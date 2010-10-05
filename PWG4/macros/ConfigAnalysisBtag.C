@@ -1,9 +1,7 @@
 //------------------------------------
-// Configuration macro example:
+// Config file for B-tagging
 //
-// Configure EMCal electron analysis
-//
-// Modified by: K. Read
+// Author T. Aronsson
 //
 //------------------------------------
 
@@ -13,7 +11,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   // Configuration goes here
   // 
   printf("======================== \n");
-  printf("ConfigAnalysisElectron() \n");
+  printf("==Preforming Btag.cxx=== \n");
   printf("======================== \n");
   Bool_t kInputIsESD = kTRUE;     //uncomment for input ESD
 //Bool_t kInputIsESD = kFALSE;    //uncomment for input AODs
@@ -21,32 +19,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 //Bool_t kFollowsFilter = kFALSE; //uncomment if no ESD filter task
   Bool_t kMC = kTRUE; //set to kFALSE for data
 
-  //enum for the different electron cut sets
-  //defined for dR and p/E
-  //kTight2 is the default standard cuts
-  enum kCutTypes {kTight2, kLooseTight, kTightLoose, kLoose2};
-  Int_t kCutSet = kTight2;
-  Double_t pOverEmin = 0.8;  //tight
-  Double_t pOverEmax = 1.2;  //tight
-  Double_t dRmax     = 0.02; //tight
-  if (gSystem->Getenv("ELECUTSET")){
-    kCutSet = atoi(gSystem->Getenv("ELECUTSET"));
-  }
-  if(kCutSet == kLooseTight) {
-    pOverEmin = 0.6;  //loose
-    pOverEmax = 1.4;  //loose
-    dRmax     = 0.02; //tight
-  }
-  if(kCutSet == kTightLoose) {
-    pOverEmin = 0.8;  //tight
-    pOverEmax = 1.2;  //tight
-    dRmax     = 0.05; //loose
-  }
-  if(kCutSet == kLoose2) {
-    pOverEmin = 0.6;  //loose
-    pOverEmax = 1.4;  //loose
-    dRmax     = 0.05; //loose
-  }    
+   
 
   //Alternatively, select input via anaInputData environment variable.
   if (gSystem->Getenv("anaInputData")){
@@ -80,13 +53,12 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   if(kInputIsESD && !kFollowsFilter)AliCaloTrackESDReader *reader = new AliCaloTrackESDReader();
   else           AliCaloTrackAODReader *reader = new AliCaloTrackAODReader();
   reader->SetDebug(-1);//10 for lots of messages
-
+  reader->SwitchOnWriteDeltaAOD();
   //Switch on or off the detectors information that you want
   reader->SwitchOnEMCAL();
-  reader->SwitchOnCTS();
-  //reader->SwitchOffEMCALCells();	
+  reader->SwitchOnCTS();	
   reader->SwitchOffPHOS();
-  //reader->SwitchOffPHOSCells();	
+	
 
   //Kine
   if(kMC && !kInputIsESD){
@@ -102,25 +74,12 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   reader->SetEMCALPtMin(0.0); //new
   if(kFollowsFilter)reader->SetTrackStatus(0);  //to prevent automatic TPC and ITS refit
 
-  //In case of generating jet events (with PYTHIA), if pt hard bin is small
-  //reject events with large difference between ptHard and triggered jet
-  //reader->SetPtHardAndJetPtComparison(kTRUE);
+
 
   reader->SetFiducialCut(fidCut);
 
   if(!kInputIsESD){
-    // Analysis with tracks, select only tracks with
-    // following bits
 
-    //     //We want tracks fitted in the detectors:
-    //     ULong_t status=AliAODTrack::kTPCrefit;
-    //     status|=AliAODTrack::kITSrefit;
-   
-    //     We want tracks whose PID bit is set:
-    //     ULong_t status =AliAODTrack::kITSpid;
-    //     status|=AliAODTrack::kTPCpid;	
-
-    //	reader->SetTrackStatus(status);
   }
 
   reader->Print("");
@@ -136,36 +95,36 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 
   fidCut2->Print("");
 
+
+
+
+
   //---------------------------------------------------------------------
   // Analysis algorithm
   //---------------------------------------------------------------------
 
-  AliAnaBtag *anaelectron = new AliAnaBtag();
-  anaelectron->SetDebug(-1); //10 for lots of messages
-  anaelectron->SetCalorimeter("EMCAL");
+  AliAnaBtag *btag = new AliAnaBtag();
+
+ //Base class
+  btag->SetDebug(-1); //10 for lots of messages
+  //btag->SetWriteNtuple(1); //Can be used to write out NTuples for local analysis (1000 times faster than AOD analysis), default is off.
   if(kMC){
-    anaelectron->SwitchOffDataMC();
-    anaelectron->SetMinPt(1.);
+    btag->SwitchOnDataMC();
+    btag->SetMinPt(1.);
   }
-  anaelectron->SetOutputAODName("Electrons");
-  anaelectron->SetOutputAODClassName("AliAODPWG4Particle");
-  anaelectron->SetWriteNtuple(kFALSE);
-  //Determine which cuts to use based on enum
-  anaelectron->SetpOverEmin(pOverEmin);
-  anaelectron->SetpOverEmax(pOverEmax);
-  anaelectron->SetResidualCut(dRmax);
-  //Set Histrograms bins and ranges
-  anaelectron->SetHistoPtRangeAndNBins(0, 100, 100) ;
-  anaelectron->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-  anaelectron->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-  anaelectron->Print("");
+  btag->SetOutputAODName("Electrons");
+  btag->SetOutputAODClassName("AliAODPWG4Particle");
+
+
+
+
 
   //---------------------------------------------------------------------
   // Set  analysis algorithm and reader
   //---------------------------------------------------------------------
   maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
-  maker->AddAnalysis(anaelectron,0);
+  maker->AddAnalysis(btag,0);
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;

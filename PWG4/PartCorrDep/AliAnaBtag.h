@@ -11,7 +11,7 @@
 // and kept in the AOD. Few histograms produced.
 //
 
-//-- Author T.R.P-R.Aronsson, J.Klay
+//-- Author T.R.P-R.Aronsson
 
 // --- ROOT system ---
 class TH2F ;
@@ -46,7 +46,7 @@ public:
   void MakeAnalysisFillHistograms() ; 
   
   //B-tagging
-  Int_t GetDVMBtag(AliAODTrack * tr);//Main tagger
+  Int_t GetDVMBtag(AliAODTrack * tr, Int_t &pairs, Int_t &start, Int_t &stop);//Main tagger
 
   //Temporary local method to get DCA
   Bool_t GetDCA(const AliAODTrack* tr,Double_t imp[2], Double_t cov[3]);
@@ -57,11 +57,7 @@ public:
   Bool_t IsMcBJet(Double_t x, Double_t y);
   Bool_t IsMcDJet(Double_t x, Double_t y);
 
-  void Print(const Option_t * opt)const;
-  
-  TString GetCalorimeter()   const {return fCalorimeter ; }
-  Double_t GetpOverEmin()   const {return fpOverEmin ; }
-  Double_t GetpOverEmax()   const {return fpOverEmax ; }
+
 
   Double_t GetDrCut() const { return fDrCut; }
   Double_t GetPairDcaCut() const { return fPairDcaCut; }
@@ -73,13 +69,9 @@ public:
   Int_t    GetITSCut() const { return fITSCut; }
   Int_t    GetNTagTrackCut() const { return fNTagTrkCut; }
   Double_t GetIPSigCut() const { return fIPSigCut; }
-  Double_t GetMinClusEne() const { return fMinClusEne; }
 
-  void SetCalorimeter(TString det)    {fCalorimeter = det ; }
-  void SetpOverEmin(Double_t min)     {fpOverEmin = min ; }
-  void SetpOverEmax(Double_t max)     {fpOverEmax = max ; }
-  void SetResidualCut(Double_t cut)     {fResidualCut = cut ; }
 
+  void SetWriteNtuple(Int_t w) { fWriteNtuple = w; }
   void SetDrCut(Double_t dr)  { fDrCut = dr; }
   void SetPairDcaCut(Double_t pdca) { fPairDcaCut = pdca; }
   void SetDecayLenCut(Double_t dlen) { fDecayLenCut = dlen; }
@@ -90,25 +82,28 @@ public:
   void SetITSCut(Int_t its) { fITSCut = its; }
   void SetNTagTrackCut(Int_t ntr) { fNTagTrkCut = ntr; }
   void SetIPSigCut(Double_t ips) { fIPSigCut = ips; }
-  void SetMinClusEne(Double_t ene) { fMinClusEne = ene; }
+
 
   void InitParameters();
   void Terminate(TList * outputList);
          
   private:
   //For DVM B-tag method
-  Double_t ComputeSignDca(AliAODTrack *track, AliAODTrack *track2, float cut1, double pdcacut);
+  Double_t ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , Double_t &masscut, Double_t &pdcacut, Double_t &massphoton, Double_t &decay);
 
-  //Int_t GetMCSource(Int_t mctag);
   AliAODMCParticle* GetMCParticle(Int_t part);
 
 
   private:
-  TString  fCalorimeter;  //! Which detector? EMCAL or PHOS
-  Double_t fpOverEmin;    //! Minimum p/E value for Electrons
-  Double_t fpOverEmax;    //! Maximum p/E value for Electrons
-  Double_t fResidualCut;  //! Track-cluster matching distance
-  Double_t fMinClusEne;   //! Min clus energy for matching
+  //NTuples!
+  Int_t fWriteNtuple;    //Will always be no, but might be set to yes in config file.
+  TNtuple * electrons;   //Electrons
+  TNtuple * pairs;       //Pairs to the electrons
+  TNtuple * events;
+  Int_t fEventNumber;    // For Ntuple to label events (starts at 0)
+  Int_t fNElec;
+  Int_t fNElecEv;
+  Int_t fNPair;
 
   //DVM B-tagging
   Double_t fDrCut;       //max dR
@@ -133,16 +128,34 @@ public:
   TH1F * fhEmcalElectrons;              //All electrons, as id:ed by EMCAL
   TH1F * fhTRDElectrons;                //Electrons from TRD
   TH1F * fhTPCElectrons;                //Electrons from TPC
+  TH1F * fhEmcalMCE;                    //All electrons, as id:ed by EMCAL MC
+  TH1F * fhTRDMCE;                      //Electrons from TRD MC
+  TH1F * fhTPCMCE;                      //Electrons from TPC MC
+  TH1F * fhEmcalMCEFake;                //All electrons, as id:ed by EMCAL MC, fake
+  TH1F * fhTRDMCEFake;                  //Electrons from TRD MC, fake
+  TH1F * fhTPCMCEFake;                  //Electrons from TPC MC, fake
+  TH1F * fhEmcalMCP;                    //Pions, as id:ed by EMCAL
+  TH1F * fhTRDMCP;                      //Pions from TRD
+  TH1F * fhTPCMCP;                      //Pions from TPC
+  TH1F * fhEmcalMCK;                    //Kaons from EMCAL
+  TH1F * fhTRDMCK;                      //Kaons from TRD
+  TH1F * fhTPCMCK;                      //Kaons from TPC
+  TH1F * fhSpecies;                     //PDG of id:ed electrons
   TH1F * fhDVM1;                        //initial b-tag dvm1
   TH1F * fhDVM2;                        //initial b-tag dvm2 
+  TH1F * fhNVTX;                        //NVtx of all btags 
+  TH1F * fhNVTXMC;                        //NVtx of MC btags 
   TH2F * fhJets;                        //All jets 2d
   TH2F * fhJetsAllEtaPhi;               //Eta phi for all jets
   TH2F * fhJetsLeadingBElectronEtaPhi;  //deta dphi btw leading jet and bele
   TH2F * fhDVM1EtaPhi;                  //eta phi for b-electrons
   TH2F * fhBJetElectronDetaDphi;        //eta phi for jet with b-electrons
+  TH2F * fhClusterMap;                  //2D eta-phi of EMCAL clusters
   TH1F * fhClusterEnergy;               //cluster E of EMCAL
   TH1F * fhTestalle;					//Temp histo for EMCAL cluster energy
   TH1F * fhResidual;                    //Residuals from trackmatching
+  TH1F * fhPairPt;                      //Pairs
+
 
   //Analysis of electrons
   TH2F * fhElectrons;

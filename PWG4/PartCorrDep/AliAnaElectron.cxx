@@ -696,6 +696,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   for (Int_t itrk =  0; itrk <  ntracks; itrk++) {////////////// track loop
     iCluster = -999; //start with no match
     AliAODTrack * track = (AliAODTrack*) (GetAODCTS()->At(itrk)) ;
+    //Added negative track condition. Seems that about 3-4% of the tracks have negative label. Causes crashes sometimes.
+    if(track->GetLabel()<0){
+      printf("Negative track label! Not sure what it  means, abort track. \n");
+      continue;
+    }
+
     if (TMath::Abs(track->Eta())< 0.5) refmult++;
     Double_t imp[2] = {-999.,-999.}; Double_t cov[3] = {-999.,-999.,-999.};
     Bool_t dcaOkay = GetDCA(track,imp,cov);  //homegrown dca calculation until AOD is fixed
@@ -728,8 +734,9 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       
       //TLorentzVector mom2(mom,0.);
       Bool_t in = kFALSE;
-      if(mom.Phi()*180./TMath::Pi() > 80. && mom.Phi()*180./TMath::Pi() < 190. &&
-	 mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
+      //Removed two lines below. Seems wrong to demand that the momentum vector should point to the EMCAL.
+      //if(mom.Phi()*180./TMath::Pi() > 80. && mom.Phi()*180./TMath::Pi() < 190. &&
+      // mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
       //Also check the track
       if(track->Phi()*180./TMath::Pi() > 80. && track->Phi()*180./TMath::Pi() < 190. &&
 	 track->Eta() > -0.7 && track->Eta() < 0.7) in = kTRUE;
@@ -885,7 +892,6 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	  //B-tagging
 	  if(GetDebug() > 1) printf("Found Electron - do b-tagging\n");
 	  Int_t dvmbtag = GetDVMBtag(track); bt += dvmbtag;
-
 	  fh2EledEdx->Fill(track->P(),dEdx);
 	  
 	  Double_t eMass = 0.511/1000; //mass in GeV
@@ -1317,7 +1323,6 @@ Int_t AliAnaElectron::GetDVMBtag(AliAODTrack * tr )
 
   fhDVMBtagQA3->Fill(ncls1);
   if (ncls1 < fITSCut) return 0;
-
   Double_t imp[2] = {-999.,-999.}; Double_t cov[3] = {-999.,-999.,-999.};
   Bool_t dcaOkay = GetDCA(tr,imp,cov);  //homegrown dca calculation until AOD is fixed                  
   if(!dcaOkay) {
@@ -1354,7 +1359,6 @@ Int_t AliAnaElectron::GetDVMBtag(AliAODTrack * tr )
     Double_t dr = sqrt(deta*deta + dphi*dphi);
 
     if(dr > fDrCut) continue;
-    
     Double_t sDca1 = ComputeSignDca(tr, track2, 1.0);
     if (sDca1 > fSdcaCut) nvtx1++;
     Double_t sDca2 = ComputeSignDca(tr, track2, 1.5);
@@ -1408,10 +1412,14 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   AliExternalTrackParam *param1 = new AliExternalTrackParam(tr);
   AliExternalTrackParam *param2 = new AliExternalTrackParam(tr2);
 
+  //Replaced functions to get the B-field. They do not work.
   Double_t bfield[3];
   param1->GetBxByBz(bfield);
-  Double_t bz = param1->GetBz();
-
+  bfield[0]=0;
+  bfield[1]=0;
+  bfield[2]=5.0;
+  Double_t bz = 5.0; //param1->GetBz();
+  printf("ZOMG1 bfield is: %f, %f",bz,bfield[2]);
   Double_t xplane1 = 0.; Double_t xplane2 = 0.;
   Double_t pairdca = param1->GetDCA(param2,bz,xplane1,xplane2);
 
@@ -1434,7 +1442,7 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   decayvector = secvtxpt - primV; //decay vector from PrimVtx
   Double_t decaylength = decayvector.Mag();
 
-  printf("\t JLK pairDCA = %2.2f\n",pairdca);
+  //printf("\t JLK pairDCA = %2.2f\n",pairdca);
 
   if(GetDebug() > 0) {
     printf(">>ComputeSdca:: mom1=%f, mom2=%f \n", emomAtB.Perp(), hmomAtB.Perp() );
@@ -1500,8 +1508,13 @@ Double_t AliAnaElectron::GetIPSignificance(AliAODTrack *tr, Double_t jetPhi)
   AliVTrack* vTrack = (AliVTrack*)vEvent->GetTrack(trackIndex);
   if(!vTrack) return -99;
   AliESDtrack esdTrack(vTrack);
+  //Replaced function to get B-field, it does not work
   Double_t bfield[3];
-  esdTrack.GetBxByBz(bfield);
+  //esdTrack.GetBxByBz(bfield);
+  bfield[0]=0;
+  bfield[1]=0;
+  bfield[2]=5.;
+  //printf("ZOMG2 ESD bfield is: %f",bfield[2]);
   if(!esdTrack.PropagateToDCABxByBz(vv, bfield, maxD, impPar, ipCov)) return -100;
   if(ipCov[0]<0) return -101;
 
@@ -1513,7 +1526,7 @@ Double_t AliAnaElectron::GetIPSignificance(AliAODTrack *tr, Double_t jetPhi)
   Double_t cosTheta = TMath::Cos(jetPhi - phiIP);
   Double_t sign = cosTheta/TMath::Abs(cosTheta);
   significance = TMath::Abs(impPar[0])/TMath::Sqrt(ipCov[0])*sign;
-  printf("\t JLK significance = %2.2f\n",significance);
+  //printf("\t JLK significance = %2.2f\n",significance);
   //ip = fabs(impPar[0]);
   fhIPSigBtagQA2->Fill(significance);
   return significance;
@@ -1687,9 +1700,14 @@ Bool_t AliAnaElectron::GetDCA(const AliAODTrack* track,Double_t impPar[2], Doubl
     AliVVertex *vv = (AliVVertex*)ve->GetPrimaryVertex();
     AliESDtrack esdTrack(track);
     Double_t bfield[3];
-    esdTrack.GetBxByBz(bfield);
+    //This GetBxByBz function does not work properly.
+    //esdTrack.GetBxByBz(bfield);
+    bfield[0]=0;
+    bfield[1]=0;
+    bfield[2]=5.;
+    //printf("ZOMG2 ESD bfield is: %f",bfield[2]);
     Bool_t gotit = esdTrack.PropagateToDCABxByBz(vv,bfield,maxD,impPar,cov);
-    printf("\t JLK impPar = %2.2f\n",impPar[0]);
+    //printf("\t JLK impPar = %2.2f\n",impPar[0]);
     return gotit;
   }
 

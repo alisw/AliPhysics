@@ -17,21 +17,19 @@
 //_________________________________________________________________________
 //
 // Class for the electron identification and B-tagging.
-// Clusters from EMCAL matched to tracks
-// and kept in the AOD. Few histograms produced.
+// Clusters from EMCAL matched to tracks to id electrons.
+// Btagger is run on all electrons, then jets are tagged as well.
+// 
 //
-// -- Author: T.R.P.Aronsson (Yale) J.L. Klay (Cal Poly), M. Heinz (Yale)
+// -- Author: T.R.P.Aronsson (Yale), M. Heinz (Yale)
 //////////////////////////////////////////////////////////////////////////////
   
-// --- ROOT system --- 
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TParticle.h>
+#include <TNtuple.h>
 #include <TClonesArray.h>
-//#include <TObjString.h>
-//#include <Riostream.h>
 
-// --- Analysis system --- 
 #include "AliAnaBtag.h" 
 #include "AliCaloTrackReader.h"
 #include "AliMCAnalysisUtils.h"
@@ -48,20 +46,17 @@
 #include "AliAODJet.h"
 #include "AliAODEvent.h"
 #include "AliGenPythiaEventHeader.h"
-//#include "iostream.h"
 ClassImp(AliAnaBtag)
   
 //____________________________________________________________________________
 AliAnaBtag::AliAnaBtag() 
-: AliAnaPartCorrBaseClass(),fCalorimeter(""),
-  fpOverEmin(0.),fpOverEmax(0.),fResidualCut(0.),fMinClusEne(0.),
-  fDrCut(0.),fPairDcaCut(0.),fDecayLenCut(0.),fImpactCut(0.),
+: AliAnaPartCorrBaseClass(),
+  fWriteNtuple(0),electrons(0),pairs(0),events(0),fEventNumber(0),fNElec(0),fNElecEv(0),fNPair(0),fDrCut(0.),fPairDcaCut(0.),fDecayLenCut(0.),fImpactCut(0.),
   fAssocPtCut(0.),fMassCut(0.),fSdcaCut(0.),fITSCut(0),
   fNTagTrkCut(0),fIPSigCut(0.),fJetEtaCut(0.3),fJetPhiMin(1.8),fJetPhiMax(2.9),
-  fhEmcalElectrons(0),fhTRDElectrons(0),fhTPCElectrons(0),fhDVM1(0),fhDVM2(0),fhJets(0),fhJetsAllEtaPhi(0),fhJetsLeadingBElectronEtaPhi(0),fhDVM1EtaPhi(0),fhBJetElectronDetaDphi(0),fhClusterEnergy(0),fhTestalle(0),fhResidual(0),fhElectrons(0),fhTracks(0)
+  fhEmcalElectrons(0),fhTRDElectrons(0),fhTPCElectrons(0),fhEmcalMCE(0),fhTRDMCE(0),fhTPCMCE(0),fhEmcalMCEFake(0),fhTRDMCEFake(0),fhTPCMCEFake(0),fhEmcalMCP(0),fhTRDMCP(0),fhTPCMCP(0),fhEmcalMCK(0),fhTRDMCK(0),fhTPCMCK(0),fhSpecies(0),fhDVM1(0),fhDVM2(0),fhNVTX(0),fhNVTXMC(0),fhJets(0),fhJetsAllEtaPhi(0),fhJetsLeadingBElectronEtaPhi(0),fhDVM1EtaPhi(0),fhBJetElectronDetaDphi(0),fhClusterMap(0),fhClusterEnergy(0),fhTestalle(0),fhResidual(0),fhPairPt(0),fhElectrons(0),fhTracks(0)
 {
   //default ctor
-  
   //Initialize parameters
   InitParameters();
 
@@ -83,91 +78,135 @@ TList *  AliAnaBtag::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ElectronHistos") ; 
 
+  if(fWriteNtuple){
+    electrons = new TNtuple("electrons","Electron Ntuple","electronnumber:eventnumber:electronineventnumber:pairs:start:stop:tpc:trd:emc:mcpdg:parentbit:btag:pt");
+    outputContainer->Add(electrons);
 
-	fhEmcalElectrons = new TH1F("fhEmcalElectrons","",400,0,400);
-    outputContainer->Add(fhEmcalElectrons);
+    pairs = new TNtuple("pairs","Pair Ntuple","pairnumber:electronnumber:eventnumber:pdca:sdca:minv:pth:massphoton:decaylength");
+    outputContainer->Add(pairs);
+
+    events = new TNtuple("events","Event NTuple","event");
+    outputContainer->Add(events);
+  }
+  
+  fhEmcalElectrons = new TH1F("fhEmcalElectrons","",400,0,400);
+  outputContainer->Add(fhEmcalElectrons);
+  
+  fhTRDElectrons = new TH1F("fhTRDElectrons","",400,0,400);
+  outputContainer->Add(fhTRDElectrons);
+  
+  fhTPCElectrons = new TH1F("fhTPCElectrons","",400,0,400);
+  outputContainer->Add(fhTPCElectrons);
+  
+
+  if(IsDataMC()){
+    fhEmcalMCE = new TH1F("fhEmcalMCE","",400,0,400);
+    outputContainer->Add(fhEmcalMCE);
     
-    fhTRDElectrons = new TH1F("fhTRDElectrons","",400,0,400);
-    outputContainer->Add(fhTRDElectrons);
-
-    fhTPCElectrons = new TH1F("fhTPCElectrons","",400,0,400);
-    outputContainer->Add(fhTPCElectrons);
-
+    fhTRDMCE = new TH1F("fhTRDMCE","",400,0,400);
+    outputContainer->Add(fhTRDMCE);
+    
+    fhTPCMCE = new TH1F("fhTPCMCE","",400,0,400);
+    outputContainer->Add(fhTPCMCE);
+    
+    fhEmcalMCEFake = new TH1F("fhEmcalMCEFake","",400,0,400);
+    outputContainer->Add(fhEmcalMCEFake);
+    
+    fhTRDMCEFake = new TH1F("fhTRDMCEFake","",400,0,400);
+    outputContainer->Add(fhTRDMCEFake);
+    
+    fhTPCMCEFake = new TH1F("fhTPCMCEFake","",400,0,400);
+    outputContainer->Add(fhTPCMCEFake);
+    
+    fhEmcalMCP = new TH1F("fhEmcalMCP","",400,0,400);
+    outputContainer->Add(fhEmcalMCP);
+    
+    fhTRDMCP = new TH1F("fhTRDMCP","",400,0,400);
+    outputContainer->Add(fhTRDMCP);
+    
+    fhTPCMCP = new TH1F("fhTPCMCP","",400,0,400);
+    outputContainer->Add(fhTPCMCP);
+    
+    fhEmcalMCK = new TH1F("fhEmcalMCK","",400,0,400);
+    outputContainer->Add(fhEmcalMCK);
+    
+    fhTRDMCK = new TH1F("fhTRDMCK","",400,0,400);
+    outputContainer->Add(fhTRDMCK);
+    
+    fhTPCMCK = new TH1F("fhTPCMCK","",400,0,400);
+    outputContainer->Add(fhTPCMCK);
+    
+    fhSpecies  = new TH1F("fhSpecies","",1000,0,1000);
+    outputContainer->Add(fhSpecies);
+    
     fhDVM1 = new TH1F("fhDVM1","",400,0,400);
     outputContainer->Add(fhDVM1);
-
+    
     fhDVM2 = new TH1F("fhDVM2","",400,0,400);
     outputContainer->Add(fhDVM2);
-
-
-    fhJets = new TH2F("fhJets","",400,0,400,20,0,20);
-    outputContainer->Add(fhJets);
-
-    fhJetsAllEtaPhi = new TH2F("fhJetsAllEtaPhi","",100,-2,2,100,-2,8);
-    outputContainer->Add(fhJetsAllEtaPhi);
-
-    fhJetsLeadingBElectronEtaPhi = new TH2F("fhJetsLeadingBElectronEtaPhi","",100,-5,5,200,-10,10);
-    outputContainer->Add(fhJetsLeadingBElectronEtaPhi);
-
-    fhDVM1EtaPhi = new TH2F("fhDVM1EtaPhi","",100,-2,2,100,-2,8);
-    outputContainer->Add(fhDVM1EtaPhi);
-
-    fhBJetElectronDetaDphi = new TH2F("fhBJetElectronDetaDphi","",100,-5,5,200,-10,10);
-    outputContainer->Add(fhBJetElectronDetaDphi);
-
-    fhClusterEnergy = new TH1F("fhClusterEnergy","",100,0,10);
-    outputContainer->Add(fhClusterEnergy);
-
-    fhTestalle = new TH1F("fhTestalle","",400,0,400);
-    outputContainer->Add(fhTestalle);
-
-    fhResidual = new TH1F("fhResidual","",500,0,5);
-    outputContainer->Add(fhResidual);
-
-    fhElectrons = new TH2F("fhElectrons","",200,0,100,20,0,20);
-    outputContainer->Add(fhElectrons);
-
-    fhTracks = new TH2F("fhTracks","",200,0,100,20,0,20);
-    outputContainer->Add(fhTracks);
-
-
+    
+    fhNVTX = new TH1F("fhNVTX","",20,0,20);
+    outputContainer->Add(fhNVTX);
+    
+    fhNVTXMC = new TH1F("fhNVTXMC","",20,0,20);
+    outputContainer->Add(fhNVTXMC);
+  }
   
-  return outputContainer ;
+
+  fhJets = new TH2F("fhJets","",400,0,400,20,0,20);
+  outputContainer->Add(fhJets);
   
+  fhJetsAllEtaPhi = new TH2F("fhJetsAllEtaPhi","",100,-2,2,100,-2,8);
+  outputContainer->Add(fhJetsAllEtaPhi);
+  
+  fhJetsLeadingBElectronEtaPhi = new TH2F("fhJetsLeadingBElectronEtaPhi","",100,-5,5,200,-10,10);
+  outputContainer->Add(fhJetsLeadingBElectronEtaPhi);
+  
+  fhDVM1EtaPhi = new TH2F("fhDVM1EtaPhi","",100,-2,2,100,-2,8);
+  outputContainer->Add(fhDVM1EtaPhi);
+  
+  fhBJetElectronDetaDphi = new TH2F("fhBJetElectronDetaDphi","",100,-5,5,200,-10,10);
+  outputContainer->Add(fhBJetElectronDetaDphi);
+  
+  fhClusterMap = new TH2F("fhClusterMap","",100,-2,2,100,-2,8);
+  outputContainer->Add(fhClusterMap);
+  
+  fhClusterEnergy = new TH1F("fhClusterEnergy","",100,0,10);
+  outputContainer->Add(fhClusterEnergy);
+  
+  fhTestalle = new TH1F("fhTestalle","",400,0,400);
+  outputContainer->Add(fhTestalle);
+  
+  fhResidual = new TH1F("fhResidual","",500,0,5);
+  outputContainer->Add(fhResidual);
+
+  fhPairPt = new TH1F("fhPairPt","",400,0,400);
+  outputContainer->Add(fhPairPt);
+  
+  fhElectrons = new TH2F("fhElectrons","",200,0,100,20,0,20);
+  outputContainer->Add(fhElectrons);
+  
+  fhTracks = new TH2F("fhTracks","",200,0,100,20,0,20);
+  outputContainer->Add(fhTracks);
+    
+  return outputContainer ; 
 }
 
 //____________________________________________________________________________
 void AliAnaBtag::Init()
 {
-
   //do some initialization
-  if(fCalorimeter == "PHOS") {
-    printf("AliAnaBtag::Init() - !!STOP: You want to use PHOS in analysis but this is not (yet) supported!!\n!!Check the configuration file!!\n");
-    fCalorimeter = "EMCAL";
-  }
-  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn()){
-    printf("AliAnaBtag::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!!\n!!Check the configuration file!!\n");
-    abort();
-  }
-
+    printf("Rubbish init step AliAnaBtag::Init()");
 }
 
 
 //____________________________________________________________________________
 void AliAnaBtag::InitParameters()
-{
-  
+{ 
   //Initialize the parameters of the analysis.
   SetOutputAODClassName("AliAODPWG4Particle");
   SetOutputAODName("PWG4Particle");
-
-  AddToHistogramsName("Btag_");
-
-  fCalorimeter = "EMCAL" ;
-  fpOverEmin = 0.5;
-  fpOverEmax = 1.2;
-  fResidualCut = 0.02;
-  fMinClusEne = 4.0;
+  //AddToHistogramsName("");
   //DVM B-tagging
   fDrCut       = 1.0; 
   fPairDcaCut  = 0.02;
@@ -189,18 +228,17 @@ void AliAnaBtag::InitParameters()
 //__________________________________________________________________
 void  AliAnaBtag::MakeAnalysisFillAOD() 
 {
+  fEventNumber++;
+  fNElecEv=0;
+  if(fWriteNtuple)
+    events->Fill(fEventNumber);
+
   //This reads in tracks, extrapolates to EMCAL, does p/E selectrons, identifies electron candidates
   //After candidates are obtained, btagging and saving into AOD.
-
-  Double_t bfield = 0.;
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
-
-  //Select the calorimeter of the electron
-  if(fCalorimeter != "EMCAL") {
-    printf("This class not yet implemented for PHOS\n");
-    abort();
-  }
-  
+  AliStack *stack =0x0;
+  //Double_t bfield = 0.;
+  if(GetDebug()>0) printf("AliAnaBtag::MakeAnalysisFillAOD() - Write ntuple flag is %d \n",fWriteNtuple);
+  //if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
   TObjArray *cl = GetAODEMCAL();
   
   if(!GetAODCTS() || GetAODCTS()->GetEntriesFast() == 0) return ;
@@ -211,25 +249,35 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
   Int_t iCluster = -999;
   Int_t ntot = cl->GetEntriesFast();
 
-  //CLUSTER STUFF
-  if(1){
-    for(Int_t iclus = 0; iclus < ntot; iclus++) {
-      AliVCluster * clus = (AliVCluster*) (cl->At(iclus));
-      if(!clus) continue;
-      fhClusterEnergy->Fill(clus->E());
-    }
-  }
+  //CLUSTER STUFF 
+  for(Int_t iclus = 0; iclus < ntot; iclus++) {
+    AliVCluster * clus = (AliVCluster*) (cl->At(iclus));
+    if(!clus) continue;
+    fhClusterEnergy->Fill(clus->E());
+    Float_t xclus[3];
+    clus->GetPosition(xclus);
+    TVector3 cluspos(xclus[0],xclus[1],xclus[2]);
 
+    fhClusterMap->Fill(cluspos.Eta(),cluspos.Phi());
+  }
+  
+  
 
   for (Int_t itrk =  0; itrk <  ntracks; itrk++) {////////////// track loop
     iCluster = -999; //start with no match
     AliAODTrack * track = (AliAODTrack*) (GetAODCTS()->At(itrk)) ;
-
+    if(track->GetLabel()<0){
+      if(GetDebug()>0)
+	printf("Negative track label, aborting!\n");
+      continue;
+    }
     Double_t imp[2] = {-999.,-999.}; Double_t cov[3] = {-999.,-999.,-999.};
     Bool_t dcaOkay = GetDCA(track,imp,cov);  //homegrown dca calculation until AOD is fixed
-    if(!dcaOkay) printf("AliAnaBtag::Problem computing DCA to primary vertex for track %d.  Skipping it...\n",itrk);
-
+    if(!dcaOkay&&GetDebug()>0) printf("AliAnaBtag::FillAOD - Problem computing DCA to primary vertex for track %d.  Skipping it...\n",itrk);
     fhTracks->Fill(track->Pt(),1);
+
+    if(track->Pt()<0)
+      continue;
 
     AliAODPid* pid = (AliAODPid*) track->GetDetPid();
     if(pid == 0) {
@@ -249,31 +297,27 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
       Double_t tmom = mom.Mag();
 
       Bool_t in = kFALSE;
-      if(mom.Phi()*180./TMath::Pi() > 80. && mom.Phi()*180./TMath::Pi() < 190. &&
-	 mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE; //Checks momentum?
-      //Also check the track
       if(track->Phi()*180./TMath::Pi() > 80. && track->Phi()*180./TMath::Pi() < 190. &&
 	 track->Eta() > -0.7 && track->Eta() < 0.7) in = kTRUE;
 
-      if(GetDebug() > 1) printf("AliAnaBtag::MakeAnalysisFillAOD() - Track(Extrap) pt %2.2f(%2.2f), phi %2.2f(%2.2f), eta %2.2f(%2.2f) in fiducial cut %d\n",track->Pt(), mom.Pt(), track->Phi(), mom.Phi(), track->Eta(),mom.Eta(), in);
 
-      if(mom.Pt() > GetMinPt() && in) {
+      Double_t dEdx = pid->GetTPCsignal();
+      Int_t pidProb = track->GetMostProbablePID();
+      Bool_t tpcEle = kFALSE; if(dEdx > 70.) tpcEle = kTRUE;
+      Bool_t trkEle = kFALSE; if(pidProb == AliAODTrack::kElectron) trkEle = kTRUE;
+      Bool_t emcEle = kFALSE;   
+
+
+
+
+      ////////////////////////////////////////////////EMCAL//////////////////////
+      if(mom.Pt() > 1.0 && in) {
 	fhTracks->Fill(track->Pt(),3);
-	Double_t dEdx = pid->GetTPCsignal();
-		
-	//Int_t ntot = cl->GetEntriesFast();
 	Double_t res = 999.;
 	Double_t pOverE = -999.;
 	
-	Int_t pidProb = track->GetMostProbablePID();
-	Bool_t tpcEle = kFALSE; if(dEdx > 70.) tpcEle = kTRUE;
-	Bool_t trkEle = kFALSE; if(pidProb == AliAODTrack::kElectron) trkEle = kTRUE;
-	Bool_t trkChgHad = kFALSE; if(pidProb == AliAODTrack::kPion || pidProb == AliAODTrack::kKaon || pidProb == AliAODTrack::kProton) trkChgHad = kTRUE;
-
-
-	//Track Matching!
-	Bool_t emcEle = kFALSE;      
-	double minRes=100.;
+	//Track Matching parameters
+   	double minRes=100.;
 	Double_t minR  = 99;
         Double_t minPe =-1;
         Double_t minEp =-1;
@@ -284,17 +328,7 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
 	  AliVCluster * clus = (AliVCluster*) (cl->At(iclus));
 	  if(!clus) continue;
 
-	  //As of 11-Oct-2009
-	  //only select "good" clusters	  
-// 	  if (clus->GetNCells()       < 2    ) continue;
-//           if (clus->GetNCells()       > 30   ) continue;
-//           if (clus->E()               < fMinClusEne ) continue;
-//           if (clus->GetDispersion()   > 1    ) continue;
-//           if (clus->GetM20()          > 0.4  ) continue;
-//           if (clus->GetM02()          > 0.4  ) continue;
-//           if (clus->GetM20()          < 0.03 ) continue;
-//           if (clus->GetM02()          < 0.03 ) continue;
-// new optimized from ben. 2010May
+	  // new optimized from ben. 2010May
 	  if (clus->GetNCells()       < 2    ) continue;
           if (clus->GetNCells()       > 35   ) continue;
           if (clus->E()               < 0 ) continue;
@@ -314,18 +348,12 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
 	  if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
 
 	  res = sqrt(dphi*dphi + deta*deta);
-	  
-	  if(res<minRes){
-	    minRes=res;
-	    
-	  }
-	  
-	  if(res < 0.0275) { //	  if(res < fResidualCut) { //Optimized from Ben
+	  if(res<minRes)  minRes=res;	    
+
+	  if(res < 0.0275) { // { //Optimized from Ben
 	    iCluster = iclus;
-	    
 	    Double_t energy = clus->E(); 
 	    if(energy > 0) pOverE = tmom/energy;
-	    
 	    if (res< minR) {
               minR  = res;
               minPe = pOverE;
@@ -333,83 +361,132 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
               minMult = clus->GetNCells() ;
               minPt = track->Pt();
             }
-
-
 	  } else {
 	      //unmatched
 	  }//res cut
-	}//calo cluster loop
 
+	}//calo cluster loop
 	fhResidual->Fill(minRes);
 
 	if(minPe > 0.9 && minPe < 1.08) emcEle = kTRUE;//	if(minPe > fpOverEmin && minPe < fpOverEmax) emcEle = kTRUE;
-	
+      	
+      }//pt, fiducial selection = EMCAL ////////////////////END EMCAL/////////////////////////
 
+
+
+
+      ////////////////////////////////////////////////////Electrons/////////////////////     
+      if(emcEle ||tpcEle || trkEle) { //Obsolete (kinda...)
+	fhTestalle->Fill(track->Pt());
+
+	//B-tagging
+	if(GetDebug() > 1) printf("Found Electron - do b-tagging\n");
+	Int_t pairs1=0,start=0,stop=0;
+	Int_t dvmbtag = GetDVMBtag(track,pairs1,start,stop); //add: get back #pairs, start stop in pair-Ntuple.
+	if(GetDebug() > 0) printf("AliAnaBtag::MakeAnalysisFillAOD -  Analyze, got back result from dvm: pair counts: pairs: %d, start %d, stop %d. \n",pairs1,start,stop);
+	fhNVTX->Fill(dvmbtag);
+
+	if(dvmbtag>0){
+	  fhDVM1->Fill(track->Pt());
+	  fhDVM1EtaPhi->Fill(track->Eta(),track->Phi());	    
+	}
+	if(dvmbtag>1)
+	  fhDVM2->Fill(track->Pt());
 	
-	if(emcEle)
+	//Create particle to save in AOD///////////// Purpose of this is the AODJets needs to check against this.
+	Double_t eMass = 0.511/1000; //mass in GeV
+	Double_t eleE = sqrt(track->P()*track->P() + eMass*eMass);
+	AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),eleE);
+	tr.SetLabel(track->GetLabel());
+	tr.SetCaloLabel(iCluster,-1); //sets the indices of the original caloclusters
+	tr.SetTrackLabel(track->GetID(),-1); //sets the indices of the original tracks tr.SetTrackLabel(track->GetID(),-1) instead of itrk;
+	tr.SetBtag(dvmbtag);
+	if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
+	else  tr.SetPdg(-11); //positron is -11	
+
+	//Set detector flags
+	Int_t emcflag=0,tpcflag=0,trdflag=0;
+	if(emcEle){
 	  fhEmcalElectrons->Fill(track->Pt());
-	if(trkEle)
+	  emcflag=1;}
+	if(trkEle){
 	  fhTRDElectrons->Fill(track->Pt());
-	if(tpcEle)
+	  trdflag=1;}
+	if(tpcEle){
 	  fhTPCElectrons->Fill(track->Pt());
-	
-	
-	//Take all emcal electrons, but the others only if pT < 10 GeV
-	if(emcEle && (tpcEle || trkEle) ) {
-	  fhTestalle->Fill(track->Pt());
-	  //B-tagging
-	  if(GetDebug() > 1) printf("Found Electron - do b-tagging\n");
-	  Int_t dvmbtag = GetDVMBtag(track);
-	  
-	  
-	  if(dvmbtag>0){
-	    fhDVM1->Fill(track->Pt());
-            fhDVM1EtaPhi->Fill(track->Eta(),track->Phi());	  
-	    
-          }
-	  if(dvmbtag>1)
-	    fhDVM2->Fill(track->Pt());
-	  
+	  tpcflag=1;}
 
-	  //Create particle to save in AOD
-	  Double_t eMass = 0.511/1000; //mass in GeV
-	  Double_t eleE = sqrt(track->P()*track->P() + eMass*eMass);
-	  AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),eleE);
-	  tr.SetLabel(track->GetLabel());
-	  tr.SetCaloLabel(iCluster,-1); //sets the indices of the original caloclusters
-	  tr.SetTrackLabel(track->GetID(),-1); //sets the indices of the original tracks tr.SetTrackLabel(track->GetID(),-1) instead of itrk;
+	if(emcEle) {//PID determined by EMCAL
+	  tr.SetDetector("EMCAL");
+	} else {
+	  tr.SetDetector("CTS"); //PID determined by CTS
+	}
 
-	  if(emcEle) {//PID determined by EMCAL
-	    tr.SetDetector(fCalorimeter);
-	  } else {
-	    tr.SetDetector("CTS"); //PID determined by CTS
+
+	/////////////////////////MC stuff////////////////////////////////////////////////
+	if(IsDataMC()){
+	  stack=GetMCStack();
+	  if(!stack) printf("AliAnaBtag::MakeAnalysisFillHistograms() - Crap, no stack: \n");
+
+	  //Is it really an electron?
+	  TParticle *partX = stack->Particle(TMath::Abs(track->GetLabel()));
+	  int pdg = 0;
+	  pdg = partX->GetPdgCode();
+	  fhSpecies->Fill(TMath::Abs(pdg));
+	  if(TMath::Abs(pdg)==11){ //Check MC electrons
+	    if(emcEle)
+	      fhEmcalMCE->Fill(track->Pt());
+	    if(trkEle)
+	      fhTRDMCE->Fill(track->Pt());
+	    if(tpcEle)
+	      fhTPCMCE->Fill(track->Pt());
+	  }else{ //Fake histos!
+	    if(emcEle)
+	      fhEmcalMCEFake->Fill(track->Pt());
+	    if(trkEle)
+	      fhTRDMCEFake->Fill(track->Pt());
+	    if(tpcEle)
+	      fhTPCMCEFake->Fill(track->Pt());
 	  }
+	  if(TMath::Abs(pdg)==211){ //Check MC pions
+	    if(emcEle)
+	      fhEmcalMCP->Fill(track->Pt());
+	    if(trkEle)
+	      fhTRDMCP->Fill(track->Pt());
+	    if(tpcEle)
+	      fhTPCMCP->Fill(track->Pt());
+	  }
+	  if(TMath::Abs(pdg)==321){ //Check MC Kaons
+	    if(emcEle)
+	      fhEmcalMCK->Fill(track->Pt());
+	    if(trkEle)
+	      fhTRDMCK->Fill(track->Pt());
+	    if(tpcEle)
+	      fhTPCMCK->Fill(track->Pt());
+	  }
+	  //Take care of where it came from (parent bit)
+	  tr.SetTag(GetMCAnalysisUtils()->CheckOrigin(tr.GetLabel(),GetReader(),tr.GetInputFileIndex())); //Gets a tag bit which contains info about super grandfather particle. Use (tag&(1<<11)), 11 for direct b, and 9 for B->C
 
-	  //if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
-	  //Make this preserve sign of particle
-	  if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
-	  else  tr.SetPdg(-11); //positron is -11
+	  if(tr.GetTag()&(1<<9)||tr.GetTag()&(1<<11)) //MC particle from b-decay
+	    fhNVTXMC->Fill(dvmbtag);
 
-	  tr.SetBtag(dvmbtag);
-	  
+	  if(fWriteNtuple){
+	    fNElec++;
+	    fNElecEv++;
+	    electrons->Fill(fNElec,fEventNumber,fNElecEv,pairs1,start,stop,tpcflag,trdflag,emcflag,pdg,tr.GetTag(),tr.GetBtag(),tr.Pt());
 
-	  //Check origin of the candiates
-	  if(IsDataMC()){
-	    tr.SetTag(GetMCAnalysisUtils()->CheckOrigin(tr.GetLabel(),GetReader(),tr.GetInputFileIndex()));
-	    if(GetDebug() > 0) printf("AliAnaBtag::MakeAnalysisFillAOD() - Origin of candidate %d\n",tr.GetTag());
-	  }//Work with stack also   
+
+	  }
 	  
-	  AddAODParticle(tr);
-	  
-	  if(GetDebug() > 1) printf("AliAnaBtag::MakeAnalysisFillAOD() - Electron selection cuts passed: pT %3.2f, pdg %d\n",tr.Pt(),tr.GetPdg());	
-	}//electron
-      }//pt, fiducial selection
-    }//pid check
+	  if(GetDebug() > 0) 
+	    printf("AliAnaBtag::MakeAnalysisFillAOD() - Origin of candidate (parent bit) %d\n",tr.GetTag());
+	}//MonteCarlo MC done
+	
+	AddAODParticle(tr);		
+      }//electron
+    
+    } //pid check
   }//track loop                         
-  
-
-
-
   if(GetDebug() > 1) printf("AliAnaBtag::MakeAnalysisFillAOD()  End fill AODs \n");  
   
 }
@@ -418,25 +495,17 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
 void  AliAnaBtag::MakeAnalysisFillHistograms() 
 {
   //Do analysis and fill histograms
-  
   AliStack * stack = 0x0;
   //   TParticle * primary = 0x0;
-  
-  
-  
-  
   if(IsDataMC()) {
     if(GetReader()->ReadStack()){
       stack =  GetMCStack() ;      
       if(!stack)
-        printf("AliAnaBtag::MakeAnalysisFillHistograms() *** no stack ***: \n");
-      
+        printf("AliAnaBtag::MakeAnalysisFillHistograms() *** no stack ***: \n");   
     }
   }// is data and MC
   
-  ////////////////////////////////////
-  //Loop over jets and check for b-tag
-  ////////////////////////////////////
+
   double maxjetEta=-4.;
   double maxjetPhi=-4.;
   
@@ -445,63 +514,76 @@ void  AliAnaBtag::MakeAnalysisFillHistograms()
   if(njets > 0) {
     if(GetDebug() > 0) printf("AliAnaBtag::MakeAnalysisFillHistograms() - Jet AOD branch has %d jets.  Performing b-jet tag analysis\n",njets);
     
+    ///////////////////////////////////Jet loop//////////////////////////////////////////////
     for(Int_t ijet = 0; ijet < njets ; ijet++) {
       AliAODJet * jet = (AliAODJet*)(GetReader()->GetOutputEvent())->GetJet(ijet) ;
-      
-      if(ijet==0){
-        maxjetEta=jet->Eta();
-        maxjetPhi=jet->Phi();
-      }
-      
-      fhJets->Fill(jet->Pt(),1);
+      fhJets->Fill(jet->Pt(),1);                                                                                ////////////////FILL
       fhJetsAllEtaPhi->Fill(jet->Eta(),jet->Phi());
-      
       if(jet->Pt() < 0.) continue; //This has to be adjusted depending on pp or AA!
-      fhJets->Fill(jet->Pt(),3); //All jets after pt cut
       
       //Geometric EMCAL cut
-      if(TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
-      if(jet->Phi() < fJetPhiMin || jet->Phi() > fJetPhiMax) continue;
-      fhJets->Fill(jet->Pt(),4); //All jets after geometric cut
+      if(TMath::Abs(jet->Eta()) > 0.3) continue;
+      if(jet->Phi() < 1.8 || jet->Phi() > 2.9) continue; //This is BAD FIXME 
+      fhJets->Fill(jet->Pt(),4); //All jets after geometric cut                                                 ////////////////FILL
       
       Bool_t leadJet  = kFALSE;
-      if (ijet==0){ 
-        fhJets->Fill(jet->Pt(),5); //Leading jets
-        leadJet= kTRUE;
-      }
+      if (ijet==0) {leadJet= kTRUE; fhJets->Fill(jet->Pt(),5);} //Leading jets                                   ////////////////FILL
       
-      
-      Bool_t dvmJet = kFALSE;  
+      /////////////////////////Track loop in Jet////////////////////////////////////
+      Bool_t dvmJet = kFALSE; 
+      Bool_t dvmMCJet = kFALSE; 
       TRefArray* rt = jet->GetRefTracks();
       Int_t ntrk = rt->GetEntries();
       
       for(Int_t itrk = 0; itrk < ntrk; itrk++) {
       	AliAODTrack* jetTrack = (AliAODTrack*)jet->GetTrack(itrk);
-        Bool_t isDVM = CheckIfBjet(jetTrack);
-        if(isDVM) dvmJet = kTRUE;
-      }
+	
+	Int_t trackId = jetTrack->GetID(); //get the index in the reader
+	Int_t naod = GetOutputAODBranch()->GetEntriesFast();
+	if(GetDebug() > 3) printf("AliAnaBtag::CheckIfBjet() - aod branch entries %d\n", naod);
+	
+	for(Int_t iaod = 0; iaod < naod ; iaod++){
+	  AliAODPWG4Particle* ele =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+	  Int_t electronlabel = ele->GetTrackLabel(0);
+	  if(electronlabel != trackId) continue;  //skip to the next one if they don't match
+	  if(ele->GetBtag()>0){
+	    dvmJet = kTRUE;
+	    if(ele->GetTag()&(1<<9) || ele->GetTag()&(1<<11) )
+	      dvmMCJet = kTRUE;
+	  }
+	} //Electron check
+	
+      }//Track loop of jet tracks
       
-      if(dvmJet)
-        fhJets->Fill(jet->Pt(),6);
-      
-      
+      if(dvmJet) fhJets->Fill(jet->Pt(),6);                                                                      ////////////////FILL
+      //MC stuff
       if(IsDataMC()) {
-        //determine tagging efficiency & mis-tagging rate
-        //using b-quarks from stack
         Bool_t isTrueBjet = IsMcBJet(jet->Eta(), jet->Phi());
-        Bool_t isTrueDjet = IsMcDJet(jet->Eta(), jet->Phi());
-        if (isTrueBjet && GetDebug() > 0) printf("== True Bjet==\n");
-        if (isTrueDjet && GetDebug() > 0) printf("== True Charm-jet==\n");
-        if (dvmJet && GetDebug() > 0)     printf("== found DVM jet==\n");
-      }
-      
-    } //jet loop
+        //Bool_t isTrueDjet = IsMcDJet(jet->Eta(), jet->Phi());
+	if(dvmJet){
+	  if(dvmMCJet){
+	    fhJets->Fill(jet->Pt(),8);   //True                                                                   ////////////////FILL
+	  }else{
+	    fhJets->Fill(jet->Pt(),9);   //False                                                                 ////////////////FILL
+	  }
+	  if(isTrueBjet){ 
+	    fhJets->Fill(jet->Pt(),10);     //True                                                                 ////////////////FILL
+	  }else{
+	    fhJets->Fill(jet->Pt(),11);     //False                                                                ////////////////FILL
+	  }
+	}
+	if(isTrueBjet){ 
+	  fhJets->Fill(jet->Pt(),12);     //True                                                                 ////////////////FILL
+	}else{
+	  fhJets->Fill(jet->Pt(),13);     //False                                                                ////////////////FILL
+	}
+
+      }//MC stuff
+
+    }//jet loop
   } //jets exist
   
-  
-  
-  
-  //Electron loop, read back electrons, fill histos
+  //Electron loop, read back electrons, fill histos; mostly photonic shit.
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaBtag::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
@@ -545,33 +627,35 @@ void  AliAnaBtag::MakeAnalysisFillHistograms()
 }
 
 //__________________________________________________________________
-Int_t AliAnaBtag::GetDVMBtag(AliAODTrack * tr )
+Int_t AliAnaBtag::GetDVMBtag(AliAODTrack * tr, Int_t &pair, Int_t &start, Int_t &stop)
 {
   //This method uses the Displaced Vertex between electron-hadron
   //pairs and the primary vertex to determine whether an electron is
   //likely from a B hadron.
-
+  Int_t pairstart = fNPair;
+  Int_t pairstop = 0;
+  Int_t pairn = 0;
   Int_t ncls1 = 0;
   for(Int_t l = 0; l < 6; l++) if(TESTBIT(tr->GetITSClusterMap(),l)) ncls1++;
-
 
   if (ncls1 < fITSCut) return 0;
 
   Double_t imp[2] = {-999.,-999.}; Double_t cov[3] = {-999.,-999.,-999.};
   Bool_t dcaOkay = GetDCA(tr,imp,cov);  //homegrown dca calculation until AOD is fixed                  
   if(!dcaOkay) {
-    printf("AliAnaBtag::Problem computing DCA to primary vertex for track %d",tr->GetID());
+    printf("AliAnaBtag::GetDVMBtag - Problem computing DCA to primary vertex for track %d",tr->GetID());
     return 0;
   }
 
   if (TMath::Abs(imp[0])   > fImpactCut ) return 0;
   if (TMath::Abs(imp[1])   > fImpactCut ) return 0;
 
-//  Int_t nvtx1 = 0;
-  Int_t nvtx2 = 0;
-//  Int_t nvtx3 = 0;
+  Int_t nvtx = 0;
+//   Int_t nvtx2 = 0;
+//   Int_t nvtx3 = 0;
 
   for (Int_t k2 =0; k2 < GetAODCTS()->GetEntriesFast() ; k2++) {
+
     //loop over assoc
     AliAODTrack* track2 = (AliAODTrack*)GetAODCTS()->At(k2);
     Int_t id1 = tr->GetID();
@@ -582,9 +666,13 @@ Int_t AliAnaBtag::GetDVMBtag(AliAODTrack * tr )
     for(Int_t l = 0; l < 6; l++) if(TESTBIT(track2->GetITSClusterMap(),l)) ncls2++;
     if (ncls2 < fITSCut) continue;
 
-    if(tr->Pt()<6.&&track2->Pt() < 0.4) continue;
-    if(tr->Pt()>6.&&tr->Pt()<10.&&track2->Pt() < 0.2) continue;
-    if(tr->Pt()>10.&&track2->Pt() < 0.6) continue;
+
+    Double_t sdca=0,pdca=0,minv=0,pth=0,massphoton=0,decaylength=0;
+
+    sdca = ComputeSignDca(tr,track2,minv,pdca,massphoton,decaylength);
+    pth=track2->Pt();
+
+
 
 
     Double_t dphi = tr->Phi() - track2->Phi();
@@ -594,35 +682,37 @@ Int_t AliAnaBtag::GetDVMBtag(AliAODTrack * tr )
     Double_t dr = sqrt(deta*deta + dphi*dphi);
 
     if(dr > fDrCut) continue;
-    
-    if(tr->Pt()<6.){
-      Double_t sDca = ComputeSignDca(tr, track2, 1.4,0.025);
-	if(sDca > 0.06) nvtx2++;
-    } 
-    if(tr->Pt()>6.&&tr->Pt()<10.){
-      Double_t sDca = ComputeSignDca(tr, track2, 1.7,0.012);
-        if(sDca > 0.03) nvtx2++;
-    } 
-    if(tr->Pt()>10.){
-      Double_t sDca = ComputeSignDca(tr, track2, 1.5,0.14);
-        if(sDca > 0.04) nvtx2++;
-    } 
+    fNPair++;
+    pairn++;
+    if(GetDebug() > 0) 
+      printf("pairs: %d !!!!!!!!!!! \n",fNPair);
+    if(fWriteNtuple){
+      pairs->Fill(fNPair,fNElec,fEventNumber,pdca,sdca,minv,pth,massphoton,decaylength);
+    }
+    pairstop=fNPair;
+    //pairs->Fill(1,1,1,1,1,1,1);
+    fhPairPt->Fill(pth);
+    if(decaylength>1.0) continue;
+    if(tr->Pt()<6. && pth>0.4 && minv>1.4 && pdca<0.025 && sdca>0.06 && massphoton>0.1) nvtx++; 
+    if(tr->Pt()>6.&&tr->Pt()<10. && pth>0.2 && minv>1.7 && pdca<0.012 && sdca>0.06 && massphoton>0.1) nvtx++;
+    if(tr->Pt()>10.&& pth>0.6 && minv>1.5 && pdca<0.14 && sdca>0.04 && massphoton>0.1) nvtx++;
+
 
 
   } //loop over hadrons
 
-  if(GetDebug() > 0) {
-//    if (nvtx1>0) printf("result1 of btagging: %d \n",nvtx1);
-    if (nvtx2>0) printf("result2 of btagging: %d \n",nvtx2);
-//    if (nvtx3>0) printf("result3 of btagging: %d \n",nvtx3);
-  }
+  if(GetDebug() > 0) printf("AliAnaBtag::GetDVMBtag - result of btagging: %d \n",nvtx);
 
-  return nvtx2;
 
+  pair=pairn;
+  start=pairstart+1;
+  stop=pairstop;
+  if(GetDebug() > 0) printf("End of DVM, pair counts: pairs: %d, start %d, stop %d. \n",pair,start,stop);
+  return nvtx;
 }
 
 //__________________________________________________________________
-Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , float masscut, double pdcacut)
+Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , Double_t &masscut, Double_t &pdcacut, Double_t &massphoton, Double_t &decay)
 {
   //Compute the signed dca between two tracks
   //and return the result
@@ -633,19 +723,14 @@ Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , float ma
   //=====Now calculate DCA between both tracks=======  
   Double_t massE = 0.000511;
   Double_t massK = 0.493677;
-
   Double_t vertex[3] = {-999.,-999.,-999}; //vertex
+
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
-    GetVertex(vertex); //If only one file, get the vertex from there
-    //FIXME:  Add a check for whether file 2 is PYTHIA or HIJING
-    //If PYTHIA, then set the vertex from file 2, if not, use the
-    //vertex from file 1
-    //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex);
+    GetVertex(vertex); //If only one file, get the vertex from there  
   }
   
-  TVector3 primV(vertex[0],vertex[1],vertex[2]) ;
-
-  if(GetDebug() > 5) printf(">>ComputeSdca:: primary vertex = %2.2f,%2.2f,%2.2f \n",vertex[0],vertex[1],vertex[2]) ;
+  TVector3 primV(vertex[0],vertex[1],vertex[2]) ; 
+  if(GetDebug()>0) printf(">>ComputeSdca:: primary vertex = %2.2f,%2.2f,%2.2f \n",vertex[0],vertex[1],vertex[2]) ;
 
   AliExternalTrackParam *param1 = new AliExternalTrackParam(tr);
   AliExternalTrackParam *param2 = new AliExternalTrackParam(tr2);
@@ -656,7 +741,6 @@ Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , float ma
   bfield[1]=0;
   bfield[2]=5.;
   Double_t bz = 5.; // = param1->GetBz();
-  //cout<<"In ComputeSignDCA, bfield[3] and bz: "<<bfield[0]<<" "<<bfield[1]<<" "<<bfield[2]<<" "<<bz<<endl;
   Double_t xplane1 = 0.; Double_t xplane2 = 0.;
   Double_t pairdca = param1->GetDCA(param2,bz,xplane1,xplane2);
 
@@ -678,17 +762,14 @@ Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , float ma
   TVector3 decayvector(0,0,0);
   decayvector = secvtxpt - primV; //decay vector from PrimVtx
   Double_t decaylength = decayvector.Mag();
-
-  //printf("\t JLK pairDCA = %2.2f\n",pairdca);
+  decay=decaylength;
 
   if(GetDebug() > 0) {
     printf(">>ComputeSdca:: mom1=%f, mom2=%f \n", emomAtB.Perp(), hmomAtB.Perp() );
     printf(">>ComputeSdca:: pairDCA=%f, length=%f \n", pairdca,decaylength );
   }
 
-
-
-  if (emomAtB.Mag()>0 && pairdca < pdcacut && decaylength < fDecayLenCut ) {
+  if (emomAtB.Mag()>0 /*&& decaylength < fDecayLenCut*/ ) {
     TVector3 sumMom = emomAtB+hmomAtB;
     Double_t ener1 = sqrt(pow(emomAtB.Mag(),2) + massE*massE);
     Double_t ener2 = sqrt(pow(hmomAtB.Mag(),2) + massK*massK);
@@ -696,19 +777,16 @@ Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , float ma
     Double_t mass = sqrt(pow((ener1+ener2),2) - pow(sumMom.Mag(),2));
     Double_t massPhot = sqrt(pow((ener1+ener3),2) - pow(sumMom.Mag(),2));
     Double_t sDca = decayvector.Dot(emomAtB)/emomAtB.Mag();
-
-//     if (masscut<1.1) fhDVMBtagQA2->Fill(sDca, mass);
-
-    if (mass > masscut && massPhot > 0.1) signDca = sDca;
-    
+    pdcacut=pairdca;//
+    masscut=mass; // 
+    massphoton=massPhot;//                                                                     Send it back!
+    signDca = sDca;
     if(GetDebug() > 0) printf("\t>>ComputeSdca:: mass=%f \n", mass);
     if(GetDebug() > 0) printf("\t>>ComputeSdca:: sec vtx-signdca :%f\n",signDca);
   }
-
   //clean up
   delete param1;
   delete param2;
-
   return signDca;
 }
 
@@ -719,9 +797,7 @@ Bool_t AliAnaBtag::PhotonicV0(Int_t id)
   //This method checks to see whether a track that has been flagged as
   //an electron was determined to match to a V0 candidate with
   //invariant mass consistent with photon conversion
-
   Bool_t itIS = kFALSE;
-
   Double_t massEta = 0.547;
   Double_t massRho0 = 0.770;
   Double_t massOmega = 0.782;
@@ -751,7 +827,6 @@ Bool_t AliAnaBtag::PhotonicV0(Int_t id)
       }
     } }
   return itIS;
-
 }
 
 //__________________________________________________________________
@@ -759,8 +834,6 @@ Bool_t AliAnaBtag::GetDCA(const AliAODTrack* track,Double_t impPar[2], Double_t 
 {
   //Use the Event vertex and AOD track information to get
   //a real impact parameter for the track
-
-
   Double_t maxD = 100000.; //max transverse IP
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
     AliVEvent* ve = (AliVEvent*)GetReader()->GetInputEvent();
@@ -775,9 +848,7 @@ Bool_t AliAnaBtag::GetDCA(const AliAODTrack* track,Double_t impPar[2], Double_t 
     Bool_t gotit = esdTrack.PropagateToDCABxByBz(vv,bfield,maxD,impPar,cov);
     return gotit;
   }
-
   return kFALSE;
-
 }
 //__________________________________________________________________
 Bool_t AliAnaBtag::CheckIfBjet(const AliAODTrack* track)
@@ -798,46 +869,36 @@ Bool_t AliAnaBtag::CheckIfBjet(const AliAODTrack* track)
   return bjet;
 } 
 
-
-
 //__________________________________________________________________
 AliAODMCParticle* AliAnaBtag::GetMCParticle(Int_t ipart) 
 {
   //Get the MC particle at position ipart
-  
+
   AliAODMCParticle* aodprimary = 0x0;
   TClonesArray * mcparticles0 = 0x0;
-  //TClonesArray * mcparticles1 = 0x0;
-  
+  TClonesArray * mcparticles1 = 0x0;
+
   if(GetReader()->ReadAODMCParticles()){
     //Get the list of MC particles                                                                                                                           
     mcparticles0 = GetReader()->GetAODMCParticles(0);
-    if(!mcparticles0) {
-      if(GetDebug() > 0)printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+    if(!mcparticles0 && GetDebug() > 0) {
+      printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
     }
-    //    if(GetReader()->GetSecondInputAODTree()){
-    //      mcparticles1 = GetReader()->GetAODMCParticles(1);
-    //      if(!mcparticles1 && GetDebug() > 0) {
-    //	printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
-    //      }
-    //    }
-    
-    else{
-      Int_t npart0 = mcparticles0->GetEntriesFast();
-      //Int_t npart1 = 0;
-      //if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
-      if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
-      //else aodprimary = (AliAODMCParticle*)mcparticles1->At(ipart-npart0);
-      if(!aodprimary) {
-        printf("AliAnaBtag::GetMCParticle() *** no primary ***:  label %d \n", ipart);
-        return 0x0;
-      }
+
+    Int_t npart0 = mcparticles0->GetEntriesFast();
+    Int_t npart1 = 0;
+    if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
+    if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
+    else aodprimary = (AliAODMCParticle*)mcparticles1->At(ipart-npart0);
+    if(!aodprimary) {
+      printf("AliAnaBtag::GetMCParticle() *** no primary ***:  label %d \n", ipart);
+      return 0x0;
     }
+
   } else {
     printf("AliAnaBtag::GetMCParticle() - Asked for AliAODMCParticle but we have a stack reader.\n");
   }
   return aodprimary;
-  
 }
 
 //__________________________________________________________________
@@ -846,7 +907,6 @@ Bool_t  AliAnaBtag::IsMcBJet(Double_t jeta, Double_t jphi)
   //Check the jet eta,phi against that of the b-quark
   //to decide whether it is an MC B-jet
   Bool_t bjet=kFALSE;
-
   AliStack* stack = 0x0;
   
   for(Int_t ipart = 0; ipart < 100; ipart++) {
@@ -873,20 +933,16 @@ Bool_t  AliAnaBtag::IsMcBJet(Double_t jeta, Double_t jphi)
       peta = aodprimary->Eta();
     }
     if ( TMath::Abs(pdg) != 5) continue;
-    
-    //      printf("MTH: IsMcBJet : %d, pdg=%d : pt=%f \n", ipart, pdgcode, primary->Pt());
     Double_t dphi = jphi - pphi;
     Double_t deta = jeta - peta;
     Double_t dr = sqrt(deta*deta + dphi*dphi);
     
     if (dr < 0.2) {
       bjet=kTRUE;
-      //printf("MTH: **** found matching MC-Bjet: PDG=%d, pt=%f,dr=%f \n", pdgcode, primary->Pt(),dr );
       break;
     }
   }
   return bjet;
-
 }
 
 //__________________________________________________________________
@@ -922,60 +978,21 @@ Bool_t  AliAnaBtag::IsMcDJet(Double_t jeta, Double_t jphi)
     }
 
     if ( TMath::Abs(pdg) != 4) continue;
-
     Double_t dphi = jphi - pphi;
     Double_t deta = jeta - peta;
     Double_t dr = sqrt(deta*deta + dphi*dphi);
-    
+   
     if (dr < 0.2) {
       cjet=kTRUE;
       break;
     }
   }
-
   return cjet;
-
 }
-
-//__________________________________________________________________
-void AliAnaBtag::Print(const Option_t * opt) const
-{
-  //Print some relevant parameters set for the analysis
-  
-  if(! opt)
-    return;
-  
-  printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
-
-  printf("Calorimeter            =     %s\n", fCalorimeter.Data()) ;
-  printf("pOverE range           =     %f - %f\n",fpOverEmin,fpOverEmax);
-  printf("residual cut           =     %f\n",fResidualCut);
-  printf("---DVM Btagging\n");
-  printf("max IP-cut (e,h)       =     %f\n",fImpactCut);
-  printf("min ITS-hits           =     %d\n",fITSCut);
-  printf("max dR (e,h)           =     %f\n",fDrCut);
-  printf("max pairDCA            =     %f\n",fPairDcaCut);
-  printf("max decaylength        =     %f\n",fDecayLenCut);
-  printf("min Associated Pt      =     %f\n",fAssocPtCut);
-  printf("---IPSig Btagging\n");
-  printf("min tag track          =     %d\n",fNTagTrkCut);
-  printf("min IP significance    =     %f\n",fIPSigCut);
-  printf("    \n") ;
-	
-} 
 
 
 //__________________________________________________________________
 void  AliAnaBtag::Terminate(TList* outputList)
 {
- 
-  //Do some plots to end
-  //Recover histograms from output histograms list, needed for
-  //distributed analysis.                
-  //ReadHistograms(outputList);
-
-  printf(" AliAnaBtag::Terminate()  *** %s Report: %d outputs\n", GetName(), outputList->GetEntries()) ;
-
+  printf(" AliAnaBtag::Terminate()  *** %s Report: %d outputs/histograms \n", GetName(), outputList->GetEntries()) ;
 }
-
