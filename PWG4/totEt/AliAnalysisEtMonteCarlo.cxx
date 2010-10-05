@@ -14,6 +14,7 @@
 #include "AliMCEvent.h"
 #include "TH2F.h"
 #include "TParticle.h"
+#include "TDatabasePDG.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 
@@ -42,6 +43,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
      
     // Get us an mc event
     AliMCEvent *event = dynamic_cast<AliMCEvent*>(ev);
+
+    Double_t protonMass = fPdgDB->GetParticle("proton")->Mass(); // should maybe use average of proton and neutron, but they are pretty close
 
     // Hijing header
     AliGenEventHeader* genHeader = event->GenEventHeader();
@@ -113,8 +116,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                 TMath::Abs(pdg->PdgCode()) == fOmegaCode
 	       )
             {
-	      if (pdg->PdgCode() > 0) { particleMassPart = - pdg->Mass();}
-	      if (pdg->PdgCode() < 0) { particleMassPart = pdg->Mass();}
+	      if (pdg->PdgCode() > 0) { particleMassPart = - protonMass;}
+	      if (pdg->PdgCode() < 0) { particleMassPart = protonMass;}
 	    }
 	    Double_t et = part->Energy() * TMath::Sin(part->Theta()) + particleMassPart;
 	    	      
