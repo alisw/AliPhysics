@@ -43,6 +43,9 @@ public:
   AliFlowEvent( const AliAODEvent* anInput, 
                 const AliCFManager* rpCFManager=NULL, 
                 const AliCFManager* poiCFManager=NULL );  //use CF(2x)
+  AliFlowEvent( const AliESDEvent* anInput,
+                const AliCFManager* poiCFManager,
+                Bool_t hybrid);
   AliFlowEvent( const AliESDEvent* anInput, 
                 const AliMCEvent* anInputMc, 
                 KineSource anOption=kNoKine,
