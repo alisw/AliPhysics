@@ -189,10 +189,8 @@ void AliTRDarrayDictionary::Compress()
   Int_t *longArr;            
   longArr = new Int_t[fNDdim];  
   Int_t k=0;
-  for(Int_t i=0; i<fNDdim;i++)
-    {
-      longArr[i]=0;  
-    }
+  memset(longArr,0,sizeof(Int_t)*fNDdim);
+
   for(Int_t i=0;i<fNDdim; i++)
     {
       j=0;
@@ -281,10 +279,10 @@ void AliTRDarrayDictionary::Expand()
   Int_t *longArr;
   longArr = new Int_t[fNDdim];
   Int_t dimexp=0;
-  for(Int_t i=0; i<fNDdim;i++)
-    {
-      longArr[i]=0;
-    }
+
+  //Initialize the array
+  memset(longArr,0,sizeof(Int_t)*fNDdim);
+
   Int_t r2=0;
   for(Int_t i=0; i<fNDdim;i++)
     {
