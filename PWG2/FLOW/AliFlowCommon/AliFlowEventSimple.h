@@ -70,9 +70,13 @@ class AliFlowEventSimple: public TObject {
   void AddV3( Double_t v3 );
   void AddV4( Double_t v4 );
   void AddFlow( Double_t v1, Double_t v2, Double_t v3, Double_t v4 );
+  void AddV2( TF1* ptDepV2 );
   void DefineDeadZone( Double_t etaMin, Double_t etaMax, Double_t phiMin, Double_t phiMax );
   Int_t CleanUpDeadTracks();
  
+  static TF1* SimplePtSpectrum();
+  static TF1* SimplePtDepV2();
+
   AliFlowTrackSimple* GetTrack(Int_t i);
   void AddTrack( AliFlowTrackSimple* track ); 
  
