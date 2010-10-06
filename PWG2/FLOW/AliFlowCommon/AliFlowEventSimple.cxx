@@ -649,6 +649,19 @@ void AliFlowEventSimple::AddFlow( Double_t v1, Double_t v2, Double_t v3, Double_
 }
 
 //_____________________________________________________________________________
+void AliFlowEventSimple::AddV2( TF1* ptDepV2 )
+{
+  //add v2 to all tracks wrt the reaction plane angle
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    Double_t v2 = ptDepV2->Eval(track->Pt());
+    if (track) track->AddV2(v2, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+  }
+  SetUserModified();
+}
+
+//_____________________________________________________________________________
 void AliFlowEventSimple::TagRP( AliFlowTrackSimpleCuts* cuts )
 {
   //tag tracks as reference particles (RPs)
@@ -717,4 +730,18 @@ Int_t AliFlowEventSimple::CleanUpDeadTracks()
   }
   fTrackCollection->Compress(); //clean up empty slots
   return ncleaned;
+}
+
+//_____________________________________________________________________________
+TF1* AliFlowEventSimple::SimplePtDepV2()
+{
+  //return a standard pt dependent v2 formula, user has to clean up!
+  return new TF1("StandardPtDepV2","((x<1.0)*(0.05/1.0)*x+(x>=1.0)*0.05)");
+}
+
+//_____________________________________________________________________________
+TF1* AliFlowEventSimple::SimplePtSpectrum()
+{
+  //return a standard pt spectrum, user has to clean up!
+  return new TF1("StandardPtSpectrum","x*TMath::Exp(-pow(0.13957*0.13957+x*x,0.5)/0.4)",0.1,10.);
 }
