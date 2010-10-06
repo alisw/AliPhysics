@@ -404,7 +404,7 @@ int AliHLTComponent::SetComponentDescription(const char* desc)
   TObjArray* pTokens=descriptor.Tokenize(" ");
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntriesFast() && iResult>=0; i++) {
-      TString argument=((TObjString*)pTokens->At(i++))->GetString();
+      TString argument=pTokens->At(i++)->GetName();
       if (!argument || argument.IsNull()) continue;
 
       // chainid
@@ -429,10 +429,23 @@ int AliHLTComponent::SetComponentDescription(const char* desc)
 
 int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
 {
-  // see header file for function documentation
+  // Configure from an array of argument strings
+  // Function supports individual arguments in the argv array and arguments
+  // separated by blanks.
+  //
+  // Each argv entry can contain blanks, quotes and newlines. Newlines are interpreted
+  // as blanks. Enclosing quotes deactivate blank as delimiter.
+  // The separated arguments are stored in an array of strings, and the pointers to
+  // those strings in an array of pointers. The latter is used in the custom argument
+  // scan of the component.
+
   int iResult=0;
-  vector<const char*> array;
-  TObjArray choppedArguments;
+  vector<string> stringarray;   // array of argument copies
+  // array of pointers to the argument copies
+  // note: not necessarily in sync with the entries in stringarray
+  // can contain any pointer to valid arguments in arbitrary sequence
+  vector<const char*> ptrarray;
+
   TString argument="";
   int i=0;
   for (i=0; i<argc && iResult>=0; i++) {
@@ -440,14 +453,18 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
     if (argument.IsWhitespace()) continue;
 
     // special handling for single component arguments ending with
-    // a sequence of blanks
+    // a sequence of blanks. All characters until the first occurence
+    // of a blank are removed. If the remainder contains only whitespaces
+    // the argument is a single argument, just having whitespaces at the end.
     argument.Remove(0, argument.First(' '));
     if (argument.IsWhitespace()) {
-      array.push_back(argv[i]);
+      ptrarray.push_back(argv[i]);
       continue;
     }
 
-    // extra blank to insert blank token before leading quotes
+    // outer loop checks for enclosing quotes
+    // extra blank to insert blank token before leading quotes, then
+    // quoted arguments are always the even ones
     argument=" ";
     argument+=argv[i];
     // insert blank in consecutive quotes to correctly tokenize
@@ -459,50 +476,49 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
     if (pTokensQuote) {
       if (pTokensQuote->GetEntriesFast()>0) {
 	for (int k=0; k<pTokensQuote->GetEntriesFast(); k++) {
-	  argument=((TObjString*)pTokensQuote->At(k))->GetString();
+	  argument=pTokensQuote->At(k)->GetName();
 	  if (argument.IsWhitespace()) continue;
 	  if (k%2) {
 	    // every second entry is enclosed by quotes and thus
 	    // one single argument
-	    array.push_back(argument.Data());
+	    stringarray.push_back(argument.Data());
+	    ptrarray.push_back(stringarray.back().c_str());
 	  } else {
     TObjArray* pTokens=argument.Tokenize(" ");
     if (pTokens) {
       if (pTokens->GetEntriesFast()>0) {
 	for (int n=0; n<pTokens->GetEntriesFast(); n++) {
-	  choppedArguments.AddLast(pTokens->At(n));
-	  TString data=((TObjString*)pTokens->At(n))->GetString();
-	  if (!data.IsNull()) {
-	    array.push_back(data.Data());
+	  TString data=pTokens->At(n)->GetName();
+	  if (!data.IsNull() && !data.IsWhitespace()) {
+	    stringarray.push_back(data.Data());
+	    ptrarray.push_back(stringarray.back().c_str());
 	  }
 	}
-	pTokens->SetOwner(kFALSE);
       }
       delete pTokens;
     }
 	  }
 	}
-	pTokensQuote->SetOwner(kFALSE);
       }
       delete pTokensQuote;
     }
   }
 
-  for (i=0; (unsigned)i<array.size() && iResult>=0;) {
-    int result=ScanConfigurationArgument(array.size()-i, &array[i]);
+  for (i=0; (unsigned)i<ptrarray.size() && iResult>=0;) {
+    int result=ScanConfigurationArgument(ptrarray.size()-i, &ptrarray[i]);
     if (result==0) {
-      HLTWarning("unknown component argument %s", array[i]);
+      HLTWarning("unknown component argument %s", ptrarray[i]);
       i++;
     } else if (result>0) {
       i+=result;
     } else {
       iResult=result;
       if (iResult==-EINVAL) {
-	HLTError("unknown argument %s", array[i]);
+	HLTError("unknown argument %s", ptrarray[i]);
       } else if (iResult==-EPROTO) {
-	HLTError("missing/wrong parameter for argument %s (%s)", array[i], (array.size()>(unsigned)i+1)?array[i+1]:"missing");
+	HLTError("missing/wrong parameter for argument %s (%s)", ptrarray[i], (ptrarray.size()>(unsigned)i+1)?ptrarray[i+1]:"missing");
       } else {
-	HLTError("scan of argument %s failed (%d)", array[i], iResult);
+	HLTError("scan of argument %s failed (%d)", ptrarray[i], iResult);
       }
     }
   }
@@ -520,7 +536,7 @@ int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char*
   TObjArray* pTokens=confEntries.Tokenize(" ");
   if (pTokens) {
     for (int n=0; n<pTokens->GetEntriesFast(); n++) {
-      const char* path=((TObjString*)pTokens->At(n))->GetString().Data();
+      const char* path=pTokens->At(n)->GetName();
       const char* chainId=GetChainId();
       HLTInfo("configure from entry \"%s\"%s%s, chain id %s", path, key?" key ":"",key?key:"", (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
       TObject* pOCDBObject = LoadAndExtractOCDBObject(path, key);
@@ -2480,20 +2496,20 @@ int AliHLTComponent::ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, Al
   if (pTokens) {
     int n=0;
     if (pTokens->GetEntriesFast()>n) {
-      retChainId=((TObjString*)pTokens->At(n++))->GetString();
+      retChainId=pTokens->At(n++)->GetName();
     }
     if (pTokens->GetEntriesFast()>n) {
-      compId=((TObjString*)pTokens->At(n++))->GetString();
+      compId=pTokens->At(n++)->GetName();
     }
     delete pTokens;
   }
   if (!compId.IsNull() && (pTokens=compId.Tokenize(":"))!=NULL) {
     int n=0;
     if (pTokens->GetEntriesFast()>n) {
-      compId=((TObjString*)pTokens->At(n++))->GetString();
+      compId=pTokens->At(n++)->GetName();
     }
     if (pTokens->GetEntriesFast()>n) {
-      compArgs=((TObjString*)pTokens->At(n++))->GetString();
+      compArgs=pTokens->At(n++)->GetName();
     }
     delete pTokens;
   }
@@ -2718,13 +2734,13 @@ int AliHLTComponent::ScanECSParam(const char* ecsParam)
   TObjArray* parameter=string.Tokenize(";");
   if (parameter) {
     for (int i=0; i<parameter->GetEntriesFast(); i++) {
-      TString entry=((TObjString*)parameter->At(i))->GetString();
+      TString entry=parameter->At(i)->GetName();
       HLTDebug("scanning ECS entry: %s", entry.Data());
       TObjArray* entryParams=entry.Tokenize("=");
       if (entryParams) {
 	if (entryParams->GetEntriesFast()>1) {
 	  if ((((TObjString*)entryParams->At(0))->GetString()).CompareTo("CTP_TRIGGER_CLASS")==0) {
-	    int result=InitCTPTriggerClasses((((TObjString*)entryParams->At(1))->GetString()).Data());
+	    int result=InitCTPTriggerClasses(entryParams->At(1)->GetName());
 	    if (iResult>=0 && result<0) iResult=result;
 	  } else {
 	    // TODO: scan the other parameters
