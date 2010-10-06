@@ -810,9 +810,9 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Double_t sigma2=0.;
      Double_t meanarea2=0.;
          
-     clustSeq.get_median_rho_and_sigma(sortedJets, range, false, bkg1, sigma1, meanarea1, false);
+     clustSeq.get_median_rho_and_sigma(sortedJets, range, false, bkg1, sigma1, meanarea1, true);
      evBkg->SetBackground(0,bkg1,sigma1,meanarea1);
-     clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, false);
+     clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, true);
      evBkg->SetBackground(1,bkg2,sigma2,meanarea2);
    }
      
@@ -973,7 +973,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Double_t bkg3=0.;
      Double_t sigma3=0.;
      Double_t meanarea3=0.;
-     clustSeqRan.get_median_rho_and_sigma(sortedJetsRan ,range, false, bkg3, sigma3, meanarea3, false);
+     clustSeqRan.get_median_rho_and_sigma(sortedJetsRan ,range, false, bkg3, sigma3, meanarea3, true);
      evBkg->SetBackground(2,bkg3,sigma3,meanarea3);
     }
 
