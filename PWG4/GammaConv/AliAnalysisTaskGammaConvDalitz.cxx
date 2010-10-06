@@ -831,7 +831,7 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 		delete pi0Bkg;
 		
 		// 2) e+e- with gammas from a pool of events
-		TClonesArray* gammaBGHandler = GammasFromBGHandler();
+/*		TClonesArray* gammaBGHandler = GammasFromBGHandler();
 		pi0Bkg = FindPi0Dalitz(ePosCandidates, eNegCandidates, gammaBGHandler);
 		
 		for(Int_t i=0; i < pi0Bkg->GetEntriesFast(); ++i)
@@ -862,6 +862,7 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 		delete gammaBGHandler;
 		delete elecBGHandler;
 		delete pi0Bkg;
+*/
 	}
 	
 	delete ePosCandidates;
