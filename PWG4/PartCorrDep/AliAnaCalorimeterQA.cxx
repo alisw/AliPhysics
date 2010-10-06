@@ -1687,8 +1687,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
     }//fill cell position histograms
     if     (fCalorimeter=="EMCAL" && amp > fEMCALCellAmpMin) ncells ++ ;
     else if(fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin)  ncells ++ ;
-    else  
-      printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - no %s CELLS passed the analysis cut\n",fCalorimeter.Data());       
+    //else  
+    //  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - no %s CELLS passed the analysis cut\n",fCalorimeter.Data());       
   }//cell loop
   if(ncells > 0 )fhNCells->Fill(ncells) ; //fill the cells after the cut 
   
