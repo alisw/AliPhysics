@@ -46,6 +46,7 @@
 #include "AliPMDddldata.h"
 #include "AliPMDHotData.h"
 #include "AliPMDNoiseCut.h"
+#include "AliPMDddlinfoData.h"
 #include "AliPMDRecoParam.h"
 #include "AliPMDReconstructor.h"
 
@@ -64,6 +65,7 @@ AliPMDClusterFinder::AliPMDClusterFinder():
   fCalibPed(GetCalibPed()),
   fCalibHot(GetCalibHot()),
   fNoiseCut(GetNoiseCut()),
+  fDdlinfo(GetDdlinfoData()),
   fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
@@ -86,6 +88,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fCalibPed(GetCalibPed()),
   fCalibHot(GetCalibHot()),
   fNoiseCut(GetNoiseCut()),
+  fDdlinfo(GetDdlinfoData()),
   fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
@@ -109,6 +112,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(const AliPMDClusterFinder & finder):
   fCalibPed(GetCalibPed()),
   fCalibHot(GetCalibHot()),
   fNoiseCut(GetNoiseCut()),
+  fDdlinfo(GetDdlinfoData()),
   fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
@@ -340,33 +344,14 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
-  // open the ddl file info to know the module
-  TString ddlinfofileName(gSystem->Getenv("ALICE_ROOT"));
-  ddlinfofileName += "/PMD/PMD_ddl_info.dat";
-  
-  ifstream infileddl;
-  infileddl.open(ddlinfofileName.Data(), ios::in); // ascii file
-  if(!infileddl) AliError("Could not read the ddl info file");
+  // access the ddlinfo database to fetch  the no of modules per DDL
 
-  Int_t ddlno = 0;
-  Int_t modno = 0;
-  Int_t modulePerDDL = 0;
   Int_t moduleddl[6] = {0,0,0,0,0,0};
 
   for(Int_t jddl = 0; jddl < 6; jddl++)
     {
-      if (infileddl.eof()) break;
-      infileddl >> ddlno >> modulePerDDL;
-      moduleddl[jddl] = modulePerDDL;
-
-      if (modulePerDDL == 0) continue;
-      for (Int_t im = 0; im < modulePerDDL; im++)
-	{
-	  infileddl >> modno;
-	}
+      moduleddl[jddl] = fDdlinfo->GetNoOfModulePerDdl(jddl);
     }
-
-  infileddl.close();
 
   // Set the minimum noise cut per module before clustering
 
@@ -449,7 +434,6 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	      continue; 
 	    }
 
-
 	  // Pedestal Subtraction
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
 	  Int_t   pedrms1    = (Int_t) pedmeanrms%100;
@@ -460,7 +444,6 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
 	  // Float_t sig1 = (Float_t) sig;
 	  Float_t sig1 = (Float_t) sig - (pedmean + 3.0*pedrms);
-
 
 	  // Hot cell - set the cell adc = 0
 	  Float_t hotflag = fCalibHot->GetHotChannel(det,smn,row,col);
@@ -801,5 +784,21 @@ AliPMDNoiseCut* AliPMDClusterFinder::GetNoiseCut() const
   if (!ncut)  AliFatal("No noise cut data from  database !");
   
   return ncut;
+}
+//--------------------------------------------------------------------//
+AliPMDddlinfoData* AliPMDClusterFinder::GetDdlinfoData() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Ddlinfo");
+  
+  if(!entry) AliFatal("ddlinfo object retrieval failed!");
+  
+  AliPMDddlinfoData *ddlinfo = 0;
+  if (entry) ddlinfo = (AliPMDddlinfoData*) entry->GetObject();
+  
+  if (!ddlinfo)  AliFatal("No ddl info data from  database !");
+  
+  return ddlinfo;
 }
   

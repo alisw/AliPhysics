@@ -22,6 +22,7 @@ class AliPMDCalibData;
 class AliPMDPedestal;
 class AliPMDHotData;
 class AliPMDNoiseCut;
+class AliPMDddlinfoData;
 class AliPMDRecoParam;
 
 class AliPMDClusterFinder : public TObject
@@ -49,19 +50,21 @@ class AliPMDClusterFinder : public TObject
   void UnLoad();
   void UnLoadClusters();
 
-  AliPMDCalibData *GetCalibGain() const;
-  AliPMDPedestal  *GetCalibPed() const;
-  AliPMDHotData   *GetCalibHot() const;
-  AliPMDNoiseCut  *GetNoiseCut() const;
+  AliPMDCalibData    *GetCalibGain() const;
+  AliPMDPedestal     *GetCalibPed() const;
+  AliPMDHotData      *GetCalibHot() const;
+  AliPMDNoiseCut     *GetNoiseCut() const;
+  AliPMDddlinfoData  *GetDdlinfoData() const;
 
  protected:
   AliRunLoader *fRunLoader; // Pointer to Run Loader
   AliLoader    *fPMDLoader; // Pointer to specific detector loader
 
-  AliPMDCalibData *fCalibGain;  //! Gain calibration data
-  AliPMDPedestal  *fCalibPed;   //! Pedestal calibration data
-  AliPMDHotData   *fCalibHot;   //! Hot data
-  AliPMDNoiseCut  *fNoiseCut;   //! Noise cut
+  AliPMDCalibData    *fCalibGain;  //! Gain calibration data
+  AliPMDPedestal     *fCalibPed;   //! Pedestal calibration data
+  AliPMDHotData      *fCalibHot;   //! Hot data
+  AliPMDNoiseCut     *fNoiseCut;   //! Noise cut
+  AliPMDddlinfoData  *fDdlinfo;    //! ddl info data
 
   const AliPMDRecoParam *fRecoParam; // reconstruction parameter
 
@@ -83,7 +86,7 @@ class AliPMDClusterFinder : public TObject
   Int_t    fCellTrack[fgkRow][fgkCol]; // Array containing individual cell tr
   Int_t    fCellPid[fgkRow][fgkCol]; // Array containing individual cell pid
 
-  ClassDef(AliPMDClusterFinder,17) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,18) // To run PMD clustering
 };
 #endif
 

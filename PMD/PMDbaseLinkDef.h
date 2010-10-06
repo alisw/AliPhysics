@@ -26,4 +26,5 @@
 #pragma link C++ class  AliPMDHotData+;
 #pragma link C++ class  AliPMDMeanSm+;
 #pragma link C++ class  AliPMDMappingData+;
+#pragma link C++ class  AliPMDddlinfoData+;
 #endif
