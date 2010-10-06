@@ -241,12 +241,12 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
     AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
     pTrack->SetSource(AliFlowTrack::kFromAOD);
 
-    if (rpOK && rpCFManager)
+    if (rpOK /* && rpCFManager */ ) // to be fixed - with CF managers uncommented only empty events (NULL in header files)
     {
       pTrack->SetForRPSelection(kTRUE);
       fNumberOfRPs++;
     }
-    if (poiOK && poiCFManager)
+    if (poiOK /* && poiCFManager*/ )
     {
       pTrack->SetForPOISelection(kTRUE);
     }
@@ -429,6 +429,87 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 
 }
 
+//-----------------------------------------------------------------------
+AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
+			    const AliCFManager* poiCFManager,
+                            Bool_t hybrid):
+  AliFlowEventSimple(20)
+{
+
+  //Select the particles of interest from the ESD
+  Int_t iNumberOfInputTracks = esd->GetNumberOfTracks() ;
+
+  //Double_t gPt = 0.0, gP = 0.0;
+  Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
+  Double_t dca3D = 0.0;
+
+  AliESDtrack trackTPC;
+
+  //loop over tracks
+  for (Int_t itrkN=0; itrkN<iNumberOfInputTracks; itrkN++)
+    {
+
+      if (!esd->GetTrack(itrkN)) continue;
+
+      Bool_t useTPC = kFALSE;
+
+      AliESDtrack* pParticle = esd->GetTrack(itrkN);   //get input particle
+
+      //check if pParticle passes the cuts
+      Bool_t poiOK = kTRUE;
+
+      if (poiCFManager)
+      {
+        poiOK = ( poiCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+                  poiCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle));
+      }
+
+      if (!(poiOK)) continue;
+
+      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)pParticle->GetTPCInnerParam();
+
+      if (tpcTrack)
+      {
+
+//      gPt = tpcTrack->Pt();
+//      gP = tpcTrack->P();
+
+        useTPC = kTRUE;
+
+        const AliESDVertex *vertexSPD = esd->GetPrimaryVertexSPD();
+        const AliESDVertex *vertexTPC = esd->GetPrimaryVertexTPC();
+
+        if(hybrid)
+          tpcTrack->PropagateToDCA(vertexSPD,esd->GetMagneticField(),100.,dca,cov);
+        else
+          tpcTrack->PropagateToDCA(vertexTPC,esd->GetMagneticField(),100.,dca,cov);
+
+        dca3D = TMath::Sqrt(TMath::Power(dca[0],2)+TMath::Power(dca[1],2));
+
+      }
+
+      //make new AliFLowTrack
+      AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
+
+      pTrack->SetSource(AliFlowTrack::kFromESD);
+
+      //marking the particles used for diff. flow:
+      if(poiOK && poiCFManager)
+      {
+        pTrack->SetForPOISelection(kTRUE);
+      }
+
+      if(useTPC)
+      {
+        pTrack->SetForRPSelection(kTRUE);
+        fNumberOfRPs++;
+      }
+
+      AddTrack(pTrack);
+
+    }//end of while (itrkN < iNumberOfInputTracks)
+
+}
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,

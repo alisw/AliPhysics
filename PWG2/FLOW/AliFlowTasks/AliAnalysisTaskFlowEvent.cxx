@@ -311,6 +311,12 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     if (fRPType == "Global") {
       flowEvent = new AliFlowEvent(myESD,fCFManager1,fCFManager2);
     }
+    if (fRPType == "TPCOnly") {
+      flowEvent = new AliFlowEvent(myESD,fCFManager2,kFALSE);
+    }
+    if (fRPType == "TPCHybrid") {
+      flowEvent = new AliFlowEvent(myESD,fCFManager2,kTRUE);
+    }
     else if (fRPType == "Tracklet"){
       flowEvent = new AliFlowEvent(myESD,myTracklets,fCFManager2);
     }
