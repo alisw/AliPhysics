@@ -39,7 +39,7 @@ const Float_t  AliITSSimuParam::fgkSDDJitterErrorDefault = 20.; // 20 um from be
 const Float_t  AliITSSimuParam::fgkSDDDynamicRangeDefault = 1400./2.5; // mV/MOhm = nA
 const Int_t    AliITSSimuParam::fgkSDDMaxAdcDefault = 1024;
 const Float_t  AliITSSimuParam::fgkSDDChargeLossDefault = 0.;
-const Float_t  AliITSSimuParam::fgkSDDTrigDelayDefault = 0.;
+const Float_t  AliITSSimuParam::fgkSDDTrigDelayDefault = 54.3;
 const Double_t AliITSSimuParam::fgkSSDCouplingPRDefault = 0.01;
 const Double_t AliITSSimuParam::fgkSSDCouplingPLDefault = 0.01;
 const Double_t AliITSSimuParam::fgkSSDCouplingNRDefault = 0.01;

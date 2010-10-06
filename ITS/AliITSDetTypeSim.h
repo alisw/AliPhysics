@@ -31,6 +31,7 @@ class AliITSCalibrationSSD;
 class AliITSGainSSDv2;
 class AliITSBadChannelsSSDv2;
 class AliITSNoiseSSDv2;
+class AliITSresponseSDD;
 class AliITSDDLModuleMapSDD;
 class AliITSCalibration;
 class AliITSgeom;
@@ -71,6 +72,7 @@ class AliITSDetTypeSim : public TObject {
     virtual AliITSSimuParam* GetSimuParam() const {return fSimuPar;}
 
     virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD()const { return fDDLMapSDD;}
+    virtual AliITSresponseSDD* GetResponseSDD() const { return fRespSDD;}
     TObjArray* GetCalibrationArray() const {return fCalibration;}
     TObjArray* GetSegmentation() const {return fSegmentation;}
     void ResetCalibrationArray();
@@ -150,6 +152,7 @@ class AliITSDetTypeSim : public TObject {
     TObjArray     *fDigits;      //! [NMod][NDigits]
     AliITSSimuParam *fSimuPar;   //! detector simulation parameters
     AliITSDDLModuleMapSDD *fDDLMapSDD; //! mapping DDL/module -> SDD module number
+    AliITSresponseSDD *fRespSDD;  //! SDD response parameters 
     Float_t       fAveGainSDD;    //! Average gain of SDD good anodes
     const Char_t*       fkDigClassName[3]; //! String with digit class name.
     AliITSLoader* fLoader;          //! loader  
@@ -157,7 +160,7 @@ class AliITSDetTypeSim : public TObject {
     AliITSFOGeneratorSPD fFOGenerator; //! Fast-OR generator object
     AliITSTriggerConditions* fTriggerConditions; //! Trigger conditions 
        
-    ClassDef(AliITSDetTypeSim,12) // ITS Simulation structure
+    ClassDef(AliITSDetTypeSim,13) // ITS Simulation structure
  
 };
 
