@@ -468,7 +468,7 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   fTrueDiff2 = new TH2F("DiffDstar_pt","True Reco diff vs pt",200,0,15,900,0,0.3);
   fOutput->Add(fTrueDiff2);
 
-  const Int_t nhist=6;
+  const Int_t nhist=9;
   TString nameMass=" ", nameSgn=" ", nameBkg=" ";
 
   for(Int_t i=-2;i<nhist;i++){
