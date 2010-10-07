@@ -460,7 +460,12 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
   if (decision && (trigger & kOneTrack))
   {
     decision = kFALSE;
-    const AliESDVertex* vertex = aEsd->GetPrimaryVertexSPD();
+    const AliESDVertex* vertex =0x0;
+    vertex = aEsd->GetPrimaryVertexTracks();
+    if (!vertex || vertex->GetNContributors() <= 0)
+    {
+      vertex = aEsd->GetPrimaryVertexSPD();
+    }
     Float_t ptmin, ptmax;
     fEsdTrackCuts->GetPtRange(ptmin,ptmax);
     AliDebug(3, Form("ptmin = %f, ptmax = %f\n",ptmin, ptmax));
