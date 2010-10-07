@@ -36,4 +36,6 @@
     delete gRandom;
     gRandom = new TRandom3(0);
   }
+
+  gROOT->LoadMacro("createHijingGlauberTestTree.C+g");
 }
