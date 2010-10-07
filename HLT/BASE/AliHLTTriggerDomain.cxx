@@ -852,13 +852,13 @@ bool AliHLTTriggerDomain::operator == (const AliHLTTriggerDomain& domain) const
   //    not marked.
   for (Int_t i = fEntries.GetEntriesFast() - 1; i >= 0; --i)
   {
-    AliHLTDomainEntry* entry1 = static_cast<const AliHLTDomainEntry*>( fEntries.UncheckedAt(i) );
+    AliHLTDomainEntry* entry1 = static_cast<AliHLTDomainEntry*>(const_cast<TObject*>( fEntries.UncheckedAt(i) ));
     // Find identical domain entry in domain.fEntries.
     AliHLTDomainEntry* entry2 = NULL;
     Int_t entry2index = -1;
     for (Int_t j = fEntries.GetEntriesFast() - 1; j >= 0; --j)
     {
-      AliHLTDomainEntry* current = static_cast<const AliHLTDomainEntry*>( domain.fEntries.UncheckedAt(j) );
+      AliHLTDomainEntry* current = static_cast<AliHLTDomainEntry*>(const_cast<TObject*>( domain.fEntries.UncheckedAt(j) ));
       if (current->TestBit(BIT(14))) continue;  // skip marked entries.
       if (entry1->IdenticalTo(*current) and entry1->Exclusive() == current->Exclusive())
       {
@@ -877,7 +877,7 @@ bool AliHLTTriggerDomain::operator == (const AliHLTTriggerDomain& domain) const
     // it fails our ordering requirements and the domains cannot match.
     for (Int_t j = entry2index + 1; j < fEntries.GetEntriesFast(); ++j)
     {
-      AliHLTDomainEntry* current = static_cast<const AliHLTDomainEntry*>( domain.fEntries.UncheckedAt(j) );
+      AliHLTDomainEntry* current = static_cast<const AliHLTDomainEntry*>(const_cast<TObject*>( domain.fEntries.UncheckedAt(j) ));
       if (current->TestBit(BIT(14))) continue;  // skip marked entries.
       if (entry1->SubsetOf(*current)) return false;
     }
