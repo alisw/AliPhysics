@@ -68,6 +68,7 @@ AliRsnCutStd::AliRsnCutStd
     case kPtLeading:
     case kEta:
     case kY:
+    case kDipAngle:
     case kThetaDeg:
       if (fVarType != kDouble) 
       {
@@ -115,6 +116,7 @@ AliRsnCutStd::AliRsnCutStd
     case kPtLeading:
     case kEta:
     case kY:
+    case kDipAngle:
     case kThetaDeg:
       break;
     // other cuts are not based on a value, so no problem
@@ -142,6 +144,7 @@ AliRsnCut::EVarType AliRsnCutStd::CheckType()
     case kPtLeading:
     case kEta:
     case kY:
+    case kDipAngle:
     case kThetaDeg:
       return kDouble;
     // other cuts are not based on a value, so no problem
@@ -238,6 +241,12 @@ Bool_t AliRsnCutStd::IsMotherSelected(AliRsnMother * const mother)
       return OkRange();
     case kY:
       fCutValueD = ref.Rapidity();
+      return OkRange();
+    case kDipAngle:
+      fCutValueD  = mother->GetDaughter(0)->P().Perp() * mother->GetDaughter(1)->P().Perp();
+      fCutValueD += mother->GetDaughter(0)->P().Pz() * mother->GetDaughter(1)->P().Pz();
+      fCutValueD += mother->GetDaughter(0)->P().Mag() * mother->GetDaughter(1)->P().Mag();
+      fCutValueD  = TMath::ACos(fCutValueD);
       return OkRange();
     case kSameLabel:
       return mother->IsLabelEqual();
