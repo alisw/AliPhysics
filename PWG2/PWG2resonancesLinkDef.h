@@ -17,6 +17,7 @@
 #pragma link C++ class AliRsnCutPrimaryVertex+;
 #pragma link C++ class AliRsnCutDaughterType+;
 #pragma link C++ class AliRsnCutESD2010+;
+#pragma link C++ class AliRsnCutAOD2010+;
 #pragma link C++ class AliRsnCutValue+;
 
 #pragma link C++ class AliRsnCutSet+;

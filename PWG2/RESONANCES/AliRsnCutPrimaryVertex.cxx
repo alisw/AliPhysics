@@ -61,53 +61,61 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
   AliRsnEvent *rsn = dynamic_cast<AliRsnEvent*>(obj1);
   if (!rsn) return kFALSE;
   AliESDEvent *esd = dynamic_cast<AliESDEvent*>(rsn->GetRef());
-  if (!esd) 
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(rsn->GetRef());
+  
+  if (esd)
   {
-    AliDebug(AliLog::kDebug+2, "NO ESD");
-    return kFALSE;
+    // get the best primary vertex:
+    // first try the one with tracks
+    const AliESDVertex *vTrk  = esd->GetPrimaryVertexTracks();
+    const AliESDVertex *vSPD  = esd->GetPrimaryVertexSPD();
+    const AliESDVertex *vTPC  = esd->GetPrimaryVertexTPC();
+    Int_t               ncTrk = -1;
+    Int_t               ncSPD = -1;
+    Int_t               ncTPC = -1;
+    Double_t            vzTrk = 2.0 * fMaxD;
+    Double_t            vzSPD = 2.0 * fMaxD;
+    Double_t            vzTPC = 2.0 * fMaxD;
+    if (vTrk) vzTrk = TMath::Abs(vTrk->GetZv());
+    if (vSPD) vzSPD = TMath::Abs(vSPD->GetZv());
+    if (vTPC) vzTPC = TMath::Abs(vTPC->GetZv());
+    if (vTrk) ncTrk = (Int_t)vTrk->GetNContributors();
+    if (vSPD) ncSPD = (Int_t)vSPD->GetNContributors();
+    if (vTPC) ncTPC = (Int_t)vTPC->GetNContributors();
+    if(vTrk && ncTrk > 0)
+    {
+      fCutValueI = ncTrk;
+      fCutValueD = vzTrk;
+    }
+    else if (vSPD && ncSPD > 0)
+    {
+      fCutValueI = ncSPD;
+      fCutValueD = vzSPD;
+    }
+    else if (vTPC && fAcceptTPC && ncTPC > 0)
+    {
+      fCutValueI = ncTPC;
+      fCutValueD = vzTPC;
+    }
+    else
+    {
+      fCutValueI = -1;
+      fCutValueD = 2.0 * fMaxD;
+    }
   }
-
-  // get the best primary vertex:
-  // first try the one with tracks
-  const AliESDVertex *vTrk  = esd->GetPrimaryVertexTracks();
-  const AliESDVertex *vSPD  = esd->GetPrimaryVertexSPD();
-  const AliESDVertex *vTPC  = esd->GetPrimaryVertexTPC();
-  Int_t               ncTrk = -1;
-  Int_t               ncSPD = -1;
-  Int_t               ncTPC = -1;
-  Double_t            vzTrk = 2.0 * fMaxD;
-  Double_t            vzSPD = 2.0 * fMaxD;
-  Double_t            vzTPC = 2.0 * fMaxD;
-  if (vTrk) vzTrk = TMath::Abs(vTrk->GetZv());
-  if (vSPD) vzSPD = TMath::Abs(vSPD->GetZv());
-  if (vTPC) vzTPC = TMath::Abs(vTPC->GetZv());
-  if (vTrk) ncTrk = (Int_t)vTrk->GetNContributors();
-  if (vSPD) ncSPD = (Int_t)vSPD->GetNContributors();
-  if (vTPC) ncTPC = (Int_t)vTPC->GetNContributors();
-  if(vTrk && ncTrk > 0)
+  else if (aod)
   {
-    fCutValueI = ncTrk;
-    fCutValueD = vzTrk;
-  }
-  else if (vSPD && ncSPD > 0)
-  {
-    fCutValueI = ncSPD;
-    fCutValueD = vzSPD;
-  }
-  else if (vTPC && fAcceptTPC && ncTPC > 0)
-  {
-    fCutValueI = ncTPC;
-    fCutValueD = vzTPC;
+    AliAODVertex *prim = aod->GetPrimaryVertex();
+    if (!prim || prim->GetNContributors() < 1) prim = aod->GetPrimaryVertexSPD();
+    if (!prim || prim->GetNContributors() < 1) return kFALSE;
+    fCutValueI = prim->GetNContributors();
+    fCutValueD = prim->GetZ();
   }
   else
-  {
-    fCutValueI = -1;
-    fCutValueD = 2.0 * fMaxD;
-  }
-  
+    return kFALSE;
+    
   // output
   Bool_t result = ((!OkRangeI()) && OkRangeD());
-  
   return result;
 }
 
