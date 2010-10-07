@@ -153,8 +153,11 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
      // do nothing, this is the standard jet finder R = 0.4, UA1 on AOD
    }
    else{
-     jetana->SetNonStdBranch(Form("jets%s_%s%s%s",jr,jf,cRadius,cAdd.Data()));
-   }
+     TString bName =  Form("jets%s_%s%s%s",jr,jf,cRadius,cAdd.Data());
+     jetana->SetNonStdBranch(bName.Data());
+     Printf("Set jet branchname \"%s\"",bName.Data());
+     
+ }
 
 
    AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(
