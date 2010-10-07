@@ -135,7 +135,7 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-27-05";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginRootVersion       = "v5-27-06";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-19-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
@@ -496,8 +496,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      taskjetServ = AddTaskJetServices();
      if (!taskjetServ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetServices cannot run for this train conditions - EXCLUDED");
      if(kGridRunRange[0]>0)taskjetServ->SetRunRange(kGridRunRange[0],kGridRunRange[1]);
-     else taskjetServ->SetRunRange(100000,150000);
-     if(!kIsMC) taskjetServ->SetRealData(kTRUE);
+     else taskjetServ->SetRunRange(110000,160000);
+     taskjetServ->SetMCData(kIsMC);
      taskjetServ->SetUsePhysicsSelection((Bool_t)iPhysicsSelection);
      taskjetServ->SetDebugLevel(0);
    }
@@ -586,7 +586,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskLeadingTrackUE.C");
      AliAnalysisTaskLeadingTrackUE *taskLeadingUE = AddTaskLeadingTrackUE(kUseMC);
      if (!taskLeadingUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTasLeadingTrackkUE cannot run for this train conditions - EXCLUDED");
-     taskLeadingUE->SetFilterBit(64);
+     //     taskLeadingUE->SetFilterBit(64);
    }
 
 
@@ -690,7 +690,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
       TString gcArguments = "-run-on-train -run-jet -run-omega-meson -use-own-xyz -run-neutralmeson -no-aod";
-      TString kGCAnalysisCutSelectionId="900356200010031";
+      //      TString kGCAnalysisCutSelectionId="9003562000100310";
+      TString kGCAnalysisCutSelectionId="9003562000100312";
       gcArguments.Append(Form(" -set-cut-selection %s ",kGCAnalysisCutSelectionId.Data()));
       if(!kIsMC)gcArguments += " -mc-off";
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
@@ -1689,7 +1690,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
    plugin->SetSplitMaxInputFileNumber(kGridFilesPerJob);
    // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
-   plugin->SetMaxInitFailed(5);
+   //   plugin->SetMaxInitFailed(5);
    // Optionally resubmit threshold.
    // plugin->SetMasterResubmitThreshold(90);
    // Optionally set time to live (default 30000 sec)
