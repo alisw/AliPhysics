@@ -1,5 +1,3 @@
-// $Id$
-
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TFile.h>
@@ -11,13 +9,22 @@
 #include <TSystem.h>
 #include <TTimeStamp.h>
 #include <TStyle.h>
+#include <TLegend.h>
+#include <vector>
 #include "TreeClasses.h"
-#include "Utils.h"        // PlotUtils and Noti classes
+#include "Utils.h"
 #endif
 
-Int_t nCuts = 2;
-Bool_t quit = 0;
-Bool_t printPDF = 0;
+Bool_t printPDF = 1;
+const Int_t nCuts = 3;
+enum eCuts {CUT0=0, CUT1, CUT2}; // may split this into ev and trk
+enum {EVT=0, TRK=1};
+Int_t fillCol[2][nCuts] = {{kBlue, kYellow, kSpring-5}, 
+			   {kAzure+1, kGreen, kRed}};
+Int_t lineCol=kBlack, mkrCol=kBlack, mkrSty=kFullCircle;
+Float_t mkrSize=1.0;
+TLegend* leg[2];
+TString cutDef[2][nCuts];
 TFile* outFile = new TFile("out.root", "recreate");
 const Double_t PI = TMath::Pi();
 Int_t nEvents = -1; // Run over whole chain if < 0
@@ -27,67 +34,63 @@ TBranch      *hBranch = 0;
 TBranch      *tBranch = 0;
 
 // Event
-//TH1F* hRun;		 
-TH1F* hBx;		 // crossing times (ns)
-TH1F* hNChips1;	 
-TH1F* hNChips2;	 
-TH1F* hNTracks;	 
-TH1F* hNSelTracks;       // no kink daughters, NClTPC > 20.
-TH1F* hNTracklets;	 
-TH1F* hVx;             
-TH1F* hVy;             
-TH1F* hVz;               // from V0 (?)
-TH1F* hVc;               // from TPC (?)
-TH1F* hIsPileupSPD; 	 
-TH1F* hNPileupSPD;	 
-TH1F* hNPileup;	 
-TH1F* hTrClassMask;	 // get names from constantin 
-TH1F* hTrCluster;	 
-TH1F* hVxSPD;          
-TH1F* hVySPD;          
-TH1F* hVzSPD;          
-TH1F* hVcSPD;          
-TH1F* hVxTPC;          
-TH1F* hVyTPC;          
-TH1F* hVzTPC;          
-TH1F* hVcTPC;                     
+vector<TH1F*> vhBx;		 // crossing times (ns)
+vector<TH1F*> vhNChips1;	 
+vector<TH1F*> vhNChips2;	 
+vector<TH1F*> vhNTracks;	 
+vector<TH1F*> vhNSelTracks;       // no kink daughters, NClTPC > 20.
+vector<TH1F*> vhNTracklets;	 
+vector<TH1F*> vhVx;             
+vector<TH1F*> vhVy;             
+vector<TH1F*> vhVz;               // from V0 (?)
+vector<TH1F*> vhVc;               // from TPC (?)
+vector<TH1F*> vhIsPileupSPD; 	 
+vector<TH1F*> vhNPileupSPD;	 
+vector<TH1F*> vhNPileup;	 
+vector<TH1F*> vhTrClassMask;	 // get names from constantin 
+vector<TH1F*> vhTrCluster;	 
+vector<TH1F*> vhVxSPD;          
+vector<TH1F*> vhVySPD;          
+vector<TH1F*> vhVzSPD;          
+vector<TH1F*> vhVcSPD;          
+vector<TH1F*> vhVxTPC;          
+vector<TH1F*> vhVyTPC;          
+vector<TH1F*> vhVzTPC;          
+vector<TH1F*> vhVcTPC;                     
 
 // Track
-TH1F* hSt;	     // status
-TH1F* hC;	     // charge
-TH1F* hPt;           
-TH1F* hEta;          
-TH1F* hPhi;          
-TH1F* hNClTPC;	     
-TH1F* hNClTPC1;	     // ?
-TH1F* hNClTPCShared; 
-TH1F* hNClITS;	     
-TH1F* hChi2TPC;      
-TH1F* hChi2TPC1;     
-TH1F* hChi2ITS;      
-TH1F* hD;            // Transverse DCA or "impact parameter"
-TH1F* hZ;            // Z DCA
-TH1F* hDTPC;         
-TH1F* hZTPC;           
+vector<TH1F*> vhSt;	     // status
+vector<TH1F*> vhC;	     // charge
+vector<TH1F*> vhPt;           
+vector<TH1F*> vhEta;          
+vector<TH1F*> vhPhi;          
+vector<TH1F*> vhNClTPC;	     
+vector<TH1F*> vhNClTPC1;	     // ?
+vector<TH1F*> vhNClTPCShared; 
+vector<TH1F*> vhNClITS;	     
+vector<TH1F*> vhChi2TPC;      
+vector<TH1F*> vhChi2TPC1;     
+vector<TH1F*> vhChi2ITS;      
+vector<TH1F*> vhD;            // Transverse DCA or "impact parameter"
+vector<TH1F*> vhZ;            // Z DCA
+vector<TH1F*> vhDTPC;         
+vector<TH1F*> vhZTPC;           
 
-// Other
-TH1F* hStBits;
-TH1F* hL0Bits;
-TH1F* hTrClBits;
-// TH1F *hEta1, *hEta2, *hEta3;
-// TH1F *hD1, *hD2, *hD3;
-// TH1F *hZ1, *hZ2, *hZ3;
-TH1F* hChi2ndfTPC;   
+vector<TH1F*> vhStBits;
+vector<TH1F*> vhL0Bits;
+vector<TH1F*> vhTrClBits;
+vector<TH1F*> vhChi2ndfTPC;   
+vector<TH1F*> vhChi2ndfITS; // <---- Still need to make this  
 
-TH2F* hDZ;
-TH2F* hDZTPC;
+vector<TH2F*> vhDZ;
+vector<TH2F*> vhDZTPC;
 
 void BookHistos();
 TObjArray* GetHistList(TFile& inFile, TString clname);
 void SetHistProps();
 void DrawHistos(TFile& inFile);
-void FillEventInfo(const MyHeader& ev);
-void FillTrackInfo(const MyPart& trk);
+void FillEventInfo(const MyHeader& ev, const Int_t k);
+void FillTrackInfo(const MyPart& trk,  const Int_t k);
 
 void DataChecker(const char* inFileNames = "../rootfiles/res_LHC10c_09212010/merged_*.root")
 {
@@ -105,12 +108,7 @@ void DataChecker(const char* inFileNames = "../rootfiles/res_LHC10c_09212010/mer
     nents=nEvents;
     cout << "Using " << nents << " entries!" << endl;
   }
-
-  if (TClass::GetClass("MyPart"))
-    TClass::GetClass("MyPart")->IgnoreTObjectStreamer();
-  if (TClass::GetClass("MyTracklet"))
-    TClass::GetClass("MyTracklet")->IgnoreTObjectStreamer();
-
+  
   BookHistos();
   
   // --- Event loop ---
@@ -122,272 +120,202 @@ void DataChecker(const char* inFileNames = "../rootfiles/res_LHC10c_09212010/mer
       tBranch = tree->GetBranch("parts");
       tBranch->SetAddress(&tracks);
       nme->Reset();
+      // get bits from maps here and fill array of names
+#if 0
+TFile f("rootfiles/merged_run119037.root")
+f.ls()
+TrigClass_run119037_map->ls()
+TrigClass_run119037_map->FindObject("CINT1B-ABCE-NOPF-ALL")
+TPair *p = TrigClass_run119037_map->FindObject("CINT1B-ABCE-NOPF-ALL")
+p->Value()->GetName()
+#endif
     }
     
     hBranch->GetEntry(li);
     tBranch->GetEntry(li);
 
-    FillEventInfo(*event);
+     Bool_t evCut0=1, evCut1=1, evCut2=1;
+     Bool_t trCut0=1, trCut1=1, trCut2=1;
+     evCut0 = 1;
+     evCut1 = !event->fIsPileupSPD && fabs(event->fVz) < 10;
+     evCut2 = event->fVc > 15;
 
+    if (evCut0) {
+      FillEventInfo(*event, CUT0);
+      if (evCut1) {
+	FillEventInfo(*event, CUT1);
+	if (evCut2) {
+	  FillEventInfo(*event, CUT2);
+	}
+      }
+    }
+    
     // --- Track loop ---
     Int_t ntracks = tracks->GetEntries();
     for (Int_t t=0;t<ntracks;++t) {
       MyPart *trk = (MyPart*)tracks->At(t);
 
-      if (!event->fIsPileupSPD && trk->fPt > 0.4)
-	FillTrackInfo(*trk);
+     trCut0 = evCut1;
+     trCut1 = trk->fNClTPC > 0;
+     trCut2 = trk->fNClTPC > 70;
+      
+      if (trCut0) {
+	FillTrackInfo(*trk, CUT0);
+	if (trCut1) {
+	  FillTrackInfo(*trk, CUT1);
+	  if (trCut2) {
+	    FillTrackInfo(*trk, CUT2);
+	  }
+	}
+      }
     }
   }
   
   outFile->Write();
   SetHistProps();
   DrawHistos(*outFile);
-
+  
   return;
 }
 
 void BookHistos()
 {
-  // From MyHeader
-  // hRun		   = new TH1F("hRun", "", 1e3, 0, 5e5);	      	  	  
- hBx		   = new TH1F("hBx", "", 3000, 0, 3000);		      	  
- hNChips1	   = new TH1F("hNChips1", "", 150, 0, 150);	      
- hNChips2	   = new TH1F("hNChips2", "", 150, 0, 150);	      
- hNTracks	   = new TH1F("hNTracks", "", 500, 0, 500);	      
- hNSelTracks	   = new TH1F("hNSelTracks", "", 500, 0, 500);	      	  
- hNTracklets	   = new TH1F("hNTracklets", "", 100, 0, 100);	      	  
- hVx               = new TH1F("hVx", "", 100, -0.1, 0.0);               
- hVy               = new TH1F("hVy", "", 100, 0.15, 0.25);               
- hVz               = new TH1F("hVz", "", 40, -20, 20);               
- hVc               = new TH1F("hVc", "", 100, 0, 100);               
- hIsPileupSPD 	   = new TH1F("hIsPileupSPD", "", 3, 0, 3);      	  	  
- hNPileupSPD	   = new TH1F("hNPileupSPD", "", 10, 0, 10);	      	  
- hNPileup	   = new TH1F("hNPileup", "", 10, 0, 10);	      
- hTrCluster	   = new TH1F("hTrCluster", "", 10, 0, 10);	      	  
- hVxSPD            = new TH1F("hVxSPD", "", 100, -0.5, 0.5);            
- hVySPD            = new TH1F("hVySPD", "", 100, -0.5, 0.5);            
- hVzSPD            = new TH1F("hVzSPD", "", 100, -20, 20);            
- hVcSPD            = new TH1F("hVcSPD", "", 100, 0, 100);            
- hVxTPC            = new TH1F("hVxTPC", "", 100, -0.01, 0.01);             
- hVyTPC            = new TH1F("hVyTPC", "", 100, -0.01, 0.01);             
- hVzTPC            = new TH1F("hVzTPC", "", 100, -5, 5);            
- hVcTPC            = new TH1F("hVcTPC", "", 100, -1, 1);            
-		  		      
- // Other evt histos
- hL0Bits           = new TH1F("hL0Bits", "", 32, 0, 32);   // UInt_t 
- hTrClBits         = new TH1F("hTrClBits", "", 64, 0, 64); // ULong64_t
+  for (Int_t k=0; k<nCuts; k++) {
+    // EVENT variables
+    vhBx          .push_back(new TH1F(Form("EVThBx_%d",k),"", 3000, 0, 3000));
+    vhNChips1	  .push_back(new TH1F(Form("EVThNChips1_%d",k),"", 150, 0, 150));	      
+    vhNChips2	  .push_back(new TH1F(Form("EVThNChips2_%d",k),"", 150, 0, 150));	      
+    vhNTracks	  .push_back(new TH1F(Form("EVThNTracks_%d",k),"", 500, 0, 500));	      
+    vhNSelTracks  .push_back(new TH1F(Form("EVThNSelTracks_%d",k),"", 500, 0, 500));
+    vhNTracklets  .push_back(new TH1F(Form("EVThNTracklets_%d",k),"", 100, 0, 100));
+    vhVx          .push_back(new TH1F(Form("EVThVx_%d",k),"", 100, -0.1, 0.0));               
+    vhVy          .push_back(new TH1F(Form("EVThVy_%d",k),"", 100, 0.15, 0.25));               
+    vhVz          .push_back(new TH1F(Form("EVThVz_%d",k),"", 40, -20, 20));               
+    vhVc          .push_back(new TH1F(Form("EVThVc_%d",k),"", 100, 0, 100));               
+    vhIsPileupSPD .push_back(new TH1F(Form("EVThIsPileupSPD_%d",k),"", 3, 0, 3));  
+    vhNPileupSPD  .push_back(new TH1F(Form("EVThNPileupSPD_%d",k),"", 10, 0, 10));
+    vhNPileup	  .push_back(new TH1F(Form("EVThNPileup_%d",k),"", 10, 0, 10));	      
+    vhTrCluster	  .push_back(new TH1F(Form("EVThTrCluster_%d",k),"", 10, 0, 10));
+    vhVxSPD       .push_back(new TH1F(Form("EVThVxSPD_%d",k),"", 100, -0.5, 0.5));            
+    vhVySPD       .push_back(new TH1F(Form("EVThVySPD_%d",k),"", 100, -0.5, 0.5));            
+    vhVzSPD       .push_back(new TH1F(Form("EVThVzSPD_%d",k),"", 100, -20, 20));            
+    vhVcSPD       .push_back(new TH1F(Form("EVThVcSPD_%d",k),"", 100, 0, 100));            
+    vhVxTPC       .push_back(new TH1F(Form("EVThVxTPC_%d",k),"", 100, -0.01, 0.01));
+    vhVyTPC       .push_back(new TH1F(Form("EVThVyTPC_%d",k),"", 100, -0.01, 0.01));
+    vhVzTPC       .push_back(new TH1F(Form("EVThVzTPC_%d",k),"", 100, -5, 5));            
+    vhVcTPC       .push_back(new TH1F(Form("EVThVcTPC_%d",k),"", 100, -1, 1));            
+    vhL0Bits      .push_back(new TH1F(Form("EVThL0Bits_%d",k),"", 32, 0, 32));
+    vhTrClBits    .push_back(new TH1F(Form("EVThTrClBits_%d",k),"", 64, 0, 64));
+    
+    // TRACK variables
+    vhC	     	  .push_back(new TH1F(Form("TRKhC_%d",k),"", 5, -2.5, 2.5));
+    vhPt          .push_back(new TH1F(Form("TRKhPt_%d",k),"", 200, 0, 20));               
+    vhEta         .push_back(new TH1F(Form("TRKhEta_%d",k),"", 600, -3, 3));              
+    vhPhi         .push_back(new TH1F(Form("TRKhPhi_%d",k),"", 100, -PI/6, 2*PI+PI/6));          
+    vhNClTPC	  .push_back(new TH1F(Form("TRKhNClTPC_%d",k),"", 200, 0, 200));	      
+    vhNClTPC1	  .push_back(new TH1F(Form("TRKhNClTPC1_%d",k),"", 200, 0, 200));	      
+    vhNClTPCShared.push_back(new TH1F(Form("TRKhNClTPCShared_%d",k),"", 200, 0, 200));     
+    vhNClITS	  .push_back(new TH1F(Form("TRKhNClITS_%d",k),"", 20, 0, 20));	      
+    vhChi2TPC     .push_back(new TH1F(Form("TRKhChi2TPC_%d",k),"", 100, 0, 100));          
+    vhChi2ndfTPC  .push_back(new TH1F(Form("TRKhChi2ndfTPC_%d",k),"", 100, 0, 100));
+    vhChi2TPC1    .push_back(new TH1F(Form("TRKhChi2TPC1_%d",k),"", 100, 0, 100));         
+    vhChi2ITS     .push_back(new TH1F(Form("TRKhChi2ITS_%d",k),"", 100, 0, 100));          
+    vhD           .push_back(new TH1F(Form("TRKhD_%d",k),"", 200, -0.1, 0.1));                
+    vhZ           .push_back(new TH1F(Form("TRKhZ_%d",k),"", 200, -0.1, 0.1));                
+    vhDTPC        .push_back(new TH1F(Form("TRKhDTPC_%d",k),"", 200, -0.1, 0.1));
+    vhZTPC        .push_back(new TH1F(Form("TRKhZTPC_%d",k),"", 200, -0.1, 0.1));
+    vhStBits      .push_back(new TH1F(Form("TRKhStBits_%d",k),"", 32, 0, 32));
+    vhDZ          .push_back(new TH2F(Form("TRKhDZ_%d",k),"", 100,-0.1,0.1, 100,-0.1,0.1));
+    vhDZTPC       .push_back(new TH2F(Form("TRKhDZTPC_%d",k),"", 100,-0.1,0.1, 100,-0.1,0.1));
+  }
 
- // From MyPart
- hC	     	   = new TH1F("hC", "", 5, -2.5, 2.5);	     	      	  
- hPt               = new TH1F("hPt", "", 200, 0, 20);               
- hEta              = new TH1F("hEta", "", 600, -3, 3);              
- hPhi              = new TH1F("hPhi", "", 100, 0, 2*PI);              
- hNClTPC	   = new TH1F("hNClTPC", "", 200, 0, 200);	      
- hNClTPC1	   = new TH1F("hNClTPC1", "", 200, 0, 200);	      
- hNClTPCShared     = new TH1F("hNClTPCShared", "", 200, 0, 200);     
- hNClITS	   = new TH1F("hNClITS", "", 20, 0, 20);	      
- hChi2TPC          = new TH1F("hChi2TPC", "", 100, 0, 100);          
- hChi2ndfTPC       = new TH1F("hChi2ndfTPC", "", 100, 0, 100); // AMA
- hChi2TPC1         = new TH1F("hChi2TPC1", "", 100, 0, 100);         
- hChi2ITS          = new TH1F("hChi2ITS", "", 100, 0, 100);          
- hD                = new TH1F("hD", "", 200, -0.1, 0.1);                
- // hD1               = new TH1F("hD1", "", 200, -0.1, 0.1);      // AMA
- // hD2               = new TH1F("hD2", "", 200, -0.1, 0.1);      // AMA    
- // hD3               = new TH1F("hD3", "", 200, -0.1, 0.1);      // AMA    
- hZ                = new TH1F("hZ", "", 200, -0.1, 0.1);                
- // hZ1               = new TH1F("hZ1", "", 200, -0.1, 0.1);      // AMA    
- // hZ2               = new TH1F("hZ2", "", 200, -0.1, 0.1);      // AMA    
- // hZ3               = new TH1F("hZ3", "", 200, -0.1, 0.1);      // AMA    
- hDTPC             = new TH1F("hDTPC", "", 200, -0.1, 0.1);                
- hZTPC             = new TH1F("hZTPC", "", 200, -0.1, 0.1);                
-
- // Other trk histos
- hStBits           = new TH1F("hStBits", "", 32, 0, 32); // ULong_t
- hDZ               = new TH2F("hDZ",    "", 100,-0.1,0.1, 100,-0.1,0.1);
- hDZTPC            = new TH2F("hDZTPC", "", 100,-0.1,0.1, 100,-0.1,0.1);
-
- // hEta1              = new TH1F("hEta1", "", 600, -3, 3);              
- // hEta2              = new TH1F("hEta2", "", 600, -3, 3);              
- // hEta3              = new TH1F("hEta3", "", 600, -3, 3);              
-
-  return;
+ return;
 }
 
 void SetHistProps()
 {
-  // MyHeader
-  //  hRun		    ->SetTitle("Run number;Run;events");
-  hBx		    ->SetTitle("Bx;bunch crossing time [ns];events");
-  hNChips1	    ->SetTitle("NChips1;chips - SPD layer 1;events");
-  hNChips2	    ->SetTitle("NChips2;chips - SPD layer 2;events");
-  hNTracks	    ->SetTitle("NTracks;reconstructed tracks;events");
-  hNSelTracks	    ->SetTitle("NSelTracks;selected tracks;events");
-  hNTracklets	    ->SetTitle("NTracklets;tracklets;events");
-  hVx               ->SetTitle("x-vertex;v_{x} [cm];events");
-  hVy               ->SetTitle("y-vertex;v_{y} [cm];events");
-  hVz               ->SetTitle("z-vertex;v_{z} [cm];events");
-  hVc               ->SetTitle("Vertex contributors;tracks;events");
-  hIsPileupSPD 	    ->SetTitle("IsPileupSPD;IsPileupSPD;events");
-  hNPileupSPD	    ->SetTitle("NPileupSPD;pileup events;events");
-  hNPileup	    ->SetTitle("NPileup;pileup events;events");
-  hTrCluster	    ->SetTitle("Trigger cluster;trigger cluster;events");
-  hVxSPD            ->SetTitle("SPD x-vertex;v_{x} [cm];events");
-  hVySPD            ->SetTitle("SPD y-vertex;v_{y} [cm];events");
-  hVzSPD            ->SetTitle("SPD z-vertex;v_{z} [cm];events");
-  hVcSPD            ->SetTitle("SPD vertex contributors;tracks;events");
-  hVxTPC            ->SetTitle("TPC x-vertex;v_{x} [cm];events");
-  hVyTPC            ->SetTitle("TPC y-vertex;v_{y} [cm];events");
-  hVzTPC            ->SetTitle("TPC z-vertex;v_{z} [cm];events");
-  hVcTPC            ->SetTitle("TPC vertex contributors;tracks;events");
-
-  // Other evt histos
-  hL0Bits           ->SetTitle("L0 trigger bits;;events");
-  hTrClBits         ->SetTitle("Trigger class bits;;events");
-
-  // MyPart
-  hC	     	    ->SetTitle("Charge;charge;tracks");
-  hPt               ->SetTitle("Pt;p_{T} [GeV/c];tracks");
-  hEta              ->SetTitle("Eta;#eta;tracks");
-  // hEta1             ->SetTitle("Eta;#eta;tracks");
-  // hEta2             ->SetTitle("Eta;#eta;tracks");
-  // hEta3             ->SetTitle("Eta;#eta;tracks");
-  hPhi              ->SetTitle("Phi;#phi;tracks");
-  hNClTPC	    ->SetTitle("TPC clusters in track;TPC clusters;tracks");
-  hNClTPC1	    ->SetTitle("TPC clusters in track (iter 1);TPC clusters;tracks");
-  hNClTPCShared     ->SetTitle("NClTPCShared;ITS/TPC clusters;tracks");
-  hNClITS	    ->SetTitle("ITS clusters;clusters;tracks");
-  hChi2TPC          ->SetTitle("TPC #chi^{2};#chi^{2}_{TPC};tracks");
-  hChi2TPC1         ->SetTitle("TPC #chi^{2} (iter 1);#chi^{2}_{TPC};tracks");
-  hChi2ITS          ->SetTitle("ITS #chi^{2};#chi^{2}_{ITS};tracks");
-  hD                ->SetTitle("Transverse DCA;x-y impact parameter [cm];tracks");
-  // hD1               ->SetTitle("Transverse DCA;x-y impact parameter [cm];tracks");
-  // hD2               ->SetTitle("Transverse DCA;x-y impact parameter [cm];tracks");
-  // hD3               ->SetTitle("Transverse DCA;x-y impact parameter [cm];tracks");
-  hZ                ->SetTitle("Longitudinal DCA;z impact parameter [cm];tracks");
-  // hZ1               ->SetTitle("Longitudinal DCA;z impact parameter [cm];tracks");
-  // hZ2               ->SetTitle("Longitudinal DCA;z impact parameter [cm];tracks");
-  // hZ3               ->SetTitle("Longitudinal DCA;z impact parameter [cm];tracks");
-  hDTPC             ->SetTitle("Transverse TPC DCA;x-y impact parameter [cm];tracks");
-  hZTPC             ->SetTitle("Longitudinal TPC DCA;z impact parameter [cm];tracks");
-
-  // Other trk histos
-  hStBits           ->SetTitle("Track status flags;;tracks");
-  hDZ               ->SetTitle("DCA;x-y impact parameter [cm];z impact parameter [cm]");
-  hDZTPC            ->SetTitle("TPC DCA;x-y impact parameter [cm];z impact parameter [cm]");
-  hChi2ndfTPC       ->SetTitle("#chi^{2}/N_{TPC clusters}/;#chi^{2};tracks");
-
-  // Put this in TreeClasses.h (and don't change the ordering)!
-  ULong_t flagValue[32] = 
-    {
-     MyPart::kITSin,
-     MyPart::kITSout,
-     MyPart::kITSrefit,
-     MyPart::kITSpid,
-     MyPart::kTPCin,
-     MyPart::kTPCout,
-     MyPart::kTPCrefit,
-     MyPart::kTPCpid,
-     MyPart::kTRDin,
-     MyPart::kTRDout,
-     MyPart::kTRDrefit,
-     MyPart::kTRDpid,
-     MyPart::kTOFin,
-     MyPart::kTOFout,
-     MyPart::kTOFrefit,
-     MyPart::kTOFpid,
-     MyPart::kHMPIDout,
-     MyPart::kHMPIDpid,
-     MyPart::kEMCALmatch,
-     MyPart::kTRDbackup,
-     0x0,     //20 missing
-     MyPart::kPHOSmatch,
-     0x0,     // 22-24 missing
-     0x0,
-     0x0,
-     MyPart::kMultInV0,
-     MyPart::kMultSec,
-     MyPart::kGlobalMerge,
-     MyPart::kITSpureSA,
-     MyPart::kTRDStop,
-     MyPart::kESDpid,
-     MyPart::kTIME
-    };
-
-  // Put this in TreeClasses.h (and don't change the ordering)!
-  TString flagLabel[32] =
-    {
-      "kITSin",
-      "kITSout",
-      "kITSrefit",
-      "kITSpid",
-      "kTPCin",
-      "kTPCout",
-      "kTPCrefit",
-      "kTPCpid",
-      "kTRDin",
-      "kTRDout",
-      "kTRDrefit",
-      "kTRDpid",
-      "kTOFin",
-      "kTOFout",
-      "kTOFrefit",
-      "kTOFpid",
-      "kHMPIDout",
-      "kHMPIDpid",
-      "kEMCALmatch",
-      "kTRDbackup",
-      "--",
-      "kPHOSmatch",
-      "--",
-      "--",
-      "--",
-      "kMultInV0",
-      "kMultSec",
-      "kGlobalMerge",
-      "kITSpureSA",
-      "kTRDStop",
-      "kESDpid",
-      "kTIME"
-    };
-
-  if (0) {
-    for (int i=0; i<28; i++) {
-      int pos = TMath::Log2(flagValue[i]);
-      cout << pos << " " << flagLabel[i].Data() << endl;
+  for (Int_t k=0; k<nCuts; k++) {
+    vhBx	  .at(k)->SetTitle("Bx;bunch crossing time [ns];events");
+    vhNChips1	  .at(k)->SetTitle("NChips1;chips - SPD layer 1;events");
+    vhNChips2	  .at(k)->SetTitle("NChips2;chips - SPD layer 2;events");
+    vhNTracks	  .at(k)->SetTitle("NTracks;reconstructed tracks;events");
+    vhNSelTracks  .at(k)->SetTitle("NSelTracks;selected tracks;events");
+    vhNTracklets  .at(k)->SetTitle("NTracklets;tracklets;events");
+    vhVx          .at(k)->SetTitle("x-vertex;v_{x} [cm];events");
+    vhVy          .at(k)->SetTitle("y-vertex;v_{y} [cm];events");
+    vhVz          .at(k)->SetTitle("z-vertex;v_{z} [cm];events");
+    vhVc          .at(k)->SetTitle("Vertex contributors;tracks;events");
+    vhIsPileupSPD .at(k)->SetTitle("IsPileupSPD;IsPileupSPD;events");
+    vhNPileupSPD  .at(k)->SetTitle("NPileupSPD;pileup events;events");
+    vhNPileup	  .at(k)->SetTitle("NPileup;pileup events;events");
+    vhTrCluster	  .at(k)->SetTitle("Trigger cluster;trigger cluster;events");
+    vhVxSPD       .at(k)->SetTitle("SPD x-vertex;v_{x} [cm];events");
+    vhVySPD       .at(k)->SetTitle("SPD y-vertex;v_{y} [cm];events");
+    vhVzSPD       .at(k)->SetTitle("SPD z-vertex;v_{z} [cm];events");
+    vhVcSPD       .at(k)->SetTitle("SPD vertex contributors;tracks;events");
+    vhVxTPC       .at(k)->SetTitle("TPC x-vertex;v_{x} [cm];events");
+    vhVyTPC       .at(k)->SetTitle("TPC y-vertex;v_{y} [cm];events");
+    vhVzTPC       .at(k)->SetTitle("TPC z-vertex;v_{z} [cm];events");
+    vhVcTPC       .at(k)->SetTitle("TPC vertex contributors;tracks;events");
+    vhL0Bits      .at(k)->SetTitle("L0 trigger bits;;events");
+    vhTrClBits    .at(k)->SetTitle("Trigger class bits;;events");
+    vhC           .at(k)->SetTitle("Charge;charge;tracks");
+    vhPt          .at(k)->SetTitle("Pt;p_{T} [GeV/c];tracks");
+    vhEta         .at(k)->SetTitle("Eta;#eta;tracks");
+    vhPhi         .at(k)->SetTitle("Phi;#phi;tracks");
+    vhNClTPC      .at(k)->SetTitle("TPC clusters in track;TPC clusters;tracks");
+    vhNClTPC1     .at(k)->SetTitle("TPC clusters in track (iter 1);TPC clusters;tracks");
+    vhNClTPCShared.at(k)->SetTitle("NClTPCShared;ITS/TPC clusters;tracks");
+    vhNClITS      .at(k)->SetTitle("ITS clusters;clusters;tracks");
+    vhChi2TPC     .at(k)->SetTitle("TPC #chi^{2};total #chi^{2}_{TPC};tracks");
+    vhChi2TPC1    .at(k)->SetTitle("TPC #chi^{2} (iter 1);total #chi^{2}_{TPC};tracks");
+    vhChi2ITS     .at(k)->SetTitle("ITS #chi^{2};#chi^{2}_{ITS};tracks");
+    vhD           .at(k)->SetTitle("Transverse DCA;x-y impact parameter [cm];tracks");
+    vhZ           .at(k)->SetTitle("Longitudinal DCA;z impact parameter [cm];tracks");
+    vhDTPC        .at(k)->SetTitle("Transverse TPC DCA;x-y impact parameter [cm];tracks");
+    vhZTPC        .at(k)->SetTitle("Longitudinal TPC DCA;z impact parameter [cm];tracks");
+    vhStBits      .at(k)->SetTitle("Track status flags;;tracks");
+    vhDZ          .at(k)->SetTitle("Impact parameter;x-y DCA [cm];z DCA [cm]");
+    vhDZTPC       .at(k)->SetTitle("TPC Impact parameter;x-y DCA [cm];z DCA [cm]");
+    vhChi2ndfTPC  .at(k)->SetTitle("#chi^{2} / N_{TPC clusters};#chi^{2}_{TPC} / N;tracks");
+    
+    for (Int_t n=0; n<32; ++n) {
+      vhStBits.at(k)->GetXaxis()->SetBinLabel(n+1, flagLabel[n].Data());
     }
   }
   
-  for (Int_t n=0; n<32; ++n) {
-    hStBits->GetXaxis()->SetBinLabel(n+1, flagLabel[n].Data());
-  }
   return;
 }
 
-void FillEventInfo(const MyHeader& ev)
+void FillEventInfo(const MyHeader& ev, const Int_t k)
 {
-  //  hRun		  ->Fill(ev.fRun		);   
-  hBx		  ->Fill(ev.fBx		   	);
-  hNChips1	  ->Fill(ev.fNChips1	   	);
-  hNChips2	  ->Fill(ev.fNChips2	   	);
-  hNTracks	  ->Fill(ev.fNTracks	   	);
-  hNSelTracks	  ->Fill(ev.fNSelTracks	   	);
-  hNTracklets	  ->Fill(ev.fNTracklets	   	);
-  hVx              ->Fill(ev.fVx               	);
-  hVy              ->Fill(ev.fVy               	);
-  hVz              ->Fill(ev.fVz               	);
-  hVc              ->Fill(ev.fVc               	);
-  hIsPileupSPD 	  ->Fill(ev.fIsPileupSPD 	);   
-  hNPileupSPD	  ->Fill(ev.fNPileupSPD	   	);
-  hNPileup	  ->Fill(ev.fNPileup	   	);
-  hTrCluster	  ->Fill(ev.fTrCluster	   	);
-  hVxSPD           ->Fill(ev.fVxSPD            	);
-  hVySPD           ->Fill(ev.fVySPD            	);
-  hVzSPD           ->Fill(ev.fVzSPD            	);
-  hVcSPD           ->Fill(ev.fVcSPD            	);
-  hVxTPC           ->Fill(ev.fVxTPC            	);
-  hVyTPC           ->Fill(ev.fVyTPC            	);
-  hVzTPC           ->Fill(ev.fVzTPC            	);
-  hVcTPC           ->Fill(ev.fVcTPC            	);
+  if (k>=nCuts) {
+    cout << "ERROR in FillEventInfo(): bad cut index " 
+	 << k << endl;
+    return;
+  }
+  vhBx         .at(k)->Fill(ev.fBx	   );
+  vhNChips1    .at(k)->Fill(ev.fNChips1    );
+  vhNChips2    .at(k)->Fill(ev.fNChips2    );
+  vhNTracks    .at(k)->Fill(ev.fNTracks    );
+  vhNSelTracks .at(k)->Fill(ev.fNSelTracks );
+  vhNTracklets .at(k)->Fill(ev.fNTracklets );
+  vhVx         .at(k)->Fill(ev.fVx         );
+  vhVy         .at(k)->Fill(ev.fVy         );
+  vhVz         .at(k)->Fill(ev.fVz         );
+  vhVc         .at(k)->Fill(ev.fVc         );
+  vhIsPileupSPD.at(k)->Fill(ev.fIsPileupSPD);   
+  vhNPileupSPD .at(k)->Fill(ev.fNPileupSPD );
+  vhNPileup    .at(k)->Fill(ev.fNPileup    );
+  vhTrCluster  .at(k)->Fill(ev.fTrCluster  );
+  vhVxSPD      .at(k)->Fill(ev.fVxSPD      );
+  vhVySPD      .at(k)->Fill(ev.fVySPD      );
+  vhVzSPD      .at(k)->Fill(ev.fVzSPD      );
+  vhVcSPD      .at(k)->Fill(ev.fVcSPD      );
+  vhVxTPC      .at(k)->Fill(ev.fVxTPC      );
+  vhVyTPC      .at(k)->Fill(ev.fVyTPC      );
+  vhVzTPC      .at(k)->Fill(ev.fVzTPC      );
+  vhVcTPC      .at(k)->Fill(ev.fVcTPC      );
 
   /*
     http://root.cern.ch/root/html/ListOfTypes.html  
@@ -399,48 +327,50 @@ void FillEventInfo(const MyHeader& ev)
   for (UInt_t n=0; n<32; n++) {
     ULong64_t uno = 1;
     Bool_t bit = ev.fL0 & uno<<n;
-    hL0Bits->Fill(n+0.5, bit);
+    vhL0Bits.at(k)->Fill(n+0.5, bit);
   }
   for (ULong64_t n=0; n<64; n++) {
     ULong64_t uno = 1;
     Bool_t bit = ev.fTrClassMask & uno<<n;
-    hTrClBits->Fill(n+0.5, bit);
+    vhTrClBits.at(k)->Fill(n+0.5, bit);
   }
-
   return;
 }
 
-void FillTrackInfo(const MyPart& trk)
+void FillTrackInfo(const MyPart& trk, const Int_t k)
 {
   // N.B. a pt > 0.4 cut is applied outside this fn.
-
-  // MyPart
-  hC	     	 ->Fill(trk.fC);	     	      	  
-  hPt            ->Fill(trk.fPt);               
-  hEta           ->Fill(trk.fEta);              
-  hPhi           ->Fill(trk.fPhi);              
-  hNClTPC	 ->Fill(trk.fNClTPC);	      
-  hNClTPC1	 ->Fill(trk.fNClTPC1);	      
-  hNClTPCShared  ->Fill(trk.fNClTPCShared);     
-  hNClITS        ->Fill(trk.fNClITS);	      
-  hChi2TPC       ->Fill(trk.fChi2TPC);          
-  hChi2TPC1      ->Fill(trk.fChi2TPC1);         
-  hChi2ITS       ->Fill(trk.fChi2ITS);          
-  hD             ->Fill(trk.fD);                
-  hZ             ->Fill(trk.fZ);                
-  hDTPC          ->Fill(trk.fDTPC);             
-  hZTPC          ->Fill(trk.fZTPC);             
+  if (k>=nCuts) {
+    cout << "ERROR in FillTrackInfo(): bad cut index " 
+	 << k << endl;
+    return;
+  }
 
   Double_t chi2tpc = trk.fNClTPC > 0? trk.fChi2TPC/trk.fNClTPC : 999;
-  hChi2ndfTPC    ->Fill(chi2tpc);
-  hDZ            ->Fill(trk.fD, trk.fZ);                
-  hDZTPC         ->Fill(trk.fDTPC, trk.fZTPC);
+  vhC	     	.at(k)->Fill(trk.fC);	     	      	  
+  vhPt          .at(k)->Fill(trk.fPt);               
+  vhEta         .at(k)->Fill(trk.fEta);              
+  vhPhi         .at(k)->Fill(trk.fPhi);              
+  vhNClTPC	.at(k)->Fill(trk.fNClTPC);	      
+  vhNClTPC1	.at(k)->Fill(trk.fNClTPC1);	      
+  vhNClTPCShared.at(k)->Fill(trk.fNClTPCShared);     
+  vhNClITS      .at(k)->Fill(trk.fNClITS);	      
+  vhChi2TPC     .at(k)->Fill(trk.fChi2TPC);          
+  vhChi2TPC1    .at(k)->Fill(trk.fChi2TPC1);         
+  vhChi2ITS     .at(k)->Fill(trk.fChi2ITS);          
+  vhD           .at(k)->Fill(trk.fD);                
+  vhZ           .at(k)->Fill(trk.fZ);                
+  vhDTPC        .at(k)->Fill(trk.fDTPC);             
+  vhZTPC        .at(k)->Fill(trk.fZTPC);             
+  vhChi2ndfTPC  .at(k)->Fill(chi2tpc);
+  vhDZ          .at(k)->Fill(trk.fD, trk.fZ);                
+  vhDZTPC       .at(k)->Fill(trk.fDTPC, trk.fZTPC);
 
   // fSt is a ULong_t (8 bytes), but only the first 32 seem to make sense
   for (ULong_t n=0; n<32; ++n) {
     ULong64_t uno = 1;
     Bool_t bit = trk.fSt & uno<<n; // 0 or 1 * 2^n, downcasted
-    hStBits->Fill(n+0.5, bit);
+    vhStBits.at(k)->Fill(n+0.5, bit);
   }
 
   return;
@@ -458,12 +388,26 @@ TObjArray* GetHistList(TFile& inFile, TString clname)
     if (0) printf("%10s %20s\n", className.Data(), keyName.Data());
     
     if (className.Contains(clname) && clname=="TH1F") {
-      TH1F* h1 = (TH1F*)inFile.Get(keyName.Data());
-      hList->Add(h1);
+      // Transpose from how histos are listed in file
+      if (keyName.EndsWith("_0")) {
+	hList->Add((TH1F*)inFile.Get(keyName.Data()));
+	for (Int_t k=1; k<nCuts; k++) {
+	  TString name(keyName.Replace(keyName.Length()-1, 1, Form("%d",k)));
+	  //	  printf("%20s %20s\n", keyName.Data(), name.Data());
+	  hList->Add((TH1F*)inFile.Get(name.Data()));
+	}
+      }
     }
     if (className.Contains(clname) && clname=="TH2F") {
-      TH2F* h2 = (TH2F*)inFile.Get(keyName.Data());
-      hList->Add(h2);
+      // Transpose from how histos are listed in file
+      if (keyName.EndsWith("_0")) {
+	hList->Add((TH2F*)inFile.Get(keyName.Data()));
+	for (Int_t k=1; k<nCuts; k++) {
+	  TString name(keyName.Replace(keyName.Length()-1, 1, Form("%d",k)));
+	  //	  printf("%20s %20s\n", keyName.Data(), name.Data());
+	  hList->Add((TH2F*)inFile.Get(name.Data()));
+	}
+      }
     }
   }
   return hList;
@@ -478,12 +422,22 @@ void DrawHistos(TFile& inFile)
   TObjArray* h1List = GetHistList(inFile, "TH1F");
   TObjArray* h2List = GetHistList(inFile, "TH2F");
 
-  Int_t fillCol=kYellow, lineCol=kBlack, mkrCol=kBlack, mkrSty=kFullCircle;
-  Float_t mkrSize=1.0;
-  PlotUtils::set_hist_props(h1List,lineCol,fillCol,mkrCol,mkrSty,mkrSize);
+  PlotUtils::set_hist_props(h1List,lineCol,kNone,mkrCol,mkrSty,mkrSize);
 
   Int_t nCanv = 0, nPrinted = 0;  
   TCanvas* c;
+
+  for (int i=0; i<2; i++) {
+    leg[i] = new TLegend(0.6, 0.85, 0.99, 0.99);
+    leg[i]->SetFillColor(kNone);
+    leg[i]->SetBorderSize(0);
+  }
+  cutDef[EVT][0] = "no cuts";
+  cutDef[EVT][1] = "!fIsPileupSPD && fabs(fVz) < 10";
+  cutDef[EVT][2] = "fVc > 15";
+  cutDef[TRK][0] = "!fIsPileupSPD && fabs(fVz) < 10";
+  cutDef[TRK][1] = "fNClTPC > 0";
+  cutDef[TRK][2] = "fNClTPC > 70";
 
   // TH1Fs
   for (int i=0; i<h1List->GetEntries(); i++) {
@@ -492,25 +446,27 @@ void DrawHistos(TFile& inFile)
     h1->SetStats(1);
     TString s(h1->GetName());
     TString options(h1->GetDrawOption());
+    
+    Int_t T = s.Contains("EVT")? 0 : 1;
 
-    if (s.Contains("hEta2") || 
-	s.Contains("hD2") || 
-	s.Contains("hZ2")) {
-      options.Append("same");
-      h1->SetFillColor(kGreen);
-    }
-    if (s.Contains("hEta3") || 
-	s.Contains("hD3") || 
-	s.Contains("hZ3")) {
-      options.Append("same");
-      h1->SetFillColor(kAzure-9);
-    }
+    int nLegEntries = leg[T]->GetListOfPrimitives()->GetEntries();
 
-    if (s.Contains("hChi2ndfTPC")) {
-      h1->SetFillColor(kNone);
-      h1->SetLineColor(kRed);
-      h1->SetLineWidth(2);
+    if (s.Contains("_0")) {
+      h1->SetFillColor(fillCol[T][CUT0]);
+      if (nLegEntries < nCuts)
+	leg[T]->AddEntry(h1, cutDef[T][CUT0].Data(), "f");
+    }
+    if (s.Contains("_1")) {
+      h1->SetFillColor(fillCol[T][CUT1]);
       options.Append("same");
+      if (nLegEntries < nCuts)
+	leg[T]->AddEntry(h1, cutDef[T][CUT1].Data(), "f");
+    }
+    if (s.Contains("_2")) {
+      h1->SetFillColor(fillCol[T][CUT2]);
+      options.Append("same");
+      if (nLegEntries < nCuts)
+	leg[T]->AddEntry(h1, cutDef[T][CUT2].Data(), "f");
     }
      
     if (!options.Contains("same")) {
@@ -533,7 +489,7 @@ void DrawHistos(TFile& inFile)
     if (s.Contains("hStBits") || 
 	s.Contains("hL0Bits") || 
 	s.Contains("hTrClBits")) {
-      h1->SetFillColor(kRed);
+      //      h1->SetFillColor(kRed);
       h1->SetBarWidth(0.9 * h1->GetBinWidth(1));
       options.Append("hbar");
       c->SetLeftMargin(0.2);
@@ -541,14 +497,18 @@ void DrawHistos(TFile& inFile)
     if (!options.Contains("hbar"))
       PlotUtils::make_nice_axes(c, h1, 1.5);
     if (s.Contains("hVx") || s.Contains("hVy") || 
-	s.Contains("hBx") || s.Contains("hTime") ||
-	s.Contains("hEvNumber") || s.Contains("hC") || 
-	s.Contains("hOrbit") || s=="hD" ||  s=="hZ")  
+	s.Contains("hBx") || s.Contains("hC") || 
+	s.Contains("hOrbit") || s.Contains("hD") ||  s.Contains("hZ") ) { 
       h1->GetXaxis()->SetNdivisions(5); // unclutter
+
+      // if (s.Contains("_0")) 
+      // 	h1->GetYaxis()->SetRangeUser(0.0, h1->GetYaxis()->GetXmax());
+    }
 
     printf("Drawing %20s opt: %s", s.Data(), options.Data());
     cout << endl;
     h1->Draw(options.Data());
+    leg[T]->Draw();
     
   }
 
