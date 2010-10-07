@@ -25,11 +25,18 @@ class AliAnalysisHelperJetTasks : public TObject {
 	 kBunchBunch = 1<<1,
 	 kBunchEmpty = 1<<2,
 	 kEmptyEmpty= 1<<3,
-	 kPhysicsSelection = 1<<4, 
-	 kVertexIn = 1<<5, 
-	 kIsCosmic = 1<<6, 
-	 kIsPileUp = 1<<7,
-	 kTotalSelections = (1<<8) - 1};
+	 kV0A=1<<4,
+	 kV0C=1<<5,
+	 kNoV0BG=1<<6,
+	 kSPDFO=1<<7,
+	 kPhysicsSelection = 1<<8, 
+	 kVertexIn = 1<<9, 
+	 kIsCosmic = 1<<10, 
+	 kIsPileUp = 1<<11,
+	 kIsMCND=1<<12,
+	 kIsMCDD=1<<13,
+	 kIsMCSD=1<<14,
+	 kTotalSelections = (1<<15) - 1};
 
   enum Trigger {kAcceptAll = 0,kMB1,kMB2,kMB3,kSPDGFO,kTrigger}; // 
   // same as in PWG0Helper

@@ -21,6 +21,7 @@ class AliAODVertex;
 class AliAODJet;
 class AliGenPythiaEventHeader;
 class AliCFManager;
+class AliTriggerAnalysis;
 
 class TList;
 class TChain;
@@ -51,7 +52,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
     virtual void SetRunRange(Float_t fLo,Float_t fUp){fRunRange[0] = fLo;fRunRange[1] = fUp;}
-    virtual void SetRealData(Bool_t b){fRealData = b;}
+    virtual void SetMCData(Bool_t b){fMC = b;}
     virtual void SetUsePhysicsSelection(Bool_t b){fUsePhysicsSelection = b;}
     Bool_t IsEventSelected(const AliESDEvent* esd);
     Bool_t IsEventSelected(const AliAODEvent* aod) const;
@@ -88,7 +89,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 
     Bool_t        fUseAODInput;        // take jet from input AOD not from ouptu AOD
     Bool_t        fUsePhysicsSelection;// decide wether we take into account physicsselction task
-    Bool_t        fRealData;           // true for real data to allow correct trigger slection
+    Bool_t        fMC;                 // true for MC data to allow correct trigger slection
     UInt_t        fSelectionInfoESD;   // slection info bit mask
     UInt_t        fEventCutInfoESD;   // event selection info of what is cutted after physics selection
     Float_t       fAvgTrials;          // Average number of trials
@@ -101,22 +102,24 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Float_t       fRIsolMinCosmic;     // Minimum R = sqrt{deltaPhi^2 + deltaEta^2} to be considered as cosmic candidate
     Float_t       fMaxCosmicAngle;     // Max deviation from pi (angle between two tracks) in case of cosmic candidate
     Float_t       fRunRange[2];        // only important for real data for 
-    TProfile*     fh1Xsec;             // pythia cross section and trials
-    TH1F*         fh1Trials;           // trials are added
-    TH1F*         fh1PtHard;           // Pt har of the event...       
-    TH1F*         fh1PtHardTrials;     // Number of trials 
-    TH1F*         fh1SelectionInfoESD; // Masks that satisfy fSelectionInfo
-    TH1F*         fh1EventCutInfoESD; // Masks that satisfy fSelectionInfo
-    TH2F*         fh2TriggerCount;     // number of fire triggers in each case
-    TH2F*         fh2ESDTriggerCount;  // number of fire triggers in each case
-    TH2F*         fh2TriggerVtx;       // vtx. position vs. trigger decision
-    TH2F*         fh2ESDTriggerVtx;    // vtx. position vs. trigger decision 
-    TH2F*         fh2ESDTriggerRun;    // fired triggers vs. run number
-    TH2F*         fh2VtxXY;            // XY position of VTX were available
-    TH1F*         fh1NCosmicsPerEvent;  // Number of coscmic candidates found in event
+    TProfile*     fh1Xsec;             //! pythia cross section and trials
+    TH1F*         fh1Trials;           //! trials are added
+    TH1F*         fh1PtHard;           //! Pt har of the event...       
+    TH1F*         fh1PtHardTrials;     //! Number of trials 
+    TH1F*         fh1SelectionInfoESD; //! Masks that satisfy fSelectionInfo
+    TH1F*         fh1EventCutInfoESD;  //! Masks that satisfy fSelectionInfo
+    TH2F*         fh2TriggerCount;     //! number of fire triggers in each case
+    TH2F*         fh2ESDTriggerCount;  //! number of fire triggers in each case
+    TH2F*         fh2TriggerVtx;       //! vtx. position vs. trigger decision
+    TH2F*         fh2ESDTriggerVtx;    //! vtx. position vs. trigger decision 
+    TH2F*         fh2ESDTriggerRun;    //! fired triggers vs. run number
+    TH2F*         fh2VtxXY;            //! XY position of VTX were available
+    TH1F*         fh1NCosmicsPerEvent;  //! Number of coscmic candidates found in event
+    AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis to get the background rates etc.
+
     TList *fHistList; // Output list
    
-    ClassDef(AliAnalysisTaskJetServices,7)
+    ClassDef(AliAnalysisTaskJetServices,8)
 };
  
 #endif

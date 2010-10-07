@@ -60,7 +60,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliPhysicsSelection.h"
-
+#include "AliTriggerAnalysis.h"
 
 #include "AliAnalysisHelperJetTasks.h"
 
@@ -69,7 +69,7 @@ ClassImp(AliAnalysisTaskJetServices)
 AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fUseAODInput(kFALSE),
   fUsePhysicsSelection(kFALSE),
-  fRealData(kFALSE),
+  fMC(kFALSE),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
   fAvgTrials(1),
@@ -94,6 +94,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fh2ESDTriggerRun(0x0),
   fh2VtxXY(0x0),
   fh1NCosmicsPerEvent(0x0),
+  fTriggerAnalysis(0x0),
   fHistList(0x0)  
 {
   fRunRange[0] = fRunRange[1] = 0; 
@@ -103,7 +104,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   AliAnalysisTaskSE(name),
   fUseAODInput(kFALSE),
   fUsePhysicsSelection(kFALSE),
-  fRealData(kFALSE),
+  fMC(kFALSE),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
   fAvgTrials(1),
@@ -128,6 +129,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh2ESDTriggerRun(0x0),
   fh2VtxXY(0x0),
   fh1NCosmicsPerEvent(0x0),
+  fTriggerAnalysis(0x0),
   fHistList(0x0)  
 {
   fRunRange[0] = fRunRange[1] = 0; 
@@ -270,7 +272,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
  
   AliAODEvent *aod = 0;
   AliESDEvent *esd = 0;
-
+  
   AliAnalysisHelperJetTasks::Selected(kTRUE,kFALSE); // set slection to false
   fSelectionInfoESD = 0; // reset
   fEventCutInfoESD = 0; // reset
@@ -295,8 +297,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     esd = dynamic_cast<AliESDEvent*>(InputEvent());
   }
   
-  fSelectionInfoESD |= AliAnalysisHelperJetTasks::kNone;
-  fEventCutInfoESD |= AliAnalysisHelperJetTasks::kNone;
+  fSelectionInfoESD |= kNoEventCut;
+  fEventCutInfoESD |= kNoEventCut;
 
   Bool_t esdVtxValid = false;
   Bool_t esdVtxIn = false;
@@ -304,6 +306,23 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   Bool_t aodVtxIn = false;
 
   if(esd){
+    // trigger analyisis
+    if(!fTriggerAnalysis){
+      fTriggerAnalysis = new AliTriggerAnalysis;
+      fTriggerAnalysis->SetAnalyzeMC(fMC);
+      fTriggerAnalysis->SetSPDGFOThreshhold(1);
+    }
+    //    fTriggerAnalysis->FillTriggerClasses(esd);
+    Bool_t v0A       = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0A);
+    Bool_t v0C       = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0C);
+    Bool_t v0ABG = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0ABG);
+    Bool_t v0CBG = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0CBG);
+    Bool_t spdFO      = fTriggerAnalysis->SPDFiredChips(esd, 0);;
+    if(v0A)fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kV0A;
+    if(v0C)fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kV0C;
+    if(!(v0ABG||v0CBG))fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kNoV0BG;
+    if(spdFO)fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kSPDFO;
+
     Float_t run = (Float_t)esd->GetRunNumber();
     const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
     esdVtxValid = 
@@ -317,9 +336,6 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       yvtx = vtxESD->GetY();
       xvtx = vtxESD->GetX();
     }
-
-
-    
 
     // CKB this can be cleaned up a bit...
     
@@ -378,8 +394,6 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   Bool_t physicsSelection = ((fInputHandler->IsEventSelected())&AliVEvent::kMB);
   fEventCutInfoESD |= kPhysicsSelectionCut; // other alreay set via IsEventSelected
   fh1EventCutInfoESD->Fill(fEventCutInfoESD);
-
-  
 
   if(esdEventSelected) fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kVertexIn;
   if(esdEventPileUp)   fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kIsPileUp;

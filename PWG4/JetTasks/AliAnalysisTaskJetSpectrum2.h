@@ -95,14 +95,14 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     void MakeJetContainer();
     Int_t GetListOfTracks(TList *list,Int_t type);
 
-    AliJetHeader *fJetHeaderRec;
-    AliJetHeader *fJetHeaderGen;
-    AliAODEvent  *fAOD; // where we take the jets from can be input or output AOD
-    THnSparseF   *fhnJetContainer[kMaxStep*2];   // like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
-    THnSparseF   *fhnCorrelation;           // response matrix for unfolding 
-    THnSparseF   *fhnCorrelationPhiZRec;       // response matrix for unfolding in max Z rec bins
+    AliJetHeader *fJetHeaderRec;//! The jet header that can be fetched from the userinfo
+    AliJetHeader *fJetHeaderGen;//! The jet header that can fetched from the userinfo
+    AliAODEvent  *fAOD; //! where we take the jets from can be input or output AOD
+    THnSparseF   *fhnJetContainer[kMaxStep*2];   //! like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
+    THnSparseF   *fhnCorrelation;           //! response matrix for unfolding 
+    THnSparseF   *fhnCorrelationPhiZRec;       //! response matrix for unfolding in max Z rec bins
 
-    TF1          *f1PtScale;                // correction function to correct to the average true jet energy depending on p_T,rec
+    TF1          *f1PtScale;                //! correction function to correct to the average true jet energy depending on p_T,rec
 
     TString       fBranchRec;  // AOD branch name for reconstructed
     TString       fBranchGen;  // AOD brnach for genereated
@@ -127,80 +127,80 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t       fDeltaPhiWindow;        // minium angle between dijets
 
 
-    TProfile*     fh1Xsec;   // pythia cross section and trials
-    TH1F*         fh1Trials; // trials are added
-    TH1F*         fh1PtHard;  // Pt har of the event...       
-    TH1F*         fh1PtHardNoW;  // Pt har of the event without weigt       
-    TH1F*         fh1PtHardTrials;  // Number of trials 
-    TH1F*         fh1NGenJets;      // nr of gen jets
-    TH1F*         fh1NRecJets;      // nr of rec jets
-    TH1F*         fh1PtTrackRec;    // track pt
-    TH1F*         fh1SumPtTrackRec; // sum over all track pT    
-    TH1F*         fh1SumPtTrackAreaRec; // sum over all track pT    
-    TH1F*         fh1TmpRho;            // just temporary histo for calculation
+    TProfile*     fh1Xsec;   //! pythia cross section and trials
+    TH1F*         fh1Trials; //! trials are added
+    TH1F*         fh1PtHard;  //! Pt har of the event...       
+    TH1F*         fh1PtHardNoW;  //! Pt har of the event without weigt       
+    TH1F*         fh1PtHardTrials;  //! Number of trials 
+    TH1F*         fh1NGenJets;      //! nr of gen jets
+    TH1F*         fh1NRecJets;      //! nr of rec jets
+    TH1F*         fh1PtTrackRec;    //! track pt
+    TH1F*         fh1SumPtTrackRec; //! sum over all track pT    
+    TH1F*         fh1SumPtTrackAreaRec; //! sum over all track pT    
+    TH1F*         fh1TmpRho;            //! just temporary histo for calculation
 
 
-    TH1F*         fh1PtRecIn[kMaxJets];  // Jet pt for all this info is also in the THNsparse      
-    TH1F*         fh1PtGenIn[kMaxJets];  // Jet pt with corellated generated jet    
+    TH1F*         fh1PtRecIn[kMaxJets];  //! Jet pt for all this info is also in the THNsparse      
+    TH1F*         fh1PtGenIn[kMaxJets];  //! Jet pt with corellated generated jet    
 
-    TH1F*         fh1PtJetsRecIn;  // Jet pt for all jets
-    TH1F*         fh1PtJetsLeadingRecIn;  // Jet pt for all jets
-    TH1F*         fh1PtTracksRecIn;  // track pt for all tracks
-    TH1F*         fh1PtTracksLeadingRecIn;  // track pt for all tracks
-    TH1F*         fh1PtTracksGenIn;  // track pt for all tracks
+    TH1F*         fh1PtJetsRecIn;  //! Jet pt for all jets
+    TH1F*         fh1PtJetsLeadingRecIn;  //! Jet pt for all jets
+    TH1F*         fh1PtTracksRecIn;  //! track pt for all tracks
+    TH1F*         fh1PtTracksLeadingRecIn;  //! track pt for all tracks
+    TH1F*         fh1PtTracksGenIn;  //! track pt for all tracks
     
 
-    TH2F*         fh2NRecJetsPt;            // Number of found jets above threshold
-    TH2F*         fh2NRecTracksPt;          // Number of found tracks above threshold
-    TH2F*         fh2JetsLeadingPhiEta;     // jet correlation with leading jet
-    TH2F*         fh2JetsLeadingPhiPt;      // jet correlation with leading jet
-    TH2F*         fh2TracksLeadingPhiEta;   // track correlation with leading track
-    TH2F*         fh2TracksLeadingPhiPt;    // track correlation with leading track
-    TH2F*         fh2TracksLeadingJetPhiPt; // track correlation with leading track
-    TH2F*         fh2JetPtJetPhi;           // Phi distribution of accepted jets 
-    TH2F*         fh2TrackPtTrackPhi;       // phi distribution of accepted tracks
-    TH2F*         fh2RelPtFGen;             // relative difference between generated and found 
-    TH2F*         fh2PhiPt[kMaxJets];    // delta phi correlation of tracks with the jet      
-    TH2F*         fh2PhiEta[kMaxJets];   // eta   phi correlation of tracks with the jet      
-    TH2F*         fh2RhoPtRec[kMaxJets];    // jet shape variable rho
-    TH2F*         fh2PsiPtRec[kMaxJets];    // jet shape variable psi
+    TH2F*         fh2NRecJetsPt;            //! Number of found jets above threshold
+    TH2F*         fh2NRecTracksPt;          //! Number of found tracks above threshold
+    TH2F*         fh2JetsLeadingPhiEta;     //! jet correlation with leading jet
+    TH2F*         fh2JetsLeadingPhiPt;      //! jet correlation with leading jet
+    TH2F*         fh2TracksLeadingPhiEta;   //! track correlation with leading track
+    TH2F*         fh2TracksLeadingPhiPt;    //! track correlation with leading track
+    TH2F*         fh2TracksLeadingJetPhiPt; //! track correlation with leading track
+    TH2F*         fh2JetPtJetPhi;           //! Phi distribution of accepted jets 
+    TH2F*         fh2TrackPtTrackPhi;       //! phi distribution of accepted tracks
+    TH2F*         fh2RelPtFGen;             //! relative difference between generated and found 
+    TH2F*         fh2PhiPt[kMaxJets];    //! delta phi correlation of tracks with the jet      
+    TH2F*         fh2PhiEta[kMaxJets];   //! eta   phi correlation of tracks with the jet      
+    TH2F*         fh2RhoPtRec[kMaxJets];    //! jet shape variable rho
+    TH2F*         fh2PsiPtRec[kMaxJets];    //! jet shape variable psi
     TH2F*         fh2RhoPtGen[kMaxJets];    //
     TH2F*         fh2PsiPtGen[kMaxJets];    //
-    TH2F*         fh2FragRec[kMaxJets];     // fragmentation function
-    TH2F*         fh2FragLnRec[kMaxJets];   // fragmetation in xi
-    TH2F*         fh2FragGen[kMaxJets];     // fragmentation function
-    TH2F*         fh2FragLnGen[kMaxJets];   // fragmetation in xi
+    TH2F*         fh2FragRec[kMaxJets];     //! fragmentation function
+    TH2F*         fh2FragLnRec[kMaxJets];   //! fragmetation in xi
+    TH2F*         fh2FragGen[kMaxJets];     //! fragmentation function
+    TH2F*         fh2FragLnGen[kMaxJets];   //! fragmetation in xi
 
 
 
     // Dijet histos
-    TH2F*   fh2DijetDeltaPhiPt;      // dijet delta phi vs pt
-    TH2F*   fh2DijetAsymPt;          // dijet asym vs pt
-    TH2F*   fh2DijetAsymPtCut;       // dijet asym vs pt after delta phi cut
-    TH2F*   fh2DijetDeltaPhiDeltaEta; // dijet delta phi delta eta
-    TH2F*   fh2DijetPt2vsPt1;          // dijet pt2 vs pt1
-    TH2F*   fh2DijetDifvsSum;          // dijet dif vs sum
-    TH1F*   fh1DijetMinv;            // dijet inv mass
-    TH1F*   fh1DijetMinvCut;         // dijet inv after delta phi cut
+    TH2F*   fh2DijetDeltaPhiPt;      //! dijet delta phi vs pt
+    TH2F*   fh2DijetAsymPt;          //! dijet asym vs pt
+    TH2F*   fh2DijetAsymPtCut;       //! dijet asym vs pt after delta phi cut
+    TH2F*   fh2DijetDeltaPhiDeltaEta; //! dijet delta phi delta eta
+    TH2F*   fh2DijetPt2vsPt1;          //! dijet pt2 vs pt1
+    TH2F*   fh2DijetDifvsSum;          //! dijet dif vs sum
+    TH1F*   fh1DijetMinv;            //! dijet inv mass
+    TH1F*   fh1DijetMinvCut;         //! dijet inv after delta phi cut
     //background histos
     
-    TH1F*         fh1Bkg1; //background estimate, all jets
-    TH1F*         fh1Bkg2; //background estimate, wo hardest jet 
-    TH1F*         fh1Sigma1; //background fluctuations, all jets
-    TH1F*         fh1Sigma2; //background fluctuations, wo hardest jet
-    TH1F*         fh1Area1; //average background jet area, all jets 
-    TH1F*         fh1Area2; //average background jet area, wo hardest jet 
+    TH1F*         fh1Bkg1;   //! background estimate, all jets
+    TH1F*         fh1Bkg2;   //! background estimate, wo hardest jet 
+    TH1F*         fh1Sigma1; //! background fluctuations, all jets
+    TH1F*         fh1Sigma2; //! background fluctuations, wo hardest jet
+    TH1F*         fh1Area1;  //! average background jet area, all jets 
+    TH1F*         fh1Area2;  //! average background jet area, wo hardest jet 
 
-    TH1F*         fh1Ptjet; //rec jet spectrum
-    TH1F*         fh1Ptjetsub1;//subtracted jet spectrum (Bkg1) 
-    TH1F*         fh1Ptjetsub2; //subtracted jet spectrum (Bkg2)
-    TH1F*         fh1Ptjethardest; //rec hardest jet spectrum
-    TH1F*         fh1Ptjetsubhardest1;//subtracted hardest jet spectrum (Bkg1)
-    TH1F*         fh1Ptjetsubhardest2;//subtracted hardest jet spectrum (Bkg2)
-    TH2F*         fh1Rhovspthardest1;//rho vs hardest subtracted jet pt (Bkg1)
-    TH2F*         fh1Rhovspthardest2;//rho vs hardest subtracted jet pt (Bkg2)
-    TH2F*         fh1Errorvspthardest1;//relative error vs hardest subtracted jet pt (Bkg1)
-    TH2F*         fh1Errorvspthardest2;//relative error vs hardest subtracted jet pt (Bkg2)
+    TH1F*         fh1Ptjet; //! rec jet spectrum
+    TH1F*         fh1Ptjetsub1;//! subtracted jet spectrum (Bkg1) 
+    TH1F*         fh1Ptjetsub2; //! subtracted jet spectrum (Bkg2)
+    TH1F*         fh1Ptjethardest; //! rec hardest jet spectrum
+    TH1F*         fh1Ptjetsubhardest1;//! subtracted hardest jet spectrum (Bkg1)
+    TH1F*         fh1Ptjetsubhardest2;//! subtracted hardest jet spectrum (Bkg2)
+    TH2F*         fh1Rhovspthardest1;//! rho vs hardest subtracted jet pt (Bkg1)
+    TH2F*         fh1Rhovspthardest2;//! rho vs hardest subtracted jet pt (Bkg2)
+    TH2F*         fh1Errorvspthardest1;//! relative error vs hardest subtracted jet pt (Bkg1)
+    TH2F*         fh1Errorvspthardest2;//! relative error vs hardest subtracted jet pt (Bkg2)
 
     TList *fHistList; // Output list
    
