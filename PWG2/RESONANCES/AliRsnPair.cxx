@@ -122,6 +122,11 @@ Bool_t AliRsnPair::Fill
 
   AliDebug(AliLog::kDebug+2,"<-");
   
+  // first of all, compute the 4-momenta of the daughters
+  // and that of the mother, according to current pair def
+  // this could be needed for some cuts
+  fMother.SetDaughters(daughter0, fPairDef->GetMass(0), daughter1, fPairDef->GetMass(1));
+  
   // check for correct type-charge match for first element
   if (daughter0->RefType() != fPairDef->GetDaughterType(0)) return kFALSE;
   if (daughter0->ChargeChar() != fPairDef->GetCharge(0)) return kFALSE;
@@ -160,7 +165,6 @@ Bool_t AliRsnPair::Fill
   fEvent = ev0;
   
   // define pair & check
-  fMother.SetDaughters(daughter0, fPairDef->GetMass(0), daughter1, fPairDef->GetMass(1));
   fCutManager.SetEvent(fEvent);
   if (!fCutManager.PassMotherCuts(&fMother)) return kFALSE;
   
