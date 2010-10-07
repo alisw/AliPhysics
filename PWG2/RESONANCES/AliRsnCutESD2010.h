@@ -51,7 +51,7 @@ class AliRsnCutESD2010 : public AliRsnCut
     void             SetTOFuseT0       (Bool_t yn = kTRUE)  {fTOFuseT0 = yn;}
     void             SetTOFtuneMC      (Bool_t yn = kTRUE)  {fTOFtuneMC = yn;}
     void             SetTOFresolution  (Double_t v = 100.0) {fTOFresolution = v;}
-    void             SetTOFband        (Double_t v)         {fMaxTOFband = v;}
+    void             SetTOFrange       (Double_t v1, Double_t v2) {fMinTOF = v1; fMaxTOF = v2;}
     
     virtual void     SetEvent(AliRsnEvent *event);
 
@@ -84,7 +84,8 @@ class AliRsnCutESD2010 : public AliRsnCut
     Bool_t           fTOFuseT0;         //  TOF settings
     Bool_t           fTOFtuneMC;        //  TOF settings
     Double_t         fTOFresolution;    //  TOF settings
-    Double_t         fMaxTOFband;       //  range for TOF PID
+    Double_t         fMinTOF;           //  range for TOF PID (min)
+    Double_t         fMaxTOF;           //  range for TOF PID (max)
     Int_t            fLastRun;          //  last run number
 
     ClassDef(AliRsnCutESD2010, 1)
