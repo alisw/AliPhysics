@@ -195,6 +195,16 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
       mother->SetDefaultMass(mass);
       fValue = mother->Ref().Rapidity();
       break;
+    case kPairPhi:
+      fValue = mother->Sum().Phi();
+      break;
+    case kPairPhiMC:
+      fValue = mother->SumMC().Phi();
+      break;
+    case kPairPtRatio:
+      fValue  = TMath::Abs(mother->GetDaughter(0)->P().Perp() - mother->GetDaughter(1)->P().Perp());
+      fValue /= TMath::Abs(mother->GetDaughter(0)->P().Perp() + mother->GetDaughter(1)->P().Perp());
+      break;
     case kPairCosThetaStar:
       fValue = mother->CosThetaStar();
       break;
