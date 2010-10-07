@@ -111,6 +111,20 @@ AliESDVZERO& AliESDVZERO::operator=(const AliESDVZERO& o)
   return *this;
 }
 
+//______________________________________________________________________________
+void AliESDVZERO::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDVZERO *robj = dynamic_cast<AliESDVZERO*>(&obj);
+  if(!robj)return; // not an AliESDVZERO
+  *robj = *this;
+
+}
+
 //__________________________________________________________________________
 Short_t AliESDVZERO::GetNbPMV0A() const
 {

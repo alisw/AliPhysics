@@ -12,6 +12,7 @@ public:
 	      UInt_t BBtriggerV0C,   UInt_t BGtriggerV0C,
 	      Float_t *Multiplicity, Float_t *Adc, 
 	      Float_t *Time, Float_t *Width, Bool_t *BBFlag, Bool_t *BGFlag);
+  virtual void Copy(TObject &obj) const;
 
   virtual ~AliESDVZERO() {};
 
