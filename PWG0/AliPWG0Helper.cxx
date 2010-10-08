@@ -40,7 +40,7 @@ Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analys
     // Checks if a vertex meets the needed quality criteria
 
   Float_t requiredZResolution = -1;
-  if (analysisMode & kSPD || analysisMode & kTPCITS)
+  if (analysisMode & kSPD || analysisMode & kTPCITS || analysisMode & kTPCSPD)
   {
     // disable cut on resolution
     requiredZResolution = 1000;
@@ -85,7 +85,7 @@ const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMo
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning SPD vertex");
   }
-  else if (analysisMode & kTPCITS)
+  else if (analysisMode & kTPCITS || analysisMode & kTPCSPD)
   {
     vertex = aEsd->GetPrimaryVertexTracks();
     if (debug)
@@ -532,6 +532,9 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Tri
     
   if (analysisMode & kTPCITS)
      str += "Global tracking";
+  
+  if (analysisMode & kTPCSPD) 
+    str += "Tracks and tracklets";
 
   if (analysisMode & kFieldOn)
   {

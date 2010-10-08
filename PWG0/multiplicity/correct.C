@@ -4,20 +4,20 @@
 // script to correct the multiplicity spectrum + helpers
 //
 
-Bool_t is900GeV = 0;
+Bool_t is900GeV = 1;
 Bool_t is2360TeV = 0;
 
 // 900 GeV, MC
-//const Int_t kBinLimits[]   = { 42, 57, 60 };
-//const Int_t kTrustLimits[] = { 26, 42, 54 };
+const Int_t kBinLimits[]   = { 42, 57, 60 };
+const Int_t kTrustLimits[] = { 26, 42, 54 };
 
 // 2.36 TeV
 //const Int_t kBinLimits[]   = { 43, 67, 83 };
 //const Int_t kTrustLimits[] = { 33, 57, 73 };
 
 // 7 TeV
-const Int_t kBinLimits[]   = { 60, 120, 60 };
-const Int_t kTrustLimits[] = { 26, 70, 54 };
+//const Int_t kBinLimits[]   = { 60, 120, 60 };
+//const Int_t kTrustLimits[] = { 26, 70, 54 };
 
 void SetTPC()
 {
@@ -70,6 +70,8 @@ void loadlibs()
   gSystem->Load("libVMC");
 
   gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD.so");
+  gSystem->Load("libAOD.so");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG0base");
@@ -302,11 +304,11 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
           //background = 1091 + 4398; // MB1 for run 104824 - 52 (SPD)
           //background = 1087 + 4398; // MB1 for run 104824 - 52 (TPCITS)
           
-          //background = 417 + 1758; // MB1 for run 104867 - 92 (SPD)
+          background = 417 + 1758; // MB1 for run 104867 - 92 (SPD)
           //background = 1162+422;     // MB1 for run 104892 (TPCITS)
           //background = 5830 + 1384;    // MB1 for run 104824,25,45,52,67,92 (TPC runs) (TPCITS)
           
-          background = 20 + 0; // V0AND for run 104824 - 52
+          //background = 20 + 0; // V0AND for run 104824 - 52
           //background = 10 + 0; // V0AND for run 104867 - 92
           
           Printf("NOTE: Subtracting %d background events", background);
