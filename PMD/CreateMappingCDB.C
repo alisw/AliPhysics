@@ -32,7 +32,7 @@ void CreateMappingCDB()
 	{
 	  infile >> moduleno;
 	  infile >> totPatchBus >> bPatchBus >> ePatchBus;
-	  
+	  mapda->SetPatchBus(iddl,moduleno,bPatchBus,ePatchBus);
 	  if (totPatchBus == 0) continue;
 	  
 	  for(Int_t i=0; i<totPatchBus; i++)

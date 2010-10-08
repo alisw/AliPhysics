@@ -48,10 +48,19 @@ AliPMDMappingData::AliPMDMappingData(const AliPMDMappingData& mapda) :
   Reset();
   for(Int_t iddl = 0; iddl < kDdl; iddl++)
     {
+      for(Int_t imod = 0; imod < 48; imod++)
+	{
+	  fBeginPatchBus[iddl][imod] = mapda.GetBeginPatchBus(iddl,imod);
+	  fEndPatchBus[iddl][imod]   = mapda.GetEndPatchBus(iddl,imod);
+	}
       for(Int_t ibus = 0; ibus < kBus; ibus++)
 	{
-	  fModuleNo[iddl][ibus]=
-	    mapda.GetModuleNo(iddl,ibus);
+	  fModuleNo[iddl][ibus]    = mapda.GetModuleNo(iddl,ibus);
+	  fMcmperBus[iddl][ibus]   = mapda.GetMcmperBus(iddl,ibus);
+	  fStartRowBus[iddl][ibus] = mapda.GetStartRowBus(iddl,ibus);
+	  fEndRowBus[iddl][ibus]   = mapda.GetEndRowBus(iddl,ibus);
+	  fStartColBus[iddl][ibus] = mapda.GetStartColBus(iddl,ibus);
+	  fEndColBus[iddl][ibus]   = mapda.GetEndColBus(iddl,ibus);
 	}
     }
 
@@ -66,10 +75,19 @@ AliPMDMappingData &AliPMDMappingData::operator =(const AliPMDMappingData& mapda)
 
   for(Int_t iddl = 0; iddl < kDdl; iddl++)
     {
+      for(Int_t imod = 0; imod < 48; imod++)
+	{
+	  fBeginPatchBus[iddl][imod] = mapda.GetBeginPatchBus(iddl,imod);
+	  fEndPatchBus[iddl][imod]   = mapda.GetEndPatchBus(iddl,imod);
+	}
       for(Int_t ibus = 0; ibus < kBus; ibus++)
 	{
-	  fModuleNo[iddl][ibus]=
-	    mapda.GetModuleNo(iddl,ibus);
+	  fModuleNo[iddl][ibus]    = mapda.GetModuleNo(iddl,ibus);
+	  fMcmperBus[iddl][ibus]   = mapda.GetMcmperBus(iddl,ibus);
+	  fStartRowBus[iddl][ibus] = mapda.GetStartRowBus(iddl,ibus);
+	  fEndRowBus[iddl][ibus]   = mapda.GetEndRowBus(iddl,ibus);
+	  fStartColBus[iddl][ibus] = mapda.GetStartColBus(iddl,ibus);
+	  fEndColBus[iddl][ibus]   = mapda.GetEndColBus(iddl,ibus);
 	}
     }
 
@@ -83,6 +101,14 @@ AliPMDMappingData::~AliPMDMappingData()
 // ----------------------------------------------------------------- //
 void AliPMDMappingData::Reset()
 {
+  for(Int_t i = 0; i < 6; i++)
+    {
+      for(Int_t j = 0; j < 48; j++)
+	{
+	  fBeginPatchBus[i][j] = -1;
+	  fEndPatchBus[i][j] = -1;
+	}
+    }
 
   for(Int_t iddl = 0; iddl < kDdl; iddl++)
     {
@@ -97,6 +123,16 @@ void AliPMDMappingData::Reset()
 	}
     }
 
+}
+// ----------------------------------------------------------------- //
+Int_t AliPMDMappingData:: GetBeginPatchBus(Int_t iddl, Int_t imod) const
+{
+  return fBeginPatchBus[iddl][imod];
+}
+// ----------------------------------------------------------------- //
+Int_t AliPMDMappingData:: GetEndPatchBus(Int_t iddl, Int_t imod) const
+{
+  return fEndPatchBus[iddl][imod];
 }
 // ----------------------------------------------------------------- //
 Int_t AliPMDMappingData:: GetModuleNo(Int_t iddl, Int_t ibus) const
@@ -127,6 +163,13 @@ Int_t AliPMDMappingData:: GetStartColBus(Int_t iddl, Int_t ibus) const
 Int_t AliPMDMappingData:: GetEndColBus(Int_t iddl, Int_t ibus) const
 {
   return fEndColBus[iddl][ibus];
+}
+// ----------------------------------------------------------------- //
+void AliPMDMappingData::SetPatchBus(Int_t iddl, Int_t imod,
+				    Int_t bpatchbus, Int_t epatchbus)
+{
+  fBeginPatchBus[iddl][imod] = bpatchbus;
+  fEndPatchBus[iddl][imod]   = epatchbus;
 }
 // ----------------------------------------------------------------- //
 void AliPMDMappingData::SetModuleNo(Int_t iddl, Int_t ibus, Int_t modno)
@@ -161,6 +204,11 @@ void AliPMDMappingData::Print(Option_t *) const
 
   for(Int_t iddl = 0; iddl < kDdl; iddl++)
     {
+      for(Int_t imod = 0; imod < 48; imod++)
+	{
+	  printf("%d %d %d %d \n",iddl, imod, fBeginPatchBus[iddl][imod],
+		 fEndPatchBus[iddl][imod]);
+	}
       for(Int_t ibus = 0; ibus < kBus; ibus++)
 	{
 	  printf("%d %d %d %d %d %d %d %d\n",iddl, ibus,

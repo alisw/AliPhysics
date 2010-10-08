@@ -29,13 +29,20 @@
 #include "AliPMDDspHeader.h"
 #include "AliPMDPatchBusHeader.h"
 #include "AliPMDRawStream.h"
+#include "AliPMDddlinfoData.h"
+#include "AliPMDMappingData.h"
 #include "AliPMDDDLRawData.h"
 #include "AliDAQ.h"
 #include "AliFstream.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 
 ClassImp(AliPMDDDLRawData)
 
 AliPMDDDLRawData::AliPMDDDLRawData():
+  fDdlinfo(GetDdlinfoData()),
+  fMapData(GetMappingData()),
   fDigits(new TClonesArray("AliPMDdigit", 1000))
 {
   // Default Constructor
@@ -45,6 +52,8 @@ AliPMDDDLRawData::AliPMDDDLRawData():
 //____________________________________________________________________________
 AliPMDDDLRawData::AliPMDDDLRawData(const AliPMDDDLRawData& ddlraw):
   TObject(ddlraw),
+  fDdlinfo(ddlraw.fDdlinfo),
+  fMapData(ddlraw.fMapData),
   fDigits(ddlraw.fDigits)
 {
   //Copy Constructor 
@@ -55,7 +64,9 @@ AliPMDDDLRawData & AliPMDDDLRawData::operator=(const AliPMDDDLRawData& ddlraw)
   //Assignment operator 
   if(this != &ddlraw)
     {
-      fDigits = ddlraw.fDigits;
+      fDdlinfo = ddlraw.fDdlinfo;
+      fMapData = ddlraw.fMapData;
+      fDigits  = ddlraw.fDigits;
     }
   return *this;
 }
@@ -87,7 +98,6 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
   AliDebug(1,Form("Number of modules inside treeD = %d",nmodules));
 
   const Int_t kDDL          = AliDAQ::NumberOfDdls("PMD");
-  Int_t modulePerDDL        = 0;
 
 
   AliRawDataHeaderSim header;
@@ -103,36 +113,22 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
   Char_t filename[80];
 
-  // open the ddl file info to know the modules per DDL
-  TString ddlinfofileName(gSystem->Getenv("ALICE_ROOT"));
-  ddlinfofileName += "/PMD/PMD_ddl_info.dat";
-
-  ifstream infileddl;
-  infileddl.open(ddlinfofileName.Data(), ios::in); // ascii file
-  if(!infileddl) AliError("Could not read the ddl info file");
-
-
-
+  Int_t modulePerDDL        = 0;
   Int_t mmodule = 0;
   Int_t ddlno;
-  Int_t modno;
-  Int_t *modulenoddl = 0x0;
+  Int_t modulenoddl[12] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 
   for(Int_t iddl = 0; iddl < kDDL; iddl++)
     {
-      if (infileddl.eof()) break;
-      infileddl >> ddlno >> modulePerDDL;
-
+      ddlno = iddl;
+      modulePerDDL = fDdlinfo->GetNoOfModulePerDdl(iddl);
       if (modulePerDDL == 0) continue;
-
-      modulenoddl = new Int_t [modulePerDDL];
-      for (Int_t im = 0; im < modulePerDDL; im++)
+      for (Int_t im = 0; im < 12; im++)
 	{
-	  infileddl >> modno;
-	  modulenoddl[im] = modno;
+	  modulenoddl[im] = fDdlinfo->GetModulesPerDdl(iddl,im);;
 	}
 
-      strcpy(filename,AliDAQ::DdlFileName("PMD",iddl));
+      strncpy(filename,AliDAQ::DdlFileName("PMD",iddl),80);
       
       outfile = new AliFstream(filename);
       
@@ -149,16 +145,15 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	    }
 	}
 
-      for(Int_t ium = 0; ium < modulePerDDL; ium++)
+      for(Int_t ium = 0; ium < 12; ium++)
 	{
-	  //if (iddl == 4 && ium == 6) mmodule = 42;
-
 	  // Extract energy deposition per cell and pack it
 	  // in a 32-bit word and returns all the total words
 	  // per one unit-module
 	  
 	  mmodule = modulenoddl[ium];
-	  GetUMDigitsData(treeD, mmodule, iddl, modulePerDDL, contentsBus, busPatch);
+	  if(mmodule == -1) continue;
+	  GetUMDigitsData(treeD, mmodule, iddl, contentsBus, busPatch);
 	}
 
       Int_t ij = 0;
@@ -366,13 +361,11 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       delete outfile;
     } // DDL Loop over
 
-  delete [] modulenoddl;
-  infileddl.close();
 }
 //____________________________________________________________________________
+
 void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
-				       Int_t ddlno, Int_t modulePerDDL,
-				       Int_t *contentsBus,
+				       Int_t ddlno,  Int_t *contentsBus,
 				       UInt_t busPatch[][1536])
 {
   // Retrieves digits data UnitModule by UnitModule
@@ -385,9 +378,9 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
   Int_t  det = 0, smn = 0, irow = 0, icol = 0;
   Int_t  parity = 0;
   
-  Int_t totPatchBus = 0, bPatchBus = 0, ePatchBus = 0;
-  Int_t ibus = 0, totmcm = 0, rows = 0, cols = 0, rowe = 0, cole = 0;
-  Int_t moduleno = 0;
+  //  Int_t totPatchBus = 0, bPatchBus = 0, ePatchBus = 0;
+  //  Int_t ibus = 0, totmcm = 0, rows = 0, cols = 0, rowe = 0, cole = 0;
+  //  Int_t moduleno = 0;
   Int_t busno = 0;
   Int_t patchBusNo[kMaxBus], mcmperBus[kMaxBus];
   Int_t startRowBus[kMaxBus], startColBus[kMaxBus];
@@ -405,103 +398,33 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
       endColBus[i]   = -1;
     }
 
+  // Fetch the DDL mapping info from the mapping database
 
-  TString fileName(gSystem->Getenv("ALICE_ROOT"));
+  DdlMapping(ddlno, imodule, beginPatchBus, endPatchBus,
+	     patchBusNo, mcmperBus, startRowBus, endRowBus,
+	     startColBus, endColBus);
 
-  if(ddlno == 0)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl0.dat";
-    }
-  else if(ddlno == 1)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl1.dat";
-    }
-  else if(ddlno == 2)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl2.dat";
-    }
-  else if(ddlno == 3)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl3.dat";
-    }
-  else if(ddlno == 4)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl4.dat";
-    }
-  else if(ddlno == 5)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl5.dat";
-    }
-
-  ifstream infile;
-  infile.open(fileName.Data(), ios::in); // ascii file
-  if(!infile)
-    AliError(Form("Could not read the mapping file for DDL No = %d",ddlno));
-
-  for (Int_t im = 0; im < modulePerDDL; im++)
-    {
-      infile >> moduleno;
-      infile >> totPatchBus >> bPatchBus >> ePatchBus;
-      
-      if (totPatchBus == 0) continue;    // BKN
-
-      if (moduleno == imodule)
-	{
-	  beginPatchBus = bPatchBus;
-	  endPatchBus   = ePatchBus;
-	}
-      
-      for(Int_t i=0; i<totPatchBus; i++)
-	{
-	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
-
-	  if (moduleno == imodule)
-	    {
-	      patchBusNo[ibus]   = ibus;
-	      mcmperBus[ibus]    = totmcm;
-	      startRowBus[ibus]  = rows;
-	      startColBus[ibus]  = cols;
-	      endRowBus[ibus]    = rowe;
-	      endColBus[ibus]    = cole;
-	    }
-	}
-
-    }
-
-  infile.close();
-
-  // Read if some chains are off
-  TString rchainName(gSystem->Getenv("ALICE_ROOT"));
-  rchainName += "/PMD/PMD_removed_chains.dat";
-
-  ifstream rchainfile;
-  rchainfile.open(rchainName.Data(), ios::in); // ascii file
-  if(!rchainfile)AliError("Could not read the removed cahins file");
+  // Read if some chains are off from the ddlinfo database
 
   Int_t srowoff1[2][24], erowoff1[2][24];
   Int_t scoloff1[2][24], ecoloff1[2][24];
   Int_t srowoff2[2][24], erowoff2[2][24];
   Int_t scoloff2[2][24], ecoloff2[2][24];
 
-  Int_t rows1 = 0, rowe1 = 0, cols1 = 0, cole1 = 0;
-  Int_t rows2 = 0, rowe2 = 0, cols2 = 0, cole2 = 0;
-
-  for (Int_t im = 0; im < 48; im++)
+  for (Int_t idet = 0; idet < 2; idet++)
     {
-      rchainfile >> det >> smn >> rows1 >> rowe1 >> cols1 >> cole1
-		 >> rows2 >> rowe2 >> cols2 >> cole2;
-      
-      srowoff1[det][smn] = rows1;
-      erowoff1[det][smn] = rowe1;
-      scoloff1[det][smn] = cols1;
-      ecoloff1[det][smn] = cole1;
-      srowoff2[det][smn] = rows2;
-      erowoff2[det][smn] = rowe2;
-      scoloff2[det][smn] = cols2;
-      ecoloff2[det][smn] = cole2;
+      for (Int_t im = 0; im < 24; im++)
+	{
+	  srowoff1[idet][im] = fDdlinfo->GetStartRowA(idet,im);
+	  erowoff1[idet][im] = fDdlinfo->GetEndRowA(idet,im);
+	  scoloff1[idet][im] = fDdlinfo->GetStartColA(idet,im);
+	  ecoloff1[idet][im] = fDdlinfo->GetEndColA(idet,im);
+	  srowoff2[idet][im] = fDdlinfo->GetStartRowB(idet,im);
+	  erowoff2[idet][im] = fDdlinfo->GetEndRowB(idet,im);
+	  scoloff2[idet][im] = fDdlinfo->GetStartColB(idet,im);
+	  ecoloff2[idet][im] = fDdlinfo->GetEndColB(idet,im);
+	}
     }
-
-  rchainfile.close();
 
   treeD->GetEntry(imodule); 
   Int_t nentries = fDigits->GetLast();
@@ -881,5 +804,60 @@ Int_t AliPMDDDLRawData::ComputeParity(UInt_t baseword)
   Int_t parity = count%2;
   return parity;
 }
+//____________________________________________________________________________
+void AliPMDDDLRawData::DdlMapping(Int_t iddl, Int_t imodule,
+				  Int_t &beginPatchBus, Int_t &endPatchBus,
+				  Int_t patchBusNo[], Int_t mcmperBus[],
+				  Int_t startRowBus[], Int_t endRowBus[],
+				  Int_t startColBus[], Int_t endColBus[])
+{
+  // DDL Mapping fetching from mapping database
 
+  beginPatchBus = fMapData->GetBeginPatchBus(iddl,imodule);
+  endPatchBus   = fMapData->GetEndPatchBus(iddl,imodule);
+
+  for(Int_t ibus = beginPatchBus; ibus < endPatchBus+1; ibus++)
+    {
+      patchBusNo[ibus]   = ibus;
+      mcmperBus[ibus]    = fMapData->GetMcmperBus(iddl,ibus);
+      startRowBus[ibus]  = fMapData->GetStartRowBus(iddl,ibus);
+      startColBus[ibus]  = fMapData->GetStartColBus(iddl,ibus);
+      endRowBus[ibus]    = fMapData->GetEndRowBus(iddl,ibus);
+      endColBus[ibus]    = fMapData->GetEndColBus(iddl,ibus);
+    }
+
+}
+//____________________________________________________________________________
+
+AliPMDddlinfoData* AliPMDDDLRawData::GetDdlinfoData() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Ddlinfo");
+  
+  if(!entry) AliFatal("ddlinfo object retrieval failed!");
+  
+  AliPMDddlinfoData *ddlinfo = 0;
+  if (entry) ddlinfo = (AliPMDddlinfoData*) entry->GetObject();
+  
+  if (!ddlinfo)  AliFatal("No ddl info data from  database !");
+  
+  return ddlinfo;
+}
+//____________________________________________________________________________
+AliPMDMappingData* AliPMDDDLRawData::GetMappingData() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Mapping");
+  
+  if(!entry) AliFatal("Mapping object retrieval failed!");
+  
+  AliPMDMappingData *mapda = 0;
+  if (entry) mapda = (AliPMDMappingData*) entry->GetObject();
+  
+  if (!mapda)  AliFatal("No mapping data from  database !");
+  
+  return mapda;
+}
 //____________________________________________________________________________

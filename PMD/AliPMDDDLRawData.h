@@ -14,8 +14,12 @@
 
 class TClonesArray;
 class TTree;
-
+class AliPMDddlinfoData;
+class AliPMDMappingData;
 class AliPMDdigit;
+class AliCDBManager;
+class AliCDBStorage;
+class AliCDBEntry;
 
 class AliPMDDDLRawData:public TObject
 {
@@ -29,8 +33,7 @@ class AliPMDDDLRawData:public TObject
 
   void WritePMDRawData(TTree *treeD);
   void GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ddlno,
-		       Int_t modulePerDDL, Int_t *contentsBus,
-		       UInt_t busPatch[][1536]);
+		       Int_t *contentsBus, UInt_t busPatch[][1536]);
   void TransformS2H(Int_t smn, Int_t &irow, Int_t &icol);
   void GetMCMCh(Int_t imodule, Int_t row, Int_t col,
 		Int_t beginPatchBus, Int_t endPatchBus,
@@ -38,14 +41,27 @@ class AliPMDDDLRawData:public TObject
 		Int_t *startRowBus, Int_t *startColBus,
 		Int_t *endRowBus, Int_t *endColBus,
 		Int_t & busno, UInt_t &mcmno, UInt_t &chno);
+  void DdlMapping(Int_t iddl, Int_t imodule,
+		  Int_t &beginPatchBus, Int_t &endPatchBus,
+		  Int_t patchBusNo[], Int_t mcmperBus[],
+		  Int_t startRowBus[], Int_t endRowBus[],
+		  Int_t startColBus[], Int_t endColBus[]);
+
+
+  AliPMDddlinfoData  *GetDdlinfoData() const;
+  AliPMDMappingData  *GetMappingData() const;
+
 
  protected:
+
+  AliPMDddlinfoData  *fDdlinfo;    //! ddl info data
+  AliPMDMappingData  *fMapData;    //! Mapping data
 
   Int_t ComputeParity(UInt_t baseword);
 
   TClonesArray *fDigits;    //! List of digits
 
-  ClassDef(AliPMDDDLRawData,9)    // To make RAW Data
+  ClassDef(AliPMDDDLRawData,10)    // To make RAW Data
 };
 #endif
 

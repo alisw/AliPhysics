@@ -18,6 +18,8 @@ class AliPMDMappingData: public TNamed
   virtual ~AliPMDMappingData();
   void  Reset();
 
+  Int_t GetBeginPatchBus(Int_t iddl, Int_t imod) const;
+  Int_t GetEndPatchBus(Int_t iddl, Int_t imod) const;
   Int_t GetModuleNo(Int_t iddl, Int_t ibus) const;
   Int_t GetMcmperBus(Int_t iddl, Int_t ibus) const;
   Int_t GetStartRowBus(Int_t iddl, Int_t ibus) const;
@@ -25,6 +27,8 @@ class AliPMDMappingData: public TNamed
   Int_t GetStartColBus(Int_t iddl, Int_t ibus) const;
   Int_t GetEndColBus(Int_t iddl, Int_t ibus) const;
 
+  
+  void  SetPatchBus(Int_t iddl, Int_t imod, Int_t bpatchbus, Int_t epatchbus);
   void  SetModuleNo(Int_t iddl, Int_t ibus, Int_t modno);
   void  SetMcmperBus(Int_t iddl, Int_t ibus, Int_t totmcm);
   void  SetRowBus(Int_t iddl, Int_t ibus, Int_t rows, Int_t rowe);
@@ -39,6 +43,8 @@ class AliPMDMappingData: public TNamed
 	kBus = 51    // Modules of patch bus
       };
 
+  Int_t fBeginPatchBus[6][48];
+  Int_t fEndPatchBus[6][48];
   Int_t fModuleNo[kDdl][kBus];
   Int_t fMcmperBus[kDdl][kBus];
   Int_t fStartRowBus[kDdl][kBus];
@@ -47,6 +53,6 @@ class AliPMDMappingData: public TNamed
   Int_t fEndColBus[kDdl][kBus];
 
 
-  ClassDef(AliPMDMappingData,1) // calibration class for gainfactors
+  ClassDef(AliPMDMappingData,2) // calibration class for gainfactors
 };
 #endif
