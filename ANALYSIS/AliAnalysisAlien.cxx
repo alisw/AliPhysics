@@ -1077,21 +1077,27 @@ Bool_t AliAnalysisAlien::CreateJDL()
             first = kFALSE;   
          }      
          delete arr;
-         TString outputArchive = fOutputArchive;
-         if (!fMergeExcludes.IsNull()) {
-            arr = fMergeExcludes.Tokenize(" ");
-            TIter next1(arr);
-            while ((os=(TObjString*)next1())) {
-               outputArchive.ReplaceAll(Form("%s,",os->GetString().Data()),"");
-               outputArchive.ReplaceAll(os->GetString(),"");
+         // Output archive for the merging jdl
+         TString outputArchive;
+         if (TestBit(AliAnalysisGrid::kDefaultOutputs)) {
+            outputArchive = "log_archive.zip:std*@disk=1 ";
+            // Add normal output files, extra files + terminate files
+            TString files = GetListOfFiles("outextter");
+            // Do not register merge excludes
+            if (!fMergeExcludes.IsNull()) {
+               arr = fMergeExcludes.Tokenize(" ");
+               TIter next1(arr);
+               while ((os=(TObjString*)next1())) {
+                  files.ReplaceAll(Form("%s,",os->GetString().Data()),"");
+                  files.ReplaceAll(os->GetString(),"");
+               }   
             }
             delete arr;
-         }
-         if (!fTerminateFiles.IsNull()) {
-            fTerminateFiles.Strip();
-            fTerminateFiles.ReplaceAll(" ", ",");
-            outputArchive.ReplaceAll("root_archive.zip:", Form("root_archive.zip:%s,", fTerminateFiles.Data()));
-         }
+            files.ReplaceAll(".root", "*.root");
+            outputArchive += Form("root_archive.zip:%s@disk=%d",files.Data(),fNreplicas);
+         } else {
+            outputArchive = fOutputArchive;
+         }   
          arr = outputArchive.Tokenize(" ");
          TIter next2(arr);
          comment = comment1;
@@ -1099,7 +1105,6 @@ Bool_t AliAnalysisAlien::CreateJDL()
          while ((os=(TObjString*)next2())) {
             if (!first) comment = NULL;
             TString currentfile = os->GetString();
-            currentfile.ReplaceAll(".root", "*.root");
             if (!IsOneStageMerging()) currentfile.ReplaceAll(".zip", "-Stage$2_$3.zip");
             if (!currentfile.Contains("@") && fCloseSE.Length())
                fMergingJDL->AddToOutputArchive(Form("%s@%s",currentfile.Data(), fCloseSE.Data()), comment);
@@ -1112,11 +1117,12 @@ Bool_t AliAnalysisAlien::CreateJDL()
       arr = fOutputFiles.Tokenize(",");
       TIter next(arr);
       Bool_t first = kTRUE;
-      const char *comment = "Files to be archived";
-      const char *comment1 = comment;
+      const char *comment = "Files to be saved";
       while ((os=(TObjString*)next())) {
          // Ignore ouputs in jdl that are also in outputarchive
          TString sout = os->GetString();
+         sout.ReplaceAll("*", "");
+         sout.ReplaceAll(".root", "");
          if (sout.Index("@")>0) sout.Remove(sout.Index("@"));
          if (fOutputArchive.Contains(sout)) continue;
          if (!first) comment = NULL;
@@ -1125,37 +1131,13 @@ Bool_t AliAnalysisAlien::CreateJDL()
          else
             fGridJDL->AddToOutputSandbox(os->GetString(), comment);
          first = kFALSE;   
+         if (fMergeExcludes.Contains(sout)) continue;   
+         if (!os->GetString().Contains("@") && fCloseSE.Length())
+            fMergingJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
+         else
+            fMergingJDL->AddToOutputSandbox(os->GetString(), comment);
       }   
       delete arr;
-      if (fOutputFiles.Length()) {
-         TString outputFiles = fOutputFiles;
-         if (!fMergeExcludes.IsNull()) {
-            arr = fMergeExcludes.Tokenize(" ");
-            TIter next1(arr);
-            while ((os=(TObjString*)next1())) {
-               outputFiles.ReplaceAll(Form("%s,",os->GetString().Data()),"");
-               outputFiles.ReplaceAll(os->GetString(),"");
-            }
-            delete arr;
-         }
-         arr = outputFiles.Tokenize(" ");
-         TIter next2(arr);
-         comment = comment1;
-         first = kTRUE;
-         while ((os=(TObjString*)next2())) {
-            // Ignore ouputs in jdl that are also in outputarchive
-            TString sout = os->GetString();
-            if (sout.Index("@")>0) sout.Remove(sout.Index("@"));
-            if (fOutputArchive.Contains(sout)) continue;
-            if (!first) comment = NULL;
-            if (!os->GetString().Contains("@") && fCloseSE.Length())
-               fMergingJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
-            else
-               fMergingJDL->AddToOutputSandbox(os->GetString(), comment);
-            first = kFALSE;   
-         }   
-         delete arr;
-      }
       fGridJDL->SetPrice((UInt_t)fPrice, "AliEn price for this job");
       fMergingJDL->SetPrice((UInt_t)fPrice, "AliEn price for this job");
       TString validationScript = fValidationScript;
@@ -2202,7 +2184,7 @@ void AliAnalysisAlien::SetOutputFiles(const char *list)
       fOutputFiles += sout;
    }
    delete arr;   
-}      
+}
 
 //______________________________________________________________________________
 void AliAnalysisAlien::SetOutputArchive(const char *list)
@@ -2416,26 +2398,13 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
    
    // Check if output files have to be taken from the analysis manager
    if (TestBit(AliAnalysisGrid::kDefaultOutputs)) {
-      fOutputFiles = "";
-      TIter next(mgr->GetOutputs());
-      AliAnalysisDataContainer *output;
-      while ((output=(AliAnalysisDataContainer*)next())) {
-         const char *filename = output->GetFileName();
-         if (!(strcmp(filename, "default"))) {
-            if (!mgr->GetOutputEventHandler()) continue;
-            filename = mgr->GetOutputEventHandler()->GetOutputFileName();
-         }
-         if (fOutputFiles.Contains(filename)) continue;
-         if (fOutputFiles.Length()) fOutputFiles += ",";
-         fOutputFiles += filename;
-      }
+      // Add output files and AOD files
+      fOutputFiles = GetListOfFiles("outaod");
       // Add extra files registered to the analysis manager
-      if (mgr->GetExtraFiles().Length()) {
-         if (fOutputFiles.Length()) fOutputFiles += ",";
-         TString extra = mgr->GetExtraFiles();
-         extra.ReplaceAll(" ", ",");
-         // Protection in case extra files do not exist (will it work?)
+      TString extra = GetListOfFiles("ext");
+      if (!extra.IsNull()) {
          extra.ReplaceAll(".root", "*.root");
+         if (!fOutputFiles.IsNull()) fOutputFiles += ",";
          fOutputFiles += extra;
       }
       // Compose the output archive.
@@ -2560,6 +2529,104 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
    gSystem->Exec("aliensh");
    return kTRUE;
 }
+
+//______________________________________________________________________________
+const char *AliAnalysisAlien::GetListOfFiles(const char *type)
+{
+// Get a comma-separated list of output files of the requested type.
+// Type can be (case unsensitive):
+//    aod - list of aod files (std, extensions and filters)
+//    out - list of output files connected to containers (but not aod's or extras)
+//    ext - list of extra files registered to the manager
+//    ter - list of files produced in terminate
+   static TString files;
+   files = "";
+   TString stype = type;
+   stype.ToLower();
+   TString aodfiles, extra;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) {
+      ::Error("GetListOfFiles", "Cannot call this without analysis manager");
+      return files.Data();
+   }
+   if (mgr->GetOutputEventHandler()) {
+      aodfiles = mgr->GetOutputEventHandler()->GetOutputFileName();
+      TString extraaod = mgr->GetOutputEventHandler()->GetExtraOutputs();
+      if (!extraaod.IsNull()) {
+         aodfiles += ",";
+         aodfiles += extraaod;
+      }
+   }
+   if (stype.Contains("aod")) {
+      files = aodfiles;
+      if (stype == "aod") return files.Data();
+   }  
+   // Add output files that are not in the list of AOD files 
+   TString outputfiles = "";
+   TIter next(mgr->GetOutputs());
+   AliAnalysisDataContainer *output;
+   const char *filename = 0;
+   while ((output=(AliAnalysisDataContainer*)next())) {
+      filename = output->GetFileName();
+      if (!(strcmp(filename, "default"))) continue;
+      if (outputfiles.Contains(filename)) continue;
+      if (aodfiles.Contains(filename))    continue;
+      if (!outputfiles.IsNull()) outputfiles += ",";
+      outputfiles += filename;
+   }
+   if (stype.Contains("out")) {
+      if (!files.IsNull()) files += ",";
+      files += outputfiles;
+      if (stype == "out") return files.Data();
+   }   
+   // Add extra files registered to the analysis manager
+   TString sextra;
+   extra = mgr->GetExtraFiles();
+   if (!extra.IsNull()) {
+      extra.Strip();
+      extra.ReplaceAll(" ", ",");
+      TObjArray *fextra = extra.Tokenize(",");
+      TIter nextx(fextra);
+      TObject *obj;
+      while ((obj=nextx())) {
+         if (aodfiles.Contains(obj->GetName())) continue;
+         if (outputfiles.Contains(obj->GetName())) continue;
+         if (sextra.Contains(obj->GetName())) continue;
+         if (!sextra.IsNull()) sextra += ",";
+         sextra += obj->GetName();
+      }
+      delete fextra;
+      if (stype.Contains("ext")) {
+         if (!files.IsNull()) files += ",";
+         files += sextra;
+      }
+   }   
+   if (stype == "ext") return files.Data();
+   TString termfiles;
+   if (!fTerminateFiles.IsNull()) {
+      fTerminateFiles.Strip();
+      fTerminateFiles.ReplaceAll(" ",",");
+      TObjArray *fextra = extra.Tokenize(",");
+      TIter nextx(fextra);
+      TObject *obj;
+      while ((obj=nextx())) {
+         if (aodfiles.Contains(obj->GetName())) continue;
+         if (outputfiles.Contains(obj->GetName())) continue;
+         if (termfiles.Contains(obj->GetName())) continue;
+         if (sextra.Contains(obj->GetName())) continue;
+         if (!termfiles.IsNull()) termfiles += ",";
+         termfiles += obj->GetName();
+      }
+      delete fextra;
+   }   
+   if (stype.Contains("ter")) {
+      if (!files.IsNull() && !termfiles.IsNull()) {
+         files += ",";
+         files += termfiles;
+      }   
+   }   
+   return files.Data();
+}   
 
 //______________________________________________________________________________
 Bool_t AliAnalysisAlien::Submit()
@@ -2791,12 +2858,14 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       // Change temp directory to current one
       out << "// Set temporary merging directory to current one" << endl;
       out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
-      out << "// load base root libraries" << endl;
-      out << "   gSystem->Load(\"libTree\");" << endl;
-      out << "   gSystem->Load(\"libGeom\");" << endl;
-      out << "   gSystem->Load(\"libVMC\");" << endl;
-      out << "   gSystem->Load(\"libPhysics\");" << endl << endl;
-      out << "   gSystem->Load(\"libMinuit\");" << endl << endl;
+      if (!fExecutableCommand.Contains("aliroot")) {
+         out << "// load base root libraries" << endl;
+         out << "   gSystem->Load(\"libTree\");" << endl;
+         out << "   gSystem->Load(\"libGeom\");" << endl;
+         out << "   gSystem->Load(\"libVMC\");" << endl;
+         out << "   gSystem->Load(\"libPhysics\");" << endl << endl;
+         out << "   gSystem->Load(\"libMinuit\");" << endl << endl;
+      }   
       if (fAdditionalRootLibs.Length()) {
          // in principle libtree /lib geom libvmc etc. can go into this list, too
          out << "// Add aditional libraries" << endl;
@@ -2815,9 +2884,11 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "// Load analysis framework libraries" << endl;
       TString setupPar = "AliAnalysisAlien::SetupPar";
       if (!fPackages) {
-         out << "   gSystem->Load(\"libSTEERBase\");" << endl;
-         out << "   gSystem->Load(\"libESD\");" << endl;
-         out << "   gSystem->Load(\"libAOD\");" << endl;
+         if (!fExecutableCommand.Contains("aliroot")) {         
+            out << "   gSystem->Load(\"libSTEERBase\");" << endl;
+            out << "   gSystem->Load(\"libESD\");" << endl;
+            out << "   gSystem->Load(\"libAOD\");" << endl;
+         }   
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
          out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
@@ -2903,9 +2974,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "// fast xrootd reading enabled" << endl;
          out << "   printf(\"!!! You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !!!\");" << endl;
          out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",10);" << endl;
-         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",20);" << endl;
+         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
-         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",50);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }   
       out << "// connect to AliEn and make the chain" << endl;
@@ -3245,9 +3316,9 @@ void AliAnalysisAlien::WriteMergingMacro()
          out << "// fast xrootd reading enabled" << endl;
          out << "   printf(\"!!! You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !!!\");" << endl;
          out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",10);" << endl;
-         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",20);" << endl;
+         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
-         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",50);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }
       // Change temp directory to current one
@@ -3257,9 +3328,8 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       out << "   Bool_t laststage = kFALSE;" << endl;
       out << "   TString outputDir = dir;" << endl;  
-      out << "   TString outputFiles = \"" << fOutputFiles << "\";" << endl;
+      out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
       out << "   TString mergeExcludes = \"" << fMergeExcludes << "\";" << endl;
-      out << "   mergeExcludes += \"" << AliAnalysisManager::GetAnalysisManager()->GetExtraFiles() << "\";" << endl;
       out << "   TObjArray *list = outputFiles.Tokenize(\",\");" << endl;
       out << "   TIter *iter = new TIter(list);" << endl;
       out << "   TObjString *str;" << endl;
@@ -3506,7 +3576,10 @@ void AliAnalysisAlien::WriteMergeExecutable()
       if (TObject::TestBit(AliAnalysisGrid::kUsePars)) out << "export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH" << endl;
       TString mergeMacro = fExecutable;
       mergeMacro.ReplaceAll(".sh", "_merge.C");
-      out << "export ARG=\"" << mergeMacro << "(\\\"$1\\\",$2,$3)\"" << endl;
+      if (IsOneStageMerging())
+         out << "export ARG=\"" << mergeMacro << "(\\\"$1\\\")\"" << endl;
+      else
+         out << "export ARG=\"" << mergeMacro << "(\\\"$1\\\",$2,$3)\"" << endl;
       out << fExecutableCommand << " " << "$ARG" << endl; 
       out << "echo \"======== " << mergeMacro.Data() << " finished with exit code: $? ========\"" << endl;
       out << "echo \"############## memory after: ##############\"" << endl;
@@ -3662,15 +3735,12 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       TObjArray *arr = outputFiles.Tokenize(",");
       TIter next1(arr);
       TString outputFile;
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      TString extra = mgr->GetExtraFiles();
       while ((os=(TObjString*)next1())) { 
          outputFile = os->GetString();
          Int_t index = outputFile.Index("@");
          if (index > 0) outputFile.Remove(index);
          if (!merge && fTerminateFiles.Contains(outputFile)) continue;
          if (merge && fMergeExcludes.Contains(outputFile)) continue;
-         if (extra.Contains(outputFile)) continue;
          if (outputFile.Contains("*")) continue;
          out << "if ! [ -f " << outputFile.Data() << " ] ; then" << endl;
          out << "   error=1" << endl;

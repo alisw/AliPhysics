@@ -96,6 +96,7 @@ public:
    static Bool_t       DirectoryExists(const char *lfn);
    static Bool_t       FileExists(const char *lfn);
    static const char  *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
+   const char         *GetListOfFiles(const char *type);
    static Bool_t       CheckMergedFiles(const char *filename, const char *aliendir, Int_t nperchunk, Bool_t submit=kTRUE, const char *jdl="");
    static Bool_t       MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge, Int_t stage=0, Int_t ichunk=0);
    virtual Bool_t      MergeOutputs();
