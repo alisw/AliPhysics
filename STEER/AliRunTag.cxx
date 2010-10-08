@@ -331,7 +331,7 @@ void AliRunTag::AddEventTag(const AliEventTag & EvTag) {
 void AliRunTag::AddFileTag(AliFileTag *t) {
   //Adds an entry for each file tag
   //  new(fFileTags[fNumFiles++]) AliFileTag(t);
-  fFileTags[fNumFiles++] = t;
+  fFileTags.AddAtAndExpand(t, fNumFiles++);
 }
 
 //___________________________________________________________________________
@@ -360,9 +360,9 @@ const AliEventTag* AliRunTag::GetEventTag(int evt) const
 
   if (evt >= GetNEvents()) return 0;
  
-  while (curev > ((AliFileTag *) fFileTags[curf])->GetNEvents()) {
-    curf++;
+  while (curev >= ((AliFileTag *) fFileTags[curf])->GetNEvents()) {
     curev -= ((AliFileTag *) fFileTags[curf])->GetNEvents();
+    curf++;
   }
   return ((AliFileTag *) fFileTags[curf])->GetEventTag(curev);
 }
@@ -375,9 +375,9 @@ AliFileTag *AliRunTag::GetFileTagForEvent(int evt)
 
   if (evt >= GetNEvents()) return 0;
  
-  while (curev > ((AliFileTag *) fFileTags[curf])->GetNEvents()) {
-    curf++;
+  while (curev >= ((AliFileTag *) fFileTags[curf])->GetNEvents()) {
     curev -= ((AliFileTag *) fFileTags[curf])->GetNEvents();
+    curf++;
   }
   return (AliFileTag *) fFileTags[curf];
 }
