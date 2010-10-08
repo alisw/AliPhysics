@@ -553,48 +553,48 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #346 #3465";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1234 #1680";
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
   } 
   else if (runNumber >= 104315 && runNumber <= 104321) {
     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #2000 #2891";
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #218 #3337";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1106 #1552";
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
   }
   else if (runNumber >= 104792 && runNumber <= 104803) {
     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #2228 #3119";
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2554 #446";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1334 #769";
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
   }
   else if (runNumber >= 104824 && runNumber <= 104892) {
     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #3119 #769";
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2554 #446";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1334 #2228";
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
   }
   else if (runNumber == 105143 || runNumber == 105160) {
     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #1337 #1418 #2228 #2309 #3119 #3200 #446 #527";
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #1580  #1742  #1904  #2066  #2630  #2792  #2954  #3362";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "  #845  #1007  #1169   #1577 #3359 #3521 #119  #281 ";
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
   }
   else if (runNumber >= 105256 && runNumber <= 105268) {
     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #3019 #669";
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2454 #346";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1234 #2128";
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
   } else if (runNumber >= 114786 && runNumber <= 116684) { // 7 TeV 2010, assume always the same filling scheme
     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #346";
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2131";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #3019";
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #1238";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
   }
   else if (runNumber >= 117048 && runNumber <= 117120) {
     //    return "Single_3b_2_2_2";
@@ -602,7 +602,7 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
    else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131 ";
    else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019 ";
    else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1238";
-   else AliError(Form("Unknown trigger: %s", trigger));
+   //   else AliError(Form("Unknown trigger: %s", trigger));
 
   }
   else if (runNumber >= 117220 && runNumber <= 119163) {
@@ -611,7 +611,7 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131 ";
     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019 ";
     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1238 ";
-    else AliError(Form("Unknown trigger: %s", trigger));						    
+    //    else AliError(Form("Unknown trigger: %s", trigger));						    
   }
   else if (runNumber >= 119837 && runNumber <= 119862) {
     //    return "Single_4b_2_2_2";
@@ -619,7 +619,7 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #346  #2454 ";
     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #1234  #2128 ";
     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1681 #3463";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
 
   }
   else if (runNumber >= 119902 && runNumber <= 120691) {
@@ -628,7 +628,7 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131  #2331  #2531 ";
     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019  #3219  #3419 ";
     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1296 #1670";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
   }
   else if (runNumber >= 120741 && runNumber <= 122375) {
     //    return "Single_13b_8_8_8";
@@ -636,7 +636,7 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #946  #2131  #2231  #2331  #2431 ";
     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019  #3119  #3219  #3319  #3519 ";
     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1835 #2726";
-    else AliError(Form("Unknown trigger: %s", trigger));
+    //    else AliError(Form("Unknown trigger: %s", trigger));
     
   } 
   else if (runNumber >= 130148 && runNumber <= 130375) {
@@ -692,7 +692,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     AliFatal("Cannot process several runs because BG computation is requested");
 
   if(fComputeBG && !fUseBXNumbers) 
-    AliFatal("Cannot compute BG id BX numbers are not used");
+    AliFatal("Cannot compute BG if BX numbers are not used");
   
   if(fUseBXNumbers && fFillingScheme != "" && fFillingScheme != GetFillingScheme(runNumber))
     AliFatal("Cannot process runs with different filling scheme if usage of BX numbers is requested");
