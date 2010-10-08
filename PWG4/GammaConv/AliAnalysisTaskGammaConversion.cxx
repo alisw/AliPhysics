@@ -2053,6 +2053,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	    fHistograms->FillHistogram("ESD_Mother_Phi", spaceVectorTwoGammaCandidate.Phi());
 	    fHistograms->FillHistogram("ESD_Mother_Mass", massTwoGammaCandidate);
 	    fHistograms->FillHistogram("ESD_Mother_alfa", alfa);
+	    if(massTwoGammaCandidate>0.1 && massTwoGammaCandidate<0.15){
+	      fHistograms->FillHistogram("ESD_Mother_alfa_Pi0", alfa);
+	    }
 	    fHistograms->FillHistogram("ESD_Mother_R", spaceVectorTwoGammaCandidate.Pt());    // Pt in Space == R!!!
 	    fHistograms->FillHistogram("ESD_Mother_ZR", twoGammaCandidate->GetZ(), spaceVectorTwoGammaCandidate.Pt());
 	    fHistograms->FillHistogram("ESD_Mother_XY", twoGammaCandidate->GetX(), twoGammaCandidate->GetY());
