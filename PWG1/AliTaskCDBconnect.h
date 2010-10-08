@@ -16,7 +16,7 @@ class AliESDInputHandler;
 
 class AliTaskCDBconnect : public AliAnalysisTask {
 private:
-  Int_t                     fRun;            //! Current run
+  Int_t                     fRun;            // Current run
   Bool_t                    fRunChanged;     //! Flag for run change.
   AliESDInputHandler       *fESDhandler;     //! Pointer to ESD input handler
   AliESDEvent              *fESD;            //! Pointer to current ESD event

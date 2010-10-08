@@ -131,7 +131,7 @@ void AliTaskCDBconnect::CreateOutputObjects()
   }   
   // Try to get event number before the first event is read
   Int_t run = mgr->GetRunFromPath();
-  if (!run) run = fESD->GetRunNumber();
+  if (!run && fESD) run = fESD->GetRunNumber();
   if (!run) {
      AliWarning("AliTaskCDBconnect: Could not set run from path");
      if (!fRun) return;
