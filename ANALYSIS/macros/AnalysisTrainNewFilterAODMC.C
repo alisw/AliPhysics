@@ -16,13 +16,13 @@
 //    root[1] AnalysisTrainNew(ana_mode, plugin_mode, "train_default_<date>/ConfigTrain.C")
 
 //==================   TRAIN NAME   ============================================
-TString     train_name         = "FILTER"; // local folder name
-TString     train_tag          = "+tasks";        // Train special tag appended to 
+TString     train_name         = "FILTERsim"; // local folder name
+TString     train_tag          = "sim+tasks";        // Train special tag appended to 
                                             // visible name. ("data", "sim", "pp", "highmult", ...)
                // Name in train page (DON'T CHANGE)
 TString     visible_name       = Form("FILTER%s$2_$3", train_tag.Data()); //# FIXED #
                // Add train composition and other comments
-TString     job_comment        = "#Tender(V0!)+PhysSel# ==AODs: std(+jets)/(di)muon/vertexing/dielectrons ==ANALYSIS: gammaconv, jpsi, hfe";
+TString     job_comment        = "#PhysSel# ==AODs: std(+jets)/(di)muon/vertexing/dielectrons ==ANALYSIS: gammaconv, jpsi, hfe";
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
 //==============================================================================
 
@@ -37,7 +37,7 @@ TString     proof_outdir       = "";
 
 // ### Settings that make sense when using the Alien plugin
 //==============================================================================
-Int_t       runOnData          = 1;       // Set to 1 if processing real data
+Int_t       runOnData          = 0;       // Set to 1 if processing real data
 Int_t       iCollision         = 0;       // 0=pp, 1=Pb-Pb
 Bool_t      usePLUGIN          = kTRUE;   // do not change
 Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
@@ -50,13 +50,13 @@ Bool_t      useCPAR            = kFALSE;  // use par files for common libs
 TString     root_version       = "v5-27-06";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     aliroot_version    = "v4-20-11-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here (test mode)
-TString     alien_datadir      = "/alice/data/2010/LHC10c";
+TString     alien_datadir      = "/alice/sim/LHC10d2";
                // Work directory in GRID (DON'T CHANGE)
 TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/AOD/AOD$2";
                // Data pattern - change as needed for test mode
-TString     data_pattern       = "*ESDs/pass2/*ESDs.root";
+TString     data_pattern       = "*ESDs.root";
 // Set the run range
-Int_t run_numbers[10] = {120822}; // **********************!!!!!!!
+Int_t run_numbers[10] = {117222}; // **********************!!!!!!!
 //Int_t       run_range[2]       =  {114786, 114949};  // LHC09a7   *CHANGE ME*
 // AliEn output directory. If blank will become output_<train_name>
                // Output directory (DON'T CHANGE)
@@ -75,7 +75,7 @@ TString     outputStorages      = "disk=4";
 // Number of runs per master job
 Int_t       nRunsPerMaster     = 10;
 // Maximum number of files per job (gives size of AOD)
-Int_t       nFilesPerJob       = 20;
+Int_t       nFilesPerJob       = 50;
 // Int_t       nFilesPerJob       = 1; (AOD->delta AOD production case)
 // ### Settings that make sense only for local analysis
 //==============================================================================
@@ -85,16 +85,16 @@ TString     local_xmldataset   = "";
 // ### Other flags to steer the analysis
 //==============================================================================
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
-Bool_t      useTender           = kTRUE; // use tender wagon
+Bool_t      useTender           = kFALSE; // use tender wagon
 Bool_t      useMergeViaJDL      = kTRUE;  // merge via JDL
 Bool_t      useFastReadOption   = kTRUE;  // use xrootd tweaks
 Bool_t      useOverwriteMode    = kTRUE;  // overwrite existing collections
 Bool_t      useDATE             = kFALSE; // use date in train name
-Bool_t      useDBG              = kFALSE;  // activate debugging
-Bool_t      useMC               = kFALSE;  // use MC info
+Bool_t      useDBG              = kTRUE;  // activate debugging
+Bool_t      useMC               = kTRUE;  // use MC info
 Bool_t      useTAGS             = kFALSE;  // use ESD tags for selection
-Bool_t      useKFILTER          = kFALSE;  // use Kinematics filter
-Bool_t      useTR               = kFALSE;  // use track references
+Bool_t      useKFILTER          = kTRUE;  // use Kinematics filter
+Bool_t      useTR               = kTRUE;  // use track references
 Bool_t      useCORRFW           = kFALSE; // do not change
 Bool_t      useAODTAGS          = kFALSE; // use AOD tags
 Bool_t      saveTrain           = kTRUE;  // save train configuration as: 
@@ -359,7 +359,6 @@ void AddAnalysisTasks()
 //      tender->SelectCollisionCandidates();
       tender->SetDebugLevel(2);
    }
-
    if (usePhysicsSelection) {
    // Physics selection task
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
@@ -1239,7 +1238,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       plugin->SetOutputToRunNo();
    }   
    plugin->SetJobTag(job_tag);
-   plugin->SetNtestFiles(1);
+   plugin->SetNtestFiles(10);
    plugin->SetCheckCopy(kFALSE);
    plugin->SetOneStageMerging(kTRUE);
 // Set versions of used packages
