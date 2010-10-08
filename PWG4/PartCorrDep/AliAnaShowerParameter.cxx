@@ -55,14 +55,14 @@ AliAnaShowerParameter::AliAnaShowerParameter() :
 AliAnaPartCorrBaseClass(), fCalorimeter(""), 
 fMinDist(0.),fMinDist2(0.),fMinDist3(0.),fRejectTrackMatch(0),
 fCheckConversion(kFALSE),fAddConvertedPairsToAOD(kFALSE), fMassCut(0), fNCellsCut(0),
-fTimeCutMin(-1), fTimeCutMax(9999999),fEMCALGeo(0),
-fhNClusters(0),fhNCellCluster(0),fhPtCluster(0),fhPhiCluster(0),fhEtaCluster(0),
+fTimeCutMin(-1), fTimeCutMax(9999999),fEMCALGeo(0),fNumClusters(0),
+fhNClusters(0),fhNCellCluster(0),fhPtCluster(0),fhPhiCluster(0),fhEtaCluster(0),fhDeltaPhiClusters(0),fhDeltaEtaClusters(0),
 fhLambdaCluster(0),fhDispersionCluster(0),fhELambdaCluster(0),fhELambdaCellCluster(0),
 fhNCellPhoton(0),fhLambdaPhoton(0),fhDispersionPhoton(0),fhELambdaPhoton(0),fhELambdaCellPhoton(0),
 fhNCellPi0(0),fhLambdaPi0(0),fhDispersionPi0(0),fhELambdaPi0(0),fhELambdaCellPi0(0),
 fhNCellChargedHadron(0),fhLambdaChargedHadron(0),fhDispersionChargedHadron(0),fhELambdaChargedHadron(0),fhELambdaCellChargedHadron(0),  
 //MC
-fhDeltaE(0), fhDeltaPt(0),fhRatioE(0), fhRatioPt(0),fh2E(0),fh2Pt(0),
+fhDeltaE(0), fhDeltaPt(0),fhRatioE(0), fhRatioPt(0),fh2E(0),fh2Pt(0),fhMCPdg(0),
 fhEMCPhoton(0),fhPhiMCPhoton(0),fhEtaMCPhoton(0),fhLambdaMCPhoton(0),fhPhotTrueE(0),fhRatioEPhoton(0),
 fhEMCPi0(0),fhPhiMCPi0(0),fhEtaMCPi0(0),fhLambdaMCPi0(0),fhPi0TrueE(0),
 fhProductionDistance(0),fhProductionRadius(0),fhDecayAngle(0),fhRatioEPi0(0),
@@ -150,38 +150,45 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
   outputContainer->Add(fhNCellCluster) ;
   
   fhPtCluster  = new TH1F("hPtCluster","Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
-  fhPtCluster->SetYTitle("N");
-  fhPtCluster->SetXTitle("p_{T #gamma}(GeV/c)");
+  fhPtCluster->SetXTitle("p_{Cluster}(GeV/c)");
   outputContainer->Add(fhPtCluster) ; 
   
   fhPhiCluster  = new TH2F
-  ("hPhiCluster","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+  ("hPhiCluster","#phi_{Cluster}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
   fhPhiCluster->SetYTitle("#phi");
-  fhPhiCluster->SetXTitle("p_{T #gamma} (GeV/c)");
+  fhPhiCluster->SetXTitle("E_{Cluster} (GeV/c)");
   outputContainer->Add(fhPhiCluster) ; 
   
   fhEtaCluster  = new TH2F
-  ("hEtaCluster","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+  ("hEtaCluster","#phi_{Cluster}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
   fhEtaCluster->SetYTitle("#eta");  
-  fhEtaCluster->SetXTitle("p_{T Cluster} (GeV/c)");
+  fhEtaCluster->SetXTitle("E_{Cluster} (GeV/c)");
   outputContainer->Add(fhEtaCluster) ;
+
+  fhDeltaEtaClusters  = new TH1F("hDeltaEtaClusters","#Delta #eta of clusters over calorimeter",netabins,etamin,etamax); 
+  fhDeltaEtaClusters->SetXTitle("#Delta #eta_{Clusters}");
+  outputContainer->Add(fhDeltaEtaClusters) ; 
+
+  fhDeltaPhiClusters  = new TH1F("hDeltaPhiClusters","#Delta #phi of clusters over calorimeter",nphibins,phimin,phimax); 
+  fhDeltaPhiClusters->SetXTitle("#Delta #phi_{Clusters}");
+  outputContainer->Add(fhDeltaPhiClusters) ; 
   
   fhLambdaCluster  = new TH3F
-  ("hLambdaCluster","#lambda_{#gamma}",nptbins,ptmin,ptmax,200,0,2,200,0,2); 
+  ("hLambdaCluster","#lambda_{Cluster}",nptbins,ptmin,ptmax,200,0,2,200,0,2); 
   fhLambdaCluster->SetZTitle("#lambda_{1}^{2}"); 
   fhLambdaCluster->SetYTitle("#lambda_{0}^{2}");
   fhLambdaCluster->SetXTitle("p_{T Cluster} (GeV/c)");
   outputContainer->Add(fhLambdaCluster) ;
   
   fhELambdaCluster  = new TH3F
-  ("hELambdaCluster","#lambda_{#gamma}",nptbins,ptmin,ptmax,200,0,2,200,0,2); 
+  ("hELambdaCluster","#lambda_{Cluster}",nptbins,ptmin,ptmax,200,0,2,200,0,2); 
   fhELambdaCluster->SetZTitle("#lambda_{1}^{2}"); 
   fhELambdaCluster->SetYTitle("#lambda_{0}^{2}");
-  fhELambdaCluster->SetXTitle("E_{Cluster} (GeV)");
+  fhELambdaCluster->SetXTitle("p_{T Cluster} (GeV)");
   outputContainer->Add(fhELambdaCluster) ;
   
   fhDispersionCluster  = new TH2F
-  ("hLambdaDispersion","#lambda_{#gamma}",nptbins,ptmin,ptmax,200,0,2); 
+  ("hDispersionCluster","Dispersion_{Cluster}",nptbins,ptmin,ptmax,200,0,2); 
   fhDispersionCluster->SetYTitle("Dispersion");
   fhDispersionCluster->SetXTitle("p_{T Cluster} (GeV/c)");
   outputContainer->Add(fhDispersionCluster) ;
@@ -195,7 +202,7 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
   
   //Identified photon histograms
   fhNCellPhoton = new TH2F ("hNCellPhoton","Number of cell per cluster",nptbins,ptmin,ptmax,21,-0.5,20.5); 
-  fhNCellPhoton->SetXTitle("p_{T}");
+  fhNCellPhoton->SetXTitle("E");
   fhNCellPhoton->SetYTitle("N_{Cells}");  
   outputContainer->Add(fhNCellPhoton) ;
   
@@ -228,7 +235,7 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
   
   //Identified Pi0 histograms
   fhNCellPi0 = new TH2F ("hNCellPi0","Number of cell per cluster",nptbins,ptmin,ptmax,21,-0.5,20.5); 
-  fhNCellPi0->SetXTitle("p_{T}");
+  fhNCellPi0->SetXTitle("E");
   fhNCellPi0->SetYTitle("N_{Cells}");  
   outputContainer->Add(fhNCellPi0) ;
   
@@ -301,11 +308,11 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
     fhDeltaPt->SetXTitle("#Delta p_{T} (GeV/c)");
     outputContainer->Add(fhDeltaPt);
     
-    fhRatioE  = new TH1F ("hRatioE","Reco/MC E ", 200,0,2); 
+    fhRatioE  = new TH1F ("hRatioE","Reco/MC E ", 1000,0,2); 
     fhRatioE->SetXTitle("E_{reco}/E_{gen}");
     outputContainer->Add(fhRatioE);
     
-    fhRatioPt  = new TH1F ("hRatioPt","Reco/MC p_{T} ", 200,0,2); 
+    fhRatioPt  = new TH1F ("hRatioPt","Reco/MC p_{T} ", 1000,0,2); 
     fhRatioPt->SetXTitle("p_{T, reco}/p_{T, gen}");
     outputContainer->Add(fhRatioPt);    
     
@@ -318,6 +325,11 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
     fh2Pt->SetXTitle("p_{T,rec} (GeV/c)");
     fh2Pt->SetYTitle("p_{T,gen} (GeV/c)");
     outputContainer->Add(fh2Pt);
+
+    fhMCPdg  = new TH2F ("hMCPdg","PDG Code distribution",nptbins,ptmin,ptmax,6001,-3000.5,3000.5); 
+    fhMCPdg->SetXTitle("E_{Reco Cluster} (GeV)");
+    fhMCPdg->SetYTitle("PDG Code");
+    outputContainer->Add(fhMCPdg);
     
     fhEMCPhoton  = new TH1F("hEMCPhoton","Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
     //fhEMCPhoton->SetYTitle("N");
@@ -350,7 +362,7 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
     fhPhotTrueE->SetXTitle("MC Truth E_{#gamma} (GeV)");
     outputContainer->Add(fhPhotTrueE) ;
     
-    fhRatioEPhoton  = new TH1F ("hRatioEPhoton","E_{Reco #gamma}/E_{MC truth #gamma}", 40,0,2); 
+    fhRatioEPhoton  = new TH1F ("hRatioEPhoton","E_{Reco #gamma}/E_{MC truth #gamma}", 1000,0,2); 
     fhRatioEPhoton->SetXTitle("E_{reco #gamma}/E_{gen #gamma}");
     outputContainer->Add(fhRatioEPhoton);
     
@@ -390,9 +402,8 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
     fhProductionRadius->SetXTitle("E_{ #pi^0} (GeV)");
     outputContainer->Add(fhProductionRadius) ;
     
-    fhDecayAngle = new TH3F
-    ("hDecayAngle","#lambda_{#pi^0}",nptbins,ptmin,ptmax,100,-0.5,0.5,200,0,2); 
-    fhDecayAngle->SetZTitle("#lambda_{0}^{2}");
+    fhDecayAngle = new TH2F
+    ("hDecayAngle","#lambda_{#pi^0}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
     fhDecayAngle->SetYTitle("Opening angle of the #pi^{0} decay (radians)");
     fhDecayAngle->SetXTitle("E_{ #pi^0} (GeV)");
     outputContainer->Add(fhDecayAngle) ;
@@ -404,7 +415,7 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
     fhPi0TrueE->SetXTitle("MC Truth E_{#pi^0} (GeV)");
     outputContainer->Add(fhPi0TrueE) ;
     
-    fhRatioEPi0  = new TH1F ("hRatioEPi0","E_{Reco #pi^{0}}/E_{MC truth #pi^{0}}", 40,0,2); 
+    fhRatioEPi0  = new TH1F ("hRatioEPi0","E_{Reco #pi^{0}}/E_{MC truth #pi^{0}}", 1000,0,2); 
     fhRatioEPi0->SetXTitle("E_{reco #pi^{0}}/E_{gen #pi^{0}}");
     outputContainer->Add(fhRatioEPi0);
     
@@ -439,7 +450,7 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
     fhPionTrueE->SetXTitle("MC Truth E_{#pi} (GeV)");
     outputContainer->Add(fhPionTrueE) ;
     
-    fhRatioEPion  = new TH1F ("hRatioEPion","E_{Reco #pi^{#pm}}/E_{MC truth #pi^{#pm}}", 40,0,2); 
+    fhRatioEPion  = new TH1F ("hRatioEPion","E_{Reco #pi^{#pm}}/E_{MC truth #pi^{#pm}}", 1000,0,2); 
     fhRatioEPion->SetXTitle("E_{reco #pi^{#pm}}/E_{gen #pi^{#pm}}");
     outputContainer->Add(fhRatioEPion);
     
@@ -474,7 +485,7 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
     fhProtonTrueE->SetXTitle("MC Truth E_{p} (GeV)");
     outputContainer->Add(fhProtonTrueE) ;
     
-    fhRatioEProton  = new TH1F ("hRatioEProton","E_{Reco p}/E_{MC truth p}", 40,0,2); 
+    fhRatioEProton  = new TH1F ("hRatioEProton","E_{Reco p}/E_{MC truth p}", 1000,0,2); 
     fhRatioEProton->SetXTitle("E_{reco p}/E_{gen p}");
     outputContainer->Add(fhRatioEProton);
     
@@ -509,7 +520,7 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
     fhAntiProtonTrueE->SetXTitle("MC Truth E_{#bar{p}} (GeV)");
     outputContainer->Add(fhAntiProtonTrueE) ;
     
-    fhRatioEAntiProton  = new TH1F ("hRatioEAntiProton","E_{Reco #bar{p}}/E_{MC truth #bar{p}}", 40,0,2); 
+    fhRatioEAntiProton  = new TH1F ("hRatioEAntiProton","E_{Reco #bar{p}}/E_{MC truth #bar{p}}", 1000,0,2); 
     fhRatioEAntiProton->SetXTitle("E_{reco #bar{p}}/E_{gen #bar{p}}");
     outputContainer->Add(fhRatioEAntiProton);
     
@@ -544,7 +555,7 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
     fhNeutronTrueE->SetXTitle("MC Truth E_{n} (GeV)");
     outputContainer->Add(fhNeutronTrueE) ;
     
-    fhRatioENeutron  = new TH1F ("hRatioENeutron","E_{Reco n}/E_{MC truth n}", 40,0,2); 
+    fhRatioENeutron  = new TH1F ("hRatioENeutron","E_{Reco n}/E_{MC truth n}", 1000,0,2); 
     fhRatioENeutron->SetXTitle("E_{reco n}/E_{gen n}");
     outputContainer->Add(fhRatioENeutron);
     
@@ -618,6 +629,8 @@ void AliAnaShowerParameter::InitParameters()
   fRejectTrackMatch       = kTRUE ;
   fCheckConversion        = kFALSE;
   fAddConvertedPairsToAOD = kFALSE;
+  
+  fNumClusters = -1; // By Default, select all events.
 	
 }
 
@@ -651,6 +664,8 @@ void  AliAnaShowerParameter::MakeAnalysisFillAOD()
   //Fill AODCaloClusters and AODParticle with PHOS/EMCAL aods
   TLorentzVector mom, mom2 ; 
   Int_t nCaloClusters = pl->GetEntriesFast();   
+  //Cut on the number of clusters in the event.
+  if ((fNumClusters !=-1) && (nCaloClusters != fNumClusters)) return;
   Bool_t * indexConverted = new Bool_t[nCaloClusters];
   for (Int_t i = 0; i < nCaloClusters; i++) 
     indexConverted[i] = kFALSE;
@@ -872,15 +887,23 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
     }
     
     //Fill the basic non-MC information about the cluster.
-    fhPtCluster  ->Fill(ptcluster);
-    fhPhiCluster ->Fill(ptcluster,phicluster);
-    fhEtaCluster ->Fill(ptcluster,etacluster);
+    fhPtCluster  ->Fill(ecluster);
+    fhPhiCluster ->Fill(ecluster,phicluster);
+    fhEtaCluster ->Fill(ecluster,etacluster);
     fhDispersionCluster->Fill(ptcluster,dispcluster);
     fhLambdaCluster ->Fill(ptcluster,lambdaMainCluster,lambdaSecondCluster);
     fhELambdaCluster ->Fill(ecluster,lambdaMainCluster,lambdaSecondCluster);
     fhELambdaCellCluster ->Fill(ecluster,lambdaMainCluster,iNumCell);
     fhNCellCluster->Fill(ecluster,iNumCell);
-    
+
+    //In the case of an event with several clusters, calculate DeltaEta and DeltaPhi for the cluster pairs.
+    for (Int_t jaod=iaod+1;jaod<naod;jaod++){
+      AliAODPWG4Particle* phSecond = (AliAODPWG4Particle*) (GetOutputAODBranch()->At(jaod));	
+      if(phSecond->GetDetector() != fCalorimeter) continue;
+      fhDeltaPhiClusters->Fill(phicluster-(phSecond->Phi()));
+      fhDeltaEtaClusters->Fill(etacluster-(phSecond->Eta()));  
+    }
+
     //Fill the lambda distribution for identified particles
     if(ph->GetPdg() ==  AliCaloPID::kPhoton){
       fhDispersionPhoton->Fill(ptcluster,dispcluster);
@@ -914,6 +937,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         continue;
       }
       
+      
       //Check if the tag matches on of the different particle types and fill the corresponding histograms
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)&&!(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))) //kMCPhoton; making sure that this is not a Pi0 cluster (it should not happen).
       {
@@ -926,8 +950,9 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         Int_t iCurrent = ph->GetLabel();
         TParticle* pCurrent = stack->Particle(iCurrent);
         ePhot = pCurrent->Energy(); 	  
-        fhPhotTrueE->Fill(ecluster,ePhot,lambdaMainCluster);
+        fhPhotTrueE->Fill(ePhot,ecluster,lambdaMainCluster);
         fhRatioEPhoton->Fill(ecluster/ePhot);
+	fhMCPdg->Fill(ecluster,22);
         if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCPhoton: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",ePhot,ecluster,lambdaMainCluster);
       }//kMCPhoton
@@ -952,21 +977,15 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         }
         Float_t fDistance = pCurrent->Rho();
         Float_t fRadius = pCurrent->R();
-        TLorentzVector mom1 ;
-        (stack->Particle((pCurrent->GetFirstDaughter())))->Momentum(mom1);
-        TLorentzVector mom2 ;
-        (stack->Particle((pCurrent->GetLastDaughter())))->Momentum(mom2);
         ePi0 = pCurrent->Energy();
-        Float_t fDecayAngle = mom1.Angle(mom2.Vect());
         fhProductionDistance->Fill(ecluster,fDistance);
         fhProductionRadius->Fill(ecluster,fRadius);
-        //Decay angle of the Pi0
-        fhDecayAngle->Fill(ecluster,fDecayAngle,lambdaMainCluster);
         //Compare the cluster energy and true energy
-        fhPi0TrueE->Fill(ecluster,ePi0,lambdaMainCluster);
+        fhPi0TrueE->Fill(ePi0,ecluster,lambdaMainCluster);
         fhRatioEPi0->Fill(ecluster/ePi0);
+	fhMCPdg->Fill(ecluster,111);
         if(GetDebug() > 3) 
-          printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCPi0: True E: %3.2f, Reco E: %3.2f, Decay Opening Angle: %3.2f, Lambda0:  %3.2f\n",ePi0,ecluster,fDecayAngle,lambdaMainCluster);
+          printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCPi0: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",ePi0,ecluster,lambdaMainCluster);
       }
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion))//kMCPion
       {
@@ -986,9 +1005,10 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         if ((TMath::Abs(pCurrent->GetPdgCode())==211)&&(iCurrent>=0))
         {
           ePion = pCurrent->Energy();
-          fhPionTrueE->Fill(ecluster,ePion,lambdaMainCluster);
+          fhPionTrueE->Fill(ePion,ecluster,lambdaMainCluster);
           fhRatioEPion->Fill(ecluster/ePion);
         }
+	fhMCPdg->Fill(ecluster,211);
         if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCPion: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",ePion,ecluster,lambdaMainCluster);
       }	
@@ -1010,9 +1030,10 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         if ((TMath::Abs(pCurrent->GetPdgCode())==2212)&&(iCurrent>=0))
         {
           eProton = pCurrent->Energy();
-          fhProtonTrueE->Fill(ecluster,eProton,lambdaMainCluster);
+          fhProtonTrueE->Fill(eProton,ecluster,lambdaMainCluster);
           fhRatioEProton->Fill(ecluster/eProton);
         }
+	fhMCPdg->Fill(ecluster,2212);
         if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCProton: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",eProton,ecluster,lambdaMainCluster);
       } 
@@ -1034,9 +1055,10 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         if ((TMath::Abs(pCurrent->GetPdgCode())==-2212)&&(iCurrent>=0))
         {
           eAntiProton = pCurrent->Energy();
-          fhAntiProtonTrueE->Fill(ecluster,eAntiProton,lambdaMainCluster);
+          fhAntiProtonTrueE->Fill(eAntiProton,ecluster,lambdaMainCluster);
           fhRatioEAntiProton->Fill(ecluster/eAntiProton);
-        }
+        }	
+	fhMCPdg->Fill(ecluster,-2212);
         if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCAntiProton: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",eAntiProton,ecluster,lambdaMainCluster);
       }
@@ -1058,9 +1080,10 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         if ((TMath::Abs(pCurrent->GetPdgCode())==2112)&&(iCurrent>=0))
         {
           eNeutron = pCurrent->Energy();
-          fhNeutronTrueE->Fill(ecluster,eNeutron,lambdaMainCluster);
+          fhNeutronTrueE->Fill(eNeutron,ecluster,lambdaMainCluster);
           fhRatioENeutron->Fill(ecluster/eNeutron);
         }
+	fhMCPdg->Fill(ecluster,2112);
 	  	  if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCNeutron: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",eNeutron,ecluster,lambdaMainCluster);
       }
@@ -1078,6 +1101,22 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
         continue;
       }
+
+      //Calculate Pi0 decay angles
+      if(stack && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
+	for(Int_t i=0 ; i<stack->GetNprimary(); i++){
+	  TParticle * prim = stack->Particle(i) ;
+ 	  if(prim->GetPdgCode() == 111){
+	    TLorentzVector mom1 ;
+	    (stack->Particle((prim->GetFirstDaughter())))->Momentum(mom1);
+	    TLorentzVector mom2 ;
+	    (stack->Particle((prim->GetLastDaughter())))->Momentum(mom2);
+	    Float_t fDecayAngle = mom1.Angle(mom2.Vect());
+	    fhDecayAngle->Fill(ecluster,fDecayAngle);
+	  }
+	}
+      }
+      
       
       Float_t eprim   = 0;
       Float_t ptprim  = 0;
@@ -1159,6 +1198,7 @@ void AliAnaShowerParameter::Print(const Option_t * opt) const
   printf("Conversion pair mass cut             = %f\n",fMassCut);
   printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
   printf("Number of cells in cluster is        > %f \n", fNCellsCut);
+  printf("Number of clusters in envent is        > %d \n", fNumClusters);
   printf("    \n") ;
   
 } 
