@@ -199,21 +199,20 @@ void AliT0::MakeBranch(Option_t* option)
       if (fDigits == 0x0) fDigits  = new AliT0digit();
       //     MakeBranchInTree(fLoader->TreeD(), branchname,
       //		       &fDigits, 405, 0);
-      fLoader->TreeD()->Branch(branchname,"AliT0digit",&fDigits,405,1);
+      fLoader->TreeD()->Branch(branchname,"AliT0digit",&fDigits);
       //   fLoader->TreeD()->Print();
     } 
   if (cR && fLoader->TreeR())
     {
       if (fRecPoints == 0x0) fRecPoints  = new AliT0RecPoint();
-      MakeBranchInTree(fLoader->TreeR(), branchname,
-		       &fRecPoints, 405, 0);
+      MakeBranchInTree(fLoader->TreeR(), branchname, &fRecPoints);
     } 
   if (cS && fLoader->TreeS())
     {
       if (fDigits == 0x0) fDigits  = new AliT0digit();
       //     MakeBranchInTree(fLoader->TreeD(), branchname,
       //		       &fDigits, 405, 0);
-      fLoader->TreeS()->Branch(branchname,"AliT0digit",&fDigits,405,1);
+      fLoader->TreeS()->Branch(branchname,"AliT0digit",&fDigits);
       //   fLoader->TreeD()->Print();
     } 
   
@@ -349,7 +348,7 @@ void AliT0::Raw2Digits(AliRawReader *rawReader,TTree* digitsTree)
 
 
    fDigits = new AliT0digit();
-   digitsTree->Branch("T0","AliT0digit",&fDigits,405,1);
+   digitsTree->Branch("T0","AliT0digit",&fDigits);
    
    
    TArrayI *timeLED = new TArrayI(24);

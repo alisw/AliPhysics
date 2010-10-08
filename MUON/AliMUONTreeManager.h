@@ -33,7 +33,7 @@ public:
   Bool_t MakeBranch(TTree& tree, const char* storeClassName,
                     const char* branchClassName, const char* branchName, 
                     void* address,
-                    Int_t bufferSize = 4000, Int_t splitLevel = 1) const;
+                    Int_t bufferSize = 4000, Int_t splitLevel = 99) const;
   
   Bool_t SetAddress(TTree& tree, const char* branchName, void* address) const;
   

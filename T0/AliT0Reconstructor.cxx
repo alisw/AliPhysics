@@ -159,7 +159,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Int_t pmtBestC=99999;
   
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
-  clustersTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints, 405,1);
+  clustersTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints);
   
   Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
@@ -284,7 +284,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
    
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
   
-  recTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints, 405,1);
+  recTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints);
    
   AliDebug(10," before read data ");
   AliT0RawReader myrawreader(rawReader);
