@@ -266,6 +266,10 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   Double_t nsigmaTPC = 0.0;
   Double_t nsigmaITS = 0.0;
   Double_t nsigmaTOF = 0.0;
+  // initialize response functions
+  AliITSPIDResponse itsrsp(fIsMC);
+  fPID.GetTPCResponse().SetBetheBlochParameters(fTPCparamBB[0],fTPCparamBB[1],fTPCparamBB[2],fTPCparamBB[3],fTPCparamBB[4]);
+  fPID.GetITSResponse() = itsrsp;
   if (isTPC)   nsigmaTPC = fPID.NumberOfSigmasTPC(track, fPIDtype);
   if (isITSSA) nsigmaITS = fPID.NumberOfSigmasITS(track, fPIDtype);
   if (isTOF)   nsigmaTOF = fPID.NumberOfSigmasTOF(track, fPIDtype);
@@ -287,7 +291,9 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   {
     if (fCheckTPC)
     {
-      if (track->P() > fTPClowLimit) bandTPC = fTPChighBand; else bandTPC = fTPClowBand;
+      AliAODPid *pidObj = track->GetDetPid();
+      Double_t   mom    = pidObj->GetTPCmomentum();
+      if (mom > fTPClowLimit) bandTPC = fTPChighBand; else bandTPC = fTPClowBand;
       if (TMath::Abs(nsigmaTPC) > bandTPC) 
       {
         AliDebug(AliLog::kDebug + 2, "Bad TPC PID. Rejected");
