@@ -2119,6 +2119,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 
     if(kGCplotPi0Spectra == kTRUE){
       histograms->AddHistogram("ESD_Mother_alfa","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinAlpha, kGClastXBinAlpha,"#alpha","Counts");
+      histograms->AddHistogram("ESD_Mother_alfa_Pi0","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinAlpha, kGClastXBinAlpha,"#alpha","Counts");
 
       //      histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
       histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
