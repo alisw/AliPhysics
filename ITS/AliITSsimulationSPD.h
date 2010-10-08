@@ -61,9 +61,9 @@ public:
    void SetLorentzDrift(Bool_t b=kFALSE)
         {fLorentz=b; if(fLorentz) SetTanLorAngle();};
    // This function set the relative contribution between holes and electrons: use  0<=WeightHole<=1
-   Bool_t SetTanLorAngle(Double_t WeightHole=0.5);
+   Bool_t SetTanLorAngle(Double_t WeightHole=1.0);
    // Getter for the Lorentz angle
-   Double_t GetTanLorAngle(){return fTanLorAng;};
+   Double_t GetTanLorAngle() const {return fTanLorAng;};
    //
    void CreateHistograms();
    void FillHistograms(Int_t ix,Int_t iz,Double_t v=1.0);

@@ -33,6 +33,7 @@ const TString  AliITSSimuParam::fgkSPDCouplingOptDefault = "old";
 const Double_t AliITSSimuParam::fgkSPDCouplColDefault = 0.;
 const Double_t AliITSSimuParam::fgkSPDCouplRowDefault = 0.055;
 const Float_t  AliITSSimuParam::fgkSPDEccDiffDefault = 0.85;
+const Float_t  AliITSSimuParam::fgkSPDLorentzHoleWeightDefault = 1.0;
 const Float_t  AliITSSimuParam::fgkSDDDiffCoeffDefault = 3.23;
 const Float_t  AliITSSimuParam::fgkSDDDiffCoeff1Default = 30.;
 const Float_t  AliITSSimuParam::fgkSDDJitterErrorDefault = 20.; // 20 um from beam test 2001
@@ -63,6 +64,8 @@ fSPDCouplOpt(0),
 fSPDCouplCol(fgkSPDCouplColDefault),
 fSPDCouplRow(fgkSPDCouplRowDefault),
 fSPDEccDiff(0.),
+fSPDLorentzDrift(kTRUE),
+fSPDLorentzHoleWeight(fgkSPDLorentzHoleWeightDefault),
 fSPDAddNoisyFlag(kFALSE),
 fSPDRemoveDeadFlag(kFALSE),
 fSDDElectronics(0),
@@ -110,6 +113,8 @@ fSPDCouplOpt(simpar.fSPDCouplOpt),
 fSPDCouplCol(simpar.fSPDCouplCol),
 fSPDCouplRow(simpar.fSPDCouplRow),
 fSPDEccDiff(simpar.fSPDEccDiff),
+fSPDLorentzDrift(simpar.fSPDLorentzDrift),
+fSPDLorentzHoleWeight(simpar.fSPDLorentzHoleWeight),
 fSPDAddNoisyFlag(simpar.fSPDAddNoisyFlag),
 fSPDRemoveDeadFlag(simpar.fSPDRemoveDeadFlag),
 fSDDElectronics(simpar.fSDDElectronics),
@@ -179,6 +184,8 @@ void AliITSSimuParam::PrintParameters() const{
   printf("Coupling value (column)   = %f\n",fSPDCouplCol);
   printf("Coupling value (row)      = %f\n",fSPDCouplRow);
   printf("Eccentricity in diffusion = %f\n",fSPDEccDiff);
+  printf("Flag to add Lorentz Drift = %d\n",fSPDLorentzDrift);
+  printf("Weight of Holes in Lor.Drift = %f\n",fSPDLorentzHoleWeight);
   printf("Flag to add noisy         = %d\n",fSPDAddNoisyFlag);
   printf("Flag to remove dead       = %d\n",fSPDRemoveDeadFlag);
   printf("\n");

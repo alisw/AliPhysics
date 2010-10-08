@@ -128,8 +128,8 @@ void AliITSsimulationSPD::Init(){
    } else {
        fCoupling=1;
    } // end if
-   //SetLorentzDrift(kTRUE);
-   if (fLorentz) SetTanLorAngle();
+   SetLorentzDrift(simpar->GetSPDLorentzDrift());
+   if (fLorentz) SetTanLorAngle(simpar->GetSPDLorentzHoleWeight());
    //SetStrobeGeneration(kFALSE);
    if (fStrobe) GenerateStrobePhase();
 }
@@ -155,13 +155,11 @@ Bool_t AliITSsimulationSPD::SetTanLorAngle(Double_t WeightHole) {
     }
     Double_t WeightEle=1.-WeightHole;
     AliITSSimuParam* simpar = fDetType->GetSimuParam();
-    Double_t pos[3]={0.,0.,0.};
-    Double_t B[3]={0.,0.,0.};
-    TGeoGlobalMagField::Instance()->Field(pos,B);
-    fTanLorAng = TMath::Tan(WeightHole*simpar->LorentzAngleHole(B[2]) +
-                             WeightEle*simpar->LorentzAngleElectron(B[2]));
-    fTanLorAng*=-1.; // this only for the old geometry
-                      // comment the upper line for the new geometry
+    AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+    if (!fld) AliFatal("The field is not initialized");
+    Double_t bz = fld->SolenoidField();
+    fTanLorAng = TMath::Tan(WeightHole*simpar->LorentzAngleHole(bz) +
+                             WeightEle*simpar->LorentzAngleElectron(bz));
     return kTRUE;
 }
 //______________________________________________________________________
