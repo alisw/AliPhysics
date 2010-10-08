@@ -24,11 +24,17 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
     esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   }
 
-  if (analysisMode & AliPWG0Helper::kTPCITS)
+  if (analysisMode & AliPWG0Helper::kTPCITS);
   {
     esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
   
     TString tag("Global tracking");
+  }
+  if ( analysisMode & AliPWG0Helper::kTPCSPD) {
+
+    esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kFALSE);
+    TString tag("Global tracking+tracklets");
+
   }
 
   if (hists)

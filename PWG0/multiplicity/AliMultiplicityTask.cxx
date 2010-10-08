@@ -36,6 +36,7 @@
 #include "AliCorrectionMatrix3D.h"
 #include "AliPhysicsSelection.h"
 #include "AliTriggerAnalysis.h"
+#include "AliVEvent.h"
 
 ClassImp(AliMultiplicityTask)
 
@@ -98,7 +99,7 @@ AliMultiplicityTask::~AliMultiplicityTask()
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
 
-  if (fOutput) {
+  if (fOutput&& !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutput;
     fOutput = 0;
   }
@@ -240,7 +241,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     return;
   }
     
-  Bool_t eventTriggered = inputHandler->IsEventSelected();
+  Bool_t eventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
 
   static AliTriggerAnalysis* triggerAnalysis = 0;
   if (!triggerAnalysis)
@@ -277,10 +278,102 @@ void AliMultiplicityTask::Exec(Option_t*)
   Int_t inputCount = 0;
   Int_t* labelArr = 0;
   Float_t* etaArr = 0;
-  if (fAnalysisMode & AliPWG0Helper::kSPD)
+  Int_t nGoodTracks = 0;  // number of total good tracks is needed both in SPD and TPC loops if the mode is kTPCSPD
+  Int_t nESDTracks  = 0; // Total number of ESD tracks (including those not passing the cuts);
+  const int kRejBit = BIT(15); // set this bit in ESD tracks if it is rejected by a cut
+
+  if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS || fAnalysisMode & AliPWG0Helper::kTPCSPD)
   {
+    if (!fEsdTrackCuts)
+    {
+      AliDebug(AliLog::kError, "fESDTrackCuts not available");
+      return;
+    }
+
     if (vtxESD)
     {
+      // get multiplicity from ESD tracks
+      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode & AliPWG0Helper::kTPC));
+      nGoodTracks = list->GetEntries();
+  
+      Int_t arraySize = nGoodTracks; // if we're also using tracklets, we need to increase this
+      if (fAnalysisMode & AliPWG0Helper::kTPCSPD) {
+	// if I have to also count clusters later on, I have to make sure the arrays are big enough
+	// Moreover, we need to keep track of rejected tracks to avoid double-counting
+	Printf( "Processing tracks");
+	const AliMultiplicity* mult = fESD->GetMultiplicity();
+	if (!mult)
+	  {
+	    AliDebug(AliLog::kError, "AliMultiplicity not available");
+	    return;
+	  }
+	arraySize += mult->GetNumberOfTracklets();
+	// allocate and fill array for rejected tracks
+	nESDTracks = fESD->GetNumberOfTracks();
+	for(Int_t itracks = 0; itracks < nESDTracks; itracks++){
+	  AliESDtrack* track = fESD->GetTrack(itracks);
+	  if( itracks!=track->GetID() ){
+	    AliFatal("Track ID not matching track index!");
+	  }
+	  if (!fEsdTrackCuts->AcceptTrack(track)) {	    
+	    track->SetBit(kRejBit);
+	  }
+	}
+      }
+
+      labelArr = new Int_t[arraySize];
+      etaArr = new Float_t[arraySize];
+  
+      // loop over esd tracks
+      for (Int_t i=0; i<nGoodTracks; i++)
+      {
+        AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
+        if (!esdTrack)
+        {
+          AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
+          continue;
+        }
+        
+        if (esdTrack->Pt() < 0.15){
+	  esdTrack->SetBit(kRejBit);
+          continue;
+	}
+
+	if (fAnalysisMode & AliPWG0Helper::kTPCSPD) {
+	  // Cuts by ruben to flag secondaries
+	  if (esdTrack->IsOn(AliESDtrack::kMultSec) ) continue;
+	  if (esdTrack->IsOn(AliESDtrack::kMultInV0)) continue;
+	}
+        
+        Float_t d0z0[2],covd0z0[3];
+        esdTrack->GetImpactParameters(d0z0,covd0z0);
+        Float_t sigma= 0.0050+0.0060/TMath::Power(esdTrack->Pt(),0.9);
+        Float_t d0max = 7.*sigma;
+        if (TMath::Abs(d0z0[0]) > d0max) {
+	  //	  rejLabelArr[irejCount++] = esdTrack->GetID(); // We
+	  //	  don't count the tracklet if the track is a
+	  //	  secondary, so this must be commented out
+          continue;
+	}
+  
+        if (vtxESD && TMath::Abs(vtx[2]) < 10)
+          fEtaPhi->Fill(esdTrack->Eta(), esdTrack->Phi());
+        
+        etaArr[inputCount] = esdTrack->Eta();
+        labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
+        ++inputCount;
+      }
+  
+      delete list;
+    }
+  }
+  // SPD tracklets are used either in SPD standalone mode or in TPC+SPD mode (tracks + tracklets not using any cluster already used in tracks)
+  if (fAnalysisMode & AliPWG0Helper::kSPD || fAnalysisMode & AliPWG0Helper::kTPCSPD)
+  {
+
+    if (vtxESD)
+    {
+      AliDebug(AliLog::kInfo, "Processing tracklets");
       // get tracklets
       const AliMultiplicity* mult = fESD->GetMultiplicity();
       if (!mult)
@@ -289,10 +382,14 @@ void AliMultiplicityTask::Exec(Option_t*)
         return;
       }
   
-      labelArr = new Int_t[mult->GetNumberOfTracklets()];
-      etaArr = new Float_t[mult->GetNumberOfTracklets()];
-      
       Bool_t foundInEta10 = kFALSE;
+      if (!(fAnalysisMode & AliPWG0Helper::kTPCSPD)) {
+	// if we are counting both tracks and tracklets, these arrays were already initialized above 
+	AliDebug(AliLog::kInfo, "Booking arrays");
+	labelArr = new Int_t[mult->GetNumberOfTracklets()];
+	etaArr = new Float_t[mult->GetNumberOfTracklets()];
+      }
+      if (inputCount) foundInEta10 = kTRUE; // by definition, if we found a track.
       
       // get multiplicity from ITS tracklets
       for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
@@ -305,11 +402,26 @@ void AliMultiplicityTask::Exec(Option_t*)
           continue;
   
         if (fSystSkipParticles && gRandom->Uniform() < (0.0153))
-        {
+	  {
           Printf("Skipped tracklet!");
           continue;
-        }
-          
+	  }
+	
+	// if counting tracks+tracklets, check if clusters where already used in tracks
+	if (fAnalysisMode & AliPWG0Helper::kTPCSPD) { 
+	    Int_t id1,id2;
+	    mult->GetTrackletTrackIDs(i,0,id1,id2);
+	    if ( (id1>=0&& !fESD->GetTrack(id1)->TestBit(kRejBit) ) ||
+		 (id2>=0&& !fESD->GetTrack(id2)->TestBit(kRejBit) )
+		 ) {
+	      printf ("Skipping tracklet: already used in track");  
+	      continue; 
+	    }
+	// Ruben also had this, but we're not using pure ITSSA tracks here:
+	// if (fSPDMult->FreeClustersTracklet(itr,1)) trITSSApure++; // not used in ITS_SA_Pure track
+	}
+	       
+
         etaArr[inputCount] = mult->GetEta(i);
         if (mult->GetLabel(i, 0) == mult->GetLabel(i, 1))
         {
@@ -336,54 +448,6 @@ void AliMultiplicityTask::Exec(Option_t*)
       
       if (fSystSkipParticles && (fTrigger & AliTriggerAnalysis::kOneParticle) && !foundInEta10)
         eventTriggered = kFALSE;
-    }
-  }
-  else if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
-  {
-    if (!fEsdTrackCuts)
-    {
-      AliDebug(AliLog::kError, "fESDTrackCuts not available");
-      return;
-    }
-
-    if (vtxESD)
-    {
-      // get multiplicity from ESD tracks
-      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode & AliPWG0Helper::kTPC));
-      Int_t nGoodTracks = list->GetEntries();
-  
-      labelArr = new Int_t[nGoodTracks];
-      etaArr = new Float_t[nGoodTracks];
-  
-      // loop over esd tracks
-      for (Int_t i=0; i<nGoodTracks; i++)
-      {
-        AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
-        if (!esdTrack)
-        {
-          AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
-          continue;
-        }
-        
-        if (esdTrack->Pt() < 0.15)
-          continue;
-        
-        Float_t d0z0[2],covd0z0[3];
-        esdTrack->GetImpactParameters(d0z0,covd0z0);
-        Float_t sigma= 0.0050+0.0060/TMath::Power(esdTrack->Pt(),0.9);
-        Float_t d0max = 7.*sigma;
-        if (TMath::Abs(d0z0[0]) > d0max) 
-          continue;
-  
-        if (vtxESD && TMath::Abs(vtx[2]) < 10)
-          fEtaPhi->Fill(esdTrack->Eta(), esdTrack->Phi());
-        
-        etaArr[inputCount] = esdTrack->Eta();
-        labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
-        ++inputCount;
-      }
-  
-      delete list;
     }
   }
 
@@ -894,6 +958,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     delete[] etaArr;
   if (labelArr)
     delete[] labelArr;
+
 }
 
 void AliMultiplicityTask::Terminate(Option_t *)

@@ -1,4 +1,4 @@
-void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug = kFALSE, Int_t aProof = 0, Int_t requiredData = 1, const char* option = "")
+void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug = kFALSE, Int_t aProof = 0, Int_t requiredData = 1, const char* option = "",Int_t workers = -1)
 {
   // aProof option: 
   //               -2 grid, terminate mode
@@ -19,7 +19,7 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
   if (aProof > 0)
   {
     gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-    TProof::Open("alicecaf");
+    TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
     
     // Enable the needed package
     if (1)
@@ -86,11 +86,12 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
     physicsSelectionTask->GetPhysicsSelection()->GetTriggerAnalysis()->SetSPDGFOEfficiency(spdFOEff);
   }
   
-  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn;
+  //AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn;
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPCSPD | AliPWG0Helper::kFieldOn;
   //AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPCITS | AliPWG0Helper::kFieldOn;
   
-  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag;
-  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle; 
+  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag;
+  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle; 
   
   //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kMB1Prime | AliTriggerAnalysis::kOfflineFlag;
   //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kSPDGFOBits | AliTriggerAnalysis::kOfflineFlag;
@@ -148,7 +149,7 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
   if (!(analysisMode & AliPWG0Helper::kSPD))
   {
     // selection of esd tracks
-    gROOT->ProcessLine(".L ../CreateStandardCuts.C");
+    gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/CreateStandardCuts.C");
     AliESDtrackCuts* esdTrackCuts = CreateTrackCuts(analysisMode);
     if (!esdTrackCuts)
     {
@@ -245,6 +246,9 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
       
       if (analysisMode & AliPWG0Helper::kSPD)
         path += "/spd";
+
+      if (analysisMode & AliPWG0Helper::kTPCSPD)
+        path += "/tpcspd";
       
       if (analysisMode & AliPWG0Helper::kTPC)
         path += "/tpc";
@@ -279,7 +283,7 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
   else if (aProof == 0)
   {
     // Create chain of input files
-    gROOT->LoadMacro("../CreateESDChain.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
     chain = CreateESDChain(data, nRuns, offset);
 
     mgr->StartAnalysis((aProof > 0) ? "proof" : "local", chain);

@@ -24,7 +24,8 @@ class AliMultiplicity;
 class AliPWG0Helper : public TObject
 {
   public:
-    enum AnalysisMode { kInvalid = -1, kSPD = 0x1, kTPC = 0x2, kTPCITS = 0x4, kFieldOn = 0x8, kSPDOnlyL0 = 0x10 };
+    // kTPCSPD: tracks + tracklets not using any cluster associated to tracks 
+    enum AnalysisMode { kInvalid = -1, kSPD = 0x1, kTPC = 0x2, kTPCITS = 0x4, kFieldOn = 0x8, kSPDOnlyL0 = 0x10, kTPCSPD = 0x20}; 
     // in case we want to use bitmaps...
     enum MCProcessType { kInvalidProcess = -1, kND = 0x1, kDD = 0x2, kSD = 0x4, kOnePart = 0x8 };
     enum DiffTreatment { kMCFlags = 0, kUA5Cuts = 1, kE710Cuts, kALICEHadronLevel };
