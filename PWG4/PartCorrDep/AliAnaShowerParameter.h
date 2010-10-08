@@ -73,7 +73,8 @@ public:
 	
   Float_t GetMassCut()    const {return fMassCut ; }
   void SetMassCut(Float_t m)    {fMassCut = m ; }
-	
+  void SetNClusterCut(Int_t nc)   {fNumClusters = nc;}
+  Int_t GetNClusterCut()   {return fNumClusters;}
   void SetTimeCut(Double_t min, Double_t max) {fTimeCutMin = min; fTimeCutMax = max;}
   Double_t GetTimeCutMin() const {return fTimeCutMin;}
   Double_t GetTimeCutMax() const {return fTimeCutMax;}	
@@ -92,13 +93,16 @@ public:
   Double_t fTimeCutMin  ;    // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;    // Remove clusters/cells with time larger than this value, in ns
   AliEMCALGeoUtils * fEMCALGeo;
+  Int_t fNumClusters;        //Cut that selects events with a specific number of clusters
 
   //Histograms   
   TH1F * fhNClusters  ; //! Number of clusters per event.
   TH2F * fhNCellCluster;//! Number of cells per cluster
   TH1F * fhPtCluster   ; //! Number of clusters vs transerse momentum 
   TH2F * fhPhiCluster  ; //! Azimuthal angle of clusters vs transerse momentum 
-  TH2F * fhEtaCluster  ; //! Pseudorapidity of clusters vs transerse momentum 
+  TH2F * fhEtaCluster  ; //! Pseudorapidity of clusters vs transerse momentum
+  TH1F * fhDeltaPhiClusters  ; //! Delta phi of cluster pairs
+  TH1F * fhDeltaEtaClusters  ; //! Delta eta of cluster pairs 
   TH3F * fhLambdaCluster  ; //! Shower parameters of clusters vs transerse momentum
   TH2F * fhDispersionCluster  ; //! Dispersion of the clusters
   TH3F * fhELambdaCluster  ; //! Shower parameters of clusters vs Energy
@@ -129,6 +133,7 @@ public:
   TH1F * fhRatioPt ; //! Reco/MC pT distribution
   TH2F * fh2E  ; //! E distribution, Reco vs MC
   TH2F * fh2Pt ; //! pT distribution, Reco vs MC
+  TH2F * fhMCPdg; //! Complete list of PDG Codes.
   
   TH1F * fhEMCPhoton;   //! Number of identified gamma 
   TH2F * fhPhiMCPhoton;  //! Phi of identified gamma
@@ -144,7 +149,7 @@ public:
   TH3F * fhPi0TrueE;  // MC truth E vs Recons E vs. Lambda of the cluster for MC Pi0s
   TH2F * fhProductionDistance; //! Distance from beam to production of the Pi0
   TH2F * fhProductionRadius; //! R from beam to Pi0
-  TH3F * fhDecayAngle;//! Decay angle of the Pi0
+  TH2F * fhDecayAngle;//! Decay angle of the Pi0
   TH1F * fhRatioEPi0  ; //! Reco/MC E distribution for Pi0s
 
   TH1F * fhEMCPion;   //! Number of identified pions 
