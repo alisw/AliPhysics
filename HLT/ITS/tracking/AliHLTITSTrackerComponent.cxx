@@ -573,14 +573,15 @@ int AliHLTITSTrackerComponent::DoEvent
       currOutLabel++;
       outPtr->fCount++;
     }        
-    
-    AliHLTComponentBlockData resultData;
-    FillBlockData( resultData );
-    resultData.fOffset = size;
-    resultData.fSize = blockSize;
-    resultData.fDataType = kAliHLTDataTypeTrackMC|kAliHLTDataOriginITS;
-    outputBlocks.push_back( resultData );
-    size+= resultData.fSize;
+    if( iResult>=0 && outPtr->fCount>0 ){
+      AliHLTComponentBlockData resultData;
+      FillBlockData( resultData );
+      resultData.fOffset = size;
+      resultData.fSize = blockSize;
+      resultData.fDataType = kAliHLTDataTypeTrackMC|kAliHLTDataOriginITS;
+      outputBlocks.push_back( resultData );
+      size+= resultData.fSize;
+    }
   }
   
   fBenchmark.Stop(0);
