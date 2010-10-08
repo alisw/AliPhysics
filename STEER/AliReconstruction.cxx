@@ -291,7 +291,12 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   ftVertexer(NULL),
   fIsNewRunLoader(kFALSE),
   fRunAliEVE(kFALSE),
-  fChain(NULL)
+  fChain(NULL),
+  fNall(0),
+  fNspecie(0),
+  fSspecie(0),
+  fNhighPt(0),
+  fShighPt(0)
 {
 // create reconstruction object with default parameters
   gGeoManager = NULL;
@@ -399,7 +404,12 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   ftVertexer(NULL),
   fIsNewRunLoader(rec.fIsNewRunLoader),
   fRunAliEVE(kFALSE),
-  fChain(NULL)
+  fChain(NULL),
+  fNall(0),
+  fNspecie(0),
+  fSspecie(0),
+  fNhighPt(0),
+  fShighPt(0)
 {
 // copy constructor
 
@@ -555,6 +565,11 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fIsNewRunLoader = rec.fIsNewRunLoader;
   fRunAliEVE = kFALSE;
   fChain = NULL;
+  fNall = 0;
+  fNspecie = 0;
+  fSspecie = 0;
+  fNhighPt = 0;
+  fShighPt = 0;
 
   return *this;
 }
@@ -2066,15 +2081,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     ftree->Fill();
     if (fWriteESDfriend) {
-      // Sampling
-      Double_t rnd = gRandom->Rndm();
-      if (fFractionFriends < rnd) {
-	fesdf->~AliESDfriend();
-	new (fesdf) AliESDfriend(); // Reset...
-	fesdf->SetSkipBit(kTRUE);
-      }
-
-      ftreeF->Fill();
+      WriteESDfriend();
     }
 
     // Auto-save the ESD tree in case of prompt reco @P2
@@ -3877,4 +3884,116 @@ Bool_t AliReconstruction::ParseOutput()
   }
 
   return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliReconstruction::IsHighPt() const {
+  // Selection of events containing "high" pT tracks
+  // If at least one track is found within 1.5 and 100 GeV (pT)
+  // that was reconstructed by both ITS and TPC, the event is accepted
+
+  // Track cuts
+
+  const Double_t pTmin = 1.5;
+  const Double_t pTmax = 100;
+  ULong_t mask = 0;
+  mask |= (AliESDtrack::kITSrefit);
+  mask |= (AliESDtrack::kTPCrefit);
+
+  Bool_t isOK = kFALSE;
+
+  if (fesd && fesd->GetEventType()==AliRawEventHeaderBase::kPhysicsEvent) {
+    // Check if this ia a physics event (code 7)
+    Int_t ntrk = fesd->GetNumberOfTracks();
+    for (Int_t itrk=0; itrk<ntrk; ++itrk) {
+	  
+      AliESDtrack * trk = fesd->GetTrack(itrk);
+      if (trk 
+	  && trk->Pt() > pTmin 
+	  && trk->Pt() < pTmax
+	  && (trk->GetStatus() & mask) == mask ) {
+	
+	isOK = kTRUE;
+	break;
+      }
+    }
+  }
+  return isOK;
+}
+
+//______________________________________________________________________________
+Bool_t AliReconstruction::IsCosmicOrCalibSpecie() const {
+  // Select cosmic or calibration events
+
+  Bool_t isOK = kFALSE;
+
+  if (fesd && fesd->GetEventType()==AliRawEventHeaderBase::kPhysicsEvent) {
+      // Check if this ia a physics event (code 7)
+      
+      UInt_t specie = fesd->GetEventSpecie();
+      if (specie==AliRecoParam::kCosmic || specie==AliRecoParam::kCalib) {
+	isOK = kTRUE;
+      }
+  }
+  return isOK;
+}
+
+//______________________________________________________________________________
+void AliReconstruction::WriteESDfriend() {
+  // Fill the ESD friend in the tree. The required fraction of ESD friends is stored
+  // in fFractionFriends. We select events where we store the ESD friends according
+  // to the following algorithm:
+  // 1. Store all Cosmic or Calibration events within the required fraction
+  // 2. Sample "high Pt" events within the remaining fraction after step 1.
+  // 3. Sample randomly events if we still have remaining slot
+
+  fNall++;
+
+  Bool_t isSelected = kFALSE;
+
+  if (IsCosmicOrCalibSpecie()) { // Selection of calib or cosmic events
+    fNspecie++;
+    Double_t curentSpecieFraction = ((Double_t)(fNspecie+1))/((Double_t)(fNall+1)); 
+    // "Bayesian" estimate supposing that without events all the events are of the required type
+    
+    Double_t rnd = gRandom->Rndm()*curentSpecieFraction;
+    if (rnd<fFractionFriends) {
+      isSelected = kTRUE;
+      fSspecie++;
+    }
+  }
+  
+  Double_t remainingFraction = fFractionFriends;
+  remainingFraction -= ((Double_t)(fSspecie)/(Double_t)(fNall));
+  
+  if (IsHighPt())  { // Selection of "high Pt" events
+    fNhighPt++;
+    Double_t curentHighPtFraction = ((Double_t)(fNhighPt+1))/((Double_t)(fNall+1));
+    // "Bayesian" estimate supposing that without events all the events are of the required type
+    
+    if (!isSelected) {
+      Double_t rnd = gRandom->Rndm()*curentHighPtFraction;
+      if (rnd<remainingFraction) {
+	isSelected = kTRUE;
+	fShighPt++;
+      }
+    }
+  }
+  remainingFraction -= ((Double_t)(fShighPt)/(Double_t)(fNall));
+  
+  // Random selection to fill the remaining fraction (if any)
+  if (!isSelected) {
+    Double_t rnd = gRandom->Rndm();
+    if (rnd<remainingFraction) {	
+      isSelected = kTRUE;
+    }
+  }
+  
+  if (!isSelected) {
+    fesdf->~AliESDfriend();
+    new (fesdf) AliESDfriend(); // Reset...
+    fesdf->SetSkipBit(kTRUE);
+  }
+  
+  ftreeF->Fill();
 }

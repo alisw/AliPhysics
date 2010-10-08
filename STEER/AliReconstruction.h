@@ -166,6 +166,10 @@ public:
 protected:
   virtual Bool_t ProcessEvent(void* event);
   void           InitRun(const char* input);
+  // Functions needed to select events for which we store the ESD friends
+  Bool_t IsHighPt() const;
+  Bool_t IsCosmicOrCalibSpecie() const;
+  void WriteESDfriend();
 
 private:
   AliReconstruction(const AliReconstruction& rec);
@@ -324,7 +328,14 @@ private:
   
   TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
 
-  ClassDef(AliReconstruction, 38)      // class for running the reconstruction
+  // Counters used in WriteESDfriend()
+  Int_t fNall;    //! Number of reconstructed events
+  Int_t fNspecie; //! Number of events, selected by IsCosmicOrCalibSpecie
+  Int_t fSspecie; //! Number of events, sampled from fNspecie
+  Int_t fNhighPt; //! Number of events, selected by IsHighPt 
+  Int_t fShighPt; //! Number of events, sampled from fNhighPt
+
+  ClassDef(AliReconstruction, 39)      // class for running the reconstruction
 };
 
 #endif
