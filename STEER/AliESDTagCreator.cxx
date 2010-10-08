@@ -270,7 +270,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD - You are trying to merge different runs!!!");
 
     TFile *file = chain->GetFile();
-    const TUrl *url = file->GetEndpointUrl();
+    //    const TUrl *url = file->GetEndpointUrl();
     fguid = file->GetUUID().AsString();
 
     if (foldguid == fguid) {
@@ -279,11 +279,12 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     else {
       AliFileTag *nftag = new AliFileTag();
 
-      if(fSession == "grid") {
-	TString fturltemp = "alien://"; fturltemp += url->GetFile();
-	fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
-      }
-      else fturl = url->GetFile();
+//       if(fSession == "grid") {
+// 	TString fturltemp = "alien://"; fturltemp += url->GetFile();
+// 	fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+//       }
+//       else fturl = url->GetFile();
+      fturl = file->GetName();
 
       if(fSession == "grid") {
 	nftag->SetMD5("");
@@ -696,13 +697,15 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
 
     if (iEventNumber == fFirstEvent) {
       TFile *file = b->GetCurrentFile();
-      const TUrl *url = file->GetEndpointUrl();
+//      const TUrl *url = file->GetEndpointUrl();
       fguid = file->GetUUID().AsString();
-      if(fStorage == 1) {
-	TString fturltemp = "alien://"; fturltemp += url->GetFile();
-	fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
-      }
-      else fturl = url->GetFile(); 
+
+//       if(fStorage == 1) {
+// 	TString fturltemp = "alien://"; fturltemp += url->GetFile();
+// 	fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+//       }
+//       else fturl = url->GetFile(); 
+      fturl = file->GetName();
       
       //    evTag->SetGUID(fguid);
       ((AliFileTag *) tag->GetFileTag(tag->GetNFiles()-1))->SetGUID(fguid);
@@ -849,13 +852,14 @@ void AliESDTagCreator::CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData,
     if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD!!!");
     
     TFile *file = chain->GetCurrentFile();
-    const TUrl *url = file->GetEndpointUrl();
+    //    const TUrl *url = file->GetName();
     fguid = file->GetUUID().AsString();
-    if(fStorage == 1) {
-      TString fturltemp = "alien://"; fturltemp += url->GetFile();
-      fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
-    }
-    else fturl = url->GetFile();
+    fturl = file->GetName();
+//     if(fStorage == 1) {
+//       TString fturltemp = "alien://"; fturltemp += url->GetFile();
+//       fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+//     }
+//     else fturl = url->GetFile();
 
     if (fturl.CompareTo(fturlold)) {
 
