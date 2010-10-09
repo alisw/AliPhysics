@@ -165,28 +165,19 @@ AliTRDsimTR::AliTRDsimTR(const AliTRDsimTR &s)
   // AliTRDsimTR copy constructor
   //
 
-  if (((AliTRDsimTR &) s).fNFoils) {
-    delete [] ((AliTRDsimTR &) s).fNFoils;
-  }
-  ((AliTRDsimTR &) s).fNFoils   = new Int_t[fNFoilsDim];
+  fNFoils   = new Int_t[fNFoilsDim];
   for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
-    ((AliTRDsimTR &) s).fNFoils[iFoil]   = fNFoils[iFoil];
+    fNFoils[iFoil]   = ((AliTRDsimTR &) s).fNFoils[iFoil];
   }  
 
-  if (((AliTRDsimTR &) s).fNFoilsUp) {
-    delete [] ((AliTRDsimTR &) s).fNFoilsUp;
-  }
-  ((AliTRDsimTR &) s).fNFoilsUp = new Double_t[fNFoilsDim];
+  fNFoilsUp = new Double_t[fNFoilsDim];
   for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
-    ((AliTRDsimTR &) s).fNFoilsUp[iFoil] = fNFoilsUp[iFoil];
+    fNFoilsUp[iFoil] = ((AliTRDsimTR &) s).fNFoilsUp[iFoil];
   }  
 
-  if (((AliTRDsimTR &) s).fSigma) {
-    delete [] ((AliTRDsimTR &) s).fSigma;
-  }
-  ((AliTRDsimTR &) s).fSigma    = new Double_t[fSpNBins];
+  fSigma    = new Double_t[fSpNBins];
   for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
-    ((AliTRDsimTR &) s).fSigma[iBin]     = fSigma[iBin];
+    fSigma[iBin]     = ((AliTRDsimTR &) s).fSigma[iBin];
   }  
 
   fSpectrum->Copy(*((AliTRDsimTR &) s).fSpectrum);

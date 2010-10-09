@@ -186,85 +186,93 @@ void AliTRDarrayDictionary::Compress()
   Int_t newDim=0;
   Int_t j;                 
   Int_t r=0;
-  Int_t *longArr;            
-  longArr = new Int_t[fNDdim];  
   Int_t k=0;
-  memset(longArr,0,sizeof(Int_t)*fNDdim);
 
-  for(Int_t i=0;i<fNDdim; i++)
-    {
-      j=0;
-      if(fDictionary[i]==-1)
-	{
-	  for(k=i;k<fNDdim;k++)
-	    {
-	      if(fDictionary[k]==-1)
-		{
-		  j=j+1;
-		  longArr[r]=j;
-		}
-	      else
-		{
-		  break;
-		}
-	    } 
-	  r=r+1;    
-	}
-      i=i+j;
-    }
-  //Calculate the size of the compressed array
-  for(Int_t i=0; i<fNDdim;i++)
-    {
-      if(longArr[i]!=0)  
-	{
-	  counter=counter+longArr[i]-1;
-	}
-    }
-  newDim=fNDdim-counter;   //Size of the compressed array
-  //Fill the buffer of the compressed array
-  Int_t* buffer;
-  buffer = new Int_t[newDim];
-  Int_t counterTwo=0;
-  Int_t g=0;
-  for(Int_t i=0; i<newDim; i++)
-    {
-      if(counterTwo<fNDdim)
-	{
-	  if(fDictionary[counterTwo]!=-1)
-	    {
-	      buffer[i]=fDictionary[counterTwo];
-	    }
-	  if(fDictionary[counterTwo]==-1)
-	    {
-	      buffer[i]=-(longArr[g]);
-	      counterTwo=counterTwo+longArr[g]-1;
-	      g++;
-	    }  
-	  counterTwo++;
-	}
-    }
+  Int_t *longArr = new Int_t[fNDdim];  
 
-  //Copy the buffer
-  if(fDictionary)
-    {
-      delete [] fDictionary;
-      fDictionary=0;
-    }
-  fDictionary = new Int_t[newDim];
-  fNDdim = newDim;
-  for(Int_t i=0; i<newDim; i++)
-    {
-      fDictionary[i] = buffer[i]; 
-    }
-  if(buffer)
-    {
-      delete [] buffer;
-      buffer=0;
-    }
   if(longArr) 
     {
+
+      memset(longArr,0,sizeof(Int_t)*fNDdim);
+
+      for(Int_t i=0;i<fNDdim; i++)
+        {
+          j=0;
+          if(fDictionary[i]==-1)
+   	    {
+	      for(k=i;k<fNDdim;k++)
+	        {
+	          if(fDictionary[k]==-1)
+		    {
+		      j=j+1;
+		      longArr[r]=j;
+		    }
+	          else
+		    {
+		      break;
+		    }
+	        } 
+	      r=r+1;    
+	    }
+          i=i+j;
+        }
+
+      //Calculate the size of the compressed array
+      for(Int_t i=0; i<fNDdim;i++)
+        {
+          if(longArr[i]!=0)  
+	    {
+	      counter=counter+longArr[i]-1;
+	    }
+        }
+      newDim=fNDdim-counter;   //Size of the compressed array
+
+      //Fill the buffer of the compressed array
+      Int_t* buffer = new Int_t[newDim];
+      Int_t counterTwo=0;
+      Int_t g=0;
+      if(buffer)
+        {
+
+          for(Int_t i=0; i<newDim; i++)
+            {
+              if(counterTwo<fNDdim)
+	        {
+	          if(fDictionary[counterTwo]!=-1)
+	            {
+	              buffer[i]=fDictionary[counterTwo];
+	            }
+	          if(fDictionary[counterTwo]==-1)
+	            {
+	              buffer[i]=-(longArr[g]);
+	              counterTwo=counterTwo+longArr[g]-1;
+	              g++;
+	            }  
+	          counterTwo++;
+	        }
+            }
+
+          //Copy the buffer
+          if(fDictionary)
+            {
+              delete [] fDictionary;
+              fDictionary=0;
+            }
+          fDictionary = new Int_t[newDim];
+          fNDdim = newDim;
+          for(Int_t i=0; i<newDim; i++)
+            {
+              fDictionary[i] = buffer[i]; 
+            }
+
+          delete [] buffer;
+          buffer=0;
+
+        }
+    
       delete [] longArr;
       longArr=0;
+
     }
 
 }

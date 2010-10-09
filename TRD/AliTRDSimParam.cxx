@@ -209,20 +209,14 @@ AliTRDSimParam::AliTRDSimParam(const AliTRDSimParam &p)
 
   Int_t iBin = 0;
 
-  if (((AliTRDSimParam &) p).fTRFsmp) {
-    delete [] ((AliTRDSimParam &) p).fTRFsmp;
-  }
-  ((AliTRDSimParam &) p).fTRFsmp = new Float_t[fTRFbin];
+  fTRFsmp = new Float_t[fTRFbin];
   for (iBin = 0; iBin < fTRFbin; iBin++) {
-    ((AliTRDSimParam &) p).fTRFsmp[iBin] = fTRFsmp[iBin];
+    fTRFsmp[iBin] = ((AliTRDSimParam &) p).fTRFsmp[iBin];
   }                                                                             
 
-  if (((AliTRDSimParam &) p).fCTsmp) {
-    delete [] ((AliTRDSimParam &) p).fCTsmp;
-  }
-  ((AliTRDSimParam &) p).fCTsmp  = new Float_t[fTRFbin];
+  fCTsmp  = new Float_t[fTRFbin];
   for (iBin = 0; iBin < fTRFbin; iBin++) {
-    ((AliTRDSimParam &) p).fCTsmp[iBin] = fCTsmp[iBin];
+    fCTsmp[iBin]  = ((AliTRDSimParam &) p).fCTsmp[iBin];
   }                                                                             
 
 }

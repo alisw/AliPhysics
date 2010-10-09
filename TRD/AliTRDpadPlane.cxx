@@ -124,20 +124,14 @@ AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p)
 
   Int_t iBin = 0;
 
-  if (((AliTRDpadPlane &) p).fPadRow) {
-    delete [] ((AliTRDpadPlane &) p).fPadRow;
-  }
-  ((AliTRDpadPlane &) p).fPadRow = new Double_t[fNrows];
+  fPadRow = new Double_t[fNrows];
   for (iBin = 0; iBin < fNrows; iBin++) {
-    ((AliTRDpadPlane &) p).fPadRow[iBin] = fPadRow[iBin];
+    fPadRow[iBin] = ((AliTRDpadPlane &) p).fPadRow[iBin];
   }                                                                             
 
-  if (((AliTRDpadPlane &) p).fPadCol) {
-    delete [] ((AliTRDpadPlane &) p).fPadCol;
-  }
-  ((AliTRDpadPlane &) p).fPadCol = new Double_t[fNrows];
+  fPadCol = new Double_t[fNrows];
   for (iBin = 0; iBin < fNrows; iBin++) {
-    ((AliTRDpadPlane &) p).fPadCol[iBin] = fPadCol[iBin];
+    fPadCol[iBin] = ((AliTRDpadPlane &) p).fPadCol[iBin];
   }                                                                             
 
 }

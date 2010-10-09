@@ -264,6 +264,7 @@ void AliTRDarrayADC::SetPadStatus(Int_t row, Int_t col, Int_t time, UChar_t stat
 	  SETBIT(signal, 10);
 	  SETBIT(signal, 11);
 	  SETBIT(signal, 12);
+          break;
 	default:
 	  CLRBIT(signal, 10);
 	  CLRBIT(signal, 11);

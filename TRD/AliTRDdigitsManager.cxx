@@ -90,6 +90,11 @@ AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDdigitsManager &m)
   // AliTRDdigitsManager copy constructor
   //
 
+  for (Int_t iDict = 0; iDict < kNDict; iDict++) 
+    {
+      fDict[iDict] = NULL;
+    }
+
 }
 
 //_____________________________________________________________________________

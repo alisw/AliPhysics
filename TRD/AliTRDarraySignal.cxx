@@ -194,91 +194,96 @@ void AliTRDarraySignal::Compress(Float_t minval)
   Int_t newDim=0;
   Int_t j;                 
   Int_t r=0;
-  Int_t *longArr;
-  longArr = new Int_t[fNdim];  
   Int_t k=0;
 
-  //Initialize the array
-  memset(longArr,0,sizeof(Int_t)*fNdim);
+  Int_t *longArr = new Int_t[fNdim];  
 
-  for(Int_t i=0;i<fNdim; i++)
-    {
-      j=0;
-      if(fSignal[i]<=minval) 
-	{
-	  for(k=i;k<fNdim;k++)
-	    {
-	      if(fSignal[k]<=minval)
-		{
-		  j=j+1;
-		  longArr[r]=j;
-		}
-	      else
-		{
-		  break;
-		}
-	    } 
-	  r=r+1;          
-	}
-      i=i+j;
-    }
-
-  //Calculate the size of the compressed array
-  for(Int_t i=0; i<fNdim;i++)
-    {
-      if(longArr[i]!=0)   
-	{
-	  counter=counter+longArr[i]-1;
-	}
-    }
-  newDim=fNdim-counter;   //New dimension
-
-  //Fill the buffer of the compressed array
-  Float_t* buffer;
-  buffer = new Float_t[newDim];
-  Int_t counterTwo=0;
-
-  //Write the new array
-  Int_t g=0;
-  for(Int_t i=0; i<newDim; i++)
-    {
-      if(counterTwo<fNdim)
-	{
-	  if(fSignal[counterTwo]>minval)   
-	    {
-	      buffer[i]=fSignal[counterTwo];
-	    }
-	  if(fSignal[counterTwo]<=minval)   
-	    {
-	      buffer[i]=-(longArr[g]);
-	      counterTwo=counterTwo+longArr[g]-1;
-	      g++;
-	    }  
-	  counterTwo++;
-	}
-    }
-
-  //Copy the buffer
-  if(fSignal)
-    {
-      delete [] fSignal;
-      fSignal=0;
-    }
-  fSignal = new Float_t[newDim];
-  fNdim = newDim;
-  for(Int_t i=0; i<newDim; i++)
-    {
-      fSignal[i] = buffer[i]; 
-    }
-  if(buffer)
-    {
-      delete [] buffer;
-      buffer=0;
-    } 
   if(longArr) 
     {
+
+      //Initialize the array
+      memset(longArr,0,sizeof(Int_t)*fNdim);
+
+      for(Int_t i=0;i<fNdim; i++)
+        {
+          j=0;
+          if(fSignal[i]<=minval) 
+	    {
+	      for(k=i;k<fNdim;k++)
+	        {
+	          if(fSignal[k]<=minval)
+		    {
+		      j=j+1;
+		      longArr[r]=j;
+	  	    }
+	          else
+		    {
+		      break;
+		    }
+	        } 
+	      r=r+1;          
+	    }
+          i=i+j;
+        }
+
+      //Calculate the size of the compressed array
+      for(Int_t i=0; i<fNdim;i++)
+        {
+          if(longArr[i]!=0)   
+	    {
+	      counter=counter+longArr[i]-1;
+	    }
+        }
+      newDim=fNdim-counter;   //New dimension
+
+      //Fill the buffer of the compressed array
+      Float_t* buffer = new Float_t[newDim];
+      Int_t counterTwo=0;
+
+      if(buffer)
+        {
+
+          //Write the new array
+          Int_t g=0;
+          for(Int_t i=0; i<newDim; i++)
+            {
+              if(counterTwo<fNdim)
+	        {
+	          if(fSignal[counterTwo]>minval)   
+	            {
+	              buffer[i]=fSignal[counterTwo];
+	            }
+	          if(fSignal[counterTwo]<=minval)   
+	            {
+	              buffer[i]=-(longArr[g]);
+	              counterTwo=counterTwo+longArr[g]-1;
+	              g++;
+	            }  
+	          counterTwo++;
+	        }
+            }
+
+          //Copy the buffer
+          if(fSignal)
+            {
+              delete [] fSignal;
+              fSignal=0;
+            }
+          fSignal = new Float_t[newDim];
+          fNdim = newDim;
+          for(Int_t i=0; i<newDim; i++)
+            {
+              fSignal[i] = buffer[i]; 
+            }
+
+          delete [] buffer;
+          buffer=0;
+
+        } 
+
       delete [] longArr;
       longArr=0;
+
     }
 
 }
