@@ -178,7 +178,8 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
     }
 
   Bool_t jsort = true;
-  Int_t iord1[kNMX];
+  // the dimension of iord1 is increased twice
+  Int_t iord1[2*kNMX];
   TMath::Sort((Int_t)kNMX,edepcell,iord1,jsort);// order the data
   cutoff = fCutoff;                             // cutoff to discard cells
   ave  = 0.;
@@ -511,6 +512,8 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	  if (clno >= 4608) 
 	    {
 	      AliWarning("RefClust: Too many clusters! more than 4608");
+	      delete [] ncl;
+	      delete [] clxy;
 	      return;
 	    }
 	  clno++;
@@ -543,6 +546,9 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	  if (clno >= 4608) 
 	    {
 	      AliWarning("RefClust: Too many clusters! more than 4608");
+	      delete [] ncl;
+	      delete [] clxy;
+
 	      return;
 	    }
 	  clno++;
@@ -584,14 +590,12 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	}
       else
 	{
-	  
 	  Int_t    *iord, *tc, *t;
 	  Double_t *x, *y, *z, *xc, *yc, *zc;
 
 	  iord = new Int_t [ncl[i]+1];
 	  tc   = new Int_t [ncl[i]+1];
 	  t    = new Int_t [ncl[i]+1];
-	  
 	  x    = new Double_t [ncl[i]+1];
 	  y    = new Double_t [ncl[i]+1];
 	  z    = new Double_t [ncl[i]+1];
@@ -633,13 +637,11 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	      i1      = fInfcl[1][id];
 	      i2      = fInfcl[2][id];
 	      i12     = i1 + i2*kNDIMX;
-
 	      iord[j] = j;
 	      x[j]    = fCoord[0][i1][i2];
 	      y[j]    = fCoord[1][i1][i2];
 	      z[j]    = edepcell[i12];
 	      t[j]    = i1*10000 + i2;
-
 	    }
 	  
 	  // arranging cells within supercluster in decreasing order
@@ -914,6 +916,38 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 		  if (clno >= 4608) 
 		    {
 		      AliWarning("RefClust: Too many clusters! more than 4608");
+
+		      delete [] cellCount;
+		      for(Int_t jj = 0; jj < ncl[i]+1; jj++) delete [] cellXY[jj];
+	      
+		      delete [] status;
+		      delete [] totaladc;
+		      delete [] totaladc2;
+		      delete [] ncell;
+		      delete [] xclust;
+		      delete [] yclust;
+		      delete [] sigxclust;
+		      delete [] sigyclust;
+		      delete [] ax;
+		      delete [] ay;
+		      delete [] ax2;
+		      delete [] ay2;
+		      delete [] weight;
+
+		      delete [] iord;
+		      delete [] tc;	  
+		      delete [] t;
+		      delete [] x;
+		      delete [] y;
+		      delete [] z;
+		      delete [] xc;
+		      delete [] yc;
+		      delete [] zc;
+
+
+		      delete [] ncl;
+		      delete [] clxy;
+
 		      return;
 		    }
 		  clusdata[0] = xclust[kcl];

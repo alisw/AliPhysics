@@ -152,7 +152,8 @@ void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn,
 	}
     }
 
-  Int_t iord1[kNMX];
+  // the dimension of iord1 is increased twice
+  Int_t iord1[2*kNMX];
   TMath::Sort((Int_t)kNMX,edepcell,iord1);// order the data
   cutoff = fCutoff; // cutoff used to discard cells having ener. dep.
   ave  = 0.;
