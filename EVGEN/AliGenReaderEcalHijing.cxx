@@ -38,7 +38,14 @@ AliGenReaderEcalHijing::AliGenReaderEcalHijing():
     fNahij(0),
     fNphij(0)
 {
-// Default constructor
+  // Default constructor
+  for (Int_t i = 0; i < 10000; i++) {
+    fKhij[i]  = 0.;     
+    fPxhij[i] = 0.;    
+    fPyhij[i] = 0.;    
+    fPzhij[i] = 0.;
+    fEhij[i]  = 0.;     
+  }
 }
 
 AliGenReaderEcalHijing::AliGenReaderEcalHijing(const AliGenReaderEcalHijing &reader):
@@ -51,6 +58,13 @@ AliGenReaderEcalHijing::AliGenReaderEcalHijing(const AliGenReaderEcalHijing &rea
     fNphij(0)
 {
     // Copy constructor
+  for (Int_t i = 0; i < 10000; i++) {
+    fKhij[i]  = 0.;     
+    fPxhij[i] = 0.;    
+    fPyhij[i] = 0.;    
+    fPzhij[i] = 0.;
+    fEhij[i]  = 0.;     
+  }
     reader.Copy(*this);
 }
 
