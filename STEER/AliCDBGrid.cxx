@@ -430,13 +430,18 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 		}
 
 		pattern += ".root";
-		AliDebug(2,Form("pattern: %s", pattern.Data()));
+		TString det = pattern(0,4);
+		TString patternCopy(pattern);
+		patternCopy.Remove(0,4);
+		TString folderCopy(fDBFolder);
+		folderCopy += det;
 
 		if (optionQuery == "-y"){
 			AliInfo("Only latest version will be returned");
 		}
 
-		TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, optionQuery.Data());
+		AliDebug(2,Form("** fDBFolder = %s, pattern = %s, filter = %s",folderCopy.Data(), patternCopy.Data(), filter.Data()));
+		TGridResult *res = gGrid->Query(folderCopy, patternCopy, filter, optionQuery.Data());
 		if (res) {
 			AliCDBId validFileId;
 			for(int i=0; i<res->GetEntries(); i++){
@@ -1043,7 +1048,7 @@ Int_t AliCDBGrid::GetLatestVersion(const char* path, Int_t run){
 	}
 
 	delete res;
-	return -1;
+
 
 }
 
