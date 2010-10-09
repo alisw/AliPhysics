@@ -93,7 +93,7 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
    Float_t lastMVValLower;
                         // Thresholds for float DCS variables
 
-   Int_t nEntries;      // Number of entries in each TObjArray, that contains DCS variable values
+   Int_t nEntries=0;      // Number of entries in each TObjArray, that contains DCS variable values
    AliDCSValue *valToProcess;
                         // Pointer to currently processed DCS variable value
    Float_t valToProcessFloat;
