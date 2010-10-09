@@ -19,6 +19,7 @@
 #include <TF1.h>
 #include <TGraphErrors.h>
 #include <TMath.h>
+#include <TString.h>
 
 /* $Id$ */
 
@@ -49,6 +50,14 @@ AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),
   SetPositions();
   SetDefaults();
   SetTimeStep(fgkDefaultTimeStep);
+  for(Int_t i=0;i<kInjPads;i++){ 
+    fSumDriftSpeed[i]=0.;
+    fSumSqDriftSpeed[i]=0.;
+    fSumPadStatus[i]=0;
+    fSumPadStatusCut[i]=0;
+    fNEventsInPad[i]=0;
+  }
+  Reset();
 }
 //______________________________________________________________________
 AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fHisto(),fTbZero(0.),fRMSTbZero(0.),fNEvents(0),fParam(),fPolDegree(0),fActualPolDegree(0),fMinDriftSpeed(0.),fMaxDriftSpeed(0.),fMaxDriftSpeedErr(0.),fLowThreshold(0.),fHighThreshold(0.),fFirstPadForFit(0),fLastPadForFit(0),fPadStatusCutForFit(0),fTimeStep(0.),fUseTimeZeroSignal(kFALSE)
@@ -57,6 +66,14 @@ AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, In
   SetPositions();
   SetDefaults();
   SetTimeStep(fgkDefaultTimeStep);
+  for(Int_t i=0;i<kInjPads;i++){ 
+    fSumDriftSpeed[i]=0.;
+    fSumSqDriftSpeed[i]=0.;
+    fSumPadStatus[i]=0;
+    fSumPadStatusCut[i]=0;
+    fNEventsInPad[i]=0;
+  }
+  Reset();
 }
 //______________________________________________________________________
 AliITSOnlineSDDInjectors::~AliITSOnlineSDDInjectors(){
@@ -585,14 +602,14 @@ void AliITSOnlineSDDInjectors::PrintCentroids(){
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_t optAppend){
   //
-  Char_t outfilnam[100];
-  sprintf(outfilnam,"SDDinj_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);  
+  TString outfilnam;
+  outfilnam.Form("SDDinj_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);  
   FILE* outf;
   if(optAppend==0){ 
-    outf=fopen(outfilnam,"w");
+    outf=fopen(outfilnam.Data(),"w");
     fprintf(outf,"%d\n",fActualPolDegree);
   }
-  else outf=fopen(outfilnam,"a");
+  else outf=fopen(outfilnam.Data(),"a");
   fprintf(outf,"%d   %d   ",evNumb,timeStamp);
   for(Int_t ic=0;ic<fPolDegree+1;ic++){
     fprintf(outf,"%G ",fParam[ic]);
@@ -602,9 +619,9 @@ void AliITSOnlineSDDInjectors::WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDInjectors::GetMeanDriftSpeedVsPadHisto() const{
-  Char_t hisnam[20];
-  sprintf(hisnam,"hdrsp%02dc%02ds%d",fDDL,fCarlos,fSide);
-  TH1F* h=new TH1F(hisnam,"",kInjPads,-0.5,kInjPads-0.5);
+  TString hisnam;
+  hisnam.Form("hdrsp%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam.Data(),"",kInjPads,-0.5,kInjPads-0.5);
   if(fNEvents>0){
     for(Int_t i=0;i<kInjPads;i++){ 
       h->SetBinContent(i+1,GetMeanDriftSpeed(i));    
@@ -623,10 +640,10 @@ Bool_t AliITSOnlineSDDInjectors::WriteToROOT(TFile *fil) const {
     AliWarning("Invalid pointer to ROOT file");
     return kFALSE;    
   }  
-  Char_t hisnam[20];
+  TString hisnam;
   fil->cd();
-  sprintf(hisnam,"hdrsp%02dc%02ds%d",fDDL,fCarlos,fSide);
-  TH1F hdsp(hisnam,"",kInjPads,-0.5,kInjPads-0.5);
+  hisnam.Form("hdrsp%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F hdsp(hisnam.Data(),"",kInjPads,-0.5,kInjPads-0.5);
   if(fNEvents==0){
     AliWarning("Zero analyzed events");
     return kFALSE;    
@@ -646,9 +663,9 @@ Bool_t AliITSOnlineSDDInjectors::WriteToROOT(TFile *fil) const {
 void AliITSOnlineSDDInjectors::WriteInjectorStatusToASCII(){
   // dump status of injectors encoded into UInt_t
   // 5 bits (value 0-31) to store number of pads with given status
-  Char_t outfilnam[100];
-  sprintf(outfilnam,"SDDinj_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);  
-  FILE* outf=fopen(outfilnam,"a");
+  TString outfilnam;
+  outfilnam.Form("SDDinj_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);  
+  FILE* outf=fopen(outfilnam.Data(),"a");
   Int_t n[8]={0,0,0,0,0,0,0,0};
   for(Int_t jpad=fFirstPadForFit; jpad<=fLastPadForFit; jpad++){
     Int_t statusPad=GetInjPadStatus(jpad);
