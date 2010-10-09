@@ -172,6 +172,7 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
       // end of module word
       fCarlosId=fData&maskmod;
       fDDL=fRawReader->GetDDLID();
+      if(fDDL<0) return kFALSE;
       fModuleID = GetModuleNumber(fDDL,fCarlosId);
       fCompletedDDL=kFALSE;
       fCompletedModule=kTRUE;
@@ -189,6 +190,7 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
       // data word
       fCarlosId=(fData&maskCarlos)>>27;
       fDDL=fRawReader->GetDDLID();
+      if(fDDL<0) return kFALSE;
       fModuleID = GetModuleNumber(fDDL,fCarlosId);
       fChannel=(fData&maskSide)>>26;
       fCoord1=(fData&maskAnode)>>18;

@@ -192,7 +192,7 @@ Bool_t AliITSRawStreamSDD::Next()
 	  fNfifo[iFifoIdx] = fCarlosId;
 	} else if (fData>=fIFifoWord[0]&&fData<=fIFifoWord[3]){ // FIFO word
 	  fCarlosId = fNfifo[fData-fIFifoWord[0]];	    
-	} else if(fData==0x3FFFFFFF){ // Carlos footer
+	} else if(fData==0x3FFFFFFF && fCarlosId>=0 && fCarlosId<kModulesPerDDL){ // Carlos footer
 	  fICountFoot[fCarlosId]++; // stop before the last word (last word=jitter)
 	  if(fICountFoot[fCarlosId]==3){
 	    fCompletedModule=kTRUE;
@@ -221,7 +221,9 @@ Bool_t AliITSRawStreamSDD::Next()
       
       if(fCarlosId>=0 && fCarlosId <kModulesPerDDL){
 	Int_t nDDL=fRawReader->GetDDLID();
-	fModuleID = GetModuleNumber(nDDL,fCarlosId);
+	if(nDDL>=0){
+	  fModuleID = GetModuleNumber(nDDL,fCarlosId);
+	}
       }
     } else {  // decode data
       if (fReadCode[fCarlosId][fChannel]) {// read the next code word

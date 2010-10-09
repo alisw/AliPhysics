@@ -131,7 +131,10 @@ void AliITSCalibrationSDD::GiveCompressParam(Int_t  cp[4]) const {
 void AliITSCalibrationSDD::SetBadChannel(Int_t i,Int_t anode){
   //Set bad anode (set gain=0 for these channels);
 
-  if(anode<0 || anode >fgkChannels*fgkChips*fgkWings-1)AliError("Wrong anode number");
+  if(anode<0 || anode >fgkChannels*fgkChips*fgkWings-1){
+    AliError("Wrong anode number");
+    return;
+  }
   fBadChannels[i]=anode;
   fGain[anode]=0;
 }
