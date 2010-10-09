@@ -428,7 +428,7 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
     Float_t polar[3] = {0., 0., 0.};
     Int_t np = fDecayer->ImportParticles(particles);
     fNpartProd += (np-1);
-    Int_t nt;    
+    Int_t nt = 0;    
     for (Int_t i = 1; i < np; i++)
     {
 	TParticle* iParticle =  (TParticle *) particles->At(i);

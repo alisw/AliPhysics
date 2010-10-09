@@ -280,7 +280,6 @@ void AliGenHijing::Generate()
       
 //      Get event vertex
 //
-      TParticle *  iparticle = (TParticle *) fParticles.At(0);
       fVertex[0] = origin0[0];
       fVertex[1] = origin0[1];	
       fVertex[2] = origin0[2];
@@ -288,7 +287,7 @@ void AliGenHijing::Generate()
 //
 //      First select parent particles
 //
-
+      TParticle *  iparticle = 0;
       for (i = 0; i < np; i++) {
 	  iparticle = (TParticle *) fParticles.At(i);
 
@@ -445,7 +444,12 @@ void AliGenHijing::EvaluateCrossSections()
     Float_t* b   = new Float_t[kMax];
     Float_t* si1 = new Float_t[kMax];    
     Float_t* si2 = new Float_t[kMax];    
-    
+    for (i = 0; i < kMax; i++){
+      b[i] = 0.;
+      si1[i] = 0.;
+      si2[i] = 0.;
+    }
+
     for (i = 0; i < kMax; i++)
     {
 	Float_t xb  = bMin+i*kdib;
