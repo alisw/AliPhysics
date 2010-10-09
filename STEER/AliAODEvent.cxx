@@ -484,7 +484,8 @@ Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
 
   AliAODTrack *track = 0;
   for (Int_t iTrack = 0; iTrack < GetNTracks(); iTrack++) {
-    if ((track = GetTrack(iTrack))->IsMuonTrack()) {
+    track = GetTrack(iTrack);
+    if (track->IsMuonTrack()) {
       muonTracks->Add(track);
     }
   }

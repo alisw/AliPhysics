@@ -123,10 +123,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     AliESD*      old = esd->GetAliESDOld();
 
     // Fetch Stack for debuggging if available 
-    AliStack *pStack = 0;
     AliMCEventHandler *mcH = 0;
     if(MCEvent()){
-      pStack = MCEvent()->Stack();
       mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()); 
     }
     // set arrays and pointers

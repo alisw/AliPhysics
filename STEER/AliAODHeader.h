@@ -112,7 +112,8 @@ class AliAODHeader : public AliVHeader {
   void RemoveQTheta();
 
   void SetDiamond(Float_t xy[2],Float_t cov[3]) { 
-    for(Int_t i=0;i<3;i++) {if(i<2) fDiamondXY[i]=xy[i]; fDiamondCovXY[i]=cov[i];}
+    for(Int_t i=0;i<3;i++) {fDiamondCovXY[i] = cov[i];}
+    for(Int_t i=0;i<2;i++) {fDiamondXY[i]    = xy[i] ;}
   }
   void SetDiamondZ(Float_t z, Float_t sig2z){
     fDiamondZ=z; fDiamondSig2Z=sig2z;

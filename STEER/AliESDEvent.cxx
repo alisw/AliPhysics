@@ -249,8 +249,11 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
 	((TNamed*)mine)->SetName(name);
       }
       else if(mine->InheritsFrom("TCollection")){
-	if(mine->InheritsFrom("TClonesArray"))
-	  dynamic_cast<TClonesArray*>(mine)->SetClass(dynamic_cast<TClonesArray*>(its)->GetClass());
+	if(mine->InheritsFrom("TClonesArray")) {
+	  TClonesArray* tcits = dynamic_cast<TClonesArray*>(its);
+	  if (tcits)
+	    dynamic_cast<TClonesArray*>(mine)->SetClass(tcits->GetClass());
+	}
 	dynamic_cast<TCollection*>(mine)->SetName(name);
       }
       AliDebug(1, Form("adding object %s of type %s", mine->GetName(), mine->ClassName()));
