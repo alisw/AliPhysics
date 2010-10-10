@@ -43,6 +43,7 @@
 #include "AliVParticle.h"
 #include "AliMixedEvent.h"
 #include "AliESDtrack.h"
+#include "AliEMCALRecoUtils.h"
 
 ClassImp(AliCaloTrackReader)
   
@@ -66,104 +67,12 @@ ClassImp(AliCaloTrackReader)
     fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
     fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
     fMixedEvent(NULL), fNMixedEvent(1), fVertex(NULL), 
-    fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE)
-{
+    fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE){
   //Ctor
   
   //Initialize parameters
   InitParameters();
 }
-/*
-//____________________________________________________________________________
-AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & reader) :   
-  TObject(reader), fEventNumber(reader.fEventNumber), fCurrentFileName(reader.fCurrentFileName), 
-  fDataType(reader.fDataType), fDebug(reader.fDebug),
-  fFiducialCut(reader.fFiducialCut),
-  fComparePtHardAndJetPt(reader.fComparePtHardAndJetPt),
-  fPtHardAndJetPtFactor(reader.fPtHardAndJetPtFactor),
-  fCTSPtMin(reader.fCTSPtMin), fEMCALPtMin(reader.fEMCALPtMin),fPHOSPtMin(reader.fPHOSPtMin), 
-  fAODBranchList(new TList()),
-  fAODCTS(new TObjArray(*reader.fAODCTS)),  
-  fAODEMCAL(new TObjArray(*reader.fAODEMCAL)),
-  fAODPHOS(new TObjArray(*reader.fAODPHOS)),
-  fEMCALCells(new TNamed(*reader.fEMCALCells)),
-  fPHOSCells(new TNamed(*reader.fPHOSCells)),
-  fInputEvent(reader.fInputEvent), fOutputEvent(reader.fOutputEvent), fMC(reader.fMC),
-  fFillCTS(reader.fFillCTS),fFillEMCAL(reader.fFillEMCAL),fFillPHOS(reader.fFillPHOS),
-  fFillEMCALCells(reader.fFillEMCALCells),fFillPHOSCells(reader.fFillPHOSCells),
-  fSecondInputAODTree(reader.fSecondInputAODTree), 
-  fSecondInputAODEvent(reader.fSecondInputAODEvent),
-  fSecondInputFileName(reader.fSecondInputFileName), 
-  fSecondInputFirstEvent(reader.fSecondInputFirstEvent),
-  fAODCTSNormalInputEntries(reader.fAODCTSNormalInputEntries), 
-  fAODEMCALNormalInputEntries(reader.fAODEMCALNormalInputEntries), 
-  fAODPHOSNormalInputEntries(reader.fAODPHOSNormalInputEntries),
-  fTrackStatus(reader.fTrackStatus),
-  fReadStack(reader.fReadStack), fReadAODMCParticles(reader.fReadAODMCParticles),
-  fFiredTriggerClassName(reader.fFiredTriggerClassName),
-  fAnaLED(reader.fAnaLED), 
-  fTaskName(reader.fTaskName),
-  fCaloUtils(new AliCalorimeterUtils(*reader.fCaloUtils))
-{
-  // cpy ctor  
-}
-*/
-//_________________________________________________________________________
-//AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & source)
-//{
-//  // assignment operator
-//  
-//  if(&source == this) return *this;
-//  
-//  fDataType    = source.fDataType ;
-//  fDebug       = source.fDebug ;
-//  fEventNumber = source.fEventNumber ;
-//  fCurrentFileName = source.fCurrentFileName ;
-//  fFiducialCut = source.fFiducialCut;
-//	
-//  fComparePtHardAndJetPt = source.fComparePtHardAndJetPt;
-//  fPtHardAndJetPtFactor  = source.fPtHardAndJetPtFactor;
-//	
-//  fCTSPtMin    = source.fCTSPtMin ;
-//  fEMCALPtMin  = source.fEMCALPtMin ;
-//  fPHOSPtMin   = source.fPHOSPtMin ; 
-//  
-//  fAODCTS     = new TObjArray(*source.fAODCTS) ;
-//  fAODEMCAL   = new TObjArray(*source.fAODEMCAL) ;
-//  fAODPHOS    = new TObjArray(*source.fAODPHOS) ;
-//  fEMCALCells = new TNamed(*source.fEMCALCells) ;
-//  fPHOSCells  = new TNamed(*source.fPHOSCells) ;
-//
-//  fInputEvent  = source.fInputEvent;
-//  fOutputEvent = source.fOutputEvent;
-//  fMC          = source.fMC;
-//  
-//  fFillCTS        = source.fFillCTS;
-//  fFillEMCAL      = source.fFillEMCAL;
-//  fFillPHOS       = source.fFillPHOS;
-//  fFillEMCALCells = source.fFillEMCALCells;
-//  fFillPHOSCells  = source.fFillPHOSCells;
-//
-//  fSecondInputAODTree    = source.fSecondInputAODTree;
-//  fSecondInputAODEvent   = source.fSecondInputAODEvent;
-//  fSecondInputFileName   = source.fSecondInputFileName;
-//  fSecondInputFirstEvent = source.fSecondInputFirstEvent;
-//
-//  fAODCTSNormalInputEntries   = source.fAODCTSNormalInputEntries; 
-//  fAODEMCALNormalInputEntries = source.fAODEMCALNormalInputEntries; 
-//  fAODPHOSNormalInputEntries  = source.fAODPHOSNormalInputEntries;
-//	
-//  fTrackStatus        = source.fTrackStatus;
-//  fReadStack          = source.fReadStack;
-//  fReadAODMCParticles = source.fReadAODMCParticles;	
-//	
-//  fDeltaAODFileName   = source.fDeltaAODFileName;
-//	
-//  fFiredTriggerClassName = source.fFiredTriggerClassName  ;
-//	
-//  return *this;
-//  
-//}
 
 //_________________________________
 AliCaloTrackReader::~AliCaloTrackReader() {
@@ -739,10 +648,28 @@ void AliCaloTrackReader::FillInputEMCAL() {
             printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
                    momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
           
+          Float_t pos[3];
+          clus->GetPosition(pos);
+          //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
+          
           //Recalibrate the cluster energy 
           if(GetCaloUtils()->IsRecalibrationOn()) {
-            Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliAODCaloCells*)GetEMCALCells());
+            Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
             clus->SetE(energy);
+            //printf("Recalibrated Energy %f\n",clus->E());  
+          }
+          
+          //Correct non linearity
+          if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn()){
+            GetCaloUtils()->CorrectClusterEnergy(clus) ;
+            //printf("Linearity Corrected Energy %f\n",clus->E());  
+          }
+          
+          //Recalculate cluster position
+          if(GetCaloUtils()->IsRecalculationOfClusterPositionOn()){
+            GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus); 
+            clus->GetPosition(pos);
+            //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
           }
           
           if (fMixedEvent) {

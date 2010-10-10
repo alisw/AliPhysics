@@ -26,6 +26,7 @@ class AliVCluster;
 class AliVCaloCells;
 #include "AliPHOSGeoUtils.h"
 #include "AliEMCALGeoUtils.h"
+class AliEMCALRecoUtils;
 
 class AliCalorimeterUtils : public TObject {
 
@@ -144,6 +145,19 @@ class AliCalorimeterUtils : public TObject {
 
   Float_t RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
 
+  void SetEMCALRecoUtils(AliEMCALRecoUtils * ru) {fEMCALRecoUtils = ru;}
+  AliEMCALRecoUtils* GetEMCALRecoUtils() const {return fEMCALRecoUtils;}
+  
+  Bool_t IsCorrectionOfClusterEnergyOn()  const    { return fCorrectELinearity ; }
+  void SwitchOnCorrectClusterLinearity()         { fCorrectELinearity = kTRUE; } 
+  void SwitchOffCorrectClusterLinearity()        { fCorrectELinearity = kFALSE; } 
+  void CorrectClusterEnergy(AliVCluster *cl);
+  
+  Bool_t IsRecalculationOfClusterPositionOn()  const { return fRecalculatePosition ; }
+  void SwitchOnRecalculateClusterPosition()      { fRecalculatePosition = kTRUE; } 
+  void SwitchOffRecalculateClusterPosition()     { fRecalculatePosition = kFALSE; } 
+  void RecalculateClusterPosition(AliVCaloCells* cells, AliVCluster* clu);
+
  private:
 
   Int_t              fDebug;                 //  Debugging level
@@ -162,8 +176,11 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fRecalibration;         //  Switch on or off the recalibration
   TObjArray        * fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
   TObjArray        * fPHOSRecalibrationFactors;  // Array of histograms with map of recalibration factors, PHOS
-
-  ClassDef(AliCalorimeterUtils,2)
+  AliEMCALRecoUtils* fEMCALRecoUtils;        //  EMCAL utils for cluster rereconstruction
+  Bool_t             fRecalculatePosition;   // Recalculate cluster position
+  Bool_t             fCorrectELinearity  ;   // Correct cluster energy linearity
+  
+  ClassDef(AliCalorimeterUtils,3)
 } ;
 
 

@@ -28,13 +28,15 @@ char * kXML = "collection.xml";
 //---------------------------------------------------------------------------
 
 const TString kInputData = "AOD"; //ESD, AOD, MC
-TString kTreeName = "aodTree";
+TString kTreeName = "esdTree";
 Bool_t copy = kFALSE;
 
 void anaEMCALCalib(Int_t mode=mLocal)
 {
   // Main
-
+  char cmd[200] ; 
+  sprintf(cmd, ".! rm -rf aod.root pi0calib.root") ; 
+  gROOT->ProcessLine(cmd) ; 
   //--------------------------------------------------------------------
   // Load analysis libraries
   // Look at the method below, 
@@ -100,16 +102,21 @@ void anaEMCALCalib(Int_t mode=mLocal)
     //-------------------------------------------------------------------------
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
-    
-    gROOT->LoadMacro("AddTaskPhysicsSelection.C");
-    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+
     
     // ESD filter task
-    if(kInputData == "ESD" && !copy){
-      gROOT->LoadMacro("AddTaskESDFilter.C");
-      AliAnalysisTaskESDfilter *esdfilter = AddTaskESDFilter(kFALSE);
+    if(kInputData == "ESD"){
+
+      gROOT->LoadMacro("AddTaskPhysicsSelection.C");
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+      if(!copy){
+	gROOT->LoadMacro("AddTaskESDFilter.C");
+	AliAnalysisTaskESDfilter *esdfilter = AddTaskESDFilter(kFALSE);
+      }
     }
     
+
+   
     AliAnalysisTaskEMCALPi0CalibSelection * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelection ("EMCALPi0Calibration");
     //pi0calib->SetDebugLevel(10); 
     pi0calib->CopyAOD(copy);
@@ -119,7 +126,27 @@ void anaEMCALCalib(Int_t mode=mLocal)
     pi0calib->SetNCellsGroup(0);
     pi0calib->SwitchOnBadChannelsRemoval();
     pi0calib->SwitchOffSameSM();
-    pi0calib->SwitchOffOldAODs();
+    pi0calib->SwitchOnOldAODs();
+    pi0calib->SetNumberOfCellsFromEMCALBorder(1);
+    AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
+    reco->SetMisalShift(0,0.8);  reco->SetMisalShift(1,8.3); reco->SetMisalShift(2,1.);
+    reco->SetMisalShift(3,-7.5); reco->SetMisalShift(4,7.5); reco->SetMisalShift(5,2.);
+    reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaGamma);
+    reco->SetNonLinearityParam(0,1.04);     reco->SetNonLinearityParam(1,-0.1445);
+    reco->SetNonLinearityParam(2,1.046);    
+
+//     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaConversion);
+//     reco->SetNonLinearityParam(0,1.033);     reco->SetNonLinearityParam(1,0.0566186);
+//     reco->SetNonLinearityParam(2,0.982133);    
+
+
+//      reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
+//      reco->SetNonLinearityParam(0,1.001);     reco->SetNonLinearityParam(1,-0.01264);
+//      reco->SetNonLinearityParam(2,-0.03632);    
+//      reco->SetNonLinearityParam(3,0.1798);     reco->SetNonLinearityParam(4,-0.522);
+
+    reco->Print("");
+
     // SM0
     pi0calib->SetEMCALChannelStatus(0,3,13);  pi0calib->SetEMCALChannelStatus(0,44,1); pi0calib->SetEMCALChannelStatus(0,3,13); 
     pi0calib->SetEMCALChannelStatus(0,20,7);  pi0calib->SetEMCALChannelStatus(0,38,2);   
@@ -140,6 +167,17 @@ void anaEMCALCalib(Int_t mode=mLocal)
 
     mgr->AddTask(pi0calib);
 
+   pi0calib->SwitchOnRecalibration();
+  TFile * f = new TFile("RecalibrationFactors.root","read");
+  TH2F * h0 = (TH2F*)f->Get("EMCALRecalFactors_SM0")->Clone();
+  TH2F * h1 = (TH2F*)f->Get("EMCALRecalFactors_SM1")->Clone();
+  TH2F * h2 = (TH2F*)f->Get("EMCALRecalFactors_SM2")->Clone();
+  TH2F * h3 = (TH2F*)f->Get("EMCALRecalFactors_SM3")->Clone();
+
+  pi0calib->SetEMCALChannelRecalibrationFactors(0,h0);
+  pi0calib->SetEMCALChannelRecalibrationFactors(1,h1);
+  pi0calib->SetEMCALChannelRecalibrationFactors(2,h2);
+  pi0calib->SetEMCALChannelRecalibrationFactors(3,h3);
     
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
@@ -148,7 +186,7 @@ void anaEMCALCalib(Int_t mode=mLocal)
       mgr->CreateContainer("pi0calib", TList::Class(), AliAnalysisManager::kOutputContainer, "pi0calib.root");
     
     AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer("Cuts", TList::Class(), 
-							       AliAnalysisManager::kParamContainer, "pi0calib.root");
+							       AliAnalysisManager::kOutputContainer, "pi0calib.root");
     
     mgr->ConnectInput  (pi0calib,     0, cinput1);
     if(copy) mgr->ConnectOutput (pi0calib, 0, coutput1 );
@@ -202,6 +240,7 @@ void  LoadLibraries(const anaModes mode) {
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
     gSystem->Load("libANALYSISalice.so");
+    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
     gSystem->Load("libPWG4CaloCalib.so");
     
     /*
