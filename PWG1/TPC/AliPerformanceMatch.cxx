@@ -214,13 +214,16 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEven
   // addition to standard analysis - check if ITS stand-alone tracks have a match in the TPC
   // Origin: A. Kalwait
   // Modified: J. Otwinowski
+  if(!esdEvent) return;
   if(!esdTrack) return;
   if(!esdFriendTrack) return;
 
-  //
-  if (esdTrack->GetInnerParam()) return; // ITS stand-alone tracks have not TPC inner param
-  if (esdTrack->GetITSclusters(0) < fCutsRC->GetMinNClustersITS()) return;
-  //AliTracker::PropagateTrackToBxByBz(esdTrack,80.0,0.1056,1.0,kTRUE); // we propagate the ITS stand-alone to the inner TPC radius
+  // ITS stand alone tracks with SPD layers 
+  if(!(esdTrack->GetStatus() & AliESDtrack::kITSpureSA)) return;
+  if(!(esdTrack->GetStatus() & AliESDtrack::kITSrefit)) return;
+  if(esdTrack->GetNcls(0)<fCutsRC->GetMinNClustersITS()) return;
+  if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) return;
+
   Bool_t hasMatch = kFALSE;
     for (Int_t jTrack = 0; jTrack < esdEvent->GetNumberOfTracks(); jTrack++) {
       // loop for all those tracks and check if the corresponding TPC track is found
@@ -229,27 +232,53 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEven
       if (!trackTPC) continue;
       if (!trackTPC->GetTPCInnerParam()) continue;
 
+      // TPC nClust/track after first tracking pass
+      if(trackTPC->GetTPCNclsIter1()<fCutsRC->GetMinNClustersTPC()) continue; 
+
       AliExternalTrackParam *innerTPC = new AliExternalTrackParam(*(trackTPC->GetTPCInnerParam()));
       if(!innerTPC) continue;
 
-      AliTracker::PropagateTrackToBxByBz(innerTPC,2.8,trackTPC->GetMass(),1.0,kTRUE);
       Double_t x[3]; trackTPC->GetXYZ(x);
       Double_t b[3]; AliTracker::GetBxByBz(x,b);
+      Double_t dca[2],cov[3];
+      Bool_t isTPCOK = innerTPC->PropagateToDCABxByBz(esdEvent->GetPrimaryVertexSPD(),b,kVeryBig,dca,cov);
+      if(!isTPCOK) { 
+        if(innerTPC) delete innerTPC;  
+        continue;
+      }
 
-      Double_t dz[2],cov[3];
-      innerTPC->PropagateToDCABxByBz(esdEvent->GetPrimaryVertexSPD(),b,kVeryBig,dz,cov);
+      //
+      // select primaries
+      //
+      Double_t dcaToVertex = -1;
+      if( fCutsRC->GetDCAToVertex2D() ) 
+      {
+        dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY()+dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
+      }
+      if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) { 
+        delete innerTPC; continue; }
+      if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) { 
+        delete innerTPC; continue; }
+      if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) { 
+        delete innerTPC; continue; }
 
       // rough checking if they match
       /*
       printf("+++++++++++++++++++++++++++++++++++++++++++++++ ");
-      printf("esdTrack->GetY() %f, esdTrack->GetSnp() %f, esdTrack->GetTgl() %f \n", 
+      printf("esdTrack->GetY() %e, esdTrack->GetSnp() %e, esdTrack->GetTgl() %e \n", 
               esdTrack->GetY(), esdTrack->GetSnp(), esdTrack->GetTgl());
-      printf("innerTPC->GetY() %f, innerTPC->GetSnp() %f, innerTPC->GetTgl() %f \n", 
+      printf("innerTPC->GetY() %e, innerTPC->GetSnp() %e, innerTPC->GetTgl() %e \n", 
               innerTPC->GetY() , innerTPC->GetSnp() , innerTPC->GetTgl());
       */
-      if (TMath::Abs(esdTrack->GetY() - innerTPC->GetY()) > 3) { delete innerTPC; continue; }
-      if (TMath::Abs(esdTrack->GetSnp() - innerTPC->GetSnp()) > 0.2) { delete innerTPC; continue; }
-      if (TMath::Abs(esdTrack->GetTgl() - innerTPC->GetTgl()) > 0.2) { delete innerTPC; continue; }
+      if (TMath::Abs(esdTrack->GetY() - innerTPC->GetY()) > 3) { 
+        delete innerTPC; continue; 
+      }
+      if (TMath::Abs(esdTrack->GetSnp() - innerTPC->GetSnp()) > 0.2) { 
+        delete innerTPC; continue; 
+      }
+      if (TMath::Abs(esdTrack->GetTgl() - innerTPC->GetTgl()) > 0.2) { 
+        delete innerTPC; continue; 
+      }
 
       hasMatch = kTRUE;
       if(innerTPC) delete innerTPC;
@@ -293,13 +322,13 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *
   Double_t dcaToVertex = -1;
   if( fCutsRC->GetDCAToVertex2D() ) 
   {
-      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY()                    + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
+      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY() + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
   }
   if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
 
-  if( (esdTrack->GetNcls(1)>fCutsRC->GetMinNClustersTPC()) && 
+  if( (esdTrack->GetTPCNclsIter1()>fCutsRC->GetMinNClustersTPC()) && 
       (esdTrack->GetTPCInnerParam()) &&
       (innerTPC=new AliExternalTrackParam(*(esdTrack->GetTPCInnerParam())))) 
   {
@@ -372,7 +401,7 @@ void AliPerformanceMatch::ProcessTPCTRD(AliStack* /*const stack*/, AliESDtrack *
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
 
-  if( (esdTrack->GetNcls(1)>fCutsRC->GetMinNClustersTPC()) && 
+  if( (esdTrack->GetTPCNclsIter1()>fCutsRC->GetMinNClustersTPC()) && 
       (esdFriendTrack->GetTPCOut()) &&
       (outerTPC=new AliExternalTrackParam(*(esdFriendTrack->GetTPCOut())))) 
   {
