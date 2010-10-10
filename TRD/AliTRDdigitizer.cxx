@@ -724,6 +724,7 @@ Bool_t AliTRDdigitizer::SortHits(Float_t **hits, Int_t *nhit)
   TTree *hitTree = gimme->TreeH();
   if (hitTree == 0x0) {
     AliError("Can not get TreeH");
+    delete [] lhit;
     return kFALSE;
   }
   fTRD->SetTreeAddress();

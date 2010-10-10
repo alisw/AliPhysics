@@ -180,8 +180,6 @@ AliTRDsimTR::AliTRDsimTR(const AliTRDsimTR &s)
     fSigma[iBin]     = ((AliTRDsimTR &) s).fSigma[iBin];
   }  
 
-  fSpectrum->Copy(*((AliTRDsimTR &) s).fSpectrum);
-
 }
 
 //_____________________________________________________________________________
@@ -273,8 +271,6 @@ void AliTRDsimTR::Copy(TObject &s) const
   for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
     ((AliTRDsimTR &) s).fSigma[iBin]     = fSigma[iBin];
   }  
-
-  fSpectrum->Copy(*((AliTRDsimTR &) s).fSpectrum);
 
 }
 

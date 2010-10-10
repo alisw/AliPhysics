@@ -2975,6 +2975,7 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
       case 13:
       case 14:
       case 15:
+        // Check for holes in from of PHOS
         if (istack == 2) {
           continue;
 	}
@@ -2989,12 +2990,6 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
       };
       if (!gGeoManager->CheckPath(volPath)) {
 	continue;
-      }
-
-      // Check for holes in from of PHOS
-      if (((isector == 13) || (isector == 14) || (isector == 15)) && 
-          (istack == 2)) {
-        continue; 
       }
 
       UShort_t     volid   = AliGeomManager::LayerToVolUID(iLayer,iModule);

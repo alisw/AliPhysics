@@ -302,129 +302,127 @@ void AliTRDarrayADC::Compress()
   Int_t l;                  
   Int_t r=0;                
   Int_t s=0;                
-  Int_t *longm;            
-  longm = new Int_t[fNAdim];  
-  Int_t *longz;            
-  longz = new Int_t[fNAdim];
   Int_t k=0;
-  memset(longz,0,sizeof(Int_t)*fNAdim);
-  memset(longm,0,sizeof(Int_t)*fNAdim);
 
-  for(Int_t i=0;i<fNAdim; i++)
+  Int_t *longm = new Int_t[fNAdim];  
+  Int_t *longz = new Int_t[fNAdim];
+
+  if(longz && longm && fADC)
     {
-      j=0;
-      if(fADC[i]==-1)
-	{
-	  for(k=i;k<fNAdim;k++)
+
+      memset(longz,0,sizeof(Int_t)*fNAdim);
+      memset(longm,0,sizeof(Int_t)*fNAdim);
+
+      for(Int_t i=0;i<fNAdim; i++)
+        {
+          j=0;
+          if(fADC[i]==-1)
 	    {
-	      if((fADC[k]==-1)&&(j<16000))   
-		{
-		  j=j+1;
-		  longm[r]=j;                
-		}
-	      else
-		{
-		  break;
-		}
+	      for(k=i;k<fNAdim;k++)
+	        {
+	          if((fADC[k]==-1)&&(j<16000))   
+		    {
+		      j=j+1;
+		      longm[r]=j;                
+		    }
+	          else
+		    {
+		      break;
+		    }
+	        }
+	      r=r+1;            
 	    }
-	  r=r+1;            
-	}
-      l=16001;
-      if(fADC[i]==0)
-	{
-	  for(k=i;k<fNAdim;k++)
+          l=16001;
+          if(fADC[i]==0)
 	    {
-	      if((fADC[k]==0)&&(l<32767))     
-		{                             
-		  l=l+1;
-		  longz[s]=l;                
-		}
-	      else
-		{
-		  break;
-		}
+	      for(k=i;k<fNAdim;k++)
+	        {
+	          if((fADC[k]==0)&&(l<32767))     
+		    {                             
+		      l=l+1;
+		      longz[s]=l;                
+		    }
+	          else
+		    {
+		      break;
+		    }
+	        }
+	      s=s+1;         
 	    }
-	  s=s+1;         
-	}
-      if(fADC[i]>0)
-	{
-	  i=i+1;
-	}
-      i=i+j+(l-16001-1); 
-    }
-
-  //Calculate the size of the compressed array
-  for(Int_t i=0; i<fNAdim;i++)
-    {
-      if(longm[i]!=0)   
-	{
-	  counter=counter+longm[i]-1;
-	}
-      if(longz[i]!=0)  
-	{
-	  counter=counter+(longz[i]-16001)-1;
-	}
-    }
-  newDim = fNAdim-counter;   //Dimension of the compressed array
-  Short_t* buffer;
-  buffer = new Short_t[newDim];
-  Int_t counterTwo=0;
-
-  //Fill the buffer of the compressed array
-  Int_t g=0;
-  Int_t h=0; 
-  for(Int_t i=0; i<newDim; i++)
-    {
-      if(counterTwo<fNAdim)
-	{
-	  if(fADC[counterTwo]>0)
+          if(fADC[i]>0)
 	    {
-	      buffer[i]=fADC[counterTwo];
+	      i=i+1;
 	    }
-	  if(fADC[counterTwo]==-1)
-	    {
-	      buffer[i]=-(longm[g]);
-	      counterTwo=counterTwo+longm[g]-1;
-	      g++;
-	    }  
-	  if(fADC[counterTwo]==0)
-	    {
-	      buffer[i]=-(longz[h]); 
-	      counterTwo=counterTwo+(longz[h]-16001)-1;
-	      h++;
-	    }  
-	  counterTwo++;
-	}
-    }
+          i=i+j+(l-16001-1); 
+        }
 
-  //Copy the buffer
-  if(fADC)
-    {
-      delete [] fADC;
-      fADC=0;
-    }
-  fADC = new Short_t[newDim];
-  fNAdim = newDim;
-  for(Int_t i=0; i<newDim; i++)
-    {
-      fADC[i] = buffer[i]; 
-    }
+      //Calculate the size of the compressed array
+      for(Int_t i=0; i<fNAdim;i++)
+        {
+          if(longm[i]!=0)   
+	    {
+	      counter=counter+longm[i]-1;
+	    }
+          if(longz[i]!=0)  
+	    {
+	      counter=counter+(longz[i]-16001)-1;
+	    }
+        }
 
-  //Delete auxiliary arrays
-  if(buffer)
-    {
-      delete [] buffer;
-      buffer=0;
-    } 
-  if(longz) 
-    {
+      Int_t counterTwo=0;
+      newDim = fNAdim-counter;   //Dimension of the compressed array
+      Short_t* buffer = new Short_t[newDim];
+
+      if(buffer)
+        {
+
+          //Fill the buffer of the compressed array
+          Int_t g=0;
+          Int_t h=0; 
+          for(Int_t i=0; i<newDim; i++)
+            {
+              if(counterTwo<fNAdim)
+	        {
+	          if(fADC[counterTwo]>0)
+	            {
+	              buffer[i]=fADC[counterTwo];
+	            }
+	          if(fADC[counterTwo]==-1)
+	            {
+	              buffer[i]=-(longm[g]);
+	              counterTwo=counterTwo+longm[g]-1;
+	              g++;
+	            }  
+	          if(fADC[counterTwo]==0)
+	            {
+	              buffer[i]=-(longz[h]); 
+	              counterTwo=counterTwo+(longz[h]-16001)-1;
+	              h++;
+	            }  
+	          counterTwo++;
+	        }
+            }
+
+          //Copy the buffer
+          delete [] fADC;
+          fADC=0;
+          fADC = new Short_t[newDim];
+          fNAdim = newDim;
+          for(Int_t i=0; i<newDim; i++)
+            {
+              fADC[i] = buffer[i]; 
+            }
+
+          //Delete auxiliary arrays
+          delete [] buffer;
+          buffer=0;
+        } 
+
       delete [] longz;
       longz=0;
-    }
-  if(longm) 
-    {
       delete [] longm;
       longm=0;
+
     }
 
 }

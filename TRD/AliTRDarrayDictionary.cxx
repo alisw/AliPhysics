@@ -284,71 +284,77 @@ void AliTRDarrayDictionary::Expand()
   //  Expand the array
   //  
 
-  Int_t *longArr;
-  longArr = new Int_t[fNDdim];
   Int_t dimexp=0;
-
-  //Initialize the array
-  memset(longArr,0,sizeof(Int_t)*fNDdim);
-
-  Int_t r2=0;
-  for(Int_t i=0; i<fNDdim;i++)
+  Int_t *longArr = new Int_t[fNDdim];
+ 
+  if(longArr && fDictionary)
     {
-      if((fDictionary[i]<0)&&(fDictionary[i]!=-1))  
-	{
-	  longArr[r2]=-fDictionary[i]; 
-	  r2++;
-	}
-    }
 
-  //Calculate new dimensions
-  for(Int_t i=0; i<fNDdim;i++)
-    {
-      if(longArr[i]!=0)      
-	{
-	  dimexp=dimexp+longArr[i]-1;
-	}
-    }
-  dimexp=dimexp+fNDdim;  
+      //Initialize the array
+      memset(longArr,0,sizeof(Int_t)*fNDdim);
 
-  //Write in the buffer the new array
-  Int_t* bufferE;
-  bufferE = new Int_t[dimexp];
-  Int_t contaexp =0;    
-  Int_t h=0;
-  for(Int_t i=0; i<dimexp; i++)
-    {
-      if(fDictionary[contaexp]>=-1)  
-	{
-	  bufferE[i]=fDictionary[contaexp];
-	}
-      if(fDictionary[contaexp]<-1)  
-	{
-	  for(Int_t j=0; j<longArr[h];j++)
+      Int_t r2=0;
+      for(Int_t i=0; i<fNDdim;i++)
+        {
+          if((fDictionary[i]<0)&&(fDictionary[i]!=-1))  
 	    {
-	      bufferE[i+j]=-1;
+	      longArr[r2]=-fDictionary[i]; 
+	      r2++;
 	    }
-	  i=i+longArr[h]-1;
-	  h++;
+        }
+
+      //Calculate new dimensions
+      for(Int_t i=0; i<fNDdim;i++)
+        {
+          if(longArr[i]!=0)      
+	    {
+	      dimexp=dimexp+longArr[i]-1;
+  	    }
+        }
+      dimexp=dimexp+fNDdim;  
+
+      //Write in the buffer the new array
+      Int_t contaexp =0;    
+      Int_t h=0;
+      Int_t* bufferE = new Int_t[dimexp];
+
+      if(bufferE)
+	{
+
+          for(Int_t i=0; i<dimexp; i++)
+            {
+              if(fDictionary[contaexp]>=-1)  
+	        {
+	          bufferE[i]=fDictionary[contaexp];
+	        }
+              if(fDictionary[contaexp]<-1)  
+	        {
+	          for(Int_t j=0; j<longArr[h];j++)
+	            {
+	              bufferE[i+j]=-1;
+	            }
+	          i=i+longArr[h]-1;
+	          h++;
+	        }
+              contaexp++;
+            }
+
+          //Copy the buffer
+          delete [] fDictionary;
+          fDictionary=0;
+          fDictionary = new Int_t[dimexp];
+          fNDdim = dimexp;
+          for(Int_t i=0; i<dimexp; i++)
+            {
+              fDictionary[i] = bufferE[i]; 
+            }
+          delete [] bufferE;
+
 	}
-      contaexp++;
-    }
 
-  //Copy the buffer
-  if(fDictionary)
-    {
-      delete [] fDictionary;
-      fDictionary=0;
-    }
+      delete [] longArr;
 
-  fDictionary = new Int_t[dimexp];
-  fNDdim = dimexp;
-  for(Int_t i=0; i<dimexp; i++)
-    {
-      fDictionary[i] = bufferE[i]; 
     }
-  if(bufferE) delete [] bufferE;
-  if(longArr) delete [] longArr;
 
 }
 //________________________________________________________________________________
