@@ -42,6 +42,7 @@
 #include <TParticle.h>
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
+#include <TGeoBBox.h>
 #include <TList.h>
 #include <TBrowser.h>
 
@@ -1319,3 +1320,168 @@ void AliEMCALGeoUtils::GetModulePhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int
   //printf(" GetModulePhiEtaIndexInSModuleFromTRUIndex : itru %2i iphitru %2i ietatru %2i iphiSM %2i ietaSM %2i \n", 
   // itru, iphitru, ietatru, iphiSM, ietaSM);
 }
+
+//__________________________________________________________________________________________________________________
+void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, Float_t energy, 
+                                                const Int_t particle, const Float_t misaligshifts[15], Float_t global[3]) const
+{ //Transform clusters cell position into global with alternative method, taking into account the depth calculation.
+  //Input are: the tower indeces, 
+  //           supermodule, 
+  //           particle type (photon 0, electron 1, hadron 2 )
+  //           misalignment shifts to global position in case of need.
+  // Federico.Ronchetti@cern.ch
+
+  if(gGeoManager){
+    //Recover some stuff
+    
+    TGeoNode        *geoXEn1;         
+    TGeoNodeMatrix  *geoSM[4];        
+    TGeoVolume      *geoSMVol[4];     
+    TGeoShape       *geoSMShape[4];    
+    TGeoBBox        *geoBox[4];        
+    TGeoMatrix      *geoSMMatrix[4];       
+    
+    gGeoManager->cd("ALIC_1/XEN1_1");
+    geoXEn1 = gGeoManager->GetCurrentNode();
+    for(int iSM = 0; iSM < 4; iSM++) {  
+      geoSM[iSM]       = dynamic_cast<TGeoNodeMatrix *>(geoXEn1->GetDaughter(iSM));
+      geoSMVol[iSM]    = geoSM[iSM]->GetVolume(); 
+      geoSMShape[iSM]  = geoSMVol[iSM]->GetShape();
+      geoBox[iSM]      = dynamic_cast<TGeoBBox *>(geoSMShape[iSM]);
+      geoSMMatrix[iSM] = geoSM[iSM]->GetMatrix();
+    }
+    
+    if(sm % 2 == 0) {
+      dcol = 47. - dcol;
+      drow = 23. - drow;
+    }
+    
+    Int_t i = 0; // one always needs "i"
+    Int_t istrip = 0;
+    Float_t z0 = 0;
+    Float_t zb = 0;
+    Float_t z_is = 0;
+    Float_t d = 0;
+    
+    Float_t x,y,z; // return variables in terry's RF
+    
+    //***********************************************************
+    //Do not like this: too many hardcoded values, is it no stored somewhere else?
+    //                : need more comments in the code 
+    //***********************************************************
+    
+    Float_t dz = 6.0;   // base cell width in eta
+    Float_t dx = 6.004; // base cell width in phi
+    
+    // parameters for shower depth calculation
+    Float_t x0  = 1.23;
+    Float_t ecr = 8;
+    Float_t cj  = 0.;
+    
+    //Float_t L = 26.04; // active tower length for hadron (lead+scint+paper)
+    // we use the geant numbers 13.87*2=27.74
+    Float_t teta1 = 0.;
+    
+    i = sm;
+    
+    if (dcol >= 47.5 || dcol<-0.5) {
+      exit(0);
+    }
+    
+    if (drow >= 23.5 || drow<-0.5) {
+      exit(0);
+    }
+    if (sm > 13 || sm <0) {
+      exit(0);
+    }
+    
+    
+    //boxes anc. here
+    Float_t l = geoBox[i]->GetDX()*2 ;
+    
+    energy = energy * 1000; // converting to MEV
+    
+    switch ( particle )
+    {
+      case 0:
+        cj = + 0.5; // photon
+        d  = x0 * TMath::Log( (energy / ecr) + cj);
+        break;
+        
+      case 1:
+        cj = - 0.5; // electron 
+        d = x0 * TMath::Log( (energy / ecr) + cj);
+        break;
+        
+      case 2:
+        // hadron 
+        d = 0.5 * l;
+        break;
+        
+      default:
+        cj = + 0.5; // photon
+        d = x0 * TMath::Log( (energy / ecr) + cj);
+    }
+    
+    istrip = int ((dcol+0.5)/2);
+    
+    // tapering angle
+    teta1 = TMath::DegToRad() * istrip * 1.5;
+    
+    // calculation of module corner along z 
+    // as a function of strip
+    
+    for (int is=0; is<= istrip; is++) {
+      
+      teta1 = TMath::DegToRad() * (is+1) * 1.5;
+      z_is = z_is + 2*dz*(TMath::Sin(teta1)*TMath::Tan(teta1) + TMath::Cos(teta1));
+      
+    }
+    
+    z0 = dz*(dcol-2*istrip+0.5);
+    zb = (2*dz-z0-d*TMath::Tan(teta1));
+    
+    z = z_is - zb*TMath::Cos(teta1);
+    y = d/TMath::Cos(teta1) + zb*TMath::Sin(teta1);
+    
+    x = (drow + 0.5)*dx;
+    
+    // moving the origin from terry's RF
+    // to the GEANT one
+    
+    double xx =  y - geoBox[i]->GetDX();
+    double yy = -x + geoBox[i]->GetDY() - 0.512; //to center the towers in the box
+    double zz =  z - geoBox[i]->GetDZ() + 1; //gap at z = 0
+    
+    const double localIn[3] = {xx, yy, zz};
+    double dglobal[3];
+    geoSMMatrix[i]->LocalToMaster(localIn, dglobal);
+    
+    
+    //hardcoded global shifts
+    if(sm == 2 || sm == 3) {//sector 1
+      global[0] = dglobal[0] + misaligshifts[3]*TMath::Sin(TMath::DegToRad()*20); // misaligshifts[3] = - 7.5
+      global[1] = dglobal[1] + misaligshifts[4]*TMath::Cos(TMath::DegToRad()*20); // misaligshifts[4] = + 7.5
+      global[2] = dglobal[2] + misaligshifts[5];                                  // misaligshifts[6] = 2.
+    }
+    else if(sm == 0 || sm == 1){//sector 0
+      global[0] = dglobal[0] + misaligshifts[0]; // misaligshifts[0] = 0.8
+      global[1] = dglobal[1] + misaligshifts[1]; // misaligshifts[1] = 8.3
+      global[2] = dglobal[2] + misaligshifts[2]; // misaligshifts[2] = 1.
+    }
+    else {
+      AliInfo("Careful, correction not implemented yet!");
+      global[0] = dglobal[0] ;
+      global[1] = dglobal[1] ;
+      global[2] = dglobal[2] ;
+    }
+    
+    
+  }
+  else{
+    AliFatal("Geometry boxes information, check that geometry.root is loaded\n");
+  }
+  
+}
+
+

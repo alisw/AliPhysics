@@ -6,8 +6,8 @@
 
 #pragma link C++ class AliEMCALGeoParams+;
 #pragma link C++ class AliEMCALGeoUtils+;
-#pragma link C++ class AliEMCALEMCGeometry+;
 #pragma link C++ class AliEMCALGeometry+;
+#pragma link C++ class AliEMCALEMCGeometry+;
 #pragma link C++ class AliEMCALShishKebabTrd1Module+;
 #pragma link C++ class AliEMCALPIDUtils+;
 #pragma link C++ class AliCaloNeuralFit+;
@@ -20,5 +20,6 @@
 #pragma link C++ class AliCaloRawAnalyzerLMS+;
 #pragma link C++ class AliCaloPeakFinderVectors+;
 #pragma link C++ class AliEMCALHistoUtilities+;
+#pragma link C++ class AliEMCALRecoUtils+;
 
 #endif

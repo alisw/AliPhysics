@@ -162,7 +162,10 @@ public:
 	  else AliFatal(Form("Wrong supermodule index -> %d",smod));
   }
 	
-protected:
+  //Alternate geometry that allows to calculate tower position for different particles and different alignments
+  void RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, Float_t energy, 
+                                     const Int_t particle, const Float_t misaligshifts[15], Float_t global[3]) const;
+  
   //Returns shift-rotational matrixes for different volumes
   const TGeoHMatrix * GetMatrixForSuperModule(Int_t smod)const ;
 	
