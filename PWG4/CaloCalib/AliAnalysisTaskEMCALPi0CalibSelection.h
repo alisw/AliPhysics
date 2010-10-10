@@ -21,16 +21,22 @@ class AliAODCaloCluster;
 class AliAODCaloCells;
 //class AliEMCALCalibData ;
 #include "AliEMCALGeoParams.h"
+class AliEMCALRecoUtils;
 
 class AliAnalysisTaskEMCALPi0CalibSelection : public AliAnalysisTaskSE
 {
 public:
 
   AliAnalysisTaskEMCALPi0CalibSelection(const char* name);
-  AliAnalysisTaskEMCALPi0CalibSelection(const AliAnalysisTaskEMCALPi0CalibSelection&); 
-  AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&); 
   virtual ~AliAnalysisTaskEMCALPi0CalibSelection();
 
+private:
+  
+  AliAnalysisTaskEMCALPi0CalibSelection(const AliAnalysisTaskEMCALPi0CalibSelection&); 
+  AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&); 
+  
+public:
+  
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t * opt);
@@ -92,7 +98,7 @@ public:
   void SwitchOffRecalibration()   {fRecalibration = kFALSE ; }
 	
   void InitEMCALRecalibrationFactors() ;
-	
+  
   Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
 	if(fEMCALRecalibrationFactors) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
 	else return 1;}
@@ -108,12 +114,14 @@ public:
   void SetEMCALChannelRecalibrationFactors(TObjArray *map) {fEMCALRecalibrationFactors = map;}
   Float_t RecalibrateClusterEnergy(AliAODCaloCluster* cluster, AliAODCaloCells * cells);
 	
+  void SetEMCALRecoUtils(AliEMCALRecoUtils * ru) {fRecoUtils = ru;}
+  AliEMCALRecoUtils* GetEMCALRecoUtils() const {return fRecoUtils;}
+  
   void SetInvariantMassHistoBinRange(Int_t nBins, Float_t minbin, Float_t maxbin){
 	fNbins = nBins; fMinBin = minbin; fMaxBin = maxbin; }
-	
+	  
 private:
-
-  void MaxEnergyCellPos(AliAODCaloCells* const cells, AliAODCaloCluster* const clu, Int_t& iSM, Int_t& ieta, Int_t& iphi);
+  void GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSM, Int_t& ieta, Int_t& iphi);
 
 private:
 
@@ -136,6 +144,8 @@ private:
   Bool_t     fRecalibration;             // Switch on or off the recalibration
   TObjArray *fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL                 
  
+  AliEMCALRecoUtils * fRecoUtils;  // Access to reconstruction utilities
+  
   //Output histograms	
   Int_t   fNbins;  // N       mass bins of invariant mass histograms
   Float_t fMinBin; // Minimum mass bins of invariant mass histograms
@@ -143,14 +153,35 @@ private:
 
   TList*  fOutputContainer; //!histogram container
   TH1F*   fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];//! two-cluster inv. mass assigned to each cell.
-  TH2F*   fHmgg;            //! two-cluster inv.mass vt pt of pair
-  TH2F*   fHmggDifferentSM; //! two-cluster inv.mass vt pt of pair, each cluster in different SM
+
+  TH2F*   fHmgg;            //! two-cluster inv.mass vs pt of pair
+  TH2F*   fHmggDifferentSM; //! two-cluster inv.mass vs pt of pair, each cluster in different SM
   TH2F*   fHmggSM[4];       //! two-cluster inv.mass per SM
   TH2F*   fHmggPairSM[4];   //! two-cluster inv.mass per Pair
+  
+  TH2F*   fHOpeningAngle;            //! two-cluster opening angle vs pt of pair, with mass close to pi0
+  TH2F*   fHOpeningAngleDifferentSM; //! two-cluster opening angle vs pt of pair, each cluster in different SM, with mass close to pi0
+  TH2F*   fHOpeningAngleSM[4];       //! two-cluster opening angle vs pt per SM,with mass close to pi0
+  TH2F*   fHOpeningAnglePairSM[4];   //! two-cluster opening angle vs pt per Pair,with mass close to pi0
+
+  TH2F*   fHIncidentAngle;            //! cluster incident angle vs pt of pair, with mass close to pi0
+  TH2F*   fHIncidentAngleDifferentSM; //! cluster incident angle vs pt of pair, each cluster in different SM, with mass close to pi0
+  TH2F*   fHIncidentAngleSM[4];       //! cluster incident angle vs pt per SM,with mass close to pi0
+  TH2F*   fHIncidentAnglePairSM[4];   //! cluster incident angle vs pt per Pair,with mass close to pi0
+  
+  TH2F*   fHAsymmetry;            //! two-cluster asymmetry vs pt of pair, with mass close to pi0
+  TH2F*   fHAsymmetryDifferentSM; //! two-cluster asymmetry vs pt of pair, each cluster in different SM, with mass close to pi0
+  TH2F*   fHAsymmetrySM[4];       //! two-cluster asymmetry vs pt per SM,with mass close to pi0
+  TH2F*   fHAsymmetryPairSM[4];   //! two-cluster asymmetry vs pt per Pair,with mass close to pi0
+  
+  TH2F*   fhTowerDecayPhotonHit[4] ;       //! Cells ordered in column/row for different module, number of times a decay photon hits
+  TH2F*   fhTowerDecayPhotonEnergy[4] ;    //! Cells ordered in column/row for different module, accumulated energy in the tower by decay photons.
+  TH2F*   fhTowerDecayPhotonAsymmetry[4] ; //! Cells ordered in column/row for different module, accumulated asymmetry in the tower by decay photons.
+
   TH1I*   fhNEvents;        //! Number of events counter histogram
   TList * fCuts ;           //! List with analysis cuts
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,5);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,7);
 
 };
 

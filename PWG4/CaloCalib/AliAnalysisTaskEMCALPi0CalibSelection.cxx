@@ -38,6 +38,8 @@
 #include "AliEMCALGeometry.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
+#include "AliEMCALRecoUtils.h"
+
 //#include "AliEMCALAodCluster.h"
 //#include "AliEMCALCalibData.h"
 
@@ -51,9 +53,15 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
   fLogWeight(4.5), fCopyAOD(kFALSE), fSameSM(kFALSE), fOldAOD(kFALSE),
   fEMCALGeoName("EMCAL_FIRSTYEAR"), fNCellsFromEMCALBorder(0),
   fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(0x0),
-  fRecalibration(kFALSE),fEMCALRecalibrationFactors(), 
-  fNbins(300), fMinBin(0.), fMaxBin(300.),
-  fOutputContainer(0x0),fHmgg(0x0), fHmggDifferentSM(0x0), fhNEvents(0x0),fCuts(0x0)
+  fRecalibration(kFALSE),fEMCALRecalibrationFactors(),
+  fRecoUtils(new AliEMCALRecoUtils),
+  fNbins(300), fMinBin(0.), fMaxBin(300.),fOutputContainer(0x0),
+  fHmgg(0x0),           fHmggDifferentSM(0x0), 
+  fHOpeningAngle(0x0),  fHOpeningAngleDifferentSM(0x0),  
+  fHIncidentAngle(0x0), fHIncidentAngleDifferentSM(0x0),
+  fHAsymmetry(0x0),  fHAsymmetryDifferentSM(0x0),  
+
+  fhNEvents(0x0),fCuts(0x0)
 {
   //Named constructor which should be used.
   
@@ -66,8 +74,17 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
   }
   
   for(Int_t iSM=0; iSM<4; iSM++) {
-    fHmggSM[iSM]    =0;
-    fHmggPairSM[iSM]=0;
+    fHmggSM[iSM]              =0;
+    fHmggPairSM[iSM]          =0;
+    fHOpeningAngleSM[iSM]     =0;
+    fHOpeningAnglePairSM[iSM] =0;
+    fHAsymmetrySM[iSM]     =0;
+    fHAsymmetryPairSM[iSM] =0;
+    fHIncidentAngleSM[iSM]    =0;
+    fHIncidentAnglePairSM[iSM]=0;
+    fhTowerDecayPhotonHit[iSM] =0;
+    fhTowerDecayPhotonEnergy[iSM]=0;
+    fhTowerDecayPhotonAsymmetry[iSM]=0;
   }
   
   DefineOutput(1, TList::Class());
@@ -98,6 +115,9 @@ AliAnalysisTaskEMCALPi0CalibSelection::~AliAnalysisTaskEMCALPi0CalibSelection()
 		fEMCALRecalibrationFactors->Clear();
 		delete  fEMCALRecalibrationFactors;
 	}	
+    
+  if(fRecoUtils) delete fRecoUtils ;
+
 }
 
 //_____________________________________________________
@@ -435,7 +455,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   //Create output container, init geometry and calibration
 	
   fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
-	
+  
   fOutputContainer = new TList();
   const Int_t buffersize = 255;
   char hname[buffersize], htitl[buffersize];
@@ -460,6 +480,37 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fHmggDifferentSM->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
   fHmggDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
   fOutputContainer->Add(fHmggDifferentSM);
+
+  fHOpeningAngle = new TH2F("hopang","2-cluster opening angle",100,0.,50.,100,0,10);
+  fHOpeningAngle->SetXTitle("#alpha_{#gamma #gamma}");
+  fHOpeningAngle->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+  fOutputContainer->Add(fHOpeningAngle);
+  
+  fHOpeningAngleDifferentSM = new TH2F("hopangDifferentSM","2-cluster opening angle, different SM",100,0,50.,100,0,10);
+  fHOpeningAngleDifferentSM->SetXTitle("#alpha_{#gamma #gamma}");
+  fHOpeningAngleDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+  fOutputContainer->Add(fHOpeningAngleDifferentSM);
+  
+  fHIncidentAngle = new TH2F("hinang","#gamma incident angle in SM",100,0.,20.,100,0,10);
+  fHIncidentAngle->SetXTitle("#alpha_{#gamma SM center}");
+  fHIncidentAngle->SetYTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fHIncidentAngle);
+  
+  fHIncidentAngleDifferentSM = new TH2F("hinangDifferentSM","#gamma incident angle in SM, different SM pair",100,0,20.,100,0,10);
+  fHIncidentAngleDifferentSM->SetXTitle("#alpha_{#gamma - SM center}");
+  fHIncidentAngleDifferentSM->SetYTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fHIncidentAngleDifferentSM);
+  
+  fHAsymmetry = new TH2F("hasym","2-cluster opening angle",100,0.,1.,100,0,10);
+  fHAsymmetry->SetXTitle("a");
+  fHAsymmetry->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+  fOutputContainer->Add(fHAsymmetry);
+  
+  fHAsymmetryDifferentSM = new TH2F("hasymDifferentSM","2-cluster opening angle, different SM",100,0,1.,100,0,10);
+  fHAsymmetryDifferentSM->SetXTitle("a");
+  fHAsymmetryDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+  fOutputContainer->Add(fHAsymmetryDifferentSM);
+  
   
   TString pairname[] = {"A side (0-2)", "C side (1-3)","Row 0 (0-1)", "Row 1 (2-3)"};
   
@@ -470,18 +521,83 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     fHmggSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
     fHmggSM[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
     fHmggSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-    
     fOutputContainer->Add(fHmggSM[iSM]);
-    
     
     snprintf(hname,buffersize, "hmgg_PairSM%d",iSM);
     snprintf(htitl,buffersize, "Two-gamma inv. mass for SM pair: %s",pairname[iSM].Data());
     fHmggPairSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
     fHmggPairSM[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
     fHmggPairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-    
     fOutputContainer->Add(fHmggPairSM[iSM]);
+    
+    
+    snprintf(hname, buffersize, "hopang_SM%d",iSM);
+    snprintf(htitl, buffersize, "Opening angle for super mod %d",iSM);
+    fHOpeningAngleSM[iSM] = new TH2F(hname,htitl,100,0.,50.,100,0,10);
+    fHOpeningAngleSM[iSM]->SetXTitle("#alpha_{#gamma #gamma} (deg)");
+    fHOpeningAngleSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHOpeningAngleSM[iSM]);
+    
+    snprintf(hname,buffersize, "hopang_PairSM%d",iSM);
+    snprintf(htitl,buffersize, "Opening angle for SM pair: %s",pairname[iSM].Data());
+    fHOpeningAnglePairSM[iSM] = new TH2F(hname,htitl,100,0.,50.,100,0,10);
+    fHOpeningAnglePairSM[iSM]->SetXTitle("#alpha_{#gamma #gamma} (deg)");
+    fHOpeningAnglePairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHOpeningAnglePairSM[iSM]);    
+    
+    snprintf(hname, buffersize, "hinang_SM%d",iSM);
+    snprintf(htitl, buffersize, "Incident angle for super mod %d",iSM);
+    fHIncidentAngleSM[iSM] = new TH2F(hname,htitl,100,0.,20.,100,0,10);
+    fHIncidentAngleSM[iSM]->SetXTitle("#alpha_{#gamma - SM center} (deg)");
+    fHIncidentAngleSM[iSM]->SetYTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fHIncidentAngleSM[iSM]);
+    
+    snprintf(hname,buffersize, "hinang_PairSM%d",iSM);
+    snprintf(htitl,buffersize, "Incident angle for SM pair: %s",pairname[iSM].Data());
+    fHIncidentAnglePairSM[iSM] = new TH2F(hname,htitl,100,0.,20.,100,0,10);
+    fHIncidentAnglePairSM[iSM]->SetXTitle("#alpha_{#gamma - SM center} (deg)");
+    fHIncidentAnglePairSM[iSM]->SetYTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fHIncidentAnglePairSM[iSM]);   
+    
+    snprintf(hname, buffersize, "hasym_SM%d",iSM);
+    snprintf(htitl, buffersize, "asymmetry for super mod %d",iSM);
+    fHAsymmetrySM[iSM] = new TH2F(hname,htitl,100,0.,1.,100,0,10);
+    fHAsymmetrySM[iSM]->SetXTitle("a");
+    fHAsymmetrySM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHAsymmetrySM[iSM]);
+    
+    snprintf(hname,buffersize, "hasym_PairSM%d",iSM);
+    snprintf(htitl,buffersize, "Asymmetry for SM pair: %s",pairname[iSM].Data());
+    fHAsymmetryPairSM[iSM] = new TH2F(hname,htitl,100,0.,1.,100,0,10);
+    fHAsymmetryPairSM[iSM]->SetXTitle("a");
+    fHAsymmetryPairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHAsymmetryPairSM[iSM]);    
+    
+    
+    Int_t colmax = 48;
+    Int_t rowmax = 24;
+    
+    fhTowerDecayPhotonHit[iSM]  = new TH2F (Form("hTowerDecPhotonHit_Mod%d",iSM),Form("Entries in grid of cells in Module %d",iSM), 
+                                      colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+    fhTowerDecayPhotonHit[iSM]->SetYTitle("row (phi direction)");
+    fhTowerDecayPhotonHit[iSM]->SetXTitle("column (eta direction)");
+    fOutputContainer->Add(fhTowerDecayPhotonHit[iSM]);
+    
+    fhTowerDecayPhotonEnergy[iSM]  = new TH2F (Form("hTowerDecPhotonEnergy_Mod%d",iSM),Form("Accumulated energy in grid of cells in Module %d",iSM), 
+                                       colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+    fhTowerDecayPhotonEnergy[iSM]->SetYTitle("row (phi direction)");
+    fhTowerDecayPhotonEnergy[iSM]->SetXTitle("column (eta direction)");
+    fOutputContainer->Add(fhTowerDecayPhotonEnergy[iSM]);
+    
+    fhTowerDecayPhotonAsymmetry[iSM]  = new TH2F (Form("hTowerDecPhotonAsymmetry_Mod%d",iSM),Form("Accumulated asymmetry in grid of cells in Module %d",iSM), 
+                                               colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+    fhTowerDecayPhotonAsymmetry[iSM]->SetYTitle("row (phi direction)");
+    fhTowerDecayPhotonAsymmetry[iSM]->SetXTitle("column (eta direction)");
+    fOutputContainer->Add(fhTowerDecayPhotonAsymmetry[iSM]);
+    
   }  
+  
+  
   
   fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
   fOutputContainer->Add(fhNEvents);
@@ -574,6 +690,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
 	
   TLorentzVector p1;
   TLorentzVector p2;
+//  TLorentzVector p11;
+//  TLorentzVector p22;
+
   TLorentzVector p12;
   
   TRefArray * caloClustersArr  = new TRefArray();
@@ -585,7 +704,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   
   // EMCAL cells
   AliAODCaloCells *emCells = aod->GetEMCALCells();
-  
+   
   // loop over EMCAL clusters
   for(Int_t iClu=0; iClu<kNumberOfEMCALClusters; iClu++) {
     
@@ -629,12 +748,25 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     }
     
     //clu1.GetMomentum(p1,v);
+    
+    // Correct Non-Linearity
+    c1->SetE(fRecoUtils->CorrectClusterEnergyLinearity(c1));
+    //printf("\t  e1 org %2.3f, e1 cor  %2.3f \n",e1ii,c1->E());
+
+    //c1->GetMomentum(p1,v);
+    //printf("\t cor: e %2.3f, pt %2.3f, px %2.3f, py %2.3f, pz %2.3f\n",p1.E(), p1.Pt(),p1.Px(),p1.Py(),p1.Pz());
+
+    //Get tower with maximum energy and fill in the end the pi0 histogram for this cell, recalculate cluster position and recalibrate    
+    //Float_t pos[3];
+    //c1->GetPosition(pos);
+    //printf("Before Alignment: e %2.4f, x %2.4f, y %2.4f , z %2.4f\n",c1->E(),pos[0], pos[1],pos[2]);
+    GetMaxEnergyCellPosAndClusterPos(emCells,c1,iSupMod1,ieta1,iphi1);
+    //printf("i1 %d, corr1 %2.3f, e1 %2.3f, , ecorr1 %2.3f, pt %2.3f, px %2.3f, py %2.3f, pz %2.3f,\n",iClu, 1./corrFac, e1, p1.E(), p1.Pt(),p1.Px(),p1.Py(),p1.Pz());
+    //c1->GetPosition(pos);
+    //printf("After Alignment: e %2.4f, x %2.4f, y %2.4f , z %2.4f\n",c1->E(),pos[0], pos[1],pos[2]);
+
     c1->GetMomentum(p1,v);
-    
-    //Get tower with maximum energy and fill in the end the pi0 histogram for this cell.
-    //MaxEnergyCellPos(emCells,&clu1,iSupMod1,ieta1,iphi1);
-    MaxEnergyCellPos(emCells,c1,iSupMod1,ieta1,iphi1);
-    
+
     for (Int_t jClu=iClu; jClu<kNumberOfEMCALClusters; jClu++) {
       AliAODCaloCluster *c2 = (AliAODCaloCluster *) caloClustersArr->At(jClu);
       if(c2->IsEqual(c1)) continue;
@@ -657,16 +789,20 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       
       Float_t e2ii = c2->E();
       
-      //clu2.GetMomentum(p2,v);
+      //Correct Non-Linearity
+      c2->SetE(fRecoUtils->CorrectClusterEnergyLinearity(c2));
+
+      //Get tower with maximum energy and fill in the end the pi0 histogram for this cell, recalculate cluster position and recalibrate    
+      GetMaxEnergyCellPosAndClusterPos(emCells,c2,iSupMod2,ieta2,iphi2);
+  
       c2->GetMomentum(p2,v);
-      
-      //Get tower with maximum energy and fill in the end the pi0 histogram for this cell.
-      //MaxEnergyCellPos(emCells,&clu2,iSupMod2,ieta2,iphi2);
-      MaxEnergyCellPos(emCells,c2,iSupMod2,ieta2,iphi2);
-      
+
       p12 = p1+p2;
       Float_t invmass = p12.M()*1000; 
-      
+      //printf("*** mass %f\n",invmass);
+      Float_t asym = TMath::Abs(p1.E()-p2.E())/(p1.E()+p2.E());
+      //printf("asymmetry %f\n",asym);
+
       if(invmass < fMaxBin && invmass > fMinBin){
         
         //Check if cluster is in fidutial region, not too close to borders
@@ -684,8 +820,80 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
           if((iSupMod1==1 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==1)) fHmggPairSM[1]->Fill(invmass,p12.Pt()); 
           if((iSupMod1==0 && iSupMod2==1) || (iSupMod1==1 && iSupMod2==0)) fHmggPairSM[2]->Fill(invmass,p12.Pt()); 
           if((iSupMod1==2 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==2)) fHmggPairSM[3]->Fill(invmass,p12.Pt()); 
+          
+          if(invmass > 100. && invmass < 160.){//restrict to clusters really close to pi0 peak
+            
+            //Opening angle of 2 photons
+            Float_t opangle = p1.Angle(p2.Vect())*TMath::RadToDeg();
+            //printf("*******>>>>>>>> In PEAK pt %f, angle %f \n",p12.Pt(),opangle);
+
+            //Inciden angle of each photon
+            //Float_t * posSM1cen = RecalculatePosition(11.5, 23.5, p1.E(),0, iSupMod1); 
+            //Float_t * posSM2cen = RecalculatePosition(11.5, 23.5, p2.E(),0, iSupMod2); 
+            Float_t posSM1cen[3]={0.,0.,0.};
+            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, p1.E(),iSupMod1,0,fRecoUtils->GetMisalShiftArray(),posSM1cen); 
+            Float_t posSM2cen[3]={0.,0.,0.}; 
+            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, p2.E(),iSupMod2,0,fRecoUtils->GetMisalShiftArray(),posSM2cen); 
+            //printf("SM1 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod1,posSM1cen[0],posSM1cen[1],posSM1cen[2]);
+            //printf("SM2 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod2,posSM2cen[0],posSM2cen[1],posSM2cen[2]);
+            
+            TVector3 vecSM1cen(posSM1cen[0]-v[0],posSM1cen[1]-v[1],posSM1cen[2]-v[2]); 
+            TVector3 vecSM2cen(posSM2cen[0]-v[0],posSM2cen[1]-v[1],posSM2cen[2]-v[2]); 
+            Float_t inangle1 = p1.Angle(vecSM1cen)*TMath::RadToDeg();
+            Float_t inangle2 = p2.Angle(vecSM2cen)*TMath::RadToDeg();
+            //printf("Incident angle: cluster 1 %2.3f; cluster 2 %2.3f\n",inangle1,inangle2);
+            
+            fHOpeningAngle ->Fill(opangle,p12.Pt()); 
+            fHIncidentAngle->Fill(inangle1,p1.Pt()); 
+            fHIncidentAngle->Fill(inangle2,p2.Pt()); 
+            fHAsymmetry    ->Fill(asym,p12.Pt()); 
+
+            if(iSupMod1==iSupMod2) {
+              fHOpeningAngleSM[iSupMod1] ->Fill(opangle,p12.Pt());
+              fHIncidentAngleSM[iSupMod1]->Fill(inangle1,p1.Pt());
+              fHIncidentAngleSM[iSupMod1]->Fill(inangle2,p2.Pt());
+              fHAsymmetrySM[iSupMod1]    ->Fill(asym,p12.Pt());
+            }
+            else{      
+              fHOpeningAngleDifferentSM  ->Fill(opangle,p12.Pt());
+              fHIncidentAngleDifferentSM ->Fill(inangle1,p1.Pt());
+              fHIncidentAngleDifferentSM ->Fill(inangle2,p2.Pt());
+              fHAsymmetryDifferentSM     ->Fill(asym,p12.Pt());
+            }
+            
+            if((iSupMod1==0 && iSupMod2==2) || (iSupMod1==2 && iSupMod2==0)) {
+              fHOpeningAnglePairSM[0] ->Fill(opangle,p12.Pt()); 
+              fHIncidentAnglePairSM[0]->Fill(inangle1,p1.Pt());
+              fHIncidentAnglePairSM[0]->Fill(inangle2,p2.Pt());
+              fHAsymmetryPairSM[0]    ->Fill(asym,p12.Pt());
+
+            } 
+            if((iSupMod1==1 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==1)) {
+              fHOpeningAnglePairSM[1] ->Fill(opangle,p12.Pt()); 
+              fHIncidentAnglePairSM[1]->Fill(inangle1,p1.Pt());
+              fHIncidentAnglePairSM[1]->Fill(inangle2,p2.Pt());
+              fHAsymmetryPairSM[1]    ->Fill(asym,p12.Pt());
+
+            }
+            
+            if((iSupMod1==0 && iSupMod2==1) || (iSupMod1==1 && iSupMod2==0)) {
+              fHOpeningAnglePairSM[2] ->Fill(opangle,p12.Pt()); 
+              fHIncidentAnglePairSM[2]->Fill(inangle1,p1.Pt());
+              fHIncidentAnglePairSM[2]->Fill(inangle2,p2.Pt());
+              fHAsymmetryPairSM[2]    ->Fill(asym,p12.Pt());
+
+
+            }
+            if((iSupMod1==2 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==2)) {
+              fHOpeningAnglePairSM[3] ->Fill(opangle,p12.Pt()); 
+              fHIncidentAnglePairSM[3]->Fill(inangle1,p1.Pt());
+              fHIncidentAnglePairSM[3]->Fill(inangle2,p2.Pt());
+              fHAsymmetryPairSM[3]    ->Fill(asym,p12.Pt());
+            }
+              
+          }// pair in 100 < mass < 160
         
-        }
+        }//in acceptance cuts
         
         //In case of filling only channels with second cluster in same SM
         if(fSameSM && iSupMod1!=iSupMod2) continue;
@@ -693,6 +901,17 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
         if (fGroupNCells == 0){
             fHmpi0[iSupMod1][ieta1][iphi1]->Fill(invmass);
             fHmpi0[iSupMod2][ieta2][iphi2]->Fill(invmass);
+          
+            if(invmass > 100. && invmass < 160.){//restrict to clusters really close to pi0 peak
+              fhTowerDecayPhotonHit      [iSupMod1]->Fill(ieta1,iphi1);
+              fhTowerDecayPhotonEnergy   [iSupMod1]->Fill(ieta1,iphi1,p1.E());
+              fhTowerDecayPhotonAsymmetry[iSupMod1]->Fill(ieta1,iphi1,asym);
+              
+              fhTowerDecayPhotonHit      [iSupMod2]->Fill(ieta2,iphi2);
+              fhTowerDecayPhotonEnergy   [iSupMod2]->Fill(ieta2,iphi2,p2.E());
+              fhTowerDecayPhotonAsymmetry[iSupMod2]->Fill(ieta2,iphi2,asym);
+
+            }// pair in mass of pi0
         }	
         else  {
           //printf("Regroup N %d, eta1 %d, phi1 %d, eta2 %d, phi2 %d \n",fGroupNCells, ieta1, iphi1, ieta2, iphi2);
@@ -795,7 +1014,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::CheckCellFiducialRegion(AliVCluste
 }	
 
 //__________________________________________________
-void AliAnalysisTaskEMCALPi0CalibSelection::MaxEnergyCellPos(AliAODCaloCells* const cells, AliAODCaloCluster* const clu, Int_t& iSupMod, Int_t& ieta, Int_t& iphi)
+void AliAnalysisTaskEMCALPi0CalibSelection::GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSupMod, Int_t& ieta, Int_t& iphi)
 {
   //For a given CaloCluster calculates the absId of the cell 
   //with maximum energy deposit.
@@ -811,18 +1030,33 @@ void AliAnalysisTaskEMCALPi0CalibSelection::MaxEnergyCellPos(AliAODCaloCells* co
   Int_t iIphi   = -1;
   Int_t iIeta   = -1;
 	
+  Float_t clEnergy = clu->E(); //Energy already recalibrated previously.
+  Float_t weight = 0., weightedCol = 0., weightedRow = 0., totalWeight=0.;
+  Bool_t  areInSameSM = kTRUE; //exclude clusters with cells in different SMs for now
+  Int_t   startingSM = -1;
+  
   for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
     cellAbsId = clu->GetCellAbsId(iDig);
     fraction  = clu->GetCellAmplitudeFraction(iDig);
     if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
+    Int_t imodrc   = -1, iphirc  = -1, ietarc  =-1;
+    Int_t iTowerrc = -1, iIphirc = -1, iIetarc =-1;
+    fEMCALGeo->GetCellIndex(cellAbsId,imodrc,iTowerrc,iIphirc,iIetarc); 
+    fEMCALGeo->GetCellPhiEtaIndexInSModule(imodrc,iTowerrc,iIphirc, iIetarc,iphirc,ietarc);			
+    if     (iDig==0)  startingSM = imodrc;
+    else if(imodrc != startingSM) areInSameSM = kFALSE;
+
     if(IsRecalibrationOn()) {
-      Int_t imodrc   = -1, iphirc  = -1, ietarc  =-1;
-      Int_t iTowerrc = -1, iIphirc = -1, iIetarc =-1;
-      fEMCALGeo->GetCellIndex(cellAbsId,imodrc,iTowerrc,iIphirc,iIetarc); 
-      fEMCALGeo->GetCellPhiEtaIndexInSModule(imodrc,iTowerrc,iIphirc, iIetarc,iphirc,ietarc);			
       recalFactor = GetEMCALChannelRecalibrationFactor(imodrc,ietarc,iphirc);
     }
     eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
+    
+    weight = TMath::Log(eCell/clEnergy) + 4;
+    if(weight < 0) weight = 0;
+    totalWeight += weight;
+    weightedCol += ietarc*weight;
+    weightedRow += iphirc*weight;
+    
     //printf("Max cell? cell %d, amplitude org %f, fraction %f, recalibration %f, amplitude new %f \n",cellAbsId, cells->GetCellAmplitude(cellAbsId), fraction, recalFactor, eCell) ;
     
     if(eCell > eMax)  { 
@@ -830,14 +1064,34 @@ void AliAnalysisTaskEMCALPi0CalibSelection::MaxEnergyCellPos(AliAODCaloCells* co
       maxId = cellAbsId;
       //printf("\t new max: cell %d, e %f, ecell %f\n",maxId, eMax,eCell);
     }
-  }
+  }// cell loop
   
   //Get from the absid the supermodule, tower and eta/phi numbers
   fEMCALGeo->GetCellIndex(maxId,iSupMod,iTower,iIphi,iIeta); 
   //Gives SuperModule and Tower numbers
   fEMCALGeo->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
-					 iIphi, iIeta,iphi,ieta);    
+					 iIphi, iIeta,iphi,ieta); 
   
+  Float_t xyzNew[3];
+  if(areInSameSM == kTRUE) {
+    //printf("In Same SM\n");
+    weightedCol = weightedCol/totalWeight;
+    weightedRow = weightedRow/totalWeight;
+    
+    //Float_t *xyzNew = RecalculatePosition(weightedRow, weightedCol, clEnergy, 0, iSupMod); //1 = electrons, 0 photons
+    fEMCALGeo->RecalculateTowerPosition(weightedRow, weightedCol, iSupMod, clEnergy, 0, //1 = electrons, 0 photons
+                                        fRecoUtils->GetMisalShiftArray(), xyzNew);
+  }
+  else {
+    //printf("In Different SM\n");
+    //Float_t *xyzNew = RecalculatePosition(iphi,        ieta,        clEnergy, 0, iSupMod); //1 = electrons, 0 photons
+    fEMCALGeo->RecalculateTowerPosition(iphi, ieta, iSupMod, clEnergy, 0, //1 = electrons, 0 photons
+                                        fRecoUtils->GetMisalShiftArray(), xyzNew);
+    
+  }
+
+  clu->SetPosition(xyzNew);
+
   //printf("\t Max : cell %d, iSupMod %d, ieta %d, iphi %d \n",maxId,iSupMod, ieta,iphi);
   
 }

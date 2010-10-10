@@ -35,6 +35,7 @@
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliMixedEvent.h"
+#include "AliEMCALRecoUtils.h"
 
 
 ClassImp(AliCalorimeterUtils)
@@ -50,7 +51,9 @@ ClassImp(AliCalorimeterUtils)
     fEMCALBadChannelMap(0x0),fPHOSBadChannelMap(0x0), 
     fNCellsFromEMCALBorder(0), fNCellsFromPHOSBorder(0), 
     fNoEMCALBorderAtEta0(kFALSE),fRecalibration(kFALSE),
-    fEMCALRecalibrationFactors(), fPHOSRecalibrationFactors()
+    fEMCALRecalibrationFactors(), fPHOSRecalibrationFactors(),
+    fEMCALRecoUtils(new AliEMCALRecoUtils),fRecalculatePosition(kFALSE),fCorrectELinearity(kFALSE)
+
 {
   //Ctor
   
@@ -83,6 +86,8 @@ AliCalorimeterUtils::~AliCalorimeterUtils() {
     delete  fPHOSRecalibrationFactors;
   }
 	
+  if(fEMCALRecoUtils) delete fEMCALRecoUtils ;
+  
 }
 
 //_______________________________________________________________
@@ -263,6 +268,12 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 
 	return kFALSE;
 
+}
+
+//____________________________________________________________________________________________________________________________________________________
+void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus){
+  // Correct cluster energy non linearity
+  clus->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(clus));
 }
 
 //____________________________________________________________________________________________________________________________________________________
@@ -567,6 +578,8 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
 	 fNCellsFromEMCALBorder, fNCellsFromPHOSBorder);
   if(fNoEMCALBorderAtEta0) printf("Do not remove EMCAL clusters at Eta = 0\n");
   printf("Recalibrate Clusters? %d\n",fRecalibration);
+  printf("Recalculate Clusters Position? %d\n",fRecalculatePosition);
+  printf("Recalculate Clusters Energy? %d\n",fCorrectELinearity);
 
   printf("    \n") ;
 } 
@@ -661,3 +674,81 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
 
 }
 
+//________________________________________________________________
+void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVCluster* clu){
+  
+  //Recalculate EMCAL cluster position
+  
+  Double_t eMax       = -1.;
+  Double_t eCell      = -1.;
+  Float_t  fraction   = 1.;
+  Int_t    cellAbsId  = -1;
+  Float_t recalFactor = 1.;
+	
+  Int_t maxId   = -1;
+  Int_t imod   = -1, iphi  = -1, ieta  =-1;
+  Int_t iTower = -1, iIphi = -1, iIeta =-1;
+
+  Float_t clEnergy = clu->E(); //Energy already recalibrated previously.
+  Float_t weight = 0., weightedCol = 0., weightedRow = 0., totalWeight=0.;
+  Bool_t  areInSameSM = kTRUE; //exclude clusters with cells in different SMs for now
+  Int_t   startingSM = -1;
+  
+  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
+    cellAbsId = clu->GetCellAbsId(iDig);
+    fraction  = clu->GetCellAmplitudeFraction(iDig);
+    if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
+       fEMCALGeo->GetCellIndex(cellAbsId,imod,iTower,iIphi,iIeta); 
+    fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);			
+    if     (iDig==0)  startingSM = imod;
+    else if(imod != startingSM) areInSameSM = kFALSE;
+    
+    if(IsRecalibrationOn()) {
+      recalFactor = GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
+    }
+    eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
+    
+    weight = TMath::Log(eCell/clEnergy) + 4;
+    if(weight < 0) weight = 0;
+    totalWeight += weight;
+    weightedCol += ieta*weight;
+    weightedRow += iphi*weight;
+    
+    //printf("Max cell? cell %d, amplitude org %f, fraction %f, recalibration %f, amplitude new %f \n",cellAbsId, cells->GetCellAmplitude(cellAbsId), fraction, recalFactor, eCell) ;
+    
+    if(eCell > eMax)  { 
+      eMax  = eCell; 
+      maxId = cellAbsId;
+      //printf("\t new max: cell %d, e %f, ecell %f\n",maxId, eMax,eCell);
+    }
+  }// cell loop
+  
+  //Get from the absid the supermodule, tower and eta/phi numbers
+  fEMCALGeo->GetCellIndex(maxId,imod,iTower,iIphi,iIeta); 
+  //Gives SuperModule and Tower numbers
+  fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,
+                                         iIphi, iIeta,iphi,ieta); 
+  
+  Float_t xyzNew[3];
+  if(areInSameSM == kTRUE) {
+    //printf("In Same SM\n");
+    weightedCol = weightedCol/totalWeight;
+    weightedRow = weightedRow/totalWeight;
+    
+    //Float_t *xyzNew = RecalculatePosition(weightedRow, weightedCol, clEnergy, 0, iSupMod); //1 = electrons, 0 photons
+    fEMCALGeo->RecalculateTowerPosition(weightedRow, weightedCol, imod, clEnergy, 0, //1 = electrons, 0 photons
+                                        fEMCALRecoUtils->GetMisalShiftArray(), xyzNew);
+  }
+  else {
+    //printf("In Different SM\n");
+    //Float_t *xyzNew = RecalculatePosition(iphi,        ieta,        clEnergy, 0, iSupMod); //1 = electrons, 0 photons
+    fEMCALGeo->RecalculateTowerPosition(iphi, ieta, imod, clEnergy, 0, //1 = electrons, 0 photons
+                                        fEMCALRecoUtils->GetMisalShiftArray(), xyzNew);
+    
+  }
+  
+  clu->SetPosition(xyzNew);
+  
+  //printf("\t Max : cell %d, iSupMod %d, ieta %d, iphi %d \n",maxId,iSupMod, ieta,iphi);
+  
+}
