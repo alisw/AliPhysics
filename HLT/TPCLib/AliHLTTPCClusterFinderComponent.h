@@ -18,6 +18,7 @@
 
 class AliHLTTPCClusterFinder;
 class AliHLTTPCDigitReader;
+class AliTPCTransform;
 
 /**
  * @class AliHLTTPCClusterFinderComponent
@@ -185,6 +186,8 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	/** flag to deconvolute in time direction */
 	Bool_t fDeconvTime;                                                          //!transient
 
+        AliTPCTransform *fTS; //!transient
+
 	/** flag to deconvolute in pad direction */
 	Bool_t fDeconvPad;                                                           //!transient
 	/** flag to switch on/off deconvolution in pad and time directions (used by sorted clusterfinding method) */
@@ -229,7 +232,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	Bool_t fReleaseMemory; // flag to release the memory after each event
 	AliHLTComponentBenchmark fBenchmark; // benchmark
 
-	ClassDef(AliHLTTPCClusterFinderComponent, 0)
+	ClassDef(AliHLTTPCClusterFinderComponent, 1)
 
 };
 #endif

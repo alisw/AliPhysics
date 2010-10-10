@@ -43,6 +43,8 @@ using namespace std;
 #include "AliTPCcalibDB.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCParam.h"
+#include "AliTPCTransform.h"
+
 //#include "AliHLTTPCCAInputDataCompressorComponent.h"
 //#include "AliHLTTPCCADef.h"
 
@@ -67,6 +69,7 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   fClusterFinder(NULL),
   fReader(NULL),
   fDeconvTime(kFALSE),
+  fTS(0),
   fDeconvPad(kFALSE),
   fClusterDeconv(false),
   fXYClusterError(-1),
@@ -199,6 +202,9 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     HLTError("AliTPCcalibDB does not exist");
     return -ENOENT;
   }
+
+  fTS = calib->GetTransform();
+
   calib->SetRun(GetRunNo());
   calib->UpdateRunInformations(GetRunNo());
   AliTPCCalPad * time0TPC = calib->GetPadTime0(); 
@@ -358,6 +364,9 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
   // fDeconvPad = kTRUE;
   //fClusterFinder->SetDeconvPad(fDeconvPad);
     
+  
+  fTS->SetCurrentTimeStamp(GetTimeStamp());
+  //fTS->SetCurrentTimeStamp(0);
 
   if(fReader == NULL){
     HLTFatal("Digit reader not initialized, skipping HLT TPC cluster reconstruction.");
