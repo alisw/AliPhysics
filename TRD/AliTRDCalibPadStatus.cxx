@@ -737,8 +737,8 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, TObjArray *arr, /*FOLD00*/
     // if we are forced and histogram doesn't yes exist create it
     Char_t name[255], title[255];
 
-    sprintf(name,"hCalib%s%.3d",type,det);
-    sprintf(title,"%s calibration histogram detector %.2d;ADC channel;Channel (pad)",type,det);
+    snprintf(name,255,"hCalib%s%.3d",type,det);
+    snprintf(title,255,"%s calibration histogram detector %.2d;ADC channel;Channel (pad)",type,det);
 
    
     Int_t nbchannels = fGeo->GetRowMax(GetLayer(det),GetStack(det),GetSector(det))*fGeo->GetColMax(GetLayer(det));

@@ -316,7 +316,7 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
       //printf("test\n");
       for(Int_t ibinx = 0; ibinx < linearfitterhisto->GetNbinsX(); ibinx++){
 	for(Int_t ibiny = 0; ibiny < linearfitterhisto->GetNbinsY(); ibiny++){
-	  if(linearfitterhisto->GetBinContent(ibinx+1,ibiny+1)>0){
+	  if(linearfitterhxisto->GetBinContent(ibinx+1,ibiny+1)>0){
 	    Double_t x = xaxis->GetBinCenter(ibinx+1);
 	    Double_t y = yaxis->GetBinCenter(ibiny+1);
 	    for(Int_t k = 0; k < (Int_t)linearfitterhisto->GetBinContent(ibinx+1,ibiny+1); k++){
@@ -350,6 +350,9 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
       //delete linearfitterhisto;
       
     }// if something
+
+    delete [] arrayI;
+
   }
    
 }

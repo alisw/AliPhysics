@@ -417,9 +417,13 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fListHist->Add(fNbTrackletsStandalone);
     
   }
-  //cout << "AliTRDCalibTask::UserCreateOutputObjects() OUT" << endl;
-}
 
+  delete [] binLimLogPt;
+  delete [] binLimPt;
+
+  //cout << "AliTRDCalibTask::UserCreateOutputObjects() OUT" << endl;
+
+}
 
 //________________________________________________________________________
 void AliTRDCalibTask::UserExec(Option_t *) 

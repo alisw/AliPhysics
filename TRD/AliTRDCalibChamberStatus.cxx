@@ -275,6 +275,7 @@ void AliTRDCalibChamberStatus::ProcessEvent(AliRawReader * rawReader, Int_t neve
   Bool_t notEmpty = kFALSE;
     
   AliTRDrawFastStream *rawStream = new AliTRDrawFastStream(rawReader);
+  if (!rawStream) return;
   rawStream->SetNoErrorWarning();
   rawStream->SetSharedPadReadout(kFALSE);
 
@@ -402,7 +403,7 @@ void AliTRDCalibChamberStatus::ProcessEvent3(AliRawReader * rawReader, Int_t nev
   if(notEmpty) fCounterEventNotEmpty++;
 
   if(digitsManager) delete digitsManager;
-  if(rawStream) delete rawStream;
+  delete rawStream;
    
 }
 //_____________________________________________________________________

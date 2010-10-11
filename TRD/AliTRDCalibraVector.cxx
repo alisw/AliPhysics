@@ -983,10 +983,12 @@ TGraphErrors *AliTRDCalibraVector::ConvertVectorPHTGraphErrors(Int_t det, Int_t 
   // Axis
   Float_t sf = 10.0;
   AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
+  if (parCom) {
+    sf = parCom->GetSamplingFrequency();
+  }
+  else {
     AliInfo("Could not get CommonParam, take the default 10MHz");
   }
-  sf = parCom->GetSamplingFrequency();
   // Axis
   Double_t x[35];  // Xaxis
   Double_t y[35];  // Sum/entries

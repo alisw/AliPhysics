@@ -4314,8 +4314,10 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   const Float_t kDrWidth = AliTRDgeometry::DrThick();
   Int_t binmax      = 0;
   Int_t binmin      = 0;
-  Double_t    *x    = new Double_t[5];
-  Double_t    *y    = new Double_t[5];
+  //Double_t    *x    = new Double_t[5];
+  //Double_t    *y    = new Double_t[5];
+  Double_t x[5];
+  Double_t y[5];
   x[0]              = 0.0;
   x[1]              = 0.0;
   x[2]              = 0.0;
@@ -4889,8 +4891,8 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     if(polynome) delete polynome;
     if(polynomea) delete polynomea;
     if(polynomeb) delete polynomeb;
-    if(x) delete [] x;
-    if(y) delete [] y;
+    //if(x) delete [] x;
+    //if(y) delete [] y;
     if(c) delete [] c;
     if(line) delete line;
 

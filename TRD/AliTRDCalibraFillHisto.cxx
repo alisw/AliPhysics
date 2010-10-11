@@ -298,6 +298,12 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   }
   fGeo = new AliTRDgeometry();
   fCalibDB = AliTRDcalibDB::Instance();
+
+  fNumberUsedCh[0]       = 0;
+  fNumberUsedCh[1]       = 0;
+  fNumberUsedPh[0]       = 0;
+  fNumberUsedPh[1]       = 0;
+
 }
 
 //____________________________________________________________________________________

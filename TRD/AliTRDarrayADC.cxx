@@ -434,110 +434,118 @@ void AliTRDarrayADC::Expand()
   // Expand the array
   //
 
-  //Check if the array has not been already expanded
-  Int_t verif=0;
-  for(Int_t i=0; i<fNAdim; i++)
+  if (fADC)
     {
-      if(fADC[i]<-1)
-	{
-	  verif++;
-	}
-    }
+
+      //Check if the array has not been already expanded
+      Int_t verif=0;
+      for(Int_t i=0; i<fNAdim; i++)
+        {
+          if(fADC[i]<-1)
+ 	    {
+	      verif++;
+	    }
+        }
   
-  if(verif==0)
-    {
-      //       AliDebug(1,"Nothing to expand");
-      return;
-    }
+      if(verif==0)
+        {
+          //AliDebug(1,"Nothing to expand");
+          return;
+        }
 
-  Int_t *longz;
-  longz = new Int_t[fNAdim];
-  Int_t *longm;
-  longm = new Int_t[fNAdim];
-  Int_t dimexp=0;
-  //Initialize arrays
-  memset(longz,0,sizeof(Int_t)*fNAdim);
-  memset(longm,0,sizeof(Int_t)*fNAdim);
-  Int_t r2=0; 
-  Int_t r3=0; 
-  for(Int_t i=0; i<fNAdim;i++)
-    {
-      if((fADC[i]<0)&&(fADC[i]>=-16000))      
-	{
-	  longm[r2]=-fADC[i];
-	  r2++;
-	}
-      if(fADC[i]<-16000)  
-	{
-	  longz[r3]=-fADC[i]-16001;  
-	  r3++;
-	}
-    }
-  //Calculate the new dimensions of the array
-  for(Int_t i=0; i<fNAdim;i++)
-    {
-      if(longm[i]!=0)       
-	{
-	  dimexp=dimexp+longm[i]-1;
-	}
-      if(longz[i]!=0)      
-	{
-	  dimexp=dimexp+longz[i]-1;
-	}
-    }
-  dimexp=dimexp+fNAdim;   
+      Int_t dimexp=0;
+      Int_t *longz = new Int_t[fNAdim];
+      Int_t *longm = new Int_t[fNAdim];
 
-  //Write in the buffer the new array
-  Short_t* bufferE;
-  bufferE = new Short_t[dimexp];
-  Int_t contaexp =0;     
-  Int_t h=0;
-  Int_t l=0;  
-  for(Int_t i=0; i<dimexp; i++)
-    {
-      if(fADC[contaexp]>0)  
+      if (longz && longm)
 	{
-	  bufferE[i]=fADC[contaexp];
-	}
 
-      if((fADC[contaexp]<0)&&(fADC[contaexp]>=-16000))  
-	{
-	  for(Int_t j=0; j<longm[h];j++)
+          //Initialize arrays
+          memset(longz,0,sizeof(Int_t)*fNAdim);
+          memset(longm,0,sizeof(Int_t)*fNAdim);
+          Int_t r2=0; 
+          Int_t r3=0; 
+          for(Int_t i=0; i<fNAdim;i++)
+            {
+              if((fADC[i]<0)&&(fADC[i]>=-16000))      
+	        {
+	          longm[r2]=-fADC[i];
+	          r2++;
+	        }
+              if(fADC[i]<-16000)  
+	        {
+	          longz[r3]=-fADC[i]-16001;  
+	          r3++;
+	        }
+            }
+
+          //Calculate the new dimensions of the array
+          for(Int_t i=0; i<fNAdim;i++)
+            {
+              if(longm[i]!=0)       
+	        {
+	          dimexp=dimexp+longm[i]-1;
+	        }
+              if(longz[i]!=0)      
+	        {
+	          dimexp=dimexp+longz[i]-1;
+	        }
+            }
+          dimexp=dimexp+fNAdim;   
+
+          //Write in the buffer the new array
+          Int_t contaexp =0;     
+          Int_t h=0;
+          Int_t l=0;  
+          Short_t* bufferE = new Short_t[dimexp];
+          if(bufferE)
 	    {
-	      bufferE[i+j]=-1;
-	    }
-	  i=i+longm[h]-1;
-	  h++;
-	}
-      if(fADC[contaexp]<-16000)  
-	{
-	  for(Int_t j=0; j<longz[l];j++)
-	    {
-	      bufferE[i+j]=0;  
-	    }
-	  i=i+longz[l]-1;
-	  l++;
-	}
-      contaexp++;
-    }
-  //Copy the buffer
-  if(fADC)
-    {
-      delete [] fADC;
-      fADC=0;
-    }
+              for(Int_t i=0; i<dimexp; i++)
+                {
+                  if(fADC[contaexp]>0)  
+	            {
+	              bufferE[i]=fADC[contaexp];
+	            }
+                  if((fADC[contaexp]<0)&&(fADC[contaexp]>=-16000))  
+	            {
+	              for(Int_t j=0; j<longm[h];j++)
+	                {
+	                  bufferE[i+j]=-1;
+	                }
+	              i=i+longm[h]-1;
+	              h++;
+	            }
+                  if(fADC[contaexp]<-16000)  
+	            {
+	              for(Int_t j=0; j<longz[l];j++)
+	                {
+	                  bufferE[i+j]=0;  
+	                }
+	              i=i+longz[l]-1;
+	              l++;
+	            }
+                  contaexp++;
+                }
+              //Copy the buffer
+              delete [] fADC;
+              fADC = new Short_t[dimexp];
+              fNAdim = dimexp;
+              for(Int_t i=0; i<dimexp; i++)
+                {
+                  fADC[i] = bufferE[i]; 
+                }
 
-  fADC = new Short_t[dimexp];
-  fNAdim = dimexp;
-  for(Int_t i=0; i<dimexp; i++)
-    {
-      fADC[i] = bufferE[i]; 
-    }
+              delete [] bufferE;
 
-  //Delete auxiliary arrays
-  if(bufferE) delete [] bufferE;
-  if(longm) delete [] longm;
-  if(longz) delete [] longz;
+	    }
+
+          //Delete auxiliary arrays
+          delete [] longm;
+          delete [] longz;
+
+	}
+
+    }
 
 }
 //____________________________________________________________________________________
