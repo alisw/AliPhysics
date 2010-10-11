@@ -205,8 +205,11 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
 		if ( startOfValidity ) *startOfValidity = entry->GetId().GetFirstRun();
 		
     TObject* object = entry->GetObject();
-    entry->SetOwner(kFALSE);
-    if (!(man->GetCacheFlag())) delete entry;
+    if (!(man->GetCacheFlag()))
+    {
+      entry->SetOwner(kFALSE);
+      delete entry;      
+    }
     return object;
   }
 	else
@@ -536,6 +539,8 @@ AliMUONCalibrationData::Reset()
 {
 /// Reset all data
 
+  AliCodeTimerAuto("",0);
+  
   delete fConfig;
   fConfig = 0x0;
   delete fPedestals;
