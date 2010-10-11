@@ -29,6 +29,7 @@ public:
   void      GetGlobalPosition(Float_t &yt, Float_t &zt, Float_t &dydx, Float_t &dzdx, Float_t *cov=0x0) const {
       dydx = fdydx; dzdx = fdzdx; yt   = fYt; zt   = fZt;
       if(cov) memcpy(cov, fCov, 3*sizeof(Float_t));}
+  Int_t     GetNpads() const {return fNpad;}
   void      GetCenterPad(Int_t &c, Int_t &r) const {c=fCol; r=fRow;}
   Float_t   GetResolution() const {return fdy;}
   Float_t   GetDriftLength() const {return fXd;}
@@ -53,6 +54,7 @@ private:
   UShort_t fDet;   // detector
   UChar_t  fCol;   // central pad column
   UChar_t  fRow;   // pad row
+  UChar_t  fNpad;  // no. of pads in the cluster
   Short_t  fPdg;   // particle code
   Short_t  fLbl;   // track label (MC)
   Short_t  fLocalTime; // calibrate drift time
@@ -72,7 +74,7 @@ private:
   Float_t  fD;     // distance to the anode wire
   Float_t  fTilt;  // pad tilt;
 
-  ClassDef(AliTRDclusterInfo, 2) // extracted cluster2MC information
+  ClassDef(AliTRDclusterInfo, 3) // extracted cluster2MC information
 };
 
 

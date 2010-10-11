@@ -91,6 +91,7 @@ public:
   TH1*    PlotTrackOut(const AliTRDtrackV1 *t=NULL);
   TH1*    PlotMC(const AliTRDtrackV1 *t=NULL);
 
+  static Bool_t  Process(TH2* const h2, TGraphErrors **g, Int_t stat=100);
   void    SetDyRange(Float_t dy) {fDyRange = dy;}
   void    SetSegmentationLevel(Int_t l=0);
   void    SetPtThreshold(Float_t pt) {fPtThreshold = pt;}

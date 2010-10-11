@@ -54,13 +54,15 @@ public:
   static const Char_t * TaskOpt(Int_t itask) {return fgkTRDtaskOpt[itask];}
   static const Char_t * TaskClassName(Int_t itask) {return fgkTRDtaskClassName[itask];}
 
-  static void   MergeProd(const Char_t *mark, const Char_t *files, Int_t nBatch);
+  static const Char_t*  Basename(const char* filepath);
+  static const Char_t*  Dirname(const char* filepath);
+  static const Char_t*  MergeBatch(const Char_t *mark, const Char_t *files, const Int_t nfiles=20, const Int_t first=0, Bool_t kSVN=kTRUE, Bool_t kCLEAR=kFALSE);
+  static void   MergeProd(const Char_t *mark, const Char_t *files, const Int_t nBatch=20, Int_t level=0);
   static Int_t  ParseOptions(Char_t *trd);
 
 private:
   AliTRDpwg1Helper(const AliTRDpwg1Helper& ref);
   const AliTRDpwg1Helper& operator=(const AliTRDpwg1Helper& ref);
-
   static const Char_t * fgkTRDtaskOpt[kNTRDTASKS + 1];  //! task options
   static const Char_t * fgkTRDtaskClassName[kNTRDTASKS];//! task class name
 };

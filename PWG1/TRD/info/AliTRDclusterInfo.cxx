@@ -22,6 +22,7 @@ AliTRDclusterInfo::AliTRDclusterInfo()
   ,fDet(0xffff)
   ,fCol(0xff)
   ,fRow(0xff)
+  ,fNpad(0)
   ,fPdg(0)
   ,fLbl(-1)
   ,fLocalTime(-100)
@@ -54,6 +55,7 @@ void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c)
   fDet = c->GetDetector();
   fCol = c->GetPadCol();
   fRow = c->GetPadRow();
+  fNpad= c->GetNPads();
   fX   = c->GetX();
   fY   = c->GetY();
   fZ   = c->GetZ();
@@ -69,6 +71,6 @@ void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c)
 void AliTRDclusterInfo::Print(Option_t */*opt*/) const
 {
 // Dump info
-  printf("Det[%3d] Col[%3d] Row[%2d] X[%7.2f] Y[%7.2f] Z[%7.2f] Q[%7.2f]\n", (fDet==0xffff ? -1 : fDet), (fCol==0xff ? -1 : fCol), (fRow==0xff ? -1 : fRow), fX, fY, fZ, fQ);
+  printf("Det[%3d] Col[%3d] Row[%2d] X[%7.2f] Y[%7.2f] Z[%7.2f] Q[%7.2f] N[%d]\n", (fDet==0xffff ? -1 : fDet), (fCol==0xff ? -1 : fCol), (fRow==0xff ? -1 : fRow), fX, fY, fZ, fQ, fNpad);
   printf("\tPdg[%d] Lbl[%d] Yt[%7.2f] Zt[%7.2f]\n", fPdg, fLbl, fYt, fZt);
 }
