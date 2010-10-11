@@ -548,6 +548,14 @@ AliITSv11GeometrySDD::AliITSv11GeometrySDD():
   //
   // Standard constructor
   //
+  fCommonVol[0] = NULL;
+  fCommonVol[1] = NULL;
+  fCommonTr[0] = NULL;
+  fCommonTr[1] = NULL;
+  for (Int_t i=0; i<fgkNladdSegCommonVol; i++){
+    fLaddSegCommonVol[i] = NULL;
+    fLaddSegCommonTr[i] = NULL;
+  }
   SetParameters();
 }
 
@@ -603,6 +611,14 @@ AliITSv11GeometrySDD::AliITSv11GeometrySDD(Int_t debug) :
   //
   // Constructor setting debugging level
   //
+  fCommonVol[0] = NULL;
+  fCommonVol[1] = NULL;
+  fCommonTr[0] = NULL;
+  fCommonTr[1] = NULL;
+  for (Int_t i=0; i<fgkNladdSegCommonVol; i++){
+    fLaddSegCommonVol[i] = NULL;
+    fLaddSegCommonTr[i] = NULL;
+  }
   SetParameters();
 }
 
@@ -656,6 +672,14 @@ AliITSv11GeometrySDD::AliITSv11GeometrySDD(const AliITSv11GeometrySDD &s) :
 {
   //     Copy Constructor
   // do only a "shallow copy" ...
+  fCommonVol[0] = s.fCommonVol[0];
+  fCommonVol[1] = s.fCommonVol[1];
+  fCommonTr[0] = s.fCommonTr[0];
+  fCommonTr[1] = s.fCommonTr[1];
+  for (Int_t i=0; i<fgkNladdSegCommonVol; i++){
+    fLaddSegCommonVol[i] = s.fLaddSegCommonVol[i];
+    fLaddSegCommonTr[i] = s.fLaddSegCommonTr[i];
+  }
   SetParameters();
 }
 
