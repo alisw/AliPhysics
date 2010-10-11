@@ -36,8 +36,9 @@ public:
    ,kGain   = 2
   };
   enum ECheckBits {
-    kSaveAs     = BIT(22) // save intermediary results
-   ,kCalibrated = BIT(23) // load calibration
+    kSaveAs     = BIT(21) // save intermediary results
+   ,kCalibrated = BIT(22) // load calibration
+   ,kGlobal     = BIT(23) // load global position
   };
   AliTRDclusterResolution();
   AliTRDclusterResolution(const char *name);
@@ -56,6 +57,7 @@ public:
   Bool_t        GetRefFigure(Int_t ifig);
   Bool_t        HasProcess(EResultContainer bit) const {return TESTBIT(fSubTaskMap, bit);}
   Bool_t        IsCalibrated() const { return TestBit(kCalibrated);}
+  Bool_t        HasGlobalPosition() const { return TestBit(kGlobal);}
   Bool_t        IsUsingCalibParam(ECalibrationParam par) const {return TESTBIT(fUseCalib, par);}
 
   TObjArray*    Histos(); 
@@ -64,6 +66,8 @@ public:
   Bool_t        IsVisual() const {return Bool_t(fCanvas);}
   Bool_t        IsSaveAs() const {return TestBit(kSaveAs);}
 
+  Bool_t        LoadCalibration();
+  Bool_t        LoadGlobalChamberPosition();
   Bool_t        PostProcess();
   void          SetCalibrationRegion(Int_t det, Int_t col=-1, Int_t row=-1);
   void          SetVisual();
@@ -75,14 +79,13 @@ public:
 
 protected:
   void    ProcessCharge();
-  void    ProcessCenterPad();
+  void    ProcessNormalTracks();
   void    ProcessSigma();
   void    ProcessMean();
 
 private:
   AliTRDclusterResolution(const AliTRDclusterResolution&);  
   AliTRDclusterResolution& operator=(const AliTRDclusterResolution&);
-  Bool_t        LoadCalibration();
 
   TCanvas    *fCanvas; //! visualization canvas 
   TObjArray  *fInfo;   //! list of cluster info
@@ -98,6 +101,9 @@ private:
   Float_t    fVdrift;  // mean drift velocity
   Float_t    fT0;      // time 0
   Float_t    fGain;    // gain
+  Float_t    fXch;     // anode wire position for chamber
+  Float_t    fZch;     // Z position for calibration element
+  Float_t    fH;       // tg of tilting angle
   static const Float_t fgkTimeBinLength;// time bin length (invers of sampling frequency)
 
   // working named variables

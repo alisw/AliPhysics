@@ -9,12 +9,15 @@
 
 #include <Rtypes.h>
 #include <TError.h>
+#include <TMath.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <TFileMerger.h>
 #include <TRandom.h>
 #include <TString.h>
 #include <TSystem.h>
 
+#include <string>
 #include <cstring>
 #include <fstream>
 
@@ -118,13 +121,13 @@ Int_t AliTRDpwg1Helper::ParseOptions(Char_t *trd)
 }
 
 //______________________________________________________
-void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const Int_t nBatch = 20)
+void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const Int_t nBatch, Int_t level)
 {
-// Merge Output files named "mark" from list in "files"
+// Recursively merge files named "mark" from list in "files" in groups of "nBatch" files.
+// parameter "level" is used to index recurent calls of this function.
 
-  Char_t lMERGE[8]; sprintf(lMERGE, "%d.lst", (Int_t)gRandom->Uniform(9999.));
-  Char_t lPURGE[8]; sprintf(lPURGE, "%d.lst", (Int_t)gRandom->Uniform(9999.));
-  gSystem->Exec("mkdir -p merge; rm -rf merge/*");
+  Char_t lMERGE[8]; sprintf(lMERGE, "%04d.lst", (Int_t)gRandom->Uniform(9999.));
+  Char_t lPURGE[8]; sprintf(lPURGE, "%04d.lst", (Int_t)gRandom->Uniform(9999.));
 
   // purge file list
   std::string filename;
@@ -135,18 +138,92 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
     gSystem->Exec(Form("echo %s >> %s", filename.c_str(), lPURGE));
     iline++;
   }
-  Int_t nBatches(iline/nBatch);
+  Int_t nBatches(TMath::Ceil(Double_t(iline)/nBatch));
+  Info("MergeProd()", Form("Merge %d files in %d batches.", iline, nBatches));
 
+  Int_t first(0);
   for(Int_t ibatch(0); ibatch<nBatches; ibatch++){
-    Int_t first(ibatch*nBatch);
-    if(!gSystem->Exec(Form("root.exe -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, lPURGE, nBatch, first))) continue;
-    gSystem->Exec(Form("mv %d_%s merge/", first, mark));
-    gSystem->Exec(Form("echo %s/merge/%d_%s >> %s", gSystem->ExpandPathName("$PWD"), first, mark, lMERGE));
+    first = ibatch*nBatch;
+     if(!gSystem->Exec(Form("aliroot -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, lPURGE, nBatch, first))) continue;
+    gSystem->Exec(Form("mv %d_%s merge/%d_%d_%s", first, mark, level, first, mark));
+    gSystem->Exec(Form("echo %s/merge/%d_%d_%s >> %s", gSystem->ExpandPathName("$PWD"), level, first, mark, lMERGE));
   }
-  gSystem->Exec(Form("root.exe -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, 0, kFALSE, kTRUE)\'", mark, lMERGE, nBatches));
-  gSystem->Exec(Form("mv 0_%s %s", mark, mark));
-  
-  gSystem->Exec(Form("rm -rfv %s %s merge", lMERGE, lPURGE));
+
+  if(nBatches==1){
+    Info("MergeProd()", "Rename 1 merged file.");
+    gSystem->Exec(Form("mv merge/%d_%d_%s %s", level, first, mark, mark));
+  } else if(nBatches<=nBatch){
+    Info("MergeProd()", Form("Merge %d files in 1 batch.", nBatches));
+    if(!gSystem->Exec(Form("aliroot -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, 0, kFALSE)\'", mark, lMERGE, nBatches))) return;
+    gSystem->Exec(Form("mv 0_%s %s", mark, mark));
+  } else MergeProd(mark, lMERGE, nBatch, level++);
+  gSystem->Exec(Form("rm -fv %s %s", lMERGE, lPURGE));
+}
+
+
+//______________________________________________________
+const Char_t* AliTRDpwg1Helper::MergeBatch(const Char_t *mark, const Char_t *files, const Int_t nfiles, const Int_t first, Bool_t kSVN, Bool_t kCLEAR)
+{
+// Merge files specified in the file list "files" by the token "mark".
+// The script will merge "nfiles" files starting from the "first" file.
+// If the file "svnInfo.log" is found together with the files to be merged it is copied locally
+// if option "kSVN". The input files are removed from disk if option "kCLEAR".
+//
+// On return the name of the merged file is return or NULL in case of failure.
+//
+  TObjArray arr(nfiles); arr.SetOwner(kTRUE);
+
+  TFileMerger fFM(kTRUE);
+  fFM.OutputFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), first, mark));
+  Int_t iline(0), nbatch(0);
+  std::string filename;
+  std::ifstream file(files);
+  while(getline(file, filename)){
+    if(Int_t(filename.find(mark)) < 0) continue;
+    iline++;
+    if(iline<first) continue;
+    if(kSVN){ // download SVN info for trending
+      std::string base=filename.substr(0, filename.find_last_of('/'));
+      if(gSystem->Exec(Form("if [ ! -f svnInfo.log ]; then cp -v %s/svnInfo.log %s; fi", base.c_str(), gSystem->ExpandPathName("$PWD"))) == 0) kSVN=kFALSE;
+    }
+    Info("MergeBatch()", filename.c_str());    if(!fFM.AddFile(filename.c_str())) return NULL;
+    arr.Add(new TObjString(filename.c_str()));
+    nbatch++;
+    if(nbatch==nfiles) break;
+  }
+  if(!nbatch){
+    Warning("MergeBatch()", "NOTHING TO MERGE"); return NULL;
+  } else {
+    Info("MergeBatch()", "MERGING FILES[%d] START[%d] %s ... ", nbatch, first, ((nbatch<nfiles)?"INCOMPLETE":""));
+  }
+  if(!fFM.Merge()) return NULL;
+
+  if(kCLEAR){
+    for(Int_t ifile(0); ifile<arr.GetEntries(); ifile++){
+      gSystem->Exec(Form("rm -fv %s", ((TObjString*)arr.At(ifile))->GetString().Data()));
+    }
+  }
+  return fFM.GetOutputFileName();
+}
+
+//______________________________________________________
+const Char_t* AliTRDpwg1Helper::Basename(const char* filepath)
+{
+// Implementation of shell "basename" builtin
+  TString s(filepath);
+  Int_t idx(s.Last('/')+1);
+  s=s(idx, idx+100);
+  return s;
+}
+
+//______________________________________________________
+const Char_t* AliTRDpwg1Helper::Dirname(const char* filepath)
+{
+// Implementation of shell "dirname" builtin
+  TString s(filepath);
+  Int_t idx(s.Last('/'));
+  s=s(0, idx);
+  return s;
 }
 
 //______________________________________________________

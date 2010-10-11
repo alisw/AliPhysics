@@ -2510,6 +2510,53 @@ Bool_t AliTRDresolution::Load(const Char_t *file, const Char_t *dir)
   return kTRUE;
 }
 
+//________________________________________________________
+Bool_t AliTRDresolution::Process(TH2* const h2, TGraphErrors **g, Int_t stat)
+{
+// Generic function to process sigma/mean for 2D plot dy(x)
+
+  if(!h2) {
+    if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>0) printf("D-AliTRDresolution::Process() : NULL pointer input container.\n");
+    return kFALSE;
+  }
+  if(!Int_t(h2->GetEntries())){
+    if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>0) printf("D-AliTRDresolution::Process() : Empty h[%s - %s].\n", h2->GetName(), h2->GetTitle());
+    return kFALSE;
+  }
+  if(!g || !g[0]|| !g[1]) {
+    if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>0) printf("D-AliTRDresolution::Process() : NULL pointer output container.\n");
+    return kFALSE;
+  }
+  // prepare
+  TAxis *ax(h2->GetXaxis()), *ay(h2->GetYaxis());
+  TF1 f("f", "gaus", ay->GetXmin(), ay->GetXmax());
+  Int_t n(0);
+  if((n=g[0]->GetN())) for(;n--;) g[0]->RemovePoint(n);
+  if((n=g[1]->GetN())) for(;n--;) g[1]->RemovePoint(n);
+  TH1D *h(NULL);
+  if((h=(TH1D*)gROOT->FindObject("py"))) delete h;
+
+  // do actual loop
+  for(Int_t ix = 1, np=0; ix<=ax->GetNbins(); ix++){
+    Double_t x = ax->GetBinCenter(ix);
+    Double_t ex= ax->GetBinWidth(ix)*0.288; // w/sqrt(12)
+    h = h2->ProjectionY("py", ix, ix);
+    if((n=(Int_t)h->GetEntries())<stat){
+      if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>1) printf("I-AliTRDresolution::Process() : Low statistics @ x[%f] stat[%d]=%d [%d].\n", x, ix, n, stat);
+      continue;
+    }
+    f.SetParameter(1, 0.);
+    f.SetParameter(2, 3.e-2);
+    h->Fit(&f, "QN");
+    g[0]->SetPoint(np, x, f.GetParameter(1));
+    g[0]->SetPointError(np, ex, f.GetParError(1));
+    g[1]->SetPoint(np, x, f.GetParameter(2));
+    g[1]->SetPointError(np, ex, f.GetParError(2));
+    np++;
+  }
+  return kTRUE;
+}
+
 
 //________________________________________________________
 Bool_t AliTRDresolution::Process(TH2 * const h2, TF1 *f, Float_t k, TGraphErrors **g)
