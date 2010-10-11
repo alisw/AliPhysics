@@ -159,7 +159,12 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
       }
     }
     if(fSimuPar) delete fSimuPar;
-    if(fRespSDD) delete fRespSDD;
+    if(fRespSDD){
+      if(!(AliCDBManager::Instance()->GetCacheFlag())){
+	delete fRespSDD;
+	fRespSDD=0;
+      }
+    }
     if(fDDLMapSDD) delete fDDLMapSDD;
     if(fNDigits) delete [] fNDigits;
     fNDigits = 0;
