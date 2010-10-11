@@ -59,6 +59,10 @@ AliTRDqaRecPoints::AliTRDqaRecPoints() :
   // Default constructor
   //
 
+  for (Int_t i = 0; i < 540; i++) {
+    fRefHist[i] = 0x0;
+  }
+
 }
 
 //____________________________________________________________________________ 

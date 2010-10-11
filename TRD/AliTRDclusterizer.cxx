@@ -97,11 +97,6 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   SetBit(kLabels, kTRUE);
   SetBit(knewDM, kFALSE);
 
-  AliTRDcalibDB *trd = 0x0;
-  if (!(trd = AliTRDcalibDB::Instance())) {
-    AliFatal("Could not get calibration object");
-  }
-
   fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
 
   // Initialize debug stream

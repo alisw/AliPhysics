@@ -108,6 +108,8 @@ void AliTRDTriggerL1::Trigger()
     // jet trigger
     Int_t nTracks1[90]; // tracks above lower pt threshold
     Int_t nTracks2[90]; // tracks above higher pt threshold
+    memset(nTracks1,0,sizeof(Int_t)*90);
+    memset(nTracks2,0,sizeof(Int_t)*90);
     for (Int_t iTrack = 0; iTrack < trackTree->GetEntriesFast(); iTrack++) {
       trackTree->GetEntry(iTrack);
       if (TMath::Abs(trk->GetPt()) > ptThreshold1)

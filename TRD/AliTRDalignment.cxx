@@ -146,6 +146,11 @@ AliTRDalignment::AliTRDalignment()
     fSurveyZ0[j][k][l] = z[k];
   }
 
+  for (int i=0; i<1000; i++) {
+    fIbuffer[i] = 0;
+    fDbuffer[i] = 0.0;
+  }
+
 }
 
 //_____________________________________________________________________________

@@ -84,7 +84,7 @@ AliTRDqaBlackEvents::AliTRDqaBlackEvents()
   // to create the histograms call Init()
   //
 
-  strcpy(fRefFileName, "");
+  strncpy(fRefFileName,"",256);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

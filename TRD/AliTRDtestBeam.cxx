@@ -78,6 +78,20 @@ AliTRDtestBeam::AliTRDtestBeam() :
   // Standard construction
   //
 
+  for (Int_t i = 0; i < 1270; i++) {
+    fSi1Address[i] = 0;
+    fSi2Address[i] = 0;
+    fSi1Charge[i]  = 0;
+    fSi2Charge[i]  = 0;
+  }
+
+  for (Int_t j = 0; j < 2; j++) {
+    fX[j]  = 0.0;
+    fY[j]  = 0.0;
+    fQx[j] = 0.0;
+    fQy[j] = 0.0;
+  }
+
 }
 //____________________________________________________________________________ 
 AliTRDtestBeam::AliTRDtestBeam(const char *filename) :

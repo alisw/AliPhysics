@@ -201,6 +201,10 @@ AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader) :
   fErrors->SetDirectory(0x0);
   fErrors->Branch("error", &fLastError);
   fErrors->SetCircular(1000);
+  for (Int_t i = 0; i < 100; i++) {
+    fErrorBuffer[i] = 0;
+  }
+
 }
 
 AliTRDrawStream::~AliTRDrawStream()

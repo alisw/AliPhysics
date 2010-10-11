@@ -70,6 +70,9 @@ void AliTRDTriggerL0::Trigger()
 
   Int_t* simulationResult;
   simulationResult = ptrgCBB->Simulate();
+  if (!simulationResult) {
+    return;
+  }
   for (Int_t iResult = 1; iResult <= simulationResult[0]; iResult++) {
     AliDebug(5, Form("Result[%d]=0x%x\n",iResult,simulationResult[iResult]));
   }
@@ -89,8 +92,7 @@ void AliTRDTriggerL0::Trigger()
   }
 
   delete ptrgCBB;
-  if (simulationResult != 0x0)
-    delete[] simulationResult;
+  delete[] simulationResult;
   simulationResult = 0x0;
 
   AliDebug(5, Form("memory state: %d", param->CheckVariables()));

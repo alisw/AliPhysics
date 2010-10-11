@@ -728,7 +728,6 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   const Int_t baseline = 10;
 
-
   // configure the reader
   rawReader->Reset();
   rawReader->SelectEquipment(0, 1024, 1041);
@@ -808,12 +807,10 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     }    
   }
   
-  if (fErrorContainer){
-    delete [] fErrorContainer[0];
-    delete [] fErrorContainer[1];
-    delete [] fErrorContainer;
-    fErrorContainer = NULL;
-  }
+  delete [] fErrorContainer[0];
+  delete [] fErrorContainer[1];
+  delete [] fErrorContainer;
+  fErrorContainer = NULL;
   
   delete digitsManager;  
   delete data;

@@ -192,7 +192,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
   for (Int_t sect = 0; sect < fGeo->Nsector(); sect++) { 
 
     char name[1024];
-    sprintf(name,"TRD_%d.ddl",sect + AliTRDrawStreamBase::kDDLOffset);
+    snprintf(name,1024,"TRD_%d.ddl",sect + AliTRDrawStreamBase::kDDLOffset);
 
     AliFstream* of = new AliFstream(name);
 

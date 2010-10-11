@@ -62,6 +62,13 @@ AliTRDpropagationLayer::AliTRDpropagationLayer()
   // Default constructor
   //
 
+  for (Int_t iZones = 0; iZones < (Int_t)kZones; iZones++) {
+    fZc[iZones]            = 0.0;
+    fZmax[iZones]          = 0.0;
+    fZmaxSensitive[iZones] = 0.0;
+    fIsHole[iZones]        = kFALSE;   
+  }
+
 }
 
 //_____________________________________________________________________________
