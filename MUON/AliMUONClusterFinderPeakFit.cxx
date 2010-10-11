@@ -627,7 +627,7 @@ void AliMUONClusterFinderPeakFit::BuildPixArrayOneCathode(AliMUONCluster& cluste
 //  AliDebug(2,Form("cluster.Multiplicity=%d",cluster.Multiplicity()));
 
   TVector2 dim = cluster.MinPadDimensions (-1, kFALSE);
-  Double_t width[2] = {dim.X(), dim.Y()}, xy0[2];
+  Double_t width[2] = {dim.X(), dim.Y()}, xy0[2] = { 0.0, 0.0 };
   Int_t found[2] = {0}, mult = cluster.Multiplicity();
 
   for ( Int_t i = 0; i < mult; ++i) {

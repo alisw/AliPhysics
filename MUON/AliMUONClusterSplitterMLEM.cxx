@@ -369,6 +369,9 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   AliMUONPad *pixPtr;
   Int_t npxclu;
   Double_t cont, cmax = 0, xseed = 0, yseed = 0, errOk[8], qq = 0;
+  
+  for ( int i = 0; i < 8; ++i ) errOk[i]=0.0;
+  
   Double_t xyseed[3][2], qseed[3], xyCand[3][2] = {{0},{0}}, sigCand[3][2] = {{0},{0}};
   
   for (Int_t ifit = 1; ifit <= nfit0; ++ifit) 
