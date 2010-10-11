@@ -1533,7 +1533,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
     } // end loop on TDC channel number
 
-    AliDebug(3,Form(" TDC number %2i:  numberOfMeasuresPerChannel = %2i  ---  maxMeasuresPerChannelInTDC = %2i ", nTDC, numberOfMeasuresPerChannel, maxMeasuresPerChannelInTDC));
+    //AliDebug(3,Form(" TDC number %2i:  numberOfMeasuresPerChannel = %2i  ---  maxMeasuresPerChannelInTDC = %2i ", nTDC, numberOfMeasuresPerChannel, maxMeasuresPerChannelInTDC));
 
     if (localIndex==-1) continue;
 
