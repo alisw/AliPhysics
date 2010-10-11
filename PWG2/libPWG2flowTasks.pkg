@@ -2,7 +2,9 @@
 
 SRCS= FLOW/AliFlowTasks/AliFlowEventSimpleMaker.cxx \
       FLOW/AliFlowTasks/AliFlowEvent.cxx \
+      FLOW/AliFlowTasks/AliFlowEventCuts.cxx \
       FLOW/AliFlowTasks/AliFlowTrack.cxx \
+      FLOW/AliFlowTasks/AliFlowTrackCuts.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskScalarProduct.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskMCEventPlane.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskLYZEventPlane.cxx \

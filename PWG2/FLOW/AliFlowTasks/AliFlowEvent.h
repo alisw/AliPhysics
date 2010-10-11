@@ -11,13 +11,12 @@
 #ifndef ALIFLOWEVENT_H
 #define ALIFLOWEVENT_H
 
-class TTree;
-class AliFlowTrackSimpleCuts;
+class AliFlowTrackCuts;
 class AliFlowTrack;
 class AliCFManager;
+class AliVEvent;
 class AliMCEvent;
 class AliESDEvent;
-class AliMCEvent;
 class AliAODEvent;
 class AliMultiplicity;
 class TH2F;
@@ -57,6 +56,9 @@ public:
   AliFlowEvent( const AliESDEvent* anInput,
                 const TH2F* anInputFMDhist,
                 const AliCFManager* poiCFManager );
+  AliFlowEvent( AliVEvent* anInput,
+                AliFlowTrackCuts* rpCuts,
+                AliFlowTrackCuts* poiCuts );
 
 
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
