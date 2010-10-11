@@ -2606,7 +2606,7 @@ const char *AliAnalysisAlien::GetListOfFiles(const char *type)
    if (!fTerminateFiles.IsNull()) {
       fTerminateFiles.Strip();
       fTerminateFiles.ReplaceAll(" ",",");
-      TObjArray *fextra = extra.Tokenize(",");
+      TObjArray *fextra = fTerminateFiles.Tokenize(",");
       TIter nextx(fextra);
       TObject *obj;
       while ((obj=nextx())) {
