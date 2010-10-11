@@ -1091,8 +1091,8 @@ Bool_t AliAnalysisAlien::CreateJDL()
                   files.ReplaceAll(Form("%s,",os->GetString().Data()),"");
                   files.ReplaceAll(os->GetString(),"");
                }   
+               delete arr;
             }
-            delete arr;
             files.ReplaceAll(".root", "*.root");
             outputArchive += Form("root_archive.zip:%s@disk=%d",files.Data(),fNreplicas);
          } else {
