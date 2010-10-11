@@ -290,7 +290,7 @@ void AliTOFDDLRawData::GetDigits()
 
   Int_t digit = -1;
   Int_t ndigits = fTOFdigitArray->GetEntries();
-
+  AliDebug(2, Form(" Number of read digits = %d",ndigits));
   AliTOFdigit *digs;
 
   // loop on TOF digits
@@ -306,7 +306,7 @@ void AliTOFDDLRawData::GetDigits()
     fTOFdigitMap->AddDigit(vol, digit);
 
   } // close loop on digit del TOF
-
+  AliDebug(2,Form(" Number of mapped digits = %d",fTOFdigitMap->GetFilledCellNumber()));
 }
 
 //----------------------------------------------------------------------------
@@ -504,143 +504,232 @@ void AliTOFDDLRawData::MakeLTMdata(UInt_t *buf)
 
   UInt_t baseWord;
   UInt_t word;
+
+  baseWord=0;
+  word = 0;
+  AliBitPacking::PackWord(word,baseWord,0,9);
+  word = 0;
+  AliBitPacking::PackWord(word,baseWord,10,19);
+  word = 0;
+  AliBitPacking::PackWord(word,baseWord,20,29);
+  word = 0;
+  AliBitPacking::PackWord(word,baseWord,30,30);
+  word = 0;
+  AliBitPacking::PackWord(word,baseWord,31,31);
+
+
+  // OR45, OR46, OR47
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR42, OR43, OR44
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR39, OR40, OR41
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR36, OR37, OR38
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR33, OR34, OR35
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR30, OR31, OR32
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR27, OR28, OR29
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR24, OR25, OR26
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR21, OR22, OR23
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR18, OR19, OR20
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR15, OR16, OR17
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR12, OR12, OR24
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR9, OR10, OR11
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR6, OR7, OR8
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR3, OR4, OR5
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // OR0, OR1, OR2
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+
   
   baseWord=0;
-  word = 100; // Local temperature in LTM5 -> 4 X 25 degree (environment temperature)
+  word = 100; // Local temperature in LTM11 -> 4 X 25 degree (environment temperature)
   AliBitPacking::PackWord(word,baseWord, 0, 9);
-  word = 100; // Local temperature in LTM6 -> 4 X 25 degree (environment temperature)
+  word = 100; // Local temperature in LTM10 -> 4 X 25 degree (environment temperature)
   AliBitPacking::PackWord(word,baseWord,10,19);
-  word = 100; // Local temperature in LTM7 -> 4 X 25 degree (environment temperature)
+  word = 100; // Local temperature in LTM9 -> 4 X 25 degree (environment temperature)
   AliBitPacking::PackWord(word,baseWord,20,29);
   word = 0;
-  AliBitPacking::PackWord(word,baseWord,30,31);
+  AliBitPacking::PackWord(word,baseWord,30,30);
+  word = 0;
+  AliBitPacking::PackWord(word,baseWord,31,31);
 
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // Local temperature in LTM2, LMT3, LTM4 -> 4 X 25 degree (environment temperature)
+  // Local temperature in LTM8, LMT7, LTM6 -> 4 X 25 degree (environment temperature)
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // Local temperature in FEAC7, FEAC8, LTM1 -> 4 X 25 degree (environment temperature)
+  // Local temperature in LTM5, LMT4, LTM3 -> 4 X 25 degree (environment temperature)
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // Local temperature in FEAC4, FEAC5, FEAC6 -> 4 X 25 degree (environment temperature)
+  // Local temperature in LTM2, LMT1, LTM0 -> 4 X 25 degree (environment temperature)
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // Local temperature in FEAC1, FEAC2, FEAC3 -> 4 X 25 degree (environment temperature)
+
+
+  // Local temperature in T7, T6, T5 -> 4 X 25 degree (environment temperature)
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // Local temperature in T4, T3, T2 -> 4 X 25 degree (environment temperature)
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // Local temperature in T1, T0 -> 4 X 25 degree (environment temperature)
+  // Local temperature in VTH15 -> Thereshould voltage for FEAC15
   fIndex++;
   buf[fIndex]=baseWord;
 
   baseWord=0;
-  word = 0; // GND-FEAC15 -> Voltage drop between GND and FEAC15
+  word = 0; // VTH13 -> Thereshould voltage for FEAC16
   AliBitPacking::PackWord(word,baseWord, 0, 9);
-  word = 0; // VTH16 -> Thereshould voltage for FEAC16
+  word = 0; // VTH14 -> Thereshould voltage for FEAC14
   AliBitPacking::PackWord(word,baseWord,10,19);
-  word = 0; // GND-FEAC16 -> Voltage drop between GND and FEAC16
+  word = 0; // GND-FEAC7 -> Voltage drop between GND and FEAC7
   AliBitPacking::PackWord(word,baseWord,20,29);
   word = 0;
-  AliBitPacking::PackWord(word,baseWord,30,31);
+  AliBitPacking::PackWord(word,baseWord,30,30);
+  word = 0;
+  AliBitPacking::PackWord(word,baseWord,31,31);
 
-  fIndex++;
-  buf[fIndex]=baseWord;
-
-  // VTH14 -> Thereshould voltage for FEAC14
-  // GND-FEAC14 -> Voltage drop between GND and FEAC14
-  // VTH15 -> Thereshould voltage for FEAC15
-  fIndex++;
-  buf[fIndex]=baseWord;
-
-  // GND-FEAC12 -> Voltage drop between GND and FEAC12
-  // VTH13 -> Thereshould voltage for FEAC13
-  // GND-FEAC13 -> Voltage drop between GND and FEAC13
   fIndex++;
   buf[fIndex]=baseWord;
 
   // VTH11 -> Thereshould voltage for FEAC11
-  // GND-FEAC11 -> Voltage drop between GND and FEAC11
   // VTH12 -> Thereshould voltage for FEAC12
-  fIndex++;
-  buf[fIndex]=baseWord;
-
-  // GND-FEAC9 -> Voltage drop between GND and FEAC9
-  // VTH10 -> Thereshould voltage for FEAC10
-  // GND-FEAC10 -> Voltage drop between GND and FEAC10
-  fIndex++;
-  buf[fIndex]=baseWord;
-
-  // VTH8 -> Thereshould voltage for FEAC8
-  // GND-FEAC8 -> Voltage drop between GND and FEAC8
-  // VTH9 -> Thereshould voltage for FEAC9
-  fIndex++;
-  buf[fIndex]=baseWord;
-
   // GND-FEAC6 -> Voltage drop between GND and FEAC6
-  // VTH7 -> Thereshould voltage for FEAC7
-  // GND-FEAC7 -> Voltage drop between GND and FEAC7
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // VTH5 -> Thereshould voltage for FEAC5
-  // GND-FEAC5 -> Voltage drop between GND and FEAC5
-  // VTH6 -> Thereshould voltage for FEAC6
+  // VTH9 -> Thereshould voltage for FEAC11
+  // VTH10 -> Thereshould voltage for FEAC12
+  // GND-FEAC5 -> Voltage drop between GND and FEAC6
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // GND-FEAC3 -> Voltage drop between GND and FEAC3
-  // VTH4 -> Thereshould voltage for FEAC4
-  // GND-FEAC4 -> Voltage drop between GND and FEAC4
+  // VTH7 -> Thereshould voltage for FEAC11
+  // VTH8 -> Thereshould voltage for FEAC12
+  // GND-FEAC4 -> Voltage drop between GND and FEAC6
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // VTH2 -> Thereshould voltage for FEAC2
-  // GND-FEAC2 -> Voltage drop between GND and FEAC2
-  // VTH3 -> Thereshould voltage for FEAC3
+  // VTH5 -> Thereshould voltage for FEAC11
+  // VTH6 -> Thereshould voltage for FEAC12
+  // GND-FEAC3 -> Voltage drop between GND and FEAC6
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // LV16 -> Low Voltage measured by FEAC16
-  // GND-FEAC1 -> Voltage drop between GND and FEAC1
-  // VTH1 -> Thereshould voltage for FEAC1
+  // VTH3 -> Thereshould voltage for FEAC11
+  // VTH4 -> Thereshould voltage for FEAC12
+  // GND-FEAC2 -> Voltage drop between GND and FEAC6
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // Low Voltage measured by FEAC13, FEAC14, FEAC15
+  // VTH1 -> Thereshould voltage for FEAC11
+  // VTH2 -> Thereshould voltage for FEAC12
+  // GND-FEAC1 -> Voltage drop between GND and FEAC6
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // Low Voltage measured by FEAC10, FEAC11, FEAC12
+  // LV15
+  // VTH0 -> Thereshould voltage for FEAC12
+  // GND-FEAC0 -> Voltage drop between GND and FEAC6
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // Low Voltage measured by FEAC7, FEAC8, FEAC9
+  // LV15
+  // VTH0 -> Thereshould voltage for FEAC12
+  // GND-FEAC0 -> Voltage drop between GND and FEAC6
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // Low Voltage measured by FEAC4, FEAC5, FEAC6
+  // LV12
+  // LV13
+  // LV14
   fIndex++;
   buf[fIndex]=baseWord;
 
-  // Low Voltage measured by FEAC1, FEAC2, FEAC3
+  // LV9
+  // LV10
+  // LV11
   fIndex++;
   buf[fIndex]=baseWord;
+
+  // LV6
+  // LV7
+  // LV8
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // LV3
+  // LV4
+  // LV5
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // LV0
+  // LV1
+  // LV2
+  fIndex++;
+  buf[fIndex]=baseWord;
+
 
 
   baseWord=0;
-  word = 0; // PDL45 -> Delay Line setting for PDL45
+  word = 0; // PDL45 -> Delay Line setting for PDL41
   AliBitPacking::PackWord(word,baseWord, 0, 7);
-  word = 0; // PDL46 -> Delay Line setting for PDL46
+  word = 0; // PDL46 -> Delay Line setting for PDL42
   AliBitPacking::PackWord(word,baseWord, 8,15);
-  word = 0; // PDL47 -> Delay Line setting for PDL47
+  word = 0; // PDL47 -> Delay Line setting for PDL43
   AliBitPacking::PackWord(word,baseWord,16,23);
-  word = 0; // PDL48 -> Delay Line setting for PDL48
+  word = 0; // PDL48 -> Delay Line setting for PDL44
   AliBitPacking::PackWord(word,baseWord,24,31);
-  fIndex++;
-  buf[fIndex]=baseWord;
-
-  // Delay Line setting for PDL41, PDL42, PDL43, PDL44
   fIndex++;
   buf[fIndex]=baseWord;
 
@@ -960,18 +1049,22 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
     // the DRM odd (i.e. left) slot number 3 doesn't contain TDC digit data
     // for TDC numbers 3-14
-    if (iDDL%2==1 && nTRM==3 && (Int_t)(nTDC/3.)!=0) continue;
+    if (iDDL%2==1 && nTRM==3 && (Int_t)(nTDC/3)!=0) continue;
 
     // loop on TDC channel number
     for (iCH=AliTOFGeometry::NCh()-1; iCH>=0; iCH--) {
 
       //numberOfMeasuresPerChannel = 0;
 
-      //fTOFrawStream->EquipmentId2VolumeId(nDDL, nTRM, iChain, nTDC, iCH, volume);
+      for (Int_t aa=0; aa<5; aa++) volume[aa]=-1;
       AliTOFRawStream::EquipmentId2VolumeId(nDDL, nTRM, iChain, nTDC, iCH, volume);
 	
+      AliDebug(3,Form(" volume -> %2d %1d %2d %2d %1d",volume[0],volume[1],volume[2],volume[3],volume[4]));
+
       if (volume[0]==-1 || volume[1]==-1 || volume[2]==-1 ||
 	  volume[3]==-1 || volume[4]==-1) continue;
+
+      AliDebug(3,Form(" ====== %2d %1d %2d %2d %1d",volume[0],volume[1],volume[2],volume[3],volume[4]));
 
       for (jj=0; jj<3; jj++) indexDigit[jj] = -1;
 
@@ -1053,6 +1146,8 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
 	if (indexDigit[jj]<0) continue;
 
+	AliDebug(3,Form(" ====== %2d %1d %2d %2d %1d -> %1d %d",volume[0],volume[1],volume[2],volume[3],volume[4],jj,indexDigit[jj]));
+
 	digs = (AliTOFdigit*)fTOFdigitArray->UncheckedAt(indexDigit[jj]);
 	  
 	if (digs->GetSector()!=volume[0] ||
@@ -1067,12 +1162,17 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 							  digs->GetPadz(), volume[4])
 						     );
 
-	timeOfFlight = (Int_t)(digs->GetTdc())
-	  /*+
+	timeOfFlight = (Int_t)(digs->GetTdc());
+	/*+
 	  fTOFCableLengthMap->GetCableTimeShiftBin(nDDL, nTRM, iChain, nTDC)*/;
 
 	//if (timeOfFlight>=fMatchingWindow+1000) continue; // adc
-	if (timeOfFlight>=fMatchingWindow) continue; // adc
+	//if (timeOfFlight>=fMatchingWindow) continue; // adc
+	if (digs->GetTdcND()>=fMatchingWindow) {
+	  AliDebug(2,"Out of matching window.");
+	  continue; // adc
+	}
+	else AliDebug(2,"In matching window");
 
 	//numberOfMeasuresPerChannel++;
 
@@ -1433,7 +1533,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
     } // end loop on TDC channel number
 
-    //AliInfo(Form(" TDC number %2i:  numberOfMeasuresPerChannel = %2i  ---  maxMeasuresPerChannelInTDC = %2i ", nTDC, numberOfMeasuresPerChannel, maxMeasuresPerChannelInTDC));
+    AliDebug(3,Form(" TDC number %2i:  numberOfMeasuresPerChannel = %2i  ---  maxMeasuresPerChannelInTDC = %2i ", nTDC, numberOfMeasuresPerChannel, maxMeasuresPerChannelInTDC));
 
     if (localIndex==-1) continue;
 
@@ -1471,7 +1571,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
       } // if (maxMeasuresPerChannelInTDC = 1)
       else if (maxMeasuresPerChannelInTDC>1) {
 
-	AliInfo(Form(" In the TOF DDL %2i, TRM %2i, TDC %2i, chain %1i, the maximum number of t.o.f. good measurements per channel is %2i",
+	AliDebug(3,Form(" In the TOF DDL %2i, TRM %2i, TDC %2i, chain %1i, the maximum number of t.o.f. good measurements per channel is %2i",
 		     nDDL, nTRM, iChain, nTDC, iCH, maxMeasuresPerChannelInTDC));
       */
       for (jj=0; jj<=localIndex; jj++) {
