@@ -483,7 +483,7 @@ TObjArray* AliTRDclusterResolution::Histos()
   arr->AddAt(h3, 2);
 
   //  RESOLUTION/PULLS PLOTS
-  fContainer->AddAt(arr = new TObjArray(3), kYRes);
+  fContainer->AddAt(arr = new TObjArray(5), kYRes);
   arr->SetName("ResY");
   // resolution plot on pw and q (for dydx=0 && B=0)
   if(!(h3=(TH3S*)gROOT->FindObject(Form("Res%s%03d", (HasMCdata()?"MC":"") ,fDet)))) {
@@ -598,7 +598,7 @@ void AliTRDclusterResolution::UserExec(Option_t *)
       if(TMath::Abs(fRow-r) > 2) continue;
     }
     dy = cli->GetResolution();
-    AliDebug(4, Form("det[%d] tb[%2d] q[%4.0f Log[%6.4f]] dy[%7.2f][um] ypull[%5.2f]", det, t, q, TMath::Log(q), 1.e4*dy, dy/TMath::Sqrt(covcl[0])));
+    AliDebug(4, Form("det[%d] tb[%2d] q[%4.0f Log[%6.4f]] np[%d] dy[%7.2f][um] ypull[%5.2f]", det, t, q, TMath::Log(q), np, 1.e4*dy, dy/TMath::Sqrt(covcl[0])));
     
     cli->GetGlobalPosition(y, z, dydx, dzdx, &cov[0]);
     Float_t pw(cli->GetYDisplacement());
