@@ -41,6 +41,7 @@ class AliRsnValue : public TNamed
       kPairPhi,
       kPairPhiMC,
       kPairPtRatio,
+      kPairDipAngle,
       kPairCosThetaStar,
       kPairCosThetaStar1,
       kPairCosThetaStar2,
