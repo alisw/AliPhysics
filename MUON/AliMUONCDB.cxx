@@ -1437,6 +1437,61 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
 
 //_____________________________________________________________________________
 void 
+AliMUONCDB::ShowCapacitances()
+{
+  /// Show briefly the number of capa values we have in the OCDB,
+  /// and the list of manu that are actually in the config and for which
+  /// we miss the capa (if any).
+  
+  if (!AliMUONCDB::CheckOCDB()) return;
+  
+  AliMUONCDB::LoadMapping();
+  
+  if (!AliMUONCDB::CheckMapping()) return;
+  
+  AliCDBEntry* e = AliCDBManager::Instance()->Get("MUON/Calib/Config");
+  
+  if (!e) return ;
+  
+  AliMUONVStore* config = static_cast<AliMUONVStore*>(e->GetObject());
+  
+  e = AliCDBManager::Instance()->Get("MUON/Calib/Capacitances");
+  
+  if (!e) return;
+  
+  AliMUONVStore* capacitances = static_cast<AliMUONVStore*>(e->GetObject());
+  
+  AliInfoGeneral("ShowCapacitances",Form("%d capacitances are in OCDB",capacitances->GetSize()));
+  
+  TIter nextManu(config->CreateIterator());
+  AliMUONVCalibParam* param;
+  
+  while ( ( param = static_cast<AliMUONVCalibParam*>(nextManu()) ) )
+  {
+    Int_t detElemId = param->ID0();
+    Int_t manuId = param->ID1();
+    
+    Int_t serialNumber 
+    = AliMpManuStore::Instance()->GetManuSerial(detElemId, manuId);
+    
+    if (serialNumber<0)
+    {
+      AliErrorGeneral("ShowCapacitances",Form("Did not find serial for DE %04d MANUID %04d",detElemId,manuId));
+    }
+    else
+    {
+      AliMUONVCalibParam* capa = static_cast<AliMUONVCalibParam*>(capacitances->FindObject(serialNumber));
+      if (!capa)
+      {
+        AliErrorGeneral("ShowCapacitances",Form("Did not find capacitance for DE %04d MANUID %04d SERIAL %d",detElemId,manuId,serialNumber));
+      }
+    }
+  }
+  
+}
+
+//_____________________________________________________________________________
+void 
 AliMUONCDB::ShowConfig(Bool_t withStatusMap)
 {  
   /// Dumps the current tracker configuration, i.e. number and identity of missing buspatches

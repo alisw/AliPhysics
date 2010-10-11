@@ -59,6 +59,8 @@ namespace AliMUONCDB
 
   void ShowConfig(Bool_t withStatusMap=kFALSE);
   
+  void ShowCapacitances();
+  
   void WriteToCDB(const char* calibpath, TObject* object,
                   Int_t startRun, Int_t endRun, Bool_t defaultValues);
   void WriteToCDB(const char* calibpath, TObject* object,
