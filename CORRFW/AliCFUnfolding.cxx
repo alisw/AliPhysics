@@ -302,13 +302,13 @@ void AliCFUnfolding::CreateEstMeasured() {
     Double_t fill = conditionalValue * priorTimesEffValue ;
     
     if (fill>0.) {
-      fMeasuredEstimate->AddBinContent(fCoordinatesN_M,fill);
-
       // error calculation : gaussian error propagation (may be overestimated...)
       Double_t err2  = TMath::Power(fMeasuredEstimate->GetBinError(fCoordinatesN_M),2) ;
       err2 += TMath::Power(conditionalValue*priorTimesEffError,2) + TMath::Power(conditionalError*priorTimesEffValue,2) ;
       Double_t err = TMath::Sqrt(err2);
       fMeasuredEstimate->SetBinError(fCoordinatesN_M,err);
+
+      fMeasuredEstimate->AddBinContent(fCoordinatesN_M,fill);
     }
   }
   delete priorTimesEff ;
@@ -411,8 +411,6 @@ void AliCFUnfolding::CreateUnfolded() {
     Double_t fill = (effValue>0. ? invResponseValue * measuredValue / effValue : 0.) ;
     
     if (fill>0.) {
-      fUnfolded->AddBinContent(fCoordinatesN_T,fill);
-
       // error calculation : gaussian error propagation (may be overestimated...)
       Double_t err2 = TMath::Power(fUnfolded->GetBinError(fCoordinatesN_T),2) ;
       err2 += TMath::Power(invResponseError * measuredValue * effValue,2) / TMath::Power(effValue,4) ;
@@ -420,6 +418,8 @@ void AliCFUnfolding::CreateUnfolded() {
       err2 += TMath::Power(invResponseValue * measuredValue * effError,2) / TMath::Power(effValue,4) ;
       Double_t err = TMath::Sqrt(err2);
       fUnfolded->SetBinError(fCoordinatesN_T,err);
+
+      fUnfolded->AddBinContent(fCoordinatesN_T,fill);
     }
   }
 }
@@ -622,8 +622,8 @@ Short_t AliCFUnfolding::SmoothUsingFunction() {
       x[iVar] = fUnfolded->GetAxis(iVar)->GetBinCenter(bin[iVar]);
     }
     Double_t functionValue = fSmoothFunction->Eval(x[0],x[1],x[2]) ;
+    fUnfolded->SetBinError  (bin,fUnfolded->GetBinError(bin)*functionValue/fUnfolded->GetBinContent(bin));
     fUnfolded->SetBinContent(bin,functionValue);
-    fUnfolded->SetBinError  (bin,functionValue*fUnfolded->GetBinError(bin));
   }
   return 0;
 }
