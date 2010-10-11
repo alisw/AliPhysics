@@ -48,7 +48,9 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Bool_t PassesCuts(const AliFlowTrackSimple *track) const;
   Bool_t PassesCuts(TParticle* p) const;
 
- private:
+  virtual Bool_t IsSelected(TObject* obj);
+
+ protected:
   Bool_t   fCutPt;
   Double_t fPtMax;
   Double_t fPtMin;

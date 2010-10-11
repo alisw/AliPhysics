@@ -12,6 +12,8 @@
 #define AliAnalysisTaskFlowEvent_H
 
 class AliCFManager;
+class AliFlowEventCuts;
+class AliFlowTrackCuts;
 class AliFlowEventSimpleMaker;
 class TList;
 class TRandom3;
@@ -49,6 +51,13 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   void DefineDeadZone( Double_t etaMin, Double_t etaMax, Double_t phiMin, Double_t phiMax )
   {this->fExcludedEtaMin = etaMin; this->fExcludedEtaMax = etaMax; 
     this->fExcludedPhiMin = phiMin; this->fExcludedPhiMax = phiMax; }
+
+  void          SetCutsEvent(AliFlowEventCuts* cutsEvent) {fCutsEvent=cutsEvent;}
+  AliFlowEventCuts* GetCutsEvent() const {return fCutsEvent;}
+  void          SetCutsRP(AliFlowTrackCuts* cutsRP) {fCutsRP=cutsRP;}
+  AliFlowTrackCuts* GetCutsRP() const {return fCutsRP;}
+  void          SetCutsPOI(AliFlowTrackCuts* cutsPOI) {fCutsPOI=cutsPOI;}
+  AliFlowTrackCuts* GetCutsPOI() const {return fCutsPOI;}
 
   void          SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
   AliCFManager* GetCFManager1()           {return this->fCFManager1; }
@@ -98,6 +107,9 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   TString       fRPType;            // can be Global or Tracklet or FMD
   AliCFManager* fCFManager1;        // correction framework manager
   AliCFManager* fCFManager2;        // correction framework manager
+  AliFlowEventCuts* fCutsEvent;     //event cuts
+  AliFlowTrackCuts* fCutsRP;        //cuts for RPs
+  AliFlowTrackCuts* fCutsPOI;       //cuts for POIs
   TList*        fQAInt;             // QA histogram list
   TList*        fQADiff;            // QA histogram list
   Int_t         fMinMult;           // Minimum multiplicity from tracks selected using CORRFW

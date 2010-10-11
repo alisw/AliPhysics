@@ -34,7 +34,7 @@ AliFlowTrack::AliFlowTrack():
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrack::AliFlowTrack(AliVParticle* p):
+AliFlowTrack::AliFlowTrack(const AliVParticle* p):
   AliFlowTrackSimple(),
   fTrackSourceBits()
 {

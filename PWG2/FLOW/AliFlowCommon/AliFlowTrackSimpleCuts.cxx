@@ -94,14 +94,25 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
 //}
 
 //----------------------------------------------------------------------- 
+Bool_t AliFlowTrackSimpleCuts::IsSelected(TObject* obj)
+{
+  //check cuts
+  TParticle* p = dynamic_cast<TParticle*>(obj);
+  if (p) return PassesCuts(p);
+  AliFlowTrackSimple* ts = dynamic_cast<AliFlowTrackSimple*>(obj);
+  if (ts) return PassesCuts(ts);
+  return kFALSE; //default when passed a wrong type of object
+}
+
+//----------------------------------------------------------------------- 
 Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
 {
   //simple method to check if the simple track passes the simple cuts
   if(fCutPt) {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;}
   if(fCutEta) {if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;}
   if(fCutPhi) {if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;}
-  //if(fCutPID) {if (track->PID() != fPID) return kFALSE;}
   if(fCutCharge) {if (track->Charge() != fCharge) return kFALSE;}
+  //if(fCutPID) {if (track->PID() != fPID) return kFALSE;}
   return kTRUE;
 }
 
@@ -119,7 +130,7 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
   if (fCutCharge) 
   {
     TParticlePDG* ppdg = track->GetPDG();
-    Int_t charge = TMath::Nint(ppdg->Charge()/3.0);
+    Int_t charge = TMath::Nint(ppdg->Charge()/3.0); //mc particles have charge in units of 1/3e
     return (charge==fCharge);
   }
   return kTRUE;

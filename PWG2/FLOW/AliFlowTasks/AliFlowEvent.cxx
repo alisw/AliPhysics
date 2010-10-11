@@ -33,7 +33,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenGeVSimEventHeader.h"
 #include "AliMultiplicity.h"
-#include "AliFlowTrackSimpleCuts.h"
+#include "AliFlowTrackCuts.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrack.h"
 #include "AliFlowEvent.h"
@@ -578,5 +578,61 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     }
   }
 
+}
+
+//-----------------------------------------------------------------------
+AliFlowEvent::AliFlowEvent( AliVEvent* event,
+                            AliFlowTrackCuts* rpCuts,
+                            AliFlowTrackCuts* poiCuts ):
+  AliFlowEventSimple(20)
+{
+  //Fills the event from a vevent: AliESDEvent,AliAODEvent,AliMCEvent
+
+  if (!rpCuts || !poiCuts) return;
+
+  //if input event empty try to do MC analysis
+  if (!event) event = rpCuts->GetMCevent();
+  if (!event) return;
+
+  Int_t numberOfTracks = event->GetNumberOfTracks() ;
+
+  //loop over tracks
+  for (Int_t i=0; i<numberOfTracks; i++)
+  {
+    AliVParticle* particle = event->GetTrack(i);   //get input particle
+
+    Bool_t rp = rpCuts->IsSelected(particle);
+    Bool_t poi = poiCuts->IsSelected(particle);
+    
+    if (!(rp||poi)) continue;
+
+    //make new AliFLowTrack
+    //here we need to be careful: if selected particle passes both rp and poi cuts
+    //then both cuts should have been done on the same set of parameters, e.g. global
+    //or TPConly. Otherwise we would have to introduce the same particle twice.
+    //this means that in a sane scenario when we pass both rp and poi cuts we get our
+    //parameters from any one of them (here rp).
+    AliFlowTrack* pTrack = NULL;
+    if (rp&&poi)
+    {
+      pTrack = rpCuts->MakeFlowTrack();
+      pTrack->TagRP();
+      pTrack->TagPOI();
+    }
+    else
+    if (rp)
+    {
+      pTrack = rpCuts->MakeFlowTrack();
+      pTrack->TagRP();
+    }
+    else
+    if (poi)
+    {
+      pTrack = poiCuts->MakeFlowTrack();
+      pTrack->TagPOI();
+    }
+
+    AddTrack(pTrack);
+  }//end of while (i < numberOfTracks)
 }
 

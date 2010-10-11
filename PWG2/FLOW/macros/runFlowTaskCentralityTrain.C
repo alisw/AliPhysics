@@ -3,6 +3,10 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 //mLocalPAR: Analyze locally files in your computer using root + PAR files
 //mPROOF: Analyze CAF files with PROOF
 
+//CENTRALITY DEFINITION
+const Int_t numberOfCentralityBins = 3;
+Int_t centralityArray[numberOfCentralityBins+1] = {0,4000,6000,10000};
+
 // RUN SETTINGS
 
 // Flow analysis method can be:(set to kTRUE or kFALSE)
@@ -21,7 +25,7 @@ Bool_t NL       = kTRUE;  // nested loops (for instance distribution of phi1-phi
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
-// Analysis type can be ESD, AOD, MC, ESDMCkineESD, ESDMCkineMC, MK
+// Analysis type can be ESD, AOD, MC, ESDMCkineESD, ESDMCkineMC
 const TString type = "ESD";
 
 // Boolean to fill/not fill the QA histograms
@@ -35,7 +39,7 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 //Bool_t DATA = kTRUE, const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
 //              Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
 
-void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
+void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10d2_117048", Int_t offset=0) //phojet 7 TeV		 
@@ -100,7 +104,23 @@ void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 50000000,
   //____________________________________________//
   // Load the analysis task
   gROOT->LoadMacro("AddTaskFlow.C");
-  AliAnalysisTaskFlowEvent* taskFE = AddTaskFlow(type,METHODS,QA,WEIGHTS);
+
+  for (Int_t i=0; i<numberOfCentralityBins; i++)
+  {
+    Int_t lowCentralityBinEdge = centralityArray[i];
+    Int_t highCentralityBinEdge = centralityArray[i+1];
+    TString filename("outputCentrality");
+    filename += i;
+    //TDirectory* dir = new TDirectory(filename.Data(),"");
+    filename += ".root";
+    AddTaskFlowCentrality( type,
+                           METHODS,
+                           QA,
+                           WEIGHTS,
+                           lowCentralityBinEdge,
+                           highCentralityBinEdge,
+                           filename );
+  }
 
   
   // Task to check the offline trigger

@@ -62,6 +62,8 @@
 
 // Interface to make the Flow Event Simple used in the flow analysis methods
 #include "AliFlowEvent.h"
+#include "AliFlowTrackCuts.h"
+#include "AliFlowEventCuts.h"
 #include "AliFlowCommonConstants.h"
 #include "AliAnalysisTaskFlowEvent.h"
 
@@ -77,6 +79,9 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fRPType("Global"),
   fCFManager1(NULL),
   fCFManager2(NULL),
+  fCutsEvent(NULL),
+  fCutsRP(NULL),
+  fCutsPOI(NULL),
   fQAInt(NULL),
   fQADiff(NULL),
   fMinMult(0),
@@ -125,6 +130,9 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fRPType(RPtype),
   fCFManager1(NULL),
   fCFManager2(NULL),
+  fCutsEvent(NULL),
+  fCutsRP(NULL),
+  fCutsPOI(NULL),
   fQAInt(NULL),
   fQADiff(NULL),
   fMinMult(0),
@@ -253,6 +261,20 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     }
   }
   
+  //use the new and temporarily inclomplete way of doing things
+  if (fAnalysisType == "MK")
+  {
+    if (!(fCutsRP&&fCutsPOI))
+    {
+      AliError("cuts not set");
+      return;
+    }
+    fCutsRP->SetMCevent( MCEvent() );
+    fCutsPOI->SetMCevent( MCEvent() );
+    flowEvent = new AliFlowEvent( InputEvent(), fCutsRP, fCutsPOI );
+    if (myESD)
+      flowEvent->SetReferenceMultiplicity(AliESDtrackCuts::GetReferenceMultiplicity(myESD,kTRUE));
+  }
 
   // Make the FlowEvent for MC input
   if (fAnalysisType == "MC")

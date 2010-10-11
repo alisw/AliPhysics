@@ -21,7 +21,7 @@ public:
                      kFromTracklet=3,
                      kFromFMD=4 };
   AliFlowTrack();
-  AliFlowTrack(AliVParticle* p);
+  AliFlowTrack(const AliVParticle* p);
   AliFlowTrack& operator=(const AliFlowTrack& aTrack);
   //virtual AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
   AliFlowTrack(const AliFlowTrack& aTrack);
