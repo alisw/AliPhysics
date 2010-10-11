@@ -43,6 +43,7 @@ AliTRDarrayDictionary::AliTRDarrayDictionary()
                       ,fNtime(0)
                       ,fNDdim(0)
                       ,fDictionary(0)
+                      ,fFlag(kTRUE)
 {
   //
   // AliTRDarrayDictionary default contructor
@@ -62,6 +63,7 @@ AliTRDarrayDictionary::AliTRDarrayDictionary(Int_t nrow, Int_t ncol, Int_t ntime
                       ,fNtime(0)
 		      ,fNDdim(0)
 		      ,fDictionary(0)
+                      ,fFlag(kTRUE)
 
 {
   //
@@ -83,6 +85,7 @@ AliTRDarrayDictionary::AliTRDarrayDictionary(const AliTRDarrayDictionary &a)
                       ,fNtime(a.fNtime)
 		      ,fNDdim(a.fNDdim)
 		      ,fDictionary(0)
+                      ,fFlag(a.fFlag)
 {
   //
   // AliTRDarrayDictionary copy constructor
@@ -138,6 +141,7 @@ AliTRDarrayDictionary &AliTRDarrayDictionary::operator=(const AliTRDarrayDiction
     {
       fDictionary[i]=a.fDictionary[i];
     }
+  fFlag=a.fFlag;
   return *this;
 
 }
@@ -227,13 +231,16 @@ void AliTRDarrayDictionary::Compress()
         }
       newDim=fNDdim-counter;   //Size of the compressed array
 
+      //Set the flag if the array has no data
+      if(newDim==1)
+	fFlag=kFALSE;
+
       //Fill the buffer of the compressed array
       Int_t* buffer = new Int_t[newDim];
       Int_t counterTwo=0;
       Int_t g=0;
       if(buffer)
         {
-
           for(Int_t i=0; i<newDim; i++)
             {
               if(counterTwo<fNDdim)
@@ -285,8 +292,24 @@ void AliTRDarrayDictionary::Expand()
   //  
 
   Int_t dimexp=0;
+
+  if(!HasData()) //if the array has no data
+    {
+      if(fDictionary)
+	{
+	  dimexp = -fDictionary[0];	
+	  delete [] fDictionary;
+	  fDictionary=0;
+	  fDictionary = new Int_t[dimexp];
+	  fNDdim = dimexp;
+	  // Re-initialize the array
+	  for(Int_t i=0; i<dimexp; i++)
+	    fDictionary[i] = -1; 
+	}
+      return;
+    }
+
   Int_t *longArr = new Int_t[fNDdim];
- 
   if(longArr && fDictionary)
     {
 
@@ -353,7 +376,7 @@ void AliTRDarrayDictionary::Expand()
 	}
 
       delete [] longArr;
-
+      
     }
 
 }
