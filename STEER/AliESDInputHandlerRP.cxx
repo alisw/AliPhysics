@@ -262,7 +262,12 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     {
 	TString name(entry->GetName());
 	TObjArray* tokens = name.Tokenize(".");
-	Int_t ntok = tokens->GetEntries();
+	Int_t ntok = 0;
+	if (tokens) {
+	  ntok = tokens->GetEntries();
+	} else {
+	  continue;
+	}
 	if (ntok <= 1) continue;
 	TString str = ((TObjString*) tokens->At(1))->GetString();
 	if (!(strcmp(str.Data(), "RecPoints"))){
