@@ -268,10 +268,10 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   AliITSPIDResponse itsrsp(fIsMC);
 
   // TOF: define fixed function for compatibility range
-  Double_t a1 = 0.01, a2 = -0.03;
-  Double_t b1 = 0.25, b2 =  0.25;
-  Double_t c1 = 0.05, c2 = -0.03;
-  Double_t ymax, ymin;
+  //Double_t a1 = 0.01, a2 = -0.03;
+  //Double_t b1 = 0.25, b2 =  0.25;
+  //Double_t c1 = 0.05, c2 = -0.03;
+  //Double_t ymax, ymin;
 
   ULong_t  status;
   Int_t    k, nITS;
@@ -352,14 +352,14 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
         tofTime  = (Double_t)track->GetTOFsignal();
         tofSigma = fTOFmaker->GetExpectedSigma(mom, times[AliPID::kKaon], AliPID::ParticleMass(AliPID::kKaon));
         tofRef   = times[AliPID::kKaon];
+        /*
         tofRel   = (tofTime - tofRef) / tofRef;
         ymax     = a1 / (mom - b1) + c1;
         ymin     = a2 / (mom - b2) + c2;
         okTOF    = (tofRel >= ymin && tofRel <= ymax);
-        /*
+        */
         tofRel   = (tofTime - tofRef) / tofSigma;
         okTOF    = (tofRel >= fMinTOF && tofRel <= fMaxTOF);
-        */
         AliDebug(AliLog::kDebug + 2, Form("TOF nsigma = %f -- range = %f %f -- cut %s", tofRel, fMinTOF, fMaxTOF, (okTOF ? "passed" : "failed")));
       }
       else
