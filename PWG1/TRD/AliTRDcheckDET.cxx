@@ -242,19 +242,19 @@ void AliTRDcheckDET::MakeSummary(){
   cOut->cd(6); GetRefFigure(kFigNTrackletsP);
   cOut->cd(7); GetRefFigure(kFigChargeCluster);
   cOut->cd(8); GetRefFigure(kFigChargeTracklet);
-  cOut->SaveAs(Form("TRDsummary%s1.gif", GetName()));
+  cOut->SaveAs("TRD_TrackQuality.gif");
   delete cOut;
 
   // Second Plot: PHS
   cOut = new TCanvas(Form("summary%s2", GetName()), Form("Summary 2 for task %s", GetName()), 1024, 512);
   cOut->cd(); GetRefFigure(kFigPH);
-  cOut->SaveAs(Form("TRDsummary%s2.gif", GetName())); 
+  cOut->SaveAs("TRD_PH.gif"); 
   delete cOut;
 
   // Third Plot: Mean Number of clusters as function of eta, phi and layer
    cOut = new TCanvas(Form("summary%s3", GetName()), Form("Summary 3 for task %s", GetName()), 1024, 768);
   cOut->cd(); MakePlotMeanClustersLayer();
-  cOut->SaveAs(Form("TRDsummary%s3.gif", GetName())); 
+  cOut->SaveAs("TRD_MeanNclusters.gif"); 
   delete cOut;
 
 }
