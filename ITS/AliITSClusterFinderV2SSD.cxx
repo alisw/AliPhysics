@@ -739,7 +739,15 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
     }
   }
 
-  if (!ncross) return;
+  if (!ncross) {
+    delete [] cnegative;
+    delete [] cused1;
+    delete [] negativepair;
+    delete [] cpositive;
+    delete [] cused2;
+    delete [] positivepair;
+    return;
+  }
 //why not to allocate memorey here?  if(!clusters) clusters = new TClonesArray("AliITSRecPoint", ncross);
   
   /* //
@@ -1764,4 +1772,3 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   delete [] positivepair;
 
 }
-
