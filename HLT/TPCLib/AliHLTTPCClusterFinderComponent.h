@@ -185,7 +185,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 
 	/** flag to deconvolute in time direction */
 	Bool_t fDeconvTime;                                                          //!transient
-
+        /** the object to set the time stamp */
         AliTPCTransform *fTS; //!transient
 
 	/** flag to deconvolute in pad direction */
@@ -232,7 +232,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	Bool_t fReleaseMemory; // flag to release the memory after each event
 	AliHLTComponentBenchmark fBenchmark; // benchmark
 
-	ClassDef(AliHLTTPCClusterFinderComponent, 1)
+	ClassDef(AliHLTTPCClusterFinderComponent, 0)
 
 };
 #endif
