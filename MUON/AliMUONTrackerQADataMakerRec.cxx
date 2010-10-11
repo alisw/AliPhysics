@@ -952,6 +952,7 @@ void AliMUONTrackerQADataMakerRec::InitRaws()
   h->SetStats(kFALSE);
   Add2RawsList(h,AliMUONQAIndices::kTrackerDDLEventSizePerEvent,kFALSE,kTRUE,kFALSE);
     
+  Add2RawsList(new TH1F("hTrackerIsThere","tracker is there",1,0,1),AliMUONQAIndices::kTrackerIsThere,kTRUE,kFALSE,kFALSE);
 }
 
 //__________________________________________________________________
@@ -1318,8 +1319,6 @@ void AliMUONTrackerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   	
   AliCodeTimerAuto(Form("%s",AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(Master()->GetEventSpecie()))),0);
 
-  AliInfo(Form("rawReader class=%s",rawReader->ClassName()));
-  
   /// forces init
   GetRawsData(AliMUONQAIndices::kTrackerBusPatchOccupancy);
   
@@ -1573,8 +1572,6 @@ AliMUONTrackerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
   /// Reset those histograms that must be reset (and only those), plus
   /// the trackerdata itself.
   
-  AliInfo("");
-  
   TIter next(list);
   TObject* o;
   while ( ( o = next() ) )
@@ -1586,28 +1583,13 @@ AliMUONTrackerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
       
       if ( !hn.Contains("TrackerBusPatchConfig") )
       {
-        AliInfo(Form("Resetting %s",hn.Data()));
-
-        if ( hn.Contains("DDLMeanEventSize") )
-        {
-          h->Print();
-          h->GetListOfFunctions()->ls();
-          cout << ">>>>>" << endl;
-        }          
+        AliDebug(1,Form("Resetting %s",hn.Data()));
 
         h->Reset();
-        
-        if ( hn.Contains("DDLMeanEventSize") )
-        {
-          h->Print();
-          h->GetListOfFunctions()->ls();
-          cout << "<<<<<<" << endl;
-        }          
       }
       else
       {
-        //        AliDebug(1,Form("Will not reset histogram %s",hn.Data()));
-        AliInfo(Form("Will not reset histogram %s",hn.Data()));          
+        AliDebug(1,Form("Will not reset histogram %s",hn.Data()));          
       }
     }
     else

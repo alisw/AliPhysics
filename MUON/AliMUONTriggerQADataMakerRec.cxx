@@ -426,6 +426,9 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
     histo1D->GetYaxis()->SetTitle("Number of 4/4");
     Add2RawsList(histo1D, AliMUONQAIndices::kTriggerNumberOf44Dec, expert, !image, !saveCorr);
   }
+  
+  Add2RawsList(new TH1F("hTriggerIsThere","trigger is there",1,0,1),AliMUONQAIndices::kTriggerIsThere,kTRUE,kFALSE,kFALSE);
+
 }
 
 //__________________________________________________________________

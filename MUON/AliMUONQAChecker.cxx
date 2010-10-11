@@ -27,10 +27,17 @@
 #include "AliMUONTrackerQAChecker.h"
 #include "AliMUONTriggerQAChecker.h"
 #include "AliCodeTimer.h"
+#include "AliMUONQAIndices.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONQAChecker)
 /// \endcond
+
+namespace
+{
+  const Int_t TRACKER=0;
+  const Int_t TRIGGER=1;
+}
 
 //__________________________________________________________________
 AliMUONQAChecker::AliMUONQAChecker() : 
@@ -39,8 +46,8 @@ fCheckers(new TObjArray)
 {
 	/// ctor
   fCheckers->SetOwner(kTRUE);
-  fCheckers->Add(new AliMUONTrackerQAChecker());
-  fCheckers->Add(new AliMUONTriggerQAChecker());
+  fCheckers->AddAt(new AliMUONTrackerQAChecker(),TRACKER);
+  fCheckers->AddAt(new AliMUONTriggerQAChecker(),TRIGGER);
 }          
 
 //__________________________________________________________________
@@ -60,8 +67,6 @@ AliMUONQAChecker::Check(Double_t* rv, AliQAv1::ALITASK_t index,
   
   AliCodeTimerAuto(AliQAv1::GetTaskName(index),0);
   
-  TIter next(fCheckers);
-  AliMUONVQAChecker* qac;
   const AliMUONRecoParam* muonRecoParam = static_cast<const AliMUONRecoParam*>(recoParam);
   AliMUONVQAChecker::ECheckCode* ecc(0x0);
 
@@ -70,8 +75,34 @@ AliMUONQAChecker::Check(Double_t* rv, AliQAv1::ALITASK_t index,
     rv[i] = -1.0;
   }
   
-  while ( ( qac = static_cast<AliMUONVQAChecker*>(next())) )
+  for ( Int_t ic = 0; ic <= fCheckers->GetLast(); ++ic )
   {
+    if ( ic != TRACKER && ic != TRIGGER ) continue;
+
+    Bool_t trackerRequested(kTRUE);
+    Bool_t triggerRequested(kTRUE);
+    
+    for ( Int_t i = 0; i < AliRecoParam::kNSpecies; ++i ) 
+    {
+      // no need to take into account detector that was not requested
+      if ( ic == TRACKER && AliQAv1::GetData(list,AliMUONQAIndices::kTrackerIsThere,AliRecoParam::ConvertIndex(i))==0x0 ) trackerRequested=kFALSE;
+      if ( ic == TRIGGER && AliQAv1::GetData(list,AliMUONQAIndices::kTriggerIsThere,AliRecoParam::ConvertIndex(i))==0x0 ) triggerRequested=kFALSE;
+    }
+    
+    if ( ic == TRACKER && !trackerRequested ) 
+    {
+      AliInfo("Skipping tracker check as tracker not requested");
+      continue;      
+    }
+    
+    if ( ic == TRIGGER && !triggerRequested ) 
+    {
+      AliInfo("Skipping trigger check as trigger not requested");
+      continue;      
+    }
+    
+    AliMUONVQAChecker* qac = static_cast<AliMUONVQAChecker*>(fCheckers->At(ic));
+    
     if ( index == AliQAv1::kRAW ) 
     {    
       ecc = qac->CheckRaws(list,muonRecoParam);
@@ -91,6 +122,10 @@ AliMUONQAChecker::Check(Double_t* rv, AliQAv1::ALITASK_t index,
     {
       for ( Int_t i = 0; i < AliRecoParam::kNSpecies; ++i ) 
       {
+        // no need to take into account detector that was not requested
+        if ( ic == TRACKER && AliQAv1::GetData(list,AliMUONQAIndices::kTrackerIsThere,AliRecoParam::ConvertIndex(i))==0x0 ) continue;
+        if ( ic == TRIGGER && AliQAv1::GetData(list,AliMUONQAIndices::kTriggerIsThere,AliRecoParam::ConvertIndex(i))==0x0 ) continue;
+                
         switch ( ecc[i] ) 
         {
           case AliMUONVQAChecker::kInfo:
@@ -106,6 +141,7 @@ AliMUONQAChecker::Check(Double_t* rv, AliQAv1::ALITASK_t index,
             rv[i] = -1.0;
             break;
           default:
+            AliError("Invalid ecc value. FIXME !");
             rv[i] = -1.0;
             break;
         }
@@ -132,33 +168,4 @@ void AliMUONQAChecker::Init(const AliQAv1::DETECTORINDEX_t det)
   lowValue[AliQAv1::kFATAL]     = -1.0   ; 
   hiValue[AliQAv1::kFATAL]      = 0.0 ; 
   SetHiLo(&hiValue[0], &lowValue[0]) ; 
-}
-
-//______________________________________________________________________________
-void 
-AliMUONQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
-{
-  /// sets the QA according the return value of the Check
-
-  AliQAv1 * qa = AliQAv1::Instance(index);
-  
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    qa->UnSet(AliQAv1::kFATAL, specie);
-    qa->UnSet(AliQAv1::kWARNING, specie);
-    qa->UnSet(AliQAv1::kERROR, specie);
-    qa->UnSet(AliQAv1::kINFO, specie);
-
-    if ( ! value ) { // No checker is implemented, set all QA to Fatal
-      qa->Set(AliQAv1::kFATAL, specie) ; 
-    } else {
-      if ( value[specie] >= fLowTestValue[AliQAv1::kFATAL] && value[specie] < fUpTestValue[AliQAv1::kFATAL] ) 
-        qa->Set(AliQAv1::kFATAL, specie) ; 
-      else if ( value[specie] > fLowTestValue[AliQAv1::kERROR] && value[specie] <= fUpTestValue[AliQAv1::kERROR]  )
-        qa->Set(AliQAv1::kERROR, specie) ; 
-      else if ( value[specie] > fLowTestValue[AliQAv1::kWARNING] && value[specie] <= fUpTestValue[AliQAv1::kWARNING]  )
-        qa->Set(AliQAv1::kWARNING, specie) ;
-      else if ( value[specie] > fLowTestValue[AliQAv1::kINFO] && value[specie] <= fUpTestValue[AliQAv1::kINFO] ) 
-        qa->Set(AliQAv1::kINFO, specie) ; 	
-    }
-  }
 }

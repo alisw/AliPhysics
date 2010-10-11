@@ -30,6 +30,13 @@ public:
     kInfo=2     ///< just so you know...
   };
   
+  enum EColor {
+    kInfoColor=kSpring-8, ///< color for information (online convention)
+    kWarningColor=kOrange, ///< color for warning (online convention)
+    kErrorColor=kRed, ///< color for normal error (online convention)
+    kFatalColor=kMagenta+1 ///< color for fatal error (online convention)
+  };
+  
   AliMUONVQAChecker();
   virtual ~AliMUONVQAChecker();
   

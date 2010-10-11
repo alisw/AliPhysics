@@ -141,15 +141,10 @@ namespace {
   //___________________________________________________________________________  
   Int_t GetColorFromCheckCode(AliMUONVQAChecker::ECheckCode code)
   {
-    const Int_t INFOCOLOR(kGreen);  // green = INFO
-    const Int_t WARNINGCOLOR(kYellow); // yellow = WARNING
-    const Int_t ERRORCOLOR(kOrange); // orange = ERROR
-    const Int_t FATALCOLOR(kRed); // red = FATAL
-    
-    if ( code == AliMUONVQAChecker::kInfo ) return INFOCOLOR;
-    else if ( code == AliMUONVQAChecker::kWarning ) return WARNINGCOLOR;
-    else if ( code ==  AliMUONVQAChecker::kFatal) return FATALCOLOR;
-    else return ERRORCOLOR;
+    if ( code == AliMUONVQAChecker::kInfo ) return AliMUONVQAChecker::kInfoColor;
+    else if ( code == AliMUONVQAChecker::kWarning ) return AliMUONVQAChecker::kWarningColor;
+    else if ( code ==  AliMUONVQAChecker::kFatal) return AliMUONVQAChecker::kFatalColor;
+    else return AliMUONVQAChecker::kErrorColor;
   }
   
   const char* NOTENOUGHEVENTMESSAGE = "Not enough event to judge. Please wait a bit";
@@ -435,6 +430,8 @@ AliMUONTrackerQAChecker::BeautifyOccupancyHistograms(TH1& hddl,
   line2->SetLineColor(1);
   line2->SetLineWidth(1);
   
+  hbp.GetListOfFunctions()->Delete();
+  
   hbp.GetListOfFunctions()->Add(line1);
   hbp.GetListOfFunctions()->Add(line2);
     
@@ -673,7 +670,7 @@ AliMUONTrackerQAChecker::BeautifyEventsizeHistograms(TH1& heventsize,
     
     if ( totalEventSizePerEvent > recoParam.EventSizeHardLimit() ) 
     {
-      rv = AliMUONVQAChecker::kFatal;
+      rv = AliMUONVQAChecker::kError;
       msg = "That is really too high.";
       action = NOTIFYEXPERTMESSAGE;
     }
@@ -681,7 +678,7 @@ AliMUONTrackerQAChecker::BeautifyEventsizeHistograms(TH1& heventsize,
     {
       msg = "That is a bit high.";
       action = "Please keep an eye on it.";
-      rv = AliMUONVQAChecker::kError;
+      rv = AliMUONVQAChecker::kWarning;
     }
     else 
     {

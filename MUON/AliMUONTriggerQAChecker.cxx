@@ -103,8 +103,8 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
     if ( hAnalyzedEvents ) 
       nAnalyzedEvents = TMath::Nint(hAnalyzedEvents->GetBinContent(1));
 
-    if ( nAnalyzedEvents == 0 )
-      rv[specie] = AliMUONVQAChecker::kFatal;
+//    if ( nAnalyzedEvents == 0 )
+//      rv[specie] = AliMUONVQAChecker::kFatal;
 
     for(Int_t ihisto = 0; ihisto<kNrawsHistos; ihisto++){
       AliMUONVQAChecker::ECheckCode currRv = AliMUONVQAChecker::kInfo;
@@ -193,10 +193,9 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
     text->AddText(str->String());
   }
     
-  if ( nevents == 0 ) {
+  if ( nevents == 0 ) 
+  {
     text->AddText("No event analyzed.");
-    text->AddText("Please make sure this is the MTR agent!");
-    text->AddText("(we share plots with MCH)");
   }
 
   TString defaultText = "";
@@ -204,25 +203,22 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
   Int_t color = 0;
   switch ( code ) {
   case AliMUONVQAChecker::kInfo:
-    color = kGreen;
+    color = AliMUONVQAChecker::kInfoColor;
     defaultText = "All is fine!";
     break;
   case AliMUONVQAChecker::kWarning:
-    color = kYellow;
+    color = AliMUONVQAChecker::kWarningColor;
     defaultText = "Please keep an eye on it!";
     break;
   case AliMUONVQAChecker::kFatal:
-    color = kRed;
+    color = AliMUONVQAChecker::kFatalColor;
     defaultText = "This is bad: PLEASE CALL EXPERT!!!";
     break;
   default:
-    color = kOrange;
+    color = AliMUONVQAChecker::kErrorColor;
     defaultText = "PLEASE NOTIFY EXPERT! (NOT at night)";
     break;
   }
-
-  if ( nevents == 0 )
-    defaultText = "Otherwise PLEASE CALL EXPERT!";
 
   text->AddText(defaultText.Data());
   text->SetFillColor(color);
@@ -232,5 +228,6 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
 
   histo.SetStats(kFALSE);
     
+  histo.GetListOfFunctions()->Clear();
   histo.GetListOfFunctions()->Add(text);
 }
