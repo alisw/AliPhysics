@@ -49,6 +49,7 @@ AliMUONRawCluster::AliMUONRawCluster()
 	fQ[j]=0;
 	fX[j]=0;
 	fY[j]=0;
+      fZ[j]=0;
 	fMultiplicity[j]=0;
 	fPeakSignal[j]=-1;
 	fChi2[j]=-1;
