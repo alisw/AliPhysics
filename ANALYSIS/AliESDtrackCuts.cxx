@@ -644,6 +644,36 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   return esdTrackCuts;
 }
 //____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries)
+{
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2010 data
+  
+  Printf("AliESDtrackCuts::GetStandardITSTPCTrackCuts: Creating track cuts for ITS+TPC.");
+  
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+
+  // TPC  
+  esdTrackCuts->SetRequireTPCStandAlone(kTRUE); // to get chi2 and ncls of kTPCin
+  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  // ITS
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  if(selPrimaries) {
+    // 7*(0.0026+0.0050/pt^1.01)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+  }
+  esdTrackCuts->SetMaxDCAToVertexZ(1.e6);
+  esdTrackCuts->SetDCAToVertex2D(kFALSE);
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  //esdTrackCuts->SetEtaRange(-0.8,+0.8);
+  
+  return esdTrackCuts;
+}
+//____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
