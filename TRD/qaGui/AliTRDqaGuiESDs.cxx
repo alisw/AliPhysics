@@ -47,6 +47,25 @@ const Int_t AliTRDqaGuiESDs::fgkLogList[24] = {
 };
 
 //////////////////////////////////////////////////////////////////////////////////
+AliTRDqaGuiESDs::AliTRDqaGuiESDs() 
+  :TGCompositeFrame()
+  ,fPage(0)
+ {
+  //
+  // Default constructor
+  //
+
+   for (Int_t i = 0; i < 6; i++) {
+     fCanvasList[i] = 0x0;
+     fHistList[i]   = 0x0;
+     for (Int_t j = 0; j < 4; j++) {
+       fNameList[j*i] = 0x0;
+     }
+   }
+
+ }
+
+//////////////////////////////////////////////////////////////////////////////////
 AliTRDqaGuiESDs::AliTRDqaGuiESDs(TGWindow *parent, Int_t page) 
   :TGCompositeFrame(parent, 720, 400)
   ,fPage(page)

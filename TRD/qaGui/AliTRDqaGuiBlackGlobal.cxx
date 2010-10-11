@@ -51,6 +51,18 @@ AliTRDqaGuiBlackGlobal::AliTRDqaGuiBlackGlobal()
   // Default constructor
   //
 
+  for (Int_t i = 0; i < 6; i++) {
+    fCanvasList[i] = 0x0;
+  }
+  for (Int_t i = 0; i < 3; i++) {
+    fHistList[i]   = 0x0;
+  }
+  for (Int_t i = 0; i < 2; i++) {
+    fGraphList[i]  = 0x0;
+  }
+
+  strncpy(fFileName,"",256);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +112,7 @@ void AliTRDqaGuiBlackGlobal::SetQAFile(const char *filename) {
   };
 
 
-  strcpy(fFileName,filename);
+  strncpy(fFileName,filename,256);
  
   for(int i=0; i<3; i++) {
 

@@ -51,6 +51,18 @@ AliTRDqaGuiBlackError::AliTRDqaGuiBlackError()
   // Default constructor
   //
 
+  for (Int_t i = 0; i < 3; i++) {
+    fHistList[i]   = 0x0;
+    fGraphList[i]  = 0x0;
+    fHistListSM[i] = 0x0;
+  }
+
+  for (Int_t i = 0; i < 9; i++) {
+    fCanvasList[i] = 0x0;
+  }
+
+  strncpy(fFileName,"",265);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +117,7 @@ void AliTRDqaGuiBlackError::SetQAFile(const char *filename) {
   };
 
 
-  strcpy(fFileName,filename);
+  strncpy(fFileName,filename,256);
  
   for(int i=0; i<3; i++) {
 

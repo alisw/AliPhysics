@@ -51,7 +51,6 @@ AliTRDqaGuiBlackSM::AliTRDqaGuiBlackSM()
     fIdxType(0),
     fSetRangePed(0),
     fSetRangeNoise(0),
-    //fFileName(0),
     fGPanel(0),
     fGCanvas(0),
     fGSelect(0),
@@ -59,6 +58,23 @@ AliTRDqaGuiBlackSM::AliTRDqaGuiBlackSM()
     fGNext(0),
     fGSelectType(0)
 {
+  //
+  // Default constructor
+  //
+
+  for (Int_t i = 0; i < 5; i++) {
+    fNameList[i] = 0x0;
+  }
+  for (Int_t i = 0; i < 2; i++) {
+    fRangePed[i]   = 0.0;
+    fRangeNoise[i] = 0.0;
+  }
+  for (Int_t i = 0; i < 30; i++) {
+    fHistList[i] = 0x0;
+  }
+
+  strncpy(fFileName,"",256);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +85,6 @@ AliTRDqaGuiBlackSM::AliTRDqaGuiBlackSM(TGWindow *parent)
     fIdxType(0),
     fSetRangePed(0),
     fSetRangeNoise(0),
-    //fFileName(0),
     fGPanel(0),
     fGCanvas(0),
     fGSelect(0),
@@ -161,7 +176,7 @@ void AliTRDqaGuiBlackSM::SetQAFile(const char *filename) {
   const char *opt[11] = {"col", "col", "", "", "", "", "col", "", "col", "col", "col"};
   const Int_t kLogy[11] = {0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0};
 
-  strcpy(fFileName,filename);
+  strncpy(fFileName,filename,256);
  
   for(int i=0; i<30; i++) {
     if (fHistList[i]) delete fHistList[i];

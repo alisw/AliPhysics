@@ -498,7 +498,7 @@ TH2F * AliTRDCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type,  Float_t m
   }
   
   char  name[1000];
-  sprintf(name,"%s 2D Plane %d Chamber %d",GetTitle(),fPla, fCha);
+  snprintf(name,1000,"%s 2D Plane %d Chamber %d",GetTitle(),fPla, fCha);
   TH2F * his = new TH2F(name,name,fNrows,0, fNrows, fNcols, 0, fNcols);
   for (Int_t irow=0; irow<fNrows; irow++){
     for (Int_t icol=0; icol<fNcols; icol++){
@@ -553,7 +553,7 @@ TH1F * AliTRDCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type,  Float_t m
     }
   }
   char  name[1000];
-  sprintf(name,"%s 1D Plane %d Chamber %d",GetTitle(),fPla, fCha);
+  snprintf(name,1000,"%s 1D Plane %d Chamber %d",GetTitle(),fPla, fCha);
   TH1F * his = new TH1F(name,name,100, min,max);
   for (Int_t irow=0; irow<fNrows; irow++){
     for (Int_t icol=0; icol<fNcols; icol++){

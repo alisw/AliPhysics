@@ -159,7 +159,7 @@ TH1F *AliTRDCalPadStatus::MakeHisto1D()
   //
 
   char  name[1000];
-  sprintf(name,"%s Pad 1D",GetTitle());
+  snprintf(name,1000,"%s Pad 1D",GetTitle());
   TH1F * his = new TH1F(name,name,6, -0.5,5.5);
   his->GetXaxis()->SetBinLabel(1,"Good");
   his->GetXaxis()->SetBinLabel(2,"Masked");
@@ -203,7 +203,7 @@ TH2F *AliTRDCalPadStatus::MakeHisto2DSmPl(Int_t sm, Int_t pl)
   Double_t col0    = padPlane0->GetCol0();
 
   char  name[1000];
-  sprintf(name,"%s Pad 2D sm %d pl %d",GetTitle(),sm,pl);
+  snprintf(name,1000,"%s Pad 2D sm %d pl %d",GetTitle(),sm,pl);
   TH2F * his = new TH2F( name, name, 88,-TMath::Abs(row0),TMath::Abs(row0)
                                    ,148,-TMath::Abs(col0),TMath::Abs(col0));
 

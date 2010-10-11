@@ -49,6 +49,10 @@ AliTRDqaJPsi::AliTRDqaJPsi()
   //
   // default dummy constructor
   //
+
+  for (Int_t i = 0; i < 1000; i++) {
+    fSM[i] = 0;
+  }
  
 }
 
@@ -80,6 +84,10 @@ AliTRDqaJPsi::AliTRDqaJPsi(const char *name)
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
+  for (Int_t i = 0; i < 1000; i++) {
+    fSM[i] = 0;
+  }
+
 }
 
 //______________________________________________________________________________

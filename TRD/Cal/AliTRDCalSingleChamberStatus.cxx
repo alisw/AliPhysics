@@ -146,14 +146,9 @@ AliTRDCalSingleChamberStatus::AliTRDCalSingleChamberStatus(const AliTRDCalSingle
   // AliTRDCalSingleChamberStatus copy constructor
   //
 
-  Int_t iBin = 0;
-
-  if (((AliTRDCalSingleChamberStatus &) c).fData) {
-    delete [] ((AliTRDCalSingleChamberStatus &) c).fData;
-  }
-  ((AliTRDCalSingleChamberStatus &) c).fData = new Char_t[fNchannels];
-  for (iBin = 0; iBin < fNchannels; iBin++) {
-    ((AliTRDCalSingleChamberStatus &) c).fData[iBin] = fData[iBin];
+  fData = new Char_t[fNchannels];
+  for (Int_t iBin = 0; iBin < fNchannels; iBin++) {
+    fData[iBin] = ((AliTRDCalSingleChamberStatus &) c).fData[iBin];
   }
 
 }

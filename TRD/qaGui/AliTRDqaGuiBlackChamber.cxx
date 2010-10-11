@@ -72,6 +72,22 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber()
     fGNextSM(0),
     fGNextChamber(0)
 {
+  //
+  // Default constructor
+  //
+
+  for (Int_t i = 0; i < 2; i++) {
+    fRangePed[i]   = 0.0;
+    fRangeNoise[i] = 0.0;
+  }
+
+  for (Int_t j = 0; j < 5; j++) {
+    fCanvasList[j] = 0x0;
+    fHistList[j]   = 0x0;    
+  }
+
+  strncpy(fFileName,"",256);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -218,7 +234,7 @@ void AliTRDqaGuiBlackChamber::SetQAFile(const char *filename) {
   const char *opt[10] = {"colz", "colz", "", "", "", "colz", "colz", "", "", ""};
   const Int_t kLogy[10] = {0, 0, 1, 1, 1, 0, 0, 1, 1,1};
   
-  strcpy(fFileName, filename);
+  strncpy(fFileName,filename,256);
  
   for(int i=0; i<5; i++) {
     if (fHistList[i]) delete fHistList[i];

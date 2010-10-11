@@ -41,6 +41,24 @@ ClassImp(AliTRDqaGuiClusters)
 const Int_t AliTRDqaGuiClusters::fgkLogList[4] = {0,1,0,1};
 
 //////////////////////////////////////////////////////////////////////////////////
+AliTRDqaGuiClusters::AliTRDqaGuiClusters() 
+  : TGCompositeFrame() {
+  //
+  // Default constructor
+  //
+
+  for (Int_t i = 0; i < 4; i++) {
+    fNameList[i]   = 0x0;
+    fHistList[i]   = 0x0;
+    fCanvasList[i] = 0x0;
+    for (Int_t j = 0; j < 3; j++) {
+      fHistRefs[i][j] = 0x0;
+    }
+  }
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 AliTRDqaGuiClusters::AliTRDqaGuiClusters(TGWindow *parent) 
   : TGCompositeFrame(parent, 720, 400) {
   //
@@ -66,7 +84,6 @@ AliTRDqaGuiClusters::AliTRDqaGuiClusters(TGWindow *parent)
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-
 void AliTRDqaGuiClusters::SetQAFile(const char *filename) {
   //
   // sets the file with histograms

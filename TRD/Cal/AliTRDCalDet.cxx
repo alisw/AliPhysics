@@ -234,7 +234,7 @@ TH1F * AliTRDCalDet::MakeHisto1Distribution(Float_t min, Float_t max,Int_t type)
     }
   }
   char  name[1000];
-  sprintf(name,"%s CalDet 1Distribution",GetTitle());
+  snprintf(name,1000,"%s CalDet 1Distribution",GetTitle());
   TH1F * his = new TH1F(name,name,100, min,max);
   for (Int_t idet=0; idet<kNdet; idet++){
     his->Fill(GetValue(idet));

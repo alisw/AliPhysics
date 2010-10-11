@@ -55,7 +55,18 @@ AliTRDqaGuiClustersSM::AliTRDqaGuiClustersSM()
     fGNext(0),
     fGPlay(0)
 {
+  //
+  // Default constructor
+  //
   
+  for (Int_t i = 0; i < 4; i++) {
+    fNameList[i]   = 0x0;
+    fCanvasList[i] = 0x0;
+    fHistList[i]   = 0x0;
+  }
+
+  strncpy(fFileName,"",256);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +151,7 @@ void AliTRDqaGuiClustersSM::SetQAFile(const char *filename) {
   // Ste file with histograms
   //
 
-  strcpy(fFileName, filename);
+  strncpy(fFileName,filename,256);
 
   for(Int_t i=0; i<4; i++) {
     if (fHistList[i]) delete fHistList[i];

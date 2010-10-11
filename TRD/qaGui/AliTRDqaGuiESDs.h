@@ -28,9 +28,9 @@ class AliTRDqaGuiESDs : public TGCompositeFrame {
 
  public:
 
-  AliTRDqaGuiESDs():TGCompositeFrame(),fPage(0) {}
+  AliTRDqaGuiESDs();
   AliTRDqaGuiESDs(TGWindow *parent, Int_t page);
-  ~AliTRDqaGuiESDs() {}
+  ~AliTRDqaGuiESDs() {};
 
   void SetPage(Int_t page) {fPage = page;}
   void SetQAFile(const char *filename);

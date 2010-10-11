@@ -372,7 +372,7 @@ TH1F * AliTRDCalPad::MakeHisto1D(const AliTRDCalDet *calDet, Int_t typedet
     }
   }
   char  name[1000];
-  sprintf(name,"%s Pad 1D",GetTitle());
+  snprintf(name,1000,"%s Pad 1D",GetTitle());
   TH1F * his = new TH1F(name,name,100, min,max);
     for (Int_t idet = 0; idet < kNdet; idet++) {
       if(calDet) factor = calDet->GetValue(idet);

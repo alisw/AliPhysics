@@ -48,6 +48,10 @@ AliTRDqaGuiMain::AliTRDqaGuiMain()
   // Default constructor
   //
 
+  for (Int_t i = 0; i < 4; i++) {
+    fGESDs[i] = 0x0;
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
