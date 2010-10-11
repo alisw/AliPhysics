@@ -109,7 +109,7 @@ protected:
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCU3
 
-  ClassDef(AliPHOSRecoParam,10)
+  ClassDef(AliPHOSRecoParam,11)
 };
 
 #endif
