@@ -41,6 +41,19 @@ AliFlowEventCuts::AliFlowEventCuts():
   //constructor 
 }
 
+//-----------------------------------------------------------------------
+AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
+  TNamed(name, title),
+  fCutNumberOfTracks(kFALSE),
+  fNumberOfTracksMax(INT_MAX),
+  fNumberOfTracksMin(INT_MIN),
+  fCutRefMult(kFALSE),
+  fRefMultMax(INT_MAX),
+  fRefMultMin(INT_MIN)
+{
+  //constructor 
+}
+
 ////-----------------------------------------------------------------------
 //AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& someCuts):
 //  TNamed(),

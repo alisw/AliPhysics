@@ -18,6 +18,7 @@ class AliFlowEventCuts : public TNamed {
 
  public:
   AliFlowEventCuts();
+  AliFlowEventCuts(const char* name, const char* title = "AliFlowEventCuts");
   //AliFlowEventCuts(const AliFlowEventCuts& someCuts);
   //AliFlowEventCuts& operator=(const AliFlowEventCuts& someCuts);
   virtual  ~AliFlowEventCuts() {}
@@ -28,10 +29,12 @@ class AliFlowEventCuts : public TNamed {
   
   static AliFlowEventCuts* StandardCuts();
   
-  void SetNumberOfTracksMax(const Int_t value) {fNumberOfTracksMax=value;fCutNumberOfTracks=kTRUE;}
-  void SetNumberOfTracksMin(const Int_t value) {fNumberOfTracksMin=value;fCutNumberOfTracks=kTRUE;}
-  void SetRefMultMax(const Int_t value) {fRefMultMax=value;fCutRefMult=kTRUE;}
-  void SetRefMultMin(const Int_t value) {fRefMultMin=value;fCutRefMult=kTRUE;}
+  void SetNumberOfTracksMax(Int_t value) {fNumberOfTracksMax=value;fCutNumberOfTracks=kTRUE;}
+  void SetNumberOfTracksMin(Int_t value) {fNumberOfTracksMin=value;fCutNumberOfTracks=kTRUE;}
+  void SetNumberOfTracksRange(Int_t min, Int_t max) {fNumberOfTracksMin=min;fNumberOfTracksMax=max;fCutNumberOfTracks=kTRUE;}
+  void SetRefMultMax(Int_t value) {fRefMultMax=value;fCutRefMult=kTRUE;}
+  void SetRefMultMin(Int_t value) {fRefMultMin=value;fCutRefMult=kTRUE;}
+  void SetRefMultRange(Int_t min, Int_t max) {fRefMultMin=min;fRefMultMax=max;fCutRefMult=kTRUE;}
 
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
   Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
