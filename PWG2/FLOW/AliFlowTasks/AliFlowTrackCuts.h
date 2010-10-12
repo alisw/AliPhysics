@@ -54,6 +54,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetDCAToVertex2D( Bool_t a ) {fAliESDtrackCuts->SetDCAToVertex2D(a);}
   void SetEtaRange( Float_t r1, Float_t r2 ) { SetEtaMin(r1); SetEtaMax(r2); }
   void SetPtRange( Float_t r1, Float_t r2 ) { SetPtMin(r1); SetPtMax(r2); }
+  void SetRequireCharge( Bool_t r ) {fRequireCharge=r;fCutRequireCharge=kTRUE;}
 
   Int_t GetMinNClustersTPC() const {return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {return fAliESDtrackCuts->GetMinNClustersITS();}
@@ -74,6 +75,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t GetDCAToVertex2D() const {return fAliESDtrackCuts->GetDCAToVertex2D();}
   void GetEtaRange( Float_t& r1, Float_t& r2 ) const { r1=GetEtaMin(); r2=GetEtaMax(); }
   void GetPtRange( Float_t& r1, Float_t& r2 ) const { r1=GetPtMin(); r2=GetPtMax(); }
+  Bool_t GetRequireCharge() const {return fRequireCharge;}
 
   //MC stuff
   void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; }
@@ -106,12 +108,14 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t fMCPID;                      //MC PID
   Bool_t fCutMCisPrimary;            //do we cut on primaryness?
   Bool_t fMCisPrimary;               //is MC primary
+  Bool_t fCutRequireCharge;       //cut on charge requirement?
+  Bool_t fRequireCharge;          //is charged? (mostly for MC)
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
-  AliMCEvent* fMCevent;              //!mc event
   Bool_t fCleanupTrack;              //check if we need to delete
   AliVParticle* fTrack;              //!the track to apply cuts on
+  AliMCEvent* fMCevent;              //!mc event
   AliMCParticle* fMCparticle;        //!mc particle
 
   ClassDef(AliFlowTrackCuts,1)
