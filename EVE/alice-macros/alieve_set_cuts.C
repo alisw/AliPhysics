@@ -103,6 +103,11 @@ public:
    void AddMomentumVectors();
    void SetCuts();
    void CloseTab();
+   void Macro1();
+   void Macro2();
+   void Macro3();
+   void Macro4();
+   void Macro5();
    
    ClassDef(SetCutsWindow, 0)
 };
@@ -114,6 +119,12 @@ namespace
 
    const char *gPictureSaveAsTypes[] = {"PNG Image", "*.png", 0, 0}; //for saving pictures
 
+}
+
+namespace
+{
+
+   const char *gMacroSaveAsTypes[] = {"AliEve settings", "*.alieve", 0, 0};
 }
 
 //________________________________________________
@@ -158,6 +169,8 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
 
    TGShutterItem *item6 = new TGShutterItem(mainShutter, new TGHotString("Momentum Vectors"), 6);
 
+   TGShutterItem *item7 = new TGShutterItem(mainShutter, new TGHotString("PR macros"), 7);
+
    mainShutter->AddItem(item1);
 
    mainShutter->AddItem(item2);
@@ -169,6 +182,8 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    mainShutter->AddItem(item5);
 
    mainShutter->AddItem(item6);
+
+   mainShutter->AddItem(item7);
 
    AddFrame(mainShutter, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
@@ -183,6 +198,8 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    TGCompositeFrame *container5 = (TGCompositeFrame *) item5->GetContainer();
 
    TGCompositeFrame *container6 = (TGCompositeFrame *) item6->GetContainer();
+
+   TGCompositeFrame *container7 = (TGCompositeFrame *) item7->GetContainer();
 
    // Draw Elements
 
@@ -208,6 +225,10 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    // Momentum Vectors
    TGVerticalFrame *momentumVectors = new TGVerticalFrame(container6);
    container6->AddFrame(momentumVectors, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+
+   // PR macros
+   TGVerticalFrame *prMacros = new TGVerticalFrame(container7);
+   container7->AddFrame(prMacros, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
    // DRAW ELEMENTS
 
@@ -301,6 +322,18 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    gDrawClusters->SetEnabled(kTRUE);
    hframeMerge->AddFrame(label, new TGLayoutHints(kLHintsExpandX));
    hframeMerge->AddFrame(gDrawClusters);
+
+   drawElements->AddFrame(hframeMerge, new TGLayoutHints(kLHintsExpandX));
+
+   // Muon
+
+   hframeMerge = new TGHorizontalFrame(drawElements, 200, 20, kFixedWidth);
+
+   label = new TGLabel(hframeMerge, "MUON");
+   gDrawVertex = new TGCheckButton(hframeMerge, "", 10);
+   gDrawVertex->SetEnabled(kTRUE);
+   hframeMerge->AddFrame(label, new TGLayoutHints(kLHintsExpandX));
+   hframeMerge->AddFrame(gDrawVertex);
 
    drawElements->AddFrame(hframeMerge, new TGLayoutHints(kLHintsExpandX));
 
@@ -855,6 +888,14 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
 
    geometry->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX));
 
+//   hframe = new TGHorizontalFrame(geometry, 150, 20, kFixedWidth);
+
+//   TGPictureButton* b1 = new TGPictureButton(hframe, gClient->GetPicture("$ALICE_ROOT/EVE/alice-data/ALICE_logo.png"));
+
+//   hframe->AddFrame(b1, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+//   geometry->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX));
+
    // ANALYSIS
 
    separator = new TGHorizontal3DLine(analysis);
@@ -1057,7 +1098,7 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
 
    gPMVRange = new TGHSlider(hframe,180);
    gPMVRange->SetRange(0, 50);
-   gPMVRange->SetPosition(0);
+   gPMVRange->SetPosition(3);
    gPMVRange->Connect("PositionChanged(Int_t)", "SetCutsWindow", this, "PMVSliderCallBack()");
 
    hframe->AddFrame(gPMVRange, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
@@ -1094,6 +1135,108 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
 
    momentumVectors->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX));
+
+   // PR macros
+
+   // choose pr macro
+
+   separator = new TGHorizontal3DLine(prMacros);
+   prMacros->AddFrame(separator, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   label = new TGLabel(prMacros, "Choose PR macro");
+   prMacros->AddFrame(label, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   separator = new TGHorizontal3DLine(prMacros);
+   prMacros->AddFrame(separator, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   hframe = new TGHorizontalFrame(prMacros, 200, 20, kFixedWidth);
+
+   label = new TGLabel(hframe, "No geometry, global tracks");
+
+   b = new TGTextButton(hframe, "OK");
+   b->Connect("Clicked()", "SetCutsWindow", this, "Macro1()");
+   hframe->AddFrame(label);
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsRight));
+
+   prMacros->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   hframe = new TGHorizontalFrame(prMacros, 200, 20, kFixedWidth);
+
+   label = new TGLabel(hframe, "Clusters, global tracks, mixed colors");
+
+   b = new TGTextButton(hframe, "OK");
+   b->Connect("Clicked()", "SetCutsWindow", this, "Macro2()");
+   hframe->AddFrame(label);
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsRight));
+
+   prMacros->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   hframe = new TGHorizontalFrame(prMacros, 200, 20, kFixedWidth);
+
+   label = new TGLabel(hframe, "No geometry, clusters, tracks, mixed colors");
+
+   b = new TGTextButton(hframe, "OK");
+   b->Connect("Clicked()", "SetCutsWindow", this, "Macro3()");
+   hframe->AddFrame(label);
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsRight));
+
+   prMacros->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   hframe = new TGHorizontalFrame(prMacros, 200, 20, kFixedWidth);
+
+   label = new TGLabel(hframe, "Only V0s, cascades, kinks");
+
+   b = new TGTextButton(hframe, "OK");
+   b->Connect("Clicked()", "SetCutsWindow", this, "Macro4()");
+   hframe->AddFrame(label);
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsRight));
+
+   prMacros->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   hframe = new TGHorizontalFrame(prMacros, 200, 20, kFixedWidth);
+
+   label = new TGLabel(hframe, "No geometry, global tracks, vectors");
+
+   b = new TGTextButton(hframe, "OK");
+   b->Connect("Clicked()", "SetCutsWindow", this, "Macro5()");
+   hframe->AddFrame(label);
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsRight));
+
+   prMacros->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   separator = new TGHorizontal3DLine(prMacros);
+
+   prMacros->AddFrame(separator, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   hframe = new TGHorizontalFrame(prMacros, 200, 20, kFixedWidth);
+
+   b = new TGTextButton(hframe, "Save Current Settings");
+   b->Connect("Clicked()", "SetCutsWindow", this, "SaveMacro()");
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   prMacros->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   hframe = new TGHorizontalFrame(prMacros, 200, 20, kFixedWidth);
+
+   b = new TGTextButton(hframe, "Load Settings");
+   b->Connect("Clicked()", "SetCutsWindow", this, "LoadMacro()");
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   prMacros->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   // Main menu
+
+   separator = new TGHorizontal3DLine(prMacros);
+   prMacros->AddFrame(separator, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   hframe = new TGHorizontalFrame(prMacros, 150, 20, kFixedWidth);
+
+   b = new TGTextButton(hframe, "Apply Cuts");
+   b->Connect("Clicked()", "SetCutsWindow", this, "SetCuts()");
+
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
+
+   prMacros->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
 
    // FINAL STUFF
 
@@ -2413,7 +2556,7 @@ Int_t SetCutsWindow::GetTrackColorByMomentum(Double_t momentum, Int_t size)
 {
 
 
-   Double_t step = 3.0/size;
+   Double_t step = 1.0/size;
 
    for(Int_t i = 0; i < size; i++)
    {
@@ -2444,7 +2587,7 @@ Int_t SetCutsWindow::GetTrackColorByMomentum(Double_t momentum, Int_t size)
 
    }
 
-   return i;
+   return i-1;
 
 }
 
@@ -2483,6 +2626,46 @@ void SetCutsWindow::SetStandardCuts()
 
 void SetCutsWindow::AddMomentumVectors()
 {
+
+   Int_t posTrackColor= gPosColorList->GetSelected();
+   Int_t negTrackColor= gNegColorList->GetSelected();
+
+Int_t colorNeg[27][10] =
+{
+   { kRed, kBlue, kOrange, kCyan, kGreen, kGray, kViolet, kMagenta, kSpring, kYellow },
+   { kCyan-4, kCyan, kAzure+10, kAzure+8, kAzure+5, kAzure, kBlue, kBlue+1, kBlue+2, kBlue+3 },
+   { kYellow-4, kYellow, kOrange+10, kOrange, kOrange+7, kOrange+10, kRed, kRed+1, kRed+2, kRed+3 },
+   { kRed, kRed-1, kRed-2, kRed-3, kRed-4, kRed-5, kRed-6, kRed-7, kRed-8, kRed-9},
+   { kRed, kRed, kRed+1, kRed+1, kRed+2, kRed+2, kRed+3, kRed+3, kRed+4, kRed+4},
+   { kOrange, kOrange-1, kOrange-2, kOrange-3, kOrange-4, kOrange-5, kOrange-6, kOrange-7, kOrange-8, kOrange-9},
+   { kOrange, kOrange+1, kOrange+2, kOrange+3, kOrange+4, kOrange+5, kOrange+6, kOrange+7, kOrange+8, kOrange+9},
+   { kYellow, kYellow-1, kYellow-2, kYellow-3, kYellow-4, kYellow-5, kYellow-6, kYellow-7, kYellow-8, kYellow-9},
+   { kYellow, kYellow, kYellow+1, kYellow+1, kYellow+2, kYellow+2, kYellow+3, kYellow+3, kYellow+4, kYellow+4},
+   { kSpring, kSpring-1, kSpring-2, kSpring-3, kSpring-4, kSpring-5, kSpring-6, kSpring-7, kSpring-8, kSpring-9},
+   { kSpring, kSpring+1, kSpring+2, kSpring+3, kSpring+4, kSpring+5, kSpring+6, kSpring+7, kSpring+8, kSpring+9},
+   { kGreen, kGreen-1, kGreen-2, kGreen-3, kGreen-4, kGreen-5, kGreen-6, kGreen-7, kGreen-8, kGreen-9},
+   { kGreen, kGreen, kGreen+1, kGreen+1, kGreen+2, kGreen+2, kGreen+3, kGreen+3, kGreen+4, kGreen+4},
+   { kTeal, kTeal-1, kTeal-2, kTeal-3, kTeal-4, kTeal-5, kTeal-6, kTeal-7, kTeal-8, kTeal-9},
+   { kTeal, kTeal+1, kTeal+2, kTeal+3, kTeal+4, kTeal+5, kTeal+6, kTeal+7, kTeal+8, kTeal+9},
+   { kCyan, kCyan-1, kCyan-2, kCyan-3, kCyan-4, kCyan-5, kCyan-6, kCyan-7, kCyan-8, kCyan-9},
+   { kCyan, kCyan, kCyan+1, kCyan+1, kCyan+2, kCyan+2, kCyan+3, kCyan+3, kCyan+4, kCyan+4},
+   { kAzure, kAzure-1, kAzure-2, kAzure-3, kAzure-4, kAzure-5, kAzure-6, kAzure-7, kAzure-8, kAzure-9},
+   { kAzure, kAzure+1, kAzure+2, kAzure+3, kAzure+4, kAzure+5, kAzure+6, kAzure+7, kAzure+8, kAzure+9},
+   { kBlue, kBlue-1, kBlue-2, kBlue-3, kBlue-4, kBlue-5, kBlue-6, kBlue-7, kBlue-8, kBlue-9},
+   { kBlue, kBlue, kBlue+1, kBlue+1, kBlue+2, kBlue+2, kBlue+3, kBlue+3, kBlue+4, kBlue+4},
+   { kViolet, kViolet-1, kViolet-2, kViolet-3, kViolet-4, kViolet-5, kViolet-6, kViolet-7, kViolet-8, kViolet-9},
+   { kViolet, kViolet+1, kViolet+2, kViolet+3, kViolet+4, kViolet+5, kViolet+6, kViolet+7, kViolet+8, kViolet+9},
+   { kMagenta, kMagenta-1, kMagenta-2, kMagenta-3, kMagenta-4, kMagenta-5, kMagenta-6, kMagenta-7, kMagenta-8, kMagenta-9},
+   { kMagenta, kMagenta, kMagenta+1, kMagenta+1, kMagenta+2, kMagenta+2, kMagenta+3, kMagenta+3, kMagenta+4, kMagenta+4},
+   { kPink, kPink-1, kPink-2, kPink-3, kPink-4, kPink-5, kPink-6, kPink-7, kPink-8, kPink-9},
+   { kPink, kPink+1, kPink+2, kPink+3, kPink+4, kPink+5, kPink+6, kPink+7, kPink+8, kPink+9},
+};
+
+Int_t colorAll[22] = 
+{
+kBlue+4, kBlue+2, kBlue, kAzure, kAzure-3, kAzure+7, kCyan, kCyan-7, kGreen-7, kGreen-4, kGreen, kSpring,
+kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, kRed+2, kMagenta
+};
 
 //   Bool_t drawWithTracks = kTRUE;
 
@@ -2633,6 +2816,18 @@ void SetCutsWindow::AddMomentumVectors()
    // draw momentum vectors
    //==============================================
 
+   TEveRecTrack rcNeg;
+
+   TEveTrackList* fTrackListV0Neg = new TEveTrackList("V0 Tracks Neg"); 
+   fTrackListV0Neg->SetMainColor(kGreen-4);
+   fTrackListV0Neg->SetMarkerColor(kYellow);
+   fTrackListV0Neg->SetMarkerStyle(10);
+   fTrackListV0Neg->SetMarkerSize(5);
+
+    TEveTrackPropagator* trkProp = fTrackListV0Neg->GetPropagator();
+    trkProp->SetMagField(0.5);
+    trkProp->SetMaxR(250);
+
    if(mode == 1 && maxMomentum > 1)
       vectorLength = 100/TMath::Log(100*maxMomentum);
    if(mode == 2 && maxMomentum)
@@ -2658,11 +2853,6 @@ void SetCutsWindow::AddMomentumVectors()
             TEveElement* trackType = (TEveElement*) *l;
             str2 = trackType->GetElementName();
 
-//            trackType->SetRnrSelf(kFALSE);
-
-//            if(trackType->HasChildren())
-//               trackType->SetRnrChildren(kFALSE);
-
             if(str2.Contains("Sigma < 3"))
             {
 
@@ -2679,6 +2869,47 @@ void SetCutsWindow::AddMomentumVectors()
                   {
 
                      AliEveTrack* trackSingle1 = dynamic_cast<AliEveTrack*>((TEveElement*) *z);
+
+                     Double_t p[3];
+                     Double_t pos[3];
+
+                     trackSingle1->GetESDTrack()->GetTPCInnerParam()->GetPxPyPzAt(80,-5.01,p);
+                     trackSingle1->GetESDTrack()->GetTPCInnerParam()->GetXYZAt(80,-5.01,pos);
+
+//                     printf("%f %f %f\n",p[0],p[1],p[2]);
+//                     printf("%f %f %f\n",pos[0],pos[1],pos[2]);
+
+//                     printf("%f %f %f %f\n",trackSingle1->GetESDTrack()->GetTPCPoints(0),trackSingle1->GetESDTrack()->GetTPCPoints(1),trackSingle1->GetESDTrack()->GetTPCPoints(2),trackSingle1->GetESDTrack()->GetTPCPoints(3));
+
+                     rcNeg.fP.Set(p);
+                     rcNeg.fV.Set(pos);
+                     rcNeg.fStatus = trackSingle1->GetESDTrack()->GetStatus();
+                     rcNeg.fLabel = trackSingle1->GetESDTrack()->GetLabel();
+                     Double_t momentum = trackSingle1->GetESDTrack()->P();
+                     rcNeg.fBeta = momentum/TMath::Sqrt(momentum*momentum + TMath::C()*TMath::C()*trackSingle1->GetESDTrack()->M()*trackSingle1->GetESDTrack()->M());
+                     rcNeg.fSign = trackSingle1->GetESDTrack()->GetSign();
+
+                     TEveTrack* track1 = new TEveTrack(&rcNeg, trkProp);
+
+                        if(trackSingle1->GetESDTrack()->GetSign() > 0)
+                        {
+                           if(posTrackColor == 0)
+                              track1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              track1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+                        else
+                        {
+                           if(negTrackColor == 0)
+                              track1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              track1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+
+                        track1->SetLineStyle(1);
+                        track1->SetRnrSelf(kTRUE);
+
+                     fTrackListV0Neg->AddElement(track1);
 
                      TEveLine* momentumVector = new TEveLine(TString::Format("Momentum Vector"));
 
@@ -2763,6 +2994,48 @@ void SetCutsWindow::AddMomentumVectors()
 
                      TEveLine* momentumVector = new TEveLine(TString::Format("Momentum Vector"));
 
+                     Double_t p[3];
+                     Double_t pos[3];
+
+                     trackSingle1->GetESDTrack()->GetTPCInnerParam()->GetPxPyPzAt(80,-5.01,p);
+                     trackSingle1->GetESDTrack()->GetTPCInnerParam()->GetXYZAt(80,-5.01,pos);
+
+//                     printf("%f %f %f\n",p[0],p[1],p[2]);
+//                     printf("%f %f %f\n",pos[0],pos[1],pos[2]);
+
+//                     printf("%f %f %f %f\n",trackSingle1->GetESDTrack()->GetTPCPoints(0),trackSingle1->GetESDTrack()->GetTPCPoints(1),trackSingle1->GetESDTrack()->GetTPCPoints(2),trackSingle1->GetESDTrack()->GetTPCPoints(3));
+
+                     rcNeg.fP.Set(p);
+                     rcNeg.fV.Set(pos);
+                     rcNeg.fStatus = trackSingle1->GetESDTrack()->GetStatus();
+                     rcNeg.fLabel = trackSingle1->GetESDTrack()->GetLabel();
+                     Double_t momentum = trackSingle1->GetESDTrack()->P();
+                     rcNeg.fBeta = momentum/TMath::Sqrt(momentum*momentum + TMath::C()*TMath::C()*trackSingle1->GetESDTrack()->M()*trackSingle1->GetESDTrack()->M());
+                     rcNeg.fSign = trackSingle1->GetESDTrack()->GetSign();
+
+                     TEveTrack* track1 = new TEveTrack(&rcNeg, trkProp);
+
+                        if(trackSingle1->GetESDTrack()->GetSign() > 0)
+                        {
+                           if(posTrackColor == 0)
+                              track1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              track1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+                        else
+                        {
+                           if(negTrackColor == 0)
+                              track1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              track1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+
+                        track1->SetLineStyle(1);
+                        track1->SetRnrSelf(kTRUE);
+
+                     fTrackListV0Neg->AddElement(track1);
+
+
                      if(trackSingle1->GetESDTrack()->P() > cut)
                      {
 
@@ -2812,6 +3085,7 @@ void SetCutsWindow::AddMomentumVectors()
 
                         momentumVectorList2->AddElement(momentumVector);
 
+
                      }
 
                   }
@@ -2841,6 +3115,47 @@ void SetCutsWindow::AddMomentumVectors()
                      AliEveTrack* trackSingle1 = dynamic_cast<AliEveTrack*>((TEveElement*) *z);
 
                      TEveLine* momentumVector = new TEveLine(TString::Format("Momentum Vector"));
+
+                     Double_t p[3];
+                     Double_t pos[3];
+
+                     trackSingle1->GetESDTrack()->GetTPCInnerParam()->GetPxPyPzAt(80,-5.01,p);
+                     trackSingle1->GetESDTrack()->GetTPCInnerParam()->GetXYZAt(80,-5.01,pos);
+
+//                     printf("%f %f %f\n",p[0],p[1],p[2]);
+//                     printf("%f %f %f\n",pos[0],pos[1],pos[2]);
+
+//                     printf("%f %f %f %f\n",trackSingle1->GetESDTrack()->GetTPCPoints(0),trackSingle1->GetESDTrack()->GetTPCPoints(1),trackSingle1->GetESDTrack()->GetTPCPoints(2),trackSingle1->GetESDTrack()->GetTPCPoints(3));
+
+                     rcNeg.fP.Set(p);
+                     rcNeg.fV.Set(pos);
+                     rcNeg.fStatus = trackSingle1->GetESDTrack()->GetStatus();
+                     rcNeg.fLabel = trackSingle1->GetESDTrack()->GetLabel();
+                     Double_t momentum = trackSingle1->GetESDTrack()->P();
+                     rcNeg.fBeta = momentum/TMath::Sqrt(momentum*momentum + TMath::C()*TMath::C()*trackSingle1->GetESDTrack()->M()*trackSingle1->GetESDTrack()->M());
+                     rcNeg.fSign = trackSingle1->GetESDTrack()->GetSign();
+
+                     TEveTrack* track1 = new TEveTrack(&rcNeg, trkProp);
+
+                        if(trackSingle1->GetESDTrack()->GetSign() > 0)
+                        {
+                           if(posTrackColor == 0)
+                              track1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              track1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+                        else
+                        {
+                           if(negTrackColor == 0)
+                              track1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              track1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+
+                        track1->SetLineStyle(2);
+                        track1->SetRnrSelf(kTRUE);
+
+                     fTrackListV0Neg->AddElement(track1);
 
                      if(trackSingle1->GetESDTrack()->P() > cut)
                      {
@@ -2904,6 +3219,9 @@ void SetCutsWindow::AddMomentumVectors()
       }
    }
  
+//  fTrackListV0Neg->MakeTracks();
+//  gEve->AddElement(fTrackListV0Neg);
+
   gEve->AddElement(momentumVectorList);
 
   TEveElement* top = gEve->GetCurrentEvent();
@@ -3066,7 +3384,7 @@ kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, k
 
                trackType->SetRnrSelf(kFALSE);
 
-               (dynamic_cast<TEveTrackList*>trackType)->GetPropagator()->SetMaxR(250);
+//               (dynamic_cast<TEveTrackList*>trackType)->GetPropagator()->SetMaxR(250);
 
                if(trackType->HasChildren())
                   trackType->SetRnrChildren(kFALSE);
@@ -4093,6 +4411,405 @@ void SetCutsWindow::CloseTab()
       Int_t current = browser->GetTabLeft()->GetCurrent();
 
       browser->GetTabLeft()->RemoveTab(current);
+
+}
+
+//______________________________________________________________________________
+
+void SetCutsWindow::Macro1()
+{
+
+   SetStandardCuts();
+
+   gPosColorList->Select(2, kTRUE);
+   gNegColorList->Select(2, kTRUE);
+
+   gEve->GetScenes()->FirstChild()->SetRnrSelf(kFALSE);
+   gEve->GetScenes()->FirstChild()->SetRnrChildren(kFALSE);
+
+   SetCuts();
+
+   gEve->FullRedraw3D(kTRUE);
+
+}
+
+//______________________________________________________________________________
+
+void SetCutsWindow::Macro2()
+{
+
+   gDrawV0s->SetOn(kFALSE,kFALSE);
+   gDrawCascades->SetOn(kFALSE,kFALSE);
+   gDrawKinks->SetOn(kFALSE,kFALSE);
+   gDrawVertex->SetOn(kFALSE,kFALSE);
+   gDrawTracklets->SetOn(kFALSE,kFALSE);
+   gDrawTracks->SetOn(kTRUE,kFALSE);
+   gDrawClusters->SetOn(kTRUE,kFALSE);
+   gDrawTracksType1->SetOn(kTRUE,kFALSE);
+   gDrawTracksType2->SetOn(kTRUE,kFALSE);
+   gDrawTracksType3->SetOn(kTRUE,kFALSE);
+   gDrawTracksType4->SetOn(kTRUE,kFALSE);
+   gDrawTracksType5->SetOn(kFALSE,kFALSE);
+   gDrawTracksType6->SetOn(kFALSE,kFALSE);
+   gDrawTracksType7->SetOn(kFALSE,kFALSE);
+   gCutOnP->SetOn(kFALSE,kFALSE);
+   gCutOnPt->SetOn(kFALSE,kFALSE);
+   gCutOnEta->SetOn(kTRUE,kFALSE);
+   gCutOnMult->SetOn(kFALSE,kFALSE);
+   gCutOnCls->SetOn(kFALSE,kFALSE);
+   gPtRange->SetValues(0.15,gPtRange->GetLimitMax());
+   gEtaRange->SetValues(-0.9,0.9);
+   gClsRangeNE->SetNumber(70);
+   gClsRange->SetPosition(70);
+
+   gEve->GetScenes()->FirstChild()->SetRnrSelf(kTRUE);
+   gEve->GetScenes()->FirstChild()->SetRnrChildren(kTRUE);
+
+   SetCuts();
+
+   gEve->FullRedraw3D(kTRUE);
+
+}
+
+//______________________________________________________________________________
+
+void SetCutsWindow::Macro3()
+{
+
+   SetStandardCuts();
+
+   gDrawVertex->SetOn(kTRUE,kFALSE);
+   gDrawTracklets->SetOn(kFALSE,kFALSE);
+   gDrawClusters->SetOn(kTRUE,kFALSE);
+
+   gPosColorList->Select(3, kTRUE);
+   gNegColorList->Select(2, kTRUE);
+
+   gEve->GetScenes()->FirstChild()->SetRnrSelf(kFALSE);
+   gEve->GetScenes()->FirstChild()->SetRnrSelf(kFALSE);
+
+   SetCuts();
+
+   gEve->FullRedraw3D(kTRUE);
+
+}
+
+//______________________________________________________________________________
+
+void SetCutsWindow::Macro4()
+{
+
+   gDrawV0s->SetOn(kTRUE,kFALSE);
+   gDrawCascades->SetOn(kTRUE,kFALSE);
+   gDrawKinks->SetOn(kTRUE,kFALSE);
+   gDrawVertex->SetOn(kTRUE,kFALSE);
+   gDrawTracklets->SetOn(kFALSE,kFALSE);
+   gDrawTracks->SetOn(kFALSE,kFALSE);
+   gDrawClusters->SetOn(kFALSE,kFALSE);
+   gDrawTracksType1->SetOn(kFALSE,kFALSE);
+   gDrawTracksType2->SetOn(kFALSE,kFALSE);
+   gDrawTracksType3->SetOn(kFALSE,kFALSE);
+   gDrawTracksType4->SetOn(kFALSE,kFALSE);
+   gDrawTracksType5->SetOn(kFALSE,kFALSE);
+   gDrawTracksType6->SetOn(kFALSE,kFALSE);
+   gDrawTracksType7->SetOn(kFALSE,kFALSE);
+   gCutOnP->SetOn(kFALSE,kFALSE);
+   gCutOnPt->SetOn(kFALSE,kFALSE);
+   gCutOnEta->SetOn(kFALSE,kFALSE);
+   gCutOnMult->SetOn(kFALSE,kFALSE);
+   gCutOnCls->SetOn(kFALSE,kFALSE);
+
+   gEve->GetScenes()->FirstChild()->SetRnrSelf(kTRUE);
+   gEve->GetScenes()->FirstChild()->SetRnrSelf(kTRUE);
+
+   SetCuts();
+
+   gEve->FullRedraw3D(kTRUE);
+
+}
+
+//______________________________________________________________________________
+
+void SetCutsWindow::Macro5()
+{
+
+   SetStandardCuts();
+
+   gPosColorList->Select(1, kTRUE);
+   gNegColorList->Select(1, kTRUE);
+
+   gEve->GetScenes()->FirstChild()->SetRnrSelf(kFALSE);
+   gEve->GetScenes()->FirstChild()->SetRnrChildren(kFALSE);
+
+   gMultRangeNE->SetNumber(50);
+
+   SetCuts();
+
+   AddMomentumVectors();
+
+   gEve->FullRedraw3D(kTRUE);
+
+}
+
+//______________________________________________________________________________
+
+void SetCutsWindow::SetValues()
+{
+
+}
+
+//______________________________________________________________________________
+
+void SetCutsWindow::SaveMacro()
+{
+
+  TGFileInfo fi;
+  fi.fFileTypes   = gMacroSaveAsTypes;
+  fi.fIniDir      = StrDup(""); // current directory
+  fi.fFileTypeIdx = 0;
+  fi.fOverwrite   = kTRUE;
+  new TGFileDialog(gClient->GetDefaultRoot(), gEve->GetMainWindow(), kFDSave, &fi);
+  if (!fi.fFilename) return;
+
+  TPMERegexp filere(".*/([^/]+$)");
+  if (filere.Match(fi.fFilename) != 2)
+  {
+    Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+    return;
+  }
+  printf("Saving...\n");
+
+  TString file(filere[1]);
+  TString file1;
+  if (!file.EndsWith(".alieve"))
+  file1 = file + ".alieve";
+  gSystem->ChangeDirectory(fi.fIniDir);
+  ofstream myfile;
+  myfile.open (file1);
+
+  myfile << gDrawV0s->IsOn() << endl;
+  myfile << gDrawCascades->IsOn() << endl;
+  myfile << gDrawKinks->IsOn() << endl;
+  myfile << gDrawVertex->IsOn() << endl;
+  myfile << gDrawTracklets->IsOn() << endl;
+  myfile << gDrawTracks->IsOn() << endl;
+  myfile << gDrawClusters->IsOn() << endl;
+  myfile << gDrawTracksType1->IsOn() << endl;
+  myfile << gDrawTracksType2->IsOn() << endl;
+  myfile << gDrawTracksType3->IsOn() << endl;
+  myfile << gDrawTracksType4->IsOn() << endl;
+  myfile << gDrawTracksType5->IsOn() << endl;
+  myfile << gDrawTracksType6->IsOn() << endl;
+  myfile << gDrawTracksType7->IsOn() << endl;
+  myfile << gCutOnP->IsOn() << endl;
+  myfile << gCutOnPt->IsOn() << endl;
+  myfile << gCutOnEta->IsOn() << endl;
+  myfile << gCutOnMult->IsOn() << endl;
+  myfile << gCutOnCls->IsOn() << endl;
+  myfile << gEve->GetScenes()->FirstChild()->GetRnrSelf() << endl;
+  myfile << gEve->GetScenes()->FirstChild()->GetRnrChildren() << endl;
+  myfile << gPRange->GetMin() << endl;
+  myfile << gPRange->GetMax() << endl;
+  myfile << gPtRange->GetMin() << endl;
+  myfile << gPtRange->GetMax() << endl;
+  myfile << gEtaRange->GetMin() << endl;
+  myfile << gEtaRange->GetMax() << endl;
+  myfile << gMultRange->GetPosition() << endl;
+  myfile << gMultRange->GetPosition() << endl;
+  myfile << gClsRange->GetPosition() << endl;
+  myfile << gPMVRange->GetPosition() << endl;
+
+  myfile << gVectorMode->GetSelected() << endl;
+  myfile << gPosColorList->GetSelected() << endl;
+  myfile << gNegColorList->GetSelected() << endl;
+  myfile << gTrackColorScale->GetSelected() << endl;
+  myfile << gBkgColorList->GetSelected() << endl;
+
+  if(gEve->GetEventScene()->FindChild("Momentum Vectors"))
+    myfile << 1 << endl;
+  else
+    myfile << 0 << endl;
+
+/*
+  myfile <<"//Macro with display settings generated automatically by AliEve\n\n";
+
+  myfile <<"void "<<file<<"(){\n" << endl;
+  myfile << "  gDrawV0s->SetOn(" << gDrawV0s->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawCascades->SetOn(" << gDrawCascades->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawKinks->SetOn(" << gDrawKinks->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawVertex->SetOn(" << gDrawVertex->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawTracklets->SetOn(" << gDrawTracklets->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawTracks->SetOn(" << gDrawTracks->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawClusters->SetOn(" << gDrawClusters->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawTracksType1->SetOn(" << gDrawTracksType1->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawTracksType2->SetOn(" << gDrawTracksType2->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawTracksType3->SetOn(" << gDrawTracksType3->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawTracksType4->SetOn(" << gDrawTracksType4->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawTracksType5->SetOn(" << gDrawTracksType5->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawTracksType6->SetOn(" << gDrawTracksType6->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gDrawTracksType7->SetOn(" << gDrawTracksType7->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gCutOnP->SetOn(" << gCutOnP->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gCutOnPt->SetOn(" << gCutOnPt->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gCutOnEta->SetOn(" << gCutOnEta->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gCutOnMult->SetOn(" << gCutOnMult->IsOn() << ",kFALSE);" << endl;
+  myfile << "  gCutOnCls->SetOn(" << gCutOnCls->IsOn() << ",kFALSE);" << endl;
+
+  myfile << "  gEve->GetScenes()->FirstChild()->SetRnrSelf(" << gEve->GetScenes()->FirstChild()->GetRnrSelf() << ");" << endl;
+  myfile << "  gEve->GetScenes()->FirstChild()->SetRnrChildren(" << gEve->GetScenes()->FirstChild()->GetRnrChildren() << ");" << endl;
+
+  myfile << "  gPRange->SetValues(" << gPRange->GetMin() << "," << gPRange->GetMax() << ",kFALSE);" << endl;
+  myfile << "  gPtRange->SetValues(" << gPtRange->GetMin() << "," << gPtRange->GetMax() << ",kFALSE);" << endl;
+  myfile << "  gEtaRange->SetValues(" << gEtaRange->GetMin() << "," << gEtaRange->GetMax() << ",kFALSE);" << endl;
+  myfile << "  gMultRange->SetPosition(" << gMultRange->GetPosition() << ");" << endl;
+  myfile << "  gMultRange->SetPosition(" << gMultRange->GetPosition() << ");" << endl;
+  myfile << "  gClsRange->SetPosition(" << gClsRange->GetPosition() << ");" << endl;
+  myfile << "  gPMVRange->SetPosition(" << gPMVRange->GetPosition() << ");" << endl;
+
+  myfile << "  SetCuts();" << endl;
+  if(gEve->GetEventScene()->FindChild("Momentum Vectors"))
+    myfile << "  AddMomentumVectors();" << endl;
+
+  myfile << "  gEve->FullRedraw3D(kTRUE);" << endl;
+  myfile << "\n}" << endl;
+
+*/
+
+}
+
+//______________________________________________________________________________
+
+void SetCutsWindow::LoadMacro()
+{
+
+   TGFileInfo fi;
+   fi.fFileTypes   = gMacroSaveAsTypes;
+   fi.fIniDir      = StrDup(""); // current directory
+   fi.fFileTypeIdx = 0;
+   fi.fOverwrite   = kTRUE;
+   new TGFileDialog(gClient->GetDefaultRoot(), gEve->GetMainWindow(), kFDOpen, &fi);//dialog
+   if (!fi.fFilename) return;
+
+   TPMERegexp filere(".*/([^/]+$)");
+   if (filere.Match(fi.fFilename) != 2)
+   {
+     Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+     return;
+   }
+   printf("Loading...\n");
+
+   TString file(filere[1]);
+   gSystem->ChangeDirectory(fi.fIniDir);
+
+   Bool_t boolValue = kFALSE;
+   Int_t intValue = 0;
+   Double_t doubleValue1 = 0.0, doubleValue2 = 0.0;
+
+   ifstream myfile(file);
+
+   if(myfile.is_open())
+   {
+      myfile >> boolValue;
+      gDrawV0s->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawCascades->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawKinks->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawVertex->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawTracklets->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawTracks->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawClusters->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawTracksType1->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawTracksType2->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawTracksType3->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawTracksType4->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawTracksType5->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawTracksType6->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gDrawTracksType7->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gCutOnP->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gCutOnPt->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gCutOnEta->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gCutOnMult->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gCutOnCls->SetOn(boolValue,kFALSE);
+      myfile >> boolValue;
+      gEve->GetScenes()->FirstChild()->SetRnrSelf(boolValue);
+      myfile >> boolValue;
+      gEve->GetScenes()->FirstChild()->SetRnrChildren(boolValue);
+      myfile >> doubleValue1;
+      myfile >> doubleValue2;
+      gPRange->SetValues(doubleValue1,doubleValue2,kFALSE);
+      myfile >> doubleValue1;
+      myfile >> doubleValue2;
+      gPtRange->SetValues(doubleValue1,doubleValue2,kFALSE);
+      myfile >> doubleValue1;
+      myfile >> doubleValue2;
+      gEtaRange->SetValues(doubleValue1,doubleValue2,kFALSE);
+      myfile >> intValue;
+      gMultRange->SetPosition(intValue);
+      myfile >> intValue;
+      gMultRange->SetPosition(intValue);
+      myfile >> intValue;
+      gClsRange->SetPosition(intValue);
+      myfile >> intValue;
+      gPMVRange->SetPosition(intValue);
+      myfile >> intValue;
+      gVectorMode->Select(intValue);
+      myfile >> intValue;
+      gPosColorList->Select(intValue);
+      myfile >> intValue;
+      gNegColorList->Select(intValue);
+      myfile >> intValue;
+      gTrackColorScale->Select(intValue);
+      myfile >> intValue;
+      gBkgColorList->Select(intValue);
+
+      myfile >> boolValue;
+      if(boolValue) AddMomentumVectors();
+
+      SetCuts();
+      gEve->FullRedraw3D(kTRUE);
+
+   }
+
+/*
+      TGFileInfo fi;
+      fi.fFileTypes   = gMacroSaveAsTypes;
+      fi.fIniDir      = StrDup(""); // current directory
+      fi.fFileTypeIdx = 0;
+      fi.fOverwrite   = kTRUE;
+      new TGFileDialog(gClient->GetDefaultRoot(), gEve->GetMainWindow(), kFDOpen, &fi);//dialog
+      if (!fi.fFilename) return;
+*/
+//      TPMERegexp filere(".*/([^/]+$)");
+/*
+      if (filere.Match(fi.fFilename) != 2)
+      {
+        Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
+        return;
+      }
+      printf("Loading...\n");
+
+      TString file(filere[1]);
+      gSystem->ChangeDirectory(fi.fIniDir);
+
+      TEveUtil::Macro(file);//run macro
+
+*/
 
 }
 
