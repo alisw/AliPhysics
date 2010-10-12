@@ -424,7 +424,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Double_t InvMass(AliAODJet* jet1, AliAODJet* jet2);
   void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isGenPrim);
   void     FillSingleTrackRecEffHisto(THnSparse* histo, TList* tracksGen, TList* tracksRec, TArrayI& indexAODTr, TArrayS& isGenPrim);
-  void     FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi,Double_t jetEta,Double_t jetPt,TList* jetTrackList, TList* tracksGen,
+  void     FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi,Double_t jetEta,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, TList* tracksGen,
 				   TArrayI& indexAODTr,TArrayS& isGenPrim);
 
     
@@ -660,7 +660,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   THnSparseF *fhnSingleTrackRecEffHisto; //! track reconstruction efficiency 
   THnSparseF *fhnJetTrackRecEffHisto;    //! reconstruction efficiency jet tracks 
 
-  ClassDef(AliAnalysisTaskFragmentationFunction, 5);
+  ClassDef(AliAnalysisTaskFragmentationFunction, 6);
 };
 
 #endif

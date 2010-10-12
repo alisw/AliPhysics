@@ -1877,16 +1877,16 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   AliAnalysisTaskFragmentationFunction::SetProperties(fhnSingleTrackRecEffHisto,5,labelsSingleTrackEffHisto); 
   
   
-  // 7D jets track eff histo: jet phi:eta:pt:track pt:z:xi:isReconstructed - use binning as for track/jet QA
-  Int_t    nBinsJetTrackEffHisto[7]     = { fQAJetNBinsPhi, fQAJetNBinsEta, fFFNBinsJetPt, fFFNBinsPt, fFFNBinsZ, fFFNBinsXi, 2};
-  Double_t binMinJetTrackEffHisto[7]    = { fQAJetPhiMin, fQAJetEtaMin, fFFJetPtMin , fFFPtMin, fFFZMin ,  fFFXiMin, 0 };
-  Double_t binMaxJetTrackEffHisto[7]    = { fQAJetPhiMax, fQAJetEtaMax, fFFJetPtMax , fFFPtMax, fFFZMax ,  fFFXiMax, 2 };
-  const char* labelsJetTrackEffHisto[7] = {"jet #phi","jet #eta","jet p_{T} [GeV/c]","track p_{T} [GeV/c]","z","#xi","isRec"};
+  // 8D jets track eff histo: jet phi:eta:gen pt:rec pt:track pt:z:xi:isReconstructed - use binning as for track/jet QA
+  Int_t    nBinsJetTrackEffHisto[8]     = { fQAJetNBinsPhi, fQAJetNBinsEta, fFFNBinsJetPt, fFFNBinsJetPt, fFFNBinsPt, fFFNBinsZ, fFFNBinsXi, 2};
+  Double_t binMinJetTrackEffHisto[8]    = { fQAJetPhiMin, fQAJetEtaMin, fFFJetPtMin , fFFJetPtMin , fFFPtMin, fFFZMin ,  fFFXiMin, 0 };
+  Double_t binMaxJetTrackEffHisto[8]    = { fQAJetPhiMax, fQAJetEtaMax, fFFJetPtMax , fFFJetPtMax , fFFPtMax, fFFZMax ,  fFFXiMax, 2 };
+  const char* labelsJetTrackEffHisto[8] = {"jet #phi","jet #eta","jet gen p_{T} [GeV/c]","jet rec p_{T} [GeV/c]","track p_{T} [GeV/c]","z","#xi","isRec"};
 
-  fhnJetTrackRecEffHisto       = new THnSparseF("fhnJetTrackRecEffHisto","generated tracks - jet phi:jet eta:jet pt:track pt:z:xi:isReconstructed",7,
+  fhnJetTrackRecEffHisto       = new THnSparseF("fhnJetTrackRecEffHisto","generated tracks - jet phi:jet eta:jet gen pt:jet rec pt:track pt:z:xi:isReconstructed",8,
 						nBinsJetTrackEffHisto,binMinJetTrackEffHisto,binMaxJetTrackEffHisto);
 
-  AliAnalysisTaskFragmentationFunction::SetProperties(fhnJetTrackRecEffHisto,7,labelsJetTrackEffHisto);
+  AliAnalysisTaskFragmentationFunction::SetProperties(fhnJetTrackRecEffHisto,8,labelsJetTrackEffHisto);
 
 
   fQATrackHistosRec          = new AliFragFuncQATrackHistos("Rec", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
@@ -2507,7 +2507,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
   //_______ DiJet part _____________________________________________________
 
-  if (nRecJetsCuts > 1)  // OB: debugged this
+  if (nRecJetsCuts > 1) 
   {
 
     AliAODJet* jet1 = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(0));
@@ -2788,19 +2788,25 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     
     if(ij==0){ // leading jet
       
-      TList* jettracklist = new TList();
-      Double_t sumPt = 0.;
+      TList* jettracklistGen = new TList();
+      Double_t sumPtGen = 0.;
+
+      GetJetTracksPointing(fTracksGen, jettracklistGen, jet, GetFFRadius(), sumPtGen); // for efficiency: gen tracks from pointing with gen/rec jet
+
+      TList* jettracklistRec = new TList();
+      Double_t sumPtRec = 0;
+
+      GetJetTracksPointing(fTracksRecCuts,jettracklistRec, jet, GetFFRadius(), sumPtRec); // bin efficiency in jet pt bins using rec tracks  
+
       
-      GetJetTracksPointing(fTracksGen, jettracklist, jet, GetFFRadius(), sumPt); // for efficiency: gen tracks from pointing with gen/rec jet
+      Double_t jetEta   = jet->Eta();
+      Double_t jetPhi   = TVector2::Phi_0_2pi(jet->Phi());
+      Double_t jetPtGen = sumPtGen;
       
-      Double_t jetEta = jet->Eta();
-      Double_t jetPhi = TVector2::Phi_0_2pi(jet->Phi());
-      Double_t jetPt  = sumPt;
+      fQAJetHistosRecEffLeading->FillJetQA( jetEta, jetPhi, jetPtGen );
+      FillJetTrackRecEffHisto(fhnJetTrackRecEffHisto,jetPhi,jetEta,jetPtGen,sumPtRec,jettracklistGen,fTracksAODMCCharged,indexAODTr,isGenPrim);
       
-      fQAJetHistosRecEffLeading->FillJetQA( jetEta, jetPhi, jetPt );
-      FillJetTrackRecEffHisto(fhnJetTrackRecEffHisto,jetPhi,jetEta,jetPt,jettracklist,fTracksAODMCCharged,indexAODTr,isGenPrim);
-      
-      delete jettracklist;
+      delete jettracklistGen;
     }
   }
    
@@ -3305,7 +3311,7 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackRecEffHisto(THnSparse*
 }
 
 // ______________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi, Double_t jetEta, Double_t jetPt, TList* jetTrackList, 
+ void AliAnalysisTaskFragmentationFunction::FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi, Double_t jetEta, Double_t jetPtGen, Double_t jetPtRec, TList* jetTrackList, 
 								   TList* tracksGen, TArrayI& indexAODTr, TArrayS& isGenPrim)
 {
   // fill THnSparse for jet track reconstruction efficiency
@@ -3340,7 +3346,7 @@ void AliAnalysisTaskFragmentationFunction::FillJetTrackRecEffHisto(THnSparse* hi
     if(phiGen < fTrackPhiMin || phiGen > fTrackPhiMax) continue;
     if(ptGen  < fTrackPtCut) continue;
 
-    Double_t z = ptGen / jetPt;
+    Double_t z = ptGen / jetPtGen;
     Double_t xi = 0;
     if(z>0) xi = TMath::Log(1/z);
 
@@ -3348,7 +3354,7 @@ void AliAnalysisTaskFragmentationFunction::FillJetTrackRecEffHisto(THnSparse* hi
     Int_t iRec = indexAODTr[iGen]; // can be -1 if no good reconstructed track 
     if(iRec>=0) isRec = 1;
 
-    Double_t entries[7] = {jetPhi,jetEta,jetPt,ptGen,z,xi,isRec};
+    Double_t entries[8] = {jetPhi,jetEta,jetPtGen,jetPtRec,ptGen,z,xi,isRec};
     histo->Fill(entries);
   }
 }
