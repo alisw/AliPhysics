@@ -1040,6 +1040,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       fhnJetContainer[kStep2]->Fill(&container[3],eventW);
       Double_t etaRec = recJets[ir].Eta();
       if(TMath::Abs(etaRec)<fRecEtaWindow)fhnJetContainer[kStep4]->Fill(&container[3],eventW);
+      if(TMath::Abs(etaRec)<fRecEtaWindow&&TMath::Abs(etaGen)<fRecEtaWindow)fhnJetContainer[kStep3]->Fill(&container[3],eventW);
     }
   }// loop over generated jets
   
