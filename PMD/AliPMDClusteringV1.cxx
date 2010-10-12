@@ -489,10 +489,10 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	{
 	  nsupcl++;
 	}
-      if (nsupcl > ndim) 
+      if (nsupcl >= ndim) 
 	{
 	  AliWarning("RefClust: Too many superclusters!");
-	  nsupcl = ndim;
+	  nsupcl = ndim - 1;
 	  break;
 	}
       ncl[nsupcl]++;
@@ -919,7 +919,8 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 
 		      delete [] cellCount;
 		      for(Int_t jj = 0; jj < ncl[i]+1; jj++) delete [] cellXY[jj];
-	      
+		      delete [] cellXY;
+
 		      delete [] status;
 		      delete [] totaladc;
 		      delete [] totaladc2;
@@ -983,7 +984,8 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 		}
 	      delete [] cellCount;
 	      for(Int_t jj = 0; jj < ncl[i]+1; jj++) delete [] cellXY[jj];
-	      
+	      delete cellXY;
+
 	      delete [] status;
 	      delete [] totaladc;
 	      delete [] totaladc2;
