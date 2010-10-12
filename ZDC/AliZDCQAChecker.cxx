@@ -220,13 +220,14 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      if(rv == 1.) messages.Add(new TObjString("ADCs are OK!")); 
 	      else if(iDetPM==kFALSE){
 	        messages.Add(new TObjString("Problem with ADCs!"));
-                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
+                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL"));
+                messages.Add(new TObjString("OR A STANDALONE_PEDESTAL RUN"));
 	      }
 	      else if(iDetPM==kTRUE) messages.Add(new TObjString("Minor problem with ADCs"));
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    else if(irawHisto==23){
-	      Double_t refTDCs = -328.5;
+	      Double_t refTDCs = -329.5;
 	      Float_t resTDC=0.;
 	      for(int ibin=5; ibin<=6; ibin++){
 		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs)<2.){
@@ -251,6 +252,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      else{
 	        messages.Add(new TObjString("Serious problem in ZDC timing"));
                 messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
+                messages.Add(new TObjString("OR A STANDALONE_PEDESTAL RUN"));
 	      }
 	      SetupHisto(messages, *hdata, rv);
 	    }
@@ -818,8 +820,7 @@ void AliZDCQAChecker::SetupHisto(const TObjArray& messages, TH1& histo, Float_t&
   /// Add text to histos
   //
 
-  Double_t y1 = 0.97 - (messages.GetLast()+2)*0.075;
-  TPaveText* text = new TPaveText(0.6,y1,0.99,0.99,"NDC");
+  TPaveText* text = new TPaveText(0.70,0.70,0.99,0.99,"NDC");
     
   TIter next(&messages);
   TObjString* str;
@@ -843,7 +844,7 @@ void AliZDCQAChecker::SetupHisto(const TObjArray& messages, TH1& histo, Float_t&
     color = kOrange;
     defaultText = "notify the expert DURING THE DAY!";
   }
-  else{
+  else if(code<0.6){
     color = kRed;
     defaultText = "CALL THE EXPERT!!!!";
   }
