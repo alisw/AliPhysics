@@ -54,7 +54,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetDCAToVertex2D( Bool_t a ) {fAliESDtrackCuts->SetDCAToVertex2D(a);}
   void SetEtaRange( Float_t r1, Float_t r2 ) { SetEtaMin(r1); SetEtaMax(r2); }
   void SetPtRange( Float_t r1, Float_t r2 ) { SetPtMin(r1); SetPtMax(r2); }
-  void SetRequireCharge( Bool_t r ) {fRequireCharge=r;fCutRequireCharge=kTRUE;}
+  void SetRequireCharge( Bool_t r ) {fRequireCharge=r;}
+  void SetFakesAreOK( Bool_t b ) {fFakesAreOK=b;}
 
   Int_t GetMinNClustersTPC() const {return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {return fAliESDtrackCuts->GetMinNClustersITS();}
@@ -89,8 +90,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   trackParameterMix GetParamMix() const {return fParamMix;}
 
   virtual Bool_t IsSelected(TObject* obj);
-  const AliVParticle* GetTrack() const {return fTrack;}
+  AliVParticle* GetTrack() const {return fTrack;}
+  AliMCParticle* GetMCparticle() const {return fMCparticle;}
   AliFlowTrack* MakeFlowTrack() const;
+  Bool_t IsPhysicalPrimary() const; 
   
   void SetMCevent(AliMCEvent* mcEvent) {fMCevent=mcEvent;}
   AliMCEvent* GetMCevent() const {return fMCevent;}
@@ -108,13 +111,14 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t fMCPID;                      //MC PID
   Bool_t fCutMCisPrimary;            //do we cut on primaryness?
   Bool_t fMCisPrimary;               //is MC primary
-  Bool_t fCutRequireCharge;       //cut on charge requirement?
-  Bool_t fRequireCharge;          //is charged? (mostly for MC)
+  Bool_t fRequireCharge;          //is charged?
+  Bool_t fFakesAreOK;             //are fakes (negative labels) ok?
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
   Bool_t fCleanupTrack;              //check if we need to delete
   AliVParticle* fTrack;              //!the track to apply cuts on
+  Int_t fTrackLabel;                 //!track label, or its absolute value if FakesAreOK
   AliMCEvent* fMCevent;              //!mc event
   AliMCParticle* fMCparticle;        //!mc particle
 

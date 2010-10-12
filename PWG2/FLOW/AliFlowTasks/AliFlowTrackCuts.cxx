@@ -57,12 +57,13 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMCPID(0),
   fCutMCisPrimary(kFALSE),
   fMCisPrimary(kFALSE),
-  fCutRequireCharge(kFALSE),
   fRequireCharge(kFALSE),
+  fFakesAreOK(kTRUE),
   fParamType(kESD_Global),
   fParamMix(kPure),
   fCleanupTrack(kFALSE),
   fTrack(NULL),
+  fTrackLabel(INT_MIN),
   fMCevent(NULL),
   fMCparticle(NULL)
 {
@@ -79,12 +80,13 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& someCuts):
   fMCPID(someCuts.fMCPID),
   fCutMCisPrimary(someCuts.fCutMCisPrimary),
   fMCisPrimary(someCuts.fMCisPrimary),
-  fCutRequireCharge(someCuts.fCutRequireCharge),
   fRequireCharge(someCuts.fRequireCharge),
+  fFakesAreOK(someCuts.fFakesAreOK),
   fParamType(someCuts.fParamType),
   fParamMix(someCuts.fParamMix),
   fCleanupTrack(kFALSE),
   fTrack(NULL),
+  fTrackLabel(INT_MIN),
   fMCevent(NULL),
   fMCparticle(NULL)
 {
@@ -103,13 +105,14 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& someCuts)
   fMCPID=someCuts.fMCPID;
   fCutMCisPrimary=someCuts.fCutMCisPrimary;
   fMCisPrimary=someCuts.fMCisPrimary;
-  fCutRequireCharge=someCuts.fCutRequireCharge;
   fRequireCharge=someCuts.fRequireCharge;
+  fFakesAreOK=someCuts.fFakesAreOK;
   fParamType=someCuts.fParamType;
   fParamMix=someCuts.fParamMix;
 
   fCleanupTrack=kFALSE;
   fTrack=NULL;
+  fTrackLabel=INT_MIN;
   fMCevent=NULL;
   fMCparticle=NULL;
 
@@ -150,11 +153,15 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 {
   //check cuts for an ESD vparticle
 
+  ////////////////////////////////////////////////////////////////
+  //  start by preparing the track parameters to cut on //////////
+  ////////////////////////////////////////////////////////////////
   //clean up from last iteration
   if (fCleanupTrack) delete fTrack; fTrack=NULL; 
 
   //get the label and the mc particle
-  if (fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(vparticle->GetLabel()));
+  fTrackLabel = (fFakesAreOK)?TMath::Abs(vparticle->GetLabel()):vparticle->GetLabel();
+  if (fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
   else fMCparticle=NULL;
 
   Bool_t isMCparticle = kFALSE; //some things are different for MC particles, check!
@@ -167,12 +174,14 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
     //now check if produced particle is MC
     isMCparticle = (dynamic_cast<AliMCParticle*>(fTrack))!=NULL;
   }
-  
+  ////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////
+
   //check the common cuts for the current particle (MC,AOD,ESD)
   if (fCutPt) {if (fTrack->Pt() < fPtMin || fTrack->Pt() >= fPtMax ) return kFALSE;}
   if (fCutEta) {if (fTrack->Eta() < fEtaMin || fTrack->Eta() >= fEtaMax ) return kFALSE;}
   if (fCutPhi) {if (fTrack->Phi() < fPhiMin || fTrack->Phi() >= fPhiMax ) return kFALSE;}
-  if (fCutRequireCharge) {if (fTrack->Charge() == 0) return kFALSE;}
+  if (fRequireCharge) {if (fTrack->Charge() == 0) return kFALSE;}
   if (fCutCharge && !isMCparticle) {if (fTrack->Charge() != fCharge) return kFALSE;}
   if (fCutCharge && isMCparticle)
   { 
@@ -186,7 +195,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   if (fCutMCisPrimary)
   {
     if (!fMCevent) {AliError("no MC info"); return kFALSE;}
-    if (fMCevent->IsPhysicalPrimary(fTrack->GetLabel()) != fMCisPrimary) return kFALSE;
+    if (fMCevent->IsPhysicalPrimary(fTrackLabel) != fMCisPrimary) return kFALSE;
   }
   if (fCutMCPID)
   {
@@ -239,7 +248,8 @@ void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
       track->FillTPCOnlyTrack(*(static_cast<AliESDtrack*>(fTrack)));
       fCleanupTrack = kTRUE;
       //recalculate the label and mc particle, they may differ as TPClabel != global label
-      if (fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrack->GetLabel()));
+      fTrackLabel = (fFakesAreOK)?TMath::Abs(fTrack->GetLabel()):fTrack->GetLabel();
+      if (fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
       else fMCparticle=NULL;
       break;
     case kMC:
@@ -301,4 +311,11 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
   else if (dynamic_cast<AliESDtrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromESD);
   else if (dynamic_cast<AliAODTrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromAOD);
   return flowtrack;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::IsPhysicalPrimary() const
+{
+  //check if current particle is a physical primary
+  return fMCevent->IsPhysicalPrimary(fTrackLabel);
 }
