@@ -7,35 +7,35 @@
 // of generating functions (GFC). 
 
 // Set how many output analysis files in total you want to access:
-const Int_t nFiles = 1;
+const Int_t nFiles = 2;
  
 // Set how many of those output analysis files you want to represent with a mesh (usually used to represent results of simulations):
 const Int_t nSim = 0;
 
 // Set paths of all output analysis files (first the ones to be represented with mesh (simulations), then the ones to be represented with markers (real data))
-TString files[nFiles] = {""};
+TString files[nFiles] = {"trackletsCorrectedNUA","default"};
 
 // Set analysis types for all output analysis files (can be "ESD","AOD","MC",""):
-TString type[nFiles] = {""};
+TString type[nFiles] = {"ESD","ESD"};
  
 // Set mesh color:
 Int_t meshColor[nSim] = {};
 
 // Set marker styles:
-Int_t markerStyle[nFiles-nSim] = {kFullSquare};
+Int_t markerStyle[nFiles-nSim] = {kFullSquare,kOpenSquare};
 
 // Set marker colors:
-Int_t markerColor[nFiles-nSim] = {kBlack};
+Int_t markerColor[nFiles-nSim] = {kBlack,kRed};
 
 // Set legend entries:
-TString legendEntry[nFiles] = {"STAR data"};
+TString legendEntry[nFiles] = {"",""};
  
 // Set if you want to rebin the histograms into wider multiplicity bins (set for each cumulant order separately):
-Bool_t rebin = kTRUE;
-Int_t nMergedBins[4] = {25,25,25,25}; // set how many original multiplicity bins will be merged into 1 new one 
+Bool_t rebin = kFALSE;
+Int_t nMergedBins[4] = {10,10,10,10}; // set how many original multiplicity bins will be merged into 1 new one 
  
 // Set if you whish to plot cumulants versus <reference multiplicity> (by default they are plotted versus # of RPs):
-Bool_t plotCumulantsVsReferenceMultiplicity = kTRUE;
+Bool_t plotCumulantsVsReferenceMultiplicity = kFALSE;
 Bool_t showReferenceMultiplicityVsNoOfRPs = kFALSE; 
 
 // Set flow values whose theoretical contribution to cumulants will be shown on the plots with the straight coloured lines: 
@@ -49,10 +49,10 @@ Bool_t plotOnly2ndAnd4thOrderCumulant = kFALSE;
 
 // Set if you want independent canvas with results for reference flow vs multiplicity:
 Bool_t showRefFlowVsM = kTRUE;
-Int_t refFlowVsMMarkerStyle[4] = {kFullSquare,kFullSquare,kFullSquare,kFullSquare}; // marker styles of QCs in their own pad
-Int_t refFlowVsMMarkerColor[4] = {kBlack,kRed,kBlue,kGreen+2}; // marker colors of QCs in their own pad
-Int_t refFlowVsMeshOrder = 1; // set results of which order will be plotted as mesh in all pads [0=2nd, 1=4th, 2=6th 3=8th] 
-Int_t refFlowVsMMeshColor = kRed-10; // mesh color of above specified order
+Int_t refFlowVsMMarkerStyle[nFiles] = {kFullSquare,kOpenSquare}; // marker style is different for different file
+Int_t refFlowVsMMarkerColor[4] = {kBlack,kRed,kBlue,kGreen+2}; // marker color is different for different cumulant order
+Int_t refFlowVsMeshOrder = -1; // set results of which order will be plotted as mesh in all pads [0=2nd, 1=4th, 2=6th, 3=8th, -1=do not show]
+Int_t refFlowVsMMeshColor = kRed-10; // mesh color for above specified order
 Double_t refFlowVsMxRange[2] = {1.,11000.}; // x range on the plots for reference multiplicity vs M
 Double_t refFlowVsMyRange[2] = {0.0,0.194}; // x range on the plots for reference multiplicity vs M
 
@@ -132,53 +132,65 @@ void plotCumulants(Int_t analysisMode=mLocal)
  // Make plots for reference flow vs multiplicity:  
  if(showRefFlowVsM){PlotRefFlowVsM();}
 
-} // end of void plotCumulants(Int_t analysisMode=mLocal) 
- 
+} // end of void plotCumulants(Int_t analysisMode=mLocal)  
+
 // =====================================================================================
 
 void PlotRefFlowVsM()
 {
- // Make plots for reference flow vs multiplicity:  
-
+ // Make plots for reference flow vs multiplicity.
+ 
+ // Calculate reference flow from cumulants vs M:
+ CalculateReferenceFlowFromCumulantsVsM();
+ 
  TCanvas *cRefFlowVsM = new TCanvas("cRefFlowVsM","Reference Flow");
  cRefFlowVsM->Divide(2,2);
 
  TLegend *lRefFlowVsM = new TLegend(0.1,0.7,0.33,0.9);
  lRefFlowVsM->SetFillStyle(0);
- //lRefFlowVsM->SetHeader("     minClustersTpcRP");
+ lRefFlowVsM->SetHeader("     Therminator (20-30%)");
 
  TString refFlowVsMFlag[4] = {"v_{2}{2,QC}","v_{2}{4,QC}","v_{2}{6,QC}","v_{2}{8,QC}"};
 
- for(Int_t co=0;co<4;co++) // cumulant order
+ for(Int_t f=0;f<nFiles;f++)
  {
-  cRefFlowVsM->cd(co+1);
-  // Style histrogram:.q
-  TH1D *styleHist = (TH1D*)StyleHist(refFlowVsMFlag[co].Data(),co)->Clone();
-  if(styleHist)
+  for(Int_t m=0;m<1+(Int_t)(showAlsoGFCResults)+(Int_t)(showAlsoMCEPResults);m++)
   {
-   styleHist->GetXaxis()->SetRangeUser(refFlowVsMxRange[0],refFlowVsMxRange[1]);
-   styleHist->GetYaxis()->SetRangeUser(refFlowVsMyRange[0],refFlowVsMyRange[1]);
-   styleHist->Draw();
-  }  
-  // Plot first the meshes for reference flow out of their own pad:
-  TGraph *rfMeshOutOf = GetErrorMesh(refFlowVsM[0][0][refFlowVsMeshOrder]); // to be improved - hardwired 0, now it works only for the "current" file and for QC   
-  if(rfMeshOutOf)
-  {
-   rfMeshOutOf->SetFillColor(refFlowVsMMeshColor);
-   rfMeshOutOf->Draw("lfsame"); 
-   if(refFlowVsMeshOrder==co){lRefFlowVsM->AddEntry(rfMeshOutOf,Form("v_{2}{%i,QC} stat. error",2*(refFlowVsMeshOrder+1)),"f");}
-  }
-  // Plot on top of the the meshes for reference flow with markers in its own pad:
-  if(refFlowVsM[0][0][co])
-  {
-   refFlowVsM[0][0][co]->SetMarkerStyle(refFlowVsMMarkerStyle[co]);
-   refFlowVsM[0][0][co]->SetMarkerColor(refFlowVsMMarkerColor[co]);
-   refFlowVsM[0][0][co]->Draw("e1same");
-   lRefFlowVsM->AddEntry(refFlowVsM[0][0][co],Form("v_{2}{%i,QC}",2*(co+1)),"p"); 
-  }
- } // end of for(Int_t co=0;co<4;co++) // cumulant order
+   for(Int_t co=0;co<4;co++) // cumulant order
+   {
+    cRefFlowVsM->cd(co+1);
+    // Style histogram:
+    if(f==0) // superimpose histograms from other files on top of this one
+    {
+     TH1D *styleHist = (TH1D*)StyleHist(refFlowVsMFlag[co].Data(),co)->Clone();
+     if(styleHist)
+     {
+      styleHist->GetXaxis()->SetRangeUser(refFlowVsMxRange[0],refFlowVsMxRange[1]);
+      styleHist->GetYaxis()->SetRangeUser(refFlowVsMyRange[0],refFlowVsMyRange[1]);
+      styleHist->Draw();
+     }
+    } // end of if(f==0)    
+    // Plot first the mesh for reference flow of specified order in all pads:
+    if(refFlowVsMeshOrder != -1)
+    {
+     TGraph *rfMeshOutOf = GetErrorMesh(refFlowVsM[f][m][refFlowVsMeshOrder]);
+     if(rfMeshOutOf)
+     {
+      rfMeshOutOf->SetFillColor(refFlowVsMMeshColor);
+      rfMeshOutOf->Draw("lfsame"); 
+      if(refFlowVsMeshOrder==co){lRefFlowVsM->AddEntry(rfMeshOutOf,Form("v_{2}{%i,QC} stat. error",2*(refFlowVsMeshOrder+1)),"f");}
+     }
+    } // end of if(refFlowVsMeshOrder != -1)
+    // Plot reference flow vs M:
+    refFlowVsM[f][m][co]->SetMarkerStyle(refFlowVsMMarkerStyle[f]);
+    refFlowVsM[f][m][co]->SetMarkerColor(refFlowVsMMarkerColor[co]);
+    refFlowVsM[f][m][co]->Draw("e1same");
+    lRefFlowVsM->AddEntry(refFlowVsM[f][m][co],Form("v_{2}{%i,QC}, %s",2*(co+1),files[f].Data()),"p"); 
+   } // end of for(Int_t co=0;co<4;co++) // cumulant order
+  } // end of for(Int_t m=0;m<nMethods;m++)
+ } // end of for(Int_t f=0;f<nFiles;f++)   
  
- // Draw a common legend in a 1st pad:
+ // Draw a common legend in the 1st pad:
  cRefFlowVsM->cd(1);
  lRefFlowVsM->Draw("same");
 
@@ -287,7 +299,7 @@ void PlotCumulantsVsM()
     cumulantsVsM[f][0][co]->Draw("e1same"); 
     cumulantsVsM[f][0][co]->SetMarkerStyle(markerStyle[f-nSim]);  
     cumulantsVsM[f][0][co]->SetMarkerColor(markerColor[f-nSim]); 
-    if(co==1)
+    if(co==0)
     {
      if(showAlsoGFCResults)
      {
@@ -414,6 +426,78 @@ TF1* ToyModel(Int_t co, Double_t k, Double_t vn, Double_t v2n)
 
 // =====================================================================================
 
+void CalculateReferenceFlowFromCumulantsVsM()
+{
+ // Calculate reference flow from cumulants vs M:
+ 
+ for(Int_t f=0;f<nFiles;f++)
+ {
+  for(Int_t m=0;m<1+(Int_t)(showAlsoGFCResults)+(Int_t)(showAlsoMCEPResults);m++)
+  {
+   for(Int_t co=0;co<4;co++) // cumulant order
+   {
+    if(cumulantsVsM[f][m][co])
+    {
+     refFlowVsM[f][m][co] = (TH1D*)cumulantsVsM[f][m][co]->Clone(Form("%i,%i,%i",f,m,co));
+     if(!refFlowVsM[f][m][co]){cout<<" WARNING: "<<Form("refFlowVsM[%i][%i][%i]",f,m,co)<<" is NULL in PlotRefFlowVsM() !!!!"<<exit(0)<<endl;}
+     refFlowVsM[f][m][co]->Reset(); // to have empty histogram with the same binning as the one with cumulants
+     Int_t nBins = refFlowVsM[f][m][co]->GetNbinsX();  
+     for(Int_t b=1;b<=nBins;b++)
+     {
+      Double_t qcVsM = cumulantsVsM[f][m][co]->GetBinContent(b); // QC vs M 
+      Double_t qcErrorVsM = cumulantsVsM[f][m][co]->GetBinError(b); // QC vs M stat. error  
+      Double_t vVsM = 0.; // reference flow vs M  
+      Double_t vErrorVsM = 0.; // reference flow vs M stat. error  
+      if(co==0) // 2nd order
+      {
+       if(qcVsM>0.)
+       {
+        vVsM = pow(qcVsM,1./2.);
+        vErrorVsM = (1./2.)*pow(qcVsM,-1./2.)*qcErrorVsM;
+       }      
+      } // end of if(co==0) 2nd order
+      else if(co==1) // 4th order
+      {
+       if(qcVsM<0.)
+       {
+        vVsM = pow(-1.*qcVsM,1./4.);
+        vErrorVsM = (1./4.)*pow(-qcVsM,-3./4.)*qcErrorVsM;
+       } 
+      } // end of if(co==1) 4th order
+      else if(co==2) // 6th order
+      {
+       if(qcVsM>0.)
+       {
+        vVsM = pow((1./4.)*qcVsM,1./6.);
+        vErrorVsM = (1./6.)*pow(2.,-1./3.)*pow(qcVsM,-5./6.)*qcErrorVsM;
+       }
+      } // end of if(co==2) 6th order
+      else if(co==3) // 8th order
+      {
+       if(qcVsM<0.)
+       {
+        vVsM = pow((-1./33.)*qcVsM,1./8.);
+        vErrorVsM = (1./8.)*pow(33.,-1./8.)*pow(-qcVsM,-7./8.)*qcErrorVsM;
+       }
+      } // end of if(co==3) 8th order     
+      // Store final results and statisticial errror for reference flow:
+      refFlowVsM[f][m][co]->SetBinContent(b,vVsM);
+      refFlowVsM[f][m][co]->SetBinError(b,vErrorVsM);
+     } // end of for(Int_t b=1;b<=nBins;b++)
+    } else
+      {
+       cout<<endl;
+       cout<<" WARNING: "<<Form("cumulantsVsM[%i][%i][%i]",f,m,co)<<" is NULL in CalculateReferenceFlowFromCumulantsVsM() !!!!"<<endl;
+       cout<<endl;
+      } 
+   } // end of for(Int_t co=0;co<4;co++) // cumulant order
+  } // end of for(Int_t m=0;m<nMethods;m++)
+ } // end of for(Int_t f=0;f<nFiles;f++)   
+
+} // end of void CalculateReferenceFlowFromCumulantsVsM()
+
+// =====================================================================================
+
 void Print()
 {
  // Print number of events and average multiplicities for each common output file.
@@ -525,7 +609,6 @@ void GetHistograms()
   
  // b) Get histograms holding results for cumulants and reference flow vs multiplicity:
  TString qcFlag[4] = {"QC{2}","QC{4}","QC{6}","QC{8}"};
- TString refFlowVsMFlag[4] = {"v_{2}{2,QC}","v_{2}{4,QC}","v_{2}{6,QC}","v_{2}{8,QC}"}; // to be improved - will not work in this way for other harmonics
  TString gfcFlag[4] = {"GFC{2}","GFC{4}","GFC{6}","GFC{8}"};
  for(Int_t f=0;f<nFiles;f++)
  {
@@ -549,16 +632,6 @@ void GetHistograms()
       if(rebin && cumulantsVsM[f][m][co])
       {
        cumulantsVsM[f][m][co] = Rebin(cumulantsVsM[f][m][co],co);
-      }
-      // Reference flow vs multiplicity:
-      refFlowVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fIntFlowVsM, %s",refFlowVsMFlag[co].Data())));
-      if(plotCumulantsVsReferenceMultiplicity && refFlowVsM[f][m][co])
-      {
-       refFlowVsM[f][m][co] = Map(refFlowVsM[f][m][co],f);
-      }    
-      if(rebin && refFlowVsM[f][m][co])
-      {
-       refFlowVsM[f][m][co] = Rebin(refFlowVsM[f][m][co],co);
       }
      } // end of for(Int_t co=0;co<4;co++)
     } // end of if(temp) 
