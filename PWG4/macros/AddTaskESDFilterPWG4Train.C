@@ -79,8 +79,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // tighter cuts on primary particles for high pT tracks
    // take the standard cuts, which include already 
    // ITSrefit and use only primaries...
-   AliESDtrackCuts* esdTrackCutsH =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
-   esdTrackCutsH->SetName("StandardFromAliESDTrackCuts");
+   AliESDtrackCuts* esdTrackCutsH =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+   esdTrackCutsH->SetName("StandardFromAliESDTrackCuts2010");
 
 
    // these are needed for older MC 
@@ -96,16 +96,16 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsH1->SetAcceptKinkDaughters(kFALSE);
    esdTrackCutsH1->SetRequireITSRefit(kTRUE); // additional cut 
    */
-   AliESDtrackCuts* esdTrackCutsH1 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009();
+   AliESDtrackCuts* esdTrackCutsH1 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
    esdTrackCutsH1->SetName("StandardFromAliESDTrackCutsMaxRelPt");
    esdTrackCutsH1->SetMaxRel1PtUncertainty(0.4); // new 
 
 
-   AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009();
+   AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
    esdTrackCutsH2->SetName("StandardFromAliESDTrackCutsExtraDCA");
    esdTrackCutsH2->SetMaxDCAToVertexZ(2);
 
-   AliESDtrackCuts* esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009();
+   AliESDtrackCuts* esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
    esdTrackCutsH2->SetName("StandardFromAliESDTrackCutsExtraDCANoITS");
    esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
    esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
