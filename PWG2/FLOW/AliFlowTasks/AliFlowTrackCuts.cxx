@@ -19,6 +19,20 @@
 // ESD track cuts for flow framework 
 //
 // origin: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
+//
+// This class gurantees consistency of cut methods, trackparameter
+// selection (global tracks, TPC only, etc..) and parameter mixing
+// in the flow framework. Transparently handles different input types:
+// ESD, MC, AOD.
+// This class works in 2 steps: first the requested track parameters are
+// constructed (to be set by SetParamType() ), then cuts are applied.
+// the constructed track can be requested AFTER checking the cuts by
+// calling GetTrack(), in this case the cut object stays in control,
+// caller does not have to delete the track.
+// Additionally caller can request an AliFlowTrack object to be constructed
+// according the parameter mixing scenario requested by SetParamMix().
+// AliFlowTrack is made using MakeFlowTrack() method, its an 'object factory'
+// so caller needs to take care of the freshly created object.
 
 #include <limits.h>
 #include <float.h>
@@ -119,8 +133,9 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj)
 Bool_t AliFlowTrackCuts::PassesCuts(AliFlowTrackSimple* track)
 {
   //check cuts on a flowtracksimple
-  if (fCleanupTrack) delete fTrack;
-  fTrack = NULL;
+
+  //clean up from last iteration
+  if (fCleanupTrack) delete fTrack; fTrack = NULL;
   return AliFlowTrackSimpleCuts::PassesCuts(track);
 }
 
@@ -128,6 +143,9 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliFlowTrackSimple* track)
 Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 {
   //check cuts for an ESD vparticle
+
+  //clean up from last iteration
+  if (fCleanupTrack) delete fTrack; fTrack=NULL; 
 
   Int_t mcLabel = vparticle->GetLabel();
   if (fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(mcLabel));
@@ -176,7 +194,6 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 void AliFlowTrackCuts::HandleVParticle(AliVParticle* track)
 {
   //handle the general case
-  if (fCleanupTrack) delete fTrack;
   switch (fParamType)
   {
     case kMC:
@@ -193,7 +210,6 @@ void AliFlowTrackCuts::HandleVParticle(AliVParticle* track)
 void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
 {
   //handle esd track
-  if (fCleanupTrack) delete fTrack;
   switch (fParamType)
   {
     case kESD_Global:
@@ -220,9 +236,10 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts()
 {
   //get standard cuts
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts();
-  cuts->SetName("standard global track cuts 2009");
+  cuts->SetName("standard TPConly cuts");
   delete cuts->fAliESDtrackCuts;
   cuts->fAliESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  cuts->SetParamType(kESD_TPConly);
   return cuts;
 }
 
@@ -234,6 +251,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPri
   cuts->SetName("standard global track cuts 2009");
   delete cuts->fAliESDtrackCuts;
   cuts->fAliESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selPrimaries);
+  cuts->SetParamType(kESD_Global);
   return cuts;
 }
 
