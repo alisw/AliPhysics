@@ -520,6 +520,17 @@ Bool_t kGCplotImbalanceHdrGam       = kTRUE;
 
 
 /** ----------- Define the binning for the different plot types here -------------------------*/
+// Number of V0s-plot
+Int_t kGCnXBinsNV0        = 1000;
+Double_t kGCfirstXBinNV0  = -0.5;
+Double_t kGClastXBinNV0   =  999.5;
+
+
+// Number of ESD track-Plot
+Int_t kGCnXBinsESDtrk      = 2000;
+Double_t kGCfirstXBinESDtrk= -0.5;
+Double_t kGClastXBinESDtrk = 1995.5;
+
 
 //EventQuality-plot
 Int_t kGCnXBinsEvtQ= 5;
@@ -2061,13 +2072,12 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     
     // ___________________________________________________________________________________________________________________________________________________
 
-
     if(kGCplotEventQuality == kTRUE){histograms->AddHistogram("ESD_EventQuality","ESD_EventQuality",kGCnXBinsEvtQ,kGCfirstXBinEvtQ,kGClastXBinEvtQ,"","");}
-    if(kGCplotESDNumberOfV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfV0s","Number of v0s",100, -0.5, 99.5,"","");}
-    if(kGCplotESDNumberOfSurvivingV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfSurvivingV0s","Number of surviving v0s",100, -0.5, 99.5,"","");}
-    if(kGCplotESDNumberOfContributorsVtx == kTRUE){histograms->AddHistogram("ESD_NumberOfContributorsVtx","Number of contributors to vertex",100, -0.5, 99.5,"","");}
-    if(kGCplotESDNumberOfGoodESDTracks == kTRUE){histograms->AddHistogram("ESD_NumberOfGoodESDTracks","Number of Good ESD tracks",100, -0.5, 99.5,"","");}
-    if(kGCplotESDNumberOfGoodESDTracks == kTRUE){histograms->AddHistogram("ESD_NumberOfGoodESDTracksVtx","Number of Good ESD tracks",100, -0.5, 99.5,"","");}	
+    if(kGCplotESDNumberOfV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfV0s","Number of v0s",kGCnXBinsNV0,kGCfirstXBinNV0 ,kGClastXBinNV0 ,"","");}
+    if(kGCplotESDNumberOfSurvivingV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfSurvivingV0s","Number of surviving v0s",kGCnXBinsNV0, kGCfirstXBinNV0 , kGClastXBinNV0,"","");}
+    if(kGCplotESDNumberOfContributorsVtx == kTRUE){histograms->AddHistogram("ESD_NumberOfContributorsVtx","Number of contributors to vertex",kGCnXBinsESDtrk, kGCfirstXBinESDtrk, kGClastXBinESDtrk,"","");}
+    if(kGCplotESDNumberOfGoodESDTracks == kTRUE){histograms->AddHistogram("ESD_NumberOfGoodESDTracks","Number of Good ESD tracks",kGCnXBinsESDtrk, kGCfirstXBinESDtrk, kGClastXBinESDtrk,"","");}
+    if(kGCplotESDNumberOfGoodESDTracks == kTRUE){histograms->AddHistogram("ESD_NumberOfGoodESDTracksVtx","Number of Good ESD tracks",kGCnXBinsESDtrk, kGCfirstXBinESDtrk, kGClastXBinESDtrk,"","");}	
 	
     //  debug histograms
     if(kGCplotESDCutGetOnFly == kTRUE){histograms->AddHistogram("ESD_CutGetOnFly_InvMass" ,"Not GetOnFly" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
