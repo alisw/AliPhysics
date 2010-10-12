@@ -33,7 +33,10 @@ AliFlowEventCuts::AliFlowEventCuts():
   TNamed(),
   fCutNumberOfTracks(kFALSE),
   fNumberOfTracksMax(INT_MAX),
-  fNumberOfTracksMin(INT_MIN)
+  fNumberOfTracksMin(INT_MIN),
+  fCutRefMult(kFALSE),
+  fRefMultMax(INT_MAX),
+  fRefMultMin(INT_MIN)
 {
   //constructor 
 }
@@ -71,7 +74,14 @@ Bool_t AliFlowEventCuts::IsSelected(const TObject* obj)
 Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
 {
   ///check if event passes cuts
-  if(fCutNumberOfTracks) {if (event->GetNumberOfTracks() < fNumberOfTracksMin || event->GetNumberOfTracks() > fNumberOfTracksMax ) return kFALSE;}
+  if(fCutNumberOfTracks) {if (event->GetNumberOfTracks() < fNumberOfTracksMin || event->GetNumberOfTracks() >= fNumberOfTracksMax ) return kFALSE;}
+  if(fCutRefMult)
+  {
+    //reference multiplicity still to be defined
+    Int_t refMult = event->GetNumberOfTracks();
+    if (refMult < fRefMultMin || refMult >= fRefMultMax )
+      return kFALSE;
+  }
   return kTRUE;
 }
 
