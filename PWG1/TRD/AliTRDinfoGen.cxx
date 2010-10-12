@@ -228,7 +228,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
 
   // define general monitor
   fContainer = new TObjArray(1); fContainer->SetOwner(kTRUE);
-  TH1 *h=new TH1S("hStat", "Run statistics;Observable;Entries", 12, -0.5, 11.5);
+  TH1 *h=new TH1I("hStat", "Run statistics;Observable;Entries", 14, -0.5, 11.5);
   TAxis *ax(h->GetXaxis());
   ax->SetBinLabel( 1, "ESD");
   ax->SetBinLabel( 2, "MC");
@@ -242,6 +242,8 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(10, "SAMC");
   ax->SetBinLabel(11, "Kink");
   ax->SetBinLabel(12, "KinkMC");
+  ax->SetBinLabel(13, "BFriend");
+  ax->SetBinLabel(14, "SFriend");
   fContainer->AddAt(h, 0);
   PostData(AliTRDpwg1Helper::kMonitor, fContainer);
 }
@@ -404,6 +406,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   Int_t nTRDout(0), nTRDin(0), nTPC(0)
        ,nclsTrklt
        ,nBarrel(0), nSA(0), nKink(0)
+       ,nBarrelFriend(0), nSAFriend(0)
        ,nBarrelMC(0), nSAMC(0), nKinkMC(0);
   AliESDtrack *esdTrack = NULL;
   AliESDfriendTrack *esdFriendTrack = NULL;
@@ -591,6 +594,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
         if(selected){ 
           fTracksBarrel->Add(new AliTRDtrackInfo(*fTrackInfo));
           nBarrel++;
+          if(fTrackInfo->GetTrack()) 
+            nBarrelFriend++;
         }
       } else {
         fTracksKink->Add(new AliTRDtrackInfo(*fTrackInfo));
@@ -599,6 +604,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
     } else if((status&AliESDtrack::kTRDout) && !(status&AliESDtrack::kTRDin)){ 
       fTracksSA->Add(new AliTRDtrackInfo(*fTrackInfo));
       nSA++;
+      if(fTrackInfo->GetTrack()) 
+        nSAFriend++;
     }
     fTrackInfo->Delete("");
   }
@@ -684,6 +691,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
   h->Fill( 9., nSAMC);
   h->Fill(10., nKink);
   h->Fill(11., nKinkMC);
+  h->Fill(12., nBarrelFriend);
+  h->Fill(13., nSAFriend);
 
   PostData(AliTRDpwg1Helper::kTracksBarrel, fTracksBarrel);
   PostData(AliTRDpwg1Helper::kTracksSA, fTracksSA);
