@@ -111,7 +111,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
   Int_t contentsBus[kbusSize];
 
-  Char_t filename[80];
+  Char_t filename[60];
 
   Int_t modulePerDDL        = 0;
   Int_t mmodule = 0;
@@ -128,7 +128,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	  modulenoddl[im] = fDdlinfo->GetModulesPerDdl(iddl,im);;
 	}
 
-      strncpy(filename,AliDAQ::DdlFileName("PMD",iddl),80);
+      strncpy(filename,AliDAQ::DdlFileName("PMD",iddl),60);
       
       outfile = new AliFstream(filename);
       

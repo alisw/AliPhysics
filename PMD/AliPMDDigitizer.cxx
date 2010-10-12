@@ -1064,7 +1064,7 @@ void AliPMDDigitizer::TrackAssignment2CPVCell()
 		  // This block handles if a cell is fired
 		  // many times by many tracks
 		  status1  = new Int_t[nn];
-		  status2  = new Int_t[nn];
+		  status2  = new Int_t[2*nn];
 		  trnarray = new Int_t[nn];
 		  for (iz = 0; iz < nn; iz++)
 		    {
@@ -1325,7 +1325,7 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 		  // This block handles if a cell is fired
 		  // many times by many tracks
 		  status1  = new Int_t[nn];
-		  status2  = new Int_t[nn];
+		  status2  = new Int_t[2*nn];
 		  trnarray = new Int_t[nn];
 		  for (iz = 0; iz < nn; iz++)
 		    {
