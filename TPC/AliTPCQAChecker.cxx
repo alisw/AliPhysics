@@ -117,13 +117,8 @@ Double_t AliTPCQAChecker::CheckRAW(Int_t specie, TObjArray* list)
     (list->FindObject(Form("%s_hRawsOccupancyVsSector",specieName)));
   TH1* hRawsQmaxVsSector = static_cast<TH1*>
     (list->FindObject(Form("%s_hRawsQmaxVsSector",specieName)));
-  TH1* hRawsOccupancyVsEvent = static_cast<TH1*>
-    (list->FindObject(Form("%s_hRawsOccupancyVsEvent",specieName)));
-  TH1* hRawsNclustersVsEvent = static_cast<TH1*>
-    (list->FindObject(Form("%s_hRawsNclustersVsEvent",specieName)));
   
-  if (!hRawsOccupancyVsSector || !hRawsQmaxVsSector ||
-      !hRawsOccupancyVsEvent  || !hRawsNclustersVsEvent) 
+  if (!hRawsOccupancyVsSector || !hRawsQmaxVsSector)
     return -0.5; // fatal
   
   if(hRawsOccupancyVsSector->GetEntries()==0) {

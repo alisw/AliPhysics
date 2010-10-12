@@ -370,13 +370,13 @@ void AliTPCQADataMakerRec::InitRaws()
   const TH1F* hOccHelp = fTPCdataQA[0]->GetHistOccupancyVsEvent();
   TH1F * histRawsOccupancyVsEvent = 
     CreateEventsHistCopy(hOccHelp, "hRawsOccupancyVsEvent");
-  Add2RawsList(histRawsOccupancyVsEvent, kRawsOccupancyVsEvent, !expert, image, !saveCorr);
+  Add2RawsList(histRawsOccupancyVsEvent, kRawsOccupancyVsEvent, expert, !image, !saveCorr);
   
   // Get histogram information from data QA to build copy
   const TH1F* hNclHelp = fTPCdataQA[0]->GetHistNclustersVsEvent();
   TH1F * histRawsNclustersVsEvent = 
     CreateEventsHistCopy(hNclHelp, "hRawsNclustersVsEvent");
-  Add2RawsList(histRawsNclustersVsEvent, kRawsNclustersVsEvent, !expert, image, !saveCorr);
+  Add2RawsList(histRawsNclustersVsEvent, kRawsNclustersVsEvent, expert, !image, !saveCorr);
 }
 
 //____________________________________________________________________________ 
