@@ -25,7 +25,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fBalance = analysis;}
   void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
     fESDtrackCuts = trackCuts;}
-  void SetVeretxDiamond(Double_t vx, Double_t vy, Double_t vz) {
+  void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
     fVxMax = vx;
     fVyMax = vy;
     fVzMax = vz;

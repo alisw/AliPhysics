@@ -2,21 +2,20 @@ AliAnalysisGrid* CreateAlienHandler() {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init 
   // then source /tmp/gclient_env_$UID in the current shell.
-  if (!AliAnalysisGrid::CreateToken()) return NULL;
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-  //plugin->SetRunMode("test");
+  plugin->SetRunMode("test");
   //plugin->SetRunMode("offline");
   //plugin->SetRunMode("submit");
-  plugin->SetRunMode("full");
+  //plugin->SetRunMode("full");
   //plugin->SetRunMode("terminate");
   plugin->SetNtestFiles(1); // Relevant only for run mode "test" 
 
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-26-00b-6");
-  plugin->SetAliROOTVersion("v4-19-22-AN");
+  plugin->SetROOTVersion("v5-27-05-build3");
+  plugin->SetAliROOTVersion("v4-20-10-AN");
 
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
@@ -28,12 +27,12 @@ AliAnalysisGrid* CreateAlienHandler() {
   // plugin->SetOutputToRunNo();  
   // ============================================================================
   //  Example 2: Real data (set in macro runFlowTask.C: DATA = kTRUE, MCEP = kFALSE)
-  plugin->SetGridDataDir("/alice/data/2010/LHC10c");
-  plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
+  plugin->SetGridDataDir("/alice/data/2010/LHC10b");
+  plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
   plugin->SetRunPrefix("000");
   
-  plugin->AddRunNumber(120244); 
-  plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
+  plugin->AddRunNumber(117222); 
+  //plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
   
   plugin->SetOutputToRunNo();  
   // ============================================================================
@@ -45,7 +44,7 @@ AliAnalysisGrid* CreateAlienHandler() {
   //plugin->AddDataFile("hijingWithoutFlow10000Evts.xml");
   //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
-  plugin->SetGridWorkingDir("data");
+  plugin->SetGridWorkingDir("Balance/pp/7TeV/LHC10b");
   // Declare alien output directory. Relative to working directory.
   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime
@@ -54,9 +53,9 @@ AliAnalysisGrid* CreateAlienHandler() {
 
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  //plugin->SetAdditionalLibs("libPWG2flowCommon.so libPWG2flowTasks.so");
+  plugin->SetAdditionalLibs("libPWG2ebye.so");
   // load libs via par files
-  //plugin->EnablePackage("PWG2ebye.par");
+  plugin->EnablePackage("PWG2ebye.par");
   
   // Do not specify your outputs by hand anymore:
   plugin->SetDefaultOutputs(kTRUE);
