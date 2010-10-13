@@ -1,4 +1,4 @@
-AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaxim.root",Int_t decCh=1,Bool_t readMC=kFALSE)
+AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D meson candidates
@@ -22,33 +22,36 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   
   AliRDHFCuts *analysiscuts=0x0;
   TString suffix="";
+  TString suffix2="";
+  if(flagOPartAntiPart==1) suffix2="P"; //P=particle, A=antiparticle
+  if(flagOPartAntiPart==-1) suffix2="A";
 
   TString cutsobjname="loosercuts";
   //Analysis cuts
   switch (decCh){
   case 0:
     analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
-    suffix="Dplus";
+    suffix=Form("Dplus%s",suffix2.Data());
     break;
   case 1:
     analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
-    suffix="D0";
+    suffix=Form("D0%s",suffix2.Data());
     break;
   case 2:
     analysiscuts = (AliRDHFCutsDstartoKpipi*)filecuts->Get(cutsobjname);
-    suffix="Dstar";
+    suffix=Form("Dstar%s",suffix2.Data());
     break;
   case 3:
     analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(cutsobjname);
-    suffix="Ds";
+    suffix=Form("Ds%s",suffix2.Data());
     break;
   case 4:
     analysiscuts = (AliRDHFCutsD0toKpipipi*)filecuts->Get(cutsobjname);
-    suffix="D04";
+    suffix=Form("D04%s",suffix2.Data());
     break;
   case 5:
     analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get(cutsobjname);
-    suffix="Lc";
+    suffix=Form("Lc%s",suffix2.Data());
     break;
   }
   //ptbins
@@ -76,7 +79,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   for (Int_t ivop=0;ivop<npars;ivop++){
     looses[ivop]=new Float_t[nptbins];
     tights[ivop]=new Float_t[nptbins];
-    nofcells[ivop]=4;
+    nofcells[ivop]=nofsteps;
   }
 
   Int_t count=0;
@@ -117,6 +120,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   sigTask->SetReadMC(readMC);
   //sigTask->SetDoLikeSign(kTRUE);
   sigTask->SetDebugLevel(3);
+  sigTask->SetFillWithPartAntiPartBoth(flagOPartAntiPart);
   mgr->AddTask(sigTask);
 
   TString contname=Form("cinputSig%s",suffix.Data());

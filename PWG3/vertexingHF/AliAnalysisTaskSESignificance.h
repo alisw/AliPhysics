@@ -33,10 +33,14 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMassLimits(Float_t range,Int_t pdg);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
+  void SetNBins(Int_t nbins){fNBins=nbins;}
+  void SetFillWithPartAntiPartBoth(Int_t value){fPartOrAndAntiPart=value;}
   //void SetMultiVector(const AliMultiDimVector *MultiDimVec){fMultiDimVec->CopyStructure(MultiDimVec);}
-  Float_t GetUpperMassLimit(){return fUpmasslimit;}
-  Float_t GetLowerMassLimit(){return fLowmasslimit;}
-  
+  Float_t GetUpperMassLimit()const {return fUpmasslimit;}
+  Float_t GetLowerMassLimit()const {return fLowmasslimit;}
+  Int_t GetNBins()const {return fNBins;}
+  Int_t GetFillWithPartAntiPartBoth()const {return fPartOrAndAntiPart;}
+
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -51,7 +55,17 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*3+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*3+2;}
   Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*5;}
- 
+
+  void CalculateInvMasses(AliAODRecoDecayHF* d,Double_t* &masses,Int_t& nmasses);
+
+  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
+  void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses, Int_t isSel);
+  void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
+  void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
+  void FillD04p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
+  void FillLambdac(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
+
+
   enum {kMaxPtBins=5};
   enum {kMaxCutVar=5};
   enum {kMaxSteps=10};
@@ -72,8 +86,10 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Bool_t fReadMC;    //flag for access to MC
   Int_t fDecChannel; //decay channel identifier
   Int_t fSelectionlevel;//selection level: kALL,kTracks,kCandidate
-   
-  ClassDef(AliAnalysisTaskSESignificance,1); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  Int_t fNBins;  //number of bins in the mass histograms
+  Int_t fPartOrAndAntiPart;  //fill histograms with particle only (+1), antiparticle only (-1), both (0)
+
+  ClassDef(AliAnalysisTaskSESignificance,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif

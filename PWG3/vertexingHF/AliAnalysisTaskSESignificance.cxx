@@ -72,7 +72,9 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance():
   fNPtBins(0),
   fReadMC(kFALSE),
   fDecChannel(0),
-  fSelectionlevel(0)
+  fSelectionlevel(0),
+  fNBins(100),
+  fPartOrAndAntiPart(0)
 {
   // Default constructor
 }
@@ -89,7 +91,9 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
   fNPtBins(0),
   fReadMC(kFALSE),
   fDecChannel(decaychannel),
-  fSelectionlevel(selectionlevel)
+  fSelectionlevel(selectionlevel),
+  fNBins(100),
+  fPartOrAndAntiPart(0)
 {
 
   Int_t pdg=421;
@@ -114,7 +118,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
     break;
   }
 
-  SetMassLimits(0.1,pdg); //check range
+  SetMassLimits(0.15,pdg); //check range
   fNPtBins=fRDCuts->GetNPtBins();
 
   if(fDebug>1)fRDCuts->PrintAll();
@@ -174,12 +178,12 @@ Bool_t AliAnalysisTaskSESignificance::CheckConsistency(){
 	}
 	Bool_t lowermdv = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetGreaterThan(ic);
 	if(uppervars[ivar]&&lowermdv){
-	  printf("AliAnalysisTaskSESignificance::CheckConsistency: WARNING! %s is declared as uppercut, but as been given tighter cut larger then loose cut in ptbin %d \n ---Task will use swapped Tight/Loose cuts \n ",names[ivar].Data(),i);
+	  AliWarning(Form("%s is declared as uppercut, but as been given tighter cut larger then loose cut in ptbin %d \n ---Task will use swapped Tight/Loose cuts \n ",names[ivar].Data(),i));
 	  ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->SwapLimits(ic);
 	  result = kTRUE;
 	}
 	if(!uppervars[ivar]&&!lowermdv){
-	  printf("AliAnalysisTaskSESignificance::CheckConsistency: WARNING! %s is declared as lower cut, but as been given tighter cut smaller then loose cut in ptbin %d \n ---Task will use swapped Tight/Loose cuts \n",names[ivar].Data(),i);
+	  AliWarning(Form("%s is declared as lower cut, but as been given tighter cut smaller then loose cut in ptbin %d \n ---Task will use swapped Tight/Loose cuts \n",names[ivar].Data(),i));
 	  ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->SwapLimits(ic);
 	  result = kTRUE;
 	}
@@ -201,8 +205,8 @@ void  AliAnalysisTaskSESignificance::SetMassLimits(Float_t range, Int_t pdg){
 void  AliAnalysisTaskSESignificance::SetMassLimits(Float_t lowlimit, Float_t uplimit){
   if(uplimit>lowlimit)
     {
-      fUpmasslimit = lowlimit;
-      fLowmasslimit = uplimit;
+      fUpmasslimit = uplimit;
+      fLowmasslimit = lowlimit;
     }
 }
 
@@ -255,23 +259,24 @@ void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
     
     title.Form("Invariant mass;M[GeV/c^{2}];Entries");
 
-    fMassHist[i]=new TH1F(hisname.Data(),title.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist[i]=new TH1F(hisname.Data(),title.Data(),fNBins,fLowmasslimit,fUpmasslimit);
     fMassHist[i]->Sumw2();
     fOutput->Add(fMassHist[i]);
 
     if(fReadMC){
-      fSigHist[i]=new TH1F(signame.Data(),title.Data(),100,fLowmasslimit,fUpmasslimit);
+      fSigHist[i]=new TH1F(signame.Data(),title.Data(),fNBins,fLowmasslimit,fUpmasslimit);
       fSigHist[i]->Sumw2();
       fOutput->Add(fSigHist[i]);
       
-      fBkgHist[i]=new TH1F(bkgname.Data(),title.Data(),100,fLowmasslimit,fUpmasslimit);
+      fBkgHist[i]=new TH1F(bkgname.Data(),title.Data(),fNBins,fLowmasslimit,fUpmasslimit);
       fBkgHist[i]->Sumw2();
       fOutput->Add(fBkgHist[i]);
 
-      fRflHist[i]=new TH1F(rflname.Data(),title.Data(),100,fLowmasslimit,fUpmasslimit);
-      fRflHist[i]->Sumw2();
-      fOutput->Add(fRflHist[i]);
-
+      if(fDecChannel != AliAnalysisTaskSESignificance::kDplustoKpipi){
+	fRflHist[i]=new TH1F(rflname.Data(),title.Data(),fNBins,fLowmasslimit,fUpmasslimit);
+	fRflHist[i]->Sumw2();
+	fOutput->Add(fRflHist[i]);
+      }
     }
   }
 
@@ -357,14 +362,13 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     }
   }
   if(!arrayProng) {
-    printf("AliAnalysisTaskSESignificance::UserExec: branch not found!\n");
+    AliError("AliAnalysisTaskSESignificance::UserExec:Branch not found!\n");
     return;
   }
   
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
-
+ if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
 
@@ -373,14 +377,14 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
-      printf("AliAnalysisTaskSESignificance::UserExec: MC particles branch not found!\n");
+      AliWarning("AliAnalysisTaskSESignificance::UserExec:MC particles branch not found!\n");
       //    return;
     }
     
     // load MC header
     mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!mcHeader) {
-      printf("AliAnalysisTaskSESignificance::UserExec: MC header branch not found!\n");
+      AliError("AliAnalysisTaskSESignificance::UserExec:MC header branch not found!\n");
       return;
     }
   }
@@ -390,7 +394,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
   AliAODRecoDecayHF *d=0;
   Int_t nprongs=1;
   Int_t *pdgdaughters=0x0;
-  Int_t prongpdg=211;
+  Int_t absPdgMom=411;
   
 
   switch(fDecChannel){
@@ -401,7 +405,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     pdgdaughters[1]=321;//K
     pdgdaughters[2]=211;//pi
     nprongs=3;
-    prongpdg=411;
+    absPdgMom=411;
     break;
   case 1:
     //D0
@@ -409,7 +413,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     pdgdaughters[0]=211;//pi 
     pdgdaughters[1]=321;//K
     nprongs=2;
-    prongpdg=421;
+    absPdgMom=421;
     break;
   case 2:
     //D*
@@ -418,7 +422,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     pdgdaughters[0]=321;//K
     pdgdaughters[2]=211;//pi (soft?)
     nprongs=3;
-    prongpdg=413;
+    absPdgMom=413;
     break;
   case 3:
     //Ds
@@ -427,33 +431,28 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     pdgdaughters[1]=321;//K
     pdgdaughters[2]=321;//K
     nprongs=3;
-    prongpdg=431;
+    absPdgMom=431;
     break;
   case 4:
-    //D0
+    //D0 in 4 prongs
     pdgdaughters =new Int_t[4];
     pdgdaughters[0]=321;
     pdgdaughters[1]=211;
     pdgdaughters[2]=211;
     pdgdaughters[3]=211;
     nprongs=4;
-    prongpdg=421;
+    absPdgMom=421;
     break;
   case 5:
     //Lambda_c
     pdgdaughters =new Int_t[3];
-    //check order
     pdgdaughters[0]=2212;//p
     pdgdaughters[1]=321;//K
     pdgdaughters[2]=211;//pi
     nprongs=3;
-    prongpdg=4122;
-    fReadMC=kFALSE;
-    printf("Warning! For the moment it is not allowed to use MC for the Lambdac\n");
+    absPdgMom=4122;
     break;
   }
-  Int_t prongPdgPlus=prongpdg;
-  Int_t prongPdgMinus=TMath::Abs(prongPdgPlus)*(-1);
 
   Int_t nHistpermv=((AliMultiDimVector*)fCutList->FindObject("multiDimVectorPtBin0"))->GetNTotCells();
   Int_t nProng = arrayProng->GetEntriesFast();
@@ -465,16 +464,20 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
   }
 
   for (Int_t iProng = 0; iProng < nProng; iProng++) {
-    d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iProng);
-    Double_t invMass=d->InvMass(nprongs,(UInt_t*)pdgdaughters);
-    Double_t invMassC=0;
     
+    d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iProng);
+    
+    Bool_t isFidAcc = fRDCuts->IsInFiducialAcceptance(d->Pt(),d->Y(absPdgMom));
     Int_t isSelected=fRDCuts->IsSelected(d,fSelectionlevel,aod);
     
-    if(isSelected) {
+    if(isSelected&&isFidAcc) {
       fHistNEvents->Fill(2); // count selected with loosest cuts
       if(fDebug>1) printf("+++++++Is Selected\n");
     
+      Double_t* invMass=0x0;
+      Int_t nmasses;
+      CalculateInvMasses(d,invMass,nmasses);
+
       const Int_t nvars=fRDCuts->GetNVarsForOpt();
       Float_t *vars = new Float_t[nvars];
       Int_t nVals=0;
@@ -490,66 +493,258 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	  if (fDebug>1) printf("Overflow!!\n");
 	  return;
 	}
-	fMassHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
+
 	fHistNEvents->Fill(3);
-	if(fReadMC){
-	  Int_t lab=-1;
-	  lab = d->MatchToMC(prongPdgPlus,arrayMC,nprongs,pdgdaughters);
-	  if(lab>=0){ //signal
-	    AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(lab);
-	    Int_t pdgMC = dMC->GetPdgCode();
-	    
-	    if(pdgMC==prongPdgPlus) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
-	    else if(fDecChannel==AliAnalysisTaskSESignificance::kD0toKpi) fRflHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass); //temporary! an implementation of the reflections for 3 prongs is in progress
-	  }
-	  else{ //background
-	    fBkgHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
-	  }
+
+	//fill the histograms with the appropriate method
+	switch (fDecChannel){
+	case 0:
+	  FillDplus(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),invMass,isSelected);
+	  break;
+	case 1:
+	  FillD02p(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),invMass,isSelected);
+	  break;
+	case 2:
+	  FillDstar(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),invMass,isSelected);
+	  break;
+	case 3:
+	  FillDs(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),invMass,isSelected);
+	  break;
+	case 4:
+	  FillD04p(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),invMass,isSelected);
+	  break;
+	case 5:
+	  FillLambdac(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),invMass,isSelected);
+	  break;
+	default:
+	  break;
+	}
 	
-	}
       }
-
-
-      if(fDecChannel==AliAnalysisTaskSESignificance::kD0toKpi || fDecChannel==AliAnalysisTaskSESignificance::kLambdactopKpi){ //repeat the cycle to checks cuts passed as D0bar
-	if(fDecChannel==AliAnalysisTaskSESignificance::kD0toKpi){
-	  pdgdaughters[0]=321;
-	  pdgdaughters[1]=211; 
-	}
-	if(fDecChannel==AliAnalysisTaskSESignificance::kLambdactopKpi){
-	  pdgdaughters[0]=211;
-	  pdgdaughters[1]=321;
- 	  pdgdaughters[2]=2212;
-	}
-
-	invMassC=d->InvMass(nprongs,(UInt_t*)pdgdaughters);
-	fRDCuts->GetCutVarsForOpt(d,vars,nvars,pdgdaughters);
-	addresses = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetGlobalAddressesAboveCuts(vars,(Float_t)d->Pt(),nVals);
-	for(Int_t ivals=0;ivals<nVals;ivals++){
-	  fMassHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
-	  if(fReadMC){
-	    Int_t lab=-1;
-	    lab = d->MatchToMC(prongPdgMinus,arrayMC,nprongs,pdgdaughters);
-	    if(lab>=0){ //signal
-	      AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(lab);
-	      Int_t pdgMC = dMC->GetPdgCode();
-	      if(pdgMC==prongPdgMinus) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
-	      else fRflHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
-	    }
-	    else{ //background
-	      fBkgHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
-	    }
-	    
-	  }
-	}
-      }
-  
     }// end if selected
-
     
   }
-
+  
   PostData(1,fOutput);    
   return;
+}
+
+//***************************************************************************
+
+// Methods used in the UserExec
+
+void AliAnalysisTaskSESignificance::CalculateInvMasses(AliAODRecoDecayHF* d,Double_t*& masses,Int_t& nmasses){
+  //Calculates all the possible invariant masses for each candidate
+  //NB: the implementation for each candidate is responsibility of the corresponding developer
+
+  switch(fDecChannel){
+  case 0:
+    //D+ -- Giacomo, Renu ?
+    {
+      nmasses=1;
+      masses=new Double_t[nmasses];
+      Int_t pdgdaughters[3] = {211,321,211};
+      masses[0]=d->InvMass(3,(UInt_t*)pdgdaughters);
+    }
+    break;
+  case 1:
+    //D0 (Kpi)  -- Chiara
+    {
+      const Int_t ndght=2;
+      nmasses=2;
+      masses=new Double_t[nmasses];
+      Int_t pdgdaughtersD0[ndght]={211,321};//pi,K 
+      masses[0]=d->InvMass(ndght,(UInt_t*)pdgdaughtersD0); //D0
+      Int_t pdgdaughtersD0bar[ndght]={321,211};//K,pi 
+      masses[1]=d->InvMass(ndght,(UInt_t*)pdgdaughtersD0bar); //D0bar
+    }
+    break;
+  case 2:
+    //D* -- ? Yifei, Alessandro
+    {
+      //.....
+    }
+    break;
+  case 3:
+    //Ds  -- Sergey, Sahdana
+    {
+      //.....
+    }
+    break;
+  case 4:
+    //D0 (Kpipipi) -- ? Rossella, Fabio ???
+    {
+      //.....
+    }
+    break;
+  case 5:
+    //Lambda_c -- Rossella
+    {
+      //.....
+    }
+    break;
+  default:
+    break;
+  }
+}
+
+//********************************************************************************************
+
+//Methods to fill the istograms with MC information, one for each candidate
+//NB: the implementation for each candidate is responsibility of the corresponding developer
+
+void AliAnalysisTaskSESignificance::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel){
+    //D+ channel
+  if(!isSel){
+    AliError("Candidate not selected\n");
+    return;
+  }
+
+  if(fPartOrAndAntiPart*d->GetCharge()<0)return;
+
+  fMassHist[index]->Fill(masses[0]);
+
+  Int_t pdgdaughters[3] = {211,321,211};
+
+  if(fReadMC){
+    Int_t lab=-1;
+    lab = d->MatchToMC(411,arrayMC,3,pdgdaughters);
+    if(lab>=0){ //signal
+      fSigHist[index]->Fill(masses[0]);
+    } else{ //background
+      fBkgHist[index]->Fill(masses[0]);
+    } 
+  }   
+}
+
+
+void AliAnalysisTaskSESignificance::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel){
+
+  //D0->Kpi channel
+
+  //mass histograms
+  if(!masses){
+    AliError("Masses not calculated\n");
+    return;
+  }
+  if((isSel==1 || isSel==3) && fPartOrAndAntiPart>=0) fMassHist[index]->Fill(masses[0]);
+  if(isSel>=2 && fPartOrAndAntiPart<=0) fMassHist[index]->Fill(masses[1]);
+
+
+  //MC histograms
+  if(fReadMC){
+
+    Int_t matchtoMC=-1;
+
+    //D0
+    Int_t pdgdaughters[2];
+    pdgdaughters[0]=211;//pi 
+    pdgdaughters[1]=321;//K
+    Int_t nprongs=2;
+    Int_t absPdgMom=421;
+
+    matchtoMC = d->MatchToMC(absPdgMom,arrayMC,nprongs,pdgdaughters);
+
+    Int_t prongPdgPlus=421,prongPdgMinus=(-1)*421;
+    if((isSel==1 || isSel==3) && fPartOrAndAntiPart>=0){ //D0
+      if(matchtoMC>=0){
+	AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
+	Int_t pdgMC = dMC->GetPdgCode();
+	
+	if(pdgMC==prongPdgPlus) fSigHist[index]->Fill(masses[0]);
+	else fRflHist[index]->Fill(masses[0]);
+	
+      } else fBkgHist[index]->Fill(masses[0]);
+      
+    }
+    if(isSel>=2 && fPartOrAndAntiPart<=0){ //D0bar
+      if(matchtoMC>=0){
+	AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
+	Int_t pdgMC = dMC->GetPdgCode();
+	
+	if(pdgMC==prongPdgMinus) fSigHist[index]->Fill(masses[1]);
+	else fRflHist[index]->Fill(masses[1]);
+      } else fBkgHist[index]->Fill(masses[1]);
+    }
+  }
+}
+
+void AliAnalysisTaskSESignificance::FillDstar(AliAODRecoDecayHF* /*d*/,TClonesArray */*arrayMC*/,Int_t /*index*/,Double_t* /*masses*/,Int_t /*matchtoMC*/){
+    //D* channel
+
+  AliInfo("Dstar channel not implemented\n");
+
+}
+
+
+void AliAnalysisTaskSESignificance::FillDs(AliAODRecoDecayHF* /*d*/,TClonesArray */*arrayMC*/,Int_t /*index*/,Double_t* /*masses*/,Int_t /*matchtoMC*/){
+  AliInfo("Ds channel not implemented\n");
+
+  //Ds channel
+	// Int_t isKKpi=0;
+	// Int_t ispiKK=0;
+        //   isKKpi=isSelected&1;
+	//   ispiKK=isSelected&2;
+
+	// Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
+	// AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
+	// Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
+
+	//       if(isKKpi){
+	//        if(pdgCode0==321){
+        //         fSigHist[index]->Fill(masses[0]);
+	//        }else{
+	//         fRflHist[index]->Fill(masses[0]);
+	//        }
+	//       }
+	//       if(ispiKK){
+	//        if(pdgCode0==211){
+        //         fSigHist[index]->Fill(masses[1]);
+	//        }else{
+	//         fRflHist[index]->Fill(masses[1]);
+	//        }
+	//       }
+
+}
+
+void AliAnalysisTaskSESignificance::FillD04p(AliAODRecoDecayHF* /*d*/,TClonesArray */*arrayMC*/,Int_t /*index*/,Double_t* /*masses*/,Int_t /*matchtoMC*/){
+  //D0->Kpipipi channel
+  AliInfo("D0 in 4 prongs channel not implemented\n");
+
+}
+
+void AliAnalysisTaskSESignificance::FillLambdac(AliAODRecoDecayHF* /*d*/,TClonesArray */*arrayMC*/,Int_t /*index*/,Double_t* /*masses*/,Int_t /*matchtoMC*/){
+  AliInfo("Lambdac channel not implemented\n");
+
+  //Lambdac channel
+  // Int_t ispKpi=0;
+  // Int_t ispiKp=0;
+
+  // ispKpi=isSelected&1;
+  // ispiKp=isSelected&2;
+  // if(matchtoMC>=0){	
+  // Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
+  // AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
+  // Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
+  // if(ispKpi){
+  //   if(pdgCode0==2212){
+  //     fSigHist[index]->Fill(invMass[0]);
+  //   }else{
+  //     fRflHist[index]->Fill(invMass[0]);
+  //   }
+  // }
+  // if(ispiKp){
+  //   if(pdgCode0==211){
+  //     fSigHist[index]->Fill(invMass[1]);
+  //   }else{
+  //     fRflHist[index]->Fill(invMass[1]);
+  //   }
+  // }
+  // }else{
+  //   fBkgHist[index]
+  // }
+
+
 }
 
 
@@ -605,7 +800,7 @@ void AliAnalysisTaskSESignificance::Terminate(Option_t */*option*/)
     if(fReadMC){
       fSigHist[i]=dynamic_cast<TH1F*>(fOutput->FindObject(signame.Data()));
       fBkgHist[i]=dynamic_cast<TH1F*>(fOutput->FindObject(bkgname.Data()));
-      fRflHist[i]=dynamic_cast<TH1F*>(fOutput->FindObject(bkgname.Data()));
+      if(fDecChannel != AliAnalysisTaskSESignificance::kDplustoKpipi) fRflHist[i]=dynamic_cast<TH1F*>(fOutput->FindObject(rflname.Data()));
     }
     
   }
