@@ -35,6 +35,12 @@ AliVZEROTrending::AliVZEROTrending() : TH1(), fNEntries(0), fMultiGraphs(NULL)
 {
 	// Default constructor
 	for(int i=0; i<8;i++) fGraphs[i] = NULL;
+	for (int i = 0; i < kDataSize; i++) {
+		fTime[i] = 0;
+		for (int j = 0; j < 8; j++) {
+		  fData[j][i] = 0;
+		}
+	}
 }
 //_____________________________________________________________________________
 AliVZEROTrending::AliVZEROTrending(const char* name, const char* title) : TH1(), fNEntries(0), fMultiGraphs(NULL)
@@ -42,6 +48,12 @@ AliVZEROTrending::AliVZEROTrending(const char* name, const char* title) : TH1(),
 	SetName(name);
 	SetTitle(title);
 	for(int i=0; i<8;i++) fGraphs[i] = NULL;
+	for (int i = 0; i < kDataSize; i++) {
+		fTime[i] = 0;
+		for (int j = 0; j < 8; j++) {
+		  fData[j][i] = 0;
+		}
+	}
 }
 //_____________________________________________________________________________
 AliVZEROTrending::AliVZEROTrending(const AliVZEROTrending &trend) : 

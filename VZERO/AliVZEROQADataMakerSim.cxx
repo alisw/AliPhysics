@@ -101,11 +101,8 @@ void AliVZEROQADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  char TDCname[100];
-  char ADCname[100];
   TH1I *fhDigTDC[64]; 
   TH1I *fhDigADC[64]; 
-  char texte[100];
 
   // create Digits histograms in Digits subdir
   TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in VZERO;# of Digits;Entries", 100, 0, 99) ; 
@@ -114,13 +111,8 @@ void AliVZEROQADataMakerSim::InitDigits()
   
   for (Int_t i=0; i<64; i++)
     {
-       sprintf(TDCname, "hDigitTDC%d", i);
-       sprintf(texte,"Digit TDC in cell %d; TDC value;Entries",i);    
-       fhDigTDC[i] = new TH1I(TDCname,texte,300,0.,149.);
-       
-       sprintf(ADCname,"hDigitADC%d",i);
-       sprintf(texte,"Digit ADC in cell %d;ADC value;Entries",i);
-       fhDigADC[i]= new TH1I(ADCname,texte,1024,0.,1023.);
+       fhDigTDC[i] = new TH1I(Form("hDigitTDC%d", i),Form("Digit TDC in cell %d; TDC value;Entries",i),300,0.,149.);
+       fhDigADC[i]= new TH1I(Form("hDigitADC%d", i),Form("Digit ADC in cell %d;ADC value;Entries",i),1024,0.,1023.);
        
        Add2DigitsList(fhDigTDC[i],i+1, !expert, image);
        Add2DigitsList(fhDigADC[i],i+1+64, !expert, image);  

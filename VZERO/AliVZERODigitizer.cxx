@@ -401,6 +401,7 @@ void AliVZERODigitizer::DigitizeHits()
 	   Int_t nPhot = hit->Nphot();
 	   Int_t cell  = hit->Cell();                          
 	   Int_t pmt = Cell2Pmt(cell);
+	   if (pmt < 0) continue;
 	   Int_t trackLabel = hit->GetTrack();
 	   for(Int_t l = 0; l < 3; ++l) {
 	     if (fLabels[pmt][l] < 0) {

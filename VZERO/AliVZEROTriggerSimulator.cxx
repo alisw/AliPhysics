@@ -160,6 +160,7 @@ void AliVZEROTriggerSimulator::Run() {
 			Int_t pmNumber   = digit->PMNumber();
 			Int_t board   = AliVZEROCalibData::GetBoardNumber(pmNumber);
 			Int_t channel = AliVZEROCalibData::GetFEEChannelNumber(pmNumber);
+			if (board < 0 || channel < 0) continue;
 			
 			if(fTriggerData->GetEnableCharge(board,channel)) {
 				fCharges[pmNumber] = digit->ChargeADC(AliVZEROdigit::kNClocks/2);

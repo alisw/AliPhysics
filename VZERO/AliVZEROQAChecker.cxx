@@ -192,6 +192,8 @@ void AliVZEROQAChecker::Init(const AliQAv1::DETECTORINDEX_t det)
   lowValue[AliQAv1::kFATAL]     = -1.0   ; 
   hiValue[AliQAv1::kFATAL]      = 0.0 ; 
   SetHiLo(hiValue, lowValue) ; 
+  delete [] hiValue;
+  delete [] lowValue;
 }
 
 //______________________________________________________________________________

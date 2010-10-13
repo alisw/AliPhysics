@@ -3173,18 +3173,17 @@ void AliVZEROv7::MakeBranch(Option_t *option)
 {
 // Creates new branches in the current Root Tree
     
-  char branchname[10];
-  sprintf(branchname,"%s",GetName());
+  TString branchname(Form("%s",GetName()));
   AliDebug(2,Form("fBufferSize = %d",fBufferSize));
   const char *cH = strstr(option,"H");
   if (fHits   && fLoader->TreeH() && cH) {
-    fLoader->TreeH()->Branch(branchname,&fHits, fBufferSize);
-    AliDebug(2,Form("Making Branch %s for hits",branchname));
+    fLoader->TreeH()->Branch(branchname.Data(),&fHits, fBufferSize);
+    AliDebug(2,Form("Making Branch %s for hits",branchname.Data()));
   }     
   const char *cD = strstr(option,"D");
   if (fDigits   && fLoader->TreeD() && cD) {
-    fLoader->TreeD()->Branch(branchname,&fDigits, fBufferSize);
-    AliDebug(2,Form("Making Branch %s for digits",branchname));
+    fLoader->TreeD()->Branch(branchname.Data(),&fDigits, fBufferSize);
+    AliDebug(2,Form("Making Branch %s for digits",branchname.Data()));
   }  
 }
 

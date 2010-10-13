@@ -58,6 +58,7 @@ AliVZERODataDCS::AliVZERODataDCS():
 		fDeadChannel[i] = kFALSE;
 		fMeanHV[i]      = 100.0;
 		fWidthHV[i]     = 0.0; 
+		fHv[i]          = NULL;
 	}
 }
 
