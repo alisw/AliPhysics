@@ -1046,6 +1046,26 @@ elif test "x$enable_module" = "xforce"; then
   enable_zdc="yes"
 else
   enable_zdc=$enable_module
+
+  if test "x$enable_zdc" = "xyes" ; then
+    AC_LANG_PUSH(C++)
+    save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/ZDC"
+
+
+    # AliZDCReconstructor::GetZDCESDData() is needed, requires revision 43770, Wed Sep 22 2010
+    AC_MSG_CHECKING([checking for  AliZDCReconstructor::GetZDCESDData() r43770])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliZDCReconstructor.h>], 
+                                       [AliZDCReconstructor rec;
+				        rec.GetZDCESDData()])],
+                                       [], 
+  				       [enable_zdc="no...requires.r43770"])
+    AC_MSG_RESULT([$enable_zdc])       
+
+    AC_LANG_POP(C++)
+    CPPFLAGS="$save_CPPFLAGS"
+  fi
+
 fi
 
 if test "x$enable_zdc" = "xyes" ; then
