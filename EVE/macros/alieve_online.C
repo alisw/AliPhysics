@@ -161,8 +161,6 @@ void alieve_online_init()
 
 }
 
-//   multiView->Get3DView()->GetGLViewer()->CurrentCamera().RotateRad(-1, 1)
-
 Int_t      g_pic_id  = 0;
 Int_t      g_pic_max = 100;
 TTimeStamp g_pic_prev(0, 0);
@@ -170,7 +168,7 @@ TTimeStamp g_pic_prev(0, 0);
 void alieve_online_on_new_event()
 {
 
-  using namespace AliTriggerAnalysis;
+  AliTriggerAnalysis atr;
 
   AliESDEvent* esd = AliEveEventManager::AssertESD();
   Double_t x[3] = { 0, 0, 0 };
@@ -214,21 +212,23 @@ void alieve_online_on_new_event()
   glv->DoDraw();
 */
 
-  V0Decision decisionV0a = V0Trigger(esd, kASide, kFALSE);
-  V0Decision decisionV0c = V0Trigger(esd, kCSide, kFALSE);
+  AliTriggerAnalysis::V0Decision decisionV0a = 
+    atr.V0Trigger(esd, AliTriggerAnalysis::kASide, kFALSE);
+  AliTriggerAnalysis::V0Decision decisionV0c = 
+    atr.V0Trigger(esd, AliTriggerAnalysis::kCSide, kFALSE);
 
   Double_t a = 0;
   Double_t c = 0;
 
-  if( decisionV0a == kV0Invalid ) a = 0.5;
-  if( decisionV0a == kV0Empty ) a = 1.5;
-  if( decisionV0a == kV0BB ) a = 2.5;
-  if( decisionV0a == kV0BG ) a = 3.5;
+  if( decisionV0a == AliTriggerAnalysis::kV0Invalid ) a = 0.5;
+  if( decisionV0a == AliTriggerAnalysis::kV0Empty ) a = 1.5;
+  if( decisionV0a == AliTriggerAnalysis::kV0BB ) a = 2.5;
+  if( decisionV0a == AliTriggerAnalysis::kV0BG ) a = 3.5;
 
-  if( decisionV0c == kV0Invalid ) c = 0.5;
-  if( decisionV0c == kV0Empty ) c = 1.5;
-  if( decisionV0c == kV0BB ) c = 2.5;
-  if( decisionV0c == kV0BG ) c = 3.5;
+  if( decisionV0c == AliTriggerAnalysis::kV0Invalid ) c = 0.5;
+  if( decisionV0c == AliTriggerAnalysis::kV0Empty ) c = 1.5;
+  if( decisionV0c == AliTriggerAnalysis::kV0BB ) c = 2.5;
+  if( decisionV0c == AliTriggerAnalysis::kV0BG ) c = 3.5;
 
   V0StateHistogram->Fill(a,c);
 
