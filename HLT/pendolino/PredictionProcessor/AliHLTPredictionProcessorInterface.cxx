@@ -25,7 +25,6 @@
 #include "AliHLTPredictionProcessorInterface.h"
 #include "AliHLTPendolino.h"
 #include "TObjArray.h"
-#include "AliDCSValue.h"
 
 
 ClassImp(AliHLTPredictionProcessorInterface)
@@ -65,6 +64,7 @@ Bool_t AliHLTPredictionProcessorInterface::includeAliCDBEntryInList(
     return fpPend->IncludeAliCDBEntryInList(entryPath);
 }
 
+#ifdef HAVE_NOT_ALIDCSVALUE_OPERATORS
 Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
 							  const char* stringId, Float_t *value) const
 {
@@ -87,3 +87,27 @@ Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
   }
   return kFALSE;
 }
+
+Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
+							  const char* stringId, Bool_t *value) const
+{
+  // extracts the sensor value
+  // return last value read from sensor specified by stringId
+  
+  TObject* object=dcsAliasMap->FindObject(stringId);
+  if (!object) return kFALSE;
+  TPair* pair = dynamic_cast<TPair*>(object);
+  if (pair && pair->Value()) {
+    TObjArray* valueSet = dynamic_cast<TObjArray*>(pair->Value());
+    Int_t nentriesDCS = valueSet->GetEntriesFast() - 1;
+    if(nentriesDCS>=0 && valueSet->At(nentriesDCS)){
+      AliDCSValue *val = dynamic_cast<AliDCSValue *>(valueSet->At(nentriesDCS));
+      if (val) {
+	*value=val->GetBool();
+	return kTRUE;
+      }
+    }
+  }
+  return kFALSE;
+}
+#endif // HAVE_NOT_ALIDCSVALUE_OPERATORS

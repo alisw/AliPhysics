@@ -14,9 +14,13 @@
 */
 
 #include <AliPreprocessor.h>
+#include "AliDCSSensor.h"
+#include "AliDCSValue.h"
+#include "AliSplineFit.h"
+#include "TMap.h"
+#include <memory>
 
 class AliHLTPendolino;
-
 
 /**
  * The Class defines the interface HLT Preprocessor.
@@ -116,7 +120,19 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
 		 * 				the Pendolino would stop, so make sure that it is true.
 		 */
 //		virtual Bool_t ProcessDCS();
-		
+
+  /**
+  *  Create an AliDCSSensor object with specified id and a linear const spline fit
+  *  There is no extrapolation in the online reconstruction, only the last value
+  *  counts. Some offline code requires the spline fit to be initialized, so it is
+  *  added here even though it does not fully make sense.
+  */ 
+  template <typename T>
+  static AliDCSSensor* CreateSensor(const char* id, T value, UInt_t starttime, UInt_t endtime);
+
+  UInt_t GetStartTime() const {return fStartTime;}
+  UInt_t GetEndTime() const {return fEndTime;}
+
 	protected:
 		/**
 		 * Helper function to receive the current run number
@@ -144,8 +160,15 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
         */
        virtual Bool_t includeAliCDBEntryInList(const TString& entryPath);
 
+  // template functionality disabled
+  // can be enabled if AliDCSValue defines type conversion operators
+  // the define HAVE_NOT_ALIDCSVALUE_OPERATORS can be set for backward
+  // compatibility reasons in the HLT build system
+#define HAVE_NOT_ALIDCSVALUE_OPERATORS
   /**
-   * Function to rertieve a sensor value from the DCS value map
+   * Function to retrieve a sensor value from the DCS value map
+   * The value is extracted from the last entry, because online reconstruction
+   * does not need the history.
    *
    * @param dcsAliasMap the retrieved DCS value map
    * @param stringId the alias name of the desired sensor value
@@ -153,7 +176,13 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
    *
    * @return true if sucessful, else false
    */
+#ifndef HAVE_NOT_ALIDCSVALUE_OPERATORS
+  template<typename T>
+  Bool_t GetSensorValue(TMap* dcsAliasMap,const char* stringId, T * value) const;
+#else // !HAVE_NOT_ALIDCSVALUE_OPERATORS
   Bool_t GetSensorValue(TMap* dcsAliasMap,const char* stringId, Float_t * value) const;
+  Bool_t GetSensorValue(TMap* dcsAliasMap,const char* stringId, Bool_t * value) const;
+#endif // HAVE_NOT_ALIDCSVALUE_OPERATORS
 
 	private:
 		/**
@@ -199,8 +228,83 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
 	
 };
 
+#ifndef HAVE_NOT_ALIDCSVALUE_OPERATORS
+template<typename T>
+Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
+							  const char* stringId, T *value) const
+{
+  // extracts the sensor value
+  // return last value read from sensor specified by stringId
+  
+  TObject* object=dcsAliasMap->FindObject(stringId);
+  if (!object) return kFALSE;
+  TPair* pair = dynamic_cast<TPair*>(object);
+  if (pair && pair->Value()) {
+    TObjArray* valueSet = dynamic_cast<TObjArray*>(pair->Value());
+    Int_t nentriesDCS = valueSet->GetEntriesFast() - 1;
+    if(nentriesDCS>=0 && valueSet->At(nentriesDCS)){
+      AliDCSValue *val = dynamic_cast<AliDCSValue *>(valueSet->At(nentriesDCS));
+      if (val) {
+	*value=*val;
+	return kTRUE;
+      }
+    }
+  }
+  return kFALSE;
+}
+#endif // !HAVE_NOT_ALIDCSVALUE_OPERATORS
 
+template <typename T>
+AliDCSSensor* AliHLTPredictionProcessorInterface::CreateSensor(const char* id, T value, UInt_t starttime, UInt_t endtime) 
+{
+  // create an AliDCSSensor object with specified id and a linear graph
+  // There is no extrapolation in the online reconstruction, only the last value
+  // counts
+
+  if (!id) return NULL;
+
+  std::auto_ptr<AliDCSSensor> pSensor(new AliDCSSensor);
+  if (!pSensor.get()) {
+    //HLTFatal("memory allocation failed");
+    return NULL;
+  }
+
+  // AliDCSSensor allows two types of value representation: a spline fit and
+  // a graph. The online system uses a linear graph with const values between
+  // start and end time
+  // Note: AliDCSSensor::GetValue returns -99 if the requested time is before
+  // the start time and the last value if the time is after end time
+  // The measurements are stored in fractions of hours (see definition in
+  // class AliDCSSensor
+  const int points=2;
+  const Double_t kSecInHour = 3600.; // seconds in one hour
+  T x[points];
+  T y[points];
+  x[0]=0;
+  x[1]=(endtime-starttime)/kSecInHour;
+  y[0]=value;
+  y[1]=value;
+  std::auto_ptr<TGraph> pGraph(new TGraph(2,x,y));
+  if (!pGraph.get()) {
+    //HLTFatal("can not create graph for id %s", id);
+    return NULL;
+  }
+
+  AliSplineFit *fit = new AliSplineFit();
+  if (!fit) return NULL;
+
+  fit->SetMinPoints(10);
+  fit->InitKnots(pGraph.get(),10, 10, 0.0);
+  fit->SplineFit(2);
+
+  pSensor->SetStringID(id);
+  pSensor->SetStartTime(starttime);
+  pSensor->SetEndTime(endtime);
+  // note: AliDCSSensor has no correct cleanup in the destructor
+  // so the fit object is lost if the sensor is deleted
+  pSensor->SetFit(fit);
+
+  return pSensor.release();
+}
 
 #endif
-
-
