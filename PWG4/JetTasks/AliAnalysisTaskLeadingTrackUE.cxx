@@ -434,7 +434,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
 	        // Fill UE containers (step, leading track, towards particles, away particles, transverse MIN and MAX particles)
 	        // (MC leading particle and RECO-matched (quantities from MC particle)  all particles)
 	        // STEP 4
-	        if (!fReduceMemoryFootprint)
+	        //if (!fReduceMemoryFootprint)
   	          fHistosUE->Fill(fillId,AliUEHist::kCFStepTrackedOnlyPrim,leadingMC,(TList*)regionSortedParticlesRECOLTMC->At(0),(TList*)regionSortedParticlesRECOLTMC->At(1),(TList*)regionsMinMaxRECOLTMC->At(0),(TList*)regionsMinMaxRECOLTMC->At(1));
 	        // comparing this step with step 3 (for all-tracks observables) you get the tracking efficiency
         
@@ -446,7 +446,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
 	        // Fill UE containers (step, leading track, towards particles, away particles, transverse MIN and MAX particles)
 	        // (MC leading particle and RECO-matched (quantities from MC particle)  all particles)
 	        // STEP 5
-	        if (!fReduceMemoryFootprint)
+	        //if (!fReduceMemoryFootprint)
                   fHistosUE->Fill(fillId,AliUEHist::kCFStepTracked,leadingMC,(TList*)regionSortedParticlesRECOLTMC2->At(0),(TList*)regionSortedParticlesRECOLTMC2->At(1),(TList*)regionsMinMaxRECOLTMC2->At(0),(TList*)regionsMinMaxRECOLTMC2->At(1));
 	        // comparing this step with step 3 (for all-tracks observables) you get the tracking efficiency
           
