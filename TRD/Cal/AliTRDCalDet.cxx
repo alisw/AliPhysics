@@ -279,7 +279,7 @@ TH1F * AliTRDCalDet::MakeHisto1DAsFunctionOfDet(Float_t min, Float_t max,Int_t t
   }
  
   char  name[1000];
-  sprintf(name,"%s CalDet as function of det",GetTitle());
+  snprintf(name,1000,"%s CalDet as function of det",GetTitle());
   TH1F * his = new TH1F(name,name,kNdet, 0, kNdet);
   for(Int_t det = 0; det< kNdet; det++){
     his->Fill(det+0.5,GetValue(det));
@@ -334,7 +334,7 @@ TH2F *AliTRDCalDet::MakeHisto2DCh(Int_t ch, Float_t min, Float_t max, Int_t type
   Double_t posglobal[3] = {0.0,0.0,0.0};
   
   char  name[1000];
-  sprintf(name,"%s CalDet 2D ch %d",GetTitle(),ch);
+  snprintf(name,1000,"%s CalDet 2D ch %d",GetTitle(),ch);
   TH2F * his = new TH2F(name, name, 400,-400.0,400.0,400,-400.0,400.0);
 
   // Where we begin
@@ -410,7 +410,7 @@ TH2F *AliTRDCalDet::MakeHisto2DSmPl(Int_t sm, Int_t pl, Float_t min, Float_t max
   Double_t col0    = padPlane0->GetCol0();
 
   char  name[1000];
-  sprintf(name,"%s CalDet 2D sm %d and pl %d",GetTitle(),sm,pl);
+  snprintf(name,1000,"%s CalDet 2D sm %d and pl %d",GetTitle(),sm,pl);
   TH2F * his = new TH2F( name, name, 5,  -TMath::Abs(row0),  TMath::Abs(row0)
                                    , 4,-2*TMath::Abs(col0),2*TMath::Abs(col0));
 

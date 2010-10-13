@@ -280,6 +280,7 @@ void AliTRDCalibChamberStatus::ProcessEvent(AliRawReader * rawReader, Int_t neve
   rawStream->SetSharedPadReadout(kFALSE);
 
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager(kTRUE);
+  if (!digitsManager) return;
   digitsManager->CreateArrays();
   
   Int_t det    = 0;
@@ -331,8 +332,8 @@ void AliTRDCalibChamberStatus::ProcessEvent(AliRawReader * rawReader, Int_t neve
 
   if(notEmpty) fCounterEventNotEmpty++;
 
-  if(digitsManager) delete digitsManager;
-  if(rawStream) delete rawStream;
+  delete digitsManager;
+  delete rawStream;
    
 }//_____________________________________________________________________
 void AliTRDCalibChamberStatus::ProcessEvent3(AliRawReader * rawReader, Int_t nevents_physics)
@@ -402,7 +403,7 @@ void AliTRDCalibChamberStatus::ProcessEvent3(AliRawReader * rawReader, Int_t nev
 
   if(notEmpty) fCounterEventNotEmpty++;
 
-  if(digitsManager) delete digitsManager;
+  delete digitsManager;
   delete rawStream;
    
 }

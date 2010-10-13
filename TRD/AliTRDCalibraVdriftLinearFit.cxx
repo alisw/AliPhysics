@@ -351,8 +351,8 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
       
     }// if something
 
-    delete [] arrayI;
-
   }
+
+  delete [] arrayI;
    
 }

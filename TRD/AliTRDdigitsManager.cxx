@@ -878,7 +878,7 @@ Bool_t AliTRDdigitsManager::LoadArrayDict()
 
       // Get the branch
       Char_t branchname[15];
-      sprintf(branchname,"TRDdictionary%d",iDict);
+      snprintf(branchname,15,"TRDdictionary%d",iDict);
       TBranch *branch = fTree->GetBranch(branchname);
       if (!branch) 
         {
@@ -1013,7 +1013,7 @@ Bool_t AliTRDdigitsManager::StoreArrayDict()
 
        // Get the branch
        Char_t branchname[15];
-       sprintf(branchname,"TRDdictionary%d",iDict);
+       snprintf(branchname,15,"TRDdictionary%d",iDict);
        TBranch *branch = fTree->GetBranch(branchname);
        if (!branch) 
          {

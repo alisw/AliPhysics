@@ -178,6 +178,10 @@ AliTRDalignment::AliTRDalignment(const AliTRDalignment& source)
     fSurveyY0[j][k][l] = source.fSurveyY0[j][k][l];
     fSurveyZ0[j][k][l] = source.fSurveyZ0[j][k][l];
   }
+  for (int i=0; i<1000; i++) {
+    fIbuffer[i] = 0;
+    fDbuffer[i] = 0.0;
+  }
 
 }
 

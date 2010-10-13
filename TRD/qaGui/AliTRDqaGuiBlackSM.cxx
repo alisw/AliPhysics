@@ -70,7 +70,8 @@ AliTRDqaGuiBlackSM::AliTRDqaGuiBlackSM()
     fRangeNoise[i] = 0.0;
   }
   for (Int_t i = 0; i < 30; i++) {
-    fHistList[i] = 0x0;
+    fHistList[i]   = 0x0;
+    fCanvasList[i] = 0x0;
   }
 
   strncpy(fFileName,"",256);

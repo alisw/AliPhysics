@@ -360,7 +360,7 @@ void AliTRDCalibViewer::GetLayerSectorStack(TString trdString, Int_t& layerNo, I
   // encoded with the following format:
   // Layer%dSector%dStack%d
 
-  sscanf(trdString.Data(), "Layer%dSector%dStack%d", &layerNo, &sectorNo, &stackNo);
+  sscanf(trdString.Data(), "Layer%1dSector%02dStack%1d", &layerNo, &sectorNo, &stackNo);
 
   return;
 }
@@ -636,7 +636,7 @@ Int_t AliTRDCalibViewer::EasyDraw(const char* drawCommand, Int_t chamber, const 
     Int_t stackNo = (chamber%30)/6;
     Int_t layerNo = (chamber%30)%6;
     char sectorChr[22];
-    sprintf(sectorChr, "Layer%iSector%iStack%i", layerNo, superModuleNo, stackNo);
+    snprintf(sectorChr,22, "Layer%iSector%iStack%i", layerNo, superModuleNo, stackNo);
     return EasyDraw(drawCommand, sectorChr, cuts, drawOptions, writeDrawCommand);
   }
   Error("EasyDraw","The TRD contains only chamber from 0 to 539");
@@ -659,7 +659,7 @@ Int_t AliTRDCalibViewer::EasyDraw1D(const char* drawCommand, Int_t chamber, cons
     Int_t stackNo = (chamber%30)/6;
     Int_t layerNo = (chamber%30)%6;
     char sectorChr[22];
-    sprintf(sectorChr, "Layer%iSector%iStack%i", layerNo, superModuleNo, stackNo);
+    snprintf(sectorChr,22, "Layer%iSector%iStack%i", layerNo, superModuleNo, stackNo);
     return EasyDraw1D(drawCommand, sectorChr, cuts, drawOptions, writeDrawCommand);
   }
   Error("EasyDraw1D","The TRD contains only chambers from 0 to 539");

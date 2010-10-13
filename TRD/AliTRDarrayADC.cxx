@@ -418,8 +418,15 @@ void AliTRDarrayADC::Compress()
           buffer=0;
         } 
 
+    }
+
+  if (longz)
+    {
       delete [] longz;
       longz=0;
+    }
+  if (longm)
+    {
       delete [] longm;
       longm=0;
 

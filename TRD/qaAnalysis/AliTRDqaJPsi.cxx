@@ -68,6 +68,10 @@ AliTRDqaJPsi:: AliTRDqaJPsi(const AliTRDqaJPsi & /*trd*/)
   // Copy constructor
   //
 
+  for (Int_t i = 0; i < 1000; i++) {
+    fSM[i] = 0;
+  }
+
 }
 
 //______________________________________________________________________________

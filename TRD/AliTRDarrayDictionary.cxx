@@ -375,8 +375,11 @@ void AliTRDarrayDictionary::Expand()
 
 	}
 
-      delete [] longArr;
-      
+    }
+
+  if (longArr)
+    {
+      delete [] longArr; 
     }
 
 }

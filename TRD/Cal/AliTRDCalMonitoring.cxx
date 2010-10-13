@@ -81,5 +81,9 @@ AliTRDCalMonitoring::AliTRDCalMonitoring(const Text_t *name, const Text_t *title
     fLVVoltage[i] = 0;
     fLVCurrent[i] = 0;
   }
+  for (Int_t i=0; i<6700; ++i) {
+    fADCTresholds[i] = 0;
+  }
+
 }
 

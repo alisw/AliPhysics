@@ -934,7 +934,9 @@ void AliTRDCalibTask::Plot()
 	  first += 1;
 	}
 	else {
-	  histolinearfitsum ->Add(linearfit->GetLinearFitterHisto(det));
+          if (histolinearfitsum) {
+	    histolinearfitsum->Add(linearfit->GetLinearFitterHisto(det));
+	  }
 	}
       }
     }

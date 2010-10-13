@@ -626,7 +626,6 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
       for(Int_t itl = 0; itl < 6; itl++){ // TRD layers
 	AliTRDseedV1 * tracklet = fTRDtrack->GetTracklet(itl);
 	if(!tracklet || !tracklet->IsOK()) continue;
-	if(!tracklet) continue;
 	nTracklets++;
 	Int_t nclsTracklet = 0;
 	for(Int_t itb = 0; itb < AliTRDseedV1::kNtb; itb++){ // timebins

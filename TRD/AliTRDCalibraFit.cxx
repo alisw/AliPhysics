@@ -4886,8 +4886,8 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     pente->Draw();
   }
   else {
-    if(pentea) delete pentea;
-    if(pente) delete pente;
+    delete pentea;
+    delete pente;
     if(polynome) delete polynome;
     if(polynomea) delete polynomea;
     if(polynomeb) delete polynomeb;

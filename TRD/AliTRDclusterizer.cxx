@@ -111,7 +111,9 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
 }
 
 //_____________________________________________________________________________
-AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, const AliTRDReconstructor *const rec)
+AliTRDclusterizer::AliTRDclusterizer(const Text_t *name
+                                   , const Text_t *title
+                                   , const AliTRDReconstructor *const rec)
   :TNamed(name,title)
   ,fReconstructor(rec)
   ,fRunLoader(NULL)
@@ -152,11 +154,6 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, co
 
   SetBit(kLabels, kTRUE);
   SetBit(knewDM, kFALSE);
-
-  AliTRDcalibDB *trd = 0x0;
-  if (!(trd = AliTRDcalibDB::Instance())) {
-    AliFatal("Could not get calibration object");
-  }
 
   fDigitsManager->CreateArrays();
 
