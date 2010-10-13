@@ -19,6 +19,9 @@
 #include "TMatrixF.h"
 #include "TVector3.h"
 #include "AliPHOSReconstructor.h"
+#ifdef HAVE_NOT_ALIPHOSRECONSTRUCTOR_r44091
+#include "AliPHOSPIDv1.h"
+#endif // HAVE_NOT_ALIPHOSRECONSTRUCTOR_r44091
 #include "TObjArray.h"
 
 AliHLTPHOSRecoParamHandler::AliHLTPHOSRecoParamHandler() :
@@ -37,7 +40,12 @@ AliHLTPHOSRecoParamHandler::~AliHLTPHOSRecoParamHandler()
 Float_t AliHLTPHOSRecoParamHandler::GetCorrectedEnergy ( Float_t e )
 {
    // See header file for class documentation
+#ifndef HAVE_NOT_ALIPHOSRECONSTRUCTOR_r44091
    return AliPHOSReconstructor::CorrectNonlinearity(e) ;
+#else // !HAVE_NOT_ALIPHOSRECONSTRUCTOR_r44091
+   AliPHOSPIDv1 phospidv1;
+   return phospidv1.GetCalibratedEnergy(e);
+#endif // HAVE_NOT_ALIPHOSRECONSTRUCTOR_r44091
 }
 
 void AliHLTPHOSRecoParamHandler::FillParameters()
