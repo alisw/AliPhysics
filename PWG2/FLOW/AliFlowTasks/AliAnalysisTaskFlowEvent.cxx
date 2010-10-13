@@ -210,7 +210,7 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
   // Called at every worker node to initialize
   cout<<"AliAnalysisTaskFlowEvent::CreateOutputObjects()"<<endl;
 
-  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMCkineESD"  || fAnalysisType == "ESDMCkineMC" || fAnalysisType == "MC"))
+  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMCkineESD"  || fAnalysisType == "ESDMCkineMC" || fAnalysisType == "MC" || fAnalysisType == "MK"))
   {
     AliError("WRONG ANALYSIS TYPE! only ESD, ESDMCkineESD, ESDMCkineMC, AOD and MC are allowed.");
     exit(1);
@@ -269,6 +269,11 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       AliError("cuts not set");
       return;
     }
+    if (fCutsEvent) 
+    {
+      if (!fCutsEvent->IsSelected(InputEvent())) return;
+    }
+
     fCutsRP->SetMCevent( MCEvent() );
     fCutsPOI->SetMCevent( MCEvent() );
     flowEvent = new AliFlowEvent( InputEvent(), fCutsRP, fCutsPOI );

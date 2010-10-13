@@ -616,14 +616,14 @@ AliFlowEvent::AliFlowEvent( AliVEvent* event,
     if (rp&&poi)
     {
       pTrack = rpCuts->MakeFlowTrack();
-      pTrack->TagRP();
+      pTrack->TagRP(); fNumberOfRPs++;
       pTrack->TagPOI();
     }
     else
     if (rp)
     {
       pTrack = rpCuts->MakeFlowTrack();
-      pTrack->TagRP();
+      pTrack->TagRP(); fNumberOfRPs++;
     }
     else
     if (poi)

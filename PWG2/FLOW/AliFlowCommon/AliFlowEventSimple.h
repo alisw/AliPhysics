@@ -52,6 +52,8 @@ class AliFlowEventSimple: public TObject {
   void     SetReferenceMultiplicity( Int_t m )            { fReferenceMultiplicity = m; }
   Int_t    GetEventNSelTracksRP() const             { return fNumberOfRPs; } 
   void     SetEventNSelTracksRP(Int_t nr)           { fNumberOfRPs = nr; }  
+  Int_t    GetNumberOfRPs() const                   { return fNumberOfRPs; }
+  void     SetNumberOfRPs( Int_t nr )               { fNumberOfRPs=nr; }
   Double_t GetMCReactionPlaneAngle() const          { return fMCReactionPlaneAngle; }
   void     SetMCReactionPlaneAngle(Double_t fPhiRP) { fMCReactionPlaneAngle=fPhiRP; fMCReactionPlaneAngleIsSet=kTRUE; }
   Bool_t   IsSetMCReactionPlaneAngle() const        { return fMCReactionPlaneAngleIsSet; }
