@@ -337,7 +337,6 @@ AliCDBEntry* AliHLTPendolino::GetFromOCDB(const char* detector,
 			const AliCDBPath& path) {
 	// fetches entry from HCDB
 	AliCDBManager *man = AliCDBManager::Instance();
-	AliCDBEntry* entry = 0;
 	
 	if (man == 0) {
 		TString msg(" *** ERROR, cannot obtain a CDB Manager reference for: ");
