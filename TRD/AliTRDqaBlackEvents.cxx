@@ -27,7 +27,6 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH2S.h"
-//#include "TH3F.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TCanvas.h"
@@ -77,14 +76,57 @@ AliTRDqaBlackEvents::AliTRDqaBlackEvents()
   ,fMinNoise(0.5)
   ,fMaxNoise(2)
   ,fFitType(0) 
-  //  ,fRefFileName("")
 {
   //
   // Constructor 
   // to create the histograms call Init()
   //
 
+  for (Int_t i = 0; i < kDET; i++) {
+    fPed[i]            = 0x0;
+    fNoise[i]          = 0x0;
+    fChPP[i]           = 0x0;
+    fNPointDist[i]     = 0x0;
+    fChPed[i]          = 0x0;
+    fChNoise[i]        = 0x0;
+    fNPoint[i]         = 0x0;
+    fData[i]           = 0x0;
+    fSignal[i]         = 0x0;
+    fnEntriesRM[i]     = 0x0;
+    fnEntriesRMDist[i] = 0x0;
+    fChPedRes[i]       = 0x0;
+    fChNoiseRes[i]     = 0x0;
+    fErrorLocHC[i]     = 0x0;
+    fErrorLocMCM[i]    = 0x0;
+    fErrorLocADC[i]    = 0x0;
+  }
+  for (Int_t i = 0; i < 3; i++) {
+    fGraphPP[i]        = 0x0;
+    fSMLink[i]         = 0x0;
+    fGrLink[i]         = 0x0;
+    fppThresh[i]       = 0;
+    fnPP[i]            = 0;
+    fnLink[i]          = 0;
+  }
+  for (Int_t i = 0; i < 2; i++) {
+    fnErrorHC[i]       = 0;
+    fnErrorMCM[i]      = 0;
+    fnErrorADC[i]      = 0;
+  }
+  for (Int_t i = 0; i < kSM; i++) {
+    fSmNoiseRms[i]     = 0x0;
+    fSmNoiseFit[i]     = 0x0;
+    fSmPP[i]           = 0x0;
+  }
+  for (Int_t i = 0; i < kSM+1; i++) {
+    fNumberADC[i]      = 0x0;
+    fnADCinSM[i]       = 0;
+  }
+  for (Int_t i = 0; i < 1000; i++) {
+    fEvNoDist[i]       = 0;
+  }
   strncpy(fRefFileName,"",256);
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,14 +163,57 @@ AliTRDqaBlackEvents::AliTRDqaBlackEvents(const AliTRDqaBlackEvents &qa)
   ,fMinNoise(0.5)
   ,fMaxNoise(2) 
   ,fFitType(0)
-   //,fRefFileName("")
 {
   //
   // Copy constructor 
   // to create the histograms call Init()
   //
   
-  strcpy(fRefFileName, "");
+  for (Int_t i = 0; i < kDET; i++) {
+    fPed[i]            = 0x0;
+    fNoise[i]          = 0x0;
+    fChPP[i]           = 0x0;
+    fNPointDist[i]     = 0x0;
+    fChPed[i]          = 0x0;
+    fChNoise[i]        = 0x0;
+    fNPoint[i]         = 0x0;
+    fData[i]           = 0x0;
+    fSignal[i]         = 0x0;
+    fnEntriesRM[i]     = 0x0;
+    fnEntriesRMDist[i] = 0x0;
+    fChPedRes[i]       = 0x0;
+    fChNoiseRes[i]     = 0x0;
+    fErrorLocHC[i]     = 0x0;
+    fErrorLocMCM[i]    = 0x0;
+    fErrorLocADC[i]    = 0x0;
+  }
+  for (Int_t i = 0; i < 3; i++) {
+    fGraphPP[i]        = 0x0;
+    fSMLink[i]         = 0x0;
+    fGrLink[i]         = 0x0;
+    fppThresh[i]       = 0;
+    fnPP[i]            = 0;
+    fnLink[i]          = 0;
+  }
+  for (Int_t i = 0; i < 2; i++) {
+    fnErrorHC[i]       = 0;
+    fnErrorMCM[i]      = 0;
+    fnErrorADC[i]      = 0;
+  }
+  for (Int_t i = 0; i < kSM; i++) {
+    fSmNoiseRms[i]     = 0x0;
+    fSmNoiseFit[i]     = 0x0;
+    fSmPP[i]           = 0x0;
+  }
+  for (Int_t i = 0; i < kSM+1; i++) {
+    fNumberADC[i]      = 0x0;
+    fnADCinSM[i]       = 0;
+  }
+  for (Int_t i = 0; i < 1000; i++) {
+    fEvNoDist[i]       = 0;
+  }
+  strncpy(fRefFileName,"",256);
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -284,7 +369,8 @@ void AliTRDqaBlackEvents::Reset()
 
 void AliTRDqaBlackEvents::SetRefFile(const char *filename) {
   
-  strcpy(fRefFileName, filename);
+  strncpy(fRefFileName,filename,256);
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -666,7 +752,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
   //
   
   char fn[256];
-  strcpy(fn, filename);
+  strncpy(fn,filename,256);
   
   //AliInfo(Form("FILENAME = %s (%s)\n", filename, fn));
 
