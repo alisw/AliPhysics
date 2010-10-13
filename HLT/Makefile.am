@@ -41,6 +41,10 @@ if EN_HLT_FMD
 FMD_DIR=FMD
 endif
 
+if EN_HLT_ZDC
+ZDC_DIR=ZDC
+endif
+
 if EN_HLT_MUON
 MUON_DIR=MUON
 endif
@@ -83,6 +87,7 @@ SUBDIRS 		= BASE \
                           $(EMCAL_DIR) \
 			  $(TRD_DIR) \
 			  $(FMD_DIR) \
+			  $(ZDC_DIR) \
 			  $(MUON_DIR) \
 			  $(COMP_DIR) \
                           $(TRIGGER_DIR) \
@@ -107,6 +112,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTTPC.pkg \
 			  libAliHLTTRD.pkg \
 			  libAliHLTFMD.pkg \
+			  libAliHLTZDC.pkg \
 			  libAliHLTMUON.pkg \
 			  libAliHLTComp.pkg \
 			  libAliHLTTrigger.pkg \

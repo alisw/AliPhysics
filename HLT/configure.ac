@@ -1030,6 +1030,36 @@ AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIFMD_LIBS])
 
 dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_ZDC],[hlt zdc library])
+
+ALIZDC_LIBS=$ALIHLTMODULE_LIBS
+CHECK_HLTMODULE([zdc],
+		[], [$ALIROOT_CPPFLAGS],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[ZDCbase ZDCrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS],
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...missing.headers"
+  enable_zdc=$enable_module
+elif test "x$enable_module" = "xforce"; then
+  enable_zdc="yes"
+else
+  enable_zdc=$enable_module
+fi
+
+if test "x$enable_zdc" = "xyes" ; then
+  AC_DEFINE(HLT_ZDC)
+  ALIZDC_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_zdc
+fi
+AM_CONDITIONAL(EN_HLT_ZDC, test x$enable_zdc = xyes)
+AC_MSG_CHECKING([whether to compile ZDC library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIZDC_LIBS])
+
+dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
 
 ALIMUON_LIBS=
@@ -1546,6 +1576,11 @@ fi
 AC_MSG_NOTICE([compile FMD library: $enable_fmd])
 if test "x$enable_fmd" = "xyes"; then 
   AC_CONFIG_FILES([FMD/Makefile])
+fi
+
+AC_MSG_NOTICE([compile ZDC library: $enable_zdc])
+if test "x$enable_zdc" = "xyes"; then 
+  AC_CONFIG_FILES([ZDC/Makefile])
 fi
 
 AC_MSG_NOTICE([compile MUON library: $enable_muon])

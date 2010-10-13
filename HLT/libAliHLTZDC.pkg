@@ -1,0 +1,50 @@
+#-*- Mode: Makefile -*-
+# $Id: libAliHLTZDC.pkg $
+
+# This files defines the source and header files for the
+# libAliHLTZDC library and additional flags for the compilation
+# and linking process. 
+
+# class header files, the link definition for the root dictionary
+# will be created from the names of the header files
+CLASS_HDRS:= 	AliHLTZDCESDRecoComponent.h \
+		AliHLTZDCAgent.h
+
+# library sources, generated from the class headers
+MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
+
+# library headers
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+# Leave MODULE_DHDR empty to enable automatic generation of *LinkDef.h
+MODULE_DHDR:=
+
+EINCLUDE := HLT/BASE \
+	    HLT/ZDC \
+        ZDC \
+	    STEER \
+	    RAW
+
+LIBRARY_DEP := -lHLTbase \
+	       -lCDB -lESD -lSTEER -lSTEERBase \
+               -lRAWDatarec -lRAWDatabase \
+               -lZDCbase -lZDCrec \
+               -L$(ROOTLIBDIR) -lEG
+
+###############################################################################
+#
+# do not change anything below this line
+#
+include $(MODDIR)/hlt.conf
+
+SRCS         := $(patsubst %,ZDC/%,$(MODULE_SRCS))
+CINTHDRS     := $(patsubst %,ZDC/%,$(CLASS_HDRS))
+HDRS         := $(patsubst %,ZDC/%,$(MODULE_HDRS))
+DHDR         := $(patsubst %,ZDC/%,$(MODULE_DHDR))
+CINTAUTOLINK := $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)
