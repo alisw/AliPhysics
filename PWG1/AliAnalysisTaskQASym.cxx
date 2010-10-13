@@ -1072,6 +1072,8 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 //   }
 
   TH1::AddDirectory(oldStatus);
+  PostData(1, fHists);
+
 }
 
 //__________________________________________________________
