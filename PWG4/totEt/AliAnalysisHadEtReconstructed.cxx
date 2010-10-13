@@ -128,7 +128,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	  else{
 	    if(TMath::Abs(track->Eta())>fCorrections->GetEtaCut()) continue;
 	    Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
-	    
+	    pID->MakeTPCPID(track);
+	    pID->MakeITSPID(track);
 	    if(cutset!=1){
 	      nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
 	      nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
@@ -172,14 +173,14 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      corrNotID = fCorrections->GetNotIDCorrectionITS(track->Pt());
 	    }
 	    Float_t et = 0.0;
-	    Float_t etNoID = Et(track->P(),track->Theta(),fPiPlusCode,track->Charge());
+	    Float_t etNoID = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	    Float_t etpartialcorrected = 0.0;
 	    Float_t etpartialcorrectedNoID = corrNoID*corrBkgd*corrEffNoID*etNoID;
 	    FillHisto2D(Form("EtDataRaw%sNoID",cutName->Data()),track->Pt(),track->Eta(),etpartialcorrectedNoID);
 
 	    if(isPion){
 	      FillHisto2D(Form("dEdxDataPion%s",cutName->Data()),track->P(),dEdx,1.0);
-	      et = Et(track->P(),track->Theta(),fPiPlusCode,track->Charge());
+	      et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	      if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionPion(track->Pt());}
 	      //else{corrEff = fCorrections->GetITSEfficiencyCorrectionPion(track->Pt());}
 	      etpartialcorrected = et*corrBkgd*corrEff;
@@ -195,7 +196,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(isKaon){
 	      FillHisto2D(Form("dEdxDataKaon%s",cutName->Data()),track->P(),dEdx,1.0);
-	      et = Et(track->P(),track->Theta(),fKPlusCode,track->Charge());
+	      et = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
 	      if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionKaon(track->Pt());}
 	      //else{corrEff = fCorrections->GetITSEfficiencyCorrectionKaon(track->Pt());}
 	      etpartialcorrected = et*corrBkgd*corrEff;
@@ -211,7 +212,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(isProton){
 	      FillHisto2D(Form("dEdxDataProton%s",cutName->Data()),track->P(),dEdx,1.0);
-	      et = Et(track->P(),track->Theta(),fProtonCode,track->Charge());
+	      et = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
 	      if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionProton(track->Pt());}
 	      //else{corrEff = fCorrections->GetITSEfficiencyCorrectionProton(track->Pt());}
 	      etpartialcorrected = et*corrBkgd*corrEff;
@@ -227,11 +228,11 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(isElectron){
 	      FillHisto2D(Form("dEdxDataProton%s",cutName->Data()),track->P(),dEdx,1.0);
-	      //et = Et(track->P(),track->Theta(),fPiPlusCode,track->Charge());
+	      //et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	    }
 	    if(unidentified){
 	      FillHisto2D(Form("dEdxDataUnidentified%s",cutName->Data()),track->P(),dEdx,1.0);
-	      et = Et(track->P(),track->Theta(),fPiPlusCode,track->Charge());
+	      et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	      etpartialcorrected = et*corrBkgd*corrEffNoID*corrNotID;
 	      FillHisto2D(Form("EtDataCorrected%sUnidentified",cutName->Data()),track->Pt(),track->Eta(),etpartialcorrected);
 	    }
@@ -382,9 +383,8 @@ Bool_t AliAnalysisHadEtReconstructed::CheckGoodVertex(AliVParticle* track)
 
 void AliAnalysisHadEtReconstructed::Init()
 { // Init
-    AliAnalysisHadEt::Init();
-
-  if (fConfigFile.Length()) {
+  AliAnalysisHadEt::Init();
+  if (fConfigFile.Length() && !fCorrections) {
     gROOT->LoadMacro(fConfigFile);
     fCorrections = (AliAnalysisHadEtCorrections *) gInterpreter->ProcessLine("ConfigHadEtAnalysis()");
     fCorrTotEtFullAcceptanceTPC = fCorrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"Full");
@@ -450,7 +450,6 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
        }
        else{cerr<<"Uh-oh!  Unable to open configuration file!"<<endl;}
      }
-
 }
 void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and adding them to the output TList
 

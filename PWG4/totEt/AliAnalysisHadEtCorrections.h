@@ -66,8 +66,8 @@ public:
     Float_t GetITSEfficiencyCorrectionProton(const float pT);
     Float_t GetITSEfficiencyCorrectionHadron(const float pT);
     //...and these guys are too
-    Float_t GetBackgroundCorrectionTPC(const float pT){return 1.0/(1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
-    Float_t GetBackgroundCorrectionITS(const float pT){return 1.0/(1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
+    Float_t GetBackgroundCorrectionTPC(const float pT){return (1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
+    Float_t GetBackgroundCorrectionITS(const float pT){return (1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
 
 
     void SetEtaCut(const Float_t val){fEtaCut=val;}

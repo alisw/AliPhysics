@@ -23,14 +23,49 @@
 #include "TDatabasePDG.h"
 #include "TParticle.h"
 #include "Rtypes.h"
+#include "AliPDG.h"
 
 using namespace std;
 
 ClassImp(AliAnalysisHadEt);
+//These are from the PDG database but by making them static the code is a bit more efficient and has no problems running with the plugin
+Float_t AliAnalysisHadEt::fgPionMass = 0.13957;
+Float_t AliAnalysisHadEt::fgKaonMass = 0.493677;
+Float_t AliAnalysisHadEt::fgProtonMass = 0.938272;
+Float_t AliAnalysisHadEt::fgElectronMass = 0.000510999;
+Int_t AliAnalysisHadEt::fgPiPlusCode = 211;
+Int_t AliAnalysisHadEt::fgPiMinusCode = -211;
+Int_t AliAnalysisHadEt::fgKPlusCode = 321;
+Int_t AliAnalysisHadEt::fgKMinusCode = -321;
+Int_t AliAnalysisHadEt::fgProtonCode = 2212;
+Int_t AliAnalysisHadEt::fgAntiProtonCode = -2212;
+Int_t AliAnalysisHadEt::fgLambdaCode = 3122;
+Int_t AliAnalysisHadEt::fgAntiLambdaCode = -3122;
+Int_t AliAnalysisHadEt::fgK0SCode = 310;
+Int_t AliAnalysisHadEt::fgOmegaCode = 3334;
+Int_t AliAnalysisHadEt::fgAntiOmegaCode = -3334;
+Int_t AliAnalysisHadEt::fgXi0Code = 3322;
+Int_t AliAnalysisHadEt::fgAntiXi0Code = -3322;
+Int_t AliAnalysisHadEt::fgXiCode = 3312;
+Int_t AliAnalysisHadEt::fgAntiXiCode = -3312;
+Int_t AliAnalysisHadEt::fgSigmaCode = 3112;
+Int_t AliAnalysisHadEt::fgAntiSigmaCode = -3112;
+Int_t AliAnalysisHadEt::fgK0LCode = 130;
+Int_t AliAnalysisHadEt::fgNeutronCode = 2112;
+Int_t AliAnalysisHadEt::fgAntiNeutronCode = -2112;
+Int_t AliAnalysisHadEt::fgEPlusCode = -11;
+Int_t AliAnalysisHadEt::fgEMinusCode = 11;
+Int_t AliAnalysisHadEt::fgGammaCode = 22;
+Int_t AliAnalysisHadEt::fgPi0Code = 111;
+Int_t AliAnalysisHadEt::fgEtaCode = 221;
+Int_t AliAnalysisHadEt::fgOmega0Code = 223;
 
 
-Int_t AliAnalysisHadEt::fgnumOfEtaBins = 46;
-Float_t AliAnalysisHadEt::fgEtaAxis[47]={-0.78, -0.74, -0.7, -0.66, -0.62, -0.58, -0.54, -0.5, -0.46, -0.42, -0.38, -0.34, -0.3, -0.26, -0.22, -0.18, -0.14, -0.12, -0.1, -0.08, -0.06, -0.04, -0.02, -0.0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.18, 0.22, 0.26, 0.3, 0.34, 0.38, 0.42, 0.46, 0.5, 0.54, 0.58, 0.62, 0.66, 0.7, 0.74, 0.78};
+// Int_t AliAnalysisHadEt::fgnumOfEtaBins = 46;
+// Float_t AliAnalysisHadEt::fgEtaAxis[47]={-0.78, -0.74, -0.7, -0.66, -0.62, -0.58, -0.54, -0.5, -0.46, -0.42, -0.38, -0.34, -0.3, -0.26, -0.22, -0.18, -0.14, -0.12, -0.1, -0.08, -0.06, -0.04, -0.02, -0.0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.18, 0.22, 0.26, 0.3, 0.34, 0.38, 0.42, 0.46, 0.5, 0.54, 0.58, 0.62, 0.66, 0.7, 0.74, 0.78};
+//reduction in the number of bins
+Int_t AliAnalysisHadEt::fgnumOfEtaBins = 16;
+Float_t AliAnalysisHadEt::fgEtaAxis[17]={-0.78, -0.7, -0.58, -0.46, -0.34, -0.22, -0.12, -0.06, -0.0, 0.06, 0.12, 0.22, 0.34, 0.46, 0.58, 0.7, 0.78};
 Int_t AliAnalysisHadEt::fgNumOfPtBins = 111;
 Float_t AliAnalysisHadEt::fgPtAxis[117]=
   {0.0,0.01,0.02,0.03,0.04, 0.05, 0.06,0.07,0.08,0.09, 0.10,0.11, .12,0.13, .14,0.15, .16,0.17, .18,0.19,
@@ -48,37 +83,6 @@ Float_t AliAnalysisHadEt::fgPtITSCutOff = 0.10;
 AliAnalysisHadEt::AliAnalysisHadEt() :
         fHistogramNameSuffix("")
 	,fCuts(0)
-        ,fPdgDB(0)
-        ,fPiPlusCode(0)
-        ,fPiMinusCode(0)
-        ,fKPlusCode(0)
-        ,fKMinusCode(0)
-        ,fProtonCode(0)
-        ,fAntiProtonCode(0)
-        ,fLambdaCode(0)
-        ,fAntiLambdaCode(0)
-        ,fK0SCode(0)
-        ,fOmegaCode(0)
-        ,fAntiOmegaCode(0)
-        ,fXi0Code(0)
-        ,fAntiXi0Code(0)
-        ,fXiCode(0)
-        ,fAntiXiCode(0)
-        ,fSigmaCode(0)
-        ,fAntiSigmaCode(0)
-        ,fK0LCode(0)
-        ,fNeutronCode(0)
-        ,fAntiNeutronCode(0)
-        ,fEPlusCode(0)
-        ,fEMinusCode(0)
-	,fGammaCode(0)
-	,fPi0Code(0)
-	,fEtaCode(0)
-	,fOmega0Code(0)
-        ,fPionMass(0)
-        ,fKaonMass(0)
-        ,fProtonMass(0)
-        ,fElectronMass(0)
 	,fSumEt(0)
 	,fSumEtAcc(0)
 	,fTotEt(0)
@@ -101,16 +105,9 @@ AliAnalysisHadEt::AliAnalysisHadEt() :
 AliAnalysisHadEt::~AliAnalysisHadEt()
 {//destructor
   delete fCuts;
-  delete fPdgDB;
   delete fEsdtrackCutsITSTPC;
   delete fEsdtrackCutsITS;
   delete fEsdtrackCutsTPC;
-  //histoList doesn't really belong to this class - it's passed in
-  //fhistoList->Clear();
-  //delete fhistoList;
-  //constants don't get deleted
-  //delete [] fgEtaAxis;
-  //delete [] fgPtAxis;
 }
 
 Int_t AliAnalysisHadEt::AnalyseEvent(AliVEvent *event)
@@ -126,7 +123,6 @@ void AliAnalysisHadEt::FillOutputList()
 
 void AliAnalysisHadEt::Init()
 {// clear variables, set up cuts and PDG info
-  ResetEventValues();
 
 }
 
@@ -150,64 +146,17 @@ void AliAnalysisHadEt::ResetEventValues()
   fChargedMultiplicity = 0;
   fNeutralMultiplicity = 0;
   
-  if (!fCuts || !fPdgDB || fPiPlusCode==0) { // some Init's needed
+  if (!fCuts) { // some Init's needed
     cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
     if (!fCuts) {
       cout << " setting up Cuts " << endl;
       fCuts = new AliAnalysisEtCuts();
-    }
-    if(!fPdgDB) {
-      cout << " setting up PdgDB " << endl;
-      fPdgDB = new TDatabasePDG();
-    }
-    
-    if (fPiPlusCode==0) {
-      SetParticleCodes();
     }
   }
 }
 
 void AliAnalysisHadEt::SetParticleCodes()
 {  //the codes are defined in $ROOTSYS/etc/pdg_table.txt
-    fPionMass = fPdgDB->GetParticle("pi+")->Mass();
-    fKaonMass = fPdgDB->GetParticle("K+")->Mass();
-    fProtonMass = fPdgDB->GetParticle("proton")->Mass();
-    fElectronMass = fPdgDB->GetParticle("e+")->Mass();
-    fPiPlusCode = fPdgDB->GetParticle("pi+")->PdgCode();
-    fPiMinusCode = fPdgDB->GetParticle("pi-")->PdgCode();
-    fKPlusCode = fPdgDB->GetParticle("K+")->PdgCode();
-    fKMinusCode = fPdgDB->GetParticle("K-")->PdgCode();
-    fProtonCode = fPdgDB->GetParticle("proton")->PdgCode();
-    fAntiProtonCode = fPdgDB->GetParticle("antiproton")->PdgCode();
-    fLambdaCode = fPdgDB->GetParticle("Lambda0")->PdgCode();
-    fAntiLambdaCode = fPdgDB->GetParticle("Lambda0_bar")->PdgCode();
-    fK0SCode = fPdgDB->GetParticle("K_S0")->PdgCode();
-    fOmegaCode = fPdgDB->GetParticle("Omega-")->PdgCode();
-    fAntiOmegaCode = fPdgDB->GetParticle("Omega+")->PdgCode();
-    fXi0Code = fPdgDB->GetParticle("Xi0")->PdgCode();
-    fAntiXi0Code = fPdgDB->GetParticle("Xi0_bar")->PdgCode();
-    fXiCode = fPdgDB->GetParticle("Xi-")->PdgCode();
-    fAntiXiCode = fPdgDB->GetParticle("Xi-_bar")->PdgCode();
-    fSigmaCode = fPdgDB->GetParticle("Sigma-")->PdgCode();
-    fAntiSigmaCode = fPdgDB->GetParticle("Sigma+")->PdgCode();
-    fK0LCode = fPdgDB->GetParticle("K_L0")->PdgCode();
-    fNeutronCode = fPdgDB->GetParticle("neutron")->PdgCode();
-    fAntiNeutronCode = fPdgDB->GetParticle("antineutron")->PdgCode();
-    fEPlusCode = fPdgDB->GetParticle("e+")->PdgCode();
-    fEMinusCode = fPdgDB->GetParticle("e-")->PdgCode();
-    fGammaCode =  fPdgDB->GetParticle("gamma")->PdgCode();
-    fPi0Code =  fPdgDB->GetParticle("pi0")->PdgCode();
-    fEtaCode =  fPdgDB->GetParticle("eta")->PdgCode();
-    fOmega0Code =  fPdgDB->GetParticle("omega")->PdgCode();
-    cout << "Resetting Codes: Pion " << fPiPlusCode
-	 << "," << fPiMinusCode 
-	 << " Kaon " << fKPlusCode 
-	 << "," << fKMinusCode 
-	 << " Gamma "<<fGammaCode
-	 << " Pi0 "<<fPi0Code
-	 << " Eta "<<fEtaCode
-	 << " omega "<<fOmega0Code
-	 << endl;
 }
 
 void AliAnalysisHadEt::CreateEtaPtHisto2D(TString name, TString title)
@@ -217,7 +166,6 @@ void AliAnalysisHadEt::CreateEtaPtHisto2D(TString name, TString title)
 
   histoname->Append(name);
   histotitle->Append(title);
-  //TH2F *h1 = new TH2F("h1", "Histogram with Gaussian random distribution", fgNumOfPtBins, ptBinsArray, fgnumOfEtaBins, etaBinsArray);
 
   TH2F *histo = new TH2F(histoname->Data(),histotitle->Data(),fgNumOfPtBins, fgPtAxis, fgnumOfEtaBins, fgEtaAxis);
   histo->SetYTitle("#eta");
@@ -234,12 +182,8 @@ void AliAnalysisHadEt::CreateHisto1D(TString name, TString title, TString xtitle
 {     //creates a 1d histogram of the given dimensions and adds it to the list of histograms to be saved
   TString *histoname   = new TString();
   TString *histotitle   = new TString();
-  
-  //cout<<"creating "<<name<<endl;
-
   histoname->Append(name);
   histotitle->Append(title);
-  // printf("%s \n ",histoname->Data());
   TH1F *histo = new TH1F(histoname->Data(),histotitle->Data(),xbins,xlow,xhigh);
   histo->SetYTitle(ytitle);
   histo->SetXTitle(xtitle);
@@ -247,18 +191,13 @@ void AliAnalysisHadEt::CreateHisto1D(TString name, TString title, TString xtitle
   fhistoList->Add(histo);
   delete histoname;
   delete histotitle;
-    
 }
 void AliAnalysisHadEt::CreateIntHisto1D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Int_t xlow,Int_t xhigh)
 {     //creates a 1d integer histogram and adds it to the list of histograms to be saved
   TString *histoname   = new TString();
   TString *histotitle   = new TString();
-  
-  //cout<<"creating "<<name<<endl;
-
   histoname->Append(name);
   histotitle->Append(title);
-  // printf("%s \n ",histoname->Data());
   TH1I *histo = new TH1I(histoname->Data(),histotitle->Data(),xbins,xlow,xhigh);
   histo->SetYTitle(ytitle);
   histo->SetXTitle(xtitle);
@@ -272,12 +211,8 @@ void AliAnalysisHadEt::CreateHisto2D(TString name, TString title, TString xtitle
 {     //creates a 2d histogram and adds it to the list of histograms to be saved
   TString *histoname   = new TString();
   TString *histotitle   = new TString();
-  
-  //cout<<"creating "<<name<<endl;
-
   histoname->Append(name);
   histotitle->Append(title);
-  // printf("%s \n ",histoname->Data());
   TH2F *histo = new TH2F(histoname->Data(),histotitle->Data(),xbins,xlow,xhigh,ybins,ylow,yhigh);
   histo->SetYTitle(ytitle);
   histo->SetXTitle(xtitle);
@@ -291,12 +226,8 @@ void AliAnalysisHadEt::CreateIntHisto2D(TString name, TString title, TString xti
 {     //creates a 2-d integer histogram and adds it to the list of histograms to be saved
   TString *histoname   = new TString();
   TString *histotitle   = new TString();
-  
-  //cout<<"creating "<<name<<endl;
-
   histoname->Append(name);
   histotitle->Append(title);
-  // printf("%s \n ",histoname->Data());
   TH2I *histo = new TH2I(histoname->Data(),histotitle->Data(),xbins,xlow,xhigh,ybins,ylow,yhigh);
   histo->SetYTitle(ytitle);
   histo->SetXTitle(xtitle);
@@ -311,8 +242,6 @@ void AliAnalysisHadEt::CreateEtaHisto1D(TString name, TString title)
 {     //creates 1d histogram in eta and adds it to the list of histograms to be saved
   TString *histoname   = new TString();
   TString *histotitle   = new TString();
-  
-
   histoname->Append(name);
   histotitle->Append(title);
   TH1F *histo = new TH1F(histoname->Data(),histotitle->Data(),fgnumOfEtaBins, fgEtaAxis);
@@ -322,13 +251,11 @@ void AliAnalysisHadEt::CreateEtaHisto1D(TString name, TString title)
   fhistoList->Add(histo);
   delete histoname;
   delete histotitle;
-    
 }
 void AliAnalysisHadEt::FillHisto1D(TString histname, Float_t x, Float_t weight)
 {//fills a 1d histogram with the name histoname with the value x and the weight "weight"
   TH1F     *histo; 
   TString  *name   = new TString();
-
   name->Append(histname);       
   histo = (TH1F *)fhistoList->FindObject(name->Data()); 
   if(histo){
@@ -341,7 +268,6 @@ void AliAnalysisHadEt::FillHisto2D(TString histname, Float_t x, Float_t y, Float
 {//fills a 2d histogram with the name histoname with the value x and the weight "weight"
   TH2F     *histo; 
   TString  *name   = new TString();
-  
   name->Append(histname);       
   histo = (TH2F *)fhistoList->FindObject(name->Data()); 
   if(histo){
@@ -374,21 +300,21 @@ Float_t AliAnalysisHadEt::Et(TParticle *part, float mass){//function to calculat
   return 0.0;
 }
 Float_t AliAnalysisHadEt::Et(Float_t p, Float_t theta, Int_t pid, Short_t charge) const {//function to calculate et in the same way as it would be calculated in a calorimeter
-  if(pid==fPiPlusCode || pid==fPiMinusCode){//Nothing special for pions
-    return TMath::Sqrt(p*p + fPionMass*fPionMass) * TMath::Sin(theta);
+  if(pid==fgPiPlusCode || pid==fgPiMinusCode){//Nothing special for pions
+    return TMath::Sqrt(p*p + fgPionMass*fgPionMass) * TMath::Sin(theta);
   }
-  if(pid==fKPlusCode || pid==fKMinusCode){//Nothing special for kaons
-    return TMath::Sqrt(p*p + fKaonMass*fKaonMass) * TMath::Sin(theta);
+  if(pid==fgKPlusCode || pid==fgKMinusCode){//Nothing special for kaons
+    return TMath::Sqrt(p*p + fgKaonMass*fgKaonMass) * TMath::Sin(theta);
   }
-  if(pid==fEPlusCode || pid==fEMinusCode){//Nothing special for electrons
-    return TMath::Sqrt(p*p + fElectronMass*fElectronMass) * TMath::Sin(theta);
+  if(pid==fgEPlusCode || pid==fgEMinusCode){//Nothing special for electrons
+    return TMath::Sqrt(p*p + fgElectronMass*fgElectronMass) * TMath::Sin(theta);
   }
-  if(pid==fProtonCode || pid==fAntiProtonCode){//But for protons we must be careful...
+  if(pid==fgProtonCode || pid==fgAntiProtonCode){//But for protons we must be careful...
     if(charge<0.0){//antiprotns: kinetic energy plus twice the rest mass
-      return (TMath::Sqrt(p*p + fProtonMass*fProtonMass) + fProtonMass) * TMath::Sin(theta);
+      return (TMath::Sqrt(p*p + fgProtonMass*fgProtonMass) + fgProtonMass) * TMath::Sin(theta);
     }
     if(charge>0.0){//antiprotns: kinetic energy only
-      return (TMath::Sqrt(p*p + fProtonMass*fProtonMass) - fProtonMass) * TMath::Sin(theta);
+      return (TMath::Sqrt(p*p + fgProtonMass*fgProtonMass) - fgProtonMass) * TMath::Sin(theta);
     }
   }
   cerr<<"Uh-oh!  Et not set properly!"<<endl;
