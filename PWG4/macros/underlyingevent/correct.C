@@ -309,7 +309,7 @@ void correctMC(const char* fileNameCorrections, const char* fileNameESD = 0, Int
   
   esd->Correct(corr);
   
-  DrawRatios(testSample, esd, compareStep, compareRegion);
+  DrawRatios(esd, testSample, compareStep, compareRegion);
 }
 
 // function to compare only final step for all regions and distributions
@@ -337,5 +337,5 @@ void correctData(const char* fileNameCorrections, const char* fileNameESD, Int_t
   esd->Write();
   file3->Close();
   
-  DrawRatios(corr, esd, compareStep, compareRegion);
+  DrawRatios(esd, corr, compareStep, compareRegion);
 }
