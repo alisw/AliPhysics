@@ -267,7 +267,8 @@ void alieve_online_on_new_event()
   if(multiView->IsMuonView()) multiView->ImportEventMuon(top);
 
   // Register image to amore.
-  const TString pichost("aldaqacrs3");
+//  const TString pichost("aldaqacrs3");
+  const TString pichost(gEnv->GetValue("AliEve.imageDumpHost", "aldaqacrs3"));
   TTimeStamp now;
   Double_t delta = now.AsDouble() - g_pic_prev.AsDouble();
 
