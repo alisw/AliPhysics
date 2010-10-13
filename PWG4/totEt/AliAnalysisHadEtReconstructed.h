@@ -66,7 +66,7 @@ public:
     Float_t GetRawEtPHOSAcceptanceITSNoPID() const {return fRawEtPHOSAcceptanceITSNoPID+fRawEtPHOSAcceptanceTPCNoPID;}
 
     void CreateHistograms();
-    virtual void Init();
+     virtual void Init();
     
 protected:
 

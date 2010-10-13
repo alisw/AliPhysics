@@ -11,6 +11,7 @@
 
 #include "AliAnalysisHadEt.h"
 class AliVEvent;
+class TRandom;
 
 class AliAnalysisHadEtMonteCarlo : public AliAnalysisHadEt
 {
@@ -18,7 +19,7 @@ class AliAnalysisHadEtMonteCarlo : public AliAnalysisHadEt
 public:
    
   AliAnalysisHadEtMonteCarlo();
-  virtual ~AliAnalysisHadEtMonteCarlo() {}
+  virtual ~AliAnalysisHadEtMonteCarlo();
    
     virtual Int_t AnalyseEvent(AliVEvent* event);
     virtual Int_t AnalyseEvent(AliVEvent* event,AliVEvent* event2);
@@ -79,15 +80,38 @@ public:
     void FillSimHadEtMinusRecoHadEtEMCALAcceptanceITSNoPID(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtEMCALAcceptanceITSNoPID",et,(fSimHadEt-et)/fSimHadEt,1.0);}
     void FillSimHadEtMinusRecoHadEtPHOSAcceptanceTPCNoPID(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtPHOSAcceptanceTPCNoPID",et,(fSimHadEt-et)/fSimHadEt,1.0);}
     void FillSimHadEtMinusRecoHadEtPHOSAcceptanceITSNoPID(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtPHOSAcceptanceITSNoPID",et,(fSimHadEt-et)/fSimHadEt,1.0);}
+
+
+    void FillSimTotEtMinusRawEtFullAcceptanceTPC(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRawEtFullAcceptanceTPC",et,(fSimTotEt-et)/fSimTotEt,1.0);}
+    void FillSimTotEtMinusRawEtFullAcceptanceITS(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRawEtFullAcceptanceITS",et,(fSimTotEt-et)/fSimTotEt,1.0);}
+    void FillSimTotEtMinusRawEtEMCALAcceptanceTPC(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRawEtEMCALAcceptanceTPC",et,(fSimTotEt-et)/fSimTotEt,1.0);}
+    void FillSimTotEtMinusRawEtEMCALAcceptanceITS(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRawEtEMCALAcceptanceITS",et,(fSimTotEt-et)/fSimTotEt,1.0);}
+    void FillSimTotEtMinusRawEtPHOSAcceptanceTPC(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRawEtPHOSAcceptanceTPC",et,(fSimTotEt-et)/fSimTotEt,1.0);}
+    void FillSimTotEtMinusRawEtPHOSAcceptanceITS(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRawEtPHOSAcceptanceITS",et,(fSimTotEt-et)/fSimTotEt,1.0);}
+    void FillSimHadEtMinusRawEtFullAcceptanceTPC(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRawEtFullAcceptanceTPC",et,(fSimHadEt-et)/fSimHadEt,1.0);}
+    void FillSimHadEtMinusRawEtFullAcceptanceITS(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRawEtFullAcceptanceITS",et,(fSimHadEt-et)/fSimHadEt,1.0);}
+    void FillSimHadEtMinusRawEtEMCALAcceptanceTPC(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRawEtEMCALAcceptanceTPC",et,(fSimHadEt-et)/fSimHadEt,1.0);}
+    void FillSimHadEtMinusRawEtEMCALAcceptanceITS(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRawEtEMCALAcceptanceITS",et,(fSimHadEt-et)/fSimHadEt,1.0);}
+    void FillSimHadEtMinusRawEtPHOSAcceptanceTPC(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRawEtPHOSAcceptanceTPC",et,(fSimHadEt-et)/fSimHadEt,1.0);}
+    void FillSimHadEtMinusRawEtPHOSAcceptanceITS(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRawEtPHOSAcceptanceITS",et,(fSimHadEt-et)/fSimHadEt,1.0);}
+
+
  private:
     //Declare it private to avoid compilation warning
     AliAnalysisHadEtMonteCarlo & operator = (const AliAnalysisHadEtMonteCarlo & g) ;//cpy assignment
     AliAnalysisHadEtMonteCarlo(const AliAnalysisHadEtMonteCarlo & g) ; // cpy ctor
 
+    //Float_t fSimPiKPEt;//simulated Et for pi,k,p event by event
     Float_t fSimHadEt;//simulated Et event by event
     Float_t fSimTotEt;//total et event by event
 
+
     void ResetEventValues();
+
+    //Float_t fSimPiKPEtSmeared[4];//simulated Et for pi,k,p smeared for each event by different momentum resolutions
+/*     static Float_t fgSmearWidths[4]; */
+/*     static Int_t fgNumSmearWidths; */
+
     ClassDef(AliAnalysisHadEtMonteCarlo, 1);
 };
 

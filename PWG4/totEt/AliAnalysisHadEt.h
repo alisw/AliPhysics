@@ -94,38 +94,38 @@ protected:
     AliAnalysisEtCuts *fCuts; // keeper of basic cuts
 
     /** PDG Database */
-    TDatabasePDG *fPdgDB;//data base used for looking up pdg codes
+    //TDatabasePDG *fPdgDB;//data base used for looking up pdg codes
     //these codes are stored as variables because otherwise there were issues using this with the plugin
-    Int_t fPiPlusCode;//pdg pi plus code
-    Int_t fPiMinusCode;//pdg pi minus code
-    Int_t fKPlusCode;// pdg k plus code
-    Int_t fKMinusCode;//pdg k minus code
-    Int_t fProtonCode;//pdg proton code
-    Int_t fAntiProtonCode;//pdg antiproton code
-    Int_t fLambdaCode;// pdg lambda code
-    Int_t fAntiLambdaCode;//pdg antilambda code
-    Int_t fK0SCode;//pdg k0 short code
-    Int_t fOmegaCode;//pdg omega code
-    Int_t fAntiOmegaCode;//pdg anti-omega code
-    Int_t fXi0Code;//pdg xi-0 code
-    Int_t fAntiXi0Code;//pdg anti-xi0 code
-    Int_t fXiCode;//pdg xi code
-    Int_t fAntiXiCode;//pdg anti-xi code
-    Int_t fSigmaCode;//pdg sigma code
-    Int_t fAntiSigmaCode;//pdg anti-sigma code
-    Int_t fK0LCode;//pdg k0 long code
-    Int_t fNeutronCode;//pdg neutron code
-    Int_t fAntiNeutronCode;//pdg anti-neutron code
-    Int_t fEPlusCode;//pdg positron code
-    Int_t fEMinusCode;//pdg electron code
-    Int_t fGammaCode;//pdg gamma code
-    Int_t fPi0Code;//pdg neutral pion code
-    Int_t fEtaCode;//pdg eta code
-    Int_t fOmega0Code;//pdg eta code
-    Float_t fPionMass;//pdg pion mass
-    Float_t fKaonMass;//pdg kaon mass
-    Float_t fProtonMass;//pdg proton mass
-    Float_t fElectronMass;//pdg electron mass
+    static Int_t fgPiPlusCode;//pdg pi plus code
+    static Int_t fgPiMinusCode;//pdg pi minus code
+    static Int_t fgKPlusCode;// pdg k plus code
+    static Int_t fgKMinusCode;//pdg k minus code
+    static Int_t fgProtonCode;//pdg proton code
+    static Int_t fgAntiProtonCode;//pdg antiproton code
+    static Int_t fgLambdaCode;// pdg lambda code
+    static Int_t fgAntiLambdaCode;//pdg antilambda code
+    static Int_t fgK0SCode;//pdg k0 short code
+    static Int_t fgOmegaCode;//pdg omega code
+    static Int_t fgAntiOmegaCode;//pdg anti-omega code
+    static Int_t fgXi0Code;//pdg xi-0 code
+    static Int_t fgAntiXi0Code;//pdg anti-xi0 code
+    static Int_t fgXiCode;//pdg xi code
+    static Int_t fgAntiXiCode;//pdg anti-xi code
+    static Int_t fgSigmaCode;//pdg sigma code
+    static Int_t fgAntiSigmaCode;//pdg anti-sigma code
+    static Int_t fgK0LCode;//pdg k0 long code
+    static Int_t fgNeutronCode;//pdg neutron code
+    static Int_t fgAntiNeutronCode;//pdg anti-neutron code
+    static Int_t fgEPlusCode;//pdg positron code
+    static Int_t fgEMinusCode;//pdg electron code
+    static Int_t fgGammaCode;//pdg gamma code
+    static Int_t fgPi0Code;//pdg neutral pion code
+    static Int_t fgEtaCode;//pdg eta code
+    static Int_t fgOmega0Code;//pdg eta code
+    static Float_t fgPionMass;//pdg pion mass
+    static Float_t fgKaonMass;//pdg kaon mass
+    static Float_t fgProtonMass;//pdg proton mass
+    static Float_t fgElectronMass;//pdg electron mass
 
     
     Double_t fSumEt;/** Sum of the total Et for all events */
@@ -158,7 +158,8 @@ protected:
     AliESDtrackCuts* fEsdtrackCutsITS;//esd track cuts for ITS stand alone tracks
 
     TList *fhistoList;//list of histograms saved out to file
-    static Float_t fgEtaAxis[47];//bins for eta axis of histograms
+    //static Float_t fgEtaAxis[47];//bins for eta axis of histograms
+    static Float_t fgEtaAxis[17];//bins for eta axis of histograms
     static Int_t fgnumOfEtaBins;//number of eta bins
     static Float_t fgPtAxis[117];//bins for pt axis of histograms
     static Int_t fgNumOfPtBins;//number of pt bins
