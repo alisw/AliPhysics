@@ -854,13 +854,24 @@ else
 				        have_alicalorawstream=yes], 
   				       [])
     AC_MSG_RESULT([$have_alicalorawstream])
+    have_aliphosrecoparamemc=no
     AC_MSG_CHECKING([for required EMC functionality in AliPHOSRecoParam.h ])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliPHOSRecoParam.h>], 
                                        [AliPHOSRecoParam param;
 				        param.GetEMCClusteringThreshold()])],
-                                       [have_aliphosrecoparam=yes], 
+                                       [have_aliphosrecoparamemc=yes], 
   				       [AC_DEFINE(HAVE_NOT_PHOSRECOPARAMEMC)])
-    AC_MSG_RESULT([$have_aliphosrecoparam])
+    AC_MSG_RESULT([$have_aliphosrecoparamemc])
+
+    have_aliphosreconstructor_r44091=no
+    AC_MSG_CHECKING([for AliPHOSReconstructor r44091 ])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliPHOSReconstructor.h>], 
+                                       [float e=0.0;
+				        AliPHOSReconstructor::CorrectNonlinearity(e)])],
+                                       [have_aliphosreconstructor_r44091=yes], 
+  				       [AC_DEFINE(HAVE_NOT_ALIPHOSRECONSTRUCTOR_r44091)])
+    AC_MSG_RESULT([$have_aliphosreconstructor_r44091])
+
     AC_LANG_POP(C++)
     CPPFLAGS="$save_CPPFLAGS"
   fi
