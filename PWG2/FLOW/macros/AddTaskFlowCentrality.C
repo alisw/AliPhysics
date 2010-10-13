@@ -81,12 +81,13 @@ const Double_t ptminRP = 0.0;
 const Double_t ptmaxRP = 10.0;
 const Double_t etaminRP  = -0.9;
 const Double_t etamaxRP  = 0.9;
-const Int_t    chargeRP = 1;  //not used
-const Bool_t   isChargedRP = kTRUE;
+Bool_t bSetChargeForRP = kTRUE; // by setting kTRUE you will use only RPs with charge "chargeRP" specified in the line bellow 
+const Int_t  chargeRP = 1;  
+const Bool_t isChargedRP = kTRUE; // take only charged particle in the analysis
 
 //PID (on generated and reconstructed tracks)
-Bool_t UsePIDforRP = kFALSE;
-const Int_t PdgRP = 211;
+Bool_t bUsePIDforRP = kFALSE; // by setting kTRUE you will use only RPs with PDG code "PdgRP" specified in the line bellow
+const Int_t PdgRP = 211; //  pion = 211, kaon = 321, proton = 2212
 
 //TRACK QUALITY (on reconstructed tracks only)
 //see /CORRFW/AliCFTrackQualityCuts class
@@ -115,10 +116,10 @@ const Bool_t   dcaToVertex2dRP = kFALSE;         //default = kFALSE;
 const Bool_t   absDcaToVertexRP = kTRUE;         //default = kTRUE;
 const Double_t minNSigmaToVertexRP = 0.;
 const Double_t maxNSigmaToVertexRP = 1.e+10; //3.; //1.e+10
-const Double_t maxSigmaDcaXySP = 1.e+10;
-const Double_t maxSigmaDcaZSP = 1.e+10;
-const Bool_t   requireSigmaToVertexSP = kFALSE;
-const Bool_t   acceptKinkDaughtersSP = kFALSE;  //default = kTRUE;
+const Double_t maxSigmaDcaXyRP = 1.e+10;
+const Double_t maxSigmaDcaZRP = 1.e+10;
+const Bool_t   requireSigmaToVertexRP = kFALSE;
+const Bool_t   acceptKinkDaughtersRP = kFALSE;  //default = kTRUE;
 
 //ACCEPTANCE (on generated tracks only : AliMCParticle)
 //see /CORRFW/AliCFAcceptanceCuts class
@@ -135,18 +136,19 @@ const Int_t  minTrackrefsMuonRP = 0;
 Bool_t UseKineforPOI = kTRUE;
 const Double_t ptminPOI = 0.0;
 const Double_t ptmaxPOI = 10.0;
-const Double_t etaminPOI  = -0.5;
-const Double_t etamaxPOI  = 0.5;
-const Int_t    chargePOI = 1;  //not used
+const Double_t etaminPOI  = -0.9;
+const Double_t etamaxPOI  = 0.9;
+Bool_t bSetChargeForPOI = kTRUE; // by setting kTRUE you will use only RPs with charge "chargePOI" specified in the line bellow 
+const Int_t    chargePOI = -1; 
 const Bool_t   isChargedPOI = kTRUE;
 
 //PID (on generated and reconstructed tracks)
-Bool_t UsePIDforPOI = kFALSE;
-const Int_t PdgPOI = 321;
+Bool_t bUsePIDforPOI = kFALSE; // by setting kTRUE you will use only POIs with PDG code "PdgPOI" specified in the line bellow
+const Int_t PdgPOI = 321; //  pion = 211, kaon = 321, proton = 2212
 
 //TRACK QUALITY (on reconstructed tracks only)
 //see /CORRFW/AliCFTrackQualityCuts class
-Bool_t UseTrackQualityforPOI = kTRUE;
+Bool_t UseTrackQualityforPOI = kFALSE;
 const Int_t    minClustersTpcPOI = 80;
 const Double_t maxChi2PerClusterTpcPOI = 4.0;    
 const UShort_t minDedxClusterTpcPOI = 0;
@@ -186,12 +188,12 @@ const Int_t minTrackrefsTofPOI = 0;
 const Int_t minTrackrefsMuonPOI = 0; 
 
 void AddTaskFlowCentrality( TString type,
-                                                 Bool_t* METHODS,
-                                                 Bool_t QA,
-                                                 Bool_t* WEIGHTS,
-                                                 Int_t refMultMin=0,
-                                                 Int_t refMultMax=1e10,
-                                                 TString fileName="AnalysisResults.root" )
+                            Bool_t* METHODS,
+                            Bool_t QA,
+                            Bool_t* WEIGHTS,
+                            Int_t refMultMin=0,
+                            Int_t refMultMax=1e10,
+                            TString fileName="AnalysisResults.root" )
 {
   //boleans for the methods
   Bool_t SP       = METHODS[0];
@@ -221,7 +223,7 @@ void AddTaskFlowCentrality( TString type,
   }   
   
   // Check the analysis type using the event handlers connected to the analysis
-  // manager. The availability of MC handler cann also be checked here.
+  // manager. The availability of MC handler can also be checked here.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskFlowEvent", "This task requires an input event handler");
@@ -406,320 +408,138 @@ void AddTaskFlowCentrality( TString type,
     mgr->AddTask(taskFE);
   }
  
-  // Create cuts using the correction framework (CORRFW)
-  //===========================================================================
-  if (QA){
-    //Set TList for the QA histograms
-    TList* qaRP  = new TList(); 
-    TList* qaPOI = new TList();
-  }
-
-  //----------Event cuts----------
-  AliCFEventGenCuts* mcEventCuts = new AliCFEventGenCuts("mcEventCuts","MC-level event cuts");
-  mcEventCuts->SetNTracksCut(refMultMin,refMultMax); 
-  mcEventCuts->SetRequireVtxCuts(requireVtxCuts);
-  mcEventCuts->SetVertexXCut(vertexXmin, vertexXmax);
-  mcEventCuts->SetVertexYCut(vertexYmin, vertexYmax);
-  mcEventCuts->SetVertexZCut(vertexZmin, vertexZmax);
-  if (QA) { 
-    mcEventCuts->SetQAOn(qaRP);
-  }
-  AliCFEventRecCuts* recEventCuts = new AliCFEventRecCuts("recEventCuts","rec-level event cuts");
-  recEventCuts->SetNTracksCut(refMultMin,refMultMax); 
-  recEventCuts->SetRequireVtxCuts(requireVtxCuts);
-  recEventCuts->SetVertexXCut(vertexXmin, vertexXmax);
-  recEventCuts->SetVertexYCut(vertexYmin, vertexYmax);
-  recEventCuts->SetVertexZCut(vertexZmin, vertexZmax);
-  recEventCuts->SetVertexNContributors(vertexNContributorsmin,vertexNContributorsmax);
-  if (QA) { 
-    recEventCuts->SetQAOn(qaRP);
-  }
-  
-  //----------Cuts for RP----------
-  //KINEMATICS (MC and reconstructed)
-  AliCFTrackKineCuts* mcKineCutsRP = new AliCFTrackKineCuts("mcKineCutsRP","MC-level kinematic cuts");
-  mcKineCutsRP->SetPtRange(ptminRP,ptmaxRP);
-  mcKineCutsRP->SetEtaRange(etaminRP,etamaxRP);
-  //mcKineCutsRP->SetChargeMC(chargeRP);
-  mcKineCutsRP->SetRequireIsCharged(isChargedRP);
-  if (QA) { 
-    mcKineCutsRP->SetQAOn(qaRP);
-  }
-
-  AliCFTrackKineCuts *recKineCutsRP = new AliCFTrackKineCuts("recKineCutsRP","rec-level kine cuts");
-  recKineCutsRP->SetPtRange(ptminRP,ptmaxRP);
-  recKineCutsRP->SetEtaRange(etaminRP,etamaxRP);
-  //recKineCutsRP->SetChargeRec(chargeRP);
-  recKineCutsRP->SetRequireIsCharged(isChargedRP);
-  if (QA) { 
-    recKineCutsRP->SetQAOn(qaRP);
-  }
-
-  //PID (MC and reconstructed)
-  AliCFParticleGenCuts* mcGenCutsRP = new AliCFParticleGenCuts("mcGenCutsRP","MC particle generation cuts for RP");
-  mcGenCutsRP->SetRequireIsPrimary();
-  if (UsePIDforRP) {mcGenCutsRP->SetRequirePdgCode(PdgRP);}
-  if (QA) { 
-    mcGenCutsRP->SetQAOn(qaRP);
-  }
-
-  int n_species = AliPID::kSPECIES ;
-  Double_t* prior = new Double_t[n_species];
-  
-  prior[0] = 0.0244519 ;
-  prior[1] = 0.0143988 ;
-  prior[2] = 0.805747  ;
-  prior[3] = 0.0928785 ;
-  prior[4] = 0.0625243 ;
-  
-  AliCFTrackCutPid* cutPidRP = NULL;
-  if(UsePIDforRP) {
-    cutPidRP = new AliCFTrackCutPid("cutPidRP","ESD_PID for RP") ;
-    cutPidRP->SetPriors(prior);
-    cutPidRP->SetProbabilityCut(0.0);
-    cutPidRP->SetDetectors("TPC TOF");
-    switch(TMath::Abs(PDG1)) {
-    case 11   : cutPidRP->SetParticleType(AliPID::kElectron, kTRUE); break;
-    case 13   : cutPidRP->SetParticleType(AliPID::kMuon    , kTRUE); break;
-    case 211  : cutPidRP->SetParticleType(AliPID::kPion    , kTRUE); break;
-    case 321  : cutPidRP->SetParticleType(AliPID::kKaon    , kTRUE); break;
-    case 2212 : cutPidRP->SetParticleType(AliPID::kProton  , kTRUE); break;
-    default   : printf("UNDEFINED PID\n"); break;
-    }
-    if (QA) { 
-      cutPidRP->SetQAOn(qaRP); 
-    }
-  }
-  
-  //TRACK QUALITY
-  AliCFTrackQualityCuts *recQualityCutsRP = new AliCFTrackQualityCuts("recQualityCutsRP","rec-level quality cuts");
-  recQualityCutsRP->SetMinNClusterTPC(minClustersTpcRP);
-  //recQualityCutsRP->SetMinFoundClusterTPC(minFoundClustersTpcRP); //only for internal TPC QA
-  recQualityCutsRP->SetMaxChi2PerClusterTPC(maxChi2PerClusterTpcRP);
-  recQualityCutsRP->SetMinNdEdxClusterTPC(minDedxClusterTpcRP);     //to reject secondaries
-
-  recQualityCutsRP->SetMinNClusterITS(minClustersItsRP);
-  recQualityCutsRP->SetMaxChi2PerClusterITS(maxChi2PerClusterItsRP);
-
-  recQualityCutsRP->SetMinNClusterTRD(minClustersTrdRP);
-  recQualityCutsRP->SetMinNTrackletTRD(minTrackletTrdRP);
-  recQualityCutsRP->SetMinNTrackletTRDpid(minTrackletTrdPidRP);
-  recQualityCutsRP->SetMaxChi2PerTrackletTRD(maxChi2PerClusterTrdRP);
-  recQualityCutsRP->SetStatus(statusRP);  
-  if (QA) { 
-    recQualityCutsRP->SetQAOn(qaRP);
-  }
-
-  /* 
-  //How to set this?
-  void SetMaxCovDiagonalElements(Float_t c1=1.e+09, Float_t c2=1.e+09, Float_t c3=1.e+09, Float_t c4=1.e+09, Float_t c5=1.e+09)
-    {fCovariance11Max=c1;fCovariance22Max=c2;fCovariance33Max=c3;fCovariance44Max=c4;fCovariance55Max=c5;}
-  */
-
-  //PRIMARIES
-  AliCFTrackIsPrimaryCuts *recIsPrimaryCutsRP = new AliCFTrackIsPrimaryCuts("recIsPrimaryCutsRP","rec-level isPrimary cuts");
-  recIsPrimaryCutsRP->UseSPDvertex(spdVertexRP);
-  recIsPrimaryCutsRP->UseTPCvertex(tpcVertexRP);
-  recIsPrimaryCutsRP->SetMinDCAToVertexXY(minDcaToVertexXyRP); 
-  recIsPrimaryCutsRP->SetMinDCAToVertexZ(minDcaToVertexZRP);
-  recIsPrimaryCutsRP->SetMaxDCAToVertexXY(maxDcaToVertexXyRP);
-  recIsPrimaryCutsRP->SetMaxDCAToVertexZ(maxDcaToVertexZRP); 
-  recIsPrimaryCutsRP->SetDCAToVertex2D(dcaToVertex2dRP);
-  recIsPrimaryCutsRP->SetAbsDCAToVertex(absDcaToVertexRP);
-  recIsPrimaryCutsRP->SetMinNSigmaToVertex(minNSigmaToVertexRP); 
-  recIsPrimaryCutsRP->SetMaxNSigmaToVertex(maxNSigmaToVertexRP); 
-  recIsPrimaryCutsRP->SetMaxSigmaDCAxy(maxSigmaDcaXySP);
-  recIsPrimaryCutsRP->SetMaxSigmaDCAz(maxSigmaDcaZSP);
-  recIsPrimaryCutsRP->SetRequireSigmaToVertex(requireSigmaToVertexSP);
-  recIsPrimaryCutsRP->SetAcceptKinkDaughters(acceptKinkDaughtersSP);
-  if (QA) { 
-    recIsPrimaryCutsRP->SetQAOn(qaRP);
-  }
-  
-  //ACCEPTANCE
-  AliCFAcceptanceCuts *mcAccCutsRP = new AliCFAcceptanceCuts("mcAccCutsRP","MC acceptance cuts");
-  mcAccCutsRP->SetMinNHitITS(minTrackrefsItsRP);
-  mcAccCutsRP->SetMinNHitTPC(minTrackrefsTpcRP);
-  mcAccCutsRP->SetMinNHitTRD(minTrackrefsTrdRP); 
-  mcAccCutsRP->SetMinNHitTOF(minTrackrefsTofRP);
-  mcAccCutsRP->SetMinNHitMUON(minTrackrefsMuonRP);
-  if (QA) { 
-    mcAccCutsRP->SetQAOn(qaRP);
-  }
-
-  
-  //----------Cuts for POI----------
-  //KINEMATICS (MC and reconstructed)
-  AliCFTrackKineCuts* mcKineCutsPOI = new AliCFTrackKineCuts("mcKineCutsPOI","MC-level kinematic cuts");
-  mcKineCutsPOI->SetPtRange(ptminPOI,ptmaxPOI);
-  mcKineCutsPOI->SetEtaRange(etaminPOI,etamaxPOI);
-  //mcKineCutsPOI->SetChargeMC(chargePOI);
-  mcKineCutsPOI->SetRequireIsCharged(isChargedPOI);
-  if (QA) { 
-    mcKineCutsPOI->SetQAOn(qaPOI);
-  }
-  
-  AliCFTrackKineCuts *recKineCutsPOI = new AliCFTrackKineCuts("recKineCutsPOI","rec-level kine cuts");
-  recKineCutsPOI->SetPtRange(ptminPOI,ptmaxPOI);
-  recKineCutsPOI->SetEtaRange(etaminPOI,etamaxPOI);
-  //recKineCutsPOI->SetChargeRec(chargePOI);
-  recKineCutsPOI->SetRequireIsCharged(isChargedPOI);
-  if (QA) { 
-    recKineCutsPOI->SetQAOn(qaPOI);
-  }
-  
-  //PID (MC and reconstructed)
-  AliCFParticleGenCuts* mcGenCutsPOI = new AliCFParticleGenCuts("mcGenCutsPOI","MC particle generation cuts for POI");
-  mcGenCutsPOI->SetRequireIsPrimary();
-  if (UsePIDforPOI) {mcGenCutsPOI->SetRequirePdgCode(PdgPOI);}
-  if (QA) { 
-    mcGenCutsPOI->SetQAOn(qaPOI);
-  }
-
-  AliCFTrackCutPid* cutPidPOI = NULL;
-  if (UsePIDforPOI) {
-    cutPidPOI = new AliCFTrackCutPid("cutPidPOI","ESD_PID for POI") ;
-    cutPidPOI->SetPriors(prior);
-    cutPidPOI->SetProbabilityCut(0.0);
-    cutPidPOI->SetDetectors("TPC TOF");
-    switch(TMath::Abs(PDG2)) {
-    case 11   : cutPidPOI->SetParticleType(AliPID::kElectron, kTRUE); break;
-    case 13   : cutPidPOI->SetParticleType(AliPID::kMuon    , kTRUE); break;
-    case 211  : cutPidPOI->SetParticleType(AliPID::kPion    , kTRUE); break;
-    case 321  : cutPidPOI->SetParticleType(AliPID::kKaon    , kTRUE); break;
-    case 2212 : cutPidPOI->SetParticleType(AliPID::kProton  , kTRUE); break;
-    default   : printf("UNDEFINED PID\n"); break;
-    }
-    if (QA) { 
-      cutPidPOI->SetQAOn(qaPOI);
-    }
-  }
-
-  //TRACK QUALITY
-  AliCFTrackQualityCuts *recQualityCutsPOI = new AliCFTrackQualityCuts("recQualityCutsPOI","rec-level quality cuts");
-  recQualityCutsPOI->SetMinNClusterTPC(minClustersTpcPOI);
-  //recQualityCutsPOI->SetMinFoundClusterTPC(minFoundClustersTpcPOI); //only for internal TPC QA
-  recQualityCutsPOI->SetMaxChi2PerClusterTPC(maxChi2PerClusterTpcPOI);
-  recQualityCutsPOI->SetMinNdEdxClusterTPC(minDedxClusterTpcPOI);     //to reject secondaries
-
-  recQualityCutsPOI->SetMinNClusterITS(minClustersItsPOI);
-  recQualityCutsPOI->SetMaxChi2PerClusterITS(maxChi2PerClusterItsPOI);
-
-  recQualityCutsPOI->SetMinNClusterTRD(minClustersTrdPOI);
-  recQualityCutsPOI->SetMinNTrackletTRD(minTrackletTrdPOI);
-  recQualityCutsPOI->SetMinNTrackletTRDpid(minTrackletTrdPidPOI);
-  recQualityCutsPOI->SetMaxChi2PerTrackletTRD(maxChi2PerClusterTrdPOI);
-  recQualityCutsPOI->SetStatus(statusPOI); 
-  if (QA) { 
-    recQualityCutsPOI->SetQAOn(qaPOI);
-  }
-
-  //PRIMARIES
-  AliCFTrackIsPrimaryCuts *recIsPrimaryCutsPOI = new AliCFTrackIsPrimaryCuts("recIsPrimaryCutsPOI","rec-level isPrimary cuts");
-  recIsPrimaryCutsPOI->UseSPDvertex(spdVertexPOI);
-  recIsPrimaryCutsPOI->UseTPCvertex(tpcVertexPOI);
-  recIsPrimaryCutsPOI->SetMinDCAToVertexXY(minDcaToVertexXyPOI); 
-  recIsPrimaryCutsPOI->SetMinDCAToVertexZ(minDcaToVertexZPOI);
-  recIsPrimaryCutsPOI->SetMaxDCAToVertexXY(maxDcaToVertexXyPOI);
-  recIsPrimaryCutsPOI->SetMaxDCAToVertexZ(maxDcaToVertexZPOI); 
-  recIsPrimaryCutsPOI->SetDCAToVertex2D(dcaToVertex2dPOI);
-  recIsPrimaryCutsPOI->SetAbsDCAToVertex(absDcaToVertexPOI);
-  recIsPrimaryCutsPOI->SetMinNSigmaToVertex(minNSigmaToVertexPOI); 
-  recIsPrimaryCutsPOI->SetMaxNSigmaToVertex(maxNSigmaToVertexPOI); 
-  recIsPrimaryCutsPOI->SetMaxSigmaDCAxy(maxSigmaDcaXyPOI);
-  recIsPrimaryCutsPOI->SetMaxSigmaDCAz(maxSigmaDcaZPOI);
-  recIsPrimaryCutsPOI->SetRequireSigmaToVertex(requireSigmaToVertexPOI);
-  recIsPrimaryCutsPOI->SetAcceptKinkDaughters(acceptKinkDaughtersPOI);
-  if (QA) { 
-    recIsPrimaryCutsPOI->SetQAOn(qaPOI);
-  }
-
-  //ACCEPTANCE
-  AliCFAcceptanceCuts *mcAccCutsPOI = new AliCFAcceptanceCuts("mcAccCutsPOI","MC acceptance cuts");
-  mcAccCutsPOI->SetMinNHitITS(minTrackrefsItsPOI);
-  mcAccCutsPOI->SetMinNHitTPC(minTrackrefsTpcPOI);
-  mcAccCutsPOI->SetMinNHitTRD(minTrackrefsTrdPOI); 
-  mcAccCutsPOI->SetMinNHitTOF(minTrackrefsTofPOI);
-  mcAccCutsPOI->SetMinNHitMUON(minTrackrefsMuonPOI);
-  if (QA) { 
-    mcAccCutsPOI->SetQAOn(qaPOI);
-  }
-
-     
-  
-  //----------Create Cut Lists----------
-  printf("CREATE EVENT CUTS\n");
-  TObjArray* mcEventList = new TObjArray(0);  
-  if (UseMultCutforESD) mcEventList->AddLast(mcEventCuts);//cut on mult and vertex
-    
-  TObjArray* recEventList = new TObjArray(0);
-  if (UseMultCutforESD) recEventList->AddLast(recEventCuts);//cut on mult and vertex
-
-  printf("CREATE MC KINE CUTS\n");
-  TObjArray* mcListRP = new TObjArray(0);
-  if (UseKineforRP) mcListRP->AddLast(mcKineCutsRP); //cut on pt/eta/phi
-  mcListRP->AddLast(mcGenCutsRP); //cut on primary and if (UsePIDforRP) MC PID
-  
-  TObjArray* mcListPOI = new TObjArray(0);
-  if (UseKineforPOI) mcListPOI->AddLast(mcKineCutsPOI); //cut on pt/eta/phi
-  mcListPOI->AddLast(mcGenCutsPOI); //cut on primary and if (UsePIDforPOI) MC PID
-  
-  printf("CREATE MC ACCEPTANCE CUTS\n");
-  TObjArray* accListRP = new TObjArray(0) ;
-  if (UseAcceptanceforRP) accListRP->AddLast(mcAccCutsRP); //cut on number of track references
-  
-  TObjArray* accListPOI = new TObjArray(0) ;
-  if (UseAcceptanceforPOI) accListPOI->AddLast(mcAccCutsPOI); //cut on number of track references
-  
-  printf("CREATE ESD RECONSTRUCTION CUTS\n");
-  TObjArray* recListRP = new TObjArray(0) ;
-  if (UseTrackQualityforRP) recListRP->AddLast(recQualityCutsRP);   //track quality
-  if (UsePrimariesforRP)    recListRP->AddLast(recIsPrimaryCutsRP); //cut if it is a primary
-  if (UseKineforRP)         recListRP->AddLast(recKineCutsRP);      //cut on pt/eta/phi  
-
-  TObjArray* recListPOI = new TObjArray(0) ;
-  if (UseTrackQualityforPOI) recListPOI->AddLast(recQualityCutsPOI);   //track quality
-  if (UsePrimariesforPOI)    recListPOI->AddLast(recIsPrimaryCutsPOI); //cut if it is a primary
-  if (UseKineforPOI)         recListPOI->AddLast(recKineCutsPOI);      //cut on pt/eta/phi
-
-  printf("CREATE ESD PID CUTS\n");
-  TObjArray* fPIDCutListRP = new TObjArray(0) ;
-  if(UsePIDforRP) {fPIDCutListRP->AddLast(cutPidRP);} //cut on ESD PID
-  
-  TObjArray* fPIDCutListPOI = new TObjArray(0) ;
-  if (UsePIDforPOI)  {fPIDCutListPOI->AddLast(cutPidPOI);} //cut on ESD PID
-  
-
   //----------Add Cut Lists to the CF Manager----------
   printf("CREATE INTERFACE AND CUTS\n");
-  AliCFManager* cfmgrRP = new AliCFManager();
-  cfmgrRP->SetNStepEvent(3);
-  cfmgrRP->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList); 
-  cfmgrRP->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList); 
-  cfmgrRP->SetNStepParticle(4); 
-  cfmgrRP->SetParticleCutsList(AliCFManager::kPartGenCuts,mcListRP);
-  cfmgrRP->SetParticleCutsList(AliCFManager::kPartAccCuts,accListRP);
-  cfmgrRP->SetParticleCutsList(AliCFManager::kPartRecCuts,recListRP);
-  cfmgrRP->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutListRP);
   
-  AliCFManager* cfmgrPOI = new AliCFManager();
-  cfmgrPOI->SetNStepEvent(3);
-  cfmgrPOI->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList); 
-  cfmgrPOI->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList); 
-  cfmgrPOI->SetNStepParticle(4); 
-  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartGenCuts,mcListPOI);
-  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartAccCuts,accListPOI);
-  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartRecCuts,recListPOI);
-  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutListPOI);
+  // EVENTS CUTS:
+  AliFlowEventCuts* eventCuts = new AliFlowEventCuts();
+  eventCuts->SetRefMultRange(refMultMin,refMultMax);
+  taskFE->SetCutsEvent(eventCuts);
+  
+  // RP CUTS:
+  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
+  cutsRP->SetPtRange(ptminRP,ptmaxRP);
+  cutsRP->SetEtaRange(etaminRP,etamaxRP);
+  cutsRP->SetRequireCharge(kTRUE);
+  if(bSetChargeForRP){cutsRP->SetCharge(chargeRP);} 
+  if(bUsePIDforRP){cutsRP->SetPID(PdgRP);}
+      
+  if(UseTrackQualityforRP)
+  {
+   cutsRP->SetMinNClustersTPC(minClustersTpcRP);
+   cutsRP->SetMaxChi2PerClusterTPC(maxChi2PerClusterTpcRP);
+   cutsRP->SetMinNClustersITS(minClustersItsRP);
+   cutsRP->SetMaxChi2PerClusterITS(maxChi2PerClusterItsRP);
+   // when compared to original Naomi's implementation we still might need setters for:
+   /*
+   const UShort_t minDedxClusterTpcRP = 0;
+   const Int_t    minClustersTrdRP = -1;
+   const Int_t    minTrackletTrdRP = -1;
+   const Int_t    minTrackletTrdPidRP = -1;
+   const Double_t maxChi2PerClusterTrdRP = 1.e+09;
+   const ULong_t  statusRP = AliESDtrack::kTPCrefit;   //AliESDtrack::kTPCrefit &  AliESDtrack::kITSrefit 
+   */
+  } // end of if(UseTrackQualityforRP)
+ 
+  if(UsePrimariesforRP)
+  {
+   cutsRP->SetMaxDCAToVertexXY(maxDcaToVertexXyRP);
+   cutsRP->SetMaxDCAToVertexZ(maxDcaToVertexZRP);
+   cutsRP->SetDCAToVertex2D(dcaToVertex2dRP);
+   cutsRP->SetMaxNsigmaToVertex(maxNSigmaToVertexRP);
+   cutsRP->SetRequireSigmaToVertex(requireSigmaToVertexRP);
+   cutsRP->SetAcceptKinkDaughters(acceptKinkDaughtersRP);
+   // when compared to original Naomi's implementation we still might need setters for:
+   /*
+   const Bool_t   spdVertexRP = kFALSE;
+   const Bool_t   tpcVertexRP = kFALSE;
+   const Float_t  minDcaToVertexXyRP = 0.;
+   const Float_t  minDcaToVertexZRP = 0.;
+   const Bool_t   absDcaToVertexRP = kTRUE;  //default = kTRUE;
+   const Double_t minNSigmaToVertexRP = 0.;
+   const Double_t maxSigmaDcaXyRP = 1.e+10;
+   const Double_t maxSigmaDcaZRP = 1.e+10;  
+   */
+  } // end of if(UsePrimariesforRP)
+  
+  if(UseAcceptanceforRP)
+  {
+   // when compared to original Naomi's implementation we still might need setters for:
+   /*
+   const Int_t minTrackrefsItsRP = 3;
+   const Int_t minTrackrefsTpcRP = 2;
+   const Int_t minTrackrefsTrdRP = 0; 
+   const Int_t minTrackrefsTofRP = 0; 
+   const Int_t minTrackrefsMuonRP = 0; 
+   */
+  }
+    
+  // POI CUTS:
+  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts();
+  cutsPOI->SetPtRange(ptminPOI,ptmaxPOI);
+  cutsPOI->SetEtaRange(etaminPOI,etamaxPOI);
+  cutsPOI->SetRequireCharge(kTRUE);
+  if(bSetChargeForPOI){cutsPOI->SetCharge(chargePOI);} 
+  if(bUsePIDforPOI){cutsPOI->SetPID(PdgPOI);}
+      
+  if(UseTrackQualityforPOI)
+  {
+   cutsPOI->SetMinNClustersTPC(minClustersTpcPOI);
+   cutsPOI->SetMaxChi2PerClusterTPC(maxChi2PerClusterTpcPOI);
+   cutsPOI->SetMinNClustersITS(minClustersItsPOI);
+   cutsPOI->SetMaxChi2PerClusterITS(maxChi2PerClusterItsPOI);
+   // when compared to original Naomi's implementation we still might need setters for:
+   /*
+   const UShort_t minDedxClusterTpcPOI = 0;
+   const Int_t    minClustersTrdPOI = -1;
+   const Int_t    minTrackletTrdPOI = -1;
+   const Int_t    minTrackletTrdPidPOI = -1;
+   const Double_t maxChi2PerClusterTrdPOI = 1.e+09;
+   const ULong_t  statusPOI = AliESDtrack::kTPCrefit;   //AliESDtrack::kTPCrefit &  AliESDtrack::kITSrefit 
+   */
+  } // end of if(UseTrackQualityforPOI)
+ 
+  if(UsePrimariesforPOI)
+  {
+   cutsPOI->SetMaxDCAToVertexXY(maxDcaToVertexXyPOI);
+   cutsPOI->SetMaxDCAToVertexZ(maxDcaToVertexZPOI);
+   cutsPOI->SetDCAToVertex2D(dcaToVertex2dPOI);
+   cutsPOI->SetMaxNsigmaToVertex(maxNSigmaToVertexPOI);
+   cutsPOI->SetRequireSigmaToVertex(requireSigmaToVertexPOI);
+   cutsPOI->SetAcceptKinkDaughters(acceptKinkDaughtersPOI);
+   // when compared to original Naomi's implementation we still might need setters for:
+   /*
+   const Bool_t   spdVertexPOI = kFALSE;
+   const Bool_t   tpcVertexPOI = kFALSE;
+   const Float_t  minDcaToVertexXyPOI = 0.;
+   const Float_t  minDcaToVertexZPOI = 0.;
+   const Bool_t   absDcaToVertexPOI = kTRUE;  //default = kTRUE;
+   const Double_t minNSigmaToVertexPOI = 0.;
+   const Double_t maxSigmaDcaXyPOI = 1.e+10;
+   const Double_t maxSigmaDcaZPOI = 1.e+10;  
+   */
+  } // end of if(UsePrimariesforPOI)
+
+  if(UseAcceptanceforRP)
+  {
+   // when compared to original Naomi's implementation we still might need setters for:
+   /*
+   const Int_t minTrackrefsItsRP = 3;
+   const Int_t minTrackrefsTpcRP = 2;
+   const Int_t minTrackrefsTrdRP = 0; 
+   const Int_t minTrackrefsTofRP = 0; 
+   const Int_t minTrackrefsMuonRP = 0; 
+   */
+  }
   
   if (QA) {
-    taskFE->SetQAList1(qaRP);
-    taskFE->SetQAList2(qaPOI);
+    taskFE->SetQAList1(new TList());
+    taskFE->SetQAList2(new TList());
   }
-  taskFE->SetCFManager1(cfmgrRP);
-  taskFE->SetCFManager2(cfmgrPOI);
-
-
+  
+  // Pass cuts for RPs and POIs to the task:
+  taskFE->SetCutsRP(cutsRP);
+  taskFE->SetCutsPOI(cutsPOI);
 
   // Create the analysis tasks, add them to the manager.
   //===========================================================================

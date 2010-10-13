@@ -5,7 +5,7 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 
 //CENTRALITY DEFINITION
 const Int_t numberOfCentralityBins = 3;
-Int_t centralityArray[numberOfCentralityBins+1] = {0,4000,6000,10000};
+Int_t centralityArray[numberOfCentralityBins+1] = {0,4,6,100};
 
 // RUN SETTINGS
 
@@ -26,7 +26,7 @@ Bool_t NL       = kTRUE;  // nested loops (for instance distribution of phi1-phi
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
 // Analysis type can be ESD, AOD, MC, ESDMCkineESD, ESDMCkineMC
-const TString type = "ESD";
+const TString type = "MK";
 
 // Boolean to fill/not fill the QA histograms
 Bool_t QA = kTRUE;   
@@ -35,18 +35,18 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 2, 
-//Bool_t DATA = kTRUE, const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
+void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 1, 
+Bool_t DATA = kFALSE, const Char_t* dataDir="LHC10d4", Int_t offset = 0)
 //              Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
 
-void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
+//void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10d2_117048", Int_t offset=0) //phojet 7 TeV		 
 		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC09d_000104792_p6", Int_t offset=0) //data 0.9 TeV
-		 Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG4/morsch/HIJING_CENT_4EV", Int_t offset=0) //hijing Pb Pb pilot
+		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG4/morsch/HIJING_CENT_4EV", Int_t offset=0) //hijing Pb Pb pilot
 
-//void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
+//void runFlowTaskCentralityTrain(Int_t mode = mGRID, Bool_t DATA = kTRUE)
 {
   TStopwatch timer;
   timer.Start();
@@ -74,7 +74,6 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
     // Connect plug-in to the analysis manager
     mgr->SetGridHandler(alienHandler);
   }
-
   if (type == "ESD"){
     AliVEventHandler* esdH = new AliESDInputHandler;
     mgr->SetInputEventHandler(esdH);
@@ -83,6 +82,16 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
       mgr->SetMCtruthEventHandler(mc); 
     }
   }
+  if (type == "MK"){
+    AliVEventHandler* esdH = new AliESDInputHandler;
+    mgr->SetInputEventHandler(esdH);
+    if (MCEP) { 
+      AliMCEventHandler *mc = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mc); 
+    }
+  }
+  
+  
   
   if (type == "AOD"){
     AliVEventHandler* aodH = new AliAODInputHandler;
@@ -103,7 +112,7 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
     
   //____________________________________________//
   // Load the analysis task
-  gROOT->LoadMacro("AddTaskFlow.C");
+  gROOT->LoadMacro("AddTaskFlowCentrality.C");
 
   for (Int_t i=0; i<numberOfCentralityBins; i++)
   {
