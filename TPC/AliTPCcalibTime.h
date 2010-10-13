@@ -8,7 +8,6 @@
 #include "THnSparse.h"           // Temporary
 #include "TH1D.h"                // Temporary make code compiling for HLT in the 
 class TObjArray;
-
 class TH1F;
 class TH3F;
 class TH2F;
@@ -54,12 +53,13 @@ public:
   AliSplineFit* GetFitDrift(const char* name);
 //  TObjArray*    GetFitDrift();
   TH1F*         GetCosmiMatchingHisto(Int_t index=0) const {return fCosmiMatchingHisto[index];};
-  
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
   TObjArray* GetAlignITSTPC() const {return fAlignITSTPC;}              // alignemnt array ITS TPC match
   TObjArray* GetAlignTRDTPC() const {return fAlignTRDTPC;}              // alignemnt array TRD TPC match
   TObjArray* GetAlignTOFTPC() const {return fAlignTOFTPC;}              // alignemnt array TOF TPC match
+
+  THnSparse * GetTPCVertexHisto(Int_t index) { return fTPCVertex[index%12];}
 
   THnSparse*  GetResHistoTPCCE(Int_t index) const { return (index<5) ? fResHistoTPCCE[index]:0;}        //TPC-CE    matching map
   THnSparse*  GetResHistoTPCITS(Int_t index) const { return (index<5) ? fResHistoTPCITS[index]:0;}        //TPC-ITS    matching map
@@ -109,6 +109,10 @@ protected:
   THnSparse * fHistVdriftLaserC[3];	//Histograms for V drift from laser
   TObjArray *fArrayLaserA;              //Object array of driftvelocity laserA
   TObjArray *fArrayLaserC;              //Object array of driftvelocity laserC
+  //
+  // TPC vertex A side C side histo
+  //
+  THnSparse * fTPCVertex[12];                  // TPC vertex histograms A side c side - A+C -ESD
   // DELTA Z histo
   TObjArray* fArrayDz;                  // array of DZ histograms for different triggers
   TObjArray* fAlignITSTPC;              // alignemnt array ITS TPC match
@@ -135,7 +139,7 @@ private:
   AliTPCcalibTime(const AliTPCcalibTime&); 
   AliTPCcalibTime& operator=(const AliTPCcalibTime&); 
 
-  ClassDef(AliTPCcalibTime, 5); 
+  ClassDef(AliTPCcalibTime, 7); 
 };
 
 #endif

@@ -96,7 +96,7 @@ Comments to be written here:
 #include "AliTPCseed.h"
 #include "AliTrackPointArray.h"
 #include "AliTracker.h"
-
+#include "AliKFVertex.h"
 ClassImp(AliTPCcalibTime)
 
 
@@ -147,8 +147,11 @@ AliTPCcalibTime::AliTPCcalibTime()
     fResHistoTPCTRD[i]=0;
     fResHistoTPCTOF[i]=0;
     fResHistoTPCvertex[i]=0;
+    fTPCVertex[i]=0;
   }
-
+  for (Int_t i=0;i<12;i++) {
+    fTPCVertex[i]=0;
+  }
 }
 
 AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift)
@@ -272,7 +275,11 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fCosmiMatchingHisto[7]=new TH1F("Cosmics matching","p2-isPair",100,-10*0.01134 ,10*0.01134 );
   fCosmiMatchingHisto[8]=new TH1F("Cosmics matching","p3-isPair",100,-10*0.004644,10*0.004644);
   fCosmiMatchingHisto[9]=new TH1F("Cosmics matching","p4-isPair",100,-10*0.03773 ,10*0.03773 );
+  for (Int_t i=0;i<12;i++) {
+    fTPCVertex[i]=0;
+  }
   BookDistortionMaps();
+  
 }
 
 AliTPCcalibTime::~AliTPCcalibTime(){
@@ -315,7 +322,10 @@ AliTPCcalibTime::~AliTPCcalibTime(){
     fResHistoTPCvertex[i]=0;
   }
 
-
+  if (fTPCVertex) {
+    for (Int_t i=0;i<12;i++)  delete fTPCVertex[i];
+  }
+  
   fAlignITSTPC->SetOwner(kTRUE);
   fAlignTRDTPC->SetOwner(kTRUE);
   fAlignTOFTPC->SetOwner(kTRUE);
@@ -738,10 +748,188 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   if (GetDebugLevel()>20) printf("Trigger: %s\n",event->GetFiredTriggerClasses().Data());
 }
 
-void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const /*event*/){
+void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
   //
-  // Not special treatment yet - the same for cosmic and physic event
   //
+  // 
+  const Int_t kMinClusters  =80;
+  const Int_t kMinTracks    =2;    // minimal number of tracks to define the vertex
+  const Double_t kMaxTgl    =1.2;    // maximal Tgl (z angle)
+  const Double_t kMinPt     =0.2;  // minimal pt
+  const Double_t kMaxD0     =10;   // cut on distance to the primary vertex first guess
+  const Double_t kMaxZ0     =20; 
+  const Double_t kMaxD      =5;    // cut on distance to the primary vertex 
+  const Double_t kMaxZ      =4;    // maximal z distance between tracks form the same side
+  const Double_t kMaxChi2   =15;   // maximal chi2 of the TPCvertex 
+  const Double_t kCumulCovarXY=0.01; //increase the error of cumul vertex 100 microns profile
+  const Double_t kCumulCovarZ=250.; //increase the error of cumul vertex
+
+  Float_t  dca0[2]={0,0};
+  Double_t dcaVertex[2]={0,0};
+
+  Int_t ntracks=event->GetNumberOfTracks();
+  if (ntracks==0) return;
+  if (ntracks > fCutTracks) return;
+  //
+  AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
+  //
+  // Divide tracks to A and C side tracks - using the cluster indexes
+  TObjArray tracksA(ntracks);  
+  TObjArray tracksC(ntracks);  
+  //
+  AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
+  AliESDVertex *vertex    =  (AliESDVertex *)event->GetPrimaryVertex();
+  AliESDVertex *vertexTracks =  (AliESDVertex *)event->GetPrimaryVertexTracks();
+  Double_t vertexZA[10000], vertexZC[10000];
+  //
+  Int_t ntracksA= 0;
+  Int_t ntracksC= 0;
+  //
+  for (Int_t itrack=0;itrack<ntracks;itrack++) {
+    AliESDtrack *track = event->GetTrack(itrack);
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(itrack);
+    if (!friendTrack) continue;
+    if (TMath::Abs(track->GetTgl())>kMaxTgl) continue;
+    if (TMath::Abs(track->Pt())<kMinPt) continue;
+    const AliExternalTrackParam * trackIn  = track->GetInnerParam();
+    TObject *calibObject=0;
+    AliTPCseed *seed = 0;
+    Int_t nA=0, nC=0;
+    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    if (seed) {
+      for (Int_t irow=159;irow>0;irow--) {
+	AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+	if (!cl) continue;
+	if ((cl->GetDetector()%36)<18) nA++;
+	if ((cl->GetDetector()%36)>=18) nC++;
+      }
+      if ((nA>kMinClusters || nC>kMinClusters) && (nA*nC==0) ){
+	track->GetImpactParameters(dca0[0],dca0[1]);
+	if (TMath::Abs(dca0[0])>kMaxD0) continue;
+	if (TMath::Abs(dca0[1])>kMaxZ0) continue;
+	AliExternalTrackParam pTPCvertex(*trackIn);
+	if (!AliTracker::PropagateTrackToBxByBz(&pTPCvertex,4.+4.*TMath::Abs(dca0[0]),0.1,2,kTRUE)) continue;
+	pTPCvertex.PropagateToDCA(vertex,AliTracker::GetBz(), kMaxD, dcaVertex,0);
+	if (TMath::Abs(dcaVertex[0])>kMaxD) continue;
+	if (nA>kMinClusters &&nC==0) { tracksA.AddLast(pTPCvertex.Clone()); vertexZA[ntracksA++] = pTPCvertex.GetZ();}
+	if (nC>kMinClusters &&nA==0) {tracksC.AddLast(pTPCvertex.Clone());  vertexZC[ntracksC++] = pTPCvertex.GetZ();}
+      }
+    }
+  }
+  Double_t medianZA=TMath::Median(ntracksA, vertexZA);
+  Double_t medianZC=TMath::Median(ntracksC, vertexZC);
+  Int_t flags=0;
+  static Double_t deltaZ[1000]={0};
+  static Int_t counterZ=0;
+  static AliKFVertex cumulVertexA, cumulVertexC, cumulVertexAC; // cumulative vertex 
+  AliKFVertex vertexA, vertexC;
+  //
+  ntracksA= tracksA.GetEntriesFast();
+  ntracksC= tracksC.GetEntriesFast();
+  if (ntracksA>kMinTracks && ntracksC>kMinTracks){
+    deltaZ[counterZ%1000]=medianZA-medianZC;
+    counterZ+=1;
+    Double_t medianDelta=(counterZ>=1000)? TMath::Median(1000, deltaZ): TMath::Median(counterZ, deltaZ);
+    if (TMath::Abs(medianDelta-(medianZA-medianZC))>kMaxZ) flags+=16;
+    // increse the error of cumulative vertex at the beginning of event
+    cumulVertexA.Covariance(0,0)+=kCumulCovarXY*kCumulCovarXY;
+    cumulVertexA.Covariance(1,1)+=kCumulCovarXY*kCumulCovarXY;
+    cumulVertexA.Covariance(2,2)+=kCumulCovarZ*kCumulCovarZ;
+    cumulVertexC.Covariance(0,0)+=kCumulCovarXY*kCumulCovarXY;
+    cumulVertexC.Covariance(1,1)+=kCumulCovarXY*kCumulCovarXY;
+    cumulVertexC.Covariance(2,2)+=kCumulCovarZ*kCumulCovarZ;
+    cumulVertexAC.Covariance(0,0)+=kCumulCovarXY*kCumulCovarXY;
+    cumulVertexAC.Covariance(1,1)+=kCumulCovarXY*kCumulCovarXY;
+    cumulVertexAC.Covariance(2,2)+=kCumulCovarZ*kCumulCovarZ;
+    //
+    for (Int_t iA=0; iA<ntracksA; iA++){
+      if (flags!=0) continue;
+      AliExternalTrackParam *aliTrack =  (AliExternalTrackParam *)tracksA.At(iA);
+      if (TMath::Abs(aliTrack->GetZ()-medianZA)>kMaxZ) continue;
+      AliKFParticle part(*aliTrack,211);
+      vertexA+=part;
+      cumulVertexA+=part;
+      cumulVertexAC+=part;
+    }	
+    for (Int_t iC=0; iC<ntracksC; iC++){
+      if (flags!=0) continue;
+      AliExternalTrackParam *aliTrack =  (AliExternalTrackParam *)tracksC.At(iC);
+      if (TMath::Abs(aliTrack->GetZ()-medianZC)>kMaxZ) continue;
+      AliKFParticle part(*aliTrack,211);
+      vertexC+=part;
+      cumulVertexC+=part;
+      cumulVertexAC+=part;
+    }	 
+    if (vertexA.GetNDF()<kMinTracks) flags+=32;
+    if (vertexC.GetNDF()<kMinTracks) flags+=32;
+    if (TMath::Abs(vertexA.Z()-medianZA)>kMaxZ) flags+=1;   //apply cuts
+    if (TMath::Abs(vertexC.Z()-medianZC)>kMaxZ) flags+=2;
+    if (TMath::Abs(vertexA.GetChi2()/vertexA.GetNDF()+vertexC.GetChi2()/vertexC.GetNDF())> kMaxChi2) flags+=4;
+    if (flags==0 &&cumulVertexC.GetNDF()>20&&cumulVertexA.GetNDF()){
+      Double_t cont[2]={0,fTime};
+      //
+      cont[0]= cumulVertexA.X();
+      fTPCVertex[0]->Fill(cont);
+      cont[0]= cumulVertexC.X();
+      fTPCVertex[1]->Fill(cont);
+      cont[0]= 0.5*(cumulVertexA.X()-cumulVertexC.X());
+      fTPCVertex[2]->Fill(cont);
+      cont[0]= 0.5*(cumulVertexA.X()+cumulVertexC.X())-vertex->GetX();
+      fTPCVertex[3]->Fill(cont);
+      //
+      cont[0]= cumulVertexA.Y();
+      fTPCVertex[4]->Fill(cont);
+      cont[0]= cumulVertexC.Y();
+      fTPCVertex[5]->Fill(cont);
+      cont[0]= 0.5*(cumulVertexA.Y()-cumulVertexC.Y());
+      fTPCVertex[6]->Fill(cont);
+      cont[0]= 0.5*(cumulVertexA.Y()+cumulVertexC.Y())-vertex->GetY();
+      fTPCVertex[7]->Fill(cont);
+      //
+      //
+      cont[0]= 0.5*(cumulVertexA.Z()+cumulVertexC.Z());
+      fTPCVertex[8]->Fill(cont);
+      cont[0]= 0.5*(cumulVertexA.Z()-cumulVertexC.Z());
+      fTPCVertex[9]->Fill(cont);
+      cont[0]= 0.5*(cumulVertexA.Z()-cumulVertexC.Z());
+      fTPCVertex[10]->Fill(cont);      
+      cont[0]= 0.5*(cumulVertexA.Z()+cumulVertexC.Z())-vertex->GetZ();
+      fTPCVertex[11]->Fill(cont);
+    }
+    //        
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    if (cstream){
+      /*
+	TCut cutChi2= "sqrt(vA.fChi2/vA.fNDF+vC.fChi2/vC.fNDF)<10";  // chi2 Cut e.g 10 	
+	TCut cutXY= "sqrt((vA.fP[0]-vC.fP[0])^2+(vA.fP[0]-vC.fP[1])^2)<5";   // vertex Cut	
+	TCut cutZ= "abs(vA.fP[2]-mZA)<3&&abs(vC.fP[2]-mZC)<5";           // vertex Cut	
+	tree->Draw("sqrt(vA.fChi2/vA.fNDF)","sqrt(vA.fChi2/vA.fNDF)<100","")
+	
+      */
+      vertexA.Print();
+      vertexC.Print();      
+      (*cstream)<<"vertexTPC"<<
+	"flags="<<flags<<        // rejection flags
+	"vSPD.="<<vertexSPD<<    // SPD vertex
+	"vT.="<<vertexTracks<<   // track vertex
+	"v.="<<vertex<<          // esd vertex
+	"mZA="<<medianZA<<       // median Z position at vertex A side
+	"mZC="<<medianZC<<       // median Z position at vertex C side
+	"mDelta="<<medianDelta<< // median delta A side -C side
+	"counter="<<counterZ<<    // counter Z
+	//
+	"vA.="<<&vertexA<<       // vertex A side
+	"vC.="<<&vertexC<<       // vertex C side
+	"cvA.="<<&cumulVertexA<<       // cumulative vertex A side
+	"cvC.="<<&cumulVertexC<<       // cumulative vertex C side
+	"cvAC.="<<&cumulVertexAC<<       // cumulative vertex A+C side
+	"nA="<<ntracksA<<        // contributors
+	"nC="<<ntracksC<<        // contributors
+	"\n";
+    }      
+  }
+  tracksA.Delete();
+  tracksC.Delete();
 }
 
 void AliTPCcalibTime::Analyze(){
@@ -856,6 +1044,11 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
       }
     }
     //
+    if (fTPCVertex && cal->fTPCVertex) 
+      for (Int_t imeas=0; imeas<12; imeas++){
+	fTPCVertex[imeas]->Add(cal->fTPCVertex[imeas]);
+      }
+    
     for (Int_t imeas=0; imeas<5; imeas++){
       if (cal->GetResHistoTPCCE(imeas) && cal->GetResHistoTPCCE(imeas)){
 	fResHistoTPCCE[imeas]->Add(cal->fResHistoTPCCE[imeas]);
@@ -1076,8 +1269,8 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *
   Double_t xyz[3]={0,0.,0.0};  
   Double_t bz   =0;
   Int_t nclIn=0,nclOut=0;
-  trackIn.ResetCovariance(10.);
-  trackOut.ResetCovariance(10.);
+  trackIn.ResetCovariance(1000.);
+  trackOut.ResetCovariance(1000.);
   //
   //2.a Refit inner
   // 
@@ -1212,7 +1405,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   const Int_t    kMinITS  = 3;     // minimal number of ITS cluster
   const Double_t kMinZ    = 10;    // maximal dz distance
   const Double_t kMaxDy   = 2.;    // maximal dy distance
-  const Double_t kMaxAngle= 0.015;  // maximal angular distance
+  const Double_t kMaxAngle= 0.05;  // maximal angular distance
   const Double_t kSigmaCut= 5;     // maximal sigma distance to median
   const Double_t kVdErr   = 0.1;  // initial uncertainty of the vd correction 
   const Double_t kT0Err   = 3.;  // initial uncertainty of the T0 time
@@ -1239,7 +1432,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   if (track->GetInnerParam()->Pt()<kMinPt)  return;
   // exclude crossing track
   if (track->GetOuterParam()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
-  if (TMath::Abs(track->GetInnerParam()->GetZ())<kMinZ)   return;
+  if (TMath::Abs(track->GetInnerParam()->GetZ())<kMinZ/3.)   return;
   if (track->GetInnerParam()->GetX()>90)   return;
   //
   AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(track->GetInnerParam()));
@@ -1549,7 +1742,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   const Int_t      kMinTPC  = 80;    // minimal number of TPC cluster
   //  const Double_t   kMinZ    = 10;    // maximal dz distance
   const Double_t   kMaxDy   = 5.;    // maximal dy distance
-  const Double_t   kMaxAngle= 0.015;  // maximal angular distance
+  const Double_t   kMaxAngle= 0.05;  // maximal angular distance
   const Double_t   kSigmaCut= 5;     // maximal sigma distance to median
   const Double_t   kVdErr   = 0.1;  // initial uncertainty of the vd correction 
   const Double_t   kT0Err   = 3.;  // initial uncertainty of the T0 time
@@ -1727,12 +1920,12 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   axisName[0]   ="#Delta";
   axisTitle[0]  ="#Delta";
   //
-  binsTrack[1] =20;
-  xminTrack[1] =-1.5; xmaxTrack[1]=1.5;
+  binsTrack[1] =44;
+  xminTrack[1] =-1.1; xmaxTrack[1]=1.1;
   axisName[1]  ="tanTheta";
   axisTitle[1]  ="tan(#Theta)";
   //
-  binsTrack[2] =90;
+  binsTrack[2] =180;
   xminTrack[2] =-TMath::Pi(); xmaxTrack[2]=TMath::Pi(); 
   axisName[2]  ="phi";
   axisTitle[2]  ="#phi";
@@ -1803,6 +1996,25 @@ void  AliTPCcalibTime::BookDistortionMaps(){
 	fResHistoTPCvertex[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
       }
     }
+  }
+  //
+  // Book vertex: time histograms
+  //
+  Int_t    binsVertex[2]={500, fTimeBins};
+  Double_t    aminVertex[2]={-5,fTimeStart};
+  Double_t    amaxVertex[2]={5, fTimeEnd};
+  const char* hnames[12]={"TPCXAside", "TPCXCside","TPCXACdiff","TPCXAPCdiff",
+			  "TPCYAside", "TPCYCside","TPCYACdiff","TPCYAPCdiff",
+			  "TPCZAPCside", "TPCZAMCside","TPCZACdiff","TPCZAPCdiff"}; 
+  const char* anames[12]={"x (cm) - A side ", "x (cm) - C side","#Delta_{x} (cm) - TPC-A-C","#Delta_{x} (cm) - TPC-Common",
+			  "y (cm) - A side ", "y (cm) - C side","#Delta_{x} (cm) - TPC-A-C","#Delta_{y} (cm) - TPC-Common",
+			  "z (cm)", "#Delta_{Z} (cm) A-C side","#Delta_{x} (cm) - TPC-A-C","#Delta_{Z} (cm) TPC-common"}; 
+  for (Int_t ihis=0; ihis<12; ihis++) {
+    if (ihis>=8) aminVertex[0]=-20.;
+    if (ihis>=8) amaxVertex[0]=20.;
+    fTPCVertex[ihis]=new THnSparseF(hnames[ihis],hnames[ihis],2,binsVertex,aminVertex,amaxVertex);
+    fTPCVertex[ihis]->GetAxis(1)->SetTitle("Time");
+    fTPCVertex[ihis]->GetAxis(0)->SetTitle(anames[ihis]);
   }
 }
 
