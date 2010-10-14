@@ -164,8 +164,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2PhiEta[kMaxJets];   //! eta   phi correlation of tracks with the jet      
     TH2F*         fh2RhoPtRec[kMaxJets];    //! jet shape variable rho
     TH2F*         fh2PsiPtRec[kMaxJets];    //! jet shape variable psi
-    TH2F*         fh2RhoPtGen[kMaxJets];    //
-    TH2F*         fh2PsiPtGen[kMaxJets];    //
+    TH2F*         fh2RhoPtGen[kMaxJets];    //! 
+    TH2F*         fh2PsiPtGen[kMaxJets];    //!
     TH2F*         fh2FragRec[kMaxJets];     //! fragmentation function
     TH2F*         fh2FragLnRec[kMaxJets];   //! fragmetation in xi
     TH2F*         fh2FragGen[kMaxJets];     //! fragmentation function
@@ -183,29 +183,34 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*   fh1DijetMinv;            //! dijet inv mass
     TH1F*   fh1DijetMinvCut;         //! dijet inv after delta phi cut
     //background histos
-    
-    TH1F*         fh1Bkg1;   //! background estimate, all jets
-    TH1F*         fh1Bkg2;   //! background estimate, wo hardest jet 
+
+    TH1F*         fh1Bkg1; //! background estimate, all jets
+    TH1F*         fh1Bkg2; //! background estimate, wo 2 hardest jet 
+    TH1F*         fh1Bkg3; //! background estimate, random jets
     TH1F*         fh1Sigma1; //! background fluctuations, all jets
     TH1F*         fh1Sigma2; //! background fluctuations, wo hardest jet
-    TH1F*         fh1Area1;  //! average background jet area, all jets 
-    TH1F*         fh1Area2;  //! average background jet area, wo hardest jet 
-
+    TH1F*         fh1Sigma3; //! background fluctuations,random jets
+    TH1F*         fh1Area1; //! average background jet area, all jets 
+    TH1F*         fh1Area2; //! average background jet area, wo 2 hardest jet 
+    TH1F*         fh1Area3; //! average background jet area, random jets
     TH1F*         fh1Ptjet; //! rec jet spectrum
     TH1F*         fh1Ptjetsub1;//! subtracted jet spectrum (Bkg1) 
     TH1F*         fh1Ptjetsub2; //! subtracted jet spectrum (Bkg2)
+    TH1F*         fh1Ptjetsub3; //! subtracted jet spectrum (Bkg3)
     TH1F*         fh1Ptjethardest; //! rec hardest jet spectrum
     TH1F*         fh1Ptjetsubhardest1;//! subtracted hardest jet spectrum (Bkg1)
     TH1F*         fh1Ptjetsubhardest2;//! subtracted hardest jet spectrum (Bkg2)
+    TH1F*         fh1Ptjetsubhardest3;//! subtracted hardest jet spectrum (Bkg3)
     TH2F*         fh1Rhovspthardest1;//! rho vs hardest subtracted jet pt (Bkg1)
     TH2F*         fh1Rhovspthardest2;//! rho vs hardest subtracted jet pt (Bkg2)
+    TH2F*         fh1Rhovspthardest3;//! rho vs hardest subtracted jet pt (Bkg3)
     TH2F*         fh1Errorvspthardest1;//! relative error vs hardest subtracted jet pt (Bkg1)
     TH2F*         fh1Errorvspthardest2;//! relative error vs hardest subtracted jet pt (Bkg2)
-
+    TH2F*         fh1Errorvspthardest3;//! relative error vs hardest subtracted jet pt (Bkg3)    
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 7) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 8) // Analysis task for standard jet analysis
 };
  
 #endif

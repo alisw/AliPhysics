@@ -126,20 +126,27 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh1DijetMinvCut(0x0),         
   fh1Bkg1(0x0),
   fh1Bkg2(0x0),
+  fh1Bkg3(0x0),
   fh1Sigma1(0x0),
   fh1Sigma2(0x0),
+  fh1Sigma3(0x0),
   fh1Area1(0x0),
   fh1Area2(0x0),
+  fh1Area3(0x0),
   fh1Ptjet(0x0),
   fh1Ptjetsub1(0x0),
   fh1Ptjetsub2(0x0),
+  fh1Ptjetsub3(0x0), 
   fh1Ptjethardest(0x0),
   fh1Ptjetsubhardest1(0x0),
   fh1Ptjetsubhardest2(0x0),
+  fh1Ptjetsubhardest3(0x0),
   fh1Rhovspthardest1(0x0), 
   fh1Rhovspthardest2(0x0),
+  fh1Rhovspthardest3(0x0),
   fh1Errorvspthardest1(0x0), 
   fh1Errorvspthardest2(0x0),
+  fh1Errorvspthardest3(0x0),
   fHistList(0x0)  
 {
   for(int i = 0;i < kMaxStep*2;++i){
@@ -224,22 +231,29 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2DijetDifvsSum(0x0),        
   fh1DijetMinv(0x0),            
   fh1DijetMinvCut(0x0),         
-  fh1Bkg1(0x0),
+  fh1Bkg1(0x0), 
   fh1Bkg2(0x0),
+  fh1Bkg3(0x0),
   fh1Sigma1(0x0),
   fh1Sigma2(0x0),
+  fh1Sigma3(0x0),
   fh1Area1(0x0),
   fh1Area2(0x0),
+  fh1Area3(0x0),
   fh1Ptjet(0x0),
-  fh1Ptjetsub1(0x0),
-  fh1Ptjetsub2(0x0),
+  fh1Ptjetsub1(0x0),      
+  fh1Ptjetsub2(0x0),   
+  fh1Ptjetsub3(0x0),     
   fh1Ptjethardest(0x0),
   fh1Ptjetsubhardest1(0x0),
   fh1Ptjetsubhardest2(0x0),
-  fh1Rhovspthardest1(0x0), 
+  fh1Ptjetsubhardest3(0x0),
+  fh1Rhovspthardest1(0x0),
   fh1Rhovspthardest2(0x0),
-  fh1Errorvspthardest1(0x0), 
+  fh1Rhovspthardest3(0x0),
+  fh1Errorvspthardest1(0x0),
   fh1Errorvspthardest2(0x0),
+  fh1Errorvspthardest3(0x0),
   fHistList(0x0)
 {
 
@@ -459,21 +473,27 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   if(fBkgSubtraction){
     fh1Bkg1 = new TH1F("fh1Bkg1","Background estimate 1",100,0.,10.);
     fh1Bkg2 = new TH1F("fh1Bkg2","Background estimate 2",100,0.,10.);
+    fh1Bkg3 = new TH1F("fh1Bkg3","Background estimate 3",100,0.,10.);
     fh1Sigma1 = new TH1F("fh1Sigma1","Background fluctuations 1",100,0.,10.);
     fh1Sigma2 = new TH1F("fh1Sigma2","Background fluctuations 2",100,0.,10.);
+    fh1Sigma3 = new TH1F("fh1Sigma3","Background fluctuations 3",100,0.,10.);
     fh1Area1 = new TH1F("fh1Area1","Background mean area 1",50,0.,5.);
     fh1Area2 = new TH1F("fh1Area2","Background mean area 2",50,0.,5.);
-    
+    fh1Area3 = new TH1F("fh1Area3","Background mean area 3",50,0.,5.);
     fh1Ptjet = new TH1F("fh1Ptjet","Jet spectrum",100,0.,200.);
     fh1Ptjetsub1 = new TH1F("fh1Ptjetsub1","Subtracted spectrum 1",50,0.,200.);
     fh1Ptjetsub2 = new TH1F("fh1Ptjetsub2","Subtracted spectrum 2",50,0.,200.);
+    fh1Ptjetsub3 = new TH1F("fh1Ptjetsub3","Subtracted spectrum 3",50,0.,200.);
     fh1Ptjethardest = new TH1F("fh1Ptjethardest","Hardest jet spectrum",50,0.,200.);
     fh1Ptjetsubhardest1 = new TH1F("fh1Pthardestsub1","Subtracted hardest jet spectrum 1",100,0.,200.);
     fh1Ptjetsubhardest2 = new TH1F("fh1Pthardestsub2","Subtracted hardest jet spectrum 2",100,0.,200.);
+    fh1Ptjetsubhardest3 = new TH1F("fh1Pthardestsub3","Subtracted hardest jet spectrum 3",100,0.,200.);
     fh1Rhovspthardest1 = new TH2F("fh1Rhovspthardest1","Background vs pTjet 1",100,0.,200.,50,0.,5.);
     fh1Rhovspthardest2 = new TH2F("fh1Rhovspthardest2","Background vs pTjet 2",100,0.,200.,50,0.,5.);
+    fh1Rhovspthardest3 = new TH2F("fh1Rhovspthardest3","Background vs pTjet 3",100,0.,200.,50,0.,5.);
     fh1Errorvspthardest1 = new TH2F("fhErorvspthardest1","Relative error 1",100,0.,200.,50,0.,5.);
     fh1Errorvspthardest2 = new TH2F("fh1Errorvspthardest2","Relative error 2",100,0.,200.,50,0.,5.);
+    fh1Errorvspthardest3 = new TH2F("fh1Errorvspthardest3","Relative error 3",100,0.,200.,50,0.,5.);
   }
   
 
@@ -539,22 +559,27 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     if(fBkgSubtraction){
       fHistList->Add(fh1Bkg1);
       fHistList->Add(fh1Bkg2);
+      fHistList->Add(fh1Bkg3);
       fHistList->Add(fh1Sigma1);
       fHistList->Add(fh1Sigma2);
+      fHistList->Add(fh1Sigma3);
       fHistList->Add(fh1Area1);
       fHistList->Add(fh1Area2);
+      fHistList->Add(fh1Area3);
       fHistList->Add(fh1Ptjet);
       fHistList->Add(fh1Ptjethardest);
       fHistList->Add(fh1Ptjetsub1);
       fHistList->Add(fh1Ptjetsub2);
-      
+      fHistList->Add(fh1Ptjetsub3);      
       fHistList->Add(fh1Ptjetsubhardest1);
       fHistList->Add(fh1Ptjetsubhardest2);
+      fHistList->Add(fh1Ptjetsubhardest3);
       fHistList->Add(fh1Rhovspthardest1);
       fHistList->Add(fh1Rhovspthardest2);
-      
+      fHistList->Add(fh1Rhovspthardest3);
       fHistList->Add(fh1Errorvspthardest1);
       fHistList->Add(fh1Errorvspthardest2);
+     fHistList->Add(fh1Errorvspthardest3);
     }
   }
 
@@ -656,23 +681,27 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
      ///just to start: some very simple plots containing rho, sigma and area of the background. 
      
      Int_t nJets = aodRecJets->GetEntriesFast();
-     Float_t pthardest=0;
+     Float_t pthardest=0.;
      if(nJets!=0){
- 
-
+  
        Float_t bkg1=evBkg->GetBackground(0);
        Float_t bkg2=evBkg->GetBackground(1);
+       Float_t bkg3=evBkg->GetBackground(2);
        Float_t sigma1=evBkg->GetSigma(0);
        Float_t sigma2=evBkg->GetSigma(1);
+       Float_t sigma3=evBkg->GetSigma(2); 
        Float_t area1=evBkg->GetMeanarea(0);
        Float_t area2=evBkg->GetMeanarea(1);  
+       Float_t area3=evBkg->GetMeanarea(2);
        fh1Bkg1->Fill(bkg1); //rho computed with all background jets.
-       fh1Bkg2->Fill(bkg2); //rho computed with all background jets but the hardest. 
+       fh1Bkg2->Fill(bkg2); //rho computed with all background jets but the 2 hardest. 
+       fh1Bkg3->Fill(bkg3); //rho computed with randomized jets
        fh1Sigma1->Fill(sigma1); 
        fh1Sigma2->Fill(sigma2);
+       fh1Sigma3->Fill(sigma3);
        fh1Area1->Fill(area1);
        fh1Area2->Fill(area2);
-       
+       fh1Area3->Fill(area3);
        
        
        for(Int_t k=0;k<nJets;k++){
@@ -680,23 +709,30 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	 fh1Ptjet->Fill(jet->Pt());
 	 Float_t ptsub1=jet->Pt()-bkg1*jet->EffectiveAreaCharged();
 	 Float_t ptsub2=jet->Pt()-bkg2*jet->EffectiveAreaCharged();
+         Float_t ptsub3=jet->Pt()-bkg3*jet->EffectiveAreaCharged();
 	 Float_t err1=sigma1*sqrt(area1);
 	 Float_t err2=sigma2*sqrt(area2);
-	 
+         Float_t err3=sigma3*sqrt(area3);	 
 	 fh1Ptjetsub1->Fill(ptsub1);
 	 fh1Ptjetsub2->Fill(ptsub2);
-	 
+	 fh1Ptjetsub3->Fill(ptsub3);
 	 if(k==0) {
 	   pthardest=jet->Pt();
 	   fh1Ptjethardest->Fill(pthardest);
 	   fh1Ptjetsubhardest1->Fill(ptsub1);
 	   fh1Ptjetsubhardest2->Fill(ptsub2);
+           fh1Ptjetsubhardest3->Fill(ptsub3);
 	   fh1Errorvspthardest1->Fill(ptsub1,err1/ptsub1);
 	   fh1Errorvspthardest2->Fill(ptsub2,err2/ptsub2);
+           fh1Errorvspthardest3->Fill(ptsub3,err3/ptsub3);
 	 }
        }
        fh1Rhovspthardest1->Fill(pthardest,bkg1);
        fh1Rhovspthardest2->Fill(pthardest,bkg2);
+       fh1Rhovspthardest3->Fill(pthardest,bkg3); 
+
+
+
      }
   }// background subtraction
   
