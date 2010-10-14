@@ -271,15 +271,14 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
     for(Int_t i=0; i<kNch; i++){
       if(  (adcMap[i][1] != chMap->GetADCModule(i)) 
         || (adcMap[i][2] != chMap->GetADCChannel(i)) 
+	|| (adcMap[i][3] != chMap->GetADCSignalCode(i)) 
 	|| (adcMap[i][4] != chMap->GetDetector(i)) 
 	|| (adcMap[i][5] != chMap->GetSector(i))) 
 	 adcMapUpdated = kTRUE;
     }
     for(Int_t i=0; i<kNScch; i++){
       if(  (scMap[i][2] != chMap->GetScChannel(i)) 
-	|| (scMap[i][3] != chMap->GetScSignalCode(i)) 
-	|| (scMap[i][4] != chMap->GetScDetector(i)) 
-	|| (scMap[i][5] != chMap->GetScSector(i)))
+	|| (scMap[i][3] != chMap->GetScSignalCode(i)) )
 	 scMapUpdated = kTRUE;
     }
     for(Int_t i=0; i<kNtdcch; i++){
@@ -318,7 +317,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
        mapCalib->SetTDCSignalCode(k, tdcMap[k][3]);
     }
     //
-    mapCalib->Print("");
+    //mapCalib->Print("");
     // 
     AliCDBMetaData metaData;
     metaData.SetBeamPeriod(0);

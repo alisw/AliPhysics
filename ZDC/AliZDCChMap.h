@@ -39,7 +39,7 @@ class AliZDCChMap: public TNamed {
   Int_t GetScChannel(Int_t i)    const {return fScalerChannel[i];}
   Int_t GetScDetector(Int_t i)   const {return fScDetector[i];}
   Int_t GetScSector(Int_t i)     const {return fScSector[i];}
-  Int_t GetScSignalCode(Int_t i) const {return fSector[i];}
+  Int_t GetScSignalCode(Int_t i) const {return fScSignalCode[i];}
   //
   Int_t GetTDCChannel(Int_t i)    const {return fTDCChannel[i];}
   Int_t GetTDCSignalCode(Int_t i) const {return fTDCSignalCode[i];}
