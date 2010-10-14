@@ -8,6 +8,8 @@
 //
 // Author: Adam.Kisiel@cern.ch
 
+class AliGRPObject;
+
 AliGRPObject *GetGRPForRun(Int_t runno) {
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("raw://");
