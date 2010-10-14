@@ -283,8 +283,9 @@ Double_t AliTPCTenderSupply::GetGainCorrection()
   AliESDEvent *event=fTender->GetEvent();
   UInt_t time=event->GetTimeStamp();
   
-  Double_t gain = 1;
-  if (fGainNew && fGainOld) gain = fGainOld->Eval(time)/fGainNew->Eval(time);
+  Double_t gain = 1.;
+  if (!fGainOld) return gain;
+  if (fGainNew) gain = fGainOld->Eval(time)/fGainNew->Eval(time);
   
   //If there is only the default calibration, at least apply correction for pressure
   if (fPcorrection){
