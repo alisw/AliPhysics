@@ -16,6 +16,7 @@
 class AliAODEvent;
 class AliAODInputHandler;
 class AliESDEvent;
+class AliESDtrackCuts;
 class AliAODTrack;
 class AliESDTrack;
 class AliGenPythiaEventHeader;
@@ -43,7 +44,8 @@ class AliAnalyseLeadingTrackUE : public TObject {
   											     fOnlyHadrons = onlyhadrons;
 										             fTrackEtaCut = etacut;     }
   void  SetDebug(Int_t debug) { fDebug = debug; } 
-  Bool_t         ApplyCuts(TObject* track, Int_t filterbit);                       // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
+  Bool_t         ApplyCuts(TObject* track);                       // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
+  void           DefineESDCuts(Int_t filterbit);                                 // Emulate filterbit
   TObjArray*     FindLeadingObjects(TObject* obj);                                 // Looks for leading track or MC particle
   TObjArray*     GetMinMaxRegion(TList* transv1, TList* transv2);                  // Sorts the transverse regions in MIN and MAX
   Int_t          NParticles(TObject *obj);                                         // Counts tracks or MC particles
@@ -59,6 +61,9 @@ class AliAnalyseLeadingTrackUE : public TObject {
   Int_t          fFilterBit;         // track selection cuts
   Bool_t         fOnlyHadrons;       // consider only charged Pions, Protons and Kaons 
   Double_t       fTrackEtaCut;       // pseudo-rapidity limit of transverse regions     
-    ClassDef(AliAnalyseLeadingTrackUE,0)
+  AliESDtrackCuts *fEsdTrackCuts;    // set of cuts when reading ESD
+  AliESDtrackCuts *fEsdTrackCutsSPD;    // set of cuts when reading ESD
+  AliESDtrackCuts *fEsdTrackCutsSDD;    // set of cuts when reading ESD
+  ClassDef(AliAnalyseLeadingTrackUE,0)
 };
 #endif
