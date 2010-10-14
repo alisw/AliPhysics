@@ -304,33 +304,41 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
           //Check origin of the candidates
           Int_t  label1 = photon1->GetLabel();
           Int_t  label2 = photon2->GetLabel();
-          tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), photon1->GetInputFileIndex());
-          tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), photon2->GetInputFileIndex());
+          if(label1>=0)tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), photon1->GetInputFileIndex());
+          if(label2>=0)tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), photon2->GetInputFileIndex());
           
           if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
-          if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)){
+          if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && 
+             GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)){
             
             //Check if pi0 mother is the same
             if(GetReader()->ReadStack()){ 
-              TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
-              label1 = mother1->GetFirstMother();
-              //mother1 = GetMCStack()->Particle(label1);//pi0
-              
-              TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
-              label2 = mother2->GetFirstMother();
-              //mother2 = GetMCStack()->Particle(label2);//pi0
+              if(label1>=0){
+                TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
+                label1 = mother1->GetFirstMother();
+                //mother1 = GetMCStack()->Particle(label1);//pi0
+              }
+              if(label2>=0){
+                TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
+                label2 = mother2->GetFirstMother();
+                //mother2 = GetMCStack()->Particle(label2);//pi0
+               }
             }
             else if(GetReader()->ReadAODMCParticles()){//&& (input > -1)){
-              AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
-              label1 = mother1->GetMother();
-              //mother1 = GetMCStack()->Particle(label1);//pi0
-              AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon2->GetInputFileIndex()))->At(label2);//photon in kine tree
-              label2 = mother2->GetMother();
-              //mother2 = GetMCStack()->Particle(label2);//pi0
+              if(label1>=0){
+                AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
+                label1 = mother1->GetMother();
+                //mother1 = GetMCStack()->Particle(label1);//pi0
+               }
+              if(label2>=0){
+                AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon2->GetInputFileIndex()))->At(label2);//photon in kine tree
+                label2 = mother2->GetMother();
+                //mother2 = GetMCStack()->Particle(label2);//pi0
+              }
             }
             
             //printf("mother1 %d, mother2 %d\n",label1,label2);
-            if(label1 == label2)
+            if(label1 == label2 && label1>=0)
               GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
           }
         }//Work with stack also   
@@ -429,32 +437,40 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         if(IsDataMC()){
           Int_t	label1 = photon1->GetLabel();
           Int_t	label2 = photon2->GetLabel();
-          tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), photon1->GetInputFileIndex());
-          tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), photon2->GetInputFileIndex());
+          if(label1>=0)tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), photon1->GetInputFileIndex());
+          if(label2>=0)tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), photon2->GetInputFileIndex());
           if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
-          if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)){
+          if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && 
+             GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)){
             //Check if pi0 mother is the same
             
             if(GetReader()->ReadStack()){ 
-              TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
-              label1 = mother1->GetFirstMother();
-              //mother1 = GetMCStack()->Particle(label1);//pi0
-              
-              TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
-              label2 = mother2->GetFirstMother();
-              //mother2 = GetMCStack()->Particle(label2);//pi0
+              if(label1>=0){
+                TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
+                label1 = mother1->GetFirstMother();
+                //mother1 = GetMCStack()->Particle(label1);//pi0
+              }
+              if(label2>=0){
+                TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
+                label2 = mother2->GetFirstMother();
+                //mother2 = GetMCStack()->Particle(label2);//pi0
+              }
             }
-            else if(GetReader()->ReadAODMCParticles()){ //&& (input > -1)){
-              AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
-              label1 = mother1->GetMother();
-              //mother1 = GetMCStack()->Particle(label1);//pi0
-              AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon2->GetInputFileIndex()))->At(label2);//photon in kine tree
-              label2 = mother2->GetMother();
-              //mother2 = GetMCStack()->Particle(label2);//pi0
+            else if(GetReader()->ReadAODMCParticles()&& label1>=0 && label2>=0){ //&& (input > -1)){
+              if(label1>=0){
+                AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
+                label1 = mother1->GetMother();
+                //mother1 = GetMCStack()->Particle(label1);//pi0
+              }
+              if(label2>=0){
+                AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon2->GetInputFileIndex()))->At(label2);//photon in kine tree
+                label2 = mother2->GetMother();
+                //mother2 = GetMCStack()->Particle(label2);//pi0
+              }
             }
             
             //printf("mother1 %d, mother2 %d\n",label1,label2);
-            if(label1 == label2)
+            if(label1 == label2 && label1>=0)
               GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
           }
         }//Work with stack also   
