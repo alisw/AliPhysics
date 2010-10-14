@@ -483,7 +483,7 @@ TObjArray* AliTRDclusterResolution::Histos()
   arr->AddAt(h3, 2);
 
   //  RESOLUTION/PULLS PLOTS
-  fContainer->AddAt(arr = new TObjArray(5), kYRes);
+  fContainer->AddAt(arr = new TObjArray(6), kYRes);
   arr->SetName("ResY");
   // resolution plot on pw and q (for dydx=0 && B=0)
   if(!(h3=(TH3S*)gROOT->FindObject(Form("Res%s%03d", (HasMCdata()?"MC":"") ,fDet)))) {
@@ -534,6 +534,16 @@ TObjArray* AliTRDclusterResolution::Histos()
       60, -fDyRange, fDyRange); // dy
   } h3->Reset();
   arr->AddAt(h3, 4);
+  // systemtic plot of tb on pw and q (for dydx=0 && B=0)
+  if(!(h3=(TH3S*)gROOT->FindObject(Form("SysTbPwQ%s%03d", (HasMCdata()?"MC":"") ,fDet)))) {
+    h3 = new TH3S(
+      Form("SysTbPwQ%s%03d", (HasMCdata()?"MC":""),fDet),
+      Form(" Det[%d] Col[%d] Row[%d];log q [a.u];#deltay [pw];t [time bin]", fDet, fCol, fRow),
+      45,   2., 6.5,            // log(q) [a.u]
+      25, -.51, .51,            // y [pw]
+      AliTRDseedV1::kNtb, -.5, AliTRDseedV1::kNtb-0.5);   // t [tb]
+  } h3->Reset();
+  arr->AddAt(h3, 5);
 
 
 
@@ -617,6 +627,8 @@ void AliTRDclusterResolution::UserExec(Option_t *)
       case 3: // MPV np
         h3 = (TH3S*)arr1->At(0);
         h3->Fill(TMath::Log(q), pw, dy);
+        h3 = (TH3S*)arr1->At(5);
+        h3->Fill(TMath::Log(q), pw, t);
         break;
       case 2: // Min np
         h3 = (TH3S*)arr1->At(3);
@@ -891,6 +903,61 @@ void AliTRDclusterResolution::ProcessCharge()
 // Author
 // Alexandru Bercuci <A.Bercuci@gsi.de>
 
+
+
+  TObjArray *arr(NULL);
+  if(!(arr = (TObjArray*)fContainer->At(kYSys))) {
+    AliError("Missing systematic container");
+    return;
+  }
+  TH3S *h3s(NULL);
+  if(!(h3s = (TH3S*)arr->At(0))){
+    AliError("Missing systematic histo");
+    return;
+  }
+  // PROCESS SYSTEMATIC
+  Float_t tmin(6.5), tmax(20.5), tmed(0.5*(tmin+tmax));
+  TGraphErrors *g[2]; TH1 *h(NULL);
+  g[0] = new TGraphErrors();
+  g[0]->SetMarkerStyle(24);g[0]->SetMarkerColor(kBlue);g[0]->SetLineColor(kBlue);
+  g[1] = new TGraphErrors();
+  g[1]->SetMarkerStyle(24);g[1]->SetMarkerColor(kRed);g[1]->SetLineColor(kRed);
+  // define model for systematic shift vs pw
+  TF1 fm("fm", "[0]+[1]*sin(x*[2])", -.45,.45);
+  fm.SetParameter(0, 0.); fm.SetParameter(1, 1.e-2); fm.FixParameter(2, TMath::TwoPi());
+  fm.SetParNames("#deltay", "#pm#delta", "2*#pi");
+  h3s->GetXaxis()->SetRange(tmin, tmax);
+  if(!AliTRDresolution::Process((TH2*)h3s->Project3D("zy"), g))return;
+  g[0]->Fit(&fm, "QR");
+  if(fCanvas){
+    g[0]->Draw("apl");
+    fCanvas->Modified(); fCanvas->Update();
+    h = g[0]->GetHistogram();
+    h->SetTitle(fm.GetTitle());
+    h->GetXaxis()->SetTitle("pw");h->GetXaxis()->CenterTitle();
+    h->GetYaxis()->SetTitle("#Delta y[cm]");h->GetYaxis()->CenterTitle();
+    if(IsSaveAs()) fCanvas->SaveAs(Form("D%03d_SysNormTrack_pw.gif", fDet));
+    else gSystem->Sleep(100);
+  }
+
+  // define model for systematic shift vs tb
+  TF1 fx("fx", "[0]+0.1*[1]*(x-[2])", tmin, tmax);
+  fx.SetParNames("#deltay", "#deltay/t", "<t>");
+  fx.FixParameter(2, tmed);
+  h3s->GetXaxis()->UnZoom();
+  if(!AliTRDresolution::Process((TH2*)h3s->Project3D("zx"), g)) return;
+  g[0]->Fit(&fx, "Q", "", tmin, tmax);
+  if(fCanvas){
+    g[0]->Draw("apl");
+    fCanvas->Modified(); fCanvas->Update();
+    h = g[0]->GetHistogram();
+    h->SetTitle(fx.GetTitle());
+    h->GetXaxis()->SetTitle("t [tb]");h->GetXaxis()->CenterTitle();
+    h->GetYaxis()->SetTitle("#Delta y[cm]");h->GetYaxis()->CenterTitle();
+    if(IsSaveAs()) fCanvas->SaveAs(Form("D%03d_SysNormTrack_tb.gif", fDet));
+    else gSystem->Sleep(100);
+  }
+
   TH3S *h3(NULL);
   if(!(h3 = (TH3S*)fContainer->At(kYRes))) {
     AliWarning("Missing dy=f(Q) histo");
@@ -909,7 +976,7 @@ void AliTRDclusterResolution::ProcessCharge()
   s2x /= (AliTRDseedV1::kNtb-5); s2x *= s2x;
   //Double_t exb2 = fExB*fExB;
 
-  TObjArray *arr = (TObjArray*)fResults->At(kYRes);
+  arr = (TObjArray*)fResults->At(kYRes);
   TGraphErrors *gqm = (TGraphErrors*)arr->At(0);
   TGraphErrors *gqs = (TGraphErrors*)arr->At(1);
   TGraphErrors *gqp = (TGraphErrors*)arr->At(2);
@@ -957,7 +1024,7 @@ void AliTRDclusterResolution::ProcessCharge()
 }
 
 //_______________________________________________________
-void AliTRDclusterResolution::ProcessNormalTracks()
+Bool_t AliTRDclusterResolution::ProcessNormalTracks()
 {
 // Resolution as a function of y displacement from pad center and drift length.
 //
@@ -991,77 +1058,43 @@ void AliTRDclusterResolution::ProcessNormalTracks()
 // Author
 // Alexandru Bercuci <A.Bercuci@gsi.de>
 
-  TH3S *h3s(NULL), *h3r(NULL), *h3q(NULL);
   TObjArray *arr(NULL);
-  if(!(arr = (TObjArray*)fContainer->At(kYSys))) {
-    AliError("Missing systematic container");
-    return;
-  }
-  if(!(h3s = (TH3S*)arr->At(0))){
-    AliError("Missing systematic histo");
-    return;
-  }
+  TH3S *h3r(NULL), *h3t(NULL);
   if(!(arr= (TObjArray*)fContainer->At(kYRes))) {
     AliError("Missing resolution container");
-    return;
+    return kFALSE;
   }
-  if(!(h3r = (TH3S*)arr->At(0))) AliWarning("Missing resolution pw/t histo");
-  if(!(h3q = (TH3S*)arr->At(2))) AliWarning("Missing resolution q histo");
+  if(!(h3r = (TH3S*)arr->At(0))){
+    AliError("Missing resolution pw/q histo");
+    return kFALSE;
+  } else if(!(Int_t)h3r->GetEntries()){
+    AliError("Empty resolution pw/q histo");
+    return kFALSE;
+  }
+  if(!(h3t = (TH3S*)arr->At(2))){
+    AliError("Missing resolution t histo");
+    return kFALSE;
+  } else if(!(Int_t)h3t->GetEntries()){
+    AliError("Empty resolution t histo");
+    return kFALSE;
+  }
 
-  // PROCESS SYSTEMATIC
+  // local variables
+  Double_t x(0.), y(0.), ex(0.), ey(0.);
   Float_t tmin(6.5), tmax(20.5), tmed(0.5*(tmin+tmax));
   TGraphErrors *g[2]; TH1 *h(NULL);
   g[0] = new TGraphErrors();
   g[0]->SetMarkerStyle(24);g[0]->SetMarkerColor(kBlue);g[0]->SetLineColor(kBlue);
   g[1] = new TGraphErrors();
   g[1]->SetMarkerStyle(24);g[1]->SetMarkerColor(kRed);g[1]->SetLineColor(kRed);
-  // define model for systematic shift vs pw
-  TF1 fm("fm", "[0]+[1]*sin(x*[2])", -.45,.45);
-  fm.SetParameter(0, 0.); fm.SetParameter(1, 1.e-2); fm.FixParameter(2, TMath::TwoPi());
-  fm.SetParNames("#deltay", "#pm#delta", "2*#pi");
-  h3s->GetXaxis()->SetRange(tmin, tmax);
-  if(!AliTRDresolution::Process((TH2*)h3s->Project3D("zy"), g))return;
-  g[0]->Fit(&fm, "QR");
-  if(fCanvas){
-    g[0]->Draw("apl");
-    fCanvas->Modified(); fCanvas->Update();
-    h = g[0]->GetHistogram();
-    h->SetTitle(fm.GetTitle());
-    h->GetXaxis()->SetTitle("pw");h->GetXaxis()->CenterTitle();
-    h->GetYaxis()->SetTitle("#Delta y[cm]");h->GetYaxis()->CenterTitle();
-    if(IsSaveAs()) fCanvas->SaveAs(Form("D%03d_SysNormTrack_pw.gif", fDet));
-    else gSystem->Sleep(100);
-  }
 
-  // define model for systematic shift vs tb
-  TF1 fx("fx", "[0]+0.1*[1]*(x-[2])", tmin, tmax);
-  fx.SetParNames("#deltay", "#deltay/t", "<t>");
-  fx.FixParameter(2, tmed);
-  h3s->GetXaxis()->UnZoom();
-  if(!AliTRDresolution::Process((TH2*)h3s->Project3D("zx"), g)) return;
-  g[0]->Fit(&fx, "Q", "", tmin, tmax);
-  if(fCanvas){
-    g[0]->Draw("apl");
-    fCanvas->Modified(); fCanvas->Update();
-    h = g[0]->GetHistogram();
-    h->SetTitle(fx.GetTitle());
-    h->GetXaxis()->SetTitle("t [tb]");h->GetXaxis()->CenterTitle();
-    h->GetYaxis()->SetTitle("#Delta y[cm]");h->GetYaxis()->CenterTitle();
-    if(IsSaveAs()) fCanvas->SaveAs(Form("D%03d_SysNormTrack_tb.gif", fDet));
-    else gSystem->Sleep(100);
-  }
-  if(!h3r || !(Int_t)h3r->GetEntries()) return;
-
-  // PROCESS RESOLUTION
-  Double_t x(0.), y(0.), ex(0.), ey(0.);
-  // define model for resolution vs tb
+  // PROCESS RESOLUTION VS TB
   TF1 fsx("fsx", "[0]*[0]+[1]*[1]*[2]*0.1*(x-[3])", tmin, tmax);
-  fsx.SetParNames("#sqrt{<#sigma^{2}_{prf}+#sigma^{2}_{q}>}(t_{med})", "D_{T}", "v_{drift}", "t_{med}");
+  fsx.SetParNames("#sqrt{<#sigma^{2}(prf, q)>}(t_{med})", "D_{T}", "v_{drift}", "t_{med}");
   fsx.FixParameter(1, fDt);
   fsx.SetParameter(2, fVdrift);
   fsx.FixParameter(3, tmed);
-  h3r->GetXaxis()->UnZoom();
-  if(!AliTRDresolution::Process((TH2*)h3r->Project3D("zx"), g)) return;
+  if(!AliTRDresolution::Process((TH2*)h3r->Project3D("yx"), g)) return kFALSE;
   for(Int_t ip(0); ip<g[1]->GetN(); ip++){
     g[1]->GetPoint(ip, x, y);ex = g[1]->GetErrorX(ip); ey = g[1]->GetErrorY(ip);
     g[1]->SetPoint(ip, x, y*y);g[1]->SetPointError(ip, ex, 2*y*ey);
@@ -1083,7 +1116,7 @@ void AliTRDclusterResolution::ProcessNormalTracks()
   TF1 fs("fs", "[0]*[0]*exp(-1*(x/[1])**2)+[2]", -.5, .5);
   fs.SetParNames("<#sigma^{max}(q,prf)>_{q}", "#sigma(pw)", "D_{T}^{2}*<x>");
   h3r->GetXaxis()->SetRange(tmin, tmax);
-  if(!AliTRDresolution::Process((TH2*)h3r->Project3D("zy"), g, 200)) return;
+  if(!AliTRDresolution::Process((TH2*)h3r->Project3D("zy"), g, 200)) return kFALSE;
   for(Int_t ip(0); ip<g[1]->GetN(); ip++){
     g[1]->GetPoint(ip, x, y); ex = g[1]->GetErrorX(ip); ey = g[1]->GetErrorY(ip);
     g[1]->SetPoint(ip, x, y*y);g[1]->SetPointError(ip, ex, 2.*y*ey);
@@ -1113,7 +1146,7 @@ void AliTRDclusterResolution::ProcessNormalTracks()
   // define model for resolution vs q
   TF1 fq("fq", "[0]*[0]*exp(-1*[1]*(x-[2])**2)+[2]", 2.5, 5.5);
   fq.SetParNames("<#sigma^{max}(q,prf)>_{prf}", "slope","mean", "D_{T}^{2}*<x>");
-  if(!AliTRDresolution::Process((TH2*)h3q->Project3D("yx"), g)) return;
+  if(!AliTRDresolution::Process((TH2*)h3t->Project3D("yx"), g)) return kFALSE;
   for(Int_t ip(0); ip<g[1]->GetN(); ip++){
     g[1]->GetPoint(ip, x, y); ex = g[1]->GetErrorX(ip); ey = g[1]->GetErrorY(ip);
     g[1]->SetPoint(ip, x, y*y);g[1]->SetPointError(ip, ex, 2.*y*ey);
@@ -1134,6 +1167,7 @@ void AliTRDclusterResolution::ProcessNormalTracks()
     if(IsSaveAs()) fCanvas->SaveAs(Form("D%03d_ResNormTrack_q.gif", fDet));
     else gSystem->Sleep(100);
   }
+  return kTRUE;
 }
 
 //_______________________________________________________
