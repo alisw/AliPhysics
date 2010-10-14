@@ -288,7 +288,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->BackgMode(0);
     jh->SetRadius(0.4);
     if(radius>0)jh->SetRadius(radius);
-    jh->SetEtSeed(4.);
+    jh->SetEtSeed(2.);
     jh->SetNAcceptJets(6);
     jh->SetLegoNbinPhi(432);
     jh->SetLegoNbinEta(274);

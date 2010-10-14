@@ -39,6 +39,8 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=
 	if(iFlag&(1<<3)) ff = AddTaskFragmentationFunction("jets", "", "KINEb", "KINEb", filterMask);
         // reconstructed charged tracks after cuts, MC jets in acceptance 
 	if(iFlag&(1<<4)) ff = AddTaskFragmentationFunction("jets", "jetsMC2b", "AODMCb", "AOD2b", filterMask);
+	// reconstruction efficiency: pointing with rec jet axis into gen tracks 
+	if(iFlag&(1<<5)) ff = AddTaskFragmentationFunction("jets", "jetsAODMC2_UA104", "AODb", "AODMC2b", filterMask);
 
         // kt jets
         // only reconstructed 
