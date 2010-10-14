@@ -245,8 +245,9 @@ void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
 {
   // Read the variables from the file
   
-  fpw = fopen(tempFile,"r");
-  
+  ifstream intmpfile;
+  intmpfile.open(tempFile);
+
   Int_t iddet = 0, issm = 0, irrow = 0, iccol = 0;
   Float_t smcount = 0., smiso = 0.;
   Float_t cellcount = 0., celliso = 0.;
@@ -256,7 +257,7 @@ void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
     {
       for (Int_t ism = 0; ism < kMaxSMN; ism++)
 	{
-	  fscanf(fpw,"%d %d %f %f",&iddet,&issm,&smcount,&smiso);
+	  intmpfile >> iddet >> issm >> smcount >> smiso;
 	  fSMCount[idet][ism] = smcount;
 	  fSMIso[idet][ism]   = smiso;
 	}
@@ -270,8 +271,8 @@ void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
 	    {
 	      for (Int_t icol = 0; icol < kMaxCol; icol++)
 		{
-		  fscanf(fpw,"%d %d %d %d %f %f",&iddet,&issm,&irrow,&iccol,
-		  	 &cellcount,&celliso);
+		  intmpfile >> iddet >> issm >> irrow >> iccol
+			    >> cellcount >> celliso;
 		  fCellCount[idet][ism][irow][icol] = cellcount;
 		  fCellIso[idet][ism][irow][icol]   = celliso;
 		}
@@ -279,7 +280,8 @@ void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
 	}
     }
   
-  fclose(fpw);
+
+  intmpfile.close();
 
 }
 // ------------------------------------------------------------------------ //
