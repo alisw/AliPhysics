@@ -18,39 +18,39 @@
 ////////////////////////////////////////////////////////////////////////
 //
 // Analysis class to Correct Underlying Event studies
-// (requires input AOD)
 //
-// Different analysis are performed according to input.
+// This class needs as input ESDs.
+// The output is an analysis-specific container.
 //
-// Run on MC:
-// - fraction of diffractive events after different cuts
-// - tracking efficiency and contamination
-// 
-// Run on DATA:
-// - fraction of events after different cuts
-// - vertex reconstruction efficiency
-//
-// vallero@physi.uni-heidelberg.de
+// The class is used to get the contamination from secondaries
+// from tracks DCA distribution 
+// as function of track pT and pseudo-rapidity.
+// It provides additional information for the corrections 
+// that can not be retrieved by the AliAnalysisTaskLeadingTackUE
+// task, which is running on AODs.
 // 
 ////////////////////////////////////////////////////////////////////////
 
 #include <TROOT.h>
 #include <TChain.h>
-#include <TCanvas.h>
-#include <TFile.h>
+//#include <TCanvas.h>
+//#include <TFile.h>
 #include <TList.h>
 #include <TMath.h>
-#include <TProfile.h>
+//#include <TProfile.h>
 #include <TTree.h>
-#include <TVector3.h>
+//#include <TVector3.h>
+#include <TH3F.h>
 
-#include "AliAnalyseUE.h"
+#include "AliAnalyseLeadingTrackUE.h"
+#include "AliAnalysisFilter.h"
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskCorrectionsUE.h"
 #include "AliAODHandler.h"
 #include "AliESDHandler.h"
 #include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliESDInputHandler.h"
@@ -58,11 +58,15 @@
 #include "AliCFManager.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliHistogramsUE.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEventHandler.h"
 #include "AliAnalysisHelperJetTasks.h"
+
+class TCanvas;
+class TFile;
+class TProfile;
+class TVector3; 
 
 ClassImp( AliAnalysisTaskCorrectionsUE)
 
@@ -72,47 +76,33 @@ AliAnalysisTaskCorrectionsUE* AliAnalysisTaskCorrectionsUE::fgTaskCorrectionsUE=
 //____________________________________________________________________
 AliAnalysisTaskCorrectionsUE:: AliAnalysisTaskCorrectionsUE(const char* name):
 AliAnalysisTask(name,""),
-fAnaUE(0x0),
-fAOD(0x0), 
-fESDHandler(0x0),
-fAODBranch("jets"),
-fCFManager(0x0),
+fAnalyseUE(0x0),
 fDebug(0),
-fHistosUE(0x0),
+fESDEvent(0x0),
+fESDHandler(0x0),
 fInputHandler(0x0),
 fListOfHistos(0x0),  
-fMcHandler(0x0),
 fMcEvent(0x0),
-fBinsPtInHist(30),     
-fIsNorm2Area(kTRUE),
-fMaxJetPtInHist(300.), 
-fMinJetPtInHist(0.),
-fConstrainDistance(kTRUE),
-fMinDistance(0.2),
-fSimulateChJetPt(kFALSE),
-fUseAliStack(kTRUE),
-fUseMCParticleBranch(kFALSE),
-fnTracksVertex(3),  // QA tracks pointing to principal vertex (= 3 default) 
-fZVertex(5.),
-fAnaType(1),         
-fConePosition(1),
-fConeRadius(0.7),
-fFilterBit(0xFF),
-fJetsOnFly(kFALSE),
-fRegionType(1),
-fUseChargeHadrons(kFALSE),
-fUseChPartJet(kFALSE),
-fUsePositiveCharge(kTRUE),
-fUseSingleCharge(kFALSE),
-fOrdering(1),
-fChJetPtMin(5.0),
-fJet1EtaCut(0.2),
-fJet2DeltaPhiCut(2.616),    // 150 degrees
-fJet2RatioPtCut(0.8),
-fJet3PtCut(15.),
+fMcHandler(0x0),
+fMode(0),
+fOutCFcont(0x0),
+fhEntries(0x0),
+fhFakes(0x0),
+fhPtMCAll(0x0),
+fhPtMCPrim(0x0),
+fhPtMCSec(0x0),
+fhPtMCPrimFake(0x0),
+fhPtMCSecFake(0x0),
+fnTracksVertex(1),  // QA tracks pointing to principal vertex  
+fZVertex(10.),
+fhVertexContributors(0x0),
+fhVertexReso(0x0),
 fTrackEtaCut(0.9),
 fTrackPtCut(0.),
-fAvgTrials(1)
+fEsdTrackCuts(0x0),
+fEsdTrackCutsSPD(0x0),
+fEsdTrackCutsSDD(0x0),
+fEsdTrackCutsDCA(0x0)
 {
   // Default constructor
   // Define input and output slots here
@@ -120,58 +110,8 @@ fAvgTrials(1)
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());
-  DefineOutput(1, AliCFContainer::Class());
 
 }
-
-//____________________________________________________________________
-AliAnalysisTaskCorrectionsUE:: AliAnalysisTaskCorrectionsUE(const AliAnalysisTaskCorrectionsUE & original):
-AliAnalysisTask(),
-fAnaUE(original.fAnaUE),
-fAOD(original.fAOD),            
-fESDHandler(original.fESDHandler),            
-fAODBranch(original.fAODBranch),
-fCFManager(original.fCFManager),
-fDebug(original.fDebug),
-fHistosUE(original.fHistosUE),
-fInputHandler(original.fInputHandler),
-fListOfHistos(original.fListOfHistos),  
-fMcHandler(original.fMcHandler),
-fMcEvent(original.fMcEvent),
-fBinsPtInHist(original.fBinsPtInHist),     
-fIsNorm2Area(original.fIsNorm2Area),
-fMaxJetPtInHist(original.fMaxJetPtInHist), 
-fMinJetPtInHist(original.fMinJetPtInHist),
-fConstrainDistance(original.fConstrainDistance),
-fMinDistance(original.fMinDistance),
-fSimulateChJetPt(original.fSimulateChJetPt),
-fUseAliStack(original.fUseAliStack),
-fUseMCParticleBranch(original.fUseMCParticleBranch),
-fnTracksVertex(original.fnTracksVertex),  // QA tracks pointing to principal vertex (= 3 default) 
-fZVertex(original.fZVertex),
-fAnaType(original.fAnaType),         
-fConePosition(original.fConePosition),
-fConeRadius(original.fConeRadius),
-fFilterBit(original.fFilterBit),
-fJetsOnFly(original.fJetsOnFly),
-fRegionType(original.fRegionType),
-fUseChargeHadrons(original.fUseChargeHadrons),
-fUseChPartJet(original.fUseChPartJet),
-fUsePositiveCharge(original.fUsePositiveCharge),
-fUseSingleCharge(original.fUseSingleCharge),
-fOrdering(original.fOrdering),
-fChJetPtMin(original.fChJetPtMin),
-fJet1EtaCut(original.fJet1EtaCut),
-fJet2DeltaPhiCut(original.fJet2DeltaPhiCut),    // 150 degrees
-fJet2RatioPtCut(original.fJet2RatioPtCut),
-fJet3PtCut(original.fJet3PtCut),
-fTrackEtaCut(original.fTrackEtaCut),
-fTrackPtCut(original.fTrackPtCut),
-fAvgTrials(original.fAvgTrials)
-{
-  // Copy constructor
-}
-
 
 //______________________________________________________________
 AliAnalysisTaskCorrectionsUE & AliAnalysisTaskCorrectionsUE::operator = (const AliAnalysisTaskCorrectionsUE & /*source*/)
@@ -180,31 +120,12 @@ AliAnalysisTaskCorrectionsUE & AliAnalysisTaskCorrectionsUE::operator = (const A
   return *this;
 }
 
+
+/************** INTERFACE METHODS *****************************/
+
 //______________________________________________________________
 Bool_t AliAnalysisTaskCorrectionsUE::Notify()
 {
-  //
-  // Implemented Notify() to read the cross sections
-  // and number of trials from pyxsec.root
-  // Copy from AliAnalysisTaskJFSystematics
-  fAvgTrials = 1;
-  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-  Float_t xsection = 0;
-  Float_t trials  = 1;
-  if(tree){
-  	TFile *curfile = tree->GetCurrentFile();
-  	if (!curfile) {
-  		Error("Notify","No current file");
-  		return kFALSE;
-  		}
-  	
-	AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,trials); 
-        fHistosUE->GetXsec()->Fill("<#sigma>",xsection);
-
-  	// construct average trials
-  	Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
-  	if(trials>=nEntries && nEntries>0.)fAvgTrials = trials/nEntries;
-  	}
   
   return kTRUE;
 
@@ -214,55 +135,58 @@ Bool_t AliAnalysisTaskCorrectionsUE::Notify()
 void AliAnalysisTaskCorrectionsUE::ConnectInputData(Option_t* /*option*/)
 {
   // Connect the input data  
-  
-  // We need AODs with tracks and jets.
-  // Since AODs can either be connected to the InputEventHandler 
-  // or to the OutputEventHandler ( the AOD is created by a previous task in the train )
-  // we need to check where it is and get the pointer to AODEvent in the right way
-  
-  // Delta AODs are also accepted
-  
  
   if (fDebug > 1) AliInfo("ConnectInputData() ");
   
   //Get the input handler
-  TObject* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  fESDHandler = (AliESDInputHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if ( !fESDHandler && fDebug > 0 ) {
+  	AliFatal(" No ESD event handler connected !!! ");
+	return;
+	}
 
-  if( handler && handler->InheritsFrom("AliAODInputHandler") ) { // input AOD
-	fAOD = ((AliAODInputHandler*)handler)->GetEvent();
-  	if(!fJetsOnFly){
-		if (fDebug > 1) AliInfo(" ==== Tracks and Jets from AliAODInputHandler");
-		}else{
-		if (fDebug > 1) AliInfo(" ==== Tracks from AliAODInputHandler / Jets on-the-fly");
-		}
-  	} else {  //output AOD
-  	handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
-  	if( handler && handler->InheritsFrom("AliAODHandler") ) {
-  		fAOD = ((AliAODHandler*)handler)->GetAOD();
-  		if (!fJetsOnFly){
-  			if (fDebug > 1) AliInfo(" ==== Tracks and Jets from AliAODHandler");
-  			} else {
-  			if (fDebug > 1) AliInfo(" ==== Tracks from AliAODHandler / Jets on-the-fly");
-  			}
-  		}else {
-  		AliFatal("I can't get any AOD Event Handler");
-  		return;
-  		}
-  	}
-
-  //Get ESD input handler
-  AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-   AliESDEvent *esdEvent = (AliESDEvent*)inputHandler->GetEvent();
-   if (!esdEvent && fDebug > 1) {
-  	AliInfo("********************** No ESD event: cannot retrive DCA values from AOD !!! ");
-  }else fAnaUE->SetESDEvent(esdEvent);
+  //Get ESD event
+   fESDEvent = (AliESDEvent*)fESDHandler->GetEvent();
+   if (!fESDEvent && fDebug > 1) {
+  	AliFatal(" No ESD event retrieved !!! ");
+        return;
+	}
 
   //Get MC handler 
   fMcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
- 
-  //Initialize AliAnalysisUE class
-  fAnaUE->Initialize(fAnaType, fAOD, fConeRadius, fDebug, fFilterBit, fJet1EtaCut, fJet2DeltaPhiCut, fJet2RatioPtCut, fJet3PtCut, fOrdering, fRegionType, fSimulateChJetPt, fTrackEtaCut, fTrackPtCut, fUseChargeHadrons, fUseChPartJet, fUsePositiveCharge, fUseSingleCharge, fHistosUE);
- 
+  
+  // Define track cuts
+  fEsdTrackCuts = new AliESDtrackCuts("ITSTPC", "ITS+TPC standard 2009 cuts w.o. SPD cluster requirement nor DCA cut");
+  // TPC  
+  fEsdTrackCuts->SetRequireTPCStandAlone(kTRUE); // to get chi2 and ncls of kTPCin
+  fEsdTrackCuts->SetMinNClustersTPC(70);
+  //fEsdTrackCuts->SetMinNClustersTPC(90); // ***** TMP *****
+  fEsdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+  // ITS
+  fEsdTrackCuts->SetRequireITSRefit(kTRUE);
+  fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  fEsdTrackCuts->SetMaxDCAToVertexZ(2); // new for pile-up !!!
+
+  // Add SPD requirement 
+  fEsdTrackCutsSPD = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
+  fEsdTrackCutsSPD->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  
+  // Add SDD requirement 
+  fEsdTrackCutsSDD = new AliESDtrackCuts("SDD", "Require 1 cluster in first layer SDD");
+  fEsdTrackCutsSDD->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
+  
+  // Add DCA cuts 
+  fEsdTrackCutsDCA = new AliESDtrackCuts("DCA", "pT dependent DCA cut");
+  // 7*(0.0050+0.0060/pt^0.9)
+  fEsdTrackCutsDCA->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
+  
+  fEsdTrackCutsDCA->SetMaxDCAToVertexZ(1.e6);
+  fEsdTrackCutsDCA->SetDCAToVertex2D(kFALSE);
+
+  // emulates filterbit when getting leading-track from ESD
+  fAnalyseUE->DefineESDCuts(16); // any number = standard ITS+TPC + (SPD or SDD)
 }
 
 //____________________________________________________________________
@@ -272,19 +196,13 @@ void  AliAnalysisTaskCorrectionsUE::CreateOutputObjects()
   
   if (fDebug > 1) AliInfo("CreateOutPutData()");
    
-  // Create pointer to AliAnalysisUE, a class implementing the main analysis algorithms
-  fAnaUE = new AliAnalyseUE();
-  if (!fAnaUE){
+  // Create pointer to AliAnalyseLeadingTrackUE, a class implementing the main analysis algorithms
+  fAnalyseUE = new AliAnalyseLeadingTrackUE();
+  if (!fAnalyseUE){
      AliError("UE analysis class not initialized!!!");
      return;
   }
-  // Create pointer to AliHistogramsUE, a class handling histogram creation/filling
-  fHistosUE = new AliHistogramsUE();
-  if (!fHistosUE){
-     AliError("UE histograms class not initialized!!!");
-     return;
-  }
-
+  
   // Create list of output histograms
   if (fListOfHistos != NULL){
 	delete fListOfHistos;
@@ -295,246 +213,70 @@ void  AliAnalysisTaskCorrectionsUE::CreateOutputObjects()
   	fListOfHistos->SetOwner(kTRUE); 
   	}
   
+  // Create CF container
+  CreateContainer();
+  // number of events
+  fhEntries = new TH1F("fhEntries","Entries",1,0.,2.); 
+  fListOfHistos->Add(fhEntries);
+  // tracks contributing to the vertex
+  fhVertexContributors = new TH1F("fhVertexContributors","Tracks in vertex",51, -0.5, 50.5);
+  fhVertexContributors->GetXaxis()->SetTitle("# tracks in vertex");
+  fhVertexContributors->GetYaxis()->SetTitle("Entries");
+  fListOfHistos->Add(fhVertexContributors);
+  // vertex resolution
+  fhVertexReso = new TH3F("fhVertexReso","Vertex resolution",51,-0.5,50.5,100,0.,0.05,100.,0.,0.1); 
+  fhVertexContributors->GetXaxis()->SetTitle("# tracks in vertex");
+  fhVertexContributors->GetYaxis()->SetTitle("Resolution XY (cm)");
+  fhVertexContributors->GetZaxis()->SetTitle("Resolution Z (cm)");
+  fListOfHistos->Add(fhVertexReso);
   
-  //Initialize output histograms
-  fHistosUE->CreateHistogramsCorrections(fListOfHistos,fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, fTrackEtaCut);
-  AddSettingsTree();
+  // number of fake tracks
+  fhFakes = new TH1F("fhFakes","Fraction of fake tracks",5,-0.5,4.5);
+  fhFakes->GetXaxis()->SetBinLabel(1,"No MC");
+  fhFakes->GetXaxis()->SetBinLabel(2,"Unique MC primary");
+  fhFakes->GetXaxis()->SetBinLabel(3,"Unique MC secondary");
+  fhFakes->GetXaxis()->SetBinLabel(4,"Multiple MC");
+  fListOfHistos->Add(fhFakes);
+  
+  //pT distributions
+  fhPtMCAll = new TH1F("fhPtMCAll","All MC particles reconstructed",100,0., 20.);
+  fListOfHistos->Add(fhPtMCAll);
+  fhPtMCPrim = new TH1F("fhPtMCPrim","Primary MC particles reconstructed",100,0., 20.);
+  fListOfHistos->Add(fhPtMCPrim);
+  fhPtMCSec = new TH1F("fhPtMCSec","Secondary MC particles reconstructed",100,0., 20.);
+  fListOfHistos->Add(fhPtMCSec);
+  fhPtMCPrimFake = new TH1F("fhPtMCPrimFake","Fake primary MC particles reconstructed",100,0., 20.);
+  fListOfHistos->Add(fhPtMCPrimFake);
+  fhPtMCSecFake = new TH1F("fhPtMCSecFake","Fake secondary MC particles reconstructed",100,0., 20.);
+  fListOfHistos->Add(fhPtMCSecFake);
 
-  //Configure the CF manager
-  if (fCFManager != NULL){
-	delete fCFManager;
-        fCFManager = NULL;
-  	}
-  if (!fCFManager){
-        fCFManager = new AliCFManager();
-  	}
-  fHistosUE->CreateCorrectionsContainer(fCFManager,fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, fTrackEtaCut,fJet1EtaCut);
+
+  // Add task configuration to output list 
+  AddSettingsTree();
+    
 
   //Post outputs
   PostData(0,fListOfHistos);
-  PostData(1,fCFManager->GetEventContainer());
-
+ 
 }
 
 //____________________________________________________________________
 void  AliAnalysisTaskCorrectionsUE::Exec(Option_t */*option*/)
 {
-
-  Bool_t flag=kTRUE;
-
-  //Determine the corrections
+  
+  // Get MC event
   if (fMcHandler){
   	fMcEvent = fMcHandler->MCEvent();
        	if ( fDebug > 3 ) AliInfo( " Processing MC event..." );
-  }else{
-       	if ( fDebug > 3 ) AliInfo( " Processing DATA event..." );
+  	if (fMode && !fMcEvent) return;
 	}
   
-
-  flag = EvaluateCorrections(); 
+  // Do the analysis
+  AnalyseCorrectionMode();
 
   
-  if (flag){ //executed if event passes trigger+vertex selection
-  	//Fetch the pythia header info and get the trials
-  	Float_t nTrials = 1;
-  	if (fMcHandler && fMcEvent) {
-  		AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMcEvent);
-  		if(pythiaGenHeader) nTrials = pythiaGenHeader->Trials();
-  		}
-  	fHistosUE->GetTrials()->Fill("#sum{ntrials}",fAvgTrials);
- 	PostData(0,fListOfHistos);
- 	PostData(1,fCFManager->GetEventContainer());
- 	}
-}
+ PostData(0,fListOfHistos);
 
-//____________________________________________________________________
-void  AliAnalysisTaskCorrectionsUE::AddSettingsTree()
-{
-  //Write settings to output list
-  TTree *settingsTree   = new TTree("UECorrectionsSettings","Analysis Settings in UE corrections");
-  settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
-  settingsTree->Branch("fConeRadius", &fConeRadius,"Rad/D");
-  settingsTree->Branch("fJet1EtaCut", &fJet1EtaCut, "LeadJetEtaCut/D");
-  settingsTree->Branch("fJet2DeltaPhiCut", &fJet2DeltaPhiCut, "DeltaPhi/D");
-  settingsTree->Branch("fJet2RatioPtCut", &fJet2RatioPtCut, "Jet2Ratio/D");
-  settingsTree->Branch("fJet3PtCut", &fJet3PtCut, "Jet3PtCut/D");
-  settingsTree->Branch("fTrackPtCut", &fTrackPtCut, "TrackPtCut/D");
-  settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
-  settingsTree->Branch("fAnaType", &fAnaType, "Ana/I");        
-  settingsTree->Branch("fRegionType", &fRegionType,"Reg/I");
-  settingsTree->Branch("fOrdering", &fOrdering,"OrderMeth/I");
-  settingsTree->Branch("fUseChPartJet", &fUseChPartJet,"UseChPart/O");
-  settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
-  settingsTree->Branch("fUseSingleCharge", &fUseSingleCharge,"UseSingleCh/O");
-  settingsTree->Branch("fUsePositiveCharge", &fUsePositiveCharge,"UsePositiveCh/O");
-  settingsTree->Fill();
-  fListOfHistos->Add(settingsTree);
-} 
-
-
-//____________________________________________________________________
-Bool_t  AliAnalysisTaskCorrectionsUE::EvaluateCorrections()
-{
-  
-  /////////////////////////////////////////////////////////////////////////
-  // 
-  // EVENT SELECTION:
-  // CF containers are filled to get the number of entries after every cut.
-  // *** Cuts: ***
-  // 0 - triggered
-  // 1 - physics selection
-  // 2 - vertex selection
-  // 3 - event topology
-  // 4 - leading track pT cut
-  // 5 - leading track correctly identified
-  // *** Variables: ***
-  // 0 - leading track pT (reco)
-  // 1 - leading track eta (reco)
-  // 2 - process type:
-  //	1: non diffractive
-  //	2: double diffractive
-  //	4: single diffractive
-  // 3 - leading track pT (true)
-  // 4 - leading track eta (true)
-  // 5 - delta eta (reco-true)
-  // 6 - delta phi (reco-true)
-  // 7 - radius (reco-true)
-  //
-  // TRACK-LEVEL CORRECTIONS:
-  // Fill histograms similar to AliAnalysisTaskUE.
-  //
-  /////////////////////////////////////////////////////////////////////////
-
-  Double_t containerInput[8];// relevant variables (see above)  
-  
-  //PROCESS TYPE (ND,SD,DD)
-  AliAnalysisHelperJetTasks::MCProcessType eventId = AliAnalysisHelperJetTasks::kInvalidProcess;
-  if (fMcHandler && fMcEvent) {
-  		AliGenEventHeader* genHeader = fMcEvent->GenEventHeader();
-		eventId = AliAnalysisHelperJetTasks::GetPythiaEventProcessType(genHeader,kFALSE);
-		if (eventId<0){
-		eventId = AliAnalysisHelperJetTasks::GetDPMjetEventProcessType(genHeader,kFALSE);
-		}
-		if (eventId<0 && fDebug>1)AliInfo("No Pythia or Phojet Header retrived!"); 
-  }else if (fDebug>1) AliInfo("No MC handler or Event!"); 
-
-  //Initialize container inputs 
-  for (Int_t i =0; i<8; i++){  
-  	containerInput[i]=-999.;
-  	}
-  
-  //Assign process type
-  if (eventId == 1 ) containerInput[2]=1.; //Non diffractive
-  if (eventId == 2 ) containerInput[2]=2.; //Double diffractive
-  if (eventId == 4 ) containerInput[2]=4.; //Single diffractive
-  
-  // Execute analysis for current event ******************************
-  
-  // Get jets and order by pT
-  TVector3 jetVect[3];
-  *jetVect = fAnaUE->GetOrderedClusters(fAODBranch, fUseChPartJet, fChJetPtMin );
-  
-  //now define leading track pT and eta
-  containerInput[0]=jetVect[0].Pt();
-  containerInput[1]=jetVect[0].Eta();
-
-  fCFManager->GetEventContainer()->Fill(containerInput,kCFStepTriggered);  //fill CF container 
-  
-  // Physics selection ************************************************
-  fInputHandler = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!fAnaUE->TriggerSelection(fInputHandler)) return kFALSE;
-  
-  fCFManager->GetEventContainer()->Fill(containerInput, kCFStepPhysSelect); //fill CF container
-  
-  // Event selection (vertex) *****************************************
-  
-  if(!fAnaUE->VertexSelection(fAOD,fnTracksVertex,fZVertex)) return kFALSE;
-  //if(!fAnaUE->VertexSelectionOld(fAOD)) return kFALSE; // temporary to compare with old task and to have same cuts for MC !!!
-
-  fCFManager->GetEventContainer()->Fill(containerInput, kCFStepVertexSelect); //fill CF container
-   
-   // Select events according to analysis type *************************
-   // (in the leading track analysis it should not happen that there are no "jets")
-   if( jetVect[0].Pt() < 0. ) {
-   	if( fDebug > 1 ) AliInfo("\n   Skipping Event, not jet found...");
-      	return kTRUE;
-    } else {
-	if (fDebug >1 ) AliInfo(Form("\n   Pt Leading Jet = %6.1f eta=%5.3f ",  jetVect[0].Pt(), jetVect[0].Eta() ));
- 	}
-  
-  
-  if ( ! (fAnaUE->AnaTypeSelection(jetVect))) return kTRUE;
-   
-   
-   // For the events selected check the real MC leading particle
-   // (only when running on MC)
-   TVector3 jetVectMC[3];
-   if (fMcEvent){
-   	*jetVectMC = fAnaUE->GetLeadingTracksMC(fMcEvent); 
-   	if (fAnaUE->AnaTypeSelection(jetVectMC) ){
-   		//now define leading track pT and eta
-   		containerInput[3]=jetVectMC[0].Pt();
-   		containerInput[4]=jetVectMC[0].Eta();
-   		//Check distance between real and reco leading-particle
-        	containerInput[5] = jetVect[0].Eta()-jetVectMC[0].Eta();
-		containerInput[6] = TMath::Abs(jetVect[0].Phi()-jetVectMC[0].Phi());
-		if (containerInput[6] >= 2.*TMath::Pi())containerInput[6] -= 2.*TMath::Pi(); 
-   		containerInput[7] = sqrt(TMath::Power(containerInput[5],2.) + TMath::Power(containerInput[6],2.));
-		} 
-   	}  
-   
-   fCFManager->GetEventContainer()->Fill(containerInput, kCFStepAnaTopology); //fill CF container
-   
-   //Cut on the leading track pT 
-   if (!(jetVect[0].Pt() >= 1.)) return kTRUE;
-   // (only when running on MC)   
-   if (fMcEvent){ 
-   	if (!(jetVectMC[0].Pt()>= 1.)){
-		containerInput[3]=containerInput[4]=-999.;
-		containerInput[5]=containerInput[6]=containerInput[7]=-999.;
-		}
-	}	
-   
-   fCFManager->GetEventContainer()->Fill(containerInput, kCFStepLtPtCut1); //fill CF container
-
-   // Check if leading track is correctly identified
-   // (only when running on MC)
-   if (fMcEvent){
-   	Int_t labelLt = fAnaUE->GetLtLabel();
-   	Int_t labelLtMC = fAnaUE->GetLtMCLabel();
-   	if (labelLt == labelLtMC){
-        	fCFManager->GetEventContainer()->Fill(containerInput, kCFStepLtCorrect); //fill CF container
-		} 
-   	}
-
-   // For track efficiency and contamination
-   // (only when running on MC)
-   if (fMcEvent){
-   	//Run once on reco...
-   	fAnaUE->FindMaxMinRegions( jetVect,  fConePosition, 0, 0 );//normal track cut 
-   	fAnaUE->FindMaxMinRegions( jetVect,  fConePosition, 0, 1 );//for efficiency: cut on pT and eta are set on MC true  
-   	//and once on MC true
-        fAnaUE->FindMaxMinRegions( jetVect,  fConePosition, 1, 0 );
-  }else{
-  	// For d0 distribution, runs only on real data
-   	fAnaUE->FindMaxMinRegions( jetVect,  fConePosition, 0, 0 );//run on real data 
-  	}
-
-
-   return kTRUE;
-}
-
-//____________________________________________________________________
-AliAnalysisTaskCorrectionsUE* AliAnalysisTaskCorrectionsUE::Instance()
-{ 
-  
-  //Create instance
-  if (fgTaskCorrectionsUE) {
-	return fgTaskCorrectionsUE;
-  } else {
-	fgTaskCorrectionsUE = new AliAnalysisTaskCorrectionsUE();
-	return fgTaskCorrectionsUE;
-  	}
 }
 
 //____________________________________________________________________
@@ -558,8 +300,350 @@ void  AliAnalysisTaskCorrectionsUE::Terminate(Option_t */*option*/)
   
 }
 
+
+/******************** ANALYSIS METHODS *****************************/
+
 //____________________________________________________________________
-void  AliAnalysisTaskCorrectionsUE::WriteSettings()
-{ 
+void  AliAnalysisTaskCorrectionsUE::AddSettingsTree()
+{
+  //Write settings to output list
+  TTree *settingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
+  settingsTree->Branch("fnTracksVertex", &fnTracksVertex, "TracksInVertex/D");
+  settingsTree->Branch("fZVertex", &fZVertex, "VertexZCut/D");
+  settingsTree->Branch("fTrackPtCut", &fTrackPtCut, "TrackPtCut/D");
+  settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
+  settingsTree->Fill();
+  fListOfHistos->Add(settingsTree);
+}  
+
+//____________________________________________________________________
+void AliAnalysisTaskCorrectionsUE::AnalyseCorrectionMode()
+{
+
+  // Analyse the event
+  Int_t labelMC  = -1;
+  if (fMcHandler && fMcEvent){
+  	// Only consider MC events within the vtx-z region used also as cut on the reconstructed vertex
+  	if (!fAnalyseUE->VertexSelection(fMcEvent, 0, fZVertex))  
+    	return; 
+  	// Get MC-true leading particle 
+  	TObjArray *ltMC = (TObjArray*)fAnalyseUE->FindLeadingObjects(fMcEvent);
+  	AliVParticle* leadingMC = 0;
+  	if (ltMC){
+    		leadingMC = (AliVParticle*) ltMC->At(0);
+		}
+	if (!leadingMC)return; 
+	labelMC = TMath::Abs(leadingMC->GetLabel());
+	}
+
+  // Trigger selection ************************************************
+  if (!fAnalyseUE->TriggerSelection(fESDHandler)) return;
+  
+  // PILEUP-CUT ****** NEW !!!!!!!!! **************
+  Bool_t select = kTRUE;
+  //select = AliAnalysisHelperJetTasks::TestSelectInfo(AliAnalysisHelperJetTasks::kIsPileUp);
+  if (! select) return;
+  
+  // Vertex selection *************************************************
+  
+  if(!fAnalyseUE->VertexSelection(fESDEvent, 0, fZVertex)) return;
+  AliESDVertex* vertex = (AliESDVertex*)fESDEvent->GetPrimaryVertex();
+  Int_t nvtx = vertex->GetNContributors();
+  fhVertexContributors->Fill(nvtx);
+  if (fMcHandler){
+		AliVVertex *vertexMC = (AliVVertex*)fMcEvent->GetPrimaryVertex();
+		if (vertexMC){
+			Double_t diffx = vertexMC->GetX()-vertex->GetX();
+			Double_t diffy = vertexMC->GetY()-vertex->GetY();
+			Double_t diffxy = TMath::Sqrt(TMath::Power(diffx,2)+TMath::Power(diffy,2));
+			//Double_t diffxy = TMath::Abs(diffx); // **** TMP ****
+			//Double_t diffxy = diffy;
+			Double_t diffz = TMath::Abs(vertexMC->GetZ()-vertex->GetZ());
+		
+			fhVertexReso->Fill(nvtx,diffxy,diffz);
+		}else if (fDebug>1)Printf("******* NO MC VERTEX ********");
+  	}
+
+  if(!fAnalyseUE->VertexSelection(fESDEvent, fnTracksVertex, fZVertex)) return;
+
+  // Get Reconstructed leading particle *******************************
+  TObjArray *ltRECO = fAnalyseUE->FindLeadingObjects(fESDEvent);
+  if (!ltRECO){
+  	delete[] ltRECO;
+	return;
+ 	}
+  Int_t labelReco= TMath::Abs(((AliVParticle*)ltRECO->At(0))->GetLabel());
+  
+  
+  // Loop on tracks
+  Int_t nTracks = fESDEvent->GetNumberOfTracks();
+  if (!nTracks)return;
+  // count accepted events
+  fhEntries->Fill(1.);
+
+  Int_t npart=0;
+  Bool_t *labelsArray = 0; 
+  if (fMcHandler){
+  	npart = fMcEvent->GetNumberOfTracks();
+        labelsArray = new Bool_t[npart];
+  	for(Int_t j = 0; j<npart; j++){
+		labelsArray[j] = kFALSE;
+  		}
+	}
+
+  for (Int_t i = 0; i < nTracks; i++){
+	AliESDtrack *track = fESDEvent->GetTrack(i);
+	// only charged
+	if (!track || !track->Charge())continue;
+        // apply cuts
+	Bool_t cut = fEsdTrackCuts->AcceptTrack(track);
+	Bool_t cutSPD = fEsdTrackCutsSPD->AcceptTrack(track);
+	Bool_t cutSDD = fEsdTrackCutsSDD->AcceptTrack(track);
+	Bool_t cutDCA = fEsdTrackCutsDCA->AcceptTrack(track);
+  	
+	//Exclude the MC leading track
+	Double_t matchLeading = 1.;//no match
+	if (fMcHandler){
+		if (TMath::Abs(track->GetLabel())==labelMC) matchLeading=0.; //match MC leading
+		if (TMath::Abs(track->GetLabel())==labelReco) {
+			matchLeading=2.;//match RECO leading
+			if (labelMC == labelReco)matchLeading = 3.; // match both (mc = reco leading)
+			}
+		}
+	// Fill step0 (all tracks) 
+	FillContainer(track, 0,kFALSE,matchLeading);         
+	// Fill step1 (no SPD cluster requirement - no DCA cut )
+	if ( cut ) FillContainer(track,1,kFALSE,matchLeading);
+	// Fill step2
+	if ( cut && cutDCA && (cutSPD || cutSDD)) FillContainer(track,2,kFALSE,matchLeading);
+	// Fill step3-step4-step5 
+	if ( cut && cutDCA && !cutSPD && !cutSDD) FillContainer(track,3,kTRUE,matchLeading);
+	if ( cut && cutDCA && cutSPD) FillContainer(track,4,kTRUE,matchLeading);
+	if ( cut && cutDCA && !cutSPD && cutSDD) FillContainer(track,5,kTRUE,matchLeading);
+        // Fill step 6 - temporary just to define the standard track cuts  
+	if ( cut && cutSPD ) FillContainer(track,6,kFALSE,matchLeading);
+	//if ( cut && cutSPD ) FillContainer(track,6,kTRUE,matchLeading); // ***** TMP *****
+	if ( cut && (cutSPD || cutSDD) ) FillContainer(track,7,kFALSE,matchLeading);
+	// Study contamination form fakes
+	if (fMcHandler){
+			
+		// consider standard ITS+TPC cuts without SPD cluster requirement
+		if (cut && cutDCA){
+			//check if it points back to any MC
+			Int_t label = TMath::Abs(track->GetLabel());
+	       		AliVParticle *part = (AliVParticle*)fMcEvent->GetTrack(label);	
+			if (!part){
+				fhFakes->Fill(0.);
+				//Printf("*************** NO MC PARTICLE ************************");
+				continue;
+				}
+				
+	                fhPtMCAll->Fill(part->Pt()); 
+			// Check if label is not already in array
+			if (!labelsArray[label]){
+				labelsArray[label]= kTRUE;
+				if (fMcEvent->IsPhysicalPrimary(label)){
+					fhFakes->Fill(1.);
+					fhPtMCPrim->Fill(part->Pt());
+				}else{
+					fhFakes->Fill(2.);
+					fhPtMCSec->Fill(part->Pt());
+					}
+			}else{
+				fhFakes->Fill(3.);
+				if (fMcEvent->IsPhysicalPrimary(label))fhPtMCPrimFake->Fill(part->Pt());
+				else fhPtMCSecFake->Fill(part->Pt());
+				}
+		   }	
+		}
+  	} // end loop on tracks
+	if(labelsArray)
+	delete[] labelsArray;
 
 }
+
+
+//____________________________________________________________________
+void AliAnalysisTaskCorrectionsUE::CreateContainer()
+{
+  
+  // Create the output CF container
+  // relevant variables 
+  UInt_t iprim  = 0; // 0: primaries, 1: secondaries from strangness, 2: secondaries form material 
+  UInt_t iptmc  = 1;
+  UInt_t ipt    = 2;
+  UInt_t ieta   = 3;
+  UInt_t idcaxy = 4;
+  UInt_t idcaz  = 5;
+  UInt_t imatch = 6;
+  UInt_t icharge = 7;
+  // set-up the grid
+  UInt_t nstep = 8;
+  const Int_t nvar  = 8;
+  const Int_t nbin0 = 5;  // prim
+  const Int_t nbin1 = 20; // pt resolution
+  const Int_t nbin2 = 39; // pt 
+  const Int_t nbin3 = 20; // eta
+  const Int_t nbin4 = 100; // dca xy
+  const Int_t nbin5 = 100; // dca z
+  const Int_t nbin6 = 4; // matching with leading track
+  const Int_t nbin7 = 2;
+
+  // array for the number of bins in each dimension
+  Int_t iBin[nvar];
+  iBin[0] = nbin0;
+  iBin[1] = nbin1;
+  iBin[2] = nbin2;
+  iBin[3] = nbin3;
+  iBin[4] = nbin4;
+  iBin[5] = nbin5;
+  iBin[6] = nbin6;
+  iBin[7] = nbin7;
+  
+  // primaries
+  Double_t primBins[7] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5};
+  // matching with leading-track
+  Double_t matchBins[5] = {-0.5,0.5,1.5,2.5,3.5};
+
+  // pT resolution
+  Double_t resoBins[nbin1+1];
+  for (Int_t i=0; i<=nbin1; i++)
+    resoBins[i] = -1.0 + 0.1 * i;
+  
+  // pT
+  Double_t ptBins[nbin2+1] = {0.0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 100.0};
+  
+  // eta
+  Double_t etaBins[nbin3+1];
+  for (Int_t i=0; i<=nbin3; i++)
+    etaBins[i] = -1.0 + 0.1 * i;
+  
+  // dca xy
+  Double_t dcaxyBins[nbin4+1];
+  for (Int_t i=0; i<=nbin4; i++)
+    dcaxyBins[i] = -1.+0.02 * i;
+  
+  // dca z
+  Double_t dcazBins[nbin5+1];
+  for (Int_t i=0; i<=nbin5; i++)
+    dcazBins[i] = -5.0 + 0.1 * i;
+ 
+  // charge 
+  Double_t chargeBins[nbin7+1] = {-1.,0.,1.};
+
+  // create container
+  // set variables
+  fOutCFcont = new AliCFContainer("fOutCFcont","Output Container",nstep,nvar,iBin);
+  fOutCFcont->SetBinLimits(iprim,primBins);
+  fOutCFcont->SetVarTitle(iprim, "Particle type");
+  fOutCFcont->SetBinLimits(iptmc,resoBins);
+  fOutCFcont->SetVarTitle(iptmc, "#Delta p_{T} (DATA-MC) (GeV/c)");
+  fOutCFcont->SetBinLimits(ipt,ptBins);
+  fOutCFcont->SetVarTitle(ipt, "p_{T} (GeV/c)");
+  fOutCFcont->SetBinLimits(ieta,etaBins);
+  fOutCFcont->SetVarTitle(ieta, "#eta");
+  fOutCFcont->SetBinLimits(idcaxy,dcaxyBins);
+  fOutCFcont->SetVarTitle(idcaxy, " DCA_{XY} (cm)");
+  fOutCFcont->SetBinLimits(idcaz,dcazBins);
+  fOutCFcont->SetVarTitle(idcaz, " DCA_{Z} (cm)");
+  fOutCFcont->SetBinLimits(imatch,matchBins);
+  fOutCFcont->SetVarTitle(imatch, "Matching with leading-track");
+  fOutCFcont->SetBinLimits(icharge,chargeBins);
+  fOutCFcont->SetVarTitle(icharge, "Charge");
+
+  // set steps
+  fOutCFcont->SetStepTitle(0,"all tracks");
+  fOutCFcont->SetStepTitle(1,"ITS+TPC cuts (no SPD cluster requirement and DCA cut)");
+  fOutCFcont->SetStepTitle(2,"add DCA cut");
+  fOutCFcont->SetStepTitle(3,"NO SPD cluster, NO SDD cluster in first layer");
+  fOutCFcont->SetStepTitle(4,"YES SPD cluster, NO SDD cluster in first layer");
+  fOutCFcont->SetStepTitle(5,"NO SPD cluster, YES SDD cluster in first layer");
+  fOutCFcont->SetStepTitle(6,"ITS+TPC cuts - no DCA cut - SPD cut");
+  fOutCFcont->SetStepTitle(7,"ITS+TPC cuts - no DCA cut - SPD or SDD cut");
+  fListOfHistos->Add(fOutCFcont);
+
+}
+
+
+void  AliAnalysisTaskCorrectionsUE::FillContainer(AliESDtrack *track, Int_t step,Bool_t mcvertex, Double_t matchLeading)
+{
+
+  // Fill the CF container
+
+  Double_t vars[8];
+  Double_t prim = -1.;
+  
+  if (track->Charge() > 0.) vars[7] = 0.5;
+  else vars[7] = -0.5;
+  
+  if (fMcHandler){
+  	// determine if points back to a primary
+  	Int_t label = TMath::Abs(track->GetLabel());
+  	
+	AliMCParticle *part = (AliMCParticle*)fMcEvent->GetTrack(label);  
+	for (Int_t i=0; i<=6;i++) vars[i] = -999.;
+  	if (part) { //PRIMARY
+  		if (fMcEvent->IsPhysicalPrimary(label)){
+			prim = 0.;
+		}else { //SECONDARY
+			// decide if strange
+			Int_t labelm = TMath::Abs(part->GetMother());
+			AliMCParticle *mother = (AliMCParticle*)fMcEvent->GetTrack(labelm);  
+			Int_t code = mother->PdgCode();
+			Int_t mfl = Int_t (code/ TMath::Power(10, Int_t(TMath::Log10(code))));
+			 if  (mfl == 3) prim = 1.;
+				else{   
+				        //Printf("***** PROCESS : %d",part->Particle()->GetUniqueID());  
+					if (TMath::Abs(code) == 211) prim = 2.; // charged pion decay
+					else if (part->Particle()->GetUniqueID() == 13 )prim = 3.; // hadronic interactions
+					else if (part->Particle()->GetUniqueID() == 5 )prim = 4.; // photon conversions
+					else prim = 5.; // other?
+				}
+			}
+  		vars[1]= part->Pt()-track->Pt();
+  		// In step 2 fill MC pT for contamination study
+		if (step == 2)vars[2]=part->Pt();
+		}
+ 	}
+  vars[0]=prim;
+
+  if (step != 2)vars[2]=track->Pt();
+  vars[3]=track->Eta();
+
+  Bool_t dcaControlFlag = kFALSE;
+  if (mcvertex && fMcHandler){
+          // we want DCA w.r.t. MC vertex
+	  AliVVertex *vtxMC = (AliVVertex*)fMcEvent->GetPrimaryVertex();
+	  dcaControlFlag = track->RelateToVertex((AliESDVertex*)vtxMC,(Double_t)fESDEvent->GetMagneticField(),10000.);
+	  }else{
+	  AliESDVertex* vertex = (AliESDVertex*)fESDEvent->GetPrimaryVertex();
+	  dcaControlFlag = track->RelateToVertex(vertex,(Double_t)fESDEvent->GetMagneticField(),10000.);
+	  }
+  if (dcaControlFlag){
+  	Float_t dca[2];
+  	Float_t dcaCov[2];
+  	track->GetImpactParameters(dca,dcaCov);
+ 	vars[4]=dca[0];
+  	vars[5]=dca[1];
+	}	  
+
+
+  vars[6]= matchLeading;
+  fOutCFcont->Fill(vars,step);
+
+}
+
+
+//____________________________________________________________________
+AliAnalysisTaskCorrectionsUE* AliAnalysisTaskCorrectionsUE::Instance()
+{ 
+  
+  //Create instance
+  if (fgTaskCorrectionsUE) {
+	return fgTaskCorrectionsUE;
+  } else {
+	fgTaskCorrectionsUE = new AliAnalysisTaskCorrectionsUE();
+	return fgTaskCorrectionsUE;
+  	}
+}
+

@@ -69,7 +69,10 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fDebug(0),
   fFilterBit(16),
   fOnlyHadrons(kFALSE),
-  fTrackEtaCut(0.8)
+  fTrackEtaCut(0.8),
+  fEsdTrackCuts(0x0), 
+  fEsdTrackCutsSPD(0x0), 
+  fEsdTrackCutsSDD(0x0) 
 {
   // constructor
 }
@@ -93,45 +96,34 @@ AliAnalyseLeadingTrackUE::~AliAnalyseLeadingTrackUE()
 
 
 //____________________________________________________________________
-Bool_t AliAnalyseLeadingTrackUE::ApplyCuts(TObject* track, Int_t filterbit)
+Bool_t AliAnalyseLeadingTrackUE::ApplyCuts(TObject* track)
 {
-  // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
-  // (see $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C)
-
-  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
-  switch (filterbit){
-   /*case 16:
-   // tighter cuts on primary particles for high pT tracks
-   // needed as input for jetfinder 
-   esdTrackCuts->SetMinNClustersTPC(50);
-   esdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
-   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-   esdTrackCuts->SetMaxDCAToVertexXY(2.4);
-   esdTrackCuts->SetMaxDCAToVertexZ(3.2);
-   esdTrackCuts->SetDCAToVertex2D(kTRUE);
-   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCuts->SetRequireITSRefit(kTRUE); // additional cut 
-   break;
-   */
-
-   case 16:
-   esdTrackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);
-   break;
-
-   default:
-   if (fDebug > 1) AliFatal("Set of cuts not defined");
-   break;
-   }
   
   // select track according to set of cuts
-  if (! esdTrackCuts->IsSelected(track) )return kFALSE;
-  
+  if (! fEsdTrackCuts->IsSelected(track) )return kFALSE;
+  if (!fEsdTrackCutsSPD->IsSelected(track) && fEsdTrackCutsSDD->IsSelected(track)) return kFALSE;
+
   return kTRUE;
 }
 
 
+//____________________________________________________________________
+void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t /*filterbit*/){
+  
+   // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
+   // (see $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C)
 
+   fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+   fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+ 
+   // Add SPD requirement 
+   fEsdTrackCutsSPD = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
+   fEsdTrackCutsSPD->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+ 
+   // Add SDD requirement 
+   fEsdTrackCutsSDD = new AliESDtrackCuts("SDD", "Require 1 cluster in first layer SDD");
+   fEsdTrackCutsSDD->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
+}
 
 
 //____________________________________________________________________
@@ -249,6 +241,9 @@ Int_t  AliAnalyseLeadingTrackUE::NParticles(TObject* obj)
   }else if (obj->InheritsFrom("AliESDEvent")){  // RECO ESD tracks
   	AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(obj);
         nTracks = esdEvent->GetNumberOfTracks();
+  }else if (obj->InheritsFrom("AliMCEvent")){  // RECO ESD tracks
+  	AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(obj);
+        nTracks = mcEvent->GetNumberOfTracks();
   }else {
   	if (fDebug > 1) AliFatal(" Analysis type not defined !!! ");
 	return 0;
@@ -352,7 +347,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
         part = esdEvent->GetTrack(ipart);
 	if (!part)return 0;
 	// track selection cuts
-	if (!( ApplyCuts(part, fFilterBit)) )return 0; 
+	if (!( ApplyCuts(part)) )return 0; 
 	
 	// only primary candidates (does not exist for ESD tracks??????)
 	//if ( ((AliAODTrack*)part)->IsPrimaryCandidate() )return 0;
