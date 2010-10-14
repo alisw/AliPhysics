@@ -1,10 +1,7 @@
 #-*- Mode: Makefile -*-
 
-SRCS= TenderSupplies/AliTOFcalibESD.cxx \
-      TenderSupplies/AliTOFT0makerANA.cxx \
-      TenderSupplies/AliTOFT0v2.cxx \
+SRCS= TenderSupplies/AliTOFTenderSupply.cxx \
       TenderSupplies/AliPIDTenderSupply.cxx \
-      TenderSupplies/AliTOFTenderSupply.cxx \
       TenderSupplies/AliTPCTenderSupply.cxx \
       TenderSupplies/AliTRDTenderSupply.cxx \
       TenderSupplies/AliVtxTenderSupply.cxx \
