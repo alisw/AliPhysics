@@ -1,6 +1,6 @@
 TGraphErrors ** StarPPSpectra() {
 
-  TGraphErrors ** gStar = new TGraphErrors*[6];
+  TGraphErrors ** gStar = new TGraphErrors*[7];
   const Int_t kNMaxPoints = 19;
   Double_t pt[kNMaxPoints];
   Double_t errpt[kNMaxPoints] = {0};
@@ -296,6 +296,37 @@ TGraphErrors ** StarPPSpectra() {
     
   }
   
+
+  // Compute K/pi
+  Int_t npoint = gStar[2]->GetN(); // Kaons have less points than pions
+  gStar[6] = new TGraphErrors();
+  for(Int_t ipoint = 0; ipoint < npoint; ipoint++){
+    Float_t pn  = gStar[0]->GetY()[ipoint];
+    Float_t pne = gStar[0]->GetEY()[ipoint];
+    Float_t pp  = gStar[1]->GetY()[ipoint];
+    Float_t ppe = gStar[1]->GetEY()[ipoint];
+    Float_t kn  = gStar[2]->GetY()[ipoint];
+    Float_t kne = gStar[2]->GetEY()[ipoint];
+    Float_t kp  = gStar[3]->GetY()[ipoint];
+    Float_t kpe = gStar[3]->GetEY()[ipoint];
+
+    if (TMath::Abs(
+		   gStar[0]->GetX()[ipoint]-
+		   gStar[2]->GetX()[ipoint]
+		   ) 
+	) {
+	  cout << "Wrong STAR pt!!!" << endl;
+	  exit(1);
+	}
+    Double_t kpiRatio = (kp+kn)/(pp+pn);
+    Double_t error2K   = (kne*kne+kpe*kpe)/(kp+kn)/(kp+kn);
+    Double_t error2pi  = (pne*pne+ppe*ppe)/(pp+pn)/(pp+pn);
+    Double_t error = TMath::Sqrt(error2pi+error2K)*kpiRatio;
+    gStar[6]->SetPoint (ipoint, gStar[0]->GetX()[ipoint],kpiRatio);
+    gStar[6]->SetPointError (ipoint, 0, error);
+  }
+  
+
 
 
 //   gStar[0]->Draw("AP");
