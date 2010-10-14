@@ -643,6 +643,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   
   return esdTrackCuts;
 }
+
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries)
 {
@@ -666,13 +667,14 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
     // 7*(0.0026+0.0050/pt^1.01)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
   }
-  esdTrackCuts->SetMaxDCAToVertexZ(1.e6);
+  esdTrackCuts->SetMaxDCAToVertexZ(2);
   esdTrackCuts->SetDCAToVertex2D(kFALSE);
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   //esdTrackCuts->SetEtaRange(-0.8,+0.8);
   
   return esdTrackCuts;
 }
+
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
 {
@@ -695,6 +697,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPr
   }
   return esdTrackCuts;
 }
+
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
 {
