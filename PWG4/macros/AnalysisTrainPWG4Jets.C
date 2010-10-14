@@ -39,6 +39,7 @@ Int_t       iAODanalysis       = 1;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 0;      // ESD to AOD filter (barrel + muon tracks)
 Int_t       iPhysicsSelection  = 1;      // ESD to AOD filter (barrel + muon tracks)
+Bool_t      useTender           = kFALSE; // use tender wagon 
 Bool_t      kUseKinefilter     = kFALSE; // use Kinematics filter
 Bool_t      kUseMuonfilter     = kFALSE; // use Kinematics filter
 TString     kCommonOutputFileName = "PWG4_JetTasksOutput.root";
@@ -209,6 +210,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (iAODanalysis) printf("=  AOD analysis                                                  =\n");
    else                     printf("=  ESD analysis                                                  =\n");
    if (iPhysicsSelection)   printf("=  Physics selection                                                =\n");
+   if (useTender)   printf("=  Using tender                                                =\n");
    if (iESDfilter)   printf("=  ESD filter                                                    =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
    printf("==================================================================\n");
@@ -350,6 +352,19 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    // For now connection to top input container and common AOD output container
    // is done in this macro, but in future these containers will be connected
    // from each task configuration macro.
+   
+   //                                                                                                                              
+   // Tender and supplies. Needs to be called for every event.                                                                     
+   //                                                                                                                              
+   if (useTender) {
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+      AliAnalysisTaskSE *tender = AddTaskTender(kTRUE);
+      //      tender->SelectCollisionCandidates();                                                                                      
+      tender->SetDebugLevel(2);
+   }
+
+
+
    if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,kTRUE,kTRUE); // last flag also adds information on  
@@ -466,7 +481,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskFrag = AddTaskFragmentationFunction(1<<1,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<2,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<3,kHighPtFilterMask);
-       taskFrag = AddTaskFragmentationFunction(1<<11);  // w/o acceptance cuts
+       taskFrag = AddTaskFragmentationFunction(1<<5,kHighPtFilterMask);
+       taskFrag = AddTaskFragmentationFunction(1<<11);  // w/o acceptance cuts       
        taskFrag =  AddTaskFragmentationFunction(1<<12);  // with acceptance cuts
        // anti-kt
        taskFrag = AddTaskFragmentationFunction(1<<21);  // w/o acceptance cuts
@@ -691,8 +707,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
       TString gcArguments = "-run-on-train -run-jet -run-omega-meson -use-own-xyz -run-neutralmeson -no-aod";
       //      TString kGCAnalysisCutSelectionId="9003562000100310";
-      TString kGCAnalysisCutSelectionId="9003562000100312";
-      gcArguments.Append(Form(" -set-cut-selection %s ",kGCAnalysisCutSelectionId.Data()));
+      //      TString kGCAnalysisCutSelectionId="9003562000100312";
+      //      gcArguments.Append(Form(" -set-cut-selection %s ",kGCAnalysisCutSelectionId.Data()));
       if(!kIsMC)gcArguments += " -mc-off";
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
       gSystem->ChangeDirectory(cdir);
@@ -1111,6 +1127,10 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 {
 // Load common analysis libraries.
   Bool_t success = kTRUE;
+  if (useTender) {
+      if (!LoadLibrary("TENDER", mode, kTRUE) ||
+          !LoadLibrary("TENDERSupplies", mode, kTRUE)) return kFALSE;
+   }
    if (iESDfilter) {
      /*
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
