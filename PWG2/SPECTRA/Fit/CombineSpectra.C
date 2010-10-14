@@ -105,6 +105,7 @@ void DrawRatios();
 void DrawWithSyst();
 void FitCombined();
 void PrintCanvas(TCanvas* c,const TString formats) ;
+void RebinHistosForRatios() ;
 void Help();
 
 // External stuff
@@ -369,6 +370,7 @@ void FitCombined() {
       if(drawStar)    DrawStar(icharge);
       hRatiosToFit[ipart][icharge]=(TH1F*)hToFit->Clone(Form("hRatio%s%s",chargeFlag[icharge],partFlag[icharge])); // Ratio data/fit
       hRatiosToFitSyst[ipart][icharge]=(TH1F*)hsyststat->Clone(Form("hRatioSyst%s%s",chargeFlag[icharge],partFlag[icharge])); // Ratio data/fit
+      // Compute ratio data/function integrating the function in the bin width
       for(Int_t iBin=1; iBin<hToFit->GetNbinsX(); iBin++){
 	Double_t lowLim=hToFit->GetBinLowEdge(iBin);
 	Double_t highLim=hToFit->GetBinLowEdge(iBin+1);
@@ -381,19 +383,11 @@ void FitCombined() {
 	hRatiosToFit[ipart][icharge]->SetBinContent(iBin,ratio);
 	hRatiosToFit[ipart][icharge]->SetBinError(iBin,eratio);
       }
-      //      hToFit->GetListOfFunctions()->At(0)->Draw("same");
-      //      ((TF1*)hToFit->GetListOfFunctions()->At(0))->SetRange(0,4);
-      //      ((TF1*)hToFit->GetListOfFunctions()->At(0))->SetLineColor(hToFit->GetLineColor());
       c2->Update();
       l->AddEntry(hToFit, 
 		  scaleKaons && ipart == kKaon ? 
 		  (TString(partLabel[ipart][icharge])+" #times 2").Data() 
 		  : partLabel[ipart][icharge]);
-//       TF1 * fClone = (TF1*) hToFit->GetListOfFunctions()->At(0)->Clone();
-//       hToFit->GetListOfFunctions()->Add(fClone);
-//       fClone->SetLineStyle(kDashed);
-//       fClone->SetRange(0,100);
-//       fClone->Draw("same");
       
       // populate table
       //     Float_t yield  = func->Integral(0.45,1.05);
@@ -500,18 +494,19 @@ void LoadSpectra() {
 
   // TOF
   // Load Efficiencies
-  f =  new TFile("./Files/effhistos.root");
+  f =  new TFile("./Files/effTOFhistosSmooth.root");
+  TFile * ftrk =  new TFile("./Files/effhistos.root");
   TH1D * hEffTrackTOF[kNPart][kNCharge];
   TH1D * hEffMatchTOF[kNPart][kNCharge];
-  hEffTrackTOF[kPion]  [kPos] = (TH1D*) f->Get("hpitrk_pos");
-  hEffTrackTOF[kKaon]  [kPos] = (TH1D*) f->Get("hkatrk_pos");
-  hEffTrackTOF[kProton][kPos] = (TH1D*) f->Get("hprtrk_pos");
+  hEffTrackTOF[kPion]  [kPos] = (TH1D*) ftrk->Get("hpitrk_pos");
+  hEffTrackTOF[kKaon]  [kPos] = (TH1D*) ftrk->Get("hkatrk_pos");
+  hEffTrackTOF[kProton][kPos] = (TH1D*) ftrk->Get("hprtrk_pos");
   hEffMatchTOF[kPion]  [kPos] = (TH1D*) f->Get("hpieff_pos");
   hEffMatchTOF[kKaon]  [kPos] = (TH1D*) f->Get("hkaeff_pos");
   hEffMatchTOF[kProton][kPos] = (TH1D*) f->Get("hpreff_pos");
-  hEffTrackTOF[kPion]  [kNeg] = (TH1D*) f->Get("hpitrk_neg");
-  hEffTrackTOF[kKaon]  [kNeg] = (TH1D*) f->Get("hkatrk_neg");
-  hEffTrackTOF[kProton][kNeg] = (TH1D*) f->Get("hprtrk_neg");
+  hEffTrackTOF[kPion]  [kNeg] = (TH1D*) ftrk->Get("hpitrk_neg");
+  hEffTrackTOF[kKaon]  [kNeg] = (TH1D*) ftrk->Get("hkatrk_neg");
+  hEffTrackTOF[kProton][kNeg] = (TH1D*) ftrk->Get("hprtrk_neg");
   hEffMatchTOF[kPion]  [kNeg] = (TH1D*) f->Get("hpieff_neg");
   hEffMatchTOF[kKaon]  [kNeg] = (TH1D*) f->Get("hkaeff_neg");
   hEffMatchTOF[kProton][kNeg] = (TH1D*) f->Get("hpreff_neg");
@@ -559,7 +554,11 @@ void LoadSpectra() {
 	hSpectra[kTOF][kKaon][icharge]->SetBinError  (ibin,0);	
 	hSpectra[kTOF][kProton][icharge]->SetBinContent(ibin,0);
 	hSpectra[kTOF][kProton][icharge]->SetBinError  (ibin,0);	
-      }            
+      }
+      if (pt < 0.7) {
+	hSpectra[kTOF][kProton][icharge]->SetBinContent(ibin,0);
+	hSpectra[kTOF][kProton][icharge]->SetBinError  (ibin,0);	
+      }
     }
   }
 //   cout << "Scaling TOF to TPC" << endl;  
@@ -596,6 +595,7 @@ void LoadSpectra() {
   hSpectra[kITS][kKaon]  [kNeg]= (TH1F*) f->Get("hSpectraNeg1");
   hSpectra[kITS][kProton][kNeg]= (TH1F*) f->Get("hSpectraNeg2");
 
+  // Remove unwanted bins
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
     for(Int_t icharge = 0; icharge < kNCharge; icharge++){
       Int_t nbinITS = hSpectra[kITS][ipart][icharge]->GetNbinsX();
@@ -628,8 +628,8 @@ void LoadSpectra() {
   }
 
   // Load ITS sa systematics, only pt dependent ones
-  //  f = TFile::Open("./Files/ITSsa-systematics.root");
-  f = TFile::Open("./Files/ITSsa-systematics_20100928.root");
+  //  f = TFile::Open("./Files/ITSsa-systematics_20100930.root");
+  f = TFile::Open("./Files/ITSsa-systematics-20101014.root");
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
       for(Int_t icharge = 0; icharge < kNCharge; icharge++){
 	AliBWTools::AddHisto(hSystError[kITS][ipart][icharge], (TH1*) gDirectory->Get(Form("hSystTot%s%s",chargeFlag[icharge],partFlag[ipart]))); // Using total error
@@ -991,7 +991,7 @@ void LoadSpectra() {
 	if(hSpectra[idet][ipart][icharge]) {
 	  //	  cout << "Scaling!" << endl;
 	  if(idet != kKinks && idet != kK0){ // Kinks use a different run list, k0s normalized by Helene
-	    hSpectra[idet][ipart][icharge]->Scale(1.*effPhysSel[ipart]/278366.15); // Scale PhysSel tutti? // FIXME
+	    hSpectra[idet][ipart][icharge]->Scale(1.*effPhysSel[ipart]/278366.15); // Scale PhysSel efficiency (computed by Alexander)
 	  }
 	}
       }
@@ -1112,17 +1112,20 @@ void GetITSResiduals() {
 
 void DrawWithModels() {
 
-  for(Int_t icharge = 0; icharge < kNCharge; icharge++){
+  Int_t chargeLoop = sumCharge ? 1 : 2; 
+  for(Int_t icharge = 0; icharge < chargeLoop; icharge++){
  
     // Draw with models
     for(Int_t ipart = 0; ipart < kNPart; ipart++){
       // Multipad canvas
-      TCanvas * c1 = new TCanvas(TString("cSpectra")+partFlag[ipart]+chargeFlag[icharge],TString("cSpectra")+partFlag[ipart]+chargeFlag[icharge],700,700);
-      TPad *p1 = new TPad(TString("p1")+partFlag[ipart]+chargeFlag[icharge], "p1", 0.0, 0.35, 1.0,  0.95, 0, 0, 0);
+      TString chargeFlagLocal = chargeFlag[icharge];
+      if(sumCharge) chargeFlagLocal += chargeFlag[1];
+      TCanvas * c1 = new TCanvas(TString("cSpectra")+partFlag[ipart]+chargeFlagLocal,TString("cSpectra")+partFlag[ipart]+chargeFlagLocal,700,700);
+      TPad *p1 = new TPad(TString("p1")+partFlag[ipart]+chargeFlagLocal, "p1", 0.0, 0.35, 1.0,  0.95, 0, 0, 0);
       p1->SetBottomMargin(0);
       p1->Draw();
       
-      TPad *p2 = new TPad(TString("p2")+partFlag[ipart]+chargeFlag[icharge], "p2", 0.0, 0.05, 1.0,  0.35, 0, 0, 0);
+      TPad *p2 = new TPad(TString("p2")+partFlag[ipart]+chargeFlagLocal, "p2", 0.0, 0.05, 1.0,  0.35, 0, 0, 0);
       p2->SetTopMargin(0);
       p2->SetBottomMargin(0.3);
       p2->Draw();
@@ -1132,7 +1135,8 @@ void DrawWithModels() {
       // Draw spectra
       p1->cd();
       p1->SetLogy();
-      TH2F * hempty = new TH2F(TString("hempty")+long(icharge)+long(ipart),"hempty",100,0.,4, 100, 0.0015,5);
+      Float_t maxy = sumCharge ? 10 : 5;
+      TH2F * hempty = new TH2F(TString("hempty")+long(icharge)+long(ipart),"hempty",100,0.,3, 100, 0.0015,maxy);
       hempty->SetXTitle("p_{t} (GeV/c)");
       hempty->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1}");
       hempty->Draw();
@@ -1141,17 +1145,21 @@ void DrawWithModels() {
 
 
       TLegend * l =new TLegend(0.502874, 0.493056, 0.892241, 0.904762);
-      l->SetFillColor(kWhite);
+      l->SetFillColor(kWhite);      
+      if(sumCharge) 	{
+	hSpectra[iCombInStudy][ipart][kPos]->Add(hSpectra[iCombInStudy][ipart][kNeg]); // Draw pos+neg
+      }
       hSpectra[iCombInStudy][ipart][icharge]->Draw("same");
       l->AddEntry(hSpectra[kTOF][ipart][icharge],TString ("Data"));
       for(Int_t itune = 0; itune < kNTunes; itune++){      
+	if(sumCharge)	hSpectraMC[itune][ipart][icharge]->Add(hSpectraMC[itune][ipart][kNeg]); // Draw pos+neg;    
 	l->AddEntry(hSpectraMC[itune][ipart][icharge],mcTuneName[itune]);
 	hSpectraMC[itune][ipart][icharge]->SetLineWidth(2);    
 	AliBWTools::GetGraphFromHisto(hSpectraMC[itune][ipart][icharge])->Draw("CX");
       }
       l->Draw("same");
      
-      TLatex * tex = new TLatex(0.6712643,2.353486,partLabel[ipart][icharge]);
+      TLatex * tex = new TLatex(0.6712643,2.353486,sumCharge ? Form("%s+%s",partLabel[ipart][icharge],partLabel[ipart][1]) : partLabel[ipart][icharge]);
       tex->SetTextFont(42);
       tex->SetTextSize(0.07936508);
       tex->SetLineWidth(2);
@@ -1159,7 +1167,8 @@ void DrawWithModels() {
 
       // Draw ratio
       p2->cd();
-      TH2F * hemptyr = new TH2F(TString("hemptyratio")+long(icharge)+long(ipart),"hempty",100,0.,4, 100, 0.01,2.99);
+      Float_t maxyr = sumCharge ? 3.99 : 2.99;
+      TH2F * hemptyr = new TH2F(TString("hemptyratio")+long(icharge)+long(ipart),"hempty",100,0.,3, 100, 0.01,maxyr);
       hemptyr->SetXTitle("p_{t} (GeV/c)");
       hemptyr->SetYTitle("Data/MC");
       hemptyr->GetXaxis()->SetLabelSize(0.04*scaleFonts);
@@ -1183,19 +1192,14 @@ void DrawWithModels() {
 	hRatio->SetLineStyle(hSpectraMC[itune][ipart][icharge]->GetLineStyle());
 	hRatio->SetLineColor(hSpectraMC[itune][ipart][icharge]->GetLineColor());
 	hRatio->SetLineWidth(hSpectraMC[itune][ipart][icharge]->GetLineWidth());
-	AliBWTools::GetGraphFromHisto(hRatio)->Draw("CX");
+	hRatio->SetMarkerStyle(0);
+	hRatio->Draw("same");
+	//	AliBWTools::GetGraphFromHisto(hRatio)->Draw("CX");
       }
 
 
       // print
-      if(doPrint) {
-	c1->Update();
-	gSystem->ProcessEvents();
-	c1->Print(TString(c1->GetName())+".eps");
-	//	ALICEWorkInProgress(c1,"","#splitline{ALICE Preliminary}{Statistical Error Only}");
-	c1->Print(TString(c1->GetName())+".png");
-	
-      }
+      PrintCanvas(c1,printFormats);
     }
   }
 
@@ -1688,6 +1692,9 @@ void DrawRatios() {
 
   // Draws ratios of combined spectra
 
+  // Rebin histograms (hi pt was fluctuating too much in the TOF)
+  RebinHistosForRatios();
+
   // Compute ratios
   TH1F * hPosNegRatio[kNPart];
   
@@ -1699,12 +1706,37 @@ void DrawRatios() {
     hPosNegRatio[ipart]->SetMaximum(1.5);
   }
   
+  
   TH1F * hKPiRatio = (TH1F*) hSpectra[iCombInStudy][kKaon][kPos]->Clone();
   hKPiRatio->Add(hSpectra[iCombInStudy][kKaon][kNeg]);
   TH1F * htmp = (TH1F*) hSpectra[iCombInStudy][kPion][kPos]->Clone();
   htmp->Add(hSpectra[iCombInStudy][kPion][kNeg]);
   hKPiRatio->Divide(htmp);
   hKPiRatio->SetYTitle("(K^{+}+K^{-})/(#pi^{+}+#pi^{-})");
+  // Get ratio of syst errors
+  // FIXME: commented combined error
+  TH1F * hKPiRatioSyst = new TH1F(*htemplate);;
+  AliBWTools::GetValueAndError(hKPiRatioSyst,hSpectra[iCombInStudy][kKaon][kPos],hSystError[iCombInStudy][kKaon][kPos],kTRUE);
+  //  AliBWTools::GetHistoCombinedErrors(hKPiRatioSyst,hSpectra[iCombInStudy][kKaon][kPos]);
+  AliBWTools::GetValueAndError(htmp,hSpectra[iCombInStudy][kKaon][kNeg],hSystError[iCombInStudy][kKaon][kNeg],kTRUE);
+  // //  AliBWTools::GetHistoCombinedErrors(htmp,hSpectra[iCombInStudy][kKaon][kNeg]);
+  hKPiRatioSyst->Add(htmp);
+  AliBWTools::GetValueAndError(htmp,hSpectra[iCombInStudy][kPion][kNeg],hSystError[iCombInStudy][kPion][kNeg],kTRUE);
+  //  AliBWTools::GetHistoCombinedErrors(htmp,hSpectra[iCombInStudy][kPion][kNeg]);
+  TH1F * htmp2 = new TH1F(*htemplate);
+  AliBWTools::GetValueAndError(htmp2,hSpectra[iCombInStudy][kPion][kPos],hSystError[iCombInStudy][kPion][kPos],kTRUE);
+  //  AliBWTools::GetHistoCombinedErrors(htmp2,hSpectra[iCombInStudy][kPion][kPos]);
+  htmp->Add(htmp2);
+  hKPiRatioSyst->Divide(htmp);
+  hKPiRatioSyst->SetYTitle("(K^{+}+K^{-})/(#pi^{+}+#pi^{-})");
+  // Multiply error for sqrt(2): the syst is not reduced by combining positive and negative charges
+  Int_t nbin = hKPiRatioSyst->GetNbinsX();
+  for(Int_t ibin = 1; ibin <= nbin; ibin++){
+    hKPiRatioSyst->SetBinError(ibin, hKPiRatioSyst->GetBinError(ibin)*TMath::Sqrt(2));
+  }
+  
+
+
 
   TH1F * hKPiRatioMC[kNTunes];
   if(showMC){
@@ -1781,33 +1813,47 @@ void DrawRatios() {
     TF1 * fRatio = new TF1 (TString("fRatio")+partFlag[ipart], TString(fLevi[ipart][kPos]->GetName())+"/"+fLevi[ipart][kNeg]->GetName());
     //    fRatio->Draw("same");
     fRatio->SetRange(0,5);
-    if (doPrint) {
-      c1->Update();
-      gSystem->ProcessEvents();
-      c1->Print(TString(c1->GetName()) + ".png");
-    }
+    PrintCanvas(c1,printFormats);
     
   }
 
 
   TCanvas * c2 = new TCanvas(TString("cRatio_KPi"),TString("cRatio_KPi"));  
   //  c2->SetGridy();
-  hKPiRatio->SetMaximum(0.62);
-  hKPiRatio->Draw();
+
+  hKPiRatioSyst->SetMaximum(0.62);  
+  hKPiRatioSyst->SetFillColor(kGray);
+  hKPiRatioSyst->SetMarkerStyle(24);
+  //  hKPiRatioSyst->Draw("e2");
+  // TMP FIXME: ERROR FROM FP:
+  TFile * f = TFile::Open("./Files/ITSsa-systematics-20101014.root");
+  TH1F * hsystRatio = (TH1F*) f->Get("hSystRatioKpi");
+  TH1F * hsyst = new TH1F(*htemplate);
+  AliBWTools::GetValueAndError(hsyst,hKPiRatio,hsystRatio,1);
+  //  AliBWTools::GetHistoCombinedErrors(hsyst,hKPiRatio);
+  //  hsyst->Draw("samee1");
+  // END TMP
+  hKPiRatio->SetMaximum(0.62);  
+  hKPiRatio->Draw("");
   TLegend * lMC = new TLegend(0.526846, 0.18007, 0.887584,0.407343);
   lMC->SetFillColor(kWhite);
-
+  TGraphErrors ** gStar = StarPPSpectra();
+  cout << gStar[6] << endl;
+  
+  gStar[6]->SetMarkerStyle(kOpenStar);
+  gStar[6]->Draw("P");
+  
   if(showE735){
     gROOT->LoadMacro("GetE735Ratios.C");
-    GetE735Ratios(0,0)->Draw("EX0,same");
-    GetE735Ratios(0,1)->Draw("EX0,same");
-    GetE735Ratios(0,2)->Draw("EX0,same");
+    // GetE735Ratios(0,0)->Draw("EX0,same");
+    // GetE735Ratios(0,1)->Draw("EX0,same");
+    // GetE735Ratios(0,2)->Draw("EX0,same");
     GetE735Ratios(0,3)->Draw("EX0,same");
   }
   hKPiRatio->SetMarkerStyle(20);
   hKPiRatio->SetMarkerColor(kRed);
   hKPiRatio->SetLineColor(kRed);
-  hKPiRatio->Draw("same");
+  //hKPiRatio->Draw("same");
   
   if(showMC){
     for(Int_t itune = 0; itune < kNTunes; itune++){
@@ -1818,20 +1864,23 @@ void DrawRatios() {
   
     lMC->Draw();
   }
+  cout << "12" << endl;
 
   if(showE735){
     TLegend * l = new TLegend(  0.1879,  0.68,  0.54,0.92);
     l->SetFillColor(kWhite);
     l->AddEntry(hKPiRatio, "ALICE, #sqrt{s} = 900 GeV","lpf");
-    l->AddEntry(GetE735Ratios(0,0), "E735, #sqrt{s} = 300 GeV","lpf");
-    l->AddEntry(GetE735Ratios(0,1), "E735, #sqrt{s} = 540 GeV","lpf");
-    l->AddEntry(GetE735Ratios(0,2), "E735, #sqrt{s} = 1000 GeV","lpf");
+    l->AddEntry(gStar[6],  "STAR, #sqrt{s} = 200 GeV", "lp");
+    // l->AddEntry(GetE735Ratios(0,0), "E735, #sqrt{s} = 300 GeV","lpf");
+    // l->AddEntry(GetE735Ratios(0,1), "E735, #sqrt{s} = 540 GeV","lpf");
+    // l->AddEntry(GetE735Ratios(0,2), "E735, #sqrt{s} = 1000 GeV","lpf");
     l->AddEntry(GetE735Ratios(0,3), "E735, #sqrt{s} = 1800 GeV","lpf");
     l->Draw();
   }
 
 
   TCanvas * c3 = new TCanvas(TString("cRatio_PPi"),TString("cRatio_PPi"));  
+  cout << "DRAWING" << endl;
   //  c3->SetGridy();
   hPPiRatio->SetMarkerStyle(20);
   hPPiRatio->SetMarkerColor(kRed);
@@ -1860,18 +1909,8 @@ void DrawRatios() {
   //  TLegend * l = new TLegend(0.206376, 0.77972, 0.600671, 0.909091);
   l->Draw();
 
-
-  if (doPrint) {
-    c2->Update();
-    gSystem->ProcessEvents();
-    c2->Print(TString(c2->GetName()) + ".png");
-    c2->Print(TString(c2->GetName()) + ".eps");
-    c3->Update();
-    gSystem->ProcessEvents();
-    c3->Print(TString(c3->GetName()) + ".png");
-    c3->Print(TString(c3->GetName()) + ".eps");
-  }
-
+  PrintCanvas(c2,printFormats);
+  PrintCanvas(c3,printFormats);
 
 }
 
@@ -1928,7 +1967,9 @@ void Help() {
 
   cout << "Macro: void CombineSpectra(Int_t analysisType=kDoFits, Int_t  fitFuncID = kFitLevi) " << endl;
   cout << "" << endl;
-
+  cout << "WARNING: some function modify the histos upon execution. You are advised to quit root" << endl;
+  cout << "         before running a different function" << endl;
+  cout << "" << endl;
   cout << "Possible Arguments" << endl;
   cout << "- analysisType:" << endl;  
   cout << "    kDoFits:           Fit Combined Spectra " << endl;
@@ -1981,3 +2022,44 @@ void LoadLibs(){
 
 }
 
+void RebinHistosForRatios() {
+  // rebins all spectra histograms 
+
+  cout << "WARNING: REBINNING HISTOS BEFORE RATIOS" << endl;
+  
+
+  const Float_t rebinBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.6,1.8,2.4};
+  Int_t nrebinBins=29;
+
+
+
+  Int_t idet = iCombInStudy;
+  for(Int_t ipart = 0; ipart < kNPart; ipart++){
+    for(Int_t icharge = 0; icharge < kNCharge; icharge++){  
+
+      TH1F * h =  hSpectra[idet][ipart][icharge];
+      TString hname = h->GetName();
+      hname += "_rebin";
+     
+      TH1F *hrebin   = new TH1F(hname, hname,nrebinBins,rebinBins);
+      hrebin->Sumw2();
+
+      for(Int_t i=1;i <= h->GetNbinsX();i++){
+	Float_t x = h->GetBinCenter(i);
+	Int_t j=0;
+	while(x > rebinBins[j+1]) j++;
+	j++;
+	hrebin->AddBinContent(j,h->GetBinContent(i));
+
+	Float_t err = hrebin->GetBinError(j) + h->GetBinError(i)*h->GetBinError(i);
+	hrebin->SetBinError(j,err);
+      }
+
+      for(Int_t i=1;i <= hrebin->GetNbinsX();i++){
+	hrebin->SetBinError(i,TMath::Sqrt(hrebin->GetBinError(i)));
+      }
+      hSpectra[idet][ipart][icharge] = hrebin;
+    }
+  }
+
+}
