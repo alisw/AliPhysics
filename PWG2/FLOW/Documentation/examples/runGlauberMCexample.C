@@ -1,8 +1,9 @@
 {
   //load libraries
-  gROOT->LoadMacro("AliGlauberNucleon.cxx+");
-  gROOT->LoadMacro("AliGlauberNucleus.cxx+");
-  gROOT->LoadMacro("AliGlauberMC.cxx+");
+  gSystem->SetBuildDir("/tmp");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberNucleon.cxx+");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberNucleus.cxx+");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberMC.cxx+");
 
 
   Int_t nevents = 10000; // number of events to simulate 
