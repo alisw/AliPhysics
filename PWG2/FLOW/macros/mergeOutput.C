@@ -13,41 +13,49 @@
 //      directory <dir> and launch it. This macro will access "mergedAnalysisResults.root"
 //      and produce the output file "AnalysisResults.root" in directory <dir>. This file will 
 //      hold the final results for merged, large statistics sample. 
-//  5.) REMARK: To see plots for some of the results use macro compareFlowResults.C. This macro
+//  5.) REMARK 1: To see plots for some of results use macro compareFlowResults.C. This macro
 //      accesses file "AnalysisResults.root" and produces couple of predefined example plots.        
+//  6.) REMARK 2: To use this macro for merging of other root files (having other name than
+//      the default "AnalysisResults.root") modify the declaration of TString outputFileName.
+
+// Name of the output files to be merged (sitting in <subdir1>, <subdir2>, ...):
+TString outputFileName = "AnalysisResults.root";
+// Name of the merged, large statistics file (to be saved in <dir>):
+TString mergedFileName = "mergedAnalysisResults.root";
+// Optionally set maximum number of files to be merged:
+Int_t maxNoOfFiles = -1; // -1 = ignore
+// For a large number of output files merging is done in cycles and this is the cycle period: 
+const Int_t cycle = 50;
 
 enum libModes {mLocal,mLocalSource};
 
 void mergeOutput(Int_t mode=mLocal)
 {
- // mode: if mode = mLocal: analyze data on your computer using aliroot
+ // Mode: if mode = mLocal: analyze data on your computer using aliroot
  //       if mode = mLocalSource: analyze data on your computer using root + source files 
- // Name of the output files to be merged:
- TString outputFileName = "AnalysisResults.root";
- // Name of the merged, large statistics file:
- TString mergedFileName = "mergedAnalysisResults.root";
- // For a large number of output files merging is done in cycles
- // and this is the cycle period: 
- const Int_t cycle = 500;
- if(cycle>500)
- {
-  cout<<"WARNING: Cycle is too big !!!!"<<endl; 
-  cout<<"         Set \"const Int_t cycle\" to smaller value in the macro."<<endl;
-  exit(0);
- }
+ 
+ // Cross-check user settings before starting:
+ CrossCheckUserSettings(); 
+ 
  // Load needed flow libraries:
  LoadLibrariesMO(mode);  
+ 
  // Standard magic:
  TString *baseDirPath = new TString(gSystem->pwd());
  TSystemDirectory *baseDir = new TSystemDirectory(".",baseDirPath->Data());          
  TList *listOfFilesInBaseDir = baseDir->GetListOfFiles();
  TStopwatch timer;
  timer.Start();
- // listOfFilesInBaseDir->Print();
+ //listOfFilesInBaseDir->Print();
+ 
+ // Count number of files to be merged:
+ CountNumberOfFilesToBeMerged(baseDirPath,listOfFilesInBaseDir);
+ 
+ // Loop over all files and from each subdirectory add file <outputFileName> to TFileMerger:
  Int_t nFiles = listOfFilesInBaseDir->GetEntries();
- // loop over all files and from each subdirectory add file AnalysisResults.root to TFileMerger:
  Int_t fileCounter = 0;
  TFileMerger *fileMerger = new TFileMerger(); 
+ cout<<" .... merging in progress, silence please ...."<<"\r"<<flush;
  for(Int_t iFile=0;iFile<nFiles;iFile++)
  {
   TSystemFile *currentFile = (TSystemFile*)listOfFilesInBaseDir->At(iFile);
@@ -55,8 +63,8 @@ void mergeOutput(Int_t mode=mLocal)
   if(!currentFile || 
      !currentFile->IsDirectory() || 
      strcmp(currentFile->GetName(), ".") == 0 || 
-     strcmp(currentFile->GetName(), "..") == 0) continue; 
-  // Accessing the output file "AnalysisResults.root" in current subdirectory: 
+     strcmp(currentFile->GetName(), "..") == 0){continue;} 
+  // Accessing the output file <outputFileName> in current subdirectory: 
   TString currentSubDirName = baseDirPath->Data();
   (currentSubDirName+="/")+=currentFile->GetName();
   currentSubDirName+="/";
@@ -64,8 +72,15 @@ void mergeOutput(Int_t mode=mLocal)
   fileName+=outputFileName.Data();
   if(!(gSystem->AccessPathName(fileName.Data(),kFileExists)))
   {
-   fileCounter++;
-   fileMerger->AddFile(fileName.Data());
+   if(gROOT->GetVersionDate()>=20100404) // to be improved - removed eventually (this is temporary protection)
+   { 
+    Bool_t success = fileMerger->AddFile(fileName.Data(),kFALSE); // kFALSE switches off cp printout (not supported in older Root)
+    if(success){fileCounter++;}
+   } else 
+     {
+      Bool_t success = fileMerger->AddFile(fileName.Data());
+      if(success){fileCounter++;}
+     }    
    // Merging in cycles:
    if(fileCounter % cycle == 0)
    {
@@ -75,38 +90,36 @@ void mergeOutput(Int_t mode=mLocal)
     (*mergedFileForPreviousCycle)+=".root";
     if(!(gSystem->AccessPathName(mergedFileForPreviousCycle->Data(),kFileExists)))
     {
-     fileMerger->AddFile(mergedFileForPreviousCycle->Data());
+     if(gROOT->GetVersionDate()>=20100404) // to be improved - removed eventually (this is temporary protection)
+     {  
+      fileMerger->AddFile(mergedFileForPreviousCycle->Data(),kFALSE); // kFALSE switches off cp printout (not supported in older Root)
+     } else
+       {
+        fileMerger->AddFile(mergedFileForPreviousCycle->Data());
+       }
      // Delete merged output from previous cycle:
      TSystemFile *file = new TSystemFile(mergedFileForPreviousCycle->Data(),baseDirPath->Data());
      file->Delete();
      delete file;
     }    
-    // Create merged output for current cycle:
+    // Create merged output for the current cycle:
     TString *mergedFileForCurrentCycle = new TString("mergedCycle"); 
     (*mergedFileForCurrentCycle)+=(fileCounter/cycle);
     (*mergedFileForCurrentCycle)+=".root";    
     fileMerger->OutputFile(mergedFileForCurrentCycle->Data());
     fileMerger->Merge();
+    cout<<" .... merged "<<fileCounter<<" files so far, marching on ....                       "<<"\r"<<flush;
     fileMerger->Reset();    
     delete mergedFileForPreviousCycle;
     delete mergedFileForCurrentCycle;
    } // end of if(fileCounter % cycle == 0) 
   } // end of if(!(gSystem->AccessPathName(fileName.Data(),kFileExists))) 
+  if(fileCounter==maxNoOfFiles){break;}
  } // end of for(Int_t iFile=0;iFile<nFiles;iFile++)
- 
  
  //=================================================================================================
  
- 
  // Final merging at the end of the day (3 distinct cases):
- if(fileCounter==0)
- {
-  cout<<endl;
-  cout<<"Merger wasn't lucky: Couldn't find a single file "<<outputFileName.Data()<<" to merge"<<endl;
-  cout<<"in subdirectories of directory "<<baseDirPath->Data()<<endl;
-  cout<<endl;
-  exit(0);
- }
  gSystem->cd(baseDirPath->Data());
  if(fileCounter < cycle)
  {
@@ -126,7 +139,13 @@ void mergeOutput(Int_t mode=mLocal)
       TString *mergedFileForPreviousCycle = new TString("mergedCycle"); 
       (*mergedFileForPreviousCycle)+=((Int_t)fileCounter/cycle);
       (*mergedFileForPreviousCycle)+=".root";      
-      fileMerger->AddFile(mergedFileForPreviousCycle->Data());
+      if(gROOT->GetVersionDate()>=20100404) // to be improved - removed eventually (this is temporary protection)
+      {  
+       fileMerger->AddFile(mergedFileForPreviousCycle->Data(),kFALSE);
+      } else
+        {
+         fileMerger->AddFile(mergedFileForPreviousCycle->Data());      
+        }
       // Delete merged output from previous cycle:
       TSystemFile *file = new TSystemFile(mergedFileForPreviousCycle->Data(),baseDirPath->Data());
       file->Delete();
@@ -138,24 +157,101 @@ void mergeOutput(Int_t mode=mLocal)
  delete fileMerger;
  delete baseDirPath;
  delete baseDir;
- 
+
+ if(!(gSystem->AccessPathName(mergedFileName.Data(),kFileExists)) && fileCounter > 0)
+ {
+  cout<<" Merging went successfully: "<<fileCounter<<" files \""<<outputFileName.Data()<<"\" were"<<endl;
+  cout<<" merged into the newly created file \""<<mergedFileName.Data()<<"\"."<<endl;
+  cout<<endl;
+  cout<<" Launch now macro redoFinish.C to get the correct final results."<<endl;
+ } else
+   {
+    cout<<" WARNING: Merging failed miserably !!!!"<<endl;
+   }   
  cout<<endl;
  timer.Stop();
  timer.Print(); 
  cout<<endl;
- if(!(gSystem->AccessPathName(mergedFileName.Data(),kFileExists)))
- {
-  cout<<"Merging went successfully: "<<fileCounter<<" files "<<outputFileName.Data()<<" were"<<endl;
-  cout<<"merged into the newly created file "<<mergedFileName.Data()<<"."<<endl;
-  cout<<endl;
-  cout<<"Launch now macro redoFinish.C to get the correct final results."<<endl;
- } else
-   {
-    cout<<"WARNING: Merging failed !!!!"<<endl;
-   } 
- cout<<endl;
+
 } // End of void mergeOutput(Int_t mode=mLocal)
 
+// ===================================================================================
+
+void CrossCheckUserSettings()
+{
+ // Cross-check user settings before starting:
+ 
+ if(cycle>100)
+ {
+  cout<<endl;
+  cout<<" WARNING: Cycle is too big !!!!"<<endl; 
+  cout<<"          Set \"const Int_t cycle\" to smaller value in the macro."<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+} // void CrossCheckUserSettings() 
+ 
+// ===================================================================================
+
+void CountNumberOfFilesToBeMerged(TString *baseDirPath,TList *listOfFilesInBaseDir)
+{
+ // Count number of files to be merged and print info on the screen.
+ 
+ if(!(baseDirPath && listOfFilesInBaseDir))
+ {
+  cout<<endl;
+  cout<<" WARNING: baseDirPath||listOfFilesInBaseDir is NULL in CountNumberOfFilesToBeMerged(...) !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ 
+ Int_t nFiles = listOfFilesInBaseDir->GetEntries();
+ Int_t fileCounter = 0;
+ for(Int_t iFile=0;iFile<nFiles;iFile++)
+ {
+  TSystemFile *currentFile = (TSystemFile*)listOfFilesInBaseDir->At(iFile);
+  // Consider only subdirectories: 
+  if(!currentFile || 
+     !currentFile->IsDirectory() || 
+     strcmp(currentFile->GetName(), ".") == 0 || 
+     strcmp(currentFile->GetName(), "..") == 0) continue; 
+  // Accessing the output file <outputFileName> in current subdirectory: 
+  TString currentSubDirName = baseDirPath->Data();
+  (currentSubDirName+="/")+=currentFile->GetName();
+  currentSubDirName+="/";
+  TString fileName = currentSubDirName; 
+  fileName+=outputFileName.Data();
+  if(!(gSystem->AccessPathName(fileName.Data(),kFileExists)))
+  {
+   fileCounter++;
+  }
+ } // end of for(Int_t iFile=0;iFile<nFiles;iFile++)
+
+ // Print info on the screen:
+ if(fileCounter>0)
+ { 
+  cout<<endl;
+  cout<<" In subdirectores of directory "<<baseDirPath->Data()<<endl;
+  cout<<" there are "<<fileCounter<<" files \""<<outputFileName.Data()<<"\" to be merged."<<endl;
+  cout<<" Let the merging begins!"<<endl;
+  cout<<endl;
+ }
+ else if(fileCounter==0)
+ {
+  cout<<endl;
+  cout<<" TFileMerger wasn't lucky :'( "<<endl;
+  cout<<" Couldn't find a single file \""<<outputFileName.Data()<<"\" to merge"<<endl;
+  cout<<" in subdirectories of directory "<<baseDirPath->Data()<<" !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ 
+ return;
+ 
+} // void CountNumberOfFilesToBeMerged(TString *dirName,TList *listOfAllFiles)
+
+// ===================================================================================
 
 void LoadLibrariesMO(const libModes mode) {
   
