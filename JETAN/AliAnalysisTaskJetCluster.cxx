@@ -147,7 +147,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fh2TracksLeadingJetPhiPtWRan(0x0),
   fHistList(0x0)  
 {
-
+  for(int i = 0;i<3;i++){
+    fh1BiARandomCones[i] = 0;
+    fh1BiARandomConesRan[i] = 0;
+  }
 }
 
 AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
@@ -227,7 +230,11 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh2TracksLeadingJetPhiPtWRan(0x0),
   fHistList(0x0)
 {
-  DefineOutput(1, TList::Class());  
+  for(int i = 0;i<3;i++){
+    fh1BiARandomCones[i] = 0;
+    fh1BiARandomConesRan[i] = 0;
+  }
+ DefineOutput(1, TList::Class());  
 }
 
 
@@ -384,6 +391,12 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   fh1PtTracksGenIn  = new TH1F("fh1PtTracksGenIn","gen tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1Nch = new TH1F("fh1Nch","charged multiplicity; N_{ch}",nChMax,-0.5,nChMax-0.5);
 
+
+  for(int i = 0;i<3;i++){
+    fh1BiARandomCones[i] = new TH1F(Form("fh1BiARandomCones%d",i),";B_{i}^{A} (GeV/c)",200,-100,100);
+    fh1BiARandomConesRan[i] =  new TH1F(Form("fh1BiARandomConesRan%d",i),";B_{i}^{A} (GeV/c)",200,-100,100);
+  }
+
   fh2NRecJetsPt = new TH2F("fh2NRecJetsPt","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NRecJetsPtRan = new TH2F("fh2NRecJetsPtRan","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NRecTracksPt = new TH2F("fh2NRecTracksPt","Number of tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",nBinPt,binLimitsPt,50,-0.5,49.5);
@@ -464,6 +477,10 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     fHistList->Add(fh1NConstLeadingRecRan);
     fHistList->Add(fh1PtJetsRecInRan);
     fHistList->Add(fh1Nch);
+    for(int i = 0;i<3;i++){
+      fHistList->Add(fh1BiARandomCones[i]);
+      fHistList->Add(fh1BiARandomConesRan[i]);
+    }
     fHistList->Add(fh2NRecJetsPt);
     fHistList->Add(fh2NRecTracksPt);
     fHistList->Add(fh2NConstPt);
@@ -618,6 +635,15 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
   vector<fastjet::PseudoJet> inputParticlesRec;
   vector<fastjet::PseudoJet> inputParticlesRecRan;
+
+
+  // create a random jet within the acceptance
+  const float rRandomCone2 = 0.4*0.4;
+  float etaRandomCone = gRandom->Rndm()-0.5; // +- 0.5
+  float phiRandomCone = gRandom->Rndm()*2.*TMath::Pi(); // 0 - 2pi
+  float ptRandomCone = 0;
+  float ptRandomConeRan = 0;
+
   for(int i = 0; i < recParticles.GetEntries(); i++){
     AliVParticle *vp = (AliVParticle*)recParticles.At(i);
     // Carefull energy is not well determined in real data, should not matter for p_T scheme?
@@ -625,6 +651,18 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     fastjet::PseudoJet jInp(vp->Px(),vp->Py(),vp->Pz(),vp->P());
     jInp.set_user_index(i);
     inputParticlesRec.push_back(jInp);
+
+    if(evBkg){
+      float deta = vp->Eta()-etaRandomCone;
+      float dphi = vp->Phi()-phiRandomCone;
+      if(dphi>TMath::Pi())dphi -= 2.*TMath::Pi();
+      if(dphi<-TMath::Pi())dphi += 2.*TMath::Pi();
+      float dr2 = dphi*dphi+deta*deta;
+      if(dr2<rRandomCone2){
+	// within random jet
+	ptRandomCone += vp->Pt();
+      }
+    }
 
     // the randomized input changes eta and phi, but keeps the p_T
     if(i>=fNSkipLeadingRan){// eventually skip the leading particles
@@ -641,6 +679,18 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fastjet::PseudoJet jInpRan(pX,pY,pZ,p);
       jInpRan.set_user_index(i);
       inputParticlesRecRan.push_back(jInpRan);
+
+      if(evBkg){
+	float deta = eta-etaRandomCone;
+	float dphi = phi-phiRandomCone;
+	if(dphi>TMath::Pi())dphi -= 2.*TMath::Pi();
+	if(dphi<-TMath::Pi())dphi += 2.*TMath::Pi();
+	float dr2 = dphi*dphi+deta*deta;
+	if(dr2<rRandomCone2){
+	  // within random jet
+	  ptRandomConeRan += pT;
+	}
+      }
     }
 
     // fill the tref array, only needed when we write out jets
@@ -667,7 +717,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   fastjet::GhostedAreaSpec ghostSpec(fGhostEtamax, fActiveAreaRepeats, fGhostArea);
   fastjet::AreaType areaType =   fastjet::active_area;
   fastjet::AreaDefinition areaDef = fastjet::AreaDefinition(areaType,ghostSpec);
-    fastjet::JetDefinition jetDef(fAlgorithm, fRparam, fRecombScheme, fStrategy);
+  fastjet::JetDefinition jetDef(fAlgorithm, fRparam, fRecombScheme, fStrategy);
   vector <fastjet::PseudoJet> inclusiveJets, sortedJets;
   fastjet::ClusterSequenceArea clustSeq(inputParticlesRec, jetDef,areaDef);
   
@@ -809,24 +859,31 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Double_t bkg2=0;
      Double_t sigma2=0.;
      Double_t meanarea2=0.;
-         
+
+     float areaRandomCone = rRandomCone2 *TMath::Pi();         
      clustSeq.get_median_rho_and_sigma(sortedJets, range, false, bkg1, sigma1, meanarea1, true);
      evBkg->SetBackground(0,bkg1,sigma1,meanarea1);
+     fh1BiARandomCones[0]->Fill(ptRandomCone-(bkg1*areaRandomCone));    
+     
      clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, true);
      evBkg->SetBackground(1,bkg2,sigma2,meanarea2);
+     fh1BiARandomCones[1]->Fill(ptRandomCone-(bkg2*areaRandomCone));    
    }
-     
-
-
   }
+  
+
+  
+  
  
- // fill track information
- Int_t nTrackOver = recParticles.GetSize();
+  // fill track information
+  Int_t nTrackOver = recParticles.GetSize();
   // do the same for tracks and jets
- if(nTrackOver>0){
+
+  if(nTrackOver>0){
    TIterator *recIter = recParticles.MakeIterator();
    AliVParticle *tmpRec = (AliVParticle*)(recIter->Next());  
    Float_t pt = tmpRec->Pt();
+
    //    Printf("Leading track p_t %3.3E",pt);
    for(int i = 1;i <= fh2NRecTracksPt->GetNbinsX();i++){
      Float_t ptCut = fh2NRecTracksPt->GetXaxis()->GetBinCenter(i);
@@ -975,6 +1032,9 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Double_t meanarea3=0.;
      clustSeqRan.get_median_rho_and_sigma(sortedJetsRan ,range, false, bkg3, sigma3, meanarea3, true);
      evBkg->SetBackground(2,bkg3,sigma3,meanarea3);
+     float areaRandomCone = rRandomCone2 *TMath::Pi();         
+     fh1BiARandomCones[2]->Fill(ptRandomCone-(bkg3*areaRandomCone));    
+
     }
 
 

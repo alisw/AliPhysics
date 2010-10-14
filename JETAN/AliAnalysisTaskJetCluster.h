@@ -157,6 +157,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
 
     TH1F*         fh1PtTracksGenIn;  //! track pt for all tracks
     TH1F*         fh1Nch;            //! charged particle mult
+    TH1F*         fh1BiARandomCones[3]; //! Residual distribtion from reandom cones on real event
+    TH1F*         fh1BiARandomConesRan[3]; //! Residual distribtion from reandom cones on random event
+
 
     TH2F*         fh2NRecJetsPt;            //! Number of found jets above threshold
     TH2F*         fh2NRecTracksPt;          //! Number of found tracks above threshold
@@ -185,10 +188,11 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH2F*         fh2PtNchNRan;            //! p_T of cluster vs. multiplicity, weigthed with constituents random
     TH2F*         fh2TracksLeadingJetPhiPtRan; //! track correlation with leading Jet
     TH2F*         fh2TracksLeadingJetPhiPtWRan; //! track correlation with leading Jet
+
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 5) 
+    ClassDef(AliAnalysisTaskJetCluster, 6) 
 };
  
 #endif
