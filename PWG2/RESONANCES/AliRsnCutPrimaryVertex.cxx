@@ -105,11 +105,13 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
   }
   else if (aod)
   {
-    AliAODVertex *prim = aod->GetPrimaryVertex();
-    if (!prim || prim->GetNContributors() < 1) prim = aod->GetPrimaryVertexSPD();
-    if (!prim || prim->GetNContributors() < 1) return kFALSE;
+    // lines suggested by Andrea to reject TPC-only events
+    if(!aod->GetPrimaryVertexSPD()) return kFALSE;
+    if(!aod->GetPrimaryVertexSPD()->Status()) return kFALSE;
+    
+    AliAODVertex *prim = (AliAODVertex*)aod->GetPrimaryVertex();
     fCutValueI = prim->GetNContributors();
-    fCutValueD = prim->GetZ();
+    fCutValueD = prim->Zv();
   }
   else
     return kFALSE;
