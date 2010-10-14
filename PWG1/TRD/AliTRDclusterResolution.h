@@ -79,7 +79,7 @@ public:
 
 protected:
   void    ProcessCharge();
-  void    ProcessNormalTracks();
+  Bool_t  ProcessNormalTracks();
   void    ProcessSigma();
   void    ProcessMean();
 
