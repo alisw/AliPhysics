@@ -206,10 +206,8 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
       fValue /= TMath::Abs(mother->GetDaughter(0)->P().Perp() + mother->GetDaughter(1)->P().Perp());
       break;
     case kPairDipAngle:
-      fValue  = mother->GetDaughter(0)->P().Perp() * mother->GetDaughter(1)->P().Perp();
-      fValue += mother->GetDaughter(0)->P().Pz() * mother->GetDaughter(1)->P().Pz();
-      fValue += mother->GetDaughter(0)->P().Mag() * mother->GetDaughter(1)->P().Mag();
-      fValue  = TMath::ACos(fValue);
+      fValue = mother->GetDaughter(0)->P().Angle(mother->GetDaughter(1)->P().Vect());
+      fValue = TMath::Abs(TMath::ACos(fValue));
       break;
     case kPairCosThetaStar:
       fValue = mother->CosThetaStar();

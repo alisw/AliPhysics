@@ -29,47 +29,9 @@
 
 ClassImp(AliRsnCutAOD2010)
 
-//_________________________________________________________________________________________________
-AliRsnCutAOD2010::AliRsnCutAOD2010() :
-  AliRsnCut(AliRsnCut::kDaughter),
-  
-  fIsMC(kFALSE),
-  fCheckITS(kTRUE),
-  fCheckTPC(kTRUE),
-  fCheckTOF(kTRUE),
-  fUseGlobal(kTRUE),
-  fUseITSSA(kTRUE),
-    
-  fPIDtype(AliPID::kKaon),
-  
-  fTPCminNclusters(70),
-  fTPCmaxChi2(4.0),
-  fTPCmaxNSigmaDCA(7.0),
-  fTPClowBand(5.0),
-  fTPChighBand(3.0),
-  fTPClowLimit(0.35),
-  
-  fITSminNclusters(4),
-  fITSmaxChi2(2.5),
-  fITSmaxNSigmaDCA(7.0),
-  fITSband(3.0),
-  
-  fTOFlowLimit(-2.5),
-  fTOFhighLimit(3.5),
-  fPID()
-{
-//
-// Default constructor.
-//
-  
-  Int_t i = 0;
-  for (i = 0; i < 3; i++) fTPCparamDCA[i] = fITSparamDCA[i] = 0.0;
-  for (i = 0; i < 5; i++) fTPCparamBB[i] = 0.0;
-}
 
 //_________________________________________________________________________________________________
-AliRsnCutAOD2010::AliRsnCutAOD2010
-(const char *name) :
+AliRsnCutAOD2010::AliRsnCutAOD2010(const char *name, Bool_t isMC) :
   AliRsnCut(name, AliRsnCut::kDaughter, 0.0, 0.0),
 
   fIsMC(kFALSE),
@@ -78,6 +40,8 @@ AliRsnCutAOD2010::AliRsnCutAOD2010
   fCheckTOF(kTRUE),
   fUseGlobal(kTRUE),
   fUseITSSA(kTRUE),
+  
+  fMaxEta(1E6),
     
   fPIDtype(AliPID::kKaon),
   
@@ -95,15 +59,24 @@ AliRsnCutAOD2010::AliRsnCutAOD2010
   
   fTOFlowLimit(-2.5),
   fTOFhighLimit(3.5),
+  
   fPID()
 {
 //
-// Main constructor.
+// Default constructor.
+// Sets all parameters to the currently used values, and requires
+// to know if we are running on data or MonteCarlo to set some others.
 //
 
-  Int_t i = 0;
-  for (i = 0; i < 3; i++) fTPCparamDCA[i] = fITSparamDCA[i] = 0.0;
-  for (i = 0; i < 5; i++) fTPCparamBB[i] = 0.0;
+  fTPCparamDCA[0] = 0.0050;
+  fTPCparamDCA[1] = 0.0070;
+  fTPCparamDCA[2] = 1.0000;
+  
+  fITSparamDCA[0] = 0.0085;
+  fITSparamDCA[1] = 0.0026;
+  fITSparamDCA[2] = 1.5500;
+  
+  SetMC(isMC);
 }
 
 //_________________________________________________________________________________________________
@@ -117,6 +90,8 @@ AliRsnCutAOD2010::AliRsnCutAOD2010
   fCheckTOF(copy.fCheckTOF),
   fUseGlobal(copy.fUseGlobal),
   fUseITSSA(copy.fUseITSSA),
+  
+  fMaxEta(copy.fMaxEta),
   
   fPIDtype(copy.fPIDtype),
   
@@ -134,6 +109,7 @@ AliRsnCutAOD2010::AliRsnCutAOD2010
   
   fTOFlowLimit(copy.fTOFlowLimit),
   fTOFhighLimit(copy.fTOFhighLimit),
+  
   fPID(copy.fPID)
 {
 //
@@ -146,7 +122,30 @@ AliRsnCutAOD2010::AliRsnCutAOD2010
     fTPCparamDCA[i] = copy.fTPCparamDCA[i];
     fITSparamDCA[i] = copy.fITSparamDCA[i];
   }
-  for (i = 0; i < 5; i++) fTPCparamBB[i] = copy.fTPCparamBB[i];
+}
+
+//_________________________________________________________________________________________________
+void AliRsnCutAOD2010::SetMC(Bool_t yn)
+{
+//
+// Sets some parameters depending on MC or dataanalysis
+//
+  
+  fIsMC = yn;
+  
+  if (fIsMC)
+  {
+    AliDebug(AliLog::kDebug + 2, "Setting for MC");
+    fPID.GetTPCResponse().SetBetheBlochParameters(2.15898 / 50.0, 1.75295E1, 3.40030E-9, 1.96178, 3.91720);
+  }
+  else
+  {
+    AliDebug(AliLog::kDebug + 2, "Setting for DATA");
+    fPID.GetTPCResponse().SetBetheBlochParameters(1.41543 / 50.0, 2.63394E1, 5.0411E-11, 2.12543, 4.88663);
+  }
+  
+  AliITSPIDResponse itsrsp(fIsMC);
+  fPID.GetITSResponse() = itsrsp;
 }
 
 //_________________________________________________________________________________________________
@@ -174,40 +173,48 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   }
 
   // step #1: check status flags and reject track if it does not match any possibility
-  Bool_t  isTPC   = track->IsOn(AliESDtrack::kTPCin) && track->IsOn(AliESDtrack::kTPCrefit) && track->IsOn(AliESDtrack::kITSrefit);
-  Bool_t  isITSSA = !track->IsOn(AliESDtrack::kTPCin) && track->IsOn(AliESDtrack::kITSrefit) && (!track->IsOn(AliESDtrack::kITSpureSA)) && track->IsOn(AliESDtrack::kITSpid);
-  Bool_t  isTOF   = track->IsOn(AliESDtrack::kTOFout) && track->IsOn(AliESDtrack::kTIME);
-  if (!isTPC && !isITSSA) 
+  Bool_t isTPC, isTOF;
+  if (!track->IsOn(AliESDtrack::kTPCin) && track->IsOn(AliESDtrack::kITSrefit) && (!track->IsOn(AliESDtrack::kITSpureSA)))
+  {
+    isTPC = kFALSE;
+    isTOF = kFALSE;
+    if (!fUseITSSA)
+    {
+      AliDebug(AliLog::kDebug + 2, "ITS standalone not used. Rejected");
+      return kFALSE;
+    }
+  }
+  else if (track->IsOn(AliESDtrack::kTPCin) && track->IsOn(AliESDtrack::kTPCrefit) && track->IsOn(AliESDtrack::kITSrefit))
+  {
+    isTPC = kTRUE;
+    if (!fUseGlobal)
+    {
+      AliDebug(AliLog::kDebug + 2, "ITS standalone not used. Rejected");
+      return kFALSE;
+    }
+    if (track->IsOn(AliESDtrack::kTOFout) && track->IsOn(AliESDtrack::kTIME))
+      isTOF = kTRUE;
+    else
+      isTOF = kFALSE;
+  }
+  else
   {
     AliDebug(AliLog::kDebug + 2, "Track is not either a TPC track or a ITS standalone. Rejected");
     return kFALSE;
   }
-  else if (isTPC && !fUseGlobal)
-  {
-    AliDebug(AliLog::kDebug + 2, "Global tracks not used. Rejected");
-    return kFALSE;
-  }
-  else if (isITSSA && !fUseITSSA)
-  {
-    AliDebug(AliLog::kDebug + 2, "ITS standalone not used. Rejected");
-    return kFALSE;
-  }
   
   // step #2: check number of clusters
-  Int_t count = 0;
   if (isTPC)
   {
-    count = track->GetTPCNcls();
-    if (count < fTPCminNclusters)
+    if (track->GetTPCNcls() < fTPCminNclusters)
     {
       AliDebug(AliLog::kDebug + 2, "Too few clusters. Rejected");
       return kFALSE;
     }
   }
-  else // then is ITS-SA
+  else
   {
-    count = track->GetITSNcls();
-    if (count < fITSminNclusters)
+    if (track->GetITSNcls() < fITSminNclusters)
     {
       AliDebug(AliLog::kDebug + 2, "Too few clusters. Rejected");
       return kFALSE;
@@ -236,7 +243,7 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   AliAODVertex *vertex = track->GetProdVertex();
   if (isTPC && vertex != 0x0)
   {
-    if (vertex->GetType() == AliAODVertex::kKink && vertex->HasDaughter(track))
+    if (vertex->GetType() == AliAODVertex::kKink)
     {
       AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
       return kFALSE;
@@ -244,7 +251,19 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   }
   
   // step #5: DCA cut (transverse)
-  Double_t sigmaDCA = 0.0, nsigma = 0.0;
+  Double_t dz[2], cov[3], sigmaDCA = 0.0, nsigma = 0.0;
+  vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
+  if (!vertex)
+  {
+    AliDebug(AliLog::kDebug + 2, "NULL vertex");
+    return kFALSE;
+  }
+  if (!track->PropagateToDCA(vertex, fEvent->GetRefAOD()->GetMagneticField(), kVeryBig, dz, cov))
+  {
+    AliDebug(AliLog::kDebug + 2, "Failed propagation to vertex");
+    return kFALSE;
+  }
+  // compute the pt-dependent sigma
   if (isTPC)
   {
     sigmaDCA = fTPCparamDCA[0] + fTPCparamDCA[1] / TMath::Power(track->Pt(), fTPCparamDCA[2]);
@@ -255,45 +274,30 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
     sigmaDCA = fITSparamDCA[0] + fITSparamDCA[1] / TMath::Power(track->Pt(), fITSparamDCA[2]);
     nsigma = fITSmaxNSigmaDCA;
   }
-  if (track->DCA() > nsigma * sigmaDCA)
+  // check the DCA
+  if (dz[0] > nsigma * sigmaDCA)
   {
     AliDebug(AliLog::kDebug + 2, "Excceeded cut in DCA. Rejected");
     return kFALSE;
   }
   
-  // step #6 PID cuts
-  Double_t bandTPC   = 0.0;
-  Double_t nsigmaTPC = 0.0;
-  Double_t nsigmaITS = 0.0;
-  Double_t nsigmaTOF = 0.0;
-  // initialize response functions
-  AliITSPIDResponse itsrsp(fIsMC);
-  fPID.GetTPCResponse().SetBetheBlochParameters(fTPCparamBB[0],fTPCparamBB[1],fTPCparamBB[2],fTPCparamBB[3],fTPCparamBB[4]);
-  fPID.GetITSResponse() = itsrsp;
-  if (isTPC)   nsigmaTPC = fPID.NumberOfSigmasTPC(track, fPIDtype);
-  if (isITSSA) nsigmaITS = fPID.NumberOfSigmasITS(track, fPIDtype);
-  if (isTOF)   nsigmaTOF = fPID.NumberOfSigmasTOF(track, fPIDtype);
-  if (isITSSA && fCheckITS)
+  // step #6: check eta range
+  if (TMath::Abs(track->Eta()) >= fMaxEta)
   {
-    if (nITS < 3) return kFALSE;
-    if (TMath::Abs(nsigmaITS) > fITSband)
-    {
-      AliDebug(AliLog::kDebug + 2, "Bad ITS PID. Rejected");
-      return kFALSE;
-    }
-    else
-    {
-      AliDebug(AliLog::kDebug + 2, "Good ITS PID. Accepted");
-      return kFALSE;
-    }
+    AliDebug(AliLog::kDebug + 2, "Outside ETA acceptance");
+    return kFALSE;
   }
-  else
+  
+  // step #7: PID cuts
+  if (isTPC)
   {
     if (fCheckTPC)
     {
-      AliAODPid *pidObj = track->GetDetPid();
-      Double_t   mom    = pidObj->GetTPCmomentum();
-      if (mom > fTPClowLimit) bandTPC = fTPChighBand; else bandTPC = fTPClowBand;
+      AliAODPid *pidObj    = track->GetDetPid();
+      Double_t   mom       = pidObj->GetTPCmomentum();
+      Double_t   nsigmaTPC = fPID.NumberOfSigmasTPC(track, fPIDtype);
+      Double_t   bandTPC   = fTPChighBand;
+      if (mom <= fTPClowLimit) bandTPC = fTPClowBand;
       if (TMath::Abs(nsigmaTPC) > bandTPC) 
       {
         AliDebug(AliLog::kDebug + 2, "Bad TPC PID. Rejected");
@@ -304,6 +308,7 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
         AliDebug(AliLog::kDebug + 2, "Good TPC PID");
         if (fCheckTOF && isTOF)
         {
+          Double_t nsigmaTOF = (Double_t)fPID.NumberOfSigmasTOF(track, fPIDtype);
           if (nsigmaTOF < fTOFlowLimit || nsigmaTOF > fTOFhighLimit)
           {
             AliDebug(AliLog::kDebug + 2, "Bad TOF PID. Rejected");
@@ -326,6 +331,7 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
     {
       if (fCheckTOF && isTOF)
       {
+        Double_t nsigmaTOF = (Double_t)fPID.NumberOfSigmasTOF(track, fPIDtype);
         if (nsigmaTOF < fTOFlowLimit || nsigmaTOF > fTOFhighLimit)
         {
           AliDebug(AliLog::kDebug + 2, "Bad TOF PID. Rejected");
@@ -344,6 +350,27 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
       }
     }
   }
-  
-  return kTRUE;
+  else
+  {
+    if (fCheckITS)
+    {
+      if (nITS < 3 || !track->IsOn(AliESDtrack::kITSpid)) return kFALSE;
+      Double_t nsigmaITS = (Double_t)fPID.NumberOfSigmasITS(track, fPIDtype);
+      if (TMath::Abs(nsigmaITS) > fITSband)
+      {
+        AliDebug(AliLog::kDebug + 2, "Bad ITS PID. Rejected");
+        return kFALSE;
+      }
+      else
+      {
+        AliDebug(AliLog::kDebug + 2, "Good ITS PID. Accepted");
+        return kFALSE;
+      }
+    }
+    else
+    {
+      AliDebug(AliLog::kDebug + 2, "No PID checked. Accepted");
+      return kTRUE;
+    }
+  }
 }

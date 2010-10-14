@@ -243,11 +243,9 @@ Bool_t AliRsnCutStd::IsMotherSelected(AliRsnMother * const mother)
       fCutValueD = ref.Rapidity();
       return OkRange();
     case kDipAngle:
-      fCutValueD  = mother->GetDaughter(0)->P().Perp() * mother->GetDaughter(1)->P().Perp();
-      fCutValueD += mother->GetDaughter(0)->P().Pz() * mother->GetDaughter(1)->P().Pz();
-      fCutValueD += mother->GetDaughter(0)->P().Mag() * mother->GetDaughter(1)->P().Mag();
-      fCutValueD  = TMath::ACos(fCutValueD);
-      return OkRange();
+      fCutValueD = mother->GetDaughter(0)->P().Angle(mother->GetDaughter(1)->P().Vect());
+      fCutValueD = TMath::Abs(TMath::ACos(fCutValueD));
+      return OkRangeD();
     case kSameLabel:
       return mother->IsLabelEqual();
     default:

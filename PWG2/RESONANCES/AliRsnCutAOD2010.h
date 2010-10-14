@@ -22,26 +22,25 @@ class AliRsnCutAOD2010 : public AliRsnCut
 {
   public:
 
-    AliRsnCutAOD2010();
-    AliRsnCutAOD2010(const char *name);
+    AliRsnCutAOD2010(const char *name = "cutAOD2010", Bool_t isMC = kFALSE);
     AliRsnCutAOD2010(const AliRsnCutAOD2010& copy);
     virtual ~AliRsnCutAOD2010() {;};
 
     virtual Bool_t   IsSelected(TObject *obj1, TObject *obj2 = 0x0);
     
-    void             SetMC       (Bool_t yn = kTRUE) {fIsMC = yn;}
+    void             SetMC       (Bool_t yn = kTRUE);
     void             SetCheckITS (Bool_t yn = kTRUE) {fCheckITS = yn;}
     void             SetCheckTPC (Bool_t yn = kTRUE) {fCheckTPC = yn;}
     void             SetCheckTOF (Bool_t yn = kTRUE) {fCheckTOF = yn;}
     void             SetUseGlobal(Bool_t yn = kTRUE) {fUseGlobal = yn;}
     void             SetUseITSSA (Bool_t yn = kTRUE) {fUseITSSA = yn;}
     void             SetPIDtype  (AliPID::EParticleType pid) {fPIDtype = pid;}
+    void             SetMaxEta   (Double_t eta) {fMaxEta = eta;}
     
     void             SetTPCminNclusters(Int_t v)         {fTPCminNclusters = v;}
     void             SetTPCmaxChi2(Double_t v)           {fTPCmaxChi2 = v;}     
     void             SetTPCmaxNSigmaDCA(Double_t v)      {fTPCmaxNSigmaDCA = v;}
     void             SetTPCparamDCA(Int_t i, Double_t v) {if (i >= 0 && i < 3) fTPCparamDCA[i] = v;} 
-    void             SetTPCparamBB(Int_t i, Double_t v)  {if (i >= 0 && i < 3) fTPCparamBB[i] = v;}  
     void             SetTPClowBand(Double_t v)           {fTPClowBand = v;}     
     void             SetTPChighBand(Double_t v)          {fTPChighBand = v;}    
     void             SetTPClowLimit(Double_t v)          {fTPClowLimit = v;}    
@@ -54,6 +53,8 @@ class AliRsnCutAOD2010 : public AliRsnCut
     void             SetITSband(Double_t v)              {fITSband = v;}    
 
     void             SetTOFrange(Double_t v1, Double_t v2) {fTOFlowLimit = v1; fTOFhighLimit = v2;}
+    
+    AliAODpidUtil*   GetPIDUtil() {return &fPID;}
 
   protected:
   
@@ -66,13 +67,14 @@ class AliRsnCutAOD2010 : public AliRsnCut
     Bool_t                fUseGlobal;        // switch to use TPC global tracks
     Bool_t                fUseITSSA;         // switch to use ITS standalone tracks
     
+    Double_t              fMaxEta;           // eta range for tracks
+    
     AliPID::EParticleType fPIDtype;          // particle type for which PID is checked   
     
     Int_t                 fTPCminNclusters;  // minimum number of clusters in TPC
     Double_t              fTPCmaxChi2;       // maximum chi2 / number of clusters in TPC
     Double_t              fTPCmaxNSigmaDCA;  // cut in DCA (transv) in numbers of sigma (pt-dependent)
     Double_t              fTPCparamDCA[3];   // parameters to compute sigma for DCA
-    Double_t              fTPCparamBB[5];    // parameters for TPC Bethe-Bloch parameterization
     Double_t              fTPClowBand;       // large band for low momentum PID
     Double_t              fTPChighBand;      // large band for low momentum PID
     Double_t              fTPClowLimit;      // limit of low momentum region
