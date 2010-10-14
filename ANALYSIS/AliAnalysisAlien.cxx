@@ -2477,9 +2477,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       }
       delete list;
       gSystem->Exec(Form("bash %s 2>stderr", fExecutable.Data()));
-      TString validationScript = fExecutable;
-      validationScript.ReplaceAll(".sh", "_validation.sh");
-      gSystem->Exec(Form("bash %s",validationScript.Data()));
+      gSystem->Exec(Form("bash %s",fValidationScript.Data()));
 //      gSystem->Exec("cat stdout");
       return kFALSE;
    }
