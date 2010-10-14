@@ -419,7 +419,7 @@ void AliTRDSaxHandler::OnEndElement(const char *name)
       fCurrentMCM = -1;
       fCurrentADC = -1;
     }
-    if (fLevel1Tag == kInsideGainTable) {
+    if (fLevel1Tag==kInsideGainTable && fCurrentMCM>=0) {
       if (CompareString(tagName, "name"))   fDCSFEEObj->SetGainTableName(fContent);
       if (CompareString(tagName, "desc"))   fDCSFEEObj->SetGainTableDesc(fContent);
       if (CompareString(tagName, "adcdac")) fDCSFEEObj->SetGainTableAdcdac(fCurrentROB, fCurrentMCM, fContent.Atoi());
