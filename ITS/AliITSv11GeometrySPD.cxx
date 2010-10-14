@@ -2365,9 +2365,36 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     TGeoVolume *cap = mgr->MakeBox("ITSSPDcapacitor", medCap, 0.5*capThickness,
                                    0.5*capWidth, 0.5*capLength);
 
-    TGeoVolume *ext1 = mgr->MakeBox("Extender1", medExt, 0.5*extThickness, 0.5*extWidth, 0.5*ext1Length);
-    TGeoVolume *ext2 = mgr->MakeBox("Extender2", medExt, 0.5*extHeight - 2.*extThickness, 0.5*extWidth, 0.5*extThickness);
-    TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, 0.5*extThickness, 0.5*(extWidth-0.8*fgkmm), 0.5*ext2Length + extThickness); // Hardcode fix of a small overlap
+    char extname[12];
+    sprintf(extname,"Extender1l%d",ilayer);
+    TGeoVolume *ext1 = mgr->MakeBox(extname, medExt, 0.5*extThickness, 0.5*extWidth, 0.5*ext1Length);
+    sprintf(extname,"Extender2l%d",ilayer);
+    TGeoVolume *ext2 = mgr->MakeBox(extname, medExt, 0.5*extHeight - 2.*extThickness, 0.5*extWidth, 0.5*extThickness);
+    TGeoVolume *ext3=0;
+    sprintf(extname,"Extender3l%d",ilayer);
+    if (ilayer==1) {
+      Double_t halflen=(0.5*ext2Length + extThickness);
+      Double_t xprof[6],yprof[6];
+      Double_t alpha=24;
+      xprof[0] = -halflen;
+      yprof[0] = -0.5*extThickness;
+      xprof[1] = halflen/2;
+      yprof[1] = yprof[0];
+      xprof[2] = xprof[1] + 0.5*halflen*CosD(alpha);
+      yprof[2] = yprof[1] + 0.5*halflen*SinD(alpha);
+      xprof[3] = xprof[2] - extThickness*SinD(alpha);
+      yprof[3] = yprof[2] + extThickness*CosD(alpha);
+      InsidePoint(xprof[0], yprof[0], xprof[1], yprof[1], xprof[2], yprof[2],
+		  extThickness, xprof[4], yprof[4]);
+      xprof[5] = xprof[0];
+      yprof[5] = 0.5*extThickness;
+      TGeoXtru *ext3sh = new TGeoXtru(2);
+      ext3sh->DefinePolygon(6, xprof, yprof);
+      ext3sh->DefineSection(0, -0.5*(extWidth-0.8*fgkmm));
+      ext3sh->DefineSection(1,  0.5*(extWidth-0.8*fgkmm));
+      ext3 = new TGeoVolume(extname, ext3sh, medExt);
+    } else
+      ext3 = mgr->MakeBox(extname, medExt, 0.5*extThickness, 0.5*(extWidth-0.8*fgkmm), 0.5*ext2Length + extThickness); // Hardcode fix of a small overlap
     bus->SetLineColor(kYellow + 2);
     pt1000->SetLineColor(kGreen + 3);
     res->SetLineColor(kRed + 1);
@@ -2453,7 +2480,14 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
         z += 0.5 * (ext2Length - extThickness) + 2.5*extThickness;
     }
     x += 0.5*(extHeight - extThickness) - 2.*extThickness;
-    TGeoTranslation *trExt3 = new TGeoTranslation(x, y, z);
+    TGeoCombiTrans *trExt3=0;
+    if (ilayer==1) {
+      if (isRight)
+	trExt3 = new TGeoCombiTrans(x, y, z, new TGeoRotation("",0.,-90.,90.));
+      else
+	trExt3 = new TGeoCombiTrans(x, y, z, new TGeoRotation("",0., 90.,90.));
+    } else
+      trExt3 = new TGeoCombiTrans(x, y, z, 0);
     container->AddNode(ext1, 0, trExt1);
     container->AddNode(ext2, 0, trExt2);
     container->AddNode(ext3, 0, trExt3);
@@ -2499,6 +2533,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     Double_t ext2Length   = fgkmm * 285.0 - ext1Length + extThickness;
 
     const Double_t kCableThickness  =   1.5  *fgkmm;
+    Double_t cableL0 =  10.0 * fgkmm;
     Double_t cableL1 = 340.0 * fgkmm - extThickness - ext1Length - ext2Length;
     Double_t cableL2 = 300.0 * fgkmm;
     //Double_t cableL3 = 570.0 * fgkmm;
@@ -2507,7 +2542,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     Double_t cableW2 =  30.0 * fgkmm;
     Double_t cableW3 =  50.0 * fgkmm;
 
-    const Double_t kMCMLength       =   cableL1 + cableL2 + cableL3;
+    const Double_t kMCMLength       =   cableL0 + cableL1 + cableL2 + cableL3;
     const Double_t kMCMWidth        =   cableW1;
     const Double_t kMCMThickness    =   1.2  *fgkmm;
 
@@ -2556,13 +2591,13 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     container[4] = new TGeoVolumeAssembly("ITSSPDWaterCooling");
 
     // The extender on the cone as a Xtru
-    x[0] = 0.0;
+    x[0] = -cableL0;
     y[0] = 0.0 + 0.5 * cableW1;
 
-    x[1] = x[0] + cableL1 - 0.5*(cableW2 - cableW1);
+    x[1] = x[0] + cableL0 + cableL1 - 0.5*(cableW2 - cableW1);
     y[1] = y[0];
 
-    x[2] = x[0] + cableL1;
+    x[2] = x[0] + cableL0 + cableL1;
     y[2] = y[1] + 0.5*(cableW2 - cableW1);
 
     x[3] = x[2] + cableL2;
@@ -2747,7 +2782,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
 
     container[0]->AddNode(volCable, 1, 0);
 
-    xloc = shMCMExt->GetDX();
+    xloc = shMCMExt->GetDX() - cableL0;
     zloc = shMCMExt->GetDZ();
     container[0]->AddNode(volMCMExt, 1,
 			  new TGeoTranslation( xloc, 0.,-zloc));
