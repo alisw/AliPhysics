@@ -15,6 +15,8 @@
 #include <AliTenderSupply.h>
 
 class AliTRDCalDet;
+class AliESDtrack;
+class AliESDEvent;
 
 class AliTRDTenderSupply: public AliTenderSupply {
   
