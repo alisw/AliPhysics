@@ -324,7 +324,7 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
   // if there is a new DCS element put it in the correct array
   if (CompareString(tagName, "DCS")) {
     if (fSystem == kInsideFEE) {
-      fDCSFEEObj = new AliTRDCalDCSFEE(name,dcsTitle);
+      fDCSFEEObj = new AliTRDCalDCSFEE();
       fDCSFEEObj->SetDCSid(dcsId);
     }
     if (fSystem == kInsidePTR) {
@@ -419,7 +419,7 @@ void AliTRDSaxHandler::OnEndElement(const char *name)
       fCurrentMCM = -1;
       fCurrentADC = -1;
     }
-    if (fLevel1Tag==kInsideGainTable && fCurrentMCM>=0) {
+    if (fLevel1Tag == kInsideGainTable) {
       if (CompareString(tagName, "name"))   fDCSFEEObj->SetGainTableName(fContent);
       if (CompareString(tagName, "desc"))   fDCSFEEObj->SetGainTableDesc(fContent);
       if (CompareString(tagName, "adcdac")) fDCSFEEObj->SetGainTableAdcdac(fCurrentROB, fCurrentMCM, fContent.Atoi());
