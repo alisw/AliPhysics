@@ -271,11 +271,11 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   // A neighbour is defined as being two digits which share a corner
   // ONLY USED IN CASE OF UNFOLDING 
 	
-  static Bool_t areNeighbours = kFALSE ;
-  static Int_t nSupMod=0, nModule=0, nIphi=0, nIeta=0;
-  static int nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0;
-  static Int_t relid1[2] , relid2[2] ; // ieta, iphi
-  static Int_t rowdiff=0, coldiff=0;
+  Bool_t areNeighbours = kFALSE ;
+  Int_t nSupMod=0, nModule=0, nIphi=0, nIeta=0;
+  Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0;
+  Int_t relid1[2] , relid2[2] ; // ieta, iphi
+  Int_t rowdiff=0, coldiff=0;
 
   areNeighbours = kFALSE ;
 
@@ -662,7 +662,7 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
 	AliEMCALDigit * digit=0;
 	Int_t i=0, nstat=0;
 	
-	static Double_t dist  = TmaxInCm(Double_t(fAmp));
+	Double_t dist  = TmaxInCm(Double_t(fAmp));
 	//Int_t	idMax = GetAbsIdMaxDigit();// idMax is not used at all in RelPosCellInSModule, why use it?
 	
 	Double_t clXYZ[3]={0.,0.,0.}, clRmsXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.;
@@ -745,7 +745,7 @@ void AliEMCALRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray * digi
   AliEMCALDigit * digit=0;
   Int_t i=0, nstat=0;
 	
-  static Double_t dist  = TmaxInCm(Double_t(fAmp));
+  Double_t dist  = TmaxInCm(Double_t(fAmp));
   //Int_t	idMax = GetAbsIdMaxDigit();// idMax is not used at all in RelPosCellInSModule, why use it?
 	
   Double_t clXYZ[3]={0.,0.,0.}, clRmsXYZ[3]={0.,0.,0.}, lxyzi[3], xyzi[3], wtot=0., w=0.;
@@ -823,14 +823,14 @@ void AliEMCALRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray * digi
 void AliEMCALRecPoint::EvalLocalPositionFit(Double_t deff, Double_t logWeight, 
 Double_t phiSlope, TClonesArray * digits)
 {
-  // Aug 14-16, 2007 - for fit 
-  // Aug 31 - should be static ??
-  static Double_t ycorr=0;
-  static AliEMCALDigit *digit=0;
+  // Evaluates local position of clusters in SM
+  
+  Double_t ycorr=0;
+  AliEMCALDigit *digit=0;
   Int_t i=0, nstat=0;
   Double_t clXYZ[3]={0.,0.,0.}, clRmsXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.; 
 
-  static Double_t dist  = TmaxInCm(Double_t(fAmp));
+  Double_t dist  = TmaxInCm(Double_t(fAmp));
   //Int_t	idMax = GetAbsIdMaxDigit();// idMax is not used at all in RelPosCellInSModule, why use it?
 	
   for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
@@ -900,9 +900,9 @@ Bool_t AliEMCALRecPoint::EvalLocalPosition2(TClonesArray * digits, TArrayD &ed)
 Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
 {
   // Used when digits should be recalibrated
-  static Double_t deff=0, w0=0, esum=0;
-  static Int_t iDigit=0;
-  //  static AliEMCALDigit *digit;
+  Double_t deff=0, w0=0, esum=0;
+  Int_t iDigit=0;
+  //  AliEMCALDigit *digit;
 
   if(ed.GetSize() && (digits->GetEntries()!=ed.GetSize())) return kFALSE;
 
@@ -919,7 +919,7 @@ Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(TClonesArray *digits, TArra
 Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(const Double_t esum, const Double_t deff, const Double_t w0, TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
 {
   //Evaluate position of digits in supermodule.
-  static AliEMCALDigit *digit=0;
+  AliEMCALDigit *digit=0;
 
   Int_t i=0, nstat=0;
   Double_t clXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.; 
@@ -971,7 +971,7 @@ void AliEMCALRecPoint::GetDeffW0(const Double_t esum , Double_t &deff,  Double_t
   // for coordinate calculation; 0.5 GeV < esum <100 GeV.
   // Look to:  http://rhic.physics.wayne.edu/~pavlinov/ALICE/SHISHKEBAB/RES/CALIB/GEOMCORR/deffandW0VaEgamma_2.gif
   //
-  static Double_t e=0.0;
+  Double_t e=0.0;
   const  Double_t kdp0=9.25147, kdp1=1.16700; // Hard coded now
   const  Double_t kwp0=4.83713, kwp1=-2.77970e-01, kwp2 = 4.41116;
 
@@ -1023,7 +1023,7 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   // Calculates the axis of the shower ellipsoid in eta and phi
   // in cell units
 
-  static TString gn(fGeomPtr->GetName());
+  TString gn(fGeomPtr->GetName());
 
   Double_t wtot = 0.;
   Double_t x    = 0.;
@@ -1454,9 +1454,9 @@ Double_t AliEMCALRecPoint::TmaxInCm(const Double_t e , const Int_t key)
   // e energy in GeV)
   // key  =  0(gamma, default)
   //     !=  0(electron)
-  static Double_t ca   = 4.82;  // shower max parameter - first guess; ca=TMath::Log(1000./8.07)
-  static Double_t x0   = 1.23;  // radiation lenght (cm)
-  static Double_t tmax = 0.;    // position of electromagnetic shower max in cm
+  const Double_t ca   = 4.82;  // shower max parameter - first guess; ca=TMath::Log(1000./8.07)
+  const Double_t x0   = 1.23;  // radiation lenght (cm)
+  Double_t tmax = 0.;    // position of electromagnetic shower max in cm
 
   if(e>0.1) {
     tmax = TMath::Log(e) + ca;
@@ -1526,7 +1526,7 @@ void AliEMCALRecPoint::Print(Option_t *opt) const
 Double_t  AliEMCALRecPoint::GetPointEnergy() const
 {
   //Returns energy ....
-  static double e=0.0;
+  Double_t e=0.0;
   for(int ic=0; ic<GetMultiplicity(); ic++) e += double(fEnergyList[ic]);
   return e;
 }
