@@ -94,7 +94,7 @@ class AliCaloCalibPedestal : public TObject {
   Bool_t IsBadChannel(int imod, int icol, int irow) const; 
   void SetChannelStatus(int imod, int icol, int irow, int status); 
 	
-  TObjArray GetDeadMap()  const {return fDeadMap;}
+  TObjArray GetDeadMap()  {ValidateProfiles(); return fDeadMap;}
   void SetDeadMap(TObjArray map) {fDeadMap = map;}
 	
   // Basic info: getters  
