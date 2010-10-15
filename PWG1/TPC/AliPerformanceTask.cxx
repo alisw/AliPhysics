@@ -230,7 +230,7 @@ void AliPerformanceTask::Terminate(Option_t *)
     fOutputSummary = dynamic_cast<TTree*> (GetOutputData(2));
     fOutput = dynamic_cast<TList*> (GetOutputData(1));
     if (!fOutput) {
-        Printf("ERROR: AliPerformanceTask::FinishTaskOutput(): fOutput data not available  ..." );
+        Printf("ERROR: AliPerformanceTask::Terminate(): fOutput data not available  ..." );
         return;
    }
     if (fOutputSummary) { delete fOutputSummary; fOutputSummary=0; }      
@@ -243,6 +243,7 @@ void AliPerformanceTask::Terminate(Option_t *)
         if (!  pTPC) {  pTPC = dynamic_cast<AliPerformanceTPC*>(pObj); }
         if (! pDEdx) { pDEdx = dynamic_cast<AliPerformanceDEdx*>(pObj); }
     }
+    if (! AliCDBManager::Instance()->GetDefaultStorage()) { AliCDBManager::Instance()->SetDefaultStorage("raw://"); }
     TUUID uuid;
     TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
     AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, tmpFile.Data());
