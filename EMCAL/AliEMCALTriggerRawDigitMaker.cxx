@@ -64,7 +64,7 @@ fTriggerData(0x0)
 	// def ctor
 	
 	AliRunLoader* rl = AliRunLoader::Instance();
-	if (rl && rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) 
+	if (rl && rl->GetAliRun() && dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))) 
 		fGeometry = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
 	else 
 	{
@@ -365,7 +365,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			
 			Int_t* idFastOR = new Int_t[sizePatchL0]; 
 			
-			for (Int_t j = 0; j < sizePatchL0; i++) idFastOR[j] = -1;
+			for (Int_t j = 0; j < sizePatchL0; j++) idFastOR[j] = -1;
 			
 			if (fGeometry->GetFastORIndexFromL0Index(iTRU, x, idFastOR, sizePatchL0))
 			{
