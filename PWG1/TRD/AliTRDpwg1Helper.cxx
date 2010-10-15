@@ -156,7 +156,11 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
     Info("MergeProd()", Form("Merge %d files in 1 batch.", nBatches));
     if(!gSystem->Exec(Form("aliroot -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, 0, kFALSE)\'", mark, lMERGE, nBatches))) return;
     gSystem->Exec(Form("mv 0_%s %s", mark, mark));
-  } else MergeProd(mark, lMERGE, nBatch, level++);
+  } else {
+    level++;
+    Info("MergeProd()", Form("Merge level %d.", level));
+    MergeProd(mark, lMERGE, nBatch, level);
+  }
   gSystem->Exec(Form("rm -fv %s %s", lMERGE, lPURGE));
 }
 
