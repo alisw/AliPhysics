@@ -16,13 +16,13 @@
 //    root[1] AnalysisTrainNew(ana_mode, plugin_mode, "train_default_<date>/ConfigTrain.C")
 
 //==================   TRAIN NAME   ============================================
-TString     train_name         = "FILTER"; // local folder name
-TString     train_tag          = "+tasks";        // Train special tag appended to 
+TString     train_name         = "FILTERpass1"; // local folder name
+TString     train_tag          = "pass1";        // Train special tag appended to 
                                             // visible name. ("data", "sim", "pp", "highmult", ...)
                // Name in train page (DON'T CHANGE)
 TString     visible_name       = Form("FILTER%s$2_$3", train_tag.Data()); //# FIXED #
                // Add train composition and other comments
-TString     job_comment        = "#Tender(V0!)+PhysSel# ==AODs: std(+jets)/(di)muon/vertexing/dielectrons ==ANALYSIS: gammaconv, jpsi, hfe";
+TString     job_comment        = "Tender+PhysSel -> AODs: std(+jets)/(di)muon/vertexing/dielectrons";
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
 //==============================================================================
 
@@ -47,16 +47,16 @@ Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
 // AliRoot.
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
-TString     root_version       = "v5-27-06";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     aliroot_version    = "v4-20-11-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     root_version       = "v5-27-06-1";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     aliroot_version    = "v4-20-12-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here (test mode)
-TString     alien_datadir      = "/alice/data/2010/LHC10c";
+TString     alien_datadir      = "/alice/data/2010/LHC10e";
                // Work directory in GRID (DON'T CHANGE)
 TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/AOD/AOD$2";
                // Data pattern - change as needed for test mode
-TString     data_pattern       = "*ESDs/pass2/*ESDs.root";
+TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
 // Set the run range
-Int_t run_numbers[10] = {120822}; // **********************!!!!!!!
+Int_t run_numbers[10] = {128913}; // **********************!!!!!!!
 //Int_t       run_range[2]       =  {114786, 114949};  // LHC09a7   *CHANGE ME*
 // AliEn output directory. If blank will become output_<train_name>
                // Output directory (DON'T CHANGE)
@@ -86,6 +86,7 @@ TString     local_xmldataset   = "";
 //==============================================================================
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
 Bool_t      useTender           = kTRUE; // use tender wagon
+Bool_t      useV0tender         = kTRUE;  // use V0 correction in tender
 Bool_t      useMergeViaJDL      = kTRUE;  // merge via JDL
 Bool_t      useFastReadOption   = kTRUE;  // use xrootd tweaks
 Bool_t      useOverwriteMode    = kTRUE;  // overwrite existing collections
@@ -110,12 +111,12 @@ Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4)
 Int_t       iJETANdelta        = 0;      // Jet delta AODs
 Int_t       iPWG4partcorr      = 0;      // Gamma-hadron correlations task (PWG4)
-Int_t       iPWG4gammaconv     = 1;      // Gamma conversion analysis (PWG4)
+Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG3)
-Int_t       iPWG3hfe           = 1;      // Electrons analysis (PWG3)
+Int_t       iPWG3hfe           = 0;      // Electrons analysis (PWG3)
 Int_t       iPWG3JPSIfilter    = 1;      // JPSI filtering (PWG3)
-Int_t       iPWG3JPSI          = 1;      // JPSI analysis (PWG3)
+Int_t       iPWG3JPSI          = 0;      // JPSI analysis (PWG3)
 Int_t       iPWG3d2h           = 0;      // D0->2 hadrons (PWG3)
 Int_t        iPWG3d0mass       = 1;      // D0 mass (PWG3D2H)                                                                              
 Int_t        iPWG3d0massLS     = 1;      // D0 mass LS (PWG3D2H)                                                                           
@@ -355,9 +356,9 @@ void AddAnalysisTasks()
   //
    if (useTender) {
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
-      AliAnalysisTaskSE *tender = AddTaskTender(kTRUE);
-//      tender->SelectCollisionCandidates();
-      tender->SetDebugLevel(2);
+      // IF V0 tender needed, put kTRUE below
+      AliAnalysisTaskSE *tender = AddTaskTender(useV0tender);
+//      tender->SetDebugLevel(2);
    }
 
    if (usePhysicsSelection) {
