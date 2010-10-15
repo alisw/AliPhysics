@@ -4,14 +4,12 @@ void AddAnalysisTasks();
 class AliAnalysisAlien;                                                                                                                    
 AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
-Int_t runNumbers[5] = {117222};
+Int_t runNumbers[5] = {126437};
 
-Bool_t doAOD          = 0;   
 Bool_t doQAsym        = 1;   // output ok
 Bool_t doVZERO        = 1;   // output ok but there is a 2nd file
 Bool_t doVertex       = 1;   // output ok
 Bool_t doSPD          = 1;   // output ok, needs RP   
-Bool_t doFMD          = 1;   // output ok
 Bool_t doTPC          = 1;   // output ok
 Bool_t doEventStat    = 0;   // output ok
 Bool_t doSDD          = 1;   // outout ok needs RP
@@ -27,34 +25,52 @@ Bool_t doMUON         = 1;   // MUON QA
 Bool_t doMUONEff      = 0;   // MUON efficiency  NEEDS geometry
 Bool_t doV0           = 0;   // V0 recosntruction performance NEEDS MCtruth 
 
-TString     train_name         = "QA";
-//TString     train_name         = "TR019_PASS6";
-TString     job_tag            = "QA16sim_LHC10d: PWG1 QA train";
-//TString     job_tag            = "TR019: LHC09d-Pass6 ESD filtering w. PhysSelection -> AOD (including muon deltas)";
-TString     root_version       = "v5-26-00b-6";
-TString     aliroot_version    = "v4-20-01-AN";
-TString     grid_datadir       = " /alice/sim/LHC10c9";
-//TString     grid_datadir       = "/alice/data/2009/LHC09d";
-//TString     data_pattern       = "*ESDs/pass2/*ESDs.root";
+TString     train_name         = "QA";      // QA local folder name
+TString     train_tag          = "";        // Train special tag appended to 
+                                            // visible name. ("sim", "pp", ...)
+               // Name in train page (DON'T CHANGE)
+TString     visible_name       = Form("QA$2_$3%s", train_tag.Data()); //# FIXED #
+TString     job_comment        = "PWG1 QA train"; // Can add observations here
+               // Job tag (DON'T CHANGE)
+TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
+               // Package versions - Modify as needed
+TString     root_version       = "v5-27-06-1";
+TString     aliroot_version    = "v4-20-12-AN";
+               // Production directory - change as needed for test mode
+TString     grid_datadir       = "/alice/sim/LHC10f7";
+               // Work directory in GRID (DON'T CHANGE)
+TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/QA/QA$2";
+               // Job splitting
+Int_t       grid_split         = 20;       // Splitting
+               // Debug level
+Int_t       debug_level        = 1;        // Debugging
+               // Data pattern - change as needed for test mode
 TString     data_pattern       = "*ESDs.root";
-TString     alien_outdir       = "";
-//TString     alien_outdir       = "/alice/cern.ch/user/m/mgheata/analysisDATA/output_QA007_PASS1_7TeV/000114917";
-//TString     alien_outdir       = "/alice/data/2009/LHC09d/analysis/PASS6/AOD";
-TString     mergeExcludes;
+               // Output directory (DON'T CHANGE)
+TString     alien_outdir       = "$1/QA$2";
+               // Input collection (production mode)
+TString     data_collection    = "$1/qa1.xml";
+TString     mergeExcludes      = ""; // Files to be excluded for merging
+TString     terminateFiles     = ""; // Files produced during Terminate
 
 Bool_t useProductionMode       = kTRUE;
 Bool_t useMergeViaJDL          = kTRUE;
 Bool_t useFastReadOption       = kTRUE;
-Bool_t useOverwriteMode        = kTRUE;
+Bool_t useOverwriteMode        = kFALSE;
 Bool_t useDevelopmentVersion   = kFALSE;
 
 void PilotAnalysis(const char *plugin_mode = "full")
 {
-  TGrid::Connect("alien://");
-  if (!gGrid || !gGrid->IsConnected()) {
-    ::Error("PilotAnalysis", "No grid connection");
-    return;
-  }
+  TString smode(plugin_mode);
+  smode.ToLower();
+  if (smode == "test") useProductionMode = kFALSE;
+  if (!useProductionMode) {
+     TGrid::Connect("alien://");
+     if (!gGrid || !gGrid->IsConnected()) {
+       ::Error("PilotAnalysis", "No grid connection");
+       return;
+     }
+  }   
   // Write configuration
   TString cdir = gSystem->WorkingDirectory();
   gSystem->MakeDirectory(train_name);
@@ -68,14 +84,12 @@ void PilotAnalysis(const char *plugin_mode = "full")
   out << "   grid_datadir   = " << "\"" << grid_datadir.Data() << "\";" << endl;
   if (!alien_outdir.Length()) alien_outdir = Form("output_%s",train_name.Data());
   out << "   alien_outdir    = " << "\"" << alien_outdir.Data() << "\";" << endl;
-  out << "   doAOD           = " << doAOD << ";" << endl;
   out << "   doQAsim         = " << doQAsym << ";" << endl;
   out << "   doVZERO         = " << doVZERO << ";" << endl;
   out << "   doVertex        = " << doVertex << ";" << endl;
   out << "   doSPD           = " << doSPD << ";" << endl;
   out << "   doSDD           = " << doSDD << ";" << endl;
   out << "   doSSDdEdx       = " << doSSDdEdx << ";" << endl;
-  out << "   doFMD           = " << doFMD << ";" << endl;
   out << "   doTPC           = " << doTPC << ";" << endl;
   out << "   doTRD           = " << doTRD << ";" << endl;
   out << "   doImpParRes     = " << doImpParRes << ";" << endl;
@@ -95,18 +109,9 @@ void PilotAnalysis(const char *plugin_mode = "full")
   esdHandler->SetReadFriends(kTRUE);
   esdHandler->SetActiveBranches("ESDfriend");
   mgr->SetInputEventHandler(esdHandler);
-  if (doAOD) {
-     // AOD output handler
-     AliAODHandler* aodHandler   = new AliAODHandler();
-     aodHandler->SetOutputFileName("AliAOD.root");
-     if (!mergeExcludes.IsNull()) mergeExcludes += " ";
-     mergeExcludes += "AliAOD.root";
-     mgr->SetOutputEventHandler(aodHandler);
-  }   
+  mgr->SetDebugLevel(debug_level);
+  mgr->SetSaveCanvases(kFALSE);
 
-  mgr->SetDebugLevel(0);
-  mgr->SetSaveCanvases(kTRUE);
-  
   // AnalysisTasks
   AddAnalysisTasks();
   // Grid handler
@@ -115,14 +120,6 @@ void PilotAnalysis(const char *plugin_mode = "full")
   if (mgr->InitAnalysis()) {                                                                                                              
     mgr->PrintStatus(); 
     mgr->StartAnalysis("grid");
-    TString alien_workdir = gGrid->GetHomeDirectory();
-    alien_workdir += "analysisDATA";
-    TString configName = Form("%s/%sConfig.C", alien_workdir.Data(), train_name.Data());
-    if (strcmp(plugin_mode, "test")) {
-      printf("=== Registering configuration file <%s>===\n", configName.Data());
-      if (AliAnalysisAlien::FileExists(configName.Data())) gGrid->Rm(configName.Data());                                                     
-      TFile::Cp(Form("file:%sConfig.C",train_name.Data()), Form("alien://%s", configName.Data()));  
-    }  
   }
 }
 
@@ -155,13 +152,6 @@ void AddAnalysisTasks()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   mgr->SetCommonFileName("QAresults.root");
-  // AOD creation with collision events
-  if (doAOD) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
-    mgr->RegisterExtraFile("AliAOD.Muons.root");
-    mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-    AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kFALSE, kTRUE, kTRUE, doEventStat);
-  }   
   //
   // Event Statistics (Jan Fiete)
   //
@@ -169,8 +159,8 @@ void AddAnalysisTasks()
   if (doEventStat) {
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-//      if (doMUON) physSelTask->GetPhysicsSelection()->SetUseMuonTriggers();
-      mgr->RegisterExtraFile("event_stat.root");
+      if (!terminateFiles.IsNull()) terminateFiles += ",";
+      terminateFiles += "event_stat.root";
   }
   // Vertexing (A. Dainese)
   // 
@@ -199,8 +189,10 @@ void AddAnalysisTasks()
   // TPC (Jacek Otwinowski)
   //
   if (doTPC) {
-    gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
-    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
+//    gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
+//    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
+    gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
+    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE);   
   }  
   //
   // SPD (A. Mastroserio)
@@ -286,13 +278,6 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskV0QA.C");
       AliAnalysisTaskV0QA *taskv0QA = AddTaskV0QA(kFALSE);
   }
-  // FMD (Hans Hjersing Dalsgaard)
-  //
-  if (doFMD) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskFMD.C");
-    AliAnalysisTaskSE* taskfmd = AddTaskFMD();
-    taskfmd->SelectCollisionCandidates();
-  }  
   // Impact parameter resolution (xianbao.yuan@pd.infn.it, andrea.dainese@pd.infn.it)
   //
   if (doImpParRes) {
@@ -318,9 +303,14 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    AliAnalysisAlien *plugin = new AliAnalysisAlien();
 // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(plugin_mode);
-   if (useProductionMode) plugin->SetProductionMode();
+   if (useProductionMode) {
+      plugin->SetProductionMode();
+      plugin->AddDataFile(data_collection);
+   }   
    plugin->SetJobTag(job_tag);
    plugin->SetNtestFiles(1);
+   plugin->SetCheckCopy(kFALSE);
+   plugin->SetOneStageMerging(kTRUE);
 // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
    plugin->SetROOTVersion(root_version);
@@ -335,18 +325,15 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 //   if (!iAODanalysis) plugin->SetRunRange(run_range[0], run_range[1]);
    //plugin->SetRunPrefix("000");
 //   plugin->SetOutputSingleFolder("output");
-   plugin->SetOutputToRunNo();
-//   Int_t run_numbers[30] = {104065, 104155, 104157, 104159, 104160, 104315, 104316, 104320, 104321, 104439, 
-//                            104792, 104793, 104799, 104800, 104801, 104802, 104803, 104821, 104824, 104825,
-//                            104841, 104845, 104849, 104852, 104865, 104867, 104876, 104892, 105143, 105160};
-//   Int_t run_numbers[8] = {114785, 114778, 114757, 114753, 114745, 114744, 114743, 114737};
-//   Int_t run_numbers[2] = {114785, 114917};
-   for (Int_t i=0; i<2; i++) {
-      if (!runNumbers[i]) break;
-      plugin->AddRunNumber(runNumbers[i]);
-   }   
+   if (!useProductionMode) {
+      plugin->SetOutputToRunNo();
+      for (Int_t i=0; i<2; i++) {
+         if (!runNumbers[i]) break;
+         plugin->AddRunNumber(runNumbers[i]);
+      }   
+   }
 // Define alien work directory where all files will be copied. Relative to alien $HOME.
-   plugin->SetGridWorkingDir(train_name);
+   plugin->SetGridWorkingDir(grid_workdir);
 // Declare alien output directory. Relative to working directory.
    if (alien_outdir.IsNull()) alien_outdir = Form("output_%s",train_name.Data());
    plugin->SetGridOutputDir(alien_outdir);
@@ -372,63 +359,24 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Declare the output file names separated by blancs.
 // (can be like: file.root or file.root@ALICE::Niham::File)
    plugin->SetDefaultOutputs();
-//   plugin->SetMergeExcludes(mergeExclude);
    plugin->SetMaxMergeFiles(20);
    plugin->SetNrunsPerMaster(1);
-// Optionally define the files to be archived.
-//   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:AliAOD.root,AOD.tag.root@ALICE::NIHAM::File");
    
    // Put default output files to archive
    TString listhists = "";
    TString listaods  = "";
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   TIter next(mgr->GetOutputs());
-   AliAnalysisDataContainer *output;
-   while ((output=(AliAnalysisDataContainer*)next())) {
-      const char *filename = output->GetFileName();
-      if (!(strcmp(filename, "default"))) {
-         if (!mgr->GetOutputEventHandler()) continue;
-         filename = mgr->GetOutputEventHandler()->GetOutputFileName();
-         if (listaods.Length()) listaods += ",";
-         listaods += filename;
-      } else {   
-         if (listhists.Contains(filename)) continue;
-         if (listhists.Length()) listhists += ",";
-         listhists += filename;
-      }   
-   }
-   if (mgr->GetExtraFiles().Length()) {
-      if (listhists.Length()) listhists += ",";
-      listhists += mgr->GetExtraFiles();
-      listhists.ReplaceAll(" ", ",");
-   }
-   if (listhists.Length()) listhists = Form("hist_archive.zip:%s", listhists.Data());
-   if (listaods.Length())  listaods  = Form("aod_archive.zip:%s", listaods.Data());
-   if (!listhists.Length()) {
-      ::Fatal("AnalysisTrainNew", "No task output !");
-   }
-   TString outputArchive = "log_archive.zip:stdout,stderr@disk=4";
-   if (listaods.Length()) {
-      outputArchive += " ";
-      outputArchive += listaods;
-      outputArchive += "@disk=4";
-   }   
-   if (listhists.Length()) {
-      outputArchive += " ";
-      outputArchive += listhists;
-      outputArchive += "@disk=4";
-   }   
    if (!mergeExcludes.IsNull()) plugin->SetMergeExcludes(mergeExcludes);
+   if (!terminateFiles.IsNull()) plugin->SetTerminateFiles(terminateFiles);
 // Set friends
-//   if (iAODanalysis && iPWG3d2h) 
-//      plugin->SetFriendChainName("AliAOD.VertexingHF.root");
-//   plugin->SetOutputArchive(outputArchive);
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro(Form("%s.C", train_name.Data()));
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(10);
+   plugin->SetSplitMaxInputFileNumber(grid_split);
 // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
 //   plugin->SetMaxInitFailed(5);
+// Optionally modify the number of replicas
+   plugin->SetNumberOfReplicas(4);
 // Optionally resubmit threshold.
 //   plugin->SetMasterResubmitThreshold(90);
 // Optionally set time to live (default 30000 sec)
@@ -450,5 +398,25 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetFastReadOption(useFastReadOption);
 // UseOverwrite mode
    plugin->SetOverwriteMode(useOverwriteMode);   
+/*********************************************************
+ ***     PROOF MODE SPECIFIC SETTINGS         ************
+ *********************************************************/
+// Proof cluster
+//   plugin->SetProofCluster("alice-caf");
+   plugin->SetProofCluster("skaf.saske.sk");
+// Dataset to be used   
+   plugin->SetProofDataSet("/alice/data/LHC10e_000128175_p1#esdTree");
+// May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
+   plugin->SetProofReset(0);
+// May limit number of workers
+   plugin->SetNproofWorkers(20);   
+// May use a specific version of root installed in proof
+   plugin->SetRootVersionForProof("current_dbg");
+// May set the aliroot mode. Check http://aaf.cern.ch/node/83 
+   plugin->SetAliRootMode("ALIROOT"); // Loads AF libs by default
+// May request ClearPackages (individual ClearPackage not supported)
+   plugin->SetClearPackages(kFALSE);
+// Plugin test mode works only providing a file containing test file locations
+   plugin->SetFileForTestMode(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/PilotTrain/files.txt"));
    return plugin;
 }
