@@ -172,7 +172,6 @@ const Char_t* AliTRDpwg1Helper::MergeBatch(const Char_t *mark, const Char_t *fil
 // On return the name of the merged file is return or NULL in case of failure.
 //
   TObjArray arr(nfiles); arr.SetOwner(kTRUE);
-
   TFileMerger fFM(kTRUE);
   fFM.OutputFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), first, mark));
   Int_t iline(0), nbatch(0);
@@ -180,13 +179,16 @@ const Char_t* AliTRDpwg1Helper::MergeBatch(const Char_t *mark, const Char_t *fil
   std::ifstream file(files);
   while(getline(file, filename)){
     if(Int_t(filename.find(mark)) < 0) continue;
-    iline++;
-    if(iline<first) continue;
+    if(iline<first){
+      iline++;
+      continue;
+    }
     if(kSVN){ // download SVN info for trending
       std::string base=filename.substr(0, filename.find_last_of('/'));
       if(gSystem->Exec(Form("if [ ! -f svnInfo.log ]; then cp -v %s/svnInfo.log %s; fi", base.c_str(), gSystem->ExpandPathName("$PWD"))) == 0) kSVN=kFALSE;
     }
-    Info("MergeBatch()", filename.c_str());    if(!fFM.AddFile(filename.c_str())) return NULL;
+    Info("MergeBatch()", filename.c_str());
+    if(!fFM.AddFile(filename.c_str())) return NULL;
     arr.Add(new TObjString(filename.c_str()));
     nbatch++;
     if(nbatch==nfiles) break;
