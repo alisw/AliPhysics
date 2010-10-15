@@ -18,6 +18,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TGeoGlobalMagField.h>
+#include "TGeoManager.h"
  
 #include "AliAnalysisManager.h"
 #include "AliGeomManager.h"
@@ -70,19 +71,6 @@ AliTaskCDBconnect::~AliTaskCDBconnect()
 void AliTaskCDBconnect::LocalInit()
 {
 // Init CDB locally if run number is defined.
-  if (!fRun) {
-    Info("LocalInit","AliTaskCDBconnect::LocalInit Run number not defined yet");
-    return;
-  }      
-  // Create CDB manager
-  AliCDBManager *cdb = AliCDBManager::Instance();
-  // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
-//  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  cdb->SetDefaultStorage("raw://");
-  // Set run
-  cdb->SetRun(fRun);
-  // Initialize GRP manager only once
-  InitGRP();
 }
   
 //______________________________________________________________________________
@@ -109,11 +97,13 @@ void AliTaskCDBconnect::InitGRP()
     }
 
     // geometry
-    printf("AliCDBconnect: #### Loading geometry...\n");
-    AliGeomManager::LoadGeometry();
-    if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC") ) {
-      AliError("Problem with align objects"); 
-    }
+    if (!gGeoManager) {
+      printf("AliCDBconnect: #### Loading geometry...\n");
+      AliGeomManager::LoadGeometry();
+      if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC") ) {
+        AliError("Problem with align objects"); 
+      }
+    }  
   }  
 }
 
@@ -136,7 +126,6 @@ void AliTaskCDBconnect::CreateOutputObjects()
      AliWarning("AliTaskCDBconnect: Could not set run from path");
      if (!fRun) return;
   }
-  printf("AliCDBconnect: #### Setting run to #%d\n", run);
   // Create CDB manager
   AliCDBManager *cdb = AliCDBManager::Instance();
   // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
@@ -149,7 +138,8 @@ void AliTaskCDBconnect::CreateOutputObjects()
      fRunChanged = kFALSE;
   }   
   // Set run
-  if (fRunChanged) cdb->SetRun(fRun);
+  printf("AliCDBconnect: #### Setting run to: %d\n", fRun);
+  cdb->SetRun(fRun);
   // Initialize GRP manager only once
   if (fRun) InitGRP();
 }
