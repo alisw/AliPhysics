@@ -29,6 +29,7 @@
 #include "AliITSgeomTGeo.h"
 #include <TParticle.h>
 #include "AliMC.h"
+#include "AliLog.h"
 
 ClassImp(AliITSClusterFinder)
 
@@ -282,81 +283,57 @@ istream &operator>>(istream &is,AliITSClusterFinder &source){
     source.Read(&is);
     return is;
 }
+
 //______________________________________________________________________
-void AliITSClusterFinder::CheckLabels2(Int_t lab[10]) {
+void AliITSClusterFinder::CheckLabels2(Int_t lab[10]) 
+{
   //------------------------------------------------------------
   // Tries to find mother's labels
   //------------------------------------------------------------
   AliRunLoader *rl = AliRunLoader::Instance();
   if(!rl) return;
   TTree *trK=(TTree*)rl->TreeK();
-
-  if(trK){
-    Int_t nlabels =0; 
-    for (Int_t i=0;i<10;i++) if (lab[i]>=0) nlabels++;
-    if(nlabels == 0) return; // In case of no labels just exit
-
-
-    Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
-
-    for (Int_t i=0;i<10;i++){
-      Int_t label = lab[i];
-      if (label>=0 && label<ntracks) {
-	TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
-
-	if (part->P() < 0.02) {
-	  Int_t m=part->GetFirstMother();
-	  if (m<0) {	
-	    continue;
-	  }
-	  if (part->GetStatusCode()>0) {
-	    continue;
-	  }
-	  lab[i]=m;       
-	}
-	else
-	  if (part->P() < 0.12 && nlabels>3) {
-	    lab[i]=-2;
-	    nlabels--;
-	  } 
-      }
-      else{
-	if ( (label>ntracks||label <0) && nlabels>3) {
-	  lab[i]=-2;
-	  nlabels--;
-	} 
-      }
-    }  
-    if (nlabels>3){
-      for (Int_t i=0;i<10;i++){
-	if (nlabels>3){
-	  Int_t label = lab[i];
-	  if (label>=0 && label<ntracks) {
-	    TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
-	    if (part->P() < 0.1) {
-	      lab[i]=-2;
-	      nlabels--;
-	    }
-	  }
-	}
-      }
+  if (!trK) return;
+  //
+  int labS[10];
+  Int_t nlabels = 0; 
+  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  for (Int_t i=0;i<10;i++) if (lab[i]>=0) labS[nlabels++] = lab[i];
+  if (nlabels==0) return;
+  //
+  float mom[10];
+  for (Int_t i=0;i<nlabels;i++) {
+    Int_t label = labS[i];
+    mom[i] = 0;
+    if (label>=ntracks) continue;
+    TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+    mom[i] = part->P();
+    if (part->P() < 0.02) {    // reduce soft particles from the same cluster
+      Int_t m=part->GetFirstMother();
+      if (m<0) continue; // primary
+      //
+      if (part->GetStatusCode()>0) continue;
+      //
+      // if the parent is within the same cluster, reassign the label to it
+      for (int j=0;j<nlabels;j++) if (labS[j]==m) { labS[i] = m; break;	}
     }
-
-    //compress labels -- if multi-times the same
-    Int_t lab2[10];
-    for (Int_t i=0;i<10;i++) lab2[i]=-2;
-    for (Int_t i=0;i<10  ;i++){
-      if (lab[i]<0) continue;
-      for (Int_t j=0;j<10 &&lab2[j]!=lab[i];j++){
-	if (lab2[j]<0) {
-	  lab2[j]= lab[i];
-	  break;
-	}
-      }
-    }
-    for (Int_t j=0;j<10;j++) lab[j]=lab2[j];
-  
+  } 
+  //
+  if (nlabels>3) { // only 3 labels are stored in cluster, sort in decreasing momentum
+    int ind[10],labSS[10];
+    TMath::Sort(nlabels,mom,ind);
+    for (int i=nlabels;i--;) labSS[i] = labS[i];
+    for (int i=0;i<nlabels;i++) labS[i] = labSS[ind[i]]; 
   }
+  //
+  //compress labels -- if multi-times the same
+  for (Int_t i=0;i<10;i++) lab[i]=-2;
+  int nlabFin=0,j=0;
+  for (int i=0;i<nlabels;i++) {
+    for (j=0;j<nlabFin;j++) if (labS[i]==lab[j]) break; // the label already there
+    if (j==nlabFin) lab[nlabFin++] = labS[i];
+  }
+  //
 }
 
 //______________________________________________________________________
