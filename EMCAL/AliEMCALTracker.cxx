@@ -161,16 +161,17 @@ void AliEMCALTracker::InitParameters()
   if(!recParam){
     AliFatal("Reconstruction parameters for EMCAL not set!");
   }
-  
-  fCutX =  recParam->GetTrkCutX();
-  fCutY =  recParam->GetTrkCutY();
-  fCutZ =  recParam->GetTrkCutZ();
-  fMaxDist =  recParam->GetTrkCutR();
-  fCutAngle =  recParam->GetTrkCutAngle();
-  fCutAlphaMin =  recParam->GetTrkCutAlphaMin();
-  fCutAlphaMax =  recParam->GetTrkCutAlphaMax();
-  fCutNITS = recParam->GetTrkCutNITS();
-  fCutNTPC = recParam->GetTrkCutNTPC();
+  else{
+    fCutX =  recParam->GetTrkCutX();
+    fCutY =  recParam->GetTrkCutY();
+    fCutZ =  recParam->GetTrkCutZ();
+    fMaxDist =  recParam->GetTrkCutR();
+    fCutAngle =  recParam->GetTrkCutAngle();
+    fCutAlphaMin =  recParam->GetTrkCutAlphaMin();
+    fCutAlphaMax =  recParam->GetTrkCutAlphaMax();
+    fCutNITS = recParam->GetTrkCutNITS();
+    fCutNTPC = recParam->GetTrkCutNTPC();
+  }
 	
 }
 //
@@ -554,7 +555,7 @@ Double_t AliEMCALTracker::CheckPair
 	//
 	
 	// TEMP
-	Bool_t isTrue = kFALSE;
+	//Bool_t isTrue = kFALSE;
 //	if (tr->GetSeedLabel() == cl->Label()) {
 //		isTrue = kTRUE;
 //	}
@@ -605,7 +606,7 @@ Double_t AliEMCALTracker::CheckPair
 		Double_t r=0.;
 		cout.setf(ios::fixed);
 		cout.precision(5);
-		if (isTrue) cout << "Init : " << rt << ' ' << x << ' ' << y << ' ' << z << endl;
+		//if (isTrue) cout << "Init : " << rt << ' ' << x << ' ' << y << ' ' << z << endl;
 		for (i = 0; i < fNPropSteps; i++) {
 			r = rt + (rc - rt) * ((Double_t)(i+1)/(Double_t)fNPropSteps);
 			if (!tr->PropagateTo(r, x0, rho)){
@@ -613,9 +614,9 @@ Double_t AliEMCALTracker::CheckPair
 			  return distance;
 			}
 			tr->GetXYZ(pos);
-			if (isTrue) cout << "Step : " << r << ' ' << x << ' ' << y << ' ' << z << endl;
+		//	if (isTrue) cout << "Step : " << r << ' ' << x << ' ' << y << ' ' << z << endl;
 		}
-		if (isTrue) cout << "Clstr: " << rc << ' ' << cl->X() << ' ' << cl->Y() << ' ' << cl->Z() << endl;
+		//if (isTrue) cout << "Clstr: " << rc << ' ' << cl->X() << ' ' << cl->Y() << ' ' << cl->Z() << endl;
 	}
 	else {
 		// when no steps are used, no correction makes sense

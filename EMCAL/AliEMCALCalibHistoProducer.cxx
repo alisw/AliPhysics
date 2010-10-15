@@ -147,14 +147,15 @@ void AliEMCALCalibHistoProducer::Init()
   // Checks existence of histograms which might have been left
   // from the previous runs to continue their filling
   fHistoFile =  new TFile(fHistoFileName,"update");
-  char hname[128];
+  const Int_t buffersize = 128;
+  char hname[buffersize];
   Int_t nRow =  fNCellsPhi ;
 
   for(Int_t supermodule=0; supermodule<fNSuperModules; supermodule++) {
     //Check installed supermodules
     if(fSMInstalled[supermodule]==kFALSE) continue;
     //Check created profiles
-    sprintf(hname,"mod%d",supermodule);
+    snprintf(hname,buffersize,"mod%d",supermodule);
     TProfile* prof = (TProfile*)fHistoFile->Get(hname);
     if(prof)
       fAmpProf[supermodule]=prof;
@@ -163,10 +164,10 @@ void AliEMCALCalibHistoProducer::Init()
     if(supermodule > 10) nRow = fNCellsPhiHalfSM ; //Supermodules 11 and 12 are half supermodules
     for(Int_t column=0; column<fNCellsEta; column++) {
       for(Int_t row=0; row<nRow; row++) {
-	sprintf(hname,"mod%dcol%drow%d",supermodule,column,row);
-	TH1F* hist = (TH1F*)fHistoFile->Get(hname);
-	if(hist) 
-	  fAmpHisto[supermodule][column][row]=hist;
+        snprintf(hname,buffersize,"mod%dcol%drow%d",supermodule,column,row);
+        TH1F* hist = (TH1F*)fHistoFile->Get(hname);
+        if(hist) 
+          fAmpHisto[supermodule][column][row]=hist;
       }
     }
   }
@@ -183,7 +184,8 @@ void AliEMCALCalibHistoProducer::Run()
   
 //   TH1F* gHighGain = 0;
 //   TH1F* gLowGain = 0;
-  char hname[128];
+  const Int_t buffersize=128;
+  char hname[buffersize];
   Int_t iEvent = 0;
   Int_t runNum = 0;
   Int_t nProfFreq = 1000; //Number of events with which a bin of the TProfile if filled
@@ -223,11 +225,11 @@ void AliEMCALCalibHistoProducer::Run()
 	
 	//Check if histogram/profile already exist, if not create it.
 	if(!fAmpHisto[mod][col][row]) {
-	  sprintf(hname,"mod%dcol%drow%d",mod,col,row);
+	  snprintf(hname,buffersize,"mod%dcol%drow%d",mod,col,row);
 	  fAmpHisto[mod][col][row] = new TH1F(hname,hname,1024,-0.5,1023.);
 	}
 	if(!fAmpProf[mod]) {
-	  sprintf(hname,"mod%d",mod);
+	  snprintf(hname,buffersize,"mod%d",mod);
 	  fAmpProf[mod] = new TProfile(hname,hname,nEvtBins,0.,nEvtBins);
 	}
 		
