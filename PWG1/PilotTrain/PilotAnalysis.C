@@ -120,7 +120,8 @@ void PilotAnalysis(const char *plugin_mode = "full")
   mgr->SetGridHandler(alienHandler);
   if (mgr->InitAnalysis()) {                                                                                                              
     mgr->PrintStatus(); 
-    mgr->StartAnalysis("grid");
+    if (!strcmp(plugin_mode, "local")) mgr->StartAnalysis("local");
+    else mgr->StartAnalysis("grid");
   }
 }
 
@@ -160,6 +161,7 @@ void AddAnalysisTasks()
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskCDBconnect.C");
     AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
     if (!taskCDB) return;
+    taskCDB->SetRunNumber(runNumbers[0]);
   }    
   
   //
@@ -199,8 +201,10 @@ void AddAnalysisTasks()
   // TPC (Jacek Otwinowski)
   //
   if (doTPC) {
-    gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
-    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
+//    gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
+//    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
+    gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
+    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE);   
   }  
   //
   // SPD (A. Mastroserio)
