@@ -1,5 +1,6 @@
-AliAnalysisTask *AddTaskTender(Bool_t checkEvtSelection=kFALSE){
+AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
   //get the current analysis manager
+  Bool_t checkEvtSelection = useV0;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_tender_Tender", "No analysis manager found.");
@@ -25,9 +26,11 @@ AliAnalysisTask *AddTaskTender(Bool_t checkEvtSelection=kFALSE){
   }   
   
   //========= Attach VZERO supply ======
-  AliVZEROTenderSupply *vzeroSupply=new AliVZEROTenderSupply("VZEROtender");
-  vzeroSupply->SetDebug(kFALSE);
-  tender->AddSupply(vzeroSupply);
+  if (useV0) {
+     AliVZEROTenderSupply *vzeroSupply=new AliVZEROTenderSupply("VZEROtender");
+     vzeroSupply->SetDebug(kFALSE);
+     tender->AddSupply(vzeroSupply);
+  }   
   //========= Attach TPC supply ======
   AliTPCTenderSupply *tpcSupply=new AliTPCTenderSupply("TPCtender");
   tpcSupply->SetDebugLevel(2);
