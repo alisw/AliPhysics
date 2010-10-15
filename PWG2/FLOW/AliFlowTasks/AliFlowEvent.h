@@ -19,6 +19,7 @@ class AliMCEvent;
 class AliESDEvent;
 class AliAODEvent;
 class AliMultiplicity;
+class AliESDPmdTrack;
 class TH2F;
 
 #include "AliFlowEventSimple.h"
@@ -59,7 +60,11 @@ public:
   AliFlowEvent( AliVEvent* anInput,
                 AliFlowTrackCuts* rpCuts,
                 AliFlowTrackCuts* poiCuts );
-
+  //pmd
+  AliFlowEvent( const AliESDEvent* anInput,
+                const AliESDPmdTrack *pmdtracks,
+                const AliCFManager* poiCFManager );
+  //pmd
 
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
   using AliFlowEventSimple::SetMCReactionPlaneAngle;

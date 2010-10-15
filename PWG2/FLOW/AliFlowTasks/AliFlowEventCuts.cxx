@@ -24,7 +24,10 @@
 #include <float.h>
 #include "TNamed.h"
 #include "AliVEvent.h"
+#include "AliESDEvent.h"
+#include "AliMCEvent.h"
 #include "AliFlowEventCuts.h"
+#include "AliESDtrackCuts.h"
 
 ClassImp(AliFlowEventCuts)
 
@@ -36,7 +39,8 @@ AliFlowEventCuts::AliFlowEventCuts():
   fNumberOfTracksMin(INT_MIN),
   fCutRefMult(kFALSE),
   fRefMultMax(INT_MAX),
-  fRefMultMin(INT_MIN)
+  fRefMultMin(INT_MIN),
+  fReferenceMultiplicity(-1)
 {
   //constructor 
 }
@@ -49,7 +53,8 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fNumberOfTracksMin(INT_MIN),
   fCutRefMult(kFALSE),
   fRefMultMax(INT_MAX),
-  fRefMultMin(INT_MIN)
+  fRefMultMin(INT_MIN),
+  fReferenceMultiplicity(-1)
 {
   //constructor 
 }
@@ -91,8 +96,8 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
   if(fCutRefMult)
   {
     //reference multiplicity still to be defined
-    Int_t refMult = event->GetNumberOfTracks();
-    if (refMult < fRefMultMin || refMult >= fRefMultMax )
+    fReferenceMultiplicity = ReferenceMultiplicity(event);
+    if (fReferenceMultiplicity < fRefMultMin || fReferenceMultiplicity >= fRefMultMax )
       return kFALSE;
   }
   return kTRUE;
@@ -104,4 +109,15 @@ AliFlowEventCuts* AliFlowEventCuts::StandardCuts()
   //make a set of standard event cuts, caller becomes owner
   AliFlowEventCuts* cuts = new AliFlowEventCuts();
   return cuts;
+}
+
+//----------------------------------------------------------------------- 
+Int_t AliFlowEventCuts::ReferenceMultiplicity(const AliVEvent* event)
+{
+  //calculate the reference multiplicity
+  const AliESDEvent* esd=dynamic_cast<const AliESDEvent*>(event);
+  if (esd) return AliESDtrackCuts::GetReferenceMultiplicity(const_cast<AliESDEvent*>(esd),kTRUE);
+  AliMCEvent* mc=const_cast<AliMCEvent*>(dynamic_cast<const AliMCEvent*>(event));
+  if (mc) return mc->GetNumberOfPrimaries();
+  return event->GetNumberOfTracks(); //default
 }

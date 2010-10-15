@@ -41,6 +41,9 @@ class AliFlowEventCuts : public TNamed {
   Int_t GetRefMultMax() const {return fRefMultMax;}
   Int_t GetRefMultMin() const {return fRefMultMin;}
 
+  static Int_t ReferenceMultiplicity(const AliVEvent* event);
+  Int_t GetReferenceMultiplicity() {return fReferenceMultiplicity;}
+
  private:
   Bool_t fCutNumberOfTracks;//cut on # of tracks
   Int_t fNumberOfTracksMax;  //limits
@@ -48,6 +51,8 @@ class AliFlowEventCuts : public TNamed {
   Bool_t fCutRefMult; //cut on refmult
   Int_t fRefMultMax; //max refmult
   Int_t fRefMultMin; //min refmult
+
+  Int_t fReferenceMultiplicity; //store the reference multiplicity
 
   ClassDef(AliFlowEventCuts,1)
 };
