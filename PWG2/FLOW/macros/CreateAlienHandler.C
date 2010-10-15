@@ -5,6 +5,9 @@ AliAnalysisGrid* CreateAlienHandler() {
   if (!AliAnalysisGrid::CreateToken()) return NULL;
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   
+  // Set if you want to use par files on Grid:
+  Bool_t bUseParFiles = kFALSE;
+  
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
   //plugin->SetRunMode("test");
   //plugin->SetRunMode("offline");
@@ -15,27 +18,25 @@ AliAnalysisGrid* CreateAlienHandler() {
 
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-26-00b-6");
-  plugin->SetAliROOTVersion("v4-19-22-AN");
-
+  plugin->SetROOTVersion("v5-27-06-1");
+  plugin->SetAliROOTVersion("v4-20-12-AN");  
+  
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
   // ============================================================================
   //  Example 1: MC production (set in macro runFlowTask.C: DATA = kFALSE)
-  // plugin->SetGridDataDir("/alice/sim/LHC10a10");
-  // plugin->SetDataPattern("*AliESDs.root"); // The default data pattern, other may be "*tag.root", "*ESD.tag.root", etc
-  // plugin->AddRunNumber(105054); // Alternatively use e.g. plugin->SetRunRange(105044,106044); to add more runs in one go  
-  // plugin->SetOutputToRunNo();  
+  plugin->SetGridDataDir("/alice/sim/LHC10d4");
+  plugin->SetDataPattern("*AliESDs.root"); // The default data pattern, other may be "*tag.root", "*ESD.tag.root", etc
+  plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(105044,106044); to add more runs in one go  
+  plugin->SetOutputToRunNo();  
   // ============================================================================
   //  Example 2: Real data (set in macro runFlowTask.C: DATA = kTRUE, MCEP = kFALSE)
-  plugin->SetGridDataDir("/alice/data/2010/LHC10c");
-  plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
-  plugin->SetRunPrefix("000");
-  
-  plugin->AddRunNumber(120244); 
-  plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
-  
-  plugin->SetOutputToRunNo();  
+  // plugin->SetGridDataDir("/alice/data/2010/LHC10c");
+  // plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
+  // plugin->SetRunPrefix("000"); // IMPORTANT!
+  // plugin->AddRunNumber(120244); 
+  // plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
+  // plugin->SetOutputToRunNo();  
   // ============================================================================
  
   // METHOD 2: Declare existing data files (raw collections, xml collections, root file)
@@ -54,10 +55,14 @@ AliAnalysisGrid* CreateAlienHandler() {
 
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  //plugin->SetAdditionalLibs("libPWG2flowCommon.so libPWG2flowTasks.so");
-  // load libs via par files
-  plugin->EnablePackage("PWG2flowCommon.par");
-  plugin->EnablePackage("PWG2flowTasks.par");
+  if(!bUseParFiles)
+  {
+   plugin->SetAdditionalLibs("libPWG2flowCommon.so libPWG2flowTasks.so");
+  } else // load libs via par files
+    { 
+     plugin->EnablePackage("PWG2flowCommon.par");
+     plugin->EnablePackage("PWG2flowTasks.par");
+    }
   // Do not specify your outputs by hand anymore:
   plugin->SetDefaultOutputs(kTRUE);
   // To specify your outputs by hand set plugin->SetDefaultOutputs(kFALSE); and comment in line plugin->SetOutputFiles("..."); 
@@ -82,7 +87,7 @@ AliAnalysisGrid* CreateAlienHandler() {
   // Optionally resubmit threshold.
   plugin->SetMasterResubmitThreshold(90);
   // Optionally set time to live (default 30000 sec)
-  plugin->SetTTL(20000);
+  plugin->SetTTL(100000);
   // Optionally set input format (default xml-single)
   plugin->SetInputFormat("xml-single");
   // Optionally modify the name of the generated JDL (default analysis.jdl)

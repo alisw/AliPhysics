@@ -68,6 +68,7 @@ AliFlowCommonHist::AliFlowCommonHist():
   fHistAngleQSub1(NULL), 
   fHarmonic(NULL),
   fRefMultVsNoOfRPs(NULL),
+  fHistRefMult(NULL),
   fHistList(NULL)
 {
   
@@ -102,6 +103,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistAngleQSub1(new TH1F(*a.fHistAngleQSub1)), 
   fHarmonic(new TProfile(*a.fHarmonic)),
   fRefMultVsNoOfRPs(new TProfile(*a.fRefMultVsNoOfRPs)),
+  fHistRefMult(new TH1F(*a.fHistRefMult)),  
   fHistList(NULL)
 {
   // copy constructor
@@ -128,6 +130,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHistWeightvsPhi);
   fHistList-> Add(fHarmonic);  
   fHistList-> Add(fRefMultVsNoOfRPs);
+  fHistList-> Add(fHistRefMult); 
   fHistList-> Add(fHistQ); 
   fHistList-> Add(fHistAngleQ);
   fHistList-> Add(fHistAngleQSub0);
@@ -166,6 +169,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
     fHistAngleQSub1(NULL), 
     fHarmonic(NULL),
     fRefMultVsNoOfRPs(NULL),
+    fHistRefMult(NULL),
     fHistList(NULL)
 {
 
@@ -356,6 +360,13 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fRefMultVsNoOfRPs->SetYTitle("<reference multiplicity>");
   fRefMultVsNoOfRPs->SetXTitle("# of RPs");
 
+  //reference multiplicity
+  sName = "Control_Flow_Ref_Mult_";
+  sName +=anInput;
+  fHistRefMult = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
+  fHistRefMult->SetXTitle("Reference multiplicity");
+  fHistRefMult->SetYTitle("Counts");
+
   //list of histograms if added here also add in copy constructor
   fHistList = new TList();
   fHistList-> Add(fHistMultRP);        
@@ -379,6 +390,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHistWeightvsPhi);
   fHistList-> Add(fHarmonic); 
   fHistList-> Add(fRefMultVsNoOfRPs); 
+  fHistList-> Add(fHistRefMult);   
   fHistList-> Add(fHistQ);           
   fHistList-> Add(fHistAngleQ);
   fHistList-> Add(fHistAngleQSub0);
@@ -417,6 +429,7 @@ AliFlowCommonHist::~AliFlowCommonHist()
   delete fHistAngleQSub1;
   delete fHarmonic;
   delete fRefMultVsNoOfRPs;
+  delete fHistRefMult;  
   delete fHistList;
 }
 
@@ -629,6 +642,9 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
   
   //<reference multiplicity> versus # of RPs:
   fRefMultVsNoOfRPs->Fill(dMultRP+0.5,anEvent->GetReferenceMultiplicity(),1.);
+  
+  //reference multiplicity:
+  fHistRefMult->Fill(anEvent->GetReferenceMultiplicity());
 
   return kTRUE; 
 }

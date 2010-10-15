@@ -72,6 +72,7 @@ class AliFlowCommonHist: public TNamed {
   TH1F*     GetHistAngleQSub1()      {return fHistAngleQSub1; }
   TProfile* GetHarmonic()            {return fHarmonic; } ; 
   TProfile* GetRefMultVsNoOfRPs()    {return fRefMultVsNoOfRPs; } ;
+  TH1F*     GetHistRefMult()         {return fHistRefMult; } ; 
   TList*    GetHistList()            {return fHistList;} ;  
 
    
@@ -106,7 +107,8 @@ class AliFlowCommonHist: public TNamed {
   TH1F*     fHistAngleQSub1;      // distribution of angle of subevent 1 Q vector
   TProfile* fHarmonic;            // harmonic 
   TProfile* fRefMultVsNoOfRPs;    // <reference multiplicity> versus # of RPs
-
+  TH1F*     fHistRefMult;         // reference multiplicity distribution
+  
   TList*    fHistList;            // list to hold all histograms  
 
   ClassDef(AliFlowCommonHist,2)   // macro for rootcint
