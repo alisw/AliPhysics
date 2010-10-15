@@ -3733,12 +3733,12 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       TObjArray *arr = outputFiles.Tokenize(",");
       TIter next1(arr);
       TString outputFile;
-      while ((os=(TObjString*)next1())) { 
+      while (!merge && (os=(TObjString*)next1())) { 
+         // No need to validate outputs produced by merging since the merging macro does this
          outputFile = os->GetString();
          Int_t index = outputFile.Index("@");
          if (index > 0) outputFile.Remove(index);
-         if (!merge && fTerminateFiles.Contains(outputFile)) continue;
-         if (merge && fMergeExcludes.Contains(outputFile)) continue;
+         if (fTerminateFiles.Contains(outputFile)) continue;
          if (outputFile.Contains("*")) continue;
          out << "if ! [ -f " << outputFile.Data() << " ] ; then" << endl;
          out << "   error=1" << endl;
