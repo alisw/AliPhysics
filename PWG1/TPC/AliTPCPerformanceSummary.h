@@ -5,7 +5,7 @@
 // Class to extract some TPC Performance parameters from AliPerformanceTPC and
 // AliPerformanceDEdx objects and produce trend graphs.  
 // 
-// Author: M.Knichel 2010-09-24
+// by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 class TTree;
@@ -21,9 +21,9 @@ class AliTPCPerformanceSummary
     AliTPCPerformanceSummary() {} // default contructor 
     virtual ~AliTPCPerformanceSummary() {} // destructor
     
-    static Int_t WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* pcstream, Int_t run); // called by WriteToFile
+    static Int_t WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* pcstream, Int_t run = -1); // called by WriteToFile
     
-    static Int_t WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const Char_t* outfile, Int_t run); // calles by MakeReport
+    static Int_t WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const Char_t* outfile, Int_t run = -1); // calles by MakeReport
     
     // the two key functions
     static Int_t MakeReport(const Char_t* infile, const Char_t* outfile, Int_t run);
@@ -54,7 +54,7 @@ class AliTPCPerformanceSummary
     AliTPCPerformanceSummary(const AliTPCPerformanceSummary&); // copy contructor (not implemented)
     AliTPCPerformanceSummary& operator=(const AliTPCPerformanceSummary&); // assignment operator (not implemented)
       
-    ClassDef(AliTPCPerformanceSummary, 2);
+    ClassDef(AliTPCPerformanceSummary, 3);
 };
 
 #endif

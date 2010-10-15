@@ -8,7 +8,7 @@
 // a data of AliPerformanceDEdx.
 //  
 // Author: J.Otwinowski 04/02/2008 
-// Changes by M.Knichel 24/09/2010
+// Changes by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 /*
@@ -35,14 +35,18 @@
 
 */
 
-#include <TDirectory.h>
-#include <TAxis.h>
-#include <TCanvas.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TF1.h>
+#include "TDirectory.h"
+#include "TAxis.h"
+#include "TCanvas.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TSystem.h"
+#include "TChain.h"
 
-#include "AliPerformanceDEdx.h" 
+#include "AliPerformanceDEdx.h"
+#include "AliPerformanceTPC.h"
+#include "AliTPCPerformanceSummary.h"
 #include "AliESDEvent.h"
 #include "AliTracker.h"
 #include "AliMCEvent.h"
@@ -166,10 +170,12 @@ void AliPerformanceDEdx::Init()
    //fDeDxHisto->Sumw2();
 
    // Init cuts
-   if(!fCutsMC) 
+   if(!fCutsMC) {
      AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-   if(!fCutsRC) 
+   }
+   if(!fCutsRC) {
      AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
+   }
 
    // init folder
    fAnalysisFolder = CreateFolder("folderDEdx","Analysis de/dx Folder");
@@ -548,5 +554,12 @@ TFolder *folder = 0;
   folder = new TFolder(name.Data(),title.Data());
 
   return folder;
+}
+
+//_____________________________________________________________________________
+TTree* AliPerformanceDEdx::CreateSummary()
+{
+    // implementaion removed, switched back to use AliPerformanceSummary (now called in AliPerformanceTask)
+    return 0;
 }
 

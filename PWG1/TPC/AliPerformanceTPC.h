@@ -6,7 +6,7 @@
 // reconstructed and MC particle tracks (TPC resolution).   
 // 
 // Author: J.Otwinowski 04/02/2008 
-// Changes by M.Knichel 24/09/2010
+// Changes by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 class TString;
@@ -30,8 +30,9 @@ class AliRecInfoCuts;
 
 class AliPerformanceTPC : public AliPerformanceObject {
 public :
-  AliPerformanceTPC(); 
-  AliPerformanceTPC(Char_t* name, Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
+  //AliPerformanceTPC(); 
+  AliPerformanceTPC(Char_t* name="AliPerformanceTPC", Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1);
+
   virtual ~AliPerformanceTPC();
 
   // Init data members
@@ -47,6 +48,9 @@ public :
 
   // Get analysis folder
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
+  
+  // produce summary
+  virtual TTree* CreateSummary();
 
   // Process events
   void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
@@ -63,8 +67,8 @@ public :
   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
   void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
    
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}  
+  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
+  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
 
   // getters
   //
@@ -85,7 +89,7 @@ private:
   static Bool_t fgMergeTHnSparse;
 
   // TPC histogram
-  THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCSide
+  THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCside:pad:detector
   THnSparseF *fTPCEventHisto;  //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
   THnSparseF *fTPCTrackHisto;  //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
   TObjArray* fFolderObj; // array of analysed histograms
@@ -102,7 +106,7 @@ private:
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,7);
+  ClassDef(AliPerformanceTPC,8);
 };
 
 #endif

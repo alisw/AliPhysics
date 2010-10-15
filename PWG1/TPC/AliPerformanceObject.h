@@ -6,13 +6,14 @@
 // reconstructed and MC particle tracks.   
 // 
 // Author: J.Otwinowski 04/14/2008 
-// Changes by M.Knichel 24/09/2010
+// Changes by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 #include "TNamed.h"
 #include "TFolder.h"
 #include "THnSparse.h"
 
+class TTree;
 class AliMCEvent;
 class AliESDEvent;
 class AliRecInfoCuts;
@@ -23,7 +24,7 @@ class AliESDVertex;
 class AliPerformanceObject : public TNamed {
 public :
   AliPerformanceObject(); 
-  AliPerformanceObject(const char* name="AliPerformanceObject", const char* title="AliPerformanceObject"); 
+  AliPerformanceObject(const char* name="AliPerformanceObject", const char* title="AliPerformanceObject", Int_t run=-1); 
   virtual ~AliPerformanceObject();
 
   // Init data members
@@ -46,6 +47,11 @@ public :
 
   // Get output folder for analysed histograms
   virtual TFolder* GetAnalysisFolder() const = 0;
+  
+  // create a summary stored in a ttree 
+  // has to be implented
+  // virtual TTree* CreateSummary() = 0;
+  virtual TTree* CreateSummary() { return 0; }
 
   // 
   virtual void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) = 0;
@@ -74,6 +80,9 @@ public :
   Bool_t IsUseTrackVertex() { return fUseTrackVertex; }
   
   Bool_t IsHighMultiplicity() { return fHighMultiplicity; }  
+  
+  void SetRunNumber(Int_t run) { fRunNumber = run; }
+  Int_t GetRunNumber() const { return fRunNumber; }
 
 protected: 
 
@@ -83,6 +92,8 @@ protected:
 
   // analysis mode
   Int_t fAnalysisMode;  // 0-TPC, 1-TPCITS, 2-Constrained, 3-TPC inner wall, 4-TPC outer wall
+
+  Int_t fRunNumber;
 
   // hpt generator
   Bool_t fHptGenerator; // hpt event generator
@@ -99,7 +110,7 @@ protected:
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
-  ClassDef(AliPerformanceObject,2);
+  ClassDef(AliPerformanceObject,3);
 };
 
 #endif

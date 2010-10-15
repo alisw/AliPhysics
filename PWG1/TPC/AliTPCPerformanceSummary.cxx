@@ -8,7 +8,7 @@
 // The function MakeReport needs a list of these rootfiles as input
 // and writes the output (tree and histograms) to another rootfile.
 //
-// Author: M.Knichel 2010-09-24
+// by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 #include <fstream>
@@ -55,11 +55,20 @@ Int_t AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC*
     // The run number must be provided since it is not stored in 
     // AliPerformanceTPC or AliPerformanceDEdx.
     //
+    if (run <= 0 ) {
+        if (pTPCgain) {run = pTPCgain->GetRunNumber(); }
+        if (pTPC) { run = pTPC->GetRunNumber(); }
+    }
+    
     AliTPCcalibDB     *calibDB=0;
 //     AliTPCcalibDButil *dbutil =0;
     Int_t startTimeGRP=0;
     Int_t stopTimeGRP=0;   
     Int_t time=0;
+    Int_t duration=0;
+    Float_t currentL3 =0;
+    Int_t polarityL3 = 0;
+    Float_t bz = 0;
     calibDB = AliTPCcalibDB::Instance();
 //     dbutil= new AliTPCcalibDButil;   
            
@@ -72,10 +81,15 @@ Int_t AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC*
   if (calibDB->GetGRP(run)){
     startTimeGRP = AliTPCcalibDB::GetGRP(run)->GetTimeStart();
     stopTimeGRP  = AliTPCcalibDB::GetGRP(run)->GetTimeEnd();
+    currentL3 = AliTPCcalibDB::GetL3Current(run);
+    polarityL3 = AliTPCcalibDB::GetL3Polarity(run);
+    bz = AliTPCcalibDB::GetBz(run);
+    
   }    
   TObjString runType(AliTPCcalibDB::GetRunType(run).Data());  
   
   time = (startTimeGRP+stopTimeGRP)/2;
+  duration = (stopTimeGRP-startTimeGRP);
     
     if (!pcstream) return -1;
     (*pcstream)<<"tpcQA"<<      
@@ -83,25 +97,26 @@ Int_t AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC*
       "time="<<time<<
       "startTimeGRP="<<startTimeGRP<<
       "stopTimeGRP="<<stopTimeGRP<<
-      //run type      
+      "duration="<<
       "runType.="<<&runType;
     Int_t returncode = 0;
-
-    pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
-    pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
-    pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1,1);    
-    returncode += AnalyzeNCL(pTPC, pcstream);    
-    returncode += AnalyzeDrift(pTPC, pcstream);
-    returncode += AnalyzeDriftPos(pTPC, pcstream);
-    returncode += AnalyzeDriftNeg(pTPC, pcstream);
+    if (pTPC) {
+        pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
+        pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
+        pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1,1);    
+        returncode += AnalyzeNCL(pTPC, pcstream);    
+        returncode += AnalyzeDrift(pTPC, pcstream);
+        returncode += AnalyzeDriftPos(pTPC, pcstream);
+        returncode += AnalyzeDriftNeg(pTPC, pcstream);    
+        returncode += AnalyzeDCARPhi(pTPC, pcstream);
+        returncode += AnalyzeDCARPhiPos(pTPC, pcstream);
+        returncode += AnalyzeDCARPhiNeg(pTPC, pcstream);
+        returncode += AnalyzeEvent(pTPC, pcstream);         
+        pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(-10,10);
+        pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0,100);
+        pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-10,10);    
+    }
     returncode += AnalyzeGain(pTPCgain, pcstream);
-    returncode += AnalyzeDCARPhi(pTPC, pcstream);
-    returncode += AnalyzeDCARPhiPos(pTPC, pcstream);
-    returncode += AnalyzeDCARPhiNeg(pTPC, pcstream);
-    returncode += AnalyzeEvent(pTPC, pcstream);
-    pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(-10,10);
-    pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0,100);
-    pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-10,10);    
     (*pcstream)<<"tpcQA"<<"\n";
     return returncode;
 
@@ -729,9 +744,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
         pTPC->GetTPCTrackHisto()->GetAxis(2)->SetRangeUser(0.4,1.1);
         his1D = pTPC->GetTPCTrackHisto()->Projection(2);
     }    
-    
-    pTPC->GetTPCTrackHisto()->GetAxis(2)->SetRangeUser(0.4,1.1);
-    his1D = pTPC->GetTPCTrackHisto()->Projection(2);
+        
     meanTPCnclF= his1D->GetMean();
     rmsTPCnclF= his1D->GetRMS();
     delete his1D;
@@ -1070,6 +1083,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     static Float_t attachSlopeA = 0;
 
     TH1 * his1D = 0;
+    //TH1 * hisProj1D=0;
+    TH2* his2D=0;
+     
 
     meanMIPvsSector.Zero();
     //
@@ -1081,73 +1097,106 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1);
     //
     // MIP position and resolution
-    //
+    //    
     TF1 gausFit("gausFit","gaus");
-    TH1 * hisProj1D = pTPCgain->GetDeDxHisto()->Projection(0);
-    hisProj1D->Fit(&gausFit,"QN","QN");
-    delete hisProj1D;
+   
+    if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_0") && !fgForceTHnSparse) {    
+        his1D = dynamic_cast<TH1*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_0")->Clone());
+    } else {
+       his1D =  pTPCgain->GetDeDxHisto()->Projection(0);
+    }
+    his1D->Fit(&gausFit,"QN","QN");
+
     meanMIP = gausFit.GetParameter(1);
     resolutionMIP = 0;
     if (meanMIP!=0) resolutionMIP = gausFit.GetParameter(2)/meanMIP;
+    //removedtotest// delete his1D;
     //
     // MIP position vs. dip angle (attachment)
-    //
-    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0);
-    TH2* his2D = pTPCgain->GetDeDxHisto()->Projection(0,5);
+    //    
+    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0); // C side
+    if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_c_0_5") && !fgForceTHnSparse) {    
+        his2D = dynamic_cast<TH2*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_c_0_5")->Clone());
+    } else {
+        his2D =  pTPCgain->GetDeDxHisto()->Projection(0,5);
+    }        
     TF1 * fpol = new TF1("fpol","pol1");
     TObjArray arrayFit;
-    his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit);
-    delete his2D;
+    his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit);    
     his1D = (TH1*) arrayFit.At(1);
     his1D->Fit(fpol,"QNROB=0.8","QNR",-1,0);
     attachSlopeC = fpol->GetParameter(1);
+     //removedtotest// delete his2D;
+     //removedtotest// delete his1D;
     //
-    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3);
-    TH2* his2DA = pTPCgain->GetDeDxHisto()->Projection(0,5);
+    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
+    if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_a_0_5") && !fgForceTHnSparse) {    
+        his2D = dynamic_cast<TH2*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_a_0_5")->Clone());
+    } else {
+        his2D =  pTPCgain->GetDeDxHisto()->Projection(0,5);
+    }         
     TF1 * fpolA = new TF1("fpolA","pol1");
     TObjArray arrayFitA;
-    his2DA->FitSlicesY(0,0,-1,10,"QN",&arrayFit);
-    delete his2DA;
-    TH1 * his1DA = (TH1*) arrayFit.At(1);
-    his1DA->Fit(fpolA,"QNROB=0.8","QN",0,1);
+    his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit);    
+    his1D = (TH1*) arrayFit.At(1);
+    his1D->Fit(fpolA,"QNROB=0.8","QN",0,1);
     attachSlopeA = fpolA->GetParameter(1);
+     //removedtotest// delete his2D;
+     //removedtotest// delete his1D;
     //
     // MIP position vs. sector
     //
     pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0); // C side
+    if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_c_0_1") && !fgForceTHnSparse) {    
+        his2D = dynamic_cast<TH2*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_c_0_1")->Clone());
+    } else {
+        his2D =  pTPCgain->GetDeDxHisto()->Projection(0,1);
+    }
     for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
         //TH1* his1D=0;
         Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
         Float_t phiUp    = -TMath::Pi() + (i+1)*(20./360.)*(2*TMath::Pi());
-        pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
-        his1D = pTPCgain->GetDeDxHisto()->Projection(0);
+        //pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
+        his2D->GetXaxis()->SetRangeUser(phiLow,phiUp);
+        //his1D = pTPCgain->GetDeDxHisto()->Projection(0); 
+        his1D = his2D->ProjectionY(); 
         TF1 gausFunc("gausFunc","gaus");
         his1D->Fit(&gausFunc, "QN");
         meanMIPvsSector(i) = gausFunc.GetParameter(1);
         sector(i)=i;
-        delete his1D;
+        //removedtotest// delete his1D;
     }
+     //removedtotest// delete his2D;
     //
     pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
+    if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_a_0_1") && !fgForceTHnSparse) {    
+        his2D = dynamic_cast<TH2*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_a_0_1")->Clone());
+    } else {
+        his2D =  pTPCgain->GetDeDxHisto()->Projection(0,1);
+    }    
     for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
         //TH1* his1D=0;
         Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
         Float_t phiUp    = -TMath::Pi() + (i+1)*(20./360.)*(2*TMath::Pi());
-        pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
-        his1D = pTPCgain->GetDeDxHisto()->Projection(0);
+        //pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
+        his2D->GetXaxis()->SetRangeUser(phiLow,phiUp);
+        //his1D = pTPCgain->GetDeDxHisto()->Projection(0);
+        his1D = his2D->ProjectionY();
         TF1 gausFunc("gausFunc","gaus");
         his1D->Fit(&gausFunc, "QN");
         meanMIPvsSector(i+18) = gausFunc.GetParameter(1);
         sector(i+18)=i+18;
-        delete his1D;
+        //removedtotest// delete his1D;
     }
+     //removedtotest// delete his2D;
     //
     printf("Gain QA report\n");
     printf("MIP mean\t%f\n",meanMIP);
     printf("MIP resolution\t%f\n",resolutionMIP);
     printf("MIPslopeA\t%f\n",attachSlopeA);
     printf("MIPslopeC\t%f\n",attachSlopeC);
-    //
+    // 
+    
     (*pcstream)<<"tpcQA"<<
         "MIPattachSlopeC="<<attachSlopeC<<
         "MIPattachSlopeA="<<attachSlopeA<<

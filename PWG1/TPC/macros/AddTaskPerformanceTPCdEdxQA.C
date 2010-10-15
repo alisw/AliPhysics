@@ -120,7 +120,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   pCompTPC0->SetAliRecInfoCuts(pRecInfoCutsTPC);
   pCompTPC0->SetAliMCInfoCuts(pMCInfoCuts);
   pCompTPC0->SetUseTrackVertex(kFALSE);
-
+  pCompTPC0->SetUseHLT(kFALSE);
   //
   // dEdx
   //
@@ -152,7 +152,11 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   // Create containers for output
   //
   AliAnalysisDataContainer *coutput_tpc = mgr->CreateContainer("TPCQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TPC_%s", mgr->GetCommonFileName(), task->GetName()));
+
+  AliAnalysisDataContainer *coutput2_tpc = mgr->CreateContainer("TPCQASummary", TTree::Class(), AliAnalysisManager::kOutputContainer, "SummaryTPCQA.root"); 
+
   mgr->ConnectOutput(task, 1, coutput_tpc);
+  mgr->ConnectOutput(task, 2, coutput2_tpc);
 
 return task;  
 }

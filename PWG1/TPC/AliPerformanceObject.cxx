@@ -18,7 +18,7 @@
 // comparison of reconstructed and MC particle tracks. 
 //
 // Author: J.Otwinowski 14/04/2008 
-// Changes by M.Knichel 24/09/2010
+// Changes by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 #include <iostream>
@@ -44,6 +44,7 @@ ClassImp(AliPerformanceObject)
 AliPerformanceObject::AliPerformanceObject():
   TNamed("AliPerformanceObject","AliPerformanceObject"),
   fAnalysisMode(-1),
+  fRunNumber(-1),
   fHptGenerator(kFALSE),
   fTriggerClass(0),
   fUseTrackVertex(kFALSE),
@@ -53,9 +54,10 @@ AliPerformanceObject::AliPerformanceObject():
 }
 
 //_____________________________________________________________________________
-AliPerformanceObject::AliPerformanceObject(const char* name, const char* title):
+AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, Int_t run):
   TNamed(name,title),
   fAnalysisMode(-1),
+  fRunNumber(run),
   fHptGenerator(kFALSE),
   fTriggerClass(0),
   fUseTrackVertex(kFALSE),

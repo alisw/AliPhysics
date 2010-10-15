@@ -8,7 +8,7 @@
 // a data member of AliPerformanceTPC.
 //
 // Author: J.Otwinowski 04/02/2008 
-// Changes by M.Knichel 24/09/2010
+// Changes by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 /*
@@ -41,6 +41,11 @@
 #include "TAxis.h"
 #include "TPostScript.h"
 #include "TString.h"
+#include "TUUID.h"
+#include "TTree.h"
+#include "TChain.h"
+#include "AliTPCPerformanceSummary.h"
+#include "TSystem.h"
 
 #include "AliPerformanceTPC.h" 
 #include "AliESDEvent.h" 
@@ -70,6 +75,7 @@ Bool_t AliPerformanceTPC::fgMergeTHnSparse = kFALSE;
 
 
 //_____________________________________________________________________________
+/*
 AliPerformanceTPC::AliPerformanceTPC():
   AliPerformanceObject("AliPerformanceTPC"),
   fTPCClustHisto(0),
@@ -89,11 +95,11 @@ AliPerformanceTPC::AliPerformanceTPC():
 {
   Init();
 }
-
+*/
 
 //_____________________________________________________________________________
-AliPerformanceTPC::AliPerformanceTPC(Char_t* name="AliPerformanceTPC", Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE):
-  AliPerformanceObject(name,title),
+AliPerformanceTPC::AliPerformanceTPC(Char_t* name, Char_t* title,Int_t analysisMode,Bool_t hptGenerator, Int_t run):
+  AliPerformanceObject(name,title,run),
   fTPCClustHisto(0),
   fTPCEventHisto(0),
   fTPCTrackHisto(0),
@@ -160,19 +166,22 @@ void AliPerformanceTPC::Init()
     ptMin = 0.; ptMax = 100.; 
   }
   */
-  // 
- 
-  // 
-  //padRow:phi:TPCSide
-  Int_t binsTPCClustHisto[3] =   {160,  180,  2 };
-  Double_t minTPCClustHisto[3] = {0.,   0.,   0.};
-  Double_t maxTPCClustHisto[3] = {160., 2.*TMath::Pi(), 2.};
+  //
 
-  fTPCClustHisto = new THnSparseF("fTPCClustHisto","padRow:phi:TPCSide",3,binsTPCClustHisto,minTPCClustHisto,maxTPCClustHisto);
+  //
+  //padRow:phi:TPCSide:pad:detector
+  Int_t binsTPCClustHisto[5] =   {160,  180,  2, 256, 512};
+  Double_t minTPCClustHisto[5] = {0.,   0.,   0., -128, 0};
+  Double_t maxTPCClustHisto[5] = {160., 2.*TMath::Pi(), 2., 128, 512};
+
+  fTPCClustHisto = new THnSparseF("fTPCClustHisto","padRow:phi:TPCSide:pad:detector",5,binsTPCClustHisto,minTPCClustHisto,maxTPCClustHisto);
   fTPCClustHisto->GetAxis(0)->SetTitle("padRow");
   fTPCClustHisto->GetAxis(1)->SetTitle("phi (rad)");
   fTPCClustHisto->GetAxis(2)->SetTitle("TPCSide");
+  fTPCClustHisto->GetAxis(3)->SetTitle("pad");
+  fTPCClustHisto->GetAxis(4)->SetTitle("detector");
   //fTPCClustHisto->Sumw2();
+  
   Int_t maxMult;
   if (fHighMultiplicity) { maxMult = 4001; } else { maxMult = 151; }
   // Xv:Yv:Zv:mult:multP:multN:vertStatus
@@ -219,10 +228,12 @@ void AliPerformanceTPC::Init()
   //fTPCTrackHisto->Sumw2();
 
   // Init cuts 
-  if(!fCutsMC) 
+  if(!fCutsMC) {
     AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-  if(!fCutsRC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
+  }
+  if(!fCutsRC) {
+    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object"); 
+  }
 
   // init folder
   fAnalysisFolder = CreateFolder("folderTPC","Analysis Resolution Folder");
@@ -483,10 +494,12 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
              //fTPCClustHisto1->Fill(vTPCClust1);
 
              //  
+             Float_t pad = cluster->GetPad();
+             Int_t detector = cluster->GetDetector();
 	     Double_t phi = TMath::ATan2(gclf[1],gclf[0]);
 	     if(phi < 0) phi += 2.*TMath::Pi();
 	    
-             Double_t vTPCClust[3] = { irow, phi, TPCside };
+             Double_t vTPCClust[5] = { irow, phi, TPCside, pad, detector };
              fTPCClustHisto->Fill(vTPCClust);
         }
       }
@@ -730,12 +743,20 @@ return count;
 
 
 //_____________________________________________________________________________
-TFolder* AliPerformanceTPC::CreateFolder(TString name, TString title) { 
+TFolder* AliPerformanceTPC::CreateFolder(TString name, TString title) 
+{ 
 // create folder for analysed histograms
 //
 TFolder *folder = 0;
   folder = new TFolder(name.Data(),title.Data());
 
   return folder;
+}
+
+//_____________________________________________________________________________
+TTree* AliPerformanceTPC::CreateSummary()
+{
+    // implementaion removed, switched back to use AliPerformanceSummary (now called in AliPerformanceTask)
+    return 0;
 }
 

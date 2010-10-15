@@ -6,7 +6,7 @@
 // reconstructed and MC particle tracks (TPC dE/dx).   
 // 
 // Author: J.Otwinowski 04/02/2008 
-// Changes by M.Knichel 24/09/2010
+// Changes by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 class TCanvas;
@@ -62,6 +62,10 @@ public :
   void  ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);      // not implemented
   void  ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack); // not implemented
 
+  
+  // produce summary (currently not used)
+  virtual TTree* CreateSummary();
+
   // Selection cuts
   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
   void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0)   {fCutsMC = cuts;} 
@@ -94,7 +98,7 @@ private:
   AliPerformanceDEdx(const AliPerformanceDEdx&); // not implemented
   AliPerformanceDEdx& operator=(const AliPerformanceDEdx&); // not implemented
 
-  ClassDef(AliPerformanceDEdx,2);
+  ClassDef(AliPerformanceDEdx,3);
 };
 
 #endif
