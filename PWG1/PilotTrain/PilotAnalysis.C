@@ -198,13 +198,12 @@ void AddAnalysisTasks()
 //  taskv0qa->SelectCollisionCandidates();
   }
   //
-  // TPC (Jacek Otwinowski)
+  // TPC (Jacek Otwinowski & Michael Knichel)
   //
   if (doTPC) {
-//    gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
-//    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
-    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE);   
+    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE);
+    tpcQA->SelectCollisionCandidates();
   }  
   //
   // SPD (A. Mastroserio)
