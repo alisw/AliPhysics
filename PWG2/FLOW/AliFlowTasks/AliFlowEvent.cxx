@@ -26,6 +26,7 @@
 #include "AliMCParticle.h"
 #include "AliCFManager.h"
 #include "AliESDtrack.h"
+#include "AliESDPmdTrack.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliGenCocktailEventHeader.h"
@@ -567,9 +568,9 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 	pTrack->SetPhi(phiFMD);
 	pTrack->SetWeight(weightFMD);
 	//marking the particles used for the reference particle (RP) selection:
-	pTrack->SetForRPSelection(kTRUE);
-	pTrack->SetSource(AliFlowTrack::kFromFMD);
+	pTrack->TagRP();
 	fNumberOfRPs++;
+	pTrack->SetSource(AliFlowTrack::kFromFMD);
 
 	//Add the track to the flowevent
 	AddTrack(pTrack);
@@ -635,4 +636,113 @@ AliFlowEvent::AliFlowEvent( AliVEvent* event,
     AddTrack(pTrack);
   }//end of while (i < numberOfTracks)
 }
+
+//-------------------------------------------------------------------//
+//---- Including PMD tracks as RP --------------------------//
+
+AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
+			    const AliESDPmdTrack *pmdtracks,
+			    const AliCFManager* poiCFManager ):
+  AliFlowEventSimple(20)
+{
+  Float_t GetPmdEta(Float_t xPos, Float_t yPos, Float_t zPos);
+  Float_t GetPmdPhi(Float_t xPos, Float_t yPos);
+  //Select the particles of interest from the ESD
+  Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
+  
+  //loop over tracks
+  for (Int_t itrkN=0; itrkN<iNumberOfInputTracks; itrkN++)
+    {
+      AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
+      //check if pParticle passes the cuts
+      Bool_t poiOK = kTRUE;
+      if (poiCFManager)
+	{
+	  poiOK = ( poiCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+		    poiCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle));
+	}
+      if (!poiOK) continue;
+      
+      //make new AliFLowTrack
+      AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
+      
+      //marking the particles used for the particle of interest (POI) selection:
+      if(poiOK && poiCFManager)
+	{
+	  pTrack->SetForPOISelection(kTRUE);
+	  pTrack->SetSource(AliFlowTrack::kFromESD);
+	}
+      
+      AddTrack(pTrack);
+    }//end of while (itrkN < iNumberOfInputTracks)
+  
+  //Select the reference particles from the PMD tracks
+  Int_t npmdcl = anInput->GetNumberOfPmdTracks();
+  printf("======There are %d PMD tracks in this event\n-------",npmdcl);
+  //loop over clusters 
+  for(Int_t iclust=0; iclust < npmdcl; iclust++){
+    //AliESDPmdTrack *pmdtr = anInput->GetPmdTrack(iclust);
+    pmdtracks = anInput->GetPmdTrack(iclust);
+    Int_t   det   = pmdtracks->GetDetector();
+    //Int_t   smn   = pmdtracks->GetSmn();
+    Float_t clsX  = pmdtracks->GetClusterX();
+    Float_t clsY  = pmdtracks->GetClusterY();
+    Float_t clsZ  = pmdtracks->GetClusterZ();
+    Float_t ncell = pmdtracks->GetClusterCells();
+    Float_t adc   = pmdtracks->GetClusterADC();
+    //Float_t pid   = pmdtracks->GetClusterPID();
+    Float_t etacls = GetPmdEta(clsX,clsY,clsZ);
+    Float_t phicls = GetPmdPhi(clsX,clsY);
+    //make new AliFLowTrackSimple
+    AliFlowTrack* pTrack = new AliFlowTrack();
+    //if(det == 0){ //selecting preshower plane only
+    if(det == 0 && adc > 270 && ncell > 1){ //selecting preshower plane only
+      //pTrack->SetPt(adc);//cluster adc
+      pTrack->SetPt(0.0);
+      pTrack->SetEta(etacls);
+      pTrack->SetPhi(phicls);
+      //marking the particles used for the reference particle (RP) selection:
+      fNumberOfRPs++;
+      pTrack->SetForRPSelection(kTRUE);
+      pTrack->SetSource(AliFlowTrack::kFromPMD);
+      //Add the track to the flowevent
+      AddTrack(pTrack);
+    }//if det
+  }
+}
+//----------------------------------------------------------------------------//
+Float_t GetPmdEta(Float_t xPos, Float_t yPos, Float_t zPos)
+{
+  Float_t rpxpy, theta, eta;
+  rpxpy  = TMath::Sqrt(xPos*xPos + yPos*yPos);
+  theta  = TMath::ATan2(rpxpy,zPos);
+  eta    = -TMath::Log(TMath::Tan(0.5*theta));
+  return eta;
+}
+//--------------------------------------------------------------------------//
+Float_t GetPmdPhi(Float_t xPos, Float_t yPos)
+{
+  Float_t pybypx, phi = 0., phi1;
+  if(xPos==0)
+    {
+      if(yPos>0) phi = 90.;
+      if(yPos<0) phi = 270.;
+    }
+  if(xPos != 0)
+    {
+      pybypx = yPos/xPos;
+      if(pybypx < 0) pybypx = - pybypx;
+      phi1 = TMath::ATan(pybypx)*180./3.14159;
+      
+      if(xPos > 0 && yPos > 0) phi = phi1;        // 1st Quadrant
+      if(xPos < 0 && yPos > 0) phi = 180 - phi1;  // 2nd Quadrant
+      if(xPos < 0 && yPos < 0) phi = 180 + phi1;  // 3rd Quadrant
+      if(xPos > 0 && yPos < 0) phi = 360 - phi1;  // 4th Quadrant
+      
+    }
+  phi = phi*3.14159/180.;
+  return   phi;
+}
+//---------------------------------------------------------------//
+
 

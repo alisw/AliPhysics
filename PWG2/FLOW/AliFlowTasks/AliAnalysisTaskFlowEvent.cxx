@@ -246,6 +246,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliESDEvent* myESD = dynamic_cast<AliESDEvent*>(InputEvent()); // from TaskSE
   AliAODEvent* myAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
   AliMultiplicity* myTracklets = NULL;
+  AliESDPmdTrack* pmdtracks = NULL;//pmd      
   TH2F* histFMD = NULL;
 
   if(GetNinputs()==2) {                   
@@ -278,7 +279,8 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     fCutsPOI->SetMCevent( MCEvent() );
     flowEvent = new AliFlowEvent( InputEvent(), fCutsRP, fCutsPOI );
     if (myESD)
-      flowEvent->SetReferenceMultiplicity(AliESDtrackCuts::GetReferenceMultiplicity(myESD,kTRUE));
+      flowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity());
+    if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
   }
 
   // Make the FlowEvent for MC input
@@ -350,6 +352,11 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     else if (fRPType == "FMD"){
       flowEvent = new AliFlowEvent(myESD,histFMD,fCFManager2);
     }
+    //pmd
+    else if (fRPType == "PMD"){
+      flowEvent = new AliFlowEvent(myESD,pmdtracks,fCFManager2);
+    }
+    //pmd
     
     // if monte carlo event get reaction plane from monte carlo (depends on generator)
     if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);

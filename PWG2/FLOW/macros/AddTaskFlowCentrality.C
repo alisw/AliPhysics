@@ -74,6 +74,7 @@ const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centr
 const TString rptype = "Global";
 //const TString rptype = "Tracklet";
 //const TString rptype = "FMD";
+//const TString rptype = "PMD";
 
 //KINEMATICS (on generated and reconstructed tracks)
 Bool_t UseKineforRP =  kFALSE;
