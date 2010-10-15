@@ -106,7 +106,7 @@ fAliceBeamType(tag.fAliceBeamType),
 fAliceCalibrationVersion(tag.fAliceCalibrationVersion),
 fAliceDataType(tag.fAliceDataType),
 //fNumEvents(tag.fNumEvents),
-fNumFiles(tag.fNumFiles),
+fNumFiles(0),
 fBeamTriggers(tag.fBeamTriggers),
 fCollisionTriggers(tag.fCollisionTriggers),
 fEmptyTriggers(tag.fEmptyTriggers),
@@ -141,8 +141,8 @@ fEventSpecies(NULL)
     fEventSpecies = new Bool_t[fESLength] ; 
     memcpy(fEventSpecies, tag.fEventSpecies, fESLength*sizeof(Bool_t)) ;
   }
-  for (int ifl=0; ifl<fNumFiles; ifl++) {
-    AddFileTag(tag.GetFileTag(ifl));
+  for (int ifl=0; ifl<tag.fNumFiles; ifl++) {
+    AddFileTag(new AliFileTag(*tag.GetFileTag(ifl)));
   }
     
 
@@ -205,7 +205,7 @@ AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
       memcpy(fEventSpecies, tag.fEventSpecies, fESLength*sizeof(Bool_t)) ;
     }
     for (int ifl=0; ifl<fNumFiles; ifl++) {
-      AddFileTag(tag.GetFileTag(ifl));
+      AddFileTag(new AliFileTag(*tag.GetFileTag(ifl)));
     }
 //     for (int ifile=0; ifile<tag.GetFileTags()->GetEntries(); ifile++)
 //       AddFileTag(*((AliFileTag *) tag.GetFileTags()->At(ifile)));
@@ -330,8 +330,9 @@ void AliRunTag::AddEventTag(const AliEventTag & EvTag) {
 
 void AliRunTag::AddFileTag(AliFileTag *t) {
   //Adds an entry for each file tag
+  if (fNumFiles == fFileTags.GetSize()-1) fFileTags.Expand(fFileTags.GetSize()*2);
   //  new(fFileTags[fNumFiles++]) AliFileTag(t);
-  fFileTags.AddAtAndExpand(t, fNumFiles++);
+  fFileTags[fNumFiles++] = t;
 }
 
 //___________________________________________________________________________
