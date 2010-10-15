@@ -456,7 +456,7 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
   
   if(nTracksInCone > 0) {
     TH2F *hd = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sNTracksInCone%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-    hd->Fill(ptTrig, nTracksInCone);
+    if(hd)hd->Fill(ptTrig, nTracksInCone);
   }
   
 }

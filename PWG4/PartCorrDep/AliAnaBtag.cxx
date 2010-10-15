@@ -424,46 +424,49 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
 
 
 	/////////////////////////MC stuff////////////////////////////////////////////////
+  Int_t pdg = 0;
 	if(IsDataMC()){
 	  stack=GetMCStack();
-	  if(!stack) printf("AliAnaBtag::MakeAnalysisFillHistograms() - Crap, no stack: \n");
-
-	  //Is it really an electron?
-	  TParticle *partX = stack->Particle(TMath::Abs(track->GetLabel()));
-	  int pdg = 0;
-	  pdg = partX->GetPdgCode();
-	  fhSpecies->Fill(TMath::Abs(pdg));
-	  if(TMath::Abs(pdg)==11){ //Check MC electrons
-	    if(emcEle)
-	      fhEmcalMCE->Fill(track->Pt());
-	    if(trkEle)
-	      fhTRDMCE->Fill(track->Pt());
-	    if(tpcEle)
-	      fhTPCMCE->Fill(track->Pt());
-	  }else{ //Fake histos!
-	    if(emcEle)
-	      fhEmcalMCEFake->Fill(track->Pt());
-	    if(trkEle)
-	      fhTRDMCEFake->Fill(track->Pt());
-	    if(tpcEle)
-	      fhTPCMCEFake->Fill(track->Pt());
-	  }
-	  if(TMath::Abs(pdg)==211){ //Check MC pions
-	    if(emcEle)
-	      fhEmcalMCP->Fill(track->Pt());
-	    if(trkEle)
-	      fhTRDMCP->Fill(track->Pt());
-	    if(tpcEle)
-	      fhTPCMCP->Fill(track->Pt());
-	  }
-	  if(TMath::Abs(pdg)==321){ //Check MC Kaons
-	    if(emcEle)
-	      fhEmcalMCK->Fill(track->Pt());
-	    if(trkEle)
-	      fhTRDMCK->Fill(track->Pt());
-	    if(tpcEle)
-	      fhTPCMCK->Fill(track->Pt());
-	  }
+	  if(!stack) {printf("AliAnaBtag::MakeAnalysisFillHistograms() - Crap, no stack: \n");
+    }
+    else{
+      //Is it really an electron?
+      TParticle *partX = stack->Particle(TMath::Abs(track->GetLabel()));
+      pdg = partX->GetPdgCode();
+      fhSpecies->Fill(TMath::Abs(pdg));
+      if(TMath::Abs(pdg)==11){ //Check MC electrons
+        if(emcEle)
+          fhEmcalMCE->Fill(track->Pt());
+        if(trkEle)
+          fhTRDMCE->Fill(track->Pt());
+        if(tpcEle)
+          fhTPCMCE->Fill(track->Pt());
+      }else{ //Fake histos!
+        if(emcEle)
+          fhEmcalMCEFake->Fill(track->Pt());
+        if(trkEle)
+          fhTRDMCEFake->Fill(track->Pt());
+        if(tpcEle)
+          fhTPCMCEFake->Fill(track->Pt());
+      }
+      if(TMath::Abs(pdg)==211){ //Check MC pions
+        if(emcEle)
+          fhEmcalMCP->Fill(track->Pt());
+        if(trkEle)
+          fhTRDMCP->Fill(track->Pt());
+        if(tpcEle)
+          fhTPCMCP->Fill(track->Pt());
+      }
+      if(TMath::Abs(pdg)==321){ //Check MC Kaons
+        if(emcEle)
+          fhEmcalMCK->Fill(track->Pt());
+        if(trkEle)
+          fhTRDMCK->Fill(track->Pt());
+        if(tpcEle)
+          fhTPCMCK->Fill(track->Pt());
+      }
+    }
+    
 	  //Take care of where it came from (parent bit)
 	  tr.SetTag(GetMCAnalysisUtils()->CheckOrigin(tr.GetLabel(),GetReader(),tr.GetInputFileIndex())); //Gets a tag bit which contains info about super grandfather particle. Use (tag&(1<<11)), 11 for direct b, and 9 for B->C
 
@@ -873,28 +876,25 @@ Bool_t AliAnaBtag::CheckIfBjet(const AliAODTrack* track)
 AliAODMCParticle* AliAnaBtag::GetMCParticle(Int_t ipart) 
 {
   //Get the MC particle at position ipart
-
+  
   AliAODMCParticle* aodprimary = 0x0;
   TClonesArray * mcparticles0 = 0x0;
-  TClonesArray * mcparticles1 = 0x0;
-
+  
   if(GetReader()->ReadAODMCParticles()){
     //Get the list of MC particles                                                                                                                           
     mcparticles0 = GetReader()->GetAODMCParticles(0);
     if(!mcparticles0 && GetDebug() > 0) {
       printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
     }
-
-    Int_t npart0 = mcparticles0->GetEntriesFast();
-    Int_t npart1 = 0;
-    if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
-    if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
-    else aodprimary = (AliAODMCParticle*)mcparticles1->At(ipart-npart0);
-    if(!aodprimary) {
-      printf("AliAnaBtag::GetMCParticle() *** no primary ***:  label %d \n", ipart);
-      return 0x0;
+    else{
+      Int_t npart0 = mcparticles0->GetEntriesFast();
+      if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
+      
+      if(!aodprimary) {
+        printf("AliAnaBtag::GetMCParticle() *** no primary ***:  label %d \n", ipart);
+        return 0x0;
+      }
     }
-
   } else {
     printf("AliAnaBtag::GetMCParticle() - Asked for AliAODMCParticle but we have a stack reader.\n");
   }

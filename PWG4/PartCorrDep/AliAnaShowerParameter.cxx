@@ -895,7 +895,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
     fhELambdaCluster ->Fill(ecluster,lambdaMainCluster,lambdaSecondCluster);
     fhELambdaCellCluster ->Fill(ecluster,lambdaMainCluster,iNumCell);
     fhNCellCluster->Fill(ecluster,iNumCell);
-
+    
     //In the case of an event with several clusters, calculate DeltaEta and DeltaPhi for the cluster pairs.
     for (Int_t jaod=iaod+1;jaod<naod;jaod++){
       AliAODPWG4Particle* phSecond = (AliAODPWG4Particle*) (GetOutputAODBranch()->At(jaod));	
@@ -903,7 +903,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
       fhDeltaPhiClusters->Fill(phicluster-(phSecond->Phi()));
       fhDeltaEtaClusters->Fill(etacluster-(phSecond->Eta()));  
     }
-
+    
     //Fill the lambda distribution for identified particles
     if(ph->GetPdg() ==  AliCaloPID::kPhoton){
       fhDispersionPhoton->Fill(ptcluster,dispcluster);
@@ -929,6 +929,9 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
     
     //Play with the MC data if available
     if(IsDataMC()){
+      if(GetReader()->ReadStack() && !stack) return;
+      if(GetReader()->ReadAODMCParticles() && !mcparticles0) return;
+
       //Get the tag from AliMCAnalysisUtils for PID
       Int_t tag =ph->GetTag();
       if ( ph->GetLabel() < 0){
@@ -952,7 +955,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         ePhot = pCurrent->Energy(); 	  
         fhPhotTrueE->Fill(ePhot,ecluster,lambdaMainCluster);
         fhRatioEPhoton->Fill(ecluster/ePhot);
-	fhMCPdg->Fill(ecluster,22);
+        fhMCPdg->Fill(ecluster,22);
         if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCPhoton: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",ePhot,ecluster,lambdaMainCluster);
       }//kMCPhoton
@@ -983,7 +986,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         //Compare the cluster energy and true energy
         fhPi0TrueE->Fill(ePi0,ecluster,lambdaMainCluster);
         fhRatioEPi0->Fill(ecluster/ePi0);
-	fhMCPdg->Fill(ecluster,111);
+        fhMCPdg->Fill(ecluster,111);
         if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCPi0: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",ePi0,ecluster,lambdaMainCluster);
       }
@@ -1008,7 +1011,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
           fhPionTrueE->Fill(ePion,ecluster,lambdaMainCluster);
           fhRatioEPion->Fill(ecluster/ePion);
         }
-	fhMCPdg->Fill(ecluster,211);
+        fhMCPdg->Fill(ecluster,211);
         if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCPion: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",ePion,ecluster,lambdaMainCluster);
       }	
@@ -1033,7 +1036,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
           fhProtonTrueE->Fill(eProton,ecluster,lambdaMainCluster);
           fhRatioEProton->Fill(ecluster/eProton);
         }
-	fhMCPdg->Fill(ecluster,2212);
+        fhMCPdg->Fill(ecluster,2212);
         if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCProton: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",eProton,ecluster,lambdaMainCluster);
       } 
@@ -1058,7 +1061,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
           fhAntiProtonTrueE->Fill(eAntiProton,ecluster,lambdaMainCluster);
           fhRatioEAntiProton->Fill(ecluster/eAntiProton);
         }	
-	fhMCPdg->Fill(ecluster,-2212);
+        fhMCPdg->Fill(ecluster,-2212);
         if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCAntiProton: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",eAntiProton,ecluster,lambdaMainCluster);
       }
@@ -1083,7 +1086,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
           fhNeutronTrueE->Fill(eNeutron,ecluster,lambdaMainCluster);
           fhRatioENeutron->Fill(ecluster/eNeutron);
         }
-	fhMCPdg->Fill(ecluster,2112);
+        fhMCPdg->Fill(ecluster,2112);
 	  	  if(GetDebug() > 3) 
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - MC Cluster identified as kMCNeutron: True E: %3.2f, Reco E: %3.2f, Lambda0:  %3.2f\n",eNeutron,ecluster,lambdaMainCluster);
       }
@@ -1101,20 +1104,20 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
         continue;
       }
-
+      
       //Calculate Pi0 decay angles
       if(stack && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
-	for(Int_t i=0 ; i<stack->GetNprimary(); i++){
-	  TParticle * prim = stack->Particle(i) ;
- 	  if(prim->GetPdgCode() == 111){
-	    TLorentzVector mom1 ;
-	    (stack->Particle((prim->GetFirstDaughter())))->Momentum(mom1);
-	    TLorentzVector mom2 ;
-	    (stack->Particle((prim->GetLastDaughter())))->Momentum(mom2);
-	    Float_t fDecayAngle = mom1.Angle(mom2.Vect());
-	    fhDecayAngle->Fill(ecluster,fDecayAngle);
-	  }
-	}
+        for(Int_t i=0 ; i<stack->GetNprimary(); i++){
+          TParticle * prim = stack->Particle(i) ;
+          if(prim->GetPdgCode() == 111){
+            TLorentzVector mom1 ;
+            (stack->Particle((prim->GetFirstDaughter())))->Momentum(mom1);
+            TLorentzVector mom2 ;
+            (stack->Particle((prim->GetLastDaughter())))->Momentum(mom2);
+            Float_t fDecayAngle = mom1.Angle(mom2.Vect());
+            fhDecayAngle->Fill(ecluster,fDecayAngle);
+          }
+        }
       }
       
       
@@ -1147,15 +1150,15 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
           aodprimary = (AliAODMCParticle*) mcparticles0->At(label);
           
         }
-//        else {//Second input
-//          if(!mcparticles1) continue;
-//          if(label >=  mcparticles1->GetEntriesFast()) {
-//            if(GetDebug() > 2)  printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n",label, mcparticles1->GetEntriesFast());
-//            continue ;
-//          }
-//          //Get the particle
-//          aodprimary = (AliAODMCParticle*) mcparticles1->At(label); 
-//        }//second input
+        //        else {//Second input
+        //          if(!mcparticles1) continue;
+        //          if(label >=  mcparticles1->GetEntriesFast()) {
+        //            if(GetDebug() > 2)  printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n",label, mcparticles1->GetEntriesFast());
+        //            continue ;
+        //          }
+        //          //Get the particle
+        //          aodprimary = (AliAODMCParticle*) mcparticles1->At(label); 
+        //        }//second input
         
         if(!aodprimary){
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
