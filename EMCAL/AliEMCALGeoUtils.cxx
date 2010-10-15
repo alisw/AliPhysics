@@ -194,12 +194,12 @@ AliEMCALGeoUtils & AliEMCALGeoUtils::operator = (const AliEMCALGeoUtils  & /*rva
 AliEMCALGeoUtils::~AliEMCALGeoUtils(void)
 {
   // dtor
-  for(Int_t smod = 0 ; smod < fEMCGeometry->GetNumberOfSuperModules(); smod++){
-    if(fkSModuleMatrix[smod])
-       delete fkSModuleMatrix[smod] ;
-      fkSModuleMatrix[smod]=0 ;
-  }
-  if(fEMCGeometry){
+  if (fEMCGeometry){ 
+    for(Int_t smod = 0 ; smod < fEMCGeometry->GetNumberOfSuperModules(); smod++){
+      if(fkSModuleMatrix[smod])
+        delete fkSModuleMatrix[smod] ;
+        fkSModuleMatrix[smod]=0 ;
+    }
     delete fEMCGeometry; fEMCGeometry = 0 ;
   }
 }

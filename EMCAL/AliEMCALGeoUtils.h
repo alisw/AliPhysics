@@ -21,6 +21,7 @@ class TParticle ;
 
 // --- AliRoot header files ---
 #include "AliEMCALEMCGeometry.h"
+#include "AliEMCALGeoParams.h"
 class AliEMCALShishKebabTrd1Module;
 #include "AliLog.h"
 
@@ -216,7 +217,7 @@ protected:
 
   Int_t    fFastOR2DMap[48][64];	 // FastOR 2D Map over full EMCal
 	
-  TGeoHMatrix* fkSModuleMatrix[12] ; //Orientations of EMCAL super modules
+  TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; //Orientations of EMCAL super modules
 
 	
   ClassDef(AliEMCALGeoUtils,1)       // EMCAL geometry class 

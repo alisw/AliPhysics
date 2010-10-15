@@ -226,14 +226,15 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 {
   
   // Get needing module parameters from EMCAL geometry
-  TString sn(fGeometry->GetName()); // 2-Feb-05
-  sn.ToUpper();
+  
   if(!fGeometry) {
     Warning("GetParameters()"," No geometry ");
     return kFALSE; 
-  }
+  }  
   
-
+  TString sn(fGeometry->GetName()); // 2-Feb-05
+  sn.ToUpper();
+  
   fga        = (Double_t)fGeometry->GetEtaModuleSize();
   fgb        = (Double_t)fGeometry->GetLongModuleSize();
   fgangle    = Double_t(fGeometry->GetTrd1Angle())*TMath::DegToRad();

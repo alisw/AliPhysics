@@ -91,6 +91,8 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry()
   // must be kept public for root persistency purposes, 
   // but should never be called by the outside world    
   fParSM[0]=0; fParSM[1]=0; fParSM[2]=0;
+  fEnvelop[0] = 0; fEnvelop[1] = 0; fEnvelop[2] = 0;
+  
   AliDebug(2, "AliEMCALEMCGeometry : default ctor ");
 }
 //______________________________________________________________________
@@ -195,6 +197,10 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
   fParSM[0]=geom.fParSM[0]; 
   fParSM[1]=geom.fParSM[1]; 
   fParSM[2]=geom.fParSM[2];
+  fEnvelop[0] = geom.fEnvelop[0]; 
+  fEnvelop[1] = geom.fEnvelop[1]; 
+  fEnvelop[2] = geom.fEnvelop[2];
+
 }
 
 //______________________________________________________________________
