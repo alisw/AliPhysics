@@ -153,7 +153,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //
   AliAnalysisDataContainer *coutput_tpc = mgr->CreateContainer("TPCQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TPC_%s", mgr->GetCommonFileName(), task->GetName()));
 
-  AliAnalysisDataContainer *coutput2_tpc = mgr->CreateContainer("TPCQASummary", TTree::Class(), AliAnalysisManager::kOutputContainer, "SummaryTPCQA.root"); 
+  AliAnalysisDataContainer *coutput2_tpc = mgr->CreateContainer("TPCQASummary", TTree::Class(), AliAnalysisManager::kParamContainer, "trending.root:SummaryTPCQA"); 
 
   mgr->ConnectOutput(task, 1, coutput_tpc);
   mgr->ConnectOutput(task, 2, coutput2_tpc);
