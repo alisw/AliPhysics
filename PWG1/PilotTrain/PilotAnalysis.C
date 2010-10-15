@@ -52,7 +52,7 @@ TString     alien_outdir       = "$1/QA$2";
                // Input collection (production mode)
 TString     data_collection    = "$1/qa1.xml";
 TString     mergeExcludes      = ""; // Files to be excluded for merging
-TString     terminateFiles     = ""; // Files produced during Terminate
+TString     terminateFiles     = "trending.root"; // Files produced during Terminate
 
 Bool_t useProductionMode       = kTRUE;
 Bool_t useMergeViaJDL          = kTRUE;
