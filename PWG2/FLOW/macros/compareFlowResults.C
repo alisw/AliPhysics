@@ -1,11 +1,21 @@
-// add comment
-//
-// RF = Reference Flow
-// RP = Reference Particles
-// POI = Particles Of Interest
+// Macro compareFlowResults.C is used to show a set of predefined plots with results 
+// of flow analysis. It's usage is very simple: If you have output root file of flow
+// analysis <outputFileName> in directory <dir>, simply copy the macro in <dir> and
+// execute it. Remarks: 
+//  1.) Make sure that the 'TString analysisType' bellow is the same as the one which 
+//      was used in the analysis which have produced the <outputFileName>;
+//  2.) Abbreviations used here are: RF = Reference Flow, RP = Reference Particles,
+//      POI = Particles Of Interest;
+//  3.) To modify cosmetics of each plot change default settings in function which 
+//      have produced that plot. Example: If you want to modify marker colors in 
+//      the plot for reference flow, modify array Int_t methodMarkerColor[nMethods] 
+//      in the function PlotReferenceFlow().
+
+// Set name of the output file of flow analysis to be accessed:
+TString outputFileName = "AnalysisResults.root";
 
 // Set here which plots will be shown by default:
-// Results:
+//  Results:
 Bool_t plotReferenceFlow = kTRUE; // reference flow 
 Bool_t plotIntFlowPOI = kTRUE; // integrated flow of POIs
 Bool_t plotDiffFlowPtPOI = kTRUE; // differential flow v(pt) for POIs
@@ -13,7 +23,7 @@ Bool_t plotDiffFlowEtaPOI = kTRUE; // differential flow v(eta) for POIs
 Bool_t plotIntFlowRP = kTRUE; // integrated flow of RPs
 Bool_t plotDiffFlowPtRP = kTRUE; // differential flow v(pt) for RPs
 Bool_t plotDiffFlowEtaRP = kTRUE; // differential flow v(eta) for RPs
-// Results relative to MC:
+//  Results relative to MC:
 Bool_t plotReferenceFlowRelativeToMC = kTRUE; // plot (v{MC}-v{method})/v{MC} for reference flow
 Bool_t plotIntFlowRelativeToMCPOI = kTRUE; // plot (v{MC}-v{method})/v{MC} for integrated flow of POIs   
 Bool_t plotDiffFlowPtRelativeToMCPOI = kTRUE; // plot (v{MC}-v{method})/v{MC} as a function of pt for POIs 
@@ -24,8 +34,6 @@ Bool_t plotDiffFlowEtaRelativeToMCRP = kTRUE; // plot (v{MC}-v{method})/v{MC} as
 // Set here if the legends will be shown on the plots:
 Bool_t showLegend = kTRUE; 
 Bool_t showLegendDiffFlow = kTRUE;
-// Set here if both the error mesh and markers will be shown for specified method in the plots for differential flow:
-Bool_t showBothErrorMeshAndMarkers = kFALSE; 
 // Some quick settings:
 Bool_t showOnlyReferenceFlow = kFALSE;
 Bool_t showResultsRelativeToMC = kFALSE;
@@ -35,18 +43,24 @@ Bool_t showOnlyPlotsForRPs = kFALSE;
 Bool_t rebinInPt = kTRUE;
 const Int_t nPtIntervals = 3;
 Double_t ptInterval[nPtIntervals+1] = {0.,2.,5.,10.}; // in GeV
-Int_t nMergedBins[nPtIntervals] = {1,5,10}; 
+Int_t nMergedBins[nPtIntervals] = {1,5,10}; // for instance in 2nd pt interval (2-5 GeV) 5 pt bins will be merged into 1
+// Set here if you want to show error mesh:
+Bool_t showErrorMesh = kTRUE;
+Bool_t showErrorMeshDiffFlow = kTRUE;
+// Set here if both the error mesh and markers will be shown for specified method in the plots for differential flow:
+Bool_t showBothErrorMeshAndMarkers = kFALSE; 
 
+// Do not touch this unless you are looking for a trouble:
 const Int_t nMethods = 12;
 TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL"};
 TList *list[nMethods] = {NULL}; // lists holding histograms for each flow analysis method
 
 enum libModes{mLocal,mLocalSource};
 
-//void newCompare(TString analysisType="",Int_t analysisMode=mLocalSource)
-void compareFlowResults(TString analysisType="",Int_t analysisMode=mLocal)
+//void compareFlowResults(TString analysisType="",Int_t analysisMode=mLocalSource)
+void compareFlowResults(TString analysisType="ESD",Int_t analysisMode=mLocal)
 {
- // 1. analysisType: "ESD", "AOD", "ESDMC0", "ESDMC1"; for Monte Carlo and 'on the fly' use simply "";
+ // 1. analysisType: "ESD", "AOD", "MC", "ESDMCkineESD", "ESDMCkineMC", "MK", for analysis 'on the fly' use simply "";
  // 2. analysisMode: if analysisMode = mLocal -> analyze data on your computer using aliroot
  //                  if analysisMode = mLocalSource -> analyze data on your computer using root + source files 
   
@@ -54,8 +68,7 @@ void compareFlowResults(TString analysisType="",Int_t analysisMode=mLocal)
  LoadLibrariesCFR(analysisMode); 
 
  // Access common output file:
- TString outputFileName = "AnalysisResults.root"; // name of the common output file
- TFile *outputFile = AccessOutputFile(outputFileName);
+ TFile *outputFile = AccessOutputFile(outputFileName); 
  
  // Access from common output file the TDirectoryFile's for each flow analysis method
  // and from them the lists holding histograms with final results:
@@ -63,7 +76,7 @@ void compareFlowResults(TString analysisType="",Int_t analysisMode=mLocal)
  
  // Global settings which will affect all plots:
  GlobalSettings();
-  
+   
  // Calling the functions to produce the final plots:
  if(plotReferenceFlow) PlotReferenceFlow();
  if(!showOnlyReferenceFlow)
@@ -418,7 +431,7 @@ void PlotDiffFlow(Int_t nMethods, TString *method, Int_t *methodMarkerStyle, Int
  StyleHistDiffFlow(ptEta.Data(),rpPoi.Data())->Draw();
  // Error mesh:  
  TGraph *errorMesh = GetErrorMeshDiffFlow(methodUsedToMakeErrorMesh.Data(),rpPoi.Data(),ptEta.Data()); 
- if(errorMesh) 
+ if(errorMesh && showErrorMeshDiffFlow) 
  {
   errorMesh->SetFillStyle(meshStyle);
   errorMesh->SetFillColor(meshColor);
@@ -807,7 +820,7 @@ void Plot(const Int_t nMethods,TString *method,Int_t *methodMarkerStyle,Int_t *m
   c->cd(1)->SetPad(0.0,0.0,0.75,1.0);
  } 
  StyleHist(title,nMethods,method,results,errors)->Draw();
- if(errorMesh)errorMesh->Draw("lfsame");
+ if(errorMesh && showErrorMesh){errorMesh->Draw("lfsame");}
  for(Int_t b=0;b<nMethods;b++)
  {
   if(ge[b])ge[b]->Draw("psame");
@@ -1332,12 +1345,12 @@ TFile* AccessOutputFile(TString outputFileName)
 void GetListsWithHistograms(TFile *outputFile, TString analysisType)
 {
  // Access from common output file the TDirectoryFile's for each flow analysis method
- // and from them the lists holding histograms with final results:
+ // and from them the TList's holding histograms with final results:
  
  TString fileName[nMethods]; 
  TDirectoryFile *dirFile[nMethods] = {NULL}; 
  TString listName[nMethods]; 
- Int_t fileCounter = 0;
+ Int_t failureCounter = 0;
  for(Int_t i=0;i<nMethods;i++)
  {
   // Form a file name for each method:
@@ -1348,28 +1361,28 @@ void GetListsWithHistograms(TFile *outputFile, TString analysisType)
   // Access this file:
   dirFile[i] = (TDirectoryFile*)outputFile->FindObjectAny(fileName[i].Data());
   // Form a list name for each method:
-  listName[i]+="cobj";
-  listName[i]+=method[i].Data();
-  // Access this list:
   if(dirFile[i])
   {
-   if(!(dirFile[i]->GetNkeys() == 0))
+   TList* listTemp = dirFile[i]->GetListOfKeys();
+   if(listTemp && listTemp->GetEntries() == 1)
    {
+    listName[i] = listTemp->At(0)->GetName(); // to be improved - implemented better (use dynamic_cast instead)
     dirFile[i]->GetObject(listName[i].Data(),list[i]);
    } else
      {
-      TString temp = listName[i].Data();
-      cout<<"WARNING: Couldn't access a list holding histograms for "<<temp.Remove(0,4).Data()<<" method !!!!"<<endl;     
-     } 
-   fileCounter++;
+      cout<<" WARNING: Accessing TList from TDirectoryFile failed for method "<<method[i].Data()<<" !!!!"<<endl;
+      cout<<"          Did you actually use "<<method[i].Data()<<" in the analysis?"<<endl;
+      cout<<endl;
+     }
   } else 
     {
-     cout<<"WARNING: Couldn't find a file "<<fileName[i].Data()<<".root !!!!"<<endl;
-    }
+     cout<<" WARNING: Couldn't find a TDirectoryFile "<<fileName[i].Data()<<".root !!!!"<<endl;
+     failureCounter++;
+    }   
  } // end of for(Int_t i=0;i<nMethods;i++) 
  
  // If no files were found most probably the 'TString analysisType' was specified wrongly:
- if(fileCounter == 0)
+ if(failureCounter == nMethods)
  {
   cout<<endl; 
   cout<<"Did you specify 'TString analysisType' correctly? Can be \"\", \"ESD\", \"AOD\", etc."<<endl;
@@ -1525,6 +1538,7 @@ void GlobalSettings()
  
  gROOT->SetStyle("Plain"); // default color is white instead of gray
  gStyle->SetOptStat(0); // remove stat. box from all histos
+ TGaxis::SetMaxDigits(4); // prefer exp notation for 5 and more significant digits
  
 } // end of void GlobalSettings()
 

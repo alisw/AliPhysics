@@ -1,14 +1,18 @@
-enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
+enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
 //mLocal: Analyze locally files in your computer using aliroot
 //mLocalPAR: Analyze locally files in your computer using root + PAR files
 //mPROOF: Analyze CAF files with PROOF
-
-//CENTRALITY DEFINITION
-const Int_t numberOfCentralityBins = 3;
-Int_t centralityArray[numberOfCentralityBins+1] = {0,4,6,100};
+//mGrid: Analyze files on Grid via AliEn plug-in and using precompiled FLOW libraries
+//       (Remark: When using this mode set also Bool_t bUseParFiles = kFALSE; in CreateAlienHandler.C)
+//mGridPAR: Analyze files on Grid via AliEn plug-in and using par files for FLOW package
+//          (Remark: when using this mode set also Bool_t bUseParFiles = kTRUE; in CreateAlienHandler.C)
+ 
+// CENTRALITY DEFINITION
+const Int_t numberOfCentralityBins = 4;
+Int_t centralityArray[numberOfCentralityBins+1] = {0,10,25,50,100}; // in terms of reference multiplicity
+TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
 // RUN SETTINGS
-
 // Flow analysis method can be:(set to kTRUE or kFALSE)
 Bool_t MCEP     = kTRUE;  // correlation with Monte Carlo reaction plane
 Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
@@ -21,22 +25,21 @@ Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (seco
 Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
 Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
 Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
-Bool_t NL       = kTRUE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
+Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
-// Analysis type can be ESD, AOD, MC, ESDMCkineESD, ESDMCkineMC
+// Analysis type can be ESD, AOD, MC, ESDMCkineESD, ESDMCkineMC, MK
 const TString type = "MK";
 
 // Boolean to fill/not fill the QA histograms
-Bool_t QA = kTRUE;   
+Bool_t QA = kFALSE;   
 
 // Boolean to use/not use weights for the Q vector
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
-
-void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 1, 
-Bool_t DATA = kFALSE, const Char_t* dataDir="LHC10d4", Int_t offset = 0)
+//void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 1, 
+//Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice3/ab/sim/LHC10d4", Int_t offset = 0)
 //              Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
 
 //void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
@@ -46,82 +49,86 @@ Bool_t DATA = kFALSE, const Char_t* dataDir="LHC10d4", Int_t offset = 0)
 		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC09d_000104792_p6", Int_t offset=0) //data 0.9 TeV
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG4/morsch/HIJING_CENT_4EV", Int_t offset=0) //hijing Pb Pb pilot
 
-//void runFlowTaskCentralityTrain(Int_t mode = mGRID, Bool_t DATA = kTRUE)
+void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kFALSE)
 {
+  // Time:
   TStopwatch timer;
   timer.Start();
-  
+  // Cross-check user settings before starting:
   CrossCheckUserSettings(DATA);
-
+  // Load needed libraries:
   LoadLibraries(mode);
-
-  if (mode == mGRID) {
-    // Create and configure the alien handler plugin
-    gROOT->LoadMacro("CreateAlienHandler.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandler();  
-    if (!alienHandler) return;
+  // Create and configure the AliEn plug-in:
+  if(mode == mGrid || mode == mGridPAR) 
+  {    
+   gROOT->LoadMacro("CreateAlienHandler.C");
+   AliAnalysisGrid *alienHandler = CreateAlienHandler();  
+   if(!alienHandler) return;
+  }
+  // Chains: 
+  if(mode == mLocal || mode == mLocalPAR) 
+  {
+   if (type!="AOD") { TChain* chain = CreateESDChain(dataDir, nRuns, offset);}
+   else { TChain* chain = CreateAODChain(dataDir, nRuns, offset);}
   }
   
-  if (mode==mLocal || mode == mLocalPAR) {
-    if (type!="AOD") { TChain* chain = CreateESDChain(dataDir, nRuns, offset);}
-    else { TChain* chain = CreateAODChain(dataDir, nRuns, offset);}
+  // Create analysis manager:
+  AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager"); 
+  // Connect plug-in to the analysis manager:
+  if(mode == mGrid || mode == mGridPAR) 
+  { 
+   mgr->SetGridHandler(alienHandler);
   }
-  //____________________________________________//
-  // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager");
- 
-  if (mode == mGRID) { 
-    // Connect plug-in to the analysis manager
-    mgr->SetGridHandler(alienHandler);
-  }
-  if (type == "ESD"){
-    AliVEventHandler* esdH = new AliESDInputHandler;
-    mgr->SetInputEventHandler(esdH);
-    if (MCEP) { 
-      AliMCEventHandler *mc = new AliMCEventHandler();
-      mgr->SetMCtruthEventHandler(mc); 
-    }
-  }
-  if (type == "MK"){
-    AliVEventHandler* esdH = new AliESDInputHandler;
-    mgr->SetInputEventHandler(esdH);
-    if (MCEP) { 
-      AliMCEventHandler *mc = new AliMCEventHandler();
-      mgr->SetMCtruthEventHandler(mc); 
-    }
-  }
-  
-  
-  
-  if (type == "AOD"){
-    AliVEventHandler* aodH = new AliAODInputHandler;
-    mgr->SetInputEventHandler(aodH); 
-    if (MCEP) { 
-      AliMCEventHandler *mc = new AliMCEventHandler();
-      mgr->SetMCtruthEventHandler(mc);
-    } 
-  }
-  
-  if (type == "MC" || type == "ESDMCkineESD" || type == "ESDMCkineMC"){
-    AliVEventHandler* esdH = new AliESDInputHandler;
-    mgr->SetInputEventHandler(esdH);
-    
+  // Event handlers:
+  if(type == "ESD")
+  {
+   AliVEventHandler* esdH = new AliESDInputHandler;
+   mgr->SetInputEventHandler(esdH);
+   if(MCEP) 
+   { 
     AliMCEventHandler *mc = new AliMCEventHandler();
     mgr->SetMCtruthEventHandler(mc); 
+   }
+  } // end of if(type == "ESD")
+  if(type == "MK")
+  {
+   AliVEventHandler* esdH = new AliESDInputHandler;
+   mgr->SetInputEventHandler(esdH);
+   if(MCEP) 
+   { 
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc); 
+   }
+  } // end of if(type == "MK")
+  if(type == "AOD")
+  {
+   AliVEventHandler* aodH = new AliAODInputHandler;
+   mgr->SetInputEventHandler(aodH); 
+   if(MCEP) 
+   { 
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc);
+   } 
+  } // end of if(type == "AOD") 
+  if(type == "MC" || type == "ESDMCkineESD" || type == "ESDMCkineMC")
+  {
+   AliVEventHandler* esdH = new AliESDInputHandler;
+   mgr->SetInputEventHandler(esdH);
+   AliMCEventHandler *mc = new AliMCEventHandler();
+   mgr->SetMCtruthEventHandler(mc); 
   }
-    
-  //____________________________________________//
-  // Load the analysis task
+  // Load the analysis task:
   gROOT->LoadMacro("AddTaskFlowCentrality.C");
-
+  // Setup analysis per centrality bin:
   for (Int_t i=0; i<numberOfCentralityBins; i++)
   {
     Int_t lowCentralityBinEdge = centralityArray[i];
     Int_t highCentralityBinEdge = centralityArray[i+1];
-    TString filename("outputCentrality");
+    TString filename(commonOutputFileName.Data());
     filename += i;
     //TDirectory* dir = new TDirectory(filename.Data(),"");
     filename += ".root";
+    Printf("\nWagon for centrality bin %i:",i);
     AddTaskFlowCentrality( type,
                            METHODS,
                            QA,
@@ -129,41 +136,40 @@ Bool_t DATA = kFALSE, const Char_t* dataDir="LHC10d4", Int_t offset = 0)
                            lowCentralityBinEdge,
                            highCentralityBinEdge,
                            filename );
-  }
-
-  
-  // Task to check the offline trigger
-  if (mode == mLocal || mode == mGRID) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); }
-  else if (mode == mPROOF || mode == mLocalPAR) {
-    gROOT->LoadMacro("AddTaskPhysicsSelection.C"); }
+   
+  } // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
+  // Task to check the offline trigger:
+  if(mode == mLocal || mode == mGrid || mode == mGridPAR) 
+  {
+   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+  } else if(mode == mPROOF || mode == mLocalPAR) 
+    {
+     gROOT->LoadMacro("AddTaskPhysicsSelection.C"); 
+    }
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
-  if (!DATA) {physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
-  
- 
-  // Enable debug printouts
+  if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
+  // Enable debug printouts:
   mgr->SetDebugLevel(2);
-
-
-  //____________________________________________//
-  // Run the analysis
-  if (!mgr->InitAnalysis()) return;
+  // Run the analysis:
+  if(!mgr->InitAnalysis()) return;  
   mgr->PrintStatus();
-  
-  if (mode == mLocal || mode == mLocalPAR) {
-    mgr->StartAnalysis("local",chain);
-  }
-  else if (mode == mPROOF) {
-    mgr->StartAnalysis("proof",dataDir,nRuns,offset);
-  }
-  else if (mode == mGRID) { 
-    mgr->StartAnalysis("grid");
-  }
-  
+  if(mode == mLocal || mode == mLocalPAR) 
+  {
+   mgr->StartAnalysis("local",chain);
+  } else if(mode == mPROOF) 
+    {
+     mgr->StartAnalysis("proof",dataDir,nRuns,offset);
+    } else if(mode == mGrid || mode == mGridPAR) 
+      { 
+       mgr->StartAnalysis("grid");
+      }
+  // Print real and CPU time used for analysis:
   timer.Stop();
-  timer.Print();
+  timer.Print();  
   
-}
+} // end of void runFlowTaskCentralityTrain(...)
+
+//===============================================================================================
 
 void CrossCheckUserSettings(Bool_t bData) 
 {
@@ -178,14 +184,21 @@ void CrossCheckUserSettings(Bool_t bData)
   exit(0);
  }
 
+ if(LYZ1SUM && LYZ2SUM) {cout<<" WARNING: You cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1 !!!!"<<endl; exit(0); }
+ if(LYZ1PROD && LYZ2PROD) {cout<<" WARNING: You cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1 !!!!"<<endl; exit(0); }
+ if(LYZ2SUM && LYZEP) {cout<<" WARNING: You cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2 !!!!"<<endl; exit(0); }
+ if(LYZ1SUM && LYZEP) {cout<<" WARNING: You cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2 !!!!"<<endl; exit(0); }
+
 } // end of void CrossCheckUserSettings()
 
-void LoadLibraries(const anaModes mode) {
-  
+//===============================================================================================
+
+void LoadLibraries(const anaModes mode) 
+{
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree");
+  //gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libXMLIO");
@@ -194,7 +207,7 @@ void LoadLibraries(const anaModes mode) {
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   //----------------------------------------------------------
-  if (mode==mLocal || mode==mGRID) {
+  if (mode==mLocal || mode==mGrid || mode == mGridPAR) {
     //--------------------------------------------------------
     // If you want to use already compiled libraries 
     // in the aliroot distribution
@@ -206,17 +219,19 @@ void LoadLibraries(const anaModes mode) {
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libCORRFW");
     gSystem->Load("libPWG2forward");
-    if (mode==mLocal) {
-      gSystem->Load("libPWG2flowCommon");
-      cerr<<"libPWG2flowCommon loaded..."<<endl;
-      gSystem->Load("libPWG2flowTasks");
-      cerr<<"libPWG2flowTasks loaded..."<<endl;
+    if(mode==mLocal || mode==mGrid) 
+    {
+     gSystem->Load("libPWG2flowCommon");
+     cerr<<"libPWG2flowCommon loaded..."<<endl;
+     gSystem->Load("libPWG2flowTasks");
+     cerr<<"libPWG2flowTasks loaded..."<<endl;
     }
-    if (mode==mGRID) {
-      SetupPar("PWG2flowCommon");
-      cerr<<"PWG2flowCommon.par loaded..."<<endl;
-      SetupPar("PWG2flowTasks");
-      cerr<<"PWG2flowTasks.par loaded..."<<endl;
+    if(mode==mGridPAR) 
+    {
+     SetupPar("PWG2flowCommon");
+     cerr<<"PWG2flowCommon.par loaded..."<<endl;
+     SetupPar("PWG2flowTasks");
+     cerr<<"PWG2flowTasks.par loaded..."<<endl;
     }
   }
   
@@ -305,9 +320,12 @@ void LoadLibraries(const anaModes mode) {
     gProof->ShowEnabledPackages();
   }  
   
-}
+} // end of void LoadLibraries(const anaModes mode) 
 
-void SetupPar(char* pararchivename) {
+//===============================================================================================
+
+void SetupPar(char* pararchivename) 
+{
   //Load par files, create analysis libraries
   //For testing, if par file already decompressed and modified
   //classes then do not decompress.
@@ -352,8 +370,10 @@ void SetupPar(char* pararchivename) {
   
   gSystem->ChangeDirectory(ocwd.Data());
   printf("Current dir: %s\n", ocwd.Data());
-}
 
+} // end of void SetupPar(char* pararchivename) 
+
+//===============================================================================================
 
 // Helper macros for creating chains
 // from: CreateESDChain.C,v 1.10 jgrosseo Exp
@@ -443,11 +463,10 @@ TChain* CreateESDChain(const char* aDataDir, Int_t aRuns, Int_t offset)
     }
   
   return chain;
-}
 
+} // end of TChain* CreateESDChain(const char* aDataDir, Int_t aRuns, Int_t offset)
 
-// Helper macros for creating chains
-// from: CreateESDChain.C,v 1.10 jgrosseo Exp
+//===============================================================================================
 
 TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
 {
@@ -534,5 +553,6 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
     }
   
   return chain;
-}
+
+} // end of TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
 

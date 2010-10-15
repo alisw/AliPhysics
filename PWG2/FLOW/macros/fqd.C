@@ -17,15 +17,20 @@ Bool_t finalResultIsFromSigma2Fitted = kTRUE; // final saved result is obtained 
 Bool_t printOnTheScreen = kTRUE; // print or not the final results on the screen
 Bool_t plotResults = kTRUE; // plot on the screen q-distribution and resulting fitting functions (for non-fixed sigma^2 and fixed sigma^2)
 
+// Name of the common output file:
+TString outputFileName = "AnalysisResults.root";
+//TString outputFileName = "outputCentrality0.root";
+
 enum libModes {mLocal,mLocalSource};
 
 TFile *commonOutputFile = NULL; // common output file "AnalysisResults.root"
 TDirectoryFile *dirFileFQD = NULL; // FQD's TDirectoryFile in "AnalysisResults.root"
 TList *outputListFQD = NULL; // output list holding all FQD objects
 
-void fqd(TString analysisType="", Int_t analysisMode=mLocal)
+void fqd(TString analysisType="ESD", Int_t analysisMode=mLocal)
 {
- // 1. analysisType: "ESD", "AOD", "ESDMC0", "ESDMC1"; for Monte Carlo and 'on the fly' use simply "";
+ // 1. analysisType: type of analysis can be ESD, AOD, MC, MK, ....
+ //                  (if type="" output files are from simulation 'on the fly')
  // 2. analysisMode: if analysisMode = mLocal -> analyze data on your computer using aliroot
  //                  if analysisMode = mLocalSource -> analyze data on your computer using root + source files 
   
@@ -76,7 +81,6 @@ void GetOutputList(TString analysisType)
  // Get output list which holds all FQD objects.
   
  // Access common output file:
- TString outputFileName = "AnalysisResults.root"; // name of the common output file
  commonOutputFile = AccessOutputFile(outputFileName);
  
  // Access from common output file the TDirectoryFile for FQD method
@@ -93,11 +97,12 @@ void Plot()
  
  gROOT->SetStyle("Plain"); // default color is white instead of gray
  gStyle->SetOptStat(0); // remove stat. box from all histos
- fLegend = new TLegend(0.6,0.55,0.85,0.7); 
+ legend = new TLegend(0.6,0.55,0.85,0.7); 
+ legend->SetFillStyle(0);
  // q-distribution:
  TH1D *qDistribution = dynamic_cast<TH1D*>(outputListFQD->FindObject("fqDistribution"));
  Cosmetics(qDistribution);
- fLegend->AddEntry(qDistribution,"q-distribution","f");
+ legend->AddEntry(qDistribution,"q-distribution","f");
  qDistribution->Draw();
  // resulting fitting functions:
  TF1 *fittingFun[2] = {NULL};
@@ -108,9 +113,9 @@ void Plot()
   fittingFun[s2F] = dynamic_cast<TF1*>(outputListFQD->FindObject(Form("fFittingFunction, %s",sigmaFlag[s2F].Data())));
   fittingFun[s2F]->SetLineColor(lineColors[s2F]);
   fittingFun[s2F]->Draw("SAME");
-  fLegend->AddEntry(fittingFun[s2F]->GetName(),sigmaFlag[s2F].Data(),"l");
+  legend->AddEntry(fittingFun[s2F]->GetName(),sigmaFlag[s2F].Data(),"l");
  }
- fLegend->Draw("SAME"); 
+ legend->Draw("SAME"); 
   
 } // end of Plot()
 
@@ -181,33 +186,28 @@ void GetListWithHistograms(TFile *outputFile, TString analysisType, TString meth
  fileName+=analysisType.Data();
  // Access this file:
  dirFileFQD = (TDirectoryFile*)outputFile->FindObjectAny(fileName.Data());
- // Form a list name:
- listName+="cobj";
- listName+=methodName.Data();
- // Access this list:
+ // Form a list name for each method:
  if(dirFileFQD)
  {
-  if(!(dirFileFQD->GetNkeys() == 0))
+  TList* listTemp = dirFileFQD->GetListOfKeys();
+  if(listTemp && listTemp->GetEntries() == 1)
   {
+   listName = listTemp->At(0)->GetName(); // to be improved - implemented better (use dynamic_cast)
    dirFileFQD->GetObject(listName.Data(),outputListFQD);
   } else
     {
-     TString temp = listName.Data();
-     cout<<"WARNING: Couldn't access a list holding histograms for "<<temp.Remove(0,4).Data()<<" method !!!!"<<endl;     
-    } 
+     cout<<" WARNING: Accessing TList from TDirectoryFile failed miserably for FQD method !!!!"<<endl;
+     cout<<"          Did you actually use FQD in the analysis?"<<endl;
+     cout<<endl;
+     exit(0);
+    }
  } else 
    {
-    cout<<"WARNING: Couldn't find a file "<<fileName.Data()<<".root !!!!"<<endl;
-   }
-     
- if(!outputListFQD) 
- {
-  cout<<endl;
-  cout<<"WARNING: Couldn't access the output list "<<listName.Data()<<" !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }      
-     
+    cout<<" WARNING: Couldn't find a TDirectoryFile "<<fileName.Data()<<" in file "<<outputFileName.Data()<<" !!!!"<<endl;
+    cout<<"          Perhaps wrong analysis type? Can be \"ESD\",\"AOD\",\"\", etc."<<endl;
+    cout<<"          Or you didn't use FQD in the analysis which have produced "<<outputFileName.Data()<<"?"<<endl;
+   } 
+          
 } // end of void GetListWithHistograms(TFile *outputFile, TString analysisType, TString methodName)
  
 //===========================================================================================

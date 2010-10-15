@@ -13,10 +13,12 @@ const Int_t nFiles = 2;
 const Int_t nSim = 0;
 
 // Set paths of all output analysis files (first the ones to be represented with mesh (simulations), then the ones to be represented with markers (real data))
-TString files[nFiles] = {"trackletsCorrectedNUA","default"};
+TString files[nFiles] = {"trackletsCorrectedNUA","default"}; // subdirectory names holding <commonOutputFileName>.root
+//TString files[nFiles] = {"outputCentrality0","outputCentrality1"}; // file names (use case: centrality train)
 
-// Set analysis types for all output analysis files (can be "ESD","AOD","MC",""):
+// Set analysis types for all output analysis files (can be "ESD","AOD","MC","","MK", ....):
 TString type[nFiles] = {"ESD","ESD"};
+//TString type[nFiles] = {"MK","MK"};
  
 // Set mesh color:
 Int_t meshColor[nSim] = {};
@@ -73,6 +75,11 @@ Bool_t showAlsoMCEPResults = kFALSE;
 Bool_t showOnlyMCEPResults = kFALSE;
 Int_t mcepMeshColor[nSim] = {};
 
+// Set the naming convention:
+Bool_t bLookInSubdirectories = kFALSE; // if kTRUE: Look in subdirectories <files[0]>, <files[1]>, ..., for output files <commonOutputFileName>
+                                      // if kFALSE: Look in <pwd> for files <files[0]>.root, <files[1]>.root, ....
+TString commonOutputFileName = "AnalysisResults.root"; 
+
 // Set method names which calculate cumulants vs multiplicity (do not touch these settings unless you are looking for a trouble):
 const Int_t nMethods = 3;
 TString method[nMethods] = {"QC","GFC","MCEP"}; 
@@ -106,14 +113,13 @@ void plotCumulants(Int_t analysisMode=mLocal)
  
  // Global settings which will affect all plots:
  GlobalSettings();
- 
+  
  // Access all common output files:
- TString commonOutputFileName = "AnalysisResults.root"; 
  AccessCommonOutputFiles(commonOutputFileName);
- 
+  
  // Get from common output files the lists holding histograms for each method:
  GetLists();
- 
+    
  // Get histograms with results for cumulants vs multiplicity:
  GetHistograms();
 
@@ -1012,7 +1018,7 @@ void GlobalSettings()
  
  gROOT->SetStyle("Plain"); // default color is white instead of gray
  gStyle->SetOptStat(0); // remove stat. box from all histos
- TGaxis::SetMaxDigits(4); 
+ TGaxis::SetMaxDigits(4); // prefer exp notation for 5 and more significant digits
  
 } // end of void GlobalSettings()
 
@@ -1037,24 +1043,23 @@ void GetLists()
    // Access this file:
    if(commonOutputFiles[f]){dirFile[f][i] = (TDirectoryFile*)commonOutputFiles[f]->FindObjectAny(fileName[f][i].Data());}
    // Form a list name for each method:
-   listName[f][i]+="cobj";
-   listName[f][i]+=method[i].Data();
-   // Access this lists:
    if(dirFile[f][i])
    {
-    dirFile[f][i]->GetObject(listName[f][i].Data(),lists[f][i]); 
-    if(!lists[f][i])
+    TList* listTemp = dirFile[f][i]->GetListOfKeys();
+    if(listTemp && listTemp->GetEntries() == 1)
     {
-     cout<<endl;
-     cout<<" WARNING: Couldn't find a list "<<listName[f][i].Data()<<" in "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;
-     cout<<"          Did you use method "<<method[i].Data()<<" in the analysis which produced this file?"<<endl;
-    }
+     listName[f][i] = listTemp->At(0)->GetName(); // to be improved - implemented better
+     dirFile[f][i]->GetObject(listName[f][i].Data(),lists[f][i]);
+    } else
+      {
+       cout<<endl;
+       cout<<" WARNING: Couldn't find a list "<<listName[f][i].Data()<<" in "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;
+       cout<<"          Did you use method "<<method[i].Data()<<" in the analysis which produced this file?"<<endl;
+      }
    } else 
      {
-      cout<<endl;
       cout<<" WARNING: Couldn't find a file "<<fileName[f][i].Data()<<".root in "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;
-      cout<<endl;
-     }
+     }   
   } // end of for(Int_t i=0;i<nMethods;i++)   
  } // end of for(Int_t f=0;f<nFiles;f++)
 
@@ -1068,16 +1073,33 @@ void AccessCommonOutputFiles(TString commonOutputFileName)
  
  for(Int_t f=0;f<nFiles;f++)
  { 
-  if(!(gSystem->AccessPathName(Form("%s/%s/%s",gSystem->pwd(),files[f].Data(),commonOutputFileName.Data()),kFileExists)))
+  if(bLookInSubdirectories)
   {
-   commonOutputFiles[f] = TFile::Open(Form("%s/%s/%s",gSystem->pwd(),files[f].Data(),commonOutputFileName.Data()),"READ");
-  } else
-    { 
-     cout<<endl;
-     cout<<" WARNING: Couldn't find the file "<<Form("%s/%s/%s",gSystem->pwd(),files[f].Data(),commonOutputFileName.Data())<<" !!!!"<<endl;
-     cout<<"          Did you specify correctly all paths in TString files[nFiles]?"<<endl;
-     cout<<endl;
-     exit(0);
+   if(!(gSystem->AccessPathName(Form("%s/%s/%s",gSystem->pwd(),files[f].Data(),commonOutputFileName.Data()),kFileExists)))
+   {
+    commonOutputFiles[f] = TFile::Open(Form("%s/%s/%s",gSystem->pwd(),files[f].Data(),commonOutputFileName.Data()),"READ");
+   } else
+     { 
+      cout<<endl;
+      cout<<" WARNING: Couldn't find the file "<<Form("%s/%s/%s",gSystem->pwd(),files[f].Data(),commonOutputFileName.Data())<<" !!!!"<<endl;
+      cout<<"          Did you specify correctly all paths in TString files[nFiles]?"<<endl;
+      cout<<"          Or you are misusing 'Bool_t bLookInSubdirectories'? "<<endl;
+      cout<<endl;
+      exit(0);
+     }
+  } else // to if(bLookInSubdirectories)
+    {
+     if(!(gSystem->AccessPathName(Form("%s/%s%s",gSystem->pwd(),files[f].Data(),".root"),kFileExists)))
+     {
+      commonOutputFiles[f] = TFile::Open(Form("%s/%s%s",gSystem->pwd(),files[f].Data(),".root"),"READ");
+     } else
+       { 
+        cout<<endl;
+        cout<<" WARNING: Couldn't find the file "<<Form("%s/%s%s",gSystem->pwd(),files[f].Data(),".root")<<" !!!!"<<endl;
+        cout<<"          Did you specify correctly all file names in TString files[nFiles]?"<<endl;
+        cout<<endl;
+        exit(0);
+       }
     }
  } // end of for(Int_t f=0;f<nFiles;f++)
  

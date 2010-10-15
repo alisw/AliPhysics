@@ -38,6 +38,10 @@ Bool_t useQuadraticPtWeights = kFALSE;
 // result for differential flow vs eta.
 //==============================================================
 
+// Name of the common output file:
+TString outputFileName = "AnalysisResults.root";
+//TString outputFileName = "outputCentrality0.root";
+
 enum libModes {mLocal,mLocalSource};
 
 //void makeWeights(TString type="", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocalSource)
@@ -55,10 +59,8 @@ void makeWeights(TString type="ESD", TString method="SP", TString cumulantOrder=
  // Load needed libraries:
  LoadLibrariesMW(mode);
 
- // Name of the common output file:
- TString outputFileName = "AnalysisResults.root";
- TFile *outputFile = NULL;
  // Access the common output file:
+ TFile *outputFile = NULL;
  if(!(gSystem->AccessPathName(Form("%s%s%s",gSystem->pwd(),"/",outputFileName.Data()),kFileExists)))
  {
   outputFile = TFile::Open(outputFileName.Data(),"READ");
@@ -78,23 +80,24 @@ void makeWeights(TString type="ESD", TString method="SP", TString cumulantOrder=
  TList *methodList = NULL;
  if(methodFile)
  {
-  methodFile->GetObject(Form("cobj%s",method.Data()),methodList);
-  if(!methodList)
+  TList* listTemp = methodFile->GetListOfKeys();
+  if(listTemp && listTemp->GetEntries() == 1)
   {
-   cout<<endl;
-   cout<<"WARNING: Couldn't access the list "<<methodList->GetName()<<" !!!!"<<endl;
-   cout<<endl;
-   exit(0);  
-  }   
+   TString listName = listTemp->At(0)->GetName(); // to be improved - implemented better (use dynamic_cast instead)
+   methodFile->GetObject(listName.Data(),methodList);
+  } else
+     {
+      cout<<" WARNING: Accessing TList from TDirectoryFile failed for method "<<method.Data()<<" !!!!"<<endl;
+      cout<<"          Did you actually used "<<method.Data()<<" in the analysis?"<<endl;
+      cout<<endl;
+     }
  } else 
    {
-    cout<<endl;
-    cout<<"WARNING: Couldn't find the file "<<methodFileName.Data()<<".root in "<<endl;
-    cout<<"         common output file "<<gSystem->pwd()<<"/"<<outputFileName.Data()<<" !!!!"<<endl;
-    cout<<endl;
-    exit(0);
-   }
+    cout<<" WARNING: Couldn't find a TDirectoryFile "<<methodFileName.Data()<<".root !!!!"<<endl;
+   }   
  
+ if(!methodList){cout<<" WARNING: methodList is NULL !!!!"<<endl;exit(0);}
+   
  // Accessing common control and results histograms from which phi, pt and eta weights will be made:
  AliFlowCommonHist *commonHist = NULL;
  AliFlowCommonHistResults *commonHistRes = NULL; 
