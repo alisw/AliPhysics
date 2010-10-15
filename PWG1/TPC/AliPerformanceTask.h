@@ -5,7 +5,7 @@
 // Task to run reconstruction performance. 
 // 
 // Author: J.Otwinowski 01/04/2009 
-// Changes by M.Knichel and H.Erdal 27/07/2010
+// Changes by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 class AliESDEvent;
@@ -14,6 +14,7 @@ class AliMCEvent;
 class AliPerformanceObject;
 class AliMagF;
 class TList;
+class TTree;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -26,6 +27,7 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  virtual void   FinishTaskOutput();
   virtual Bool_t Notify();
 
   // Add comparison objects
@@ -41,11 +43,12 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   void SetUseHLT(Bool_t useHLT = kFALSE) {fUseHLT = useHLT;}
 
  private:
-  AliESDEvent *fESD;   //! ESD event
-  AliESDfriend *fESDfriend; //! ESD friend event
-  AliMCEvent *fMC;    //! MC event
+  AliESDEvent *fESD;          //! ESD event
+  AliESDfriend *fESDfriend;   //! ESD friend event
+  AliMCEvent *fMC;            //! MC event
 
-  TList *fOutput;             //! list send on output slot 0
+  TList *fOutput;             //! list send on output container 1
+  TTree* fOutputSummary;       //! tree to dump summary values (output container 2)
   TIterator *fPitList;        //! iterator over the output objetcs  
   TList *fCompList;           // list of comparison objects
 
@@ -56,7 +59,7 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   AliPerformanceTask(const AliPerformanceTask&); // not implemented
   AliPerformanceTask& operator=(const AliPerformanceTask&); // not implemented
   
-  ClassDef(AliPerformanceTask, 2); // example of analysis
+  ClassDef(AliPerformanceTask, 3); // example of analysis
 };
 
 #endif

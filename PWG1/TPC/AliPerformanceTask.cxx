@@ -23,7 +23,7 @@
 // are stored in the output file (details in description of these classes).
 // 
 // Author: J.Otwinowski 01/04/2009 
-// Changes by M.Knichel and H.Erdal 27/07/2010
+// Changes by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
 #include "iostream"
@@ -34,6 +34,7 @@
 #include "TCanvas.h"
 #include "TList.h"
 #include "TFile.h"
+#include "TSystem.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -53,7 +54,11 @@
 #include "AliRecInfoCuts.h"
 #include "AliComparisonObject.h"
 #include "AliPerformanceObject.h"
+#include "AliTPCPerformanceSummary.h"
+#include "AliPerformanceTPC.h"
+#include "AliPerformanceDEdx.h"
 #include "AliPerformanceTask.h"
+
 
 using namespace std;
 
@@ -66,6 +71,7 @@ AliPerformanceTask::AliPerformanceTask()
   , fESDfriend(0)
   , fMC(0)
   , fOutput(0)
+  , fOutputSummary(0)
   , fPitList(0)
   , fCompList(0)
   , fUseMCInfo(kFALSE)
@@ -83,6 +89,7 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
   , fESDfriend(0)
   , fMC(0)
   , fOutput(0)
+  , fOutputSummary(0)
   , fPitList(0)
   , fCompList(0)
   , fUseMCInfo(kFALSE)
@@ -93,6 +100,7 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
 
   // Define input and output slots here
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 
   // create the list for comparison objects
   fCompList = new TList;
@@ -101,8 +109,9 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
 //_____________________________________________________________________________
 AliPerformanceTask::~AliPerformanceTask()
 {
-  if(fOutput)     delete fOutput;    fOutput   = 0; 
-  if(fCompList)   delete fCompList;  fCompList = 0; 
+  if (fOutput)     delete fOutput;    fOutput   = 0; 
+  if (fOutputSummary) delete fOutputSummary; fOutputSummary = 0;
+  if (fCompList)   delete fCompList;  fCompList = 0; 
 }
 
 //_____________________________________________________________________________
@@ -130,7 +139,10 @@ void AliPerformanceTask::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
   fPitList = fOutput->MakeIterator();
-
+  
+  // create output list
+  //fOutputSummary = new TTree;
+  
   // add comparison objects to the output
   AliPerformanceObject *pObj=0;
   Int_t count=0;
@@ -141,6 +153,9 @@ void AliPerformanceTask::UserCreateOutputObjects()
     count++;
   }
   Printf("UserCreateOutputObjects(): Number of output comparison objects: %d \n", count);
+  
+  PostData(1, fOutput);  
+  //PostData(2, fOutputSummary);  
 }
 
 //_____________________________________________________________________________
@@ -212,19 +227,59 @@ void AliPerformanceTask::Terminate(Option_t *)
   // Called once at the end 
   
   // check output data
-  fOutput = dynamic_cast<TList*> (GetOutputData(1));
-  if (!fOutput) {
-    Printf("ERROR: AliPerformanceTask::Terminate(): fOutput data not avaiable  ..." );
-    return;
-  }
+    fOutputSummary = dynamic_cast<TTree*> (GetOutputData(2));
+    fOutput = dynamic_cast<TList*> (GetOutputData(1));
+    if (!fOutput) {
+        Printf("ERROR: AliPerformanceTask::FinishTaskOutput(): fOutput data not available  ..." );
+        return;
+   }
+    if (fOutputSummary) { delete fOutputSummary; fOutputSummary=0; }      
+    AliPerformanceObject* pObj=0;
+    AliPerformanceTPC*  pTPC = 0;
+    AliPerformanceDEdx* pDEdx = 0;
+    TIterator* itOut = fOutput->MakeIterator();
+    itOut->Reset();
+    while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) { 
+        if (!  pTPC) {  pTPC = dynamic_cast<AliPerformanceTPC*>(pObj); }
+        if (! pDEdx) { pDEdx = dynamic_cast<AliPerformanceDEdx*>(pObj); }
+    }
+    TUUID uuid;
+    TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
+    AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, tmpFile.Data());
+    TChain* chain = new TChain("tpcQA");
+    chain->Add(tmpFile.Data());
+    TTree *tree = chain->CopyTree("1");
+    if (chain) { delete chain; chain=0; }
+    fOutputSummary = tree;
+      
+     // Post output data.
+     PostData(2, fOutputSummary);
 
-  AliPerformanceObject* pObj=0;
-  TIterator* itOut = fOutput->MakeIterator();  
-  itOut->Reset();
-  while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) {
-    pObj->Analyse();
-  }
+}
 
+//_____________________________________________________________________________
+void AliPerformanceTask::FinishTaskOutput()
+{
+    // called once at the end of each job (on the workernode)
+    //
+    // projects THnSparse to TH1,2,3
+    
+    fOutput = dynamic_cast<TList*> (GetOutputData(1));
+    if (!fOutput) {
+        Printf("ERROR: AliPerformanceTask::FinishTaskOutput(): fOutput data not available  ..." );
+        return;
+   }
+
+      AliPerformanceObject* pObj=0;
+      TIterator* itOut = fOutput->MakeIterator();  
+      itOut->Reset();
+      while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) {
+          pObj->SetRunNumber(fCurrentRunNumber);
+          pObj->Analyse();
+      }
+      
+     // Post output data.
+     PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
