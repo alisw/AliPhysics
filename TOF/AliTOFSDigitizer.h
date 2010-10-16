@@ -21,6 +21,9 @@ class TString;
 
 class AliLoader;
 class AliRunLoader;
+
+class AliTOFcalib;
+
 class AliTOFSDigitizer: public TTask {
 
 public:
@@ -83,6 +86,8 @@ public:
   void  SetAdcMean(Float_t adcMean)                  {fAdcMean=adcMean;}
   void  SetAdcRms(Float_t adcRms)                    {fAdcRms=adcRms;}
 
+  void SetTimeResolution(Float_t time) {fTimeResolution=time;}
+
   Float_t  GetPadefficiency()    const {return fpadefficiency;}
   Int_t    GetEdgeEffect()       const {return fEdgeEffect;}
   Int_t    GetEdgeTails()        const {return fEdgeTails;}
@@ -114,6 +119,8 @@ public:
   Float_t  GetAdcMean()          const {return fAdcMean;}
   Float_t  GetAdcRms()           const {return fAdcRms;}
   
+  Float_t  GetTimeResolution()  const {return fTimeResolution;}
+
 
 protected:
 
@@ -131,7 +138,7 @@ private:
 
   // detector response simulation
   // Intrisic MRPC time resolution and pad (edge effect) parameters
-  Float_t fTimeResolution;  // time resolution of the MRPC (ns)
+  Float_t fTimeResolution;   // time resolution (ps)
   Float_t fpadefficiency;   // intrinsic pad efficiency, used if fEdgeEffect==0
   Int_t   fEdgeEffect;      // edge effects option
   Int_t   fEdgeTails;       // edge tails option
@@ -172,7 +179,9 @@ private:
   Float_t fAdcMean;     // mean value for the ADC spectrum [bins]
   Float_t fAdcRms;      // rms value for the ADC spectrum [bins]
 
-  ClassDef(AliTOFSDigitizer,3)  // creates TOF SDigits
+  AliTOFcalib * fCalib; //! calibration object
+
+  ClassDef(AliTOFSDigitizer,4)  // creates TOF SDigits
 
 };
 

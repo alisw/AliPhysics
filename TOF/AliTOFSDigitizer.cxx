@@ -41,6 +41,8 @@
 #include "AliRunLoader.h"
 #include "AliRun.h"
 
+#include "AliTOFcalib.h"
+#include "AliTOFRecoParam.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFHitMap.h"
 #include "AliTOFhitT0.h"
@@ -64,7 +66,7 @@ AliTOFSDigitizer::AliTOFSDigitizer():
   fTOFLoader(0x0),
   fSelectedSector(-1), 
   fSelectedPlate(-1),
-  fTimeResolution(0),
+  fTimeResolution(100.),
   fpadefficiency(0),
   fEdgeEffect(-1),
   fEdgeTails(-1),
@@ -93,9 +95,11 @@ AliTOFSDigitizer::AliTOFSDigitizer():
   fAverageTimeFlag(-1),
   fAdcBin(0),
   fAdcMean(0),
-  fAdcRms(0)
+  fAdcRms(0),
+  fCalib(new AliTOFcalib())
 {
   // ctor
+
 }
 
 //------------------------------------------------------------------------
@@ -109,7 +113,7 @@ AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source):
   fTOFLoader(0x0),
   fSelectedSector(-1), 
   fSelectedPlate(-1),
-  fTimeResolution(0),
+  fTimeResolution(100.),
   fpadefficiency(0),
   fEdgeEffect(-1),
   fEdgeTails(-1),
@@ -138,7 +142,8 @@ AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source):
   fAverageTimeFlag(-1),
   fAdcBin(0),
   fAdcMean(0),
-  fAdcRms(0)
+  fAdcRms(0),
+  fCalib(new AliTOFcalib())
 {
   // copy constructor
   //this->fTOFGeometry=source.fTOFGeometry;
@@ -164,7 +169,7 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
   fTOFLoader(0x0),
   fSelectedSector(-1), // by default we sdigitize all sectors
   fSelectedPlate(-1),  // by default we sdigitize all plates in all sectors
-  fTimeResolution(0),
+  fTimeResolution(100.),
   fpadefficiency(0),
   fEdgeEffect(-1),
   fEdgeTails(-1),
@@ -193,7 +198,8 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
   fAverageTimeFlag(-1),
   fAdcBin(0),
   fAdcMean(0),
-  fAdcRms(0)
+  fAdcRms(0),
+  fCalib(new AliTOFcalib())
 {
   //ctor, reading from input file 
   
@@ -260,6 +266,7 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
       return;
     }
   fTOFLoader->PostSDigitizer(this);
+
 }
 
 //____________________________________________________________________________ 
@@ -268,6 +275,8 @@ AliTOFSDigitizer::~AliTOFSDigitizer()
   // dtor
   fTOFLoader->CleanSDigitizer();
 
+  if (fCalib) delete fCalib;
+
 }
 
 //____________________________________________________________________________ 
@@ -275,9 +284,20 @@ void AliTOFSDigitizer::InitParameters()
 {
   // set parameters for detector simulation
   
-  fTimeResolution = 0.080; //0.120; OLD
+  fCalib->Init();
+
+  //fTimeResolution = 80.; //120.; OLD
+  AliTOFRecoParam *recoParams = (AliTOFRecoParam*)fCalib->ReadRecParFromCDB("TOF/Calib",fRunLoader->GetRunNumber());
+  fTimeResolution = recoParams->GetTimeResolution(); // now from OCDB
+  if (fTimeResolution==0.) {
+    AliWarning("In OCDB found 0ps for TOF time resolution. It is set to 100ps.");
+    fTimeResolution = 100.;
+  }
+  AliDebug(1,Form(" TOF time resolution read from OCDB = %f ps",fTimeResolution));
   fpadefficiency  = 0.99 ;
-  fEdgeEffect     = 2   ;
+  //fEdgeEffect   = 2   ; // edge effects according to test beam results
+  fEdgeEffect     = 1   ; // edge effects according to test beam results
+                          // but with fixed time resolution, i.e. fTimeResolution
   fEdgeTails      = 0   ;
   fHparameter     = 0.4 ;
   fH2parameter    = 0.15;
@@ -359,7 +379,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
     AliError("TOF not found");
     return;
   }
-  
+
   fTOFLoader->LoadHits("read");
   fTOFLoader->LoadSDigits("recreate");
 
@@ -453,7 +473,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 	  vol[4] = tofHit->GetPadz();
 	  dxPad = tofHit->GetDx();
 	  dzPad = tofHit->GetDz();
-	  geantTime = tofHit->GetTof(); // unit [s]
+	  geantTime = tofHit->GetTof(); // unit [s] // already corrected per event_time smearing
 	} else {
 	  AliTOFhitT0 *tofHit = (AliTOFhitT0 *) tofHitArray->UncheckedAt(hit);
 	  tracknum = tofHit->GetTrack();
@@ -464,7 +484,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 	  vol[4] = tofHit->GetPadz();
 	  dxPad = tofHit->GetDx();
 	  dzPad = tofHit->GetDz();
-	  geantTime = tofHit->GetTof(); // unit [s]
+	  geantTime = tofHit->GetTof(); // unit [s] // already corrected per event_time_smearing
 	}
 	
 	geantTime *= 1.e+09;  // conversion from [s] to [ns]
@@ -715,20 +735,26 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
       tofTime[nActivatedPads-1] = gRandom->Gaus(geantTime + fTimeWalkCenter, res[0]);
       averageTime = tofTime[nActivatedPads-1];
     }
-  } else {
-     
+  } else { // if (fEdgeEffet!=0)
+
     if(z < h) {
       if(z < h2) {
 	effZ = fEffBoundary + (fEff2Boundary - fEffBoundary) * z / h2;
       } else {
 	effZ = fEff2Boundary + (fEffCenter - fEff2Boundary) * (z - h2) / (h - h2);
       }
-      resZ = fResBoundary + (fResCenter - fResBoundary) * z / h;
+      if (fEdgeEffect==1)
+	resZ = fTimeResolution;
+      else if (fEdgeEffect==2)
+	resZ = fResBoundary + (fResCenter - fResBoundary) * z / h;
       timeWalkZ = fTimeWalkBoundary + (fTimeWalkCenter - fTimeWalkBoundary) * z / h;
       nTail[nActivatedPads-1] = 1;
     } else {
       effZ = fEffCenter;
-      resZ = fResCenter;
+      if (fEdgeEffect==1)
+	resZ = fTimeResolution;
+      else if (fEdgeEffect==2)
+	resZ = fResCenter;
       timeWalkZ = fTimeWalkCenter;
     }
     
@@ -738,12 +764,18 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
       } else {
 	effX = fEff2Boundary + (fEffCenter - fEff2Boundary) * (x - h2) / (h - h2);
       }
-      resX = fResBoundary + (fResCenter - fResBoundary) * x / h;
+      if (fEdgeEffect==1)
+	resX = fTimeResolution;
+      else if (fEdgeEffect==2)
+	resX = fResBoundary + (fResCenter - fResBoundary) * x / h;
       timeWalkX = fTimeWalkBoundary + (fTimeWalkCenter - fTimeWalkBoundary) * x / h;
       nTail[nActivatedPads-1] = 1;
     } else {
       effX = fEffCenter;
-      resX = fResCenter;
+      if (fEdgeEffect==1)
+	resX = fTimeResolution;
+      else if (fEdgeEffect==2)
+	resX = fResCenter;
       timeWalkX = fTimeWalkCenter;
     }
     
@@ -758,7 +790,10 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
     } else {
       effZ = fEff3Boundary * (k - z) / (k - k2);
     }
-    resZ = fResBoundary + fResSlope * z / k;
+    if (fEdgeEffect==1)
+      resZ = fTimeResolution;
+    else if (fEdgeEffect==2)
+      resZ = fResBoundary + fResSlope * z / k;
     timeWalkZ = fTimeWalkBoundary + fTimeWalkSlope * z / k;
     
     if(z < k && z > 0) {
@@ -789,7 +824,10 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
     } else {
       effX = fEff3Boundary * (k - x) / (k - k2);
     }
-    resX = fResBoundary + fResSlope*x/k;
+    if (fEdgeEffect==1)
+      resX = fTimeResolution;
+    else if (fEdgeEffect==2)
+      resX = fResBoundary + fResSlope*x/k;
     timeWalkX = fTimeWalkBoundary + fTimeWalkSlope*x/k;
     
     if(x < k && x > 0) {
@@ -896,7 +934,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 
 
     for (Int_t iPad = 0; iPad < nActivatedPads; iPad++) {
-      if (res[iPad] < fTimeResolution) res[iPad] = fTimeResolution;
+      if (fEdgeEffect==2 && res[iPad] < fTimeResolution) res[iPad] = fTimeResolution;
       if(gRandom->Rndm() < eff[iPad]) {
 	isFired[iPad] = kTRUE;
 	nFiredPads++;
@@ -909,6 +947,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	    tofTime[iPad] = geantTime + timeWalk[iPad] + timeDelay[iPad] + timeAB;
 	  }
 	} else {
+	  AliDebug(1,Form(" ----------------- TOF time resolution = %f",res[iPad]));
 	  tofTime[iPad] = gRandom->Gaus(geantTime + timeWalk[iPad] + timeDelay[iPad], res[iPad]);
 	}
 	if (fAverageTimeFlag) {
@@ -936,7 +975,7 @@ void AliTOFSDigitizer::PrintParameters()const
   
   AliInfo(Form(" Number of events:                       %i ", (fEvent2-fEvent1)));
   AliInfo(Form(" from event %i to event %i", fEvent1, (fEvent2-1)));
-  AliInfo(Form(" Time Resolution (ns) %f  Pad Efficiency: %f ", fTimeResolution, fpadefficiency));
+  AliInfo(Form(" Time Resolution (ps) %f  Pad Efficiency: %f ", fTimeResolution, fpadefficiency));
   AliInfo(Form(" Edge Effect option:  %d", fEdgeEffect));
 
   AliInfo(" Boundary Effect Simulation Parameters ");
