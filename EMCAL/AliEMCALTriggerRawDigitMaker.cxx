@@ -61,22 +61,25 @@ fRawAnalyzer(0x0),
 fDCSConfig(0x0),
 fTriggerData(0x0)
 {
-	// def ctor
-	
-	AliRunLoader* rl = AliRunLoader::Instance();
-	if (rl && rl->GetAliRun() && dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))) 
-		fGeometry = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-	else 
-	{
-		AliDebug(1, Form("Using default geometry"));
-		fGeometry =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
-	}
-	
-	fRawAnalyzer = new AliCaloRawAnalyzerFakeALTRO();
-	
-	fDCSConfig = AliEMCALTriggerDCSConfigDB::Instance();
-	
-	for (Int_t i=0; i<3072; i++) fRawDigitIndex[i] = -1;
+  // def ctor
+  
+  AliRunLoader* rl = AliRunLoader::Instance();
+  if (rl && rl->GetAliRun()){
+    AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
+    if(emcal) fGeometry = emcal->GetGeometry();
+  }
+  
+  if(!fGeometry)
+    {
+      AliDebug(1, Form("Using default geometry"));
+      fGeometry =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
+    }
+  
+  fRawAnalyzer = new AliCaloRawAnalyzerFakeALTRO();
+  
+  fDCSConfig = AliEMCALTriggerDCSConfigDB::Instance();
+  
+  for (Int_t i=0; i<3072; i++) fRawDigitIndex[i] = -1;
 }	
 
 //_______________

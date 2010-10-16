@@ -266,6 +266,11 @@ Bool_t AliEMCALTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * a
   }
   if(iSM>9) rowborder /= 2; // half size in phi
   
+  if(!ampmatrixes){
+    AliError("Could not recover the matrix with the amplitudes");
+    return kFALSE;
+  }
+  
   //Define patch modules - what is this ??
   Int_t isolmodules   = fIsolPatchSize*(1+iPatchType);
   Int_t ipatchmodules = 2*(1+fPatchSize*iPatchType);
@@ -433,7 +438,7 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
 */
 //____________________________________________________________________________
 void AliEMCALTrigger::MakeSlidingTowers(const TClonesArray * amptrus, const TClonesArray * timeRtrus, 
-const Int_t isupermod,TMatrixD &ampmax2, TMatrixD &ampmaxn){
+                                        const Int_t isupermod,TMatrixD &ampmax2, TMatrixD &ampmaxn){
   
   // Output from module (2x2 cells from one module)
   Int_t nModulesPhi  = fGeom->GetNModulesInTRUPhi(); // now 4 modules (3 div in phi)
@@ -444,8 +449,8 @@ const Int_t isupermod,TMatrixD &ampmax2, TMatrixD &ampmaxn){
   Int_t nTRU         = fGeom->GetNTRU();
   static int keyPrint = 0;
   if(keyPrint) AliDebug(2,Form("MakeSlidingTowers : nTRU %i nModulesPhi %i nModulesEta %i ", 
-  nTRU, nModulesPhi, nModulesEta ));
-
+                               nTRU, nModulesPhi, nModulesEta ));
+  
   Float_t amp2 = 0 ;
   Float_t ampn = 0 ; 
   for(Int_t i = 0; i < 4; i++){
@@ -453,89 +458,94 @@ const Int_t isupermod,TMatrixD &ampmax2, TMatrixD &ampmaxn){
       ampmax2(i,j) = ampmaxn(i,j) = -1;
     }
   }
-
+  
   // Create matrix that will contain 2x2 amplitude sums
   // used to calculate the nxn sums
   TMatrixD tru2x2(nModulesPhi/2,nModulesEta/2);
-
+  
   // Loop over all TRUS in a supermodule
   for(Int_t itru = 0 + isupermod * nTRU ; itru < (isupermod+1)*nTRU ; itru++) {
     TMatrixD * amptru   = dynamic_cast<TMatrixD *>(amptrus->At(itru)) ;
     TMatrixD * timeRtru = dynamic_cast<TMatrixD *>(timeRtrus->At(itru)) ;
     Int_t mtru = itru - isupermod*nTRU ; // Number of TRU in Supermodule !!
-   
+    
+    if(!amptru || !timeRtru){
+      AliError("Amplitude or Time TRU matrix not available")
+      return;
+    }
+    
     // Sliding 2x2, add 2x2 amplitudes (NOT OVERLAP)
     for(Int_t irow = 0 ; irow <  nModulesPhi; irow +=2){ 
       for(Int_t icol = 0 ; icol < nModulesEta ; icol +=2){
-	amp2 = (*amptru)(irow,icol) +(*amptru)(irow+1,icol)+
-	  (*amptru)(irow,icol+1)+(*amptru)(irow+1,icol+1);
-
-	//Fill matrix with added 2x2 towers for use in nxn sums
-	tru2x2(irow/2,icol/2) = amp2 ;
-	//Select 2x2 maximum sums to select L0 
-	if(amp2 > ampmax2(0,mtru)){
-	  ampmax2(0,mtru) = amp2 ; 
-	  ampmax2(1,mtru) = irow;
-	  ampmax2(2,mtru) = icol;
-	}
+        amp2 = (*amptru)(irow,icol) +(*amptru)(irow+1,icol)+
+        (*amptru)(irow,icol+1)+(*amptru)(irow+1,icol+1);
+        
+        //Fill matrix with added 2x2 towers for use in nxn sums
+        tru2x2(irow/2,icol/2) = amp2 ;
+        //Select 2x2 maximum sums to select L0 
+        if(amp2 > ampmax2(0,mtru)){
+          ampmax2(0,mtru) = amp2 ; 
+          ampmax2(1,mtru) = irow;
+          ampmax2(2,mtru) = icol;
+        }
       }
     }
     
     ampmax2(3,mtru) = 0.;
     if(GetTimeKey()) {
-    // Find most recent time in the selected 2x2 towers
+      // Find most recent time in the selected 2x2 towers
       Int_t row2 =  static_cast <Int_t> (ampmax2(1,mtru));
       Int_t col2 =  static_cast <Int_t> (ampmax2(2,mtru));
       for(Int_t i = 0; i<2; i++){
         for(Int_t j = 0; j<2; j++){
-	  if((*amptru)(row2+i,col2+j) > 0 &&  (*timeRtru)(row2+i,col2+j)> 0){	  
-	    if((*timeRtru)(row2+i,col2+j) >  ampmax2(3,mtru)  )
-	      ampmax2(3,mtru) =  (*timeRtru)(row2+i,col2+j); // max time
-	  }
+          if((*amptru)(row2+i,col2+j) > 0 &&  (*timeRtru)(row2+i,col2+j)> 0){	  
+            if((*timeRtru)(row2+i,col2+j) >  ampmax2(3,mtru)  )
+              ampmax2(3,mtru) =  (*timeRtru)(row2+i,col2+j); // max time
+          }
         }
       }
     }
-
+    
     //Sliding nxn, add nxn amplitudes  (OVERLAP)
     if(fPatchSize > 0){
       for(Int_t irow = 0 ; irow <  nModulesPhi/2; irow++){ 
-	for(Int_t icol = 0 ; icol < nModulesEta/2; icol++){
-	  ampn = 0;
-	  if( (irow+fPatchSize) < nModulesPhi/2 && (icol+fPatchSize) < nModulesEta/2){ //Avoid exit the TRU
-	    for(Int_t i = 0 ; i <= fPatchSize ; i++)
-	      for(Int_t j = 0 ; j <= fPatchSize ; j++)
-		ampn += tru2x2(irow+i,icol+j);
-	    //Select nxn maximum sums to select L1 
-	    if(ampn > ampmaxn(0,mtru)){
-	      ampmaxn(0,mtru) = ampn ; 
-	      ampmaxn(1,mtru) = irow;
-	      ampmaxn(2,mtru) = icol;
-	    }
-	  }
-	}
+        for(Int_t icol = 0 ; icol < nModulesEta/2; icol++){
+          ampn = 0;
+          if( (irow+fPatchSize) < nModulesPhi/2 && (icol+fPatchSize) < nModulesEta/2){ //Avoid exit the TRU
+            for(Int_t i = 0 ; i <= fPatchSize ; i++)
+              for(Int_t j = 0 ; j <= fPatchSize ; j++)
+                ampn += tru2x2(irow+i,icol+j);
+            //Select nxn maximum sums to select L1 
+            if(ampn > ampmaxn(0,mtru)){
+              ampmaxn(0,mtru) = ampn ; 
+              ampmaxn(1,mtru) = irow;
+              ampmaxn(2,mtru) = icol;
+            }
+          }
+        }
       }
       
       ampmaxn(3,mtru) = 0.; // Was 1 , I don't know why
       if(GetTimeKey()) {
-      //Find most recent time in selected nxn cell
+        //Find most recent time in selected nxn cell
         Int_t rown =  static_cast <Int_t> (ampmaxn(1,mtru));
         Int_t coln =  static_cast <Int_t> (ampmaxn(2,mtru));
         for(Int_t i = 0; i<4*fPatchSize; i++){
-	  for(Int_t j = 0; j<4*fPatchSize; j++){
-	    if( (rown+i) < nModulesPhi && (coln+j) < nModulesEta){//Avoid exit the TRU
-	      if((*amptru)(rown+i,coln+j) > 0 &&  (*timeRtru)(rown+i,coln+j)> 0){
-	        if((*timeRtru)(rown+i,coln+j) >  ampmaxn(3,mtru)  )
-		  ampmaxn(3,mtru) =  (*timeRtru)(rown+i,coln+j); // max time
-	      }
-	    }
-	  }
+          for(Int_t j = 0; j<4*fPatchSize; j++){
+            if( (rown+i) < nModulesPhi && (coln+j) < nModulesEta){//Avoid exit the TRU
+              if((*amptru)(rown+i,coln+j) > 0 &&  (*timeRtru)(rown+i,coln+j)> 0){
+                if((*timeRtru)(rown+i,coln+j) >  ampmaxn(3,mtru)  )
+                  ampmaxn(3,mtru) =  (*timeRtru)(rown+i,coln+j); // max time
+              }
+            }
+          }
         }
       }
     } else { // copy 2x2 to nxn  
-	ampmaxn(0,mtru) =  ampmax2(0,mtru); 
-	ampmaxn(1,mtru) =  ampmax2(1,mtru);
-	ampmaxn(2,mtru) =  ampmax2(2,mtru);
-	ampmaxn(3,mtru) =  ampmax2(3,mtru);
+      ampmaxn(0,mtru) =  ampmax2(0,mtru); 
+      ampmaxn(1,mtru) =  ampmax2(1,mtru);
+      ampmaxn(2,mtru) =  ampmax2(2,mtru);
+      ampmaxn(3,mtru) =  ampmax2(3,mtru);
     }
   }
   if(keyPrint) AliDebug(2,Form(" : MakeSlidingTowers -OUt \n"));
@@ -812,56 +822,67 @@ void AliEMCALTrigger::FillTRU(const TClonesArray * digits, TClonesArray * ampmat
   for(Int_t idig = 0 ; idig < digits->GetEntriesFast() ; idig++){
     
     dig = dynamic_cast<AliEMCALDigit *>(digits->At(idig)) ;
-    amp    = Float_t(dig->GetAmplitude()); // Energy of the digit (arbitrary units)
-    id     = dig->GetId() ;          // Id label of the cell
-    timeR  = dig->GetTimeR() ;       // Earliest time of the digit
-    if(amp<=0.0) AliDebug(1,Form(" id %i amp %f \n", id, amp));
-    // printf(" FILLTRU : timeR %10.5e time %10.5e : amp %10.5e \n", timeR, dig->GetTime(), amp);
-    // Get eta and phi cell position in supermodule
-    Bool_t bCell = fGeom->GetCellIndex(id, iSupMod, nModule, nIphi, nIeta) ;
-    if(!bCell)
-      AliError(Form("%i Wrong cell id number %i ", idig, id)) ;
-    
-    fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
-    // iphim, ietam - module indexes in SM
-    fGeom->GetModuleIndexesFromCellIndexesInSModule(iSupMod,iphi,ieta, iphim, ietam, nModule); 
-    //if(iSupMod >9) 
-    //printf("iSupMod %i nModule %i iphi %i  ieta %i  iphim %i  ietam %i \n",
-    //iSupMod,nModule, iphi, ieta, iphim, ietam); 
-
-    // Check to which TRU in the supermodule belongs the cell. 
-    // Supermodules are divided in a TRU matrix of dimension 
-    // (fNTRUPhi,fNTRUEta).
-    // Each TRU is a cell matrix of dimension (nModulesPhi,nModulesEta)
-
-    // First calculate the row and column in the supermodule 
-    // of the TRU to which the cell belongs.
-    Int_t row   = iphim / nModulesPhi;
-    Int_t col   = ietam / nModulesEta;
-    //Calculate label number of the TRU
-    Int_t itru  = fGeom->GetAbsTRUNumberFromNumberInSm(row, col, iSupMod);
- 
-    //Fill TRU matrix with cell values
-    TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(ampmatrix->At(itru)) ;
-    TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(timeRmatrix->At(itru)) ;
-
-    //Calculate row and column of the module inside the TRU with number itru
-    Int_t irow = iphim - row * nModulesPhi;
-    if(iSupMod > 9)
-      irow = iphim - row *  nModulesPhi2; // size of matrix the same
-    Int_t icol = ietam - col * nModulesEta;
-    
-    (*amptrus)(irow,icol)  += amp ;
-    if((*timeRtrus)(irow,icol) <0.0 || (*timeRtrus)(irow,icol) <= timeR){ // ??
-      (*timeRtrus)(irow,icol) = timeR ;
+    if(dig){
+      amp    = Float_t(dig->GetAmplitude()); // Energy of the digit (arbitrary units)
+      id     = dig->GetId() ;          // Id label of the cell
+      timeR  = dig->GetTimeR() ;       // Earliest time of the digit
+      if(amp<=0.0) AliDebug(1,Form(" id %i amp %f \n", id, amp));
+      // printf(" FILLTRU : timeR %10.5e time %10.5e : amp %10.5e \n", timeR, dig->GetTime(), amp);
+      // Get eta and phi cell position in supermodule
+      Bool_t bCell = fGeom->GetCellIndex(id, iSupMod, nModule, nIphi, nIeta) ;
+      if(!bCell)
+        AliError(Form("%i Wrong cell id number %i ", idig, id)) ;
+      
+      fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
+      // iphim, ietam - module indexes in SM
+      fGeom->GetModuleIndexesFromCellIndexesInSModule(iSupMod,iphi,ieta, iphim, ietam, nModule); 
+      //if(iSupMod >9) 
+      //printf("iSupMod %i nModule %i iphi %i  ieta %i  iphim %i  ietam %i \n",
+      //iSupMod,nModule, iphi, ieta, iphim, ietam); 
+      
+      // Check to which TRU in the supermodule belongs the cell. 
+      // Supermodules are divided in a TRU matrix of dimension 
+      // (fNTRUPhi,fNTRUEta).
+      // Each TRU is a cell matrix of dimension (nModulesPhi,nModulesEta)
+      
+      // First calculate the row and column in the supermodule 
+      // of the TRU to which the cell belongs.
+      Int_t row   = iphim / nModulesPhi;
+      Int_t col   = ietam / nModulesEta;
+      //Calculate label number of the TRU
+      Int_t itru  = fGeom->GetAbsTRUNumberFromNumberInSm(row, col, iSupMod);
+      
+      //Fill TRU matrix with cell values
+      TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(ampmatrix->At(itru)) ;
+      TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(timeRmatrix->At(itru)) ;
+      
+      if(!amptrus || timeRtrus){
+        AliError("Could not recover the TRU matrix with amplitudes or times");
+        continue;
+      }
+      //Calculate row and column of the module inside the TRU with number itru
+      Int_t irow = iphim - row * nModulesPhi;
+      if(iSupMod > 9)
+        irow = iphim - row *  nModulesPhi2; // size of matrix the same
+      Int_t icol = ietam - col * nModulesEta;
+      
+      (*amptrus)(irow,icol)  += amp ;
+      if((*timeRtrus)(irow,icol) <0.0 || (*timeRtrus)(irow,icol) <= timeR){ // ??
+        (*timeRtrus)(irow,icol) = timeR ;
+      }
+      //printf(" ieta %i iphi %i iSM %i || col %i row %i : itru %i -> amp %f\n", 
+      //	   ieta, iphi, iSupMod, col, row, itru, amp);     
+      //####################SUPERMODULE MATRIX ##################
+      TMatrixD * ampsmods   = dynamic_cast<TMatrixD *>(ampmatrixsmod->At(iSupMod)) ;
+      if(!ampsmods){
+        AliError("Could not recover the matrix per SM");
+        continue;
+      }
+      (*ampsmods)(iphim,ietam)  += amp ;
+      //    printf(" id %i iphim %i ietam %i SM %i : irow %i icol %i itru %i : amp %6.0f\n", 
+      //id, iphim, ietam, iSupMod, irow, icol, itru, amp); 
     }
-    //printf(" ieta %i iphi %i iSM %i || col %i row %i : itru %i -> amp %f\n", 
-    //	   ieta, iphi, iSupMod, col, row, itru, amp);     
-    //####################SUPERMODULE MATRIX ##################
-    TMatrixD * ampsmods   = dynamic_cast<TMatrixD *>(ampmatrixsmod->At(iSupMod)) ;
-    (*ampsmods)(iphim,ietam)  += amp ;
-    //    printf(" id %i iphim %i ietam %i SM %i : irow %i icol %i itru %i : amp %6.0f\n", 
-    //id, iphim, ietam, iSupMod, irow, icol, itru, amp); 
+    else AliError("Could not recover the digit");
   }
   //assert(0);
   //printf("<I> AliEMCALTrigger::FillTRU() is ended \n");
@@ -880,13 +901,15 @@ void AliEMCALTrigger::Trigger()
   }
  
   //Load EMCAL Geometry
-  if (runLoader && runLoader->GetAliRun() && runLoader->GetAliRun()->GetDetector("EMCAL"))
-    fGeom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-
-  if (fGeom == 0) 	 
+  if (runLoader && runLoader->GetAliRun()){
+    AliEMCAL* emcal = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"));
+    if(emcal)fGeom = emcal->GetGeometry();
+  }
+  
+  if (!fGeom) 	 
     fGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName()); 	 
 
-  if (fGeom==0)
+  if (!fGeom)
     AliFatal("Did not get geometry from EMCALLoader");
   
   //Define parameters
@@ -995,6 +1018,9 @@ void AliEMCALTrigger::FillJetMatrixFromSMs(TClonesArray *ampmatrixsmod, TMatrixD
   Int_t nEtaSM=0, nPhiSM=0;
   for(Int_t iSM=0; iSM<ampmatrixsmod->GetEntries(); iSM++) {
     TMatrixD * ampsmods   = dynamic_cast<TMatrixD *>(ampmatrixsmod->At(iSM));
+    
+    if(!ampsmods) return;
+    
     Int_t nrow = ampsmods->GetNrows();
     Int_t ncol = ampsmods->GetNcols();
     //printf("%s",Form(" ######## SM %i : nrow %i : ncol %i ##### \n", iSM, nrow, ncol));

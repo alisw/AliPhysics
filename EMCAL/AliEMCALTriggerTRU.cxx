@@ -327,9 +327,13 @@ Int_t AliEMCALTriggerTRU::L0()
 //________________
 void AliEMCALTriggerTRU::SetADC( Int_t channel, Int_t bin, Int_t sig )
 {
-	//
-	if (channel>95) AliError("TRU has 96 ADC channels only!");
-	fADC[channel][bin] = sig;
+  //Set ADC value
+  if (channel > 95 || bin > 255) {
+    AliError("TRU has 96 ADC channels and 256 bins only!");
+  }
+  else{ 
+    fADC[channel][bin] = sig;
+  }
 }
 
 //________________

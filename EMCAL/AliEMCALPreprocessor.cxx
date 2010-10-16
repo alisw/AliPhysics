@@ -167,7 +167,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
   UInt_t dcsResult=0;
   if (errorHandling == "OFF" ) {
     if (!dcsAliasMap) dcsResult = kReturnCodeNoEntries;
-    if (dcsAliasMap->GetEntries() == 0 ) dcsResult = kReturnCodeNoEntries;  
+    else if (dcsAliasMap->GetEntries() == 0 ) dcsResult = kReturnCodeNoEntries;  
     status = new TParameter<int>("dcsResult",dcsResult);
     resultArray->Add(status);
   } 
@@ -207,15 +207,15 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
       if ( source == "HLT") pedestalSource[0] = AliShuttleInterface::kHLT;
       if (!GetHLTStatus()) pedestalSource[0] = AliShuttleInterface::kDAQ;
       if (source == "HLTDAQ" ) {
-	numSources=2;
-	pedestalSource[0] = AliShuttleInterface::kHLT;
-	pedestalSource[1] = AliShuttleInterface::kDAQ;
+        numSources=2;
+        pedestalSource[0] = AliShuttleInterface::kHLT;
+        pedestalSource[1] = AliShuttleInterface::kDAQ;
       }
       if (source == "DAQHLT" ) numSources=2;
       UInt_t pedestalResult=0;
       for (Int_t i=0; i<numSources; i++ ) {	
-	pedestalResult = ExtractPedestals(pedestalSource[i]);
-	if ( pedestalResult == 0 ) break;
+        pedestalResult = ExtractPedestals(pedestalSource[i]);
+        if ( pedestalResult == 0 ) break;
       }
       result += pedestalResult;
       status = new TParameter<int>("pedestalResult",pedestalResult);
@@ -233,15 +233,15 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
       if ( source == "HLT") signalSource[0] = AliShuttleInterface::kHLT;
       if (!GetHLTStatus()) signalSource[0] = AliShuttleInterface::kDAQ;
       if (source == "HLTDAQ" ) {
-	numSources=2;
-	signalSource[0] = AliShuttleInterface::kHLT;
-	signalSource[1] = AliShuttleInterface::kDAQ;
+        numSources=2;
+        signalSource[0] = AliShuttleInterface::kHLT;
+        signalSource[1] = AliShuttleInterface::kDAQ;
       }
       if (source == "DAQHLT" ) numSources=2;
       UInt_t signalResult=0;
       for (Int_t i=0; i<numSources; i++ ) {	
-	signalResult = ExtractSignal(signalSource[i]);
-	if ( signalResult == 0 ) break;
+        signalResult = ExtractSignal(signalSource[i]);
+        if ( signalResult == 0 ) break;
       }
       result += signalResult;
       status = new TParameter<int>("signalResult",signalResult);

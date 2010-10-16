@@ -98,9 +98,11 @@ void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVect
 	{
 		AliError("Operation not allowed: STU won't be configured properly!");
 	}
-	
-	for (Int_t i=0; i<rSize->X(); i++)
-		for (Int_t j=0; j<rSize->Y(); j++) v[i + ix][j + iy * 4] = M[i][j];
+  
+  if(v){	
+    for (Int_t i=0; i<rSize->X(); i++)
+      for (Int_t j=0; j<rSize->Y(); j++) v[i + ix][j + iy * 4] = M[i][j];
+  }
 }
 
 //_______________

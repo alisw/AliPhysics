@@ -92,12 +92,14 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 	AliEMCALGeometry* geom = 0x0;
 	
 	AliRunLoader *rl = AliRunLoader::Instance();
-	if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
-		geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-	else 
-		geom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
-
-	if (!geom) AliError("Cannot access geometry!");
+	if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")){
+	  AliEMCAL* emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
+	  if(emcal)geom = emcal->GetGeometry();
+	}
+	
+	if(!geom) geom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
+	
+	if(!geom) AliError("Cannot access geometry!");
 	
 	//	digits->Sort();
 	

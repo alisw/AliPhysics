@@ -259,10 +259,14 @@ void AliEMCALClusterizer::Init()
   // Attach the Clusterizer task to the list of EMCAL tasks
   
   AliRunLoader *rl = AliRunLoader::Instance();
-  if (rl->GetAliRun() && dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL")))
-    fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-  else 
+  if (rl->GetAliRun()){
+    AliEMCAL* emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
+    if(emcal)fGeom = emcal->GetGeometry();
+  }
+  
+  if(!fGeom){ 
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
+  }
   
   AliDebug(1,Form("geom %p",fGeom));
   

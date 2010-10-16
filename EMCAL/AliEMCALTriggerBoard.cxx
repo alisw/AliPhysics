@@ -54,34 +54,38 @@ fSubRegionSize( new TVector2() ),
 fPatchSize(     new TVector2() ),
 fPatches( new TClonesArray("AliEMCALTriggerPatch",10) )
 {
-   fRegion = (int**)malloc( (int)fRegionSize->X() * sizeof( int* ) );  
-
-   if (!fRegion) printf("Error: malloc could not allocate %d bytes for fRegion\n",
-                        int(fRegionSize->X() * sizeof( int* )));
-
-      fMap = (int**)malloc( (int)fRegionSize->X() * sizeof( int* ) );
-
-      if (!fMap) printf("Error: malloc could not allocate %d bytes for fMap\n",
-                        int(fRegionSize->X() * sizeof( int* )));
-
-   for (Int_t i=0;i<fRegionSize->X();i++)
-   {
+  fRegion = (int**)malloc( (int)fRegionSize->X() * sizeof( int* ) );  
+  
+  if (!fRegion) printf("Error: malloc could not allocate %d bytes for fRegion\n",
+                       int(fRegionSize->X() * sizeof( int* )));
+  
+  fMap = (int**)malloc( (int)fRegionSize->X() * sizeof( int* ) );
+  
+  if (!fMap) printf("Error: malloc could not allocate %d bytes for fMap\n",
+                    int(fRegionSize->X() * sizeof( int* )));
+  
+  for (Int_t i=0;i<fRegionSize->X();i++)
+  {
+    if(fRegion){
       fRegion[i] = (int*)malloc( (int)fRegionSize->Y() * sizeof( int ) );
-      
+    
       if (!fRegion[i]) printf("Error: malloc could not allocate %d bytes for fRegion[%d]\n",
-                              i,int(fRegionSize->Y() * sizeof( int )));
-
-         fMap[i] = (int*)malloc( (int)fRegionSize->Y() * sizeof( int ) );
-
-            if (!fMap[i]) printf("Error: malloc could not allocate %d bytes for fMap[%d]\n",
-                              i,int(fRegionSize->Y() * sizeof( int )));
-   }
-
+                            i,int(fRegionSize->Y() * sizeof( int )));
+    }
+    if(fMap){
+      fMap[i] = (int*)malloc( (int)fRegionSize->Y() * sizeof( int ) );
+    
+      if (!fMap[i]) printf("Error: malloc could not allocate %d bytes for fMap[%d]\n",
+                           i,int(fRegionSize->Y() * sizeof( int )));
+    }
+  }
+  
 	// Initialize region matrix
 	ZeroRegion();
-	
+	if(fMap){
 	for (int i=0; i<fRegionSize->X(); ++i)
 		for (int j=0; j<fRegionSize->Y(); ++j) fMap[i][j] = 0;
+  }
 }
 
 //_______________

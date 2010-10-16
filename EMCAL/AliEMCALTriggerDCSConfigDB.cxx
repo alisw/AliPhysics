@@ -253,28 +253,37 @@ void AliEMCALTriggerDCSConfigDB::GetSTUSegmentation(Int_t ssg[], Int_t spg[], In
 	//
 	//
 	const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
-
-	AliEMCALTriggerSTUDCSConfig* stuConf = dcsConf->GetSTUDCSConfig();
-	
-	Int_t fw = stuConf->GetFw();
-	
-	switch ( fw )
-	{
-		case 2223:
-			ssg[0] = 1;
-			ssg[1] = 1;
-			spg[0] = 2;
-			spg[1] = 2;
-			
-			ssj[0] = 4;
-			ssj[1] = 4;
-			spj[0] = 2;
-			spj[1] = 2;
-			break;
-		default:
-			AliError("Firmware version do not match!");
-			break;
-	}
+  if(dcsConf){
+    AliEMCALTriggerSTUDCSConfig* stuConf = dcsConf->GetSTUDCSConfig();
+    if(stuConf){
+      Int_t fw = stuConf->GetFw();
+      
+      switch ( fw )
+      {
+        case 2223:
+          ssg[0] = 1;
+          ssg[1] = 1;
+          spg[0] = 2;
+          spg[1] = 2;
+          
+          ssj[0] = 4;
+          ssj[1] = 4;
+          spj[0] = 2;
+          spj[1] = 2;
+          break;
+        default:
+          AliError("Firmware version do not match!");
+          break;
+      }
+    }
+    else {
+      AliError("STUDCSConfig is null!");
+    }
+  }
+  else {
+    AliError("DCSConfig is null!");
+  }
+  
 }
 
 //_____________________________________________________________________________

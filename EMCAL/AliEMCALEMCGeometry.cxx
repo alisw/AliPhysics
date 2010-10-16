@@ -92,6 +92,7 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry()
   // but should never be called by the outside world    
   fParSM[0]=0; fParSM[1]=0; fParSM[2]=0;
   fEnvelop[0] = 0; fEnvelop[1] = 0; fEnvelop[2] = 0;
+  for(Int_t i = 0; i < 6; i++) fkAdditionalOpts[i] = "";
   
   AliDebug(2, "AliEMCALEMCGeometry : default ctor ");
 }
@@ -200,6 +201,7 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
   fEnvelop[0] = geom.fEnvelop[0]; 
   fEnvelop[1] = geom.fEnvelop[1]; 
   fEnvelop[2] = geom.fEnvelop[2];
+  for(Int_t i = 0; i < 6; i++) fkAdditionalOpts[i] = geom.fkAdditionalOpts[i];
 
 }
 

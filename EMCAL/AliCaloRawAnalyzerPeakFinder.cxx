@@ -273,53 +273,53 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsASCII()
 {
   //Read in the Peak finder vecors from ASCI files
   fIsInitialized= true;  
-
+  const Int_t buffersize = 256;
   for(int i = 0;  i < PF::MAXSTART ; i++)
+  {
+    for( int j=0; j < PF::SAMPLERANGE; j++)
     {
-      for( int j=0; j < PF::SAMPLERANGE; j++)
-	{
-	  char filenameCoarse[256];
-	  char filename[256];
-	  int n = j+fNsampleCut;
-	  double start = (double)i+0;
-	  
-	  sprintf(filename,        "%s/EMCAL/vectors-emcal/start%.1fN%dtau0.235fs10dt1.0.txt", getenv("ALICE_ROOT"), start, n);
-	  sprintf(filenameCoarse,  "%s/EMCAL/vectors-emcal/start%.1fN%dtau0.235fs10dt3.0.txt", getenv("ALICE_ROOT"), start, n);
-	  
-	  FILE *fp  =  fopen(filename, "r");
-	  FILE *fpc =  fopen(filenameCoarse, "r");
-
-	  if( fp == 0 )
+      char filenameCoarse[buffersize];
+      char filename[buffersize];
+      int n = j+fNsampleCut;
+      double start = (double)i+0;
+      
+      snprintf(filename, buffersize,       "%s/EMCAL/vectors-emcal/start%.1fN%dtau0.235fs10dt1.0.txt", getenv("ALICE_ROOT"), start, n);
+      snprintf(filenameCoarse, buffersize, "%s/EMCAL/vectors-emcal/start%.1fN%dtau0.235fs10dt3.0.txt", getenv("ALICE_ROOT"), start, n);
+      
+      FILE *fp  =  fopen(filename, "r");
+      FILE *fpc =  fopen(filenameCoarse, "r");
+      
+      if( fp == 0 )
 	    {
 	      AliFatal( Form( "could not open file: %s", filename ) );
 	    }
-	  if(fpc == 0)
+      else if(fpc == 0)
 	    {
 	      AliFatal( Form( "could not open file: %s", filenameCoarse ) );
 	    }
-	  else
+      else
 	    {
 	      for(int m = 0; m < n ; m++ )
-		{
- 		  fscanf(fp, "%lf\t", &fPFAmpVectors[i][j][m] );
-		  fscanf(fpc, "%lf\t", &fPFAmpVectorsCoarse[i][j][m] );
-		}
+        {
+          fscanf(fp, "%lf\t", &fPFAmpVectors[i][j][m] );
+          fscanf(fpc, "%lf\t", &fPFAmpVectorsCoarse[i][j][m] );
+        }
 	      fscanf(fp,   "\n" );
 	      fscanf(fpc,  "\n" );
 	      for(int m = 0; m < n ; m++ )
-		{
-		  fscanf(fp, "%lf\t",   &fPFTofVectors[i][j][m]  );
-		  fscanf(fpc, "%lf\t",  &fPFTofVectorsCoarse[i][j][m]  );  
-		}
+        {
+          fscanf(fp, "%lf\t",   &fPFTofVectors[i][j][m]  );
+          fscanf(fpc, "%lf\t",  &fPFTofVectorsCoarse[i][j][m]  );  
+        }
 	      
 	      fPeakFinderVectors->SetVector( i, j, fPFAmpVectors[i][j], fPFTofVectors[i][j],    
-					     fPFAmpVectorsCoarse[i][j], fPFTofVectorsCoarse[i][j] );   
-	      					     
+                                      fPFAmpVectorsCoarse[i][j], fPFTofVectorsCoarse[i][j] );   
+        
 	      fclose (fp);
 	      fclose (fpc);
 	    }
-	}
     }
+  }
 }
 
 

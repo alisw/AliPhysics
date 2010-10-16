@@ -37,6 +37,11 @@ AliEMCALCCUSBRawStream::AliEMCALCCUSBRawStream(AliRawReader* rawReader) :
 
   fRawReader->Reset();
   fRawReader->SelectEquipment(1, 1, 1);
+  
+  for(Int_t i = 0 ; i < fgkNTDC; i++ )          fTDC[i] = 0 ;             
+  for(Int_t i = 0 ; i < fgkNQDC; i++ )          fQDC[i] = 0 ;                         
+  for(Int_t i = 0 ; i < fgkNScalerCCUSB; i++ )  fScalerCCUSB[i]  = 0;          
+  for(Int_t i = 0 ; i < fgkNScalerLecroy; i++ ) fScalerLecroy[i] = 0;       
 }
 
 Bool_t AliEMCALCCUSBRawStream::Next()

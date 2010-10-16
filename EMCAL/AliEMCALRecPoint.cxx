@@ -835,23 +835,24 @@ Double_t phiSlope, TClonesArray * digits)
 	
   for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
     digit = dynamic_cast<AliEMCALDigit *>(digits->At(fDigitsList[iDigit])) ;
- 
-    dist = deff;
-    //fGeomPtr->RelPosCellInSModule(digit->GetId(), idMax, dist, xyzi[0], xyzi[1], xyzi[2]);
-    fGeomPtr->RelPosCellInSModule(digit->GetId(), dist, xyzi[0], xyzi[1], xyzi[2]);
-    
-    if(logWeight > 0.0)  w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ));
-    else                 w = fEnergyList[iDigit]; // just energy
-    
-    if(w>0.0) {
-      wtot += w ;
-      nstat++;
-      for(i=0; i<3; i++ ) {
-        clXYZ[i]    += (w*xyzi[i]);
-        clRmsXYZ[i] += (w*xyzi[i]*xyzi[i]);
+    if(digit){
+      dist = deff;
+      //fGeomPtr->RelPosCellInSModule(digit->GetId(), idMax, dist, xyzi[0], xyzi[1], xyzi[2]);
+      fGeomPtr->RelPosCellInSModule(digit->GetId(), dist, xyzi[0], xyzi[1], xyzi[2]);
+      
+      if(logWeight > 0.0)  w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ));
+      else                 w = fEnergyList[iDigit]; // just energy
+      
+      if(w>0.0) {
+        wtot += w ;
+        nstat++;
+        for(i=0; i<3; i++ ) {
+          clXYZ[i]    += (w*xyzi[i]);
+          clRmsXYZ[i] += (w*xyzi[i]*xyzi[i]);
+        }
       }
-    }
-  }
+    }else AliError("Digit null");
+  }//loop
   //  cout << " wtot " << wtot << endl;
   if ( wtot > 0 ) { 
     //    xRMS   = TMath::Sqrt(x2m - xMean*xMean);
@@ -931,21 +932,22 @@ Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(const Double_t esum, const 
 
   for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
     digit = dynamic_cast<AliEMCALDigit *>(digits->At(iDigit));
-
-    //geo->RelPosCellInSModule(digit->GetId(), idMax, deff, xyzi[0], xyzi[1], xyzi[2]);
-    geo->RelPosCellInSModule(digit->GetId(), deff, xyzi[0], xyzi[1], xyzi[2]);
-
-    if(w0 > 0.0)  w = TMath::Max( 0., w0 + TMath::Log(ed[iDigit] / esum));
-    else          w = ed[iDigit]; // just energy
-
-    if(w>0.0) {
-      wtot += w ;
-      nstat++;
-      for(i=0; i<3; i++ ) {
-        clXYZ[i] += (w*xyzi[i]);
+    if(digit){
+      //geo->RelPosCellInSModule(digit->GetId(), idMax, deff, xyzi[0], xyzi[1], xyzi[2]);
+      geo->RelPosCellInSModule(digit->GetId(), deff, xyzi[0], xyzi[1], xyzi[2]);
+      
+      if(w0 > 0.0)  w = TMath::Max( 0., w0 + TMath::Log(ed[iDigit] / esum));
+      else          w = ed[iDigit]; // just energy
+      
+      if(w>0.0) {
+        wtot += w ;
+        nstat++;
+        for(i=0; i<3; i++ ) {
+          clXYZ[i] += (w*xyzi[i]);
+        }
       }
-    }
-  }
+    }else AliError("Digit null");
+  }//loop
   //  cout << " wtot " << wtot << endl;
   if (wtot > 0) { 
     for(i=0; i<3; i++ ) {

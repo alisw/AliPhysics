@@ -141,7 +141,7 @@ AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
   fLEDRefs(sig.GetLEDRefs()),
   fModules(sig.GetModules()),
   fCaloString(sig.GetCaloString()),
-  fMapping(NULL), //! note that we are not copying the map info
+  fMapping(), //! note that we are not copying the map info
   fRunNumber(sig.GetRunNumber()),
   fStartTime(sig.GetStartTime()),
   fAmpCut(sig.GetAmpCut()),
@@ -155,13 +155,23 @@ AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
   fSecInAverage(sig.GetSecInAverage()),
   fNEvents(sig.GetNEvents()),
   fNAcceptedEvents(sig.GetNAcceptedEvents()),
-  fTreeAmpVsTime(NULL),
-  fTreeAvgAmpVsTime(NULL),
-  fTreeLEDAmpVsTime(NULL),
-  fTreeLEDAvgAmpVsTime(NULL)
+  fTreeAmpVsTime(),
+  fTreeAvgAmpVsTime(),
+  fTreeLEDAmpVsTime(),
+  fTreeLEDAvgAmpVsTime()
 {
   // also the TTree contents
   AddInfo(&sig);
+  for (Int_t i = 0; i<2*fgkMaxTowers; i++) {
+    if(i < fgkMaxTowers){
+      fNHighGain[i] = sig.fNHighGain[i];
+      fNLowGain[i]  = sig.fNLowGain[i]; 
+    }
+    fNRef[i] = sig.fNRef[i]; 
+  }
+  
+  
+  
 }
 
 // assignment operator; use copy ctor to make life easy..
@@ -724,8 +734,8 @@ Bool_t AliCaloCalibSignal::Analyze()
   //1: set up TProfiles for the towers that had data
   TProfile * profile[fgkMaxTowers*2]; // *2 is since we include both high and low gains
   memset(profile, 0, sizeof(profile));
-
-  char name[200]; // for profile id and title
+  const Int_t buffersize = 200;
+  char name[buffersize]; // for profile id and title
   int iTowerNum = 0;
 
   for (int i = 0; i<fModules; i++) {
@@ -736,14 +746,14 @@ Bool_t AliCaloCalibSignal::Analyze()
 	// high gain
 	if (fNHighGain[iTowerNum] > 0) {
 	  fChannelNum = GetChannelNum(i, ic, ir, 1); 
-	  sprintf(name, "profileChan%d", fChannelNum);
+	  snprintf(name,buffersize,"profileChan%d", fChannelNum);
 	  profile[fChannelNum] = new TProfile(name, name, numProfBins, timeMin, timeMax, "s");
 	}
 
 	// same for low gain
 	if (fNLowGain[iTowerNum] > 0) {
 	  fChannelNum = GetChannelNum(i, ic, ir, 0); 
-	  sprintf(name, "profileChan%d", fChannelNum);
+	  snprintf(name,buffersize,"profileChan%d", fChannelNum);
 	  profile[fChannelNum] = new TProfile(name, name, numProfBins, timeMin, timeMax, "s");
 	}
 

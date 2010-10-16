@@ -48,8 +48,8 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
   fAlgo(Algo::kNONE)
 {
   //Comment 
-  sprintf(fName, "%s", name);
-  sprintf(fNameShort, "%s", nameshort);
+  snprintf(fName, 256,"%s", name);
+  snprintf(fNameShort,256, "%s", nameshort);
     
   for(int i=0; i < MAXSAMPLES; i++ )
     {
