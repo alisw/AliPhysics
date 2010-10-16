@@ -37,19 +37,34 @@ public:
   void     GetMaxEnergyCell(AliEMCALGeoUtils *geom, AliVCaloCells* cells, AliVCluster* clu, 
                             Int_t & absId,  Int_t& iSupMod, Int_t& ieta, Int_t& iphi);
   
-  Float_t  GetMisalShift(const Int_t i) const {
-    if(i < 15 ){return fMisalShift[i]; }
+  Float_t  GetMisalTransShift(const Int_t i) const {
+    if(i < 15 ){return fMisalTransShift[i]; }
     else { AliInfo(Form("Index %d larger than 15, do nothing\n",i)); return 0.;}
   }
-  Float_t  *GetMisalShiftArray() {return fMisalShift; }
+  Float_t  *GetMisalTransShiftArray() {return fMisalTransShift; }
 
-  void     SetMisalShift(const Int_t i, const Float_t shift) {
-    if(i < 15 ){fMisalShift[i] = shift; }
+  void     SetMisalTransShift(const Int_t i, const Float_t shift) {
+    if(i < 15 ){fMisalTransShift[i] = shift; }
     else { AliInfo(Form("Index %d larger than 15, do nothing\n",i));}
   }
-  void     SetMisalShiftArray(Float_t * misal) 
-  { for(Int_t i = 0; i < 15; i++)fMisalShift[i] = misal[i]; }
+  void     SetMisalTransShiftArray(Float_t * misal) 
+  { for(Int_t i = 0; i < 15; i++)fMisalTransShift[i] = misal[i]; }
 
+  Float_t  GetMisalRotShift(const Int_t i) const {
+    if(i < 15 ){return fMisalRotShift[i]; }
+    else { AliInfo(Form("Index %d larger than 15, do nothing\n",i)); return 0.;}
+  }
+  Float_t  *GetMisalRotShiftArray() {return fMisalRotShift; }
+  
+  void     SetMisalRotShift(const Int_t i, const Float_t shift) {
+    if(i < 15 ){fMisalRotShift[i] = shift; }
+    else { AliInfo(Form("Index %d larger than 15, do nothing\n",i));}
+  }
+  void     SetMisalRotShiftArray(Float_t * misal) 
+  { for(Int_t i = 0; i < 15; i++)fMisalRotShift[i] = misal[i]; }
+  
+  
+  
   //Non Linearity
   
   Float_t CorrectClusterEnergyLinearity(AliVCluster* clu);
@@ -70,11 +85,12 @@ public:
   
 private:
   
-  Float_t fMisalShift[15];        // Shift parameters
+  Float_t fMisalTransShift[15];   // Shift parameters
+  Float_t fMisalRotShift[15];     // Shift parameters
   Int_t   fNonLinearityFunction;  // Non linearity function choice
   Float_t fNonLinearityParams[6]; // Parameters for the non linearity function
 
-  ClassDef(AliEMCALRecoUtils, 1)
+  ClassDef(AliEMCALRecoUtils, 2)
   
 };
 

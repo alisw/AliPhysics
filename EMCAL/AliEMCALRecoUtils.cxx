@@ -50,7 +50,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   // during Reco algorithm execution
   //
   
-  for(Int_t i = 0; i < 15 ; i++) fMisalShift[i] = 0.;  
+  for(Int_t i = 0; i < 15 ; i++) {fMisalTransShift[i] = 0.; fMisalRotShift[i] = 0.; }
   for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = 0.; 
   //By default kPi0GammaGamma case
   fNonLinearityParams[0] = 0.1457/0.1349766/1.038;
@@ -65,7 +65,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
 {
   //Copy ctor
   
-  for(Int_t i = 0; i < 15 ; i++) fMisalShift[i]         = reco.fMisalShift[i];  
+  for(Int_t i = 0; i < 15 ; i++) {fMisalRotShift[i] = reco.fMisalRotShift[i]; fMisalTransShift[i] = reco.fMisalTransShift[i]; } 
   for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
 }
 
@@ -79,7 +79,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   ((TNamed *)this)->operator=(reco);
 
   fNonLinearityFunction = reco.fNonLinearityFunction;
-  for(Int_t i = 0; i < 15 ; i++) fMisalShift[i]         = reco.fMisalShift[i];  
+  for(Int_t i = 0; i < 15 ; i++) {fMisalTransShift[i] = reco.fMisalTransShift[i]; fMisalRotShift[i] = reco.fMisalRotShift[i];}
   for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
   
   return *this;
@@ -221,11 +221,11 @@ void AliEMCALRecoUtils::RecalculateClusterPosition(AliEMCALGeoUtils *geom, AliVC
     //printf("In Same SM\n");
     weightedCol = weightedCol/totalWeight;
     weightedRow = weightedRow/totalWeight;
-    geom->RecalculateTowerPosition(weightedRow, weightedCol, iSupMod, clEnergy, iParticle, fMisalShift, xyzNew); 
+    geom->RecalculateTowerPosition(weightedRow, weightedCol, iSupMod, clEnergy, iParticle, fMisalTransShift, fMisalRotShift, xyzNew); 
   }
   else {
     //printf("In Different SM\n");
-    geom->RecalculateTowerPosition(iphi,        ieta,        iSupMod, clEnergy, iParticle, fMisalShift, xyzNew); 
+    geom->RecalculateTowerPosition(iphi,        ieta,        iSupMod, clEnergy, iParticle, fMisalTransShift, fMisalRotShift, xyzNew); 
   }
   clu->SetPosition(xyzNew);
 
@@ -241,7 +241,9 @@ void AliEMCALRecoUtils::Print(const Option_t *) const
   
   printf("AliEMCALRecoUtils Settings: \n");
   printf("Misalignment shifts\n");
-  for(Int_t i=0; i<5; i++) printf("\t sector %d, (dx,dy,dz)=(%f,%f,%f)\n",i, fMisalShift[i*3],fMisalShift[i*3+1],fMisalShift[i*3+2]);
+  for(Int_t i=0; i<5; i++) printf("\t sector %d, traslation (x,y,z)=(%f,%f,%f), rotation (x,y,z)=(%f,%f,%f)\n",i, 
+                                  fMisalTransShift[i*3],fMisalTransShift[i*3+1],fMisalTransShift[i*3+2],
+                                  fMisalRotShift[i*3],  fMisalRotShift[i*3+1],  fMisalRotShift[i*3+2]   );
   printf("Non linearity function %d, parameters:\n", fNonLinearityFunction);
   for(Int_t i=0; i<6; i++) printf("param[%d]=%f\n",i, fNonLinearityParams[i]);
     

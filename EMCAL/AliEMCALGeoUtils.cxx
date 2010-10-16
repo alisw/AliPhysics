@@ -1323,7 +1323,8 @@ void AliEMCALGeoUtils::GetModulePhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int
 
 //__________________________________________________________________________________________________________________
 void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, Float_t energy, 
-                                                const Int_t particle, const Float_t misaligshifts[15], Float_t global[3]) const
+                                                const Int_t particle, const Float_t misaligTransShifts[15], 
+                                                const Float_t misaligRotShifts[15], Float_t global[3]) const
 { //Transform clusters cell position into global with alternative method, taking into account the depth calculation.
   //Input are: the tower indeces, 
   //           supermodule, 
@@ -1460,14 +1461,14 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     
     //hardcoded global shifts
     if(sm == 2 || sm == 3) {//sector 1
-      global[0] = dglobal[0] + misaligshifts[3]*TMath::Sin(TMath::DegToRad()*20); // misaligshifts[3] = - 7.5
-      global[1] = dglobal[1] + misaligshifts[4]*TMath::Cos(TMath::DegToRad()*20); // misaligshifts[4] = + 7.5
-      global[2] = dglobal[2] + misaligshifts[5];                                  // misaligshifts[6] = 2.
+      global[0] = dglobal[0] + misaligTransShifts[3] + misaligRotShifts[3]*TMath::Sin(TMath::DegToRad()*20) ; 
+      global[1] = dglobal[1] + misaligTransShifts[4] + misaligRotShifts[4]*TMath::Cos(TMath::DegToRad()*20) ; 
+      global[2] = dglobal[2] + misaligTransShifts[5];
     }
     else if(sm == 0 || sm == 1){//sector 0
-      global[0] = dglobal[0] + misaligshifts[0]; // misaligshifts[0] = 0.8
-      global[1] = dglobal[1] + misaligshifts[1]; // misaligshifts[1] = 8.3
-      global[2] = dglobal[2] + misaligshifts[2]; // misaligshifts[2] = 1.
+      global[0] = dglobal[0] + misaligTransShifts[0]; 
+      global[1] = dglobal[1] + misaligTransShifts[1]; 
+      global[2] = dglobal[2] + misaligTransShifts[2];
     }
     else {
       AliInfo("Careful, correction not implemented yet!");
