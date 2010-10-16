@@ -737,13 +737,13 @@ void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVC
     
     //Float_t *xyzNew = RecalculatePosition(weightedRow, weightedCol, clEnergy, 0, iSupMod); //1 = electrons, 0 photons
     fEMCALGeo->RecalculateTowerPosition(weightedRow, weightedCol, imod, clEnergy, 0, //1 = electrons, 0 photons
-                                        fEMCALRecoUtils->GetMisalShiftArray(), xyzNew);
+                                        fEMCALRecoUtils->GetMisalTransShiftArray(), fEMCALRecoUtils->GetMisalRotShiftArray(), xyzNew);
   }
   else {
     //printf("In Different SM\n");
     //Float_t *xyzNew = RecalculatePosition(iphi,        ieta,        clEnergy, 0, iSupMod); //1 = electrons, 0 photons
     fEMCALGeo->RecalculateTowerPosition(iphi, ieta, imod, clEnergy, 0, //1 = electrons, 0 photons
-                                        fEMCALRecoUtils->GetMisalShiftArray(), xyzNew);
+                                        fEMCALRecoUtils->GetMisalTransShiftArray(), fEMCALRecoUtils->GetMisalRotShiftArray(), xyzNew);
     
   }
   

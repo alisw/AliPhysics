@@ -49,7 +49,7 @@ ClassImp(AliAnalysisTaskEMCALPi0CalibSelection)
 //__________________________________________________
 AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
   AliAnalysisTaskSE(name),fEMCALGeo(0x0),//fCalibData(0x0), 
-  fEmin(0.5), fEmax(15.), fMinNCells(2), fGroupNCells(0),
+  fEmin(0.5), fEmax(15.), fAsyCut(1.),fMinNCells(2), fGroupNCells(0),
   fLogWeight(4.5), fCopyAOD(kFALSE), fSameSM(kFALSE), fOldAOD(kFALSE),
   fEMCALGeoName("EMCAL_FIRSTYEAR"), fNCellsFromEMCALBorder(0),
   fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(0x0),
@@ -60,7 +60,6 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
   fHOpeningAngle(0x0),  fHOpeningAngleDifferentSM(0x0),  
   fHIncidentAngle(0x0), fHIncidentAngleDifferentSM(0x0),
   fHAsymmetry(0x0),  fHAsymmetryDifferentSM(0x0),  
-
   fhNEvents(0x0),fCuts(0x0)
 {
   //Named constructor which should be used.
@@ -130,7 +129,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::LocalInit()
 	char onePar[buffersize] ;
 	fCuts = new TList();
 
-	snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; min number of cells %d;", fEmin,fEmax, fMinNCells) ;
+	snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; min number of cells %d; Assymetry cut %1.2f", fEmin,fEmax, fMinNCells, fAsyCut) ;
 	fCuts->Add(new TObjString(onePar));
 	snprintf(onePar,buffersize, "Group %d cells;", fGroupNCells) ;
 	fCuts->Add(new TObjString(onePar));
@@ -802,7 +801,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       //printf("*** mass %f\n",invmass);
       Float_t asym = TMath::Abs(p1.E()-p2.E())/(p1.E()+p2.E());
       //printf("asymmetry %f\n",asym);
-
+      
+      if(asym > fAsyCut) continue;
+      
       if(invmass < fMaxBin && invmass > fMinBin){
         
         //Check if cluster is in fidutial region, not too close to borders
@@ -831,9 +832,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
             //Float_t * posSM1cen = RecalculatePosition(11.5, 23.5, p1.E(),0, iSupMod1); 
             //Float_t * posSM2cen = RecalculatePosition(11.5, 23.5, p2.E(),0, iSupMod2); 
             Float_t posSM1cen[3]={0.,0.,0.};
-            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, p1.E(),iSupMod1,0,fRecoUtils->GetMisalShiftArray(),posSM1cen); 
+            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, p1.E(),iSupMod1,0,
+                                                fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM1cen); 
             Float_t posSM2cen[3]={0.,0.,0.}; 
-            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, p2.E(),iSupMod2,0,fRecoUtils->GetMisalShiftArray(),posSM2cen); 
+            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, p2.E(),iSupMod2,0,
+                                                fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM2cen); 
             //printf("SM1 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod1,posSM1cen[0],posSM1cen[1],posSM1cen[2]);
             //printf("SM2 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod2,posSM2cen[0],posSM2cen[1],posSM2cen[2]);
             
@@ -1080,13 +1083,13 @@ void AliAnalysisTaskEMCALPi0CalibSelection::GetMaxEnergyCellPosAndClusterPos(Ali
     
     //Float_t *xyzNew = RecalculatePosition(weightedRow, weightedCol, clEnergy, 0, iSupMod); //1 = electrons, 0 photons
     fEMCALGeo->RecalculateTowerPosition(weightedRow, weightedCol, iSupMod, clEnergy, 0, //1 = electrons, 0 photons
-                                        fRecoUtils->GetMisalShiftArray(), xyzNew);
+                                        fRecoUtils->GetMisalTransShiftArray(), fRecoUtils->GetMisalRotShiftArray(), xyzNew);
   }
   else {
     //printf("In Different SM\n");
     //Float_t *xyzNew = RecalculatePosition(iphi,        ieta,        clEnergy, 0, iSupMod); //1 = electrons, 0 photons
     fEMCALGeo->RecalculateTowerPosition(iphi, ieta, iSupMod, clEnergy, 0, //1 = electrons, 0 photons
-                                        fRecoUtils->GetMisalShiftArray(), xyzNew);
+                                        fRecoUtils->GetMisalTransShiftArray(), fRecoUtils->GetMisalRotShiftArray(), xyzNew);
     
   }
 
