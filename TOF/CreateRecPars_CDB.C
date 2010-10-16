@@ -4,6 +4,18 @@ void CreateRecPars_CDB(){
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliTOFcalib *tofcalib = new AliTOFcalib();
+
+  TObjArray * array = new TObjArray(2);
+  array->Clear();
   AliTOFRecoParam *param = new AliTOFRecoParam();
-  tofcalib->WriteRecParOnCDB("TOF/Calib",0,999999999,param);
+  param->SetTimeResolution(100.);
+  AliTOFRecoParam *paramPbPb = param->GetPbPbparam();
+  paramPbPb->SetTimeResolution(100.);
+  AliTOFRecoParam *parampp = param->GetPPparam();
+  parampp->SetTimeResolution(100.);
+
+  array->AddLast(parampp);
+  array->AddLast(paramPbPb);
+
+  tofcalib->WriteRecParOnCDB("TOF/Calib",0,999999999,array);
 }

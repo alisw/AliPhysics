@@ -907,7 +907,7 @@ void AliTOFcalib::WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun
   delete md;
 }
 //_____________________________________________________________________________
-AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t nrun)
+AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t nrun, Int_t eventType)
 {
   //Read reconstruction parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
@@ -923,8 +923,12 @@ AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t nrun)
     exit(0);  
   }  
 
-  AliTOFRecoParam *param=(AliTOFRecoParam*)entry->GetObject();
+  TObjArray *array = (TObjArray*)entry->GetObject();
+  AliTOFRecoParam *param=0x0;
+  if (eventType>=0 || eventType<array->GetEntries())
+    param=(AliTOFRecoParam*)array->At(eventType);
   return param;
+
 }
 //-----------------------------------------------------------------------------
 // Calibration methods
