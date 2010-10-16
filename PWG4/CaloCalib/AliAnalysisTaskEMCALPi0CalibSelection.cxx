@@ -832,10 +832,10 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
             //Float_t * posSM1cen = RecalculatePosition(11.5, 23.5, p1.E(),0, iSupMod1); 
             //Float_t * posSM2cen = RecalculatePosition(11.5, 23.5, p2.E(),0, iSupMod2); 
             Float_t posSM1cen[3]={0.,0.,0.};
-            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, p1.E(),iSupMod1,0,
+            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod1, p1.E(), 0,
                                                 fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM1cen); 
             Float_t posSM2cen[3]={0.,0.,0.}; 
-            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, p2.E(),iSupMod2,0,
+            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod2, p2.E(), 0,
                                                 fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM2cen); 
             //printf("SM1 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod1,posSM1cen[0],posSM1cen[1],posSM1cen[2]);
             //printf("SM2 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod2,posSM2cen[0],posSM2cen[1],posSM2cen[2]);
