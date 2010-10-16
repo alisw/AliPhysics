@@ -101,7 +101,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   GetUseTotCharge() const {return fUseTotCharge;}          // switch use total or max charge
   Float_t  GetMinFraction() const {return fMinFraction;}           // truncated mean - lower threshold
   Float_t  GetMaxFraction() const {return fMaxFaction;}            // truncated mean - upper threshold
-
+  //
+  void     SetUseTotCharge(Bool_t useTotCharge) {fUseTotCharge=useTotCharge; }
+  //
   Bool_t   GetUseTOFCorrection() {return fUseTOFCorrection;}
 
   //
