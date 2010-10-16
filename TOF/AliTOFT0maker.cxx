@@ -160,7 +160,7 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
       }
     }
     else{
-      SetT0FillWidth(fT0spreadExt);
+      if(fT0spreadExt > 0) SetT0FillWidth(fT0spreadExt);
       t0fill = fT0fillExt;
     }
   }
@@ -315,21 +315,26 @@ void AliTOFT0maker::ApplyT0TOF(AliESDEvent *esd){
   // Recalculate TOF PID probabilities
   //
 
-  // subtruct t0 for each track
-  Int_t ntracks = esd->GetNumberOfTracks();
+// subtruct t0 for each track
+   Int_t ntracks = esd->GetNumberOfTracks();
   
-  while (ntracks--) {
-    AliESDtrack *t=esd->GetTrack(ntracks);
+   while (ntracks--) {
+       AliESDtrack *t=esd->GetTrack(ntracks);
     
-    if ((t->GetStatus()&AliESDtrack::kTOFout)==0) continue;
+       if ((t->GetStatus()&AliESDtrack::kTOFout)==0) continue;
     
-    Double_t time=t->GetTOFsignal();
-    Float_t p = t->GetP();
+       Double_t time=t->GetTOFsignal();
+       Float_t p = t->GetP();
 
-    Double_t *t0=GetT0p(p);
-    time -= t0[0];
-    t->SetTOFsignal(time);
-  }
+       Double_t *t0=GetT0p(p);
+       time -= t0[0];
+       t->SetTOFsignal(time);
+   }
+
+   for(Int_t i=0;i<fNmomBins;i++){
+       fPIDesd->GetTOFResponse().SetT0bin(i,0.0);
+   }
+   
   //
 }
 //____________________________________________________________________________ 
@@ -401,7 +406,7 @@ AliTOFT0maker::TuneForMC(AliESDEvent *esd){ // return true T0 event
       /* reset TOF status */
       t->ResetStatus(AliESDtrack::kTOFin);
       t->ResetStatus(AliESDtrack::kTOFout);
-      t->ResetStatus(AliESDtrack::kTOFrefit);
+      t->ResetStatus(AliESDtrack::kTOFmismatch);
       t->ResetStatus(AliESDtrack::kTOFpid);
     }
 

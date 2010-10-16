@@ -62,7 +62,7 @@ public:
   Bool_t fExternalPIDFlag; // external PID flag
   AliTOFcalib *fTOFcalib; // TOF calibration
 
-  Bool_t fNoTOFT0;   // swithc to avoid T0-TOF is used
+  Bool_t fNoTOFT0;   // switch to avoid T0-TOF is used
 
   Int_t fNmomBins;
 

@@ -43,7 +43,7 @@ public:
 
   Bool_t AcceptTrack(AliESDtrack *track); /* accept track */
   Float_t GetSigmaToVertex(AliESDtrack *track) const; /* get sigma to vertex */
-
+  Bool_t CheckTPCMatching(AliESDtrack *track,Int_t imass) const;
 
   Float_t fLowerMomBound;   // momentum lower bound for selected primary tracks   
   Float_t fUpperMomBound;   // momentum upper bound for selected primary tracks 

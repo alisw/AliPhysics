@@ -215,6 +215,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
     if (!AcceptTrack(t)) continue;
 
     if(t->GetP() < fLowerMomBound || t->GetIntegratedLength() < 350 || t->GetTOFsignalToT() < 0.000000001)continue; //skip decays
+
     if(time <= mintime) mintime=time;
     tracks[ngoodtrk]=t;
     ngoodtrk++;
@@ -376,7 +377,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	    imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j)))/Int_t(TMath::Power(3,ntracksinsetmy-j-1));
 	    texp[j]=exptof[j][imass[j]];
 	    dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
+	    if(! CheckTPCMatching(tracksT0[j],imass[j])) dtexp[j]*=100;
 	  }
+
 	  Float_t sumAllweights=0.;
 	  Float_t meantzero=0.;
 	  Float_t eMeanTzero=0.;
@@ -399,8 +402,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  
 	  Float_t chisquare=0.;		
 	  for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
-	    chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq];
-	    
+	      if(CheckTPCMatching(tracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	      else  chisquare+=1000;
 	  } // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	  
 	  if(chisquare<=chisquarebest){
@@ -412,7 +415,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	      besttimeofflight[iqsq]=timeofflight[iqsq]; 
 	      besttexp[iqsq]=texp[iqsq]; 
 	      bestweightedtimezero[iqsq]=weightedtimezero[iqsq]; 
-	      bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; 
+	      if(CheckTPCMatching(tracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+	      else  bestchisquare[iqsq]=1000;
 	    }
 	    
 	    Int_t npion=0;
@@ -461,6 +465,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	      imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j))) / Int_t(TMath::Power(3,ntracksinsetmy-j-1));
 	      texp[j]=exptof[j][imass[j]];
 	      dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
+	      if(! CheckTPCMatching(tracksT0[j],imass[j])) dtexp[j]*=100;
 	    }
 	    
 	    Float_t sumAllweights=0.;
@@ -487,7 +492,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	    Float_t chisquare=0.;		
 	    for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
 	      if(! usetrack[icsq]) continue;
-	      chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq];
+	      if(CheckTPCMatching(tracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	      else  chisquare+=1000;
 	      
 	    } // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	    
@@ -497,7 +503,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	      if(imass[j] == 0) npion++;
 	    }
 	    
-	    if(chisquare<=chisquarebest){
+	    if(chisquare<=chisquarebest && npion>0){
 	      for(Int_t iqsq = 0; iqsq<ntracksinsetmy; iqsq++) {
 		if(! usetrack[iqsq]) continue;
 		bestsqTrackError[iqsq]=sqTrackError[iqsq]; 
@@ -506,7 +512,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 		besttimeofflight[iqsq]=timeofflight[iqsq]; 
 		besttexp[iqsq]=texp[iqsq]; 
 		bestweightedtimezero[iqsq]=weightedtimezero[iqsq]; 
-		bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; 
+		if(CheckTPCMatching(tracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+		else  bestchisquare[iqsq]=1000;
 	      }
 	      
 	      npionbest=npion;
@@ -572,6 +579,30 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	
       } // end for the current set
       
+      //Redo the computation of the best in order to esclude very bad samples
+ 	if(ngoodsetsSel > 1){
+	    Double_t t0BestStep1 = t0bestallSel/sumWt0bestallSel;
+	    Int_t nsamples=ngoodsetsSel;
+	    ngoodsetsSel=0;
+	    t0bestallSel=0;
+	    sumWt0bestallSel=0;
+	    for (Int_t itz=0; itz<nsamples;itz++) {
+		if(TMath::Abs(t0bestSel[itz]/eT0bestSel[itz]-t0BestStep1)<1.0){
+		    t0bestallSel += t0bestSel[itz];
+		    sumWt0bestallSel += eT0bestSel[itz];	      
+		    ngoodsetsSel++;   
+//	      printf("not rejected %f +/- %f\n",t0bestSel[itz]/eT0bestSel[itz],1./TMath::Sqrt(eT0bestSel[itz]));
+		}
+		else{
+//	      printf("rejected %f +/- %f\n",t0bestSel[itz]/eT0bestSel[itz],1./TMath::Sqrt(eT0bestSel[itz]));
+		}
+	    }
+	}
+	if(ngoodsetsSel < 1){
+	    sumWt0bestallSel = 0.0;
+	}
+      //--------------------------------End recomputation
+
       nUsedTracks =  ngoodtrkt0;  
       if(strstr(option,"all")){
 	if(sumAllweightspi>0.){
@@ -612,7 +643,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 //   bench->Print("t0computation");
 //   printf("%f %f\n",fT0SigmaT0def[4],fT0SigmaT0def[5]);
 
-  bench->Reset();
+
+  delete bench;
+  bench=NULL;
 
   return fT0SigmaT0def;
   }
@@ -844,7 +877,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	    imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j)))/Int_t(TMath::Power(3,ntracksinsetmy-j-1));
 	    texp[j]=exptof[j][imass[j]];
 	    dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
+	    if(! CheckTPCMatching(tracksT0[j],imass[j])) dtexp[j]*=100;
 	  }
+
 	  Float_t sumAllweights=0.;
 	  Float_t meantzero=0.;
 	  Float_t eMeanTzero=0.;
@@ -864,10 +899,10 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  eMeanTzero=sqrt(1./sumAllweights); // it is given in [ns]
 	  
 	  // calculate chisquare
-	  
 	  Float_t chisquare=0.;		
 	  for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
-	    chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq];
+	      if(CheckTPCMatching(tracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	      else  chisquare+=1000;
 	  } // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	  
 	  if(chisquare<=chisquarebest){
@@ -879,7 +914,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	      besttimeofflight[iqsq]=timeofflight[iqsq]; 
 	      besttexp[iqsq]=texp[iqsq]; 
 	      bestweightedtimezero[iqsq]=weightedtimezero[iqsq]; 
-	      bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; 
+	      if(CheckTPCMatching(tracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+	      else  bestchisquare[iqsq]=1000;
 	    }
 	    
 	    Int_t npion=0;
@@ -903,7 +939,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	
 	Double_t chi2singlecut = chi2cut[ntracksinsetmy-1]/ntracksinsetmy + TMath::Abs(chisquarebest-chi2cut[ntracksinsetmy-1])/ntracksinsetmy;
 	
-	//	printf("tracks removed with a chi2 > %f (chi2total = %f w.r.t. the limit of %f)\n",chi2singlecut,chisquarebest,chi2cut[ntracksinsetmy-1]);
+//	printf("tracks removed with a chi2 > %f (chi2total = %f w.r.t. the limit of %f)\n",chi2singlecut,chisquarebest,chi2cut[ntracksinsetmy-1]);
 	
 	Bool_t kRedoT0 = kFALSE;
         ntracksinsetmyCut = ntracksinsetmy;
@@ -911,13 +947,13 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
 	  usetrack[icsq] = kTRUE;
 	  if((bestchisquare[icsq] > chisquarebest*0.5 && ntracksinsetmy > 2) || (bestchisquare[icsq] > chi2singlecut)){
-	    kRedoT0 = kTRUE;
-	    ntracksinsetmyCut--;
-	    usetrack[icsq] = kFALSE;
+	      kRedoT0 = kTRUE;
+	      ntracksinsetmyCut--;
+	      usetrack[icsq] = kFALSE;
 	  }
 	} // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	
-	//	printf("ntrackinsetmy = %i - %i\n",ntracksinsetmy,ntracksinsetmyCut);
+//	printf("ntrackinsetmy = %i - %i\n",ntracksinsetmy,ntracksinsetmyCut);
 
 	// Loop on mass hypotheses Redo
 	if(kRedoT0 && ntracksinsetmyCut > 1){
@@ -927,6 +963,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	      imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j))) / Int_t(TMath::Power(3,ntracksinsetmy-j-1));
 	      texp[j]=exptof[j][imass[j]];
 	      dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
+	      if(! CheckTPCMatching(tracksT0[j],imass[j])) dtexp[j]*=100;
 	    }
 	    
 	    Float_t sumAllweights=0.;
@@ -953,8 +990,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	    Float_t chisquare=0.;		
 	    for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
 	      if(! usetrack[icsq]) continue;
-	      chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq];
-	      
+	      if(CheckTPCMatching(tracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	      else  chisquare+=1000;
 	    } // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	    
 	    Int_t npion=0;
@@ -963,7 +1000,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	      if(imass[j] == 0) npion++;
 	    }
 	    
-	    if(chisquare<=chisquarebest){
+	    if(chisquare<=chisquarebest && npion>0){
 	      for(Int_t iqsq = 0; iqsq<ntracksinsetmy; iqsq++) {
 		if(! usetrack[iqsq]) continue;
 		bestsqTrackError[iqsq]=sqTrackError[iqsq]; 
@@ -972,7 +1009,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 		besttimeofflight[iqsq]=timeofflight[iqsq]; 
 		besttexp[iqsq]=texp[iqsq]; 
 		bestweightedtimezero[iqsq]=weightedtimezero[iqsq]; 
-		bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; 
+		if(CheckTPCMatching(tracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+		else  bestchisquare[iqsq]=1000;
 	      }
 	      
 	      npionbest=npion;
@@ -1002,6 +1040,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 //  	  cout << " C.L. of the set "<< confLevel <<endl;
 //  	  cout << " T0 for this set (in ns)  " << t0best << endl;
 
+	  Int_t ntrackincurrentsel=0;
 	  for(Int_t icsq=0; icsq<ntracksinsetmy;icsq++){
 
 	    if(! usetrack[icsq]) continue;
@@ -1014,6 +1053,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 //  		 << " TOF   = "     << besttimeofflight[icsq] 
 //  		 << " TOF tracking  = " << besttexp[icsq]
 //  		 << " is used = " << usetrack[icsq] << endl;
+	    ntrackincurrentsel++;
 	  }
 	  
 	  //	  printf("%i) CL(Chi2) = %f < 0.01\n",ngoodsetsSel,confLevel);
@@ -1029,7 +1069,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	    sumWt0bestallSel += 1./eT0best/eT0best;
 	    ngoodsetsSel++;
 	    ngoodtrktrulyused+=ntracksinsetmyCut;
-	    //	    printf("T0 set = %f +/- %f\n",t0best,eT0best);
+//	    printf("T0best = %f +/- %f (%i-%i) -- conflevel = %f\n",t0best,eT0best,ntrackincurrentsel,npionbest,confLevel);
 	  }
 	  else{
 	    //	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
@@ -1040,6 +1080,30 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	
       } // end for the current set
       
+      //Redo the computation of the best in order to esclude very bad samples
+	if(ngoodsetsSel > 1){
+	    Double_t t0BestStep1 = t0bestallSel/sumWt0bestallSel;
+	    Int_t nsamples=ngoodsetsSel;
+	    ngoodsetsSel=0;
+	    t0bestallSel=0;
+	    sumWt0bestallSel=0;
+	    for (Int_t itz=0; itz<nsamples;itz++) {
+		if(TMath::Abs(t0bestSel[itz]/eT0bestSel[itz]-t0BestStep1)<1.0){
+		    t0bestallSel += t0bestSel[itz];
+		    sumWt0bestallSel += eT0bestSel[itz];	      
+		    ngoodsetsSel++;   
+//	      printf("not rejected %f +/- %f\n",t0bestSel[itz]/eT0bestSel[itz],1./TMath::Sqrt(eT0bestSel[itz]));
+		}
+		else{
+//	      printf("rejected %f +/- %f\n",t0bestSel[itz]/eT0bestSel[itz],1./TMath::Sqrt(eT0bestSel[itz]));
+		}
+	    }
+	}
+	if(ngoodsetsSel < 1){
+	    sumWt0bestallSel = 0.0;
+	}
+      //--------------------------------End recomputation
+
       nUsedTracks =  ngoodtrkt0;  
       if(strstr(option,"all")){
 	if(sumAllweightspi>0.){
@@ -1082,7 +1146,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 //   bench->Print("t0computation");
 //   printf("(%4.1f < p < %4.1f GeV/c) T0-TOF =%9.1f +/- %5.1f ps (n_track = %i)\n\n",pMinCut,pMaxCut,-fT0SigmaT0def[0]*1000,fT0SigmaT0def[1]*1000,Int_t(fT0SigmaT0def[3]));
 
-  bench->Reset();
+  delete bench;
+  bench=NULL;
 
   return fT0SigmaT0def;
   }
@@ -1162,4 +1227,32 @@ Float_t AliTOFT0v1::GetSigmaToVertex(AliESDtrack* esdTrack) const
 
   Float_t nSigma = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
   return nSigma;
+}
+//____________________________________________________________________
+
+Bool_t AliTOFT0v1::CheckTPCMatching(AliESDtrack *track,Int_t imass) const{
+    Bool_t status = kFALSE;
+    
+    Double_t exptimes[5];
+    track->GetIntegratedTimes(exptimes);
+    
+    Float_t dedx = track->GetTPCsignal();
+    
+    Double_t ptpc[3];
+    track->GetInnerPxPyPz(ptpc);
+    Float_t momtpc=TMath::Sqrt(ptpc[0]*ptpc[0] + ptpc[1]*ptpc[1] + ptpc[2]*ptpc[2]);
+
+    if(imass > 2 || imass < 0) return status;
+    Int_t i = imass+2;
+    
+    AliPID::EParticleType type=AliPID::EParticleType(i);
+    
+    Float_t dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,type);
+    Float_t resolutionTPC = fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),type);
+	
+    if(TMath::Abs(dedx - dedxExp) < 5 * resolutionTPC){
+	status = kTRUE;
+    }
+    
+    return status;
 }
