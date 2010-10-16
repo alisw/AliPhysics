@@ -41,18 +41,19 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t * opt);
   virtual void LocalInit() ;
-
-  void SetClusterMinEnergy(Float_t emin) {fEmin=emin;}
-  void SetClusterMaxEnergy(Float_t emax) {fEmax=emax;}
-  void SetClusterMinNCells(Int_t n)      {fMinNCells=n;}
-  void SetNCellsGroup(Int_t n)           {fGroupNCells=n;}
-
-  void SetLogWeight(Float_t weight) {fLogWeight=weight;}
+  
+  void SetAsymmetryCut(Float_t asy)      {fAsyCut      = asy ;}
+  void SetClusterMinEnergy(Float_t emin) {fEmin        = emin;}
+  void SetClusterMaxEnergy(Float_t emax) {fEmax        = emax;}
+  void SetClusterMinNCells(Int_t n)      {fMinNCells   = n   ;}
+  void SetNCellsGroup(Int_t n)           {fGroupNCells = n   ;}
+  void SetLogWeight(Float_t w)           {fLogWeight   = w   ;}
+  
   //void SetCalibCorrections(AliEMCALCalibData* const cdata);
   void CreateAODFromESD();
   void CreateAODFromAOD();	
 
-  void CopyAOD(Bool_t copy)   { fCopyAOD = copy ; }
+  void CopyAOD(Bool_t copy)  { fCopyAOD = copy ; }
   Bool_t IsAODCopied() const { return fCopyAOD ; }
 	
   void SwitchOnSameSM()    {fSameSM = kTRUE  ; }
@@ -63,8 +64,8 @@ public:
   void SwitchOnOldAODs()   {fOldAOD = kTRUE  ; }
   void SwitchOffOldAODs()  {fOldAOD = kFALSE ; }  
   
-  void SetGeometryName(TString name)   { fEMCALGeoName = name ; }
-  TString GeometryName() const { return fEMCALGeoName ; }
+  void SetGeometryName(TString name) { fEMCALGeoName = name ; }
+  TString GeometryName() const       { return fEMCALGeoName ; }
  
   //Modules fiducial region
   Bool_t CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells) ;
@@ -87,15 +88,14 @@ public:
 	((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c);}
 	
   TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap->At(iSM);}
-	
-  void SetEMCALChannelStatusMap(TObjArray *map) {fEMCALBadChannelMap = map;}
+  void   SetEMCALChannelStatusMap(TObjArray *map)  {fEMCALBadChannelMap = map;}
 	
   Bool_t ClusterContainsBadChannel(UShort_t* cellList, Int_t nCells);
 	
   // Recalibration
-  Bool_t IsRecalibrationOn()  const { return fRecalibration ; }
-  void SwitchOnRecalibration()    {fRecalibration = kTRUE ; InitEMCALRecalibrationFactors();}
-  void SwitchOffRecalibration()   {fRecalibration = kFALSE ; }
+  Bool_t IsRecalibrationOn() const { return fRecalibration  ; }
+  void SwitchOnRecalibration()     {fRecalibration = kTRUE  ; InitEMCALRecalibrationFactors();}
+  void SwitchOffRecalibration()    {fRecalibration = kFALSE ; }
 	
   void InitEMCALRecalibrationFactors() ;
   
@@ -115,12 +115,11 @@ public:
   Float_t RecalibrateClusterEnergy(AliAODCaloCluster* cluster, AliAODCaloCells * cells);
 	
   void SetEMCALRecoUtils(AliEMCALRecoUtils * ru) {fRecoUtils = ru;}
-  AliEMCALRecoUtils* GetEMCALRecoUtils() const {return fRecoUtils;}
+  AliEMCALRecoUtils* GetEMCALRecoUtils() const   {return fRecoUtils;}
   
   void SetInvariantMassHistoBinRange(Int_t nBins, Float_t minbin, Float_t maxbin){
 	fNbins = nBins; fMinBin = minbin; fMaxBin = maxbin; }
 	  
-private:
   void GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSM, Int_t& ieta, Int_t& iphi);
 
 private:
@@ -130,6 +129,7 @@ private:
 	
   Float_t fEmin;          // min. cluster energy
   Float_t fEmax;          // max. cluster energy
+  Float_t fAsyCut;        // Asymmetry cut
   Int_t   fMinNCells;     // min. ncells in cluster
   Int_t   fGroupNCells;   // group n cells
   Float_t fLogWeight;     // log weight used in cluster recalibration
@@ -181,7 +181,7 @@ private:
   TH1I*   fhNEvents;        //! Number of events counter histogram
   TList * fCuts ;           //! List with analysis cuts
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,7);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,8);
 
 };
 
