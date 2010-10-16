@@ -41,7 +41,9 @@ private:
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX task, TObjArray * list) ;
   virtual void   GetMapIndeces(Int_t *in, Int_t *out) ; 
 
-  ClassDef(AliTOFQADataMaker,1)  // description 
+  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
+
+  ClassDef(AliTOFQADataMaker,2)  // description 
 
 };
 

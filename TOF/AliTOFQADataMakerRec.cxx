@@ -86,7 +86,8 @@ ClassImp(AliTOFQADataMakerRec)
     fLineExpTimeMin(0x0),
     fLineExpTimeMax(0x0),
     fLineExpTotMin(0x0),
-    fLineExpTotMax(0x0)
+    fLineExpTotMax(0x0),
+  fTOFRawStream(AliTOFRawStream())
 {
   //
   // ctor
@@ -109,7 +110,8 @@ AliTOFQADataMakerRec::AliTOFQADataMakerRec(const AliTOFQADataMakerRec& qadm) :
   fLineExpTimeMin(qadm.fLineExpTimeMin),
   fLineExpTimeMax(qadm.fLineExpTimeMax),
   fLineExpTotMin(qadm.fLineExpTotMin),
-  fLineExpTotMax(qadm.fLineExpTotMax)
+  fLineExpTotMax(qadm.fLineExpTotMax),
+  fTOFRawStream(qadm.fTOFRawStream)
 {
   //
   //copy ctor 
@@ -134,6 +136,13 @@ AliTOFQADataMakerRec& AliTOFQADataMakerRec::operator = (const AliTOFQADataMakerR
   return *this;
 }
  
+//----------------------------------------------------------------------------
+AliTOFQADataMakerRec::~AliTOFQADataMakerRec()
+{
+
+  fTOFRawStream.Clear();
+
+}
 //----------------------------------------------------------------------------
 AliTOFChannelOnlineStatusArray* AliTOFQADataMakerRec::GetCalibData() const
 {
@@ -443,16 +452,17 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	Int_t chIndex=-1;
 	
 	TClonesArray * clonesRawData;
-	AliTOFRawStream tofInput(rawReader);
-	
+	//AliTOFRawStream tofInput(rawReader);
+	fTOFRawStream.SetRawReader(rawReader);
+
 	//uncomment if needed to apply DeltaBC correction
-	//tofInput.ApplyBCCorrections(kTRUE);
+	//fTOFRawStream.ApplyBCCorrections(kTRUE);
 	
 	for (Int_t iDDL = 0; iDDL < AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors(); iDDL++){
 	    rawReader->Reset();
 	    
-	    tofInput.LoadRawDataBuffersV2(iDDL);
-	    clonesRawData = (TClonesArray*)tofInput.GetRawData();
+	    fTOFRawStream.LoadRawDataBuffersV2(iDDL);
+	    clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
 	    for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 		AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
 		
@@ -465,12 +475,12 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		    equipmentID[4]=tofRawDatum->GetTDCchannel();
 		    
 		    if (CheckEquipID(equipmentID)){
-			tofInput.EquipmentId2VolumeId(iDDL, 
-						      tofRawDatum->GetTRM(), 
-						      tofRawDatum->GetTRMchain(),
-						      tofRawDatum->GetTDC(), 
-						      tofRawDatum->GetTDCchannel(), 
-						      volumeID);
+			fTOFRawStream.EquipmentId2VolumeId(iDDL, 
+							   tofRawDatum->GetTRM(), 
+							   tofRawDatum->GetTRMchain(),
+							   tofRawDatum->GetTDC(), 
+							   tofRawDatum->GetTDCchannel(), 
+							   volumeID);
 			if (FilterSpare(equipmentID)) continue;
 			if (FilterLTMData(equipmentID)){ //counts LTM hits
 			    if (tofRawDatum->GetTOT()) GetRawsData(15)->Fill(equipmentID[0]);
@@ -553,10 +563,12 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	} // DDL Loop
 	
 	for (Int_t j=0;j<5;j++){
-	    GetRawsData(j)->Fill(ntof[j]);
+	  GetRawsData(j)->Fill(ntof[j]);
 	}
 	fProcessedRawEventN++;
-	
+
+	fTOFRawStream.Clear();
+
     } else {
 	AliDebug(1,Form("Event of type %d found. Skipping non-physics event for QA.\n", rawReader->GetType())); 
     }

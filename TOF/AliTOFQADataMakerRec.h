@@ -28,7 +28,7 @@ public:
   AliTOFQADataMakerRec(const AliTOFQADataMakerRec& qadm) ;   
   AliTOFQADataMakerRec& operator = (const AliTOFQADataMakerRec& qadm) ;
   AliTOFChannelOnlineStatusArray *GetCalibData() const;
-  virtual ~AliTOFQADataMakerRec() {;} // dtor
+  virtual ~AliTOFQADataMakerRec(); // dtor
   
 protected: 
   AliTOFChannelOnlineStatusArray * fCalibData;        //! calibration data
@@ -66,7 +66,9 @@ private:
 	  TLine* fLineSMid035[10];
 	  TLine* fLineSMid3671[10];
 
-	  ClassDef(AliTOFQADataMakerRec,3)  // description 
+	  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
+
+	  ClassDef(AliTOFQADataMakerRec,4)  // description 
 
 };
 

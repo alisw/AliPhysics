@@ -43,7 +43,8 @@ ClassImp(AliTOFQADataMaker)
            
 //____________________________________________________________________________ 
   AliTOFQADataMaker::AliTOFQADataMaker() : 
-  AliQADataMaker(AliQAv1::GetDetName(AliQAv1::kTOF), "TOF Quality Assurance Data Maker")
+  AliQADataMaker(AliQAv1::GetDetName(AliQAv1::kTOF), "TOF Quality Assurance Data Maker"),
+    fTOFRawStream(AliTOFRawStream())
 {
   //
   // ctor
@@ -52,7 +53,8 @@ ClassImp(AliTOFQADataMaker)
 
 //____________________________________________________________________________ 
 AliTOFQADataMaker::AliTOFQADataMaker(const AliTOFQADataMaker& qadm) :
-  AliQADataMaker()
+  AliQADataMaker(),
+  fTOFRawStream(AliTOFRawStream(qadm.fTOFRawStream))
 {
   //
   //copy ctor 
@@ -472,11 +474,12 @@ void AliTOFQADataMaker::MakeRaws(AliRawReader* rawReader)
   Int_t out[5];
 
   TClonesArray * clonesRawData;
-  AliTOFRawStream tofInput(rawReader);
+  //AliTOFRawStream tofInput(rawReader);
+  fTOFRawStream.SetRawReader(rawReader);
   for (Int_t iDDL = 0; iDDL < AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors(); iDDL++){
     rawReader->Reset();
-    tofInput.LoadRawData(iDDL);
-    clonesRawData = (TClonesArray*)tofInput.GetRawData();
+    fTOFRawStream.LoadRawData(iDDL);
+    clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
       //if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
@@ -485,12 +488,12 @@ void AliTOFQADataMaker::MakeRaws(AliRawReader* rawReader)
       GetRawsData(1)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
       GetRawsData(2)->Fill( tofRawDatum->GetTOT()*tot2ns) ;//in ns
 
-      tofInput.EquipmentId2VolumeId(iDDL, 
-				    tofRawDatum->GetTRM(), 
-				    tofRawDatum->GetTRMchain(),
-				    tofRawDatum->GetTDC(), 
-				    tofRawDatum->GetTDCchannel(), 
-				    in);
+      fTOFRawStream.EquipmentId2VolumeId(iDDL, 
+					 tofRawDatum->GetTRM(), 
+					 tofRawDatum->GetTRMchain(),
+					 tofRawDatum->GetTDC(), 
+					 tofRawDatum->GetTDCchannel(), 
+					 in);
     
       GetMapIndeces(in,out);
       GetRawsData(3)->Fill( out[0],out[1]) ;//raw map
@@ -501,6 +504,8 @@ void AliTOFQADataMaker::MakeRaws(AliRawReader* rawReader)
     
   } // DDL Loop
   
+  fTOFRawStream.Clear();
+
   Int_t nentries=ntof;
   if(nentries<=0){
     GetRawsData(0)->Fill(-1.) ; 
