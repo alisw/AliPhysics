@@ -47,6 +47,7 @@
 #include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliGeomManager.h"
+#include "AliCDBManager.h"
 
 #include "AliMCInfo.h"
 #include "AliESDRecInfo.h"
