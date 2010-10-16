@@ -116,14 +116,18 @@ void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName,
     } 
     printf("looking for file %s\n",(objs->GetString()).Data());
     TFile* currentFile=TFile::Open((objs->GetString()).Data());
+    if(!currentFile) continue; // protection
     Merge(currentFile, mergeArray);
   }
   Bool_t separate = kFALSE;
-  if (separate) 
+  if (separate) {
     StoreSeparateResults(mergeArray,outputFileName);
-  else
+  }
+  else {
     StoreResults(mergeArray,outputFileName);
+  }
   delete mergeArray;
+  delete res;
 }
 
 
@@ -150,10 +154,13 @@ void AliFileMerger::IterTXT( const char * fileList,  const char* outputFileName,
     TFile currentFile(objfile.Data());
     Merge(&currentFile, mergeArray);
   }
-  if (separate) 
+  if (separate) { 
     StoreSeparateResults(mergeArray, outputFileName);
-  else
+  }
+  else {
     StoreResults(mergeArray, outputFileName);
+  }
+
   delete mergeArray;
 }
 
@@ -200,7 +207,10 @@ void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
   // load all objects to  memory
   
   TList *farr = fileIn->GetListOfKeys();
-  if (!farr) return;
+  if (!farr) { 
+    delete carray;
+    return;
+  }
   for (Int_t ical=0; ical<farr->GetEntries(); ical++){
     if (!farr->At(ical)) continue;
     TString name(farr->At(ical)->GetName());
@@ -210,7 +220,10 @@ void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
     AliSysInfo::AddStamp(name.Data(),1,ical,counter);  
   }
   
-  if (carray->GetEntries()==0) return;
+  if (carray->GetEntries()==0)  { 
+    delete carray;
+    return;
+  }
   TMethodCall callEnv;
   
   for (Int_t i=0; i<carray->GetEntries(); i++){
@@ -218,15 +231,22 @@ void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
     TObjArray *templist = new TObjArray(1);
     templist->SetOwner(kFALSE);
     TObject *currentObject = carray->At(i);
-    if (!currentObject) continue;
+    if (!currentObject) { 
+      delete templist;
+      continue;
+    }
     printf("%s\n",currentObject->GetName());
     callEnv.InitWithPrototype(currentObject->IsA(), "Merge", "TCollection*");
-    if (!callEnv.IsValid()) {continue;}
+    if (!callEnv.IsValid()) {
+      delete templist; 
+      continue;
+    }
     TString oname=currentObject->GetName();
     TObject *mergedObject = array->FindObject(currentObject->GetName());
     if (!mergedObject) {
       array->AddLast(currentObject);
       carray->RemoveAt(i);
+      delete templist; 
       continue;
     }
     templist->AddLast(currentObject);
