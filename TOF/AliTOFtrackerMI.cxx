@@ -271,7 +271,7 @@ void AliTOFtrackerMI::MatchTracks( Bool_t /*mLastStep*/) const {
 void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
 
   //Match ESD tracks to clusters in TOF
-  const Float_t kTofOffset   = 26;  // time offset
+  const Float_t kTofOffset   = 0;  // time offset
   const Float_t kMinQuality  = -6.; // minimal quality
   const Float_t kMaxQualityD = 1.;  // max delta quality if cluster used
   const Float_t kForbiddenR  = 0.1; // minimal PID according TPC

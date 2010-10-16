@@ -390,7 +390,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   static Float_t padDepth=0.5;
 
   const Float_t kSpeedOfLight= 2.99792458e-2; // speed of light [cm/ps]
-  const Float_t kTimeOffset = 32.; // time offset for tracking algorithm [ps]
+  const Float_t kTimeOffset = 0.; // time offset for tracking algorithm [ps]
 
   Float_t dY=AliTOFGeometry::XPad(); 
   Float_t dZ=AliTOFGeometry::ZPad(); 

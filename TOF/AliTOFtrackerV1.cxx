@@ -362,7 +362,7 @@ void AliTOFtrackerV1::MatchTracks( ){
   Float_t dY=AliTOFGeometry::XPad(); 
   Float_t dZ=AliTOFGeometry::ZPad(); 
 
-  const Float_t kTimeOffset = 32.; // time offset for tracking algorithm [ps]
+  const Float_t kTimeOffset = 0.; // time offset for tracking algorithm [ps]
 
   const Int_t kncmax = 100;
   Float_t sensRadius = fkRecoParam->GetSensRadius();
