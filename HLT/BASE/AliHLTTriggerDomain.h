@@ -263,7 +263,7 @@ class AliHLTTriggerDomain : public TObject
    * \param  option  This is passed onto the internal fEntries TClonesArray.
    * The method is inherited from TObject.
    */
-  virtual void Clear(Option_t* option = "");
+  virtual void Clear(Option_t* option = "C");
   
   /**
    * Prints all the domain entries in this trigger domain in the order in which

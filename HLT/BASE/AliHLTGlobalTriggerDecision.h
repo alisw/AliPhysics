@@ -217,7 +217,7 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
    * \param  option  This is passed onto the internal array clear methods.
    * The method is inherited from TObject.
    */
-  virtual void Clear(Option_t* option = "");
+  virtual void Clear(Option_t* option = "C");
   
  private:
   

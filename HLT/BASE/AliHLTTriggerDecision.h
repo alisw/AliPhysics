@@ -170,7 +170,7 @@ class AliHLTTriggerDecision : public TObject
    * \param  option  This is passed onto the trigger domain clear method.
    * The method is inherited from TObject.
    */
-  virtual void Clear(Option_t* option = "");
+  virtual void Clear(Option_t* option = "C");
   
  private:
   
