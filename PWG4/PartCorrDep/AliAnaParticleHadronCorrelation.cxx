@@ -24,6 +24,7 @@
 // 2. change the correlation variable
 // 3. Only use leading particle(cluster/track) as trigger for correlation (2010/07/02)
 // 4. Make decay photon-hadron correlations where decay contribute pi0 mass (2010/09/09)
+// 5. fill the pout to extract kt at the end, also to study charge asymmetry(2010/10/06) 
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -56,29 +57,40 @@ ClassImp(AliAnaParticleHadronCorrelation)
     AliAnaPartCorrBaseClass(),
     fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), fSelectIsolated(0),
     fMakeSeveralUE(0),  fUeDeltaPhiMaxCut(0.), fUeDeltaPhiMinCut(0.), 
-    fPi0AODBranchName(""),fPi0Trigger(0),
+    fPi0AODBranchName(""),fNeutralCorr(0), fPi0Trigger(0),
+   // fMultiBin(0),fNZvertBin(0),fNrpBin(0),fZvtxCut(0.),
+   // fUseSelectEvent(kFALSE), 
+    fhNclustersNtracks(0), fhVertex(0),
     fhPtLeading(0),fhPhiLeading(0),fhEtaLeading(0), 
-    fhDeltaPhiDeltaEtaCharged(0),fhDeltaPhiDeltaEtaNeutral(0),
-    fhPhiCharged(0), fhPhiNeutral(0), fhEtaCharged(0), fhEtaNeutral(0), 
-    fhDeltaPhiCharged(0), fhDeltaPhiNeutral(0), 
-    fhDeltaEtaCharged(0), fhDeltaEtaNeutral(0),
-    fhDeltaPhiChargedPt(0), fhDeltaPhiNeutralPt(0), 
-    fhDeltaPhiUeChargedPt(0), fhDeltaPhiUeNeutralPt(0), 
-    fhPtImbalanceNeutral(0), fhPtImbalanceCharged(0), 
-    fhPtImbalanceUeCharged(0),fhPtImbalanceUeNeutral(0),
+    fhDeltaPhiDeltaEtaCharged(0),
+    fhPhiCharged(0), fhEtaCharged(0), 
+    fhDeltaPhiCharged(0), 
+    fhDeltaEtaCharged(0), 
+    fhDeltaPhiChargedPt(0), 
+    fhDeltaPhiUeChargedPt(0), 
+    fhPtImbalanceCharged(0), 
+    fhPtImbalanceUeCharged(0),
+    fhPtImbalancePosCharged(0),fhPtImbalanceNegCharged(0),
     fhPtHbpCharged(0), fhPtHbpUeCharged(0),
-    fhPtHbpNeutral(0), fhPtHbpUeNeutral(0),
     fhDeltaPhiUeLeftCharged(0),fhDeltaPhiUeRightCharged(0),
-    fhDeltaPhiUeLeftNeutral(0),fhDeltaPhiUeRightNeutral(0),
     fhPtImbalanceUeLeftCharged(0),fhPtImbalanceUeRightCharged(0),
+    fhPtHbpUeLeftCharged(0),fhPtHbpUeRightCharged(0), 
+    fhPoutTrig(0), fhPtTrigCharged(0),
+    fhTrigDeltaPhiDeltaEtaCharged(0x0), fhTrigCorr(0x0),fhTrigUeCorr(0x0),
+    fhDeltaPhiDeltaEtaNeutral(0), 
+    fhPhiNeutral(0), fhEtaNeutral(0), 
+    fhDeltaPhiNeutral(0), fhDeltaEtaNeutral(0),
+    fhDeltaPhiNeutralPt(0),fhDeltaPhiUeNeutralPt(0), 
+    fhPtImbalanceNeutral(0),fhPtImbalanceUeNeutral(0),
+    fhPtHbpNeutral(0), fhPtHbpUeNeutral(0),
+    fhDeltaPhiUeLeftNeutral(0),fhDeltaPhiUeRightNeutral(0),
     fhPtImbalanceUeLeftNeutral(0),fhPtImbalanceUeRightNeutral(0),
-    fhPtHbpUeLeftCharged(0),fhPtHbpUeRightCharged(0),
     fhPtHbpUeLeftNeutral(0),fhPtHbpUeRightNeutral(0),
     fhPtPi0DecayRatio(0),
-    fhDeltaPhiDecay1Charged(0),fhDeltaPhiDecay2Charged(0),
-    fhPtImbalanceDecay1Charged(0), fhPtImbalanceDecay2Charged(0),
-    fhDeltaPhiDecay1Neutral(0),fhDeltaPhiDecay2Neutral(0),
-    fhPtImbalanceDecay1Neutral(0), fhPtImbalanceDecay2Neutral(0)
+    fhDeltaPhiDecayCharged(0),
+    fhPtImbalanceDecayCharged(0), 
+    fhDeltaPhiDecayNeutral(0),
+    fhPtImbalanceDecayNeutral(0)
 {
   //Default Ctor
   
@@ -104,6 +116,16 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   Float_t ptmin  = GetHistoPtMin();
   Float_t phimin = GetHistoPhiMin();
   Float_t etamin = GetHistoEtaMin();	
+
+  
+  fhNclustersNtracks  = new TH2F ("Multiplicity","Neutral cluster and charged track multiplicity",1000, 0., 1000.,1000, 0., 1000.); 
+  fhNclustersNtracks->SetYTitle("# of tracks");
+  fhNclustersNtracks->SetXTitle("# of clusters");
+  
+  fhVertex  = new TH3D ("Vertex","vertex position", 100,-50.,50., 100,-50.,50., 100,-50.,50.); 
+  fhVertex->SetXTitle("X");
+  fhVertex->SetYTitle("Y");
+  fhVertex->SetZTitle("Z");
   
   fhPtLeading  = new TH1F ("hPtLeading","p_T distribution of leading particles", nptbins,ptmin,ptmax); 
   fhPtLeading->SetXTitle("p_{T}^{trig} (GeV/c)");
@@ -113,6 +135,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   fhEtaLeading  = new TH2F ("hEtaLeading","#eta distribution of leading",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
   fhEtaLeading->SetYTitle("#eta ");  
+  outputContainer->Add(fhNclustersNtracks);
+  outputContainer->Add(fhVertex);  
   outputContainer->Add(fhPtLeading);
   outputContainer->Add(fhPhiLeading);
   outputContainer->Add(fhEtaLeading);
@@ -173,6 +197,18 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhPtImbalanceUeCharged->SetYTitle("z_{trigger Ueh^{#pm}}");
     fhPtImbalanceUeCharged->SetXTitle("p_{T trigger}");
     
+    fhPtImbalancePosCharged  = 
+    new TH2F("CorrelationPositiveCharged","z_{trigger h^{+}} = p_{T h^{+}} / p_{T trigger}",
+             nptbins,ptmin,ptmax,200,0.,2.); 
+    fhPtImbalancePosCharged->SetYTitle("z_{trigger h^{+}}");
+    fhPtImbalancePosCharged->SetXTitle("p_{T trigger}");
+    
+    fhPtImbalanceNegCharged  = 
+    new TH2F("CorrelationNegativeCharged","z_{trigger h^{-}} = p_{T h^{-}} / p_{T trigger}",
+             nptbins,ptmin,ptmax,200,0.,2.); 
+    fhPtImbalanceNegCharged->SetYTitle("z_{trigger h^{-}}");
+    fhPtImbalanceNegCharged->SetXTitle("p_{T trigger}");
+    
     fhPtHbpCharged  = 
     new TH2F("HbpCharged","#xi = ln(1/x_{E}) with charged hadrons",
              nptbins,ptmin,ptmax,200,0.,10.); 
@@ -184,6 +220,18 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
              nptbins,ptmin,ptmax,200,0.,10.); 
     fhPtHbpUeCharged->SetYTitle("ln(1/x_{E})");
     fhPtHbpUeCharged->SetXTitle("p_{T trigger}");
+    
+    fhPoutTrig  = 
+    new TH2F("PoutTrigPt","Pout with charged hadrons",
+             nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
+    fhPoutTrig->SetYTitle("p_{out} (GeV/c)");
+    fhPoutTrig->SetXTitle("p_{T trigger} (GeV/c)");    
+    
+    fhPtTrigCharged  = 
+    new TH2F("PtTrigCharged","trgger and charged tracks pt distribution",
+             nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
+    fhPtTrigCharged->SetYTitle("p_{T asso} (GeV/c)");
+    fhPtTrigCharged->SetXTitle("p_{T trigger} (GeV/c)");    
 	  
     outputContainer->Add(fhDeltaPhiDeltaEtaCharged);
     outputContainer->Add(fhPhiCharged) ;
@@ -193,10 +241,41 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhDeltaPhiChargedPt) ;
     outputContainer->Add(fhDeltaPhiUeChargedPt) ;
     outputContainer->Add(fhPtImbalanceCharged) ;
+    outputContainer->Add(fhPtImbalancePosCharged) ;
+    outputContainer->Add(fhPtImbalanceNegCharged) ;
     outputContainer->Add(fhPtImbalanceUeCharged) ;
     outputContainer->Add(fhPtHbpCharged) ;
     outputContainer->Add(fhPtHbpUeCharged) ;
+    outputContainer->Add(fhPoutTrig) ;
+    outputContainer->Add(fhPtTrigCharged) ;
     
+    if(DoEventSelect()){ 
+      Int_t nMultiBins = GetMultiBin();
+      fhTrigDeltaPhiDeltaEtaCharged = new TH3D*[nMultiBins] ;
+      fhTrigCorr = new TH2F*[nMultiBins];
+      fhTrigUeCorr = new TH2F*[nMultiBins];
+      for(Int_t im=0; im<nMultiBins; im++){
+        fhTrigDeltaPhiDeltaEtaCharged[im]  = new TH3D 
+        (Form("fhTrigDeltaPhiDeltaEtaCharged_%d",im),Form("fhTrigDeltaPhiDeltaEtaCharged_%d",im), nptbins,ptmin,ptmax, 140,-2.,5., 200,-2,2); 
+        fhTrigDeltaPhiDeltaEtaCharged[im]->SetXTitle("p_{T trigger} (GeV/c)");
+        fhTrigDeltaPhiDeltaEtaCharged[im]->SetYTitle("#Delta #phi");
+        fhTrigDeltaPhiDeltaEtaCharged[im]->SetZTitle("#Delta #eta");
+        fhTrigCorr[im]  = new TH2F
+        (Form("fhTrigPtCorr_%d",im),Form("fhTrigPtCorr_%d",im), nptbins,ptmin,ptmax,200,0.,2.); 
+        fhTrigCorr[im]->SetYTitle("z_{trigger h^{#pm}}");
+        fhTrigCorr[im]->SetXTitle("p_{T trigger}");
+        fhTrigUeCorr[im]  = new TH2F
+        (Form("fhTrigPtUeCorr_%d",im),Form("fhTrigPtUeCorr_%d",im), nptbins,ptmin,ptmax,200,0.,2.); 
+        fhTrigUeCorr[im]->SetYTitle("z_{trigger h^{#pm}}");
+        fhTrigUeCorr[im]->SetXTitle("p_{T trigger}");       
+
+        outputContainer->Add(fhTrigDeltaPhiDeltaEtaCharged[im]) ;
+        outputContainer->Add(fhTrigCorr[im]);
+        outputContainer->Add(fhTrigUeCorr[im]);
+        
+        }
+    }
+   
     if(fPi0Trigger){
       fhPtPi0DecayRatio  = new TH3D
       ("hPtPi0DecayRatio","p_T of #pi^{0} and the ratio of pt for two decay", 
@@ -205,34 +284,21 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhPtPi0DecayRatio->SetYTitle("p_{T}^{Decay1}/p_{T}^{#pi^{0}}");
       fhPtPi0DecayRatio->SetZTitle("p_{T}^{Decay2}/p_{T}^{#pi^{0}}");
       
-      fhDeltaPhiDecay1Charged  = new TH2F
-      ("DeltaPhiDecay1Charged","#phi_{Decay} - #phi_{h^{#pm}} vs p_{T Decay}",
+      fhDeltaPhiDecayCharged  = new TH2F
+      ("DeltaPhiDecayCharged","#phi_{Decay} - #phi_{h^{#pm}} vs p_{T Decay}",
        nptbins,ptmin,ptmax,140,-2.,5.); 
-      fhDeltaPhiDecay1Charged->SetYTitle("#Delta #phi");
-      fhDeltaPhiDecay1Charged->SetXTitle("p_{T Decay} (GeV/c)");
+      fhDeltaPhiDecayCharged->SetYTitle("#Delta #phi");
+      fhDeltaPhiDecayCharged->SetXTitle("p_{T Decay} (GeV/c)");
       
-      fhDeltaPhiDecay2Charged  = new TH2F
-      ("DeltaPhiDecay2Charged","#phi_{Decay} - #phi_{h^{#pm}} vs p_{T Decay}",
-       nptbins,ptmin,ptmax,140,-2.,5.); 
-      fhDeltaPhiDecay2Charged->SetYTitle("#Delta #phi");
-      fhDeltaPhiDecay2Charged->SetXTitle("p_{T Decay} (GeV/c)");
-      
-      fhPtImbalanceDecay1Charged  = 
-      new TH2F("CorrelationDecay1Charged","z_{trigger h^{#pm}} = p_{T h^{#pm}} / p_{T Decay}",
+      fhPtImbalanceDecayCharged  = 
+      new TH2F("CorrelationDecayCharged","z_{trigger h^{#pm}} = p_{T h^{#pm}} / p_{T Decay}",
                nptbins,ptmin,ptmax,200,0.,2.); 
-      fhPtImbalanceDecay1Charged->SetYTitle("z_{decay h^{#pm}}");
-      fhPtImbalanceDecay1Charged->SetXTitle("p_{T decay}");
+      fhPtImbalanceDecayCharged->SetYTitle("z_{decay h^{#pm}}");
+      fhPtImbalanceDecayCharged->SetXTitle("p_{T decay}");
       
-      fhPtImbalanceDecay2Charged  = 
-      new TH2F("CorrelationDecay2Charged","z_{trigger h^{#pm}} = p_{T h^{#pm}} / p_{T Decay}",
-               nptbins,ptmin,ptmax,200,0.,2.); 
-      fhPtImbalanceDecay2Charged->SetYTitle("z_{decay h^{#pm}}");
-      fhPtImbalanceDecay2Charged->SetXTitle("p_{T decay}");
       outputContainer->Add(fhPtPi0DecayRatio) ; 
-      outputContainer->Add(fhDeltaPhiDecay1Charged) ; 
-      outputContainer->Add(fhDeltaPhiDecay2Charged) ; 
-      outputContainer->Add(fhPtImbalanceDecay1Charged) ;
-      outputContainer->Add(fhPtImbalanceDecay2Charged) ;
+      outputContainer->Add(fhDeltaPhiDecayCharged) ; 
+      outputContainer->Add(fhPtImbalanceDecayCharged) ;
     }    
     
     
@@ -283,7 +349,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   }  //Correlation with charged hadrons
   
   //Correlation with neutral hadrons
-  if(GetReader()->IsEMCALSwitchedOn() || GetReader()->IsPHOSSwitchedOn()){
+  if(fNeutralCorr){
     
     fhDeltaPhiDeltaEtaNeutral  = new TH2F
     ("DeltaPhiDeltaEtaNeutral","#phi_{trigger} - #phi_{h^{0}} vs #eta_{trigger} - #eta_{h^{0}}",
@@ -365,34 +431,20 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhPtHbpUeNeutral) ;    
     
     if(fPi0Trigger){
-      fhDeltaPhiDecay1Neutral  = new TH2F
-      ("DeltaPhiDecay1Neutral","#phi_{Decay} - #phi_{h^{0}} vs p_{T Decay}",
+      fhDeltaPhiDecayNeutral  = new TH2F
+      ("DeltaPhiDecayNeutral","#phi_{Decay} - #phi_{h^{0}} vs p_{T Decay}",
        nptbins,ptmin,ptmax,140,-2.,5.); 
-      fhDeltaPhiDecay1Neutral->SetYTitle("#Delta #phi");
-      fhDeltaPhiDecay1Neutral->SetXTitle("p_{T Decay} (GeV/c)");
+      fhDeltaPhiDecayNeutral->SetYTitle("#Delta #phi");
+      fhDeltaPhiDecayNeutral->SetXTitle("p_{T Decay} (GeV/c)");
       
-      fhDeltaPhiDecay2Neutral  = new TH2F
-      ("DeltaPhiDecay2Neutral","#phi_{Decay} - #phi_{h^{0}} vs p_{T Decay}",
-       nptbins,ptmin,ptmax,140,-2.,5.); 
-      fhDeltaPhiDecay2Neutral->SetYTitle("#Delta #phi");
-      fhDeltaPhiDecay2Neutral->SetXTitle("p_{T Decay} (GeV/c)");
-      
-      fhPtImbalanceDecay1Neutral  = 
-      new TH2F("CorrelationDecay1Neutral","z_{trigger h^{0}} = p_{T h^{0}} / p_{T Decay}",
+      fhPtImbalanceDecayNeutral  = 
+      new TH2F("CorrelationDecayNeutral","z_{trigger h^{0}} = p_{T h^{0}} / p_{T Decay}",
                nptbins,ptmin,ptmax,200,0.,2.); 
-      fhPtImbalanceDecay1Neutral->SetYTitle("z_{decay h^{0}}");
-      fhPtImbalanceDecay1Neutral->SetXTitle("p_{T decay}");
+      fhPtImbalanceDecayNeutral->SetYTitle("z_{decay h^{0}}");
+      fhPtImbalanceDecayNeutral->SetXTitle("p_{T decay}");
       
-      fhPtImbalanceDecay2Neutral  = 
-      new TH2F("CorrelationDecay2Neutral","z_{trigger h^{0}} = p_{T h^{0}} / p_{T Decay}",
-               nptbins,ptmin,ptmax,200,0.,2.); 
-      fhPtImbalanceDecay2Neutral->SetYTitle("z_{decay h^{0}}");
-      fhPtImbalanceDecay2Neutral->SetXTitle("p_{T decay}");
-      
-      outputContainer->Add(fhDeltaPhiDecay1Neutral) ; 
-      outputContainer->Add(fhDeltaPhiDecay2Neutral) ; 
-      outputContainer->Add(fhPtImbalanceDecay1Neutral) ;
-      outputContainer->Add(fhPtImbalanceDecay2Neutral) ;
+      outputContainer->Add(fhDeltaPhiDecayNeutral) ; 
+      outputContainer->Add(fhPtImbalanceDecayNeutral) ;
     }
     
     
@@ -472,6 +524,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fMakeSeveralUE = kFALSE;
   fUeDeltaPhiMinCut = 1. ;
   fUeDeltaPhiMaxCut = 1.5 ;
+  fNeutralCorr = kFALSE ;
   fPi0Trigger = kFALSE ;
 
 }
@@ -585,7 +638,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
       MakeChargedCorrelation(particle, GetAODCTS(),kFALSE);
     
     TObjArray * pi0list = (TObjArray*) GetAODBranch(fPi0AODBranchName); //For the future, foresee more possible pi0 lists
-    if(pi0list && pi0list->GetEntriesFast() > 0)
+    if(fNeutralCorr && pi0list && pi0list->GetEntriesFast() > 0)
       MakeNeutralCorrelation(particle, pi0list,kFALSE);
     
   }//Correlate leading
@@ -609,16 +662,41 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
   }
   
+  //Get the vertex and check it is not too large in z
+  Double_t v[3] = {0,0,0}; //vertex ;
+  GetReader()->GetVertex(v);
+  if(!GetMixedEvent() && TMath::Abs(v[2]) > GetZvertexCut()) return ;  
+  
   //Loop on stored AOD particles, find leading
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
+  if(naod!=0)fhNclustersNtracks->Fill(naod, GetAODCTS()->GetEntriesFast());
+  if(naod!=0)fhVertex->Fill(v[0],v[1],v[2]);
   Double_t ptTrig = 0.;
   Int_t trigIndex = -1 ;
   for(Int_t iaod = 0; iaod < naod ; iaod++){	 //loop on input trigger AOD file 
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-    
+    //vertex cut in case of mixing
+    if (GetMixedEvent()) {
+      Int_t evt=-1;
+      Int_t id =-1;
+      if     (particle->GetCaloLabel(0)  >= 0 ){
+        id=particle->GetCaloLabel(0); 
+        if(id >= 0 )evt= GetMixedEvent()-> EventIndexForCaloCluster(id) ;
+      }
+      else if(particle->GetTrackLabel(0) >= 0 ){
+        id=particle->GetTrackLabel(0);
+        if(id >= 0 )evt= GetMixedEvent()->EventIndex(id) ;
+      }
+      else continue;
+      
+      if (TMath::Abs(GetVertex(evt)[2]) > GetZvertexCut()) 
+        continue ;
+    }
+
     //check if the particle is isolated or if we want to take the isolation into account
     if(OnlyIsolated() && !particle->IsIsolated()) continue;
-	   //find the leading particles with highest momentum
+    //check if inside the vertex cut
+    //find the leading particles with highest momentum
     if (particle->Pt()>ptTrig) {
       ptTrig = particle->Pt() ;
 		  trigIndex = iaod ;
@@ -628,6 +706,23 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   if(trigIndex!=-1){ //using trigger partilce to do correlations
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(trigIndex));
 	  
+    if (GetMixedEvent()) {
+      Int_t evt=-1;
+      Int_t id = 0;
+      if     (particle->GetCaloLabel(0)  >= 0 ){
+        id=particle->GetCaloLabel(0); 
+        if(id >= 0 )evt= GetMixedEvent()-> EventIndexForCaloCluster(id) ;
+      }
+      else if(particle->GetTrackLabel(0) >= 0 ){
+        id=particle->GetTrackLabel(0);
+        if(id >= 0 )evt= GetMixedEvent()->EventIndex(id) ;
+      }
+      else return;
+      
+      if (TMath::Abs(GetVertex(evt)[2]) > GetZvertexCut()) 
+        return ;
+    }
+        
     //Fill leading particle histogram   
     fhPtLeading->Fill(particle->Pt());
     Float_t phi = particle->Phi();
@@ -644,7 +739,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     
     //Make correlation with neutral pions
     TObjArray * refpi0   = particle->GetObjArray(GetAODObjArrayName()+"Pi0s");
-    if(refpi0){
+    if(refpi0 && fNeutralCorr){
       if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading %d, In Pi0 Refs entries %d\n",trigIndex, refpi0->GetEntriesFast());      
       MakeNeutralCorrelation(particle, refpi0, kTRUE);
     }
@@ -665,6 +760,11 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   Int_t evtIndex12 = 0 ;
   Int_t indexPhoton1 = -1 ;
   Int_t indexPhoton2 = -1 ;  
+  Double_t v[3] = {0,0,0}; //vertex ;
+  GetReader()->GetVertex(v);
+  if(!GetMixedEvent() && TMath::Abs(v[2]) > GetZvertexCut()) return ;  
+
+  Int_t nTracks = GetAODCTS()->GetEntriesFast() ;
   
   if (GetMixedEvent()) {
     evtIndex11 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(0)) ;
@@ -676,6 +776,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   Double_t pyTrig  = aodParticle->Py();
   
   Double_t phiTrig = aodParticle->Phi();
+  Double_t etaTrig = aodParticle->Eta();
   
   Double_t pt   = -100.;
   Double_t px   = -100.;
@@ -740,11 +841,16 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   //Int_t currentIndex = -1 ; 
   for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ ){
     AliAODTrack * track = (AliAODTrack *) (pl->At(ipr)) ;
+    //check if inside the vertex cut
+    //printf("charge = %d\n", track->Charge());
     Int_t evtIndex2 = 0 ; 
     if (GetMixedEvent()) {
       evtIndex2 = GetMixedEvent()->EventIndex(track->GetID()) ;
       if (evtIndex11 == evtIndex2 || evtIndex12 == evtIndex2) // photon and track from different events
         continue ; 
+      //vertex cut
+      if (TMath::Abs(GetVertex(evtIndex2)[2]) > GetZvertexCut()) 
+         continue ;
       //      if(currentIndex == evtIndex2) // tracks from different event 
       //        continue ;
       //      currentIndex = evtIndex2 ;
@@ -752,9 +858,9 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     if(track->GetID()==aodParticle->GetTrackLabel(0)) 
       continue ;
     
-    //if(track->Pt()>ptTrig) 
-    //continue ;
-    
+    if(track->Pt()==ptTrig && track->Phi()==phiTrig && track->Eta()==etaTrig) 
+    continue ;
+ 
     Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
     p3.SetXYZ(mom[0],mom[1],mom[2]);
     pt   = p3.Pt();
@@ -809,28 +915,52 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
       fhDeltaPhiDeltaEtaCharged->Fill(deltaphi,aodParticle->Eta()-eta);
       
       if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
-      
+      //fill different multiplicity histogram
+      if(DoEventSelect()){
+        for(Int_t im=0; im<GetMultiBin(); im++){
+          if(nTracks < GetMaxMulti()/GetMultiBin()*(im+1))fhTrigDeltaPhiDeltaEtaCharged[im]->Fill(ptTrig,deltaphi,aodParticle->Eta()-eta);
+        }
+      }
       //delta phi cut for correlation
       if( (deltaphi > fDeltaPhiMinCut) && ( deltaphi < fDeltaPhiMaxCut) ) {
         fhDeltaPhiChargedPt->Fill(pt,deltaphi);
-        fhPtImbalanceCharged->Fill(ptTrig,rat); 
+        fhPtImbalanceCharged->Fill(ptTrig,xE); 
         fhPtHbpCharged->Fill(ptTrig,cosi);
-      }
+        Double_t pout = pt*TMath::Sin(deltaphi) ;
+        fhPoutTrig->Fill(ptTrig, pout) ;
+        fhPtTrigCharged->Fill(ptTrig, pt) ;
+        if(track->Charge()>0) fhPtImbalancePosCharged->Fill(ptTrig,xE) ;
+        else fhPtImbalanceNegCharged->Fill(ptTrig,xE) ;
+        //fill different multiplicity histogram
+        if(DoEventSelect()){
+          for(Int_t im=0; im<GetMultiBin(); im++){
+            if(nTracks < ( GetMaxMulti() - 0 )/GetMultiBin()*(im+1))
+              fhTrigCorr[im]->Fill(ptTrig,xE);
+          }
+        } //multiplicity events selection
+      } //delta phi cut for correlation
       else {
         fhDeltaPhiUeChargedPt->Fill(pt,deltaphi);
-        fhPtImbalanceUeCharged->Fill(ptTrig,rat);
+        fhPtImbalanceUeCharged->Fill(ptTrig,xE);
         fhPtHbpUeCharged->Fill(ptTrig,cosi);
+        if(DoEventSelect()){
+          for(Int_t im=0; im<GetMultiBin(); im++){
+            if(nTracks < ( GetMaxMulti() - 0 )/GetMultiBin()*(im+1))
+              fhTrigUeCorr[im]->Fill(ptTrig,xE);
+          }
+        } //multiplicity events selection
+        
       }
       
       if(fPi0Trigger){
         if(indexPhoton1!=-1 && indexPhoton2!=-1){
-          fhDeltaPhiDecay1Charged->Fill(ptDecay1, deltaphiDecay1);
-          fhDeltaPhiDecay2Charged->Fill(ptDecay2, deltaphiDecay2);
+          fhDeltaPhiDecayCharged->Fill(ptDecay1, deltaphiDecay1);
+          fhDeltaPhiDecayCharged->Fill(ptDecay2, deltaphiDecay2);
           if(GetDebug() > 1)printf("deltaPhoton1 = %f, deltaPhoton2 = %f \n", deltaphiDecay1, deltaphiDecay2);
           if( (deltaphiDecay1 > fDeltaPhiMinCut) && ( deltaphiDecay1 < fDeltaPhiMaxCut) )
-            fhPtImbalanceDecay1Charged->Fill(ptDecay1,ratDecay1); 
+            fhPtImbalanceDecayCharged->Fill(ptDecay1,ratDecay1); 
           if( (deltaphiDecay2 > fDeltaPhiMinCut) && ( deltaphiDecay2 < fDeltaPhiMaxCut) )
-            fhPtImbalanceDecay2Charged->Fill(ptDecay2,ratDecay2);
+            fhPtImbalanceDecayCharged->Fill(ptDecay2,ratDecay2);
           if(GetDebug() > 1)printf("ratPhoton1 = %f, ratPhoton2 = %f \n", pt/ptDecay1, pt/ptDecay2);
         } //index of decay photons found
       } //make decay-hadron correlation          
@@ -1208,13 +1338,13 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Particle
           if(deltaphiDecay1>3*TMath::PiOver2()) deltaphiDecay1-=TMath::TwoPi();
           if(deltaphiDecay2< -TMath::PiOver2()) deltaphiDecay2+=TMath::TwoPi();
           if(deltaphiDecay2>3*TMath::PiOver2()) deltaphiDecay2-=TMath::TwoPi();   
-          fhDeltaPhiDecay1Neutral->Fill(ptDecay1, deltaphiDecay1);
-          fhDeltaPhiDecay2Neutral->Fill(ptDecay2, deltaphiDecay2);
+          fhDeltaPhiDecayNeutral->Fill(ptDecay1, deltaphiDecay1);
+          fhDeltaPhiDecayNeutral->Fill(ptDecay2, deltaphiDecay2);
           if(GetDebug() > 1)printf("deltaPhoton1 = %f, deltaPhoton2 = %f \n", deltaphiDecay1, deltaphiDecay2);
           if( (deltaphiDecay1 > fDeltaPhiMinCut) && ( deltaphiDecay1 < fDeltaPhiMaxCut) )
-            fhPtImbalanceDecay1Neutral->Fill(ptDecay1,ratDecay1); 
+            fhPtImbalanceDecayNeutral->Fill(ptDecay1,ratDecay1); 
           if( (deltaphiDecay2 > fDeltaPhiMinCut) && ( deltaphiDecay2 < fDeltaPhiMaxCut) )
-            fhPtImbalanceDecay2Neutral->Fill(ptDecay2,ratDecay2);
+            fhPtImbalanceDecayNeutral->Fill(ptDecay2,ratDecay2);
           if(GetDebug() > 1)printf("ratPhoton1 = %f, ratPhoton2 = %f \n", pt/ptDecay1, pt/ptDecay2);
         }
       } //do decay-hadron correlation

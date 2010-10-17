@@ -15,7 +15,7 @@
 //-- Author: Gustavo Conesa (INFN-LNF)
 // Root system
 class TH2F; 
-
+class TH3D;
 // Analysis system
 #include "AliAnaPartCorrBaseClass.h"
  
@@ -50,10 +50,14 @@ class AliAnaChargedParticles : public AliAnaPartCorrBaseClass {
   
   Int_t  fPdg ; //identified particle id
   //Histograms 
+  TH1F * fhNtracks; //! track multiplicity distribution
+  TH3D * fhVertex; //! vertex distribution
   TH1F * fhPt; //! pT distribution
   TH2F * fhPhi; //! phi distribution vs pT
   TH2F * fhEta; //! eta distribution vs pT
-  
+  TH3D * fhPtEtaPhiPos; //! pT and phi distribution of positive charge  
+  TH3D * fhPtEtaPhiNeg; //! pT and phi distribution of positive charge  
+
   //MC
   TH1F * fhPtPion; //! pT distribution
   TH2F * fhPhiPion; //! phi distribution vs pT
@@ -75,7 +79,7 @@ class AliAnaChargedParticles : public AliAnaPartCorrBaseClass {
   TH2F * fhPhiUnknown; //! phi distribution vs pT
   TH2F * fhEtaUnknown; //! eta distribution vs pT
   
-  ClassDef(AliAnaChargedParticles,1)
+  ClassDef(AliAnaChargedParticles,2)
     } ;
 
 

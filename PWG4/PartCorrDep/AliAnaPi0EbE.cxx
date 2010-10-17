@@ -276,7 +276,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     Int_t evtIndex1 = 0 ; 
     if(GetMixedEvent())
       evtIndex1 = GetMixedEvent()->EventIndexForCaloCluster(photon1->GetCaloLabel(0)) ;
-    
+    if(TMath::Abs(GetVertex(evtIndex1)[2]) > GetZvertexCut()) continue ;  //vertex cut
     mom1 = *(photon1->Momentum());
     
     for(Int_t jphoton = iphoton+1; jphoton < GetInputAODBranch()->GetEntriesFast()-1; jphoton++){
@@ -287,7 +287,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         evtIndex2 = GetMixedEvent()->EventIndexForCaloCluster(photon2->GetCaloLabel(0)) ;
       if(GetMixedEvent() && (evtIndex1 == evtIndex2))
         continue ; 
-      
+      if(TMath::Abs(GetVertex(evtIndex2)[2]) > GetZvertexCut()) continue ;  //vertex cut
       mom2 = *(photon2->Momentum());
       //Int_t input = -1;	//if -1 photons come from different files, not a pi0
       //if(photon1->GetInputFileIndex() == photon2->GetInputFileIndex()) 
@@ -407,7 +407,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   Int_t tag1 = 0;
   Int_t tag2 = 0;
   Int_t tag  = 0;
-  
+  Int_t evtIndex = 0;
   if(!GetInputAODBranch()){
     printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - No input calo photons in AOD branch with name < %s > , STOP\n",GetInputAODName().Data());
     abort();
@@ -425,6 +425,10 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
     }
     for(Int_t jphoton = iphoton+1; jphoton < fInputAODGammaConv->GetEntriesFast()-1; jphoton++){
       AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (fInputAODGammaConv->At(jphoton));
+      if(GetMixedEvent())
+        evtIndex = GetMixedEvent()->EventIndexForCaloCluster(photon2->GetCaloLabel(0)) ;
+      if(TMath::Abs(GetVertex(evtIndex)[2]) > GetZvertexCut()) continue ;  //vertex cut
+      
       mom2 = *(photon2->Momentum());
       
       //Int_t input = -1;	//if -1 photons come from different files, not a pi0
@@ -530,7 +534,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if (GetMixedEvent()) {
       evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
     }
-    
+    if(TMath::Abs(GetVertex(evtIndex)[2]) > GetZvertexCut()) continue ;  //vertex cut
+
     //Cluster selection, not charged, with pi0 id and in fiducial cut
 	  
     //Input from second AOD?

@@ -19,10 +19,10 @@ class TH2D ;
 class TObjString;
 
 //Analysis
+#include "AliAnaPartCorrBaseClass.h"
 class AliAODEvent ;
 class AliESDEvent ;
 class AliAODPWG4Particle ;
-#include "AliAnaPartCorrBaseClass.h"
 
 class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
@@ -52,12 +52,12 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
     
   //Setters for parameters of event buffers
   void SetNCentrBin(Int_t n=5) {fNCentrBin=n ;} //number of bins in centrality 
-  void SetNZvertBin(Int_t n=5) {fNZvertBin=n ;} //number of bins for vertex position
-  void SetNRPBin(Int_t n=6)    {fNrpBin=n ;}    //number of bins in reaction plain
+//  void SetNZvertBin(Int_t n=5) {fNZvertBin=n ;} //number of bins for vertex position
+//  void SetNRPBin(Int_t n=6)    {fNrpBin=n ;}    //number of bins in reaction plain
   void SetNMaxEvMix(Int_t n=20){fNmaxMixEv=n ;} //Maximal number of events for mixing
   
   //Setters for event selection
-  void SetZvertexCut(Float_t zcut=40.){fZvtxCut=zcut ;} //cut on vertex position
+ // void SetZvertexCut(Float_t zcut=40.){fZvtxCut=zcut ;} //cut on vertex position
   
   TString GetCalorimeter()   const {return fCalorimeter ; }
   void SetCalorimeter(TString det)    {fCalorimeter = det ; }
@@ -98,11 +98,11 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   private:
   Bool_t   fDoOwnMix;     // Do combinatorial background not the one provided by the frame
   Int_t    fNCentrBin ;	  // Number of bins in event container for centrality
-  Int_t    fNZvertBin ;	  // Number of bins in event container for vertex position
-  Int_t    fNrpBin ;	    // Number of bins in event container for reaction plain
+ // Int_t    fNZvertBin ;	  // Number of bins in event container for vertex position
+//  Int_t    fNrpBin ;	    // Number of bins in event container for reaction plain
   Int_t    fNPID ;		    // Number of possible PID combinations
   Int_t    fNmaxMixEv ;	  // Maximal number of events stored in buffer for mixing
-  Float_t  fZvtxCut ;	    // Cut on vertex position
+//  Float_t  fZvtxCut ;	    // Cut on vertex position
   TString  fCalorimeter ; // Select Calorimeter for IM
   Int_t    fNModules ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
   Bool_t   fUseAngleCut ; // Select pairs depending on their opening angle
