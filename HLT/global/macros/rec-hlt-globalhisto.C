@@ -55,12 +55,17 @@ void rec_hlt_globalhisto(const char *filename,
   AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
 
   AliHLTConfiguration globalhisto("globalhisto", "GlobalHisto", "GLOBAL-esd-converter",
-				  "-histogram TrackPt -size 1000 -expression Track_pt "
-				  "-histogram TrackPhi -size 1000 -expression Track_phi "
-				  "-histogram TrackEta -size 1000 -expression Track_eta "
-				  "-histogram TrackCount -size 1000 -expression trackcount "
+				  "-histogram TrackPt    -size 1000 -expression Track_pt    "
+				  "-histogram TrackPhi   -size 1000 -expression Track_phi   "
+				  "-histogram TrackEta   -size 1000 -expression Track_eta   "
+				  "-histogram TrackCount -size 1000 -expression trackcount  "
+				  "-histogram TrackTheta -size 1000 -expression Track_theta "
+				  "-histogram VertexX    -size 1000 -expression vertexX     "
+				  "-histogram VertexY    -size 1000 -expression vertexY     "
+				  "-histogram VertexZ    -size 1000 -expression vertexZ     "
+				  //"-histogram TrackStatus -size 1000 -expression Track_statusFlag -cut &kTPCin "
 				  );
-  AliHLTConfiguration writer("writer", "ROOTFileWriter", "globalhisto", "-datafile HLT.Histo.root -overwrite -concatenate-events");
+  AliHLTConfiguration writer("writer", "ROOTFileWriter", "globalhisto", "-datafile histo.root -overwrite -concatenate-events");
 
   TString hltOptions="loglevel=0x7c ignore-hltout chains=writer";
 
