@@ -82,7 +82,6 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateIntFlowSumOfEventWeightsNUA();
     virtual void CalculateIntFlowSumOfProductOfEventWeightsNUA();
     // ...  
-    virtual void CalculateWeightedQProductsForIntFlow();
     virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent); 
     virtual void EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent); 
     virtual void EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple* const anEvent); 
@@ -99,8 +98,6 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights(TString type, TString ptOrEta);  
     // ...
     //virtual void CalculateCorrelationsForDifferentialFlow2D(TString type); // type = RP or POI
-    //virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms(TString type); // type = RP or POI  
-    //virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms(TString type); // type = RP or POI
     virtual void EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
     virtual void EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta); 
     virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
@@ -222,8 +219,8 @@ class AliFlowAnalysisWithQCumulants{
   Double_t GetMinMult() const {return this->fMinMult;};
   void SetMaxMult(Double_t const maxm) {this->fMaxMult = maxm;};
   Double_t GetMaxMult() const {return this->fMaxMult;};
-  void SetPropagateErrorAlsoFromNUATerms(Bool_t const pefc) {this->fPropagateErrorAlsoFromNUATerms = pefc;};
-  Bool_t GetPropagateErrorAlsoFromNUATerms() const {return this->fPropagateErrorAlsoFromNUATerms;};  
+  void SetPropagateErrorAlsoFromNIT(Bool_t const peafNIT) {this->fPropagateErrorAlsoFromNIT = peafNIT;};
+  Bool_t GetPropagateErrorAlsoFromNIT() const {return this->fPropagateErrorAlsoFromNIT;};  
   void SetCalculateCumulantsVsM(Bool_t const ccvm) {this->fCalculateCumulantsVsM = ccvm;};
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};   
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
@@ -256,9 +253,6 @@ class AliFlowAnalysisWithQCumulants{
   TH1D* GetIntFlowCorrelationsVsMHist(Int_t const ci) const {return this->fIntFlowCorrelationsVsMHist[ci];};    
   void SetIntFlowCorrelationsAllHist(TH1D* const intFlowCorrelationsAllHist) {this->fIntFlowCorrelationsAllHist = intFlowCorrelationsAllHist;};
   TH1D* GetIntFlowCorrelationsAllHist() const {return this->fIntFlowCorrelationsAllHist;};  
-  // to be improved (removed:)
-  //void SetIntFlowProductOfCorrelationsHist(TH1D* const intFlowProductOfCorrelationsHist) {this->fIntFlowProductOfCorrelationsHist = intFlowProductOfCorrelationsHist;};
-  //TH1D* GetIntFlowProductOfCorrelationsHist() const {return this->fIntFlowProductOfCorrelationsHist;};  
   void SetIntFlowCorrectionTermsForNUAHist(TH1D* const ifctfnh, Int_t const sc) {this->fIntFlowCorrectionTermsForNUAHist[sc] = ifctfnh;};
   TH1D* GetIntFlowCorrectionTermsForNUAHist(Int_t sc) const {return this->fIntFlowCorrectionTermsForNUAHist[sc];};  
   void SetIntFlowCovariances(TH1D* const intFlowCovariances) {this->fIntFlowCovariances = intFlowCovariances;};
@@ -437,7 +431,7 @@ class AliFlowAnalysisWithQCumulants{
   Int_t fnBinsMult; // number of multiplicity bins for flow analysis versus multiplicity  
   Double_t fMinMult; // minimal multiplicity for flow analysis versus multiplicity  
   Double_t fMaxMult; // maximal multiplicity for flow analysis versus multiplicity  
-  Bool_t fPropagateErrorAlsoFromNUATerms; // propagate error by taking into account also non-isotrpic terms
+  Bool_t fPropagateErrorAlsoFromNIT; // propagate error by taking into account also non-isotropic terms (not sure if resulting error then is correct - to be improved)
   Bool_t fCalculateCumulantsVsM; // calculate cumulants versus multiplicity  
   Bool_t fMinimumBiasReferenceFlow; // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)   
   //  3c.) event-by-event quantities:

@@ -45,7 +45,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fHarmonic(2),  
  fApplyCorrectionForNUA(kFALSE), 
  fApplyCorrectionForNUAVsM(kFALSE), 
- fPropagateErrorAlsoFromNUATerms(kFALSE),
+ fPropagateErrorAlsoFromNIT(kFALSE),
  fCalculate2DFlow(kFALSE),
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kTRUE), 
@@ -87,7 +87,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fHarmonic(0),  
  fApplyCorrectionForNUA(kFALSE), 
  fApplyCorrectionForNUAVsM(kFALSE), 
- fPropagateErrorAlsoFromNUATerms(kFALSE),
+ fPropagateErrorAlsoFromNIT(kFALSE),
  fCalculate2DFlow(kFALSE),
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE),  
@@ -120,7 +120,7 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC->SetHarmonic(fHarmonic);
  fQC->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
  fQC->SetApplyCorrectionForNUAVsM(fApplyCorrectionForNUAVsM);
- fQC->SetPropagateErrorAlsoFromNUATerms(fPropagateErrorAlsoFromNUATerms);
+ fQC->SetPropagateErrorAlsoFromNIT(fPropagateErrorAlsoFromNIT);
  fQC->SetCalculate2DFlow(fCalculate2DFlow);
  fQC->SetStoreDistributions(fStoreDistributions);
  fQC->SetCalculateCumulantsVsM(fCalculateCumulantsVsM);

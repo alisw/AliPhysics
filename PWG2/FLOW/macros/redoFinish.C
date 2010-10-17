@@ -20,7 +20,7 @@ TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","L
 Bool_t bApplyCorrectionForNUA = kFALSE; // apply correction for non-uniform acceptance
 Bool_t bApplyCorrectionForNUAVsM = kFALSE; // apply correction for non-uniform acceptance in each multiplicity bin independently
 Bool_t bPropagateErrorAlsoFromNIT = kFALSE; // propagate error also from non-isotropic terms
-Bool_t bFinalRefFlowResultIsRebinnedInM = kFALSE; // store in CRH for reference flow the result obtained after rebinning in multiplicity
+Bool_t bMinimumBiasReferenceFlow = kTRUE; // store in CRH for reference flow the result obtained wihout rebinning in multiplicity (kTRUE)
 
 enum libModes {mLocal,mLocalSource};
 
@@ -141,10 +141,10 @@ void redoFinish(TString type="", Int_t mode=mLocal)
   {
    AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
    qc->GetOutputHistograms(list[i]);
-   if(bApplyCorrectionForNUA){qc->GetIntFlowFlags()->SetBinContent(3,1);} 
-   if(bApplyCorrectionForNUAVsM){qc->GetIntFlowFlags()->SetBinContent(8,1);} 
-   if(bPropagateErrorAlsoFromNIT){qc->GetIntFlowFlags()->SetBinContent(9,1);}
-   if(bFinalRefFlowResultIsRebinnedInM){qc->GetIntFlowFlags()->SetBinContent(11,0);}
+   qc->GetIntFlowFlags()->SetBinContent(3,(Int_t)bApplyCorrectionForNUA); 
+   qc->GetIntFlowFlags()->SetBinContent(8,(Int_t)bApplyCorrectionForNUAVsM); 
+   qc->GetIntFlowFlags()->SetBinContent(9,(Int_t)bPropagateErrorAlsoFromNIT);
+   qc->GetIntFlowFlags()->SetBinContent(11,(Int_t)bMinimumBiasReferenceFlow);
    qc->Finish();
    dirFile[i]->Add(list[i],kTRUE);
    dirFile[i]->Write(dirFile[i]->GetName(),TObject::kSingleKey+TObject::kOverwrite);
