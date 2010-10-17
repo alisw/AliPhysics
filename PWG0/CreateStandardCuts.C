@@ -2,7 +2,7 @@
 
 // this macro creates the track cuts used in this analysis
 
-AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_t hists = kTRUE)
+AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode,  Bool_t hists = kTRUE,  Float_t ptMin = 0,  Float_t etacut =1e10)
 {
   AliESDtrackCuts* esdTrackCuts = 0;
   
@@ -27,7 +27,8 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
   if (analysisMode & AliPWG0Helper::kTPCITS);
   {
     esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
-  
+    esdTrackCuts->SetPtRange(ptMin);  // adding pt cut
+    esdTrackCuts->SetEtaRange(-etacut,etacut);  
     TString tag("Global tracking");
   }
   if ( analysisMode & AliPWG0Helper::kTPCSPD) {
