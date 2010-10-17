@@ -34,6 +34,7 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   
   // Set data search pattern
   plugin->SetDataPattern("*pass1/*ESDs.root");
+  //plugin->SetDataPattern("*/*ESDs.root");
     
   plugin->AddRunNumber(runNumber); 
   //plugin->SetRunRange(xxx,yyy);
@@ -43,7 +44,7 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   plugin->SetGridOutputDir(gridOutputDir);   // relative to working dir
   
   
-  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
+  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -74,6 +75,10 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   	    bGLOBAL = kTRUE;
 	    continue;
          }        
+	 if(argument.CompareTo("D0", TString::kIgnoreCase)==0){
+  	    bD0 = kTRUE;
+	    continue;
+         }  
 	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
 	    bTPC    = kTRUE;
 	    bPHOS   = kTRUE;
@@ -119,7 +124,14 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
     plugin->SetAdditionalLibs("AliAnalysisTaskHLT.h AliAnalysisTaskHLT.cxx"); 
     plugin->SetOutputFiles("HLT-OFFLINE-GLOBAL-comparison.root");
   }
-
+  if(bD0) {
+    //plugin->AddIncludePath("-I$ROOTSYS -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER -I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/HLT/BASE/util -I$ALICE_ROOT/HLT/global/physics -I$ALICE_ROOT/HLT/trigger");
+    //plugin->SetAdditionalLibs("libRAWDatabase.so libProof.so libGui.so libCDB.so libSTEER.so libHLTbase.so libAliHLTUtil.so libAliHLTGlobal.so AliAnalysisTaskD0Trigger.cxx AliAnalysisTaskD0Trigger.h");  
+    plugin->SetAnalysisSource("AliAnalysisTaskD0Trigger.cxx");  
+    plugin->SetAdditionalLibs("AliAnalysisTaskD0Trigger.h AliAnalysisTaskD0Trigger.cxx"); 
+    plugin->SetOutputFiles("HLT-OFFLINE-D0-comparison.root");    
+  }
+  
   // Optionally define the files to be archived.
   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
   

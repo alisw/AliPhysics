@@ -54,7 +54,7 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   
-  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE;
+  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE, bD0=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -88,6 +88,10 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
       }      
       if(argument.CompareTo("pwg1", TString::kIgnoreCase)==0){
 	bPWG1 = kTRUE;
+	continue;
+      }
+      if(argument.CompareTo("D0", TString::kIgnoreCase)==0){
+	bD0 = kTRUE;
 	continue;
       }
       if(argument.CompareTo("all",TString::kIgnoreCase)==0){
@@ -127,6 +131,7 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
   if(bPWG1)   gROOT->LoadMacro("AddTaskPerformance.C");
+  if(bD0)     gROOT->LoadMacro("AliAnalysisTaskD0Trigger.cxx+"); 
   
   //if(!AliAnalysisGrid::CreateToken()) return NULL;
   
@@ -217,7 +222,14 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
       return;
     }
   }
-  
+  if(bD0){
+    float cuts[7]={0.5,0.04,0.7,0.8,0.05,-0.00025,0.7};
+    AliAnalysisTaskD0Trigger *taskD0 = new AliAnalysisTaskD0Trigger("offhlt_comparison_D0",cuts);
+    mgr->AddTask(taskD0);
+    AliAnalysisDataContainer *coutput6 =  mgr->CreateContainer("D0_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-D0-comparison.root");  
+    mgr->ConnectInput(taskD0,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(taskD0,1,coutput6);
+  }
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
