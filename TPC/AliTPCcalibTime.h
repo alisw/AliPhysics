@@ -24,7 +24,7 @@ class AliESDfriendTrack;
 class AliTPCcalibTime:public AliTPCcalibBase {
 public:
   AliTPCcalibTime(); 
-  AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift);
+  AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift, Int_t memoryMode=2);
   virtual ~AliTPCcalibTime();
   
   virtual void           Process(AliESDEvent *event);
@@ -79,7 +79,7 @@ public:
 
 protected:
   void ResetCurrent();                  // reset current values
-
+  Int_t              fMemoryMode;       // 0 -do not fill THnSparse with residuals  1- fill only important QA THn 2 - Fill all THnsparse for calibration
   AliTPCcalibLaser * fLaser;            //! laser calibration
   //
   // current information
@@ -139,7 +139,7 @@ private:
   AliTPCcalibTime(const AliTPCcalibTime&); 
   AliTPCcalibTime& operator=(const AliTPCcalibTime&); 
 
-  ClassDef(AliTPCcalibTime, 7); 
+  ClassDef(AliTPCcalibTime, 8); 
 };
 
 #endif

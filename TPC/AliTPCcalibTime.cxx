@@ -97,11 +97,14 @@ Comments to be written here:
 #include "AliTrackPointArray.h"
 #include "AliTracker.h"
 #include "AliKFVertex.h"
+#include <AliLog.h>
+
 ClassImp(AliTPCcalibTime)
 
 
 AliTPCcalibTime::AliTPCcalibTime() 
-  :AliTPCcalibBase(), 
+  :AliTPCcalibBase(),  
+   fMemoryMode(1), // 0 -do not fill THnSparse with residuals  1- fill only important QA THn 2 - Fill all THnsparse for calibration
    fLaser(0),       // pointer to laser calibration
    fDz(0),          // current delta z
    fCutMaxD(3),        // maximal distance in rfi ditection
@@ -152,10 +155,19 @@ AliTPCcalibTime::AliTPCcalibTime()
   for (Int_t i=0;i<12;i++) {
     fTPCVertex[i]=0;
   }
+  static Int_t counter=0;
+  if (1) {
+    TTimeStamp s;
+    Int_t time=s;
+    AliInfo(Form("Counter Constructor\t%d\t%d",counter,time));
+    counter++;
+  }
+
 }
 
-AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift)
+AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift, Int_t memoryMode)
   :AliTPCcalibBase(),
+   fMemoryMode(memoryMode), // 0 -do not fill THnSparse with residuals  1- fill only important QA THn 2 - Fill all THnsparse for calibration
    fLaser(0),            // pointer to laser calibration
    fDz(0),               // current delta z
    fCutMaxD(5*0.5356),   // maximal distance in rfi ditection
@@ -286,6 +298,13 @@ AliTPCcalibTime::~AliTPCcalibTime(){
   //
   // Virtual Destructor
   //
+  static Int_t counter=0;
+  if (1) {
+    TTimeStamp s;
+    Int_t time=s;
+    AliInfo(Form("Counter Destructor\t%s\t%d\t%d",GetName(),counter,time));
+    counter++;
+  }
   for(Int_t i=0;i<3;i++){
     if(fHistVdriftLaserA[i]){
       delete fHistVdriftLaserA[i];
@@ -906,8 +925,8 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
 	tree->Draw("sqrt(vA.fChi2/vA.fNDF)","sqrt(vA.fChi2/vA.fNDF)<100","")
 	
       */
-      vertexA.Print();
-      vertexC.Print();      
+      //vertexA.Print();
+      //vertexC.Print();      
       (*cstream)<<"vertexTPC"<<
 	"flags="<<flags<<        // rejection flags
 	"vSPD.="<<vertexSPD<<    // SPD vertex
@@ -1031,7 +1050,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
   //
   TIterator* iter = li->MakeIterator();
   AliTPCcalibTime* cal = 0;
-
+  //
   while ((cal = (AliTPCcalibTime*)iter->Next())) {
     if (!cal->InheritsFrom(AliTPCcalibTime::Class())) {
       Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
@@ -1046,32 +1065,37 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
     //
     if (fTPCVertex && cal->fTPCVertex) 
       for (Int_t imeas=0; imeas<12; imeas++){
-	fTPCVertex[imeas]->Add(cal->fTPCVertex[imeas]);
+	if (fTPCVertex[imeas] && cal->fTPCVertex[imeas]) fTPCVertex[imeas]->Add(cal->fTPCVertex[imeas]);
       }
     
-    for (Int_t imeas=0; imeas<5; imeas++){
-      if (cal->GetResHistoTPCCE(imeas) && cal->GetResHistoTPCCE(imeas)){
-	fResHistoTPCCE[imeas]->Add(cal->fResHistoTPCCE[imeas]);
-      }else{
-	 fResHistoTPCCE[imeas]=(THnSparse*)cal->fResHistoTPCCE[imeas]->Clone();
+    if (fMemoryMode>0) for (Int_t imeas=0; imeas<5; imeas++){
+      if (fMemoryMode>1){
+	if ( cal->GetResHistoTPCCE(imeas) && cal->GetResHistoTPCCE(imeas)){
+	  fResHistoTPCCE[imeas]->Add(cal->fResHistoTPCCE[imeas]);
+	}else{
+	  fResHistoTPCCE[imeas]=(THnSparse*)cal->fResHistoTPCCE[imeas]->Clone();
+	}
       }
-      if (cal->GetResHistoTPCITS(imeas) && cal->GetResHistoTPCITS(imeas)){
-	fResHistoTPCITS[imeas]->Add(cal->fResHistoTPCITS[imeas]);
-	fResHistoTPCvertex[imeas]->Add(cal->fResHistoTPCvertex[imeas]);
+      //
+      if ((fMemoryMode>0) &&cal->GetResHistoTPCITS(imeas) && cal->GetResHistoTPCITS(imeas)){
+	if (fMemoryMode>1 || (imeas%2)==1) fResHistoTPCITS[imeas]->Add(cal->fResHistoTPCITS[imeas]);
+	if (fMemoryMode>1) fResHistoTPCvertex[imeas]->Add(cal->fResHistoTPCvertex[imeas]);
       }
-      if (cal->fResHistoTPCTRD[imeas]){
+      //
+      if ((fMemoryMode>1) && cal->fResHistoTPCTRD[imeas]){
 	if (fResHistoTPCTRD[imeas])
 	  fResHistoTPCTRD[imeas]->Add(cal->fResHistoTPCTRD[imeas]);
 	else
 	  fResHistoTPCTRD[imeas]=(THnSparse*)cal->fResHistoTPCTRD[imeas]->Clone();
       }
-      if  (cal->fResHistoTPCTOF[imeas]){
+      //
+      if  ((fMemoryMode>1) && cal->fResHistoTPCTOF[imeas]){
 	if (fResHistoTPCTOF[imeas])
 	  fResHistoTPCTOF[imeas]->Add(cal->fResHistoTPCTOF[imeas]);
 	else
 	  fResHistoTPCTOF[imeas]=(THnSparse*)cal->fResHistoTPCTOF[imeas]->Clone();      
       }
-
+      //
       if (cal->fArrayLaserA){
 	fArrayLaserA->Expand(fArrayLaserA->GetEntriesFast()+cal->fArrayLaserA->GetEntriesFast());
 	fArrayLaserC->Expand(fArrayLaserC->GetEntriesFast()+cal->fArrayLaserC->GetEntriesFast());
@@ -1087,7 +1111,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
     TIterator* iterator = addArray->MakeIterator();
     iterator->Reset();
     THnSparse* addHist=NULL;
-    while((addHist=(THnSparseF*)iterator->Next())){
+    if ((fMemoryMode>1)) while((addHist=(THnSparseF*)iterator->Next())){
       if(!addHist) continue;
       addHist->Print();
       THnSparse* localHist=(THnSparseF*)fArrayDz->FindObject(addHist->GetName());
@@ -2024,6 +2048,7 @@ void        AliTPCcalibTime::FillResHistoTPCCE(const AliExternalTrackParam * pTP
   // fill residual histograms pTPCOut-pTPCin - trac crossing CE
   // Histogram 
   //
+  if (fMemoryMode<2) return;
   Double_t histoX[5];
   Double_t xyz[3];
   pTPCIn->GetXYZ(xyz);
@@ -2069,6 +2094,7 @@ void        AliTPCcalibTime::FillResHistoTPC(const AliESDtrack * pTrack){
   // fill residual histograms pTPC - vertex
   // Histogram is filled only for primary tracks
   //
+  if (fMemoryMode<2) return;
   Double_t histoX[4];
   const AliExternalTrackParam * pTPCIn = pTrack->GetInnerParam();
   AliExternalTrackParam pTPCvertex(*(pTrack->GetInnerParam()));
@@ -2100,6 +2126,7 @@ void        AliTPCcalibTime::FillResHistoTPCTRD(const AliExternalTrackParam * pT
   //
   // fill resuidual histogram TPCout-TRDin
   //
+  if (fMemoryMode<2) return;
   Double_t histoX[4];
   Double_t xyz[3];
   pTPCOut->GetXYZ(xyz);
@@ -2124,6 +2151,7 @@ void        AliTPCcalibTime::FillResHistoTPCTOF(const AliExternalTrackParam * pT
   //
   // fill resuidual histogram TPCout-TOFin
   // track propagated to the TOF position
+  if (fMemoryMode<2) return;
   Double_t histoX[4];
   Double_t xyz[3];
 
