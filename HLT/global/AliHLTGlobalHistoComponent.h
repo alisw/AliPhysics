@@ -126,7 +126,7 @@ class AliHLTGlobalHistoComponent : public AliHLTTTreeProcessor
   AliHLTUInt32_t GetDataSpec() const {return 0;}
 
   int ResetVariables();
-
+  
 private:
   /// copy constructor prohibited
   AliHLTGlobalHistoComponent(const AliHLTGlobalHistoComponent&);
@@ -137,9 +137,16 @@ private:
   int fEvent; //!
   /// track count, tree filling variable
   int fNofTracks; //!
+  /// x coordinate of vertex
+  float fVertexX; //!
+  /// y coordinate of vertex
+  float fVertexY; //!
+  /// z coordinate of vertex
+  float fVertexZ; //!
+ 
   /// filling arrays for track parameters
   AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables fTrackVariables; //!
-
+  
   ClassDef(AliHLTGlobalHistoComponent, 0) // HLT Global Histogram component
 };
 #endif

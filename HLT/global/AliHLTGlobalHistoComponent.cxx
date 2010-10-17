@@ -37,6 +37,9 @@ AliHLTGlobalHistoComponent::AliHLTGlobalHistoComponent()
   : AliHLTTTreeProcessor()
   , fEvent(0)
   , fNofTracks(0)
+  , fVertexX(-99)
+  , fVertexY(-99)
+  , fVertexZ(-99)
   , fTrackVariables()
 {
   // see header file for class documentation
@@ -70,21 +73,34 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
     "Track_pt "
     "Track_phi "
     "Track_eta "
-    // "Track_dcar "
-    // "Track_dcaz "
+    "Track_p "
+    "Track_theta "
+    "Track_Nclusters "
+    "Track_statusFlag "
+    "Track_charge "
+    //"Track_dca "
+    //"Track_dcar "
+    //"Track_dcaz "
   };
+  
   int maxTrackCount=20000; // FIXME: make configurable
+  
   if ((iResult=fTrackVariables.Init(maxTrackCount, trackVariableNames))<0) {
     HLTError("failed to initialize internal structure for track properties");
   }
   
   if (iResult>=0) {
-    pTree->Branch("event",        &fEvent, "event/I");
+    pTree->Branch("event",        &fEvent,     "event/I");
     pTree->Branch("trackcount",   &fNofTracks, "trackcount/I");
+    pTree->Branch("vertexX",      &fVertexX,   "vertexX/F");
+    pTree->Branch("vertexY",      &fVertexY,   "vertexY/F");
+    pTree->Branch("vertexZ",      &fVertexZ,   "vertexZ/F");
+    
     for (int i=0; i<fTrackVariables.Variables(); i++) {
       TString specifier=fTrackVariables.GetKey(i);
       float* pArray=fTrackVariables.GetArray(specifier);
       specifier+="[trackcount]/f";
+      specifier+="[vertexX]/f";
       pTree->Branch(fTrackVariables.GetKey(i), pArray, specifier.Data());
     }
   } else {
@@ -116,14 +132,24 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
 
   // fill track variables
   fNofTracks=esd->GetNumberOfTracks();
+  fVertexX = esd->GetPrimaryVertexTracks()->GetX();
+  fVertexY = esd->GetPrimaryVertexTracks()->GetY();
+  fVertexZ = esd->GetPrimaryVertexTracks()->GetZ();
+  
   for (int i=0; i<fNofTracks; i++) {
     AliESDtrack *esdTrack = esd->GetTrack(i);
     if (!esdTrack) continue;
     
-    fTrackVariables.Fill("Track_pt", esdTrack->Pt());
-    fTrackVariables.Fill("Track_phi", esdTrack->Phi());
-    fTrackVariables.Fill("Track_eta", esdTrack->Theta());
-  }
+    fTrackVariables.Fill("Track_pt"        , esdTrack->Pt()                      );
+    fTrackVariables.Fill("Track_phi"       , esdTrack->Phi()*TMath::RadToDeg()   );
+    fTrackVariables.Fill("Track_eta"       , esdTrack->Theta()                   );
+    fTrackVariables.Fill("Track_p"         , esdTrack->P()                       );
+    fTrackVariables.Fill("Track_theta"     , esdTrack->Theta()*TMath::RadToDeg() );
+    fTrackVariables.Fill("Track_Nclusters" , esdTrack->GetTPCNcls()              );
+    fTrackVariables.Fill("Track_statusFlag", esdTrack->GetStatus()               );
+    fTrackVariables.Fill("Track_charge"    , esdTrack->Charge()                  );
+   
+   }
   HLTInfo("added parameters for %d tracks", fNofTracks);
 
   if (iResult<0) {
