@@ -18,6 +18,7 @@
 // Base class for analysis algorithms
 //-- Author: Gustavo Conesa (LNF-INFN) 
 //_________________________________________________________________________
+// --Yaxian Mao: Add the possibality for event selection analysis based on vertex and multiplicity bins (10/10/2010)
   
 
 // --- ROOT system ---
@@ -46,6 +47,8 @@ ClassImp(AliAnaPartCorrBaseClass)
   AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass() : 
     TObject(), fDataMC(0), fDebug(0), fCheckFidCut(0),
     fCheckCaloPID(0), fRecalculateCaloPID(0), fMinPt(0), fMaxPt(0),
+    fMultiBin(0),fNZvertBin(0),fNrpBin(0),fZvtxCut(0.), fMaxMulti(0),fMinMulti(0),
+    fUseSelectEvent(kFALSE), 
     fReader(0x0), fInputAODBranch(0x0), fInputAODName(""),
     fOutputAODBranch(0x0), fNewAOD(kFALSE),
     fOutputAODName(""), fOutputAODClassName(""),
@@ -155,8 +158,8 @@ AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass()
   if(fIC)        delete fIC ;
   if(fMCUtils)   delete fMCUtils ;
   if(fNMS)       delete fNMS ;
-  
-//   printf("--- analysis deleted \n");
+
+  //   printf("--- analysis deleted \n");
 }
 
 //____________________________________________________________________________
@@ -457,7 +460,14 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fRecalculateCaloPID = kFALSE ;
   fMinPt = 0.1  ; //Min pt in particle analysis
   fMaxPt = 300. ; //Max pt in particle analysis
-
+  fMultiBin = 1;
+  fNZvertBin = 1;
+  fNrpBin    = 1;
+  fZvtxCut   = 40;
+  fMaxMulti   = 1000;
+  fMinMulti   = 0;
+  fUseSelectEvent = kFALSE ;
+  
   //fReader    = new AliCaloTrackReader(); //Initialized in maker
   //fCaloUtils = new AliCalorimeterUtils();//Initialized in maker
   	

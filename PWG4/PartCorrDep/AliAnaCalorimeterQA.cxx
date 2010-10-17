@@ -1222,40 +1222,45 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   Int_t trackIndex = 0;
   Int_t nModule = -1;
   
+  //Get vertex for photon momentum calculation and event selection
+  Double_t v[3] = {0,0,0}; //vertex ;
+  GetReader()->GetVertex(v);
+  if (TMath::Abs(v[2]) > GetZvertexCut()) return ;  
+  
   //Play with the MC stack if available	
   //Get the MC arrays and do some checks
   if(IsDataMC()){
     if(GetReader()->ReadStack()){
       
       if(!GetMCStack()) {
-	printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
-	abort();
+        printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
+        abort();
       }
       //Fill some pure MC histograms, only primaries.
       for(Int_t i=0 ; i<GetMCStack()->GetNprimary(); i++){//Only primary particles, for all MC transport put GetNtrack()
-	TParticle *primary = GetMCStack()->Particle(i) ;
+        TParticle *primary = GetMCStack()->Particle(i) ;
         //printf("i %d, %s: status = %d, primary? %d\n",i, primary->GetName(), primary->GetStatusCode(), primary->IsPrimary());
-	if (primary->GetStatusCode() > 11) continue; //Working for PYTHIA and simple generators, check for HERWIG 
-	primary->Momentum(mom);
-	MCHistograms(mom,TMath::Abs(primary->GetPdgCode()));
+        if (primary->GetStatusCode() > 11) continue; //Working for PYTHIA and simple generators, check for HERWIG 
+        primary->Momentum(mom);
+        MCHistograms(mom,TMath::Abs(primary->GetPdgCode()));
       } //primary loop
     }
     else if(GetReader()->ReadAODMCParticles()){
       
       if(!GetReader()->GetAODMCParticles(0)) 	{
-	printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  AODMCParticles not available!\n");
-	abort();
+        printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  AODMCParticles not available!\n");
+        abort();
       }
       //Fill some pure MC histograms, only primaries.
       for(Int_t i=0 ; i < (GetReader()->GetAODMCParticles(0))->GetEntriesFast(); i++){
-	AliAODMCParticle *aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(i) ;
+        AliAODMCParticle *aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(i) ;
         //printf("i %d, %s: primary? %d physical primary? %d, flag %d\n",
         //	   i,(TDatabasePDG::Instance()->GetParticle(aodprimary->GetPdgCode()))->GetName(), 
         //	   aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), aodprimary->GetFlag());
-	if (!aodprimary->IsPrimary()) continue; //accept all which is not MC transport generated. Don't know how to avoid partons
+        if (!aodprimary->IsPrimary()) continue; //accept all which is not MC transport generated. Don't know how to avoid partons
         //aodprimary->Momentum(mom);
-	mom.SetPxPyPzE(aodprimary->Px(),aodprimary->Py(),aodprimary->Pz(),aodprimary->E());
-	MCHistograms(mom,TMath::Abs(aodprimary->GetPdgCode()));
+        mom.SetPxPyPzE(aodprimary->Px(),aodprimary->Py(),aodprimary->Pz(),aodprimary->E());
+        MCHistograms(mom,TMath::Abs(aodprimary->GetPdgCode()));
       } //primary loop
       
     }
@@ -1295,11 +1300,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
     if(GetDebug() > 0)
       printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In %s there are %d clusters \n", fCalorimeter.Data(), nCaloClusters);
     
-    //Get vertex for photon momentum calculation
-    Double_t v[3] = {0,0,0}; //vertex ;
-    GetReader()->GetVertex(v);
     AliVTrack * track = 0x0;
-    
     Float_t pos[3] ;
     Float_t showerShape[3] ;
     Double_t tof = 0;
@@ -1326,7 +1327,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         Bool_t in = kTRUE;
         if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
         if(!in) continue;
-                
+        
         //Get module of cluster
         nCaloClustersAccepted++;
         nModule = GetModuleNumber(clus);
@@ -1339,7 +1340,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         //Cells per cluster
         nCaloCellsPerCluster =  clus->GetNCells();
         //if(mom.E() > 10 && nCaloCellsPerCluster == 1 ) printf("%s:************** E = %f ********** ncells = %d\n",fCalorimeter.Data(), mom.E(),nCaloCellsPerCluster);
-   
+        
         //matched cluster with tracks
         nTracksMatched = clus->GetNTracksMatched();
         trackIndex     = clus->GetTrackMatchedIndex();
@@ -1473,8 +1474,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         if(GetDebug()>1) printf("Invariant mass \n");
         
         //do not do for bad vertex
-        Float_t fZvtxCut = 40. ;	
-        if(v[2]<-fZvtxCut || v[2]> fZvtxCut) continue ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
+        // Float_t fZvtxCut = 40. ;	
+        if(v[2]<-GetZvertexCut() || v[2]> GetZvertexCut()) continue ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
         
         Int_t nModule2 = -1;
         Int_t nCaloCellsPerCluster2=0;
@@ -1751,7 +1752,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
     fhYE     ->Fill(pos[1],e);
     fhZE     ->Fill(pos[2],e);
     fhXYZ    ->Fill(pos[0], pos[1],pos[2]);
-   
+    
     fhXNCells->Fill(pos[0],nCaloCellsPerCluster);
     fhYNCells->Fill(pos[1],nCaloCellsPerCluster);
     fhZNCells->Fill(pos[2],nCaloCellsPerCluster);
@@ -1790,8 +1791,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
     if(GetReader()->ReadStack() && !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown)){ //it MC stack and known tag
       
       if( label >= GetMCStack()->GetNtrack()) {
-	if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() *** large label ***:  label %d, n tracks %d \n", label, GetMCStack()->GetNtrack());
-	return ;
+        if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() *** large label ***:  label %d, n tracks %d \n", label, GetMCStack()->GetNtrack());
+        return ;
       }
       
       primary = GetMCStack()->Particle(label);
@@ -1804,50 +1805,50 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
       iParent = primary->GetFirstMother();
       
       if(GetDebug() > 1 ) {
-	printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
-	printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg0, primary->GetName(),status, iParent);
+        printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
+        printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg0, primary->GetName(),status, iParent);
       }
       
       //Get final particle, no conversion products
       if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)){
         //Get the parent
-	primary = GetMCStack()->Particle(iParent);
-	pdg = TMath::Abs(primary->GetPdgCode());
-	if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
-	while((pdg == 22 || pdg == 11) && status != 1){
-	  iMother = iParent;
-	  primary = GetMCStack()->Particle(iMother);
-	  status  = primary->GetStatusCode();
-	  iParent = primary->GetFirstMother();
-	  pdg     = TMath::Abs(primary->GetPdgCode());
-	  if(GetDebug() > 1 )printf("\t pdg %d, index %d, %s, status %d \n",pdg, iMother,  primary->GetName(),status);	
-	}	
+        primary = GetMCStack()->Particle(iParent);
+        pdg = TMath::Abs(primary->GetPdgCode());
+        if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
+        while((pdg == 22 || pdg == 11) && status != 1){
+          iMother = iParent;
+          primary = GetMCStack()->Particle(iMother);
+          status  = primary->GetStatusCode();
+          iParent = primary->GetFirstMother();
+          pdg     = TMath::Abs(primary->GetPdgCode());
+          if(GetDebug() > 1 )printf("\t pdg %d, index %d, %s, status %d \n",pdg, iMother,  primary->GetName(),status);	
+        }	
         
-	if(GetDebug() > 1 ) {
-	  printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
-	  printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg, primary->GetName(), status, iParent);
-	}
+        if(GetDebug() > 1 ) {
+          printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
+          printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg, primary->GetName(), status, iParent);
+        }
         
       }
       
       //Overlapped pi0 (or eta, there will be very few), get the meson
       if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
          GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
-	if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: \n");
-	while(pdg != 111 && pdg != 221){
-	  iMother = iParent;
-	  primary = GetMCStack()->Particle(iMother);
-	  status  = primary->GetStatusCode();
-	  iParent = primary->GetFirstMother();
-	  pdg     = TMath::Abs(primary->GetPdgCode());
-	  if(GetDebug() > 1 ) printf("\t pdg %d, %s, index %d\n",pdg,  primary->GetName(),iMother);
-	  if(iMother==-1) {
-	    printf("AliAnaCalorimeterQA::ClusterHistograms() - Tagged as Overlapped photon but meson not found, why?\n");
+        if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: \n");
+        while(pdg != 111 && pdg != 221){
+          iMother = iParent;
+          primary = GetMCStack()->Particle(iMother);
+          status  = primary->GetStatusCode();
+          iParent = primary->GetFirstMother();
+          pdg     = TMath::Abs(primary->GetPdgCode());
+          if(GetDebug() > 1 ) printf("\t pdg %d, %s, index %d\n",pdg,  primary->GetName(),iMother);
+          if(iMother==-1) {
+            printf("AliAnaCalorimeterQA::ClusterHistograms() - Tagged as Overlapped photon but meson not found, why?\n");
             //break;
-	  }
-	}
+          }
+        }
         
-	if(GetDebug() > 2 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped %s decay, label %d \n", 
+        if(GetDebug() > 2 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped %s decay, label %d \n", 
                                    primary->GetName(),iMother);
       }
       
@@ -1862,8 +1863,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
     else if(GetReader()->ReadAODMCParticles() && !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown)){//it MC AOD and known tag
       //Get the list of MC particles
       if(!GetReader()->GetAODMCParticles(0)) 	{
-	printf("AliAnaCalorimeterQA::ClusterHistograms() -  MCParticles not available!\n");
-	abort();
+        printf("AliAnaCalorimeterQA::ClusterHistograms() -  MCParticles not available!\n");
+        abort();
       }		
       
       aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(label);
@@ -1876,58 +1877,58 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
       iParent = aodprimary->GetMother();
       
       if(GetDebug() > 1 ) {
-	printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
-	printf("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d, parent %d \n",
+        printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
+        printf("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d, parent %d \n",
                iMother, pdg0, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), iParent);
       }
       
       //Get final particle, no conversion products
       if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)){
-	if(GetDebug() > 1 ) 
-	  printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
+        if(GetDebug() > 1 ) 
+          printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
         //Get the parent
-	aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iParent);
-	pdg = TMath::Abs(aodprimary->GetPdgCode());
-	while ((pdg == 22 || pdg == 11) && !aodprimary->IsPhysicalPrimary()) {
-	  iMother    = iParent;
-	  aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
-	  status     = aodprimary->IsPrimary();
-	  iParent    = aodprimary->GetMother();
-	  pdg        = TMath::Abs(aodprimary->GetPdgCode());
-	  if(GetDebug() > 1 )
-	    printf("\t pdg %d, index %d, Primary? %d, Physical Primary? %d \n",
+        aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iParent);
+        pdg = TMath::Abs(aodprimary->GetPdgCode());
+        while ((pdg == 22 || pdg == 11) && !aodprimary->IsPhysicalPrimary()) {
+          iMother    = iParent;
+          aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
+          status     = aodprimary->IsPrimary();
+          iParent    = aodprimary->GetMother();
+          pdg        = TMath::Abs(aodprimary->GetPdgCode());
+          if(GetDebug() > 1 )
+            printf("\t pdg %d, index %d, Primary? %d, Physical Primary? %d \n",
                    pdg, iMother, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());	
-	}	
-	
-	if(GetDebug() > 1 ) {
-	  printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
-	  printf("\t Mother label %d, pdg %d, parent %d, Primary? %d, Physical Primary? %d \n",
+        }	
+        
+        if(GetDebug() > 1 ) {
+          printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
+          printf("\t Mother label %d, pdg %d, parent %d, Primary? %d, Physical Primary? %d \n",
                  iMother, pdg, iParent, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());
-	}
-	
+        }
+        
       }
       
       //Overlapped pi0 (or eta, there will be very few), get the meson
       if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
          GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
-	if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: PDG %d, mom %d \n",pdg, iMother);
-	while(pdg != 111 && pdg != 221){
-	  
-	  iMother    = iParent;
-	  aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
-	  status     = aodprimary->IsPrimary();
-	  iParent    = aodprimary->GetMother();
-	  pdg        = TMath::Abs(aodprimary->GetPdgCode());
+        if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: PDG %d, mom %d \n",pdg, iMother);
+        while(pdg != 111 && pdg != 221){
           
-	  if(GetDebug() > 1 ) printf("\t pdg %d, index %d\n",pdg, iMother);
-	  
-	  if(iMother==-1) {
-	    printf("AliAnaCalorimeterQA::ClusterHistograms() - Tagged as Overlapped photon but meson not found, why?\n");
+          iMother    = iParent;
+          aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
+          status     = aodprimary->IsPrimary();
+          iParent    = aodprimary->GetMother();
+          pdg        = TMath::Abs(aodprimary->GetPdgCode());
+          
+          if(GetDebug() > 1 ) printf("\t pdg %d, index %d\n",pdg, iMother);
+          
+          if(iMother==-1) {
+            printf("AliAnaCalorimeterQA::ClusterHistograms() - Tagged as Overlapped photon but meson not found, why?\n");
             //break;
-	  }
-	}	
-	
-	if(GetDebug() > 2 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped %s decay, label %d \n", 
+          }
+        }	
+        
+        if(GetDebug() > 2 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped %s decay, label %d \n", 
                                    aodprimary->GetName(),iMother);
       }	
       
@@ -2009,10 +2010,10 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
       fhEMVxyz   ->Fill(vxMC,vyMC);//,vz);
       fhEMR      ->Fill(e,rVMC);
       if( nTracksMatched > 0){
-	fhEleECharged     ->Fill(e,eMC);		
-	fhElePtCharged    ->Fill(pt,ptMC);
-	fhElePhiCharged   ->Fill(phi,phiMC);
-	fhEleEtaCharged   ->Fill(eta,etaMC);
+        fhEleECharged     ->Fill(e,eMC);		
+        fhElePtCharged    ->Fill(pt,ptMC);
+        fhElePhiCharged   ->Fill(phi,phiMC);
+        fhEleEtaCharged   ->Fill(eta,etaMC);
       }
     }
     else if(charge == 0){
@@ -2023,10 +2024,10 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
       fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
       fhHaR        ->Fill(e,rVMC);
       if( nTracksMatched > 0){
-	fhNeHadECharged     ->Fill(e,eMC);		
-	fhNeHadPtCharged    ->Fill(pt,ptMC);
-	fhNeHadPhiCharged   ->Fill(phi,phiMC);
-	fhNeHadEtaCharged   ->Fill(eta,etaMC);
+        fhNeHadECharged     ->Fill(e,eMC);		
+        fhNeHadPtCharged    ->Fill(pt,ptMC);
+        fhNeHadPhiCharged   ->Fill(phi,phiMC);
+        fhNeHadEtaCharged   ->Fill(eta,etaMC);
       }
     }
     else if(charge!=0){
@@ -2037,10 +2038,10 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
       fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
       fhHaR        ->Fill(e,rVMC);
       if( nTracksMatched > 0){
-	fhChHadECharged     ->Fill(e,eMC);		
-	fhChHadPtCharged    ->Fill(pt,ptMC);
-	fhChHadPhiCharged   ->Fill(phi,phiMC);
-	fhChHadEtaCharged   ->Fill(eta,etaMC);
+        fhChHadECharged     ->Fill(e,eMC);		
+        fhChHadPtCharged    ->Fill(pt,ptMC);
+        fhChHadPhiCharged   ->Fill(phi,phiMC);
+        fhChHadEtaCharged   ->Fill(eta,etaMC);
       }
     }
   }//Work with MC
@@ -2978,11 +2979,12 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendPhiCl.Draw();
 	
-  //ETA
+	//ETA
 	cetaphic->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
   
+	delete htmp; 
 	htmp = fhEtaPhiE->ProjectionX("heta_cluster_nocut",0,-1,0,-1);
 	htmp ->SetLineColor(1);
 	rbEta =  GetNewRebinForRePlotting(htmp,etamin, etamax,netabins) ;
@@ -3030,7 +3032,8 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	pLegendPhiCell.SetTextSize(0.03);
 	pLegendPhiCell.SetFillColor(10);
 	pLegendPhiCell.SetBorderSize(1);
-	
+  
+	delete htmp; 
 	htmp = fhEtaPhiAmp->ProjectionY("hphi_cell_nocut",0,-1,0,-1);
 	if(htmp){
 	  htmp->SetMinimum(1);
@@ -3057,7 +3060,8 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cetaphicell->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
-	
+  
+	delete htmp; 
 	htmp = fhEtaPhiAmp->ProjectionX("heta_cell_nocut",0,-1,0,-1);
 	if(htmp){
 	  htmp ->SetLineColor(1);
@@ -3162,7 +3166,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     snprintf(name,buffersize,"QA_%s_ClusterX_Y_Z.eps",fCalorimeter.Data());
     cx->Print(name); printf("Create plot %s\n",name);
   }
-    //CELLS
+  //CELLS
   if(fFillAllPosHisto)
   { 
     snprintf(cname,buffersize,"%s_QA_CellXY",fCalorimeter.Data());
@@ -3243,6 +3247,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     pLegendXCl.SetFillColor(10);
     pLegendXCl.SetBorderSize(1);
     
+    delete htmp; 
     htmp = fhRE->ProjectionX("hre_cluster_nocut",0,-1);
     Int_t rbR=1;
     if(htmp){
@@ -3271,6 +3276,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxe->cd(2) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    delete htmp; 
     htmp = fhXE->ProjectionX("hxe_cluster_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3292,6 +3298,8 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxe->cd(3) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    
+    delete htmp; 
     htmp = fhYE->ProjectionX("hye_cluster_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3314,6 +3322,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     gPad->SetLogy();
     gPad->SetGridy();
     
+    delete htmp; 
     htmp = fhZE->ProjectionX("hze_cluster_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3354,6 +3363,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     pLegendXClN.SetFillColor(10);
     pLegendXClN.SetBorderSize(1);
     
+    delete htmp; 
     htmp = fhRNCells->ProjectionX("hrn_cluster_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3380,6 +3390,8 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxn->cd(2) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    
+    delete htmp; 
     htmp = fhXNCells->ProjectionX("hxn_cluster_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3400,6 +3412,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxn->cd(3) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    delete htmp; 
     htmp = fhYNCells->ProjectionX("hyn_cluster_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3421,6 +3434,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     gPad->SetLogy();
     gPad->SetGridy();
     
+    delete htmp; 
     htmp = fhZNCells->ProjectionX("hzn_cluster_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3459,6 +3473,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     pLegendXCell.SetFillColor(10);
     pLegendXCell.SetBorderSize(1);
     
+    delete htmp; 
     htmp = fhRCellE->ProjectionX("hre_cell_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3485,6 +3500,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     gPad->SetLogy();
     gPad->SetGridy();
     
+    delete htmp; 
     htmp = fhXCellE->ProjectionX("hxe_cells_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3506,6 +3522,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxecell->cd(3) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    delete htmp; 
     htmp = fhYCellE->ProjectionX("hye_cells_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3517,6 +3534,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       for (Int_t i = 0; i < ncuts; i++) {
         binmin =  hE->FindBin(ecut[i]);
         //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        delete htmp; 
         htmp = fhYCellE->ProjectionX(Form("hye_cells_cut%d",i),binmin,-1);
         htmp->SetLineColor(ecutcolor[i]);
         htmp->Rebin(rbY);
@@ -3527,6 +3545,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxecell->cd(4) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    delete htmp; 
     htmp = fhZCellE->ProjectionX("hze_cells_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3538,6 +3557,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       for (Int_t i = 0; i < ncuts; i++) {
         binmin =  hE->FindBin(ecut[i]);
         //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        delete htmp; 
         htmp = fhZCellE->ProjectionX(Form("hze_cells_cut%d",i),binmin,-1);
         htmp->SetLineColor(ecutcolor[i]);
         htmp->Rebin(rbZ);
@@ -3569,6 +3589,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     pLegendXClD.SetFillColor(10);
     pLegendXClD.SetBorderSize(1);
     
+    delete htmp; 
     htmp = fhDeltaCellClusterRE->ProjectionX("hrde_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3581,6 +3602,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       for (Int_t i = 0; i < ncuts; i++) {
         binmin =  hE->FindBin(ecut[i]);
         //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        delete htmp; 
         htmp = fhDeltaCellClusterRE->ProjectionX(Form("hrde_cut%d",i),binmin,-1);
         htmp->SetLineColor(ecutcolor[i]);
         htmp->Rebin(rbDR);
@@ -3594,6 +3616,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxde->cd(2) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    delete htmp; 
     htmp = fhDeltaCellClusterXE->ProjectionX("hxde_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3605,6 +3628,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       for (Int_t i = 0; i < ncuts; i++) {
         binmin =  hE->FindBin(ecut[i]);
         //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        delete htmp; 
         htmp = fhDeltaCellClusterXE->ProjectionX(Form("hxde_cut%d",i),binmin,-1);
         htmp->SetLineColor(ecutcolor[i]);
         htmp->Rebin(rbDX);
@@ -3616,6 +3640,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxde->cd(3) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    delete htmp; 
     htmp = fhDeltaCellClusterYE->ProjectionX("hyde_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3627,6 +3652,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       for (Int_t i = 0; i < ncuts; i++) {
         binmin =  hE->FindBin(ecut[i]);
         //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        delete htmp; 
         htmp = fhDeltaCellClusterYE->ProjectionX(Form("hyde_cut%d",i),binmin,-1);
         htmp->SetLineColor(ecutcolor[i]);
         htmp->Rebin(rbDY);
@@ -3639,6 +3665,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     gPad->SetLogy();
     gPad->SetGridy();
     
+    delete htmp; 
     htmp = fhDeltaCellClusterZE->ProjectionX("hzde_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3650,6 +3677,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       for (Int_t i = 0; i < ncuts; i++) {
         binmin =  hE->FindBin(ecut[i]);
         //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        delete htmp; 
         htmp = fhDeltaCellClusterZE->ProjectionX(Form("hzde_cut%d",i),binmin,-1);
         htmp->SetLineColor(ecutcolor[i]);
         htmp->Rebin(rbZ);
@@ -3677,7 +3705,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     pLegendXClDN.SetTextSize(0.03);
     pLegendXClDN.SetFillColor(10);
     pLegendXClDN.SetBorderSize(1);
-    
+    delete htmp; 
     htmp = fhDeltaCellClusterRNCells->ProjectionX("hrdn_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3688,6 +3716,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       pLegendXClDN.AddEntry(htmp,"No cut","L");
       
       for (Int_t i = 0; i < ncellcuts; i++) {
+        delete htmp; 
         if(i < ncellcuts-1) htmp = fhDeltaCellClusterRNCells->ProjectionX(Form("hrdn_cut%d",i),ncellcut[i],ncellcut[i]);
         else htmp = fhDeltaCellClusterRNCells->ProjectionX(Form("hrdn_cut%d",i),ncellcut[i],-1);
         htmp->SetLineColor(ecutcolor[i]);
@@ -3704,6 +3733,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxdn->cd(2) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    delete htmp; 
     htmp = fhDeltaCellClusterXNCells->ProjectionX("hxdn_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3713,6 +3743,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       htmp->Draw("HE");
       
       for (Int_t i = 0; i < ncellcuts; i++) {
+        delete htmp; 
         if(i < ncellcuts-1)htmp = fhDeltaCellClusterXNCells->ProjectionX(Form("hxdn_cut%d",i),ncellcut[i],ncellcut[i]);
         else htmp = fhDeltaCellClusterXNCells->ProjectionX(Form("hxdn_cut%d",i),ncellcut[i],-1);
         htmp->SetLineColor(ecutcolor[i]);
@@ -3725,6 +3756,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxdn->cd(3) ; 
     gPad->SetLogy();
     gPad->SetGridy();
+    delete htmp; 
     htmp = fhDeltaCellClusterYNCells->ProjectionX("hydn_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3734,6 +3766,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       htmp->Draw("HE");
       
       for (Int_t i = 0; i < ncellcuts; i++) {
+        delete htmp; 
         if(i < ncellcuts-1) htmp = fhDeltaCellClusterYNCells->ProjectionX(Form("hydn_cut%d",i),ncellcut[i],ncellcut[i]);
         else htmp = fhDeltaCellClusterYNCells->ProjectionX(Form("hydn_cut%d",i),ncellcut[i],-1);
         htmp->SetLineColor(ecutcolor[i]);
@@ -3746,7 +3779,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cxdn->cd(4) ; 
     gPad->SetLogy();
     gPad->SetGridy();
-    
+    delete htmp; 
     htmp = fhDeltaCellClusterZNCells->ProjectionX("hzdn_nocut",0,-1);
     if(htmp){
       htmp->SetMinimum(1);
@@ -3756,6 +3789,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       htmp->Draw("HE");
       
       for (Int_t i = 0; i < ncellcuts; i++) {
+        delete htmp; 
         if(i < ncellcuts-1)htmp = fhDeltaCellClusterZNCells->ProjectionX(Form("hzdn_cut%d",i),ncellcut[i],ncellcut[i]);
         else htmp = fhDeltaCellClusterZNCells->ProjectionX(Form("hzdn_cut%d",i),ncellcut[i],-1);
         htmp->SetLineColor(ecutcolor[i]);
@@ -3886,6 +3920,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cN->cd(2) ; 
 	gPad->SetLogx();
 	for(Int_t imod = 1; imod < fNModules; imod++){
+    delete htmp; 
 		htmp = (TH1D*)fhNClustersMod[imod]->Clone(Form("hNClustersRat%d",imod));
 		htmp->Divide(fhNClustersMod[0]);
 		htmp->SetLineColor(modColorIndex[imod]);
@@ -3916,6 +3951,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cN->cd(4) ; 
 	gPad->SetLogx();
 	for(Int_t imod = 1; imod < fNModules; imod++){
+    delete htmp; 
 		htmp = (TH1D*)fhNCellsMod[imod]->Clone(Form("hNCellsRat%d",imod));
 		htmp->Divide(fhNCellsMod[0]);
 		htmp->SetLineColor(modColorIndex[imod]);
@@ -3949,6 +3985,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cN->cd(6) ; 
 	gPad->SetLogx();
 	for(Int_t imod = 1; imod < fNModules; imod++){
+    delete htmp; 
 		htmp = (TH1D*)hNCellsCluster1D[imod]->Clone(Form("hNClustersCells1DRat%d",imod));
 		htmp->Divide(hNCellsCluster1D[0]);
 		htmp->SetLineColor(modColorIndex[imod]);

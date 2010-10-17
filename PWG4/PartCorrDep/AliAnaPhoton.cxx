@@ -361,6 +361,10 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   //Do photon analysis and fill aods
   
   //  Double_t vertex2[] = {0,0,0} ; //vertex from second input aod
+  //Get the vertex and check it is not too large in z, cut for SE
+  Double_t v[3] = {0,0,0}; //vertex ;
+  GetReader()->GetVertex(v);
+  if(!GetMixedEvent() && TMath::Abs(v[2]) > GetZvertexCut()) return ;  
   
   //Select the Calorimeter of the photon
   TObjArray * pl = 0x0; 
@@ -391,6 +395,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Int_t evtIndex = 0 ; 
     if (GetMixedEvent()) {
       evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
+      //Get the vertex and check it is not too large in z
+      if(TMath::Abs(GetVertex(evtIndex)[2])> GetZvertexCut()) continue ;  
     }
 
     //Cluster selection, not charged, with photon id and in fiducial cut

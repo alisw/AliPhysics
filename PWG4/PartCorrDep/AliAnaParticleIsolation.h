@@ -115,6 +115,8 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   TH2F * fhEtaIso ;    //! eta of isolated particles
   TH2F * fhConeSumPt ; //! Sum Pt in the cone
   TH2F * fhPtInCone ;  //! Particle Pt in the cone
+  TH2F * fhFRConeSumPt ; //! Sum Pt in the forward region cone (phi +90)
+  TH2F * fhPtInFRCone ;  //! Particle Pt in the forward region cone (phi +90 ) 
   
   //Prompt photon analysis data members for multiple cones and pt thresholds 
   Int_t       fNCones ;          //! Number of cone sizes to test

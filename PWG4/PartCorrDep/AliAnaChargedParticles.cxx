@@ -27,7 +27,7 @@
 // --- ROOT system ---
 #include "TParticle.h"
 #include "TH2F.h"
-
+#include "TH3D.h"
 //---- AliRoot system ----
 #include "AliAnaChargedParticles.h"
 #include "AliCaloTrackReader.h"
@@ -41,7 +41,8 @@ ClassImp(AliAnaChargedParticles)
   
 //____________________________________________________________________________
   AliAnaChargedParticles::AliAnaChargedParticles() : 
-    AliAnaPartCorrBaseClass(),fPdg(0), fhPt(0),fhPhi(0),fhEta(0), 
+    AliAnaPartCorrBaseClass(),fPdg(0), fhNtracks(0),fhVertex(0), fhPt(0),fhPhi(0),fhEta(0), 
+    fhPtEtaPhiPos(0), fhPtEtaPhiNeg(0),
     fhPtPion(0),fhPhiPion(0),fhEtaPion(0),
     fhPtProton(0),fhPhiProton(0),fhEtaProton(0),
     fhPtElectron(0),fhPhiElectron(0),fhEtaElectron(0),
@@ -113,6 +114,16 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   Float_t ptmin  = GetHistoPtMin();
   Float_t phimin = GetHistoPhiMin();
   Float_t etamin = GetHistoEtaMin();	
+
+  fhNtracks  = new TH1F ("hNtracks","# of tracks", 1000,0,1000); 
+  fhNtracks->SetXTitle("# of tracks");
+  outputContainer->Add(fhNtracks);
+  
+  fhVertex  = new TH3D ("Vertex","vertex position", 100,-50.,50., 100,-50.,50., 100,-50.,50.); 
+  fhVertex->SetXTitle("X");
+  fhVertex->SetYTitle("Y");
+  fhVertex->SetZTitle("Z");
+  outputContainer->Add(fhVertex);
   
   fhPt  = new TH1F ("hPtCharged","p_T distribution", nptbins,ptmin,ptmax); 
   fhPt->SetXTitle("p_{T} (GeV/c)");
@@ -126,6 +137,17 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEta->SetXTitle("#eta ");
   outputContainer->Add(fhEta);
   
+  fhPtEtaPhiPos  = new TH3D ("hPtEtaPhiPos","pt/eta/phi of positive charge",nptbins,ptmin,ptmax, netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhPtEtaPhiPos->SetXTitle("p_{T}^{h^{+}} (GeV/c)");
+  fhPtEtaPhiPos->SetYTitle("#eta ");
+  fhPtEtaPhiPos->SetZTitle("#phi (rad)");  
+  outputContainer->Add(fhPtEtaPhiPos);
+  
+  fhPtEtaPhiNeg  = new TH3D ("hPtEtaPhiNeg","pt/eta/phi of negative charge",nptbins,ptmin,ptmax, netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhPtEtaPhiNeg->SetXTitle("p_{T}^{h^{-}} (GeV/c)");
+  fhPtEtaPhiNeg->SetYTitle("#eta ");
+  fhPtEtaPhiNeg->SetZTitle("#phi (rad)");  
+  outputContainer->Add(fhPtEtaPhiNeg);
   
   if(IsDataMC()){
     
@@ -249,6 +271,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   
   //Fill AODParticle with CTS aods
   TVector3 p3;
+  Int_t evtIndex = 0;
+  Double_t vert[3]={0,0,0};
   for(Int_t i = 0; i < ntracks; i++){
     
     AliAODTrack * track =  (AliAODTrack*) (GetAODCTS()->At(i));
@@ -264,11 +288,17 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       //Keep only particles identified with fPdg
       //Selection not done for the moment
       //Should be done here.
+      if (GetMixedEvent()){
+        evtIndex = GetMixedEvent()->EventIndex(track->GetID()) ;
+      }        
+      GetVertex(vert,evtIndex); 
+      if(TMath::Abs(vert[2])> GetZvertexCut()) continue;
       
       AliAODPWG4Particle tr = AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
       tr.SetDetector("CTS");
       tr.SetLabel(track->GetLabel());
       tr.SetTrackLabel(track->GetID(),-1);
+    //  tr.SetChargedBit(track->Charge());
 	  //Input from second AOD?
 	  //if(GetReader()->GetAODCTSNormalInputEntries() <= i) tr.SetInputFileIndex(1);
 		
@@ -287,6 +317,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   
   //Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
+  if(naod!=0)fhNtracks->Fill(GetAODCTS()->GetEntriesFast()) ;
+  Double_t v[3] = {0,0,0}; //vertex ;
+  GetReader()->GetVertex(v);
+  fhVertex->Fill(v[0],v[1],v[2]);
   if(GetDebug() > 0) printf("AliAnaChargedParticles::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4Particle* tr =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
@@ -294,47 +328,51 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     fhPt->Fill(tr->Pt());
     fhPhi->Fill(tr->Pt(), tr->Phi());
     fhEta->Fill(tr->Pt(), tr->Eta());
+    //for charge information
+    AliAODTrack * track =  (AliAODTrack*) (GetAODCTS()->At(iaod));
+    if(track->Charge()>0)fhPtEtaPhiPos->Fill(tr->Pt(), tr->Eta(),tr->Phi());
+    if(track->Charge()<0)fhPtEtaPhiNeg->Fill(tr->Pt(), tr->Eta(),tr->Phi());
     
     if(IsDataMC()){
       //Play with the MC stack if available		
-	  Int_t mompdg = -1;
-	  Int_t label  = tr->GetLabel();
-	  if(GetReader()->ReadStack()){
-		  TParticle * mom = GetMCStack()->Particle(label);
-		  mompdg =TMath::Abs(mom->GetPdgCode());
+      Int_t mompdg = -1;
+      Int_t label  = tr->GetLabel();
+      if(GetReader()->ReadStack()){
+        TParticle * mom = GetMCStack()->Particle(label);
+        mompdg =TMath::Abs(mom->GetPdgCode());
       }
-	  else if(GetReader()->ReadAODMCParticles()){
-		AliAODMCParticle * aodmom = 0;
-		//Get the list of MC particles
-	    aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(tr->GetInputFileIndex()))->At(label);
-		mompdg =TMath::Abs(aodmom->GetPdgCode());
-	 }
-		
-	 if(mompdg==211){
-	fhPtPion->Fill(tr->Pt());
-	fhPhiPion->Fill(tr->Pt(), tr->Phi());
-	fhEtaPion->Fill(tr->Pt(), tr->Eta());
+      else if(GetReader()->ReadAODMCParticles()){
+        AliAODMCParticle * aodmom = 0;
+        //Get the list of MC particles
+        aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(tr->GetInputFileIndex()))->At(label);
+        mompdg =TMath::Abs(aodmom->GetPdgCode());
+      }
+      
+      if(mompdg==211){
+        fhPtPion->Fill(tr->Pt());
+        fhPhiPion->Fill(tr->Pt(), tr->Phi());
+        fhEtaPion->Fill(tr->Pt(), tr->Eta());
       }
       else if(mompdg==2212){
-	fhPtProton->Fill(tr->Pt());
-	fhPhiProton->Fill(tr->Pt(), tr->Phi());
-	fhEtaProton->Fill(tr->Pt(), tr->Eta());
+        fhPtProton->Fill(tr->Pt());
+        fhPhiProton->Fill(tr->Pt(), tr->Phi());
+        fhEtaProton->Fill(tr->Pt(), tr->Eta());
       }
       else if(mompdg==321){
-	fhPtKaon->Fill(tr->Pt());
-	fhPhiKaon->Fill(tr->Pt(), tr->Phi());
-	fhEtaKaon->Fill(tr->Pt(), tr->Eta());
+        fhPtKaon->Fill(tr->Pt());
+        fhPhiKaon->Fill(tr->Pt(), tr->Phi());
+        fhEtaKaon->Fill(tr->Pt(), tr->Eta());
       }
       else if(mompdg==11){
-	fhPtElectron->Fill(tr->Pt());
-	fhPhiElectron->Fill(tr->Pt(), tr->Phi());
-	fhEtaElectron->Fill(tr->Pt(), tr->Eta());
+        fhPtElectron->Fill(tr->Pt());
+        fhPhiElectron->Fill(tr->Pt(), tr->Phi());
+        fhEtaElectron->Fill(tr->Pt(), tr->Eta());
       }
       else {
-	//printf("unknown pdg %d\n",mompdg);
-	fhPtUnknown->Fill(tr->Pt());
-	fhPhiUnknown->Fill(tr->Pt(), tr->Phi());
-	fhEtaUnknown->Fill(tr->Pt(), tr->Eta());
+        //printf("unknown pdg %d\n",mompdg);
+        fhPtUnknown->Fill(tr->Pt());
+        fhPhiUnknown->Fill(tr->Pt(), tr->Phi());
+        fhEtaUnknown->Fill(tr->Pt(), tr->Eta());
       }
     }//Work with stack also
   }// aod branch loop

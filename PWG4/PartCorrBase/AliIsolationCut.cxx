@@ -22,6 +22,10 @@
 //
 //
 //*-- Author: Gustavo Conesa (LNF-INFN) 
+
+//-Yaxian Mao (add the possibility for different IC method with different pt range, 01/10/2010)
+//-Yaxian Mao (check the candidate particle is the leading particle or not at the same hemishere)
+
 //////////////////////////////////////////////////////////////////////////////
   
   
@@ -43,7 +47,7 @@ ClassImp(AliIsolationCut)
 //____________________________________________________________________________
   AliIsolationCut::AliIsolationCut() : 
     TObject(),
-    fConeSize(0.),fPtThreshold(0.), fPtFraction(0.), fICMethod(0),fPartInCone(0)
+    fConeSize(0.),fPtThreshold(0.), fSumPtThreshold(0.), fPtFraction(0.), fICMethod(0),fPartInCone(0)
  
 {
   //default ctor
@@ -113,6 +117,7 @@ void AliIsolationCut::InitParameters()
   
   fConeSize    = 0.4 ; 
   fPtThreshold = 1. ; 
+  fSumPtThreshold = 0.5 ; 
   fPtFraction  = 0.1 ; 
   fPartInCone  = kNeutralAndCharged;
   fICMethod    = kPtThresIC; // 0 pt threshol method, 1 cone pt sum method
@@ -136,13 +141,12 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   n = 0 ;
   coneptsum = 0.; 
   isolated = kFALSE;
-  
+
   //Initialize the array with refrences
   TObjArray * refclusters = 0x0;
   TObjArray * reftracks   = 0x0;
   Int_t ntrackrefs   = 0;
   Int_t nclusterrefs = 0;
-  
   //Check charged particles in cone.
   if(plCTS && (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged)){
     TVector3 p3;
@@ -156,6 +160,17 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       phi  = p3.Phi() ;
       if(phi<0) phi+=TMath::TwoPi();
       
+      //only loop the particle at the same side of candidate
+      if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
+      //if at the same side has particle larger than candidate, then candidate can not be the leading, skip such events
+      if(pt > ptC){
+        n = -1;
+        nfrac = -1;
+        coneptsum = -1;
+        isolated = kFALSE;
+        if(fillAOD && reftracks) reftracks->Clear(); 
+        return ;
+      }
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
       rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
       
@@ -215,6 +230,21 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       eta  = mom.Eta();
       phi  = mom.Phi() ;
       if(phi<0) phi+=TMath::TwoPi();
+      //only loop the particle at the same side of candidate
+      
+      if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
+      //if at the same side has particle larger than candidate, then candidate can not be the leading, skip such events
+      if(pt > ptC){
+        n = -1;
+        nfrac = -1;
+        coneptsum = -1;
+        isolated = kFALSE;
+        if(fillAOD){
+          if(reftracks)  reftracks->Clear(); 
+          if(refclusters)refclusters->Clear(); 
+        }
+        return ;
+      }
       
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
       rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
@@ -231,11 +261,12 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         //printf("neutral in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
         coneptsum+=pt;
         if(pt > fPtThreshold ) n++;
-        if(pt > fPtFraction*ptC ) nfrac++;
+        //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
+        if(pt > fPtFraction*ptC && pt>fPtThreshold) nfrac++; 
       }//in cone
     }// neutral particle loop
   }//neutrals
-  
+
   //printf("Isolation Cut: in cone with: pT>pTthres %d, pT > pTfrac*pTcandidate %d \n",n,nfrac);
   
   //Add reference arrays to AOD when filling AODs only
@@ -243,21 +274,20 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
     if(refclusters)	pCandidate->AddObjArray(refclusters);
     if(reftracks)	  pCandidate->AddObjArray(reftracks);
   }
-  
   //Check isolation, depending on method.
   if( fICMethod == kPtThresIC){
     if(n==0) isolated = kTRUE ;
   }
   else if( fICMethod == kSumPtIC){
-    if(coneptsum < fPtThreshold)
+    if(coneptsum < fSumPtThreshold)
       isolated  =  kTRUE ;
   }
   else if( fICMethod == kPtFracIC){
     if(nfrac==0) isolated = kTRUE ;
   }
   else if( fICMethod == kSumPtFracIC){
-    if(coneptsum < fPtFraction*ptC)
-      isolated  =  kTRUE ;
+    //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
+    if(coneptsum < fPtFraction*ptC && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
   }
   
   //if(refclusters) delete refclusters;

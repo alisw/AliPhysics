@@ -53,8 +53,8 @@ ClassImp(AliAnaPi0)
 
 //________________________________________________________________________________________________________________________________________________  
 AliAnaPi0::AliAnaPi0() : AliAnaPartCorrBaseClass(),
-fDoOwnMix(kFALSE),fNCentrBin(0),fNZvertBin(0),fNrpBin(0),
-fNPID(0),fNmaxMixEv(0), fZvtxCut(0.),fCalorimeter(""),
+fDoOwnMix(kFALSE),fNCentrBin(0),//fNZvertBin(0),fNrpBin(0),
+fNPID(0),fNmaxMixEv(0), fCalorimeter(""),
 fNModules(12), fUseAngleCut(kFALSE), fEventsList(0x0), fMultiCutAna(kFALSE),
 fNPtCuts(0),fPtCuts(0x0),fNAsymCuts(0),fAsymCuts(0x0),
 fNCellNCuts(0),fCellNCuts(0x0),fNPIDBits(0),fPIDBits(0x0),fhReMod(0x0),
@@ -76,10 +76,10 @@ AliAnaPi0::~AliAnaPi0() {
   
   if(fDoOwnMix && fEventsList){
     for(Int_t ic=0; ic<fNCentrBin; ic++){
-      for(Int_t iz=0; iz<fNZvertBin; iz++){
-        for(Int_t irp=0; irp<fNrpBin; irp++){
-          fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp]->Delete() ;
-          delete fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp] ;
+      for(Int_t iz=0; iz<GetNZvertBin(); iz++){
+        for(Int_t irp=0; irp<GetNRPBin(); irp++){
+          fEventsList[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp]->Delete() ;
+          delete fEventsList[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp] ;
         }
       }
     }
@@ -99,11 +99,11 @@ void AliAnaPi0::InitParameters()
   AddToHistogramsName("AnaPi0_");
   fNModules = 12; // set maximum to maximum number of EMCAL modules
   fNCentrBin = 1;
-  fNZvertBin = 1;
-  fNrpBin    = 1;
+//  fNZvertBin = 1;
+//  fNrpBin    = 1;
   fNPID      = 9;
   fNmaxMixEv = 10;
-  fZvtxCut   = 40;
+ 
   fCalorimeter  = "PHOS";
   fUseAngleCut = kFALSE;
   
@@ -139,9 +139,9 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
 	 parList+=onePar ;	
 	 snprintf(onePar,buffersize,"Number of bins in Centrality:  %d \n",fNCentrBin) ;
 	 parList+=onePar ;
-	 snprintf(onePar,buffersize,"Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
+	 snprintf(onePar,buffersize,"Number of bins in Z vert. pos: %d \n",GetNZvertBin()) ;
 	 parList+=onePar ;
-	 snprintf(onePar,buffersize,"Number of bins in Reac. Plain: %d \n",fNrpBin) ;
+	 snprintf(onePar,buffersize,"Number of bins in Reac. Plain: %d \n",GetNRPBin()) ;
 	 parList+=onePar ;
 	 snprintf(onePar,buffersize,"Depth of event buffer: %d \n",fNmaxMixEv) ;
 	 parList+=onePar ;
@@ -149,7 +149,7 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
 	 parList+=onePar ;
 	 snprintf(onePar,buffersize,"Cuts: \n") ;
 	 parList+=onePar ;
-	 snprintf(onePar,buffersize,"Z vertex position: -%f < z < %f \n",fZvtxCut,fZvtxCut) ;
+	 snprintf(onePar,buffersize,"Z vertex position: -%f < z < %f \n",GetZvertexCut(),GetZvertexCut()) ;
 	 parList+=onePar ;
 	 snprintf(onePar,buffersize,"Calorimeter: %s \n",fCalorimeter.Data()) ;
 	 parList+=onePar ;
@@ -183,12 +183,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   // store them in fOutputContainer
   
   //create event containers
-  fEventsList = new TList*[fNCentrBin*fNZvertBin*fNrpBin] ;
+  fEventsList = new TList*[fNCentrBin*GetNZvertBin()*GetNRPBin()] ;
 	
   for(Int_t ic=0; ic<fNCentrBin; ic++){
-    for(Int_t iz=0; iz<fNZvertBin; iz++){
-      for(Int_t irp=0; irp<fNrpBin; irp++){
-        fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp] = new TList() ;
+    for(Int_t iz=0; iz<GetNZvertBin(); iz++){
+      for(Int_t irp=0; irp<GetNRPBin(); irp++){
+        fEventsList[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp] = new TList() ;
       }
     }
   }
@@ -342,7 +342,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   }// multi cuts analysis
   
   fhEvents=new TH3D("hEvents","Number of events",fNCentrBin,0.,1.*fNCentrBin,
-                    fNZvertBin,0.,1.*fNZvertBin,fNrpBin,0.,1.*fNrpBin) ;
+                    GetNZvertBin(),0.,1.*GetNZvertBin(),GetNRPBin(),0.,1.*GetNRPBin()) ;
   outputContainer->Add(fhEvents) ;
 	
   fhRealOpeningAngle  = new TH2D
@@ -418,12 +418,12 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   AliAnaPartCorrBaseClass::Print(" ");
 
   printf("Number of bins in Centrality:  %d \n",fNCentrBin) ;
-  printf("Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
-  printf("Number of bins in Reac. Plain: %d \n",fNrpBin) ;
+  printf("Number of bins in Z vert. pos: %d \n",GetNZvertBin()) ;
+  printf("Number of bins in Reac. Plain: %d \n",GetNRPBin()) ;
   printf("Depth of event buffer: %d \n",fNmaxMixEv) ;
   printf("Number of different PID used:  %d \n",fNPID) ;
   printf("Cuts: \n") ;
-  printf("Z vertex position: -%2.3f < z < %2.3f \n",fZvtxCut,fZvtxCut) ;
+  printf("Z vertex position: -%2.3f < z < %2.3f \n",GetZvertexCut(),GetZvertexCut()) ;
   printf("Number of modules:             %d \n",fNModules) ;
   printf("Select pairs with their angle: %d \n",fUseAngleCut) ;
   if(fMultiCutAna){
@@ -569,6 +569,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     // get the event index in the mixed buffer where the photon comes from 
     // in case of mixing with analysis frame, not own mixing
     evtIndex1 = GetEventIndex(p1, vert) ; 
+    //printf("charge = %d\n", track->Charge());
     if ( evtIndex1 == -1 )
       return ; 
     if ( evtIndex1 == -2 )
@@ -578,7 +579,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //does not exist in ESD yet????
       curCentrBin = 0 ; 
       curRPBin    = 0 ;
-      curZvertBin = (Int_t)(0.5*fNZvertBin*(vert[2]+fZvtxCut)/fZvtxCut) ;
+      curZvertBin = (Int_t)(0.5*GetNZvertBin()*(vert[2]+GetZvertexCut())/GetZvertexCut()) ;
       fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
       currentEvtIndex = evtIndex1 ; 
     }
@@ -688,7 +689,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   
   if(fDoOwnMix){
     //Fill mixed
-    TList * evMixList=fEventsList[curCentrBin*fNZvertBin*fNrpBin+curZvertBin*fNrpBin+curRPBin] ;
+    TList * evMixList=fEventsList[curCentrBin*GetNZvertBin()*GetNRPBin()+curZvertBin*GetNRPBin()+curRPBin] ;
     Int_t nMixed = evMixList->GetSize() ;
     for(Int_t ii=0; ii<nMixed; ii++){  
       TClonesArray* ev2= (TClonesArray*) (evMixList->At(ii));
@@ -958,13 +959,13 @@ Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)
       evtIndex = GetMixedEvent()->EventIndexForCaloCluster(part->GetCaloLabel(0)) ;
       GetVertex(vert,evtIndex); 
       
-      if(vert[2] < -fZvtxCut || vert[2] > fZvtxCut)
+      if(TMath::Abs(vert[2])> GetZvertexCut())
         evtIndex = -2 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
     } else {// Single event
       
       GetVertex(vert);
       
-      if(vert[2] < -fZvtxCut || vert[2] > fZvtxCut)
+      if(TMath::Abs(vert[2])> GetZvertexCut())
         evtIndex = -1 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
       else 
         evtIndex = 0 ;

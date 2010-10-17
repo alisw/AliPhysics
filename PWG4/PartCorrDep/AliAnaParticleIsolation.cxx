@@ -22,6 +22,8 @@
 //  (see AliRoot versions previous Release 4-09)
 //
 // -- Author: Gustavo Conesa (LNF-INFN) 
+
+//-Yaxian Mao (add the possibility for different IC method with different pt range, 01/10/2010)
 //////////////////////////////////////////////////////////////////////////////
   
   
@@ -50,6 +52,7 @@ ClassImp(AliAnaParticleIsolation)
     AliAnaPartCorrBaseClass(), fCalorimeter(""), 
     fReMakeIC(0), fMakeSeveralIC(0), fMakeInvMass(0),
     fhPtIso(0),fhPhiIso(0),fhEtaIso(0), fhConeSumPt(0), fhPtInCone(0),
+    fhFRConeSumPt(0), fhPtInFRCone(0),
     //Several IC
     fNCones(0),fNPtThresFrac(0), fConeSizes(),  fPtThresholds(),  fPtFractions(), 
     //MC
@@ -236,6 +239,18 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtInCone->SetYTitle("p_{T in cone} (GeV/c)");
     fhPtInCone->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtInCone) ;
+    
+    fhFRConeSumPt  = new TH2F
+    ("hFRConePtSum","#Sigma p_{T} in the froward region isolation cone ",nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+    fhFRConeSumPt->SetYTitle("#Sigma p_{T}");
+    fhFRConeSumPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhFRConeSumPt) ;
+    
+    fhPtInFRCone  = new TH2F
+    ("hPtInFRCone","p_{T} in froward region isolation cone ",nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+    fhPtInFRCone->SetYTitle("p_{T in cone} (GeV/c)");
+    fhPtInFRCone->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtInFRCone) ;    
     
     fhPtIso  = new TH1F("hPt","Isolated Number of particles",nptbins,ptmin,ptmax); 
     fhPtIso->SetYTitle("N");
@@ -560,6 +575,17 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     //If too small or too large pt, skip
     if(aodinput->Pt() < GetMinPt() || aodinput->Pt() > GetMaxPt() ) continue ; 
     
+    //check if it is low pt trigger particle, then adjust the isolation method
+    if(aodinput->Pt() < GetIsolationCut()->GetPtThreshold() || aodinput->Pt() < GetIsolationCut()->GetSumPtThreshold()) 
+      continue ; //trigger should not from underlying event
+ //   if(GetIsolationCut()->GetICMethod()!=AliIsolationCut::kPtThresIC && aodinput->Pt()!=0.){ 
+//      //low pt trigger use pt threshold IC instead of other method
+//      if (aodinput->Pt()*(GetIsolationCut()->GetPtFraction())<GetIsolationCut()->GetPtThreshold() || aodinput->Pt()*(GetIsolationCut()->GetPtFraction())<GetIsolationCut()->GetSumPtThreshold()) {
+//       // printf("change the IC method to PtThresIC\n") ;
+//        GetIsolationCut()->SetICMethod(AliIsolationCut::kPtThresIC); 
+//      }
+//    }
+    
     //Check invariant mass, if pi0, skip.
     Bool_t decay = kFALSE ;
     if(fMakeInvMass) decay = CheckInvMass(iaod,aodinput);
@@ -603,13 +629,16 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t ptcluster  = aod->Pt();
     Float_t phicluster = aod->Phi();
     Float_t etacluster = aod->Eta();
+   // Float_t phiForward = aod->Phi()+TMath::PiOver2() ;
+    Float_t conesize       = GetIsolationCut()->GetConeSize();
+    
     //Recover reference arrays with clusters and tracks
     TObjArray * refclusters = aod->GetObjArray(GetAODObjArrayName()+"Clusters");
     TObjArray * reftracks   = aod->GetObjArray(GetAODObjArrayName()+"Tracks");
-    
     //If too small or too large pt, skip
     if(aod->Pt() < GetMinPt() || aod->Pt() > GetMaxPt() ) continue ; 
-	  
+    
+
     if(fMakeSeveralIC) {
       //Analysis of multiple IC at same time
       MakeSeveralICAnalysis(aod);
@@ -626,6 +655,21 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     //Fill pt distribution of particles in cone
     //Tracks
     coneptsum=0;
+    Double_t sumptFR = 0. ;
+    TObjArray * trackList   = GetAODCTS() ;
+    for(Int_t itrack=0; itrack < trackList->GetEntriesFast(); itrack++){
+      AliAODTrack* track = (AliAODTrack *) trackList->At(itrack);
+      //fill the histograms at forward range
+      if(TMath::Sqrt((phicluster+TMath::PiOver2()-track->Phi())*(phicluster+TMath::PiOver2()-track->Phi())+(etacluster-track->Eta())*(etacluster-track->Eta())) < conesize){
+        fhPtInFRCone->Fill(ptcluster,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
+        sumptFR+=track->Pt();
+      }    
+      if(TMath::Sqrt((phicluster-TMath::PiOver2()-track->Phi())*(phicluster-TMath::PiOver2()-track->Phi())+(etacluster-track->Eta())*(etacluster-track->Eta())) < conesize){
+        fhPtInFRCone->Fill(ptcluster,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
+        sumptFR+=track->Pt();
+      }      
+    }
+    fhFRConeSumPt->Fill(ptcluster,sumptFR);
     if(reftracks){  
       for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++){
         AliAODTrack* track = (AliAODTrack *) reftracks->At(itrack);
@@ -633,7 +677,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         coneptsum+=track->Pt();
       }
     }
-	  
+
     //CaloClusters
     if(refclusters){    
       TLorentzVector mom ;
