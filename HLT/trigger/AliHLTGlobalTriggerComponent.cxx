@@ -1530,6 +1530,21 @@ int AliHLTGlobalTriggerComponent::FindSymbol(const char* name, const TClonesArra
 }
 
 
+namespace
+{
+  /**
+   * Helper routine to compare two trigger menu symbols to see if b is a subset of a.
+   * \returns true if b is a subset of a or they are unrelated.
+   */
+  bool AliHLTCheckForContainment(const AliHLTTriggerMenuSymbol* a, const AliHLTTriggerMenuSymbol* b)
+  {
+    TString bstr = b->Name();
+    return bstr.Contains(a->Name());
+  }
+
+} // end of namespace
+
+
 int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu, TClonesArray& list)
 {
   // Builds the list of symbols to use in the custom global trigger menu
@@ -1560,9 +1575,11 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
       return -ENOMEM;
     }
   }
+  Int_t initialEntryCount = list.GetEntriesFast();
   
-  TRegexp exp("[_a-zA-Z][-_a-zA-Z0-9]*");
-  TRegexp hexexp("x[a-fA-F0-9]+");
+  // Note: the \\. must not be the first element in the character class, otherwise
+  // it is interpreted as an "any character" dot symbol.
+  TRegexp exp("[_a-zA-Z][-\\._a-zA-Z0-9]*");
   for (UInt_t i = 0; i < menu->NumberOfItems(); i++)
   {
     const AliHLTTriggerMenuItem* item = menu->Item(i);
@@ -1604,6 +1621,27 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
         // Ignore iso646.h and other keywords.
         continue;
       }
+      
+      // We need to handle the special case where the symbol contains a dot.
+      // In C++ this is a dereferencing operator. So we need to check if the
+      // current symbol we are handling starts with the same string as any of
+      // the existing symbols defined manually in the symbols table.
+      // If we do find such a case then revert to treating the dot as an operator
+      // rather than part of the symbol name. i.e. skip adding the automatic symbol.
+      bool dereferencedSymbol = false;
+      for (int j = 0; j < initialEntryCount; j++)
+      {
+        const AliHLTTriggerMenuSymbol* symbol = dynamic_cast<const AliHLTTriggerMenuSymbol*>( list.UncheckedAt(j) );
+        if (symbol == NULL) continue;
+        TString symstr = symbol->Name();
+        symstr += ".";
+        if (s.BeginsWith(symstr))
+        {
+          dereferencedSymbol = true;
+          break;
+        }
+      }
+      if (dereferencedSymbol) continue;
 
       // Need to create the symbols first and check if its name is in the list
       // before actually adding it to the symbols list.
@@ -1627,6 +1665,30 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
       }
     }
     while (start < str.Length());
+  }
+  
+  // This last part is necessary to make sure that symbols are replaced in the
+  // trigger condition and domain merging expressions in a greedy manner.
+  // I.e. we need to make sure that if one symbol's string representation is
+  // contained inside another (string subset) that the longer symbol name is
+  // always first in the symbols list.
+  // This will work because the symbol table is traversed from first to last
+  // element and TString::ReplaceAll is used to replace the substrings inside
+  // the AliHLTGlobalTriggerComponent::GenerateTrigger method.
+  std::vector<AliHLTTriggerMenuSymbol*> orderedList;
+  for (Int_t i = 0; i < list.GetEntriesFast(); i++)
+  {
+    orderedList.push_back( static_cast<AliHLTTriggerMenuSymbol*>(list.UncheckedAt(i)) );
+  }
+  std::sort(orderedList.begin(), orderedList.end(), AliHLTCheckForContainment);
+  //std::sort(orderedList.begin(), orderedList.end());
+  // Now swap values around according to the orderedList.
+  for (Int_t i = 0; i < list.GetEntriesFast(); i++)
+  {
+    AliHLTTriggerMenuSymbol* target = static_cast<AliHLTTriggerMenuSymbol*>(list.UncheckedAt(i));
+    AliHLTTriggerMenuSymbol tmp = *target;
+    *target = *orderedList[i];
+    *orderedList[i] = tmp;
   }
   
   return 0;

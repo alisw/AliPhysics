@@ -27,13 +27,14 @@
  * All expressions must be valid C++.
  *
  * The symbols used in the trigger condition expressions are assumed to be AliHLTTrigger
- * names, unless they are predefined in the trigger menu symbols table. All symbols should
- * be valid C++ symbol names. However, the '-' character is allowed as a special extention.
- * The '-' character must not be the first character of the symbol and there cannot be
- * any spaces between it and the alphanumeric characters. If there are any spaces then
- * the '-' character is treated as the normal C++ minus operator. For example,
- * "abc-xyz" is a single whole symbol, while "abc - xyz" are two symbols, abc and xyz,
- * separated by a minus operator.
+ * names, unless they are predefined in the trigger menu symbols table. All symbols
+ * should be valid C++ symbol names. However, the '-' and '.' characters are allowed
+ * as a special extention. Neither the '-', nor '.' characters can be the first
+ * character of the symbol and there cannot be any spaces between it and the
+ * alphanumeric characters. If there are any spaces then the '-' or '.' character is
+ * treated as the normal C++ minus or dereferencing operator respectively.
+ * For example, "abc-xyz" is a single whole symbol, while "abc - xyz" are two symbols,
+ * abc and xyz, separated by a minus operator.
  *
  * Merging expressions can use all the symbols defined in the trigger menu symbols table
  * including all the implicit symbols used in the trigger conditions which are assumed

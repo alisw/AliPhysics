@@ -89,9 +89,10 @@ const char* AliHLTTriggerMenuSymbol::RealName() const
 void AliHLTTriggerMenuSymbol::Name(const char* value)
 {
   // sets the name and real name of the symbol
-  // replaces '-' of the real name with '_' in order to comply with
-  // C++ conventions
+  // replaces '-' and '.' in the real name with '_' in order to comply with
+  // C++ conventions.
   fRealName = value;
   fName = value;
   fName.ReplaceAll("-", "_");
+  fName.ReplaceAll(".", "_");
 }
