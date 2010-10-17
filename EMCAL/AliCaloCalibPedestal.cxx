@@ -255,35 +255,30 @@ void AliCaloCalibPedestal::CompressAndSetOwner()
 AliCaloCalibPedestal::~AliCaloCalibPedestal()
 {
   //dtor
-  printf("Dtor\n");
-
   
-  if (fReference){   printf("Ref\n"); delete fReference;}//Delete the reference object, if it has been loaded
+  if (fReference) delete fReference;//Delete the reference object, if it has been loaded
   
-
-  printf("Delete\n");
-
   // delete also TObjArray's 
-  fPedestalLowGain.Delete();  printf("D 1\n");
-  fPedestalHighGain.Delete();printf("D 2\n");
-  fPedestalLEDRefLowGain.Delete();printf("D 3\n");
-  fPedestalLEDRefHighGain.Delete();printf("D 4\n");
-  fPeakMinusPedLowGain.Delete();printf("D 5\n");
-  fPeakMinusPedHighGain.Delete();printf("D 6\n");
-  fPeakMinusPedHighGainHisto.Delete();printf("D 7\n");
-  fPedestalLowGainDiff.Delete();printf("D 8\n");
-  fPedestalHighGainDiff.Delete();printf("D 9\n");
-  fPedestalLEDRefLowGainDiff.Delete();printf("D 10\n");
-  fPedestalLEDRefHighGainDiff.Delete();printf("D 11\n");
-  fPeakMinusPedLowGainDiff.Delete();printf("D 12\n");
-  fPeakMinusPedHighGainDiff.Delete();printf("D 13\n");
-  fPedestalLowGainRatio.Delete();printf("D 14\n");
-  fPedestalHighGainRatio.Delete();printf("D 15\n");
-  fPedestalLEDRefLowGainRatio.Delete();printf("D 16\n");
-  fPedestalLEDRefHighGainRatio.Delete();printf("D 17\n");
-  fPeakMinusPedLowGainRatio.Delete();printf("D 18\n");
-  fPeakMinusPedHighGainRatio.Delete();printf("D 19\n");
-  fDeadMap.Delete();printf("D 20\n");
+  fPedestalLowGain.Delete(); 
+  fPedestalHighGain.Delete();
+  fPedestalLEDRefLowGain.Delete();
+  fPedestalLEDRefHighGain.Delete();
+  fPeakMinusPedLowGain.Delete();
+  fPeakMinusPedHighGain.Delete();
+  fPeakMinusPedHighGainHisto.Delete();
+  fPedestalLowGainDiff.Delete();
+  fPedestalHighGainDiff.Delete();
+  fPedestalLEDRefLowGainDiff.Delete();
+  fPedestalLEDRefHighGainDiff.Delete();
+  fPeakMinusPedLowGainDiff.Delete();
+  fPeakMinusPedHighGainDiff.Delete();
+  fPedestalLowGainRatio.Delete();
+  fPedestalHighGainRatio.Delete();
+  fPedestalLEDRefLowGainRatio.Delete();
+  fPedestalLEDRefHighGainRatio.Delete();
+  fPeakMinusPedLowGainRatio.Delete();
+  fPeakMinusPedHighGainRatio.Delete();
+  fDeadMap.Delete();
   
 }
 
