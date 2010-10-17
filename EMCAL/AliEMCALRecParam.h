@@ -119,6 +119,15 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Bool_t   UseFALTRO()            const {return fUseFALTRO; }
   Bool_t   FitLEDEvents()         const {return fFitLEDEvents; }
 
+  //Unfolding (Adam)
+  Double_t GetSSPars(Int_t i) const   {return fSSPars[i];}
+  Double_t GetPar5(Int_t i) const     {return fPar5[i];}
+  Double_t GetPar6(Int_t i) const     {return fPar6[i];}
+  void SetSSPars(Int_t i, Double_t param )     {fSSPars[i]=param;}
+  void SetPar5(Int_t i, Double_t param )       {fPar5[i]=param;}
+  void SetPar6(Int_t i, Double_t param )       {fPar6[i]=param;}
+
+
   virtual void Print(Option_t * option="") const ;
   
   static AliEMCALRecParam* GetDefaultParameters();
@@ -177,9 +186,14 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Bool_t   fUseFALTRO;             // get FALTRO (trigger) and put it on trigger digits.
   Bool_t   fFitLEDEvents;          // fit LED events or not
 	
+  //Shower shape parameters (Adam)
+  Double_t fSSPars[8]; // Unfolding shower shape parameters
+  Double_t fPar5[3];   // UF SSPar nr 5
+  Double_t fPar6[3];   // UF SSPar nr 6
+
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,13)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,14)     // Reconstruction parameters
     
     } ;
 

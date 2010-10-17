@@ -124,14 +124,14 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 	
   if(!fGeom) AliFatal(Form("Could not get geometry!"));
 
-  AliEMCALTriggerDCSConfigDB* dcsConfigDB = AliEMCALTriggerDCSConfigDB::Instance();
+  //AliEMCALTriggerDCSConfigDB* dcsConfigDB = AliEMCALTriggerDCSConfigDB::Instance();
 
-  const AliEMCALTriggerDCSConfig* dcsConfig = dcsConfigDB->GetTriggerDCSConfig();
+  //const AliEMCALTriggerDCSConfig* dcsConfig = dcsConfigDB->GetTriggerDCSConfig();
 
-  if (!dcsConfig) AliFatal("No Trigger DCS Configuration from OCDB!");
-  fgTriggerProcessor = new AliEMCALTriggerElectronics( dcsConfig );
+  //if (!dcsConfig) AliFatal("No Trigger DCS Configuration from OCDB!");
+  //fgTriggerProcessor = new AliEMCALTriggerElectronics( dcsConfig );
 	
-  fTriggerData = new AliEMCALTriggerData();
+  //fTriggerData = new AliEMCALTriggerData();
 
  //Init temporary list of digits
   fgDigitsArr   = new TClonesArray("AliEMCALDigit",1000);
@@ -160,7 +160,7 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   
   if(fgRawUtils)         delete fgRawUtils;
   if(fgClusterizer)      delete fgClusterizer;
-  if(fgTriggerProcessor) delete fgTriggerProcessor;
+  //if(fgTriggerProcessor) delete fgTriggerProcessor;
   
   AliCodeTimer::Instance()->Print();
 } 

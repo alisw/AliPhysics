@@ -56,6 +56,7 @@ class TSystem;
 #include "AliEMCALCalibData.h"
 class AliCDBStorage;
 #include "AliCDBEntry.h"
+#include "AliEMCALUnfolding.h"
 
 ClassImp(AliEMCALClusterizer)
 
@@ -71,7 +72,8 @@ AliEMCALClusterizer::AliEMCALClusterizer():
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
-  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.)
+  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),
+  fClusterUnfolding(NULL)
 {
   // ctor
   
@@ -91,7 +93,8 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry):
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
-  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.)
+  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),
+  fClusterUnfolding(NULL)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   // use this contructor to avoid usage of Init() which uses runloader
@@ -106,7 +109,13 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry):
   {
     AliFatal("Geometry not initialized.");
   }
-  
+  Int_t i=0;
+  for (i = 0; i < 8; i++)
+    fSSPars[i] = 0.;
+  for (i = 0; i < 3; i++) {
+    fPar5[i] = 0.;
+    fPar6[i] = 0.;
+  }
 }
 
 //____________________________________________________________________________
@@ -121,12 +130,21 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry, AliEMCALCal
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
-  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.)
+  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),
+  fClusterUnfolding(NULL)
 {
 	// ctor, geometry and calibration are initialized elsewhere.
 	
 	if (!fGeom)
 		AliFatal("Geometry not initialized.");
+  
+  Int_t i=0;
+  for (i = 0; i < 8; i++)
+    fSSPars[i] = 0.;
+  for (i = 0; i < 3; i++) {
+    fPar5[i] = 0.;
+    fPar6[i] = 0.;
+  }
   
 }
 
@@ -149,6 +167,8 @@ AliEMCALClusterizer::~AliEMCALClusterizer()
 //     fRecPoints->Delete();
 //     delete fRecPoints;
 //  }
+  
+  if(fClusterUnfolding) delete fClusterUnfolding;
 }
 
 //____________________________________________________________________________
@@ -273,6 +293,14 @@ void AliEMCALClusterizer::Init()
   if(!gMinuit) 
     gMinuit = new TMinuit(100) ;
   
+  Int_t i=0;
+  for (i = 0; i < 8; i++)
+    fSSPars[i] = 0.;
+  for (i = 0; i < 3; i++) {
+    fPar5[i] = 0.;
+    fPar6[i] = 0.;
+  }
+  
 }
 
 //____________________________________________________________________________
@@ -301,6 +329,28 @@ void AliEMCALClusterizer::InitParameters()
                     fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut, fTimeMin, fTimeMax));
   }
   
+  if(fToUnfold){
+    Int_t i=0;
+    for (i = 0; i < 8; i++) {
+      fSSPars[i] = recParam->GetSSPars(i);
+    }//end of loop over parameters
+    for (i = 0; i < 3; i++) {
+      fPar5[i] = recParam->GetPar5(i);
+      fPar6[i] = recParam->GetPar6(i);
+    }//end of loop over parameters
+    
+    fClusterUnfolding=new AliEMCALUnfolding(fGeom,fECALocMaxCut,fSSPars,fPar5,fPar6);
+    
+    for (i = 0; i < 8; i++) {
+      AliDebug(1,Form("unfolding shower shape parameters: fSSPars=%f \n",fSSPars[i]));
+    }
+    for (i = 0; i < 3; i++) {
+      AliDebug(1,Form("unfolding parameter 5: fPar5=%f \n",fPar5[i]));
+      AliDebug(1,Form("unfolding parameter 6: fPar5=%f \n",fPar6[i]));
+    }
+    
+  }
+
 }
 
 

@@ -61,6 +61,7 @@
 #include "AliCaloCalibPedestal.h"
 #include "AliEMCALCalibData.h"
 #include "AliESDCaloCluster.h"
+#include "AliEMCALUnfolding.h"
 
 ClassImp(AliEMCALClusterizerNxN)
 
@@ -121,12 +122,13 @@ void AliEMCALClusterizerNxN::Digits2Clusters(Option_t * option)
   
   MakeClusters() ;  //only the real clusters
   
-  if(fToUnfold)
-    MakeUnfolding() ;
+  if(fToUnfold){
+    fClusterUnfolding->SetInput(fNumberOfECAClusters,fRecPoints,fDigitsArr);
+    fClusterUnfolding->MakeUnfolding();
+  }
   
+  //Evaluate position, dispersion and other RecPoint properties for EC section 
   Int_t index ;
-  
-  //Evaluate position, dispersion and other RecPoint properties for EC section                      
   for(index = 0; index < fRecPoints->GetEntries(); index++) 
   { 
     AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
@@ -356,85 +358,6 @@ void AliEMCALClusterizerNxN::MakeClusters()
   //delete digitsC ; //nope we use an object
   
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 
-}
-
-//____________________________________________________________________________
-void AliEMCALClusterizerNxN::MakeUnfolding()
-{
-  // Unfolds clusters using the shape of an ElectroMagnetic shower
-  // Performs unfolding of all clusters
-  
-  if(fNumberOfECAClusters > 0){
-    
-    if (fGeom){
-      
-      Int_t nModulesToUnfold = fGeom->GetNCells();
-      
-      Int_t numberofNotUnfolded = fNumberOfECAClusters ;
-      Int_t index ;
-      for(index = 0 ; index < numberofNotUnfolded ; index++){
-        
-        AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(index) ) ;
-        if(recPoint){
-          TVector3 gpos;
-          Int_t absId;
-          recPoint->GetGlobalPosition(gpos);
-          fGeom->GetAbsCellIdFromEtaPhi(gpos.Eta(),gpos.Phi(),absId);
-          if(absId > nModulesToUnfold)
-            break ;
-          
-          Int_t nMultipl = recPoint->GetMultiplicity() ;
-          AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMultipl] ;
-          Float_t * maxAtEnergy = new Float_t[nMultipl] ;
-          Int_t nMax = recPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
-          
-          if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0
-            //UnfoldCluster(recPoint, nMax, maxAt, maxAtEnergy) ;
-            fRecPoints->Remove(recPoint);
-            fRecPoints->Compress() ;
-            index-- ;
-            fNumberOfECAClusters-- ;
-            numberofNotUnfolded-- ;
-          }
-          else{
-            recPoint->SetNExMax(1) ; //Only one local maximum
-          }
-          
-          delete[] maxAt ;
-          delete[] maxAtEnergy ;
-        }
-        else AliFatal("Could not get RecPoint!") ;
-      }//loop
-    }
-    else AliFatal("Could not get geometry from EMCALLoader!") ;
-
-  }
-  // End of Unfolding of clusters
-}
-
-//____________________________________________________________________________
-Double_t  AliEMCALClusterizerNxN::ShowerShape(Double_t x, Double_t y)
-{ 
-  // Shape of the shower
-  // If you change this function, change also the gradient evaluation in ChiSquare()
-  //
-  Double_t r = sqrt(x*x+y*y);
-  Double_t r133  = TMath::Power(r, 1.33) ;
-  Double_t r669  = TMath::Power(r, 6.69) ;
-  Double_t shape = TMath::Exp( -r133 * (1. / (1.57 + 0.0860 * r133) - 0.55 / (1 + 0.000563 * r669) ) ) ;
-  return shape ;
-}
-
-//____________________________________________________________________________
-void  AliEMCALClusterizerNxN::UnfoldCluster(AliEMCALRecPoint * /*iniTower*/, 
-					    Int_t /*nMax*/, 
-					    AliEMCALDigit ** /*maxAt*/, 
-					    Float_t * /*maxAtEnergy*/)
-{
-  //
-  // Performs the unfolding of a cluster with nMax overlapping showers 
-  //
-  AliWarning("Not implemented. To be.");
 }
 
 //___________________________________________________________________

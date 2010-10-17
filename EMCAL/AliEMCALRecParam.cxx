@@ -221,7 +221,22 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fHadronEnergyProb[3]=  2.030230e+00;
   fHadronEnergyProb[4]= -6.402242e-02;
   
-  
+  //unfolding  
+  fSSPars[0] = 0.9262;
+  fSSPars[1] = 3.365;
+  fSSPars[2] = 1.548;
+  fSSPars[3] = 0.1625;
+  fSSPars[4] = -0.4195;
+  fSSPars[5] = 0.;
+  fSSPars[6] = 0.;
+  fSSPars[7] = 2.332;
+  fPar5[0] = 12.31;
+  fPar5[1] = -0.007381;
+  fPar5[2] = -0.06936;
+  fPar6[0] = 0.05452; 
+  fPar6[1] = 0.0001228; 
+  fPar6[2] = 0.001361; 
+
 }
 
 //-----------------------------------------------------------------------------
@@ -273,6 +288,15 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
     
   }
   
+  //unfolding  
+  for (i = 0; i < 8; i++) {
+    fSSPars[i] = rp.fSSPars[i];
+  }
+  for (i = 0; i < 3; i++) {
+    fPar5[i] = rp.fPar5[i];
+    fPar6[i] = rp.fPar6[i];
+  }
+
 }
 
 //-----------------------------------------------------------------------------
@@ -323,7 +347,15 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
       fPiZeroEnergyProb[i] = rp.fPiZeroEnergyProb[i];
       fHadronEnergyProb[i] = rp.fHadronEnergyProb[i];
     }
-    
+    //unfolding  
+    for (i = 0; i < 8; i++) {
+      fSSPars[i] = rp.fSSPars[i];
+    }
+    for (i = 0; i < 3; i++) {
+      fPar5[i] = rp.fPar5[i];
+      fPar6[i] = rp.fPar6[i];
+    }
+
   }    
   
   return *this;
@@ -563,6 +595,20 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     
     AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %f\n", 
 				 fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
+
+    AliInfo(Form("Unfolding parameters, Shower shape function :\n")); 
+    for(Int_t i = 0; i < 8; i++){
+	printf(" %f, ", fSSPars[i]);
+    }
+    printf("\n Parameter 5 : ");
+    for(Int_t i = 0; i < 3; i++){
+      printf(" %f, ", fPar5[i]);
+    }
+    printf("\n Parameter 6 : ");
+    for(Int_t i = 0; i < 3; i++){
+      printf(" %f, ", fPar6[i]);
+    }
+    printf("\n");
   }
   
   if(!strcmp("",opt) || !strcmp("pid",opt)){

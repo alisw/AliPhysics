@@ -22,6 +22,7 @@ class TTree;
 class AliEMCALGeometry ;
 class AliEMCALCalibData ;
 class AliCaloCalibPedestal ;
+class AliEMCALUnfolding ;
 
 class AliEMCALClusterizer : public TObject {
 
@@ -68,6 +69,8 @@ public:
   virtual void Print(Option_t * option)const ;
   virtual void PrintRecPoints(Option_t * option);
   virtual void PrintRecoInfo();                        //*MENU*
+
+
   
   virtual const char * Version() const {Warning("Version", "Not Defined") ; return 0 ; } 
 
@@ -99,13 +102,18 @@ protected:
   Float_t fECAW0 ;                   // logarithmic weight for the cluster center of gravity calculation
   Float_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
   
+  AliEMCALUnfolding * fClusterUnfolding ; //! pointer to unfolding object
+  Double_t fSSPars[8];// Shower shape parameters 
+  Double_t fPar5[3];  // Shower shape parameter 5
+  Double_t fPar6[3];  // Shower shape parameter 6
+
 private:
   AliEMCALClusterizer(const AliEMCALClusterizer &); //copy ctor
   AliEMCALClusterizer & operator = (const AliEMCALClusterizer &);
   
   
   
-  ClassDef(AliEMCALClusterizer,2)  // Clusterization algorithm class 
+  ClassDef(AliEMCALClusterizer,3)  // Clusterization algorithm class 
 } ;
 
 #endif // AliEMCALCLUSTERIZER_H

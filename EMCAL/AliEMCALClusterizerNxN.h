@@ -33,15 +33,11 @@ public:
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2, Bool_t & shared)const ; 
                                // Checks if digits are in neighbour cells 
 
-   virtual void   Digits2Clusters(Option_t *option);                // Does the job
+  virtual void   Digits2Clusters(Option_t *option);                // Does the job
 
-
-  static Double_t ShowerShape(Double_t x, Double_t y) ; // Shape of EM shower used in unfolding; 
-                                            //class member function (not object member function)
   static void     SetInputCalibrated(Bool_t val);
 
   virtual const char * Version() const { return "clu-NxN" ; }  
- 
   
 protected:
 
@@ -52,14 +48,6 @@ protected:
 private:
   AliEMCALClusterizerNxN(const AliEMCALClusterizerNxN &); //copy ctor
   AliEMCALClusterizerNxN & operator = (const AliEMCALClusterizerNxN &);
-
-
-  virtual void   MakeUnfolding();
-  void           UnfoldCluster(AliEMCALRecPoint * iniEmc, Int_t Nmax, 
-                               AliEMCALDigit ** maxAt,
-                               Float_t * maxAtEnergy ); //Unfolds cluster using TMinuit package
-
-private:
 
    ClassDef(AliEMCALClusterizerNxN,1)   // Clusterizer implementation version 1
 
