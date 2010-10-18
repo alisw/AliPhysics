@@ -42,7 +42,13 @@ Double_t AliVTrack::GetBz() const
   // returns Bz component of the magnetic field (kG)
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!fld) return 0.5*kAlmost0Field;
-  double bz = fld->SolenoidField();
+  double bz;
+  if (fld->IsUniform()) bz = fld->SolenoidField();
+  else {
+    Double_t r[3]; 
+    GetXYZ(r); 
+    bz = fld->GetBz(r);
+  }
   return TMath::Sign(0.5*kAlmost0Field,bz) + bz;
 }
 
