@@ -127,6 +127,8 @@ void AliHLTHOMERProxyHandler::IdentifyRealm() {
   // see header file for class documentation
 
   TString hostIP(gSystem->GetHostByName(gSystem->HostName()).GetHostAddress());
+  
+  HLTInfo(hostIP.Data());
 
   if ( hostIP.Contains("10.162.") )
     fRealm = kHLT;
@@ -137,6 +139,7 @@ void AliHLTHOMERProxyHandler::IdentifyRealm() {
   else  if ( hostIP.Contains("137.138") 
 	     || hostIP.Contains("128.141") 
 	     || hostIP.Contains("127.0.") 
+	     || hostIP.Contains("192.168")
 	     )
     fRealm = kGPN;
   else {
