@@ -8,17 +8,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 // Define the range for eta subevents (for SP method)
-//-----(FMD 1.7 - 5.0)-----
-//Double_t minA = -5.0;
-//Double_t maxA = -1.7;
-//Double_t minB = 1.7;
-//Double_t maxB = 5.0;
-//-----(Tracklets 0.9 - 2.0)-----
-//Double_t minA = -2.0;
-//Double_t maxA = -0.9;
-//Double_t minB = 0.9;
-//Double_t maxB = 2.0;
-//-----(Global 0.5 - 0.9)-----
 Double_t minA = -0.9;
 Double_t maxA = -0.5;
 Double_t minB = 0.5;
@@ -42,31 +31,28 @@ Double_t excludePhiMax = 0.;
 // use physics selection class
 Bool_t  UsePhysicsSelection = kTRUE;
 
+
+// RUN SETTINGS
+// Flow analysis method can be:(set to kTRUE or kFALSE)
+Bool_t MCEP     = kTRUE;  // correlation with Monte Carlo reaction plane
+Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
+Bool_t GFC      = kTRUE;  // cumulants based on generating function
+Bool_t QC       = kTRUE;  // cumulants using Q vectors
+Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
+Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
+Bool_t LYZ1PROD = kTRUE;  // Lee Yang Zeroes using product generating function (integrated v)
+Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
+Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
+Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
+Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
+Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
+
+Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
+
+// Boolean to use/not use weights for the Q vector
+Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
+
 // SETTING THE CUTS
-
-//----------Event selection----------
-Bool_t UseMultCutforESD = kTRUE;
-//Bool_t UseMultCutforESD = kFALSE;
-const Int_t multminESD = 1;  //used for CORRFW cuts 
-const Int_t multmaxESD = 1000000; //used for CORRFW cuts 
-
-Bool_t requireVtxCuts = kTRUE;
-const Double_t vertexXmin = -1.e99; 
-const Double_t vertexXmax = 1.e99;
-const Double_t vertexYmin = -1.e99;
-const Double_t vertexYmax = 1.e99;
-const Double_t vertexZmin = -10.; 
-const Double_t vertexZmax = 10.; 
-const Int_t vertexNContributorsmin = 1;
-const Int_t vertexNContributorsmax = 10000;
-
-//Bool_t UseMultCut = kFALSE;
-Bool_t UseMultCut = kTRUE;
-const Int_t multmin = 1;     //used for AliFlowEventSimple (to set the centrality)
-const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centrality)
-//const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
-//const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
-
 
 //----------For RP selection----------
 // Use Global tracks ("Global"), or SPD tracklets ("Tracklet") 
@@ -76,152 +62,68 @@ const TString rptype = "Global";
 //const TString rptype = "FMD";
 //const TString rptype = "PMD";
 
-//KINEMATICS (on generated and reconstructed tracks)
-Bool_t UseKineforRP =  kFALSE;
-const Double_t ptminRP = 0.0;
-const Double_t ptmaxRP = 10.0;
-const Double_t etaminRP  = -0.9;
-const Double_t etamaxRP  = 0.9;
-Bool_t bSetChargeForRP = kTRUE; // by setting kTRUE you will use only RPs with charge "chargeRP" specified in the line bellow 
-const Int_t  chargeRP = 1;  
-const Bool_t isChargedRP = kTRUE; // take only charged particle in the analysis
+const TString type = "ESD";
 
-//PID (on generated and reconstructed tracks)
-Bool_t bUsePIDforRP = kFALSE; // by setting kTRUE you will use only RPs with PDG code "PdgRP" specified in the line bellow
-const Int_t PdgRP = 211; //  pion = 211, kaon = 321, proton = 2212
-
-//TRACK QUALITY (on reconstructed tracks only)
-//see /CORRFW/AliCFTrackQualityCuts class
-Bool_t UseTrackQualityforRP =  kFALSE;
-const Int_t    minClustersTpcRP = 80;           //default = -1; 
-const Double_t maxChi2PerClusterTpcRP = 4.0;    //default = 1.e+09;
-const UShort_t minDedxClusterTpcRP = 0;
-const Int_t    minClustersItsRP = 2;            //panos
-const Double_t maxChi2PerClusterItsRP = 1.e+09; 
-const Int_t    minClustersTrdRP = -1;
-const Int_t    minTrackletTrdRP = -1;
-const Int_t    minTrackletTrdPidRP = -1;
-const Double_t maxChi2PerClusterTrdRP = 1.e+09;
-const ULong_t  statusRP = AliESDtrack::kTPCrefit;   //AliESDtrack::kTPCrefit &  AliESDtrack::kITSrefit 
-
-//PRIMARY (on reconstructed tracks only)
-//see /CORRFW/AliCFTrackIsPrimaryCuts class
-Bool_t UsePrimariesforRP = kFALSE;
-const Bool_t   spdVertexRP = kFALSE;
-const Bool_t   tpcVertexRP = kFALSE;
-const Float_t  minDcaToVertexXyRP = 0.;
-const Float_t  minDcaToVertexZRP = 0.;
-const Float_t  maxDcaToVertexXyRP = 2.4;         //default = 1.e+10;  //2.4;
-const Float_t  maxDcaToVertexZRP = 3.2;          //default = 1.e+10;  //3.2;
-const Bool_t   dcaToVertex2dRP = kFALSE;         //default = kFALSE;
-const Bool_t   absDcaToVertexRP = kTRUE;         //default = kTRUE;
-const Double_t minNSigmaToVertexRP = 0.;
-const Double_t maxNSigmaToVertexRP = 1.e+10; //3.; //1.e+10
-const Double_t maxSigmaDcaXyRP = 1.e+10;
-const Double_t maxSigmaDcaZRP = 1.e+10;
-const Bool_t   requireSigmaToVertexRP = kFALSE;
-const Bool_t   acceptKinkDaughtersRP = kFALSE;  //default = kTRUE;
-
-//ACCEPTANCE (on generated tracks only : AliMCParticle)
-//see /CORRFW/AliCFAcceptanceCuts class
-Bool_t UseAcceptanceforRP =  kFALSE; 
-const Int_t  minTrackrefsItsRP = 0;//3;
-const Int_t  minTrackrefsTpcRP = 0;//2;
-const Int_t  minTrackrefsTrdRP = 0; 
-const Int_t  minTrackrefsTofRP = 0; 
-const Int_t  minTrackrefsMuonRP = 0; 
-//default for all is 0
-
-//----------For POI selection----------
-//KINEMATICS (on generated and reconstructed tracks)
-Bool_t UseKineforPOI = kTRUE;
-const Double_t ptminPOI = 0.0;
-const Double_t ptmaxPOI = 10.0;
-const Double_t etaminPOI  = -0.9;
-const Double_t etamaxPOI  = 0.9;
-Bool_t bSetChargeForPOI = kTRUE; // by setting kTRUE you will use only RPs with charge "chargePOI" specified in the line bellow 
-const Int_t    chargePOI = -1; 
-const Bool_t   isChargedPOI = kTRUE;
-
-//PID (on generated and reconstructed tracks)
-Bool_t bUsePIDforPOI = kFALSE; // by setting kTRUE you will use only POIs with PDG code "PdgPOI" specified in the line bellow
-const Int_t PdgPOI = 321; //  pion = 211, kaon = 321, proton = 2212
-
-//TRACK QUALITY (on reconstructed tracks only)
-//see /CORRFW/AliCFTrackQualityCuts class
-Bool_t UseTrackQualityforPOI = kFALSE;
-const Int_t    minClustersTpcPOI = 80;
-const Double_t maxChi2PerClusterTpcPOI = 4.0;    
-const UShort_t minDedxClusterTpcPOI = 0;
-const Int_t    minClustersItsPOI = 2;
-const Double_t maxChi2PerClusterItsPOI = 1.e+09;
-const Int_t    minClustersTrdPOI = -1;
-const Int_t    minTrackletTrdPOI = -1;
-const Int_t    minTrackletTrdPidPOI = -1;
-const Double_t maxChi2PerClusterTrdPOI = 1.e+09;
-const ULong_t  statusPOI = AliESDtrack::kTPCrefit;   
-
-//PRIMARY (on reconstructed tracks only)
-//see /CORRFW/AliCFTrackIsPrimaryCuts class
-Bool_t UsePrimariesforPOI = kTRUE;
-const Bool_t   spdVertexPOI = kFALSE;
-const Bool_t   tpcVertexPOI = kFALSE;
-const Float_t  minDcaToVertexXyPOI = 0.;
-const Float_t  minDcaToVertexZPOI = 0.;
-const Float_t  maxDcaToVertexXyPOI = 2.4;
-const Float_t  maxDcaToVertexZPOI = 3.2;
-const Bool_t   dcaToVertex2dPOI =  kFALSE;
-const Bool_t   absDcaToVertexPOI = kTRUE;
-const Double_t minNSigmaToVertexPOI = 0.;
-const Double_t maxNSigmaToVertexPOI = 1.e+10;  
-const Double_t maxSigmaDcaXyPOI = 1.e+10;
-const Double_t maxSigmaDcaZPOI = 1.e+10;
-const Bool_t   requireSigmaToVertexPOI = kFALSE;
-const Bool_t   acceptKinkDaughtersPOI = kFALSE;
-
-//ACCEPTANCE (on generated tracks only : AliMCParticle)
-//see /CORRFW/AliCFAcceptanceCuts class
-Bool_t UseAcceptanceforPOI = kFALSE;
-const Int_t minTrackrefsItsPOI = 3;
-const Int_t minTrackrefsTpcPOI = 2;
-const Int_t minTrackrefsTrdPOI = 0; 
-const Int_t minTrackrefsTofPOI = 0; 
-const Int_t minTrackrefsMuonPOI = 0; 
-
-void AddTaskFlowCentrality( TString type,
-                            Bool_t* METHODS,
-                            Bool_t QA,
-                            Bool_t* WEIGHTS,
-                            Int_t refMultMin=0,
+void AddTaskFlowCentrality( Int_t refMultMin=0,
                             Int_t refMultMax=1e10,
                             TString fileName="AnalysisResults.root" )
 {
-  //boleans for the methods
-  Bool_t SP       = METHODS[0];
-  Bool_t LYZ1SUM  = METHODS[1];
-  Bool_t LYZ1PROD = METHODS[2];
-  Bool_t LYZ2SUM  = METHODS[3];
-  Bool_t LYZ2PROD = METHODS[4];
-  Bool_t LYZEP    = METHODS[5];
-  Bool_t GFC      = METHODS[6];
-  Bool_t QC       = METHODS[7];
-  Bool_t FQD      = METHODS[8];
-  Bool_t MCEP     = METHODS[9];      
-  Bool_t MH       = METHODS[10];
-  Bool_t NL       = METHODS[11];  
-  //for using weights
+
+  //===========================================================================
+  printf("CREATE CUTS\n");
+  
+  // EVENTS CUTS:
+  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts();
+  cutsEvent->SetRefMultRange(refMultMin,refMultMax);
+  
+  // RP TRACK CUTS:
+  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
+  cutsRP->SetPtRange(0.2,10.);
+  cutsRP->SetEtaRange(-0.7,0.7);
+  cutsRP->SetRequireCharge(kTRUE);
+  //cutsRP->SetCharge(chargeRP);
+  //cutsRP->SetPID(PdgRP);
+  cutsRP->SetMinNClustersTPC(80);
+  cutsRP->SetMaxChi2PerClusterTPC(4.0);
+  cutsRP->SetMinNClustersITS(2);
+  //cutsRP->SetMaxChi2PerClusterITS(1.e+09);
+  cutsRP->SetMaxDCAToVertexXY(2.4);
+  cutsRP->SetMaxDCAToVertexZ(3.2);
+  cutsRP->SetDCAToVertex2D(kFALSE);
+  cutsRP->SetMaxNsigmaToVertex(1.e+10);
+  cutsRP->SetRequireSigmaToVertex(kFALSE);
+  cutsRP->SetAcceptKinkDaughters(kFALSE);
+
+  // POI TRACK CUTS:
+  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts();
+  cutsPOI->SetPtRange(0.2,10.);
+  cutsPOI->SetEtaRange(-0.7,0.7);
+  cutsPOI->SetRequireCharge(kTRUE);
+  //cutsPOI->SetCharge(chargeRP);
+  //cutsPOI->SetPID(PdgRP);
+  cutsPOI->SetMinNClustersTPC(80);
+  cutsPOI->SetMaxChi2PerClusterTPC(4.0);
+  cutsPOI->SetMinNClustersITS(2);
+  //cutsPOI->SetMaxChi2PerClusterITS(1.e+09);
+  cutsPOI->SetMaxDCAToVertexXY(2.4);
+  cutsPOI->SetMaxDCAToVertexZ(3.2);
+  cutsPOI->SetDCAToVertex2D(kFALSE);
+  cutsPOI->SetMaxNsigmaToVertex(1.e+10);
+  cutsPOI->SetRequireSigmaToVertex(kFALSE);
+  cutsPOI->SetAcceptKinkDaughters(kFALSE);
+
+
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
   if (useWeights) cout<<"Weights are used"<<endl;
   else cout<<"Weights are not used"<<endl;
-
-
+  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskFlowEvent", "No analysis manager to connect to.");
     return NULL;
-  }   
+  }
   
   // Check the analysis type using the event handlers connected to the analysis
   // manager. The availability of MC handler can also be checked here.
@@ -230,7 +132,7 @@ void AddTaskFlowCentrality( TString type,
     ::Error("AddTaskFlowEvent", "This task requires an input event handler");
     return NULL;
   }  
-    
+
   // Open external input files
   //===========================================================================
   //weights: 
@@ -249,7 +151,7 @@ void AddTaskFlowCentrality( TString type,
       break;
     } 
   }
-    
+  
   //LYZ2
   if (LYZ2SUM || LYZ2PROD) {
     //read the outputfile of the first run
@@ -262,9 +164,7 @@ void AddTaskFlowCentrality( TString type,
       cout<<"WARNING: You do not have an output file:"<<endl;
       cout<<"         "<<pwd.Data()<<endl;
       exit(0);
-    } else {
-      outputFile = TFile::Open(pwd.Data(),"READ");
-    }
+    } else { outputFile = TFile::Open(pwd.Data(),"READ");}
     
     if (LYZ2SUM){  
       // read the output directory from LYZ1SUM 
@@ -301,7 +201,6 @@ void AddTaskFlowCentrality( TString type,
     }
   }
 
-
   if (LYZEP) {
     //read the outputfile of the second run
     TString outputFileName = "AnalysisResults2.root";
@@ -316,7 +215,7 @@ void AddTaskFlowCentrality( TString type,
     } else {
       outputFile = TFile::Open(pwd.Data(),"READ");
     }
-
+    
     // read the output file from LYZ2SUM
     TString inputFileNameLYZEP = "outputLYZ2SUManalysis" ;
     inputFileNameLYZEP += type;
@@ -341,206 +240,47 @@ void AddTaskFlowCentrality( TString type,
     if (rptype == "FMD") {
       taskfmd = new AliFMDAnalysisTaskSE("TaskFMD");
       mgr->AddTask(taskfmd);
-  
+      
       AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
       pars->Init();
       pars->SetProcessPrimary(kTRUE); //for MC only
       pars->SetProcessHits(kFALSE);
-
+      
       //pars->SetRealData(kTRUE); //for real data
       //pars->SetProcessPrimary(kFALSE); //for real data
-
     }
   }
   
-
   // Create the task, add it to the manager.
   //===========================================================================
   AliAnalysisTaskFlowEvent *taskFE = NULL;
-  if (QA) { 
-    if(useAfterBurner)
-    { 
-      taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kTRUE,1);
-      taskFE->SetFlow(v1,v2,v3,v4); 
-      taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
-      taskFE->SetAfterburnerOn();
-    }
-    else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kTRUE); }
-    taskFE->SetAnalysisType(type);
-    taskFE->SetRPType(rptype); //only for ESD
-    if (UseMultCut) {
-      taskFE->SetMinMult(multmin);
-      taskFE->SetMaxMult(multmax);
-    }
-    if (ExcludeRegion) {
-      taskFE->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 
-    }
 
-    taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
-    if (UsePhysicsSelection) {
-      taskFE->SelectCollisionCandidates();
-      cout<<"Using Physics Selection"<<endl;
-    }
-    mgr->AddTask(taskFE);
-  }
-  else { 
-    if(useAfterBurner)
+  if(useAfterBurner)
     { 
       taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE,1);
       taskFE->SetFlow(v1,v2,v3,v4); 
       taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
       taskFE->SetAfterburnerOn();
     }
-    else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE); }
-    taskFE->SetAnalysisType(type);
-    taskFE->SetRPType(rptype); //only for ESD
-    if (UseMultCut) {
-      taskFE->SetMinMult(multmin);
-      taskFE->SetMaxMult(multmax);
-    }
-    if (ExcludeRegion) {
-      taskFE->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 
-    }
-    taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
-    if (UsePhysicsSelection) {
-      taskFE->SelectCollisionCandidates();
-      cout<<"Using Physics Selection"<<endl;
-    }
-    mgr->AddTask(taskFE);
+  else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE); }
+  if (ExcludeRegion) {
+    taskFE->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 
   }
- 
-  //----------Add Cut Lists to the CF Manager----------
-  printf("CREATE INTERFACE AND CUTS\n");
-  
-  // EVENTS CUTS:
-  AliFlowEventCuts* eventCuts = new AliFlowEventCuts();
-  eventCuts->SetRefMultRange(refMultMin,refMultMax);
-  taskFE->SetCutsEvent(eventCuts);
-  
-  // RP CUTS:
-  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
-  cutsRP->SetPtRange(ptminRP,ptmaxRP);
-  cutsRP->SetEtaRange(etaminRP,etamaxRP);
-  cutsRP->SetRequireCharge(kTRUE);
-  if(bSetChargeForRP){cutsRP->SetCharge(chargeRP);} 
-  if(bUsePIDforRP){cutsRP->SetPID(PdgRP);}
-      
-  if(UseTrackQualityforRP)
-  {
-   cutsRP->SetMinNClustersTPC(minClustersTpcRP);
-   cutsRP->SetMaxChi2PerClusterTPC(maxChi2PerClusterTpcRP);
-   cutsRP->SetMinNClustersITS(minClustersItsRP);
-   cutsRP->SetMaxChi2PerClusterITS(maxChi2PerClusterItsRP);
-   // when compared to original Naomi's implementation we still might need setters for:
-   /*
-   const UShort_t minDedxClusterTpcRP = 0;
-   const Int_t    minClustersTrdRP = -1;
-   const Int_t    minTrackletTrdRP = -1;
-   const Int_t    minTrackletTrdPidRP = -1;
-   const Double_t maxChi2PerClusterTrdRP = 1.e+09;
-   const ULong_t  statusRP = AliESDtrack::kTPCrefit;   //AliESDtrack::kTPCrefit &  AliESDtrack::kITSrefit 
-   */
-  } // end of if(UseTrackQualityforRP)
- 
-  if(UsePrimariesforRP)
-  {
-   cutsRP->SetMaxDCAToVertexXY(maxDcaToVertexXyRP);
-   cutsRP->SetMaxDCAToVertexZ(maxDcaToVertexZRP);
-   cutsRP->SetDCAToVertex2D(dcaToVertex2dRP);
-   cutsRP->SetMaxNsigmaToVertex(maxNSigmaToVertexRP);
-   cutsRP->SetRequireSigmaToVertex(requireSigmaToVertexRP);
-   cutsRP->SetAcceptKinkDaughters(acceptKinkDaughtersRP);
-   // when compared to original Naomi's implementation we still might need setters for:
-   /*
-   const Bool_t   spdVertexRP = kFALSE;
-   const Bool_t   tpcVertexRP = kFALSE;
-   const Float_t  minDcaToVertexXyRP = 0.;
-   const Float_t  minDcaToVertexZRP = 0.;
-   const Bool_t   absDcaToVertexRP = kTRUE;  //default = kTRUE;
-   const Double_t minNSigmaToVertexRP = 0.;
-   const Double_t maxSigmaDcaXyRP = 1.e+10;
-   const Double_t maxSigmaDcaZRP = 1.e+10;  
-   */
-  } // end of if(UsePrimariesforRP)
-  
-  if(UseAcceptanceforRP)
-  {
-   // when compared to original Naomi's implementation we still might need setters for:
-   /*
-   const Int_t minTrackrefsItsRP = 3;
-   const Int_t minTrackrefsTpcRP = 2;
-   const Int_t minTrackrefsTrdRP = 0; 
-   const Int_t minTrackrefsTofRP = 0; 
-   const Int_t minTrackrefsMuonRP = 0; 
-   */
+  taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
+  if (UsePhysicsSelection) {
+    taskFE->SelectCollisionCandidates();
+    cout<<"Using Physics Selection"<<endl;
   }
-    
-  // POI CUTS:
-  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts();
-  cutsPOI->SetPtRange(ptminPOI,ptmaxPOI);
-  cutsPOI->SetEtaRange(etaminPOI,etamaxPOI);
-  cutsPOI->SetRequireCharge(kTRUE);
-  if(bSetChargeForPOI){cutsPOI->SetCharge(chargePOI);} 
-  if(bUsePIDforPOI){cutsPOI->SetPID(PdgPOI);}
-      
-  if(UseTrackQualityforPOI)
-  {
-   cutsPOI->SetMinNClustersTPC(minClustersTpcPOI);
-   cutsPOI->SetMaxChi2PerClusterTPC(maxChi2PerClusterTpcPOI);
-   cutsPOI->SetMinNClustersITS(minClustersItsPOI);
-   cutsPOI->SetMaxChi2PerClusterITS(maxChi2PerClusterItsPOI);
-   // when compared to original Naomi's implementation we still might need setters for:
-   /*
-   const UShort_t minDedxClusterTpcPOI = 0;
-   const Int_t    minClustersTrdPOI = -1;
-   const Int_t    minTrackletTrdPOI = -1;
-   const Int_t    minTrackletTrdPidPOI = -1;
-   const Double_t maxChi2PerClusterTrdPOI = 1.e+09;
-   const ULong_t  statusPOI = AliESDtrack::kTPCrefit;   //AliESDtrack::kTPCrefit &  AliESDtrack::kITSrefit 
-   */
-  } // end of if(UseTrackQualityforPOI)
- 
-  if(UsePrimariesforPOI)
-  {
-   cutsPOI->SetMaxDCAToVertexXY(maxDcaToVertexXyPOI);
-   cutsPOI->SetMaxDCAToVertexZ(maxDcaToVertexZPOI);
-   cutsPOI->SetDCAToVertex2D(dcaToVertex2dPOI);
-   cutsPOI->SetMaxNsigmaToVertex(maxNSigmaToVertexPOI);
-   cutsPOI->SetRequireSigmaToVertex(requireSigmaToVertexPOI);
-   cutsPOI->SetAcceptKinkDaughters(acceptKinkDaughtersPOI);
-   // when compared to original Naomi's implementation we still might need setters for:
-   /*
-   const Bool_t   spdVertexPOI = kFALSE;
-   const Bool_t   tpcVertexPOI = kFALSE;
-   const Float_t  minDcaToVertexXyPOI = 0.;
-   const Float_t  minDcaToVertexZPOI = 0.;
-   const Bool_t   absDcaToVertexPOI = kTRUE;  //default = kTRUE;
-   const Double_t minNSigmaToVertexPOI = 0.;
-   const Double_t maxSigmaDcaXyPOI = 1.e+10;
-   const Double_t maxSigmaDcaZPOI = 1.e+10;  
-   */
-  } // end of if(UsePrimariesforPOI)
+  mgr->AddTask(taskFE);
+  
+  // Pass cuts for RPs and POIs to the task:
+  taskFE->SetCutsEvent(cutsEvent);
 
-  if(UseAcceptanceforRP)
-  {
-   // when compared to original Naomi's implementation we still might need setters for:
-   /*
-   const Int_t minTrackrefsItsRP = 3;
-   const Int_t minTrackrefsTpcRP = 2;
-   const Int_t minTrackrefsTrdRP = 0; 
-   const Int_t minTrackrefsTofRP = 0; 
-   const Int_t minTrackrefsMuonRP = 0; 
-   */
-  }
-  
-  if (QA) {
-    taskFE->SetQAList1(new TList());
-    taskFE->SetQAList2(new TList());
-  }
-  
   // Pass cuts for RPs and POIs to the task:
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
+ 
+
 
   // Create the analysis tasks, add them to the manager.
   //===========================================================================
@@ -635,7 +375,7 @@ void AddTaskFlowCentrality( TString type,
   
   if (rptype == "FMD") {
     AliAnalysisDataContainer *coutputFMD = 
-      mgr->CreateContainer(Form("BackgroundCorrected_%s",fileName.Data()), TList::Class(), AliAnalysisManager::kExchangeContainer);                        
+      mgr->CreateContainer(Form("BackgroundCorrected_%s",fileName.Data()), TList::Class(), AliAnalysisManager::kExchangeContainer);
     //input and output taskFMD     
     mgr->ConnectInput(taskfmd, 0, cinput1);
     mgr->ConnectOutput(taskfmd, 1, coutputFMD);
@@ -647,95 +387,84 @@ void AddTaskFlowCentrality( TString type,
     mgr->CreateContainer(Form("cobjFlowEventSimple_%s",fileName.Data()),  AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
   mgr->ConnectInput(taskFE,0,cinput1); 
   mgr->ConnectOutput(taskFE,1,coutputFE);
-
-  if (QA) { 
-    TString qaNameRPFE = fileName;
-    qaNameRPFE += ":QAforRP_FE_";
-    qaNameRPFE += type;
-
-    AliAnalysisDataContainer *coutputQA1FE =
-      mgr->CreateContainer(Form("QARPFE_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,qaNameRPFE); 
-    
-    TString qaNamePOIFE = fileName;
-    qaNamePOIFE += ":QAforPOI_FE_";
-    qaNamePOIFE += type;
-        
-    AliAnalysisDataContainer *coutputQA2FE =
-      mgr->CreateContainer(Form("QAPOIFE_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,qaNamePOIFE); 
-
-    mgr->ConnectOutput(taskFE,2,coutputQA1FE); 
-    mgr->ConnectOutput(taskFE,3,coutputQA2FE); 
-  }
+  
 
   // Create the output containers for the data produced by the analysis tasks
   // Connect to the input and output containers
   //===========================================================================
   if (useWeights) {    
-    AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer(Form("cobjWeights_%s",fileName.Data()),TList::Class(),AliAnalysisManager::kInputContainer); 
+    AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer(Form("cobjWeights_%s",fileName.Data()),
+								   TList::Class(),AliAnalysisManager::kInputContainer); 
   }
 
   if(SP) {
     TString outputSP = fileName;
     outputSP += ":outputSPanalysis";
     outputSP+= type;
-    
-    AliAnalysisDataContainer *coutputSP = mgr->CreateContainer(Form("cobjSP_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputSP); 
+    AliAnalysisDataContainer *coutputSP = mgr->CreateContainer(Form("cobjSP_%s",fileName.Data()), 
+							       TList::Class(),AliAnalysisManager::kOutputContainer,outputSP); 
     mgr->ConnectInput(taskSP,0,coutputFE); 
     mgr->ConnectOutput(taskSP,1,coutputSP); 
     if (WEIGHTS[0]) {
       mgr->ConnectInput(taskSP,1,cinputWeights);
       cinputWeights->SetData(weightsList);
-    } 
+    }
   }
   if(LYZ1SUM) {
     TString outputLYZ1SUM = fileName;
     outputLYZ1SUM += ":outputLYZ1SUManalysis";
     outputLYZ1SUM+= type;
-    
-    AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer(Form("cobjLYZ1SUM_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1SUM); 
-    mgr->ConnectInput(taskLYZ1SUM,0,coutputFE); 
-    mgr->ConnectOutput(taskLYZ1SUM,1,coutputLYZ1SUM); 
+    AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer(Form("cobjLYZ1SUM_%s",fileName.Data()), 
+								    TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1SUM); 
+    mgr->ConnectInput(taskLYZ1SUM,0,coutputFE);
+    mgr->ConnectOutput(taskLYZ1SUM,1,coutputLYZ1SUM);
   }
   if(LYZ1PROD) {
     TString outputLYZ1PROD = fileName;
     outputLYZ1PROD += ":outputLYZ1PRODanalysis";
     outputLYZ1PROD+= type;
-    
-    AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer(Form("cobjLYZ1PROD_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1PROD); 
+    AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer(Form("cobjLYZ1PROD_%s",fileName.Data()), 
+								     TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1PROD); 
     mgr->ConnectInput(taskLYZ1PROD,0,coutputFE); 
     mgr->ConnectOutput(taskLYZ1PROD,1,coutputLYZ1PROD);
   }
   if(LYZ2SUM) {
-    AliAnalysisDataContainer *cinputLYZ2SUM = mgr->CreateContainer(Form("cobjLYZ2SUMin_%s",fileName.Data()),TList::Class(),AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cinputLYZ2SUM = mgr->CreateContainer(Form("cobjLYZ2SUMin_%s",fileName.Data()),
+								   TList::Class(),AliAnalysisManager::kInputContainer);
     TString outputLYZ2SUM = fileName;
     outputLYZ2SUM += ":outputLYZ2SUManalysis";
     outputLYZ2SUM+= type;
     
-    AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer(Form("cobjLYZ2SUM_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2SUM); 
+    AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer(Form("cobjLYZ2SUM_%s",fileName.Data()), 
+								    TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2SUM); 
     mgr->ConnectInput(taskLYZ2SUM,0,coutputFE); 
     mgr->ConnectInput(taskLYZ2SUM,1,cinputLYZ2SUM);
     mgr->ConnectOutput(taskLYZ2SUM,1,coutputLYZ2SUM); 
     cinputLYZ2SUM->SetData(fInputListLYZ2SUM);
   }
   if(LYZ2PROD) {
-    AliAnalysisDataContainer *cinputLYZ2PROD = mgr->CreateContainer(Form("cobjLYZ2PRODin_%s",fileName.Data()),TList::Class(),AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cinputLYZ2PROD = mgr->CreateContainer(Form("cobjLYZ2PRODin_%s",fileName.Data()),
+								    TList::Class(),AliAnalysisManager::kInputContainer);
     TString outputLYZ2PROD = fileName;
     outputLYZ2PROD += ":outputLYZ2PRODanalysis";
     outputLYZ2PROD+= type;
     
-    AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer(Form("cobjLYZ2PROD_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2PROD); 
+    AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer(Form("cobjLYZ2PROD_%s",fileName.Data()), 
+								     TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2PROD); 
     mgr->ConnectInput(taskLYZ2PROD,0,coutputFE); 
     mgr->ConnectInput(taskLYZ2PROD,1,cinputLYZ2PROD);
     mgr->ConnectOutput(taskLYZ2PROD,1,coutputLYZ2PROD); 
     cinputLYZ2PROD->SetData(fInputListLYZ2PROD);
   }
   if(LYZEP) {
-    AliAnalysisDataContainer *cinputLYZEP = mgr->CreateContainer(Form("cobjLYZEPin_%s",fileName.Data()),TList::Class(),AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cinputLYZEP = mgr->CreateContainer(Form("cobjLYZEPin_%s",fileName.Data()),
+								 TList::Class(),AliAnalysisManager::kInputContainer);
     TString outputLYZEP = fileName;
     outputLYZEP += ":outputLYZEPanalysis";
     outputLYZEP+= type;
     
-    AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer(Form("cobjLYZEP_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP); 
+    AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer(Form("cobjLYZEP_%s",fileName.Data()), 
+								  TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP); 
     mgr->ConnectInput(taskLYZEP,0,coutputFE); 
     mgr->ConnectInput(taskLYZEP,1,cinputLYZEP);
     mgr->ConnectOutput(taskLYZEP,1,coutputLYZEP); 
@@ -746,7 +475,8 @@ void AddTaskFlowCentrality( TString type,
     outputGFC += ":outputGFCanalysis";
     outputGFC+= type;
     
-    AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer(Form("cobjGFC_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC); 
+    AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer(Form("cobjGFC_%s",fileName.Data()), 
+								TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC); 
     mgr->ConnectInput(taskGFC,0,coutputFE); 
     mgr->ConnectOutput(taskGFC,1,coutputGFC);
     if (useWeights) {
@@ -759,20 +489,22 @@ void AddTaskFlowCentrality( TString type,
     outputQC += ":outputQCanalysis";
     outputQC+= type;
 
-    AliAnalysisDataContainer *coutputQC = mgr->CreateContainer(Form("cobjQC_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputQC); 
+    AliAnalysisDataContainer *coutputQC = mgr->CreateContainer(Form("cobjQC_%s",fileName.Data()), 
+							       TList::Class(),AliAnalysisManager::kOutputContainer,outputQC); 
     mgr->ConnectInput(taskQC,0,coutputFE); 
     mgr->ConnectOutput(taskQC,1,coutputQC);
     if (useWeights) {
       mgr->ConnectInput(taskQC,1,cinputWeights);
       cinputWeights->SetData(weightsList);
-    }    
+    }
   }
   if(FQD) {
     TString outputFQD = fileName;
     outputFQD += ":outputFQDanalysis";
     outputFQD+= type;
     
-    AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer(Form("cobjFQD_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD); 
+    AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer(Form("cobjFQD_%s",fileName.Data()), 
+								TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD); 
     mgr->ConnectInput(taskFQD,0,coutputFE); 
     mgr->ConnectOutput(taskFQD,1,coutputFQD);
     if(useWeights) {
@@ -785,8 +517,9 @@ void AddTaskFlowCentrality( TString type,
     outputMCEP += ":outputMCEPanalysis";
     outputMCEP+= type;
     
-    AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer(Form("cobjMCEP_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP); 
-    mgr->ConnectInput(taskMCEP,0,coutputFE); 
+    AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer(Form("cobjMCEP_%s",fileName.Data()), 
+								 TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP); 
+    mgr->ConnectInput(taskMCEP,0,coutputFE);
     mgr->ConnectOutput(taskMCEP,1,coutputMCEP); 
   }
   if(MH) {
@@ -794,7 +527,8 @@ void AddTaskFlowCentrality( TString type,
     outputMH += ":outputMHanalysis";
     outputMH += type;
         
-    AliAnalysisDataContainer *coutputMH = mgr->CreateContainer(Form("cobjMH_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputMH); 
+    AliAnalysisDataContainer *coutputMH = mgr->CreateContainer(Form("cobjMH_%s",fileName.Data()), 
+							       TList::Class(),AliAnalysisManager::kOutputContainer,outputMH); 
     mgr->ConnectInput(taskMH,0,coutputFE); 
     mgr->ConnectOutput(taskMH,1,coutputMH); 
     //if (useWeights) {
@@ -806,16 +540,16 @@ void AddTaskFlowCentrality( TString type,
     TString outputNL = fileName;
     outputNL += ":outputNLanalysis";
     outputNL += type;
-        
-    AliAnalysisDataContainer *coutputNL = mgr->CreateContainer(Form("cobjNL_%s",fileName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputNL); 
-    mgr->ConnectInput(taskNL,0,coutputFE); 
-    mgr->ConnectOutput(taskNL,1,coutputNL); 
+
+    AliAnalysisDataContainer *coutputNL = mgr->CreateContainer(Form("cobjNL_%s",fileName.Data()), 
+							       TList::Class(),AliAnalysisManager::kOutputContainer,outputNL); 
+    mgr->ConnectInput(taskNL,0,coutputFE);
+    mgr->ConnectOutput(taskNL,1,coutputNL);
     //if (useWeights) {
     //  mgr->ConnectInput(taskNL,1,cinputWeights);
     //  cinputWeights->SetData(weightsList);
     //} 
   }
-
 }
 
 
