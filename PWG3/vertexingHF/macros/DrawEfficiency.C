@@ -188,6 +188,7 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 	TH1D *hpteffCF = 0x0; //the efficiency vs pt
 
 	if (ieff & mcAcc_over_mcLimAcc){
+		AliCFEffGrid *eff = new AliCFEffGrid("eff"," The efficiency",*data);
 		stepDen = (Int_t)(AliCFTaskVertexingHF::kStepGeneratedLimAcc);	
 		stepNum = (Int_t)(AliCFTaskVertexingHF::kStepAcceptance);	
 		printf("Calculating efficiency for mcAcc_over_mcLimAcc: stepDen = %d, stepNum = %d\n",stepDen,stepNum);	
@@ -208,9 +209,12 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 		ceffpt->Print(Form("%s/effpt_mcAcc_over_mcLimAcc.png", plotDir.Data()));
 		ceffpt->Print(Form("%s/effpt_mcAcc_over_mcLimAcc.eps", plotDir.Data()));
 		ceffpt->Print(Form("%s/effpt_mcAcc_over_mcLimAcc.gif", plotDir.Data()));
+		delete eff;
+		eff = 0x0;
 	}
 
 	if (ieff & recPPR_over_mcAcc){
+		AliCFEffGrid *eff = new AliCFEffGrid("eff"," The efficiency",*data);
 		stepDen = (Int_t)(AliCFTaskVertexingHF::kStepAcceptance);	
 		stepNum = (Int_t)(AliCFTaskVertexingHF::kStepRecoPPR);	
 		printf("Calculating efficiency for RecPPR_over_mcAcc: stepDen = %d, stepNum = %d\n",stepDen,stepNum);	
@@ -231,9 +235,12 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 		ceffpt->Print(Form("%s/effpt_RecAnCut_over_mcAcc.png", plotDir.Data()));
 		ceffpt->Print(Form("%s/effpt_RecAnCut_over_mcAcc.eps", plotDir.Data()));
 		ceffpt->Print(Form("%s/effpt_RecAnCut_over_mcAcc.gif", plotDir.Data()));
+		delete eff;
+		eff = 0x0;
 	}
 
 	if (ieff & recPID_over_mcAcc){
+		AliCFEffGrid *eff = new AliCFEffGrid("eff"," The efficiency",*data);
 		stepDen = (Int_t)(AliCFTaskVertexingHF::kStepAcceptance);	
 		stepNum = (Int_t)(AliCFTaskVertexingHF::kStepRecoPID);	
 		printf("Calculating efficiency for RecPID_over_mcAcc: stepDen = %d, stepNum = %d\n",stepDen,stepNum);	
@@ -254,6 +261,8 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 		ceffpt->Print(Form("%s/effpt_RecPID_over_mcAcc.png", plotDir.Data()));
 		ceffpt->Print(Form("%s/effpt_RecPID_over_mcAcc.eps", plotDir.Data()));
 		ceffpt->Print(Form("%s/effpt_RecPID_over_mcAcc.gif", plotDir.Data()));
+		delete eff;
+		eff = 0x0;
 	}
 	
 	cutsRDHF->Write("Cuts");
