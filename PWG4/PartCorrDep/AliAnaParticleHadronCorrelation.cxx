@@ -918,7 +918,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
       //fill different multiplicity histogram
       if(DoEventSelect()){
         for(Int_t im=0; im<GetMultiBin(); im++){
-          if(nTracks < GetMaxMulti()/GetMultiBin()*(im+1))fhTrigDeltaPhiDeltaEtaCharged[im]->Fill(ptTrig,deltaphi,aodParticle->Eta()-eta);
+          if(nTracks < ( GetMaxMulti() - GetMinMulti() )/GetMultiBin()*(im+1))fhTrigDeltaPhiDeltaEtaCharged[im]->Fill(ptTrig,deltaphi,aodParticle->Eta()-eta);
         }
       }
       //delta phi cut for correlation
@@ -934,7 +934,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
         //fill different multiplicity histogram
         if(DoEventSelect()){
           for(Int_t im=0; im<GetMultiBin(); im++){
-            if(nTracks < ( GetMaxMulti() - 0 )/GetMultiBin()*(im+1))
+            if(nTracks < ( GetMaxMulti() - GetMinMulti() )/GetMultiBin()*(im+1))
               fhTrigCorr[im]->Fill(ptTrig,xE);
           }
         } //multiplicity events selection
@@ -945,7 +945,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
         fhPtHbpUeCharged->Fill(ptTrig,cosi);
         if(DoEventSelect()){
           for(Int_t im=0; im<GetMultiBin(); im++){
-            if(nTracks < ( GetMaxMulti() - 0 )/GetMultiBin()*(im+1))
+            if(nTracks < ( GetMaxMulti() - GetMinMulti() )/GetMultiBin()*(im+1))
               fhTrigUeCorr[im]->Fill(ptTrig,xE);
           }
         } //multiplicity events selection
