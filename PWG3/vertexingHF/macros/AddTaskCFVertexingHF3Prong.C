@@ -292,14 +292,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	//one "container" for MC
 	TString nameContainer="";
 	if(!isKeepDfromB) {
-	  nameContainer="CFHFccontainer0_New_3Prong";
+	  nameContainer="CFHFccontainer0_3Prong_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
-	  nameContainer="CFHFccontainer0DfromB_New_3Prong";
+	  nameContainer="CFHFccontainer0DfromB_3Prong_CommonFramework";
 	}
 	else  {
-	  nameContainer="CFHFccontainer0allD_New_3Prong";
-	  
+	  nameContainer="CFHFccontainer0allD_3Prong_CommonFramework";          
 	}
 	
 	AliCFContainer* container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBin);
@@ -459,14 +458,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 
 	TString nameCorr="";
 	if(!isKeepDfromB) {
-	  nameCorr="CFHFcorr0_New_3Prong";
+		nameCorr="CFHFcorr0_3Prong_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
-	  nameCorr= "CFHFcorr0KeepDfromBOnly_3Prong";
+		nameCorr= "CFHFcorr0KeepDfromBOnly_3Prong_CommonFramework";
 	}
 	else  {
-	  nameCorr="CFHFcorr0allD_New_3Prong";
-
+		nameCorr="CFHFcorr0allD_3Prong_CommonFramework";		
 	}
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
@@ -502,20 +500,19 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	output2name=nameContainer;
 	output3name=nameCorr;
 	if(!isKeepDfromB) {
-	  outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_NEW";
-	  output1name="CFHFchist0_New_3Prong";
+		outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_CommonFramework";
+		output1name="CFHFchist0_3Prong_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
-	  outputfile += ":PWG3_D2H_CFtaskDplustoKpipiKeepDfromBOnly";
-	  output1name="CFHFchist0DfromB_3Prong";
+		outputfile += ":PWG3_D2H_CFtaskDplustoKpipiKeepDfromBOnly_CommonFramework";
+		output1name="CFHFchist0DfromB_3Prong_CommonFramework";
 	}
 	else{
-	  outputfile += ":PWG3_D2H_CFtaskDplustoKpipiKeepDfromB_NEW";
-	  output1name="CFHFchist0allD_New_3Prong";
-	  
+		outputfile += ":PWG3_D2H_CFtaskDplustoKpipiKeepDfromB_CommonFramework";
+		output1name="CFHFchist0allD_3Prong_CommonFramework";
 	}
 
-	output4name= "Cuts_3Prong";
+	output4name= "Cuts_3Prong_CommonFramework";
 
 	//now comes user's output objects :
 	// output TH1I for event counting

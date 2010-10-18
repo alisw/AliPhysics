@@ -256,16 +256,15 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	//one "container" for MC
 	TString nameContainer="";
 	if(!isKeepDfromB) {
-	  nameContainer="CFHFccontainer0_New";
+		nameContainer="CFHFccontainer0_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
-	  nameContainer="CFHFccontainer0DfromB_New";
+		nameContainer="CFHFccontainer0DfromB_CommonFramework";
 	}
 	else  {
-	  nameContainer="CFHFccontainer0allD_New";
-	  
+		nameContainer="CFHFccontainer0allD_CommonFramework";	  
 	}
-	
+
 	AliCFContainer* container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBin);
 	//setting the bin limits
 	printf("pt\n");
@@ -426,13 +425,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 	TString nameCorr="";
 	if(!isKeepDfromB) {
-	  nameCorr="CFHFcorr0_New";
+		nameCorr="CFHFcorr0_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
-	  nameCorr= "CFHFcorr0KeepDfromBOnly";
+		nameCorr= "CFHFcorr0KeepDfromBOnly_CommonFramework";
 	}
 	else  {
-	  nameCorr="CFHFcorr0allD_New";
+		nameCorr="CFHFcorr0allD_CommonFramework";
 
 	}
 
@@ -469,19 +468,18 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	output2name=nameContainer;
 	output3name=nameCorr;
 	if(!isKeepDfromB) {
-	  outputfile += ":PWG3_D2H_CFtaskD0toKpi_NEW";
-	  output1name="CFHFchist0_New";
+		outputfile += ":PWG3_D2H_CFtaskD0toKpi_CommonFramework";
+		output1name="CFHFchist0_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
-	  outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly";
-	  output1name="CFHFchist0DfromB";
+		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly_CommonFramework";
+		output1name="CFHFchist0DfromB_CommonFramework";
 	}
 	else{
-	  outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB_NEW";
-	  output1name="CFHFchist0allD_New";
-	  
+		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB_CommonFramework";
+		output1name="CFHFchist0allD_CommonFramework";
 	}
-	output4name= "Cuts_New";
+	output4name= "Cuts_CommonFramework";
 
 	//now comes user's output objects :
 	// output TH1I for event counting
