@@ -55,14 +55,11 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 // SETTING THE CUTS
 
 //----------For RP selection----------
-// Use Global tracks ("Global"), or SPD tracklets ("Tracklet") 
-// or FMD hits ("FMD") for the RP selection
-const TString rptype = "Global";
-//const TString rptype = "Tracklet";
-//const TString rptype = "FMD";
-//const TString rptype = "PMD";
+//kMC, kESD_Global, kESD_TPConly
+const TString rptype = "kMC";
+const TString poitype = "kMC";
 
-const TString type = "ESD";
+const TString type = "MK";
 
 void AddTaskFlowCentrality( Int_t refMultMin=0,
                             Int_t refMultMax=1e10,
@@ -78,6 +75,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
+  cutsRP->SetParamType(rptype)
   cutsRP->SetPtRange(0.2,10.);
   cutsRP->SetEtaRange(-0.7,0.7);
   cutsRP->SetRequireCharge(kTRUE);
@@ -96,6 +94,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts();
+  cutsPOI->SetParamType(poitype)
   cutsPOI->SetPtRange(0.2,10.);
   cutsPOI->SetEtaRange(-0.7,0.7);
   cutsPOI->SetRequireCharge(kTRUE);

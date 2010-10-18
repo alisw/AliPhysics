@@ -75,7 +75,7 @@ ClassImp(AliAnalysisTaskFlowEvent)
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   AliAnalysisTaskSE(),
   //  fOutputFile(NULL),
-  fAnalysisType("ESD"),
+  fAnalysisType("MK"),
   fRPType("Global"),
   fCFManager1(NULL),
   fCFManager2(NULL),
@@ -126,7 +126,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPtype, Bool_t on, UInt_t iseed) :
   AliAnalysisTaskSE(name),
   //  fOutputFile(NULL),
-  fAnalysisType("ESD"),
+  fAnalysisType("MK"),
   fRPType(RPtype),
   fCFManager1(NULL),
   fCFManager2(NULL),
