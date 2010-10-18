@@ -1144,7 +1144,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 	    //	    cout << "Events " << classFlags[iTrigClass] << " ("<<icol<<") " << nEvents[iTrigClass] << endl;	    
 	  }
 	  if (nEvents[kClassB]>0) {
-	    Int_t acc  = ratioToB[kClassE]*nEvents[kClassE]; 
+	    Float_t acc  = ratioToB[kClassE]*nEvents[kClassE]; 
 	    Double_t acc_err = TMath::Sqrt(ratioToB[kClassE]*ratioToB[kClassE]*nEvents[kClassE]);
 	    //      Int_t bg   = cint1A + cint1C - 2*acc;
 	    
