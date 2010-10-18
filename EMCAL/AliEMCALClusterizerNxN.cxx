@@ -171,62 +171,62 @@ void AliEMCALClusterizerNxN::Digits2Clusters(Option_t * option)
 //____________________________________________________________________________
 Int_t AliEMCALClusterizerNxN::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2, Bool_t & shared) const
 {
-	// Gives the neighbourness of two digits = 0 are not neighbour ; continue searching 
-	//                                       = 1 are neighbour
-	//                                       = 2 is in different SM; continue searching 
-	// In case it is in different SM, but same phi rack, check if neigbours at eta=0
-	// neighbours are defined as digits having at least a common side 
-	// The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
-	//                                      which is compared to a digit (d2)  not yet in a cluster  
-	
-	static Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
-	static Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
-	static Int_t rowdiff=0, coldiff=0;
-
-	shared = kFALSE;
-	
-	fGeom->GetCellIndex(d1->GetId(), nSupMod1,nModule1,nIphi1,nIeta1);
-	fGeom->GetCellIndex(d2->GetId(), nSupMod2,nModule2,nIphi2,nIeta2);
-	fGeom->GetCellPhiEtaIndexInSModule(nSupMod1,nModule1,nIphi1,nIeta1, iphi1,ieta1);
-	fGeom->GetCellPhiEtaIndexInSModule(nSupMod2,nModule2,nIphi2,nIeta2, iphi2,ieta2);
-	
-	//If different SM, check if they are in the same phi, then consider cells close to eta=0 as neighbours; May 2010
-	if(nSupMod1 != nSupMod2 ) 
-	  {
-	    //Check if the 2 SM are in the same PHI position (0,1), (2,3), ...
-	    Float_t smPhi1 = fGeom->GetEMCGeometry()->GetPhiCenterOfSM(nSupMod1);
-	    Float_t smPhi2 = fGeom->GetEMCGeometry()->GetPhiCenterOfSM(nSupMod2);
-	    
-	    if(!TMath::AreEqualAbs(smPhi1, smPhi2, 1e-3)) return 2; //Not phi rack equal, not neighbours
-	    
-	    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
-	    // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
-	    if(nSupMod1%2) ieta1+=AliEMCALGeoParams::fgkEMCALCols;
-	    else           ieta2+=AliEMCALGeoParams::fgkEMCALCols;
-	    
-	    shared = kTRUE; // maybe a shared cluster, we know this later, set it for the moment.
-	    
-	}//Different SM, same phi
-	
-	rowdiff = TMath::Abs(iphi1 - iphi2);  
-	coldiff = TMath::Abs(ieta1 - ieta2) ;  
-
-	// neighbours +-1 in col and row
-	if ( TMath::Abs(coldiff) < 2 && TMath::Abs(rowdiff) < 2)
-	  {
-	    
-	    AliDebug(9, Form("AliEMCALClusterizerNxN::AreNeighbours(): id1=%d, (row %d, col %d) ; id2=%d, (row %d, col %d), shared %d \n",
-			     d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2, shared));
-	    
-	    return 1;
-	  }//Neighbours
-	else 
-	  {
-	    AliDebug(9, Form("NOT AliEMCALClusterizerNxN::AreNeighbours(): id1=%d, (row %d, col %d) ; id2=%d, (row %d, col %d), shared %d \n",
-			     d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2, shared));
-	    shared = kFALSE;
-	    return 2 ; 
-	  }//Not neighbours
+  // Gives the neighbourness of two digits = 0 are not neighbour ; continue searching 
+  //                                       = 1 are neighbour
+  //                                       = 2 is in different SM; continue searching 
+  // In case it is in different SM, but same phi rack, check if neigbours at eta=0
+  // neighbours are defined as digits having at least a common side 
+  // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
+  //                                      which is compared to a digit (d2)  not yet in a cluster  
+  
+  static Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
+  static Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
+  static Int_t rowdiff=0, coldiff=0;
+  
+  shared = kFALSE;
+  
+  fGeom->GetCellIndex(d1->GetId(), nSupMod1,nModule1,nIphi1,nIeta1);
+  fGeom->GetCellIndex(d2->GetId(), nSupMod2,nModule2,nIphi2,nIeta2);
+  fGeom->GetCellPhiEtaIndexInSModule(nSupMod1,nModule1,nIphi1,nIeta1, iphi1,ieta1);
+  fGeom->GetCellPhiEtaIndexInSModule(nSupMod2,nModule2,nIphi2,nIeta2, iphi2,ieta2);
+  
+  //If different SM, check if they are in the same phi, then consider cells close to eta=0 as neighbours; May 2010
+  if(nSupMod1 != nSupMod2 ) 
+    {
+      //Check if the 2 SM are in the same PHI position (0,1), (2,3), ...
+      Float_t smPhi1 = fGeom->GetEMCGeometry()->GetPhiCenterOfSM(nSupMod1);
+      Float_t smPhi2 = fGeom->GetEMCGeometry()->GetPhiCenterOfSM(nSupMod2);
+      
+      if(!TMath::AreEqualAbs(smPhi1, smPhi2, 1e-3)) return 2; //Not phi rack equal, not neighbours
+      
+      // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
+      // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
+      if(nSupMod1%2) ieta1+=AliEMCALGeoParams::fgkEMCALCols;
+      else           ieta2+=AliEMCALGeoParams::fgkEMCALCols;
+      
+      shared = kTRUE; // maybe a shared cluster, we know this later, set it for the moment.
+      
+    }//Different SM, same phi
+  
+  rowdiff = TMath::Abs(iphi1 - iphi2);  
+  coldiff = TMath::Abs(ieta1 - ieta2) ;  
+  
+  // neighbours +-1 in col and row
+  if ( TMath::Abs(coldiff) < 2 && TMath::Abs(rowdiff) < 2)
+    {
+      
+      AliDebug(9, Form("AliEMCALClusterizerNxN::AreNeighbours(): id1=%d, (row %d, col %d) ; id2=%d, (row %d, col %d), shared %d \n",
+		       d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2, shared));
+      
+      return 1;
+    }//Neighbours
+  else 
+    {
+      AliDebug(9, Form("NOT AliEMCALClusterizerNxN::AreNeighbours(): id1=%d, (row %d, col %d) ; id2=%d, (row %d, col %d), shared %d \n",
+		       d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2, shared));
+      shared = kFALSE;
+      return 2 ; 
+    }//Not neighbours
 }
 
 //____________________________________________________________________________

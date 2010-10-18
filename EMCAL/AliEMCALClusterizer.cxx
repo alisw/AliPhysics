@@ -133,10 +133,10 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry, AliEMCALCal
   fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),
   fClusterUnfolding(NULL)
 {
-	// ctor, geometry and calibration are initialized elsewhere.
-	
-	if (!fGeom)
-		AliFatal("Geometry not initialized.");
+  // ctor, geometry and calibration are initialized elsewhere.
+  
+  if (!fGeom)
+    AliFatal("Geometry not initialized.");
   
   Int_t i=0;
   for (i = 0; i < 8; i++)
@@ -250,26 +250,26 @@ void AliEMCALClusterizer::GetCalibrationParameters()
 //____________________________________________________________________________
 void AliEMCALClusterizer::GetCaloCalibPedestal() 
 {
-	// Set calibration parameters:
-	// if calibration database exists, they are read from database,
-	// otherwise, they are taken from digitizer.
-	//
-	// It is a user responsilibity to open CDB before reconstruction, 
-	// for example: 
-	// AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
-	
-	//Check if calibration is stored in data base
-	
-	if(!fCaloPed)
-  {
-		AliCDBEntry *entry = (AliCDBEntry*) 
-		AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
-		if (entry) fCaloPed =  (AliCaloCalibPedestal*) entry->GetObject();
-  }
-	
-	if(!fCaloPed)
-		AliFatal("Pedestal info not found in CDB!");
-	
+  // Set calibration parameters:
+  // if calibration database exists, they are read from database,
+  // otherwise, they are taken from digitizer.
+  //
+  // It is a user responsilibity to open CDB before reconstruction, 
+  // for example: 
+  // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
+  
+  //Check if calibration is stored in data base
+  
+  if(!fCaloPed)
+    {
+      AliCDBEntry *entry = (AliCDBEntry*) 
+	AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+      if (entry) fCaloPed =  (AliCaloCalibPedestal*) entry->GetObject();
+    }
+  
+  if(!fCaloPed)
+    AliFatal("Pedestal info not found in CDB!");
+  
 }
 
 //____________________________________________________________________________
@@ -346,7 +346,7 @@ void AliEMCALClusterizer::InitParameters()
     }
     for (i = 0; i < 3; i++) {
       AliDebug(1,Form("unfolding parameter 5: fPar5=%f \n",fPar5[i]));
-      AliDebug(1,Form("unfolding parameter 6: fPar5=%f \n",fPar6[i]));
+      AliDebug(1,Form("unfolding parameter 6: fPar6=%f \n",fPar6[i]));
     }
     
   }
@@ -373,8 +373,19 @@ void AliEMCALClusterizer::Print(Option_t * /*option*/)const
     printf("Clusterizing digits: "); 
     printf("\n                       ECA Local Maximum cut    = %f", fECALocMaxCut); 
     printf("\n                       ECA Logarithmic weight   = %f", fECAW0); 
-    if(fToUnfold)
+    if(fToUnfold){
       printf("\nUnfolding on\n");
+      printf("Unfolding parameters: fSSpars: \n");
+      Int_t i=0;
+      for (i = 0; i < 8; i++) {
+        printf("fSSPars[%d] = %f \n", i, fSSPars[i]);
+      }
+      printf("Unfolding parameter 5 and 6: fPar5 and fPar6: \n");
+      for (i = 0; i < 3; i++) {
+        printf("fPar5[%d] = %f \n", i, fPar5[i]);
+        printf("fPar6[%d] = %f \n", i, fPar6[i]);
+      }
+    }
     else
       printf("\nUnfolding off\n");
     
