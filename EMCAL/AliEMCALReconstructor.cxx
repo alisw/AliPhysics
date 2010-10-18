@@ -113,7 +113,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fPedestalData)
     {
       AliCDBEntry *entry = (AliCDBEntry*) 
-	AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+      AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
       if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
     }
   
@@ -145,8 +145,10 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   // dtor
 
   if(fGeom)              delete fGeom;
-  if(fCalibData)         delete fCalibData;
-  if(fPedestalData)      delete fPedestalData;
+  
+  //No need to delete, recovered from OCDB
+  //if(fCalibData)         delete fCalibData;
+  //if(fPedestalData)      delete fPedestalData;
   
   if(fgDigitsArr){
     fgDigitsArr->Clear("C");
