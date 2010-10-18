@@ -293,6 +293,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   
   // output list
   fListHist = new TList();
+  fListHist->SetOwner();
   if(fHisto2d) {  
     fListHist->Add(fTRDCalibraFillHisto->GetCH2d());
     fListHist->Add(fTRDCalibraFillHisto->GetPH2d()); 

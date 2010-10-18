@@ -117,6 +117,10 @@ AliTRDCalibraVdriftLinearFit::~AliTRDCalibraVdriftLinearFit() /*FOLD00*/
   //
   // destructor
   //
+  fLinearFitterHistoArray.SetOwner();
+  fLinearFitterPArray.SetOwner();
+  fLinearFitterEArray.SetOwner();
+
   fLinearFitterHistoArray.Delete();
   fLinearFitterPArray.Delete();
   fLinearFitterEArray.Delete();
