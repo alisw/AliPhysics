@@ -179,7 +179,7 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
   TString skipObjects=
     // "AliESDRun,"
     // "AliESDHeader,"
-    "AliESDZDC,"
+    // "AliESDZDC,"
     "AliESDFMD,"
     // "AliESDVZERO,"
     // "AliESDTZERO,"
@@ -703,6 +703,23 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     } else {
       ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZERO",
 		       DataType2Text(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO).c_str());
+    }
+  }
+
+  // FIXME: the size of all input blocks can be added in one loop
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeESDContent|kAliHLTDataOriginZDC);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    fBenchmark.AddInput(pBlock->fSize);
+  }
+  for ( const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginZDC); 
+	pObject != NULL; pObject = GetNextInputObject() ) {
+    AliESDZDC *esdZDC = dynamic_cast<AliESDZDC*>(const_cast<TObject*>( pObject ) );
+    if (esdZDC) {
+      pESD->SetZDCData( esdZDC );
+      break;
+    } else {
+      ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDZDC",
+		       DataType2Text(kAliHLTDataTypeESDContent|kAliHLTDataOriginZDC).c_str());
     }
   }
 
