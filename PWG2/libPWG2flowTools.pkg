@@ -1,0 +1,20 @@
+#-*- Mode: Makefile -*-
+
+SRCS= FLOW/AliFlowTools/glauberMC/AliGlauberMC.cxx \
+      FLOW/AliFlowTools/glauberMC/AliGlauberNucleus.cxx \
+      FLOW/AliFlowTools/glauberMC/AliGlauberNucleon.cxx 
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=PWG2flowToolsLinkDef.h
+
+EXPORT:=
+
+EINCLUDE:= PWG2/FLOW/AliFlowCommon PWG2/FLOW/AliFlowTasks PWG2/FLOW/AliFlowTools/glauberMC 
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lPWG2AOD -lANALYSIS -lANALYSISalice \
+                         -lCORRFW \
+                         -L$(ROOTLIBDIR) -lEG
+endif
