@@ -83,10 +83,24 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistBeforeEvSel; //! histo with pt distribution before my event selection
   TH1F *fHistAfterEvSel; //! histo with pt distribution after my event selection
   
-  TH1F *fHistMCpos[3]; //! histo with spectra from the MC truth (positive)
-  TH1F *fHistMCneg[3]; //! histo with spectra from the MC truth (negative)
-  TH1F *fHistMCposBefEvSel[3]; //! histo with spectra from the MC truth (positive)
-  TH1F *fHistMCnegBefEvSel[3]; //! histo with spectra from the MC truth (negative)
+  TH1F *fHistPrimMCpos[3]; //! histo with spectra of primaries from the MC truth (positive)
+  TH1F *fHistPrimMCneg[3]; //! histo with spectra of primaries from the MC truth (negative)
+  TH1F *fHistSecStrMCpos[3]; //! histo with spectra of strange decays from the MC truth (positive)
+  TH1F *fHistSecStrMCneg[3]; //! histo with spectra of strange decays from the MC truth (negative)
+  TH1F *fHistSecMatMCpos[3]; //! histo with spectra of sec. from material from the MC truth (positive)
+  TH1F *fHistSecMatMCneg[3]; //! histo with spectra of sec. from material from the MC truth (negative)
+  TH1F *fHistPrimMCposBefEvSel[3]; //! histo with spectra of primaries from the MC truth (positive)
+  TH1F *fHistPrimMCnegBefEvSel[3]; //! histo with spectra of primaries from the MC truth (negative)
+  TH1F *fHistSecStrMCposBefEvSel[3]; //! histo with spectra of strange decays from the MC truth (positive)
+  TH1F *fHistSecStrMCnegBefEvSel[3]; //! histo with spectra of strange decays from the MC truth (negative)
+  TH1F *fHistSecMatMCposBefEvSel[3]; //! histo with spectra of sec. from material from the MC truth (positive)
+  TH1F *fHistSecMatMCnegBefEvSel[3]; //! histo with spectra of sec. from material from the MC truth (negative)
+  TH1F *fHistPrimMCposReco[3]; //! histo with spectra of primaries from the MC truth (positive)
+  TH1F *fHistPrimMCnegReco[3]; //! histo with spectra of primaries from the MC truth (negative)
+  TH1F *fHistSecStrMCposReco[3]; //! histo with spectra of strange decays from the MC truth (positive)
+  TH1F *fHistSecStrMCnegReco[3]; //! histo with spectra of strange decays from the MC truth (negative)
+  TH1F *fHistSecMatMCposReco[3]; //! histo with spectra of sec. from material from the MC truth (positive)
+  TH1F *fHistSecMatMCnegReco[3]; //! histo with spectra of sec. from material from the MC truth (negative)
   
   TH1F *fHistCharge[4]; //! histo with charge distribution to check the calibration 
   
@@ -103,7 +117,28 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistDCANegPi[kNbins]; //! histo with DCA distibution in the pions hypotesis (negative)
   TH1F *fHistDCANegK[kNbins]; //! histo with DCA distibution in the kaons hypotesis (negative)
   TH1F *fHistDCANegP[kNbins]; //! histo with DCA distibution in the protons hypotesis (negative)
-  		
+  
+  TH1F *fHistMCPrimDCAPosPi[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCPrimDCAPosK[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCPrimDCAPosP[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCPrimDCANegPi[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCPrimDCANegK[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCPrimDCANegP[kNbins]; //! histo with DCA distibution, MC truth
+  
+  TH1F *fHistMCSecStDCAPosPi[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecStDCAPosK[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecStDCAPosP[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecStDCANegPi[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecStDCANegK[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecStDCANegP[kNbins]; //! histo with DCA distibution, MC truth
+  
+  TH1F *fHistMCSecMatDCAPosPi[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecMatDCAPosK[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecMatDCAPosP[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecMatDCANegPi[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecMatDCANegK[kNbins]; //! histo with DCA distibution, MC truth 
+  TH1F *fHistMCSecMatDCANegP[kNbins]; //! histo with DCA distibution, MC truth
+ 
   TH1F *fHistMCPosPi[kNbins]; //! histo with dedx using the MC truth in the pions hypotesis (positive)
   TH1F *fHistMCPosK[kNbins]; //! histo with dedx  using the MC truth in the kaons hypotesis (positive)
   TH1F *fHistMCPosP[kNbins]; //! histo with dedx  using the MC truth in the protons hypotesis (positive)
@@ -111,10 +146,21 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistMCNegK[kNbins]; //! histo with dedx  using the MC truth in the kaons hypotesis (negative)
   TH1F *fHistMCNegP[kNbins]; //! histo with dedx  using the MC truth in the protons hypotesis (negative)
   
+  TH1F *fHistPosNSigmaMean[3];       //! NSigma histos for 6 species
+  TH1F *fHistPosNSigmaMCMean[3];       //! NSigma histos for 6 species
+  TH1F *fHistPosNSigmaPrimMean[3];   //! NSigma histos for 6 species
+  TH1F *fHistPosNSigmaPrimMCMean[3]; //! NSigma histos for 6 species
+  TH1F *fHistNegNSigmaMean[3];       //! NSigma histos for 6 species
+  TH1F *fHistNegNSigmaMCMean[3];       //! NSigma histos for 6 species
+  TH1F *fHistNegNSigmaPrimMean[3];   //! NSigma histos for 6 species
+  TH1F *fHistNegNSigmaPrimMCMean[3]; //! NSigma histos for 6 species
+
   TH1F *fHistPosNSigma[3];       //! NSigma histos for 6 species
+  TH1F *fHistPosNSigmaMC[3];       //! NSigma histos for 6 species
   TH1F *fHistPosNSigmaPrim[3];   //! NSigma histos for 6 species
   TH1F *fHistPosNSigmaPrimMC[3]; //! NSigma histos for 6 species
   TH1F *fHistNegNSigma[3];       //! NSigma histos for 6 species
+  TH1F *fHistNegNSigmaMC[3];       //! NSigma histos for 6 species
   TH1F *fHistNegNSigmaPrim[3];   //! NSigma histos for 6 species
   TH1F *fHistNegNSigmaPrimMC[3]; //! NSigma histos for 6 species
 
