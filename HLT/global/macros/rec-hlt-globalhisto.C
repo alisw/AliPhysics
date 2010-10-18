@@ -63,7 +63,10 @@ void rec_hlt_globalhisto(const char *filename,
 				  "-histogram VertexX    -size 1000 -expression vertexX     "
 				  "-histogram VertexY    -size 1000 -expression vertexY     "
 				  "-histogram VertexZ    -size 1000 -expression vertexZ     "
-				  //"-histogram TrackStatus -size 1000 -expression Track_statusFlag -cut &kTPCin "
+				  "-histogram DCAr       -size 1000 -expression Track_DCAr  "
+				  "-histogram DCAz       -size 1000 -expression Track_DCAz  "
+				  "-histogram dEdx_vs_p  -size 1000 -expression Track_dEdx:Track_p  "
+				  //"-histogram TrackStatus -size 1000 -expression Track_status -cut &kTPCin "
 				  );
   AliHLTConfiguration writer("writer", "ROOTFileWriter", "globalhisto", "-datafile histo.root -overwrite -concatenate-events");
 
