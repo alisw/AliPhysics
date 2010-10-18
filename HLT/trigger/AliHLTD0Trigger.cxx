@@ -246,8 +246,8 @@ int AliHLTD0Trigger::DoDeinit()
   // see header file for class documentation
   if(fd0calc){delete fd0calc; fd0calc = NULL;}  
   if(fD0mass){delete fD0mass; fD0mass = NULL;}
-  if(fD0pt){delete fD0pt; fD0pt=NULL}
-  if(ftwoTrackArray){delete ftwoTrackArray; ftwoTrackArray=NULL}
+  if(fD0pt){delete fD0pt; fD0pt=NULL;}
+  if(ftwoTrackArray){delete ftwoTrackArray; ftwoTrackArray=NULL;}
   
   return 0;
 }
