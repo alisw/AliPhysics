@@ -42,7 +42,6 @@
 #include "AliHLTD0Trigger.h"
 #include "AliHLTTriggerITSMultiplicity.h"
 #include "AliHLTTriggerBarrelGeomMultiplicity.h"
-#include "AliHLTTriggerBarrelCosmic.h"
 #include "AliHLTGlobalTriggerComponent.h"
 #include "AliHLTTriggerPhosClusterEnergy.h"
 #include "AliHLTTriggerEmcalClusterEnergy.h"
@@ -85,7 +84,6 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   pHandler->AddComponent(new AliHLTTriggerITSMultiplicity);
   pHandler->AddComponent(new AliHLTD0Trigger);
   pHandler->AddComponent(new AliHLTTriggerBarrelGeomMultiplicity);
-  pHandler->AddComponent(new AliHLTTriggerBarrelCosmic);
   pHandler->AddComponent(new AliHLTTriggerPhosClusterEnergy); 
   pHandler->AddComponent(new AliHLTTriggerEmcalClusterEnergy); 
   pHandler->AddComponent(new AliHLTTriggerPhosMip); 

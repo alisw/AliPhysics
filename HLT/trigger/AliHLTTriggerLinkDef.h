@@ -13,7 +13,6 @@
 #pragma link C++ class AliHLTD0toKpi+;
 #pragma link C++ class AliHLTTriggerITSMultiplicity+;
 #pragma link C++ class AliHLTTriggerBarrelGeomMultiplicity+;
-#pragma link C++ class AliHLTTriggerBarrelCosmic+;
 #pragma link C++ class AliHLTTriggerAgent+;
 #pragma link C++ class AliHLTEventSummary+;
 #pragma link C++ class AliHLTEventSummaryProducerComponent+;
