@@ -76,11 +76,11 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
     "Track_p "
     "Track_theta "
     "Track_Nclusters "
-    "Track_statusFlag "
+    "Track_status "
     "Track_charge "
-    //"Track_dca "
-    //"Track_dcar "
-    //"Track_dcaz "
+    "Track_DCAr "
+    "Track_DCAz "
+    "Track_dEdx "
   };
   
   int maxTrackCount=20000; // FIXME: make configurable
@@ -140,15 +140,20 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
     AliESDtrack *esdTrack = esd->GetTrack(i);
     if (!esdTrack) continue;
     
+    Float_t DCAr, DCAz = -99;
+    esdTrack->GetImpactParametersTPC(DCAr, DCAz);
+    
     fTrackVariables.Fill("Track_pt"        , esdTrack->Pt()                      );
     fTrackVariables.Fill("Track_phi"       , esdTrack->Phi()*TMath::RadToDeg()   );
     fTrackVariables.Fill("Track_eta"       , esdTrack->Theta()                   );
     fTrackVariables.Fill("Track_p"         , esdTrack->P()                       );
     fTrackVariables.Fill("Track_theta"     , esdTrack->Theta()*TMath::RadToDeg() );
     fTrackVariables.Fill("Track_Nclusters" , esdTrack->GetTPCNcls()              );
-    fTrackVariables.Fill("Track_statusFlag", esdTrack->GetStatus()               );
+    fTrackVariables.Fill("Track_status"    , esdTrack->GetStatus()               );
     fTrackVariables.Fill("Track_charge"    , esdTrack->Charge()                  );
-   
+    fTrackVariables.Fill("Track_DCAr"      , DCAr                        	 );
+    fTrackVariables.Fill("Track_DCAz"      , DCAz                                );   
+    fTrackVariables.Fill("Track_dEdx"      , esdTrack->GetTPCsignal()            );   
    }
   HLTInfo("added parameters for %d tracks", fNofTracks);
 
