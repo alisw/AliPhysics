@@ -22,6 +22,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 /*
+   Modified by adecaro on 18/10/2010
+   - fTOFRawStream object set as private member
+ 
     Modified by fbellini on 13/09/2010
   - Set TLines as private members
   - Set image flag for expert histos
@@ -81,12 +84,12 @@ ClassImp(AliTOFQADataMakerRec)
   AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kTOF), "TOF Quality Assurance Data Maker"),
   fCalibData(0x0),
   fEnableNoiseFiltering(kFALSE),
-    fEnableDqmShifterOpt(kFALSE),
-    fProcessedRawEventN(0),
-    fLineExpTimeMin(0x0),
-    fLineExpTimeMax(0x0),
-    fLineExpTotMin(0x0),
-    fLineExpTotMax(0x0),
+  fEnableDqmShifterOpt(kFALSE),
+  fProcessedRawEventN(0),
+  fLineExpTimeMin(new TLine(200., 0., 200., 0.)),
+  fLineExpTimeMax(new TLine(250., 0., 250., 0.)),
+  fLineExpTotMin(new TLine(5., 0., 5., 0.)),
+  fLineExpTotMax(new TLine(20., 0., 20., 0.)),
   fTOFRawStream(AliTOFRawStream())
 {
   //
@@ -94,8 +97,10 @@ ClassImp(AliTOFQADataMakerRec)
   //
    
   for (Int_t sm=0;sm<10;sm++){
-      fLineSMid035[sm]=0x0;
-      fLineSMid3671[sm]=0x0;
+      fLineSMid035[sm] = new TLine( 40*sm, 0., 40*sm, 0.);
+      fLineSMid3671[sm] = new TLine( 40*sm+360, 0., 40*sm+360, 0.);
+      //fLineSMid035[sm]=0x0;
+      //fLineSMid3671[sm]=0x0;
   }
     
 }
@@ -141,6 +146,15 @@ AliTOFQADataMakerRec::~AliTOFQADataMakerRec()
 {
 
   fTOFRawStream.Clear();
+
+  delete fLineExpTimeMin;
+  delete fLineExpTimeMax;
+  delete fLineExpTotMin;
+  delete fLineExpTotMax;
+  for (Int_t sm=0;sm<10;sm++){
+    delete fLineSMid035[sm];
+    delete fLineSMid3671[sm];
+  }
 
 }
 //----------------------------------------------------------------------------
@@ -244,6 +258,41 @@ void AliTOFQADataMakerRec::InitRaws()
   h23->Sumw2() ;
   h24->Sumw2() ;
 
+  //add lines for DQM shifter
+  //fLineExpTimeMin = new TLine(200., 0., 200., 0.);
+  fLineExpTimeMin->SetLineColor(kGreen);
+  fLineExpTimeMin->SetLineWidth(2);
+  
+  //fLineExpTimeMax = new TLine(250., 0., 250., 0.);
+  fLineExpTimeMax->SetLineColor(kGreen);
+  fLineExpTimeMax->SetLineWidth(2);
+  
+  //fLineExpTotMin = new TLine( 5., 0., 5., 0.);
+  fLineExpTotMin->SetLineColor(kGreen);
+  fLineExpTotMin->SetLineWidth(2);
+  
+  //fLineExpTotMax = new TLine(20., 0., 20., 0.);
+  fLineExpTotMax->SetLineColor(kGreen);
+  fLineExpTotMax->SetLineWidth(2);
+  
+  h5->GetListOfFunctions()->Add(fLineExpTimeMin);
+  h5->GetListOfFunctions()->Add(fLineExpTimeMax);
+  h10->GetListOfFunctions()->Add(fLineExpTotMin);
+  h10->GetListOfFunctions()->Add(fLineExpTotMax);
+  
+  for (Int_t sm=0;sm<10;sm++){
+    //fLineSMid035[sm] = new TLine( 40*sm, 0., 40*sm, 0.);
+    fLineSMid035[sm]->SetLineColor(kMagenta);
+    fLineSMid035[sm]->SetLineWidth(2);
+    h16->GetListOfFunctions()->Add(fLineSMid035[sm]);
+    //GetRawsData(16)->GetListOfFunctions()->Add(fLineSMid035[sm]);
+    //fLineSMid3671[sm] = new TLine( 40*sm+360, 0., 40*sm+360, 0.);
+    fLineSMid3671[sm]->SetLineColor(kMagenta);
+    fLineSMid3671[sm]->SetLineWidth(2);
+    //GetRawsData(17)->GetListOfFunctions()->Add(fLineSMid3671[sm]);
+    h17->GetListOfFunctions()->Add(fLineSMid3671[sm]);
+  }
+
   Add2RawsList(h0,   0, !expert,  image, !saveCorr) ;
   Add2RawsList(h1,   1,  expert,  image, !saveCorr) ;
   Add2RawsList(h2,   2,  expert,  image, !saveCorr) ;
@@ -270,39 +319,6 @@ void AliTOFQADataMakerRec::InitRaws()
   Add2RawsList(h23, 23,  expert, !image, !saveCorr) ;
   Add2RawsList(h24, 24,  expert, !image, !saveCorr) ;
 
-  //add lines for DQM shifter
-  fLineExpTimeMin = new TLine(200., 0., 200., 0.);
-  fLineExpTimeMin->SetLineColor(kGreen);
-  fLineExpTimeMin->SetLineWidth(2);
-  
-  fLineExpTimeMax = new TLine(250., 0., 250., 0.);
-  fLineExpTimeMax->SetLineColor(kGreen);
-  fLineExpTimeMax->SetLineWidth(2);
-  
-  fLineExpTotMin = new TLine( 5., 0., 5., 0.);
-  fLineExpTotMin->SetLineColor(kGreen);
-  fLineExpTotMin->SetLineWidth(2);
-  
-  fLineExpTotMax = new TLine(20., 0., 20., 0.);
-  fLineExpTotMax->SetLineColor(kGreen);
-  fLineExpTotMax->SetLineWidth(2);
-  
-  h5->GetListOfFunctions()->Add(fLineExpTimeMin);
-  h5->GetListOfFunctions()->Add(fLineExpTimeMax);
-  h10->GetListOfFunctions()->Add(fLineExpTotMin);
-  h10->GetListOfFunctions()->Add(fLineExpTotMax);
-  
-  for (Int_t sm=0;sm<10;sm++){
-      fLineSMid035[sm] = new TLine( 40*sm, 0, 40*sm, 0.);
-      fLineSMid035[sm]->SetLineColor(kMagenta);
-      fLineSMid035[sm]->SetLineWidth(2);
-      GetRawsData(16)->GetListOfFunctions()->Add(fLineSMid035[sm]);
-      fLineSMid3671[sm] = new TLine( 40*sm+360, 0, 40*sm+360, 0.);
-      fLineSMid3671[sm]->SetLineColor(kMagenta);
-      fLineSMid3671[sm]->SetLineWidth(2);
-      GetRawsData(17)->GetListOfFunctions()->Add(fLineSMid3671[sm]);
-  }
-  
 }
 
 //____________________________________________________________________________ 
@@ -382,6 +398,7 @@ void AliTOFQADataMakerRec::InitRecPoints()
   Add2RecPointsList(h17, 17,  expert, !image) ;
   Add2RecPointsList(h18, 18,  expert, !image) ;
   Add2RecPointsList(h19, 19,  expert, !image) ;
+
 }
 
 //____________________________________________________________________________ 
@@ -428,6 +445,7 @@ void AliTOFQADataMakerRec::InitESDs()
   Add2ESDsList(h8, 8,  expert,  image) ; 
   Add2ESDsList(h9, 9, !expert,  image) ;
   Add2ESDsList(h10, 10, !expert,  image) ;
+
 }
 
 
@@ -475,12 +493,12 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		    equipmentID[4]=tofRawDatum->GetTDCchannel();
 		    
 		    if (CheckEquipID(equipmentID)){
-			fTOFRawStream.EquipmentId2VolumeId(iDDL, 
-							   tofRawDatum->GetTRM(), 
-							   tofRawDatum->GetTRMchain(),
-							   tofRawDatum->GetTDC(), 
-							   tofRawDatum->GetTDCchannel(), 
-							   volumeID);
+		      fTOFRawStream.EquipmentId2VolumeId(iDDL, 
+							 tofRawDatum->GetTRM(), 
+							 tofRawDatum->GetTRMchain(),
+							 tofRawDatum->GetTDC(), 
+							 tofRawDatum->GetTDCchannel(), 
+							 volumeID);
 			if (FilterSpare(equipmentID)) continue;
 			if (FilterLTMData(equipmentID)){ //counts LTM hits
 			    if (tofRawDatum->GetTOT()) GetRawsData(15)->Fill(equipmentID[0]);
@@ -764,6 +782,12 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
+
+  TH1F * hTrmChannels035 = new TH1F("hTrmchannels035", "Active channels per TRM - crates 0 to 35;TRM index = SMid(crate*10)+TRM(0-9);Active channels",  361, 0., 361.) ;
+  TH1F * hTrmChannels3671 = new TH1F("hTrmChannels3671","Active channels per TRM - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Active channels", 361, 360., 721.) ;
+
+
+
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
 	if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
 	    continue ; 
@@ -780,9 +804,10 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    
 	    if (fCalibData){
 		//normalize TRM hits plots to the number of enabled channels from OCDB object
-		TH1F * hTrmChannels035 = new TH1F("hTrmchannels035", "Active channels per TRM - crates 0 to 35;TRM index = SMid(crate*10)+TRM(0-9);Active channels",  361, 0., 361.) ;
-		TH1F * hTrmChannels3671 = new TH1F("hTrmChannels3671","Active channels per TRM - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Active channels", 361, 360., 721.) ;
-		
+		//TH1F * hTrmChannels035 = new TH1F("hTrmchannels035", "Active channels per TRM - crates 0 to 35;TRM index = SMid(crate*10)+TRM(0-9);Active channels",  361, 0., 361.) ;
+		//TH1F * hTrmChannels3671 = new TH1F("hTrmChannels3671","Active channels per TRM - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Active channels", 361, 360., 721.) ;
+	      hTrmChannels035->Clear();
+	      hTrmChannels3671->Clear();
 		for (Int_t ch = 0; ch <  fCalibData->GetSize(); ch++) {
 		    if (!(fCalibData->GetNoiseStatus(ch)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
 			&& (fCalibData->GetHWStatus(ch) == AliTOFChannelOnlineStatusArray::kTOFHWOk)){
@@ -852,6 +877,10 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    
 	}
     }
+
+    delete hTrmChannels035;
+    delete hTrmChannels3671;
+
     AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
 }
 //____________________________________________________________________________
