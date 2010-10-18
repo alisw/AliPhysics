@@ -35,9 +35,6 @@
 #include "AliHLTDomainEntry.h"
 
 
-AliHLTTriggerPhosClusterEnergy gPhosClusterEnergyTrigger;
-
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTriggerPhosClusterEnergy)
 

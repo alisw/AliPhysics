@@ -35,9 +35,6 @@
 #include "AliHLTDomainEntry.h"
 
 
-AliHLTTriggerEmcalClusterEnergy gEmcalClusterEnergyTrigger;
-
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTriggerEmcalClusterEnergy)
 
