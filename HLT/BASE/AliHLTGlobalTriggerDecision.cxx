@@ -308,7 +308,10 @@ void AliHLTGlobalTriggerDecision::Clear(Option_t* option)
   // Clears the trigger domain and resets the decision result.
   
   AliHLTTriggerDecision::Clear(option);
-  fContributingTriggers.Clear(option);
+  // because of TClonesArray members in AliHLTTriggerDecision it is not
+  // enough to call Clear. Delete will also invoke the destructor of the
+  // elements which is necessary to do the proper internal cleanup
+  fContributingTriggers.Delete();
   DeleteInputObjects();
   fCounters.Set(0);
 }
