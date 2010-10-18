@@ -26,7 +26,6 @@ void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10,
   // Cross-check user settings before starting:
   //  CrossCheckUserSettings(DATA);
   // Load needed libraries:
-  cout << "help" << endl;
   LoadLibraries(mode);
   // Create and configure the AliEn plug-in:
   if(mode == mGrid || mode == mGridPAR) 
@@ -134,7 +133,6 @@ void LoadLibraries(const anaModes mode)
     // If you want to use already compiled libraries 
     // in the aliroot distribution
     //--------------------------------------------------------
-    cout << "loading libs" << endl;
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
     gSystem->Load("libAOD");
