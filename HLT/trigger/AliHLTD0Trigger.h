@@ -137,7 +137,7 @@ class AliHLTD0Trigger : public AliHLTTrigger
   bool fUseV0;                                             //! transient 
 
   /// D0 mass
-  Double_t mD0PDG;                                         //! transient
+  Double_t fD0PDG;                                         //! transient
 
   /// D0 inv. mass plot
   TH1F *fD0mass;                                           //! transient  

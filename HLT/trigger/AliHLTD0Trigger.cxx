@@ -60,7 +60,7 @@ AliHLTD0Trigger::AliHLTD0Trigger()
   , fcosPoint(0.0)
   , fplothisto(false)
   , fUseV0(false)
-  , mD0PDG(TDatabasePDG::Instance()->GetParticle(421)->Mass())
+  , fD0PDG(TDatabasePDG::Instance()->GetParticle(421)->Mass())
   , fD0mass(NULL)
   , fD0pt(NULL)
   , fPos()
@@ -246,6 +246,8 @@ int AliHLTD0Trigger::DoDeinit()
   // see header file for class documentation
   if(fd0calc){delete fd0calc; fd0calc = NULL;}  
   if(fD0mass){delete fD0mass; fD0mass = NULL;}
+  if(fD0pt){delete fD0pt; fD0pt=NULL}
+  if(ftwoTrackArray){delete ftwoTrackArray; ftwoTrackArray=NULL}
   
   return 0;
 }
@@ -413,9 +415,9 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const A
       pdg2[0]=211; pdg2[1]=321; pdg2bar[0]=321; pdg2bar[1]=211;
       minv = rd->InvMass(nprongs,pdg2);
       minvbar = rd->InvMass(nprongs,pdg2bar);
-      if(TMath::Abs(minv-mD0PDG)>finvMass && TMath::Abs(minv-mD0PDG)>finvMass) {continue; delete vertexp1n1; delete rd;}
+      if(TMath::Abs(minv-fD0PDG)>finvMass && TMath::Abs(minv-fD0PDG)>finvMass) {continue; delete vertexp1n1; delete rd;}
       */
-      if((TMath::Abs(fd0calc->InvMass(tN,tP)-mD0PDG)) > finvMass && TMath::Abs((fd0calc->InvMass(tP,tN))-mD0PDG) > finvMass){continue;}
+      if((TMath::Abs(fd0calc->InvMass(tN,tP)-fD0PDG)) > finvMass && TMath::Abs((fd0calc->InvMass(tP,tN))-fD0PDG) > finvMass){continue;}
       fd0calc->cosThetaStar(tN,tP,D0,D0bar);
       if(TMath::Abs(D0) > fcosThetaStar && TMath::Abs(D0bar) > fcosThetaStar){continue;}
       d0[0] = tP->GetD(pvpos[0],pvpos[1],fField);
@@ -430,7 +432,7 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const A
 	fD0mass->Fill(fd0calc->InvMass(tP,tN));
 	fD0pt->Fill(fd0calc->Pt(tP,tN));
 	/*
-	if((fd0calc->InvMass(tN,tP) - mD0PDG) > finvMass){
+	if((fd0calc->InvMass(tN,tP) - fD0PDG) > finvMass){
 	  fD0mass->Fill(fd0calc->InvMass(tN,tP));
 	}
 	else{
@@ -447,6 +449,7 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const A
       }
 
       nD0++;
+      vertexp1n1->RemoveCovMatrix();
       delete vertexp1n1;
     }
   }
@@ -489,14 +492,14 @@ Int_t AliHLTD0Trigger::RecV0(const TObject* iter){
       Double_t tmp1, tmp2;
       if(tN->GetDCA(tP,field,tmp1,tmp2) > fdca){continue;}
       
-      if((fd0calc->InvMass(tN,tP) - mD0PDG) > finvMass && (fd0calc->InvMass(tP,tN) - mD0PDG) > finvMass){continue;}
+      if((fd0calc->InvMass(tN,tP) - fD0PDG) > finvMass && (fd0calc->InvMass(tP,tN) - fD0PDG) > finvMass){continue;}
       fd0calc->cosThetaStar(tN,tP,D0,D0bar);
       if(D0 > fcosThetaStar && D0bar > fcosThetaStar){continue;}
       if((d0[0]*d0[1]) > fd0d0){continue;}
       if(fd0calc->pointingAngle(tN,tP,pvpos,svpos) < fcosPoint){continue;}
       
       nD0++;
-      if((fd0calc->InvMass(tN,tP) - mD0PDG) > finvMass){
+      if((fd0calc->InvMass(tN,tP) - fD0PDG) > finvMass){
 	fD0mass->Fill(fd0calc->InvMass(tN,tP));
       }
       else{
