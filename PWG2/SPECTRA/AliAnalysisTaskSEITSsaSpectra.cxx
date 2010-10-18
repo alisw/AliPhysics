@@ -178,11 +178,13 @@ Double_t AliAnalysisTaskSEITSsaSpectra::BetheBloch(Double_t bg,Bool_t optMC) con
   // BB PHOBOS parametrization tuned by G. Ortona on 900 GeV pp data of 2009
   Double_t par[5];
   if(optMC){//Double_t par[5]={139.1,23.36,0.06052,0.2043,-0.0004999};
-    par[0]=139.1;
-    par[1]=23.36;
-    par[2]=0.06052;
-    par[3]=0.2043;
-    par[4]=-0.0004999; 
+    
+    par[0]=-2.48;   //new parameter from LHC10d2
+    par[1]=23.13;
+    par[2]=1.161;
+    par[3]=0.93;
+    par[4]=-1.2973;
+    
   }else {
     //Double_t par[5]={5.33458e+04,1.65303e+01,2.60065e-03,3.59533e-04,7.51168e-05};}
   par[0]=5.33458e+04;
@@ -247,18 +249,45 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
   
   
   for(Int_t j=0;j<3;j++){
-    fHistMCpos[j] = new TH1F(Form("fHistMCpos%d",j),Form("fHistMCpos%d",j),kNbins,fPtBinLimits);
-    fHistMCneg[j] = new TH1F(Form("fHistMCneg%d",j),Form("fHistMCneg%d",j),kNbins,fPtBinLimits);
-    fOutput->Add(fHistMCneg[j]);
-		fOutput->Add(fHistMCpos[j]);
-  }
-  
+    fHistPrimMCpos[j] = new TH1F(Form("fHistPrimMCpos%d",j),Form("fHistPrimMCpos%d",j),kNbins,fPtBinLimits);
+    fHistPrimMCneg[j] = new TH1F(Form("fHistPrimMCneg%d",j),Form("fHistPrimMCneg%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistPrimMCneg[j]);
+    fOutput->Add(fHistPrimMCpos[j]);
+    fHistSecStrMCpos[j] = new TH1F(Form("fHistSecStrMCpos%d",j),Form("fHistSecStrMCpos%d",j),kNbins,fPtBinLimits);
+    fHistSecStrMCneg[j] = new TH1F(Form("fHistSecStrMCneg%d",j),Form("fHistSecStrMCneg%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistSecStrMCneg[j]);
+    fOutput->Add(fHistSecStrMCpos[j]);
+    fHistSecMatMCpos[j] = new TH1F(Form("fHistSecMatMCpos%d",j),Form("fHistSecMatMCpos%d",j),kNbins,fPtBinLimits);
+    fHistSecMatMCneg[j] = new TH1F(Form("fHistSecMatMCneg%d",j),Form("fHistSecMatMCneg%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistSecMatMCneg[j]);
+    fOutput->Add(fHistSecMatMCpos[j]);
+    //
+    fHistPrimMCposBefEvSel[j] = new TH1F(Form("fHistPrimMCposBefEvSel%d",j),Form("fHistPrimMCposBefEvSel%d",j),kNbins,fPtBinLimits);
+    fHistPrimMCnegBefEvSel[j] = new TH1F(Form("fHistPrimMCnegBefEvSel%d",j),Form("fHistPrimMCnegBefEvSel%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistPrimMCnegBefEvSel[j]);
+    fOutput->Add(fHistPrimMCposBefEvSel[j]);
+    fHistSecStrMCposBefEvSel[j] = new TH1F(Form("fHistSecStrMCposBefEvSel%d",j),Form("fHistSecStrMCposBefEvSel%d",j),kNbins,fPtBinLimits);
+    fHistSecStrMCnegBefEvSel[j] = new TH1F(Form("fHistSecStrMCnegBefEvSel%d",j),Form("fHistSecStrMCnegBefEvSel%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistSecStrMCnegBefEvSel[j]);
+    fOutput->Add(fHistSecStrMCposBefEvSel[j]);
+    fHistSecMatMCposBefEvSel[j] = new TH1F(Form("fHistSecMatMCposBefEvSel%d",j),Form("fHistSecMatMCposBefEvSel%d",j),kNbins,fPtBinLimits);
+    fHistSecMatMCnegBefEvSel[j] = new TH1F(Form("fHistSecMatMCnegBefEvSel%d",j),Form("fHistSecMatMCnegBefEvSel%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistSecMatMCnegBefEvSel[j]);
+    fOutput->Add(fHistSecMatMCposBefEvSel[j]);
+    //
+    fHistPrimMCposReco[j] = new TH1F(Form("fHistPrimMCposReco%d",j),Form("fHistPrimMCposReco%d",j),kNbins,fPtBinLimits);
+    fHistPrimMCnegReco[j] = new TH1F(Form("fHistPrimMCnegReco%d",j),Form("fHistPrimMCnegReco%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistPrimMCnegReco[j]);
+    fOutput->Add(fHistPrimMCposReco[j]);
+    fHistSecStrMCposReco[j] = new TH1F(Form("fHistSecStrMCposReco%d",j),Form("fHistSecStrMCposReco%d",j),kNbins,fPtBinLimits);
+    fHistSecStrMCnegReco[j] = new TH1F(Form("fHistSecStrMCnegReco%d",j),Form("fHistSecStrMCnegReco%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistSecStrMCnegReco[j]);
+    fOutput->Add(fHistSecStrMCposReco[j]);
+    fHistSecMatMCposReco[j] = new TH1F(Form("fHistSecMatMCposReco%d",j),Form("fHistSecMatMCposReco%d",j),kNbins,fPtBinLimits);
+    fHistSecMatMCnegReco[j] = new TH1F(Form("fHistSecMatMCnegReco%d",j),Form("fHistSecMatMCnegReco%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistSecMatMCnegReco[j]);
+    fOutput->Add(fHistSecMatMCposReco[j]);
 
-  for(Int_t j=0;j<3;j++){
-    fHistMCposBefEvSel[j] = new TH1F(Form("fHistMCposBefEvSel%d",j),Form("fHistMCposBefEvSel%d",j),kNbins,fPtBinLimits);
-    fHistMCnegBefEvSel[j] = new TH1F(Form("fHistMCnegBefEvSel%d",j),Form("fHistMCnegBefEvSel%d",j),kNbins,fPtBinLimits);
-    fOutput->Add(fHistMCnegBefEvSel[j]);
-    fOutput->Add(fHistMCposBefEvSel[j]);
   }
   
   for(Int_t i=0; i<4; i++){
@@ -274,12 +303,33 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
     fHistNegK[i]  = new TH1F(Form("fHistNegK%d",i),Form("fHistNegK%d",i),175,-3.5,3.5);	
     fHistNegP[i]  = new TH1F(Form("fHistNegP%d",i),Form("fHistNegP%d",i),175,-3.5,3.5);	
     
-    fHistDCAPosPi[i] = new TH1F(Form("fHistDCAPosPi%d",i),Form("fHistDCAPosPi%d",i),2000,-1,1);  //DCA distr.	
+    fHistDCAPosPi[i] = new TH1F(Form("fHistDCAPosPi%d",i),Form("fHistDCAPosPi%d",i),2000,-1,1);  //DCA distr. with NSigma PID
     fHistDCAPosK[i]  = new TH1F(Form("fHistDCAPosK%d",i),Form("fHistDCAPosK%d",i),2000,-1,1);	
     fHistDCAPosP[i]  = new TH1F(Form("fHistDCAPosP%d",i),Form("fHistDCAPosP%d",i),2000,-1,1);	
     fHistDCANegPi[i] = new TH1F(Form("fHistDCANegPi%d",i),Form("fHistDCANegPi%d",i),2000,-1,1);	
     fHistDCANegK[i]  = new TH1F(Form("fHistDCANegK%d",i),Form("fHistDCANegK%d",i),2000,-1,1);	
     fHistDCANegP[i]  = new TH1F(Form("fHistDCANegP%d",i),Form("fHistDCANegP%d",i),2000,-1,1);	
+    
+    fHistMCPrimDCAPosPi[i] = new TH1F(Form("fHistMCPrimDCAPosPi%d",i),Form("fHistMCPrimDCAPosPi%d",i),2000,-1,1);  //DCA distr. with MC truth
+    fHistMCPrimDCAPosK[i]  = new TH1F(Form("fHistMCPrimDCAPosK%d",i),Form("fHistMCPrimDCAPosK%d",i),2000,-1,1);	
+    fHistMCPrimDCAPosP[i]  = new TH1F(Form("fHistMCPrimDCAPosP%d",i),Form("fHistMCPrimDCAPosP%d",i),2000,-1,1);	
+    fHistMCPrimDCANegPi[i] = new TH1F(Form("fHistMCPrimDCANegPi%d",i),Form("fHistMCPrimDCANegPi%d",i),2000,-1,1);	
+    fHistMCPrimDCANegK[i]  = new TH1F(Form("fHistMCPrimDCANegK%d",i),Form("fHistMCPrimDCANegK%d",i),2000,-1,1);	
+    fHistMCPrimDCANegP[i]  = new TH1F(Form("fHistMCPrimDCANegP%d",i),Form("fHistMCPrimDCANegP%d",i),2000,-1,1);	
+    
+    fHistMCSecStDCAPosPi[i] = new TH1F(Form("fHistMCSecStDCAPosPi%d",i),Form("fHistMCSecStDCAPosPi%d",i),2000,-1,1);  //DCA distr. with MC truth
+    fHistMCSecStDCAPosK[i]  = new TH1F(Form("fHistMCSecStDCAPosK%d",i),Form("fHistMCSecStDCAPosK%d",i),2000,-1,1);	
+    fHistMCSecStDCAPosP[i]  = new TH1F(Form("fHistMCSecStDCAPosP%d",i),Form("fHistMCSecStDCAPosP%d",i),2000,-1,1);	
+    fHistMCSecStDCANegPi[i] = new TH1F(Form("fHistMCSecStDCANegPi%d",i),Form("fHistMCSecStDCANegPi%d",i),2000,-1,1);	
+    fHistMCSecStDCANegK[i]  = new TH1F(Form("fHistMCSecStDCANegK%d",i),Form("fHistMCSecStDCANegK%d",i),2000,-1,1);	
+    fHistMCSecStDCANegP[i]  = new TH1F(Form("fHistMCSecStDCANegP%d",i),Form("fHistMCSecStDCANegP%d",i),2000,-1,1);	
+    
+    fHistMCSecMatDCAPosPi[i] = new TH1F(Form("fHistMCSecMatDCAPosPi%d",i),Form("fHistMCSecMatDCAPosPi%d",i),2000,-1,1);  //DCA distr. with MC truth
+    fHistMCSecMatDCAPosK[i]  = new TH1F(Form("fHistMCSecMatDCAPosK%d",i),Form("fHistMCSecMatDCAPosK%d",i),2000,-1,1);	
+    fHistMCSecMatDCAPosP[i]  = new TH1F(Form("fHistMCSecMatDCAPosP%d",i),Form("fHistMCSecMatDCAPosP%d",i),2000,-1,1);	
+    fHistMCSecMatDCANegPi[i] = new TH1F(Form("fHistMCSecMatDCANegPi%d",i),Form("fHistMCSecMatDCANegPi%d",i),2000,-1,1);	
+    fHistMCSecMatDCANegK[i]  = new TH1F(Form("fHistMCSecMatDCANegK%d",i),Form("fHistMCSecMatDCANegK%d",i),2000,-1,1);	
+    fHistMCSecMatDCANegP[i]  = new TH1F(Form("fHistMCSecMatDCANegP%d",i),Form("fHistMCSecMatDCANegP%d",i),2000,-1,1);	
     
     fHistMCPosPi[i] = new TH1F(Form("fHistMCPosPi%d",i),Form("fHistMCPosPi%d",i),175,-3.5,3.5);	//MC truth
     fHistMCPosK[i]  = new TH1F(Form("fHistMCPosK%d",i),Form("fHistMCPosK%d",i),175,-3.5,3.5);	
@@ -301,6 +351,27 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
     fOutput->Add(fHistDCANegK[i]);
     fOutput->Add(fHistDCANegP[i]);
     
+    fOutput->Add(fHistMCPrimDCAPosPi[i]);//DCA distr.
+    fOutput->Add(fHistMCPrimDCAPosK[i]);
+    fOutput->Add(fHistMCPrimDCAPosP[i]);
+    fOutput->Add(fHistMCPrimDCANegPi[i]);
+    fOutput->Add(fHistMCPrimDCANegK[i]);
+    fOutput->Add(fHistMCPrimDCANegP[i]);
+
+    fOutput->Add(fHistMCSecStDCAPosPi[i]);//DCA distr.
+    fOutput->Add(fHistMCSecStDCAPosK[i]);
+    fOutput->Add(fHistMCSecStDCAPosP[i]);
+    fOutput->Add(fHistMCSecStDCANegPi[i]);
+    fOutput->Add(fHistMCSecStDCANegK[i]);
+    fOutput->Add(fHistMCSecStDCANegP[i]);
+
+    fOutput->Add(fHistMCSecMatDCAPosPi[i]);//DCA distr.
+    fOutput->Add(fHistMCSecMatDCAPosK[i]);
+    fOutput->Add(fHistMCSecMatDCAPosP[i]);
+    fOutput->Add(fHistMCSecMatDCANegPi[i]);
+    fOutput->Add(fHistMCSecMatDCANegK[i]);
+    fOutput->Add(fHistMCSecMatDCANegP[i]);
+
     fOutput->Add(fHistMCPosPi[i]);//MC truth
     fOutput->Add(fHistMCPosK[i]);
     fOutput->Add(fHistMCPosP[i]);
@@ -311,18 +382,41 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
   
   //NSigma Histos
   for(Int_t j=0;j<3;j++){
+    
+    fHistPosNSigmaMean[j] = new TH1F(Form("hHistPosNSigmaMean%d",j),Form("hHistPosNSigmaMean%d",j),kNbins,fPtBinLimits);
+    fHistNegNSigmaMean[j] = new TH1F(Form("hHistNegNSigmaMean%d",j),Form("hHistNegNSigmaMean%d",j),kNbins,fPtBinLimits);
+    fHistPosNSigmaMCMean[j] = new TH1F(Form("hHistPosNSigmaMCMean%d",j),Form("hHistPosNSigmaMCMean%d",j),kNbins,fPtBinLimits);
+    fHistNegNSigmaMCMean[j] = new TH1F(Form("hHistNegNSigmaMCMean%d",j),Form("hHistNegNSigmaMCMean%d",j),kNbins,fPtBinLimits);
+    fHistPosNSigmaPrimMean[j] = new TH1F(Form("hHistPosNSigmaPrimMean%d",j),Form("hHistPosNSigmaPrimMean%d",j),kNbins,fPtBinLimits);
+    fHistNegNSigmaPrimMean[j] = new TH1F(Form("hHistNegNSigmaPrimMean%d",j),Form("hHistNegNSigmaPrimMean%d",j),kNbins,fPtBinLimits);
+    fHistPosNSigmaPrimMCMean[j] = new TH1F(Form("hHistPosNSigmaPrimMCMean%d",j),Form("hHistPosNSigmaPrimMCMean%d",j),kNbins,fPtBinLimits);
+    fHistNegNSigmaPrimMCMean[j] = new TH1F(Form("hHistNegNSigmaPrimMCMean%d",j),Form("hHistNegNSigmaPrimMCMean%d",j),kNbins,fPtBinLimits);
+    fOutput->Add(fHistPosNSigmaMean[j]);
+    fOutput->Add(fHistNegNSigmaMean[j]);
+    fOutput->Add(fHistPosNSigmaMCMean[j]);
+    fOutput->Add(fHistNegNSigmaMCMean[j]);
+    fOutput->Add(fHistPosNSigmaPrimMean[j]);
+    fOutput->Add(fHistNegNSigmaPrimMean[j]);
+    fOutput->Add(fHistPosNSigmaPrimMCMean[j]);
+    fOutput->Add(fHistNegNSigmaPrimMCMean[j]);
+
     fHistPosNSigma[j] = new TH1F(Form("hHistPosNSigma%d",j),Form("hHistPosNSigma%d",j),kNbins,fPtBinLimits);
     fHistNegNSigma[j] = new TH1F(Form("hHistNegNSigma%d",j),Form("hHistNegNSigma%d",j),kNbins,fPtBinLimits);
+    fHistPosNSigmaMC[j] = new TH1F(Form("hHistPosNSigmaMC%d",j),Form("hHistPosNSigmaMC%d",j),kNbins,fPtBinLimits);
+    fHistNegNSigmaMC[j] = new TH1F(Form("hHistNegNSigmaMC%d",j),Form("hHistNegNSigmaMC%d",j),kNbins,fPtBinLimits);
     fHistPosNSigmaPrim[j] = new TH1F(Form("hHistPosNSigmaPrim%d",j),Form("hHistPosNSigmaPrim%d",j),kNbins,fPtBinLimits);
     fHistNegNSigmaPrim[j] = new TH1F(Form("hHistNegNSigmaPrim%d",j),Form("hHistNegNSigmaPrim%d",j),kNbins,fPtBinLimits);
     fHistPosNSigmaPrimMC[j] = new TH1F(Form("hHistPosNSigmaPrimMC%d",j),Form("hHistPosNSigmaPrimMC%d",j),kNbins,fPtBinLimits);
     fHistNegNSigmaPrimMC[j] = new TH1F(Form("hHistNegNSigmaPrimMC%d",j),Form("hHistNegNSigmaPrimMC%d",j),kNbins,fPtBinLimits);
     fOutput->Add(fHistPosNSigma[j]);
     fOutput->Add(fHistNegNSigma[j]);
+    fOutput->Add(fHistPosNSigmaMC[j]);
+    fOutput->Add(fHistNegNSigmaMC[j]);
     fOutput->Add(fHistPosNSigmaPrim[j]);
     fOutput->Add(fHistNegNSigmaPrim[j]);
     fOutput->Add(fHistPosNSigmaPrimMC[j]);
     fOutput->Add(fHistNegNSigmaPrimMC[j]);
+
   }
   
   fNtupleNSigma = new TNtuple("fNtupleNSigma","fNtupleNSigma","p:pt:dedx:ncls:sign:run:eta:impactXY:impactZ:isph:pdgcode:mfl");
@@ -347,10 +441,11 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   //binning for the dEdx distributions
 
   //variables
-  Float_t pdgmass[3]={0.13957,0.493677,0.938272}; //mass for pi, K, P (Gev/c^2)
+  Float_t pdgmass[4]={0.13957,0.493677,0.938272,1.8756}; //mass for pi, K, P (Gev/c^2)
   Int_t listcode[3]={211,321,2212};//code for pi, K, P (Gev/c^2)
   Double_t s[4];
-  Float_t ptMC=-999,yMC=-999,code=-999, signMC=-999,isph=-999,mfl=-999.;
+  Float_t ptMC=-999,yMC=-999;
+  Int_t code=-999, signMC=-999,isph=-999,mfl=-999;
   Float_t impactXY=-999, impactZ=-999;
   Int_t evSel=1;
   AliESDtrack* track;
@@ -420,20 +515,32 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	
   for(Int_t imc=0; imc<nTrackMC; imc++){
     part = stack->Particle(imc);
-    if(!stack->IsPhysicalPrimary(imc))continue;//no secondary in the MC sample 
-    isph=1.;
+    isph=1;    
+    if(!stack->IsPhysicalPrimary(imc)) isph=0;
     pdgPart = part->GetPDG();
+    if(!pdgPart)continue;
     if(pdgPart->Charge()==0) continue; //no neutral particles
     if(TMath::Abs(part->Eta()) > 0.9) continue; //pseudorapidity-acceptance cut
     if(part->Energy() != TMath::Abs(part->Pz())) yMC = 0.5*TMath::Log((part->Energy()+part->Pz())/(part->Energy()-part->Pz()));
     if(TMath::Abs(yMC) > fMaxY) continue; //rapidity cut
-    
     if(pdgPart->Charge()>0) signMC=1;
     else signMC=-1;
     ptMC=part->Pt();
     code=pdgPart->PdgCode();
+    Int_t jpart=-1;
+    for(Int_t j=0; j<3; j++){
+      if(TMath::Abs(code)==listcode[j]){
+	jpart=j;
+	break;
+      }
+    }
+    Int_t indexMoth=part->GetFirstMother();
+    if(indexMoth>=0){
+      TParticle* moth = stack->Particle(indexMoth);
+      Float_t codemoth = TMath::Abs(moth->GetPdgCode());
+      mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+    }
     
-	  
     //filling MC ntuple
     if(TMath::Abs(code)==211 || TMath::Abs(code)==321 || TMath::Abs(code)==2212){
       Float_t xntMC[8];
@@ -446,34 +553,47 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       xntMC[indexMC++]=(Float_t)isph;
       xntMC[indexMC++]=(Float_t)evSel;
       xntMC[indexMC++]=(Float_t)fESD->GetRunNumber();
-
+      
       if(fFillNtuple) fNtupleMC->Fill(xntMC);
     }
     
-    for(Int_t j=0; j<3; j++){
-      if(TMath::Abs(code)==listcode[j]){
-	if(signMC>0) fHistMCposBefEvSel[j]->Fill(TMath::Abs(ptMC));
-	else  fHistMCnegBefEvSel[j]->Fill(TMath::Abs(ptMC));
-      }
-    }
-    if(evSel==1){
-      for(Int_t j=0; j<3; j++){
-	if(TMath::Abs(code)==listcode[j]){
-	  if(signMC>0) fHistMCpos[j]->Fill(TMath::Abs(ptMC));
-	  else  fHistMCneg[j]->Fill(TMath::Abs(ptMC));
+    if(jpart>=0){
+      if(stack->IsPhysicalPrimary(imc)){
+	if(signMC>0) fHistPrimMCposBefEvSel[jpart]->Fill(TMath::Abs(ptMC));
+	else  fHistPrimMCnegBefEvSel[jpart]->Fill(TMath::Abs(ptMC));
+	if(evSel==1){
+	  if(signMC>0) fHistPrimMCpos[jpart]->Fill(TMath::Abs(ptMC));
+	  else  fHistPrimMCneg[jpart]->Fill(TMath::Abs(ptMC));
+	}
+      }else{
+	if(mfl==3){ // strangeness
+	  if(signMC>0) fHistSecStrMCposBefEvSel[jpart]->Fill(TMath::Abs(ptMC));
+	  else  fHistSecStrMCnegBefEvSel[jpart]->Fill(TMath::Abs(ptMC));	    
+	  if(evSel==1){
+	    if(signMC>0) fHistSecStrMCpos[jpart]->Fill(TMath::Abs(ptMC));
+	    else  fHistSecStrMCneg[jpart]->Fill(TMath::Abs(ptMC));	    
+	  }
+	}else{
+	  if(signMC>0) fHistSecMatMCposBefEvSel[jpart]->Fill(TMath::Abs(ptMC));
+	  else  fHistSecMatMCnegBefEvSel[jpart]->Fill(TMath::Abs(ptMC));	    
+	  if(evSel==1){
+	    if(signMC>0) fHistSecMatMCpos[jpart]->Fill(TMath::Abs(ptMC));
+	    else  fHistSecMatMCneg[jpart]->Fill(TMath::Abs(ptMC));	    
+	  }
 	}
       }
-    }	
-  }
+    }
+  }	
   
-  if(evSel==0)return;
+  
+  if(evSel==0)return;  //event selection
 	
   //loop on tracks
   for (Int_t iTrack=0; iTrack<fESD->GetNumberOfTracks(); iTrack++) {  
-    isph=-999.;
+    isph=-999;
     code=-999;
     mfl=-999;
-	  
+    
     track = (AliESDtrack*)fESD->GetTrack(iTrack);      
     if (!track) continue;
     
@@ -486,8 +606,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     fHistNTracks->Fill(3);
     if(TMath::Abs(track->GetSign())<0.0001) continue; //no neutral particles
     fHistNTracks->Fill(4);
-
-	  
+    
     //cluster in ITS
     UInt_t clumap = track->GetITSClusterMap();
     Int_t nSPD=0;
@@ -512,7 +631,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     if(dedx<0) continue;
     fHistNTracks->Fill(9);
 
-
     Float_t pt = track->Pt();
     Int_t theBin=-1;
     for(Int_t m=0; m<kNbins; m++){
@@ -522,25 +640,68 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       }
     }
     track->GetImpactParameters(impactXY, impactZ);
-	  
+    
     //Filling Ntuple
     //information from the MC kinematics
     if(fMC){
-      if(track->GetLabel()<0)isph=-1.;
+      if(track->GetLabel()<0)isph=-1;
       if(track->GetLabel()>=0){
 	part = (TParticle*)stack->Particle(track->GetLabel());
 	pdgPart = part->GetPDG();
 	code = pdgPart->PdgCode();
-	if(stack->IsPhysicalPrimary(track->GetLabel()))isph=1.;
+	if(stack->IsPhysicalPrimary(track->GetLabel())) isph=1;
 	else{ 
-	  isph=0.;
-	  TParticle* moth = stack->Particle(part->GetFirstMother());
-	  Float_t codemoth = TMath::Abs(moth->GetPdgCode());
-	  mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+	  isph=0;
+	  Int_t indexMoth=part->GetFirstMother();
+	  if(indexMoth>=0){
+	    TParticle* moth = stack->Particle(indexMoth);
+	    Float_t codemoth = TMath::Abs(moth->GetPdgCode());
+	    mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+	  }
+	}
+	
+	//Filling DCA distribution with MC truth
+	
+	if(theBin>=0 && theBin<kNbins){
+	  if(isph==1){//primaries in MC
+	    if(track->GetSign()>0){
+	      if(TMath::Abs(code)==listcode[0]) fHistMCPrimDCAPosPi[theBin]->Fill(impactXY);
+	      if(TMath::Abs(code)==listcode[1]) fHistMCPrimDCAPosK[theBin]->Fill(impactXY);
+	      if(TMath::Abs(code)==listcode[2]) fHistMCPrimDCAPosP[theBin]->Fill(impactXY);
+	    }else{
+	      if(TMath::Abs(code)==listcode[0]) fHistMCPrimDCANegPi[theBin]->Fill(impactXY);
+	      if(TMath::Abs(code)==listcode[1]) fHistMCPrimDCANegK[theBin]->Fill(impactXY);
+	      if(TMath::Abs(code)==listcode[2]) fHistMCPrimDCANegP[theBin]->Fill(impactXY);
+	    }
+	  }
+	  
+	  if(isph==0){//primaries in MC
+	    if(mfl==3){
+	      if(track->GetSign()>0){
+		if(TMath::Abs(code)==listcode[0]) fHistMCSecStDCAPosPi[theBin]->Fill(impactXY);
+		if(TMath::Abs(code)==listcode[1]) fHistMCSecStDCAPosK[theBin]->Fill(impactXY);
+		if(TMath::Abs(code)==listcode[2]) fHistMCSecStDCAPosP[theBin]->Fill(impactXY);
+	      }else{
+		if(TMath::Abs(code)==listcode[0]) fHistMCSecStDCANegPi[theBin]->Fill(impactXY);
+		if(TMath::Abs(code)==listcode[1]) fHistMCSecStDCANegK[theBin]->Fill(impactXY);
+		if(TMath::Abs(code)==listcode[2]) fHistMCSecStDCANegP[theBin]->Fill(impactXY);
+	      }
+	    }else{
+	      if(track->GetSign()>0){
+		if(TMath::Abs(code)==listcode[0]) fHistMCSecMatDCAPosPi[theBin]->Fill(impactXY);
+		if(TMath::Abs(code)==listcode[1]) fHistMCSecMatDCAPosK[theBin]->Fill(impactXY);
+		if(TMath::Abs(code)==listcode[2]) fHistMCSecMatDCAPosP[theBin]->Fill(impactXY);
+	      }else{
+		if(TMath::Abs(code)==listcode[0]) fHistMCSecMatDCANegPi[theBin]->Fill(impactXY);
+		if(TMath::Abs(code)==listcode[1]) fHistMCSecMatDCANegK[theBin]->Fill(impactXY);
+		if(TMath::Abs(code)==listcode[2]) fHistMCSecMatDCANegP[theBin]->Fill(impactXY);
+	      }
+	    }
+	  }
 	}
       }
     }
-    Float_t xnt[12];
+  Float_t xnt[12];
     Int_t index=0;
     xnt[index++]=(Float_t)track->GetP();
     xnt[index++]=(Float_t)track->Pt();
@@ -560,21 +721,40 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     
 	
     //Compute y and bb
-    Double_t y[3],bbtheo[3],logdiff[3];
+    Double_t y[4],bbtheo[4],logdiff[4];
     Float_t p=track->GetP();
     if(fMC && fSmearMC){
       dedx=fRandGener->Gaus(dedx,fSmeardEdx*dedx);
       p=fRandGener->Gaus(p,fSmearP*p);     
     }
 
-    for(Int_t i=0;i<3;i++){
+    for(Int_t i=0;i<4;i++){
       y[i] = Eta2y(pt,pdgmass[i],track->Eta());
       bbtheo[i]=BetheBloch(p/pdgmass[i],fMC);
       logdiff[i]=TMath::Log(dedx) - TMath::Log(bbtheo[i]);
     }
-
-    //NSigma Method
     Int_t resocls=(Int_t)count-1;
+    
+    //NSigma Method, with asymmetric bands
+    
+    Int_t minPosMean=-1;
+    for(Int_t isp=0; isp<3; isp++){
+      if(dedx<bbtheo[0])continue;
+      Double_t bb=bbtheo[isp];
+      if(dedx<bb){
+	Double_t bbdistance=TMath::Abs((bbtheo[isp]-bbtheo[isp-1])/2);
+	Double_t nsigma=TMath::Abs((dedx-bb)/bbdistance);
+	if(nsigma<1.)minPosMean=isp;
+      }
+      else{
+	Double_t bbdistance=TMath::Abs((bbtheo[isp]-bbtheo[isp+1])/2);
+	Double_t nsigma=TMath::Abs((dedx-bb)/bbdistance);
+	if(nsigma<1.)minPosMean=isp;
+      }
+    }
+    if(dedx<bbtheo[0] && TMath::Abs((dedx-bbtheo[0])/(resodedx[resocls]*bbtheo[0]))<2)minPosMean=0;
+    
+    //NSigma method with simmetric bands
 
     Double_t nsigmas[3];
     Double_t min=999999.;
@@ -587,34 +767,116 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	minPos=isp;
       }
     }
+    
+    // y calculation
+    Double_t yPartMean=y[minPosMean];
     Double_t yPart=y[minPos];
     
-    if(min<fMinNSigma && yPart<fMaxY){     
-      //DCA distributions, before the DCA cuts
+    if(yPartMean<fMaxY){     
+      //DCA distributions, before the DCA cuts, based on asymmetrinc nsigma approach
       if(theBin>=0 && theBin<kNbins){
 	if(track->GetSign()>0){
-	  if(minPos==0) fHistDCAPosPi[theBin]->Fill(impactXY);
-	  else if(minPos==1) fHistDCAPosK[theBin]->Fill(impactXY);
-	  else if(minPos==2) fHistDCAPosP[theBin]->Fill(impactXY);
+	  if(minPosMean==0) fHistDCAPosPi[theBin]->Fill(impactXY);
+	  else if(minPosMean==1) fHistDCAPosK[theBin]->Fill(impactXY);
+	  else if(minPosMean==2) fHistDCAPosP[theBin]->Fill(impactXY);
 	}else{
-	  if(minPos==0) fHistDCANegPi[theBin]->Fill(impactXY);
-	  else if(minPos==1) fHistDCANegK[theBin]->Fill(impactXY);
-	  else if(minPos==2) fHistDCANegP[theBin]->Fill(impactXY);
+	  if(minPosMean==0) fHistDCANegPi[theBin]->Fill(impactXY);
+	  else if(minPosMean==1) fHistDCANegK[theBin]->Fill(impactXY);
+	  else if(minPosMean==2) fHistDCANegP[theBin]->Fill(impactXY);
 	}
       } 
     }
     
+    if(track->GetSign()>0)fHistNTracks->Fill(11);
+    if(track->GetSign()<0)fHistNTracks->Fill(12);
     //DCA cut on xy and z
     if(!DCAcut(impactXY,impactZ,pt,fMC)) continue;
     fHistNTracks->Fill(10);
+    if(track->GetSign()>0)fHistNTracks->Fill(13);
+    if(track->GetSign()<0)fHistNTracks->Fill(14);
     
+    //Filling Histos for Reco Efficiency
+    //information from the MC kinematics
+    if(fMC){
+      if(track->GetLabel()<0)isph=-1;
+      if(track->GetLabel()>=0){
+	part = (TParticle*)stack->Particle(track->GetLabel());
+	pdgPart = part->GetPDG();
+	code = pdgPart->PdgCode();
+	Int_t jpart=-1;
+	for(Int_t j=0; j<3; j++){
+	  if(TMath::Abs(code)==listcode[j]){
+	    jpart=j;
+	    break;
+	  }
+	}
+	if(jpart<0) continue;
+	if(pdgPart->Charge()>0) signMC=1;
+	else signMC=-1;
+	ptMC=part->Pt();
+	if(stack->IsPhysicalPrimary(track->GetLabel())){
+	  if(signMC>0) fHistPrimMCposReco[jpart]->Fill(TMath::Abs(ptMC));
+	  else  fHistPrimMCnegReco[jpart]->Fill(TMath::Abs(ptMC));
+	}else{ 
+	  Int_t indexMoth=part->GetFirstMother();
+	  if(indexMoth>=0){
+	    TParticle* moth = stack->Particle(indexMoth);
+	    Float_t codemoth = TMath::Abs(moth->GetPdgCode());
+	    mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+	  }
+	  if(mfl==3){ // strangeness
+	    if(signMC>0) fHistSecStrMCposReco[jpart]->Fill(TMath::Abs(ptMC));
+	    else  fHistSecStrMCnegReco[jpart]->Fill(TMath::Abs(ptMC));	    
+	  }else{
+	    if(signMC>0) fHistSecMatMCposReco[jpart]->Fill(TMath::Abs(ptMC));
+	    else  fHistSecMatMCnegReco[jpart]->Fill(TMath::Abs(ptMC));	    
+	  }
+	}
+      }
+    }
+    
+    //Nsigma histos with MC truth
+    
+    //asymmetric approach
+    if(yPartMean<fMaxY){
+      //nsigma histos
+      if(track->GetSign()>0) fHistPosNSigmaMean[minPosMean]->Fill(pt);
+      else fHistNegNSigmaMean[minPosMean]->Fill(pt);
+      if(fMC){
+	//nsigma histos with MC truth on PID
+	if(TMath::Abs(code)==listcode[minPosMean]){
+	  if(track->GetSign()>0) fHistPosNSigmaMCMean[minPosMean]->Fill(pt);
+	  else fHistNegNSigmaMCMean[minPosMean]->Fill(pt);
+	}
+	//nsigma histos with MC truth on IsPhysicalPrimary
+	if(isph==1){
+	  if(track->GetSign()>0) fHistPosNSigmaPrimMean[minPosMean]->Fill(pt);
+	  else fHistNegNSigmaPrimMean[minPosMean]->Fill(pt);
+	  //nsigma histos with MC truth on IsPhysicalPrimary and PID
+	  if(TMath::Abs(code)==listcode[minPosMean]){
+	    if(track->GetSign()>0) fHistPosNSigmaPrimMCMean[minPosMean]->Fill(pt);
+	    else fHistNegNSigmaPrimMCMean[minPosMean]->Fill(pt);
+	  }
+	}
+      }
+    }
+    
+    //symmetric bands
     if(min<fMinNSigma && yPart<fMaxY){
+      //nsigma histos
       if(track->GetSign()>0) fHistPosNSigma[minPos]->Fill(pt);
       else fHistNegNSigma[minPos]->Fill(pt);
       if(fMC){
+	//nsigma histos with MC truth on PID
+	if(TMath::Abs(code)==listcode[minPos]){
+	  if(track->GetSign()>0) fHistPosNSigmaMC[minPos]->Fill(pt);
+	  else fHistNegNSigmaMC[minPos]->Fill(pt);
+	}
+	//nsigma histos with MC truth on IsPhysicalPrimary
 	if(isph==1){
 	  if(track->GetSign()>0) fHistPosNSigmaPrim[minPos]->Fill(pt);
 	  else fHistNegNSigmaPrim[minPos]->Fill(pt);
+	   //nsigma histos with MC truth on IsPhysicalPrimary and PID
 	  if(TMath::Abs(code)==listcode[minPos]){
 	    if(track->GetSign()>0) fHistPosNSigmaPrimMC[minPos]->Fill(pt);
 	    else fHistNegNSigmaPrimMC[minPos]->Fill(pt);
@@ -623,6 +885,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       }
     }
     
+    
+    //integral approach histograms
     if(theBin>=0 && theBin<kNbins){
       if(track->GetSign()>0){
 	if(TMath::Abs(y[0]) < fMaxY)fHistPosPi[theBin]->Fill(logdiff[0]);
@@ -682,16 +946,30 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
 
 	
   for(Int_t j=0;j<3;j++){
-    fHistMCpos[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCpos%d",j)));
-    fHistMCneg[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCneg%d",j)));
+    if(fMC){
+    fHistPrimMCpos[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistPrimMCpos%d",j)));
+    fHistPrimMCneg[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistPrimMCneg%d",j)));
+    fHistSecStrMCpos[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecStrMCpos%d",j)));
+    fHistSecStrMCneg[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecStrMCneg%d",j)));
+    fHistSecMatMCpos[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecMatMCpos%d",j)));
+    fHistSecMatMCneg[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecMatMCneg%d",j)));
+    //
+    fHistPrimMCposBefEvSel[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistPrimMCposBefEvSel%d",j)));
+    fHistPrimMCnegBefEvSel[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistPrimMCnegBefEvSel%d",j)));
+    fHistSecStrMCposBefEvSel[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecStrMCposBefEvSel%d",j)));
+    fHistSecStrMCnegBefEvSel[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecStrMCnegBefEvSel%d",j)));
+    fHistSecMatMCposBefEvSel[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecMatMCposBefEvSel%d",j)));
+    fHistSecMatMCnegBefEvSel[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecMatMCnegBefEvSel%d",j)));
+    //
+    fHistPrimMCposReco[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistPrimMCposReco%d",j)));
+    fHistPrimMCnegReco[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistPrimMCnegReco%d",j)));
+    fHistSecStrMCposReco[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecStrMCposReco%d",j)));
+    fHistSecStrMCnegReco[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecStrMCnegReco%d",j)));
+    fHistSecMatMCposReco[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecMatMCposReco%d",j)));
+    fHistSecMatMCnegReco[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistSecMatMCnegReco%d",j)));
+    }
   }
-
   
-  for(Int_t j=0;j<3;j++){
-    fHistMCposBefEvSel[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCposBefEvSel%d",j)));
-    fHistMCnegBefEvSel[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCnegBefEvSel%d",j)));
-  }
-
   for(Int_t i=0; i<4; i++){
     fHistCharge[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistChargeLay%d",i)));
   }
@@ -713,6 +991,28 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
     
     
     if(fMC){	
+      
+      fHistMCPrimDCAPosPi[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPrimDCAPosPi%d",i)));
+      fHistMCPrimDCAPosK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPrimDCAPosK%d",i)));
+      fHistMCPrimDCAPosP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPrimDCAPosP%d",i)));
+      fHistMCPrimDCANegPi[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPrimDCANegPi%d",i)));
+      fHistMCPrimDCANegK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPrimDCANegK%d",i)));
+      fHistMCPrimDCANegP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPrimDCANegP%d",i)));  
+      
+      fHistMCSecStDCAPosPi[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecStDCAPosPi%d",i)));
+      fHistMCSecStDCAPosK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecStDCAPosK%d",i)));
+      fHistMCSecStDCAPosP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecStDCAPosP%d",i)));
+      fHistMCSecStDCANegPi[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecStDCANegPi%d",i)));
+      fHistMCSecStDCANegK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecStDCANegK%d",i)));
+      fHistMCSecStDCANegP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecStDCANegP%d",i)));  
+      
+      fHistMCSecMatDCAPosPi[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecMatDCAPosPi%d",i)));
+      fHistMCSecMatDCAPosK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecMatDCAPosK%d",i)));
+      fHistMCSecMatDCAPosP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecMatDCAPosP%d",i)));
+      fHistMCSecMatDCANegPi[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecMatDCANegPi%d",i)));
+      fHistMCSecMatDCANegK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecMatDCANegK%d",i)));
+      fHistMCSecMatDCANegP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecMatDCANegP%d",i)));  
+      
       fHistMCPosPi[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosPi%d",i)));
       fHistMCPosK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosK%d",i)));
       fHistMCPosP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosP%d",i)));
@@ -721,14 +1021,26 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
       fHistMCNegP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegP%d",i)));
     }
   }
-
+  
   for(Int_t j=0;j<3;j++){
+    fHistPosNSigmaMean[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistPosNSigmaMean%d",j)));
+    fHistNegNSigmaMean[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistNegNSigmaMean%d",j)));
+    fHistPosNSigmaMCMean[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistPosNSigmaMCMean%d",j)));
+    fHistNegNSigmaMCMean[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistNegNSigmaMCMean%d",j)));
+    fHistPosNSigmaPrimMean[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistPosNSigmaPrimMean%d",j)));
+    fHistNegNSigmaPrimMean[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistNegNSigmaPrimMean%d",j)));
+    fHistPosNSigmaPrimMCMean[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistPosNSigmaPrimMCMean%d",j)));
+    fHistNegNSigmaPrimMCMean[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistNegNSigmaPrimMCMean%d",j)));
+  
     fHistPosNSigma[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistPosNSigma%d",j)));
     fHistNegNSigma[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistNegNSigma%d",j)));
+    fHistPosNSigmaMC[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistPosNSigmaMC%d",j)));
+    fHistNegNSigmaMC[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistNegNSigmaMC%d",j)));
     fHistPosNSigmaPrim[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistPosNSigmaPrim%d",j)));
     fHistNegNSigmaPrim[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistNegNSigmaPrim%d",j)));
     fHistPosNSigmaPrimMC[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistPosNSigmaPrimMC%d",j)));
     fHistNegNSigmaPrimMC[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("hHistNegNSigmaPrimMC%d",j)));
+  
   }
   
   fNtupleNSigma = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleNSigma"));
