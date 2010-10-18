@@ -107,11 +107,13 @@ class AliHLTD0Trigger : public AliHLTTrigger
   /// inherited from AliHLTTrigger: calculate the trigger
   virtual int DoTrigger();
   
-  // TODO: code audit 2010-07-23 describe functions, add a short description
-  // also in the cxx file
-  void SingleTrackSelect(AliExternalTrackParam*);
+  /// Adding single track cut on input tracks, and split in pos. and neg.
+  void SingleTrackSelect(AliExternalTrackParam*,const AliESDVertex*);
+  /// Useing the V0's in the ESD found by the V0 finder
   Int_t RecV0(const TObject* iter);
-  void RecD0(Int_t&,Int_t&,Int_t&);
+  /// Reconstructing the D0 from K and pi
+  void RecD0(Int_t&,Int_t&,Int_t&,const AliESDVertex*);
+  /// Checking if the decay prodicts came from a D0
   int CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackParam* pn);
 
   /// pt cut for decay, minimum [GeV/c]
@@ -129,31 +131,42 @@ class AliHLTD0Trigger : public AliHLTTrigger
   /// Pionting angle
   float fcosPoint;                                         //! transient 
 
-  // TODO: code audit 2010-07-23 member variable description missing
-  bool fplothisto;                                         //! transient 
+  /// Option for ploting InvMass and Pt of D0's
+  bool fplothisto;                                         //! transient
+  /// Option for useing the V0' from V0 finder
   bool fUseV0;                                             //! transient 
 
+  /// D0 mass
   Double_t mD0PDG;                                         //! transient
 
   /// D0 inv. mass plot
   TH1F *fD0mass;                                           //! transient  
+  /// Pt plot of D0's
   TH1F *fD0pt;                                             //! transient  
 
-  vector<AliExternalTrackParam*> fPos;                       //! transient
-  vector<AliExternalTrackParam*> fNeg;                       //! transient
+  /// Vector for positive tracks
+  vector<AliExternalTrackParam*> fPos;                     //! transient
+  /// Vector for negative tracks
+  vector<AliExternalTrackParam*> fNeg;                     //! transient
 
-  AliHLTD0toKpi *fd0calc;                                   //! transient
-  TObjArray *ftwoTrackArray;                                //! transient
+  /// Object for calculations
+  AliHLTD0toKpi *fd0calc;                                  //! transient
+  /// Array of the two decay products
+  TObjArray *ftwoTrackArray;                               //! transient
 
-  Int_t fTotalD0;                                           //! transient
-  Int_t fTotalD0Onetrue;                                       //! transient
-  Int_t fTotalD0true;                                       //! transient
-  AliESDVertex *fVertex;                                    //! transient
-  Double_t fField;                                          //!transient
+  /// Counters for D0
+  Int_t fTotalD0;                                          //! transient
+  Int_t fTotalD0Onetrue;                                   //! transient
+  Int_t fTotalD0true;                                      //! transient
   
-  AliHLTMCEvent* fEvent;                                    //!transient
+  /// Magnetic field
+  Double_t fField;                                         //!transient
+  
+  /// Object with information about the Monte Carlo
+  AliHLTMCEvent* fEvent;                                   //!transient
 
-  bool fuseKF;                                               //!transient
+  /// Option for useing KF particle for vertexing
+  bool fuseKF;                                             //!transient
 
   /// the default configuration entry for this component
   static const char* fgkOCDBEntry; //!transient

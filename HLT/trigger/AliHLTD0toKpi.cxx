@@ -80,7 +80,7 @@ Double_t AliHLTD0toKpi::pointingAngle(AliExternalTrackParam* n, AliExternalTrack
   return TMath::Cos(pta); 
 }
 
-AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, AliESDVertex *v, bool useKF)
+AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, const AliESDVertex *v, bool useKF)
 {
   
   AliESDVertex *vertexESD = 0;
@@ -88,7 +88,8 @@ AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Dou
   
   if(!useKF){
     AliVertexerTracks *vertexer = new AliVertexerTracks(b);
-    vertexer->SetVtxStart(v);
+    AliESDVertex* Vertex =  const_cast<AliESDVertex*>(v);
+    vertexer->SetVtxStart(Vertex);
     //if(isESD){vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);}
     UShort_t *id = new UShort_t[2];
     AliHLTGlobalBarrelTrack *t1 = (AliHLTGlobalBarrelTrack*) trkArray->At(0);

@@ -28,7 +28,7 @@ public:
   Double_t pointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv);
   Double_t Pt(AliExternalTrackParam* d1, AliExternalTrackParam* d2);
 
-  AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, AliESDVertex *v, bool useKF);
+  AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, const AliESDVertex *v, bool useKF);
 
 private:
   
