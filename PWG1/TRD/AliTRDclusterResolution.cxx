@@ -622,7 +622,8 @@ void AliTRDclusterResolution::UserExec(Option_t *)
     // resolution/pull as a function of pw and log(q)
     // only for dydx = 0, ExB=0
     if(TMath::Abs(fExB) < kAroundZero &&
-       TMath::Abs(dydx) < kAroundZero){
+       TMath::Abs(dydx) < kAroundZero &&
+       t>5 && t<24 ){
       switch(np){
       case 3: // MPV np
         h3 = (TH3S*)arr1->At(0);
