@@ -275,7 +275,11 @@ Int_t AliITSPlaneEffSDD::GetMissingTracksForGivenEff(Double_t eff, Double_t RelE
 if (im>=kNModule || ic>=kNChip || iw>=kNWing || is>=kNSubWing) 
  {AliError("GetMissingTracksForGivenEff: you asked for a non existing block");
  return -1;}
-else return GetNTracksForGivenEff(eff,RelErr)-fTried[GetKey(im,ic,iw,is)];
+else {
+  UInt_t key=GetKey(im,ic,iw,is);
+  if (key<kNModule*kNChip*kNWing*kNSubWing) return GetNTracksForGivenEff(eff,RelErr)-fTried[key];
+  else return -1;
+}
 }
 //_________________________________________________________________________
 Double_t  AliITSPlaneEffSDD::PlaneEff(const UInt_t im,const UInt_t ic,
@@ -288,8 +292,13 @@ Double_t  AliITSPlaneEffSDD::PlaneEff(const UInt_t im,const UInt_t ic,
 //        is     -> chip number [0,kNSubWing-1]
 if (im>=kNModule || ic>=kNChip || iw>=kNWing || is>=kNSubWing) 
  {AliError("PlaneEff(UInt_t,UInt_t,UInt_t,UInt_t): you asked for a non existing block"); return -1.;}
- Int_t nf=fFound[GetKey(im,ic,iw,is)];
- Int_t nt=fTried[GetKey(im,ic,iw,is)];
+UInt_t key=GetKey(im,ic,iw,is);
+Int_t nf=-1;
+Int_t nt=-1;
+if (key<kNModule*kNChip*kNWing*kNSubWing) {
+  nf=fFound[key];
+  nt=fTried[key];
+}
 return AliITSPlaneEff::PlaneEff(nf,nt);
 }
 //_________________________________________________________________________
@@ -304,8 +313,13 @@ Double_t  AliITSPlaneEffSDD::ErrPlaneEff(const UInt_t im,const UInt_t ic,
     //        is     -> chip number [0,kNSubWing-1]
 if (im>=kNModule || ic>=kNChip || iw>=kNWing || is>=kNSubWing) 
  {AliError("ErrPlaneEff(UInt_t,UInt_t,UInt_t,UInt_t): you asked for a non existing block"); return -1.;}
-Int_t nf=fFound[GetKey(im,ic,iw,is)];
-Int_t nt=fTried[GetKey(im,ic,iw,is)];
+UInt_t key=GetKey(im,ic,iw,is);
+Int_t nf=-1;
+Int_t nt=-1;
+if (key<kNModule*kNChip*kNWing*kNSubWing) {
+  nf=fFound[key];
+  nt=fTried[key];
+}
 return AliITSPlaneEff::ErrPlaneEff(nf,nt);
 } 
 //_________________________________________________________________________
@@ -315,9 +329,12 @@ Bool_t AliITSPlaneEffSDD::UpDatePlaneEff(const Bool_t Kfound,
   // Update efficiency for a basic block
 if (im>=kNModule || ic>=kNChip || iw>=kNWing || is>=kNSubWing) 
  {AliError("UpDatePlaneEff: you asked for a non existing block"); return kFALSE;}
- fTried[GetKey(im,ic,iw,is)]++;
- if(Kfound) fFound[GetKey(im,ic,iw,is)]++;
- return kTRUE;
+ UInt_t key=GetKey(im,ic,iw,is);
+ if (key<kNModule*kNChip*kNWing*kNSubWing) { 
+   fTried[key]++;
+   if(Kfound) fFound[key]++;
+   return kTRUE;
+ }
 }
 //_________________________________________________________________________
 void AliITSPlaneEffSDD::ChipAndWingFromAnode(const UInt_t anode, UInt_t& chip,
@@ -969,8 +986,7 @@ return;
 }
 //__________________________________________________________
 Bool_t AliITSPlaneEffSDD::FillHistos(UInt_t key, Bool_t found, 
-                               //      Float_t tXZ[2], Float_t cXZ[2], Int_t ctXZ[2]) {
-                                     Float_t *tr, Float_t *clu, Int_t *csize) {
+                                     Float_t *tr, Float_t *clu, Int_t *csize, Float_t*) {
 // this method fill the histograms
 // input: - key: unique key of the basic block 
 //        - found: Boolean to asses whether a cluster has been associated to the track or not 

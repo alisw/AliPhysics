@@ -32,6 +32,7 @@
 #include <TString.h>
 #include <TRandom.h>
 #include <TTreeStream.h>
+#include <TVector3.h>
 
 #include "AliLog.h"
 #include "AliGeomManager.h"
@@ -4567,6 +4568,7 @@ Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
   return kTRUE;
 }
 //------------------------------------------------------------------------
+//------------------------------------------------------------------------
 Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t *clusters, Int_t ilayer) const {
 //
 // Method to be optimized further: 
@@ -4605,14 +4607,15 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t 
 // require a minimal number of cluster in other layers and eventually clusters in closest layers 
   Int_t ncl_out=0; Int_t ncl_in=0;
   for(Int_t lay=AliITSgeomTGeo::kNLayers-1;lay>ilayer;lay--) { // count n. of cluster in outermost layers
-    AliDebug(2,Form("trak=%d  lay=%d  ; index=%d ESD label= %d",tmp.GetLabel(),lay,
+ AliDebug(2,Form("trak=%d  lay=%d  ; index=%d ESD label= %d",tmp.GetLabel(),lay,
                     tmp.GetClIndex(lay),((AliESDtrack*)tmp.GetESDtrack())->GetLabel())) ;
-    if (tmp.GetClIndex(lay)>=0) ncl_out++;
+   // if (tmp.GetClIndex(lay)>=0) ncl_out++;
+if(index[lay]>=0)ncl_out++;
   }
   for(Int_t lay=ilayer-1; lay>=0;lay--) { // count n. of cluster in innermost layers
     AliDebug(2,Form("trak=%d  lay=%d  ; index=%d ESD label= %d",tmp.GetLabel(),lay,
                     tmp.GetClIndex(lay),((AliESDtrack*)tmp.GetESDtrack())->GetLabel())) ;
-    if (tmp.GetClIndex(lay)>=0) ncl_in++;
+   if (index[lay]>=0) ncl_in++; 
   }
   Int_t ncl=ncl_out+ncl_in;
   Bool_t nextout = kFALSE;
@@ -4655,14 +4658,11 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t 
   //***************
   // DEFINITION OF SEARCH ROAD FOR accepting a track
   //
-  //For the time being they are hard-wired, later on from AliITSRecoParam
   Double_t nsigx=AliITSReconstructor::GetRecoParam()->GetNSigXFromBoundaryPlaneEff();
   Double_t nsigz=AliITSReconstructor::GetRecoParam()->GetNSigZFromBoundaryPlaneEff();
-  // Double_t nsigz=4; 
-  // Double_t nsigx=4; 
   Double_t dx=nsigx*TMath::Sqrt(tmp.GetSigmaY2());  // those are precisions in the tracking reference system
   Double_t dz=nsigz*TMath::Sqrt(tmp.GetSigmaZ2());  // Use it also for the module reference system, as it is
-                                                // done for RecPoints
+                                                    // done for RecPoints
 
   // exclude tracks at boundary between detectors
   //Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidthPlaneEff();
@@ -4670,7 +4670,6 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t 
   AliDebug(2,Form("Tracking: track impact x=%f, y=%f, z=%f",tmp.GetX(), tmp.GetY(), tmp.GetZ()));
   AliDebug(2,Form("Local:    track impact x=%f, z=%f",locx,locz));
   AliDebug(2,Form("Search Road. Tracking: dy=%f , dz=%f",dx,dz));
-
   if ( (locx-dx < blockXmn+boundaryWidth) ||
        (locx+dx > blockXmx-boundaryWidth) ||
        (locz-dz < blockZmn+boundaryWidth) ||
@@ -4806,6 +4805,9 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
     Float_t tr[4]={99999.,99999.,9999.,9999.};    // initialize to high values 
     Float_t clu[4]={-99999.,-99999.,9999.,9999.}; // (in some cases GetCov fails) 
     Int_t cltype[2]={-999,-999};
+                                                          // and the module
+
+Float_t AngleModTrack[3]={99999.,99999.,99999.}; // angles (phi, z and "absolute angle") between the track and the mormal to the module (see below)
 
     tr[0]=locx;
     tr[1]=locz;
@@ -4835,8 +4837,54 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
         clu[3]=TMath::Sqrt(c.GetSigmaZ2());
       //}
     }
-    fPlaneEff->FillHistos(key,found,tr,clu,cltype);
+  // Compute the angles between the track and the module
+      // compute the angle "in phi direction", i.e. the angle in the transverse plane 
+      // between the normal to the module and the projection (in the transverse plane) of the 
+      // track trajectory
+    // tgphi and tglambda of the track in tracking frame with alpha=det.GetPhi
+    Float_t tgl = tmp.GetTgl();
+    Float_t phitr   = tmp.GetSnp();
+    phitr = TMath::ASin(phitr);
+    Int_t volId = AliGeomManager::LayerToVolUIDSafe(ilayer+1 ,idet );
+
+    Double_t tra[3]; AliGeomManager::GetOrigTranslation(volId,tra);
+    Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
+   Double_t alpha =0.;
+    alpha = tmp.GetAlpha();
+    Double_t phiglob = alpha+phitr;
+    Double_t p[3];
+    p[0] = TMath::Cos(phiglob);
+    p[1] = TMath::Sin(phiglob);
+    p[2] = tgl;
+    TVector3 pvec(p[0],p[1],p[2]);
+    TVector3 normvec(rot[1],rot[4],rot[7]);
+    Double_t angle = pvec.Angle(normvec);
+
+    if(angle>0.5*TMath::Pi()) angle = (TMath::Pi()-angle);
+    angle *= 180./TMath::Pi();
+
+    //Trasverse Plane
+    TVector3 pt(p[0],p[1],0);
+    TVector3 normt(rot[1],rot[4],0);
+    Double_t anglet = pt.Angle(normt);
+
+    Double_t phiPt = TMath::ATan2(p[1],p[0]);
+    if(phiPt<0)phiPt+=2.*TMath::Pi();
+    Double_t phiNorm = TMath::ATan2(rot[4],rot[1]);
+    if(phiNorm<0) phiNorm+=2.*TMath::Pi();
+    if(anglet>0.5*TMath::Pi()) anglet = (TMath::Pi()-anglet);
+    if(phiNorm>phiPt) anglet*=-1.;// pt-->normt  clockwise: anglet>0
+    if((phiNorm-phiPt)>TMath::Pi()) anglet*=-1.;
+    anglet *= 180./TMath::Pi();
+
+     AngleModTrack[2]=(Float_t) angle;
+     AngleModTrack[0]=(Float_t) anglet;
+     // now the "angle in z" (much easier, i.e. the angle between the z axis and the track momentum + 90)
+    AngleModTrack[1]=TMath::ACos(tgl/TMath::Sqrt(tgl*tgl+1.));
+    AngleModTrack[1]-=TMath::Pi()/2.; // range of angle is -pi/2 , pi/2
+    AngleModTrack[1]*=180./TMath::Pi(); // in degree
+
+      fPlaneEff->FillHistos(key,found,tr,clu,cltype,AngleModTrack);
   }
 return;
 }
-

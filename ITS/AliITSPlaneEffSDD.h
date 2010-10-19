@@ -86,8 +86,7 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     // method to set on/off the creation/updates of histograms (Histos are created/destroyed)
     void   SetCreateHistos(Bool_t his=kFALSE)
          {fHis=his; if(fHis) {DeleteHistos(); InitHistos();} else DeleteHistos(); return; }
-    //Bool_t FillHistos(UInt_t key, Bool_t found, Float_t trackXZ[2], Float_t clusterXZ[2], Int_t ctXZ[2]);
-    virtual Bool_t FillHistos(UInt_t key, Bool_t found, Float_t *track, Float_t *cluster, Int_t *ctype);
+    virtual Bool_t FillHistos(UInt_t key, Bool_t found, Float_t *track, Float_t *cluster, Int_t *ctype, Float_t *);
     virtual Bool_t WriteHistosToFile(TString filename="PlaneEffSDDHistos.root",Option_t* option = "RECREATE");
     virtual Bool_t ReadHistosFromFile(TString filename="PlaneEffSDDHistos.root"); // histos must exist already !
                                                                           // This method increases the

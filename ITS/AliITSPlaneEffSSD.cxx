@@ -536,8 +536,7 @@ return;
 }
 //__________________________________________________________
 Bool_t AliITSPlaneEffSSD::FillHistos(UInt_t key, Bool_t found,
-                                 //    Float_t tXZ[2], Float_t cXZ[2], Int_t ctXZ[2]) {
-                                     Float_t *tr, Float_t *clu, Int_t *csize) {
+                                     Float_t *tr, Float_t *clu, Int_t *csize, Float_t*) {
 // this method fill the histograms
 // input: - key: unique key of the basic block
 //        - found: Boolean to asses whether a cluster has been associated to the track or not

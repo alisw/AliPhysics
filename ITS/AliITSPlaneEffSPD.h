@@ -5,6 +5,7 @@
 
 #include <TH1F.h>
 #include <TH2I.h>
+#include <TProfile.h>
 #include "AliITSPlaneEff.h"
 #include  "AliCDBId.h"
 
@@ -75,8 +76,7 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     virtual void   SetCreateHistos(Bool_t his=kFALSE) 
          //{fHis=his; if(fHis) InitHistos(); else DeleteHistos(); return; }
          {fHis=his; if(fHis) {DeleteHistos(); InitHistos();} else DeleteHistos(); return; }
-    //Bool_t FillHistos(UInt_t key, Bool_t found, Float_t trackXZ[2], Float_t clusterXZ[2], Int_t ctXZ[2]);
-    virtual Bool_t FillHistos(UInt_t key, Bool_t found, Float_t *track, Float_t *cluster, Int_t *ctype);
+    virtual Bool_t FillHistos(UInt_t key, Bool_t found, Float_t *track, Float_t *cluster, Int_t *ctype, Float_t *angtrkmod);
     virtual Bool_t WriteHistosToFile(TString filename="PlaneEffSPDHistos.root",Option_t* option = "RECREATE");
     virtual Bool_t ReadHistosFromFile(TString filename="PlaneEffSPDHistos.root"); // histos must exist already !
                                                                                   // This method increases the
@@ -118,16 +118,18 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     TH1F ***fHisResZclu; //! histos with residual distribution along local Z for cluster type
     TH1F ***fHisResXchip; //! histos with residual distribution along local X (r-phi) chip by chip
     TH1F ***fHisResZchip; //! histos with residual distribution along local Z chip by chip
-    //TProfile **fProfResXvsLPhi; //! TProfile of X Residuals vs. impact Angle phi (of the track w.r.t. module)
-    //TProfile **fProfResZvsLPhi; //! TProfile of Z Residuals vs. impact Angle phi (of the track w.r.t. module)
-    //TProfile **fProfResXvsLDip; //! TProfile of X Residuals vs. impact dip Angle  (of the track w.r.t. module)
-    //TProfile **fProfResZvsLDip; //! TProfile of Z Residuals vs. impact dip Angle  (of the track w.r.t. module)
+    TProfile **fProfResXvsPhi; //! TProfile of X Residuals vs. impact Angle phi (of the track w.r.t. module)
+    //TProfile **fProfResZvsPhi; //! TProfile of Z Residuals vs. impact Angle phi (of the track w.r.t. module)
+    //TProfile **fProfResXvsDip; //! TProfile of X Residuals vs. impact dip Angle  (of the track w.r.t. module)
+    TProfile **fProfResZvsDip; //! TProfile of Z Residuals vs. impact dip Angle  (of the track w.r.t. module)
+    TProfile ***fProfResXvsPhiclu; //! TProfile of X Residuals vs. impact Angle phi (of the track w.r.t. module) for different clu. type
+    TProfile ***fProfResZvsDipclu; //! TProfile of Z Residuals vs. impact dip Angle  (of the track w.r.t. module) for different clu. type
     TH1F **fHisTrackErrX; //! histos with track prediction error on Local X
     TH1F **fHisTrackErrZ; //! histos with track prediction error on Local Z
     TH1F **fHisClusErrX; //! histos with Local_X cluster error
     TH1F **fHisClusErrZ; //! histos with Local_Z cluster error
 
-    ClassDef(AliITSPlaneEffSPD,2) // SPD Plane Efficiency class
+    ClassDef(AliITSPlaneEffSPD,3) // SPD Plane Efficiency class
 };
 //
 inline UInt_t AliITSPlaneEffSPD::Nblock() const {return kNModule*kNChip;}
