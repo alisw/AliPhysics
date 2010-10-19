@@ -10,6 +10,7 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTRootFileWriterComponent.h \
 		AliHLTRootFileStreamerComponent.h \
 		AliHLTRootSchemaEvolutionComponent.h \
+		AliHLTRecoParamComponent.h \
 		AliHLTLoaderPublisherComponent.h \
 		AliHLTRawReaderPublisherComponent.h \
 		AliHLTOUTPublisherComponent.h \
