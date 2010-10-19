@@ -24,7 +24,8 @@ class AliAODEvent;
 
 class AliAODpidUtil {
 public:
-  AliAODpidUtil(Bool_t isMC = kFALSE): fRange(5.), fTPCResponse(), fITSResponse(isMC), fTOFResponse(), fTRDResponse(), fIsMC(isMC) {;}
+
+  AliAODpidUtil(Bool_t isMC = kFALSE): fRange(5.), fTPCResponse(), fITSResponse(isMC), fTOFResponse(), fTRDResponse() {;}
   virtual ~AliAODpidUtil() {;}
 
 
@@ -43,16 +44,12 @@ public:
   AliTPCPIDResponse &GetTPCResponse() {return fTPCResponse;}
   AliTOFPIDResponse &GetTOFResponse() {return fTOFResponse;}
 
-  Bool_t IsMC() {return fIsMC;}
-  
-
 private:
   Float_t           fRange;          // nSigma max in likelihood
   AliTPCPIDResponse fTPCResponse;
   AliITSPIDResponse fITSResponse;
   AliTOFPIDResponse fTOFResponse;
   AliTRDPIDResponse fTRDResponse;
-  Bool_t            fIsMC;
   
   ClassDef(AliAODpidUtil,1)  // PID calculation class
 };
