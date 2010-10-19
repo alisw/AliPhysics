@@ -78,7 +78,7 @@ int AliHLTZDCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // -- Define the VZERO reconstruction components
     // -----------------------------------------------
-    handler->CreateConfiguration("ZDC-RECO", "ZDCReconstruction", "ZDC-DP_0", "");
+    handler->CreateConfiguration("ZDC-RECO", "ZDCESDReco", "ZDC-DP_0", "");
   }
   else if (runloader && !rawReader) {
     // indicates AliSimulation with no RawReader available -> run on digits
