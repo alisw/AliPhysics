@@ -94,7 +94,7 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
 //}
 
 //----------------------------------------------------------------------- 
-Bool_t AliFlowTrackSimpleCuts::IsSelected(TObject* obj)
+Bool_t AliFlowTrackSimpleCuts::IsSelected(TObject* obj, Int_t id)
 {
   //check cuts
   TParticle* p = dynamic_cast<TParticle*>(obj);
