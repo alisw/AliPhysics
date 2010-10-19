@@ -4340,7 +4340,11 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   TF1 * polynome = 0x0;
   TF1 * polynomea = 0x0;
   TF1 * polynomeb = 0x0;
-  Double_t *c = 0x0;
+  Double_t c0 = 0.0;
+  Double_t c1 = 0.0;
+  Double_t c2 = 0.0;
+  Double_t c3 = 0.0;
+  Double_t c4 = 0.0;
   
   // Some variables
   TAxis   *xpph    = projPH->GetXaxis();
@@ -4380,7 +4384,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
       y[0] = pentea->GetBinContent(binmax-2);
       y[1] = pentea->GetBinContent(binmax-1);
       y[2] = pentea->GetBinContent(binmax);
-      c = CalculPolynomeLagrange2(x,y);
+      CalculPolynomeLagrange2(x,y,c0,c1,c2,c3,c4);
       AliInfo("At the limit for beginning!");
       break;  
     case 2:
@@ -4394,7 +4398,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
       y[1] = pentea->GetBinContent(binmax-1);
       y[2] = pentea->GetBinContent(binmax);
       y[3] = pentea->GetBinContent(binmax+1);
-      c = CalculPolynomeLagrange3(x,y);
+      CalculPolynomeLagrange3(x,y,c0,c1,c2,c3,c4);
       break;
     default:
       switch(binmax){
@@ -4410,7 +4414,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
 	y[0] = pentea->GetBinContent(binmax);
 	y[1] = pentea->GetBinContent(binmax+1);
 	y[2] = pentea->GetBinContent(binmax+2);
-	c = CalculPolynomeLagrange2(x,y);
+	CalculPolynomeLagrange2(x,y,c0,c1,c2,c3,c4);
 	break;
       case 2:
 	minnn = pentea->GetBinCenter(binmax-1);
@@ -4423,7 +4427,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
 	y[1] = pentea->GetBinContent(binmax);
 	y[2] = pentea->GetBinContent(binmax+1);
 	y[3] = pentea->GetBinContent(binmax+2);
-       	c = CalculPolynomeLagrange3(x,y);
+       	CalculPolynomeLagrange3(x,y,c0,c1,c2,c3,c4);
 	break;
       default:
      	minnn = pentea->GetBinCenter(binmax-2);
@@ -4438,7 +4442,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
 	y[2] = pentea->GetBinContent(binmax);
 	y[3] = pentea->GetBinContent(binmax+1);
 	y[4] = pentea->GetBinContent(binmax+2);
-	c = CalculPolynomeLagrange4(x,y);
+	CalculPolynomeLagrange4(x,y,c0,c1,c2,c3,c4);
 	break;
       }
       break;
@@ -4447,7 +4451,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   
   if(put) {
     polynomeb = new TF1("polb","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x",minnn,maxxx);
-    polynomeb->SetParameters(c[0],c[1],c[2],c[3],c[4]);
+    polynomeb->SetParameters(c0,c1,c2,c3,c4);
       
     Double_t step = (maxxx-minnn)/10000;
     Double_t l = minnn;
@@ -4503,7 +4507,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
       y[0] = projPH->GetBinContent(binmax-2);
       y[1] = projPH->GetBinContent(binmax-1);
       y[2] = projPH->GetBinContent(binmax);
-      c = CalculPolynomeLagrange2(x,y);
+      CalculPolynomeLagrange2(x,y,c0,c1,c2,c3,c4);
       //AliInfo("At the limit for the drift!");
       break;
     case 1:
@@ -4517,7 +4521,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
       y[1] = projPH->GetBinContent(binmax-1);
       y[2] = projPH->GetBinContent(binmax);
       y[3] = projPH->GetBinContent(binmax+1);
-      c = CalculPolynomeLagrange3(x,y);
+      CalculPolynomeLagrange3(x,y,c0,c1,c2,c3,c4);
       break;
     default:
       switch(binmax)
@@ -4534,7 +4538,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
 	  y[0] = projPH->GetBinContent(binmax);
 	  y[1] = projPH->GetBinContent(binmax+1);
 	  y[2] = projPH->GetBinContent(binmax+2);
-	  c = CalculPolynomeLagrange2(x,y);
+	  CalculPolynomeLagrange2(x,y,c0,c1,c2,c3,c4);
 	  break;
 	case 2:
 	  minn = projPH->GetBinCenter(binmax-1);
@@ -4547,7 +4551,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
 	  y[1] = projPH->GetBinContent(binmax);
 	  y[2] = projPH->GetBinContent(binmax+1);
 	  y[3] = projPH->GetBinContent(binmax+2);
-	  c = CalculPolynomeLagrange3(x,y);
+	  CalculPolynomeLagrange3(x,y,c0,c1,c2,c3,c4);
 	  break;
 	default:
 	  minn = projPH->GetBinCenter(binmax-2);
@@ -4562,7 +4566,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
 	  y[2] = projPH->GetBinContent(binmax);
 	  y[3] = projPH->GetBinContent(binmax+1);
 	  y[4] = projPH->GetBinContent(binmax+2);
-	  c = CalculPolynomeLagrange4(x,y);
+	  CalculPolynomeLagrange4(x,y,c0,c1,c2,c3,c4);
 	  break;
 	}
       break;
@@ -4570,7 +4574,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   
   if(put) {
     polynomea = new TF1("pola","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x",minn,maxx);
-    polynomea->SetParameters(c[0],c[1],c[2],c[3],c[4]);
+    polynomea->SetParameters(c0,c1,c2,c3,c4);
        
     Double_t step = (maxx-minn)/1000;
     Double_t l = minn;
@@ -4651,7 +4655,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     y[3] = pente->GetBinContent(binmin+1);
     y[4] = pente->GetBinContent(binmin+2);
     //Calcul the polynome de Lagrange
-    c = CalculPolynomeLagrange4(x,y);
+    CalculPolynomeLagrange4(x,y,c0,c1,c2,c3,c4);
     //richtung +/-
     if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1)) &&
        (pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) {
@@ -4693,7 +4697,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     y[2] = pente->GetBinContent(binmin);
     y[3] = pente->GetBinContent(binmin+1);
     //Calcul the polynome de Lagrange
-    c = CalculPolynomeLagrange3(x,y);
+    CalculPolynomeLagrange3(x,y,c0,c1,c2,c3,c4);
     //richtung +: nothing
     //richtung -
     if((pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) {
@@ -4715,7 +4719,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     y[2] = pente->GetBinContent(binmin+1);
     y[3] = pente->GetBinContent(binmin+2);
     //Calcul the polynome de Lagrange
-    c = CalculPolynomeLagrange3(x,y);
+    CalculPolynomeLagrange3(x,y,c0,c1,c2,c3,c4);
     //richtung +
     if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1))) {
       //AliInfo("polynome 3+ case 2");      
@@ -4733,7 +4737,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     y[1] = pente->GetBinContent(binmin+1);
     y[2] = pente->GetBinContent(binmin+2);
     //Calcul the polynome de Lagrange
-    c = CalculPolynomeLagrange2(x,y);
+    CalculPolynomeLagrange2(x,y,c0,c1,c2,c3,c4);
     //richtung +
     if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1))) {
       //AliInfo("polynome 2+ false");
@@ -4752,7 +4756,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     y[1] = pente->GetBinContent(binmin);
     y[2] = pente->GetBinContent(binmin+1);
     //Calcul the polynome de Lagrange
-    c = CalculPolynomeLagrange2(x,y);
+    CalculPolynomeLagrange2(x,y,c0,c1,c2,c3,c4);
     //richtung +: nothing
     //richtung -: nothing
   }
@@ -4768,7 +4772,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     y[1] = pente->GetBinContent(binmin-1);
     y[2] = pente->GetBinContent(binmin);
     //Calcul the polynome de Lagrange
-    c = CalculPolynomeLagrange2(x,y);
+    CalculPolynomeLagrange2(x,y,c0,c1,c2,c3,c4);
     //AliInfo("At the limit for the drift!");
     //fluctuation too big!
     //richtung +: nothing
@@ -4796,7 +4800,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   
   if(put) {
     polynome = new TF1("pol","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x",min,max);
-    polynome->SetParameters(c[0],c[1],c[2],c[3],c[4]);
+    polynome->SetParameters(c0,c1,c2,c3,c4);
     //AliInfo(Form("GetMinimum of the function %f",polynome->GetMinimumX()));
     Double_t step = (max-min)/1000;
     Double_t l = min;
@@ -4893,7 +4897,6 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     if(polynomeb) delete polynomeb;
     //if(x) delete [] x;
     //if(y) delete [] y;
-    if(c) delete [] c;
     if(line) delete line;
 
   }
@@ -5635,68 +5638,59 @@ void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean)
   }
 } 
 //_____________________________________________________________________________
-Double_t *AliTRDCalibraFit::CalculPolynomeLagrange2(const Double_t *x, const Double_t *y) const
+void AliTRDCalibraFit::CalculPolynomeLagrange2(const Double_t *x, const Double_t *y, Double_t &c0, Double_t &c1, Double_t &c2, Double_t &c3, Double_t &c4) const
 {
   //
   // Calcul the coefficients of the polynome passant par ces trois points de degre 2
   //
-  Double_t *c = new Double_t[5];
   Double_t x0 = y[0]/((x[0]-x[1])*(x[0]-x[2]));
   Double_t x1 = y[1]/((x[1]-x[0])*(x[1]-x[2]));
   Double_t x2 = y[2]/((x[2]-x[0])*(x[2]-x[1]));
 
-  c[4] = 0.0;
-  c[3] = 0.0;
-  c[2] = x0+x1+x2;
-  c[1] = -(x0*(x[1]+x[2])+x1*(x[0]+x[2])+x2*(x[0]+x[1]));
-  c[0] = x0*x[1]*x[2]+x1*x[0]*x[2]+x2*x[0]*x[1];
-
-  return c;
-  
+  c4 = 0.0;
+  c3 = 0.0;
+  c2 = x0+x1+x2;
+  c1 = -(x0*(x[1]+x[2])+x1*(x[0]+x[2])+x2*(x[0]+x[1]));
+  c0 = x0*x[1]*x[2]+x1*x[0]*x[2]+x2*x[0]*x[1];
 
 }
 
 //_____________________________________________________________________________
-Double_t *AliTRDCalibraFit::CalculPolynomeLagrange3(const Double_t *x, const Double_t *y) const
+void AliTRDCalibraFit::CalculPolynomeLagrange3(const Double_t *x, const Double_t *y, Double_t &c0, Double_t &c1, Double_t &c2, Double_t &c3, Double_t &c4) const
 {
   //
   // Calcul the coefficients of the polynome passant par ces quatre points de degre 3
   //
-  Double_t *c = new Double_t[5];
   Double_t x0 = y[0]/((x[0]-x[1])*(x[0]-x[2])*(x[0]-x[3]));
   Double_t x1 = y[1]/((x[1]-x[0])*(x[1]-x[2])*(x[1]-x[3]));
   Double_t x2 = y[2]/((x[2]-x[0])*(x[2]-x[1])*(x[2]-x[3]));
   Double_t x3 = y[3]/((x[3]-x[0])*(x[3]-x[1])*(x[3]-x[2]));
 
-  c[4] = 0.0;
-  c[3] = x0+x1+x2+x3;
-  c[2] = -(x0*(x[1]+x[2]+x[3])
+  c4 = 0.0;
+  c3 = x0+x1+x2+x3;
+  c2 = -(x0*(x[1]+x[2]+x[3])
 	   +x1*(x[0]+x[2]+x[3])
 	   +x2*(x[0]+x[1]+x[3])
 	   +x3*(x[0]+x[1]+x[2]));
-  c[1] = (x0*(x[1]*x[2]+x[1]*x[3]+x[2]*x[3])
+  c1 = (x0*(x[1]*x[2]+x[1]*x[3]+x[2]*x[3])
 	  +x1*(x[0]*x[2]+x[0]*x[3]+x[2]*x[3])
 	  +x2*(x[0]*x[1]+x[0]*x[3]+x[1]*x[3])
 	  +x3*(x[0]*x[1]+x[0]*x[2]+x[1]*x[2]));
   
-  c[0] = -(x0*x[1]*x[2]*x[3]
+  c0 = -(x0*x[1]*x[2]*x[3]
 	  +x1*x[0]*x[2]*x[3]
 	  +x2*x[0]*x[1]*x[3]
 	  +x3*x[0]*x[1]*x[2]);  
 
 
-  return c;
-  
-
 }
 
 //_____________________________________________________________________________
-Double_t *AliTRDCalibraFit::CalculPolynomeLagrange4(const Double_t *x, const Double_t *y) const
+void AliTRDCalibraFit::CalculPolynomeLagrange4(const Double_t *x, const Double_t *y, Double_t &c0, Double_t &c1, Double_t &c2, Double_t &c3, Double_t &c4) const
 {
   //
   // Calcul the coefficients of the polynome passant par ces cinqs points de degre 4
   //
-  Double_t *c = new Double_t[5];
   Double_t x0 = y[0]/((x[0]-x[1])*(x[0]-x[2])*(x[0]-x[3])*(x[0]-x[4]));
   Double_t x1 = y[1]/((x[1]-x[0])*(x[1]-x[2])*(x[1]-x[3])*(x[1]-x[4]));
   Double_t x2 = y[2]/((x[2]-x[0])*(x[2]-x[1])*(x[2]-x[3])*(x[2]-x[4]));
@@ -5704,32 +5698,29 @@ Double_t *AliTRDCalibraFit::CalculPolynomeLagrange4(const Double_t *x, const Dou
   Double_t x4 = y[4]/((x[4]-x[0])*(x[4]-x[1])*(x[4]-x[2])*(x[4]-x[3]));
  
 
-  c[4] = x0+x1+x2+x3+x4;
-  c[3] = -(x0*(x[1]+x[2]+x[3]+x[4])
+  c4 = x0+x1+x2+x3+x4;
+  c3 = -(x0*(x[1]+x[2]+x[3]+x[4])
 	   +x1*(x[0]+x[2]+x[3]+x[4])
 	   +x2*(x[0]+x[1]+x[3]+x[4])
 	   +x3*(x[0]+x[1]+x[2]+x[4])
 	   +x4*(x[0]+x[1]+x[2]+x[3]));
-  c[2] = (x0*(x[1]*x[2]+x[1]*x[3]+x[1]*x[4]+x[2]*x[3]+x[2]*x[4]+x[3]*x[4])
+  c2 = (x0*(x[1]*x[2]+x[1]*x[3]+x[1]*x[4]+x[2]*x[3]+x[2]*x[4]+x[3]*x[4])
 	  +x1*(x[0]*x[2]+x[0]*x[3]+x[0]*x[4]+x[2]*x[3]+x[2]*x[4]+x[3]*x[4])
 	  +x2*(x[0]*x[1]+x[0]*x[3]+x[0]*x[4]+x[1]*x[3]+x[1]*x[4]+x[3]*x[4])
 	  +x3*(x[0]*x[1]+x[0]*x[2]+x[0]*x[4]+x[1]*x[2]+x[1]*x[4]+x[2]*x[4])
 	  +x4*(x[0]*x[1]+x[0]*x[2]+x[0]*x[3]+x[1]*x[2]+x[1]*x[3]+x[2]*x[3]));
 
-  c[1] = -(x0*(x[1]*x[2]*x[3]+x[1]*x[2]*x[4]+x[1]*x[3]*x[4]+x[2]*x[3]*x[4])
+  c1 = -(x0*(x[1]*x[2]*x[3]+x[1]*x[2]*x[4]+x[1]*x[3]*x[4]+x[2]*x[3]*x[4])
 	  +x1*(x[0]*x[2]*x[3]+x[0]*x[2]*x[4]+x[0]*x[3]*x[4]+x[2]*x[3]*x[4])
 	  +x2*(x[0]*x[1]*x[3]+x[0]*x[1]*x[4]+x[0]*x[3]*x[4]+x[1]*x[3]*x[4])
 	  +x3*(x[0]*x[1]*x[2]+x[0]*x[1]*x[4]+x[0]*x[2]*x[4]+x[1]*x[2]*x[4])
 	  +x4*(x[0]*x[1]*x[2]+x[0]*x[1]*x[3]+x[0]*x[2]*x[3]+x[1]*x[2]*x[3]));
 
-  c[0] = (x0*x[1]*x[2]*x[3]*x[4]
+  c0 = (x0*x[1]*x[2]*x[3]*x[4]
 	  +x1*x[0]*x[2]*x[3]*x[4]
 	  +x2*x[0]*x[1]*x[3]*x[4]
 	  +x3*x[0]*x[1]*x[2]*x[4]
 	  +x4*x[0]*x[1]*x[2]*x[3]);
-
-  return c;
-  
 
 }
 //_____________________________________________________________________________
@@ -6214,4 +6205,6 @@ Double_t AliTRDCalibraFit::GausConstant(const Double_t *x, const Double_t *par)
   return gauss;
 
 }
+
+
 

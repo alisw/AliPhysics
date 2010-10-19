@@ -529,23 +529,22 @@ Bool_t AliTRDCalibraFillHisto::InitCalDet()
   // DB Setting
   // Get cal
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor",AliCDBManager::Instance()->GetRun(),fVersionGainUsed,fSubVersionGainUsed);
-
-  if (entry) {
-  
-
-    if( fCalDetGain ){ 
-      fCalDetGain->~AliTRDCalDet();
-      new(fCalDetGain) AliTRDCalDet(*(dynamic_cast<AliTRDCalDet *>(entry->GetObject())));
-    }else fCalDetGain = new AliTRDCalDet(*(dynamic_cast<AliTRDCalDet *>(entry->GetObject())));
-  
-
-  } 
-  else {
-    
-    AliError("No new gain calibration entry found");
+  if(!entry) {
+    AliError("No gain det calibration entry found");
     return kFALSE;
-  
   }
+  AliTRDCalDet *calDet = (AliTRDCalDet *)entry->GetObject();
+  if(!calDet) {
+    AliError("No calDet gain found");
+    return kFALSE;
+  }
+   
+
+  if( fCalDetGain ){ 
+    fCalDetGain->~AliTRDCalDet();
+    new(fCalDetGain) AliTRDCalDet(*(calDet));
+  }else fCalDetGain = new AliTRDCalDet(*(calDet));
+  
   
   // title CH2d
   TString name("Ver");
@@ -585,23 +584,29 @@ Bool_t AliTRDCalibraFillHisto::InitCalPad(Int_t detector)
   // DB Setting
   // Get cal
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/LocalGainFactor",AliCDBManager::Instance()->GetRun(),fVersionGainLocalUsed,fSubVersionGainLocalUsed);
-
-  if (entry) {
-  
-
-    if( fCalROCGain ){ 
-      fCalROCGain->~AliTRDCalROC();
-      new(fCalROCGain) AliTRDCalROC(*((dynamic_cast<AliTRDCalPad *>(entry->GetObject()))->GetCalROC(detector)));
-    }else fCalROCGain = new AliTRDCalROC(*((dynamic_cast<AliTRDCalPad *>(entry->GetObject()))->GetCalROC(detector)));
-  
-
-  } 
-  else {
-    
-    AliError("No new gain calibration entry found");
+  if(!entry) {
+    AliError("No gain pad calibration entry found");
     return kFALSE;
-  
   }
+  AliTRDCalPad *calPad = (AliTRDCalPad *)entry->GetObject();
+  if(!calPad) {
+    AliError("No calPad gain found");
+    return kFALSE;
+  }
+  AliTRDCalROC *calRoc = (AliTRDCalROC *)calPad->GetCalROC(detector);
+  if(!calRoc) {
+    AliError("No calRoc gain found");
+    return kFALSE;
+  }
+  
+  if( fCalROCGain ){ 
+    fCalROCGain->~AliTRDCalROC();
+    new(fCalROCGain) AliTRDCalROC(*(calRoc));
+  }else fCalROCGain = new AliTRDCalROC(*(calRoc));
+  
+
+  
+ 
   
   return kTRUE;
 
@@ -1050,7 +1055,8 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   // Check no shared clusters
   //////////////////////////////
   for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
-    if((cl = tracklet->GetClusters(icc)))  crossrow = 1;
+    cl = tracklet->GetClusters(icc);
+    if(cl)  crossrow = 1;
   }
   //////////////////////////////////
   // Loop clusters
@@ -1597,9 +1603,11 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   //////////////////////////////////////////////
   for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     // reject shared clusters on pad row
-    if(((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) && (cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
+    cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb);
+    if(((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) && (cl)) continue;
     //
-    if(!(cl = tracklet->GetClusters(ic))) continue;
+    cl = tracklet->GetClusters(ic);
+    if(!cl) continue;
 
     Short_t  *signals      = cl->GetSignals();              // signal
     Double_t     time      = cl->GetPadTime();         // time bin

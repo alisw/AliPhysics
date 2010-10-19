@@ -82,9 +82,9 @@ class AliTRDCalibraFit : public TObject {
   void     ResetVectorFit();
   
   // Some functions
-  Double_t *CalculPolynomeLagrange2(const Double_t *x, const Double_t *y) const;
-  Double_t *CalculPolynomeLagrange3(const Double_t *x, const Double_t *y) const;
-  Double_t *CalculPolynomeLagrange4(const Double_t *x, const Double_t *y) const;
+  void CalculPolynomeLagrange2(const Double_t *x, const Double_t *y, Double_t &c0, Double_t &c1, Double_t &c2, Double_t &c3, Double_t &c4) const;
+  void CalculPolynomeLagrange3(const Double_t *x, const Double_t *y, Double_t &c0, Double_t &c1, Double_t &c2, Double_t &c3, Double_t &c4) const;
+  void CalculPolynomeLagrange4(const Double_t *x, const Double_t *y, Double_t &c0, Double_t &c1, Double_t &c2, Double_t &c3, Double_t &c4) const;
   
   // Fill the database
   void         RemoveOutliers(Int_t type, Bool_t perdetector = kFALSE);
@@ -355,4 +355,6 @@ class AliTRDCalibraFit : public TObject {
 };
   
 #endif
+
+
 
