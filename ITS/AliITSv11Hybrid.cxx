@@ -5319,6 +5319,13 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t wINOX[9]={0.0003,0.02,0.01,0.00045,0.0003,0.12,0.17,0.025,0.654};
     Float_t dINOX = 8.03;
 
+    //AISI 304 L (from F.Tosello's web page - M.S. 18 Oct 10)
+    
+    Float_t a304L[8]={12.0107,54.9380, 28.0855,30.9738,32.066,58.6928,51.9961,55.845};
+    Float_t z304L[8]={6.,25.,14.,15.,16., 28.,24.,26.};
+    Float_t w304L[8]={0.0003,0.02,0.01,0.00045,0.003,0.0925,0.19,0.6865};
+    Float_t d304L = 8.03;
+
     //SDD HV microcable
 
     Float_t aHVm[5]={12.0107,1.00794,14.0067,15.9994,26.981538};
@@ -5347,12 +5354,19 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t wALVm[5]={0.392653705471,0.0128595919215,0.041626868025,0.118832707289, 0.431909};
     Float_t dALVm = 2.0502;
 
-    //X7R capacitors
+    //X7R capacitors - updated from F.Tosello's web page - M.S. 18 Oct 10
 
-    Float_t aX7R[7]={137.327,47.867,15.9994,58.6928,63.5460,118.710,207.2};
-    Float_t zX7R[7]={56.,22.,8.,28.,29.,50.,82.};
-    Float_t wX7R[7]={0.251639432,0.084755042,0.085975822,0.038244751,0.009471271,0.321736471,0.2081768};
-    Float_t dX7R = 7.14567;
+    Float_t aX7R[6]={137.327,47.867,15.9994,58.6928,63.5460,118.710};
+    Float_t zX7R[6]={56.,22.,8.,28.,29.,50.};
+    Float_t wX7R[6]={0.524732,0.176736,0.179282,0.079750,0.019750,0.019750};
+    Float_t dX7R = 6.07914;
+
+    //X7R weld, i.e. Sn 60% Pb 40% (from F.Tosello's web page - M.S. 15 Oct 10)
+
+    Float_t aX7Rweld[2]={118.71 , 207.20};
+    Float_t zX7Rweld[2]={ 50.   ,  82.  };
+    Float_t wX7Rweld[2]={  0.60 ,   0.40};
+    Float_t dX7Rweld   = 8.52358;
 
     // AIR
 
@@ -5466,6 +5480,27 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t wPPS[3] = {  6.    , 4.     ,  1.   };
     Float_t dPPS    = 1.35;
 
+    // Glass Fiber (from F.Tosello's web page - M.S. 15 Oct 10)
+    Float_t aGlass[11] = {15.9994  ,28.0855  ,40.078   ,26.981539,10.811   ,
+		24.305   ,39.0983  ,22.98977 ,18.9984  ,47.867   ,55.845};
+    Float_t zGlass[11] = { 8.      ,14.      ,20       ,13       , 5       ,
+		12.      ,19       ,11       , 9       ,22       ,26    };
+    Float_t wGlass[11] = { 0.473610, 0.252415, 0.135791, 0.068803, 0.023293,
+		 0.015076, 0.008301, 0.007419, 0.007000, 0.004795, 0.003497};
+    Float_t dGlass = 2.61;
+
+    // Ryton R-4 04 (from F.Tosello's web page - M.S. 15 Oct 10)
+    Float_t aRyton[14] = {15.9994  ,28.0855  ,40.078   ,26.981539,10.811   ,
+			  24.305   ,39.0983  ,22.98977 ,18.9984  ,47.867   ,
+			  55.845   ,12.0107  , 1.00794 ,32.066   };
+    Float_t zRyton[14] = { 8.      ,14.      ,20.      ,13.      , 5.      ,
+			  12.      ,19.      ,11.      , 9.      ,22.      ,
+			  26.      , 6.      , 1.      ,16.      };
+    Float_t wRyton[14] = { 0.189445, 0.100966, 0.054316, 0.027521, 0.009317,
+			   0.006030, 0.003320, 0.002968, 0.002800, 0.001918,
+			   0.001399, 0.399760, 0.022365, 0.177875};
+    Float_t dRyton = 1.65;
+
     //SSD NiSn capacitor ends
     Float_t aNiSn[2]  = { 56.6934,118.710};
     Float_t zNiSn[2]  = {     28.,     50.};
@@ -5527,6 +5562,21 @@ void AliITSv11Hybrid::CreateMaterials(){
 
     AliMixture(27,"GEN Air$",aAir,zAir,dAir,4,wAir);
     AliMedium(27,"GEN Air$",27,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
+
+    AliMixture(39,"RYTON$",aRyton,zRyton,dRyton,14,wRyton);
+    AliMedium(39,"RYTON$",39,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMixture(40,"GLASS FIBER$",aGlass,zGlass,dGlass,11,wGlass);
+    AliMedium(40,"GLASS FIBER$",40,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMixture(41,"AISI304L$",a304L,z304L,d304L,8,w304L);
+    AliMedium(41,"AISI304L$",41,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMaterial(42,"NICKEL$",0.58693E+02,0.28000E+02,0.89080E+01,0.14200E+01,0.99900E+03);
+    AliMedium(42,"NICKEL$",42,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+               
+    AliMixture(43,"SDD X7R weld$",aX7Rweld,zX7Rweld,dX7Rweld,2,wX7Rweld);
+    AliMedium(43,"SDD X7R weld$",43,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(44,"PPS$",aPPS,zPPS,dPPS,-3,wPPS);
     AliMedium(44,"PPS$",44,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
@@ -5645,7 +5695,7 @@ void AliITSv11Hybrid::CreateMaterials(){
     AliMixture(76,"SPDBUS(AL+KPT+EPOX)$",aSPDbus,zSPDbus,dSPDbus,5,wSPDbus);
     AliMedium(76,"SPDBUS(AL+KPT+EPOX)$",76,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
                
-    AliMixture(77,"SDD X7R capacitors$",aX7R,zX7R,dX7R,7,wX7R);
+    AliMixture(77,"SDD X7R capacitors$",aX7R,zX7R,dX7R,6,wX7R);
     AliMedium(77,"SDD X7R capacitors$",77,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(78,"SDD ruby sph. Al2O3$",aAlOxide,zAlOxide,dAlOxide,2,wAlOxide);

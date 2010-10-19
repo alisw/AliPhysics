@@ -39,6 +39,7 @@
 #include <TGeoTube.h>
 #include <TGeoTrd1.h>
 #include <TGeoArb8.h>
+#include <TGeoXtru.h>
 #include <TGeoCompositeShape.h>
 #include <TGeoMatrix.h>
 #include <TGeoNode.h>
@@ -53,11 +54,12 @@
 
 const char*    AliITSv11GeometrySDD::fgSDDsensitiveVolName3 = "ITSsddSensitivL3";
 const char*    AliITSv11GeometrySDD::fgSDDsensitiveVolName4 = "ITSsddSensitivL4";
-const Double_t AliITSv11GeometrySDD::fgkSegmentLength     = 37.2*2*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkSegmentLength     = 37.21*2*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadderWidth       = 50.0*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadderHeight      = 30.0*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLadderSegBoxDW    =  3.5*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLadderSegBoxDH    =  3.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLadderSegBoxDW    =  7.5*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLadderSegBoxDH    =  7.1*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLadderSegBoxDHCorr=  2.1*fgkmm;
 
 const Double_t AliITSv11GeometrySDD::fgkLadderBeamRadius  =  0.6*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadderLa          =  3.*fgkmm;
@@ -108,7 +110,7 @@ const Double_t AliITSv11GeometrySDD::fgkBTBHoleRefX        = 10 *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkBTBHoleRefY        =  6.5 *fgkmm;
 
 const Double_t AliITSv11GeometrySDD::fgkLay3Rmin           = 129.*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLay3Rmax           = 200.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLay3Rmax           = 205.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay3Length         = (524.+0.)*fgkmm; // ladder+supporting rings (length of the virtual tube)
 const Double_t AliITSv11GeometrySDD::fgkLay3LadderLength   = 524.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay3DetShortRadius = 146.0*fgkmm;
@@ -119,7 +121,7 @@ const Int_t    AliITSv11GeometrySDD::fgkLay3Nladd          = 14;
 const Double_t AliITSv11GeometrySDD::fgkLay3CoolPipeSuppH  =  7.5*fgkmm;
 
 const Double_t AliITSv11GeometrySDD::fgkLay4Rmin           = 220.*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLay4Rmax           = 286.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLay4Rmax           = 291.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay4Length         = (671.+0.)*fgkmm;    // ladder+supporting rings (length of the virtual tube)
 const Double_t AliITSv11GeometrySDD::fgkLay4LadderLength   = 671.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay4DetShortRadius = 235.0*fgkmm;
@@ -159,6 +161,10 @@ const Double_t AliITSv11GeometrySDD::fgkHybFLUpperWidth   = 15.012*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperLength  = 59.878*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperAlDZ    = 11.183*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperAldx    =  2.307*fgkmm;
+
+const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorLen   = 12.000*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorWid   =  1.490*fgkcm; //???
+const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorAng   = 40.0;
 
 const Double_t AliITSv11GeometrySDD::fgkmu = 1*fgkmicron; // 1*fgkmicron; // can be increase for checking thin objects
 const Double_t AliITSv11GeometrySDD::fgkHybridThBridgeThick =  0.25*fgkmm;               // ???
@@ -470,6 +476,9 @@ const Double_t AliITSv11GeometrySDD::fgkSectionCoolWaterEL = 0.3496;
 const Double_t AliITSv11GeometrySDD::fgkEndLadderEarthCableR = 0.5*fgkmm;
 // (sections are given in cm square)
 const Double_t AliITSv11GeometrySDD::fgkCableBendRatio = 1.3; // ??? this factor account for the bending of cables
+const Double_t AliITSv11GeometrySDD::fgkHybridAlFoilThick = 0.1*fgkmm; // Thickness of Al foil on hybrid side - TO BE CHECKED
+const Double_t AliITSv11GeometrySDD::fgkHybridAlFoilWide = 4.2*fgkmm; // Width of Al foil on hybrid side - from digitCableA
+const Double_t AliITSv11GeometrySDD::fgkHybridAlFoilSide = 2.0*fgkmm; // Side length of Al foil on hybrid side
 
 const Double_t AliITSv11GeometrySDD::fgkConeSDDr1 = 11.87574*fgkcm;
 const Double_t AliITSv11GeometrySDD::fgkConeSDDr2 = 26.07574*fgkcm;
@@ -819,9 +828,9 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   TGeoMedium *carbonFiberLadderStruct = GetMedium("SDD C AL (M55J)$"); //ITSsddCarbonM55J
   TGeoMedium *polyhamideSDD   = GetMedium("SDDKAPTON (POLYCH2)$");//ITSsddKAPTON_POLYCH2
   TGeoMedium *alSDD           = GetMedium("AL$"); //ITSal
-  TGeoMedium *stainless       = GetMedium("INOX$"); // for screws, what is the material ???????????
+  TGeoMedium *stainless       = GetMedium("AISI304L$"); // for screws
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
-  TGeoMedium *raccordMedium   = GetMedium("INOX$");  // ??? material of raccordo ???
+  TGeoMedium *raccordMedium   = GetMedium("INOX$");  // same as AISI 316-L
 
   //********************************************************************
   // pieces of the carbon fiber structure
@@ -2016,15 +2025,34 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   TGeoMedium *alSDD80p100             = GetMedium("AL$");                 // to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   TGeoMedium *alSDD50p100             = GetMedium("AL$");                 // to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   TGeoMedium *polyhamideSDD           = GetMedium("SDDKAPTON (POLYCH2)$"); //ITSsddKAPTON_POLYCH2
-  TGeoMedium *niSDD                   = GetMedium("COPPER$");                // to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *niSDD                   = GetMedium("NICKEL$");
   TGeoMedium *glueAG                  = GetMedium("SDDKAPTON (POLYCH2)$");  // to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   TGeoMedium *siliconSDD              = GetMedium("SDD SI CHIP$"); //ITSsddSiChip
-  TGeoMedium *medSMD                  = GetMedium("SDD X7R capacitors$");      //  SDDX7Rcapacitors   TO CHECK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  TGeoMedium *medSMDweld              = GetMedium("SDD X7R capacitors$");      //  SDDX7Rcapacitors  TO CHECK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *medSMD                  = GetMedium("SDD X7R capacitors$"); //  SDDX7Rcapacitors
+  TGeoMedium *medSMDweld              = GetMedium("SDD X7R weld$");
 
   //**************************************************** main volume :
-  TGeoBBox *hybridBox = new TGeoBBox("",fgkHybridWidth/2, volumeThick/2,
-				     (fgkHybridLength)/2);
+//  TGeoBBox *hybridBox = new TGeoBBox("",fgkHybridWidth/2, volumeThick/2,
+//				     (fgkHybridLength)/2);
+  Double_t xhybr[6],yhybr[6];
+  xhybr[0] = -fgkHybridWidth/2;
+  yhybr[0] = -volumeThick/2;
+  xhybr[1] =  fgkHybridWidth/2;
+  yhybr[1] = -volumeThick/2;
+  xhybr[2] =  fgkHybridWidth/2;
+  yhybr[2] =  volumeThick/2;
+  xhybr[3] = -fgkHybridWidth/2;
+  yhybr[3] =  volumeThick/2;
+  xhybr[4] =  xhybr[3] - 1.05*fgkHybCC2SensorLen*SinD(fgkHybCC2SensorAng);
+  yhybr[4] =  yhybr[3] - 1.05*fgkHybCC2SensorLen*CosD(fgkHybCC2SensorAng);
+  xhybr[5] =  xhybr[4];
+  yhybr[5] =  yhybr[4] - volumeThick;
+
+  TGeoXtru *hybridBox = new TGeoXtru(2);
+  hybridBox->DefinePolygon(6, xhybr, yhybr);
+  hybridBox->DefineSection(0,-fgkHybridLength/2);
+  hybridBox->DefineSection(1, fgkHybridLength/2);
+
   TGeoVolume *hybrid = new TGeoVolume("ITSsddHybridVol", hybridBox,
 				      airSDD);
  
@@ -2134,7 +2162,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   TGeoBBox *sAlBar2 = new TGeoBBox("sAlBar2", fgkHybridWidth/2,
 				   fgkHybAlThick/2, sideWidth2/2);
 
- TGeoTranslation *upGlueBarTr2 = new TGeoTranslation("upGlueBarTr2", 0,
+  TGeoTranslation *upGlueBarTr2 = new TGeoTranslation("upGlueBarTr2", 0,
 			      lowLayerYmin+(fgkHybGlueLowThick+fgkHybUpThick)/2,
 					       (fgkHybridLength-sideWidth2)/2);
   TGeoTranslation *alBarTr2 = new TGeoTranslation("alBarTr2", 0,
@@ -2325,6 +2353,48 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
     ccLayer2.AddCheckPoint( hybrid, 0, x1, vX );
     ccLayer2.AddCheckPoint( hybrid, 1, x2, vX );
     ccLayer2.CreateAndInsertBoxCableSegment(1,-90);
+
+  //**************************************************** CC to sensors:
+  // (alas, we cannot use GeomCableFlat here because section is not constant)
+    Double_t xcc[6],ycc[6];
+    xcc[0] = -0.5*ccLayer1.GetWidth();
+    ycc[0] =  0;
+    xcc[1] =  0.5*ccLayer1.GetWidth();
+    ycc[1] =  0;
+    xcc[2] = xcc[1];
+    ycc[2] = -fgkHybCC2SensorLen;
+    xcc[3] = xcc[2] - fgkHybCC2SensorWid;
+    ycc[3] = ycc[2];
+    xcc[4] = xcc[3];
+    ycc[4] = 0.8*ycc[3];
+    xcc[5] = xcc[0];
+    ycc[5] = 0.2*ycc[3];
+
+    TGeoXtru* ccToSensPoliSh = new TGeoXtru(2);
+    ccToSensPoliSh->DefinePolygon(6, xcc, ycc);
+    ccToSensPoliSh->DefineSection(0, 0.);
+    ccToSensPoliSh->DefineSection(1, ccLayer1.GetThickness());
+
+    sprintf(ch, "ccToSens%i", i);
+    TGeoVolume* ccToSensPoliVol = new TGeoVolume(ch, ccToSensPoliSh, polyhamideSDD);
+    ccToSensPoliVol->SetLineColor(fColorPolyhamide);
+
+    TGeoXtru* ccToSensAlSh = new TGeoXtru(2);
+    ccToSensAlSh->DefinePolygon(6, xcc, ycc);
+    ccToSensAlSh->DefineSection(0, 0.);
+    ccToSensAlSh->DefineSection(1, fgkHybAlCCThick);
+
+    sprintf(ch, "ccToSensAl%i", i);
+    TGeoVolume* ccToSensAlVol = new TGeoVolume(ch, ccToSensAlSh, alSDD50p100);
+    ccToSensAlVol->SetLineColor(fColorAl);
+
+    ccToSensPoliVol->AddNode(ccToSensAlVol, 1, 0);
+
+    Double_t coord[3];
+    ccLayer1.GetPoint(0,coord);
+    hybrid->AddNode(ccToSensPoliVol, i+1,
+		    new TGeoCombiTrans(coord[0], coord[1], coord[2],
+			new TGeoRotation("",-90-fgkHybCC2SensorAng, 90, 90)));
   };
 
   //**************************************************** FL UP:
@@ -2425,6 +2495,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   TGeoMedium *phynoxSDD       = GetMedium("INOX$");
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
   TGeoMedium *airSDD          = GetMedium("SDD AIR$");
+  TGeoMedium *alSDD           = GetMedium("AL$");
 
   Double_t tDY = fgkLadderSegBoxDH/2; //space left on top of the ladder 
   Double_t segmentLength = fgkSegmentLength;
@@ -2488,11 +2559,36 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
  
   //TGeoVolumeAssembly *virtualSeg = new TGeoVolumeAssembly("ITSsddSegment");
 
-  TGeoBBox *segBox = new TGeoBBox("ITSsddSegBox",
-				  fgkLadderWidth/2+fgkPinSuppWidth+fgkLadderSegBoxDW,
-				  fgkLadderHeight/2+fgkLadderSegBoxDH/2,
-				  segmentLength/2);
-  
+//   TGeoBBox *segBox = new TGeoBBox("ITSsddSegBox",
+// 				  fgkLadderWidth/2+fgkPinSuppWidth+fgkLadderSegBoxDW,
+// 				  fgkLadderHeight/2+fgkLadderSegBoxDH/2,
+// 				  segmentLength/2);
+  // A shaped Xtru instead of a simple BBox to avoid overlaps and extrusions
+  TGeoXtru *segBox = new TGeoXtru(2);
+  segBox->SetName("ITSsddSegBox");
+
+  Double_t xseg[8],yseg[8];
+  xseg[0] = -(fgkLadderWidth/2+fgkPinSuppWidth+fgkLadderSegBoxDW);
+  yseg[0] =  fgkLadderHeight/2+fgkLadderSegBoxDH/2;
+  xseg[1] =  xseg[0];
+  yseg[1] = -yseg[0];
+  xseg[2] = -xseg[1];
+  yseg[2] =  yseg[1];
+  xseg[3] =  xseg[2];
+  yseg[3] =  yseg[0];
+  xseg[4] =  0.35*xseg[3];
+  yseg[4] =  yseg[3];
+  xseg[5] =  xseg[4];
+  yseg[5] =  yseg[4] + fgkLadderSegBoxDHCorr;
+  xseg[6] = -xseg[4];
+  yseg[6] =  yseg[5];
+  xseg[7] =  xseg[6];
+  yseg[7] =  yseg[0];
+
+  segBox->DefinePolygon(8, xseg, yseg);
+  segBox->DefineSection(0,-segmentLength/2);
+  segBox->DefineSection(1, segmentLength/2);
+
   TGeoVolume *virtualSeg = new TGeoVolume("ITSsddSegment",
 					  segBox, airSDD);
   virtualSeg->SetVisibility(kFALSE);
@@ -2575,7 +2671,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   virtualSeg->AddNode(fPinSupport, 7, transPS7);
   virtualSeg->AddNode(fPinSupport, 8, transPS8);
 
-  TGeoMedium *pinMed   = GetMedium("SDDKAPTON (POLYCH2)$");  // medium ???
+  TGeoMedium *pinMed   = GetMedium("RYTON$");
   Double_t fgkPinHeight = 4.5*fgkmm;
   TGeoTube *pineS = new TGeoTube("ITSsddPin",0,fgkPinR,
 				fgkPinHeight/2.);
@@ -2727,8 +2823,8 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   //***********
   if (fAddCables) {
   // Starting from this segment
-  Double_t hybDz = ((TGeoBBox*)fHybrid->GetShape())->GetDZ();
-  Double_t hybDx = ((TGeoBBox*)fHybrid->GetShape())->GetDX();
+  Double_t hybDz = ((TGeoXtru*)fHybrid->GetShape())->GetZ(1);
+  Double_t hybDx = ((TGeoXtru*)fHybrid->GetShape())->GetX(1);
   Double_t posDigitCableAlongHyb = shiftHyb+ hybDx 
                                    - digitCableA->GetWidth()/2;
   Double_t distAxeToDigitCableCenter = distAxeToHybridCenter+hybDy
@@ -2773,6 +2869,46 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
     digitCableB[iCable].GetPoint( 1, coord);
     digitCableB[iCable].AddCheckPoint( virtualSeg, iPoint, coord, vZ);
   };
+
+  // Now the small Al foil on the same hybrid side
+  Double_t xfoil[5],yfoil[5];
+  hybDx *= 0.95;
+  xfoil[0] = -fgkHybridAlFoilWide/2;
+  yfoil[0] =  hybDx;
+  xfoil[1] =  fgkHybridAlFoilWide/2;
+  yfoil[1] =  yfoil[0];
+  xfoil[2] =  xfoil[1];
+  yfoil[2] = -hybDx + (fgkHybridAlFoilWide - fgkHybridAlFoilSide);
+  xfoil[3] =  xfoil[0] + fgkHybridAlFoilSide;
+  yfoil[3] = -hybDx;
+  xfoil[4] =  xfoil[0];
+  yfoil[4] =  yfoil[3];
+
+  TGeoXtru* alFoilSh = new TGeoXtru(2);
+  alFoilSh->DefinePolygon(5, xfoil, yfoil);
+  alFoilSh->DefineSection(0,-fgkHybridAlFoilThick/2);
+  alFoilSh->DefineSection(1, fgkHybridAlFoilThick/2);
+
+  TGeoVolume* alFoilVol = new TGeoVolume("ITSsddAlFoilHybSide", alFoilSh, alSDD);
+  alFoilVol->SetLineColor(fColorAl);
+
+  Double_t zFoilTrans = cableSideSign*(hybDz + alFoilSh->GetX(1));
+  TGeoRotation rotFoil3;
+  TGeoRotation rotFoil4;
+  if (cableSideSign > 0) {
+    rotFoil3 = TGeoRotation("", 90-fgkHybridAngle, -90, -90);
+    rotFoil4 = TGeoRotation("",-90+fgkHybridAngle,  90,  90);
+  } else {
+    rotFoil3 = TGeoRotation("", 90-fgkHybridAngle,  90, -90);
+    rotFoil4 = TGeoRotation("",-90+fgkHybridAngle, -90,  90);
+  }
+  TGeoCombiTrans *foiTr1 = new TGeoCombiTrans(*pipeTr2, rotFoil3);
+  TGeoCombiTrans *foiTr2 = new TGeoCombiTrans(*pipeTr1, rotFoil4);
+  AddTranslationToCombiTrans( foiTr1, -hybrVolX, hybrVolY, zFoilTrans);
+  AddTranslationToCombiTrans( foiTr2,  hybrVolX, hybrVolY, zFoilTrans);
+    
+  virtualSeg->AddNode(alFoilVol, 1, foiTr1);
+  virtualSeg->AddNode(alFoilVol, 2, foiTr2);
   };
 
   //**********************************
@@ -2787,7 +2923,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreatePinSupport() {
 // Create a pine support and its pine
 // axis of rotation is the cone axis, center in its middle
 //
-    TGeoMedium *rytonSDD = GetMedium("SDD C AL (M55J)$"); //medium = ryton ?
+    TGeoMedium *rytonSDD = GetMedium("RYTON$");
 
     TGeoCone *cone = new TGeoCone("ITSsddPinSuppCone",fgkPinSuppHeight/2.,
                                   0,fgkPinSuppRmax,0,fgkPinSuppRmax-
@@ -2890,7 +3026,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportL() {
     axe->InspectShape();
   };
 
-  TGeoMedium *rytonSDD = GetMedium("SDD C AL (M55J)$"); //medium = ryton ?  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *rytonSDD = GetMedium("RYTON$");
   
   TGeoCompositeShape *coolPipeSuppShape = new TGeoCompositeShape(
 				        "ITSsddCoolPipeSuppShapeL",
@@ -2990,7 +3126,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportR() {
 				      "+ITSsddCPSaxeBoxR:ITSsddCPSAxBoxTrR"
 				      "-ITSsddCPSaxeR:ITSsddCPSaxeTrR");
   
-  TGeoMedium *rytonSDD = GetMedium("SDD C AL (M55J)$"); //medium = ryton ? To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *rytonSDD = GetMedium("RYTON$");
   TGeoVolume *coolPipeSupp = new TGeoVolume( "ITSsddCoolPipeSupportR",
 					     coolPipeSuppShape, rytonSDD);
   coolPipeSupp->SetLineColor(fColorRyton);
@@ -3478,12 +3614,12 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateCarlosCard(Int_t iLay) {
   //
 
   (void) iLay;
-  TGeoMedium *glassFiber  = GetMedium("SDD SI CHIP$");// glassFiber   TO CODE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *glassFiber  = GetMedium("GLASS FIBER$");// glassFiber
   TGeoMedium *siliconChip = GetMedium("SDD SI CHIP$");// ITSsddSiChip
   TGeoMedium *plastiChip  = GetMedium("SDDKAPTON (POLYCH2)$"); // ITSsddKAPTON_POLYCH2
   TGeoMedium *copper      = GetMedium("COPPER$"); 
   TGeoMedium *alCu12SDD   = GetMedium("INOX$"); // ITSsddAlCu12,  to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  TGeoMedium *stainless   = GetMedium("INOX$"); // for screws, what is the material ???????????
+  TGeoMedium *stainless   = GetMedium("AISI304L$"); // for screws
 
   //=========================================
   // cooling support of the Carlos card (HeatBridge):
@@ -3766,12 +3902,12 @@ Int_t AliITSv11GeometrySDD::CreateLVCard() {
   // Creates the assemblies containing the LV cards (left and right)
   //
 
-  TGeoMedium *glassFiber  = GetMedium("SDD SI CHIP$");// glassFiber   TO CODE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *glassFiber  = GetMedium("GLASS FIBER$");// glassFiber
   TGeoMedium *siliconChip = GetMedium("SDD SI CHIP$");// ITSsddSiChip
   TGeoMedium *plastiChip  = GetMedium("SDDKAPTON (POLYCH2)$"); // ITSsddKAPTON_POLYCH2
   TGeoMedium *copper      = GetMedium("COPPER$"); 
   TGeoMedium *alCu12SDD   = GetMedium("INOX$"); // ITSsddAlCu12,  to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  TGeoMedium *stainless   = GetMedium("INOX$"); // for screws, what is the material ???????????
+  TGeoMedium *stainless   = GetMedium("AISI304L$"); // for screws
 
   fCardLVL = new TGeoVolumeAssembly("ITSsddLVCardLeft");
   fCardLVR = new TGeoVolumeAssembly("ITSsddLVCardRight");
@@ -4011,8 +4147,8 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(Int_t iLay){
   iLay = iLay;
 
   TGeoMedium *ceramic          = GetMedium("CERAMICS$"); // ceramicHVcard
-  TGeoMedium *medSMDcapaMiddle = GetMedium("SDD X7R capacitors$");      //    TO CODE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  TGeoMedium *medSMDcapaEnd    = GetMedium("SDD X7R capacitors$");      // SDDX7RcapacitorsSDD   TO CODE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *medSMDcapaMiddle = GetMedium("SDD X7R capacitors$"); // check if different
+  TGeoMedium *medSMDcapaEnd    = GetMedium("SDD X7R capacitors$"); // check if different
   TGeoMedium *stainless        = GetMedium("INOX$");       // ITSspdStainlesSteal ???????????
   TGeoMedium *plastic          = GetMedium("SDDKAPTON (POLYCH2)$");  // ITS_ITSsddKAPTON_POLYCH2 ???????????
   TGeoMedium *alCu12SDD       = GetMedium("INOX$"); // ITSsddAlCu12  : to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

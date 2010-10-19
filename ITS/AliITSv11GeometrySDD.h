@@ -212,6 +212,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkLadderHeight;          // including bottom beam
   static const Double_t fgkLadderSegBoxDW;        // To include hybrids in box
   static const Double_t fgkLadderSegBoxDH;        // To include hybrids in box
+  static const Double_t fgkLadderSegBoxDHCorr;    // To include hybrids in box
 
   static const Double_t fgkLadderBeamRadius;      // carbon fiber beam radius
   static const Double_t fgkLadderLa;              // parameters defining
@@ -309,6 +310,9 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkHybGlueUpThick;        // ===
   static const Double_t fgkHybAlCCThick;          // ===
   static const Double_t fgkHybUpCCThick;          // ===
+  static const Double_t fgkHybCC2SensorLen;       // ===
+  static const Double_t fgkHybCC2SensorWid;       // ===
+  static const Double_t fgkHybCC2SensorAng;       // ===
   static const Double_t fgkHybChipThick;          // ===
   static const Double_t fgkHybGlueAgThick;        // ===
   static const Double_t fgkHybUnderNiThick;       // ===
@@ -582,6 +586,9 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkSectionCoolWaterEL; // area of cooling water on End Ladders
   static const Double_t fgkEndLadderEarthCableR; // radius of the earth cable on End Ladders
   static const Double_t fgkCableBendRatio; // ??? this factor account for the bending of cables
+  static const Double_t fgkHybridAlFoilThick; // Thickness of Al foil on hybrid side
+  static const Double_t fgkHybridAlFoilWide; // Width of Al foil on hybrid side
+  static const Double_t fgkHybridAlFoilSide; // Side length of Al foil on hybrid side
 
   static const Double_t fgkConeSDDr1; // define SDD cone slope and pos
   static const Double_t fgkConeSDDr2; // define SDD cone slope and pos
