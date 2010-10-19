@@ -76,14 +76,16 @@ int AliHLTRecoParamComponent::InitCalibration()
 
   int iResult=0;
 
-  return 0;
+  return iResult;
 }
 
 int AliHLTRecoParamComponent::DeinitCalibration()
 {
   // see header file for class documentation
 
-  return 0;
+  int iResult=0;
+
+  return iResult;
 }
 
 int AliHLTRecoParamComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/,
