@@ -340,8 +340,6 @@ Bool_t AliEMCALUnfolding::FindFitV2(AliEMCALRecPoint * recPoint, AliEMCALDigit *
   // Cluster will be fitted as a superposition of nPar/3
   // electromagnetic showers
 
-  cout<<"inside FindFitV2"<<endl;
-
   if (fGeom==0) AliFatal("Did not get geometry from EMCALLoader");
 	
   if(!gMinuit)
