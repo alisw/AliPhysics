@@ -1,10 +1,10 @@
 {
   //load libraries
-  gSystem->SetBuildDir("/tmp");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberNucleon.cxx+");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberNucleus.cxx+");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberMC.cxx+");
-
+ gSystem->Load("libPWG2flowTools");
+ //  gSystem->SetBuildDir("/tmp");
+ //  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberNucleon.cxx+");
+ //  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberNucleus.cxx+");
+ //  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberMC.cxx+");
 
   Int_t nevents = 10000; // number of events to simulate 
   // supported systems are e.g. "p", "d", "Si", "Au", "Pb", "U" 
