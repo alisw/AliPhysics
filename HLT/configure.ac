@@ -1065,13 +1065,17 @@ else
 
 
     # AliZDCReconstructor::GetZDCESDData() is needed, requires revision 43770, Wed Sep 22 2010
+    have_alizdcreconstructor_r43770=no
     AC_MSG_CHECKING([checking for  AliZDCReconstructor::GetZDCESDData() r43770])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliZDCReconstructor.h>], 
                                        [AliZDCReconstructor rec;
 				        rec.GetZDCESDData()])],
-                                       [], 
-  				       [enable_zdc="no...requires.r43770"])
-    AC_MSG_RESULT([$enable_zdc])       
+                                       [have_alizdcreconstructor_r43770=yes], 
+  				       [AC_DEFINE(HAVE_NOT_ALIZDCRECONSTRUCTOR_r43770)])
+    if test "x$have_alizdcreconstructor_r43770"	!= "xyes"; then
+       enable_zdc="no...requires.r43770"
+    fi
+    AC_MSG_RESULT([$have_alizdcreconstructor_r43770])       
 
     AC_LANG_POP(C++)
     CPPFLAGS="$save_CPPFLAGS"
