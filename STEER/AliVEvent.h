@@ -122,7 +122,11 @@ public:
 				 const{
     return kFALSE;
   }
-  
+
+  virtual Bool_t IsPileupFromSPDInMultBins() const {
+    return kFALSE;    
+  }
+
   virtual Int_t        EventIndex(Int_t itrack) const = 0;
   virtual Int_t        EventIndexForCaloCluster(Int_t iclu) const= 0;
   virtual Int_t        EventIndexForPHOSCell(Int_t icell) const= 0;

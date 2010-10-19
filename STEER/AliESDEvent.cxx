@@ -1697,3 +1697,11 @@ void AliESDEvent::EstimateMultiplicity(Int_t &tracklets, Int_t &trITSTPC, Int_t 
   }
   //
 }
+
+Bool_t AliESDEvent::IsPileupFromSPDInMultBins() const {
+    Int_t nTracklets=GetMultiplicity()->GetNumberOfTracklets();
+    if(nTracklets<20) return IsPileupFromSPD(3,0.8);
+    else if(nTracklets<50) return IsPileupFromSPD(4,0.8);
+    else return IsPileupFromSPD(5,0.8);
+}
+

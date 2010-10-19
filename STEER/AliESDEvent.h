@@ -270,6 +270,8 @@ public:
 				  Double_t nSigmaDiamXY=2., 
 				  Double_t nSigmaDiamZ=5.) const;
   
+  virtual Bool_t IsPileupFromSPDInMultBins() const;
+
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)(fTracks?fTracks->UncheckedAt(i):0x0);
   }

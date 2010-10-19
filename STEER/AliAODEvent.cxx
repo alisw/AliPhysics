@@ -758,3 +758,11 @@ void AliAODEvent::AssignIDtoCollection(TCollection* col)
     while ((obj = next()))
 	TProcessID::AssignID(obj);
 }
+
+Bool_t AliAODEvent::IsPileupFromSPDInMultBins() const {
+    Int_t nTracklets=GetTracklets()->GetNumberOfTracklets();
+    if(nTracklets<20) return IsPileupFromSPD(3,0.8);
+    else if(nTracklets<50) return IsPileupFromSPD(4,0.8);
+    else return IsPileupFromSPD(5,0.8);
+}
+
