@@ -37,9 +37,16 @@ ClassImp(AliGlauberNucleus)
 
 //______________________________________________________________________________
 AliGlauberNucleus::AliGlauberNucleus(Option_t* iname, Int_t iN, Double_t iR, Double_t ia, Double_t iw, TF1* ifunc) : 
-   fN(iN),fR(iR),fA(ia),fW(iw),fMinDist(-1),
-   fF(0),fTrials(0),fFunction(ifunc),
-   fNucleons(0)
+  TNamed(iname,""),
+  fN(iN),
+  fR(iR),
+  fA(ia),
+  fW(iw),
+  fMinDist(-1),
+  fF(0),
+  fTrials(0),
+  fFunction(ifunc),
+  fNucleons(NULL)
 {
    if (fN==0) {
       cout << "Setting up nucleus " << iname << endl;
@@ -54,6 +61,42 @@ AliGlauberNucleus::~AliGlauberNucleus()
       delete fNucleons;
    }
    delete fFunction;
+}
+
+//______________________________________________________________________________
+AliGlauberNucleus::AliGlauberNucleus(const AliGlauberNucleus& in):
+  TNamed(in),
+  fN(in.fN),
+  fR(in.fR),
+  fA(in.fA),
+  fW(in.fW),
+  fMinDist(in.fMinDist),
+  fF(in.fF),
+  fTrials(in.fTrials),
+  fFunction(in.fFunction),
+  fNucleons(NULL)
+{
+  //copy ctor
+  if (in.fNucleons)
+    fNucleons=static_cast<TObjArray*>((in.fNucleons)->Clone());
+}
+
+//______________________________________________________________________________
+AliGlauberNucleus& AliGlauberNucleus::operator=(const AliGlauberNucleus& in)
+{
+  //assignment
+  fN=in.fN;
+  fR=in.fR;
+  fA=in.fA;
+  fW=in.fW;
+  fMinDist=in.fMinDist;
+  fF=in.fF;
+  fTrials=in.fTrials;
+  fFunction=in.fFunction;
+  delete fNucleons;
+  fNucleons=static_cast<TObjArray*>((in.fNucleons)->Clone());
+  fNucleons->SetOwner();
+  return *this;
 }
 
 //______________________________________________________________________________

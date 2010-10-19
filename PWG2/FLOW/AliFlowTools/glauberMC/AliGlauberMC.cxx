@@ -43,11 +43,14 @@ ClassImp(AliGlauberMC)
 
 //______________________________________________________________________________
 AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
+  TNamed(),
   fANucleus(NA),
   fBNucleus(NB),
-  fXSect(0),
+  fXSect(xsect),
   fNucleonsA(0),
   fNucleonsB(0),
+  fAN(0),
+  fBN(0),
   fnt(0),
   fMeanX2(0),
   fMeanY2(0),
@@ -68,20 +71,20 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
   fB_MC(0),
   fEvents(0),
   fTotalEvents(0),
-  fBMin(0),
-  fBMax(0),
+  fBMin(0.),
+  fBMax(20.),
   fMaxNpartFound(0),
   fNpart(0),
   fNcoll(0),
-  fSx2(0),
-  fSy2(0),
-  fSxy(0),
+  fSx2(0.),
+  fSy2(0.),
+  fSxy(0.),
+  fSx2Coll(0.),
+  fSy2Coll(0.),
+  fSxyColl(0.),
   fX(0.13),
   fNpp(8.)
 {
-  fBMin = 0;
-  fBMax = 20;
-  fXSect = xsect;
   fdNdEtaParam[0] = 8.0;
   fdNdEtaParam[1] = 0.13;
   fdNdEtaGBWParam[0] = 0.79;
@@ -90,17 +93,124 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
   fdNdEtaNBDParam[0] = 3.0;
   fdNdEtaNBDParam[1] = 4.0;
   fdNdEtaNBDParam[2] = 0.13;
-  fdNdEtaTwoNBDParam[0] = 0.4;
-  fdNdEtaTwoNBDParam[1] = 3.0;
-  fdNdEtaTwoNBDParam[2] = 4.0;
-  fdNdEtaTwoNBDParam[3] = 2.0;
-  fdNdEtaTwoNBDParam[4] = 11.0;
+  fdNdEtaTwoNBDParam[0] = 3.0;
+  fdNdEtaTwoNBDParam[1] = 4.0;
+  fdNdEtaTwoNBDParam[2] = 2.0;
+  fdNdEtaTwoNBDParam[3] = 11.0;
+  fdNdEtaTwoNBDParam[4] = 0.4;
   fdNdEtaTwoNBDParam[5] = 0.13;
 
-  TString name(Form("Glauber_%s_%s",fANucleus.GetName(),fBNucleus.GetName()));
-  TString title(Form("Glauber %s+%s Version",fANucleus.GetName(),fBNucleus.GetName()));
-  SetName(name);
-  SetTitle(title);
+  SetName(Form("Glauber_%s_%s",fANucleus.GetName(),fBNucleus.GetName()));
+  SetTitle(Form("Glauber %s+%s Version",fANucleus.GetName(),fBNucleus.GetName()));
+}
+
+//______________________________________________________________________________
+AliGlauberMC::~AliGlauberMC()
+{
+  //dtor
+  delete fnt;
+}
+
+//______________________________________________________________________________
+AliGlauberMC::AliGlauberMC(const AliGlauberMC& in):
+  TNamed(in),
+  fANucleus(in.fANucleus),
+  fBNucleus(in.fBNucleus),
+  fXSect(in.fXSect),
+  fNucleonsA(in.fNucleonsA),
+  fNucleonsB(in.fNucleonsB),
+  fAN(in.fAN),
+  fBN(in.fBN),
+  fnt(in.fnt),
+  fMeanX2(in.fMeanX2),
+  fMeanY2(in.fMeanY2),
+  fMeanXY(in.fMeanXY),
+  fMeanXParts(in.fMeanXParts),
+  fMeanYParts(in.fMeanYParts),
+  fMeanXColl(in.fMeanXColl),
+  fMeanYColl(in.fMeanYColl),
+  fMeanX2Coll(in.fMeanX2Coll),
+  fMeanY2Coll(in.fMeanY2Coll),
+  fMeanXYColl(in.fMeanXYColl),
+  fMeanXSystem(in.fMeanXSystem),
+  fMeanYSystem(in.fMeanYSystem),
+  fMeanX_A(in.fMeanX_A),
+  fMeanY_A(in.fMeanY_A),
+  fMeanX_B(in.fMeanX_B),
+  fMeanY_B(in.fMeanY_B),
+  fB_MC(in.fB_MC),
+  fEvents(in.fEvents),
+  fTotalEvents(in.fTotalEvents),
+  fBMin(in.fBMin),
+  fBMax(in.fBMax),
+  fMaxNpartFound(in.fMaxNpartFound),
+  fNpart(in.fNpart),
+  fNcoll(in.fNcoll),
+  fSx2(in.fSx2),
+  fSy2(in.fSy2),
+  fSxy(in.fSxy),
+  fSx2Coll(in.fSx2Coll),
+  fSy2Coll(in.fSy2Coll),
+  fSxyColl(in.fSxyColl),
+  fX(in.fX),
+  fNpp(in.fNpp)
+{
+  //copy ctor
+  memcpy(fdNdEtaParam,in.fdNdEtaParam,2*sizeof(Double_t));
+  memcpy(fdNdEtaGBWParam,in.fdNdEtaGBWParam,3*sizeof(Double_t));
+  memcpy(fdNdEtaNBDParam,in.fdNdEtaNBDParam,3*sizeof(Double_t));
+  memcpy(fdNdEtaTwoNBDParam,in.fdNdEtaTwoNBDParam,6*sizeof(Double_t));
+}
+
+//______________________________________________________________________________
+AliGlauberMC& AliGlauberMC::operator=(const AliGlauberMC& in)
+{
+  //assignment
+  fANucleus=in.fANucleus; 
+  fBNucleus=in.fBNucleus; 
+  fXSect=in.fXSect;    
+  fNucleonsA=in.fNucleonsA;
+  fNucleonsB=in.fNucleonsB;
+  fAN=in.fAN;       
+  fBN=in.fBN;       
+  fnt=in.fnt;       
+  fMeanX2=in.fMeanX2;   
+  fMeanY2=in.fMeanY2;   
+  fMeanXY=in.fMeanXY;   
+  fMeanXParts=in.fMeanXParts;
+  fMeanYParts=in.fMeanYParts;
+  fMeanXColl=in.fMeanXColl;
+  fMeanYColl=in.fMeanYColl;
+  fMeanX2Coll=in.fMeanX2Coll;
+  fMeanY2Coll=in.fMeanY2Coll;
+  fMeanXYColl=in.fMeanXYColl;
+  fMeanXSystem=in.fMeanXSystem;
+  fMeanYSystem=in.fMeanYSystem;
+  fMeanX_A=in.fMeanX_A;  
+  fMeanY_A=in.fMeanY_A;  
+  fMeanX_B=in.fMeanX_B;  
+  fMeanY_B=in.fMeanY_B;  
+  fB_MC=in.fB_MC;     
+  fEvents=in.fEvents;   
+  fTotalEvents=in.fTotalEvents;
+  fBMin=in.fBMin;     
+  fBMax=in.fBMax;     
+  memcpy(fdNdEtaParam,in.fdNdEtaParam,2*sizeof(Double_t));
+  memcpy(fdNdEtaGBWParam,in.fdNdEtaGBWParam,3*sizeof(Double_t));
+  memcpy(fdNdEtaNBDParam,in.fdNdEtaNBDParam,3*sizeof(Double_t));
+  memcpy(fdNdEtaTwoNBDParam,in.fdNdEtaTwoNBDParam,6*sizeof(Double_t));
+  fMaxNpartFound=in.fMaxNpartFound;
+  fNpart=in.fNpart;   
+  fNcoll=in.fNcoll;    
+  fSx2=in.fSx2;      
+  fSy2=in.fSy2;      
+  fSxy=in.fSxy;      
+  fSx2Coll=in.fSx2Coll;  
+  fSy2Coll=in.fSy2Coll;  
+  fSxyColl=in.fSxyColl;  
+  fX=in.fX;      
+  fNpp=in.fNpp;       
+  return *this;
 }
 
 //______________________________________________________________________________
@@ -419,14 +529,19 @@ void AliGlauberMC::SetdNdEtaNBDParam(Double_t k, Double_t nmean, Double_t beta)
   fdNdEtaNBDParam[2]=beta;
 }
 //______________________________________________________________________________
-void AliGlauberMC::SetdNdEtaTwoNBDParam(Double_t alpha, Double_t k1, Double_t nmean1, Double_t k2, Double_t nmean2, Double_t beta)
+void AliGlauberMC::SetdNdEtaTwoNBDParam( Double_t k1, 
+                                         Double_t nmean1, 
+                                         Double_t k2, 
+                                         Double_t nmean2, 
+                                         Double_t alpha,
+                                         Double_t beta)
 {
   // set parameters used for calculating multiplicity see GetdNdEtaTwoNBD() for commments
-  fdNdEtaTwoNBDParam[0]=alpha;
-  fdNdEtaTwoNBDParam[1]=k1;
-  fdNdEtaTwoNBDParam[2]=nmean1;
-  fdNdEtaTwoNBDParam[3]=k2;
-  fdNdEtaTwoNBDParam[4]=nmean2;
+  fdNdEtaTwoNBDParam[0]=k1;
+  fdNdEtaTwoNBDParam[1]=nmean1;
+  fdNdEtaTwoNBDParam[2]=k2;
+  fdNdEtaTwoNBDParam[3]=nmean2;
+  fdNdEtaTwoNBDParam[4]=alpha;
   fdNdEtaTwoNBDParam[5]=beta;
 }
 //______________________________________________________________________________
@@ -472,13 +587,12 @@ Double_t AliGlauberMC::GetdNdEtaNBD ( Int_t k, Double_t nmean, Double_t beta)
 }
 //______________________________________________________________________________
 
-Double_t AliGlauberMC::GetdNdEtaTwoNBD (
-  Int_t k1,
-  Double_t nmean1,
-  Int_t k2,
-  Double_t nmean2,
-  Double_t alpha,
-  Double_t beta )
+Double_t AliGlauberMC::GetdNdEtaTwoNBD ( Int_t k1,
+                                         Double_t nmean1,
+                                         Int_t k2,
+                                         Double_t nmean2,
+                                         Double_t alpha,
+                                         Double_t beta )
 {
   //Get particle density per unit of rapidity
   //using random numbers from two negative binomial distributions
@@ -617,10 +731,10 @@ void AliGlauberMC::runAndSaveNtuple( Int_t n,
                                      Double_t mind,
                                      const char *fname)
 {
-  AliGlauberMC *mcg=new AliGlauberMC(sysA,sysB,signn);
-  mcg->SetMinDistance(mind);
-  mcg->Run(n);
-  TNtuple  *nt=mcg->GetNtuple();
+  AliGlauberMC mcg(sysA,sysB,signn);
+  mcg.SetMinDistance(mind);
+  mcg.Run(n);
+  TNtuple  *nt=mcg.GetNtuple();
   TFile out(fname,"recreate",fname,9);
   if(nt) nt->Write();
   out.Close();
@@ -635,8 +749,8 @@ void AliGlauberMC::runAndSaveNucleons( Int_t n,
                                        Bool_t verbose,
                                        const char *fname)
 {
-  AliGlauberMC *mcg=new AliGlauberMC(sysA,sysB,signn);
-  mcg->SetMinDistance(mind);
+  AliGlauberMC mcg(sysA,sysB,signn);
+  mcg.SetMinDistance(mind);
   TFile *out=0;
   if(fname)
     out=new TFile(fname,"recreate",fname,9);
@@ -645,10 +759,10 @@ void AliGlauberMC::runAndSaveNucleons( Int_t n,
   {
 
     //get an event with at least one collision
-    while(!mcg->NextEvent()) {}
+    while(!mcg.NextEvent()) {}
 
     //access, save and (if wanted) print out nucleons
-    TObjArray* nucleons=mcg->GetNucleons();
+    TObjArray* nucleons=mcg.GetNucleons();
     if(!nucleons) continue;
     if(out)
       nucleons->Write(Form("nucleonarray%d",ievent),TObject::kSingleKey);
@@ -656,7 +770,7 @@ void AliGlauberMC::runAndSaveNucleons( Int_t n,
     if(verbose)
     {
       cout<<endl<<endl<<"EVENT NO: "<<ievent<<endl;
-      cout<<"B = "<<mcg->GetB()<<"  Npart = "<<mcg->GetNpart()<<endl<<endl;
+      cout<<"B = "<<mcg.GetB()<<"  Npart = "<<mcg.GetNpart()<<endl<<endl;
       printf("Nucleus\t X\t Y\t Z\tNcoll\n");
       Int_t nNucls=nucleons->GetEntries();
       for(Int_t iNucl=0; iNucl<nNucls; iNucl++)
@@ -675,3 +789,9 @@ void AliGlauberMC::runAndSaveNucleons( Int_t n,
   if(out) delete out;
 }
 
+//---------------------------------------------------------------------------------
+void AliGlauberMC::Reset()
+{
+  //delete the ntuple
+  delete fnt; fnt=NULL;
+}

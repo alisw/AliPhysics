@@ -52,10 +52,10 @@ private:
    Int_t        fTotalEvents;    //All events within selected impact parameter range
    Double_t     fBMin;           //Minimum impact parameter to be generated
    Double_t     fBMax;           //Maximum impact parameter to be generated
-   Double_t	fdNdEtaParam[2];	   //Parameters: nnp, x
-   Double_t fdNdEtaGBWParam[3];  //Parameters: delta, lambda, snn
-   Double_t fdNdEtaNBDParam[3];       //Parameters:  k, nmean, beta
-   Double_t fdNdEtaTwoNBDParam[6];    //Parameters: alpha, k1, nmean1, k2, nmean2, beta
+   Double_t	    fdNdEtaParam[2];	   //Parameters: nnp, x
+   Double_t     fdNdEtaGBWParam[3];  //Parameters: delta, lambda, snn
+   Double_t     fdNdEtaNBDParam[3];       //Parameters:  k, nmean, beta
+   Double_t     fdNdEtaTwoNBDParam[6];    //Parameters: k1, nmean1, k2, nmean2, alpha, beta
    Int_t        fMaxNpartFound;  //Largest value of Npart obtained
    Int_t        fNpart;          //Number of wounded (participating) nucleons in current event
    Int_t        fNcoll;          //Number of binary collisions in current event
@@ -71,7 +71,9 @@ private:
 
 public:
    AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 72);
-   virtual     ~AliGlauberMC() {Reset();}
+   virtual     ~AliGlauberMC();
+   AliGlauberMC(const AliGlauberMC& in);
+   AliGlauberMC& operator=(const AliGlauberMC& in);
    void         Draw(Option_t* option);
 
    void         Run(Int_t nevents);
@@ -108,7 +110,7 @@ public:
    TObjArray   *GetNucleons();
    Double_t     GetTotXSect()        const;
    Double_t     GetTotXSectErr()     const;
-   void         Reset()                    {delete fnt; fnt=0; }
+   void         Reset();
    static Double_t	NegativeBinomialDistribution(Int_t x, Int_t k, Double_t nmean);
    Int_t NegativeBinomialRandom(Int_t k, Double_t nmean);
    Int_t DoubleNegativeBinomialRandom(Int_t k1, Double_t nmean1, Int_t k2, Double_t nmean2, Double_t alpha);
