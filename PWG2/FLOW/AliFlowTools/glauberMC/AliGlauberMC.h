@@ -15,6 +15,7 @@
 
 #include "AliGlauberNucleus.h"
 
+#include <Riostream.h>
 class TNamed;
 class TObjArray;
 class TNtuple;
