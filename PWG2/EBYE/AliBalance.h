@@ -49,9 +49,9 @@ class AliBalance : public TObject {
   Double_t GetNpp(Int_t p2) const { return 1.0*fNpp[p2]; }
   Double_t GetNpn(Int_t p2) const { return 1.0*fNpn[p2]; }
  
-  TH1F *GetHistNnn() {return fHistfNnn;}
-  TH1F *GetHistNpp() {return fHistfNpp;}
-  TH1F *GetHistNpn() {return fHistfNpn;}
+  TH1F *GetHistNnn();
+  TH1F *GetHistNpp();
+  TH1F *GetHistNpn();
 
   void CalculateBalance(TObjArray *gTrackArray);
   
