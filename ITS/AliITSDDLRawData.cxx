@@ -544,14 +544,14 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch, AliITSFOSignalsSPD* foSignal
   fIndex=-1;
 
   TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
-  char fileName[15];
+  TString fileName;
   AliFstream* outfile;         // logical name of the output file 
   AliRawDataHeaderSim header;
 
   //loop over DDLs
   for(Int_t ddl=0;ddl<AliDAQ::NumberOfDdls("ITSSPD");ddl++){
-    strcpy(fileName,AliDAQ::DdlFileName("ITSSPD",ddl)); //The name of the output file.
-    outfile = new AliFstream(fileName);
+    fileName.Form("%s",AliDAQ::DdlFileName("ITSSPD",ddl)); //The name of the output file.
+    outfile = new AliFstream(fileName.Data());
     //write Dummy DATA HEADER
     UInt_t dataHeaderPosition=outfile->Tellp();
     outfile->WriteBuffer((char*)(&header),sizeof(header));
@@ -591,14 +591,14 @@ Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
   fIndex=-1;
 
   TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
-  char fileName[15];
+  TString fileName;
   AliFstream* outfile;         // logical name of the output file 
   AliRawDataHeaderSim header;
 
   //loop over DDLs  
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSSD");i++){
-    strcpy(fileName,AliDAQ::DdlFileName("ITSSSD",i)); //The name of the output file.
-    outfile = new AliFstream(fileName);
+    fileName.Form("%s",AliDAQ::DdlFileName("ITSSSD",i)); //The name of the output file.
+    outfile = new AliFstream(fileName.Data());
     //write Dummy DATA HEADER
     UInt_t dataHeaderPosition=outfile->Tellp();
     outfile->WriteBuffer((char*)(&header),sizeof(header));
@@ -638,7 +638,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
   fIndex=-1;
 
   TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
-  char fileName[15];
+  TString fileName;
   AliFstream* outfile;             // logical name of the output file 
   AliRawDataHeaderSim header;
   
@@ -657,8 +657,8 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
  
   //loop over DDLs  
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSDD");i++){
-    strcpy(fileName,AliDAQ::DdlFileName("ITSSDD",i)); //The name of the output file.
-    outfile = new AliFstream(fileName);
+    fileName.Form("%s",AliDAQ::DdlFileName("ITSSDD",i)); //The name of the output file.
+    outfile = new AliFstream(fileName.Data());
     //write Dummy DATA HEADER
     UInt_t dataHeaderPosition=outfile->Tellp();
     outfile->WriteBuffer((char*)(&header),sizeof(header));

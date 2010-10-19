@@ -315,8 +315,8 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
     if(nPtLay4>0) aveCoefLay4[ic]/=nPtLay4; // mean parameters
     else aveCoefLay4[ic]=defCoef[ic]; // default parameters
   }
-  AliITSDriftSpeedSDD *avdsp3=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,aveCoefLay3);
-  AliITSDriftSpeedSDD *avdsp4=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,aveCoefLay4);
+  AliITSDriftSpeedSDD *avdsp3=new AliITSDriftSpeedSDD(evNumb,timeStamp,3,aveCoefLay3);
+  AliITSDriftSpeedSDD *avdsp4=new AliITSDriftSpeedSDD(evNumb,timeStamp,3,aveCoefLay4);
 
   for(Int_t ihyb=0; ihyb<2*kNumberOfSDDLay3; ihyb++){
     if(modSet[ihyb]==0){ 

@@ -77,9 +77,9 @@ Float_t AliITSMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD 
 //______________________________________________________________________
 TH2F* AliITSMapSDD::GetMapHisto() const{
   // Returns a TH2F histogram with map of residuals
-  Char_t hname[50];
-  sprintf(hname,"h%s",GetName());
-  TH2F* hmap=new TH2F(hname,"",fgkNAnodPts,-0.5,255.5,fgkNDrifPts,0.,35.);
+  TString hname;
+  hname.Form("h%s",GetName());
+  TH2F* hmap=new TH2F(hname.Data(),"",fgkNAnodPts,-0.5,255.5,fgkNDrifPts,0.,35.);
   for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
     for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
       hmap->SetBinContent(iAn+1,iDr+1,GetCellContent(iAn,iDr));
@@ -90,9 +90,9 @@ TH2F* AliITSMapSDD::GetMapHisto() const{
 //______________________________________________________________________
 TH1F* AliITSMapSDD::GetResidualDistr(Float_t dmin, Float_t dmax) const{
   // Returns a TH1F histogram with distribution of residual
-  Char_t hname[50];
-  sprintf(hname,"hd%s",GetName());
-  TH1F* hd=new TH1F(hname,"",100,dmin,dmax);
+  TString hname;
+  hname.Form("hd%s",GetName());
+  TH1F* hd=new TH1F(hname.Data(),"",100,dmin,dmax);
   for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
     for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
       hd->Fill(GetCellContent(iAn,iDr));

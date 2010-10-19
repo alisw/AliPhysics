@@ -65,9 +65,9 @@ Float_t AliITSCorrMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentation
 //______________________________________________________________________
 TH2F* AliITSCorrMapSDD::GetMapHisto() const{
   // Returns a TH2F histogram with map of residuals
-  Char_t hname[50];
-  sprintf(hname,"h%s",GetName());
-  TH2F* hmap=new TH2F(hname,"",fNAnodePts,-0.5,255.5,fNDriftPts,0.,35.);
+  TString hname;
+  hname.Form("h%s",GetName());
+  TH2F* hmap=new TH2F(hname.Data(),"",fNAnodePts,-0.5,255.5,fNDriftPts,0.,35.);
   for(Int_t iAn=0;iAn<fNAnodePts; iAn++){
     for(Int_t iDr=0;iDr<fNDriftPts; iDr++){
       hmap->SetBinContent(iAn+1,iDr+1,GetCellContent(iAn,iDr));
@@ -78,9 +78,9 @@ TH2F* AliITSCorrMapSDD::GetMapHisto() const{
 //______________________________________________________________________
 TH1F* AliITSCorrMapSDD::GetMapProfile() const{
   // Returns a TH1F with the projection of the map along drift coordinate
-  Char_t hname[50];
-  sprintf(hname,"p%s",GetName());
-  TH1F* hprof=new TH1F(hname,"",fNDriftPts,0.,35.);
+  TString hname;
+  hname.Form("p%s",GetName());
+  TH1F* hprof=new TH1F(hname.Data(),"",fNDriftPts,0.,35.);
   for(Int_t iDr=0;iDr<fNDriftPts; iDr++){
     Float_t meanval=0.;
     for(Int_t iAn=0;iAn<fNAnodePts; iAn++){
@@ -94,9 +94,9 @@ TH1F* AliITSCorrMapSDD::GetMapProfile() const{
 //______________________________________________________________________
 TH1F* AliITSCorrMapSDD::GetResidualDistr(Float_t dmin, Float_t dmax) const{
   // Returns a TH1F histogram with distribution of residual
-  Char_t hname[50];
-  sprintf(hname,"hd%s",GetName());
-  TH1F* hd=new TH1F(hname,"",100,dmin,dmax);
+  TString hname;
+  hname.Form("hd%s",GetName());
+  TH1F* hd=new TH1F(hname.Data(),"",100,dmin,dmax);
   for(Int_t iAn=0;iAn<fNAnodePts; iAn++){
     for(Int_t iDr=0;iDr<fNDriftPts; iDr++){
       hd->Fill(GetCellContent(iAn,iDr));

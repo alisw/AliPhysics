@@ -182,7 +182,7 @@ Float_t AliITSOnlineSDDBase::CalcMeanRawNoise() const{
 //______________________________________________________________________
 void AliITSOnlineSDDBase::WriteToASCII(){
   //
-  Char_t outfilnam[100];
+  TString outfilnam;
   Float_t basMin,basMax;
   GetMinAndMaxBaseline(basMin,basMax);
   Float_t finalVal=basMin;
@@ -194,8 +194,8 @@ void AliITSOnlineSDDBase::WriteToASCII(){
   Int_t thrH=(Int_t)(finalVal+fHighThrFact*avNoise+0.5);
   if(CountGoodAnodes()==0) thrH=255;
 
-  sprintf(outfilnam,"SDDbase_step1_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
-  FILE* outf=fopen(outfilnam,"w");
+  outfilnam.Form("SDDbase_step1_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
+  FILE* outf=fopen(outfilnam.Data(),"w");
   fprintf(outf,"%d\n",thrH);
   fprintf(outf,"%d\n",thrL);
   Float_t corrnoise=2.;
