@@ -43,6 +43,11 @@
 #include "TChain.h"
 #include "TList.h"
 
+const float kAliESDVZERODefaultTime = -1024.;
+const float kAliESDVZERODefaultTimeGlitch = 1e-6;
+const float kAliESDZDCDefaultEMEnergy = 0.;
+const float kAliESDZDCDefaultEMEnergyGlitch = 1e-6;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTEsdManagerImplementation)
 
@@ -57,6 +62,8 @@ AliHLTEsdManagerImplementation::AliHLTEsdManagerImplementation()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+  CheckClassConditions();
 }
 
 AliHLTEsdManagerImplementation::~AliHLTEsdManagerImplementation()
@@ -708,14 +715,20 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
 	AliESDTZERO* pESDTZero=dynamic_cast<AliESDTZERO*>(pSrcObject);
 	copy=(pESDTZero && (pESDTZero->GetT0zVertex()!=0.0 || pESDTZero->GetT0()!=0.0));
       } else if (pSrcObject->IsA()==AliESDVZERO::Class()) {
-	AliESDVZERO* pESDVZero=dynamic_cast<AliESDVZERO*>(pSrcObject);
-	copy=(pESDVZero && false); // could not find an easy valid condition
+	AliESDVZERO* pESDVZERO=dynamic_cast<AliESDVZERO*>(pSrcObject);
+	// object contains data if one of the times exceeds the default value
+	copy=pESDVZERO &&
+	  (pESDVZERO->GetV0ATime() > kAliESDVZERODefaultTime+kAliESDVZERODefaultTimeGlitch ||
+	   pESDVZERO->GetV0CTime() > kAliESDVZERODefaultTime+kAliESDVZERODefaultTimeGlitch);
       } else if (pSrcObject->IsA()==AliESDFMD::Class()) {
 	AliESDFMD* pESDFMD=dynamic_cast<AliESDFMD*>(pSrcObject);
 	copy=(pESDFMD && false); // have to find an easy valid condition
       } else if (pSrcObject->IsA()==AliESDZDC::Class()) {
 	AliESDZDC* pESDZDC=dynamic_cast<AliESDZDC*>(pSrcObject);
-	copy=(pESDZDC && false); // have to find an easy valid condition
+	// object contains data if the EM energies are different from the default value
+	copy=pESDZDC &&
+	  (TMath::Abs(pESDZDC->GetZDCEMEnergy(0)-kAliESDZDCDefaultEMEnergy) > kAliESDZDCDefaultEMEnergyGlitch ||
+	   TMath::Abs(pESDZDC->GetZDCEMEnergy(1)-kAliESDZDCDefaultEMEnergy) > kAliESDZDCDefaultEMEnergyGlitch);
       } else if (pSrcObject->IsA()==AliMultiplicity::Class()) {
 	AliMultiplicity* pMultiplicity=dynamic_cast<AliMultiplicity*>(pSrcObject);
 	copy=(pMultiplicity && pMultiplicity->GetNumberOfTracklets()>0);
@@ -807,4 +820,31 @@ bool AliHLTEsdManagerImplementation::AliHLTESDEventHelper::IsStdContent(const ch
     if (needle.CompareTo(fgkESDListName[i])==0) return true;
   }
   return false;
+}
+
+int AliHLTEsdManagerImplementation::CheckClassConditions() const
+{
+  // this is a helper method which checks if some thing in the default
+  // object initialization changes during the evolution of the source code
+  // which is necessary for checking the validity of data in the object
+
+  // check AliESDVZERO
+  AliESDVZERO vzerodummy;
+  if (TMath::Abs(vzerodummy.GetV0ATime()-kAliESDVZERODefaultTime) > kAliESDVZERODefaultTimeGlitch ||
+      TMath::Abs(vzerodummy.GetV0CTime()-kAliESDVZERODefaultTime) > kAliESDVZERODefaultTimeGlitch) {
+    HLTWarning("initialization of AliESDVZERO has changed, default time values now %f/%f, "
+	       "revision of condition might be needed",
+	       vzerodummy.GetV0ATime(), vzerodummy.GetV0CTime());
+  }
+
+  // check AliESDZDC
+  AliESDZDC zdcdummy;
+  if (TMath::Abs(zdcdummy.GetZDCEMEnergy(0)-kAliESDZDCDefaultEMEnergy) > kAliESDZDCDefaultEMEnergyGlitch ||
+      TMath::Abs(zdcdummy.GetZDCEMEnergy(1)-kAliESDZDCDefaultEMEnergy) > kAliESDZDCDefaultEMEnergyGlitch) {
+    HLTWarning("initialization of AliESDZDC has changed, default em energy values now %f/%f, "
+	       "revision of condition might be needed",
+	       zdcdummy.GetZDCEMEnergy(0), zdcdummy.GetZDCEMEnergy(1));
+  }
+
+  return 0;
 }

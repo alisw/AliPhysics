@@ -103,6 +103,8 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
     static bool IsStdContent(const char* key);
   };
 
+  int CheckClassConditions() const;
+
  protected:
 
  private:
