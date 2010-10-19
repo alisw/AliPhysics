@@ -715,7 +715,12 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	pObject != NULL; pObject = GetNextInputObject() ) {
     AliESDZDC *esdZDC = dynamic_cast<AliESDZDC*>(const_cast<TObject*>( pObject ) );
     if (esdZDC) {
+#ifndef HAVE_NOT_ALIZDCRECONSTRUCTOR_r43770
       pESD->SetZDCData( esdZDC );
+#else
+      ALIHLTERRORGUARD(1, "Processing of ZDC data requires AliRoot r43770m skipping data block of type %s",
+		       DataType2Text(kAliHLTDataTypeESDContent|kAliHLTDataOriginZDC).c_str());
+#endif
       break;
     } else {
       ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDZDC",
