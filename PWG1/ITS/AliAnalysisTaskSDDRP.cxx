@@ -49,6 +49,7 @@ ClassImp(AliAnalysisTaskSDDRP)
 AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"), 
   fOutput(0),
   fHistNEvents(0),
+  fHistCluInLay(0),
   fHistAllPMod(0),
   fHistGoodPMod(0),
   fHistBadRegMod(0),
@@ -56,6 +57,14 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"
   fHistSkippedMod(0),
   fHistOutAccMod(0),
   fHistNoRefitMod(0),
+  fHistAllPXloc(0),
+  fHistGoodPXloc(0),
+  fHistBadRegXloc(0),
+  fHistMissPXloc(0),
+  fHistAllPZloc(0),
+  fHistGoodPZloc(0),
+  fHistBadRegZloc(0),
+  fHistMissPZloc(0),
   fHistdEdxL3VsP(0),
   fHistdEdxL4VsP(0),
   fHistdEdxVsMod(0),
@@ -72,15 +81,14 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"
   fDriftTimeTPAll(0),
   fDriftTimeTPNoExtra(0),
   fDriftTimeTPExtra(0),
-  fESD(0),
-  fESDfriend(0),
+  fCluSizAnVsTime(0),
+  fCluSizTbVsTime(0),
   fResp(0),
   fUseITSsaTracks(kFALSE),
   fMinITSpts(3),
   fMinTPCpts(70),
   fMinPfordEdx(0.5),
   fOnlyCINT1BTrig(0),
-  fInitialised(0),
   fExcludeBadMod(kFALSE)
 {
   //
@@ -95,6 +103,7 @@ AliAnalysisTaskSDDRP::~AliAnalysisTaskSDDRP(){
     delete fOutput;
     fOutput = 0;
   }
+  
 }
 
 
@@ -110,6 +119,11 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
+
+  fHistCluInLay = new TH1F("hCluInLay","hCluInLay",7,-1.5,5.5);
+  fHistCluInLay->Sumw2();
+  fHistCluInLay->SetMinimum(0);
+  fOutput->Add(fHistCluInLay);
 
   // -- Module histos
 
@@ -148,20 +162,6 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   fHistNoRefitMod->SetMinimum(0);
   fOutput->Add(fHistNoRefitMod);
 
-  fHistdEdxL3VsP=new TH2F("hdEdxL3VsP","dE/dx vs. p lay3",40,0.,2.,100,0.,500.);
-  fHistdEdxL3VsP->Sumw2();
-  fHistdEdxL3VsP->SetMinimum(0);
-  fOutput->Add(fHistdEdxL3VsP);
-
-  fHistdEdxL4VsP=new TH2F("hdEdxL4VsP","dE/dx vs. p lay4",40,0.,2.,100,0.,500);
-  fHistdEdxL4VsP->Sumw2();
-  fHistdEdxL4VsP->SetMinimum(0);
-  fOutput->Add(fHistdEdxL4VsP);
-
-  fHistdEdxVsMod=new TH2F("hdEdxVsMod","dE/dx vs. mod",260,239.5,499.5,100,0.,500.);
-  fHistdEdxVsMod->Sumw2();
-  fHistdEdxVsMod->SetMinimum(0);
-  fOutput->Add(fHistdEdxVsMod);
 
 
   fRecPMod = new TH1F("hRPMod","Rec Points per Module",260,239.5,499.5);
@@ -176,6 +176,48 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
 
   fGoodAnMod = new TH1F("hGAMod","Good Anodes per Module",260,239.5,499.5);
   fOutput->Add(fGoodAnMod);
+
+  // -- Local coordinates
+
+  fHistAllPXloc  = new TH1F("hAllPxloc","Crossing Tracks vs. Xloc",75, -3.75, 3.75);
+  fHistAllPXloc->Sumw2();
+  fHistAllPXloc->SetMinimum(0);
+  fOutput->Add(fHistAllPXloc);
+
+  fHistGoodPXloc  = new TH1F("hGoodPxloc","PointsAssocToTrack vs. Xloc",75, -3.75, 3.75);
+  fHistGoodPXloc->Sumw2();
+  fHistGoodPXloc->SetMinimum(0);
+  fOutput->Add(fHistGoodPXloc);
+
+  fHistBadRegXloc  = new TH1F("hBadRegxloc","Tracks in BadRegion vs. Xloc",75, -3.75, 3.75);
+  fHistBadRegXloc->Sumw2();
+  fHistBadRegXloc->SetMinimum(0);
+  fOutput->Add(fHistBadRegXloc);
+
+  fHistMissPXloc  = new TH1F("hMissPxloc","Missing Points vs. Xloc",75, -3.75, 3.75);
+  fHistMissPXloc->Sumw2();
+  fHistMissPXloc->SetMinimum(0);
+  fOutput->Add(fHistMissPXloc);
+
+  fHistAllPZloc  = new TH1F("hAllPzloc","Crossing Tracks vs. Zloc",77, -3.85, 3.85);
+  fHistAllPZloc->Sumw2();
+  fHistAllPZloc->SetMinimum(0);
+  fOutput->Add(fHistAllPZloc);
+
+  fHistGoodPZloc  = new TH1F("hGoodPzloc","PointsAssocToTrack vs. Zloc",77, -3.85, 3.85);
+  fHistGoodPZloc->Sumw2();
+  fHistGoodPZloc->SetMinimum(0);
+  fOutput->Add(fHistGoodPZloc);
+
+  fHistBadRegZloc  = new TH1F("hBadRegzloc","Tracks in BadRegion vs. Zloc",77, -3.85, 3.85);
+  fHistBadRegZloc->Sumw2();
+  fHistBadRegZloc->SetMinimum(0);
+  fOutput->Add(fHistBadRegZloc);
+
+  fHistMissPZloc  = new TH1F("hMissPzloc","Missing Points vs. Zloc",77, -3.85, 3.85);
+  fHistMissPZloc->Sumw2();
+  fHistMissPZloc->SetMinimum(0);
+  fOutput->Add(fHistMissPZloc);
 
   // -- Ladder histos
 
@@ -225,95 +267,123 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   fDriftTimeTPExtra->SetMinimum(0.);
   fOutput->Add(fDriftTimeTPExtra);
 
+  // dE/dx histos
+
+  fHistdEdxL3VsP=new TH2F("hdEdxL3VsP","dE/dx vs. p lay3",40,0.,2.,100,0.,500.);
+  fHistdEdxL3VsP->Sumw2();
+  fHistdEdxL3VsP->SetMinimum(0);
+  fOutput->Add(fHistdEdxL3VsP);
+
+  fHistdEdxL4VsP=new TH2F("hdEdxL4VsP","dE/dx vs. p lay4",40,0.,2.,100,0.,500);
+  fHistdEdxL4VsP->Sumw2();
+  fHistdEdxL4VsP->SetMinimum(0);
+  fOutput->Add(fHistdEdxL4VsP);
+
+  fHistdEdxVsMod=new TH2F("hdEdxVsMod","dE/dx vs. mod",260,239.5,499.5,100,0.,500.);
+  fHistdEdxVsMod->Sumw2();
+  fHistdEdxVsMod->SetMinimum(0);
+  fOutput->Add(fHistdEdxVsMod);
+
   for(Int_t it=0; it<8; it++){
     fSignalTime[it]=new TH1F(Form("hSigTimeInt%d",it),Form("hSigTimeInt%d",it),100,0.,300.);
     fSignalTime[it]->Sumw2();
     fSignalTime[it]->SetMinimum(0);
     fOutput->Add(fSignalTime[it]);
   }
+
+  // cluster size histos
+  
+  fCluSizAnVsTime = new TH2F("hCluSizAn","hCluSizAn",40,0.,6400.,15,-0.5,14.5);
+  fCluSizAnVsTime->Sumw2();
+  fCluSizAnVsTime->SetMinimum(0);
+  fOutput->Add(fCluSizAnVsTime);
+
+  fCluSizTbVsTime = new TH2F("hCluSizTb","hCluSizTb",40,0.,6400.,15,-0.5,14.5);
+  fCluSizTbVsTime->Sumw2();
+  fCluSizTbVsTime->SetMinimum(0);
+  fOutput->Add(fCluSizTbVsTime);
+
+
+    // Read dead channels from OCDB
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) AliFatal("No analysis manager");
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage("raw://");
+  Int_t nrun=mgr->GetRunFromPath();
+  man->SetRun(nrun);
+  
+    
+  AliCDBEntry* eR=(AliCDBEntry*)man->Get("ITS/Calib/RespSDD");
+  eR->PrintId();
+  eR->PrintMetaData();
+  fResp=(AliITSresponseSDD*)eR->GetObject();
+    
+  AliCDBEntry* eC=(AliCDBEntry*)man->Get("ITS/Calib/CalibSDD");
+  eC->PrintId();
+  eC->PrintMetaData();
+  TObjArray* calsdd=(TObjArray*)eC->GetObject();
+  Int_t countGood3[14];
+  Int_t countGood4[22];
+  Int_t countGoodMod[260];
+  for(Int_t ilad=0;ilad<14;ilad++) countGood3[ilad]=0;
+  for(Int_t ilad=0;ilad<22;ilad++) countGood4[ilad]=0;
+  for(Int_t imod=0;imod<260;imod++) countGoodMod[imod]=0;
+  for(Int_t imod=0;imod<260;imod++){
+    AliITSCalibrationSDD* cal=(AliITSCalibrationSDD*)calsdd->At(imod);
+    if(cal->IsBad()) continue;
+    Int_t modId=imod+AliITSgeomTGeo::GetModuleIndex(3,1,1);
+    Int_t lay,lad,det;
+    AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
+    if(fExcludeBadMod && !CheckModule(lay,lad,det)) continue;
+    for(Int_t ian=0; ian<512; ian++){
+      if(cal->IsBadChannel(ian)) continue;
+      countGoodMod[imod]++;
+      if(lay==3) countGood3[lad-1]++;
+      else if(lay==4) countGood4[lad-1]++;
+    }
+  }
+  for(Int_t imod=0;imod<260;imod++) fGoodAnMod->SetBinContent(imod+1,countGoodMod[imod]);
+  fGoodAnMod->SetMinimum(0);
+  for(Int_t ilad=0;ilad<14;ilad++) fGoodAnLadLay3->SetBinContent(ilad+1,countGood3[ilad]);
+  fGoodAnLadLay3->SetMinimum(0);    
+  for(Int_t ilad=0;ilad<22;ilad++) fGoodAnLadLay4->SetBinContent(ilad+1,countGood4[ilad]);
+  fGoodAnLadLay4->SetMinimum(0);
+
+  PostData(1, fOutput);
+
 }
 //______________________________________________________________________________
 void AliAnalysisTaskSDDRP::UserExec(Option_t *)
 {
   //
-  fESD = (AliESDEvent*) (InputEvent());
-  fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+  AliESDEvent *esd = (AliESDEvent*) (InputEvent());
 
 
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
-  if(!esdH) {
-    printf("ERROR: Could not get ESDInputHandler\n");
-    return;
-  } else {
-    fESD = esdH->GetEvent();
-  }
-  if(!fESD) {
+  if(!esd) {
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
     return;
   } 
 
 
-  if(!fESDfriend) {
+  if(!ESDfriend()) {
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESDfriend\n");
     return;
   }
   
   
   PostData(1, fOutput);
-  fESD->SetESDfriend(fESDfriend);
-
-  if (!fInitialised) {
-    fInitialised = 1;
-
-    AliCDBManager* man = AliCDBManager::Instance();
-    man->SetDefaultStorage("raw://");
-    man->SetRun(fESD->GetRunNumber());
-    
-    
-    AliCDBEntry* eR=(AliCDBEntry*)man->Get("ITS/Calib/RespSDD");
-    fResp=(AliITSresponseSDD*)eR->GetObject();
-    
-    AliCDBEntry* eC=(AliCDBEntry*)man->Get("ITS/Calib/CalibSDD");
-    TObjArray* calsdd=(TObjArray*)eC->GetObject();
-    Int_t countGood3[14];
-    Int_t countGood4[22];
-    Int_t countGoodMod[260];
-    for(Int_t ilad=0;ilad<14;ilad++) countGood3[ilad]=0;
-    for(Int_t ilad=0;ilad<22;ilad++) countGood4[ilad]=0;
-    for(Int_t imod=0;imod<260;imod++) countGoodMod[imod]=0;
-    for(Int_t imod=0;imod<260;imod++){
-      AliITSCalibrationSDD* cal=(AliITSCalibrationSDD*)calsdd->At(imod);
-      if(cal->IsBad()) continue;
-      Int_t modId=imod+AliITSgeomTGeo::GetModuleIndex(3,1,1);
-      Int_t lay,lad,det;
-      AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
-      if(fExcludeBadMod && !CheckModule(lay,lad,det)) continue;
-      for(Int_t ian=0; ian<512; ian++){
-	if(cal->IsBadChannel(ian)) continue;
-	countGoodMod[imod]++;
-	if(lay==3) countGood3[lad-1]++;
-	else if(lay==4) countGood4[lad-1]++;
-      }
-    }
-    for(Int_t imod=0;imod<260;imod++) fGoodAnMod->SetBinContent(imod+1,countGoodMod[imod]);
-    fGoodAnMod->SetMinimum(0);
-    for(Int_t ilad=0;ilad<14;ilad++) fGoodAnLadLay3->SetBinContent(ilad+1,countGood3[ilad]);
-    fGoodAnLadLay3->SetMinimum(0);    
-    for(Int_t ilad=0;ilad<22;ilad++) fGoodAnLadLay4->SetBinContent(ilad+1,countGood4[ilad]);
-    fGoodAnLadLay4->SetMinimum(0);
-  }
-
 
   fHistNEvents->Fill(0);
   if(fOnlyCINT1BTrig){
-    if(!fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
+    if(!esd->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
     fHistNEvents->Fill(1);
   }
   const AliTrackPointArray *array = 0;
-  Int_t ntracks = fESD->GetNumberOfTracks();
+  Int_t ntracks = esd->GetNumberOfTracks();
   for (Int_t itrack=0; itrack < ntracks; itrack++) {
-    AliESDtrack * track = fESD->GetTrack(itrack);
+    AliESDtrack * track = esd->GetTrack(itrack);
     if (!track) continue;
 
     Bool_t accept=kTRUE;
@@ -327,6 +397,13 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
     if(!(trstatus&AliESDtrack::kITSrefit)) accept=kFALSE;
     if(!accept) continue;
 
+    fHistCluInLay->Fill(-1.); // bin -1 counts accepted tracks
+    UChar_t clumap=track->GetITSClusterMap();
+    for(Int_t iBit=0; iBit<6; iBit++){
+      if(clumap&(1<<iBit)) fHistCluInLay->Fill(iBit);
+    }
+
+
     Double_t dedx[4];
     track->GetITSdEdxSamples(dedx);
     Float_t mom=track->P();
@@ -337,16 +414,28 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
       if(ok){
 	iMod+=240;
 	fHistAllPMod->Fill(iMod);
+	fHistAllPXloc->Fill(xloc);
+	fHistAllPZloc->Fill(zloc);
 	if(status==1){
 	  fHistGoodPMod->Fill(iMod);
+	  fHistGoodPXloc->Fill(xloc);
+	  fHistGoodPZloc->Fill(zloc);
 	  if(mom>fMinPfordEdx) fHistdEdxVsMod->Fill(iMod,dedx[iLay-2]);
 	  if(iLay==2) fHistdEdxL3VsP->Fill(mom,dedx[0]);
 	  else fHistdEdxL4VsP->Fill(mom,dedx[1]);
 	}
-	else if(status==2) fHistBadRegMod->Fill(iMod);
+	else if(status==2){ 
+	  fHistBadRegMod->Fill(iMod);
+	  fHistBadRegXloc->Fill(xloc);
+	  fHistBadRegZloc->Fill(zloc);
+	}
 	else if(status==3) fHistSkippedMod->Fill(iMod);
 	else if(status==4) fHistOutAccMod->Fill(iMod);
-	else if(status==5) fHistMissPMod->Fill(iMod);
+	else if(status==5){
+	  fHistMissPMod->Fill(iMod);
+	  fHistMissPXloc->Fill(xloc);
+	  fHistMissPZloc->Fill(zloc);
+	}
 	else if(status==6) fHistNoRefitMod->Fill(iMod);
       }
     }
@@ -370,6 +459,11 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
       if(point.IsExtra()) fDriftTimeTPExtra->Fill(point.GetDriftTime());
       else fDriftTimeTPNoExtra->Fill(point.GetDriftTime());
       Float_t dtime=point.GetDriftTime()-fResp->GetTimeZero(modId);
+      Int_t cluTyp=point.GetClusterType();
+      Int_t clSizAn=(cluTyp>>8)&0xFF;
+      Int_t clSizTb=cluTyp&0xFF;
+      fCluSizAnVsTime->Fill(dtime,clSizAn);
+      fCluSizTbVsTime->Fill(dtime,clSizTb);
       Int_t theBin=int(dtime/6500.*8.);
       if(layerId==3){ 
 	fTrackPLadLay3->Fill(lad-1);	  
@@ -447,6 +541,7 @@ void AliAnalysisTaskSDDRP::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
+  fHistCluInLay= dynamic_cast<TH1F*>(fOutput->FindObject("hCluInLay"));
 
   fHistAllPMod= dynamic_cast<TH1F*>(fOutput->FindObject("hAllPMod"));
   fHistGoodPMod= dynamic_cast<TH1F*>(fOutput->FindObject("hGoodPMod"));
@@ -455,6 +550,15 @@ void AliAnalysisTaskSDDRP::Terminate(Option_t */*option*/)
   fHistSkippedMod= dynamic_cast<TH1F*>(fOutput->FindObject("hSkippedMod"));
   fHistOutAccMod= dynamic_cast<TH1F*>(fOutput->FindObject("hOutAccMod"));
   fHistNoRefitMod= dynamic_cast<TH1F*>(fOutput->FindObject("hNoRefitMod"));
+
+  fHistAllPXloc= dynamic_cast<TH1F*>(fOutput->FindObject("hAllPxloc"));
+  fHistGoodPXloc= dynamic_cast<TH1F*>(fOutput->FindObject("hGoodPxloc"));
+  fHistBadRegXloc= dynamic_cast<TH1F*>(fOutput->FindObject("hBadRegxloc"));
+  fHistMissPXloc= dynamic_cast<TH1F*>(fOutput->FindObject("hMissPxloc"));
+  fHistAllPZloc= dynamic_cast<TH1F*>(fOutput->FindObject("hAllPzloc"));
+  fHistGoodPZloc= dynamic_cast<TH1F*>(fOutput->FindObject("hGoodPzloc"));
+  fHistBadRegZloc= dynamic_cast<TH1F*>(fOutput->FindObject("fHistBadRegZloc"));
+  fHistMissPZloc= dynamic_cast<TH1F*>(fOutput->FindObject("hMissPzloc"));
 
   fHistdEdxL3VsP= dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxL3VsP"));
   fHistdEdxL4VsP= dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxL4VsP"));
@@ -479,6 +583,8 @@ void AliAnalysisTaskSDDRP::Terminate(Option_t */*option*/)
   for(Int_t it=0; it<8; it++){
     fSignalTime[it]= dynamic_cast<TH1F*>(fOutput->FindObject(Form("hSigTimeInt%d",it)));
   }
+  fCluSizAnVsTime= dynamic_cast<TH2F*>(fOutput->FindObject("hCluSizAn"));
+  fCluSizTbVsTime= dynamic_cast<TH2F*>(fOutput->FindObject("hCluSizTb"));
 
   return;
 }

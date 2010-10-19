@@ -60,6 +60,7 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   
   TList*  fOutput;          //! QA histos
   TH1F*   fHistNEvents;     //! histo with N of events  
+  TH1F*   fHistCluInLay;    //! histo with number of tracks per layer
   TH1F*   fHistAllPMod;     //! histo of tracks crossing SDD modules
   TH1F*   fHistGoodPMod;    //! histo of tracks with good point in SDD module
   TH1F*   fHistBadRegMod;   //! histo of tracks crossing bad region of SDD mod.
@@ -67,6 +68,16 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   TH1F*   fHistSkippedMod;  //! histo of tracks skipping an SDD module
   TH1F*   fHistOutAccMod;   //! histo of tracks out of accept. in SDD module
   TH1F*   fHistNoRefitMod;  //! histo of points rejected in refit vs. SDD mod.
+
+  TH1F*   fHistAllPXloc;    //! histo of xlocal for track hit points
+  TH1F*   fHistGoodPXloc;   //! histo of xlocal for track hit points + good clu
+  TH1F*   fHistBadRegXloc;  //! histo of xlocal for track hit points + bad reg.
+  TH1F*   fHistMissPXloc;   //! histo of xlocal for track hit points + miss clu
+  TH1F*   fHistAllPZloc;    //! histo of zlocal for track hit points
+  TH1F*   fHistGoodPZloc;   //! histo of zlocal for track hit points + good clu
+  TH1F*   fHistBadRegZloc;  //! histo of zlocal for track hit points + bad reg.
+  TH1F*   fHistMissPZloc;   //! histo of zlocal for track hit points + miss clu
+
   TH2F*   fHistdEdxL3VsP;   //! 2D histo of dE/dx vs. momentum -- layer 3
   TH2F*   fHistdEdxL4VsP;   //! 2D histo of dE/dx vs. momentum -- layer 4
   TH2F*   fHistdEdxVsMod;   //! 2D histo of dE/dx vs. module number
@@ -84,18 +95,17 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   TH1F*   fDriftTimeTPNoExtra; //! histo with drift time distribution (TrP)
   TH1F*   fDriftTimeTPExtra;//! histo with drift time distribution (TrP)
   TH1F*   fSignalTime[8];   //! histos of dE/dx in time windows
-  AliESDEvent  *fESD;       // ESD object
-  AliESDfriend *fESDfriend; // ESD friend object
+  TH2F*   fCluSizAnVsTime;  //! Histo with anode cluster size vs. time
+  TH2F*   fCluSizTbVsTime;  //! Histo with time-bin cluster size vs. time
   AliITSresponseSDD* fResp; // ResponseSDD object
   Bool_t  fUseITSsaTracks;   // Flag for using standalone ITS tracs
   Int_t   fMinITSpts;       // Minimum number of ITS points per track
   Int_t   fMinTPCpts;       // Minimum number of TPC points per track
   Float_t fMinPfordEdx;     // Minimum momentum for dE/dx
   Bool_t  fOnlyCINT1BTrig;  // Flag for using all events or only intections
-  Bool_t  fInitialised;     // True if initialised
   Bool_t  fExcludeBadMod;   // Flag to reject bad modules
  
-  ClassDef(AliAnalysisTaskSDDRP,3);  
+  ClassDef(AliAnalysisTaskSDDRP,4);
 };
 
 
