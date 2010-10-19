@@ -304,9 +304,12 @@ void AliTPCROCVoltError3D::InitROCVoltError3D() {
 	    Float_t phi0    = gridSizePhi * k ;
 	    
 	    // To avoid problems at sector boundaries, use an average of +- 1 degree from actual phi location
-	    if ( j == (kColumns-1) ) 
+	    if ( j == (kColumns-1) ) {
 	      arrayV(i,j) = 0.5*  ( GetROCVoltOffset( side, radius0, phi0+0.02 ) + GetROCVoltOffset( side, radius0, phi0-0.02 ) ) ;
 
+	      if (side==1) // C side
+		arrayV(i,j) = -arrayV(i,j); // minus sign on the C side to allow a consistent usage of global z when setting the boundaries
+	    }
 	  }
 	}      
 	

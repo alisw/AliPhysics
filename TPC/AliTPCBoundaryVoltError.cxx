@@ -211,8 +211,9 @@ void AliTPCBoundaryVoltError::InitBoundaryVoltErrorDistortion() {
 
   // check if boundaries are different (regardless the sign)
   for (Int_t i=0; i<8; i++) { 
-    if ((TMath::Abs(fBoundariesA[i]) - TMath::Abs(fBoundariesC[i])) > 1e-5) symmetry = 0;  
-    sVec[i] = (Int_t) (TMath::Sign((Float_t)1.,fBoundariesA[i])*TMath::Sign((Float_t)1.,fBoundariesC[i])); // == -1 for anti-symmetry
+    if (TMath::Abs(TMath::Abs(fBoundariesA[i]) - TMath::Abs(fBoundariesC[i])) > 1e-5) 
+      symmetry = 0;  
+    sVec[i] = (Int_t)( TMath::Sign((Float_t)1.,fBoundariesA[i]) * TMath::Sign((Float_t)1.,fBoundariesC[i])); 
   }
   if (symmetry==-1) { // still the same values?
     // check the kind of symmetry , if even ...
@@ -294,7 +295,7 @@ void AliTPCBoundaryVoltError::InitBoundaryVoltErrorDistortion() {
     }
   }
 
-  //Interpolate results onto standard grid for Electric Fields
+  // Interpolate results onto standard grid for Electric Fields
   Int_t ilow=0, jlow=0 ;
   Double_t z,r;
   Float_t saveEr[2] ;	      
