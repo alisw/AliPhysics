@@ -18,6 +18,7 @@ class AliMCParticle;
 class AliFlowTrack;
 class AliMCEvent;
 class AliVEvent;
+class AliMultiplicity; 
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -30,7 +31,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static AliFlowTrackCuts* GetStandardTPCOnlyTrackCuts();
   static AliFlowTrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
 
-  enum trackParameterType { kMC, kESD_Global, kESD_TPConly };
+  enum trackParameterType { kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet };
   enum trackParameterMix  { kPure, kTrackWithMCkine, kTrackWithMCPID };
 
   //setters (interface to AliESDtrackCuts)
@@ -86,10 +87,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void SetParamType(trackParameterType paramType) {fParamType=paramType;}
   trackParameterType GetParamType() const {return fParamType;}
+  static const char* GetParamTypeName(trackParameterType type);
   void SetParamMix(trackParameterMix paramMix) {fParamMix=paramMix;}
   trackParameterMix GetParamMix() const {return fParamMix;}
 
-  virtual Bool_t IsSelected(TObject* obj);
+  virtual Bool_t IsSelected(TObject* obj, Int_t id=-1);
   AliVParticle* GetTrack() const {return fTrack;}
   AliMCParticle* GetMCparticle() const {return fMCparticle;}
   AliFlowTrack* MakeFlowTrack() const;
@@ -101,6 +103,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
  protected:
   Bool_t PassesCuts(AliVParticle* track);
   Bool_t PassesCuts(AliFlowTrackSimple* track);
+  Bool_t PassesCuts(AliMultiplicity* track, Int_t id);
+  Bool_t PassesMCcuts();
   void HandleESDtrack(AliESDtrack* track);
   void HandleVParticle(AliVParticle* track);
 
@@ -116,8 +120,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
-  Bool_t fCleanupTrack;              //check if we need to delete
+  Bool_t fCleanupTrack;              //check if we need to delete the track
   AliVParticle* fTrack;              //!the track to apply cuts on
+  Double_t fTrackPhi;                //!track phi
+  Double_t fTrackEta;                //!track eta
+  Double_t fTrackWeight;             //!track weight
   Int_t fTrackLabel;                 //!track label, or its absolute value if FakesAreOK
   AliMCEvent* fMCevent;              //!mc event
   AliMCParticle* fMCparticle;        //!mc particle

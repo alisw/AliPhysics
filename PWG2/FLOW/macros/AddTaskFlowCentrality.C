@@ -55,11 +55,12 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 // SETTING THE CUTS
 
 //----------For RP selection----------
-//kMC, kESD_Global, kESD_TPConly
-const TString rptype = "kMC";
-const TString poitype = "kMC";
+//kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet
+AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
+AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
 
-const TString type = "MK";
+const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype)
+const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype)
 
 void AddTaskFlowCentrality( Int_t refMultMin=0,
                             Int_t refMultMax=1e10,
@@ -168,7 +169,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
     if (LYZ2SUM){  
       // read the output directory from LYZ1SUM 
       TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis" ;
-      inputFileNameLYZ2SUM += type;
+      inputFileNameLYZ2SUM += rptypestr;
       cout<<"The input directory is "<<inputFileNameLYZ2SUM.Data()<<endl;
       TFile* fInputFileLYZ2SUM = (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2SUM.Data());
       if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
@@ -185,7 +186,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
     if (LYZ2PROD){  
       // read the output directory from LYZ1PROD 
       TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis" ;
-      inputFileNameLYZ2PROD += type;
+      inputFileNameLYZ2PROD += rptypestr;
       cout<<"The input directory is "<<inputFileNameLYZ2PROD.Data()<<endl;
       TFile* fInputFileLYZ2PROD = (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2PROD.Data());
       if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
@@ -217,7 +218,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
     
     // read the output file from LYZ2SUM
     TString inputFileNameLYZEP = "outputLYZ2SUManalysis" ;
-    inputFileNameLYZEP += type;
+    inputFileNameLYZEP += rptypestr;
     cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
     TFile* fInputFileLYZEP = (TFile*)outputFile->FindObjectAny(inputFileNameLYZEP.Data());
     if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
@@ -234,9 +235,9 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   
   // Create the FMD task and add it to the manager
   //===========================================================================
-  if (rptype == "FMD") {
+  if (rptypestr == "FMD") {
     AliFMDAnalysisTaskSE *taskfmd = NULL;
-    if (rptype == "FMD") {
+    if (rptypestr == "FMD") {
       taskfmd = new AliFMDAnalysisTaskSE("TaskFMD");
       mgr->AddTask(taskfmd);
       
@@ -256,12 +257,12 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
 
   if(useAfterBurner)
     { 
-      taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE,1);
+      taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent","",kFALSE,1);
       taskFE->SetFlow(v1,v2,v3,v4); 
       taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
       taskFE->SetAfterburnerOn();
     }
-  else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE); }
+  else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent","",kFALSE); }
   if (ExcludeRegion) {
     taskFE->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 
   }
@@ -372,7 +373,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   //===========================================================================
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   
-  if (rptype == "FMD") {
+  if (rptypestr == "FMD") {
     AliAnalysisDataContainer *coutputFMD = 
       mgr->CreateContainer(Form("BackgroundCorrected_%s",fileName.Data()), TList::Class(), AliAnalysisManager::kExchangeContainer);
     //input and output taskFMD     
@@ -399,7 +400,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if(SP) {
     TString outputSP = fileName;
     outputSP += ":outputSPanalysis";
-    outputSP+= type;
+    outputSP+= rptypestr;
     AliAnalysisDataContainer *coutputSP = mgr->CreateContainer(Form("cobjSP_%s",fileName.Data()), 
 							       TList::Class(),AliAnalysisManager::kOutputContainer,outputSP); 
     mgr->ConnectInput(taskSP,0,coutputFE); 
@@ -412,7 +413,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if(LYZ1SUM) {
     TString outputLYZ1SUM = fileName;
     outputLYZ1SUM += ":outputLYZ1SUManalysis";
-    outputLYZ1SUM+= type;
+    outputLYZ1SUM+= rptypestr;
     AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer(Form("cobjLYZ1SUM_%s",fileName.Data()), 
 								    TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1SUM); 
     mgr->ConnectInput(taskLYZ1SUM,0,coutputFE);
@@ -421,7 +422,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if(LYZ1PROD) {
     TString outputLYZ1PROD = fileName;
     outputLYZ1PROD += ":outputLYZ1PRODanalysis";
-    outputLYZ1PROD+= type;
+    outputLYZ1PROD+= rptypestr;
     AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer(Form("cobjLYZ1PROD_%s",fileName.Data()), 
 								     TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1PROD); 
     mgr->ConnectInput(taskLYZ1PROD,0,coutputFE); 
@@ -432,7 +433,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
 								   TList::Class(),AliAnalysisManager::kInputContainer);
     TString outputLYZ2SUM = fileName;
     outputLYZ2SUM += ":outputLYZ2SUManalysis";
-    outputLYZ2SUM+= type;
+    outputLYZ2SUM+= rptypestr;
     
     AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer(Form("cobjLYZ2SUM_%s",fileName.Data()), 
 								    TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2SUM); 
@@ -446,7 +447,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
 								    TList::Class(),AliAnalysisManager::kInputContainer);
     TString outputLYZ2PROD = fileName;
     outputLYZ2PROD += ":outputLYZ2PRODanalysis";
-    outputLYZ2PROD+= type;
+    outputLYZ2PROD+= rptypestr;
     
     AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer(Form("cobjLYZ2PROD_%s",fileName.Data()), 
 								     TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2PROD); 
@@ -460,7 +461,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
 								 TList::Class(),AliAnalysisManager::kInputContainer);
     TString outputLYZEP = fileName;
     outputLYZEP += ":outputLYZEPanalysis";
-    outputLYZEP+= type;
+    outputLYZEP+= rptypestr;
     
     AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer(Form("cobjLYZEP_%s",fileName.Data()), 
 								  TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP); 
@@ -472,7 +473,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if(GFC) {
     TString outputGFC = fileName;
     outputGFC += ":outputGFCanalysis";
-    outputGFC+= type;
+    outputGFC+= rptypestr;
     
     AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer(Form("cobjGFC_%s",fileName.Data()), 
 								TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC); 
@@ -486,7 +487,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if(QC) {
     TString outputQC = fileName;
     outputQC += ":outputQCanalysis";
-    outputQC+= type;
+    outputQC+= rptypestr;
 
     AliAnalysisDataContainer *coutputQC = mgr->CreateContainer(Form("cobjQC_%s",fileName.Data()), 
 							       TList::Class(),AliAnalysisManager::kOutputContainer,outputQC); 
@@ -500,7 +501,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if(FQD) {
     TString outputFQD = fileName;
     outputFQD += ":outputFQDanalysis";
-    outputFQD+= type;
+    outputFQD+= rptypestr;
     
     AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer(Form("cobjFQD_%s",fileName.Data()), 
 								TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD); 
@@ -514,7 +515,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if(MCEP) {
     TString outputMCEP = fileName;
     outputMCEP += ":outputMCEPanalysis";
-    outputMCEP+= type;
+    outputMCEP+= rptypestr;
     
     AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer(Form("cobjMCEP_%s",fileName.Data()), 
 								 TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP); 
@@ -524,7 +525,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if(MH) {
     TString outputMH = fileName;
     outputMH += ":outputMHanalysis";
-    outputMH += type;
+    outputMH += rptypestr;
         
     AliAnalysisDataContainer *coutputMH = mgr->CreateContainer(Form("cobjMH_%s",fileName.Data()), 
 							       TList::Class(),AliAnalysisManager::kOutputContainer,outputMH); 
@@ -538,7 +539,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if(NL) {
     TString outputNL = fileName;
     outputNL += ":outputNLanalysis";
-    outputNL += type;
+    outputNL += rptypestr;
 
     AliAnalysisDataContainer *coutputNL = mgr->CreateContainer(Form("cobjNL_%s",fileName.Data()), 
 							       TList::Class(),AliAnalysisManager::kOutputContainer,outputNL); 

@@ -75,7 +75,7 @@ ClassImp(AliAnalysisTaskFlowEvent)
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   AliAnalysisTaskSE(),
   //  fOutputFile(NULL),
-  fAnalysisType("MK"),
+  fAnalysisType("AUTOMATIC"),
   fRPType("Global"),
   fCFManager1(NULL),
   fCFManager2(NULL),
@@ -126,7 +126,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPtype, Bool_t on, UInt_t iseed) :
   AliAnalysisTaskSE(name),
   //  fOutputFile(NULL),
-  fAnalysisType("MK"),
+  fAnalysisType("AUTOMATIC"),
   fRPType(RPtype),
   fCFManager1(NULL),
   fCFManager2(NULL),
@@ -210,9 +210,9 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
   // Called at every worker node to initialize
   cout<<"AliAnalysisTaskFlowEvent::CreateOutputObjects()"<<endl;
 
-  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMCkineESD"  || fAnalysisType == "ESDMCkineMC" || fAnalysisType == "MC" || fAnalysisType == "MK"))
+  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMCkineESD"  || fAnalysisType == "ESDMCkineMC" || fAnalysisType == "MC" || fAnalysisType == "AUTOMATIC"))
   {
-    AliError("WRONG ANALYSIS TYPE! only ESD, ESDMCkineESD, ESDMCkineMC, AOD and MC are allowed.");
+    AliError("WRONG ANALYSIS TYPE! only ESD, ESDMCkineESD, ESDMCkineMC, AOD, MC and AUTOMATIC are allowed.");
     exit(1);
   }
 
@@ -263,7 +263,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   }
   
   //use the new and temporarily inclomplete way of doing things
-  if (fAnalysisType == "MK")
+  if (fAnalysisType == "AUTOMATIC")
   {
     if (!(fCutsRP&&fCutsPOI))
     {
