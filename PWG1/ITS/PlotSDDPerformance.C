@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TGrid.h>
+#include <TGridResult.h>
 #include <TMath.h>
 #include <TCanvas.h>
 #include <TStyle.h>
@@ -70,20 +71,58 @@ Double_t LangausFun(Double_t *x, Double_t *par) {
 }
 
 
-void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0){
+void PlotSDDPerformance(TString option="local", 
+			TString fileName="QAresults.root", 
+			Int_t nRun=0,
+			Int_t year=2010, 
+			TString period="LHC10e"){
+
   gStyle->SetOptStat(0);
   //  gStyle->SetOptTitle(0);
-  TString fileName;
   TFile *f;
+  TString path;
+  Char_t psfilename[100];
+  Char_t openpsfilename[100];
+  Char_t closepsfilename[100];
+  sprintf(psfilename,"QAtrainRun%d.ps",nRun);
+  sprintf(openpsfilename,"QAtrainRun%d.ps[",nRun);
+  sprintf(closepsfilename,"QAtrainRun%d.ps]",nRun);
+
   if(option.Contains("local")){
-    fileName=Form("./AnalysisResults.root");
-    //fileName=Form("./SDD.Performance.114786.root");
     f=new TFile(fileName.Data());
   }else{
-    fileName=Form("alien:///alice/data/2010/%s/%09d/ESDs/pass2/QA10/QAresults.root",period.Data(),nRun);
     TGrid::Connect("alien:");
+    path=Form("/alice/data/%d/%s/%09d/ESDs/",year,period.Data(),nRun);
+    if(!gGrid||!gGrid->IsConnected()) {
+      printf("gGrid not found! exit macro\n");
+      return;
+    }
+    TGridResult *gr = gGrid->Query(path,fileName);
+    Int_t nFiles = gr->GetEntries();
+    if (nFiles < 1){
+      printf("QA file for run %d not found\n",nRun);
+      return;
+    }
+    printf("================>%d files found\n", nFiles);
+    Int_t theFile=0;
+    Int_t maxVer=0;
+    if (nFiles > 1){
+      for (Int_t iFil = 0; iFil <nFiles ; iFil++) { 
+	fileName=Form("%s",gr->GetKey(iFil,"turl"));
+	TString cutFilename=fileName.ReplaceAll("/QAresults.root","");
+	Int_t last=cutFilename.Sizeof()-3;
+	cutFilename.Remove(0,last);
+	Int_t qaver=atoi(cutFilename.Data());
+	if(qaver>maxVer){
+	  maxVer=qaver;
+	  theFile=iFil;
+	}
+      }
+    }
+    fileName=Form("%s",gr->GetKey(theFile,"turl"));
     f=TFile::Open(fileName.Data());
   }
+
   TDirectoryFile* df=(TDirectoryFile*)f->Get("SDD_Performance");
   if(!df){
     printf("SDD_Performance MISSING -> Exit\n");
@@ -95,6 +134,7 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
     return;
   }
 
+  TH1F* hcllay=(TH1F*)l->FindObject("hCluInLay");
   TH1F* hapmod=(TH1F*)l->FindObject("hAllPmod");
   TH1F* hgpmod=(TH1F*)l->FindObject("hGoodPmod");
   TH1F* hmpmod=(TH1F*)l->FindObject("hMissPmod");
@@ -102,6 +142,15 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
   TH1F* hskmod=(TH1F*)l->FindObject("hSkippedmod");
   TH1F* hoamod=(TH1F*)l->FindObject("hOutAccmod");
   TH1F* hnrmod=(TH1F*)l->FindObject("hNoRefitmod");
+
+  //  TH1F* hapxl=(TH1F*)l->FindObject("hAllPxloc");
+  TH1F* hgpxl=(TH1F*)l->FindObject("hGoodPxloc");
+  TH1F* hmpxl=(TH1F*)l->FindObject("hMissPxloc");
+  TH1F* hbrxl=(TH1F*)l->FindObject("hBadRegxloc");
+  //  TH1F* hapzl=(TH1F*)l->FindObject("hAllPzloc");
+  TH1F* hgpzl=(TH1F*)l->FindObject("hGoodPzloc");
+  TH1F* hmpzl=(TH1F*)l->FindObject("hMissPzloc");
+  TH1F* hbrzl=(TH1F*)l->FindObject("hBadRegzloc");
 
   TH2F* hdedx3=(TH2F*)l->FindObject("hdEdxL3VsP");
   TH2F* hdedx4=(TH2F*)l->FindObject("hdEdxL4VsP");
@@ -147,14 +196,17 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
   printf("Chunks merged = %d\n",nChunks);
   hgamod->Scale(1./nChunks);
   TCanvas* cgan=new TCanvas("cgan","Good Anodes");
+  cgan->Print(openpsfilename);
   cgan->SetTickx();
   cgan->SetTicky();
   hgamod->SetMarkerStyle(20);
   hgamod->SetMarkerSize(0.6);
+  hgamod->SetMinimum(-10.);
   hgamod->Draw("P");
   hgamod->GetXaxis()->SetTitle("SDD Module Id");
   hgamod->GetYaxis()->SetTitle("Number of good anodes");
   cgan->Update();
+  cgan->Print(psfilename);
 
   printf("---- Modules with > 2%% of bad anodes ----\n");
   for(Int_t iMod=0; iMod<260; iMod++){
@@ -234,6 +286,7 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
     h2dmodR4N->GetXaxis()->SetTitle("Detector");
     h2dmodR4N->GetYaxis()->SetTitle("Ladder");
     cmodR->Update();
+    cmodR->Print(psfilename);
   }
     
   TCanvas* cmodT=new TCanvas("cmodT","TrackPoint Occup",1200,1200);
@@ -270,7 +323,7 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
   h2dmodT4N->GetXaxis()->SetTitle("Detector");
   h2dmodT4N->GetYaxis()->SetTitle("Ladder");
   cmodT->Update();
-
+  cmodT->Print(psfilename);
 
   TH1F* htplad3=(TH1F*)l->FindObject("hTPLad3");
   TH1F* htplad4=(TH1F*)l->FindObject("hTPLad4");
@@ -317,8 +370,24 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
   hnormOcc4->GetYaxis()->SetTitle("TrackPoints/GoodAnode/Events");
   hnormOcc4->GetYaxis()->SetTitleOffset(1.35);
   cn0->Update();
+  cn0->Print(psfilename);
 
-  
+  if(hcllay){
+    Double_t norm=hcllay->GetBinContent(1);
+    hcllay->Scale(1./norm);
+    hcllay->SetTitle("");
+    hcllay->GetXaxis()->SetRange(2,7);
+    hcllay->SetMinimum(0.);
+    hcllay->SetMaximum(1.1);
+    hcllay->SetMarkerStyle(23);
+    TCanvas* ceffL=new TCanvas("ceffL","PointPerLayer",1000,600);
+    ceffL->SetGridy();
+    hcllay->Draw();
+    hcllay->GetXaxis()->SetTitle("Layer");
+    hcllay->GetYaxis()->SetTitle("Fraction of tracks with point in layer");
+    ceffL->Update();
+    ceffL->Print(psfilename);
+  }
 
   hgpmod->SetTitle("");
   TCanvas* ceff0=new TCanvas("ceff0","ModuleIndexInfo",1000,600);
@@ -354,7 +423,7 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
   t3->SetTextColor(kGreen+1);
   t3->Draw();
   ceff0->Update();
-
+  ceff0->Print(psfilename);
 
   TH1F* heff=new TH1F("heff","",260,239.5,499.5);
   for(Int_t imod=0; imod<260;imod++){
@@ -384,7 +453,51 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
       printf("Module %d - Layer %d Ladder %2d Det %d  -   Eff. %.3f\n",iMod,lay,lad,det,heff->GetBinContent(ibin));
     }
   }
+  ceff1->Update();
+  ceff1->Print(psfilename);
 
+  if(hgpxl){
+    hgpxl->SetTitle("");
+    hgpzl->SetTitle("");
+    TCanvas* ceff2=new TCanvas("ceff2","LocalCoord",1000,600);
+    ceff2->Divide(2,1);
+    ceff2->cd(1);
+    hgpxl->Draw();
+    hgpxl->GetXaxis()->SetTitle("Xlocal (cm)");
+    hgpxl->GetYaxis()->SetTitle("Number of tracks");
+    hmpxl->SetLineColor(2);
+    hmpxl->SetMarkerColor(2);
+    hmpxl->SetMarkerStyle(22);
+    hmpxl->SetMarkerSize(0.5);
+    hmpxl->Draw("psame");
+    hbrxl->SetLineColor(kGreen+1);
+    hbrxl->SetMarkerColor(kGreen+1);
+    hbrxl->SetMarkerStyle(20);
+    hbrxl->SetMarkerSize(0.5);
+    hbrxl->Draw("same");
+    t1->Draw();
+    t2->Draw();
+    t3->Draw();
+    ceff2->cd(2);
+    hgpzl->Draw();
+    hgpzl->GetXaxis()->SetTitle("Zlocal (cm)");
+    hgpzl->GetYaxis()->SetTitle("Number of tracks");
+    hmpzl->SetLineColor(2);
+    hmpzl->SetMarkerColor(2);
+    hmpzl->SetMarkerStyle(22);
+    hmpzl->SetMarkerSize(0.5);
+    hmpzl->Draw("psame");
+    hbrzl->SetLineColor(kGreen+1);
+    hbrzl->SetMarkerColor(kGreen+1);
+    hbrzl->SetMarkerStyle(20);
+    hbrzl->SetMarkerSize(0.5);
+    hbrzl->Draw("same");
+    t1->Draw();
+    t2->Draw();
+    t3->Draw();
+    ceff2->Update();
+    ceff2->Print(psfilename);
+  }
 
   TH1F* htimR=(TH1F*)l->FindObject("hDrTimRP");
   TH1F* htimT=(TH1F*)l->FindObject("hDrTimTPAll");
@@ -419,6 +532,7 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
   tn->SetTextColor(4);
   tn->Draw();
   ctim->Update();
+  ctim->Print(psfilename);
 
   TCanvas* cdedx=new TCanvas("cdedx","dedx",1400,600);
   cdedx->Divide(3,1);
@@ -441,6 +555,7 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
   hdedxmod->GetYaxis()->SetTitle("dE/dx (keV/300 #mum)");
   hdedxmod->GetYaxis()->SetTitleOffset(1.25);
   cdedx->Update();
+  cdedx->Print(psfilename);
 
   printf("---- dE/dx vs.DriftTime ----\n");
   TCanvas* csig=new TCanvas("csig","dedx vs. DriftTime",1000,700);
@@ -486,7 +601,7 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
       printf("Bin %d - MPV=%.3f  \t SigmaLandau=%.3f  \t SigmaGaus=%.3f\n",it,mpv,sigl,sig);
     }
   }
-  
+  csig->Print(psfilename);
 
   TCanvas* cpars=new TCanvas("cpars","Params",800,900);
   cpars->Divide(1,3,0.01,0.);
@@ -531,6 +646,8 @@ void PlotSDDPerformance(TString option="local", TString period="", Int_t nRun=0)
   gsigg->GetXaxis()->SetTitleSize(0.05);
   gsigg->GetYaxis()->SetTitleSize(0.05);
   gsigg->GetYaxis()->SetTitleOffset(1.2);
-  
+  cpars->Update();
+  cpars->Print(psfilename);  
+  cpars->Print(closepsfilename);  
 
 }
