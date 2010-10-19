@@ -1633,8 +1633,16 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
 }
 
  void AliESDtrackCuts::SetMaxDCAToVertexXYPtDep(const char *dist){
-   if(!CheckPtDepDCA(dist,kTRUE)) return;
-   if(f1CutMaxDCAToVertexXYPtDep)delete f1CutMaxDCAToVertexXYPtDep;
+
+   if(f1CutMaxDCAToVertexXYPtDep){
+     delete f1CutMaxDCAToVertexXYPtDep;
+     // resetiing both
+     f1CutMaxDCAToVertexXYPtDep = 0;
+     fCutMaxDCAToVertexXYPtDep = "";
+   }
+   if(!CheckPtDepDCA(dist,kTRUE)){
+     return;
+   }  
    fCutMaxDCAToVertexXYPtDep = dist;
    TString tmp(dist);
    tmp.ReplaceAll("pt","x");
@@ -1643,8 +1651,16 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
 }
 
  void AliESDtrackCuts::SetMaxDCAToVertexZPtDep(const char *dist){
-   if(!CheckPtDepDCA(dist,kTRUE)) return;
-   if(f1CutMaxDCAToVertexZPtDep)delete f1CutMaxDCAToVertexZPtDep;
+
+
+   if(f1CutMaxDCAToVertexZPtDep){
+     delete f1CutMaxDCAToVertexZPtDep;
+     // resetiing both
+     f1CutMaxDCAToVertexZPtDep = 0;
+     fCutMaxDCAToVertexZPtDep = "";
+   }
+   if(!CheckPtDepDCA(dist,kTRUE))return;
+     
    fCutMaxDCAToVertexZPtDep = dist;
    TString tmp(dist);
    tmp.ReplaceAll("pt","x");
@@ -1655,8 +1671,16 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
 
 
  void AliESDtrackCuts::SetMinDCAToVertexXYPtDep(const char *dist){
-   if(!CheckPtDepDCA(dist,kTRUE)) return;
-   if(f1CutMinDCAToVertexXYPtDep)delete f1CutMinDCAToVertexXYPtDep;
+
+
+   if(f1CutMinDCAToVertexXYPtDep){
+     delete f1CutMinDCAToVertexXYPtDep;
+     // resetiing both
+     f1CutMinDCAToVertexXYPtDep = 0;
+     fCutMinDCAToVertexXYPtDep = "";
+   }
+   if(!CheckPtDepDCA(dist,kTRUE))return;
+
    fCutMinDCAToVertexXYPtDep = dist;
    TString tmp(dist);
    tmp.ReplaceAll("pt","x");
@@ -1666,8 +1690,16 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
 
 
  void AliESDtrackCuts::SetMinDCAToVertexZPtDep(const char *dist){
-   if(!CheckPtDepDCA(dist,kTRUE)) return;
-   if(f1CutMinDCAToVertexZPtDep)delete f1CutMinDCAToVertexZPtDep;
+
+   
+
+   if(f1CutMinDCAToVertexZPtDep){
+     delete f1CutMinDCAToVertexZPtDep;
+     // resetiing both
+     f1CutMinDCAToVertexZPtDep = 0;
+     fCutMinDCAToVertexZPtDep = "";
+   }
+   if(!CheckPtDepDCA(dist,kTRUE))return;
    fCutMinDCAToVertexZPtDep = dist;
    TString tmp(dist);
    tmp.ReplaceAll("pt","x");
