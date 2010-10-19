@@ -8,8 +8,8 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
 //          (Remark: when using this mode set also Bool_t bUseParFiles = kTRUE; in CreateAlienHandler.C)
  
 // CENTRALITY DEFINITION
-const Int_t numberOfCentralityBins = 4;
-Int_t centralityArray[numberOfCentralityBins+1] = {0,10,25,50,100}; // in terms of reference multiplicity
+const Int_t numberOfCentralityBins = 1;
+Int_t centralityArray[numberOfCentralityBins+1] = {0,10000}; // in terms of reference multiplicity
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
 void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10, 
