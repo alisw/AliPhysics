@@ -291,15 +291,19 @@ Int_t AliEMCALTriggerDCSConfigDB::GetTRUSegmentation(Int_t iTRU)
 {
 	//
 	const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
+  if(dcsConf){	
+    AliEMCALTriggerTRUDCSConfig* truConf = dcsConf->GetTRUDCSConfig(iTRU);
+    if(truConf){
+      Int_t sel = truConf->GetL0SEL();
 	
-	AliEMCALTriggerTRUDCSConfig* truConf = dcsConf->GetTRUDCSConfig(iTRU);
-
-	Int_t sel = truConf->GetL0SEL();
-	
-	if (sel & 0x0001)
-		return 2;
-	else
-		return 1;
+      if (sel & 0x0001)
+        return 2;
+      else
+        return 1;
+    } else AliFatal("TRUDCSConf Null!") ;
+  }else AliFatal("TriggerDCSConf Null!") ;
+  
+  return -1;
 }
 
 //_____________________________________________________________________________
@@ -309,8 +313,12 @@ Int_t AliEMCALTriggerDCSConfigDB::GetTRUGTHRL0(Int_t iTRU)
 	//
 	//
 	const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
-	
-	AliEMCALTriggerTRUDCSConfig* truConf = dcsConf->GetTRUDCSConfig(iTRU);
-	
-	return truConf->GetGTHRL0();
+  if(dcsConf){	
+    AliEMCALTriggerTRUDCSConfig* truConf = dcsConf->GetTRUDCSConfig(iTRU);
+    if(truConf){
+      return truConf->GetGTHRL0();
+    } else AliFatal("TRUDCSConf Null!") ;
+  }else AliFatal("TriggerDCSConf Null!") ;
+  
+  return -1;
 }

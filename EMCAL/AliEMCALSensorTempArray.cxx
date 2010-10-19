@@ -116,8 +116,11 @@ void AliEMCALSensorTempArray::ReadSensors(const char *dbEntry)
   // Read list of temperature sensors from text file
   //
   AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry);
-  TTree *tree = (TTree*) entry->GetObject();
-  fSensors = AliEMCALSensorTemp::ReadTree(tree);
+  if(entry){
+    TTree *tree = (TTree*) entry->GetObject();
+    fSensors = AliEMCALSensorTemp::ReadTree(tree);
+  }
+  else AliFatal("NULL CDB entry!");
 }  
 
 //_____________________________________________________________________________

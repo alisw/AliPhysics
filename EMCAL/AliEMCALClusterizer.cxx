@@ -319,7 +319,6 @@ void AliEMCALClusterizer::InitParameters()
     fECAW0                  = recParam->GetW0();
     fMinECut                = recParam->GetMinECut();    
     fToUnfold               = recParam->GetUnfold();
-    if(fToUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!"); 
     fECALocMaxCut           = recParam->GetLocMaxCut();
     fTimeCut                = recParam->GetTimeCut();
     fTimeMin                = recParam->GetTimeMin();
@@ -327,30 +326,31 @@ void AliEMCALClusterizer::InitParameters()
     
     AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f GeV, fECAW=%.3f, fMinECut=%.3f GeV, fToUnfold=%d, fECALocMaxCut=%.3f GeV, fTimeCut=%e s,fTimeMin=%e s,fTimeMax=%e s",
                     fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut, fTimeMin, fTimeMax));
-  }
+    
+    if(fToUnfold){
+      
+      Int_t i=0;
+      for (i = 0; i < 8; i++) {
+        fSSPars[i] = recParam->GetSSPars(i);
+      }//end of loop over parameters
+      for (i = 0; i < 3; i++) {
+        fPar5[i] = recParam->GetPar5(i);
+        fPar6[i] = recParam->GetPar6(i);
+      }//end of loop over parameters
+      
+      fClusterUnfolding=new AliEMCALUnfolding(fGeom,fECALocMaxCut,fSSPars,fPar5,fPar6);
+      
+      for (i = 0; i < 8; i++) {
+        AliDebug(1,Form("unfolding shower shape parameters: fSSPars=%f \n",fSSPars[i]));
+      }
+      for (i = 0; i < 3; i++) {
+        AliDebug(1,Form("unfolding parameter 5: fPar5=%f \n",fPar5[i]));
+        AliDebug(1,Form("unfolding parameter 6: fPar6=%f \n",fPar6[i]));
+      }
+      
+    }// to unfold
+  }// recparam not null
   
-  if(fToUnfold){
-    Int_t i=0;
-    for (i = 0; i < 8; i++) {
-      fSSPars[i] = recParam->GetSSPars(i);
-    }//end of loop over parameters
-    for (i = 0; i < 3; i++) {
-      fPar5[i] = recParam->GetPar5(i);
-      fPar6[i] = recParam->GetPar6(i);
-    }//end of loop over parameters
-    
-    fClusterUnfolding=new AliEMCALUnfolding(fGeom,fECALocMaxCut,fSSPars,fPar5,fPar6);
-    
-    for (i = 0; i < 8; i++) {
-      AliDebug(1,Form("unfolding shower shape parameters: fSSPars=%f \n",fSSPars[i]));
-    }
-    for (i = 0; i < 3; i++) {
-      AliDebug(1,Form("unfolding parameter 5: fPar5=%f \n",fPar5[i]));
-      AliDebug(1,Form("unfolding parameter 6: fPar6=%f \n",fPar6[i]));
-    }
-    
-  }
-
 }
 
 

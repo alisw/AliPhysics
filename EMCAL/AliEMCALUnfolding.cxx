@@ -165,46 +165,47 @@ void AliEMCALUnfolding::MakeUnfolding()
 {
   // Unfolds clusters using the shape of an ElectroMagnetic shower
   // Performs unfolding of all clusters
-
+  
   if(fNumberOfECAClusters > 0){
     if (fGeom==0)
       AliFatal("Did not get geometry from EMCALLoader") ;
     //Int_t nModulesToUnfold = fGeom->GetNCells();
-
+    
     Int_t numberofNotUnfolded = fNumberOfECAClusters ;
     Int_t index ;
     for(index = 0 ; index < numberofNotUnfolded ; index++){
       AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(index) ) ;
-
-      //do we really need it?
-//      TVector3 gpos;
-//      Int_t absId = -1;
-//      recPoint->GetGlobalPosition(gpos);
-//      fGeom->GetAbsCellIdFromEtaPhi(gpos.Eta(),gpos.Phi(),absId);
-//      if(absId > nModulesToUnfold)
-//        break ;
-
-      Int_t nMultipl = recPoint->GetMultiplicity() ;
-      AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMultipl] ;
-      Float_t * maxAtEnergy = new Float_t[nMultipl] ;
-      Int_t nMax = recPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
-
-      if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0
-        if(UnfoldClusterV2(recPoint, nMax, maxAt, maxAtEnergy) ){
-	  fRecPoints->Remove(recPoint);
-	  fRecPoints->Compress() ;//is it really needed
-	  index-- ;
-	  fNumberOfECAClusters-- ;
-	  numberofNotUnfolded-- ;
-	}
-      }
-      else{
-        recPoint->SetNExMax(1) ; //Only one local maximum
-      }
-
-      delete[] maxAt ;
-      delete[] maxAtEnergy ;
-    }
+      if(recPoint){
+        //do we really need it?
+        //      TVector3 gpos;
+        //      Int_t absId = -1;
+        //      recPoint->GetGlobalPosition(gpos);
+        //      fGeom->GetAbsCellIdFromEtaPhi(gpos.Eta(),gpos.Phi(),absId);
+        //      if(absId > nModulesToUnfold)
+        //        break ;
+        
+        Int_t nMultipl = recPoint->GetMultiplicity() ;
+        AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMultipl] ;
+        Float_t * maxAtEnergy = new Float_t[nMultipl] ;
+        Int_t nMax = recPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
+        
+        if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0
+          if(UnfoldClusterV2(recPoint, nMax, maxAt, maxAtEnergy) ){
+            fRecPoints->Remove(recPoint);
+            fRecPoints->Compress() ;//is it really needed
+            index-- ;
+            fNumberOfECAClusters-- ;
+            numberofNotUnfolded-- ;
+          }
+        }
+        else{
+          recPoint->SetNExMax(1) ; //Only one local maximum
+        }
+        
+        delete[] maxAt ;
+        delete[] maxAtEnergy ;
+      } else AliError("RecPoint NULL");
+    } // rec point loop
   }
   // End of Unfolding of clusters
 }
@@ -220,10 +221,10 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   
   Int_t nPar = 3 * nMax ;
   Float_t * fitparameters = new Float_t[nPar] ;
-
+  
   if (fGeom==0)
     AliFatal("Did not get geometry from EMCALLoader") ;
-
+  
   Bool_t rv = FindFitV2(iniTower, maxAt, maxAtEnergy, nPar, fitparameters) ;
   if( !rv ) {
     // Fit failed, return (and remove cluster? - why? I leave the cluster)
@@ -231,17 +232,17 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
     delete[] fitparameters ;
     return kFALSE;
   }
-
+  
   // create unfolded rec points and fill them with new energy lists
   // First calculate energy deposited in each sell in accordance with
   // fit (without fluctuations): efit[]
   // and later correct this number in acordance with actual energy
   // deposition
-
+  
   Int_t nDigits = iniTower->GetMultiplicity() ;
   Float_t * efit = new Float_t[nDigits] ;//new fitted energy in cells
   Float_t xpar=0.,zpar=0.,epar=0.  ;//center of gravity in cell units
-
+  
   AliEMCALDigit * digit = 0 ;
   Int_t * digitsList = iniTower->GetDigitsList() ;
   
@@ -251,73 +252,80 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   Int_t iIeta   =  0 ;
   Int_t iphi    =  0 ;//x direction
   Int_t ieta    =  0 ;//z direstion
-
+  
   Int_t iparam = 0 ;
   Int_t iDigit = 0 ;
-
+  
   for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
     digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At(digitsList[iDigit] ) ) ;
-    fGeom->GetCellIndex(digit->GetId(),iSupMod,iTower,iIphi,iIeta); 
-    fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
-				       iIphi, iIeta,iphi,ieta);
-    EvalParsPhiDependence(digit->GetId(),fGeom);
-
-    efit[iDigit] = 0.;
-    iparam = 0;
-    while(iparam < nPar ){
-      xpar = fitparameters[iparam] ;
-      zpar = fitparameters[iparam+1] ;
-      epar = fitparameters[iparam+2] ;
-      iparam += 3 ;
-
-      efit[iDigit] += epar * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) ;
-    }
-
-  }
-
+    if(digit){
+      fGeom->GetCellIndex(digit->GetId(),iSupMod,iTower,iIphi,iIeta); 
+      fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
+                                         iIphi, iIeta,iphi,ieta);
+      EvalParsPhiDependence(digit->GetId(),fGeom);
+      
+      efit[iDigit] = 0.;
+      iparam = 0;
+      while(iparam < nPar ){
+        xpar = fitparameters[iparam] ;
+        zpar = fitparameters[iparam+1] ;
+        epar = fitparameters[iparam+2] ;
+        iparam += 3 ;
+        
+        efit[iDigit] += epar * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) ;
+      }
+    } else AliError("Digit NULL!");
+    
+  }//digit loop
+  
   // Now create new RecPoints and fill energy lists with efit corrected to fluctuations
   // so that energy deposited in each cell is distributed between new clusters proportionally
   // to its contribution to efit
-
+  
   Float_t * energiesList = iniTower->GetEnergiesList() ;
   Float_t ratio = 0 ;
-
+  
   iparam = 0 ;
   while(iparam < nPar ){
     xpar = fitparameters[iparam] ;
     zpar = fitparameters[iparam+1] ;
     epar = fitparameters[iparam+2] ;
     iparam += 3 ;
-
+    
     AliEMCALRecPoint * recPoint = 0 ;
-
+    
     if(fNumberOfECAClusters >= fRecPoints->GetSize())
       fRecPoints->Expand(2*fNumberOfECAClusters) ;
-
+    
     //add recpoint
     (*fRecPoints)[fNumberOfECAClusters] = new AliEMCALRecPoint("") ;
     recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
-    fNumberOfECAClusters++ ;
-    recPoint->SetNExMax((Int_t)nPar/3) ;
-
-    Float_t eDigit = 0. ;
-    for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-      digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
-      fGeom->GetCellIndex(digit->GetId(),iSupMod,iTower,iIphi,iIeta); 
-      fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
-					 iIphi, iIeta,iphi,ieta);
-      EvalParsPhiDependence(digit->GetId(),fGeom);
-      if(efit[iDigit]==0) continue;//just for sure
-      ratio = epar * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) / efit[iDigit] ;
-      eDigit = energiesList[iDigit] * ratio ;
-      recPoint->AddDigit( *digit, eDigit, kFALSE ) ; //FIXME, need to study the shared case
-    }
-
-  }
-
+    
+    if(recPoint){
+      
+      fNumberOfECAClusters++ ;
+      recPoint->SetNExMax((Int_t)nPar/3) ;
+      
+      Float_t eDigit = 0. ;
+      for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
+        digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
+        if(digit){
+          fGeom->GetCellIndex(digit->GetId(),iSupMod,iTower,iIphi,iIeta); 
+          fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
+                                             iIphi, iIeta,iphi,ieta);
+          EvalParsPhiDependence(digit->GetId(),fGeom);
+          if(efit[iDigit]==0) continue;//just for sure
+          ratio = epar * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) / efit[iDigit] ;
+          eDigit = energiesList[iDigit] * ratio ;
+          recPoint->AddDigit( *digit, eDigit, kFALSE ) ; //FIXME, need to study the shared case
+        } else AliError("NULL digit");
+      }//digit loop 
+    } else AliError("NULL RecPoint");
+  }//while
+  
   delete[] fitparameters ;
   delete[] efit ;
-
+  
   return kTRUE;
 }
 
@@ -456,106 +464,112 @@ void AliEMCALUnfolding::UnfoldingChiSquareV2(Int_t & nPar, Double_t * Grad,
 {
   // Calculates the Chi square for the cluster unfolding minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
-
+  
   TList * toMinuit = dynamic_cast<TList*>( gMinuit->GetObjectFit() ) ;
-
-  AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint*>( toMinuit->At(0) )  ;
-  TClonesArray * digits = dynamic_cast<TClonesArray*>( toMinuit->At(1) )  ;
-  // A bit buggy way to get an access to the geometry
-  // To be revised!
-  AliEMCALGeometry *geom = dynamic_cast<AliEMCALGeometry *>(toMinuit->At(2));
-
-  Int_t * digitsList     = recPoint->GetDigitsList() ;
-
-  Int_t nOdigits = recPoint->GetDigitsMultiplicity() ;
-
-  Float_t * energiesList = recPoint->GetEnergiesList() ;
-
-  fret = 0. ;
-  Int_t iparam = 0 ;
-
-  if(iflag == 2)
-    for(iparam = 0 ; iparam < nPar ; iparam++)
-      Grad[iparam] = 0 ; // Will evaluate gradient
-
-  Double_t efit = 0. ;
-
-  AliEMCALDigit * digit ;
-  Int_t iDigit ;
-
-  Int_t iSupMod =  0 ;
-  Int_t iTower  =  0 ;
-  Int_t iIphi   =  0 ;
-  Int_t iIeta   =  0 ;
-  Int_t iphi    =  0 ;//x direction
-  Int_t ieta    =  0 ;//z direstion
-
-
-  for( iDigit = 0 ; iDigit < nOdigits ; iDigit++) {
-    if(energiesList[iDigit]==0) continue;
-
-    digit = dynamic_cast<AliEMCALDigit*>( digits->At( digitsList[iDigit] ) );
-
-    geom->GetCellIndex(digit->GetId(),iSupMod,iTower,iIphi,iIeta); 
-    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
-				       iIphi, iIeta,iphi,ieta);
-    EvalParsPhiDependence(digit->GetId(),geom);
-
-    if(iflag == 2){  // calculate gradient
-      Int_t iParam = 0 ;
-      efit = 0. ;
-      while(iParam < nPar ){
-        Double_t dx = ((Float_t)iphi - x[iParam]) ;
-        iParam++ ;
-        Double_t dz = ((Float_t)ieta - x[iParam]) ;
-        iParam++ ;
-        efit += x[iParam] * ShowerShapeV2(dx,dz) ;
-        iParam++ ;
-      }
-
-      Double_t sum = 2. * (efit - energiesList[iDigit]) / energiesList[iDigit] ; // Here we assume, that sigma = sqrt(E)
-      iParam = 0 ;
-      while(iParam < nPar ){
-        Double_t xpar = x[iParam] ;
-        Double_t zpar = x[iParam+1] ;
-        Double_t epar = x[iParam+2] ;
-
-        Double_t dr = fSSPars[7]*TMath::Sqrt( ((Float_t)iphi - xpar) * ((Float_t)iphi - xpar) + ((Float_t)ieta - zpar) * ((Float_t)ieta - zpar) );
-        Double_t shape = sum * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) ;
-	Double_t rp1  = TMath::Power(dr, fSSPars[1]) ;
-	Double_t rp5  = TMath::Power(dr, fSSPars[5]) ;
-
-	Double_t deriv = -2 * TMath::Power(dr,fSSPars[1]-2.) * fSSPars[7] * fSSPars[7] * 
-	  (fSSPars[1] * ( 1/(fSSPars[2]+fSSPars[3]*rp1) + fSSPars[4]/(1+fSSPars[6]*rp5) ) - 
-	   (fSSPars[1]*fSSPars[3]*rp1/( (fSSPars[2]+fSSPars[3]*rp1)*(fSSPars[2]+fSSPars[3]*rp1) ) + 
-	    fSSPars[4]*fSSPars[5]*fSSPars[6]*rp5/( (1+fSSPars[6]*rp5)*(1+fSSPars[6]*rp5) ) ) );
-
-        //Double_t deriv =-1.33 * TMath::Power(dr,0.33)*dr * ( 1.57 / ( (1.57 + 0.0860 * r133) * (1.57 + 0.0860 * r133) )
-	//                                                   - 0.55 / (1 + 0.000563 * r669) / ( (1 + 0.000563 * r669) * (1 + 0.000563 * r669) ) ) ;
-
-        Grad[iParam] += epar * shape * deriv * ((Float_t)iphi - xpar) ;  // Derivative over x
-        iParam++ ;
-        Grad[iParam] += epar * shape * deriv * ((Float_t)ieta - zpar) ;  // Derivative over z
-        iParam++ ;
-        Grad[iParam] += shape ;                                  // Derivative over energy
-	iParam++ ;
-      }
-    }
-    efit = 0;
-    iparam = 0 ;
-
-    while(iparam < nPar ){
-      Double_t xpar = x[iparam] ;
-      Double_t zpar = x[iparam+1] ;
-      Double_t epar = x[iparam+2] ;
-      iparam += 3 ;
-      efit += epar * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) ;
-    }
-
-    fret += (efit-energiesList[iDigit])*(efit-energiesList[iDigit])/energiesList[iDigit] ;
-    // Here we assume, that sigma = sqrt(E) 
-  }
-
+  if(toMinuit){
+    AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint*>( toMinuit->At(0) )  ;
+    TClonesArray * digits = dynamic_cast<TClonesArray*>( toMinuit->At(1) )  ;
+    // A bit buggy way to get an access to the geometry
+    // To be revised!
+    AliEMCALGeometry *geom = dynamic_cast<AliEMCALGeometry *>(toMinuit->At(2));
+    
+    if(recPoint && digits && geom){
+      
+      Int_t * digitsList     = recPoint->GetDigitsList() ;
+      
+      Int_t nOdigits = recPoint->GetDigitsMultiplicity() ;
+      
+      Float_t * energiesList = recPoint->GetEnergiesList() ;
+      
+      fret = 0. ;
+      Int_t iparam = 0 ;
+      
+      if(iflag == 2)
+        for(iparam = 0 ; iparam < nPar ; iparam++)
+          Grad[iparam] = 0 ; // Will evaluate gradient
+      
+      Double_t efit = 0. ;
+      
+      AliEMCALDigit * digit ;
+      Int_t iDigit ;
+      
+      Int_t iSupMod =  0 ;
+      Int_t iTower  =  0 ;
+      Int_t iIphi   =  0 ;
+      Int_t iIeta   =  0 ;
+      Int_t iphi    =  0 ;//x direction
+      Int_t ieta    =  0 ;//z direstion
+      
+      
+      for( iDigit = 0 ; iDigit < nOdigits ; iDigit++) {
+        if(energiesList[iDigit]==0) continue;
+        
+        digit = dynamic_cast<AliEMCALDigit*>( digits->At( digitsList[iDigit] ) );
+        
+        if(digit){
+        geom->GetCellIndex(digit->GetId(),iSupMod,iTower,iIphi,iIeta); 
+        geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
+                                          iIphi, iIeta,iphi,ieta);
+        EvalParsPhiDependence(digit->GetId(),geom);
+        
+        if(iflag == 2){  // calculate gradient
+          Int_t iParam = 0 ;
+          efit = 0. ;
+          while(iParam < nPar ){
+            Double_t dx = ((Float_t)iphi - x[iParam]) ;
+            iParam++ ;
+            Double_t dz = ((Float_t)ieta - x[iParam]) ;
+            iParam++ ;
+            efit += x[iParam] * ShowerShapeV2(dx,dz) ;
+            iParam++ ;
+          }
+          
+          Double_t sum = 2. * (efit - energiesList[iDigit]) / energiesList[iDigit] ; // Here we assume, that sigma = sqrt(E)
+          iParam = 0 ;
+          while(iParam < nPar ){
+            Double_t xpar = x[iParam] ;
+            Double_t zpar = x[iParam+1] ;
+            Double_t epar = x[iParam+2] ;
+            
+            Double_t dr = fSSPars[7]*TMath::Sqrt( ((Float_t)iphi - xpar) * ((Float_t)iphi - xpar) + ((Float_t)ieta - zpar) * ((Float_t)ieta - zpar) );
+            Double_t shape = sum * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) ;
+            Double_t rp1  = TMath::Power(dr, fSSPars[1]) ;
+            Double_t rp5  = TMath::Power(dr, fSSPars[5]) ;
+            
+            Double_t deriv = -2 * TMath::Power(dr,fSSPars[1]-2.) * fSSPars[7] * fSSPars[7] * 
+            (fSSPars[1] * ( 1/(fSSPars[2]+fSSPars[3]*rp1) + fSSPars[4]/(1+fSSPars[6]*rp5) ) - 
+             (fSSPars[1]*fSSPars[3]*rp1/( (fSSPars[2]+fSSPars[3]*rp1)*(fSSPars[2]+fSSPars[3]*rp1) ) + 
+              fSSPars[4]*fSSPars[5]*fSSPars[6]*rp5/( (1+fSSPars[6]*rp5)*(1+fSSPars[6]*rp5) ) ) );
+            
+            //Double_t deriv =-1.33 * TMath::Power(dr,0.33)*dr * ( 1.57 / ( (1.57 + 0.0860 * r133) * (1.57 + 0.0860 * r133) )
+            //                                                   - 0.55 / (1 + 0.000563 * r669) / ( (1 + 0.000563 * r669) * (1 + 0.000563 * r669) ) ) ;
+            
+            Grad[iParam] += epar * shape * deriv * ((Float_t)iphi - xpar) ;  // Derivative over x
+            iParam++ ;
+            Grad[iParam] += epar * shape * deriv * ((Float_t)ieta - zpar) ;  // Derivative over z
+            iParam++ ;
+            Grad[iParam] += shape ;                                  // Derivative over energy
+            iParam++ ;
+          }
+        }
+        efit = 0;
+        iparam = 0 ;
+        
+        while(iparam < nPar ){
+          Double_t xpar = x[iparam] ;
+          Double_t zpar = x[iparam+1] ;
+          Double_t epar = x[iparam+2] ;
+          iparam += 3 ;
+          efit += epar * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) ;
+        }
+        
+        fret += (efit-energiesList[iDigit])*(efit-energiesList[iDigit])/energiesList[iDigit] ;
+        // Here we assume, that sigma = sqrt(E) 
+        } else printf("AliEMCALUnfoding::UnfoldingChiSquareV2 - NULL digit!\n");
+      } // digit loop
+    } // recpoint, digits and geom not NULL
+  }// List is not NULL
+  
 }
 
 

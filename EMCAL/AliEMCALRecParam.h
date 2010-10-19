@@ -52,7 +52,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetTimeCut            (Float_t t)         {fTimeCut   = t          ;}
   void SetTimeMin            (Float_t t)         {fTimeMin   = t          ;}
   void SetTimeMax            (Float_t t)         {fTimeMax   = t          ;}
-  void SetUnfold             (Bool_t unfold)     {fUnfold = unfold ; if(fUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!");}
+  void SetUnfold             (Bool_t unfold)     {fUnfold = unfold ;}
   
   //PID (Guenole)
   Double_t GetGamma(Int_t i, Int_t j) const       {return fGamma[i][j];} 

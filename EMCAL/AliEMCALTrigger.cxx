@@ -244,7 +244,8 @@ Bool_t AliEMCALTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * a
   //                            1             4x4                      8x8               
                           
   Bool_t b = kFALSE;
- 
+  if(!ampmatrixes) return kFALSE;
+  
   // Get matrix of TRU or Module with maximum amplitude patch.
   Int_t itru = mtru + iSM * fGeom->GetNTRU(); //number of tru, min 0 max 3*12=36.
   TMatrixD * ampmatrix   = 0x0;
@@ -858,17 +859,18 @@ void AliEMCALTrigger::FillTRU(const TClonesArray * digits, TClonesArray * ampmat
       
       if(!amptrus || timeRtrus){
         AliError("Could not recover the TRU matrix with amplitudes or times");
-        continue;
       }
-      //Calculate row and column of the module inside the TRU with number itru
-      Int_t irow = iphim - row * nModulesPhi;
-      if(iSupMod > 9)
-        irow = iphim - row *  nModulesPhi2; // size of matrix the same
-      Int_t icol = ietam - col * nModulesEta;
+      else{
+        //Calculate row and column of the module inside the TRU with number itru
+        Int_t irow = iphim - row * nModulesPhi;
+        if(iSupMod > 9)
+          irow = iphim - row *  nModulesPhi2; // size of matrix the same
+        Int_t icol = ietam - col * nModulesEta;
       
-      (*amptrus)(irow,icol)  += amp ;
-      if((*timeRtrus)(irow,icol) <0.0 || (*timeRtrus)(irow,icol) <= timeR){ // ??
-        (*timeRtrus)(irow,icol) = timeR ;
+        (*amptrus)(irow,icol)  += amp ;
+        if((*timeRtrus)(irow,icol) <0.0 || (*timeRtrus)(irow,icol) <= timeR){ // ??
+          (*timeRtrus)(irow,icol) = timeR ;
+        }
       }
       //printf(" ieta %i iphi %i iSM %i || col %i row %i : itru %i -> amp %f\n", 
       //	   ieta, iphi, iSupMod, col, row, itru, amp);     
