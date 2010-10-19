@@ -308,7 +308,7 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   // make default reconstruction  parameters for hig  flux env.
   //
   AliITSRecoParam *param = new AliITSRecoParam();
-  param->SetVertexerZ();
+  param->SetVertexer3DDefaults();
 
   // use of bads from OCDB
   param->SetUseBadZonesFromOCDB(kTRUE);
