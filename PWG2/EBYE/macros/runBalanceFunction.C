@@ -1,9 +1,9 @@
-enum anaModes {kLocal,kLocalPAR,kPROOF,kGRID};
+enum anaModes {kLocal,kLocalPAR,kPROOF,kInteractive,kGRID};
 //kLocal: Analyze locally files in your computer using aliroot
 //kLocalPAR: Analyze locally files in your computer using root + PAR files
 //kPROOF: Analyze CAF files with PROOF
 
-void runBalanceFunction(Int_t analysisMode = kLocal,
+void runBalanceFunction(Int_t analysisMode = kInteractive,
 			Bool_t kMCAnalysis = kFALSE,
 			const char* dataMode = "ESD") {
   TStopwatch timer;
@@ -21,10 +21,22 @@ void runBalanceFunction(Int_t analysisMode = kLocal,
   }
   if (analysisMode==kLocal || analysisMode == kLocalPAR) {
     TChain *chain = new TChain("esdTree");
-    chain->Add("Set1/AliESDs.root");
-    //chain->Add("Set2/AliESDs.root");
+    chain->Add("../Set1/AliESDs.root");
+    chain->Add("../Set2/AliESDs.root");
   }
+  if(analysisMode == kInteractive) {
+    TGrid::Connect("alien://");
+    TChain *chain = new TChain("esdTree");
+    TString alienUrl;
 
+    TAlienCollection *collection = TAlienCollection::Open("wn.xml");
+    TGridResult *gResult = collection->GetGridResult("",0,0);
+    Int_t nEntries = gResult->GetEntries();
+    for(Int_t i = 0; i < nEntries; i++) {
+      alienUrl = gResult->GetKey(i,"turl");
+      chain->Add(alienUrl.Data());
+    }
+  }
   //___________________________________________________//
   // Create the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("testAnalysis");
@@ -41,7 +53,7 @@ void runBalanceFunction(Int_t analysisMode = kLocal,
   AliAnalysisTaskBF *taskBF = AddTaskBalanceFunction();
 
   // Task to check the offline trigger
-  if (analysisMode == kLocal || analysisMode == kGRID) {
+  if (analysisMode == kLocal || analysisMode == kGRID || analysisMode == kInteractive) {
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); }
   else if (analysisMode == kPROOF || analysisMode == kLocalPAR) {
     gROOT->LoadMacro("AddTaskPhysicsSelection.C"); }
@@ -54,7 +66,7 @@ void runBalanceFunction(Int_t analysisMode = kLocal,
     return;
   mgr->PrintStatus();
   
-  if (analysisMode == kLocal || analysisMode == kLocalPAR) {
+  if (analysisMode == kLocal || analysisMode == kLocalPAR || analysisMode == kInteractive) {
     mgr->StartAnalysis("local",chain);
   }
   else if (analysisMode == kPROOF) {
@@ -66,6 +78,53 @@ void runBalanceFunction(Int_t analysisMode = kLocal,
 
   timer.Stop();
   timer.Print();
+}
+
+void SetupPar(char* pararchivename) {
+  //Load par files, create analysis libraries
+  //For testing, if par file already decompressed and modified
+  //classes then do not decompress.
+  
+  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
+  TString parpar(Form("%s.par", pararchivename)) ; 
+  if ( gSystem->AccessPathName(parpar.Data()) ) {
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+    TString processline(Form(".! make %s", parpar.Data())) ; 
+    gROOT->ProcessLine(processline.Data()) ;
+    gSystem->ChangeDirectory(cdir) ; 
+    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data()) ;
+  } 
+  if ( gSystem->AccessPathName(pararchivename) ) {  
+    TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data());
+  }
+  
+  TString ocwd = gSystem->WorkingDirectory();
+  gSystem->ChangeDirectory(pararchivename);
+  
+  // check for BUILD.sh and execute
+  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
+    printf("*******************************\n");
+    printf("*** Building PAR archive    ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
+      Error("runProcess","Cannot Build the PAR Archive! - Abort!");
+      return -1;
+    }
+  }
+  // check for SETUP.C and execute
+  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
+    printf("*******************************\n");
+    printf("*** Setup PAR archive       ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+    gROOT->Macro("PROOF-INF/SETUP.C");
+  }
+  
+  gSystem->ChangeDirectory(ocwd.Data());
+  printf("Current dir: %s\n", ocwd.Data());
 }
 
 //__________________________________________________________//
@@ -112,7 +171,7 @@ void LoadLibraries(const anaModes mode) {
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   //----------------------------------------------------------
-  if (mode==kLocal || mode==kGRID) {
+  if (mode==kLocal || mode==kGRID || mode==kInteractive) {
     //--------------------------------------------------------
     // If you want to use already compiled libraries 
     // in the aliroot distribution
@@ -123,10 +182,13 @@ void LoadLibraries(const anaModes mode) {
     gSystem->Load("libAOD.so");
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
-    if (mode==kLocal)
+    if (mode==kLocal) {
+      Printf("Local: loading the libPWG2ebye.so");
       gSystem->Load("libPWG2ebye.so");
-    if (mode==kGRID) {
-      setupPar("PWG2ebye");
+    }
+    if (mode==kGRID || mode==kInteractive) {
+      //setupPar("PWG2ebye");
+      //Printf("GRID: loading the libPWG2ebye.so");
       gSystem->Load("libPWG2ebye.so");
     }
   }//local or GRID
@@ -135,16 +197,17 @@ void LoadLibraries(const anaModes mode) {
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
     gSystem->Load("libSTEERBase.so");
-    setupPar("ESD");
+    //setupPar("ESD");
     gSystem->Load("libVMC.so");
     gSystem->Load("libESD.so");
-    setupPar("AOD");
+    //setupPar("AOD");
     gSystem->Load("libAOD.so");
-    setupPar("ANALYSIS");
+    //setupPar("ANALYSIS");
     gSystem->Load("libANALYSIS.so");
-    setupPar("ANALYSISalice");
+    //setupPar("ANALYSISalice");
     gSystem->Load("libANALYSISalice.so");
-    setupPar("PWG2ebye");
+    Int_t setuparflag = setupPar("PWG2ebye");
+    Printf("localPar: loading the libPWG2ebye.so (%d)",setuparflag);
     gSystem->Load("libPWG2ebye.so");
   }//local with par files
   
