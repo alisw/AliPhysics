@@ -21,11 +21,11 @@
   c->cd(3);
   t->Draw("VarE:Npart","","prof");
   c->cd(4);
-  t->Draw("VarEpart:Npart","","prof");
+  t->Draw("VarEPart:Npart","","prof");
   c->cd(5);
-  t->Draw("Mult:B");
+  t->Draw("dNdEta:B");
   c->cd(6);
-  t->Draw("MultGBW:B");
+  t->Draw("dNdEtaGBW:B");
 
   c->cd(0);
 
