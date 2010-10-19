@@ -59,8 +59,8 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
 AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
 
-const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype)
-const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype)
+const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype);
+const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype);
 
 void AddTaskFlowCentrality( Int_t refMultMin=0,
                             Int_t refMultMax=1e10,
