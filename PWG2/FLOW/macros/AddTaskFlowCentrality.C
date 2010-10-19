@@ -62,6 +62,7 @@ AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
 const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype);
 const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype);
 
+
 void AddTaskFlowCentrality( Int_t refMultMin=0,
                             Int_t refMultMax=1e10,
                             TString fileName="AnalysisResults.root" )
@@ -69,14 +70,15 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
 
   //===========================================================================
   printf("CREATE CUTS\n");
-  
+  cout << "Used for RP: "<< rptypestr << endl;  
+  cout << "Used for POI: "<< poitypestr << endl;  
   // EVENTS CUTS:
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts();
   cutsEvent->SetRefMultRange(refMultMin,refMultMax);
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
-  cutsRP->SetParamType(rptype)
+  cutsRP->SetParamType(rptype);
   cutsRP->SetPtRange(0.2,10.);
   cutsRP->SetEtaRange(-0.7,0.7);
   cutsRP->SetRequireCharge(kTRUE);
@@ -95,7 +97,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts();
-  cutsPOI->SetParamType(poitype)
+  cutsPOI->SetParamType(poitype);
   cutsPOI->SetPtRange(0.2,10.);
   cutsPOI->SetEtaRange(-0.7,0.7);
   cutsPOI->SetRequireCharge(kTRUE);
