@@ -19,7 +19,7 @@
 
 class TGraphErrors;
 class TObjArray;
-//class TString;
+class TH1F;
 
 class AliBalance : public TObject {
  public:
@@ -34,8 +34,8 @@ class AliBalance : public TObject {
   void SetInterval(Double_t p2Start, Double_t p2Stop);
 
   Int_t GetNumberOfBins() {return fNumberOfBins;}
-  const char* GetAnalysisType();
   const char* GetAnalysisLevel() {return fAnalysisLevel.Data();}
+  Int_t GetNumberOfAnalyzedEvent() {return fAnalyzedEvents;}
 
   void SetNp(Int_t np) {fNp = np;}
   void SetNn(Int_t nn) {fNn = nn;}
@@ -49,6 +49,10 @@ class AliBalance : public TObject {
   Double_t GetNpp(Int_t p2) const { return 1.0*fNpp[p2]; }
   Double_t GetNpn(Int_t p2) const { return 1.0*fNpn[p2]; }
  
+  TH1F *GetHistNnn() {return fHistfNnn;}
+  TH1F *GetHistNpp() {return fHistfNpp;}
+  TH1F *GetHistNpn() {return fHistfNpn;}
+
   void CalculateBalance(TObjArray *gTrackArray);
   
   Double_t GetBalance(Int_t p2);
@@ -56,6 +60,7 @@ class AliBalance : public TObject {
 
   TGraphErrors *DrawBalance();
   void PrintResults();
+  void PrintAnalysisSettings();
 
   void Merge(AliBalance *b);
 
@@ -74,7 +79,11 @@ class AliBalance : public TObject {
   
   Double_t fB[MAXIMUM_NUMBER_OF_STEPS]; //BF matrix
   Double_t ferror[MAXIMUM_NUMBER_OF_STEPS]; //error of the BF
-   
+  
+  TH1F *fHistfNnn; //N(--) in a histo
+  TH1F *fHistfNpp; //N(++) in a histo
+  TH1F *fHistfNpn; //N(+-) in a histo
+
   AliBalance & operator=(const AliBalance & ) {return *this;}
 
   ClassDef(AliBalance, 1)
