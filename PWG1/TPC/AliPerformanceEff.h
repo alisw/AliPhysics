@@ -80,10 +80,13 @@ public :
   THnSparseF* GetEffSecHisto() const {return fEffSecHisto;}
 
 private:
+  
+  // Helper Method
+  TH1D* AddHistoEff(Int_t axis, const Char_t *name, const Char_t* vsTitle);
 
   // Control histograms
-  THnSparseF *fEffHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable
-  THnSparseF *fEffSecHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:mcR:mother_phi:mother_eta
+  THnSparseF *fEffHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:charge
+  THnSparseF *fEffSecHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:mcR:mother_phi:mother_eta:charge
 
   // Global cuts objects
   AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
@@ -95,7 +98,7 @@ private:
   AliPerformanceEff(const AliPerformanceEff&); // not implemented
   AliPerformanceEff& operator=(const AliPerformanceEff&); // not implemented
 
-  ClassDef(AliPerformanceEff,1);
+  ClassDef(AliPerformanceEff,2);
 };
 
 #endif

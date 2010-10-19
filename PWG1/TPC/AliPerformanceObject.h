@@ -84,6 +84,10 @@ public :
   void SetRunNumber(Int_t run) { fRunNumber = run; }
   Int_t GetRunNumber() const { return fRunNumber; }
 
+  // use kink daughters
+  void SetUseKinkDaughters(Bool_t kinkDaughters = kTRUE) { fUseKinkDaughters = kinkDaughters; }
+  Bool_t IsUseKinkDaughters() { return fUseKinkDaughters; }
+
 protected: 
 
   void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, TString* selString = 0);
@@ -107,10 +111,12 @@ protected:
   // PbPb mode?
   Bool_t fHighMultiplicity; // flag to switch between pp and PbPb  
 
+  Bool_t fUseKinkDaughters; // use kink daughthers, default is yes
+
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
-  ClassDef(AliPerformanceObject,3);
+  ClassDef(AliPerformanceObject,4);
 };
 
 #endif

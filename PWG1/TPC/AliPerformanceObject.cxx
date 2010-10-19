@@ -48,7 +48,8 @@ AliPerformanceObject::AliPerformanceObject():
   fHptGenerator(kFALSE),
   fTriggerClass(0),
   fUseTrackVertex(kFALSE),
-  fHighMultiplicity(kFALSE)
+  fHighMultiplicity(kFALSE),
+  fUseKinkDaughters(kTRUE)
 {
   // constructor
 }
@@ -61,7 +62,8 @@ AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, 
   fHptGenerator(kFALSE),
   fTriggerClass(0),
   fUseTrackVertex(kFALSE),
-   fHighMultiplicity(kFALSE)
+  fHighMultiplicity(kFALSE),
+  fUseKinkDaughters(kTRUE)
 {
   // constructor
 }
@@ -101,6 +103,9 @@ void AliPerformanceObject::PrintHisto(Bool_t logz, Char_t * outFileName) {
   Int_t pad_count = 0;
   while ((obj = (TH1*)iter()) !=0) {
 
+    TString name(obj->ClassName());
+ 
+
     // 4 figures per page
     if((count%4) == 0) {
       pad_count = 0;
@@ -117,19 +122,20 @@ void AliPerformanceObject::PrintHisto(Bool_t logz, Char_t * outFileName) {
 
     if (obj->GetYaxis() && obj->GetZaxis()) {
       if(logz) gPad->SetLogz();
-      obj->Draw("colz");
+      if ( name.CompareTo("TH3D") )
+	obj->Draw("colz");
     }
     else { 
       obj->SetMarkerStyle(24);
       obj->SetMarkerSize(1.0);
-      obj->Draw();
+      if ( name.CompareTo("TH3D") )
+	obj->Draw();
     }
 
     if ((pad_count%4) == 0)  { 
       can->Update();
     }
 
-  //printf("count %d \n",count);
   count++;
   }
   ps->Close();
