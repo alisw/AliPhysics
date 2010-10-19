@@ -30,14 +30,18 @@ ClassImp(AliAnalysisTaskBF)
 
 //________________________________________________________________________
 AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name) 
-  : AliAnalysisTaskSE(name), 
-    fBalance(0),
-    fList(0),
-    fHistEventStats(0),
-    fESDtrackCuts(0),
-    fVxMax(0.3),
-    fVyMax(0.3),
-    fVzMax(10.) {
+: AliAnalysisTaskSE(name), 
+  fBalance(0),
+  fList(0),
+  fHistEventStats(0),
+  fHistVx(0),
+  fHistVy(0),
+  fHistVz(0),
+  fESDtrackCuts(0),
+  fUseOfflineTrigger(kFALSE),
+  fVxMax(0.3),
+  fVyMax(0.3),
+  fVzMax(10.) {
   // Constructor
 
   // Define input and output slots here
@@ -60,9 +64,11 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
     fBalance->SetInterval(-0.9,0.9);
   }
 
+  //QA list
   fList = new TList();
   fList->SetName("listQA");
 
+  //Event stats.
   TString gCutName[4] = {"Total","Offline trigger",
                          "Vertex","Analyzed"};
   fHistEventStats = new TH1F("fHistEventStats",
@@ -71,6 +77,14 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   for(Int_t i = 1; i <= 4; i++)
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
+
+  //Vertex distributions
+  fHistVx = new TH1F("fHistVx","Primary vertex distribution - x coordinate;V_{x} (cm);Entries",100,-0.5,0.5);
+  fList->Add(fHistVx);
+  fHistVy = new TH1F("fHistVy","Primary vertex distribution - y coordinate;V_{y} (cm);Entries",100,-0.5,0.5);
+  fList->Add(fHistVy);
+  fHistVz = new TH1F("fHistVz","Primary vertex distribution - z coordinate;V_{z} (cm);Entries",100,-20.,20.);
+  fList->Add(fHistVz);
 
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
@@ -96,7 +110,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     }
 
     fHistEventStats->Fill(1); //all events
-    Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    Bool_t isSelected = kTRUE;
+    if(fUseOfflineTrigger)
+      isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     if(isSelected) {
       fHistEventStats->Fill(2); //triggered events
 
@@ -109,8 +125,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
 		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
 		  fHistEventStats->Fill(4); //analayzed events
-	
-		  Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
+		  fHistVx->Fill(vertex->GetXv());
+		  fHistVy->Fill(vertex->GetYv());
+		  fHistVz->Fill(vertex->GetZv());
+
+		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
 		  for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {
 		    AliESDtrack* track = gESD->GetTrack(iTracks);
 		    if (!track) {

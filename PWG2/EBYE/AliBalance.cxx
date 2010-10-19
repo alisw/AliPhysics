@@ -28,6 +28,7 @@
 #include <TObjArray.h>
 #include <TGraphErrors.h>
 #include <TString.h>
+#include <TH1F.h>
 
 #include "AliVParticle.h"
 #include "AliMCParticle.h"
@@ -43,7 +44,13 @@ AliBalance::AliBalance() :
   TObject(), 
   fAnalysisLevel("ESD"), fNumberOfBins(0),
   fAnalysisType(0), fAnalyzedEvents(0), fP2Start(0),
-  fP2Stop(0), fP2Step(0), fNn(0), fNp(0) {
+  fP2Stop(0), fP2Step(0), fNn(0), fNp(0),
+  fHistfNnn(new TH1F("fHistfNnn","(--) component;;Entries",
+		     fNumberOfBins,fP2Start,fP2Stop)),
+  fHistfNpp(new TH1F("fHistfNpp","(++) component;;Entries",
+		     fNumberOfBins,fP2Start,fP2Stop)),
+  fHistfNpn(new TH1F("fHistfNpn","(+-) component;;Entries",
+		     fNumberOfBins,fP2Start,fP2Stop)) {
   // Default constructor
   for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++) {
     fNpp[i] = .0;
@@ -52,6 +59,46 @@ AliBalance::AliBalance() :
     fB[i] = 0.0;
     ferror[i] = 0.0;
   } 
+
+  switch(fAnalysisType) {
+  case 0:
+    fHistfNnn->GetXaxis()->SetTitle("#Delta y");
+    fHistfNpp->GetXaxis()->SetTitle("#Delta y");
+    fHistfNpn->GetXaxis()->SetTitle("#Delta y");
+    break;
+  case 1:
+    fHistfNnn->GetXaxis()->SetTitle("#Delta #eta");
+    fHistfNpp->GetXaxis()->SetTitle("#Delta #eta");
+    fHistfNpn->GetXaxis()->SetTitle("#Delta #eta");
+    break;
+  case 2:
+    fHistfNnn->GetXaxis()->SetTitle("q_{long} (GeV/c)");
+    fHistfNpp->GetXaxis()->SetTitle("q_{long} (GeV/c)");
+    fHistfNpn->GetXaxis()->SetTitle("q_{long} (GeV/c)");
+    break;
+  case 3:
+    fHistfNnn->GetXaxis()->SetTitle("q_{out} (GeV/c)");
+    fHistfNpp->GetXaxis()->SetTitle("q_{out} (GeV/c)");
+    fHistfNpn->GetXaxis()->SetTitle("q_{out} (GeV/c)");
+    break;
+  case 4:
+    fHistfNnn->GetXaxis()->SetTitle("q_{side} (GeV/c)");
+    fHistfNpp->GetXaxis()->SetTitle("q_{side} (GeV/c)");
+    fHistfNpn->GetXaxis()->SetTitle("q_{side} (GeV/c)");
+    break;
+  case 5:
+    fHistfNnn->GetXaxis()->SetTitle("q_{inv.} (GeV/c)");
+    fHistfNpp->GetXaxis()->SetTitle("q_{inv.} (GeV/c)");
+    fHistfNpn->GetXaxis()->SetTitle("q_{inv.} (GeV/c)");
+    break;
+  case 6:
+    fHistfNnn->GetXaxis()->SetTitle("#Delta #phi");
+    fHistfNpp->GetXaxis()->SetTitle("#Delta #phi");
+    fHistfNpn->GetXaxis()->SetTitle("#Delta #phi");
+    break;
+  default:
+    break;
+  }
 }
 
 //____________________________________________________________________//
@@ -60,7 +107,13 @@ AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :
   fNumberOfBins(p2Bins), fAnalysisType(0), 
   fAnalyzedEvents(0), fP2Start(p2Start), fP2Stop(p2Stop), 
   fP2Step(TMath::Abs(fP2Start - fP2Stop) / (Double_t)fNumberOfBins), 
-  fNn(0), fNp(0) {
+  fNn(0), fNp(0),
+  fHistfNnn(new TH1F("fHistfNnn","(--) component;;Entries",
+		     fNumberOfBins,fP2Start,fP2Stop)),
+  fHistfNpp(new TH1F("fHistfNpp","(++) component;;Entries",
+		     fNumberOfBins,fP2Start,fP2Stop)),
+  fHistfNpn(new TH1F("fHistfNpn","(+-) component;;Entries",
+		     fNumberOfBins,fP2Start,fP2Stop)) {
   // Constructor
   for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++) {
     fNpp[i] = .0;
@@ -69,6 +122,46 @@ AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :
     fB[i] = 0.0;
     ferror[i] = 0.0;
   } 
+
+  switch(fAnalysisType) {
+  case 0:
+    fHistfNnn->GetXaxis()->SetTitle("#Delta y");
+    fHistfNpp->GetXaxis()->SetTitle("#Delta y");
+    fHistfNpn->GetXaxis()->SetTitle("#Delta y");
+    break;
+  case 1:
+    fHistfNnn->GetXaxis()->SetTitle("#Delta #eta");
+    fHistfNpp->GetXaxis()->SetTitle("#Delta #eta");
+    fHistfNpn->GetXaxis()->SetTitle("#Delta #eta");
+    break;
+  case 2:
+    fHistfNnn->GetXaxis()->SetTitle("q_{long} (GeV/c)");
+    fHistfNpp->GetXaxis()->SetTitle("q_{long} (GeV/c)");
+    fHistfNpn->GetXaxis()->SetTitle("q_{long} (GeV/c)");
+    break;
+  case 3:
+    fHistfNnn->GetXaxis()->SetTitle("q_{out} (GeV/c)");
+    fHistfNpp->GetXaxis()->SetTitle("q_{out} (GeV/c)");
+    fHistfNpn->GetXaxis()->SetTitle("q_{out} (GeV/c)");
+    break;
+  case 4:
+    fHistfNnn->GetXaxis()->SetTitle("q_{side} (GeV/c)");
+    fHistfNpp->GetXaxis()->SetTitle("q_{side} (GeV/c)");
+    fHistfNpn->GetXaxis()->SetTitle("q_{side} (GeV/c)");
+    break;
+  case 5:
+    fHistfNnn->GetXaxis()->SetTitle("q_{inv.} (GeV/c)");
+    fHistfNpp->GetXaxis()->SetTitle("q_{inv.} (GeV/c)");
+    fHistfNpn->GetXaxis()->SetTitle("q_{inv.} (GeV/c)");
+    break;
+  case 6:
+    fHistfNnn->GetXaxis()->SetTitle("#Delta #phi");
+    fHistfNpp->GetXaxis()->SetTitle("#Delta #phi");
+    fHistfNpn->GetXaxis()->SetTitle("#Delta #phi");
+    break;
+  default:
+    break;
+  }
 }
 
 //____________________________________________________________________//
@@ -81,7 +174,10 @@ AliBalance::AliBalance(const AliBalance& balance):
   fP2Stop(balance.fP2Stop),
   fP2Step(balance.fP2Step),
   fNn(balance.fNn),
-  fNp(balance.fNp) {
+  fNp(balance.fNp),
+  fHistfNnn(balance.fHistfNnn), 
+  fHistfNpp(balance.fHistfNpp), 
+  fHistfNpn(balance.fHistfNpn) {
   //copy constructor
   for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++) {
     fNpp[i] = .0;
@@ -95,6 +191,9 @@ AliBalance::AliBalance(const AliBalance& balance):
 //____________________________________________________________________//
 AliBalance::~AliBalance() {
   // Destructor
+  if(fHistfNnn) delete fHistfNnn;
+  if(fHistfNpp) delete fHistfNpp;
+  if(fHistfNpn) delete fHistfNpn;
 }
 
 //____________________________________________________________________//
@@ -177,7 +276,7 @@ void AliBalance::SetAnalysisType(Int_t iType) {
 }
 
 //____________________________________________________________________//
-const char* AliBalance::GetAnalysisType() {
+void AliBalance::PrintAnalysisSettings() {
   //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
   TString analysisType;
   switch(fAnalysisType) {
@@ -205,12 +304,15 @@ const char* AliBalance::GetAnalysisType() {
   default:
     break;
   }
-  analysisType += "\nInterval: ";
-  analysisType += fP2Start; analysisType += " - "; analysisType += fP2Stop;
-  analysisType += "\nSteps: "; analysisType += fP2Step;
-  analysisType += "\nBins: "; analysisType += fNumberOfBins;
-
-  return analysisType.Data();
+  
+  Printf("======================================");
+  Printf("Analysis level: %s",fAnalysisLevel.Data());
+  Printf("Analysis type: %s",analysisType.Data());
+  Printf("Analyzed interval (min.): %lf",fP2Start);
+  Printf("Analyzed interval (max.): %lf",fP2Stop);
+  Printf("Number of bins: %d",fNumberOfBins);
+  Printf("Step: %lf",fP2Step);
+  Printf("======================================");
 }
 
 //____________________________________________________________________//
@@ -607,20 +709,20 @@ TGraphErrors *AliBalance::DrawBalance() {
     gr->GetYaxis()->SetTitle("B(#Delta #eta)");
   }
   if(fAnalysisType==2) {
-    gr->GetXaxis()->SetTitle("Q_{long} [GeV]");
-    gr->GetYaxis()->SetTitle("B(Q_{long})");
+    gr->GetXaxis()->SetTitle("q_{long} (GeV/c)");
+    gr->GetYaxis()->SetTitle("B(q_{long}) [(GeV/c)^{-1}]");
   }
   if(fAnalysisType==3) {
-    gr->GetXaxis()->SetTitle("Q_{out} [GeV]");
-    gr->GetYaxis()->SetTitle("B(Q_{out})");
+    gr->GetXaxis()->SetTitle("q_{out} (GeV/c)");
+    gr->GetYaxis()->SetTitle("B(q_{out}) [(GeV/c)^{-1}]");
   }
   if(fAnalysisType==4) {
-    gr->GetXaxis()->SetTitle("Q_{side} [GeV]");
-    gr->GetYaxis()->SetTitle("B(Q_{side})");
+    gr->GetXaxis()->SetTitle("q_{side} (GeV/c)");
+    gr->GetYaxis()->SetTitle("B(q_{side}) [(GeV/c)^{-1}]");
   }
   if(fAnalysisType==5) {
-    gr->GetXaxis()->SetTitle("Q_{inv} [GeV]");
-    gr->GetYaxis()->SetTitle("B(Q_{inv})");
+    gr->GetXaxis()->SetTitle("q_{inv} (GeV/c)");
+    gr->GetYaxis()->SetTitle("B(q_{inv}) [(GeV/c)^{-1}]");
   }
   if(fAnalysisType==6) {
     gr->GetXaxis()->SetTitle("#Delta #phi");
