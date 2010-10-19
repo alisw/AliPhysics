@@ -479,11 +479,11 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     for (Int_t iCell=0; iCell<cellMult; iCell++) {
       if (amplFloat[iCell] > 0) {
       absIdList[newCellMult] = (UShort_t)(digitInts[iCell]);
-      //Uncomment when unfolding is done
-      //if(emcCells.GetCellAmplitude(digitInts[iCell])>0)
-      //fracList[newCellMult] = amplFloat[iCell]/(emcCells.GetCellAmplitude(digitInts[iCell])*calibration);//get cell calibration value 
-      //else
-      fracList[newCellMult] = 0; 
+      //Calculate Fraction
+      if(emcCells.GetCellAmplitude(digitInts[iCell])>0 && GetRecParam()->GetUnfold())
+        fracList[newCellMult] = amplFloat[iCell]/(emcCells.GetCellAmplitude(digitInts[iCell]));//get cell calibration value 
+      else
+        fracList[newCellMult] = 0; 
       newCellMult++;
       }
     }

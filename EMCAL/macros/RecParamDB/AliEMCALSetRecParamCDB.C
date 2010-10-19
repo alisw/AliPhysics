@@ -134,7 +134,7 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetClusteringThreshold(0.5);
   params->SetW0(4.5);
   params->SetMinECut(0.45);
-  params->SetUnfold(kFALSE);
+  params->SetUnfold(kTRUE);
   params->SetLocMaxCut(0.03);
   params->SetTimeCut(250e-9);//250 ns
   params->SetTimeMin(425e-9);//425 ns
@@ -293,7 +293,7 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetNoiseThreshold(3);
   params->SetNPedSamples(5);
   params->SetRemoveBadChannels(kFALSE);
-  params->SetFittingAlgorithm(AliEMCALRawUtils::kStandard);  
+  params->SetFittingAlgorithm(0);//(AliCaloConstants::kStandard);  
   params->SetFALTROUsage(kTRUE); 
   params->SetLEDFit(kFALSE);   
 
@@ -310,7 +310,7 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   AliEMCALRecParam* params =  AliEMCALRecParam::GetDefaultParameters();
   //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
   params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
-  
+  params->SetUnfold(kTRUE);
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
   params->SetMinECut(0.01);  //10 MeV       	
   params->SetTimeCut(250e-9);//250 ns
@@ -461,7 +461,7 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   params->SetNoiseThreshold(3);
   params->SetNPedSamples(5);
   params->SetRemoveBadChannels(kFALSE);
-  params->SetFittingAlgorithm(AliEMCALRawUtils::kStandard);  
+  params->SetFittingAlgorithm(0);//(AliCaloConstants::kStandard);  
   params->SetFALTROUsage(kTRUE); 
   params->SetLEDFit(kFALSE);   
 
