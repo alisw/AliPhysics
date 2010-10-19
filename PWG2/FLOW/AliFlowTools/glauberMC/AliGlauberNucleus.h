@@ -36,6 +36,8 @@ private:
 public:
    AliGlauberNucleus(Option_t* iname="Au", Int_t iN=0, Double_t iR=0, Double_t ia=0, Double_t iw=0, TF1* ifunc=0);
    virtual ~AliGlauberNucleus();
+   AliGlauberNucleus(const AliGlauberNucleus& in);
+   AliGlauberNucleus& operator=(const AliGlauberNucleus& in);
 
    using      TObject::Draw;
    void       Draw(Double_t xs, Int_t col);
