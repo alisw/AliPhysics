@@ -1165,20 +1165,3 @@ void AliTRDtrack::SetSampledEdx(Float_t q)
   fNdedx++;
 
 }     
-
-//_____________________________________________________________________________
-Double_t AliTRDtrack::GetBz() const 
-{
-  //
-  // Returns Bz component of the magnetic field (kG)
-  //
-
-  if (AliTracker::UniformField()) {
-    return AliTracker::GetBz();
-  }
-  Double_t r[3]; 
-  GetXYZ(r);
-
-  return AliTracker::GetBz(r);
-
-}

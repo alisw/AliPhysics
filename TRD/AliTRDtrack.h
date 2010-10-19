@@ -169,7 +169,6 @@ class AliTRDtrack : public AliKalmanTrack {
          AliTRDtrack           &operator=(const AliTRDtrack &t);
 
 	       void	           CookdEdxNN(Float_t *dedx);
-         Double_t        GetBz() const;
          Bool_t          Update(const AliCluster */*c*/, Double_t /*chi2*/, Int_t /*idx*/) { return 0;   }
          Double_t        GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
 
