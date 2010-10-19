@@ -137,12 +137,12 @@ void AliPerformanceEff::Init()
   }
   */
 
-  //mceta:mcphi:mcpt:pid:recStatus:findable
-  Int_t binsEffHisto[6]={30,144,nPtBins,5,2,2};
-  Double_t minEffHisto[6]={-1.5,0.,ptMin,0.,0.,0.};
-  Double_t maxEffHisto[6]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.};
+  //mceta:mcphi:mcpt:pid:recStatus:findable:charge
+  Int_t binsEffHisto[7]={30,144,nPtBins,5,2,2,3};
+  Double_t minEffHisto[7]={-1.5,0.,ptMin,0.,0.,0.,-1.5};
+  Double_t maxEffHisto[7]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.,1.5};
 
-  fEffHisto = new THnSparseF("fEffHisto","mceta:mcphi:mcpt:pid:recStatus:findable",6,binsEffHisto,minEffHisto,maxEffHisto);
+  fEffHisto = new THnSparseF("fEffHisto","mceta:mcphi:mcpt:pid:recStatus:findable:charge",7,binsEffHisto,minEffHisto,maxEffHisto);
   fEffHisto->SetBinEdges(2,binsPt);
 
   fEffHisto->GetAxis(0)->SetTitle("#eta_{mc}");
@@ -151,14 +151,15 @@ void AliPerformanceEff::Init()
   fEffHisto->GetAxis(3)->SetTitle("pid");
   fEffHisto->GetAxis(4)->SetTitle("recStatus");
   fEffHisto->GetAxis(5)->SetTitle("findable");
+  fEffHisto->GetAxis(6)->SetTitle("charge");
   fEffHisto->Sumw2();
 
-  //mceta:mcphi:mcpt:pid:recStatus:findable:mcR:mother_phi:mother_eta
-  Int_t binsEffSecHisto[9]={30,60,nPtBins,5,2,2,100,60,30};
-  Double_t minEffSecHisto[9]={-1.5,0.,ptMin,0.,0.,0.,0.,0.,-1.5};
-  Double_t maxEffSecHisto[9]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.,200,2.*TMath::Pi(),1.5};
+  //mceta:mcphi:mcpt:pid:recStatus:findable:mcR:mother_phi:mother_eta:charge
+  Int_t binsEffSecHisto[10]={30,60,nPtBins,5,2,2,100,60,30,3};
+  Double_t minEffSecHisto[10]={-1.5,0.,ptMin,0.,0.,0.,0.,0.,-1.5,-1.5};
+  Double_t maxEffSecHisto[10]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.,200,2.*TMath::Pi(),1.5,1.5};
 
-  fEffSecHisto = new THnSparseF("fEffSecHisto","mceta:mcphi:mcpt:pid:recStatus:findable:mcR:mother_phi:mother_eta",9,binsEffSecHisto,minEffSecHisto,maxEffSecHisto);
+  fEffSecHisto = new THnSparseF("fEffSecHisto","mceta:mcphi:mcpt:pid:recStatus:findable:mcR:mother_phi:mother_eta:charge",10,binsEffSecHisto,minEffSecHisto,maxEffSecHisto);
   fEffSecHisto->SetBinEdges(2,binsPt);
 
   fEffSecHisto->GetAxis(0)->SetTitle("#eta_{mc}");
@@ -170,6 +171,7 @@ void AliPerformanceEff::Init()
   fEffSecHisto->GetAxis(6)->SetTitle("mcR (cm)");
   fEffSecHisto->GetAxis(7)->SetTitle("mother_phi (rad)");
   fEffSecHisto->GetAxis(8)->SetTitle("mother_eta");
+  fEffSecHisto->GetAxis(9)->SetTitle("charge");
   fEffSecHisto->Sumw2();
 
   // init cuts
@@ -201,6 +203,10 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
     track = esdEvent->GetTrack(iTrack);
     if(!track) continue;
     if(track->Charge()==0) continue;
+
+    // if not fUseKinkDaughters don't use tracks with kink index > 0
+    if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
+
     Int_t label = TMath::Abs(track->GetLabel()); 
     labelsAllRec[iTrack]=label;
 
@@ -235,6 +241,18 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
     Bool_t prim = stack->IsPhysicalPrimary(iMc);
     if(!prim) continue;
 
+    // --- check for double filling in stack
+    // use only particles with no daughters in the list of primaries
+    Int_t nDaughters =  particle->GetNDaughters();
+    
+    for( Int_t iDaught=0; iDaught < particle->GetNDaughters(); iDaught++ ) {
+      if( particle->GetDaughter(iDaught) < stack->GetNprimary() )
+	nDaughters++;
+    }
+    if( nDaughters > 0 ) 
+      continue;
+    // --- check for double filling in stack
+
     Bool_t findable = kFALSE;
     for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
     {
@@ -267,10 +285,12 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
     Float_t mcphi =  particle->Phi();
     if(mcphi<0) mcphi += 2.*TMath::Pi();
     Float_t mcpt = particle->Pt();
-
+    Float_t charge = 0.;
+    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
 
     // Fill histograms
-    Double_t vEffHisto[6] = {mceta, mcphi, mcpt, pid, recStatus, findable}; 
+    Double_t vEffHisto[7] = {mceta, mcphi, mcpt, pid, recStatus, findable, charge}; 
     fEffHisto->Fill(vEffHisto);
   }
 
@@ -298,6 +318,10 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
     track = esdEvent->GetTrack(iTrack);
     if(!track) continue;
     if(track->Charge()==0) continue;
+
+    // if not fUseKinkDaughters don't use tracks with kink index > 0
+    if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
+
     Int_t label = TMath::Abs(track->GetLabel()); 
     labelsAllRec[multAll]=label;
     multAll++;
@@ -385,8 +409,12 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
     Float_t mother_phi = mother->Phi();
     if(mother_phi<0) mother_phi += 2.*TMath::Pi();
 
+    Float_t charge = 0.;
+    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
+
     // Fill histograms
-    Double_t vEffSecHisto[9] = { mceta, mcphi, mcpt, pid, recStatus, findable, mcR, mother_phi, mother_eta }; 
+    Double_t vEffSecHisto[10] = { mceta, mcphi, mcpt, pid, recStatus, findable, mcR, mother_phi, mother_eta, charge }; 
     fEffSecHisto->Fill(vEffSecHisto);
   }
 
@@ -416,6 +444,10 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
     track = esdEvent->GetTrack(iTrack);
     if(!track) continue;
     if(track->Charge()==0) continue;
+
+    // if not fUseKinkDaughters don't use tracks with kink index > 0
+    if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
+
     Int_t label = TMath::Abs(track->GetLabel()); 
     labelsAllRec[iTrack]=label;
 
@@ -481,8 +513,12 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
     if(mcphi<0) mcphi += 2.*TMath::Pi();
     Float_t mcpt = particle->Pt();
 
+    Float_t charge = 0.;
+    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
+    
     // Fill histograms
-    Double_t vEffHisto[6] = { mceta, mcphi, mcpt, pid, recStatus, findable}; 
+    Double_t vEffHisto[7] = { mceta, mcphi, mcpt, pid, recStatus, findable, charge}; 
     fEffHisto->Fill(vEffHisto);
   }
 
@@ -509,6 +545,10 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
     track = esdEvent->GetTrack(iTrack);
     if(!track) continue;
     if(track->Charge()==0) continue;
+
+    // if not fUseKinkDaughters don't use tracks with kink index > 0
+    if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
+
     Int_t label = TMath::Abs(track->GetLabel()); 
     labelsAllRec[iTrack]=label;
 
@@ -575,8 +615,12 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
     if(mcphi<0) mcphi += 2.*TMath::Pi();
     Float_t mcpt = particle->Pt();
 
+    Float_t charge = 0.;
+    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
+
     // Fill histograms
-    Double_t vEffHisto[6] = { mceta, mcphi, mcpt, pid, recStatus, findable}; 
+    Double_t vEffHisto[7] = { mceta, mcphi, mcpt, pid, recStatus, findable, charge}; 
     fEffHisto->Fill(vEffHisto);
   }
 
@@ -830,106 +874,66 @@ void AliPerformanceEff::Analyse()
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
   fEffHisto->GetAxis(2)->SetRangeUser(0.1,10.);   // pt range
 
-
   // rec efficiency vs pt
   fEffHisto->GetAxis(3)->SetRangeUser(0.,3.99);  // reconstructed 
-  TH1D *ptAll = fEffHisto->Projection(2);
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
-  TH1D *ptRec = fEffHisto->Projection(2);
-  TH1D *ptRecc = (TH1D*)ptRec->Clone();
-  ptRecc->Divide(ptRec,ptAll,1,1,"B");
-  ptRecc->SetName("ptRecEff");
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(2, "ptRecEff", "rec. efficiency"));
 
-  ptRecc->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRecc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency",fEffHisto->GetAxis(2)->GetTitle());
-  ptRecc->SetTitle(title);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffNeg", "rec. efficiency neg."));
 
-  ptRecc->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecc);
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffPos", "rec. efficiency pos."));
 
   // rec efficiency vs pid vs pt
+  fEffHisto->GetAxis(3)->SetRangeUser(2.,2.);    // pions
+  
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffPi", "rec. efficiency (pions)"));
+ 
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffPiNeg", "rec. efficiency (pions) neg."));
 
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
-  fEffHisto->GetAxis(3)->SetRangeUser(2.,2.); // pions
-
-  TH1D *ptAllPi = fEffHisto->Projection(2);
-
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
-  TH1D *ptRecPi = fEffHisto->Projection(2);
-  TH1D *ptRecPic = (TH1D*)ptRecPi->Clone();
-  ptRecPic->Divide(ptRecPi,ptAllPi,1,1,"B");
-  ptRecPic->SetName("ptRecEffPi");
-
-  ptRecPic->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRecPic->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffHisto->GetAxis(2)->GetTitle());
-  ptRecPic->SetTitle(title);
-
-  ptRecPic->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecPic);
-
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
-  fEffHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
-  TH1D *ptAllK = fEffHisto->Projection(2);
-
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
-  TH1D *ptRecK = fEffHisto->Projection(2);
-
-  TH1D *ptRecKc = (TH1D*)ptRecK->Clone();
-  ptRecKc->Divide(ptRecK,ptAllK,1,1,"B");
-  ptRecKc->SetName("ptRecEffK");
-
-  ptRecKc->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRecKc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffHisto->GetAxis(2)->GetTitle());
-  ptRecKc->SetTitle(title);
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffPiPos", "rec. efficiency (pions) pos."));
 
 
-  ptRecKc->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecKc);
+  fEffHisto->GetAxis(3)->SetRangeUser(3.,3.);    // kaons
+  
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffK", "rec. efficiency (kaons)"));
+  
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffKNeg", "rec. efficiency (kaons) neg."));
+ 
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffKPos", "rec. efficiency (kaons) pos."));
+ 
+  
+  fEffHisto->GetAxis(3)->SetRangeUser(4.,4.);    // protons
 
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
-  fEffHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
-  TH1D *ptAllP = fEffHisto->Projection(2);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffP", "rec. efficiency (protons)"));
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
-  TH1D *ptRecP = fEffHisto->Projection(2);
-  TH1D *ptRecPc = (TH1D*)ptRecP->Clone();
-  ptRecPc->Divide(ptRecP,ptAllP,1,1,"B");
-  ptRecPc->SetName("ptRecEffP");
-
-  ptRecPc->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRecPc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffHisto->GetAxis(2)->GetTitle());
-  ptRecPc->SetTitle(title);
-
-  ptRecPc->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecPc);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffPNeg", "rec. efficiency (protons) neg."));
+ 
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffPPos", "rec. efficiency (protons) pos."));
 
   // findable efficiency vs pt
-
   fEffHisto->GetAxis(3)->SetRangeUser(0.,4.); 
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffHisto->GetAxis(5)->SetRangeUser(1.,1.); // findable
-  TH1D *ptAllF = fEffHisto->Projection(2);
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);
-  fEffHisto->GetAxis(5)->SetRangeUser(1.,1.);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffF", "rec. efficiency (findable)"));
 
-  TH1D *ptRecF = fEffHisto->Projection(2); // rec findable
-  TH1D *ptRecFc = (TH1D*)ptRecF->Clone();
-  ptRecFc->Divide(ptRecF,ptAllF,1,1,"B");
-  ptRecFc->SetName("ptRecEffF");
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffFNeg", "rec. efficiency (findable) neg."));
 
-  ptRecFc->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRecFc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffHisto->GetAxis(2)->GetTitle());
-  ptRecFc->SetTitle(title);
-
-  ptRecFc->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecFc);
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(2, "ptRecEffFPos", "rec. efficiency (findable) pos."));
 
   //
   // efficiency vs eta
@@ -937,100 +941,68 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(0)->SetRangeUser(-1.5,1.5); // eta range
   fEffHisto->GetAxis(2)->SetRangeUser(0.2,10.); // pt range
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.);   // all
   fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
-  TH1D *etaAll = fEffHisto->Projection(0);
+  // rec efficiency vs eta
+  fEffHisto->GetAxis(3)->SetRangeUser(0.,4.);  // reconstructed 
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
-  TH1D *etaRec = fEffHisto->Projection(0);
-  TH1D *etaRecc = (TH1D*)etaRec->Clone();
-  etaRecc->Divide(etaRec,etaAll,1,1,"B");
-  etaRecc->SetName("etaRecEff");
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(0, "etaRecEff", "rec. efficiency"));
 
-  etaRecc->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRecc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency",fEffHisto->GetAxis(0)->GetTitle());
-  etaRecc->SetTitle(title);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffNeg", "rec. efficiency neg."));
 
-  aFolderObj->Add(etaRecc);
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffPos", "rec. efficiency pos."));
 
   // rec efficiency vs pid vs eta
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
-  fEffHisto->GetAxis(3)->SetRangeUser(2.,2.); // pions
+  fEffHisto->GetAxis(3)->SetRangeUser(2.,2.);    // pions
+  
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffPi", "rec. efficiency (pions)"));
 
-  TH1D *etaAllPi = fEffHisto->Projection(0);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffPiNeg", "rec. efficiency (pions) neg."));
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
-  TH1D *etaRecPi = fEffHisto->Projection(0);
-  TH1D *etaRecPic = (TH1D*)etaRecPi->Clone();
-  etaRecPic->Divide(etaRecPi,etaAllPi,1,1,"B");
-  etaRecPic->SetName("etaRecEffPi");
-
-  etaRecPic->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRecPic->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffHisto->GetAxis(0)->GetTitle());
-  etaRecPic->SetTitle(title);
-
-  aFolderObj->Add(etaRecPic);
-
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
-  fEffHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
-  TH1D *etaAllK = fEffHisto->Projection(0);
-
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
-  TH1D *etaRecK = fEffHisto->Projection(0);
-
-  TH1D *etaRecKc = (TH1D*)etaRecK->Clone();
-  etaRecKc->Divide(etaRecK,etaAllK,1,1,"B");
-  etaRecKc->SetName("etaRecEffK");
-
-  etaRecKc->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRecKc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffHisto->GetAxis(0)->GetTitle());
-  etaRecKc->SetTitle(title);
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffPiPos", "rec. efficiency (pions) pos."));
 
 
-  aFolderObj->Add(etaRecKc);
+  fEffHisto->GetAxis(3)->SetRangeUser(3.,3.);    // kaons
+  
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffK", "rec. efficiency (kaons)"));
 
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
-  fEffHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
-  TH1D *etaAllP = fEffHisto->Projection(0);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffKNeg", "rec. efficiency (kaons) neg."));
+  
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffKPos", "rec. efficiency (kaons) pos."));
+  
+  
+  fEffHisto->GetAxis(3)->SetRangeUser(4.,4.);    // protons
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
-  TH1D *etaRecP = fEffHisto->Projection(0);
-  TH1D *etaRecPc = (TH1D*)etaRecP->Clone();
-  etaRecPc->Divide(etaRecP,etaAllP,1,1,"B");
-  etaRecPc->SetName("etaRecEffP");
-
-  etaRecPc->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRecPc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffHisto->GetAxis(0)->GetTitle());
-  etaRecPc->SetTitle(title);
-
-  aFolderObj->Add(etaRecPc);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffP", "rec. efficiency (protons)"));
+ 
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffPNeg", "rec. efficiency (protons) neg."));
+  
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffPPos", "rec. efficiency (protons) pos."));
 
   // findable efficiency vs eta
-
   fEffHisto->GetAxis(3)->SetRangeUser(0.,4.); 
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffHisto->GetAxis(5)->SetRangeUser(1.,1.); // findable
-  TH1D *etaAllF = fEffHisto->Projection(0);
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);
-  fEffHisto->GetAxis(5)->SetRangeUser(1.,1.);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffF", "rec. efficiency (findable)"));
 
-  TH1D *etaRecF = fEffHisto->Projection(0); // rec findable
-  TH1D *etaRecFc = (TH1D*)etaRecF->Clone();
-  etaRecFc->Divide(etaRecF,etaAllF,1,1,"B");
-  etaRecFc->SetName("etaRecEffF");
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffFNeg", "rec. efficiency (findable) neg."));
 
-  etaRecFc->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRecFc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffHisto->GetAxis(0)->GetTitle());
-  etaRecFc->SetTitle(title);
-
-  aFolderObj->Add(etaRecFc);
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(0, "etaRecEffFPos", "rec. efficiency (findable) pos."));
 
   //
   // efficiency vs phi
@@ -1038,100 +1010,68 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.9); // eta range
   fEffHisto->GetAxis(2)->SetRangeUser(0.2,10.); // pt range
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.);   // all
   fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
-  TH1D *phiAll = fEffHisto->Projection(1);
+  // rec efficiency vs phi
+  fEffHisto->GetAxis(3)->SetRangeUser(0.,4.);  // reconstructed 
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
-  TH1D *phiRec = fEffHisto->Projection(1);
-  TH1D *phiRecc = (TH1D*)phiRec->Clone();
-  phiRecc->Divide(phiRec,phiAll,1,1,"B");
-  phiRecc->SetName("phiRecEff");
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(1, "phiRecEff", "rec. efficiency"));
 
-  phiRecc->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRecc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency",fEffHisto->GetAxis(1)->GetTitle());
-  phiRecc->SetTitle(title);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffNeg", "rec. efficiency neg."));
 
-  aFolderObj->Add(phiRecc);
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffPos", "rec. efficiency pos."));
 
   // rec efficiency vs pid vs phi
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
-  fEffHisto->GetAxis(3)->SetRangeUser(2.,2.); // pions
+  fEffHisto->GetAxis(3)->SetRangeUser(2.,2.);    // pions
+  
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffPi", "rec. efficiency (pions)"));
 
-  TH1D *phiAllPi = fEffHisto->Projection(1);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffPiNeg", "rec. efficiency (pions) neg."));
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
-  TH1D *phiRecPi = fEffHisto->Projection(1);
-  TH1D *phiRecPic = (TH1D*)phiRecPi->Clone();
-  phiRecPic->Divide(phiRecPi,phiAllPi,1,1,"B");
-  phiRecPic->SetName("phiRecEffPi");
-
-  phiRecPic->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRecPic->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffHisto->GetAxis(1)->GetTitle());
-  phiRecPic->SetTitle(title);
-
-  aFolderObj->Add(phiRecPic);
-
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
-  fEffHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
-  TH1D *phiAllK = fEffHisto->Projection(1);
-
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
-  TH1D *phiRecK = fEffHisto->Projection(1);
-
-  TH1D *phiRecKc = (TH1D*)phiRecK->Clone();
-  phiRecKc->Divide(phiRecK,phiAllK,1,1,"B");
-  phiRecKc->SetName("phiRecEffK");
-
-  phiRecKc->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRecKc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffHisto->GetAxis(1)->GetTitle());
-  phiRecKc->SetTitle(title);
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffPiPos", "rec. efficiency (pions) pos."));
 
 
-  aFolderObj->Add(phiRecKc);
+  fEffHisto->GetAxis(3)->SetRangeUser(3.,3.);    // kaons
+  
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffK", "rec. efficiency (kaons)"));
 
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
-  fEffHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
-  TH1D *phiAllP = fEffHisto->Projection(1);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffKNeg", "rec. efficiency (kaons) neg."));
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
-  TH1D *phiRecP = fEffHisto->Projection(1);
-  TH1D *phiRecPc = (TH1D*)phiRecP->Clone();
-  phiRecPc->Divide(phiRecP,phiAllP,1,1,"B");
-  phiRecPc->SetName("phiRecEffP");
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffKPos", "rec. efficiency (kaons) pos."));
+ 
+  
+  fEffHisto->GetAxis(3)->SetRangeUser(4.,4.);    // protons
 
-  phiRecPc->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRecPc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffHisto->GetAxis(1)->GetTitle());
-  phiRecPc->SetTitle(title);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffP", "rec. efficiency (protons)"));
 
-  aFolderObj->Add(phiRecPc);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffPNeg", "rec. efficiency (protons) neg."));
+ 
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffPPos", "rec. efficiency (protons) pos."));
 
   // findable efficiency vs phi
-
   fEffHisto->GetAxis(3)->SetRangeUser(0.,4.); 
-  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffHisto->GetAxis(5)->SetRangeUser(1.,1.); // findable
-  TH1D *phiAllF = fEffHisto->Projection(1);
 
-  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);
-  fEffHisto->GetAxis(5)->SetRangeUser(1.,1.);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffF", "rec. efficiency (findable)"));
 
-  TH1D *phiRecF = fEffHisto->Projection(1); // rec findable
-  TH1D *phiRecFc = (TH1D*)phiRecF->Clone();
-  phiRecFc->Divide(phiRecF,phiAllF,1,1,"B");
-  phiRecFc->SetName("phiRecEffF");
-
-  phiRecFc->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRecFc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffHisto->GetAxis(1)->GetTitle());
-  phiRecFc->SetTitle(title);
-
-  aFolderObj->Add(phiRecFc);
+  fEffHisto->GetAxis(6)->SetRangeUser(-2.,0.);   // charge negativ
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffFNeg", "rec. efficiency (findable) neg."));
+ 
+  fEffHisto->GetAxis(6)->SetRangeUser(0.,2.);    // charge positiv
+  aFolderObj->Add(AddHistoEff(1, "phiRecEffFPos", "rec. efficiency (findable) pos."));
   }
   else {
   // 
@@ -1560,4 +1500,32 @@ TFolder *folder = 0;
   folder = new TFolder(name.Data(),title.Data());
 
   return folder;
+}
+
+
+//_____________________________________________________________________________
+TH1D* AliPerformanceEff::AddHistoEff(Int_t axis, const Char_t *name, const Char_t* vsTitle) {
+  // Create and add rec efficiency vs pt, eta, phi
+  
+  char title[256];
+
+  fEffHisto->GetAxis(4)->SetRangeUser(0.,1.);    // all
+  TH1D *all = fEffHisto->Projection(axis);
+
+  fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);    // reconstructed 
+  TH1D *rec = fEffHisto->Projection(axis);
+  TH1D *recc = (TH1D*)rec->Clone();
+
+  recc->Divide(rec,all,1,1,"B");
+  recc->SetName(name);
+
+  recc->GetXaxis()->SetTitle(fEffHisto->GetAxis(axis)->GetTitle());
+  recc->GetYaxis()->SetTitle("efficiency");
+
+  sprintf(title,"%s vs %s",vsTitle, fEffHisto->GetAxis(axis)->GetTitle());  
+  recc->SetTitle(title);
+
+  if (axis == 2 ) recc->SetBit(TH1::kLogX);
+
+  return recc;
 }

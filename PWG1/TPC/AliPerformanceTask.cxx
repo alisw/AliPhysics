@@ -78,6 +78,7 @@ AliPerformanceTask::AliPerformanceTask()
   , fUseMCInfo(kFALSE)
   , fUseESDfriend(kFALSE)
   , fUseHLT(kFALSE)
+  , fUseTerminate(kTRUE)
 {
   // Dummy Constructor
   // should not be used
@@ -96,6 +97,7 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
   , fUseMCInfo(kFALSE)
   , fUseESDfriend(kFALSE)
   , fUseHLT(kFALSE)
+  , fUseTerminate(kTRUE)
 {
   // Constructor
 
@@ -226,7 +228,10 @@ void AliPerformanceTask::UserExec(Option_t *)
 void AliPerformanceTask::Terminate(Option_t *) 
 {
   // Called once at the end 
-  
+
+  if ( !fUseTerminate )
+    return;
+
   // check output data
     fOutputSummary = dynamic_cast<TTree*> (GetOutputData(2));
     fOutput = dynamic_cast<TList*> (GetOutputData(1));
