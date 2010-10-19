@@ -111,6 +111,8 @@
 #pragma link C++ class  AliTRDpidRefMaker+;
 #pragma link C++ class  AliTRDpidRefMakerLQ+;
 #pragma link C++ class  AliTRDpidRefMakerNN+;
+// TOF QA
+#pragma link C++ class  AliAnalysisTaskTOFqa+;
 // Cosmics QA
 #pragma link C++ class  AliAnalysisTaskCosmic+;
 // Background and luminosity studies
