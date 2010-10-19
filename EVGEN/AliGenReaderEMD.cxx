@@ -155,21 +155,21 @@ Int_t AliGenReaderEMD::NextEvent()
 	// #### fPcToTrack 	=0->neutrons, =1->protons
 	if(fIPSide==0){
 	  if(fPcToTrack==0){
-	    printf("\n \t \t Tracking %d neutrons emitted on RIGHT side\n\n", fNnRight);
+	    printf("\n \t \t Tracking %d neutrons emitted on C side\n\n", fNnRight);
 	    nTracks    = fNnRight;
 	  }
 	  else if(fPcToTrack==1){
-	    printf("\n \t \t Tracking %d protons emitted on RIGHT side\n\n", fNpRight);
+	    printf("\n \t \t Tracking %d protons emitted on C side\n\n", fNpRight);
 	    nTracks    = fNpRight;
 	  }
 	}
 	else if(fIPSide==1){
 	  if(fPcToTrack==0){
-	    printf("\n \t \t Tracking %d neutrons emitted on LEFT side\n", fNnLeft);
+	    printf("\n \t \t Tracking %d neutrons emitted on A side\n", fNnLeft);
 	    nTracks    = fNnLeft;
 	  }
 	  else if(fPcToTrack==1){
-	    printf("\n \t \t Tracking %d protons emitted on LEFT side\n", fNpLeft);
+	    printf("\n \t \t Tracking %d protons emitted on A side\n", fNpLeft);
 	    nTracks    = fNpLeft;
 	  }
 	}
@@ -185,8 +185,12 @@ TParticle* AliGenReaderEMD::NextParticle()
 {
     // Read the next particle
     Float_t p[4];
-    Int_t ipart = kNeutron;
-    Double_t amass = TDatabasePDG::Instance()->GetParticle(kNeutron)->Mass();
+
+    Int_t ipart=0;
+    if(fPcToTrack==0) ipart = kNeutron;
+    else  if(fPcToTrack==1) ipart = kProton;
+    Double_t amass = TDatabasePDG::Instance()->GetParticle(ipart)->Mass();
+
     p[0] = fPxnRight[fNparticle];
     p[1] = fPynRight[fNparticle];
     p[2] = fPznRight[fNparticle];
