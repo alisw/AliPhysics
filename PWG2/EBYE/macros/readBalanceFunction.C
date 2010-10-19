@@ -1,25 +1,70 @@
-void readBalanceFunctionF() {
+void readBalanceFunction() {
   //Macro to read the output of the BF analysis:
   //i) Merges the output of each sub-job
   //ii) Prints and draws the final output
   //iii) Printd the details of the BF analysis (i.e. type, bins,...)
   //iv) Reads the QA part of the analysis
-  //iv) 
   //Author: Panos.Christakoglou@cern.ch
-
-  //Merge the output
-  mergeOutput("/alice/cern.ch/user/p/pchrist/Balance/pp/7TeV/LHC10b/output/");
-}
-
-//___________________________________________________________//
-void mergeOutput(const char* outputDir) {
-  //Function to merge the output of the sub-jobs
- //Loading the needed libraries
+  //Loading the needed libraries
   gSystem->Load("libProofPlayer.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libPWG2ebye.so");
 
+
+  //Draw BF              
+  drawBF();
+
+  //Print BF config
+  //printBFConfig();     
+
+  //Merge the output
+  //mergeOutput("/alice/cern.ch/user/p/pchrist/Balance/pp/7TeV/LHC10b/output/");
+}
+
+//___________________________________________________________//
+void drawBF() {
+  //Function to draw the BF object
+  TFile *f = TFile::Open("AnalysisResults.118558.root");
+  if(!f) {
+    Printf("File not found!!!");
+    break;
+  }
+
+  TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(f->Get("PWG2EbyE.outputBalanceFunctionAnalysis.root"));
+  if(!dir) {
+    Printf("Output directory not found!!!");
+    break;
+  }
+
+  AliBalance *bf = dynamic_cast<AliBalance *>(dir->Get("AliBalance"));
+  if(!bf) {
+    Printf("BF object not found!!!");
+    break;
+  }
+
+  bf->PrintResults();
+  TGraphErrors *gr = bf->DrawBalance();
+  gr->SetMarkerStyle(24);
+
+  TCanvas *c1 = new TCanvas("c1","Balance Function",0,0,500,500);
+  c1->SetFillColor(10); c1->SetHighLightColor(10);
+
+  TH2F *hEmpty = new TH2F("hEmpty","",1000,-1000,1000,1000,-0.2,1.0);
+  hEmpty->SetStats(kFALSE);
+  hEmpty->GetXaxis()->SetTitle(gr->GetXaxis()->GetTitle());
+  hEmpty->GetYaxis()->SetTitle(gr->GetYaxis()->GetTitle());
+  hEmpty->GetXaxis()->SetRangeUser(gr->GetXaxis()->GetXmin(),
+                                   gr->GetXaxis()->GetXmax());
+  hEmpty->GetYaxis()->SetRangeUser(gr->GetYaxis()->GetXmin(),
+                                   gr->GetYaxis()->GetXmax());
+  hEmpty->Draw();
+  gr->Draw("P");
+}
+
+//___________________________________________________________//
+void mergeOutput(const char* outputDir) {
+  //Function to merge the output of the sub-jobs
   //Create a BF object
   AliBalance *bf = new AliBalance();
 
@@ -53,6 +98,7 @@ void mergeOutput(const char* outputDir) {
 
     //merge BF
     AliBalance *bfSubJob = dynamic_cast<AliBalance *>(dirSubJob->Get("AliBalance"));
+    //bfSubJob->PrintResults();
     bf->Merge(bfSubJob);
     //delete bfSubJob;
 
