@@ -1,0 +1,40 @@
+#--------------------------------------------------------------------------------#
+# Package File for PWG3hfe                                                       #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS hfe/AliHFEtools.cxx hfe/AliHFEcollection.cxx hfe/AliHFEcontainer.cxx hfe/AliHFEmcQA.cxx hfe/AliHFEpairs.cxx hfe/AliHFEsecVtxs.cxx hfe/AliHFEsecVtx.cxx hfe/AliHFEpriVtx.cxx hfe/AliHFEelecbackground.cxx hfe/AliHFEspectrum.cxx hfe/AliHFEV0info.cxx hfe/AliHFEV0pid.cxx hfe/AliHFEpidQA.cxx hfe/AliHFEtrdPIDqa.cxx hfe/AliHFEpid.cxx hfe/AliHFEpidBase.cxx hfe/AliHFEpidITS.cxx hfe/AliHFEpidTPC.cxx hfe/AliHFEpidTRD.cxx hfe/AliHFEpidTOF.cxx hfe/AliHFEpidMC.cxx hfe/AliHFEextraCuts.cxx hfe/AliHFEcutStep.cxx hfe/AliHFEtrackFilter.cxx hfe/AliHFEcuts.cxx hfe/AliHFEdca.cxx hfe/AliAnalysisTaskDCA.cxx hfe/AliHFEdisplacedElectrons.cxx hfe/AliHFEpostAnalysis.cxx hfe/AliAnalysisTaskDisplacedElectrons.cxx hfe/AliAnalysisTaskHFEpidQA.cxx hfe/AliHFEefficiency.cxx hfe/AliAnalysisTaskHFE.cxx hfe/AliHFEV0pidMC.cxx hfe/AliHFEV0cuts.cxx)
+
+string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+set ( DHDR  PWG3hfeLinkDef.h)
+
+set ( EINCLUDE  PWG3/base PWG3/hfe STEER TPC CORRFW)
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+	
+			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lSTEER -lTPCbase -lANALYSISalice -lANALYSIS -lCORRFW)
+
+endif( ALICE_TARGET STREQUAL "win32gcc")
