@@ -30,6 +30,10 @@ public:
     Float_t GetNotHadronicCorrection() const {return fNotHadronicCorrection;}
     Float_t GetpTCutCorrectionTPC() const {return fpTcutCorrectionTPC;}
     Float_t GetpTCutCorrectionITS() const {return fpTcutCorrectionITS;}
+    Float_t GetNotIDConstCorrectionTPC() const {return fNotIDConstTPC;}
+    Float_t GetNotIDConstCorrectionITS() const {return fNotIDConstITS;}
+    Float_t GetNotIDConstCorrectionTPCNoID() const {return fNotIDConstTPCNoID;}
+    Float_t GetNotIDConstCorrectionITSNoID() const {return fNotIDConstITSNoID;}
     Float_t GetNeutralCorrectionLowBound() const {return fNeutralCorrectionLow;}
     Float_t GetNotHadronicCorrectionLowBound() const {return fNotHadronicCorrectionLow;}
     Float_t GetpTCutCorrectionTPCLowBound() const {return ffpTcutCorrectionTPCLow;}
@@ -38,6 +42,10 @@ public:
     Float_t GetNotHadronicCorrectionHighBound() const {return fNotHadronicCorrectionHigh;}
     Float_t GetpTCutCorrectionTPCHighBound() const {return ffpTcutCorrectionTPCHigh;}
     Float_t GetpTCutCorrectionITSHighBound() const {return ffpTcutCorrectionITSHigh;}
+    Float_t GetNotIDConstCorrectionTPCLowBound() const {return fNotIDConstTPCLow;}
+    Float_t GetNotIDConstCorrectionITSLowBound() const {return fNotIDConstITSLow;}
+    Float_t GetNotIDConstCorrectionTPCNoIDLowBound() const {return fNotIDConstTPCNoIDLow;}
+    Float_t GetNotIDConstCorrectionITSNoIDLowBound() const {return fNotIDConstITSNoIDLow;}
     TH1D *GetNotIDCorrectionTPC() const {return fnotIDTPC;}
     TH1D *GetNotIDCorrectionITS() const {return fnotIDITS;}
     TH1D *GetNotIDCorrectionNoPID() const {return fnotIDNoID;}
@@ -53,9 +61,9 @@ public:
     TH1D *GetBackgroundCorrectionITS() const {return fBackgroundITS;}
 
     //This is stored as the inverse of the correction
-    Float_t GetNotIDCorrectionTPC(const float pT){return 1.0/(fnotIDTPC->GetBinContent(fnotIDTPC->FindBin(pT)));}
-    Float_t GetNotIDCorrectionITS(const float pT){return 1.0/(fnotIDITS->GetBinContent(fnotIDITS->FindBin(pT)));}
-    Float_t GetNotIDCorrectionNoPID(const float pT){return 1.0/(fnotIDNoID->GetBinContent(fnotIDNoID->FindBin(pT)));}
+    Float_t GetNotIDCorrectionTPC(const float pT);//{return 1.0/(fnotIDTPC->GetBinContent(fnotIDTPC->FindBin(pT)));}
+    Float_t GetNotIDCorrectionITS(const float pT);//{return 1.0/(fnotIDITS->GetBinContent(fnotIDITS->FindBin(pT)));}
+    Float_t GetNotIDCorrectionNoPID(const float pT);//{return 1.0/(fnotIDNoID->GetBinContent(fnotIDNoID->FindBin(pT)));}
     //As is this...
     Float_t GetTPCEfficiencyCorrectionPion(const float pT);
     Float_t GetTPCEfficiencyCorrectionKaon(const float pT);
@@ -78,6 +86,10 @@ public:
     void SetNotHadronicCorrection(const Float_t val){fNotHadronicCorrection=val;}
     void SetpTCutCorrectionTPC(const Float_t val){fpTcutCorrectionTPC=val;}
     void SetpTCutCorrectionITS(const Float_t val){fpTcutCorrectionITS=val;}
+    void SetNotIDConstCorrectionTPC(const Float_t val){fNotIDConstTPC=val;}
+    void SetNotIDConstCorrectionITS(const Float_t val){fNotIDConstITS=val;}
+    void SetNotIDConstCorrectionTPCNoID(const Float_t val){fNotIDConstTPCNoID=val;}
+    void SetNotIDConstCorrectionITSNoID(const Float_t val){fNotIDConstITSNoID=val;}
     void SetNeutralCorrectionLowBound(const Float_t val){fNeutralCorrectionLow=val;}
     void SetNotHadronicCorrectionLowBound(const Float_t val){fNotHadronicCorrectionLow=val;}
     void SetpTCutCorrectionTPCLowBound(const Float_t val){ffpTcutCorrectionTPCLow=val;}
@@ -86,6 +98,14 @@ public:
     void SetNotHadronicCorrectionHighBound(const Float_t val){fNotHadronicCorrectionHigh=val;}
     void SetpTCutCorrectionTPCHighBound(const Float_t val){ffpTcutCorrectionTPCHigh=val;}
     void SetpTCutCorrectionITSHighBound(const Float_t val){ffpTcutCorrectionITSHigh=val;}
+    void SetNotIDConstCorrectionTPCLowBound(const Float_t val){fNotIDConstTPCLow=val;}
+    void SetNotIDConstCorrectionITSLowBound(const Float_t val){fNotIDConstITSLow=val;}
+    void SetNotIDConstCorrectionTPCNoIDLowBound(const Float_t val){fNotIDConstTPCNoIDLow=val;}
+    void SetNotIDConstCorrectionITSNoIDLowBound(const Float_t val){fNotIDConstITSNoIDLow=val;}
+    void SetNotIDConstCorrectionTPCHighBound(const Float_t val){fNotIDConstTPCHigh=val;}
+    void SetNotIDConstCorrectionITSHighBound(const Float_t val){fNotIDConstITSHigh=val;}
+    void SetNotIDConstCorrectionTPCNoIDHighBound(const Float_t val){fNotIDConstTPCNoIDHigh=val;}
+    void SetNotIDConstCorrectionITSNoIDHighBound(const Float_t val){fNotIDConstITSNoIDHigh=val;}
     void SetNotIDCorrectionTPC(const TH1D *histo){fnotIDTPC=(TH1D*) histo;}
     void SetNotIDCorrectionITS(const TH1D *histo){fnotIDITS=(TH1D*) histo;}
     void SetNotIDCorrectionNoPID(const TH1D *histo){fnotIDNoID=(TH1D*) histo;}
@@ -118,6 +138,10 @@ protected:
     Float_t fNotHadronicCorrection;//the correction for the fraction of energy which is not measured by the tracking detectors 
     Float_t fpTcutCorrectionTPC;//the correction for the momentum cut for the tpc (150 MeV/c)
     Float_t fpTcutCorrectionITS;//the correction for the momentum cut for the ITS (100 MeV/c)
+    Float_t fNotIDConstTPC;//the correction for the constant correction for unidentified particles with the TPC momentum cut
+    Float_t fNotIDConstITS;//the correction for the constant correction for unidentified particles with the ITS momentum cut
+    Float_t fNotIDConstTPCNoID;//the correction for the constant correction for unidentified particles with the TPC momentum cut if no PID was done
+    Float_t fNotIDConstITSNoID;//the correction for the constant correction for unidentified particles with the ITS momentum cut if no PID was done
     Float_t fNeutralCorrectionLow;//the low bound on the neutral energy fraction correction
     Float_t fNotHadronicCorrectionLow;//the low bound on the hadronic energy fraction correction
     Float_t ffpTcutCorrectionTPCLow;//the low bound on the TPC momentum cut correction
@@ -126,6 +150,14 @@ protected:
     Float_t fNotHadronicCorrectionHigh;//the high bound on the hadronic energy correction
     Float_t ffpTcutCorrectionTPCHigh;//the high bound on the TPC momentum cut correction
     Float_t ffpTcutCorrectionITSHigh;//the high bound on the ITS momentum cut correction
+    Float_t fNotIDConstTPCLow;//the correction for the constant correction for unidentified particles with the TPC momentum cut
+    Float_t fNotIDConstITSLow;//the correction for the constant correction for unidentified particles with the ITS momentum cut
+    Float_t fNotIDConstTPCNoIDLow;//the correction for the constant correction for unidentified particles with the TPC momentum cut if no PID was done
+    Float_t fNotIDConstITSNoIDLow;//the correction for the constant correction for unidentified particles with the ITS momentum cut if no PID was done
+    Float_t fNotIDConstTPCHigh;//the correction for the constant correction for unidentified particles with the TPC momentum cut
+    Float_t fNotIDConstITSHigh;//the correction for the constant correction for unidentified particles with the ITS momentum cut
+    Float_t fNotIDConstTPCNoIDHigh;//the correction for the constant correction for unidentified particles with the TPC momentum cut if no PID was done
+    Float_t fNotIDConstITSNoIDHigh;//the correction for the constant correction for unidentified particles with the ITS momentum cut if no PID was done
 
     //Histograms with the pT dependent fCorrections
     TH1D *fnotIDTPC;//correction for unidentified tracks in the TPC

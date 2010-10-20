@@ -285,7 +285,7 @@ Float_t AliAnalysisHadEt::Et(TParticle *part, float mass){//function to calculat
 	//for antinucleons we specifically want to return the kinetic energy plus twice the rest mass
 	return (part->Energy()+part->GetMass())*TMath::Sin(part->Theta());
       }
-      if(part->GetPDG(0)->PdgCode()==2212 || part->GetPDG(0)->PdgCode()==2112){//antiproton or antineutron
+      if(part->GetPDG(0)->PdgCode()==2212 || part->GetPDG(0)->PdgCode()==2112){//proton or neutron
 	//for nucleons we specifically want to return the kinetic energy only
 	return (part->Energy()-part->GetMass())*TMath::Sin(part->Theta());
       }

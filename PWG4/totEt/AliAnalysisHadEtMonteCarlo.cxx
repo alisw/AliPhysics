@@ -30,13 +30,14 @@ using namespace std;
 ClassImp(AliAnalysisHadEtMonteCarlo);
 
 
-// Int_t AliAnalysisHadEtMonteCarlo::fgNumSmearWidths = 4;
-// Float_t AliAnalysisHadEtMonteCarlo::fgSmearWidths[4] = {0.005,0.006,0.007,0.008};
+Int_t AliAnalysisHadEtMonteCarlo::fgNumSmearWidths = 4;
+Float_t AliAnalysisHadEtMonteCarlo::fgSmearWidths[4] = {0.005,0.006,0.007,0.008};
 
 AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
-						      //,fSimPiKPEt(0)
+							,fSimPiKPEt(0)
 							,fSimHadEt(0)
 							,fSimTotEt(0) 
+							,fPtSmearer(0)
 {
 //   for(int i=0;i<fgNumSmearWidths;i++){
 //     //fSimPiKPEtSmeared[i] = 0.0;
@@ -44,13 +45,14 @@ AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 }
 AliAnalysisHadEtMonteCarlo::~AliAnalysisHadEtMonteCarlo(){//destructor
   //if(fSimPiKPEtSmeared) delete [] fSimPiKPEtSmeared;
+  if(fPtSmearer) delete fPtSmearer;
 }
 
 void AliAnalysisHadEtMonteCarlo::ResetEventValues(){//resetting event variables
   AliAnalysisHadEt::ResetEventValues();
     fSimHadEt=0.0;
     fSimTotEt=0.0;
-    //fSimPiKPEt=0.0;
+    fSimPiKPEt=0.0;
 }
 Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 { // analyse MC and real event info
@@ -156,7 +158,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  }
 	  else{//analysis
 	    if(stack->IsPhysicalPrimary(label)){
-	      if (TMath::Abs(simPart->Eta()) < fCuts->GetCommonEtaCut())	    {
+	      if (TMath::Abs(simPart->Eta()) < fCuts->GetCommonEtaCut()){
+	      //if (TMath::Abs(simPart->Eta()) < 0.7)	    {
 
 		Int_t pdgCode =  simPart->GetPDG(0)->PdgCode();
 		Int_t mypid = 0;
@@ -320,65 +323,67 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    }
 	    else{//not a primary - we're after V0 daughters!
 	      //cout<<"I'm a secondary "<<simPart->GetName()<<"!";//<<endl;
-	      TParticle *mom = stack->Particle(simPart->GetFirstMother());
-	      if(mom){
-		TParticlePDG *pc = mom->GetPDG(0);
-		if(pc){
-		  Int_t pdgCode =  mom->GetPDG(0)->PdgCode();
-		  if(pdgCode == fgLambdaCode){
-		    float myEt = Et(simPart);
-		    FillHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-		  }
-		  if(pdgCode == fgAntiLambdaCode){
-		    float myEt = Et(simPart);
-		    FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-		  }
-		  if(pdgCode == fgK0SCode){
-		    float myEt = Et(simPart);
-		    FillHisto2D(Form("EtReconstructed%sK0SDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-		  }
-		  if(pdgCode == fgXiCode){
-		    float myEt = Et(simPart);
-		    FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-		  }
-		  if(pdgCode == fgAntiXiCode){
-		    float myEt = Et(simPart);
-		    FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-		  }
-		  if(pdgCode == fgOmegaCode){
-		    float myEt = Et(simPart);
-		    FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-		  }
-		  if(pdgCode == fgXiCode){
-		    float myEt = Et(simPart);
-		    FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-		  }
+	      if (TMath::Abs(simPart->Eta()) < fCuts->GetCommonEtaCut()){
+		TParticle *mom = stack->Particle(simPart->GetFirstMother());
+		if(mom){
+		  TParticlePDG *pc = mom->GetPDG(0);
+		  if(pc){
+		    Int_t pdgCode =  mom->GetPDG(0)->PdgCode();
+		    if(pdgCode == fgLambdaCode){
+		      float myEt = Et(simPart);
+		      FillHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		    }
+		    if(pdgCode == fgAntiLambdaCode){
+		      float myEt = Et(simPart);
+		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		    }
+		    if(pdgCode == fgK0SCode){
+		      float myEt = Et(simPart);
+		      FillHisto2D(Form("EtReconstructed%sK0SDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		    }
+		    if(pdgCode == fgXiCode){
+		      float myEt = Et(simPart);
+		      FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		    }
+		    if(pdgCode == fgAntiXiCode){
+		      float myEt = Et(simPart);
+		      FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		    }
+		    if(pdgCode == fgOmegaCode){
+		      float myEt = Et(simPart);
+		      FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		    }
+		    if(pdgCode == fgXiCode){
+		      float myEt = Et(simPart);
+		      FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		    }
 
-		  if(mom->GetFirstMother()>0){
-		    TParticle *grandma = stack->Particle(mom->GetFirstMother());
-		    if(grandma){
-		      Int_t pdgCodeMom =  mom->GetPDG(0)->PdgCode();
-		      if(pdgCodeMom==fgPiPlusCode || pdgCodeMom==fgPiMinusCode || pdgCodeMom==fgProtonCode ||pdgCodeMom==fgAntiProtonCode || pdgCodeMom==fgKPlusCode || pdgCode==fgKMinusCode){
-			//cout<<" my grandmother is "<<grandma->GetName()<<" "<<endl;
-			Int_t pdgCodeGrandma =  grandma->GetPDG(0)->PdgCode();
+		    if(mom->GetFirstMother()>0){
+		      TParticle *grandma = stack->Particle(mom->GetFirstMother());
+		      if(grandma){
+			Int_t pdgCodeMom =  mom->GetPDG(0)->PdgCode();
+			if(pdgCodeMom==fgPiPlusCode || pdgCodeMom==fgPiMinusCode || pdgCodeMom==fgProtonCode ||pdgCodeMom==fgAntiProtonCode || pdgCodeMom==fgKPlusCode || pdgCode==fgKMinusCode){
+			  //cout<<" my grandmother is "<<grandma->GetName()<<" "<<endl;
+			  Int_t pdgCodeGrandma =  grandma->GetPDG(0)->PdgCode();
 		      
-			if(pdgCodeGrandma == fgXiCode){
-			  float myEt = Et(simPart);
-			  FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-			}
-			if(pdgCodeGrandma == fgAntiXiCode){
-			  float myEt = Et(simPart);
-			  FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-			}
-			if(pdgCodeGrandma == fgOmegaCode){
-			  float myEt = Et(simPart);
-			  FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-			}
-			if(pdgCodeGrandma == fgXiCode){
-			  float myEt = Et(simPart);
-			  FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
-			}
+			  if(pdgCodeGrandma == fgXiCode){
+			    float myEt = Et(simPart);
+			    FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+			  }
+			  if(pdgCodeGrandma == fgAntiXiCode){
+			    float myEt = Et(simPart);
+			    FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+			  }
+			  if(pdgCodeGrandma == fgOmegaCode){
+			    float myEt = Et(simPart);
+			    FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+			  }
+			  if(pdgCodeGrandma == fgXiCode){
+			    float myEt = Et(simPart);
+			    FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+			  }
 
+			}
 		      }
 		    }
 		  }
@@ -410,10 +415,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
     Int_t nPrim = stack->GetNtrack();
 
-//     Float_t fSimPiKPEtSmeared[fgNumSmearWidths];
-//     for(int i=0;i<fgNumSmearWidths;i++){
-//       fSimPiKPEtSmeared[i] = 0.0;
-//     }
+    Float_t fSimPiKPEtPtSmeared = 0;
+    Float_t fSimPiKPEtEfficiencySmeared = 0;
+    Float_t fSimPiKPEtPtCutSmearedTPC = 0;
+    Float_t fSimPiKPEtPtCutSmearedITS = 0;
+    Float_t fSimPiKPEtPIDSmeared = 0;
+    Float_t fSimPiKPEtPIDSmearedNoID = 0;
     //=================Tracks which may or may not have been reconstructed=================
 
     for (Int_t iPart = 0; iPart < nPrim; iPart++)
@@ -438,46 +445,76 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    //cout<<pdgCode->PdgCode()<<" ";
 	    //fPdgDB->GetParticle("pi+")->PdgCode();
 	    bool filled = false;
+	    //Investigating smearing...
+	    //Numbers are realistic correction factors from previous studies
+	    if(pdgCode==fgPiPlusCode ||pdgCode==fgPiMinusCode ||pdgCode==fgKPlusCode ||pdgCode==fgKMinusCode ||pdgCode==fgProtonCode ||pdgCode==fgAntiProtonCode){
+	      //To investigate Smearing...
+	      Float_t myet = Et(part);
+	      fSimPiKPEt += myet;
+	      Float_t theta = part->Theta();
+	      Short_t charge = 1;
+	      Float_t momentum = part->P();
+	      //pt smearing
+	      Float_t pSmeared = momentum *  fPtSmearer->Gaus(1,0.005);//Gaussian centered around 1
+	      fSimPiKPEtPtSmeared += Et(pSmeared,theta,pdgCode,charge);
+	      //Efficiency smearing
+	      float efficiency = 2.26545*TMath::Exp(-TMath::Power(9.99977e-01/part->Pt(),7.85488e-02));//simple rough efficiency from fitting curve
+	      if(fPtSmearer->Binomial(1,efficiency) ==1){
+		fSimPiKPEtEfficiencySmeared += (1.0/efficiency)*myet;
+	      }
+	      //pT cut smeared
+	      if(part->Pt()>0.10){fSimPiKPEtPtCutSmearedITS +=1.00645645*myet;}
+	      if(part->Pt()>0.15){fSimPiKPEtPtCutSmearedTPC +=1.02000723*myet;}
+	      //PID smearing
+	      fSimPiKPEtPIDSmearedNoID += 1.02679314*Et(momentum,theta,fgPiPlusCode,charge);
+	      if(part->P()<1.0){//then the particle would have been ID'd
+		fSimPiKPEtPIDSmeared += 1.0085942*myet;
+	      }
+	      else{//Then it would have been assumed to be a pion
+		fSimPiKPEtPIDSmeared += 1.0085942*Et(momentum,theta,fgPiPlusCode,charge);
+	      }
+	    }
+
 	    //============Charged hadrons===================================
 	    if(pdgCode == fgPiPlusCode){
 	      //cout<<"I'm a simulated primary "<<part->GetName()<<"! "<<"my label is "<<part->GetFirstMother()<<" pt "<<part->Pt()<<endl;
 	      float myEt = Et(part);
+
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      //To investigate p Smearing...
-// 	      fSimPiKPEt += myEt;
-// 	      Float_t theta = part->Theta();
-// 	      Short_t charge = 1;
-// 	      for(int i=0;i<fgNumSmearWidths;i++){
-// 		Float_t pSmeared = part->P() *  fpSmearer->Gaus(1,fgSmearWidths[i]);//Gaussian centered around 1
-// 		fSimPiKPEtSmeared[i] += AliAnalysisHadEt::Et(pSmeared,theta,pdgCode,charge);
-// 	      }
+
 	      FillHisto2D("EtSimulatedPiPlus",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedPiPlus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedChargedHadron",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Short_t charge = 1;
+	      Float_t myEtLow = Et(0.0,part->Theta(),pdgCode,charge);
+	      Float_t myEtITS = Et(0.10/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      Float_t myEtTPC = Et(0.15/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingNoPt",part->Pt(),part->Eta(),myEtLow);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut",part->Pt(),part->Eta(),myEtTPC);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtITSCut",part->Pt(),part->Eta(),myEtITS);
 	      filled = true;
 	    }
 	    if(pdgCode == fgPiMinusCode){
 	      float myEt = Et(part);
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-// 	      //To investigate p Smearing...
-// 	      fSimPiKPEt += myEt;
-// 	      Float_t theta = part->Theta();
-// 	      Short_t charge = -1;
-// 	      for(int i=0;i<fgNumSmearWidths;i++){
-// 		Float_t pSmeared = part->P() *  fpSmearer->Gaus(1,fgSmearWidths[i]);//Gaussian centered around 1
-// 		fSimPiKPEtSmeared[i] += AliAnalysisHadEt::Et(pSmeared,theta,pdgCode,charge);
-// 	      }
 	      FillHisto2D("EtSimulatedPiMinus",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedPiMinus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedChargedHadron",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Short_t charge = -1;
+	      Float_t myEtLow = Et(0.0,part->Theta(),pdgCode,charge);
+	      Float_t myEtITS = Et(0.10/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      Float_t myEtTPC = Et(0.15/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingNoPt",part->Pt(),part->Eta(),myEtLow);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut",part->Pt(),part->Eta(),myEtTPC);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtITSCut",part->Pt(),part->Eta(),myEtITS);
 	      filled = true;
 	    }
 	    if(pdgCode == fgKPlusCode){
@@ -485,14 +522,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEtPi = Et(part,fgPionMass);
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      //To investigate p Smearing...
-// 	      fSimPiKPEt += myEt;
-// 	      Float_t theta = part->Theta();
-// 	      Short_t charge = 1;
-// 	      for(int i=0;i<fgNumSmearWidths;i++){
-// 		Float_t pSmeared = part->P() *  fpSmearer->Gaus(1,fgSmearWidths[i]);//Gaussian centered around 1
-// 		fSimPiKPEtSmeared[i] += AliAnalysisHadEt::Et(pSmeared,theta,pdgCode,charge);
-// 	      }
 	      FillHisto2D("EtSimulatedKPlus",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedKPlus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -500,6 +529,13 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedKPlusAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Short_t charge = 1;
+	      Float_t myEtLow = Et(0.0,part->Theta(),pdgCode,charge);
+	      Float_t myEtITS = Et(0.10/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      Float_t myEtTPC = Et(0.15/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingNoPt",part->Pt(),part->Eta(),myEtLow);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut",part->Pt(),part->Eta(),myEtTPC);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtITSCut",part->Pt(),part->Eta(),myEtITS);
 	      filled = true;
 	    }
 	    if(pdgCode == fgKMinusCode){
@@ -507,14 +543,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEtPi = Et(part,fgPionMass);
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      //To investigate p Smearing...
-// 	      fSimPiKPEt += myEt;
-// 	      Float_t theta = part->Theta();
-// 	      Short_t charge = -1;
-// 	      for(int i=0;i<fgNumSmearWidths;i++){
-// 		Float_t pSmeared = part->P() *  fpSmearer->Gaus(1,fgSmearWidths[i]);//Gaussian centered around 1
-// 		fSimPiKPEtSmeared[i] += AliAnalysisHadEt::Et(pSmeared,theta,pdgCode,charge);
-// 	      }
 	      FillHisto2D("EtSimulatedKMinus",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedKMinus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -522,6 +550,13 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedKMinusAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Short_t charge = -1;
+	      Float_t myEtLow = Et(0.0,part->Theta(),pdgCode,charge);
+	      Float_t myEtITS = Et(0.10/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      Float_t myEtTPC = Et(0.15/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingNoPt",part->Pt(),part->Eta(),myEtLow);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut",part->Pt(),part->Eta(),myEtTPC);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtITSCut",part->Pt(),part->Eta(),myEtITS);
 	      filled = true;
 	    }
 	    if(pdgCode == fgProtonCode){
@@ -529,14 +564,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEtPi = Et(part,fgPionMass);
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      //To investigate p Smearing...
-// 	      fSimPiKPEt += myEt;
-// 	      Float_t theta = part->Theta();
-// 	      Short_t charge = 1;
-// 	      for(int i=0;i<fgNumSmearWidths;i++){
-// 		Float_t pSmeared = part->P() *  fpSmearer->Gaus(1,fgSmearWidths[i]);//Gaussian centered around 1
-// 		fSimPiKPEtSmeared[i] += AliAnalysisHadEt::Et(pSmeared,theta,pdgCode,charge);
-// 	      }
 	      FillHisto2D("EtSimulatedProton",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedProton",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -544,6 +571,13 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedProtonAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Short_t charge = 1;
+	      Float_t myEtLow = Et(0.0,part->Theta(),pdgCode,charge);
+	      Float_t myEtITS = Et(0.10/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      Float_t myEtTPC = Et(0.15/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingNoPt",part->Pt(),part->Eta(),myEtLow);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut",part->Pt(),part->Eta(),myEtTPC);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtITSCut",part->Pt(),part->Eta(),myEtITS);
 	      filled = true;
 	    }
 	    if(pdgCode == fgAntiProtonCode){
@@ -551,14 +585,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEtPi = Et(part,fgPionMass);
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      //To investigate p Smearing...
-// 	      fSimPiKPEt += myEt;
-// 	      Float_t theta = part->Theta();
-// 	      Short_t charge = -1;
-// 	      for(int i=0;i<fgNumSmearWidths;i++){
-// 		Float_t pSmeared = part->P() *  fpSmearer->Gaus(1,fgSmearWidths[i]);//Gaussian centered around 1
-// 		fSimPiKPEtSmeared[i] += AliAnalysisHadEt::Et(pSmeared,theta,pdgCode,charge);
-// 	      }
 	      FillHisto2D("EtSimulatedAntiProton",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedAntiProton",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -566,6 +592,13 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedAntiProtonAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Short_t charge = -1;
+	      Float_t myEtLow = Et(0.0,part->Theta(),pdgCode,charge);
+	      Float_t myEtITS = Et(0.10/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      Float_t myEtTPC = Et(0.15/TMath::Sin(part->Theta()),part->Theta(),pdgCode,charge);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingNoPt",part->Pt(),part->Eta(),myEtLow);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut",part->Pt(),part->Eta(),myEtTPC);
+	      FillHisto2D("EtSimulatedChargedHadronAssumingPtITSCut",part->Pt(),part->Eta(),myEtITS);
 	      filled = true;
 	    }
 	    //============Other hadrons===================================
@@ -893,16 +926,26 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	}
     }
 
-    FillHisto1D("SimTotEt",fSimTotEt,1.0);
-    FillHisto1D("SimHadEt",fSimHadEt,1.0);
-//     FillHisto1D("SimPiKPEt",fSimPiKPEt,1.0);
-//     char histoname[200];
-//     for(int i=0;i<fgNumSmearWidths;i++){
-//       sprintf(histoname,"SimPiKPEtMinusSimSmeared%2.1f",fgSmearWidths[i]*100.);
-//       if(fSimPiKPEt>0.0) FillHisto2D(histoname,fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtSmeared[i])/fSimPiKPEt,1.0);
-//       sprintf(histoname,"SimPiKPEt%2.1f",fgSmearWidths[i]*100.);
-//       FillHisto1D(histoname,fSimPiKPEtSmeared[i],1.0);
-//     }
+    if(fSimTotEt>0.0)FillHisto1D("SimTotEt",fSimTotEt,1.0);
+    if(fSimHadEt>0.0)FillHisto1D("SimHadEt",fSimHadEt,1.0);
+    if(fSimPiKPEt>0.0)FillHisto1D("SimPiKPEt",fSimPiKPEt,1.0);
+
+    //Smearing histograms
+    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPtSmeared",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPtSmeared)/fSimPiKPEt,1.0);
+    FillHisto1D("SimPiKPEtPtSmeared",fSimPiKPEtPtSmeared,1.0);
+    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimEfficiencySmeared",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtEfficiencySmeared)/fSimPiKPEt,1.0);
+    FillHisto1D("SimPiKPEtEfficiencySmeared",fSimPiKPEtEfficiencySmeared,1.0);
+    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPtCutSmearedTPC",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPtCutSmearedTPC)/fSimPiKPEt,1.0);
+    FillHisto1D("SimPiKPEtPtCutSmearedTPC",fSimPiKPEtPtCutSmearedTPC,1.0);
+    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPtCutSmearedITS",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPtCutSmearedITS)/fSimPiKPEt,1.0);
+    FillHisto1D("SimPiKPEtPtCutSmearedITS",fSimPiKPEtPtCutSmearedTPC,1.0);
+    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPIDSmeared",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPIDSmeared)/fSimPiKPEt,1.0);
+    //if(fSimPiKPEt>0.0)cout<<"Filling SimPiKPEtMinusSimPIDSmeared with "<<fSimPiKPEt<<","<<(fSimPiKPEt-fSimPiKPEtPIDSmeared)/fSimPiKPEt<<endl;
+    FillHisto1D("SimPiKPEtPIDSmeared",fSimPiKPEtPIDSmeared,1.0);
+    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPIDSmearedNoID",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPIDSmearedNoID)/fSimPiKPEt,1.0);
+    //if(fSimPiKPEt>0.0)cout<<"Filling SimPiKPEtMinusSimPIDSmearedNoID with "<<fSimPiKPEt<<","<<(fSimPiKPEt-fSimPiKPEtPIDSmearedNoID)/fSimPiKPEt<<endl;
+    FillHisto1D("SimPiKPEtPIDSmearedNoID",fSimPiKPEtPIDSmearedNoID,1.0);
+
     return 1;
     
 }
@@ -910,6 +953,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 void AliAnalysisHadEtMonteCarlo::Init()
 { // Init
     AliAnalysisHadEt::Init();
+    if(!fPtSmearer) fPtSmearer = new TRandom();
 }
 
 void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
@@ -928,6 +972,9 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D("EtNSimulatedProton","Number of simulated p");
   CreateEtaPtHisto2D("EtNSimulatedAntiProton","Number of simulated #bar{p}");
   CreateEtaPtHisto2D("EtNSimulatedChargedHadron","Number of simulated charged hadrons");
+  CreateEtaPtHisto2D("EtSimulatedChargedHadronAssumingNoPt","Simulated E_{T} from charged hadrons assuming p_{T}=0");
+  CreateEtaPtHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut","Simulated E_{T} from charged hadrons assuming p_{T}=0.15");
+  CreateEtaPtHisto2D("EtSimulatedChargedHadronAssumingPtITSCut","Simulated E_{T} from charged hadrons assuming p_{T}=0.10");
 
   CreateEtaPtHisto2D("EtSimulatedChargedHadronAssumingPion","Simulated E_{T} from charged hadrons assuming they are all pions");
   CreateEtaPtHisto2D("EtSimulatedKPlusAssumingPion","Simulated E_{T} from K^{+} assuming #pi mass");
@@ -1126,27 +1173,102 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 	  sprintf(xtitle,"Simulated %s",etstring->Data());
 	  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
 
-	  //cout<<"I want to make "<<histoname<<" with the title "<<histotitle<<endl;
+	  if(hadet==0){//we only want to do this once...  not the most elegant way of coding but hey...
+	    sprintf(histoname,"SimPiKPMinusRecoPiKP%sAcceptance%s%s",acceptance->Data(),detector->Data(),partid->Data());
+	    sprintf(histotitle,"(Sim PiKP - reco PiKP)/(Sim PiKP) with %s acceptance for p_{T}>%s GeV/c%s",acceptance->Data(),ptstring->Data(),partidstring->Data());
+	    sprintf(ytitle,"(Sim PiKP - reco PiKP)/(Sim PiKP)");
+	    sprintf(xtitle,"Simulated E_{T}^{#pi,K,p}");
+	    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+	    //cout<<"Creating "<<histoname<<endl;
+	  }
 	}
       }
     }
   }
-//   CreateHisto1D("SimPiKPEt","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt,minEt,maxEt);
-  CreateHisto1D("SimTotEt","Simulated Total E_{T}","Simulated Total E_{T}","Number of events",nbinsEt,minEt,maxEt);
-  CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt,minEt,maxEt);
-//   etDiff = 0.015;
-//   for(int i=0;i<fgNumSmearWidths;i++){
-//     sprintf(histoname,"SimPiKPEtMinusSimSmeared%2.1f",fgSmearWidths[i]*100.);
-//     sprintf(histotitle,"Simulated (true-smeared)/true for %2.1f percent momentum smearing",fgSmearWidths[i]*100.);
-//     sprintf(ytitle,"(true-smeared)/true");
-//     sprintf(xtitle,"true p, K, p E_{T}");
-//     CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-//     sprintf(histoname,"SimPiKPEt%2.1f",fgSmearWidths[i]*100.);
-//     sprintf(histotitle,"Simulated E_{T} for %2.1f percent momentum smearing",fgSmearWidths[i]*100.);
-//     sprintf(ytitle,"Number of events");
-//     sprintf(xtitle,"p, K, p E_{T}");
-//     CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
-//   }
+   CreateHisto1D("SimPiKPEt","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt,minEt,maxEt);
+  CreateHisto1D("SimTotEt","Simulated Total E_{T}","Simulated Total E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
+  CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
+
+  etDiff = 0.15;
+
+  //======================================================================
+
+  sprintf(histoname,"SimPiKPEtMinusSimPtSmeared");
+  sprintf(histotitle,"Simulated (true-smeared)/true for 0.5 percent momentum smearing");
+  sprintf(ytitle,"(true-smeared)/true");
+  sprintf(xtitle,"true p, K, p E_{T}");
+  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff/10.0,etDiff/10.0);
+  sprintf(histoname,"SimPiKPEtPtSmeared");
+  sprintf(histotitle,"Simulated E_{T} for 0.5 percent momentum smearing");
+  sprintf(ytitle,"Number of events");
+  sprintf(xtitle,"p, K, p E_{T}");
+  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+
+  //======================================================================
+
+  sprintf(histoname,"SimPiKPEtMinusSimEfficiencySmeared");
+  sprintf(histotitle,"Simulated (true-smeared)/true for efficiency smearing");
+  sprintf(ytitle,"(true-smeared)/true");
+  sprintf(xtitle,"true p, K, p E_{T}");
+  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,etDiff*5);
+  sprintf(histoname,"SimPiKPEtEfficiencySmeared");
+  sprintf(histotitle,"Simulated E_{T} for efficiency smearing");
+  sprintf(ytitle,"Number of events");
+  sprintf(xtitle,"p, K, p E_{T}");
+  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+
+  //======================================================================
+
+  sprintf(histoname,"SimPiKPEtMinusSimPtCutSmearedTPC");
+  sprintf(histotitle,"Simulated (true-smeared)/true for p_{T}>0.15 GeV/c smearing");
+  sprintf(ytitle,"(true-smeared)/true");
+  sprintf(xtitle,"true p, K, p E_{T}");
+  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+  sprintf(histoname,"SimPiKPEtPtCutSmearedTPC");
+  sprintf(histotitle,"Simulated E_{T} for p_{T}>0.15 GeV/c smearing");
+  sprintf(ytitle,"Number of events");
+  sprintf(xtitle,"p, K, p E_{T}");
+  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+
+
+  //======================================================================
+
+  sprintf(histoname,"SimPiKPEtMinusSimPtCutSmearedITS");
+  sprintf(histotitle,"Simulated (true-smeared)/true for p_{T}>0.10 GeV/c smearing");
+  sprintf(ytitle,"(true-smeared)/true");
+  sprintf(xtitle,"true p, K, p E_{T}");
+  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+  sprintf(histoname,"SimPiKPEtPtCutSmearedITS");
+  sprintf(histotitle,"Simulated E_{T} for p_{T}>0.10 GeV/c smearing");
+  sprintf(ytitle,"Number of events");
+  sprintf(xtitle,"p, K, p E_{T}");
+  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+
+  //======================================================================
+
+  sprintf(histoname,"SimPiKPEtMinusSimPIDSmeared");
+  sprintf(histotitle,"Simulated (true-smeared)/true for PID smearing");
+  sprintf(ytitle,"(true-smeared)/true");
+  sprintf(xtitle,"true p, K, p E_{T}");
+  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+  sprintf(histoname,"SimPiKPEtPIDSmeared");
+  sprintf(histotitle,"Simulated E_{T} for PID smearing");
+  sprintf(ytitle,"Number of events");
+  sprintf(xtitle,"p, K, p E_{T}");
+  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+
+  //======================================================================
+
+  sprintf(histoname,"SimPiKPEtMinusSimPIDSmearedNoID");
+  sprintf(histotitle,"Simulated (true-smeared)/true for PID smearing No ID");
+  sprintf(ytitle,"(true-smeared)/true");
+  sprintf(xtitle,"true p, K, p E_{T}");
+  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+  sprintf(histoname,"SimPiKPEtPIDSmearedNoID");
+  sprintf(histotitle,"Simulated E_{T} for PID smearing No ID");
+  sprintf(ytitle,"Number of events");
+  sprintf(xtitle,"p, K, p E_{T}");
+  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
   delete sTPC;
   delete sITS;
