@@ -208,11 +208,11 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
 
   fh2ESDTriggerCount = new TH2F("fh2ESDTriggerCount",";Trigger No.;constrained;Count",AliAnalysisHelperJetTasks::kTrigger,-0.5,AliAnalysisHelperJetTasks::kTrigger-0.5,kConstraints,-0.5,kConstraints-0.5); 
   fHistList->Add(fh2ESDTriggerCount);
-
-  fh2TriggerVtx = new TH2F("fh2TriggerVtx",";Trigger No.;Vtx (cm);Count",AliAnalysisHelperJetTasks::kTrigger,-0.5,AliAnalysisHelperJetTasks::kTrigger-0.5,400,-20.,20.); 
+  const Int_t nBins = AliAnalysisHelperJetTasks::kTrigger*kConstraints;
+  fh2TriggerVtx = new TH2F("fh2TriggerVtx",";Constraint No. * (trig no+1);Vtx (cm);Count",nBins,-0.5,nBins-0.5,400,-20.,20.); 
   fHistList->Add(fh2TriggerVtx);
 
-  fh2ESDTriggerVtx = new TH2F("fh2ESDTriggerVtx",";Trigger No.;Vtx (cm);Count",AliAnalysisHelperJetTasks::kTrigger,-0.5,AliAnalysisHelperJetTasks::kTrigger-0.5,400,-20.,20.); 
+  fh2ESDTriggerVtx = new TH2F("fh2ESDTriggerVtx",";Constraint No.* (trg no+1);Vtx (cm);Count",nBins,-0.5,nBins-0.5,400,-20.,20.); 
   fHistList->Add(fh2ESDTriggerVtx);
   
 
@@ -425,6 +425,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
     //      Printf(">> ESDvtx %s %s",vtxESD->GetName(),vtxESD->GetTitle());vtxESD->Print();
     TString vtxName(vtxESD->GetName());
+    Float_t zvtx = vtxESD->GetZ();
     for(int it = AliAnalysisHelperJetTasks::kAcceptAll;it < AliAnalysisHelperJetTasks::kTrigger;it++){
       Bool_t esdTrig = kFALSE;
       esdTrig = AliAnalysisHelperJetTasks::IsTriggerFired(esd,(AliAnalysisHelperJetTasks::Trigger)it);
@@ -432,19 +433,27 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       Bool_t cand = physicsSelection;
       if(cand){
 	fh2ESDTriggerCount->Fill(it,kSelectedALICE); 
+	fh2ESDTriggerVtx->Fill(kSelectedALICE*(it+1),zvtx);
       }
       if(!fUsePhysicsSelection)cand =  AliAnalysisHelperJetTasks::IsTriggerFired(esd,AliAnalysisHelperJetTasks::kMB1);
       if(vtxESD->GetNContributors()>2&&!vtxName.Contains("TPCVertex")){
-	if(esdTrig)fh2ESDTriggerCount->Fill(it,kTriggeredVertex);
-	Float_t zvtx = vtxESD->GetZ();
+	if(esdTrig){
+	  fh2ESDTriggerCount->Fill(it,kTriggeredVertex);
+	  fh2ESDTriggerVtx->Fill(kTriggeredVertex*(it+1),zvtx);
+	}
 	if(esdEventSelected&&esdTrig){
 	  fh2ESDTriggerCount->Fill(it,kTriggeredVertexIn);
-	  fh2ESDTriggerVtx->Fill(it,zvtx);
+	  fh2ESDTriggerVtx->Fill(kTriggeredVertexIn*(it+1),zvtx);
 	}
-	if(cand)fh2ESDTriggerCount->Fill(it,kSelectedALICEVertexValid);
+	if(cand){
+	  fh2ESDTriggerCount->Fill(it,kSelectedALICEVertexValid);
+	  fh2ESDTriggerVtx->Fill(kSelectedALICEVertexValid*(it+1),zvtx);
+	}
       }
       if(cand&&esdEventSelected){
 	fh2ESDTriggerCount->Fill(it,kSelectedALICEVertexIn);
+	fh2ESDTriggerVtx->Fill(kSelectedALICEVertexIn*(it+1),zvtx);
+	fh2ESDTriggerVtx->Fill(kSelected*(it+1),zvtx);
 	fh2ESDTriggerCount->Fill(it,kSelected);
 	AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
       }
@@ -462,18 +471,25 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       Bool_t cand = aod->GetHeader()->GetOfflineTrigger()&AliVEvent::kMB;
       if(aodTrig)fh2TriggerCount->Fill(it,kAllTriggered);
       if(aodVtxValid){
-	if(aodTrig)fh2TriggerCount->Fill(it,kTriggeredVertex);
 	Float_t zvtx = vtxAOD->GetZ();
+	if(aodTrig){
+	  fh2TriggerCount->Fill(it,kTriggeredVertex);
+	  fh2TriggerVtx->Fill(kTriggeredVertex*(it+1),zvtx);
+	}
 	if(cand&&aodEventSelected){
 	  fh2TriggerCount->Fill(it,kSelected);
 	}
 	if(aodTrig&&aodEventSelected){
-	  fh2TriggerVtx->Fill(it,zvtx);
+	  fh2TriggerVtx->Fill(kTriggeredVertexIn*(it+1),zvtx);
 	  fh2TriggerCount->Fill(it,kTriggeredVertexIn);
 	}
 	if(cand){
 	  fh2TriggerCount->Fill(it,kSelectedALICEVertexValid);
-	  if(aodEventSelected)fh2TriggerCount->Fill(it,kSelectedALICEVertexIn);
+	  fh2TriggerVtx->Fill(kSelectedALICEVertexValid*(it+1),zvtx);
+	  if(aodEventSelected){
+	    fh2TriggerCount->Fill(it,kSelectedALICEVertexIn);
+	    fh2TriggerVtx->Fill(kSelectedALICEVertexIn*(it+1),zvtx);
+	  }
 	}
       }
     }
