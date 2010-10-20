@@ -249,8 +249,8 @@ Bool_t AliESDZDC::GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Dou
   if(denZNA!=0){
     Float_t nSpecnA = fZDCN1Energy/beamEne;
     cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
-    fZNCCentrCoord[0] = cZNA*numXZNA/denZNA;
-    fZNCCentrCoord[1] = cZNA*numYZNA/denZNA;
+    fZNACentrCoord[0] = cZNA*numXZNA/denZNA;
+    fZNACentrCoord[1] = cZNA*numYZNA/denZNA;
   } 
   else{
     fZNACentrCoord[0] = fZNACentrCoord[1] = 999.;
