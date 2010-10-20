@@ -95,6 +95,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh1PtHard(0x0),
   fh1PtHardNoW(0x0),  
   fh1PtHardTrials(0x0),
+  fh1ZVtx(0x0),
   fh1NGenJets(0x0),
   fh1NRecJets(0x0),
   fh1PtTrackRec(0x0),   
@@ -202,6 +203,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh1PtHard(0x0),
   fh1PtHardNoW(0x0),  
   fh1PtHardTrials(0x0),
+  fh1ZVtx(0x0),
   fh1NGenJets(0x0),
   fh1NRecJets(0x0),
   fh1PtTrackRec(0x0),   
@@ -395,6 +397,8 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1PtHardNoW = new TH1F("fh1PtHardNoW","PYTHIA Pt hard no weight;p_{T,hard}",nBinPt,binLimitsPt);
   fh1PtHardTrials = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",nBinPt,binLimitsPt);
 
+  fh1ZVtx = new TH1F("fh1ZVtx","z vtx;z_{vtx} (cm)",400,-20,20);
+
   fh1NGenJets  = new TH1F("fh1NGenJets","N generated jets",20,-0.5,19.5);
   fh1NRecJets = new TH1F("fh1NRecJets","N reconstructed jets",20,-0.5,19.5);
 
@@ -506,6 +510,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh1PtHard);
     fHistList->Add(fh1PtHardNoW);
     fHistList->Add(fh1PtHardTrials);
+    fHistList->Add(fh1ZVtx);
     if(fBranchGen.Length()>0){
       fHistList->Add(fh1NGenJets);
       fHistList->Add(fh1PtTracksGenIn);
@@ -828,6 +833,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   fh1PtHard->Fill(ptHard,eventW);
   fh1PtHardNoW->Fill(ptHard,1);
   fh1PtHardTrials->Fill(ptHard,nTrials);
+  fh1ZVtx->Fill(fAOD->GetPrimaryVertex()->GetZ());
+
 
   // If we set a second branch for the input jets fetch this 
   if(fBranchGen.Length()>0){
