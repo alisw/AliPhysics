@@ -1,7 +1,7 @@
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* bBkg="jeteventbackground_clustersAOD_KT06",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1,UInt_t iEventSelectionMask = 0,Bool_t kBackground=kTRUE);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* bBkg="jeteventbackground_clustersAOD_KT06",UInt_t filterMask = 32, Int_t iPhysicsSelection = 1,UInt_t iEventSelectionMask = 0,Bool_t kBackground=kTRUE);
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,Bool_t kBackground = kFALSE){
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,Bool_t kBackground = kFALSE){
   AliAnalysisTaskJetSpectrum2 *js = 0;
 
   TString cBack = "";
