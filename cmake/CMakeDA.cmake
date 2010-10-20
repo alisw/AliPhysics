@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.2 FATAL_ERROR)
 
 # -----------Utilities--------------------
 
@@ -45,42 +45,45 @@ endfunction()
 # ----------Common stuff-------------------
 
 file(GLOB_RECURSE _dafiles $ENV{ALICE_ROOT}/*da.cxx)
-set(DAINSTALL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+set(DAINSTALL "$ENV{ALICE_INSTALL}/DA")
 
 file(MAKE_DIRECTORY ${DAINSTALL})
 
-#**Set compiler flags
+string (REPLACE "-pedantic-errors" "" CXXFLAGS ${CXXFLAGS})
 
-
-find_program(AMORE amore-config)
-#temporary
-find_program(DATE date-config)
-find_program(ROOT_CONFIG root-config)
 find_program(XML2 xml2-config)
 
-if(AMORE)
-  execute_process(COMMAND ${AMORE} --cflags --includes OUTPUT_VARIABLE AMOREFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-  #**Set compiler flags
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AMOREFLAGS}")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${AMOREFLAGS}")
-  
-  execute_process(COMMAND ${AMORE} --ldflags-da-static OUTPUT_VARIABLE _lddaflags OUTPUT_STRIP_TRAILING_WHITESPACE)
-  string(REGEX REPLACE "\n" " " _lddaflags ${_lddaflags})
-  execute_process(COMMAND ${DATE} --rcproxylibs OUTPUT_VARIABLE _rcproxylib OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(AMOREDALIBS "-static ${_lddaflags} ${_rcproxylib}") 	
+if(AMORE_FOUND)
+  #Set compiler flags
+  set(CXXFLAGS "${CXXFLAGS} ${AMOREFLAGS}")
+  set(CFLAGS "${CFLAGS} ${AMOREFLAGS}")
+  set(CINTFLAGS "${CINTFLAGS} ${AMOREFLAGS}")
 else()
   set(AMORELIBS)
-endif(AMORE)
+endif(AMORE_FOUND)
 
-execute_process(COMMAND ${ROOT_CONFIG} --libdir OUTPUT_VARIABLE ROOTLIBDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${XML2} --libs OUTPUT_VARIABLE _xml2libs OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${DATE} --monitorlibs=noshift OUTPUT_VARIABLE MONITORLIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${DATE_CONFIG} --monitorlibs=noshift OUTPUT_VARIABLE MONITORLIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+separate_arguments(MONITORLIBS)
 
-string(REGEX REPLACE " " ";" MONITORLIBS ${MONITORLIBS})
 set(SYSLIBS -ldl -lpthread ${_xml2libs})
+
 set(EXTRAROOTLIB "libRootExtra.a")
+
 file(GLOB _extraroot "$ENV{ROOTSYS}/montercarlo/vmc/src/*.o" "$ENV{ROOTSYS}/tree/treeplayer/src/*.o" "$ENV{ROOTSYS}/io/xmlparser/src/*.o" "$ENV{ROOTSYS}/math/minuit2/src/*.o")
+
+set(DAQDALIB_PATH $ENV{DAQDALIB_PATH})	
+if(DAQDALIB_PATH)
+  set(DAQDADIR "${DAQDALIB_PATH}")
+else()
+  set(DAQDADIR "$ENV{ALICE}/daqDAlib")
+endif(DAQDALIB_PATH)
+set(DAQDALIB "${DAQDADIR}/libdaqDA.a")
+
+include_directories(${DAQDADIR} RAW)
+include_directories(SYSTEM ${ROOTINCDIR})
+
 #message("${_extraroot}")
 
 
@@ -93,14 +96,21 @@ message("RAW SRCS ${RAWDatabase_SRC}")
 foreach(detector ${ONLINEDETECTORS} )
   
   #ALIROOTALIBS
+
   set(ALIROOTALIBS)
+
   list(APPEND ALIROOTALIBS RAWDatabase_a RAWDatarec_a RAWDatasim_a STEERBase_a STEER_a CDB_a ESD_a STAT_a AOD_a )
 
   set(ONLINEDETECTORNAME ${detector})
+
   detector_module(DAMODULE ${ONLINEDETECTORNAME})
+
   detector_subda(SUBDAMODULE ${ONLINEDETECTORNAME})
+
 #Get detector algorithms for this detector
+
   foreach(dafile ${_dafiles})
+
 	string(REGEX MATCH "$ENV{ALICE_ROOT}/${DAMODULE}/${DAMODULE}${SUBDAMODULE}" match ${dafile})
 #Found a valid target name
 	if(match)
@@ -136,29 +146,7 @@ foreach(detector ${ONLINEDETECTORS} )
 	  set(DATAR "${DATARGETDIR}/${DAARC}.src.tar.gz")
 	  set(DASPECFILE "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.spec")
 	  set(DAMAKEFILE "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.make")
-	  set(DAQDALIB_PATH $ENV{DAQDALIB_PATH})	
- 	  if(DAQDALIB_PATH)
-	    set(DAQDADIR "${DAQDALIB_PATH}")
-	  else()
-	    set(DAQDADIR "$ENV{ALICE}/daqDAlib")
-	  endif(DAQDALIB_PATH)
 
-	  set(DAQDALIB "${DAQDADIR}/libdaqDA.a")
-
-#	  message(${DAVERSION})
-#	  message(${DAALIROOTRELEASE})
-
-	  ##**set(EXTRADAMODULE ALIROOTALIBS
-#	  file(READ "$ENV{ALICE_ROOT}/${DAMODULE}/CMake_lib${DAMODULE}.txt" _modulesrc )
-#	  message("${_modulesrc}")
-#	  string(REGEX MATCHALL "[^ ]+\\.cxx" DAMODULE_SRC ${_modulesrc})
-	  
-#	  set(MODULEALIB ${DAMODULE}_SRC)
-#	  
-	  
-#	  message("MODULE SRCS - ${DAMODULE_SRC}")
-#	  string(REGEX MATCH "[^\n]*" 
-#	  list(APPEND ALIROOTALIBS ${DAMODULE_SRC})
 
 # Super Duper Hack :D
 	  file(GLOB _damodule "$ENV{ALICE_ROOT}/${DAMODULE}/lib${DAMODULE}*.pkg" )
@@ -194,27 +182,14 @@ foreach(detector ${ONLINEDETECTORS} )
 	   message(FATAL_ERROR "SRC FILE MISSING")
 	  endif(NOT _dasrc)
 
-#	  message("${_dasrc}")
-#	  message("DACONTACT - ${DACONTACT}")
-#	  message("DALINKPAGE - ${DALINKPAGE}")
-#	  message("DAREFFUN - ${DAREFFUN}")
-#	  message("DARUNTYPE - ${DARUNTYPE}")
-#	  message("DATYPE - ${DATYPE}")
-#	  message("DANUMBEROFEVENTS - ${DANUMBEROFEVENTS}")
-#	  message("DAINPUTFILES - ${DAINPUTFILES}")
-#	  message("DAOUTPUTFILES - ${DAOUTPUTFILES}")
-#	  message("DATRIGGERTYPE - ${DATRIGGERTYPE}")
-
 #----------- Targets ----------------------
 
-  	  set(CMAKE_CXX_FLAGS "${CXXFLAGS}")
-	  set(CMAKE_C_FLAGS "${CFLAGS}")
-	  set(CMAKE_Fortran_FLAGS "${FFLAGS}")
+	  set(CMAKE_CXX_FLAGS ${CXXFLAGS})
+	  set(CMAKE_C_FLAGS ${CFLAGS})
+	  set(CMAKE_Fortran_FLAGS ${FFLAGS})
 	  set(CMAKE_SHARED_LINKER_FLAGS ${SOFLAGS}) 
 	  set(CMAKE_MODULE_LINKER_FLAGS ${LDFLAGS})
 
-	  include_directories(${MODULES} ${DAQDADIR} )
-	  include_directories(SYSTEM ${ROOTINCDIR})
 	  set(ZIP)
 	  foreach(_lib ${ALIROOTALIBS})
 	   string(REGEX REPLACE "-all" "_a" _lib ${_lib})
@@ -236,7 +211,6 @@ foreach(detector ${ONLINEDETECTORS} )
 	  add_custom_command(TARGET ${DAEXE} 
 		   	PRE_LINK
 			COMMAND ${CMAKE_AR} r ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${EXTRAROOTLIB} ${_extraroot})
-#	  message("${DALIB} --> ${ALIROOTALIBS}")
 	endif(match)
   endforeach(dafile)
 endforeach(detector)
