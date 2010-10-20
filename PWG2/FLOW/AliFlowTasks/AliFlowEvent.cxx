@@ -654,17 +654,11 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
 
       //make new AliFLowTrack
       AliFlowTrack* pTrack = NULL;
-      if (rp&&poi)
-      {
-        pTrack = rpCuts->MakeFlowTrack();
-        pTrack->TagRP(); fNumberOfRPs++;
-        pTrack->TagPOI();
-      }
-      else
       if (rp)
       {
         pTrack = rpCuts->MakeFlowTrack();
         pTrack->TagRP(); fNumberOfRPs++;
+        if (poi) pTrack->TagPOI();
       }
       else
       if (poi)
@@ -680,6 +674,7 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
   {
     //here we have two different sources of particles, so we fill
     //them independently
+    AliFlowTrack* pTrack = NULL;
     //RP
     Int_t numberOfRPs = 0;
     if (trackletsRP) numberOfRPs = trackletsRP->GetNumberOfTracklets();
@@ -691,8 +686,9 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
       else particle = eventRP->GetTrack(i);
       Bool_t rp = rpCuts->IsSelected(particle,i);
       if (!rp) continue;
-      AliFlowTrack* pTrack = rpCuts->MakeFlowTrack();
+      pTrack = rpCuts->MakeFlowTrack();
       pTrack->TagRP(); fNumberOfRPs++;
+      AddTrack(pTrack);
     }
     //POI
     Int_t numberOfPOIs = 0;
@@ -705,8 +701,9 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
       else particle = eventPOI->GetTrack(i);
       Bool_t poi = poiCuts->IsSelected(particle,i);
       if (!poi) continue;
-      AliFlowTrack* pTrack = poiCuts->MakeFlowTrack();
+      pTrack = poiCuts->MakeFlowTrack();
       pTrack->TagPOI();
+      AddTrack(pTrack);
     }
   }
 }
