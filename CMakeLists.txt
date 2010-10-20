@@ -171,9 +171,6 @@ set(EXPORTFILES)
 
 add_custom_target(alilibs-static)
 add_custom_target(include-headers)
-if(DATE_FOUND AND AMORE_FOUND)
-  include (CMakeDA)
-endif(DATE_FOUND AND AMORE_FOUND)
 
 # Add Modules
 # ------------------------------
@@ -185,6 +182,10 @@ foreach(MODULE ${MODDIRS})
   add_subdirectory(${MODULE})
 
 endforeach(MODULE)
+
+if(DATE_FOUND AND AMORE_FOUND)
+  include (CMakeDA)
+endif(DATE_FOUND AND AMORE_FOUND)
 
 #--------------------------------------------------------------------------------#
 # Additional Targets                                                             #
