@@ -52,6 +52,7 @@ ClassImp(AliFlowTrackCuts)
 AliFlowTrackCuts::AliFlowTrackCuts():
   AliFlowTrackSimpleCuts(),
   fAliESDtrackCuts(new AliESDtrackCuts()),
+  fQA(kFALSE),
   fCutMCprocessType(kFALSE),
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
@@ -78,6 +79,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
 AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& someCuts):
   AliFlowTrackSimpleCuts(someCuts),
   fAliESDtrackCuts(new AliESDtrackCuts(*(someCuts.fAliESDtrackCuts))),
+  fQA(someCuts.fQA),
   fCutMCprocessType(someCuts.fCutMCprocessType),
   fMCprocessType(someCuts.fMCprocessType),
   fCutMCPID(someCuts.fCutMCPID),
@@ -106,6 +108,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& someCuts)
   //assignment
   AliFlowTrackSimpleCuts::operator=(someCuts);
   *fAliESDtrackCuts=*(someCuts.fAliESDtrackCuts);
+  fQA=someCuts.fQA;
   fCutMCprocessType=someCuts.fCutMCprocessType;
   fMCprocessType=someCuts.fMCprocessType;
   fCutMCPID=someCuts.fCutMCPID;
@@ -236,27 +239,29 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
 
+  Bool_t pass=kTRUE;
   //check the common cuts for the current particle (MC,AOD,ESD)
-  if (fCutPt) {if (fTrack->Pt() < fPtMin || fTrack->Pt() >= fPtMax ) return kFALSE;}
-  if (fCutEta) {if (fTrack->Eta() < fEtaMin || fTrack->Eta() >= fEtaMax ) return kFALSE;}
-  if (fCutPhi) {if (fTrack->Phi() < fPhiMin || fTrack->Phi() >= fPhiMax ) return kFALSE;}
-  if (fRequireCharge) {if (fTrack->Charge() == 0) return kFALSE;}
-  if (fCutCharge && !isMCparticle) {if (fTrack->Charge() != fCharge) return kFALSE;}
+  if (fCutPt) {if (fTrack->Pt() < fPtMin || fTrack->Pt() >= fPtMax ) pass=kFALSE;}
+  if (fCutEta) {if (fTrack->Eta() < fEtaMin || fTrack->Eta() >= fEtaMax ) pass=kFALSE;}
+  if (fCutPhi) {if (fTrack->Phi() < fPhiMin || fTrack->Phi() >= fPhiMax ) pass=kFALSE;}
+  if (fRequireCharge) {if (fTrack->Charge() == 0) pass=kFALSE;}
+  if (fCutCharge && !isMCparticle) {if (fTrack->Charge() != fCharge) pass=kFALSE;}
   if (fCutCharge && isMCparticle)
   { 
     //in case of an MC particle the charge is stored in units of 1/3|e| 
     Int_t charge = TMath::Nint(fTrack->Charge()/3.0); //mc particles have charge in units of 1/3e
     return (charge==fCharge);
   }
-  //if(fCutPID) {if (fTrack->PID() != fPID) return kFALSE;}
+  //if(fCutPID) {if (fTrack->PID() != fPID) pass=kFALSE;}
 
   //when additionally MC info is required
-  if (!PassesMCcuts()) return kFALSE;
+  if (!PassesMCcuts()) pass=kFALSE;
 
   //check all else for ESDs using aliesdtrackcuts
-  if (esdTrack && (fParamType!=kMC) ) return fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack));
+  if (esdTrack && (fParamType!=kMC) ) 
+    if (!fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack))) pass=kFALSE;
 
-  return kTRUE; //true by default, if we didn't set any cuts
+  return pass; //true by default, if we didn't set any cuts
 }
 
 //-----------------------------------------------------------------------
@@ -382,4 +387,9 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
         return "unknown";
   }
   return "unknown";
+}
+
+//-----------------------------------------------------------------------
+void AliFlowTrackCuts::DefineHistograms()
+{
 }

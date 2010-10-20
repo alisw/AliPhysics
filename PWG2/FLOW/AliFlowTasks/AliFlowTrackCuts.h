@@ -13,6 +13,7 @@
 #include "AliESDtrackCuts.h"
 #include "TMCProcess.h"
 
+class TDirectory;
 class AliVParticle;
 class AliMCParticle;
 class AliFlowTrack;
@@ -79,6 +80,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void GetPtRange( Float_t& r1, Float_t& r2 ) const { r1=GetPtMin(); r2=GetPtMax(); }
   Bool_t GetRequireCharge() const {return fRequireCharge;}
 
+  void SetQA(const char* dirname);
+  TDirectory* GetQA() const {return fQA;}
+
   //MC stuff
   void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; }
   TMCProcess GetMCprocessType() const { return fMCprocessType; }
@@ -107,8 +111,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesMCcuts();
   void HandleESDtrack(AliESDtrack* track);
   void HandleVParticle(AliVParticle* track);
+  void DefineHistograms();
 
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
+  TDirectory* fQA;                   //qa histograms go here
   Bool_t fCutMCprocessType;          //do we cut on mc process type?
   TMCProcess fMCprocessType;         //mc process type
   Bool_t fCutMCPID;                  //cut on MC pid?
