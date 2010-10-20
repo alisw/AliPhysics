@@ -118,6 +118,8 @@ void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName,
     TFile* currentFile=TFile::Open((objs->GetString()).Data());
     if(!currentFile) continue; // protection
     Merge(currentFile, mergeArray);
+
+    if(currentFile) delete currentFile;
   }
   Bool_t separate = kFALSE;
   if (separate) {
@@ -128,6 +130,7 @@ void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName,
   }
   delete mergeArray;
   delete res;
+
 }
 
 
