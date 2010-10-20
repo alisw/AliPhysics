@@ -1,8 +1,8 @@
-#include <Riostream.h>
-#include <TFile.h>
-#include <AliRDHFCutsD0toKpi.h>
-#include <TClonesArray.h>
-#include <TParameter.h>
+//#include <Riostream.h>
+//#include <TFile.h>
+//#include <AliRDHFCutsD0toKpi.h>
+//#include <TClonesArray.h>
+//#include <TParameter.h>
 
 
 //Use:
@@ -28,7 +28,7 @@ void makeInputAliAnalysisTaskSED0Mass(){
   //default
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4); // default is 5
+  //esdTrackCuts->SetMinNClustersITS(4); // default is 5
   //esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny); 
@@ -248,7 +248,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   //default
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4);
+  //esdTrackCuts->SetMinNClustersITS(4);
   
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);

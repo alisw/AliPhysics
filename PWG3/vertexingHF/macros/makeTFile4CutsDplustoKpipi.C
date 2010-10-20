@@ -22,20 +22,18 @@ void makeTFile4CutsDplustoKpipi(){
   RDHFDplustoKpipi->SetName("loosercuts");
   RDHFDplustoKpipi->SetTitle("Cuts for significance maximization");
 
-//   AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
-//   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-//   //default
-//   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-//   esdTrackCuts->SetRequireITSRefit(kTRUE);
-//   esdTrackCuts->SetMinNClustersITS(4); // default is 5
-//   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-// 					 AliESDtrackCuts::kAny); 
-//  // default is kBoth, otherwise kAny
-//   esdTrackCuts->SetMinDCAToVertexXY(0.);
-//   esdTrackCuts->SetPtRange(0.3,1.e10);
-
-
-//   RDHFDplustoKpipi->AddTrackCuts(esdTrackCuts);
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  //default
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  //   esdTrackCuts->SetMinNClustersITS(4); // default is 5
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+ 					 AliESDtrackCuts::kAny); 
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+  
+  RDHFDplustoKpipi->AddTrackCuts(esdTrackCuts);
 
   const Int_t nvars=12;
 

@@ -29,7 +29,7 @@ void makeInputAliAnalysisTaskSEStarSpectra(){
   //default
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4); // default is 5
+  //esdTrackCuts->SetMinNClustersITS(4); // default is 5
   //esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny); 
@@ -45,7 +45,7 @@ void makeInputAliAnalysisTaskSEStarSpectra(){
   esdSoftPicuts->SetRequireITSRefit(kFALSE);
   esdSoftPicuts->SetMinNClustersITS(4); // default is 4
   esdSoftPicuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					  AliESDtrackCuts::kAny); //test d0 asimmetry
+					  AliESDtrackCuts::kAny);
   esdSoftPicuts->SetPtRange(0.0,1.e10);
 
   // set pre selections
