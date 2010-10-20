@@ -69,9 +69,13 @@ separate_arguments(MONITORLIBS)
 
 set(SYSLIBS -ldl -lpthread ${_xml2libs})
 
+
 set(EXTRAROOTLIB "libRootExtra.a")
 
 file(GLOB _extraroot "$ENV{ROOTSYS}/montercarlo/vmc/src/*.o" "$ENV{ROOTSYS}/tree/treeplayer/src/*.o" "$ENV{ROOTSYS}/io/xmlparser/src/*.o" "$ENV{ROOTSYS}/math/minuit2/src/*.o")
+
+add_library(${EXTRAROOTLIB} STATIC ${_extraroot})	
+set_target_properties(${EXTRAROOTLIB} PROPERTIES LINKER_LANGUAGE CXX)
 
 set(DAQDALIB_PATH $ENV{DAQDALIB_PATH})	
 if(DAQDALIB_PATH)
@@ -81,15 +85,8 @@ else()
 endif(DAQDALIB_PATH)
 set(DAQDALIB "${DAQDADIR}/libdaqDA.a")
 
-include_directories(${DAQDADIR} RAW)
+include_directories(${DAQDADIR} RAW include)
 include_directories(SYSTEM ${ROOTINCDIR})
-
-#message("${_extraroot}")
-
-
-#add_custom_target(TARGET ${EXTRAROOTLIB} COMMAND ${CMAKE_AR} r $ENV{ALICE_INSTALL}/lib/tgt_$ENV{ALICE_TARGET}/${EXTRAROOTLIB} ${_extraroot} COMMAND pwd)
-
-message("RAW SRCS ${RAWDatabase_SRC}")
 
 # ----------Create All Valid targets---------
 	  
@@ -121,7 +118,6 @@ foreach(detector ${ONLINEDETECTORS} )
 	  else()
 	    set(DATARGETNAME "daqDA-${ONLINEDETECTORNAME}")
 	  endif(DANAME)
-          message("${DATARGETNAME}")
 
 	  set(DATARGETDIR "${DAINSTALL}/${DAMODULE}/tgt_$ENV{ALICE_TARGET}")
 	  file(MAKE_DIRECTORY ${DATARGETDIR})
@@ -151,17 +147,12 @@ foreach(detector ${ONLINEDETECTORS} )
 # Super Duper Hack :D
 	  file(GLOB _damodule "$ENV{ALICE_ROOT}/${DAMODULE}/lib${DAMODULE}*.pkg" )
 	  
-	  message(${_damodule})
 	  foreach(_submodule ${_damodule})
 	    string(REGEX REPLACE ".*lib(${DAMODULE}.*)" "\\1" _submodule ${_submodule})
 	    string(REGEX REPLACE "\\.pkg" "_a" _submodule ${_submodule})
 	    list(APPEND ALIROOTALIBS "${_submodule}")	  
-	    message("Adding ${_submodule}")
 	  endforeach(_submodule)
 	  
-#	file(WRITE "$ENV{ALICE_INSTALL}/tmp" "list(APPEND ALIROOTALIBS ${DAMODULE}-all)")
-#	  include("$ENV{ALICE_INSTALL}/tmp")
-
 	  list(REMOVE_DUPLICATES ALIROOTALIBS)
 	  if(EXTRADAMODULE)
 	    ##**set
@@ -208,9 +199,10 @@ foreach(detector ${ONLINEDETECTORS} )
     	  set_property(TARGET ${DAEXE} PROPERTY EXCLUDE_FROM_ALL TRUE)
 	  add_dependencies(${DAEXE} ${DALIB}_x)
 	  target_link_libraries(${DAEXE} "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${DALIB}.a" ${EXTRAROOTLIB} "${ROOTLIBDIR}/libRoot.a" "${ROOTLIBDIR}/libfreetype.a" "${ROOTLIBDIR}/libpcre.a" ${SYSLIBS} ${DAQDALIB} ${MONITORLIBS} ${AMOREDALIBS})
-	  add_custom_command(TARGET ${DAEXE} 
-		   	PRE_LINK
-			COMMAND ${CMAKE_AR} r ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${EXTRAROOTLIB} ${_extraroot})
+	  
+#	  add_custom_command(TARGET ${DAEXE} 
+#		   	PRE_LINK
+#			COMMAND ${CMAKE_AR} r ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${EXTRAROOTLIB} ${_extraroot})
 	endif(match)
   endforeach(dafile)
 endforeach(detector)
