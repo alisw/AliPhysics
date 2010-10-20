@@ -43,7 +43,7 @@ class AliEvent : public AliVertex,public AliTimestamp
   Int_t GetRunNumber() const;             // Provide the run number
   Int_t GetEventNumber() const;           // Provide the event number
   virtual void HeaderData();              // Print the event header information
-  using AliVertex::Data;
+//  using AliVertex::Data;
   virtual void Data(TString f="car",TString u="rad"); // Print the event info within frame f and ang units u
   void SetDevCopy(Int_t j);               // (De)activate creation of private copies of the devices
   Int_t GetDevCopy() const;               // Provide DevCopy flag value      

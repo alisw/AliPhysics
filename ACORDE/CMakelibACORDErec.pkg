@@ -1,0 +1,11 @@
+set ( SRCS  AliACORDEReconstructor.cxx AliACORDEQADataMakerRec.cxx AliACORDERecoParam.cxx)
+
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+set ( DHDR ACORDErecLinkDef.h)
+
+set ( EINCLUDE  RAW)
+
+if(ALICE_TARGET STREQUAL "win32gcc")
+set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lACORDEbase -lSTEERBase -lESD -lSTEER )
+endif(ALICE_TARGET STREQUAL "win32gcc")

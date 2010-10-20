@@ -1,0 +1,69 @@
+#--------------------------------------------------------------------------------#
+# Package File for AliHLTTPC                                                     #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( CLASS_HDRS   	AliHLTTPCTransform.h AliHLTTPCClusterTransformation.h AliHLTTPCAgent.h AliHLTTPCMemHandler.h AliHLTTPCDataCompressorHelper.h AliHLTTPCFitter.h AliHLTTPCFileHandler.h AliHLTTPCClusterFinder.h AliHLTTPCMapping.h AliHLTTPCDigitReader.h AliHLTTPCDigitReaderPacked.h AliHLTTPCDigitReaderUnpacked.h AliHLTTPCDigitReaderDecoder.h AliHLTTPCDigitReader32Bit.h AliHLTTPCDigitDumpComponent.h AliHLTTPCDataCheckerComponent.h AliHLTTPCZeroSuppressionComponent.h AliHLTTPCNoiseMap.h AliHLTTPCNoiseMapComponent.h AliHLTTPCVertex.h AliHLTTPCVertexArray.h AliHLTTPCVertexFinder.h AliHLTTPCTrackArray.h AliHLTTPCTrack.h offline/AliHLTTPCDigitPublisherComponent.h offline/AliHLTTPCOfflineClustererComponent.h offline/AliHLTTPCOfflineTrackerComponent.h offline/AliHLTTPCOfflineTrackerCalibComponent.h offline/AliHLTTPCOfflineCalibrationComponent.h offline/AliHLTTPCOfflineCluster.h AliHLTTPCClusters.h AliHLTTPCConfMapFit.h AliHLTTPCConfMapTrack.h AliHLTTPCConfMapPoint.h AliHLTTPCConfMapper.h AliHLTTPCModelTrack.h AliHLTTPCMerger.h AliHLTTPCTrackMerger.h AliHLTTPCGlobalMerger.h AliHLTTPCInterMerger.h AliHLTTPCPad.h AliHLTTPCDefinitions.h AliHLTTPCRawDataUnpackerComponent.h AliHLTTPCClusterFinderComponent.h AliHLTTPCHWClusterTransformComponent.h AliHLTTPCCFComparisonComponent.h AliHLTTPCVertexFinderComponent.h AliHLTTPCSliceTrackerComponent.h AliHLTTPCGlobalMergerComponent.h AliHLTTPCEsdWriterComponent.h AliHLTTPCHistogramHandlerComponent.h AliHLTTPCClusterConverterComponent.h tracking-ca/AliHLTTPCCATrack.h tracking-ca/AliHLTTPCCATracklet.h tracking-ca/AliHLTTPCCATracker.h tracking-ca/AliHLTTPCCABaseTrackParam.h tracking-ca/AliHLTTPCCATrackParam.h tracking-ca/AliHLTTPCCATrackConvertor.h tracking-ca/AliHLTTPCCAParam.h tracking-ca/AliHLTTPCCARow.h tracking-ca/AliHLTTPCCAGrid.h tracking-ca/AliHLTTPCCAHitArea.h tracking-ca/AliHLTTPCCAMCPoint.h tracking-ca/AliHLTTPCCATrackerComponent.h tracking-ca/AliHLTTPCCANeighboursFinder.h tracking-ca/AliHLTTPCCANeighboursCleaner.h tracking-ca/AliHLTTPCCAStartHitsFinder.h tracking-ca/AliHLTTPCCATrackletConstructor.h tracking-ca/AliHLTTPCCATrackletSelector.h tracking-ca/AliHLTTPCCADisplay.h tracking-ca/AliHLTTPCCAMCTrack.h tracking-ca/AliHLTTPCCAPerformance.h tracking-ca/AliHLTTPCCAMerger.h tracking-ca/AliHLTTPCCAGlobalMergerComponent.h tracking-ca/AliHLTTPCCAClusterData.h tracking-ca/AliHLTTPCCASliceData.h tracking-ca/AliHLTTPCCASliceOutput.h tracking-ca/AliHLTTPCCAStandaloneFramework.h tracking-ca/AliTPCtrackerCA.h tracking-ca/AliHLTTPCCATrackerFramework.h tracking-ca/AliHLTTPCCAInputDataCompressorComponent.h tracking-ca/AliHLTTPCCAGPUTracker.h tracking-ca/AliHLTTPCCATrackerOutputConverter.h comp/AliHLTTPCCompDataCompressorHelper.h comp/AliHLTTPCCompDumpComponent.h comp/AliHLTTPCCompModelAnalysis.h comp/AliHLTTPCCompModelConverter.h comp/AliHLTTPCCompModelConverterComponent.h comp/AliHLTTPCCompModelDeconverter.h comp/AliHLTTPCCompModelDeconverterComponent.h comp/AliHLTTPCCompModelDeflater.h comp/AliHLTTPCCompModelDeflaterComponent.h comp/AliHLTTPCCompModelInflater.h comp/AliHLTTPCCompModelInflaterComponent.h AliHLTTPCEventStatistics.h AliHLTTPCEventStatisticsProducerComponent.h AliHLTTPCRunStatistics.h AliHLTTPCRunStatisticsProducerComponent.h AliHLTTPCKryptonClusterFinder.h AliHLTTPCKryptonClusterFinderComponent.h AliHLTTPCClusterHistoComponent.h AliHLTTPCTrackHistoComponent.h AliHLTTPCTrackDumpComponent.h AliHLTTPCClusterDumpComponent.h AliHLTTPCHWCFDataReverterComponent.h AliHLTTPCTrackMCMarkerComponent.h AliHLTTPCdEdxComponent.h)
+
+string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
+list(APPEND MODULE_SRCS AliHLTTPCLog.cxx)
+
+set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTTPCLog.h AliHLTTPCLogging.h AliHLTTPCSpacePointData.h AliHLTTPCRootTypes.h AliHLTTPCDigitData.h AliHLTTPCTrackSegmentData.h AliHLTTPCVertexData.h AliHLTTPCTrackletDataFormat.h AliHLTTPCClusterDataFormat.h AliHLTTPCModels.h)
+
+set ( MODULE_DHDR )
+
+set ( EINCLUDE  HLT/TPCLib HLT/TPCLib/tracking HLT/TPCLib/comp HLT/TPCLib/tracking-ca HLT/TPCLib/offline HLT/BASE HLT/BASE/util HLT/RCU TPC RAW STEER)
+set ( ELIBS  dl)
+
+set ( LIBRARY_DEP  -lHLTbase -lAliHLTRCU -lAliHLTUtil -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lEG)
+
+include ("CMakehlt.conf")
+
+if (MODULE_SRCS)
+ALICE_Format (SRCS "TPCLib/" "" "${MODULE_SRCS}")
+endif(MODULE_SRCS)
+if (CLASS_HDRS)
+ALICE_Format (CINTHDRS "TPCLib/" "" "${CLASS_HDRS}")
+endif(CLASS_HDRS)
+if (MODULE_HDRS)
+ALICE_Format (HDRS "TPCLib/" "" "${MODULE_HDRS}")
+endif(MODULE_HDRS)
+if (MODULE_DHDR)
+ALICE_Format (DHDR "TPCLib/" "" "${MODULE_DHDR}")
+endif(MODULE_DHDR)
+
+if(NOT DHDR)
+  set(CINTAUTOLINK 1)
+endif(NOT DHDR)
+
+set ( EDEFINE  ${HLTDEFS})
+set ( PACKCXXFLAGS  ${HLTCXXFLAGS} -Wshadow)
+set ( PACKCFLAGS  ${HLTCLFAGS})
+set ( PACKDCXXFLAGS  ${HLTDCXXFLAGS})
+set ( PACKSOFLAGS ${HLTSOFLAGS})
+
+
+
+

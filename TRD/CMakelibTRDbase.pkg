@@ -1,0 +1,40 @@
+#--------------------------------------------------------------------------------#
+# Package File for TRDbase                                                       #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS  AliTRDarraySignal.cxx AliTRDarrayDictionary.cxx AliTRDarrayADC.cxx AliTRDSignalIndex.cxx AliTRDgeometry.cxx AliTRDdigit.cxx AliTRDdigitsManager.cxx AliTRDdigitsParam.cxx AliTRDrawData.cxx AliTRDpadPlane.cxx AliTRDrawStreamOld.cxx AliTRDrawFastStream.cxx AliTRDrawStreamBase.cxx AliTRDrawStream.cxx AliTRDtestBeam.cxx AliTRDCommonParam.cxx AliTRDfeeParam.cxx AliTRDgtuParam.cxx AliTRDcalibDB.cxx Cal/AliTRDCalROC.cxx Cal/AliTRDCalPad.cxx Cal/AliTRDCalDet.cxx Cal/AliTRDCalDCS.cxx Cal/AliTRDCalDCSFEE.cxx Cal/AliTRDCalDCSPTR.cxx Cal/AliTRDCalDCSGTUBoardInfo.cxx Cal/AliTRDCalDCSGTUCtpOpc.cxx Cal/AliTRDCalDCSGTUSegment.cxx Cal/AliTRDCalDCSGTUTgu.cxx Cal/AliTRDCalDCSGTUTmu.cxx Cal/AliTRDCalDCSGTU.cxx Cal/AliTRDCalMonitoring.cxx Cal/AliTRDCalChamberStatus.cxx Cal/AliTRDCalPadStatus.cxx Cal/AliTRDCalSingleChamberStatus.cxx Cal/AliTRDCalPID.cxx AliTRDCalibraFit.cxx AliTRDCalibraMode.cxx AliTRDCalibraVector.cxx AliTRDCalibraVdriftLinearFit.cxx AliTRDCalibPadStatus.cxx AliTRDCalibChamberStatus.cxx AliTRDCalibViewer.cxx AliTRDCalibViewerGUI.cxx AliTRDEntriesInfo.cxx AliTRDPhInfo.cxx AliTRDPrfInfo.cxx AliTRDUshortInfo.cxx AliTRDQAChecker.cxx AliTRDPreprocessor.cxx AliTRDSaxHandler.cxx AliTRDDataDCS.cxx AliTRDSensor.cxx AliTRDSensorArray.cxx AliTRDalignment.cxx AliTRDtrapConfig.cxx AliTRDmcmSim.cxx AliTRDtrapConfigHandler.cxx AliTRDtrackGTU.cxx AliTRDtrackletBase.cxx AliTRDtrackletGTU.cxx AliTRDtrackletMCM.cxx AliTRDtrackletWord.cxx AliTRDgtuSim.cxx AliTRDgtuTMU.cxx AliTRDhit.cxx AliTRDrecoParam.cxx AliTRDSimParam.cxx)
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  TRDbaseLinkDef.h)
+
+set ( EINCLUDE  RAW TRD/Cal)
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+	
+				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lCDB -lESD -lSTEERBase -lRAWDatasim -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lMinuit -lGeom -lVMC -lMLP -lXMLParser)
+
+endif( ALICE_TARGET STREQUAL "win32gcc")

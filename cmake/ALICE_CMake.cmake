@@ -1,0 +1,533 @@
+# AliRoot Build System Utility Macro and Function definitions
+#
+# Author: Johny Jose (johny.jose@cern.ch)
+#         Port of previous Makefile build to cmake
+
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+
+macro(ALICE_DevFlagsOutput)
+
+  if(ALICEDEV STREQUAL "YES")
+    message(STATUS "FFLAGS    : ${FFLAGS}")
+    message(STATUS "CXXFLAGS  : ${CXXFLAGS}")
+    message(STATUS "CFLAGS    : ${CFLAGS}")
+    message(STATUS "SOFLAGS   : ${SOFLAGS}")
+    message(STATUS "LDFLAGS   : ${LDFLAGS}")
+    message(STATUS "SHLIB     : ${SHLIB}")
+    message(STATUS "SYSLIBS   : ${SYSLIBS}")
+    message(STATUS "CINTFLAGS : ${CINTFLAGS}")
+  endif(ALICEDEV STREQUAL "YES")
+
+endmacro(ALICE_DevFlagsOutput)
+
+function(ALICE_CleanOutput _output input)
+
+  string(REGEX REPLACE "\n" " " clean ${input})
+  set(${_output} ${clean} PARENT_SCOPE)
+
+endfunction(ALICE_CleanOutput)
+
+function(ALICE_CorrectPaths _output value )
+
+  set(corrected)
+  foreach(path ${value})
+    set(external)
+    string(REGEX MATCH "^/" external ${path})
+    if(NOT external)
+      list(APPEND corrected "${CMAKE_SOURCE_DIR}/${path}" )
+    else()
+      list(APPEND corrected ${path})
+    endif(NOT external)
+  endforeach(path)
+  set(${_output} ${corrected} PARENT_SCOPE)
+
+endfunction(ALICE_CorrectPaths)
+
+function(ALICE_Format _output prefix suffix input)
+
+# DevNotes - input should be put in quotes or the complete list does not get passed to the function
+  set(format)
+  foreach(arg ${input})
+    set(item ${arg})
+    if(prefix)
+      string(REGEX MATCH "^${prefix}" pre ${arg})
+    endif(prefix)
+    if(suffix)
+      string(REGEX MATCH "${suffix}$" suf ${arg})
+    endif(suffix)
+    if(NOT pre)
+      set(item "${prefix}${item}")
+    endif(NOT pre)
+    if(NOT suf)
+      set(item "${item}${suffix}")
+    endif(NOT suf)
+    list(APPEND format ${item})
+  endforeach(arg)
+  set(${_output} ${format} PARENT_SCOPE)
+
+endfunction(ALICE_Format)
+
+function(ALICE_CheckLibraries _output input)
+
+  set(format)
+  foreach(arg ${input})
+    set(item ${arg})
+    string(REGEX MATCH "^(/|-)" preformatted ${item})
+    if(NOT preformatted)
+      set(item "-l${item}")
+    endif(NOT preformatted)
+    list(APPEND format ${item})
+  endforeach(arg)
+  set(${_output} ${format} PARENT_SCOPE)
+  
+endfunction(ALICE_CheckLibraries)
+
+function(ALICE_RootConfig _output parameters)
+
+  if(ROOT_CONFIG)
+    execute_process(COMMAND ${ROOT_CONFIG} ${parameters} OUTPUT_VARIABLE result ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+      message(FATAL_ERROR "root-config ERROR : ${error}")
+    endif(error)
+    ALICE_CleanOutput(result "${result}")
+    set(${_output} "${result}" PARENT_SCOPE)
+  else()
+    message(FATAL_ERROR "root-config not found")
+  endif(ROOT_CONFIG)
+
+endfunction(ALICE_RootConfig)
+
+macro(ALICE_CheckOutOfSourceBuild)
+  
+  #Check if previous in-source build failed
+  if(EXISTS ${CMAKE_SOURCE_DIR}/CMakeCache.txt OR EXISTS ${CMAKE_SOURCE_DIR}/CMakeFiles)
+    message(FATAL_ERROR "CMakeCache.txt or CMakeFiles exists in source directory! Please remove them before running cmake $ALICE_ROOT")
+  endif(EXISTS ${CMAKE_SOURCE_DIR}/CMakeCache.txt OR EXISTS ${CMAKE_SOURCE_DIR}/CMakeFiles)
+  
+  #Get Real Paths of the source and binary directories
+  get_filename_component(srcdir "${CMAKE_SOURCE_DIR}" REALPATH)
+  get_filename_component(bindir "${CMAKE_BINARY_DIR}" REALPATH)
+  
+  #Check for in-source builds
+  if(${srcdir} STREQUAL ${bindir})
+    message(FATAL_ERROR "AliRoot cannot be built in-source! Please run cmake $ALICE_ROOT outside the source directory")
+  endif(${srcdir} STREQUAL ${bindir})
+
+endmacro(ALICE_CheckOutOfSourceBuild)
+
+macro(ALICE_ConfigureCompiler)
+
+  if(ALIDEBUG STREQUAL "YES")
+    set(ALICE_TARGET ${ALICE_TARGET}DEBUG)
+    message("Befor ${CXXFLAGS}")
+    string(REGEX MATCHALL "-O[^ ]*" FFLAGS ${FFLAGS})
+    string(REGEX MATCHALL "-O[^ ]*" CXXFLAGS ${CXXFLAGS})
+    message("After ${CXXFLAGS}")
+    string(REGEX MATCHALL "-O[^ ]*" CFLAGS ${CFLAGS})
+    string(REGEX MATCHALL "-O[^ ]*" SOFLAGS ${SOFLAGS})
+    string(REGEX MATCHALL "-O[^ ]*" LDFLAGS ${LDFLAGS})
+    set(FFLAGS "-g ${FFLAGS}")
+    set(CXXFLAGS "-g ${CXXFLAGS}")
+    set(CFLAGS "-g ${CFLAGS}")
+    set(SOFLAGS "-g ${SOFLAGS}")
+    set(LDFLAGS "-g ${LDFLAGS}")
+  endif(ALIDEBUG STREQUAL "YES")
+
+  if(ALIPROFILE STREQUAL "YES")
+    set(ALICE_TARGET ${ALICE_TARGET}PROF)
+    set(FFLAGS "-pg ${FFLAGS}")
+    set(CXXFLAGS "-pg ${CXXFLAGS}")
+    set(CFLAGS "-pg ${CFLAGS}")
+    set(SOFLAGS "-pg ${SOFLAGS}")
+    set(LDFLAGS "-pg ${LDFLAGS}")
+  endif(ALIPROFILE STREQUAL "YES")
+
+  ALICE_RootConfig(RCFLAGS --auxcflags)
+  ALICE_RootConfig(RLFLAGS --ldflags)
+
+  set(CXXFLAGS "${CXXFLAGS} ${RCFLAGS}")
+  set(CFLAGS  "${CFLAGS} ${RCFLAGS}")
+  set(SOFLAGS "${SOFLAGS} ${RLFLAGS}")
+  set(LDFLAGS "${LDFLAGS} ${RLFLAGS}")
+
+  if(NOT ALICXXWARN STREQUAL "NO")
+    set(CXXFLAGS "${CXXFLAGS} ${CXXWARN}")
+  endif(NOT ALICXXWARN STREQUAL "NO")
+
+  set(CXXFLAGS "${DATEFLAGS} ${CXXFLAGS}")
+  set(CFLAGS "${DATEFLAGS} ${CFLAGS}")
+  set(CINTFLAGS "${DATEFLAGS}")
+
+endmacro(ALICE_ConfigureCompiler)
+
+macro(ALICE_ConfigurePlatform)
+  
+  ALICE_GetTarget()
+  include("CMake${ALICE_TARGET}")
+  
+endmacro(ALICE_ConfigurePlatform)
+
+macro(ALICE_GetTarget)
+  
+  #Set ALICE_TARGET if it has not been set yet
+  if(NOT ALICE_TARGET)  
+    set(ALICE_TARGET $ENV{ALICE_TARGET})
+    #If ALICE_TARGET is not defined assign default values
+    if(NOT ALICE_TARGET)
+      message(WARNING "Environment variable ALICE_TARGET is not set ! Setting to default value.")
+      ALICE_RootConfig(ALICE_TARGET --arch)
+      message("ALICE_TARGET set to ${ALICE_TARGET}")
+    endif(NOT ALICE_TARGET)
+  endif(NOT ALICE_TARGET)
+
+endmacro(ALICE_GetTarget) 
+
+macro(ALICE_ResetPackage)
+
+  set(MODDIR ${MODULE})
+  set(MODDIRI ${PROJECT_SOURCE_DIR}/${MODULE})
+
+  set(SRCS)
+  set(HDRS)
+  set(FSRCS)
+  set(DHDR)
+  set(CSRCS)
+  set(CHDRS)
+  set(EINCLUDE)
+  set(EDEFINE)
+  set(ELIBS)
+  set(ELIBSDIR)
+  set(PACKFFLAGS)
+  set(PACKCXXFLAGS)
+  set(PACKCFLAGS)
+  set(PACKDYFLAGS)
+  set(PACKSOFLAGS)
+  set(PACKLDFLAGS)
+  set(PACKBLIBS)
+  set(EXPORT)
+  set(EHDRS)
+  set(CINTHDRS)
+  set(CINTAUTOLINK)
+  set(ARLIBS)
+  set(SHLIBS)
+
+  #HLT Variables
+  set(MODULE_HDRS)
+  set(MODULE_SRCS)
+  set(MODULE_DHDR)
+  set(CLASS_HDRS)
+  set(LIBRARY_DEP)
+  set(HLTDEFS)
+  set(HLTSOFLAGS) 
+
+
+  set(PSRCS)
+  set(PHDRS)
+  set(PFSRCS)
+  set(PDHDR)
+  set(PCSRCS)
+  set(PCHDRS)
+  set(PEINCLUDE)
+  set(PEDEFINE)
+  set(PELIBS)
+  set(PELIBSDIR)
+  set(PPACKFFLAGS)
+  set(PPACKCXXFLAGS)
+  set(PPACKCFLAGS)
+  set(PPACKDYFLAGS)
+  set(PPACKSOFLAGS)
+  set(PPACKLDFLAGS)
+  set(PPACKBLIBS)
+  set(PEXPORT)
+  set(PEHDRS)
+  set(PCINTHDRS)
+  set(PCINTAUTOLINK)
+  set(PARLIBS)
+  set(PSHLIBS)
+  set(PDS)
+
+endmacro(ALICE_ResetPackage)
+
+function(ALICE_SetPackageVariable _var ext setvalue unsetvalue )
+
+#DevNotes - setvalue and unsetcalue should both be put in quotes or cmake throws an error if they have undefined values
+  if(setvalue)
+    set(${_var} ${setvalue} PARENT_SCOPE)
+    set(${PACKAGE}${ext} ${setvalue} PARENT_SCOPE)
+  else()
+    set(${_var} ${unsetvalue} PARENT_SCOPE)
+    set(${PACKAGE}${ext} ${unsetvalue} PARENT_SCOPE)
+  endif(setvalue)
+
+endfunction(ALICE_SetPackageVariable)
+
+macro(ALICE_BuildPackage)
+ 
+  list(APPEND EINCLUDE STEER) 
+
+  ALICE_SetPackageVariable(PFFLAGS "FFLAGS" "${PACKFFLAGS}" "${FFLAGS}")
+  ALICE_SetPackageVariable(PCFLAGS "CFLAGS" "${PACKCFLAGS}" "${CFLAGS}")
+  ALICE_SetPackageVariable(PCXXFLAGS "CXXFLAGS" "${PACKCXXFLAGS}" "${CXXFLAGS}")
+  ALICE_SetPackageVariable(PSOFLAGS "SOFLAGS" "${PACKSOFLAGS}" "${SOFLAGS}")
+  ALICE_SetPackageVariable(PLDFLAGS "LDFLAGS" "${PACKLDFLAGS}" "${LDFLAGS}")
+  ALICE_SetPackageVariable(PDCXXFLAGS "DCXXFLAGS" "${PACKDCXXFLAGS}" "${CXXFLAGSNO}")
+  ALICE_SetPackageVariable(PBLIBS "BLIBS" "${PACKBLIBS}" "${LIBS}")
+
+  set(WITHDICT)
+  if(DHDR OR CINTAUTOLINK)
+    set(WITHDICT TRUE)
+  endif(DHDR OR CINTAUTOLINK)
+
+  ALICE_SetPackageVariable(PEDEFINE "EDEFINE" "${EDEFINE}" "${EDEFINE}")
+  ALICE_SetPackageVariable(PEXPORT "EXPORT" "${EXPORT}" "${EXPORT}")
+  ALICE_SetPackageVariable(PEXPORTDEST "EXPORTDEST" "${CMAKE_INCLUDE_EXPORT_DIRECTORY}" "${CMAKE_INCLUDE_EXPORT_DIRECTORY}")
+  ALICE_SetPackageVariable(PINC "INC" "${EINCLUDE};${MODULE}" "${EINCLUDE};${MODULE}")
+  ALICE_SetPackageVariable(PELIBS "ELIBS" "${ELIBS}" "${ELIBS}")
+  ALICE_SetPackageVariable(PELIBSDIR "ELIBSDIR" "${ELIBSDIR}" "${ELIBSDIR}")
+  
+  ALICE_SetPackageVariable(PCS "CS" "${CSRCS}" "${CSRCS}")
+  ALICE_SetPackageVariable(PCH "CH" "${CHDRS}" "${CHDRS}")
+  
+  ALICE_SetPackageVariable(PFS "FS" "${FSRCS}" "${FSRCS}")
+
+  ALICE_SetPackageVariable(PS "S" "${SRCS}" "${SRCS}")
+  ALICE_SetPackageVariable(PH "H" "${HDRS} ${EHDRS}" "${HDRS} ${EHDRS}")
+  ALICE_SetPackageVariable(PCINTHDRS "CINTHDRS" "${CINTHDRS}" "${PH}")
+  
+  string( REPLACE ".h" "" PCINTCLASSES "${PCINTHDRS}")
+  set ( ${PACKAGE}CINTCLASSES ${PCINTCLASSES})
+
+  ALICE_SetPackageVariable(PDH "DH" "${DHDR}" "")
+
+  if(CINTAUTOLINK)
+    ALICE_SetPackageVariable(PDAL "DAL" "${CMAKE_CURRENT_BINARY_DIR}/G__${PACKAGE}AutoLinkDef.h" "${CMAKE_CURRENT_BINARY_DIR}/G__${PACKAGE}AutoLinkDef.h")
+    ALICE_SetPackageVariable(PDH "DH" "${PDAL}" "${PDAL}")
+    ALICE_GenerateLinkDef()
+  endif(CINTAUTOLINK)
+
+  if(lib)
+    list(APPEND ${MODULE}LIBS ${PACKAGE})
+    list(APPEND ALLLIBS ${PACKAGE})
+    list(APPEND ${MODULE}ALIBS ${PACKAGE}_a)
+    list(APPEND ALLALIBS ${PACKAGE}_a)
+    list(APPEND BINLIBS ${PACKAGE})
+  else()
+    list(APPEND ALLEXECS ${PACKAGE})
+  endif(lib)
+
+  list(APPEND INCLUDEFILES ${PEXPORTDEST})
+  ALICE_CopyHeaders()
+  if(WITHDICT)  
+    ALICE_SetPackageVariable(PDS "DS" "G__${PACKAGE}.cxx" "G__${PACKAGE}.cxx")
+    ALICE_GenerateDictionary()
+  else()
+    if(lib)
+      message(STATUS "No dictionary generated for ${PACKAGE}")  
+    endif(lib)
+  endif(WITHDICT)
+  
+  if(PS OR PCS OR PFS)
+    if(lib)
+      ALICE_BuildLibrary()
+    elseif(bin)
+      ALICE_BuildExecutable()
+    endif(lib)
+  endif(PS OR PCS OR PFS)
+
+endmacro(ALICE_BuildPackage)
+
+
+macro(ALICE_BuildModule)
+
+  add_definitions(-D_MODULE="${MODULE}")
+  foreach(PACKAGEFILE ${PACKAGES})
+      set(lib)
+      set(bin)
+      string(REGEX MATCH "CMakelib" lib ${PACKAGEFILE})
+      string(REGEX MATCH "CMakebin" bin ${PACKAGEFILE})
+      get_filename_component(PACKAGE ${PACKAGEFILE} NAME)
+      string(REGEX REPLACE "^CMake(lib|bin)(.*)\\.pkg" "\\2" PACKAGE ${PACKAGE})
+      if(ALICEDEV)
+        message("Adding package ${PACKAGE} in ${MODULE}")
+      endif(ALICEDEV)
+      ALICE_ResetPackage()
+      include(${PACKAGEFILE})
+      ALICE_BuildPackage()
+     
+      get_property(EXCLUDEPACKAGE TARGET ${PACKAGE} PROPERTY EXCLUDE_FROM_ALL) 
+      if(NOT EXCLUDEPACKAGE)
+        install(TARGETS ${PACKAGE} 
+                RUNTIME DESTINATION bin
+                LIBRARY DESTINATION lib
+                ARCHIVE DESTINATION bin)
+      endif(NOT EXCLUDEPACKAGE)
+  endforeach(PACKAGEFILE)
+
+endmacro(ALICE_BuildModule)
+
+macro(ALICE_GenerateDictionary)
+ 
+  if(ALICEDEV STREQUAL "YES")
+    message("Generating Dictionary rule for ${PACKAGE}")
+    message("${ROOTCINT} -f ${PDS} -c ${PEDEFINE} ${CINTFLAGS} ${PINC} ${PCINTHDRS} ${PDH}")
+  endif(ALICEDEV STREQUAL "YES")
+ 
+  # Split up all arguments
+
+  set(DEDEFINE ${PEDEFINE})
+  set(DCINTFLAGS ${CINTFLAGS})
+  set(DINC ${PINC})
+  set(DCINTHDRS ${PCINTHDRS})
+  set(DDH ${PDH})
+  separate_arguments(DEDEFINE)
+  separate_arguments(DCINTFLAGS)
+  separate_arguments(DINC)
+  separate_arguments(DCINTHDRS)
+  separate_arguments(DDH)
+  # Format neccesary arguments
+  ALICE_Format(DINC "-I" "" "${DINC};${CMAKE_INCLUDE_EXPORT_DIRECTORY}")
+  set_source_files_properties(${PDS} PROPERTIES GENERATED TRUE)
+  add_custom_command(OUTPUT  ${PDS}
+                     COMMAND cd ${PROJECT_SOURCE_DIR} && ${ROOTCINT} -f ${CMAKE_CURRENT_BINARY_DIR}/${PDS} -c -D_MODULE=\\\"${MODULE}\\\" ${DEDEFINE} ${DCINTFLAGS} ${DINC} ${DCINTHDRS} ${DDH}
+                     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                     DEPENDS ${DCINTHDRS} ${DDH}
+                     )
+  add_custom_target(G${PACKAGE})
+  add_dependencies(G${PACKAGE} ${PDS})
+
+endmacro(ALICE_GenerateDictionary)
+
+macro(ALICE_BuildLibrary)
+
+  ALICE_DevFlagsOutput()
+  set(CMAKE_CXX_FLAGS "${PEDEFINE} ${PCXXFLAGS}")
+  set(CMAKE_C_FLAGS "${PEDEFINE} ${PCFLAGS}")
+  set(CMAKE_Fortran_FLAGS ${PEDEFINE} ${PFFLAGS})
+  set(CMAKE_SHARED_LINKER_FLAGS ${PSOFLAGS}) 
+  set(CMAKE_MODULE_LINKER_FLAGS ${PLDFLAGS})
+  
+  
+  separate_arguments(PINC)
+  separate_arguments(EINCLUDE)
+  separate_arguments(PELIBSDIR)
+  separate_arguments(PBLIBS)
+  separate_arguments(PELIBS)
+  separate_arguments(SHLIB)
+
+  ALICE_Format(PELIBSDIR "-L" "" "${PELIBSDIR}")
+  ALICE_CheckLibraries(PBLIBS "${PBLIBS}")
+  ALICE_CheckLibraries(PELIBS "${PELIBS}")
+
+  ALICE_CorrectPaths(EINCLUDE "${EINCLUDE}")
+  ALICE_CorrectPaths(PINC "${PINC}")
+
+  include_directories(SYSTEM ${ROOTINCDIR})
+  include_directories(${PINC})  
+  include_directories(${EINCLUDE})
+  include_directories(${CMAKE_INCLUDE_EXPORT_DIRECTORY})
+  
+  add_library(${PACKAGE} SHARED ${PCS} ${PFS} ${PS} ${PDS})
+  
+
+  if(PELIBS OR SHLIB)
+    target_link_libraries(${PACKAGE} ${PELIBSDIR} ${PELIBS} ${SHLIB})
+  endif(PELIBS OR SHLIB)
+  
+  add_dependencies(${MODULE}-all ${PACKAGE})
+     
+  add_library(${PACKAGE}_a STATIC EXCLUDE_FROM_ALL ${PCS} ${PFS} ${PS} ${PDS})
+  if(PELIBS OR ALLIB)
+    target_link_libraries(${PACKAGE}_a ${PELIBSDIR} ${PELIBS} ${ALLIB})
+  endif(PELIBS OR ALLIB)
+
+  add_dependencies(${MODULE}-static ${PACKAGE}_a)
+  if(ALIPROFILE STREQUAL "YES")
+    add_dependencies(${MODULE}-all ${MODULE}-static)
+  endif(ALIPROFILE STREQUAL "YES")
+
+  list(FIND EXCLUDEMODULES ${MODULE} RESULT)
+  if(NOT RESULT STREQUAL "-1")
+    message(STATUS "${MODULE} will not be built by default. Type make ${MODULE}-all to build.")
+    set_property(TARGET ${PACKAGE} PROPERTY EXCLUDE_FROM_ALL TRUE)
+  endif(NOT RESULT STREQUAL "-1")
+
+endmacro(ALICE_BuildLibrary)
+
+macro(ALICE_BuildExecutable)
+
+  ALICE_DevFlagsOutput()
+  set(CMAKE_CXX_FLAGS "${PEDEFINE} ${PCXXFLAGS} ${EXEFLAGS}")
+  set(CMAKE_C_FLAGS "${PEDEFINE} ${PCFLAGS} ${EXEFLAGS}")
+  set(CMAKE_Fortran_FLAGS "${PEDEFINE} ${PFFLAGS} ${EXEFLAGS}")
+  set(CMAKE_SHARED_LINKER_FLAGS ${PSOFLAGS}) 
+  set(CMAKE_MODULE_LINKER_FLAGS ${PLDFLAGS})
+  
+  separate_arguments(PINC)
+  separate_arguments(EINCLUDE)
+  separate_arguments(PELIBSDIR)
+  separate_arguments(PBLIBS)
+  separate_arguments(PELIBS)
+  separate_arguments(SHLIB)
+
+  ALICE_Format(PELIBSDIR "-L" "" "${PELIBSDIR}")
+  ALICE_CheckLibraries(PBLIBS "${PBLIBS}")
+  #ALICE_CheckLibraries(PELIBS "${PELIBS}")
+
+  ALICE_CorrectPaths(EINCLUDE "${EINCLUDE}")
+  ALICE_CorrectPaths(PINC "${PINC}")
+
+  include_directories(SYSTEM ${ROOTINCDIR})
+  include_directories(${PINC})  
+  include_directories(${EINCLUDE})
+  include_directories(${CMAKE_INCLUDE_EXPORT_DIRECTORY})
+
+  if(ALIPROFILE STREQUAL "YES")
+    add_executable(${PACKAGE} ${PFS} ${PCS} ${PS} ${PDS})
+    if(ARLIBS OR SHLIBS OR PBLIBS OR EXEFLAGS)
+      target_link_libraries(${PACKAGE} ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS})
+    endif(ARLIBS OR SHLIBS OR PBLIBS OR EXEFLAGS)
+    add_dependencies(${MODULE}-all ${PACKAGE})
+  else()
+    add_executable(${PACKAGE} ${PFS} ${PCS} ${PS} ${PDS})
+    if(PELIBS OR PBLIBS OR EXEFLAGS)
+      target_link_libraries(${PACKAGE} ${BINLIBDIRS} ${PELIBSDIR} ${PELIBS} ${PBLIBS} ${EXEFLAGS})
+    endif(PELIBS OR PBLIBS OR EXEFLAGS)
+    add_dependencies(${MODULE}-all ${PACKAGE})
+  endif(ALIPROFILE STREQUAL "YES")
+
+  list(FIND EXCLUDEMODULES ${MODULE} RESULT)
+  if(NOT RESULT STREQUAL "-1")
+    set_property(TARGET ${PACKAGE} PROPERTY EXCLUDE_FROM_ALL TRUE)
+  endif(NOT RESULT STREQUAL "-1")
+
+endmacro(ALICE_BuildExecutable)
+
+macro(ALICE_CopyHeaders)
+  
+  if(NOT EXPORT )
+    set(HEADERS)
+  else()
+    set(HEADERS ${EXPORT})
+  endif(NOT EXPORT)
+  foreach(header ${HEADERS})
+      configure_file(${header} ${PEXPORTDEST} COPYONLY)
+      install(FILES ${header} DESTINATION include)
+  endforeach(header)
+
+endmacro(ALICE_CopyHeaders)
+
+macro(ALICE_GenerateLinkDef)
+
+  file (WRITE ${PDAL} "//--------------------------------------------------------------------------------\n")
+  file (APPEND ${PDAL} "// This is an automatically generated Root Dictionary Linkdef file for ${PACKAGE}\n")
+  file (APPEND ${PDAL} "// !!! DO NOT EDIT THIS FILE !!!\n")
+  file (APPEND ${PDAL} "#ifdef __CINT__\n")
+  file (APPEND ${PDAL} "#pragma link off all globals;\n")
+  file (APPEND ${PDAL} "#pragma link off all classes;\n")
+  file (APPEND ${PDAL} "#pragma link off all functions;\n")
+  foreach (class ${PCINTCLASSES})
+    get_filename_component(classname ${class} NAME)
+    file(APPEND ${PDAL} "#pragma link C++ class ${classname}+;\n")
+  endforeach(class)
+  file (APPEND ${PDAL} "#endif\n")
+endmacro(ALICE_GenerateLinkDef)
