@@ -41,30 +41,30 @@ class AliGenReaderEMD : public AliGenReader
     //
     // --- Declaration of leaves types
     // **** neutrons
-    Int_t           fNnLeft;		// No. of neutrons emitted on left side            
-    Float_t         fEnLeft; 		// Forward energy Left side
-    Float_t	    fPxnLeft[70];     	// momentum x component - left side
-    Float_t	    fPynLeft[70];     	// momentum y component - left side     
-    Float_t	    fPznLeft[70];     	// momentum z component - left side   
+    Int_t           fNnAside;		// No. of neutrons emitted on left side            
+    Float_t         fEnAside; 		// Forward energy Aside side
+    Float_t	    fPxnAside[70];     	// momentum x component - left side
+    Float_t	    fPynAside[70];     	// momentum y component - left side     
+    Float_t	    fPznAside[70];     	// momentum z component - left side   
     //  
-    Int_t           fNnRight;		// No. of neutrons emitted on right side            
-    Float_t         fEnRight; 		// Forward energy Right side
-    Float_t	    fPxnRight[70];     	// momentum x component - right side
-    Float_t	    fPynRight[70];     	// momentum y component - right side     
-    Float_t	    fPznRight[70];     	// momentum z component - right side     
+    Int_t           fNnCside;		// No. of neutrons emitted on right side            
+    Float_t         fEnCside; 		// Forward energy Cside side
+    Float_t	    fPxnCside[70];     	// momentum x component - right side
+    Float_t	    fPynCside[70];     	// momentum y component - right side     
+    Float_t	    fPznCside[70];     	// momentum z component - right side     
     //
     // **** protons
-    Int_t           fNpLeft;		// No. of protons emitted on left side            
-    Float_t         fEtapLeft; 		// Forward energy Left side
-    Float_t	    fPxpLeft[70];     	// momentum x component - left side
-    Float_t	    fPypLeft[70];     	// momentum y component - left side     
-    Float_t	    fPzpLeft[70];     	// momentum z component - left side   
+    Int_t           fNpAside;		// No. of protons emitted on left side            
+    Float_t         fEtapAside; 		// Forward energy Aside side
+    Float_t	    fPxpAside[70];     	// momentum x component - left side
+    Float_t	    fPypAside[70];     	// momentum y component - left side     
+    Float_t	    fPzpAside[70];     	// momentum z component - left side   
     //  
-    Int_t           fNpRight;		// No. of protons emitted on right side            
-    Float_t         fEtapRight; 	// Forward energy Right side
-    Float_t	    fPxpRight[70];     	// momentum x component - right side
-    Float_t	    fPypRight[70];     	// momentum y component - right side     
-    Float_t	    fPzpRight[70];     	// momentum z component - right side
+    Int_t           fNpCside;		// No. of protons emitted on right side            
+    Float_t         fEtapCside; 	// Forward energy Cside side
+    Float_t	    fPxpCside[70];     	// momentum x component - right side
+    Float_t	    fPypCside[70];     	// momentum y component - right side     
+    Float_t	    fPzpCside[70];     	// momentum z component - right side
     
  private:
     void Copy(TObject&) const;

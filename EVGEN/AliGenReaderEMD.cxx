@@ -24,8 +24,9 @@
 #include <TVirtualMC.h>
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
-
 #include "AliGenReaderEMD.h"
+#include "AliStack.h"
+
 
 ClassImp(AliGenReaderEMD)
 
@@ -36,14 +37,14 @@ AliGenReaderEMD::AliGenReaderEMD():
     fTreeNtuple(0),
     fIPSide(0),
     fPcToTrack(0),
-    fNnLeft(0),
-    fEnLeft(0),
-    fNnRight(0),
-    fEnRight(0),
-    fNpLeft(0),
-    fEtapLeft(0),
-    fNpRight(0),
-    fEtapRight(0)
+    fNnAside(0),
+    fEnAside(0),
+    fNnCside(0),
+    fEnCside(0),
+    fNpAside(0),
+    fEtapAside(0),
+    fNpCside(0),
+    fEtapCside(0)
 {
 // Default constructor
 }
@@ -56,14 +57,14 @@ AliGenReaderEMD::AliGenReaderEMD(const AliGenReaderEMD &reader):
     fTreeNtuple(0),
     fIPSide(0),
     fPcToTrack(0),
-    fNnLeft(0),
-    fEnLeft(0),
-    fNnRight(0),
-    fEnRight(0),
-    fNpLeft(0),
-    fEtapLeft(0),
-    fNpRight(0),
-    fEtapRight(0)
+    fNnAside(0),
+    fEnAside(0),
+    fNnCside(0),
+    fEnCside(0),
+    fNpAside(0),
+    fEtapAside(0),
+    fNpCside(0),
+    fEtapCside(0)
 {
     // Copy Constructor
     reader.Copy(*this);
@@ -110,27 +111,27 @@ void AliGenReaderEMD::Init()
     //
     // Set branch addresses
     // **** neutrons
-    Ntu->SetBranchAddress("Nleft",&fNnLeft);
-    Ntu->SetBranchAddress("Eleft",&fEnLeft);
-    Ntu->SetBranchAddress("Pxl",  fPxnLeft);
-    Ntu->SetBranchAddress("Pyl",  fPynLeft);
-    Ntu->SetBranchAddress("Pzl",  fPznLeft);
-    Ntu->SetBranchAddress("Nright",&fNnRight);
-    Ntu->SetBranchAddress("Eright",&fEnRight);
-    Ntu->SetBranchAddress("Pxr",   fPxnRight);
-    Ntu->SetBranchAddress("Pyr",   fPynRight);
-    Ntu->SetBranchAddress("Pzr",   fPznRight);
+    Ntu->SetBranchAddress("Nleft",&fNnAside);
+    Ntu->SetBranchAddress("Eleft",&fEnAside);
+    Ntu->SetBranchAddress("Pxl",  fPxnAside);
+    Ntu->SetBranchAddress("Pyl",  fPynAside);
+    Ntu->SetBranchAddress("Pzl",  fPznAside);
+    Ntu->SetBranchAddress("Nright",&fNnCside);
+    Ntu->SetBranchAddress("Eright",&fEnCside);
+    Ntu->SetBranchAddress("Pxr",   fPxnCside);
+    Ntu->SetBranchAddress("Pyr",   fPynCside);
+    Ntu->SetBranchAddress("Pzr",   fPznCside);
     // **** protons
-    Ntu->SetBranchAddress("Nleft_p",&fNpLeft);
-    Ntu->SetBranchAddress("Etaleft_p",&fEtapLeft);
-    Ntu->SetBranchAddress("Pxl_p",  fPxpLeft);
-    Ntu->SetBranchAddress("Pyl_p",  fPypLeft);
-    Ntu->SetBranchAddress("Pzl_p",  fPzpLeft);
-    Ntu->SetBranchAddress("Nright_p",&fNpRight);
-    Ntu->SetBranchAddress("Etaright_p",&fEtapRight);
-    Ntu->SetBranchAddress("Pxr_p",   fPxpRight);
-    Ntu->SetBranchAddress("Pyr_p",   fPypRight);
-    Ntu->SetBranchAddress("Pzr_p",   fPzpRight);
+    Ntu->SetBranchAddress("Nleft_p",&fNpAside);
+    Ntu->SetBranchAddress("Etaleft_p",&fEtapAside);
+    Ntu->SetBranchAddress("Pxl_p",  fPxpAside);
+    Ntu->SetBranchAddress("Pyl_p",  fPypAside);
+    Ntu->SetBranchAddress("Pzl_p",  fPzpAside);
+    Ntu->SetBranchAddress("Nright_p",&fNpCside);
+    Ntu->SetBranchAddress("Etaright_p",&fEtapCside);
+    Ntu->SetBranchAddress("Pxr_p",   fPxpCside);
+    Ntu->SetBranchAddress("Pyr_p",   fPypCside);
+    Ntu->SetBranchAddress("Pzr_p",   fPzpCside);
 }
 
 // -----------------------------------------------------------------------------------
@@ -138,6 +139,7 @@ Int_t AliGenReaderEMD::NextEvent()
 {
     // Read the next event  
     Int_t nTracks=0;
+    fNparticle = 0;
     
     TFile* pFile = fTreeNtuple->GetCurrentFile();
     pFile->cd();
@@ -146,34 +148,41 @@ Int_t AliGenReaderEMD::NextEvent()
     Int_t nentries = (Int_t) fTreeNtuple->GetEntries();
     if(fNcurrent < nentries) {
 	fTreeNtuple->GetEvent(fNcurrent);
-	printf("\n *** Event %d read ***\n\n",fNcurrent);
-	fNcurrent++;
-	//printf("\n \t \t LEFT-> %d neutrons and %d protons emitted\n", fNnLeft, fNpLeft);
-	//printf("\t \t RIGHT-> %d neutrons and %d protons emitted\n\n", fNnRight, fNpRight);
+	printf("\n *** Event %d read ***\n",fNcurrent);
+	//printf("\t A side-> %d neutrons and %d protons emitted\n", fNnAside, fNpAside);
+	//printf("\t C side-> %d neutrons and %d protons emitted\n\n", fNnCside, fNpCside);
 	//
-	// **** IPSIde 		=0->RIGHT side, =1->LEFT side  
-	// #### fPcToTrack 	=0->neutrons, =1->protons
-	if(fIPSide==0){
-	  if(fPcToTrack==0){
-	    printf("\n \t \t Tracking %d neutrons emitted on C side\n\n", fNnRight);
-	    nTracks    = fNnRight;
+	// **** IPSIde = 0->both sides, 1->only Cside, 2->only A side  
+	// #### fPcToTrack = 0->neutrons, 1->protons
+	if(fPcToTrack==0){ // neutrons
+	  if(fIPSide==0){
+	    printf("\t Tracking %d+%d neutrons emitted on C+A side\n", fNnCside,fNnAside);
+	    nTracks = fNnCside+fNnAside;
 	  }
-	  else if(fPcToTrack==1){
-	    printf("\n \t \t Tracking %d protons emitted on C side\n\n", fNpRight);
-	    nTracks    = fNpRight;
+	  else if(fIPSide==1){ 
+	    printf("\t Tracking %d neutrons emitted on C side\n", fNnCside);
+	    nTracks    = fNnCside;
 	  }
-	}
-	else if(fIPSide==1){
-	  if(fPcToTrack==0){
-	    printf("\n \t \t Tracking %d neutrons emitted on A side\n", fNnLeft);
-	    nTracks    = fNnLeft;
-	  }
-	  else if(fPcToTrack==1){
-	    printf("\n \t \t Tracking %d protons emitted on A side\n", fNpLeft);
-	    nTracks    = fNpLeft;
+	  else if(fIPSide==2){
+	    printf("\t Tracking %d neutrons emitted on A side\n", fNnAside);
+	    nTracks    = fNnAside;
 	  }
 	}
-	fNparticle = 0;
+	else if(fPcToTrack==1){ //protons
+	  if(fIPSide==0){
+	    printf("\t Tracking %d+%d protons emitted on C+A side\n", fNpCside,fNpAside);
+	    nTracks    = fNpCside+fNpAside;
+	  }
+	  else if(fIPSide==1){
+	    printf("\t Tracking %d protons emitted on C side\n", fNpCside);
+	    nTracks    = fNpCside;
+	  }
+	  else if(fIPSide==2){
+	    printf("\t Tracking %d protons emitted on A side\n", fNpAside);
+	    nTracks    = fNpAside;
+	  }
+	}
+	fNcurrent++;
 	return nTracks;
     }
 
@@ -184,26 +193,71 @@ Int_t AliGenReaderEMD::NextEvent()
 TParticle* AliGenReaderEMD::NextParticle() 
 {
     // Read the next particle
-    Float_t p[4];
-
+    Float_t p[4]={0.,0.,0.,0.};
+    
     Int_t ipart=0;
     if(fPcToTrack==0) ipart = kNeutron;
     else  if(fPcToTrack==1) ipart = kProton;
     Double_t amass = TDatabasePDG::Instance()->GetParticle(ipart)->Mass();
 
-    p[0] = fPxnRight[fNparticle];
-    p[1] = fPynRight[fNparticle];
-    p[2] = fPznRight[fNparticle];
+    if(fPcToTrack==0){
+      if(fIPSide==0){
+        if(fNparticle<fNnCside){
+          p[0] = fPxnCside[fNparticle];
+          p[1] = fPynCside[fNparticle];
+          p[2] = fPznCside[fNparticle];
+	}
+	else{
+          p[0] = fPxnAside[fNparticle-fNnCside];
+          p[1] = fPynAside[fNparticle-fNnCside];
+          p[2] = fPznAside[fNparticle-fNnCside];
+	}
+      }
+      else if(fIPSide==1){
+        p[0] = fPxnCside[fNparticle];
+        p[1] = fPynCside[fNparticle];
+        p[2] = fPznCside[fNparticle];
+      }
+      else if(fIPSide==2){
+        p[0] = fPxnAside[fNparticle-fNpCside];
+        p[1] = fPynAside[fNparticle-fNpCside];
+        p[2] = fPznAside[fNparticle-fNpCside];
+      }
+    }
+    else if(fPcToTrack==1){
+      if(fIPSide==0){
+        if(fNparticle<fNnCside){
+          p[0] = fPxpCside[fNparticle];
+          p[1] = fPypCside[fNparticle];
+          p[2] = fPzpCside[fNparticle];
+	}
+	else{
+          p[0] = fPxpAside[fNparticle];
+          p[1] = fPypAside[fNparticle];
+          p[2] = fPzpAside[fNparticle];
+	}
+      }
+      else if(fIPSide==1){
+        p[0] = fPxpCside[fNparticle];
+        p[1] = fPypCside[fNparticle];
+        p[2] = fPzpCside[fNparticle];
+      }
+      else if(fIPSide==2){
+        p[0] = fPxpAside[fNparticle];
+        p[1] = fPypAside[fNparticle];
+        p[2] = fPzpAside[fNparticle];
+      }
+    } 
     Float_t ptot = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
     p[3] = TMath::Sqrt(ptot*ptot+amass*amass);
-    //printf("\t Nucleon momentum: px = %f, py = %f, pz = %f\n", p[0],p[1],p[2]);
+    //printf(" * pc %d: momentum (%f, %f, %f) \n", fNparticle, p[0],p[1],p[2]);
     
     if(p[3]<=amass) 
       Warning("Generate","Particle %d  E = %f mass = %f \n",ipart,p[3],amass);
 
     TParticle* particle = new TParticle(ipart, 0, -1, -1, -1, -1, 
     	p[0], p[1], p[2], p[3], 0., 0., 0., 0.);
-    //fNcurrent++;
+    particle->SetBit(kTransportBit);
     fNparticle++;
     return particle;
 }
