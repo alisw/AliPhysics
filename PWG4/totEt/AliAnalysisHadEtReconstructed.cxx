@@ -91,8 +91,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
     TString *strTPC = new TString("TPC");
     TString *strITS = new TString("ITS");
     TString *strTPCITS = new TString("TPCITS");
-    bool isTPC = false;
     for(Int_t cutset=0;cutset<2;cutset++){
+      bool isTPC = false;
       TString *cutName;
       TObjArray* list;
       switch(cutset){
@@ -126,10 +126,9 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      continue;
 	    }
 	  else{
+	    //if(!isTPC) cout<<"I should add an ITS track..."<<endl;
 	    if(TMath::Abs(track->Eta())>fCorrections->GetEtaCut()) continue;
 	    Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
-	    pID->MakeTPCPID(track);
-	    pID->MakeITSPID(track);
 	    if(cutset!=1){
 	      nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
 	      nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
@@ -148,7 +147,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
 
 	    //bool IsElectron = false;
-	    bool unidentified = (!isProton && !isKaon && !isElectron);
+	    bool unidentified = (!isProton && !isKaon && !isElectron && !isPion);
 	    Float_t dEdx = track->GetTPCsignal();
 	    if(cutset==1) dEdx = track->GetITSsignal();
 	    FillHisto2D(Form("dEdxDataAll%s",cutName->Data()),track->P(),dEdx,1.0);
@@ -159,18 +158,20 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
 	    Float_t corrBkgd=0.0;
 	    Float_t corrNotID=0.0;
-	    Float_t corrNoID = fCorrections->GetNotIDCorrectionNoPID(track->Pt());
+	    Float_t corrNoID=0.0;// = fCorrections->GetNotIDCorrectionNoPID(track->Pt());
 	    Float_t corrEff = 0.0;
 	    Float_t corrEffNoID = 0.0;
 	    if(cutset==0){//TPC
 	      corrBkgd = fCorrections->GetBackgroundCorrectionTPC(track->Pt());
 	      corrEffNoID = fCorrections->GetTPCEfficiencyCorrectionHadron(track->Pt());
-	      corrNotID = fCorrections->GetNotIDCorrectionTPC(track->Pt());
+	      corrNotID = fCorrections->GetNotIDConstCorrectionTPC();
+	      corrNoID = fCorrections->GetNotIDConstCorrectionTPCNoID();
 	    }
 	    if(cutset==1){//ITS
 	      corrBkgd = fCorrections->GetBackgroundCorrectionITS(track->Pt());
-	      //corrEffNoID = fCorrections->GetITSEfficiencyCorrectionHadron(track->Pt());
-	      corrNotID = fCorrections->GetNotIDCorrectionITS(track->Pt());
+	      corrEffNoID = fCorrections->GetITSEfficiencyCorrectionHadron(track->Pt());
+	      corrNotID = fCorrections->GetNotIDConstCorrectionITS();
+	      corrNoID = fCorrections->GetNotIDConstCorrectionITSNoID();
 	    }
 	    Float_t et = 0.0;
 	    Float_t etNoID = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
@@ -183,7 +184,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	      if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionPion(track->Pt());}
 	      //else{corrEff = fCorrections->GetITSEfficiencyCorrectionPion(track->Pt());}
-	      etpartialcorrected = et*corrBkgd*corrEff;
+	      etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
 	      
 	      if(track->Charge()>0.0){
 		FillHisto2D(Form("EtDataRaw%sPiPlus",cutName->Data()),track->Pt(),track->Eta(),et);
@@ -199,7 +200,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      et = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
 	      if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionKaon(track->Pt());}
 	      //else{corrEff = fCorrections->GetITSEfficiencyCorrectionKaon(track->Pt());}
-	      etpartialcorrected = et*corrBkgd*corrEff;
+	      etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
 	      
 	      if(track->Charge()>0.0){
 		FillHisto2D(Form("EtDataRaw%sKPlus",cutName->Data()),track->Pt(),track->Eta(),et);
@@ -215,7 +216,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      et = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
 	      if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionProton(track->Pt());}
 	      //else{corrEff = fCorrections->GetITSEfficiencyCorrectionProton(track->Pt());}
-	      etpartialcorrected = et*corrBkgd*corrEff;
+	      etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
 	      
 	      if(track->Charge()>0.0){
 		FillHisto2D(Form("EtDataRaw%sProton",cutName->Data()),track->Pt(),track->Eta(),et);
@@ -231,13 +232,32 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      //et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	    }
 	    if(unidentified){
+	      //if(!isPion) 
 	      FillHisto2D(Form("dEdxDataUnidentified%s",cutName->Data()),track->P(),dEdx,1.0);
 	      et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	      etpartialcorrected = et*corrBkgd*corrEffNoID*corrNotID;
+	      //if(!isPion) 
 	      FillHisto2D(Form("EtDataCorrected%sUnidentified",cutName->Data()),track->Pt(),track->Eta(),etpartialcorrected);
 	    }
-	    if(!isTPC) etpartialcorrected = etpartialcorrectedNoID;//Not using PID for ITS
+	    if(!isTPC){
+	      etpartialcorrected = etpartialcorrectedNoID;//Not using PID for ITS
+	      //cout<<"I should add an ITS track..."<<endl;
+	    }
 	    AddEt(et,etNoID,etpartialcorrected,etpartialcorrectedNoID,track->Pt(),isTPC,inPHOS,inEMCAL);
+	    // cout<<"Pt "<<track->Pt()<<" et corrected no id "<<etpartialcorrectedNoID<<"="<<corrNoID<<"*"<<corrBkgd<<"*"<<corrEffNoID<<"*"<<etNoID<<endl;
+// 	    if(isTPC){
+// 	      //if(!unidentified){
+// 	      //cout<<"Pt "<<track->Pt()<<" et corrected   pid "<<etpartialcorrected<<"="<<corrBkgd<<"*"<<corrEff<<"*"<<et;
+// 	      cout<<"Pt "<<track->Pt()<<" et corrected  pid "<<etpartialcorrected<<"="<<corrNotID<<"*"<<corrBkgd<<"*"<<corrEff<<"*"<<et;
+// 	      if(isPion)cout<<" pion";
+// 	      if(isProton)cout<<" proton";
+// 	      if(isKaon)cout<<" kaon";
+// 	      if(isElectron)cout<<" electron";
+// 	      if(unidentified)cout<<" unidentified";
+// 	      cout<<endl;
+// 		//}
+// 	      //else{cout<<"Pt "<<track->Pt()<<" et corrected  !pid "<<etpartialcorrected<<"="<<corrBkgd<<"*"<<corrEff<<"*"<<corrNotID<<"*"<<et<<" Not identified"<<endl;}
+// 	    }
 	    //if(inEMCAL) cout<<"I should add a track"<<endl;
 	  }
 	}
@@ -320,7 +340,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL) {//Adding Et to each of the variables that tracks et event by event
   if(pt>=AliAnalysisHadEt::fgPtTPCCutOff && IsTPC){//TPC tracks
     //adding to the raw Et
-    //if(InEMCAL) cout<<"Adding "<<rawEt<<" to the raw Et"<<endl;
+    //if(InEMCAL)
+    //cout<<"Adding "<<rawEt<<" to the raw TPC Et"<<endl;
     fRawEtFullAcceptanceTPC += rawEt;
     if(InPHOS)fRawEtPHOSAcceptanceTPC += rawEt;
     if(InEMCAL)fRawEtEMCALAcceptanceTPC += rawEt;
@@ -335,6 +356,7 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     fCorrectedHadEtFullAcceptanceTPCNoPID += corrEtNoPID;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceTPCNoPID += corrEtNoPID;
     if(InEMCAL)fCorrectedHadEtEMCALAcceptanceTPCNoPID += corrEtNoPID;
+    //cout<<"Adding "<<corrEt<<" to the corrected Et, TPC pT "<<pt<<endl;
   }
   if(pt<AliAnalysisHadEt::fgPtTPCCutOff &&pt>=AliAnalysisHadEt::fgPtITSCutOff && !IsTPC){//ITS tracks
     //adding to the raw Et
@@ -344,6 +366,7 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     fRawEtFullAcceptanceITSNoPID += rawEtNoPID;
     if(InPHOS)fRawEtPHOSAcceptanceITSNoPID += rawEtNoPID;
     if(InEMCAL)fRawEtEMCALAcceptanceITSNoPID += rawEtNoPID;
+    //cout<<"Adding "<<rawEt<<" to the raw ITS Et"<<endl;
     //adding to the corrected Et
     fCorrectedHadEtFullAcceptanceITS += corrEt;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceITS += corrEt;
@@ -351,6 +374,7 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     fCorrectedHadEtFullAcceptanceITSNoPID += corrEtNoPID;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceITSNoPID += corrEtNoPID;
     if(InEMCAL)fCorrectedHadEtEMCALAcceptanceITSNoPID += corrEtNoPID;
+    //cout<<"Adding "<<corrEt<<" to the corrected Et, ITS pT "<<pt<<endl;
   }
 }
 
@@ -575,11 +599,13 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	  sprintf(histoname,"Reco%s%sAcceptance%s%s",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
 	  sprintf(histotitle,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
 	  sprintf(xtitle,"Reconstructed %s",etstring->Data());
-	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt,minEt,maxEt);
+	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
 	}
       }
     }
   }
+
+  //CreateHisto2D("Efficiency","Efficiency","pT","efficiency",
 
   delete sTPC;
   delete sITS;

@@ -64,6 +64,10 @@ public:
     Float_t GetRawEtEMCALAcceptanceITSNoPID() const {return fRawEtEMCALAcceptanceITSNoPID+fRawEtEMCALAcceptanceTPCNoPID;}
     Float_t GetRawEtPHOSAcceptanceTPCNoPID() const {return fRawEtPHOSAcceptanceTPCNoPID;}
     Float_t GetRawEtPHOSAcceptanceITSNoPID() const {return fRawEtPHOSAcceptanceITSNoPID+fRawEtPHOSAcceptanceTPCNoPID;}
+    Float_t GetCorrectedPiKPEtFullAcceptanceTPC() const {return fCorrectedHadEtFullAcceptanceTPC;}
+    Float_t GetCorrectedPiKPEtFullAcceptanceITS() const {return fCorrectedHadEtFullAcceptanceITS+fCorrectedHadEtFullAcceptanceTPC;}
+    Float_t GetCorrectedPiKPEtFullAcceptanceTPCNoPID() const {return fCorrectedHadEtFullAcceptanceTPCNoPID;}
+    Float_t GetCorrectedPiKPEtFullAcceptanceITSNoPID() const {return fCorrectedHadEtFullAcceptanceITSNoPID+fCorrectedHadEtFullAcceptanceTPCNoPID;}
 
     void CreateHistograms();
      virtual void Init();
