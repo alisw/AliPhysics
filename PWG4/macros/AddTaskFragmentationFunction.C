@@ -24,7 +24,7 @@ Or it runs on delta-AODs filled with filtered tracks and jets before.
 
 
 
-AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=1, UInt_t filterMask=16){
+AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=1, UInt_t filterMask=32){
         
         AliAnalysisTaskFragmentationFunction *ff=0;
 
