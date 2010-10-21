@@ -113,6 +113,8 @@
 #pragma link C++ class  AliTRDpidRefMakerNN+;
 // TOF QA
 #pragma link C++ class  AliAnalysisTaskTOFqa+;
+// HMPID QA
+#pragma link C++ class  AliHMPIDTaskQA+;
 // Cosmics QA
 #pragma link C++ class  AliAnalysisTaskCosmic+;
 // Background and luminosity studies
