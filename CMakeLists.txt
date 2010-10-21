@@ -30,7 +30,7 @@ else()
   message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
 endif(NOT ALICE_INSTALL)
 
-set(CMAKE_MODULE_PATH "${ALICE_ROOT}/cmake")
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 include(ALICE_CMake)
 
