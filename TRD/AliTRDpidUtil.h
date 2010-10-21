@@ -1,5 +1,9 @@
 #ifndef ALITRDPIDUTIL_H
 #define ALITRDPIDUTIL_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id: AliTRDpidUtil.h 42548 2010-07-27 08:10:51Z cblume $ */
 
 //////////////////////////////////////////////////////
 //

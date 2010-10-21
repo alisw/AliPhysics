@@ -1,13 +1,34 @@
-/***********************************************************************************************************
- *                                                                                                         *
- * Helper class for TRD PID efficiency calculation Calculation of the hadron efficiency depenedent on      *
- * momentum and of the errors implemented in function CalculatePionEff. The pion efficiency is based on a  * 
- * predefined electron efficiency. The default is 90%. To change the, one has to call the function         *
- * SetElectronEfficiency.                                                                                  *
- * Other Helper functions decide based on 90% electron efficiency whether a certain track is accepted      *
- * as Electron Track. The reference data is stored in the TRD OCDB.                                        *
- *                                                                                                         *
- ***********************************************************************************************************/
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id: AliTRDdigitizer.cxx 44182 2010-10-10 16:23:39Z cblume $ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// Helper class for TRD PID efficiency calculation.                       //
+// Calculation of the hadron efficiency dependent on momentum and of      //
+// the errors implemented in function CalculatePionEff. The pion          //
+// efficiency is based on a predefined electron efficiency.               //
+// The default is 90%. To change the, one has to call the function        //
+// SetElectronEfficiency.                                                 //
+// Other Helper functions decide based on 90% electron efficiency         //
+// whether a certain track is accepted as Electron Track.                 //
+// The reference data is stored in the TRD OCDB.                          //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "TObject.h"
 #include "TObjArray.h"
 #include "TMath.h"
@@ -26,7 +47,6 @@
 #include "AliTRDpidUtil.h"
 
 ClassImp(AliTRDpidUtil)
-
 
 Float_t AliTRDpidUtil::fgEleEffi = 0.9;
 
@@ -160,8 +180,11 @@ Bool_t AliTRDpidUtil::IsElectron(const AliESDtrack *track, ETRDPIDMethod method)
   TString histname[2] = {"fHistThreshLQ", "fHistThreshNN"};
   AliCDBManager *cdb = AliCDBManager::Instance(); 
   AliCDBEntry *cdbThresholds = cdb->Get("TRD/Calib/PIDThresholds");
+  if (!cdbThresholds) return kFALSE;
   TObjArray *histos = dynamic_cast<TObjArray *>(cdbThresholds->GetObject());
-  TH1 * thresholdHist = dynamic_cast<TH1F *>(histos->FindObject(histname[method].Data()));
+  if (!histos) return kFALSE;
+  TH1 *thresholdHist = dynamic_cast<TH1F *>(histos->FindObject(histname[method].Data()));
+  if (!thresholdHist) return kFALSE;
   Double_t threshold = thresholdHist->GetBinContent(GetMomentumBin(track->P()) + 1);
   
   // Do Decision
@@ -182,8 +205,11 @@ Double_t AliTRDpidUtil::GetSystematicError(const AliESDtrack *track, ETRDPIDMeth
   TString histname[2] = {"fHistPionEffLQ", "fHistPionEffNN"};
   AliCDBManager *cdb = AliCDBManager::Instance(); 
   AliCDBEntry *cdbThresholds = cdb->Get("TRD/Calib/PIDThresholds");
+  if (!cdbThresholds) return kFALSE;
   TObjArray *histos = dynamic_cast<TObjArray *>(cdbThresholds->GetObject());
-  TH1 * thresholdHist = dynamic_cast<TH1F *>(histos->FindObject(histname[method].Data()));
+  if (!histos) return kFALSE;
+  TH1 *thresholdHist = dynamic_cast<TH1F *>(histos->FindObject(histname[method].Data()));
+  if (!thresholdHist) return kFALSE;
   return thresholdHist->GetBinContent(GetMomentumBin(track->P()) + 1);
 }
 
