@@ -428,7 +428,10 @@ AliHLTReadoutList AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& t
 
   const AliRawDataHeader* cdh = NULL;
   if (AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL, true) != 0) return AliHLTReadoutList();
-  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return AliHLTReadoutList();  // invalid for software triggers.
+  // Check if we are dealing with a software trigger. If so then we need to return
+  // a readout list with everything set because the CTP trigger bits are invalid.
+  // Thus we assume that everything should be read out.
+  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return ~ AliHLTReadoutList();
   // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
   AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
 
