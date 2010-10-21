@@ -10,6 +10,7 @@
 
 #pragma link C++ class AlidNdPtTask+;
 #pragma link C++ class AlidNdPtHelper+;
+#pragma link C++ class AlidNdPtAnalysisPbPb+;
 #pragma link C++ class AlidNdPtAnalysis+;
 #pragma link C++ class AlidNdPtCorrection+;
 
