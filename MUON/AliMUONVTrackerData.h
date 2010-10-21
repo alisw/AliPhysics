@@ -159,6 +159,12 @@ public:
 	/// Whether we store values at the channel level
 	virtual Bool_t IsManuLevelEnabled() const = 0;
   
+  /// Whether we store values at the bus patch level or not
+  virtual Bool_t IsBusPatchLevelEnabled() const = 0;
+  
+  /// Whether we store values at the PCB level or not
+  virtual Bool_t IsPCBLevelEnabled() const = 0;
+  
 private:
   /// not implemented
   AliMUONVTrackerData(const AliMUONVTrackerData& rhs);

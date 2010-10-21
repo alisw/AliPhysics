@@ -591,6 +591,18 @@ AliMUONPainterPlotSelector::UpdateTypeButton()
 		{ 
 			manuButton->SetEnabled(fCurrentData->IsManuLevelEnabled());
 		}
+		TGTextButton* busPatchButton = static_cast<TGTextButton*>
+		(AliMUONPainterInterfaceHelper::FindButtonByName(*fTypes,"BUSPATCH"));
+		if (busPatchButton) 
+		{ 
+			busPatchButton->SetEnabled(fCurrentData->IsBusPatchLevelEnabled());
+		}
+		TGTextButton* pcbButton = static_cast<TGTextButton*>
+		(AliMUONPainterInterfaceHelper::FindButtonByName(*fTypes,"PCB"));
+		if (pcbButton) 
+		{ 
+			pcbButton->SetEnabled(fCurrentData->IsPCBLevelEnabled());
+		}
     
 	}
 	

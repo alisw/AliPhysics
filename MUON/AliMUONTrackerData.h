@@ -30,7 +30,10 @@ public:
   
   AliMUONTrackerData(const char* name, const char* title,
                      const AliMUONVStore& manuValues);
-  
+
+  AliMUONTrackerData(const char* name, const char* title,
+                     const AliMUONVStore& deValues, Int_t val);
+
   virtual ~AliMUONTrackerData();
 
   Bool_t Add(const AliMUONTrackerData& data);
@@ -122,6 +125,12 @@ public:
 	/// Whether we store values at the manu level or not
 	virtual Bool_t IsManuLevelEnabled() const { return fIsManuLevelEnabled; }
   
+  /// Whether we store values at the bus patch level or not
+  virtual Bool_t IsBusPatchLevelEnabled() const { return fIsBustPatchLevelEnabled; }
+
+  /// Whether we store values at the PCB level or not
+  virtual Bool_t IsPCBLevelEnabled() const { return fIsPCBLevelEnabled; }
+
   /// To allow merging of different objects
   virtual Long64_t Merge(TCollection* list);
     
@@ -234,11 +243,13 @@ private:
   static const Int_t fgkVirtualExtraDimension; ///< to give access to information not stored, but computed on the fly
   Bool_t fIsChannelLevelEnabled; ///< whether we allow storing of channel (fChannelValues) values
   Bool_t fIsManuLevelEnabled; ///< whether we allow storing of manu (fManuValues) values
+  Bool_t fIsBustPatchLevelEnabled; ///< whether we allow storing of bus patches (fBusPatchValues) values
+  Bool_t fIsPCBLevelEnabled; ///< whether we allow storing of PCB values (fPCBValues)
   Int_t fNofDDLs; ///< nof of DDLs we're dealing with
   /// the number of events treated (per DDL)
   Int_t* fNofEventsPerDDL; //[fNofDDLs] the number of events treated (per DDL)
 
-  ClassDef(AliMUONTrackerData,7) // Implementation of AliMUONVTrackerData
+  ClassDef(AliMUONTrackerData,8) // Implementation of AliMUONVTrackerData
 };
 
 #endif

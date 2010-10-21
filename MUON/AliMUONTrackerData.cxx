@@ -85,6 +85,8 @@ fXmin(0.0),
 fXmax(0.0),
 fIsChannelLevelEnabled(kTRUE),
 fIsManuLevelEnabled(kTRUE),
+fIsBustPatchLevelEnabled(kTRUE),
+fIsPCBLevelEnabled(kTRUE),
 fNofDDLs(0),
 fNofEventsPerDDL(0x0)
 {  
@@ -120,6 +122,8 @@ fXmin(0.0),
 fXmax(0.0),
 fIsChannelLevelEnabled(kFALSE),
 fIsManuLevelEnabled(kTRUE),
+fIsBustPatchLevelEnabled(kTRUE),
+fIsPCBLevelEnabled(kTRUE),
 fNofDDLs(0),
 fNofEventsPerDDL(0x0)
 {  
@@ -245,6 +249,140 @@ fNofEventsPerDDL(0x0)
 
 }
 
+//_____________________________________________________________________________
+AliMUONTrackerData::AliMUONTrackerData(const char* name, const char* title,
+                                       const AliMUONVStore& deValues, Int_t val)
+: AliMUONVTrackerData(name,title),
+fIsSingleEvent(kFALSE),
+fChannelValues(0x0),
+fManuValues(0x0),
+fBusPatchValues(0x0),
+fDEValues(0x0),
+fChamberValues(0x0),
+fPCBValues(0x0),
+fDimension(0),
+fNevents(0),
+fDimensionNames(0x0),
+fExternalDimensionNames(0x0),
+fExternalDimension(0),
+fHistogramming(0x0),
+fHistos(0x0),
+fXmin(0.0),
+fXmax(0.0),
+fIsChannelLevelEnabled(kFALSE),
+fIsManuLevelEnabled(kFALSE),
+fIsBustPatchLevelEnabled(kFALSE),
+fIsPCBLevelEnabled(kFALSE),
+fNofDDLs(0),
+fNofEventsPerDDL(0x0)
+{  
+  /// ctor with values at the detection element level
+  /// In this case, we force fIsChannelLevelEnabled = fIsManuLevelEnabled = kFALSE
+  /// ctor
+  
+  if (deValues.GetSize()==0)
+  {
+    AliFatal("Cannot create a tracker data from nothing in that case !");
+  }
+  
+  if ( val != 1 ) 
+  {
+    AliFatal("Wrong parameter. For DE, must be 1");
+  }
+  
+  if ( !AliMpDDLStore::Instance(kFALSE) && !AliMpManuStore::Instance(kFALSE) )
+  {
+    AliError("Cannot work without (full) mapping");
+    return;
+  }
+  
+  TIter next(deValues.CreateIterator());
+  AliMUONVCalibParam* m = static_cast<AliMUONVCalibParam*>(next());
+  
+  Int_t dimension = ( m->Dimension() - fgkExtraDimension - fgkVirtualExtraDimension ) / 2;
+  
+  fDimension = External2Internal(dimension)+fgkExtraDimension;
+  
+  fDimensionNames = new TObjArray(fDimension+fgkVirtualExtraDimension);
+  fExternalDimensionNames = new TObjArray(dimension);
+  fExternalDimension = dimension;
+  fHistogramming = new Int_t[fExternalDimension];
+  memset(fHistogramming,0,fExternalDimension*sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
+  
+  fExternalDimensionNames->SetOwner(kTRUE);
+  fDimensionNames->SetOwner(kTRUE);  
+  fDimensionNames->AddAt(new TObjString("occ"),IndexOfOccupancyDimension());
+  fDimensionNames->AddAt(new TObjString("N"),IndexOfNumberDimension());
+  fDimensionNames->AddAt(new TObjString("n"),NumberOfDimensions()-fgkVirtualExtraDimension);
+  Clear();
+  TArrayI nevents(AliDAQ::NumberOfDdls("MUONTRK"));
+  AssertStores();
+  
+  next.Reset();
+  AliMUONVCalibParam* external;
+  
+  while ( ( external = static_cast<AliMUONVCalibParam*>(next()) ) )
+  {
+    Int_t detElemId = external->ID0();
+
+    AliMpDetElement* mpde = AliMpDDLStore::Instance()->GetDetElement(detElemId,kFALSE);
+    
+    if (!mpde)
+    {
+      AliError(Form("Got an invalid DE (%d) from external store",detElemId));
+      continue;
+    }
+    
+    Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+    AliMUONVCalibParam* chamber = ChamberParam(chamberId,kTRUE);
+    AliMUONVCalibParam* de = DetectionElementParam(detElemId,kTRUE);
+
+    AliMUONVCalibParam* wec = new AliMUONCalibParamND(external->Dimension()-1,1,detElemId,0,0);
+    // as external, but without event count
+    wec->SetValueAsDouble(0,0,external->ValueAsDouble(0,0));
+    wec->SetValueAsDouble(0,1,external->ValueAsDouble(0,1));
+    wec->SetValueAsDouble(0,2,external->ValueAsDouble(0,2));
+    wec->SetValueAsDouble(0,3,external->ValueAsDouble(0,3));
+    
+    Int_t n1 = de->ValueAsInt(0,IndexOfNumberDimension());
+    Int_t n2 = external->ValueAsInt(0,IndexOfNumberDimension());
+    if  ( n1 != n2 )
+    {
+      AliError(Form("Incoherent number of dimensions for DE%d : %d vs %d",
+                    detElemId,n1,n2));
+      continue;
+    }
+    
+    Int_t nevt = external->ValueAsInt(0,4);
+    
+    Int_t ddl = mpde->GetDdlId();
+    
+    if ( nevents[ddl] == 0 ) 
+    {
+      nevents[ddl] = nevt;
+    }
+    else
+    {
+      if ( nevents.At(ddl) != nevt ) 
+      {
+        AliError(Form("Nevt mismatch for DE %5d  DDL %d : %d vs %d",
+                      detElemId,ddl,nevents.At(ddl),nevt));
+        continue;
+      }
+    }
+    
+    for ( Int_t i = 0; i < wec->Dimension()-1; ++i ) 
+    {
+      de->SetValueAsDouble(0,i,de->ValueAsDouble(0,i) + wec->ValueAsDouble(0,i));
+      
+      chamber->SetValueAsDouble(0,i,chamber->ValueAsDouble(0,i) + wec->ValueAsDouble(0,i));
+    }    
+    delete wec;
+  }  
+  
+  UpdateNumberOfEvents(&nevents);
+  
+}
 
 //_____________________________________________________________________________
 AliMUONTrackerData::~AliMUONTrackerData()
@@ -555,8 +693,14 @@ AliMUONTrackerData::AssertStores()
     {
       fManuValues = new AliMUON2DMap(kTRUE);
     }
-    fPCBValues = new AliMUON2DMap(kFALSE);
-    fBusPatchValues = new AliMUON1DMap(numberOfBusPatches);
+    if ( fIsPCBLevelEnabled )
+    {
+      fPCBValues = new AliMUON2DMap(kFALSE);
+    }
+    if ( fIsBustPatchLevelEnabled )
+    {
+      fBusPatchValues = new AliMUON1DMap(numberOfBusPatches);
+    }
     fDEValues = new AliMUON1DMap(numberOfDEs);
     fChamberValues = new AliMUON1DArray;
   }
