@@ -45,6 +45,7 @@
 #pragma link C++ class AliAODPWG4ParticleCorrelation+;
 #pragma link C++ class AliAODDimuon+;
 #pragma link C++ class AliAODpidUtil+;
+#pragma link C++ class AliAODCentrality+;
 
 
 #endif
