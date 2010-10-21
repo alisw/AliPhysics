@@ -33,5 +33,6 @@
 #pragma link C++ class AliAnalyseLeadingTrackUE+;
 #pragma link C++ class AliAnalysisTaskLeadingTrackUE+;
 #pragma link C++ class AliAnalysisTaskJetsTM+;
+#pragma link C++ class AliAnalysisTaskQGSep+;
 
 #endif

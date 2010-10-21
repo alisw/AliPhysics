@@ -95,6 +95,8 @@ Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
 Int_t       iPWG4Cosmics     = 0;      // Marta's Cosmics Taks 
 Int_t       iPWG4ThreeJets     = 0;      // Sona's thrust task
+Int_t       iPWG4QGSep     = 0;          // Sona's QG Separation task
+Int_t       iPWG4Minijet       = 0;      // Eva's Mini Jet Task cluster task 
 Int_t       iPWG4KMeans        = 0;      // Andreas' KMeans task 
 Int_t       iPWG4Cluster       = 0;      // CKB cluster task 
 Int_t       iEMCUtilLibs       = 0;      // Flag to satisfy dependence on EMC utils
@@ -242,6 +244,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(printMask,"PWG4 Pt QA TPC",iPWG4PtQATPC);     
    printf(printMask,"PWG4 Cosmics",iPWG4Cosmics);     
    printf(printMask,"PWG4 Three Jets",iPWG4ThreeJets);
+   printf(printMask,"PWG4 QGSep",iPWG4QGSep);
+   printf(printMask,"PWG4 Minijet",iPWG4Minijet);
    printf(printMask,"PWG4 KMeans",iPWG4KMeans);
    printf(printMask,"PWG4 Cluster",iPWG4Cluster);
    printf(printMask,"PWG4 Part Corr",iPWG4PartCorr);
@@ -618,6 +622,21 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskThreeJets *taskThree = AddTaskThreeJets();
      if(!taskThree)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskThreets cannot run for this train conditions - EXCLUDED");
    }
+   if(iPWG4QGSep){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskQGSep.C");
+     AliAnalysisTaskQGSep *taskQGSep = AddTaskQGSep(kUseMC,iAODanalysis);
+     if(!taskQGSep)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQGSep cannot run for this train conditions - EXCLUDED");
+   }
+  
+
+   if(iPWG4Minijet){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskMinijet.C");
+     AliAnalysisTaskMinijet *taskMinijet = AddTaskMinjet("esd",kUseMC);
+     // if we ha highmult trigger add another task
+     if(!taskMini)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskMinjet cannot run for this train conditions - EXCLUDED");
+   }
+
+
    if(iPWG4PtQAMC){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQAMC.C");
      AliPWG4HighPtQAMC *taskQAMC = 0;
@@ -958,10 +977,10 @@ void CheckModuleFlags(const char *mode) {
 	kUseMuonfilter = kFALSE;
       }
       if(!iJETAN){
-	iPWG4JetSpectrum = iPWG4UE =  iPWG4CorrectionsUE = iPWG4ThreeJets = iDIJETAN = 0;
+	iPWG4JetSpectrum = iPWG4UE =  iPWG4CorrectionsUE = iPWG4ThreeJets = iPWG4QGSep = iDIJETAN = 0;
       }
    }
-   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4LeadingUE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem||iPWG4Fragmentation;
+   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4LeadingUE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4QGSep||iPWG4JetChem||iPWG4Minijet||iPWG4Fragmentation;
    iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
    iPWG4GammaConvLib = iPWG4GammaConv||iPWG4CaloConv;
 
