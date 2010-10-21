@@ -100,11 +100,19 @@ set(BINLIBDIRS "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 # Exclude Module from all target
 # ------------------------------
 
-set(EXCLUDEMODULES THydjet SHUTTLE)
+#set(EXCLUDEMODULES THydjet SHUTTLE)
 
 # Standard Modules
 # ------------------------------
-set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet PWG0 PWG1 PWG2 PWG3 PWG4 TRIGGER THydjet PYTHIA8)
+set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet PWG0 PWG1 PWG2 PWG3 PWG4 TRIGGER PYTHIA8 )
+
+if(THydjet)
+  list(APPEND ALIROOTMODULES THydjet)
+endif(THydjet)
+
+if(SHUTTLE)
+  list(APPEND ALIROOTMODULES SHUTTLE)
+endif(SHUTTLE)
 
 # Additional Modules
 # ------------------------------
@@ -126,7 +134,7 @@ if(EXISTS ${ROOTINCDIR}/TPythia6.h)
   set(PYTHIA6 TRUE)
   list(APPEND CERNMODULES PYTHIA6 RALICE EVGEN)
 else()
-  message(FATAL_ERROR "Pythia6 is required !")
+  message(FATAL_ERROR "ROOT must have Pythia6 enabled !")
 endif(EXISTS ${ROOTINCDIR}/TPythia6.h)
 
 # Set Final list of modules 
@@ -171,16 +179,16 @@ set(EXPORTFILES)
 
 add_custom_target(alilibs-static)
 add_custom_target(include-headers)
-
+add_custom_target(DA-all)
 # Add Modules
 # ------------------------------
 foreach(MODULE ${MODDIRS})
+  set(${MODULE}ALIBS)
   configure_file(${PROJECT_SOURCE_DIR}/cmake/Module.tmp ${PROJECT_SOURCE_DIR}/${MODULE}/CMakeLists.txt @ONLY)
   add_custom_target(${MODULE}-all ALL)
   add_custom_target(${MODULE}-static)
   add_dependencies(alilibs-static "${MODULE}-static")
   add_subdirectory(${MODULE})
-
 endforeach(MODULE)
 
 if(DATE_FOUND AND AMORE_FOUND)

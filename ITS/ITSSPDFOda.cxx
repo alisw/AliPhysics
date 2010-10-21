@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
   
   // turn off annoying warning messages
   // NB: Should not be handled here 
-  AliLog logger = AliLog::GetRootLogger();
+  AliLog* logger = AliLog::GetRootLogger();
   logger->SetGlobalDebugLevel(-20);
   
 // ********* STEP 0: Get configuration files from db (if there are any) , then read parameters*********  

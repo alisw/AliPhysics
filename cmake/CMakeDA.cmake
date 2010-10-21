@@ -5,6 +5,16 @@ cmake_minimum_required(VERSION 2.8.2 FATAL_ERROR)
 #list of detectors 
 set(ONLINEDETECTORS SPD SDD SSD TPC TRD TOF HMP PHS CPV PMD MCH MTR FMD T00 V00 ZDC ACO TRI EMC HLT TST GRP)
 
+function(expand output input)
+    string(REGEX MATCH "\\\${[^}]*}" m "${input}")
+    while(m)
+        string(REGEX REPLACE "\\\${(.*)}" "\\1" v "${m}")
+        string(REPLACE "\${${v}}" "${${v}}" input "${input}")
+        string(REGEX MATCH "\\\${[^}]*}" m "${input}")
+    endwhile()
+    set("${output}" "${input}" PARENT_SCOPE)
+endfunction()
+
 #function to get module for detector
 function (detector_module _module detector)
   #Map of online detectors to DA in pairs of ONLINEDETECTORNAME DAMODULE
@@ -85,12 +95,18 @@ else()
 endif(DAQDALIB_PATH)
 set(DAQDALIB "${DAQDADIR}/libdaqDA.a")
 
-include_directories(${DAQDADIR} RAW include)
+include_directories(${DAQDADIR} RAW include STEER)
 include_directories(SYSTEM ${ROOTINCDIR})
 
 # ----------Create All Valid targets---------
 	  
 foreach(detector ${ONLINEDETECTORS} )
+
+  set(ONLINEDETECTORNAME ${detector})
+
+  detector_module(DAMODULE ${ONLINEDETECTORNAME})
+
+  detector_subda(SUBDAMODULE ${ONLINEDETECTORNAME})
   
   #ALIROOTALIBS
 
@@ -98,12 +114,14 @@ foreach(detector ${ONLINEDETECTORS} )
 
   list(APPEND ALIROOTALIBS RAWDatabase_a RAWDatarec_a RAWDatasim_a STEERBase_a STEER_a CDB_a ESD_a STAT_a AOD_a )
 
-  set(ONLINEDETECTORNAME ${detector})
-
-  detector_module(DAMODULE ${ONLINEDETECTORNAME})
-
-  detector_subda(SUBDAMODULE ${ONLINEDETECTORNAME})
-
+  expand(ALIROOTALIBS2 "\${${DAMODULE}ALIBS}")
+  expand(DAINCDIRS "\${${DAMODULE}INC}")
+  list(APPEND ALIROOTALIBS ${ALIROOTALIBS2})
+  
+  message("Listing sub directories for ${DAMODULE}")
+  message("${DAINCDIRS}")
+  
+  include_directories(${DAMODULE} ${SUBDIR} ${DAINCDIRS})
 #Get detector algorithms for this detector
 
   foreach(dafile ${_dafiles})
@@ -124,7 +142,7 @@ foreach(detector ${ONLINEDETECTORS} )
 
 	  set(DASRC "${DAMODULE}/${DAMODULE}${SUBDAMODULE}${DANAME}da.cxx")
 	  set(DALIB "${DAMODULE}${SUBDAMODULE}${DANAME}DA")
-	  set(DAEXE "${DAMODULE}${SUBDAMODULE}${DANAME}da")
+	  set(DAEXE "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe")
 	  
 	# DAVERSION
 	  execute_process(COMMAND svn info $ENV{ALICE_ROOT}/${DASRC} OUTPUT_VARIABLE _daversion OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -144,16 +162,7 @@ foreach(detector ${ONLINEDETECTORS} )
 	  set(DAMAKEFILE "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.make")
 
 
-# Super Duper Hack :D
-	  file(GLOB _damodule "$ENV{ALICE_ROOT}/${DAMODULE}/lib${DAMODULE}*.pkg" )
-	  
-	  foreach(_submodule ${_damodule})
-	    string(REGEX REPLACE ".*lib(${DAMODULE}.*)" "\\1" _submodule ${_submodule})
-	    string(REGEX REPLACE "\\.pkg" "_a" _submodule ${_submodule})
-	    list(APPEND ALIROOTALIBS "${_submodule}")	  
-	  endforeach(_submodule)
-	  
-	  list(REMOVE_DUPLICATES ALIROOTALIBS)
+          
 	  if(EXTRADAMODULE)
 	    ##**set
 	  endif(EXTRADAMODULE)
@@ -175,34 +184,35 @@ foreach(detector ${ONLINEDETECTORS} )
 
 #----------- Targets ----------------------
 
-	  set(CMAKE_CXX_FLAGS ${CXXFLAGS})
-	  set(CMAKE_C_FLAGS ${CFLAGS})
+	  set(CMAKE_CXX_FLAGS "${CXXFLAGS}")
+	  set(CMAKE_C_FLAGS "${CFLAGS}")
 	  set(CMAKE_Fortran_FLAGS ${FFLAGS})
 	  set(CMAKE_SHARED_LINKER_FLAGS ${SOFLAGS}) 
 	  set(CMAKE_MODULE_LINKER_FLAGS ${LDFLAGS})
 
 	  set(ZIP)
+	  message("${DAEXE}- ${DAMODULE} - ${ALIROOTALIBS}")
 	  foreach(_lib ${ALIROOTALIBS})
 	   string(REGEX REPLACE "-all" "_a" _lib ${_lib})
 	   list(APPEND ZIP && ar x "../lib${_lib}.a")
 	  endforeach(_lib)
- 	  list (APPEND ZIP && ar r "../${DALIB}.a" "*.o")
- 
-	  add_custom_target("${DALIB}_x" rm -rf junk && mkdir -p junk 
+ 	  list (APPEND ZIP && ar r "../lib${DALIB}.a" "*.o")
+
+	  add_custom_target( ${DALIB} COMMAND rm -rf junk && mkdir -p junk 
 				COMMAND cd junk ${ZIP}
 				COMMAND cd ../ && rm -rf junk
 				DEPENDS ${ALIROOTALIBS}
 				WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-	  add_custom_target(${DATARGETNAME} DEPENDS ${DAEXE} )
-	  add_executable(${DAEXE} ${DASRC} )
+	  add_custom_target(${DATARGETNAME})
+	  add_executable(${DAEXE} ${DASRC})
     	  set_property(TARGET ${DAEXE} PROPERTY EXCLUDE_FROM_ALL TRUE)
-	  add_dependencies(${DAEXE} ${DALIB}_x)
-	  target_link_libraries(${DAEXE} "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${DALIB}.a" ${EXTRAROOTLIB} "${ROOTLIBDIR}/libRoot.a" "${ROOTLIBDIR}/libfreetype.a" "${ROOTLIBDIR}/libpcre.a" ${SYSLIBS} ${DAQDALIB} ${MONITORLIBS} ${AMOREDALIBS})
+	  add_dependencies(${DAEXE} ${DALIB})
+	  add_dependencies(DA-all ${DATARGETNAME})
+	  target_link_libraries(${DAEXE} "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${DALIB}.a" ${EXTRAROOTLIB} "${ROOTLIBDIR}/libRoot.a" "${ROOTLIBDIR}/libfreetype.a" "${ROOTLIBDIR}/libpcre.a" ${SYSLIBS} ${DAQDALIB} ${MONITORLIBS} ${AMOREDALIBS})
+	  add_dependencies(${DATARGETNAME} ${DAEXE})
 	  
-#	  add_custom_command(TARGET ${DAEXE} 
-#		   	PRE_LINK
-#			COMMAND ${CMAKE_AR} r ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${EXTRAROOTLIB} ${_extraroot})
+
 	endif(match)
   endforeach(dafile)
 endforeach(detector)
