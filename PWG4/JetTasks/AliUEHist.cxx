@@ -89,10 +89,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
     leadingpTBins[i] = 0.5 * i;
   
   // pT,lead binning 2
-  const Int_t kNLeadingpTBins2 = 10;
-  Double_t leadingpTBins2[kNLeadingpTBins2+1];
-  for (Int_t i=0; i<=kNLeadingpTBins2; i++)
-    leadingpTBins2[i] = 5.0 * i;
+  const Int_t kNLeadingpTBins2 = 13;
+  Double_t leadingpTBins2[] = { 0.0, 0.5, 1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 100.0 };
   
   // phi,lead
   const Int_t kNLeadingPhiBins = 40;
@@ -484,6 +482,7 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
   {
     fTrackHist[region]->GetGrid(step)->SetRangeUser(2, ptLeadMin, ptLeadMax);
     tracks = fTrackHist[region]->GetGrid(step)->Project(4);
+    Printf("Calculated histogram in %.2f <= pT <= %.2f --> %f entries", ptLeadMin, ptLeadMax, tracks->Integral());
     fTrackHist[region]->GetGrid(step)->SetRangeUser(2, 0, -1);
     
     // normalize to get a density (deta dphi)
@@ -625,13 +624,26 @@ void AliUEHist::Correct(AliUEHist* corrections)
   {
     if (!fTrackHist[region])
       continue;
-      
-    //TH1D* leadingBias = (TH1D*) corrections->GetBias(kCFStepReconstructed, kCFStepTracked, region, "z"); // from MC
-    TH1D* leadingBias = (TH1D*) GetBias(kCFStepBiasStudy, kCFStepReconstructed, region, "z");          // from data
-    CorrectTracks(kCFStepReconstructed, kCFStepTracked, region, leadingBias, 2);
+
+    const char* projAxis = "z";
+    Int_t secondBin = -1;
+
+    if (fTrackHist[region]->GetNVar() == 5)
+    {
+      projAxis = "yz";
+      secondBin = 4;
+    }
+    
+    #if 0
+      TH1* leadingBias = (TH1*) corrections->GetBias(kCFStepReconstructed, kCFStepTracked, region, projAxis); // from MC
+      Printf("WARNING: Using MC bias correction");
+    #else
+      TH1* leadingBias = (TH1*) GetBias(kCFStepBiasStudy, kCFStepReconstructed, region, projAxis);          // from data
+    #endif
+    CorrectTracks(kCFStepReconstructed, kCFStepTracked, region, leadingBias, 2, secondBin);
     if (region == kMin && fCombineMinMax)
     {
-      CorrectTracks(kCFStepReconstructed, kCFStepTracked, kMax, leadingBias, 2);
+      CorrectTracks(kCFStepReconstructed, kCFStepTracked, kMax, leadingBias, 2, secondBin);
       delete leadingBias;
       break;
     }
@@ -672,7 +684,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
   vertexCorrectionObs->Reset();
   
   TF1* func = new TF1("func", "[1]+[0]/(x-[2])");
-  vertexCorrection->Fit(func, "0", "", 0.8, 4);
+  vertexCorrection->Fit(func, "0", "", 0, 3);
 
   for (Int_t i=1; i<=vertexCorrectionObs->GetNbinsX(); i++)
   {
@@ -688,12 +700,15 @@ void AliUEHist::Correct(AliUEHist* corrections)
   vertexCorrection->DrawCopy();
   vertexCorrectionObs->SetLineColor(2);
   vertexCorrectionObs->DrawCopy("same");
+  func->SetRange(0, 4);
+  func->DrawClone("same");
   #endif
   
   CorrectTracks(kCFStepVertex, kCFStepTriggered, vertexCorrectionObs, 3);
   CorrectEvents(kCFStepVertex, kCFStepTriggered, vertexCorrectionObs, 1);
   delete vertexCorrectionObs;
   delete vertexCorrection;
+  delete func;
   
   // copy 
   CorrectTracks(kCFStepTriggered, kCFStepAll, 0, -1);
@@ -955,11 +970,11 @@ TH1* AliUEHist::GetBias(CFStep step1, CFStep step2, Int_t region, const char* ax
   SetBinLimits(tmp->GetGrid(step2));
   
   TH1D* events1 = fEventHist->Project(0, step1);
-  TH3D* hist1 = tmp->Project(0, 1, 2, step1);
+  TH3D* hist1 = tmp->Project(0, tmp->GetNVar()-1, 2, step1);
   WeightHistogram(hist1, events1);
   
   TH1D* events2 = fEventHist->Project(0, step2);
-  TH3D* hist2 = tmp->Project(0, 1, 2, step2);
+  TH3D* hist2 = tmp->Project(0, tmp->GetNVar()-1, 2, step2);
   WeightHistogram(hist2, events2);
   
   TH1* generated = hist1;
@@ -978,12 +993,7 @@ TH1* AliUEHist::GetBias(CFStep step1, CFStep step2, Int_t region, const char* ax
       hist1->GetXaxis()->SetRangeUser(fEtaMin, fEtaMax);
       hist2->GetXaxis()->SetRangeUser(fEtaMin, fEtaMax);
     }
-    if (fPtMax > fPtMin && !TString(axis).Contains("y"))
-    {
-      hist1->GetYaxis()->SetRangeUser(fPtMin, fPtMax);
-      hist2->GetYaxis()->SetRangeUser(fPtMin, fPtMax);
-    }
-    
+   
     generated = hist1->Project3D(axis);
     measured  = hist2->Project3D(axis);
     

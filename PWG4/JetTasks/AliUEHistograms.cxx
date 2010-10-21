@@ -183,6 +183,20 @@ AliUEHistograms::~AliUEHistograms()
   }
 }
 
+AliUEHist* AliUEHistograms::GetUEHist(Int_t id)
+{
+  // returns AliUEHist object, useful for loops
+  
+  switch (id)
+  {
+    case 0: return fNumberDensitypT; break;
+    case 1: return fSumpT; break;
+    case 2: return fNumberDensityPhi; break;
+  }
+  
+  return 0;
+}
+
 //____________________________________________________________________
 Int_t AliUEHistograms::CountParticles(TList* list, Float_t ptMin)
 {
@@ -391,7 +405,7 @@ void AliUEHistograms::Correct(AliUEHistograms* corrections)
   
   fNumberDensitypT->Correct(corrections->fNumberDensitypT);
   fSumpT->Correct(corrections->fSumpT);
-  //fNumberDensityPhi->Correct(corrections->fNumberDensityPhi);
+  fNumberDensityPhi->Correct(corrections->fNumberDensityPhi);
 }
 
 //____________________________________________________________________
