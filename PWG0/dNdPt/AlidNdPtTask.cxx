@@ -44,7 +44,7 @@ ClassImp(AlidNdPtTask)
 
 //_____________________________________________________________________________
 AlidNdPtTask::AlidNdPtTask(const char *name) 
-  : AliAnalysisTask(name, "dNdPt analysis")
+  : AliAnalysisTaskSE(name)
   , fESD(0)
   , fMC(0)
   , fOutput(0)
@@ -55,8 +55,7 @@ AlidNdPtTask::AlidNdPtTask(const char *name)
   // Constructor
 
   // Define input and output slots here
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
 
   // create the list for comparison objects
   fCompList = new TList;
@@ -66,6 +65,7 @@ AlidNdPtTask::AlidNdPtTask(const char *name)
 AlidNdPtTask::~AlidNdPtTask()
 {
   if(fOutput) delete fOutput;  fOutput =0; 
+  if(fCompList) delete fCompList;  fCompList =0; 
 }
 
 //____________________________________________________________________________
@@ -94,41 +94,6 @@ return kTRUE;
 }
 
 //_____________________________________________________________________________
-void AlidNdPtTask::ConnectInputData(Option_t *) 
-{
-// connect input data 
-// called once
-
-  TTree *tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-    return;
-  }
-
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-  if (!esdH) {
-    Printf("ERROR: Could not get ESDInputHandler");
-    return;
-  } else {
-    fESD = esdH->GetEvent();
-
-    // Enable only the needed branches
-    //esdH->SetActiveBranches("AliESDHeader Vertex Tracks");
-  }
-
-  if (fUseMCInfo) {
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-      return;
-    } else { 
-      fMC = eventHandler->MCEvent();
-    }
-  }
-}
-
-//_____________________________________________________________________________
 Bool_t AlidNdPtTask::AddAnalysisObject(AlidNdPt *pObj) 
 {
   // add analysis object to the list
@@ -144,12 +109,12 @@ return kTRUE;
 }
 
 //_____________________________________________________________________________
-void AlidNdPtTask::CreateOutputObjects()
+void AlidNdPtTask::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
 
-  OpenFile(0, "RECREATE");
+  OpenFile(1, "RECREATE");
 
   //
   // create output list
@@ -167,16 +132,30 @@ void AlidNdPtTask::CreateOutputObjects()
     fOutput->Add(pObj);
     count++;
   }
-  Printf("CreateOutputObjects(): Number of output comparison objects: %d \n", count);
+  Printf("UserCreateOutputObjects(): Number of output objects: %d \n", count);
 }
 
 //_____________________________________________________________________________
-void AlidNdPtTask::Exec(Option_t *) 
+void AlidNdPtTask::UserExec(Option_t *) 
 {
+  //
   // Called for each event
+  //
+
+  // ESD event
+  fESD = (AliESDEvent*) (InputEvent());
   if (!fESD) {
     Printf("ERROR: ESD event not available");
     return;
+  }
+
+  // MC event
+  if(fUseMCInfo) {
+    fMC = MCEvent();
+    if (!fMC) {
+      Printf("ERROR: MC event not available");
+      return;
+    }
   }
 
   // Process analysis
@@ -187,7 +166,7 @@ void AlidNdPtTask::Exec(Option_t *)
   }
 
   // Post output data.
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
@@ -196,7 +175,7 @@ void AlidNdPtTask::Terminate(Option_t *)
   // Called one at the end 
   
   // check output data
-  fOutput = dynamic_cast<TList*> (GetOutputData(0));
+  fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {
     Printf("ERROR: AlidNdPtTask::Terminate(): Output data not avaiable GetOutputData(0)==0x0 ..." );
     return;

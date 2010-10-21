@@ -170,7 +170,7 @@ return kFALSE;
 Bool_t AlidNdPtBackgroundCuts::IsSplittedTrack(AliESDtrack *track1, AliESDtrack *track2)
 {
   // 
-  // check whether track is cosmic
+  // check whether track is splitted
   //
   if(!track1) return kFALSE;
   if(!track2) return kFALSE;

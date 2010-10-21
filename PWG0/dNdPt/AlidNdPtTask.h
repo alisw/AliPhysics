@@ -19,16 +19,15 @@ class AliMagFMaps;
 class TList;
 
 #include "dNdPt/AlidNdPtHelper.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AlidNdPtTask : public AliAnalysisTask {
+class AlidNdPtTask : public AliAnalysisTaskSE {
  public:
   AlidNdPtTask(const char *name = "AlidNdPtTask");
   virtual ~AlidNdPtTask();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   virtual Bool_t Notify();
 
