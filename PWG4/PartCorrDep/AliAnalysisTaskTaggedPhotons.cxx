@@ -379,384 +379,390 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
 void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *) 
 {
   //Fill all histograms
-
-
+  
+  
   // We prepared 4 PID histograms, choose which PID combinations to use
   // see AliAODPWG4Particle for more choises
   //    0=all,2=Disp,4=Ch,6=Ch+Disp
   const Int_t pidMap[4]={0,2,4,6} ;
-
+  
   // Processing of one event
   if(fDebug>1)
     AliInfo(Form("\n\n Processing event # %lld",  Entry())) ; 
   AliESDEvent* esd = (AliESDEvent*)InputEvent();
-
-
+  
+  
   //read geometry if not read yet
   if((fPHOS && fPHOSgeom==0) || (!fPHOS && fEMCALgeom==0))
     InitGeometry() ;
-  if(fPHOS && fPHOSgeom!=0){
-  }
+  //if(fPHOS && fPHOSgeom!=0){
+  //}
   if(!fPHOS && fEMCALgeom!=0){ //EMCAL geometry initialized, but still need to set matrixes
     AliAODEvent * aod = 0x0 ;
     if(!esd)
       aod=dynamic_cast<AliAODEvent*>(InputEvent()) ;
-    if(!esd && !aod)
+    
+    if(!esd && !aod){
       AliFatal("Can not read geometry matrixes from ESD/AOD: NO ESD") ;
-    for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-      if(esd){
-        const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
-        fEMCALgeom->SetMisalMatrix(m, mod) ;
-      }
-      else{
-        const TGeoHMatrix* m=aod->GetHeader()->GetEMCALMatrix(mod) ;
-        fEMCALgeom->SetMisalMatrix(m, mod) ;
-      }
     }
-  }
-  //MC stack init
-  fStack=0x0 ;
-  if(AliAnalysisManager::GetAnalysisManager()){
-    AliMCEventHandler* mctruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    if(mctruth)
-      fStack = mctruth->MCEvent()->Stack();
-  }
-
-  if(!fStack && gDebug>1)
-    AliInfo("No stack! \n");
-
-
-//  Here one can choose trigger. But according to framework it should be chosen 
-//  by external filters???
-//  TString trigClasses = esd->GetFiredTriggerClasses();
-//  if (!fStack && !trigClasses.Contains("CINT1B-ABCE-NOPF-ALL") ){
-//    Printf("Skip event with trigger class \"%s\"",trigClasses.Data());
-//    return;
-//  }
-
-  fhEvents->Fill(0.);
-
-  //************************  PHOS/EMCAL *************************************
-  TRefArray * caloClustersArr  = new TRefArray();  
-  if(fPHOS)
-    esd->GetPHOSClusters(caloClustersArr);
-  else
-    esd->GetEMCALClusters(caloClustersArr);
-  const Int_t kNumberOfClusters = caloClustersArr->GetEntries() ;  
-
-  TClonesArray * fCaloPhotonsArr   = new TClonesArray("AliAODPWG4Particle",kNumberOfClusters);
-  Int_t inList = 0; //counter of caloClusters
-
-  Int_t cluster ; 
-
-  // loop over Clusters
-  for(cluster = 0 ; cluster < kNumberOfClusters ; cluster++) {
-    AliESDCaloCluster * caloCluster = static_cast<AliESDCaloCluster*>(caloClustersArr->At(cluster)) ;
-  
-    if((fPHOS && !caloCluster->IsPHOS()) ||
-       (!fPHOS && caloCluster->IsPHOS()))
-      continue ; 
-
-    Double_t v[3] ; //vertex ;
-    esd->GetVertex()->GetXYZ(v) ;
-
-    TLorentzVector momentum ;
-    caloCluster->GetMomentum(momentum, v);
-    new ((*fCaloPhotonsArr)[inList]) AliAODPWG4Particle(momentum.Px(),momentum.Py(),momentum.Pz(),caloCluster->E() );
-    AliAODPWG4Particle *p = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(inList));
-    inList++;
-
-    p->SetCaloLabel(cluster,-1); //This and partner cluster
-    p->SetDistToBad(Int_t(caloCluster->GetDistanceToBadChannel()));
-
-    p->SetTag(AliMCAnalysisUtils::kMCUnknown);
-    p->SetTagged(kFALSE);   //Reconstructed pairs found
-    p->SetLabel(caloCluster->GetLabel());
-    Float_t pos[3] ;
-    caloCluster->GetPosition(pos) ;
-    p->SetFiducialArea(GetFiducialArea(pos)) ;
-
-    //PID criteria
-    p->SetDispBit(TestDisp(caloCluster->GetM02(),caloCluster->GetM20(),caloCluster->E())) ;
-    p->SetTOFBit(TestTOF(caloCluster->GetTOF(),caloCluster->E())) ;
-    p->SetChargedBit(TestCharged(caloCluster->GetEmcCpvDistance(),caloCluster->E())) ;
-
-    for(Int_t iPID=0; iPID<4; iPID++){
-      if(p->IsPIDOK(pidMap[iPID],22))
-        fhRecAll[iPID]->Fill( p->Pt() ) ; //All recontructed particles
-    }
-    Int_t iFidArea = p->GetFiducialArea(); 
-    if(iFidArea>0){
-      fhRecAllArea1->Fill(p->Pt() ) ; 
-      if(iFidArea>1){
-        fhRecAllArea2->Fill(p->Pt() ) ; 
-        if(iFidArea>2){
-          fhRecAllArea3->Fill(p->Pt() ) ; 
+    else{
+      
+      
+      for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+        if(esd){
+          const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
+          fEMCALgeom->SetMisalMatrix(m, mod) ;
+        }
+        else{
+          const TGeoHMatrix* m=aod->GetHeader()->GetEMCALMatrix(mod) ;
+          fEMCALgeom->SetMisalMatrix(m, mod) ;
         }
       }
     }
-
-    if(fStack){
-      TParticle * prim = fStack->Particle(caloCluster->GetLabel()) ;
-      if(fDebug>2)
-        printf("Pdgcode = %d\n",prim->GetPdgCode());
-
-      if(prim->GetPdgCode()!=22){ //not photon
-//<--DP        p->SetPhoton(kFALSE);
-        fhRecOther->Fill(p->Pt()); //not photons real spectra
-        for(Int_t iPID=0; iPID<4; iPID++){
-          if(p->IsPIDOK(pidMap[iPID],22))
-            fhRecOtherPID[iPID]->Fill(p->Pt());
+    //MC stack init
+    fStack=0x0 ;
+    if(AliAnalysisManager::GetAnalysisManager()){
+      AliMCEventHandler* mctruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+      if(mctruth)
+        fStack = mctruth->MCEvent()->Stack();
+    }
+    
+    if(!fStack && gDebug>1)
+      AliInfo("No stack! \n");
+    
+    
+    //  Here one can choose trigger. But according to framework it should be chosen 
+    //  by external filters???
+    //  TString trigClasses = esd->GetFiredTriggerClasses();
+    //  if (!fStack && !trigClasses.Contains("CINT1B-ABCE-NOPF-ALL") ){
+    //    Printf("Skip event with trigger class \"%s\"",trigClasses.Data());
+    //    return;
+    //  }
+    
+    fhEvents->Fill(0.);
+    
+    //************************  PHOS/EMCAL *************************************
+    TRefArray * caloClustersArr  = new TRefArray();  
+    if(fPHOS)
+      esd->GetPHOSClusters(caloClustersArr);
+    else
+      esd->GetEMCALClusters(caloClustersArr);
+    const Int_t kNumberOfClusters = caloClustersArr->GetEntries() ;  
+    
+    TClonesArray * fCaloPhotonsArr   = new TClonesArray("AliAODPWG4Particle",kNumberOfClusters);
+    Int_t inList = 0; //counter of caloClusters
+    
+    Int_t cluster ; 
+    
+    // loop over Clusters
+    for(cluster = 0 ; cluster < kNumberOfClusters ; cluster++) {
+      AliESDCaloCluster * caloCluster = static_cast<AliESDCaloCluster*>(caloClustersArr->At(cluster)) ;
+      
+      if((fPHOS && !caloCluster->IsPHOS()) ||
+         (!fPHOS && caloCluster->IsPHOS()))
+        continue ; 
+      
+      Double_t v[3] ; //vertex ;
+      esd->GetVertex()->GetXYZ(v) ;
+      
+      TLorentzVector momentum ;
+      caloCluster->GetMomentum(momentum, v);
+      new ((*fCaloPhotonsArr)[inList]) AliAODPWG4Particle(momentum.Px(),momentum.Py(),momentum.Pz(),caloCluster->E() );
+      AliAODPWG4Particle *p = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(inList));
+      inList++;
+      
+      p->SetCaloLabel(cluster,-1); //This and partner cluster
+      p->SetDistToBad(Int_t(caloCluster->GetDistanceToBadChannel()));
+      
+      p->SetTag(AliMCAnalysisUtils::kMCUnknown);
+      p->SetTagged(kFALSE);   //Reconstructed pairs found
+      p->SetLabel(caloCluster->GetLabel());
+      Float_t pos[3] ;
+      caloCluster->GetPosition(pos) ;
+      p->SetFiducialArea(GetFiducialArea(pos)) ;
+      
+      //PID criteria
+      p->SetDispBit(TestDisp(caloCluster->GetM02(),caloCluster->GetM20(),caloCluster->E())) ;
+      p->SetTOFBit(TestTOF(caloCluster->GetTOF(),caloCluster->E())) ;
+      p->SetChargedBit(TestCharged(caloCluster->GetEmcCpvDistance(),caloCluster->E())) ;
+      
+      for(Int_t iPID=0; iPID<4; iPID++){
+        if(p->IsPIDOK(pidMap[iPID],22))
+          fhRecAll[iPID]->Fill( p->Pt() ) ; //All recontructed particles
+      }
+      Int_t iFidArea = p->GetFiducialArea(); 
+      if(iFidArea>0){
+        fhRecAllArea1->Fill(p->Pt() ) ; 
+        if(iFidArea>1){
+          fhRecAllArea2->Fill(p->Pt() ) ; 
+          if(iFidArea>2){
+            fhRecAllArea3->Fill(p->Pt() ) ; 
+          }
         }
       }
-      else{ //Primary photon (as in MC)
-//<--DP        p->SetPhoton(kTRUE);
-        fhRecPhoton->Fill(p->Pt()); //Reconstructed with primary photon
-        for(Int_t iPID=0; iPID<4; iPID++){
-          if(p->IsPIDOK(pidMap[iPID],22))
-            fhRecPhotonPID[iPID]->Fill(p->Pt());
+      
+      if(fStack){
+        TParticle * prim = fStack->Particle(caloCluster->GetLabel()) ;
+        if(fDebug>2)
+          printf("Pdgcode = %d\n",prim->GetPdgCode());
+        
+        if(prim->GetPdgCode()!=22){ //not photon
+          //<--DP        p->SetPhoton(kFALSE);
+          fhRecOther->Fill(p->Pt()); //not photons real spectra
+          for(Int_t iPID=0; iPID<4; iPID++){
+            if(p->IsPIDOK(pidMap[iPID],22))
+              fhRecOtherPID[iPID]->Fill(p->Pt());
+          }
         }
-        Int_t pi0i=prim->GetFirstMother();
-        Int_t grandpaPDG=-1 ;
-        TParticle * pi0p = 0;
-        if(pi0i>=0){
-          pi0p=fStack->Particle(pi0i);
-          grandpaPDG=pi0p->GetPdgCode() ;
-        }
-        switch(grandpaPDG){
-        case 111: //Pi0 decay
-                //Primary decay photon (as in MC)
-                fhRecPhotPi0->Fill(p->Pt());
-                break ;
-        case  11:
-        case -11: //electron/positron conversion
-//<--DP                p->SetConverted(1);
-                fhRecPhotConv->Fill(p->Pt());  //Reconstructed with photon from conversion primary
-                fhConversionRadius->Fill(prim->R());
-                break ;
-        case -2212:
-        case -2112: //antineutron & antiproton conversion
-                fhRecPhotHadron->Fill(p->Pt());  //Reconstructed with photon from antibaryon annihilation
-                fhInteractionRadius->Fill(prim->R());
-                break ;
-          
-        case 221: //eta decay
-                fhRecPhotEta->Fill(p->Pt());
-                break ;  
-          
-        case 223: //omega meson decay
-                fhRecPhotOmega->Fill(p->Pt());
-                break ;
-            
-        case 331: //eta' decay
-                fhRecPhotEtapr->Fill(p->Pt());
-                break ;
+        else{ //Primary photon (as in MC)
+          //<--DP        p->SetPhoton(kTRUE);
+          fhRecPhoton->Fill(p->Pt()); //Reconstructed with primary photon
+          for(Int_t iPID=0; iPID<4; iPID++){
+            if(p->IsPIDOK(pidMap[iPID],22))
+              fhRecPhotonPID[iPID]->Fill(p->Pt());
+          }
+          Int_t pi0i=prim->GetFirstMother();
+          Int_t grandpaPDG=-1 ;
+          TParticle * pi0p = 0;
+          if(pi0i>=0){
+            pi0p=fStack->Particle(pi0i);
+            grandpaPDG=pi0p->GetPdgCode() ;
+          }
+          switch(grandpaPDG){
+            case 111: //Pi0 decay
+              //Primary decay photon (as in MC)
+              fhRecPhotPi0->Fill(p->Pt());
+              break ;
+            case  11:
+            case -11: //electron/positron conversion
+              //<--DP                p->SetConverted(1);
+              fhRecPhotConv->Fill(p->Pt());  //Reconstructed with photon from conversion primary
+              fhConversionRadius->Fill(prim->R());
+              break ;
+            case -2212:
+            case -2112: //antineutron & antiproton conversion
+              fhRecPhotHadron->Fill(p->Pt());  //Reconstructed with photon from antibaryon annihilation
+              fhInteractionRadius->Fill(prim->R());
+              break ;
               
-        case -1: //direct photon or no primary
-                fhRecPhotDirect->Fill(p->Pt());
-                break ;
+            case 221: //eta decay
+              fhRecPhotEta->Fill(p->Pt());
+              break ;  
               
-        default:  
-                fhRecPhotOther->Fill(p->Pt());
-                break ;
-        }  
-
-        //Now classify pi0 decay photon
-        if(grandpaPDG==111){
-//<--DP          p->Pi0Decay(kTRUE); //Mark this photon as primary decayed
-//<--DP          p->Pi0Id(pi0i); //remember id of the parent pi0
-
-          //Now check if second (partner) photon from pi0 decay hits PHOS or not
-          //i.e. both photons can be tagged or it's the systematic error
-//<--DP          p->SetPartnerPt(0.); 
-          Int_t indexdecay1,indexdecay2;
-
-          indexdecay1=pi0p->GetFirstDaughter();
-          indexdecay2=pi0p->GetLastDaughter();
-          Int_t indexdecay=-1;
-          if(fDebug>2)
-                printf("checking pi0 decay...index1=%d, index2=%d, index_pi0=%d, index_ph_prim=%d\n", indexdecay1,indexdecay2,pi0i,caloCluster->GetLabel());
-                
-          if(indexdecay1!=caloCluster->GetLabel()) 
-            indexdecay=indexdecay1;
-          if(indexdecay2!=caloCluster->GetLabel()) 
-            indexdecay=indexdecay2;
-          if(indexdecay==-1){
-            if(fDebug>2){
-              printf("Probably the other photon is not in the stack!\n");
-              printf("Number of daughters: %d\n",pi0p->GetNDaughters());
-            }
-            fhDecWMissedPartnerStack->Fill(p->Pt()) ;
+            case 223: //omega meson decay
+              fhRecPhotOmega->Fill(p->Pt());
+              break ;
+              
+            case 331: //eta' decay
+              fhRecPhotEtapr->Fill(p->Pt());
+              break ;
+              
+            case -1: //direct photon or no primary
+              fhRecPhotDirect->Fill(p->Pt());
+              break ;
+              
+            default:  
+              fhRecPhotOther->Fill(p->Pt());
+              break ;
           }  
-          else{
-            TParticle *partner = fStack->Particle(indexdecay);
-//<--DP            p->SetPartnerPt(partner->Pt());
-            if(partner->GetPdgCode()==22){ 
-              Bool_t isPartnerLost=kFALSE; //If partner is lost for some reason
-              if(partner->GetNDaughters()!=0){ //this photon is converted before it is registered by some detector
-                if(fDebug>2)
-                  printf("P_Conv, daughters=%d\n",partner->GetNDaughters());
-//<--DP                p->SetConvertedPartner(1);
-                fhPartnerMissedConv->Fill(partner->Pt());
-                fhDecWMissedPartnerConv->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
-                isPartnerLost=kTRUE;
+          
+          //Now classify pi0 decay photon
+          if(grandpaPDG==111){
+            //<--DP          p->Pi0Decay(kTRUE); //Mark this photon as primary decayed
+            //<--DP          p->Pi0Id(pi0i); //remember id of the parent pi0
+            
+            //Now check if second (partner) photon from pi0 decay hits PHOS or not
+            //i.e. both photons can be tagged or it's the systematic error
+            //<--DP          p->SetPartnerPt(0.); 
+            Int_t indexdecay1,indexdecay2;
+            
+            indexdecay1=pi0p->GetFirstDaughter();
+            indexdecay2=pi0p->GetLastDaughter();
+            Int_t indexdecay=-1;
+            if(fDebug>2)
+              printf("checking pi0 decay...index1=%d, index2=%d, index_pi0=%d, index_ph_prim=%d\n", indexdecay1,indexdecay2,pi0i,caloCluster->GetLabel());
+            
+            if(indexdecay1!=caloCluster->GetLabel()) 
+              indexdecay=indexdecay1;
+            if(indexdecay2!=caloCluster->GetLabel()) 
+              indexdecay=indexdecay2;
+            if(indexdecay==-1){
+              if(fDebug>2){
+                printf("Probably the other photon is not in the stack!\n");
+                printf("Number of daughters: %d\n",pi0p->GetNDaughters());
               }
-              Bool_t impact = kFALSE ;
-              if(fPHOS){
-                Int_t modulenum ;
-                Double_t ztmp,xtmp ;
-                impact=fPHOSgeom->ImpactOnEmc(partner,modulenum,ztmp,xtmp) ;
-                if(fDebug>2){
-                  printf("Impact on PHOS: module: %d, x tower: %f, z tower: %f\n", modulenum,xtmp,ztmp);
+              fhDecWMissedPartnerStack->Fill(p->Pt()) ;
+            }  
+            else{
+              TParticle *partner = fStack->Particle(indexdecay);
+              //<--DP            p->SetPartnerPt(partner->Pt());
+              if(partner->GetPdgCode()==22){ 
+                Bool_t isPartnerLost=kFALSE; //If partner is lost for some reason
+                if(partner->GetNDaughters()!=0){ //this photon is converted before it is registered by some detector
+                  if(fDebug>2)
+                    printf("P_Conv, daughters=%d\n",partner->GetNDaughters());
+                  //<--DP                p->SetConvertedPartner(1);
+                  fhPartnerMissedConv->Fill(partner->Pt());
+                  fhDecWMissedPartnerConv->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
+                  isPartnerLost=kTRUE;
                 }
-              }
-              else{
-                impact = fEMCALgeom->Impact(partner) ;
-              }
-              if(!impact){ //this photon cannot hit PHOS
-                if(fDebug>2)
-                  printf("P_Geo\n");
-                fhPartnerMissedGeo->Fill(partner->Pt());
-                fhDecWMissedPartnerGeom0->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
-                if(iFidArea>0){
-                  fhDecWMissedPartnerGeom1->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
-                  if(iFidArea>1){
-                    fhDecWMissedPartnerGeom2->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
-                    if(iFidArea>2){
-                      fhDecWMissedPartnerGeom3->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
-                    }
+                Bool_t impact = kFALSE ;
+                if(fPHOS){
+                  Int_t modulenum ;
+                  Double_t ztmp,xtmp ;
+                  impact=fPHOSgeom->ImpactOnEmc(partner,modulenum,ztmp,xtmp) ;
+                  if(fDebug>2){
+                    printf("Impact on PHOS: module: %d, x tower: %f, z tower: %f\n", modulenum,xtmp,ztmp);
                   }
                 }
-                isPartnerLost=kTRUE;
-              }
-              if(!isPartnerLost && partner->Energy()<fMinEnergyCut){ //energy is not enough to be registered by PHOS
-                if(fDebug>2)
-                  printf("P_Reg, E=%f\n",partner->Energy());
-                fhPartnerMissedEmin->Fill(partner->Pt());  //Spectrum of missed partners
-                fhDecWMissedPartnerEmin->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
-                isPartnerLost=kTRUE;
-              }
-              if(!isPartnerLost){
-//                p->SetMCTagged(1); //set this photon as primary tagged
-                fhDecWMCPartner->Fill(p->Pt());
-                fhPartnerMCReg->Fill(partner->Pt());
-                if(fDebug>2){
-                  printf("both photons are inside PHOS. Energy: %f, Pt of pair photon: %f, E of pair photon: %f, Px: %f Py: %f Pz: %f, num of daughters: %d \n", caloCluster->E(),partner->Pt(),partner->Energy(),partner->Px(),partner->Py(),partner->Pz(),partner->GetNDaughters());
+                else{
+                  impact = fEMCALgeom->Impact(partner) ;
                 }
+                if(!impact){ //this photon cannot hit PHOS
+                  if(fDebug>2)
+                    printf("P_Geo\n");
+                  fhPartnerMissedGeo->Fill(partner->Pt());
+                  fhDecWMissedPartnerGeom0->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
+                  if(iFidArea>0){
+                    fhDecWMissedPartnerGeom1->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
+                    if(iFidArea>1){
+                      fhDecWMissedPartnerGeom2->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
+                      if(iFidArea>2){
+                        fhDecWMissedPartnerGeom3->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
+                      }
+                    }
+                  }
+                  isPartnerLost=kTRUE;
+                }
+                if(!isPartnerLost && partner->Energy()<fMinEnergyCut){ //energy is not enough to be registered by PHOS
+                  if(fDebug>2)
+                    printf("P_Reg, E=%f\n",partner->Energy());
+                  fhPartnerMissedEmin->Fill(partner->Pt());  //Spectrum of missed partners
+                  fhDecWMissedPartnerEmin->Fill(p->Pt()) ;  //Spectrum of tagged with missed partner
+                  isPartnerLost=kTRUE;
+                }
+                if(!isPartnerLost){
+                  //                p->SetMCTagged(1); //set this photon as primary tagged
+                  fhDecWMCPartner->Fill(p->Pt());
+                  fhPartnerMCReg->Fill(partner->Pt());
+                  if(fDebug>2){
+                    printf("both photons are inside PHOS. Energy: %f, Pt of pair photon: %f, E of pair photon: %f, Px: %f Py: %f Pz: %f, num of daughters: %d \n", caloCluster->E(),partner->Pt(),partner->Energy(),partner->Px(),partner->Py(),partner->Pz(),partner->GetNDaughters());
+                  }
+                }
+                else{
+                  fhDecWMissedPartnerAll->Fill(p->Pt());
+                }
+              }//Partner - photon
+              else{//partner not photon
+                fhDecWMissedPartnerNotPhoton->Fill(p->Pt());                
               }
-              else{
-                fhDecWMissedPartnerAll->Fill(p->Pt());
-              }
-            }//Partner - photon
-            else{//partner not photon
-              fhDecWMissedPartnerNotPhoton->Fill(p->Pt());                
             }
           }
         }
       }
-    }
-  } //PHOS/EMCAL clusters
+    } //PHOS/EMCAL clusters
     
-  if(fDebug>1)   
-    printf("number of clusters: %d\n",inList);
-
-  //Invariant Mass analysis
-  for(Int_t phosPhoton1 = 0 ; phosPhoton1 < inList ; phosPhoton1++) {
-    AliAODPWG4Particle * p1 = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(phosPhoton1));        
-    for(Int_t phosPhoton2 = 0 ; phosPhoton2 < inList ; phosPhoton2++) {
-      if(phosPhoton1==phosPhoton2)
-        continue ;
-      AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(phosPhoton2));
-
-      Double_t invMass = p1->GetPairMass(p2);
-      for(Int_t iPID=0; iPID<4; iPID++){
-        if(p1->IsPIDOK(pidMap[iPID],22))
-          fhInvMassReal[iPID]->Fill(invMass,p1->Pt());
-        if(p2->IsPIDOK(pidMap[iPID],22))
-          fhInvMassReal[iPID]->Fill(invMass,p2->Pt());
-      }
-      if(fDebug>2)
-          printf("Pair i=%d,j=%d, M=%f\n",phosPhoton1,phosPhoton2,invMass);
-
-      Bool_t makePi0=IsInPi0Band(invMass,p1->Pt());
-
-      if(makePi0 && p1->IsTagged()){//Multiple tagging
-        fhTaggedMult->Fill(p1->Pt());
-      }  
-      if(makePi0 && !p1->IsTagged()){//Each photon should enter histogram once, even if tagged several times
-        fhTaggedAll->Fill(p1->Pt());
-        Int_t iFidArea = p1->GetFiducialArea(); 
-        if(iFidArea>0){
-          fhTaggedArea1->Fill(p1->Pt() ) ; 
-          if(iFidArea>1){
-            fhTaggedArea2->Fill(p1->Pt() ) ; 
-            if(iFidArea>2){
-              fhTaggedArea3->Fill(p1->Pt() ) ; 
-            }
-          }
-        }
-
-        for(Int_t iPID=0; iPID<4; iPID++){
-          if(p1->IsPIDOK(pidMap[iPID],22))
-            fhTaggedPID[iPID]->Fill(p1->Pt());
-        }
-
-        p1->SetTagged(kTRUE) ;
-      }  
-      
-      //First chesk if this is true pi0 pair
-      if(IsSamePi0(p1,p2)){ //Correctly tagged - from the same pi0
-//        p1->SetTrueTagged(1);
-//        p2->SetTrueTagged(1);
-        if(makePi0)//Correctly tagged photons
-          fhTaggedMCTrue->Fill(p1->Pt());
-        else{ //Decay pair missed tagging      
-          fhMCMissedTagging->Fill(p1->Pt());
-          fhMCMissedTaggingMass->Fill(invMass,p1->Pt()) ;
-          //Clussify why missed tagging (todo)
-          //Converted
-          //Partner not a photon
-          //Tagged not a photon
-          //Just wrong inv.mass          
-        }  
-      }
-      else{//Fake tagged - not from the same pi0
-        if(makePi0)//Fake pair
-          fhMCFakeTagged->Fill(p1->Pt());
-      }
-    }
-  }
-
-  //Fill Mixed InvMass distributions:
-  TIter nextEv(fEventList) ;
-  while(TClonesArray * event2 = static_cast<TClonesArray*>(nextEv())){
-    Int_t nPhotons2 = event2->GetEntriesFast() ;
-    for(Int_t i=0; i < inList ; i++){
-      AliAODPWG4Particle * p1 = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(i)) ;
-      for(Int_t j=0; j < nPhotons2 ; j++){
-        AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(event2->At(j)) ;
+    if(fDebug>1)   
+      printf("number of clusters: %d\n",inList);
+    
+    //Invariant Mass analysis
+    for(Int_t phosPhoton1 = 0 ; phosPhoton1 < inList ; phosPhoton1++) {
+      AliAODPWG4Particle * p1 = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(phosPhoton1));        
+      for(Int_t phosPhoton2 = 0 ; phosPhoton2 < inList ; phosPhoton2++) {
+        if(phosPhoton1==phosPhoton2)
+          continue ;
+        AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(phosPhoton2));
+        
         Double_t invMass = p1->GetPairMass(p2);
         for(Int_t iPID=0; iPID<4; iPID++){
           if(p1->IsPIDOK(pidMap[iPID],22))
-            fhInvMassMixed[iPID]->Fill(invMass,p1->Pt());
+            fhInvMassReal[iPID]->Fill(invMass,p1->Pt());
           if(p2->IsPIDOK(pidMap[iPID],22))
-            fhInvMassMixed[iPID]->Fill(invMass,p2->Pt());
+            fhInvMassReal[iPID]->Fill(invMass,p2->Pt());
+        }
+        if(fDebug>2)
+          printf("Pair i=%d,j=%d, M=%f\n",phosPhoton1,phosPhoton2,invMass);
+        
+        Bool_t makePi0=IsInPi0Band(invMass,p1->Pt());
+        
+        if(makePi0 && p1->IsTagged()){//Multiple tagging
+          fhTaggedMult->Fill(p1->Pt());
+        }  
+        if(makePi0 && !p1->IsTagged()){//Each photon should enter histogram once, even if tagged several times
+          fhTaggedAll->Fill(p1->Pt());
+          Int_t iFidArea = p1->GetFiducialArea(); 
+          if(iFidArea>0){
+            fhTaggedArea1->Fill(p1->Pt() ) ; 
+            if(iFidArea>1){
+              fhTaggedArea2->Fill(p1->Pt() ) ; 
+              if(iFidArea>2){
+                fhTaggedArea3->Fill(p1->Pt() ) ; 
+              }
+            }
+          }
+          
+          for(Int_t iPID=0; iPID<4; iPID++){
+            if(p1->IsPIDOK(pidMap[iPID],22))
+              fhTaggedPID[iPID]->Fill(p1->Pt());
+          }
+          
+          p1->SetTagged(kTRUE) ;
+        }  
+        
+        //First chesk if this is true pi0 pair
+        if(IsSamePi0(p1,p2)){ //Correctly tagged - from the same pi0
+          //        p1->SetTrueTagged(1);
+          //        p2->SetTrueTagged(1);
+          if(makePi0)//Correctly tagged photons
+            fhTaggedMCTrue->Fill(p1->Pt());
+          else{ //Decay pair missed tagging      
+            fhMCMissedTagging->Fill(p1->Pt());
+            fhMCMissedTaggingMass->Fill(invMass,p1->Pt()) ;
+            //Clussify why missed tagging (todo)
+            //Converted
+            //Partner not a photon
+            //Tagged not a photon
+            //Just wrong inv.mass          
+          }  
+        }
+        else{//Fake tagged - not from the same pi0
+          if(makePi0)//Fake pair
+            fhMCFakeTagged->Fill(p1->Pt());
         }
       }
     }
-  }
-
-  //Remove old events
-  fEventList->AddFirst(fCaloPhotonsArr);
-  if(fEventList->GetSize() > 10){
-    TClonesArray *tmp = static_cast <TClonesArray*> (fEventList->Last());
-    fEventList->Remove(tmp);
-    delete tmp;
-  }
-
-  delete caloClustersArr;
-
-  PostData(1, fOutputList);
+    
+    //Fill Mixed InvMass distributions:
+    TIter nextEv(fEventList) ;
+    while(TClonesArray * event2 = static_cast<TClonesArray*>(nextEv())){
+      Int_t nPhotons2 = event2->GetEntriesFast() ;
+      for(Int_t i=0; i < inList ; i++){
+        AliAODPWG4Particle * p1 = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(i)) ;
+        for(Int_t j=0; j < nPhotons2 ; j++){
+          AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(event2->At(j)) ;
+          Double_t invMass = p1->GetPairMass(p2);
+          for(Int_t iPID=0; iPID<4; iPID++){
+            if(p1->IsPIDOK(pidMap[iPID],22))
+              fhInvMassMixed[iPID]->Fill(invMass,p1->Pt());
+            if(p2->IsPIDOK(pidMap[iPID],22))
+              fhInvMassMixed[iPID]->Fill(invMass,p2->Pt());
+          }
+        }
+      }
+    }
+    
+    //Remove old events
+    fEventList->AddFirst(fCaloPhotonsArr);
+    if(fEventList->GetSize() > 10){
+      TClonesArray *tmp = static_cast <TClonesArray*> (fEventList->Last());
+      fEventList->Remove(tmp);
+      delete tmp;
+    }
+    
+    delete caloClustersArr;
+    
+    PostData(1, fOutputList);
+  }// esd or aod exist
 }
 
 
@@ -884,100 +890,104 @@ Bool_t  AliAnalysisTaskTaggedPhotons::TestCharged(Double_t dr,Double_t /*en*/)co
 //______________________________________________________________________________^M
 void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
   //Read rotation matrixes from ESD
-
+  
   if(fDebug>1)printf("Init geometry \n") ;
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
   AliAODEvent * aod = 0x0 ;
   if(!esd)
     aod=dynamic_cast<AliAODEvent*>(InputEvent()) ;
-  if(!esd && !aod)
+  if(!esd && !aod){
     AliFatal("Can not read geometry matrixes from ESD/AOD: NO ESD") ;
-  if(fPHOS){//reading PHOS matrixes
-    fPHOSgeom = new AliPHOSGeoUtils("IHEP","");
-    Bool_t activeMod[5]={0} ;
-    for(Int_t mod=0; mod<5; mod++){
-      if(esd){
-        const TGeoHMatrix* m=esd->GetPHOSMatrix(mod) ;
-        fPHOSgeom->SetMisalMatrix(m, mod) ;
-        if(m!=0)
-         activeMod[mod]=kTRUE ;
-      }
-      else{
-        const TGeoHMatrix* m=aod->GetHeader()->GetPHOSMatrix(mod) ;
-        fPHOSgeom->SetMisalMatrix(m, mod) ;
-        if(m!=0)
-         activeMod[mod]=kTRUE ;
-      }
-    }
-
-    if(fZmax>fZmin) //already  set manually
-      return ;
-    fZmax= 999. ;
-    fZmin=-999. ;
-    fPhimax=-999. ;
-    fPhimin= 999. ;
-    for(Int_t imod=1; imod<=5; imod++){
-      if(!activeMod[imod-1])
- 	continue ;
-    //Find exact coordinates of PHOS corners
-      Int_t relId[4]={imod,0,1,1} ;
-      Float_t x,z ;
-      fPHOSgeom->RelPosInModule(relId,x,z) ;
-      TVector3 pos ;
-      fPHOSgeom->Local2Global(imod,x,z,pos) ;
-      Double_t phi=pos.Phi() ;
-      while(phi<0.)phi+=TMath::TwoPi() ;
-      while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-      fPhimin=TMath::Min(fPhimin,float(phi)) ;
-      fZmin=TMath::Max(fZmin,float(pos.Z())) ;
-      relId[2]=64 ;
-      relId[3]=56 ;
-      fPHOSgeom->RelPosInModule(relId,x,z) ;
-      fPHOSgeom->Local2Global(imod,x,z,pos) ;
-      phi=pos.Phi() ;
-      while(phi<0.)phi+=TMath::TwoPi() ;
-      while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-      fPhimax=TMath::Max(fPhimax,float(phi)) ;
-      fZmax=TMath::Min(fZmax,float(pos.Z())) ;
-    }
   }
-  else{ //EMCAL
-    fEMCALgeom = new AliEMCALGeoUtils("EMCAL_FIRSTYEAR");
-    for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
-      if(esd){
-        const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
-        fEMCALgeom->SetMisalMatrix(m, mod) ;
+  else {
+    
+    if(fPHOS){//reading PHOS matrixes
+      fPHOSgeom = new AliPHOSGeoUtils("IHEP","");
+      Bool_t activeMod[5]={0} ;
+      for(Int_t mod=0; mod<5; mod++){
+        if(esd){
+          const TGeoHMatrix* m=esd->GetPHOSMatrix(mod) ;
+          fPHOSgeom->SetMisalMatrix(m, mod) ;
+          if(m!=0)
+            activeMod[mod]=kTRUE ;
+        }
+        else{
+          const TGeoHMatrix* m=aod->GetHeader()->GetPHOSMatrix(mod) ;
+          fPHOSgeom->SetMisalMatrix(m, mod) ;
+          if(m!=0)
+            activeMod[mod]=kTRUE ;
+        }
       }
-      else{
-        const TGeoHMatrix* m=aod->GetHeader()->GetEMCALMatrix(mod) ;
-        fEMCALgeom->SetMisalMatrix(m, mod) ;
+      
+      if(fZmax>fZmin) //already  set manually
+        return ;
+      fZmax= 999. ;
+      fZmin=-999. ;
+      fPhimax=-999. ;
+      fPhimin= 999. ;
+      for(Int_t imod=1; imod<=5; imod++){
+        if(!activeMod[imod-1])
+          continue ;
+        //Find exact coordinates of PHOS corners
+        Int_t relId[4]={imod,0,1,1} ;
+        Float_t x,z ;
+        fPHOSgeom->RelPosInModule(relId,x,z) ;
+        TVector3 pos ;
+        fPHOSgeom->Local2Global(imod,x,z,pos) ;
+        Double_t phi=pos.Phi() ;
+        while(phi<0.)phi+=TMath::TwoPi() ;
+        while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+        fPhimin=TMath::Min(fPhimin,float(phi)) ;
+        fZmin=TMath::Max(fZmin,float(pos.Z())) ;
+        relId[2]=64 ;
+        relId[3]=56 ;
+        fPHOSgeom->RelPosInModule(relId,x,z) ;
+        fPHOSgeom->Local2Global(imod,x,z,pos) ;
+        phi=pos.Phi() ;
+        while(phi<0.)phi+=TMath::TwoPi() ;
+        while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+        fPhimax=TMath::Max(fPhimax,float(phi)) ;
+        fZmax=TMath::Min(fZmax,float(pos.Z())) ;
       }
     }
-    if(fZmax>fZmin) //already  set manually
-      return ;
-
-    fZmax= 999. ;
-    fZmin=-999. ;
-    fPhimax=-999. ;
-    fPhimin= 999. ;
-    for(Int_t imod=0; imod<12; imod++){
-    //Find exact coordinates of SM corners
-      Int_t absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 0, 0);
-      TVector3 pos ;
-      //Get the position of this tower.
-      fEMCALgeom->RelPosCellInSModule(absId,pos);
-      Double_t phi=pos.Phi() ;
-      while(phi<0.)phi+=TMath::TwoPi() ;
-      while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-      fPhimin=TMath::Min(fPhimin,float(phi)) ;
-      fZmin=TMath::Max(fZmin,float(pos.Z())) ;
-      absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 24, 48);
-      fEMCALgeom->RelPosCellInSModule(absId,pos);
-      phi=pos.Phi() ;
-      while(phi<0.)phi+=TMath::TwoPi() ;
-      while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-      fPhimax=TMath::Max(fPhimax,float(phi)) ;
-      fZmax=TMath::Min(fZmax,float(pos.Z())) ;
+    else{ //EMCAL
+      fEMCALgeom = new AliEMCALGeoUtils("EMCAL_FIRSTYEAR");
+      for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
+        if(esd){
+          const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
+          fEMCALgeom->SetMisalMatrix(m, mod) ;
+        }
+        else{
+          const TGeoHMatrix* m=aod->GetHeader()->GetEMCALMatrix(mod) ;
+          fEMCALgeom->SetMisalMatrix(m, mod) ;
+        }
+      }
+      if(fZmax>fZmin) //already  set manually
+        return ;
+      
+      fZmax= 999. ;
+      fZmin=-999. ;
+      fPhimax=-999. ;
+      fPhimin= 999. ;
+      for(Int_t imod=0; imod<12; imod++){
+        //Find exact coordinates of SM corners
+        Int_t absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 0, 0);
+        TVector3 pos ;
+        //Get the position of this tower.
+        fEMCALgeom->RelPosCellInSModule(absId,pos);
+        Double_t phi=pos.Phi() ;
+        while(phi<0.)phi+=TMath::TwoPi() ;
+        while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+        fPhimin=TMath::Min(fPhimin,float(phi)) ;
+        fZmin=TMath::Max(fZmin,float(pos.Z())) ;
+        absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 24, 48);
+        fEMCALgeom->RelPosCellInSModule(absId,pos);
+        phi=pos.Phi() ;
+        while(phi<0.)phi+=TMath::TwoPi() ;
+        while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+        fPhimax=TMath::Max(fPhimax,float(phi)) ;
+        fZmax=TMath::Min(fZmax,float(pos.Z())) ;
+      }
     }
-  }
+  } // ESD or AOD available
 }
