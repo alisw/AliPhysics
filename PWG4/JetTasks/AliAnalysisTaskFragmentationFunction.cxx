@@ -37,6 +37,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODJet.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliInputEventHandler.h"
 
 #include "AliAnalysisHelperJetTasks.h"
@@ -2266,22 +2267,33 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   Double_t nTrials = 1; // trials for MC trigger weight for real data
   
   if(fMCEvent){
-     AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMCEvent);
-     if(!pythiaGenHeader){
-        if(fJetTypeGen != kJetsUndef && fTrackTypeGen != kTrackUndef){
-           Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
-           return;
-        }
-     } else {
-        nTrials = pythiaGenHeader->Trials();
-        ptHard  = pythiaGenHeader->GetPtHard();
+     AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+     AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+     AliGenHijingEventHeader*  hijingGenHeader = 0x0;
 
-        fh1PtHard->Fill(ptHard);
-        fh1PtHardTrials->Fill(ptHard,nTrials);
+     if(pythiaGenHeader){
+	 if(fDebug>3) Printf("%s:%d pythiaGenHeader found", (char*)__FILE__,__LINE__);
+	 nTrials = pythiaGenHeader->Trials();
+	 ptHard  = pythiaGenHeader->GetPtHard();
 
-        fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+	 fh1PtHard->Fill(ptHard);
+	 fh1PtHardTrials->Fill(ptHard,nTrials);
+
+
+     } else { // no pythia, hijing?
+
+	 if(fDebug>3) Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
+
+         hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+         if(!hijingGenHeader){
+            Printf("%s:%d no pythiaGenHeader or hjingGenHeader found", (char*)__FILE__,__LINE__);
+         } else {
+	    if(fDebug>3) Printf("%s:%d hijingGenHeader found", (char*)__FILE__,__LINE__);
+	 }
      }
-   }
+
+     fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+  }
   
   
   //___ fetch jets __________________________________________________________________________
@@ -3042,11 +3054,38 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
       if(fDebug>1) Printf("%s:%d no mcEvent",(char*)__FILE__,__LINE__);
       return 0;
     }
-    
-    AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMCEvent);
+   
+    AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+    AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+    AliGenHijingEventHeader*  hijingGenHeader = 0x0;
+
     if(!pythiaGenHeader){
-      Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
-      return 0;
+      hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+      
+      if(!hijingGenHeader){
+         Printf("%s:%d no pythiaGenHeader or hijingGenHeader found", (char*)__FILE__,__LINE__);
+         return 0;
+      }else{
+         TLorentzVector mom[4];
+         AliAODJet* jet[4];
+         hijingGenHeader->GetJets(mom[0], mom[1], mom[2], mom[3]);
+
+         for(Int_t i=0; i<2; ++i){
+	    if(!mom[i].Pt()) continue;
+            jet[i] = new AliAODJet(mom[i]);
+
+            if( type == kJetsKineAcceptance &&
+                (    jet[i]->Eta() < fJetEtaMin
+                  || jet[i]->Eta() > fJetEtaMax
+                  || jet[i]->Phi() < fJetPhiMin
+                  || jet[i]->Phi() > fJetPhiMax )) continue;
+
+	    list->Add(jet[i]);
+	    nGenJets++;
+	 }
+	 list->Sort();
+         return nGenJets;
+      }
     }
     
     // fetch the pythia generated jets
