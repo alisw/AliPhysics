@@ -26,10 +26,15 @@
 class TH1I;
 class TH1F;
 class TH1D;
-class TFile ;
+class TProfile;
+class TFile;
+class TList;
+
 //class AliCFManager;
 class AliESDtrackCuts;
 class AliESDEvent;
+class AliMCEvent;
+class AliGenPythiaEventHeader;
 
 class AliPWG4HighPtSpectra : public AliAnalysisTask {
  public:
@@ -55,6 +60,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  virtual Bool_t Notify(); //Copied from AliAnalysisTaskJetSpectrum2
 
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
   void     SetCFManagerPos(const AliCFManager* io1) {fCFManagerPos = io1;}   // global correction manager 
@@ -69,6 +75,9 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   // Data types
   Bool_t IsReadAODData()   const {return fReadAODData;}
   void   SetReadAODData(Bool_t flag=kTRUE) {fReadAODData=flag;}
+
+  static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
+  static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
   
  protected:
   Bool_t              fReadAODData ;       // flag for AOD/ESD input files
@@ -84,11 +93,18 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra&);
   AliPWG4HighPtSpectra& operator=(const AliPWG4HighPtSpectra&);
 
+  Float_t fAvgTrials;             // Average number of trials
+
   // Histograms
   //Number of events
-  TList *fHistList;            //! List of output histograms
+  TList *fHistList;             //! List of output histograms
   TH1F  *fNEventAll;            //! Event counter
   TH1F  *fNEventSel;            //! Event counter: Selected events for analysis
+
+  TProfile*     fh1Xsec;                       //! pythia cross section and trials
+  TH1F*         fh1Trials;                     //! trials which are added
+  TH1F*         fh1PtHard;                     //! pt hard of the event
+  TH1F*         fh1PtHardTrials;               //! pt hard of the event
 
   ClassDef(AliPWG4HighPtSpectra,2);
 };
