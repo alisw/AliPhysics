@@ -26,10 +26,13 @@
 class TH1F;
 class TH2F;
 class TH3F;
+class TProfile;
 class TList;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliMCEvent;
+class AliGenPythiaEventHeader;
+//class AliAnalysisHelperJetTasks;
 
 class AliPWG4HighPtQAMC: public AliAnalysisTask {
 
@@ -37,11 +40,12 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   AliPWG4HighPtQAMC();
   AliPWG4HighPtQAMC(const char *name);
   ~AliPWG4HighPtQAMC() {;}
-
+ 
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  virtual Bool_t Notify(); //Copied from AliAnalysisTaskJetSpectrum2
 
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
@@ -50,10 +54,12 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
   Float_t GetPtMax()           {return fPtMax;}
 
+  static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
+  static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+
  protected:
 
  private:
-
   AliPWG4HighPtQAMC(const AliPWG4HighPtQAMC&);
   AliPWG4HighPtQAMC& operator=(const AliPWG4HighPtQAMC&);
 
@@ -63,13 +69,21 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global reconstructed vs MC comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
 
-  Int_t fTrackType;               // 0: global track; 1:TPConly track
+  Int_t   fTrackType;             // 0: global track; 1:TPConly track
 
   Float_t fPtMax;                 // Maximum pT for histograms
 
+  Float_t fAvgTrials;             // Average number of trials
   
   TH1F *fNEventAll;                            //! Event counter
   TH1F *fNEventSel;                            //! Event counter
+ 
+  TProfile*     fh1Xsec;                       //! pythia cross section and trials
+  TH1F*         fh1Trials;                     //! trials which are added
+  TH1F*         fh1PtHard;                     //! pt hard of the event
+  TH1F*         fh1PtHardTrials;               //! pt hard of the event
+
+
   TH1F *fPtAll;                                //! Pt spectrum all charged particles
   TH1F *fPtSel;                                //! Pt spectrum all selected charged particles by fTrackCuts
   TH2F *fPtAllminPtMCvsPtAll;                  //! Momentum resolution (global vs MC)

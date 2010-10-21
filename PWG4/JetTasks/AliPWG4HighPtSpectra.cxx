@@ -34,8 +34,12 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TProfile.h"
 #include "TList.h"
 #include "TChain.h"
+#include "TKey.h"
+#include "TSystem.h"
+#include "TFile.h"
 
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
@@ -50,7 +54,8 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliCFContainer.h"
-
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 //#include "$ALICE_ROOT/PWG4/JetTasks/AliAnalysisHelperJetTasks.h"
 
 //#include <iostream>
@@ -66,9 +71,14 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fESD(0),
   fTrackCuts(0),
   fTrackCutsTPConly(0),
+  fAvgTrials(1),
   fHistList(0),
   fNEventAll(0),
-  fNEventSel(0)
+  fNEventSel(0),
+  fh1Xsec(0),
+  fh1Trials(0),
+  fh1PtHard(0),
+  fh1PtHardTrials(0)
 {
   //
   //Default ctor
@@ -83,9 +93,14 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fESD(0),
   fTrackCuts(),
   fTrackCutsTPConly(0),
+  fAvgTrials(1),
   fHistList(0),
   fNEventAll(0),
-  fNEventSel(0)
+  fNEventSel(0),
+  fh1Xsec(0),
+  fh1Trials(0),
+  fh1PtHard(0),
+  fh1PtHardTrials(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -188,6 +203,28 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     stack = mcEvent->Stack();                //Particles Stack
     
     AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
+  }
+
+  //___ get MC information __________________________________________________________________
+
+  Double_t ptHard = 0.;
+  Double_t nTrials = 1; // trials for MC trigger weight for real data
+  
+  if(mcEvent){
+    AliGenPythiaEventHeader*  pythiaGenHeader = GetPythiaEventHeader(mcEvent);
+     if(!pythiaGenHeader){
+       AliDebug(2,Form("ERROR: Could not retrieve AliGenPythiaEventHeader"));
+       PostData(0, fHistList);
+       return;
+     } else {
+        nTrials = pythiaGenHeader->Trials();
+        ptHard  = pythiaGenHeader->GetPtHard();
+
+        fh1PtHard->Fill(ptHard);
+        fh1PtHardTrials->Fill(ptHard,nTrials);
+
+        fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+     }
   }
   
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
@@ -358,6 +395,133 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   PostData(2,fCFManagerNeg->GetParticleContainer());
   
 }
+//________________________________________________________________________
+Bool_t AliPWG4HighPtSpectra::PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials){
+  //
+  // get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+  // This is to called in Notify and should provide the path to the AOD/ESD file
+  // Copied from AliAnalysisTaskJetSpectrum2
+  //
+
+  TString file(currFile);  
+  fXsec = 0;
+  fTrials = 1;
+
+  if(file.Contains("root_archive.zip#")){
+    Ssiz_t pos1 = file.Index("root_archive",12,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    file.Replace(pos+1,20,"");
+  }
+  else {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+  }
+  Printf("%s",file.Data());
+   
+  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
+  if(!fxsec){
+    // next trial fetch the histgram file
+    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
+    if(!fxsec){
+	// not a severe condition but inciate that we have no information
+      return kFALSE;
+    }
+    else{
+      // find the tlist we want to be independtent of the name so use the Tkey
+      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
+      if(!key){
+	fxsec->Close();
+	return kFALSE;
+      }
+      TList *list = dynamic_cast<TList*>(key->ReadObj());
+      if(!list){
+	fxsec->Close();
+	return kFALSE;
+      }
+      fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
+      fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
+      fxsec->Close();
+    }
+  } // no tree pyxsec.root
+  else {
+    TTree *xtree = (TTree*)fxsec->Get("Xsection");
+    if(!xtree){
+      fxsec->Close();
+      return kFALSE;
+    }
+    UInt_t   ntrials  = 0;
+    Double_t  xsection  = 0;
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    fTrials = ntrials;
+    fXsec = xsection;
+    fxsec->Close();
+  }
+  return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliPWG4HighPtSpectra::Notify()
+{
+  //
+  // Implemented Notify() to read the cross sections
+  // and number of trials from pyxsec.root
+  // Copied from AliAnalysisTaskJetSpectrum2
+  // 
+
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  Float_t xsection = 0;
+  Float_t ftrials  = 1;
+
+  fAvgTrials = 1;
+  if(tree){
+    TFile *curfile = tree->GetCurrentFile();
+    if (!curfile) {
+      Error("Notify","No current file");
+      return kFALSE;
+    }
+    if(!fh1Xsec||!fh1Trials){
+      Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+      return kFALSE;
+    }
+     PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
+    fh1Xsec->Fill("<#sigma>",xsection);
+    // construct a poor man average trials 
+    Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
+    if(ftrials>=nEntries && nEntries>0.)fAvgTrials = ftrials/nEntries;
+  }  
+  return kTRUE;
+}
+
+//________________________________________________________________________
+AliGenPythiaEventHeader*  AliPWG4HighPtSpectra::GetPythiaEventHeader(AliMCEvent *mcEvent){
+  
+  if(!mcEvent)return 0;
+  AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
+  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+  if(!pythiaGenHeader){
+    // cocktail ??
+    AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
+    
+    if (!genCocktailHeader) {
+      AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Unknown header type (not Pythia or Cocktail)");
+      //      AliWarning(Form("%s %d: Unknown header type (not Pythia or Cocktail)",(char*)__FILE__,__LINE__));
+      return 0;
+    }
+    TList* headerList = genCocktailHeader->GetHeaders();
+    for (Int_t i=0; i<headerList->GetEntries(); i++) {
+      pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
+      if (pythiaGenHeader)
+        break;
+    }
+    if(!pythiaGenHeader){
+      AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Pythia event header not found");
+      return 0;
+    }
+  }
+  return pythiaGenHeader;
+
+}
 
 
 //___________________________________________________________________________
@@ -382,10 +546,24 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   //slot #1
   OpenFile(0);
   fHistList = new TList();
+  fHistList->SetOwner(kTRUE);
   fNEventAll = new TH1F("fNEventAll","NEventAll",1,-0.5,0.5);
   fHistList->Add(fNEventAll);
   fNEventSel = new TH1F("fNEventSel","NEvent Selected for analysis",1,-0.5,0.5);
   fHistList->Add(fNEventSel);
+
+  fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
+  fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+  fHistList->Add(fh1Xsec);
+
+  fh1Trials = new TH1F("fh1Trials","trials root file",1,0,1);
+  fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+  fHistList->Add(fh1Trials);
+
+  fh1PtHard       = new TH1F("fh1PtHard","PYTHIA Pt hard;p_{T,hard}",350,-.5,349.5);
+  fHistList->Add(fh1PtHard);
+  fh1PtHardTrials = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",350,-.5,349.5);
+  fHistList->Add(fh1PtHardTrials);
 
   TH1::AddDirectory(oldStatus);   
 
