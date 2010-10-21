@@ -173,15 +173,16 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
   } 
   else {
     if (!dcsAliasMap) return kReturnCodeNoInfo;
-    if (dcsAliasMap->GetEntries() == 0 ) return kReturnCodeNoInfo;
+    else if (dcsAliasMap->GetEntries() == 0 ) return kReturnCodeNoInfo;
   }
   
+    
   TString runType = GetRunType();
   
   // Temperature sensors are processed by AliEMCALCalTemp
   TString tempConf = fConfEnv->GetValue("Temperature","ON");
   tempConf.ToUpper();
-  if (tempConf != "OFF" ) {
+  if (tempConf != "OFF" && dcsAliasMap ) {
     UInt_t tempResult = MapTemperature(dcsAliasMap);
     result=tempResult;
     status = new TParameter<int>("tempResult",tempResult);

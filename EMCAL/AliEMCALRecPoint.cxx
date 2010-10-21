@@ -176,12 +176,12 @@ AliEMCALRecPoint& AliEMCALRecPoint::operator= (const AliEMCALRecPoint &rp)
   for(Int_t i = 0; i<fMaxDigit; i++) fDigitsList[i] = rp.fDigitsList[i];
   for(Int_t i = 0; i<fMaxTrack; i++) fTracksList[i] = rp.fTracksList[i];
   fClusterType = rp.fClusterType;
-  fCoreEnergy = rp.fCoreEnergy; 
-  fDispersion = rp.fDispersion;
+  fCoreEnergy  = rp.fCoreEnergy; 
+  fDispersion  = rp.fDispersion;
   for(Int_t i = 0; i<fMaxDigit; i++) {
     fEnergyList[i] = rp.fEnergyList[i];
-    fTimeList[i] = rp.fTimeList[i]; 
-    fAbsIdList[i] = rp.fAbsIdList[i];
+    fTimeList[i]   = rp.fTimeList[i]; 
+    fAbsIdList[i]  = rp.fAbsIdList[i];
   }
   fTime = rp.fTime;
   fNExMax = rp.fNExMax;
@@ -207,7 +207,7 @@ AliEMCALRecPoint& AliEMCALRecPoint::operator= (const AliEMCALRecPoint &rp)
 }
 
 //____________________________________________________________________________
-void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy, Bool_t shared)
+void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t energy, Bool_t shared)
 {
   // Adds a digit to the RecPoint
   // and accumulates the total amplitude and the multiplicity 
@@ -222,10 +222,10 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy, Bool_t sh
 
   if ( fMulDigit >= fMaxDigit ) { // increase the size of the lists 
     fMaxDigit*=2 ; 
-    Int_t * tempo = new Int_t[fMaxDigit]; 
-    Float_t * tempoE =  new Float_t[fMaxDigit];
-    Float_t * tempoT =  new Float_t[fMaxDigit];
-    Int_t * tempoId = new Int_t[fMaxDigit]; 
+    Int_t   * tempo   = new Int_t[fMaxDigit]; 
+    Float_t * tempoE  = new Float_t[fMaxDigit];
+    Float_t * tempoT  = new Float_t[fMaxDigit];
+    Int_t   * tempoId = new Int_t[fMaxDigit]; 
 
     Int_t index ;     
     for ( index = 0 ; index < fMulDigit ; index++ ){
@@ -242,16 +242,16 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy, Bool_t sh
 
     fDigitsList = tempo;
     fEnergyList = tempoE; 
-    fTimeList = tempoT;
-    fAbsIdList = tempoId;
+    fTimeList   = tempoT;
+    fAbsIdList  = tempoId;
   } // if
   
   fDigitsList[fMulDigit]   = digit.GetIndexInList()  ; 
-  fEnergyList[fMulDigit]   = Energy ;
+  fEnergyList[fMulDigit]   = energy ;
   fTimeList[fMulDigit]     = digit.GetTimeR() ;
   fAbsIdList[fMulDigit]    = digit.GetId();
   fMulDigit++ ; 
-  fAmp += Energy ; 
+  fAmp += energy ; 
 	
   if(shared) fSharedCluster = kTRUE;
 	
@@ -447,6 +447,7 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
 	
   // First calculate the index of digit with maximum amplitude and get 
   // the supermodule number where it sits.
+    
   fDigitIndMax       = GetMaximalEnergyIndex();
   fSuperModuleNumber = fGeomPtr->GetSuperModuleNumber(GetAbsIdMaxDigit());
   

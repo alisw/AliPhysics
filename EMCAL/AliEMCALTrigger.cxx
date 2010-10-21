@@ -267,7 +267,7 @@ Bool_t AliEMCALTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * a
   }
   if(iSM>9) rowborder /= 2; // half size in phi
   
-  if(!ampmatrixes){
+  if(!ampmatrixes || !ampmatrix){
     AliError("Could not recover the matrix with the amplitudes");
     return kFALSE;
   }
@@ -857,7 +857,7 @@ void AliEMCALTrigger::FillTRU(const TClonesArray * digits, TClonesArray * ampmat
       TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(ampmatrix->At(itru)) ;
       TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(timeRmatrix->At(itru)) ;
       
-      if(!amptrus || timeRtrus){
+      if(!amptrus || !timeRtrus){
         AliError("Could not recover the TRU matrix with amplitudes or times");
       }
       else{
