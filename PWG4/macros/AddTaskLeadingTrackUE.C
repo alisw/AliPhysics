@@ -47,7 +47,7 @@ void ConfigTaskUE(AliAnalysisTaskLeadingTrackUE * ueana){
   ueana->SetDebugLevel(0); 
   ueana->SetPtRangeInHist(100, 0., 100.);
   //  ueana->SetFilterBit(16);  
-  ueana->SetFilterBit(64+128);  
+  ueana->SetFilterBit(64+32);  
   ueana->SetTrackEtaCut(0.8);
   ueana->SetLeadingTrackEtaCut(0.8);
   ueana->SetEventSelectionBit(AliAnalysisHelperJetTasks::kIsPileUp);
