@@ -597,8 +597,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
       evtTrigData.fCommonHeader[1] = AliHLTUInt32_t(l1msg) << 14;
       evtTrigData.fCommonHeader[3] = ((l1msg & 0x1) == 0x1) ? (participatingDetectors & 0xFFFFFF) : 0x0;
       evtTrigData.fCommonHeader[5]=trgMask&0xffffffff;
-      trgMask>>=32;
-      evtTrigData.fCommonHeader[6]=trgMask&0x3ffff;
+      evtTrigData.fCommonHeader[6]=(trgMask>>32)&0x3ffff;
       trigData.fData=&evtTrigData;
       iLastOutputDataSize=iOutputDataSize;
       AliHLTUInt32_t size=iOutputDataSize;
