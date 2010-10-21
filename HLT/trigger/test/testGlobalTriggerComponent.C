@@ -308,10 +308,18 @@ void RunTriggerSW(int config = 0, bool usecint = false, bool debug = false, cons
 	);
 	sys.Run(
 		1,   // Number of events to process.
-		1,   // Stop chain at end of run.
+		0,   // Stop chain at end of run.
 		0x1, // Active CTP trigger mask.
 		0,   // Time stamp.
 		0    // Event type.
+	);
+	sys.Run(
+		1,   // Number of events to process.
+		1,   // Stop chain at end of run.
+		0x1, // Active CTP trigger mask.
+		0,   // Time stamp.
+		gkAliEventTypeSoftware,  // Event type.
+		AliHLTReadoutList::kTPC
 	);
 }
 
@@ -828,9 +836,8 @@ bool CheckSoftwareTriggerTestConfig(const char* testName = "Software trigger con
 	bool result = false;
 	
 	AliHLTTriggerDomain domainPHOS("*******:PHOS");
-	domainPHOS.Remove(AliHLTReadoutList("PHOS"));
 	AliHLTTriggerDomain domainSPD("*******:SPD");
-	domainSPD.Remove(AliHLTReadoutList("ITSSPD"));
+	AliHLTTriggerDomain domainTPC("DAQRDOUT:TPC");
 	AliHLTTriggerDomain domainMUON("TRACKS:MUON");
 	domainMUON.Add(AliHLTReadoutList("MUONTRK MUONTRG"));
 
@@ -867,10 +874,17 @@ bool CheckSoftwareTriggerTestConfig(const char* testName = "Software trigger con
 	if (! result) goto cleanup;
 	
 	decision = dynamic_cast<AliHLTGlobalTriggerDecision*>(file->Get("HLTGlobalTrigger;5"));
-	result = Check(testName, 5, decision, true, AliHLTTriggerDomain(), "End of data");
+	result = Check(testName, 5, decision, true, domainSPD|domainTPC, "Software trigger");
 	if (! result) goto cleanup;
-	expectedCounters[1] = 1; expectedCounters[5] = 5;
+	expectedCounters[2] = 2; expectedCounters[5] = 5;
 	result = CheckCounters(testName, 5, decision, expectedCounters);
+	if (! result) goto cleanup;
+	
+	decision = dynamic_cast<AliHLTGlobalTriggerDecision*>(file->Get("HLTGlobalTrigger;6"));
+	result = Check(testName, 6, decision, true, AliHLTTriggerDomain(), "End of data");
+	if (! result) goto cleanup;
+	expectedCounters[1] = 1; expectedCounters[5] = 6;
+	result = CheckCounters(testName, 6, decision, expectedCounters);
 	if (! result) goto cleanup;
 	
 	delete file;

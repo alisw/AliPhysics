@@ -112,7 +112,7 @@ void SoftwareTriggersTestConfig()
 	config.AddSymbol("domainSPD", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:SPD\")");
 	config.AddItem(5, "START_OF_DATA", "START_OF_DATA", "Start of data");
 	config.AddItem(4, "END_OF_DATA", "END_OF_DATA", "End of data");
-	config.AddItem(3, "SOFTWARE", "domainSPD", "Software trigger");
+	config.AddItem(3, "SOFTWARE", "domainSPD | SOFTWARE", "Software trigger");
 	config.AddItem(2, "CALIBRATION", "domainPHOS", "Calibration trigger");
 	config.AddItem(1, "triggerMUON", "triggerMUON", "MUON trigger");
 }
