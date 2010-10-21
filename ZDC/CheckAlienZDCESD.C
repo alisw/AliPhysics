@@ -21,7 +21,7 @@
 #include "STEER/AliESDZDC.h"
 
 #endif
-void CheckAlienZDCESD(Int_t year=2010, const char* period="10a", 
+void CheckAlienZDCESD(Int_t year=2010, const char* period="10f", 
 	Int_t nRun=0, Int_t recoPass=1, Int_t nMaxFiles=1,
 	Bool_t plot=kTRUE, Bool_t esdWordCut=kFALSE)
 {
@@ -75,6 +75,14 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10a",
  //
  TH1F *hESDword = new TH1F("hESDword","hESDword",6,0.5,6.5);
  hESDword->SetXTitle("ZDC trigger pattern"); 
+ //
+ TH1F * hTDC[32];
+ char ntdchist[20];
+ for(Int_t itdc=0; itdc<32; itdc++){
+    sprintf(ntdchist,"TDC-ch.%d",itdc);
+    hTDC[itdc] = new TH1F(ntdchist, ntdchist, 160, -350., -310.);
+    hTDC[itdc]->SetXTitle("TDC (ns)");
+ }
 
  TGrid::Connect("alien:",0,0,"t");
  gSystem->Exec(Form("gbbox find \"/alice/data/%d/LHC%s/000%d/ESDs/pass%d\" \"AliESDs.root\" > ESDFiles.txt",
@@ -240,6 +248,18 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10a",
       hSumQZNA->Fill(sumQzna);
       hSumQZPA->Fill(sumQzpa);
 */
+      Float_t tdcData[32][4];
+      for(Int_t isc=0; isc<32; isc++){
+	for(Int_t i=0; i<4; i++) tdcData[isc][i] = 0.025*esdZDC->GetZDCTDCData(isc, i);
+      }
+      for(Int_t itdc=0; itdc<32; itdc++){
+         for(Int_t j=0; j<4; j++){
+            if((itdc>=0 || itdc<=9) && (tdcData[itdc][j]!=0)){
+	       hTDC[itdc]->Fill(tdcData[itdc][j]-tdcData[15][j]);
+	    } 
+	 }
+      }
+      
     }
     
   }
@@ -423,6 +443,28 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10a",
   hZPATow[4]->SetLineColor(kRed+1);
   hZPATow[4]->SetFillColor(kRed+1);
   hZPATow[4]->Draw("");
+  
+  //-------------------------------------------------
+  TCanvas *c4 = new TCanvas("c4","TDCs",400,0,700,500);
+  c4->Divide(3,2);
+  c4->cd(1);
+  hTDC[1]->SetFillColor(kPink); hTDC[1]->SetLineColor(kPink);
+  hTDC[1]->Draw("");
+  c4->cd(2);
+  hTDC[3]->SetFillColor(kPink+4); hTDC[3]->SetLineColor(kPink+4);
+  hTDC[3]->Draw("");
+  c4->cd(3);
+  hTDC[5]->SetFillColor(kGreen); hTDC[5]->SetLineColor(kGreen);
+  hTDC[5]->Draw("");
+  c4->cd(4);
+  hTDC[7]->SetFillColor(kGreen+2); hTDC[7]->SetLineColor(kGreen+2);
+  hTDC[7]->Draw("");
+  c4->cd(5);
+  hTDC[8]->SetFillColor(kAzure); hTDC[8]->SetLineColor(kAzure);
+  hTDC[8]->Draw("");
+  c4->cd(6);
+  hTDC[9]->SetFillColor(kAzure+5); hTDC[9]->SetLineColor(kAzure+5);
+  hTDC[9]->Draw("");
  }
    
   TFile * fileout = new TFile("ESDhistos.root","recreate");
@@ -447,6 +489,7 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10a",
   hSumQZPA->Write();*/
   //
   hESDword->Write();
+  for(Int_t jj=0; jj<9; jj++) hTDC[jj]->Write();
   //
   fileout->Close();
 
