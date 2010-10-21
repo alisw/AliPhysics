@@ -268,8 +268,10 @@ void AliUEHistograms::FillRegion(AliUEHist::Region region, AliUEHist::CFStep ste
     vars[2] = leading->Pt();
     vars[3] = multiplicity;
     vars[4] = leading->Phi() - particle->Phi();
-    if (vars[4]>TMath::Pi()/2.)vars[4]-=TMath::TwoPi();
-    if (vars[4]< - 3.*TMath::Pi()/2.)vars[4]+=TMath::TwoPi();
+    if (vars[4] > 1.5 * TMath::Pi()) 
+      vars[4] -= TMath::TwoPi();
+    if (vars[4] < -0.5 * TMath::Pi())
+      vars[4] += TMath::TwoPi();
 
     fNumberDensitypT->GetTrackHist(region)->Fill(vars, step);
     fSumpT->GetTrackHist(region)->Fill(vars, step, particle->Pt());
