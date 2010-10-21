@@ -96,7 +96,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   const Int_t kNLeadingPhiBins = 40;
   Double_t leadingPhiBins[kNLeadingPhiBins+1];
   for (Int_t i=0; i<=kNLeadingPhiBins; i++)
-    leadingPhiBins[i] = -1.5 * TMath::Pi() + 1.0 / 40 * i * TMath::TwoPi();
+    leadingPhiBins[i] = -0.5 * TMath::Pi() + 1.0 / 40 * i * TMath::TwoPi();
     
   // multiplicity
   const Int_t kNMultiplicityBins = 15;
