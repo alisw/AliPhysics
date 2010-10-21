@@ -1304,6 +1304,7 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
 
  aodpid->SetITSsignal(track->GetITSsignal());
  aodpid->SetTPCsignal(track->GetTPCsignal());
+ aodpid->SetTPCsignalN(track->GetTPCsignalN());
 
  //n TRD planes = 6
  Int_t nslices = track->GetNumberOfTRDslices()*6;

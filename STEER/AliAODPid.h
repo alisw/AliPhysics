@@ -25,6 +25,7 @@ class AliAODPid : public TObject {
  //setters
   void      SetITSsignal(Double_t its)                         {fITSsignal=its;}
   void      SetTPCsignal(Double_t tpc)                         {fTPCsignal=tpc;}
+  void      SetTPCsignalN(UShort_t tpcN)                       {fTPCsignalN=tpcN;}
   void      SetTPCmomentum(Double_t tpcMom)                    {fTPCmomentum=tpcMom;}
   void      SetTRDsignal(Int_t nslices, Double_t* trdslices)   {fTRDnSlices = nslices; fTRDslices=trdslices;}
   void      SetTRDmomentum(Int_t nplane, Float_t trdMom)       {fTRDmomentum[nplane]=trdMom;}
@@ -36,6 +37,7 @@ class AliAODPid : public TObject {
 
   Double_t  GetITSsignal()       const {return  fITSsignal;}
   Double_t  GetTPCsignal()       const {return  fTPCsignal;}
+  UShort_t  GetTPCsignalN()      const {return  fTPCsignalN;}
   Double_t  GetTPCmomentum()     const {return  fTPCmomentum;}
   Int_t     GetTRDnSlices()      const {return  fTRDnSlices;}
   Double_t* GetTRDsignal()       const {return  fTRDslices;}
@@ -50,6 +52,7 @@ class AliAODPid : public TObject {
  private :
   Double32_t  fITSsignal;        //[0.,0.,10] detector raw signal
   Double32_t  fTPCsignal;        //[0.,0.,10] detector raw signal
+  UShort_t    fTPCsignalN;       // number of points used for TPC dE/dx
   Double_t    fTPCmomentum;      // momentum at the inner wall of TPC;
   Int_t       fTRDnSlices;       // N slices used for PID in the TRD
   Double32_t* fTRDslices;        //[fTRDnSlices]
@@ -62,7 +65,7 @@ class AliAODPid : public TObject {
   Double32_t  fEMCALMomentum[3]; // momentum of track
 				 // extrapolated to EMCAL surface
 
-  ClassDef(AliAODPid, 3);
+  ClassDef(AliAODPid, 4);
 };
 
 #endif
