@@ -107,15 +107,17 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	fCalibration = NULL;
 	SDDQACheckerValue= fHighSDDValue[AliQAv1::kWARNING];
       }
-    fCalibration = (TObjArray *)calibSDD->GetObject();
-    
-    if(!cacheStatus)calibSDD->SetObject(NULL);
-    calibSDD->SetOwner(kTRUE);
-    if(!cacheStatus)
-      {
-	delete calibSDD;
-      }
-  }
+    else{
+      fCalibration = (TObjArray *)calibSDD->GetObject();
+      
+      if(!cacheStatus)calibSDD->SetObject(NULL);
+      calibSDD->SetOwner(kTRUE);
+      if(!cacheStatus)
+	{
+	  delete calibSDD;
+	}
+    }//end calibsdd 
+  }//end f calibration
 
   AliInfo("Calib SDD Created\n ");
 
@@ -130,6 +132,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       if (list->GetEntries() == 0){SDDQACheckerValue += fHighSDDValue[AliQAv1::kFATAL];	break;}
       TH1 *hmodule=NULL;
       TH2 *hlayer[2]; 
+      hdata=NULL;
       Int_t emptymodules[2], filledmodules[2],emptyladders[2],filledladders[2];
       for(Int_t i=0;i<2;i++){emptymodules[i]=0; filledmodules[i]=0; emptyladders[i]=0; filledladders[i]=0; }
       for(Int_t i=0;i<2;i++)hlayer[i]=NULL;   
@@ -175,21 +178,22 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      if(hname.Contains("3"))layer1=0;
 	      else  if(hname.Contains("4"))layer1=1;
 	      TH2* htemp=dynamic_cast<TH2*>(hdata);
-	      hlayer[layer1]=(TH2*)htemp->Clone();
-	      char newname[50];
-	      sprintf(newname,"%s_copy",hname.Data());
-	      hlayer[layer1]->SetName(newname);
-	      hlayer[layer1]->RebinX(2);
-	      int modmay=hlayer[layer1]->GetNbinsY();
-	      TH1D* hproj= hlayer[layer1]->ProjectionY();
-	      Double_t ladcontent=0;
-	      for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
-		ladcontent=hproj->GetBinContent(i);
-		if(AliITSQADataMakerRec::AreEqual(ladcontent,0.)) emptyladders[layer1]++;
-		else filledladders[layer1]++;}//end for
-	      AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer], filledladders[layer]));//end else layer 3
-	      delete hproj;
-	      hproj=NULL;}//end else entries !=0
+	      if(htemp){
+		hlayer[layer1]=(TH2*)htemp->Clone();
+		hlayer[layer1]->SetName(Form("%s_copy",hname.Data()));
+		hlayer[layer1]->RebinX(2);
+		int modmay=hlayer[layer1]->GetNbinsY();
+		TH1D* hproj= hlayer[layer1]->ProjectionY();
+		Double_t ladcontent=0;
+		for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
+		  ladcontent=hproj->GetBinContent(i);
+		  if(AliITSQADataMakerRec::AreEqual(ladcontent,0.)) emptyladders[layer1]++;
+		  else filledladders[layer1]++;}//end for
+		AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer], filledladders[layer]));//end else layer 3
+		delete hproj;
+		hproj=NULL;
+	      }//end if htemp
+	    }//end else entries !=0
 	  }//end check on phiz	      
 	}//end if hdata	
       }//end while
@@ -206,7 +210,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  Int_t module=0;
 	  module=imod+fgkmodoffset;
 	  AliITSCalibrationSDD * cal=(AliITSCalibrationSDD*)fCalibration->At(imod);
-	  if(cal==0) { delete cal; continue;}
+	  if(cal==0) { continue;}
 	  AliITSgeomTGeo::GetModuleId(module,lay,lad,det);
 	  if (cal->IsBad()){
 	    excluded++;
@@ -477,7 +481,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
   }//end switch
   
   fCalibration=NULL;
-  delete hdata;
+  if(hdata) delete hdata;
 
 
   return SDDQACheckerValue;	

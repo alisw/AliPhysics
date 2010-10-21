@@ -312,13 +312,9 @@ void AliITSQADataMakerRec::InitRecPoints()
 	  Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
 	  const Bool_t expert   = kTRUE ; 
 	  const Bool_t image    = kTRUE ; 
-	  Char_t name[50];
-	  Char_t title[50];
-	  TH2F**hPhiEta = new TH2F*[6];
+	  TH2F* hPhiEta[6];
 	  for (Int_t iLay=0;iLay<6;iLay++) {
-	    sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
-	    sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
-	    hPhiEta[iLay]=new TH2F(name,title,30,-1.5,1.5,200,0.,2*TMath::Pi());
+	    hPhiEta[iLay]=new TH2F(Form("Phi_vs_Eta_ITS_Layer%d",iLay+1),Form("Phi_vs_Eta_ITS_Layer%d",iLay+1),30,-1.5,1.5,200,0.,2*TMath::Pi());
 	    hPhiEta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
 	    hPhiEta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
 	    Add2RecPointsList(hPhiEta[iLay], iLay + offset, !expert, image);

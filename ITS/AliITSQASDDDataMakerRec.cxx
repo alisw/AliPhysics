@@ -342,11 +342,11 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
 	Float_t hMax = 0.2;
 	
 	TH1F *oL3 = new TH1F("SDDL3_RelativeOccupancy","Layer 3 Relative Occupancy",200,0.,hMax);
-	rv = fAliITSQADataMakerRec->Add2RawsList(oL3,6+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); //6 
+	rv = fAliITSQADataMakerRec->Add2RawsList(oL3,6+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); //6  
 	fSDDhRawsTask++;
 	
 	TH1F *oL4 = new TH1F("SDDL4_RelativeOccupancy","Layer 4 Relative Occupancy",200,0.,hMax);
-	rv = fAliITSQADataMakerRec->Add2RawsList(oL4,7+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); //7
+	rv = fAliITSQADataMakerRec->Add2RawsList(oL4,7+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); //7   
 	fSDDhRawsTask++;
 	
 	fOnlineOffsetRaws = fSDDhRawsTask;
@@ -363,15 +363,10 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
       indexlast = 0;
       index1 = 0;
       indexlast1 = fSDDhRawsTask;
-      char *hname[3];
-      for(Int_t i=0; i<3; i++) hname[i]= new char[50];
       for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
 		  for(Int_t iside=0;iside<fgknSide;iside++){
 			  AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-			  sprintf(hname[0],"SDDchargeMapFSE_L%d_%d_%d_%d",lay,lad,det,iside);
-			  sprintf(hname[1],"SDDChargeMapForSingleEvent_L%d_%d_%d_%d",lay,lad,det,iside);
-	  //	  sprintf(hname[2],"SDDhmonoDMap_L%d_%d_%d_%d",lay,lad,det,iside);
-			  TProfile2D *fModuleChargeMapFSE = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
+			  TProfile2D *fModuleChargeMapFSE = new TProfile2D(Form("SDDchargeMapFSE_L%d_%d_%d_%d",lay,lad,det,iside),Form("SDDChargeMapForSingleEvent_L%d_%d_%d_%d",lay,lad,det,iside)  ,256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
 			  fModuleChargeMapFSE->GetXaxis()->SetTitle("Time Bin");
 			  fModuleChargeMapFSE->GetYaxis()->SetTitle("Anode");
 			  rv = fAliITSQADataMakerRec->Add2RawsList(fModuleChargeMapFSE,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);	  
@@ -383,12 +378,10 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
       for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
 		  for(Int_t iside=0;iside<fgknSide;iside++){
 			  AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-			  sprintf(hname[0],"SDDchargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
-			  sprintf(hname[1],"SDDChargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
-			  TProfile2D *fModuleChargeMap = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
+			  TProfile2D *fModuleChargeMap = new TProfile2D(Form("SDDchargeMap_L%d_%d_%d_%d",lay,lad,det,iside),Form("SDDChargeMap_L%d_%d_%d_%d",lay,lad,det,iside),256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
 			  fModuleChargeMap->GetXaxis()->SetTitle("Time Bin");
 			  fModuleChargeMap->GetYaxis()->SetTitle("Anode Number");
-			  rv = fAliITSQADataMakerRec->Add2RawsList(fModuleChargeMap,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
+			  rv = fAliITSQADataMakerRec->Add2RawsList(fModuleChargeMap,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
 			  fSDDhRawsTask++;
 			  index1++;	 
 		  }
@@ -399,7 +392,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
       hsize->SetBit(TH1::kCanRebin);
       hsize->GetXaxis()->SetTitle("Event Size [kB]");
       hsize->GetYaxis()->SetTitle("Entries");
-      rv = fAliITSQADataMakerRec->Add2RawsList(hsize,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
+      rv = fAliITSQADataMakerRec->Add2RawsList(hsize,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
       fSDDhRawsTask++;
 	  
     }  // kONLINE
@@ -455,9 +448,10 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   while(stream->Next()) {
     ildcID = rawReader->GetLDCId();
     iddl = rawReader->GetDDLID();// - fgkDDLIDshift;
+    if(iddl<0)isddmod=-1;
     //printf("----------------------iddl %i\n",iddl);
+    else isddmod = fDDLModuleMap->GetModuleNumber(iddl,stream->GetCarlosId());
 
-    isddmod = fDDLModuleMap->GetModuleNumber(iddl,stream->GetCarlosId());
     if(isddmod==-1){
       AliDebug(AliQAv1::GetQADebugLevel(),Form("Found module with iddl: %d, stream->GetCarlosId: %d \n",iddl,stream->GetCarlosId()));
       continue;
@@ -645,7 +639,6 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   rv = fAliITSQADataMakerRec->Add2RecPointsList(h1, 1 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);//NON expert image
   fSDDhRecPointsTask++;
 
-  char hisnam[50];
   TH2F *h2 = new TH2F("SDDGlobalCoordDistribYX","YX Global Coord Distrib",56,-28,28,56,-28,28);//position number 2
   h2->GetYaxis()->SetTitle("Y[cm]");
   h2->GetXaxis()->SetTitle("X[cm]");
@@ -738,8 +731,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   fSDDhRecPointsTask++;
   
   for(Int_t iLay=0; iLay<=1; iLay++){
-    sprintf(hisnam,"SDDphidistrib_Layer%d",iLay+3);
-    TH1F *h15 = new TH1F(hisnam,hisnam,180,-TMath::Pi(),TMath::Pi());//position number 15 (L3) and position number 16 (L4)
+    TH1F *h15 = new TH1F(Form("SDDphidistrib_Layer%d",iLay+3),Form("SDDphidistrib_Layer%d",iLay+3) ,180,-TMath::Pi(),TMath::Pi());//position number 15 (L3) and position number 16 (L4)
     h15->GetXaxis()->SetTitle("#varphi[rad]");
     h15->GetXaxis()->CenterTitle();
     h15->GetYaxis()->SetTitle("Entries");
@@ -748,8 +740,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   }
   
   for(Int_t iLay=0; iLay<=1; iLay++){
-    sprintf(hisnam,"SDDdrifttime_Layer%d",iLay+3);
-    TH1F *h17 = new TH1F(hisnam,hisnam,45,-0.5,4499.5);//position number 17 (L3) and position number 18 (L4)
+    TH1F *h17 = new TH1F(Form("SDDdrifttime_Layer%d",iLay+3),Form("SDDdrifttime_Layer%d",iLay+3),45,-0.5,4499.5);//position number 17 (L3) and position number 18 (L4)
     h17->SetBit(TH1::kCanRebin);
     h17->GetXaxis()->SetTitle("drift time[ns]");
     h17->GetXaxis()->CenterTitle();
@@ -940,11 +931,13 @@ void AliITSQASDDDataMakerRec::CreateTheMap()
       fDDLModuleMap = NULL;
       //return rv;
     }
-  fDDLModuleMap = (AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
-  if(!cacheStatus)ddlMapSDD->SetObject(NULL);
-  ddlMapSDD->SetOwner(kTRUE);
-  if(!cacheStatus){ delete ddlMapSDD;}
-  AliInfo("DDL Map Created\n ");
+  else{
+    fDDLModuleMap = (AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
+    if(!cacheStatus)ddlMapSDD->SetObject(NULL);
+    ddlMapSDD->SetOwner(kTRUE);
+    if(!cacheStatus){ delete ddlMapSDD;}
+    AliInfo("DDL Map Created\n ");
+  }
 }
 
 //_______________________________________________________________
@@ -958,88 +951,89 @@ void AliITSQASDDDataMakerRec::CreateTheCalibration()
     if(!calibSDD)
       {
 	AliError("Calibration object retrieval failed! SDD will not be processed");
-	fCalibration = NULL;;
+	fCalibration = NULL;
       }
-    fCalibration = (TObjArray *)calibSDD->GetObject();
-    
-    if(!cacheStatus)calibSDD->SetObject(NULL);
-    calibSDD->SetOwner(kTRUE);
-    if(!cacheStatus){delete calibSDD;}
-
-    AliITSCalibrationSDD * cal=NULL;
-    for(Int_t imod=0;imod<fgknSDDmodules;imod++)
-      {
-	//cal=NULL;
-	Int_t fillmodhisto1=fgkTotalNumberSDDAnodes;
-	Int_t fillmodhisto2side0=fgkNumberOfSDDAnodesperSide;
-	Int_t fillmodhisto2side1=fgkNumberOfSDDAnodesperSide;
-	Int_t fillmodhisto3side0=fgkNumberOfSDDAnodesperSide;
-	Int_t fillmodhisto3side1=fgkNumberOfSDDAnodesperSide;
-	
-	Int_t badmodhisto1=0;
-	Int_t badmodhisto2side0=0;
-	Int_t badmodhisto2side1=0;
-	Int_t badmodhisto3side0=0;
-	Int_t badmodhisto3side1=0;
-	//printf("imod %i\t ==== \t",imod);
-	Int_t module=imod + 240;
-	//printf("module %i\t ==== \t",module);
-	cal=(AliITSCalibrationSDD*)fCalibration->At(imod);
-	Int_t lay,lad,det;
-	AliITSgeomTGeo::GetModuleId(module,lay,lad,det);
-	Int_t index=1+(det-1)*2;
-	if(cal==0){continue;}
-	if (cal->IsBad()){continue;}//bad module check
-	else{
-	  for(Int_t i=0;i<8;i++) //check on bad chips in good modules
-	    {
-	      if(lay==3){
-		if(cal->IsChipBad(i)){
-		  if(i<4){badmodhisto2side0+=64;}
-		  if(i>=4){badmodhisto2side1+=64;}
-		}//end if chip
-	      }//end if  layer3
-	      else if(lay==4){
-		if(cal->IsChipBad(i)){
-		  if(i<4){badmodhisto3side0+=64;}
-		  if(i>=4){badmodhisto3side1+=64;}		 
-		}//end if  chip
-	      }//ens if layer4
-	    }//end for  chip
-	  for(Int_t iAn=0; iAn<512; iAn++){//anodes loop 
-	    Int_t ic=cal->GetChip(iAn);//chip with this anode number
-	    if(!cal->IsChipBad(ic) && !cal->IsBad() && cal->IsBadChannel(iAn)){// good chip   good module   bad channel 
-	      if(lay==3){
+    else{
+      fCalibration = (TObjArray *)calibSDD->GetObject();
+      
+      if(!cacheStatus)calibSDD->SetObject(NULL);
+      calibSDD->SetOwner(kTRUE);
+      if(!cacheStatus){delete calibSDD;}
+      
+      AliITSCalibrationSDD * cal=NULL;
+      for(Int_t imod=0;imod<fgknSDDmodules;imod++)
+	{
+	  //cal=NULL;
+	  Int_t fillmodhisto1=fgkTotalNumberSDDAnodes;
+	  Int_t fillmodhisto2side0=fgkNumberOfSDDAnodesperSide;
+	  Int_t fillmodhisto2side1=fgkNumberOfSDDAnodesperSide;
+	  Int_t fillmodhisto3side0=fgkNumberOfSDDAnodesperSide;
+	  Int_t fillmodhisto3side1=fgkNumberOfSDDAnodesperSide;
+	  
+	  Int_t badmodhisto1=0;
+	  Int_t badmodhisto2side0=0;
+	  Int_t badmodhisto2side1=0;
+	  Int_t badmodhisto3side0=0;
+	  Int_t badmodhisto3side1=0;
+	  //printf("imod %i\t ==== \t",imod);
+	  Int_t module=imod + 240;
+	  //printf("module %i\t ==== \t",module);
+	  cal=(AliITSCalibrationSDD*)fCalibration->At(imod);
+	  Int_t lay,lad,det;
+	  AliITSgeomTGeo::GetModuleId(module,lay,lad,det);
+	  Int_t index=1+(det-1)*2;
+	  if(cal==0){continue;}
+	  if (cal->IsBad()){continue;}//bad module check
+	  else{
+	    for(Int_t i=0;i<8;i++) //check on bad chips in good modules
+	      {
+		if(lay==3){
+		  if(cal->IsChipBad(i)){
+		    if(i<4){badmodhisto2side0+=64;}
+		    if(i>=4){badmodhisto2side1+=64;}
+		  }//end if chip
+		}//end if  layer3
+		else if(lay==4){
+		  if(cal->IsChipBad(i)){
+		    if(i<4){badmodhisto3side0+=64;}
+		    if(i>=4){badmodhisto3side1+=64;}		 
+		  }//end if  chip
+		}//ens if layer4
+	      }//end for  chip
+	    for(Int_t iAn=0; iAn<512; iAn++){//anodes loop 
+	      Int_t ic=cal->GetChip(iAn);//chip with this anode number
+	      if(!cal->IsChipBad(ic) && !cal->IsBad() && cal->IsBadChannel(iAn)){// good chip   good module   bad channel 
+		if(lay==3){
 		  if(ic<4) badmodhisto2side0++;
 		  else if(ic>=4)badmodhisto2side1++;
 		}//end if layer 3
-	      else if(lay==4){
+		else if(lay==4){
 		  if(ic<4) badmodhisto3side0++;
 		  else if(ic>=4)badmodhisto3side1++;
 		}//end if layer 4
-	    }//end if chip module channel
-	  }//end for anodes
-	  if(lay==3){
-	    badmodhisto1=badmodhisto2side0+badmodhisto2side1;
-	    fillmodhisto1-=badmodhisto1;
-	    fillmodhisto2side0-=badmodhisto2side0;
-	    fillmodhisto2side1-=badmodhisto2side1;
-	    ((TH1D*)(fHistoCalibration->At(0)))->SetBinContent(imod+1,fillmodhisto1);
-	    ((TH2D*)(fHistoCalibration->At(1)))->SetBinContent(index,lad,fillmodhisto2side0);
-	    ((TH2D*)(fHistoCalibration->At(1)))->SetBinContent(index+1,lad,fillmodhisto2side1);
-	  }//end layer 3
-	  else if(lay==4){
-	    badmodhisto1=badmodhisto3side0+badmodhisto3side1;
-	    fillmodhisto1-=badmodhisto1;
-	    fillmodhisto3side0-=badmodhisto3side0;
-	    fillmodhisto3side1-=badmodhisto3side1;
-	    ((TH1D*)(fHistoCalibration->At(0)))->SetBinContent(imod+1,fillmodhisto1);
-	    ((TH2D*)(fHistoCalibration->At(2)))->SetBinContent(index,lad,fillmodhisto3side0);
-	    ((TH2D*)(fHistoCalibration->At(2)))->SetBinContent(index+1,lad,fillmodhisto2side1);
-	  }//end layer 4
-	}//end else bad module
-      }//end module for
-
+	      }//end if chip module channel
+	    }//end for anodes
+	    if(lay==3){
+	      badmodhisto1=badmodhisto2side0+badmodhisto2side1;
+	      fillmodhisto1-=badmodhisto1;
+	      fillmodhisto2side0-=badmodhisto2side0;
+	      fillmodhisto2side1-=badmodhisto2side1;
+	      ((TH1D*)(fHistoCalibration->At(0)))->SetBinContent(imod+1,fillmodhisto1);
+	      ((TH2D*)(fHistoCalibration->At(1)))->SetBinContent(index,lad,fillmodhisto2side0);
+	      ((TH2D*)(fHistoCalibration->At(1)))->SetBinContent(index+1,lad,fillmodhisto2side1);
+	    }//end layer 3
+	    else if(lay==4){
+	      badmodhisto1=badmodhisto3side0+badmodhisto3side1;
+	      fillmodhisto1-=badmodhisto1;
+	      fillmodhisto3side0-=badmodhisto3side0;
+	      fillmodhisto3side1-=badmodhisto3side1;
+	      ((TH1D*)(fHistoCalibration->At(0)))->SetBinContent(imod+1,fillmodhisto1);
+	      ((TH2D*)(fHistoCalibration->At(2)))->SetBinContent(index,lad,fillmodhisto3side0);
+	      ((TH2D*)(fHistoCalibration->At(2)))->SetBinContent(index+1,lad,fillmodhisto2side1);
+	    }//end layer 4
+	  }//end else bad module
+	}//end module for
+    }
 }
 
 //____________________________________________________________________
@@ -1069,8 +1063,9 @@ void AliITSQASDDDataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
   //reset the SDD calibration histograms
   AliInfo(Form("Reset detector in SDD called for task index %i", task));
   if(task== AliQAv1::kRAWS ){
-  fDDLModuleMap=NULL;
+    fDDLModuleMap=NULL;
   }
+
   fCalibration=NULL;
 
   ((TH1D*)(fHistoCalibration->At(0)))->Reset();
