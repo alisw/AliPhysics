@@ -69,37 +69,37 @@ public:
   virtual ~AliTRDv0Info(){}
   
 
-  Int_t GetQuality(){return fQuality;}
-  Float_t GetDCA(){return fDCA;}
-  Float_t GetPointingAngle(){return fPointingAngle;}
-  Float_t GetOpenAngle(){return fOpenAngle;}
-  Float_t GetPsiPair(){return fPsiPair;}
-  Float_t GetRadius(){return fRadius;}
-  Float_t GetV0Momentum(){return fV0Momentum;}
-  Double_t GetInvMass(Int_t iDecay){return fInvMass[iDecay];}
-  Float_t GetDetPID(Int_t iDaughter, Int_t iDetector, Int_t iSpecies){return fDetPID[iDaughter][iDetector][iSpecies];}
-  Float_t GetComPID(Int_t iDaughter, Int_t iSpecies){return fComPID[iDaughter][iSpecies];}
-  Float_t GetTPCdEdx(Int_t iDaughter){return fTPCdEdx[iDaughter];}
-  Float_t GetChi2ndf(Int_t decay){return fChi2ndf[decay];}
+  Int_t GetQuality() const {return fQuality;}
+  Float_t GetDCA() const {return fDCA;}
+  Float_t GetPointingAngle() const {return fPointingAngle;}
+  Float_t GetOpenAngle() const {return fOpenAngle;}
+  Float_t GetPsiPair() const {return fPsiPair;}
+  Float_t GetRadius() const {return fRadius;}
+  Float_t GetV0Momentum() const {return fV0Momentum;}
+  Double_t GetInvMass(Int_t iDecay) const {return fInvMass[iDecay];}
+  Float_t GetDetPID(Int_t iDaughter, Int_t iDetector, Int_t iSpecies) const {return fDetPID[iDaughter][iDetector][iSpecies];}
+  Float_t GetComPID(Int_t iDaughter, Int_t iSpecies) const {return fComPID[iDaughter][iSpecies];}
+  Float_t GetTPCdEdx(Int_t iDaughter) const {return fTPCdEdx[iDaughter];}
+  Float_t GetChi2ndf(Int_t decay) const {return fChi2ndf[decay];}
   
   //Get Cut values:
   
-  Float_t GetUpDCA(Int_t iDecay){return fUpDCA[iDecay];}
-  Float_t GetUpPointingAngle(Int_t iDecay){return fUpPointingAngle[iDecay];}
-  Float_t GetUpOpenAngle(Int_t iDecay){return fUpOpenAngle[iDecay];}
-  Float_t GetDownOpenAngle(Int_t iDecay){return fDownOpenAngle[iDecay];}
-  Float_t GetUpPsiPair(Int_t iDecay){return fUpPsiPair[iDecay];}
-  Float_t GetDownPsiPair(Int_t iDecay){return fDownPsiPair[iDecay];}
-  Float_t GetUpRadius(Int_t iDecay){return fUpRadius[iDecay];}
-  Float_t GetDownRadius(Int_t iDecay){return fDownRadius[iDecay];}
-  Double_t GetUpInvMass(Int_t iDecay, Int_t iMomentum){return fUpInvMass[iDecay][iMomentum];}
-  Double_t GetDownInvMass(Int_t iDecay){return fDownInvMass[iDecay];}
-  Float_t GetDownTPCPIDneg(Int_t iPart){return fDownTPCPIDneg[iPart];}
-  Float_t GetDownTPCPIDpos(Int_t iPart){return fDownTPCPIDpos[iPart];}
-  Float_t GetDownComPIDneg(Int_t iPart){return fDownComPIDneg[iPart];}
-  Float_t GetDownComPIDpos(Int_t iPart){return fDownComPIDpos[iPart];}
-  Float_t GetDownComPIDnegPart(Int_t iPart){return fDownComPIDnegPart[iPart];}
-  Float_t GetDownComPIDposPart(Int_t iPart){return fDownComPIDposPart[iPart];}
+  Float_t GetUpDCA(Int_t iDecay) const {return fUpDCA[iDecay];}
+  Float_t GetUpPointingAngle(Int_t iDecay) const {return fUpPointingAngle[iDecay];}
+  Float_t GetUpOpenAngle(Int_t iDecay) const {return fUpOpenAngle[iDecay];}
+  Float_t GetDownOpenAngle(Int_t iDecay) const {return fDownOpenAngle[iDecay];}
+  Float_t GetUpPsiPair(Int_t iDecay) const {return fUpPsiPair[iDecay];}
+  Float_t GetDownPsiPair(Int_t iDecay) const {return fDownPsiPair[iDecay];}
+  Float_t GetUpRadius(Int_t iDecay) const {return fUpRadius[iDecay];}
+  Float_t GetDownRadius(Int_t iDecay) const {return fDownRadius[iDecay];}
+  Double_t GetUpInvMass(Int_t iDecay, Int_t iMomentum) const {return fUpInvMass[iDecay][iMomentum];}
+  Double_t GetDownInvMass(Int_t iDecay) const {return fDownInvMass[iDecay];}
+  Float_t GetDownTPCPIDneg(Int_t iPart) const {return fDownTPCPIDneg[iPart];}
+  Float_t GetDownTPCPIDpos(Int_t iPart) const {return fDownTPCPIDpos[iPart];}
+  Float_t GetDownComPIDneg(Int_t iPart) const {return fDownComPIDneg[iPart];}
+  Float_t GetDownComPIDpos(Int_t iPart) const {return fDownComPIDpos[iPart];}
+  Float_t GetDownComPIDnegPart(Int_t iPart) const {return fDownComPIDnegPart[iPart];}
+  Float_t GetDownComPIDposPart(Int_t iPart) const {return fDownComPIDposPart[iPart];}
   
   
   Int_t  GetPID(Int_t ipart, AliTRDtrackInfo *track);
@@ -149,7 +149,7 @@ public:
   void SetDownComPIDposPart(Int_t iPart, Double_t DownComPIDposPart){fDownComPIDposPart[iPart] = DownComPIDposPart;}
  
   
-  void SetV0Info(AliESDv0 *v0);//gets most of the variables below
+  void SetV0Info(const AliESDv0 *v0);//gets most of the variables below
 
 
 
@@ -158,19 +158,19 @@ private:
 
   void GetDetectorPID();//operating with likelihood values of different detectors
   void CombinePID();//Bayesian combination of TPC and TOF likelihoods
-  Bool_t TPCdEdxCuts(Int_t part, AliTRDtrackInfo * const track);//direct cuts on TPC dE/dx
+  Bool_t TPCdEdxCuts(Int_t part, const AliTRDtrackInfo * const track);//direct cuts on TPC dE/dx
 
   Bool_t GetTPCdEdx();//TPC dE/dx values from both tracks
-  Int_t Quality(AliESDv0 * const esdv0);//checks for track/vertex quality criteria
-  Double_t InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0) const;//invariant mass of mother
-  Float_t PsiPair(AliESDv0 *esdv0);//angle between daughters in plane perpendicular to magnetic field (characteristically around zero for conversions)
-  Float_t OpenAngle(AliESDv0 *esdv0);//opening angle between V0 daughters; close to zero for conversions
-  Float_t Radius(AliESDv0 *esdv0);//distance of secondary to primary vertex in x-y-plane 
+  Int_t Quality(const AliESDv0 * const esdv0);//checks for track/vertex quality criteria
+  Double_t InvMass(Int_t part1, Int_t part2, const AliESDv0 *esdv0) const;//invariant mass of mother
+  Float_t PsiPair(const AliESDv0 *esdv0);//angle between daughters in plane perpendicular to magnetic field (characteristically around zero for conversions)
+  Float_t OpenAngle(const AliESDv0 *esdv0);//opening angle between V0 daughters; close to zero for conversions
+  Float_t Radius(const AliESDv0 *esdv0);//distance of secondary to primary vertex in x-y-plane 
   Float_t DCA() const {return fDCA;}//distance of closest approach between supposed daughter tracks
   Float_t PointingAngle() const {return fPointingAngle;}//pointing angle: between vector from primary to secondary vertex and reconstructed momentum of V0 mother particle
-  Float_t V0Momentum(AliESDv0 *esdv0) const;//reconstructed momentum of V0 mother particle
+  Float_t V0Momentum(const AliESDv0 *esdv0) const;//reconstructed momentum of V0 mother particle
   Bool_t V0SignCheck();//checks if daughters have opposite signs
-  Bool_t  Armenteros(AliESDv0 *esdv0, Int_t species);//the famous Armenteros-Polanski cut
+  Bool_t  Armenteros(const AliESDv0 *esdv0, Int_t species);//the famous Armenteros-Polanski cut
   Double_t KFChi2ndf(Int_t part1, Int_t part2,Int_t decay);//Chi2ndf from KF
   AliKFParticle *CreateMotherParticle(const AliESDtrack *pdaughter, const AliESDtrack *ndaughter, Int_t pspec, Int_t nspec);//Mother Particle from KF
  

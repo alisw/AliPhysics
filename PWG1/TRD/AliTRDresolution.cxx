@@ -2513,7 +2513,9 @@ Bool_t AliTRDresolution::Load(const Char_t *file, const Char_t *dir)
 //________________________________________________________
 Bool_t AliTRDresolution::Process(TH2* const h2, TGraphErrors **g, Int_t stat)
 {
-// Generic function to process sigma/mean for 2D plot dy(x)
+// Robust function to process sigma/mean for 2D plot dy(x)
+// For each x bin a gauss fit is performed on the y projection and the range
+// with the minimum chi2/ndf is choosen
 
   if(!h2) {
     if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>0) printf("D-AliTRDresolution::Process() : NULL pointer input container.\n");
@@ -2529,29 +2531,53 @@ Bool_t AliTRDresolution::Process(TH2* const h2, TGraphErrors **g, Int_t stat)
   }
   // prepare
   TAxis *ax(h2->GetXaxis()), *ay(h2->GetYaxis());
-  TF1 f("f", "gaus", ay->GetXmin(), ay->GetXmax());
+  Float_t ymin(ay->GetXmin()), ymax(ay->GetXmax()), dy(ay->GetBinWidth(1)), y0(0.), y1(0.);
+  TF1 f("f", "gaus", ymin, ymax);
   Int_t n(0);
   if((n=g[0]->GetN())) for(;n--;) g[0]->RemovePoint(n);
   if((n=g[1]->GetN())) for(;n--;) g[1]->RemovePoint(n);
   TH1D *h(NULL);
   if((h=(TH1D*)gROOT->FindObject("py"))) delete h;
+  Double_t x(0.), y(0.), ex(0.), ey(0.), sy(0.), esy(0.);
+  
 
   // do actual loop
+  Float_t chi2OverNdf(0.);
   for(Int_t ix = 1, np=0; ix<=ax->GetNbins(); ix++){
-    Double_t x = ax->GetBinCenter(ix);
-    Double_t ex= ax->GetBinWidth(ix)*0.288; // w/sqrt(12)
+    x = ax->GetBinCenter(ix); ex= ax->GetBinWidth(ix)*0.288; // w/sqrt(12)
+    ymin = ay->GetXmin(); ymax = ay->GetXmax();
+
     h = h2->ProjectionY("py", ix, ix);
     if((n=(Int_t)h->GetEntries())<stat){
       if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>1) printf("I-AliTRDresolution::Process() : Low statistics @ x[%f] stat[%d]=%d [%d].\n", x, ix, n, stat);
       continue;
     }
-    f.SetParameter(1, 0.);
-    f.SetParameter(2, 3.e-2);
-    h->Fit(&f, "QN");
-    g[0]->SetPoint(np, x, f.GetParameter(1));
-    g[0]->SetPointError(np, ex, f.GetParError(1));
-    g[1]->SetPoint(np, x, f.GetParameter(2));
-    g[1]->SetPointError(np, ex, f.GetParError(2));
+    // looking for a first order mean value
+    f.SetParameter(1, 0.); f.SetParameter(2, 3.e-2);
+    h->Fit(&f, "QNW");
+    chi2OverNdf = f.GetChisquare()/f.GetNDF();
+    printf("x[%f] range[%f %f] chi2[%f] ndf[%d] chi2/ndf[%f]\n", x, ymin, ymax, f.GetChisquare(),f.GetNDF(),chi2OverNdf);
+    y = f.GetParameter(1); y0 = y-4*dy; y1 = y+4*dy;
+    ey  = f.GetParError(1);
+    sy = f.GetParameter(2); esy = f.GetParError(2);
+//     // looking for the best chi2/ndf value
+//     while(ymin<y0 && ymax>y1){
+//       f.SetParameter(1, y);
+//       f.SetParameter(2, sy);
+//       h->Fit(&f, "QNW", "", y0, y1);
+//       printf("   range[%f %f] chi2[%f] ndf[%d] chi2/ndf[%f]\n", y0, y1, f.GetChisquare(),f.GetNDF(),f.GetChisquare()/f.GetNDF());
+//       if(f.GetChisquare()/f.GetNDF() < Chi2OverNdf){
+//         chi2OverNdf = f.GetChisquare()/f.GetNDF();
+//         y  = f.GetParameter(1); ey  = f.GetParError(1);
+//         sy = f.GetParameter(2); esy = f.GetParError(2);
+//         printf("    set y[%f] sy[%f] chi2/ndf[%f]\n", y, sy, chi2OverNdf);
+//       }
+//       y0-=dy; y1+=dy;
+//     }
+    g[0]->SetPoint(np, x, y);
+    g[0]->SetPointError(np, ex, ey);
+    g[1]->SetPoint(np, x, sy);
+    g[1]->SetPointError(np, ex, esy);
     np++;
   }
   return kTRUE;
@@ -3062,7 +3088,7 @@ Bool_t AliTRDresolution::FitTrack(const Int_t np, AliTrackPoint *points, Float_t
 //
 
   if(np<40){
-    if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>1) printf("D-AliTRDresolution::FitTrack: Not enough clusters to fit a track [%d].", np);
+    if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>1) printf("D-AliTRDresolution::FitTrack: Not enough clusters to fit a track [%d].\n", np);
     return kFALSE;
   }
   TLinearFitter yfitter(2, "pol1"), zfitter(2, "pol1");
@@ -3097,12 +3123,12 @@ Bool_t AliTRDresolution::FitTrack(const Int_t np, AliTrackPoint *points, Float_t
   Double_t dydx = yfitter.GetParameter(1);
 
   param[0] = x0; param[1] = y0; param[2] = z0; param[3] = dydx; param[4] = dzdx;
-  if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>3) printf("D-AliTRDresolution::FitTrack: x0[%f] y0[%f] z0[%f] dydx[%f] dzdx[%f]\n", x0, y0, z0, dydx, dzdx);
+  if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>3) printf("D-AliTRDresolution::FitTrack: x0[%f] y0[%f] z0[%f] dydx[%f] dzdx[%f].\n", x0, y0, z0, dydx, dzdx);
   return kTRUE;
 }
 
 //____________________________________________________________________
-Bool_t AliTRDresolution::FitTracklet(const Int_t ly, const Int_t np, AliTrackPoint *points, const Float_t param[10], Float_t par[3])
+Bool_t AliTRDresolution::FitTracklet(const Int_t ly, const Int_t np, const AliTrackPoint *points, const Float_t param[10], Float_t par[3])
 {
 //
 // Fit tracklet with a staight line using the coresponding subset of clusters out of the total "np" clusters stored in the array "points".
@@ -3134,7 +3160,7 @@ Bool_t AliTRDresolution::FitTracklet(const Int_t ly, const Int_t np, AliTrackPoi
     nly++;
   }
   if(nly<10){
-    if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>1) printf("D-AliTRDresolution::FitTracklet: Not enough clusters to fit a tracklet [%d].", nly);
+    if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>1) printf("D-AliTRDresolution::FitTracklet: Not enough clusters to fit a tracklet [%d].\n", nly);
     return kFALSE;
   }
   // set radial reference for fit
@@ -3161,7 +3187,7 @@ Bool_t AliTRDresolution::FitTracklet(const Int_t ly, const Int_t np, AliTrackPoi
 }
 
 //____________________________________________________________________
-Bool_t AliTRDresolution::UseTrack(const Int_t np, AliTrackPoint *points, Float_t param[10])
+Bool_t AliTRDresolution::UseTrack(const Int_t np, const AliTrackPoint *points, Float_t param[10])
 {
 //
 // Global selection mechanism of tracksbased on cluster to fit residuals
