@@ -3998,10 +3998,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		}
 		else 
 			htmp->Draw("same HE");
-		
-    delete [] hNCellsCluster1D;
-    
 	}
+  delete [] hNCellsCluster1D;
+
 	snprintf(name,buffersize,"QA_%s_NumberCaloClustersAndCaloCells.eps",fCalorimeter.Data());
 	cN->Print(name); printf("Print plot %s\n",name);
 	
