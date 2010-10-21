@@ -16,8 +16,8 @@ class TList;
 class TH1F;
 class TH2F;
 class TProfile;
+class THnSparse; 
 
-#include "THnSparse.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
@@ -63,7 +63,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     TH2F*   fh2Z;         //! FF: z  
     TH1F*   fh1JetPt;     //! jet pt 
 
-    TString fName;       // histo names prefix
+    TString fNameFF;      // histo names prefix
     
     ClassDef(AliFragFuncHistos, 1);
   };
@@ -100,7 +100,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     
     TH2F*   fh2EtaPhi;   //! jet phi vs eta 
     TH1F*   fh1Pt;       //! jet transverse momentum 
-    TString fName;       // histo names prefix
+    TString fNameQAJ;    // histo names prefix
     
     ClassDef(AliFragFuncQAJetHistos, 1);
   };
@@ -142,7 +142,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     TH1F*   fh1Pt;            //! track transverse momentum 
     TH2F*   fh2HighPtEtaPhi;  //! phi vs eta for high pt (>fgHighPtThreshold) tracks
 
-    TString fName;            // histo names prefix
+    TString fNameQAT;         // histo names prefix
     
     ClassDef(AliFragFuncQATrackHistos, 1);
   };
@@ -165,7 +165,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     virtual ~AliFragFuncIntraJetHistos();
     
     virtual void DefineHistos();
-    virtual void FillIntraJet(TLorentzVector* trackV, TLorentzVector* jetV);
+    virtual void FillIntraJet(const TLorentzVector* trackV, const TLorentzVector* jetV);
     virtual void AddToOutput(TList* list) const;
 
   private:
@@ -197,7 +197,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     THnSparseF* fhnIntraJet; //! IntraJet
     Int_t fnDim;             // HnSparseF dimensions 
 
-    TString fName;           // histo names prefix
+    TString fNameIJ;         // histo names prefix
     
     ClassDef(AliFragFuncIntraJetHistos, 1);
   };
@@ -224,7 +224,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     
     private:
 
-    Int_t   fKindSlices;
+    Int_t   fKindSlices;      // DJ kind of slices
     Int_t   fNBinsJetInvMass; // FF histos bins
     Float_t fJetInvMassMin;   // FF histos limits
     Float_t fJetInvMassMax;   // FF histos limits
@@ -257,7 +257,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     TH2F*   fh2Pt2;         //! FF dijet : z of jet 2 
     TH2F*   fh2Pt;          //! FF dijet : z of jet 1 and 2 
 
-    TString fName;          // histo names prefix
+    TString fNameDJ;        // histo names prefix
     
     ClassDef(AliFragFuncDiJetHistos, 1);
   };
@@ -282,7 +282,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     
     private:
     
-    Int_t   fKindSlices;
+    Int_t   fKindSlices;       // DJ kind of slices
     Int_t   fNBinsJetInvMass;  // FF histos bins in jet invariant mass
     Float_t fJetInvMassMin;    // FF histos limits in jet invariant mass
     Float_t fJetInvMassMax;    // FF histos limits in jet invariant mass
@@ -304,7 +304,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     TH2F*   fh2DeltaEta;       // FF dijet delta eta histos
     TH2F*   fh2DeltaPt;        // FF dijet delta pt histos
 
-    TString fName;             // histo names prefix
+    TString fNameQADJ;         // histo names prefix
     
     ClassDef(AliFragFuncQADiJetHistos, 1);
   };
@@ -377,55 +377,40 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     fQATrackNBinsEta = nEta; fQATrackEtaMin = etaMin; fQATrackEtaMax = etaMax;
     fQATrackNBinsPhi = nPhi; fQATrackPhiMin = phiMin; fQATrackPhiMax = phiMax; }
   
-  void   SetIJHistoBins(Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
-			Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
-			Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1,
-			Int_t nCosTheta = 100,  Float_t costhetaMin = 0.,  Float_t costhetaMax = 1.,
-			Int_t nTheta = 200,  Float_t thetaMin = -0.5,  Float_t thetaMax = 1.5,
-			Int_t nJt = 25,  Float_t jtMin = 0.,  Float_t jtMax = 5.)
-  { fIJNBinsJetPt = nJetPt; fIJJetPtMin = jetPtMin; fIJJetPtMax = jetPtMax; 
-    fIJNBinsPt = nPt; fIJPtMin = ptMin; fIJPtMax = ptMax;
-    fIJNBinsZ = nZ; fIJZMin = zMin; fIJZMax = zMax;
-    fIJNBinsCosTheta  = nCosTheta;  fIJCosThetaMin  = costhetaMin;  fIJCosThetaMax  = costhetaMax;
-    fIJNBinsTheta  = nTheta;  fIJThetaMin  = thetaMin;  fIJThetaMax  = thetaMax;
-    fIJNBinsJt  = nJt;  fIJJtMin  = jtMin;  fIJJtMax  = jtMax; }
+  void   SetIJHistoBins(Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
+			Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1,	Int_t nCosTheta = 100,  Float_t costhetaMin = 0.,  Float_t costhetaMax = 1.,
+			Int_t nTheta = 200,  Float_t thetaMin = -0.5,  Float_t thetaMax = 1.5, Int_t nJt = 25,  Float_t jtMin = 0.,  Float_t jtMax = 5.)
+  { fIJNBinsJetPt = nJetPt; fIJJetPtMin = jetPtMin; fIJJetPtMax = jetPtMax; fIJNBinsPt = nPt; fIJPtMin = ptMin; fIJPtMax = ptMax;
+    fIJNBinsZ = nZ; fIJZMin = zMin; fIJZMax = zMax;fIJNBinsCosTheta  = nCosTheta;  fIJCosThetaMin  = costhetaMin;  fIJCosThetaMax  = costhetaMax;
+    fIJNBinsTheta  = nTheta;  fIJThetaMin  = thetaMin;  fIJThetaMax  = thetaMax; fIJNBinsJt  = nJt;  fIJJtMin  = jtMin;  fIJJtMax  = jtMax; }
 
-  void SetDiJetHistoBins(Int_t nJetInvMass = 245, Float_t jetInvMassMin = 5, Float_t jetInvMassMax = 250, 
-			 Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
-			 Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
-			 Int_t nXi = 70, Float_t xiMin = 0., Float_t xiMax = 7.,
-			 Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1)
+  void SetDiJetHistoBins(Int_t nJetInvMass = 245, Float_t jetInvMassMin = 5, Float_t jetInvMassMax = 250, Int_t nJetPt = 245, Float_t jetPtMin = 5, 
+			 Float_t jetPtMax = 250, Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., Int_t nXi = 70, Float_t xiMin = 0., 
+			 Float_t xiMax = 7., Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1)
   {
-    fDiJetNBinsJetInvMass = nJetInvMass; fDiJetJetInvMassMin = jetInvMassMin; fDiJetJetInvMassMax = jetInvMassMax;
-    fDiJetNBinsJetPt = nJetPt; fDiJetJetPtMin = jetPtMin; fDiJetJetPtMax = jetPtMax;
-    fDiJetNBinsPt = nPt; fDiJetPtMin = ptMin; fDiJetPtMax = ptMax;
-    fDiJetNBinsXi = nXi; fDiJetXiMin = xiMin; fDiJetXiMax = xiMax;
-    fDiJetNBinsZ = nZ; fDiJetZMin = zMin; fDiJetZMax = zMax;
+    fDiJetNBinsJetInvMass = nJetInvMass; fDiJetJetInvMassMin = jetInvMassMin; fDiJetJetInvMassMax = jetInvMassMax; fDiJetNBinsJetPt = nJetPt; fDiJetJetPtMin = jetPtMin; 
+    fDiJetJetPtMax = jetPtMax; fDiJetNBinsPt = nPt; fDiJetPtMin = ptMin; fDiJetPtMax = ptMax; fDiJetNBinsXi = nXi; fDiJetXiMin = xiMin; 
+    fDiJetXiMax = xiMax; fDiJetNBinsZ = nZ; fDiJetZMin = zMin; fDiJetZMax = zMax;
   }
 
-  void SetQADiJetHistoBins(Int_t nInvMass = 245, Float_t invMassMin = 5., Float_t invMassMax = 250.,
-			   Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
-			   Int_t nDeltaPhi = 100, Float_t deltaPhiMin = 0., Float_t deltaPhiMax = TMath::Pi(),
-			   Int_t nDeltaEta = 22, Float_t deltaEtaMin = 0., Float_t deltaEtaMax = 1.1,
-			   Int_t nDeltaPt = 100, Float_t deltaPtMin = 0., Float_t deltaPtMax = 100.)
+  void SetQADiJetHistoBins(Int_t nInvMass = 245, Float_t invMassMin = 5., Float_t invMassMax = 250., Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
+			   Int_t nDeltaPhi = 100, Float_t deltaPhiMin = 0., Float_t deltaPhiMax = TMath::Pi(), Int_t nDeltaEta = 22, Float_t deltaEtaMin = 0., 
+			   Float_t deltaEtaMax = 1.1, Int_t nDeltaPt = 100, Float_t deltaPtMin = 0., Float_t deltaPtMax = 100.)
   {
-    fQADiJetNBinsInvMass = nInvMass; fQADiJetInvMassMin = invMassMin; fQADiJetInvMassMax = invMassMax;
-    fQADiJetNBinsJetPt = nJetPt; fQADiJetJetPtMin = jetPtMin; fQADiJetJetPtMax = jetPtMax;
-    fQADiJetNBinsDeltaPhi = nDeltaPhi; fQADiJetDeltaPhiMin = deltaPhiMin; fQADiJetDeltaPhiMax = deltaPhiMax;
-    fQADiJetNBinsDeltaEta = nDeltaEta; fQADiJetDeltaEtaMin = deltaEtaMin; fQADiJetDeltaEtaMax = deltaEtaMax;
-    fQADiJetNBinsDeltaPt = nDeltaPt; fQADiJetDeltaPtMin = deltaPtMin; fQADiJetDeltaPtMax = deltaPtMax;
-
+    fQADiJetNBinsInvMass = nInvMass; fQADiJetInvMassMin = invMassMin; fQADiJetInvMassMax = invMassMax; fQADiJetNBinsJetPt = nJetPt; fQADiJetJetPtMin = jetPtMin; 
+    fQADiJetJetPtMax = jetPtMax; fQADiJetNBinsDeltaPhi = nDeltaPhi; fQADiJetDeltaPhiMin = deltaPhiMin; fQADiJetDeltaPhiMax = deltaPhiMax; fQADiJetNBinsDeltaEta = nDeltaEta; 
+    fQADiJetDeltaEtaMin = deltaEtaMin; fQADiJetDeltaEtaMax = deltaEtaMax; fQADiJetNBinsDeltaPt = nDeltaPt; fQADiJetDeltaPtMin = deltaPtMin; fQADiJetDeltaPtMax = deltaPtMax;
   }
 
   Float_t  GetFFRadius() const { return fFFRadius; }
-  void	   GetJetTracksTrackrefs(TList* l, AliAODJet* j);
-  void	   GetJetTracksPointing(TList* in, TList* out, AliAODJet* j, const Double_t r, Double_t& pt);  
+  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j);
+  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& pt);  
   Double_t GetDiJetBin(Double_t invMass, Double_t leadingJetPt, Double_t eMean, Int_t kindSlices); // function to find which bin fill
-  Double_t InvMass(AliAODJet* jet1, AliAODJet* jet2);
+  Double_t InvMass(const AliAODJet* jet1, const AliAODJet* jet2);
   void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isGenPrim);
-  void     FillSingleTrackRecEffHisto(THnSparse* histo, TList* tracksGen, TList* tracksRec, TArrayI& indexAODTr, TArrayS& isGenPrim);
+  void     FillSingleTrackRecEffHisto(THnSparse* histo, TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr, const TArrayS& isGenPrim);
   void     FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi,Double_t jetEta,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, TList* tracksGen,
-				   TArrayI& indexAODTr,TArrayS& isGenPrim);
+				   const TArrayI& indexAODTr,const TArrayS& isGenPrim);
 
     
   // Consts
@@ -442,7 +427,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   
   AliESDEvent* fESD;      // ESD event
   AliAODEvent* fAOD;      // AOD event
-  AliMCEvent*  fMCEvent;  // MC event
+  //AliMCEvent*  fMCEvent;  // MC event
   
   TString fBranchRecJets;         // branch name for reconstructed jets
   TString fBranchGenJets;         // branch name for generated jets
@@ -476,7 +461,6 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t fDiJetCDFCut;         // cdf cut value
 
   Int_t   fDiJetKindBins;       // type of bins: invmass, etleading, emean
-  static  TArrayD* fDiJetBins;   // bining in invmass, etleading, emean
 
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
 
