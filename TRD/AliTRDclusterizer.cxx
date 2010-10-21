@@ -400,7 +400,7 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
   TObjArray *ioArray = new TObjArray(400);
   TBranch *branch = fClusterTree->GetBranch("TRDcluster");
   if (!branch) {
-    branch = fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
+    fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
   } else branch->SetAddress(&ioArray);
   
   Int_t nRecPoints = RecPoints()->GetEntriesFast();
