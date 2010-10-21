@@ -295,6 +295,7 @@ void  AliAnalysisTaskLeadingTrackUE::AddSettingsTree()
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fLeadingTrackEtaCut", &fLeadingTrackEtaCut, "LeadingTrackEtaCut/D");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
+  settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
 }  
