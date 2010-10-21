@@ -484,7 +484,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(kUseAODMC){
        taskFrag = AddTaskFragmentationFunction(1<<1,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<2,kHighPtFilterMask);
-       taskFrag = AddTaskFragmentationFunction(1<<3,kHighPtFilterMask);
+       //       taskFrag = AddTaskFragmentationFunction(1<<3,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<5,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<11);  // w/o acceptance cuts       
        taskFrag =  AddTaskFragmentationFunction(1<<12);  // with acceptance cuts
