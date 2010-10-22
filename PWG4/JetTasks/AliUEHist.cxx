@@ -524,7 +524,7 @@ void AliUEHist::CorrectTracks(CFStep step1, CFStep step2, Int_t region, TH1* tra
   
   if (!fTrackHist[region])
     return;
-    
+   
   THnSparse* grid = fTrackHist[region]->GetGrid(step1)->GetGrid();
   THnSparse* target = fTrackHist[region]->GetGrid(step2)->GetGrid();
   
@@ -564,6 +564,8 @@ void AliUEHist::CorrectTracks(CFStep step1, CFStep step2, Int_t region, TH1* tra
     target->SetBinContent(bins, value);
     target->SetBinError(bins, error);
   }
+ 
+  Printf("AliUEHist::CorrectTracks: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", grid->GetEntries(), target->GetEntries(), (trackCorrection) ? trackCorrection->GetEntries() : -1.0, (trackCorrection) ? trackCorrection->Integral() : -1.0); 
 }
 
 //____________________________________________________________________
@@ -607,6 +609,8 @@ void AliUEHist::CorrectEvents(CFStep step1, CFStep step2, TH1D* eventCorrection,
       }
     }
   }
+  
+  Printf("AliUEHist::CorrectEvents: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", grid->GetEntries(), target->GetEntries(), (eventCorrection) ? eventCorrection->GetEntries() : -1.0, (eventCorrection) ? eventCorrection->Integral() : -1.0); 
 }
 
 //____________________________________________________________________
