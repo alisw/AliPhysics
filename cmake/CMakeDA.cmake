@@ -118,9 +118,6 @@ foreach(detector ${ONLINEDETECTORS} )
   expand(DAINCDIRS "\${${DAMODULE}INC}")
   list(APPEND ALIROOTALIBS ${ALIROOTALIBS2})
   
-  message("Listing sub directories for ${DAMODULE}")
-  message("${DAINCDIRS}")
-  
   include_directories(${DAMODULE} ${SUBDIR} ${DAINCDIRS})
 #Get detector algorithms for this detector
 
@@ -191,7 +188,6 @@ foreach(detector ${ONLINEDETECTORS} )
 	  set(CMAKE_MODULE_LINKER_FLAGS ${LDFLAGS})
 
 	  set(ZIP)
-	  message("${DAEXE}- ${DAMODULE} - ${ALIROOTALIBS}")
 	  foreach(_lib ${ALIROOTALIBS})
 	   string(REGEX REPLACE "-all" "_a" _lib ${_lib})
 	   list(APPEND ZIP && ar x "../lib${_lib}.a")
