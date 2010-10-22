@@ -74,8 +74,8 @@ class AliTRDqaBlackEvents : public TObject {
   
   Int_t fRefEv;           // reference event number
 
-  Char_t fRefFileName[256];  // name of the file with reference distributions
-
+  //Char_t fRefFileName[256];  // name of the file with reference distributions
+  const Char_t *fRefFileName;  // name of the file with reference distributions
 
   // geometry constants 
   enum {
