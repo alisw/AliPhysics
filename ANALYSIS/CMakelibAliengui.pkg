@@ -26,9 +26,9 @@
 #--------------------------------------------------------------------------------#
 if( ROOTHASXML STREQUAL "yes")
 	
-	set ( PACKCXXFLAGS ${PACKCXXFLAGS}  ${CXXFLAGS} -DWITHXML)
+	set ( PACKCXXFLAGS "${PACKCXXFLAGS}  ${CXXFLAGS} -DWITHXML")
 	set ( CINTFLAGS ${CINTFLAGS}  -DWITHXML)
-  set ( SRCS  Aliengui/AliAlienBrowser.cxx Aliengui/AliAnalysisGUI.cxx Aliengui/AliSelectorFrame.cxx Aliengui/AliFileListFrame.cxx Aliengui/AliLoginFrame.cxx Aliengui/AliPackageFrame.cxx Aliengui/AliTagAnalysisFrame.cxx Aliengui/AliTagFrame.cxx)
+	set ( SRCS  Aliengui/AliAlienBrowser.cxx Aliengui/AliAnalysisGUI.cxx Aliengui/AliSelectorFrame.cxx Aliengui/AliFileListFrame.cxx Aliengui/AliLoginFrame.cxx Aliengui/AliPackageFrame.cxx Aliengui/AliTagAnalysisFrame.cxx Aliengui/AliTagFrame.cxx)
 else()
 	set ( SRCS  Aliengui/AliAnalysisGUIdummy.cxx)
 endif( ROOTHASXML STREQUAL "yes")

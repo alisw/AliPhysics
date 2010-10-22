@@ -29,13 +29,13 @@ set ( SRCS  	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx AliAnalysisTaskESDfilte
 
 if( ROOTHASALIEN STREQUAL "yes")
 	
-	set ( PACKCXXFLAGS  ${CXXFLAGS} -DWITHALIEN)
+	set ( PACKCXXFLAGS  "${CXXFLAGS} -DWITHALIEN")
 
 endif( ROOTHASALIEN STREQUAL "yes")
 
 if( ROOTHASXML STREQUAL "yes")
 	
-	set ( PACKCXXFLAGS ${PACKCXXFLAGS}  ${CXXFLAGS} -DWITHXML)
+	set ( PACKCXXFLAGS "${PACKCXXFLAGS}  ${CXXFLAGS} -DWITHXML")
 	set ( CINTFLAGS ${CINTFLAGS}  -DWITHXML)
 	set ( SRCS ${SRCS}  AliTagAnalysis.cxx AliXMLCollection.cxx AliAnalysisAlien.cxx)
 
