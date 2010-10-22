@@ -1,5 +1,5 @@
 /*  created by fbellini@cern.ch on 14/09/2010 */
-/*  last modified by fbellini   on 08/10/2010 */
+/*  last modified by fbellini   on 21/10/2010 */
 
 
 #ifndef ALIANALYSISTASKTOFQA_CXX
@@ -10,7 +10,6 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
-//#include "TArrayI.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -18,11 +17,7 @@
 #include "AliAnalysisTaskTOFqa.h"
 #include "AliAnalysisFilter.h"
 #include "AliESDtrackCuts.h"
-//#include "AliPID.h"
-//#include "AliESDpid.h"
-//#include "TRandom.h"
 #include "AliLog.h"
-//#include "AliTOFT0.h"
 #include "AliTOFRawStream.h"
 #include "AliTOFGeometry.h"
 
@@ -30,7 +25,7 @@ ClassImp(AliAnalysisTaskTOFqa)
 
 //________________________________________________________________________
 AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa() :
-  fRunNumber(-1), 
+  fRunNumber(0), 
   fESD(0x0), 
   fTrackFilter(0x0), 
   fVertex(0x0),
@@ -45,7 +40,7 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa() :
 //________________________________________________________________________
 AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa(const char *name) : 
   AliAnalysisTaskSE(name), 
-  fRunNumber(-1), 
+  fRunNumber(0), 
   fESD(0x0), 
   fTrackFilter(0x0),
   fVertex(0x0),
@@ -114,7 +109,6 @@ AliAnalysisTaskTOFqa::~AliAnalysisTaskTOFqa() {
   Info("~AliAnalysisTaskTOFqa","Calling Destructor");
   if (fVertex) delete fVertex;
   if (fTrackFilter) delete fTrackFilter;
-  if (fESD) delete fESD;
   if (fHlist) {
     delete fHlist;
     fHlist = 0;
@@ -126,38 +120,15 @@ AliAnalysisTaskTOFqa::~AliAnalysisTaskTOFqa() {
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTOFqa::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } else {
-    // Disable all branches and enable only the needed ones
-    // The next two lines are different when data produced as AliESDEvent is read
-    tree->SetBranchStatus("*", kFALSE);
-    tree->SetBranchStatus("Tracks.*", kTRUE);
-    tree->SetBranchStatus("AliESDTZERO.*", kTRUE);
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else
-      fESD = esdH->GetEvent();
-  }
- 
-}
-
-//________________________________________________________________________
 void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 {
   //Defines output objects and histograms
   Info("CreateOutputObjects","CreateOutputObjects (TList) of task %s", GetName());
   OpenFile(1);
   if (!fHlist) fHlist = new TList();	
+  fHlist->SetOwner(kTRUE);
   if (!fHlistExperts) fHlistExperts = new TList();	
+  fHlistExperts->SetOwner(kTRUE);
   //0
   TH1I* hTOFmatchedESDperEvt = new TH1I("hTOFmatchedPerEvt", "Number of matched TOF tracks per event;Number of TOF matched ESD tracks;Counts", 100, 0, 100) ;  
   hTOFmatchedESDperEvt->SetLineWidth(2);
@@ -297,6 +268,9 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   hTOFmatchedExpTime->SetMarkerColor(kRed);
   fHlistExperts->AddLast(hTOFmatchedExpTime) ;
 
+  
+  PostData(1, fHlist);
+  PostData(2, fHlistExperts);
 }
 //________________________________________________________________________
 void AliAnalysisTaskTOFqa::UserExec(Option_t *) 
@@ -304,8 +278,16 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
   /* Main - executed for each event.
     It extracts event information and track information after selecting 
     primary tracks via standard cuts. */
-  
   const Double_t speedOfLight =  TMath::C()*1E2*1E-12; // cm/ps
+  
+  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!esdH) {
+    Printf("ERROR: Could not get ESDInputHandler");
+    return;
+  } else {
+    fESD = (AliESDEvent*) esdH->GetEvent();
+  } 
+  
   if (!fESD) {
     Printf("ERROR: fESD not available");
     return;
