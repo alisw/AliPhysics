@@ -1537,9 +1537,11 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     // reject shared clusters on pad row
     if((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) {
-      if((cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
+      cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb);
+      if(cl) continue;
     }
-    if(!(cl = tracklet->GetClusters(ic))) continue;
+    cl = tracklet->GetClusters(ic);
+    if(!cl) continue;
     Double_t     time  = cl->GetPadTime();
     if((time<=7) || (time>=21)) continue;
     Short_t  *signals  = cl->GetSignals(); 
@@ -3255,20 +3257,15 @@ Double_t *AliTRDCalibraFillHisto::StatH(TH2 *h, Int_t i)
 
     //Debug
     if(i > 1){
-      if((!((Bool_t)nbEntries)) && (nentries > 0)){
-	nbEntries = new TH1F("Number of entries","Number of entries"
-                               ,100,(Int_t)nentries/2,nentries*2);
+      if(nentries > 0){
+	if(!((Bool_t)nbEntries)) nbEntries = new TH1F("Number of entries","Number of entries",100,(Int_t)nentries/2,nentries*2);
 	nbEntries->SetDirectory(0);
-	nbEntriesPerGroup = new TH1F("Number of entries per group","Number of entries per group"
-                               ,nbins,0,nbins);
+	nbEntries->Fill(nentries);
+	if(!((Bool_t)nbEntriesPerGroup)) nbEntriesPerGroup = new TH1F("Number of entries per group","Number of entries per group",nbins,0,nbins);
 	nbEntriesPerGroup->SetDirectory(0);
-	nbEntriesPerSp = new TProfile("Number of entries per supermodule","Number of entries per supermodule"
-                               ,(Int_t)(nbins/18),0,(Int_t)(nbins/18));
-	nbEntriesPerSp->SetDirectory(0);
-      }
-      if(nbEntries){
-	if(nentries > 0) nbEntries->Fill(nentries);
 	nbEntriesPerGroup->Fill(idect+0.5,nentries);
+	if(!((Bool_t)nbEntriesPerSp)) nbEntriesPerSp = new TProfile("Number of entries per supermodule","Number of entries per supermodule",(Int_t)(nbins/18),0,(Int_t)(nbins/18));
+	nbEntriesPerSp->SetDirectory(0);
 	nbEntriesPerSp->Fill((idect%((Int_t)(nbins/18)))+0.5,nentries);
       }
     }
@@ -3309,7 +3306,7 @@ Double_t *AliTRDCalibraFillHisto::StatH(TH2 *h, Int_t i)
   info[5] = meanstats;
   info[6] = meanrelativerror;
 
-  if(i > 1){
+  if(nbEntries && nbEntriesPerSp && nbEntriesPerGroup){
     gStyle->SetPalette(1);
     gStyle->SetOptStat(1111);
     gStyle->SetPadBorderMode(0);
@@ -3343,12 +3340,13 @@ Double_t *AliTRDCalibraFillHisto::GetMeanMedianRMSNumberCH()
   // 3 number of group with entries
   //
 
-  Double_t *stat      = new Double_t[4]; 
+  Double_t *stat = new Double_t[4];
   stat[3]             = 0.0;
 
   Int_t    nbofgroups = CalculateTotalNumberOfBins(0);
-  Double_t *weight    = new Double_t[nbofgroups];
-  Int_t    *nonul     = new Int_t[nbofgroups];
+  
+  Double_t *weight = new Double_t[nbofgroups];
+  Double_t *nonul = new Double_t[nbofgroups];
  
   for(Int_t k = 0; k < nbofgroups; k++){
     if(fEntriesCH[k] > 0) {
@@ -3361,6 +3359,9 @@ Double_t *AliTRDCalibraFillHisto::GetMeanMedianRMSNumberCH()
   stat[0]          = TMath::Mean(nbofgroups,fEntriesCH,weight); 
   stat[1]          = TMath::Median(nbofgroups,fEntriesCH,weight); 
   stat[2]          = TMath::RMS((Int_t)stat[3],nonul); 
+
+  delete [] weight;
+  delete [] nonul;
 
   return stat;
 
@@ -3394,6 +3395,9 @@ Double_t *AliTRDCalibraFillHisto::GetMeanMedianRMSNumberLinearFitter() const
   stat[0]          = TMath::Mean(nbofgroups,fEntriesLinearFitter,weight); 
   stat[1]          = TMath::Median(nbofgroups,fEntriesLinearFitter,weight); 
   stat[2]          = TMath::RMS((Int_t)stat[3],nonul); 
+
+  delete [] weight;
+  delete [] nonul;
 
   return stat;
 
@@ -3648,5 +3652,6 @@ void AliTRDCalibraFillHisto::AnalyseLinearFitter()
     }
   }
 }
+
 
 
