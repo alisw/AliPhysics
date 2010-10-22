@@ -885,8 +885,9 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 		//GetXY(iSec,iRow,iPad,xCord,yCord);
 		Double_t x[]={iRow,iPad,iTimeBin};
 		Int_t i[]={iSec};
-		AliTPCTransform trafo;
-		trafo.Transform(x,i,0,1);
+		AliTPCTransform *transform     = AliTPCcalibDB::Instance()->GetTransform() ;
+
+		transform->Transform(x,i,0,1);
 		
 		AliPadMax *oneMaximum = new AliPadMax(AliTPCvtpr(valueMaximum,
 								 timeBinMax,
@@ -933,8 +934,13 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	      //GetXY(iSec,iRow,iPad,xCord,yCord);
 	      Double_t x[]={iRow,iPad,iTimeBin};
 	      Int_t i[]={iSec};
-	      AliTPCTransform trafo;
-	      trafo.Transform(x,i,0,1);
+	      //AliTPCTransform trafo;
+	      //trafo.Transform(x,i,0,1);
+
+		AliTPCTransform *transform     = AliTPCcalibDB::Instance()->GetTransform() ;
+
+		transform->Transform(x,i,0,1);
+
 	      AliPadMax *oneMaximum = new AliPadMax(AliTPCvtpr(valueMaximum,
 							       timeBinMax,
 							       iPad,
