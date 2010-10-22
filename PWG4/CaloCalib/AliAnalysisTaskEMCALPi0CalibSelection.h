@@ -91,29 +91,7 @@ public:
   void   SetEMCALChannelStatusMap(TObjArray *map)  {fEMCALBadChannelMap = map;}
 	
   Bool_t ClusterContainsBadChannel(UShort_t* cellList, Int_t nCells);
-	
-  // Recalibration
-  Bool_t IsRecalibrationOn() const { return fRecalibration  ; }
-  void SwitchOnRecalibration()     {fRecalibration = kTRUE  ; InitEMCALRecalibrationFactors();}
-  void SwitchOffRecalibration()    {fRecalibration = kFALSE ; }
-	
-  void InitEMCALRecalibrationFactors() ;
-  
-  Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-	if(fEMCALRecalibrationFactors) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
-	else return 1;}
-	
-  void SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-	if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors();
-	((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c);}
-	
-  void SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) {fEMCALRecalibrationFactors->AddAt(h,iSM);}
-	
-  TH2F * GetEMCALChannelRecalibrationFactors(Int_t iSM) const {return (TH2F*)fEMCALRecalibrationFactors->At(iSM);}
-	
-  void SetEMCALChannelRecalibrationFactors(TObjArray *map) {fEMCALRecalibrationFactors = map;}
-  Float_t RecalibrateClusterEnergy(AliAODCaloCluster* cluster, AliAODCaloCells * cells);
-	
+		  
   void SetEMCALRecoUtils(AliEMCALRecoUtils * ru) {fRecoUtils = ru;}
   AliEMCALRecoUtils* GetEMCALRecoUtils() const   {return fRecoUtils;}
   
@@ -141,9 +119,6 @@ private:
 
   Bool_t     fRemoveBadChannels;         // Check the channel status provided and remove clusters with bad channels
   TObjArray *fEMCALBadChannelMap;        // Array of histograms with map of bad channels, EMCAL
-  Bool_t     fRecalibration;             // Switch on or off the recalibration
-  TObjArray *fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL                 
- 
   AliEMCALRecoUtils * fRecoUtils;  // Access to reconstruction utilities
   
   //Output histograms	
@@ -181,7 +156,7 @@ private:
   TH1I*   fhNEvents;        //! Number of events counter histogram
   TList * fCuts ;           //! List with analysis cuts
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,8);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,9);
 
 };
 
