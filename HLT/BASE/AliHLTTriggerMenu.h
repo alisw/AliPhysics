@@ -275,6 +275,16 @@ class AliHLTTriggerMenu : public TObject
    */
   const char* DefaultDomainOperator() const { return fDefaultDomainOperator.Data(); }
   
+  /**
+   * Returns the default result for the global trigger if no item is matched.
+   */
+  bool DefaultResult() const { return TestBit(BIT(15)) == 1; }
+  
+  /**
+   * Set the default result for the global trigger if no item is matched.
+   */
+  void DefaultResult(bool value) { SetBit(BIT(15), value); }
+  
  private:
   
   TString fName;  /// Name of the trigger menu.
@@ -285,7 +295,7 @@ class AliHLTTriggerMenu : public TObject
   TString fDefaultConditionOperator;  /// The default operator to use to merge trigger conditions from the same priority group.
   TString fDefaultDomainOperator;  /// The default operator to use to merge trigger domains from the same priority group.
   
-  ClassDef(AliHLTTriggerMenu, 3) // Trigger menu for the global HLT trigger.
+  ClassDef(AliHLTTriggerMenu, 4) // Trigger menu for the global HLT trigger.
 };
 
 #endif // ALIHLTTRIGGERMENU_H

@@ -200,10 +200,33 @@ class AliHLTGlobalTriggerConfig
    * \param  prescalar  The prescalar value to use (Zero if not used).
    * \param  description  Optional description string which will be used in the
    *     global result.
+   * \param  defaultResult  The default result to use for the global trigger decision
+   *     if this item's trigger condition is matched.
    */
   static void AddItem(
       UInt_t priority, const char* conditionExpr, const char* domainExpr,
-      UInt_t prescalar, const char* description = NULL
+      UInt_t prescalar, const char* description = NULL, bool defaultResult = true
+    );
+  
+  /**
+   * Adds a new trigger menu item to the current trigger menu with a particular priority.
+   * \param  priority  The priority group this entry should be part of. Higher numbers
+   *     indicate higher priorities.
+   * \param  conditionExpr  The trigger condition expression. It must be a valid
+   *     C++ expression, where the symbol names must be either defined in the
+   *     menu or the names of AliHLTTrigger components.
+   * \param  domainExpr  The trigger domain merging expression. It must be a
+   *     valid C++ expression, where the symbol names must be either defined in
+   *     the menu or the names of AliHLTTrigger components.
+   * \param  description  Optional description string which will be used in the
+   *     global result.
+   * \param  scaledown  The scale-down factor to use as a percentage in the range [0..100].
+   * \param  defaultResult  The default result to use for the global trigger decision
+   *     if this item's trigger condition is matched.
+   */
+  static void AddItem(
+      UInt_t priority, const char* conditionExpr, const char* domainExpr,
+      const char* description = NULL, Double_t scaledown = 100, bool defaultResult = true
     );
   
   /**
@@ -220,24 +243,6 @@ class AliHLTGlobalTriggerConfig
    */
   static void AddItem(
       const char* conditionExpr, const char* domainExpr, UInt_t prescalar,
-      const char* description = NULL
-    );
-  
-  /**
-   * Adds a new trigger menu item to the current trigger menu with a particular priority.
-   * \param  priority  The priority group this entry should be part of. Higher numbers
-   *     indicate higher priorities.
-   * \param  conditionExpr  The trigger condition expression. It must be a valid
-   *     C++ expression, where the symbol names must be either defined in the
-   *     menu or the names of AliHLTTrigger components.
-   * \param  domainExpr  The trigger domain merging expression. It must be a
-   *     valid C++ expression, where the symbol names must be either defined in
-   *     the menu or the names of AliHLTTrigger components.
-   * \param  description  Optional description string which will be used in the
-   *     global result.
-   */
-  static void AddItem(
-      UInt_t priority, const char* conditionExpr, const char* domainExpr,
       const char* description = NULL
     );
   
@@ -294,6 +299,11 @@ class AliHLTGlobalTriggerConfig
    * \param  op  The new default operator to use.
    */
   static void SetDefaultDomainOperator(const char* op);
+  
+  /**
+   * Set the default result for the global trigger if no item is matched.
+   */
+  static void SetDefaultResult(bool value);
   
  private:
   

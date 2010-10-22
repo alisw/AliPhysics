@@ -191,11 +191,11 @@ void AliHLTGlobalTriggerConfig::AddSymbol(
   entry.BlockType(blockType, origin, spec);
   fgMenu->AddSymbol(entry);
 }
-
-
+    
+    
 void AliHLTGlobalTriggerConfig::AddItem(
     UInt_t priority, const char* conditionExpr, const char* domainExpr,
-    UInt_t prescalar, const char* description
+    UInt_t prescalar, const char* description, bool defaultResult
   )
 {
   // Adds a new entry to the trigger menu with a particular priority.
@@ -207,6 +207,40 @@ void AliHLTGlobalTriggerConfig::AddItem(
   entry.MergeExpression(domainExpr);
   entry.PreScalar(prescalar);
   entry.Priority(priority);
+  entry.DefaultResult(defaultResult);
+  if (description != NULL) entry.Description(description);
+  fgMenu->AddItem(entry);
+}
+
+
+void AliHLTGlobalTriggerConfig::AddItem(
+    UInt_t priority, const char* conditionExpr, const char* domainExpr,
+    const char* description, Double_t scaledown, bool defaultResult
+  )
+{
+  // Adds a new entry to the trigger menu with a particular priority.
+  
+  if (scaledown < 0)
+  {
+    cerr << "ERROR: Cannot have a scale-down value smaller than 0. But a value of "
+         << scaledown << " was specified. The valid range is [0..100]." << endl;
+    return;
+  }
+  if (scaledown < 0)
+  {
+    cerr << "ERROR: Cannot have a scale-down value larger than 100. But a value of "
+         << scaledown << " was specified. The valid range is [0..100]." << endl;
+    return;
+  }
+  
+  if (fgMenu == NULL) NewMenu("");
+  
+  AliHLTTriggerMenuItem entry;
+  entry.TriggerCondition(conditionExpr);
+  entry.MergeExpression(domainExpr);
+  entry.Priority(priority);
+  entry.ScaleDown(scaledown / 100.);
+  entry.DefaultResult(defaultResult);
   if (description != NULL) entry.Description(description);
   fgMenu->AddItem(entry);
 }
@@ -225,24 +259,6 @@ void AliHLTGlobalTriggerConfig::AddItem(
   entry.TriggerCondition(conditionExpr);
   entry.MergeExpression(domainExpr);
   entry.PreScalar(prescalar);
-  if (description != NULL) entry.Description(description);
-  fgMenu->AddItem(entry);
-}
-
-
-void AliHLTGlobalTriggerConfig::AddItem(
-    UInt_t priority, const char* conditionExpr, const char* domainExpr,
-    const char* description
-  )
-{
-  // Adds a new entry to the trigger menu with a particular priority.
-  
-  if (fgMenu == NULL) NewMenu("");
-  
-  AliHLTTriggerMenuItem entry;
-  entry.TriggerCondition(conditionExpr);
-  entry.MergeExpression(domainExpr);
-  entry.Priority(priority);
   if (description != NULL) entry.Description(description);
   fgMenu->AddItem(entry);
 }
@@ -306,6 +322,15 @@ void AliHLTGlobalTriggerConfig::SetDefaultDomainOperator(const char* op)
   
   if (fgMenu == NULL) NewMenu("");
   fgMenu->DefaultDomainOperator(op);
+}
+
+
+void AliHLTGlobalTriggerConfig::SetDefaultResult(bool value)
+{
+  // Sets the default result when no item is matched.
+  
+  if (fgMenu == NULL) NewMenu("");
+  fgMenu->DefaultResult(value);
 }
 
 

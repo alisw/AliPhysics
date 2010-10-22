@@ -61,11 +61,12 @@ class AliHLTGlobalTrigger
   
   /**
    * Abstract method that calculates the trigger decision
+   * \param  triggerResult  The resultant decision bit of the global HLT trigger decision.
    * \param  domain  The resultant trigger domain for the global HLT result.
    * \param  description  The resultant description for the global HLT result.
-   * \returns The global HLT trigger decision result.
+   * \returns true if any of the triggers in the trigger menu were matched.
    */
-  virtual bool CalculateTriggerDecision(AliHLTTriggerDomain& domain, TString& description) = 0;
+  virtual bool CalculateTriggerDecision(bool& triggerResult, AliHLTTriggerDomain& domain, TString& description) = 0;
   
   /**
    * Returns the array of internal trigger counters.

@@ -90,7 +90,7 @@ AliHLTGlobalTriggerWrapper::AliHLTGlobalTriggerWrapper(const char* classname) :
     HLTError("Could not initialise method call object for class '%s' and method Add.", classname);
     return;
   }
-  fCalculateTriggerDecisionCall.InitWithPrototype(fClass, "CalculateTriggerDecision", "AliHLTTriggerDomain&, TString&");
+  fCalculateTriggerDecisionCall.InitWithPrototype(fClass, "CalculateTriggerDecision", "bool&, AliHLTTriggerDomain&, TString&");
   if (not fCalculateTriggerDecisionCall.IsValid())
   {
     HLTError("Could not initialise method call object for class '%s' and method CalculateTriggerDecision.", classname);
@@ -215,19 +215,21 @@ void AliHLTGlobalTriggerWrapper::Add(
 }
 
 
-bool AliHLTGlobalTriggerWrapper::CalculateTriggerDecision(AliHLTTriggerDomain& domain, TString& description)
+bool AliHLTGlobalTriggerWrapper::CalculateTriggerDecision(bool& triggerResult, AliHLTTriggerDomain& domain, TString& description)
 {
   // Calculates the global trigger decision.
 
   fCallFailed = false;
   struct Params
   {
+    const void* fResult;
     const void* fDomain;
     const void* fDesc;
   } params;
+  params.fResult = &triggerResult;
   params.fDomain = &domain;
   params.fDesc = &description;
-  fCalculateTriggerDecisionCall.SetParamPtrs(&params, 2);
+  fCalculateTriggerDecisionCall.SetParamPtrs(&params, 3);
   Long_t retval;
   gCINTErrorMessage = "";
   fCalculateTriggerDecisionCall.Execute(fObject, retval);

@@ -44,6 +44,7 @@
 #include "TDatime.h"
 #include "TClass.h"
 #include "TNamed.h"
+#include "TRandom3.h"
 #include <fstream>
 #include <cerrno>
 #include <cassert>
@@ -139,6 +140,8 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   fIncludeFiles.Clear();
   SetBit(kIncludeInput);
   fDataEventsOnly = true;
+  UInt_t randomSeed = 0;
+  bool randomSeedSet = false;
   
   for (int i = 0; i < argc; i++)
   {
@@ -325,6 +328,31 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
       fMakeSoftwareTriggers = false;
       continue;
     }
+    if (strcmp(argv[i], "-randomseed") == 0)
+    {
+      if (randomSeedSet)
+      {
+        HLTWarning("The random seed was already specified previously with the option -randomseed."
+                   "Will replace the previous value of %d with the new one.",
+                   randomSeed
+        );
+      }
+      if (argc <= i+1)
+      {
+        HLTError("The number to use as the seed was not specified for the -randomseed option." );
+        return -EINVAL;
+      }
+      TString numstr = argv[i+1];
+      if (not numstr.IsDigit())
+      {
+        HLTError("The number specified in the -randomseed option is not a valid decimal integer." );
+        return -EINVAL;
+      }
+      randomSeed = numstr.Atoi();
+      randomSeedSet = true;
+      i++;
+      continue;
+    }
     
     HLTError("Unknown option '%s'.", argv[i]);
     return -EINVAL;
@@ -388,6 +416,14 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   // Set the default values from the trigger menu.
   SetDescription(menu->DefaultDescription());
   SetTriggerDomain(menu->DefaultTriggerDomain());
+  
+  // Initialise the random number generator seed value.
+  // NOTE: The GenerateTrigger method called above will set the fUniqueID value
+  // with a random value based on a GUID that should be unique across the system.
+  // This is then used as the seed to the random number generator if the -randomseed
+  // option is not used.
+  if (not randomSeedSet) randomSeed = fUniqueID;
+  gRandom->SetSeed(randomSeed);
   
   fTotalEventCounter = 0;
   return 0;
@@ -495,14 +531,15 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   // back the new global trigger decision object.
   TString description;
   AliHLTTriggerDomain triggerDomain;
-  bool triggerResult = fTrigger->CalculateTriggerDecision(triggerDomain, description);
+  bool triggerResult = false;
+  bool matchedItems = fTrigger->CalculateTriggerDecision(triggerResult, triggerDomain, description);
   if (fTrigger->CallFailed()) return -EPROTO;
   AliHLTGlobalTriggerDecision decision(
       triggerResult,
       // The following will cause the decision to be generated with default values
       // (set in fTriggerDomain and fDescription) if the trigger result is false.
-      (triggerResult == true) ? triggerDomain : GetTriggerDomain(),
-      (triggerResult == true) ? description.Data() : GetDescription()
+      (matchedItems == true) ? triggerDomain : GetTriggerDomain(),
+      (matchedItems == true) ? description.Data() : GetDescription()
     );
 
   decision.SetUniqueID(fUniqueID);
@@ -790,6 +827,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   code << "#include \"TClass.h\"" << endl;
   code << "#include \"TString.h\"" << endl;
   code << "#include \"TClonesArray.h\"" << endl;
+  code << "#include \"TRandom3.h\"" << endl;
   code << "#include \"AliHLTLogging.h\"" << endl;
   code << "#include \"AliHLTGlobalTrigger.h\"" << endl;
   code << "#include \"AliHLTGlobalTriggerDecision.h\"" << endl;
@@ -1105,7 +1143,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   // positive results. Again, if no trailing operators are used in the individual
   // merging expressions then the default domain operator is placed between two
   // expression fragments.
-  code << "  virtual bool CalculateTriggerDecision(AliHLTTriggerDomain& _domain_, TString& _description_) {" << endl;
+  code << "  virtual bool CalculateTriggerDecision(bool& _trigger_result_, AliHLTTriggerDomain& _domain_, TString& _description_) {" << endl;
   if (fDebugMode)
   {
     code << "#ifdef __CINT__" << endl;
@@ -1209,10 +1247,22 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
       code << "    if (" << triggerCondition << ") {" << endl;
       code << "      ++fCounter[" << i << "];" << endl;
       const char* indentation = "";
-      if (item->PreScalar() != 0)
+      // Generate the code to handle the prescalar and scale-down
+      bool havePrescalar = item->PreScalar() != 0;
+      bool haveScaledown = item->ScaleDown() < 1;
+      if (havePrescalar or haveScaledown) 
       {
         indentation = "  ";
-        code << "      if ((fCounter[" << i << "] % " << item->PreScalar() << ") == 1) {" << endl;
+        code << "      if (";
+        if (havePrescalar) code << "(fCounter[" << i << "] % " << item->PreScalar() << ") == 1";
+        if (havePrescalar and haveScaledown) code << " && ";
+        if (haveScaledown)
+        {
+          std::streamsize oldprecision = code.precision(17);
+          code << "gRandom->Rndm() < " << item->ScaleDown();
+          code.precision(oldprecision);
+        }
+        code << ") {" << endl;
       }
       code << indentation << "      _item_result_ = true;" << endl;
       if (fDebugMode)
@@ -1220,7 +1270,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
         code << indentation << "      HLTDebug(Form(\"Matched trigger condition " << i
              << " (Description = '%s').\", fMenuItemDescription" << i << ".Data()));" << endl;
       }
-      if (item->PreScalar() != 0)
+      if (havePrescalar or haveScaledown)
       {
         code << "      }" << endl;
       }
@@ -1299,11 +1349,33 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
         code << "      HLTDebug(Form(\"Matched triggers in trigger priority group " << priorities[n] << ".\"));" << endl;
       }
     }
+    bool methodReturnResult = true;
+    if (priorityGroup[n].size() > 0)
+    {
+      const AliHLTTriggerMenuItem* item = menu->Item(priorityGroup[n][0]);
+      methodReturnResult = item->DefaultResult();
+    }
+    // Check to see if the items of the group all have the same default result.
+    // If not then warn the user since only the first item's value will be used.
+    for (size_t m = 1; m < priorityGroup[n].size(); m++)
+    {
+      const AliHLTTriggerMenuItem* item = menu->Item(priorityGroup[n][m]);
+      if (item->DefaultResult() != methodReturnResult)
+      {
+        HLTWarning("Found items with different default results set for priority group %d."
+                   "Will only use the value from the first item.",
+                   item->Priority()
+                  );
+        break;
+      }
+    }
+    code << "      _trigger_result_ = " << (methodReturnResult ? "true" : "false") << ";" << endl;
     code << "      return true;" << endl;
     code << "    }" << endl;
   }
   code << "    _domain_.Clear();" << endl;
   code << "    _description_ = \"\";" << endl;
+  code << "    _trigger_result_ = " << (menu->DefaultResult() ? "true" : "false") << ";" << endl;
   code << "    return false;" << endl;
   code << "  }" << endl;
   

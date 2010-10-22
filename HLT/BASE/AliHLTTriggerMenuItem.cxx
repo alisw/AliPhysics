@@ -35,9 +35,12 @@ AliHLTTriggerMenuItem::AliHLTTriggerMenuItem() :
   fConditionExpr(),
   fDomainExpr(),
   fPrescalar(0),
-  fPriority(0)
+  fPriority(0),
+  fScaleDown(1)
 {
   // Default constructor.
+  
+  DefaultResult(true); // The default result for the item is always true.
 }
 
 
@@ -54,10 +57,13 @@ void AliHLTTriggerMenuItem::Print(Option_t* option) const
   TString opt = option;
   if (opt.Contains("compact"))
   {
-    cout << setw(10) << fPrescalar << " | "
-         << setw(10) << fPriority << " | "
-         << setw(60) << fConditionExpr.Data() << " | "
-         << setw(60) << fDomainExpr.Data() << setw(0) << endl;
+    cout << "{fConditionExpr = \"" << fConditionExpr.Data()
+         << "\", fDomainExpr = \"" << fDomainExpr.Data()
+         << "\", fPrescalar = " << fPrescalar
+         << ", fScaleDown = " << fScaleDown
+         << ", fPriority = " << fPriority
+         << ", default result = " << (DefaultResult() ? "true" : "false")
+         << "}" << endl;
   }
   else
   {
@@ -66,6 +72,8 @@ void AliHLTTriggerMenuItem::Print(Option_t* option) const
     cout << "Trigger domain merge expression = " << fDomainExpr.Data() << endl;
     cout << "                     Pre-scalar = " << fPrescalar << endl;
     cout << "                       Priority = " << fPriority << endl;
+    cout << "                     Scale-down = " << fScaleDown << endl;
+    cout << "  Default global trigger result = " << (DefaultResult() ? "true" : "false") << endl;
   }
 }
 
