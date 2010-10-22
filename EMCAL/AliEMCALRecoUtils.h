@@ -16,7 +16,7 @@
 #include "TNamed.h"
 #include "TMath.h"
 #include "TObjArray.h"
-#include "TH2F.h";
+#include "TH2F.h"
 
 //AliRoot includes
 class AliVCluster;
