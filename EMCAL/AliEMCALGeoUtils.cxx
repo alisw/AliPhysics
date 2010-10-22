@@ -1322,9 +1322,8 @@ void AliEMCALGeoUtils::GetModulePhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int
 }
 
 //__________________________________________________________________________________________________________________
-void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, Float_t energy, 
-                                                const Int_t particle, const Float_t misaligTransShifts[15], 
-                                                const Float_t misaligRotShifts[15], Float_t global[3]) const
+void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, const Float_t depth,
+                                                const Float_t misaligTransShifts[15], const Float_t misaligRotShifts[15], Float_t global[3]) const
 { //Transform clusters cell position into global with alternative method, taking into account the depth calculation.
   //Input are: the tower indeces, 
   //           supermodule, 
@@ -1335,15 +1334,14 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
   if(gGeoManager){
     //Recover some stuff
     
-    TGeoNode        *geoXEn1;         
+    gGeoManager->cd("ALIC_1/XEN1_1");
+    TGeoNode        *geoXEn1 = gGeoManager->GetCurrentNode();
     TGeoNodeMatrix  *geoSM[4];        
     TGeoVolume      *geoSMVol[4];     
     TGeoShape       *geoSMShape[4];    
     TGeoBBox        *geoBox[4];        
     TGeoMatrix      *geoSMMatrix[4];       
     
-    gGeoManager->cd("ALIC_1/XEN1_1");
-    geoXEn1 = gGeoManager->GetCurrentNode();
     for(int iSM = 0; iSM < 4; iSM++) {  
       geoSM[iSM]       = dynamic_cast<TGeoNodeMatrix *>(geoXEn1->GetDaughter(iSM));
       geoSMVol[iSM]    = geoSM[iSM]->GetVolume(); 
@@ -1362,7 +1360,6 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     Float_t z0 = 0;
     Float_t zb = 0;
     Float_t z_is = 0;
-    Float_t d = 0;
     
     Float_t x,y,z; // return variables in terry's RF
     
@@ -1374,10 +1371,6 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     Float_t dz = 6.0;   // base cell width in eta
     Float_t dx = 6.004; // base cell width in phi
     
-    // parameters for shower depth calculation
-    Float_t x0  = 1.23;
-    Float_t ecr = 8;
-    Float_t cj  = 0.;
     
     //Float_t L = 26.04; // active tower length for hadron (lead+scint+paper)
     // we use the geant numbers 13.87*2=27.74
@@ -1395,35 +1388,7 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     if (sm > 13 || sm <0) {
       exit(0);
     }
-    
-    
-    //boxes anc. here
-    Float_t l = geoBox[i]->GetDX()*2 ;
-    
-    energy = energy * 1000; // converting to MEV
-    
-    switch ( particle )
-    {
-      case 0:
-        cj = + 0.5; // photon
-        d  = x0 * TMath::Log( (energy / ecr) + cj);
-        break;
         
-      case 1:
-        cj = - 0.5; // electron 
-        d = x0 * TMath::Log( (energy / ecr) + cj);
-        break;
-        
-      case 2:
-        // hadron 
-        d = 0.5 * l;
-        break;
-        
-      default:
-        cj = + 0.5; // photon
-        d = x0 * TMath::Log( (energy / ecr) + cj);
-    }
-    
     istrip = int ((dcol+0.5)/2);
     
     // tapering angle
@@ -1440,10 +1405,10 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     }
     
     z0 = dz*(dcol-2*istrip+0.5);
-    zb = (2*dz-z0-d*TMath::Tan(teta1));
+    zb = (2*dz-z0-depth*TMath::Tan(teta1));
     
     z = z_is - zb*TMath::Cos(teta1);
-    y = d/TMath::Cos(teta1) + zb*TMath::Sin(teta1);
+    y = depth/TMath::Cos(teta1) + zb*TMath::Sin(teta1);
     
     x = (drow + 0.5)*dx;
     
