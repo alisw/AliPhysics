@@ -18,6 +18,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // Class for TRD reconstruction                                              //
+//                                                                           //   
+// For the special options which can be used during reconstruction and their //
+//  default values pls. see function SetOption().                            //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -265,6 +268,19 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
   //
   // Read option string into the steer param.
   //
+  // The following string options are available during reconstruction.
+  // In square brackets the default values are given.
+  //   "dc"  : digits conversion [false]
+  //   "cw"  : write clusters [true]
+  //   "tw"  : write online tracklets [false]
+  //   "sa"  : track seeding (stand alone tracking) [true]
+  //   "hlt" : HLT reconstruction [false]
+  //   "tp"  : also use online tracklets for reconstruction [false]
+  //   "deb" : Write debug stream [false]
+  //   "cc"  : Cluster radial correction during reconstruction [false]
+  //
+  // To check the actual options used during reconstruction include the following line in your rec.C script
+  // AliLog::SetClassDebugLevel("AliTRDReconstructor", 1);
 
   AliReconstructor::SetOption(opt);
 
