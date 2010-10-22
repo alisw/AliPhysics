@@ -71,7 +71,10 @@ AliTOFT0v1::AliTOFT0v1(AliESDpid *extPID):
   fUpperMomBound(3),  
   fTimeCorr(0.), 
   fEvent(0x0),
-  fPIDesd(extPID)
+  fPIDesd(extPID),
+  fTracks(new TObjArray(10)),
+  fGTracks(new TObjArray(10)),
+  fTracksT0(new TObjArray(10))
 {
   //
   // default constructor
@@ -93,7 +96,10 @@ AliTOFT0v1::AliTOFT0v1(AliESDEvent* event,AliESDpid *extPID):
   fUpperMomBound(3.0),  
   fTimeCorr(0.), 
   fEvent(event),
-  fPIDesd(extPID)
+  fPIDesd(extPID),
+  fTracks(new TObjArray(10)),
+  fGTracks(new TObjArray(10)),
+  fTracksT0(new TObjArray(10))
 {
   //
   // real constructor
@@ -126,6 +132,19 @@ AliTOFT0v1& AliTOFT0v1::operator=(const AliTOFT0v1 &tzero)
   fT0SigmaT0def[2]=tzero.fT0SigmaT0def[2];
   fT0SigmaT0def[3]=tzero.fT0SigmaT0def[3];
 
+  fTracks=tzero.fTracks;
+  fGTracks=tzero.fGTracks;
+  fTracksT0=tzero.fTracksT0;
+
+  for (Int_t ii=0; ii<tzero.fTracks->GetEntries(); ii++)
+    fTracks->AddLast(tzero.fTracks->At(ii));
+
+  for (Int_t ii=0; ii<tzero.fGTracks->GetEntries(); ii++)
+    fGTracks->AddLast(tzero.fGTracks->At(ii));
+
+  for (Int_t ii=0; ii<tzero.fTracksT0->GetEntries(); ii++)
+    fTracksT0->AddLast(tzero.fTracksT0->At(ii));
+
   return *this;
 }
 
@@ -134,6 +153,18 @@ AliTOFT0v1::~AliTOFT0v1()
 {
   // dtor
   fEvent=NULL;
+
+  fTracks->Delete();
+  delete fTracks;
+  fTracks=0x0;
+
+  fGTracks->Delete();
+  delete fGTracks;
+  fGTracks=0x0;
+
+  fTracksT0->Delete();
+  delete fTracksT0;
+  fTracksT0=0x0;
 
 }
 //____________________________________________________________________________ 
@@ -194,7 +225,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 
   Int_t ntrk=fEvent->GetNumberOfTracks();
   
-  AliESDtrack **tracks=new AliESDtrack*[ntrk];
+  //AliESDtrack **fTracks=new AliESDtrack*[ntrk];
   Int_t ngoodtrk=0;
   Int_t ngoodtrkt0 =0;
   Float_t mintime =1E6;
@@ -217,28 +248,34 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
     if(t->GetP() < fLowerMomBound || t->GetIntegratedLength() < 350 || t->GetTOFsignalToT() < 0.000000001)continue; //skip decays
 
     if(time <= mintime) mintime=time;
-    tracks[ngoodtrk]=t;
+    //fTracks[ngoodtrk]=t;
+    fTracks->AddLast(t);
     ngoodtrk++;
   }
-  
+
   if(ngoodtrk>22) nmaxtracksinset = 6;
 
 //    cout << " N. of ESD tracks                    : " << ntrk << endl;
 //    cout << " N. of preselected tracks            : " << ngoodtrk << endl;
 //    cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
   
-  AliESDtrack **gtracks=new AliESDtrack*[ngoodtrk];
+  //AliESDtrack **fGTracks=new AliESDtrack*[ngoodtrk];
   
-  for (Int_t jtrk=0; jtrk< ngoodtrk; jtrk++) {
-    AliESDtrack *t=tracks[jtrk];
+  //for (Int_t jtrk=0; jtrk< ngoodtrk; jtrk++) {
+  for (Int_t jtrk=0; jtrk< fTracks->GetEntries(); jtrk++) {
+    //AliESDtrack *t=fTracks[jtrk];
+    AliESDtrack *t=(AliESDtrack*)fTracks->At(jtrk);
     Double_t time=t->GetTOFsignal();
 
     if((time-mintime*1.E3)<50.E3){ // For pp and per 
-      gtracks[ngoodtrkt0]=t;
+      //fGTracks[ngoodtrkt0]=t;
+      fGTracks->AddLast(t);
       ngoodtrkt0++;
     }
   }
   
+  //delete[] fTracks;
+  fTracks->Clear();
 
   Int_t nseteq = (ngoodtrkt0-1)/nmaxtracksinset + 1;
   Int_t nmaxtracksinsetCurrent=ngoodtrkt0/nseteq;
@@ -272,12 +309,15 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	Int_t npionbest=0;
 	
 	Int_t ntracksinsetmy=0;      
-	AliESDtrack **tracksT0=new AliESDtrack*[ntracksinset];
+	//AliESDtrack **fTracksT0=new AliESDtrack*[ntracksinset];
 	for (Int_t itrk=0; itrk<ntracksinset; itrk++) {
 	  Int_t index = itrk+i*ntracksinset;
-	  if(index < ngoodtrkt0){
-	    AliESDtrack *t=gtracks[index];
-	    tracksT0[itrk]=t;
+	  //if(index < ngoodtrkt0){
+	  if(index < fGTracks->GetEntries()){
+	    //AliESDtrack *t=fGTracks[index];
+	    AliESDtrack *t=(AliESDtrack*)fGTracks->At(index);
+	    //fTracksT0[itrk]=t;
+	    fTracksT0->AddLast(t);
 	    ntracksinsetmy++;
 	  }
 	}
@@ -328,8 +368,10 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  imass[j] = 1;
 	}
 	
-	for (Int_t j=0; j<ntracksinsetmy; j++) {
-	  AliESDtrack *t=tracksT0[j];
+	//for (Int_t j=0; j<ntracksinsetmy; j++) {
+	for (Int_t j=0; j<fTracksT0->GetEntries(); j++) {
+	  //AliESDtrack *t=fTracksT0[j];
+	  AliESDtrack *t=(AliESDtrack*)fTracksT0->At(j);
 	  Double_t momOld=t->GetP();
 	  Double_t mom=momOld-0.0036*momOld;
 	  Double_t time=t->GetTOFsignal();
@@ -369,15 +411,18 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  imass[j] = 3;
 	}
 	
-	Int_t ncombinatorial = Int_t(TMath::Power(3,ntracksinsetmy));
+	//Int_t ncombinatorial = Int_t(TMath::Power(3,ntracksinsetmy));
+	Int_t ncombinatorial = ToCalculatePower(3,ntracksinsetmy);
 	
 	// Loop on mass hypotheses
 	for (Int_t k=0; k < ncombinatorial;k++) {
 	  for (Int_t j=0; j<ntracksinsetmy; j++) {
-	    imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j)))/Int_t(TMath::Power(3,ntracksinsetmy-j-1));
+	    //imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j)))/Int_t(TMath::Power(3,ntracksinsetmy-j-1));
+	    imass[j] = (k % ToCalculatePower(3,ntracksinsetmy-j))/ToCalculatePower(3,ntracksinsetmy-j-1);
 	    texp[j]=exptof[j][imass[j]];
 	    dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
-	    if(! CheckTPCMatching(tracksT0[j],imass[j])) dtexp[j]*=100;
+	    //if(! CheckTPCMatching(fTracksT0[j],imass[j])) dtexp[j]*=100;
+	    if(! CheckTPCMatching((AliESDtrack*)fTracksT0->At(j),imass[j])) dtexp[j]*=100;
 	  }
 
 	  Float_t sumAllweights=0.;
@@ -402,8 +447,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  
 	  Float_t chisquare=0.;		
 	  for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
-	      if(CheckTPCMatching(tracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
-	      else  chisquare+=1000;
+	    //if(CheckTPCMatching(fTracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	    if(CheckTPCMatching((AliESDtrack*)fTracksT0->At(icsq),imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	    else  chisquare+=1000;
 	  } // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	  
 	  if(chisquare<=chisquarebest){
@@ -415,7 +461,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	      besttimeofflight[iqsq]=timeofflight[iqsq]; 
 	      besttexp[iqsq]=texp[iqsq]; 
 	      bestweightedtimezero[iqsq]=weightedtimezero[iqsq]; 
-	      if(CheckTPCMatching(tracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+	      //if(CheckTPCMatching(fTracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+	      if(CheckTPCMatching((AliESDtrack*)fTracksT0->At(iqsq),imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
 	      else  bestchisquare[iqsq]=1000;
 	    }
 	    
@@ -462,10 +509,12 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  //	  printf("Redo T0\n");
 	  for (Int_t k=0; k < ncombinatorial;k++) {
 	    for (Int_t j=0; j<ntracksinsetmy; j++) {
-	      imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j))) / Int_t(TMath::Power(3,ntracksinsetmy-j-1));
+	      //imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j))) / Int_t(TMath::Power(3,ntracksinsetmy-j-1));
+	      imass[j] = (k % ToCalculatePower(3,ntracksinsetmy-j)) / ToCalculatePower(3,ntracksinsetmy-j-1);
 	      texp[j]=exptof[j][imass[j]];
 	      dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
-	      if(! CheckTPCMatching(tracksT0[j],imass[j])) dtexp[j]*=100;
+	      //if(! CheckTPCMatching(fTracksT0[j],imass[j])) dtexp[j]*=100;
+	      if(! CheckTPCMatching((AliESDtrack*)fTracksT0->At(j),imass[j])) dtexp[j]*=100;
 	    }
 	    
 	    Float_t sumAllweights=0.;
@@ -492,7 +541,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	    Float_t chisquare=0.;		
 	    for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
 	      if(! usetrack[icsq]) continue;
-	      if(CheckTPCMatching(tracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	      //if(CheckTPCMatching(fTracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	      if(CheckTPCMatching((AliESDtrack*)fTracksT0->At(icsq),imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
 	      else  chisquare+=1000;
 	      
 	    } // end loop for (Int_t icsq=0; icsq<15;icsq++) 
@@ -512,7 +562,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 		besttimeofflight[iqsq]=timeofflight[iqsq]; 
 		besttexp[iqsq]=texp[iqsq]; 
 		bestweightedtimezero[iqsq]=weightedtimezero[iqsq]; 
-		if(CheckTPCMatching(tracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+		//if(CheckTPCMatching(fTracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+		if(CheckTPCMatching((AliESDtrack*)fTracksT0->At(iqsq),imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
 		else  bestchisquare[iqsq]=1000;
 	      }
 	      
@@ -574,7 +625,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	    //	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
 	  }
 	}	
-	delete[] tracksT0;
+	//delete[] fTracksT0;
+	fTracksT0->Clear();
 	nsets++;
 	
       } // end for the current set
@@ -628,7 +680,10 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
       fT0SigmaT0def[3]=ngoodtrktrulyused;
     }
   }
-  
+
+  //delete [] fGTracks;
+  fGTracks->Clear();
+
   //   if(strstr(option,"tim") || strstr(option,"all")){
   //     cout << "AliTOFT0v1:" << endl ;
   //}
@@ -690,7 +745,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 
   Int_t ntrk=fEvent->GetNumberOfTracks();
   
-  AliESDtrack **tracks=new AliESDtrack*[ntrk];
+  //AliESDtrack **fTracks=new AliESDtrack*[ntrk];
   Int_t ngoodtrk=0;
   Int_t ngoodtrkt0 =0;
   Float_t mintime =1E6;
@@ -713,7 +768,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
     if(t->GetIntegratedLength() < 350)continue; //skip decays
     if(t->GetP() > pMinCut && t->GetP() < pMaxCut) continue;
     if(time <= mintime) mintime=time;
-    tracks[ngoodtrk]=t;
+    //fTracks[ngoodtrk]=t;
+    fTracks->AddLast(t);
     ngoodtrk++;
   }
   
@@ -724,18 +780,24 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 //     cout << " N. of preselected tracks            : " << ngoodtrk << endl;
 //     cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
   
-  AliESDtrack **gtracks=new AliESDtrack*[ngoodtrk];
+  //AliESDtrack **fGTracks=new AliESDtrack*[ngoodtrk];
   
-  for (Int_t jtrk=0; jtrk< ngoodtrk; jtrk++) {
-    AliESDtrack *t=tracks[jtrk];
+  //for (Int_t jtrk=0; jtrk< ngoodtrk; jtrk++) {
+  for (Int_t jtrk=0; jtrk< fTracks->GetEntries(); jtrk++) {
+    //AliESDtrack *t=fTracks[jtrk];
+    AliESDtrack *t=(AliESDtrack*)fTracks->At(jtrk);
     Double_t time=t->GetTOFsignal();
 
     if((time-mintime*1.E3)<50.E3){ // For pp and per 
-      gtracks[ngoodtrkt0]=t;
+      //fGTracks[ngoodtrkt0]=t;
+      fGTracks->AddLast(t);
       ngoodtrkt0++;
     }
   }
-  
+
+  //delete [] fTracks;
+  fTracks->Clear();
+
 //     cout << " N. of preselected tracks t0         : " << ngoodtrkt0 << endl;
 
   Int_t nseteq = (ngoodtrkt0-1)/nmaxtracksinset + 1;
@@ -772,16 +834,19 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	Int_t npionbest=0;
 	
 	Int_t ntracksinsetmy=0;      
-	AliESDtrack **tracksT0=new AliESDtrack*[ntracksinset];
+	//AliESDtrack **fTracksT0=new AliESDtrack*[ntracksinset];
 	for (Int_t itrk=0; itrk<ntracksinset; itrk++) {
 	  Int_t index = itrk+i*ntracksinset;
-	  if(index < ngoodtrkt0){
-	    AliESDtrack *t=gtracks[index];
-	    tracksT0[itrk]=t;
+	  //if(index < ngoodtrkt0){
+	  if(index < fGTracks->GetEntries()){
+	    //AliESDtrack *t=fGTracks[index];
+	    AliESDtrack *t=(AliESDtrack*)fGTracks->At(index);
+	    //fTracksT0[itrk]=t;
+	    fTracksT0->AddLast(t);
 	    ntracksinsetmy++;
 	  }
 	}
-	
+
 	// Analyse it
 	
 	Int_t   assparticle[nmaxtracksinsetMax];
@@ -828,8 +893,10 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  imass[j] = 1;
 	}
 	
-	for (Int_t j=0; j<ntracksinsetmy; j++) {
-	  AliESDtrack *t=tracksT0[j];
+	//for (Int_t j=0; j<ntracksinsetmy; j++) {
+	for (Int_t j=0; j<fTracksT0->GetEntries(); j++) {
+	  //AliESDtrack *t=fTracksT0[j];
+	  AliESDtrack *t=(AliESDtrack*)fTracksT0->At(j);
 	  Double_t momOld=t->GetP();
 	  Double_t mom=momOld-0.0036*momOld;
 	  Double_t time=t->GetTOFsignal();
@@ -869,15 +936,18 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  imass[j] = 3;
 	}
 	
-	Int_t ncombinatorial = Int_t(TMath::Power(3,ntracksinsetmy));
+	//Int_t ncombinatorial = Int_t(TMath::Power(3,ntracksinsetmy));
+	Int_t ncombinatorial = ToCalculatePower(3,ntracksinsetmy);
 	
 	// Loop on mass hypotheses
 	for (Int_t k=0; k < ncombinatorial;k++) {
 	  for (Int_t j=0; j<ntracksinsetmy; j++) {
-	    imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j)))/Int_t(TMath::Power(3,ntracksinsetmy-j-1));
+	    //imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j)))/Int_t(TMath::Power(3,ntracksinsetmy-j-1));
+	    imass[j] = (k % ToCalculatePower(3,ntracksinsetmy-j))/ToCalculatePower(3,ntracksinsetmy-j-1);
 	    texp[j]=exptof[j][imass[j]];
 	    dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
-	    if(! CheckTPCMatching(tracksT0[j],imass[j])) dtexp[j]*=100;
+	    //if(! CheckTPCMatching(fTracksT0[j],imass[j])) dtexp[j]*=100;
+	    if(! CheckTPCMatching((AliESDtrack*)fTracksT0->At(j),imass[j])) dtexp[j]*=100;
 	  }
 
 	  Float_t sumAllweights=0.;
@@ -901,8 +971,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  // calculate chisquare
 	  Float_t chisquare=0.;		
 	  for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
-	      if(CheckTPCMatching(tracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
-	      else  chisquare+=1000;
+	    //if(CheckTPCMatching(fTracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	    if(CheckTPCMatching((AliESDtrack*)fTracksT0->At(icsq),imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	    else  chisquare+=1000;
 	  } // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	  
 	  if(chisquare<=chisquarebest){
@@ -914,7 +985,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	      besttimeofflight[iqsq]=timeofflight[iqsq]; 
 	      besttexp[iqsq]=texp[iqsq]; 
 	      bestweightedtimezero[iqsq]=weightedtimezero[iqsq]; 
-	      if(CheckTPCMatching(tracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+	      //if(CheckTPCMatching(fTracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+	      if(CheckTPCMatching((AliESDtrack*)fTracksT0->At(iqsq),imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
 	      else  bestchisquare[iqsq]=1000;
 	    }
 	    
@@ -960,10 +1032,12 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  //	  printf("Redo T0\n");
 	  for (Int_t k=0; k < ncombinatorial;k++) {
 	    for (Int_t j=0; j<ntracksinsetmy; j++) {
-	      imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j))) / Int_t(TMath::Power(3,ntracksinsetmy-j-1));
+	      //imass[j] = (k % Int_t(TMath::Power(3,ntracksinsetmy-j))) / Int_t(TMath::Power(3,ntracksinsetmy-j-1));
+	      imass[j] = (k % ToCalculatePower(3,ntracksinsetmy-j)) / ToCalculatePower(3,ntracksinsetmy-j-1);
 	      texp[j]=exptof[j][imass[j]];
 	      dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
-	      if(! CheckTPCMatching(tracksT0[j],imass[j])) dtexp[j]*=100;
+	      //if(! CheckTPCMatching(fTracksT0[j],imass[j])) dtexp[j]*=100;
+	      if(! CheckTPCMatching((AliESDtrack*)fTracksT0->At(j),imass[j])) dtexp[j]*=100;
 	    }
 	    
 	    Float_t sumAllweights=0.;
@@ -990,7 +1064,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	    Float_t chisquare=0.;		
 	    for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
 	      if(! usetrack[icsq]) continue;
-	      if(CheckTPCMatching(tracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	      //if(CheckTPCMatching(fTracksT0[icsq],imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
+	      if(CheckTPCMatching((AliESDtrack*)fTracksT0->At(icsq),imass[icsq])) chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq]; // require TPC agreement
 	      else  chisquare+=1000;
 	    } // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	    
@@ -1009,7 +1084,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 		besttimeofflight[iqsq]=timeofflight[iqsq]; 
 		besttexp[iqsq]=texp[iqsq]; 
 		bestweightedtimezero[iqsq]=weightedtimezero[iqsq]; 
-		if(CheckTPCMatching(tracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+		//if(CheckTPCMatching(fTracksT0[iqsq],imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
+		if(CheckTPCMatching((AliESDtrack*)fTracksT0->At(iqsq),imass[iqsq])) bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; // require TPC agreement
 		else  bestchisquare[iqsq]=1000;
 	      }
 	      
@@ -1075,7 +1151,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	    //	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
 	  }
 	}	
-	delete[] tracksT0;
+	//delete[] fTracksT0;
+	fTracksT0->Clear();
 	nsets++;
 	
       } // end for the current set
@@ -1131,7 +1208,10 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
       fT0SigmaT0def[3]=ngoodtrktrulyused;
     }
   }
-  
+
+  //delete [] fGTracks;
+  fGTracks->Clear();
+
   //   if(strstr(option,"tim") || strstr(option,"all")){
   //     cout << "AliTOFT0v1:" << endl ;
   //}
@@ -1217,7 +1297,8 @@ Float_t AliTOFT0v1::GetSigmaToVertex(AliESDtrack* esdTrack) const
   if (bRes[0] == 0 || bRes[1] ==0)
     return -1;
 
-  Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
+  //Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
+  Float_t d = TMath::Sqrt(ToCalculatePower(b[0]/bRes[0],2) + ToCalculatePower(b[1]/bRes[1],2));
 
   // work around precision problem
   // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
@@ -1255,4 +1336,35 @@ Bool_t AliTOFT0v1::CheckTPCMatching(AliESDtrack *track,Int_t imass) const{
     }
     
     return status;
+}
+
+//____________________________________________________________________
+Float_t AliTOFT0v1::ToCalculatePower(Float_t base, Int_t exponent) const
+{
+  //
+  // Returns base^exponent
+  //
+
+  Float_t power=1.;
+
+  for (Int_t ii=exponent; ii>0; ii--)
+      power=power*base;
+
+  return power;
+
+}
+//____________________________________________________________________
+Int_t AliTOFT0v1::ToCalculatePower(Int_t base, Int_t exponent) const
+{
+  //
+  // Returns base^exponent
+  //
+
+  Int_t power=1;
+
+  for (Int_t ii=exponent; ii>0; ii--)
+      power=power*base;
+
+  return power;
+
 }

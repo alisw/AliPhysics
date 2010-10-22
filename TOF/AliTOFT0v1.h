@@ -12,9 +12,13 @@
 
 #include "TObject.h"
 
+#include "TObjArray.h"
+
 class AliESDtrack;
 class AliESDEvent;
 class AliESDpid;
+
+class TObjArray;
 
 class AliTOFT0v1: public TObject {
 public:
@@ -38,6 +42,9 @@ public:
 
  private:
 
+  Float_t ToCalculatePower(Float_t base, Int_t exponent) const ;
+  Int_t   ToCalculatePower(Int_t base, Int_t exponent) const ;
+
   AliTOFT0v1(const AliTOFT0v1 &);
   AliTOFT0v1 & operator=(const AliTOFT0v1 &) ;
 
@@ -53,7 +60,11 @@ public:
   
   AliESDpid *fPIDesd; // class with the detector response
 
-  ClassDef(AliTOFT0v1,3);  // Calculate the time zero using TOF detector */
+  TObjArray *fTracks;   //! array of tracks
+  TObjArray *fGTracks;  //! array of good tracks
+  TObjArray *fTracksT0; //! array of tracks usefull for T0 estimate
+
+  ClassDef(AliTOFT0v1,4);  // Calculate the time zero using TOF detector */
   
 };
 
