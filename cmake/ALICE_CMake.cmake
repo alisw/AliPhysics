@@ -502,16 +502,19 @@ macro(ALICE_BuildExecutable)
 # ------------------------------
   if(PACKAGE STREQUAL "alimdc")
 
-    add_executable(${PACKAGE}-static ${PFS} ${PCS} ${PS} ${PDS})
+    add_executable(${PACKAGE}-static EXCLUDE_FROM_ALL ${PFS} ${PCS} ${PS} ${PDS})
     set_target_properties(${PACKAGE}-static PROPERTIES OUTPUT_NAME alimdca)
     add_custom_target( libAliMDC
                         COMMAND rm -rf ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a
 			COMMAND rm -rf junkmdc
 			COMMAND mkdir junkmdc && cd junkmdc && ar x ../libRAWDatabase.a && ar x ../libMDC.a && ar x ../libESD.a && ar x ../libSTEERBase.a && ar r ../libAliMDC.a *.o && cd .. && rm -rf junkmdc
-			DEPENDS 
 			WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    add_custom_target( root-static-libs 
+                       COMMAND make static
+		       WORKING_DIRECTORY ${ROOTSYS} )
+		       
     add_dependencies(libAliMDC RAWDatabase-static STEERBase-static MDC-static ESD-static)
-    add_dependencies(${PACKAGE}-static libAliMDC)
+    add_dependencies(${PACKAGE}-static libAliMDC root-static-libs)
     target_link_libraries(${PACKAGE}-static ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${ROOTLIBDIR}/libRoot.a ${ROOTLIBDIR}/libfreetype.a ${ROOTLIBDIR}/libpcre.a -pthread -ldl -lcurses)
 			
 
