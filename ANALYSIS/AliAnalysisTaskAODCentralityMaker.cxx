@@ -27,30 +27,23 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODCentrality.h"
-#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliESD.h"
-#include "AliESDHeader.h"
 #include "AliESDInputHandler.h"
 #include "AliESDZDC.h"
 #include "AliESDFMD.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 #include "AliAODHandler.h"
+#include "AliAODHeader.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
-#include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliMCParticle.h"
 #include "AliStack.h"
 #include "AliHeader.h"
-#include "AliAODMCParticle.h"
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
-#include "AliPhysicsSelectionTask.h"
-#include "AliPhysicsSelection.h"
-#include "AliBackgroundSelection.h"
 #include "AliAnalysisTaskAODCentralityMaker.h"
 
 ClassImp(AliAnalysisTaskAODCentralityMaker)
@@ -61,53 +54,10 @@ AliAnalysisTaskAODCentralityMaker::AliAnalysisTaskAODCentralityMaker():
 AliAnalysisTaskSE(),
 fAODCentrality(0),
 fDeltaAODFileName("AliAOD.Centrality.root"),
-fIsMCInput        (0),
-fNev              (0),
-fBeamEnergy       (0),	
-fNmyTracks_gen    (0),
-fxVertex          (0),
-fyVertex          (0),
-fzVertex          (0),
-fVertexer3d       (0),
-fbMC 		  (0),
-fNpartTargMC	  (0),
-fNpartProjMC	  (0),
-fNNColl     	  (0),
-fNNwColl    	  (0),
-fNwNColl    	  (0),
-fNwNwColl   	  (0),
-fNTracklets 	  (0),
-fNSingleClusters  (0),
-fbZDC             (0),
-fNpartZDC         (0),
-fbZDCA            (0),
-fNpartZDCA        (0), 
-fbZDCC            (0),   
-fNpartZDCC        (0),     
-fESDFlag 	  (0),
-fZNCEnergy	  (0),
-fZPCEnergy	  (0),
-fZNAEnergy	  (0),
-fZPAEnergy	  (0),
-fZEM1Energy	  (0),
-fZEM2Energy	  (0),
-fNTracks    	  (0),
-fNPmdTracks 	  (0),
-fMultV0A    	  (0),
-fMultV0C    	  (0),
-fMultFMDA    	  (0),   
-fMultFMDC         (0)
+fAODHeader        (0),
+fIsMCInput        (0)
 {
   // Default constructor
-    
-  for (int i=0;i<6;i++) fNClusters[i]=0;
-  for (int i=0;i<2;i++) fNChips[i]=0;
-  for (int i=0;i<5;i++) fZNCtower[i]=0;
-  for (int i=0;i<5;i++) fZPCtower[i]=0;
-  for (int i=0;i<5;i++) fZNAtower[i]=0;
-  for (int i=0;i<5;i++) fZPAtower[i]=0;
-  for (int i=0;i<2;i++) fCentrZNC[i]=0;
-  for (int i=0;i<2;i++) fCentrZNA[i]=0;
 }
 
 //________________________________________________________________________
@@ -115,53 +65,10 @@ AliAnalysisTaskAODCentralityMaker::AliAnalysisTaskAODCentralityMaker(const char 
 AliAnalysisTaskSE(name),
 fAODCentrality(0),
 fDeltaAODFileName("AliAOD.Centrality.root"),
-fIsMCInput        (0),
-fNev              (0),
-fBeamEnergy       (0),	
-fNmyTracks_gen    (0),
-fxVertex          (0),
-fyVertex          (0),
-fzVertex          (0),
-fVertexer3d       (0),
-fbMC 		  (0),
-fNpartTargMC	  (0),
-fNpartProjMC	  (0),
-fNNColl     	  (0),
-fNNwColl    	  (0),
-fNwNColl    	  (0),
-fNwNwColl   	  (0),
-fNTracklets 	  (0),
-fNSingleClusters  (0),
-fbZDC             (0),
-fNpartZDC         (0),
-fbZDCA            (0),
-fNpartZDCA        (0), 
-fbZDCC            (0),   
-fNpartZDCC        (0),     
-fESDFlag 	  (0),
-fZNCEnergy	  (0),
-fZPCEnergy	  (0),
-fZNAEnergy	  (0),
-fZPAEnergy	  (0),
-fZEM1Energy	  (0),
-fZEM2Energy	  (0),
-fNTracks    	  (0),
-fNPmdTracks 	  (0),
-fMultV0A    	  (0),
-fMultV0C    	  (0),
-fMultFMDA    	  (0),   
-fMultFMDC         (0)
+fAODHeader        (0),
+fIsMCInput        (0)
 {
   // Standard constructor
-    
-  for (int i=0;i<6;i++) fNClusters[i]=0;
-  for (int i=0;i<2;i++) fNChips[i]=0;
-  for (int i=0;i<5;i++) fZNCtower[i]=0;
-  for (int i=0;i<5;i++) fZPCtower[i]=0;
-  for (int i=0;i<5;i++) fZNAtower[i]=0;
-  for (int i=0;i<5;i++) fZPAtower[i]=0;
-  for (int i=0;i<2;i++) fCentrZNC[i]=0;
-  for (int i=0;i<2;i++) fCentrZNA[i]=0;
 }
 
 
@@ -203,123 +110,151 @@ void AliAnalysisTaskAODCentralityMaker::UserCreateOutputObjects()
   fAODCentrality->SetName("AODCentrality");
   AddAODBranch("AliAODCentrality", &fAODCentrality, filename);
   
+
+  fAODHeader = new AliAODHeader();
+  AddAODBranch("AliAODHeader", &fAODHeader, filename);
   return;
 }
+
 
 //________________________________________________________________________
 void AliAnalysisTaskAODCentralityMaker::UserExec(Option_t */*option*/)
 {
-  AliVEvent* event = InputEvent();
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+  AliVEvent*   event = InputEvent();
+  AliESDEvent* esd   = dynamic_cast<AliESDEvent*>(event);
 
-  fBeamEnergy = esd->GetBeamEnergy();
-  fNTracks    = event->GetNumberOfTracks();     
-  fNPmdTracks = esd->GetNumberOfPmdTracks();     
+  Float_t beamEnergy = esd->GetBeamEnergy();
+  Int_t   nTracks    = event->GetNumberOfTracks();     
+  Int_t   nPmdTracks = esd->GetNumberOfPmdTracks();     
     
   // ***** V0 info
   AliESDVZERO* esdV0 = esd->GetVZEROData();
-  fMultV0A=esdV0->GetMTotV0A();
-  fMultV0C=esdV0->GetMTotV0C();
+  Double_t multV0A = esdV0->GetMTotV0A();
+  Double_t multV0C = esdV0->GetMTotV0C();
     
   // ***** Trigger selection
+  char     trigClass[100];	//  fired trigger classes
   TString triggerClass = esd->GetFiredTriggerClasses();
-  sprintf(fTrigClass,"%s",triggerClass.Data());
+  sprintf(trigClass,"%s",triggerClass.Data());
   
   // ***** vertex info
   const AliESDVertex *vertex = esd->GetPrimaryVertexSPD();
-  fxVertex = vertex->GetX();
-  fyVertex = vertex->GetY();
-  fzVertex = vertex->GetZ();
-  if(vertex->IsFromVertexer3D()) fVertexer3d = kTRUE;
-  else fVertexer3d = kFALSE;
+  Double_t xVertex = vertex->GetX();
+  Double_t yVertex = vertex->GetY();
+  Double_t zVertex = vertex->GetZ();
+  Bool_t vertexer3d;
+  
+  if(vertex->IsFromVertexer3D()) vertexer3d = kTRUE;
+  else vertexer3d = kFALSE;
   Double_t vertex3[3];
   vertex->GetXYZ(vertex3);
   
   // ***** CB info (tracklets, clusters, chips)
   const AliMultiplicity *mult = esd->GetMultiplicity();
-  fNTracklets = mult->GetNumberOfTracklets();
+  Int_t nTracklets = mult->GetNumberOfTracklets();
+  Int_t nSingleClusters;
+  Int_t nClusters[6];
   
-  for(Int_t ilay=0; ilay<6; ilay++){
-    fNClusters[ilay] = mult->GetNumberOfITSClusters(ilay);
+  for(Int_t ilay = 0; ilay < 6; ilay++){
+    nClusters[ilay] = mult->GetNumberOfITSClusters(ilay);
   }
-  fNSingleClusters = mult->GetNumberOfSingleClusters();
-  
-  for(Int_t ilay=0; ilay<2; ilay++){
-    fNChips[ilay] = mult->GetNumberOfFiredChips(ilay);
+  nSingleClusters = mult->GetNumberOfSingleClusters();
+
+  Int_t nChips[2];
+  for(Int_t ilay = 0; ilay < 2; ilay++){
+    nChips[ilay] = mult->GetNumberOfFiredChips(ilay);
   }
   
   // ***** FMD info
   AliESDFMD *fmd = esd->GetFMDData();
   Float_t totalMultA = 0;
   Float_t totalMultC = 0;
-  const Float_t fFMDLowCut = 0.4;
+  const Float_t fmdLowCut = 0.4;
   
-  for(UShort_t det=1;det<=3;det++) {
-    Int_t nRings = (det==1 ? 1 : 2);
-    for (UShort_t ir = 0; ir < nRings; ir++) {	  
-      Char_t   ring = (ir == 0 ? 'I' : 'O');
-      UShort_t nsec = (ir == 0 ? 20  : 40);
-      UShort_t nstr = (ir == 0 ? 512 : 256);
-      for(UShort_t sec =0; sec < nsec;  sec++)  {
-	for(UShort_t strip = 0; strip < nstr; strip++) {
+  for(UShort_t det = 1;det <= 3; det++) {
+      Int_t nRings = (det==1 ? 1 : 2);
+      for (UShort_t ir = 0; ir < nRings; ir++) {	  
+	  Char_t   ring = (ir == 0 ? 'I' : 'O');
+	  UShort_t nsec = (ir == 0 ? 20  : 40);
+	  UShort_t nstr = (ir == 0 ? 512 : 256);
+	  for(UShort_t sec =0; sec < nsec;  sec++)  {
+	      for(UShort_t strip = 0; strip < nstr; strip++) {
+		  Float_t fmdMult = fmd->Multiplicity(det,ring,sec,strip);
+		  if(fmdMult == 0 || fmdMult == AliESDFMD::kInvalidMult) continue;
+		  Float_t nParticles=0;
+		  if(fmdMult > fmdLowCut) {
+		      nParticles = 1.;
+		  }
 	  
-	  Float_t FMDmult = fmd->Multiplicity(det,ring,sec,strip);
-	  if(FMDmult == 0 || FMDmult == AliESDFMD::kInvalidMult) continue;
-	  
-	  Float_t nParticles=0;
-	  
-	  if(FMDmult > fFMDLowCut) {
-	    nParticles = 1.;
+		  if (det<3) totalMultA = totalMultA + nParticles;
+		  else totalMultC = totalMultC + nParticles;
+		  
+	      }
 	  }
-	  
-	  if (det<3) totalMultA = totalMultA + nParticles;
-	  else totalMultC = totalMultC + nParticles;
-	  
-	}
       }
-    }
   }
-  fMultFMDA = totalMultA;
-  fMultFMDC = totalMultC;
+  Float_t multFMDA = totalMultA;
+  Float_t multFMDC = totalMultC;
   
   // ***** ZDC info
   AliESDZDC *esdZDC = esd->GetESDZDC();
-  fESDFlag =  esdZDC->GetESDQuality();   
+  UInt_t esdFlag =  esdZDC->GetESDQuality();   
   
-  fZNCEnergy = (Float_t) (esdZDC->GetZDCN1Energy());
-  fZPCEnergy = (Float_t) (esdZDC->GetZDCP1Energy());
-  fZNAEnergy = (Float_t) (esdZDC->GetZDCN2Energy());
-  fZPAEnergy = (Float_t) (esdZDC->GetZDCP2Energy());
-  fZEM1Energy = (Float_t) (esdZDC->GetZDCEMEnergy(0));
-  fZEM2Energy = (Float_t) (esdZDC->GetZDCEMEnergy(1));
+  Float_t znCEnergy  = (Float_t) (esdZDC->GetZDCN1Energy());
+  Float_t zpCEnergy  = (Float_t) (esdZDC->GetZDCP1Energy());
+  Float_t znAEnergy  = (Float_t) (esdZDC->GetZDCN2Energy());
+  Float_t zpAEnergy  = (Float_t) (esdZDC->GetZDCP2Energy());
+  Float_t zem1Energy = (Float_t) (esdZDC->GetZDCEMEnergy(0));
+  Float_t zem2Energy = (Float_t) (esdZDC->GetZDCEMEnergy(1));
   
-  fbZDC = esdZDC->GetImpactParameter();
-  fNpartZDC = esdZDC->GetZDCParticipants();
-  fbZDCA = esdZDC->GetImpactParamSideA();
-  fNpartZDCA = esdZDC->GetZDCPartSideA();
-  fbZDCC = esdZDC->GetImpactParamSideC();
-  fNpartZDCC = esdZDC->GetZDCPartSideC();
+  Double_t bZDC      = esdZDC->GetImpactParameter();
+  Int_t    nPartZDC  = esdZDC->GetZDCParticipants();
+  Double_t bZDCA     = esdZDC->GetImpactParamSideA();
+  Int_t    nPartZDCA = esdZDC->GetZDCPartSideA();
+  Double_t bZDCC     = esdZDC->GetImpactParamSideC();
+  Int_t    nPartZDCC = esdZDC->GetZDCPartSideC();
   
   const Double_t * towZNC = esdZDC->GetZN1TowerEnergy();
   const Double_t * towZPC = esdZDC->GetZP1TowerEnergy();
   const Double_t * towZNA = esdZDC->GetZN2TowerEnergy();
   const Double_t * towZPA = esdZDC->GetZP2TowerEnergy();
   //
-  for(Int_t it=0; it<5; it++){
-    fZNCtower[it] = (Float_t) (towZNC[it]);
-    fZPCtower[it] = (Float_t) (towZPC[it]);
-    fZNAtower[it] = (Float_t) (towZNA[it]); 
-    fZPAtower[it] = (Float_t) (towZPA[it]);  
+  Float_t  znCtower[5];	//  ZNC 5 tower signals
+  Float_t  zpCtower[5];	//  ZPC 5 tower signals
+  Float_t  znAtower[5];	//  ZNA 5 tower signals
+  Float_t  zpAtower[5];	//  ZPA 5 tower signals
+  Float_t  centrZNC[2];	//  centroid over ZNC
+  Float_t  centrZNA[2];	//  centroid over ZNA
+
+  for(Int_t it = 0; it < 5; it++){
+    znCtower[it] = (Float_t) (towZNC[it]);
+    zpCtower[it] = (Float_t) (towZPC[it]);
+    znAtower[it] = (Float_t) (towZNA[it]); 
+    zpAtower[it] = (Float_t) (towZPA[it]);  
   }
   
-  Double_t xyZNC[2]={-99.,-99.}, xyZNA[2]={-99.,-99.};
-  esdZDC->GetZNCentroidInPbPb(fBeamEnergy, xyZNC, xyZNA);
-  for(Int_t it=0; it<2; it++){
-    fCentrZNC[it] = xyZNC[it];
-    fCentrZNA[it] = xyZNA[it];
+  Double_t xyZNC[2] = {-99.,-99.};
+  Double_t xyZNA[2] = {-99.,-99.};
+
+  esdZDC->GetZNCentroidInPbPb(beamEnergy, xyZNC, xyZNA);
+  for(Int_t it = 0; it < 2; it++){
+      centrZNC[it] = xyZNC[it];
+      centrZNA[it] = xyZNA[it];
   }
 
   // ***** MC info
+  Double_t bMC          = 0.;
+  Int_t specNeutronProj = 0;
+  Int_t specProtonProj  = 0;
+  Int_t specNeutronTarg = 0;
+  Int_t specProtonTarg  = 0;
+  Int_t nPartTargMC     = 0;
+  Int_t nPartProjMC     = 0;
+  Int_t nnColl          = 0;
+  Int_t nnwColl         = 0;
+  Int_t nwNColl         = 0;
+  Int_t nwNwColl        = 0;
+
   if(fIsMCInput){
     
     AliMCEvent* mcEvent = MCEvent();
@@ -328,7 +263,7 @@ void AliAnalysisTaskAODCentralityMaker::UserExec(Option_t */*option*/)
       return;
     }
     
-    fNmyTracks_gen = 0;
+    Int_t nMyTracks_gen = 0;
     AliStack *stack = 0x0; // needed for MC studies
     stack = MCEvent()->Stack();
     for (Int_t iTrack = 0; iTrack < MCEvent()->GetNumberOfTracks(); iTrack++) {
@@ -343,7 +278,7 @@ void AliAnalysisTaskAODCentralityMaker::UserExec(Option_t */*option*/)
       // 	  if(mcP->Pt()<0.2)continue;
       // 	  if(mcP->Pt()>200)continue;
       
-      fNmyTracks_gen ++;
+      nMyTracks_gen ++;
     } 
     
     AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
@@ -352,97 +287,103 @@ void AliAnalysisTaskAODCentralityMaker::UserExec(Option_t */*option*/)
       return;
     }
 	
+
     if(genHeader->InheritsFrom(AliGenHijingEventHeader::Class())){
-      fbMC = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
-      Int_t specNeutronProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
-      Int_t specProtonProj  = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
-      Int_t specNeutronTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsn();
-      Int_t specProtonTarg  = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
-      fNpartTargMC = Int_t (208.-(specNeutronTarg+specProtonTarg));
-      fNpartProjMC = Int_t (208.-(specNeutronProj+specProtonProj));
-      fNNColl   = ((AliGenHijingEventHeader*) genHeader)->NN();
-      fNNwColl  = ((AliGenHijingEventHeader*) genHeader)->NNw();
-      fNwNColl  = ((AliGenHijingEventHeader*) genHeader)->NwN();
-      fNwNwColl = ((AliGenHijingEventHeader*) genHeader)->NwNw();
+	bMC = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
+	specNeutronProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
+	specProtonProj  = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
+	specNeutronTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsn();
+	specProtonTarg  = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
+	nPartTargMC = Int_t (208.-(specNeutronTarg+specProtonTarg));
+	nPartProjMC = Int_t (208.-(specNeutronProj+specProtonProj));
+	nnColl   = ((AliGenHijingEventHeader*) genHeader)->NN();
+	nnwColl  = ((AliGenHijingEventHeader*) genHeader)->NNw();
+	nwNColl  = ((AliGenHijingEventHeader*) genHeader)->NwN();
+	nwNwColl = ((AliGenHijingEventHeader*) genHeader)->NwNw();
     }  
-    
   }
   
-  fAODCentrality->SetTrigClass         (fTrigClass[100]);
-  fAODCentrality->SetxVertex	       (fxVertex       );
-  fAODCentrality->SetyVertex	       (fyVertex       );
-  fAODCentrality->SetzVertex	       (fzVertex       );
-  fAODCentrality->SetVertexer3d        (fVertexer3d    );
-  fAODCentrality->SetbMC               (fbMC);
-  fAODCentrality->SetNpartTargMC       (fNpartTargMC);
-  fAODCentrality->SetNpartProjMC       (fNpartProjMC);
-  fAODCentrality->SetNNColl            (fNNColl);
-  fAODCentrality->SetNNwColl           (fNNwColl);
-  fAODCentrality->SetNwNColl           (fNwNColl);
-  fAODCentrality->SetNwNwColl          (fNwNwColl);
-  fAODCentrality->SetNTracklets        (fNTracklets);
-  fAODCentrality->SetNSingleClusters   (fNSingleClusters);
+  fAODCentrality->SetTrigClass         (trigClass[100]);
+  fAODCentrality->SetxVertex	       (xVertex       );
+  fAODCentrality->SetyVertex	       (yVertex       );
+  fAODCentrality->SetzVertex	       (zVertex       );
+  fAODCentrality->SetVertexer3d        (vertexer3d    );
+  fAODCentrality->SetbMC               (bMC);
+  fAODCentrality->SetNpartTargMC       (nPartTargMC);
+  fAODCentrality->SetNpartProjMC       (nPartProjMC);
+  fAODCentrality->SetNNColl            (nnColl);
+  fAODCentrality->SetNNwColl           (nnwColl);
+  fAODCentrality->SetNwNColl           (nwNColl);
+  fAODCentrality->SetNwNwColl          (nwNwColl);
+  fAODCentrality->SetNTracklets        (nTracklets);
+  fAODCentrality->SetNSingleClusters   (nSingleClusters);
   fAODCentrality->SetNClusters         (
-					   fNClusters[0],
-					   fNClusters[1],
-					   fNClusters[2],
-					   fNClusters[3],
-					   fNClusters[4],
-					   fNClusters[5]);
+					   nClusters[0],
+					   nClusters[1],
+					   nClusters[2],
+					   nClusters[3],
+					   nClusters[4],
+					   nClusters[5]);
   fAODCentrality->SetNChips            (
-					   fNChips[0],
-					   fNChips[1]);
-  fAODCentrality->SetbZDC              (fbZDC);
-  fAODCentrality->SetNpartZDC          (fNpartZDC);
-  fAODCentrality->SetbZDCA             (fbZDCA);
-  fAODCentrality->SetNpartZDCA         (fNpartZDCA);
-  fAODCentrality->SetbZDCC             (fbZDCC);
-  fAODCentrality->SetNpartZDCC         (fNpartZDCC);
-  fAODCentrality->SetESDFlag  	  (fESDFlag);
-  fAODCentrality->SetZNCEnergy 	  (fZNCEnergy);
-  fAODCentrality->SetZPCEnergy	  (fZPCEnergy);
-  fAODCentrality->SetZNAEnergy	  (fZNAEnergy);
-  fAODCentrality->SetZPAEnergy	  (fZPAEnergy);
-  fAODCentrality->SetZEM1Energy	  (fZEM1Energy);
-  fAODCentrality->SetZEM2Energy	  (fZEM2Energy);
+					   nChips[0],
+					   nChips[1]);
+  fAODCentrality->SetbZDC              (bZDC);
+  fAODCentrality->SetNpartZDC          (nPartZDC);
+  fAODCentrality->SetbZDCA             (bZDCA);
+  fAODCentrality->SetNpartZDCA         (nPartZDCA);
+  fAODCentrality->SetbZDCC             (bZDCC);
+  fAODCentrality->SetNpartZDCC         (nPartZDCC);
+  fAODCentrality->SetESDFlag  	  (esdFlag);
+  fAODCentrality->SetZNCEnergy 	  (znCEnergy);
+  fAODCentrality->SetZPCEnergy	  (zpCEnergy);
+  fAODCentrality->SetZNAEnergy	  (znAEnergy);
+  fAODCentrality->SetZPAEnergy	  (zpAEnergy);
+  fAODCentrality->SetZEM1Energy	  (zem1Energy);
+  fAODCentrality->SetZEM2Energy	  (zem2Energy);
   fAODCentrality->SetZNCtower          (
-					   fZNCtower[0],
-					   fZNCtower[1],
-					   fZNCtower[2],
-					   fZNCtower[3],
-					   fZNCtower[4]);
+					   znCtower[0],
+					   znCtower[1],
+					   znCtower[2],
+					   znCtower[3],
+					   znCtower[4]);
   fAODCentrality->SetZPCtower          (
-					 fZPCtower[0],
-					 fZPCtower[1],
-					 fZPCtower[2],
-					 fZPCtower[3],
-					 fZPCtower[4]);
+					 zpCtower[0],
+					 zpCtower[1],
+					 zpCtower[2],
+					 zpCtower[3],
+					 zpCtower[4]);
  
   fAODCentrality-> SetZNAtower          (
-			     fZNAtower[0],  
-			     fZNAtower[1], 
-			     fZNAtower[2],  
-			     fZNAtower[3],  
-			     fZNAtower[4]); 
+			     znAtower[0],  
+			     znAtower[1], 
+			     znAtower[2],  
+			     znAtower[3],  
+			     znAtower[4]); 
   fAODCentrality-> SetZPAtower          (
-					    fZPAtower[0], 
-					    fZPAtower[1], 
-					    fZPAtower[2], 
-					    fZPAtower[3],
-					    fZPAtower[4]);
+					    zpAtower[0], 
+					    zpAtower[1], 
+					    zpAtower[2], 
+					    zpAtower[3],
+					    zpAtower[4]);
   fAODCentrality-> SetCentrZNC          (
-					    fCentrZNC[0],
-					    fCentrZNC[1]);
+					    centrZNC[0],
+					    centrZNC[1]);
   fAODCentrality-> SetCentrZNA          (
-					    fCentrZNA[0],
-					    fCentrZNA[1]);
-  fAODCentrality-> SetNTracks           (fNTracks);
-  fAODCentrality-> SetNPmdTracks        (fNPmdTracks);
-  fAODCentrality-> SetMultV0A           (fMultV0A);
-  fAODCentrality-> SetMultV0C           (fMultV0C);
-  fAODCentrality-> SetMultFMDA          (fMultFMDA);
-  fAODCentrality-> SetMultFMDC          (fMultFMDC);
+					    centrZNA[0],
+					    centrZNA[1]);
+  fAODCentrality-> SetNTracks           (nTracks);
+  fAODCentrality-> SetNPmdTracks        (nPmdTracks);
+  fAODCentrality-> SetMultV0A           (multV0A);
+  fAODCentrality-> SetMultV0C           (multV0C);
+  fAODCentrality-> SetMultFMDA          (multFMDA);
+  fAODCentrality-> SetMultFMDC          (multFMDC);
 
+//
+// Header Replication
+//
+  AliAODHeader* hdr = AODEvent()->GetHeader();
+  *fAODHeader =  *hdr;
+//
   return;
 }
 
