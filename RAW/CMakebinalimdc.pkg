@@ -35,7 +35,7 @@ set ( ELIBS  MDC TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONmapping
 
 if( ALICE_TARGET MATCHES "macosx")
   
-  ALICE_Format(TEMP "-Wl,-u,_G__cpp_setupG__" "" ${alimdcLIBSINIT})
+  ALICE_Format(TEMP "-Wl,-u,_G__cpp_setupG__" "" "${alimdcLIBSINIT}")
   set(PACKLDFLAGS "${LDFLAGS} ${TEMP}")
 
 endif(ALICE_TARGET MATCHES "macosx")

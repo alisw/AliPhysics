@@ -38,10 +38,10 @@ endif(PYTHIA6)
 
 if( ALICE_TARGET STREQUAL "macosx")
 		
-  string(REGEX REPLACE "(microcern|lhapdf|herwig)" "" "${ELIBS}") 
+  string(REGEX REPLACE "(microcern|lhapdf|herwig)" "" ELIBS "${ELIBS}") 
   
   ALICE_Format(PACKLDFLAGS "-Wl,-u,_G__cpp_setupG__" "" "${LDFLAGS};${ELIBSCPP}")
-  string ( REPLACE "%" "-Wl,-u,_G__cpp_setupG__%" PACKLDFLAGS "${LDFLAGS) $(ELIBSCPP}" )
+  string ( REPLACE "%" "-Wl,-u,_G__cpp_setupG__%" PACKLDFLAGS "${LDFLAGS} ${ELIBSCPP}" )
 		
 	set ( ELIBSDIR ${ELIBSDIR} ${FINK_ROOT}/lib)
 

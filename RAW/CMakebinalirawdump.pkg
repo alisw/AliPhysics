@@ -35,7 +35,7 @@ set ( ELIBS STEERBase RAWDatabase)
 
 if( ALICE_TARGET MATCHES "macosx")
 
-  ALICE_Format(TEMP "-Wl,-u,_G__cpp_setupG__" "" ${alirawdumpLIBSINIT})
+  ALICE_Format(TEMP "-Wl,-u,_G__cpp_setupG__" "" "${alirawdumpLIBSINIT}")
   set(PACKLDFLAGS "${LDFLAGS} ${TEMP}")
 
 endif(ALICE_TARGET MATCHES "macosx")
