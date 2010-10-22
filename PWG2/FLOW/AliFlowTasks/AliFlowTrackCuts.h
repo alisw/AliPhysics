@@ -33,7 +33,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static AliFlowTrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
 
   enum trackParameterType { kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet };
-  enum trackParameterMix  { kPure, kTrackWithMCkine, kTrackWithMCPID };
+  enum trackParameterMix  { kPure, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt };
 
   //setters (interface to AliESDtrackCuts)
   void SetMinNClustersTPC( Int_t a ) {fAliESDtrackCuts->SetMinNClustersTPC(a);}
@@ -58,6 +58,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetPtRange( Float_t r1, Float_t r2 ) { SetPtMin(r1); SetPtMax(r2); }
   void SetRequireCharge( Bool_t r ) {fRequireCharge=r;}
   void SetFakesAreOK( Bool_t b ) {fFakesAreOK=b;}
+  void SetSPDtrackletDeltaPhiMax( Double_t m ) {fSPDtrackletDeltaPhiMax=m; fCutSPDtrackletDeltaPhi=kTRUE;}
+  void SetSPDtrackletDeltaPhiMin( Double_t m ) {fSPDtrackletDeltaPhiMin=m; fCutSPDtrackletDeltaPhi=kTRUE;}
 
   Int_t GetMinNClustersTPC() const {return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {return fAliESDtrackCuts->GetMinNClustersITS();}
@@ -79,6 +81,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void GetEtaRange( Float_t& r1, Float_t& r2 ) const { r1=GetEtaMin(); r2=GetEtaMax(); }
   void GetPtRange( Float_t& r1, Float_t& r2 ) const { r1=GetPtMin(); r2=GetPtMax(); }
   Bool_t GetRequireCharge() const {return fRequireCharge;}
+  Bool_t GetFakesAreOK() const {return fFakesAreOK;}
+  Double_t GetSPDtrackletDeltaPhiMax() const {return fSPDtrackletDeltaPhiMax;}
+  Double_t GetSPDtrackletDeltaPhiMin() const {return fSPDtrackletDeltaPhiMin;}
 
   void SetQA(const char* dirname);
   TDirectory* GetQA() const {return fQA;}
@@ -95,14 +100,19 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetParamMix(trackParameterMix paramMix) {fParamMix=paramMix;}
   trackParameterMix GetParamMix() const {return fParamMix;}
 
-  virtual Bool_t IsSelected(TObject* obj, Int_t id=-1);
+  virtual Bool_t IsSelected(TObject* obj, Int_t id=-666);
   AliVParticle* GetTrack() const {return fTrack;}
   AliMCParticle* GetMCparticle() const {return fMCparticle;}
   AliFlowTrack* MakeFlowTrack() const;
   Bool_t IsPhysicalPrimary() const; 
+  static Bool_t IsPhysicalPrimary(AliMCEvent* p, Int_t label); 
   
   void SetMCevent(AliMCEvent* mcEvent) {fMCevent=mcEvent;}
   AliMCEvent* GetMCevent() const {return fMCevent;}
+  void SetEvent(AliVEvent* event) {fEvent=event;}
+  AliVEvent* GetEvent() const {return fEvent;}
+  Int_t GetNumberOfInputObjects() const;
+  TObject* GetInputObject(Int_t i);
 
  protected:
   Bool_t PassesCuts(AliVParticle* track);
@@ -113,6 +123,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void HandleVParticle(AliVParticle* track);
   void DefineHistograms();
 
+  //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
   TDirectory* fQA;                   //qa histograms go here
   Bool_t fCutMCprocessType;          //do we cut on mc process type?
@@ -123,6 +134,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fMCisPrimary;               //is MC primary
   Bool_t fRequireCharge;          //is charged?
   Bool_t fFakesAreOK;             //are fakes (negative labels) ok?
+  Bool_t fCutSPDtrackletDeltaPhi; //are we cutting on the trcklet deltaphi?
+  Double_t fSPDtrackletDeltaPhiMax; //maximal deltaphi for tracklets
+  Double_t fSPDtrackletDeltaPhiMin; //minimal deltaphi for tracklets
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
@@ -134,6 +148,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t fTrackLabel;                 //!track label, or its absolute value if FakesAreOK
   AliMCEvent* fMCevent;              //!mc event
   AliMCParticle* fMCparticle;        //!mc particle
+  AliVEvent* fEvent;                 //!placeholder for current event
 
   ClassDef(AliFlowTrackCuts,1)
 };

@@ -657,6 +657,7 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
       if (rp)
       {
         pTrack = rpCuts->MakeFlowTrack();
+      if (!pTrack) continue;
         pTrack->TagRP(); fNumberOfRPs++;
         if (poi) pTrack->TagPOI();
       }
@@ -664,6 +665,7 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
       if (poi)
       {
         pTrack = poiCuts->MakeFlowTrack();
+      if (!pTrack) continue;
         pTrack->TagPOI();
       }
 
@@ -687,6 +689,7 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
       Bool_t rp = rpCuts->IsSelected(particle,i);
       if (!rp) continue;
       pTrack = rpCuts->MakeFlowTrack();
+      if (!pTrack) continue;
       pTrack->TagRP(); fNumberOfRPs++;
       AddTrack(pTrack);
     }
@@ -702,6 +705,7 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
       Bool_t poi = poiCuts->IsSelected(particle,i);
       if (!poi) continue;
       pTrack = poiCuts->MakeFlowTrack();
+      if (!pTrack) continue;
       pTrack->TagPOI();
       AddTrack(pTrack);
     }

@@ -12,11 +12,14 @@
 #include <float.h>
 #include "TNamed.h"
 
-class AliVEvent;;
+class AliVEvent;
+class AliFlowTrackCuts;
 
 class AliFlowEventCuts : public TNamed {
 
  public:
+  enum refMultMethod { kTPConly, kSPDtracklets };
+
   AliFlowEventCuts();
   AliFlowEventCuts(const char* name, const char* title = "AliFlowEventCuts");
   //AliFlowEventCuts(const AliFlowEventCuts& someCuts);
@@ -40,19 +43,23 @@ class AliFlowEventCuts : public TNamed {
   Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
   Int_t GetRefMultMax() const {return fRefMultMax;}
   Int_t GetRefMultMin() const {return fRefMultMin;}
+  void SetRefMultMethod(refMultMethod m) {fRefMultMethod=m;}
+  refMultMethod GetRefMultMethod() const {return fRefMultMethod;}
 
-  static Int_t ReferenceMultiplicity(const AliVEvent* event);
-  Int_t GetReferenceMultiplicity() {return fReferenceMultiplicity;}
+  Int_t RefMult(const AliVEvent* event, AliFlowTrackCuts* cuts=NULL);
+  //Int_t GetRefMult() {return fRefMult;}
+  Int_t GetReferenceMultiplicity(const AliVEvent* event) {return RefMult(event);}
 
  private:
   Bool_t fCutNumberOfTracks;//cut on # of tracks
   Int_t fNumberOfTracksMax;  //limits
   Int_t fNumberOfTracksMin;  //limits
   Bool_t fCutRefMult; //cut on refmult
+  refMultMethod fRefMultMethod; //how do we calculate refmult?
   Int_t fRefMultMax; //max refmult
   Int_t fRefMultMin; //min refmult
 
-  Int_t fReferenceMultiplicity; //store the reference multiplicity
+  Int_t fRefMult; //store the reference multiplicity
 
   ClassDef(AliFlowEventCuts,1)
 };

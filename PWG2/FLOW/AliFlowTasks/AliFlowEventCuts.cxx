@@ -25,9 +25,10 @@
 #include "TNamed.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
+#include "AliMultiplicity.h"
 #include "AliMCEvent.h"
 #include "AliFlowEventCuts.h"
-#include "AliESDtrackCuts.h"
+#include "AliFlowTrackCuts.h"
 
 ClassImp(AliFlowEventCuts)
 
@@ -38,9 +39,10 @@ AliFlowEventCuts::AliFlowEventCuts():
   fNumberOfTracksMax(INT_MAX),
   fNumberOfTracksMin(INT_MIN),
   fCutRefMult(kFALSE),
+  fRefMultMethod(kTPConly),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
-  fReferenceMultiplicity(-1)
+  fRefMult(-1)
 {
   //constructor 
 }
@@ -52,16 +54,17 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fNumberOfTracksMax(INT_MAX),
   fNumberOfTracksMin(INT_MIN),
   fCutRefMult(kFALSE),
+  fRefMultMethod(kTPConly),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
-  fReferenceMultiplicity(-1)
+  fRefMult(-1)
 {
   //constructor 
 }
 
 ////-----------------------------------------------------------------------
 //AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& someCuts):
-//  TNamed(),
+//  TNamed(someCuts),
 //  fCutNumberOfTracks(that.fCutNumberOfTracks),
 //  fNumberOfTracksMax(that.fNumberOfTracksMax),
 //  fNumberOfTracksMin(that.fNumberOfTracksMin),
@@ -96,8 +99,8 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
   if(fCutRefMult)
   {
     //reference multiplicity still to be defined
-    fReferenceMultiplicity = ReferenceMultiplicity(event);
-    if (fReferenceMultiplicity < fRefMultMin || fReferenceMultiplicity >= fRefMultMax )
+    fRefMult = RefMult(event);
+    if (fRefMult < fRefMultMin || fRefMult >= fRefMultMax )
       return kFALSE;
   }
   return kTRUE;
@@ -112,12 +115,54 @@ AliFlowEventCuts* AliFlowEventCuts::StandardCuts()
 }
 
 //----------------------------------------------------------------------- 
-Int_t AliFlowEventCuts::ReferenceMultiplicity(const AliVEvent* event)
+Int_t AliFlowEventCuts::RefMult(const AliVEvent* event, AliFlowTrackCuts* cuts)
 {
-  //calculate the reference multiplicity
+  //calculate the reference multiplicity, if all fails return 0
+  Int_t refmult=0;
+
+  //in the case of an ESD
   const AliESDEvent* esd=dynamic_cast<const AliESDEvent*>(event);
-  if (esd) return AliESDtrackCuts::GetReferenceMultiplicity(const_cast<AliESDEvent*>(esd),kTRUE);
+  if (esd) 
+  {
+    AliMultiplicity* tracklets=NULL;
+    switch (fRefMultMethod)
+    {
+      case kTPConly:
+        if (!cuts)
+        {
+          //if not explicitly passed, make default cuts
+          cuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
+          cuts->SetEtaRange(-0.8,0.8);
+          cuts->SetPtMin(0.15);
+        }
+        for (Int_t i=0; i<esd->GetNumberOfTracks();i++)
+        {
+          AliESDtrack* track = esd->GetTrack(i);
+          if (cuts->IsSelected(track)) refmult++;
+        }
+        break;
+      case kSPDtracklets:
+        if (!cuts)
+        {
+          //if not explicitly passed, make default cuts
+          cuts = new AliFlowTrackCuts();
+          cuts->SetEtaRange(-0.8,0.8);
+        }
+        tracklets = const_cast<AliMultiplicity*>(esd->GetMultiplicity());
+        for (Int_t i=0; i<tracklets->GetNumberOfTracklets(); i++)
+        {
+          if (cuts->IsSelected(tracklets,i)) refmult++;
+        }
+        break;
+      default:
+        return 0;
+    }
+    return refmult;
+  }
+
+  //in case of MC event
   AliMCEvent* mc=const_cast<AliMCEvent*>(dynamic_cast<const AliMCEvent*>(event));
   if (mc) return mc->GetNumberOfPrimaries();
-  return event->GetNumberOfTracks(); //default
+
+  return event->GetNumberOfTracks(); //default, at least returns some number
 }
