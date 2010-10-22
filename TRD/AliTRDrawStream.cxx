@@ -455,7 +455,7 @@ Int_t AliTRDrawStream::ReadSmHeader()
 		   fCurrStackMask));
 
   // decode GTU track words
-  UInt_t trackWord[2];
+  UInt_t trackWord[2] = { 0, 0 };
   Int_t stack = 0;
   Int_t idx = 0;
   for (UInt_t iWord = 4; iWord < fCurrSmuIndexHeaderSize; iWord++) {
