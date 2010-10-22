@@ -163,59 +163,59 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   emcbranch->SetAddress(&fgEMCRecPoints);
   emcbranch->GetEntry(0);
 
-  //#########Calculate trigger and set trigger info###########
+//   //#########Calculate trigger and set trigger info###########
 
-  AliPHOSTrigger tr ;
-  //   tr.SetPatchSize(1);//create 4x4 patches
-  tr.SetSimulation(kFALSE);
-  tr.Trigger(fgDigitsArray);
+//   AliPHOSTrigger tr ;
+//   //   tr.SetPatchSize(1);//create 4x4 patches
+//   tr.SetSimulation(kFALSE);
+//   tr.Trigger(fgDigitsArray);
   
-  Float_t maxAmp2x2  = tr.Get2x2MaxAmplitude();
-  Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
-  Float_t ampOutOfPatch2x2  = tr.Get2x2AmpOutOfPatch() ;
-  Float_t ampOutOfPatchnxn  = tr.GetnxnAmpOutOfPatch() ;
+//   Float_t maxAmp2x2  = tr.Get2x2MaxAmplitude();
+//   Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
+//   Float_t ampOutOfPatch2x2  = tr.Get2x2AmpOutOfPatch() ;
+//   Float_t ampOutOfPatchnxn  = tr.GetnxnAmpOutOfPatch() ;
 
-  Int_t iSM2x2      = tr.Get2x2SuperModule();
-  Int_t iSMnxn      = tr.GetnxnSuperModule();
-  Int_t iCrystalPhi2x2 = tr.Get2x2CrystalPhi();
-  Int_t iCrystalPhinxn = tr.GetnxnCrystalPhi();
-  Int_t iCrystalEta2x2 = tr.Get2x2CrystalEta();
-  Int_t iCrystalEtanxn = tr.GetnxnCrystalEta();
+//   Int_t iSM2x2      = tr.Get2x2SuperModule();
+//   Int_t iSMnxn      = tr.GetnxnSuperModule();
+//   Int_t iCrystalPhi2x2 = tr.Get2x2CrystalPhi();
+//   Int_t iCrystalPhinxn = tr.GetnxnCrystalPhi();
+//   Int_t iCrystalEta2x2 = tr.Get2x2CrystalEta();
+//   Int_t iCrystalEtanxn = tr.GetnxnCrystalEta();
 
-  AliDebug(2, Form("Trigger 2x2 max amp %f, out amp %f, SM %d, iphi %d ieta %d",  
-		   maxAmp2x2, ampOutOfPatch2x2, iSM2x2,iCrystalPhi2x2, iCrystalEta2x2));
-  AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",
-		   maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iCrystalPhinxn, iCrystalEtanxn));
+//   AliDebug(2, Form("Trigger 2x2 max amp %f, out amp %f, SM %d, iphi %d ieta %d",  
+// 		   maxAmp2x2, ampOutOfPatch2x2, iSM2x2,iCrystalPhi2x2, iCrystalEta2x2));
+//   AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",
+// 		   maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iCrystalPhinxn, iCrystalEtanxn));
 
-  // Attention! PHOS modules in order to calculate AbsId need to be 1-5 not 0-4 as returns trigger.
-  Int_t iRelId2x2 []= {iSM2x2+1,0,iCrystalPhi2x2,iCrystalEta2x2};
-  Int_t iAbsId2x2 =-1;
-  Int_t iRelIdnxn []= {iSMnxn+1,0,iCrystalPhinxn,iCrystalEtanxn};
-  Int_t iAbsIdnxn =-1;
-  TVector3    pos2x2(-1,-1,-1);
-  TVector3    posnxn(-1,-1,-1);
-  fGeom->RelToAbsNumbering(iRelId2x2, iAbsId2x2);
-  fGeom->RelToAbsNumbering(iRelIdnxn, iAbsIdnxn);
-  fGeom->RelPosInAlice(iAbsId2x2, pos2x2);
-  fGeom->RelPosInAlice(iAbsIdnxn, posnxn);
+//   // Attention! PHOS modules in order to calculate AbsId need to be 1-5 not 0-4 as returns trigger.
+//   Int_t iRelId2x2 []= {iSM2x2+1,0,iCrystalPhi2x2,iCrystalEta2x2};
+//   Int_t iAbsId2x2 =-1;
+//   Int_t iRelIdnxn []= {iSMnxn+1,0,iCrystalPhinxn,iCrystalEtanxn};
+//   Int_t iAbsIdnxn =-1;
+//   TVector3    pos2x2(-1,-1,-1);
+//   TVector3    posnxn(-1,-1,-1);
+//   fGeom->RelToAbsNumbering(iRelId2x2, iAbsId2x2);
+//   fGeom->RelToAbsNumbering(iRelIdnxn, iAbsIdnxn);
+//   fGeom->RelPosInAlice(iAbsId2x2, pos2x2);
+//   fGeom->RelPosInAlice(iAbsIdnxn, posnxn);
 
-  TArrayF triggerPosition(6);
-  triggerPosition[0] = pos2x2(0) ;   
-  triggerPosition[1] = pos2x2(1) ;   
-  triggerPosition[2] = pos2x2(2) ;  
-  triggerPosition[3] = posnxn(0) ;   
-  triggerPosition[4] = posnxn(1) ;   
-  triggerPosition[5] = posnxn(2) ;  
+//   TArrayF triggerPosition(6);
+//   triggerPosition[0] = pos2x2(0) ;   
+//   triggerPosition[1] = pos2x2(1) ;   
+//   triggerPosition[2] = pos2x2(2) ;  
+//   triggerPosition[3] = posnxn(0) ;   
+//   triggerPosition[4] = posnxn(1) ;   
+//   triggerPosition[5] = posnxn(2) ;  
 
-  TArrayF triggerAmplitudes(4);
-  triggerAmplitudes[0] = maxAmp2x2 ;   
-  triggerAmplitudes[1] = ampOutOfPatch2x2 ;    
-  triggerAmplitudes[2] = maxAmpnxn ;   
-  triggerAmplitudes[3] = ampOutOfPatchnxn ;   
+//   TArrayF triggerAmplitudes(4);
+//   triggerAmplitudes[0] = maxAmp2x2 ;   
+//   triggerAmplitudes[1] = ampOutOfPatch2x2 ;    
+//   triggerAmplitudes[2] = maxAmpnxn ;   
+//   triggerAmplitudes[3] = ampOutOfPatchnxn ;   
 
-  //esd->SetPHOSTriggerCells(triggerPosition);
-  esd->AddPHOSTriggerPosition(triggerPosition);
-  esd->AddPHOSTriggerAmplitudes(triggerAmplitudes);
+//   //esd->SetPHOSTriggerCells(triggerPosition);
+//   esd->AddPHOSTriggerPosition(triggerPosition);
+//   esd->AddPHOSTriggerAmplitudes(triggerAmplitudes);
   
 
   //########################################
