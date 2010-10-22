@@ -82,6 +82,15 @@
 #pragma link C++ class AliHLTDomainEntry+;
 #pragma link C++ class AliHLTTriggerMenu+;
 #pragma link C++ class AliHLTTriggerMenuItem+;
+
+// For old versions of the trigger menu item we need to set the missing values to appropriate defaults.
+#pragma read sourceClass="AliHLTTriggerMenuItem" version="[1-3]" targetClass="AliHLTTriggerMenuItem"\
+  source="" target=""\
+  code="{\
+    newObj->DefaultResult(true);\
+    newObj->ScaleDown(1);\
+  }"
+
 #pragma link C++ class AliHLTTriggerMenuSymbol+;
 #pragma link C++ class AliHLTRunStatistics+;
 #pragma link C++ class AliHLTMisc+;
