@@ -3618,7 +3618,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateCarlosCard(Int_t iLay) {
   TGeoMedium *siliconChip = GetMedium("SDD SI CHIP$");// ITSsddSiChip
   TGeoMedium *plastiChip  = GetMedium("SDDKAPTON (POLYCH2)$"); // ITSsddKAPTON_POLYCH2
   TGeoMedium *copper      = GetMedium("COPPER$"); 
-  TGeoMedium *alCu12SDD   = GetMedium("INOX$"); // ITSsddAlCu12,  to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *alCu12SDD   = GetMedium("ALCU12$"); // ITSsddAlCu12
   TGeoMedium *stainless   = GetMedium("AISI304L$"); // for screws
 
   //=========================================
@@ -3906,7 +3906,7 @@ Int_t AliITSv11GeometrySDD::CreateLVCard() {
   TGeoMedium *siliconChip = GetMedium("SDD SI CHIP$");// ITSsddSiChip
   TGeoMedium *plastiChip  = GetMedium("SDDKAPTON (POLYCH2)$"); // ITSsddKAPTON_POLYCH2
   TGeoMedium *copper      = GetMedium("COPPER$"); 
-  TGeoMedium *alCu12SDD   = GetMedium("INOX$"); // ITSsddAlCu12,  to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *alCu12SDD   = GetMedium("ALCU12$"); // ITSsddAlCu12
   TGeoMedium *stainless   = GetMedium("AISI304L$"); // for screws
 
   fCardLVL = new TGeoVolumeAssembly("ITSsddLVCardLeft");
@@ -4151,7 +4151,7 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(Int_t iLay){
   TGeoMedium *medSMDcapaEnd    = GetMedium("SDD X7R capacitors$"); // check if different
   TGeoMedium *stainless        = GetMedium("INOX$");       // ITSspdStainlesSteal ???????????
   TGeoMedium *plastic          = GetMedium("SDDKAPTON (POLYCH2)$");  // ITS_ITSsddKAPTON_POLYCH2 ???????????
-  TGeoMedium *alCu12SDD       = GetMedium("INOX$"); // ITSsddAlCu12  : to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *alCu12SDD       = GetMedium("ALCU12$"); // ITSsddAlCu12
 
   TGeoVolumeAssembly *highVCard = new TGeoVolumeAssembly("ITSsddHVCard");
 
@@ -4430,7 +4430,7 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
 // and their cooling system 
 //
 
-  TGeoMedium *alCu12SDD       = GetMedium("AL$"); // ITSsddAlCu12 : to code !!!!!!!!!!!!!!
+  TGeoMedium *alCu12SDD       = GetMedium("ALCU12$"); // ITSsddAlCu12
   TGeoMedium *phynoxSDD       = GetMedium("INOX$");
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
 
@@ -4629,7 +4629,7 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
 // This is the code actually used for the end ladder cards
 //
 
-  TGeoMedium *alCu12SDD       = GetMedium("AL$"); // ITSsddAlCu12 : to code !!!!!!!!!!!!!!
+  TGeoMedium *alCu12SDD       = GetMedium("ALCU12$"); // ITSsddAlCu12
   TGeoMedium *phynoxSDD       = GetMedium("INOX$");
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
   TGeoMedium *copper          = GetMedium("COPPER$");
@@ -5043,7 +5043,7 @@ void AliITSv11GeometrySDD::CreateSDDsensor() {
   TGeoMedium *siliconSDDsens = GetMedium("SI$");                  // ITSsddSi
   TGeoMedium *alSDD          = GetMedium("AL$");                  // ITSal
   TGeoMedium *polyhamideSDD  = GetMedium("SDDKAPTON (POLYCH2)$"); // ITSsddKAPTON_POLYCH2
-  TGeoMedium *glassSDD       = GetMedium("SDD SI insensitive$");  //  To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *glassSDD       = GetMedium("STDGLASS$");            // StdGlass
 
 
   Double_t rWraping = fgkWaferThickness/2+fgkWaHVcableAlThick+fgkWaHVcablePolyThick;

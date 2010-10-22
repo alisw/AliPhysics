@@ -5417,6 +5417,13 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t wInAl[5] = {.816164, .131443,.0330906,.0183836,.000919182};
     Float_t dInAl    = 3.075;
 
+    // Aluminum alloy with 12% Copper - 21 Oct 10
+
+    Float_t aAlCu12[2] = {26.9815, 63.546};
+    Float_t zAlCu12[2] = {13.    , 29.   };
+    Float_t wAlCu12[2] = { 0.88  ,  0.12 };
+    Float_t dAlCu12    = 2.96;
+
     // Kapton
 
     Float_t aKapton[4]={1.00794,12.0107, 14.010,15.9994};
@@ -5479,6 +5486,21 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t zPPS[3] = {  6.    , 1.     , 16.   };
     Float_t wPPS[3] = {  6.    , 4.     ,  1.   };
     Float_t dPPS    = 1.35;
+
+    // Megolon (Polyolefin = (C-H2)n) - 20 Oct 10
+    Float_t aMegolon[2] = { 12.0107, 1.00794};
+    Float_t zMegolon[2] = {  6.    , 1.     };
+    Float_t wMegolon[2] = {  1.    , 2.     };
+    Float_t dMegolon    = 1.51; // Mean of various types
+
+    // Standard glass (from glassproperties.com/glasses - M.S. 21 Oct 10)
+    Float_t aStdGlass[7] = {15.9994  ,28.0855  ,22.98977 ,40.078   ,
+			    24.305   ,26.981539,39.0983  };
+    Float_t zStdGlass[7] = { 8.      ,14.      ,11.      ,20.      ,
+			    12.      ,13.      ,19.      };
+    Float_t wStdGlass[7] = { 0.468377, 0.348239, 0.096441, 0.071469,
+			     0.006030, 0.005293, 0.004151};
+    Float_t dStdGlass    = 2.53;
 
     // Glass Fiber (from F.Tosello's web page - M.S. 15 Oct 10)
     Float_t aGlass[11] = {15.9994  ,28.0855  ,40.078   ,26.981539,10.811   ,
@@ -5562,6 +5584,15 @@ void AliITSv11Hybrid::CreateMaterials(){
 
     AliMixture(27,"GEN Air$",aAir,zAir,dAir,4,wAir);
     AliMedium(27,"GEN Air$",27,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
+
+    AliMixture(36,"STDGLASS$",aStdGlass,zStdGlass,dStdGlass,7,wStdGlass);
+    AliMedium(36,"STDGLASS$",36,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMixture(37,"ALCU12$",aAlCu12,zAlCu12,dAlCu12,2,wAlCu12);
+    AliMedium(37,"ALCU12$",37,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMixture(38,"MEGOLON$",aMegolon,zMegolon,dMegolon,-2,wMegolon);
+    AliMedium(38,"MEGOLON$",38,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(39,"RYTON$",aRyton,zRyton,dRyton,14,wRyton);
     AliMedium(39,"RYTON$",39,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
