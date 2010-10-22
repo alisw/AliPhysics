@@ -30,6 +30,7 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliHLTTriggerMenu.h"
+#include "AliHLTReadoutList.h"
 #include "AliHLTGlobalTriggerConfig.h"
 #include "TObjString.h"
 #include "TString.h"
@@ -133,8 +134,8 @@ void HM_PHYSICS_V0002(
 		 4, // priority group.
 		 "CINT1WU-B-NOPF-ALL || CINT1-B-NOPF-ALLNOTRD",
 		 "domainHLTOUT | domainALLDDL",
-		 7,  // scaledown factor 1/7
-		 "H-MINBIAS_SCALE_DOWN-V0003.001-CENTRAL-ALL"
+		 "H-MINBIAS_SCALE_DOWN-V0003.001-CENTRAL-ALL",
+		 15.  // scaledown factor 0.15
 		 );
 
   // Readout only 50% of HLT ESDs for min bias.
@@ -143,7 +144,8 @@ void HM_PHYSICS_V0002(
 		 "CINT1WU-B-NOPF-ALL || CINT1-B-NOPF-ALLNOTRD",
 		 "domainESD | domainHLTDDL",
 		 2,  // scaledown factor 1/2
-		 "Rejected min-bias with HLT ESD readout"
+		 "Rejected min-bias with HLT ESD readout",
+		 false  // default global trigger decision result
 		 );
 
   // Reject completely the other 50% min bias.
@@ -151,13 +153,16 @@ void HM_PHYSICS_V0002(
 		 2, // priority group.
 		 "CINT1WU-B-NOPF-ALL || CINT1-B-NOPF-ALLNOTRD",
 		 "domainHLTDDL",  // Only HLT DDL to deliver at least the decision.
-		 "Rejected min-bias"
+		 0,  // No prescalar (no scaledown)
+		 "Rejected min-bias",
+		 false  // default global trigger decision result
 		 );
 
   config.AddItem(
 		 1, // priority group.
 		 "SOFTWARE || CALIBRATION || START_OF_DATA || END_OF_DATA",
-		 "domainHLTOUT | domainALLDDL",
+		 //"domainHLTOUT | domainALLDDL",
+		 "SOFTWARE | CALIBRATION | START_OF_DATA | END_OF_DATA",
 		 "H-SoftwareTrigger-V0001.001-ALL-ALL"
 		 );
 
@@ -170,8 +175,9 @@ void HM_PHYSICS_V0002(
   readoutlist.Enable(AliHLTReadoutList::kALLDET);
   defaultDomain.Add(readoutlist);
   config.SetDefaultTriggerDomain(defaultDomain);
+  config.SetDefaultResult(true);
   
-  TObject* menu = AliHLTGlobalTriggerConfig::Menu();
+  TObject* menu = AliHLTGlobalTriggerConfig::Menu()->Clone();
   menu->Print();
   
   ///////////////////////////////////////////////////////////////////////////////////////////

@@ -22,6 +22,7 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliHLTTriggerMenu.h"
+#include "AliHLTReadoutList.h"
 #include "AliHLTGlobalTriggerConfig.h"
 #include "TObjString.h"
 #include "TString.h"
@@ -256,7 +257,8 @@ void HM_TEST_V0001(
 		 "CINT1WU-B-NOPF-ALL || CINT1-B-NOPF-ALLNOTRD",
 		 "domainESD | domainHLTDDL",
 		 2,  // scaledown factor 1/2
-		 "Rejected min-bias with HLT ESD readout"
+		 "Rejected min-bias with HLT ESD readout",
+		 false  // default global trigger decision result
 		 );
 
   // Reject completely the other 50% min bias.
@@ -264,7 +266,9 @@ void HM_TEST_V0001(
 		 10, // priority group.
 		 "CINT1WU-B-NOPF-ALL || CINT1-B-NOPF-ALLNOTRD",
 		 "domainHLTDDL",  // Only HLT DDL to deliver at least the decision.
-		 "Rejected min-bias"
+		 0,  // no scaledown
+		 "Rejected min-bias",
+		 false  // default global trigger decision result
 		 );
 
   config.AddItem(
@@ -284,8 +288,9 @@ void HM_TEST_V0001(
   readoutlist.Enable(AliHLTReadoutList::kALLDET);
   defaultDomain.Add(readoutlist);
   config.SetDefaultTriggerDomain(defaultDomain);
+  config.SetDefaultResult(true);
   
-  TObject* menu = AliHLTGlobalTriggerConfig::Menu();
+  TObject* menu = AliHLTGlobalTriggerConfig::Menu()->Clone();
   menu->Print();
   
   ///////////////////////////////////////////////////////////////////////////////////////////
