@@ -26,7 +26,7 @@ class AliVCluster;
 class AliVCaloCells;
 #include "AliPHOSGeoUtils.h"
 #include "AliEMCALGeoUtils.h"
-class AliEMCALRecoUtils;
+#include "AliEMCALRecoUtils.h"
 
 class AliCalorimeterUtils : public TObject {
 
@@ -112,35 +112,31 @@ class AliCalorimeterUtils : public TObject {
 	
   // Recalibration
   Bool_t IsRecalibrationOn()  const { return fRecalibration ; }
-  void SwitchOnRecalibration()    {fRecalibration = kTRUE ; InitEMCALRecalibrationFactors(); InitPHOSRecalibrationFactors();}
-  void SwitchOffRecalibration()   {fRecalibration = kFALSE ; }
+  void SwitchOnRecalibration()    {fRecalibration = kTRUE ; InitPHOSRecalibrationFactors(); fEMCALRecoUtils->SwitchOnRecalibration();}
+  void SwitchOffRecalibration()   {fRecalibration = kFALSE;fEMCALRecoUtils->SwitchOffRecalibration();}
 	
-  void InitEMCALRecalibrationFactors() ;
   void InitPHOSRecalibrationFactors () ;
 	
-  Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-    if(fEMCALRecalibrationFactors) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
-    else return 1;}
+  Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { return fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(iSM , iCol, iRow);}
   
   Float_t GetPHOSChannelRecalibrationFactor (Int_t imod, Int_t iCol, Int_t iRow) const { 
     if(fPHOSRecalibrationFactors)return (Float_t) ((TH2F*)fPHOSRecalibrationFactors->At(imod))->GetBinContent(iCol,iRow); 
     else return 1;}
   
   void SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-    if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors();
-    ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c);}
+    fEMCALRecoUtils->SetEMCALChannelRecalibrationFactor(iSM,iCol,iRow,c);}
 	
   void SetPHOSChannelRecalibrationFactor (Int_t imod, Int_t iCol, Int_t iRow, Double_t c = 1) {
     if(!fPHOSRecalibrationFactors)  InitPHOSRecalibrationFactors();
     ((TH2F*)fPHOSRecalibrationFactors->At(imod))->SetBinContent(iCol,iRow,c);}
     
-  void SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) {fEMCALRecalibrationFactors->AddAt(h,iSM);}
+  void SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) {fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(iSM,h);}
   void SetPHOSChannelRecalibrationFactors(Int_t imod , TH2F* h) {fPHOSRecalibrationFactors ->AddAt(h,imod);}
 	
-  TH2F * GetEMCALChannelRecalibrationFactors(Int_t iSM) const {return (TH2F*)fEMCALRecalibrationFactors->At(iSM);}
+  TH2F * GetEMCALChannelRecalibrationFactors(Int_t iSM) const {return fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors(iSM);}
   TH2F * GetPHOSChannelRecalibrationFactors(Int_t imod) const {return (TH2F*)fPHOSRecalibrationFactors->At(imod);}
 	
-  void SetEMCALChannelRecalibrationFactors(TObjArray *map) {fEMCALRecalibrationFactors = map;}
+  void SetEMCALChannelRecalibrationFactors(TObjArray *map) {fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(map);}
   void SetPHOSChannelRecalibrationFactors (TObjArray *map) {fPHOSRecalibrationFactors  = map;}
 
   Float_t RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
@@ -174,7 +170,6 @@ class AliCalorimeterUtils : public TObject {
   Int_t              fNCellsFromPHOSBorder;  //  Number of cells from PHOS  border the cell with maximum amplitude has to be.
   Bool_t             fNoEMCALBorderAtEta0;   //  Do fiducial cut in EMCAL region eta = 0?
   Bool_t             fRecalibration;         //  Switch on or off the recalibration
-  TObjArray        * fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
   TObjArray        * fPHOSRecalibrationFactors;  // Array of histograms with map of recalibration factors, PHOS
   AliEMCALRecoUtils* fEMCALRecoUtils;        //  EMCAL utils for cluster rereconstruction
   Bool_t             fRecalculatePosition;   // Recalculate cluster position

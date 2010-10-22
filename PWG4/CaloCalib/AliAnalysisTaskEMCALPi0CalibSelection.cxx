@@ -53,7 +53,6 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
   fLogWeight(4.5), fCopyAOD(kFALSE), fSameSM(kFALSE), fOldAOD(kFALSE),
   fEMCALGeoName("EMCAL_FIRSTYEAR"), fNCellsFromEMCALBorder(0),
   fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(0x0),
-  fRecalibration(kFALSE),fEMCALRecalibrationFactors(),
   fRecoUtils(new AliEMCALRecoUtils),
   fNbins(300), fMinBin(0.), fMaxBin(300.),fOutputContainer(0x0),
   fHmgg(0x0),           fHmggDifferentSM(0x0), 
@@ -109,12 +108,6 @@ AliAnalysisTaskEMCALPi0CalibSelection::~AliAnalysisTaskEMCALPi0CalibSelection()
 		delete  fEMCALBadChannelMap;
 	}
 	
-	
-	if(fEMCALRecalibrationFactors) { 
-		fEMCALRecalibrationFactors->Clear();
-		delete  fEMCALRecalibrationFactors;
-	}	
-    
   if(fRecoUtils) delete fRecoUtils ;
 
 }
@@ -138,7 +131,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::LocalInit()
 	snprintf(onePar,buffersize, "Histograms: bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
 	fCuts->Add(new TObjString(onePar));
 	snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Copy AODs? %d;  Recalibrate %d?, Analyze Old AODs? %d, Mass per channel same SM clusters? %d ",
-            fRemoveBadChannels,fCopyAOD,fRecalibration, fOldAOD, fSameSM) ;
+            fRemoveBadChannels,fCopyAOD,fRecoUtils->IsRecalibrationOn(), fOldAOD, fSameSM) ;
 	fCuts->Add(new TObjString(onePar));
 	snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >",fEMCALGeoName.Data()) ;
 	fCuts->Add(new TObjString(onePar));
@@ -613,6 +606,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   //Analysis per event.
   if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection <<< Event %d >>>\n",(Int_t)Entry());
   
+  if(fRecoUtils->GetParticleType()!=AliEMCALRecoUtils::kPhoton){
+    printf("Wrong particle type for cluster position recalculation! = %d\n", fRecoUtils->GetParticleType());
+    abort();
+  }
+    
   fhNEvents->Fill(0); //Event analyzed
   
   AliAODEvent* aod = 0x0;
@@ -679,10 +677,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   //  }
   
   if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
-  
+  Int_t absId1   = -1;
   Int_t iSupMod1 = -1;
   Int_t iphi1    = -1;
   Int_t ieta1    = -1;
+  Int_t absId2   = -1;
   Int_t iSupMod2 = -1;
   Int_t iphi2    = -1;
   Int_t ieta2    = -1;
@@ -727,24 +726,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     //clu1.Recalibrate(fCalibData, emCells, fEMCALGeoName);
     //clu1.EvalEnergy();
     //clu1.EvalAll(fLogWeight, fEMCALGeoName);
-    if(IsRecalibrationOn())	{
-      Float_t energy = RecalibrateClusterEnergy(c1, emCells);
-      //clu1.SetE(energy);
-      c1->SetE(energy);
-    }
+    if(fRecoUtils->IsRecalibrationOn())	fRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, c1, emCells);
     
     //Float_t e1ii = clu1.E(); // cluster energy after correction
     Float_t e1ii = c1->E(); // cluster energy after correction
-    
+        
     if(DebugLevel() > 2)
-    { 
-      //printf("Recal: i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,e1ii, clu1.GetDispersion(),clu1.GetM02(),clu1.GetM20()); 
       printf("Recal: i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,e1ii, c1->GetDispersion(),c1->GetM02(),c1->GetM20());    
-      Float_t pos2[]={0,0,0};
-      //clu1.GetPosition(pos2);
-      c1->GetPosition(pos2);
-      printf("Recal: i %d, x %f, y %f, z %f\n",iClu, pos2[0], pos2[1], pos2[2]);
-    }
+    
     
     //clu1.GetMomentum(p1,v);
     
@@ -759,7 +748,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     //Float_t pos[3];
     //c1->GetPosition(pos);
     //printf("Before Alignment: e %2.4f, x %2.4f, y %2.4f , z %2.4f\n",c1->E(),pos[0], pos[1],pos[2]);
-    GetMaxEnergyCellPosAndClusterPos(emCells,c1,iSupMod1,ieta1,iphi1);
+    fRecoUtils->RecalculateClusterPosition(fEMCALGeo, emCells,c1);
+    fRecoUtils->GetMaxEnergyCell          (fEMCALGeo, emCells,c1,absId1,iSupMod1,ieta1,iphi1);
+
     //printf("i1 %d, corr1 %2.3f, e1 %2.3f, , ecorr1 %2.3f, pt %2.3f, px %2.3f, py %2.3f, pz %2.3f,\n",iClu, 1./corrFac, e1, p1.E(), p1.Pt(),p1.Px(),p1.Py(),p1.Pz());
     //c1->GetPosition(pos);
     //printf("After Alignment: e %2.4f, x %2.4f, y %2.4f , z %2.4f\n",c1->E(),pos[0], pos[1],pos[2]);
@@ -780,20 +771,17 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       //clu2.Recalibrate(fCalibData, emCells,fEMCALGeoName);
       //clu2.EvalEnergy();
       //clu2.EvalAll(fLogWeight,fEMCALGeoName);
-      if(IsRecalibrationOn())	{
-        Float_t energy = RecalibrateClusterEnergy(c2, emCells);
-        //clu2.SetE(energy);
-        c2->SetE(energy);
-      }
-      
+      if(fRecoUtils->IsRecalibrationOn())	fRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, c2, emCells);
+
       Float_t e2ii = c2->E();
       
       //Correct Non-Linearity
       c2->SetE(fRecoUtils->CorrectClusterEnergyLinearity(c2));
 
       //Get tower with maximum energy and fill in the end the pi0 histogram for this cell, recalculate cluster position and recalibrate    
-      GetMaxEnergyCellPosAndClusterPos(emCells,c2,iSupMod2,ieta2,iphi2);
-  
+      fRecoUtils->RecalculateClusterPosition(fEMCALGeo, emCells,c2);
+      fRecoUtils->GetMaxEnergyCell          (fEMCALGeo, emCells,c2,absId2,iSupMod2,ieta2,iphi2);
+      
       c2->GetMomentum(p2,v);
 
       p12 = p1+p2;
@@ -832,11 +820,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
             //Float_t * posSM1cen = RecalculatePosition(11.5, 23.5, p1.E(),0, iSupMod1); 
             //Float_t * posSM2cen = RecalculatePosition(11.5, 23.5, p2.E(),0, iSupMod2); 
             Float_t posSM1cen[3]={0.,0.,0.};
-            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod1, p1.E(), 0,
-                                                fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM1cen); 
+            Float_t depth = fRecoUtils->GetDepth(p1.Energy(),fRecoUtils->GetParticleType(),iSupMod1);
+            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod1, depth, fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM1cen); 
             Float_t posSM2cen[3]={0.,0.,0.}; 
-            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod2, p2.E(), 0,
-                                                fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM2cen); 
+            depth = fRecoUtils->GetDepth(p2.Energy(),fRecoUtils->GetParticleType(),iSupMod2);
+            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod2, depth, fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM2cen); 
             //printf("SM1 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod1,posSM1cen[0],posSM1cen[1],posSM1cen[2]);
             //printf("SM2 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod2,posSM2cen[0],posSM2cen[1],posSM2cen[2]);
             
@@ -1016,88 +1004,6 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::CheckCellFiducialRegion(AliVCluste
 	
 }	
 
-//__________________________________________________
-void AliAnalysisTaskEMCALPi0CalibSelection::GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSupMod, Int_t& ieta, Int_t& iphi)
-{
-  //For a given CaloCluster calculates the absId of the cell 
-  //with maximum energy deposit.
-  
-  Double_t eMax       = -1.;
-  Double_t eCell      = -1.;
-  Float_t  fraction   = 1.;
-  Int_t    cellAbsId  = -1;
-  Float_t recalFactor = 1.;
-	
-  Int_t maxId   = -1;
-  Int_t iTower  = -1;
-  Int_t iIphi   = -1;
-  Int_t iIeta   = -1;
-	
-  Float_t clEnergy = clu->E(); //Energy already recalibrated previously.
-  Float_t weight = 0., weightedCol = 0., weightedRow = 0., totalWeight=0.;
-  Bool_t  areInSameSM = kTRUE; //exclude clusters with cells in different SMs for now
-  Int_t   startingSM = -1;
-  
-  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
-    cellAbsId = clu->GetCellAbsId(iDig);
-    fraction  = clu->GetCellAmplitudeFraction(iDig);
-    if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
-    Int_t imodrc   = -1, iphirc  = -1, ietarc  =-1;
-    Int_t iTowerrc = -1, iIphirc = -1, iIetarc =-1;
-    fEMCALGeo->GetCellIndex(cellAbsId,imodrc,iTowerrc,iIphirc,iIetarc); 
-    fEMCALGeo->GetCellPhiEtaIndexInSModule(imodrc,iTowerrc,iIphirc, iIetarc,iphirc,ietarc);			
-    if     (iDig==0)  startingSM = imodrc;
-    else if(imodrc != startingSM) areInSameSM = kFALSE;
-
-    if(IsRecalibrationOn()) {
-      recalFactor = GetEMCALChannelRecalibrationFactor(imodrc,ietarc,iphirc);
-    }
-    eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
-    
-    weight = TMath::Log(eCell/clEnergy) + 4;
-    if(weight < 0) weight = 0;
-    totalWeight += weight;
-    weightedCol += ietarc*weight;
-    weightedRow += iphirc*weight;
-    
-    //printf("Max cell? cell %d, amplitude org %f, fraction %f, recalibration %f, amplitude new %f \n",cellAbsId, cells->GetCellAmplitude(cellAbsId), fraction, recalFactor, eCell) ;
-    
-    if(eCell > eMax)  { 
-      eMax  = eCell; 
-      maxId = cellAbsId;
-      //printf("\t new max: cell %d, e %f, ecell %f\n",maxId, eMax,eCell);
-    }
-  }// cell loop
-  
-  //Get from the absid the supermodule, tower and eta/phi numbers
-  fEMCALGeo->GetCellIndex(maxId,iSupMod,iTower,iIphi,iIeta); 
-  //Gives SuperModule and Tower numbers
-  fEMCALGeo->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
-					 iIphi, iIeta,iphi,ieta); 
-  
-  Float_t xyzNew[3];
-  if(areInSameSM == kTRUE) {
-    //printf("In Same SM\n");
-    weightedCol = weightedCol/totalWeight;
-    weightedRow = weightedRow/totalWeight;
-    
-    //Float_t *xyzNew = RecalculatePosition(weightedRow, weightedCol, clEnergy, 0, iSupMod); //1 = electrons, 0 photons
-    fEMCALGeo->RecalculateTowerPosition(weightedRow, weightedCol, iSupMod, clEnergy, 0, //1 = electrons, 0 photons
-                                        fRecoUtils->GetMisalTransShiftArray(), fRecoUtils->GetMisalRotShiftArray(), xyzNew);
-  }
-  else {
-    //printf("In Different SM\n");
-    //Float_t *xyzNew = RecalculatePosition(iphi,        ieta,        clEnergy, 0, iSupMod); //1 = electrons, 0 photons
-    fEMCALGeo->RecalculateTowerPosition(iphi, ieta, iSupMod, clEnergy, 0, //1 = electrons, 0 photons
-                                        fRecoUtils->GetMisalTransShiftArray(), fRecoUtils->GetMisalRotShiftArray(), xyzNew);
-    
-  }
-
-  clu->SetPosition(xyzNew);
-
-  //printf("\t Max : cell %d, iSupMod %d, ieta %d, iphi %d \n",maxId,iSupMod, ieta,iphi);
-  
-}
 
 //__________________________________________________
 //void AliAnalysisTaskEMCALPi0CalibSelection::SetCalibCorrections(AliEMCALCalibData* const cdata)
@@ -1157,77 +1063,6 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::ClusterContainsBadChannel(UShort_t
 	}// cell cluster loop
 	
 	return kFALSE;
-	
-}
-
-
-//________________________________________________________________
-void AliAnalysisTaskEMCALPi0CalibSelection::InitEMCALRecalibrationFactors(){
-	//Init EMCAL recalibration factors
-	if(DebugLevel() > 0 )printf("AliAnalysisTaskEMCALPi0CalibSelection::InitEMCALRecalibrationFactors()\n");
-	//In order to avoid rewriting the same histograms
-	Bool_t oldStatus = TH1::AddDirectoryStatus();
-	TH1::AddDirectory(kFALSE);
-	
-	fEMCALRecalibrationFactors = new TObjArray(12);
-	for (int i = 0; i < 12; i++) fEMCALRecalibrationFactors->Add(new TH2F(Form("EMCALRecalFactors_SM%d",i),Form("EMCALRecalFactors_SM%d",i),  48, 0, 48, 24, 0, 24));
-	//Init the histograms with 1
-	for (Int_t sm = 0; sm < 12; sm++) {
-		for (Int_t i = 0; i < 48; i++) {
-			for (Int_t j = 0; j < 24; j++) {
-				SetEMCALChannelRecalibrationFactor(sm,i,j,1.);
-			}
-		}
-	}
-	fEMCALRecalibrationFactors->SetOwner(kTRUE);
-	fEMCALRecalibrationFactors->Compress();
-	
-	//In order to avoid rewriting the same histograms
-	TH1::AddDirectory(oldStatus);		
-}
-
-//________________________________________________________________
-Float_t AliAnalysisTaskEMCALPi0CalibSelection::RecalibrateClusterEnergy(AliAODCaloCluster * cluster, AliAODCaloCells * cells){
-	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
-	// AOD case
-	
-	if(!cells) {
-		printf("AliAnalysisTaskEMCALPi0CalibSelection::RecalibrateClusterEnergy(AOD) - Cells pointer does not exist, stop!");
-		abort();
-	}
-	
-	//Get the cluster number of cells and list of absId, check what kind of cluster do we have.
-	UShort_t * index    = cluster->GetCellsAbsId() ;
-	Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
-	Int_t ncells = cluster->GetNCells();
-	
-	//Initialize some used variables
-	Float_t energy = 0;
-	Int_t absId    = -1;
-    Int_t icol = -1, irow = -1, imod=1;
-	Float_t factor = 1, frac = 0;
-	
-	//Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
-	for(Int_t icell = 0; icell < ncells; icell++){
-		absId = index[icell];
-		frac =  fraction[icell];
-		if(frac < 1e-5) frac = 1; //in case of EMCAL, this is set as 0 since unfolding is off
-		Int_t iTower = -1, iIphi = -1, iIeta = -1; 
-		fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-		if(fEMCALRecalibrationFactors->GetEntries() <= imod) continue;
-		fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);			
-		factor = GetEMCALChannelRecalibrationFactor(imod,icol,irow);
-		if(DebugLevel()>2)
-			printf("AliAnalysisTaskEMCALPi0CalibSelection::RecalibrateClusterEnergy - recalibrate cell: module %d, col %d, row %d, cell fraction %f,recalibration factor %f, cell energy %f\n",
-				   imod,icol,irow,frac,factor,cells->GetCellAmplitude(absId));
-		
-		energy += cells->GetCellAmplitude(absId)*factor*frac;
-	}
-	
-	if(DebugLevel()>1)
-		printf("AliAnalysisTaskEMCALPi0CalibSelection::RecalibrateClusterEnergy - Energy before %f, after %f\n",cluster->E(),energy);
-	
-	return energy;
 	
 }
 
