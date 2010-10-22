@@ -255,9 +255,9 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
   // Nothing in this time bin. Reset indexes 
   if(!nClStack){
     fN = 0;
-    memset(&fPositions[0], 0xff, sizeof(UChar_t) * kMaxRows);
-    memset(&fClusters[0], 0x0, sizeof(AliTRDcluster*) * kMaxClustersLayer);
-    memset(&fIndex[0], 0xffff, sizeof(UInt_t) * kMaxClustersLayer);
+    memset(&fPositions[0], 0, sizeof(UChar_t) * kMaxRows);
+    memset(&fClusters[0], 0, sizeof(AliTRDcluster*) * kMaxClustersLayer);
+    memset(&fIndex[0], 0, sizeof(UInt_t) * kMaxClustersLayer);
     return;
   }
   

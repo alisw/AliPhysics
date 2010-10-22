@@ -457,10 +457,8 @@ Int_t  AliTRDtrackV1::GetClusterIndex(Int_t id) const
       n+=fTracklet[ip]->GetN();
       continue;
     }
-    AliTRDcluster *c = NULL;
     for(Int_t ic=AliTRDseedV1::kNclusters; ic--;){
-      if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
-
+      if(!(fTracklet[ip]->GetClusters(ic))) continue;
       if(n<id){n++; continue;}
       return fTracklet[ip]->GetIndexes(ic);
     }
@@ -858,6 +856,7 @@ void AliTRDtrackV1::SetTrackIn()
 //
   const AliExternalTrackParam *op = dynamic_cast<const AliExternalTrackParam*>(this);
 
+  printf("SetTrackIn() : fTrackLow[%p]\n", (void*)fTrackLow);
   if(fTrackLow){
     fTrackLow->~AliExternalTrackParam();
     new(fTrackLow) AliExternalTrackParam(*op);
@@ -880,7 +879,7 @@ void AliTRDtrackV1::SetTrackOut(const AliExternalTrackParam *op)
 //_______________________________________________________________
 void AliTRDtrackV1::UnsetTracklet(Int_t plane)
 {
-  if(plane<0 && plane >= kNplane) return;
+  if(plane<0) return;
   fTrackletIndex[plane] = -1;
   fTracklet[plane] = NULL;
 }

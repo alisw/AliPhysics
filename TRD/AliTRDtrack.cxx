@@ -464,7 +464,7 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up)
   }
   // Sort the dedx values by amplitude
   Int_t *index = new Int_t[fNdedx];
-  TMath::Sort(fNdedx, sorted, index, kFALSE);
+  TMath::Sort((int)fNdedx, sorted, index, kFALSE);
 
   // Sum up the truncated charge between lower and upper bounds 
   Int_t nl = Int_t(low * fNdedx);
