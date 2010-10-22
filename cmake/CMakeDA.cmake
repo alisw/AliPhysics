@@ -112,7 +112,7 @@ foreach(detector ${ONLINEDETECTORS} )
 
   set(ALIROOTALIBS)
 
-  list(APPEND ALIROOTALIBS RAWDatabase_a RAWDatarec_a RAWDatasim_a STEERBase_a STEER_a CDB_a ESD_a STAT_a AOD_a )
+  list(APPEND ALIROOTALIBS RAWDatabase-static RAWDatarec-static RAWDatasim-static STEERBase-static STEER-static CDB-static ESD-static STAT-static AOD-static )
 
   expand(ALIROOTALIBS2 "\${${DAMODULE}ALIBS}")
   expand(DAINCDIRS "\${${DAMODULE}INC}")
@@ -189,16 +189,20 @@ foreach(detector ${ONLINEDETECTORS} )
 
 	  set(ZIP)
 	  foreach(_lib ${ALIROOTALIBS})
-	   string(REGEX REPLACE "-all" "_a" _lib ${_lib})
+	   string(REGEX REPLACE "-static" "" _lib ${_lib})
 	   list(APPEND ZIP && ar x "../lib${_lib}.a")
 	  endforeach(_lib)
  	  list (APPEND ZIP && ar r "../lib${DALIB}.a" "*.o")
 
 	  add_custom_target( ${DALIB} COMMAND rm -rf junk && mkdir -p junk 
-				COMMAND cd junk ${ZIP}
-				COMMAND cd ../ && rm -rf junk
+				COMMAND cd junk${DAEXE} ${ZIP}
+				COMMAND cd ../ && rm -rf junk${DAEXE}
 				DEPENDS ${ALIROOTALIBS}
 				WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+	  add_custom_command( TARGET clean
+	                     COMMAND rm -rf junk${DAEXE}
+			     WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+	    
 
 	  add_custom_target(${DATARGETNAME})
 	  add_executable(${DAEXE} ${DASRC})
