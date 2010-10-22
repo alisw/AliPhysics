@@ -570,13 +570,15 @@ Int_t AliTRDtestBeam::Int(Int_t i, const Char_t * const start) const
   // ?????
   //
   
-  bool swap = kFALSE;
+  // bool swap = kFALSE;
 
-  if(swap) {
-    char *q=(char*)(start+i); 
-    char p[] = {q[3], q[2], q[1], q[0]};
-    return *((int*) p);
-  } else return *((int*)(start+i));
+  // if(swap) {
+  //   char *q=(char*)(start+i); 
+  //   char p[] = {q[3], q[2], q[1], q[0]};
+  //   return *((int*) p);
+  // } else return *((int*)(start+i));
+  
+  return *((int*)(start+i));
 
 }
 
