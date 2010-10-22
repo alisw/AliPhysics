@@ -32,7 +32,7 @@
 
 
 void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000, 
-		   Int_t lastRun=999999999)
+		   Int_t lastRun=999999999, Int_t ipedGainChain=0)
 {
 
 
@@ -68,10 +68,14 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
     AliZDCPedestals *calibdata = dynamic_cast<AliZDCPedestals*>  (entry->GetObject());
     
     for(int i=0; i<kNchannels; i++){
-      graph[i]->SetPoint(iPoint, (Double_t)nrun, calibdata->GetMeanPed(i));
-      graph[i]->SetPointError(iPoint, 0., calibdata->GetMeanPedWidth(i));
-      /*printf("Filling graph %d for RUN %d: entry %d - pedValue %1.2f\n",
-      	i,nrun,iPoint,calibdata->GetMeanPed(i));*/
+      if(ipedGainChain==0){
+        graph[i]->SetPoint(iPoint, (Double_t)nrun, calibdata->GetMeanPed(i));
+        graph[i]->SetPointError(iPoint, 0., calibdata->GetMeanPedWidth(i));
+      }
+      else{
+        graph[i]->SetPoint(iPoint, (Double_t)nrun, calibdata->GetMeanPed(i+kNchannels));
+        graph[i]->SetPointError(iPoint, 0., calibdata->GetMeanPedWidth(i+kNchannels));
+      }
     }
     iPoint++;
     f->Close();
@@ -109,47 +113,55 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
    // *** ZNC pedestals
    cHadPeds->cd(ic+1);
    //
-   TH1F *haxis1 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+   TH1F *haxis1=0;
+   if(ipedGainChain==0) haxis1 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+   else  haxis1 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
    haxis1->GetXaxis()->SetNoExponent();
    haxis1->SetXTitle("RUN no.");
    haxis1->SetYTitle("ZNC pedestals");
    //
    graph[ic]->SetMarkerStyle(20);
    graph[ic]->SetMarkerColor(kBlue);
-   graph[ic]->Draw("P");
+   graph[ic]->Draw("P, SAME");
    // *** ZPC pedestals
    cHadPeds->cd(ic+6);
    //
-   TH1F *haxis2 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+   TH1F *haxis2=0;
+   if(ipedGainChain==0) haxis2= gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+   else  haxis2 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
    haxis2->GetXaxis()->SetNoExponent();
    haxis2->SetXTitle("RUN no.");
    haxis2->SetYTitle("ZPC pedestals");
    //
    graph[ic+5]->SetMarkerStyle(21);
    graph[ic+5]->SetMarkerColor(kBlue+3);
-   graph[ic+5]->Draw("P");
+   graph[ic+5]->Draw("P, SAME");
    // *** ZNA pedestals
    cHadPeds->cd(ic+11);
    //
-   TH1F *haxis3 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+   TH1F *haxis3=0;
+   if(ipedGainChain==0) haxis3 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+   else  haxis3 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
    haxis3->GetXaxis()->SetNoExponent();
    haxis3->SetXTitle("RUN no.");
    haxis3->SetYTitle("ZNA pedestals");
    //
    graph[ic+12]->SetMarkerStyle(20);
    graph[ic+12]->SetMarkerColor(kRed);
-   graph[ic+12]->Draw("P");
+   graph[ic+12]->Draw("P, SAME");
    // *** ZPA pedestals
    cHadPeds->cd(ic+16);
    //
-   TH1F *haxis4 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+   TH1F *haxis4=0;
+   if(ipedGainChain==0) haxis4 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+   else  haxis4 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
    haxis4->GetXaxis()->SetNoExponent();
    haxis4->SetXTitle("RUN no.");
    haxis4->SetYTitle("ZPA pedestals");
    //
    graph[ic+17]->SetMarkerStyle(21);
    graph[ic+17]->SetMarkerColor(kRed+1);
-   graph[ic+17]->Draw("P");
+   graph[ic+17]->Draw("P, SAME");
  }
  cHadPeds->SaveAs("ZDCPedvsTime1.gif");
 
@@ -159,25 +171,29 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
     // *** ZEM pedestals
     cothPeds->cd(ic+1);
     //
-    TH1F *haxis5 = gPad->DrawFrame(firstRun-100, 20, lastRun+20, 90);
+    TH1F *haxis5=0;
+    if(ipedGainChain==0) haxis5 = gPad->DrawFrame(firstRun-100, 20, lastRun+20, 90);
+    else  haxis5 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
     haxis5->GetXaxis()->SetNoExponent();
     haxis5->SetXTitle("RUN no.");
     haxis5->SetYTitle("ZEM pedestals");
     //
     graph[ic+10]->SetMarkerStyle(22);
     graph[ic+10]->SetMarkerColor(kGreen+1);
-    graph[ic+10]->Draw("P");
+    graph[ic+10]->Draw("P, SAME");
     // *** Ref. pedestals
     cothPeds->cd(ic+3);
     //
-    TH1F *haxis6 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+    TH1F *haxis6=0; 
+    if(ipedGainChain==0) haxis6 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
+    else  haxis6 = gPad->DrawFrame(firstRun-100, 150, lastRun+100, 700);
     haxis6->GetXaxis()->SetNoExponent();
     haxis6->SetXTitle("RUN no.");
     haxis6->SetYTitle("PMRef. pedestals");
     //
     graph[ic+22]->SetMarkerStyle(23);
     graph[ic+22]->SetMarkerColor(kGreen+4);
-    graph[ic+22]->Draw("P");
+    graph[ic+22]->Draw("P, SAME");
  }
  cothPeds->SaveAs("ZDCPedvsTime2.gif");
  
