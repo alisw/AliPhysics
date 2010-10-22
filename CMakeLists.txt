@@ -180,6 +180,8 @@ set(EXPORTFILES)
 add_custom_target(alilibs-static)
 add_custom_target(include-headers)
 add_custom_target(DA-all)
+
+
 # Add Modules
 # ------------------------------
 foreach(MODULE ${MODDIRS})
@@ -198,6 +200,10 @@ endif(DATE_FOUND AND AMORE_FOUND)
 #--------------------------------------------------------------------------------#
 # Additional Targets                                                             #
 #--------------------------------------------------------------------------------#
+
+# AliMdc RPM
+# ------------------------------
+
 
 include (InstallRequiredSystemLibraries)
 include (CPack)

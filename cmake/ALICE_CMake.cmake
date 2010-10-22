@@ -498,6 +498,26 @@ macro(ALICE_BuildExecutable)
     add_dependencies(${MODULE}-all ${PACKAGE})
   endif(ALIPROFILE STREQUAL "YES")
 
+# AliMDC
+# ------------------------------
+  if(PACKAGE STREQUAL "alimdc")
+
+    add_executable(${PACKAGE}-static ${PFS} ${PCS} ${PS} ${PDS})
+    set_target_properties(${PACKAGE}-static PROPERTIES OUTPUT_NAME alimdca)
+    add_custom_target( libAliMDC
+                        COMMAND rm -rf ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a
+			COMMAND rm -rf junkmdc
+			COMMAND mkdir junkmdc && cd junkmdc && ar x ../libRAWDatabase.a && ar x ../libMDC.a && ar x ../libESD.a && ar x ../libSTEERBase.a && ar r ../libAliMDC.a *.o && cd .. && rm -rf junkmdc
+			DEPENDS 
+			WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    add_dependencies(libAliMDC RAWDatabase-static STEERBase-static MDC-static ESD-static)
+    add_dependencies(${PACKAGE}-static libAliMDC)
+    target_link_libraries(${PACKAGE}-static ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${ROOTLIBDIR}/libRoot.a ${ROOTLIBDIR}/libfreetype.a ${ROOTLIBDIR}/libpcre.a -pthread -ldl -lcurses)
+			
+
+
+  endif(PACKAGE STREQUAL "alimdc")
+
   list(FIND EXCLUDEMODULES ${MODULE} RESULT)
   if(NOT RESULT STREQUAL "-1")
     set_property(TARGET ${PACKAGE} PROPERTY EXCLUDE_FROM_ALL TRUE)
