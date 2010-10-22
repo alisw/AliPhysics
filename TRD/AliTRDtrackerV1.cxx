@@ -693,8 +693,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   Int_t debugLevel = fkReconstructor->IsDebugStreaming() ? fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) : 0;
   TTreeSRedirector *cstreamer = fkReconstructor->IsDebugStreaming() ? fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker) : 0x0;
 
-  Bool_t kStoreIn(kTRUE),     //
-         kPropagateIn(kTRUE), //
+  Bool_t kStoreIn(kTRUE),     // toggel store track params. at TRD entry
          kStandAlone(kFALSE), // toggle tracker awarness of stand alone seeding 
          kUseTRD(fkRecoParam->IsOverPtThreshold(t.Pt()));// use TRD measurment to update Kalman
 
@@ -938,10 +937,6 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       t.SetStatus(AliTRDtrackV1::kSnp);
       AliDebug(4, Form("Failed Max Snp[%f] MaxSnp[%f]", t.GetSnp(), fgkMaxSnp));
       break;
-    }
-    if(kPropagateIn){
-      t.SetTrackIn(); 
-      kPropagateIn = kFALSE;
     }
     Double_t cov[3]; ptrTracklet->GetCovAt(x, cov);
     Double_t p[2] = { ptrTracklet->GetY(), ptrTracklet->GetZ()};
