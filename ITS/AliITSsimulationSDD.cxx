@@ -400,6 +400,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
   Int_t     nlookups   = simpar->GetGausNLookUp();       //
   Float_t   jitter     = simpar->GetSDDJitterError(); // 
   Float_t   trigDelay  = simpar->GetSDDTrigDelay(); // compensation for MC time zero
+  if(res->IsAMAt20MHz()) trigDelay+=12.5; // compensation for discretization step
   Float_t   timeZero=fDetType->GetResponseSDD()->GetTimeZero(fModule);
 
   // Piergiorgio's part (apart for few variables which I made float
