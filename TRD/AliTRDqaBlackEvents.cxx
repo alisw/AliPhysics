@@ -762,8 +762,8 @@ void AliTRDqaBlackEvents::Process(const char *filename)
   // Process something
   //
   
-  char fn[256];
-  strncpy(fn,filename,256);
+  //char fn[256];
+  //strncpy(fn,filename,256);
   
   //AliInfo(Form("FILENAME = %s (%s)\n", filename, fn));
 
@@ -912,7 +912,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
   // save histograms
 
   //AliInfo(Form("FILENAME 2 = %s (%d)\n", fn, fn));
-  TFile *file = new TFile(fn, "recreate");
+  TFile *file = new TFile(filename, "recreate");
   for(Int_t det = 0; det < kDET; det++) {
     if (!map[det]) continue; 
     fChPed[det]->Write();
