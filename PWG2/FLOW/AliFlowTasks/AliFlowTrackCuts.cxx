@@ -208,10 +208,10 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliMultiplicity* tracklet, Int_t id)
 Bool_t AliFlowTrackCuts::PassesMCcuts()
 {
   //check the MC info
-  if (!fMCevent) {AliWarning("no MC info"); return kFALSE;}
+  if (!fMCevent) return kFALSE;
   if (fTrackLabel<0) return kFALSE;//otherwise AliCMevent prints a warning before returning NULL
   fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
-  if (!fMCparticle) {AliError("no MC info"); return kFALSE;}
+  if (!fMCparticle) {AliError("no MC track"); return kFALSE;}
 
   if (fCutMCisPrimary)
   {
