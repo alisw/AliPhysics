@@ -400,15 +400,17 @@ AliTagAnalysis::CreateXMLCollection(const char* name,
 		    iRejectedEvtInFile = 0;
 		    iAcceptedEvtInFile = 0;
 
+		    localList.Reset();
+		    
 		    flTag = tag->GetFileTag(iChunk);
 		    guid = flTag->GetGUID();
 		    turl = flTag->GetTURL();
 		    lfn = turl(8,turl.Length());
-
+		    
 		    for (int i = 0; i<flTag->GetNEvents(); i++) 
 		      {
 			//			evTag = flTag->GetEventTag(i);
-		
+			
 			if( !evTagCuts || ( evTagCuts && evTagCuts->IsAccepted(flTag->GetEventTag(i))) )
 			  {
 			    localList.Enter(i);
@@ -420,7 +422,7 @@ AliTagAnalysis::CreateXMLCollection(const char* name,
 			    ++iRejectedEvtInFile;
 			  }
 		      }
-		// *** FIXME ***
+		    // *** FIXME ***
 //		Int_t i(0);
 
 // 		TIter next(tag->GetEventTags());
