@@ -22,8 +22,8 @@ class AliFlowEventCuts : public TNamed {
 
   AliFlowEventCuts();
   AliFlowEventCuts(const char* name, const char* title = "AliFlowEventCuts");
-  //AliFlowEventCuts(const AliFlowEventCuts& someCuts);
-  //AliFlowEventCuts& operator=(const AliFlowEventCuts& someCuts);
+  AliFlowEventCuts(const AliFlowEventCuts& someCuts);
+  AliFlowEventCuts& operator=(const AliFlowEventCuts& someCuts);
   virtual  ~AliFlowEventCuts() {}
   
   virtual Bool_t IsSelected(const TObject* obj);
@@ -45,8 +45,10 @@ class AliFlowEventCuts : public TNamed {
   Int_t GetRefMultMin() const {return fRefMultMin;}
   void SetRefMultMethod(refMultMethod m) {fRefMultMethod=m;}
   refMultMethod GetRefMultMethod() const {return fRefMultMethod;}
+  void SetRefMultCuts( AliFlowTrackCuts* cuts ) {fRefMultCuts=cuts;}
+  AliFlowTrackCuts* GetRefMultCuts() const {return fRefMultCuts;}
 
-  Int_t RefMult(const AliVEvent* event, AliFlowTrackCuts* cuts=NULL);
+  Int_t RefMult(const AliVEvent* event);
   //Int_t GetRefMult() {return fRefMult;}
   Int_t GetReferenceMultiplicity(const AliVEvent* event) {return RefMult(event);}
 
@@ -59,7 +61,7 @@ class AliFlowEventCuts : public TNamed {
   Int_t fRefMultMax; //max refmult
   Int_t fRefMultMin; //min refmult
 
-  Int_t fRefMult; //store the reference multiplicity
+  AliFlowTrackCuts* fRefMultCuts; //cuts
 
   ClassDef(AliFlowEventCuts,1)
 };

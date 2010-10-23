@@ -42,7 +42,7 @@ AliFlowEventCuts::AliFlowEventCuts():
   fRefMultMethod(kTPConly),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
-  fRefMult(-1)
+  fRefMultCuts(NULL)
 {
   //constructor 
 }
@@ -57,31 +57,40 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fRefMultMethod(kTPConly),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
-  fRefMult(-1)
+  fRefMultCuts(NULL)
 {
   //constructor 
 }
 
 ////-----------------------------------------------------------------------
-//AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& someCuts):
-//  TNamed(someCuts),
-//  fCutNumberOfTracks(that.fCutNumberOfTracks),
-//  fNumberOfTracksMax(that.fNumberOfTracksMax),
-//  fNumberOfTracksMin(that.fNumberOfTracksMin),
-//{
-//  //copy constructor 
-//}
-//
+AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
+  TNamed(that),
+  fCutNumberOfTracks(that.fCutNumberOfTracks),
+  fNumberOfTracksMax(that.fNumberOfTracksMax),
+  fNumberOfTracksMin(that.fNumberOfTracksMin),
+  fCutRefMult(that.fCutRefMult),
+  fRefMultMethod(that.fRefMultMethod),
+  fRefMultMax(that.fRefMultMax),
+  fRefMultMin(that.fRefMultMin),
+  fRefMultCuts(new AliFlowTrackCuts(*(that.fRefMultCuts)))
+{
+  //copy constructor 
+}
+
 ////-----------------------------------------------------------------------
-//AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& someCuts)
-//{
-//  //assignment
-//  fCutNumberOfTracks=that.fCutNumberOfTracks;
-//  fNumberOfTracksMax=that.fNumberOfTracksMax;
-//  fNumberOfTracksMin=that.fNumberOfTracksMin;
-//
-//  return *this;
-//}
+AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
+{
+  //assignment
+  fCutNumberOfTracks=that.fCutNumberOfTracks;
+  fNumberOfTracksMax=that.fNumberOfTracksMax;
+  fNumberOfTracksMin=that.fNumberOfTracksMin;
+  fCutRefMult=that.fCutRefMult;
+  fRefMultMethod=that.fRefMultMethod;
+  fRefMultMax=that.fRefMultMax;
+  fRefMultMin=that.fRefMultMin;
+  *fRefMultCuts=*(that.fRefMultCuts);
+  return *this;
+}
 
 //----------------------------------------------------------------------- 
 Bool_t AliFlowEventCuts::IsSelected(const TObject* obj)
@@ -99,8 +108,8 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
   if(fCutRefMult)
   {
     //reference multiplicity still to be defined
-    fRefMult = RefMult(event);
-    if (fRefMult < fRefMultMin || fRefMult >= fRefMultMax )
+    Double_t refMult = RefMult(event);
+    if (refMult < fRefMultMin || refMult >= fRefMultMax )
       return kFALSE;
   }
   return kTRUE;
@@ -115,7 +124,7 @@ AliFlowEventCuts* AliFlowEventCuts::StandardCuts()
 }
 
 //----------------------------------------------------------------------- 
-Int_t AliFlowEventCuts::RefMult(const AliVEvent* event, AliFlowTrackCuts* cuts)
+Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
 {
   //calculate the reference multiplicity, if all fails return 0
   Int_t refmult=0;
@@ -128,30 +137,30 @@ Int_t AliFlowEventCuts::RefMult(const AliVEvent* event, AliFlowTrackCuts* cuts)
     switch (fRefMultMethod)
     {
       case kTPConly:
-        if (!cuts)
+        if (!fRefMultCuts)
         {
           //if not explicitly passed, make default cuts
-          cuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
-          cuts->SetEtaRange(-0.8,0.8);
-          cuts->SetPtMin(0.15);
+          fRefMultCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
+          fRefMultCuts->SetEtaRange(-0.8,0.8);
+          fRefMultCuts->SetPtMin(0.15);
         }
         for (Int_t i=0; i<esd->GetNumberOfTracks();i++)
         {
           AliESDtrack* track = esd->GetTrack(i);
-          if (cuts->IsSelected(track)) refmult++;
+          if (fRefMultCuts->IsSelected(track)) refmult++;
         }
         break;
       case kSPDtracklets:
-        if (!cuts)
+        if (!fRefMultCuts)
         {
-          //if not explicitly passed, make default cuts
-          cuts = new AliFlowTrackCuts();
-          cuts->SetEtaRange(-0.8,0.8);
+          //if not explicitly passed, make default fRefMultCuts
+          fRefMultCuts = new AliFlowTrackCuts();
+          fRefMultCuts->SetEtaRange(-0.8,0.8);
         }
         tracklets = const_cast<AliMultiplicity*>(esd->GetMultiplicity());
         for (Int_t i=0; i<tracklets->GetNumberOfTracklets(); i++)
         {
-          if (cuts->IsSelected(tracklets,i)) refmult++;
+          if (fRefMultCuts->IsSelected(tracklets,i)) refmult++;
         }
         break;
       default:

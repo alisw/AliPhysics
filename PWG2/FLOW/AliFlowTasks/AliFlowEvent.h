@@ -57,8 +57,7 @@ public:
   AliFlowEvent( const AliESDEvent* anInput,
                 const TH2F* anInputFMDhist,
                 const AliCFManager* poiCFManager );
-  AliFlowEvent( AliVEvent* anInput,
-                AliFlowTrackCuts* rpCuts,
+  AliFlowEvent( AliFlowTrackCuts* rpCuts,
                 AliFlowTrackCuts* poiCuts );
   //pmd
   AliFlowEvent( const AliESDEvent* anInput,
