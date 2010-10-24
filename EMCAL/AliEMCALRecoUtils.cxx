@@ -45,8 +45,11 @@ ClassImp(AliEMCALRecoUtils)
   
 //______________________________________________
 AliEMCALRecoUtils::AliEMCALRecoUtils():
-  fNonLinearityFunction (kPi0GammaGamma), fParticleType(kPhoton),
-  fPosAlgo(kPosTowerIndex),fW0(4.),fRecalibration(kFALSE), fEMCALRecalibrationFactors()
+  fNonLinearityFunction (kNoCorrection), fParticleType(kPhoton),
+  fPosAlgo(kUnchanged),fW0(4.),
+  fRecalibration(kFALSE), fEMCALRecalibrationFactors(),
+  fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(),
+  fNCellsFromEMCALBorder(0),fNoEMCALBorderAtEta0(kFALSE)
 {
 //
   // Constructor.
@@ -54,9 +57,12 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   // during Reco algorithm execution
   //
   
-  for(Int_t i = 0; i < 15 ; i++) {fMisalTransShift[i] = 0.; fMisalRotShift[i] = 0.; }
+  for(Int_t i = 0; i < 15 ; i++) {
+      fMisalTransShift[i] = 0.; 
+      fMisalRotShift[i] = 0.; 
+  }
   for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = 0.; 
-  //By default kPi0GammaGamma case
+  //For kPi0GammaGamma case, but default is no correction
   fNonLinearityParams[0] = 0.1457/0.1349766/1.038;
   fNonLinearityParams[1] = -0.02024/0.1349766/1.038;
   fNonLinearityParams[2] = 1.046;
@@ -66,12 +72,18 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
 //______________________________________________________________________
 AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco) 
 : TNamed(reco), fNonLinearityFunction(reco.fNonLinearityFunction), 
-  fParticleType(reco.fParticleType), fPosAlgo(reco.fPosAlgo), 
-  fW0(reco.fW0), fRecalibration(reco.fRecalibration),fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors)
+  fParticleType(reco.fParticleType), fPosAlgo(reco.fPosAlgo), fW0(reco.fW0), 
+  fRecalibration(reco.fRecalibration),fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
+  fRemoveBadChannels(reco.fRemoveBadChannels),fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
+  fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0)
+
 {
   //Copy ctor
   
-  for(Int_t i = 0; i < 15 ; i++) {fMisalRotShift[i] = reco.fMisalRotShift[i]; fMisalTransShift[i] = reco.fMisalTransShift[i]; } 
+  for(Int_t i = 0; i < 15 ; i++) {
+      fMisalRotShift[i] = reco.fMisalRotShift[i]; 
+      fMisalTransShift[i] = reco.fMisalTransShift[i]; 
+  } 
   for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
 }
 
@@ -84,12 +96,16 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   if(this == &reco)return *this;
   ((TNamed *)this)->operator=(reco);
 
-  fNonLinearityFunction = reco.fNonLinearityFunction;
-  fParticleType         = reco.fParticleType;
-  fPosAlgo              = reco.fPosAlgo; 
-  fW0                   = reco.fW0;
-  fRecalibration        = reco.fRecalibration;
+  fNonLinearityFunction  = reco.fNonLinearityFunction;
+  fParticleType          = reco.fParticleType;
+  fPosAlgo               = reco.fPosAlgo; 
+  fW0                    = reco.fW0;
+  fRecalibration         = reco.fRecalibration;
   fEMCALRecalibrationFactors = reco.fEMCALRecalibrationFactors;
+  fRemoveBadChannels     = reco.fRemoveBadChannels;
+  fEMCALBadChannelMap    = reco.fEMCALBadChannelMap;
+  fNCellsFromEMCALBorder = reco.fNCellsFromEMCALBorder;
+  fNoEMCALBorderAtEta0   = reco.fNoEMCALBorderAtEta0;
   
   for(Int_t i = 0; i < 15 ; i++) {fMisalTransShift[i] = reco.fMisalTransShift[i]; fMisalRotShift[i] = reco.fMisalRotShift[i];}
   for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
@@ -107,8 +123,95 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
 		fEMCALRecalibrationFactors->Clear();
 		delete  fEMCALRecalibrationFactors;
 	}	
+  
+  if(fEMCALBadChannelMap) { 
+		fEMCALBadChannelMap->Clear();
+		delete  fEMCALBadChannelMap;
+	}
+  
 }
 
+//_______________________________________________________________
+Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells* cells) 
+{
+	// Given the list of AbsId of the cluster, get the maximum cell and 
+	// check if there are fNCellsFromBorder from the calorimeter border
+	
+  //If the distance to the border is 0 or negative just exit accept all clusters
+	if(cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 ) return kTRUE;
+  
+  Int_t absIdMax	= -1, iSM =-1, ieta = -1, iphi = -1;  
+  GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSM, ieta, iphi);
+
+  AliDebug(2,Form("AliEMCALRecoUtils::CheckCellFiducialRegion() - Cluster Max AbsId %d, Cell Energy %2.2f, Cluster Energy %2.2f\n", 
+           cells->GetCellAmplitude(absIdMax), cluster->E()));
+	
+	if(absIdMax==-1) return kFALSE;
+	
+	//Check if the cell is close to the borders:
+	Bool_t okrow = kFALSE;
+	Bool_t okcol = kFALSE;
+  
+  if(iSM < 0 || iphi < 0 || ieta < 0 ) {
+    AliFatal(Form("Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",
+                  iSM,ieta,iphi));
+  }
+  
+  //Check rows/phi
+  if(iSM < 10){
+    if(iphi >= fNCellsFromEMCALBorder && iphi < 24-fNCellsFromEMCALBorder) okrow =kTRUE; 
+  }
+  else{
+    if(iphi >= fNCellsFromEMCALBorder && iphi < 12-fNCellsFromEMCALBorder) okrow =kTRUE; 
+  }
+  
+  //Check columns/eta
+  if(!fNoEMCALBorderAtEta0){
+    if(ieta  > fNCellsFromEMCALBorder && ieta < 48-fNCellsFromEMCALBorder) okcol =kTRUE; 
+  }
+  else{
+    if(iSM%2==0){
+      if(ieta >= fNCellsFromEMCALBorder)     okcol = kTRUE;	
+    }
+    else {
+      if(ieta <  48-fNCellsFromEMCALBorder)  okcol = kTRUE;	
+    }
+  }//eta 0 not checked
+    
+  AliDebug(2,Form("AliEMCALRecoUtils::CheckCellFiducialRegion() - EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d:  column? %d, row? %d",
+           fNCellsFromEMCALBorder, ieta, iphi, iSM, okcol, okrow));
+	
+	if (okcol && okrow) return kTRUE; 
+	else                return kFALSE;
+	
+}	
+
+
+//_________________________________________________________________________________________________________
+Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, Int_t nCells){
+	// Check that in the cluster cells, there is no bad channel of those stored 
+	// in fEMCALBadChannelMap or fPHOSBadChannelMap
+	
+	if(!fRemoveBadChannels)  return kFALSE;
+	if(!fEMCALBadChannelMap) return kFALSE;
+	
+	Int_t icol = -1;
+	Int_t irow = -1;
+	Int_t imod = -1;
+	for(Int_t iCell = 0; iCell<nCells; iCell++){
+		
+		//Get the column and row
+    Int_t iTower = -1, iIphi = -1, iIeta = -1; 
+    geom->GetCellIndex(cellList[iCell],imod,iTower,iIphi,iIeta); 
+    if(fEMCALBadChannelMap->GetEntries() <= imod) continue;
+    geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);			
+    if(GetEMCALChannelStatus(imod, icol, irow))return kTRUE;
+		
+	}// cell cluster loop
+	
+	return kFALSE;
+	
+}
 
 //__________________________________________________
 Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
@@ -171,11 +274,11 @@ Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, const Int_t iParticle
   switch ( iParticle )
   {
     case kPhoton:
-      depth = x0 * TMath::Log( (energy*1000/ ecr) + 0.5); //Multiply energy by 1000 to transform to MeV
+      depth = x0 * (TMath::Log(energy*1000/ ecr) + 0.5); //Multiply energy by 1000 to transform to MeV
       break;
       
     case kElectron:
-      depth = x0 * TMath::Log( (energy*1000/ ecr) - 0.5); //Multiply energy by 1000 to transform to MeV
+      depth = x0 * (TMath::Log(energy*1000/ ecr) - 0.5); //Multiply energy by 1000 to transform to MeV
       break;
       
     case kHadron:
@@ -185,20 +288,22 @@ Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, const Int_t iParticle
         gGeoManager->cd("ALIC_1/XEN1_1");
         TGeoNode        *geoXEn1    = gGeoManager->GetCurrentNode();
         TGeoNodeMatrix  *geoSM      = dynamic_cast<TGeoNodeMatrix *>(geoXEn1->GetDaughter(iSM));
-        TGeoVolume      *geoSMVol   = geoSM->GetVolume(); 
-        TGeoShape       *geoSMShape = geoSMVol->GetShape();
-        TGeoBBox        *geoBox     = dynamic_cast<TGeoBBox *>(geoSMShape);
-        Float_t l = geoBox->GetDX()*2 ;
-        depth = 0.5 * l;
+        if(geoSM){
+          TGeoVolume      *geoSMVol   = geoSM->GetVolume(); 
+          TGeoShape       *geoSMShape = geoSMVol->GetShape();
+          TGeoBBox        *geoBox     = dynamic_cast<TGeoBBox *>(geoSMShape);
+          if(geoBox) depth = 0.5 * geoBox->GetDX()*2 ;
+          else AliFatal("Null GEANT box");
+        }else AliFatal("NULL  GEANT node matrix");
       }
       else{//electron
-        depth = x0 * TMath::Log( (energy*1000 / ecr)  - 0.5); //Multiply energy by 1000 to transform to MeV
+        depth = x0 * (TMath::Log(energy*1000 / ecr)  - 0.5); //Multiply energy by 1000 to transform to MeV
       }
         
       break;
       
     default://photon
-      depth = x0 * TMath::Log( (energy*1000 / ecr) + 0.5); //Multiply energy by 1000 to transform to MeV
+      depth = x0 * (TMath::Log(energy*1000 / ecr) + 0.5); //Multiply energy by 1000 to transform to MeV
   }  
   
   return depth;
@@ -274,6 +379,29 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors(){
 
 
 //________________________________________________________________
+void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap(){
+	//Init EMCAL bad channels map
+	AliDebug(2,"AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()");
+	//In order to avoid rewriting the same histograms
+	Bool_t oldStatus = TH1::AddDirectoryStatus();
+	TH1::AddDirectory(kFALSE);
+	
+	fEMCALBadChannelMap = new TObjArray(12);
+	//TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
+	for (int i = 0; i < 12; i++) {
+		fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_Mod%d",i),Form("EMCALBadChannelMap_Mod%d",i), 48, 0, 48, 24, 0, 24));
+	}
+	
+	//delete hTemp;
+	
+	fEMCALBadChannelMap->SetOwner(kTRUE);
+	fEMCALBadChannelMap->Compress();
+	
+	//In order to avoid rewriting the same histograms
+	TH1::AddDirectory(oldStatus);		
+}
+
+//________________________________________________________________
 void AliEMCALRecoUtils::RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVCluster * cluster, AliVCaloCells * cells){
 	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
 	
@@ -319,6 +447,7 @@ void AliEMCALRecoUtils::RecalculateClusterPosition(AliEMCALGeometry *geom, AliVC
   
   if     (fPosAlgo==kPosTowerGlobal) RecalculateClusterPositionFromTowerGlobal( geom, cells, clu);
   else if(fPosAlgo==kPosTowerIndex)  RecalculateClusterPositionFromTowerIndex ( geom, cells, clu);
+  else   AliDebug(2,"Algorithm to recalculate position not selected, do nothing.");
   
 }  
 
@@ -389,8 +518,6 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(AliEMCALGeomet
 	}
   
   clu->SetPosition(newPos);
-  
-  
   
 }  
 

@@ -34,7 +34,7 @@ public:
   virtual ~AliEMCALRecoUtils() ;
   
   enum NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3};
-  enum PositionAlgorithms{kPosTowerIndex=0, kPosTowerGlobal};
+  enum PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
   
   //Position recalculation
@@ -123,6 +123,36 @@ public:
   void SetEMCALChannelRecalibrationFactors(TObjArray *map)      {fEMCALRecalibrationFactors = map;}
   void SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) {fEMCALRecalibrationFactors->AddAt(h,iSM);}
 
+  //Modules fiducial region, remove clusters in borders
+  Bool_t CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells* cells) ;
+  void   SetNumberOfCellsFromEMCALBorder(Int_t n) {fNCellsFromEMCALBorder = n; }
+  Int_t  GetNumberOfCellsFromEMCALBorder() const  {return fNCellsFromEMCALBorder; }
+    
+  void   SwitchOnNoFiducialBorderInEMCALEta0()  {fNoEMCALBorderAtEta0 = kTRUE; }
+  void   SwitchOffNoFiducialBorderInEMCALEta0() {fNoEMCALBorderAtEta0 = kFALSE; }
+  Bool_t IsEMCALNoBorderAtEta0()                {return fNoEMCALBorderAtEta0;}
+  
+  // Bad channels
+  Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
+  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; InitEMCALBadChannelStatusMap();}
+  void SwitchOffBadChannelsRemoval()  {fRemoveBadChannels = kFALSE ; }
+	
+  void InitEMCALBadChannelStatusMap() ;
+	
+  Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
+    if(fEMCALBadChannelMap) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 0;}//Channel is ok by default
+	
+  void SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
+    if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ;
+    ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c);}
+	
+  TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap->At(iSM);}
+  void   SetEMCALChannelStatusMap(TObjArray *map)  {fEMCALBadChannelMap = map;}
+	
+  Bool_t ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, Int_t nCells);
+ 
+
 private:
   
   Float_t fMisalTransShift[15];   // Shift parameters
@@ -132,10 +162,15 @@ private:
   Int_t   fParticleType;          // Particle type for depth calculation
   Int_t   fPosAlgo;               // Position recalculation algorithm
   Float_t fW0;                    // Weight0
-  Bool_t       fRecalibration;             //  Switch on or off the recalibration
-  TObjArray  * fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
+  
+  Bool_t     fRecalibration;             // Switch on or off the recalibration
+  TObjArray* fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
+  Bool_t     fRemoveBadChannels;         // Check the channel status provided and remove clusters with bad channels
+  TObjArray* fEMCALBadChannelMap;        // Array of histograms with map of bad channels, EMCAL
+  Int_t      fNCellsFromEMCALBorder;     // Number of cells from EMCAL border the cell with maximum amplitude has to be.
+  Bool_t     fNoEMCALBorderAtEta0;       // Do fiducial cut in EMCAL region eta = 0?
 
-  ClassDef(AliEMCALRecoUtils, 3)
+  ClassDef(AliEMCALRecoUtils, 4)
   
 };
 
