@@ -64,32 +64,29 @@ class AliCalorimeterUtils : public TObject {
 	
   // Bad channels
   Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
-  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; InitEMCALBadChannelStatusMap(); InitPHOSBadChannelStatusMap();}
-  void SwitchOffBadChannelsRemoval()  {fRemoveBadChannels = kFALSE ; }
+  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; fEMCALRecoUtils->SwitchOnBadChannelsRemoval(); InitPHOSBadChannelStatusMap();}
+  void SwitchOffBadChannelsRemoval()  {fRemoveBadChannels = kFALSE ; fEMCALRecoUtils->SwitchOffBadChannelsRemoval();}
 	
-  void InitEMCALBadChannelStatusMap() ;
   void InitPHOSBadChannelStatusMap () ;
 
   Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-    if(fEMCALBadChannelMap) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
-    else return 0;}//Channel is ok by default
+    return fEMCALRecoUtils->GetEMCALChannelStatus(iSM,iCol,iRow); }//Channel is ok by default
 
   Int_t GetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow) const { 
     if(fPHOSBadChannelMap)return (Int_t) ((TH2I*)fPHOSBadChannelMap->At(imod))->GetBinContent(iCol,iRow); 
     else return 0;}//Channel is ok by default
   
   void SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-    if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ;
-    ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c);}
+    fEMCALRecoUtils->SetEMCALChannelStatus(iSM,iCol,iRow,c);}
   
   void SetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow, Double_t c = 1) {
 	if(!fPHOSBadChannelMap) InitPHOSBadChannelStatusMap() ; 
 	((TH2I*)fPHOSBadChannelMap->At(imod))->SetBinContent(iCol,iRow,c);}
     
-  TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap->At(iSM);}
+  TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return fEMCALRecoUtils->GetEMCALChannelStatusMap(iSM);}
   TH2I * GetPHOSChannelStatusMap(Int_t imod) const {return (TH2I*)fPHOSBadChannelMap->At(imod);}
 
-  void SetEMCALChannelStatusMap(TObjArray *map) {fEMCALBadChannelMap = map;}
+  void SetEMCALChannelStatusMap(TObjArray *map) {fEMCALRecoUtils->SetEMCALChannelStatusMap(map);}
   void SetPHOSChannelStatusMap (TObjArray *map) {fPHOSBadChannelMap  = map;}
 	
   Bool_t ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells);
@@ -101,15 +98,11 @@ class AliCalorimeterUtils : public TObject {
 	
   //Modules fiducial region
   Bool_t CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent * event, Int_t iev=0) const ;
-	
-  void   SetNumberOfCellsFromEMCALBorder(Int_t n) {fNCellsFromEMCALBorder = n; }
-  Int_t  GetNumberOfCellsFromEMCALBorder() const  {return fNCellsFromEMCALBorder; }
   void   SetNumberOfCellsFromPHOSBorder(Int_t n)  {fNCellsFromPHOSBorder = n; }
   Int_t  GetNumberOfCellsFromPHOSBorder() const   {return fNCellsFromPHOSBorder; }
-	
-  void   SwitchOnNoFiducialBorderInEMCALEta0()  {fNoEMCALBorderAtEta0 = kTRUE; }
-  void   SwitchOffNoFiducialBorderInEMCALEta0() {fNoEMCALBorderAtEta0 = kFALSE; }
-	
+  void   SetNumberOfCellsFromEMCALBorder(Int_t n) {fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(n); }
+  Int_t  GetNumberOfCellsFromEMCALBorder() const  {return fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder(); }
+  
   // Recalibration
   Bool_t IsRecalibrationOn()  const { return fRecalibration ; }
   void SwitchOnRecalibration()    {fRecalibration = kTRUE ; InitPHOSRecalibrationFactors(); fEMCALRecoUtils->SwitchOnRecalibration();}
@@ -164,11 +157,8 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fEMCALGeoMatrixSet;     //  Check if the transformation matrix is set for EMCAL
   Bool_t             fPHOSGeoMatrixSet ;     //  Check if the transformation matrix is set for PHOS
   Bool_t             fRemoveBadChannels;     //  Check the channel status provided and remove clusters with bad channels
-  TObjArray        * fEMCALBadChannelMap;    //  Array of histograms with map of bad channels, EMCAL
   TObjArray        * fPHOSBadChannelMap;     //  Array of histograms with map of bad channels, PHOS
-  Int_t              fNCellsFromEMCALBorder; //  Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Int_t              fNCellsFromPHOSBorder;  //  Number of cells from PHOS  border the cell with maximum amplitude has to be.
-  Bool_t             fNoEMCALBorderAtEta0;   //  Do fiducial cut in EMCAL region eta = 0?
   Bool_t             fRecalibration;         //  Switch on or off the recalibration
   TObjArray        * fPHOSRecalibrationFactors;  // Array of histograms with map of recalibration factors, PHOS
   AliEMCALRecoUtils* fEMCALRecoUtils;        //  EMCAL utils for cluster rereconstruction
