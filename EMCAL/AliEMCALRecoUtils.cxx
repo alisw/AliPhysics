@@ -144,7 +144,7 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCl
   GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSM, ieta, iphi);
 
   AliDebug(2,Form("AliEMCALRecoUtils::CheckCellFiducialRegion() - Cluster Max AbsId %d, Cell Energy %2.2f, Cluster Energy %2.2f\n", 
-           cells->GetCellAmplitude(absIdMax), cluster->E()));
+           absIdMax, cells->GetCellAmplitude(absIdMax), cluster->E()));
 	
 	if(absIdMax==-1) return kFALSE;
 	
