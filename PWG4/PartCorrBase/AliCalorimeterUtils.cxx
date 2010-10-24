@@ -45,13 +45,11 @@ ClassImp(AliCalorimeterUtils)
     fEMCALGeoName("EMCAL_FIRSTYEAR"),fPHOSGeoName("PHOSgeo"), 
     fEMCALGeo(0x0), fPHOSGeo(0x0), 
     fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE), 
-    fRemoveBadChannels(kFALSE),
-    fEMCALBadChannelMap(0x0),fPHOSBadChannelMap(0x0), 
-    fNCellsFromEMCALBorder(0), fNCellsFromPHOSBorder(0), 
-    fNoEMCALBorderAtEta0(kFALSE),fRecalibration(kFALSE),
+    fRemoveBadChannels(kFALSE),fPHOSBadChannelMap(0x0), 
+    fNCellsFromPHOSBorder(0), fRecalibration(kFALSE),
     fPHOSRecalibrationFactors(),
-    fEMCALRecoUtils(new AliEMCALRecoUtils),fRecalculatePosition(kFALSE),fCorrectELinearity(kFALSE)
-
+    fEMCALRecoUtils(new AliEMCALRecoUtils),
+    fRecalculatePosition(kFALSE),fCorrectELinearity(kFALSE)
 {
   //Ctor
   
@@ -65,11 +63,7 @@ AliCalorimeterUtils::~AliCalorimeterUtils() {
   
   //if(fPHOSGeo)  delete fPHOSGeo  ;
   if(fEMCALGeo) delete fEMCALGeo ;
-	
-  if(fEMCALBadChannelMap) { 
-    fEMCALBadChannelMap->Clear();
-    delete  fEMCALBadChannelMap;
-  }
+
   if(fPHOSBadChannelMap) { 
     fPHOSBadChannelMap->Clear();
     delete  fPHOSBadChannelMap;
@@ -91,7 +85,7 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
 	// check if there are fNCellsFromBorder from the calorimeter border
 	
     //If the distance to the border is 0 or negative just exit accept all clusters
-	if(cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 ) return kTRUE;
+	if(cells->GetType()==AliVCaloCells::kEMCALCell && fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder() <= 0 ) return kTRUE;
 	if(cells->GetType()==AliVCaloCells::kPHOSCell  && fNCellsFromPHOSBorder  <= 0 ) return kTRUE;
 
   Int_t absIdMax	= -1;
@@ -169,29 +163,30 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
     }
       
 		//Check rows/phi
+    Int_t nborder = fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder();
 		if(iSM < 10){
-			if(iphi >= fNCellsFromEMCALBorder && iphi < 24-fNCellsFromEMCALBorder) okrow =kTRUE; 
+			if(iphi >= nborder && iphi < 24-nborder) okrow =kTRUE; 
 	    }
 		else{
-			if(iphi >= fNCellsFromEMCALBorder && iphi < 12-fNCellsFromEMCALBorder) okrow =kTRUE; 
+			if(iphi >= nborder && iphi < 12-nborder) okrow =kTRUE; 
 		}
 		
-		//Check collumns/eta
-		if(!fNoEMCALBorderAtEta0){
-			if(ieta  > fNCellsFromEMCALBorder && ieta < 48-fNCellsFromEMCALBorder) okcol =kTRUE; 
+		//Check columns/eta
+		if(!fEMCALRecoUtils->IsEMCALNoBorderAtEta0()){
+			if(ieta  > nborder && ieta < 48-nborder) okcol =kTRUE; 
 		}
 		else{
 			if(iSM%2==0){
-				if(ieta >= fNCellsFromEMCALBorder)     okcol = kTRUE;	
+				if(ieta >= nborder)     okcol = kTRUE;	
 			}
 			else {
-				if(ieta <  48-fNCellsFromEMCALBorder)  okcol = kTRUE;	
+				if(ieta <  48-nborder)  okcol = kTRUE;	
 			}
 		}//eta 0 not checked
 		if(fDebug > 1)
 		{
 			printf("AliCalorimeterUtils::CheckCellFiducialRegion() - EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d ?",
-				   fNCellsFromEMCALBorder, ieta, iphi, iSM);
+				   nborder, ieta, iphi, iSM);
 			if (okcol && okrow ) printf(" YES \n");
 			else  printf(" NO: column ok? %d, row ok? %d \n",okcol,okrow);
 		}
@@ -226,7 +221,7 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 	
 	if (!fRemoveBadChannels) return kFALSE;
 	//printf("fEMCALBadChannelMap %p, fPHOSBadChannelMap %p \n",fEMCALBadChannelMap,fPHOSBadChannelMap);
-	if(calorimeter == "EMCAL" && !fEMCALBadChannelMap) return kFALSE;
+	if(calorimeter == "EMCAL" && !fEMCALRecoUtils->GetEMCALChannelStatusMap(0)) return kFALSE;
 	if(calorimeter == "PHOS"  && !fPHOSBadChannelMap)  return kFALSE;
 
 	Int_t icol = -1;
@@ -236,16 +231,7 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 	
 		//Get the column and row
 		if(calorimeter == "EMCAL"){
-			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
-			fEMCALGeo->GetCellIndex(cellList[iCell],imod,iTower,iIphi,iIeta); 
-			if(fEMCALBadChannelMap->GetEntries() <= imod) continue;
-			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);		
-      
-      if(imod < 0 || irow < 0 || icol < 0 ) {
-        Fatal("ClusterContainsBadChannel","Negative value for super module: %d, or cell icol: %d, or cell irow: %d, check EMCAL geometry name\n",imod,icol,irow);
-      }
-      
-			if(GetEMCALChannelStatus(imod, icol, irow))return kTRUE;
+      return fEMCALRecoUtils->ClusterContainsBadChannel((AliEMCALGeometry*)fEMCALGeo,cellList,nCells);
 		}
 		else if(calorimeter=="PHOS"){
 			Int_t    relId[4];
@@ -432,34 +418,9 @@ void AliCalorimeterUtils::InitParameters()
 		
   fRemoveBadChannels   = kFALSE;
 	
-  fNCellsFromEMCALBorder   = 0;
   fNCellsFromPHOSBorder    = 0;
-  fNoEMCALBorderAtEta0     = kFALSE;
 }
 
-//________________________________________________________________
-void AliCalorimeterUtils::InitEMCALBadChannelStatusMap(){
-  //Init EMCAL bad channels map
-   if(fDebug > 0 )printf("AliCalorimeterUtils::InitEMCALBadChannelStatusMap()\n");
-  //In order to avoid rewriting the same histograms
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
-
-  fEMCALBadChannelMap = new TObjArray(12);
-  //TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
-  for (int i = 0; i < 12; i++) {
-    fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_Mod%d",i),Form("EMCALBadChannelMap_Mod%d",i), 48, 0, 48, 24, 0, 24));
-    //fEMCALBadChannelMap->Add((TH2I*)hTemp->Clone(Form("EMCALBadChannelMap_Mod%d",i)));
-  }
-
-  //delete hTemp;
-
-  fEMCALBadChannelMap->SetOwner(kTRUE);
-  fEMCALBadChannelMap->Compress();
-
-  //In order to avoid rewriting the same histograms
-  TH1::AddDirectory(oldStatus);		
-}
 
 //________________________________________________________________
 void AliCalorimeterUtils::InitPHOSBadChannelStatusMap(){
@@ -544,8 +505,8 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
   printf("***** Print: %s %s ******\n", GetName(), GetTitle() ) ;
   printf("Remove Clusters with bad channels? %d\n",fRemoveBadChannels);
   printf("Remove Clusters with max cell at less than %d cells from EMCAL border and %d cells from PHOS border\n",
-	 fNCellsFromEMCALBorder, fNCellsFromPHOSBorder);
-  if(fNoEMCALBorderAtEta0) printf("Do not remove EMCAL clusters at Eta = 0\n");
+	 fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder(), fNCellsFromPHOSBorder);
+  if(fEMCALRecoUtils->IsEMCALNoBorderAtEta0()) printf("Do not remove EMCAL clusters at Eta = 0\n");
   printf("Recalibrate Clusters? %d\n",fRecalibration);
   printf("Recalculate Clusters Position? %d\n",fRecalculatePosition);
   printf("Recalculate Clusters Energy? %d\n",fCorrectELinearity);
