@@ -9,6 +9,8 @@ void rec() {
 			  Form("local://%s",gSystem->pwd()));
   reco.SetRunPlaneEff(kTRUE);
 
+  reco.SetFractionFriends(1.);
+
   TStopwatch timer;
   timer.Start();
   reco.Run();

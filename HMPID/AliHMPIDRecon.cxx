@@ -27,12 +27,14 @@
 #include <TH1D.h>            //HoughResponse()
 #include <TClonesArray.h>    //CkovAngle()
 #include <AliESDtrack.h>     //CkovAngle()
+#include <AliESDfriendTrack.h>     //CkovAngle()
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRecon::AliHMPIDRecon():
   TTask("RichRec","RichPat"),
   fPhotCnt(-1),
   fPhotFlag(0x0),
+  fPhotClusIndex(0x0),    
   fPhotCkov(0x0),
   fPhotPhi(0x0),
   fPhotWei(0x0),
@@ -62,6 +64,7 @@ void AliHMPIDRecon::InitVars(Int_t n)
 //..
   if(n<=0) return;
   fPhotFlag = new Int_t[n];
+  fPhotClusIndex  = new Int_t[n];
   fPhotCkov = new Double_t[n];
   fPhotPhi  = new Double_t[n];
   fPhotWei  = new Double_t[n];
@@ -74,6 +77,7 @@ void AliHMPIDRecon::DeleteVars()const
 //Delete variables
 //..
   delete [] fPhotFlag;
+  delete [] fPhotClusIndex;
   delete [] fPhotCkov;
   delete [] fPhotPhi;
   delete [] fPhotWei;
@@ -86,7 +90,9 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
 //              pCluLst  - list of clusters for this chamber   
 //   Returns:            - track ckov angle, [rad], 
     
-
+   
+  AliESDfriendTrack *pFriendTrk = (AliESDfriendTrack*)pTrk->GetFriendTrack();
+  
   const Int_t nMinPhotAcc = 3;                      // Minimum number of photons required to perform the pattern recognition
   
   Int_t nClusTot = pCluLst->GetEntries();
@@ -119,7 +125,8 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
     Double_t thetaCer,phiCer;
     if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                    //find ckov angle for this  photon candidate
       fPhotCkov[fPhotCnt]=thetaCer;                                                           //actual theta Cerenkov (in TRS)
-      fPhotPhi [fPhotCnt]=phiCer;                                                             //actual phi   Cerenkov (in TRS): -pi to come back to "unusual" ref system (X,Y,-Z)
+      fPhotPhi [fPhotCnt]=phiCer;
+      fPhotClusIndex[fPhotCnt]=iClu;                                                             //actual phi   Cerenkov (in TRS): -pi to come back to "unusual" ref system (X,Y,-Z)
       fPhotCnt++;                                                                             //increment counter of photon candidates
     }
   }//clusters loop
@@ -127,29 +134,31 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                                 //store mip info in any case 
   pTrk->SetHMPIDcluIdx(chId,index+1000*sizeClu);                                              //set index of cluster
   
-  if(fPhotCnt<nMinPhotAcc) {                                                                  //no reconstruction with <=3 photon candidates
+  if(fPhotCnt<=nMinPhotAcc) {                                                                 //no reconstruction with <=3 photon candidates
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //set the appropriate flag
     return;
   }
-  
-  
+    
   fMipPos.Set(mipX,mipY);
-  
+    
+  TClonesArray *pPhotCluLst = pFriendTrk->GetHmpPhotClus();
   
 //PATTERN RECOGNITION STARTED: 
   
-  Int_t iNrec=FlagPhot(HoughResponse());                                                      //flag photons according to individual theta ckov with respect to most probable
+  Int_t iNrec=FlagPhot(HoughResponse(),pCluLst,pPhotCluLst);                                                      //flag photons according to individual theta ckov with respect to most probable
+  
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNrec);                                                    //store mip info 
 
-  if(iNrec<nMinPhotAcc){
+  if(iNrec<1){
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //no photon candidates are accepted
     return;
   }
+  
   Double_t thetaC = FindRingCkov(pCluLst->GetEntries());                                    //find the best reconstructed theta Cherenkov
 //    FindRingGeom(thetaC,2);
   pTrk->SetHMPIDsignal(thetaC);                                                             //store theta Cherenkov
   pTrk->SetHMPIDchi2(fCkovSigma2);                                                          //store errors squared
-
+  
   DeleteVars();
 }//CkovAngle()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -353,7 +362,7 @@ Double_t AliHMPIDRecon::FindRingCkov(Int_t)
   return weightThetaCerenkov;
 }//FindCkovRing()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDRecon::FlagPhot(Double_t ckov)
+Int_t AliHMPIDRecon::FlagPhot(Double_t ckov,TClonesArray *pCluLst, TClonesArray *pPhotCluLst)
 {
 // Flag photon candidates if their individual ckov angle is inside the window around ckov angle returned by  HoughResponse()
 // Arguments: ckov- value of most probable ckov angle for track as returned by HoughResponse()
@@ -362,6 +371,7 @@ Int_t AliHMPIDRecon::FlagPhot(Double_t ckov)
 // Photon Flag:  Flag = 0 initial set; 
 //               Flag = 1 good candidate (charge compatible with photon); 
 //               Flag = 2 photon used for the ring;
+  Int_t *PhotIndex = new Int_t[fPhotCnt];
   
   Int_t steps = (Int_t)((ckov )/ fDTheta); //how many times we need to have fDTheta to fill the distance between 0  and thetaCkovHough
 
@@ -376,10 +386,26 @@ Int_t AliHMPIDRecon::FlagPhot(Double_t ckov)
     fPhotFlag[i] = 0;
     if(fPhotCkov[i] >= tmin && fPhotCkov[i] <= tmax)	{ 
       fPhotFlag[i]=2;	  
+      PhotIndex[iInsideCnt]=fPhotClusIndex[i];
       iInsideCnt++;
     }
   }
+      
+  Int_t nPhot = 0;
+     
+  for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
+    AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster
+    for(Int_t j=0; j<iInsideCnt; j++){
+      if(iClu==PhotIndex[j]) {
+      new ((*pPhotCluLst)[nPhot++]) AliHMPIDCluster(*pClu);  //add this raw cluster 
+     } 
+    }
+  } 
+                                                                                      
+  delete [] PhotIndex;
+  
   return iInsideCnt;
+  
 }//FlagPhot()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TVector2 AliHMPIDRecon::TracePhot(Double_t ckovThe,Double_t ckovPhi)const

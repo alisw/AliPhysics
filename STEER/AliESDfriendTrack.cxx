@@ -21,6 +21,7 @@
 #include "AliTrackPointArray.h"
 #include "AliESDfriendTrack.h"
 #include "TObjArray.h"
+#include "TClonesArray.h"
 #include "AliKalmanTrack.h"
 
 ClassImp(AliESDfriendTrack)
@@ -28,6 +29,7 @@ ClassImp(AliESDfriendTrack)
 AliESDfriendTrack::AliESDfriendTrack(): 
 TObject(), 
 f1P(0), 
+fHmpPhotClus(new TClonesArray("AliHMPIDCluster",1000)),
 fnMaxITScluster(0),
 fnMaxTPCcluster(0),
 fnMaxTRDcluster(0),
@@ -52,11 +54,15 @@ fTRDIn(0)
   //for (i=0; i<kMaxITScluster; i++) fITSindex[i]=-2;
   //for (i=0; i<kMaxTPCcluster; i++) fTPCindex[i]=-2;
   //for (i=0; i<kMaxTRDcluster; i++) fTRDindex[i]=-2;
+  
+  //fHmpPhotClus->SetOwner(kTRUE); 
+  
 }
 
 AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t): 
 TObject(t),
 f1P(t.f1P),
+fHmpPhotClus(t.fHmpPhotClus),        
 fnMaxITScluster(t.fnMaxITScluster),
 fnMaxTPCcluster(t.fnMaxTPCcluster),
 fnMaxTRDcluster(t.fnMaxTRDcluster),
@@ -106,6 +112,8 @@ fTRDIn(0)
   if (t.fITSOut) fITSOut = new AliExternalTrackParam(*(t.fITSOut));
   if (t.fTRDIn)  fTRDIn = new AliExternalTrackParam(*(t.fTRDIn));
 
+  fHmpPhotClus = new TClonesArray(*t.fHmpPhotClus);  
+  
 }
 
 AliESDfriendTrack::~AliESDfriendTrack() {
@@ -115,6 +123,7 @@ AliESDfriendTrack::~AliESDfriendTrack() {
    delete fPoints;
    if (fCalibContainer) fCalibContainer->Delete();
    delete fCalibContainer;
+   delete fHmpPhotClus;   
    delete fITStrack;
    delete fTRDtrack;
    delete fTPCOut;
@@ -166,6 +175,18 @@ void AliESDfriendTrack::SetTRDIn(const AliExternalTrackParam  &param)  {
   delete fTRDIn;
   fTRDIn=new AliExternalTrackParam(param);
 } 
+
+
+void AliESDfriendTrack::SetHmpPhotClus(TClonesArray  *array)  {
+  //
+  // 
+  //
+  fHmpPhotClus->Clear("C");
+  for(Int_t iClu=0; iClu<array->GetEntriesFast(); iClu++){
+     TObject *pClu = (TObject*)array->UncheckedAt(iClu);
+     new ((*fHmpPhotClus)[iClu]) TObject(*pClu);
+  }
+}
 
 void AliESDfriendTrack::SetITSIndices(Int_t* indices, Int_t n){
 

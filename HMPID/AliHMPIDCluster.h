@@ -63,6 +63,7 @@ public:
          void           SetY     (Double_t y                               ){fYY=y;}                                               // Setter
          void           SetSize  (Int_t size                               ){fSi=size;}                                            // Setter
          void           FindClusterSize(Int_t i,Int_t *pSigmaCut);                                                                 //Find the clusterSize of deconvoluted clusters 
+ virtual void	        Clear(const Option_t*) { delete [] fDigs; fDigs=0; delete [] fParam; fParam=0; }
          
 protected:
   Int_t         fCh;          //chamber number

@@ -8,6 +8,7 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include <TClonesArray.h>
 #include <AliExternalTrackParam.h>
 
 class AliTrackPointArray;
@@ -47,6 +48,8 @@ public:
   void SetITSOut(const AliExternalTrackParam &param);
   void SetTRDIn(const AliExternalTrackParam  &param);
   //
+  void SetHmpPhotClus(TClonesArray *array);
+  
   const AliExternalTrackParam * GetTPCOut() const {return  fTPCOut;} 
   const AliExternalTrackParam * GetITSOut() const {return fITSOut;} 
   const AliExternalTrackParam * GetTRDIn()  const {return fTRDIn;} 
@@ -59,12 +62,15 @@ public:
   Int_t GetMaxTPCcluster() {return fnMaxTPCcluster;}
   Int_t GetMaxTRDcluster() {return fnMaxTRDcluster;}
 
+  TClonesArray *GetHmpPhotClus() const {return fHmpPhotClus;}   
+  
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
   Bool_t TestSkipBit() {return TestBit(23);}
 
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
+  TClonesArray *fHmpPhotClus; // TClonesArray of reconstructed photon clusters  
   Int_t fnMaxITScluster; // Max number of ITS clusters
   Int_t fnMaxTPCcluster; // Max number of TPC clusters
   Int_t fnMaxTRDcluster; // Max number of TRD clusters
@@ -85,7 +91,7 @@ protected:
 private:
   AliESDfriendTrack &operator=(const AliESDfriendTrack & /* t */) {return *this;}
 
-  ClassDef(AliESDfriendTrack,4) //ESD friend track
+  ClassDef(AliESDfriendTrack,5) //ESD friend track
 };
 
 #endif

@@ -33,7 +33,7 @@ public :
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
   void     FindRingGeom (Double_t ckovAng,Int_t level=1                                     );     //estimated area of ring in cm^2 and portion accepted by geometry
   TVector2 IntWithEdge  (TVector2 p1,TVector2 p2                                            )const;//find intercection between plane and lines of 2 thetaC
-  Int_t    FlagPhot     (Double_t ckov                                                      );     //is photon ckov near most probable track ckov
+  Int_t    FlagPhot     (Double_t ckov,TClonesArray *pCluLst,TClonesArray *pPhotCluLst      );     //is photon ckov near most probable track ckov
   Double_t HoughResponse(                                                                   );     //most probable track ckov angle
   void     Propagate    (const TVector3  dir,      TVector3 &pos,Double_t z                 )const;//propagate photon alogn the line  
   void     Refract      (      TVector3 &dir,                    Double_t n1,    Double_t n2)const;//refract photon on the boundary
@@ -59,6 +59,7 @@ public :
 protected:
   Int_t     fPhotCnt;                           // counter of photons candidate
   Int_t    *fPhotFlag;                          // flags of photon candidates
+  Int_t    *fPhotClusIndex;                     // cluster index of photon candidates
   Double_t *fPhotCkov;                          // Ckov angles of photon candidates, [rad]
   Double_t *fPhotPhi;                           // phis of photons candidates, [rad]
   Double_t *fPhotWei;                           // weigths of photon candidates
@@ -81,7 +82,7 @@ private:
   AliHMPIDRecon(const AliHMPIDRecon& r);              //dummy copy constructor
   AliHMPIDRecon &operator=(const AliHMPIDRecon& r);   //dummy assignment operator
 //
-  ClassDef(AliHMPIDRecon,1)
+  ClassDef(AliHMPIDRecon,2)
 };
 
 #endif // #ifdef AliHMPIDRecon_cxx
