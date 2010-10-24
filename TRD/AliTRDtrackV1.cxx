@@ -856,7 +856,7 @@ void AliTRDtrackV1::SetTrackIn()
 //
   const AliExternalTrackParam *op = dynamic_cast<const AliExternalTrackParam*>(this);
 
-  printf("SetTrackIn() : fTrackLow[%p]\n", (void*)fTrackLow);
+  //printf("SetTrackIn() : fTrackLow[%p]\n", (void*)fTrackLow);
   if(fTrackLow){
     fTrackLow->~AliExternalTrackParam();
     new(fTrackLow) AliExternalTrackParam(*op);
