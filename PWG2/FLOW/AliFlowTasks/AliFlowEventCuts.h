@@ -38,6 +38,14 @@ class AliFlowEventCuts : public TNamed {
   void SetRefMultMax(Int_t value) {fRefMultMax=value;fCutRefMult=kTRUE;}
   void SetRefMultMin(Int_t value) {fRefMultMin=value;fCutRefMult=kTRUE;}
   void SetRefMultRange(Int_t min, Int_t max) {fRefMultMin=min;fRefMultMax=max;fCutRefMult=kTRUE;}
+  void SetPrimaryVertexXrange(Double_t min, Double_t max)
+       {fCutPrimaryVertexX=kTRUE; fPrimaryVertexXmin=min; fPrimaryVertexXmax=max;}
+  void SetPrimaryVertexYrange(Double_t min, Double_t max)
+       {fCutPrimaryVertexY=kTRUE; fPrimaryVertexYmin=min; fPrimaryVertexYmax=max;}
+  void SetPrimaryVertexZrange(Double_t min, Double_t max)
+       {fCutPrimaryVertexZ=kTRUE; fPrimaryVertexZmin=min; fPrimaryVertexZmax=max;}
+  void SetNContributorsRange(Int_t min, Int_t max=INT_MAX) 
+       {fCutNContributors=kTRUE; fNContributorsMin=min; fNContributorsMax=max;}
 
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
   Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
@@ -60,10 +68,22 @@ class AliFlowEventCuts : public TNamed {
   refMultMethod fRefMultMethod; //how do we calculate refmult?
   Int_t fRefMultMax; //max refmult
   Int_t fRefMultMin; //min refmult
-
   AliFlowTrackCuts* fRefMultCuts; //cuts
+  Bool_t fCutPrimaryVertexX; //cut on x of prim vtx
+  Double_t fPrimaryVertexXmax; //max x prim vtx
+  Double_t fPrimaryVertexXmin; //min x prim vtx
+  Bool_t fCutPrimaryVertexY; //cut on y of prim vtx
+  Double_t fPrimaryVertexYmax; //max y prim vtx
+  Double_t fPrimaryVertexYmin; //min y prim vtx
+  Bool_t fCutPrimaryVertexZ; //cut on z of prim vtx
+  Double_t fPrimaryVertexZmax; //max z prim vtx
+  Double_t fPrimaryVertexZmin; //min z prim vtx
+  Bool_t fCutNContributors; //cut on number of contributors
+  Int_t fNContributorsMax; //maximal number of contrib
+  Int_t fNContributorsMin; //minimal number of contrib
 
-  ClassDef(AliFlowEventCuts,1)
+
+  ClassDef(AliFlowEventCuts,2)
 };
 
 #endif

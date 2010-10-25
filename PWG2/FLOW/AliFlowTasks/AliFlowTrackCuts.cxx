@@ -83,28 +83,28 @@ AliFlowTrackCuts::AliFlowTrackCuts():
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& someCuts):
-  AliFlowTrackSimpleCuts(someCuts),
-  fAliESDtrackCuts(new AliESDtrackCuts(*(someCuts.fAliESDtrackCuts))),
-  fQA(someCuts.fQA),
-  fCutMCprocessType(someCuts.fCutMCprocessType),
-  fMCprocessType(someCuts.fMCprocessType),
-  fCutMCPID(someCuts.fCutMCPID),
-  fMCPID(someCuts.fMCPID),
-  fCutMCisPrimary(someCuts.fCutMCisPrimary),
-  fMCisPrimary(someCuts.fMCisPrimary),
-  fRequireCharge(someCuts.fRequireCharge),
-  fFakesAreOK(someCuts.fFakesAreOK),
-  fCutSPDtrackletDeltaPhi(someCuts.fCutSPDtrackletDeltaPhi),
-  fSPDtrackletDeltaPhiMax(someCuts.fSPDtrackletDeltaPhiMax),
-  fSPDtrackletDeltaPhiMin(someCuts.fSPDtrackletDeltaPhiMin),
-  fParamType(someCuts.fParamType),
-  fParamMix(someCuts.fParamMix),
+AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
+  AliFlowTrackSimpleCuts(that),
+  fAliESDtrackCuts(new AliESDtrackCuts(*(that.fAliESDtrackCuts))),
+  fQA(that.fQA),
+  fCutMCprocessType(that.fCutMCprocessType),
+  fMCprocessType(that.fMCprocessType),
+  fCutMCPID(that.fCutMCPID),
+  fMCPID(that.fMCPID),
+  fCutMCisPrimary(that.fCutMCisPrimary),
+  fMCisPrimary(that.fMCisPrimary),
+  fRequireCharge(that.fRequireCharge),
+  fFakesAreOK(that.fFakesAreOK),
+  fCutSPDtrackletDeltaPhi(that.fCutSPDtrackletDeltaPhi),
+  fSPDtrackletDeltaPhiMax(that.fSPDtrackletDeltaPhiMax),
+  fSPDtrackletDeltaPhiMin(that.fSPDtrackletDeltaPhiMin),
+  fParamType(that.fParamType),
+  fParamMix(that.fParamMix),
   fCleanupTrack(kFALSE),
   fTrack(NULL),
-  fTrackPhi(someCuts.fTrackPhi),
-  fTrackEta(someCuts.fTrackEta),
-  fTrackWeight(someCuts.fTrackWeight),
+  fTrackPhi(0.),
+  fTrackEta(0.),
+  fTrackWeight(0.),
   fTrackLabel(INT_MIN),
   fMCevent(NULL),
   fMCparticle(NULL),
@@ -114,31 +114,31 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& someCuts):
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& someCuts)
+AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
 {
   //assignment
-  AliFlowTrackSimpleCuts::operator=(someCuts);
-  *fAliESDtrackCuts=*(someCuts.fAliESDtrackCuts);
-  fQA=someCuts.fQA;
-  fCutMCprocessType=someCuts.fCutMCprocessType;
-  fMCprocessType=someCuts.fMCprocessType;
-  fCutMCPID=someCuts.fCutMCPID;
-  fMCPID=someCuts.fMCPID;
-  fCutMCisPrimary=someCuts.fCutMCisPrimary;
-  fMCisPrimary=someCuts.fMCisPrimary;
-  fRequireCharge=someCuts.fRequireCharge;
-  fFakesAreOK=someCuts.fFakesAreOK;
-  fCutSPDtrackletDeltaPhi=someCuts.fCutSPDtrackletDeltaPhi;
-  fSPDtrackletDeltaPhiMax=someCuts.fSPDtrackletDeltaPhiMax;
-  fSPDtrackletDeltaPhiMin=someCuts.fSPDtrackletDeltaPhiMin;
-  fParamType=someCuts.fParamType;
-  fParamMix=someCuts.fParamMix;
+  AliFlowTrackSimpleCuts::operator=(that);
+  *fAliESDtrackCuts=*(that.fAliESDtrackCuts);
+  fQA=that.fQA;
+  fCutMCprocessType=that.fCutMCprocessType;
+  fMCprocessType=that.fMCprocessType;
+  fCutMCPID=that.fCutMCPID;
+  fMCPID=that.fMCPID;
+  fCutMCisPrimary=that.fCutMCisPrimary;
+  fMCisPrimary=that.fMCisPrimary;
+  fRequireCharge=that.fRequireCharge;
+  fFakesAreOK=that.fFakesAreOK;
+  fCutSPDtrackletDeltaPhi=that.fCutSPDtrackletDeltaPhi;
+  fSPDtrackletDeltaPhiMax=that.fSPDtrackletDeltaPhiMax;
+  fSPDtrackletDeltaPhiMin=that.fSPDtrackletDeltaPhiMin;
+  fParamType=that.fParamType;
+  fParamMix=that.fParamMix;
 
   fCleanupTrack=kFALSE;
   fTrack=NULL;
-  fTrackPhi=someCuts.fTrackPhi;
-  fTrackPhi=someCuts.fTrackPhi;
-  fTrackWeight=someCuts.fTrackWeight;
+  fTrackPhi=0.;
+  fTrackPhi=0.;
+  fTrackWeight=0.;
   fTrackLabel=INT_MIN;
   fMCevent=NULL;
   fMCparticle=NULL;

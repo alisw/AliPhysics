@@ -150,7 +150,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliMCParticle* fMCparticle;        //!mc particle
   AliVEvent* fEvent;                 //!placeholder for current event
 
-  ClassDef(AliFlowTrackCuts,1)
+  ClassDef(AliFlowTrackCuts,2)
 };
 
 #endif
