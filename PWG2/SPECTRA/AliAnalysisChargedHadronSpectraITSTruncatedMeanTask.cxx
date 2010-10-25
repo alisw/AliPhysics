@@ -19,7 +19,7 @@
 //#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 
-
+#include "TGraph.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TMath.h"
@@ -39,8 +39,11 @@ ClassImp(AliAnalysisChargedHadronSpectraITSTruncatedMeanTask)
 
 //________________________________________________________________________
 AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::AliAnalysisChargedHadronSpectraITSTruncatedMeanTask(const char *name) 
-:AliAnalysisTaskSE(name),fESD(0),fCuts(0),fMC(0),fYCut(100.0),fsigmacut(3.0),fnsigmaxy(7.0),fnsigmaz(5.0),fchargeCut(0.0),
+:AliAnalysisTaskSE(name),fESD(0),fCuts(0),fMC(0),
+fLowMultiplicity(-1),fUpMultiplicity(-1),
+fYCut(100.0),fsigmacut(3.0),fnsigmaxy(7.0),fnsigmaz(5.0),fchargeCut(0.0),
 fCorrectSDD(0),fCorrectSSD(0),
+ fK0weight(0),flambdaweight(0),fAntilambdaweight(0),
 fHistStats(0),fHistPhiPtBeforeCuts(0),fHistPhiPtAfterCuts(0),fHistEtaPtBeforeCuts(0),fHistEtaPtAfterCuts(0),fHistDCABeforeCuts(0),fHistDCAAfterCuts(0),
 fHistPminusTPCinPAfterCuts(0),fHistPminusTPCinPglobalAfterCuts(0),
 fHistMydEPpositive(0),fHistMydETPCinPpositive(0),fHistMydETPCinPglobalpositive(0),
@@ -80,10 +83,10 @@ fHistminsignalifPionPMCPrimaryAfterEventCutsBeforeVertexZ(0),fHistminsignalifKao
 fHistminsignalifAntiPionPMCPrimaryAfterEventCutsBeforeVertexZ(0),fHistminsignalifAntiKaonPMCPrimaryAfterEventCutsBeforeVertexZ(0),fHistminsignalifAntiProtonPMCPrimaryAfterEventCutsBeforeVertexZ(0),
 fDCAXYZforcleanPionsMCPrimary(0),fDCAXYZforcleanAntiPionsMCPrimary(0),fDCAXYZforcleanProtonsMCPrimary(0),fDCAXYZforcleanAntiProtonsMCPrimary(0),
  fDCAXYZforcleanPionsWD(0),fDCAXYZforcleanAntiPionsWD(0),fDCAXYZforcleanProtonsWD(0), fDCAXYZforcleanAntiProtonsWD(0),fDCAXYZforcleanPionsHI(0),fDCAXYZforcleanAntiPionsHI(0),
-fDCAXYZforcleanProtonsHI(0),fDCAXYZforcleanAntiProtonsHI(0),fDCAXYZforcleanPionsME(0),fDCAXYZforcleanAntiPionsME(0),fDCAXYZforcleanPionsR(0),fDCAXYZforcleanAntiPionsR(0),fDCAXYZforcleanProtonsR(0),fDCAXYZforcleanAntiProtonsR(0),
+fDCAXYZforcleanProtonsHI(0),fDCAXYZforcleanAntiProtonsHI(0),fDCAXYZforcleanPionsMEPrimary(0),fDCAXYZforcleanAntiPionsMEPrimary(0),fDCAXYZforcleanPionsMESecondary(0),fDCAXYZforcleanAntiPionsMESecondary(0),fDCAXYZforcleanPionsR(0),fDCAXYZforcleanAntiPionsR(0),fDCAXYZforcleanProtonsR(0),fDCAXYZforcleanAntiProtonsR(0),
 fDCAXYZOpenforcleanPionsMCPrimary(0),fDCAXYZOpenforcleanAntiPionsMCPrimary(0),fDCAXYZOpenforcleanProtonsMCPrimary(0),fDCAXYZOpenforcleanAntiProtonsMCPrimary(0),
  fDCAXYZOpenforcleanPionsWD(0),fDCAXYZOpenforcleanAntiPionsWD(0),fDCAXYZOpenforcleanProtonsWD(0), fDCAXYZOpenforcleanAntiProtonsWD(0),fDCAXYZOpenforcleanPionsHI(0),fDCAXYZOpenforcleanAntiPionsHI(0),
-fDCAXYZOpenforcleanProtonsHI(0),fDCAXYZOpenforcleanAntiProtonsHI(0),fDCAXYZOpenforcleanPionsME(0),fDCAXYZOpenforcleanAntiPionsME(0),fDCAXYZOpenforcleanPionsR(0),fDCAXYZOpenforcleanAntiPionsR(0),fDCAXYZOpenforcleanProtonsR(0),fDCAXYZOpenforcleanAntiProtonsR(0),
+fDCAXYZOpenforcleanProtonsHI(0),fDCAXYZOpenforcleanAntiProtonsHI(0),fDCAXYZOpenforcleanPionsMEPrimary(0),fDCAXYZOpenforcleanAntiPionsMEPrimary(0),fDCAXYZOpenforcleanPionsMESecondary(0),fDCAXYZOpenforcleanAntiPionsMESecondary(0),fDCAXYZOpenforcleanPionsR(0),fDCAXYZOpenforcleanAntiPionsR(0),fDCAXYZOpenforcleanProtonsR(0),fDCAXYZOpenforcleanAntiProtonsR(0),
 fElectronsource(0),fAntiElectronsource(0), 
 fMuonsource(0),fAntiMuonsource(0),
 fPionNTPCClusters(0),fAntiPionNTPCClusters(0),
@@ -325,9 +328,9 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	fAntiPionNTPCClusters=new TH2F("fAntiPionNTPCClusters","fAntiPionNTPCClusters;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,60,160);
 	flist->Add(fAntiPionNTPCClusters);
 	
-	fHistStandartMul=new TH1F("fHistStandartMul",";counts;Ntracks",300,0,300);
+	fHistStandartMul=new TH1F("fHistStandartMul",";Ntracks;counts",300,0,300);
 	flist->Add(fHistStandartMul);
-	fHistMytrackMul=new TH1F("fHistMytrackMul",";counts;Ntracks",300,0,300);
+	fHistMytrackMul=new TH1F("fHistMytrackMul",";Ntracks;counts",300,0,300);
 	flist->Add(fHistMytrackMul);
 	
 	if(!fMC)
@@ -533,10 +536,14 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	fDCAXYZforcleanAntiProtonsHI=new TH3F("fDCAXYZforcleanAntiProtonsHI",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
 	flist->Add(fDCAXYZforcleanAntiProtonsHI);
 	//Secondrary Pions mu el
-	fDCAXYZforcleanPionsME=new TH3F("fDCAXYZforcleanPionsME",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
-	flist->Add(fDCAXYZforcleanPionsME);
-	fDCAXYZforcleanAntiPionsME=new TH3F("fDCAXYZforcleanAntiPionsME",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
-	flist->Add(fDCAXYZforcleanAntiPionsME);
+	fDCAXYZforcleanPionsMEPrimary=new TH3F("fDCAXYZforcleanPionsMEPrimary",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
+	flist->Add(fDCAXYZforcleanPionsMEPrimary);
+	fDCAXYZforcleanAntiPionsMEPrimary=new TH3F("fDCAXYZforcleanAntiPionsMEPrimary",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
+	flist->Add(fDCAXYZforcleanAntiPionsMEPrimary);
+	fDCAXYZforcleanPionsMESecondary=new TH3F("fDCAXYZforcleanPionsMESecondary",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
+	flist->Add(fDCAXYZforcleanPionsMESecondary);
+	fDCAXYZforcleanAntiPionsMESecondary=new TH3F("fDCAXYZforcleanAntiPionsMESecondary",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
+	flist->Add(fDCAXYZforcleanAntiPionsMESecondary);
 	
 	fDCAXYZforcleanPionsR=new TH3F("fDCAXYZforcleanPionsR",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
 	flist->Add(fDCAXYZforcleanPionsR);
@@ -580,10 +587,15 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	fDCAXYZOpenforcleanAntiProtonsHI=new TH3F("fDCAXYZOpenforcleanAntiProtonsHI",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
 	flist->Add(fDCAXYZOpenforcleanAntiProtonsHI);
 	//Secondrary Pions mu el
-	fDCAXYZOpenforcleanPionsME=new TH3F("fDCAXYZOpenforcleanPionsME",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
-	flist->Add(fDCAXYZOpenforcleanPionsME);
-	fDCAXYZOpenforcleanAntiPionsME=new TH3F("fDCAXYZOpenforcleanAntiPionsME",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
-	flist->Add(fDCAXYZOpenforcleanAntiPionsME);
+	
+	fDCAXYZOpenforcleanPionsMEPrimary=new TH3F("fDCAXYZOpenforcleanPionsMEPrimary",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
+	flist->Add(fDCAXYZOpenforcleanPionsMEPrimary);
+	fDCAXYZOpenforcleanAntiPionsMEPrimary=new TH3F("fDCAXYZOpenforcleanAntiPionsMEPrimary",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
+	flist->Add(fDCAXYZOpenforcleanAntiPionsMEPrimary);
+	fDCAXYZOpenforcleanPionsMESecondary=new TH3F("fDCAXYZOpenforcleanPionsMESecondary",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
+	flist->Add(fDCAXYZOpenforcleanPionsMESecondary);
+	fDCAXYZOpenforcleanAntiPionsMESecondary=new TH3F("fDCAXYZOpenforcleanAntiPionsMESecondary",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
+	flist->Add(fDCAXYZOpenforcleanAntiPionsMESecondary);
 	
 	fDCAXYZOpenforcleanPionsR=new TH3F("fDCAXYZOpenforcleanPionsR",";Pt[GeV/c];dcaxy[cm];dcaz[cm]",kPtBins,binsPtDummy,kDCABins,binsDCADummy,kDCABins,binsDCADummy);
 	flist->Add(fDCAXYZOpenforcleanPionsR);
@@ -624,12 +636,24 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::LocalInit()
 
 void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *) 
 {
-	//UserExec
+	//UserExec	
 	 fESD = dynamic_cast<AliESDEvent*> (InputEvent());
 	if (!fESD) 
 	{
 		Printf("ERROR: fESD not available");
 		return;
+	}
+	
+	Float_t refmultiplicity=AliESDtrackCuts::GetReferenceMultiplicity(fESD,1);
+	if(fLowMultiplicity>-1)
+	{
+		if(refmultiplicity<fLowMultiplicity)
+			return;
+	}
+	if(fUpMultiplicity>-1)
+	{
+		if(refmultiplicity>fUpMultiplicity)
+			return;
 	}
 	AliStack* stack=0x0;
 	Double_t mcZvertex=0.0;
@@ -1047,24 +1071,32 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		}
 		if(TMath::Abs(yforpion)<=fYCut)
 		{
+			Float_t weight=1.0;
+			if(fMC)
+				weight=GetWeight(label,stack);	
 			if(pt>0.0)
 			{
 				if(cutDCA)
 				{
-					fHistminsignalifPionP->Fill(pt,itspidsignalforpions);
-					if(TMath::Abs(itspidsignalforpions)<0.2) //select on clean
+					if(fMC)
+						fHistminsignalifPionP->Fill(pt,itspidsignalforpions,weight);
+					else
+						fHistminsignalifPionP->Fill(pt,itspidsignalforpions);
+					if(itspidsignalforpions>-0.5&&itspidsignalforpions<0.2) //select on clean
 					{
 						fDCAXYZforcleanPions->Fill(pt,dcaxy,dcaz);
 						if(fMC)
 						{
 							if(primary&&pdgcode==211)
 								fDCAXYZforcleanPionsMCPrimary->Fill(pt,dcaxy,dcaz);
-							else if(!primary&&pdgcode==211&&uniqueID==kPDecay)	 
+							else if(!primary&&pdgcode==211&&uniqueID==kPDecay)
 								fDCAXYZforcleanPionsWD->Fill(pt,dcaxy,dcaz);
 							else if(!primary&&pdgcode==211&&uniqueID==kPHadronic)
 								fDCAXYZforcleanPionsHI->Fill(pt,dcaxy,dcaz);
-							else if(!primary&&(pdgcode==-11||pdgcode==-13))	
-								fDCAXYZforcleanPionsME->Fill(pt,dcaxy,dcaz);
+							else if(primary&&(pdgcode==-11||pdgcode==-13))
+								fDCAXYZforcleanPionsMEPrimary->Fill(pt,dcaxy,dcaz);
+							else if(!primary&&(pdgcode==-11||pdgcode==-13))
+								fDCAXYZforcleanPionsMESecondary->Fill(pt,dcaxy,dcaz);
 							else
 								fDCAXYZforcleanPionsR->Fill(pt,dcaxy,dcaz);
 					
@@ -1077,8 +1109,8 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 					}
 					else 
 					{
-						if(pdgcode==211)
-							fHistminsignalifPionPSecondary->Fill(pt,itspidsignalforpions);
+						if(pdgcode==211)							
+							fHistminsignalifPionPSecondary->Fill(pt,itspidsignalforpions,weight);
 					//cout<<pdgcode<<" "<<	uniqueID<<"  "<<kPDecay<<" "<<kPHadronic<<endl;
 					}						
 					if(pdgcode==-11||pdgcode==-13)
@@ -1105,7 +1137,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 							fHistminsignalifPionSecondaryfake->Fill(pt,itspidsignalforpions);	
 					}	
 				}				
-				if(TMath::Abs(itspidsignalforpions)<0.2) //select on clean
+				if(itspidsignalforpions>-0.5&&itspidsignalforpions<0.2) //select on clean
 				{
 					fDCAXYZOpenforcleanPions->Fill(pt,dcaxy,dcaz);
 					if(fMC)
@@ -1116,8 +1148,10 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 							fDCAXYZOpenforcleanPionsWD->Fill(pt,dcaxy,dcaz);
 						else if(!primary&&pdgcode==211&&uniqueID==kPHadronic)
 							fDCAXYZOpenforcleanPionsHI->Fill(pt,dcaxy,dcaz);
+						else if(primary&&(pdgcode==-11||pdgcode==-13))	
+							fDCAXYZOpenforcleanPionsMEPrimary->Fill(pt,dcaxy,dcaz);
 						else if(!primary&&(pdgcode==-11||pdgcode==-13))	
-							fDCAXYZOpenforcleanPionsME->Fill(pt,dcaxy,dcaz);
+							fDCAXYZOpenforcleanPionsMESecondary->Fill(pt,dcaxy,dcaz);	
 						else
 							fDCAXYZOpenforcleanPionsR->Fill(pt,dcaxy,dcaz);					
 					}	  	  	   
@@ -1127,8 +1161,11 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			{
 				if(cutDCA)
 				{
-					fHistminsignalifAntiPionP->Fill(TMath::Abs(pt),itspidsignalforpions);
-					if(TMath::Abs(itspidsignalforpions)<0.2)//select on clean
+					if(fMC)
+						fHistminsignalifAntiPionP->Fill(TMath::Abs(pt),itspidsignalforpions,weight);
+					else	
+						fHistminsignalifAntiPionP->Fill(TMath::Abs(pt),itspidsignalforpions);
+					if(itspidsignalforpions>-0.5&&itspidsignalforpions<0.2)//select on clean
 					{
 						fDCAXYZforcleanAntiPions->Fill(TMath::Abs(pt),dcaxy,dcaz);
 						if(fMC)
@@ -1139,8 +1176,10 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 								fDCAXYZforcleanAntiPionsWD->Fill(TMath::Abs(pt),dcaxy,dcaz);
 							else if(!primary&&pdgcode==-211&&uniqueID==kPHadronic)
 								fDCAXYZforcleanAntiPionsHI->Fill(TMath::Abs(pt),dcaxy,dcaz);
+							else if(primary&&(pdgcode==11||pdgcode==13))	
+								fDCAXYZforcleanAntiPionsMEPrimary->Fill(TMath::Abs(pt),dcaxy,dcaz);
 							else if(!primary&&(pdgcode==11||pdgcode==13))	
-								fDCAXYZforcleanAntiPionsME->Fill(TMath::Abs(pt),dcaxy,dcaz);
+								fDCAXYZforcleanAntiPionsMESecondary->Fill(TMath::Abs(pt),dcaxy,dcaz);	
 							else
 								fDCAXYZforcleanAntiPionsR->Fill(TMath::Abs(pt),dcaxy,dcaz);	 
 						}				
@@ -1153,7 +1192,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 					else 
 					{
 						if(pdgcode==-211)
-							fHistminsignalifAntiPionPSecondary->Fill(TMath::Abs(pt),itspidsignalforpions);
+							fHistminsignalifAntiPionPSecondary->Fill(TMath::Abs(pt),itspidsignalforpions,weight);
 						//cout<<pdgcode<<" "<<	uniqueID<<"  "<<kPDecay<<" "<<kPHadronic<<endl;
 					}
 					if(pdgcode==11||pdgcode==13)
@@ -1180,19 +1219,21 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 							fHistminsignalifAntiPionSecondaryfake->Fill(TMath::Abs(pt),itspidsignalforpions);	
 					}	
 				}			
-				if(TMath::Abs(itspidsignalforpions)<0.2)//select on clean
+				if(itspidsignalforpions>-0.5&&itspidsignalforpions<0.2)//select on clean
 				{
 					fDCAXYZOpenforcleanAntiPions->Fill(TMath::Abs(pt),dcaxy,dcaz);
 					if(fMC)
 					{
-						if(primary&&pdgcode==-211)		
+						if(primary&&pdgcode==-211)
 							fDCAXYZOpenforcleanAntiPionsMCPrimary->Fill(TMath::Abs(pt),dcaxy,dcaz);
 						else if(!primary&&pdgcode==-211&&uniqueID==kPDecay)	 
 							fDCAXYZOpenforcleanAntiPionsWD->Fill(TMath::Abs(pt),dcaxy,dcaz);
 						else if(!primary&&pdgcode==-211&&uniqueID==kPHadronic)
 							fDCAXYZOpenforcleanAntiPionsHI->Fill(TMath::Abs(pt),dcaxy,dcaz);
+						else if(primary&&(pdgcode==11||pdgcode==13))	
+							fDCAXYZOpenforcleanAntiPionsMEPrimary->Fill(TMath::Abs(pt),dcaxy,dcaz);
 						else if(!primary&&(pdgcode==11||pdgcode==13))	
-							fDCAXYZOpenforcleanAntiPionsME->Fill(TMath::Abs(pt),dcaxy,dcaz);
+							fDCAXYZOpenforcleanAntiPionsMESecondary->Fill(TMath::Abs(pt),dcaxy,dcaz);	
 						else
 							fDCAXYZOpenforcleanAntiPionsR->Fill(TMath::Abs(pt),dcaxy,dcaz);	 
 					}				
@@ -1247,11 +1288,17 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		}	
 		if(TMath::Abs(yforproton)<=fYCut)
 		{	
+			Float_t weight=1.0;
+			if(fMC)
+				weight=GetWeight(label,stack);	
 			if(pt>0.0)
 			{
 				if(cutDCA)
 				{
-					fHistminsignalifProtonP->Fill(pt,itspidsignalforprotons);
+					if(fMC)
+						fHistminsignalifProtonP->Fill(pt,itspidsignalforprotons,weight);
+					else	
+						fHistminsignalifProtonP->Fill(pt,itspidsignalforprotons);
 					
 					//if(((itspidsignalforprotons))>(TMath::Abs(pt)<0.45?-0.2:0.0))&&(itspidsignalforprotons))<0.2)//select on
 					// clean
@@ -1282,12 +1329,12 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 					}
 					else
 					{
-						if(pdgcode==2212&&uniqueID==kPDecay)					
-							fHistminsignalifProtonPSecondaryWD->Fill(pt,itspidsignalforprotons);
+						if(pdgcode==2212&&uniqueID==kPDecay)		
+							fHistminsignalifProtonPSecondaryWD->Fill(pt,itspidsignalforprotons,weight);
 						else if(pdgcode==2212&&uniqueID==kPHadronic)	
 							fHistminsignalifProtonPSecondaryHI->Fill(pt,itspidsignalforprotons);
 						else	if(pdgcodefake==2212&&uniqueID==kPDecay)
-							fHistminsignalifProtonPSecondaryWDfake->Fill(pt,itspidsignalforprotons);
+							fHistminsignalifProtonPSecondaryWDfake->Fill(pt,itspidsignalforprotons,weight);
 						else if(pdgcodefake==2212&&uniqueID==kPHadronic)
 							fHistminsignalifProtonPSecondaryHIfake->Fill(pt,itspidsignalforprotons);
 						else	 if(fMC)
@@ -1316,7 +1363,10 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			{
 				if(cutDCA)
 				{
-					fHistminsignalifAntiProtonP->Fill(TMath::Abs(pt),itspidsignalforprotons);
+					if(fMC)
+						fHistminsignalifAntiProtonP->Fill(TMath::Abs(pt),itspidsignalforprotons,weight);
+					else	
+						fHistminsignalifAntiProtonP->Fill(TMath::Abs(pt),itspidsignalforprotons);
 					if((itspidsignalforprotons>-0.2)&&(itspidsignalforprotons<0.5))
 					{//select on clean
 						fDCAXYZforcleanAntiProtons->Fill(TMath::Abs(pt),dcaxy,dcaz);
@@ -1345,11 +1395,11 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 					else 
 					{
 						if(pdgcode==-2212&&uniqueID==kPDecay)
-							fHistminsignalifAntiProtonPSecondaryWD->Fill(TMath::Abs(pt),itspidsignalforprotons);
+							fHistminsignalifAntiProtonPSecondaryWD->Fill(TMath::Abs(pt),itspidsignalforprotons,weight);
 						else if(pdgcode==-2212&&uniqueID==kPHadronic)	
 							fHistminsignalifAntiProtonPSecondaryHI->Fill(TMath::Abs(pt),itspidsignalforprotons);	
 						else if(pdgcodefake==-2212&&uniqueID==kPDecay)
-							fHistminsignalifAntiProtonPSecondaryWDfake->Fill(TMath::Abs(pt),itspidsignalforprotons);
+							fHistminsignalifAntiProtonPSecondaryWDfake->Fill(TMath::Abs(pt),itspidsignalforprotons,weight);
 						else if(pdgcodefake==-2212&&uniqueID==kPHadronic)	
 							fHistminsignalifAntiProtonPSecondaryHIfake->Fill(TMath::Abs(pt),itspidsignalforprotons);
 						else if(fMC)
@@ -1374,7 +1424,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			}		
 		}			
 	}	
-	fHistStandartMul->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESD,1));
+	fHistStandartMul->Fill(refmultiplicity);
 	fHistMytrackMul->Fill(mynumberoftracks);
 	
 		
@@ -1453,8 +1503,24 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::Terminate(Option_t *)
 		Printf("correct SDD On\n");
   	if(fCorrectSSD)
 		Printf("correct SSD On\n");
-  
-		
+	if(fK0weight) 
+	{
+		Printf("weigth for pions");
+		fK0weight->Print("All");
+	}
+	if(flambdaweight)
+	{
+		Printf("weigth for protons");
+		flambdaweight->Print("All");
+	}
+	if(fAntilambdaweight)
+	{
+		Printf("weigth for antiprotons");
+		fAntilambdaweight->Print("All");
+	}
+	Printf("Mul low %d Mul up %d",fLowMultiplicity, fUpMultiplicity);
+	
+	
 	Printf("end of Terminate");
 }
 //___________________________________________________
@@ -1569,3 +1635,28 @@ Float_t  AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::MyITSsignalusing3p
 		return kTRUE;
  	return kFALSE;
 }
+//__________________________________________________________________________________________________
+    Float_t AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::GetWeight(Int_t t,AliStack* const stack) const
+    {
+    
+    	//Get weigth for pions protons and antiprotons
+	if(stack->IsPhysicalPrimary(TMath::Abs(t)))
+		return 1.0;	
+	TParticle *particleMC = stack->Particle(TMath::Abs(t));
+	Int_t pdgcodeMC = particleMC->GetPdgCode();
+	if(TMath::Abs(pdgcodeMC)!=211&&TMath::Abs(pdgcodeMC)!=2212)
+		return 1.0;
+	if(!stack->IsPhysicalPrimary(TMath::Abs(particleMC->GetFirstMother())))
+		return 1.0;	
+	TParticle *particleMother=stack->Particle(TMath::Abs(particleMC->GetFirstMother()));
+	Int_t pdgcodeMother = particleMother->GetPdgCode();
+	Float_t motherpt=particleMother-> Pt();
+	if(TMath::Abs(pdgcodeMC)==211&&pdgcodeMother==310&&fK0weight)
+		return fK0weight->Eval(motherpt);
+	else if (pdgcodeMother==3122&&flambdaweight)
+		return flambdaweight->Eval(motherpt);
+	else if(pdgcodeMother==-3122&&fAntilambdaweight)
+		return fAntilambdaweight->Eval(motherpt);	
+	return 1.0;	
+    }
+    

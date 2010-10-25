@@ -15,7 +15,8 @@ class AliESDtrack;
 class  AliESDtrackCuts;
 class AliESDpidCuts;
 class AliESDpid;
-
+class TGraph;
+class AliStack;
 #include "AliAnalysisTaskSE.h"
 //#include "AliESDtrackCuts.h"
 #include "AliESDpidCuts.h"
@@ -40,6 +41,7 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
   void SetAliESDtrackCuts(AliESDtrackCuts* const cuts ){fCuts=cuts;/*flist->Add(fCuts);*/}
   void SetFunctionParam( Float_t * const par);
   void SetLinearParam(Float_t a, Float_t b){flinearpar[0]=a;flinearpar[1]=b;}
+   void SetMultiplicityCut(Int_t low, Int_t up){fLowMultiplicity=low;fUpMultiplicity=up;}
   void SetCorrectSDD(){fCorrectSDD=kTRUE;}
    void SetCorrectSSD(){fCorrectSSD=kTRUE;}
   void SetYcut(Float_t value){fYCut=TMath::Abs(value);}
@@ -47,12 +49,16 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
   void SetNsigmaDCAcut(Float_t sigmaxy,Float_t sigmaz){fnsigmaxy=sigmaxy;fnsigmaz=sigmaz;}    
   void SetChargeCut(Float_t chargeCut){fchargeCut=TMath::Abs(chargeCut)>50.0?50.0:TMath::Abs(chargeCut);}
      void SetTPCPIDCUT(AliESDpidCuts* const cuts){fTPCPIDCUT=cuts;}
+     void SetWeights(TGraph* const setK0weight, TGraph* const  setlambdaweight,TGraph* const setAntilambdaweight){fK0weight=setK0weight;flambdaweight=setlambdaweight;fAntilambdaweight=setAntilambdaweight;}
  private:
  
  
  AliESDEvent *fESD;    //ESD object    
   AliESDtrackCuts *fCuts;//cuts 
   Bool_t fMC;//if TRUE use MC 
+  Int_t fLowMultiplicity;//low Multiplicity cut
+  Int_t fUpMultiplicity;//up Multiplicity cut
+  
   Float_t fpar[5];//BB parameters
   Float_t flinearpar[2];//resolution parameters a*dE+b=res 
   Float_t fYCut;//cut in y
@@ -66,7 +72,11 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
   Bool_t fCorrectSSD;//this same but for dE SSS
   
   
+  TGraph* fK0weight ;//weight for pions comming from K0shorts
+  TGraph* flambdaweight ;//weight for protons comming from lambdas
+   TGraph* fAntilambdaweight ;//weight for antiprotons comming from antilambdas
   
+   
 TH1F *fHistStats; //histogram with statistic of events
 TH2F* fHistPhiPtBeforeCuts;//phi pt before cuts 
 TH2F* fHistPhiPtAfterCuts;//phi pt after cuts 
@@ -292,8 +302,10 @@ TH3F* fDCAXYZforcleanProtonsHI;//pions
 TH3F* fDCAXYZforcleanAntiProtonsHI;//antipions
 
 //Secondrary Pions mu el
-TH3F* fDCAXYZforcleanPionsME;//posvitive
-TH3F* fDCAXYZforcleanAntiPionsME;//negative
+TH3F* fDCAXYZforcleanPionsMEPrimary;//posvitive
+TH3F* fDCAXYZforcleanAntiPionsMEPrimary;//negative
+TH3F* fDCAXYZforcleanPionsMESecondary;//posvitive
+TH3F* fDCAXYZforcleanAntiPionsMESecondary;//negative
 
 //Secondrary Pions rest source
 TH3F* fDCAXYZforcleanPionsR;//positive
@@ -328,8 +340,10 @@ TH3F* fDCAXYZOpenforcleanProtonsHI;//pions
 TH3F* fDCAXYZOpenforcleanAntiProtonsHI;//antipions
 
 //Secondrary Pions mu el
-TH3F* fDCAXYZOpenforcleanPionsME;//posvitive
-TH3F* fDCAXYZOpenforcleanAntiPionsME;//negative
+TH3F* fDCAXYZOpenforcleanPionsMEPrimary;//posvitive
+TH3F* fDCAXYZOpenforcleanAntiPionsMEPrimary;//negative
+TH3F* fDCAXYZOpenforcleanPionsMESecondary;//posvitive
+TH3F* fDCAXYZOpenforcleanAntiPionsMESecondary;//negative
 
 //Secondrary Pions rest source
 TH3F* fDCAXYZOpenforcleanPionsR;//positive
@@ -373,6 +387,10 @@ Float_t BBparametrization(Float_t x,const Float_t * par) const;
 void CorrectSDD(Double_t *tmpQESD) const;
 void CorrectSSD(Double_t *tmpQESD) const;
     Bool_t SelectOnImpPar(AliESDtrack* const t) const;
+    Float_t GetWeight(Int_t type,AliStack* const stack) const;
+    
+    
+    
  ClassDef(AliAnalysisChargedHadronSpectraITSTruncatedMeanTask, 1); // example of analysis
 };
 
