@@ -23,6 +23,7 @@
 #include <limits.h>
 #include <float.h>
 #include "TNamed.h"
+#include "AliVVertex.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliMultiplicity.h"
@@ -42,7 +43,19 @@ AliFlowEventCuts::AliFlowEventCuts():
   fRefMultMethod(kTPConly),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
-  fRefMultCuts(NULL)
+  fRefMultCuts(NULL),
+  fCutPrimaryVertexX(kFALSE),
+  fPrimaryVertexXmax(INT_MAX),
+  fPrimaryVertexXmin(INT_MIN),
+  fCutPrimaryVertexY(kFALSE),
+  fPrimaryVertexYmax(INT_MAX),
+  fPrimaryVertexYmin(INT_MIN),
+  fCutPrimaryVertexZ(kFALSE),
+  fPrimaryVertexZmax(INT_MAX),
+  fPrimaryVertexZmin(INT_MIN),
+  fCutNContributors(kFALSE),
+  fNContributorsMax(INT_MAX),
+  fNContributorsMin(INT_MIN)
 {
   //constructor 
 }
@@ -57,7 +70,19 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fRefMultMethod(kTPConly),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
-  fRefMultCuts(NULL)
+  fRefMultCuts(NULL),
+  fCutPrimaryVertexX(kFALSE),
+  fPrimaryVertexXmax(INT_MAX),
+  fPrimaryVertexXmin(INT_MIN),
+  fCutPrimaryVertexY(kFALSE),
+  fPrimaryVertexYmax(INT_MAX),
+  fPrimaryVertexYmin(INT_MIN),
+  fCutPrimaryVertexZ(kFALSE),
+  fPrimaryVertexZmax(INT_MAX),
+  fPrimaryVertexZmin(INT_MIN),
+  fCutNContributors(kFALSE),
+  fNContributorsMax(INT_MAX),
+  fNContributorsMin(INT_MIN)
 {
   //constructor 
 }
@@ -72,9 +97,23 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fRefMultMethod(that.fRefMultMethod),
   fRefMultMax(that.fRefMultMax),
   fRefMultMin(that.fRefMultMin),
-  fRefMultCuts(new AliFlowTrackCuts(*(that.fRefMultCuts)))
+  fRefMultCuts(NULL),
+  fCutPrimaryVertexX(that.fCutPrimaryVertexX),
+  fPrimaryVertexXmax(that.fPrimaryVertexXmax),
+  fPrimaryVertexXmin(that.fPrimaryVertexXmin),
+  fCutPrimaryVertexY(that.fCutPrimaryVertexX),
+  fPrimaryVertexYmax(that.fPrimaryVertexYmax),
+  fPrimaryVertexYmin(that.fPrimaryVertexYmin),
+  fCutPrimaryVertexZ(that.fCutPrimaryVertexX),
+  fPrimaryVertexZmax(that.fPrimaryVertexZmax),
+  fPrimaryVertexZmin(that.fPrimaryVertexZmin),
+  fCutNContributors(that.fCutNContributors),
+  fNContributorsMax(that.fNContributorsMax),
+  fNContributorsMin(that.fNContributorsMin)
 {
   //copy constructor 
+  if (that.fRefMultCuts)
+    fRefMultCuts = new AliFlowTrackCuts(*(that.fRefMultCuts));
 }
 
 ////-----------------------------------------------------------------------
@@ -88,7 +127,17 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fRefMultMethod=that.fRefMultMethod;
   fRefMultMax=that.fRefMultMax;
   fRefMultMin=that.fRefMultMin;
-  *fRefMultCuts=*(that.fRefMultCuts);
+  if (that.fRefMultCuts) *fRefMultCuts=*(that.fRefMultCuts);
+  fCutPrimaryVertexX=that.fCutPrimaryVertexX;
+  fPrimaryVertexXmin=that.fPrimaryVertexXmin;
+  fPrimaryVertexXmax=that.fPrimaryVertexXmax;
+  fPrimaryVertexYmin=that.fPrimaryVertexYmin;
+  fPrimaryVertexYmax=that.fPrimaryVertexYmax;
+  fPrimaryVertexZmin=that.fPrimaryVertexZmin;
+  fPrimaryVertexZmax=that.fPrimaryVertexZmax;
+  fCutNContributors=that.fCutNContributors;
+  fNContributorsMax=that.fNContributorsMax;
+  fNContributorsMin=that.fNContributorsMin;
   return *this;
 }
 
@@ -110,6 +159,31 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
     //reference multiplicity still to be defined
     Double_t refMult = RefMult(event);
     if (refMult < fRefMultMin || refMult >= fRefMultMax )
+      return kFALSE;
+  }
+  const AliVVertex* pvtx=event->GetPrimaryVertex();
+  Double_t pvtxx = pvtx->GetX();
+  Double_t pvtxy = pvtx->GetY();
+  Double_t pvtxz = pvtx->GetZ();
+  Int_t ncontrib = pvtx->GetNContributors();
+  if (fCutNContributors)
+  {
+    if (ncontrib < fNContributorsMin || ncontrib >= fNContributorsMax)
+      return kFALSE;
+  }
+  if (fCutPrimaryVertexX)
+  {
+    if (pvtxx < fPrimaryVertexXmin || pvtxx >= fPrimaryVertexXmax)
+      return kFALSE;
+  }
+  if (fCutPrimaryVertexY)
+  {
+    if (pvtxy < fPrimaryVertexYmin || pvtxy >= fPrimaryVertexYmax)
+      return kFALSE;
+  }
+  if (fCutPrimaryVertexZ)
+  {
+    if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
       return kFALSE;
   }
   return kTRUE;
