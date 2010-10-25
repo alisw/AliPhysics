@@ -520,16 +520,15 @@ FRAME 65 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
 * TRD
 * ===
 *
-*    Med GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA  ANNI  BREM  COMP  DCAY  DRAY  HADR  LOSS  MULS  PAIR  PHOT  RAYL 
-* Xe gas  
-TRD   4  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     3     1     1     1     1
-* Mylar  
-TRD   8  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     3     1     1     1     1
+* TRD
+* ===
+*
+*    Med GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA  ANNI  BREM  COMP  DCAY  DRAY  HADR  LOSS  MULS  PAIR  PHOT  RAYL
+* Mylar
+TRD  27  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     3     1     1     1     1
 * Gas mixture
 TRD   9  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     3     1     1     1     1
-* Kapton
-TRD  11  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     3     1     1     1     1
-
+*
 * MUON
 * ===
 *
