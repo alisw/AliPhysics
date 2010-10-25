@@ -477,14 +477,15 @@ Bool_t AliRDHFCuts::CompareCuts(const AliRDHFCuts *obj) const {
   if(fUsePID!=obj->fUsePID) { printf("Use PID %d  %d\n",(Int_t)fUsePID,(Int_t)obj->fUsePID); areEqual=kFALSE;}
 
   if(fRemoveDaughtersFromPrimary!=obj->fRemoveDaughtersFromPrimary) {printf("Remove daughters from vtx %d  %d\n",(Int_t)fRemoveDaughtersFromPrimary,(Int_t)obj->fRemoveDaughtersFromPrimary); areEqual=kFALSE;}
+  if(fTrackCuts){
+    if(fTrackCuts->GetMinNClusterTPC()!=obj->fTrackCuts->GetMinNClusterTPC()) {printf("MinNClsTPC %d  %d\n",fTrackCuts->GetMinNClusterTPC(),obj->fTrackCuts->GetMinNClusterTPC()); areEqual=kFALSE;}
 
-  if(fTrackCuts->GetMinNClusterTPC()!=obj->fTrackCuts->GetMinNClusterTPC()) {printf("MinNClsTPC %d  %d\n",fTrackCuts->GetMinNClusterTPC(),obj->fTrackCuts->GetMinNClusterTPC()); areEqual=kFALSE;}
+    if(fTrackCuts->GetMinNClustersITS()!=obj->fTrackCuts->GetMinNClustersITS()) {printf("MinNClsITS %d  %d\n",fTrackCuts->GetMinNClustersITS(),obj->fTrackCuts->GetMinNClustersITS()); areEqual=kFALSE;}
 
-  if(fTrackCuts->GetMinNClustersITS()!=obj->fTrackCuts->GetMinNClustersITS()) {printf("MinNClsITS %d  %d\n",fTrackCuts->GetMinNClustersITS(),obj->fTrackCuts->GetMinNClustersITS()); areEqual=kFALSE;}
+    if(TMath::Abs(fTrackCuts->GetMaxChi2PerClusterTPC()-obj->fTrackCuts->GetMaxChi2PerClusterTPC())>1.e-10) {printf("MaxChi2ClsTPC %f  %f\n",fTrackCuts->GetMaxChi2PerClusterTPC(),obj->fTrackCuts->GetMaxChi2PerClusterTPC()); areEqual=kFALSE;}
 
-  if(TMath::Abs(fTrackCuts->GetMaxChi2PerClusterTPC()-obj->fTrackCuts->GetMaxChi2PerClusterTPC())>1.e-10) {printf("MaxChi2ClsTPC %f  %f\n",fTrackCuts->GetMaxChi2PerClusterTPC(),obj->fTrackCuts->GetMaxChi2PerClusterTPC()); areEqual=kFALSE;}
-
-  if(fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)!=obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)) {printf("ClusterReq SPD %d  %d\n",fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD),obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)); areEqual=kFALSE;}
+    if(fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)!=obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)) {printf("ClusterReq SPD %d  %d\n",fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD),obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)); areEqual=kFALSE;}
+  }
 
   if(fCutsRD) {
    for(Int_t iv=0;iv<fnVars;iv++) {
