@@ -481,13 +481,13 @@ void AliVZEROv7::CreateGeometry()
     TGeoRotation *rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(-90.0);
-    double FEEshiftR2Sec1 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
-    TGeoCombiTrans *posFicFEEBSec1 = new TGeoCombiTrans("posFicFEEBSec1", FEEshiftR2Sec1*cos225 + 2.0, 0, 7.5, rot);
+    double aFEEshiftR2Sec1 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    TGeoCombiTrans *posFicFEEBSec1 = new TGeoCombiTrans("posFicFEEBSec1", aFEEshiftR2Sec1*cos225 + 2.0, 0, 7.5, rot);
     posFicFEEBSec1->RegisterYourself();
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(-90.0+45.0);
-    TGeoCombiTrans *posFicFEEBUpSec1 = new TGeoCombiTrans("posFicFEEBUpSec1", (FEEshiftR2Sec1*cos225 + 2.0 )*cos45, (FEEshiftR2Sec1*cos225 + 2.0 )*sin45, 7.5, rot);
+    TGeoCombiTrans *posFicFEEBUpSec1 = new TGeoCombiTrans("posFicFEEBUpSec1", (aFEEshiftR2Sec1*cos225 + 2.0 )*cos45, (aFEEshiftR2Sec1*cos225 + 2.0 )*sin45, 7.5, rot);
     posFicFEEBUpSec1->RegisterYourself();
     for (int i=0;i<2;i++) {
     v0APts[0+8*i] = fV0AOctH2/2.;	       v0APts[1+8*i] = fV0AFEEBHt/2. + 2.5;
@@ -496,11 +496,11 @@ void AliVZEROv7::CreateGeometry()
     v0APts[6+8*i] = -fV0AOctH2/2.;	       v0APts[7+8*i] = fV0AFEEBHt/2.+ 2.5;
     }
     new TGeoArb8("sV0AFicOct2Sec1", (fV0ASciWd+2*fV0AOctWd)/2., v0APts);
-    TGeoTranslation *posFicOct2Sec1 = new TGeoTranslation("posFicOct2Sec1",(FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0,0.0,0.0);
+    TGeoTranslation *posFicOct2Sec1 = new TGeoTranslation("posFicOct2Sec1",(aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0,0.0,0.0);
     posFicOct2Sec1->RegisterYourself();  
     rot = new TGeoRotation("rot");
     rot->RotateZ(-90.0+45.0+90.0);
-    TGeoCombiTrans *posFicOct2UpSec1 = new TGeoCombiTrans("posFicOct2UpSec1",((FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot);
+    TGeoCombiTrans *posFicOct2UpSec1 = new TGeoCombiTrans("posFicOct2UpSec1",((aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot);
     posFicOct2UpSec1->RegisterYourself(); 
 
     /// Frame
@@ -779,8 +779,8 @@ void AliVZEROv7::CreateGeometry()
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(+90.0);
-    double FEEshiftR = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
-    v0LE->AddNode(v0AFEE,1, new TGeoCombiTrans( FEEshiftR*cos225+2.0, 0, 7.5, rot));
+    double aFEEshiftR = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    v0LE->AddNode(v0AFEE,1, new TGeoCombiTrans( aFEEshiftR*cos225+2.0, 0, 7.5, rot));
     for (int i=0;i<2;i++) {
     v0APts[0+8*i] = fV0AOctH2/2.;	       v0APts[1+8*i] = fV0AFEEBHt/2. + 2.5;
     v0APts[2+8*i] = fV0AOctH2/2.;              v0APts[3+8*i] = -fV0AFEEBHt/2.- 2.5;
@@ -790,7 +790,7 @@ void AliVZEROv7::CreateGeometry()
     TGeoArb8 *sV0AFEEOct2 = new TGeoArb8("sV0AFEEOct2", (fV0ASciWd+2*fV0AOctWd)/2., v0APts);
     TGeoVolume *v0AFEEOct2 = new TGeoVolume("V0AFEEOct2",sV0AFEEOct2, medV0ASup);
     v0AFEEOct2->SetLineColor(kV0AColorOct);
-    v0LE->AddNode(v0AFEEOct2,1, new TGeoTranslation((FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0,0.0,0.0));
+    v0LE->AddNode(v0AFEEOct2,1, new TGeoTranslation((aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0,0.0,0.0));
 
 
     /// Definition sector 2
@@ -830,8 +830,8 @@ void AliVZEROv7::CreateGeometry()
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(-90.0);
-    double FEEshiftR2Sec2 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
-    TGeoCombiTrans *posFicFEEBSec2 = new TGeoCombiTrans("posFicFEEBSec2", FEEshiftR2Sec2*cos225 + 2.0, 0, 7.5, rot);
+    double aFEEshiftR2Sec2 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    TGeoCombiTrans *posFicFEEBSec2 = new TGeoCombiTrans("posFicFEEBSec2", aFEEshiftR2Sec2*cos225 + 2.0, 0, 7.5, rot);
     posFicFEEBSec2->RegisterYourself();
     for (int i=0;i<2;i++) {
     v0APts[0+8*i] = fV0AOctH2/2.;	       v0APts[1+8*i] = fV0AFEEBHt/2. + 2.5;
@@ -840,7 +840,7 @@ void AliVZEROv7::CreateGeometry()
     v0APts[6+8*i] = -fV0AOctH2/2.;	       v0APts[7+8*i] = fV0AFEEBHt/2.+ 2.5;
     }
     new TGeoArb8("sV0AFicOct2Sec2", (fV0ASciWd+2*fV0AOctWd)/2., v0APts);
-    TGeoTranslation *posFicOct2Sec2 = new TGeoTranslation("posFicOct2Sec2",(FEEshiftR2Sec2*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0,0.0,0.0);
+    TGeoTranslation *posFicOct2Sec2 = new TGeoTranslation("posFicOct2Sec2",(aFEEshiftR2Sec2*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0,0.0,0.0);
     posFicOct2Sec2->RegisterYourself();  
 
     /// Frame
@@ -1083,10 +1083,10 @@ void AliVZEROv7::CreateGeometry()
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(+90.0-45.0+90);
-    v0LE->AddNode(v0AFEE2,1, new TGeoCombiTrans( (FEEshiftR2Sec1*cos225 + 2.0)*cos45, (FEEshiftR2Sec1*cos225 + 2.0)*sin45, 7.5, rot));
+    v0LE->AddNode(v0AFEE2,1, new TGeoCombiTrans( (aFEEshiftR2Sec1*cos225 + 2.0)*cos45, (aFEEshiftR2Sec1*cos225 + 2.0)*sin45, 7.5, rot));
     rot = new TGeoRotation("rot");
     rot->RotateZ(-90.0+45.0+90.0);
-    v0LE->AddNode(v0AFEEOct2,2, new TGeoCombiTrans(((FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot));
+    v0LE->AddNode(v0AFEEOct2,2, new TGeoCombiTrans(((aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot));
 
    
     //Upper supports
@@ -1145,11 +1145,11 @@ void AliVZEROv7::CreateGeometry()
     new TGeoCompositeShape("sV0AChaSec3","sV0ACha12Sec3+sV0ANailsSciHolesSec3");
     new TGeoTubeSeg("sV0AFicR5Sec3", fV0AR4+fV0AFraWd/2., fV0AR4 + fV0AR0, fV0ASciWd/2.+2*preShapeSec3, 0, 45);
     new TGeoBBox("sV0AFicFEEBSec3", fV0AFEEBWd/2., fV0AFEEBHt/2., fV0AFEEBTh/2.);
-    double FEEshiftR2Sec3 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    double aFEEshiftR2Sec3 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(-90.0+45.0);
-    TGeoCombiTrans *posFicFEEBSec3 = new TGeoCombiTrans("posFicFEEBSec3", (FEEshiftR2Sec3*cos225 + 2.0 )*cos45, (FEEshiftR2Sec3*cos225 + 2.0 )*sin45, 7.5, rot);
+    TGeoCombiTrans *posFicFEEBSec3 = new TGeoCombiTrans("posFicFEEBSec3", (aFEEshiftR2Sec3*cos225 + 2.0 )*cos45, (aFEEshiftR2Sec3*cos225 + 2.0 )*sin45, 7.5, rot);
     posFicFEEBSec3->RegisterYourself();
     for (int i=0;i<2;i++) {
     v0APts[0+8*i] = fV0AOctH2/2.;	       v0APts[1+8*i] = fV0AFEEBHt/2. + 2.5;
@@ -1160,7 +1160,7 @@ void AliVZEROv7::CreateGeometry()
     new TGeoArb8("sV0AFicOct2Sec3", (fV0ASciWd+2*fV0AOctWd)/2., v0APts); 
     rot = new TGeoRotation("rot");
     rot->RotateZ(-90.0+45.0+90.0);
-    TGeoCombiTrans *posFicOct2UpSec3 = new TGeoCombiTrans("posFicOct2UpSec3",((FEEshiftR2Sec3*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((FEEshiftR2Sec3*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot);
+    TGeoCombiTrans *posFicOct2UpSec3 = new TGeoCombiTrans("posFicOct2UpSec3",((aFEEshiftR2Sec3*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((aFEEshiftR2Sec3*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot);
     posFicOct2UpSec3->RegisterYourself();
 
     /// Frame
@@ -1403,10 +1403,10 @@ void AliVZEROv7::CreateGeometry()
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(-90.0+45.0-90);
-    v0LE->AddNode(v0AFEE3,1, new TGeoCombiTrans( -(FEEshiftR2Sec1*cos225 + 2.0)*cos45, (FEEshiftR2Sec1*cos225 + 2.0)*sin45, 7.5, rot) );
+    v0LE->AddNode(v0AFEE3,1, new TGeoCombiTrans( -(aFEEshiftR2Sec1*cos225 + 2.0)*cos45, (aFEEshiftR2Sec1*cos225 + 2.0)*sin45, 7.5, rot) );
     rot = new TGeoRotation("rot");
     rot->RotateZ(+90.0-45.0-90.0);
-    v0LE->AddNode(v0AFEEOct2,3, new TGeoCombiTrans(-((FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot)); 
+    v0LE->AddNode(v0AFEEOct2,3, new TGeoCombiTrans(-((aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot)); 
 
 
     /// Definition sector 4
@@ -1446,13 +1446,13 @@ void AliVZEROv7::CreateGeometry()
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(-90.0);
-    double FEEshiftR2Sec4 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
-    TGeoCombiTrans *posFicFEEBSec4 = new TGeoCombiTrans("posFicFEEBSec4", FEEshiftR2Sec4*cos225 + 2.0, 0, 7.5, rot);
+    double aFEEshiftR2Sec4 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    TGeoCombiTrans *posFicFEEBSec4 = new TGeoCombiTrans("posFicFEEBSec4", aFEEshiftR2Sec4*cos225 + 2.0, 0, 7.5, rot);
     posFicFEEBSec4->RegisterYourself();
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(-90.0+45.0);
-    TGeoCombiTrans *posFicFEEBUpSec4 = new TGeoCombiTrans("posFicFEEBUpSec4", (FEEshiftR2Sec4*cos225 + 2.0 )*cos45, (FEEshiftR2Sec4*cos225 + 2.0 )*sin45, 7.5, rot);
+    TGeoCombiTrans *posFicFEEBUpSec4 = new TGeoCombiTrans("posFicFEEBUpSec4", (aFEEshiftR2Sec4*cos225 + 2.0 )*cos45, (aFEEshiftR2Sec4*cos225 + 2.0 )*sin45, 7.5, rot);
     posFicFEEBUpSec4->RegisterYourself();
     for (int i=0;i<2;i++) {
     v0APts[0+8*i] = fV0AOctH2/2.;	       v0APts[1+8*i] = fV0AFEEBHt/2. + 2.5;
@@ -1461,11 +1461,11 @@ void AliVZEROv7::CreateGeometry()
     v0APts[6+8*i] = -fV0AOctH2/2.;	       v0APts[7+8*i] = fV0AFEEBHt/2.+ 2.5;
     }
     new TGeoArb8("sV0AFicOct2Sec4", (fV0ASciWd+2*fV0AOctWd)/2., v0APts);
-    TGeoTranslation *posFicOct2Sec4 = new TGeoTranslation("posFicOct2Sec4",(FEEshiftR2Sec4*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0,0.0,0.0);
+    TGeoTranslation *posFicOct2Sec4 = new TGeoTranslation("posFicOct2Sec4",(aFEEshiftR2Sec4*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0,0.0,0.0);
     posFicOct2Sec4->RegisterYourself();  
     rot = new TGeoRotation("rot");
     rot->RotateZ(-90.0+45.0+90.0);
-    TGeoCombiTrans *posFicOct2UpSec4 = new TGeoCombiTrans("posFicOct2UpSec4",((FEEshiftR2Sec4*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((FEEshiftR2Sec4*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot);
+    TGeoCombiTrans *posFicOct2UpSec4 = new TGeoCombiTrans("posFicOct2UpSec4",((aFEEshiftR2Sec4*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*cos45,((aFEEshiftR2Sec4*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0)*sin45,0.0,rot);
     posFicOct2UpSec4->RegisterYourself(); 
 
     /// Frame
@@ -1708,8 +1708,8 @@ void AliVZEROv7::CreateGeometry()
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(-90.0);
-    v0LE->AddNode(v0AFEE4,1, new TGeoCombiTrans( -FEEshiftR2Sec1*cos225-2.0, 0, 7.5, rot));   
-    v0LE->AddNode(v0AFEEOct2,4, new TGeoTranslation(-1.0*((FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0),0.0,0.0));
+    v0LE->AddNode(v0AFEE4,1, new TGeoCombiTrans( -aFEEshiftR2Sec1*cos225-2.0, 0, 7.5, rot));   
+    v0LE->AddNode(v0AFEEOct2,4, new TGeoTranslation(-1.0*((aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0),0.0,0.0));
 
 
     //Definition of sector 5
@@ -1758,9 +1758,9 @@ void AliVZEROv7::CreateGeometry()
     rot = new TGeoRotation("rot");
     rot->RotateX(90);
     rot->RotateZ(-90.0);
-    TGeoCombiTrans *posFicFEEBSec5 = new TGeoCombiTrans("posFicFEEBSec5", -FEEshiftR2Sec1*cos225 - 2.0, 0, 7.5, rot);
+    TGeoCombiTrans *posFicFEEBSec5 = new TGeoCombiTrans("posFicFEEBSec5", -aFEEshiftR2Sec1*cos225 - 2.0, 0, 7.5, rot);
     posFicFEEBSec5->RegisterYourself();
-    TGeoTranslation *posFicOct2Sec5 = new TGeoTranslation("posFicOct2Sec5",-1.0*((FEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0),0.0,0.0);
+    TGeoTranslation *posFicOct2Sec5 = new TGeoTranslation("posFicOct2Sec5",-1.0*((aFEEshiftR2Sec1*cos225 + 2.0) - fV0AFEEBTh/2. - 1.0),0.0,0.0);
     posFicOct2Sec5->RegisterYourself(); 
 
     /// Frame
