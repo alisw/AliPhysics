@@ -119,24 +119,33 @@ void AliTaskCDBconnect::CreateOutputObjects()
      AliFatal("No ESD input event handler connected");
      return;
   }   
-  // Try to get event number before the first event is read
+  // Try to get event number before the first event is read (this has precedence
+  // over existing fRun)
   Int_t run = mgr->GetRunFromPath();
-  if (!run && fESD) run = fESD->GetRunNumber();
   if (!run) {
      AliWarning("AliTaskCDBconnect: Could not set run from path");
-     if (!fRun) return;
+     if (!fRun) {
+        AliError("AliTaskCDBconnect: Run not set - no CDB connection");
+        return;
+     }   
   }
   // Create CDB manager
   AliCDBManager *cdb = AliCDBManager::Instance();
+  // If CDB is already locked, return
+  if (cdb->GetLock()) return;
   // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
-//  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  cdb->SetDefaultStorage("raw://");
+  //  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  if (cdb->IsDefaultStorageSet()) {
+     AliError("AliTaskCDBconnect: CDB default storage already set!");
+  } else {
+     cdb->SetDefaultStorage("raw://");
+  }   
   if (run && (run != fRun)) {
      fRunChanged = kTRUE;
      fRun = run;
   } else {
      fRunChanged = kFALSE;
-  }   
+  }
   // Set run
   printf("AliCDBconnect: #### Setting run to: %d\n", fRun);
   cdb->SetRun(fRun);
@@ -166,4 +175,11 @@ void AliTaskCDBconnect::Exec(Option_t* /*option*/)
     AliCDBManager::Instance()->SetRun(fRun);
   }
 //  PostData(0, fESD);
+}
+
+//______________________________________________________________________________
+void AliTaskCDBconnect::Terminate(Option_t *)
+{
+// Initialize CDB also in Terminate
+   CreateOutputObjects();
 }
