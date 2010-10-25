@@ -25,7 +25,7 @@ class AliAODPWG4Particle;
 class AliVCluster;
 class AliVCaloCells;
 #include "AliPHOSGeoUtils.h"
-#include "AliEMCALGeoUtils.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 
 class AliCalorimeterUtils : public TObject {
@@ -146,6 +146,10 @@ class AliCalorimeterUtils : public TObject {
   void SwitchOnRecalculateClusterPosition()      { fRecalculatePosition = kTRUE; } 
   void SwitchOffRecalculateClusterPosition()     { fRecalculatePosition = kFALSE; } 
   void RecalculateClusterPosition(AliVCaloCells* cells, AliVCluster* clu);
+  void RecalculateClusterShowerShapeParameters(AliVCaloCells* cells, AliVCluster* clu){
+    fEMCALRecoUtils->RecalculateClusterShowerShapeParameters((AliEMCALGeometry*)fEMCALGeo, cells, clu);
+  }
+  void RecalculateClusterPID(AliVCluster* clu) {fEMCALRecoUtils->RecalculateClusterPID(clu);}
 
  private:
 

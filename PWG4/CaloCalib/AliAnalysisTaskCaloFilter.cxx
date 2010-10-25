@@ -189,13 +189,15 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     
     //--------------------------------------------------------------
     //If EMCAL, and requested, correct energy, position ...
-    //printf("Hello IsEMCAL? %d, Correct? %d\n",cluster->IsEMCAL(), fCorrect);
     if(cluster->IsEMCAL() && fCorrect){
       Float_t position[]={0,0,0};
       if(DebugLevel() > 2)
         printf("Check cluster %d for bad channels and close to border\n",cluster->GetID());
       if(fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo,cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
-      if(fEMCALRecoUtils->CheckCellFiducialRegion(fEMCALGeo, cluster, event->GetEMCALCells())) continue;
+//      if(!fEMCALRecoUtils->CheckCellFiducialRegion(fEMCALGeo, cluster, event->GetEMCALCells())) {
+//        printf("Finally reject\n");
+//        continue;
+//      }
       if(DebugLevel() > 2)
       { 
         printf("Filter, before  : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClust,cluster->E(),
@@ -204,10 +206,16 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
         printf("Filter, before  : i %d, x %f, y %f, z %f\n",cluster->GetID(), position[0], position[1], position[2]);
       }
             
-      if(fEMCALRecoUtils->IsRecalibrationOn())	fEMCALRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, cluster, event->GetEMCALCells());
+      if(fEMCALRecoUtils->IsRecalibrationOn())	{
+        fEMCALRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, cluster, event->GetEMCALCells());
+        fEMCALRecoUtils->RecalculateClusterShowerShapeParameters(fEMCALGeo, event->GetEMCALCells(),cluster);
+        fEMCALRecoUtils->RecalculateClusterPID(cluster);
+
+      }
       cluster->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(cluster));
-      fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, event->GetEMCALCells(),cluster);
       
+      fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, event->GetEMCALCells(),cluster);
+
       if(DebugLevel() > 2)
       { 
         printf("Filter, after   : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",cluster->GetID(),cluster->E(),
@@ -266,13 +274,23 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     aodEMcells.SetType(AliVCaloCells::kEMCALCell);
     Double_t calibFactor = 1.;   
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) { 
+      Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+      fEMCALGeo->GetCellIndex(eventEMcells.GetCellNumber(iCell),imod,iTower,iIphi,iIeta); 
+      fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
+      
       if(fCorrect && fEMCALRecoUtils->IsRecalibrationOn()){ 
-        Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
-        fEMCALGeo->GetCellIndex(eventEMcells.GetCellNumber(iCell),imod,iTower,iIphi,iIeta); 
-        fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
         calibFactor = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
       }
-      aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),eventEMcells.GetAmplitude(iCell)*calibFactor);
+      
+      if(!fEMCALRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi)){ //Channel is not declared as bad
+        aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),eventEMcells.GetAmplitude(iCell)*calibFactor);
+        //printf("GOOD channel\n");
+      }
+      else {
+        aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),0);
+        //printf("BAD channel\n");
+
+      }
     }
     aodEMcells.Sort();
   }
@@ -293,6 +311,17 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   
   
   return;
+}
+
+//_____________________________________________________
+void AliAnalysisTaskCaloFilter::PrintInfo(){
+
+  //Print settings
+
+  printf("TASK: AnalysisCaloFilter \n");
+  printf("\t Not only filter, correct Clusters? %d\n",fCorrect);
+  printf("\t Calorimeter Filtering Option     ? %d\n",fCaloFilter);
+
 }
 
 //_____________________________________________________

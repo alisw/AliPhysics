@@ -352,13 +352,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   if(fFilteredInput) event = AODEvent();
   else               event = InputEvent();
   
-  
-  
   if(!event) {
     printf("Input event not available!\n");
     return;
   }
-  
+
   if(DebugLevel() > 1) 
     printf("AliAnalysisTaskEMCALPi0CalibSelection <<< %s: Event %d >>>\n",event->GetName(), (Int_t)Entry());
   
@@ -421,7 +419,6 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   Float_t pos[]={0,0,0};
   if(fCorrectClusters){
     for(Int_t iClu=0; iClu<kNumberOfEMCALClusters-1; iClu++) {
-      
       AliVCluster *c1 = (AliVCluster *) caloClustersArr->At(iClu);
       
       if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeo, c1->GetCellsAbsId(), c1->GetNCells())) continue;	
@@ -434,12 +431,17 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       }
       
       //Correct cluster energy and position if requested, and not corrected previously, by default Off
-      if(fRecoUtils->IsRecalibrationOn())	fRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, c1, emCells);
+      if(fRecoUtils->IsRecalibrationOn())	{
+        fRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, c1, emCells);
+        fRecoUtils->RecalculateClusterShowerShapeParameters(fEMCALGeo, emCells,c1);
+        fRecoUtils->RecalculateClusterPID(c1);
+      }
       if(DebugLevel() > 2) 
         printf("Energy: after recalibration %f; ",c1->E());
       
       // Correct Non-Linearity
       c1->SetE(fRecoUtils->CorrectClusterEnergyLinearity(c1));
+
       if(DebugLevel() > 2) 
         printf("after linearity correction %f\n",c1->E());
       // Recalculate cluster position
@@ -452,6 +454,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       }    
     }    
   }
+  
   //----------------------------------------------------------
   //Now the invariant mass analysis with the corrected clusters  
   for(Int_t iClu=0; iClu<kNumberOfEMCALClusters-1; iClu++) {
@@ -649,6 +652,21 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   delete caloClustersArr;
   
   PostData(1,fOutputContainer);
+  
+}
+
+//_____________________________________________________
+void AliAnalysisTaskEMCALPi0CalibSelection::PrintInfo(){
+  
+  //Print settings
+  printf("Cluster cuts: %2.2f < E < %2.2f GeV; min number of cells %d; Assymetry cut %1.2f\n", fEmin,fEmax, fMinNCells, fAsyCut) ;
+	printf("Group %d cells\n", fGroupNCells) ;
+  printf("Cluster maximal cell away from border at least %d cells\n", fRecoUtils->GetNumberOfCellsFromEMCALBorder()) ;
+	printf("Histograms: bins %d; energy range: %2.2f < E < %2.2f GeV\n",fNbins,fMinBin,fMaxBin) ;
+	printf("Switchs:\n \t Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, \n \t Analyze Old AODs? %d, Mass per channel same SM clusters? %d\n",
+           fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fOldAOD, fSameSM) ;
+	printf("EMCAL Geometry name: < %s >\n",fEMCALGeoName.Data()) ;
+
   
 }
 

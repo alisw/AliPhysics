@@ -53,6 +53,8 @@ public:
   void SwitchOnClusterCorrection()  {fCorrect = kTRUE ;}
   void SwitchOffClusterCorrection() {fCorrect = kFALSE;}
 
+  void PrintInfo();
+  
 private:
   
   //TList* fCuts ;      //! List with analysis cuts

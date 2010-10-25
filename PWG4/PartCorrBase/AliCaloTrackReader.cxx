@@ -657,6 +657,9 @@ void AliCaloTrackReader::FillInputEMCAL() {
             Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
             clus->SetE(energy);
             //printf("Recalibrated Energy %f\n",clus->E());  
+            GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
+            GetCaloUtils()->RecalculateClusterPID(clus);
+
           }
           
           //Correct non linearity
