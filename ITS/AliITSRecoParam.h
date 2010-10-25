@@ -431,6 +431,20 @@ class AliITSRecoParam : public AliDetectorRecoParam
   //
   AliESDV0Params *GetESDV0Params() const {return fESDV0Params;}
   //
+  // Lorentz angle
+  Bool_t  GetCorrectLorentzAngleSPD() const {return fCorrectLorentzAngleSPD;}
+  Float_t GetLorentzAngleHolesSPD() const {return fLorentzAngleHolesSPD;}
+  Bool_t  GetCorrectLorentzAngleSSD() const {return fCorrectLorentzAngleSSD;}
+  Float_t GetLorentzAngleHolesSSD() const {return fLorentzAngleHolesSSD;}
+  Float_t GetLorentzAngleElectronsSSD() const {return fLorentzAngleElectronsSSD;}
+
+  void SetCorrectLorentzAngleSPD(Bool_t flag) {fCorrectLorentzAngleSPD=flag;}
+  void SetLorentzAngleHolesSPD(Float_t la) {fLorentzAngleHolesSPD=la;}
+  void SetCorrectLorentzAngleSSD(Bool_t flag) {fCorrectLorentzAngleSSD=flag;}
+  void SetLorentzAngleHolesSSD(Float_t la) {fLorentzAngleHolesSSD=la;}
+  void SetLorentzAngleElectronsSSD(Float_t la) {fLorentzAngleElectronsSSD=la;}
+
+  //
   enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
   enum {fgkMaxClusterPerLayer5=28000};//7000*10*2/5;  // max clusters per layer
   enum {fgkMaxClusterPerLayer10=14000};//7000*10*2/10; // max clusters per layer
@@ -684,13 +698,20 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fMultCutK0SFromDecay;           // min path*P for K0s
   Float_t fMultCutMaxDCA;                 // max DCA for V0 at ESD vertex
   //
+  // Lorentz angle
+  Bool_t fCorrectLorentzAngleSPD;         // flag to enable correction
+  Float_t fLorentzAngleHolesSPD;          // angle for holes in SPD
+  Bool_t fCorrectLorentzAngleSSD;         // flag to enable correction
+  Float_t fLorentzAngleHolesSSD;          // angle for holes in SSD
+  Float_t fLorentzAngleElectronsSSD;          // angle for electrons in SSD
+
  private:
   AliESDV0Params * fESDV0Params;  // declare the AliESDV0Params to be able to used in AliITSV0Finder
 
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,31) // ITS reco parameters
+  ClassDef(AliITSRecoParam,32) // ITS reco parameters
 };
 
 #endif

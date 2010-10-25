@@ -211,6 +211,12 @@ fMultCutGammaSFromDecay(-10.),
 fMultCutK0SFromDecay(-10.),
 fMultCutMaxDCA(1.),
 //
+fCorrectLorentzAngleSPD(kFALSE),
+fLorentzAngleHolesSPD(0.),
+fCorrectLorentzAngleSSD(kFALSE),
+fLorentzAngleHolesSSD(0.),
+fLorentzAngleElectronsSSD(0.),
+//
 fESDV0Params(NULL)
 {
   //
