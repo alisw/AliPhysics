@@ -18,6 +18,7 @@
 
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 
 #include "AliStack.h"
 #include "AliMCEvent.h"
@@ -273,8 +274,6 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
     //AOD MCreading and analysis
     //------
     if (fUseMC){
-      Printf("Not yet implemented");
-      return;
       ntracks = LoopAODMC(&pt, &eta, &phi);//read tracks
       if(ntracks>0){
 	Analyse(pt, eta, phi, ntracks, 0, 3);//analyse
@@ -523,43 +522,70 @@ Int_t AliAnalysisTaskMinijet::LoopAOD(Float_t **ptArray, Float_t ** etaArray,
 Int_t AliAnalysisTaskMinijet::LoopAODMC(Float_t **ptArray, Float_t ** etaArray, 
 					Float_t ** phiArray)
 {
-  // Main loop
-  // Called for each event
+  // gives back the number of AOD MC particles and pointer to arrays with particle 
+  // properties (pt, eta, phi)
   
-  AliWarning("Not implemented yet !!!")
-  return 0;
-
-  AliMCEvent *mcEvent = (AliMCEvent*) MCEvent();
-  if (!mcEvent) {
-    Error("UserExec", "Could not retrieve MC event");
-    return 0;
+  //retreive MC particles from event
+  TClonesArray *mcArray = (TClonesArray*)fAODEvent->
+    FindListObject(AliAODMCParticle::StdBranchName());
+  if(!mcArray){
+    Printf("%s:%d No MC particle branch found",(char*)__FILE__,__LINE__);
+    return kFALSE;
   }
   
-  Int_t ntracks = mcEvent->GetNumberOfTracks();
+  Int_t ntracks = mcArray->GetEntriesFast();
   if(fDebug)Printf("MC particles: %d", ntracks);
 
-  *ptArray = new Float_t[ntracks]; 
-  *etaArray = new Float_t[ntracks]; 
-  *phiArray = new Float_t[ntracks]; 
-  
-  // Track loop
-  for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-    AliMCParticle *track = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(iTracks));
+
+  // Track loop: chek how many particles will be accepted
+  Float_t vzMC=0.;
+  Int_t nAcceptedTracks=0;
+  for (Int_t it = 0; it < ntracks; it++) {
+    AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
     if (!track) {
-      Error("UserExec", "Could not receive track %d", iTracks);
+      Error("UserExec", "Could not receive track %d", it);
       continue;
     }
+    if(!track->IsPhysicalPrimary())continue;
+    if (track->Charge() == 0) continue;
+    if(TMath::Abs(track->Eta())>1. || track->Pt()<0.2 || track->Pt()>200) continue; //same cuts as in ESD filter
+    if(track->TestBit(16))nAcceptedTracks++;
+    if(nAcceptedTracks==1) vzMC= track->Zv(); // check only one time. (only one vertex per event allowed)
+  }
 
-    fHistPtMC->Fill(track->Pt());
-
-    //fills arrays with track properties
-    (*ptArray)[iTracks]  = track->Pt();
-    (*etaArray)[iTracks] = track->Eta();
-    (*phiArray)[iTracks] = track->Phi();
-
-  } //track loop
+  //generate array with size of number of accepted tracks
+  *ptArray = new Float_t[nAcceptedTracks]; 
+  *etaArray = new Float_t[nAcceptedTracks]; 
+  *phiArray = new Float_t[nAcceptedTracks]; 
   
-  return ntracks;
+  if(nAcceptedTracks==0) return 0;
+
+  //check vertex
+  if(TMath::Abs(vzMC)>fVertexZCut) return 0;
+  fVertexZ[3]->Fill(vzMC);
+  
+
+  // Track loop: fill arrays for accepted tracks 
+  Int_t iAcceptedTracks=0;
+  for (Int_t it = 0; it < ntracks; it++) {
+    AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
+    if (!track) {
+      Error("UserExec", "Could not receive track %d", it);
+      continue;
+    }
+    if(!track->IsPhysicalPrimary())continue;
+    if (track->Charge() == 0) continue;
+    if(TMath::Abs(track->Eta())>0.9 || track->Pt()<0.2 || track->Pt()>200) continue;
+
+    if(track->TestBit(16)){
+      fHistPtMC->Fill(track->Pt());
+      (*ptArray)[iAcceptedTracks]  = track->Pt();
+      (*etaArray)[iAcceptedTracks] = track->Eta();
+      (*phiArray)[iAcceptedTracks++] = track->Phi();
+    }
+  }
+  
+  return nAcceptedTracks;
 
 } 
 
