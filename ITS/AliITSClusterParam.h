@@ -52,6 +52,9 @@ class AliITSClusterParam : public TObject {
   static Int_t GetErrorParamAngle(Int_t layer,const AliITSRecPoint*cl,
 				  Float_t tgl,Float_t tgphitr,
 				  Float_t &erry,Float_t &errz);
+  static Int_t GetErrorParamAngleOld(Int_t layer,const AliITSRecPoint*cl,
+                                  Float_t tgl,Float_t tgphitr,
+                                  Float_t &erry,Float_t &errz);
 
   ClassDef(AliITSClusterParam,1)    //  ITS cluster parametrization class
 };

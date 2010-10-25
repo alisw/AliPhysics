@@ -35,6 +35,7 @@
 #include "AliITSClusterParam.h"
 #include "AliITSReconstructor.h"
 #include "AliExternalTrackParam.h"
+#include "AliCheb3DCalc.h"
 
 ClassImp(AliITSClusterParam)
 
@@ -130,6 +131,9 @@ Int_t AliITSClusterParam::GetError(Int_t layer,
     break;
   case 2: 
     retval = GetErrorParamAngle(layer,cl,tgl,tgphitr,erry,errz);
+    break;
+  case 3: 
+    retval = GetErrorParamAngleOld(layer,cl,tgl,tgphitr,erry,errz);
     break;
   default: 
     retval = GetErrorParamMI(layer,cl,tgl,tgphitr,expQ,erry,errz);
@@ -335,6 +339,99 @@ Int_t AliITSClusterParam::GetErrorParamAngle(Int_t layer,
 					     const AliITSRecPoint *cl,
 					     Float_t tgl,Float_t tgphitr,
 					     Float_t &erry,Float_t &errz)
+{
+  //
+  // Calculate cluster position error (parametrization extracted from rp-hit
+  // residuals, as a function of angle between track and det module plane.
+  // Origin: M.Lunardon, S.Moretto)
+  //
+  const int kNcfSPDResX = 21;
+  float kCfSPDResX[kNcfSPDResX] = {+1.1201e+01,+2.0903e+00,-2.2909e-01,-2.6413e-01,+4.2135e-01,-3.7190e-01,
+			    +4.2339e-01,+1.8679e-01,-5.1249e-01,+1.8421e-01,+4.8849e-02,-4.3127e-01,
+			    -1.1148e-01,+3.1984e-03,-2.5743e-01,-6.6408e-02,+3.0756e-01,+2.6809e-01,
+			    -5.0339e-03,-1.4964e-01,-1.1001e-01};
+  const float kSPDazMax=56.000000;
+  //
+  const int kNcfSPDMeanX = 16;
+  float kCfSPDMeanX[kNcfSPDMeanX] = {-1.2532e+00,-3.8185e-01,-8.9039e-01,+2.6648e+00,+7.0361e-01,+1.2298e+00,
+				     +3.2871e-01,+7.8487e-02,-1.6792e-01,-1.3966e-01,-3.1670e-01,-2.1795e-01,
+				     -1.9451e-01,-4.9347e-02,-1.9186e-01,-1.9195e-01};
+  //
+  const int kNcfSPDResZ = 5;
+  float kCfSPDResZ[kNcfSPDResZ] = {+9.2384e+01,+3.4352e-01,-2.7317e+01,-1.4642e-01,+2.0868e+00};
+  const float kSPDpolMin=34.358002, kSPDpolMax=145.000000;
+  //
+  Double_t maxSigmaSDDx=100.;
+  Double_t maxSigmaSDDz=400.;
+  Double_t maxSigmaSSDx=100.;
+  Double_t maxSigmaSSDz=1000.;
+  //  
+  Double_t paramSDDx[2]={30.93,0.059};
+  Double_t paramSDDz[2]={33.09,0.011};
+  Double_t paramSSDx[2]={18.64,-0.0046};
+  Double_t paramSSDz[2]={784.4,-0.828};
+  Double_t sigmax=1000.0,sigmaz=1000.0;
+  Double_t biasx = 0.0;
+
+  Int_t volId = (Int_t)cl->GetVolumeId();
+  Double_t rotMA[9]; AliGeomManager::GetRotation(volId,rotMA);      // misaligned rotation
+  Double_t rotOR[9]; AliGeomManager::GetOrigRotation(volId,rotOR);  // original rotation
+  // difference in phi of original and misaligned sensors
+  double cross = rotOR[1]*rotMA[4]-rotOR[4]*rotMA[1];
+  cross /= TMath::Sqrt( (1.-rotOR[7]*rotOR[7]) * (1.-rotMA[7]*rotMA[7]) );
+  Double_t angleAzi = TMath::Abs(TMath::ATan(tgphitr) - TMath::ASin(cross) );
+  Double_t anglePol = TMath::Abs(TMath::ATan(tgl));
+
+  if(angleAzi>0.5*TMath::Pi()) angleAzi = TMath::Pi()-angleAzi;
+  if(anglePol>0.5*TMath::Pi()) anglePol = TMath::Pi()-anglePol;
+  Double_t angleAziDeg = angleAzi*180./TMath::Pi();
+  Double_t anglePolDeg = anglePol*180./TMath::Pi();
+  
+  if(layer==0 || layer==1) { // SPD
+    //
+    float phiInt    = angleAziDeg/kSPDazMax; // mapped to -1:1
+    if (phiInt>1) phiInt = 1; else if (phiInt<-1) phiInt = -1;
+    float phiAbsInt = (TMath::Abs(angleAziDeg+angleAziDeg) - kSPDazMax)/kSPDazMax; // mapped to -1:1
+    if (phiAbsInt>1) phiAbsInt = 1; else if (phiAbsInt<-1) phiAbsInt = -1;
+    anglePolDeg += 90; // the parameterization was provided in polar angle (90 deg - normal to sensor)
+    float polInt   = (anglePolDeg+anglePolDeg - (kSPDpolMax+kSPDpolMin))/(kSPDpolMax-kSPDpolMin); // mapped to -1:1
+    if (polInt>1) polInt = 1; else if (polInt<-1) polInt = -1;
+    //
+    sigmax = AliCheb3DCalc::ChebEval1D(phiAbsInt, kCfSPDResX , kNcfSPDResX);
+    biasx  = AliCheb3DCalc::ChebEval1D(phiInt   , kCfSPDMeanX, kNcfSPDMeanX);
+    sigmaz = AliCheb3DCalc::ChebEval1D(polInt   , kCfSPDResZ , kNcfSPDResZ);
+    //
+    // for the moment for the SPD only, need to decide where to put it
+    biasx *= 1e-4;
+    
+  } else if(layer==2 || layer==3) { // SDD
+
+    sigmax = angleAziDeg*paramSDDx[1]+paramSDDx[0];
+    sigmaz = paramSDDz[0]+paramSDDz[1]*anglePolDeg;
+    if(sigmax > maxSigmaSDDx) sigmax = maxSigmaSDDx;
+    if(sigmaz > maxSigmaSDDz) sigmax = maxSigmaSDDz;
+    
+  } else if(layer==4 || layer==5) { // SSD
+
+    sigmax = angleAziDeg*paramSSDx[1]+paramSSDx[0];
+    sigmaz = paramSSDz[0]+paramSSDz[1]*anglePolDeg;
+    if(sigmax > maxSigmaSSDx) sigmax = maxSigmaSSDx;
+    if(sigmaz > maxSigmaSSDz) sigmax = maxSigmaSSDz;
+    
+  }
+
+  // convert from micron to cm
+  erry = 1.e-4*sigmax; 
+  errz = 1.e-4*sigmaz;
+  
+
+  return 1;
+}
+//--------------------------------------------------------------------------
+Int_t AliITSClusterParam::GetErrorParamAngleOld(Int_t layer,
+						const AliITSRecPoint *cl,
+						Float_t tgl,Float_t tgphitr,
+						Float_t &erry,Float_t &errz)
 {
   //
   // Calculate cluster position error (parametrization extracted from rp-hit
