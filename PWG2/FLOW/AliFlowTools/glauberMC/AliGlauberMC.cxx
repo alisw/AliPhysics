@@ -634,8 +634,6 @@ Double_t AliGlauberMC::GetEccentricityPartColl() const
 {
   //get participant eccentricity of binary collisions
   if (fNcoll<2) return 0.0;
-  printf("fSx2Coll: %.10f\n",fSx2Coll);
-  printf("fSy2Coll: %.10f\n",fSy2Coll);
   return (TMath::Sqrt((fSy2Coll-fSx2Coll)*(fSy2Coll-fSx2Coll)+4*fSxyColl*fSxyColl)/(fSy2Coll+fSx2Coll));
 }
 
