@@ -113,7 +113,7 @@ class AliESDCaloCluster : public AliVCluster
   Int_t GetNTracksMatched() const { if (fTracksMatched) return  fTracksMatched->GetSize(); 
     else return -1;}
   UInt_t GetNLabels() const       { if (fLabels) return  fLabels->GetSize(); 
-    else return -1;}
+    else return (0);}
   
   void GetMomentum(TLorentzVector& p, Double_t * vertexPosition );
   
