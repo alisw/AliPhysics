@@ -1,8 +1,7 @@
 /* $Id:  $ */
 //--------------------------------------------------
-// Example macro to do analysis with the 
-// analysis classes in PWG4PartCorr
-// Can be executed with Root and AliRoot
+// Example macro to do Calorimeters filtering
+// copy ESDs into AODs
 //
 // Pay attention to the options and definitions
 // set in the lines below
@@ -38,19 +37,20 @@ void SetRecoUtilsParams(AliEMCALRecoUtils* reco){
 
     reco->SetPositionAlgorithm(AliEMCALRecoUtils::kUnchanged);
 
-    //reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
-    //reco->SetMisalTransShift(0,1.134);   reco->SetMisalTransShift(1,8.2); reco->SetMisalTransShift(2,1.197);
-    //reco->SetMisalTransShift(3,-3.093);  reco->SetMisalTransShift(4,6.82);reco->SetMisalTransShift(5,1.635);
+//     reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
+//     reco->SetMisalTransShift(0,1.134);   reco->SetMisalTransShift(1,8.2); reco->SetMisalTransShift(2,1.197);
+//     reco->SetMisalTransShift(3,-3.093);  reco->SetMisalTransShift(4,6.82);reco->SetMisalTransShift(5,1.635);
 
-    //reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerIndex);
-    //reco->SetMisalTransShift(0,1.08);   reco->SetMisalTransShift(1,8.35); reco->SetMisalTransShift(2,1.12);
-    //reco->SetMisalRotShift(3,-8.05);    reco->SetMisalRotShift(4,8.05);  
-    //reco->SetMisalTransShift(3,-0.42);  reco->SetMisalTransShift(5,1.55);
+//     reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerIndex);
+//     reco->SetMisalTransShift(0,1.08);   reco->SetMisalTransShift(1,8.35); reco->SetMisalTransShift(2,1.12);
+//     reco->SetMisalRotShift(3,-8.05);    reco->SetMisalRotShift(4,8.05);  
+//     reco->SetMisalTransShift(3,-0.42);  reco->SetMisalTransShift(5,1.55);
 
-     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
-    //reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaGamma);
-    //reco->SetNonLinearityParam(0,1.04);     reco->SetNonLinearityParam(1,-0.1445);
-    //reco->SetNonLinearityParam(2,1.046);    
+    reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
+
+//     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaGamma);
+//     reco->SetNonLinearityParam(0,1.04);     reco->SetNonLinearityParam(1,-0.1445);
+//     reco->SetNonLinearityParam(2,1.046);    
 
 //     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaConversion);
 //     reco->SetNonLinearityParam(0,1.033);     reco->SetNonLinearityParam(1,0.0566186);
@@ -62,7 +62,7 @@ void SetRecoUtilsParams(AliEMCALRecoUtils* reco){
 //      reco->SetNonLinearityParam(2,-0.03632);    
 //      reco->SetNonLinearityParam(3,0.1798);     reco->SetNonLinearityParam(4,-0.522);
 
-//     reco->SwitchOnRecalibration();
+//      reco->SwitchOnRecalibration();
 //      TFile * f = new TFile("RecalibrationFactors.root","read");
 //      TH2F * h0 = (TH2F*)f->Get("EMCALRecalFactors_SM0")->Clone();
 //      TH2F * h1 = (TH2F*)f->Get("EMCALRecalFactors_SM1")->Clone();
@@ -99,7 +99,7 @@ void SetRecoUtilsParams(AliEMCALRecoUtils* reco){
 
 }
 
-void anaEMCALCalib(Int_t mode=mLocal)
+void anaCaloFilter(Int_t mode=mLocal)
 {
   // Main
   char cmd[200] ; 
@@ -137,6 +137,12 @@ void anaEMCALCalib(Int_t mode=mLocal)
     //-------------------------------------
     AliAnalysisManager *mgr  = new AliAnalysisManager("Manager", "Manager");
 
+    // AOD output handler
+    AliAODHandler* aodoutHandler   = new AliAODHandler();
+    aodoutHandler->SetOutputFileName("aod.root");
+    ////aodoutHandler->SetCreateNonStandardAOD();
+    mgr->SetOutputEventHandler(aodoutHandler);
+    
     //input
     if(kInputData == "ESD")
       {
@@ -160,46 +166,36 @@ void anaEMCALCalib(Int_t mode=mLocal)
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
-    
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
+
     // ESD filter task
-    if(kInputData == "ESD"){
-
-      //gROOT->LoadMacro("AddTaskPhysicsSelection.C");
-      //AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-
-    }
+    //if(kInputData == "ESD"){
+    //  gROOT->LoadMacro("AddTaskPhysicsSelection.C");
+    //  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+    //}
     
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
 
-    AliAnalysisTaskEMCALPi0CalibSelection * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelection ("EMCALPi0Calibration");
-     if(kInputData == "ESD") pi0calib->SelectCollisionCandidates(); 
-    //pi0calib->SetDebugLevel(10); 
-    //pi0calib->UseFilteredEventAsInput();
-    pi0calib->SetClusterMinEnergy(0.5);
-    pi0calib->SetClusterMaxEnergy(10.);
-    pi0calib->SetAsymmetryCut(0.5);
-    pi0calib->SetClusterMinNCells(0);
-    pi0calib->SetNCellsGroup(0);
-    pi0calib->SwitchOnSameSM();
-    //pi0calib->SwitchOnOldAODs();
-
-    pi0calib->SwitchOnClusterCorrection();
-    AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
+    AliAnalysisTaskCaloFilter * filter = new AliAnalysisTaskCaloFilter("EMCALFilter");
+    //filter->SelectCollisionCandidates(); 
+    filter->SetCaloFilter(AliAnalysisTaskCaloFilter::kEMCAL); //kPHOS or kBoth
+    filter->SwitchOffClusterCorrection();
+    filter->PrintInfo();
+    AliEMCALRecoUtils * reco = filter->GetEMCALRecoUtils();
     SetRecoUtilsParams(reco);
     //reco->Print("");
-    pi0calib->PrintInfo();
-    mgr->AddTask(pi0calib);
-
-    AliAnalysisDataContainer *coutput2 = 
-    mgr->CreateContainer("pi0calib", TList::Class(), AliAnalysisManager::kOutputContainer, "pi0calib.root");
     
-    AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer("Cuts", TList::Class(), 
-    						       AliAnalysisManager::kOutputContainer, "pi0calib.root");
+    mgr->AddTask(filter);
+        
+    //AliAnalysisDataContainer *cout_cuts2 = mgr->CreateContainer("Cuts", TList::Class(), 
+    //					       AliAnalysisManager::kOutputContainer, "pi0calib.root");
     
-    mgr->ConnectInput  (pi0calib,     0, cinput1);
-    mgr->ConnectOutput (pi0calib, 1, coutput2 );
-    mgr->ConnectOutput (pi0calib, 2, cout_cuts);
+    mgr->ConnectInput  (filter,  0, cinput1);
+    mgr->ConnectOutput (filter, 0, coutput1 );
+    //mgr->ConnectOutput (filter, 2, cout_cuts2);
 
     //-----------------------
     // Run the analysis
