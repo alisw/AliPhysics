@@ -137,7 +137,9 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   Double_t sig,errsig,s,errs,b,errb;
   for(Int_t iBin=0; iBin<nPtBins; iBin++){
     c1->cd(iPad++);
+    Int_t origNbins=hmass[iBin]->GetNbinsX();
     fitter[iBin]=new AliHFMassFitter(hmass[iBin],hmin, hmax,rebin[iBin],typeb,types);
+    rebin[iBin]=origNbins/fitter[iBin]->GetBinN();
     fitter[iBin]->SetReflectionSigmaFactor(factor4refl);
     fitter[iBin]->SetInitialGaussianMean(massD);
     Bool_t out=fitter[iBin]->MassFitter(0);
