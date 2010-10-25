@@ -79,14 +79,14 @@ AliMUONQAChecker::Check(Double_t* rv, AliQAv1::ALITASK_t index,
   {
     if ( ic != TRACKER && ic != TRIGGER ) continue;
 
-    Bool_t trackerRequested(kTRUE);
-    Bool_t triggerRequested(kTRUE);
+    Bool_t trackerRequested(kFALSE);
+    Bool_t triggerRequested(kFALSE);
     
     for ( Int_t i = 0; i < AliRecoParam::kNSpecies; ++i ) 
     {
       // no need to take into account detector that was not requested
-      if ( ic == TRACKER && AliQAv1::GetData(list,AliMUONQAIndices::kTrackerIsThere,AliRecoParam::ConvertIndex(i))==0x0 ) trackerRequested=kFALSE;
-      if ( ic == TRIGGER && AliQAv1::GetData(list,AliMUONQAIndices::kTriggerIsThere,AliRecoParam::ConvertIndex(i))==0x0 ) triggerRequested=kFALSE;
+      if ( ic == TRACKER && AliQAv1::GetData(list,AliMUONQAIndices::kTrackerIsThere,AliRecoParam::ConvertIndex(i)) ) trackerRequested=kTRUE;
+      if ( ic == TRIGGER && AliQAv1::GetData(list,AliMUONQAIndices::kTriggerIsThere,AliRecoParam::ConvertIndex(i)) ) triggerRequested=kTRUE;
     }
     
     if ( ic == TRACKER && !trackerRequested ) 
