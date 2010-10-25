@@ -1,6 +1,7 @@
 #-*- Mode: Makefile -*-
 
-SRCS= EVCHAR/AliAnalysisTaskSPDdNdEta.cxx 
+SRCS= EVCHAR/AliAnalysisTaskSPDdNdEta.cxx \
+      EVCHAR/AliTrackletAlg.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
