@@ -10,6 +10,7 @@
 #define ALIFLOWEVENTCUTS_H
 
 #include <float.h>
+#include <limits.h>
 #include "TNamed.h"
 
 class AliVEvent;
