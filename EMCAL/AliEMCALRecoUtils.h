@@ -23,6 +23,7 @@ class AliVCluster;
 class AliVCaloCells;
 #include "AliLog.h"
 class AliEMCALGeometry;
+class AliEMCALPIDUtils;
 
 class AliEMCALRecoUtils : public TNamed {
   
@@ -152,6 +153,12 @@ public:
 	
   Bool_t ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, Int_t nCells);
  
+  //Recalculate other cluster parameters
+  void RecalculateClusterPID(AliVCluster * cluster);
+  AliEMCALPIDUtils * GetPIDUtils() { return fPIDUtils;}
+
+  void RecalculateClusterShowerShapeParameters(AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
+
 
 private:
   
@@ -170,7 +177,9 @@ private:
   Int_t      fNCellsFromEMCALBorder;     // Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Bool_t     fNoEMCALBorderAtEta0;       // Do fiducial cut in EMCAL region eta = 0?
 
-  ClassDef(AliEMCALRecoUtils, 4)
+  AliEMCALPIDUtils * fPIDUtils;               // Recalculate PID parameters
+  
+  ClassDef(AliEMCALRecoUtils, 5)
   
 };
 
