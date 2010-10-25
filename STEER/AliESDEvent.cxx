@@ -358,7 +358,15 @@ void AliESDEvent::Reset()
 	((TClonesArray*)pObject)->Delete();
       }
       else if(!pObject->InheritsFrom(TCollection::Class())){
-	ResetWithPlacementNew(pObject);
+	TClass *pClass = TClass::GetClass(pObject->ClassName());
+	if (pClass && pClass->GetListOfMethods()->FindObject("Clear")) {
+	  AliDebug(1, Form("Clear for object %s class %s", pObject->GetName(), pObject->ClassName()));
+	  pObject->Clear();
+	}
+	else {
+	  AliDebug(1, Form("ResetWithPlacementNew for object %s class %s", pObject->GetName(), pObject->ClassName()));
+	  ResetWithPlacementNew(pObject);
+	}
       }
       else{
 	AliWarning(Form("No reset for %s \n",
