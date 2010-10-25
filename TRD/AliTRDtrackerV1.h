@@ -108,7 +108,7 @@ public:
   Int_t           LoadClusters(TClonesArray *const clusters);
   Int_t           PropagateBack(AliESDEvent *event);
   static Int_t    PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep);
-  Int_t           ReadClusters(TClonesArray* &array, TTree *in) const;
+  Bool_t          ReadClusters(TTree *in);
   Int_t           RefitInward(AliESDEvent *event);
   static void     SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
   void            SetReconstructor(const AliTRDReconstructor *rec) {fkReconstructor = rec;}
