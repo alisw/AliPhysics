@@ -68,7 +68,8 @@ fUsePid4Distr(0),
 fNPtBins(1),
 fTotPosPairs(0),
 fTotNegPairs(0),
-fLsNormalization(1.)
+fLsNormalization(1.),
+fFillOnlyD0D0bar(0)
 
 
 {
@@ -90,8 +91,8 @@ fUsePid4Distr(0),
 fNPtBins(1),
 fTotPosPairs(0),
 fTotNegPairs(0),
-fLsNormalization(1.)
-
+fLsNormalization(1.),
+fFillOnlyD0D0bar(0)
 
 {
   // Default constructor
@@ -491,6 +492,14 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
 
   }
+
+  namedistr="hpospair";
+  TH1F* hpospair=new TH1F(namedistr.Data(),"Number of positive pairs",fCuts->GetNPtBins(),-0.5,fCuts->GetNPtBins()-0.5);
+  namedistr="hnegpair";
+  TH1F* hnegpair=new TH1F(namedistr.Data(),"Number of negative pairs",fCuts->GetNPtBins(),-0.5,fCuts->GetNPtBins()-0.5);
+  fDistr->Add(hpospair);
+  fDistr->Add(hnegpair);
+
 
   //histograms for vertex checking and TOF checking
   TString checkname="hptGoodTr";
@@ -1048,7 +1057,13 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	  return;
 	}
 	else{
-	  if(prongg->Charge()==1) {fTotPosPairs[ptbin]++;} else {fTotNegPairs[ptbin]++;}
+	  if(prongg->Charge()==1) {
+	    fTotPosPairs[ptbin]++;
+	    ((TH1F*)fDistr->FindObject("hpospair"))->Fill(ptbin);
+	  } else {
+	    fTotNegPairs[ptbin]++;
+	    ((TH1F*)fDistr->FindObject("hnegpair"))->Fill(ptbin);
+	  }
 	}
 	
 	//normalise pt distr to half afterwards
@@ -1259,7 +1274,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODEvent* aod,AliAODRecoDecayHF2P
   if (fReadMC && labD0>=0) fNentries->Fill(2);
   //PostData(3,fNentries);
 
-  if (isSelected==1 || isSelected==3) { //D0
+  if ((isSelected==1 || isSelected==3) && fFillOnlyD0D0bar<2) { //D0
     fillthis="histMass_";
     fillthis+=ptbin;
     //cout<<"Filling "<<fillthis<<endl;
@@ -1295,7 +1310,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODEvent* aod,AliAODRecoDecayHF2P
     }
       
   }
-  if (isSelected>1) { //D0bar
+  if (isSelected>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) { //D0bar
     fillthis="histMass_";
     fillthis+=ptbin;
     //printf("Fill mass with D0bar");
