@@ -913,10 +913,15 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
    ,fCalPadStatusROC->GetStatus(Max.col+1, Max.row)
   };
 
-  gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col-1,Max.row);
-  Signals[0] = (Short_t)((fDigits->GetData(Max.row, Max.col-1, Max.time) - fBaseline) / gain + 0.5f);
-  gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col+1,Max.row);
-  Signals[2] = (Short_t)((fDigits->GetData(Max.row, Max.col+1, Max.time) - fBaseline) / gain + 0.5f);
+  Short_t signal(0);
+  if((signal = fDigits->GetData(Max.row, Max.col-1, Max.time))){
+    gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col-1,Max.row);
+    Signals[0] = (Short_t)((signal - fBaseline) / gain + 0.5f);
+  } else Signals[0] = 0;
+  if((signal = fDigits->GetData(Max.row, Max.col+1, Max.time))){
+    gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col+1,Max.row);
+    Signals[2] = (Short_t)((signal - fBaseline) / gain + 0.5f);
+  } else Signals[2] = 0;
 
   if(!(status[0] | status[1] | status[2])) {//all pads are good
     if ((Signals[2] <= Signals[1]) && (Signals[0] <  Signals[1])) {
@@ -1038,42 +1043,38 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
 //_____________________________________________________________________________
 void AliTRDclusterizer::CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount)
 {
-  // Look to the right
-  Int_t ii = 1;
-  while (fDigits->GetData(Max.row, Max.col-ii, Max.time) >= fSigThresh) {
-    nPadCount++;
-    ii++;
-    if (Max.col < ii) break;
-  }
-  // Look to the left
-  ii = 1;
-  while (fDigits->GetData(Max.row, Max.col+ii, Max.time) >= fSigThresh) {
-    nPadCount++;
-    ii++;
-    if (Max.col+ii >= fColMax) break;
-  }
+// Calculate number of pads/cluster and
+// ADC signals at position 0, 1, 5 and 6
 
+  Float_t gain(1.); Short_t signal(0.);
   // Store the amplitudes of the pads in the cluster for later analysis
   // and check whether one of these pads is masked in the database
-  signals[2]=Max.signals[0];
   signals[3]=Max.signals[1];
-  signals[4]=Max.signals[2];
-  Float_t gain;
-  for(Int_t i = 0; i<2; i++)
-    {
-      if(Max.col+i >= 3){
-	gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col-3+i,Max.row);
-	signals[i] = (Short_t)((fDigits->GetData(Max.row, Max.col-3+i, Max.time) - fBaseline) / gain + 0.5f);
-      }
-      if(Max.col+3-i < fColMax){
-	gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col+3-i,Max.row);
-	signals[6-i] = (Short_t)((fDigits->GetData(Max.row, Max.col+3-i, Max.time) - fBaseline) / gain + 0.5f);
-      }
-    }
-  /*for (Int_t jPad = Max.Col-3; jPad <= Max.Col+3; jPad++) {
-    if ((jPad >= 0) && (jPad < fColMax))
-      signals[jPad-Max.Col+3] = TMath::Nint(fDigits->GetData(Max.Row,jPad,Max.Time));
-      }*/
+  Int_t ipad(1), jpad(0);
+  // Look to the right
+  while((jpad = Max.col-ipad)){
+    if(!(signal = fDigits->GetData(Max.row, jpad, Max.time))) break; // empty digit !
+    gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(jpad, Max.row);
+    signal = (Short_t)((signal - fBaseline) / gain + 0.5f);
+    if(signal<fSigThresh) break; // signal under threshold
+    nPadCount++;
+    if(ipad<=3) signals[3 - ipad] = signal;
+    ipad++;
+  }
+  ipad=1;
+  // Look to the left
+  while((jpad = Max.col+ipad)<fColMax){
+    if(!(signal = fDigits->GetData(Max.row, jpad, Max.time))) break; // empty digit !
+    gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(jpad, Max.row);
+    signal = (Short_t)((signal - fBaseline) / gain + 0.5f);
+    if(signal<fSigThresh) break; // signal under threshold
+    nPadCount++;
+    if(ipad<=3) signals[3 + ipad] = signal;
+    ipad++;
+  }
+
+  AliDebug(4, Form("Signals[%3d %3d %3d %3d %3d %3d %3d] Npads[%d]."
+    , signals[0], signals[1], signals[2], signals[3], signals[4], signals[5], signals[6], nPadCount));
 }
 
 //_____________________________________________________________________________
