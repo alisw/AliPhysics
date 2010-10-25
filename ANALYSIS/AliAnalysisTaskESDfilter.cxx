@@ -21,6 +21,7 @@
 #include <TArrayI.h>
 #include <TRandom.h>
 #include <TParticle.h>
+#include <TFile.h>
 
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisManager.h"
@@ -160,6 +161,12 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     
     header->SetRunNumber(esd->GetRunNumber());
     header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
+    TTree* tree = fInputHandler->GetTree();
+    if (tree) {
+	TFile* file = tree->GetCurrentFile();
+	if (file) header->SetESDFileName(file->GetName());
+    }
+    
     if (old) {
 	header->SetBunchCrossNumber(0);
 	header->SetOrbitNumber(0);
@@ -172,13 +179,16 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	header->SetOrbitNumber(esd->GetOrbitNumber());
 	header->SetPeriodNumber(esd->GetPeriodNumber());
 	header->SetEventType(esd->GetEventType());
-	header->SetCentrality(-999.);        // FIXME
+	header->SetCentrality(-999.);
+	header->SetEventNumberESDFile(esd->GetHeader()->GetEventNumberInFile());
     }
     // Trigger
     header->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
     header->SetTriggerMask(esd->GetTriggerMask()); 
     header->SetTriggerCluster(esd->GetTriggerCluster());
-    
+    header->SetL0TriggerInputs(esd->GetHeader()->GetL0TriggerInputs());    
+    header->SetL1TriggerInputs(esd->GetHeader()->GetL1TriggerInputs());    
+    header->SetL2TriggerInputs(esd->GetHeader()->GetL2TriggerInputs());    
 
     header->SetMagneticField(esd->GetMagneticField());
     header->SetMuonMagFieldScale(esd->GetCurrentDip()/6000.);

@@ -53,7 +53,12 @@ AliAODHeader::AliAODHeader() :
   fTriggerCluster(0), 
   fDiamondZ(0.), 
   fDiamondSig2Z(0.),
-  fOfflineTrigger(0)
+  fOfflineTrigger(0),
+  fESDFileName(""),
+  fEventNumberESDFile(-1),
+  fL0TriggerInputs(0),
+  fL1TriggerInputs(0),
+  fL2TriggerInputs(0)
 {
   // default constructor
 
@@ -97,7 +102,12 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fTriggerCluster(0), 
   fDiamondZ(0.), 
   fDiamondSig2Z(0.),
-  fOfflineTrigger(0)
+  fOfflineTrigger(0),
+  fESDFileName(""),
+  fEventNumberESDFile(-1),
+  fL0TriggerInputs(0),
+  fL1TriggerInputs(0),
+  fL2TriggerInputs(0)
 {
   // constructor
 
@@ -158,7 +168,12 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fTriggerCluster(trigClus),
   fDiamondZ(0.), 
   fDiamondSig2Z(0.),
-  fOfflineTrigger(0)
+  fOfflineTrigger(0),
+  fESDFileName(""),
+  fEventNumberESDFile(-1),
+  fL0TriggerInputs(0),
+  fL1TriggerInputs(0),
+  fL2TriggerInputs(0)
 {
   // constructor
 
@@ -207,7 +222,12 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fTriggerCluster(hdr.fTriggerCluster), 
   fDiamondZ(hdr.fDiamondZ), 
   fDiamondSig2Z(hdr.fDiamondSig2Z),
-  fOfflineTrigger(hdr.fOfflineTrigger)
+  fOfflineTrigger(hdr.fOfflineTrigger),
+  fESDFileName(hdr.fESDFileName),
+  fEventNumberESDFile(hdr.fEventNumberESDFile),
+  fL0TriggerInputs(hdr.fL0TriggerInputs),
+  fL1TriggerInputs(hdr.fL1TriggerInputs),
+  fL2TriggerInputs(hdr.fL2TriggerInputs)
 {
   // Copy constructor.
   
@@ -266,7 +286,11 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fDiamondZ         = hdr.fDiamondZ;
     fDiamondSig2Z     = hdr.fDiamondSig2Z;
     fOfflineTrigger   = hdr.fOfflineTrigger;
-
+    fESDFileName      = hdr.fESDFileName;
+    fEventNumberESDFile = hdr.fEventNumberESDFile;
+    fL0TriggerInputs    = hdr.fL0TriggerInputs;
+    fL1TriggerInputs    = hdr.fL1TriggerInputs;
+    fL2TriggerInputs    = hdr.fL2TriggerInputs;
 
     SetName(hdr.fName);
     SetTitle(hdr.fTitle);

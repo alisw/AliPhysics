@@ -12,6 +12,7 @@
 
 #include "AliVHeader.h"
 #include "AliAODVertex.h"
+#include <TString.h>
 
 class TGeoHMatrix;
 class TString;
@@ -47,8 +48,9 @@ class AliAODHeader : public AliVHeader {
   virtual ~AliAODHeader();
   AliAODHeader(const AliAODHeader& evt); 
   AliAODHeader& operator=(const AliAODHeader& evt);
-  
-  Int_t     GetRunNumber()          const { return fRunNumber; }
+
+  Int_t     GetRunNumber()          const { return fRunNumber;}
+  Int_t     GetEventNumberESDFile() const { return fEventNumberESDFile;}
   UShort_t  GetBunchCrossNumber()   const { return fBunchCrossNumber; }
   UInt_t    GetOrbitNumber()        const { return fOrbitNumber; }
   UInt_t    GetPeriodNumber()       const { return fPeriodNumber; }
@@ -83,8 +85,13 @@ class AliAODHeader : public AliVHeader {
   void GetDiamondCovXY(Float_t cov[3]) const {
     for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
   }
+  UInt_t   GetL0TriggerInputs() const {return fL0TriggerInputs;}  
+  UInt_t   GetL1TriggerInputs() const {return fL1TriggerInputs;} 
+  UShort_t GetL2TriggerInputs() const {return fL2TriggerInputs;} 
+
   
   void SetRunNumber(Int_t nRun)                { fRunNumber = nRun; }
+  void SetEventNumberESDFile(Int_t n)          { fEventNumberESDFile=n; }
   void SetBunchCrossNumber(UShort_t nBx)       { fBunchCrossNumber = nBx; }
   void SetOrbitNumber(UInt_t nOr)              { fOrbitNumber = nOr; }
   void SetPeriodNumber(UInt_t nPer)            { fPeriodNumber = nPer; }
@@ -118,7 +125,10 @@ class AliAODHeader : public AliVHeader {
   void SetDiamondZ(Float_t z, Float_t sig2z){
     fDiamondZ=z; fDiamondSig2Z=sig2z;
   }
-
+  void SetL0TriggerInputs(UInt_t n)   {fL0TriggerInputs=n;}
+  void SetL1TriggerInputs(UInt_t n)   {fL1TriggerInputs=n;}
+  void SetL2TriggerInputs(UShort_t n) {fL2TriggerInputs=n;}
+  void SetESDFileName(TString name)   {fESDFileName = name;}
   void Print(Option_t* option = "") const;
 
   void    SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {
@@ -137,7 +147,7 @@ class AliAODHeader : public AliVHeader {
   
   UInt_t GetOfflineTrigger() { return fOfflineTrigger; }
   void SetOfflineTrigger(UInt_t trigger) { fOfflineTrigger = trigger; }
-  
+  TString GetESDFileName()   {return fESDFileName;}
   enum {kNPHOSMatrix = 5};
   enum {kNEMCALMatrix = 12};
   
@@ -173,8 +183,12 @@ class AliAODHeader : public AliVHeader {
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix];   //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
   UInt_t      fOfflineTrigger;      // fired offline triggers for this event
-
-  ClassDef(AliAODHeader,12);
+  TString     fESDFileName;         // ESD file name to which this event belongs
+  Int_t       fEventNumberESDFile;  // Event number in ESD file
+  UInt_t      fL0TriggerInputs;     // L0 Trigger Inputs (mask)
+  UInt_t      fL1TriggerInputs;     // L1 Trigger Inputs (mask)
+  UShort_t    fL2TriggerInputs;     // L2 Trigger Inputs (mask)
+  ClassDef(AliAODHeader, 13);
 };
 
 #endif
