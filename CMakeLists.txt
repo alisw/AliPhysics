@@ -32,6 +32,7 @@ endif(NOT ALICE_INSTALL)
 
 get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" REALPATH)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+set(CPACK_COMPONENTS_ALL MDC)
 
 include(ALICE_CMake)
 
@@ -69,6 +70,12 @@ find_package(GEANT3)
 
 find_package(AMORE)
 
+# AliRoot CPack configuration                                                    
+#-------------------------------
+
+find_package(CPack)
+
+
 #--------------------------------------------------------------------------------#
 # Environment/Compiler Configuration                                             #
 #--------------------------------------------------------------------------------#
@@ -94,6 +101,7 @@ file(MAKE_DIRECTORY ${CMAKE_INCLUDE_EXPORT_DIRECTORY})
 set(EXPORTDIRS "${ALICE_INSTALL}/include")
 set(BINLIBDIRS "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
+
 #--------------------------------------------------------------------------------#
 # AliRoot Modules                                                                #
 #--------------------------------------------------------------------------------#
@@ -102,6 +110,7 @@ set(BINLIBDIRS "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 # ------------------------------
 
 #set(EXCLUDEMODULES THydjet SHUTTLE)
+
 
 # Standard Modules
 # ------------------------------
@@ -204,7 +213,6 @@ endif(DATE_FOUND AND AMORE_FOUND)
 
 # AliMdc RPM
 # ------------------------------
-
 
 include (InstallRequiredSystemLibraries)
 include (CPack)
