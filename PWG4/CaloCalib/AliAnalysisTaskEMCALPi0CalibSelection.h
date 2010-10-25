@@ -74,6 +74,8 @@ public:
   void UseFilteredEventAsInput() {fFilteredInput = kTRUE;}
   void UseNormalEventAsInput()   {fFilteredInput = kFALSE;}
 
+  void PrintInfo();
+  
 private:
 
   AliEMCALGeometry * fEMCALGeo;  //! EMCAL geometry
