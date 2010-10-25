@@ -3373,6 +3373,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "      ::Error(\"" << func.Data() << "\", \"No analysis manager found in file" << analysisFile <<"\");" << endl;
       out << "      return;" << endl;
       out << "   }" << endl << endl;
+      out << "   mgr->SetRunFromPath(mgr->GetRunFromAlienPath(dir));" << endl;
       out << "   mgr->SetSkipTerminate(kFALSE);" << endl;
       out << "   mgr->PrintStatus();" << endl;
       if (AliAnalysisManager::GetAnalysisManager()) {
