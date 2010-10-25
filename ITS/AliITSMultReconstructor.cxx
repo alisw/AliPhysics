@@ -1051,12 +1051,12 @@ void AliITSMultReconstructor::FlagTrackClusters(Int_t id)
     //
     if ( track->IsOn(AliESDtrack::kITSpureSA) ) {
       if (uClus[layID][clID]&kMaskH) {
-	AliWarning(Form("Tracks %5d and %5d share cluster %6d of lr%d",id,int(uClus[layID][clID]>>16)-1,clID,layID));
+	AliDebug(2,Form("Tracks %5d and %5d share cluster %6d of lr%d",id,int(uClus[layID][clID]>>16)-1,clID,layID));
 	uClus[layID][clID] &= kMaskL;
       }
     }
     else if (uClus[layID][clID]&kMaskL) {
-      AliWarning(Form("Tracks %5d and %5d share cluster %6d of lr%d",id,int(uClus[layID][clID]&kMaskL)-1,clID,layID));
+      AliDebug(2,Form("Tracks %5d and %5d share cluster %6d of lr%d",id,int(uClus[layID][clID]&kMaskL)-1,clID,layID));
       uClus[layID][clID] &= kMaskH;
     }
     uClus[layID][clID] |= mark;
@@ -1210,3 +1210,4 @@ Bool_t AliITSMultReconstructor::CanBeElectron(const AliESDtrack* trc) const
     pid[AliPID::kElectron]>fCutMinElectronProbESD;
   //
 }
+
