@@ -5,5 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskSPDdNdEta+;
+#pragma link C++ class AliTrackletAlg+;
 
 #endif
