@@ -500,9 +500,9 @@ macro(ALICE_BuildExecutable)
 
 # AliMDC
 # ------------------------------
-  if(PACKAGE STREQUAL "alimdc")
+  if(PACKAGE STREQUAL "alimdc" AND GENERATEPACKAGES)
 
-    add_executable(${PACKAGE}-static EXCLUDE_FROM_ALL ${PFS} ${PCS} ${PS} ${PDS})
+    add_executable(${PACKAGE}-static ${PFS} ${PCS} ${PS} ${PDS})
     set_target_properties(${PACKAGE}-static PROPERTIES OUTPUT_NAME alimdca)
     add_custom_target( libAliMDC
                         COMMAND rm -rf ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a
@@ -516,10 +516,27 @@ macro(ALICE_BuildExecutable)
     add_dependencies(libAliMDC RAWDatabase-static STEERBase-static MDC-static ESD-static)
     add_dependencies(${PACKAGE}-static libAliMDC root-static-libs)
     target_link_libraries(${PACKAGE}-static ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${ROOTLIBDIR}/libRoot.a ${ROOTLIBDIR}/libfreetype.a ${ROOTLIBDIR}/libpcre.a -pthread -ldl -lcurses)
-			
 
+    install(TARGETS ${PACKAGE}-static RUNTIME DESTINATION bin COMPONENT MDC)
+    install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${ROOTLIBDIR}/libRoot.a ${ROOTLIBDIR}/libfreetype.a ${ROOTLIBDIR}/libpcre.a DESTINATION lib COMPONENT MDC)
+    install(FILES ${PROJECT_SOURCE_DIR}/RAW/mdc.h DESTINATION include COMPONENT MDC)
+    set(CPACK_RPM_PACKAGE_SUMMARY "AliMDC static libraries")
+    set(CPACK_RPM_PACKAGE_NAME "alimdc")
+    set(CPACK_RPM_PACKAGE_VERSION "${ALIMDCVERSION}")
+    set(CPACK_RPM_PACKAGE_RELEASE "${ALIMDCRELEASE}")
+    set(CPACK_RPM_PACKAGE_LICENSE "Copyright: CERN ALICE Off-line Group")
+    set(CPACK_RPM_PACKAGE_VENDOR "ALICE Core Off-line Group")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "AliMDC static libraries")
+    set(CPACK_RPM_PACKAGE_GROUP "Applications/Alice")
+    set(CPACK_RPM_PACKAGE_REQUIRES "glibc")
+    set(CPACK_PACKAGE_VERSION "1.0.0")
+    set(CPACK_PACKAGE_VERSION_MAJOR "1")
+    set(CPACK_PACKAGE_VERSION_MINOR "0")
+    set(CPACK_PACKAGE_VERSION_PATCH "0")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "/opt/")
+    add_component_package(MDC alimdc-rpm)
 
-  endif(PACKAGE STREQUAL "alimdc")
+  endif(PACKAGE STREQUAL "alimdc" AND GENERATEPACKAGES)
 
   list(FIND EXCLUDEMODULES ${MODULE} RESULT)
   if(NOT RESULT STREQUAL "-1")
@@ -557,3 +574,5 @@ macro(ALICE_GenerateLinkDef)
   endforeach(class)
   file (APPEND ${PDAL} "#endif\n")
 endmacro(ALICE_GenerateLinkDef)
+
+

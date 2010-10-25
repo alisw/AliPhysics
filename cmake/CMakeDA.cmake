@@ -194,7 +194,7 @@ foreach(detector ${ONLINEDETECTORS} )
 	  endforeach(_lib)
  	  list (APPEND ZIP && ar r "../lib${DALIB}.a" "*.o")
 
-	  add_custom_target( ${DALIB} COMMAND rm -rf junk && mkdir -p junk 
+	  add_custom_target( ${DALIB} COMMAND rm -rf junk${DAEXE} && mkdir -p junk${DAEXE} 
 				COMMAND cd junk${DAEXE} ${ZIP}
 				COMMAND cd ../ && rm -rf junk${DAEXE}
 				DEPENDS ${ALIROOTALIBS}
