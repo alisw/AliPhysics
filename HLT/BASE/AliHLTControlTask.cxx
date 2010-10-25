@@ -137,17 +137,18 @@ int AliHLTControlTask::AliHLTControlEventComponent::GetEvent(const AliHLTCompone
   // see header file for class documentation
   if (!fpParent) return -ENODEV;
   const AliHLTControlTask* pParent=fpParent;
-  // return if no event has been set
-  if (pParent->fpData==NULL ||
-      pParent->fBlocks.size()==0) {
-    //HLTInfo("no control event to send");
-    return 0;
-  }
 
   AliHLTUInt32_t capacity=size;
   size=0;
   if (capacity<pParent->fSize) {
     return -ENOSPC;
+  }
+
+  // return if no event has been set
+  if (pParent->fpData==NULL ||
+      pParent->fBlocks.size()==0) {
+    //HLTInfo("no control event to send");
+    return 0;
   }
 
   for (unsigned int i=0; i<pParent->fBlocks.size(); i++) {
