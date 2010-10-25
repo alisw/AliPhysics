@@ -1,12 +1,24 @@
-AliAnalysisTaskMinijet* AddTaskMinijet(TString format="esd",Bool_t useMC = kFALSE, Bool_t IsHighMult=kTRUE)
+AliAnalysisTaskMinijet* AddTaskMinijet(TString format="esd",Bool_t useMC = kFALSE, TString kGridDataSet="LHC10e")
 {
+
+  //starting with periode LHC10e, there are also events triggered with High Mult trigger
+  //add stand alone task in case these events are availale
+  Bool_t IsHighMult= (!kGridDataSet.CompareTo("LHC10e") || !kGridDataSet.CompareTo("LHC10f"));
+  //extent with new periods (LHC10g,h,...)
+
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) mgr = new AliAnalysisManager("Analysis train");
-  
-  
-  // Configure analysis
+
+  // Set cuts (used for ESDs) 
+  //===========================================================================
+  AliESDtrackCuts* esdTrackCutsITSTPC=0x0;
+  if(!format.CompareTo("esd")){
+    esdTrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+  }
+
+  // Configure tasks
   //===========================================================================
    
   //first task for min bias events
@@ -18,10 +30,15 @@ AliAnalysisTaskMinijet* AddTaskMinijet(TString format="esd",Bool_t useMC = kFALS
   task->SetEventAxis(1); //1=random track
   task->SetDebugLevel(0);
   task->SetMaxVertexZ(10.);
+  if(!format.CompareTo("esd")){
+    task->SetCuts(esdTrackCutsITSTPC);
+    task->SetMode(0);//0=reading ESDs
+    task->SelectCollisionCandidates(AliVEvent::kMB);//MB
+  }
 
   //second task for high multipliciy events
   AliAnalysisTaskMinijet *taskHM =0x0;
-  if(IsHighMult){
+  if(IsHighMult && !format.CompareTo("esd")){
     taskHM  = new AliAnalysisTaskMinijet("AliAnalysisTaskMinijet HighMult");
     taskHM->UseMC(useMC);
     taskHM->SetRadiusCut(0.7);
@@ -30,28 +47,13 @@ AliAnalysisTaskMinijet* AddTaskMinijet(TString format="esd",Bool_t useMC = kFALS
     taskHM->SetEventAxis(1); //1=random track
     taskHM->SetDebugLevel(0);
     taskHM->SetMaxVertexZ(10.);
+    taskHM->SetCuts(esdTrackCutsITSTPC);
+    taskHM->SetMode(0);//0=reading ESDs
+    taskHM->SelectCollisionCandidates(AliVEvent::kHighMult);//high mult triggered event
   }
 
-  //set cuts (used for ESDs) 
-  AliESDtrackCuts* esdTrackCutsITSTPC=0x0;
-
-  if(!format.CompareTo("esd")){
-    esdTrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
-    
-    //configure tasks
-    task->SetMode(0);//0=reading ESDs
-    task->SelectCollisionCandidates(AliVEvent::kMB);//MB
-    task->SetCuts(esdTrackCutsITSTPC);
-    if(IsHighMult){
-      taskHM->SetMode(0);//0=reading ESDs
-      taskHM->SelectCollisionCandidates(AliVEvent::kHighMult);//high mult triggered event
-      taskHM->SetCuts(esdTrackCutsITSTPC);
-    }
-  }
-
-  else if (!format.CompareTo("aod")){
+  if (!format.CompareTo("aod")){
     task->SetMode(1);// 1 = reading AODs
-    task->UseMC(kFALSE);//MC AODs are not implemented yet
   }
 
   //create output container and add task to mgr
