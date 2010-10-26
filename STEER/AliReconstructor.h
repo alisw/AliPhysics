@@ -68,6 +68,9 @@ public:
   static const AliDetectorRecoParam* GetRecoParam(Int_t iDet);
   virtual void                 GetPidSettings(AliESDpid *esdPID);
 
+  virtual void FillEventTimeWithTOF(AliESDEvent *, AliESDpid *)
+    {return;}
+
 private:
 
   AliReconstructor(const AliReconstructor &); // Not implemented

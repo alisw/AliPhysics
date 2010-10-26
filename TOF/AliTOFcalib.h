@@ -121,6 +121,7 @@ public:
   Bool_t ReadParOnlineHWFromCDB(const Char_t *sel, Int_t nrun);      // old, before unification of status info
   Bool_t ReadParOfflineFromCDB(const Char_t *sel, Int_t nrun);
   void WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param);
+  void WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun, TObjArray *arr);
   AliTOFRecoParam * ReadRecParFromCDB(const Char_t *sel, Int_t nrun, Int_t eventType=0);
   void CreateTreeFromCDB(Int_t minrun, Int_t maxrun);
   void CreateTreeFromFile(Int_t minrun, Int_t maxrun);

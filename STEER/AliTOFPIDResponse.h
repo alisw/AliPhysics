@@ -14,9 +14,10 @@
 
 class AliTOFPIDResponse : public TObject {
 public:
+
   AliTOFPIDResponse();
   AliTOFPIDResponse(Double_t *param);
- ~AliTOFPIDResponse(){}
+  ~AliTOFPIDResponse(){}
 
   void     SetTimeResolution(Float_t res) { fSigma = res; }
   void     SetTimeZero(Double_t t0) { fTime0=t0; }
@@ -32,22 +33,28 @@ public:
 
   void     SetT0event(Float_t *t0event){for(Int_t i=0;i < fNmomBins;i++) fT0event[i] = t0event[i];};
   void     SetT0resolution(Float_t *t0resolution){for(Int_t i=0;i < fNmomBins;i++) fT0resolution[i] = t0resolution[i];};
-  //  void     LoadT0infoFromESD(Option_t *option){}; // to be added
   void     ResetT0info(){ for(Int_t i=0;i < fNmomBins;i++){ fT0event[i] = 0.0; fT0resolution[i] = 0.0;} };
   void     SetMomBoundary();
   Int_t    GetMomBin(Float_t p) const;
   Int_t    GetNmomBins(){return fNmomBins;};
-  Float_t  GetMinMom(Int_t ibin){if(ibin >=0 && ibin <= fNmomBins) return fPCutMin[ibin]; else return 0.0;};
-  Float_t  GetMaxMom(Int_t ibin){if(ibin >=0 && ibin <= fNmomBins) return fPCutMin[ibin+1]; else return 0.0;};
+  Float_t  GetMinMom(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fPCutMin[ibin]; else return 0.0;};
+  Float_t  GetMaxMom(Int_t ibin)const {if(ibin >=0 && ibin <= fNmomBins) return fPCutMin[ibin+1]; else return 0.0;};
   void     SetT0bin(Int_t ibin,Float_t t0bin){if(ibin >=0 && ibin <= fNmomBins) fT0event[ibin] = t0bin;};
   void     SetT0binRes(Int_t ibin,Float_t t0binRes){if(ibin >=0 && ibin <= fNmomBins) fT0resolution[ibin] = t0binRes;};
-  Float_t  GetT0bin(Int_t ibin){if(ibin >=0 && ibin <= fNmomBins) return fT0event[ibin]; else return 0.0;};
-  Float_t  GetT0binRes(Int_t ibin){if(ibin >=0 && ibin <= fNmomBins) return fT0resolution[ibin]; else return 0.0;};
+  Float_t  GetT0bin(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fT0event[ibin]; else return 0.0;};
+  Float_t  GetT0binRes(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fT0resolution[ibin]; else return 0.0;};
+
+  // Get Start Time for a track
+  Float_t  GetStartTime(Float_t mom);
+  Float_t  GetStartTimeRes(Float_t mom);
 
  private:
   Double_t fSigma;        // intrinsic TOF resolution
+
+  // obsolete
   Double_t fPmax;         // "maximal" probability of mismathing (at ~0.5 GeV/c)
   Double_t fTime0;        // time zero
+  //--------------
 
   // About event time (t0) info
   static const Int_t fNmomBins = 10; // number of momentum bin 

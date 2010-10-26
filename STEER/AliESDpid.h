@@ -25,10 +25,11 @@ class AliESDpid {
 public:
   AliESDpid(): fRange(5.), fITSPIDmethod(kITSTruncMean), fTPCResponse(), fITSResponse(), fTOFResponse(), fTRDResponse(){;}
   virtual ~AliESDpid() {}
-  Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t TimeZeroTOF=0) const;
+  Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t timeZeroTOF=9999) const;
   void MakeTPCPID(AliESDtrack *track) const;
   void MakeITSPID(AliESDtrack *track) const;
-  void MakeTOFPID(AliESDtrack *track, Float_t TimeZeroTOF) const;
+  void MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const;
+  Bool_t CheckTOFMatching(AliESDtrack *track) const;
   //  void MakeHMPIDPID(AliESDtrack *track);
   void MakeTRDPID(AliESDtrack *track) const;
   void CombinePID(AliESDtrack *track) const;
@@ -37,7 +38,7 @@ public:
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
 
   Float_t NumberOfSigmasTPC(const AliESDtrack *track, AliPID::EParticleType type) const;
-  Float_t NumberOfSigmasTOF(const AliESDtrack *track, AliPID::EParticleType type, const Float_t TimeZeroTOF) const;
+  Float_t NumberOfSigmasTOF(const AliESDtrack *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const;
   Float_t NumberOfSigmasITS(const AliESDtrack *track, AliPID::EParticleType type) const;
 
   AliITSPIDResponse &GetITSResponse() {return fITSResponse;}
@@ -45,6 +46,8 @@ public:
   AliTOFPIDResponse &GetTOFResponse() {return fTOFResponse;}
   AliTRDPIDResponse &GetTRDResponse() {return fTRDResponse;}
 
+  enum EStartTimeType_t {kFILL_T0,kTOF_T0, kT0_T0, kBest_T0};
+  void SetTOFResponse(AliESDEvent *event,EStartTimeType_t option);
 
 private:
   Float_t           fRange;          // nSigma max in likelihood
@@ -66,10 +69,10 @@ inline Float_t AliESDpid::NumberOfSigmasTPC(const AliESDtrack *track, AliPID::EP
   return fTPCResponse.GetNumberOfSigmas(mom,track->GetTPCsignal(),track->GetTPCsignalN(),type); 
 }
 
-inline Float_t AliESDpid::NumberOfSigmasTOF(const AliESDtrack *track, AliPID::EParticleType type, const Float_t TimeZeroTOF) const {
+inline Float_t AliESDpid::NumberOfSigmasTOF(const AliESDtrack *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const {
   Double_t times[AliPID::kSPECIES];
   track->GetIntegratedTimes(times);
-  return (track->GetTOFsignal() - TimeZeroTOF - times[type])/fTOFResponse.GetExpectedSigma(track->GetP(),times[type],AliPID::ParticleMass(type));
+  return (track->GetTOFsignal() - timeZeroTOF - times[type])/fTOFResponse.GetExpectedSigma(track->GetP(),times[type],AliPID::ParticleMass(type));
 }
 
 inline Float_t AliESDpid::NumberOfSigmasITS(const AliESDtrack *track, AliPID::EParticleType type) const {

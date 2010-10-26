@@ -47,9 +47,13 @@ public:
   
   Float_t  TuneForMC(AliESDEvent *esd); // set enabled channeld, add a smeared t0, add a TOF smearing, return true(smeared) T0 event
   
-  void SetT0spread(Float_t t0spread){fT0spreadExt=t0spread;};
+  void SetT0spread(Float_t t0spread){fT0spreadExt=t0spread;}; // get T0spread
+  Float_t GetT0spread() const {return fT0spreadExt;} // get T0spread
+
   void SetT0fill(Float_t t0fill){fT0fillExt=t0fill;};
   
+  void WriteInESD(AliESDEvent *esd);
+
  private:
   
   AliTOFT0maker(const AliTOFT0maker &);

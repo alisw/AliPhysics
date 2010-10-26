@@ -903,7 +903,24 @@ void AliTOFcalib::WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun
   const Char_t *sel1 = "RecoParam" ;
   TString out(Form("%s/%s",sel,sel1));
   AliCDBId id(out,minrun,maxrun);
-  man->Put(param,id,md);
+
+  TObjArray *arr=new TObjArray(1);
+  arr->AddLast(param);
+  man->Put(arr,id,md);
+  //man->Put(param,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+void AliTOFcalib::WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun, TObjArray *arr){
+  //Write reconstruction parameters to the CDB
+
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Silvia Arcelli");
+  const Char_t *sel1 = "RecoParam" ;
+  TString out(Form("%s/%s",sel,sel1));
+  AliCDBId id(out,minrun,maxrun);
+  man->Put(arr,id,md);
   delete md;
 }
 //_____________________________________________________________________________

@@ -46,6 +46,7 @@
 #include "AliTOFT0v1.h"
 #include "AliTOFT0maker.h"
 #include "AliPID.h"
+#include "AliLog.h"
 #include "AliESDpid.h"
 #include "AliESDEvent.h"
 #include "TFile.h"
@@ -53,6 +54,7 @@
 #include "AliTOFcalib.h"
 #include "AliTOFRunParams.h"
 #include "TRandom.h"
+#include "AliTOFHeader.h"
 
 ClassImp(AliTOFT0maker)
            
@@ -423,4 +425,90 @@ AliTOFT0maker::TuneForMC(AliESDEvent *esd){ // return true T0 event
   }
   //
   return t0;
+}
+//_________________________________________________________________________
+void     AliTOFT0maker::WriteInESD(AliESDEvent *esd){
+  //
+  // Write t0Gen, t0ResGen, nt0;
+  //       t0resESD[0:nt0], it0ESD[0:nt0]
+  // in the AliESDEvent
+  //
+    Int_t nMomBins = fPIDesd->GetTOFResponse().GetNmomBins();
+
+    Int_t nt0=0;
+    Float_t *t0 = new Float_t[nMomBins];
+    Float_t *t0res = new Float_t[nMomBins];
+    Int_t *multT0 = new Int_t[nMomBins];
+
+    for(Int_t i=0;i<nMomBins;i++){
+//	printf("START %i) %f %f\n",i,fT0event[i],fT0resolution[i]);
+	multT0[i]=0;
+	Bool_t kNewT0=kTRUE;
+	for(Int_t j=0;j < nt0;j++){
+	    if(TMath::Abs(fPIDesd->GetTOFResponse().GetT0bin(i) - t0[j])<0.1){
+		kNewT0=kFALSE;
+		multT0[j]++;
+		j=nMomBins*10;
+	    }
+	}
+	if(kNewT0){
+	    t0[nt0]=fPIDesd->GetTOFResponse().GetT0bin(i);
+	    t0res[nt0]=fPIDesd->GetTOFResponse().GetT0binRes(i);
+	    nt0++;
+	}
+    }
+
+    Int_t iMultT0=0,nmult=0;
+    for(Int_t j=0;j < nt0;j++){ // find the most frequent
+	if(multT0[j] > nmult){
+	    iMultT0 = j;
+	    nmult = multT0[j];
+	}
+    }
+
+    Float_t *t0ESD = new Float_t[nMomBins];
+    Float_t *t0resESD = new Float_t[nMomBins];
+    Int_t *it0ESD = new Int_t[nMomBins];
+    
+    Float_t t0Gen,t0ResGen;
+    t0Gen = t0[iMultT0];
+    t0ResGen = t0res[iMultT0];
+    nt0=0;
+    //  printf("T0 to ESD\n%f %f\n",t0Gen,t0ResGen);
+    for(Int_t i=0;i<nMomBins;i++){
+	if(TMath::Abs(fPIDesd->GetTOFResponse().GetT0bin(i) - t0Gen)>0.1){
+	    t0ESD[nt0]=fPIDesd->GetTOFResponse().GetT0bin(i);
+	    t0resESD[nt0]=fPIDesd->GetTOFResponse().GetT0binRes(i);
+	    it0ESD[nt0]=i;
+//	    printf("%i) %f %f %i\n",nt0,t0ESD[nt0],t0resESD[nt0],it0ESD[nt0]);
+	    nt0++;
+	}
+    }
+
+    // Write  t0Gen,t0ResGen; nt0; t0resESD[0:nt0],it0ESD[0:nt0] in the AliESDEvent
+
+   AliTOFHeader *tofHeader =
+	new AliTOFHeader(t0Gen,t0ResGen,nt0,
+			 t0ESD,t0resESD,it0ESD,fTimeResolution,fT0spreadExt);
+  
+    esd->SetTOFHeader(tofHeader);
+
+    AliInfo(Form("resTOF=%f T0spread=%f t0Gen=%f t0resGen=%f",fTimeResolution,fT0spreadExt,t0Gen,t0ResGen));
+    AliInfo(Form("%d ",nt0));
+    for (Int_t ii=0; ii<nt0; ii++)
+      AliInfo(Form("pBin=%d t0val=%f t0res=%f",it0ESD[ii],t0ESD[ii],t0resESD[ii]));
+    
+    delete[] t0;
+    t0 = NULL;
+    delete[] t0res;
+    t0res = NULL;
+    delete[] multT0;
+    multT0 = NULL;
+    delete[] t0ESD;
+    t0ESD = NULL;
+    delete[] t0resESD;
+    t0resESD = NULL;
+    delete[] it0ESD;
+    it0ESD = NULL;
+
 }

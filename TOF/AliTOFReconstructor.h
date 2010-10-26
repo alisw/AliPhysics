@@ -20,6 +20,7 @@ class TTree;
 class AliESDEvent;
 class AliRawReader;
 class AliTOFcalib;
+//class AliTOFT0maker;
 
 class AliTOFReconstructor: public AliReconstructor {
 public:
@@ -40,11 +41,14 @@ public:
 
   static const AliTOFRecoParam* GetRecoParam() { return dynamic_cast<const AliTOFRecoParam*>(AliReconstructor::GetRecoParam(3)); } // getting RecoParam obj
 
+  virtual void FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *esdPID);
+
 private:
   AliTOFReconstructor(const AliTOFReconstructor &); //Not implemented
   AliTOFReconstructor& operator=(const AliTOFReconstructor &); //Not implemented
 
   AliTOFcalib    *fTOFcalib;    // pointer to TOF calib class
+  //AliTOFT0maker  *fTOFT0maker;  // pointer to TOF T0 maker class
 
   ClassDef(AliTOFReconstructor, 3)   // class for the TOF reconstruction
 };

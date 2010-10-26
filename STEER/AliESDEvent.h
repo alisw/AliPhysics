@@ -39,6 +39,7 @@
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
 
+#include "AliTOFHeader.h"
 
 class AliESDfriend;
 class AliESDVZERO;
@@ -93,6 +94,7 @@ public:
 		       kPHOSCells,
 		       kErrorLogs,
                        kESDACORDE,
+		       kTOFHeader,
 		       kESDListN
   };
 
@@ -243,6 +245,13 @@ public:
   AliESDVertex *PrimaryVertexTracksUnconstrained() const;
 
   const AliESDVertex *GetPrimaryVertex() const;
+
+
+
+  void SetTOFHeader(const AliTOFHeader * tofEventTime);
+  const AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
+
+
 
   void SetMultiplicity(const AliMultiplicity *mul);
 
@@ -456,6 +465,11 @@ protected:
   Bool_t    fUseOwnList;           //! Do not use the list from the esdTree but use the one created by this class 
 
   static const char* fgkESDListName[kESDListN]; //!
+
+  AliTOFHeader *fTOFHeader;  //! event times (and sigmas) as estimated by TOF
+			     //  combinatorial algorithm.
+                             //  It contains also TOF time resolution
+                             //  and T0spread as written in OCDB
 
   ClassDef(AliESDEvent,11)  //ESDEvent class 
 };

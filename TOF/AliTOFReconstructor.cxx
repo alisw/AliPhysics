@@ -26,7 +26,10 @@
 #include "TString.h"
 
 #include "AliLog.h"
+#include "AliESDEvent.h"
+#include "AliESDpid.h"
 #include "AliRawReader.h"
+#include "AliTOFHeader.h"
 
 #include "AliTOFClusterFinder.h"
 #include "AliTOFClusterFinderV1.h"
@@ -34,18 +37,18 @@
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtracker.h"
 #include "AliTOFtrackerV1.h"
+#include "AliTOFT0maker.h"
 #include "AliTOFReconstructor.h"
 
 class TTree;
-
-class AliESDEvent;
 
 ClassImp(AliTOFReconstructor)
 
  //____________________________________________________________________
 AliTOFReconstructor::AliTOFReconstructor() 
   : AliReconstructor(),
-    fTOFcalib(0)
+    fTOFcalib(0)/*,
+		  fTOFT0maker(0)*/
 {
 //
 // ctor
@@ -78,7 +81,11 @@ AliTOFReconstructor::~AliTOFReconstructor()
 //
 // dtor
 //
+
   delete fTOFcalib;
+
+  //delete fTOFT0maker;
+
 }
 
 //_____________________________________________________________________________
@@ -243,3 +250,23 @@ AliTracker* AliTOFReconstructor::CreateTracker() const
   return tracker;
 
 }
+
+//_____________________________________________________________________________
+void AliTOFReconstructor::FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *esdPID)
+{
+  //
+  // Fill AliESDEvent::fTOFHeader variable
+  // It contains the event_time estiamted by the TOF combinatorial algorithm
+  //
+
+  Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
+  AliTOFT0maker *tofT0maker = new AliTOFT0maker(esdPID,fTOFcalib);
+  //AliTOFT0maker tofT0maker = AliTOFT0maker(esdPID,fTOFcalib);
+  tofT0maker->SetTimeResolution(tofResolution);
+  tofT0maker->ComputeT0TOF(event);
+  tofT0maker->WriteInESD(event);
+  tofT0maker->~AliTOFT0maker();
+  delete tofT0maker;
+
+}
+

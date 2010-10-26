@@ -1887,7 +1887,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
- 
+
+    // AdC+FN
+    GetReconstructor(3)->FillEventTimeWithTOF(fesd,&pid);
+
     // combined PID
     pid.MakePID(fesd);
 

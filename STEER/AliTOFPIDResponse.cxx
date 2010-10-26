@@ -90,6 +90,10 @@ Double_t AliTOFPIDResponse::GetExpectedSigma(Float_t mom, Float_t time, Float_t 
 }
 //_________________________________________________________________________
 Int_t AliTOFPIDResponse::GetMomBin(Float_t p) const{
+  //
+  // Returns the momentum bin index
+  //
+
   Int_t i=0;
   while(p > fPCutMin[i] && i < fNmomBins) i++;
   if(i > 0) i--;
@@ -98,6 +102,10 @@ Int_t AliTOFPIDResponse::GetMomBin(Float_t p) const{
 }
 //_________________________________________________________________________
 void AliTOFPIDResponse::SetMomBoundary(){
+  //
+  // Set boundaries for momentum bins
+  //
+
   fPCutMin[0] = 0.3;
   fPCutMin[1] = 0.5;
   fPCutMin[2] = 0.6;
@@ -109,4 +117,24 @@ void AliTOFPIDResponse::SetMomBoundary(){
   fPCutMin[8] = 1.5;
   fPCutMin[9] = 2;
   fPCutMin[10] = 3;  
+}
+//_________________________________________________________________________
+Float_t AliTOFPIDResponse::GetStartTime(Float_t mom) {
+  //
+  // Returns event_time value as estimated by TOF combinatorial algorithm
+  //
+
+  Int_t ibin = GetMomBin(mom);
+  return GetT0bin(ibin);
+
+}
+//_________________________________________________________________________
+Float_t AliTOFPIDResponse::GetStartTimeRes(Float_t mom) {
+  //
+  // Returns event_time resolution as estimated by TOF combinatorial algorithm
+  //
+
+  Int_t ibin = GetMomBin(mom);
+  return GetT0binRes(ibin);
+
 }

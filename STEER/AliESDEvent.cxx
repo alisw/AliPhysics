@@ -74,31 +74,32 @@ ClassImp(AliESDEvent)
 // here we define the names, some classes are no TNamed, therefore the classnames 
 // are the Names
   const char* AliESDEvent::fgkESDListName[kESDListN] = {"AliESDRun",
-						       "AliESDHeader",
-						       "AliESDZDC",
-						       "AliESDFMD",
-						       "AliESDVZERO",
-						       "AliESDTZERO",
-						       "TPCVertex",
-						       "SPDVertex",
-						       "PrimaryVertex",
-						       "AliMultiplicity",
-						       "PHOSTrigger",
-						       "EMCALTrigger",
-						       "SPDPileupVertices",
-						       "TrkPileupVertices",
-						       "Tracks",
-						       "MuonTracks",
-						       "PmdTracks",
-						       "TrdTracks",
-						       "V0s",
-						       "Cascades",
-						       "Kinks",
-						       "CaloClusters",
-						      "EMCALCells",
-						      "PHOSCells",
-						       "AliRawDataErrorLogs",
-						       "AliESDACORDE"};
+							"AliESDHeader",
+							"AliESDZDC",
+							"AliESDFMD",
+							"AliESDVZERO",
+							"AliESDTZERO",
+							"TPCVertex",
+							"SPDVertex",
+							"PrimaryVertex",
+							"AliMultiplicity",
+							"PHOSTrigger",
+							"EMCALTrigger",
+							"SPDPileupVertices",
+							"TrkPileupVertices",
+							"Tracks",
+							"MuonTracks",
+							"PmdTracks",
+							"TrdTracks",
+							"V0s",
+							"Cascades",
+							"Kinks",
+							"CaloClusters",
+							"EMCALCells",
+							"PHOSCells",
+							"AliRawDataErrorLogs",
+							"AliESDACORDE",
+							"AliTOFHeader"};
 
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent():
@@ -132,7 +133,8 @@ AliESDEvent::AliESDEvent():
   fESDOld(0),
   fESDFriendOld(0),
   fConnected(kFALSE),
-  fUseOwnList(kFALSE)
+  fUseOwnList(kFALSE),
+  fTOFHeader(0)
 {
 }
 //______________________________________________________________________________
@@ -168,7 +170,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fESDOld(esd.fESDOld ? new AliESD(*esd.fESDOld) : 0),
   fESDFriendOld(esd.fESDFriendOld ? new AliESDfriend(*esd.fESDFriendOld) : 0),
   fConnected(esd.fConnected),
-  fUseOwnList(esd.fUseOwnList)
+  fUseOwnList(esd.fUseOwnList),
+  fTOFHeader(new AliTOFHeader(*esd.fTOFHeader))
 
 {
   // CKB init in the constructor list and only add here ...
@@ -198,6 +201,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fPHOSCells);
   AddObject(fErrorLogs);
   AddObject(fESDACORDE);
+  AddObject(fTOFHeader);
 
   GetStdContent();
 
@@ -427,6 +431,11 @@ void AliESDEvent::ResetStdContent()
   if(fSPDMult){
     fSPDMult->~AliMultiplicity();
     new (fSPDMult) AliMultiplicity();
+  }
+  if(fTOFHeader){
+    fTOFHeader->~AliTOFHeader();
+    new (fTOFHeader) AliTOFHeader();
+    //fTOFHeader->SetName(fgkESDListName[kTOFHeader]);
   }
   if(fPHOSTrigger)fPHOSTrigger->Reset(); 
   if(fEMCALTrigger)fEMCALTrigger->Reset(); 
@@ -1121,7 +1130,7 @@ void AliESDEvent::GetStdContent()
   fPHOSCells = (AliESDCaloCells*)fESDObjects->FindObject(fgkESDListName[kPHOSCells]);
   fErrorLogs = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kErrorLogs]);
   fESDACORDE = (AliESDACORDE*)fESDObjects->FindObject(fgkESDListName[kESDACORDE]);
-
+  fTOFHeader = (AliTOFHeader*)fESDObjects->FindObject(fgkESDListName[kTOFHeader]);
 }
 
 void AliESDEvent::SetStdNames(){
@@ -1180,6 +1189,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new AliESDCaloCells());
   AddObject(new TClonesArray("AliRawDataErrorLog",0));
   AddObject(new AliESDACORDE()); 
+  AddObject(new AliTOFHeader());
 
   // check the order of the indices against enum...
 
@@ -1713,3 +1723,21 @@ Bool_t AliESDEvent::IsPileupFromSPDInMultBins() const {
     else return IsPileupFromSPD(5,0.8);
 }
 
+void  AliESDEvent::SetTOFHeader(const AliTOFHeader *header)
+{
+  //
+  // Set the TOF event_time
+  //
+
+  if (fTOFHeader) {
+    *fTOFHeader=*header;
+    //fTOFHeader->SetName(fgkESDListName[kTOFHeader]);
+  }
+  else {
+    // for analysis of reconstructed events
+    // when this information is not avaliable
+    fTOFHeader = new AliTOFHeader(*header);
+    //AddObject(fTOFHeader);
+  }
+
+}
