@@ -2014,7 +2014,7 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
          delete res;
          return kFALSE;
       }   
-      for (Int_t counter=0; counter<ichunk*nmaxmerge; counter++) map = (TMap*)nextmap();
+      for (Int_t counter=0; counter<ichunk*nmaxmerge; counter++) nextmap();
       outputChunk.ReplaceAll(".root", Form("-Stage%02d_%04d.root", stage, ichunk));
    }
    countZero = nmaxmerge;  
