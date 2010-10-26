@@ -355,11 +355,11 @@ void AliTPCv2::CreateGeometry()
   //
   // segment outermost
   //
-  TGeoTubeSeg *t2 = new TGeoTubeSeg(76.6774,78.845,74.175,350.,109.6); // tedlar 38 microns
-  TGeoTubeSeg *t3 = new TGeoTubeSeg(76.6812,78.8412,74.175,350.,109.6); // prepreg2 500 microns
-  TGeoTubeSeg *t4 = new TGeoTubeSeg(76.7312,78.7912,74.175,350.,109.6); // prepreg3 300 microns
-  TGeoTubeSeg *t5 = new TGeoTubeSeg(76.7612,78.7612,74.175,350.,109.6); // nomex 2 cm
-  TGeoTubeSeg *tepox1 = new TGeoTubeSeg(76.6774,78.845,74.175,109.6,110.);//epoxy
+  TGeoTubeSeg *t2 = new TGeoTubeSeg(76.6774,78.845,74.175,350.,109.4); // tedlar 38 microns
+  TGeoTubeSeg *t3 = new TGeoTubeSeg(76.6812,78.8412,74.175,350.,109.4); // prepreg2 500 microns
+  TGeoTubeSeg *t4 = new TGeoTubeSeg(76.7312,78.7912,74.175,350.,109.4); // prepreg3 300 microns
+  TGeoTubeSeg *t5 = new TGeoTubeSeg(76.7612,78.7612,74.175,350.,109.4); // nomex 2 cm
+  TGeoTubeSeg *tepox1 = new TGeoTubeSeg(76.6774,78.845,74.175,109.4,110.);//epoxy
   TGeoTubeSeg *tpr1 = new TGeoTubeSeg(78.845,78.885,74.175,109.,111.);
   
   // volumes for the outer part  
@@ -374,11 +374,11 @@ void AliTPCv2::CreateGeometry()
   //
   // segment middle
   //
-  TGeoTubeSeg *t6 = new TGeoTubeSeg(76.6774,78.795,5.,350.,109.6); // tedlar 38 microns
-  TGeoTubeSeg *t7 = new TGeoTubeSeg(76.6812,78.7912,5.,350.,109.6); // prepreg2 250 microns
-  TGeoTubeSeg *t8 = new TGeoTubeSeg(76.7062,78.7662,5.,350.,109.6); // prepreg3 300 microns
-  TGeoTubeSeg *t9 = new TGeoTubeSeg(76.7362,78.7362,5.,350.,109.6); // nomex 2 cm
-  TGeoTubeSeg *tepox2 = new TGeoTubeSeg(76.6774,78.795,5.,109.6,110.);//epoxy
+  TGeoTubeSeg *t6 = new TGeoTubeSeg(76.6774,78.795,5.,350.,109.4); // tedlar 38 microns
+  TGeoTubeSeg *t7 = new TGeoTubeSeg(76.6812,78.7912,5.,350.,109.4); // prepreg2 250 microns
+  TGeoTubeSeg *t8 = new TGeoTubeSeg(76.7062,78.7662,5.,350.,109.4); // prepreg3 300 microns
+  TGeoTubeSeg *t9 = new TGeoTubeSeg(76.7362,78.7362,5.,350.,109.4); // nomex 2 cm
+  TGeoTubeSeg *tepox2 = new TGeoTubeSeg(76.6774,78.795,5.,109.4,110.);//epoxy
   TGeoTubeSeg *tpr2 = new TGeoTubeSeg(78.795,78.835,5.,109.,111.);
   // volumes for the middle part
   TGeoVolume *tv6 = new TGeoVolume("TPC_IFC7",t6,sm2);
@@ -391,10 +391,10 @@ void AliTPCv2::CreateGeometry()
   // 
   // segment central part
   //
-  TGeoTubeSeg *t10 = new TGeoTubeSeg(76.6774,78.785,93.75,350.,109.6); // tedlar 38 microns 
-  TGeoTubeSeg *t11 = new TGeoTubeSeg(76.6812,78.7812,93.75,350.,109.6); // prepreg3 500 microns
-  TGeoTubeSeg *t12 = new TGeoTubeSeg(76.7312,78.7312,93.75,350.,109.6); // nomex 2 cm 
-  TGeoTubeSeg *tepox3 = new TGeoTubeSeg(76.6774,78.785,93.75,109.6,110.);//epoxy
+  TGeoTubeSeg *t10 = new TGeoTubeSeg(76.6774,78.785,93.75,350.,109.4); // tedlar 38 microns 
+  TGeoTubeSeg *t11 = new TGeoTubeSeg(76.6812,78.7812,93.75,350.,109.4); // prepreg3 500 microns
+  TGeoTubeSeg *t12 = new TGeoTubeSeg(76.7312,78.7312,93.75,350.,109.4); // nomex 2 cm 
+  TGeoTubeSeg *tepox3 = new TGeoTubeSeg(76.6774,78.785,93.75,109.4,110.);//epoxy
   TGeoTubeSeg *tpr3 = new TGeoTubeSeg(78.785,78.825,93.75,109.,111.);
   // volumes for the central part
   TGeoVolume *tv10 = new TGeoVolume("TPC_IFC11",t10,sm2);
@@ -511,10 +511,15 @@ void AliTPCv2::CreateGeometry()
   //
   TGeoVolume *cflv = new TGeoVolume("TPC_CDR",cfl,m3);
   // sandwich
-  TGeoTube *cd1 = new TGeoTube(60.6224,61.19,71.1);
-  TGeoTube *cd2 = new TGeoTube(60.6262,61.1862,71.1);
-  TGeoTube *cd3 = new TGeoTube(60.6462,61.1662,71.1);  
-  TGeoTube *cd4 = new TGeoTube(60.6562,61.1562,71.1);  
+  TGeoTubeSeg *cd1 = new TGeoTubeSeg(60.6224,61.19,71.1,0.1,119.9);
+  TGeoTubeSeg *cd2 = new TGeoTubeSeg(60.6262,61.1862,71.1,0.1,119.9);
+  TGeoTubeSeg *cd3 = new TGeoTubeSeg(60.6462,61.1662,71.1,0.1,119.9);
+  TGeoTubeSeg *cd4 = new TGeoTubeSeg(60.6562,61.1562,71.1,0.1,119.9);
+  TGeoTubeSeg *tepox4 = new TGeoTubeSeg(60.6224,61.19,71.1,359.9,0.1);
+  //  TGeoTube *cd1 = new TGeoTube(60.6224,61.19,71.1);
+  //  TGeoTube *cd2 = new TGeoTube(60.6262,61.1862,71.1);
+  //  TGeoTube *cd3 = new TGeoTube(60.6462,61.1662,71.1);  
+  //  TGeoTube *cd4 = new TGeoTube(60.6562,61.1562,71.1);  
   //
   TGeoMedium *sm6 = gGeoManager->GetMedium("TPC_Prepreg1");
   TGeoMedium *sm8 = gGeoManager->GetMedium("TPC_Epoxyfm");
@@ -522,6 +527,7 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *cd2v = new TGeoVolume("TPC_CDR2",cd2,sm6);// prepreg1
   TGeoVolume *cd3v = new TGeoVolume("TPC_CDR3",cd3,sm8); //epoxy film
   TGeoVolume *cd4v = new TGeoVolume("TPC_CDR4",cd4,sm4); //nomex
+  TGeoVolume *tvep4 = new TGeoVolume("TPC_IFEPOX4",tepox4,sm1);
 
   //
   // seals for central drum 2 copies
@@ -552,7 +558,17 @@ void AliTPCv2::CreateGeometry()
   //
   TGeoRotation *ref = new TGeoRotation("ref",90.,0.,90.,90.,180.,0.);
   //
-  cd1v->AddNode(cd2v,1); cd2v->AddNode(cd3v,1); cd3v->AddNode(cd4v,1); cflv->AddNode(cd1v,1); 
+  cd1v->AddNode(cd2v,1); cd2v->AddNode(cd3v,1); cd3v->AddNode(cd4v,1); //sandwich
+  // first segment  
+  cflv->AddNode(cd1v,1); cflv->AddNode(tvep4,1);
+  // second segment
+  segrot = new TGeoRotation();
+  segrot->RotateZ(120.);
+  cflv->AddNode(cd1v,2,segrot); cflv->AddNode(tvep4,2,segrot);
+  // third segment
+  segrot = new TGeoRotation();
+  segrot->RotateZ(240.);
+  cflv->AddNode(cd1v,3,segrot); cflv->AddNode(tvep4,3,segrot);
   //
   v1->AddNode(siv,1,new TGeoTranslation(0.,0.,-69.9));
   v1->AddNode(siv,2,new TGeoTranslation(0.,0.,69.9));
