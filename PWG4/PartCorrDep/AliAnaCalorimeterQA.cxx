@@ -2987,9 +2987,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	delete htmp; 
 	htmp = fhEtaPhiE->ProjectionX("heta_cluster_nocut",0,-1,0,-1);
 	htmp ->SetLineColor(1);
-	rbEta =  GetNewRebinForRePlotting(htmp,etamin, etamax,netabins) ;
-  //printf("new Eta rb %d\n",rbEta);
-	if(htmp){
+  if(htmp){
+    rbEta =  GetNewRebinForRePlotting(htmp,etamin, etamax,netabins) ;
+    //printf("new Eta rb %d\n",rbEta);
 	  htmp->Rebin(rbEta);
 	  htmp->SetMinimum(1);
 	  htmp->SetTitle("#eta of clusters for energy in cluster > threshold");

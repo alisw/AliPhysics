@@ -85,25 +85,26 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   // Execute analysis for current event
   //
   
-  //Magic line to write events to file
-  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
-  
   if (fDebug > 0)  
     printf("CaloFilter: Analysing event # %d\n", (Int_t)Entry());
   
   // Copy input ESD or AOD header, vertex, CaloClusters and CaloCells to output AOD
   
   AliVEvent* event = InputEvent();
-  Bool_t bAOD = kFALSE;
-  if(!strcmp(event->GetName(),"AliAODEvent")) bAOD=kTRUE;
-  Bool_t bESD = kFALSE;
-  if(!strcmp(event->GetName(),"AliESDEvent")) bESD=kTRUE;
-  
   if(!event) {
     printf("AliAnalysisTaskCaloFilter::CreateAODFromESD() - This event does not contain Input?");
     return;
   }
+
+  //Magic line to write events to file
+  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+    
   
+  Bool_t bAOD = kFALSE;
+  if(!strcmp(event->GetName(),"AliAODEvent")) bAOD=kTRUE;
+  Bool_t bESD = kFALSE;
+  if(!strcmp(event->GetName(),"AliESDEvent")) bESD=kTRUE;
+    
   // set arrays and pointers
   Float_t posF[3];
   Double_t pos[3];
