@@ -353,18 +353,19 @@ public:
   AliESDCaloCells *GetEMCALCells() const {return fEMCALCells; }  
   AliESDCaloCells *GetPHOSCells() const {return fPHOSCells; }  
 
+  AliESDCaloTrigger* GetCaloTrigger(TString calo) const 
+  {
+	  if (calo.Contains("EMCAL")) return fEMCALTrigger;
+	  else
+		  return fPHOSTrigger;
+  }
+	
   AliRawDataErrorLog *GetErrorLog(Int_t i) const {
     return (AliRawDataErrorLog *)(fErrorLogs?fErrorLogs->UncheckedAt(i):0x0);
   }
   void  AddRawDataErrorLog(const AliRawDataErrorLog *log) const;
 
   Int_t GetNumberOfErrorLogs()   const {return fErrorLogs?fErrorLogs->GetEntriesFast():0;}
-
-    
-  void AddPHOSTriggerPosition(TArrayF array)   { if(fPHOSTrigger) fPHOSTrigger->AddTriggerPosition(array); }
-  void AddPHOSTriggerAmplitudes(TArrayF array) { if(fPHOSTrigger) fPHOSTrigger->AddTriggerAmplitudes(array);}
-  void AddEMCALTriggerPosition(TArrayF array)  { if(fEMCALTrigger) fEMCALTrigger->AddTriggerPosition(array); }
-  void AddEMCALTriggerAmplitudes(TArrayF array){ if(fEMCALTrigger) fEMCALTrigger->AddTriggerAmplitudes(array); }
 
   Int_t GetNumberOfPileupVerticesSPD() const {
     return (fSPDPileupVertices?fSPDPileupVertices->GetEntriesFast():0);
@@ -391,11 +392,6 @@ public:
 
   void SetUseOwnList(Bool_t b){fUseOwnList = b;}
   Bool_t GetUseOwnList() const {return fUseOwnList;}
-
-  TArrayF *GetEMCALTriggerPosition() const {return  fEMCALTrigger?fEMCALTrigger->GetTriggerPosition():0x0;}
-  TArrayF *GetEMCALTriggerAmplitudes() const {return  fEMCALTrigger?fEMCALTrigger->GetTriggerAmplitudes():0x0;}
-  TArrayF *GetPHOSTriggerPosition() const {return  fPHOSTrigger?fPHOSTrigger->GetTriggerPosition():0x0;}
-  TArrayF *GetPHOSTriggerAmplitudes() const {return  fPHOSTrigger?fPHOSTrigger->GetTriggerAmplitudes():0x0;}
 
   void ResetV0s() { if(fV0s) fV0s->Clear(); }
   void ResetCascades() { if(fCascades) fCascades->Clear(); }

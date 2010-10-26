@@ -437,8 +437,8 @@ void AliESDEvent::ResetStdContent()
     new (fTOFHeader) AliTOFHeader();
     //fTOFHeader->SetName(fgkESDListName[kTOFHeader]);
   }
-  if(fPHOSTrigger)fPHOSTrigger->Reset(); 
-  if(fEMCALTrigger)fEMCALTrigger->Reset(); 
+  if(fPHOSTrigger)fPHOSTrigger->DeAllocate(); 
+  if(fEMCALTrigger)fEMCALTrigger->DeAllocate(); 
   if(fSPDPileupVertices)fSPDPileupVertices->Delete();
   if(fTrkPileupVertices)fTrkPileupVertices->Delete();
   if(fTracks)fTracks->Delete();
