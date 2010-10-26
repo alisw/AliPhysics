@@ -1,285 +1,219 @@
-# -*- mode: cmake -*-
+# Top level CMakeList.txt file for the AliRoot Build System
+#
+# Author: Johny Jose (johny.jose@cern.ch)
+#         Port of previous Makefile build to cmake
 
-# Check if cmake has the required version
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-# Set name of our project to AliRoot. To be done after check of cmake version
-project(AliRoot NONE)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-# Set AliRoot variables
-set(CMAKE_VERBOSE_MAKEFILES OFF)
-#fix for MACOSX
-SET(CMAKE_INCLUDE_SYSTEM_FLAG_C "-isystem")
-SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem") 
+#--------------------------------------------------------------------------------#
+# Set Basic CMake Configuration                                                  #
+#--------------------------------------------------------------------------------#
 
-set(ALICE_INSTALL $ENV{ALICE_INSTALL})
+project(AliRoot CXX C Fortran)
 set(ALICE_ROOT $ENV{ALICE_ROOT})
-set(ALICE_STATIC_BUILD OFF CACHE BOOL "Build also statics libs")
-execute_process(COMMAND root-config --arch OUTPUT_VARIABLE ALICE_TARGET)
-string (REGEX REPLACE "\n" "" ALICE_TARGET ${ALICE_TARGET})
+set(ALICE $ENV{ALICE})
 
-if(NOT ALICE_INSTALL)
-message(FATAL_ERROR "Please set environment variable ALICE_INSTALL to the AliRoot installation directory")
-endif(NOT ALICE_INSTALL)
+if(NOT ALICE)
+  message(WARNING "Environment variable ALICE is not set")
+endif(NOT ALICE)
+
 if(NOT ALICE_ROOT)
-message(FATAL_ERROR "Please set environment variable ALICE_ROOT to the AliRoot source directory")
+  message(FATAL_ERROR "Please set ALICE_ROOT to the AliRoot source directory")
 endif(NOT ALICE_ROOT)
 
+# Set AliRoot Installation directory 
+if(NOT ALICE_INSTALL)
+  message(STATUS "AliRoot files will be installed in ${ALICE_ROOT}. You can specify a different location by setting ALICE_INSTALL environment variable")
+  set(ALICE_INSTALL ${ALICE_ROOT})
+else()
+  message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
+endif(NOT ALICE_INSTALL)
 
-message("ALICE_ROOT: ${ALICE_ROOT}")
+get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" REALPATH)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+set(CPACK_COMPONENTS_ALL MDC)
 
+include(ALICE_CMake)
 
-# where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ 
-#set(PROJECT_BINARY_DIR ${ALICE_INSTALL})
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/tgt_${ALICE_TARGET})
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/tgt_${ALICE_TARGET})
-set(CMAKE_MODULE_PATH "${ALICE_ROOT}/cmake/modules")
+#--------------------------------------------------------------------------------#
+# Find Packages                                                                  #
+#--------------------------------------------------------------------------------#
 
-# To fix a hack that has been introduced for the Mac
-if(APPLE)
-  set(CMAKE_INSTALL_NAME_TOOL CMAKE_INSTALL_NAME_TOOL-NOTFOUND)
-endif(APPLE)
+# Subversion
+# ------------------------------
 
-# Setup ROOT and C, C++ , Fortran Compilers
-find_package(ROOT 5.0.0 REQUIRED)
-set(CMAKE_C_COMPILER $ENV{CC})
-enable_language(C)
-set(CMAKE_CXX_COMPILER $ENV{CXX})
-enable_language(CXX)
-set(CMAKE_Fortran_COMPILER $ENV{F77})
-enable_language(Fortran)
+find_package(Subversion REQUIRED)
 
-# Load some basic macros which are needed later on
-#Include(WriteConfigFile)
+# ROOT
+# ------------------------------
 
-include (CTest)
-include(ALICEMacros)
+find_package(ROOT REQUIRED)
 
-# Check if the user wants to build the project in the source directory
-Check_out_of_Source_Build()
+# IRST Rule Checker 
+# ------------------------------
 
-# searches for needed packages
-
-
-# Setup GEANT3
-find_package(GEANT3)
-
-# Setup RuleChecker
 find_package(RuleChecker)
 
-# Check if DATE is installed
+# DATE
+# ------------------------------ 
+
 find_package(DATE)
 
-# Setup system dependent flags 
-SetupSystem()
+# GEANT3
+# ------------------------------
 
-Include(CreateSubCMakeFiles)
-CreateSubCMakeFiles()
+find_package(GEANT3)
 
+# AMORE
+# ------------------------------
 
+find_package(AMORE)
 
+# AliRoot CPack configuration                                                    
+#-------------------------------
 
-# Set the library version in the main CMakeLists.txt
-set(ALIROOT_MAJOR_VERSION 0)
-set(ALIROOT_MINOR_VERSION 0)
-set(ALIROOT_PATCH_VERSION 0)
-set(ALIROOT_VERSION "${ALIROOT_MAJOR_VERSION}.${ALIROOT_MINOR_VERSION}.${ALIROOT_PATCH_VERSION}")
-
-set(ALIROOT_LIBRARY_PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES}
-    VERSION "${ALIROOT_VERSION}"
-    SOVERSION "${ALIROOT_MAJOR_VERSION}"
-    SUFFIX ".so"
-)
-
-# Set version variables
-find_program( READLINK_PROGRAM readlink)
-
-if(READLINK_PROGRAM) 
-  execute_process(COMMAND readlink -f ${ALICE_ROOT} 
-    COMMAND xargs svn info
-    OUTPUT_VARIABLE _svn_out)
-else(READLINK_PROGRAM)
-  execute_process(COMMAND svn info ${ALICE_ROOT} 
-    OUTPUT_VARIABLE _svn_out)
-endif(READLINK_PROGRAM)
-
-string(REGEX REPLACE "^.*Revision: ([^\n]*).*$" "\\1" 
-  ALIROOT_SVN_REVISION ${_svn_out})
-string(REGEX REPLACE "^.*URL: ([^\n]*).*$" "\\1"
-  ALIROOT_SVN_BRANCH ${_svn_out})
-string(REGEX REPLACE "^.*AliRoot/([^\n]*)" "\\1" ALIROOT_SVN_BRANCH ${ALIROOT_SVN_BRANCH})
+find_package(CPack)
 
 
-# Additional targets
-add_custom_target(check-all COMMENT "Checking coding conventions")
-message(STATUS "REVISION: ${ALIROOT_SVN_REVISION}")
-message(STATUS "BRANCH: ${ALIROOT_SVN_BRANCH}")
+#--------------------------------------------------------------------------------#
+# Environment/Compiler Configuration                                             #
+#--------------------------------------------------------------------------------#
 
-# Delete and recreate header ARVersion Header file 
-execute_process(COMMAND cmake -E remove "${CMAKE_CURRENT_BINARY_DIR}/STEER/ARVersion.h")
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/STEER/ARVersion.h.in ${CMAKE_CURRENT_BINARY_DIR}/STEER/ARVersion.h @ONLY)
-
-# Get list of enabled root features
-execute_process(COMMAND root-config --features OUTPUT_VARIABLE FEATURES)
-string(REGEX MATCH "pythia6" PYTHIA6 ${FEATURES})
-string(REGEX MATCH "pythia8" PYTHIA8 ${FEATURES})
-string(REGEX MATCH "opengl" OPENGL ${FEATURES})
-if(PYTHIA6)
-  message(STATUS "Pythia6 enabled")
-endif(PYTHIA6)
-if(PYTHIA8)
-  message(STATUS "Pythia8 enabled")
-endif(PYTHIA8)
-if(OPENGL)
-  message(STATUS "OpenGL enabled")	
-endif(OPENGL)	
-option (TFLUKA "Build TFluka" OFF)
-option (THYDJET "Build THydjet" OFF)
-option (SHUTTLE "Build SHUTTLE" OFF)
+ALICE_CheckOutOfSourceBuild()
+ALICE_RootConfig(CMAKE_CXX_COMPILER --cxx)
+ALICE_RootConfig(CMAKE_C_COMPILER --cc)
+ALICE_RootConfig(CMAKE_Fortran_COMPILER --f77)
+ALICE_ConfigurePlatform()
+ALICE_ConfigureCompiler()
 
 
-add_custom_target(STEER-all)
-add_custom_target(PHOS-all)	
-add_custom_target(TRD-all) 
-add_custom_target(TPC-all)
-add_custom_target(ZDC-all) 
-add_custom_target(MUON-all) 
-add_custom_target(PMD-all) 
-add_custom_target(FMD-all)
-add_custom_target(TOF-all) 
-add_custom_target(ITS-all) 
-add_custom_target(ACORDE-all) 
-add_custom_target(HMPID-all) 
-add_custom_target(T0-all) 
-add_custom_target(BCM-all) 
-add_custom_target(STRUCT-all) 
-add_custom_target(EVGEN-all) 
-add_custom_target(RALICE-all) 
-add_custom_target(VZERO-all) 
-add_custom_target(THijing-all)
-add_custom_target(THbtp-all) 
-add_custom_target(EMCAL-all) 
-add_custom_target(THerwig-all) 
-add_custom_target(TEPEMGEN-all) 
-add_custom_target(FASTSIM-all) 
-add_custom_target(TPHIC-all) 
-add_custom_target(RAW-all) 
-add_custom_target(MONITOR-all) 
-add_custom_target(ANALYSIS-all) 
-add_custom_target(JETAN-all)
-add_custom_target(HLT-all) 
-add_custom_target(LHC-all) 
-add_custom_target(ESDCheck-all) 
-add_custom_target(STAT-all) 
-add_custom_target(TTherminator-all) 
-add_custom_target(CORRFW-all) 
-add_custom_target(DPMJET-all) 
-add_custom_target(TDPMjet-all) 
-add_custom_target(PWG0-all) 
-add_custom_target(PWG1-all) 
-add_custom_target(PWG2-all) 
-add_custom_target(PWG3-all) 
-add_custom_target(PWG4-all)
-add_custom_target(TRIGGER-all) 
-add_custom_target(TUHKMgen-all) 
-add_custom_target(EPOS-all) 
-add_custom_target(PYTHIA8-all) 
-add_custom_target(EVE-all) 
-add_custom_target(TFluka-all)
-add_custom_target(THydjet-all)
-add_custom_target(SHUTTLE-all)
-add_custom_target(LHAPDF-all) 
-add_custom_target(HIJING-all) 
-add_custom_target(MICROCERN-all) 
-add_custom_target(HERWIG-all) 
-add_custom_target(PYTHIA6-all)
-add_custom_target(ALIROOT-all)
+#--------------------------------------------------------------------------------#
+# AliRoot Path Settings                                                          #
+#--------------------------------------------------------------------------------#
 
-set(MODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS ACORDE HMPID T0 BCM STRUCT EVGEN RALICE VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet PWG0 PWG1 PWG2 PWG3 PWG4 TRIGGER TUHKMgen EPOS)
+ALICE_DevFlagsOutput()
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/tgt_${ALICE_TARGET}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib/tgt_${ALICE_TARGET}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib/tgt_${ALICE_TARGET}")
+set(CMAKE_INCLUDE_EXPORT_DIRECTORY "${PROJECT_BINARY_DIR}/include")
+file(MAKE_DIRECTORY ${CMAKE_INCLUDE_EXPORT_DIRECTORY})
+set(EXPORTDIRS "${ALICE_INSTALL}/include")
+set(BINLIBDIRS "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
-# Recurse into the given subdirectories.  This does not actually
-# cause another cmake executable to run.  The same process will walk through
-# the project's entire directory structure.
-Add_subdirectory(STEER)
-Add_subdirectory(PHOS) 
-Add_subdirectory(TRD) 
-Add_subdirectory(TPC)
-Add_subdirectory(ZDC) 
-Add_subdirectory(MUON) 
-Add_subdirectory(PMD) 
-Add_subdirectory(FMD)
-Add_subdirectory(TOF) 
-Add_subdirectory(ITS) 
-Add_subdirectory(ACORDE) 
-Add_subdirectory(HMPID) 
-Add_subdirectory(T0) 
-Add_subdirectory(BCM) 
-Add_subdirectory(STRUCT) 
-Add_subdirectory(EVGEN) 
-Add_subdirectory(RALICE) 
-Add_subdirectory(VZERO) 
-Add_subdirectory(THijing)
-Add_subdirectory(THbtp) 
-Add_subdirectory(EMCAL) 
-Add_subdirectory(THerwig) 
-Add_subdirectory(TEPEMGEN) 
-Add_subdirectory(FASTSIM) 
-Add_subdirectory(TPHIC) 
-Add_subdirectory(RAW) 
-Add_subdirectory(MONITOR) 
-Add_subdirectory(ANALYSIS) 
-Add_subdirectory(JETAN)
-Add_subdirectory(HLT) 
-Add_subdirectory(LHC) 
-Add_subdirectory(ESDCheck) 
-Add_subdirectory(STAT) 
-Add_subdirectory(TTherminator) 
-Add_subdirectory(CORRFW) 
-Add_subdirectory(DPMJET) 
-Add_subdirectory(TDPMjet) 
-Add_subdirectory(PWG0) 
-Add_subdirectory(PWG1) 
-Add_subdirectory(PWG2) 
-Add_subdirectory(PWG3) 
-Add_subdirectory(PWG4)
-Add_subdirectory(TRIGGER) 
-Add_subdirectory(TUHKMgen) 
-Add_subdirectory(EPOS) 
-if(PYTHIA8)
-Add_subdirectory(PYTHIA8) 
-list(APPEND MODULES PYTHIA8)
-endif(PYTHIA8)
-if(OPENGL)
-Add_subdirectory(EVE) 
-list(APPEND MODULES EVE)
-endif(OPENGL)
-if(TFLUKA)
-Add_subdirectory(TFluka)
-list(APPEND MODULES TFluka)
-endif(TFLUKA)
-if(THYDJET)	
-Add_subdirectory(THydjet)
-list(APPEND MODULES THydjet)
-endif(THYDJET)
+
+#--------------------------------------------------------------------------------#
+# AliRoot Modules                                                                #
+#--------------------------------------------------------------------------------#
+
+# Exclude Module from all target
+# ------------------------------
+
+#set(EXCLUDEMODULES THydjet SHUTTLE)
+
+
+# Standard Modules
+# ------------------------------
+set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet PWG0 PWG1 PWG2 PWG3 PWG4 TRIGGER PYTHIA8 )
+
+if(THydjet)
+  list(APPEND ALIROOTMODULES THydjet)
+endif(THydjet)
+
 if(SHUTTLE)
-Add_subdirectory(SHUTTLE)
-list(APPEND MODULES SHUTTLE)
-endif(SHUTTLE)	
-Add_subdirectory(LHAPDF) 
-Add_subdirectory(HIJING) 
-Add_subdirectory(MICROCERN) 
-Add_subdirectory(HERWIG) 
-list(APPEND MODULES LHAPDF HIJING MICROCERN HERWIG)
-if(PYTHIA6)
-Add_subdirectory(PYTHIA6)
-list(APPEND MODULES PYTHIA6)
-endif(PYTHIA6)
-Add_subdirectory(ALIROOT)
-add_subdirectory(test)
-add_test ("Aliroot_executable" aliroot -q) 
-#copy testing files
-configure_file("CTestCustom.ctest" "${PROJECT_BINARY_DIRECTORY}" COPYONLY)
+  list(APPEND ALIROOTMODULES SHUTTLE)
+endif(SHUTTLE)
 
-if(DA)
-include(cmakeDA)
-endif(DA)
+# Additional Modules
+# ------------------------------
+list(APPEND ALIROOTMODULES TUHKMgen EPOS)
+
+# EVE
+# ------------------------------
+ALICE_RootConfig(EVE --has-opengl)
+if(NOT EVE STREQUAL "no")
+  list(APPEND ALIROOTMODULES EVE)
+endif(NOT EVE STREQUAL "no")
+
+# CERN Modules
+# ------------------------------
+set(CERNMODULES LHAPDF HIJING MICROCERN HERWIG)
+
+# Check for Pythia 6
+if(EXISTS ${ROOTINCDIR}/TPythia6.h)
+  set(PYTHIA6 TRUE)
+  list(APPEND CERNMODULES PYTHIA6 RALICE EVGEN)
+else()
+  message(FATAL_ERROR "ROOT must have Pythia6 enabled !")
+endif(EXISTS ${ROOTINCDIR}/TPythia6.h)
+
+# Set Final list of modules 
+set(MODULES ${ALIROOTMODULES} ${CERNMODULES} ALIROOT)
+
+# Set Module directories
+set(MODDIRS ${MODULES})
+
+# Libraries for Linking
+# ------------------------------
+set(ALILIBS MUON TPC PMD TRD FMD TOF ITS PHOS ACORDE HMPID VZERO ZDC STRUCT T0 EVGEN STEER TRIGGER)
+set(LIBS ${ROOTCLIBS} ${ROOTPLIBS} ${SYSLIBS})
+
+# Configure ARVerion.h
+# ------------------------------
+if(Subversion_FOUND)
+  Subversion_WC_INFO(${PROJECT_SOURCE_DIR} PROJECT)
+  set(ALIROOT_SVN_REVISION ${PROJECT_WC_REVISION})
+  set(ALIROOT_SVN_BRANCH ${PROJECT_WC_URL})
+  string(REGEX MATCH "[^/]+$" ALIROOT_SVN_BRANCH ${ALIROOT_SVN_BRANCH})
+  message(STATUS "Aliroot Revision - ${ALIROOT_SVN_REVISION} Branch - ${ALIROOT_SVN_BRANCH}")
+  if(EXISTS ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
+    file(REMOVE ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
+  endif(EXISTS ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h @ONLY)
+endif(Subversion_FOUND)
+
+#--------------------------------------------------------------------------------#
+# Build Modules                                                                  #
+#--------------------------------------------------------------------------------#
+
+# Module Variables
+# ------------------------------
+set(ALLLIBS)
+set(ALLEXECS)
+set(INCLUDEFILES)
+set(BINLIBS)
+set(EXPORTFILES)
+
+# Top Level Build Targets
+# ------------------------------
+
+add_custom_target(alilibs-static)
+add_custom_target(include-headers)
+add_custom_target(DA-all)
+
+
+# Add Modules
+# ------------------------------
+foreach(MODULE ${MODDIRS})
+  set(${MODULE}ALIBS)
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/Module.tmp ${PROJECT_SOURCE_DIR}/${MODULE}/CMakeLists.txt @ONLY)
+  add_custom_target(${MODULE}-all ALL)
+  add_custom_target(${MODULE}-all-static)
+  add_dependencies(alilibs-static "${MODULE}-static")
+  add_subdirectory(${MODULE})
+endforeach(MODULE)
+
+if(DATE_FOUND AND AMORE_FOUND)
+  include (CMakeDA)
+endif(DATE_FOUND AND AMORE_FOUND)
+
+#--------------------------------------------------------------------------------#
+# Additional Targets                                                             #
+#--------------------------------------------------------------------------------#
+
+# AliMdc RPM
+# ------------------------------
+
+include (InstallRequiredSystemLibraries)
+include (CPack)
+

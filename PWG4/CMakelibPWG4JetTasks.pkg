@@ -1,0 +1,42 @@
+#--------------------------------------------------------------------------------#
+# Package File for PWG4JetTasks                                                  #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS  JetTasks/AliAnalysisTaskUE.cxx JetTasks/AliHistogramsUE.cxx JetTasks/AliAnalyseUE.cxx JetTasks/AliAnalysisTaskJetSpectrum.cxx JetTasks/AliAnalysisTaskJetSpectrum2.cxx JetTasks/AliAnalysisHelperJetTasks.cxx JetTasks/AliAnalysisTaskJetServices.cxx JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx JetTasks/AliJetSpectrumUnfolding.cxx JetTasks/AliAnalysisTaskJFSystematics.cxx JetTasks/AliAnalysisTaskJetCorrections.cxx JetTasks/AliAnalysisTaskThreeJets.cxx JetTasks/AliPWG4HighPtQATPConly.cxx JetTasks/AliPWG4HighPtQAMC.cxx JetTasks/AliPWG4HighPtSpectra.cxx JetTasks/AliPWG4CosmicCandidates.cxx JetTasks/AliAnalysisTaskJetChem.cxx JetTasks/AliAnalysisTaskFragmentationFunction.cxx JetTasks/AliAnalysisTaskMinijet.cxx JetTasks/AliUEHist.cxx JetTasks/AliUEHistograms.cxx JetTasks/AliAnalyseLeadingTrackUE.cxx JetTasks/AliAnalysisTaskLeadingTrackUE.cxx JetTasks/AliAnalysisTaskQGSep.cxx JetTasks/AliAnalysisTaskJetsTM.cxx)
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  PWG4JetTasksLinkDef.h)
+
+string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
+
+set ( EINCLUDE ANALYSIS JETAN CORRFW PWG4/JetTasks)
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+	
+			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lJETAN -lCORRFW -L${ROOTLIBDIR} -lEG)
+
+endif( ALICE_TARGET STREQUAL "win32gcc")

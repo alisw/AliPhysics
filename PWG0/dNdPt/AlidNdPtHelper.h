@@ -40,9 +40,11 @@ class AlidNdPtHelper : public TObject
 {
   public:
     enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS, kTPCSPDvtx, kTPCSPDvtxUpdate, kTPCTrackSPDvtx, kTPCTrackSPDvtxUpdate, kTPCITSHybrid, kTPCITSHybridTrackSPDvtx, kTPCITSHybridTrackSPDvtxDCArPt, kITSStandAloneTrackSPDvtx,kITSStandAloneTPCTrackSPDvtx, kMCRec };
+
     enum ParticleMode { kAllPart = 0, kMCPion, kMCKaon, kMCProton, kPlus, kMinus, kCosmic, kBackgroundTrack, kMCRest, kVZEROCase1, kVZEROCase2};
 
-    enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kCorrection, kSystematics };
+    enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kAnalysisPbPb , kCorrection, kSystematics };
+
     enum TrackObject  { kInvalidTrackObject = -1, kAllTracks = 0, kAccTracks, kRecTracks, kMCTracks };
     enum EventObject  { kInvalidEventObject = -1, kAllEvents = 0, kTriggeredEvents, kAccEvents, kRecEvents, kMCEvents };
     enum CutSteps     { kCutSteps = 3 };

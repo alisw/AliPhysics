@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -27,12 +27,14 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TList;
+
 class AliESDEvent;
 class AliESDfriend;
 class AliESDfriendTrack;
 class AliVEvent;
 class AliESDtrackCuts;
 class AliESDtrack;
+
 
 class AliPWG4HighPtQATPConly: public AliAnalysisTask {
 

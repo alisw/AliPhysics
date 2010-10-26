@@ -54,13 +54,19 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 // SETTING THE CUTS
 
-//----------For RP selection----------
+//---------Data selection----------
 //kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet
 AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
 AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
 
-const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype)
-const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype)
+//---------Parameter mixing--------
+//kPure - no mixing, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt
+AliFlowTrackCuts::trackParameterMix rpmix = AliFlowTrackCuts::kPure;
+AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
+
+
+const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype);
+const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype);
 
 void AddTaskFlowCentrality( Int_t refMultMin=0,
                             Int_t refMultMax=1e10,
@@ -69,14 +75,18 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
 
   //===========================================================================
   printf("CREATE CUTS\n");
-  
+  cout << "Used for RP: "<< rptypestr << endl;  
+  cout << "Used for POI: "<< poitypestr << endl;  
   // EVENTS CUTS:
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts();
   cutsEvent->SetRefMultRange(refMultMin,refMultMax);
+  //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
+  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
-  cutsRP->SetParamType(rptype)
+  cutsRP->SetParamType(rptype);
+  cutsRP->SetParamMix(rpmix);
   cutsRP->SetPtRange(0.2,10.);
   cutsRP->SetEtaRange(-0.7,0.7);
   cutsRP->SetRequireCharge(kTRUE);
@@ -95,7 +105,8 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts();
-  cutsPOI->SetParamType(poitype)
+  cutsPOI->SetParamType(poitype);
+  cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(0.2,10.);
   cutsPOI->SetEtaRange(-0.7,0.7);
   cutsPOI->SetRequireCharge(kTRUE);

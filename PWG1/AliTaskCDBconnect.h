@@ -41,6 +41,7 @@ public:
   virtual void              LocalInit();
   virtual Bool_t            Notify();
   virtual void              Exec(Option_t *option);
+  virtual void              Terminate(Option_t *option);
     
   ClassDef(AliTaskCDBconnect,1)  // Class giving CDB connectivity
 };

@@ -45,9 +45,12 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;}
   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;}
+  void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
   Bool_t GetUsePid4Distr() const {return fUsePid4Distr;}
+  Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
+
  private:
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
@@ -69,9 +72,9 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Int_t*    fTotPosPairs;         //[fNPtBins]
   Int_t*    fTotNegPairs;         //[fNPtBins] 
   Double_t  fLsNormalization;     //  normalization
+  Int_t     fFillOnlyD0D0bar;     // flag to fill mass histogram with D0/D0bar only (0 = fill with both, 1 = fill with D0 only, 2 = fill with D0bar only)
 
-
-  ClassDef(AliAnalysisTaskSED0Mass,8); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,9); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif

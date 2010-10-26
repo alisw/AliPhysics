@@ -92,54 +92,54 @@ class AliStarTrackCuts : public TNamed {
   Float_t GetFitRatioMin() const {return fFitRatioMin;};
 
  private:
-  Bool_t   fCutID;
-  Int_t fIDMax;
-  Int_t fIDMin;
-  Bool_t   fCutCharge;
-  Int_t fChargeMax;
-  Int_t fChargeMin;
-  Bool_t   fCutEta;
-  Float_t fEtaMax;
-  Float_t fEtaMin;
-  Bool_t   fCutPhi;
-  Float_t fPhiMax;
-  Float_t fPhiMin;
-  Bool_t   fCutPt;
-  Float_t fPtMax;
-  Float_t fPtMin;
-  Bool_t   fCutDCA;
-  Float_t fDCAMax;
-  Float_t fDCAMin;
-  Bool_t   fCutNHits;
-  Int_t fNHitsMax;
-  Int_t fNHitsMin;
-  Bool_t   fCutNHitsFit;
-  Int_t fNHitsFitMax;
-  Int_t fNHitsFitMin;
-  Bool_t   fCutNHitsPoss;
-  Int_t fNHitsPossMax;
-  Int_t fNHitsPossMin;
-  Bool_t   fCutNHitsDedx;
-  Int_t fNHitsDedxMax;
-  Int_t fNHitsDedxMin;
-  Bool_t   fCutdEdx;
-  Float_t fdEdxMax;
-  Float_t fdEdxMin;
-  Bool_t   fCutNSigElect;
-  Float_t fNSigElectMax;
-  Float_t fNSigElectMin;
-  Bool_t   fCutNSigPi;
-  Float_t fNSigPiMax;
-  Float_t fNSigPiMin;
-  Bool_t   fCutNSigK;
-  Float_t fNSigKMax;
-  Float_t fNSigKMin;
-  Bool_t   fCutNSigProton;
-  Float_t fNSigProtonMax;
-  Float_t fNSigProtonMin;
-  Bool_t  fCutFitRatio;
-  Float_t fFitRatioMax;
-  Float_t fFitRatioMin;
+  Bool_t   fCutID;  //cut on id
+  Int_t fIDMax;     //id max
+  Int_t fIDMin;     //id min
+  Bool_t   fCutCharge;  //cut on charge
+  Int_t fChargeMax;     //max charge
+  Int_t fChargeMin;     //min charge
+  Bool_t   fCutEta;     //cut on eta
+  Float_t fEtaMax;      //eta max
+  Float_t fEtaMin;      //eta min
+  Bool_t   fCutPhi;     //cut on phi
+  Float_t fPhiMax;      //phi max
+  Float_t fPhiMin;      //phi min
+  Bool_t   fCutPt;      //cut on pt
+  Float_t fPtMax;       //pt max
+  Float_t fPtMin;       //pt min
+  Bool_t   fCutDCA;     //cut dca
+  Float_t fDCAMax;      //max dca
+  Float_t fDCAMin;      //min dca
+  Bool_t   fCutNHits;   //cut nhits
+  Int_t fNHitsMax;      //max nhits
+  Int_t fNHitsMin;      //min nhits
+  Bool_t   fCutNHitsFit;//cut nhistfit
+  Int_t fNHitsFitMax;   //nhistfit max
+  Int_t fNHitsFitMin;   //nhistfit min
+  Bool_t   fCutNHitsPoss;  //cut nhitsposs
+  Int_t fNHitsPossMax;     //nhitsposs max
+  Int_t fNHitsPossMin;     //nhitsposs min
+  Bool_t   fCutNHitsDedx;  //cut nhitsdedx
+  Int_t fNHitsDedxMax;     //nhitsdedx max
+  Int_t fNHitsDedxMin;     //nhits min
+  Bool_t   fCutdEdx;       //cut dedx
+  Float_t fdEdxMax;        //dedx max
+  Float_t fdEdxMin;        //dedx min
+  Bool_t   fCutNSigElect;  //cut nsigelect
+  Float_t fNSigElectMax;   //nsigelect max
+  Float_t fNSigElectMin;   //nsigelect min
+  Bool_t   fCutNSigPi;     //cut nsigpi
+  Float_t fNSigPiMax;      //max nsigpi
+  Float_t fNSigPiMin;      //min nsigpi
+  Bool_t   fCutNSigK;      //cut nsigk
+  Float_t fNSigKMax;       //max nsigk
+  Float_t fNSigKMin;       //min nsigk
+  Bool_t   fCutNSigProton; //cut nsigproton
+  Float_t fNSigProtonMax;  //max nsigproton
+  Float_t fNSigProtonMin;  //min nsigproton
+  Bool_t  fCutFitRatio;    //cut fitratio
+  Float_t fFitRatioMax;    //max fitratio
+  Float_t fFitRatioMin;    //min fitratio
 
   ClassDef(AliStarTrackCuts,1)
 };

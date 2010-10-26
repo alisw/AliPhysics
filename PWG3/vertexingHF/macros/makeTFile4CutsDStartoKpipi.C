@@ -18,7 +18,7 @@
 
 
 //macro to make a .root file which contains an AliRDHFCutsDStartoKpipi for AliAnalysisTaskSEDStarSpectra task and CF task
-void makeInputAliAnalysisTaskSEStarSpectra(){
+void makeInputAliAnalysisTaskSEDStarSpectra(){
 
   AliRDHFCutsDStartoKpipi* RDHFDStartoKpipi=new AliRDHFCutsDStartoKpipi();
   RDHFDStartoKpipi->SetName("DStartoKpipiCuts");
@@ -29,7 +29,7 @@ void makeInputAliAnalysisTaskSEStarSpectra(){
   //default
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4); // default is 5
+  //esdTrackCuts->SetMinNClustersITS(4); // default is 5
   //esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny); 
@@ -43,7 +43,7 @@ void makeInputAliAnalysisTaskSEStarSpectra(){
   //default
   esdSoftPicuts->SetRequireTPCRefit(kFALSE);
   esdSoftPicuts->SetRequireITSRefit(kFALSE);
-  esdSoftPicuts->SetMinNClustersITS(4); // default is 4
+  //esdSoftPicuts->SetMinNClustersITS(4); // default is 4
   esdSoftPicuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					  AliESDtrackCuts::kAny); //test d0 asimmetry
   esdSoftPicuts->SetPtRange(0.0,1.e10);
@@ -53,20 +53,24 @@ void makeInputAliAnalysisTaskSEStarSpectra(){
   RDHFDStartoKpipi->AddTrackCutsSoftPi(esdSoftPicuts);
 
   const Int_t nvars=14;
-  const Int_t nptbins=9;
+  const Int_t nptbins=13;
   
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];
-  ptbins[0]=0.7;
-  ptbins[1]=1.;
-  ptbins[2]=2.;
-  ptbins[3]=3.;
-  ptbins[4]=5.;
-  ptbins[5]=8.; 
-  ptbins[6]=12.;
-  ptbins[7]=18.;
-  ptbins[8]=25.;
-  ptbins[9]=9999.;
+  ptbins[0]=0.;
+  ptbins[1]=0.5;
+  ptbins[2]=1.;
+  ptbins[3]=2.;
+  ptbins[4]=3.;
+  ptbins[5]=4.;
+  ptbins[6]=5.; 
+  ptbins[7]=6.;
+  ptbins[8]=8.;
+  ptbins[9]=12.;
+  ptbins[10]=16.;
+  ptbins[11]=20.;
+  ptbins[12]=25.;
+  ptbins[13]=999.;
 
   RDHFDStartoKpipi->SetPtBins(nptbins+1,ptbins);
   
@@ -76,7 +80,8 @@ void makeInputAliAnalysisTaskSEStarSpectra(){
   for(Int_t iv=0;iv<nvars;iv++){
     rdcutsvalmine[iv]=new Float_t[nptbins];
   }
-  //0-1
+
+  //0-0.5
   rdcutsvalmine[0][0]=0.7;
   rdcutsvalmine[1][0]=0.022;
   rdcutsvalmine[2][0]=0.7;
@@ -86,102 +91,102 @@ void makeInputAliAnalysisTaskSEStarSpectra(){
   rdcutsvalmine[6][0]=0.05;
   rdcutsvalmine[7][0]=-0.00002;
   rdcutsvalmine[8][0]=0.85;
-  rdcutsvalmine[9][0]=0.3.;
+  rdcutsvalmine[9][0]=0.3;
   rdcutsvalmine[10][0]=0.1;
   rdcutsvalmine[11][0]=0.05;
   rdcutsvalmine[12][0]=100.;
   rdcutsvalmine[13][0]=0.5;
-  //1-2
+ //0.5-1
   rdcutsvalmine[0][1]=0.7;
-  rdcutsvalmine[1][1]=0.04;
-  rdcutsvalmine[2][1]=0.8;
-  rdcutsvalmine[3][1]=0.3;
-  rdcutsvalmine[4][1]=0.3;
-  rdcutsvalmine[5][1]=0.08;
-  rdcutsvalmine[6][1]=0.08;
-  rdcutsvalmine[7][1]=-0.00036;
-  rdcutsvalmine[8][1]=0.82;
+  rdcutsvalmine[1][1]=0.022;
+  rdcutsvalmine[2][1]=0.7;
+  rdcutsvalmine[3][1]=0.21;
+  rdcutsvalmine[4][1]=0.21;
+  rdcutsvalmine[5][1]=0.05;
+  rdcutsvalmine[6][1]=0.05;
+  rdcutsvalmine[7][1]=-0.00016;
+  rdcutsvalmine[8][1]=0.85;
   rdcutsvalmine[9][1]=0.3;
   rdcutsvalmine[10][1]=0.1;
   rdcutsvalmine[11][1]=0.05;
   rdcutsvalmine[12][1]=100.;
   rdcutsvalmine[13][1]=0.5;
-  //2-3
+  //1-2
   rdcutsvalmine[0][2]=0.7;
-  rdcutsvalmine[1][2]=0.02;
+  rdcutsvalmine[1][2]=0.04;
   rdcutsvalmine[2][2]=0.8;
   rdcutsvalmine[3][2]=0.7;
   rdcutsvalmine[4][2]=0.7;
-  rdcutsvalmine[5][2]=0.08;
-  rdcutsvalmine[6][2]=0.08;
-  rdcutsvalmine[7][2]=-0.00016;
-  rdcutsvalmine[8][2]=0.90;
+  rdcutsvalmine[5][2]=0.04;
+  rdcutsvalmine[6][2]=0.04;
+  rdcutsvalmine[7][2]=-0.00036;
+  rdcutsvalmine[8][2]=0.82;
   rdcutsvalmine[9][2]=0.3;
   rdcutsvalmine[10][2]=0.1;
   rdcutsvalmine[11][2]=0.05;
   rdcutsvalmine[12][2]=100.;
   rdcutsvalmine[13][2]=0.5;
-  //3-5
+  //2-3
   rdcutsvalmine[0][3]=0.7;
-  rdcutsvalmine[1][3]=0.05;
+  rdcutsvalmine[1][3]=0.02;
   rdcutsvalmine[2][3]=0.8;
-  rdcutsvalmine[3][3]=1.;
-  rdcutsvalmine[4][3]=1.;
-  rdcutsvalmine[5][3]=0.042;
-  rdcutsvalmine[6][3]=0.056;
-  rdcutsvalmine[7][3]=-0.000065;
-  rdcutsvalmine[8][3]=0.9;
+  rdcutsvalmine[3][3]=0.7;
+  rdcutsvalmine[4][3]=0.7;
+  rdcutsvalmine[5][3]=0.05;
+  rdcutsvalmine[6][3]=0.05;
+  rdcutsvalmine[7][3]=-0.00016;
+  rdcutsvalmine[8][3]=0.90;
   rdcutsvalmine[9][3]=0.3;
   rdcutsvalmine[10][3]=0.1;
   rdcutsvalmine[11][3]=0.05;
   rdcutsvalmine[12][3]=100.;
   rdcutsvalmine[13][3]=0.5;
-  //5-8
+  //3-4
   rdcutsvalmine[0][4]=0.7;
-  rdcutsvalmine[1][4]=0.08;
-  rdcutsvalmine[2][4]=0.9;
-  rdcutsvalmine[3][4]=1.2;
-  rdcutsvalmine[4][4]=1.2;
-  rdcutsvalmine[5][4]=0.07;
-  rdcutsvalmine[6][4]=0.07;
-  rdcutsvalmine[7][4]=0.0001;
+  rdcutsvalmine[1][4]=0.05;
+  rdcutsvalmine[2][4]=0.8;
+  rdcutsvalmine[3][4]=1.;
+  rdcutsvalmine[4][4]=1.;
+  rdcutsvalmine[5][4]=0.042;
+  rdcutsvalmine[6][4]=0.056;
+  rdcutsvalmine[7][4]=-0.000065;
   rdcutsvalmine[8][4]=0.9;
   rdcutsvalmine[9][4]=0.3;
   rdcutsvalmine[10][4]=0.1;
   rdcutsvalmine[11][4]=0.05;
   rdcutsvalmine[12][4]=100.;
   rdcutsvalmine[13][4]=0.5;
-  //8-12
+  //4-5
   rdcutsvalmine[0][5]=0.7;
-  rdcutsvalmine[1][5]=0.1;
-  rdcutsvalmine[2][5]=1.0;
-  rdcutsvalmine[3][5]=1.;
-  rdcutsvalmine[4][5]=1.;
-  rdcutsvalmine[5][5]=0.08;
-  rdcutsvalmine[6][5]=0.08;
-  rdcutsvalmine[7][5]=0.0004;
+  rdcutsvalmine[1][5]=0.08;
+  rdcutsvalmine[2][5]=0.9;
+  rdcutsvalmine[3][5]=1.2;
+  rdcutsvalmine[4][5]=1.2;
+  rdcutsvalmine[5][5]=0.07;
+  rdcutsvalmine[6][5]=0.07;
+  rdcutsvalmine[7][5]=0.0001;
   rdcutsvalmine[8][5]=0.9;
   rdcutsvalmine[9][5]=0.3;
   rdcutsvalmine[10][5]=0.1;
   rdcutsvalmine[11][5]=0.05;
-  rdcutsvalmine[12][5]=100000.;
+  rdcutsvalmine[12][5]=100.;
   rdcutsvalmine[13][5]=0.5;
-  //12-18
+  //5-6
   rdcutsvalmine[0][6]=0.7;
   rdcutsvalmine[1][6]=0.1;
   rdcutsvalmine[2][6]=1.0;
   rdcutsvalmine[3][6]=1.;
   rdcutsvalmine[4][6]=1.;
-  rdcutsvalmine[5][6]=0.1;
-  rdcutsvalmine[6][6]=0.1;
+  rdcutsvalmine[5][6]=0.08;
+  rdcutsvalmine[6][6]=0.08;
   rdcutsvalmine[7][6]=0.0005;
-  rdcutsvalmine[8][6]=0.9;
+  rdcutsvalmine[8][6]=0.8;
   rdcutsvalmine[9][6]=0.3;
   rdcutsvalmine[10][6]=0.1;
   rdcutsvalmine[11][6]=0.05;
-  rdcutsvalmine[12][6]=100.;
+  rdcutsvalmine[12][6]=100000.;
   rdcutsvalmine[13][6]=0.5;
-  //18-25
+  //6-8
   rdcutsvalmine[0][7]=0.7;
   rdcutsvalmine[1][7]=0.1;
   rdcutsvalmine[2][7]=1.0;
@@ -190,27 +195,87 @@ void makeInputAliAnalysisTaskSEStarSpectra(){
   rdcutsvalmine[5][7]=0.1;
   rdcutsvalmine[6][7]=0.1;
   rdcutsvalmine[7][7]=0.001;
-  rdcutsvalmine[8][7]=0.9;
+  rdcutsvalmine[8][7]=0.7;
   rdcutsvalmine[9][7]=0.3;
   rdcutsvalmine[10][7]=0.1;
   rdcutsvalmine[11][7]=0.05;
   rdcutsvalmine[12][7]=100.;
   rdcutsvalmine[13][7]=0.5;
-  //>25
+  //8-12
   rdcutsvalmine[0][8]=0.7;
   rdcutsvalmine[1][8]=0.1;
   rdcutsvalmine[2][8]=1.0;
-  rdcutsvalmine[3][8]=.3;
-  rdcutsvalmine[4][8]=.3;
-  rdcutsvalmine[5][8]=0.15;
-  rdcutsvalmine[6][8]=0.15;
-  rdcutsvalmine[7][8]=0.01;
-  rdcutsvalmine[8][8]=0.8;
+  rdcutsvalmine[3][8]=1.;
+  rdcutsvalmine[4][8]=1.;
+  rdcutsvalmine[5][8]=0.1;
+  rdcutsvalmine[6][8]=0.1;
+  rdcutsvalmine[7][8]=0.006;
+  rdcutsvalmine[8][8]=0.7;
   rdcutsvalmine[9][8]=0.3;
   rdcutsvalmine[10][8]=0.1;
   rdcutsvalmine[11][8]=0.05;
   rdcutsvalmine[12][8]=100.;
   rdcutsvalmine[13][8]=0.5;
+  //12-16
+  rdcutsvalmine[0][9]=0.7;
+  rdcutsvalmine[1][9]=0.1;
+  rdcutsvalmine[2][9]=1.0;
+  rdcutsvalmine[3][9]=.3;
+  rdcutsvalmine[4][9]=.3;
+  rdcutsvalmine[5][9]=0.15;
+  rdcutsvalmine[6][9]=0.15;
+  rdcutsvalmine[7][9]=0.01;
+  rdcutsvalmine[8][9]=0.7;
+  rdcutsvalmine[9][9]=0.3;
+  rdcutsvalmine[10][9]=0.1;
+  rdcutsvalmine[11][9]=0.05;
+  rdcutsvalmine[12][9]=100.;
+  rdcutsvalmine[13][9]=0.5;
+  //16-20
+  rdcutsvalmine[0][10]=0.7;
+  rdcutsvalmine[1][10]=0.2;
+  rdcutsvalmine[2][10]=1.0;
+  rdcutsvalmine[3][10]=.3;
+  rdcutsvalmine[4][10]=.3;
+  rdcutsvalmine[5][10]=0.15;
+  rdcutsvalmine[6][10]=0.15;
+  rdcutsvalmine[7][10]=0.01;
+  rdcutsvalmine[8][10]=0.7;
+  rdcutsvalmine[9][10]=0.3;
+  rdcutsvalmine[10][10]=0.1;
+  rdcutsvalmine[11][10]=0.05;
+  rdcutsvalmine[12][10]=100.;
+  rdcutsvalmine[13][10]=0.5;
+  //20-24
+  rdcutsvalmine[0][11]=0.7;
+  rdcutsvalmine[1][11]=0.2;
+  rdcutsvalmine[2][11]=1.0;
+  rdcutsvalmine[3][11]=.3;
+  rdcutsvalmine[4][11]=.3;
+  rdcutsvalmine[5][11]=0.15;
+  rdcutsvalmine[6][11]=0.15;
+  rdcutsvalmine[7][11]=0.01;
+  rdcutsvalmine[8][11]=0.7;
+  rdcutsvalmine[9][11]=0.3;
+  rdcutsvalmine[10][11]=0.1;
+  rdcutsvalmine[11][11]=0.05;
+  rdcutsvalmine[12][11]=100.;
+  rdcutsvalmine[13][11]=0.5;
+  //>25
+  rdcutsvalmine[0][12]=0.7;
+  rdcutsvalmine[1][12]=0.6;
+  rdcutsvalmine[2][12]=1.0;
+  rdcutsvalmine[3][12]=.4;
+  rdcutsvalmine[4][12]=.4;
+  rdcutsvalmine[5][12]=0.5;
+  rdcutsvalmine[6][12]=0.5;
+  rdcutsvalmine[7][12]=0.1;
+  rdcutsvalmine[8][12]=0.7;
+  rdcutsvalmine[9][12]=0.3;
+  rdcutsvalmine[10][12]=0.1;
+  rdcutsvalmine[11][12]=0.05;
+  rdcutsvalmine[12][12]=100.;
+  rdcutsvalmine[13][12]=0.5;
   
 
   RDHFDStartoKpipi->SetCuts(nvars,nptbins,rdcutsvalmine);

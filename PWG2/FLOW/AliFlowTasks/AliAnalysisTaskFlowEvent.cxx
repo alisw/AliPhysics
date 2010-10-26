@@ -275,11 +275,15 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       if (!fCutsEvent->IsSelected(InputEvent())) return;
     }
 
-    fCutsRP->SetMCevent( MCEvent() );
+    //first attach all possible information to the cuts
+    fCutsRP->SetEvent( InputEvent() );  //attach event
+    fCutsRP->SetMCevent( MCEvent() );   //attach mc truth
+    fCutsPOI->SetEvent( InputEvent() );
     fCutsPOI->SetMCevent( MCEvent() );
-    flowEvent = new AliFlowEvent( InputEvent(), fCutsRP, fCutsPOI );
+    //then make the event
+    flowEvent = new AliFlowEvent( fCutsRP, fCutsPOI );
     if (myESD)
-      flowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity());
+      flowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent()));
     if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
   }
 

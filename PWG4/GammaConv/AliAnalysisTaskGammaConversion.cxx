@@ -329,7 +329,7 @@ void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
 
 // Using standard function  for setting Cuts
   Bool_t selectPrimaries=kTRUE;
-  fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
+  fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
   fEsdTrackCuts->SetEtaRange(-0.8, 0.8);
   fEsdTrackCuts->SetPtRange(0.15);
   

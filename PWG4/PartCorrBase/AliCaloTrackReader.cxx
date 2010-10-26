@@ -648,8 +648,8 @@ void AliCaloTrackReader::FillInputEMCAL() {
             printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
                    momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
           
-          Float_t pos[3];
-          clus->GetPosition(pos);
+          //Float_t pos[3];
+          //clus->GetPosition(pos);
           //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
           
           //Recalibrate the cluster energy 
@@ -657,6 +657,9 @@ void AliCaloTrackReader::FillInputEMCAL() {
             Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
             clus->SetE(energy);
             //printf("Recalibrated Energy %f\n",clus->E());  
+            GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
+            GetCaloUtils()->RecalculateClusterPID(clus);
+
           }
           
           //Correct non linearity
@@ -668,7 +671,7 @@ void AliCaloTrackReader::FillInputEMCAL() {
           //Recalculate cluster position
           if(GetCaloUtils()->IsRecalculationOfClusterPositionOn()){
             GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus); 
-            clus->GetPosition(pos);
+            //clus->GetPosition(pos);
             //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
           }
           

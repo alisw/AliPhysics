@@ -883,8 +883,8 @@ AliAODMCParticle* AliAnaBtag::GetMCParticle(Int_t ipart)
   if(GetReader()->ReadAODMCParticles()){
     //Get the list of MC particles                                                                                                                           
     mcparticles0 = GetReader()->GetAODMCParticles(0);
-    if(!mcparticles0 && GetDebug() > 0) {
-      printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+    if(!mcparticles0) {
+      if(GetDebug() > 0)printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
     }
     else{
       Int_t npart0 = mcparticles0->GetEntriesFast();

@@ -582,70 +582,30 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 }
 
 //-----------------------------------------------------------------------
-AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
-                            AliFlowTrackCuts* rpCuts,
+AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
                             AliFlowTrackCuts* poiCuts ):
   AliFlowEventSimple(20)
 {
   //Fills the event from a vevent: AliESDEvent,AliAODEvent,AliMCEvent
-
-  if (!rpCuts || !poiCuts) return;
-
-  AliFlowTrackCuts::trackParameterType sourceRP = rpCuts->GetParamType();
-  AliFlowTrackCuts::trackParameterType sourcePOI = poiCuts->GetParamType();
-
-  //MC case is special: handle it
-  //if input event empty do MC analysis
-  AliVEvent* eventRP = inputEvent;
-  AliVEvent* eventPOI = inputEvent;
-  if (!inputEvent)
-  {
-    eventRP = rpCuts->GetMCevent();
-    eventPOI = poiCuts->GetMCevent();
-  }
-  if (sourceRP==AliFlowTrackCuts::kMC) eventRP = rpCuts->GetMCevent();
-  if (sourcePOI==AliFlowTrackCuts::kMC) eventPOI = poiCuts->GetMCevent();
-  
-  //if we dont have input data return
-  if (!eventRP || !eventPOI) return;
-
-  //check if we want to use tracklets, TODO: const_casts to be somehow removed!
-  AliESDEvent* esdEvent = NULL; 
-  AliMultiplicity* trackletsRP=NULL;
-  AliMultiplicity* trackletsPOI=NULL;
-  if (sourceRP==AliFlowTrackCuts::kESD_SPDtracklet)
-  { 
-    esdEvent = dynamic_cast<AliESDEvent*>(eventRP);
-    if (!esdEvent) return;
-    trackletsRP=const_cast<AliMultiplicity*>(esdEvent->GetMultiplicity());
-  }
-  if (sourcePOI==AliFlowTrackCuts::kESD_SPDtracklet)
-  { 
-    esdEvent = dynamic_cast<AliESDEvent*>(eventPOI);
-    if (!esdEvent) return;
-    trackletsPOI=const_cast<AliMultiplicity*>(esdEvent->GetMultiplicity());
-  }
-
+  //the input data needs to be attached to the cuts
   //we have two cases, if we're cutting the same collection of tracks
   //(same param type) then we can have tracks that are both rp and poi
   //in the other case we want to have two exclusive sets of rps and pois
   //e.g. one tracklets, the other PMD or global - USER IS RESPOSIBLE
   //FOR MAKING SURE THEY DONT OVERLAP OR ELSE THE SAME PARTICLE WILL BE
   //TAKEN TWICE
+
+  AliFlowTrackCuts::trackParameterType sourceRP = rpCuts->GetParamType();
+  AliFlowTrackCuts::trackParameterType sourcePOI = poiCuts->GetParamType();
+
+  if (!rpCuts || !poiCuts) return;
   if (sourceRP==sourcePOI)
   {
     //loop over tracks
-    //check the number of particles first
-    Int_t numberOfTracks = 0;
-    if (trackletsRP) numberOfTracks = trackletsRP->GetNumberOfTracklets();
-    else numberOfTracks = eventRP->GetNumberOfTracks();
-
-    for (Int_t i=0; i<numberOfTracks; i++)
+    for (Int_t i=0; i<rpCuts->GetNumberOfInputObjects(); i++)
     {
       //get input object (particle)
-      TObject* particle = NULL;
-      if (trackletsRP) particle = trackletsRP;
-      else particle = eventRP->GetTrack(i);
+      TObject* particle = rpCuts->GetInputObject(i);
 
       Bool_t rp = rpCuts->IsSelected(particle,i);
       Bool_t poi = poiCuts->IsSelected(particle,i);
@@ -654,22 +614,18 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
 
       //make new AliFLowTrack
       AliFlowTrack* pTrack = NULL;
-      if (rp&&poi)
-      {
-        pTrack = rpCuts->MakeFlowTrack();
-        pTrack->TagRP(); fNumberOfRPs++;
-        pTrack->TagPOI();
-      }
-      else
       if (rp)
       {
         pTrack = rpCuts->MakeFlowTrack();
+        if (!pTrack) continue;
         pTrack->TagRP(); fNumberOfRPs++;
+        if (poi) pTrack->TagPOI();
       }
       else
       if (poi)
       {
         pTrack = poiCuts->MakeFlowTrack();
+        if (!pTrack) continue;
         pTrack->TagPOI();
       }
 
@@ -680,33 +636,28 @@ AliFlowEvent::AliFlowEvent( AliVEvent* inputEvent,
   {
     //here we have two different sources of particles, so we fill
     //them independently
+    AliFlowTrack* pTrack = NULL;
     //RP
-    Int_t numberOfRPs = 0;
-    if (trackletsRP) numberOfRPs = trackletsRP->GetNumberOfTracklets();
-    else numberOfRPs = eventRP->GetNumberOfTracks();
-    for (Int_t i=0; i<numberOfRPs; i++)
+    for (Int_t i=0; i<rpCuts->GetNumberOfInputObjects(); i++)
     {
-      TObject* particle = NULL;
-      if (trackletsRP) particle = trackletsRP;
-      else particle = eventRP->GetTrack(i);
+      TObject* particle = rpCuts->GetInputObject(i);
       Bool_t rp = rpCuts->IsSelected(particle,i);
       if (!rp) continue;
-      AliFlowTrack* pTrack = rpCuts->MakeFlowTrack();
+      pTrack = rpCuts->MakeFlowTrack();
+      if (!pTrack) continue;
       pTrack->TagRP(); fNumberOfRPs++;
+      AddTrack(pTrack);
     }
     //POI
-    Int_t numberOfPOIs = 0;
-    if (trackletsPOI) numberOfPOIs = trackletsPOI->GetNumberOfTracklets();
-    else numberOfPOIs = eventPOI->GetNumberOfTracks();
-    for (Int_t i=0; i<numberOfPOIs; i++)
+    for (Int_t i=0; i<poiCuts->GetNumberOfInputObjects(); i++)
     {
-      TObject* particle = NULL;
-      if (trackletsPOI) particle = trackletsPOI;
-      else particle = eventPOI->GetTrack(i);
+      TObject* particle = poiCuts->GetInputObject(i);
       Bool_t poi = poiCuts->IsSelected(particle,i);
       if (!poi) continue;
-      AliFlowTrack* pTrack = poiCuts->MakeFlowTrack();
+      pTrack = poiCuts->MakeFlowTrack();
+      if (!pTrack) continue;
       pTrack->TagPOI();
+      AddTrack(pTrack);
     }
   }
 }

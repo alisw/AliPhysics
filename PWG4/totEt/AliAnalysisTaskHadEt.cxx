@@ -188,6 +188,10 @@ if (mcEvent)
 //     fMCAnalysis->FillSimHadEtMinusRawHadEtPHOSAcceptanceTPC( fRecAnalysis->GetRawEtPHOSAcceptanceTPC() );
 //     fMCAnalysis->FillSimHadEtMinusRawHadEtPHOSAcceptanceITS( fRecAnalysis->GetRawEtPHOSAcceptanceITS() );
 
+    fMCAnalysis->FillSimPiKPMinusRecoPiKPFullAcceptanceTPC(fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceTPC());
+    fMCAnalysis->FillSimPiKPMinusRecoPiKPFullAcceptanceITS(fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceITS());
+    fMCAnalysis->FillSimPiKPMinusRecoPiKPFullAcceptanceTPCNoPID(fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceTPCNoPID());
+    fMCAnalysis->FillSimPiKPMinusRecoPiKPFullAcceptanceITSNoPID(fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceITSNoPID());
 
   }
 

@@ -37,6 +37,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODJet.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliInputEventHandler.h"
 
 #include "AliAnalysisHelperJetTasks.h"
@@ -55,7 +56,6 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    : AliAnalysisTaskSE()
    ,fESD(0)
    ,fAOD(0)
-   ,fMCEvent(0)
    ,fBranchRecJets("jets")
    ,fBranchGenJets("")
    ,fTrackTypeGen(0)
@@ -220,7 +220,6 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   : AliAnalysisTaskSE(name)
   ,fESD(0)
   ,fAOD(0)
-  ,fMCEvent(0)
   ,fBranchRecJets("jets")
   ,fBranchGenJets("")
   ,fTrackTypeGen(0)
@@ -389,7 +388,6 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   : AliAnalysisTaskSE()
   ,fESD(copy.fESD)
   ,fAOD(copy.fAOD)
-  ,fMCEvent(copy.fMCEvent)
   ,fBranchRecJets(copy.fBranchRecJets)
   ,fBranchGenJets(copy.fBranchGenJets)
   ,fTrackTypeGen(copy.fTrackTypeGen)
@@ -560,7 +558,6 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     AliAnalysisTaskSE::operator=(o);
     fESD                          = o.fESD;
     fAOD                          = o.fAOD;
-    fMCEvent                      = o.fMCEvent;
     fBranchRecJets                = o.fBranchRecJets;
     fBranchGenJets                = o.fBranchGenJets;
     fTrackTypeGen                 = o.fTrackTypeGen;
@@ -735,9 +732,6 @@ AliAnalysisTaskFragmentationFunction::~AliAnalysisTaskFragmentationFunction()
   if(fJetsRecCuts)          delete fJetsRecCuts;
   if(fJetsGen)              delete fJetsGen;
   if(fJetsRecEff)           delete fJetsRecEff;
-
-  //  if(fDiJetBins)     delete fDiJetBins;
-
 }
 
 //______________________________________________________________________________________________________
@@ -763,7 +757,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::AliFragFuncHistos(const
   ,fh2Xi(0)
   ,fh2Z(0)
   ,fh1JetPt(0)
-  ,fName(name)
+  ,fNameFF(name)
 {
   // default constructor
 
@@ -788,7 +782,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::AliFragFuncHistos(const
   ,fh2Xi(copy.fh2Xi)
   ,fh2Z(copy.fh2Z)
   ,fh1JetPt(copy.fh1JetPt)
-  ,fName(copy.fName)
+  ,fNameFF(copy.fNameFF)
 {
   // copy constructor
 }
@@ -816,7 +810,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncHistos& AliAnalysisTaskFragment
     fh2Xi       = o.fh2Xi;
     fh2Z        = o.fh2Z;
     fh1JetPt    = o.fh1JetPt;
-    fName       = o.fName;
+    fNameFF     = o.fNameFF;
   }
     
   return *this;
@@ -838,10 +832,10 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::DefineHistos()
 {
   // book FF histos
 
-  fh1JetPt   = new TH1F(Form("fh1FFJetPt%s", fName.Data()),"",fNBinsJetPt,fJetPtMin,fJetPtMax);
-  fh2TrackPt = new TH2F(Form("fh2FFTrackPt%s",fName.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,fNBinsPt, fPtMin, fPtMax);
-  fh2Xi      = new TH2F(Form("fh2FFXi%s",fName.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsXi, fXiMin, fXiMax);
-  fh2Z       = new TH2F(Form("fh2FFZ%s",fName.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsZ, fZMin, fZMax);
+  fh1JetPt   = new TH1F(Form("fh1FFJetPt%s", fNameFF.Data()),"",fNBinsJetPt,fJetPtMin,fJetPtMax);
+  fh2TrackPt = new TH2F(Form("fh2FFTrackPt%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,fNBinsPt, fPtMin, fPtMax);
+  fh2Xi      = new TH2F(Form("fh2FFXi%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsXi, fXiMin, fXiMax);
+  fh2Z       = new TH2F(Form("fh2FFZ%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsZ, fZMin, fZMax);
 
   AliAnalysisTaskFragmentationFunction::SetProperties(fh1JetPt, "p_{T} [GeV/c]", "entries"); 
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2TrackPt,"jet p_{T} [GeV/c]","p_{T} [GeV/c]","entries");
@@ -895,7 +889,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::AliFragFuncQAJetHi
   ,fPhiMax(phiMax)
   ,fh2EtaPhi(0)
   ,fh1Pt(0)
-  ,fName(name)
+  ,fNameQAJ(name)
 {
   // default constructor
 }
@@ -914,7 +908,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::AliFragFuncQAJetHi
   ,fPhiMax(copy.fPhiMax)
   ,fh2EtaPhi(copy.fh2EtaPhi)
   ,fh1Pt(copy.fh1Pt)
-  ,fName(copy.fName)
+  ,fNameQAJ(copy.fNameQAJ)
 {
   // copy constructor
 }
@@ -937,7 +931,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos& AliAnalysisTaskFra
     fPhiMax   = o.fPhiMax;
     fh2EtaPhi = o.fh2EtaPhi;
     fh1Pt     = o.fh1Pt;
-    fName     = o.fName;
+    fNameQAJ  = o.fNameQAJ;
   }
   
   return *this;
@@ -957,8 +951,8 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::DefineHistos(
 {
   // book jet QA histos
 
-  fh2EtaPhi  = new TH2F(Form("fh2JetQAEtaPhi%s", fName.Data()), Form("%s: #eta - #phi distribution", fName.Data()), fNBinsEta, fEtaMin, fEtaMax, fNBinsPhi, fPhiMin, fPhiMax);
-  fh1Pt      = new TH1F(Form("fh1JetQAPt%s", fName.Data()), Form("%s: p_{T} distribution", fName.Data()), fNBinsPt, fPtMin, fPtMax);
+  fh2EtaPhi  = new TH2F(Form("fh2JetQAEtaPhi%s", fNameQAJ.Data()), Form("%s: #eta - #phi distribution", fNameQAJ.Data()), fNBinsEta, fEtaMin, fEtaMax, fNBinsPhi, fPhiMin, fPhiMax);
+  fh1Pt      = new TH1F(Form("fh1JetQAPt%s", fNameQAJ.Data()), Form("%s: p_{T} distribution", fNameQAJ.Data()), fNBinsPt, fPtMin, fPtMax);
 	
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2EtaPhi, "#eta", "#phi"); 
   AliAnalysisTaskFragmentationFunction::SetProperties(fh1Pt, "p_{T} [GeV/c]", "entries");
@@ -1002,7 +996,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::AliFragFuncQATra
   ,fh2EtaPhi(0)
   ,fh1Pt(0)
   ,fh2HighPtEtaPhi(0)
-  ,fName(name)
+  ,fNameQAT(name)
 {
   // default constructor
 }
@@ -1023,7 +1017,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::AliFragFuncQATra
   ,fh2EtaPhi(copy.fh2EtaPhi)
   ,fh1Pt(copy.fh1Pt)
   ,fh2HighPtEtaPhi(copy.fh2HighPtEtaPhi)
-  ,fName(copy.fName)
+  ,fNameQAT(copy.fNameQAT)
 {
   // copy constructor
 }
@@ -1048,7 +1042,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos& AliAnalysisTaskF
     fh2EtaPhi        = o.fh2EtaPhi;
     fh1Pt            = o.fh1Pt;
     fh2HighPtEtaPhi  = o.fh2HighPtEtaPhi;
-    fName            = o.fName;
+    fNameQAT         = o.fNameQAT;
   }
   
   return *this;
@@ -1069,9 +1063,9 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::DefineHisto
 {
   // book track QA histos
 
-  fh2EtaPhi       = new TH2F(Form("fh2TrackQAEtaPhi%s", fName.Data()), Form("%s: #eta - #phi distribution", fName.Data()), fNBinsEta, fEtaMin, fEtaMax, fNBinsPhi, fPhiMin, fPhiMax);
-  fh2HighPtEtaPhi = new TH2F(Form("fh2TrackQAHighPtEtaPhi%s", fName.Data()), Form("%s: #eta - #phi distribution for high-p_{T}", fName.Data()), fNBinsEta, fEtaMin, fEtaMax, fNBinsPhi, fPhiMin, fPhiMax);
-  fh1Pt           = new TH1F(Form("fh1TrackQAPt%s", fName.Data()), Form("%s: p_{T} distribution", fName.Data()), fNBinsPt, fPtMin, fPtMax);
+  fh2EtaPhi       = new TH2F(Form("fh2TrackQAEtaPhi%s", fNameQAT.Data()), Form("%s: #eta - #phi distribution", fNameQAT.Data()), fNBinsEta, fEtaMin, fEtaMax, fNBinsPhi, fPhiMin, fPhiMax);
+  fh2HighPtEtaPhi = new TH2F(Form("fh2TrackQAHighPtEtaPhi%s", fNameQAT.Data()), Form("%s: #eta - #phi distribution for high-p_{T}", fNameQAT.Data()), fNBinsEta, fEtaMin, fEtaMax, fNBinsPhi, fPhiMin, fPhiMax);
+  fh1Pt           = new TH1F(Form("fh1TrackQAPt%s", fNameQAT.Data()), Form("%s: p_{T} distribution", fNameQAT.Data()), fNBinsPt, fPtMin, fPtMax);
   
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2EtaPhi, "#eta", "#phi"); 
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2HighPtEtaPhi, "#eta", "#phi");
@@ -1131,7 +1125,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::AliFragFuncIntr
   ,fh2PtvsZ(0)
   ,fhnIntraJet(0)
   ,fnDim(6)
-  ,fName(name)
+  ,fNameIJ(name)
 {
   // default constructor
 
@@ -1164,7 +1158,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::AliFragFuncIntr
   ,fh2PtvsZ(copy.fh2PtvsZ)
   ,fhnIntraJet(copy.fhnIntraJet)
   ,fnDim(copy.fnDim)
-  ,fName(copy.fName)
+  ,fNameIJ(copy.fNameIJ)
 {
   // copy constructor
 }
@@ -1200,7 +1194,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos& AliAnalysisTask
     fh2PtvsZ          = o.fh2PtvsZ;
     fhnIntraJet       = o.fhnIntraJet;
     fnDim             = o.fnDim;
-    fName             = o.fName;
+    fNameIJ           = o.fNameIJ;
   }
     
   return *this;
@@ -1225,9 +1219,9 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::DefineHist
 {
   // book FF histos
 
-  fh2Theta    = new TH2F(Form("fh2IJTheta%s",fName.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,fNBinsTheta, fThetaMin, fThetaMax);
-  fh2CosTheta = new TH2F(Form("fh2IJcosTheta%s",fName.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,fNBinsCosTheta, fCosThetaMin, fCosThetaMax);
-  fh2Jt       = new TH2F(Form("fh2IJJt%s",fName.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsJt, fJtMin, fJtMax);
+  fh2Theta    = new TH2F(Form("fh2IJTheta%s",fNameIJ.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,fNBinsTheta, fThetaMin, fThetaMax);
+  fh2CosTheta = new TH2F(Form("fh2IJcosTheta%s",fNameIJ.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,fNBinsCosTheta, fCosThetaMin, fCosThetaMax);
+  fh2Jt       = new TH2F(Form("fh2IJJt%s",fNameIJ.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsJt, fJtMin, fJtMax);
 
   // Create 3D histograms
   Int_t    *iBin = new Int_t[fnDim];
@@ -1238,7 +1232,7 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::DefineHist
   min[0]  = fJetPtMin; min[1] = fThetaMin; min[2] = fCosThetaMin; min[3] = fJtMin; min[4] = fZMin; min[5] = fPtMin; 
   max[0]  = fJetPtMax; max[1] = fThetaMax; max[2] = fCosThetaMax; max[3] = fJtMax; max[4] = fZMax; max[5] = fPtMax;
 
-  const char* title = Form("fhnIntraJetPart%s",fName.Data());
+  const char* title = Form("fhnIntraJetPart%s",fNameIJ.Data());
   const char* comment = "THnSparseF p_{T} jet [GeV/c] : #Theta : cos(#Theta) : j_{T} : Z : p_{T} part [GeV/c]";
   fhnIntraJet = new THnSparseF(title,comment,fnDim,iBin,min,max);
 
@@ -1261,7 +1255,7 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::DefineHist
 }
 
 //_______________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::FillIntraJet(TLorentzVector* trackV, TLorentzVector* jetV)
+void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::FillIntraJet(const TLorentzVector* trackV, const TLorentzVector* jetV)
 {
   // fill IntraJet histos
  
@@ -1350,7 +1344,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos::AliFragFuncDiJetHi
   ,fh2Pt1(0)
   ,fh2Pt2(0)
   ,fh2Pt(0)
-  ,fName(name)
+  ,fNameDJ(name)
 {
   // default constructor
 
@@ -1390,7 +1384,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos::AliFragFuncDiJetHi
   ,fh2Pt1(copy.fh2Pt1)
   ,fh2Pt2(copy.fh2Pt2)
   ,fh2Pt(copy.fh2Pt)
-  ,fName(copy.fName)
+  ,fNameDJ(copy.fNameDJ)
 {
   // default constructor
 
@@ -1434,7 +1428,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos& AliAnalysisTaskFra
     fh2Pt1           = o.fh2Pt1;
     fh2Pt2           = o.fh2Pt2;
     fh2Pt            = o.fh2Pt;
-    fName            = o.fName;
+    fNameDJ          = o.fNameDJ;
   }
     
   return *this;
@@ -1465,7 +1459,8 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos::~AliFragFuncDiJetH
 //________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos::DefineDiJetHistos()
 {
-
+  // book DiJet histos
+  
   Int_t nBins = 0;
   Double_t min = 0.;
   Double_t max = 0.;
@@ -1486,25 +1481,25 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos::DefineDiJetHi
       if(fKindSlices == 3) xaxis ="leading jet p_{T} [GeV/c]";
     }
   
-  fh1Jet1Pt      = new TH1F(Form("fh1DJJet1Pt%s", fName.Data()), "", fNBinsJetPt, fJetPtMin, fJetPtMax);
-  fh1Jet2Pt      = new TH1F(Form("fh1DJJet2Pt%s", fName.Data()), "", fNBinsJetPt, fJetPtMin, fJetPtMax);
-  fh1JetPt       = new TH1F(Form("fh1DJJetPt%s",  fName.Data()), "", fNBinsJetPt, fJetPtMin, fJetPtMax);
+  fh1Jet1Pt      = new TH1F(Form("fh1DJJet1Pt%s", fNameDJ.Data()), "", fNBinsJetPt, fJetPtMin, fJetPtMax);
+  fh1Jet2Pt      = new TH1F(Form("fh1DJJet2Pt%s", fNameDJ.Data()), "", fNBinsJetPt, fJetPtMin, fJetPtMax);
+  fh1JetPt       = new TH1F(Form("fh1DJJetPt%s",  fNameDJ.Data()), "", fNBinsJetPt, fJetPtMin, fJetPtMax);
   
-  fh2TrackPtJet1 = new TH2F(Form("fh2DJTrackPtJet1%s", fName.Data()), "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
-  fh2TrackPtJet2 = new TH2F(Form("fh2DJTrackPtJet2%s", fName.Data()), "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
-  fh2TrackPtJet  = new TH2F(Form("fh2DJTrackPtJet%s", fName.Data()),  "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
+  fh2TrackPtJet1 = new TH2F(Form("fh2DJTrackPtJet1%s", fNameDJ.Data()), "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
+  fh2TrackPtJet2 = new TH2F(Form("fh2DJTrackPtJet2%s", fNameDJ.Data()), "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
+  fh2TrackPtJet  = new TH2F(Form("fh2DJTrackPtJet%s", fNameDJ.Data()),  "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
   
-  fh2Xi1         = new TH2F(Form("fh2DJXi1%s", fName.Data()), "",nBins, min, max, fNBinsXi, fXiMin, fXiMax);
-  fh2Xi2         = new TH2F(Form("fh2DJXi2%s", fName.Data()), "",nBins, min, max, fNBinsXi, fXiMin, fXiMax);
-  fh2Xi          = new TH2F(Form("fh2DJXi%s", fName.Data()),  "",nBins, min, max, fNBinsXi, fXiMin, fXiMax);
+  fh2Xi1         = new TH2F(Form("fh2DJXi1%s", fNameDJ.Data()), "",nBins, min, max, fNBinsXi, fXiMin, fXiMax);
+  fh2Xi2         = new TH2F(Form("fh2DJXi2%s", fNameDJ.Data()), "",nBins, min, max, fNBinsXi, fXiMin, fXiMax);
+  fh2Xi          = new TH2F(Form("fh2DJXi%s", fNameDJ.Data()),  "",nBins, min, max, fNBinsXi, fXiMin, fXiMax);
   
-  fh2Z1          = new TH2F(Form("fh2DJZ1%s", fName.Data()), "",nBins, min, max, fNBinsZ, fZMin, fZMax);
-  fh2Z2          = new TH2F(Form("fh2DJZ2%s", fName.Data()), "",nBins, min, max, fNBinsZ, fZMin, fZMax);
-  fh2Z           = new TH2F(Form("fh2DJZ%s", fName.Data()),  "",nBins, min, max, fNBinsZ, fZMin, fZMax);
+  fh2Z1          = new TH2F(Form("fh2DJZ1%s", fNameDJ.Data()), "",nBins, min, max, fNBinsZ, fZMin, fZMax);
+  fh2Z2          = new TH2F(Form("fh2DJZ2%s", fNameDJ.Data()), "",nBins, min, max, fNBinsZ, fZMin, fZMax);
+  fh2Z           = new TH2F(Form("fh2DJZ%s", fNameDJ.Data()),  "",nBins, min, max, fNBinsZ, fZMin, fZMax);
   
-  fh2Pt1         = new TH2F(Form("fh2DJPt1%s", fName.Data()), "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
-  fh2Pt2         = new TH2F(Form("fh2DJPt2%s", fName.Data()), "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
-  fh2Pt          = new TH2F(Form("fh2DJPtZ%s", fName.Data()),  "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
+  fh2Pt1         = new TH2F(Form("fh2DJPt1%s", fNameDJ.Data()), "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
+  fh2Pt2         = new TH2F(Form("fh2DJPt2%s", fNameDJ.Data()), "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
+  fh2Pt          = new TH2F(Form("fh2DJPtZ%s", fNameDJ.Data()),  "",nBins, min, max, fNBinsPt, fPtMin, fPtMax);
       
   AliAnalysisTaskFragmentationFunction::SetProperties(fh1Jet1Pt, "p_{T} [GeV/c]", "entries");
   AliAnalysisTaskFragmentationFunction::SetProperties(fh1Jet2Pt, "p_{T} [GeV/c]", "entries");
@@ -1522,12 +1517,13 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos::DefineDiJetHi
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2Pt1, xaxis, "p_{T} [GeV/c]", "Entries");
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2Pt2, xaxis, "p_{T} [GeV/c]", "Entries");
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2Pt, xaxis, "p_{T} [GeV/c]", "Entries");
-  
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos::FillDiJetFF(Int_t jetType, Float_t trackPt, Float_t jetPt, Double_t jetBin, Bool_t incrementJetPt)
 {
+  // fill DiJet FF
+
   if(jetType == 0)
     {
       if(incrementJetPt) fh1JetPt->Fill(jetPt);  
@@ -1574,6 +1570,8 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos::FillDiJetFF(I
 //________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos::AddToOutput(TList* list)const
 {
+  // add histos to list
+
   list->Add(fh1Jet1Pt);
   list->Add(fh1Jet2Pt);
   list->Add(fh1JetPt);
@@ -1616,7 +1614,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos::AliFragFuncQADiJ
   ,fh2DeltaPhi(0)
   ,fh2DeltaEta(0)
   ,fh2DeltaPt(0)
-  ,fName(name)
+  ,fNameQADJ(name)
 {
   // default constructor
 
@@ -1645,7 +1643,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos::AliFragFuncQADiJ
   ,fh2DeltaPhi(copy.fh2DeltaPhi)
   ,fh2DeltaEta(copy.fh2DeltaEta)
   ,fh2DeltaPt(copy.fh2DeltaPt)
-  ,fName(copy.fName)
+  ,fNameQADJ(copy.fNameQADJ)
 {
   // default constructor
 
@@ -1678,7 +1676,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos& AliAnalysisTaskF
     fh2DeltaPhi       = o.fh2DeltaPhi;
     fh2DeltaEta       = o.fh2DeltaEta;
     fh2DeltaPt        = o.fh2DeltaPt;
-    fName             = o.fName;
+    fNameQADJ         = o.fNameQADJ;
   }
     
   return *this;
@@ -1698,7 +1696,8 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos::~AliFragFuncQADi
 //________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos::DefineQADiJetHistos()
 {
-
+  // define histos
+  
   Int_t nBins = 0;
   Double_t min = 0.;
   Double_t max = 0.;
@@ -1720,10 +1719,10 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos::DefineQADiJ
     }
   
   
-  fh2InvMass  = new TH2F(Form("fh2DJInvMassPositionCut%s",  fName.Data()), "",nBins, min, max, fNBinsJetInvMass, fJetInvMassMin, fJetInvMassMax);
-  fh2DeltaPhi = new TH2F(Form("fh2DJDeltaPhiPositionCut%s", fName.Data()), "",nBins, min, max, fNBinsDeltaPhi, fDeltaPhiMin, fDeltaPhiMax);
-  fh2DeltaEta = new TH2F(Form("fh2DJDeltaEtaPositionCut%s", fName.Data()), "",nBins, min, max, fNBinsDeltaEta, fDeltaEtaMin, fDeltaEtaMax);
-  fh2DeltaPt  = new TH2F(Form("fh2DJDeltaPtPositionCut%s",  fName.Data()), "",nBins, min, max, fNBinsDeltaPt, fDeltaPtMin, fDeltaPtMax);
+  fh2InvMass  = new TH2F(Form("fh2DJInvMassPositionCut%s",  fNameQADJ.Data()), "",nBins, min, max, fNBinsJetInvMass, fJetInvMassMin, fJetInvMassMax);
+  fh2DeltaPhi = new TH2F(Form("fh2DJDeltaPhiPositionCut%s", fNameQADJ.Data()), "",nBins, min, max, fNBinsDeltaPhi, fDeltaPhiMin, fDeltaPhiMax);
+  fh2DeltaEta = new TH2F(Form("fh2DJDeltaEtaPositionCut%s", fNameQADJ.Data()), "",nBins, min, max, fNBinsDeltaEta, fDeltaEtaMin, fDeltaEtaMax);
+  fh2DeltaPt  = new TH2F(Form("fh2DJDeltaPtPositionCut%s",  fNameQADJ.Data()), "",nBins, min, max, fNBinsDeltaPt, fDeltaPtMin, fDeltaPtMax);
   
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2InvMass, xaxis, "Invariant Mass", "Entries");
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2DeltaPhi, xaxis, "#Delta #phi", "Entries");
@@ -1735,6 +1734,8 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos::DefineQADiJ
 //________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos::FillDiJetQA(Double_t invMass, Double_t deltaPhi, Double_t deltaEta,Double_t deltaPt, Double_t jetBin)
 {
+  // fill dijet QA
+
   fh2InvMass->Fill(jetBin, invMass);
   fh2DeltaPhi->Fill(jetBin, deltaPhi);
   fh2DeltaEta->Fill(jetBin, deltaEta);
@@ -1744,6 +1745,8 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos::FillDiJetQA
 //________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos::AddToOutput(TList* list)const
 {
+  // add histos to list
+
   list->Add(fh2InvMass);
   list->Add(fh2DeltaPhi);
   list->Add(fh2DeltaEta);
@@ -2266,22 +2269,33 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   Double_t nTrials = 1; // trials for MC trigger weight for real data
   
   if(fMCEvent){
-     AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMCEvent);
-     if(!pythiaGenHeader){
-        if(fJetTypeGen != kJetsUndef && fTrackTypeGen != kTrackUndef){
-           Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
-           return;
-        }
-     } else {
-        nTrials = pythiaGenHeader->Trials();
-        ptHard  = pythiaGenHeader->GetPtHard();
+     AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+     AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+     AliGenHijingEventHeader*  hijingGenHeader = 0x0;
 
-        fh1PtHard->Fill(ptHard);
-        fh1PtHardTrials->Fill(ptHard,nTrials);
+     if(pythiaGenHeader){
+	 if(fDebug>3) Printf("%s:%d pythiaGenHeader found", (char*)__FILE__,__LINE__);
+	 nTrials = pythiaGenHeader->Trials();
+	 ptHard  = pythiaGenHeader->GetPtHard();
 
-        fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+	 fh1PtHard->Fill(ptHard);
+	 fh1PtHardTrials->Fill(ptHard,nTrials);
+
+
+     } else { // no pythia, hijing?
+
+	 if(fDebug>3) Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
+
+         hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+         if(!hijingGenHeader){
+            Printf("%s:%d no pythiaGenHeader or hjingGenHeader found", (char*)__FILE__,__LINE__);
+         } else {
+	    if(fDebug>3) Printf("%s:%d hijingGenHeader found", (char*)__FILE__,__LINE__);
+	 }
      }
-   }
+
+     fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+  }
   
   
   //___ fetch jets __________________________________________________________________________
@@ -2520,10 +2534,10 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     if (deltaPhi > TMath::Pi() && deltaPhi < 2*TMath::Pi()) deltaPhi = 2*TMath::Pi() - deltaPhi;
     
     // DiJet CDF cut calculation
-    Double_t Et1     = TMath::Abs(jet1->E()*TMath::Sin(jet1->Theta()));
-    Double_t Et2     = TMath::Abs(jet2->E()*TMath::Sin(jet2->Theta()));
-    Double_t sumEt   = Et1 + Et2;
-    Double_t normEt1PlusEt2   = TMath::Sqrt(Et1*Et1+Et2*Et2+2*Et1*Et2*TMath::Cos(deltaPhi));
+    Double_t et1     = TMath::Abs(jet1->E()*TMath::Sin(jet1->Theta()));
+    Double_t et2     = TMath::Abs(jet2->E()*TMath::Sin(jet2->Theta()));
+    Double_t sumEt   = et1 + et2;
+    Double_t normEt1PlusEt2   = TMath::Sqrt(et1*et1+et2*et2+2*et1*et2*TMath::Cos(deltaPhi));
     Double_t ratio = (Double_t)(normEt1PlusEt2/sumEt);
     
     // DiJet events selection
@@ -2548,7 +2562,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
       {
 	Double_t deltaEta      = TMath::Abs(jet1->Eta()-jet2->Eta());
 	Double_t deltaPt       = TMath::Abs(jet1->Pt()-jet2->Pt());
-	Double_t meanEt        = (Double_t)((Et1+Et2)/2.);
+	Double_t meanEt        = (Double_t)((et1+et2)/2.);
 	Double_t invariantMass = (Double_t)InvMass(jet1,jet2);
 	
 	Double_t  jetBin = GetDiJetBin(invariantMass, jet1->Pt(), meanEt, fDiJetKindBins);
@@ -2645,10 +2659,10 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     deltaPhi      = TMath::Abs(phi1-phi2); 
     if (deltaPhi > TMath::Pi() && deltaPhi < 2*TMath::Pi()) deltaPhi = 2*TMath::Pi() - deltaPhi;
 
-    Double_t Et1            = TMath::Abs(jet1->E()*TMath::Sin(jet1->Theta()));
-    Double_t Et2            = TMath::Abs(jet2->E()*TMath::Sin(jet2->Theta()));
-    Double_t sumEt          = Et1 + Et2;
-    Double_t normEt1PlusEt2 = TMath::Sqrt(Et1*Et1+Et2*Et2+2*Et1*Et2*TMath::Cos(deltaPhi));
+    Double_t et1            = TMath::Abs(jet1->E()*TMath::Sin(jet1->Theta()));
+    Double_t et2            = TMath::Abs(jet2->E()*TMath::Sin(jet2->Theta()));
+    Double_t sumEt          = et1 + et2;
+    Double_t normEt1PlusEt2 = TMath::Sqrt(et1*et1+et2*et2+2*et1*et2*TMath::Cos(deltaPhi));
     Double_t ratio          = (Double_t)(normEt1PlusEt2/sumEt);
 
     // DiJet events selection
@@ -2673,7 +2687,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     {
       Double_t deltaEta      = TMath::Abs(jet1->Eta()-jet2->Eta());
       Double_t deltaPt       = TMath::Abs(jet1->Pt()-jet2->Pt());
-      Double_t meanEt        = (Double_t)((Et1+Et2)/2.);
+      Double_t meanEt        = (Double_t)((et1+et2)/2.);
       Double_t invariantMass = (Double_t)InvMass(jet1,jet2);
 
       Double_t jetBin = GetDiJetBin(invariantMass, jet1->Pt(), meanEt, fDiJetKindBins);
@@ -2829,8 +2843,9 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 }
 
 //________________________________________________________________________________________
-Double_t AliAnalysisTaskFragmentationFunction::InvMass(AliAODJet* jet1, AliAODJet* jet2)
+Double_t AliAnalysisTaskFragmentationFunction::InvMass(const AliAODJet* jet1, const AliAODJet* jet2)
 {
+  // cald DiJet inv mass
 
   Double_t invMass = 0.;
   invMass = TMath::Sqrt(pow(jet1->E()+jet2->E(),2) - pow(jet1->Px()+jet2->Px(),2) - 
@@ -2843,6 +2858,8 @@ Double_t AliAnalysisTaskFragmentationFunction::InvMass(AliAODJet* jet1, AliAODJe
 //________________________________________________________________________________________
 Double_t AliAnalysisTaskFragmentationFunction::GetDiJetBin(Double_t invMass, Double_t leadingJetPt, Double_t EtMean, Int_t kindBins)
 {
+  // calc DiJet bin according to kindBins parameter
+
   Double_t jetBinOk = 0.;
   Double_t jetBin = 0.;
 
@@ -3042,11 +3059,38 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
       if(fDebug>1) Printf("%s:%d no mcEvent",(char*)__FILE__,__LINE__);
       return 0;
     }
-    
-    AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMCEvent);
+   
+    AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+    AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+    AliGenHijingEventHeader*  hijingGenHeader = 0x0;
+
     if(!pythiaGenHeader){
-      Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
-      return 0;
+      hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+      
+      if(!hijingGenHeader){
+         Printf("%s:%d no pythiaGenHeader or hijingGenHeader found", (char*)__FILE__,__LINE__);
+         return 0;
+      }else{
+         TLorentzVector mom[4];
+         AliAODJet* jet[4];
+         hijingGenHeader->GetJets(mom[0], mom[1], mom[2], mom[3]);
+
+         for(Int_t i=0; i<2; ++i){
+	    if(!mom[i].Pt()) continue;
+            jet[i] = new AliAODJet(mom[i]);
+
+            if( type == kJetsKineAcceptance &&
+                (    jet[i]->Eta() < fJetEtaMin
+                  || jet[i]->Eta() > fJetEtaMax
+                  || jet[i]->Phi() < fJetPhiMin
+                  || jet[i]->Phi() > fJetPhiMax )) continue;
+
+	    list->Add(jet[i]);
+	    nGenJets++;
+	 }
+	 list->Sort();
+         return nGenJets;
+      }
     }
     
     // fetch the pythia generated jets
@@ -3153,7 +3197,7 @@ void AliAnalysisTaskFragmentationFunction::SetProperties(TH2* h,const char* x, c
 }
 
 // ________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist, TList* outputlist, AliAODJet* jet, const Double_t radius,Double_t& sumPt)
+void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist, TList* outputlist, const AliAODJet* jet, const Double_t radius,Double_t& sumPt)
 {
   // fill list of tracks in cone around jet axis  
 
@@ -3185,7 +3229,7 @@ void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist
 }
 
 // ___________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, AliAODJet* jet)
+void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet)
 {
   // list of jet tracks from trackrefs
   
@@ -3268,10 +3312,11 @@ void  AliAnalysisTaskFragmentationFunction::AssociateGenRec(TList* tracksAODMCCh
 }
 
 // _____________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::FillSingleTrackRecEffHisto(THnSparse* histo, TList* tracksGen, TList* tracksRec, TArrayI& indexAODTr, TArrayS& isGenPrim){
+void AliAnalysisTaskFragmentationFunction::FillSingleTrackRecEffHisto(THnSparse* histo, TList* tracksGen, const TList* tracksRec,
+								      const TArrayI& indexAODTr, const TArrayS& isGenPrim){
 
   // fill THnSparse for single track reconstruction efficiency
-
+  
   Int_t nTracksGen  = tracksGen->GetSize();
 
   if(!nTracksGen) return;
@@ -3312,7 +3357,7 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackRecEffHisto(THnSparse*
 
 // ______________________________________________________________________________________________________________________________________________________
  void AliAnalysisTaskFragmentationFunction::FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi, Double_t jetEta, Double_t jetPtGen, Double_t jetPtRec, TList* jetTrackList, 
-								   TList* tracksGen, TArrayI& indexAODTr, TArrayS& isGenPrim)
+								    TList* tracksGen, const TArrayI& indexAODTr, const TArrayS& isGenPrim)
 {
   // fill THnSparse for jet track reconstruction efficiency
 

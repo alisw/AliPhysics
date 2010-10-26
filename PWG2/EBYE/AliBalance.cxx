@@ -617,6 +617,33 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 }
 
 //____________________________________________________________________//
+TH1F *AliBalance::GetHistNnn() {
+  //Return the control histogram of the -- component
+  for(Int_t iBin = 1; iBin <= fNumberOfBins; iBin++)
+    fHistfNnn->SetBinContent(iBin,GetNnn(iBin-1));
+
+  return fHistfNnn;
+}
+
+//____________________________________________________________________//
+TH1F *AliBalance::GetHistNpp() {
+  //Return the control histogram of the ++ component
+  for(Int_t iBin = 1; iBin <= fNumberOfBins; iBin++)
+    fHistfNpp->SetBinContent(iBin,GetNpp(iBin-1));
+
+  return fHistfNpp;
+}
+
+//____________________________________________________________________//
+TH1F *AliBalance::GetHistNpn() {
+  //Return the control histogram of the +- component
+  for(Int_t iBin = 1; iBin <= fNumberOfBins; iBin++)
+    fHistfNpn->SetBinContent(iBin,GetNpn(iBin-1));
+
+  return fHistfNpn;
+}
+
+//____________________________________________________________________//
 Double_t AliBalance::GetBalance(Int_t p2) {
   // Returns the value of the balance function in bin p2
   fB[p2] = 0.5*(((fNpn[p2] - 2.0*fNnn[p2])/fNn) + ((fNpn[p2] - 2.0*fNpp[p2])/fNp))/fP2Step;

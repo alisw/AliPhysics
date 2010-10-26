@@ -286,7 +286,7 @@ AliTRDv0Info::AliTRDv0Info(const AliTRDv0Info &ref)
 }
 
 //_________________________________________________
-void AliTRDv0Info::SetV0Info(AliESDv0 *esdv0)
+void AliTRDv0Info::SetV0Info(const AliESDv0 *esdv0)
 {
   //Gets values of ESDv0 and daughter track properties
   //See header file for description of variables
@@ -337,7 +337,7 @@ void AliTRDv0Info::SetV0Info(AliESDv0 *esdv0)
 
 }
 //_________________________________________________
-Float_t  AliTRDv0Info::V0Momentum(AliESDv0 *esdv0) const
+Float_t  AliTRDv0Info::V0Momentum(const AliESDv0 *esdv0) const
 {
   //
   // Reconstructed momentum of V0 mother particle
@@ -355,7 +355,7 @@ Float_t  AliTRDv0Info::V0Momentum(AliESDv0 *esdv0) const
 }
 
 //_________________________________________________
-Double_t AliTRDv0Info::InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0) const
+Double_t AliTRDv0Info::InvMass(Int_t part1, Int_t part2, const AliESDv0 *esdv0) const
 {
   //
   // Invariant mass of reconstructed V0 mother
@@ -397,7 +397,7 @@ Double_t AliTRDv0Info::InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0) const
   
 }
 //_________________________________________________
-Float_t AliTRDv0Info::OpenAngle(AliESDv0 *esdv0)
+Float_t AliTRDv0Info::OpenAngle(const AliESDv0 *esdv0)
 {
   //Opening angle between two daughter tracks
   Double_t mn[3] = {0,0,0};
@@ -414,7 +414,7 @@ Float_t AliTRDv0Info::OpenAngle(AliESDv0 *esdv0)
 }
 
 //_________________________________________________
-Float_t AliTRDv0Info::PsiPair(AliESDv0 *esdv0)
+Float_t AliTRDv0Info::PsiPair(const AliESDv0 *esdv0)
 {
   //Angle between daughter momentum plane and plane perpendicular to magnetic field
   Double_t x, y, z;
@@ -603,7 +603,7 @@ Bool_t AliTRDv0Info::GetTPCdEdx()
 
 }
 //_________________________________________________
-Bool_t AliTRDv0Info::TPCdEdxCuts(Int_t part, AliTRDtrackInfo * const track)
+Bool_t AliTRDv0Info::TPCdEdxCuts(Int_t part, const AliTRDtrackInfo * const track)
 {
   //applies cuts on TPC dE/dx according to particle species; cutting lines are drawn shifted to the Bethe-Bloch paremeterization
   if(!fTrackP->GetID()) return 0;
@@ -661,7 +661,7 @@ Bool_t AliTRDv0Info::TPCdEdxCuts(Int_t part, AliTRDtrackInfo * const track)
 
 }
 //_________________________________________________
-Float_t AliTRDv0Info::Radius(AliESDv0 *esdv0)
+Float_t AliTRDv0Info::Radius(const AliESDv0 *esdv0)
 {
   //distance from secondary vertex to primary vertex in x-y plane
   Double_t x, y, z;
@@ -672,7 +672,7 @@ Float_t AliTRDv0Info::Radius(AliESDv0 *esdv0)
 }
 
 //_________________________________________________
-Int_t AliTRDv0Info::Quality(AliESDv0 *const esdv0)
+Int_t AliTRDv0Info::Quality(const AliESDv0 *const esdv0)
 { 
   //
   // Checking track and V0 quality status in order to exclude vertices based on poor information
@@ -741,7 +741,7 @@ Bool_t AliTRDv0Info::V0SignCheck(){
   return kTRUE;
 }
 //___________________________________________________________________
-Bool_t AliTRDv0Info::Armenteros(AliESDv0 *esdv0, Int_t decay){
+Bool_t AliTRDv0Info::Armenteros(const AliESDv0 *esdv0, Int_t decay){
   //
   // computes the Armenteros variables for given V0
   //

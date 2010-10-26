@@ -65,7 +65,7 @@ public:
   virtual ~AliTRDresolution();
   
   static Bool_t  FitTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
-  static Bool_t  FitTracklet(const Int_t ly, const Int_t np, AliTrackPoint *points, const Float_t trackPars[10], Float_t trackletPars[3]);
+  static Bool_t  FitTracklet(const Int_t ly, const Int_t np, const AliTrackPoint *points, const Float_t trackPars[10], Float_t trackletPars[3]);
   void    UserCreateOutputObjects();
   Float_t GetDyRange() const {return fDyRange;}
   Float_t GetPtThreshold() const {return fPtThreshold;}
@@ -103,7 +103,7 @@ public:
   void    Terminate(Option_t * opt);
   Bool_t  GetGraph(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1, Bool_t kLEG=kTRUE, const Char_t *explain=NULL);
   Bool_t  GetGraphArray(Float_t *bb, ETRDresolutionPlot ip, Int_t idx, Bool_t kLEG=kTRUE, Int_t n=0, Int_t *sel=NULL, const Char_t *explain=NULL);
-  static Bool_t  UseTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
+  static Bool_t  UseTrack(const Int_t np, const AliTrackPoint *points, Float_t params[10]);
     
 private:
   AliTRDresolution(const AliTRDresolution&);

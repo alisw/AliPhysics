@@ -135,7 +135,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cRadius));
 
    TString cAdd = "";
-   if(filterMask==16){
+   if(filterMask==32){
      // this is the standard mask do not add anything
      // should be changed after current train over all data is finished 
      // now needed for merging
@@ -393,7 +393,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
     AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
     jrh->SetComment("AOD Reader");
     jrh->SetPtCut(0.15); // set low p_T cut of to 150 MeV
-    jrh->SetTestFilterMask(16); // Change this one for a different set of cuts
+    jrh->SetTestFilterMask(32); // Change this one for a different set of cuts
     if(filterMask>0)jrh->SetTestFilterMask(filterMask); 
     // Define reader and set its header
     er = new AliJetAODReader();

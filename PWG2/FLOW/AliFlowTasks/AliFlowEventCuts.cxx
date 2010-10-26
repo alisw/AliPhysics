@@ -23,11 +23,13 @@
 #include <limits.h>
 #include <float.h>
 #include "TNamed.h"
+#include "AliVVertex.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
+#include "AliMultiplicity.h"
 #include "AliMCEvent.h"
 #include "AliFlowEventCuts.h"
-#include "AliESDtrackCuts.h"
+#include "AliFlowTrackCuts.h"
 
 ClassImp(AliFlowEventCuts)
 
@@ -38,9 +40,22 @@ AliFlowEventCuts::AliFlowEventCuts():
   fNumberOfTracksMax(INT_MAX),
   fNumberOfTracksMin(INT_MIN),
   fCutRefMult(kFALSE),
+  fRefMultMethod(kTPConly),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
-  fReferenceMultiplicity(-1)
+  fRefMultCuts(NULL),
+  fCutPrimaryVertexX(kFALSE),
+  fPrimaryVertexXmax(INT_MAX),
+  fPrimaryVertexXmin(INT_MIN),
+  fCutPrimaryVertexY(kFALSE),
+  fPrimaryVertexYmax(INT_MAX),
+  fPrimaryVertexYmin(INT_MIN),
+  fCutPrimaryVertexZ(kFALSE),
+  fPrimaryVertexZmax(INT_MAX),
+  fPrimaryVertexZmin(INT_MIN),
+  fCutNContributors(kFALSE),
+  fNContributorsMax(INT_MAX),
+  fNContributorsMin(INT_MIN)
 {
   //constructor 
 }
@@ -52,33 +67,79 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fNumberOfTracksMax(INT_MAX),
   fNumberOfTracksMin(INT_MIN),
   fCutRefMult(kFALSE),
+  fRefMultMethod(kTPConly),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
-  fReferenceMultiplicity(-1)
+  fRefMultCuts(NULL),
+  fCutPrimaryVertexX(kFALSE),
+  fPrimaryVertexXmax(INT_MAX),
+  fPrimaryVertexXmin(INT_MIN),
+  fCutPrimaryVertexY(kFALSE),
+  fPrimaryVertexYmax(INT_MAX),
+  fPrimaryVertexYmin(INT_MIN),
+  fCutPrimaryVertexZ(kFALSE),
+  fPrimaryVertexZmax(INT_MAX),
+  fPrimaryVertexZmin(INT_MIN),
+  fCutNContributors(kFALSE),
+  fNContributorsMax(INT_MAX),
+  fNContributorsMin(INT_MIN)
 {
   //constructor 
 }
 
 ////-----------------------------------------------------------------------
-//AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& someCuts):
-//  TNamed(),
-//  fCutNumberOfTracks(that.fCutNumberOfTracks),
-//  fNumberOfTracksMax(that.fNumberOfTracksMax),
-//  fNumberOfTracksMin(that.fNumberOfTracksMin),
-//{
-//  //copy constructor 
-//}
-//
+AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
+  TNamed(that),
+  fCutNumberOfTracks(that.fCutNumberOfTracks),
+  fNumberOfTracksMax(that.fNumberOfTracksMax),
+  fNumberOfTracksMin(that.fNumberOfTracksMin),
+  fCutRefMult(that.fCutRefMult),
+  fRefMultMethod(that.fRefMultMethod),
+  fRefMultMax(that.fRefMultMax),
+  fRefMultMin(that.fRefMultMin),
+  fRefMultCuts(NULL),
+  fCutPrimaryVertexX(that.fCutPrimaryVertexX),
+  fPrimaryVertexXmax(that.fPrimaryVertexXmax),
+  fPrimaryVertexXmin(that.fPrimaryVertexXmin),
+  fCutPrimaryVertexY(that.fCutPrimaryVertexX),
+  fPrimaryVertexYmax(that.fPrimaryVertexYmax),
+  fPrimaryVertexYmin(that.fPrimaryVertexYmin),
+  fCutPrimaryVertexZ(that.fCutPrimaryVertexX),
+  fPrimaryVertexZmax(that.fPrimaryVertexZmax),
+  fPrimaryVertexZmin(that.fPrimaryVertexZmin),
+  fCutNContributors(that.fCutNContributors),
+  fNContributorsMax(that.fNContributorsMax),
+  fNContributorsMin(that.fNContributorsMin)
+{
+  //copy constructor 
+  if (that.fRefMultCuts)
+    fRefMultCuts = new AliFlowTrackCuts(*(that.fRefMultCuts));
+}
+
 ////-----------------------------------------------------------------------
-//AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& someCuts)
-//{
-//  //assignment
-//  fCutNumberOfTracks=that.fCutNumberOfTracks;
-//  fNumberOfTracksMax=that.fNumberOfTracksMax;
-//  fNumberOfTracksMin=that.fNumberOfTracksMin;
-//
-//  return *this;
-//}
+AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
+{
+  //assignment
+  fCutNumberOfTracks=that.fCutNumberOfTracks;
+  fNumberOfTracksMax=that.fNumberOfTracksMax;
+  fNumberOfTracksMin=that.fNumberOfTracksMin;
+  fCutRefMult=that.fCutRefMult;
+  fRefMultMethod=that.fRefMultMethod;
+  fRefMultMax=that.fRefMultMax;
+  fRefMultMin=that.fRefMultMin;
+  if (that.fRefMultCuts) *fRefMultCuts=*(that.fRefMultCuts);
+  fCutPrimaryVertexX=that.fCutPrimaryVertexX;
+  fPrimaryVertexXmin=that.fPrimaryVertexXmin;
+  fPrimaryVertexXmax=that.fPrimaryVertexXmax;
+  fPrimaryVertexYmin=that.fPrimaryVertexYmin;
+  fPrimaryVertexYmax=that.fPrimaryVertexYmax;
+  fPrimaryVertexZmin=that.fPrimaryVertexZmin;
+  fPrimaryVertexZmax=that.fPrimaryVertexZmax;
+  fCutNContributors=that.fCutNContributors;
+  fNContributorsMax=that.fNContributorsMax;
+  fNContributorsMin=that.fNContributorsMin;
+  return *this;
+}
 
 //----------------------------------------------------------------------- 
 Bool_t AliFlowEventCuts::IsSelected(const TObject* obj)
@@ -96,8 +157,33 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
   if(fCutRefMult)
   {
     //reference multiplicity still to be defined
-    fReferenceMultiplicity = ReferenceMultiplicity(event);
-    if (fReferenceMultiplicity < fRefMultMin || fReferenceMultiplicity >= fRefMultMax )
+    Double_t refMult = RefMult(event);
+    if (refMult < fRefMultMin || refMult >= fRefMultMax )
+      return kFALSE;
+  }
+  const AliVVertex* pvtx=event->GetPrimaryVertex();
+  Double_t pvtxx = pvtx->GetX();
+  Double_t pvtxy = pvtx->GetY();
+  Double_t pvtxz = pvtx->GetZ();
+  Int_t ncontrib = pvtx->GetNContributors();
+  if (fCutNContributors)
+  {
+    if (ncontrib < fNContributorsMin || ncontrib >= fNContributorsMax)
+      return kFALSE;
+  }
+  if (fCutPrimaryVertexX)
+  {
+    if (pvtxx < fPrimaryVertexXmin || pvtxx >= fPrimaryVertexXmax)
+      return kFALSE;
+  }
+  if (fCutPrimaryVertexY)
+  {
+    if (pvtxy < fPrimaryVertexYmin || pvtxy >= fPrimaryVertexYmax)
+      return kFALSE;
+  }
+  if (fCutPrimaryVertexZ)
+  {
+    if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
       return kFALSE;
   }
   return kTRUE;
@@ -112,12 +198,54 @@ AliFlowEventCuts* AliFlowEventCuts::StandardCuts()
 }
 
 //----------------------------------------------------------------------- 
-Int_t AliFlowEventCuts::ReferenceMultiplicity(const AliVEvent* event)
+Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
 {
-  //calculate the reference multiplicity
+  //calculate the reference multiplicity, if all fails return 0
+  Int_t refmult=0;
+
+  //in the case of an ESD
   const AliESDEvent* esd=dynamic_cast<const AliESDEvent*>(event);
-  if (esd) return AliESDtrackCuts::GetReferenceMultiplicity(const_cast<AliESDEvent*>(esd),kTRUE);
+  if (esd) 
+  {
+    AliMultiplicity* tracklets=NULL;
+    switch (fRefMultMethod)
+    {
+      case kTPConly:
+        if (!fRefMultCuts)
+        {
+          //if not explicitly passed, make default cuts
+          fRefMultCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
+          fRefMultCuts->SetEtaRange(-0.8,0.8);
+          fRefMultCuts->SetPtMin(0.15);
+        }
+        for (Int_t i=0; i<esd->GetNumberOfTracks();i++)
+        {
+          AliESDtrack* track = esd->GetTrack(i);
+          if (fRefMultCuts->IsSelected(track)) refmult++;
+        }
+        break;
+      case kSPDtracklets:
+        if (!fRefMultCuts)
+        {
+          //if not explicitly passed, make default fRefMultCuts
+          fRefMultCuts = new AliFlowTrackCuts();
+          fRefMultCuts->SetEtaRange(-0.8,0.8);
+        }
+        tracklets = const_cast<AliMultiplicity*>(esd->GetMultiplicity());
+        for (Int_t i=0; i<tracklets->GetNumberOfTracklets(); i++)
+        {
+          if (fRefMultCuts->IsSelected(tracklets,i)) refmult++;
+        }
+        break;
+      default:
+        return 0;
+    }
+    return refmult;
+  }
+
+  //in case of MC event
   AliMCEvent* mc=const_cast<AliMCEvent*>(dynamic_cast<const AliMCEvent*>(event));
   if (mc) return mc->GetNumberOfPrimaries();
-  return event->GetNumberOfTracks(); //default
+
+  return event->GetNumberOfTracks(); //default, at least returns some number
 }

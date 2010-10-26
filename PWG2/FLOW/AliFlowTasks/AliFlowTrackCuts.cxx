@@ -36,7 +36,10 @@
 
 #include <limits.h>
 #include <float.h>
+#include "TParticle.h"
+#include "AliStack.h"
 #include "AliMCEvent.h"
+#include "AliESDEvent.h"
 #include "AliVParticle.h"
 #include "AliMCParticle.h"
 #include "AliESDtrack.h"
@@ -52,6 +55,7 @@ ClassImp(AliFlowTrackCuts)
 AliFlowTrackCuts::AliFlowTrackCuts():
   AliFlowTrackSimpleCuts(),
   fAliESDtrackCuts(new AliESDtrackCuts()),
+  fQA(kFALSE),
   fCutMCprocessType(kFALSE),
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
@@ -60,6 +64,9 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMCisPrimary(kFALSE),
   fRequireCharge(kFALSE),
   fFakesAreOK(kTRUE),
+  fCutSPDtrackletDeltaPhi(kFALSE),
+  fSPDtrackletDeltaPhiMax(FLT_MAX),
+  fSPDtrackletDeltaPhiMin(-FLT_MAX),
   fParamType(kGlobal),
   fParamMix(kPure),
   fCleanupTrack(kFALSE),
@@ -69,62 +76,73 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fTrackWeight(0.),
   fTrackLabel(INT_MIN),
   fMCevent(NULL),
-  fMCparticle(NULL)
+  fMCparticle(NULL),
+  fEvent(NULL)
 {
   //constructor 
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& someCuts):
-  AliFlowTrackSimpleCuts(someCuts),
-  fAliESDtrackCuts(new AliESDtrackCuts(*(someCuts.fAliESDtrackCuts))),
-  fCutMCprocessType(someCuts.fCutMCprocessType),
-  fMCprocessType(someCuts.fMCprocessType),
-  fCutMCPID(someCuts.fCutMCPID),
-  fMCPID(someCuts.fMCPID),
-  fCutMCisPrimary(someCuts.fCutMCisPrimary),
-  fMCisPrimary(someCuts.fMCisPrimary),
-  fRequireCharge(someCuts.fRequireCharge),
-  fFakesAreOK(someCuts.fFakesAreOK),
-  fParamType(someCuts.fParamType),
-  fParamMix(someCuts.fParamMix),
+AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
+  AliFlowTrackSimpleCuts(that),
+  fAliESDtrackCuts(new AliESDtrackCuts(*(that.fAliESDtrackCuts))),
+  fQA(that.fQA),
+  fCutMCprocessType(that.fCutMCprocessType),
+  fMCprocessType(that.fMCprocessType),
+  fCutMCPID(that.fCutMCPID),
+  fMCPID(that.fMCPID),
+  fCutMCisPrimary(that.fCutMCisPrimary),
+  fMCisPrimary(that.fMCisPrimary),
+  fRequireCharge(that.fRequireCharge),
+  fFakesAreOK(that.fFakesAreOK),
+  fCutSPDtrackletDeltaPhi(that.fCutSPDtrackletDeltaPhi),
+  fSPDtrackletDeltaPhiMax(that.fSPDtrackletDeltaPhiMax),
+  fSPDtrackletDeltaPhiMin(that.fSPDtrackletDeltaPhiMin),
+  fParamType(that.fParamType),
+  fParamMix(that.fParamMix),
   fCleanupTrack(kFALSE),
   fTrack(NULL),
-  fTrackPhi(someCuts.fTrackPhi),
-  fTrackEta(someCuts.fTrackEta),
-  fTrackWeight(someCuts.fTrackWeight),
+  fTrackPhi(0.),
+  fTrackEta(0.),
+  fTrackWeight(0.),
   fTrackLabel(INT_MIN),
   fMCevent(NULL),
-  fMCparticle(NULL)
+  fMCparticle(NULL),
+  fEvent(NULL)
 {
   //copy constructor
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& someCuts)
+AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
 {
   //assignment
-  AliFlowTrackSimpleCuts::operator=(someCuts);
-  *fAliESDtrackCuts=*(someCuts.fAliESDtrackCuts);
-  fCutMCprocessType=someCuts.fCutMCprocessType;
-  fMCprocessType=someCuts.fMCprocessType;
-  fCutMCPID=someCuts.fCutMCPID;
-  fMCPID=someCuts.fMCPID;
-  fCutMCisPrimary=someCuts.fCutMCisPrimary;
-  fMCisPrimary=someCuts.fMCisPrimary;
-  fRequireCharge=someCuts.fRequireCharge;
-  fFakesAreOK=someCuts.fFakesAreOK;
-  fParamType=someCuts.fParamType;
-  fParamMix=someCuts.fParamMix;
+  AliFlowTrackSimpleCuts::operator=(that);
+  *fAliESDtrackCuts=*(that.fAliESDtrackCuts);
+  fQA=that.fQA;
+  fCutMCprocessType=that.fCutMCprocessType;
+  fMCprocessType=that.fMCprocessType;
+  fCutMCPID=that.fCutMCPID;
+  fMCPID=that.fMCPID;
+  fCutMCisPrimary=that.fCutMCisPrimary;
+  fMCisPrimary=that.fMCisPrimary;
+  fRequireCharge=that.fRequireCharge;
+  fFakesAreOK=that.fFakesAreOK;
+  fCutSPDtrackletDeltaPhi=that.fCutSPDtrackletDeltaPhi;
+  fSPDtrackletDeltaPhiMax=that.fSPDtrackletDeltaPhiMax;
+  fSPDtrackletDeltaPhiMin=that.fSPDtrackletDeltaPhiMin;
+  fParamType=that.fParamType;
+  fParamMix=that.fParamMix;
 
   fCleanupTrack=kFALSE;
   fTrack=NULL;
-  fTrackPhi=someCuts.fTrackPhi;
-  fTrackPhi=someCuts.fTrackPhi;
-  fTrackWeight=someCuts.fTrackWeight;
+  fTrackPhi=0.;
+  fTrackPhi=0.;
+  fTrackWeight=0.;
   fTrackLabel=INT_MIN;
   fMCevent=NULL;
   fMCparticle=NULL;
+  fEvent=NULL;
 
   return *this;
 }
@@ -165,9 +183,10 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliMultiplicity* tracklet, Int_t id)
 {
   //check cuts on a tracklets
 
-  //clean up from last iteration
+  //clean up from last iteration, and init label
   if (fCleanupTrack) delete fTrack; fTrack = NULL;
   fMCparticle=NULL;
+  fTrackLabel=-1;
 
   fTrackPhi = tracklet->GetPhi(id);
   fTrackEta = tracklet->GetEta(id);
@@ -176,7 +195,11 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliMultiplicity* tracklet, Int_t id)
   if (fCutPhi) {if ( fTrackPhi < fPhiMin || fTrackPhi >= fPhiMax ) return kFALSE;}
 
   //check MC info if available
-  fTrackLabel = tracklet->GetLabel(id,1); //TODO: this can be improved
+  //if the 2 clusters have different label track cannot be good
+  //and should therefore not pass the mc cuts
+  Int_t label0 = tracklet->GetLabel(id,0);
+  Int_t label1 = tracklet->GetLabel(id,1);
+  fTrackLabel = (label0==label1)?tracklet->GetLabel(id,1):-1;
   if (!PassesMCcuts()) return kFALSE;
   return kTRUE;
 }
@@ -185,13 +208,14 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliMultiplicity* tracklet, Int_t id)
 Bool_t AliFlowTrackCuts::PassesMCcuts()
 {
   //check the MC info
-  if (!fMCevent) {AliError("no MC info"); return kFALSE;}
+  if (!fMCevent) return kFALSE;
+  if (fTrackLabel<0) return kFALSE;//otherwise AliCMevent prints a warning before returning NULL
   fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
-  if (!fMCparticle) {AliError("no MC info"); return kFALSE;}
+  if (!fMCparticle) {AliError("no MC track"); return kFALSE;}
 
   if (fCutMCisPrimary)
   {
-    if (IsPhysicalPrimary() != fMCisPrimary) return kFALSE;
+    if (IsPhysicalPrimary(fMCevent,fTrackLabel) != fMCisPrimary) return kFALSE;
   }
   if (fCutMCPID)
   {
@@ -236,27 +260,29 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
 
-  //check the common cuts for the current particle (MC,AOD,ESD)
-  if (fCutPt) {if (fTrack->Pt() < fPtMin || fTrack->Pt() >= fPtMax ) return kFALSE;}
-  if (fCutEta) {if (fTrack->Eta() < fEtaMin || fTrack->Eta() >= fEtaMax ) return kFALSE;}
-  if (fCutPhi) {if (fTrack->Phi() < fPhiMin || fTrack->Phi() >= fPhiMax ) return kFALSE;}
-  if (fRequireCharge) {if (fTrack->Charge() == 0) return kFALSE;}
-  if (fCutCharge && !isMCparticle) {if (fTrack->Charge() != fCharge) return kFALSE;}
+  Bool_t pass=kTRUE;
+  //check the common cuts for the current particle fTrack (MC,AOD,ESD)
+  if (fCutPt) {if (fTrack->Pt() < fPtMin || fTrack->Pt() >= fPtMax ) pass=kFALSE;}
+  if (fCutEta) {if (fTrack->Eta() < fEtaMin || fTrack->Eta() >= fEtaMax ) pass=kFALSE;}
+  if (fCutPhi) {if (fTrack->Phi() < fPhiMin || fTrack->Phi() >= fPhiMax ) pass=kFALSE;}
+  if (fRequireCharge) {if (fTrack->Charge() == 0) pass=kFALSE;}
+  if (fCutCharge && !isMCparticle) {if (fTrack->Charge() != fCharge) pass=kFALSE;}
   if (fCutCharge && isMCparticle)
   { 
     //in case of an MC particle the charge is stored in units of 1/3|e| 
     Int_t charge = TMath::Nint(fTrack->Charge()/3.0); //mc particles have charge in units of 1/3e
     return (charge==fCharge);
   }
-  //if(fCutPID) {if (fTrack->PID() != fPID) return kFALSE;}
+  //if(fCutPID) {if (fTrack->PID() != fPID) pass=kFALSE;}
 
   //when additionally MC info is required
-  if (!PassesMCcuts()) return kFALSE;
+  if (!PassesMCcuts()) pass=kFALSE;
 
   //check all else for ESDs using aliesdtrackcuts
-  if (esdTrack && (fParamType!=kMC) ) return fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack));
+  if (esdTrack && (fParamType!=kMC) ) 
+    if (!fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack))) pass=kFALSE;
 
-  return kTRUE; //true by default, if we didn't set any cuts
+  return pass; //true by default, if we didn't set any cuts
 }
 
 //-----------------------------------------------------------------------
@@ -325,12 +351,33 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
 {
   //get a flow track constructed from whatever we applied cuts on
   //caller is resposible for deletion
+  //if construction fails return NULL
   AliFlowTrack* flowtrack=NULL;
   if (fParamType==kESD_SPDtracklet)
   {
     flowtrack = new AliFlowTrack();
-    flowtrack->SetPhi(fTrackPhi);
-    flowtrack->SetEta(fTrackEta);
+    switch (fParamMix)
+    {
+      case kPure:
+        flowtrack->SetPhi(fTrackPhi);
+        flowtrack->SetEta(fTrackEta);
+        break;
+      case kTrackWithMCkine:
+        if (!fMCparticle) return NULL;
+        flowtrack->SetPhi( fMCparticle->Phi() );
+        flowtrack->SetEta( fMCparticle->Eta() );
+        flowtrack->SetPt( fMCparticle->Pt() );
+        break;
+      case kTrackWithMCpt:
+        if (!fMCparticle) return NULL;
+        flowtrack->SetPhi(fTrackPhi);
+        flowtrack->SetEta(fTrackEta);
+        flowtrack->SetPt(fMCparticle->Pt());
+        break;
+      default:
+        flowtrack->SetPhi(fTrackPhi);
+        flowtrack->SetEta(fTrackEta);
+    }
     flowtrack->SetSource(AliFlowTrack::kFromTracklet);
   }
   else
@@ -345,7 +392,12 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
         break;
       case kTrackWithMCPID:
         flowtrack = new AliFlowTrack(fTrack);
+        //flowtrack->setPID(...) from mc, when implemented
         break;
+      case kTrackWithMCpt:
+        if (!fMCparticle) return NULL;
+        flowtrack = new AliFlowTrack(fTrack);
+        flowtrack->SetPt(fMCparticle->Pt());
       default:
         flowtrack = new AliFlowTrack(fTrack);
     }
@@ -361,7 +413,23 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
 Bool_t AliFlowTrackCuts::IsPhysicalPrimary() const
 {
   //check if current particle is a physical primary
-  return fMCevent->IsPhysicalPrimary(fTrackLabel);
+  if (!fMCevent) return kFALSE;
+  if (fTrackLabel<0) return kFALSE;
+  return IsPhysicalPrimary(fMCevent, fTrackLabel);
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::IsPhysicalPrimary(AliMCEvent* mcEvent, Int_t label)
+{
+  //check if current particle is a physical primary
+  Bool_t physprim=mcEvent->IsPhysicalPrimary(label);
+  if (!physprim) return kFALSE;
+  AliMCParticle* track = static_cast<AliMCParticle*>(mcEvent->GetTrack(label));
+  if (!track) return kFALSE;
+  TParticle* particle = track->Particle();
+  Bool_t transported = particle->TestBit(kTransportBit);
+  //printf("prim: %s, transp: %s\n",(physprim)?"YES":"NO ",(transported)?"YES":"NO ");
+  return (physprim && transported);
 }
 
 //-----------------------------------------------------------------------
@@ -382,4 +450,52 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
         return "unknown";
   }
   return "unknown";
+}
+
+//-----------------------------------------------------------------------
+void AliFlowTrackCuts::DefineHistograms()
+{
+}
+
+//-----------------------------------------------------------------------
+Int_t AliFlowTrackCuts::GetNumberOfInputObjects() const
+{
+  //get the number of tracks in the input event according source
+  //selection (ESD tracks, tracklets, MC particles etc.)
+  AliESDEvent* esd=NULL;
+  switch (fParamType)
+  {
+    case kESD_SPDtracklet:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) return 0;
+      return esd->GetMultiplicity()->GetNumberOfTracklets();
+    case kMC:
+      if (!fMCevent) return 0;
+      return fMCevent->GetNumberOfTracks();
+    default:
+      if (!fEvent) return 0;
+      return fEvent->GetNumberOfTracks();
+  }
+  return 0;
+}
+
+//-----------------------------------------------------------------------
+TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
+{
+  //get the input object according the data source selection:
+  //(esd tracks, traclets, mc particles,etc...)
+  AliESDEvent* esd=NULL;
+  switch (fParamType)
+  {
+    case kESD_SPDtracklet:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) return NULL;
+      return const_cast<AliMultiplicity*>(esd->GetMultiplicity());
+    case kMC:
+      if (!fMCevent) return NULL;
+      return fMCevent->GetTrack(i);
+    default:
+      if (!fEvent) return NULL;
+      return fEvent->GetTrack(i);
+  }
 }

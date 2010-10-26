@@ -289,10 +289,13 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
 
   OpenFile(0);
   fHistList = new TList();
+  fHistList->SetOwner(kTRUE);
   OpenFile(1);
   fHistListTPC = new TList();
+  fHistListTPC->SetOwner(kTRUE);
   OpenFile(2);
   fHistListITS = new TList();
+  fHistListITS->SetOwner(kTRUE);
 
   Int_t fgkNPhiBins=18;
   Float_t kMinPhi = 0.;

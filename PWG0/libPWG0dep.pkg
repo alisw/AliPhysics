@@ -6,6 +6,7 @@
 
 SRCS = dNdPt/AlidNdPtHelper.cxx \
       dNdPt/AlidNdPtAnalysis.cxx \
+      dNdPt/AlidNdPtAnalysisPbPb.cxx \
       dNdPt/AlidNdPtCorrection.cxx \
       dNdPt/AlidNdPtAcceptanceCuts.cxx \
       dNdPt/AlidNdPtEventCuts.cxx \

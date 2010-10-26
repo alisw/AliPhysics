@@ -42,13 +42,16 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   // Use HLT ESD
   void SetUseHLT(Bool_t useHLT = kFALSE) {fUseHLT = useHLT;}
 
+  // Use Terminate function
+  void SetUseTerminate(Bool_t useTerminate = kTRUE) {fUseTerminate = useTerminate;}
+
  private:
   AliESDEvent *fESD;          //! ESD event
   AliESDfriend *fESDfriend;   //! ESD friend event
   AliMCEvent *fMC;            //! MC event
 
   TList *fOutput;             //! list send on output container 1
-  TTree* fOutputSummary;       //! tree to dump summary values (output container 2)
+  TTree* fOutputSummary;      //! tree to dump summary values (output container 2)
   TIterator *fPitList;        //! iterator over the output objetcs  
   TList *fCompList;           // list of comparison objects
 
@@ -56,10 +59,12 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   Bool_t fUseESDfriend;       // use ESD friend
   Bool_t fUseHLT;             // use HLT ESD
 
+  Bool_t fUseTerminate;       // use terminate function
+
   AliPerformanceTask(const AliPerformanceTask&); // not implemented
   AliPerformanceTask& operator=(const AliPerformanceTask&); // not implemented
   
-  ClassDef(AliPerformanceTask, 3); // example of analysis
+  ClassDef(AliPerformanceTask, 4); // example of analysis
 };
 
 #endif

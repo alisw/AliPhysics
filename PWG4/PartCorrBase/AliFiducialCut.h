@@ -53,52 +53,52 @@ class AliFiducialCut : public TObject {
   void SetSimpleEMCALFiducialCut(const Float_t abseta, const Float_t phimin, const Float_t phimax) ;
   void SetSimplePHOSFiducialCut(const Float_t abseta, const Float_t phimin, const Float_t phimax) ;
 
-  void AddCTSFidCutMaxEtaArray(TArrayF & array)  
-  {  fCTSFidCutMaxEta  = new TArrayF(array) ; } 
+  void AddCTSFidCutMaxEtaArray(Int_t size, Float_t* array)  
+  {  fCTSFidCutMaxEta->Set(size,array);  } 
   TArrayF * GetCTSFidCutMaxEtaArray() const   {return   fCTSFidCutMaxEta;}
   
-  void AddCTSFidCutMaxPhiArray(TArrayF & array)  
-  {  fCTSFidCutMaxPhi  = new TArrayF(array) ; }
+  void AddCTSFidCutMaxPhiArray(Int_t size, Float_t* array)  
+  {  fCTSFidCutMaxPhi->Set(size,array); }
   TArrayF * GetCTSFidCutMaxPhiArray() const   {return   fCTSFidCutMaxPhi;}
   
-  void AddCTSFidCutMinEtaArray(TArrayF & array)  
-  {  fCTSFidCutMinEta  = new TArrayF(array) ; } 
+  void AddCTSFidCutMinEtaArray(Int_t size, Float_t* array)  
+  {  fCTSFidCutMinEta->Set(size,array); } 
   TArrayF * GetCTSFidCutMinEtaArray() const   {return   fCTSFidCutMinEta;}
  
-  void AddCTSFidCutMinPhiArray(TArrayF & array)  
-  {  fCTSFidCutMinPhi  = new TArrayF(array) ; }
+  void AddCTSFidCutMinPhiArray(Int_t size, Float_t* array)  
+  {  fCTSFidCutMinPhi->Set(size,array); }
   TArrayF * GetCTSFidCutMinPhiArray() const   {return   fCTSFidCutMinPhi;}
   
-  void AddEMCALFidCutMaxEtaArray(TArrayF & array)  
-  {  fEMCALFidCutMaxEta  = new TArrayF(array) ; } 
+  void AddEMCALFidCutMaxEtaArray(Int_t size, Float_t* array)  
+  {  fEMCALFidCutMaxEta->Set(size,array); } 
   TArrayF * GetEMCALFidCutMaxEtaArray() const   {return   fEMCALFidCutMaxEta;}
   
-  void AddEMCALFidCutMaxPhiArray(TArrayF & array)  
-  {  fEMCALFidCutMaxPhi  = new TArrayF(array) ; }
+  void AddEMCALFidCutMaxPhiArray(Int_t size, Float_t* array)  
+  {  fEMCALFidCutMaxPhi->Set(size,array); }
   TArrayF * GetEMCALFidCutMaxPhiArray() const   {return   fEMCALFidCutMaxPhi;}
  
-  void AddEMCALFidCutMinEtaArray(TArrayF & array)  
-  {  fEMCALFidCutMinEta  = new TArrayF(array) ; } 
+  void AddEMCALFidCutMinEtaArray(Int_t size, Float_t* array)  
+  {  fEMCALFidCutMinEta->Set(size,array); } 
   TArrayF * GetEMCALFidCutMinEtaArray() const   {return   fEMCALFidCutMinEta;}
   
-  void AddEMCALFidCutMinPhiArray(TArrayF & array)  
-  {  fEMCALFidCutMinPhi  = new TArrayF(array) ; }
+  void AddEMCALFidCutMinPhiArray(Int_t size, Float_t* array)  
+  {  fEMCALFidCutMinPhi->Set(size,array); }
   TArrayF * GetEMCALFidCutMinPhiArray() const   {return   fEMCALFidCutMinPhi;}
   
-  void AddPHOSFidCutMaxEtaArray(TArrayF & array)  
-  {  fPHOSFidCutMaxEta  = new TArrayF(array) ; } 
+  void AddPHOSFidCutMaxEtaArray(Int_t size, Float_t* array)  
+  {  fPHOSFidCutMaxEta->Set(size,array); } 
   TArrayF * GetPHOSFidCutMaxEtaArray() const   {return   fPHOSFidCutMaxEta;}
   
-   void AddPHOSFidCutMaxPhiArray(TArrayF & array)  
-   {  fPHOSFidCutMaxPhi  = new TArrayF(array) ; }
+   void AddPHOSFidCutMaxPhiArray(Int_t size, Float_t* array)  
+   {  fPHOSFidCutMaxPhi->Set(size,array); }
    TArrayF * GetPHOSFidCutMaxPhiArray() const   {return   fPHOSFidCutMaxPhi;}
    
-   void AddPHOSFidCutMinEtaArray(TArrayF & array)  
-   {  fPHOSFidCutMinEta  = new TArrayF(array) ; } 
+   void AddPHOSFidCutMinEtaArray(Int_t size, Float_t* array)  
+   {  fPHOSFidCutMinEta->Set(size,array); } 
    TArrayF * GetPHOSFidCutMinEtaArray() const   {return   fPHOSFidCutMinEta;}
  
-   void AddPHOSFidCutMinPhiArray(TArrayF & array)  
-   {  fPHOSFidCutMinPhi  = new TArrayF(array) ; }
+   void AddPHOSFidCutMinPhiArray(Int_t size, Float_t* array)  
+   {  fPHOSFidCutMinPhi->Set(size,array); }
    TArrayF * GetPHOSFidCutMinPhiArray() const   {return   fPHOSFidCutMinPhi;}
    
  

@@ -31,6 +31,8 @@ class AliUEHistograms : public TObject
   
   void CopyReconstructedData(AliUEHistograms* from);
   
+  AliUEHist* GetUEHist(Int_t id);
+  
   AliUEHist* GetNumberDensitypT() { return fNumberDensitypT; }
   AliUEHist* GetSumpT() { return fSumpT; }
   AliUEHist* GetNumberDensityPhi() { return fNumberDensityPhi; }

@@ -28,181 +28,83 @@
 #include "AliAnalysisTaskCaloFilter.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDCaloCells.h"
 #include "AliLog.h"
+#include "AliVCluster.h"
+#include "AliVCaloCells.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliEMCALGeometry.h"
+#include "AliVEventHandler.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 
 ClassImp(AliAnalysisTaskCaloFilter)
   
 ////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
-  AliAnalysisTaskSE(),
-  fCalorimeter("EMCAL PHOS")
+  AliAnalysisTaskSE(), //fCuts(0x0),
+  fCaloFilter(0), fCorrect(kFALSE), 
+  fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEAR"), 
+  fEMCALRecoUtils(new AliEMCALRecoUtils)
 {
   // Default constructor
 }
 
 //__________________________________________________
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter(const char* name):
-  AliAnalysisTaskSE(name),
-  fCalorimeter("EMCAL PHOS")
+  AliAnalysisTaskSE(name), //fCuts(0x0),
+  fCaloFilter(0), fCorrect(kFALSE),
+  fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEAR"), 
+  fEMCALRecoUtils(new AliEMCALRecoUtils)
 {
   // Constructor
 }
 
 //__________________________________________________
-void AliAnalysisTaskCaloFilter::CreateAODFromAOD()
+AliAnalysisTaskCaloFilter::~AliAnalysisTaskCaloFilter()
 {
-
-  // Copy AOD header, vertex, CaloClusters and CaloCells to output AOD
+  //Destructor.
+	
+  if(fEMCALGeo)       delete fEMCALGeo;	
+  if(fEMCALRecoUtils) delete fEMCALRecoUtils ;
   
-  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!aod) {
-    printf("AliAnalysisTaskCaloFilter::CreateAODFromAOD() - This event does not contain AODs?");
-    return;
-  }
-  
-  // set arrays and pointers
-  Float_t posF[3];
-  Double_t pos[3];
-  
-  Double_t covVtx[6];
-  
-  for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
-  
-  // Update the header
-  AliAODHeader* headerin = aod->GetHeader();
-  AliAODHeader* header = AODEvent()->GetHeader();
-  header->SetRunNumber(headerin->GetRunNumber());
-  header->SetBunchCrossNumber(headerin->GetBunchCrossNumber());
-  header->SetOrbitNumber(headerin->GetOrbitNumber());
-  header->SetPeriodNumber(headerin->GetPeriodNumber());
-  header->SetEventType(headerin->GetEventType());
-  header->SetMuonMagFieldScale(headerin->GetMuonMagFieldScale()); // FIXME
-  header->SetCentrality(headerin->GetCentrality());        // FIXME
-  
-  
-  header->SetTriggerMask(headerin->GetTriggerMask()); 
-  header->SetTriggerCluster(headerin->GetTriggerCluster());
-  header->SetMagneticField(headerin->GetMagneticField());
-  header->SetZDCN1Energy(headerin->GetZDCN1Energy());
-  header->SetZDCP1Energy(headerin->GetZDCP1Energy());
-  header->SetZDCN2Energy(headerin->GetZDCN2Energy());
-  header->SetZDCP2Energy(headerin->GetZDCP2Energy());
-  header->SetZDCEMEnergy(headerin->GetZDCEMEnergy(0),headerin->GetZDCEMEnergy(1));
-  Float_t diamxy[2]={aod->GetDiamondX(),aod->GetDiamondY()};
-  Float_t diamcov[3]; aod->GetDiamondCovXY(diamcov);
-  header->SetDiamond(diamxy,diamcov);
-  //
-  //
-  Int_t nVertices = 1 ;/* = prim. vtx*/;
-  Int_t nCaloClus = aod->GetNumberOfCaloClusters();
-  
-  AODEvent()->ResetStd(0, nVertices, 0, 0, 0, nCaloClus, 0, 0);
-  
-  // Access to the AOD container of vertices
-  TClonesArray &vertices = *(AODEvent()->GetVertices());
-  Int_t jVertices=0;
-  
-  // Add primary vertex. The primary tracks will be defined
-  // after the loops on the composite objects (V0, cascades, kinks)
-  const AliAODVertex *vtx = aod->GetPrimaryVertex();
-  
-  vtx->GetXYZ(pos); // position
-  vtx->GetCovMatrix(covVtx); //covariance matrix
-  
-  AliAODVertex * primary = new(vertices[jVertices++])
-    AliAODVertex(pos, covVtx, vtx->GetChi2perNDF(), NULL, -1, AliAODVertex::kPrimary);
-  primary->SetName(vtx->GetName());
-  primary->SetTitle(vtx->GetTitle());
-  
-  // Access to the AOD container of clusters
-  TClonesArray &caloClusters = *(AODEvent()->GetCaloClusters());
-  Int_t jClusters=0;
-  
-  for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
-    
-    AliAODCaloCluster * cluster = aod->GetCaloCluster(iClust);
-    
-    //Check which calorimeter information we want to keep.
-    if     (fCalorimeter.Contains("PHOS")  && !fCalorimeter.Contains("EMCAL") && cluster->IsEMCAL()) continue ;
-    else if(fCalorimeter.Contains("EMCAL") && !fCalorimeter.Contains("PHOS")  && cluster->IsPHOS())  continue ;
-    
-    Int_t id       = cluster->GetID();
-    Float_t energy = cluster->E();
-    cluster->GetPosition(posF);
-    Char_t ttype   = cluster->GetType(); 
-    
-    
-    AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) 
-      AliAODCaloCluster(id,
-			0,
-			0x0,
-			energy,
-			posF,
-			NULL,
-			ttype);
-    
-    caloCluster->SetCaloCluster(cluster->GetDistanceToBadChannel(),
-				cluster->GetDispersion(),
-				cluster->GetM20(), cluster->GetM02(),
-				cluster->GetEmcCpvDistance(),  
-				cluster->GetNExMax(),cluster->GetTOF()) ;
-    
-    caloCluster->SetPIDFromESD(cluster->GetPID());
-    caloCluster->SetNCells(cluster->GetNCells());
-    caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
-    caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
-    
-  } 
-  caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
-  // end of loop on calo clusters
-  
-  // fill EMCAL cell info
-  if (fCalorimeter.Contains("EMCAL") && aod->GetEMCALCells()) { // protection against missing ESD information
-    AliAODCaloCells &aodinEMcells = *(aod->GetEMCALCells());
-    Int_t nEMcell = aodinEMcells.GetNumberOfCells() ;
-    
-    AliAODCaloCells &aodEMcells = *(AODEvent()->GetEMCALCells());
-    aodEMcells.CreateContainer(nEMcell);
-    aodEMcells.SetType(AliVCaloCells::kEMCALCell);
-    for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
-      aodEMcells.SetCell(iCell,aodinEMcells.GetCellNumber(iCell),aodinEMcells.GetAmplitude(iCell));
-    }
-    aodEMcells.Sort();
-  }
-  
-  // fill PHOS cell info
-  if (fCalorimeter.Contains("PHOS") && aod->GetPHOSCells()) { // protection against missing ESD information
-    AliAODCaloCells &aodinPHcells = *(aod->GetPHOSCells());
-    Int_t nPHcell = aodinPHcells.GetNumberOfCells() ;
-    
-    AliAODCaloCells &aodPHcells = *(AODEvent()->GetPHOSCells());
-    aodPHcells.CreateContainer(nPHcell);
-    aodPHcells.SetType(AliVCaloCells::kPHOSCell);
-    for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
-      aodPHcells.SetCell(iCell,aodinPHcells.GetCellNumber(iCell),aodinPHcells.GetAmplitude(iCell));
-    }
-    aodPHcells.Sort();
-  }
-  
-  
-  return;
 }
 
 //__________________________________________________
-void AliAnalysisTaskCaloFilter::CreateAODFromESD()
+void AliAnalysisTaskCaloFilter::UserCreateOutputObjects()
 {
-
-  // Copy ESD header, vertex, CaloClusters and CaloCells to output AOD
+  // Init geometry 
+	
+  fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
   
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if(!esd) {
-    printf("AliAnalysisTaskCaloFilter::CreateAODFromESD() - This event does not contain AODs?");
+}  
+
+//__________________________________________________
+void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
+{
+  // Execute analysis for current event
+  //
+  
+  if (fDebug > 0)  
+    printf("CaloFilter: Analysing event # %d\n", (Int_t)Entry());
+  
+  // Copy input ESD or AOD header, vertex, CaloClusters and CaloCells to output AOD
+  
+  AliVEvent* event = InputEvent();
+  if(!event) {
+    printf("AliAnalysisTaskCaloFilter::CreateAODFromESD() - This event does not contain Input?");
     return;
   }
+
+  //Magic line to write events to file
+  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+    
   
+  Bool_t bAOD = kFALSE;
+  if(!strcmp(event->GetName(),"AliAODEvent")) bAOD=kTRUE;
+  Bool_t bESD = kFALSE;
+  if(!strcmp(event->GetName(),"AliESDEvent")) bESD=kTRUE;
+    
   // set arrays and pointers
   Float_t posF[3];
   Double_t pos[3];
@@ -210,34 +112,42 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
   Double_t covVtx[6];
   
   for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
-  
-  // Update the header
-  
+      
   AliAODHeader* header = AODEvent()->GetHeader();
-  header->SetRunNumber(esd->GetRunNumber());
-  header->SetBunchCrossNumber(esd->GetBunchCrossNumber());
-  header->SetOrbitNumber(esd->GetOrbitNumber());
-  header->SetPeriodNumber(esd->GetPeriodNumber());
-  header->SetEventType(esd->GetEventType());
+  
+  header->SetRunNumber(event->GetRunNumber());
+  header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
+  if(bESD)
+    header->SetFiredTriggerClasses(((AliESDEvent*)event)->GetFiredTriggerClasses());
+  header->SetTriggerMask(event->GetTriggerMask()); 
+  header->SetTriggerCluster(event->GetTriggerCluster());
+  
+  header->SetBunchCrossNumber(event->GetBunchCrossNumber());
+  header->SetOrbitNumber(event->GetOrbitNumber());
+  header->SetPeriodNumber(event->GetPeriodNumber());
+  header->SetEventType(event->GetEventType());
   header->SetMuonMagFieldScale(-999.); // FIXME
   header->SetCentrality(-999.);        // FIXME
   
   
-  header->SetTriggerMask(esd->GetTriggerMask()); 
-  header->SetTriggerCluster(esd->GetTriggerCluster());
-  header->SetMagneticField(esd->GetMagneticField());
-  header->SetZDCN1Energy(esd->GetZDCN1Energy());
-  header->SetZDCP1Energy(esd->GetZDCP1Energy());
-  header->SetZDCN2Energy(esd->GetZDCN2Energy());
-  header->SetZDCP2Energy(esd->GetZDCP2Energy());
-  header->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
-  Float_t diamxy[2]={esd->GetDiamondX(),esd->GetDiamondY()};
-  Float_t diamcov[3]; esd->GetDiamondCovXY(diamcov);
+  header->SetTriggerMask(event->GetTriggerMask()); 
+  header->SetTriggerCluster(event->GetTriggerCluster());
+  header->SetMagneticField(event->GetMagneticField());
+  header->SetZDCN1Energy(event->GetZDCN1Energy());
+  header->SetZDCP1Energy(event->GetZDCP1Energy());
+  header->SetZDCN2Energy(event->GetZDCN2Energy());
+  header->SetZDCP2Energy(event->GetZDCP2Energy());
+  header->SetZDCEMEnergy(event->GetZDCEMEnergy(0),event->GetZDCEMEnergy(1));
+  Float_t diamxy[2]={event->GetDiamondX(),event->GetDiamondY()};
+  Float_t diamcov[3]; event->GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);
+  if(bESD){
+    header->SetDiamondZ(((AliESDEvent*)event)->GetDiamondZ(),((AliESDEvent*)event)->GetSigma2DiamondZ());
+  }
   //
   //
   Int_t nVertices = 1 ;/* = prim. vtx*/;
-  Int_t nCaloClus = esd->GetNumberOfCaloClusters();
+  Int_t nCaloClus = event->GetNumberOfCaloClusters();
   
   AODEvent()->ResetStd(0, nVertices, 0, 0, 0, nCaloClus, 0, 0);
   
@@ -247,15 +157,21 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
   
   // Add primary vertex. The primary tracks will be defined
   // after the loops on the composite objects (V0, cascades, kinks)
-  const AliESDVertex *vtx = esd->GetPrimaryVertex();
-  
-  vtx->GetXYZ(pos); // position
-  vtx->GetCovMatrix(covVtx); //covariance matrix
+  event->GetPrimaryVertex()->GetXYZ(pos);
+  Float_t chi = 0;
+  if      (bESD){
+    ((AliESDEvent*)event)->GetPrimaryVertex()->GetCovMatrix(covVtx);
+    chi = ((AliESDEvent*)event)->GetPrimaryVertex()->GetChi2toNDF();
+  }
+  else if (bAOD){
+    ((AliAODEvent*)event)->GetPrimaryVertex()->GetCovMatrix(covVtx);
+    chi = ((AliAODEvent*)event)->GetPrimaryVertex()->GetChi2perNDF();//Different from ESD?
+  }
   
   AliAODVertex * primary = new(vertices[jVertices++])
-    AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
-  primary->SetName(vtx->GetName());
-  primary->SetTitle(vtx->GetTitle());
+    AliAODVertex(pos, covVtx, chi, NULL, -1, AliAODVertex::kPrimary);
+  primary->SetName(event->GetPrimaryVertex()->GetName());
+  primary->SetTitle(event->GetPrimaryVertex()->GetTitle());
   
   // Access to the AOD container of clusters
   TClonesArray &caloClusters = *(AODEvent()->GetCaloClusters());
@@ -263,12 +179,56 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
   
   for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
     
-    AliESDCaloCluster * cluster = esd->GetCaloCluster(iClust);
+    AliVCluster * cluster = event->GetCaloCluster(iClust);
     
     //Check which calorimeter information we want to keep.
-    if     (fCalorimeter.Contains("PHOS")  && !fCalorimeter.Contains("EMCAL") && cluster->IsEMCAL()) continue ;
-    else if(fCalorimeter.Contains("EMCAL") && !fCalorimeter.Contains("PHOS")  && cluster->IsPHOS())  continue ;
     
+    if(fCaloFilter!=kBoth){
+      if     (fCaloFilter==kPHOS  && cluster->IsEMCAL()) continue ;
+      else if(fCaloFilter==kEMCAL && cluster->IsPHOS())  continue ;
+    }  
+    
+    //--------------------------------------------------------------
+    //If EMCAL, and requested, correct energy, position ...
+    if(cluster->IsEMCAL() && fCorrect){
+      Float_t position[]={0,0,0};
+      if(DebugLevel() > 2)
+        printf("Check cluster %d for bad channels and close to border\n",cluster->GetID());
+      if(fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo,cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
+//      if(!fEMCALRecoUtils->CheckCellFiducialRegion(fEMCALGeo, cluster, event->GetEMCALCells())) {
+//        printf("Finally reject\n");
+//        continue;
+//      }
+      if(DebugLevel() > 2)
+      { 
+        printf("Filter, before  : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClust,cluster->E(),
+               cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20());
+        cluster->GetPosition(position);
+        printf("Filter, before  : i %d, x %f, y %f, z %f\n",cluster->GetID(), position[0], position[1], position[2]);
+      }
+            
+      if(fEMCALRecoUtils->IsRecalibrationOn())	{
+        fEMCALRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, cluster, event->GetEMCALCells());
+        fEMCALRecoUtils->RecalculateClusterShowerShapeParameters(fEMCALGeo, event->GetEMCALCells(),cluster);
+        fEMCALRecoUtils->RecalculateClusterPID(cluster);
+
+      }
+      cluster->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(cluster));
+      
+      fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, event->GetEMCALCells(),cluster);
+
+      if(DebugLevel() > 2)
+      { 
+        printf("Filter, after   : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",cluster->GetID(),cluster->E(),
+               cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20());
+        cluster->GetPosition(position);
+        printf("Filter, after   : i %d, x %f, y %f, z %f\n",cluster->GetID(), position[0], position[1], position[2]);
+      }    
+      
+    }
+    //--------------------------------------------------------------
+
+    //Now fill AODs
     Int_t id       = cluster->GetID();
     Float_t energy = cluster->E();
     cluster->GetPosition(posF);
@@ -293,34 +253,59 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
     
+    if(DebugLevel() > 2)
+    { 
+      printf("Filter, aod       : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",caloCluster->GetID(),caloCluster->E(),
+             caloCluster->GetDispersion(),caloCluster->GetM02(),caloCluster->GetM20());
+      caloCluster->GetPosition(posF);
+      printf("Filter, aod       : i %d, x %f, y %f, z %f\n",caloCluster->GetID(), posF[0], posF[1], posF[2]);
+    }    
+    
   } 
   caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
   // end of loop on calo clusters
   
   // fill EMCAL cell info
-  if (fCalorimeter.Contains("EMCAL") && esd->GetEMCALCells()) { // protection against missing ESD information
-    AliESDCaloCells &esdEMcells = *(esd->GetEMCALCells());
-    Int_t nEMcell = esdEMcells.GetNumberOfCells() ;
+  if ((fCaloFilter==kBoth ||  fCaloFilter==kEMCAL) && event->GetEMCALCells()) { // protection against missing ESD information
+    AliVCaloCells &eventEMcells = *(event->GetEMCALCells());
+    Int_t nEMcell = eventEMcells.GetNumberOfCells() ;
     
     AliAODCaloCells &aodEMcells = *(AODEvent()->GetEMCALCells());
     aodEMcells.CreateContainer(nEMcell);
     aodEMcells.SetType(AliVCaloCells::kEMCALCell);
-    for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
-      aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell));
+    Double_t calibFactor = 1.;   
+    for (Int_t iCell = 0; iCell < nEMcell; iCell++) { 
+      Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+      fEMCALGeo->GetCellIndex(eventEMcells.GetCellNumber(iCell),imod,iTower,iIphi,iIeta); 
+      fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
+      
+      if(fCorrect && fEMCALRecoUtils->IsRecalibrationOn()){ 
+        calibFactor = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
+      }
+      
+      if(!fEMCALRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi)){ //Channel is not declared as bad
+        aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),eventEMcells.GetAmplitude(iCell)*calibFactor);
+        //printf("GOOD channel\n");
+      }
+      else {
+        aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),0);
+        //printf("BAD channel\n");
+
+      }
     }
     aodEMcells.Sort();
   }
   
   // fill PHOS cell info
-  if (fCalorimeter.Contains("PHOS") && esd->GetPHOSCells()) { // protection against missing ESD information
-    AliESDCaloCells &esdPHcells = *(esd->GetPHOSCells());
-    Int_t nPHcell = esdPHcells.GetNumberOfCells() ;
+  if ((fCaloFilter==kBoth ||  fCaloFilter==kPHOS) && event->GetPHOSCells()) { // protection against missing ESD information
+    AliVCaloCells &eventPHcells = *(event->GetPHOSCells());
+    Int_t nPHcell = eventPHcells.GetNumberOfCells() ;
     
     AliAODCaloCells &aodPHcells = *(AODEvent()->GetPHOSCells());
     aodPHcells.CreateContainer(nPHcell);
     aodPHcells.SetType(AliVCaloCells::kPHOSCell);
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
-      aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell));
+      aodPHcells.SetCell(iCell,eventPHcells.GetCellNumber(iCell),eventPHcells.GetAmplitude(iCell));
     }
     aodPHcells.Sort();
   }
@@ -329,39 +314,37 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
   return;
 }
 
-//__________________________________________________
-void AliAnalysisTaskCaloFilter::Init()
-{
-  // Initialization
-  if (fDebug > 1) AliInfo("Init() \n");
-  
-}
+//_____________________________________________________
+void AliAnalysisTaskCaloFilter::PrintInfo(){
 
-//__________________________________________________
-void AliAnalysisTaskCaloFilter::UserCreateOutputObjects()
-{
-  // Create the output container
-}
+  //Print settings
 
-//__________________________________________________
-void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
-{
-  // Execute analysis for current event
-  //
-  
-  Long64_t ientry = Entry();
-  if (fDebug > 0)  printf("CaloFilter: Analysing event # %5d\n", (Int_t) ientry);
-
-  const char * dataevent =InputEvent()->GetName();
-  if(!strcmp(dataevent,"AliAODEvent"))   CreateAODFromAOD();  
-  
-  else if(!strcmp(dataevent,"AliESDEvent"))  CreateAODFromESD();
-  else {
-    AliFatal(Form("Unknown event type %s, ABORT",dataevent));
-    
-  }
+  printf("TASK: AnalysisCaloFilter \n");
+  printf("\t Not only filter, correct Clusters? %d\n",fCorrect);
+  printf("\t Calorimeter Filtering Option     ? %d\n",fCaloFilter);
 
 }
+
+//_____________________________________________________
+//void AliAnalysisTaskCaloFilter::LocalInit()
+//{
+//	// Local Initialization
+//	
+//	// Create cuts/param objects and publish to slot
+//	const Int_t buffersize = 255;
+//	char onePar[buffersize] ;
+//	fCuts = new TList();
+//  
+//	snprintf(onePar,buffersize, "Calorimeter Filtering Option %d", fCaloFilter) ;
+//	fCuts->Add(new TObjString(onePar));
+//	snprintf(onePar,buffersize, "Not only filter but correct? %d cells;", fCorrect) ;
+//	fCuts->Add(new TObjString(onePar));
+//  
+//	// Post Data
+//	PostData(2, fCuts);
+//	
+//}
+
 
 //__________________________________________________
 void AliAnalysisTaskCaloFilter::Terminate(Option_t */*option*/)

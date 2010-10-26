@@ -27,9 +27,77 @@ Int_t kFile = 1; // Number of files
 char * kXML = "collection.xml";
 //---------------------------------------------------------------------------
 
-const TString kInputData = "AOD"; //ESD, AOD, MC
+const TString kInputData = "ESD"; //ESD, AOD, MC
 TString kTreeName = "esdTree";
-Bool_t copy = kFALSE;
+
+
+void SetRecoUtilsParams(AliEMCALRecoUtils* reco){
+
+    reco->SetParticleType(AliEMCALRecoUtils::kPhoton);
+    reco->SetW0(4.5);
+
+    reco->SetPositionAlgorithm(AliEMCALRecoUtils::kUnchanged);
+
+    //reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
+    //reco->SetMisalTransShift(0,1.134);   reco->SetMisalTransShift(1,8.2); reco->SetMisalTransShift(2,1.197);
+    //reco->SetMisalTransShift(3,-3.093);  reco->SetMisalTransShift(4,6.82);reco->SetMisalTransShift(5,1.635);
+
+    //reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerIndex);
+    //reco->SetMisalTransShift(0,1.08);   reco->SetMisalTransShift(1,8.35); reco->SetMisalTransShift(2,1.12);
+    //reco->SetMisalRotShift(3,-8.05);    reco->SetMisalRotShift(4,8.05);  
+    //reco->SetMisalTransShift(3,-0.42);  reco->SetMisalTransShift(5,1.55);
+
+     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
+    //reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaGamma);
+    //reco->SetNonLinearityParam(0,1.04);     reco->SetNonLinearityParam(1,-0.1445);
+    //reco->SetNonLinearityParam(2,1.046);    
+
+//     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaConversion);
+//     reco->SetNonLinearityParam(0,1.033);     reco->SetNonLinearityParam(1,0.0566186);
+//     reco->SetNonLinearityParam(2,0.982133);    
+
+
+//      reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
+//      reco->SetNonLinearityParam(0,1.001);     reco->SetNonLinearityParam(1,-0.01264);
+//      reco->SetNonLinearityParam(2,-0.03632);    
+//      reco->SetNonLinearityParam(3,0.1798);     reco->SetNonLinearityParam(4,-0.522);
+
+//     reco->SwitchOnRecalibration();
+//      TFile * f = new TFile("RecalibrationFactors.root","read");
+//      TH2F * h0 = (TH2F*)f->Get("EMCALRecalFactors_SM0")->Clone();
+//      TH2F * h1 = (TH2F*)f->Get("EMCALRecalFactors_SM1")->Clone();
+//      TH2F * h2 = (TH2F*)f->Get("EMCALRecalFactors_SM2")->Clone();
+//      TH2F * h3 = (TH2F*)f->Get("EMCALRecalFactors_SM3")->Clone();
+
+//      reco->SetEMCALChannelRecalibrationFactors(0,h0);
+//      reco->SetEMCALChannelRecalibrationFactors(1,h1);
+//      reco->SetEMCALChannelRecalibrationFactors(2,h2);
+//      reco->SetEMCALChannelRecalibrationFactors(3,h3);
+
+    reco->SwitchOnBadChannelsRemoval();
+    // SM0
+    reco->SetEMCALChannelStatus(0,3,13);  reco->SetEMCALChannelStatus(0,44,1); reco->SetEMCALChannelStatus(0,3,13); 
+    reco->SetEMCALChannelStatus(0,20,7);  reco->SetEMCALChannelStatus(0,38,2);   
+    // SM1
+    reco->SetEMCALChannelStatus(1,4,7);   reco->SetEMCALChannelStatus(1,4,13);  reco->SetEMCALChannelStatus(1,9,20); 
+    reco->SetEMCALChannelStatus(1,14,15); reco->SetEMCALChannelStatus(1,23,16); reco->SetEMCALChannelStatus(1,32,23); 
+    reco->SetEMCALChannelStatus(1,37,5);  reco->SetEMCALChannelStatus(1,40,1);  reco->SetEMCALChannelStatus(1,40,2);
+    reco->SetEMCALChannelStatus(1,40,5);  reco->SetEMCALChannelStatus(1,41,0);  reco->SetEMCALChannelStatus(1,41,1);
+    reco->SetEMCALChannelStatus(1,41,2);  reco->SetEMCALChannelStatus(1,41,4);
+    // SM2        
+    reco->SetEMCALChannelStatus(2,14,15); reco->SetEMCALChannelStatus(2,18,16); reco->SetEMCALChannelStatus(2,18,17); 
+    reco->SetEMCALChannelStatus(2,18,18); reco->SetEMCALChannelStatus(2,18,20); reco->SetEMCALChannelStatus(2,18,21); 
+    reco->SetEMCALChannelStatus(2,18,23); reco->SetEMCALChannelStatus(2,19,16); reco->SetEMCALChannelStatus(2,19,17); 
+    reco->SetEMCALChannelStatus(2,19,19); reco->SetEMCALChannelStatus(2,19,20); reco->SetEMCALChannelStatus(2,19,21); 
+    reco->SetEMCALChannelStatus(2,19,22);
+    //SM3
+    reco->SetEMCALChannelStatus(3,4,7);
+
+    reco->SetNumberOfCellsFromEMCALBorder(1);
+
+    //reco->Print("");
+
+}
 
 void anaEMCALCalib(Int_t mode=mLocal)
 {
@@ -47,7 +115,7 @@ void anaEMCALCalib(Int_t mode=mLocal)
   //Try to set the new library
   //gSystem->Load("./PWG4CaloCalib/libPWG4CaloCalib.so");
   //gSystem->ListLibraries();
-  
+
   //-------------------------------------------------------------------------------------------------
   //Create chain from ESD and from cross sections files, look below for options.
   //-------------------------------------------------------------------------------------------------
@@ -57,10 +125,10 @@ void anaEMCALCalib(Int_t mode=mLocal)
     cout<<"Wrong  data type "<<kInputData<<endl;
     break;
   }
-  
+
   TChain *chain       = new TChain(kTreeName) ;
   CreateChain(mode, chain);  
-  
+
   if(chain){
     AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
     
@@ -68,133 +136,71 @@ void anaEMCALCalib(Int_t mode=mLocal)
     // Make the analysis manager
     //-------------------------------------
     AliAnalysisManager *mgr  = new AliAnalysisManager("Manager", "Manager");
-    
-    // AOD output handler
-    if(copy){
-      AliAODHandler* aodoutHandler   = new AliAODHandler();
-      aodoutHandler->SetOutputFileName("aod.root");
-      ////aodoutHandler->SetCreateNonStandardAOD();
-      mgr->SetOutputEventHandler(aodoutHandler);
-    }
-    
+
     //input
     if(kInputData == "ESD")
-    {
-      // ESD handler
-      AliESDInputHandler *esdHandler = new AliESDInputHandler();
-      mgr->SetInputEventHandler(esdHandler);
-      esdHandler->SetReadFriends(kFALSE);
-      cout<<"ESD handler "<<mgr->GetInputEventHandler()<<endl;
-    }
+      {
+	// ESD handler
+	AliESDInputHandler *esdHandler = new AliESDInputHandler();
+	mgr->SetInputEventHandler(esdHandler);
+	esdHandler->SetReadFriends(kFALSE);
+	cout<<"ESD handler "<<mgr->GetInputEventHandler()<<endl;
+      }
     if(kInputData == "AOD")
-    {
-      // AOD handler
-      AliAODInputHandler *aodHandler = new AliAODInputHandler();
-      mgr->SetInputEventHandler(aodHandler);
-      cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
-      
-    }
+      {
+	// AOD handler
+	AliAODInputHandler *aodHandler = new AliAODInputHandler();
+	mgr->SetInputEventHandler(aodHandler);
+	cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
+	
+      }
     
-    //mgr->SetDebugLevel(1);
+    // mgr->SetDebugLevel(1);
     
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
-    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
-    
     
     // ESD filter task
     if(kInputData == "ESD"){
-      
-      gROOT->LoadMacro("AddTaskPhysicsSelection.C");
-      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-      if(!copy){
-        gROOT->LoadMacro("AddTaskESDFilter.C");
-        AliAnalysisTaskESDfilter *esdfilter = AddTaskESDFilter(kFALSE);
-      }
+
+      //gROOT->LoadMacro("AddTaskPhysicsSelection.C");
+      //AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+
     }
-    
-    
-    
-    AliAnalysisTaskEMCALPi0CalibSelection * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelection ("EMCALPi0Calibration");
-    //pi0calib->SetDebugLevel(10); 
-    pi0calib->CopyAOD(copy);
-    pi0calib->SetClusterMinEnergy(0.5);
-    pi0calib->SetClusterMaxEnergy(15.);
-    pi0calib->SetAsymmetryCut(0.7);
-    pi0calib->SetClusterMinNCells(0);
-    pi0calib->SetNCellsGroup(0);
-    pi0calib->SwitchOnBadChannelsRemoval();
-    pi0calib->SwitchOffSameSM();
-    pi0calib->SwitchOnOldAODs();
-    pi0calib->SetNumberOfCellsFromEMCALBorder(1);
-    AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
-    reco->SetMisalTransShift(0,1.08);   reco->SetMisalTransShift(1,8.35); reco->SetMisalTransShift(2,1.12);
-    reco->SetMisalRotShift(3,-8.05);    reco->SetMisalRotShift(4,8.05);  
-    reco->SetMisalTransShift(3,-0.42);  reco->SetMisalTransShift(5,1.55);
-    reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaGamma);
-    reco->SetNonLinearityParam(0,1.04);     reco->SetNonLinearityParam(1,-0.1445);
-    reco->SetNonLinearityParam(2,1.046);    
-    
-    //     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaConversion);
-    //     reco->SetNonLinearityParam(0,1.033);     reco->SetNonLinearityParam(1,0.0566186);
-    //     reco->SetNonLinearityParam(2,0.982133);    
-    
-    
-    //      reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
-    //      reco->SetNonLinearityParam(0,1.001);     reco->SetNonLinearityParam(1,-0.01264);
-    //      reco->SetNonLinearityParam(2,-0.03632);    
-    //      reco->SetNonLinearityParam(3,0.1798);     reco->SetNonLinearityParam(4,-0.522);
-    
-    reco->Print("");
-    
-    // SM0
-    pi0calib->SetEMCALChannelStatus(0,3,13);  pi0calib->SetEMCALChannelStatus(0,44,1); pi0calib->SetEMCALChannelStatus(0,3,13); 
-    pi0calib->SetEMCALChannelStatus(0,20,7);  pi0calib->SetEMCALChannelStatus(0,38,2);   
-    // SM1
-    pi0calib->SetEMCALChannelStatus(1,4,7);   pi0calib->SetEMCALChannelStatus(1,4,13);  pi0calib->SetEMCALChannelStatus(1,9,20); 
-    pi0calib->SetEMCALChannelStatus(1,14,15); pi0calib->SetEMCALChannelStatus(1,23,16); pi0calib->SetEMCALChannelStatus(1,32,23); 
-    pi0calib->SetEMCALChannelStatus(1,37,5);  pi0calib->SetEMCALChannelStatus(1,40,1);  pi0calib->SetEMCALChannelStatus(1,40,2);
-    pi0calib->SetEMCALChannelStatus(1,40,5);  pi0calib->SetEMCALChannelStatus(1,41,0);  pi0calib->SetEMCALChannelStatus(1,41,1);
-    pi0calib->SetEMCALChannelStatus(1,41,2);  pi0calib->SetEMCALChannelStatus(1,41,4);
-    // SM2        
-    pi0calib->SetEMCALChannelStatus(2,14,15); pi0calib->SetEMCALChannelStatus(2,18,16); pi0calib->SetEMCALChannelStatus(2,18,17); 
-    pi0calib->SetEMCALChannelStatus(2,18,18); pi0calib->SetEMCALChannelStatus(2,18,20); pi0calib->SetEMCALChannelStatus(2,18,21); 
-    pi0calib->SetEMCALChannelStatus(2,18,23); pi0calib->SetEMCALChannelStatus(2,19,16); pi0calib->SetEMCALChannelStatus(2,19,17); 
-    pi0calib->SetEMCALChannelStatus(2,19,19); pi0calib->SetEMCALChannelStatus(2,19,20); pi0calib->SetEMCALChannelStatus(2,19,21); 
-    pi0calib->SetEMCALChannelStatus(2,19,22);
-    //SM3
-    pi0calib->SetEMCALChannelStatus(3,4,7);
-    
-    mgr->AddTask(pi0calib);
-    
-    pi0calib->SwitchOnRecalibration();
-    TFile * f = new TFile("RecalibrationFactors.root","read");
-    TH2F * h0 = (TH2F*)f->Get("EMCALRecalFactors_SM0")->Clone();
-    TH2F * h1 = (TH2F*)f->Get("EMCALRecalFactors_SM1")->Clone();
-    TH2F * h2 = (TH2F*)f->Get("EMCALRecalFactors_SM2")->Clone();
-    TH2F * h3 = (TH2F*)f->Get("EMCALRecalFactors_SM3")->Clone();
-    
-    pi0calib->SetEMCALChannelRecalibrationFactors(0,h0);
-    pi0calib->SetEMCALChannelRecalibrationFactors(1,h1);
-    pi0calib->SetEMCALChannelRecalibrationFactors(2,h2);
-    pi0calib->SetEMCALChannelRecalibrationFactors(3,h3);
     
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-    if(copy) AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
+
+    AliAnalysisTaskEMCALPi0CalibSelection * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelection ("EMCALPi0Calibration");
+     if(kInputData == "ESD") pi0calib->SelectCollisionCandidates(); 
+    //pi0calib->SetDebugLevel(10); 
+    //pi0calib->UseFilteredEventAsInput();
+    pi0calib->SetClusterMinEnergy(0.5);
+    pi0calib->SetClusterMaxEnergy(10.);
+    pi0calib->SetAsymmetryCut(0.5);
+    pi0calib->SetClusterMinNCells(0);
+    pi0calib->SetNCellsGroup(0);
+    pi0calib->SwitchOnSameSM();
+    //pi0calib->SwitchOnOldAODs();
+
+    pi0calib->SwitchOnClusterCorrection();
+    AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
+    SetRecoUtilsParams(reco);
+    //reco->Print("");
+    pi0calib->PrintInfo();
+    mgr->AddTask(pi0calib);
+
     AliAnalysisDataContainer *coutput2 = 
     mgr->CreateContainer("pi0calib", TList::Class(), AliAnalysisManager::kOutputContainer, "pi0calib.root");
     
     AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer("Cuts", TList::Class(), 
-                                                               AliAnalysisManager::kOutputContainer, "pi0calib.root");
+    						       AliAnalysisManager::kOutputContainer, "pi0calib.root");
     
     mgr->ConnectInput  (pi0calib,     0, cinput1);
-    if(copy) mgr->ConnectOutput (pi0calib, 0, coutput1 );
     mgr->ConnectOutput (pi0calib, 1, coutput2 );
     mgr->ConnectOutput (pi0calib, 2, cout_cuts);
-    
+
     //-----------------------
     // Run the analysis
     //-----------------------    
@@ -209,9 +215,9 @@ void anaEMCALCalib(Int_t mode=mLocal)
     mgr->InitAnalysis();
     mgr->PrintStatus();
     mgr->StartAnalysis(smode.Data(),chain);
-    
-    cout <<" Analysis ended sucessfully "<< endl ;
-    
+
+cout <<" Analysis ended sucessfully "<< endl ;
+
   }
   else cout << "Chain was not produced ! "<<endl;
   
@@ -244,7 +250,7 @@ void  LoadLibraries(const anaModes mode) {
     gSystem->Load("libANALYSISalice.so");
     TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
     gSystem->Load("libPWG4CaloCalib.so");
-    
+    //SetupPar("PWG4CaloCalib");
     /*
       //     gSystem->Load("libPWG4omega3pi.so");
       //     gSystem->Load("libCORRFW.so");

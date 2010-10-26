@@ -132,6 +132,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtHard;  //! Pt har of the event...       
     TH1F*         fh1PtHardNoW;  //! Pt har of the event without weigt       
     TH1F*         fh1PtHardTrials;  //! Number of trials 
+    TH1F*         fh1ZVtx;          //! z-vtx distribution
     TH1F*         fh1NGenJets;      //! nr of gen jets
     TH1F*         fh1NRecJets;      //! nr of rec jets
     TH1F*         fh1PtTrackRec;    //! track pt
@@ -210,7 +211,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 8) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 9) // Analysis task for standard jet analysis
 };
  
 #endif

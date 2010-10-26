@@ -1,0 +1,40 @@
+#--------------------------------------------------------------------------------#
+# Package File for PWG3vertexingHF                                               #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS    vertexingHF/AliAODRecoDecayHF.cxx vertexingHF/AliAODRecoDecayHF2Prong.cxx  vertexingHF/AliAODRecoDecayHF3Prong.cxx vertexingHF/AliAODRecoDecayHF4Prong.cxx vertexingHF/AliAODRecoCascadeHF.cxx vertexingHF/AliAODPidHF.cxx vertexingHF/AliRDHFCuts.cxx vertexingHF/AliRDHFCutsD0toKpi.cxx vertexingHF/AliRDHFCutsJpsitoee.cxx vertexingHF/AliRDHFCutsDplustoKpipi.cxx vertexingHF/AliRDHFCutsDstoKKpi.cxx vertexingHF/AliRDHFCutsLctopKpi.cxx vertexingHF/AliRDHFCutsLctoV0.cxx vertexingHF/AliRDHFCutsD0toKpipipi.cxx vertexingHF/AliRDHFCutsDStartoKpipi.cxx vertexingHF/AliAnalysisVertexingHF.cxx vertexingHF/AliAnalysisTaskSEVertexingHF.cxx vertexingHF/AliAnalysisTaskMEVertexingHF.cxx vertexingHF/AliAnalysisTaskSESelectHF.cxx vertexingHF/AliAnalysisTaskSECompareHF.cxx vertexingHF/AliAnalysisTaskSEDplus.cxx vertexingHF/AliAnalysisTaskSEDs.cxx vertexingHF/AliAnalysisTaskSELambdac.cxx vertexingHF/AliAnalysisTaskSED0Mass.cxx vertexingHF/AliAnalysisTaskSECharmFraction.cxx vertexingHF/AliCFVertexingHF.cxx vertexingHF/AliCFVertexingHF2Prong.cxx vertexingHF/AliCFVertexingHF3Prong.cxx vertexingHF/AliCFTaskVertexingHF.cxx vertexingHF/AliCFHeavyFlavourTaskMultiVarMultiStep.cxx vertexingHF/AliCFTaskForDStarAnalysis.cxx vertexingHF/AliAnalysisTaskSEDStarJets.cxx vertexingHF/AliAnalysisTaskSEDStarSpectra.cxx vertexingHF/AliAnalysisTaskSESignificance.cxx vertexingHF/AliMultiDimVector.cxx vertexingHF/AliSignificanceCalculator.cxx vertexingHF/AliHFMassFitter.cxx vertexingHF/AliHFPtSpectrum.cxx vertexingHF/AliAnalysisTaskSEBkgLikeSignJPSI.cxx vertexingHF/AliAnalysisTaskSEBkgLikeSignD0.cxx vertexingHF/AliAnalysisTaskSEJPSItoEle.cxx vertexingHF/AliAnalysisBtoJPSItoEle.cxx vertexingHF/AliAnalysisTaskSEBtoJPSItoEle.cxx vertexingHF/AliBtoJPSItoEleCDFfitFCN.cxx vertexingHF/AliBtoJPSItoEleCDFfitHandler.cxx)
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  PWG3vertexingHFLinkDef.h)
+
+set ( EINCLUDE   PWG3/base PWG3/vertexingHF CORRFW)
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+	
+			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -L${ROOTLIBDIR} -lEG)
+
+endif( ALICE_TARGET STREQUAL "win32gcc")

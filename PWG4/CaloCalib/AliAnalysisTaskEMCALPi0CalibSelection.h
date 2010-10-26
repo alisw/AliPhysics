@@ -17,8 +17,6 @@ class TH1F;
 // AliRoot includes
 #include "AliAnalysisTaskSE.h"
 class AliEMCALGeometry;
-class AliAODCaloCluster;
-class AliAODCaloCells;
 //class AliEMCALCalibData ;
 #include "AliEMCALGeoParams.h"
 class AliEMCALRecoUtils;
@@ -50,12 +48,10 @@ public:
   void SetLogWeight(Float_t w)           {fLogWeight   = w   ;}
   
   //void SetCalibCorrections(AliEMCALCalibData* const cdata);
-  void CreateAODFromESD();
-  void CreateAODFromAOD();	
-
-  void CopyAOD(Bool_t copy)  { fCopyAOD = copy ; }
-  Bool_t IsAODCopied() const { return fCopyAOD ; }
 	
+  void SwitchOnClusterCorrection()    {fCorrectClusters = kTRUE  ; }
+  void SwitchOffClusterCorrection()   {fCorrectClusters = kFALSE ; }
+  
   void SwitchOnSameSM()    {fSameSM = kTRUE  ; }
   void SwitchOffSameSM()   {fSameSM = kFALSE ; }
   
@@ -66,54 +62,7 @@ public:
   
   void SetGeometryName(TString name) { fEMCALGeoName = name ; }
   TString GeometryName() const       { return fEMCALGeoName ; }
- 
-  //Modules fiducial region
-  Bool_t CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells) ;
-  void   SetNumberOfCellsFromEMCALBorder(Int_t n) {fNCellsFromEMCALBorder = n; }
-  Int_t  GetNumberOfCellsFromEMCALBorder() const  {return fNCellsFromEMCALBorder; }
-  
-  // Bad channels, copy from PWG4/PartCorrBase/AliCalorimeterUtils
-  Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
-  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; InitEMCALBadChannelStatusMap();}
-  void SwitchOffBadChannelsRemoval()  {fRemoveBadChannels = kFALSE ; }
-	
-  void InitEMCALBadChannelStatusMap() ;
-	
-  Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-	if(fEMCALBadChannelMap) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
-	else return 0;}//Channel is ok by default
-	
-  void SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-	if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ;
-	((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c);}
-	
-  TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap->At(iSM);}
-  void   SetEMCALChannelStatusMap(TObjArray *map)  {fEMCALBadChannelMap = map;}
-	
-  Bool_t ClusterContainsBadChannel(UShort_t* cellList, Int_t nCells);
-	
-  // Recalibration
-  Bool_t IsRecalibrationOn() const { return fRecalibration  ; }
-  void SwitchOnRecalibration()     {fRecalibration = kTRUE  ; InitEMCALRecalibrationFactors();}
-  void SwitchOffRecalibration()    {fRecalibration = kFALSE ; }
-	
-  void InitEMCALRecalibrationFactors() ;
-  
-  Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-	if(fEMCALRecalibrationFactors) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
-	else return 1;}
-	
-  void SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-	if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors();
-	((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c);}
-	
-  void SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) {fEMCALRecalibrationFactors->AddAt(h,iSM);}
-	
-  TH2F * GetEMCALChannelRecalibrationFactors(Int_t iSM) const {return (TH2F*)fEMCALRecalibrationFactors->At(iSM);}
-	
-  void SetEMCALChannelRecalibrationFactors(TObjArray *map) {fEMCALRecalibrationFactors = map;}
-  Float_t RecalibrateClusterEnergy(AliAODCaloCluster* cluster, AliAODCaloCells * cells);
-	
+ 		  
   void SetEMCALRecoUtils(AliEMCALRecoUtils * ru) {fRecoUtils = ru;}
   AliEMCALRecoUtils* GetEMCALRecoUtils() const   {return fRecoUtils;}
   
@@ -122,28 +71,28 @@ public:
 	  
   void GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSM, Int_t& ieta, Int_t& iphi);
 
+  void UseFilteredEventAsInput() {fFilteredInput = kTRUE;}
+  void UseNormalEventAsInput()   {fFilteredInput = kFALSE;}
+
+  void PrintInfo();
+  
 private:
 
   AliEMCALGeometry * fEMCALGeo;  //! EMCAL geometry
   //AliEMCALCalibData* fCalibData; // corrections to CC from the previous iteration
 	
-  Float_t fEmin;          // min. cluster energy
-  Float_t fEmax;          // max. cluster energy
-  Float_t fAsyCut;        // Asymmetry cut
-  Int_t   fMinNCells;     // min. ncells in cluster
-  Int_t   fGroupNCells;   // group n cells
-  Float_t fLogWeight;     // log weight used in cluster recalibration
-  Bool_t  fCopyAOD;       // Copy calo information only to AOD?
-  Bool_t  fSameSM;        // Combine clusters in channels on same SM
-  Bool_t  fOldAOD;        // Reading Old AODs, created before release 4.20
-  TString fEMCALGeoName;  // Name of geometry to use.
-  Int_t   fNCellsFromEMCALBorder; //  Number of cells from EMCAL border the cell with maximum amplitude has to be.
+  Float_t fEmin;           // min. cluster energy
+  Float_t fEmax;           // max. cluster energy
+  Float_t fAsyCut;         // Asymmetry cut
+  Int_t   fMinNCells;      // min. ncells in cluster
+  Int_t   fGroupNCells;    // group n cells
+  Float_t fLogWeight;      // log weight used in cluster recalibration
+  Bool_t  fSameSM;         // Combine clusters in channels on same SM
+  Bool_t  fOldAOD;         // Reading Old AODs, created before release 4.20
+  Bool_t  fFilteredInput;  // Read input produced with filter.
+  Bool_t  fCorrectClusters;// Correct clusters energy, position etc.
+  TString fEMCALGeoName;   // Name of geometry to use.
 
-  Bool_t     fRemoveBadChannels;         // Check the channel status provided and remove clusters with bad channels
-  TObjArray *fEMCALBadChannelMap;        // Array of histograms with map of bad channels, EMCAL
-  Bool_t     fRecalibration;             // Switch on or off the recalibration
-  TObjArray *fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL                 
- 
   AliEMCALRecoUtils * fRecoUtils;  // Access to reconstruction utilities
   
   //Output histograms	
@@ -181,7 +130,7 @@ private:
   TH1I*   fhNEvents;        //! Number of events counter histogram
   TList * fCuts ;           //! List with analysis cuts
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,8);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,10);
 
 };
 

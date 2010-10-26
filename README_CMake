@@ -1,20 +1,47 @@
+
+Note: The CMake build of AliRoot builds out-of-source
+
 Steps to Build AliRoot with CMake :
 
-1. Define environment variable ALICE_INSTALL
-	export ALICE_INSTALL=$ALICE/AliRootInstall
+1. Check out Aliroot source into any folder
+	
+	svn co http://alisoft.cern.ch/AliRoot/trunk ~/trunk
 
-2. Set Path to point to binaries and libraries that will be built in ALICE_INSTALL
-	export PATH=$PATH:$ALICE_INSTALL/bin/tgt_${ALICE_TARGET}
-	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ALICE_INSTALL/lib/tgt_${ALICE_TARGET}
+2. Create a new folder and set the environment variable ALICE_ROOT to point to it
+	
+	mkdir AliRoot
+	cd AliRoot
+	export ALICE_ROOT=`pwd`
 
 3. Execute the following commands to build AliRoot
-	cd $ALICE_INSTALL
-	cmake <path_to_source> 
+
+	cmake <Path to Source>
+
+eg.	cmake ~/trunk
 	make
 
-4. In order to build addtional targets like TFluka, THydjet and SHUTTLE add the following options to the cmake command
-	cmake -DTFLUKA=ON -DTHYDJET=ON -DSHUTTLE=ON <path_to_source>
+4. In order to build addtional targets like THydjet and SHUTTLE add the following options to the cmake command
 
-!IMPORTANT! : Make sure you delete all the files in your ALICE_INSTALL directory before you generate the Makefile again to clear the CMakeCache or the generated build system may not function properly.
+	cmake -DTHydjet=ON -DSHUTTLE=ON <path_to_source>
+
+5. Static libraries can be built using
+
+	make alilibs-static
+
+6. Individual Modules can be built using
+
+	make <Module>-all
+	make <Module>-all-static 
+
+eg.	make STEER-all STEER-all-static
+
+7. Individual Packages can be built using
+
+	make <Package>
+	make <Package>-static
+
+eg.	make STEERbase STEERbase-static
+
+!IMPORTANT! - Make sure your source folder is clean. If you used the old make system to build aliroot run make clean in the source directory before you run cmake
  
 

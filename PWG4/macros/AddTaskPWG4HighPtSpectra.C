@@ -117,7 +117,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
   //CREATE THE  CUTS -----------------------------------------------
   //Use AliESDtrackCuts
   AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
-  trackCuts = trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Quality Selection for Global tracks
+  trackCuts = trackCuts->GetStandardITSTPCTrackCuts2010(kTRUE);//Primary Track Quality Selection for Global tracks
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
 

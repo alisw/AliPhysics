@@ -271,6 +271,11 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
   fMeanXY=0;
   fMeanXParts=0;
   fMeanYParts=0;
+  fMeanXColl=0;
+  fMeanYColl=0;
+  fMeanX2Coll=0;
+  fMeanY2Coll=0;
+  fMeanXYColl=0;
   fMeanXSystem=0;
   fMeanYSystem=0;
   fMeanX_A=0;
@@ -620,6 +625,7 @@ Double_t AliGlauberMC::GetdNdEtaTwoNBD ( Int_t k1,
 Double_t AliGlauberMC::GetEccentricityPart() const
 {
   //get participant eccentricity of participants
+  if (fNpart<2) return 0.0;
   return (TMath::Sqrt((fSy2-fSx2)*(fSy2-fSx2)+4*fSxy*fSxy)/(fSy2+fSx2));
 }
 
@@ -627,6 +633,7 @@ Double_t AliGlauberMC::GetEccentricityPart() const
 Double_t AliGlauberMC::GetEccentricityPartColl() const
 {
   //get participant eccentricity of binary collisions
+  if (fNcoll<2) return 0.0;
   return (TMath::Sqrt((fSy2Coll-fSx2Coll)*(fSy2Coll-fSx2Coll)+4*fSxyColl*fSxyColl)/(fSy2Coll+fSx2Coll));
 }
 
@@ -682,6 +689,7 @@ void AliGlauberMC::Run(Int_t nevents)
       u++;
       continue;
     }
+
     q++;
     Float_t v[25];
     v[0]  = GetNpart();

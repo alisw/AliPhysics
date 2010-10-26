@@ -40,6 +40,7 @@ class AliUEHist : public TObject
   
   void SetTrackHist(Region region, AliCFContainer* hist) { fTrackHist[region] = hist; }
   void SetEventHist(AliCFContainer* hist) { fEventHist = hist; }
+  void SetTrackHistEfficiency(AliCFContainer* hist) { fTrackHistEfficiency = hist; }
   
   void CopyReconstructedData(AliUEHist* from);
   
@@ -47,7 +48,7 @@ class AliUEHist : public TObject
   
   TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Int_t source = 1);
   TH1* GetEventEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1);
-  TH1* GetBias(CFStep step1, CFStep step2, Int_t region, const char* axis, Float_t leadPtMin = 0, Float_t leadPtMax = 0);
+  TH1* GetBias(CFStep step1, CFStep step2, Int_t region, const char* axis, Float_t leadPtMin = 0, Float_t leadPtMax = -1);
   
   TH1D* GetTrackingEfficiency(Int_t axis);
   TH2D* GetTrackingEfficiency();
@@ -75,6 +76,9 @@ class AliUEHist : public TObject
   
   void CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_t ptLeadMax);
   
+  void SetBinLimits(AliCFGridSparse* grid);
+  void ResetBinLimits(AliCFGridSparse* grid);
+  
   AliUEHist(const AliUEHist &c);
   AliUEHist& operator=(const AliUEHist& corr);
   virtual void Copy(TObject& c) const;
@@ -84,8 +88,6 @@ class AliUEHist : public TObject
 protected:
   void SetStepNames(AliCFContainer* container);
   void WeightHistogram(TH3* hist1, TH1* hist2);
-  void SetBinLimits(AliCFGridSparse* grid);
-  void ResetBinLimits(AliCFGridSparse* grid);
 
   AliCFContainer* fTrackHist[4];      // container for track level distributions in four regions (toward, away, min, max) and at four analysis steps
   AliCFContainer* fEventHist;         // container for event level distribution at four analysis steps

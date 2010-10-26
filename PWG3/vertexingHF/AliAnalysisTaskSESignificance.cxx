@@ -427,9 +427,9 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
   case 3:
     //Ds
     pdgdaughters =new Int_t[3];
-    pdgdaughters[0]=211;//pi
+    pdgdaughters[0]=321;//K
     pdgdaughters[1]=321;//K
-    pdgdaughters[2]=321;//K
+    pdgdaughters[2]=211;//pi
     nprongs=3;
     absPdgMom=431;
     break;
@@ -568,6 +568,14 @@ void AliAnalysisTaskSESignificance::CalculateInvMasses(AliAODRecoDecayHF* d,Doub
   case 3:
     //Ds  -- Sergey, Sahdana
     {
+      const Int_t ndght=3;
+      nmasses=2;
+      masses=new Double_t[nmasses];
+      Int_t pdgdaughtersDsKKpi[ndght]={321,321,211};//K,K,pi 
+      masses[0]=d->InvMass(ndght,(UInt_t*)pdgdaughtersDsKKpi); //Ds
+      Int_t pdgdaughtersDspiKK[ndght]={211,321,321};//pi,K,K 
+      masses[1]=d->InvMass(ndght,(UInt_t*)pdgdaughtersDspiKK); //Dsbar 
+
       //.....
     }
     break;
@@ -631,6 +639,7 @@ void AliAnalysisTaskSESignificance::FillD02p(AliAODRecoDecayHF* d,TClonesArray *
   if(isSel>=2 && fPartOrAndAntiPart<=0) fMassHist[index]->Fill(masses[1]);
 
 
+
   //MC histograms
   if(fReadMC){
 
@@ -677,9 +686,69 @@ void AliAnalysisTaskSESignificance::FillDstar(AliAODRecoDecayHF* /*d*/,TClonesAr
 }
 
 
-void AliAnalysisTaskSESignificance::FillDs(AliAODRecoDecayHF* /*d*/,TClonesArray */*arrayMC*/,Int_t /*index*/,Double_t* /*masses*/,Int_t /*matchtoMC*/){
-  AliInfo("Ds channel not implemented\n");
+void AliAnalysisTaskSESignificance::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel){
 
+  //AliInfo("Ds channel not implemented\n");
+
+
+  if(!masses){
+    AliError("Masses not calculated\n");
+    return;
+  }
+  
+  Int_t pdgDstoKKpi[3]={321,321,211};
+  Int_t labDs=-1;
+  if(fReadMC){
+    labDs = d->MatchToMC(431,arrayMC,3,pdgDstoKKpi);
+  }
+  
+  
+  if(isSel&1  && fPartOrAndAntiPart*d->GetCharge()>=0) {
+    
+    fMassHist[index]->Fill(masses[0]); 
+        
+    if(fReadMC){
+
+      if(labDs>=0){
+	Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
+	AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
+	Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
+	
+	if(pdgCode0==321) {	  
+	  
+	  fSigHist[index]->Fill(masses[0]); //signal
+	}else{
+	  fRflHist[index]->Fill(masses[0]); //Reflected signal
+	}
+      }else{
+	fBkgHist[index]->Fill(masses[0]); // Background
+      }
+    }
+  }
+  
+  if(isSel&2 && fPartOrAndAntiPart*d->GetCharge()>=0){
+    fMassHist[index]->Fill(masses[1]);
+    if(fReadMC){
+      if(labDs>=0){
+	Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
+	AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
+	Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
+	
+	if(pdgCode0==211) {	  
+	  
+	  fSigHist[index]->Fill(masses[1]);
+	}else{
+	  fRflHist[index]->Fill(masses[1]);
+	}
+      }else{
+	fBkgHist[index]->Fill(masses[1]);
+      }
+    }
+  }
+  
+     
+  //MC histograms
+ 
   //Ds channel
 	// Int_t isKKpi=0;
 	// Int_t ispiKK=0;

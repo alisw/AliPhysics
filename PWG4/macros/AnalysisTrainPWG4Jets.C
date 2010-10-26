@@ -95,6 +95,8 @@ Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
 Int_t       iPWG4Cosmics     = 0;      // Marta's Cosmics Taks 
 Int_t       iPWG4ThreeJets     = 0;      // Sona's thrust task
+Int_t       iPWG4QGSep     = 0;          // Sona's QG Separation task
+Int_t       iPWG4Minijet       = 0;      // Eva's Mini Jet Task cluster task 
 Int_t       iPWG4KMeans        = 0;      // Andreas' KMeans task 
 Int_t       iPWG4Cluster       = 0;      // CKB cluster task 
 Int_t       iEMCUtilLibs       = 0;      // Flag to satisfy dependence on EMC utils
@@ -107,7 +109,7 @@ Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4)
 Int_t       iPWG4GammaConvLib     = 0;      // Gamma Conversio
 Int_t       iPWG4GammaConv     = 0;      // Gamma Conversio
 Int_t       iPWG4CaloConv     = 0;      // Gamma Conversio
-Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Filter
+Int_t       kHighPtFilterMask  = 32;     // change depending on the used AOD Filter
 TString     kDeltaAODJetName   = "AliAOD.Jets.root";     
 TString     kDeltaAODJCORRANName   = "AliAOD.JCORRAN.root";     
 TString     kDeltaAODPartCorrName   = "deltaAODPartCorr.root";     
@@ -136,7 +138,7 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-27-06";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginRootVersion       = "v5-27-06a-1";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-19-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
@@ -242,6 +244,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(printMask,"PWG4 Pt QA TPC",iPWG4PtQATPC);     
    printf(printMask,"PWG4 Cosmics",iPWG4Cosmics);     
    printf(printMask,"PWG4 Three Jets",iPWG4ThreeJets);
+   printf(printMask,"PWG4 QGSep",iPWG4QGSep);
+   printf(printMask,"PWG4 Minijet",iPWG4Minijet);
    printf(printMask,"PWG4 KMeans",iPWG4KMeans);
    printf(printMask,"PWG4 Cluster",iPWG4Cluster);
    printf(printMask,"PWG4 Part Corr",iPWG4PartCorr);
@@ -480,7 +484,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(kUseAODMC){
        taskFrag = AddTaskFragmentationFunction(1<<1,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<2,kHighPtFilterMask);
-       taskFrag = AddTaskFragmentationFunction(1<<3,kHighPtFilterMask);
+       //       taskFrag = AddTaskFragmentationFunction(1<<3,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<5,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<11);  // w/o acceptance cuts       
        taskFrag =  AddTaskFragmentationFunction(1<<12);  // with acceptance cuts
@@ -618,6 +622,21 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskThreeJets *taskThree = AddTaskThreeJets();
      if(!taskThree)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskThreets cannot run for this train conditions - EXCLUDED");
    }
+   if(iPWG4QGSep){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskQGSep.C");
+     AliAnalysisTaskQGSep *taskQGSep = AddTaskQGSep(kUseMC,iAODanalysis);
+     if(!taskQGSep)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQGSep cannot run for this train conditions - EXCLUDED");
+   }
+  
+
+   if(iPWG4Minijet){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskMinijet.C");
+     AliAnalysisTaskMinijet *taskMini = AddTaskMinijet("esd",kUseMC,kGridDataSet);
+     // if we ha highmult trigger add another task
+     if(!taskMini)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskMinjet cannot run for this train conditions - EXCLUDED");
+   }
+
+
    if(iPWG4PtQAMC){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQAMC.C");
      AliPWG4HighPtQAMC *taskQAMC = 0;
@@ -958,10 +977,10 @@ void CheckModuleFlags(const char *mode) {
 	kUseMuonfilter = kFALSE;
       }
       if(!iJETAN){
-	iPWG4JetSpectrum = iPWG4UE =  iPWG4CorrectionsUE = iPWG4ThreeJets = iDIJETAN = 0;
+	iPWG4JetSpectrum = iPWG4UE =  iPWG4CorrectionsUE = iPWG4ThreeJets = iPWG4QGSep = iDIJETAN = 0;
       }
    }
-   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4LeadingUE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem||iPWG4Fragmentation;
+   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4LeadingUE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4QGSep||iPWG4JetChem||iPWG4Minijet||iPWG4Fragmentation;
    iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
    iPWG4GammaConvLib = iPWG4GammaConv||iPWG4CaloConv;
 
@@ -1928,9 +1947,9 @@ Bool_t PatchAnalysisMacro(){
   }
 
   // do not exclude the extra files from merign, this is done explicitly in this train script
-  index = st2.Index("mergeExcludes +="); // uncommen $ALICE_ROOT include for par files
-  if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
-  st2.Insert(index,"// CKB comment out, handled explicitly by the train macro \n //");
+  //  index = st2.Index("mergeExcludes +="); // uncommen $ALICE_ROOT include for par files
+  //  if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
+  // st2.Insert(index,"// CKB comment out, handled explicitly by the train macro \n //");
 
 
   ofstream out2;

@@ -18,7 +18,6 @@ class AliAnalysisTaskTOFqa : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFqa& operator= (const AliAnalysisTaskTOFqa& copy);
   virtual ~AliAnalysisTaskTOFqa();
   
-  virtual void   ConnectInputData(Option_t *);
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);

@@ -66,7 +66,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
   cu->SetNumberOfCellsFromPHOSBorder(2);
-  cu->SwitchOnNoFiducialBorderInEMCALEta0();
 	
   // Remove EMCAL hottest channels for first LHC10 periods 	
   cu->SwitchOnBadChannelsRemoval();

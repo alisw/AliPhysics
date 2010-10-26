@@ -183,6 +183,20 @@ AliUEHistograms::~AliUEHistograms()
   }
 }
 
+AliUEHist* AliUEHistograms::GetUEHist(Int_t id)
+{
+  // returns AliUEHist object, useful for loops
+  
+  switch (id)
+  {
+    case 0: return fNumberDensitypT; break;
+    case 1: return fSumpT; break;
+    case 2: return fNumberDensityPhi; break;
+  }
+  
+  return 0;
+}
+
 //____________________________________________________________________
 Int_t AliUEHistograms::CountParticles(TList* list, Float_t ptMin)
 {
@@ -254,8 +268,10 @@ void AliUEHistograms::FillRegion(AliUEHist::Region region, AliUEHist::CFStep ste
     vars[2] = leading->Pt();
     vars[3] = multiplicity;
     vars[4] = leading->Phi() - particle->Phi();
-    if (vars[4]>TMath::Pi()/2.)vars[4]-=TMath::TwoPi();
-    if (vars[4]< - 3.*TMath::Pi()/2.)vars[4]+=TMath::TwoPi();
+    if (vars[4] > 1.5 * TMath::Pi()) 
+      vars[4] -= TMath::TwoPi();
+    if (vars[4] < -0.5 * TMath::Pi())
+      vars[4] += TMath::TwoPi();
 
     fNumberDensitypT->GetTrackHist(region)->Fill(vars, step);
     fSumpT->GetTrackHist(region)->Fill(vars, step, particle->Pt());
@@ -391,7 +407,7 @@ void AliUEHistograms::Correct(AliUEHistograms* corrections)
   
   fNumberDensitypT->Correct(corrections->fNumberDensitypT);
   fSumpT->Correct(corrections->fSumpT);
-  //fNumberDensityPhi->Correct(corrections->fNumberDensityPhi);
+  fNumberDensityPhi->Correct(corrections->fNumberDensityPhi);
 }
 
 //____________________________________________________________________

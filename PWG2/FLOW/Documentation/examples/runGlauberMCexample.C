@@ -6,6 +6,11 @@
  //  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberNucleus.cxx+");
  //  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberMC.cxx+");
 
+  //set the random seed from current time
+  TTimeStamp time;
+  Int_t seed = time->GetSec();
+  gRandom->SetSeed(seed);
+
   Int_t nevents = 10000; // number of events to simulate 
   // supported systems are e.g. "p", "d", "Si", "Au", "Pb", "U" 
   Option_t *sysA="Pb"; 
