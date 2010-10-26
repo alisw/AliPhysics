@@ -316,6 +316,7 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 
   OpenFile(1);
   if(!fHistList)fHistList = new TList();
+  fHistList->SetOwner();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -864,10 +865,12 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      clustSeq.get_median_rho_and_sigma(sortedJets, range, false, bkg1, sigma1, meanarea1, true);
      evBkg->SetBackground(0,bkg1,sigma1,meanarea1);
      fh1BiARandomCones[0]->Fill(ptRandomCone-(bkg1*areaRandomCone));    
+     fh1BiARandomConesRan[0]->Fill(ptRandomConeRan-(bkg1*areaRandomCone));    
      
      clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, true);
      evBkg->SetBackground(1,bkg2,sigma2,meanarea2);
      fh1BiARandomCones[1]->Fill(ptRandomCone-(bkg2*areaRandomCone));    
+     fh1BiARandomConesRan[1]->Fill(ptRandomConeRan-(bkg2*areaRandomCone));    
    }
   }
   
@@ -1034,7 +1037,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      evBkg->SetBackground(2,bkg3,sigma3,meanarea3);
      float areaRandomCone = rRandomCone2 *TMath::Pi();         
      fh1BiARandomCones[2]->Fill(ptRandomCone-(bkg3*areaRandomCone));    
-
+     fh1BiARandomConesRan[2]->Fill(ptRandomConeRan-(bkg3*areaRandomCone));    
     }
 
 

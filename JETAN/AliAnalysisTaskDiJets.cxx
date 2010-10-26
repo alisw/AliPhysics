@@ -81,6 +81,7 @@ void AliAnalysisTaskDiJets::UserCreateOutputObjects()
 	}
 
     if (!fHistList) fHistList = new TList();
+    fHistList->SetOwner();
     Float_t pi=TMath::Pi();
     gStyle->SetPalette(1);
 
