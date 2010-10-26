@@ -499,6 +499,13 @@ void AliAODHandler::AddBranch(const char* cname, void* addobj, const char* filen
        AliAODExtension *ext = AddExtension(filename);
        ext->AddBranch(cname, addobj);
        return;
+    } else {
+       // Add branch to all filters
+      if (fFilters) {
+         TIter next(fFilters);
+         AliAODExtension *ext;
+         while ((ext=(AliAODExtension*)next())) ext->AddBranch(cname, addobj);
+      }
     }
     TDirectory *owd = gDirectory;
     if (fFileA) {
@@ -690,10 +697,10 @@ AliAODExtension::~AliAODExtension()
 void AliAODExtension::AddBranch(const char* cname, void* addobj)
 {
     // Add a new branch to the aod 
-    if (IsFilteredAOD()) {
-       Error("AddBranch", "Not allowed to add branched to filtered AOD's.");
-       return;
-    }   
+//    if (IsFilteredAOD()) {
+//       Error("AddBranch", "Not allowed to add branched to filtered AOD's.");
+//       return;
+//    }   
     if (!fAODEvent) {
        char type[20];
        gROOT->ProcessLine(Form("TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)%p, \"%%s\", s_tmp.Data());", type));
