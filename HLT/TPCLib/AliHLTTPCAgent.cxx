@@ -245,7 +245,10 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
     // AliRoot simulation
     //if (runloader->GetLoader("TPCLoader") != NULL)
       //return "TPC-esd-converter TPC-clusters";
-      return "TPC-clusters";
+
+    // 2010-10-26 TPC clusters not written to HLTOUT in order to make the simulation
+    // closer to the real data 
+    //return "TPC-clusters";
   }
   return NULL;
 }
