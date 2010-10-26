@@ -214,8 +214,8 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], c
 //_______________________________________________________________
 AliTRDtrackV1::~AliTRDtrackV1()
 {
-  //AliInfo("");
-  //printf("I-AliTRDtrackV1::~AliTRDtrackV1() : Owner[%s]\n", TestBit(kOwner)?"YES":"NO");
+  // Clean up all objects allocated by the track during its lifetime.
+  AliDebug(2, Form("Deleting track[%d]\n   fBackupTrack[%p] fTrackLow[%p] fTrackHigh[%p] Owner[%c].", fESDid, (void*)fBackupTrack, (void*)fTrackLow, (void*)fTrackHigh, TestBit(kOwner)?'y':'n'));
 
   if(fBackupTrack) delete fBackupTrack; fBackupTrack = NULL;
 

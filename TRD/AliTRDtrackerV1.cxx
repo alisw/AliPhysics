@@ -318,6 +318,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     if ((status & AliESDtrack::kTRDout) != 0) continue;
 
     // Propagate to the entrance in the TRD mother volume
+    track.~AliTRDtrackV1();
     new(&track) AliTRDtrackV1(*seed);
     if(AliTRDgeometry::GetXtrdBeg() > (fgkMaxStep + track.GetX()) && !PropagateToX(track, AliTRDgeometry::GetXtrdBeg(), fgkMaxStep)){ 
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
@@ -331,9 +332,8 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
       continue;
     }
-
     nTPCseeds++;
-
+    AliDebug(2, Form("TRD propagate TPC seed[%d] = %d.", iSeed, index[iSeed]));
     // store track status at TRD entrance
     seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup);
 
@@ -867,19 +867,20 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         continue;
       }      
       // build tracklet
+      tracklet.~AliTRDseedV1();
       ptrTracklet = new(&tracklet) AliTRDseedV1(det);
       ptrTracklet->SetReconstructor(fkReconstructor);
       ptrTracklet->SetKink(t.IsKink());
       ptrTracklet->SetPrimary(t.IsPrimary());
       ptrTracklet->SetPadPlane(fGeom->GetPadPlane(ily, stk));
       ptrTracklet->SetX0(glb[0]+driftLength);
-      if(!tracklet.Init(&t)){
+      if(!ptrTracklet->Init(&t)){
         n=-1; 
         t.SetStatus(AliTRDtrackV1::kTrackletInit);
         AliDebug(4, "Failed Tracklet Init");
         break;
       }
-      if(!tracklet.AttachClusters(chamber, kTRUE)){   
+      if(!ptrTracklet->AttachClusters(chamber, kTRUE)){
         t.SetStatus(AliTRDtrackV1::kNoAttach, ily);
         if(debugLevel>3){
           AliTRDseedV1 trackletCp(*ptrTracklet);
@@ -892,8 +893,8 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         AliDebug(4, "Failed Attach Clusters");
         continue;
       }
-      AliDebug(3, Form("Number of Clusters in Tracklet: %d", tracklet.GetN()));
-      if(tracklet.GetN() < fgNTimeBins*fkRecoParam ->GetFindableClusters()){
+      AliDebug(3, Form("Number of Clusters in Tracklet: %d", ptrTracklet->GetN()));
+      if(ptrTracklet->GetN() < fgNTimeBins*fkRecoParam->GetFindableClusters()){
         t.SetStatus(AliTRDtrackV1::kNoClustersTracklet, ily);
         if(debugLevel>3){
           AliTRDseedV1 trackletCp(*ptrTracklet);
@@ -982,7 +983,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     AliTracker::FillResiduals(&t, p, cov, ptrTracklet->GetVolumeId());
   
 
-    // load tracklet to the tracker
+    // register tracklet with the tracker and track
     ptrTracklet->Update(&t);
     ptrTracklet = SetTracklet(ptrTracklet);
     Int_t index(fTracklets->GetEntriesFast()-1);
