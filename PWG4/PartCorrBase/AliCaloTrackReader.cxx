@@ -44,6 +44,7 @@
 #include "AliMixedEvent.h"
 #include "AliESDtrack.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliESDtrackCuts.h"
 
 ClassImp(AliCaloTrackReader)
   
@@ -62,7 +63,7 @@ ClassImp(AliCaloTrackReader)
 //    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
 //    fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
 //    fAODPHOSNormalInputEntries(0), 
-    fTrackStatus(0), 
+    fTrackStatus(0),   fESDtrackCuts(0), fTrackMult(0), fTrackMultEtaCut(0.9),
     fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
     fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
     fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
@@ -118,6 +119,8 @@ AliCaloTrackReader::~AliCaloTrackReader() {
     delete [] fVertex ;
 	}
 
+  if(fESDtrackCuts)   delete fESDtrackCuts;
+  
 //  Pointers not owned, done by the analysis frame
 //  if(fInputEvent)  delete fInputEvent ;
 //  if(fOutputEvent) delete fOutputEvent ;
@@ -312,8 +315,11 @@ void AliCaloTrackReader::InitParameters()
   fAnaLED = kFALSE;
   
   //We want tracks fitted in the detectors:
-  fTrackStatus=AliESDtrack::kTPCrefit;
-  fTrackStatus|=AliESDtrack::kITSrefit;  
+  //fTrackStatus=AliESDtrack::kTPCrefit;
+  //fTrackStatus|=AliESDtrack::kITSrefit;  
+  
+  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+
   
 }
 
@@ -337,6 +343,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n", fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n", fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
+  printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n", fWriteOutputDeltaAOD) ;
 
   if(fComparePtHardAndJetPt)
@@ -551,12 +558,22 @@ void AliCaloTrackReader::FillInputCTS() {
   
   Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
   Double_t p[3];
+  fTrackMult = 0;
+  Int_t nstatus = 0;
   for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
     AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
-    
-      //Select tracks under certain conditions, TPCrefit, ITSrefit ... check the set bits
+
+    //Select tracks under certain conditions, TPCrefit, ITSrefit ... check the set bits
     if (fTrackStatus && !((track->GetStatus() & fTrackStatus) == fTrackStatus)) 
       continue ;
+    
+    nstatus++;
+    
+    if(fDataType==kESD && !fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
+    
+    //Count the tracks in eta < 0.9
+    //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
+    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
     
     track->GetPxPyPz(p) ;
     TLorentzVector momentum(p[0],p[1],p[2],0);
@@ -580,7 +597,8 @@ void AliCaloTrackReader::FillInputCTS() {
   }// track loop
 	
   //fAODCTSNormalInputEntries = fAODCTS->GetEntriesFast();
-  if(fDebug > 1) printf("AliCaloTrackReader::FillInputCTS()   - aod entries %d\n", fAODCTS->GetEntriesFast());//fAODCTSNormalInputEntries);
+  if(fDebug > 1) 
+    printf("AliCaloTrackReader::FillInputCTS()   - aod entries %d, input tracks %d, pass status %d, multipliticy %d\n", fAODCTS->GetEntriesFast(), nTracks, nstatus, fTrackMult);//fAODCTSNormalInputEntries);
   
     //  //If second input event available, add the clusters.
     //  if(fSecondInputAODTree && fSecondInputAODEvent){
