@@ -17,10 +17,10 @@
 class AliTOFDRMGlobalHeader
 {
  public:
-  UInt_t GetSlotID() {return fSlotID;};
-  UInt_t GetEventWords() {return fEventWords;};
-  UInt_t GetDRMID() {return fDRMID;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetSlotID() const {return fSlotID;};
+  UInt_t GetEventWords() const {return fEventWords;};
+  UInt_t GetDRMID() const {return fDRMID;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fSlotID:     4;
   UInt_t fEventWords: 17;

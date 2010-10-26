@@ -17,10 +17,10 @@
 class AliTOFLTMGlobalTrailer
 {
  public:
-  UInt_t GetSlotID() {return fSlotID;};
-  UInt_t GetEventCRC() {return fEventCRC;};
-  UInt_t GetEventNumber() {return fEventNumber;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetSlotID() const {return fSlotID;};
+  UInt_t GetEventCRC() const {return fEventCRC;};
+  UInt_t GetEventNumber() const {return fEventNumber;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fSlotID:      4;
   UInt_t fEventCRC:    12;

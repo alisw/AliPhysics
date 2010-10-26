@@ -91,16 +91,17 @@
 
 
 #include "TObject.h"
-#include "AliTOFRawDataFormat.h"
-#include "AliTOFDecoderSummaryData.h"
-#include "AliTOFDRMSummaryData.h"
-#include "AliTOFLTMSummaryData.h"
-#include "AliTOFTRMSummaryData.h"
-#include "AliTOFChainSummaryData.h"
-#include "AliTOFTDCHitBuffer.h"
-#include "AliTOFTDCErrorBuffer.h"
 #include "AliRawReader.h"
-#include "AliRawDataHeader.h"
+#include "AliTOFTDCHit.h"
+
+class AliTOFDecoderSummaryData;
+class AliTOFDRMSummaryData;
+class AliTOFLTMSummaryData;
+class AliTOFTRMSummaryData;
+class AliTOFChainSummaryData;
+class AliTOFTDCHitBuffer;
+class AliTOFTDCErrorBuffer;
+class AliRawDataHeader;
 
 class AliTOFDecoderV2 : public TObject
 {
@@ -180,33 +181,33 @@ class AliTOFDecoderV2 : public TObject
   AliTOFTRMDiagnosticErrorWord2  *fTRMDiagnosticErrorWord2; //TRM diagnostica error word 2
 
   /* Spider data members */
-  AliTOFTDCHit fSpiderBuffer[N_CHANNEL];
-  Bool_t fSpiderBufferFull[N_CHANNEL];
-  Int_t fSpiderTDCID;
-  AliTOFTDCHitBuffer *fSpiderTDCPackedHitBuffer;
+  AliTOFTDCHit fSpiderBuffer[8]; // SPIDER buffer
+  Bool_t fSpiderBufferFull[8]; // SPIDER buffer full flag
+  Int_t fSpiderTDCID; // SPIDER TDC ID
+  AliTOFTDCHitBuffer *fSpiderTDCPackedHitBuffer; // SPIDER buffer
 
 
   /* Summary Data Functions */
   //fill DRM summary data 
-  void FillDRMSummaryData(AliTOFDRMGlobalHeader *DRMGlobalHeader); //DRM global header
-  void FillDRMSummaryData(AliTOFDRMGlobalTrailer *DRMGlobalTrailer); //DRM global trailer
-  void FillDRMSummaryData(AliTOFDRMStatusHeader1 *DRMStatusHeader1); //DRM status header 1
-  void FillDRMSummaryData(AliTOFDRMStatusHeader2 *DRMStatusHeader2); //DRM status header 2
-  void FillDRMSummaryData(AliTOFDRMStatusHeader3 *DRMStatusHeader3); //DRM status header 3
-  void FillDRMSummaryData(AliTOFDRMStatusHeader4 *DRMStatusHeader4); //DRM status header 4
-  void FillDRMSummaryData(AliTOFDRMEventCRC *DRMEventCRC); //DRM event CRC
+  void FillDRMSummaryData(const AliTOFDRMGlobalHeader *DRMGlobalHeader); //DRM global header
+  void FillDRMSummaryData(const AliTOFDRMGlobalTrailer *DRMGlobalTrailer); //DRM global trailer
+  void FillDRMSummaryData(const AliTOFDRMStatusHeader1 *DRMStatusHeader1); //DRM status header 1
+  void FillDRMSummaryData(const AliTOFDRMStatusHeader2 *DRMStatusHeader2); //DRM status header 2
+  void FillDRMSummaryData(const AliTOFDRMStatusHeader3 *DRMStatusHeader3); //DRM status header 3
+  void FillDRMSummaryData(const AliTOFDRMStatusHeader4 *DRMStatusHeader4); //DRM status header 4
+  void FillDRMSummaryData(const AliTOFDRMEventCRC *DRMEventCRC); //DRM event CRC
   //fill LTM summary data
-  void FillLTMSummaryData(AliTOFLTMGlobalHeader *LTMGlobalHeader); //LTM global header
-  void FillLTMSummaryData(AliTOFLTMGlobalTrailer *LTMGlobalTrailer); //LTM global trailer
-  void FillLTMSummaryData(AliTOFLTMPDLData *LTMPDLData, Int_t PDLWord); //LTM PDL data
-  void FillLTMSummaryData(AliTOFLTMADCData *LTMADCData, Int_t ADCWord); //LTM ADC data
-  void FillLTMSummaryData(AliTOFLTMORData *LTMORData, Int_t ORWord); //LTM OR data
+  void FillLTMSummaryData(const AliTOFLTMGlobalHeader *LTMGlobalHeader); //LTM global header
+  void FillLTMSummaryData(const AliTOFLTMGlobalTrailer *LTMGlobalTrailer); //LTM global trailer
+  void FillLTMSummaryData(const AliTOFLTMPDLData *LTMPDLData, Int_t PDLWord); //LTM PDL data
+  void FillLTMSummaryData(const AliTOFLTMADCData *LTMADCData, Int_t ADCWord); //LTM ADC data
+  void FillLTMSummaryData(const AliTOFLTMORData *LTMORData, Int_t ORWord); //LTM OR data
   //fill TRM summary data
-  void FillTRMSummaryData(AliTOFTRMGlobalHeader *TRMGlobalHeader); //TRM global header
-  void FillTRMSummaryData(AliTOFTRMGlobalTrailer *TRMGlobalTrailer); //TRM global trailer
+  void FillTRMSummaryData(const AliTOFTRMGlobalHeader *TRMGlobalHeader); //TRM global header
+  void FillTRMSummaryData(const AliTOFTRMGlobalTrailer *TRMGlobalTrailer); //TRM global trailer
   //fill chain summary data
-  void FillChainSummaryData(AliTOFTRMChainHeader *TRMChainHeader); //TRM chain header
-  void FillChainSummaryData(AliTOFTRMChainTrailer *TRMChainTrailer); //TRM chain trailer
+  void FillChainSummaryData(const AliTOFTRMChainHeader *TRMChainHeader); //TRM chain header
+  void FillChainSummaryData(const AliTOFTRMChainTrailer *TRMChainTrailer); //TRM chain trailer
 
   ClassDef(AliTOFDecoderV2, 1);
 };

@@ -127,6 +127,14 @@ Revision 0.01  2005/07/22 A. De Caro
 #include "AliRawDataHeader.h"
 
 #include "AliTOFDecoderV2.h"
+#include "AliTOFTDCHit.h"
+#include "AliTOFDecoderSummaryData.h"
+#include "AliTOFDRMSummaryData.h"
+#include "AliTOFLTMSummaryData.h"
+#include "AliTOFTRMSummaryData.h"
+#include "AliTOFChainSummaryData.h"
+#include "AliTOFTDCHitBuffer.h"
+#include "AliTOFTDCErrorBuffer.h"
 
 ClassImp(AliTOFRawStream)
 

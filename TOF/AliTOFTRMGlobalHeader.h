@@ -17,13 +17,13 @@
 class AliTOFTRMGlobalHeader
 {
  public:
-  UInt_t GetSlotID() {return fSlotID;};
-  UInt_t GetEventWords() {return fEventWords;};
-  UInt_t GetACQBits() {return fACQBits;};
-  UInt_t GetLBit() {return fLBit;};
-  UInt_t GetEBit() {return fEBit;};
-  UInt_t GetMBZ() {return fMBZ;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetSlotID() const {return fSlotID;};
+  UInt_t GetEventWords() const {return fEventWords;};
+  UInt_t GetACQBits() const {return fACQBits;};
+  UInt_t GetLBit() const {return fLBit;};
+  UInt_t GetEBit() const {return fEBit;};
+  UInt_t GetMBZ() const {return fMBZ;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fSlotID:     4;
   UInt_t fEventWords: 13;

@@ -17,10 +17,10 @@
 class AliTOFLTMPDLData
 {
  public:
-  UInt_t GetPDLValue1() {return fPDLValue1;};
-  UInt_t GetPDLValue2() {return fPDLValue2;};
-  UInt_t GetPDLValue3() {return fPDLValue3;};
-  UInt_t GetPDLValue4() {return fPDLValue4;};
+  UInt_t GetPDLValue1() const {return fPDLValue1;};
+  UInt_t GetPDLValue2() const {return fPDLValue2;};
+  UInt_t GetPDLValue3() const {return fPDLValue3;};
+  UInt_t GetPDLValue4() const {return fPDLValue4;};
  private:
   UInt_t fPDLValue1: 8;
   UInt_t fPDLValue2: 8;

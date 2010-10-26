@@ -17,10 +17,10 @@
 class AliTOFTRMChainTrailer
 {
  public:
-  UInt_t GetStatus() {return fStatus;};
-  UInt_t GetMBZ() {return fMBZ;};
-  UInt_t GetEventCounter() {return fEventCounter;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetStatus() const {return fStatus;};
+  UInt_t GetMBZ() const {return fMBZ;};
+  UInt_t GetEventCounter() const {return fEventCounter;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fStatus:        4; // status
   UInt_t fMBZ:          12; // must-be-zero bits

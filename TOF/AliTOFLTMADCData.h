@@ -17,10 +17,10 @@
 class AliTOFLTMADCData
 {
  public:
-  UInt_t GetADCValue1() {return fADCValue1;};
-  UInt_t GetADCValue2() {return fADCValue2;};
-  UInt_t GetADCValue3() {return fADCValue3;};
-  UInt_t GetMBZ() {return fMBZ;};
+  UInt_t GetADCValue1() const {return fADCValue1;};
+  UInt_t GetADCValue2() const {return fADCValue2;};
+  UInt_t GetADCValue3() const {return fADCValue3;};
+  UInt_t GetMBZ() const {return fMBZ;};
  private:
   UInt_t fADCValue1: 10;
   UInt_t fADCValue2: 10;

@@ -17,10 +17,10 @@
 class AliTOFTRMGlobalTrailer
 {
  public:
-  UInt_t GetSlotID() {return fSlotID;};
-  UInt_t GetEventCRC() {return fEventCRC;};
-  UInt_t GetEventCounter() {return fEventCounter;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetSlotID() const {return fSlotID;};
+  UInt_t GetEventCRC() const {return fEventCRC;};
+  UInt_t GetEventCounter() const {return fEventCounter;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fSlotID:        4; // TRM number
   UInt_t fEventCRC:     12; // event CRC

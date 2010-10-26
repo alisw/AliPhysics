@@ -17,12 +17,12 @@
 class AliTOFTRMDiagnosticErrorWord2
 {
  public:
-  UInt_t GetJtagErrorCode() {return fJtagErrorCode;};
-  UInt_t GetTDCID() {return fTDCID;};
-  UInt_t GetCBit() {return fCBit;};
-  UInt_t GetMBZ() {return fMBZ;};
-  UInt_t GetMBO() {return fMBO;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetJtagErrorCode() const {return fJtagErrorCode;};
+  UInt_t GetTDCID() const {return fTDCID;};
+  UInt_t GetCBit() const {return fCBit;};
+  UInt_t GetMBZ() const {return fMBZ;};
+  UInt_t GetMBO() const {return fMBO;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fJtagErrorCode: 11; // Jtag error code
   UInt_t fTDCID:          4; // TDC ID

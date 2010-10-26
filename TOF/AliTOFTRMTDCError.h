@@ -17,10 +17,10 @@
 class AliTOFTRMTDCError
 {
  public:
-  UInt_t GetErrorFlags() {return fErrorFlags;};
-  UInt_t GetMBZ() {return fMBZ;};
-  UInt_t GetTDCID () {return fTDCID;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetErrorFlags() const {return fErrorFlags;};
+  UInt_t GetMBZ() const {return fMBZ;};
+  UInt_t GetTDCID () const {return fTDCID;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fErrorFlags: 15; // error flags
   UInt_t fMBZ:         9; // must-be-zero bits

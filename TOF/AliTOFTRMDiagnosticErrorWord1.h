@@ -17,11 +17,11 @@
 class AliTOFTRMDiagnosticErrorWord1
 {
  public:
-  UInt_t GetFaultChipFlagID() {return fFaultChipFlagID;};
-  UInt_t GetCBit() {return fCBit;};
-  UInt_t GetMBZ() {return fMBZ;};
-  UInt_t GetMBO() {return fMBO;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetFaultChipFlagID() const {return fFaultChipFlagID;};
+  UInt_t GetCBit() const {return fCBit;};
+  UInt_t GetMBZ() const {return fMBZ;};
+  UInt_t GetMBO() const {return fMBO;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fFaultChipFlagID: 15; // fault chip flag ID
   UInt_t fCBit:             1; // C bit

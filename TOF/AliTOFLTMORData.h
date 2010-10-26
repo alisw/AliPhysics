@@ -17,10 +17,10 @@
 class AliTOFLTMORData
 {
  public:
-  UInt_t GetORValue1() {return fORValue1;};
-  UInt_t GetORValue2() {return fORValue2;};
-  UInt_t GetORValue3() {return fORValue3;};
-  UInt_t GetMBZ() {return fMBZ;};
+  UInt_t GetORValue1() const {return fORValue1;};
+  UInt_t GetORValue2() const {return fORValue2;};
+  UInt_t GetORValue3() const {return fORValue3;};
+  UInt_t GetMBZ() const {return fMBZ;};
  private:
   UInt_t fORValue1: 10;
   UInt_t fORValue2: 10;

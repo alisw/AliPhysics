@@ -17,12 +17,12 @@
 class AliTOFTRMChainHeader
 {
  public:
-  UInt_t GetSlotID() {return fSlotID;};
-  UInt_t GetBunchID() {return fBunchID;};
-  UInt_t GetPB24Temp() {return fPB24Temp;};
-  UInt_t GetPB24ID() {return fPB24ID;};
-  UInt_t GetTSBit() {return fTSBit;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetSlotID() const {return fSlotID;};
+  UInt_t GetBunchID() const {return fBunchID;};
+  UInt_t GetPB24Temp() const {return fPB24Temp;};
+  UInt_t GetPB24ID() const {return fPB24ID;};
+  UInt_t GetTSBit() const {return fTSBit;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fSlotID:    4; // TRM number
   UInt_t fBunchID:  12; // bunch ID

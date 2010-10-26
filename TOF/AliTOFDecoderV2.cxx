@@ -41,8 +41,17 @@ TOF Raw Data decoder
                                
 
 #include "AliLog.h"
+#include "AliTOFRawDataFormat.h"
 #include "AliTOFDecoderV2.h"
 #include "AliTOFTDCHit.h"
+#include "AliTOFDecoderSummaryData.h"
+#include "AliTOFDRMSummaryData.h"
+#include "AliTOFLTMSummaryData.h"
+#include "AliTOFTRMSummaryData.h"
+#include "AliTOFChainSummaryData.h"
+#include "AliTOFTDCHitBuffer.h"
+#include "AliTOFTDCErrorBuffer.h"
+#include "AliRawDataHeader.h"
 
 ClassImp(AliTOFDecoderV2)
 
@@ -211,9 +220,9 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
   UShort_t decoderStatus = 0x0;
 
   //CRC variables
-  UInt_t DRMCRC = 0x0;
-  UInt_t LTMCRC = 0x0;
-  UInt_t TRMCRC = 0x0;
+  UInt_t drmCRC = 0x0;
+  UInt_t ltmCRC = 0x0;
+  UInt_t trmCRC = 0x0;
 
   // error warning counter
   Int_t errorWarning = 0;
@@ -254,9 +263,9 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       AliInfo(Form("  %02x - 0x%08x",decoderStatus,*rawData));
     
     //compute CRC with current data
-    DRMCRC ^= *rawData;
-    LTMCRC ^= *rawData;
-    TRMCRC ^= *rawData;
+    drmCRC ^= *rawData;
+    ltmCRC ^= *rawData;
+    trmCRC ^= *rawData;
 
     //switch word type
     switch (*rawData & WORD_TYPE_MASK){
@@ -299,7 +308,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//set DRM global header
 	fDRMGlobalHeader = (AliTOFDRMGlobalHeader *)rawData;
 	//reset DRM CRC
-	DRMCRC = 0x0;
+	drmCRC = 0x0;
 	//fill decoder summary data
 	fDecoderSummaryData->SetCurrentDRMID(fDRMGlobalHeader->GetDRMID());
 	fDecoderSummaryData->SetCurrentSlotID(fDRMGlobalHeader->GetSlotID());
@@ -319,7 +328,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	for (Int_t i = 0; i < DRM_STATUS_HEADER_WORDS; i++){
 	  iWord++;
 	  rawData++;
-	  DRMCRC ^= *rawData;
+	  drmCRC ^= *rawData;
 
 	  switch (i){
 	  case 0: //DRM status header 1
@@ -351,9 +360,9 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//decode DRM event CRC
 	iWord++;
 	rawData++;
-	DRMCRC ^= *rawData;
+	drmCRC ^= *rawData;
 	//remove DRM event CRC from DRM CRC
-	DRMCRC ^= *rawData;
+	drmCRC ^= *rawData;
 	fDRMEventCRC = (AliTOFDRMEventCRC *)rawData;
 	FillDRMSummaryData(fDRMEventCRC);
 	if (fVerbose)
@@ -399,7 +408,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//set LTM global header
 	fLTMGlobalHeader = (AliTOFLTMGlobalHeader *)rawData;
 	//reset LTM CRC
-	LTMCRC = 0x0;
+	ltmCRC = 0x0;
 	//fill decoder summary data
 	fDecoderSummaryData->SetCurrentSlotID(fLTMGlobalHeader->GetSlotID());
 	//get LTM summary data
@@ -421,8 +430,8 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	for (Int_t iPDLWord = 0; iPDLWord < LTM_PDL_DATA_WORDS; iPDLWord++){
 	  iWord++;
 	  rawData++;
-	  DRMCRC ^= *rawData;
-	  LTMCRC ^= *rawData;
+	  drmCRC ^= *rawData;
+	  ltmCRC ^= *rawData;
 	  //set LTM PDL data
 	  fLTMPDLData = (AliTOFLTMPDLData *)rawData;
 	  //fill LTM summary data
@@ -435,8 +444,8 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	for (Int_t iADCWord = 0; iADCWord < LTM_ADC_DATA_WORDS; iADCWord++){
 	  iWord++;
 	  rawData++;
-	  DRMCRC ^= *rawData;
-	  LTMCRC ^= *rawData;
+	  drmCRC ^= *rawData;
+	  ltmCRC ^= *rawData;
 	  //set LTM ADC data
 	  fLTMADCData = (AliTOFLTMADCData *)rawData;
 	  //fill LTM summary data
@@ -449,8 +458,8 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	for (Int_t iORWord = 0; iORWord < LTM_OR_DATA_WORDS; iORWord++){
 	  iWord++;
 	  rawData++;
-	  DRMCRC ^= *rawData;
-	  LTMCRC ^= *rawData;
+	  drmCRC ^= *rawData;
+	  ltmCRC ^= *rawData;
 	  //set LTM OR data
 	  fLTMORData = (AliTOFLTMORData *)rawData;
 	  //fill LTM summary data
@@ -500,7 +509,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//set TRM global header
 	fTRMGlobalHeader = (AliTOFTRMGlobalHeader *)rawData;	
 	//reset TRM CRC
-	TRMCRC = 0x0;
+	trmCRC = 0x0;
 	//fill decoder summary data
 	fDecoderSummaryData->SetCurrentSlotID(fTRMGlobalHeader->GetSlotID());
 	//get TRM summary data
@@ -589,10 +598,10 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//set DRM global trailer
 	fDRMGlobalTrailer = (AliTOFDRMGlobalTrailer *)rawData;
 	//remove global trailer from DRM CRC
-	DRMCRC ^= *rawData;
+	drmCRC ^= *rawData;
 	//fill DRM summary data
 	FillDRMSummaryData(fDRMGlobalTrailer);
-	fDRMSummaryData->SetDecoderCRC(COMPUTE_DRM_CRC(DRMCRC));
+	fDRMSummaryData->SetDecoderCRC(COMPUTE_DRM_CRC(drmCRC));
 	//print verbose
 	if (fVerbose)
 	  AliInfo(Form("  %02x - 0x%08x \t  DRM global trailer",decoderStatus,*rawData));
@@ -634,10 +643,10 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//set LTM global trailer
 	fLTMGlobalTrailer = (AliTOFLTMGlobalTrailer *)rawData;
 	//remove global trailer from LTM CRC
-	LTMCRC ^= *rawData;
+	ltmCRC ^= *rawData;
 	//fill LTM summary data
 	FillLTMSummaryData(fLTMGlobalTrailer);
-	fLTMSummaryData->SetDecoderCRC(COMPUTE_LTM_CRC(LTMCRC));
+	fLTMSummaryData->SetDecoderCRC(COMPUTE_LTM_CRC(ltmCRC));
 	//print verbose
 	if (fVerbose)
 	  AliInfo(Form("  %02x - 0x%08x \t  LTM global trailer",decoderStatus,*rawData));
@@ -679,10 +688,10 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//set TRM global trailer
 	fTRMGlobalTrailer = (AliTOFTRMGlobalTrailer *)rawData;	
 	//remove global trailer from TRM CRC
-	TRMCRC ^= *rawData;
+	trmCRC ^= *rawData;
 	//fill TRM summary data
 	FillTRMSummaryData(fTRMGlobalTrailer);
-	fTRMSummaryData->SetDecoderCRC(COMPUTE_TRM_CRC(TRMCRC));
+	fTRMSummaryData->SetDecoderCRC(COMPUTE_TRM_CRC(trmCRC));
 	//print verbose
 	if (fVerbose)
 	  AliInfo(Form("  %02x - 0x%08x \t  TRM global trailer \t CRC=%04d eventCounter=%04d",decoderStatus,*rawData,fTRMGlobalTrailer->GetEventCRC(),fTRMGlobalTrailer->GetEventCounter()));
@@ -1130,8 +1139,14 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMGlobalHeader *DRMGlobalHeader)
+AliTOFDecoderV2::FillDRMSummaryData(const AliTOFDRMGlobalHeader *DRMGlobalHeader)
 {
+  /*
+   *
+   * FillDRMSummaryData
+   *
+   */
+
   fDRMSummaryData->SetHeader(kTRUE);
   fDRMSummaryData->SetSlotID(DRMGlobalHeader->GetSlotID());
   fDRMSummaryData->SetEventWords(DRMGlobalHeader->GetEventWords());
@@ -1141,8 +1156,14 @@ AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMGlobalHeader *DRMGlobalHeader)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMGlobalTrailer *DRMGlobalTrailer)
+AliTOFDecoderV2::FillDRMSummaryData(const AliTOFDRMGlobalTrailer *DRMGlobalTrailer)
 {
+  /*
+   *
+   * FillDRMSummaryData
+   *
+   */
+
   fDRMSummaryData->SetTrailer(kTRUE);
   fDRMSummaryData->SetLocalEventCounter(DRMGlobalTrailer->GetLocalEventCounter());
 }
@@ -1150,8 +1171,14 @@ AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMGlobalTrailer *DRMGlobalTrailer)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMStatusHeader1 *DRMStatusHeader1)
+AliTOFDecoderV2::FillDRMSummaryData(const AliTOFDRMStatusHeader1 *DRMStatusHeader1)
 {
+  /*
+   *
+   * FillDRMSummaryData
+   *
+   */
+
   fDRMSummaryData->SetPartecipatingSlotID(DRMStatusHeader1->GetPartecipatingSlotID());
   fDRMSummaryData->SetCBit(DRMStatusHeader1->GetCBit());
   fDRMSummaryData->SetVersID(DRMStatusHeader1->GetVersID());
@@ -1161,8 +1188,14 @@ AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMStatusHeader1 *DRMStatusHeader1)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMStatusHeader2 *DRMStatusHeader2)
+AliTOFDecoderV2::FillDRMSummaryData(const AliTOFDRMStatusHeader2 *DRMStatusHeader2)
 {
+  /*
+   *
+   * FillDRMSummaryData
+   *
+   */
+
   fDRMSummaryData->SetSlotEnableMask(DRMStatusHeader2->GetSlotEnableMask());
   fDRMSummaryData->SetFaultID(DRMStatusHeader2->GetFaultID());
   fDRMSummaryData->SetRTOBit(DRMStatusHeader2->GetRTOBit());
@@ -1171,8 +1204,14 @@ AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMStatusHeader2 *DRMStatusHeader2)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMStatusHeader3 *DRMStatusHeader3)
+AliTOFDecoderV2::FillDRMSummaryData(const AliTOFDRMStatusHeader3 *DRMStatusHeader3)
 {
+  /*
+   *
+   * FillDRMSummaryData
+   *
+   */
+
   fDRMSummaryData->SetL0BCID(DRMStatusHeader3->GetL0BCID());
   fDRMSummaryData->SetRunTimeInfo(DRMStatusHeader3->GetRunTimeInfo());
 }
@@ -1180,8 +1219,14 @@ AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMStatusHeader3 *DRMStatusHeader3)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMStatusHeader4 *DRMStatusHeader4)
+AliTOFDecoderV2::FillDRMSummaryData(const AliTOFDRMStatusHeader4 *DRMStatusHeader4)
 {
+  /*
+   *
+   * FillDRMSummaryData
+   *
+   */
+
   fDRMSummaryData->SetTemperature(DRMStatusHeader4->GetTemperature());
   fDRMSummaryData->SetACKBit(DRMStatusHeader4->GetACKBit());
   fDRMSummaryData->SetSensAD(DRMStatusHeader4->GetSensAD());
@@ -1190,16 +1235,28 @@ AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMStatusHeader4 *DRMStatusHeader4)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillDRMSummaryData(AliTOFDRMEventCRC *DRMEventCRC)
+AliTOFDecoderV2::FillDRMSummaryData(const AliTOFDRMEventCRC *DRMEventCRC)
 {
+  /*
+   *
+   * FillDRMSummaryData
+   *
+   */
+
   fDRMSummaryData->SetEventCRC(DRMEventCRC->GetEventCRC());
 }
 
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMGlobalHeader *LTMGlobalHeader)
+AliTOFDecoderV2::FillLTMSummaryData(const AliTOFLTMGlobalHeader *LTMGlobalHeader)
 {
+  /*
+   *
+   * FillLTMSummaryData
+   *
+   */
+
   fLTMSummaryData->SetHeader(kTRUE);
   fLTMSummaryData->SetSlotID(LTMGlobalHeader->GetSlotID());
   fLTMSummaryData->SetEventWords(LTMGlobalHeader->GetEventWords());
@@ -1210,8 +1267,14 @@ AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMGlobalHeader *LTMGlobalHeader)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMGlobalTrailer *LTMGlobalTrailer)
+AliTOFDecoderV2::FillLTMSummaryData(const AliTOFLTMGlobalTrailer *LTMGlobalTrailer)
 {
+  /*
+   *
+   * FillLTMSummaryData
+   *
+   */
+
   fLTMSummaryData->SetTrailer(kTRUE);
   fLTMSummaryData->SetEventCRC(LTMGlobalTrailer->GetEventCRC());
   fLTMSummaryData->SetEventNumber(LTMGlobalTrailer->GetEventNumber());
@@ -1220,8 +1283,14 @@ AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMGlobalTrailer *LTMGlobalTrailer)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMPDLData *LTMPDLData, Int_t PDLWord)
+AliTOFDecoderV2::FillLTMSummaryData(const AliTOFLTMPDLData *LTMPDLData, Int_t PDLWord)
 {
+  /*
+   *
+   * FillLTMSummaryData
+   *
+   */
+
   fLTMSummaryData->SetPDL(4 * PDLWord + 0, LTMPDLData->GetPDLValue1());
   fLTMSummaryData->SetPDL(4 * PDLWord + 1, LTMPDLData->GetPDLValue2());
   fLTMSummaryData->SetPDL(4 * PDLWord + 2, LTMPDLData->GetPDLValue3());
@@ -1231,8 +1300,14 @@ AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMPDLData *LTMPDLData, Int_t PDLWord)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMADCData *LTMADCData, Int_t ADCWord)
+AliTOFDecoderV2::FillLTMSummaryData(const AliTOFLTMADCData *LTMADCData, Int_t ADCWord)
 {
+  /*
+   *
+   * FillLTMSummaryData
+   *
+   */
+
   fLTMSummaryData->SetADC(3 * ADCWord + 0, LTMADCData->GetADCValue1());
   fLTMSummaryData->SetADC(3 * ADCWord + 1, LTMADCData->GetADCValue2());
   fLTMSummaryData->SetADC(3 * ADCWord + 2, LTMADCData->GetADCValue3());
@@ -1241,8 +1316,14 @@ AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMADCData *LTMADCData, Int_t ADCWord)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMORData *LTMORData, Int_t ORWord)
+AliTOFDecoderV2::FillLTMSummaryData(const AliTOFLTMORData *LTMORData, Int_t ORWord)
 {
+  /*
+   *
+   * FillLTMSummaryData
+   *
+   */
+
   fLTMSummaryData->SetOR(3 * ORWord + 0, LTMORData->GetORValue1());
   fLTMSummaryData->SetOR(3 * ORWord + 1, LTMORData->GetORValue2());
   fLTMSummaryData->SetOR(3 * ORWord + 2, LTMORData->GetORValue3());
@@ -1251,8 +1332,14 @@ AliTOFDecoderV2::FillLTMSummaryData(AliTOFLTMORData *LTMORData, Int_t ORWord)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillTRMSummaryData(AliTOFTRMGlobalHeader *TRMGlobalHeader)
+AliTOFDecoderV2::FillTRMSummaryData(const AliTOFTRMGlobalHeader *TRMGlobalHeader)
 {
+  /*
+   *
+   * FillTRMSummaryData
+   *
+   */
+
   fTRMSummaryData->SetHeader(kTRUE);
   fTRMSummaryData->SetSlotID(TRMGlobalHeader->GetSlotID());
   fTRMSummaryData->SetEventWords(TRMGlobalHeader->GetEventWords());
@@ -1264,8 +1351,14 @@ AliTOFDecoderV2::FillTRMSummaryData(AliTOFTRMGlobalHeader *TRMGlobalHeader)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillTRMSummaryData(AliTOFTRMGlobalTrailer *TRMGlobalTrailer)
+AliTOFDecoderV2::FillTRMSummaryData(const AliTOFTRMGlobalTrailer *TRMGlobalTrailer)
 {
+  /*
+   *
+   * FillTRMSummaryData
+   *
+   */
+
   fTRMSummaryData->SetTrailer(kTRUE);
   fTRMSummaryData->SetEventCRC(TRMGlobalTrailer->GetEventCRC());
   fTRMSummaryData->SetEventCounter(TRMGlobalTrailer->GetEventCounter());
@@ -1274,8 +1367,14 @@ AliTOFDecoderV2::FillTRMSummaryData(AliTOFTRMGlobalTrailer *TRMGlobalTrailer)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillChainSummaryData(AliTOFTRMChainHeader *TRMChainHeader)
+AliTOFDecoderV2::FillChainSummaryData(const AliTOFTRMChainHeader *TRMChainHeader)
 {
+  /*
+   *
+   * FillChainSummaryData
+   *
+   */
+
   fChainSummaryData->SetHeader(kTRUE);
   switch (*(UInt_t *)TRMChainHeader & WORD_TYPE_MASK){
   case CHAIN_A_HEADER:
@@ -1294,8 +1393,14 @@ AliTOFDecoderV2::FillChainSummaryData(AliTOFTRMChainHeader *TRMChainHeader)
 //_________________________________________________________________
 
 void
-AliTOFDecoderV2::FillChainSummaryData(AliTOFTRMChainTrailer *TRMChainTrailer)
+AliTOFDecoderV2::FillChainSummaryData(const AliTOFTRMChainTrailer *TRMChainTrailer)
 {
+  /*
+   *
+   * FillChainSummaryData
+   *
+   */
+
   fChainSummaryData->SetTrailer(kTRUE);
   fChainSummaryData->SetStatus(TRMChainTrailer->GetStatus());
   fChainSummaryData->SetEventCounter(TRMChainTrailer->GetEventCounter());

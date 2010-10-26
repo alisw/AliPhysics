@@ -17,13 +17,13 @@
 class AliTOFTDCPackedHit
 {
  public:
-  UInt_t GetHitTime() {return fHitTime;};
-  UInt_t GetTOTWidth() {return fTOTWidth;};
-  UInt_t GetChan() {return fChan;};
-  UInt_t GetTDCID() {return fTDCID;};
-  UInt_t GetEBit() {return fEBit;};
-  UInt_t GetPSBits() {return fPSBits;};
-  UInt_t GetMBO() {return fMBO;};
+  UInt_t GetHitTime() const {return fHitTime;};
+  UInt_t GetTOTWidth() const {return fTOTWidth;};
+  UInt_t GetChan() const {return fChan;};
+  UInt_t GetTDCID() const {return fTDCID;};
+  UInt_t GetEBit() const {return fEBit;};
+  UInt_t GetPSBits() const {return fPSBits;};
+  UInt_t GetMBO() const {return fMBO;};
  private:
   UInt_t fHitTime:  13; // time-of-flight measurement
   UInt_t fTOTWidth:  8; // time-over-threshold measurement

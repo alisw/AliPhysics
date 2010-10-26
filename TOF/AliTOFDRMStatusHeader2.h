@@ -17,12 +17,12 @@
 class AliTOFDRMStatusHeader2
 {
  public:
-  UInt_t GetSlotID() {return fSlotID;};
-  UInt_t GetSlotEnableMask() {return fSlotEnableMask;};
-  UInt_t GetMBZ() {return fMBZ;};
-  UInt_t GetFaultID() {return fFaultID;};
-  UInt_t GetRTOBit() {return fRTOBit;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetSlotID() const {return fSlotID;};
+  UInt_t GetSlotEnableMask() const {return fSlotEnableMask;};
+  UInt_t GetMBZ() const {return fMBZ;};
+  UInt_t GetFaultID() const {return fFaultID;};
+  UInt_t GetRTOBit() const {return fRTOBit;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
   UInt_t fSlotID:         4;
   UInt_t fSlotEnableMask: 11;
