@@ -2287,6 +2287,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       }
       // Is a given aliroot mode requested ?
       TList optionsList;
+      TString parLibs;
       if (!fAliRootMode.IsNull()) {
          TString alirootMode = fAliRootMode;
          if (alirootMode == "default") alirootMode = "";
@@ -2295,18 +2296,33 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          optionsList.Add(new TNamed("ALIROOT_MODE", alirootMode.Data()));
          // Check the additional libs to be loaded
          TString extraLibs;
+         Bool_t parMode = kFALSE;
          if (!alirootMode.IsNull()) extraLibs = "ANALYSIS:ANALYSISalice";
          // Parse the extra libs for .so
          if (fAdditionalLibs.Length()) {
             TObjArray *list = fAdditionalLibs.Tokenize(" ");
             TIter next(list);
             TObjString *str;
-            while((str=(TObjString*)next()) && str->GetString().Contains(".so")) {
-               TString stmp = str->GetName();
-               if (stmp.BeginsWith("lib")) stmp.Remove(0,3);
-               stmp.ReplaceAll(".so","");
-               if (!extraLibs.IsNull()) extraLibs += ":";
-               extraLibs += stmp;
+            while((str=(TObjString*)next())) {
+               if (str->GetString().Contains(".so")) {
+                  if (parMode) {
+                     Warning("StartAnalysis", "Plugin does not support loading libs after par files in PROOF mode. Library %s and following will not load on workers", str->GetName());
+                     break;
+                  }   
+                  TString stmp = str->GetName();
+                  if (stmp.BeginsWith("lib")) stmp.Remove(0,3);
+                  stmp.ReplaceAll(".so","");
+                  if (!extraLibs.IsNull()) extraLibs += ":";
+                  extraLibs += stmp;
+                  continue;
+               }
+               if (str->GetString().Contains(".par")) {
+                  // The first par file found in the list will not allow any further .so
+                  parMode = kTRUE;
+                  if (!parLibs.IsNull()) parLibs += ":";
+                  parLibs += str->GetName();
+                  continue;
+               }   
             }
             if (list) delete list;            
          }
@@ -2344,6 +2360,24 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
                return kFALSE;
             }         
          }
+         // Enable first par files from fAdditionalLibs
+         if (!parLibs.IsNull()) {
+            TObjArray *list = parLibs.Tokenize(":");
+            TIter next(list);
+            TObjString *package;
+            while((package=(TObjString*)next())) {
+               if (gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
+                  if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\",kTRUE);", package->GetName()))) {
+                     Error("StartAnalysis", "There was an error trying to enable package %s", package->GetName());
+                     return kFALSE;
+                  }
+               } else {
+                  Error("StartAnalysis", "There was an error trying to upload package %s", package->GetName());
+                  return kFALSE;
+               }
+            }
+            if (list) delete list; 
+         }
       } else {
          if (fAdditionalLibs.Contains(".so") && !testMode) {
             Error("StartAnalysis", "You request additional libs to be loaded but did not enabled any AliRoot mode. Please refer to: \
@@ -2356,6 +2390,8 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          TIter next(fPackages);
          TObject *package;
          while ((package=next())) {
+            // Skip packages already enabled
+            if (parLibs.Contains(package->GetName())) continue;
             if (gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
                if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\",kTRUE);", package->GetName()))) {
                   Error("StartAnalysis", "There was an error trying to enable package %s", package->GetName());
