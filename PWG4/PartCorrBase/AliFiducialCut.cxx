@@ -106,20 +106,20 @@ AliFiducialCut & AliFiducialCut::operator = (const AliFiducialCut & source)
 AliFiducialCut::~AliFiducialCut() {
   //Dtor
 
-  delete fCTSFidCutMinEta ;
-  delete fCTSFidCutMinPhi ;
-  delete fCTSFidCutMaxEta ;
-  delete fCTSFidCutMaxPhi ;
+  if(fCTSFidCutMinEta)delete fCTSFidCutMinEta ;
+  if(fCTSFidCutMinPhi)delete fCTSFidCutMinPhi ;
+  if(fCTSFidCutMaxEta)delete fCTSFidCutMaxEta ;
+  if(fCTSFidCutMaxPhi)delete fCTSFidCutMaxPhi ;
   
-  delete fEMCALFidCutMinEta ;
-  delete fEMCALFidCutMinPhi ;
-  delete fEMCALFidCutMaxEta ; 
-  delete fEMCALFidCutMaxPhi ;
+  if(fEMCALFidCutMinEta)delete fEMCALFidCutMinEta ;
+  if(fEMCALFidCutMinPhi)delete fEMCALFidCutMinPhi ;
+  if(fEMCALFidCutMaxEta)delete fEMCALFidCutMaxEta ; 
+  if(fEMCALFidCutMaxPhi)delete fEMCALFidCutMaxPhi ;
   
-  delete fPHOSFidCutMinEta ; 
-  delete fPHOSFidCutMinPhi ; 
-  delete fPHOSFidCutMaxEta ;
-  delete fPHOSFidCutMaxPhi ;
+  if(fPHOSFidCutMinEta)delete fPHOSFidCutMinEta ; 
+  if(fPHOSFidCutMinPhi)delete fPHOSFidCutMinPhi ; 
+  if(fPHOSFidCutMaxEta)delete fPHOSFidCutMaxEta ;
+  if(fPHOSFidCutMaxPhi)delete fPHOSFidCutMaxPhi ;
 
 }
 
