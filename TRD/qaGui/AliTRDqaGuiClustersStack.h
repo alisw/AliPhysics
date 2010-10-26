@@ -51,7 +51,8 @@ class AliTRDqaGuiClustersStack : public TGCompositeFrame {
   Int_t fIdxStack;   // active stack
   Int_t fView;       // data type 
 
-  char fFileName[256];  // file wuth histograms
+  //char fFileName[256];      // file with histograms
+  const Char_t *fFileName;    // file with histograms
   
   TRootEmbeddedCanvas *fCanvasList[6];   // canvases
   TH1D *fHistList[6];                    // and histos
@@ -79,7 +80,7 @@ class AliTRDqaGuiClustersStack : public TGCompositeFrame {
  private:  
   AliTRDqaGuiClustersStack& operator = (const AliTRDqaGuiClustersStack& /*g*/) { return *this; };
   AliTRDqaGuiClustersStack(const AliTRDqaGuiClustersStack &);
-  ClassDef(AliTRDqaGuiClustersStack,1) // 
+  ClassDef(AliTRDqaGuiClustersStack,2) // 
 };
 
 #endif

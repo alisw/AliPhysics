@@ -42,6 +42,7 @@ ClassImp(AliTRDqaGuiEnergyDeposit)
 
 AliTRDqaGuiEnergyDeposit::AliTRDqaGuiEnergyDeposit() 
   : fIdx(0),
+    fFileName(0),
     fGPanel(0),
     fGCanvas(0),
     fGSelect(0),
@@ -58,7 +59,7 @@ AliTRDqaGuiEnergyDeposit::AliTRDqaGuiEnergyDeposit()
     fHistList[i]   = 0x0;
   }
 
-  strncpy(fFileName,"",256);
+  //strncpy(fFileName,"",256);
 
 }
 
@@ -67,6 +68,7 @@ AliTRDqaGuiEnergyDeposit::AliTRDqaGuiEnergyDeposit()
 AliTRDqaGuiEnergyDeposit::AliTRDqaGuiEnergyDeposit(TGWindow *parent) 
   : TGCompositeFrame(parent, 720, 500),
     fIdx(0),
+    fFileName(0x0),
     fGPanel(0),
     fGCanvas(0),
     fGSelect(0),
@@ -142,7 +144,8 @@ void AliTRDqaGuiEnergyDeposit::SetQAFile(const char *filename) {
   // Ste file with histograms
   //
 
-  strncpy(fFileName,filename,256);
+  //strncpy(fFileName,filename,256);
+  fFileName = filename;
 
   for(Int_t i=0; i<6; i++) {
     if (fHistList[i]) delete fHistList[i];

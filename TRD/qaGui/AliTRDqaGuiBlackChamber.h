@@ -84,7 +84,8 @@ class AliTRDqaGuiBlackChamber : public TGCompositeFrame {
   Int_t fIdxChamber;               // active chamber 
   //Int_t fView;
 
-  char fFileName[256];             // file with histograms
+  //char fFileName[256];                  // file with histograms
+  const Char_t *fFileName;              // file with histograms
   
   TRootEmbeddedCanvas *fCanvasList[5];  // canvases
   TH1 *fHistList[5];                    // and histos

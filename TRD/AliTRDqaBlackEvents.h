@@ -203,7 +203,7 @@ class AliTRDqaBlackEvents : public TObject {
   Int_t FillBits(TH1D *hist, Int_t code, Int_t offset);
 
 
-  ClassDef(AliTRDqaBlackEvents,0) // QA for black events  
+  ClassDef(AliTRDqaBlackEvents,1) // QA for black events  
 
 };
 #endif

@@ -60,6 +60,7 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber()
     fSetRangeNoise(0),
     fIdxSM(0),
     fIdxChamber(0),
+    fFileName(0x0),
     fGPanel(0),
     fGCanvas(0),
     fGCanvasUp(0),
@@ -86,7 +87,7 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber()
     fHistList[j]   = 0x0;    
   }
 
-  strncpy(fFileName,"",256);
+  //strncpy(fFileName,"",256);
 
 }
 
@@ -99,6 +100,7 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber(TGWindow *parent)
     fSetRangeNoise(0),
     fIdxSM(0),
     fIdxChamber(0),
+    fFileName(0x0),
     fGPanel(0),
     fGCanvas(0),
     fGCanvasUp(0),
@@ -234,7 +236,8 @@ void AliTRDqaGuiBlackChamber::SetQAFile(const char *filename) {
   const char *opt[10] = {"colz", "colz", "", "", "", "colz", "colz", "", "", ""};
   const Int_t kLogy[10] = {0, 0, 1, 1, 1, 0, 0, 1, 1,1};
   
-  strncpy(fFileName,filename,256);
+  //strncpy(fFileName,filename,256);
+  fFileName = filename;
  
   for(int i=0; i<5; i++) {
     if (fHistList[i]) delete fHistList[i];

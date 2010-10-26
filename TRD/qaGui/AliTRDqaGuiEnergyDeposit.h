@@ -43,7 +43,8 @@ class AliTRDqaGuiEnergyDeposit : public TGCompositeFrame {
   Int_t fIdx;                          // super module index
   const char *fNameList[6];            // names of histograms
 
-  char fFileName[256];                 // file with histograms
+  //char fFileName[256];                // file with histograms
+  const Char_t *fFileName;              // file with histograms
  
   TRootEmbeddedCanvas *fCanvasList[6];  // canvases
   TH1D *fHistList[6];                   // and histograms
@@ -61,7 +62,7 @@ class AliTRDqaGuiEnergyDeposit : public TGCompositeFrame {
   AliTRDqaGuiEnergyDeposit& operator = (const AliTRDqaGuiEnergyDeposit& /*g*/) { return *this; };
   AliTRDqaGuiEnergyDeposit(const AliTRDqaGuiEnergyDeposit&);
 
-  ClassDef(AliTRDqaGuiEnergyDeposit,1) // 
+  ClassDef(AliTRDqaGuiEnergyDeposit,2) // 
 };
 
 #endif

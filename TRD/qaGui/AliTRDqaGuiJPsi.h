@@ -45,7 +45,8 @@ class AliTRDqaGuiJPsi : public TGCompositeFrame {
   Int_t fIdx;                          // super module index
   const char *fNameList[6];            // names of histograms
 
-  char fFileName[256];                 // file with histograms
+  //char fFileName[256];                // file with histograms
+  const Char_t *fFileName;              // file with histograms
  
   TRootEmbeddedCanvas *fCanvasList[6];  // canvases
   TH1D *fHistList[6];                   // and histograms
@@ -63,7 +64,7 @@ class AliTRDqaGuiJPsi : public TGCompositeFrame {
   AliTRDqaGuiJPsi& operator = (const AliTRDqaGuiJPsi& /*g*/) { return *this; };
   AliTRDqaGuiJPsi(const AliTRDqaGuiJPsi&);
 
-  ClassDef(AliTRDqaGuiJPsi,1) // 
+  ClassDef(AliTRDqaGuiJPsi,2) // 
 };
 
 #endif

@@ -55,6 +55,7 @@ AliTRDqaGuiClustersStack::AliTRDqaGuiClustersStack()
   : fIdxSM (0),
     fIdxStack (0),
     fView (0),
+    fFileName (0x0),
     fGPanel (0),
     fGCanvas (0),
     fGSelectSM (0),
@@ -75,7 +76,7 @@ AliTRDqaGuiClustersStack::AliTRDqaGuiClustersStack()
     fHistList[i]   = 0x0;
   }
 
-  strncpy(fFileName,"",256);
+  //strncpy(fFileName,"",256);
 
 }
 
@@ -85,6 +86,7 @@ AliTRDqaGuiClustersStack::AliTRDqaGuiClustersStack(TGWindow *parent)
     fIdxSM (0),
     fIdxStack (0),
     fView (0),
+    fFileName (0x0),
     fGPanel (0),
     fGCanvas (0),
     fGSelectSM (0),
@@ -193,7 +195,8 @@ void AliTRDqaGuiClustersStack::SetQAFile(const char *filename) {
   // Sets a file with histograms
   //
   
-  strncpy(fFileName,filename,256);
+  //strncpy(fFileName,filename,256);
+  fFileName = filename;
 
   for(Int_t i=0; i<fgknCh; i++) {
     if (fHistList[i]) delete fHistList[i];

@@ -50,7 +50,8 @@ class AliTRDqaGuiClustersSM : public TGCompositeFrame {
   const char *fNameList[4];            // names of histograms
   static const Int_t fgkLogList[4];    // flag for logaritmic scale
    
-  char fFileName[256];                 // file with histograms
+  //char fFileName[256];                  // file with histograms
+  const Char_t *fFileName;              // file with histograms
  
   TRootEmbeddedCanvas *fCanvasList[4];  // canvases
   TH1D *fHistList[4];                   // and histograms
@@ -70,7 +71,7 @@ class AliTRDqaGuiClustersSM : public TGCompositeFrame {
   AliTRDqaGuiClustersSM& operator = (const AliTRDqaGuiClustersSM& /*g*/) { return *this; };
   AliTRDqaGuiClustersSM(const AliTRDqaGuiClustersSM&);
 
-  ClassDef(AliTRDqaGuiClustersSM,1) // 
+  ClassDef(AliTRDqaGuiClustersSM,2) // 
 };
 
 #endif
