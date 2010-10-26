@@ -35,6 +35,7 @@ class AliMixedEvent;
 #include "AliFiducialCut.h"
 class AliAODMCHeader;
 #include "AliCalorimeterUtils.h"
+class AliESDtrackCuts;
 
 class AliCaloTrackReader : public TObject {
 
@@ -171,9 +172,17 @@ public:
 //  Int_t GetAODPHOSNormalInputEntries()  {if(!fSecondInputAODTree) { fAODPHOSNormalInputEntries  = fAODPHOS->GetEntriesFast() ;}
 //										 return fAODPHOSNormalInputEntries ; }
 	
-  ULong_t GetTrackStatus() const    {return fTrackStatus ; }
+  // Track selection
+  ULong_t GetTrackStatus() const   {return fTrackStatus ; }
   void SetTrackStatus(ULong_t bit) { fTrackStatus = bit ; }		
 	
+  AliESDtrackCuts* GetTrackCuts()          const  { return fESDtrackCuts    ; }
+  void    SetTrackCuts(AliESDtrackCuts * cuts)    { fESDtrackCuts = cuts    ; }		  
+  Int_t   GetTrackMultiplicity()           const  { return fTrackMult       ; }
+  Float_t GetTrackMultiplicityEtaCut()     const  { return fTrackMultEtaCut ; }
+  void    SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta  ; }		
+  
+  //MC switchs
   void SwitchOnStack()              { fReadStack          = kTRUE  ; }
   void SwitchOffStack()             { fReadStack          = kFALSE ; }
   void SwitchOnAODMCParticles()     { fReadAODMCParticles = kTRUE  ; }
@@ -267,6 +276,9 @@ public:
 //  Int_t          fAODPHOSNormalInputEntries;  // Number of entries in PHOS  in case of standard input, larger with mixing.
 	
   ULong_t          fTrackStatus        ; // Track selection bit, select tracks refitted in TPC, ITS ...
+  AliESDtrackCuts *fESDtrackCuts       ; // Track cut  
+  Int_t            fTrackMult          ; // Track multiplicity
+  Float_t          fTrackMultEtaCut    ; // Track multiplicity eta cut
   Bool_t           fReadStack          ; // Access kine information from stack
   Bool_t	         fReadAODMCParticles ; // Access kine information from filtered AOD MC particles
 	
@@ -286,7 +298,7 @@ public:
   Bool_t           fWriteOutputDeltaAOD;// Write the created delta AOD objects into file  
 	Bool_t           fOldAOD;             // Old AODs, before revision 4.20
   
-  ClassDef(AliCaloTrackReader,19)
+  ClassDef(AliCaloTrackReader,20)
 } ;
 
 

@@ -36,6 +36,7 @@
 #include "AliVEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliESDtrackCuts.h"
 
 ClassImp(AliAnalysisTaskCaloFilter)
   
@@ -45,9 +46,12 @@ AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
   AliAnalysisTaskSE(), //fCuts(0x0),
   fCaloFilter(0), fCorrect(kFALSE), 
   fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEAR"), 
-  fEMCALRecoUtils(new AliEMCALRecoUtils)
+  fEMCALRecoUtils(new AliEMCALRecoUtils),
+  fESDtrackCuts(0), fTrackMultEtaCut(0.9)
 {
   // Default constructor
+  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+
 }
 
 //__________________________________________________
@@ -55,9 +59,12 @@ AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter(const char* name):
   AliAnalysisTaskSE(name), //fCuts(0x0),
   fCaloFilter(0), fCorrect(kFALSE),
   fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEAR"), 
-  fEMCALRecoUtils(new AliEMCALRecoUtils)
+  fEMCALRecoUtils(new AliEMCALRecoUtils),
+  fESDtrackCuts(0), fTrackMultEtaCut(0.9)
 {
   // Constructor
+  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+
 }
 
 //__________________________________________________
@@ -66,8 +73,8 @@ AliAnalysisTaskCaloFilter::~AliAnalysisTaskCaloFilter()
   //Destructor.
 	
   if(fEMCALGeo)       delete fEMCALGeo;	
-  if(fEMCALRecoUtils) delete fEMCALRecoUtils ;
-  
+  if(fEMCALRecoUtils) delete fEMCALRecoUtils;
+  if(fESDtrackCuts)   delete fESDtrackCuts;
 }
 
 //__________________________________________________
@@ -99,12 +106,23 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   //Magic line to write events to file
   AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
     
-  
   Bool_t bAOD = kFALSE;
   if(!strcmp(event->GetName(),"AliAODEvent")) bAOD=kTRUE;
   Bool_t bESD = kFALSE;
   if(!strcmp(event->GetName(),"AliESDEvent")) bESD=kTRUE;
-    
+  
+  //Get track multiplicity
+  Int_t trackMult = 0;
+  if(bESD){
+    Int_t nTracks   = InputEvent()->GetNumberOfTracks() ;
+    for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
+      AliVTrack * track = (AliVTrack*)InputEvent()->GetTrack(itrack) ; // retrieve track from esd
+      if(!fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
+      //Count the tracks in eta < 0.9
+      if(TMath::Abs(track->Eta())< fTrackMultEtaCut) trackMult++;
+    }    
+  }
+  
   // set arrays and pointers
   Float_t posF[3];
   Double_t pos[3];
@@ -127,8 +145,9 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   header->SetPeriodNumber(event->GetPeriodNumber());
   header->SetEventType(event->GetEventType());
   header->SetMuonMagFieldScale(-999.); // FIXME
-  header->SetCentrality(-999.);        // FIXME
-  
+  //printf("Track Multiplicity for eta < %f: %d \n",fTrackMultEtaCut,trackMult);
+  header->SetCentrality((Double_t)trackMult);        // FIXME
+  //printf("Centrality %f\n",header->GetCentrality());
   
   header->SetTriggerMask(event->GetTriggerMask()); 
   header->SetTriggerCluster(event->GetTriggerCluster());
@@ -261,6 +280,18 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       printf("Filter, aod       : i %d, x %f, y %f, z %f\n",caloCluster->GetID(), posF[0], posF[1], posF[2]);
     }    
     
+    //Matched tracks, just to know if there was any match, the track pointer is useless.
+    if(bESD){
+      TArrayI* matchedT = 	((AliESDCaloCluster*)cluster)->GetTracksMatched();
+      if (InputEvent()->GetNumberOfTracks() > 0 && matchedT && cluster->GetTrackMatchedIndex() >= 0) {	
+        for (Int_t im = 0; im < matchedT->GetSize(); im++) {
+          Int_t iESDtrack = matchedT->At(im);;
+          if ((AliVTrack*)InputEvent()->GetTrack(iESDtrack) != 0) {
+            caloCluster->AddTrackMatched((AliVTrack*)InputEvent()->GetTrack(iESDtrack));
+          }
+        }
+      }// There is at least a match with a track
+    }
   } 
   caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
   // end of loop on calo clusters
