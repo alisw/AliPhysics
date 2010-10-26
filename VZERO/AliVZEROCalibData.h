@@ -112,6 +112,9 @@ class AliVZEROCalibData: public TNamed {
 
   Float_t  GetLightYields(Int_t channel);
 
+  Float_t *GetPMGainsA() const { return fPMGainsA; }
+  Float_t *GetPMGainsB() const { return fPMGainsB; }
+
  protected:
   void     InitLightYields();
   void     InitPMGains();
