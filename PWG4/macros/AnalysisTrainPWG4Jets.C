@@ -631,7 +631,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4Minijet){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskMinijet.C");
-     AliAnalysisTaskMinijet *taskMinijet = AddTaskMinjet("esd",kUseMC,kGridDataSet);
+     AliAnalysisTaskMinijet *taskMini = AddTaskMinijet("esd",kUseMC,kGridDataSet);
      // if we ha highmult trigger add another task
      if(!taskMini)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskMinjet cannot run for this train conditions - EXCLUDED");
    }
