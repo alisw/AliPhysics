@@ -880,7 +880,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
   Int_t nbins = fhRECpt->GetNbinsX();
   Double_t binwidth = fhRECpt->GetBinWidth(1);
   Double_t *limits = new Double_t[nbins+1];
-  Double_t *binwidths = new Double_t[nbins];
+  Double_t *binwidths = new Double_t[nbins+1];
   Double_t xlow=0.;
   for (Int_t i=1; i<=nbins; i++) {
     binwidth = fhRECpt->GetBinWidth(i);
@@ -997,7 +997,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumFc(){
   Double_t valueConservativeMax= 0., valueConservativeMin= 0.;
   Double_t binwidth = fhRECpt->GetBinWidth(1);
   Double_t *limits = new Double_t[nbins+1];
-  Double_t *binwidths = new Double_t[nbins];
+  Double_t *binwidths = new Double_t[nbins+1];
   Double_t xlow=0.;
   for (Int_t i=1; i<=nbins; i++) {
     binwidth = fhRECpt->GetBinWidth(i);
