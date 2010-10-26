@@ -1337,7 +1337,9 @@ Bool_t AliAnalysisAlien::FileExists(const char *lfn)
 {
 // Returns true if file exists.
    if (!gGrid) return kFALSE;
-   TGridResult *res = gGrid->Ls(lfn);
+   TString slfn = lfn;
+   slfn.ReplaceAll("alien://","");
+   TGridResult *res = gGrid->Ls(slfn);
    if (!res) return kFALSE;
    TMap *map = dynamic_cast<TMap*>(res->At(0));
    if (!map) {
@@ -1931,10 +1933,27 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
    // Check overwrite mode and remove previous partial results if needed
    // Preserve old merging functionality for stage 0.
    if (stage==0) {
+      Int_t countChar = 0;
       if (!gSystem->Exec(Form("ls %s 2>/dev/null", outputChunk.Data()))) {
          while (1) {
             // Skip as many input files as in a chunk
-            for (Int_t counter=0; counter<nmaxmerge; counter++) map = (TMap*)nextmap();
+            for (Int_t counter=0; counter<nmaxmerge; counter++) {
+               map = (TMap*)nextmap();
+               if (!map) {
+                  ::Error("MergeOutput", "Mismatch found. Please remove partial merged files from local dir.");
+                  delete res;
+                  return kFALSE;
+               }   
+               TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
+               // Count the '/' characters in the path to the current file.
+               Int_t crtCount = objs->GetString().CountChar('/');
+               if (!countChar) {
+                  countChar = crtCount;
+                  // Make sure we check if the same file in the parent dir exists
+                  if (FileExists(Form("%s/../%s", basedir, output))) countChar--;
+               }
+               if (crtCount > countChar) counter--;
+            }
             if (!map) {
                ::Error("MergeOutput", "Cannot resume merging for <%s>, nentries=%d", outputFile.Data(), res->GetSize());
                delete res;
@@ -1953,7 +1972,23 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
       countZero = nmaxmerge;
    
       while ((map=(TMap*)nextmap())) {
-      // Loop 'find' results and get next LFN
+         TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
+         if (!objs || !objs->GetString().Length()) {
+            // Nothing found - skip this output
+            delete res;
+            delete fm;
+            return kFALSE;
+         }          
+         // Make sure this is a good file and not one from a subjob directory in case we merge runs         
+         // Count the '/' characters in the path to the current file.
+         Int_t crtCount = objs->GetString().CountChar('/');
+         if (!countChar) {
+            countChar = crtCount;
+            // Make sure we check if the same file in the parent dir exists
+            if (FileExists(Form("%s/../%s", basedir, output))) countChar--;
+         }
+         if (crtCount > countChar) continue;
+         // Loop 'find' results and get next LFN
          if (countZero == nmaxmerge) {
             // First file in chunk - create file merger and add previous chunk if any.
             fm = new TFileMerger(kFALSE);
@@ -1964,13 +1999,6 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
          }
          // If last file found, put merged results in the output file
          if (map == res->Last()) outputChunk = outputFile;
-         TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
-         if (!objs || !objs->GetString().Length()) {
-            // Nothing found - skip this output
-            delete res;
-            delete fm;
-            return kFALSE;
-         } 
          // Add file to be merged and decrement chunk counter.
          fm->AddFile(objs->GetString());
          countZero--;
