@@ -128,9 +128,7 @@ AlidNdPtAnalysisPbPb::AlidNdPtAnalysisPbPb(Char_t* name, Char_t* title): AlidNdP
 
   // event level correction
   fGenEventMatrix(0),
-
   fTriggerEventMatrix(0),
-
   fRecEventMatrix(0),
 
   //
@@ -147,12 +145,15 @@ AlidNdPtAnalysisPbPb::AlidNdPtAnalysisPbPb(Char_t* name, Char_t* title): AlidNdP
   fGenPrimTrackMatrix(0),
   fRecPrimTrackMatrix(0),
 
-  // secondary track contamination correction (fRecSecTrackMatrix / fRecTrackMatrix)
+  // secondary track contamination correction (fRecTrackMatrix - fRecSecTrackMatrix)
   fRecTrackMatrix(0),
   fRecSecTrackMatrix(0),
 
-  // multiple rec. track contamination corrections (fRecMultTrackMatrix / fRecTrackMatrix)
+  // multiple rec. track contamination corrections (fRecTrackMatrix - fRecMultTrackMatrix)
   fRecMultTrackMatrix(0),
+
+
+
 
   // event control histograms
   fMCEventHist1(0),
@@ -164,7 +165,7 @@ AlidNdPtAnalysisPbPb::AlidNdPtAnalysisPbPb(Char_t* name, Char_t* title): AlidNdP
   // rec. pt and eta resolution w.r.t MC
   fRecMCTrackHist1(0),
 
-  //multple reconstructed tracks
+  //multiple reconstructed tracks
   fMCMultRecTrackHist1(0), 
 
   // rec. track control histograms
@@ -254,8 +255,8 @@ void AlidNdPtAnalysisPbPb::Init(){
   Double_t binsMult[multNbins+1] = {-0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,
                                      9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,
  				     19.5,20.5, 30.5, 40.5 , 50.5 , 60.5 , 70.5 , 80.5 , 90.5 , 100.5 , 
-				     200.5, 300.5 , 400.5 , 500.5 ,600.5, 700.5 , 800.5 , 900.5 , 1000.5 ,
-				     2000.5 , 3000.5 , 4000.5 , 5000.5 , 6000.5 , 7000.5 , 8000.5 , 9000.5 , 10000.5};//forPbPb
+					200.5, 300.5 , 400.5 , 500.5 ,600.5, 700.5 , 800.5 , 900.5 , 1000.5 ,
+					2000.5 , 3000.5 , 4000.5 , 5000.5 , 6000.5 , 7000.5 , 8000.5 , 9000.5 , 10000.5};//forPbPb
 
 
 
@@ -840,11 +841,17 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
        // checked accepted
        if(accCuts->AcceptTrack(particle)) 
        {
-         Double_t vTrackEventMatrix[3] = {vtxMC[2], particle->Pt(), particle->Eta()}; 
-         fGenTrackEventMatrix->Fill(vTrackEventMatrix);
+        Double_t vTrackEventMatrix[3] = {vtxMC[2], particle->Pt(), particle->Eta()}; 
+        fGenTrackEventMatrix->Fill(vTrackEventMatrix);
 
-       }
-     }//loop over stack
+        if(!isEventTriggered) continue;  
+        fTriggerTrackEventMatrix->Fill(vTrackEventMatrix);
+
+	if(!isEventOK) continue;
+	fRecTrackEventMatrix->Fill(vTrackEventMatrix);
+
+       }// if(accCuts->AcceptTrack(particle))
+     }// for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc)
 
      // 
      // track-level corrections (zv,pt,eta)
