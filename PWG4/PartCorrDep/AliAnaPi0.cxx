@@ -57,10 +57,11 @@ fDoOwnMix(kFALSE),fNCentrBin(0),//fNZvertBin(0),fNrpBin(0),
 fNPID(0),fNmaxMixEv(0), fCalorimeter(""),
 fNModules(12), fUseAngleCut(kFALSE), fEventsList(0x0), fMultiCutAna(kFALSE),
 fNPtCuts(0),fPtCuts(0x0),fNAsymCuts(0),fAsymCuts(0x0),
-fNCellNCuts(0),fCellNCuts(0x0),fNPIDBits(0),fPIDBits(0x0),fhReMod(0x0),
+fNCellNCuts(0),fCellNCuts(0x0),fNPIDBits(0),fPIDBits(0x0),fhReMod(0x0),fhReDiffMod(0x0),
 fhRe1(0x0),      fhMi1(0x0),      fhRe2(0x0),      fhMi2(0x0),      fhRe3(0x0),      fhMi3(0x0),
 fhReInvPt1(0x0), fhMiInvPt1(0x0), fhReInvPt2(0x0), fhMiInvPt2(0x0), fhReInvPt3(0x0), fhMiInvPt3(0x0),
 fhRePtNCellAsymCuts(0x0), fhRePIDBits(0x0),
+fhRePtMult(0x0), fhRePtMultAsy07(0x0)  ,   
 fhEvents(0x0), fhRealOpeningAngle(0x0),fhRealCosOpeningAngle(0x0),
 fhPrimPt(0x0), fhPrimAccPt(0x0), fhPrimY(0x0), fhPrimAccY(0x0), fhPrimPhi(0x0), fhPrimAccPhi(0x0),
 fhPrimOpeningAngle(0x0),fhPrimCosOpeningAngle(0x0)
@@ -197,6 +198,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   outputContainer->SetName(GetName()); 
 	
   fhReMod = new TH3D*[fNModules] ;
+  fhReDiffMod = new TH3D*[fNModules+1] ;
+  
   fhRe1 = new TH3D*[fNCentrBin*fNPID] ;
   fhRe2 = new TH3D*[fNCentrBin*fNPID] ;
   fhRe3 = new TH3D*[fNCentrBin*fNPID] ;
@@ -272,7 +275,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhReInvPt3[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhReInvPt3[ic*fNPID+ipid]) ;
       
-      
       if(fDoOwnMix){
         //Distance to bad module 1
         snprintf(key, buffersize,"hMi_cen%d_pid%d_dist1",ic,ipid) ;
@@ -339,6 +341,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         }
       }
     }
+    
+    fhRePtMult      = new TH3D("hRePtMult","(p_{T},C,M)_{#gamma#gamma}, 0<A<1.0",      nptbins,ptmin,ptmax,40,0.,160.,nmassbins,massmin,massmax);
+    fhRePtMultAsy07 = new TH3D("hRePtMultAsy07","(p_{T},C,M)_{#gamma#gamma}, 0<A<0.7",nptbins,ptmin,ptmax,40,0.,160.,nmassbins,massmin,massmax);
+    outputContainer->Add(fhRePtMult) ;
+    outputContainer->Add(fhRePtMultAsy07) ;
+
   }// multi cuts analysis
   
   fhEvents=new TH3D("hEvents","Number of events",fNCentrBin,0.,1.*fNCentrBin,
@@ -393,13 +401,39 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
   }
   
+  TString * pairname = new TString[fNModules];
+  if(fCalorimeter=="EMCAL"){
+    pairname[0]="A side (0-2)"; 
+    pairname[1]="C side (1-3)";
+    pairname[2]="Sector 0 (0-1)"; 
+    pairname[3]="Sector 1 (2-3)";
+    for(Int_t i = 4 ; i < fNModules ; i++) pairname[i]="";}
+  if(fCalorimeter=="PHOS") {
+    pairname[0]="(0-1)"; 
+    pairname[1]="(0-2)";
+    pairname[2]="(1-3)";
+    for(Int_t i = 3 ; i < fNModules ; i++) pairname[i]="";}
+
   for(Int_t imod=0; imod<fNModules; imod++){
     //Module dependent invariant mass
     snprintf(key, buffersize,"hReMod_%d",imod) ;
     snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for Module %d",imod) ;
     fhReMod[imod]  = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
     outputContainer->Add(fhReMod[imod]) ;
+
+    snprintf(key, buffersize,"hReDiffMod_%d",imod) ;
+    snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for Different Modules: %s",(pairname[imod]).Data()) ;
+    fhReDiffMod[imod]  = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
+    outputContainer->Add(fhReDiffMod[imod]) ;
   }
+  
+  delete [] pairname;
+  
+  snprintf(key, buffersize,"hReDiffMod_%d",fNModules) ;
+  snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for all Modules Combination",fNModules) ;
+  fhReDiffMod[fNModules]  = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
+  outputContainer->Add(fhReDiffMod[fNModules]) ;
+  
   
 //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
 //  
@@ -616,10 +650,25 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         continue;
       fhRealOpeningAngle   ->Fill(pt,angle);
       fhRealCosOpeningAngle->Fill(pt,TMath::Cos(angle));
+      
       //Fill module dependent histograms
       //if(module1==module2) printf("mod1 %d\n",module1);
       if(module1==module2 && module1 >=0 && module1<fNModules)
         fhReMod[module1]->Fill(pt,a,m) ;
+      else  
+        fhReDiffMod[fNModules]->Fill(pt,a,m) ;
+      
+      if(fCalorimeter=="EMCAL"){
+        if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffMod[0]->Fill(pt,a,m) ; 
+        if((module1==1 && module2==3) || (module1==3 && module2==1)) fhReDiffMod[1]->Fill(pt,a,m) ; 
+        if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffMod[2]->Fill(pt,a,m) ;
+        if((module1==2 && module2==3) || (module1==3 && module2==2)) fhReDiffMod[3]->Fill(pt,a,m) ; 
+      }
+      else {
+        if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffMod[0]->Fill(pt,a,m) ; 
+        if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffMod[1]->Fill(pt,a,m) ; 
+        if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffMod[2]->Fill(pt,a,m) ;
+      }
       
       for(Int_t ipid=0; ipid<fNPID; ipid++){
         if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
@@ -683,6 +732,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           }// icell loop
         }// pt cut loop
         
+        fhRePtMult->Fill(pt,GetTrackMultiplicity(),m) ;
+        if(a < 0.7)
+          fhRePtMultAsy07->Fill(pt,GetTrackMultiplicity(),m) ;
+
       }// multiple cuts analysis
     }// second same event particle
   }// first cluster
@@ -771,14 +824,16 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   if(!fhMi1) fhMi1 = new TH3D*[fNCentrBin*fNPID] ;
   if(!fhMi2) fhMi2 = new TH3D*[fNCentrBin*fNPID] ;
   if(!fhMi3) fhMi3 = new TH3D*[fNCentrBin*fNPID] ;	
-  if(!fhReInvPt1) fhReInvPt1 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhReInvPt2) fhReInvPt2 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhReInvPt3) fhReInvPt3 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhMiInvPt1) fhMiInvPt1 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhMiInvPt2) fhMiInvPt2 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhMiInvPt3) fhMiInvPt3 = new TH3D*[fNCentrBin*fNPID] ;	
-  if(!fhReMod)  fhReMod = new TH3D*[fNModules] ;	
-    
+  if(!fhReInvPt1) fhReInvPt1  = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhReInvPt2) fhReInvPt2  = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhReInvPt3) fhReInvPt3  = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhMiInvPt1) fhMiInvPt1  = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhMiInvPt2) fhMiInvPt2  = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhMiInvPt3) fhMiInvPt3  = new TH3D*[fNCentrBin*fNPID] ;	
+  if(!fhReMod)    fhReMod     = new TH3D*[fNModules] ;	
+  if(!fhReDiffMod)fhReDiffMod = new TH3D*[fNModules+1] ;	
+  
+
   for(Int_t ic=0; ic<fNCentrBin; ic++){
     for(Int_t ipid=0; ipid<fNPID; ipid++){
       fhRe1[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);
@@ -815,6 +870,8 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
         }// iasym
       }// icell loop
     }// ipt loop
+    fhRePtMult      = (TH3D*) outputList->At(index++);
+    fhRePtMultAsy07 = (TH3D*) outputList->At(index++);
   }// multi cut analysis 
   
   fhEvents = (TH3D *) outputList->At(index++); 
