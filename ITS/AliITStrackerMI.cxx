@@ -526,14 +526,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
       if (esd->GetStatus()&AliESDtrack::kTPCout) continue;
       if (esd->GetStatus()&AliESDtrack::kITSin) continue;
       if (esd->GetKinkIndex(0)>0) continue;   //kink daughter
-      AliITStrackMI *t=0;
-      try {
-        t=new AliITStrackMI(*esd);
-      } catch (const Char_t *msg) {
-        //Warning("Clusters2Tracks",msg);
-        delete t;
-        continue;
-      }
+      AliITStrackMI *t = new AliITStrackMI(*esd);
       t->GetDZ(GetX(),GetY(),GetZ(),t->GetDP());              //I.B.
       Double_t vdist = TMath::Sqrt(t->GetD(0)*t->GetD(0)+t->GetD(1)*t->GetD(1));
 
@@ -669,14 +662,8 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue;
      if (esd->GetStatus()&AliESDtrack::kITSout) continue;
 
-     AliITStrackMI *t=0;
-     try {
-        t=new AliITStrackMI(*esd);
-     } catch (const Char_t *msg) {
-       //Warning("PropagateBack",msg);
-        delete t;
-        continue;
-     }
+     AliITStrackMI *t = new AliITStrackMI(*esd);
+
      t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
 
      ResetTrackToFollow(*t);
@@ -746,14 +733,8 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
     if (esd->GetStatus()&AliESDtrack::kTPCout)
       if ((esd->GetStatus()&AliESDtrack::kTPCrefit)==0) continue;
 
-    AliITStrackMI *t=0;
-    try {
-        t=new AliITStrackMI(*esd);
-    } catch (const Char_t *msg) {
-      //Warning("RefitInward",msg);
-        delete t;
-        continue;
-    }
+    AliITStrackMI *t = new AliITStrackMI(*esd);
+
     t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
     if (!CorrectForTPCtoITSDeadZoneMaterial(t)) {
        delete t;

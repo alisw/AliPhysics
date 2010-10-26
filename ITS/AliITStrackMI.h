@@ -37,7 +37,7 @@ class AliESDtrack;
 class AliITStrackMI : public AliITStrackV2 {
 public:
   AliITStrackMI();
-  AliITStrackMI(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
+  AliITStrackMI(AliESDtrack& t,Bool_t c=kFALSE);
   AliITStrackMI(const AliITStrackMI& t);
   Int_t GetProlongationFast(Double_t alpha, Double_t xr,Double_t &y, Double_t &z);
   Bool_t UpdateMI(const AliCluster *c, Double_t chi2, Int_t i);  

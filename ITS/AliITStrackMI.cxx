@@ -56,7 +56,7 @@ fGoldV0(kFALSE)
 }
 
 //____________________________________________________________________________
-AliITStrackMI::AliITStrackMI(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
+AliITStrackMI::AliITStrackMI(AliESDtrack& t,Bool_t c):
 AliITStrackV2(t,c),
 fNUsed(0),
 fNSkipped(0),
@@ -75,7 +75,6 @@ fGoldV0(kFALSE) {
   for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0; fChi2MIP[i]=0;}
   fD[0]=0; fD[1]=0;
   fDnorm[0]=0; fDnorm[1]=0;
-  //if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
 
 }
 
