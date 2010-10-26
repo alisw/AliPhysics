@@ -35,21 +35,17 @@ public:
 
   virtual void   Digits2Clusters(Option_t *option);                // Does the job
 
-  static void     SetInputCalibrated(Bool_t val);
-
   virtual const char * Version() const { return "clu-NxN" ; }  
   
 protected:
 
   virtual void   MakeClusters();            
 
-  static Bool_t fgkIsInputCalibrated; // to enable reclusterization from ESD cells
-
 private:
   AliEMCALClusterizerNxN(const AliEMCALClusterizerNxN &); //copy ctor
   AliEMCALClusterizerNxN & operator = (const AliEMCALClusterizerNxN &);
 
-   ClassDef(AliEMCALClusterizerNxN,1)   // Clusterizer implementation version 1
+   ClassDef(AliEMCALClusterizerNxN,2)   // Clusterizer implementation version 1
 
 };
 

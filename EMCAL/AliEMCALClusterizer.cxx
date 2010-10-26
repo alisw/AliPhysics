@@ -60,6 +60,9 @@ class AliCDBStorage;
 
 ClassImp(AliEMCALClusterizer)
 
+Bool_t AliEMCALClusterizer::fgkIsInputCalibrated = kFALSE;
+
+
 //____________________________________________________________________________
 AliEMCALClusterizer::AliEMCALClusterizer():
   fDigitsArr(NULL),
@@ -210,15 +213,30 @@ Float_t  AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, c
     }
     //Check if time is too large or too small, indication of a noisy channel, remove in this case
     if(time > fTimeMax || time < fTimeMin) return 0;
+    
+    if (AliEMCALClusterizer::fgkIsInputCalibrated == kTRUE)
+    {
+      AliDebug(10, Form("Input already calibrated!"));
+      return amp;
+    }
 	  
     fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
     fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
     
+    
     return -fADCpedestalECA + amp * fADCchannelECA ;        
     
   }
-  else //Return energy with default parameters if calibration is not available
+  else{ //Return energy with default parameters if calibration is not available
+    
+    if (AliEMCALClusterizer::fgkIsInputCalibrated == kTRUE)
+    {
+      AliDebug(10, Form("Input already calibrated!"));
+      return amp;
+    }    
+    
     return -fADCpedestalECA + amp * fADCchannelECA ; 
+  }
   
 }
 
@@ -478,6 +496,15 @@ void AliEMCALClusterizer::SetOutput(TTree *clustersTree)
   Int_t split = 0;
   Int_t bufsize = 32000;
   fTreeR->Branch("EMCALECARP", "TObjArray", &fRecPoints, bufsize, split);
+}
+
+//___________________________________________________________________
+void   AliEMCALClusterizer::SetInputCalibrated(Bool_t val)
+{
+  //
+  // input is calibrated - the case when we run already on ESD
+  //
+  AliEMCALClusterizer::fgkIsInputCalibrated = val;
 }
 
 

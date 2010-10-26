@@ -65,8 +65,6 @@
 
 ClassImp(AliEMCALClusterizerNxN)
 
-Bool_t AliEMCALClusterizerNxN::fgkIsInputCalibrated = kFALSE;
-
 //____________________________________________________________________________
 AliEMCALClusterizerNxN::AliEMCALClusterizerNxN()
   : AliEMCALClusterizer()
@@ -360,11 +358,3 @@ void AliEMCALClusterizerNxN::MakeClusters()
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 
 }
 
-//___________________________________________________________________
-void   AliEMCALClusterizerNxN::SetInputCalibrated(Bool_t val)
-{
-  //
-  // input is calibrated - the case when we run already on ESD
-  //
-  AliEMCALClusterizerNxN::fgkIsInputCalibrated = val;
-}
