@@ -28,6 +28,7 @@
 #pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos+;
 #pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos+;
 #pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos+;
+#pragma link C++ class AliAnalysisTaskMinijet+;
 #pragma link C++ class AliUEHist+;
 #pragma link C++ class AliUEHistograms+;
 #pragma link C++ class AliAnalyseLeadingTrackUE+;

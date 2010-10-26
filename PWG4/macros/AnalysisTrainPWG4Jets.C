@@ -138,7 +138,7 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-27-06";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginRootVersion       = "v5-27-06a-1";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-19-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
@@ -631,7 +631,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4Minijet){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskMinijet.C");
-     AliAnalysisTaskMinijet *taskMinijet = AddTaskMinjet("esd",kUseMC);
+     AliAnalysisTaskMinijet *taskMinijet = AddTaskMinjet("esd",kUseMC,kGridDataSet);
      // if we ha highmult trigger add another task
      if(!taskMini)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskMinjet cannot run for this train conditions - EXCLUDED");
    }
@@ -1947,9 +1947,9 @@ Bool_t PatchAnalysisMacro(){
   }
 
   // do not exclude the extra files from merign, this is done explicitly in this train script
-  index = st2.Index("mergeExcludes +="); // uncommen $ALICE_ROOT include for par files
-  if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
-  st2.Insert(index,"// CKB comment out, handled explicitly by the train macro \n //");
+  //  index = st2.Index("mergeExcludes +="); // uncommen $ALICE_ROOT include for par files
+  //  if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
+  // st2.Insert(index,"// CKB comment out, handled explicitly by the train macro \n //");
 
 
   ofstream out2;
