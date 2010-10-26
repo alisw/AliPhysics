@@ -36,20 +36,21 @@ enum {kGaus=0, kDoubleGaus};
 
 
 // Common variables: to be configured by the user
-const Int_t nPtBins=6;
-Double_t ptlims[nPtBins+1]={2.,3.,4.,5.,6.,8.,12.};
-Int_t rebin[nPtBins+1]={2,4,4,4,4,4,4};
-// const Int_t nPtBins=7;
-// Double_t ptlims[nPtBins+1]={1.,2.,3.,4.,5.,6.,8.,12.};
-// Int_t rebin[nPtBins+1]={10,10,10,10,10,10,10,10};
-Int_t typeb=kExpo;
+// const Int_t nPtBins=6;
+// Double_t ptlims[nPtBins+1]={2.,3.,4.,5.,6.,8.,12.};
+// Int_t rebin[nPtBins+1]={2,4,4,4,4,4,4};
+
+const Int_t nPtBins=7;
+Double_t ptlims[nPtBins+1]={1.,2.,3.,4.,5.,6.,8.,12.};
+Int_t rebin[nPtBins+1]={10,10,10,10,10,10,10,10};
+Int_t typeb=kLinear;
 Int_t types=kGaus;
 Int_t optPartAntiPart=kBoth;
 Int_t factor4refl=0;
 Float_t massRangeForCounting=0.05; // GeV
 
 //for D0only
-Bool_t cutsappliedondistr=kFALSE;
+Bool_t cutsappliedondistr=kTRUE;
 
 // Functions
 
@@ -105,7 +106,11 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
 
   TH1F* hCntSig1=new TH1F("hCntSig1","hCntSig1",nPtBins,ptlims);
   TH1F* hCntSig2=new TH1F("hCntSig2","hCntSig2",nPtBins,ptlims);
+  TH1F* hNDiffCntSig1=new TH1F("hNDiffCntSig1","hNDiffCntSig1",nPtBins,ptlims);
+  TH1F* hNDiffCntSig2=new TH1F("hNDiffCntSig2","hNDiffCntSig2",nPtBins,ptlims);
   TH1F* hSignal=new TH1F("hSignal","hSignal",nPtBins,ptlims);
+  TH1F* hRelErrSig=new TH1F("hRelErrSig","hRelErrSig",nPtBins,ptlims);
+  TH1F* hInvSignif=new TH1F("hInvSignif","hInvSignif",nPtBins,ptlims);
   TH1F* hBackground=new TH1F("hBackground","hBackground",nPtBins,ptlims);
   TH1F* hSignificance=new TH1F("hSignificance","hSignificance",nPtBins,ptlims);
 
@@ -167,10 +172,17 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     }
     hCntSig1->SetBinContent(iBin+1,cntSig1);
     hCntSig1->SetBinError(iBin+1,TMath::Sqrt(cntErr));
+    hNDiffCntSig1->SetBinContent(iBin+1,(s-cntSig1)/s);
+    hNDiffCntSig1->SetBinError(iBin+1,TMath::Sqrt(cntErr)/s);
     hCntSig2->SetBinContent(iBin+1,cntSig2);
+    hNDiffCntSig2->SetBinContent(iBin+1,(s-cntSig2)/s);
+    hNDiffCntSig2->SetBinError(iBin+1,TMath::Sqrt(cntErr)/s);
     hCntSig2->SetBinError(iBin+1,TMath::Sqrt(cntErr));
     hSignal->SetBinContent(iBin+1,s);
     hSignal->SetBinError(iBin+1,errs);
+    hRelErrSig->SetBinContent(iBin+1,errs/s);
+    hInvSignif->SetBinContent(iBin+1,1/sig);
+    hInvSignif->SetBinError(iBin+1,errsig/(sig*sig));
     hBackground->SetBinContent(iBin+1,b);
     hBackground->SetBinError(iBin+1,errb);
     hSignificance->SetBinContent(iBin+1,sig);
@@ -219,11 +231,53 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   hSignificance->GetXaxis()->SetTitle("Pt (GeV/c)");
   hSignificance->GetYaxis()->SetTitle("Significance");
 
+  TCanvas* cDiffS=new TCanvas("cDiffS","Difference",1200,600);
+  cDiffS->Divide(2,1);
+  cDiffS->cd(1);
+  hRelErrSig->SetMarkerStyle(20); //fullcircle
+  hRelErrSig->SetTitleOffset(1.2);  
+  hRelErrSig->SetTitle(";p_{t} (GeV/c);Signal Relative Error");
+  hRelErrSig->Draw("P");
+  hInvSignif->SetMarkerStyle(21); //fullsquare
+  hInvSignif->SetMarkerColor(kMagenta+1);
+  hInvSignif->SetLineColor(kMagenta+1);
+  hInvSignif->Draw("PSAMES");
+  TLegend* leg2=new TLegend(0.4,0.7,0.89,0.89);
+  leg2->SetFillColor(0);
+  TLegendEntry* ent2=leg2->AddEntry(hRelErrSig,"From Fit","P");
+  ent2->SetTextColor(hRelErrSig->GetMarkerColor());
+  ent2=leg2->AddEntry(hInvSignif,"1/Significance","PL");
+  ent2->SetTextColor(hInvSignif->GetMarkerColor());
+  leg2->Draw();
+
+  cDiffS->cd(2);
+  hNDiffCntSig1->SetMarkerStyle(26);
+  hNDiffCntSig1->SetMarkerColor(2);
+  hNDiffCntSig1->SetLineColor(2);
+  hNDiffCntSig1->SetTitle(";p_{t} (GeV/c);(S_{fit}-S_{count})/S_{fit}");
+  hNDiffCntSig1->Draw("P");
+  hNDiffCntSig2->SetMarkerStyle(29);
+  hNDiffCntSig2->SetMarkerColor(kGray+1);
+  hNDiffCntSig2->SetLineColor(kGray+1);
+  hNDiffCntSig2->Draw("PSAME");
+  TLegend* leg1=new TLegend(0.4,0.7,0.89,0.89);
+  leg1->SetFillColor(0);
+  TLegendEntry* ent1=leg1->AddEntry(hNDiffCntSig1,"From Counting1","PL");
+  ent1->SetTextColor(hNDiffCntSig1->GetMarkerColor());
+  ent1=leg1->AddEntry(hNDiffCntSig2,"From Counting2","PL");
+  ent1->SetTextColor(hNDiffCntSig2->GetMarkerColor());
+  leg1->Draw();
+
+
   TFile* outf=new TFile("RawYield.root","update");
   outf->cd();
   hCntSig1->Write();
   hCntSig2->Write();
+  hNDiffCntSig1->Write();
+  hNDiffCntSig2->Write();
   hSignal->Write();
+  hRelErrSig->Write();
+  hInvSignif->Write();
   hBackground->Write();
   hSignificance->Write();
   outf->Close();
@@ -354,6 +408,10 @@ Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH1F** hMass){
   }
   if(nReadFiles<nFiles){
     printf("WARNING: not all requested files have been found\n");
+    if (nReadFiles==0) {
+      printf("ERROR: Any file/dir found\n");
+      return kFALSE;
+    }
   }
 
   Int_t nPtBinsCuts=dcuts[0]->GetNPtBins();
