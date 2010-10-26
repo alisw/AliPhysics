@@ -640,6 +640,7 @@ int AliHLTDataBuffer::PrintStatistics()
        rawpage=AliHLTDataBuffer::AliHLTRawPage::NextPage(rawpage)) {
     nofPages++;
     totalSize+=rawpage->Size();
+    if (fgLogging.CheckFilter(kHLTLogDebug)) rawpage->Print("");
   }
   //if (rawpage) rawpage->Print("global");
   fgLogging.Logging(kHLTLogInfo, "AliHLTDataBuffer::PrintStatistics", "data buffer handling", "total number of memory pages: %d   total size %d", nofPages, totalSize);
@@ -1276,7 +1277,7 @@ void AliHLTDataBuffer::AliHLTRawPage::Print(const char* option)
 
 vector<AliHLTDataBuffer::AliHLTRawPage*> AliHLTDataBuffer::AliHLTRawPage::fgGlobalPages;
 
-AliHLTUInt32_t AliHLTDataBuffer::AliHLTRawPage::fgGlobalPageSize=50*1024*1024;
+AliHLTUInt32_t AliHLTDataBuffer::AliHLTRawPage::fgGlobalPageSize=30*1024*1024;
 
 AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc(AliHLTUInt32_t size, int verbosity)
 {
@@ -1306,6 +1307,14 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc(
     if (!rawpage) {
       log.Logging(kHLTLogError, "AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc", "data buffer handling", "can not create raw page");
       return NULL;
+    }
+
+    // check is there is at least one unused page which can be replaced by the newly created one
+    for (page=fgGlobalPages.begin(); page!=fgGlobalPages.end(); page++) {
+      if ((*page)->IsUsed()) continue;
+      delete *page;
+      fgGlobalPages.erase(page);
+      break; // delete only one page to be replaced by the new page
     }
     fgGlobalPages.push_back(rawpage);
     if ((rawbuffer=rawpage->Alloc(size))!=NULL) {
