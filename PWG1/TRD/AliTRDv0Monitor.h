@@ -43,7 +43,7 @@ public:
   Bool_t      GetRefFigure(Int_t ifig); 
   TObjArray*  Histos();
   void        UserExec(Option_t *option);
-  void        MakeSummary();
+  //void        MakeSummary();
 
 private:
   AliTRDv0Monitor(const AliTRDv0Monitor&);              // not implemented

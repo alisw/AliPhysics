@@ -105,7 +105,7 @@ private:
   AliTRDcheckDET(const AliTRDcheckDET &);
   AliTRDcheckDET& operator=(const AliTRDcheckDET &);
   void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 * const tracklet, AliTRDcluster * const c);
-  TH1* MakePlotChi2();
+  TH1* MakePlotChi2() const;
   TH1* MakePlotNTracklets();
   Bool_t MakePlotPulseHeight();
   void MakePlotnTrackletsVsP();
