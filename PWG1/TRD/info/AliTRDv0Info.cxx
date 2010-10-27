@@ -78,7 +78,8 @@ AliTRDv0Info::AliTRDv0Info()
   memset(fArmenteros, 0, kNDecays*sizeof(Bool_t));
   memset(fTPCdEdx, 0, kNDaughters*sizeof(Float_t));
   memset(fChi2ndf, 0, kNDecays*sizeof(Double_t));
-
+  memset(fDownOpenAngle, 0, kNDecays*sizeof(Float_t));
+  memset(fDownPsiPair, 0, kNDecays*sizeof(Float_t));
   /////////////////////////////////////////////////////////////////////////////
   //Set Cut values: First specify decay in brackets, then the actual cut value!
   ///////////////////////////////////////////////////////////////////////////// 

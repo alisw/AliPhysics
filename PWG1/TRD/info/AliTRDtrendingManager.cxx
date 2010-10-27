@@ -37,10 +37,10 @@ AliTRDtrendingManager* AliTRDtrendingManager::Instance()
     if(!trd){ 
       AliWarningGeneral("AliTRDtrendingManager", "TRD OCDB manager not initialized. No trending DB available.");
     } else {
-      const TObjArray *trendMap(NULL/*trd->GetTrendMap()*/);
+/*      const TObjArray *trendMap(trd->GetTrendMap());
       if(!trendMap){
         AliWarningGeneral("AliTRDtrendingManager", "No TRD trending DB available  for TRD.");
-      } else fgInstance->fEntries=(TObjArray*)trendMap->Clone();
+      } else fgInstance->fEntries=(TObjArray*)trendMap->Clone();*/
     }
   }
 

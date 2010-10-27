@@ -29,8 +29,8 @@ public:
   
   void    UserCreateOutputObjects();
   void    UserExec(Option_t *opt);
-  TH1*    PlotTrackPoints(const AliTRDtrackV1 *track=0x0);
-  Bool_t  PostProcess() { return kTRUE;}
+  TH1*    PlotTrackPoints(const AliTRDtrackV1 *track=NULL);
+  //Bool_t  PostProcess() { return kTRUE;}
   
 private:
   Bool_t IsIdenticalWithOneOf(AliTrackPoint * const p, AliTrackPointArray *parray, int nmax);

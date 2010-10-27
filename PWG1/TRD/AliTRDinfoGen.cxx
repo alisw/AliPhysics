@@ -300,15 +300,20 @@ void AliTRDinfoGen::UserExec(Option_t *){
     ocdb->SetDefaultStorage(fOCDB.Data());
     ocdb->SetRun(fESDev->GetRunNumber());
     // create geo manager
-    AliCDBEntry* obj = ocdb->Get(AliCDBPath("GRP", "Geometry", "Data"));
-    AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
-    AliGeomManager::GetNalignable("TRD");
-    AliGeomManager::ApplyAlignObjsFromCDB("TRD");
+    AliCDBEntry* obj(NULL);
+    if(!(obj = ocdb->Get(AliCDBPath("GRP", "Geometry", "Data")))){
+      AliError("GEOMETRY failed initialization.");
+    } else {
+      AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
+      AliGeomManager::GetNalignable("TRD");
+      AliGeomManager::ApplyAlignObjsFromCDB("TRD");
+    }
     fgGeo = new AliTRDgeometry;
+    fgGeo->CreateClusterMatrixArray();
     //init magnetic field
     if(!TGeoGlobalMagField::Instance()->IsLocked() &&
        !fESDev->InitMagneticField()){
-      AliWarning("Magnetic field failed initialization.");
+      AliError("MAGNETIC FIELD failed initialization.");
     }
 
     // set no of time bins
@@ -319,22 +324,26 @@ void AliTRDinfoGen::UserExec(Option_t *){
     AliInfo(Form("Initializing TRD reco params for EventSpecie[%d]...",
       fESDev->GetEventSpecie()));
     fgReconstructor = new AliTRDReconstructor();
-    obj = ocdb->Get(AliCDBPath("TRD", "Calib", "RecoParam"));
-    obj->PrintMetaData();
-    TObjArray *recos((TObjArray*)obj->GetObject());
-    for(Int_t ireco(0); ireco<recos->GetEntriesFast(); ireco++){
-      AliTRDrecoParam *reco((AliTRDrecoParam*)recos->At(ireco));
-      Int_t es(reco->GetEventSpecie());
-      if(!(es&fESDev->GetEventSpecie())) continue;
-      fgReconstructor->SetRecoParam(reco);
-      TString s;
-      if(es&AliRecoParam::kLowMult) s="LowMult";
-      else if(es&AliRecoParam::kHighMult) s="HighMult";
-      else if(es&AliRecoParam::kCosmic) s="Cosmic";
-      else if(es&AliRecoParam::kCalib) s="Calib";
-      else s="Unknown";
-      AliInfo(Form("Using reco params for %s", s.Data()));
-      break;
+    if(!(obj = ocdb->Get(AliCDBPath("TRD", "Calib", "RecoParam")))){
+      AliError("RECO PARAM failed initialization.");
+      fgReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
+    } else {
+      obj->PrintMetaData();
+      TObjArray *recos((TObjArray*)obj->GetObject());
+      for(Int_t ireco(0); ireco<recos->GetEntriesFast(); ireco++){
+        AliTRDrecoParam *reco((AliTRDrecoParam*)recos->At(ireco));
+        Int_t es(reco->GetEventSpecie());
+        if(!(es&fESDev->GetEventSpecie())) continue;
+        fgReconstructor->SetRecoParam(reco);
+        TString s;
+        if(es&AliRecoParam::kLowMult) s="LowMult";
+        else if(es&AliRecoParam::kHighMult) s="HighMult";
+        else if(es&AliRecoParam::kCosmic) s="Cosmic";
+        else if(es&AliRecoParam::kCalib) s="Calib";
+        else s="Unknown";
+        AliInfo(Form("Using reco params for %s", s.Data()));
+        break;
+      }
     }
     SetInitOCDB();
   }
