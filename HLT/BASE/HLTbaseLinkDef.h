@@ -52,14 +52,21 @@
 #pragma link C++ class AliHLTEventStatistics+;
 #pragma link C++ class AliHLTBlockDataCollection+;
 #pragma link C++ class AliHLTTriggerDecision+;
-#pragma link C++ class AliHLTGlobalTriggerDecision-;  // '-' option since the class uses a custom streamer.
 
 #include "RVersion.h"
 #if ROOT_VERSION_CODE < 334336 //ROOT_VERSION(5,26,0)
 
+#pragma link C++ class AliHLTGlobalTriggerDecision-;  // '-' option since the class uses a custom streamer.
 #pragma link C++ class AliHLTReadoutList-;  // '-' option since the class uses a custom streamer.
 
 #else // ROOT version check
+
+#pragma link C++ class AliHLTGlobalTriggerDecision+;
+
+// Scheme rule to mark all objects in the trigger decision loaded from file as
+// deletable. Meaning the new object owns all the input objects.
+#pragma read sourceClass="AliHLTGlobalTriggerDecision" version="[1-]" targetClass="AliHLTGlobalTriggerDecision"\
+  source="" target="" code="{ newObj->MarkInputObjectsAsOwned(); }"
 
 #pragma link C++ class AliHLTReadoutList+;
 

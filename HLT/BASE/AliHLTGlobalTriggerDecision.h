@@ -227,6 +227,12 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
    */
   void DeleteInputObjects();
   
+  /**
+   * This method is called in the streamer to mark the entries in fInputObjects as
+   * owned and deletable.
+   */
+  void MarkInputObjectsAsOwned();
+  
   TClonesArray fContributingTriggers;  /// The list of contributing trigger decisions from all AliHLTTrigger components that were considered.
   TObjArray fInputObjects;  /// The list of other input objects.
   TArrayL64 fCounters;  /// Event trigger counters. One counter for each trigger class in the global trigger.
