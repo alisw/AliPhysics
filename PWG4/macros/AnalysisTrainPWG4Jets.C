@@ -150,6 +150,7 @@ TString     kPluginExecutableCommand = "source /Users/kleinb/setup_32bit_aliroot
 // == grid plugin input and output variables
 TString     kGridDatadir      = "/alice/sim/PDC_08b/LHC09a1/AOD/";
 Int_t         kGridMaxRunsFromList = 999999999;
+Int_t         kGridOffsetRunFromList = 0; // skip the first n runs from the list
 TString     kGridLocalRunList = "";
 TString     kGridOutdir       = ""; // AliEn output directory. If blank will become output_<kTrainName>
 TString     kGridDataSet      = ""; // sub working directory not to confuse different run xmls 
@@ -187,7 +188,7 @@ class AliAnalysisAlien;
 //______________________________________________________________________________
 void AnalysisTrainPWG4Jets(const char *analysis_mode="local", 
 			   const char *plugin_mode="",
-			   const char *config_file="",Int_t iOffset = 0)
+			   const char *config_file="",Int_t iOffset = 0,Int_t iTotal = 0)
 {
 // Main analysis train macro. If a configuration file is provided, all parameters
 // are taken from there but may be altered by CheckModuleFlags.
@@ -196,8 +197,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
   kPluginMode = plugin_mode;
   
   if (strlen(config_file) && !LoadConfig(config_file)) return;
+  if(iTotal>0)kGridMaxRunsFromList = iTotal; // overwrites the settings from config file
+  if(iOffset)kGridOffsetRunFromList = iOffset;
+  if(iOffset)kProofOffset = iOffset;
 
-   if(iOffset)kProofOffset = iOffset;
+
    TString smode(analysis_mode);
    smode.ToUpper();
    if (kSaveTrain)WriteConfig();
@@ -631,7 +635,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4Minijet){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskMinijet.C");
-     AliAnalysisTaskMinijet *taskMini = AddTaskMinijet("esd",kUseMC,kGridDataSet);
+     AliAnalysisTaskMinijet *taskMini = AddTaskMinijet(-1,"esd",kUseMC,kGridDataSet);
      // if we ha highmult trigger add another task
      if(!taskMini)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskMinjet cannot run for this train conditions - EXCLUDED");
    }
@@ -1523,7 +1527,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
      ifstream in1;
      in1.open(kGridLocalRunList.Data());
      int iRun;
-
+     int icount = 0;
      /*
      char c;
      char cLine[250];
@@ -1549,8 +1553,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 
      // just use run numbers, negatives will be excluded
      while(in1>>iRun){
-       
-       if(iRun>=0&&(nRun<kGridMaxRunsFromList)){
+       if(iRun>= kGridOffsetRunFromList&&(nRun<kGridMaxRunsFromList)){
 	   Printf("AnalysisTrainPWG4Jets Adding run number from File %s", Form(kGridRunPattern.Data(),iRun));
 	   plugin->AddRunNumber(Form(kGridRunPattern.Data(),iRun));
 	   nRun++;
