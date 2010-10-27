@@ -38,10 +38,14 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
 
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
+  void SetUseStrongPid(Bool_t spid){fUseStrongPid=spid;}
+  Bool_t GetStrongPid(){return fUseStrongPid;}
   
  protected:
 
-  ClassDef(AliRDHFCutsDplustoKpipi,1);  // class for cuts on AOD reconstructed 
+ private:
+  Bool_t fUseStrongPid;//use strong pid
+  ClassDef(AliRDHFCutsDplustoKpipi,2);  // class for cuts on AOD reconstructed 
                                    // D+->Kpipi
 };
 
