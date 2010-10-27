@@ -231,6 +231,8 @@ void AliTPCSpaceCharge::InitSpaceChargeDistortion() {
       
       fLookUpErOverEz[i][j] = saveEr[0] + (saveEr[1]-saveEr[0])*(r-rList[ilow])/gridSizeR ;
       fLookUpDeltaEz[i][j]  = saveEz[0] + (saveEz[1]-saveEz[0])*(r-rList[ilow])/gridSizeR ;
+
+      if (fgkZList[i]<0)  fLookUpDeltaEz[i][j] *= -1; // C side is negative z
     }
   }
   

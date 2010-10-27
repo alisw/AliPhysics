@@ -57,8 +57,13 @@ AliTPCSpaceCharge3D::AliTPCSpaceCharge3D()
     fC0(0.),fC1(0.),
     fCorrectionFactor(1.),
     fInitLookUp(kFALSE),
-    fSCDataFileName((char*)"$(ALICE_ROOT)/TPC/Calib/maps/sc_3D_distribution_Sim.root"),
-    fSCLookUpPOCsFileName((char*)"$(ALICE_ROOT)/TPC/Calib/maps/sc_3D_raw_18-18-26_17p-18p-25p-MN30.root")
+    fSCDataFileName(""),
+    fSCLookUpPOCsFileName3D(""),
+    fSCLookUpPOCsFileNameRZ(""),
+    fSCLookUpPOCsFileNameRPhi(""),
+    fSCdensityInRZ(0),
+    fSCdensityInRPhiA(0),
+    fSCdensityInRPhiC(0)
 {
   //
   // default constructor
@@ -72,10 +77,23 @@ AliTPCSpaceCharge3D::AliTPCSpaceCharge3D()
     fLookUpDeltaEz[k]    =  new TMatrixD(kNR,kNZ); 
     fSCdensityDistribution[k] = new TMatrixD(kNR,kNZ);
   }
+  fSCdensityInRZ   = new TMatrixD(kNR,kNZ);
+  fSCdensityInRPhiA = new TMatrixD(kNR,kNPhi);
+  fSCdensityInRPhiC = new TMatrixD(kNR,kNPhi);
 
-  printf("%s\n",fSCDataFileName);
-  printf("%s\n",fSCLookUpPOCsFileName);
-  SetSCDataFileName(fSCDataFileName);
+  // location of the precalculated look up tables
+
+  fSCLookUpPOCsFileName3D="$(ALICE_ROOT)/TPC/Calib/maps/sc_3D_raw_18-18-26_17p-18p-25p-MN30.root"; // rough estimate
+  fSCLookUpPOCsFileNameRZ="$(ALICE_ROOT)/TPC/Calib/maps/sc_radSym_35-01-51_34p-01p-50p_MN60.root";
+  fSCLookUpPOCsFileNameRPhi="$(ALICE_ROOT)/TPC/Calib/maps/sc_cChInZ_35-36-26_34p-18p-01p-MN40.root";
+  //  fSCLookUpPOCsFileNameRPhi="$(ALICE_ROOT)/TPC/Calib/maps/sc_cChInZ_35-18-26_34p-18p-01p-MN40.root";
+
+
+  // standard location of the space charge distibution ... can be changes
+  fSCDataFileName="$(ALICE_ROOT)/TPC/Calib/maps/sc_3D_distribution_Sim.root";
+
+  //  SetSCDataFileName(fSCDataFileName.Data()); // should be done by the user
+
 
 }
 
@@ -90,10 +108,11 @@ AliTPCSpaceCharge3D::~AliTPCSpaceCharge3D() {
     delete fLookUpDeltaEz[k];
     delete fSCdensityDistribution[k];
   }
+  delete fSCdensityInRZ;
+  delete fSCdensityInRPhiA;
+  delete fSCdensityInRPhiC;
 
-  //  delete fSCdensityDistribution;
 }
-
 
 
 void AliTPCSpaceCharge3D::Init() {
@@ -133,7 +152,6 @@ void AliTPCSpaceCharge3D::Update(const TTimeStamp &/*timeStamp*/) {
   //  SetCorrectionFactor(1.); // should come from some database
 
 }
-
 
 
 void AliTPCSpaceCharge3D::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
@@ -192,8 +210,664 @@ void AliTPCSpaceCharge3D::GetCorrection(const Float_t x[],const Short_t roc,Floa
 
 }
 
-
 void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
+ //
+  // Initialization of the Lookup table which contains the solutions of the 
+  // "space charge" (poisson) problem - Faster and more accureate
+  //
+  // Method: Weighted sum-up of the different fields within the look up table 
+  // but using two lookup tables with higher granularity in the (r,z) and the (rphi)- plane to emulate
+  // more realistic space charges. (r,z) from primary ionisation. (rphi) for possible Gating leaks
+
+  if (fInitLookUp) {
+    AliInfo("Lookup table was already initialized!  Doing it again anyway ...");
+    //    return;
+  }
+  
+  // ------------------------------------------------------------------------------------------------------
+  // step 1: lookup table in rz, fine grid, radial symetric, to emulate primary ionization
+
+  AliInfo("Step 1: Preparation of the weighted look-up tables.");
+   
+  // lookup table in rz, fine grid
+
+  TFile *fZR = new TFile(fSCLookUpPOCsFileNameRZ.Data(),"READ");
+  if ( !fZR ) {
+    AliError("Precalculated POC-looup-table in ZR could not be found");
+    return;
+  } 
+
+  // units are in [m]
+  TVector *gridf1  = (TVector*) fZR->Get("constants"); 
+  TVector &grid1 = *gridf1;
+  TMatrix *coordf1  = (TMatrix*) fZR->Get("coordinates");
+  TMatrix &coord1 = *coordf1;
+  TMatrix *coordPOCf1  = (TMatrix*) fZR->Get("POCcoord");
+  TMatrix &coordPOC1 = *coordPOCf1;
+  
+  Int_t rows      = (Int_t)grid1(0);   // number of points in r direction  - from RZ or RPhi table
+  Int_t phiSlices = (Int_t)grid1(1);   // number of points in phi          - from RPhi table
+  Int_t columns   = (Int_t)grid1(2);   // number of points in z direction  - from RZ table
+
+  Float_t gridSizeR   =  (fgkOFCRadius-fgkIFCRadius)/(rows-1);   // unit in [cm]
+  Float_t gridSizeZ   =  fgkTPCZ0/(columns-1);                  // unit in [cm]
+
+  // temporary matrices needed for the calculation // for rotational symmetric RZ table, phislices is 1
+
+  TMatrixD *arrayofErA[phiSlices], *arrayofdEzA[phiSlices]; 
+  TMatrixD *arrayofErC[phiSlices], *arrayofdEzC[phiSlices]; 
+
+  TMatrixD *arrayofEroverEzA[phiSlices], *arrayofDeltaEzA[phiSlices];
+  TMatrixD *arrayofEroverEzC[phiSlices], *arrayofDeltaEzC[phiSlices];
+
+ 
+  for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
+   
+    arrayofErA[k]   =   new TMatrixD(rows,columns) ;
+    arrayofdEzA[k]  =   new TMatrixD(rows,columns) ;
+    arrayofErC[k]   =   new TMatrixD(rows,columns) ;
+    arrayofdEzC[k]  =   new TMatrixD(rows,columns) ;
+
+    arrayofEroverEzA[k]   =   new TMatrixD(rows,columns) ;
+    arrayofDeltaEzA[k]    =   new TMatrixD(rows,columns) ;
+    arrayofEroverEzC[k]   =   new TMatrixD(rows,columns) ;
+    arrayofDeltaEzC[k]    =   new TMatrixD(rows,columns) ;
+
+    // zero initialization not necessary, it is done in the constructor of TMatrix 
+
+  }
+ 
+  // list of points as used during sum up
+  Double_t  rlist1[rows], zedlist1[columns];// , philist1[phiSlices];
+  for ( Int_t i = 0 ; i < rows ; i++ )    {
+    rlist1[i] = fgkIFCRadius + i*gridSizeR ;
+    for ( Int_t j = 0 ; j < columns ; j++ ) { 
+      zedlist1[j]  = j * gridSizeZ ;
+    }
+  }
+  
+  TTree *treePOC = (TTree*)fZR->Get("POCall");
+
+  TVector *bEr  = 0;   //TVector *bEphi= 0;
+  TVector *bEz  = 0;
+  
+  treePOC->SetBranchAddress("Er",&bEr);
+  treePOC->SetBranchAddress("Ez",&bEz);
+
+
+  // Read the complete tree and do a weighted sum-up over the POC configurations
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+  Int_t treeNumPOC = (Int_t)treePOC->GetEntries(); // Number of POC conf. in the look-up table
+  Int_t ipC = 0; // POC Conf. counter (note: different to the POC number in the tree!)
+
+  for (Int_t itreepC=0; itreepC<treeNumPOC; itreepC++) { // ------------- loop over POC configurations in tree
+  
+    treePOC->GetEntry(itreepC);
+
+    // center of the POC voxel in [meter]
+    Double_t r0 = coordPOC1(ipC,0);
+    Double_t phi0 = coordPOC1(ipC,1);
+    Double_t z0 = coordPOC1(ipC,2);
+
+    ipC++; // POC configuration counter
+
+    // weights (charge density) at POC position on the A and C side (in C/m^3/e0)
+    // note: coordinates are in [cm]
+    Double_t weightA = GetSpaceChargeDensity(r0*100,phi0, z0*100, 1);  // partial load in r,z
+    Double_t weightC = GetSpaceChargeDensity(r0*100,phi0,-z0*100, 1);  // partial load in r,z
+  
+    // Summing up the vector components according to their weight
+
+    Int_t ip = 0;
+    for ( Int_t j = 0 ; j < columns ; j++ ) { 
+      for ( Int_t i = 0 ; i < rows ; i++ )    {
+	for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
+		  
+	  // check wether the coordinates were screwed
+	  if (TMath::Abs((coord1(0,ip)*100-rlist1[i]))>1 || 
+	      TMath::Abs((coord1(2,ip)*100-zedlist1[j])>1)) { 
+	    AliError("internal error: coordinate system was screwed during the sum-up");
+	    printf("sum-up: (r,z)=(%lf,%lf)\n",rlist1[i],zedlist1[j]);
+	    printf("lookup: (r,z)=(%lf,%lf)\n",coord1(0,ip)*100,coord1(2,ip)*100);
+	    AliError("Don't trust the results of the space charge calculation!");
+	  }
+	  
+	  // unfortunately, the lookup tables were produced to be faster for phi symmetric charges
+	  // This will be the most frequent usage (hopefully)
+	  // That's why we have to do this here ...
+
+	  TMatrixD &erA   =  *arrayofErA[k]  ;
+	  TMatrixD &dEzA  =  *arrayofdEzA[k]   ;
+   
+	  TMatrixD &erC   =  *arrayofErC[k]  ;
+	  TMatrixD &dEzC  =  *arrayofdEzC[k]   ;
+   
+	  // Sum up - Efield values in [V/m] -> transition to [V/cm]
+	  erA(i,j) += ((*bEr)(ip)) * weightA /100;
+	  erC(i,j) += ((*bEr)(ip)) * weightC /100;
+	  dEzA(i,j)  += ((*bEz)(ip)) * weightA /100;
+	  dEzC(i,j)  += ((*bEz)(ip)) * weightC /100;
+
+	  // increase the counter
+	  ip++;
+	}
+      }
+    } // end coordinate loop
+  } // end POC loop
+
+
+  // -------------------------------------------------------------------------------
+  // Division by the Ez (drift) field and integration along z
+
+  //  AliInfo("Step 1: Division and integration");
+
+  Double_t ezField = (fgkCathodeV-fgkGG)/fgkTPCZ0; // = Electric Field (V/cm) Magnitude ~ -400 V/cm;
+
+  for ( Int_t k = 0 ; k < phiSlices ; k++ ) { // phi loop
+
+    // matrices holding the solution - summation of POC charges // see above
+    TMatrixD &erA   =  *arrayofErA[k]  ;
+    TMatrixD &dezA  =  *arrayofdEzA[k]   ;
+    TMatrixD &erC   =  *arrayofErC[k]  ;
+    TMatrixD &dezC  =  *arrayofdEzC[k]   ;
+
+    // matrices which will contain the integrated fields (divided by the drift field)
+    TMatrixD &erOverEzA   =  *arrayofEroverEzA[k]  ;
+    TMatrixD &deltaEzA    =  *arrayofDeltaEzA[k];
+    TMatrixD &erOverEzC   =  *arrayofEroverEzC[k]  ;
+    TMatrixD &deltaEzC    =  *arrayofDeltaEzC[k];    
+    
+    for ( Int_t i = 0 ; i < rows ; i++ )    { // r loop
+      for ( Int_t j = columns-1 ; j >= 0 ; j-- ) {// z loop 
+	// Count backwards to facilitate integration over Z
+
+	Int_t index = 1 ; // Simpsons rule if N=odd.If N!=odd then add extra point 
+	                  // by trapezoidal rule.  
+
+	erOverEzA(i,j) = 0; //ephiOverEzA(i,j) = 0;
+	deltaEzA(i,j) = 0;
+	erOverEzC(i,j) = 0; //ephiOverEzC(i,j) = 0; 
+	deltaEzC(i,j) = 0;
+
+	for ( Int_t m = j ; m < columns ; m++ ) { // integration
+
+	  erOverEzA(i,j)   += index*(gridSizeZ/3.0)*erA(i,m)/(-1*ezField) ;
+	  erOverEzC(i,j)   += index*(gridSizeZ/3.0)*erC(i,m)/(-1*ezField)  ;
+	  deltaEzA(i,j)    += index*(gridSizeZ/3.0)*dezA(i,m)/(-1) ;
+	  deltaEzC(i,j)    += index*(gridSizeZ/3.0)*dezC(i,m)/(-1) ;
+
+	  if ( index != 4 )  index = 4; else index = 2 ;
+
+	}
+
+	if ( index == 4 ) {
+	  erOverEzA(i,j)   -= (gridSizeZ/3.0)*erA(i,columns-1)/(-1*ezField) ;
+	  erOverEzC(i,j)   -= (gridSizeZ/3.0)*erC(i,columns-1)/(-1*ezField) ;
+	  deltaEzA(i,j)    -= (gridSizeZ/3.0)*dezA(i,columns-1)/(-1) ;
+	  deltaEzC(i,j)    -= (gridSizeZ/3.0)*dezC(i,columns-1)/(-1) ;
+	}
+	if ( index == 2 ) {
+	  erOverEzA(i,j)   += (gridSizeZ/3.0)*(0.5*erA(i,columns-2)-2.5*erA(i,columns-1))/(-1*ezField) ;
+	  erOverEzC(i,j)   += (gridSizeZ/3.0)*(0.5*erC(i,columns-2)-2.5*erC(i,columns-1))/(-1*ezField) ;
+	  deltaEzA(i,j)    += (gridSizeZ/3.0)*(0.5*dezA(i,columns-2)-2.5*dezA(i,columns-1))/(-1) ;
+	  deltaEzC(i,j)    += (gridSizeZ/3.0)*(0.5*dezC(i,columns-2)-2.5*dezC(i,columns-1))/(-1) ;
+	}
+	if ( j == columns-2 ) {
+	  erOverEzA(i,j)   = (gridSizeZ/3.0)*(1.5*erA(i,columns-2)+1.5*erA(i,columns-1))/(-1*ezField) ;
+	  erOverEzC(i,j)   = (gridSizeZ/3.0)*(1.5*erC(i,columns-2)+1.5*erC(i,columns-1))/(-1*ezField) ;
+	  deltaEzA(i,j)    = (gridSizeZ/3.0)*(1.5*dezA(i,columns-2)+1.5*dezA(i,columns-1))/(-1) ;
+	  deltaEzC(i,j)    = (gridSizeZ/3.0)*(1.5*dezC(i,columns-2)+1.5*dezC(i,columns-1))/(-1) ;
+	}
+	if ( j == columns-1 ) {
+	  erOverEzA(i,j)   = 0;   
+	  erOverEzC(i,j)   = 0;
+	  deltaEzA(i,j)    = 0;  
+	  deltaEzC(i,j)    = 0;
+	}
+      }
+    }
+
+  }
+  
+  //  AliInfo("Step 1: Interpolation to Standard grid");
+
+  // -------------------------------------------------------------------------------
+  // Interpolate results onto the standard grid which is used for all AliTPCCorrections classes
+
+  const Int_t order  = 1  ;  // Linear interpolation = 1, Quadratic = 2  
+
+  Double_t  r, z;//phi, z ;
+  for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
+    //    phi = fgkPhiList[k] ;
+	
+    // final lookup table
+    TMatrixD &erOverEzFinal   =  *fLookUpErOverEz[k]  ;
+    TMatrixD &deltaEzFinal    =  *fLookUpDeltaEz[k]   ;
+	
+    // calculated and integrated tables - just one phi slice
+    TMatrixD &erOverEzA   =  *arrayofEroverEzA[0]  ;
+    TMatrixD &deltaEzA    =  *arrayofDeltaEzA[0];
+    TMatrixD &erOverEzC   =  *arrayofEroverEzC[0]  ;
+    TMatrixD &deltaEzC    =  *arrayofDeltaEzC[0];    
+    
+    
+    for ( Int_t j = 0 ; j < kNZ ; j++ ) {
+
+      z = TMath::Abs(fgkZList[j]) ;  // z position is symmetric
+    
+      for ( Int_t i = 0 ; i < kNR ; i++ ) { 
+	r = fgkRList[i] ;
+
+	// Interpolate Lookup tables onto standard grid
+	if (fgkZList[j]>0) {
+	  erOverEzFinal(i,j)   = Interpolate2DTable(order, r, z, rows, columns, rlist1, zedlist1, erOverEzA  );
+	  deltaEzFinal(i,j)    = Interpolate2DTable(order, r, z, rows, columns, rlist1, zedlist1, deltaEzA   );
+	} else {
+	  erOverEzFinal(i,j)   = Interpolate2DTable(order, r, z, rows, columns, rlist1, zedlist1, erOverEzC  );
+	  deltaEzFinal(i,j)    = - Interpolate2DTable(order, r, z, rows, columns, rlist1, zedlist1, deltaEzC   );
+	  // negative coordinate system on C side
+	}
+
+      } // end r loop
+    } // end z loop
+  } // end phi loop
+
+  
+  // clear the temporary arrays lists
+  for ( Int_t k = 0 ; k < phiSlices ; k++ )  {
+
+    delete arrayofErA[k];  
+    delete arrayofdEzA[k];
+    delete arrayofErC[k];  
+    delete arrayofdEzC[k];
+
+    delete arrayofEroverEzA[k];  
+    delete arrayofDeltaEzA[k];
+    delete arrayofEroverEzC[k];  
+    delete arrayofDeltaEzC[k];
+
+  }
+
+  fZR->Close();
+
+  // ------------------------------------------------------------------------------------------------------
+  // Step 2: Load and sum up lookup table in rphi, fine grid, to emulate for example a GG leak
+ 
+  //  AliInfo("Step 2: Preparation of the weighted look-up table");
+ 
+  TFile *fRPhi = new TFile(fSCLookUpPOCsFileNameRPhi.Data(),"READ");
+  if ( !fRPhi ) {
+    AliError("Precalculated POC-looup-table in RPhi could not be found");
+    return;
+  } 
+
+  // units are in [m]
+  TVector *gridf2  = (TVector*) fRPhi->Get("constants"); 
+  TVector &grid2 = *gridf2;
+  TMatrix *coordf2  = (TMatrix*) fRPhi->Get("coordinates");
+  TMatrix &coord2 = *coordf2;
+  TMatrix *coordPOCf2  = (TMatrix*) fRPhi->Get("POCcoord");
+  TMatrix &coordPOC2 = *coordPOCf2;
+
+  rows      = (Int_t)grid2(0);   // number of points in r direction   
+  phiSlices = (Int_t)grid2(1);   // number of points in phi           
+  columns   = (Int_t)grid2(2);   // number of points in z direction   
+
+  gridSizeR   =  (fgkOFCRadius-fgkIFCRadius)/(rows-1);   // unit in [cm]
+  Float_t gridSizePhi =  TMath::TwoPi()/phiSlices;         // unit in [rad]
+  gridSizeZ   =  fgkTPCZ0/(columns-1);                  // unit in [cm]
+ 
+  // list of points as used during sum up
+  Double_t  rlist2[rows], philist2[phiSlices], zedlist2[columns]; 
+  for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
+    philist2[k] =  gridSizePhi * k;
+    for ( Int_t i = 0 ; i < rows ; i++ )    {
+      rlist2[i] = fgkIFCRadius + i*gridSizeR ;
+      for ( Int_t j = 0 ; j < columns ; j++ ) { 
+	zedlist2[j]  = j * gridSizeZ ;
+      }
+    }
+  } // only done once
+ 
+  // temporary matrices needed for the calculation 
+
+  TMatrixD *arrayofErA2[phiSlices], *arrayofEphiA2[phiSlices], *arrayofdEzA2[phiSlices];
+  TMatrixD *arrayofErC2[phiSlices], *arrayofEphiC2[phiSlices], *arrayofdEzC2[phiSlices]; 
+
+  TMatrixD *arrayofEroverEzA2[phiSlices], *arrayofEphioverEzA2[phiSlices], *arrayofDeltaEzA2[phiSlices]; 
+  TMatrixD *arrayofEroverEzC2[phiSlices], *arrayofEphioverEzC2[phiSlices], *arrayofDeltaEzC2[phiSlices]; 
+
+ 
+  for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
+   
+    arrayofErA2[k]   =   new TMatrixD(rows,columns) ;
+    arrayofEphiA2[k] =   new TMatrixD(rows,columns) ;
+    arrayofdEzA2[k]  =   new TMatrixD(rows,columns) ;
+    arrayofErC2[k]   =   new TMatrixD(rows,columns) ;
+    arrayofEphiC2[k] =   new TMatrixD(rows,columns) ;
+    arrayofdEzC2[k]  =   new TMatrixD(rows,columns) ;
+
+    arrayofEroverEzA2[k]   =   new TMatrixD(rows,columns) ;
+    arrayofEphioverEzA2[k] =   new TMatrixD(rows,columns) ; 
+    arrayofDeltaEzA2[k]    =   new TMatrixD(rows,columns) ;
+    arrayofEroverEzC2[k]   =   new TMatrixD(rows,columns) ;
+    arrayofEphioverEzC2[k] =   new TMatrixD(rows,columns) ; 
+    arrayofDeltaEzC2[k]    =   new TMatrixD(rows,columns) ;
+
+    // zero initialization not necessary, it is done in the constructor of TMatrix 
+
+  }
+ 
+    
+  treePOC = (TTree*)fRPhi->Get("POCall");
+
+  //  TVector *bEr  = 0;   // done above
+  TVector *bEphi= 0;
+  //  TVector *bEz  = 0;   // done above
+
+  treePOC->SetBranchAddress("Er",&bEr);
+  treePOC->SetBranchAddress("Ephi",&bEphi);
+  treePOC->SetBranchAddress("Ez",&bEz);
+
+  // Read the complete tree and do a weighted sum-up over the POC configurations
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+  treeNumPOC = (Int_t)treePOC->GetEntries(); // Number of POC conf. in the look-up table
+  ipC = 0; // POC Conf. counter (note: different to the POC number in the tree!)
+
+  for (Int_t itreepC=0; itreepC<treeNumPOC; itreepC++) { // ------------- loop over POC configurations in tree
+  
+    treePOC->GetEntry(itreepC);
+
+    // center of the POC voxel in [meter]
+    Double_t r0 = coordPOC2(ipC,0);
+    Double_t phi0 = coordPOC2(ipC,1);
+    //    Double_t z0 = coordPOC2(ipC,2);
+
+     // weights (charge density) at POC position on the A and C side (in C/m^3/e0)
+    // note: coordinates are in [cm]
+    Double_t weightA = GetSpaceChargeDensity(r0*100,phi0, 0.499, 2);  // partial load in r,phi
+    Double_t weightC = GetSpaceChargeDensity(r0*100,phi0,-0.499, 2);  // partial load in r,phi
+  
+    //    printf("-----\n%lf %lf : %e %e\n",r0,phi0,weightA,weightC);
+
+    // Summing up the vector components according to their weight
+
+    Int_t ip = 0;
+    for ( Int_t j = 0 ; j < columns ; j++ ) { 
+      for ( Int_t i = 0 ; i < rows ; i++ )    {
+	for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
+		  
+	  // check wether the coordinates were screwed
+	  if (TMath::Abs((coord2(0,ip)*100-rlist2[i]))>1 || 
+	      TMath::Abs((coord2(1,ip)-philist2[k]))>1 || 
+	      TMath::Abs((coord2(2,ip)*100-zedlist2[j]))>1) { 
+	    AliError("internal error: coordinate system was screwed during the sum-up");
+	    printf("lookup: (r,phi,z)=(%lf,%lf,%lf)\n",coord2(0,ip)*100,coord2(1,ip),coord2(2,ip)*100);
+	    printf("sum-up: (r,phi,z)=(%lf,%lf,%lf)\n",rlist2[i],philist2[k],zedlist2[j]);
+	    AliError("Don't trust the results of the space charge calculation!");
+	  }
+	  
+	  // unfortunately, the lookup tables were produced to be faster for phi symmetric charges
+	  // This will be the most frequent usage (hopefully)
+	  // That's why we have to do this here ...
+
+	  TMatrixD &erA   =  *arrayofErA2[k]  ;
+	  TMatrixD &ephiA =  *arrayofEphiA2[k];
+	  TMatrixD &dEzA  =  *arrayofdEzA2[k] ;
+   
+	  TMatrixD &erC   =  *arrayofErC2[k]  ;
+	  TMatrixD &ephiC =  *arrayofEphiC2[k];
+	  TMatrixD &dEzC  =  *arrayofdEzC2[k]   ;
+   
+	  // Sum up - Efield values in [V/m] -> transition to [V/cm]
+	  erA(i,j) += ((*bEr)(ip)) * weightA /100;
+	  erC(i,j) += ((*bEr)(ip)) * weightC /100;
+	  ephiA(i,j) += ((*bEphi)(ip)) * weightA/100; // [V/rad]
+	  ephiC(i,j) += ((*bEphi)(ip)) * weightC/100; // [V/rad]
+	  dEzA(i,j)  += ((*bEz)(ip)) * weightA /100;
+	  dEzC(i,j)  += ((*bEz)(ip)) * weightC /100;
+
+	  // increase the counter
+	  ip++;
+	}
+      }
+    } // end coordinate loop
+    
+    
+    // Rotation and summation in the rest of the dPhiSteps
+    // which were not stored in the this tree due to storage & symmetry reasons
+
+    
+    Int_t phiPoints = (Int_t) grid2(1);
+    Int_t phiPOC    = (Int_t) grid2(4);
+    
+    //   printf("%d %d\n",phiPOC,flagRadSym);
+    
+    for (Int_t phiiC = 1; phiiC<phiPOC; phiiC++) { // just used for non-radial symetric table 
+      
+      Double_t phi0R = phiiC*phi0*2 + phi0; // rotate further
+
+      // weights (charge density) at POC position on the A and C side (in C/m^3/e0)
+      // note: coordinates are in [cm] // ecxept z
+      weightA = GetSpaceChargeDensity(r0*100,phi0R, 0.499, 2);  // partial load in r,phi
+      weightC = GetSpaceChargeDensity(r0*100,phi0R,-0.499, 2);  // partial load in r,phi
+    
+      // printf("%lf %lf : %e %e\n",r0,phi0R,weightA,weightC);
+         
+      // Summing up the vector components according to their weight
+      ip = 0;
+      for ( Int_t j = 0 ; j < columns ; j++ ) { 
+	for ( Int_t i = 0 ; i < rows ; i++ )    {
+	  for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
+	    
+	    // Note: rotating the coordinated during the sum up
+	    
+	    Int_t rotVal = (phiPoints/phiPOC)*phiiC;
+	    Int_t ipR = -1;
+	    
+	    if ((ip%phiPoints)>=rotVal) {
+	      ipR = ip-rotVal;
+	    } else {
+	      ipR = ip+(phiPoints-rotVal);
+	    }
+	    
+	    // unfortunately, the lookup tables were produced to be faster for phi symmetric charges
+	    // This will be the most frequent usage 
+	    // That's why we have to do this here and not outside the loop ...
+	    
+	    TMatrixD &erA   =  *arrayofErA2[k]  ;
+	    TMatrixD &ephiA =  *arrayofEphiA2[k];
+	    TMatrixD &dEzA  =  *arrayofdEzA2[k]   ;
+	    
+	    TMatrixD &erC   =  *arrayofErC2[k]  ;
+	    TMatrixD &ephiC =  *arrayofEphiC2[k];
+	    TMatrixD &dEzC  =  *arrayofdEzC2[k]   ;
+       
+	    // Sum up - Efield values in [V/m] -> transition to [V/cm]
+	    erA(i,j) += ((*bEr)(ipR)) * weightA /100;
+	    erC(i,j) += ((*bEr)(ipR)) * weightC /100;
+	    ephiA(i,j) += ((*bEphi)(ipR)) * weightA/100; // [V/rad]
+	    ephiC(i,j) += ((*bEphi)(ipR)) * weightC/100; // [V/rad]
+	    dEzA(i,j)  += ((*bEz)(ipR)) * weightA /100;
+	    dEzC(i,j)  += ((*bEz)(ipR)) * weightC /100;
+
+	    // increase the counter
+	    ip++;
+	  }
+	}
+      } // end coordinate loop
+
+    } // end phi-POC summation (phiiC)
+
+    ipC++; // POC configuration counter
+
+    //   printf("POC: (r,phi,z) = (%lf %lf %lf) | weight(A,C): %03.1lf %03.1lf\n",r0,phi0,z0, weightA, weightC);
+    
+  }
+
+
+
+
+  // -------------------------------------------------------------------------------
+  // Division by the Ez (drift) field and integration along z
+
+  //  AliInfo("Step 2: Division and integration");
+
+
+  for ( Int_t k = 0 ; k < phiSlices ; k++ ) { // phi loop
+
+    // matrices holding the solution - summation of POC charges // see above
+    TMatrixD &erA   =  *arrayofErA2[k]  ;
+    TMatrixD &ephiA =  *arrayofEphiA2[k];
+    TMatrixD &dezA  =  *arrayofdEzA2[k]   ;
+    TMatrixD &erC   =  *arrayofErC2[k]  ;
+    TMatrixD &ephiC =  *arrayofEphiC2[k];
+    TMatrixD &dezC  =  *arrayofdEzC2[k]   ;
+
+    // matrices which will contain the integrated fields (divided by the drift field)
+    TMatrixD &erOverEzA   =  *arrayofEroverEzA2[k]  ;
+    TMatrixD &ephiOverEzA =  *arrayofEphioverEzA2[k];
+    TMatrixD &deltaEzA    =  *arrayofDeltaEzA2[k];
+    TMatrixD &erOverEzC   =  *arrayofEroverEzC2[k]  ;
+    TMatrixD &ephiOverEzC =  *arrayofEphioverEzC2[k];
+    TMatrixD &deltaEzC    =  *arrayofDeltaEzC2[k];    
+    
+    for ( Int_t i = 0 ; i < rows ; i++ )    { // r loop
+      for ( Int_t j = columns-1 ; j >= 0 ; j-- ) {// z loop 
+	// Count backwards to facilitate integration over Z
+
+	Int_t index = 1 ; // Simpsons rule if N=odd.If N!=odd then add extra point by trapezoidal rule.  
+
+	erOverEzA(i,j) = 0; 
+	ephiOverEzA(i,j) = 0;
+	deltaEzA(i,j) = 0;
+	erOverEzC(i,j) = 0; 
+	ephiOverEzC(i,j) = 0; 
+	deltaEzC(i,j) = 0;
+
+	for ( Int_t m = j ; m < columns ; m++ ) { // integration
+
+	  erOverEzA(i,j)   += index*(gridSizeZ/3.0)*erA(i,m)/(-1*ezField) ;
+	  erOverEzC(i,j)   += index*(gridSizeZ/3.0)*erC(i,m)/(-1*ezField)  ;
+	  ephiOverEzA(i,j) += index*(gridSizeZ/3.0)*ephiA(i,m)/(-1*ezField)  ;
+	  ephiOverEzC(i,j) += index*(gridSizeZ/3.0)*ephiC(i,m)/(-1*ezField)  ;
+	  deltaEzA(i,j)    += index*(gridSizeZ/3.0)*dezA(i,m)/(-1) ;
+	  deltaEzC(i,j)    += index*(gridSizeZ/3.0)*dezC(i,m)/(-1) ;
+
+	  if ( index != 4 )  index = 4; else index = 2 ;
+
+	}
+
+	if ( index == 4 ) {
+	  erOverEzA(i,j)   -= (gridSizeZ/3.0)*erA(i,columns-1)/(-1*ezField) ;
+	  erOverEzC(i,j)   -= (gridSizeZ/3.0)*erC(i,columns-1)/(-1*ezField) ;
+	  ephiOverEzA(i,j) -= (gridSizeZ/3.0)*ephiA(i,columns-1)/(-1*ezField) ;
+	  ephiOverEzC(i,j) -= (gridSizeZ/3.0)*ephiC(i,columns-1)/(-1*ezField) ;
+	  deltaEzA(i,j)    -= (gridSizeZ/3.0)*dezA(i,columns-1)/(-1) ;
+	  deltaEzC(i,j)    -= (gridSizeZ/3.0)*dezC(i,columns-1)/(-1) ;
+	}
+	if ( index == 2 ) {
+	  erOverEzA(i,j)   += (gridSizeZ/3.0)*(0.5*erA(i,columns-2)-2.5*erA(i,columns-1))/(-1*ezField) ;
+	  erOverEzC(i,j)   += (gridSizeZ/3.0)*(0.5*erC(i,columns-2)-2.5*erC(i,columns-1))/(-1*ezField) ;
+	  ephiOverEzA(i,j) += (gridSizeZ/3.0)*(0.5*ephiA(i,columns-2)-2.5*ephiA(i,columns-1))/(-1*ezField) ;
+	  ephiOverEzC(i,j) += (gridSizeZ/3.0)*(0.5*ephiC(i,columns-2)-2.5*ephiC(i,columns-1))/(-1*ezField) ;
+	  deltaEzA(i,j)    += (gridSizeZ/3.0)*(0.5*dezA(i,columns-2)-2.5*dezA(i,columns-1))/(-1) ;
+	  deltaEzC(i,j)    += (gridSizeZ/3.0)*(0.5*dezC(i,columns-2)-2.5*dezC(i,columns-1))/(-1) ;
+	}
+	if ( j == columns-2 ) {
+	  erOverEzA(i,j)   = (gridSizeZ/3.0)*(1.5*erA(i,columns-2)+1.5*erA(i,columns-1))/(-1*ezField) ;
+	  erOverEzC(i,j)   = (gridSizeZ/3.0)*(1.5*erC(i,columns-2)+1.5*erC(i,columns-1))/(-1*ezField) ;
+	  ephiOverEzA(i,j) = (gridSizeZ/3.0)*(1.5*ephiA(i,columns-2)+1.5*ephiA(i,columns-1))/(-1*ezField) ;
+	  ephiOverEzC(i,j) = (gridSizeZ/3.0)*(1.5*ephiC(i,columns-2)+1.5*ephiC(i,columns-1))/(-1*ezField) ;
+	  deltaEzA(i,j)    = (gridSizeZ/3.0)*(1.5*dezA(i,columns-2)+1.5*dezA(i,columns-1))/(-1) ;
+	  deltaEzC(i,j)    = (gridSizeZ/3.0)*(1.5*dezC(i,columns-2)+1.5*dezC(i,columns-1))/(-1) ;
+	}
+	if ( j == columns-1 ) {
+	  erOverEzA(i,j)   = 0;   
+	  erOverEzC(i,j)   = 0;
+	  ephiOverEzA(i,j) = 0; 
+	  ephiOverEzC(i,j) = 0;
+	  deltaEzA(i,j)    = 0;  
+	  deltaEzC(i,j)    = 0;
+	}
+      }
+    }
+
+  }
+  
+  AliInfo("Step 2: Interpolation to Standard grid");
+
+  // -------------------------------------------------------------------------------
+  // Interpolate results onto the standard grid which is used for all AliTPCCorrections classes
+
+
+  for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
+    Double_t phi = fgkPhiList[k] ;
+	
+    // final lookup table
+    TMatrixD &erOverEzFinal   =  *fLookUpErOverEz[k]  ;
+    TMatrixD &ephiOverEzFinal =  *fLookUpEphiOverEz[k];
+    TMatrixD &deltaEzFinal    =  *fLookUpDeltaEz[k]   ;
+	
+    for ( Int_t j = 0 ; j < kNZ ; j++ ) {
+
+      z = TMath::Abs(fgkZList[j]) ;  // z position is symmetric
+    
+      for ( Int_t i = 0 ; i < kNR ; i++ ) { 
+	r = fgkRList[i] ;
+
+	// Interpolate Lookup tables onto standard grid
+	if (fgkZList[j]>0) {
+	  erOverEzFinal(i,j)   += Interpolate3DTable(order, r, z, phi, rows, columns, phiSlices, 
+					       rlist2, zedlist2, philist2, arrayofEroverEzA2  );
+	  ephiOverEzFinal(i,j) += Interpolate3DTable(order, r, z, phi, rows, columns, phiSlices,
+					       rlist2, zedlist2, philist2, arrayofEphioverEzA2);
+	  deltaEzFinal(i,j)    += Interpolate3DTable(order, r, z, phi, rows, columns, phiSlices,
+					       rlist2, zedlist2, philist2, arrayofDeltaEzA2   );
+	} else {
+	  erOverEzFinal(i,j)   += Interpolate3DTable(order, r, z, phi, rows, columns, phiSlices, 
+					       rlist2, zedlist2, philist2, arrayofEroverEzC2  );
+	  ephiOverEzFinal(i,j) += Interpolate3DTable(order, r, z, phi, rows, columns, phiSlices,
+					       rlist2, zedlist2, philist2, arrayofEphioverEzC2);
+	  deltaEzFinal(i,j)  -=  Interpolate3DTable(order, r, z, phi, rows, columns, phiSlices,
+					       rlist2, zedlist2, philist2, arrayofDeltaEzC2   );
+	}
+
+      } // end r loop
+    } // end z loop
+  } // end phi loop
+  
+  
+  // clear the temporary arrays lists
+  for ( Int_t k = 0 ; k < phiSlices ; k++ )  {
+
+    delete arrayofErA2[k];  
+    delete arrayofEphiA2[k];
+    delete arrayofdEzA2[k];
+    delete arrayofErC2[k];  
+    delete arrayofEphiC2[k];
+    delete arrayofdEzC2[k];
+
+    delete arrayofEroverEzA2[k];  
+    delete arrayofEphioverEzA2[k];
+    delete arrayofDeltaEzA2[k];
+    delete arrayofEroverEzC2[k];  
+    delete arrayofEphioverEzC2[k];
+    delete arrayofDeltaEzC2[k];
+
+  }
+ 
+  fRPhi->Close();
+  
+  // FINISHED
+
+  fInitLookUp = kTRUE;
+
+}
+
+void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortionCourse() {
   //
   // Initialization of the Lookup table which contains the solutions of the 
   // "space charge" (poisson) problem 
@@ -202,8 +876,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
   // in order to calculate the corresponding field deviations due to a given (discretized)
   // space charge distribution ....
   //
-  // Method of calculation: Weighted sum up of the different fields within the look up table
-  //
+  // Method of calculation: Weighted sum-up of the different fields within the look up table
+  // Note: Full 3d version: Course and slow ...
 
   if (fInitLookUp) {
     AliInfo("Lookup table was already initialized!");
@@ -212,8 +886,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 
   AliInfo("Preparation of the weighted look-up table");
    
-  TFile *f = new TFile(fSCLookUpPOCsFileName);
-  if (!f) { 
+  TFile *f = new TFile(fSCLookUpPOCsFileName3D.Data(),"READ");
+  if ( !f ) {
     AliError("Precalculated POC-looup-table could not be found");
     return;
   }
@@ -228,7 +902,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
   
   Bool_t flagRadSym = 0;
   if (grid(1)==1 && grid(4)==1) {
-    AliInfo("LOOK UP TABLE IS RADIAL SYMETTRIC - Field in Phi is ZERO");
+    //   AliInfo("LOOK UP TABLE IS RADIAL SYMETTRIC - Field in Phi is ZERO");
     flagRadSym=1;
   }
 
@@ -236,9 +910,9 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
   Int_t phiSlices = (Int_t)grid(1);   // number of points in phi         
   Int_t columns   = (Int_t)grid(2);   // number of points in z direction 
 
-  const Float_t gridSizeR   =  grid(6)*100;    // unit in [cm]
-  const Float_t gridSizePhi   =  grid(7);  // unit in [rad]
-  const Float_t gridSizeZ =  grid(8)*100;      // unit in [cm]
+  const Float_t gridSizeR   =  (fgkOFCRadius-fgkIFCRadius)/(rows-1);   // unit in [cm]
+  const Float_t gridSizePhi =  TMath::TwoPi()/phiSlices;         // unit in [rad]
+  const Float_t gridSizeZ   =  fgkTPCZ0/(columns-1);                  // unit in [cm]
  
   // temporary matrices needed for the calculation
   TMatrixD *arrayofErA[phiSlices], *arrayofEphiA[phiSlices], *arrayofdEzA[phiSlices];
@@ -282,10 +956,6 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
   } // only done once
   
   
-  // Prepare summation Vectors
-  //  Int_t numPosInd = (Int_t)(grid(0)*grid(1)*grid(2)); // Number of fulcrums in the look-up table
-  //  Int_t numPOC = (Int_t)(grid(3)*grid(4)*grid(5));    // Number of POC conf. in the look-up table
-  
   TTree *treePOC = (TTree*)f->Get("POCall");
 
   TVector *bEr  = 0;   TVector *bEphi= 0;   TVector *bEz  = 0;
@@ -294,11 +964,6 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
   if (!flagRadSym) treePOC->SetBranchAddress("Ephi",&bEphi);
   treePOC->SetBranchAddress("Ez",&bEz);
 
-  /*  TBranch *b2Er = treePOC->GetBranch("Er");
-      TBranch *b2Ephi =0;
-      if (!flagRadSym) b2Ephi = treePOC->GetBranch("Ephi");
-      TBranch *b2Ez = treePOC->GetBranch("Ez");
-  */
 
   // Read the complete tree and do a weighted sum-up over the POC configurations
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -306,27 +971,20 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
   Int_t treeNumPOC = (Int_t)treePOC->GetEntries(); // Number of POC conf. in the look-up table
   Int_t ipC = 0; // POC Conf. counter (note: different to the POC number in the tree!)
 
-  for (Int_t itreepC=0; itreepC<treeNumPOC; itreepC++) { // loop over POC configurations in tree
+  for (Int_t itreepC=0; itreepC<treeNumPOC; itreepC++) { // ------------- loop over POC configurations in tree
   
-    // if (!flagRadSym) cout<<ipC<<endl;
-
     treePOC->GetEntry(itreepC);
-
-    /*    b2Er->GetEntry(itreepC); 
-	  if (!flagRadSym) b2Ephi->GetEntry(itreepC); 
-	  b2Ez->GetEntry(itreepC); 
-    */
 
     // center of the POC voxel in [meter]
     Double_t r0 = coordPOC(ipC,0);
     Double_t phi0 = coordPOC(ipC,1);
     Double_t z0 = coordPOC(ipC,2);
 
-    ipC++; // POC conf. counter
+    ipC++; // POC configuration counter
 
     // weights (charge density) at POC position on the A and C side (in C/m^3/e0)
     // note: coordinates are in [cm]
-    Double_t weightA = GetSpaceChargeDensity(r0*100,phi0, z0*100); 
+    Double_t weightA = GetSpaceChargeDensity(r0*100,phi0, z0*100);
     Double_t weightC = GetSpaceChargeDensity(r0*100,phi0,-z0*100);
   
     // Summing up the vector components according to their weight
@@ -337,13 +995,13 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
 		  
 	  // check wether the coordinates were screwed
-	  if ((coord(0,ip)*100-rlist[i])>0.01 || 
-	      (coord(1,ip)-philist[k])>0.01 || 
-	      (coord(2,ip)*100-zedlist[j])>0.01) {
+	  if (TMath::Abs((coord(0,ip)*100-rlist[i]))>1 || 
+	      TMath::Abs((coord(1,ip)-philist[k]))>1 || 
+	      TMath::Abs((coord(2,ip)*100-zedlist[j]))>1) { 
 	    AliError("internal error: coordinate system was screwed during the sum-up");
 	    printf("lookup: (r,phi,z)=(%lf,%lf,%lf)\n",coord(0,ip)*100,coord(1,ip),coord(2,ip)*100);
 	    printf("sum-up: (r,phi,z)=(%lf,%lf,%lf)\n",rlist[i],philist[k],zedlist[j]);
-	    AliError("Don't trust the results of the space charge calibration!");
+	    AliError("Don't trust the results of the space charge calculation!");
 	  }
 	  
 	  // unfortunately, the lookup tables were produced to be faster for phi symmetric charges
@@ -352,18 +1010,18 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 
 	  TMatrixD &erA   =  *arrayofErA[k]  ;
 	  TMatrixD &ephiA =  *arrayofEphiA[k];
-	  TMatrixD &dEzA    =  *arrayofdEzA[k]   ;
+	  TMatrixD &dEzA  =  *arrayofdEzA[k]   ;
    
 	  TMatrixD &erC   =  *arrayofErC[k]  ;
 	  TMatrixD &ephiC =  *arrayofEphiC[k];
-	  TMatrixD &dEzC    =  *arrayofdEzC[k]   ;
+	  TMatrixD &dEzC  =  *arrayofdEzC[k]   ;
    
 	  // Sum up - Efield values in [V/m] -> transition to [V/cm]
 	  erA(i,j) += ((*bEr)(ip)) * weightA /100;
 	  erC(i,j) += ((*bEr)(ip)) * weightC /100;
 	  if (!flagRadSym) {
-	    ephiA(i,j) += ((*bEphi)(ip)) * weightA; // [V/rad]
-	    ephiC(i,j) += ((*bEphi)(ip)) * weightC; // [V/rad]
+	    ephiA(i,j) += ((*bEphi)(ip)) * weightA/100; // [V/rad]
+	    ephiC(i,j) += ((*bEphi)(ip)) * weightC/100; // [V/rad]
 	  }
 	  dEzA(i,j)  += ((*bEz)(ip)) * weightA /100;
 	  dEzC(i,j)  += ((*bEz)(ip)) * weightC /100;
@@ -372,17 +1030,18 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	  ip++;
 	}
       }
-    }
+    } // end coordinate loop
+    
     
     // Rotation and summation in the rest of the dPhiSteps
-    // which were not stored in the tree due to storage & symmetry reasons
+    // which were not stored in the this tree due to storage & symmetry reasons
 
     Int_t phiPoints = (Int_t) grid(1);
     Int_t phiPOC    = (Int_t) grid(4);
     
-    // printf("%d %d\n",phiPOC,flagRadSym);
+    //   printf("%d %d\n",phiPOC,flagRadSym);
     
-    for (Int_t phiiC = 1; phiiC<phiPOC; phiiC++) { // just used for non-radial symetric table
+    for (Int_t phiiC = 1; phiiC<phiPOC; phiiC++) { // just used for non-radial symetric table 
       
       r0 = coordPOC(ipC,0);
       phi0 = coordPOC(ipC,1);
@@ -395,7 +1054,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
       weightA = GetSpaceChargeDensity(r0*100,phi0, z0*100); 
       weightC = GetSpaceChargeDensity(r0*100,phi0,-z0*100);
       
-      
+      //     printf("%lf %lf %lf: %e %e\n",r0,phi0,z0,weightA,weightC);
+       
       // Summing up the vector components according to their weight
       ip = 0;
       for ( Int_t j = 0 ; j < columns ; j++ ) { 
@@ -414,7 +1074,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	    }
 	    
 	    // unfortunately, the lookup tables were produced to be faster for phi symmetric charges
-	    // This will be the most frequent usage (hopefully)
+	    // This will be the most frequent usage 
 	    // That's why we have to do this here and not outside the loop ...
 	    
 	    TMatrixD &erA   =  *arrayofErA[k]  ;
@@ -429,8 +1089,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	    erA(i,j) += ((*bEr)(ipR)) * weightA /100;
 	    erC(i,j) += ((*bEr)(ipR)) * weightC /100;
 	    if (!flagRadSym) {
-	      ephiA(i,j) += ((*bEphi)(ipR)) * weightA; // [V/rad]
-	      ephiC(i,j) += ((*bEphi)(ipR)) * weightC; // [V/rad]
+	      ephiA(i,j) += ((*bEphi)(ipR)) * weightA/100; // [V/rad]
+	      ephiC(i,j) += ((*bEphi)(ipR)) * weightC/100; // [V/rad]
 	    }
 	    dEzA(i,j)  += ((*bEz)(ipR)) * weightA /100;
 	    dEzC(i,j)  += ((*bEz)(ipR)) * weightC /100;
@@ -445,19 +1105,21 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
    
 
     // printf("POC: (r,phi,z) = (%lf %lf %lf) | weight(A,C): %03.1lf %03.1lf\n",r0,phi0,z0, weightA, weightC);
+    
+  }
 
-  } // end POC loop
- 
-  AliInfo("Division and integration");
+
 
   // -------------------------------------------------------------------------------
   // Division by the Ez (drift) field and integration along z
+
+  AliInfo("Division and integration");
 
   Double_t ezField = (fgkCathodeV-fgkGG)/fgkTPCZ0; // = Electric Field (V/cm) Magnitude ~ -400 V/cm;
 
   for ( Int_t k = 0 ; k < phiSlices ; k++ ) { // phi loop
 
-    // matrices holding the solution - summation of POC charges
+    // matrices holding the solution - summation of POC charges // see above
     TMatrixD &erA   =  *arrayofErA[k]  ;
     TMatrixD &ephiA =  *arrayofEphiA[k];
     TMatrixD &dezA  =  *arrayofdEzA[k]   ;
@@ -465,7 +1127,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
     TMatrixD &ephiC =  *arrayofEphiC[k];
     TMatrixD &dezC  =  *arrayofdEzC[k]   ;
 
-    // matrices which contain the integrated fields (divided by the drift field)
+    // matrices which will contain the integrated fields (divided by the drift field)
     TMatrixD &erOverEzA   =  *arrayofEroverEzA[k]  ;
     TMatrixD &ephiOverEzA =  *arrayofEphioverEzA[k];
     TMatrixD &deltaEzA    =  *arrayofDeltaEzA[k];
@@ -490,8 +1152,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	    ephiOverEzA(i,j) += index*(gridSizeZ/3.0)*ephiA(i,m)/(-1*ezField)  ;
 	    ephiOverEzC(i,j) += index*(gridSizeZ/3.0)*ephiC(i,m)/(-1*ezField)  ;
 	  }
-	  deltaEzA(i,j)    += index*(gridSizeZ/3.0)*dezA(i,m) ;
-	  deltaEzC(i,j)    += index*(gridSizeZ/3.0)*dezC(i,m) ;
+	  deltaEzA(i,j)    += index*(gridSizeZ/3.0)*dezA(i,m)/(-1) ;
+	  deltaEzC(i,j)    += index*(gridSizeZ/3.0)*dezC(i,m)/(-1) ;
 
 	  if ( index != 4 )  index = 4; else index = 2 ;
 
@@ -504,8 +1166,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	    ephiOverEzA(i,j) -= (gridSizeZ/3.0)*ephiA(i,columns-1)/(-1*ezField) ;
 	    ephiOverEzC(i,j) -= (gridSizeZ/3.0)*ephiC(i,columns-1)/(-1*ezField) ;
 	  }
-	  deltaEzA(i,j)    -= (gridSizeZ/3.0)*dezA(i,columns-1) ;
-	  deltaEzC(i,j)    -= (gridSizeZ/3.0)*dezC(i,columns-1) ;
+	  deltaEzA(i,j)    -= (gridSizeZ/3.0)*dezA(i,columns-1)/(-1) ;
+	  deltaEzC(i,j)    -= (gridSizeZ/3.0)*dezC(i,columns-1)/(-1) ;
 	}
 	if ( index == 2 ) {
 	  erOverEzA(i,j)   += (gridSizeZ/3.0)*(0.5*erA(i,columns-2)-2.5*erA(i,columns-1))/(-1*ezField) ;
@@ -514,8 +1176,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	    ephiOverEzA(i,j) += (gridSizeZ/3.0)*(0.5*ephiA(i,columns-2)-2.5*ephiA(i,columns-1))/(-1*ezField) ;
 	    ephiOverEzC(i,j) += (gridSizeZ/3.0)*(0.5*ephiC(i,columns-2)-2.5*ephiC(i,columns-1))/(-1*ezField) ;
 	  }
-	  deltaEzA(i,j)    += (gridSizeZ/3.0)*(0.5*dezA(i,columns-2)-2.5*dezA(i,columns-1)) ;
-	  deltaEzC(i,j)    += (gridSizeZ/3.0)*(0.5*dezC(i,columns-2)-2.5*dezC(i,columns-1)) ;
+	  deltaEzA(i,j)    += (gridSizeZ/3.0)*(0.5*dezA(i,columns-2)-2.5*dezA(i,columns-1))/(-1) ;
+	  deltaEzC(i,j)    += (gridSizeZ/3.0)*(0.5*dezC(i,columns-2)-2.5*dezC(i,columns-1))/(-1) ;
 	}
 	if ( j == columns-2 ) {
 	  erOverEzA(i,j)   = (gridSizeZ/3.0)*(1.5*erA(i,columns-2)+1.5*erA(i,columns-1))/(-1*ezField) ;
@@ -524,25 +1186,30 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	    ephiOverEzA(i,j) = (gridSizeZ/3.0)*(1.5*ephiA(i,columns-2)+1.5*ephiA(i,columns-1))/(-1*ezField) ;
 	    ephiOverEzC(i,j) = (gridSizeZ/3.0)*(1.5*ephiC(i,columns-2)+1.5*ephiC(i,columns-1))/(-1*ezField) ;
 	  }
-	  deltaEzA(i,j)    = (gridSizeZ/3.0)*(1.5*dezA(i,columns-2)+1.5*dezA(i,columns-1)) ;
-	  deltaEzC(i,j)    = (gridSizeZ/3.0)*(1.5*dezC(i,columns-2)+1.5*dezC(i,columns-1)) ;
+	  deltaEzA(i,j)    = (gridSizeZ/3.0)*(1.5*dezA(i,columns-2)+1.5*dezA(i,columns-1))/(-1) ;
+	  deltaEzC(i,j)    = (gridSizeZ/3.0)*(1.5*dezC(i,columns-2)+1.5*dezC(i,columns-1))/(-1) ;
 	}
 	if ( j == columns-1 ) {
-	  erOverEzA(i,j)   = 0;    erOverEzC(i,j)   = 0;
+	  erOverEzA(i,j)   = 0;   
+	  erOverEzC(i,j)   = 0;
 	  if (!flagRadSym) {
-	    ephiOverEzA(i,j) = 0;  ephiOverEzC(i,j) = 0;
+	    ephiOverEzA(i,j) = 0; 
+	    ephiOverEzC(i,j) = 0;
 	  }
-	  deltaEzA(i,j)    = 0;    deltaEzC(i,j)    = 0;
+	  deltaEzA(i,j)    = 0;  
+	  deltaEzC(i,j)    = 0;
 	}
       }
     }
 
   }
   
+
+ 
   AliInfo("Interpolation to Standard grid");
 
   // -------------------------------------------------------------------------------
-  // Interpolate results onto the standard grid which is used for all AliTPCCorrections
+  // Interpolate results onto the standard grid which is used for all AliTPCCorrections classes
 
   const Int_t order  = 1  ;  // Linear interpolation = 1, Quadratic = 2  
 
@@ -583,7 +1250,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
     } // end z loop
   } // end phi loop
 
-  
+ 
   // clear the temporary arrays lists
   for ( Int_t k = 0 ; k < phiSlices ; k++ )  {
 
@@ -603,50 +1270,76 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 
   }
 
-
   fInitLookUp = kTRUE;
 
 }
 
 
-void AliTPCSpaceCharge3D::SetSCDataFileName(char *const fname) {
+void AliTPCSpaceCharge3D::SetSCDataFileName(TString fname) {
   //
   // Set & load the Space charge density distribution from a file 
   // (linear interpolation onto a standard grid)
   //
 
+ 
   fSCDataFileName = fname;
 
-  TFile *f = new TFile(fSCDataFileName,"READ");
+  TFile *f = new TFile(fSCDataFileName.Data(),"READ");
   if (!f) { 
     AliError(Form("File %s, which should contain the space charge distribution, could not be found",
-		  fSCDataFileName));
+		  fSCDataFileName.Data()));
     return;
   }
  
-  TH3F *density = (TH3F*) f->Get("SpaceChargeDistribution");
-  if (!density) { 
+  TH2F *densityRZ = (TH2F*) f->Get("SpaceChargeInRZ");
+  if (!densityRZ) { 
     AliError(Form("The indicated file (%s) does not contain a histogram called %s",
-		  fSCDataFileName,"SpaceChargeDistribution"));
+		  fSCDataFileName.Data(),"SpaceChargeInRZ"));
+    return;
+  }
+
+  TH3F *densityRPhi = (TH3F*) f->Get("SpaceChargeInRPhi");
+  if (!densityRPhi) { 
+    AliError(Form("The indicated file (%s) does not contain a histogram called %s",
+		  fSCDataFileName.Data(),"SpaceChargeInRPhi"));
     return;
   }
  
 
   Double_t  r, phi, z ;
+
+  TMatrixD &scDensityInRZ   =  *fSCdensityInRZ;
+  TMatrixD &scDensityInRPhiA   =  *fSCdensityInRPhiA;
+  TMatrixD &scDensityInRPhiC   =  *fSCdensityInRPhiC;
   for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
     phi = fgkPhiList[k] ;
-    TMatrixD &scdensity   =  *fSCdensityDistribution[k]  ;
+    TMatrixD &scDensity   =  *fSCdensityDistribution[k]  ;
     for ( Int_t j = 0 ; j < kNZ ; j++ ) {
-      z = TMath::Abs(fgkZList[j]) ;  // z position is symmetric
+      z = fgkZList[j] ; 
       for ( Int_t i = 0 ; i < kNR ; i++ ) { 
 	r = fgkRList[i] ;
-	scdensity(i,j) = density->Interpolate(r,phi,z); // quite slow
-	//  	printf("%lf %lf %lf: %lf\n",r,phi,z,scdensity(i,j));
+
+	// partial load in (r,z)
+	if (k==0) // do just once
+	  scDensityInRZ(i,j) =  densityRZ->Interpolate(r,z);
+
+	// partial load in (r,phi)
+	if ( j==0 || j == kNZ/2 ) {
+	  if (z>0) 
+	    scDensityInRPhiA(i,k) =  densityRPhi->Interpolate(r,phi,0.499);  // A side
+	  else 
+	    scDensityInRPhiC(i,k) =  densityRPhi->Interpolate(r,phi,-0.499); // C side
+	}
+
+	// Full 3D configuration ...
+	if (z>0) 
+	   scDensity(i,j) = scDensityInRZ(i,j) + scDensityInRPhiA(i,k); 
+	else
+	   scDensity(i,j) = scDensityInRZ(i,j) + scDensityInRPhiC(i,k); 
       }
     }
   }
 
- 
   f->Close();
 
   fInitLookUp = kFALSE;
@@ -655,14 +1348,14 @@ void AliTPCSpaceCharge3D::SetSCDataFileName(char *const fname) {
 }
 
 
-Float_t  AliTPCSpaceCharge3D::GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z) {
+Float_t  AliTPCSpaceCharge3D::GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z, Int_t mode) {
   //
   // returns the (input) space charge density at a given point according 
   // Note: input in [cm], output in [C/m^3/e0] !!
   //
 
-  if (!fSCdensityDistribution) {
-    printf("Scheiss is nuul - argg\n");
+  if (!fSCdensityDistribution || !fSCdensityInRZ || !fSCdensityInRPhiA || !fSCdensityInRPhiC ) {
+    printf("Irgend a schaaas is nuul - argg\n");
     return 0.;
   }
 
@@ -672,16 +1365,38 @@ Float_t  AliTPCSpaceCharge3D::GetSpaceChargeDensity(Float_t r, Float_t phi, Floa
 
   // Float_t sc =fSCdensityDistribution->Interpolate(r0,phi0,z0);
   Int_t order = 1; //
-  Float_t sc = Interpolate3DTable(order, r, z, phi, kNR, kNZ, kNPhi, 
-				  fgkRList, fgkZList, fgkPhiList, fSCdensityDistribution );
+  Float_t sc = 0;
 
+  if (mode == 0) { // return full load
+    sc = Interpolate3DTable(order, r, z, phi, kNR, kNZ, kNPhi, 
+			    fgkRList, fgkZList, fgkPhiList, fSCdensityDistribution );
+ 
+  } else if (mode == 1) { // return partial load in (r,z)
+    TMatrixD &scDensityInRZ   =  *fSCdensityInRZ;
+    sc = Interpolate2DTable(order, r, z, kNR, kNZ, fgkRList, fgkZList, scDensityInRZ );
+    
+  } else if (mode == 2) { // return partial load in (r,phi)
+
+    if (z>0) {
+      TMatrixD &scDensityInRPhi   =  *fSCdensityInRPhiA;
+      sc = Interpolate2DTable(order, r, phi, kNR, kNPhi, fgkRList, fgkPhiList, scDensityInRPhi );
+    } else {
+      TMatrixD &scDensityInRPhi   =  *fSCdensityInRPhiC;
+      sc = Interpolate2DTable(order, r, phi, kNR, kNPhi, fgkRList, fgkPhiList, scDensityInRPhi );
+    }
+
+  } else {
+    // should i give a warning?
+    sc = 0;
+  }
+  
   //  printf("%lf %lf %lf: %lf\n",r,phi,z,sc);
   
   return sc;
 }
 
 
-TH2F * AliTPCSpaceCharge3D::CreateHistoSCinXY(Float_t z, Int_t nx, Int_t ny) {
+TH2F * AliTPCSpaceCharge3D::CreateHistoSCinXY(Float_t z, Int_t nx, Int_t ny, Int_t mode) {
   //
   // return a simple histogramm containing the space charge distribution (input for the calculation)
   //
@@ -698,7 +1413,7 @@ TH2F * AliTPCSpaceCharge3D::CreateHistoSCinXY(Float_t z, Int_t nx, Int_t ny) {
       Float_t phi = TMath::ATan2(yp,xp); 
    
       if (85.<=r && r<=250.) {
-	Float_t sc = GetSpaceChargeDensity(r,phi,z)/fgke0; // in [C/m^3/e0]
+	Float_t sc = GetSpaceChargeDensity(r,phi,z,mode)/fgke0; // in [C/m^3/e0]
 	h->SetBinContent(ix,iy,sc); 
       } else {
 	h->SetBinContent(ix,iy,0.);
@@ -709,7 +1424,7 @@ TH2F * AliTPCSpaceCharge3D::CreateHistoSCinXY(Float_t z, Int_t nx, Int_t ny) {
   return h;
 } 
 
-TH2F * AliTPCSpaceCharge3D::CreateHistoSCinZR(Float_t phi, Int_t nz, Int_t nr) {
+TH2F * AliTPCSpaceCharge3D::CreateHistoSCinZR(Float_t phi, Int_t nz, Int_t nr,Int_t mode ) {
   //
   // return a simple histogramm containing the space charge distribution (input for the calculation)
   //
@@ -721,7 +1436,7 @@ TH2F * AliTPCSpaceCharge3D::CreateHistoSCinZR(Float_t phi, Int_t nz, Int_t nr) {
     Float_t r = h->GetYaxis()->GetBinCenter(ir);
     for (Int_t iz=1;iz<=nz;++iz) {
       Float_t z = h->GetXaxis()->GetBinCenter(iz);
-      Float_t sc = GetSpaceChargeDensity(r,phi,z)/fgke0; // in [C/m^3/e0]
+      Float_t sc = GetSpaceChargeDensity(r,phi,z,mode)/fgke0; // in [C/m^3/e0]
       h->SetBinContent(iz,ir,sc);
     }
   }
@@ -733,69 +1448,112 @@ void AliTPCSpaceCharge3D::WriteChargeDistributionToFile(const char* fname) {
   //
   // Example on how to write a Space charge distribution into a File
   //  (see below: estimate from scaling STAR measurements to Alice)
+  // Charge distribution is splitted into two (RZ and RPHI) in order to speed up
+  // the needed calculation time
   //
 
   TFile *f = new TFile(fname,"RECREATE");
-
+  
   // some grid, not too course
-  Int_t nr = 72;
+  Int_t nr = 350;
   Int_t nphi = 180;
-  Int_t nz = 250;
+  Int_t nz = 500;
 
   Double_t dr = (fgkOFCRadius-fgkIFCRadius)/(nr+1);
   Double_t dphi = TMath::TwoPi()/(nphi+1);
   Double_t dz = 500./(nz+1);
   Double_t safty = 0.; // due to a root bug which does not interpolate the boundary (first and last bin) correctly
 
-  TH3F *histo = new TH3F("charge","charge",
-			 nr,fgkIFCRadius-dr-safty,fgkOFCRadius+dr+safty,
-			 nphi,0-dphi-safty,TMath::TwoPi()+dphi+safty,
-			 nz,-250-dz-safty,250+dz+safty);
+
+  // Charge distribution in ZR (rotational symmetric) ------------------
+
+  TH2F *histoZR = new TH2F("chargeZR","chargeZR",
+			   nr,fgkIFCRadius-dr-safty,fgkOFCRadius+dr+safty,
+			   nz,-250-dz-safty,250+dz+safty);
  
   for (Int_t ir=1;ir<=nr;++ir) {
-    Double_t rp = histo->GetXaxis()->GetBinCenter(ir);
+    Double_t rp = histoZR->GetXaxis()->GetBinCenter(ir);
+    for (Int_t iz=1;iz<=nz;++iz) {
+      Double_t zp = histoZR->GetYaxis()->GetBinCenter(iz);
+      
+      // recalculation to meter
+      Double_t lZ = 2.5; // approx. TPC drift length
+      Double_t rpM = rp/100.; // in [m]
+      Double_t zpM = TMath::Abs(zp/100.); // in [m]
+      
+      // setting of mb multiplicity and Interaction rate
+      Double_t multiplicity = 950;
+      Double_t intRate = 7800;
+
+      // calculation of "scaled" parameters
+      Double_t a = multiplicity*intRate/79175;
+      Double_t b = a/lZ;
+	
+      Double_t charge = (a - b*zpM)/(rpM*rpM); // charge in [C/m^3/e0]
+	
+      charge = charge*fgke0; // [C/m^3]
+	
+      if (zp<0) charge *= 0.9; // e.g. slightly less on C side due to front absorber
+
+      //  charge = 0; // for tests
+      histoZR->SetBinContent(ir,iz,charge); 
+    }
+  }
+    
+  histoZR->Write("SpaceChargeInRZ");
+  
+
+  // Charge distribution in RPhi (e.g. Floating GG wire) ------------
+  
+  TH3F *histoRPhi = new TH3F("chargeRPhi","chargeRPhi",
+			     nr,fgkIFCRadius-dr-safty,fgkOFCRadius+dr+safty,
+			     nphi,0-dphi-safty,TMath::TwoPi()+dphi+safty,
+			     2,-1,1); // z part - to allow A and C side differences
+  
+  // some 'arbitrary' GG leaks
+  Int_t   nGGleaks = 5;
+  Double_t secPosA[5]    = {3,6,6,11,13};         // sector
+  Double_t radialPosA[5] = {125,100,160,200,190}; // radius in cm
+  Double_t secPosC[5]    = {5,8,12,15,15};        // sector
+  Double_t radialPosC[5] = {210,170,140,120,190}; // radius in cm
+
+  for (Int_t ir=1;ir<=nr;++ir) {
+    Double_t rp = histoRPhi->GetXaxis()->GetBinCenter(ir);
     for (Int_t iphi=1;iphi<=nphi;++iphi) {
-      Double_t phip = histo->GetYaxis()->GetBinCenter(iphi);
-      for (Int_t iz=1;iz<=nz;++iz) {
-	Double_t zp = histo->GetZaxis()->GetBinCenter(iz);
-
-
-	zp = TMath::Abs(zp); // symmetric on both sides of the TPC
+      Double_t phip = histoRPhi->GetYaxis()->GetBinCenter(iphi);
+      for (Int_t iz=1;iz<=2;++iz) {
+	Double_t zp = histoRPhi->GetZaxis()->GetBinCenter(iz);
 	
-	// recalculation to meter
-	Double_t lZ = 2.5; // approx. TPC drift length
-	Double_t rpM = rp/100.; // in [m]
-	Double_t zpM = zp/100.; // in [m]
+	Double_t charge = 0;
 	
-	// setting of mb multiplicity and Interaction rate
-	Double_t multiplicity = 950;
-	Double_t intRate = 8000;
+	for (Int_t igg = 0; igg<nGGleaks; igg++) { // loop over GG leaks
+	  
+	  // A side
+	  Double_t secPos = secPosA[igg]; 
+	  Double_t radialPos = radialPosA[igg];
 
-	// calculation of "scaled" parameters
-	Double_t a = multiplicity*intRate/79175;
-	Double_t b = a/lZ;
-	
-	Double_t charge = (a - b * zpM)/(rpM*rpM); // charge in [C/m^3/e0]
-	
-	// some 'arbitrary' GG leaks
-	if (  (phip<(TMath::Pi()/9*3) && phip>(TMath::Pi()/9*2) ) ) { //||
-	  //	      (phip<(TMath::Pi()/9*7) && phip>(TMath::Pi()/9*6) ) ||
-	  //	      (phip<(TMath::Pi()/9*16) && phip>(TMath::Pi()/9*13) ) ){
-	  if (rp>130&&rp<135) 
-	    charge = 300; 
-	}
+	  if (zp<0) { // C side
+	    secPos = secPosC[igg]; 
+	    radialPos = radialPosC[igg];
+	  }	    
 
-	//	printf("%lf %lf %lf: %lf\n",rp,phip,zp,charge);
- 
+	  // some 'arbitrary' GG leaks
+	  if (  (phip<(TMath::Pi()/9*(secPos+1)) && phip>(TMath::Pi()/9*secPos) ) ) { // sector slice
+	    if ( rp>(radialPos-2.5) && rp<(radialPos+2.5))  // 5 cm slice
+	      charge = 300; 
+	  }
+	  
+	}		
+	
 	charge = charge*fgke0; // [C/m^3]
 
-	histo->SetBinContent(ir,iphi,iz,charge); 
+	histoRPhi->SetBinContent(ir,iphi,iz,charge); 
       }
     }
   }
 
+  histoRPhi->Write("SpaceChargeInRPhi");
 
-  histo->Write("SpaceChargeDistribution");
   f->Close();
   
 }

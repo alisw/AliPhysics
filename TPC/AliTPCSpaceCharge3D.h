@@ -37,14 +37,15 @@ public:
   void SetCorrectionFactor(Float_t correctionFactor) {fCorrectionFactor=correctionFactor;}
   Float_t GetCorrectionFactor() const {return fCorrectionFactor;}
 
-  void  SetSCDataFileName(char *const fname);
-  char* GetSCDataFileName() const { return fSCDataFileName; }
+  void  SetSCDataFileName(TString fname);
+  const char* GetSCDataFileName() { return fSCDataFileName.Data(); }
 
-  void InitSpaceCharge3DDistortion();
+  void InitSpaceCharge3DDistortion();       // faster model and more accurate ;-)
+  void InitSpaceCharge3DDistortionCourse(); // real 3D but not accurate enough
 
-  Float_t GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z);
-  TH2F* CreateHistoSCinXY(Float_t z, Int_t nx=100, Int_t ny=100);
-  TH2F* CreateHistoSCinZR(Float_t phi, Int_t nz=100, Int_t nr=100);
+  Float_t GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z, Int_t mode=0);
+  TH2F* CreateHistoSCinXY(Float_t z, Int_t nx=100, Int_t ny=100, Int_t mode=0);
+  TH2F* CreateHistoSCinZR(Float_t phi, Int_t nz=100, Int_t nr=100, Int_t mode=0);
 
 
   void WriteChargeDistributionToFile(const char* fname = "SC-Alice.root");
@@ -71,10 +72,16 @@ private:
   TMatrixD *fLookUpEphiOverEz[kNPhi]; // Array to store electric field integral (int Er/Ez)
   TMatrixD *fLookUpDeltaEz[kNPhi];    // Array to store electric field integral (int Er/Ez)
 
-  char *fSCDataFileName;         // file which contains the space charge distribution
-  char *fSCLookUpPOCsFileName;   // filename of the precalculated lookup tables (for individual voxels)
+  TString fSCDataFileName;          // file which contains the space charge distribution
+  TString fSCLookUpPOCsFileName3D;  // filename of the precalculated lookup tables (for individual voxels)
+  TString fSCLookUpPOCsFileNameRZ;  // filename of the precalculated lookup tables (for individual voxels)
+  TString fSCLookUpPOCsFileNameRPhi;  // filename of the precalculated lookup tables (for individual voxels)
 
-  TMatrixD *fSCdensityDistribution[kNPhi]; // space charge distribution
+
+  TMatrixD *fSCdensityDistribution[kNPhi]; // 3D space charge distribution
+  TMatrixD *fSCdensityInRZ;       // (r,z) space charge distribution
+  TMatrixD *fSCdensityInRPhiA;     // (r,phi) space charge distribution
+  TMatrixD *fSCdensityInRPhiC;     // (r,phi) space charge distribution
  
   ClassDef(AliTPCSpaceCharge3D,1); 
 };
