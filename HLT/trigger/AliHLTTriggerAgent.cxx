@@ -225,8 +225,11 @@ int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandle
   if (triggerInputs.Length()>0) {
     HLTInfo("Configuring inputs for %s: %s", configurationId.Data(), triggerInputs.Data());
     pHandler->CreateConfiguration(configurationId.Data(), "D0Trigger", triggerInputs.Data(), argD0.Data());
-    if (triggerOutputs.Length()>0) triggerOutputs+=" ";
-    triggerOutputs+=configurationId;
+    // FIXME: due to a rare segfault for reconstruction of PbPb data the
+    // component is temporarily excluded
+    // https://savannah.cern.ch/bugs/?72590
+    //if (triggerOutputs.Length()>0) triggerOutputs+=" ";
+    //triggerOutputs+=configurationId;
   } else {
     HLTWarning("No inputs for %s found, skipping component", configurationId.Data());
   }
