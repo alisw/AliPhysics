@@ -87,17 +87,20 @@ AliCaloTrackReader::~AliCaloTrackReader() {
   }  
   
   if(fAODCTS){
-    fAODCTS->Clear() ; 
+    if(fDataType!=kMC)fAODCTS->Clear() ; 
+    else              fAODCTS->Delete() ; 
     delete fAODCTS ;
   }
   
   if(fAODEMCAL){
-    fAODEMCAL->Clear() ; 
+    if(fDataType!=kMC)fAODEMCAL->Clear() ; 
+    else              fAODEMCAL->Delete() ; 
     delete fAODEMCAL ;
   }
   
   if(fAODPHOS){
-    fAODPHOS->Clear() ; 
+    if(fDataType!=kMC)fAODPHOS->Clear() ; 
+    else              fAODPHOS->Delete() ; 
     delete fAODPHOS ;
   }
   

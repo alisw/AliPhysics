@@ -48,7 +48,7 @@ ClassImp(AliAnaPartCorrBaseClass)
     TObject(), fDataMC(0), fDebug(0), fCheckFidCut(0),
     fCheckCaloPID(0), fRecalculateCaloPID(0), fMinPt(0), fMaxPt(0),
     fMultiBin(0),fNZvertBin(0),fNrpBin(0),fZvtxCut(0.), fMaxMulti(0),fMinMulti(0),
-    fUseSelectEvent(kFALSE), 
+    fUseSelectEvent(kFALSE), fMakePlots(kFALSE),
     fReader(0x0), fInputAODBranch(0x0), fInputAODName(""),
     fOutputAODBranch(0x0), fNewAOD(kFALSE),
     fOutputAODName(""), fOutputAODClassName(""),
@@ -519,6 +519,7 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   printf("Recalculate PID     =     %d\n",     fRecalculateCaloPID) ;
   printf("Check Fiducial cut  =     %d\n",     fCheckFidCut) ;
   printf("Check MC labels     =     %d\n",     fDataMC);
+  printf("Make plots?         =     %d \n",    fMakePlots); 	
   printf("Debug Level         =     %d\n",     fDebug);
   printf("Histograms: %3.1f < pT  < %3.1f,  Nbin = %d\n", fHistoPtMin,  fHistoPtMax,  fHistoPtBins);
   printf("Histograms: %3.1f < phi < %3.1f, Nbin = %d\n", fHistoPhiMin, fHistoPhiMax, fHistoPhiBins);

@@ -56,49 +56,7 @@ AliCaloTrackMCReader::AliCaloTrackMCReader() :
   
   //Initialize parameters
   InitParameters();
-  fDataType = kMC;  
-  fReadStack          = kTRUE;
-  fReadAODMCParticles = kFALSE;
-  
 }
-/*
-//____________________________________________________________________________
-AliCaloTrackMCReader::AliCaloTrackMCReader(const AliCaloTrackMCReader & g) :   
-  AliCaloTrackReader(g), fDecayPi0(g.fDecayPi0), 
-  fNeutralParticlesArray(g.fNeutralParticlesArray?new TArrayI(*g.fNeutralParticlesArray):0x0),
-  fChargedParticlesArray(g.fChargedParticlesArray?new TArrayI(*g.fChargedParticlesArray):0x0),
-  fStatusArray(g.fStatusArray?new TArrayI(*g.fStatusArray):0x0),
-  fKeepAllStatus(g.fKeepAllStatus), fCheckOverlap(g.fCheckOverlap),
-  fEMCALOverlapAngle( g.fEMCALOverlapAngle), fPHOSOverlapAngle(g.fPHOSOverlapAngle),
-  fIndex2ndPhoton(g.fIndex2ndPhoton)
-{
-  // cpy ctor
-}
-*/
-//_________________________________________________________________________
-//AliCaloTrackMCReader & AliCaloTrackMCReader::operator = (const AliCaloTrackMCReader & source)
-//{
-//  // assignment operator
-//
-//  if(&source == this) return *this;
-//
-//  fDecayPi0 = source.fDecayPi0; 
-//
-//  delete fChargedParticlesArray;
-//  fChargedParticlesArray = source.fChargedParticlesArray?new TArrayI(*source.fChargedParticlesArray):0x0;
-//
-//  delete fNeutralParticlesArray;
-//  fNeutralParticlesArray = source.fNeutralParticlesArray?new TArrayI(*source.fNeutralParticlesArray):0x0;
-//
-//  delete fStatusArray;
-//  fStatusArray = source.fStatusArray?new TArrayI(*source.fStatusArray):0x0;
-// 
-//  fKeepAllStatus = source.fKeepAllStatus ;
-//
-//  return *this;
-//
-//}
-//
 //_________________________________
 AliCaloTrackMCReader::~AliCaloTrackMCReader() {
   //Dtor
@@ -120,7 +78,6 @@ void AliCaloTrackMCReader::GetVertex(Double_t  v[3]) const {
   v[2]=pv.At(2);
 
 }
-
 
 //_______________________________________________________________
 void AliCaloTrackMCReader::InitParameters()
@@ -145,7 +102,18 @@ void AliCaloTrackMCReader::InitParameters()
   fEMCALOverlapAngle = 2.5 * TMath::DegToRad();
   fPHOSOverlapAngle = 0.5 * TMath::DegToRad();
   fIndex2ndPhoton = -1;
+  
+  fDataType = kMC;  
+  fReadStack          = kTRUE;
+  fReadAODMCParticles = kFALSE;
+  
+  //For this reader we own the objects of the arrays
+  fAODCTS->SetOwner(kTRUE); 
+  fAODEMCAL->SetOwner(kTRUE); 
+  fAODPHOS->SetOwner(kTRUE); 
+  
 }
+
 //____________________________________________________________________________
 void  AliCaloTrackMCReader::CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg) {
   //Check overlap of decay photons
@@ -189,7 +157,7 @@ void  AliCaloTrackMCReader::CheckOverlap(const Float_t anglethres, const Int_t i
 }
 
 //____________________________________________________________________________
-void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector momentum) {
+void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector &momentum) {
   //Fill AODCaloClusters or TParticles lists of PHOS or EMCAL
   //In PHOS
   if(fFillPHOS && momentum.Pt() > fPHOSPtMin){
@@ -278,7 +246,9 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
 	  //Particles in CTS acceptance
 		
 	  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
-		
+		 
+    if(TMath::Abs(pdg) == 11 && GetStack()->Particle(particle->GetFirstMother())->GetPdgCode()==22) continue ;
+       
 	  if(fDebug > 3 && momentum.Pt() > 0.2)
 	    printf("AliCaloTrackMCReader::FillInputEvent() - CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 		   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());

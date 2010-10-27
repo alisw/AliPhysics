@@ -82,40 +82,41 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void SwitchOnMultipleCutAnalysis()   {fMultiCutAna = kTRUE;}
   void SwitchOffMultipleCutAnalysis()  {fMultiCutAna = kFALSE;}
 
-  void SetPtCuts   (Int_t ncuts)       {fNPtCuts    = ncuts;}
-  void SetAsymCuts (Int_t ncuts)       {fNAsymCuts  = ncuts;}
-  void SetCellNCuts(Int_t ncuts)       {fNCellNCuts = ncuts;}
-  void SetPIDBits  (Int_t ncuts)       {fNPIDBits   = ncuts;}
+  void SetNPtCuts   (Int_t size)  {if(size <= 5)fNPtCuts    = size; }
+  void SetNAsymCuts (Int_t size)  {if(size <= 5)fNAsymCuts  = size; }
+  void SetNNCellCuts(Int_t size)  {if(size <= 5)fNCellNCuts = size; }
+  void SetNPIDBits  (Int_t size)  {if(size <= 5)fNPIDBits   = size; }
 
-  void SetPtCuts   (Float_t * cuts)    {fPtCuts    = cuts;}
-  void SetAsymCuts (Float_t * cuts)    {fAsymCuts  = cuts;}
-  void SetCellNCuts(Int_t   * cuts)    {fCellNCuts = cuts;}
-  void SetPIDBits  (Int_t   * cuts)    {fPIDBits   = cuts;}
-
+  void SetPtCutsAt   (Int_t pos,Float_t val)  {if(pos < 5)fPtCuts[pos]    = val;}
+  void SetAsymCutsAt (Int_t pos,Float_t val)  {if(pos < 5)fAsymCuts[pos]  = val;}
+  void SetNCellCutsAt(Int_t pos,Float_t val)  {if(pos < 5)fCellNCuts[pos] = val;}
+  void SetPIDBitsAt  (Int_t pos,Float_t val)  {if(pos < 5)fPIDBits[pos]   = val;}
+  
+  
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
   
   private:
   Bool_t   fDoOwnMix;     // Do combinatorial background not the one provided by the frame
   Int_t    fNCentrBin ;	  // Number of bins in event container for centrality
- // Int_t    fNZvertBin ;	  // Number of bins in event container for vertex position
-//  Int_t    fNrpBin ;	    // Number of bins in event container for reaction plain
+  // Int_t    fNZvertBin ;	// Number of bins in event container for vertex position
+  // Int_t    fNrpBin ;	    // Number of bins in event container for reaction plain
   Int_t    fNPID ;		    // Number of possible PID combinations
   Int_t    fNmaxMixEv ;	  // Maximal number of events stored in buffer for mixing
-//  Float_t  fZvtxCut ;	    // Cut on vertex position
+  //  Float_t  fZvtxCut ;	    // Cut on vertex position
   TString  fCalorimeter ; // Select Calorimeter for IM
   Int_t    fNModules ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
   Bool_t   fUseAngleCut ; // Select pairs depending on their opening angle
   TList ** fEventsList ;  //! Containers for photons in stored events
   Bool_t   fMultiCutAna;  // Do analysis with several or fixed cut
   Int_t    fNPtCuts;      // number of pt cuts
-  Float_t* fPtCuts;       //[fNPtCuts] array with different pt cuts
+  Float_t  fPtCuts[5];    // array with different pt cuts
   Int_t    fNAsymCuts;    // number of assymmetry cuts
-  Float_t* fAsymCuts;     //[fNAsymCuts] array with different assymetry cuts
+  Float_t  fAsymCuts[5];  // array with different assymetry cuts
   Int_t    fNCellNCuts;   // number of cuts with number of cells in cluster
-  Int_t*   fCellNCuts;    //[fNCellNCuts] array with different cell number cluster cuts
+  Int_t    fCellNCuts[5]; // array with different cell number cluster cuts
   Int_t    fNPIDBits;     // number of PID bits to check in multi cuts option
-  Int_t*   fPIDBits;      //[fNPIDBits] array with different pid bits
+  Int_t    fPIDBits[5];   // array with different pid bits
 
   //Histograms
   TH3D ** fhReMod ;     //!REAL two-photon invariant mass distribution for different calorimeter modules.

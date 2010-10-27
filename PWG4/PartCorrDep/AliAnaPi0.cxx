@@ -56,8 +56,8 @@ AliAnaPi0::AliAnaPi0() : AliAnaPartCorrBaseClass(),
 fDoOwnMix(kFALSE),fNCentrBin(0),//fNZvertBin(0),fNrpBin(0),
 fNPID(0),fNmaxMixEv(0), fCalorimeter(""),
 fNModules(12), fUseAngleCut(kFALSE), fEventsList(0x0), fMultiCutAna(kFALSE),
-fNPtCuts(0),fPtCuts(0x0),fNAsymCuts(0),fAsymCuts(0x0),
-fNCellNCuts(0),fCellNCuts(0x0),fNPIDBits(0),fPIDBits(0x0),fhReMod(0x0),fhReDiffMod(0x0),
+fNPtCuts(0),fNAsymCuts(0), fNCellNCuts(0),fNPIDBits(0),
+fhReMod(0x0),fhReDiffMod(0x0),
 fhRe1(0x0),      fhMi1(0x0),      fhRe2(0x0),      fhMi2(0x0),      fhRe3(0x0),      fhMi3(0x0),
 fhReInvPt1(0x0), fhMiInvPt1(0x0), fhReInvPt2(0x0), fhMiInvPt2(0x0), fhReInvPt3(0x0), fhMiInvPt3(0x0),
 fhRePtNCellAsymCuts(0x0), fhRePIDBits(0x0),
@@ -111,21 +111,17 @@ void AliAnaPi0::InitParameters()
   fMultiCutAna = kFALSE;
   
   fNPtCuts = 3;
-  fPtCuts  = new Float_t[fNPtCuts];
-  fPtCuts[0] = 0.; fPtCuts[1] = 0.2;   fPtCuts[2] = 0.3;
+  fPtCuts[0] = 0.; fPtCuts[1] = 0.2;   fPtCuts[2] = 0.3;fPtCuts[3] = 0.;   fPtCuts[4] = 0.;
 
   fNAsymCuts = 3;
-  fAsymCuts  = new Float_t[fNAsymCuts];
-  fAsymCuts[0] = 0.7;  fAsymCuts[1] = 0.8;   fAsymCuts[2] = 1.;   
+  fAsymCuts[0] = 0.7;  fAsymCuts[1] = 0.8;   fAsymCuts[2] = 1.;    fAsymCuts[3] = 0.;   fAsymCuts[4] = 0.;  
   
   fNCellNCuts = 3;
-  fCellNCuts  = new Int_t[fNCellNCuts];
-  fCellNCuts[0] = 1; fCellNCuts[1] = 2;   fCellNCuts[2] = 3;   
+  fCellNCuts[0] = 1; fCellNCuts[1] = 2;   fCellNCuts[2] = 3;  fCellNCuts[3] = 0;   fCellNCuts[4] = 0;  
   
   fNPIDBits = 3;
-  fPIDBits  = new Int_t[fNPIDBits];
   fPIDBits[0] = 2;   fPIDBits[1] = 4;   fPIDBits[2] = 6; // check dispersion, neutral, dispersion&&neutral
-  
+  fPIDBits[3] = 0;   fPIDBits[4] = 0;
 }
 
 
