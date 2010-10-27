@@ -430,7 +430,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   delete [] pairname;
   
   snprintf(key, buffersize,"hReDiffMod_%d",fNModules) ;
-  snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for all Modules Combination",fNModules) ;
+  snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for all Modules Combination") ;
   fhReDiffMod[fNModules]  = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
   outputContainer->Add(fhReDiffMod[fNModules]) ;
   

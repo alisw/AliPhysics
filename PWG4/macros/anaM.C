@@ -164,7 +164,9 @@ void  LoadLibraries(const anaModes mode) {
   gSystem->Load("libGeom.so");
   gSystem->Load("libVMC.so");
   gSystem->Load("libXMLIO.so");
-  
+  gSystem->Load("libMatrix.so");
+  gSystem->Load("libPhysics.so");
+
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   //----------------------------------------------------------
