@@ -27,7 +27,7 @@ AliTRDtrendValue::AliTRDtrendValue()
 {
 //  Constructor. Reset all fields.
   memset(fLimits, 0, 2*(kNlevels+1)*sizeof(Double_t));
-  for(Int_t ilevel(kNlevels); ilevel--; ) sprintf(fAlarmMessage[ilevel], " ");
+  for(Int_t ilevel(kNlevels); ilevel--; ) snprintf(fAlarmMessage[ilevel], 1024, " ");
 }
 
 //____________________________________________
@@ -46,7 +46,7 @@ AliTRDtrendValue::AliTRDtrendValue(Char_t *n, Char_t *t)
   } else SetName(n);
 
   memset(fLimits, 0, 2*(kNlevels+1)*sizeof(Double_t));
-  for(Int_t ilevel(kNlevels); ilevel--; ) sprintf(fAlarmMessage[ilevel], " ");
+  for(Int_t ilevel(kNlevels); ilevel--; ) snprintf(fAlarmMessage[ilevel], 1024, " ");
 }
 
 //____________________________________________
@@ -103,8 +103,8 @@ const char* AliTRDtrendValue::GetValueName() const
 const char* AliTRDtrendValue::GetResponsible(Char_t *n, Char_t *mail) const
 {
 // Get responsible with name and mail
-  if(n) sprintf(n, "%s", fResponsible.fNameR);
-  if(mail) sprintf(mail, "%s", fResponsible.fMail);
+  if(n) snprintf(n, 100, "%s", fResponsible.fNameR);
+  if(mail) snprintf(mail, 200, "%s", fResponsible.fMail);
   return Form("%s <%s>", fResponsible.fNameR, fResponsible.fMail);
 }
 
@@ -113,8 +113,8 @@ const char* AliTRDtrendValue::GetNotifiable(Int_t in, Char_t *n, Char_t *mail) c
 {
 // Get noticible person "in" with name and mail
   if(in<0||in>=fNnotifiable) return NULL;
-  if(n) sprintf(n, "%s", fNotifiable[in].fNameR);
-  if(mail) sprintf(mail, "%s", fNotifiable[in].fMail);
+  if(n) snprintf(n, 100, "%s", fNotifiable[in].fNameR);
+  if(mail) snprintf(mail, 200, "%s", fNotifiable[in].fMail);
   return Form("%s <%s>", fNotifiable[in].fNameR, fNotifiable[in].fMail);
 }
 
@@ -126,8 +126,8 @@ void AliTRDtrendValue::SetNotifiable(const Char_t *name, const Char_t *mail)
     AliWarning(Form("Could not add %s for notification. Only %d persons can be registered for notification.", name, kNnotifiable));
     return;
   }
-  sprintf(fNotifiable[fNnotifiable].fNameR, "%s", name);
-  sprintf(fNotifiable[fNnotifiable].fMail, "%s", mail);
+  snprintf(fNotifiable[fNnotifiable].fNameR, 100, "%s", name);
+  snprintf(fNotifiable[fNnotifiable].fMail, 200, "%s", mail);
   fNnotifiable++;
 }
 
@@ -135,8 +135,8 @@ void AliTRDtrendValue::SetNotifiable(const Char_t *name, const Char_t *mail)
 void AliTRDtrendValue::SetResponsible(const Char_t *name, const Char_t *mail) 
 {
 // set responsible person for trend
-  sprintf(fResponsible.fNameR, "%s", name);
-  sprintf(fResponsible.fMail, "%s", mail);
+  snprintf(fResponsible.fNameR, 100, "%s", name);
+  snprintf(fResponsible.fMail, 200, "%s", mail);
 }
 
 //____________________________________________
@@ -165,6 +165,6 @@ void AliTRDtrendValue::Print(Option_t */*o*/) const
 AliTRDtrendValue::AliTRDtrendValueResponsible::AliTRDtrendValueResponsible(Char_t *n, Char_t *m) 
 {
 // define person with mail and mail
-  if(n) sprintf(fNameR, "%s", n); else sprintf(fNameR, " ");
-  if(m) sprintf(fMail, "%s", m); else sprintf(fMail, " ");
+  if(n) snprintf(fNameR, 100, "%s", n); else snprintf(fNameR, 100, " ");
+  if(m) snprintf(fMail, 200, "%s", m); else snprintf(fMail, 200, " ");
 }

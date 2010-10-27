@@ -148,13 +148,13 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
 
   AliDebug(1, Form("Entries: Ev[%d] Tracks[%d] V0[%d] PID[%d]", ev, fTracks->GetEntriesFast(), fV0s->GetEntriesFast(), fInfo->GetEntriesFast()));
   AliTRDtrackInfo     *track = NULL;
-  AliTRDtrackV1    *trackTRD = NULL;
+  //AliTRDtrackV1    *trackTRD = NULL;
   AliTrackReference     *ref = NULL;
   const AliTRDtrackInfo::AliESDinfo *infoESD = NULL;
   for(Int_t itrk=0; itrk<fTracks->GetEntriesFast(); itrk++){
     track = (AliTRDtrackInfo*)fTracks->UncheckedAt(itrk);
     if(!track->HasESDtrack()) continue;
-    trackTRD = track->GetTrack();
+    //trackTRD = track->GetTrack();
     infoESD  = track->GetESDinfo();
     Double32_t *infoPID = infoESD->GetSliceIter();
     Int_t n = infoESD->GetNSlices() - AliTRDgeometry::kNlayer;
@@ -171,7 +171,7 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
     // fill the pid information
     SetRefPID(fRefPID, track, infoESD, fPID);
     // get particle type
-    Int_t idx(TMath::LocMax(AliPID::kSPECIES, fPID)); 
+    Int_t idx(TMath::Max(Long64_t(0), TMath::LocMax(AliPID::kSPECIES, fPID))); 
     if(fPID[idx]<1.e-5) continue;
     
     // prepare PID data array

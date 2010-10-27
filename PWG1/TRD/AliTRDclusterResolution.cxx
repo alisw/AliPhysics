@@ -579,7 +579,10 @@ void AliTRDclusterResolution::UserExec(Option_t *)
     fContainer = Histos();
     PostData(1, fContainer);
   }
-  fInfo = dynamic_cast<TObjArray *>(GetInputData(1));
+  if(!(fInfo = dynamic_cast<TObjArray *>(GetInputData(1)))){
+    AliError("Cluster array missing.");
+    return;
+  }
   AliDebug(2, Form("Clusters[%d]", fInfo->GetEntriesFast()));
 
   Int_t det, t, np;

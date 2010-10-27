@@ -205,10 +205,10 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
   else{
     for(Int_t iMomBin = 0; iMomBin < AliTRDCalPID::kNMom; iMomBin++){
       if(fTrain[iMomBin] -> GetN() < fMinTrain){
-	AliError(Form("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available for momentum bin [%d]! Please check Data sample!", iMomBin));
-	continue;
+        AliError(Form("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available for momentum bin [%d]! Please check Data sample!", iMomBin));
+        continue;
       }
-      MakeRefs(fTrainMomBin);
+      MakeRefs(iMomBin);
       MonitorTraining(iMomBin);
     }
   }

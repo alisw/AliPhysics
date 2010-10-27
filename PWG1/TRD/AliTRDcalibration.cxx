@@ -1069,8 +1069,10 @@ Bool_t AliTRDcalibration::FillGraphIndex(const TObjArray *vectora,TGraph *graph)
     y[k]  = ((Float_t *)((AliTRDCalibraFit::AliTRDFitInfo *) vectora->At(k))->GetCoef())[0];
   }
 
-  if(!graph) graph = new TGraph(540,&x[0],&y[0]);
-  else{ 
+  if(!graph){
+    graph = new TGraph(540,&x[0],&y[0]);
+    graph->SetMarkerStyle(20);
+  } else{ 
     graph->~TGraph();
     new(graph) TGraph(540,&x[0],&y[0]);
   }
