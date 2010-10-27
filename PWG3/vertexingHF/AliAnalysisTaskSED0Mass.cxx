@@ -48,7 +48,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSED0Mass.h"
-
+#include "AliNormalizationCounter.h"
 
 ClassImp(AliAnalysisTaskSED0Mass)
 
@@ -65,6 +65,7 @@ fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
 fUsePid4Distr(0),
+fCounter(0),
 fNPtBins(1),
 fTotPosPairs(0),
 fTotNegPairs(0),
@@ -88,6 +89,7 @@ fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
 fUsePid4Distr(0),
+fCounter(0),
 fNPtBins(1),
 fTotPosPairs(0),
 fTotNegPairs(0),
@@ -114,7 +116,8 @@ fFillOnlyD0D0bar(0)
   DefineOutput(4,TList::Class());  //My private output
   // Output slot #5 writes into a TList container (cuts)
   DefineOutput(5,AliRDHFCutsD0toKpi::Class());  //My private output
-
+  // Output slot #6 writes Normalization Counter 
+  DefineOutput(6,AliNormalizationCounter::Class());
 }
 
 //________________________________________________________________________
@@ -140,7 +143,10 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     delete fNentries;
     fNentries = 0;
   }
- 
+  if(fCounter){
+    delete fCounter;
+    fCounter=0;
+  }
  
 }  
 
@@ -559,13 +565,14 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(14,"Lambda");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
- 
+  fCounter = new AliNormalizationCounter("NormalizationCounter");
+
   // Post the data
   PostData(1,fOutputMass);
   PostData(2,fDistr);
   PostData(3,fNentries);
   PostData(4,fChecks);
-  
+  PostData(6,fCounter);  
   return;
 }
 
@@ -656,7 +663,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
-    
+  fCounter->StoreEvent(aod,fReadMC);   
   if(!fCuts->IsEventSelected(aod)) return;
   
   // AOD primary vertex
@@ -728,14 +735,14 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   }
   //number of events with good vertex and at least 2 good tracks
   if (isGoodTrack>=2 && isGoodVtx) fNentries->Fill(4);
-  
+
   // loop over candidates
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
   if(fDebug>2) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
 
   // FILE *f=fopen("4display.txt","a");
   // fprintf(f,"Number of D0->Kpi: %d\n",nInD0toKpi);
-
+  Int_t nSelectedloose=0,nSelectedtight=0;  
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     //Int_t nPosPairs=0, nNegPairs=0;
     //cout<<"inside the loop"<<endl;
@@ -745,7 +752,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     if(!(d->GetDaughter(0) || d->GetDaughter(1))) {
       AliDebug(1,"at least one daughter not found!");
       fNentries->Fill(6);
-      return;
+      continue;
     }
 
     // Bool_t unsetvtx=kFALSE;
@@ -763,29 +770,30 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     if ( fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(421)) ) {
       //if( TMath::Abs(eta0)<0.9 && TMath::Abs(eta1)<0.9 ){
        //apply cuts on tracks
+      nSelectedloose++;
       Int_t isSelected = fCuts->IsSelected(d,AliRDHFCuts::kTracks);
-
       if(((AliAODTrack*)d->GetDaughter(0))->GetTPCNcls() < 70 || ((AliAODTrack*)d->GetDaughter(1))->GetTPCNcls() < 70) isSelected=kFALSE;
-      if (!isSelected) return;
+      if (!isSelected) continue;
+      nSelectedtight++;
       fNentries->Fill(7);       
       if(fDebug>2) cout<<"tracks selected"<<endl;
 
       Int_t ptbin=fCuts->PtBin(d->Pt());
-      if(ptbin==-1) {fNentries->Fill(5); return;} //out of bounds
+      if(ptbin==-1) {fNentries->Fill(5); continue;} //out of bounds
       FillVarHists(aod,d,mcArray,fCuts,fDistr);
       FillMassHists(aod,d,mcArray,fCuts,fOutputMass);
     }
   
     //if(unsetvtx) d->UnsetOwnPrimaryVtx();
   } //end for prongs
-
-
+  fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
+  fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);  
   // Post the data
   PostData(1,fOutputMass);
   PostData(2,fDistr);
   PostData(3,fNentries);
   PostData(4,fChecks);
-
+  PostData(6,fCounter);
   return;
 }
 
@@ -1428,8 +1436,11 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
     printf("ERROR: fChecks not available\n");
     return;
   }
-  
- 
+  fCounter = dynamic_cast<AliNormalizationCounter*>(GetOutputData(6));    
+  if (!fCounter) {
+    printf("ERROR: fCounter not available\n");
+    return;
+  }
   for(Int_t ipt=0;ipt<5;ipt++){ //change 5 in GetNPtBins when sure it is written and check
 
 

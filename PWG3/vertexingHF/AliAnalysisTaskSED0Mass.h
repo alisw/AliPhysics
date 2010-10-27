@@ -20,6 +20,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
+#include "AliNormalizationCounter.h"
 
 class AliAODEvent;
 
@@ -68,13 +69,14 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fReadMC;              //  flag for MC array: kTRUE = read it, kFALSE = do not read it
   Bool_t    fCutOnDistr;          //  flag to decide if apply cut also on distributions: 0 no cuts, 1 looser cuts, 2 tighter cuts 
   Bool_t    fUsePid4Distr;        //  flag to use the particle identification to fill the signal histograms of distributions. It has effect only with fReadMC=kFALSE
+  AliNormalizationCounter *fCounter;//!AliNormalizationCounter on output slot 6
   Int_t     fNPtBins;             //  number of pt bins
   Int_t*    fTotPosPairs;         //[fNPtBins]
   Int_t*    fTotNegPairs;         //[fNPtBins] 
   Double_t  fLsNormalization;     //  normalization
   Int_t     fFillOnlyD0D0bar;     // flag to fill mass histogram with D0/D0bar only (0 = fill with both, 1 = fill with D0 only, 2 = fill with D0bar only)
 
-  ClassDef(AliAnalysisTaskSED0Mass,9); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,10); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif

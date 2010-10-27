@@ -43,6 +43,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSEDplus.h"
+#include "AliNormalizationCounter.h"
 
 ClassImp(AliAnalysisTaskSEDplus)
 
@@ -66,8 +67,10 @@ AliAnalysisTaskSE(),
   fListCuts(0),
   fRDCutsProduction(0),
   fRDCutsAnalysis(0),
+  fCounter(0),
   fFillNtuple(kFALSE),
   fReadMC(kFALSE),
+  fUseStrangeness(kFALSE),
   fDoLS(kFALSE)
 {
    // Default constructor
@@ -92,8 +95,10 @@ fBinWidth(0.002),
 fListCuts(0),
 fRDCutsProduction(dpluscutsprod),
 fRDCutsAnalysis(dpluscutsana),
+fCounter(0),
 fFillNtuple(fillNtuple),
 fReadMC(kFALSE),
+fUseStrangeness(kFALSE),
 fDoLS(kFALSE)
 {
   // 
@@ -108,9 +113,12 @@ fDoLS(kFALSE)
  // Output slot #2 writes cut to private output
   //  DefineOutput(2,AliRDHFCutsDplustoKpipi::Class());
   DefineOutput(2,TList::Class());
+// Output slot #3 writes cut to private output
+  DefineOutput(3,AliNormalizationCounter::Class());
+
   if(fFillNtuple){
-    // Output slot #3 writes into a TNtuple container
-    DefineOutput(3,TNtuple::Class());  //My private output
+    // Output slot #4 writes into a TNtuple container
+    DefineOutput(4,TNtuple::Class());  //My private output
   }
 }
 
@@ -190,6 +198,10 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     fRDCutsAnalysis = 0;
   }
 
+  if(fCounter){
+    delete fCounter;
+    fCounter = 0;
+  }
 
 
 }  
@@ -704,6 +716,10 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->Add(fYVsPtSig);
   fOutput->Add(fYVsPtSigTC);
 
+
+  //Counter for Normalization
+  fCounter = new AliNormalizationCounter("NormalizationCounter");//new line
+
   if(fFillNtuple){
     OpenFile(2); // 2 is the slot number of the ntuple
    
@@ -722,6 +738,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
+ 
+
   TClonesArray *array3Prong = 0;
   TClonesArray *arrayLikeSign =0;
   if(!aod && AODEvent() && IsStandardAOD()) {
@@ -755,8 +773,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
-
+  if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
+  fCounter->StoreEvent(aod,fReadMC);
   fHistNEvents->Fill(0); // count event
   // Post the data already here
   PostData(1,fOutput);
@@ -794,6 +812,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   Int_t pdgDgDplustoKpipi[3]={321,211,211};
   // Double_t cutsDplus[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};//TO REMOVE
   //Double_t *cutsDplus = new (Double_t*)fRDCuts->GetCuts();
+  Int_t nSelectedloose=0,nSelectedtight=0;
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
     
@@ -805,6 +824,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     }
 
     if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate)) {
+
+  
+
       Int_t iPtBin = -1;
       Double_t ptCand = d->Pt();
 
@@ -813,6 +835,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       }
       
       Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate);
+     
 
       Int_t labDp=-1;
       Float_t deltaPx=0.;
@@ -891,6 +914,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       
 	index=GetHistoIndex(iPtBin);
 	if(isFidAcc){
+	  nSelectedloose++;
 	  fMassHist[index]->Fill(invMass);
 	  fCosPHist[index]->Fill(cosp);
 	  fDLenHist[index]->Fill(dlen);
@@ -900,6 +924,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  fDCAHist[index]->Fill(dca);
 	  
 	  if(passTightCuts){
+	    nSelectedtight++;
 	    fMassHistTC[index]->Fill(invMass);
 	    if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
 	    else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
@@ -910,13 +935,42 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  if(labDp>=0) {
 	    index=GetSignalHistoIndex(iPtBin);
 	    if(isFidAcc){
+	      Float_t factor[3]={1.,1.,1.};
+	      if(fUseStrangeness){
+		for(Int_t iprong=0;iprong<3;iprong++){
+		  AliAODTrack *trad = (AliAODTrack*)d->GetDaughter(iprong);
+		  Int_t labd= trad->GetLabel();
+		  if(labd>=0){
+		    AliAODMCParticle *dau = (AliAODMCParticle*)arrayMC->At(labd);
+		    if(dau){
+		      Int_t labm = dau->GetMother();
+		      if(labm>=0){
+			AliAODMCParticle *mot = (AliAODMCParticle*)arrayMC->At(labm);
+			if(mot){
+			  if(TMath::Abs(mot->GetPdgCode())==310 || TMath::Abs(mot->GetPdgCode())==130 || TMath::Abs(mot->GetPdgCode())==321){ //K0_S, K0_L, K^+-
+			    if(d->PtProng(iprong)<=1)factor[iprong]=1./.7;
+			    else factor[iprong]=1./.6;
+			    //          fNentries->Fill(12);
+			  }
+			  if(TMath::Abs(mot->GetPdgCode())==3122) { //Lambda
+			    factor[iprong]=1./0.25;
+			    //		  fNentries->Fill(13);
+			  }//if 3122
+			}//if(mot)
+		      }//if labm>0
+		    }//if(dau)
+		  }//if labd>=0
+		}//prong loop
+	      }
+	      Float_t fact=1.;for(Int_t k=0;k<3;k++)fact=fact*factor[k];
 	      fMassHist[index]->Fill(invMass);
-	      fCosPHist[index]->Fill(cosp);
-	      fDLenHist[index]->Fill(dlen);
-	      fSumd02Hist[index]->Fill(sumD02);
-	      fSigVertHist[index]->Fill(sigvert);
-	      fPtMaxHist[index]->Fill(ptmax);
-	      fDCAHist[index]->Fill(dca);
+	      fCosPHist[index]->Fill(cosp,fact);
+	      fDLenHist[index]->Fill(dlen,fact);
+	      Float_t sumd02s=d->Getd0Prong(0)*d->Getd0Prong(0)*factor[0]*factor[0]+d->Getd0Prong(1)*d->Getd0Prong(1)*factor[1]*factor[1]+d->Getd0Prong(2)*d->Getd0Prong(2)*factor[2]*factor[2];
+	      fSumd02Hist[index]->Fill(sumd02s);
+	      fSigVertHist[index]->Fill(sigvert,fact);
+	      fPtMaxHist[index]->Fill(ptmax,fact);
+	      fDCAHist[index]->Fill(dca,fact);
 	      if(passTightCuts){
 		fMassHistTC[index]->Fill(invMass);	      
 		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
@@ -928,13 +982,42 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  }else{
 	    index=GetBackgroundHistoIndex(iPtBin);
 	    if(isFidAcc){
+	      Float_t factor[3]={1.,1.,1.};
+	      if(fUseStrangeness){
+		for(Int_t iprong=0;iprong<3;iprong++){
+		  AliAODTrack *trad = (AliAODTrack*)d->GetDaughter(iprong);
+		  Int_t labd= trad->GetLabel();
+		  if(labd>=0){
+		    AliAODMCParticle *dau = (AliAODMCParticle*)arrayMC->At(labd);
+		    if(dau){
+		      Int_t labm = dau->GetMother();
+		      if(labm>=0){
+			AliAODMCParticle *mot = (AliAODMCParticle*)arrayMC->At(labm);
+			if(mot){
+			  if(TMath::Abs(mot->GetPdgCode())==310 || TMath::Abs(mot->GetPdgCode())==130 || TMath::Abs(mot->GetPdgCode())==321){ //K0_S, K0_L, K^+-
+			    if(d->PtProng(iprong)<=1)factor[iprong]=1./.7;
+			    else factor[iprong]=1./.6;
+			    //          fNentries->Fill(12);
+			  }
+			  if(TMath::Abs(mot->GetPdgCode())==3122) { //Lambda
+			    factor[iprong]=1./0.25;
+			    //		  fNentries->Fill(13);
+			  }//if 3122
+			}//if(mot)
+		      }//if labm>0
+		    }//if(dau)
+		  }//if labd>=0
+		}//prong loop
+	      }
+	      Float_t fact=1.;for(Int_t k=0;k<3;k++)fact=fact*factor[k];
 	      fMassHist[index]->Fill(invMass);
-	      fCosPHist[index]->Fill(cosp);
-	      fDLenHist[index]->Fill(dlen);
-	      fSumd02Hist[index]->Fill(sumD02);
-	      fSigVertHist[index]->Fill(sigvert);
-	      fPtMaxHist[index]->Fill(ptmax);
-	      fDCAHist[index]->Fill(dca);
+	      fCosPHist[index]->Fill(cosp,fact);
+	      fDLenHist[index]->Fill(dlen,fact);
+	      Float_t sumd02s=d->Getd0Prong(0)*d->Getd0Prong(0)*factor[0]*factor[0]+d->Getd0Prong(1)*d->Getd0Prong(1)*factor[1]*factor[1]+d->Getd0Prong(2)*d->Getd0Prong(2)*factor[2]*factor[2];
+	      fSumd02Hist[index]->Fill(sumd02s);
+	      fSigVertHist[index]->Fill(sigvert,fact);
+	      fPtMaxHist[index]->Fill(ptmax,fact);
+	      fDCAHist[index]->Fill(dca,fact);
 	      if(passTightCuts){
 		fMassHistTC[index]->Fill(invMass);
 		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
@@ -943,15 +1026,18 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    }	
 	  }
 	}
-      }    
+      }  
     }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
+  fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);
+  fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);
   
   //start LS analysis
   if(fDoLS && arrayLikeSign) LSAnalysis(array3Prong,arrayLikeSign,aod,vtx1,nOS);
   
   PostData(1,fOutput);    
+  PostData(3,fCounter);    
   return;
 }
 
@@ -1130,9 +1216,10 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     }
  
   }
+  fCounter = dynamic_cast<AliNormalizationCounter*>(GetOutputData(3)); 
 
   if(fFillNtuple){
-    fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(3));
+    fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(4));
   }
 
   TCanvas *c1=new TCanvas("c1","D+ invariant mass distribution",500,500);
