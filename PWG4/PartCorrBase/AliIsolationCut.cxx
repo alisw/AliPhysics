@@ -126,8 +126,8 @@ void AliIsolationCut::InitParameters()
 
 //__________________________________________________________________
 void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * const plNe, AliCaloTrackReader * const reader, 
-					const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  *pCandidate, 
-					const TString aodArrayRefName,
+					const Bool_t bFillAOD, AliAODPWG4ParticleCorrelation  *pCandidate, 
+					const TString & aodArrayRefName,
 					Int_t & n, Int_t & nfrac, Float_t &coneptsum,  Bool_t  &isolated) const
 {  
   //Search in cone around a candidate particle if it is isolated 
@@ -168,18 +168,18 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         nfrac = -1;
         coneptsum = -1;
         isolated = kFALSE;
-        if(fillAOD && reftracks) reftracks->Clear(); 
+        if(bFillAOD && reftracks) reftracks->Clear(); 
         return ;
       }
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
       rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
       
       if(rad < fConeSize){
-        if(fillAOD) {
+        if(bFillAOD) {
           ntrackrefs++;
           if(ntrackrefs == 1){
             reftracks = new TObjArray(0);
-            reftracks->SetName(aodArrayRefName+"Tracks");
+            reftracks->SetName(Form("Tracks%s",aodArrayRefName.Data()));
             reftracks->SetOwner(kFALSE);
           }
           reftracks->Add(track);
@@ -188,7 +188,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         coneptsum+=pt;
         if(pt > fPtThreshold ) n++;
         if(pt > fPtFraction*ptC ) nfrac++;  
-      }
+      } // Inside cone
     }// charged particle loop
   }//Tracks
   
@@ -239,7 +239,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         nfrac = -1;
         coneptsum = -1;
         isolated = kFALSE;
-        if(fillAOD){
+        if(bFillAOD){
           if(reftracks)  reftracks->Clear(); 
           if(refclusters)refclusters->Clear(); 
         }
@@ -249,11 +249,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
       rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
       if(rad < fConeSize){
-        if(fillAOD) {
+        if(bFillAOD) {
           nclusterrefs++;
           if(nclusterrefs==1){
             refclusters = new TObjArray(0);
-            refclusters->SetName(aodArrayRefName+"Clusters");
+            refclusters->SetName(Form("Clusters%s",aodArrayRefName.Data()));
             refclusters->SetOwner(kFALSE);
           }
           refclusters->Add(calo);
@@ -262,7 +262,12 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         coneptsum+=pt;
         if(pt > fPtThreshold ) n++;
         //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-        if(pt > fPtFraction*ptC && pt>fPtThreshold) nfrac++; 
+        if(fPtFraction*ptC<fPtThreshold) {
+            if(pt>fPtThreshold) nfrac++ ;
+        }
+        else {
+            if(pt>fPtFraction*ptC) nfrac++; 
+        }
       }//in cone
     }// neutral particle loop
   }//neutrals
@@ -270,7 +275,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   //printf("Isolation Cut: in cone with: pT>pTthres %d, pT > pTfrac*pTcandidate %d \n",n,nfrac);
   
   //Add reference arrays to AOD when filling AODs only
-  if(fillAOD) {
+  if(bFillAOD) {
     if(refclusters)	pCandidate->AddObjArray(refclusters);
     if(reftracks)	  pCandidate->AddObjArray(reftracks);
   }
@@ -289,9 +294,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
     //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
     if(coneptsum < fPtFraction*ptC && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
   }
-  
-  //if(refclusters) delete refclusters;
-  //if(reftracks)   delete reftracks;
   
 }
 

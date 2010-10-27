@@ -55,9 +55,7 @@ public:
   TString GetStyleMacro() const {return fStyleMacro ;}
   void SetStyleMacro( TString macro ) {fStyleMacro = macro; }
   
-  void SwitchOnPlotsMaking()  {fMakePlots = kTRUE  ;}
-  void SwitchOffPlotsMaking() {fMakePlots = kFALSE ;}
-	
+ 	
   void SwitchOnFillAllPositionHistogram()   {fFillAllPosHisto = kTRUE  ;}
   void SwitchOffFillAllPositionHistogram()  {fFillAllPosHisto = kFALSE ;}
   
@@ -227,7 +225,6 @@ public:
   
   TString  fCalorimeter ;    // Calorimeter selection
   TString  fStyleMacro  ;    // Location of macro for plots style
-  Bool_t   fMakePlots   ;    // Print plots
   Bool_t   fFillAllPosHisto; // Fill all the position related histograms 
   Bool_t   fFillAllTH12 ;    // Fill simple histograms which information is already in TH3 histograms
   Bool_t   fCorrelateCalos ; // Correlate PHOS/EMCAL clusters
@@ -491,7 +488,7 @@ public:
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-  ClassDef(AliAnaCalorimeterQA,11)
+  ClassDef(AliAnaCalorimeterQA,12)
 } ;
 
 

@@ -99,9 +99,12 @@ class AliCalorimeterUtils : public TObject {
   //Modules fiducial region
   Bool_t CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent * event, Int_t iev=0) const ;
   void   SetNumberOfCellsFromPHOSBorder(Int_t n)  {fNCellsFromPHOSBorder = n; }
-  Int_t  GetNumberOfCellsFromPHOSBorder() const   {return fNCellsFromPHOSBorder; }
-  void   SetNumberOfCellsFromEMCALBorder(Int_t n) {fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(n); }
-  Int_t  GetNumberOfCellsFromEMCALBorder() const  {return fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder(); }
+  Int_t  GetNumberOfCellsFromPHOSBorder()  const  {return fNCellsFromPHOSBorder; }
+  void   SetNumberOfCellsFromEMCALBorder(Int_t n) {fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(n)      ;}
+  Int_t  GetNumberOfCellsFromEMCALBorder() const  {return fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder();}
+  void   SwitchOnNoFiducialBorderInEMCALEta0()    {fEMCALRecoUtils->SwitchOnNoFiducialBorderInEMCALEta0()   ;}
+  void   SwitchOffNoFiducialBorderInEMCALEta0()   {fEMCALRecoUtils->SwitchOffNoFiducialBorderInEMCALEta0()  ;}
+  Bool_t IsEMCALNoBorderAtEta0()           const  {return fEMCALRecoUtils->IsEMCALNoBorderAtEta0()          ;}
   
   // Recalibration
   Bool_t IsRecalibrationOn()  const { return fRecalibration ; }

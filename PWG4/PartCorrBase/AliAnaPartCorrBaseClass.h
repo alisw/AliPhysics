@@ -246,6 +246,10 @@ public:
 
 	virtual Bool_t IsTrackMatched(const AliVCluster * cluster) const { return fCaloPID->IsTrackMatched(cluster); } 
   
+  void SwitchOnPlotsMaking()  {fMakePlots = kTRUE  ;}
+  void SwitchOffPlotsMaking() {fMakePlots = kFALSE ;}
+  Bool_t MakePlotsOn() const  {return fMakePlots;}
+  
 private:    
   
   Bool_t  fDataMC ;             // Flag to access MC data when using ESD or AOD     
@@ -262,7 +266,8 @@ private:
   Int_t    fMaxMulti ;              // Maximum multiplicity of particles in the analysis
   Int_t    fMinMulti ;              // Maximum multiplicity of particles in the analysis
   Bool_t   fUseSelectEvent ; // Select events based on multiplicity and vertex cuts
-  
+  Bool_t   fMakePlots   ;    // Print plots
+
 	
   AliCaloTrackReader * fReader; // Acces to ESD/AOD/MC data
   
@@ -300,7 +305,7 @@ private:
   Float_t fHistoAsymMax  ;  // Maximum value of asymmetry histogram range
   Float_t fHistoAsymMin  ;  // Minimum value of asymmetry histogram range
   
-  ClassDef(AliAnaPartCorrBaseClass,10)
+  ClassDef(AliAnaPartCorrBaseClass,11)
 } ;
 
 

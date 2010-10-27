@@ -157,7 +157,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
     if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
     
     //GrandParent of the entity
-    TParticle * parent = new TParticle ;
+    TParticle * parent = NULL;
     Int_t pPdg = -1;
     Int_t pStatus =-1;
     if(iParent >= 0){

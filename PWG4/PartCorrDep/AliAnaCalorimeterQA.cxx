@@ -57,7 +57,7 @@ ClassImp(AliAnaCalorimeterQA)
 //____________________________________________________________________________
 AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
 AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), 
-fMakePlots(kFALSE), fFillAllPosHisto(kFALSE), fFillAllTH12(kFALSE),
+fFillAllPosHisto(kFALSE), fFillAllTH12(kFALSE),
 fCorrelateCalos(kFALSE), fNModules(12), fNRCU(2),
 fTimeCutMin(-1), fTimeCutMax(9999999),
 fEMCALCellAmpMin(0),fPHOSCellAmpMin(0), 
@@ -1187,7 +1187,6 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
   AliAnaPartCorrBaseClass::Print(" ");
   
   printf("Select Calorimeter %s \n",fCalorimeter.Data());
-  printf("Make plots?        %d \n",fMakePlots); 	
   printf("Plots style macro  %s \n",fStyleMacro.Data()); 
   printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
   printf("EMCAL Min Amplitude   : %2.1f GeV/c\n", fEMCALCellAmpMin) ;
@@ -2634,9 +2633,8 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 {
   //Do plots if requested	
   
-  if(GetDebug() > 0) printf("AliAnaCalorimeterQA::Terminate() - Make plots for %s? %d\n",fCalorimeter.Data(), fMakePlots);
-  if(!fMakePlots) return;
-  
+  if(GetDebug() > 0) printf("AliAnaCalorimeterQA::Terminate() - Make plots for %s? %d\n",fCalorimeter.Data(), MakePlotsOn());
+ 
   //Do some plots to end
   if(fStyleMacro!="")gROOT->Macro(fStyleMacro); 
   //Recover histograms from output histograms list, needed for distributed analysis.	

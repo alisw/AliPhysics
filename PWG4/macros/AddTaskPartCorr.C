@@ -265,24 +265,24 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   if(kPrintSettings)   anaomegaToPi0Gamma->Print("");
 	
 	
-  //---------------------------------------------------------------------
-  // Electron/btag
-  //---------------------------------------------------------------------
-  if(calorimeter=="EMCAL"){
-    
-    AliAnaBtag *anabtag = new AliAnaBtag();
-    anabtag->SetDebug(-1); //10 for lots of messages
-    if(kUseKinematics){
-      anabtag->SwitchOnDataMC();
-      anabtag->SetMinPt(1.);
-    }
-    anabtag->SetOutputAODName("ElectronsEMCAL");
-    anabtag->SetOutputAODClassName("AliAODPWG4Particle");
-    //anabtag->SetHistoPtRangeAndNBins(0, 100, 100) ;
-    //anabtag->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-    //anabtag->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-    if(kPrintSettings)anabtag->Print("");
-  }
+//  //---------------------------------------------------------------------
+//  // Electron/btag
+//  //---------------------------------------------------------------------
+//  if(calorimeter=="EMCAL"){
+//    
+//    AliAnaBtag *anabtag = new AliAnaBtag();
+//    anabtag->SetDebug(-1); //10 for lots of messages
+//    if(kUseKinematics){
+//      anabtag->SwitchOnDataMC();
+//      anabtag->SetMinPt(1.);
+//    }
+//    anabtag->SetOutputAODName("ElectronsEMCAL");
+//    anabtag->SetOutputAODClassName("AliAODPWG4Particle");
+//    //anabtag->SetHistoPtRangeAndNBins(0, 100, 100) ;
+//    //anabtag->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+//    //anabtag->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+//    if(kPrintSettings)anabtag->Print("");
+//  }
   
   //==================================
   // ### Isolation analysis ###	
@@ -484,7 +484,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anapi0,n++);
   maker->AddAnalysis(anapi0ebe,n++);
   maker->AddAnalysis(anaomegaToPi0Gamma,n++);  
-  if(calorimeter=="EMCAL")maker->AddAnalysis(anabtag,n++);   
+  //if(calorimeter=="EMCAL")maker->AddAnalysis(anabtag,n++);   
   // Isolation analysis
   maker->AddAnalysis(anaisol,n++);
   maker->AddAnalysis(anaisolpi0,n++);

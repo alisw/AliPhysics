@@ -343,7 +343,7 @@ void AliAnaPartCorrMaker::Terminate(TList * outputList)
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
     
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-    ana->Terminate(outputList);
+    if(ana->MakePlotsOn())ana->Terminate(outputList);
     
   }//Loop on analysis defined
 }

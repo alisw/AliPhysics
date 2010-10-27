@@ -87,7 +87,7 @@ public:
   
   void CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg);
   void MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, TLorentzVector &p2) const ;//, Double_t &angle); 
-  void FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector momentum) ;
+  void FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector & momentum) ;
   
   private:
   Bool_t    fDecayPi0 ;              // If not decayed, decay pi0 by hand
