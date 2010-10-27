@@ -35,6 +35,7 @@ class AliVEventHandler : public TNamed {
     virtual Bool_t       Init(Option_t* opt)              = 0;
     virtual Bool_t       Init(TTree* tree, Option_t* opt) = 0;
     virtual Bool_t       BeginEvent(Long64_t entry)       = 0;
+    virtual Bool_t       GetEntry()                       = 0;
     virtual Bool_t       Notify(const char *path)         = 0;
     virtual Bool_t       FinishEvent()                    = 0;
     virtual Bool_t       Terminate()                      = 0;

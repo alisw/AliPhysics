@@ -47,6 +47,7 @@ public:
     virtual void         SetInputTree(TTree* /*tree*/) {;}
     virtual TString*     GetInputPath() const {return fPathName;}
     virtual Bool_t       Init(Option_t* opt);
+    virtual Bool_t       GetEntry() {return kTRUE;}
     virtual Bool_t       InitIO(Option_t* opt) {return Init(opt);};
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/) {return kTRUE;}
     virtual Bool_t       BeginEvent(Long64_t entry);

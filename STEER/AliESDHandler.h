@@ -28,6 +28,7 @@ class AliESDHandler : public AliVEventHandler {
 	virtual const char* GetOutputFileName(){return fFileName.Data();}
 	virtual Bool_t Init(Option_t* option);
 	virtual Bool_t Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
+	virtual Bool_t GetEntry() {return kTRUE;}
 	virtual Bool_t BeginEvent(Long64_t /*entry*/){fIsEventSelectedForFriends = kFALSE; return kTRUE;}
 	virtual Bool_t Notify() {return AliVEventHandler::Notify(); };
 	virtual Bool_t Notify(const char * /* path */) {return kTRUE;}

@@ -473,6 +473,9 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
    if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(entry);
    
    GetEntry(entry);
+
+   if (fInputEventHandler)   fInputEventHandler  ->GetEntry();
+
    ExecAnalysis();
    if (fDebug > 1) printf("<-AliAnalysisManager::Process()\n");
    return kTRUE;
