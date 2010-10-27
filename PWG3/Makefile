@@ -24,6 +24,7 @@ ifneq ($(ESD_INCLUDE),)
 	ifneq ($(CORRFW_INCLUDE),)
 		ALICEINC += -I../$(CORRFW_INCLUDE)
 	endif
+        ALICEINC += -I../PWG3base/base
 else
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PWG3/base -I$(ALICE_ROOT)/MUON -I$(ALICE_ROOT)/MUON/mapping
