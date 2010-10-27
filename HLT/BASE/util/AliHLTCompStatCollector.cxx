@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTCompStatCollector.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Collector component for the component statistics information.
-*/
+/// @file   AliHLTCompStatCollector.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Collector component for the component statistics information.
+///
 
 #include "AliHLTCompStatCollector.h"
 #include "TFile.h"
@@ -33,6 +33,8 @@
 #include "TNamed.h"
 #include "TString.h"
 #include <cassert>
+#include <algorithm>
+using std::sort;
 
 #define HLTSTAT_FOLDER_NAME               "HLTstat"
 #define HLTSTAT_FOLDER_DESC               "ALICE HLT component statistics"
@@ -51,10 +53,11 @@ AliHLTCompStatCollector::AliHLTCompStatCollector()
   AliHLTProcessor(),
   fpTimer(NULL),
   fpFolder(NULL),
+  fInstances(),
   fpStatTree(NULL),
   fCycleTime(0),
   fNofSets(0),
-  fArraySize(1000),
+  fArraySize(0),
   fPosition(0),
   fpLevelArray(NULL),
   fpSpecArray(NULL),
@@ -180,7 +183,8 @@ int AliHLTCompStatCollector::DoInit( int argc, const char** argv )
       if ((bMissingParam=(++i>=argc))) break;
       TString param=argv[i];
       if (param.IsDigit()) {
-	fArraySize=param.Atoi();
+	//fArraySize=param.Atoi();
+	HLTWarning("argument -arraysize is deprecated, array size adjusted dynamically");
       } else {
 	HLTError("expecting number as parameter for option %s", argument.Data());
 	iResult=-EINVAL;
@@ -194,48 +198,6 @@ int AliHLTCompStatCollector::DoInit( int argc, const char** argv )
   if (bMissingParam) {
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
-  }
-
-  if (iResult>=0) {
-    fpLevelArray=new UInt_t[fArraySize];
-    fpSpecArray=new UInt_t[fArraySize];
-    fpBlockNoArray=new UInt_t[fArraySize];
-    fpIdArray=new UInt_t[fArraySize];
-    fpTimeArray=new UInt_t[fArraySize];
-    fpCTimeArray=new UInt_t[fArraySize];
-    fpInputBlockCountArray=new UInt_t[fArraySize];
-    fpTotalInputSizeArray=new UInt_t[fArraySize];
-    fpNormalizedInputSizeArray=new UInt_t[fArraySize];
-    fpOutputBlockCountArray=new UInt_t[fArraySize];
-    fpTotalOutputSizeArray=new UInt_t[fArraySize];
-    fpInputOutputRatioArray=new UInt_t[fArraySize];
-    fpNormalizedInputOutputRatioArray=new UInt_t[fArraySize];
-    fpComponentCycleTimeArray=new UInt_t[fArraySize];
-    fpEventTypeArray=new UInt_t[fArraySize];
-    fpEventCountArray=new UInt_t[fArraySize];
-
-    fpStatTree=new TTree("CompStat", "HLT component statistics");
-    if (fpStatTree) {
-      fpStatTree->SetDirectory(0);
-      fpStatTree->Branch("cycleTime",        &fCycleTime, "cycleTime/F");
-      fpStatTree->Branch("nofSets",          &fNofSets, "nofSets/I");
-      fpStatTree->Branch("Level",            fpLevelArray, "Level[nofSets]/i");
-      fpStatTree->Branch("Specification",    fpSpecArray, "Specification[nofSets]/i");
-      fpStatTree->Branch("BlockNo",          fpBlockNoArray, "BlockNo[nofSets]/i");
-      fpStatTree->Branch("Id",               fpIdArray, "Id[nofSets]/i");
-      fpStatTree->Branch("Time",             fpTimeArray, "Time[nofSets]/i");
-      fpStatTree->Branch("CTime",            fpCTimeArray, "CTime[nofSets]/i");
-      fpStatTree->Branch("InputBlockCount",  fpInputBlockCountArray, "InputBlockCount[nofSets]/i");
-      fpStatTree->Branch("TotalInputSize",   fpTotalInputSizeArray, "TotalInputSize[nofSets]/i");
-      fpStatTree->Branch("NormalizedInputSize",   fpNormalizedInputSizeArray, "NormalizedInputSize[nofSets]/i");
-      fpStatTree->Branch("OutputBlockCount", fpOutputBlockCountArray, "OutputBlockCount[nofSets]/i");
-      fpStatTree->Branch("TotalOutputSize",  fpTotalOutputSizeArray, "TotalOutputSize[nofSets]/i");
-      fpStatTree->Branch("InputOutputRatio",  fpInputOutputRatioArray, "InputOutputRatio[nofSets]/i");
-      fpStatTree->Branch("NormalizedInputOutputRatio",  fpNormalizedInputOutputRatioArray, "NormalizedInputOutputRatio[nofSets]/i");
-      fpStatTree->Branch("ComponentCycleTime",fpComponentCycleTimeArray, "ComponentCycleTime[nofSets]/i");
-      fpStatTree->Branch("EventType",fpEventTypeArray, "EventType[nofSets]/i");
-      fpStatTree->Branch("EventCount",fpEventCountArray, "EventCount[nofSets]/i");
-    }
   }
 
   if (!fFileName.empty()) {
@@ -270,6 +232,14 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
     fCycleTime=fpTimer->RealTime()*1000000;
   }
 
+  // only if the map of instances is empty it can be initialized from the
+  // component table entries
+  // the logical check fo eventType==gkAliEventTypeStartOfRun does not work
+  // for simulated data where the blocks of the SOR are stored inside the
+  // first event
+  bool bMapInitialization=fInstances.empty();
+  vector<AliHLTCompStatCollector::AliHLTCompStatInstance> sortedInstances;
+
   bool bEmbeddedTree=false;
   bool bFolderCreated=false;
   if ((bFolderCreated=(fpFolder==NULL))) {
@@ -284,11 +254,28 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
        pBlock=GetNextInputBlock()) {
     string chainId, compId, compArgs;
     vector<AliHLTUInt32_t> parents;
+    int level=0;
     iResult=ExtractComponentTableEntry((const AliHLTUInt8_t*)pBlock->fPtr, pBlock->fSize,
 				       chainId, compId, compArgs,
-				       parents);
+				       parents, level);
     if (iResult>0) {
       HLTDebug("%s(%s) 0x%08x", chainId.c_str(), compId.c_str(), pBlock->fSpecification);
+      if (bMapInitialization) {
+	map<AliHLTUInt32_t, AliHLTCompStatInstance>::const_iterator element=fInstances.find(pBlock->fSpecification);
+	AliHLTCompStatInstance newInstance(pBlock->fSpecification, chainId, compId, compArgs, parents, level);
+	if (element==fInstances.end()) {
+	  // new instance
+	  fInstances[pBlock->fSpecification]=newInstance;
+	  sortedInstances.push_back(newInstance);
+	} else {
+	  // check existing instance
+	  if (element->second!=newInstance) {
+	    HLTWarning("component table entries have identical CRC ids but different content\n  in list: %s\n  skipping: %s",	       
+		       element->second.Description().c_str(), newInstance.Description().c_str());
+	  }
+	}
+      }
+
       TObject* pObj=NULL;
       TFolder* pEntry=NULL;
       if ((pObj=fpFolder->FindObjectAny(chainId.c_str()))!=NULL &&
@@ -344,6 +331,42 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
       HLTError("extraction of table entry 0x%08x (%p %d) failed with %d", pBlock->fSpecification, pBlock->fPtr, pBlock->fSize, iResult);
     }
     iResult=0;
+  }
+
+  if (bMapInitialization) {
+    // assign tags to all instances in the map
+    int level=-1;
+    int tag=-1;
+    TString componentId;
+    TObjArray* taglist=NULL;
+    sort(sortedInstances.begin(), sortedInstances.end(), AliHLTCompStatInstance::SortByLevelAndComponentId);
+    for (vector< AliHLTCompStatInstance>::const_iterator element=sortedInstances.begin();
+	 element!=sortedInstances.end();
+	 element++) {
+      if (level!=element->GetLevel() ||
+	  componentId.CompareTo(element->GetComponentId().c_str())!=0) {
+	tag++;
+	level=element->GetLevel();
+	componentId=element->GetComponentId().c_str();
+	if (fpFolder) {
+	  if (!taglist) {
+	    taglist=new TObjArray;
+	    taglist->SetName("CompStatMap");
+	    fpFolder->Add(taglist);
+	  }
+	  if (taglist) {
+	    TString entry;
+	    entry.Form("%02d ", tag); entry+=componentId;
+	    taglist->Add(new TObjString(entry));
+	  }
+	}
+      }
+      fInstances[element->GetCRCId()].SetTag(tag);
+    }
+
+    if (fpStatTree==NULL && !fInstances.empty()) {
+      iResult=AllocateStatTree(fInstances.size());
+    }
   }
 
   if (newFolders.size()>0) {
@@ -464,9 +487,17 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
 void AliHLTCompStatCollector::ResetFillingVariables()
 {
   // see header file for class documentation
+
+  for (map<AliHLTUInt32_t, AliHLTCompStatInstance>::iterator element=fInstances.begin();
+       element!=fInstances.end();
+       element++) {
+    element->second.ResetProcessed();
+  }
+
   fCycleTime=0;
   fNofSets=0;
   fPosition=0;
+  if (fArraySize==0) return;
   memset(fpLevelArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpSpecArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpBlockNoArray, 0, sizeof(UInt_t)*fArraySize);
@@ -512,9 +543,21 @@ int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size, AliHLTUInt
   i=fPosition;
   for (vector<int>::iterator element=indexList.begin();
        element!=indexList.end();
-       element++, i++) {
-    if (i<fArraySize) {
-      fpLevelArray[i]=pStat[*element].fLevel;
+       element++) {
+    map<AliHLTUInt32_t, AliHLTCompStatInstance>::iterator instance=fInstances.find(pStat[*element].fId);
+    if (i<fArraySize && instance!=fInstances.end()) {
+      if (instance->second.IsProcessed()) {
+	//HLTWarning("already processed instance %s, skip", instance->second.Description().c_str());
+	continue;
+      }
+      instance->second.MarkProcessed();
+      if ((int)pStat[*element].fLevel!=instance->second.GetLevel()) {
+	// TODO: there is currently a mismatch of the level set in the statistics entry and
+	// the one in the component table entries. However this does not matter for
+	// archiving because the CRC id is related to a tag/level
+	//HLTWarning("level does not match for instance %s, expected %d", instance->second.Description().c_str(), pStat[*element].fLevel);
+      }
+      fpLevelArray[i]=instance->second.GetTag();
       fpIdArray[i]=pStat[*element].fId;
       fpTimeArray[i]=pStat[*element].fTime;
       fpCTimeArray[i]=pStat[*element].fCTime;
@@ -532,13 +575,14 @@ int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size, AliHLTUInt
       fpComponentCycleTimeArray[i]=pStat[*element].fComponentCycleTime;
       fpEventTypeArray[i]=eventType;
       fpEventCountArray[i]=GetEventCount();
-    } else {
-      // TODO: dynamically grow arrays with placement new
+      i++;
+    } else if (instance==fInstances.end()) {
+      HLTWarning("can not find instance of CRC id 0x%08x", pStat[*element].fId);
     }
   }
 
-  if (i>=fArraySize) {
-    HLTWarning("too little space in branch variables to fill %d statistics blocks, available %d at position %d", i, fArraySize, fPosition);
+  if (i>fArraySize) {
+    HLTWarning("too little space in branch variables to fill %d statistics blocks, total available %d, current position %d", i, fArraySize, fPosition);
     fPosition=fArraySize;
   } else {
     fPosition=i;
@@ -547,11 +591,69 @@ int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size, AliHLTUInt
   return iResult;
 }
 
+int AliHLTCompStatCollector::AllocateStatTree(AliHLTUInt32_t size)
+{
+  // allocate the statistics tree and the branch arrays
+  if (fArraySize>0) {
+    ClearStatTree();
+  }
+  fArraySize=size;
+  if (fArraySize==0) return 0;
+
+  fpLevelArray=new UInt_t[fArraySize];
+  fpSpecArray=new UInt_t[fArraySize];
+  fpBlockNoArray=new UInt_t[fArraySize];
+  fpIdArray=new UInt_t[fArraySize];
+  fpTimeArray=new UInt_t[fArraySize];
+  fpCTimeArray=new UInt_t[fArraySize];
+  fpInputBlockCountArray=new UInt_t[fArraySize];
+  fpTotalInputSizeArray=new UInt_t[fArraySize];
+  fpNormalizedInputSizeArray=new UInt_t[fArraySize];
+  fpOutputBlockCountArray=new UInt_t[fArraySize];
+  fpTotalOutputSizeArray=new UInt_t[fArraySize];
+  fpInputOutputRatioArray=new UInt_t[fArraySize];
+  fpNormalizedInputOutputRatioArray=new UInt_t[fArraySize];
+  fpComponentCycleTimeArray=new UInt_t[fArraySize];
+  fpEventTypeArray=new UInt_t[fArraySize];
+  fpEventCountArray=new UInt_t[fArraySize];
+
+  fpStatTree=new TTree("CompStat", "HLT component statistics");
+  if (fpStatTree) {
+    fpStatTree->SetDirectory(0);
+    fpStatTree->Branch("cycleTime",        &fCycleTime, "cycleTime/F");
+    fpStatTree->Branch("nofSets",          &fNofSets, "nofSets/I");
+    fpStatTree->Branch("Level",            fpLevelArray, "Level[nofSets]/i");
+    fpStatTree->Branch("Specification",    fpSpecArray, "Specification[nofSets]/i");
+    fpStatTree->Branch("BlockNo",          fpBlockNoArray, "BlockNo[nofSets]/i");
+    fpStatTree->Branch("Id",               fpIdArray, "Id[nofSets]/i");
+    fpStatTree->Branch("Time",             fpTimeArray, "Time[nofSets]/i");
+    fpStatTree->Branch("CTime",            fpCTimeArray, "CTime[nofSets]/i");
+    fpStatTree->Branch("InputBlockCount",  fpInputBlockCountArray, "InputBlockCount[nofSets]/i");
+    fpStatTree->Branch("TotalInputSize",   fpTotalInputSizeArray, "TotalInputSize[nofSets]/i");
+    fpStatTree->Branch("NormalizedInputSize",   fpNormalizedInputSizeArray, "NormalizedInputSize[nofSets]/i");
+    fpStatTree->Branch("OutputBlockCount", fpOutputBlockCountArray, "OutputBlockCount[nofSets]/i");
+    fpStatTree->Branch("TotalOutputSize",  fpTotalOutputSizeArray, "TotalOutputSize[nofSets]/i");
+    fpStatTree->Branch("InputOutputRatio",  fpInputOutputRatioArray, "InputOutputRatio[nofSets]/i");
+    fpStatTree->Branch("NormalizedInputOutputRatio",  fpNormalizedInputOutputRatioArray, "NormalizedInputOutputRatio[nofSets]/i");
+    fpStatTree->Branch("ComponentCycleTime",fpComponentCycleTimeArray, "ComponentCycleTime[nofSets]/i");
+    fpStatTree->Branch("EventType",fpEventTypeArray, "EventType[nofSets]/i");
+    fpStatTree->Branch("EventCount",fpEventCountArray, "EventCount[nofSets]/i");
+  }
+
+  return 0;
+}
+
 void AliHLTCompStatCollector::ClearAll()
 {
   // see header file for class documentation
   if (fpTimer) delete fpTimer; fpTimer=NULL;
   if (fpFolder) delete fpFolder; fpFolder=NULL;
+  ClearStatTree();
+}
+
+void AliHLTCompStatCollector::ClearStatTree()
+{
+  // clear the statistics tree and the branch arrays
   if (fpStatTree) delete fpStatTree; fpStatTree=NULL;
   if (fpLevelArray) delete fpLevelArray; fpLevelArray=NULL;
   if (fpSpecArray) delete fpSpecArray; fpSpecArray=NULL;
@@ -569,6 +671,7 @@ void AliHLTCompStatCollector::ClearAll()
   if (fpComponentCycleTimeArray) delete fpComponentCycleTimeArray; fpComponentCycleTimeArray=NULL;
   if (fpEventTypeArray) delete fpEventTypeArray; fpEventTypeArray=NULL;
   if (fpEventCountArray) delete fpEventCountArray; fpEventCountArray=NULL;
+  fArraySize=0;
 }
 
 int AliHLTCompStatCollector::RemoveRecurrence(TFolder* pRoot) const
@@ -625,4 +728,145 @@ bool AliHLTCompStatCollector::CheckPeriod(bool bUpdate)
     }
   }
   return result;
+}
+
+void AliHLTCompStatCollector::Print(const char* option) const
+{
+  // print information
+  if (strcmp(option, "instances")==0) {
+    vector<AliHLTCompStatInstance> sortedInstances;
+    for (map<AliHLTUInt32_t, AliHLTCompStatInstance>::const_iterator element=fInstances.begin();
+	 element!=fInstances.end();
+	 element++) {
+      sortedInstances.push_back(element->second);
+    }
+    sort(sortedInstances.begin(), sortedInstances.end(), AliHLTCompStatInstance::SortByLevelAndComponentId);
+    for (vector<AliHLTCompStatInstance>::const_iterator element=sortedInstances.begin();
+	 element!=sortedInstances.end();
+	 element++) {
+      element->Print("");
+    }
+  }
+}
+
+AliHLTCompStatCollector::AliHLTCompStatInstance::AliHLTCompStatInstance()
+  : fCRCId(0)
+  , fChainId()
+  , fComponentId()
+  , fComponentParam()
+  , fParents()
+  , fLevel(-1)
+  , fTag(-1)
+  , fProcessed(false)
+{
+  /// default constructor
+}
+
+AliHLTCompStatCollector::AliHLTCompStatInstance::AliHLTCompStatInstance(AliHLTUInt32_t CRCId,
+									const char* chainId,
+									const char* componentId,
+									const char* componentParam,
+									const vector<AliHLTUInt32_t>& parents,
+									int level,
+									int tag)
+  : fCRCId(CRCId)
+  , fChainId(chainId)
+  , fComponentId(componentId)
+  , fComponentParam(componentParam)
+  , fParents(parents)
+  , fLevel(level)
+  , fTag(tag)
+  , fProcessed(false)
+{
+}
+
+AliHLTCompStatCollector::AliHLTCompStatInstance::AliHLTCompStatInstance(AliHLTUInt32_t CRCId,
+									const string& chainId,
+									const string& componentId,
+									const string& componentParam,
+									const vector<AliHLTUInt32_t>& parents,
+									int level,
+									int tag)
+  : fCRCId(CRCId)
+  , fChainId(chainId)
+  , fComponentId(componentId)
+  , fComponentParam(componentParam)
+  , fParents(parents)
+  , fLevel(level)
+  , fTag(tag)
+  , fProcessed(false)
+{
+}
+
+AliHLTCompStatCollector::AliHLTCompStatInstance::AliHLTCompStatInstance(const AliHLTCompStatCollector::AliHLTCompStatInstance& src)
+  : fCRCId(src.fCRCId)
+  , fChainId(src.fChainId)
+  , fComponentId(src.fComponentId)
+  , fComponentParam(src.fComponentParam)
+  , fParents(src.fParents)
+  , fLevel(src.fLevel)
+  , fTag(src.fTag)
+  , fProcessed(src.fProcessed)
+{
+  /// copy constructor
+}
+
+AliHLTCompStatCollector::AliHLTCompStatInstance& AliHLTCompStatCollector::AliHLTCompStatInstance::operator=(const AliHLTCompStatCollector::AliHLTCompStatInstance& src)
+{
+  /// assignment operator
+  if (&src==this) return *this;
+
+  fCRCId=src.fCRCId;
+  fChainId=src.fChainId;
+  fComponentId=src.fComponentId;
+  fComponentParam=src.fComponentParam;
+  fParents.assign(src.fParents.begin(), src.fParents.end());
+  fLevel=src.fLevel;
+  fTag=src.fTag;
+
+  return *this;
+}
+
+AliHLTCompStatCollector::AliHLTCompStatInstance::~AliHLTCompStatInstance()
+{
+  /// destructor
+}
+
+string AliHLTCompStatCollector::AliHLTCompStatInstance::Description(const char* /*option*/) const
+{
+  // get a description string
+  TString description;
+  description.Form("0x%08x level %d tag %d: %s (%s) %s",
+		   fCRCId, fLevel, fTag, fChainId.c_str(), fComponentId.c_str(), fComponentParam.c_str());
+  string ret=description.Data();
+  return ret;
+}
+
+void AliHLTCompStatCollector::AliHLTCompStatInstance::Print(const char* /*option*/) const
+{
+  // print info to cout
+  cout << Description() << endl;
+}
+
+bool AliHLTCompStatCollector::AliHLTCompStatInstance::operator==(const AliHLTCompStatInstance &b) const
+{
+  // check if two instances are equal
+  if (fChainId       !=b.fChainId)          return false;
+  if (fComponentId   !=b.fComponentId)      return false;
+  if (fComponentParam!=b.fComponentParam)   return false;
+  if (fCRCId         !=b.fCRCId)            return false;
+  if (fLevel         !=b.fLevel)            return false;
+  if (fTag>=0 && fTag!=b.fTag && b.fTag>=0) return false;
+
+  return true;
+}
+
+bool AliHLTCompStatCollector::AliHLTCompStatInstance::SortByLevelAndComponentId(const AliHLTCompStatInstance &a,
+										const AliHLTCompStatInstance &b)
+{
+  // helper function for std::sort
+  if ( a.fLevel       != b.fLevel )       return ( a.fLevel       < b.fLevel );
+  if ( a.fComponentId != b.fComponentId ) return ( a.fComponentId < b.fComponentId );
+  if ( a.fChainId     != b.fChainId )     return ( a.fChainId     < b.fChainId );
+  return 0;
 }

@@ -7,14 +7,15 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTCompStatCollector.h
-    @author Matthias Richter
-    @date   
-    @brief  Collector component for the component statistics information.
-*/
+/// @file   AliHLTCompStatCollector.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Collector component for the component statistics information.
+///
 
 #include "AliHLTProcessor.h"
 #include <ctime>
+#include <map>
 
 class TStopwatch;
 class TH1F;
@@ -94,6 +95,66 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
+  /**
+   * 
+   */
+  class AliHLTCompStatInstance {
+  public:
+    AliHLTCompStatInstance();
+    AliHLTCompStatInstance(AliHLTUInt32_t CRCId,
+			   const char* chainId,
+			   const char* componentId,
+			   const char* componentParam,
+			   const vector<AliHLTUInt32_t>& parents,
+			   const int level=-1,
+			   const int tag=-1);
+    AliHLTCompStatInstance(AliHLTUInt32_t CRCId,
+			   const string& chainId,
+			   const string& componentId,
+			   const string& componentParam,
+			   const vector<AliHLTUInt32_t>& parents,
+			   const int level=-1,
+			   const int tag=-1);
+    AliHLTCompStatInstance(const AliHLTCompStatInstance& src);
+    AliHLTCompStatInstance& operator=(const AliHLTCompStatInstance& src);
+
+    ~AliHLTCompStatInstance();
+
+    AliHLTUInt32_t GetCRCId() const {return fCRCId;}
+    const string&  GetChainId() const {return fChainId;}
+    const string&  GetComponentId() const {return fComponentId;}
+    const string&  GetComponentParam() const {return fComponentParam;}
+    const vector<AliHLTUInt32_t>& GetParents() const {return fParents;}
+    int GetLevel() const {return fLevel;}
+    int GetTag() const {return fTag;}
+    int SetTag(int tag) {fTag=tag; return fTag;}
+    bool IsProcessed() const {return fProcessed;}
+    void MarkProcessed() {fProcessed=true;}
+    void ResetProcessed() {fProcessed=false;}
+
+    void Print(const char* option="") const;
+    string Description(const char* option="") const;
+
+    bool operator==(const AliHLTCompStatInstance &b) const;
+    bool operator!=(const AliHLTCompStatInstance &b) const {return !(*this==b);}
+
+    /// helper function for sort, like operator<
+    static bool SortByLevelAndComponentId(const AliHLTCompStatInstance &a,
+					  const AliHLTCompStatInstance &b);
+
+  private:
+    AliHLTUInt32_t fCRCId;           /// CRC id of this entry
+    string fChainId;                 /// chain id string
+    string fComponentId;             /// component id string
+    string fComponentParam;          /// component arguments
+    vector<AliHLTUInt32_t> fParents; /// list of parent chain ids
+    int fLevel;                      /// level in the reconstruction chain
+    int fTag;                        /// tag for recording
+    bool fProcessed;                 /// marks instance as processed
+  };
+
+  void Print(const char* option) const;
+
  protected:
   int DoInit( int argc, const char** argv );
   int DoDeinit();
@@ -126,8 +187,13 @@ class AliHLTCompStatCollector : public AliHLTProcessor
    */
   int FillVariablesSorted(void* ptr, int size, AliHLTUInt32_t eventType);
 
+  /** allocate the statistics tree and the branch arrays */
+  int AllocateStatTree(AliHLTUInt32_t size);
+
   /** delete all internal objects */
   void ClearAll();
+  /** clear the statistics tree and the branch arrays */
+  void ClearStatTree();
 
   /**
    * Remove entries from the parent list if they occur further down in the
@@ -149,6 +215,8 @@ class AliHLTCompStatCollector : public AliHLTProcessor
 
   /** top folder */
   TFolder* fpFolder; //!transient
+  /** map between crc id and instance description */
+  map<AliHLTUInt32_t, AliHLTCompStatInstance> fInstances;
 
   /** statistics tree */
   TTree* fpStatTree; //!transient
@@ -215,6 +283,6 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   /** event modulo to save/publish onjects */
   unsigned int fEventModulo; //! transient
 
-  ClassDef(AliHLTCompStatCollector, 4)
+  ClassDef(AliHLTCompStatCollector, 0)
 };
 #endif

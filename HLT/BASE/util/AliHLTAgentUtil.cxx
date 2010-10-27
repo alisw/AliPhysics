@@ -86,7 +86,7 @@ int AliHLTAgentUtil::CreateConfigurations(AliHLTConfigurationHandler* handler,
   handler->CreateConfiguration("UTIL-hltout-compstat-publisher", "AliHLTOUTPublisher"   , NULL, "-disable-component-stat");
 
   // collector configuration
-  handler->CreateConfiguration("UTIL-compstat-converter", "StatisticsCollector", "UTIL-hltout-compstat-publisher", "-disable-component-stat -arraysize 10000");
+  handler->CreateConfiguration("UTIL-compstat-converter", "StatisticsCollector", "UTIL-hltout-compstat-publisher", "-disable-component-stat");
 
   // writer configuration
   handler->CreateConfiguration("UTIL-compstat-writer", "ROOTFileWriter", "UTIL-compstat-converter", "-datafile HLT.statistics.root -concatenate-events -overwrite");
