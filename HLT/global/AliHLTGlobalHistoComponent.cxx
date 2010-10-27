@@ -100,7 +100,6 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
       TString specifier=fTrackVariables.GetKey(i);
       float* pArray=fTrackVariables.GetArray(specifier);
       specifier+="[trackcount]/f";
-      specifier+="[vertexX]/f";
       pTree->Branch(fTrackVariables.GetKey(i), pArray, specifier.Data());
     }
   } else {
