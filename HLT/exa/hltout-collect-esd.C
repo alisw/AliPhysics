@@ -8,8 +8,14 @@
  * is configured to publish all ESD objects from the HLTOUT data, the
  * AliHLTEsdCollectorComponent writes the files using the AliHLTEsdManager.
  *
- * Usage: aliroot -b -q hltout-collect-esd.C | tee hltout-collect-esd.log
- *
+ * Usage: aliroot -b -q \
+ *             hltout-collect-esd.C'("raw.root","local://$ALICE_ROOT/OCDB",0,5)' | tee hltout-collect-esd.log
+ * or 
+ *  
+ *    aliroot -b -l -q \
+ *                hltout-collect-esd.C'("alien:///alice/data/2010/LHC10b/000115322/raw/10000115322040.80.root","raw://",0,5)'  | tee hltout-collect-esd.log
+ * 
+ * 
  * The macro asumes HLTOUT raw data ddl files in order to open an
  * AliRawReaderFile, e.g. simulated using the default AliSimulation with
  * at least SetWriteRawData("HLT") enabled.
@@ -21,8 +27,33 @@
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_tutorial
  */
-void hltout_collect_esd()
+void hltout_collect_esd(const char *filename,
+                        const char *cdbURI,
+                        int minEvent=-1,
+                        int maxEvent=-1)
 {
+  
+  // connect to the GRID if we use a file or OCDB from the GRID
+  TString struri=cdbURI;
+  TString strfile=filename;
+  if (struri.BeginsWith("raw://") ||
+      strfile.Contains("://") && !strfile.Contains("local://")) {
+    TGrid::Connect("alien");
+  }
+
+  // Set the CDB storage location
+  AliCDBManager * man = AliCDBManager::Instance();
+  man->SetDefaultStorage(cdbURI);
+  if (struri.BeginsWith("local://")) {
+    // set specific storage for GRP entry
+    // search in the working directory and one level above, the latter
+    // follows the standard simulation setup like e.g. in test/ppbench
+    if (!gSystem->AccessPathName("GRP/GRP/Data")) {
+      man->SetSpecificStorage("GRP/GRP/Data", "local://$PWD");
+    } else if (!gSystem->AccessPathName("../GRP/GRP/Data")) {
+      man->SetSpecificStorage("GRP/GRP/Data", "local://$PWD/..");
+    }
+  }
   /////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////
   //
@@ -50,8 +81,15 @@ void hltout_collect_esd()
   /////////////////////////////////////////////////////////////////////////
   //
   // setup of the reconstruction
-  AliReconstruction rec;
-  rec.SetInput("./");
+  AliReconstruction rec; 
+  
+  if (minEvent>=0 || maxEvent>minEvent) {
+    if (minEvent<0) minEvent=0;
+    if (maxEvent<minEvent) maxEvent=minEvent;
+    rec.SetEventRange(minEvent,maxEvent);
+  }
+
+  rec.SetInput(filename);
   rec.SetRunLocalReconstruction("HLT");
   rec.SetRunTracking("");
   rec.SetFillESD("");
