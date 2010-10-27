@@ -1253,7 +1253,7 @@ void AliTRDcheckDET::GetEtaPhiAt(const AliExternalTrackParam *track, Double_t x,
 
 
 //_______________________________________________________
-TH1* AliTRDcheckDET::MakePlotChi2()
+TH1* AliTRDcheckDET::MakePlotChi2() const
 {
 // Plot chi2/track normalized to number of degree of freedom 
 // (tracklets) and compare with the theoretical distribution.

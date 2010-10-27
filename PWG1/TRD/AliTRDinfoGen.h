@@ -43,7 +43,6 @@ public:
   AliTRDinfoGen(char* name);
   virtual ~AliTRDinfoGen();
   
-  void    ConnectInputData(Option_t *opt) {AliAnalysisTaskSE::ConnectInputData(opt);}
   static Float_t GetEndITS() { return fgkITS;}
   static Float_t GetEndTPC() { return fgkTPC;}
   static Float_t GetEndTRD() { return fgkTRD;}

@@ -309,6 +309,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
       AliGeomManager::ApplyAlignObjsFromCDB("TRD");
     }
     fgGeo = new AliTRDgeometry;
+    fgGeo->CreateClusterMatrixArray();
     //init magnetic field
     if(!TGeoGlobalMagField::Instance()->IsLocked() &&
        !fESDev->InitMagneticField()){

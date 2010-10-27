@@ -69,18 +69,18 @@ AliTRDv0Monitor::AliTRDv0Monitor(const char *name)
 
 
 
-//____________________________________________________________________
-void AliTRDv0Monitor::MakeSummary(){//makes a summary with potentially nice reference figures
-  //TCanvas *cOut = new TCanvas("v0MonitorSummary1", "Summary 1 for task V0Monitor", 1024, 768);
-  //cOut->cd();
-  //GetRefFigure(4);
-  //cOut->SaveAs("V0MonitorSummary.gif");
-
-  //cOut = new TCanvas("v0MonitorSummary2","Summary 2 for task V0Monitor", 1024, 768);
-  //cOut->cd();
-  //GetRefFigure(5);
-  //cOut->SaveAs("V0MonitorSummary2.gif");
-}
+// //____________________________________________________________________
+// void AliTRDv0Monitor::MakeSummary(){//makes a summary with potentially nice reference figures
+//   //TCanvas *cOut = new TCanvas("v0MonitorSummary1", "Summary 1 for task V0Monitor", 1024, 768);
+//   //cOut->cd();
+//   //GetRefFigure(4);
+//   //cOut->SaveAs("V0MonitorSummary.gif");
+// 
+//   //cOut = new TCanvas("v0MonitorSummary2","Summary 2 for task V0Monitor", 1024, 768);
+//   //cOut->cd();
+//   //GetRefFigure(5);
+//   //cOut->SaveAs("V0MonitorSummary2.gif");
+// }
 
 //________________________________________________________________________
 Bool_t AliTRDv0Monitor::GetRefFigure(Int_t /*ifig*/)
