@@ -293,7 +293,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
   // (covariance in the yz plane)
   if(nSeeds){  
     quality = new Float_t[nSeeds];
-    index   = new Int_t[nSeeds];
+    index   = new Int_t[4*nSeeds];
     for (Int_t iSeed = nSeeds; iSeed--;) {
       AliESDtrack *seed = event->GetTrack(iSeed);
       Double_t covariance[15];
@@ -2282,7 +2282,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     if(!ntracks) break;
     
     // Sort the seeds according to their quality
-    Int_t sort[kMaxTracksStack];
+    Int_t sort[kMaxTracksStack+1];
     TMath::Sort(ntracks, fTrackQuality, sort, kTRUE);
     if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1") > 2){
       AliDebug(3, "Track candidates classification:");
@@ -3124,7 +3124,7 @@ Bool_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRD
   for (Int_t iter = 0; iter < 4; iter++) {
     // Try better cluster set
     Int_t nLayers(0); Float_t qualitynew(0.);
-    Int_t  indexes[AliTRDgeometry::kNlayer];
+    Int_t  indexes[4*AliTRDgeometry::kNlayer];
     TMath::Sort(Int_t(AliTRDgeometry::kNlayer), lQuality, indexes, kFALSE);
     for(Int_t jLayer=AliTRDgeometry::kNlayer; jLayer--;) {
       Int_t bLayer = indexes[jLayer];

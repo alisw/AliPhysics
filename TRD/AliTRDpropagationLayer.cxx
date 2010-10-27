@@ -68,7 +68,7 @@ AliTRDpropagationLayer::AliTRDpropagationLayer()
     fZmaxSensitive[iZones] = 0.0;
     fIsHole[iZones]        = kFALSE;   
   }
-
+  memset(fZmaxSensitive, 0, kZones*sizeof(Double_t));
 }
 
 //_____________________________________________________________________________
@@ -112,7 +112,7 @@ AliTRDpropagationLayer::AliTRDpropagationLayer(Double_t x, Double_t dx, Double_t
   for (Int_t i = 0; i < 5; i++) {
     fIsHole[i] = kFALSE;
   }
-
+  memset(fZmaxSensitive, 0, kZones*sizeof(Double_t));
 }
 
 //_____________________________________________________________________________
@@ -151,16 +151,16 @@ AliTRDpropagationLayer::AliTRDpropagationLayer(const AliTRDpropagationLayer &p)
 
 	// Make a deep copy of the Clusters array and the Index array unless they are needed in class AliTRDstackLayer
 	Int_t arrsize = (Int_t)kMaxClusterPerTimeBin;
-	 if (fTimeBinIndex >= 0) { 
+	if (fTimeBinIndex >= 0) {
     fClusters = new AliTRDcluster*[arrsize];
     fIndex    = new UInt_t[arrsize];
+    memset(fIndex, 0, sizeof(UInt_t)*arrsize);
+    memset(fClusters, 0, sizeof(AliTRDcluster *)*arrsize);
+    for(Int_t i = 0; i < arrsize; i++){
+      fClusters[i] = p.fClusters[i];
+      fIndex[i] = p.fIndex[i];
+    }
   }
-	memset(fIndex, 0, sizeof(UInt_t)*arrsize);
-	memset(fClusters, 0, sizeof(AliTRDcluster *)*arrsize);
-	for(Int_t i = 0; i < arrsize; i++){
-		fClusters[i] = p.fClusters[i];
-		fIndex[i] = p.fIndex[i];
-	}
 }
  
 //_____________________________________________________________________________

@@ -146,7 +146,7 @@ void AliTRDtrackerDebug::ResidualsClustersTrack(const AliTRDseedV1 *tracklet)
     Double_t xc = c->GetX(), yc = c->GetY(), zc = c->GetZ();
 
     // propagate track to cluster 
-    PropagateToX(*fTrack, xc, 2.); 
+    if(!PropagateToX(*fTrack, xc, 2.)) continue; 
     fTrack->GetXYZ(x);
     
     // transform to local tracking coordinates
@@ -675,9 +675,11 @@ TCanvas* AliTRDtrackerDebug::PlotFullTrackFit(Int_t event, Int_t candidate, Int_
       else
         refP[nLayers] = tracklet[iLayer]->GetZref(0);
       nLayers++;
+      AliTRDcluster *cl(NULL);
       for(Int_t itb = 0; itb < 30; itb++){
         if(!tracklet[iLayer]->IsUsable(itb)) continue;
-        AliTRDcluster *cl = tracklet[iLayer]->GetClusters(itb);
+        if(!(cl = tracklet[iLayer]->GetClusters(itb))) continue;
+        
         if(!strcmp(direction, "y"))
           clp[ncls] = cl->GetY();
         else

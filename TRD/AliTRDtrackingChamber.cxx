@@ -262,8 +262,8 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
   Float_t *cogz[kMaxRows];
   
   // Lookup-Table storing coordinates according to the bins
-  Float_t yLengths[kMaxCols];
-  Float_t zLengths[kMaxRows];
+  Float_t yLengths[kMaxCols]; memset(yLengths, 0, kMaxCols*sizeof(Float_t));
+  Float_t zLengths[kMaxRows]; memset(zLengths, 0, kMaxRows*sizeof(Float_t));
   for(Int_t icnt = 0; icnt < nCols; icnt++){
     yLengths[icnt] = pp->GetColPos(nCols - 1 - icnt) + binlength/2;
   }

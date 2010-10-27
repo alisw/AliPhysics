@@ -41,6 +41,7 @@ AliTRDtrackingSector::AliTRDtrackingSector()
   // Default constructor
   
   memset(fChamber, 0, AliTRDgeometry::kNdets*sizeof(AliTRDtrackingChamber*));
+  memset(fStack,   0, AliTRDgeometry::kNlayer*sizeof(AliTRDtrackingChamber*));
   memset(fIndex, -1, AliTRDgeometry::kNdets*sizeof(Char_t));
   memset(fX0, 0, AliTRDgeometry::kNlayer*sizeof(Float_t));
 }
@@ -56,6 +57,7 @@ AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry *geo, Int_t gs)
   //
 
   memset(fChamber, 0, AliTRDgeometry::kNdets*sizeof(AliTRDtrackingChamber*));
+  memset(fStack,   0, AliTRDgeometry::kNlayer*sizeof(AliTRDtrackingChamber*));
   memset(fIndex, -1, AliTRDgeometry::kNdets*sizeof(Char_t));
   memset(fX0, 0, AliTRDgeometry::kNlayer*sizeof(Float_t));
 }
