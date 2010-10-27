@@ -67,7 +67,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     DefineFirstModule(key);
   }
   DefineName(fTheta);
-  printf("AliEMCALShishKebabTrd1Module - first module key=%i:  theta %1.4f geometry %s\n",key,fTheta, g->GetName());
+  AliDebug(10,Form("AliEMCALShishKebabTrd1Module - first module key=%i:  theta %1.4f geometry %s\n",key,fTheta, g->GetName()));
 }
 
 //_____________________________________________________________________________
