@@ -34,7 +34,8 @@ ClassImp(AliRDHFCutsDplustoKpipi)
 
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const char* name) : 
-  AliRDHFCuts(name)
+AliRDHFCuts(name),
+fUseStrongPid(kFALSE)
 {
   //
   // Default Constructor
@@ -100,7 +101,9 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const char* name) :
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi &source) :
-  AliRDHFCuts(source)
+  AliRDHFCuts(source),
+  fUseStrongPid(source.fUseStrongPid)
+
 {
   //
   // Copy constructor
@@ -269,9 +272,11 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)
     if(isKaon<0) nNotKaons++;  
     if(sign==track->Charge()){//pions
       if(isPion<0)return 0;
+      if(rd->Pt()<2. && isPion<=0 && fUseStrongPid)return 0;
     }
       else{//kaons
 	if(isKaon<0)return 0;
+	if(rd->Pt()<2. && isKaon<=0 && fUseStrongPid)return 0;
       }
     
       
