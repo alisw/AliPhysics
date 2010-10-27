@@ -367,7 +367,7 @@ void AliPHOSCpvRecPoint::Print(const Option_t *) const
   TString message ; 
   message  =  "AliPHOSCpvRecPoint: " ;
   message +=  "Digits #   " ;
-  AliInfo(Form(message.Data())) ; 
+  AliInfo(message.Data()) ; 
   
   Int_t iDigit;
 

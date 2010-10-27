@@ -205,7 +205,7 @@ Int_t AliPMDCalibGain::ExtractHotChannel(const Char_t *rootFile)
 		{
 		  for (Int_t icol = 0; icol < kMaxCol; icol++)
 		    {
-		      fHotFlag[idet][kMaxSMN][kMaxRow][kMaxCol] = 0.;
+		      fHotFlag[idet][ismn][irow][icol] = 0.;
 		    }
 		}
 	    }

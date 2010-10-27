@@ -510,14 +510,14 @@ Int_t AliSurveyObj::ListReports(TString detector, Int_t year,
   Int_t numberEntries = res->GetEntries();
 
   if (numberEntries > 0) {
-    Printf(Form("%d reports found:", numberEntries));
+    Printf("%d reports found:", numberEntries);
     for (int i = 0; i < res->GetEntries(); ++i) {
       fn = res->GetFileNamePath(i);
-      Printf(Form("Detector:%s\tYear:%d\tEDMS Report Number:%d\tVersion:%d",
+      Printf("Detector:%s\tYear:%d\tEDMS Report Number:%d\tVersion:%d",
 		  FileNamePathToDetector(fn).Data(),
 		  FileNamePathToReportYear(fn),
 		  FileNamePathToReportNumber(fn),
-		  FileNamePathToReportVersion(fn)));
+		  FileNamePathToReportVersion(fn));
     }
     delete res;
     return numberEntries;

@@ -2280,12 +2280,12 @@ void AliTPCCalibCE::FindLocalMaxima(TObjArray * const arrObj, Double_t timestamp
         if(side==0){
           gxyz[2]=gxyz[2]-(TMath::Sqrt((gxyz[0]-globmir[0])*(gxyz[0]-globmir[0])
                                        +(gxyz[1]-globmir[1])*(gxyz[1]-globmir[1])
-                                       +(gxyz[2]-globmir[2])*(gxyz[2]-globmir[3])+raylength))*vdrift*TMath::Power(10.,-6.)/30000;
+                                       +(gxyz[2]-globmir[2])*(gxyz[2]-globmir[2])+raylength))*vdrift*TMath::Power(10.,-6.)/30000;
         }
         else {
           gxyz[2]=gxyz[2]-(TMath::Sqrt((gxyz[0]-globmir[0])*(gxyz[0]-globmir[0])
                                        +(gxyz[1]-globmir[1])*(gxyz[1]-globmir[1])
-                                       +(gxyz[2]-globmir[2])*(gxyz[2]-globmir[3])+raylength))*vdrift*TMath::Power(10.,-6.)/30000;
+                                       +(gxyz[2]-globmir[2])*(gxyz[2]-globmir[2])+raylength))*vdrift*TMath::Power(10.,-6.)/30000;
         }
       }
       

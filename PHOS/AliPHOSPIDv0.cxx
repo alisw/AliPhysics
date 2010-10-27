@@ -419,7 +419,7 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
     for (index = 0 ; index < fRecParticles->GetEntries() ; index++) {
       AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) fRecParticles->At(index) ;       
       
-      Text_t particle[11];
+      Text_t particle[100];
       switch(rp->GetType()) {
       case  AliPHOSFastRecParticle::kNEUTRALEMFAST:
 	strcpy( particle, "NEUTRAL EM FAST");

@@ -476,7 +476,7 @@ void AliPHOSAnalyze::Ls(){
       message += "\n" ;
     }
   }
-  AliInfo(Form(message.Data())) ;  
+  AliInfo(message.Data()) ;  
 }
 //____________________________________________________________________________
  void AliPHOSAnalyze::InvariantMass()

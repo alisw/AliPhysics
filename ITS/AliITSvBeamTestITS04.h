@@ -33,11 +33,11 @@ class AliITSvBeamTestITS04 : public AliITS {
     virtual void StepManager();
     //for writing out geometry set .det write 
     virtual void   SetWriteDet(Bool_t det=kTRUE){fGeomDetOut = det;}
-    virtual void   SetWriteDet(const char *f){fWrite[60]=0;strncpy(fWrite,f,59);
+    virtual void   SetWriteDet(const char *f){fWrite[59]=0;strncpy(fWrite,f,59);
                              fGeomDetOut = kTRUE;}// set write file 
     //for reading geometry (JC) set .det read
     virtual void   SetReadDet(Bool_t det=kTRUE){fGeomDetIn = det;}
-    virtual void   SetReadDet(const char *f){fRead[60]=0;strncpy(fRead,f,59);
+    virtual void   SetReadDet(const char *f){fRead[59]=0;strncpy(fRead,f,59);
                          fGeomDetIn = kTRUE;} // set read file
  public:
     void AddSPDGeometry(TGeoVolume *moth) const;

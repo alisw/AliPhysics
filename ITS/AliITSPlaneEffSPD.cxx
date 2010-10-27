@@ -339,6 +339,7 @@ if (im>=kNModule || ic>=kNChip)
    if(Kfound) fFound[key]++;
    return kTRUE;
  }
+ return kFALSE;
 }
 //_________________________________________________________________________
 UInt_t AliITSPlaneEffSPD::GetChipFromCol(const UInt_t col) const {
