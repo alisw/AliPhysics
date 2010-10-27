@@ -456,7 +456,7 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
   TString gn(g->GetName()); gn.ToUpper(); 
   // Module definition
   Double_t xpos=0., ypos=0., zpos=0.;
-  Double_t trd1Angle = g->GetTrd1Angle()*TMath::DegToRad(), tanTrd1 = TMath::Tan(trd1Angle/2.);
+  //Double_t trd1Angle = g->GetTrd1Angle()*TMath::DegToRad();tanTrd1 = TMath::Tan(trd1Angle/2.);
 
   if(strcmp(mother,"SMOD")==0) {
     fParEMOD[0] = g->GetEtaModuleSize()/2.;   // dx1
