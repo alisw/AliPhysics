@@ -48,9 +48,10 @@ void AliEveTRDNode::Paint(Option_t* option)
 {
   // Paint object.
 
+  AliEveTRDModule *module(NULL);
   List_i iter = fChildren.begin();
   while(iter != fChildren.end()){
-    (dynamic_cast<AliEveTRDModule*>(*iter))->Paint(option);
+    if((module = dynamic_cast<AliEveTRDModule*>(*iter))) module->Paint(option);
     iter++;
   }
 }

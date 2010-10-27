@@ -305,7 +305,7 @@ void AliEveTRDLoaderSimEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveTRDLoaderSim*>(obj);
+  if(!(fM = dynamic_cast<AliEveTRDLoaderSim*>(obj))) return;
 
   Bool_t kRL   = (fM->IsDataLinked()) ? kTRUE : kFALSE;
 

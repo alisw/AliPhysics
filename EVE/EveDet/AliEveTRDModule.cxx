@@ -167,7 +167,7 @@ void AliEveTRDModuleEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveTRDModule*>(obj);
+  if(!(fM = dynamic_cast<AliEveTRDModule*>(obj))) return;
 
   if(AliEveTRDNode *node = dynamic_cast<AliEveTRDNode*>(fM)) node->UpdateNode();
 
@@ -241,7 +241,8 @@ void AliEveTRDModuleEditor::UpdateChamber()
   fM->fRnrTracklets = kFALSE;
   if(fDisplayTracks->IsDown()) fM->fRnrTracklets = kTRUE;
 
-  if(dynamic_cast<AliEveTRDNode*>(fM)) (dynamic_cast<AliEveTRDNode*>(fM))->UpdateLeaves();
+  AliEveTRDNode *node(NULL);
+  if((node = dynamic_cast<AliEveTRDNode*>(fM))) node->UpdateLeaves();
 
   gEve->Redraw3D();
 }

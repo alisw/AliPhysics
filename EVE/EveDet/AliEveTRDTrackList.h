@@ -279,17 +279,17 @@ public:
   void SetCmd(const char* newCmd)             // Sets the command that will be used to call this macro
   { 
     memset(fCmd, '\0', sizeof(Char_t) * MAX_APPLY_COMMAND_LENGTH);
-    sprintf(fCmd, "%s", newCmd);
+    snprintf(fCmd, MAX_APPLY_COMMAND_LENGTH, "%s", newCmd);
   }
   void SetName(const char* newName)           // Sets the macro name (please use without ".C")
   { 
     memset(fName, '\0', sizeof(Char_t) * MAX_MACRO_NAME_LENGTH);
-    sprintf(fName, "%s", newName);
+    snprintf(fName, MAX_MACRO_NAME_LENGTH, "%s", newName);
   }
   void SetPath(const char* newPath)           // Sets the path of the macro
   { 
     memset(fPath, '\0', sizeof(Char_t) * MAX_MACRO_PATH_LENGTH);
-    sprintf(fPath, "%s", newPath);
+    snprintf(fPath, MAX_MACRO_PATH_LENGTH, "%s", newPath);
   }
   void SetSelected(Bool_t selection)          // Sets whether the macro is selected or not
   {

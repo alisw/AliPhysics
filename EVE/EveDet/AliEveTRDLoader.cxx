@@ -336,9 +336,10 @@ void AliEveTRDLoader::Paint(Option_t *option)
 {
   // Paint object.
 
+  AliEveTRDModule *module(NULL);
   List_i ichmb = fChildren.begin();
   while(ichmb != fChildren.end()){
-    (dynamic_cast<AliEveTRDModule*>(*ichmb))->Paint(option);
+    if((module = dynamic_cast<AliEveTRDModule*>(*ichmb))) module->Paint(option);
     ichmb++;
   }
 }
@@ -471,7 +472,7 @@ void AliEveTRDLoaderEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveTRDLoader*>(obj);
+  if(!(fM = dynamic_cast<AliEveTRDLoader*>(obj))) return;
 
   fFile->SetEnabled(!fM->IsDataLinked());
   fFile->SetText(gSystem->BaseName(fM->fFilename.Data()));

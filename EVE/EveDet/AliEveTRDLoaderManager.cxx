@@ -70,9 +70,10 @@ void AliEveTRDLoaderManager::Paint(Option_t *option)
 {
   // Paint object.
 
+  AliEveTRDLoader *loader(NULL);
   List_i ichmb = fChildren.begin();
   while(ichmb != fChildren.end()){
-    (dynamic_cast<AliEveTRDLoader*>(*ichmb))->Paint(option);
+    if((loader = dynamic_cast<AliEveTRDLoader*>(*ichmb))) loader->Paint(option);
     ichmb++;
   }
 }

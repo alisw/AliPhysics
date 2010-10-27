@@ -572,7 +572,7 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
     1.E2*trk->GetPID(2), 1.E2*trk->GetPID(3), 1.E2*trk->GetPID(4), trk->GetLabel()));
 
   if(GetName()){
-    char id[6]; strncpy(id, GetName(), 6); 
+    char id[6]; snprintf(id, 6, "%s", GetName());
     SetName(Form("%s %s", id, AliPID::ParticleName(species)));
   }
 
@@ -583,14 +583,17 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
 //______________________________________________________________________________
 void AliEveTRDTrack::Load(Char_t *what) const
 {
-  TEveElement::List_ci	itrklt=BeginChildren();
+// Spread downwards to tracklets the command "what"
+
+  const AliEveTRDTracklet* trklt(NULL);
+  TEveElement::List_ci itrklt=BeginChildren();
   while(itrklt!=EndChildren()){
-    dynamic_cast<const AliEveTRDTracklet*>(*itrklt)->Load(what);
+    if((trklt = dynamic_cast<const AliEveTRDTracklet*>(*itrklt))) trklt->Load(what);
     itrklt++;
   }
 }
 
-
+//______________________________________________________________________________
 AliEveTRDTrackletOnline::AliEveTRDTrackletOnline(AliTRDtrackletMCM *tracklet) :
   TEveLine(),
   fDetector(-1),

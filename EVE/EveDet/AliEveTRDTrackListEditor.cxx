@@ -332,13 +332,10 @@ void AliEveTRDTrackListEditor::ApplyMacros()
     DrawHistos();
   }
 
-  if (selIterator != 0) delete selIterator;
-  selIterator = 0;  
-  if (procIterator != 0)  delete procIterator;  
-  procIterator = 0;  
+  delete selIterator;
+  delete procIterator;  
   
-  if (!success)
-  {
+  if (!success) {
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  "AliEveTRDTrackList::ApplyProcessMacros experienced an error (cf. CINT-output)!", 
                  kMBIconExclamation, kMBOk);  
@@ -652,6 +649,8 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
   // accessed (and that it exists) and adds the macro to the macro list via AddMacro(...).
   // You can use environment variables in the text field, e.g. "$ALICE_ROOT/Eve/alice-macro/myMacro.C".
 
+  Char_t bname[AliEveTRDTrackList::fkMaxMacroNameLength]; // allocate buffers
+
   if (strlen(fteField->GetText()) != 0)
   {  
     // Expand the pathname
@@ -672,36 +671,30 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
       Char_t* name = (Char_t*)strrchr(fteField->GetText(), '/');
 
       // Current path
-      if (name == NULL)
-      {
-        name = new Char_t[AliEveTRDTrackList::fkMaxMacroNameLength];
+      if (!name) {
+        name= bname;
         memset(name, '\0', sizeof(Char_t) * AliEveTRDTrackList::fkMaxMacroNameLength);
-        sprintf(name, "%s", fteField->GetText());
+        snprintf(name, AliEveTRDTrackList::fkMaxMacroNameLength, "%s", fteField->GetText());
 
         // Add path to textfield -> Path is "./" -> Use length for the name + 2
         Char_t pathname[AliEveTRDTrackList::fkMaxMacroNameLength + 2];
         memset(pathname, '\0', sizeof(Char_t) * (AliEveTRDTrackList::fkMaxMacroNameLength + 2));
-        sprintf(pathname, "./%s", fteField->GetText());
+        snprintf(pathname, AliEveTRDTrackList::fkMaxMacroNameLength + 2, "./%s", fteField->GetText());
         fteField->SetText(pathname);
 
         AddMacro(name);  
-        if (name != 0)  delete [] name;
-        name = 0;
       }
       // Different path
       else
       {
         // Extract path
-        Char_t* path = new Char_t[AliEveTRDTrackList::fkMaxMacroPathLength];
+        Char_t path[AliEveTRDTrackList::fkMaxMacroPathLength];
         memset(path, '\0', sizeof(Char_t) * AliEveTRDTrackList::fkMaxMacroPathLength);
-        strncpy(path, fteField->GetText(), strlen(fteField->GetText()) - strlen(name));
+        snprintf(path, strlen(fteField->GetText()) - strlen(name), "%s", fteField->GetText());
         
         // Ignore the slash "/" in name
         AddMacro(name + 1, path);  
-  
-        if (path != 0)  delete [] path;
-        path = 0;
-      }       
+      }
     }
     else
     {
@@ -798,24 +791,18 @@ void AliEveTRDTrackListEditor::RemoveMacros()
 {
   // Removes the selected macros from the corresponding list.
 
-  TList* iterator = new TList();
-  
-  ftlMacroList->GetSelectedEntries(iterator);
-  fM->RemoveSelectedMacros(iterator);
+  TList iterator;
+  ftlMacroList->GetSelectedEntries(&iterator);
+  fM->RemoveSelectedMacros(&iterator);
 
-  if (iterator != 0)  delete iterator;
 
-  iterator = new TList();
-  ftlMacroSelList->GetSelectedEntries(iterator);
-  fM->RemoveSelectedMacros(iterator);
+  iterator.Clear();
+  ftlMacroSelList->GetSelectedEntries(&iterator);
+  fM->RemoveSelectedMacros(&iterator);
 
   // Selected macros are deleted from the list -> No selected entries left
   fM->fMacroListSelected = 0;
-
   UpdateMacroList();
-
-  if (iterator != 0)  delete iterator;
-  iterator = 0;
 }
 
 //______________________________________________________

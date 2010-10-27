@@ -173,7 +173,7 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC, Bool
 
   // Expand the path and create the pathname
   Char_t* systemPath = gSystem->ExpandPathName(path);
-  sprintf(pathname, "%s/%s", systemPath, nameC);
+  snprintf(pathname, fkMaxMacroPathNameLength, "%s/%s", systemPath, nameC);
   delete systemPath;
   systemPath = 0;
 
@@ -334,7 +334,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
   // A.B. gROOT->Reset();
   
   // Clear old data and re-allocate
-  if (fDataTree == 0x0){ 
+  if (!fDataTree){
     TDirectory *cwd = gDirectory;
     fDataTree = new TTreeSRedirector(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")));
     cwd->cd();
@@ -356,15 +356,11 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
 
   TMacroData* macro = 0;
 
-  TString* procCmds = 0;
-  AliEveTRDTrackListMacroType* mProcType = 0;
-  if (procIterator->GetEntries() > 0) {
-    procCmds = new TString[procIterator->GetEntries()];
-    mProcType = new AliEveTRDTrackListMacroType[procIterator->GetEntries()];
-  }
+  TString* procCmds = new TString[procIterator->GetEntries()];
+  AliEveTRDTrackListMacroType* mProcType = new AliEveTRDTrackListMacroType[procIterator->GetEntries()];
 
   TString* selCmds(NULL);
-  AliEveTRDTrackListMacroType* mSelType = 0;
+  AliEveTRDTrackListMacroType* mSelType(NULL);
   if (selIterator->GetEntries() > 0) {
     selCmds = new TString[selIterator->GetEntries()];
     mSelType = new AliEveTRDTrackListMacroType[selIterator->GetEntries()];
@@ -374,7 +370,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
 
   AliEveTRDTrackListMacroType macroType = kUnknown;
   Int_t numHistoMacros = 0;
-  TH1** histos = 0;
+  TH1** histos(NULL);
 
   AliEveTRDTrack* track1(NULL);
   AliEveTRDTrack* track2(NULL);
@@ -440,25 +436,25 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
     // Single track select macro
     if (macroType == kSingleTrackSelect) {
       // Has already been processed by ApplySTSelectionMacros(...)
-      mSelType[i] = macroType;         
+      if(mSelType) mSelType[i] = macroType;
     }
     // Correlated tracks select macro
     else if (macroType == kCorrelTrackSelect) {
-      mSelType[i] = macroType;  
+      if(mSelType) mSelType[i] = macroType;  
  
       // Create the command
-      selCmds[i] = macro->GetCmd();
+      if(selCmds) selCmds[i] = macro->GetCmd();
     } else {
       Error("Apply process macros", 
         Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!", 
         macro->GetPath(), macro->GetName()));
-      mSelType[i] = kUnknown;
+      if(mSelType) mSelType[i] = kUnknown;
     } 
   }  
 
   // Allocate memory for the histograms
   if (numHistoMacros > 0)  histos = new TH1*[numHistoMacros];
-  for (Int_t i = 0; i < numHistoMacros; i++)  histos[i] = 0x0;
+  memset(histos, 0, numHistoMacros*sizeof(TH1*));
 
 
   //////////////////////////////////
@@ -478,7 +474,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
     for (Int_t i = 0, histoIndex = 0; i < procIterator->GetEntries(); i++){
       // Single track histo
       if (mProcType[i] == kSingleTrackHisto){
-        histos[histoIndex++] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
+        if(histos) histos[histoIndex++] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
        // Correlated tracks histo
       } else if (mProcType[i] == kCorrelTrackHisto) {
         // Loop over all pairs behind the current one - together with the other loop this will be a loop
@@ -502,7 +498,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           // Select track by default (so it will be processed, if there are no correlated tracks selection macros!)
           selectedByCorrSelMacro = kTRUE;
           for (Int_t j = 0; j < selIterator->GetEntries(); j++){
-            if (mSelType[j] == kCorrelTrackSelect){
+            if (mSelType && mSelType[j] == kCorrelTrackSelect){
               selectedByCorrSelMacro = (Bool_t)gROOT->ProcessLineSync(selCmds[j]);
               if (!selectedByCorrSelMacro)  break;
             }
@@ -511,7 +507,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           // If the pair has not been selected by the correlated tracks selection macros, skip it!
           if (!selectedByCorrSelMacro) continue;
           
-          histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
+          if(histos) histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
         }
         histoIndex++;
       }
@@ -558,7 +554,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           // Select track by default (so it will be processed, if there are no correlated tracks selection macros!)
           selectedByCorrSelMacro = kTRUE;
           for (Int_t j = 0; j < selIterator->GetEntries(); j++) {
-            if (mSelType[j] == kCorrelTrackSelect) {
+            if (mSelType && mSelType[j] == kCorrelTrackSelect) {
               selectedByCorrSelMacro = (Bool_t)gROOT->ProcessLineSync(selCmds[j]);
               if (!selectedByCorrSelMacro)  break;
             }
@@ -599,21 +595,21 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
     }
   }
 
-  if (fDataTree != 0) delete fDataTree;
-  fDataTree = 0;
+  if (fDataTree) delete fDataTree;
+  fDataTree = NULL;
 
-  if (procCmds != 0)  delete [] procCmds;
-  procCmds = 0;
-  if (mProcType != 0)  delete [] mProcType;
-  mProcType = 0;
+  if (procCmds)  delete [] procCmds;
+  procCmds = NULL;
+  if (mProcType)  delete [] mProcType;
+  mProcType = NULL;
 
-  if (selCmds != 0)  delete [] selCmds;
-  selCmds = 0;
-  if (mSelType != 0)  delete [] mSelType;
-  mSelType = 0;
+  if (selCmds)  delete [] selCmds;
+  selCmds = NULL;
+  if (mSelType)  delete [] mSelType;
+  mSelType = NULL;
 
-  if (histos != 0)  delete [] histos;
-  histos = 0;
+  if (histos)  delete [] histos;
+  histos = NULL;
 
   // Clear root
   // A.B. gROOT->Reset();
