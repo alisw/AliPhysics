@@ -58,7 +58,7 @@ AliAnalysisTaskSE()
   , fd0(0.0) 
   , fd0d0(0.0)
   , fcosPoint(0.0)
-  , mD0PDG(TDatabasePDG::Instance()->GetParticle(421)->Mass())
+  , fD0PDG(TDatabasePDG::Instance()->GetParticle(421)->Mass())
   , fD0massHLT(NULL)
   , fD0ptHLT(NULL)
   , fD0massOFF(NULL)
@@ -92,7 +92,7 @@ AliAnalysisTaskSE(name)
   , fd0(cuts[4]) 
   , fd0d0(cuts[5])
   , fcosPoint(cuts[6])
-  , mD0PDG(TDatabasePDG::Instance()->GetParticle(421)->Mass())
+  , fD0PDG(TDatabasePDG::Instance()->GetParticle(421)->Mass())
   , fD0massHLT(NULL)
   , fD0ptHLT(NULL)
   , fD0massOFF(NULL)
@@ -230,8 +230,8 @@ void AliAnalysisTaskD0Trigger::SingleTrackSelect(AliExternalTrackParam* t, AliES
 }
 
 void AliAnalysisTaskD0Trigger::RecD0(Int_t& nD0, AliESDVertex *pV,bool isHLT){
-  
-  Double_t D0,D0bar,xdummy,ydummy; 
+  // Reconstructing D0
+  Double_t starD0,starD0bar,xdummy,ydummy; 
   Double_t d0[2];
   Double_t svpos[3];
   Double_t pvpos[3];
@@ -267,13 +267,13 @@ void AliAnalysisTaskD0Trigger::RecD0(Int_t& nD0, AliESDVertex *pV,bool isHLT){
       tP->PropagateToDCA(vertexp1n1,fField,kVeryBig); 
       tN->PropagateToDCA(vertexp1n1,fField,kVeryBig);
       
-      if((TMath::Abs(InvMass(tN,tP)-mD0PDG)) > finvMass && TMath::Abs((InvMass(tP,tN))-mD0PDG) > finvMass){continue;}
-      cosThetaStar(tN,tP,D0,D0bar);
-      if(TMath::Abs(D0) > fcosThetaStar && TMath::Abs(D0bar) > fcosThetaStar){continue;}
+      if((TMath::Abs(InvMass(tN,tP)-fD0PDG)) > finvMass && TMath::Abs((InvMass(tP,tN))-fD0PDG) > finvMass){continue;}
+      CosThetaStar(tN,tP,starD0,starD0bar);
+      if(TMath::Abs(starD0) > fcosThetaStar && TMath::Abs(starD0bar) > fcosThetaStar){continue;}
       d0[0] = tP->GetD(pvpos[0],pvpos[1],fField);
       d0[1] = tN->GetD(pvpos[0],pvpos[1],fField);
       if((d0[0]*d0[1]) > fd0d0){continue;}
-      if(pointingAngle(tN,tP,pvpos,svpos) < fcosPoint){continue;}
+      if(PointingAngle(tN,tP,pvpos,svpos) < fcosPoint){continue;}
       
       if(isHLT){
 	fD0massHLT->Fill(InvMass(tN,tP));
@@ -293,6 +293,7 @@ void AliAnalysisTaskD0Trigger::RecD0(Int_t& nD0, AliESDVertex *pV,bool isHLT){
 
 Double_t AliAnalysisTaskD0Trigger::InvMass(AliExternalTrackParam* d1, AliExternalTrackParam* d2)
 {
+  // Calculating the invariant mass
   Double_t mpi=TDatabasePDG::Instance()->GetParticle(211)->Mass();
   Double_t mK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
 
@@ -312,8 +313,9 @@ Double_t AliAnalysisTaskD0Trigger::InvMass(AliExternalTrackParam* d1, AliExterna
 
 }
 
-void AliAnalysisTaskD0Trigger::cosThetaStar(AliExternalTrackParam* d1, AliExternalTrackParam* d2,Double_t &D0,Double_t &D0bar)
+void AliAnalysisTaskD0Trigger::CosThetaStar(AliExternalTrackParam* d1, AliExternalTrackParam* d2,Double_t &D0,Double_t &D0bar)
 {
+  //Calculating the decay angle
   Double_t mD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   Double_t mpi=TDatabasePDG::Instance()->GetParticle(211)->Mass();
   Double_t mK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
@@ -344,9 +346,9 @@ void AliAnalysisTaskD0Trigger::cosThetaStar(AliExternalTrackParam* d1, AliExtern
 
 }
 
-Double_t AliAnalysisTaskD0Trigger::pointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv)
+Double_t AliAnalysisTaskD0Trigger::PointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv)
 {
-
+  // Calcutating the pointing angle
   TVector3 mom(n->Px()+p->Px(),n->Py()+p->Py(),n->Pz()+p->Pz());
   TVector3 flight(sv[0]-pv[0],sv[1]-pv[1],sv[2]-pv[2]);
   
@@ -357,14 +359,14 @@ Double_t AliAnalysisTaskD0Trigger::pointingAngle(AliExternalTrackParam* n, AliEx
 
 AliAODVertex* AliAnalysisTaskD0Trigger::ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, const AliESDVertex *v, bool useKF)
 {
-  
+  // Finding the vertex of the two tracks in trkArray
   AliESDVertex *vertexESD = 0;
   AliAODVertex *vertexAOD = 0;
   
   if(!useKF){
     AliVertexerTracks *vertexer = new AliVertexerTracks(b);
-    AliESDVertex* Vertex =  const_cast<AliESDVertex*>(v);
-    vertexer->SetVtxStart(Vertex);
+    AliESDVertex* vertex =  const_cast<AliESDVertex*>(v);
+    vertexer->SetVtxStart(vertex);
     //if(isESD){vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);}
     UShort_t *id = new UShort_t[2];
     AliExternalTrackParam *t1 = (AliExternalTrackParam*) trkArray->At(0);
@@ -380,6 +382,7 @@ AliAODVertex* AliAnalysisTaskD0Trigger::ReconstructSecondaryVertex(TObjArray *tr
     if(vertexESD->GetNContributors()!=trkArray->GetEntriesFast()) { 
       //AliDebug(2,"vertexing failed"); 
       delete vertexESD; vertexESD=NULL;
+      delete vertex;
       return vertexAOD;
     }
   }
@@ -416,6 +419,7 @@ AliAODVertex* AliAnalysisTaskD0Trigger::ReconstructSecondaryVertex(TObjArray *tr
 
 Double_t AliAnalysisTaskD0Trigger::Pt(AliExternalTrackParam* d1, AliExternalTrackParam* d2)
 {
+  //Calculating pT of the two tracks
   Double_t p1[3],p2[3];
   d1->GetPxPyPz(p1);
   d2->GetPxPyPz(p2);

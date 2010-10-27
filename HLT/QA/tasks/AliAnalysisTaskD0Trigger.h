@@ -42,51 +42,44 @@ class AliAnalysisTaskD0Trigger : public AliAnalysisTaskSE {
 
   TList *fOutputList; // list of output histograms
 
-  void SingleTrackSelect(AliExternalTrackParam*, AliESDVertex*);
-  void RecD0(Int_t&,AliESDVertex *,bool);
+  void SingleTrackSelect(AliExternalTrackParam* t, AliESDVertex* pV);
+  void RecD0(Int_t& nD0,AliESDVertex *pV,bool isHLT);
 
   //from AliD0toKpi
   Double_t InvMass(AliExternalTrackParam* d1, AliExternalTrackParam* d2);
-  void cosThetaStar(AliExternalTrackParam* n, AliExternalTrackParam* p,Double_t &D0,Double_t &D0bar);
-  Double_t pointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv);
+  void CosThetaStar(AliExternalTrackParam* n, AliExternalTrackParam* p,Double_t &D0,Double_t &D0bar);
+  Double_t PointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv);
   Double_t Pt(AliExternalTrackParam* d1, AliExternalTrackParam* d2);
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, const AliESDVertex *v, bool useKF);
 
-  /// pt cut for decay, minimum [GeV/c]
-  float fPtMin;                                           
-  /// Distance between decay tracks [cm] ??
-  float fdca;                                             
-  /// Inv. mass half width [GeV]
-  float finvMass;                                         
-  /// Decay angle
-  float fcosThetaStar;                                    
-  /// Distance from primary vertex for decay tracks [cm] 
-  float fd0;                                              
-  /// Product of d0 for the two decay tracks [cm^2]
-  float fd0d0;                                            
-  /// Pionting angle
-  float fcosPoint;                                        
+  float fPtMin;                 // pt cut for decay, minimum [GeV/c]
+  float fdca;                   // Distance between decay tracks [cm] ??
+  float finvMass;               // Inv. mass half width [GeV]  
+  float fcosThetaStar;          // Decay angle                           
+  float fd0;                    // Distance from primary vertex for decay tracks [cm] 
+  float fd0d0;                  // Product of d0 for the two decay tracks [cm^2]
+  float fcosPoint;              // Pionting angle                                      
 
-  Double_t mD0PDG;                                        
+  Double_t fD0PDG;              // Mass of D0 from PDG              
 
-  /// D0 inv. mass plot
-  TH1F *fD0massHLT;                                       
-  TH1F *fD0ptHLT;                                         
-  TH1F *fD0massOFF;                                       
-  TH1F *fD0ptOFF;                                         
-
-  vector<AliExternalTrackParam*> fPos;                    
-  vector<AliExternalTrackParam*> fNeg;                    
-
-  TObjArray *ftwoTrackArray;                              
-
-  Int_t fTotalD0HLT;                                         
-  Int_t fTotalD0OFF;                                     
-  Double_t fField;                                        
-
-  Int_t fNevents;                                         
   
-  bool fuseKF;                                            
+  TH1F *fD0massHLT;             // D0 inv. mass plot from HLT             
+  TH1F *fD0ptHLT;               // D0 pT plot from HLT      
+  TH1F *fD0massOFF;             // D0 inv. mass plot from offline
+  TH1F *fD0ptOFF;               // D0 pT plot from offline
+
+  vector<AliExternalTrackParam*> fPos;   // vector for positive tracks      
+  vector<AliExternalTrackParam*> fNeg;   // vector for negative tracks
+
+  TObjArray *ftwoTrackArray;        // Array for the two decay products                      
+
+  Int_t fTotalD0HLT;            // Conter for numbers of D0 from HLT   
+  Int_t fTotalD0OFF;            // Conter for numbers of D0 from offline   
+  Double_t fField;              // Magnetic Field                          
+
+  Int_t fNevents;               // Counter for number of events          
+  
+  bool fuseKF;                  // Bool for switching to KF
 
   /// the default configuration entry for this component
   static const char* fgkOCDBEntry; //!transient
