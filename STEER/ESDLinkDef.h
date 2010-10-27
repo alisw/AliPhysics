@@ -78,6 +78,7 @@
 
 #pragma link C++ class  AliMeanVertex+;
 #pragma link C++ class  AliESDCaloCells+;
+#pragma link C++ class  AliESDCentrality+;
 
 #pragma link C++ class  AliTriggerIR+;
 

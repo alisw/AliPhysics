@@ -66,6 +66,7 @@
 #include "AliLog.h"
 #include "AliESDACORDE.h"
 #include "AliESDHLTDecision.h"
+#include "AliESDCentrality.h"
 
 ClassImp(AliESDEvent)
 
@@ -134,7 +135,8 @@ AliESDEvent::AliESDEvent():
   fESDFriendOld(0),
   fConnected(kFALSE),
   fUseOwnList(kFALSE),
-  fTOFHeader(0)
+  fTOFHeader(0),
+  fCentrality(new AliESDCentrality())
 {
 }
 //______________________________________________________________________________
@@ -171,8 +173,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fESDFriendOld(esd.fESDFriendOld ? new AliESDfriend(*esd.fESDFriendOld) : 0),
   fConnected(esd.fConnected),
   fUseOwnList(esd.fUseOwnList),
-  fTOFHeader(new AliTOFHeader(*esd.fTOFHeader))
-
+  fTOFHeader(new AliTOFHeader(*esd.fTOFHeader)),
+  fCentrality(new AliESDCentrality(*esd.fCentrality))
 {
   // CKB init in the constructor list and only add here ...
   AddObject(fESDRun);
@@ -294,11 +296,12 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
     }
   }
 
-  fConnected = source.fConnected;
+  fCentrality = source.fCentrality;
+
+  fConnected  = source.fConnected;
   fUseOwnList = source.fUseOwnList;
 
   return *this;
-
 }
 
 
@@ -317,7 +320,7 @@ AliESDEvent::~AliESDEvent()
       delete fESDObjects;
       fESDObjects = 0;
     }
-
+  delete fCentrality;
   
 }
 
