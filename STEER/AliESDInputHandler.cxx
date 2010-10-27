@@ -87,7 +87,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     // Initialisation necessary for each new tree 
     // 
     fAnalysisType = opt;
-    if (tree) fTree = tree;
+    fTree = tree;
     
     if (!fTree) return kFALSE;
     fTree->GetEntry(0);
@@ -97,7 +97,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();
 
-    if (fMixingHandler) fMixingHandler->Init(0,  opt);
+    if (fMixingHandler) fMixingHandler->Init(tree,  opt);
 
     return kTRUE;
 }
@@ -131,7 +131,8 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   // Friends
   ((AliESDEvent*)fEvent)->SetESDfriend(fFriend);
   called = kTRUE;
-  
+
+  if (fMixingHandler) fMixingHandler->BeginEvent(entry);  
       
   return kTRUE;
 }
@@ -149,7 +150,7 @@ Bool_t  AliESDInputHandler::FinishEvent()
 {
     // Finish the event 
   if(fEvent)fEvent->Reset();
-  
+  if (fMixingHandler) fMixingHandler->FinishEvent();
   return kTRUE;
 } 
 

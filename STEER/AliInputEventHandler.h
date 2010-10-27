@@ -33,6 +33,7 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual Bool_t       Init(Option_t* /*opt*/)                      {return kTRUE;}
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/)     {return kTRUE;}
     virtual Bool_t       BeginEvent(Long64_t /*entry*/)               {return kTRUE;}
+    virtual Bool_t       GetEntry()                                   {return kTRUE;}    
     virtual Bool_t       Notify() { return AliVEventHandler::Notify();}
     virtual Bool_t       Notify(const char */*path*/)                 {return kTRUE;}
     virtual Bool_t       FinishEvent()                                {return kTRUE;}        
