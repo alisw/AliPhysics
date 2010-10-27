@@ -89,8 +89,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
 
   void SetPtCutsAt   (Int_t pos,Float_t val)  {if(pos < 5)fPtCuts[pos]    = val;}
   void SetAsymCutsAt (Int_t pos,Float_t val)  {if(pos < 5)fAsymCuts[pos]  = val;}
-  void SetNCellCutsAt(Int_t pos,Float_t val)  {if(pos < 5)fCellNCuts[pos] = val;}
-  void SetPIDBitsAt  (Int_t pos,Float_t val)  {if(pos < 5)fPIDBits[pos]   = val;}
+  void SetNCellCutsAt(Int_t pos,Int_t val)    {if(pos < 5)fCellNCuts[pos] = val;}
+  void SetPIDBitsAt  (Int_t pos,Int_t val)    {if(pos < 5)fPIDBits[pos]   = val;}
   
   
   private:
