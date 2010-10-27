@@ -764,14 +764,11 @@ extern "C" {
    */
   struct AliHLTComponentTableEntry
   {
-    /** Size of this structure in bytes. */
-    AliHLTUInt32_t fStructSize;
-    /** size of the array of parent ids */
-    AliHLTUInt16_t fNofParents;
-    /** size of the description string in the appended buffer */
-    AliHLTUInt8_t  fSizeDescription;
-    /** the strings: chain id, component args, reserved */
-    AliHLTUInt8_t  fBuffer[1];
+    AliHLTUInt32_t fStructSize;           /// Size of this structure in bytes.
+    AliHLTUInt32_t fLevel;                /// Indicates from which processing stage this information is from.
+    AliHLTUInt16_t fNofParents;           /// size of the array of parent ids
+    AliHLTUInt8_t  fSizeDescription;      /// size of the description string in the appended buffer
+    AliHLTUInt8_t  fBuffer[1];            /// the strings: chain id, component args, reserved
   };
 
   //////////////////////////////////////////////////////////////////////////

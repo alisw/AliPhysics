@@ -728,7 +728,14 @@ class AliHLTComponent : public AliHLTLogging {
    */
   static int ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size,
 					string& chainId, string& compId, string& compParam,
-					vector<AliHLTUInt32_t>& parents);
+					vector<AliHLTUInt32_t>& parents) {
+    int dummy=0;
+    return ExtractComponentTableEntry(pBuffer, size, chainId, compId, compParam, parents, dummy);
+  }
+
+  static int ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size,
+					string& chainId, string& compId, string& compParam,
+					vector<AliHLTUInt32_t>& parents, int& level);
 
   /**
    * Extracts the different data parts from the trigger data structure.
@@ -1693,7 +1700,8 @@ class AliHLTComponent : public AliHLTLogging {
 			      AliHLTUInt8_t* buffer,
 			      AliHLTUInt32_t bufferSize,
 			      AliHLTUInt32_t offset,
-			      const vector<AliHLTUInt32_t>& parents) const;
+			      const vector<AliHLTUInt32_t>& parents,
+			      int processingLevel) const;
 
   /**
    * Scan the ECS parameter string.

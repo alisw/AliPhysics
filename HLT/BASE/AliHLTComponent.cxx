@@ -1709,6 +1709,68 @@ int AliHLTComponent::CreateEventDoneData(AliHLTComponentEventDoneData edd)
   return iResult;
 }
 
+namespace
+{
+  // helper function for std:sort, implements an operator<
+  bool SortComponentStatisticsById(const AliHLTComponentStatistics& a, const AliHLTComponentStatistics& b)
+  {
+    return a.fId<b.fId;
+  }
+
+  // helper function for std:sort
+  bool SortComponentStatisticsDescendingByLevel(const AliHLTComponentStatistics& a, const AliHLTComponentStatistics& b)
+  {
+    return a.fId>b.fId;
+  }
+
+  // helper class to define operator== between AliHLTComponentStatistics and AliHLTComponentStatistics.fId
+  class AliHLTComponentStatisticsId {
+  public:
+    AliHLTComponentStatisticsId(AliHLTUInt32_t id) : fId(id) {}
+    bool operator==(const AliHLTComponentStatistics& a) const {return a.fId==fId;}
+  private:
+    AliHLTComponentStatisticsId();
+    AliHLTComponentStatisticsId(const AliHLTComponentStatisticsId&);
+    AliHLTUInt32_t fId;
+  };
+
+  // operator for std::find of AliHLTComponentStatistics by id
+  bool operator==(const AliHLTComponentStatistics& a, const AliHLTComponentStatisticsId& b)
+  {
+    return b==a;
+  }
+
+  bool AliHLTComponentStatisticsCompareIds(const AliHLTComponentStatistics& a, const AliHLTComponentStatistics& b)
+  {
+    return a.fId==b.fId;
+  }
+
+  // helper class to define operator== between AliHLTComponentBlockData and AliHLTComponentBlockData.fSpecification
+  class AliHLTComponentBlockDataSpecification {
+  public:
+    AliHLTComponentBlockDataSpecification(AliHLTUInt32_t specification) : fSpecification(specification) {}
+    bool operator==(const AliHLTComponentBlockData& bd) const {return bd.fSpecification==fSpecification;}
+  private:
+    AliHLTComponentBlockDataSpecification();
+    AliHLTComponentBlockDataSpecification(const AliHLTComponentBlockDataSpecification&);
+    AliHLTUInt32_t fSpecification;
+  };
+
+  // operator for std::find of AliHLTComponentBlockData by specification
+  bool operator==(const AliHLTComponentBlockData& bd, const AliHLTComponentBlockDataSpecification& spec)
+  {
+    return spec==bd;
+  }
+
+  // operator for std::find
+  bool operator==(const AliHLTComponentBlockData& a, const AliHLTComponentBlockData& b)
+  {
+    if (!MatchExactly(a.fDataType,b.fDataType)) return false;
+    return a.fSpecification==b.fSpecification;
+  }
+
+} // end of namespace
+
 int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 				   const AliHLTComponentBlockData* blocks, 
 				   AliHLTComponentTriggerData& trigData,
@@ -1740,6 +1802,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   AliHLTComponentStatisticsList compStats;
   bool bAddComponentTableEntry=false;
   vector<AliHLTUInt32_t> parentComponentTables;
+  int processingLevel=-1;
 #if defined(HLT_COMPONENT_STATISTICS)
   if ((fFlags&kDisableComponentStat)==0) {
     AliHLTComponentStatistics outputStat;
@@ -1833,12 +1896,30 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	    if (pStat && compStats[0].fLevel<=pStat->fLevel) {
 	      compStats[0].fLevel=pStat->fLevel+1;
 	    }
-	    compStats.push_back(*pStat);
+	    if (find(compStats.begin(), compStats.end(), AliHLTComponentStatisticsId(pStat->fId))==compStats.end()) {
+	      compStats.push_back(*pStat);
+	    }
 	  }
 	}
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeComponentTable) {
-	forwardedBlocks.push_back(fpInputBlocks[i]);
+	AliHLTComponentBlockDataList::iterator element=forwardedBlocks.begin();
+	while ((element=find(element, forwardedBlocks.end(), AliHLTComponentBlockDataSpecification(fpInputBlocks[i].fSpecification)))!=forwardedBlocks.end()) {
+	  if (element->fDataType==fpInputBlocks[i].fDataType) break;
+	  // TODO: think about some more checks inclusing also the actual data buffers
+	  // this has to handle multiplicity>1 in the online system, where all components
+	  // send the information on SOR, because this event is broadcasted
+	}
+	if (element==forwardedBlocks.end()) {
+	  forwardedBlocks.push_back(fpInputBlocks[i]);
+	}
 	parentComponentTables.push_back(fpInputBlocks[i].fSpecification);
+	if (fpInputBlocks[i].fSize>=sizeof(AliHLTComponentTableEntry)) {
+	  const AliHLTComponentTableEntry* entry=reinterpret_cast<AliHLTComponentTableEntry*>(fpInputBlocks[i].fPtr);
+	  if (entry->fStructSize==sizeof(AliHLTComponentTableEntry)) {
+	    if (processingLevel<0 || processingLevel<=(int)entry->fLevel) 
+	      processingLevel=entry->fLevel+1;
+	  }
+	}
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeECSParam) {
 	indexECSParamBlock=i;
       } else {
@@ -1856,6 +1937,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     if (indexSOREvent>=0) {
       // start of run
       bAddComponentTableEntry=true;
+      compStats.clear();   // no component statistics for SOR
       if (fpRunDesc==NULL) {
 	fpRunDesc=new AliHLTRunDesc;
 	if (fpRunDesc) *fpRunDesc=kAliHLTVoidRunDesc;
@@ -1898,6 +1980,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     if (indexEOREvent>=0) {
       fLastPushBackTime=0; // always send at EOR
       bAddComponentTableEntry=true;
+      compStats.clear();   // no component statistics for EOR
       if (fpRunDesc!=NULL) {
 	if (fpRunDesc) {
 	  AliHLTRunDesc rundesc;
@@ -1949,6 +2032,9 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   // for the private blocks
   if ((fFlags&kRequireSteeringBlocks)!=0) bSkipDataProcessing=0;
 
+  // data processing is not skipped for data sources
+  if (GetComponentType()==AliHLTComponent::kSource) bSkipDataProcessing=0;
+
   if (fpCTPData) {
     // set the active triggers for this event
     fpCTPData->SetTriggers(trigData);
@@ -1993,7 +2079,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	    if (offset>0) fOutputBufferFilled+=offset;
 	  }
 	  if (bAddComponentTableEntry) {
-	    int offset=AddComponentTableEntry(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled, parentComponentTables);
+	    int offset=AddComponentTableEntry(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled, parentComponentTables, processingLevel);
 	    if (offset>0) size+=offset;
 	  }
 	  if (forwardedBlocks.size()>0) {
@@ -2005,12 +2091,18 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       }
     } else {
       // Low Level interface
+      if (blockData.empty() && size!=0) {
+	// set the size to zero because there is no announced data
+	//HLTWarning("no output blocks added by component but output buffer filled %d of %d", size, fOutputBufferSize);
+	size=0;
+      }
+
       if (compStats.size()>0) {
 	int offset=AddComponentStatistics(blockData, fpOutputBuffer, fOutputBufferSize, size, compStats);
 	if (offset>0) size+=offset;
       }
       if (bAddComponentTableEntry) {
-	int offset=AddComponentTableEntry(blockData, fpOutputBuffer, fOutputBufferSize, size, parentComponentTables);
+	int offset=AddComponentTableEntry(blockData, fpOutputBuffer, fOutputBufferSize, size, parentComponentTables, processingLevel);
 	if (offset>0) size+=offset;
       }
       if (forwardedBlocks.size()>0) {
@@ -2074,7 +2166,12 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
     stats[0].fCTime=(AliHLTUInt32_t)(fpBenchmark->CpuTime()*ALIHLTCOMPONENT_STATTIME_SCALER);
     fpBenchmark->Continue();
   }
+
+  sort(stats.begin(), stats.end(), SortComponentStatisticsDescendingByLevel);
+
+  // shrink the number of entries if the buffer is too small
   if (offset+stats.size()*sizeof(AliHLTComponentStatistics)>bufferSize) {
+    unsigned originalSize=stats.size();
     AliHLTUInt32_t removedLevel=0;
     do {
       // remove all entries of the level of the last entry
@@ -2090,6 +2187,10 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
       }
     } while (stats.size()>1 && 
 	     (offset+stats.size()*sizeof(AliHLTComponentStatistics)>bufferSize));
+    HLTWarning("too little space in output buffer to add block of %d statistics entries (size %d), available %d, removed %d entries",
+	       originalSize, sizeof(AliHLTComponentStatistics), bufferSize-offset, originalSize-stats.size());
+  } else {
+    HLTDebug("adding block of %d statistics entries", stats.size());
   }
   assert(stats.size()>0);
   if (stats.size()==0) return 0;
@@ -2100,26 +2201,7 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
     bd.fOffset        = offset;
     bd.fSize          = stats.size()*sizeof(AliHLTComponentStatistics);
     bd.fDataType      = kAliHLTDataTypeComponentStatistics;
-    bd.fSpecification = kAliHLTVoidDataSpec;
-    unsigned int master=0;
-    for (unsigned int i=1; i<blocks.size(); i++) {
-      if (blocks[i].fSize>blocks[master].fSize && 
-	  !MatchExactly(blocks[i].fDataType, kAliHLTVoidDataType|kAliHLTDataOriginPrivate))
-	master=i;
-    }
-    if (blocks.size()>0 && !MatchExactly(blocks[master].fDataType, kAliHLTVoidDataType|kAliHLTDataOriginPrivate)) {
-      // take the data origin of the biggest block as specification
-      // this is similar to the treatment in the HOMER interface. For traditional
-      // reasons, the bytes are swapped there on a little endian architecture, so
-      // we do it as well.
-      memcpy(&bd.fSpecification, &blocks[master].fDataType.fOrigin, sizeof(bd.fSpecification));
-#ifdef R__BYTESWAP // set on little endian architectures
-      bd.fSpecification=((bd.fSpecification & 0xFFULL) << 24) | 
-	((bd.fSpecification & 0xFF00ULL) << 8) | 
-	((bd.fSpecification & 0xFF0000ULL) >> 8) | 
-	((bd.fSpecification & 0xFF000000ULL) >> 24);
-#endif
-    }
+    bd.fSpecification = fChainIdCrc;
     memcpy(buffer+offset, &(stats[0]), bd.fSize);
     blocks.push_back(bd);
     iResult=bd.fSize;
@@ -2136,7 +2218,8 @@ int  AliHLTComponent::AddComponentTableEntry(AliHLTComponentBlockDataList& block
 					     AliHLTUInt8_t* buffer,
 					     AliHLTUInt32_t bufferSize,
 					     AliHLTUInt32_t offset,
-					     const vector<AliHLTUInt32_t>& parents) const
+					     const vector<AliHLTUInt32_t>& parents,
+					     int processingLevel) const
 {
   // see header file for function documentation
   int iResult=0;
@@ -2165,6 +2248,7 @@ int  AliHLTComponent::AddComponentTableEntry(AliHLTComponentBlockDataList& block
     // write entry
     AliHLTComponentTableEntry* pEntry=reinterpret_cast<AliHLTComponentTableEntry*>(pTgt);
     pEntry->fStructSize=sizeof(AliHLTComponentTableEntry);
+    pEntry->fLevel=processingLevel>=0?processingLevel:0;
     pEntry->fNofParents=parents.size();
     pEntry->fSizeDescription=descriptionSize;
     pTgt=pEntry->fBuffer;
@@ -2198,7 +2282,7 @@ int  AliHLTComponent::AddComponentTableEntry(AliHLTComponentBlockDataList& block
     iResult=bd.fSize;
   }
 #else
-  if (blocks.size() && buffer && bufferSize && offset && parents.size()) {
+  if (blocks.size() && buffer && bufferSize && offset && parents.size() && processingLevel) {
     // get rid of warning
   }
 #endif // HLT_COMPONENT_STATISTICS
@@ -2462,18 +2546,22 @@ AliHLTUInt32_t AliHLTComponent::CalculateChecksum(const AliHLTUInt8_t* buffer, i
 
 int AliHLTComponent::ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size,
 						string& retChainId, string& retCompId, string& retCompArgs,
-						vector<AliHLTUInt32_t>& parents)
+						vector<AliHLTUInt32_t>& parents, int& level)
 {
   // see header file for function documentation
   retChainId.clear();
   retCompId.clear();
   retCompArgs.clear();
   parents.clear();
+  level=-1;
   if (!pBuffer || size==0) return 0;
 
   const AliHLTComponentTableEntry* pEntry=reinterpret_cast<const AliHLTComponentTableEntry*>(pBuffer);
   if (size<8/* the initial size of the structure*/ ||
       pEntry==NULL || pEntry->fStructSize<8) return -ENOMSG;
+
+  if (pEntry->fStructSize!=sizeof(AliHLTComponentTableEntry)) return -EBADF;
+  level=pEntry->fLevel;
   const AliHLTUInt32_t* pParents=reinterpret_cast<const AliHLTUInt32_t*>(pEntry->fBuffer);
   const AliHLTUInt8_t* pEnd=pBuffer+size;
 
