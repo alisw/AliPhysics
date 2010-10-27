@@ -323,7 +323,7 @@ Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
       }
       bFIRST = kFALSE;
     }
-    leg->Draw();
+    if(leg) leg->Draw();
     break;
   }
   return kTRUE;

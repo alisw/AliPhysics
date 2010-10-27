@@ -60,7 +60,7 @@ public:
   virtual Bool_t PutTrendValue(const Char_t *name, Double_t val);
   virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
-  virtual void   SetNameId(const Char_t *nid) {sprintf(fNameId, "%s", nid);}
+  virtual void   SetNameId(const Char_t *nid) {snprintf(fNameId, 10, "%s", nid);}
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
   virtual void   Terminate(Option_t *);
 

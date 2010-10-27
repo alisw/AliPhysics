@@ -126,8 +126,8 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
 // Recursively merge files named "mark" from list in "files" in groups of "nBatch" files.
 // parameter "level" is used to index recurent calls of this function.
 
-  Char_t lMERGE[8]; sprintf(lMERGE, "%04d.lst", (Int_t)gRandom->Uniform(9999.));
-  Char_t lPURGE[8]; sprintf(lPURGE, "%04d.lst", (Int_t)gRandom->Uniform(9999.));
+  Char_t lMERGE[8]; snprintf(lMERGE, 8, "%04d.lst", (Int_t)gRandom->Uniform(9999.));
+  Char_t lPURGE[8]; snprintf(lPURGE, 8, "%04d.lst", (Int_t)gRandom->Uniform(9999.));
 
   // purge file list
   std::string filename;
@@ -188,8 +188,7 @@ const Char_t* AliTRDpwg1Helper::MergeBatch(const Char_t *mark, const Char_t *fil
       continue;
     }
     if(kSVN){ // download SVN info for trending
-      std::string base=filename.substr(0, filename.find_last_of('/'));
-      if(gSystem->Exec(Form("if [ ! -f svnInfo.log ]; then cp -v %s/svnInfo.log %s; fi", base.c_str(), gSystem->ExpandPathName("$PWD"))) == 0) kSVN=kFALSE;
+      if(gSystem->Exec(Form("if [ ! -f svnInfo.log ]; then cp -v %s/svnInfo.log %s; fi", Basename(filename.c_str()), gSystem->ExpandPathName("$PWD"))) == 0) kSVN=kFALSE;
     }
     Info("MergeBatch()", filename.c_str());
     if(!fFM.AddFile(filename.c_str())) return NULL;

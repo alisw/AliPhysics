@@ -450,7 +450,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvNtrkl));
+    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvNtrkl)))) break;
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
     hProf2D->GetXaxis()->SetTitle("#eta");
@@ -517,7 +517,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     pad->SetLogz();
-    h2F = dynamic_cast<TH2F*>(fHistos->At(kNClsTrackTRD));
+    if(!(h2F = dynamic_cast<TH2F*>(fHistos->At(kNClsTrackTRD)))) break;
     h2F->SetStats(kFALSE);
     h2F->SetTitle("");
     h2F->GetXaxis()->SetTitle("p [GeV/c]");
@@ -999,7 +999,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
       AliTrackReference *ref(NULL); 
       Int_t fLabel(esdTrack->GetLabel());
       Int_t fIdx(TMath::Abs(fLabel));
-      if(fIdx > fStack->GetNtrack()) continue; 
+      if(!fStack || fIdx > fStack->GetNtrack()) continue; 
       
       // read MC particle 
       if(!(mcParticle = (AliMCParticle*) fMC->GetTrack(fIdx))) {

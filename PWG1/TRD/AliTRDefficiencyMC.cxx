@@ -117,7 +117,7 @@ void AliTRDefficiencyMC::UserExec(Option_t *){
   Int_t nTrackInfos = fTracks->GetEntriesFast();
   AliDebug(2, Form("   CANDIDATE TRACKS[%d]", nTrackInfos));
 
-  AliTRDtrackV1 *trackTRD(NULL);
+  //AliTRDtrackV1 *trackTRD(NULL);
   AliTRDtrackInfo *trkInf(NULL);
   for(Int_t itinf = 0; itinf < nTrackInfos; itinf++){
     trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(itinf));
@@ -130,7 +130,7 @@ void AliTRDefficiencyMC::UserExec(Option_t *){
         AliDebug(2, Form("MC(Track Reference) missing @ label[%d]", trkInf->GetLabel()));
         isContamination = kTRUE;
         // Debugging
-        if(trackTRD && DebugLevel()>5) FillStreamTrackWOMC(trkInf);
+        if(trkInf && DebugLevel()>5) FillStreamTrackWOMC(trkInf);
       }
       if(isContamination){
         // reject kink (we count these only once)
@@ -177,7 +177,7 @@ void AliTRDefficiencyMC::UserExec(Option_t *){
   memcpy(tmprejected, indexReject, sizeof(Int_t) * nreject);
   nreject = 0;
   for(Int_t irej = 0; irej < nrej; irej++){
-    trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->At(tmprejected[irej]));
+    if(!(trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->At(tmprejected[irej])))) continue;
     Int_t idx(-1);
     if((idx = IsRegistered(trkInf,indexAccept,naccept))<0){
       indexReject[nreject++] = tmprejected[irej];
@@ -222,61 +222,62 @@ Bool_t AliTRDefficiencyMC::GetRefFigure(Int_t ifig){
   if(ifig >= fNRefFigures) return kFALSE;
   if(!gPad) return kFALSE;
   gPad->SetLogx(kTRUE);
+  TH1 *h(NULL);
   if(ifig < 2){
-    (dynamic_cast<TH1 *>(fContainer->At(ifig)))->Draw("e1");
+    if(!(h = (dynamic_cast<TH1 *>(fContainer->At(ifig))))) return kFALSE;
+    h->Draw("e1");
     return kTRUE;
   }
-  TH1 *h(NULL); 
   TLegend *leg=new TLegend(.65, .12, .85, .3);
   leg->SetHeader("Charge");
   leg->SetBorderSize(1);leg->SetFillColor(kWhite);
   switch(ifig){
   case 2:
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram)))) return kFALSE;;
     h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+1));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+1)))) return kFALSE;;
     h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
     leg->Draw();
     break;
   case 3:
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+2));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+2)))) return kFALSE;;
     h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+3));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+3)))) return kFALSE;;
     h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
     leg->Draw();
     break;
   case 4:
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+4));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+4)))) return kFALSE;;
     h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+5));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+5)))) return kFALSE;;
     h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
     leg->Draw();
     break;
   case 5:
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+6));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+6)))) return kFALSE;;
     h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+7));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+7)))) return kFALSE;;
     h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
     leg->Draw();
     break;
   case 6:
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+8));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+8)))) return kFALSE;;
     h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+9));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+9)))) return kFALSE;;
     h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
     leg->Draw();
     break;
   case 7:
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+10));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+10)))) return kFALSE;;
     h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+11));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+11)))) return kFALSE;;
     h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
     leg->Draw();
     break;
   case 8:
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+12));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+12)))) return kFALSE;;
     h->Draw("e1"); leg->AddEntry(h, "  -", "pl");
-    h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+13));
+    if(!(h=dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram+13)))) return kFALSE;;
     h->Draw("e1same"); leg->AddEntry(h, "  +", "pl");
     leg->Draw();
     break;
@@ -446,7 +447,7 @@ void AliTRDefficiencyMC::FillHistograms(Int_t nTracks, Int_t *indices, ETRDeffic
   Int_t trkpdg(-1);      // particle PDG code
   AliTRDtrackInfo *trkInf(NULL);
   for(Int_t itk = 0; itk < nTracks; itk++){
-    trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->At(indices[itk]));
+    if(!(trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->At(indices[itk])))) continue;
     if(trkInf->GetNTrackRefs()){
       // use Monte-Carlo Information for Momentum and PID
       trkmom = trkInf->GetTrackRef(0)->P();
@@ -456,20 +457,26 @@ void AliTRDefficiencyMC::FillHistograms(Int_t nTracks, Int_t *indices, ETRDeffic
       trkmom = trkInf->GetTrack()->P();
     }
 
+    TProfile *hp(NULL);
     const Char_t *cmode(NULL);
     switch(mode){
       case kAccept:
-        (dynamic_cast<TProfile *>(fContainer->At(kEfficiencyHistogram)))->Fill(trkmom, 1);
-        (dynamic_cast<TProfile *>(fContainer->At(kContaminationHistogram)))->Fill(trkmom, 0);
+        if(!(hp = (dynamic_cast<TProfile *>(fContainer->At(kEfficiencyHistogram))))) continue;
+        hp->Fill(trkmom, 1);
+        if(!(hp = ((dynamic_cast<TProfile *>(fContainer->At(kContaminationHistogram)))))) continue;
+        hp->Fill(trkmom, 0);
         cmode="ACCEPT";
         break;
       case kMiss:
-        (dynamic_cast<TProfile *>(fContainer->At(kEfficiencyHistogram)))->Fill(trkmom, 0);
-        (dynamic_cast<TProfile *>(fContainer->At(kContaminationHistogram)))->Fill(trkmom, 0);
+        if(!(hp = ((dynamic_cast<TProfile *>(fContainer->At(kEfficiencyHistogram)))))) continue;
+        hp->Fill(trkmom, 0);
+        if(!(hp = ((dynamic_cast<TProfile *>(fContainer->At(kContaminationHistogram)))))) continue;
+        hp->Fill(trkmom, 0);
         cmode="MISS";
         break;
       case kFake:
-        (dynamic_cast<TProfile *>(fContainer->At(kContaminationHistogram)))->Fill(trkmom, 1);
+        if(!(hp = ((dynamic_cast<TProfile *>(fContainer->At(kContaminationHistogram)))))) continue;
+        hp->Fill(trkmom, 1);
         cmode="FAKE";
         break;
     }
@@ -480,7 +487,8 @@ void AliTRDefficiencyMC::FillHistograms(Int_t nTracks, Int_t *indices, ETRDeffic
     Int_t sign = dbPDG->GetParticle(trkpdg)->Charge() > 0. ? 1 : 0;
     //printf("[%d]%s pdg[%d] sign[%d]\n", idxSpec, AliPID::ParticleName(idxSpec), trkpdg, sign);
     if(idxSpec < 0) idxSpec = AliPID::kSPECIES;
-    (dynamic_cast<TProfile *>(fContainer->At(kEfficiencySpeciesHistogram + idxSpec*2+sign)))->Fill(trkmom, mode==kAccept?1:0);
+    if(!(hp = (dynamic_cast<TProfile *>(fContainer->At(kEfficiencySpeciesHistogram + idxSpec*2+sign))))) continue;
+    hp->Fill(trkmom, mode==kAccept?1:0);
   }
 }
 
@@ -567,9 +575,11 @@ Int_t AliTRDefficiencyMC::IsRegistered(const AliTRDtrackInfo * const trkInf, Int
   // Checks if track is registered in a given mode
   //
 
+  AliTRDtrackInfo *ti(NULL);
   Int_t label(trkInf->GetLabel());
   for(Int_t il(nTracks); il--;){
-    if((dynamic_cast<AliTRDtrackInfo *>(fTracks->At(indices[il])))->GetLabel() == label) return il;
+    if(!(ti = dynamic_cast<AliTRDtrackInfo *>(fTracks->At(indices[il])))) continue;
+    if(ti->GetLabel() == label) return il;
   }
   return -1;
 }

@@ -846,9 +846,10 @@ TH1 *AliTRDcheckPID::PlotV0(const AliTRDtrackV1 *track)
     AliWarning("No output container defined.");
     return NULL;
   }
-  AliDebug(2, Form("TRACK[%d] species[%s][%d]\n", fkESD->GetId(), AliPID::ParticleShortName(fkMC->GetPID()), fkMC->GetPDG()));
+  AliDebug(2, Form("TRACK[%d] species[%s][%d]\n", fkESD->GetId(), fkMC->GetPID()>=0?AliPID::ParticleShortName(fkMC->GetPID()):"none", fkMC->GetPDG()));
 
-  TH1 *h=dynamic_cast<TH1F*>(fContainer->At(kV0));
+  TH1 *h(NULL);
+  if(!(h = dynamic_cast<TH1F*>(fContainer->At(kV0)))) return NULL;
   Int_t sgn(0), n(0); AliTRDv0Info *v0(NULL);
   for(Int_t iv0(fV0s->GetEntriesFast()); iv0--;){
     if(!(v0=(AliTRDv0Info*)fV0s->At(iv0))) continue;
@@ -1066,7 +1067,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
         h1->GetXaxis()->SetTitle("x_{drift} [cm]");
         h1->GetYaxis()->SetTitle("<dQ/dl> [a.u./cm]");
       }
-      h = (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
+      h1->DrawClone(kFIRST ? "c" : "samec");
       kFIRST = kFALSE;
     }
 

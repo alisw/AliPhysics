@@ -47,7 +47,8 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fkESD(NULL)
   ,fPlotFuncList(NULL)
 {
-// Default constructor  
+// Default constructor
+  snprintf(fNameId, 10, "no name");
 }
 
 //_______________________________________________________
@@ -64,6 +65,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
 // Constructor for all derived performance tasks
 
   SetTitle(title);
+  snprintf(fNameId, 10, "no name");
   DefineInput (1, TObjArray::Class()); // track list
   DefineOutput(1, TObjArray::Class()); // histogram list
 }

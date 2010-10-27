@@ -1858,7 +1858,7 @@ void AliTRDresolution::MakeSummary()
   p=cOut->cd(3); 
   p->SetRightMargin(0.06);p->SetTopMargin(0.06);
   xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
-  GetGraphArray(xy, kCluster, 1, 1);
+  if(!GetGraphArray(xy, kCluster, 1, 1)) return;
 
   p=cOut->cd(4); 
   p->SetRightMargin(0.16);p->SetTopMargin(0.06);
@@ -1883,7 +1883,7 @@ void AliTRDresolution::MakeSummary()
   p=cOut->cd(6); 
   p->SetRightMargin(0.06);p->SetTopMargin(0.06);
   xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
-  GetGraphArray(xy, kTrack, 1, 1);
+  if(!GetGraphArray(xy, kTrack, 1, 1)) return;
 
   cOut->SaveAs(Form("%s.gif", cOut->GetName()));
 
@@ -2278,7 +2278,7 @@ TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool
   TH1 *h(NULL); char hname[100], htitle[300];
 
   // tracklet resolution/pull in y direction
-  sprintf(hname, "%s_%s_Y", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_Y", GetNameId(), name);
   sprintf(htitle, "Y res for \"%s\" @ %s;tg(#phi);#Delta y [cm];%s", GetNameId(), name, fgkResYsegmName[fSegmentLevel]);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     Int_t nybins=fgkNresYsegm[fSegmentLevel];
@@ -2289,8 +2289,8 @@ TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool
                  nybins, -0.5, nybins-0.5);// segment
   } else h->Reset();
   arr->AddAt(h, 0);
-  sprintf(hname, "%s_%s_YZpull", GetNameId(), name);
-  sprintf(htitle, "YZ pull for \"%s\" @ %s;%s;#Delta y  / #sigma_{y};#Delta z  / #sigma_{z}", GetNameId(), name, fgkResYsegmName[fSegmentLevel]);
+  snprintf(hname, 100, "%s_%s_YZpull", GetNameId(), name);
+  snprintf(htitle, 300, "YZ pull for \"%s\" @ %s;%s;#Delta y  / #sigma_{y};#Delta z  / #sigma_{z}", GetNameId(), name, fgkResYsegmName[fSegmentLevel]);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, fgkNresYsegm[fSegmentLevel], -0.5, fgkNresYsegm[fSegmentLevel]-0.5, 100, -4.5, 4.5, 100, -4.5, 4.5);
   } else h->Reset();
@@ -2311,14 +2311,14 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTracklet(const char* name, Boo
   TH1 *h(NULL); char hname[100], htitle[300];
 
   // tracklet resolution/pull in z direction
-  sprintf(hname, "%s_%s_Z", GetNameId(), name);
-  sprintf(htitle, "Z res for \"%s\" @ %s;tg(#theta);#Delta z [cm];row cross", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_Z", GetNameId(), name);
+  snprintf(htitle, 300, "Z res for \"%s\" @ %s;tg(#theta);#Delta z [cm];row cross", GetNameId(), name);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, 50, -1., 1., 100, -1.5, 1.5, 2, -0.5, 1.5);
   } else h->Reset();
   arr->AddAt(h, 2);
-  sprintf(hname, "%s_%s_Zpull", GetNameId(), name);
-  sprintf(htitle, "Z pull for \"%s\" @ %s;tg(#theta);#Delta z  / #sigma_{z};row cross", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_Zpull", GetNameId(), name);
+  snprintf(htitle, 300, "Z pull for \"%s\" @ %s;tg(#theta);#Delta z  / #sigma_{z};row cross", GetNameId(), name);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, 50, -1., 1., 100, -5.5, 5.5, 2, -0.5, 1.5);
     h->GetZaxis()->SetBinLabel(1, "no RC");
@@ -2327,8 +2327,8 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTracklet(const char* name, Boo
   arr->AddAt(h, 3);
 
   // tracklet to track phi resolution
-  sprintf(hname, "%s_%s_PHI", GetNameId(), name);
-  sprintf(htitle, "#Phi res for \"%s\" @ %s;tg(#phi);#Delta #phi [rad];entries", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_PHI", GetNameId(), name);
+  snprintf(htitle, 300, "#Phi res for \"%s\" @ %s;tg(#phi);#Delta #phi [rad];entries", GetNameId(), name);
   if(!(h = (TH2I*)gROOT->FindObject(hname))){
     h = new TH2I(hname, htitle, 21, -.33, .33, 100, -.5, .5);
   } else h->Reset();
@@ -2353,23 +2353,23 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
   TAxis *ax(NULL);
 
   // snp pulls
-  sprintf(hname, "%s_%s_SNPpull", GetNameId(), name);
-  sprintf(htitle, "SNP pull for \"%s\" @ %s;tg(#phi);#Delta snp  / #sigma_{snp};entries", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_SNPpull", GetNameId(), name);
+  snprintf(htitle, 300, "SNP pull for \"%s\" @ %s;tg(#phi);#Delta snp  / #sigma_{snp};entries", GetNameId(), name);
   if(!(h = (TH2I*)gROOT->FindObject(hname))){
     h = new TH2I(hname, htitle, 60, -.3, .3, 100, -4.5, 4.5);
   } else h->Reset();
   arr->AddAt(h, 5);
 
   // theta resolution
-  sprintf(hname, "%s_%s_THT", GetNameId(), name);
-  sprintf(htitle, "#Theta res for \"%s\" @ %s;tg(#theta);#Delta #theta [rad];entries", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_THT", GetNameId(), name);
+  snprintf(htitle, 300, "#Theta res for \"%s\" @ %s;tg(#theta);#Delta #theta [rad];entries", GetNameId(), name);
   if(!(h = (TH2I*)gROOT->FindObject(hname))){
     h = new TH2I(hname, htitle, 100, -1., 1., 100, -5e-3, 5e-3);
   } else h->Reset();
   arr->AddAt(h, 6);
   // tgl pulls
-  sprintf(hname, "%s_%s_TGLpull", GetNameId(), name);
-  sprintf(htitle, "TGL pull for \"%s\" @ %s;tg(#theta);#Delta tgl  / #sigma_{tgl};entries", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_TGLpull", GetNameId(), name);
+  snprintf(htitle, 300, "TGL pull for \"%s\" @ %s;tg(#theta);#Delta tgl  / #sigma_{tgl};entries", GetNameId(), name);
   if(!(h = (TH2I*)gROOT->FindObject(hname))){
     h = new TH2I(hname, htitle, 100, -1., 1., 100, -4.5, 4.5);
   } else h->Reset();
@@ -2385,8 +2385,8 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
   for(Int_t i=0; i<kNdpt+1; i++,lDPt+=2.e-3) binsDPt[i]=lDPt;
 
   // Pt resolution
-  sprintf(hname, "%s_%s_Pt", GetNameId(), name);
-  sprintf(htitle, "P_{t} res for \"%s\" @ %s;p_{t} [GeV/c];#Delta p_{t}/p_{t}^{MC};SPECIES", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_Pt", GetNameId(), name);
+  snprintf(htitle, 300, "#splitline{P_{t} res for}{\"%s\" @ %s};p_{t} [GeV/c];#Delta p_{t}/p_{t}^{MC};SPECIES", GetNameId(), name);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, 
                  kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
@@ -2395,8 +2395,8 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
   } else h->Reset();
   arr->AddAt(h, 8);
   // 1/Pt pulls
-  sprintf(hname, "%s_%s_1Pt", GetNameId(), name);
-  sprintf(htitle, "1/P_{t} pull for \"%s\" @ %s;1/p_{t}^{MC} [c/GeV];#Delta(1/p_{t})/#sigma(1/p_{t});SPECIES", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_1Pt", GetNameId(), name);
+  snprintf(htitle, 300, "#splitline{1/P_{t} pull for}{\"%s\" @ %s};1/p_{t}^{MC} [c/GeV];#Delta(1/p_{t})/#sigma(1/p_{t});SPECIES", GetNameId(), name);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, 
                  kNpt, 0., 2., 100, -4., 4., kNspc, -5.5, 5.5);
@@ -2405,8 +2405,8 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
   } else h->Reset();
   arr->AddAt(h, 9);
   // P resolution
-  sprintf(hname, "%s_%s_P", GetNameId(), name);
-  sprintf(htitle, "P res for \"%s\" @ %s;p [GeV/c];#Delta p/p^{MC};SPECIES", GetNameId(), name);
+  snprintf(hname, 100, "%s_%s_P", GetNameId(), name);
+  snprintf(htitle, 300, "P res for \"%s\" @ %s;p [GeV/c];#Delta p/p^{MC};SPECIES", GetNameId(), name);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, 
                  kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
@@ -2591,7 +2591,7 @@ Bool_t AliTRDresolution::Process(TH2 * const h2, TF1 *f, Float_t k, TGraphErrors
   // Do the processing
   //
 
-  Char_t pn[10]; sprintf(pn, "p%03d", fIdxPlot);
+  Char_t pn[10]; snprintf(pn, 10, "p%03d", fIdxPlot);
   Int_t n = 0;
   if((n=g[0]->GetN())) for(;n--;) g[0]->RemovePoint(n);
   if((n=g[1]->GetN())) for(;n--;) g[1]->RemovePoint(n);
@@ -2766,7 +2766,7 @@ Bool_t AliTRDresolution::Process3DL(ETRDresolutionPlot plot, Int_t idx, TF1 *f, 
   if(!(gm = (TGraphAsymmErrors*)((TObjArray*)fGraphM->At(plot))->At(0))) return kFALSE;
   if(!(gs = (TGraphErrors*)((TObjArray*)fGraphS->At(plot)))) return kFALSE;
 
-  Float_t x, r, mpv, xM, xm;
+  Float_t x(0.), r(0.), mpv(0.), xM(0.), xm(0.);
   TAxis *ay = h3->GetYaxis();
   for(Int_t iy=1; iy<=h3->GetNbinsY(); iy++){
     ay->SetRange(iy, iy);
