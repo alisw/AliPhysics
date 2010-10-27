@@ -79,6 +79,7 @@ class AliHLTOnlineConfiguration : public TObject {
 
  private:
   TArrayC fXMLBuffer; // buffer for XML configuration
+  UInt_t fXMLSize;
 
   ClassDef(AliHLTOnlineConfiguration, 1); // description of HLT online configuration
 };
