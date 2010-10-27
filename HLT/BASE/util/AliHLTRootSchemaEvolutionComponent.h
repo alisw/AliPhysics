@@ -32,7 +32,7 @@ class AliHLTMessage;
  *
  * <h2>General properties:</h2>
  *
- * Component ID: \b ROOTFileWriter                                      <br>
+ * Component ID: \b ROOTSchemaEvolutionComponent                        <br>
  * Library: \b libAliHLTUtil.so						<br>
  * Input Data Types: ::kAliHLTAnyDataType				<br>
  * Output Data Types: none						<br>
@@ -64,7 +64,8 @@ class AliHLTMessage;
  * The component loads no CDB entries.
  *
  * <h2>Performance:</h2>
- * The component does not process any event data.
+ * TODO: update performance requirements for unpacking ESDs and creating the
+ * streamer info
  *
  * <h2>Memory consumption:</h2>
  * The component does not process any event data.
