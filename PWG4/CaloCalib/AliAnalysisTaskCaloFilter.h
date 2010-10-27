@@ -21,6 +21,7 @@ class TList;
 #include "AliAnalysisTaskSE.h"
 class AliEMCALRecoUtils;
 class AliEMCALGeometry;
+class AliESDtrackCuts;
 
 class AliAnalysisTaskCaloFilter : public AliAnalysisTaskSE
 {
@@ -53,6 +54,12 @@ public:
   void SwitchOnClusterCorrection()  {fCorrect = kTRUE ;}
   void SwitchOffClusterCorrection() {fCorrect = kFALSE;}
 
+  AliESDtrackCuts* GetTrackCuts()          const  { return fESDtrackCuts    ; }
+  void    SetTrackCuts(AliESDtrackCuts * cuts)    { fESDtrackCuts = cuts    ; }		  
+  Float_t GetTrackMultiplicityEtaCut()     const  { return fTrackMultEtaCut ; }
+  void    SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta  ; }		
+  
+  
   void PrintInfo();
   
 private:
@@ -65,7 +72,11 @@ private:
   TString             fEMCALGeoName;   // Name of geometry to use.
   AliEMCALRecoUtils * fEMCALRecoUtils; // Pointer to EMCAL utilities for clusterization
 
-  ClassDef(AliAnalysisTaskCaloFilter, 2); // Analysis task for standard ESD filtering
+  AliESDtrackCuts *fESDtrackCuts       ; // Track cut  
+  Float_t          fTrackMultEtaCut    ; // Track multiplicity eta cut
+  
+  
+  ClassDef(AliAnalysisTaskCaloFilter, 3); // Analysis task for standard ESD filtering
 };
 
 #endif

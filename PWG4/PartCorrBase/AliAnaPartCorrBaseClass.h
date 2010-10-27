@@ -74,6 +74,8 @@ public:
   virtual AliCaloTrackReader * GetReader() const {return fReader ; }
   virtual void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }
   
+  Int_t GetTrackMultiplicity() const {return fReader->GetTrackMultiplicity();}
+  
   //Calorimeter helper class access methods
   AliEMCALGeoUtils *  GetEMCALGeometry() const { return fCaloUtils->GetEMCALGeometry(); }
   AliPHOSGeoUtils  *  GetPHOSGeometry()  const { return fCaloUtils->GetPHOSGeometry() ; }

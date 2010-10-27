@@ -118,8 +118,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Int_t*   fPIDBits;      //[fNPIDBits] array with different pid bits
 
   //Histograms
-  TH3D ** fhReMod ;  //!REAL two-photon invariant mass distribution for different calorimeter modules.
-	
+  TH3D ** fhReMod ;     //!REAL two-photon invariant mass distribution for different calorimeter modules.
+  TH3D ** fhReDiffMod ; //!REAL two-photon invariant mass distribution for different clusters in different calorimeter modules.
+
   TH3D ** fhRe1 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID 
   TH3D ** fhMi1 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
   TH3D ** fhRe2 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID 
@@ -137,7 +138,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   //Multiple cuts
   TH2D ** fhRePtNCellAsymCuts ; //!REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry
   TH2D ** fhRePIDBits ;         //!REAL two-photon invariant mass distribution for different PID bits
-
+  TH3D *  fhRePtMult ;          //!REAL two-photon invariant mass distribution for different track multiplicity
+  TH3D *  fhRePtMultAsy07 ;     //!REAL two-photon invariant mass distribution for different track multiplicity, asymetry < 0.7
+  
   TH3D * fhEvents; //!Number of events per centrality, RP, zbin
 
   TH2D * fhRealOpeningAngle ;    //! Opening angle of pair versus pair energy
