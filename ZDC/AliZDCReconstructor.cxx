@@ -119,6 +119,12 @@ void AliZDCReconstructor::Init()
     printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
     	beamType.Data(), fBeamEnergy, fBeamEnergy);
   
+  // if EMD calibration run NO ENERGY CALIBRATION should be performed
+  // pp-like reconstruction must be performed (E cailb. coeff. = 1)
+  if((runType.CompareTo("CALIBRATION_EMD")) == 0){
+    fRecoMode=1; 
+  }
+  
   fESDZDC = new AliESDZDC();
 
 }
@@ -288,10 +294,10 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   }//digits loop
  
   UInt_t counts[32];
-  Int_t  tdc[32];
+  Int_t  tdc[32][4];
   for(Int_t jj=0; jj<32; jj++){
     counts[jj]=0;
-    tdc[jj]=0;
+    for(Int_t ii=0; ii<4; ii++) tdc[jj][ii]=0;
   }
   
   Int_t  evQualityBlock[4] = {1,0,0,0};
@@ -355,12 +361,12 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   }  
 
   Bool_t isScalerOn=kFALSE;
-  Int_t jsc=0, itdc=0;
+  Int_t jsc=0, itdc=0, iprevtdc=-1, ihittdc=0;
   UInt_t scalerData[32];
-  Int_t tdcData[32];	
+  Int_t tdcData[32][4];	
   for(Int_t k=0; k<32; k++){
     scalerData[k]=0;
-    tdcData[k]=0;
+    for(Int_t i=0; i<4; i++) tdcData[k][i]=0;
   }
   
   Int_t  evQualityBlock[4] = {1,0,0,0};
@@ -531,11 +537,13 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
    }// VME SCALER DATA
    // ***************************** Reading ZDC TDC
    else if(rawData.GetADCModule()==kZDCTDCGeo && rawData.IsZDCTDCDatum()==kTRUE){
-       tdcData[itdc] = rawData.GetZDCTDCDatum();
+       itdc = rawData.GetChannel(); 
+       if(itdc==iprevtdc) ihittdc++;
+       else ihittdc=0;
+       iprevtdc=itdc;
+       tdcData[itdc][ihittdc] = rawData.GetZDCTDCDatum();
        // Ch. debug
-       //printf("   Reconstructed VME Scaler: %d %d  ",jsc,scalerData[jsc]);
-       //
-       itdc++;
+       printf("   Reconstructed TDC[%d, %d] %d  ",itdc, ihittdc, tdcData[itdc][ihittdc]);
    }// ZDC TDC DATA
    // ***************************** Reading PU
    else if(rawData.GetADCModule()==kPUGeo){
@@ -626,7 +634,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
 	const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	Int_t* tdcData, const Int_t* const evQualityBlock, 
+	Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
@@ -821,7 +829,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 	const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	Int_t* tdcData, const Int_t* const evQualityBlock, 
+	Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
@@ -1298,8 +1306,10 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   }
   
   // Writing TDC data into ZDC ESDs
-  Int_t tdcValues[32];
-  for(Int_t jk=0; jk<32; jk++) tdcValues[jk] = reco.GetZDCTDCData(jk);
+  Int_t tdcValues[32][4];
+  for(Int_t jk=0; jk<32; jk++){
+    for(Int_t lk=0; lk<4; lk++) tdcValues[jk][lk] = reco.GetZDCTDCData(jk, lk);
+  }
   fESDZDC->SetZDCTDC(tdcValues);
   
   if(esd) esd->SetZDCData(fESDZDC);

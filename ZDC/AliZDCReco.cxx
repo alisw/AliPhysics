@@ -61,7 +61,10 @@ AliZDCReco::AliZDCReco() :
      }
   }
   
-  for(Int_t i=0; i<32; i++) fZDCScaler[i] = fZDCTDCData[i] = 0;
+  for(Int_t i=0; i<32; i++){
+    fZDCScaler[i] = 0;
+    for(Int_t ij=0; ij<4; ij++) fZDCTDCData[i][ij] = 0;
+  }
 }
   
 
@@ -75,7 +78,7 @@ AliZDCReco::AliZDCReco(
      Int_t trsp, Int_t trspSideA,Int_t trspSideC,
      Int_t npart, Int_t npartSideA, Int_t npartSideC, 
      Float_t b, Float_t bSideA, Float_t bSideC,
-     UInt_t recoFlag, Bool_t scalerOn, UInt_t* scaler, Int_t* tdcData) :
+     UInt_t recoFlag, Bool_t scalerOn, UInt_t* scaler, Int_t tdcData[32][4]) :
 	
   TObject(),
   //
@@ -116,7 +119,7 @@ AliZDCReco::AliZDCReco(
   }
   for(Int_t j=0; j<32; j++){
     fZDCScaler[j] = scaler[j];
-    fZDCTDCData[j] = tdcData[j];
+    for(Int_t y=0; y<4; y++) fZDCTDCData[j][y] = tdcData[j][y];
   }
 }
 
@@ -171,7 +174,7 @@ fIsScalerOn(oldreco.IsScalerOn())
   fPMRef2[1] = oldreco.GetPMRef2LRsignal();
   for(Int_t j=0; j<32; j++){
     fZDCScaler[j] = oldreco.GetZDCScaler(j);
-    fZDCTDCData[j] = oldreco.GetZDCTDCData(j);
+    for(Int_t y=0; y<4; y++) fZDCTDCData[j][y] = oldreco.GetZDCTDCData(j, y);
   }
 }
 

@@ -767,7 +767,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             	test[specie] += res;
             	count++;
 	      }
-	      if(TMath::Abs(sumADCZPC)>1.e-10){
+/*	      if(TMath::Abs(sumADCZPC)>1.e-10){
             	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
             	  res=1.;
             	else 
@@ -783,6 +783,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             	test[specie] += res;
             	count++;
 	      }
+*/
             }
             esdInd++;
           }  
