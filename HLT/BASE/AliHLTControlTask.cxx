@@ -54,7 +54,11 @@ int AliHLTControlTask::CreateComponent(AliHLTConfiguration* /*pConf*/, AliHLTCom
   int iResult=0;
   if ((pComponent=new AliHLTControlEventComponent(this))) {
     const AliHLTAnalysisEnvironment* pEnv=pCH->GetEnvironment();
-    if ((iResult=pComponent->Init(pEnv, NULL, 0, NULL))>=0) {
+    const char* argv[]={
+      "-disable-component-stat"
+    };
+    int argc=sizeof(argv)/sizeof(const char*);
+    if ((iResult=pComponent->Init(pEnv, NULL, argc, argv))>=0) {
       //HLTDebug("component %s (%p) created", pComponent->GetComponentID(), pComponent); 
     } else {
       HLTError("Initialization of component \"%s\" failed with error %d", pComponent->GetComponentID(), iResult);
