@@ -1,14 +1,14 @@
 #ifndef ALIEMCALSHISHKEBABTRD1MODULE_H
 #define ALIEMCALSHISHKEBABTRD1MODULE_H
 
-/* Copyright(c) 1998-2004, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 //_________________________________________________________________________
 // Main class for TRD1 geometry of Shish-Kebab case.
-// Author: Aleksei Pavlinov(WSU).
-// Nov 2004; Feb 2006
+// Author: Alexei Pavlinov(WSU).
+// Nov 2004; Feb 2006; Apr 2010; Oct 23, 2010
 
 #include <TNamed.h>
 #include <TMath.h>
@@ -32,7 +32,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   virtual ~AliEMCALShishKebabTrd1Module(void) {}
   Bool_t GetParameters();
   void DefineName(Double_t theta);
-  void DefineFirstModule();
+  void DefineFirstModule(const Int_t key=0); // key=0-zero tilt of first module
 
   Double_t GetTheta() const {return fTheta;}
   TVector2& GetCenterOfModule() {return fOK;}
@@ -92,7 +92,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   static Double_t fga;        // 2*dx1=2*dy1
   static Double_t fga2;       // 2*dx2
   static Double_t fgb;        // 2*dz1
-  static Double_t fgangle;    // ~1 degree
+  static Double_t fgangle;    // in rad (1.5 degree)
   static Double_t fgtanBetta; // tan(fgangle/2.)
   static Double_t fgr;        // radius to IP
 

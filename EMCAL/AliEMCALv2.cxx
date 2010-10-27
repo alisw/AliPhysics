@@ -20,7 +20,7 @@
 //*-- An object of this class does not produce digits
 //*-- It is the one to use if you do want to produce outputs in TREEH 
 //*--                  
-//*-- Author : Aleksei Pavlinov (WSU)
+//*-- Author : Alexei Pavlinov (WSU)
 
 // This Class not stores information on all particles prior to EMCAL entry - in order to facilitate analysis.
 // This is done by setting fIShunt =2, and flagging all parents of particles entering the EMCAL.
@@ -301,7 +301,7 @@ void AliEMCALv2::Browse(TBrowser* b)
 void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
 { 
   // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
-  TString g(fGeometry->GetName());
+  TString g(GetGeometry()->GetName());
   g.ToUpper();
   gMC->Gsatt("*", "seen", 0);
 

@@ -47,9 +47,9 @@ public:
   //
   Bool_t IsInitialized(void) const { return fgInit ; }
   static const Char_t* GetDefaultGeometryName() {return fgkDefaultGeometryName;}
-  void   PrintGeometry();                                            //*MENU*  
+  void   PrintGeometry();        //*MENU*  
   
-  void   Init(void);     			// initializes the parameters of EMCAL
+  void   Init(void);     		  // initializes the parameters of EMCAL
   void   CheckAdditionalOptions();        //
   void   DefineSamplingFraction();        // Jun 5, 2006
 
@@ -91,6 +91,8 @@ public:
   Float_t GetTrd1Angle() const {return fTrd1Angle;}
   Float_t Get2Trd1Dx2()  const {return f2Trd1Dx2;}
   Float_t GetEtaMaxOfTRD1() const {return fEtaMaxOfTRD1;}
+  Float_t GetTrd1AlFrontThick() const { return fTrd1AlFrontThick;}
+  Float_t GetTrd1BondPaperThick() const {return fTrd1BondPaperThick;}
   // --
   Int_t   GetNCellsInSupMod() const {return fNCellsInSupMod;}
   Int_t   GetNCellsInModule()  const {return fNCellsInModule; }
@@ -154,15 +156,14 @@ public:
 
   //////////////////////////////////////////////////
   // Obsolete methods to be thrown out when feasible
-  Float_t GetAlFrontThickness() const { return fAlFrontThick;}
   Float_t GetGap2Active() const {return  fGap2Active ;}
   Float_t GetSteelFrontThickness() const { return fSteelFrontThick;}
   Float_t GetTrd2AngleY()const {return fTrd2AngleY;}
   Float_t Get2Trd2Dy2()  const {return f2Trd2Dy2;}
   Float_t GetTubsR()     const {return fTubsR;}
   Float_t GetTubsTurnAngle() const {return fTubsTurnAngle;}
-  Float_t GetIP2ECASection() const { return ( GetIPDistance() + GetAlFrontThickness() 
-					      + GetGap2Active() ) ; }   
+  //  Float_t GetIP2ECASection() const { return ( GetIPDistance() + GetAlFrontThickness() 
+  //					      + GetGap2Active() ) ; }   
   //////////////////////////////////////////////////
 
   static Bool_t  fgInit;	        // Tells if geometry has been succesfully set up.
@@ -228,6 +229,9 @@ private:
   TArrayD fPhiBoundariesOfSM;            // phi boundaries of SM in rad; size is fNumberOfSuperModules;
   TArrayD fPhiCentersOfSM;                // phi of centers of SMl size is fNumberOfSuperModules/2
   Float_t fEtaMaxOfTRD1;                 // max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
+  // Oct 26,2010
+  Float_t fTrd1AlFrontThick;		 // Thickness of the Al front plate  
+  Float_t fTrd1BondPaperThick;		 // Thickness of the Bond Paper sheet  
   // Local Coordinates of SM
   TArrayD fCentersOfCellsEtaDir;        // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
   TArrayD fCentersOfCellsXDir;          // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
@@ -246,7 +250,6 @@ private:
   ////////////////////////////////////////////////////////////
   //Obsolete member data that will be thrown out when feasible
   //
-  Float_t fAlFrontThick;		// Thickness of the front Al face of the support box  
   Float_t fGap2Active;			// Gap between the envelop and the active material
   Float_t fSteelFrontThick;		 // Thickness of the front stell face of the support box - 9-sep-04
   // TRD2 options - 27-jan-07
@@ -259,7 +262,7 @@ private:
 
   ///////////////////////////////////////////////////////////
 
-  ClassDef(AliEMCALEMCGeometry, 1) // EMCAL geometry class 
+  ClassDef(AliEMCALEMCGeometry, 2) // EMCAL geometry class 
 };
 
 #endif // AliEMCALEMCGEOMETRY_H

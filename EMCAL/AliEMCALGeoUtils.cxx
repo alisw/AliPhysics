@@ -301,6 +301,16 @@ void AliEMCALGeoUtils::PrintCellIndexes(Int_t absId, int pri, const char *tit) c
   }
 }
 
+void AliEMCALGeoUtils::PrintLocalTrd1(Int_t pri) const
+{
+  // For comparing with numbers from drawing
+  for(Int_t i=0; i<GetShishKebabTrd1Modules()->GetSize(); i++){
+    printf(" %s | ", GetShishKebabModule(i)->GetName());
+    if(i==0 && pri<1) GetShishKebabModule(i)->PrintShish(1);
+    else     GetShishKebabModule(i)->PrintShish(pri);
+  }
+}
+
 //________________________________________________________________________________________________
 void AliEMCALGeoUtils::EtaPhiFromIndex(Int_t absId,Double_t &eta,Double_t &phi) const
 {
@@ -660,6 +670,7 @@ void AliEMCALGeoUtils::CreateListOfTrd1Modules()
   // Generate the list of Trd1 modules
   // which will make up the EMCAL
   // geometry
+  // key: look to the AliEMCALShishKebabTrd1Module::
 
   AliDebug(2,Form(" AliEMCALGeometry::CreateListOfTrd1Modules() started "));
 
@@ -1449,5 +1460,3 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
   }
   
 }
-
-

@@ -21,6 +21,7 @@
 //*-- Author: Yves Schutz (SUBATECH) 
 //
 //*-- Additional Contributions: Sahal Yacoob (LBNL/UCT)
+//                            : Alexei Pavlinov (WSU) 
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -211,6 +212,16 @@ void AliEMCAL::CreateMaterials()
   Float_t wsteel[4] = { .715,.18,.1,.005 };
   AliMixture(4, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
 
+  // Oct 26,2010 : Multipurpose Copy Paper UNV-21200), weiht 75 g/m**2. 
+  // *Cellulose C6H10O5
+  //    Component C  A=12.01   Z=6.    W=6./21.
+  //    Component H  A=1.      Z=1.    W=10./21.
+  //    Component O  A=16.     Z=8.    W=5./21.
+  Float_t apaper[3] = { 12.01, 1.0, 16.0};
+  Float_t zpaper[3] = { 26.0,  1.0,  8.0};
+  Float_t wpaper[3] = {6./21., 10./21., 5./21.};
+  AliMixture(5, "BondPaper$", apaper, zpaper, 0.75, 3, wpaper);
+ 
   // DEFINITION OF THE TRACKING MEDIA
 
   // for EMCAL: idtmed[1599->1698] equivalent to fIdtmed[0->100]
@@ -237,7 +248,12 @@ void AliEMCAL::CreateMaterials()
 
   // 25-aug-04 by PAI : see  PMD/AliPMDv0.cxx for STEEL definition                 -> idtmed[1603]
   AliMedium(4, "S steel$", 4, 0, 
-             isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
+             isxfld, sxmgmx, 10.0, 0.01, 0.1, 0.001, 0.001, 0, 0) ;
+
+  // Oct 26,2010                                                                   -> idtmed[1604]
+  Float_t stemax = 0.001;
+  AliMedium(5, "Paper$", 5, 0, 
+             isxfld, sxmgmx, 10.0, stemax, 0.1, 0.001, 0.001, 0, 0) ;
 
 
   //set constants for Birk's Law implentation

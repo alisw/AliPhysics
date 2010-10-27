@@ -81,6 +81,7 @@ class  AliCaloRawAnalyzer : public TObject
 			   Double_t & mean, Double_t & rms);
 
  protected:
+public: // PAI
   short Max( const AliCaloBunchInfo *const bunch, int *const maxindex) const;
   UShort_t Max(const UShort_t *data, const int length ) const;
   bool CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch) const;

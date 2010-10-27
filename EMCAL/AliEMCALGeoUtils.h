@@ -44,6 +44,7 @@ public:
 
   void PrintGeometry(); 
   void PrintCellIndexes(Int_t absId=0, int pri=0, const char *tit="") const ;  //*MENU*
+  void PrintLocalTrd1(Int_t pri=0) const;  //*MENU*
   virtual void Browse(TBrowser* b);
   virtual Bool_t  IsFolder() const;
 
@@ -211,9 +212,9 @@ protected:
   Float_t  fIPDistance;		         // Radial Distance of the inner surface of the EMCAL
   Float_t  fLongModuleSize;          // Size of long module
   // Geometry Parameters
-  Float_t  fShellThickness;		     // Total thickness in (x,y) direction
-  Float_t  fZLength;			     // Total length in z direction
-  Float_t  fSampling;			     // Sampling factor
+  Float_t  fShellThickness;	     // Total thickness in (x,y) direction
+  Float_t  fZLength;		     // Total length in z direction
+  Float_t  fSampling;		     // Sampling factor
 
   Int_t    fFastOR2DMap[48][64];	 // FastOR 2D Map over full EMCal
 	

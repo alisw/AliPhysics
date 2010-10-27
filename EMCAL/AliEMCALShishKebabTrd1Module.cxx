@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2004, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -17,8 +17,8 @@
 
 //_________________________________________________________________________
 // Main class for TRD1 geometry of Shish-Kebab case.
-// Author: Aleksei Pavlinov(WSU).
-// Sep 20004 - Nov 2006
+// Author: Alexei Pavlinov(WSU).
+// Sep 20004 - Nov 2006; Apr 2010
 // See web page with description of Shish-Kebab geometries:
 // http://pdsfweb01.nersc.gov/~pavlinov/ALICE/SHISHKEBAB/RES/shishkebabALICE.html
 // Nov 9,2006 - added case of 3X3
@@ -60,13 +60,14 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     fORB(), 
     fORT()
 { 
-  // theta in radians ; first object shold be with theta=pi/2.
-  fTheta = TMath::PiOver2();
+  TString snam(g->GetName());
+  Int_t key=0;
+  if(snam.Contains("FIRSTYEARv1",TString::kIgnoreCase)) key=1;
   if(GetParameters()) {
-    DefineFirstModule();
+    DefineFirstModule(key);
   }
   DefineName(fTheta);
-  AliDebug(1,Form("AliEMCALShishKebabTrd1Module - first module:  theta %1.4f geometry %s",fTheta,g->GetName()));  
+  printf("AliEMCALShishKebabTrd1Module - first module key=%i:  theta %1.4f geometry %s\n",key,fTheta, g->GetName());
 }
 
 //_____________________________________________________________________________
@@ -198,17 +199,44 @@ void AliEMCALShishKebabTrd1Module::DefineAllStaff()
 }
 
 //_____________________________________________________________________________
-void AliEMCALShishKebabTrd1Module::DefineFirstModule()
+void AliEMCALShishKebabTrd1Module::DefineFirstModule(const Int_t key)
 {
+  //    Oct 23-25, 2010
+  //  key=0 - zero tilt of first module;
+  //  key=1 - angle=fgangle/2 = 0.75 degree.
+  //  This is what we have in produced SM. 
+
   // Define first module
-  fOK.Set(fga2/2., fgr + fgb/2.); // position the center of module vs o
+  if(key==0) {
+    // theta in radians ; first object theta=pi/2.
+    fTheta = TMath::PiOver2();
+    fOK.Set(fga2/2., fgr + fgb/2.); // position the center of module vs o
 
-  // parameters of right line : y = A*z + B in system where zero point is IP.
-  fThetaA = fTheta - fgangle/2.;
-  fA      = TMath::Tan(fThetaA);
-  Double_t xA = fga/2. + fga2/2., yA = fgr;
-  fB = yA - fA*xA;
+    // parameters of right line : y = A*z + B in system where zero point is IP.
+    fThetaA = fTheta - fgangle/2.;
+    fA      = TMath::Tan(fThetaA);
+    Double_t xA = fga/2. + fga2/2.;
+    Double_t yA = fgr;
+    fB = yA - fA*xA;
 
+  } else if(key==1) {
+    // theta in radians ; first object theta = 90-0.75 = 89.25 degree
+    fTheta = 89.25*TMath::DegToRad();
+    Double_t al1 = fgangle/2.;
+    Double_t x = 0.5*(fga*TMath::Cos(al1) + fgb*TMath::Sin(al1));
+    Double_t y = 0.5*(fgb + fga*TMath::Sin(al1))*TMath::Cos(al1);
+    fOK.Set(x, fgr + y);
+    // parameters of right line : y = A*z + B in system where zero point is IP.
+    fThetaA = fTheta - fgangle/2.;
+    fA      = TMath::Tan(fThetaA);
+    Double_t xA = fga*TMath::Cos(al1);
+    Double_t yA = fgr;
+    fB = yA - fA*xA;
+
+  } else {
+    printf("<E> key=%i : wrong case \n",key);
+    assert(0);
+  }
   TObject::SetUniqueID(1); //
 
   DefineAllStaff();
@@ -253,14 +281,18 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 void AliEMCALShishKebabTrd1Module::PrintShish(int pri) const
 {
   // service method
-  if(pri>=0) {
-    printf("PrintShish() \n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
-    fga, fga2, fgb, fgr, fgangle, fgangle*TMath::RadToDeg(), fgtanBetta);
-    printf(" fTheta %f : %5.2f : cos(theta) %f\n", 
-    fTheta, GetThetaInDegree(),TMath::Cos(fTheta)); 
-    if(pri>=1) {
-      printf(" %i |%s| theta %f :  fOK.Phi = %f(%5.2f)\n", 
+  if(pri>=0) { 
+    if(pri >= 1) {
+      printf("PrintShish() \n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
+      fga, fga2, fgb, fgr, fgangle, fgangle*TMath::RadToDeg(), fgtanBetta);
+      printf(" fTheta %f : %5.2f : cos(theta) %f\n", 
+      fTheta, GetThetaInDegree(),TMath::Cos(fTheta)); 
+      printf(" OK : %i |%s| theta %f :  phi = %f(%5.2f) \n", 
       GetUniqueID(), GetName(), fTheta, fOK.Phi(),fOK.Phi()*TMath::RadToDeg());
+    }
+    printf(" y %9.3f x %9.3f xrb %9.3f (right bottom on r=%9.3f ) \n", 
+	   fOK.X(), fOK.Y(), fORB.X(),fORB.Y());
+    if(pri>=2) {
       printf(" A %f B %f | fThetaA %7.6f(%5.2f)\n", fA,fB, fThetaA,fThetaA*TMath::RadToDeg());
       printf(" fOK  : X %9.4f: Y %9.4f : eta  %5.3f\n",  fOK.X(), fOK.Y(), GetEtaOfCenterOfModule());
       printf(" fOK1 : X %9.4f: Y %9.4f :   (local, ieta=2)\n", fOK1.X(), fOK1.Y());
@@ -307,8 +339,9 @@ void AliEMCALShishKebabTrd1Module::GetPositionAtCenterCellLine(Int_t ieta, Doubl
   }
   x = v.X() + TMath::Cos(theta) * dist;
   y = v.Y() + TMath::Sin(theta) * dist;
+  //  printf(" GetPositionAtCenterCellLine() %s : dist %f : ieta %i : x %f %f v.X() | y %f %f v.Y() : cos %f sin %f \n", 
+  //GetName(), dist, ieta, v.X(),x, y,v.Y(),TMath::Cos(theta),TMath::Sin(theta));
   v.Set(x,y);
-  //printf(" GetPositionAtCenterCellLine() : dist %f : ieta %i : x %f | y %f \n", dist, ieta, x, y);
 }  
 
 

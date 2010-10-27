@@ -11,7 +11,7 @@
 //                  
 //*-- Author: Sahal Yacoob (LBL / UCT)
 //*--   and : Yves Schutz (Subatech)
-//*--   and : Aleksei Pavlinov (WSU) - shashlyk staff
+//*--   and : Alexei Pavlinov (WSU) - shashlyk staff
 //*--   and : Gustavo Conesa: Add TRU mapping. TRU parameters still not fixed.
 
 // --- ROOT system ---
@@ -100,7 +100,9 @@ public:
   Float_t  GetLongModuleSize(void) const {return fEMCGeometry->GetLongModuleSize();}
   Float_t  GetTrd1Angle(void) const {return fEMCGeometry->GetTrd1Angle();}
   Float_t  Get2Trd1Dx2(void)  const {return fEMCGeometry->Get2Trd1Dx2();}
-  // --
+  Float_t  GetTrd1AlFrontThick() const {return fEMCGeometry->GetTrd1AlFrontThick();}
+  Float_t  GetTrd1BondPaperThick() const {return fEMCGeometry->GetTrd1BondPaperThick();}
+   // --
   Int_t    GetNCellsInSupMod(void) const {return fEMCGeometry->GetNCellsInSupMod();}
   Int_t    GetNCellsInModule(void)  const {return fEMCGeometry->GetNCellsInModule(); }
   Int_t    GetKey110DEG(void)      const {return fEMCGeometry->GetKey110DEG();}
@@ -145,28 +147,19 @@ public:
   void SetNTRUEta(Int_t ntru) { fEMCGeometry->SetNTRUEta(ntru);}
   void SetNTRUPhi(Int_t ntru) { fEMCGeometry->SetNTRUPhi(ntru);}
   void SetSampling(Float_t samp) { fEMCGeometry->SetSampling(samp);}
-  
-/*   /////////////////// */
-/*   // useful utilities */
-/*   // */
-/*   Float_t AngleFromEta(Float_t eta) const { // returns theta in radians for a given pseudorapidity */
-/*     return 2.0*TMath::ATan(TMath::Exp(-eta)); */
-/*   } */
-/*   Float_t ZFromEtaR(Float_t r,Float_t eta) const { // returns z in for a given */
-/*     // pseudorapidity and r=sqrt(x*x+y*y). */
-/*     return r/TMath::Tan(AngleFromEta(eta)); */
-/*   } */
+
+  void PrintGeometry() {fEMCGeometry->PrintGeometry();}  //*MENU*  
 
   //////////////////////////////////////////////////
   // Obsolete methods to be thrown out when feasible
-  Float_t GetAlFrontThickness(void) const { return fEMCGeometry->GetAlFrontThickness();}
   Float_t GetGap2Active(void) const {return  fEMCGeometry->GetGap2Active();}
   Float_t GetSteelFrontThickness(void) const { return fEMCGeometry->GetSteelFrontThickness();}
   Float_t GetTrd2AngleY(void) const {return fEMCGeometry->GetTrd2AngleY();}
   Float_t Get2Trd2Dy2(void)  const {return fEMCGeometry->Get2Trd2Dy2();}
   Float_t GetTubsR(void)     const {return fEMCGeometry->GetTubsR();}
   Float_t GetTubsTurnAngle(void) const {return fEMCGeometry->GetTubsTurnAngle();}
-  Float_t GetIP2ECASection(void) const { return fEMCGeometry->GetIP2ECASection(); }   
+  //Float_t GetAlFrontThickness(void) const { return fEMCGeometry->GetAlFrontThickness();}
+  //  Float_t GetIP2ECASection(void) const { return fEMCGeometry->GetIP2ECASection(); }   
   //////////////////////////////////////////////////
 
 protected:

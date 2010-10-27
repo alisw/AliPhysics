@@ -50,11 +50,11 @@ class AliEMCALv0 : public AliEMCAL {
     // As above
     return TString("v0") ; 
   }
-  
-  // ShishKebab 
+    // ShishKebab 
   void CreateShishKebabGeometry();
   void CreateSmod(const char* mother="XEN1");
   void CreateEmod(const char* mother="SMOD", const char* child="EMOD");
+  void CreateAlFrontPlate(const char* mother="EMOD", const char* child="ALFP");
   // TRD1
   void Trd1Tower3X3(const double *parSCM0);
   void Trd1Tower4X4() const;

@@ -34,6 +34,18 @@
 //   EMCAL_COMPLETE (geometry for expected complete detector)
 //      = equivalent to SHISH_77_TRD1_2X2_FINAL_110DEG scTh=0.176 pbTh=0.144
 //          in old notation
+//
+//   EMCAL_FIRSTYEAR - geometry for December 2009 to December 2010 run period
+//                     with four Super Modules
+//  
+//   EMCAL_FIRSTYEARV1 - geometry for December 2009 to December 2010 run period; 
+//                1. Fixed bug for positions of modules inside SM
+//                   (first module has tilt 0.75 degree);
+//                2. Added Al front plate (width 1 cm) and 2 paper sheets per sampling
+//                   layer (additional 0.2 mm) 
+//                   The sizes have updated with last information from production
+//                   drawing (end of October 2010). 
+//
 //   EMCAL_WSUC (Wayne State test stand)
 //      = no definite equivalent in old notation, was only used by
 //          Aleksei, but kept for testing purposes
@@ -80,11 +92,12 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry()
     // 
     fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0),fEtaMaxOfTRD1(0),
+    fTrd1AlFrontThick(0.0), fTrd1BondPaperThick(0.),
     fCentersOfCellsEtaDir(0), fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
-    fILOSS(-1), fIHADR(-1),
+    fParSM(), fILOSS(-1), fIHADR(-1),
     //obsolete member data
-    fAlFrontThick(0.), fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
+     fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
     f2Trd2Dy2(0.), fEmptySpace(0.), fTubsR(0.), fTubsTurnAngle(0.)
 { 
   // default ctor only for internal usage (singleton)
@@ -110,11 +123,12 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title
     // 
     fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0), fEtaMaxOfTRD1(0),
+    fTrd1AlFrontThick(0.0), fTrd1BondPaperThick(0.),
     fCentersOfCellsEtaDir(0),fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
-    fILOSS(-1), fIHADR(-1), 
+    fParSM(),fILOSS(-1), fIHADR(-1), 
     //obsolete member data
-    fAlFrontThick(0.), fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
+    fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
     f2Trd2Dy2(0.), fEmptySpace(0.), fTubsR(0.), fTubsTurnAngle(0.)
 {
   // ctor only for internal usage (singleton)
@@ -177,6 +191,8 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fPhiBoundariesOfSM(geom.fPhiBoundariesOfSM),
     fPhiCentersOfSM(geom.fPhiCentersOfSM),
     fEtaMaxOfTRD1(geom.fEtaMaxOfTRD1),
+    fTrd1AlFrontThick(geom.fTrd1AlFrontThick),
+    fTrd1BondPaperThick(geom.fTrd1BondPaperThick),
     fCentersOfCellsEtaDir(geom.fCentersOfCellsEtaDir),
     fCentersOfCellsXDir(geom.fCentersOfCellsXDir),
     fCentersOfCellsPhiDir(geom.fCentersOfCellsPhiDir),
@@ -185,7 +201,6 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fShishKebabTrd1Modules(geom.fShishKebabTrd1Modules),
     fILOSS(geom.fILOSS), fIHADR(geom.fIHADR),
     //obsolete member data
-    fAlFrontThick(geom.fAlFrontThick),
     fGap2Active(geom.fGap2Active),
     fSteelFrontThick(geom.fSteelFrontThick),
     fTrd2AngleY(geom.fTrd2AngleY),
@@ -307,9 +322,24 @@ void AliEMCALEMCGeometry::Init(void){
 
   //In 2009-2010 data taking runs only 4 SM, in the upper position.
   if(fGeoName.Contains("FIRSTYEAR")){	
-	fNumberOfSuperModules = 4;	
-	fArm1PhiMax           = 120.0; 
-	CheckAdditionalOptions();	
+    fNumberOfSuperModules = 4;	
+    fArm1PhiMax           = 120.0; 
+    if(fGeoName.Contains("FIRSTYEARV1")){
+      // Oct 26,2010 : First module has tilt = 0.75 degree : 
+      // look to AliEMCALShishKebabTrd1Module::DefineFirstModule(key)
+      // New sizes from production drawing, added Al front plate.
+      // The thickness of sampling is change due to existing two sheets of paper.
+
+      // Will replace fFrontSteelStrip
+      fTrd1AlFrontThick   = 1.0;  // one cm
+      // Bond paper - two sheets around Sc tile
+      fTrd1BondPaperThick = 0.01; // 0.01cm = 0.1 mm
+
+      fPhiModuleSize = 12.0;
+      fEtaModuleSize = fPhiModuleSize;
+      fLateralSteelStrip = 0.015; // 0.015cm  = 0.15mm
+    }
+    CheckAdditionalOptions();	
   }	
 	
   // constant for transition absid <--> indexes
@@ -325,7 +355,13 @@ void AliEMCALEMCGeometry::Init(void){
   fEtaTileSize = fEtaModuleSize/double(fNETAdiv) - fLateralSteelStrip; // 13-may-05 
 
   fLongModuleSize = fNECLayers*(fECScintThick + fECPbRadThickness);  
+  if(fGeoName.Contains("FIRSTYEARV1")){
+    Double_t ws = fECScintThick + fECPbRadThickness + 2.*fTrd1BondPaperThick; // sampling width
+    // Number of Pb tiles = Number of Sc tiles - 1
+    fLongModuleSize = fTrd1AlFrontThick + (ws*fNECLayers - fECPbRadThickness);
+  }
   f2Trd1Dx2 = fEtaModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd1Angle*TMath::DegToRad()/2.);
+
   if(!fGeoName.Contains("WSUC")) fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2);
 
   //These parameters are used to create the mother volume to hold the supermodules
@@ -409,6 +445,8 @@ void AliEMCALEMCGeometry::PrintGeometry()
   printf(" fILOSS %i : fIHADR %i \n", fILOSS, fIHADR);
   printf(" fTrd1Angle %7.4f\n", fTrd1Angle);
   printf(" f2Trd1Dx2  %7.4f\n",  f2Trd1Dx2);
+  printf(" fTrd1AlFrontThick   %7.4f \n", fTrd1AlFrontThick);
+  printf(" fTrd1BondPaperThick %5.4f \n", fTrd1BondPaperThick);
   printf("SM dimensions(TRD1) : dx %7.2f dy %7.2f dz %7.2f (SMOD, BOX)\n", 
 	 fParSM[0],fParSM[1],fParSM[2]);
   printf(" fPhiGapForSM  %7.4f cm (%7.4f <- phi size in degree)\n",  
