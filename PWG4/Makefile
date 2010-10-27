@@ -84,6 +84,7 @@ endif
     ALICEINC += -I$(ALICE_ROOT)/JETAN   # some extra includes
     ALICEINC += -I$(ALICE_ROOT)/PHOS
     ALICEINC += -I$(ALICE_ROOT)/EMCAL
+    ALICEINC += -I$(ALICE_ROOT)/PWG4/PartCorrBase
   endif
 #endif
 

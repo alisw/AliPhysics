@@ -25,14 +25,6 @@ Int_t kFile = 1; // Number of files
 //---------------------------------------------------------------------------
 //Collection file for grid analysis
 char * kXML = "collection.xml";
-//---------------------------------------------------------------------------
-//Scale histograms from file. Change to kTRUE when xsection file exists
-//Put name of file containing xsection 
-//Put number of events per ESD file
-//This is an specific case for normalization of Pythia files.
-const Bool_t kGetXSectionFromFileAndScale = kFALSE ;
-const char * kXSFileName = "pyxsec.root";
-//---------------------------------------------------------------------------
 
 const Bool_t kMC = kFALSE; //With real data kMC = kFALSE
 const TString kInputData = "ESD"; //ESD, AOD, MC
@@ -48,7 +40,8 @@ void ana(Int_t mode=mLocal)
   // change whatever you need for your analysis case
   // ------------------------------------------------------------------
   LoadLibraries(mode) ;
-  
+  //    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
+
   //-------------------------------------------------------------------------------------------------
   //Create chain from ESD and from cross sections files, look below for options.
   //-------------------------------------------------------------------------------------------------
@@ -61,8 +54,7 @@ void ana(Int_t mode=mLocal)
   }
 
   TChain *chain       = new TChain(kTreeName) ;
-  TChain * chainxs = new TChain("Xsection") ;
-  CreateChain(mode, chain, chainxs);  
+  CreateChain(mode, chain);  
 
   if(chain){
     AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
@@ -78,29 +70,22 @@ void ana(Int_t mode=mLocal)
       mgr->SetMCtruthEventHandler(mcHandler);
 	  if( kInputData == "MC") mgr->SetInputEventHandler(NULL);
     }
-
-    // AOD output handler
-     AliAODHandler* aodoutHandler   = new AliAODHandler();
-    aodoutHandler->SetOutputFileName("aod.root");
-    ////aodoutHandler->SetCreateNonStandardAOD();
-    mgr->SetOutputEventHandler(aodoutHandler);
     
     //input
     if(kInputData == "ESD")
-	{
-      // ESD handler
-      AliESDInputHandler *esdHandler = new AliESDInputHandler();
-      mgr->SetInputEventHandler(esdHandler);
-	  cout<<"ESD handler "<<mgr->GetInputEventHandler()<<endl;
-	}
+      {
+       // ESD handler
+       AliESDInputHandler *esdHandler = new AliESDInputHandler();
+       mgr->SetInputEventHandler(esdHandler);
+       cout<<"ESD handler "<<mgr->GetInputEventHandler()<<endl;
+      }
     if(kInputData == "AOD"){
       // AOD handler
       AliAODInputHandler *aodHandler = new AliAODInputHandler();
       mgr->SetInputEventHandler(aodHandler);
-	  cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
-	   	  
+      cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
     }
-
+    
      //mgr->SetDebugLevel(-1); // For debugging, do not uncomment if you want no messages.
 
     //-------------------------------------------------------------------------
@@ -112,23 +97,9 @@ void ana(Int_t mode=mLocal)
     //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
     //AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kTRUE);
 
-    //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
    
-
-    //AliAnalysisTaskParticleCorrelation *taskEMCAL = AddTaskPartCorr("AOD","EMCAL", kTRUE,kTRUE);	
-    //mgr->AddTask(taskEMCAL);
-    //AliAnalysisTaskParticleCorrelation *taskPHOS  = AddTaskPartCorr("AOD","PHOS", kTRUE);
-    //mgr->AddTask(taskPHOS);
-
-    //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCalorimeterQA.C");
-    gROOT->LoadMacro("AddTaskCalorimeterQA.C");
-    AliAnalysisTaskParticleCorrelation *taskQA = AddTaskCalorimeterQA(kInputData,kFALSE,kTRUE);
-
-    //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskomega3pi.C");
-    //AliAnalysisTaskOmegaPi0PiPi * taskomega = AddTaskomega3pi();
-    //mgr->AddTask(taskomega);
-
-
+    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
+    AliAnalysisTaskParticleCorrelation *taskQA = AddTaskCalorimeterQA(kInputData,kFALSE,kMC);
 
     //-----------------------
     // Run the analysis
@@ -161,7 +132,8 @@ void  LoadLibraries(const anaModes mode) {
   gSystem->Load("libGeom.so");
   gSystem->Load("libVMC.so");
   gSystem->Load("libXMLIO.so");
-  
+  gSystem->Load("libMatrix.so");
+  gSystem->Load("libPhysics.so");
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   //----------------------------------------------------------
@@ -170,15 +142,7 @@ void  LoadLibraries(const anaModes mode) {
     // If you want to use already compiled libraries 
     // in the aliroot distribution
     //--------------------------------------------------------
-    //gSystem->Load("/Users/Gustavo/Work/analysis/STEERBase/libSTEERBase.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/ESD/libESD.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/AOD/libAOD.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/ANALYSIS/libANALYSIS.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/ANALYSISalice/libANALYSISalice.so");
-    //gSystem->Load("libPHOSUtils");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/PWG4PartCorrBase/libPWG4PartCorrBase.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/PWG4PartCorrDep/libPWG4PartCorrDep.so");
-	
+ 
     gSystem->Load("libSTEERBase.so");
     gSystem->Load("libESD.so");
     gSystem->Load("libAOD.so");
@@ -188,10 +152,6 @@ void  LoadLibraries(const anaModes mode) {
     gSystem->Load("libEMCALUtils");
     gSystem->Load("libPWG4PartCorrBase.so");
     gSystem->Load("libPWG4PartCorrDep.so");
-//     gSystem->Load("libPWG4omega3pi.so");
-//     gSystem->Load("libCORRFW.so");
-//     gSystem->Load("libPWG3base.so");
-//     gSystem->Load("libPWG3muon.so");
  
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
@@ -204,11 +164,10 @@ void  LoadLibraries(const anaModes mode) {
 //     //If your analysis needs PHOS geometry uncomment following lines
 //     SetupPar("PHOSUtils");
 //     SetupPar("EMCALUtils");
-//     //	//Create Geometry
-//     //    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
+//     //Create Geometry
 //     SetupPar("PWG4PartCorrBase");
 //     SetupPar("PWG4PartCorrDep");
-//     //SetupPar("PWG4omega3pi");
+
   }
 
   //---------------------------------------------------------
@@ -304,7 +263,7 @@ void SetupPar(char* pararchivename)
 
 
 
-void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
+void CreateChain(const anaModes mode, TChain * chain){
   //Fills chain with data
   TString ocwd = gSystem->WorkingDirectory();
   
@@ -346,44 +305,27 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
 	return ;
       }
 
-      //if(gSystem->Getenv("XSFILE"))  
-      //kXSFileName = gSystem->Getenv("XSFILE") ; 
-      //else cout<<" XS file name not set, use default: "<<kXSFileName<<endl;	
-      char * kGener = gSystem->Getenv("GENER");
-      if(kGener) {
-	cout<<"GENER "<<kGener<<endl;
-	if(!strcmp(kGener,"PYTHIA")) kXSFileName = "pyxsec.root";
-	else if(!strcmp(kGener,"HERWIG")) kXSFileName = "hexsec.root";
-	else cout<<" UNKNOWN GENER, use default: "<<kXSFileName<<endl;
-      }
-      else cout<<" GENER not set, use default xs file name: "<<kXSFileName<<endl;
-
       cout<<"INDIR   : "<<kInDir<<endl;
       cout<<"NFILES  : "<<kFile<<endl;
       cout<<"PATTERN : " <<kPattern<<endl;
-      cout<<"XSFILE  : "<<kXSFileName<<endl;
 
       TString datafile="";
       if(kInputData == "ESD") datafile = "AliESDs.root" ;
       else if(kInputData == "AOD") datafile = "AliAOD.root" ;
-      else if(kInputData == "MC")  datafile = "galice.root" ;
       
       //Loop on ESD files, add them to chain
       Int_t event =0;
       Int_t skipped=0 ; 
       char file[120] ;
-      char filexs[120] ;
       
       for (event = 0 ; event < kFile ; event++) {
 	sprintf(file, "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ; 
-	sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ; 
 	TFile * fESD = 0 ; 
 	//Check if file exists and add it, if not skip it
 	if ( fESD = TFile::Open(file)) {
 	  if ( fESD->Get(kTreeName) ) { 
 	    printf("++++ Adding %s\n", file) ;
 	    chain->AddFile(file);
-	    chainxs->Add(filexs) ; 
 	  }
 	}
 	else { 
@@ -425,7 +367,6 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
     TGrid::Connect("alien://") ;
 
     //Feed Grid with collection file
-    //TGridCollection * collection =  (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)", kXML));
     TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
     if (! collection) {
       AliError(Form("%s not found", kXML)) ; 
@@ -439,54 +380,9 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       TString alienURL = result->GetKey(index, "turl") ; 
       cout << "================== " << alienURL << endl ; 
       chain->Add(alienURL) ; 
-      alienURL.ReplaceAll("AliESDs.root",kXSFileName);
-      chainxs->Add(alienURL) ; 
     }
   }// xml analysis
   
   gSystem->ChangeDirectory(ocwd.Data());
 }
-
-//________________________________________________
-void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
-{
-  // Read the PYTHIA statistics from the file pyxsec.root created by
-  // the function WriteXsection():
-  // integrated cross section (xsection) and
-  // the  number of Pyevent() calls (ntrials)
-  // and calculate the weight per one event xsection/ntrials
-  // The spectrum calculated by a user should be
-  // multiplied by this weight, something like this:
-  // TH1F *userSpectrum ... // book and fill the spectrum
-  // userSpectrum->Scale(weight)
-  //
-  // Yuri Kharlov 19 June 2007
-  // Gustavo Conesa 15 April 2008
-  Double_t xsection = 0;
-  UInt_t    ntrials = 0;
-  xs = 0;
-  ntr = 0;
-  
-  Int_t nfiles =  tree->GetEntries()  ;
-  if (tree && nfiles > 0) {
-    tree->SetBranchAddress("xsection",&xsection);
-    tree->SetBranchAddress("ntrials",&ntrials);
-    for(Int_t i = 0; i < nfiles; i++){
-      tree->GetEntry(i);
-      xs += xsection ;
-      ntr += ntrials ;
-      cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl; 
-    }
-    
-    xs =   xs /  nfiles;
-    ntr =  ntr / nfiles;
-    cout << "-----------------------------------------------------------------"<<endl;
-    cout << "Average of "<< nfiles<<" files: xsection " <<xs<<" ntrials "<<ntr<<endl; 
-    cout << "-----------------------------------------------------------------"<<endl;
-  } 
-  else cout << " >>>> Empty tree !!!! <<<<< "<<endl;
-  
-}
-
-
 

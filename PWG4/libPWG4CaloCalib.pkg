@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS =  CaloCalib/AliAnalysisTaskCaloFilter.cxx CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx CaloCalib/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
+SRCS =  CaloCalib/AliAnalysisTaskCaloFilter.cxx CaloCalib/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
       
 HDRS:= $(SRCS:.cxx=.h) 
 
@@ -8,10 +8,10 @@ DHDR:= PWG4CaloCalibLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
 
-EINCLUDE= PHOS EMCAL PWG4/CaloCalib
+EINCLUDE= EMCALUtils PWG4/CaloCalib
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
-                         -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSbase -lEMCALbase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice -lEMCALUtils \
                          -L$(ROOTLIBDIR) -lEG
 endif
