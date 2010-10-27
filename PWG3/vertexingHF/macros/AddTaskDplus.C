@@ -58,6 +58,9 @@ AliAnalysisTaskSEDplus *AddTaskDplus(TString filename="./DplustoKpipiCuts.root",
   AliAnalysisDataContainer *coutputDplus = mgr->CreateContainer("coutputDplus",TList::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
+  AliAnalysisDataContainer *coutputDplusNorm = mgr->CreateContainer("coutputDplusNorm",AliNormalizationCounter::Class(),
+								AliAnalysisManager::kOutputContainer,
+								outputfile.Data());
   
   if(storeNtuple){
     AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer("coutputDplus2",TNtuple::Class(),
@@ -71,9 +74,10 @@ AliAnalysisTaskSEDplus *AddTaskDplus(TString filename="./DplustoKpipiCuts.root",
   mgr->ConnectOutput(dplusTask,1,coutputDplus);
   
   mgr->ConnectOutput(dplusTask,2,coutputDplusCuts);
-  
+
+  mgr->ConnectOutput(dplusTask,3,coutputDplusNorm);  
   if(storeNtuple){
-    mgr->ConnectOutput(dplusTask,3,coutputDplus2);
+    mgr->ConnectOutput(dplusTask,4,coutputDplus2);
   }
   return dplusTask;
 }

@@ -36,6 +36,7 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliMultiDimVector.cxx vertexingHF/AliSignificanceCalculator.cxx \
        vertexingHF/AliHFMassFitter.cxx \
        vertexingHF/AliHFPtSpectrum.cxx \
+       vertexingHF/AliNormalizationCounter.cxx \
        vertexingHF/AliAnalysisTaskSEBkgLikeSignJPSI.cxx \
        vertexingHF/AliAnalysisTaskSEBkgLikeSignD0.cxx \
        vertexingHF/AliAnalysisTaskSEJPSItoEle.cxx \

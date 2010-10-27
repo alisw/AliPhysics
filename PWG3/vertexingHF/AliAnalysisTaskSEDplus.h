@@ -24,6 +24,7 @@
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliNormalizationCounter.h"
 
 class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 {
@@ -35,6 +36,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetDoLikeSign(Bool_t dols=kTRUE){fDoLS=dols;}
+  void SetUseStrangeness(Bool_t uses=kTRUE){fUseStrangeness=uses;}
   void SetMassLimits(Float_t range);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetPtBinLimit(Int_t n, Float_t *limitarray);
@@ -101,12 +103,14 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TList *fListCuts; //list of cuts
   AliRDHFCutsDplustoKpipi *fRDCutsProduction; //Production D+ Cuts
   AliRDHFCutsDplustoKpipi *fRDCutsAnalysis; //Cuts for Analysis
+  AliNormalizationCounter *fCounter;//!Counter for normalization
   Double_t fArrayBinLimits[kMaxPtBins+1]; //limits for the Pt bins
   Bool_t fFillNtuple;   // flag for filling ntuple
   Bool_t fReadMC;    //flag for access to MC
+  Bool_t fUseStrangeness;//flag to enhance strangeness in MC to fit to data
   Bool_t fDoLS;      //flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,8); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,9); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
