@@ -26,8 +26,6 @@
 #include "AliESDEvent.h"
 #include "TTree.h"
 #include "TString.h"
-#include "TObjString.h"
-#include "TObjArray.h"
 #include <cassert>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -41,6 +39,7 @@ AliHLTGlobalHistoComponent::AliHLTGlobalHistoComponent()
   , fVertexY(-99)
   , fVertexZ(-99)
   , fTrackVariables()
+  , fTrackVariablesInt()
 {
   // see header file for class documentation
   // or
@@ -54,6 +53,7 @@ AliHLTGlobalHistoComponent::~AliHLTGlobalHistoComponent()
 {
   // see header file for class documentation
   fTrackVariables.Reset();
+  fTrackVariablesInt.Reset();
 }
 
 void AliHLTGlobalHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
@@ -70,6 +70,7 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
   if (!pTree) return NULL;
 
   const char* trackVariableNames = {
+    // Note the black at the end of each name!
     "Track_pt "
     "Track_phi "
     "Track_eta "
@@ -83,10 +84,18 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
     "Track_dEdx "
   };
   
+  const char* trackIntVariableNames = {
+    // Note the black at the end of each name!
+    "Track_status "
+  };
+  
   int maxTrackCount=20000; // FIXME: make configurable
   
   if ((iResult=fTrackVariables.Init(maxTrackCount, trackVariableNames))<0) {
-    HLTError("failed to initialize internal structure for track properties");
+    HLTError("failed to initialize internal structure for track properties (float)");
+  }
+  if ((iResult=fTrackVariablesInt.Init(maxTrackCount, trackIntVariableNames))<0) {
+    HLTError("failed to initialize internal structure for track properties (int)");
   }
   
   if (iResult>=0) {
@@ -95,12 +104,22 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
     pTree->Branch("vertexX",      &fVertexX,   "vertexX/F");
     pTree->Branch("vertexY",      &fVertexY,   "vertexY/F");
     pTree->Branch("vertexZ",      &fVertexZ,   "vertexZ/F");
-    
-    for (int i=0; i<fTrackVariables.Variables(); i++) {
+
+    int i=0;
+    // FIXME: this is a bit ugly since type 'f' and 'i' are specified
+    // explicitely. Would be better to use a function like
+    // AliHLTGlobalHistoVariables::GetType but could not get this working
+    for (i=0; i<fTrackVariables.Variables(); i++) {
       TString specifier=fTrackVariables.GetKey(i);
       float* pArray=fTrackVariables.GetArray(specifier);
       specifier+="[trackcount]/f";
       pTree->Branch(fTrackVariables.GetKey(i), pArray, specifier.Data());
+    }
+    for (i=0; i<fTrackVariablesInt.Variables(); i++) {
+      TString specifier=fTrackVariablesInt.GetKey(i);
+      int* pArray=fTrackVariablesInt.GetArray(specifier);
+      specifier+="[trackcount]/i";
+      pTree->Branch(fTrackVariablesInt.GetKey(i), pArray, specifier.Data());
     }
   } else {
     delete pTree;
@@ -153,6 +172,8 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
     fTrackVariables.Fill("Track_DCAr"      , DCAr                        	 );
     fTrackVariables.Fill("Track_DCAz"      , DCAz                                );   
     fTrackVariables.Fill("Track_dEdx"      , esdTrack->GetTPCsignal()            );   
+
+    fTrackVariablesInt.Fill("Track_status" , esdTrack->GetStatus()               );   
    }
   HLTInfo("added parameters for %d tracks", fNofTracks);
 
@@ -171,6 +192,7 @@ int AliHLTGlobalHistoComponent::ResetVariables()
   /// reset all filling variables
   fNofTracks=0;
   fTrackVariables.ResetCount();
+  fTrackVariablesInt.ResetCount();
   return 0;
 }
 
@@ -185,121 +207,3 @@ AliHLTComponentDataType AliHLTGlobalHistoComponent::GetOriginDataType() const
 //   // get specifications of the output data
 //   return 0;
 // }
-
-AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::AliHLTGlobalHistoVariables()
- : fCapacity(0)
- , fArrays()
- , fCount()
- , fKeys()
-{
-  /// default constructor
-}
-
-AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::~AliHLTGlobalHistoVariables()
-{
-  /// destructor
-  Reset();
-}
-
-int AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::Init(int capacity, const char* names)
-{
-  /// init the arrays
-  int iResult=0;
-  TString initializer(names);
-  TObjArray* pTokens=initializer.Tokenize(" ");
-  fCapacity=capacity;
-  if (pTokens) {
-    int entries=pTokens->GetEntriesFast();
-    fArrays.resize(entries);
-    fCount.resize(entries);
-    for (int i=0; i<entries; i++) {
-      fKeys[pTokens->At(i)->GetName()]=i;
-      fArrays[i]=new float[fCapacity];
-    }
-    delete pTokens;
-  }
-  assert(fArrays.size()==fCount.size());
-  assert(fArrays.size()==fKeys.size());
-  if (fArrays.size()!=fCount.size() ||
-      fArrays.size()!=fKeys.size()) {
-    return -EFAULT;
-  }
-
-  ResetCount();
-  return iResult;
-}
-
-int AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::Reset()
-{
-  /// reset the arrays
-  for (vector<float*>::iterator element=fArrays.begin();
-       element!=fArrays.end();
-       element++) {
-    delete *element;
-  }
-  fArrays.clear();
-  fCount.clear();
-  fKeys.clear();
-
-  return 0;
-}
-
-int AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::ResetCount()
-{
-  /// reset the fill counts
-  for (vector<int>::iterator element=fCount.begin();
-       element!=fCount.end();
-       element++) {
-    *element=0;
-  }
-  return 0;
-}
-
-int AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::Fill(unsigned index, float value)
-{
-  /// fill variable at index
-  assert(fArrays.size()==fCount.size());
-  if (index>=fArrays.size() || index>=fCount.size()) return -ENOENT;
-  if (fCount[index]>=fCapacity) return -ENOSPC;
-
-  (fArrays[index])[fCount[index]++]=value;
-  return fCount[index];
-}
-
-int AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::Fill(const char* key, float value)
-{
-  /// fill variable at key
-  int index=FindKey(key);
-  if (index<0) return -ENOENT;
-
-  return Fill(index, value);
-}
-
-float* AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::GetArray(const char* key)
-{
-  /// get array at key
-  int index=FindKey(key);
-  if (index<0) return NULL;
-  assert((unsigned)index<fArrays.size());
-  if ((unsigned)index>=fArrays.size()) return NULL;
-
-  return fArrays[index];
-}
-
-int AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::FindKey(const char* key) const
-{
-  /// fill variable at key
-  map<string, int>::const_iterator element=fKeys.find(key);
-  if (element==fKeys.end()) return -ENOENT;
-  return element->second;
-}
-
-const char* AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::GetKey(int index) const
-{
-  /// fill variable at key
-  for (map<string, int>::const_iterator element=fKeys.begin();
-       element!=fKeys.end(); element++) {
-    if (element->second==index) return element->first.c_str();
-  }
-  return NULL;
-}
