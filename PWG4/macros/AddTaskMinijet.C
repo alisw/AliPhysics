@@ -1,4 +1,4 @@
-AliAnalysisTaskMinijet* AddTaskMinijet(TString format="esd",Bool_t useMC = kFALSE, TString kGridDataSet="LHC10e")
+AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber, TString format="esd",Bool_t useMC = kFALSE, TString kGridDataSet="LHC10e")
 {
 
   //starting with periode LHC10e, there are also events triggered with High Mult trigger
@@ -56,28 +56,42 @@ AliAnalysisTaskMinijet* AddTaskMinijet(TString format="esd",Bool_t useMC = kFALS
     task->SetMode(1);// 1 = reading AODs
   }
 
-  //create output container and add task to mgr
+  //create output containers 
   //===========================================================================
-  AliAnalysisDataContainer *output1 = 
-    mgr->CreateContainer("chist", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, 
-			 "EventAxis.root");
-  // add task to the manager
+  AliAnalysisDataContainer *output1  = 0x0;
+  AliAnalysisDataContainer *outputHM = 0x0;
+
+  if(runNumber>0){ 
+    output1  =  mgr->CreateContainer("MiniJets",TList::Class(),
+				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
+    outputHM =  mgr->CreateContainer("MiniJets_HighMult",TList::Class(),
+				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
+   }
+   
+   else{
+     output1  = mgr->CreateContainer("MiniJets",TList::Class(),
+				 AliAnalysisManager::kOutputContainer, 
+				 Form("%s:PWG4_MiniJets",AliAnalysisManager::GetCommonFileName()));
+     outputHM = mgr->CreateContainer("MiniJets_HighMult",TList::Class(),
+				     AliAnalysisManager::kOutputContainer, 
+				     Form("%s:PWG4_MiniJets",AliAnalysisManager::GetCommonFileName()));
+     
+   }
+
+  //===========================================================================  
+  // add first task to the manager
+  
   mgr->AddTask(task);
   
   //connect input and output
   mgr->ConnectInput(task, 0,  mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, output1);
-
-
+  
+  
   //===========================================================================
   //do same for high mult task if necassary
   if(!format.CompareTo("esd") && IsHighMult){
-    //create output container
-    AliAnalysisDataContainer *outputHM = 0x0;
-    outputHM =  mgr->CreateContainer("chist_HM", TList::Class(), 
-				     AliAnalysisManager::kOutputContainer, 
-				     "EventAxis.root");
+    
     // add task to the manager
     mgr->AddTask(taskHM);
     
