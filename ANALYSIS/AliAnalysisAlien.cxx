@@ -1096,7 +1096,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
             files.ReplaceAll(".root", "*.root");
             outputArchive += Form("root_archive.zip:%s@disk=%d",files.Data(),fNreplicas);
          } else {
-            outputArchive = fOutputArchive;
+            TString files = fOutputArchive;
+            files.ReplaceAll(".root", "*.root"); // nreplicas etc should be already atttached by use
+            outputArchive = files;
          }   
          arr = outputArchive.Tokenize(" ");
          TIter next2(arr);
@@ -1852,6 +1854,7 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
    // Sumbit merging jobs for all missing chunks for the current stage.
    TString query = Form("submit %s %s", jdl, aliendir);
    Int_t ichunk = -1;
+   chunksDone.SetBitNumber(ntotstage); // expand the array to the maximum number of chunks
    if (nmissing) {
       for (i=0; i<nmissing; i++) {
          ichunk = chunksDone.FirstNullBit(ichunk+1);
