@@ -132,10 +132,6 @@ void AliAnalysisTaskAODCentralityMaker::UserExec(Option_t */*option*/)
   Double_t multV0A = esdV0->GetMTotV0A();
   Double_t multV0C = esdV0->GetMTotV0C();
     
-  // ***** Trigger selection
-  char     trigClass[100];	//  fired trigger classes
-  TString triggerClass = esd->GetFiredTriggerClasses();
-  sprintf(trigClass,"%s",triggerClass.Data());
   
   // ***** vertex info
   const AliESDVertex *vertex = esd->GetPrimaryVertexSPD();
@@ -303,7 +299,6 @@ void AliAnalysisTaskAODCentralityMaker::UserExec(Option_t */*option*/)
     }  
   }
   
-  fAODCentrality->SetTrigClass         (trigClass[100]);
   fAODCentrality->SetxVertex	       (xVertex       );
   fAODCentrality->SetyVertex	       (yVertex       );
   fAODCentrality->SetzVertex	       (zVertex       );

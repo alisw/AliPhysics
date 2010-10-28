@@ -20,7 +20,6 @@ class AliAODCentrality : public TNamed {
   AliAODCentrality(const AliAODCentrality& cnt); 
   AliAODCentrality& operator=(const AliAODCentrality& cnt);
   
-  void SetTrigClass         (char     x) {fTrigClass[100] = x; }
   void SetxVertex     	    (Double_t x) {fxVertex	 = x; }
   void SetyVertex 	    (Double_t x) {fyVertex	 = x; }
   void SetzVertex	    (Double_t x) {fzVertex	 = x; }
@@ -102,7 +101,6 @@ class AliAODCentrality : public TNamed {
   void SetMultFMDA          (Float_t  x) {fMultFMDA = x; }    
   void SetMultFMDC          (Float_t  x) {fMultFMDC = x; }
   
-  char       GetTrigClass         () const {return fTrigClass[100] ; }
   Double_t   GetxVertex	          () const {return fxVertex	 ; }
   Double_t   GetyVertex	          () const {return fyVertex	 ; }
   Double_t   GetzVertex	          () const {return fzVertex	 ; }
@@ -174,8 +172,6 @@ class AliAODCentrality : public TNamed {
 
   
  private:
-  char     fTrigClass[100];	//  fired trigger classes
-  //
   Double_t fxVertex;		//  X vertex from ITS
   Double_t fyVertex;		//  Y vertex from ITS
   Double_t fzVertex;		//  Z vertex from ITS
