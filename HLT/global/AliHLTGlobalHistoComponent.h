@@ -216,12 +216,18 @@ private:
   int fEvent; //!
   /// track count, tree filling variable
   int fNofTracks; //!
-  /// x coordinate of vertex
+  /// V0 count, tree filling variable
+  int fNofV0s; //!
+  /// contributors count, tree filling variable
+  int fNofContributors; //!
+ /// x coordinate of vertex
   float fVertexX; //!
   /// y coordinate of vertex
   float fVertexY; //!
   /// z coordinate of vertex
   float fVertexZ; //!
+  /// vertex status, found or not
+  bool fVertexStatus; //!
  
   /// filling arrays for track parameters
   AliHLTGlobalHistoVariables<float> fTrackVariables; //!

@@ -35,9 +35,12 @@ AliHLTGlobalHistoComponent::AliHLTGlobalHistoComponent()
   : AliHLTTTreeProcessor()
   , fEvent(0)
   , fNofTracks(0)
+  , fNofV0s(0)
+  , fNofContributors(0)
   , fVertexX(-99)
   , fVertexY(-99)
   , fVertexZ(-99)
+  , fVertexStatus(kFALSE)
   , fTrackVariables()
   , fTrackVariablesInt()
 {
@@ -99,11 +102,14 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
   }
   
   if (iResult>=0) {
-    pTree->Branch("event",        &fEvent,     "event/I");
-    pTree->Branch("trackcount",   &fNofTracks, "trackcount/I");
-    pTree->Branch("vertexX",      &fVertexX,   "vertexX/F");
-    pTree->Branch("vertexY",      &fVertexY,   "vertexY/F");
-    pTree->Branch("vertexZ",      &fVertexZ,   "vertexZ/F");
+    pTree->Branch("event",        &fEvent,           "event/I");
+    pTree->Branch("trackcount",   &fNofTracks,       "trackcount/I");
+    pTree->Branch("vertexX",      &fVertexX,         "vertexX/F");
+    pTree->Branch("vertexY",      &fVertexY,         "vertexY/F");
+    pTree->Branch("vertexZ",      &fVertexZ,         "vertexZ/F");
+    pTree->Branch("nV0",          &fNofV0s,          "nV0/I");
+    pTree->Branch("nContributors",&fNofContributors, "nContributors/I");
+    pTree->Branch("vertexStatus", &fVertexStatus,    "vertexStatus/I");
 
     int i=0;
     // FIXME: this is a bit ugly since type 'f' and 'i' are specified
@@ -149,10 +155,13 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
   esd->GetStdContent();
 
   // fill track variables
-  fNofTracks=esd->GetNumberOfTracks();
-  fVertexX = esd->GetPrimaryVertexTracks()->GetX();
-  fVertexY = esd->GetPrimaryVertexTracks()->GetY();
-  fVertexZ = esd->GetPrimaryVertexTracks()->GetZ();
+  fNofTracks       = esd->GetNumberOfTracks();
+  fVertexX         = esd->GetPrimaryVertexTracks()->GetX();
+  fVertexY         = esd->GetPrimaryVertexTracks()->GetY();
+  fVertexZ         = esd->GetPrimaryVertexTracks()->GetZ();
+  fNofV0s          = esd->GetNumberOfV0s();
+  fNofContributors = esd->GetPrimaryVertexTracks()->GetNContributors();
+  fVertexStatus    = esd->GetPrimaryVertexTracks()->GetStatus();
   
   for (int i=0; i<fNofTracks; i++) {
     AliESDtrack *esdTrack = esd->GetTrack(i);
@@ -175,7 +184,7 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
 
     fTrackVariablesInt.Fill("Track_status" , esdTrack->GetStatus()               );   
    }
-  HLTInfo("added parameters for %d tracks", fNofTracks);
+  //HLTInfo("added parameters for %d tracks", fNofTracks);
 
   if (iResult<0) {
     // fill an empty event
