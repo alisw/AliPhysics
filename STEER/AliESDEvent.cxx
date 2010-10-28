@@ -1409,7 +1409,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
       if(bname.CompareTo("AliESDfriend")==0)
 	{
 	  // AliESDfriend does not have a name ...
-	    TBranch *br = tree->GetBranch(bname.Data());
+	    TBranch *br = tree->GetBranch("ESDfriend.");
 	    if (br) tree->SetBranchAddress("ESDfriend.",fESDObjects->GetObjectRef(el));
 	}
       else{
