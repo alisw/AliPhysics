@@ -34,10 +34,10 @@ void SETUP()
     CheckLoadLibrary("libPWG3muondep");
 
    // Set the include paths
-   gROOT->ProcessLine(".include PWG3muondep");
+   gROOT->ProcessLine(".include PWG3muondep/muondep");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG3muondep_INCLUDE", "PWG3muondep");
+   gSystem->Setenv("PWG3muondep_INCLUDE", "PWG3muondep/muondep");
 }
 
 Int_t CheckLoadLibrary(const char* library)

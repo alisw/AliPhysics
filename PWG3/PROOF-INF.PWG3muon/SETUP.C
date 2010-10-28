@@ -11,14 +11,15 @@ void SETUP()
     CheckLoadLibrary("libESD");
     CheckLoadLibrary("libAOD");
     CheckLoadLibrary("libANALYSISalice");
+    CheckLoadLibrary("libPWG3base");
     CheckLoadLibrary("libPWG3muon");
 
 
    // Set the include paths
-   gROOT->ProcessLine(".include PWG3muon");
+   gROOT->ProcessLine(".include PWG3muon/muon");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG3muon_INCLUDE", "PWG3muon");
+   gSystem->Setenv("PWG3muon_INCLUDE", "PWG3muon/muon");
 }
 
 Int_t CheckLoadLibrary(const char* library)
