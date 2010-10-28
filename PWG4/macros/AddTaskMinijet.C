@@ -64,17 +64,21 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber, TString format="esd",Boo
   if(runNumber>0){ 
     output1  =  mgr->CreateContainer("MiniJets",TList::Class(),
 				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
-    outputHM =  mgr->CreateContainer("MiniJets_HighMult",TList::Class(),
-				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
+    if(!format.CompareTo("esd") && IsHighMult){
+      outputHM =  mgr->CreateContainer("MiniJets_HighMult",TList::Class(),
+				       AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
+    }
    }
    
    else{
      output1  = mgr->CreateContainer("MiniJets",TList::Class(),
 				 AliAnalysisManager::kOutputContainer, 
 				 Form("%s:PWG4_MiniJets",AliAnalysisManager::GetCommonFileName()));
-     outputHM = mgr->CreateContainer("MiniJets_HighMult",TList::Class(),
-				     AliAnalysisManager::kOutputContainer, 
-				     Form("%s:PWG4_MiniJets",AliAnalysisManager::GetCommonFileName()));
+     if(!format.CompareTo("esd") && IsHighMult){
+       outputHM = mgr->CreateContainer("MiniJets_HighMult",TList::Class(),
+				       AliAnalysisManager::kOutputContainer, 
+				       Form("%s:PWG4_MiniJets",AliAnalysisManager::GetCommonFileName()));
+     }
      
    }
 
