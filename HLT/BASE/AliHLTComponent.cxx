@@ -1727,10 +1727,10 @@ namespace
   class AliHLTComponentStatisticsId {
   public:
     AliHLTComponentStatisticsId(AliHLTUInt32_t id) : fId(id) {}
+    AliHLTComponentStatisticsId(const AliHLTComponentStatisticsId& src) : fId(src.fId) {}
     bool operator==(const AliHLTComponentStatistics& a) const {return a.fId==fId;}
   private:
     AliHLTComponentStatisticsId();
-    AliHLTComponentStatisticsId(const AliHLTComponentStatisticsId&);
     AliHLTUInt32_t fId;
   };
 
@@ -1749,10 +1749,10 @@ namespace
   class AliHLTComponentBlockDataSpecification {
   public:
     AliHLTComponentBlockDataSpecification(AliHLTUInt32_t specification) : fSpecification(specification) {}
+    AliHLTComponentBlockDataSpecification(const AliHLTComponentBlockDataSpecification& src) : fSpecification(src.fSpecification) {}
     bool operator==(const AliHLTComponentBlockData& bd) const {return bd.fSpecification==fSpecification;}
   private:
     AliHLTComponentBlockDataSpecification();
-    AliHLTComponentBlockDataSpecification(const AliHLTComponentBlockDataSpecification&);
     AliHLTUInt32_t fSpecification;
   };
 
