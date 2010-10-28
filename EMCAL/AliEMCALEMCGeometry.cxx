@@ -259,7 +259,8 @@ void AliEMCALEMCGeometry::Init(void){
   if(fGeoName.Contains("WSUC")) fGeoName = "EMCAL_WSUC";
 
   //check that we have a valid geometry name
-  if(!(fGeoName.Contains("EMCAL_PDC06") || fGeoName.Contains("EMCAL_COMPLETE") || fGeoName.Contains("EMCAL_WSUC") || fGeoName.Contains("EMCAL_FIRSTYEAR"))) {
+  if(!(fGeoName.Contains("EMCAL_PDC06") || fGeoName.Contains("EMCAL_COMPLETE") || fGeoName.Contains("EMCAL_WSUC") 
+       || fGeoName.Contains("EMCAL_FIRSTYEAR") || fGeoName.Contains("EMCAL_FIRSTYEARV1"))) {
     Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
   }
 
