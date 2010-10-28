@@ -36,7 +36,8 @@ CLASS_HDRS:= \
 		AliHLTTriggerGammaConversion.h              \
 		AliHLTMuonSpectroScalars.h                  \
 		AliHLTMuonSpectroTriggerComponent.h	    \
-		AliHLTUpcTriggerComponent.h
+		AliHLTUpcTriggerComponent.h                 \
+		AliHLTTriggerCounters.h
 
 # library sources
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)

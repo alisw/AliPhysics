@@ -8,13 +8,15 @@ AM_CPPFLAGS			= -I$(top_srcdir)/BASE \
 
 EXTRA_DIST			= 
 
-check_PROGRAMS			= testTriggerDomain testGlobalTriggerComponent testMuonSpectroTrigger
+check_PROGRAMS			= testTriggerDomain testGlobalTriggerComponent testMuonSpectroTrigger testAliHLTTriggerCounters
 
 testTriggerDomain_SOURCES 	= testTriggerDomain.C
 
 testGlobalTriggerComponent_SOURCES	= testGlobalTriggerComponent.C
 
 testMuonSpectroTrigger_SOURCES	= testMuonSpectroTrigger.C
+
+testAliHLTTriggerCounters_SOURCES = testAliHLTTriggerCounters.C
 
 # linker flags
 LDADD_COMMON			= $(top_builddir)/BASE/libHLTbase.la \
@@ -36,6 +38,9 @@ testGlobalTriggerComponent_LDFLAGS	= $(LDFLAGS_COMMON)
 testMuonSpectroTrigger_LDADD 	= $(LDADD_COMMON)
 
 testMuonSpectroTrigger_LDFLAGS	= $(LDFLAGS_COMMON)
+
+testAliHLTTriggerCounters_LDADD   = $(LDADD_COMMON)
+testAliHLTTriggerCounters_LDFLAGS = $(LDFLAGS_COMMON)
 
 TESTS				= $(check_PROGRAMS)
 

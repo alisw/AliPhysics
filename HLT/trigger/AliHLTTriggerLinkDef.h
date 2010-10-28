@@ -32,4 +32,7 @@
 #pragma link C++ class AliHLTMuonSpectroScalars::AliScalar+;
 #pragma link C++ class AliHLTMuonSpectroTriggerComponent+;
 #pragma link C++ class AliHLTUpcTriggerComponent+;
+#pragma link C++ class AliHLTTriggerCounters+;
+#pragma link C++ class AliHLTTriggerCounters::AliCounter+;
+
 #endif
