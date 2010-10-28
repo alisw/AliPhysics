@@ -44,7 +44,9 @@ public TObject
   Bool_t GetChannelEnabled(Int_t iIndex) const {return iIndex < GetNumberOfIndexes() ? fChannelEnabled[iIndex] : kFALSE;}; // get channel enabled
   Int_t GetMatchingWindow(Int_t iIndex) const {return iIndex < GetNumberOfIndexes() ? fMatchingWindow[iIndex] : 0;}; // get matching window
   Int_t GetLatencyWindow(Int_t iIndex) const {return iIndex < GetNumberOfIndexes() ? fLatencyWindow[iIndex] : 0;}; // get latency window
-  
+  UInt_t GetTriggerMask(Int_t iddl) const {return iddl < GetNumberOfDDLs() ? fTriggerMask[iddl] : 0;}; // get trigger mask
+  UInt_t *GetTriggerMaskArray() {return fTriggerMask;}; // get trigger mask array
+
   /* setters */
   
   /* methods */
@@ -60,6 +62,7 @@ public TObject
   Int_t ParseFEElightConfig(); // parse FEElight config
 
   void ResetChannelEnabledArray(); // reset channel enabled array
+  void ResetTriggerMaskArray(); // reset trigger mask array
   void Reset(); // reset channel enabled array
   Bool_t IsChannelEnabled(Int_t iIndex) const {return GetChannelEnabled(iIndex);}; // is channel enabled
   
@@ -83,7 +86,9 @@ public TObject
   Int_t fMatchingWindow[fgkNumberOfIndexes]; // matching window
   Int_t fLatencyWindow[fgkNumberOfIndexes]; // matching window
 
-  ClassDef(AliTOFFEEReader, 1);
+  UInt_t fTriggerMask[fgkNumberOfDDLs]; // trigger mask
+
+  ClassDef(AliTOFFEEReader, 2);
 
 };
 

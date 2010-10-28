@@ -122,6 +122,21 @@ AliTOFFEEReader::ResetChannelEnabledArray()
 //_______________________________________________________________
 
 void
+AliTOFFEEReader::ResetTriggerMaskArray()
+{
+  /*
+   *
+   * reset trigger mask array
+   *
+   */
+
+  for (Int_t iddl = 0; iddl < GetNumberOfDDLs(); iddl++)
+    fTriggerMask[iddl] = 0x0;
+}
+
+//_______________________________________________________________
+
+void
 AliTOFFEEReader::Reset()
 {
   /*
@@ -135,6 +150,9 @@ AliTOFFEEReader::Reset()
     fMatchingWindow[iIndex] = 0;
     fLatencyWindow[iIndex] = 0;
   }
+
+  for (Int_t iddl = 0; iddl < GetNumberOfDDLs(); iddl++)
+    fTriggerMask[iddl] = 0x0;
 }
 
 //_______________________________________________________________
@@ -244,6 +262,8 @@ AliTOFFEEReader::ParseFEElightConfig()
 
   AliInfo("parsing TOF FEElight config");
 
+  Reset();
+
   AliTOFcalibHisto calibHisto;
   calibHisto.LoadCalibHisto();
 
@@ -259,6 +279,12 @@ AliTOFFEEReader::ParseFEElightConfig()
     fChannelEnabled[index] = channelConfig->IsEnabled();
     fMatchingWindow[index] = channelConfig->GetMatchingWindow();
     fLatencyWindow[index] = channelConfig->GetLatencyWindow();
+  }
+
+  AliTOFFEEtriggerConfig *triggerConfig = NULL;
+  for (Int_t iddl = 0; iddl < GetNumberOfDDLs(); iddl++) {
+    triggerConfig = fFEElightConfig->GetTriggerConfig(iddl);
+    fTriggerMask[iddl] = triggerConfig->GetStatusMap();
   }
  
   return nEnabled;

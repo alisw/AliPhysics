@@ -40,7 +40,7 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "READOUT", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Readout.root");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "DELAYS", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Total.root");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Partial.root");
-  shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeLightMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEElight.20090616.102605.8000");
+  shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeLightMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEElight.20101028.133932.8000");
   shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEE.20091217.194708.105517");
 
   TString filename;

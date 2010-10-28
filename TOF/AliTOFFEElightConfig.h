@@ -46,15 +46,37 @@ class AliTOFFEEchannelConfig
 
 //_____________________________________________________________________________
 
+class AliTOFFEEtriggerConfig
+{
+
+ public:
+  
+ private:
+  UInt_t fStatusMap; // status
+
+ public:
+  AliTOFFEEtriggerConfig() : fStatusMap(0x0) {}; // default construct
+  ~AliTOFFEEtriggerConfig() {}; // default destructor
+
+  UInt_t GetStatusMap() const {return fStatusMap;}; // get status map
+
+  void SetStatusMap(UInt_t value) {fStatusMap = value;}; // set status map
+
+};
+
+//_____________________________________________________________________________
+
 class AliTOFFEElightConfig
 {
 
  private:
   static const Int_t fgkNumberOfChannels = 172800; // number of channels
+  static const Int_t fgkNumberOfTriggerMaps = 72; // number of trigger maps
   Int_t fVersion; // version
   Int_t fRunNumber; // run number
   Int_t fRunType; // run type
   AliTOFFEEchannelConfig fChannelConfig[fgkNumberOfChannels]; // channel config array
+  AliTOFFEEtriggerConfig fTriggerConfig[fgkNumberOfTriggerMaps]; // trigger config array
 
  public:
   AliTOFFEElightConfig() : fVersion(0), fRunNumber(0), fRunType(0), fChannelConfig() {}; // default construct
@@ -64,6 +86,7 @@ class AliTOFFEElightConfig
   Int_t GetRunNumber() const {return fRunNumber;}; // get run number
   Int_t GetRunType() const {return fRunType;}; // get run type
   AliTOFFEEchannelConfig *GetChannelConfig(Int_t i) {return (i < fgkNumberOfChannels ? &fChannelConfig[i] : NULL);}; // get channel config
+  AliTOFFEEtriggerConfig *GetTriggerConfig(Int_t i) {return (i < fgkNumberOfTriggerMaps ? &fTriggerConfig[i] : NULL);}; // get trigger config
 
   void SetVersion(Int_t value) {fVersion = value;}; // get version
   void SetRunNumber(Int_t value) {fRunNumber = value;}; // get run number

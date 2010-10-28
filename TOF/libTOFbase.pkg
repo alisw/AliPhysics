@@ -47,7 +47,8 @@ SRCS  = AliTOFGeometry.cxx  \
 	AliTOFTDCErrorBuffer.cxx\
 	AliTOFTDCHit.cxx\
 	AliTOFTDCHitBuffer.cxx\
-	AliTOFReadoutInfo.cxx	
+	AliTOFReadoutInfo.cxx\
+	AliTOFTriggerMask.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)

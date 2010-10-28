@@ -57,6 +57,7 @@
 #pragma link C++ class  AliTOFTDCHitBuffer+;
 
 #pragma link C++ class  AliTOFReadoutInfo+;
+#pragma link C++ class  AliTOFTriggerMask+;
 
 
 #endif

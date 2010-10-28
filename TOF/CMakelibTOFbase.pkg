@@ -25,7 +25,22 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliTOFGeometry.cxx AliTOFdigit.cxx AliTOFDigitMap.cxx AliTOFRawMap.cxx AliTOFrawData.cxx AliTOFRawStream.cxx AliTOFHitData.cxx AliTOFHitField.cxx AliTOFHitDataBuffer.cxx AliTOFDecoder.cxx AliTOFChannelOffline.cxx AliTOFChannelOnline.cxx AliTOFChannelOnlineStatus.cxx AliTOFChannelOnlineArray.cxx AliTOFChannelOnlineStatusArray.cxx AliTOFcalib.cxx AliTOFAlignment.cxx AliTOFPreprocessor.cxx AliTOFDataDCS.cxx AliTOFFormatDCS.cxx AliTOFPreprocessorFDR.cxx AliTOFFEEReader.cxx AliTOFFEEDump.cxx AliTOFCableLengthMap.cxx AliTOFNoiseConfigHandler.cxx AliTOFcalibHisto.cxx AliTOFArray.cxx AliTOFDaConfigHandler.cxx AliTOFDeltaBCOffset.cxx AliTOFCTPLatency.cxx AliTOFT0Fill.cxx AliTOFRunParams.cxx AliTOFResponseParams.cxx AliTOFT0FillOnlineCalib.cxx AliTOFLvHvDataPoints.cxx AliTOFDCSmaps.cxx AliTOFChainSummaryData.cxx AliTOFDRMSummaryData.cxx AliTOFDecoderSummaryData.cxx AliTOFLTMSummaryData.cxx AliTOFTRMSummaryData.cxx AliTOFDecoderV2.cxx AliTOFTDCError.cxx AliTOFTDCErrorBuffer.cxx AliTOFTDCHit.cxx AliTOFTDCHitBuffer.cxx AliTOFReadoutInfo.cxx)
+set ( SRCS  AliTOFGeometry.cxx AliTOFdigit.cxx AliTOFDigitMap.cxx
+AliTOFRawMap.cxx AliTOFrawData.cxx AliTOFRawStream.cxx AliTOFHitData.cxx
+AliTOFHitField.cxx AliTOFHitDataBuffer.cxx AliTOFDecoder.cxx
+AliTOFChannelOffline.cxx AliTOFChannelOnline.cxx AliTOFChannelOnlineStatus.cxx
+AliTOFChannelOnlineArray.cxx AliTOFChannelOnlineStatusArray.cxx
+AliTOFcalib.cxx AliTOFAlignment.cxx AliTOFPreprocessor.cxx AliTOFDataDCS.cxx
+AliTOFFormatDCS.cxx AliTOFPreprocessorFDR.cxx AliTOFFEEReader.cxx
+AliTOFFEEDump.cxx AliTOFCableLengthMap.cxx AliTOFNoiseConfigHandler.cxx
+AliTOFcalibHisto.cxx AliTOFArray.cxx AliTOFDaConfigHandler.cxx
+AliTOFDeltaBCOffset.cxx AliTOFCTPLatency.cxx AliTOFT0Fill.cxx
+AliTOFRunParams.cxx AliTOFResponseParams.cxx AliTOFT0FillOnlineCalib.cxx
+AliTOFLvHvDataPoints.cxx AliTOFDCSmaps.cxx AliTOFChainSummaryData.cxx
+AliTOFDRMSummaryData.cxx AliTOFDecoderSummaryData.cxx AliTOFLTMSummaryData.cxx
+AliTOFTRMSummaryData.cxx AliTOFDecoderV2.cxx AliTOFTDCError.cxx
+AliTOFTDCErrorBuffer.cxx AliTOFTDCHit.cxx AliTOFTDCHitBuffer.cxx
+AliTOFReadoutInfo.cxx AliTOFTriggerMask.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
