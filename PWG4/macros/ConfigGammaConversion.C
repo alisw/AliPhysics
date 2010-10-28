@@ -50,7 +50,7 @@ Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
 TString kGCAnalysisCutSelectionId="90035620401003321"; // do not change here, use -set-cut-selection in argument instead
 
-Int_t kGCNEventsForBGCalculation=10;
+Int_t kGCNEventsForBGCalculation=20;
 
 Int_t kGCpidOfNegativeTrack=11;
 Int_t kGCpidOfPositiveTrack=-11;
@@ -2640,6 +2640,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 6:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.7;
     break;
+  case 7:  // 0% of findable clusters
+    kGCminClsTPCCutToF= 0.35;
+    break;
   default:
     return iResult;
   }
@@ -2790,17 +2793,29 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   switch(minRCut){
   case 0:
     kGCminRCut=0;
+    kGCmaxRCut = 180.;
     break;
   case 1:
     kGCminRCut=2.8;
+    kGCmaxRCut = 180.;
     break;
   case 2:
     kGCminRCut=5.;
+    kGCmaxRCut = 180.;
     break;
   case 3:
     kGCmaxRCut = 70.;
     kGCminRCut = 10.;
     break;
+  case 4:
+    kGCmaxRCut = 70.;
+    kGCminRCut = 5.;
+    break;
+  case 5:
+    kGCmaxRCut = 180.;
+    kGCminRCut = 10.;
+    break;
+
   default:
     return iResult;
   }
