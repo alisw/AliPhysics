@@ -15,10 +15,10 @@ void SETUP()
 
 
    // Set the include paths
-   gROOT->ProcessLine(".include PWG3base");
+   gROOT->ProcessLine(".include PWG3base/base");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG3base_INCLUDE", "PWG3base");
+   gSystem->Setenv("PWG3base_INCLUDE", "PWG3base/base");
 }
 
 Int_t CheckLoadLibrary(const char* library)
