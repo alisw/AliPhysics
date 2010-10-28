@@ -105,6 +105,10 @@
 #pragma link C++ class AliHLTScalars+;
 #pragma link C++ class AliHLTScalars::AliScalar+;
 
+// Need to initialise the hash table which is transient after reading the class.
+#pragma read sourceClass="AliHLTScalars" version="[1-]" targetClass="AliHLTScalars"\
+  source="" target="fMap,fScalars" code="{fMap.AddAll(&fScalars);}"
+
 #pragma link C++ struct AliHLTComponentEventData+;
 #pragma link C++ struct AliHLTComponentBlockData+;
 #pragma link C++ struct AliHLTComponentDataType+;

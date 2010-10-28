@@ -181,7 +181,7 @@ public:
 	AliScalar& GetScalarN(UInt_t n);
 	
 	/// Resets all scalar values to zero.
-	void Reset();
+	virtual void Reset();
 	
 	/**
 	 * Removes all the scalars from the internal array.
@@ -258,8 +258,58 @@ protected:
 	 * in the fScalars TClonesArray.
 	 * \param cl  The class to use in the fScalars as passed to the TClonesArray constructor.
 	 * \param initSize  The initial approximate number of elements in fScalars. (Default = 128).
+	 * \note The class used in <i>cl</i> must derive from AliHLTScalars::AliScalar.
 	 */
 	AliHLTScalars(const TClass* cl, Int_t initSize = 128);
+	
+	/**
+	 * This method creates a new scalar object in the fScalars TClonesArray.
+	 * \param i  Location of the new object to construct in the TClonesArray.
+	 * \param name  The name of the new scalar.
+	 * \param description  The description of the new scalar.
+	 * \param value  The value of the new scalar.
+	 * \returns the pointer to the new object created.
+	 * \note This method must be overridden by classes inheriting from this class if
+	 *    the protected AliHLTScalars(const TClass*, Int_t) constructor is used to
+	 *    change the class stored in the fScalars TClonesArray.
+	 *    One should use the method ScalarForConstructor to get the location where
+	 *    the new scalar object will be constructed.
+	 */
+	virtual AliScalar* NewScalar(UInt_t i, const char* name, const char* description, Double_t value);
+	
+	/**
+	 * Returns a pointer to the memory where a new scalar object should be constructed.
+	 * \param i  The position of the new object.
+	 */
+	TObject*& ScalarForConstructor(UInt_t i) { return fScalars[Int_t(i)]; }
+	
+	/**
+	 * This method should return an empty sentinel object to mark that a scalar was
+	 * not found in the list.
+	 * \note This method must be overridden by classes inheriting from this class if
+	 *    the protected AliHLTScalars(const TClass*, Int_t) constructor is used to
+	 *    change the class stored in the fScalars TClonesArray.
+	 */
+	virtual const AliScalar& Sentinel() const;
+	
+	/**
+	 * This is an internal Add method which can be faster to use than the public Add method
+	 * directly for classes derived from AliHLTScalars.
+	 * [out] \param scalar This gets filled with the pointer of the new scalar created or
+	 *    the existing one found.
+	 * [in] \param name The name of the scalar.
+	 * [in] \param description  A short description of the scalar.
+	 * [in] \param value  The value of the new scalar.
+	 * \returns true if the scalar already exists and false otherwise.
+	 */
+	bool Add(AliScalar*& scalar, const char* name, const char* description, Double_t value);
+	
+	/**
+	 * Utility method for classes deriving from AliHLTScalars to fetch the i'th scalar
+	 * from the TClonesArray without checking that the index is valid.
+	 * \param i  The index number of the scalar to fetch.
+	 */
+	AliScalar* ScalarUncheckedAt(UInt_t i) const { return static_cast<AliScalar*>(fScalars.UncheckedAt(Int_t(i))); }
 	
 private:
 	

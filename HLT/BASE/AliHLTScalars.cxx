@@ -77,15 +77,32 @@ AliHLTScalars::~AliHLTScalars()
 }
 
 
-bool AliHLTScalars::Add(const char* name, const char* description, Double_t value)
+AliHLTScalars::AliScalar* AliHLTScalars::NewScalar(UInt_t i, const char* name, const char* description, Double_t value)
 {
-	// Adds a new scalar.
+	// Creates a new scalar object.
+	
+	return new (fScalars[i]) AliScalar(name, description, value);
+}
 
-	AliScalar* scalar = static_cast<AliScalar*>( fMap.FindObject(name) );
+
+const AliHLTScalars::AliScalar& AliHLTScalars::Sentinel() const
+{
+	// Returns an empty sentinel object.
+	
+	static AliHLTScalars::AliScalar sentinel;
+	return sentinel;
+}
+
+
+bool AliHLTScalars::Add(AliScalar*& scalar, const char* name, const char* description, Double_t value)
+{
+	// Adds a new scalar (internal version).
+	
+	scalar = static_cast<AliScalar*>( fMap.FindObject(name) );
 	bool exists = scalar != NULL;
 	if (not exists)
 	{
-		scalar = new (fScalars[fScalars.GetEntriesFast()]) AliScalar(name, description, value);
+		scalar = NewScalar(fScalars.GetEntriesFast(), name, description, value);
 		fMap.Add(scalar);
 	}
 	else
@@ -93,6 +110,15 @@ bool AliHLTScalars::Add(const char* name, const char* description, Double_t valu
 		scalar->Value(value);
 	}
 	return exists;
+}
+
+
+bool AliHLTScalars::Add(const char* name, const char* description, Double_t value)
+{
+	// Adds a new scalar.
+
+	AliScalar* scalar = NULL;
+	return Add(scalar, name, description, value);
 }
 
 
@@ -123,8 +149,7 @@ const AliHLTScalars::AliScalar& AliHLTScalars::GetScalar(const char* name) const
 	}
 	else
 	{
-		static AliHLTScalars::AliScalar sentinel;
-		return sentinel;
+		return Sentinel();
 	}
 }
 
@@ -136,7 +161,7 @@ AliHLTScalars::AliScalar& AliHLTScalars::GetScalar(const char* name)
 	TObject* scalar = fMap.FindObject(name);
 	if (scalar == NULL)
 	{
-		scalar = new (fScalars[fScalars.GetEntriesFast()]) AliScalar(name, "", 0);
+		scalar = NewScalar(fScalars.GetEntriesFast(), name, "", 0);
 		fMap.Add(scalar);
 	}
 	return *static_cast<AliScalar*>(scalar);
@@ -154,8 +179,7 @@ const AliHLTScalars::AliScalar& AliHLTScalars::GetScalarN(UInt_t n) const
 	}
 	else
 	{
-		static AliHLTScalars::AliScalar sentinel;
-		return sentinel;
+		return Sentinel();
 	}
 }
 
@@ -188,7 +212,7 @@ AliHLTScalars::AliScalar& AliHLTScalars::GetScalarN(UInt_t n)
 				}
 				while (FindObject(nameToUse.Data()) != NULL);
 			}
-			scalar = new (fScalars[i]) AliScalar(nameToUse.Data(), "", 0);
+			scalar = NewScalar(i, nameToUse.Data(), "", 0);
 			fMap.Add(scalar);
 		}
 	}
@@ -198,7 +222,7 @@ AliHLTScalars::AliScalar& AliHLTScalars::GetScalarN(UInt_t n)
 
 void AliHLTScalars::Reset()
 {
-	// Sets all the scalar values and rates to zero.
+	// Sets all the scalar values to zero.
 	
 	for (Int_t i = 0; i < fScalars.GetEntriesFast(); ++i)
 	{
@@ -272,7 +296,7 @@ void AliHLTScalars::Print(Option_t* option) const
 		     << " = " << scalar->Value() << setw(0)
 		     << endl;
 	}
-	if (fScalars.GetSize() == 0) cout << "(none)" << endl;
+	if (fScalars.GetEntriesFast() == 0) cout << "(none)" << endl;
 }
 
 
