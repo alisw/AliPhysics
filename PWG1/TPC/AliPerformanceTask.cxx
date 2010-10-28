@@ -58,6 +58,7 @@
 #include "AliTPCPerformanceSummary.h"
 #include "AliPerformanceTPC.h"
 #include "AliPerformanceDEdx.h"
+#include "AliPerformanceMatch.h"
 #include "AliPerformanceTask.h"
 
 
@@ -243,16 +244,19 @@ void AliPerformanceTask::Terminate(Option_t *)
     AliPerformanceObject* pObj=0;
     AliPerformanceTPC*  pTPC = 0;
     AliPerformanceDEdx* pDEdx = 0;
+    AliPerformanceMatch* pMatch = 0;
     TIterator* itOut = fOutput->MakeIterator();
     itOut->Reset();
     while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) { 
-        if (!  pTPC) {  pTPC = dynamic_cast<AliPerformanceTPC*>(pObj); }
-        if (! pDEdx) { pDEdx = dynamic_cast<AliPerformanceDEdx*>(pObj); }
+        pObj->AnalyseFinal();
+        if (!  pTPC)  {    pTPC = dynamic_cast<AliPerformanceTPC*>(pObj); }
+        if (! pDEdx)  {   pDEdx = dynamic_cast<AliPerformanceDEdx*>(pObj); }
+        if (! pMatch) {  pMatch = dynamic_cast<AliPerformanceMatch*>(pObj); }
     }
     if (! AliCDBManager::Instance()->GetDefaultStorage()) { AliCDBManager::Instance()->SetDefaultStorage("raw://"); }
     TUUID uuid;
     TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
-    AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, tmpFile.Data());
+    AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, tmpFile.Data());
     TChain* chain = new TChain("tpcQA");
     chain->Add(tmpFile.Data());
     TTree *tree = chain->CopyTree("1");

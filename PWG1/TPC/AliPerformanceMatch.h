@@ -5,7 +5,8 @@
 // Class keeps matching information between 
 // central barrel detectors.   
 // 
-// Author: J.Otwinowski 17/10/2009 
+// Author: J.Otwinowski 17/10/2009  
+// Changes by M.Knichel 22/10/2010
 //------------------------------------------------------------------------------
 
 class TString;
@@ -46,8 +47,11 @@ public :
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
 
-  // Analyse output histograms
+  // Project Histograms store in AnalysisFolder
   virtual void Analyse();
+  
+  // Analyse Projected Histograms to create Efficiency and AddToFolder
+  virtual void AnalyseFinal();
 
   // Get analysis folder
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
@@ -80,8 +84,18 @@ public :
   THnSparse *GetResolHisto() const  { return fResolHisto; }
   THnSparse *GetPullHisto()  const  { return fPullHisto; }
   THnSparse *GetTrackEffHisto() const  { return fTrackingEffHisto; }
+  
+  TObjArray* GetHistos() const { return fFolderObj; }
+  
+  static Bool_t GetMergeTHnSparse() { return fgMergeTHnSparse; }
+  static void SetMergeTHnSparse(Bool_t mergeTHnSparse) { fgMergeTHnSparse = mergeTHnSparse; }
+  void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
+  Bool_t GetUseHLT() { return fUseHLT; }  
 
 private:
+
+  static Bool_t fgMergeTHnSparse;
+
   //
   // Control histograms
   // 5 track parameters (details in STEER/AliExternalTrackParam.h)
@@ -96,6 +110,8 @@ private:
 
   // tracking efficiency using ITS stand-alone tracks histogram
   THnSparseF *fTrackingEffHisto;  //-> has match:y:z:snp:tgl:phi:pt:ITSclusters
+  
+  TObjArray* fFolderObj; // array of analysed histograms  
 
   // Global cuts objects
   AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks
@@ -103,11 +119,13 @@ private:
 
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
+  
+  Bool_t fUseHLT; // use HLT ESD
 
   AliPerformanceMatch(const AliPerformanceMatch&); // not implemented
   AliPerformanceMatch& operator=(const AliPerformanceMatch&); // not implemented
 
-  ClassDef(AliPerformanceMatch,1);
+  ClassDef(AliPerformanceMatch,2);
 };
 
 #endif
