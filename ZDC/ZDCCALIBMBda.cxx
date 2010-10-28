@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
   int const kNModules = 10;
   int const kNChannels = 24;
   int const kNScChannels = 32;
-  Int_t kFirstADCGeo=0, kLastADCGeo=3;
+  Int_t kFirstADCGeo=0, kLastADCGeo=1;
       
   Int_t iMod=-1;
   Int_t modGeo[kNModules], modType[kNModules],modNCh[kNModules];
