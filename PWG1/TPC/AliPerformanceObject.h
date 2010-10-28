@@ -42,7 +42,8 @@ public :
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list=0) = 0;
 
-  // Analyse output histograms
+  // project to 1d,2d,3d
+  // is called from FinishTaskOuput() in AliPerformanceTask
   virtual void Analyse() = 0;
 
   // Get output folder for analysed histograms
@@ -50,8 +51,12 @@ public :
   
   // create a summary stored in a ttree 
   // has to be implented
-  // virtual TTree* CreateSummary() = 0;
   virtual TTree* CreateSummary() { return 0; }
+  
+  // project to 1d,2d,3d
+  // is called from Terminate() in AliPerformanceTask
+  // final spectra calculation
+  virtual void AnalyseFinal() { ; }
 
   // 
   virtual void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) = 0;
@@ -116,7 +121,7 @@ protected:
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
-  ClassDef(AliPerformanceObject,4);
+  ClassDef(AliPerformanceObject,5);
 };
 
 #endif

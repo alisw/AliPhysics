@@ -5,7 +5,7 @@
 // Class to extract some TPC Performance parameters from AliPerformanceTPC and
 // AliPerformanceDEdx objects and produce trend graphs.  
 // 
-// by M.Knichel 15/10/2010
+// by M.Knichel 15/10/2010 
 //------------------------------------------------------------------------------
 
 class TTree;
@@ -14,6 +14,7 @@ class TTreeSRedirector;
 class AliPerformanceTPC;
 class AliPerformanceDEdx;
 class AliPerformanceDCA;
+class AliPerformanceMatch;
 
 class AliTPCPerformanceSummary
 {
@@ -21,9 +22,9 @@ class AliTPCPerformanceSummary
     AliTPCPerformanceSummary() {} // default contructor 
     virtual ~AliTPCPerformanceSummary() {} // destructor
     
-    static Int_t WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* pcstream, Int_t run = -1); // called by WriteToFile
+    static void WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, TTreeSRedirector* pcstream, Int_t run = -1); // called by WriteToFile
     
-    static Int_t WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const Char_t* outfile, Int_t run = -1); // calles by MakeReport
+    static void WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch, const Char_t* outfile, Int_t run = -1); // calles by MakeReport
     
     // the two key functions
     static Int_t MakeReport(const Char_t* infile, const Char_t* outfile, Int_t run);
@@ -49,6 +50,7 @@ class AliTPCPerformanceSummary
     static Int_t AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
     static Int_t AnalyzeGain(const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* pcstream);
     static Int_t AnalyzeEvent(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
+    static void AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* pcstream);
     
       
     AliTPCPerformanceSummary(const AliTPCPerformanceSummary&); // copy contructor (not implemented)

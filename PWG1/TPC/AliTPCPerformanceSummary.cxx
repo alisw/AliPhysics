@@ -38,6 +38,7 @@
 #include "AliPerformanceTPC.h"
 #include "AliPerformanceDEdx.h"
 #include "AliPerformanceDCA.h"
+#include "AliPerformanceMatch.h"
 
 #include "AliTPCPerformanceSummary.h"
 
@@ -47,7 +48,7 @@ Bool_t AliTPCPerformanceSummary::fgForceTHnSparse = kFALSE;
 
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* pcstream, Int_t run)
+void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, TTreeSRedirector* pcstream, Int_t run)
 {
    // 
     // Extracts performance parameters from pTPC and pTPCgain.
@@ -56,10 +57,11 @@ Int_t AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC*
     // AliPerformanceTPC or AliPerformanceDEdx.
     //
     if (run <= 0 ) {
+        if (pTPCMatch) {run = pTPCMatch->GetRunNumber(); }
         if (pTPCgain) {run = pTPCgain->GetRunNumber(); }
         if (pTPC) { run = pTPC->GetRunNumber(); }
     }
-    
+    TObjString runType;
     AliTPCcalibDB     *calibDB=0;
 //     AliTPCcalibDButil *dbutil =0;
     Int_t startTimeGRP=0;
@@ -71,9 +73,10 @@ Int_t AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC*
     Float_t bz = 0;
     calibDB = AliTPCcalibDB::Instance();
 //     dbutil= new AliTPCcalibDButil;   
-           
+        
     printf("Processing run %d ...\n",run);
-    AliTPCcalibDB::Instance()->SetRun(run);
+    if (calibDB) { 
+        AliTPCcalibDB::Instance()->SetRun(run); 
 //     dbutil->UpdateFromCalibDB();
 //     dbutil->SetReferenceRun(run);
 //     dbutil->UpdateRefDataFromOCDB();     
@@ -86,12 +89,12 @@ Int_t AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC*
     bz = AliTPCcalibDB::GetBz(run);
     
   }    
-  TObjString runType(AliTPCcalibDB::GetRunType(run).Data());  
-  
+  runType = AliTPCcalibDB::GetRunType(run).Data();  
+}  
   time = (startTimeGRP+stopTimeGRP)/2;
   duration = (stopTimeGRP-startTimeGRP);
     
-    if (!pcstream) return -1;
+    if (!pcstream) return;
     (*pcstream)<<"tpcQA"<<      
       "run="<<run<<
       "time="<<time<<
@@ -99,31 +102,29 @@ Int_t AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC*
       "stopTimeGRP="<<stopTimeGRP<<
       "duration="<<
       "runType.="<<&runType;
-    Int_t returncode = 0;
     if (pTPC) {
         pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
         pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
         pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1,1);    
-        returncode += AnalyzeNCL(pTPC, pcstream);    
-        returncode += AnalyzeDrift(pTPC, pcstream);
-        returncode += AnalyzeDriftPos(pTPC, pcstream);
-        returncode += AnalyzeDriftNeg(pTPC, pcstream);    
-        returncode += AnalyzeDCARPhi(pTPC, pcstream);
-        returncode += AnalyzeDCARPhiPos(pTPC, pcstream);
-        returncode += AnalyzeDCARPhiNeg(pTPC, pcstream);
-        returncode += AnalyzeEvent(pTPC, pcstream);         
+        AnalyzeNCL(pTPC, pcstream);    
+        AnalyzeDrift(pTPC, pcstream);
+        AnalyzeDriftPos(pTPC, pcstream);
+        AnalyzeDriftNeg(pTPC, pcstream);    
+        AnalyzeDCARPhi(pTPC, pcstream);
+        AnalyzeDCARPhiPos(pTPC, pcstream);
+        AnalyzeDCARPhiNeg(pTPC, pcstream);
+        AnalyzeEvent(pTPC, pcstream);         
         pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(-10,10);
         pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0,100);
-        pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-10,10);    
+        pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-10,10); 
     }
-    returncode += AnalyzeGain(pTPCgain, pcstream);
+    AnalyzeGain(pTPCgain, pcstream);
+    AnalyzeMatch(pTPCMatch, pcstream);
     (*pcstream)<<"tpcQA"<<"\n";
-    return returncode;
-
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const Char_t* outfile, Int_t run)
+void AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch, const Char_t* outfile, Int_t run)
 {
     //
     // Extracts performance parameters from pTPC and pTPCgain.
@@ -135,13 +136,12 @@ Int_t AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const
     // function WriteToTTreeSRedirector.
     //
     
-    if (!outfile) return -1;
+    if (!outfile) return;
     TTreeSRedirector* pcstream = 0;
     pcstream = new TTreeSRedirector(outfile);
-    if (!pcstream) return -1;
-    Int_t returncode = WriteToTTreeSRedirector(pTPC, pTPCgain, pcstream, run);
-    if (pcstream) { delete pcstream; pcstream = 0; }
-    return returncode;
+    if (!pcstream) return;
+    WriteToTTreeSRedirector(pTPC, pTPCgain, pMatch, pcstream, run);
+    if (pcstream) { delete pcstream; pcstream = 0; }    
     
 }
 
@@ -180,11 +180,13 @@ Int_t AliTPCPerformanceSummary::MakeReport(const Char_t* infile, const Char_t* o
     } 
     AliPerformanceTPC* pTPC = 0;
     AliPerformanceDEdx* pTPCgain = 0; 
-    if (list) {  pTPC = (AliPerformanceTPC*)(list->FindObject("AliPerformanceTPC")); }
-    if (list) {  pTPCgain = (AliPerformanceDEdx*)(list->FindObject("AliPerformanceDEdxTPCInner")); }
+    AliPerformanceMatch* pTPCmatch = 0; 
+    if (list) {  pTPC = dynamic_cast<AliPerformanceTPC*>(list->FindObject("AliPerformanceTPC")); }
+    if (list) {  pTPCgain = dynamic_cast<AliPerformanceDEdx*>(list->FindObject("AliPerformanceDEdxTPCInner")); }
+    if (list) {  pTPCmatch = dynamic_cast<AliPerformanceMatch*>(list->FindObject("AliPerformanceMatchTPCITS")); }
     
     Int_t returncode = 0;
-    returncode = WriteToFile(pTPC, pTPCgain, outfile, run);
+    WriteToFile(pTPC, pTPCgain, pTPCmatch ,outfile, run);
     if (f) { delete f; f=0; }
     return returncode;
 }
@@ -1330,4 +1332,11 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
         "rmsMultNeg="<<rmsMultNeg;     
      
     return 0;
+}
+
+//_____________________________________________________________________________
+void AliTPCPerformanceSummary::AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* pcstream)
+{
+ if ((pMatch == 0) or (0 == pcstream)) { printf("this will not work anyway..."); }
+ printf("funtion not implemented");
 }
