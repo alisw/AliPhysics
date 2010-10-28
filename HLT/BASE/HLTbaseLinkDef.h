@@ -102,6 +102,8 @@
 #pragma link C++ class AliHLTRunStatistics+;
 #pragma link C++ class AliHLTMisc+;
 #pragma link C++ class AliHLTCTPData+;
+#pragma link C++ class AliHLTScalars+;
+#pragma link C++ class AliHLTScalars::AliScalar+;
 
 #pragma link C++ struct AliHLTComponentEventData+;
 #pragma link C++ struct AliHLTComponentBlockData+;
