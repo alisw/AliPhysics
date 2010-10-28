@@ -130,7 +130,7 @@ bool CheckScalarsListClass()
 	s.Add("c", "three", 33);
 	if (s.GetScalar("c").Value() != 33 || TString(s.GetScalar("c").Description()) != "")
 	{
-		cerr << "ERROR: AliHLTScalars::Add did not update and exisiting scalar correctly." << endl;
+		cerr << "ERROR: AliHLTScalars::Add did not update an exisiting scalar correctly." << endl;
 		return false;
 	}
 	if (TString(p.GetScalarN(0).Name()) != "b" || TString(p.GetScalarN(1).Name()) != "a" || TString(p.GetScalarN(2).Name()) != "c")
