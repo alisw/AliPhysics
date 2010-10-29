@@ -42,7 +42,7 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   // define working and output directories
   plugin->SetGridWorkingDir(gridWorkingDir); // relative to $HOME
   plugin->SetGridOutputDir(gridOutputDir);   // relative to working dir
-  
+  plugin->SetOverwriteMode();                // overwrites the contents of the working and output directory
   
   Bool_t bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE;
  
