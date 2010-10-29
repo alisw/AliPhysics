@@ -80,7 +80,7 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
-  Bool_t IsEventSelected(AliVEvent *event) const;
+  Bool_t IsEventSelected(AliVEvent *event);
   Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd) const;
   Bool_t IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts) const;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF * /*rd*/) {return 1;}
