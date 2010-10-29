@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 20;
+const int c_array_size = 21;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -101,6 +101,7 @@ Double_t kGCprobElectron = 0.000;
 
 Double_t kGCminOpeningAngleGhostCut = 0.005;
 
+Bool_t kGCRemovePileUp = kFALSE;
 /** ---------------------------------- define pi0 dalitz cuts here ------------------------------------*/
 
 Bool_t kGCRunStandalone    = kFALSE;
@@ -533,9 +534,9 @@ Double_t kGClastXBinESDtrk = 1999.5;
 
 
 //EventQuality-plot
-Int_t kGCnXBinsEvtQ= 5;
+Int_t kGCnXBinsEvtQ= 6;
 Double_t kGCfirstXBinEvtQ=-1.5;
-Double_t kGClastXBinEvtQ=3.5;
+Double_t kGClastXBinEvtQ=4.5;
 
 //R-plots
 Int_t kGCnXBinsR = 400;
@@ -1499,6 +1500,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetEtaWidth(kGCetaWidth);
 	
   gammaconversion->SetMinOpeningAngleGhostCut(kGCminOpeningAngleGhostCut);
+  
 	
   Double_t lowPtMapping=0.4;
   Double_t highPtMapping=1.5;
@@ -1538,6 +1540,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetNumberOfRotationsBG(kGCnumberOfRotationEventsForBG);
   gammaconversion->SetCheckBGProbability(kGCdoBGProbability);
 
+  gammaconversion->SetRemovePileUp(kGCRemovePileUp);
   // for CF
   gammaconversion->SetCFManager(man);
   gammaconversion->SetDoCF(kGCrunCF);
@@ -2446,7 +2449,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t BackgroundScheme=array[17];
   Int_t DegreesForRotationMethod=array[18];
   Int_t NumberOfRotations=array[19];
+  Int_t removePileUp=array[20];
 
+  cout<<"Remove PileUp"<< removePileUp<<endl;
   cout<<"NumberOfRotations::"<<NumberOfRotations<<endl;
   cout<<"DegreesForRotationMethod::"<<DegreesForRotationMethod<<endl;
   cout<<"BackgroundScheme::"<<BackgroundScheme<<endl;
@@ -2899,6 +2904,17 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     return iResult;
   }
 
+  switch(removePileUp){
+  case 0:
+    kGCRemovePileUp=kFALSE;
+    break;
+  case 1:
+    kGCRemovePileUp=kTRUE;
+    break;
+  default:
+    return iResult;
+  }
+
   iResult=1;
   return iResult;
 
@@ -2930,6 +2946,7 @@ void string2array(const std::string& number, int a[c_array_size])
         ASSIGNARRAY(17);
         ASSIGNARRAY(18);
         ASSIGNARRAY(19);
+        ASSIGNARRAY(20);
   }
 }
 
