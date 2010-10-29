@@ -34,7 +34,8 @@ class TUHKMgen : public TGenerator {
   virtual TObjArray* ImportParticles(const Option_t* option="prim");
   // this function makes available the PDG info in our database 
   virtual DatabasePDG* PDGInfo() const {return fInitialState->PDGInfo();}
-
+  virtual void GetCentrality(Double_t& b, Double_t & npart, Double_t & nbin)
+      {fInitialState->GetCentrality(b, npart, nbin);}
   // Setters
   // set reasonable default parameters suited for central Au+Au collisions at RHIC(200GeV)
   void SetAllParametersRHIC();

@@ -452,14 +452,21 @@ void AliGenUHKM::Generate()
 
   // Builds the event header, to be called after each event
   AliGenEventHeader* header = new AliGenHijingEventHeader("UHKM");
+  Double_t b       = 0.;
+  Double_t npart   = 0; 
+  Double_t nbin    = 0;
+  fUHKMgen->GetCentrality(b, npart, nbin);
+  printf("********** %13.3f %13.3f %13.3f \n", b, npart, nbin);
+  
+
 
   ((AliGenHijingEventHeader*) header)->SetNProduced(fNprimaries);
   ((AliGenHijingEventHeader*) header)->SetPrimaryVertex(eventVertex);
-  ((AliGenHijingEventHeader*) header)->SetImpactParameter(0.0);
+  ((AliGenHijingEventHeader*) header)->SetImpactParameter(b);
   ((AliGenHijingEventHeader*) header)->SetTotalEnergy(0.0);
   ((AliGenHijingEventHeader*) header)->SetHardScatters(0);
-  ((AliGenHijingEventHeader*) header)->SetParticipants(0, 0);
-  ((AliGenHijingEventHeader*) header)->SetCollisions(0, 0, 0, 0);
+  ((AliGenHijingEventHeader*) header)->SetParticipants(npart, 0);
+  ((AliGenHijingEventHeader*) header)->SetCollisions(nbin, 0, 0, 0);
   ((AliGenHijingEventHeader*) header)->SetSpectators(0, 0, 0, 0);
   ((AliGenHijingEventHeader*) header)->SetReactionPlaneAngle(0);//evrot);
 

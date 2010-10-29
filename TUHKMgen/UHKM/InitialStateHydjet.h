@@ -102,14 +102,13 @@ struct InitialParamsHydjet_t {
 
   Double_t fMuTh[1000];                    //Chemical potentials at thermal freezeout of hadron species
 
-
 };
 
 
 class InitialStateHydjet : public InitialState {
  public:
    
-  InitialStateHydjet() : fParams(), fVolEff(0){};
+  InitialStateHydjet() : fParams(), fVolEff(0), fBgen(0), fNpart(0), fNcoll(0) {};
   ~InitialStateHydjet() {};
   
   void SetVolEff(Double_t value) {fVolEff = value;}
@@ -122,12 +121,20 @@ class InitialStateHydjet : public InitialState {
   virtual void Initialize(List_t &source, ParticleAllocator &allocator);
   virtual Bool_t ReadParams();
   virtual Bool_t MultIni();
+  virtual void GetCentrality(Double_t& b, Double_t & npart, Double_t & nbin)
+      {b = fBgen; npart = fNpart; nbin = fNcoll;}
+  
   Bool_t IniOfThFreezeoutParameters();
   
   InitialParamsHydjet_t fParams;             // the list of initial state parameters
   
   private:
-   Double_t fVolEff;                           // the effective volume
+   Double_t fVolEff;                     // the effective volume
+   // Collision geometry
+   Double_t    fBgen;                       // Generated impact parameter
+   Double_t    fNpart;                      // Number of participants
+   Double_t    fNcoll;                      // Number of collisions 
+      
    Double_t F2(Double_t x, Double_t y);
    
    Double_t SimpsonIntegrator(Double_t a, Double_t b, Double_t phi);

@@ -68,7 +68,13 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 
   // run a HYDJET event
   hyevnt_(); 
-   
+
+  fBgen  =  HYFPAR.bgen * HYIPAR.RA;
+  fNpart =  HYFPAR.npart;
+  fNcoll =  HYFPAR.nbcol;
+
+  
+      
   if(fParams.fNhsel != 0) {   
     //get number of particles in jets
     Int_t numbJetPart = HYPART.njp;
@@ -128,7 +134,7 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
     coeffR1 = TMath::Power(coeffR1, 0.333333);
 
     double veff=fVolEff;
-
+    
     //------------------------------------
     //cycle on particles types
     for(Int_t i = 0; i < fParams.fNPartTypes; ++i) {
