@@ -57,7 +57,10 @@ fIsUpperCut(0),
 fUsePID(kFALSE),
 fPidHF(0),
 fWhyRejection(0),
-fRemoveDaughtersFromPrimary(kFALSE)
+fRemoveDaughtersFromPrimary(kFALSE),
+fOptPileup(0),
+fMinContrPileup(3),
+fMinDzPileup(0.6)
 {
   //
   // Default Constructor
@@ -85,7 +88,10 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fUsePID(source.fUsePID),
   fPidHF(0),
   fWhyRejection(source.fWhyRejection),
-  fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary)
+  fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary),
+  fOptPileup(source.fOptPileup),
+  fMinContrPileup(source.fMinContrPileup),
+  fMinDzPileup(source.fMinDzPileup)  
 {
   //
   // Copy constructor
@@ -123,6 +129,9 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   SetPidHF(source.GetPidHF());
   fWhyRejection=source.fWhyRejection;
   fRemoveDaughtersFromPrimary=source.fRemoveDaughtersFromPrimary;
+  fOptPileup=source.fOptPileup;
+  fMinContrPileup=source.fMinContrPileup;
+  fMinDzPileup=source.fMinDzPileup;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -169,6 +178,11 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) const {
   if(title.Contains("3D") && fMinVtxType>2) return kFALSE; 
 
   if(vertex->GetNContributors()<fMinVtxContr) return kFALSE; 
+  if(fOptPileup==kRejectPileupEvent){
+    Int_t cutc=(Int_t)fMinContrPileup;
+    Double_t cutz=(Double_t)fMinDzPileup;
+    if(event->IsPileupFromSPD(cutc,cutz,3.,2.,10.)) return kFALSE;
+  }
 
   return kTRUE;
 }
@@ -214,6 +228,11 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   esdTrack.RelateToVertex(primary,0.,3.); 
   if(!cuts->IsSelected(&esdTrack)) retval = kFALSE;
  
+  if(fOptPileup==kRejectTracksFromPileupVertex){
+    // to be implemented
+    // we need either to have here the AOD Event, 
+    // or to have the pileup vertex object
+  }
   return retval; 
 }
 //---------------------------------------------------------------------------
