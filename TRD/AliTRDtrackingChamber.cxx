@@ -305,7 +305,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
   Int_t col, row, lower, lower1, upper, upper1;
   for(Int_t ib = 0; ib < nCont; ib++){
     if(nCandidates >= AliTRDtrackerV1::kMaxTracksStack){
-      AliWarning(Form("Number of seed candidates %d exceeded maximum allowed per stack %d", nCandidates, AliTRDtrackerV1::kMaxTracksStack));
+      AliDebug(1, Form("Number of seed candidates %d exceeded maximum allowed per stack %d", nCandidates, AliTRDtrackerV1::kMaxTracksStack));
       break;
     }
     // Positions
