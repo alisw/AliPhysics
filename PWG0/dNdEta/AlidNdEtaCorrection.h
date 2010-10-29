@@ -43,7 +43,7 @@ public:
   ~AlidNdEtaCorrection();
 
   void FillMCParticle(Float_t vtx, Float_t eta, Float_t pt, Bool_t trigger, Bool_t vertex, Int_t processType);
-  void FillTrackedParticle(Float_t vtx, Float_t eta, Float_t pt);
+  void FillTrackedParticle(Float_t vtx, Float_t eta, Float_t pt, Double_t weight=1.);
   void FillEvent(Float_t vtx, Float_t n, Bool_t trigger, Bool_t vertex, Int_t processType);
 
   void Finish();

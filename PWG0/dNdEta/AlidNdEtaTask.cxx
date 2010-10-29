@@ -9,6 +9,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH1D.h>
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TParticle.h>
@@ -94,7 +95,18 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fTrackletsVsClusters(0),
   fTrackletsVsUnassigned(0),
   fStats(0),
-  fStats2(0)
+  fStats2(0),
+  fPtMin(0.15),
+  fEta(0x0),
+  fEtaMC(0x0),
+  fHistEvents(0),
+  fHistEventsMC(0),
+  fTrigEffNum(0),
+  fTrigEffDen(0),
+  fVtxEffNum(0),
+  fVtxEffDen(0),
+  fVtxTrigEffNum(0),
+  fVtxTrigEffDen(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -327,6 +339,31 @@ void AlidNdEtaTask::UserCreateOutputObjects()
     fEsdTrackCuts->SetName("fEsdTrackCuts");
     fOutput->Add(fEsdTrackCuts);
   }
+
+  fEta = new TH1D("fEta", "Eta;#eta;count", 80, -4, 4);
+  fOutput->Add(fEta);
+  
+  fEtaMC = new TH1D("fEtaMC", "Eta, MC;#eta;count", 80, -4, 4);
+  fOutput->Add(fEtaMC);
+
+  fHistEvents = new TH1D("fHistEvents", "N. of Events;accepted;count", 2, 0, 2);
+  fOutput->Add(fHistEvents);
+  
+  fHistEventsMC = new TH1D("fHistEventsMC", "N. of MC Events;accepted;count", 2, 0, 2);
+  fOutput->Add(fHistEventsMC);
+
+  fTrigEffNum = new TH1D("fTrigEffNum", "N. of triggered events", 100,0,100); 
+  fOutput->Add(fTrigEffNum);
+  fTrigEffDen = new TH1D("fTrigEffDen", "N. of true events", 100,0,100); 
+  fOutput->Add(fTrigEffDen);
+  fVtxEffNum = new TH1D("fVtxEffNum", "N. of events with vtx", 100,0,100); 
+  fOutput->Add(fVtxEffNum);
+  fVtxEffDen = new TH1D("fVtxEffDen", "N. of true events", 100,0,100); 
+  fOutput->Add(fVtxEffDen);
+  fVtxTrigEffNum = new TH1D("fVtxTrigEffNum", "N. of triggered events with vtx", 100,0,100); 
+  fOutput->Add(fVtxTrigEffNum);
+  fVtxTrigEffDen = new TH1D("fVtxTrigEffDen", "N. of triggered true events", 100,0,100); 
+  fOutput->Add(fVtxTrigEffDen);
   
   //AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
 }
@@ -335,6 +372,7 @@ Bool_t AlidNdEtaTask::IsEventInBinZero()
 {
   // checks if the event goes to the 0 bin
   
+  Bool_t isZeroBin = kTRUE;
   fESD = (AliESDEvent*) fInputEvent;
   
   AliInputEventHandler* inputHandler = static_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -361,9 +399,29 @@ Bool_t AlidNdEtaTask::IsEventInBinZero()
   if (!triggerAnalysis->IsTriggerFired(fESD, fTrigger))
     return kFALSE;
   
-  // TODO 0 bin check
+  // 0 bin check - from Michele
   
-  return kTRUE;
+  const AliMultiplicity* mult = fESD->GetMultiplicity();
+  if (!mult){
+    Printf("AlidNdEtaTask::IsBinZero: Can't get multiplicity object from ESDs");
+    return kFALSE;
+  }
+  Int_t ntracklet = mult->GetNumberOfTracklets();
+  const AliESDVertex * vtxESD = fESD->GetPrimaryVertexSPD();
+  if(vtxESD) {
+	  // If there is a vertex from vertexer z with delta phi > 0.02 we
+	  // don't consider it rec (we keep the event in bin0). If quality
+	  // is good eneough we check the number of tracklets
+	  // if the vertex is more than 15 cm away, this is autamatically bin0
+	  if( TMath::Abs(vtxESD->GetZ()) <= 15 ) {
+		  if (vtxESD->IsFromVertexerZ()) {
+			  if (vtxESD->GetDispersion()<=0.02 ) {
+				  if(ntracklet>0) isZeroBin = kFALSE;
+			  }
+		  } else if(ntracklet>0) isZeroBin = kFALSE; // if the event is not from Vz we chek the n of tracklets
+	  } 
+  }
+  return isZeroBin;
 }
 
 void AlidNdEtaTask::UserExec(Option_t*)
@@ -546,6 +604,7 @@ isManager()->GetInputEventHandler());
         
       const AliMultiplicity* mult = fESD->GetMultiplicity();
       if (!mult)
+	Printf("Returning, no Multiplicity found");
         return;
       
       if (mult->GetNumberOfTracklets() == 0)
@@ -821,33 +880,45 @@ isManager()->GetInputEventHandler());
           if (eventTriggered && vtxESD)
             fRawPt->Fill(pT);
   
-          if (esdTrack->Pt() < 0.15)
+          if (esdTrack->Pt() < fPtMin) // even if the pt cut is already in the esdTrackCuts....
             continue;
           
-          // INEL>0 trigger
-          if (TMath::Abs(esdTrack->Eta()) < 1 && esdTrack->Pt() > 0.15)
-            foundInEta10 = kTRUE;
-  
           if (fOnlyPrimaries)
           {
-            if (label == 0)
-              continue;
-            
-            if (stack->IsPhysicalPrimary(label) == kFALSE)
-              continue;
+	   if (label == 0)
+	     continue;
+	   
+	   if (stack->IsPhysicalPrimary(label) == kFALSE)
+	     continue;
           }
+
+	  // 2 types of INEL>0 trigger - choose one
+
+	  // 1. HL 
+          // INEL>0 trigger
+          // if (TMath::Abs(esdTrack->Eta()) < 1 && esdTrack->Pt() > 0.15)
+          // foundInEta10 = kTRUE;
+
+          // 2. MB working group
+	  if (TMath::Abs(esdTrack->Eta()) < 0.8 && esdTrack->Pt() > fPtMin){  // this should be in the trigger selection as well, so one particle should always be found
+	    foundInEta10 = kTRUE;
+	  }
   
           if (fUseMCKine)
           {
-            if (label > 0)
+	    if (label > 0)
             {
               TParticle* particle = stack->Particle(label);
               eta = particle->Eta();
               pT = particle->Pt();
+	      // check when using INEL>0, MB Working Group definition
+	      if (TMath::Abs(eta) >=0.8 || pT <= fPtMin){
+		AliDebug(2,Form("WARNING ************* USING KINE: eta = %f, pt = %f",eta,pT));
+	      }
             }
             else
               Printf("WARNING: fUseMCKine set without fOnlyPrimaries and no label found");
-          }
+	  }
   
           if (fSymmetrize)
             eta = TMath::Abs(eta);
@@ -865,8 +936,20 @@ isManager()->GetInputEventHandler());
         delete list;
       }
       
-      if (!foundInEta10)
+      if (!foundInEta10){
         eventTriggered = kFALSE;
+	fHistEvents->Fill(0.1);
+	AliDebug(3,"Event rejected");
+      }
+      else{
+	if (eventTriggered){
+	  fHistEvents->Fill(1.1);
+	  AliDebug(3,Form("Event Accepted, with inputcount = %d",inputCount));
+	}
+	else{
+	  AliDebug(3,"Event has foundInEta10 but was not triggered");
+	}
+      }
     }
     else
       return;
@@ -906,7 +989,7 @@ isManager()->GetInputEventHandler());
           
           if (TMath::Abs(eta) < 0.5)
             part05++;
-          if (TMath::Abs(eta) < 1.0)
+          if (TMath::Abs(eta) < 1.0) // in the INEL>0, MB WG definition, this is in any case equivalent to <0.8, due to the EsdTrackCuts
             part10++;
         }
         
@@ -1028,6 +1111,8 @@ isManager()->GetInputEventHandler());
     Int_t nAcceptedParticles = 0;
     Bool_t oneParticleEvent = kFALSE;
 
+    Int_t nMCparticlesinRange = 0; // number of true particles in my range of interest
+
     // count particles first, then fill
     for (Int_t iMc = 0; iMc < nPrim; ++iMc)
     {
@@ -1046,13 +1131,47 @@ isManager()->GetInputEventHandler());
       //AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", iMc, particle->GetUniqueID()));
       Float_t eta = particle->Eta();
 
-      if (TMath::Abs(eta) < 1.0)
-        oneParticleEvent = kTRUE;
+      AliDebug(2,Form("particle %d: eta = %f, pt = %f",iMc,particle->Eta(),particle->Pt()));
+
+      // INEL>0: choose one
+      // 1.HL
+      // if (TMath::Abs(eta) < 1.0){
+      //   oneParticleEvent = kTRUE;
+      //   nMCparticlesinRange++;
+      //}
+      // 2.MB Working Group definition
+      if (TMath::Abs(eta) < 0.8 && particle->Pt() > fPtMin){
+	oneParticleEvent = kTRUE;
+	nMCparticlesinRange++;
+      }
 
       // make a rough eta cut (so that nAcceptedParticles is not too far off the true measured value (NB: these histograms are only gathered for comparison))
       if (TMath::Abs(eta) < 1.5) // && pt > 0.3)
         nAcceptedParticles++;
     }
+
+    if (TMath::Abs(vtxMC[2]) < 10.){
+      // if MC vertex is inside 10
+      if (vtxESD){
+	fVtxEffNum->Fill(nMCparticlesinRange);
+      }
+      fVtxEffDen->Fill(nMCparticlesinRange);
+      if (eventTriggered){
+	if (vtxESD){
+	   fVtxTrigEffNum->Fill(nMCparticlesinRange);
+	}
+	fVtxTrigEffDen->Fill(nMCparticlesinRange);
+	fTrigEffNum->Fill(nMCparticlesinRange);
+      }
+      fTrigEffDen->Fill(nMCparticlesinRange);
+    }
+
+    if (oneParticleEvent){
+	    fHistEventsMC->Fill(1.1);
+    }
+    else{
+	    fHistEventsMC->Fill(0.1);
+    }	
 
     for (Int_t iMc = 0; iMc < nPrim; ++iMc)
     {
@@ -1095,6 +1214,7 @@ isManager()->GetInputEventHandler());
         fdNdEtaAnalysisND->FillTrack(vtxMC[2], eta, thirdDim);
       
       if (oneParticleEvent)
+	AliDebug(3,Form("filling dNdEtaAnalysis object:: vtx = %f, eta = %f, pt = %f",vtxMC[2], eta, thirdDim));
         fdNdEtaAnalysisOnePart->FillTrack(vtxMC[2], eta, thirdDim);
 
       if (eventTriggered)
@@ -1109,6 +1229,9 @@ isManager()->GetInputEventHandler());
         //Float_t value = 1. / TMath::TwoPi() / particle->Pt() * particle->Energy() / particle->P();
         Float_t value = 1;
         fPartPt->Fill(particle->Pt(), value);
+	if (TMath::Abs(eta) < 0.8 && particle->Pt() > fPtMin){
+	  fEtaMC->Fill(eta);
+	}
       }
     }
 
@@ -1139,6 +1262,8 @@ void AlidNdEtaTask::Terminate(Option_t *)
   if (!fOutput)
     Printf("ERROR: fOutput not available");
 
+  TH1D* dNdEta = new TH1D("dNdEta","#eta;counts",80, -4, 4);
+  TH1D* dNdEtaMC = new TH1D("dNdEtaMC","#eta,MC;counts",80, -4, 4);
   if (fOutput)
   {
     fdNdEtaAnalysisESD = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("fdNdEtaAnalysisESD"));
@@ -1166,6 +1291,52 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fStats2 = dynamic_cast<TH2F*> (fOutput->FindObject("fStats2"));
 
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCuts"));
+
+    fEta = dynamic_cast<TH1D*>(fOutput->FindObject("fEta"));
+    fEtaMC = dynamic_cast<TH1D*>(fOutput->FindObject("fEtaMC"));
+    fHistEvents = dynamic_cast<TH1D*>(fOutput->FindObject("fHistEvents"));
+    fHistEventsMC = dynamic_cast<TH1D*>(fOutput->FindObject("fHistEventsMC"));
+    fVtxEffDen = dynamic_cast<TH1D*>(fOutput->FindObject("fVtxEffDen"));
+    fVtxEffNum = dynamic_cast<TH1D*>(fOutput->FindObject("fVtxEffNum"));
+    fTrigEffDen = dynamic_cast<TH1D*>(fOutput->FindObject("fTrigEffDen"));
+    fTrigEffNum = dynamic_cast<TH1D*>(fOutput->FindObject("fTrigEffNum"));
+    fVtxTrigEffDen = dynamic_cast<TH1D*>(fOutput->FindObject("fVtxTrigEffDen"));
+    fVtxTrigEffNum = dynamic_cast<TH1D*>(fOutput->FindObject("fVtxTrigEffNum"));
+    Printf("Events selected = %f", fHistEvents->GetBinContent(fHistEvents->GetXaxis()->FindBin(1.1)));
+    Printf("Events selected frm MC = %f", fHistEventsMC->GetBinContent(fHistEventsMC->GetXaxis()->FindBin(1.1)));
+    Float_t nevents = fHistEvents->GetBinContent(fHistEvents->GetXaxis()->FindBin(1.1));
+    Float_t neventsMC = fHistEventsMC->GetBinContent(fHistEventsMC->GetXaxis()->FindBin(1.1));
+    for (Int_t ibin = 1; ibin <= fEta->GetNbinsX(); ibin++){
+      Float_t eta = fEta->GetBinContent(ibin)/nevents/fEta->GetBinWidth(ibin);
+      Float_t etaerr = fEta->GetBinError(ibin)/nevents/fEta->GetBinWidth(ibin);
+      Float_t etaMC = fEtaMC->GetBinContent(ibin)/neventsMC/fEtaMC->GetBinWidth(ibin);
+      Float_t etaerrMC = fEtaMC->GetBinError(ibin)/neventsMC/fEtaMC->GetBinWidth(ibin);
+      dNdEta->SetBinContent(ibin,eta);
+      dNdEta->SetBinError(ibin,etaerr);
+      dNdEtaMC->SetBinContent(ibin,etaMC);
+      dNdEtaMC->SetBinError(ibin,etaerrMC);
+    }
+    new TCanvas("eta", " eta ",50, 50, 550, 550) ;
+    fEta->Draw();
+    new TCanvas("etaMC", " etaMC ",50, 50, 550, 550) ;
+    fEtaMC->Draw();
+    new TCanvas("dNdEta", "#eta;dNdEta ",50, 50, 550, 550) ;
+    dNdEta->Draw();
+    new TCanvas("dNdEtaMC", "#eta,MC;dNdEta ",50, 50, 550, 550) ;
+    dNdEtaMC->Draw();
+    new TCanvas("Events", "Events;Events ",50, 50, 550, 550) ;
+    fHistEvents->Draw();
+    new TCanvas("Events, MC", "Events, MC;Events ",50, 50, 550, 550) ;
+    fHistEventsMC->Draw();
+    
+    TFile* outputFileCheck = new TFile("histogramsCheck.root", "RECREATE");
+    fEta->Write();
+    fEtaMC->Write();
+    dNdEta->Write();
+    dNdEtaMC->Write();
+    outputFileCheck->Write();
+    outputFileCheck->Close();
+
   }
 
   if (!fdNdEtaAnalysisESD)
@@ -1297,6 +1468,24 @@ void AlidNdEtaTask::Terminate(Option_t *)
     if (fVertexVsMult)
       fVertexVsMult->Write();
     
+    if (fVtxEffDen) fVtxEffDen->Write();
+    else Printf("fVtxEffDen not found");
+
+    if (fVtxEffNum) fVtxEffNum->Write();
+    else Printf("fVtxEffNum not found");
+
+    if (fVtxTrigEffNum) fVtxTrigEffNum->Write();
+    else Printf("fVtxTrigEffNum not found");
+
+    if (fVtxTrigEffDen) fVtxTrigEffDen->Write();
+    else Printf("fVtxTrigEffDen not found");
+
+    if (fTrigEffNum) fTrigEffNum->Write();
+    else Printf("fTrigEffNum not found");
+
+    if (fTrigEffDen) fTrigEffDen->Write();
+    else Printf("fTrigEffDen not found");
+
     fout->Write();
     fout->Close();
 

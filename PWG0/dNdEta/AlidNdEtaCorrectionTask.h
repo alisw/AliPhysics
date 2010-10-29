@@ -6,8 +6,8 @@
 #include "AliAnalysisTask.h"
 #include <TString.h>
 #include "AliPWG0Helper.h"
+#include "AliESDtrackCuts.h"
 
-class AliESDtrackCuts;
 class dNdEtaAnalysis;
 class AlidNdEtaCorrection;
 class TH1;
@@ -41,6 +41,10 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     void SetSkipParticles(Bool_t flag = kTRUE) { fSystSkipParticles = flag; }
 
     void SetOption(const char* opt) { fOption = opt; }
+    void SetPtMin(Float_t ptMin) {fPtMin = ptMin;}
+    void SetWeightSecondaries(Bool_t flag) { fWeightSecondaries = flag;}
+    Double_t GetSecondaryCorrection(Double_t pt);
+    Double_t GetLinearInterpolationValue(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Double_t pt);
 
  protected:
     Bool_t SignOK(TParticlePDG* particle);
@@ -106,12 +110,28 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     AlidNdEtaCorrection* fdNdEtaCorrectionSpecial[4];   //! correction maps used for systematic studies, may contain:
                                                         // for specific process type (ND, SD, DD), enable with option: process-types
                                                         // for particle species (pi, K, p, rest), enable with: particle-species
+    AliESDtrackCuts*  fEsdTrackCutsCheck;        //! Object containing the parameters of the esd track cuts
+    TH2F* fEtaCorrelationAllESD;                       //! ESD eta vs MC eta
+    TH2F* fpTCorrelation;                         //! ESD pT vs MC pT in |eta| < 0.9
+    TH2F* fpTCorrelationShift;                    //! (MC pT - ESD pT) vs MC pT in |eta| < 0.9
+    TH2F* fpTCorrelationAllESD;                         //! ESD pT vs MC pT in |eta| < 0.9
+    TH2F* fpTCorrelationShiftAllESD;                    //! (MC pT - ESD pT) vs MC pT in |eta| < 0.9
+    Float_t fPtMin;    // ptMin for kOneTrack
+    TH1F* fPtMC;       //! pT histogram for MC information for selected tracks
+    TH1F* fEtaMC;      //! eta histogram for MC information for selected tracks
+    TH1F* fPtESD;      //! pT histogram for ESD information for selected tracks
+    TH1F* fEtaESD;     //! eta histogram for ESD information for selected tracks
+    TH1F* fVtxMC;      //! vtx_z histogram for MC information for all events
+    TH1F* fNumberEventMC;      //! number of accepted event histogram for MC information for all events
+    TH1F* fNumberEvent;      //! number of accepted event histogram for reco information for all events
+    Int_t fEventNumber;      // number of the event - useful when running on one file, on one worker
+    Bool_t fWeightSecondaries; // is true if calculating corrections to be applied to real data (secondaries correction should be on)
 
  private:
     AlidNdEtaCorrectionTask(const AlidNdEtaCorrectionTask&);
     AlidNdEtaCorrectionTask& operator=(const AlidNdEtaCorrectionTask&);
 
-  ClassDef(AlidNdEtaCorrectionTask, 1);
+  ClassDef(AlidNdEtaCorrectionTask, 2);
 };
 
 #endif

@@ -32,7 +32,9 @@ dNdEtaAnalysis::dNdEtaAnalysis() :
   fMult(0),
   fPtDist(0),
   fAnalysisMode(AliPWG0Helper::kInvalid),
-  fTag()
+  fTag(),
+  fvtxMin(-9.99),
+  fvtxMax(9.99)
 {
   // default constructor
 
@@ -50,7 +52,9 @@ dNdEtaAnalysis::dNdEtaAnalysis(const Char_t* name, const Char_t* title, AliPWG0H
   fMult(0),
   fPtDist(0),
   fAnalysisMode(analysisMode),
-  fTag()
+  fTag(),
+  fvtxMin(-9.99),
+  fvtxMax(9.99)
 {
   // constructor
 
@@ -123,7 +127,9 @@ dNdEtaAnalysis::dNdEtaAnalysis(const dNdEtaAnalysis &c) :
   fMult(0),
   fPtDist(0),
   fAnalysisMode(AliPWG0Helper::kInvalid),
-  fTag()
+  fTag(),
+  fvtxMin(-9.99),
+  fvtxMax(9.99)
 {
   //
   // dNdEtaAnalysis copy constructor
@@ -433,8 +439,10 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     fdNdEtaPtCutOffCorrected[vertexPos]->Reset();
   }
 
-  const Float_t vertexRangeBegin[kVertexBinning] = { -9.99,  -9.99,  0.01 };
-  const Float_t vertexRangeEnd[kVertexBinning]   = {  9.99,  -0.01,  9.99 };
+  //const Float_t vertexRangeBegin[kVertexBinning] = { -9.99,  -9.99,  0.01 };
+  //const Float_t vertexRangeEnd[kVertexBinning]   = {  9.99,  -0.01,  9.99 };
+  const Float_t vertexRangeBegin[kVertexBinning] = { fvtxMin,  fvtxMin,  0.01 };
+  const Float_t vertexRangeEnd[kVertexBinning]   = { fvtxMax,  -0.01,  fvtxMax };
 
   for (Int_t iEta=1; iEta<=vtxVsEta->GetNbinsY(); iEta++)
   {
@@ -445,31 +453,32 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Int_t vertexBinEnd   = vertexHist->GetXaxis()->FindBin(vertexRangeEnd[vertexPos]);
 
       const Int_t *binBegin = 0;
-      const Int_t maxBins = 40;
+      const Int_t maxBins = 20;
+      const Int_t maxBins1 = 40;
       
       if (dataHist->GetNbinsY() != maxBins)
         AliFatal(Form("Binning of acceptance is different from data histogram: data=%d, acceptance=%d", dataHist->GetNbinsY(), maxBins));
 
       // adjust acceptance range
       // produce with drawPlots.C: DetermineAcceptance(...)
-      const Int_t binBeginSPD[maxBins] = {19, 18, 17, 15, 14, 12, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
-      const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1};
-      const Int_t binBeginTPCITS[maxBins] = {-1, -1, -1, -1, -1, -1, -1, 14, 10, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1};
+
+      //const Int_t binBeginSPD[maxBins] = {19, 18, 17, 15, 14, 12, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
+      //const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1};
+      //const Int_t binBeginTPCITS[maxBins] = {-1, -1, -1, -1, -1, -1, -1, 14, 10, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1};
 
       if (fAnalysisMode & AliPWG0Helper::kSPD)
       {
-        //const Int_t binBeginSPD[maxBins] = {15, 14, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
-        
+	const Int_t binBeginSPD[maxBins1] = {19, 18, 17, 15, 14, 12, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
         binBegin = binBeginSPD;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPC)
       {
-
+        const Int_t binBeginTPC[maxBins1] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1};
         binBegin = binBeginTPC;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPCITS)
       {
-
+        const Int_t binBeginTPCITS[maxBins] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1};
         binBegin = binBeginTPCITS;
       }
 
@@ -479,7 +488,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       if (binBegin)
       {
         vtxBegin = binBegin[iEta - 1];
-        vtxEnd = 18 + 1 - binBegin[maxBins - iEta];
+        vtxEnd = (Int_t) vtxVsEta->GetNbinsX() + 1 - binBegin[maxBins - iEta];
       }
       else
         Printf("WARNING: No acceptance applied!");

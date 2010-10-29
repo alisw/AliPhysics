@@ -90,7 +90,7 @@ const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMo
     vertex = aEsd->GetPrimaryVertexTracks();
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning vertex from tracks");
-    if (vertex && vertex->GetNContributors() <= 0)
+    if (!vertex || vertex->GetNContributors() <= 0)
     {
       if (debug)
         Printf("AliPWG0Helper::GetVertex: Vertex from tracks has no contributors. Falling back to SPD vertex.");
