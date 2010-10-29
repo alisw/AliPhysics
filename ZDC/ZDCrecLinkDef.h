@@ -14,5 +14,6 @@
 #pragma link C++ class  AliZDCRecoParamPbPb+;
 #pragma link C++ class  AliZDCReconstructor+;
 #pragma link C++ class  AliZDCQADataMakerRec+;
+#pragma link C++ class  AliZDCTowerCalibTask+;
 
 #endif
