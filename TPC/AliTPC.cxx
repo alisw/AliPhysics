@@ -316,7 +316,7 @@ void AliTPC::CreateMaterials()
 
   AliMixture(12,"Ne-CO2-N-1",amat,zmat,density,4,wmat);
   AliMixture(13,"Ne-CO2-N-2",amat,zmat,density,4,wmat);
-  AliMixture(30,"Ne-CO2-N-3",amat,zmat,density,4,wmat);
+  AliMixture(35,"Ne-CO2-N-3",amat,zmat,density,4,wmat);
   //----------------------------------------------------------------------
   //               solid materials
   //----------------------------------------------------------------------
@@ -682,7 +682,7 @@ void AliTPC::CreateMaterials()
   AliMedium(1, "Ne-CO2-N-1", 12, 0, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
   AliMedium(2, "Ne-CO2-N-2", 13, 1, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
   AliMedium(3,"CO2",10,0, iSXFLD, sXMGMX, 10., 999.,.1, .001, .001); 
-  AliMedium(20, "Ne-CO2-N-3", 30, 1, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
+  AliMedium(20, "Ne-CO2-N-3", 35, 1, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
   //-----------------------------------------------------------  
   // tracking media for solids
   //-----------------------------------------------------------
