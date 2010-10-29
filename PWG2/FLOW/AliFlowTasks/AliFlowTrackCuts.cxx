@@ -60,6 +60,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
   fMCPID(0),
+  fIgnoreSignInPID(kFALSE),
   fCutMCisPrimary(kFALSE),
   fMCisPrimary(kFALSE),
   fRequireCharge(kFALSE),
@@ -91,6 +92,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMCprocessType(that.fMCprocessType),
   fCutMCPID(that.fCutMCPID),
   fMCPID(that.fMCPID),
+  fIgnoreSignInPID(that.fIgnoreSignInPID),
   fCutMCisPrimary(that.fCutMCisPrimary),
   fMCisPrimary(that.fMCisPrimary),
   fRequireCharge(that.fRequireCharge),
@@ -124,6 +126,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMCprocessType=that.fMCprocessType;
   fCutMCPID=that.fCutMCPID;
   fMCPID=that.fMCPID;
+  fIgnoreSignInPID=that.fIgnoreSignInPID,
   fCutMCisPrimary=that.fCutMCisPrimary;
   fMCisPrimary=that.fMCisPrimary;
   fRequireCharge=that.fRequireCharge;
@@ -220,7 +223,14 @@ Bool_t AliFlowTrackCuts::PassesMCcuts()
   if (fCutMCPID)
   {
     Int_t pdgCode = fMCparticle->PdgCode();
-    if (fMCPID != pdgCode) return kFALSE;
+    if (fIgnoreSignInPID) 
+    {
+      if (TMath::Abs(fMCPID) != TMath::Abs(pdgCode)) return kFALSE;
+    }
+    else 
+    {
+      if (fMCPID != pdgCode) return kFALSE;
+    }
   }
   if ( fCutMCprocessType )
   {
