@@ -498,7 +498,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	iotrack.SetTPCPoints(points);
 	if( element->TrackID()<ndEdxTPC ){
 	  AliHLTFloat32_t *val = &(dEdxTPC[3*element->TrackID()]);
-	  iotrack.SetTPCsignal( val[0], val[1], val[2] ); 
+	  iotrack.SetTPCsignal( val[0], val[1], (UChar_t) val[2] ); 
 	  //AliTPCseed s;
 	  //s.Set( element->GetX(), element->GetAlpha(),
 	  //element->GetParameter(), element->GetCovariance() );

@@ -351,7 +351,7 @@ int AliHLTTPCTrackHistoComponent::ScanConfigurationArgument(int argc, const char
   if (argument.CompareTo("-event-modulo")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fEvtMod=argument.Atof();
+    fEvtMod=argument.Atoi();
     return 2;
   }    
 
@@ -359,7 +359,7 @@ int AliHLTTPCTrackHistoComponent::ScanConfigurationArgument(int argc, const char
   if (argument.CompareTo("-buffer-size")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fBufferSize=argument.Atof();
+    fBufferSize=argument.Atoi();
     return 2;
   }    
   

@@ -434,7 +434,7 @@ int AliHLTITSVertexerSPDComponent::DoEvent
 	// get phi bin
 	double phi = TMath::ATan2( xyz[1]-vtxY, xyz[0]-vtxX );
 	if( phi<0 ) phi+=TMath::TwoPi();
-	int iphi = (int ) phi/kDPhi;
+	int iphi = (int ) (phi/kDPhi);
 	if( iphi<0 ) iphi = 0;
 	if( iphi>=kNPhiBins ) iphi = kNPhiBins-1;
 	AliHLTITSVZCluster c;

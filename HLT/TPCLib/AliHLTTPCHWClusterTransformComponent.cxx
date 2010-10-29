@@ -343,7 +343,7 @@ int AliHLTTPCHWClusterTransformComponent::ScanConfigurationArgument(int argc, co
   if (argument.CompareTo("-charge-threshold")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fChargeThreshold=argument.Atof();
+    fChargeThreshold=(UInt_t)argument.Atoi();
     HLTInfo("The charge threshold has been set to %d.", fChargeThreshold);
     return 2;
   }    
