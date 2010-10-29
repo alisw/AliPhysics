@@ -272,7 +272,9 @@ void AliTRDtrackerDebug::ResidualsTrackletsTrack() const
       dzdx = tracklet[ip].GetZref(1);
 
     // restore tracklet
-    tracklet[ip] = (*fTrack->GetTracklet(ip)); 
+    AliTRDseedV1 *ptr(NULL);
+    if(!(ptr = fTrack->GetTracklet(ip))) continue;
+    tracklet[ip] = (*ptr);
 // 		for(int ic=0; ic<AliTRDseedV1:knTimebins; ic++){
 // 			if(!(c = tracklet[ip].GetClusters(ic))) continue;
 // 			Double_t xc = c->GetX(), yc = c->GetY(), zc = c->GetZ();
