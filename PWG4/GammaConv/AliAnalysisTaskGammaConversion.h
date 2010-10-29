@@ -153,6 +153,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 
   void SetCheckBGProbability(Bool_t flag){fCheckBGProbability = flag;}
 
+  void SetRemovePileUp(Bool_t removePileUp) { fRemovePileUp = removePileUp; }
+
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -287,8 +289,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fDoRotation; //flag
   Bool_t fCheckBGProbability; //flag
   vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
-
-  ClassDef(AliAnalysisTaskGammaConversion, 12); // Analysis task for gamma conversions
+  Bool_t fRemovePileUp;                 // Remove Pile Up
+  ClassDef(AliAnalysisTaskGammaConversion, 13); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

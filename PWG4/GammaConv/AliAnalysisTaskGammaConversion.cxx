@@ -133,7 +133,8 @@ AliAnalysisTaskSE(),
   fNDegreesPMBackground(15),
   fDoRotation(kTRUE),
   fCheckBGProbability(kTRUE),
-  fKFReconstructedGammasV0Index()
+  fKFReconstructedGammasV0Index(),
+  fRemovePileUp(kFALSE)
 {
   // Default constructor
 
@@ -221,7 +222,8 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fNDegreesPMBackground(15),
   fDoRotation(kTRUE),
   fCheckBGProbability(kTRUE),
-  fKFReconstructedGammasV0Index()
+  fKFReconstructedGammasV0Index(),
+  fRemovePileUp(kFALSE)
 {
   // Common I/O in slot 0
   DefineInput (0, TChain::Class());
@@ -515,6 +517,11 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     }
     return;
   }
+
+  if(fRemovePileUp && fV0Reader->GetESDEvent()->IsPileupFromSPD()) {
+     eventQuality=4;
+    return;
+  }
   eventQuality=3;
   fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
 
@@ -660,8 +667,8 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
   if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
     return; // aborts if the primary vertex does not have contributors.
   }
-
-  for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
+  for (Int_t iTracks = 0; iTracks < fStack->GetNprimary(); iTracks++) {
+    //  for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
     TParticle* particle = (TParticle *)fStack->Particle(iTracks);
 
 
