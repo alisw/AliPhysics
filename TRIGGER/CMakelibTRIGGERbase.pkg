@@ -33,7 +33,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TRIGGERbaseLinkDef.h)
 
-set ( EINCLUDE  TRIGGER ITS STEER)
+set ( EINCLUDE  TRIGGER ITS STEER TOF)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	

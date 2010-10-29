@@ -29,6 +29,9 @@
 #include "AliCDBEntry.h"
 #include "AliLog.h"
 #include "AliITSTriggerConditions.h"
+
+#include "AliTOFFEEReader.h"
+#include "AliTOFTriggerMask.h"
           
 #include <TTimeStamp.h>
 #include <TObjString.h>
@@ -112,7 +115,7 @@ UInt_t AliTRIPreprocessor::Process(TMap* /*dcsAliasMap*/)
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
-		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessTOFTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
@@ -247,7 +250,28 @@ Short_t AliTRIPreprocessor::ProcessTOFTriggerData()
 	//
 
 	Log("************** Processing TOF Trigger data... **************");
-	Log("************** Fake function **************");
+
+	const char * nameFile = GetFile(kDCS,"TofFeeLightMap", ""); 
+	AliInfo(Form("toffeeLight file name = %s",nameFile));
+	if (nameFile == NULL) {
+	  return 1;
+	} 
+	AliTOFFEEReader feeReader;
+	feeReader.LoadFEElightConfig(nameFile);
+	feeReader.ParseFEElightConfig();
+	AliTOFTriggerMask triggerMask;
+	triggerMask.SetTriggerMaskArray(feeReader.GetTriggerMaskArray());
+
+	AliCDBMetaData metaData;
+	metaData.SetBeamPeriod(0);
+	metaData.SetResponsible("Roberto Preghenella");
+	metaData.SetComment("TOF trigger mask");
+	if (!Store("TOF", "TriggerMask", &triggerMask, &metaData, 0, kTRUE)) {
+	  Log("error while storing TriggerMask object");
+	  return 1;
+	}
+	Log("TriggerMask object successfully stored");
+
 	Log("************************* ...done.*************************");
 	return 0;
 }

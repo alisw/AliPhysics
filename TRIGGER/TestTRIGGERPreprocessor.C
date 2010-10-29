@@ -18,6 +18,8 @@ void TestTRIGGERPreprocessor()
   // Adding test input files
   shuttle->AddInputFile(AliTestShuttle::kDCS, "TRI", "PITConditions", "", "$ALICE_ROOT/TRIGGER/ShuttleInput/pit_dumpFileSep08.txt");
 
+  shuttle->AddInputFile(AliTestShuttle::kDCS, "TRI", "TofFeeLightMap", "", "$ALICE_ROOT/TRIGGER/ShuttleInput/TOFFEElight.20101028.133932.8000");
+
   // Adding Trigger mask
   shuttle->SetInputTriggerDetectorMask("0100001");
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
