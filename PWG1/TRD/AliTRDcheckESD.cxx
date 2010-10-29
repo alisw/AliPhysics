@@ -542,7 +542,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+0));
+    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+0)))) break;
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
     hProf2D->GetXaxis()->SetTitle("#eta");
@@ -564,7 +564,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+1));
+    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+1)))) break;
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
     hProf2D->GetXaxis()->SetTitle("#eta");
@@ -586,7 +586,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+2));
+    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+2)))) break;
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
     hProf2D->GetXaxis()->SetTitle("#eta");
@@ -608,7 +608,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+3));
+    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+3)))) break;
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
     hProf2D->GetXaxis()->SetTitle("#eta");
@@ -630,7 +630,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+4));
+    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+4)))) break;
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
     hProf2D->GetXaxis()->SetTitle("#eta");
@@ -652,7 +652,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+5));
+    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+5)))) break;
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
     hProf2D->GetXaxis()->SetTitle("#eta");
@@ -674,7 +674,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    h2F = dynamic_cast<TH2F*>(fHistos->At(kPHSlice));
+    if(!(h2F = dynamic_cast<TH2F*>(fHistos->At(kPHSlice)))) break;
     hF = Proj2D((TH2F*)h2F);
     h2F->SetStats(kFALSE);
     h2F->SetTitle("");
@@ -697,7 +697,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     pad->SetLogz();
-    h2F = dynamic_cast<TH2F*>(fHistos->At(kQtotP));
+    if(!(h2F = dynamic_cast<TH2F*>(fHistos->At(kQtotP)))) break;
     h2F->SetStats(kFALSE);
     h2F->SetTitle("");
     h2F->GetXaxis()->SetTitle("P [GeV/c]");
@@ -721,8 +721,8 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    h2FtrdP = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCpions));
-    h2FtrdN = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCelectrons));
+    if(!(h2FtrdP = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCpions)))) break;
+    if(!(h2FtrdN = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCelectrons)))) break;
     hFeffP = Proj2D((TH2F*)h2FtrdP);
     hFeffN = Proj2D((TH2F*)h2FtrdN);
     h2F = new TH2F("PHvsSlice","",10,h2FtrdN->GetXaxis()->GetXmin(),h2FtrdN->GetXaxis()->GetXmax(),

@@ -292,8 +292,12 @@ AliTRDclusterResolution::~AliTRDclusterResolution()
 //_______________________________________________________
 void AliTRDclusterResolution::UserCreateOutputObjects()
 {
-/*  fContainer = Histos();
-  PostData(1, fContainer);*/
+// Build and post histo container.
+// Actual population of the container with histo is done in function Histos.
+
+  if(!fContainer) fContainer = new TObjArray(kNtasks);
+ //fContainer->SetOwner(kTRUE);
+  PostData(1, fContainer);
 }
 
 //_______________________________________________________
@@ -441,9 +445,11 @@ TObjArray* AliTRDclusterResolution::Histos()
 {
 // Retrieve histograms array if already build or build it
 
-  if(fContainer) return fContainer;
-  fContainer = new TObjArray(kNtasks);
-  //fContainer->SetOwner(kTRUE);
+  if(!fContainer){
+    fContainer = new TObjArray(kNtasks);
+    //fContainer->SetOwner(kTRUE);
+  }
+  if(fContainer->GetEntries() == kNtasks) return fContainer;
 
   TH3S *h3(NULL);TH2I *h2(NULL);
   TObjArray *arr(NULL);
@@ -575,10 +581,8 @@ void AliTRDclusterResolution::UserExec(Option_t *)
       return;
     }
   }
-  if(!fContainer){
-    fContainer = Histos();
-    PostData(1, fContainer);
-  }
+  if(!fContainer->GetEntries()) Histos();
+
   if(!(fInfo = dynamic_cast<TObjArray *>(GetInputData(1)))){
     AliError("Cluster array missing.");
     return;
