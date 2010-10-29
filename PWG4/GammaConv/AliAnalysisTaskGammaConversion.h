@@ -14,7 +14,7 @@
 #include <vector>
 #include "AliV0Reader.h"
 #include "AliGammaConversionBGHandler.h"
-#include "TRandom3.h"
+//#include "TRandom3.h"
 //#include "AliCFManager.h"  // for CF
 //#include "AliCFContainer.h"   // for CF
 
@@ -34,6 +34,7 @@ class AliStack;
 class AliESDtrackCuts;
 class AliCFManager; // for CF
 class AliCFContainer; // for CF
+class TRandom3;
 
 class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 {
@@ -51,14 +52,14 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   //virtual void ConnectInputData(Option_t * option);
-  void CheckMesonProcessTypeEventQuality(Int_t );
-  Int_t GetProcessType(AliMCEvent * mcEvt) ;
+  void CheckMesonProcessTypeEventQuality(Int_t evtQ);
+  Int_t GetProcessType(const AliMCEvent * mcEvt) ;
   void ProcessMCData();
   void ProcessV0sNoCut();
   void ProcessV0s();
   void ProcessGammasForNeutralMesonAnalysis();
   void ProcessGammasForOmegaMesonAnalysis();
-  void ProcessConvPHOSGammasForNeutralMesonAnalysis();
+  //  void ProcessConvPHOSGammasForNeutralMesonAnalysis();
   void RecalculateV0ForGamma();
   // for CF
   void SetCFManager(AliCFManager * const io) {fCFManager = io;};
@@ -72,7 +73,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void FillAODWithConversionGammas();
   // end AOD
 		
-  static Bool_t IsGoodImpPar(AliESDtrack *const track);
+  static Bool_t IsGoodImpPar(const AliESDtrack *const track);
 	
   // for GammaJetAnalysis
   void ProcessGammasForGammaJetAnalysis();
@@ -116,13 +117,13 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void CalculateBackground();
   void SetWriteNtuple(Bool_t writeNtuple){fWriteNtuple = writeNtuple;}
   void FillNtuple();
-  Double_t GetMCOpeningAngle(TParticle* const daughter0, TParticle* const daughter1) const;
+  Double_t GetMCOpeningAngle(const TParticle* const daughter0,const TParticle* const daughter1) const;
   void CheckV0Efficiency();
   void SetDeltaAODFileName(TString fn) { fKFDeltaAODFileName = fn; };
 		
   //////////////////Chi_c Analysis////////////////////////////
-  void GetPID(AliESDtrack *track, Stat_t &pid, Stat_t &weight);	
-  double GetSigmaToVertex(AliESDtrack* t);
+  void GetPID(const AliESDtrack *track, Stat_t &pid, Stat_t &weight);	
+  double GetSigmaToVertex(const AliESDtrack* t);
   void ElectronBackground(TString hBg, TClonesArray e);
   void FillAngle(TString histoName,TClonesArray const tlVeNeg, TClonesArray const tlVePos);
   void FillElectronInvMass(TString histoName, TClonesArray const negativeElectron, TClonesArray const positiveElectron);
@@ -138,15 +139,15 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 
   void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
 
-  void MoveParticleAccordingToVertex(AliKFParticle *particle,AliGammaConversionBGHandler::GammaConversionVertex *vertex);
+  void MoveParticleAccordingToVertex(AliKFParticle * particle,const AliGammaConversionBGHandler::GammaConversionVertex *vertex);
 
   void SetApplyChi2Cut(Bool_t flag){fApplyChi2Cut = flag;}
 
   void SetDoRotation(Bool_t flag){fDoRotation = flag;}
 
-  void SetPMDegreesBG(Int_t deg){nDegreesPMBackground=deg;}
+  void SetPMDegreesBG(Int_t deg){fNDegreesPMBackground=deg;}
 
-  void SetNumberOfRotationsBG(Int_t nRot){nRandomEventsForBG=nRot;}
+  void SetNumberOfRotationsBG(Int_t nRot){fNRandomEventsForBG=nRot;}
 
   void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle);
 
@@ -157,8 +158,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
   
   /// Add reconstructed pions to aod
-  void AddPionToAOD(AliKFParticle * pionkf, Double_t mass, Int_t daughter1, Int_t daughter2); 
-  void AddOmegaToAOD(AliKFParticle * pionkf, Double_t mass, Int_t daughter1, Int_t daughter2); 
+  void AddPionToAOD(const AliKFParticle * const pionkf, Double_t mass, Int_t daughter1, Int_t daughter2); 
+  void AddOmegaToAOD(const AliKFParticle * const omegakf, Double_t mass, Int_t daughter1, Int_t daughter2); 
 		
   // for CF
   enum{
@@ -168,8 +169,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
     kStepLikeSign = 3,
     kStepTPCRefit = 4,
     kStepKinks = 5,
-    kStepdEdx_electronselection = 6,
-    kStepdEdx_pionrejection = 7,
+    kStepdEdxElectronSelection = 6,
+    kStepdEdxPpionRejection = 7,
     kStepNContributors = 8,
     kStepTPCPID = 9,
     kStepR = 10,
@@ -278,13 +279,13 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fKFForceAOD;  //Set the Analysis Manager FillAOD variable to true every event
   TString fKFDeltaAODFileName; //! File name for delta AOD (if any)
   Bool_t fDoNeutralMesonV0MCCheck; //flag
-  Bool_t fUseTrackMultiplicityForBG;
-  Bool_t fMoveParticleAccordingToVertex;
-  Bool_t fApplyChi2Cut;
-  Int_t nRandomEventsForBG;
-  Int_t nDegreesPMBackground;
-  Bool_t fDoRotation;
-  Bool_t fCheckBGProbability;
+  Bool_t fUseTrackMultiplicityForBG; //flag
+  Bool_t fMoveParticleAccordingToVertex; //flag
+  Bool_t fApplyChi2Cut; //flag
+  Int_t fNRandomEventsForBG; //number of random events to use in rotation method
+  Int_t fNDegreesPMBackground; // number of degree window to rotate particles for rotation method
+  Bool_t fDoRotation; //flag
+  Bool_t fCheckBGProbability; //flag
   vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
 
   ClassDef(AliAnalysisTaskGammaConversion, 12); // Analysis task for gamma conversions

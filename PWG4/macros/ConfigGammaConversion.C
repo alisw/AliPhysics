@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 17;
+const int c_array_size = 20;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -48,7 +48,7 @@ Bool_t kGCdoBGProbability=kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="90035620401003321"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="90035620401003321022"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=20;
 
@@ -1406,6 +1406,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 	
 
   if(!SetAnalysisCutSelection(kGCAnalysisCutSelectionId)){
+    cout<<"Error in analysis cut selection"<<endl;
     return 0;
   }
 	
@@ -1524,8 +1525,16 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetUseChargedTracksMultiplicityForBG(kGCUseTrackMultiplicityForBG);
   gammaconversion->SetMoveParticleAccordingToVertex(kGCMoveParticlesAccordingToVertex);
   gammaconversion->SetApplyChi2Cut(kGCApplyChi2Cut);
+  cout<<"NumberOfDegrees in rotatation method set to: "<<kGCnDegreeRotationPMForBG<<endl;
   gammaconversion->SetPMDegreesBG(kGCnDegreeRotationPMForBG);
+  if(kGCUseRotationMethodInBG){
+    cout<<"Using rotation method for bg."<<endl;
+  }
+  else{
+    cout<<"Using mixed event for bg."<<endl;
+  }
   gammaconversion->SetDoRotation(kGCUseRotationMethodInBG);
+  cout<<"Using :"<<kGCnumberOfRotationEventsForBG<<" rotations in bg calculation"<<endl;
   gammaconversion->SetNumberOfRotationsBG(kGCnumberOfRotationEventsForBG);
   gammaconversion->SetCheckBGProbability(kGCdoBGProbability);
 
@@ -2434,7 +2443,13 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t alphaMesonCut=array[14];
   Int_t minRCut=array[15];
   Int_t RapidityMesonCut=array[16];
+  Int_t BackgroundScheme=array[17];
+  Int_t DegreesForRotationMethod=array[18];
+  Int_t NumberOfRotations=array[19];
 
+  cout<<"NumberOfRotations::"<<NumberOfRotations<<endl;
+  cout<<"DegreesForRotationMethod::"<<DegreesForRotationMethod<<endl;
+  cout<<"BackgroundScheme::"<<BackgroundScheme<<endl;
   cout<<"RapidityMesonCut::"<<RapidityMesonCut<<endl;	
   cout<<"minRCut::"<<minRCut<<endl;
   cout<<"alphaMesonCut::"<<alphaMesonCut<<endl;	
@@ -2643,6 +2658,7 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 7:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.35;
     break;
+
   default:
     return iResult;
   }
@@ -2815,7 +2831,7 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     kGCmaxRCut = 180.;
     kGCminRCut = 10.;
     break;
-
+    
   default:
     return iResult;
   }
@@ -2834,8 +2850,59 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   default:
     return iResult;
   }
+
+  switch(BackgroundScheme){
+  case 0: //Rotation
+    kGCUseRotationMethodInBG=kTRUE;
+    break;
+  case 1: // mixed event
+    kGCUseRotationMethodInBG=kFALSE;
+    break;
+
+  default:
+    return iResult;
+  }
+  
+  switch(DegreesForRotationMethod){
+  case 0:
+    kGCnDegreeRotationPMForBG = 5;
+    break;
+  case 1:
+    kGCnDegreeRotationPMForBG = 10;
+    break;
+  case 2:
+    kGCnDegreeRotationPMForBG = 15;
+    break;
+  case 3:
+    kGCnDegreeRotationPMForBG = 20;
+    break;
+
+  default:
+    return iResult;
+  }
+
+  switch(NumberOfRotations){
+  case 0:
+    kGCnumberOfRotationEventsForBG = 5;
+    break;
+  case 1:
+    kGCnumberOfRotationEventsForBG = 10;
+    break;
+  case 2:
+    kGCnumberOfRotationEventsForBG = 15;
+    break;
+  case 3:
+    kGCnumberOfRotationEventsForBG = 20;
+    break;
+
+  default:
+    return iResult;
+  }
+
   iResult=1;
   return iResult;
+
+
 }
 
 
@@ -2860,6 +2927,9 @@ void string2array(const std::string& number, int a[c_array_size])
         ASSIGNARRAY(14);
         ASSIGNARRAY(15);
         ASSIGNARRAY(16);
+        ASSIGNARRAY(17);
+        ASSIGNARRAY(18);
+        ASSIGNARRAY(19);
   }
 }
 

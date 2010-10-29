@@ -30,9 +30,9 @@
 
 #include <Riostream.h>
 
-extern TRandom *gRandom;
-extern TBenchmark *gBenchmark;
-extern TSystem *gSystem;
+//extern TRandom *kgRandom;
+//extern TBenchmark *kgBenchmark;
+//extern TSystem *kgSystem;
 
 
 // ---------------------------- Function definiton --------------------------------------------------------------------------------------------
@@ -100,16 +100,16 @@ void StyleSettings(){
 }
 
 
-void set_plot_style() {
-    const Int_t NRGBs = 5;
-    const Int_t NCont = 255;
+void SetPlotStyle() {
+    const Int_t nRGBs = 5;
+    const Int_t nCont = 255;
 
-    Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
-    Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
-    Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
-    Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
-    TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
-    gStyle->SetNumberContours(NCont);
+    Double_t stops[nRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
+    Double_t red[nRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
+    Double_t green[nRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
+    Double_t blue[nRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
+    TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, nCont);
+    gStyle->SetNumberContours(nCont);
 }
 
 
@@ -144,29 +144,29 @@ void StylingSliceHistos(TH1 *histo, Float_t markersize){
 					 Bool_t XRange, Float_t XMin, Float_t XMax) {
 	if (YRangeMax && !XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		if(maxRange_R < histo2->GetMaximum()){
-			maxRange_R = histo2->GetMaximum();
+		Double_t maxRangeR = histo1->GetMaximum();
+		if(maxRangeR < histo2->GetMaximum()){
+			maxRangeR = histo2->GetMaximum();
 			}
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(minRange_R > histo2->GetMinimum()){
-			minRange_R = histo2->GetMinimum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(minRangeR > histo2->GetMinimum()){
+			minRangeR = histo2->GetMinimum();
 		}
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 	}
 	if (YRangeMax && XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		if(maxRange_R < histo2->GetMaximum()){
-			maxRange_R = histo2->GetMaximum();
+		Double_t maxRangeR = histo1->GetMaximum();
+		if(maxRangeR < histo2->GetMaximum()){
+			maxRangeR = histo2->GetMaximum();
 			}
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(minRange_R > histo2->GetMinimum()){
-			minRange_R = histo2->GetMinimum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(minRangeR > histo2->GetMinimum()){
+			minRangeR = histo2->GetMinimum();
 		}
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
 	}
 	if (YRange && XRange){
@@ -235,29 +235,29 @@ void DrawAutoGammaHistos( TH1* histo1,
 					 Bool_t XRange, Float_t XMin, Float_t XMax) {
 	if (YRangeMax && !XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		if(maxRange_R < histo2->GetMaximum()){
-			maxRange_R = histo2->GetMaximum();
+		Double_t maxRangeR = histo1->GetMaximum();
+		if(maxRangeR < histo2->GetMaximum()){
+			maxRangeR = histo2->GetMaximum();
 			}
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(minRange_R > histo2->GetMinimum()){
-			minRange_R = histo2->GetMinimum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(minRangeR > histo2->GetMinimum()){
+			minRangeR = histo2->GetMinimum();
 		}
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 	}
 	if (YRangeMax && XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		if(maxRange_R < histo2->GetMaximum()){
-			maxRange_R = histo2->GetMaximum();
+		Double_t maxRangeR = histo1->GetMaximum();
+		if(maxRangeR < histo2->GetMaximum()){
+			maxRangeR = histo2->GetMaximum();
 			}
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(minRange_R > histo2->GetMinimum()){
-			minRange_R = histo2->GetMinimum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(minRangeR > histo2->GetMinimum()){
+			minRangeR = histo2->GetMinimum();
 		}
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
 	}
 	if (YRange && XRange){
@@ -323,17 +323,17 @@ void DrawAutoGammaHisto( TH1* histo1,
 					Bool_t XRange, Float_t XMin, Float_t XMax) {
 	if (YRangeMax && !XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		Double_t maxRangeR = histo1->GetMaximum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 	}
 	if (YRangeMax && XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		Double_t maxRangeR = histo1->GetMaximum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
 	}
 	if (YRange && XRange){
@@ -446,17 +446,17 @@ void DrawRatioGammaHisto( TH1* histo1,
 					Bool_t XRange, Float_t XMin, Float_t XMax) {
 	if (YRangeMax && !XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		Double_t maxRangeR = histo1->GetMaximum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 	}
 	if (YRangeMax && XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		Double_t maxRangeR = histo1->GetMaximum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
 	}
 	if (YRange && XRange){
@@ -519,29 +519,29 @@ void DrawCutGammaHistos( TH1* histo1, TH1* histo2,
 					Bool_t XRange, Float_t XMin, Float_t XMax) {
 	if (YRangeMax && !XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo2->GetMaximum();
-		if(maxRange_R < histo4->GetMaximum()){
-			maxRange_R = histo4->GetMaximum();
+		Double_t maxRangeR = histo2->GetMaximum();
+		if(maxRangeR < histo4->GetMaximum()){
+			maxRangeR = histo4->GetMaximum();
 			}
-		Double_t minRange_R = histo2->GetMinimum();		
-		if(minRange_R > histo4->GetMinimum()){
-			minRange_R = histo4->GetMinimum();
+		Double_t minRangeR = histo2->GetMinimum();		
+		if(minRangeR > histo4->GetMinimum()){
+			minRangeR = histo4->GetMinimum();
 		}
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 	}
 	if (YRangeMax && XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo2->GetMaximum();
-		if(maxRange_R < histo4->GetMaximum()){
-			maxRange_R = histo4->GetMaximum();
+		Double_t maxRangeR = histo2->GetMaximum();
+		if(maxRangeR < histo4->GetMaximum()){
+			maxRangeR = histo4->GetMaximum();
 			}
-		Double_t minRange_R = histo2->GetMinimum();		
-		if(minRange_R > histo4->GetMinimum()){
-			minRange_R = histo4->GetMinimum();
+		Double_t minRangeR = histo2->GetMinimum();		
+		if(minRangeR > histo4->GetMinimum()){
+			minRangeR = histo4->GetMinimum();
 		}
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
 	}
 	if (YRange && XRange){
@@ -619,17 +619,17 @@ void DrawCutGammaHisto( TH1* histo1, TH1* histo2,
 					Bool_t XRange, Float_t XMin, Float_t XMax) {
 	if (YRangeMax && !XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo2->GetMaximum();
-		Double_t minRange_R = histo2->GetMinimum();		
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		Double_t maxRangeR = histo2->GetMaximum();
+		Double_t minRangeR = histo2->GetMinimum();		
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 	}
 	if (YRangeMax && XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo2->GetMaximum();
-		Double_t minRange_R = histo2->GetMinimum();				
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		Double_t maxRangeR = histo2->GetMaximum();
+		Double_t minRangeR = histo2->GetMinimum();				
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
 	}
 	if (YRange && XRange){
@@ -695,17 +695,17 @@ void DrawResolutionGammaHisto( TH1* histo1,
 					Bool_t XRange, Float_t XMin, Float_t XMax) {
 	if (YRangeMax && !XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		Double_t maxRangeR = histo1->GetMaximum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 	}
 	if (YRangeMax && XRange){
 		YRange = kFALSE;
-		Double_t maxRange_R = histo1->GetMaximum();
-		Double_t minRange_R = histo1->GetMinimum();		
-		if(YMinimum > minRange_R){minRange_R = YMinimum;}
-		histo1->GetYaxis()->SetRangeUser(minRange_R, maxRange_R*YMaxFactor);	
+		Double_t maxRangeR = histo1->GetMaximum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
 		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
 	}
 	if (YRange && XRange){
@@ -797,3 +797,140 @@ void DrawAutoGammaHisto2DRes(	TH2 *histo,
 	}
 }
 
+
+/* DrawAutoGammaMesonHistos is function used for styling the histograms of the gamma conversion group for two histos and standart settings
+* histo1 - first histogram
+* Title - histogram title
+* XTitle - X-axis title
+* YTitle - Y-axis title
+* YRangeMax 	= kTRUE will scale by Maximum and Minimum Range in Y
+*YMaxFactor - will MaximumY by this factor if YRangeMay = kTRUE 
+*YMinimum - this will be used if YRangeMax is set
+*YRange  	= kTRUE will Cut y-axis by YMin and YMax 
+- will be set to kFAlSE if YRangeMax is set
+*YMin - minimum Y
+*YMax - maximum Y
+*XRange 	= kTRUE will Cut x-axis by XMin and XMax
+*XMin - minimum Y
+*XMax - maximum Y
+*/ 
+
+void DrawAutoGammaMesonHistos( TH1* histo1, 
+					 const char *Title, const char *XTitle, const char *YTitle, 
+					 Bool_t YRangeMax, Float_t YMaxFactor, Float_t YMinimum, 
+					 Bool_t YRange, Float_t YMin ,Float_t YMax, 
+					 Bool_t XRange, Float_t XMin, Float_t XMax) {
+	if (YRangeMax && !XRange){
+		YRange = kFALSE;
+		Double_t maxRangeR = histo1->GetMaximum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
+	}
+	if (YRangeMax && XRange){
+		YRange = kFALSE;
+		Double_t maxRangeR = histo1->GetMaximum();
+		Double_t minRangeR = histo1->GetMinimum();		
+		if(YMinimum > minRangeR){minRangeR = YMinimum;}
+		histo1->GetYaxis()->SetRangeUser(minRangeR, maxRangeR*YMaxFactor);	
+		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
+	}
+	if (YRange && XRange){
+		histo1->GetYaxis()->SetRangeUser(YMin, YMax);	
+		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
+	}
+	if (!YRangeMax && !YRange && XRange){
+		histo1->GetXaxis()->SetRangeUser(XMin, XMax);	
+	}
+	if (YRange && !XRange){
+		histo1->GetYaxis()->SetRangeUser(YMin, YMax);
+	}
+	
+	if(Title != ""){
+		histo1->SetTitle(Title);
+	}else{
+		histo1->SetTitle();
+	}
+	if(XTitle ! =""){
+		histo1->SetXTitle(XTitle);
+	}
+	if(YTitle ! =""){
+		histo1->SetYTitle(YTitle);
+	}
+	histo1->GetYaxis()->SetLabelSize(0.03);
+	histo1->GetYaxis()->SetTitleSize(0.04);	
+	histo1->GetYaxis()->SetDecimals();
+	histo1->GetYaxis()->SetTitleOffset(1.2);
+	histo1->GetXaxis()->SetTitleSize(0.04);	
+	histo1->GetXaxis()->SetLabelSize(0.03);
+	
+	histo1->DrawCopy("e1,p");
+	
+}
+
+void DrawGammaSetMarker( TH1* histo1, 
+				Style_t MarkerStyle, Size_t MarkerSize, Color_t MarkerColor, Color_t LineColor ) {
+	histo1->SetMarkerStyle(MarkerStyle);
+	histo1->SetMarkerSize(MarkerSize);
+	histo1->SetMarkerColor(MarkerColor);
+	histo1->SetLineColor(LineColor);	
+}
+
+void DrawGammaCanvasSettings( TCanvas* c1, Double_t LeftMargin, Double_t RightMargin, Double_t TopMargin, Double_t BottomMargin){
+	c1->SetTickx();
+	c1->SetTicky();
+	c1->SetGridx(0);
+	c1->SetGridy(0);
+	c1->SetLogy(0);	
+	c1->SetLeftMargin(LeftMargin);
+	c1->SetRightMargin(RightMargin);
+	c1->SetTopMargin(TopMargin);				
+	c1->SetBottomMargin(BottomMargin);				
+	c1->SetFillColor(0);
+}
+
+void DrawGammaPadSettings( TPad* pad1, Double_t LeftMargin, Double_t RightMargin, Double_t TopMargin, Double_t BottomMargin){
+	pad1->SetFillColor(0);
+	pad1->GetFrame()->SetFillColor(0);
+	pad1->SetBorderMode(0);
+	pad1->SetLeftMargin(LeftMargin);
+	pad1->SetBottomMargin(BottomMargin);
+	pad1->SetRightMargin(RightMargin);
+	pad1->SetTopMargin(TopMargin);
+	pad1->SetTickx();
+	pad1->SetTicky();
+	
+}
+
+void DrawGammaSetMarkerTGraph( TGraph* graph, 
+					Style_t MarkerStyle, Size_t MarkerSize, Color_t MarkerColor, Color_t LineColor ) {
+	graph->SetMarkerStyle(MarkerStyle);
+	graph->SetMarkerSize(MarkerSize);
+	graph->SetMarkerColor(MarkerColor);
+	graph->SetLineColor(LineColor);	
+}
+
+void DrawGammaSetMarkerTGraphErr( TGraphErrors* graph, 
+						 Style_t MarkerStyle, Size_t MarkerSize, Color_t MarkerColor, Color_t LineColor ) {
+	graph->SetMarkerStyle(MarkerStyle);
+	graph->SetMarkerSize(MarkerSize);
+	graph->SetMarkerColor(MarkerColor);
+	graph->SetLineColor(LineColor);	
+}
+
+
+void DrawGammaSetMarkerTGraphAsym( TGraphAsymmErrors* graph, 
+						 Style_t MarkerStyle, Size_t MarkerSize, Color_t MarkerColor, Color_t LineColor ) {
+	graph->SetMarkerStyle(MarkerStyle);
+	graph->SetMarkerSize(MarkerSize);
+	graph->SetMarkerColor(MarkerColor);
+	graph->SetLineColor(LineColor);	
+}
+
+
+void DrawGammaSetMarkerTF1( TF1* fit1, 
+						 Style_t LineStyle, Size_t LineWidth, Color_t LineColor ) {
+	fit1->SetLineColor(LineColor);	
+	fit1->SetLineStyle(LineStyle);	
+	fit1->SetLineWidth(LineWidth);	
+}
