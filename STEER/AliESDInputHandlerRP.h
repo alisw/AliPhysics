@@ -31,7 +31,7 @@ class AliESDInputHandlerRP : public AliESDInputHandler {
     virtual Bool_t       BeginEvent(Long64_t entry);
     virtual Bool_t       FinishEvent();
     virtual Bool_t       LoadEvent(Int_t iev);
-    virtual Bool_t       Notify() {return kTRUE;}
+    virtual Bool_t       Notify() { return AliESDInputHandler::Notify();}
     virtual Bool_t       Notify(const char* path);
     virtual void         ResetIO();
     //

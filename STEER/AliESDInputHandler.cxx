@@ -194,7 +194,10 @@ Bool_t AliESDInputHandler::Notify(const char* path)
 	}
     }
 
-    if (!fUseTags) return (kTRUE);
+    if (!fUseTags) {
+	if (fMixingHandler) fMixingHandler->Notify(path);
+	return (kTRUE);
+    }
     
     Bool_t zip = kFALSE;
     

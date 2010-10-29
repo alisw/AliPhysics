@@ -30,16 +30,17 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual ~AliInputEventHandler();
     virtual void         SetOutputFileName(const char* /*fname*/) {;}
     virtual const char  *GetOutputFileName()                          {return 0;}
-    virtual Bool_t       Init(Option_t* /*opt*/)                      {return kTRUE;}
-    virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/)     {return kTRUE;}
+    virtual Bool_t       Init(Option_t* opt) {if(fMixingHandler) fMixingHandler->Init(opt);return kTRUE;}
+    virtual Bool_t       Init(TTree* tree, Option_t* opt) {if(fMixingHandler) fMixingHandler->Init(tree,opt);return kTRUE;}
     virtual Bool_t       GetEntry() {if(fMixingHandler) fMixingHandler->GetEntry(); return kTRUE;}
-    
-    virtual Bool_t       BeginEvent(Long64_t /*entry*/)               {return kTRUE;}
-    virtual Bool_t       Notify() { return AliVEventHandler::Notify();}
-    virtual Bool_t       Notify(const char */*path*/)                 {return kTRUE;}
-    virtual Bool_t       FinishEvent()                                {return kTRUE;}        
-    virtual Bool_t       Terminate()                                  {return kTRUE;}
-    virtual Bool_t       TerminateIO()                                {return kTRUE;}
+    virtual Bool_t       BeginEvent(Long64_t entry) {if(fMixingHandler) fMixingHandler->BeginEvent(entry);return kTRUE;}
+
+    virtual Bool_t       Notify()      { return AliVEventHandler::Notify();}
+    virtual Bool_t       Notify(const char *path) {if(fMixingHandler) fMixingHandler->Notify(path);return kTRUE;}
+    virtual Bool_t       FinishEvent() {if(fMixingHandler) fMixingHandler->FinishEvent();return kTRUE;}        
+    virtual Bool_t       Terminate()   {if(fMixingHandler) fMixingHandler->Terminate();return kTRUE;}
+    virtual Bool_t       TerminateIO() {if(fMixingHandler) fMixingHandler->TerminateIO();return kTRUE;}
+
     // Setters
     virtual void         SetInputTree(TTree* tree)                    {fTree = tree;}
     virtual void         SetEventSelection(AliVCuts* cuts)            {fEventCuts = cuts;}
