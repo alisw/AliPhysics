@@ -158,7 +158,7 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
 //     hPtESDI->GetXaxis()->SetTitle("Pt");
 //     hPtESDI->Draw("p e1 same");
 
-    TH1D *hPtESDCorr = corrdata->Project(0); //corrected data
+    TH1D *hPtESDCorr = (TH1D*)corrdata->Project(0); //corrected data
     hPtESDCorr->SetMarkerStyle(26);
     hPtESDCorr->SetMarkerColor(kRed);        //ESD corrected 
 	hPtESDCorr->SetName("hPtESDCorr");
