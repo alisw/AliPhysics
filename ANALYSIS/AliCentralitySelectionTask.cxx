@@ -68,10 +68,25 @@ AliAnalysisTaskSE(),
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
   fFile(0),
+  fFile2(0),
   fCentfilename(0),
-  fMethod(0),
-  fCent(0),
-  fHtemp(0)
+  fCentfilename2(0),
+  fCentV0M(0),
+  fCentFMD(0),
+  fCentTRK(0),
+  fCentTKL(0),
+  fCentCL0(0),
+  fCentV0MvsFMD(0),
+  fCentTKLvsV0M(0),
+  fCentZEMvsZDC(0),
+  fHtempV0M(0),
+  fHtempFMD(0),
+  fHtempTRK(0),
+  fHtempTKL(0),
+  fHtempCL0(0),
+  fHtempV0MvsFMD(0),
+  fHtempTKLvsV0M(0),
+  fHtempZEMvsZDC(0)
 {   
   // Default constructor
 }   
@@ -83,10 +98,25 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
   fFile(0),
+  fFile2(0),
   fCentfilename(0),
-  fMethod(0),
-  fCent(0),
-  fHtemp(0)
+  fCentfilename2(0),
+  fCentV0M(0),
+  fCentFMD(0),
+  fCentTRK(0),
+  fCentTKL(0),
+  fCentCL0(0),
+  fCentV0MvsFMD(0),
+  fCentTKLvsV0M(0),
+  fCentZEMvsZDC(0),
+  fHtempV0M(0),
+  fHtempFMD(0),
+  fHtempTRK(0),
+  fHtempTKL(0),
+  fHtempCL0(0),
+  fHtempV0MvsFMD(0),
+  fHtempTKLvsV0M(0),
+  fHtempZEMvsZDC(0)
 {
   // Default constructor
 }
@@ -108,10 +138,25 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fAnalysisInput(ana.fDebug),
   fIsMCInput(ana.fIsMCInput),
   fFile(ana.fFile),
+  fFile2(ana.fFile2),
   fCentfilename(ana.fCentfilename),
-  fMethod(ana.fMethod),
-  fCent(ana.fCent),
-  fHtemp(ana.fHtemp)
+  fCentfilename2(ana.fCentfilename2),
+  fCentV0M(ana.fCentV0M),
+  fCentFMD(ana.fCentFMD),
+  fCentTRK(ana.fCentTRK),
+  fCentTKL(ana.fCentTKL),
+  fCentCL0(ana.fCentCL0),
+  fCentV0MvsFMD(ana.fCentV0MvsFMD),
+  fCentTKLvsV0M(ana.fCentTKLvsV0M),
+  fCentZEMvsZDC(ana.fCentZEMvsZDC),
+  fHtempV0M(ana.fHtempV0M),
+  fHtempFMD(ana.fHtempFMD),
+  fHtempTRK(ana.fHtempTRK),
+  fHtempTKL(ana.fHtempTKL),
+  fHtempCL0(ana.fHtempCL0),
+  fHtempV0MvsFMD(ana.fHtempV0MvsFMD),
+  fHtempTKLvsV0M(ana.fHtempTKLvsV0M),
+  fHtempZEMvsZDC(ana.fHtempZEMvsZDC)
 {
   // Copy Constructor	
 }
@@ -135,22 +180,22 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   if(fDebug>1) printf(" **** AliCentralitySelectionTask::UserExec() \n");
   
-  Float_t  zncEnergy;                 //  ZNC Energy
-  Float_t  zpcEnergy;                 //  ZPC Energy
-  Float_t  znaEnergy;                 //  ZNA Energy
-  Float_t  zpaEnergy;                 //  ZPA Energy
-  Float_t  zem1Energy;                //  ZEM1 Energy
-  Float_t  zem2Energy;                //  ZEM2 Energy
+  Float_t  zncEnergy;               //  ZNC Energy
+  Float_t  zpcEnergy;               //  ZPC Energy
+  Float_t  znaEnergy;               //  ZNA Energy
+  Float_t  zpaEnergy;               //  ZPA Energy
+  Float_t  zem1Energy = 0.;         //  ZEM1 Energy
+  Float_t  zem2Energy = 0.;         //  ZEM2 Energy
   
-  Int_t    nTracks    = 0;            //  no. tracks
-  Int_t    nTracklets = 0;            //  no. tracklets
-  Int_t    nClusters[6];              //  no. clusters on 6 ITS layers
-  Int_t    nChips[2];                 //  no. chips on 2 SPD layers
+  Int_t    nTracks    = 0;          //  no. tracks
+  Int_t    nTracklets = 0;          //  no. tracklets
+  Int_t    nClusters[6];            //  no. clusters on 6 ITS layers
+  Int_t    nChips[2];               //  no. chips on 2 SPD layers
 
-  Float_t  multV0A    = 0;            //  multiplicity from V0 reco side A
-  Float_t  multV0C    = 0;            //  multiplicity from V0 reco side C
-  Float_t  multFMDA   = 0;            //  multiplicity from FMD on detector A
-  Float_t  multFMDC   = 0;            //  multiplicity from FMD on detector C
+  Float_t  multV0A  = 0;            //  multiplicity from V0 reco side A
+  Float_t  multV0C  = 0;            //  multiplicity from V0 reco side C
+  Float_t  multFMDA = 0;            //  multiplicity from FMD on detector A
+  Float_t  multFMDC = 0;            //  multiplicity from FMD on detector C
 
   AliESDCentrality *esdCent = 0;
 
@@ -158,7 +203,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
     AliVEvent* event = InputEvent();
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
-    
+
     esdCent = esd->GetCentrality();
 
     // ***** V0 info    
@@ -218,10 +263,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     
     // ***** ZDC info
     AliESDZDC *esdZDC = esd->GetESDZDC();
-    zncEnergy  = (Float_t) (esdZDC->GetZDCN1Energy());
-    zpcEnergy  = (Float_t) (esdZDC->GetZDCP1Energy());
-    znaEnergy  = (Float_t) (esdZDC->GetZDCN2Energy());
-    zpaEnergy  = (Float_t) (esdZDC->GetZDCP2Energy());
+    zncEnergy = (Float_t) (esdZDC->GetZDCN1Energy());
+    zpcEnergy = (Float_t) (esdZDC->GetZDCP1Energy());
+    znaEnergy = (Float_t) (esdZDC->GetZDCN2Energy());
+    zpaEnergy = (Float_t) (esdZDC->GetZDCP2Energy());
     zem1Energy = (Float_t) (esdZDC->GetZDCEMEnergy(0));
     zem2Energy = (Float_t) (esdZDC->GetZDCEMEnergy(1));
     
@@ -233,49 +278,56 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     return;
   }
 
-   // ***** Centrality Selection
-  if(fMethod.CompareTo("V0")==0){
-    fCent = fHtemp->GetBinContent(fHtemp->FindBin((multV0A+multV0C)));
-  }
-  if(fMethod.CompareTo("FMD")==0){
-    fCent = fHtemp->GetBinContent(fHtemp->FindBin((multFMDA+multFMDC)));
-  }
-  if(fMethod.CompareTo("TRACKS")==0) {
-    fCent = fHtemp->GetBinContent(fHtemp->FindBin(nTracks));
-  }
-  if(fMethod.CompareTo("TRACKLETS")==0){
-    fCent = fHtemp->GetBinContent(fHtemp->FindBin(nTracklets));
-  }
-  if(fMethod.CompareTo("CLUSTERS")==0) {
-    fCent = fHtemp->GetBinContent(fHtemp->FindBin(nClusters[0]));
-  }
-  printf(" **** centrality is %3.2f \n", fCent);
+  // ***** Centrality Selection
+  fCentV0M = fHtempV0M->GetBinContent(fHtempV0M->FindBin((multV0A+multV0C)));
+  fCentFMD = fHtempFMD->GetBinContent(fHtempFMD->FindBin((multFMDA+multFMDC)));
+  fCentTRK = fHtempTRK->GetBinContent(fHtempTRK->FindBin(nTracks));
+  fCentTKL = fHtempTKL->GetBinContent(fHtempTKL->FindBin(nTracklets));
+  fCentCL0 = fHtempCL0->GetBinContent(fHtempCL0->FindBin(nClusters[0]));
   
-  esdCent->SetCentrality(fCent);
+  fCentV0MvsFMD = fHtempV0MvsFMD->GetBinContent(fHtempV0MvsFMD->FindBin((multV0A+multV0C)));
+  fCentTKLvsV0M = fHtempTKLvsV0M->GetBinContent(fHtempTKLvsV0M->FindBin(nTracklets));
+  fCentZEMvsZDC = fHtempZEMvsZDC->GetBinContent(fHtempZEMvsZDC->FindBin((zem1Energy+zem2Energy)/1000.));
+  
+  esdCent->SetCentralityV0M(fCentV0M);
+  esdCent->SetCentralityFMD(fCentFMD);
+  esdCent->SetCentralityTRK(fCentTRK);
+  esdCent->SetCentralityTKL(fCentTKL);
+  esdCent->SetCentralityCL0(fCentCL0);
+  esdCent->SetCentralityV0MvsFMD(fCentV0MvsFMD);
+  esdCent->SetCentralityTKLvsV0M(fCentTKLvsV0M);
+  esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
 }
 
 //________________________________________________________________________
-void AliCentralitySelectionTask::SetCentralityMethod(const char* x) 
+void AliCentralitySelectionTask::ReadCentralityHistos() 
 {
-  fMethod = x;
-
   fFile  = new TFile(fCentfilename);
+  fHtempV0M  = (TH1D*) (fFile->Get("hmultV0_percentile")); 
+  fHtempFMD  = (TH1D*) (fFile->Get("hmultFMD_percentile")); 
+  fHtempTRK  = (TH1D*) (fFile->Get("hNtracks_percentile")); 
+  fHtempTKL  = (TH1D*) (fFile->Get("hNtracklets_percentile")); 
+  fHtempCL0  = (TH1D*) (fFile->Get("hNclusters0_percentile")); 
+}  
   
-  if(fMethod.CompareTo("V0")==0)
-    fHtemp  = (TH1D*) (fFile->Get("hmultV0_percentile")); 
-  
-  if(fMethod.CompareTo("FMD")==0)
-    fHtemp  = (TH1D*) (fFile->Get("hmultFMD_percentile")); 
-  
-  if(fMethod.CompareTo("TRACKS")==0) 
-    fHtemp  = (TH1D*) (fFile->Get("hNtracks_percentile")); 
-  
-  if(fMethod.CompareTo("TRACKLETS")==0)
-    fHtemp  = (TH1D*) (fFile->Get("hNtracklets_percentile")); 
-  
-  if(fMethod.CompareTo("CLUSTERS")==0) 
-    fHtemp  = (TH1D*) (fFile->Get("hNclusters0_percentile")); 
-  
+void AliCentralitySelectionTask::ReadCentralityHistos2() 
+{
+  fFile2  = new TFile(fCentfilename2);
+  fHtempV0MvsFMD  = (TH1D*) (fFile2->Get("hmultV0vsmultFMD_all_percentile")); 
+  fHtempTKLvsV0M  = (TH1D*) (fFile2->Get("hNtrackletsvsmultV0_all_percentile")); 
+  fHtempZEMvsZDC  = (TH1D*) (fFile2->Get("hEzemvsEzdc_all_percentile"));  
+}
+
+void AliCentralitySelectionTask::SetPercentileFile(TString filename) 
+{
+  fCentfilename = filename;
+  ReadCentralityHistos();
+}
+
+void AliCentralitySelectionTask::SetPercentileFile2(TString filename) 
+{
+  fCentfilename2 = filename;
+  ReadCentralityHistos2();
 }
 
 //________________________________________________________________________
@@ -283,6 +335,7 @@ void AliCentralitySelectionTask::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
   fFile->Close();  
+  fFile2->Close();  
 }
 //________________________________________________________________________
 

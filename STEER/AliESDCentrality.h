@@ -22,16 +22,30 @@ class AliESDCentrality : public TNamed
   AliESDCentrality& operator=(const AliESDCentrality& cnt);   /// assignment operator
 
   /// set centrality result
-  void SetCentrality(Float_t cent) {fCentrality = cent;}
+  void SetCentralityV0M(Float_t cent) {fCentralityV0M = cent;} 
+  void SetCentralityFMD(Float_t cent) {fCentralityFMD = cent;}
+  void SetCentralityTRK(Float_t cent) {fCentralityTRK = cent;}
+  void SetCentralityTKL(Float_t cent) {fCentralityTKL = cent;}
+  void SetCentralityCL0(Float_t cent) {fCentralityCL0 = cent;}
+  void SetCentralityV0MvsFMD(Float_t cent) {fCentralityV0MvsFMD = cent;}
+  void SetCentralityTKLvsV0M(Float_t cent) {fCentralityTKLvsV0M = cent;}
+  void SetCentralityZEMvsZDC(Float_t cent) {fCentralityZEMvsZDC = cent;}
 
   /// get centrality result
-  Float_t GetCentralityPercentile();
-  Int_t   GetCentralityClass10();
-  Int_t   GetCentralityClass5();
-  Bool_t  IsEventInCentralityClass(Float_t a, Float_t b);
+  Float_t GetCentralityPercentile(const char *method);
+  Int_t   GetCentralityClass10(const char *method);
+  Int_t   GetCentralityClass5(const char *method);
+  Bool_t  IsEventInCentralityClass(Float_t a, Float_t b, const char *method);
 
  private:
-  Float_t fCentrality;   // Centrality
+  Float_t fCentralityV0M;   // Centrality from V0
+  Float_t fCentralityFMD;   // Centrality from FMD
+  Float_t fCentralityTRK;   // Centrality from tracks
+  Float_t fCentralityTKL;   // Centrality from tracklets
+  Float_t fCentralityCL0;   // Centrality from Clusters in layer 0
+  Float_t fCentralityV0MvsFMD;   // Centrality from V0 vs FMD
+  Float_t fCentralityTKLvsV0M;   // Centrality from tracklets vs V0
+  Float_t fCentralityZEMvsZDC;   // Centrality from ZEM vs ZDC
 
   ClassDef(AliESDCentrality, 1)
 };
