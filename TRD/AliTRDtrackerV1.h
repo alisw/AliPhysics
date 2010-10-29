@@ -176,7 +176,7 @@ protected:
   static Bool_t  AdjustSector(AliTRDtrackV1 *const track); 
   Double_t       BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int_t *configs);
   Int_t          BuildTrackingContainers();
-  static Float_t CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref);
+  static Float_t CalculateChi2Z(const AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref);
   Int_t          Clusters2TracksSM(Int_t sector, AliESDEvent *esd);
   Int_t          Clusters2TracksStack(AliTRDtrackingChamber **stack, TClonesArray * const esdTrackList);
   AliTRDseedV1*  GetTracklet(AliTRDtrackV1 *const trk, Int_t plane, Int_t &idx);

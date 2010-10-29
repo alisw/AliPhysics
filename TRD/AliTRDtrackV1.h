@@ -11,20 +11,20 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-//#ifndef ALIKALMANTRACK_H
+#ifndef ALIKALMANTRACK_H
 #include "AliKalmanTrack.h"
-//#endif
+#endif
 
-//#ifndef ALITRDSEEDV1_H
+#ifndef ALITRDSEEDV1_H
 #include "AliTRDseedV1.h"
-//#endif
+#endif
 
-class AliTRDcluster;
 class AliESDtrack;
+class AliTRDcluster;
 class AliTRDReconstructor;
 class AliTRDtrackV1 : public AliKalmanTrack
 {
-  friend class AliHLTTRDTrack;
+  friend class AliHLTTRDTrack; // allow HLT special access
 public:
   enum ETRDtrackSize { 
     kNdet      = AliTRDgeometry::kNdet

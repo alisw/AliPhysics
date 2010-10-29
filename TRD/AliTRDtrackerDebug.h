@@ -31,8 +31,6 @@ public:
 	AliTRDtrackerDebug();
 	~AliTRDtrackerDebug();
 
-	void				Draw(Option_t *);
-
 	Bool_t      Init();
 	Bool_t      Open(const char *method);
 	Int_t       Process();

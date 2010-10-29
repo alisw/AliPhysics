@@ -159,7 +159,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent * const event)
 
             
     // Skip tracks which have no TRD signal at all
-    if (t->GetTRDsignal() == 0.) continue;
+    if (t->GetTRDsignal()<1.e-5) continue;
   
     // Loop over detector layers
     mom          = 0.;

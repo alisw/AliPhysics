@@ -1671,7 +1671,8 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 * const t
   //if(points) printf("First marker point @ x[%d] = %f\n", ip, points[ip].GetX());
 
 
-  AliTRDseedV1 tracklet, *ptrTracklet = NULL;
+  AliTRDseedV1 tracklet;
+  AliTRDseedV1 *ptrTracklet = NULL;
 
   //Loop through the TRD planes
   for (Int_t jplane = 0; jplane < kNPlanes; jplane++) {
@@ -1771,7 +1772,7 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 * const t
 }
 
 //_________________________________________________________________________
-Float_t AliTRDtrackerV1::CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref)
+Float_t AliTRDtrackerV1::CalculateChi2Z(const AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref)
 {
   //
   // Calculates the chi2-value of the track in z-Direction including tilting pad correction.
@@ -3787,6 +3788,7 @@ Double_t AliTRDtrackerV1::FitTiltedRiemanV1(AliTRDseedV1 *const tracklets){
 //____________________________________________________________________
 void AliTRDtrackerV1::UnsetTrackletsTrack(const AliTRDtrackV1 * const track)
 {
+//  Remove tracklets from tracker list attached to "track"
   Int_t idx(-1);
   for(Int_t il(0); il<kNPlanes; il++){
     if((idx = track->GetTrackletIndex(il)) < 0) continue;
@@ -3873,7 +3875,7 @@ Bool_t AliTRDtrackerV1::AliTRDLeastSquare::Eval(){
   //
   
   Double_t det = fSums[0] * fSums[4] - fSums[1] *fSums[1];
-  if(det==0) return kFALSE;
+  if(TMath::Abs(det)<1.e-30) return kFALSE;
 
   //	for(Int_t isum = 0; isum < 5; isum++)
   //		printf("fSums[%d] = %f\n", isum, fSums[isum]);

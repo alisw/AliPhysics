@@ -188,9 +188,9 @@ Bool_t AliTRDpidUtil::IsElectron(const AliESDtrack *track, ETRDPIDMethod method)
   Double_t threshold = thresholdHist->GetBinContent(GetMomentumBin(track->P()) + 1);
   
   // Do Decision
-  Double_t pid_probs[5];
-  track->GetTRDpid(pid_probs);
-  if(pid_probs[AliPID::kElectron] >= threshold) return kTRUE;
+  Double_t pidProbs[5];
+  track->GetTRDpid(pidProbs);
+  if(pidProbs[AliPID::kElectron] >= threshold) return kTRUE;
   return kFALSE; 
 }
 

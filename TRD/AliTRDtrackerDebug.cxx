@@ -75,13 +75,6 @@ AliTRDtrackerDebug::~AliTRDtrackerDebug()
 
 
 //____________________________________________________
-void AliTRDtrackerDebug::Draw(Option_t *) 
-{
-// steer draw function
-}
-
-
-//____________________________________________________
 Bool_t AliTRDtrackerDebug::Init()
 {
 // steer linking data for various debug streams	

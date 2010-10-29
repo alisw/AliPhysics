@@ -500,33 +500,23 @@ Bool_t AliTRDtrackV1::IsEqual(const TObject *o) const
   
   //if ( fPIDquality != inTrack->GetPIDquality() ) return kFALSE;
   
-  for(Int_t i = 0; i < AliPID::kSPECIES; i++){
-    if ( fPID[i] != inTrack->GetPID(i) ) return kFALSE;
-  }
-  
-  for (Int_t i = 0; i < 3; i++){
-    if ( fBudget[i] != inTrack->GetBudget(i) ) return kFALSE;
-  }
-  if ( fDE != inTrack->GetEdep() ) return kFALSE;
-  if ( fFakeRatio != inTrack->GetFakeRatio() ) return kFALSE;
-  if ( fChi2 != inTrack->GetChi2() ) return kFALSE;
-  if ( fMass != inTrack->GetMass() ) return kFALSE;
-  if ( fLab != inTrack->GetLabel() ) return kFALSE;
-  if ( fN != inTrack->GetNumberOfClusters() ) return kFALSE;
-  if ( AliKalmanTrack::GetIntegratedLength() != inTrack->GetIntegratedLength() ) return kFALSE;
-  
-  if ( GetX() != inTrack->GetX() ) return kFALSE;
-  if ( GetAlpha() != inTrack->GetAlpha() ) return kFALSE;
-  const Double_t *inP = inTrack->GetParameter();
-  const Double_t *curP = GetParameter();
-  for (Int_t i = 0; i < 5; i++){
-    if ( curP[i] != inP[i]) return kFALSE;
-  }
-  const Double_t *inC = inTrack->GetCovariance();
-  const Double_t *curC = GetCovariance();
-  for (Int_t i = 0; i < 15; i++){
-    if ( curC[i] != inC[i]) return kFALSE;
-  }
+  if(memcmp(fPID, inTrack->fPID, AliPID::kSPECIES*sizeof(Double32_t))) return kFALSE;
+  if(memcmp(fBudget, inTrack->fBudget, 3*sizeof(Double32_t))) return kFALSE;
+  if(memcmp(&fDE, &inTrack->fDE, sizeof(Double32_t))) return kFALSE;
+  if(memcmp(&fFakeRatio, &inTrack->fFakeRatio, sizeof(Double32_t))) return kFALSE;
+  if(memcmp(&fChi2, &inTrack->fChi2, sizeof(Double32_t))) return kFALSE;
+  if(memcmp(&fMass, &inTrack->fMass, sizeof(Double32_t))) return kFALSE;
+  if( fLab != inTrack->fLab ) return kFALSE;
+  if( fN != inTrack->fN ) return kFALSE;
+  Double32_t l(0.), in(0.);
+  l = GetIntegratedLength(); in = inTrack->GetIntegratedLength();
+  if(memcmp(&l, &in, sizeof(Double32_t))) return kFALSE;
+  l=GetX(); in=inTrack->GetX();
+  if(memcmp(&l, &in, sizeof(Double32_t))) return kFALSE;
+  l = GetAlpha(); in = inTrack->GetAlpha();
+  if(memcmp(&l, &in, sizeof(Double32_t))) return kFALSE;
+  if(memcmp(GetParameter(), inTrack->GetParameter(), 5*sizeof(Double32_t))) return kFALSE;
+  if(memcmp(GetCovariance(), inTrack->GetCovariance(), 15*sizeof(Double32_t))) return kFALSE;
   
   for (Int_t iTracklet = 0; iTracklet < kNplane; iTracklet++){
     AliTRDseedV1 *curTracklet = fTracklet[iTracklet];
@@ -636,7 +626,7 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
   // "xrho" - thickness*density    [g/cm^2] 
   // 
 
-  if (xk == GetX()) return kTRUE;
+  if (TMath::Abs(xk - GetX())<1.e-2) return kTRUE; // 100mum limit
 
   Double_t xyz0[3] = {GetX(), GetY(), GetZ()}, // track position BEFORE propagation 
            b[3];    // magnetic field 
