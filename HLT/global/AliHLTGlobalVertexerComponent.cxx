@@ -699,6 +699,7 @@ void AliHLTGlobalVertexerComponent::FillESD( AliESDEvent *event, AliHLTGlobalVer
   if( data->fPrimNContributors >=3 ){
 
     AliESDVertex vESD( data->fPrimP, data->fPrimC, data->fPrimChi2, data->fPrimNContributors );
+    event->SetPrimaryVertexTPC( &vESD );
     event->SetPrimaryVertexTracks( &vESD );
 
     // relate tracks to the primary vertex
