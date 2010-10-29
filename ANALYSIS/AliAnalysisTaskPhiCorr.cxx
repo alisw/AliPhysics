@@ -49,7 +49,8 @@ void AliAnalysisTaskPhiCorr::UserExec(Option_t *)
     Int_t nev = fInputHandler->GetBufferSize();
     Float_t wgt = 1./(nev*(nev-1));
     fMixedEvent.Reset();
-    
+
+
     for (Int_t iev = 0; iev < nev; iev++) {
 	AliAODEvent* aod = (AliAODEvent*) GetEvent(iev);
 	fMixedEvent.AddEvent(aod);
@@ -76,6 +77,7 @@ void AliAnalysisTaskPhiCorr::UserExec(Option_t *)
 	} // tarcks
       } // tracks
     } // more than 1 
+
   PostData(1, fHists);
 }      
 
