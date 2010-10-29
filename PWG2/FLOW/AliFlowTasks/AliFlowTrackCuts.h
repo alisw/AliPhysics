@@ -130,6 +130,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TMCProcess fMCprocessType;         //mc process type
   Bool_t fCutMCPID;                  //cut on MC pid?
   Int_t fMCPID;                      //MC PID
+  Bool_t fIgnoreSignInPID;           //when PID cut is set, pass also the antiparticle
   Bool_t fCutMCisPrimary;            //do we cut on primaryness?
   Bool_t fMCisPrimary;               //is MC primary
   Bool_t fRequireCharge;          //is charged?
@@ -150,7 +151,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliMCParticle* fMCparticle;        //!mc particle
   AliVEvent* fEvent;                 //!placeholder for current event
 
-  ClassDef(AliFlowTrackCuts,2)
+  ClassDef(AliFlowTrackCuts,3)
 };
 
 #endif
