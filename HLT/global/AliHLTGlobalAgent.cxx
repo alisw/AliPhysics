@@ -34,6 +34,7 @@
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTGlobalOfflineVertexerComponent.h"
 #include "AliHLTV0HistoComponent.h"
+#include "AliHLTdNdPtAnalysisComponent.h"
 #include "AliHLTGlobalVertexerHistoComponent.h"
 #include "AliHLTGlobalHistoComponent.h"
 #include "AliHLTGlobalHistoCollector.h"
@@ -73,6 +74,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTGlobalVertexerHistoComponent);
   pHandler->AddComponent(new AliHLTGlobalHistoComponent);
   pHandler->AddComponent(new AliHLTV0HistoComponent );
+  pHandler->AddComponent(new AliHLTdNdPtAnalysisComponent );
   pHandler->AddComponent(new AliHLTGlobalHistoCollector );
   pHandler->AddComponent(new AliHLTGlobalDCSPublisherComponent );
   return 0;
@@ -172,6 +174,8 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
     HLTWarning("No inputs to global HLT Vertex histogram component found");
   }
   
+  pHandler->CreateConfiguration("GLOBAL-dNdPtAnalysis", "dNdPtAnalysis", "GLOBAL-esd-converter", "");
+
   return 0;
 }
 
@@ -183,7 +187,7 @@ const char* AliHLTGlobalAgent::GetReconstructionChains(AliRawReader* /*rawReader
     // reconstruction chains for AliRoot simulation
     // Note: run loader is only available while running embedded into
     // AliRoot simulation
-    return "GLOBAL-esd-converter";
+    return "GLOBAL-esd-converter";    
   }
   return NULL;
 }
@@ -192,7 +196,7 @@ const char* AliHLTGlobalAgent::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
 
-  return "";
+  return "libPWG0base.so libPWG0dep.so";
 }
 
 int AliHLTGlobalAgent::GetHandlerDescription(AliHLTComponentDataType /*dt*/,
