@@ -50,6 +50,15 @@ class AliRDHFCuts : public AliAnalysisCuts
     fPidHF=new AliAODPidHF(*pidObj);
   }
   void SetRemoveDaughtersFromPrim(Bool_t removeDaughtersPrim) {fRemoveDaughtersFromPrimary=removeDaughtersPrim;}
+  void SetOptPileup(Int_t opt=0){
+    // see enum below
+    fOptPileup=opt;
+  }
+  void ConfigurePileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
+    fMinContrPileup=minContrib;
+    fMinDzPileup=minDz;
+  }
+
 
   AliAODPidHF* GetPidHF() const {return fPidHF;}
   Float_t *GetPtBinLimits() const {return fPtBinLimits;}
@@ -90,6 +99,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t CompareCuts(const AliRDHFCuts *obj) const;
 
   enum{kAll,kTracks,kPID,kCandidate};
+  enum{kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
 
  protected:
 
@@ -119,8 +129,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   AliAODPidHF *fPidHF; // PID for heavy flavours manager
   Int_t fWhyRejection; // used to code the step at which candidate was rejected
   Bool_t fRemoveDaughtersFromPrimary; // flag to switch on the removal of duaghters from the primary vertex computation
+  Int_t  fOptPileup;      // option for pielup selection
+  Int_t  fMinContrPileup; // min. n. of tracklets in pileup vertex
+  Float_t fMinDzPileup;   // min deltaz between main and pileup vertices
 
-  ClassDef(AliRDHFCuts,5);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,6);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
