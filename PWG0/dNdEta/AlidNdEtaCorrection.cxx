@@ -330,11 +330,11 @@ void AlidNdEtaCorrection::FillMCParticle(Float_t vtx, Float_t eta, Float_t pt, B
 }
 
 //____________________________________________________________________
-void AlidNdEtaCorrection::FillTrackedParticle(Float_t vtx, Float_t eta, Float_t pt)
+void AlidNdEtaCorrection::FillTrackedParticle(Float_t vtx, Float_t eta, Float_t pt, Double_t weight)
 {
   // fills a tracked particle in the corrections
 
-  fTrack2ParticleCorrection->GetTrackCorrection()->FillMeas(vtx, eta, pt);
+  fTrack2ParticleCorrection->GetTrackCorrection()->FillMeas(vtx, eta, pt, weight);
 }
 
 //____________________________________________________________________

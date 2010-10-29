@@ -62,6 +62,9 @@ public:
   void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
   AliPWG0Helper::AnalysisMode GetAnalysisMode() { return fAnalysisMode; }
 
+  void SetVtxMin(Float_t vtxMin) {fvtxMin = vtxMin;}
+  void SetVtxMax(Float_t vtxMax) {fvtxMax = vtxMax;}
+
 protected:
   Float_t GetVtxMin(Float_t eta);
 
@@ -76,7 +79,10 @@ protected:
   AliPWG0Helper::AnalysisMode fAnalysisMode;       // detector (combination) used for the analysis
   TString fTag;                                   // tag saved that describes the applied correction
 
-  ClassDef(dNdEtaAnalysis, 2)
+  Float_t fvtxMin;  // mininum vtx on which to integrate
+  Float_t fvtxMax;  // maximum vtx on which to intgrate
+
+  ClassDef(dNdEtaAnalysis, 3)
 };
 
 #endif

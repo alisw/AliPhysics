@@ -15,6 +15,7 @@ class TH2F;
 class TH3F;
 class AliESDEvent;
 class AliTriggerAnalysis;
+class TH1D;
 
 class AlidNdEtaTask : public AliAnalysisTaskSE {
   public:
@@ -43,6 +44,7 @@ class AlidNdEtaTask : public AliAnalysisTaskSE {
     void SetDiffTreatment(AliPWG0Helper::DiffTreatment diffTreatment) { fDiffTreatment = diffTreatment; }
     
     void SetOption(const char* opt) { fOption = opt; }
+    void SetPtMin(Float_t ptMin) { fPtMin = ptMin;}
 
  protected:
     AliESDEvent *fESD;                         //! ESD object
@@ -100,12 +102,22 @@ class AlidNdEtaTask : public AliAnalysisTaskSE {
     TH2F* fTrackletsVsUnassigned; //! number of tracklets vs. number of unassigned clusters in L1 (only for SPD analysis)
     TH1F* fStats;                 //! further statistics : bin 1 = vertexer 3d, bin 2 = vertexer z, etc (see CreateOutputObjects)
     TH2F* fStats2;                //! V0 vs SPD statistics
-
+    Float_t fPtMin;               // pt min, to be used in kOneTrack case
+    TH1D* fEta;                   //! eta distribution from ESD
+    TH1D* fEtaMC;                 //! eta distribution from MC
+    TH1D* fHistEvents;            //! histo for n. of selected ESD events
+    TH1D* fHistEventsMC;          //! histo for n. of selected MC events
+    TH1D* fTrigEffNum;            //!
+    TH1D* fTrigEffDen;            //!
+    TH1D* fVtxEffNum;             //!
+    TH1D* fVtxEffDen;             //!
+    TH1D* fVtxTrigEffNum;         //!
+    TH1D* fVtxTrigEffDen;         //!
  private:
     AlidNdEtaTask(const AlidNdEtaTask&);
     AlidNdEtaTask& operator=(const AlidNdEtaTask&);
 
-  ClassDef(AlidNdEtaTask, 1);
+  ClassDef(AlidNdEtaTask, 2);
 };
 
 #endif

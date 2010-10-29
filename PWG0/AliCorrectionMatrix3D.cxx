@@ -282,17 +282,17 @@ TH1* AliCorrectionMatrix3D::Get1DCorrectionHistogram(Option_t* opt, Float_t aMin
 }
 
 //____________________________________________________________________
-void AliCorrectionMatrix3D::FillMeas(Float_t ax, Float_t ay, Float_t az)
+void AliCorrectionMatrix3D::FillMeas(Float_t ax, Float_t ay, Float_t az, Double_t weight)
 {
   // add value to measured histogram
-  GetMeasuredHistogram()->Fill(ax, ay, az);
+  GetMeasuredHistogram()->Fill(ax, ay, az, weight);
 }
 
 //____________________________________________________________________
-void AliCorrectionMatrix3D::FillGene(Float_t ax, Float_t ay, Float_t az)
+void AliCorrectionMatrix3D::FillGene(Float_t ax, Float_t ay, Float_t az, Double_t weight)
 {
   // add value to generated histogram
-  GetGeneratedHistogram()->Fill(ax, ay, az);
+  GetGeneratedHistogram()->Fill(ax, ay, az, weight);
 }
 
 //____________________________________________________________________
