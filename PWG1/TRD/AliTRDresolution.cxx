@@ -1920,7 +1920,7 @@ void AliTRDresolution::MakeSummary()
   p=cOut->cd(3); 
   p->SetRightMargin(0.06);p->SetTopMargin(0.06);
   xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
-  GetGraphArray(xy, kMCcluster, 1, 1);
+  if(!GetGraphArray(xy, kMCcluster, 1, 1)) AliWarning("Missing MC cluster plot.");
 
   p=cOut->cd(4); 
   p->SetRightMargin(0.16);p->SetTopMargin(0.06);
@@ -2279,7 +2279,7 @@ TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool
 
   // tracklet resolution/pull in y direction
   snprintf(hname, 100, "%s_%s_Y", GetNameId(), name);
-  sprintf(htitle, "Y res for \"%s\" @ %s;tg(#phi);#Delta y [cm];%s", GetNameId(), name, fgkResYsegmName[fSegmentLevel]);
+  snprintf(htitle, 300, "Y res for \"%s\" @ %s;tg(#phi);#Delta y [cm];%s", GetNameId(), name, fgkResYsegmName[fSegmentLevel]);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     Int_t nybins=fgkNresYsegm[fSegmentLevel];
     if(expand) nybins*=2;

@@ -141,7 +141,7 @@ void AliTRDcheckDET::UserExec(Option_t *opt){
     nTracks++;
   }
   if(nTracks)
-    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtracksEvent))->Fill(nTracks);
+    if((histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtracksEvent)))) histo->Fill(nTracks);
 
   if(!fEventInfo->GetEventHeader()) return; // For trigger statistics event header is essential
   Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();

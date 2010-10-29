@@ -11,9 +11,6 @@
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
 #endif
-#ifndef ALILOG_H
-#include "AliLog.h"
-#endif
 
 class TCanvas;
 class TObjArray;
@@ -122,7 +119,7 @@ private:
 //___________________________________________________
 inline void AliTRDclusterResolution::GetDiffCoeff(Float_t &dt, Float_t &dl) const
 {
-  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
+  if(!IsCalibrated()) printf(" - W - AliTRDclusterResolution::GetDiffCoeff() : Instance not calibrated.\n");
   dt=fDt; dl=fDl;
   return;
 }
@@ -131,28 +128,28 @@ inline void AliTRDclusterResolution::GetDiffCoeff(Float_t &dt, Float_t &dl) cons
 //___________________________________________________
 inline Float_t AliTRDclusterResolution::GetExB() const
 { 
-  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
+  if(!IsCalibrated()) printf(" - W - AliTRDclusterResolution::GetExB() : Instance not calibrated.\n");
   return fExB;
 }
 
 //___________________________________________________
 inline Float_t AliTRDclusterResolution::GetVdrift() const
 { 
-  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
+  if(!IsCalibrated()) printf(" - W - AliTRDclusterResolution::GetVdrift() : Instance not calibrated.\n");
   return fVdrift;
 }
 
 //___________________________________________________
 inline Float_t AliTRDclusterResolution::GetT0() const
 {
-  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
+  if(!IsCalibrated()) printf(" - W - AliTRDclusterResolution::GetT0() : Instance not calibrated.\n");
   return fT0;
 }
 
 //___________________________________________________
 inline Float_t AliTRDclusterResolution::GetGain() const
 {
-  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
+  if(!IsCalibrated()) printf(" - W - AliTRDclusterResolution::GetGain() : Instance not calibrated.\n");
   return fGain;
 }
 
