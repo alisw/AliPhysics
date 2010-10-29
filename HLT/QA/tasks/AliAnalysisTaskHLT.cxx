@@ -844,178 +844,178 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 
 void AliAnalysisTaskHLT::Terminate(Option_t *){
   // see header file of AliAnalysisTask for documentation
-
-  // Draw result to the screen
-  // Called once at the end of the query
-
-  Bool_t print_png=kFALSE;
-  if(print_png){
-  
-    TF1 *signalX= new TF1("signalX","gaus",-1,1); 
-    TF1 *signalY= new TF1("signalY","gaus",-1,1);
-    TF1 *signalZ= new TF1("signalZ","gaus",-30,30);
-
-    signalZ->SetLineColor(8);
-    signalZ->SetLineWidth(2);
-    
-    fXVertexVSNtracksHLT->SetMarkerStyle(7);
-    fXVertexVSNtracksHLT->SetMarkerSize(7);
-    fXVertexVSNtracksOff->SetMarkerStyle(7);
-    fXVertexVSNtracksOff->SetMarkerSize(7);
-
-    fYVertexVSNtracksHLT->SetMarkerStyle(7);
-    fYVertexVSNtracksHLT->SetMarkerSize(7);
-    fYVertexVSNtracksOff->SetMarkerStyle(7);
-    fYVertexVSNtracksOff->SetMarkerSize(7);
-
-    fZVertexVSNtracksHLT->Sumw2();
-    fZVertexVSNtracksHLT->SetMarkerStyle(21);
-    fZVertexVSNtracksHLT->SetMarkerSize(0.7);
-    fZVertexVSNtracksOff->Sumw2();
-    fZVertexVSNtracksOff->SetMarkerStyle(21);
-    fZVertexVSNtracksOff->SetMarkerSize(0.7);
-
-    for(int jj=0;jj<fNcontr;jj++){
-
-      fXvertexVSNcontriOff[jj]->Fit(signalX,"RQ");
-      fXVertexVSNtracksOff->Fill(fNcontrArray[jj],signalX->GetParameter(2)); 
-
-      fYvertexVSNcontriOff[jj]->Fit(signalY,"RQ");
-      fYVertexVSNtracksOff->Fill(fNcontrArray[jj],signalY->GetParameter(2));
-
-      fZvertexVSNcontriOff[jj]->Fit(signalZ,"RQ");
-      fZVertexVSNtracksOff->Fill(fNcontrArray[jj],signalZ->GetParameter(2));
-      fZVertexVSNtracksOff->Fill(fNcontrArray[jj],signalZ->GetParameter(2), signalZ->GetParError(2));
-    
-      fXvertexVSNcontriHLT[jj]->Fit(signalX,"RQ");
-      fXVertexVSNtracksHLT->Fill(fNcontrArray[jj],signalX->GetParameter(2));
-
-      fYvertexVSNcontriHLT[jj]->Fit(signalY,"RQ");
-      fYVertexVSNtracksHLT->Fill(fNcontrArray[jj],signalY->GetParameter(2));
-    
-      fZvertexVSNcontriHLT[jj]->Fit(signalZ,"RQ");
-      fZVertexVSNtracksHLT->Fill(fNcontrArray[jj],signalZ->GetParameter(2));
-      fZVertexVSNtracksHLT->Fill(fNcontrArray[jj],signalZ->GetParameter(2), signalZ->GetParError(2));
-
-    }
-
-    //Drawing histograms
-    Int_t maxbin =0;
-    TCanvas *c1 = new TCanvas("c1","Info pr track, Offline vs Online",10,10,1210,810);
-     
-    c1->Divide(3,2);
-     
-    c1->cd(1);
-    maxbin =fEtaOff->GetBinContent(fEtaOff->GetMaximumBin());
-    if(maxbin < fEtaHLT->GetBinContent(fEtaHLT->GetMaximumBin()))
-      maxbin=fEtaHLT->GetBinContent(fEtaHLT->GetMaximumBin());
-    fEtaOff->SetMaximum(maxbin+20);
-    fEtaOff->SetTitle("Pseudorapidity (without momentum cut)");
-    fEtaOff->SetLineColor(2);
-    fEtaOff->DrawCopy("");
-    fEtaHLT->DrawCopy("sameS");
- 
-    TLegend *legend = new TLegend(0.70,0.60,0.90,0.75);
-    legend->AddEntry(fEtaOff, "Offline", "LP");
-    legend->AddEntry(fEtaHLT,"HLT","LP");
-    legend->SetFillColor(10);
-    legend->SetBorderSize(0);
-    legend->Draw("");
-
-    c1->cd(2);
-    maxbin =fEtaMomentumcutOff->GetBinContent(fEtaMomentumcutOff->GetMaximumBin());
-    if(maxbin < fEtaMomentumcutHLT->GetBinContent(fEtaMomentumcutHLT->GetMaximumBin()))
-      maxbin=fEtaMomentumcutHLT->GetBinContent(fEtaMomentumcutHLT->GetMaximumBin());
-    fEtaMomentumcutOff->SetMaximum(maxbin+20);
-    fEtaMomentumcutOff->SetTitle("Pseudorapidity");
-    fEtaMomentumcutOff->SetLineColor(2);
-    fEtaMomentumcutOff->DrawCopy("");
-    fEtaMomentumcutHLT->DrawCopy("sames");
-
-    c1->cd(3);
-    maxbin =fNclusterOff->GetBinContent(fNclusterOff->GetMaximumBin());
-    if(maxbin < fNclusterHLT->GetBinContent(fNclusterHLT->GetMaximumBin()))
-      maxbin=fNclusterHLT->GetBinContent(fNclusterHLT->GetMaximumBin());
-    fNclusterOff->SetMaximum(maxbin+20);
-    fNclusterOff->SetLineColor(2);
-    fNclusterOff->SetTitle("Nr clusters per track");
-    fNclusterOff->DrawCopy("");
-    fNclusterHLT->DrawCopy("sames");
-
-    c1->cd(4);
-    maxbin =fPhiOff->GetBinContent(fPhiOff->GetMaximumBin());
-    if(maxbin < fPhiHLT->GetBinContent(fPhiHLT->GetMaximumBin()))
-      maxbin=fPhiHLT->GetBinContent(fPhiHLT->GetMaximumBin());
-    fPhiOff->SetMinimum(0);
-    fPhiOff->SetMaximum(maxbin+20);
-    fPhiOff->SetLineColor(2);
-    fPhiOff->SetTitle("Azimuthal angle distribution");
-    fPhiOff->DrawCopy("");
-    fPhiHLT->DrawCopy("sames");
-
-    c1->cd(5);
-    maxbin =fThetaOff->GetBinContent(fThetaOff->GetMaximumBin());
-    if(maxbin < fThetaHLT->GetBinContent(fThetaHLT->GetMaximumBin()))
-      maxbin=fThetaHLT->GetBinContent(fThetaHLT->GetMaximumBin());
-    fThetaOff->SetMaximum(maxbin+20);
-    fThetaOff->SetLineColor(2);
-    fThetaOff->SetTitle("Polar angle distribution");
-    fThetaOff->DrawCopy("");
-    fThetaHLT->DrawCopy("sames");
-
-    c1->cd(6);
-    maxbin =fMomentumOff->GetBinContent(fMomentumOff->GetMaximumBin());
-    if(maxbin < fMomentumHLT->GetBinContent(fMomentumHLT->GetMaximumBin()))
-      maxbin=fMomentumHLT->GetBinContent(fMomentumHLT->GetMaximumBin());
-    fMomentumOff->SetMaximum(maxbin+200);
-    fMomentumOff->GetXaxis()->SetRangeUser(0,5);
-    fMomentumOff->SetLineColor(2);
-    fMomentumOff->SetTitle("Momentum");
-    fMomentumOff->DrawCopy("");
-    fMomentumHLT->DrawCopy("sames");
-
-    TCanvas *c2= new TCanvas("c2", "Info pr event, Offline vs Online", 10 , 10,1210, 810);
-    TLegend *legend2 = new TLegend(0.70,0.60,0.90,0.75);
-    c2->Divide(3,2);
-    c2->cd(1);
-    fXvertexOff->SetTitle("Primary Vertex Distribution in X");
-    fXvertexOff->SetLineColor(2);
-    fXvertexOff->GetXaxis()->SetRangeUser(-0.5,0.5);
-    legend2->AddEntry(fXvertexOff,"Offline","LP");
-    fXvertexOff->DrawCopy("");
-    fXvertexHLT->DrawCopy("sames");
-    legend2->AddEntry(fXvertexHLT,"HLT","LP");
-    legend2->SetFillColor(10);
-    legend2->SetBorderSize(0);
-    legend2->Draw();
-    c2->cd(2);
-    fYvertexOff->SetTitle("Primary Vertex Distribution in Y");
-    fYvertexOff->SetLineColor(2);
-    fYvertexOff->GetXaxis()->SetRangeUser(-0.5,0.5);
-    fYvertexOff->DrawCopy("");
-    fYvertexHLT->DrawCopy("sames");
-    c2->cd(3);
-    fZvertexOff->SetTitle("Primary Vertex Distribution in Z");
-    fZvertexOff->SetLineColor(2);
-    fZvertexOff->DrawCopy("");
-    fZvertexHLT->DrawCopy("sames");
-  
-    c2->cd(4);
-    fMultHLT->SetTitle("Track Multiplicity, NumberTracks>0");
-    fMultHLT->DrawCopy("");
-    fMultOff->SetLineColor(2);
-    fMultOff->DrawCopy("sames");
-
-    string filename="Info_pr_track";
-    char plotname[100];
-    sprintf(plotname,"%s.png",filename.c_str());
-    //  c1->Print("Info_pr_track.png","png");
-    c1->Print(plotname,"png");
- 
-    filename="Info_pr_Event";
-    sprintf(plotname,"%s.png",filename.c_str());
-    c2->Print(plotname,"png");
-  }
+// 
+//   // Draw result to the screen
+//   // Called once at the end of the query
+// 
+//   Bool_t print_png=kFALSE;
+//   if(print_png){
+//   
+//     TF1 *signalX= new TF1("signalX","gaus",-1,1); 
+//     TF1 *signalY= new TF1("signalY","gaus",-1,1);
+//     TF1 *signalZ= new TF1("signalZ","gaus",-30,30);
+// 
+//     signalZ->SetLineColor(8);
+//     signalZ->SetLineWidth(2);
+//     
+//     fXVertexVSNtracksHLT->SetMarkerStyle(7);
+//     fXVertexVSNtracksHLT->SetMarkerSize(7);
+//     fXVertexVSNtracksOff->SetMarkerStyle(7);
+//     fXVertexVSNtracksOff->SetMarkerSize(7);
+// 
+//     fYVertexVSNtracksHLT->SetMarkerStyle(7);
+//     fYVertexVSNtracksHLT->SetMarkerSize(7);
+//     fYVertexVSNtracksOff->SetMarkerStyle(7);
+//     fYVertexVSNtracksOff->SetMarkerSize(7);
+// 
+//     fZVertexVSNtracksHLT->Sumw2();
+//     fZVertexVSNtracksHLT->SetMarkerStyle(21);
+//     fZVertexVSNtracksHLT->SetMarkerSize(0.7);
+//     fZVertexVSNtracksOff->Sumw2();
+//     fZVertexVSNtracksOff->SetMarkerStyle(21);
+//     fZVertexVSNtracksOff->SetMarkerSize(0.7);
+// 
+//     for(int jj=0;jj<fNcontr;jj++){
+// 
+//       fXvertexVSNcontriOff[jj]->Fit(signalX,"RQ");
+//       fXVertexVSNtracksOff->Fill(fNcontrArray[jj],signalX->GetParameter(2)); 
+// 
+//       fYvertexVSNcontriOff[jj]->Fit(signalY,"RQ");
+//       fYVertexVSNtracksOff->Fill(fNcontrArray[jj],signalY->GetParameter(2));
+// 
+//       fZvertexVSNcontriOff[jj]->Fit(signalZ,"RQ");
+//       fZVertexVSNtracksOff->Fill(fNcontrArray[jj],signalZ->GetParameter(2));
+//       fZVertexVSNtracksOff->Fill(fNcontrArray[jj],signalZ->GetParameter(2), signalZ->GetParError(2));
+//     
+//       fXvertexVSNcontriHLT[jj]->Fit(signalX,"RQ");
+//       fXVertexVSNtracksHLT->Fill(fNcontrArray[jj],signalX->GetParameter(2));
+// 
+//       fYvertexVSNcontriHLT[jj]->Fit(signalY,"RQ");
+//       fYVertexVSNtracksHLT->Fill(fNcontrArray[jj],signalY->GetParameter(2));
+//     
+//       fZvertexVSNcontriHLT[jj]->Fit(signalZ,"RQ");
+//       fZVertexVSNtracksHLT->Fill(fNcontrArray[jj],signalZ->GetParameter(2));
+//       fZVertexVSNtracksHLT->Fill(fNcontrArray[jj],signalZ->GetParameter(2), signalZ->GetParError(2));
+// 
+//     }
+// 
+//     //Drawing histograms
+//     Int_t maxbin =0;
+//     TCanvas *c1 = new TCanvas("c1","Info pr track, Offline vs Online",10,10,1210,810);
+//      
+//     c1->Divide(3,2);
+//      
+//     c1->cd(1);
+//     maxbin =fEtaOff->GetBinContent(fEtaOff->GetMaximumBin());
+//     if(maxbin < fEtaHLT->GetBinContent(fEtaHLT->GetMaximumBin()))
+//       maxbin=fEtaHLT->GetBinContent(fEtaHLT->GetMaximumBin());
+//     fEtaOff->SetMaximum(maxbin+20);
+//     fEtaOff->SetTitle("Pseudorapidity (without momentum cut)");
+//     fEtaOff->SetLineColor(2);
+//     fEtaOff->DrawCopy("");
+//     fEtaHLT->DrawCopy("sameS");
+//  
+//     TLegend *legend = new TLegend(0.70,0.60,0.90,0.75);
+//     legend->AddEntry(fEtaOff, "Offline", "LP");
+//     legend->AddEntry(fEtaHLT,"HLT","LP");
+//     legend->SetFillColor(10);
+//     legend->SetBorderSize(0);
+//     legend->Draw("");
+// 
+//     c1->cd(2);
+//     maxbin =fEtaMomentumcutOff->GetBinContent(fEtaMomentumcutOff->GetMaximumBin());
+//     if(maxbin < fEtaMomentumcutHLT->GetBinContent(fEtaMomentumcutHLT->GetMaximumBin()))
+//       maxbin=fEtaMomentumcutHLT->GetBinContent(fEtaMomentumcutHLT->GetMaximumBin());
+//     fEtaMomentumcutOff->SetMaximum(maxbin+20);
+//     fEtaMomentumcutOff->SetTitle("Pseudorapidity");
+//     fEtaMomentumcutOff->SetLineColor(2);
+//     fEtaMomentumcutOff->DrawCopy("");
+//     fEtaMomentumcutHLT->DrawCopy("sames");
+// 
+//     c1->cd(3);
+//     maxbin =fNclusterOff->GetBinContent(fNclusterOff->GetMaximumBin());
+//     if(maxbin < fNclusterHLT->GetBinContent(fNclusterHLT->GetMaximumBin()))
+//       maxbin=fNclusterHLT->GetBinContent(fNclusterHLT->GetMaximumBin());
+//     fNclusterOff->SetMaximum(maxbin+20);
+//     fNclusterOff->SetLineColor(2);
+//     fNclusterOff->SetTitle("Nr clusters per track");
+//     fNclusterOff->DrawCopy("");
+//     fNclusterHLT->DrawCopy("sames");
+// 
+//     c1->cd(4);
+//     maxbin =fPhiOff->GetBinContent(fPhiOff->GetMaximumBin());
+//     if(maxbin < fPhiHLT->GetBinContent(fPhiHLT->GetMaximumBin()))
+//       maxbin=fPhiHLT->GetBinContent(fPhiHLT->GetMaximumBin());
+//     fPhiOff->SetMinimum(0);
+//     fPhiOff->SetMaximum(maxbin+20);
+//     fPhiOff->SetLineColor(2);
+//     fPhiOff->SetTitle("Azimuthal angle distribution");
+//     fPhiOff->DrawCopy("");
+//     fPhiHLT->DrawCopy("sames");
+// 
+//     c1->cd(5);
+//     maxbin =fThetaOff->GetBinContent(fThetaOff->GetMaximumBin());
+//     if(maxbin < fThetaHLT->GetBinContent(fThetaHLT->GetMaximumBin()))
+//       maxbin=fThetaHLT->GetBinContent(fThetaHLT->GetMaximumBin());
+//     fThetaOff->SetMaximum(maxbin+20);
+//     fThetaOff->SetLineColor(2);
+//     fThetaOff->SetTitle("Polar angle distribution");
+//     fThetaOff->DrawCopy("");
+//     fThetaHLT->DrawCopy("sames");
+// 
+//     c1->cd(6);
+//     maxbin =fMomentumOff->GetBinContent(fMomentumOff->GetMaximumBin());
+//     if(maxbin < fMomentumHLT->GetBinContent(fMomentumHLT->GetMaximumBin()))
+//       maxbin=fMomentumHLT->GetBinContent(fMomentumHLT->GetMaximumBin());
+//     fMomentumOff->SetMaximum(maxbin+200);
+//     fMomentumOff->GetXaxis()->SetRangeUser(0,5);
+//     fMomentumOff->SetLineColor(2);
+//     fMomentumOff->SetTitle("Momentum");
+//     fMomentumOff->DrawCopy("");
+//     fMomentumHLT->DrawCopy("sames");
+// 
+//     TCanvas *c2= new TCanvas("c2", "Info pr event, Offline vs Online", 10 , 10,1210, 810);
+//     TLegend *legend2 = new TLegend(0.70,0.60,0.90,0.75);
+//     c2->Divide(3,2);
+//     c2->cd(1);
+//     fXvertexOff->SetTitle("Primary Vertex Distribution in X");
+//     fXvertexOff->SetLineColor(2);
+//     fXvertexOff->GetXaxis()->SetRangeUser(-0.5,0.5);
+//     legend2->AddEntry(fXvertexOff,"Offline","LP");
+//     fXvertexOff->DrawCopy("");
+//     fXvertexHLT->DrawCopy("sames");
+//     legend2->AddEntry(fXvertexHLT,"HLT","LP");
+//     legend2->SetFillColor(10);
+//     legend2->SetBorderSize(0);
+//     legend2->Draw();
+//     c2->cd(2);
+//     fYvertexOff->SetTitle("Primary Vertex Distribution in Y");
+//     fYvertexOff->SetLineColor(2);
+//     fYvertexOff->GetXaxis()->SetRangeUser(-0.5,0.5);
+//     fYvertexOff->DrawCopy("");
+//     fYvertexHLT->DrawCopy("sames");
+//     c2->cd(3);
+//     fZvertexOff->SetTitle("Primary Vertex Distribution in Z");
+//     fZvertexOff->SetLineColor(2);
+//     fZvertexOff->DrawCopy("");
+//     fZvertexHLT->DrawCopy("sames");
+//   
+//     c2->cd(4);
+//     fMultHLT->SetTitle("Track Multiplicity, NumberTracks>0");
+//     fMultHLT->DrawCopy("");
+//     fMultOff->SetLineColor(2);
+//     fMultOff->DrawCopy("sames");
+// 
+//     string filename="Info_pr_track";
+//     char plotname[100];
+//     sprintf(plotname,"%s.png",filename.c_str());
+//     //  c1->Print("Info_pr_track.png","png");
+//     c1->Print(plotname,"png");
+//  
+//     filename="Info_pr_Event";
+//     sprintf(plotname,"%s.png",filename.c_str());
+//     c2->Print(plotname,"png");
+//   }
 
 }
 
