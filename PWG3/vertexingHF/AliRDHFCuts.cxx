@@ -161,13 +161,17 @@ AliRDHFCuts::~AliRDHFCuts() {
   }
 }
 //---------------------------------------------------------------------------
-Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) const {
+Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   //
   // Event selection
   // 
   //if(fTriggerMask && event->GetTriggerMask()!=fTriggerMask) return kFALSE;
 
+  fWhyRejection=0;
+
   // multiplicity cuts no implemented yet
+
+
 
   const AliVVertex *vertex = event->GetPrimaryVertex();
 
@@ -181,7 +185,10 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) const {
   if(fOptPileup==kRejectPileupEvent){
     Int_t cutc=(Int_t)fMinContrPileup;
     Double_t cutz=(Double_t)fMinDzPileup;
-    if(event->IsPileupFromSPD(cutc,cutz,3.,2.,10.)) return kFALSE;
+    if(event->IsPileupFromSPD(cutc,cutz,3.,2.,10.)) {
+      fWhyRejection=1;
+      return kFALSE;
+    }
   }
 
   return kTRUE;
