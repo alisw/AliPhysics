@@ -227,7 +227,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    else if(irawHisto==23){
-	      Double_t refTDCs = -329.5;
+	      Double_t refTDCs = -319.5;
 	      Float_t resTDC=0.;
 	      for(int ibin=5; ibin<=6; ibin++){
 		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs)<2.){
