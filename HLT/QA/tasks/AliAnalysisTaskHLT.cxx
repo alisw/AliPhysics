@@ -627,6 +627,13 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
       if(!(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin)) continue;
 
       fDCAHLT->Fill(esdtrackHLT->GetD(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), bfield) );  
+      
+//       // plotting the DCA calculated by Sergey 
+//       Float_t DCAr, DCAz = -99;
+//       esdtrackHLT->GetImpactParametersTPC(DCAr, DCAz);
+//       fDCAHLT->Fill(DCAr);
+      
+      
       fChargeHLT->Fill(esdtrackHLT->Charge());
 
       if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout))
