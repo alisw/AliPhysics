@@ -1715,7 +1715,7 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
 							"effProtonsStep0Step2",
 							*gProtonContainer);
   effProtonsStep0Step2->CalculateEfficiency(2,0); 
-  fHistEfficiencyYPtProtons = effProtonsStep0Step2->Project(iRap,iPt);
+  fHistEfficiencyYPtProtons = (TH2D*)effProtonsStep0Step2->Project(iRap,iPt);
   fHistEfficiencyYPtProtons->Sumw2();
 
   //Calculation of efficiency/correction: Protons
@@ -1724,7 +1724,7 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
 							    "effAntiProtonsStep0Step2",
 							    *gAntiProtonContainer);
   effAntiProtonsStep0Step2->CalculateEfficiency(2,0); 
-  fHistEfficiencyYPtAntiProtons = effAntiProtonsStep0Step2->Project(iRap,iPt);
+  fHistEfficiencyYPtAntiProtons = (TH2D*)effAntiProtonsStep0Step2->Project(iRap,iPt);
   fHistEfficiencyYPtAntiProtons->Sumw2();
 
   Correct();
