@@ -13,6 +13,9 @@
 #include "AliHLTEveBase.h"
 #include "TString.h"
 
+class AliESDEvent;
+class AliESDCaloCluster;
+class TRefArray;
 class TEveElementList;
 class TEveBoxSet;
 class AliHLTHOMERBlockDesc;
@@ -37,18 +40,24 @@ public:
   /** inherited from AliHLTEveBase */
   void ResetElements();
 
+  /// Process esd event
+  void ProcessEvent(AliESDEvent * event);
 
 
 protected :
 
   /** Create the elementlist */
-  virtual TEveElementList * CreateElementList() = 0;
+  virtual void CreateElementList() = 0;
   
   /** Add clusters boxset to eve display */
   virtual void AddClusters(Float_t * pos, Int_t module, Float_t energy) = 0;
 
   /** Add digits boxset to eve display */
   virtual void AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t energy) = 0;
+
+  
+  virtual void ProcessESDCluster(AliESDCaloCluster * cluster)  = 0;
+
 
   /** Process clusters block */
   void ProcessClusters(AliHLTHOMERBlockDesc * block);
@@ -58,18 +67,24 @@ protected :
 
   /** Process histogram block */
   void ProcessHistogram(AliHLTHOMERBlockDesc * block );
+
   
   /** Process and draw histograms */
   void AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount );  
+  
 
   Int_t GetPadNumber(TString name);  
 
+  virtual Int_t GetClusters (AliESDEvent * event, TRefArray * clusters) = 0;
+
   TEveBoxSet * fBoxSetDigits;            //Boxset for clusters and digist
   TEveBoxSet * fBoxSetClusters;            //Boxset for clusters and digist
-  
-  TEveElementList * fElementList; //Element list to contain the clusters
 
   const Int_t fNModules;          //Number of modules in calorimeter
+
+
+  TRefArray * fClustersArray;
+
 
 private:
   

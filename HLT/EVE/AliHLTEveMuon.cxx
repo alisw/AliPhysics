@@ -24,7 +24,7 @@
 #include "TCanvas.h"
 #include "TEveStraightLineSet.h"
 #include "TEvePointSet.h"
-#include "AliEveHOMERManager.h"
+#include "AliEveHLTEventManager.h"
 #include "TEveManager.h"
 
 
@@ -47,7 +47,7 @@ class AliEveMuonTrack;
 ClassImp(AliHLTEveMuon);
 
 AliHLTEveMuon::AliHLTEveMuon() : 
-  AliHLTEveBase(),
+  AliHLTEveBase("Muon"),
   fFullTrackList(NULL),
   fTracks(NULL),
   fClusters(NULL)
@@ -78,7 +78,7 @@ void AliHLTEveMuon::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   if ( (block->GetDataType().CompareTo("RECHITS") == 0) || (block->GetDataType().CompareTo("TRIGRECS") == 0) ) {
     if(!fClusters) {
       fClusters = CreateClusters();
-      fEventManager->GetEveManager()->AddElement(fClusters);
+      AddElement(fClusters);
     }
     ProcessClusters( block, fClusters );
     
@@ -86,8 +86,7 @@ void AliHLTEveMuon::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     
     if ( !fTracks ) {
       fTracks = CreateTrackSet(); 
-      fEventManager->GetEveManager()->AddElement(fTracks);
-      gEve->AddElement(fTracks);
+      AddElement(fTracks);
     }
     
     ProcessTracks( block, fTracks );
@@ -96,8 +95,7 @@ void AliHLTEveMuon::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     
     if ( !fFullTrackList ) {
       fFullTrackList = CreateFullTrackList(); 
-      fEventManager->GetEveManager()->AddElement(fFullTrackList);      
-      gEve->AddElement(fFullTrackList);
+      AddElement(fFullTrackList);
     }
     
     ProcessFullTracks( block,  fFullTrackList );
@@ -118,17 +116,17 @@ TEvePointSet * AliHLTEveMuon::CreateClusters() {
 
 TEveStraightLineSet * AliHLTEveMuon::CreateTrackSet() {
   // See header file
-  TEveStraightLineSet * ls = new TEveStraightLineSet("MUON Tracks");
-  ls->SetMainColor(kRed);
-  ls->SetLineWidth(3);
-  return ls;
+  TEveStraightLineSet * lineset = new TEveStraightLineSet("MUON Tracks");
+  lineset->SetMainColor(kRed);
+  lineset->SetLineWidth(3);
+  return lineset;
 }
 
 TEveTrackList * AliHLTEveMuon::CreateFullTrackList(){
   // See header file
-  TEveTrackList * ls = new TEveTrackList("MUON Full Tracks");
-  ls->SetMainColor(kBlue);
-  return ls;
+  TEveTrackList * lineset = new TEveTrackList("MUON Full Tracks");
+  lineset->SetMainColor(kBlue);
+  return lineset;
 }
 
 void AliHLTEveMuon::ProcessHistogram(AliHLTHOMERBlockDesc * block ) {
@@ -347,7 +345,7 @@ Int_t AliHLTEveMuon::ProcessFullTracks(AliHLTHOMERBlockDesc * block, TEveTrackLi
     track->MakeESDTrack(muonESDTrack);
     //track->SetTitle(Form("HLT Track : %d, pt : %lf",ientry,TMath::Sqrt(((mtrack->fPx * mtrack->fPx) + (mtrack->fPy * mtrack->fPy)))));
     track->SetName(Form("HLT Track : %d, pt : %lf",ientry,TMath::Sqrt(((mtrack->fPx * mtrack->fPx) + (mtrack->fPy * mtrack->fPy)))));
-    gEve->AddElement(track, fullTracks);
+    fullTracks->AddElement(track);
     
     mtrack++;
   }//track loop

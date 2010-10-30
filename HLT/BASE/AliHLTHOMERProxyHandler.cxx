@@ -68,12 +68,8 @@ AliHLTHOMERProxyHandler::~AliHLTHOMERProxyHandler() {
 //##################################################################################
 Int_t AliHLTHOMERProxyHandler::Initialize() {
   // see header file for class documentation
-
-  Int_t iResult = 0 ;
-
   IdentifyRealm();
-
-  return iResult;
+  return 0;
 }
 
 /*
@@ -145,6 +141,8 @@ void AliHLTHOMERProxyHandler::IdentifyRealm() {
   else {
     fRealm = kLoc;
   }
+
+  //fRealm = kLoc;
 
   return;
 }

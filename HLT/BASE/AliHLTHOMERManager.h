@@ -12,7 +12,8 @@
 
 /** @file   AliHLTHOMERManager.h
     @author Jochen Thaeder
-    @date
+    @author Svein Lindal <slindal@fys.uio.no>
+    @date   October 2010
     @brief  Manager for HOMER in aliroot
 */
 
@@ -28,7 +29,7 @@
 
 #include "AliHLTLoggingVariadicFree.h"
 
-#define BUFFERSIZE 10
+#define BUFFERSIZE 15
 
 class AliHLTHOMERLibManager;
 
@@ -51,134 +52,73 @@ class AliHLTHOMERManager : public AliHLTLogging
 {
 public:
   
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Constructor / Destructor
-   * ---------------------------------------------------------------------------------
-   */
-
   /** default constructor */
   AliHLTHOMERManager();
 
   /** destructor */
   virtual ~AliHLTHOMERManager();
 
-  /** Initialize 
-   *  @return 0 on success, <0 for failure
-   */
+  /** Initialize */
   Int_t Initialize();
 
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Source Handling - public
-   * ---------------------------------------------------------------------------------
-   */
-
-  /** Create Sources List from HOMER-Proxy 
-   *  @return 0 on success, <0 for failure, 1 for no active service
-   */
+  /** Create Sources List from HOMER-Proxy */
   virtual Int_t CreateSourcesList();
 
-  /** Set state of a source 
-   *  @param source      Pointer to AliHLTHOMERSourceDesc object.
-   *  @param state       New (selected/not selected) state.
-   */
+  /** Set state of a source */
   void   SetSourceState( AliHLTHOMERSourceDesc* source, Bool_t state);
 
   /** Get pointer to source List */
   TList* GetSourceList() { return fSourceList; }
 
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Connection Handling - public
-   * ---------------------------------------------------------------------------------
-   */
-
-  /** Connect to HOMER sources, of a certain detector.
-   *  which gets created when state has changed 
-   *  @param detector    Detector to be connected to
-   *  @return            0 on success, <0 for failure
-   */
+  /** Connect to HOMER sources, of a certain detector. */
   Int_t ConnectHOMER( TString detector="ALL" );
 
   /** Disconnect from HOMER sources */
   void  DisconnectHOMER();
 
-  /** Reconnect from HOMER sources 
-   *  @param detector    Detector to be connected to
-   *  @return            0 on success, <0 for failure
-   */
+  /** Reconnect from HOMER sources */
   Int_t ReconnectHOMER( TString detector);
 
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Event Handling - public
-   * ---------------------------------------------------------------------------------
-   */
 
-  /** Loads the next Event, after being connected 
-   *  @return 0 on success, <0 for failure
-   */
+  /** Loads the next Event, after being connected */
   virtual Int_t NextEvent();
 
-  /** Loads the next Cycle, after being connected 
-   *  @return 0 on success, <0 for failure
-   */
+  /** Loads the next Cycle, after being connected */
   virtual Int_t NextCycle() { return NextEvent(); }
 
   /** Get event ID */
   ULong_t GetEventID() { return fEventID[fCurrentBufferIdx]; }
 
-  /* ---------------------------------------------------------------------------------
-   *                           Buffer Handling - public
-   * ---------------------------------------------------------------------------------
-   */
-
-  /** Get pointer to last requested BlockList 
-   *  @return     ptr to buffer, NULL if buffer boundary reached                
-   */
-  TList* GetBlockList() { return GetBlockListEventBuffer(fCurrentBufferIdx); }
-
-  /** Get pointer to last asynchrounous BlockList 
-   *  @return     ptr to buffer, NULL if none present
-   */
+  Int_t GetNAvailableEvents() { return fNEventsAvailable;}
+  
+  /** Get pointer to last requested BlockList */
+  TList* GetBlockList() { return fBlockList; }
   TList* GetAsyncBlockList() { return fAsyncBlockList; }
 
-  /** Navigate backwards in event buffer 
-   *  @return      index in buffer, -1 if boundary reached                
-   */
+  /** Navigate backwards in event buffer */
   Int_t  NavigateEventBufferBack();
 
-  /** Navigate forwards in event buffer 
-   *  @return      index in buffer, -1 if boundary reached                
-   */
+  /** Navigate forwards in event buffer */
   Int_t  NavigateEventBufferFwd();
 
-  /* ---------------------------------------------------------------------------------
-   *                          Trigger Handling - public
-   * ---------------------------------------------------------------------------------
-   */
-
-  /** Set and get the string used to select triggers 
-   *  @param triggerString    Trigger selection string
-   */
+  /** Set and get the string used to select triggers */
   void SetTriggerString ( TString triggerString ) { fTriggerString = triggerString; }
 
   /** Get TriggerString */
   TString GetTriggerString () { return fTriggerString; }
 
-  ///////////////////////////////////////////////////////////////////////////////////
+  void SetBlockOwner(Bool_t owner) { fBlockList->SetOwner(owner); }
+  Bool_t GetBlockOwner() const { return fBlockList->IsOwner(); }
 
 protected:
 
   /** Dynamic loader manager for the HOMER library */
   AliHLTHOMERLibManager* fLibManager;             //! transient
 
-  /** Indicates, if a sources have changes, 
-   *  so that one has to reconnect. */
+  /** Indicates, if a sources have changes,  so that one has to reconnect. */
   Bool_t    fStateHasChanged;                     //  see above
 
-  ///////////////////////////////////////////////////////////////////////////////////
+  Bool_t Connected() const { return fConnected; }
 
 private:
 
@@ -188,67 +128,38 @@ private:
   /** assignment operator prohibited */
   AliHLTHOMERManager& operator=(const AliHLTHOMERManager&);
 
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Connection Handling - private
-   * ---------------------------------------------------------------------------------
-   */
+  //==============Connection to homer ==========================
 
-  /** Create a readout list for Hostname and ports 
-   *  @param socurceHostnames   Array of selected hostnames
-   *  @param socurcePorts       Array of selected ports
-   *  @param socurceCount       Number of selected hostname:port
-   *  @param detector           detector to be selected
-   */
+  /** Create a readout list for Hostname and ports */
   void CreateReadoutList( const char** sourceHostnames, UShort_t* sourcePorts, 
 			  UInt_t &sourceCount, TString detector );
 
   /** Checks if already connected to HOMER sources */
   Bool_t IsConnected() { return fConnected; }  
-  
-  /* ---------------------------------------------------------------------------------
-   *                           Buffer Handling - private
-   * ---------------------------------------------------------------------------------
-   */
 
   /** Create and add Block List to Buffer */
   void AddBlockListToBuffer();
 
   /** Add bocks to asynchronous BlockList */
   void AddToAsyncBlockList();
+  void AddToBlockList();
 
-  /** Get pointer to block list in event buffer 
-   *  @return     ptr to buffer, NULL if not present
-   */
+
+  //============ Block Handling ====================
+
+  /** Get pointer to block list in event buffer */
   TList* GetBlockListEventBuffer( Int_t idx );
     
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Block Handling - private
-   * ---------------------------------------------------------------------------------
-   */
-
   /** Get Number of blocks in current event */
   ULong_t GetNBlks() { return fNBlks; }
 
-  // ----------------------------------------------------
-
-  /** Handle Blocks and fill them in event buffer or asyncronous BlockList
-   *  @return 0 on success, <0 for failure
-   */
+  /** Handle Blocks and fill them in event buffer or asyncronous BlockList */
   Int_t HandleBlocks();
 
-  /** Check is block are from syncronous source
-   *  @return kTRUE, if asyncronous kFALSE
-   */
+  /** Check is block are from syncronous source */
   Bool_t IsSyncBlocks();
 
-  // ----------------------------------------------------
-
-  /** Get pointer to block ndx in current event 
-   *  @param ndx        Block index
-   *  @return           returns pointer to blk, NULL if no block present
-   */
+  /** Get pointer to block ndx in current event */
   void* GetBlk( Int_t ndx );
 
   /** Get pointer to current block in current event */
@@ -260,139 +171,63 @@ private:
   /** Get next block in current event */
   void* GetNextBlk() { return GetBlk(++fCurrentBlk); }
 
-  // ----------------------------------------------------
-
-  /** Get size of block ndx 
-   *  @param ndx        Block index
-   *  @return           returns size blk, 0 otherwise
-   */
+  /** Get size of block ndx */
   ULong_t GetBlkSize( Int_t ndx );
 
   /** Get size of current block */ 
   ULong_t GetBlkSize() { return GetBlkSize( fCurrentBlk ); }
 
-  // ---------------------------------------------------- 
-
-  /** Get origin of block ndx 
-   *  @param ndx        Block index
-   *  @return           origin of block
-   */
+  /** Get origin of block ndx  */
   TString GetBlkOrigin( Int_t ndx );
 
   /** Get origin of current block */
   TString GetBlkOrigin(){ return GetBlkOrigin( fCurrentBlk ); }
 
-  // ----------------------------------------------------
-
-  /** Get type of block ndx 
-   *  @param ndx        Block index
-   *  @return           type of block
-   */
+  /** Get type of block ndx */
   TString GetBlkType( Int_t ndx ); 
 
   /** Get type of current block */
   TString GetBlkType() { return GetBlkType( fCurrentBlk ); } 
   
-  // ----------------------------------------------------
-  
-  /** Get specification of block ndx 
-   *  @param ndx        Block index
-   *  @return           specification of block
-   */
+  //Get specification of block at ndx in bufferindex
   ULong_t GetBlkSpecification( Int_t ndx );
 
   /** Get specification of current block */
   ULong_t GetBlkSpecification() { return GetBlkSpecification( fCurrentBlk ); } 
 
-  // ----------------------------------------------------
-
-  /** Checks if current Block should was requested 
-   *  @return           returns kTRUE, if block should was requested
-   */
+  //Check if requested in eve
   Bool_t CheckIfRequested( AliHLTHOMERBlockDesc* block );
-
-  /* ---------------------------------------------------------------------------------
-   *                          Trigger Handling - private
-   * ---------------------------------------------------------------------------------
-   */
-  
-  /** Loops over the data block from all the readers in the readerlist until
-   *    a triggerdecsision has been found
-   *    Locates the triggerdecision required by fTriggerString and checks if it triggered 
-   *  @return           returns kTRUE, if event was triggered, kFALSE otherwise
-   */
+    
+  //Check trigger decision
   Bool_t CheckTriggerDecision();
-
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Members - private
-   * ---------------------------------------------------------------------------------
-   */
-
-  /** Proxy Handler to get the list of sources */
-  AliHLTHOMERProxyHandler *fProxyHandler;               //! transient 
-
-  // == connection ==
-
-  /** Pointer to current HOMER reader */
-  AliHLTHOMERReader       *fCurrentReader;              //! transient 
-
-  /** List to pointer of HOMER readers */
-  TList                   *fReaderList;                 //! transient
+  
+  AliHLTHOMERProxyHandler * fProxyHandler;  /** Proxy Handler to get the list of sources */  //! transient 
+  AliHLTHOMERReader* fCurrentReader;   /** Pointer to current HOMER reader */ //! transient 
+  TList* fReaderList;                 /** List to pointer of HOMER readers */
 
   // == sources ==
-
-  /** List to HOMER sources */
-  TList                   *fSourceList;                 //! transient
-
-  // == events ==
-
-  /** Number of blockes in current event */
-  ULong_t                  fNBlks;                      //  see above
-
-  /** EventID of current event */
-  ULong64_t                fEventID[BUFFERSIZE];        //  see above
-
-  /** Current block in current event */
-  ULong_t                  fCurrentBlk;                 //  see above
-
-  // == Asynchronous BlockList ==
-
-  /** List containing asychronous blocks */
-  TList                   *fAsyncBlockList;             //  see above
+  TList* fSourceList;                /** List to HOMER sources */
+  ULong_t fNBlks;                    /** Number of blockes in current event */
+  ULong64_t fEventID[BUFFERSIZE];    /** EventID of current event */
+  ULong_t fCurrentBlk;               /** Current block in current event */
+  TList* fAsyncBlockList;            /** List containing asychronous blocks */
+  TList* fBlockList;            /** List containing asychronous blocks */
 
   // == event buffer ==
-
-  /** Event Buffer */
-  TClonesArray            *fEventBuffer;                //  see above
-
-  /** Buffer index to last received event */
-  Int_t                    fBufferTopIdx;               //  see above
-
-  /** Buffer index to last received event */
-  Int_t                    fBufferLowIdx;               //  see above
-
-  /** Buffer index to current event */
-  Int_t                    fCurrentBufferIdx;           //  see above
-
-  /** Navigate index through event buffer */
-  Int_t                    fNavigateBufferIdx;          //  see above
+  TClonesArray     * fEventBuffer;  /** Event Buffer */
+  Int_t  fBufferTopIdx;             /** Buffer index to last received event */
+  Int_t  fBufferLowIdx;             /** Buffer index to last received event */
+  Int_t  fCurrentBufferIdx;         /** Buffer index to current event */
+  Int_t  fNavigateBufferIdx;        //  Navigate index through event buffer */
+  Int_t  fNEventsAvailable;         //Number of available events
   
-  // == states ==
+  Bool_t fConnected;                /** Shows connection status */
+  TString fTriggerString;           /** String indicating which trigger should be used to select events */
+  Int_t  fNEventsNotTriggered;      /** Number Events not triggered, before next triggered event is found */
   
-  /** Shows connection status */
-  Bool_t                   fConnected;                  //  see above
+  Bool_t fRetryNextEvent;           /** Retry reading next event */
 
-  // == trigger selection ==
-
-  /** String indicating which trigger should be used to select events */
-  TString                  fTriggerString;              //  see above
-
-  /** Number Events not triggered, before next triggered event is found */
-  Int_t                    fNEventsNotTriggered;        //  see above
-
-  /** Retry reading next event */
-  Bool_t                   fRetryNextEvent;             //  see above
+  Bool_t fIsBlockOwner;
 
   ClassDef(AliHLTHOMERManager, 1); // Manage connections to HLT data-sources.
 };

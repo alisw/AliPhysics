@@ -11,18 +11,18 @@
 
 #include "Rtypes.h"
 #include "TString.h"
-
+#include "TEveElement.h"
 class AliHLTHOMERBlockDesc;
-class AliEveHOMERManager;
+class AliEveHLTEventManager;
 class TCanvas;
 
 
-class AliHLTEveBase{
+class AliHLTEveBase : public TEveElementList {
 
 public:
   
   /** Default constructor prohibited **/
-  AliHLTEveBase();
+  AliHLTEveBase(const char * name);
 
   /** Destructor **/
   virtual ~AliHLTEveBase();
@@ -36,8 +36,8 @@ public:
   /** Reset the elements before reading in new event, to be implemented by children */
   virtual void ResetElements() = 0;
 
-  /** Set the parent AliEveHOMERManager instance */
-  void SetEventManager(AliEveHOMERManager * em) { fEventManager = em; };
+  /** Set the parent AliEveHLTEventManager instance */
+  void SetEventManager(AliEveHLTEventManager * em) { fEventManager = em; };
 
   
 
@@ -59,13 +59,15 @@ protected:
   TString GetDetector() const {return fDetector;}
 
   
-  AliEveHOMERManager * fEventManager; //Pointer to AliEveHOMERManager instance
+  AliEveHLTEventManager * fEventManager; //Pointer to AliEveHLTEventManager instance
   TCanvas * fCanvas;                  //Canvas for histograms
   Int_t fHistoCount;                  //Counter for histograms, to track where to draw the next one
 
 
 private:
 
+  /** Default constructor prohibited **/
+  AliHLTEveBase();
   /** copy constructor prohibited */
   AliHLTEveBase(const AliHLTEveBase&);
   /** assignment operator prohibited */

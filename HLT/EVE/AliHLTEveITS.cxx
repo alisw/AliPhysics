@@ -21,7 +21,7 @@
 #include "AliHLTEveITS.h"
 #include "AliHLTHOMERBlockDesc.h"
 #include "TCanvas.h"
-#include "AliEveHOMERManager.h"
+#include "AliEveHLTEventManager.h"
 #include "TEveManager.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -33,7 +33,7 @@
 ClassImp(AliHLTEveITS)
 
 AliHLTEveITS::AliHLTEveITS(TString name) : 
-AliHLTEveBase(),
+AliHLTEveBase(name.Data()),
   fName(name), 
   fPointSet(NULL)
 {
@@ -65,7 +65,7 @@ void AliHLTEveITS::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   else if ( block->GetDataType().CompareTo("CLUSTERS") == 0 ) {
     if(!fPointSet) {
       fPointSet = CreatePointSet(fName);
-      fEventManager->GetEveManager()->AddElement(fPointSet);
+      AddElement(fPointSet);
     }
     ProcessClusters(block, fPointSet);
   }

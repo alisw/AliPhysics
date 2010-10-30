@@ -25,7 +25,7 @@
 #include "AliPHOSGeoUtils.h"
 #include "AliPHOSGeometry.h"
 #include "TVector3.h"
-#include "AliEveHOMERManager.h"
+#include "AliEveHLTEventManager.h"
 #include "TEveManager.h"
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloClusterDataStruct.h"
@@ -40,6 +40,8 @@ fGeoUtils(NULL)
 {
   // Constructor.
   fGeoUtils = new AliPHOSGeoUtils("PHOS", "noCPV");
+  CreateElementList();
+
 }
 
 AliHLTEvePhos::~AliHLTEvePhos()
@@ -50,11 +52,9 @@ AliHLTEvePhos::~AliHLTEvePhos()
   fGeoUtils = NULL;
 }
 
-
-TEveElementList * AliHLTEvePhos::CreateElementList() {
+void AliHLTEvePhos::CreateElementList() {
   //See header file for documentation
 
-  TEveElementList * elementList  = new TEveElementList("PHOS ");
   fBoxSetClusters = new TEveBoxSet[fNModules];
   fBoxSetDigits = new TEveBoxSet[fNModules];
 
@@ -67,7 +67,7 @@ TEveElementList * AliHLTEvePhos::CreateElementList() {
   for(int im = 0; im < fNModules; im++) {
     
     TEveRGBAPalette* pal = new TEveRGBAPalette(0,512);
-    pal->SetLimits(-1, 6);
+    pal->SetLimits(-1, 45);
 
     //Create clusters box set
     fBoxSetClusters[im].SetTitle(Form("Clusters Module %d", im));
@@ -85,7 +85,7 @@ TEveElementList * AliHLTEvePhos::CreateElementList() {
     t.SetupRotation(1, 2, angle );
     t.SetPos(center.X(), center.Y(), center.Z());
     
-    elementList->AddElement(&fBoxSetClusters[im]);
+    AddElement(&fBoxSetClusters[im]);
 
 
     //Create digits box set
@@ -104,12 +104,11 @@ TEveElementList * AliHLTEvePhos::CreateElementList() {
     t2.SetupRotation(1, 2, angle );
     t2.SetPos(center.X(), center.Y(), center.Z());
     
-    elementList->AddElement(&fBoxSetDigits[im]);
+    AddElement(&fBoxSetDigits[im]);
 
 
   }
 
-  return elementList;
 }
 
 void AliHLTEvePhos::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t energy) {
@@ -120,6 +119,25 @@ void AliHLTEvePhos::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t en
   fBoxSetDigits[4-module].DigitValue(static_cast<Int_t>(energy));
 }
 
+void AliHLTEvePhos::ProcessESDCluster(AliESDCaloCluster * cluster) {
+  
+  Float_t pos[3];
+  cluster->GetPosition(pos);
+  TVector3 vec = TVector3(pos);
+  Float_t phi = vec.Phi() *180 / TMath::Pi();
+  if(phi < 0) phi += 360;
+
+  Int_t mid = 0;
+  if(phi > 320) return;
+  else if(phi > 300) mid = 4;
+  else if(phi > 280) mid = 3;
+  else if(phi > 260) mid = 2;
+  else return;
+  
+  Int_t nCells = cluster->GetNCells();
+  AddClusters(pos, mid, cluster->E(), nCells);
+
+}
 
 void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
 
@@ -129,7 +147,19 @@ void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
   fGeoUtils->Global2Local(localVector, globalVector, 5-module);
 
  //See header file for documentation
-  fBoxSetClusters[4-module].AddBox(localVector.X(), -70, localVector.Z(), 2.2, -energy*20, 2.2);
-  fBoxSetClusters[4-module].DigitValue(static_cast<Int_t>(energy));
+  fBoxSetClusters[4-module].AddBox(localVector.X(), 0, localVector.Z(), 2.2, energy*40, 2.2 );
+  fBoxSetClusters[4-module].DigitValue(static_cast<Int_t>(energy*10));
+}
+void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy, Int_t nCells) {
+
+  TVector3 localVector;
+  TVector3 globalVector(pos);
+
+  fGeoUtils->Global2Local(localVector, globalVector, 5-module);
+
+  Float_t cf = 2.2*TMath::Sqrt(nCells);
+ //See header file for documentation
+  fBoxSetClusters[4-module].AddBox(localVector.X(), 0, localVector.Z(), cf, energy*40, cf );
+  fBoxSetClusters[4-module].DigitValue(static_cast<Int_t>(energy*10));
 }
 

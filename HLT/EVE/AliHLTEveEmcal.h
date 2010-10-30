@@ -9,6 +9,7 @@
 #ifndef ALIHLTEVEEMCAL_H
 #define ALIHLTEVEEMCAL_H
 
+#include "AliESDEvent.h"
 #include "AliHLTEveCalo.h"
 class TEveElementList;
 class AliEMCALGeoUtils;
@@ -33,8 +34,12 @@ private:
   void AddClusters(Float_t * pos, Int_t module, Float_t energy);
 
   void AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t energy);
+
+  Int_t GetClusters(AliESDEvent * event, TRefArray * clusters) { return event->GetEMCALClusters(clusters); }
   
-  TEveElementList * CreateElementList();
+  void ProcessESDCluster(AliESDCaloCluster * cluster) { if(cluster) return;}
+
+  void CreateElementList();
 
   AliEMCALGeoUtils * fGeoUtils;
 

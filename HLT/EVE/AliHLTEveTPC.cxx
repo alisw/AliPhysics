@@ -22,7 +22,7 @@
 #include "AliHLTHOMERBlockDesc.h"
 #include "TCanvas.h"
 #include "AliHLTEveBase.h"
-#include "AliEveHOMERManager.h"
+#include "AliEveHLTEventManager.h"
 #include "TEveManager.h"
 #include "TEvePointSet.h"
 #include "TColor.h"
@@ -33,7 +33,7 @@
 ClassImp(AliHLTEveTPC)
 
 AliHLTEveTPC::AliHLTEveTPC() : 
-  AliHLTEveBase(), 
+  AliHLTEveBase("TPC Clusters"), 
   fEveClusters(NULL),
   fEveColClusters(NULL),
   fNColorBins(15), 
@@ -82,7 +82,7 @@ void AliHLTEveTPC::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     
     if(!fEveColClusters){
       fEveColClusters = CreatePointSetArray();
-      fEventManager->GetEveManager()->AddElement(fEveColClusters);
+      AddElement(fEveColClusters);
     } 
     
     ProcessClusters(block, fEveClusters, fEveColClusters);
@@ -143,7 +143,7 @@ void AliHLTEveTPC::UpdateElements() {
   if(fEveClusters) fEveClusters->ResetBBox();
 
   if (fHistQMax || fHistQMaxOverCharge || fHistCharge )
-    DrawHistograms();
+    // DrawHistograms();
  
   if(fCanvas) fCanvas->Update();
  
@@ -171,9 +171,9 @@ Int_t AliHLTEveTPC::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet 
   //See header file for documentation
 
 
-  if(!fHistCharge) fHistCharge = new TH1F("ClusterCharge","ClusterCharge",100,0,500);
-  if(!fHistQMax) fHistQMax = new TH1F("QMax","QMax",50,0,250);
-  if(!fHistQMaxOverCharge) fHistQMaxOverCharge = new TH1F("QMaxOverCharge","QMaxOverCharge",50,0,1);
+  // if(!fHistCharge) fHistCharge = new TH1F("ClusterCharge","ClusterCharge",100,0,500);
+  // if(!fHistQMax) fHistQMax = new TH1F("QMax","QMax",50,0,250);
+  // if(!fHistQMaxOverCharge) fHistQMaxOverCharge = new TH1F("QMaxOverCharge","QMaxOverCharge",50,0,1);
 
 
   Int_t   slice = block->GetSubDetector();
@@ -192,9 +192,9 @@ Int_t AliHLTEveTPC::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet 
 	contCol->Fill(cos*sp->fX - sin*sp->fY, sin*sp->fX + cos*sp->fY, sp->fZ, sp->fCharge);
 
 
-      fHistCharge->Fill(sp->fCharge);
-      fHistQMax->Fill(sp->fQMax);
-      fHistQMaxOverCharge->Fill(((Float_t)sp->fQMax)/((Float_t)sp->fCharge));
+      // fHistCharge->Fill(sp->fCharge);
+      // fHistQMax->Fill(sp->fQMax);
+      // fHistQMaxOverCharge->Fill(((Float_t)sp->fQMax)/((Float_t)sp->fCharge));
     }
   }
 

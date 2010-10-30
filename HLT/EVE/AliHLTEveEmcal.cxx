@@ -26,7 +26,7 @@
 #include "TEveBoxSet.h"
 #include "AliPHOSGeometry.h"
 #include "TVector3.h"
-#include "AliEveHOMERManager.h"
+#include "AliEveHLTEventManager.h"
 #include "TEveManager.h"
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloClusterDataStruct.h"
@@ -34,6 +34,10 @@
 #include "TEveTrans.h"
 #include "TGeoNode.h"
 #include "AliEMCALGeoUtils.h"
+#include "TGeoManager.h"
+
+#include "TEveGeoShapeExtract.h"
+#include "TEveGeoNode.h"
 
 ClassImp(AliHLTEveEmcal)
 
@@ -43,6 +47,7 @@ fGeoUtils(NULL)
 {
   //Constructor
   fGeoUtils = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
+  CreateElementList();
 
 }
 
@@ -52,12 +57,16 @@ AliHLTEveEmcal::~AliHLTEveEmcal()
   //Destructor, not implemented
 }
 
-TEveElementList * AliHLTEveEmcal::CreateElementList() {
+void AliHLTEveEmcal::CreateElementList() {
   
-  TGeoNode * gEMCALNode = fEventManager->GetGeoManager()->GetTopVolume()->FindNode("XEN1_1");
 
-  fElementList = new TEveElementList("EMCAL Digits / Clusters");
-  fElementList->SetTitle("Tooltip");
+  //TEveGeoShapeExtract * shape = new TEveGeoShapeExtract();
+  TGeoNode * gEMCALNode = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
+  //TEveGeoNode * eveNode = new TEveGeoNode(gEMCALNode);
+  //TEveGeoShapeExtract* juice = eveNode->DumpShapeTree(this, shape, kFALSE);
+  //juice->Dump();
+  //eveNode->WriteExtract("out.root", kFALSE);
+
   
   //gStyle->SetPalette(1, 0);
   TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);
@@ -77,7 +86,7 @@ TEveElementList * AliHLTEveEmcal::CreateElementList() {
     fBoxSetDigits[sm].RefMainTrans().SetFrom(*gEMCALNode->GetDaughter(sm)->GetMatrix());
     fBoxSetDigits[sm].SetPalette(pal);
     
-    fElementList->AddElement(&fBoxSetDigits[sm]);
+    AddElement(&fBoxSetDigits[sm]);
  
     //Clusters
     fBoxSetClusters[sm].SetTitle(Form("Clusters Module %d", sm));
@@ -88,12 +97,10 @@ TEveElementList * AliHLTEveEmcal::CreateElementList() {
     //    fBoxSetClusters[sm].RefMainTrans().SetFrom(*gEMCALNode->GetDaughter(sm)->GetMatrix());
     fBoxSetClusters[sm].SetPalette(pal);
     
-    fElementList->AddElement(&fBoxSetClusters[sm]);
+    AddElement(&fBoxSetClusters[sm]);
 
 
   }
-  
-  return fElementList;
 }
 
 void AliHLTEveEmcal::AddClusters(Float_t * pos, Int_t module, Float_t energy) {

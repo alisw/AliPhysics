@@ -18,11 +18,12 @@
 /// @author Svein Lindal <slindal@fys.uio.no>
 /// @brief  TPC processor for the HLT EVE display
 
+#include "TClonesArray.h"
 #include "AliHLTEveTRD.h"
 #include "AliHLTHOMERBlockDesc.h"
 #include "TCanvas.h"
 #include "AliHLTEveBase.h"
-#include "AliEveHOMERManager.h"
+#include "AliEveHLTEventManager.h"
 #include "TEveManager.h"
 #include "TEvePointSet.h"
 #include "TColor.h"
@@ -34,7 +35,7 @@
 ClassImp(AliHLTEveTRD)
 
 AliHLTEveTRD::AliHLTEveTRD() : 
-  AliHLTEveBase(), 
+  AliHLTEveBase("TRD"), 
   fEveClusters(NULL),
   fEveColClusters(NULL),
   fNColorBins(15),
@@ -68,7 +69,7 @@ void AliHLTEveTRD::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     
     if(!fEveColClusters){
       fEveColClusters = CreatePointSetArray();
-      fEventManager->GetEveManager()->AddElement(fEveColClusters);
+      AddElement(fEveColClusters);
     } 
     
     ProcessClusters(block, fEveColClusters);

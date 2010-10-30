@@ -21,8 +21,9 @@
 
 #include "AliHLTEveBase.h"
 #include "AliHLTHOMERBlockDesc.h"
-//#include "TCollection.h"
-#include "AliEveHOMERManager.h"
+#include "TCollection.h"
+#include "TObjArray.h"
+#include "AliEveHLTEventManager.h"
 #include "TCanvas.h"
 #include "TEveWindow.h"
 #include "TEveManager.h"
@@ -32,7 +33,8 @@
 
 ClassImp(AliHLTEveBase);
 
-AliHLTEveBase::AliHLTEveBase() : 
+AliHLTEveBase::AliHLTEveBase(const char * name) : 
+  TEveElementList(name),
   fEventManager(NULL), 
   fCanvas(NULL),
   fHistoCount(0),
@@ -72,8 +74,13 @@ TCanvas * AliHLTEveBase::CreateCanvas(TString  tabTitle, TString  canvasTitle ) 
 void AliHLTEveBase::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount ) {
   //See header file for documentation
 
-   
+
+
   if ( ! block->GetClassName().CompareTo("TObjArray")) {
+
+    // // TObjArray * blocks = dynamic_cast<TObjArray*>(block->GetTObject());
+    // // TIterator* next = block::MakeIterator();
+
     TIter next((TObjArray*)(block->GetTObject()));
     TObject *object;
     

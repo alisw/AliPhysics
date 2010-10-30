@@ -64,15 +64,19 @@ ClassImp(AliHLTHOMERManager)
   fEventID(),
   fCurrentBlk(0),
   fAsyncBlockList(NULL),
-  fEventBuffer(NULL),
+  fBlockList(NULL),
+   fEventBuffer(NULL),
   fBufferTopIdx(-1),
   fBufferLowIdx(-1),
   fCurrentBufferIdx(-1),
   fNavigateBufferIdx(-1),
+  fNEventsAvailable(0),
   fConnected(kFALSE), 
   fTriggerString("ALL"), 
   fNEventsNotTriggered(0),
-  fRetryNextEvent(kFALSE) {
+  fRetryNextEvent(kFALSE),
+  fIsBlockOwner(kTRUE)
+{
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -116,6 +120,12 @@ AliHLTHOMERManager::~AliHLTHOMERManager() {
   }
   fEventBuffer = NULL;
 
+  if(fBlockList) {
+    fBlockList->Clear();
+    delete fBlockList;
+  }
+  fBlockList = NULL;
+
   if ( fAsyncBlockList ) {
     fAsyncBlockList->Clear();
     delete fAsyncBlockList;
@@ -127,6 +137,8 @@ AliHLTHOMERManager::~AliHLTHOMERManager() {
 Int_t AliHLTHOMERManager::Initialize() {
   // see header file for class documentation
 
+  HLTInfo("Initializing");
+
   Int_t iResult = 0;
 
   // -- Initialize ProxyHandler
@@ -137,8 +149,8 @@ Int_t AliHLTHOMERManager::Initialize() {
     iResult = fProxyHandler->Initialize();
     if (iResult)
       HLTError(Form("Initialize of ProxyHandler failed."));
-  }
-  else {
+  
+  } else {
     iResult = -1;
     HLTError(Form("Creating of ProxyHandler failed."));
   }
@@ -152,6 +164,12 @@ Int_t AliHLTHOMERManager::Initialize() {
   if( !fAsyncBlockList ) {
     fAsyncBlockList = new TList();
     fAsyncBlockList->SetOwner(kTRUE);
+  }
+
+  //initialize normal block list
+  if( !fBlockList ) {
+    fBlockList = new TList();
+    fBlockList->SetOwner(kFALSE);
   }
 
   // -- Initialize Event Buffer and EventID array
@@ -180,7 +198,7 @@ Int_t AliHLTHOMERManager::CreateSourcesList() {
   // see header file for class documentation
 
   Int_t iResult = 0;
-  
+
   if ( fSourceList != NULL )
     delete fSourceList;
   fSourceList = NULL;
@@ -273,6 +291,9 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
   
   for (UInt_t idx = 0; idx < sourceCount; idx++) {
     
+    if (sourcePorts[idx] > 60000)
+      continue;
+
     HLTInfo(Form("Adding source %d as %s : %d", idx, sourceHostnames[idx], sourcePorts[idx]));
     
     fReaderList->Add(dynamic_cast<TObject*>(fLibManager->OpenReader(sourceHostnames[idx], sourcePorts[idx])));
@@ -463,17 +484,7 @@ Int_t AliHLTHOMERManager::NextEvent(){
 
   } // while( (object = next()) ) {
 
-  // -- Check if NextEvent should be recalled, 
-  //    to catch the next event with a trigger
-  if ( fRetryNextEvent ) {
-    usleep(1000000);
-    fRetryNextEvent = kFALSE;
-    
-    HLTInfo(Form("Checked trigger of %d events, without triggering", fNEventsNotTriggered));
-    return NextEvent();
-  }
-  else
-    return 0;  
+  return 0;  
 }
 
 /* ---------------------------------------------------------------------------------
@@ -502,6 +513,8 @@ Int_t AliHLTHOMERManager::NavigateEventBufferBack() {
 Int_t AliHLTHOMERManager::NavigateEventBufferFwd() {
   // see header file for class documentation
 
+  HLTInfo(Form("fNavigateBufferIdx: %d, fCurrentBufferIdx %d, fBufferTopIdx %d", fNavigateBufferIdx, fCurrentBufferIdx, fBufferTopIdx));
+
   // -- reached the top of the buffer
   if ( fNavigateBufferIdx == fBufferTopIdx )
     return -1;
@@ -511,8 +524,12 @@ Int_t AliHLTHOMERManager::NavigateEventBufferFwd() {
     newIdx = 0;
   
   fCurrentBufferIdx = fNavigateBufferIdx = newIdx;
+  fNEventsAvailable -= 1;
 
-  return newIdx;
+  HLTInfo(Form("fNavigateBufferIdx: %d, fCurrentBufferIdx %d, fBufferTopIdx %d", fNavigateBufferIdx, fCurrentBufferIdx, fBufferTopIdx));
+
+
+  return 0;
 }
 
  ///////////////////////////////////////////////////////////////////////////////////
@@ -533,6 +550,9 @@ void AliHLTHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
   // -- Read all sources and check if they should be read out
   TIter next( fSourceList );
   while ( ( source = dynamic_cast<AliHLTHOMERSourceDesc*>(next()) ) ) {
+
+    ///Don't use sources from dev cluster
+    if(source->GetPort() > 60000) continue;
 
     // -- If detector NO detector name given
     if ( ! detector.CompareTo("ALL") ) {
@@ -619,14 +639,17 @@ void AliHLTHOMERManager::AddBlockListToBuffer() {
       fBufferLowIdx = 0;
   }
 
-  fNavigateBufferIdx = fCurrentBufferIdx = fBufferTopIdx;    
 
   // -- Fill EventID
   fEventID[fBufferTopIdx] = eventID;
 
   // -- Clear Buffer slot
   (reinterpret_cast<TList*>((*fEventBuffer)[fBufferTopIdx]))->Clear();
-
+  if(fBlockList->IsOwner()) HLTWarning("block list is owner!!");
+  HLTInfo(Form("fBlockList size %d", fBlockList->GetSize()));
+  //fBlockList->Clear();
+  fBlockList = new TList();
+  HLTInfo(Form("fBlockList size %d", fBlockList->GetSize()));
 
   GetFirstBlk();
 
@@ -641,16 +664,21 @@ void AliHLTHOMERManager::AddBlockListToBuffer() {
     // -- Check sources list if block is requested
     if ( CheckIfRequested( block ) ) {
       (reinterpret_cast<TList*>((*fEventBuffer)[fBufferTopIdx]))->Add( block );
+      fBlockList->Add(block);
     }
     else {
       // XXX HACK Jochen
       (reinterpret_cast<TList*>((*fEventBuffer)[fBufferTopIdx]))->Add( block );
+      fBlockList->Add(block);
       // delete block;
       // block = NULL;
     }
  
   } while( GetNextBlk() );
 
+  //We have one more event available
+  fNEventsAvailable++;
+  HLTInfo(Form("fNEventsAvailable %d", fNEventsAvailable));
   return;
 }
 
@@ -662,46 +690,61 @@ void AliHLTHOMERManager::AddToAsyncBlockList() {
 
   GetFirstBlk();
 
-  // -- Fill block list
   do {
     
-    // -- Create new block
     AliHLTHOMERBlockDesc * block = new AliHLTHOMERBlockDesc();
     block->SetBlock( GetBlk(), GetBlkSize(), GetBlkOrigin(),
 		     GetBlkType(), GetBlkSpecification() );
     
+
+    fAsyncBlockList->Add( block );
+
     // -- Check sources list if block is requested
-    if ( CheckIfRequested( block ) ) 
-      fAsyncBlockList->Add( block );
-    else {
-      // XXX HACK Jochen
-      fAsyncBlockList->Add( block );
-      // delete block;
-      // block = NULL;
-    }
+    // if ( CheckIfRequested( block ) ) 
+    //   fAsyncBlockList->Add( block );
+    // else {
+    //   // XXX HACK Jochen
+    // }
  
   } while( GetNextBlk() );
 
   return;
 }
-//##################################################################################
+//__________________________________________________________________________________
+void AliHLTHOMERManager::AddToBlockList() {
+  // see header file for class documentation
+  HLTInfo("Adding blocks to the synchroneous block list");
+
+  
+  GetFirstBlk();
+  do {
+
+    AliHLTHOMERBlockDesc * block = new AliHLTHOMERBlockDesc();
+    block->SetBlock( GetBlk(), GetBlkSize(), GetBlkOrigin(),
+		     GetBlkType(), GetBlkSpecification() );
+    fBlockList->Add( block );
+  
+  } while( GetNextBlk() );  
+}
+
+//__________________________________________________________________________________
 TList* AliHLTHOMERManager::GetBlockListEventBuffer( Int_t idx ) {
   // see header file for class documentation
 
-  if ( idx == -1 )
+  if(fBlockList)
+    return fBlockList;
+  else 
     return NULL;
 
+  if ( idx == -1 )
+    return NULL;
+ 
   return reinterpret_cast<TList*>((*fEventBuffer)[idx]);
 
 }
 
-/*
- * ---------------------------------------------------------------------------------
- *                          Block Handling - private
- * ---------------------------------------------------------------------------------
- */
 
-//##################################################################################
+//__________________________________________________________________________________
 Int_t AliHLTHOMERManager::HandleBlocks() {
   // see header file for class documentation
   
@@ -719,35 +762,18 @@ Int_t AliHLTHOMERManager::HandleBlocks() {
   }
 
   HLTInfo(Form("Event 0x%016lX (%lu) with %lu blocks", eventID, eventID, fNBlks));
-
-#if EVE_DEBUG
-  // Loop for Debug only
-  for ( ULong_t ii = 0; ii < fNBlks; ii++ ) {
-    Char_t tmp1[9], tmp2[5];
-    memset( tmp1, 0, 9 );
-    memset( tmp2, 0, 5 );
-    void *tmp11 = tmp1;
-    ULong64_t* tmp12 = static_cast<ULong64_t*>(tmp11);
-    *tmp12 = fCurrentReader->GetBlockDataType(ii);
-    void *tmp21 = tmp2;
-    ULong_t* tmp22 = static_cast<ULong_t*>(tmp21);
-    *tmp22 = fCurrentReader->GetBlockDataOrigin(ii);
-    HLTInfo(Form( "Block %lu length: %lu - type: %s - origin: %s - spec 0x%08X",
-		  ii, fCurrentReader->GetBlockDataLength(ii), tmp1, tmp2, fCurrentReader->GetBlockDataSpec(ii) ));
-  } // end for ( ULong_t ii = 0; ii < fNBlks; ii++ ) {
-#endif
     
-  // -- Check if blocks are from syncronous source
+  if ( IsSyncBlocks() ) {
+    //AddBlockListToBuffer();
+    AddToBlockList();
+  } else {
+    AddToAsyncBlockList();
+  }
 
-   if ( IsSyncBlocks() )
-     AddBlockListToBuffer();
-   else
-     AddToAsyncBlockList();
-    
   return iResult;
 }
 
-//##################################################################################
+//__________________________________________________________________________________
 Bool_t AliHLTHOMERManager::IsSyncBlocks() {
   // see header file for class documentation
   

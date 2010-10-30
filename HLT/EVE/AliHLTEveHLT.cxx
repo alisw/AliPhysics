@@ -21,7 +21,7 @@
 #include "AliHLTEveHLT.h"
 #include "AliHLTHOMERBlockDesc.h"
 #include "AliHLTEveBase.h"
-#include "AliEveHOMERManager.h"
+#include "AliEveHLTEventManager.h"
 #include "TEveManager.h"
 #include "TEvePointSet.h"
 #include "TEveTrack.h"
@@ -36,15 +36,17 @@
 #include "AliEveMagField.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TThread.h"
 
 ClassImp(AliHLTEveHLT)
 
 AliHLTEveHLT::AliHLTEveHLT() : 
-  AliHLTEveBase(), 
+  AliHLTEveBase("TPC tracks"), 
   fTrueField(kFALSE),
   fUseIpOnFailedITS(kFALSE),
   fUseRkStepper(kFALSE),
   fTrackList(NULL),
+  fOldTrackList(NULL),
   fPointSetVertex(NULL),
   fTrCanvas(NULL),
   fHistPt(NULL), 
@@ -56,8 +58,7 @@ AliHLTEveHLT::AliHLTEveHLT() :
   fHistMult(NULL)
 {
   // Constructor.
-  CreateHistograms();
-
+  //CreateHistograms();
 }
 
 AliHLTEveHLT::~AliHLTEveHLT()
@@ -68,24 +69,14 @@ AliHLTEveHLT::~AliHLTEveHLT()
   fTrackList = NULL;
 }
 
-void AliHLTEveHLT::CreateHistograms(){
+void AliHLTEveHLT::ProcessEsdEvent( AliESDEvent * esd ) {
   //See header file for documentation
-  fHistPt        = new TH1F("fHistPt",       "transverse momentum",    100, 0, 10); // KK   
-  fHistP         = new TH1F("fHistP",        "signed momentum",        100,-7,  7);	   
-  fHistEta       = new TH1F("fHistEta",      "pseudorapidity",         100,-2,  2);	   
-  fHistTheta     = new TH1F("fHistTheta",    "polar angle",            180, 0,180);   
-  fHistPhi	 = new TH1F("fHistPhi",      "azimuthal angle",        180, 0,360);   
-  fHistnClusters = new TH1F("fHistnClusters","TPC clusters per track", 160, 0,160);
-  fHistMult      = new TH1F("fHistMult",     "event track multiplicity",50, 0, 50);    
-  
-  fHistPt   ->SetXTitle("p_{t} (GeV/c)");   // KK
-  fHistP    ->SetXTitle("P*charge (GeV/c)");
-  fHistEta  ->SetXTitle("#eta");
-  fHistTheta->SetXTitle("#theta (degrees)");
-  fHistPhi  ->SetXTitle("#phi (degrees)");
-
+  if(!fTrackList) CreateTrackList();
+  if(!fPointSetVertex) CreateVertexPointSet();
+  ProcessEsdEvent(esd, fTrackList);
+    
 }
-
+///_____________________________________________________________________
 void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
   if ( ! block->GetDataType().CompareTo("ALIESDV0") ) {
@@ -108,28 +99,49 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
       fCanvas->Divide(3, 2);
     }
     ProcessHistograms( block , fCanvas);
-  }
-  
+  }  
 }
 
-
+///____________________________________________________________________________
 void AliHLTEveHLT::UpdateElements() {
   //See header file for documentation
-  if(fCanvas) fCanvas->Update();
-  DrawHistograms();
+  //if(fCanvas) fCanvas->Update();
+  //DrawHistograms();
   if(fTrackList) fTrackList->ElementChanged();
   if(fPointSetVertex) fPointSetVertex->ResetBBox();
 
 }
-
+///_________________________________________________________________________________
 void AliHLTEveHLT::ResetElements(){
-    //See header file for documentation
-  if(fTrackList) fTrackList->DestroyElements();
+  //See header file for documentation
+  
+  cout << "destroy"<<endl;
+  if(fTrackList) {
+    RemoveElement(fTrackList);
+    fTrackList = NULL;
+  }
+  
   if(fPointSetVertex) fPointSetVertex->Reset();
+  cout<< "reset done"<<endl;
   fHistoCount = 0;
 
 }
 
+///_____________________________________________________________________________________
+void * AliHLTEveHLT::DestroyGarbage(void * arg) {
+  AliHLTEveHLT * hlt = reinterpret_cast<AliHLTEveHLT*>(arg);
+  if(hlt) hlt->DestroyOldTrackList();
+  return (void*)0;
+}
+///_____________________________________________________________________________________
+void AliHLTEveHLT::DestroyOldTrackList() {
+  cout << "Destroying the old tracklist's elements"<<endl;
+  fOldTrackList->DestroyElements();
+  cout << "Destroying the old tracklist itself"<<endl;
+  fOldTrackList->Destroy();
+}
+
+///_____________________________________________________________________________________
 void AliHLTEveHLT::ProcessHistograms(AliHLTHOMERBlockDesc * block, TCanvas * canvas) {
   //See header file for documentation
   if ( ! block->GetClassName().CompareTo("TH1F")) {
@@ -158,18 +170,16 @@ void AliHLTEveHLT::ProcessHistograms(AliHLTHOMERBlockDesc * block, TCanvas * can
     }
   }
   canvas->cd();
-
-
-
-
 }
+
 
 void AliHLTEveHLT::CreateTrackList() {
   //See header file for documentation
   fTrackList = new TEveTrackList("ESD Tracks");
   fTrackList->SetMainColor(6);
-  gEve->AddElement(fTrackList);
+  AddElement(fTrackList);
 }
+
 
 void AliHLTEveHLT::CreateVertexPointSet() {
   //See header file for documentation
@@ -177,7 +187,7 @@ void AliHLTEveHLT::CreateVertexPointSet() {
   fPointSetVertex->SetMainColor(6);
   fPointSetVertex->SetMarkerStyle((Style_t)kFullStar);
 
-  gEve->AddElement(fPointSetVertex);
+  AddElement(fPointSetVertex);
 }
 
 
@@ -185,7 +195,18 @@ void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList 
   //See header file for documentation
 
   AliESDEvent* esd = (AliESDEvent *) (block->GetTObject());
+  if (!esd) return;
+  
+  ProcessEsdEvent(esd, cont);
+}
+
+void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
+
   esd->GetStdContent();
+
+  cout << esd->GetEventNumberInFile() << "  " << esd->GetNumberOfCaloClusters() << endl;
+
+  //fEventManager->SetRunNumber(esd->GetRunNumber());
 
   Double_t vertex[3];
   const AliESDVertex * esdVertex = esd->GetPrimaryVertex();
@@ -201,23 +222,24 @@ void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList 
     AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esd->GetTrack(iter), cont));
     cont->AddElement(track);
    
-    fHistPt->Fill(esd->GetTrack(iter)->Pt());   // KK
-    fHistP->Fill(esd->GetTrack(iter)->P()*esd->GetTrack(iter)->Charge());
-    fHistEta->Fill(esd->GetTrack(iter)->Eta());
-    fHistTheta->Fill(esd->GetTrack(iter)->Theta()*TMath::RadToDeg());
-    fHistPhi->Fill(esd->GetTrack(iter)->Phi()*TMath::RadToDeg());
-    if(esd->GetTrack(iter)->GetStatus()&AliESDtrack::kTPCin || (esd->GetTrack(iter)->GetStatus()&AliESDtrack::kTPCin && esd->GetTrack(iter)->GetStatus()&AliESDtrack::kITSin)){
-       fHistnClusters->Fill(esd->GetTrack(iter)->GetTPCNcls());  
-    }
+    // fHistPt->Fill(esd->GetTrack(iter)->Pt());   // KK
+    // fHistP->Fill(esd->GetTrack(iter)->P()*esd->GetTrack(iter)->Charge());
+    // fHistEta->Fill(esd->GetTrack(iter)->Eta());
+    // fHistTheta->Fill(esd->GetTrack(iter)->Theta()*TMath::RadToDeg());
+    // fHistPhi->Fill(esd->GetTrack(iter)->Phi()*TMath::RadToDeg());
+    // if(esd->GetTrack(iter)->GetStatus()&AliESDtrack::kTPCin || (esd->GetTrack(iter)->GetStatus()&AliESDtrack::kTPCin && esd->GetTrack(iter)->GetStatus()&AliESDtrack::kITSin)){
+    //    fHistnClusters->Fill(esd->GetTrack(iter)->GetTPCNcls());  
+    //}
   }
   
-  fHistMult->Fill(esd->GetNumberOfTracks()); // KK
+//fHistMult->Fill(esd->GetNumberOfTracks()); // KK
   
   
   cont->SetTitle(Form("N=%d", esd->GetNumberOfTracks()) );
   cont->MakeTracks();
-
+  
 }
+
 
 
 void AliHLTEveHLT::DrawHistograms(){
@@ -341,7 +363,7 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     //
     
     for( double dxx=dx/2; TMath::Abs(dxx)>=1.; dxx*=.9 ){
-      if( !t.TransportToX(x0+dxx, bz, .99 ) ) continue;
+      if( !t.TransportToX(x0+dxx, bz, .999 ) ) continue;
       AliHLTTPCCATrackConvertor::GetExtParam( t, trackParam, trackParam.GetAlpha() ); 
       trackParam.GetXYZ(vbuf);
       trackParam.GetPxPyPz(pbuf);
@@ -358,7 +380,7 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     //
     
     for( ; TMath::Abs(dx)>=1.; dx*=.9 ){
-      if( !t.TransportToX(x0+dx, bz, .99 ) ) continue;
+      if( !t.TransportToX(x0+dx, bz, .999 ) ) continue;
       AliHLTTPCCATrackConvertor::GetExtParam( t, trackParam, trackParam.GetAlpha() ); 
       trackParam.GetXYZ(vbuf);
       trackParam.GetPxPyPz(pbuf);
@@ -471,4 +493,5 @@ TString AliHLTEveHLT::CreateTrackTitle(AliESDtrack* t) {
 
   return s;
 }
+
 

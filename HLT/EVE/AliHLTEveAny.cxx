@@ -13,7 +13,7 @@
 ClassImp(AliHLTEveAny);
 
 AliHLTEveAny::AliHLTEveAny() : 
-  AliHLTEveBase()
+  AliHLTEveBase("Other")
 {
   // Constructor.
   SetDetector("Any detector");

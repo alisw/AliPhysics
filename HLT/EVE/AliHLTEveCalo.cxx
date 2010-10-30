@@ -18,6 +18,8 @@
 /// @author Svein Lindal <slindal@fys.uio.no>
 /// @brief  Calorimeter base class for the HLT EVE display
 
+#include "TCollection.h"
+#include "TObjArray.h"
 #include "AliHLTEveCalo.h"
 #include "AliHLTHOMERBlockDesc.h"
 #include "TCanvas.h"
@@ -25,7 +27,7 @@
 #include "TEveBoxSet.h"
 #include "AliPHOSGeometry.h"
 #include "TVector3.h"
-#include "AliEveHOMERManager.h"
+#include "AliEveHLTEventManager.h"
 #include "TEveManager.h"
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloClusterDataStruct.h"
@@ -34,17 +36,18 @@
 #include "TString.h"
 #include "TH2F.h"
 #include "TH1F.h"
-
-
+#include "TRefArray.h"
+#include "AliESDEvent.h"
+#include "AliESDCaloCluster.h"
 
 ClassImp(AliHLTEveCalo);
 
 AliHLTEveCalo::AliHLTEveCalo(Int_t nm, TString name) : 
-  AliHLTEveBase(), 
+  AliHLTEveBase(name), 
   fBoxSetDigits(NULL),
   fBoxSetClusters(NULL),
-  fElementList(NULL),
   fNModules(nm),
+  fClustersArray(NULL),
   fName(name), 
   fPadTitles(NULL),
   fInvMassCanvas(NULL)
@@ -59,6 +62,7 @@ AliHLTEveCalo::AliHLTEveCalo(Int_t nm, TString name) :
     fPadTitles[i] = "";
   }
 
+  fClustersArray = new TRefArray();
 
 }
 
@@ -73,11 +77,6 @@ AliHLTEveCalo::~AliHLTEveCalo()
     delete fBoxSetClusters;
   fBoxSetClusters = NULL;
 
-  if(fElementList) {
-    
-    delete fElementList;
-  }
-  fElementList = NULL;
 
   if(fPadTitles)
     delete [] fPadTitles;
@@ -94,10 +93,6 @@ void AliHLTEveCalo::ProcessBlock(AliHLTHOMERBlockDesc * block) {
    
   } else {
 
-    if( !fElementList ) {
-      fElementList = CreateElementList();
-      fEventManager->GetEveManager()->AddElement(fElementList);
-    }
     
     if ( block->GetDataType().CompareTo("CALOCLUS") == 0 ){
       //cout <<"Skipping calo clusters"<<endl;
@@ -151,10 +146,22 @@ void AliHLTEveCalo::ProcessHistogram(AliHLTHOMERBlockDesc * block ) {
 
 // }
 
+void AliHLTEveCalo::ProcessEvent(AliESDEvent * event) {
+  //see header file for documentation
+
+
+
+  Int_t nClusters = GetClusters(event, fClustersArray);
+  for(int ic = 0; ic < nClusters; ic++) {
+    AliESDCaloCluster * cluster = dynamic_cast<AliESDCaloCluster*>(fClustersArray->At(ic));
+    ProcessESDCluster(cluster);
+  }
+  
+}
+
 
 void AliHLTEveCalo::ProcessClusters(AliHLTHOMERBlockDesc* block) {
   //See header file for documentation
-
 
   AliHLTCaloClusterHeaderStruct *dh = reinterpret_cast<AliHLTCaloClusterHeaderStruct*> (block->GetData());
   AliHLTCaloClusterReader * clusterReader = new AliHLTCaloClusterReader();

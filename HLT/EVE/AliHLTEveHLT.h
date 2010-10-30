@@ -19,6 +19,7 @@ class TEveTrackPropagator;
 class TString;
 class AliExternalTrackParam;
 class TH1F;
+class AliESDEvent;
 
 class AliHLTEveHLT : public AliHLTEveBase {
 
@@ -39,6 +40,11 @@ public:
   /** inherited from AliHLTEveBase */
   void ResetElements();
 
+  void ProcessEsdEvent( AliESDEvent * esd);
+
+  void DestroyOldTrackList();
+  static void * DestroyGarbage(void * arg);
+
 private:
 
   /** copy constructor prohibited */
@@ -57,6 +63,9 @@ private:
 
   // Process the ESD block and call the functions necessary to fill the tracklist
   void ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList * cont );
+
+  // Process ESD event
+  void ProcessEsdEvent( AliESDEvent * esd, TEveTrackList * cont);
 
   //Set up the track propagator
   void SetUpTrackPropagator(TEveTrackPropagator* trkProp, Float_t magF, Float_t maxR);
@@ -80,11 +89,13 @@ private:
   void DrawHistograms();
 
 
+
   Bool_t fTrueField;        //Use true field?
   Bool_t fUseIpOnFailedITS; // Use IP as origin if ITS refit fails?
   Bool_t fUseRkStepper;    // Use Runge Kutta for something something?
 
   TEveTrackList * fTrackList;  //Eve tracklist 
+  TEveTrackList * fOldTrackList;  //Eve tracklist 
   TEvePointSet * fPointSetVertex;      //Display primary vertex
 
   TCanvas * fTrCanvas;  //Canvas for track qa histos
