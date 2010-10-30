@@ -65,6 +65,12 @@ void AliHLTGlobalHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& 
   list.push_back(kAliHLTAllDataTypes);
 }
 
+AliHLTComponentDataType AliHLTGlobalHistoComponent::GetOutputDataType()
+{
+  // see header file for class documentation
+  return kAliHLTDataTypeHistogram|kAliHLTDataOriginOut;
+}
+
 TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*/)
 {
   // create the tree and branches
@@ -92,8 +98,8 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
     "Track_status "
   };
   
-  int maxTrackCount=20000; // FIXME: make configurable
-  
+  int maxTrackCount = 20000; // FIXME: make configurable
+    
   if ((iResult=fTrackVariables.Init(maxTrackCount, trackVariableNames))<0) {
     HLTError("failed to initialize internal structure for track properties (float)");
   }

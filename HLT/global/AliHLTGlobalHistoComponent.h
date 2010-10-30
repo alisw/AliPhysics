@@ -66,7 +66,12 @@ class AliHLTGlobalHistoComponent : public AliHLTTTreeProcessor
   virtual const char* GetComponentID() {return "GlobalHisto";};
   /// inherited from AliHLTComponent: input data types
   virtual void GetInputDataTypes(AliHLTComponentDataTypeList&);
-
+ 
+  
+  /// interface function, see AliHLTComponent for description
+  AliHLTComponentDataType GetOutputDataType();
+  
+  
   /// inherited from AliHLTComponent: spawn function, create an instance.
   virtual AliHLTComponent* Spawn() {return new AliHLTGlobalHistoComponent;}
 
