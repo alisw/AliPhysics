@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 21;
+const int c_array_size = 22;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -48,7 +48,7 @@ Bool_t kGCdoBGProbability=kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="900356204010033210220"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="9003562040100332102200"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=20;
 
@@ -102,6 +102,8 @@ Double_t kGCprobElectron = 0.000;
 Double_t kGCminOpeningAngleGhostCut = 0.005;
 
 Bool_t kGCRemovePileUp = kFALSE;
+
+Bool_t kGCSelectV0AND = kFALSE;
 /** ---------------------------------- define pi0 dalitz cuts here ------------------------------------*/
 
 Bool_t kGCRunStandalone    = kFALSE;
@@ -534,9 +536,9 @@ Double_t kGClastXBinESDtrk = 1999.5;
 
 
 //EventQuality-plot
-Int_t kGCnXBinsEvtQ= 6;
+Int_t kGCnXBinsEvtQ= 7;
 Double_t kGCfirstXBinEvtQ=-1.5;
-Double_t kGClastXBinEvtQ=4.5;
+Double_t kGClastXBinEvtQ=5.5;
 
 //R-plots
 Int_t kGCnXBinsR = 400;
@@ -1541,6 +1543,8 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetCheckBGProbability(kGCdoBGProbability);
 
   gammaconversion->SetRemovePileUp(kGCRemovePileUp);
+  gammaconversion->SetSelectV0AND(kGCSelectV0AND);
+
   // for CF
   gammaconversion->SetCFManager(man);
   gammaconversion->SetDoCF(kGCrunCF);
@@ -2450,7 +2454,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t DegreesForRotationMethod=array[18];
   Int_t NumberOfRotations=array[19];
   Int_t removePileUp=array[20];
+  Int_t selectV0AND=array[21];
 
+  cout<<"Select V0AND"<< selectV0AND<<endl;
   cout<<"Remove PileUp"<< removePileUp<<endl;
   cout<<"NumberOfRotations::"<<NumberOfRotations<<endl;
   cout<<"DegreesForRotationMethod::"<<DegreesForRotationMethod<<endl;
@@ -2915,6 +2921,17 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     return iResult;
   }
 
+  switch(selectV0AND){
+  case 0:
+    kGCSelectV0AND=kFALSE;
+    break;
+  case 1:
+    kGCSelectV0AND=kTRUE;
+    break;
+  default:
+    return iResult;
+  }
+
   iResult=1;
   return iResult;
 
@@ -2947,6 +2964,7 @@ void string2array(const std::string& number, int a[c_array_size])
         ASSIGNARRAY(18);
         ASSIGNARRAY(19);
         ASSIGNARRAY(20);
+        ASSIGNARRAY(21);
   }
 }
 

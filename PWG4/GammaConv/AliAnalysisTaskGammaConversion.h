@@ -32,6 +32,7 @@ class AliMCEvent;
 class TList;
 class AliStack;
 class AliESDtrackCuts;
+class AliTriggerAnalysis;
 class AliCFManager; // for CF
 class AliCFContainer; // for CF
 class TRandom3;
@@ -154,6 +155,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetCheckBGProbability(Bool_t flag){fCheckBGProbability = flag;}
 
   void SetRemovePileUp(Bool_t removePileUp) { fRemovePileUp = removePileUp; }
+
+  void SetSelectV0AND(Bool_t selectV0AND) { fSelectV0AND = selectV0AND; }
 
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -290,7 +293,9 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fCheckBGProbability; //flag
   vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
   Bool_t fRemovePileUp;                 // Remove Pile Up
-  ClassDef(AliAnalysisTaskGammaConversion, 13); // Analysis task for gamma conversions
+  Bool_t fSelectV0AND;                 // Select V0AND
+  AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
+  ClassDef(AliAnalysisTaskGammaConversion, 14); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H
