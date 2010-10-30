@@ -1,4 +1,5 @@
-AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kFALSE, Bool_t selectTrigger = kTRUE, Short_t selectCharge = 0)
+AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kFALSE, Bool_t selectTrigger = kTRUE,
+				     Bool_t selectMatched = kFALSE, Short_t selectCharge = 0)
 {
   /// Add AliAnalysisTaskMuonQA to the train (Philippe Pillot)
   
@@ -25,6 +26,7 @@ AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kFALSE, Bool_t selec
   }
   task->SelectPhysics(selectPhysics);
   task->SelectTrigger(selectTrigger);
+  task->SelectMatched(selectMatched);
   task->SelectCharge(selectCharge);
   
   // Add task to analysis manager
