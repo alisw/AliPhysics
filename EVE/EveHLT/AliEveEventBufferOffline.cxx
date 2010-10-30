@@ -1,0 +1,113 @@
+#if __GNUC__>= 3
+   using namespace std;
+#endif
+
+#include "AliEveEventBufferOffline.h"
+
+#include "AliESDEvent.h"
+
+#include "TTimer.h"
+#include "TFile.h"
+#include "TTree.h"
+#include <iostream>
+
+ClassImp(AliEveEventBufferOffline);
+
+///_______________________________________________________________________
+AliEveEventBufferOffline::AliEveEventBufferOffline() :
+  fFile(NULL),
+  fNEntries(0),
+  fEventNo(0),
+  fEvent(NULL),
+  fTree(NULL)
+{
+  // see header file for class documentation
+  //Not Allowed
+}
+
+///_______________________________________________________________________
+AliEveEventBufferOffline::AliEveEventBufferOffline(TString filename)  : 
+  fFile(NULL),
+  fNEntries(0),
+  fEventNo(0),
+  fEvent(NULL),
+  fTree(NULL)
+{
+  
+  fEvent = new AliESDEvent();
+
+  cout <<"opening file " << filename << " what?" <<endl;
+  fFile = TFile::Open(filename, "READ");
+  if(!fFile) {
+    cout << "Couldn't open file, crashing hard! Soon?"<<endl;
+    return;
+  }
+
+  fTree = dynamic_cast<TTree *>(fFile->Get("esdTree"));
+  cout << "File has " << fNEntries << "events" << endl;
+  fNEntries = fTree->GetEntries();
+  fEvent->ReadFromTree(fTree);
+  
+}
+
+
+
+
+///____________________________________________________________________
+AliEveEventBufferOffline::~AliEveEventBufferOffline() {
+  
+  if(fFile)
+    delete fFile;
+  fFile = NULL;
+
+  if(fTree)
+    delete fTree;
+  fTree = NULL;
+  
+  if(fEvent)
+    delete fEvent;
+  fEvent = NULL;
+
+}
+
+
+///______________________________________________________________________
+TObject * AliEveEventBufferOffline::GetEventFromSource() {
+  //see header file for documentation
+  if(fTree) {
+    fTree->GetEntry(fEventNo++);
+    if(fEventNo == fNEntries)
+      fEventNo = 0;
+  }  else {
+    cout << "Tree not found, probably bad file!!"<<endl;
+    return NULL;
+  }
+
+  //Copy event into new event (must be deleted when no longer needed in list!!
+  AliESDEvent * event = new AliESDEvent();
+  fEvent->Copy(*event);
+  cout << event->GetNumberOfCaloClusters() << endl;
+
+  if (event) {
+    return dynamic_cast<TObject*>(event);
+  } else {
+    cout << "error getting event" << endl;
+    return NULL;
+  }
+}
+
+///___________________________________________________________________
+void AliEveEventBufferOffline::ConnectToSource() {
+  //Needed for homer version
+  // see header file for class documentation
+  return;
+}
+
+
+///_____________________________________________________________________
+void AliEveEventBufferOffline::WriteToFile(){
+  //Inherited from AliEveEventBuffer
+  TFile * file = TFile::Open(Form("Event_%d_ITS.root", 100), "RECREATE"); 
+  fEventBuffer->At(fBIndex[kTop])->Write("blockList", TObject::kSingleKey);
+  file->Close();
+}	     

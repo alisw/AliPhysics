@@ -35,14 +35,8 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   fButtonConnect(NULL),
   fButtonWriteToFile(0),
   fButtonNextEvent(0),
-  fButtonNavigateBack(0),
-  fButtonNavigateFwd(0),
   fButtonPrintScreens(NULL),
-  fBoxTriggerSelector(0),
-//  fBoxEventLoopSpeed(0),
-  fButtonEventLoopText(0),
-  fButtonEventLoop(0),
- fEventLoopStarted(kFALSE) 
+  fBoxTriggerSelector(0)
 {
   
   MakeTitle("AliEveHOMERManager");
@@ -65,19 +59,6 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   AddFrame(fButtonNextEvent); //, new TGLayoutHints(...));
   fButtonNextEvent->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "NextEvent()");
 
-  fButtonNavigateBack = new TGTextButton(this, "  Navigate Back  ");
-  AddFrame(fButtonNavigateBack); //, new TGLayoutHints(...));
-  fButtonNavigateBack->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "NavigateBack()");
-
-  fButtonNavigateFwd = new TGTextButton(this, "  Navigate Fwd  ");
-  AddFrame(fButtonNavigateFwd); //, new TGLayoutHints(...));
-  fButtonNavigateFwd->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "NavigateFwd()");
-
-
-  fButtonPrintScreens = new TGTextButton(this, "  Save Viewers  ");
-  AddFrame(fButtonPrintScreens); //, new TGLayoutHints(...));
-  fButtonPrintScreens->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "PrintScreens()");
-
 
   fBoxTriggerSelector = new TGComboBox(this, "Select Trigger");
   fBoxTriggerSelector->AddEntry("HLT Global Trigger", 0);
@@ -89,13 +70,7 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   fBoxTriggerSelector->SetHeight(25);
   AddFrame(fBoxTriggerSelector);
 
-  fButtonEventLoopText = new TGTextButton(this, "  Loop Events  ");
-  AddFrame(fButtonEventLoopText); //, new TGLayoutHints(...));
-  fButtonEventLoopText->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "EventLoop()");
 
-  fButtonEventLoop = new TGPictureButton(this, gClient->GetPicture("$ALICE_ROOT/EVE/hlt-macros/HLT-logo.png"));
-  AddFrame(fButtonEventLoop); //, new TGLayoutHints(...));
-  fButtonEventLoop->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "EventLoop()");
 }
 
 /******************************************************************************/
@@ -119,62 +94,7 @@ void AliEveHOMERManagerEditor::NextEvent() {
   fM->NextHOMEREvent();
 }
 
-void AliEveHOMERManagerEditor::WriteBlockListToFile() {
-  gROOT->ProcessLineFast("writeToFile();");
 
-}
-
-
-void AliEveHOMERManagerEditor::PrintScreens() {
-  //Print screens
-  fM->PrintScreens();
-}
-
-void AliEveHOMERManagerEditor::NavigateFwd() {
-  // navigate forward
-  
-  if ( !fEventLoopStarted ) {
-    if ( fM->NavigateEventBufferFwd() == -1 )
-      return;
-
-    fM->ProcessEvent();
-    //    gROOT->ProcessLineFast("processEvent();");
-  }
-  return;
-}
-
-void AliEveHOMERManagerEditor::NavigateBack() {
-  // navigate back
-
-  if ( !fEventLoopStarted ) {
-    if ( fM->NavigateEventBufferBack() == -1 )
-      return;
-    
-    fM->ProcessEvent();
-    //gROOT->ProcessLineFast("processEvent();");
-  }
-  return;
-}
-
-void AliEveHOMERManagerEditor::EventLoop() {
-  // Start/stop event loop
-  if ( !fEventLoopStarted ) {
-    fEventLoopStarted = kTRUE;
-    fButtonEventLoopText->SetText(" Stop Loop ");
-    //fM->SetEventLoopStarted(kTRUE);
-    fM->StartLoop();
-    
-    //    gROOT->ProcessLineFast("loopEvent();");
-  
-  } else {
-    
-    //gROOT->ProcessLineFast("stopLoopEvent();");
-    fM->StopLoop();
-    fEventLoopStarted = kFALSE;
-    //fM->SetEventLoopStarted(kFALSE);
-    fButtonEventLoopText->SetText(" Loop Events ");
-  }
-}
 
 void AliEveHOMERManagerEditor::SetTriggerString(int id) {
 

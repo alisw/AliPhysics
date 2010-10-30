@@ -16,3 +16,10 @@
 #pragma link C++ class AliEveHOMERSource+;
 #pragma link C++ class AliEveHOMERSourceList+;
 #pragma link C++ class AliEveHOMERSourceMap+;
+#pragma link C++ class AliEveHLTEventManager+;
+#pragma link C++ class AliEveHLTEventManagerOffline+;
+#pragma link C++ class AliEveHLTEventManagerHomer+;
+#pragma link C++ class AliEveHLTEventManagerEditor+;
+#pragma link C++ class AliEveEventBuffer+;
+#pragma link C++ class AliEveEventBufferOffline+;
+#pragma link C++ class AliEveEventBufferHomer+;

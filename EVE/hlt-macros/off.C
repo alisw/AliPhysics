@@ -29,7 +29,7 @@
 #include "TEveManager.h"
 
 #include "AliEveHOMERManager.h"
-#include "AliEveHLTEventManager.h"
+#include "AliEveHLTEventManagerOffline.h"
 #include "geom_gentle_hlt.C"
 
 //***************************************************************
@@ -74,12 +74,89 @@ Bool_t gShowMUONRhoZ = kTRUE;
 Bool_t gShowTRD      = kFALSE;
 
 
+// -----------------------------------------------------------------
+// --                         Members                            --
+// -----------------------------------------------------------------
+
+// -- Timer for automatic event loop
+TTimer                                    eventTimer;
+TTimer                                    eventTimerFast;
+
 // -- HOMERManager
-AliEveHOMERManager*                       gHomerManager      = 0;
-AliEveHLTEventManager*                       geventManager      = 0;
+AliEveHLTEventManagerOffline*                       geventManager      = 0;
 
 // -- Geometry Manager 
 TGeoManager*                              gGeoManager        = 0;
+AliPHOSGeometry*                          gPHOSGeom          = 0;
+
+// -- Cluster members
+TEvePointSet*                             gSPDClusters       = 0;
+TEvePointSet*                             gSSDClusters       = 0;
+TEvePointSet*                             gSDDClusters       = 0;
+TEvePointSet*                             gTRDClusters       = 0;
+TEvePointSetArray*                        gTRDColClusters    = 0;
+TEvePointSet*                             gTPCClusters       = 0;
+TEvePointSet*                             gTPCTestClusters       = 0;
+TEvePointSetArray*                        gTPCColClusters    = 0;
+TEveBoxSet*                               gPHOSBoxSet[5]     = {0, 0, 0, 0, 0}; 
+TEveBoxSet*                               gEMCALBoxSet[13]   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+TEvePointSet*                             gMUONClusters      = 0;
+TEveStraightLineSet*                      gMUONTracks        = 0;
+
+// -- Text output members
+TEveText*                                 gHLTText           = 0;
+
+// -- Tracks members
+TEveTrackList*                            gTPCTrack          = 0;
+
+// -- Canvas for histograms
+TCanvas*                                  gTRDCanvas         = 0;
+TCanvas*                                  gTPCCanvas         = 0;
+TCanvas*                                  gTPCClustCanvas          = 0;
+TCanvas*                                  gTRDCalibCanvas    = 0;
+TCanvas*                                  gTRDEORCanvas      = 0;
+TCanvas*                                  gPrimVertexCanvas  = 0;
+TCanvas*                                  gSPDVertexCanvas   = 0;
+TCanvas*                                  gITSCanvas         = 0;
+TCanvas*                                  gSSDCanvas0        = 0;
+TCanvas*                                  gSSDCanvas1        = 0;
+TCanvas*                                  gV0Canvas          = 0;
+TCanvas*                                  gPHOSCanvas          = NULL;
+TCanvas*                                  gEMCALCanvas          = 0;
+
+// -- vertex --
+Int_t                                     gSPDVertexHistoCount  = 0;
+
+
+
+// -- TRD --
+Int_t                                     gTRDHistoCount     = 0;
+Int_t                                     gTRDEvents         = 0;
+Int_t                                     gTRDBins           = 12;
+
+// -- TPC --
+Int_t                                     gTPCBins           = 15;
+TH1F*                                     gTPCCharge         = 0;
+TH1F*                                     gTPCQMax           = 0;
+TH1F*                                     gTPCQMaxOverCharge = 0;
+
+TH1F*                                     gTPCPt        = 0; // KK
+TH1F*                                     gTPCEta       = 0; 
+TH1F*                                     gTPCPsi       = 0; 
+TH1F*                                     gTPCnClusters = 0; 
+TH1F*                                     gTPCMult      = 0;
+
+// -- PHOS --
+TEveElementList*                          gPHOSElementList   = 0;
+Int_t                                     gPHOSHistoCount    =0;
+// -- EMCAL
+TEveElementList*                          gEMCALElementList  = 0;
+TGeoNode*                                 gEMCALNode         = 0;
+Int_t                                     gEMCALHistoCount    =0;
+
+// --- Flag if eventloop is running
+Bool_t                                    gEventLoopStarted = kFALSE;
+
 
 
 //Container for gGeoManager till it is broken
@@ -98,7 +175,7 @@ void writeToFile();
 // #################################################################
 
 // -----------------------------------------------------------------
-void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
+void off ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
 
   // -- Loading Geometry
   // ---------------------
@@ -123,7 +200,6 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
 
   // -- Initialize Eve
   // -------------------
-  cout << "Initializing the EVE viewer"<<endl;
   initializeEveViewer( showBarrel, showMuon );
 
   // -- Reset gGeoManager to the original pointer
@@ -136,9 +212,9 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
 
   // -- Create new hM object
   // -------------------------
-
-  cout << "Creating the Event Manager"<<endl;
-  gEventManager = new AliEveHLTEventManagerHomer();
+ 
+  gEventManager = new AliEveHLTEventManagerOffline("/home/slindal/alice/data/PbPb/AliESDs.root");
+  //gEventManager = new AliEveHLTEventManagerOffline("/home/slindal/alice/QAtasks/AliESDs.root");
   gEventManager->SetEveManager(gEve);
   gEventManager->SetGeoManager(gGeoManager);
   gEventManager->SetRPhiManager(gRPhiMgr);
@@ -147,42 +223,17 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
   gEventManager->SetRhoZManager(gRhoZMgr);
   gEventManager->SetRhoZEventScene(gRhoZEventScene);
   gEventManager->SetRhoZViewer(gRhoZView);
- 
   //gEventManager->SetBarrelFlag(showBarrel);
   //gEventManager->SetMuonFlag(showMuon);
 
-  // Int_t iResult = gHomerManager->Initialize();
-  // if (iResult) { 
-  //   printf("Error Initializing AliHLTHOMERManager, quitting");
-  //   return; 
-  // }
-  
-  // gEventManager->SetHomerManager(gHomerManager);
 
   // -- Add hM to EveTree
   // ----------------------
-  //gEve->AddToListTree(gHomerManager, kTRUE);
   gEve->AddToListTree(gEventManager, kTRUE);
 
   // -- Create SourceList
   // ----------------------
-  // iResult = gHomerManager->CreateEveSourcesListLoop();
-  // if (iResult) {
-  //   printf ("Couldn't find active services. Giving up. \n");
-  //   return;
-  // } 
 
-
-  // if ( showBarrel ) {
-  //   gHomerManager->ConnectEVEtoHOMER("TPC" );
-  // } else if ( MUONMode ) {
-  //   gHomerManager->ConnectEVEtoHOMER("MUON");
-  // } else if( TRDMode ) {
-  //   gHomerManager->ConnectEVEtoHOMER("TRD");  
-  // } else {
-  //   cout<<" No detectors selected, nothing will be displayed"<<endl;
-  // }	
-  // THIS LINE DOES NOT WORK. PLEASE USE ANOTHER LINE!
 
 
   gGeoManager = fGeoManager;
@@ -359,6 +410,7 @@ Int_t initializeEveViewer( Bool_t showBarrel, Bool_t showMuon ) {
 
 
   gStyle->SetPalette(1, 0);
+
   gStyle->SetOptFit(1);
 
 
@@ -366,23 +418,8 @@ Int_t initializeEveViewer( Bool_t showBarrel, Bool_t showMuon ) {
   return 0;
 }
 
-//****************************************************************************
-void writeToFile(){
 
-  TList * bList = gHomerManager->GetBlockList();
-  if(bList){
-    TFile * file = TFile::Open(Form("Event_0x%016X_ITS.root", gHomerManager->GetEventID()), "RECREATE"); 
-    bList->Write("blockList", TObject::kSingleKey);
-    file->Close();
-  }
-  
-  bList = gHomerManager->GetAsyncBlockList();
-  if(bList){
-    TFile * afile = TFile::Open(Form("Event_0x%016X_Async.root", gHomerManager->GetEventID()), "RECREATE"); 
-    bList->Write("blockList", TObject::kSingleKey);
-    afile->Close();
-  }
-}
+
 
 
 

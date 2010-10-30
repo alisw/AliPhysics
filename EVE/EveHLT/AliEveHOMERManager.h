@@ -27,23 +27,7 @@
 
 class AliEveHOMERSourceList;
 class TString;
-class TEveManager;
-class TEveScene;
-class TEveProjectionManager;
 class TTimer;
-class TEveViewer;
-
-class AliHLTEvePhos;
-class AliHLTEveEmcal;
-class AliHLTEveTPC;
-class AliHLTEveHLT;
-class AliHLTEveITS;
-class AliHLTEveISSD;
-class AliHLTEveISDD;
-class AliHLTEveISPD;
-class AliHLTEveTRD;
-class AliHLTEveAny;
-class AliHLTEveMuon;
 
 class AliEveHOMERManager : public TEveElementList, public AliHLTHOMERManager {
 
@@ -77,41 +61,10 @@ public:
   void SetRetryCount(Int_t count, Int_t sleeptime) { fRetryCount = count; fRetrySleeptime = sleeptime; }
   
   /** Get next event from the readers */
-  Int_t NextHOMEREvent();
+  TList * NextHOMEREvent();
 
-  /** Process the event data */
-  Int_t ProcessEvent();
-
-  /** Set flag for event loop */
-  void SetEventLoopStarted (Bool_t started) {fEventLoopStarted = started;}
-
-  /** Set flag for showing barrel */
-  void SetBarrelFlag(Bool_t flag) { fShowBarrel = flag;}
-  /** Set flag for showing muon arm */
-  void SetMuonFlag(Bool_t flag) { fShowMuon = flag;}
-
-  /**Set and get the global instance of the Eve manager */
-  void SetEveManager(TEveManager * manager) {fEveManager = manager;}
-  TEveManager * GetEveManager() const {return fEveManager;}
-
-  /**Set and get the global instance of TGeoManager */
-  void SetGeoManager(TGeoManager * manager) {fGeoManager = manager;}
-  TGeoManager * GetGeoManager() const {return fGeoManager;}
-
-  /** Set the projection scenes and their managers */
-  void SetRPhiManager (TEveProjectionManager * mgr) {fRPhiManager = mgr;}
-  void SetRPhiEventScene (TEveScene * scene ) {fRPhiEventScene = scene;}
-  void SetRPhiViewer(TEveViewer * viewer ) {fRPhiViewer = viewer;}
-  void SetRhoZManager(TEveProjectionManager * mgr) {fRhoZManager = mgr;}
-  void SetRhoZEventScene(TEveScene * scene ) {fRhoZEventScene = scene;}
-  void SetRhoZViewer(TEveViewer * viewer ) {fRhoZViewer = viewer;}
-
-  /** Start and stop the automatic event loop */
-  void StartLoop();
-  void StopLoop();
-
-  /** Print the screens to a file **/
-  void PrintScreens();
+  void StartEveSourceListLoop();
+  void StopEveSourceListLoop();
 
  
 private:
@@ -122,53 +75,18 @@ private:
   /** assignment operator prohibited */
   AliEveHOMERManager& operator=(const AliEveHOMERManager&);
 
-  void DestroyDetectorElements();
-  
-  /** Process block */
-  void ProcessBlock(AliHLTHOMERBlockDesc * block);  //Process block
-  /** Reset the elements in the display */
-  void ResetDisplay();  
-  /** Update the display  */
-  void UpdateDisplay(); 
-
   // == sources ==
   AliEveHOMERSourceList* fSrcList;        // List of Connected HOMER Sources
+
 
   Int_t fRetryCount;                     //How many times to retry creating source list before giving up
   Int_t fRetrySleeptime;                 //Sleep time between attempt at craeting source list
 
-  TGeoManager * fGeoManager;              //The global TGeoManager instance
-  TEveManager * fEveManager;              //The global TEveManager instance
-  TEveProjectionManager * fRPhiManager;   //The R - Phi projection scene manager
-  TEveProjectionManager * fRhoZManager;   //The Rho- Z projection sene manager
-  TEveScene * fRPhiEventScene;            //The R - Phi projection scene
-  TEveScene * fRhoZEventScene;            //The Rho - Z projection sene
-  TEveViewer * fRhoZViewer;
-  TEveViewer * fRPhiViewer;
   
-
-
-  TTimer * fTimer;                   //Timer for event loop
-  //TTimer * fSourceListTimer;       //Timer for source list loop
- 
-  AliHLTEvePhos  * fPhosElement;     //Phos eve processor
-  AliHLTEveEmcal * fEmcalElement;    //Emcal eve processor
-  AliHLTEveTPC   * fTPCElement;      //TPC eve processor
-  AliHLTEveHLT   * fHLTElement;      //HLT
-  AliHLTEveITS   * fITSElement;      //ITS
-  AliHLTEveISPD  * fISPDElement;     //ISPD
-  AliHLTEveISSD  * fISSDElement;     //ISSD
-  AliHLTEveISDD  * fISDDElement;     //ISDD
-  AliHLTEveTRD   * fTRDElement;      //TRD
-  AliHLTEveMuon  * fMuonElement;     //MUON
-  AliHLTEveAny   * fAnyElement;      //Catch all
-
-  Bool_t fEventLoopStarted;                    // Flag indicating whether the loop is running
-  Bool_t fCenterProjectionsAtPrimaryVertex;    // Flag indicating whether to center the projection scenes at primary vertex (as opposed to 0, 0, 0)
-  Bool_t fShowBarrel;                               // Display barrel detectors ?
-  Bool_t fShowMuon;                                 // Display Muon arm ?
-   
+  TTimer * fSourceListTimer;             //Timer to attempt source list creation!
+    
   ClassDef(AliEveHOMERManager, 0); // Manage connections to HLT data-sources.
+  
 
 };
 #endif

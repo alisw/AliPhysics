@@ -1,4 +1,4 @@
-// $Id$
+ // $Id$
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef AliEveAliEVEHOMERManagerEditor_H
-#define AliEveAliEVEHOMERManagerEditor_H
+#ifndef AliEveHLTEventManagerEditor_H
+#define AliEveHLTEventManagerEditor_H
 
 #include <TGedFrame.h>
 
@@ -18,39 +18,53 @@ class TGNumberEntry;
 class TGColorSelect;
 class TGPictureButton;
 class TGComboBox;
-class AliEveHOMERManager;
+class AliEveHLTEventManager;
 
-class AliEveHOMERManagerEditor : public TGedFrame
+class AliEveHLTEventManagerEditor : public TGedFrame
 {
 public:
-  AliEveHOMERManagerEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, 
+  AliEveHLTEventManagerEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, 
 			   UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveHOMERManagerEditor() {}
+  virtual ~AliEveHLTEventManagerEditor() {}
 
   virtual void SetModel(TObject* obj);
 
   // Declare callback/slot methods
   void ConnectToHLT();
   void NextEvent();
+  void EventLoop();
 
+  void NavigateBack();
+  void NavigateFwd();
   void SetTriggerString(int id);
+  void WriteBlockListToFile();
+  void PrintScreens();
+  void PollEvents();
 
 protected:
 
-  AliEveHOMERManager  *fM; // Model object.
+  AliEveHLTEventManager  *fM; // Model object.
   
   TGTextButton     *fButtonConnect; // Button to connect to HOMER.
   TGTextButton     *fButtonWriteToFile; // Button to write block list to file
   TGTextButton     *fButtonNextEvent; // Button to call next Even
+  TGTextButton     *fButtonNavigateBack; // Button to navigate back
+  TGTextButton     *fButtonNavigateFwd;  // Button to navigate fwd
   TGTextButton     *fButtonPrintScreens;  // Button to print viewers
   TGComboBox       *fBoxTriggerSelector; // Drop down menu to select trigger criteria.
+  TGTextButton     *fButtonEventLoopText; //Text button to start / stop event loop.
+  TGTextButton    *fButtonUpdateEvents;
+  //TGComboBox       *fBoxEventLoopSpeed; // Drop down menu to set the speed of the loop.
+  TGPictureButton  *fButtonEventLoop; // Picture button to start/stop event loop, HLT LOGO.
   
 
 private:
-  AliEveHOMERManagerEditor(const AliEveHOMERManagerEditor&);            // Not implemented
-  AliEveHOMERManagerEditor& operator=(const AliEveHOMERManagerEditor&); // Not implemented
+  AliEveHLTEventManagerEditor(const AliEveHLTEventManagerEditor&);            // Not implemented
+  AliEveHLTEventManagerEditor& operator=(const AliEveHLTEventManagerEditor&); // Not implemented
 
-  ClassDef(AliEveHOMERManagerEditor, 0); // Editor for AliEveHOMERManager
+  Bool_t fEventLoopStarted;
+
+  ClassDef(AliEveHLTEventManagerEditor, 0); // Editor for AliEveHLTEventManager
 };
 
 #endif
