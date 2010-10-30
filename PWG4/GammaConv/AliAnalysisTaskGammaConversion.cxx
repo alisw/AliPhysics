@@ -41,6 +41,7 @@
 #include "AliGenEventHeader.h"
 #include <AliMCEventHandler.h>
 #include "TRandom3.h"
+#include "AliTriggerAnalysis.h"
 
 class AliESDTrackCuts;
 class AliCFContainer;
@@ -134,7 +135,9 @@ AliAnalysisTaskSE(),
   fDoRotation(kTRUE),
   fCheckBGProbability(kTRUE),
   fKFReconstructedGammasV0Index(),
-  fRemovePileUp(kFALSE)
+  fRemovePileUp(kFALSE),
+  fSelectV0AND(kFALSE),
+  fTriggerAnalysis(NULL)
 {
   // Default constructor
 
@@ -223,7 +226,9 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fDoRotation(kTRUE),
   fCheckBGProbability(kTRUE),
   fKFReconstructedGammasV0Index(),
-  fRemovePileUp(kFALSE)
+  fRemovePileUp(kFALSE),
+  fSelectV0AND(kFALSE),
+  fTriggerAnalysis(NULL)
 {
   // Common I/O in slot 0
   DefineInput (0, TChain::Class());
@@ -281,6 +286,11 @@ AliAnalysisTaskGammaConversion::~AliAnalysisTaskGammaConversion()
     delete fAODOmega;
   }
   fAODOmega = NULL;
+
+  if(fTriggerAnalysis) {
+    delete fTriggerAnalysis;
+  }
+
 
 }
 
@@ -456,11 +466,14 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     fKFReconstructedPi0sTClone = new TClonesArray("AliKFParticle",0);
   }
  
- if(fKFRecalculatedGammasTClone == NULL){
+  if(fKFRecalculatedGammasTClone == NULL){
     fKFRecalculatedGammasTClone = new TClonesArray("AliKFParticle",0);
   }
 
-	
+  if(fTriggerAnalysis== NULL){
+    fTriggerAnalysis = new AliTriggerAnalysis;
+  }
+
   //clear TClones
   fKFReconstructedGammasTClone->Delete();
   fCurrentEventPosElectronTClone->Delete();
@@ -522,6 +535,17 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
      eventQuality=4;
     return;
   }
+
+ 
+  Bool_t v0A       = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0A);
+  Bool_t v0C       = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0C);
+  Bool_t v0AND = v0A && v0C;
+
+  if(fSelectV0AND && !v0AND){
+    eventQuality=5;
+    return;
+  }
+
   eventQuality=3;
   fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
 
