@@ -35,6 +35,9 @@ public:
   /// - if not, apply the mask to the trigger word built by looking for triggers listed in "fSelectTriggerClass"
   void SelectTrigger(Bool_t flag = kTRUE, UInt_t mask = AliVEvent::kMUON) {fSelectTrigger = flag; fTriggerMask = mask;}
   
+  /// Select track matching the trigger to fill histograms
+  void SelectMatched(Bool_t flag = kTRUE) {fSelectMatched = flag;}
+  
 private:
   
   /// Not implemented
@@ -101,9 +104,10 @@ private:
   AliCounterCollection* fEventCounters; //!< event statistics
   
   Short_t fSelectCharge;  ///< Fill histograms only with negative/position tracks (0=all)
-  Bool_t  fSelectPhysics; ///< Fill histograms only with track passing the physics selection
-  Bool_t  fSelectTrigger; ///< Fill histograms only with track passing the trigger selection
-  UInt_t  fTriggerMask;   ///< trigger mask to be used when selecting tracks
+  Bool_t  fSelectPhysics; ///< Fill histograms only with events passing the physics selection
+  Bool_t  fSelectTrigger; ///< Fill histograms only with events passing the trigger selection
+  UInt_t  fTriggerMask;   ///< Trigger mask to be used when selecting events
+  Bool_t  fSelectMatched; ///< Fill histograms only with tracks matching the trigger
   
   TMap*  fTriggerClass;       //!< map of trigger class name associated to short name
   TList* fSelectTriggerClass; //!< list of trigger class that can be selected to fill histograms
@@ -112,7 +116,7 @@ private:
   static const Int_t nDE;       ///< number of DE
   static const Float_t dMax[5]; ///< maximum diameter of each station
   
-  ClassDef(AliAnalysisTaskMuonQA, 4);
+  ClassDef(AliAnalysisTaskMuonQA, 5);
 };
 
 #endif

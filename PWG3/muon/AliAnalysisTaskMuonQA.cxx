@@ -62,6 +62,7 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
   fSelectPhysics(kFALSE),
   fSelectTrigger(kFALSE),
   fTriggerMask(0),
+  fSelectMatched(kFALSE),
   fTriggerClass(0x0),
   fSelectTriggerClass(0x0)
 {
@@ -80,6 +81,7 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   fSelectPhysics(kFALSE),
   fSelectTrigger(kFALSE),
   fTriggerMask(0),
+  fSelectMatched(kFALSE),
   fTriggerClass(0x0),
   fSelectTriggerClass(0x0)
 {
@@ -121,15 +123,20 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fTriggerClass->Add(new TObjString(" CBEAMB"), new TObjString("CBEAMB"));
   fTriggerClass->Add(new TObjString(" CINT1B-ABCE-NOPF-ALL "), new TObjString("CINT1B"));
   fTriggerClass->Add(new TObjString(" CMUS1B-ABCE-NOPF-MUON "), new TObjString("CMUS1B"));
-  fTriggerClass->Add(new TObjString(" CINT1B-ABCE-NOPF-ALL  CMUS1B-ABCE-NOPF-MUON "), new TObjString("CINT1B+CMUS1B"));
   fTriggerClass->Add(new TObjString(" CINT1[AC]-"), new TObjString("CINT1AC"));
-  fTriggerClass->Add(new TObjString(" CINT1-E-"), new TObjString("CINT1E"));
   fTriggerClass->Add(new TObjString(" CMUS1[AC]-"), new TObjString("CMUS1AC"));
+  fTriggerClass->Add(new TObjString(" CINT1-E-"), new TObjString("CINT1E"));
+  fTriggerClass->Add(new TObjString(" CINT5-E-"), new TObjString("CINT1E"));
   fTriggerClass->Add(new TObjString(" CMUS1-E-"), new TObjString("CMUS1E"));
+  fTriggerClass->Add(new TObjString(" CMUS5-E-"), new TObjString("CMUS1E"));
   fTriggerClass->Add(new TObjString(" CINT1-B-"), new TObjString("CINT1B"));
+  fTriggerClass->Add(new TObjString(" CINT5-B-"), new TObjString("CINT1B"));
   fTriggerClass->Add(new TObjString(" CMUS1-B-"), new TObjString("CMUS1B"));
+  fTriggerClass->Add(new TObjString(" CMUS5-B-"), new TObjString("CMUS1B"));
   fTriggerClass->Add(new TObjString(" CINT1-AC-"), new TObjString("CINT1AC"));
+  fTriggerClass->Add(new TObjString(" CINT5-AC-"), new TObjString("CINT1AC"));
   fTriggerClass->Add(new TObjString(" CMUS1-AC-"), new TObjString("CMUS1AC"));
+  fTriggerClass->Add(new TObjString(" CMUS5-AC-"), new TObjString("CMUS1AC"));
   fTriggerClass->Add(new TObjString(" CSH1-B-"), new TObjString("CSH1B"));
   
   // set the corresponding list of trigger key words for counters
@@ -141,7 +148,9 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fSelectTriggerClass->AddLast(new TObjString(" CINT1B-ABCE-NOPF-ALL ")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
   fSelectTriggerClass->AddLast(new TObjString(" CMUS1B-ABCE-NOPF-MUON ")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
   fSelectTriggerClass->AddLast(new TObjString(" CINT1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString(" CINT5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
   fSelectTriggerClass->AddLast(new TObjString(" CMUS1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
+  fSelectTriggerClass->AddLast(new TObjString(" CMUS5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
   fSelectTriggerClass->AddLast(new TObjString(" CSH1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kHighMult);
   
   // create histograms
@@ -285,11 +294,12 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   Bool_t isTriggerSelected = ((triggerWord & fTriggerMask) != 0);
   
   // first loop over tracks to check for trigger readout problem
+  Int_t maxTriggerRO = (!strcmp(fESD->GetBeamType(),"p-p")) ? 10 : 1000;
   Int_t nTracks = (Int_t) fESD->GetNumberOfMuonTracks();
   Int_t nTriggerTracks = 0;
   for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack)
     if (fESD->GetMuonTrack(iTrack)->ContainTriggerData()) nTriggerTracks++;
-  TString triggerRO = (nTriggerTracks < 10) ? "triggerRO:good" : "triggerRO:bad";
+  TString triggerRO = (nTriggerTracks < maxTriggerRO) ? "triggerRO:good" : "triggerRO:bad";
   
   // --- fill event counters ---
   
@@ -383,6 +393,9 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     
     // select on track charge
     if (fSelectCharge*esdTrack->Charge() < 0) continue;
+    
+    // select on track matching
+    if (fSelectMatched && !esdTrack->ContainTriggerData()) continue;
     
     nSelectedTrackerTracks++;
     if (esdTrack->ContainTriggerData()) nSelectedTrackMatchTrig++;
@@ -548,9 +561,9 @@ void AliAnalysisTaskMuonQA::Terminate(Option_t *)
   if (nTracks > 0.) {
     ((TH1F*)fListExpert->UncheckedAt(kNClustersPerCh))->Scale(1./nTracks);
     ((TH1F*)fListExpert->UncheckedAt(kNClustersPerDE))->Scale(1./nTracks);
-    fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerCh))->Clone(), kNClustersPerChPerTrack);
-    fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerDE))->Clone(), kNClustersPerDEPerTrack);
   }
+  fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerCh))->Clone(), kNClustersPerChPerTrack);
+  fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerDE))->Clone(), kNClustersPerDEPerTrack);
   
   // fill summary plots per chamber
   for (Int_t iCh = 0; iCh < nCh; iCh++) {
@@ -634,6 +647,8 @@ TList* AliAnalysisTaskMuonQA::BuildListOfTriggerCases(TString& FiredTriggerClass
   
   TList* list = new TList();
   list->SetOwner();
+  Bool_t foundCINT1B = kFALSE;
+  Bool_t foundCMUS1B = kFALSE;
   
   // add case any
   list->AddLast(new TObjString("trigger:any"));
@@ -649,9 +664,16 @@ TList* AliAnalysisTaskMuonQA::BuildListOfTriggerCases(TString& FiredTriggerClass
       TObjString* trigShortName = static_cast<TObjString*>(fTriggerClass->GetValue(trigClasseName));
       list->AddLast(new TObjString(Form("trigger:%s",trigShortName->GetName())));
       
+      // check for CINT1B and CMUS1B trigger
+      if (trigShortName->String() == "CINT1B") foundCINT1B = kTRUE;
+      else if (trigShortName->String() == "CMUS1B") foundCMUS1B = kTRUE;
+      
     }
     
   }
+  
+  // add the special case CINT1B+CMUS1B
+  if (foundCINT1B && foundCMUS1B) list->AddLast(new TObjString("trigger:CINT1B+CMUS1B"));
   
   // add case other if no specific trigger was found
   if (list->GetSize() == 1) list->AddLast(new TObjString("trigger:other"));
