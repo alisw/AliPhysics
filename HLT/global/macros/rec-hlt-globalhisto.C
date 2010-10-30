@@ -193,18 +193,18 @@ void rec_hlt_globalhisto(const char *esdfilename,
   AliHLTConfiguration esdpublisher(histoinput.Data(), "ESDMCEventPublisher", "", arguments.Data());
 
   AliHLTConfiguration globalhisto("globalhisto", "GlobalHisto", histoinput.Data(),
-        			"-histogram TrackPt    -size 1000 -expression Track_pt   "
-        		     //  //"-histogram TrackPt    -size 1000 -expression Track_pt  -cut Track_pt<0.8&&Track_pt>0.6  "
-         			"-histogram TrackPhi   -size 1000 -expression Track_phi   "
-         			"-histogram TrackEta   -size 1000 -expression Track_eta   "
-         			"-histogram TrackCount -size 1000 -expression trackcount  "
+        			"-histogram TrackPt    -size 1000 -expression Track_pt "
+        		        //"-histogram TrackPt    -size 1000 -expression Track_pt  -cut Track_pt<0.8&&Track_pt>0.6  "
+         			"-histogram TrackPhi   -size 1000 -expression Track_phi "
+         			"-histogram TrackEta   -size 1000 -expression Track_eta "
+         			"-histogram TrackCount -size 1000 -expression trackcount "
          			"-histogram TrackTheta -size 1000 -expression Track_theta "
-         			//"-histogram VertexX    -size 1000 -expression vertexX	  "
-         			//"-histogram VertexY    -size 1000 -expression vertexY	  "
-         			//"-histogram VertexZ    -size 1000 -expression vertexZ	  "
-         			"-histogram DCAr       -size 1000 -expression Track_DCAr  "
-         			"-histogram DCAz       -size 1000 -expression Track_DCAz  "
-         			"-histogram dEdx_vs_p  -size 1000 -expression Track_dEdx:Track_p  "
+         			"-histogram VertexX    -size 1000 -expression vertexX "
+         			"-histogram VertexY    -size 1000 -expression vertexY "
+         			"-histogram VertexZ    -size 1000 -expression vertexZ "
+         			"-histogram DCAr       -size 1000 -expression Track_DCAr "
+         			"-histogram DCAz       -size 1000 -expression Track_DCAz "
+         			"-histogram dEdx_vs_p  -size 1000 -expression Track_dEdx:Track_p "
 				);
   
   AliHLTConfiguration writer("writer", "ROOTFileWriter", "globalhisto", "-datafile histo.root -overwrite -concatenate-events");
