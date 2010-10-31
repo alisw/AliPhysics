@@ -41,7 +41,7 @@ EINCLUDE 	:= HLT/global HLT/global/physics \
 
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
-               -lRAWDatarec -lRAWDatabase -lTRDbase -lPWG0base -lPWG0dep \
+               -lRAWDatarec -lRAWDatabase -lTRDbase \
                -L$(ROOTLIBDIR) -lEG
 
 ###############################################################################
