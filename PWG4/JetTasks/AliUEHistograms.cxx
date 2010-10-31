@@ -538,3 +538,12 @@ void AliUEHistograms::CopyReconstructedData(AliUEHistograms* from)
   fSumpT->CopyReconstructedData(from->fSumpT);
   fNumberDensityPhi->CopyReconstructedData(from->fNumberDensityPhi);
 }
+
+void AliUEHistograms::ExtendTrackingEfficiency()
+{
+  // delegates to AliUEHists
+
+  for (Int_t i=0; i<3; i++)
+    GetUEHist(i)->ExtendTrackingEfficiency();
+}
+

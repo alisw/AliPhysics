@@ -1,4 +1,5 @@
 const char* objectName = "PWG4_LeadingTrackUE/histosLeadingTrackUE";
+Float_t gLeadingpTMin = 0.51;
 //const char* objectName = "PWG4_LeadingTrackUE/histosLeadingTrackUE_filterbit32";
 
 void SetRanges(TAxis* axis)
@@ -134,9 +135,7 @@ void CompareBias(const char* mcFile = "PWG4_JetTasksOutput.root", Int_t region, 
   TFile::Open(mcFile);
   list = (TList*) gFile->Get(objectName);
   AliUEHistograms* h = (AliUEHistograms*) list->FindObject("AliUEHistograms");
-  h->SetEtaRange(-0.79, 0.79);
-  h->SetPtRange(0.51, 100);
-  h->SetCombineMinMax(kTRUE);
+  SetupRanges(h);
   
   const char* axis = "z";
   Float_t ptLeadMin = 0;
@@ -144,8 +143,8 @@ void CompareBias(const char* mcFile = "PWG4_JetTasksOutput.root", Int_t region, 
   
   if (ueHist == 2)
   {
-    ptLeadMin = 0.51 + 4;
-    ptLeadMax = 1.99 + 4;
+    ptLeadMin = 0.51 + 0;
+    ptLeadMax = 1.99 + 0;
     axis = "y";
   }
   
@@ -171,16 +170,14 @@ void CompareBiasWithData(const char* mcFile = "PWG4_JetTasksOutput.root", const 
   file1 = TFile::Open(mcFile);
   list = (TList*) file1->Get(objectName);
   AliUEHistograms* h = (AliUEHistograms*) list->FindObject("AliUEHistograms");
-  h->SetEtaRange(-0.79, 0.79);
-  h->SetPtRange(0.51, 100);
+  SetupRanges(h);
   
   biasFromMC   = (TH1*) h->GetNumberDensitypT()->GetBias(AliUEHist::kCFStepReconstructed, AliUEHist::kCFStepTracked, "z")->Clone("biasFromMC");
   
   file2 = TFile::Open(dataFile);
   list = (TList*) file2->Get(objectName);
   AliUEHistograms* h2 = (AliUEHistograms*) list->FindObject("AliUEHistograms");
-  h2->SetEtaRange(-0.79, 0.79);
-  h2->SetPtRange(0.51, 100);
+  SetupRanges(h2);
   
   biasFromData = (TH1*) h2->GetNumberDensitypT()->GetBias(AliUEHist::kCFStepBiasStudy, AliUEHist::kCFStepReconstructed, "z")->Clone("biasFromData");
   biasFromData2 = (TH1*) h2->GetNumberDensitypT()->GetBias(AliUEHist::kCFStepBiasStudy2, AliUEHist::kCFStepReconstructed, "z")->Clone("biasFromData2");
@@ -189,35 +186,64 @@ void CompareBiasWithData(const char* mcFile = "PWG4_JetTasksOutput.root", const 
   DrawRatio(biasFromData, biasFromData2, "bias: data vs data two step");
 }
 
-void Compare(const char* fileName1, const char* fileName2, Int_t step1, Int_t step2)
+void Compare(const char* fileName1, const char* fileName2, Int_t id, Int_t step1, Int_t step2, Int_t region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1)
 {
   loadlibs();
 
   file1 = TFile::Open(fileName1);
   list = (TList*) file1->Get(objectName);
   AliUEHistograms* h = (AliUEHistograms*) list->FindObject("AliUEHistograms");
-  h->SetEtaRange(-0.79, 0.79);
-  h->SetPtRange(0.51, 100);
+  SetupRanges(h);
 
   file2 = TFile::Open(fileName2);
   list = (TList*) file2->Get(objectName);
   AliUEHistograms* h2 = (AliUEHistograms*) list->FindObject("AliUEHistograms");
-  h2->SetEtaRange(-0.79, 0.79);
-  h2->SetPtRange(0.51, 100);
+  SetupRanges(h2);
 
-  Int_t region = 0;
-    
-  TH1* hist1 = h->GetNumberDensitypT()->GetUEHist(step1, region);
-  TH1* hist2 = h2->GetNumberDensitypT()->GetUEHist(step2, region);
+  TH1* hist1 = h->GetUEHist(id)->GetUEHist(step1, region, ptLeadMin, ptLeadMax);
+  TH1* hist2 = h2->GetUEHist(id)->GetUEHist(step2, region, ptLeadMin, ptLeadMax);
 
   DrawRatio(hist1, hist2, "compare");
 }  
 
-void CompareRaw(const char* fileName1, const char* fileName2)
+void CompareEventHist(const char* fileName1, const char* fileName2, Int_t id, Int_t step, Int_t var)
 {
   loadlibs();
 
-  Compare(fileName1, fileName2, AliUEHist::kCFStepReconstructed, AliUEHist::kCFStepReconstructed);
+  file1 = TFile::Open(fileName1);
+  list = (TList*) file1->Get(objectName);
+  AliUEHistograms* h = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+  SetupRanges(h);
+
+  file2 = TFile::Open(fileName2);
+  list = (TList*) file2->Get(objectName);
+  AliUEHistograms* h2 = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+  SetupRanges(h2);
+
+  TH1* hist1 = h->GetUEHist(id)->GetEventHist()->ShowProjection(var, step);
+  TH1* hist2 = h2->GetUEHist(id)->GetEventHist()->ShowProjection(var, step);
+ 
+  DrawRatio(hist1, hist2, "compare");
+}
+
+void CompareStep(const char* fileName1, const char* fileName2, Int_t id, Int_t step, Int_t region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1)
+{
+  loadlibs();
+
+  Compare(fileName1, fileName2, id, step, step, region, ptLeadMin, ptLeadMax);
+}
+
+void DrawStep(const char* fileName, Int_t id, Int_t step, Int_t region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1)
+{
+  loadlibs();
+
+  file1 = TFile::Open(fileName);
+  list = (TList*) file1->Get(objectName);
+  AliUEHistograms* h = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+  SetupRanges(h);
+
+  new TCanvas;
+  h->GetUEHist(id)->GetUEHist(step, region, ptLeadMin, ptLeadMax)->Draw();
 }
 
 void ProfileMultiplicity(const char* fileName = "PWG4_JetTasksOutput.root")
@@ -239,7 +265,7 @@ void ProfileMultiplicity(const char* fileName = "PWG4_JetTasksOutput.root")
 void SetupRanges(void* obj)
 {
   ((AliUEHistograms*) obj)->SetEtaRange(-0.79, 0.79);
-  ((AliUEHistograms*) obj)->SetPtRange(0.51, 100);
+  ((AliUEHistograms*) obj)->SetPtRange(gLeadingpTMin, 100);
   ((AliUEHistograms*) obj)->SetCombineMinMax(kTRUE);
 }
 
@@ -286,8 +312,8 @@ void DrawRatios(void* correctedVoid, void* comparisonVoid, Int_t compareStep = -
 
   if (compareUEHist == 2)
   {
-    for (Float_t ptLeadMin = 2.51; ptLeadMin < 4; ptLeadMin += 2)
-      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 1.98);      
+    for (Float_t ptLeadMin = 1.01; ptLeadMin < 4; ptLeadMin += 2)
+      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 0.48);      
     return;
   }
 
@@ -344,6 +370,8 @@ void correctMC(const char* fileNameCorrections, const char* fileNameESD = 0, Int
   TFile::Open(fileNameCorrections);
   list = (TList*) gFile->Get(objectName);
   AliUEHistograms* corr = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+  SetupRanges(corr);
+  corr->ExtendTrackingEfficiency();
   
   if (fileNameESD)
   {
@@ -386,23 +414,27 @@ void correctData(const char* fileNameCorrections, const char* fileNameESD, Int_t
   SetupRanges(corr);
   SetupRanges(esd);
   
+  corr->ExtendTrackingEfficiency();
+  
   esd->Correct(corr);
   
   file3 = TFile::Open("corrected.root", "RECREATE");
-  esd->Write();
+  file3->mkdir("PWG4_LeadingTrackUE");
+  file3->cd("PWG4_LeadingTrackUE");
+  list->Write(0, TObject::kSingleKey);
   file3->Close();
   
   DrawRatios(esd, corr, compareStep, compareRegion, compareUEHist);
 }
 
-void ITSTPCEfficiency(const char* fileNameData, Int_t itsTPC = 0)
+void ITSTPCEfficiency(const char* fileNameData, Int_t id, Int_t itsTPC = 0)
 {
   // its = 0; tpc = 1
 
   // uncertainty from dN/dpT paper
   Double_t pTBins[] =  {0.0, 0.1, 0.15,  0.2,  0.25,  0.3,   0.35,  0.4,   0.45,  0.5,   0.6,   0.7,   0.8,   0.9,   1.0,   1.5,   2.0,   2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 100.0};
-  Float_t effITS[] = {0.,  0.,  0.995, 0.98, 0.986, 0.996, 0.999, 0.997, 0.997, 1.008, 1.005, 1.022, 1.021, 1.021, 1.035, 1.04,  1.03  };  // the last three are the same because i don't have entries
-  Float_t effTPC[] = {0.,  0,   1.042, 1.026,1.021, 1.018, 1.015, 1.015, 1.012, 1.012, 1.007, 1.0075,1.006, 1.006, 1.004, 1.004, 1.009 }; // the last bins put as if they were the same
+  Float_t effITS[] =   {0.,  0.,  0.995, 0.98, 0.986, 0.996, 1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,    };  // the last three are the same because i don't have entries
+  Float_t effTPC[] =   {0.,  0,   1.042, 1.026,1.021, 1.018, 1.015, 1.015, 1.012, 1.012, 1.007, 1.0075,1.006, 1.006, 1.004, 1.004, 1.009 }; // the last bins put as if they were the same
 
   TH1F* effHist = new TH1F("effHist", "effHist", 39, pTBins);
   for (Int_t i=0; i<39; i++)
@@ -415,11 +447,11 @@ void ITSTPCEfficiency(const char* fileNameData, Int_t itsTPC = 0)
 
   new TCanvas; effHist->Draw();
 
-  EffectOfModifiedTrackingEfficiency(fileNameData, effHist, (itsTPC == 0) ? "ITS" : "TPC");
+  EffectOfModifiedTrackingEfficiency(fileNameData, id, effHist, 1, -1, (itsTPC == 0) ? "ITS" : "TPC");
 } 
 
 
-void EffectOfModifiedTrackingEfficiency(const char* fileNameData, TH1F* trackingEff, const char* name = "EffectOfModifiedTrackingEfficiency")
+void EffectOfModifiedTrackingEfficiency(const char* fileNameData, Int_t id, TH1* trackingEff, Int_t axis1, Int_t axis2 = -1, const char* name = "EffectOfModifiedTrackingEfficiency")
 {
   // trackingEff should contain the change in tracking efficiency, i.e. between before and after in the eta-pT plane
 
@@ -428,11 +460,9 @@ void EffectOfModifiedTrackingEfficiency(const char* fileNameData, TH1F* tracking
   TFile::Open(fileNameData);
   list = (TList*) gFile->Get(objectName);
   AliUEHistograms* corrected = (AliUEHistograms*) list->FindObject("AliUEHistograms");
-  corrected->SetEtaRange(-0.79, 0.79);
-  corrected->SetPtRange(0.51, 100);
-  corrected->SetCombineMinMax(kTRUE);
+  SetupRanges(corrected);
   
-  AliUEHist* ueHist = corrected->GetUEHist(0);
+  AliUEHist* ueHist = corrected->GetUEHist(id);
   Int_t region = 2;
   
   // histogram before
@@ -443,12 +473,56 @@ void EffectOfModifiedTrackingEfficiency(const char* fileNameData, TH1F* tracking
   ueHist->CorrectTracks(AliUEHist::kCFStepAll, AliUEHist::kCFStepTriggered, (TH1*) 0, 0, -1);
 
   // reapply tracking efficiency
-  ueHist->CorrectTracks(AliUEHist::kCFStepTriggered, AliUEHist::kCFStepAll, trackingEff, 1);
+  ueHist->CorrectTracks(AliUEHist::kCFStepTriggered, AliUEHist::kCFStepAll, trackingEff, axis1, axis2);
 
   // histogram after
   TH1* after = ueHist->GetUEHist(AliUEHist::kCFStepAll, region);
   
   DrawRatio(before, after, name);
+  gPad->GetCanvas()->SaveAs(Form("%s.png", name));
+}
+
+void EffectOfTrackCuts(const char* fileNameData, Int_t id, const char* systFile)
+{
+  loadlibs();
+
+  TFile::Open(fileNameData);
+  list = (TList*) gFile->Get(objectName);
+  AliUEHistograms* corrected = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+  effHist = (TH2D*) corrected->GetUEHist(0)->GetTrackingEfficiency()->Clone("effHist");
+
+  file = TFile::Open(systFile);
+
+  Int_t maxSyst = 3;
+  const char* systNames[] = { "NClusTPC", "Chi2TPC", "SigmaDCA" };
+
+  for (Int_t i=0; i<maxSyst; i++)
+  {
+    for (Int_t j=0; j<2; j++)
+    {
+      TString histName;
+      histName.Form("%s_syst_%s", systNames[i], (j == 0) ? "up" : "down");
+      systEffect = (TH2*) file->Get(histName);
+
+      // rebin
+      effHist->Reset();
+      for (Int_t x=1; x <= effHist->GetNbinsX(); x++)
+        for (Int_t y=1; y <= effHist->GetNbinsY(); y++)
+          effHist->SetBinContent(x, y, 1);
+
+      for (Int_t x=1; x <= systEffect->GetNbinsX(); x++)
+        for (Int_t y=1; y <= systEffect->GetNbinsY(); y++)
+          if (systEffect->GetBinContent(x, y) != 0)
+            effHist->SetBinContent(effHist->GetXaxis()->FindBin(systEffect->GetYaxis()->GetBinCenter(y)), effHist->GetYaxis()->FindBin(systEffect->GetXaxis()->GetBinCenter(x)), systEffect->GetBinContent(x, y));
+           
+   
+      //new TCanvas; systEffect->Draw("COLZ"); new TCanvas; effHist->Draw("COLZ");
+ 
+      EffectOfModifiedTrackingEfficiency(fileNameData, id, effHist, 0, 1, histName);
+
+      //return;
+    }
+  } 
 }
 
 void ModifyComposition(const char* fileNameData, const char* fileNameCorrections, Int_t id, Bool_t verbose = kFALSE)
@@ -458,34 +532,46 @@ void ModifyComposition(const char* fileNameData, const char* fileNameCorrections
   TFile::Open(fileNameData);
   list = (TList*) gFile->Get(objectName);
   AliUEHistograms* corrected = (AliUEHistograms*) list->FindObject("AliUEHistograms");
-  corrected->SetEtaRange(-0.79, 0.79);
-  corrected->SetPtRange(0.51, 100);
-  corrected->SetCombineMinMax(kTRUE);
+  SetupRanges(corrected);
   
   file2 = TFile::Open(fileNameCorrections);
   list2 = (TList*) file2->Get(objectName);
   AliUEHistograms* corrections = (AliUEHistograms*) list2->FindObject("AliUEHistograms");
-  corrections->SetEtaRange(-0.79, 0.79);
-  corrections->SetPtRange(0.51, 100);
-  corrections->SetCombineMinMax(kTRUE);
+  SetupRanges(corrections);
   
-  ueHist = (AliUEHist*) corrections->GetUEHist(id);
+  ueHistData        = (AliUEHist*) corrected->GetUEHist(id);
+  ueHistCorrections = (AliUEHist*) corrections->GetUEHist(id);
   
   // copy histogram
   // the CFStepTriggered step is overwritten here and cannot be used for comparison afterwards anymore
-  ueHist->CorrectTracks(AliUEHist::kCFStepAll, AliUEHist::kCFStepTriggered, (TH1*) 0, 0);
+  ueHistData->CorrectTracks(AliUEHist::kCFStepAll, AliUEHist::kCFStepTriggered, (TH1*) 0, 0);
+  
+  Int_t maxRegion = 3;
+  Float_t ptLeadMin = -1;
+  Float_t ptLeadMax = -1;
+  if (id == 2)
+  {
+    maxRegion = 1;
+    // the uncertainty is flat in delta phi, so use this trick to get directly the uncertainty as function of leading pT
+    //ptLeadMin = 1.01;
+    //ptLeadMax = 1.99;
+  }
   
   // histogram before
   TH1* before[3];
-  for (Int_t region=0; region<3; region++)
-    before[region] = ueHist->GetUEHist(AliUEHist::kCFStepAll, region);
+  for (Int_t region=0; region<maxRegion; region++)
+    before[region] = ueHistData->GetUEHist(AliUEHist::kCFStepAll, region, ptLeadMin, ptLeadMax);
   
-  defaultEff = ueHist->GetTrackingEfficiency();
-  defaultEffpT = ueHist->GetTrackingEfficiency(1);
-  defaultContainer = ueHist->GetTrackHistEfficiency();
+  defaultEff = ueHistCorrections->GetTrackingEfficiency();
+  defaultEffpT = ueHistCorrections->GetTrackingEfficiency(1);
+  defaultContainer = ueHistCorrections->GetTrackHistEfficiency();
   
   c = new TCanvas;
   defaultEffpT->Draw("");
+  
+  Float_t largestDeviation[3];
+  for (Int_t i=0; i<maxRegion; i++)
+    largestDeviation[i] = 0;  
   
   for (Int_t i=0; i<7; i++)
   {
@@ -526,25 +612,25 @@ void ModifyComposition(const char* fileNameData, const char* fileNameCorrections
     }
     
     // put in corrections
-    ueHist->SetTrackHistEfficiency(newContainer);
+    ueHistCorrections->SetTrackHistEfficiency(newContainer);
     
     // ratio
-    modifiedEff = ueHist->GetTrackingEfficiency();
+    modifiedEff = ueHistCorrections->GetTrackingEfficiency();
     modifiedEff->Divide(modifiedEff, defaultEff);
     //modifiedEff->Draw("COLZ");
     
     c->cd();
-    modifiedEffpT = ueHist->GetTrackingEfficiency(1);
+    modifiedEffpT = ueHistCorrections->GetTrackingEfficiency(1);
     modifiedEffpT->SetLineColor(i+1);
     modifiedEffpT->Draw("SAME");
     
     // apply change in tracking efficiency
-    ueHist->CorrectTracks(AliUEHist::kCFStepTriggered, AliUEHist::kCFStepAll, modifiedEff, 0, 1);
+    ueHistData->CorrectTracks(AliUEHist::kCFStepTriggered, AliUEHist::kCFStepAll, modifiedEff, 0, 1);
   
-    for (Int_t region=0; region<3; region++)
+    for (Int_t region=0; region<maxRegion; region++)
     {
       // histogram after
-      TH1* after = ueHist->GetUEHist(AliUEHist::kCFStepAll, region);
+      TH1* after = ueHistData->GetUEHist(AliUEHist::kCFStepAll, region, ptLeadMin, ptLeadMax);
       
       if (verbose)
         DrawRatio(before[region], (TH1*) after->Clone(), Form("Region %d Composition %d", region, i));
@@ -552,8 +638,15 @@ void ModifyComposition(const char* fileNameData, const char* fileNameCorrections
       // ratio is flat, extract deviation
       after->Divide(before[region]);
       after->Fit("pol0", "0");
-      Printf("Deviation for region %d case %d is %.2f %%", region, i, 100.0 - 100.0 * after->GetFunction("pol0")->GetParameter(0));
+      Float_t deviation = 100.0 - 100.0 * after->GetFunction("pol0")->GetParameter(0);
+      Printf("Deviation for region %d case %d is %.2f %%", region, i, deviation);
+      
+      if (TMath::Abs(deviation) > largestDeviation[region])
+        largestDeviation[region] = TMath::Abs(deviation);
     }
     //return;
   }
+  
+  for (Int_t i=0; i<maxRegion; i++)
+    Printf("Largest deviation in region %d is %f", i, largestDeviation[i]);
 }    

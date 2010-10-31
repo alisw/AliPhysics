@@ -1172,3 +1172,46 @@ void AliUEHist::CopyReconstructedData(AliUEHist* from)
   fEventHist->SetGrid(AliUEHist::kCFStepReconstructed, from->fEventHist->GetGrid(AliUEHist::kCFStepReconstructed));
   fEventHist->SetGrid(AliUEHist::kCFStepBiasStudy,     from->fEventHist->GetGrid(AliUEHist::kCFStepBiasStudy));
 }
+
+//____________________________________________________________________
+void AliUEHist::ExtendTrackingEfficiency()
+{
+  // fits the tracking efficiency at high pT with a constant and fills all bins with this tracking efficiency
+
+  Float_t fitRangeBegin = 5.01;
+  Float_t fitRangeEnd = 14.99;
+  Float_t extendRangeBegin = 10.01;
+
+  TH1* obj = GetTrackingEfficiency(1);
+
+  //new TCanvas; obj->Draw();
+  obj->Fit("pol0", "+0", "SAME", fitRangeBegin, fitRangeEnd);
+
+  Float_t trackingEff = obj->GetFunction("pol0")->GetParameter(0);
+
+  obj = GetTrackingContamination(1);
+
+  //new TCanvas; obj->Draw();
+  obj->Fit("pol0", "+0", "SAME", fitRangeBegin, fitRangeEnd);
+
+  Float_t trackingCont = obj->GetFunction("pol0")->GetParameter(0);
+
+  Printf("AliUEHist::ExtendTrackingEfficiency: Fitted efficiency between %f and %f and got %f tracking efficiency and %f tracking contamination correction. Extending from %f onwards (within %f < eta < %f)", fitRangeBegin, fitRangeEnd, trackingEff, trackingCont, extendRangeBegin, fEtaMin, fEtaMax);
+ 
+  // extend up to pT 100
+  for (Int_t x = fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMin); x <= fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMax); x++)
+    for (Int_t y = fTrackHistEfficiency->GetAxis(1, 0)->FindBin(extendRangeBegin); y <= fTrackHistEfficiency->GetNBins(1); y++)
+      for (Int_t z = 1; z <= fTrackHistEfficiency->GetNBins(2); z++)
+      {
+      // TODO fit contamination as well
+        Int_t bins[3];
+        bins[0] = x;
+        bins[1] = y;
+        bins[2] = z;
+        
+        fTrackHistEfficiency->GetGrid(0)->SetElement(bins, 1);
+        fTrackHistEfficiency->GetGrid(1)->SetElement(bins, trackingEff);
+        fTrackHistEfficiency->GetGrid(2)->SetElement(bins, trackingEff / trackingCont);
+      }
+}
+
