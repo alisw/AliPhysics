@@ -216,7 +216,7 @@ private:
   AliHLTGlobalHistoComponent(const AliHLTGlobalHistoComponent&);
   /// assignment operator prohibited
   AliHLTGlobalHistoComponent& operator=(const AliHLTGlobalHistoComponent&);
-
+    
   /// the event number, tree filling variable
   int fEvent; //!
   /// track count, tree filling variable
@@ -237,7 +237,22 @@ private:
   /// filling arrays for track parameters
   AliHLTGlobalHistoVariables<float> fTrackVariables; //!
   AliHLTGlobalHistoVariables<int> fTrackVariablesInt; //!
+ 
+  /// filling arrays for V0 parameters
+  AliHLTGlobalHistoVariables<float> fV0Variables; //!
   
+ 
+  Double_t fGammaCuts[8];  // cuts for gammas
+  Double_t fKsCuts[8];     // cuts for Ks
+  Double_t fLambdaCuts[8]; // cuts for Lambdas
+  Double_t fAPCuts[8];     // cuts for Armenteros-Podolanski plot
+
+  Int_t fNEvents;  // n of processed events
+  Int_t fNGammas;  // n found total
+  Int_t fNKShorts; // n found total
+  Int_t fNLambdas; // n found total
+  Int_t fNPi0s;    // n found total
+
   ClassDef(AliHLTGlobalHistoComponent, 0) // HLT Global Histogram component
 };
 #endif

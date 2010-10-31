@@ -1,3 +1,5 @@
+// -*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTV0HISTOCOMPONENT_H
 #define ALIHLTV0HISTOCOMPONENT_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
