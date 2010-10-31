@@ -1214,6 +1214,9 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 	  }
 	}
       }
+      for (Int_t iTrigClass = 0; iTrigClass < kNClasses; iTrigClass++){
+	delete [] rows[iTrigClass];
+      }  
     }  
   }
 
