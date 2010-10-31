@@ -122,3 +122,25 @@ void CheckTrackingEfficiency(const char* reference = 0, const char* fileName = "
   }
 }
 
+void PlotSingleTrackingEfficiency(const char* fileName, Int_t what = 0)
+{
+  loadlibs();
+
+  file = TFile::Open(fileName);
+  list = (TList*) file->Get("PWG4_LeadingTrackUE/histosLeadingTrackUE");
+  AliUEHistograms* h = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+  h->SetEtaRange(-0.79, 0.79);
+
+  if (what == 0)
+    eff = (TH2*) h->GetNumberDensitypT()->GetTrackEfficiency(AliUEHist::kCFStepAnaTopology, AliUEHist::kCFStepTrackedOnlyPrim, 0, 1);
+  else
+    eff = (TH2*) h->GetNumberDensitypT()->GetTrackingContamination();
+
+  eff->Draw("colz");
+}
+
+void PlotSystUncertainties()
+{
+  //
+}
+ 

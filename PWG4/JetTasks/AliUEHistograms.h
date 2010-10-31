@@ -55,6 +55,8 @@ class AliUEHistograms : public TObject
   void SetContaminationEnhancement(TH1F* hist);
   void SetCombineMinMax(Bool_t flag);
   
+  void ExtendTrackingEfficiency();
+
   AliUEHistograms(const AliUEHistograms &c);
   AliUEHistograms& operator=(const AliUEHistograms& c);
   virtual void Copy(TObject& c) const;
