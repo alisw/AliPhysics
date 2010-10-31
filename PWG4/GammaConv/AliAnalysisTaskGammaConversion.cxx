@@ -532,7 +532,8 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   }
 
   if(fRemovePileUp && fV0Reader->GetESDEvent()->IsPileupFromSPD()) {
-     eventQuality=4;
+    fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+    eventQuality=4;
     return;
   }
 
@@ -542,6 +543,7 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   Bool_t v0AND = v0A && v0C;
 
   if(fSelectV0AND && !v0AND){
+    fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
     eventQuality=5;
     return;
   }
