@@ -80,6 +80,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
 							    fUseExternalWeightOnly(kFALSE),
 							    fLimitGenJetEta(kFALSE),
                                                             fBkgSubtraction(kFALSE),
+                                                            fFillCorrBkg(0),
 							    fFilterMask(0),
   fEventSelectionMask(0),
 							    fAnalysisType(0),
@@ -142,12 +143,12 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh1Ptjetsubhardest1(0x0),
   fh1Ptjetsubhardest2(0x0),
   fh1Ptjetsubhardest3(0x0),
-  fh1Rhovspthardest1(0x0), 
-  fh1Rhovspthardest2(0x0),
-  fh1Rhovspthardest3(0x0),
-  fh1Errorvspthardest1(0x0), 
-  fh1Errorvspthardest2(0x0),
-  fh1Errorvspthardest3(0x0),
+  fh2Rhovspthardest1(0x0), 
+  fh2Rhovspthardest2(0x0),
+  fh2Rhovspthardest3(0x0),
+  fh2Errorvspthardest1(0x0), 
+  fh2Errorvspthardest2(0x0),
+  fh2Errorvspthardest3(0x0),
   fHistList(0x0)  
 {
   for(int i = 0;i < kMaxStep*2;++i){
@@ -188,6 +189,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
   fBkgSubtraction(kFALSE),
+  fFillCorrBkg(0),
   fFilterMask(0),
   fEventSelectionMask(0),
   fAnalysisType(0),
@@ -250,12 +252,12 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh1Ptjetsubhardest1(0x0),
   fh1Ptjetsubhardest2(0x0),
   fh1Ptjetsubhardest3(0x0),
-  fh1Rhovspthardest1(0x0),
-  fh1Rhovspthardest2(0x0),
-  fh1Rhovspthardest3(0x0),
-  fh1Errorvspthardest1(0x0),
-  fh1Errorvspthardest2(0x0),
-  fh1Errorvspthardest3(0x0),
+  fh2Rhovspthardest1(0x0),
+  fh2Rhovspthardest2(0x0),
+  fh2Rhovspthardest3(0x0),
+  fh2Errorvspthardest1(0x0),
+  fh2Errorvspthardest2(0x0),
+  fh2Errorvspthardest3(0x0),
   fHistList(0x0)
 {
 
@@ -492,12 +494,12 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fh1Ptjetsubhardest1 = new TH1F("fh1Pthardestsub1","Subtracted hardest jet spectrum 1",100,0.,200.);
     fh1Ptjetsubhardest2 = new TH1F("fh1Pthardestsub2","Subtracted hardest jet spectrum 2",100,0.,200.);
     fh1Ptjetsubhardest3 = new TH1F("fh1Pthardestsub3","Subtracted hardest jet spectrum 3",100,0.,200.);
-    fh1Rhovspthardest1 = new TH2F("fh1Rhovspthardest1","Background vs pTjet 1",100,0.,200.,50,0.,5.);
-    fh1Rhovspthardest2 = new TH2F("fh1Rhovspthardest2","Background vs pTjet 2",100,0.,200.,50,0.,5.);
-    fh1Rhovspthardest3 = new TH2F("fh1Rhovspthardest3","Background vs pTjet 3",100,0.,200.,50,0.,5.);
-    fh1Errorvspthardest1 = new TH2F("fhErorvspthardest1","Relative error 1",100,0.,200.,50,0.,5.);
-    fh1Errorvspthardest2 = new TH2F("fh1Errorvspthardest2","Relative error 2",100,0.,200.,50,0.,5.);
-    fh1Errorvspthardest3 = new TH2F("fh1Errorvspthardest3","Relative error 3",100,0.,200.,50,0.,5.);
+    fh2Rhovspthardest1 = new TH2F("fh2Rhovspthardest1","Background vs pTjet 1",100,0.,200.,50,0.,5.);
+    fh2Rhovspthardest2 = new TH2F("fh2Rhovspthardest2","Background vs pTjet 2",100,0.,200.,50,0.,5.);
+    fh2Rhovspthardest3 = new TH2F("fh2Rhovspthardest3","Background vs pTjet 3",100,0.,200.,50,0.,5.);
+    fh2Errorvspthardest1 = new TH2F("fh2Errorvspthardest1","Relative error 1",100,0.,200.,50,0.,5.);
+    fh2Errorvspthardest2 = new TH2F("fh2Errorvspthardest2","Relative error 2",100,0.,200.,50,0.,5.);
+    fh2Errorvspthardest3 = new TH2F("fh2Errorvspthardest3","Relative error 3",100,0.,200.,50,0.,5.);
   }
   
 
@@ -579,12 +581,12 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       fHistList->Add(fh1Ptjetsubhardest1);
       fHistList->Add(fh1Ptjetsubhardest2);
       fHistList->Add(fh1Ptjetsubhardest3);
-      fHistList->Add(fh1Rhovspthardest1);
-      fHistList->Add(fh1Rhovspthardest2);
-      fHistList->Add(fh1Rhovspthardest3);
-      fHistList->Add(fh1Errorvspthardest1);
-      fHistList->Add(fh1Errorvspthardest2);
-     fHistList->Add(fh1Errorvspthardest3);
+      fHistList->Add(fh2Rhovspthardest1);
+      fHistList->Add(fh2Rhovspthardest2);
+      fHistList->Add(fh2Rhovspthardest3);
+      fHistList->Add(fh2Errorvspthardest1);
+      fHistList->Add(fh2Errorvspthardest2);
+     fHistList->Add(fh2Errorvspthardest3);
     }
   }
 
@@ -673,6 +675,19 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     return;
   }
 
+  Int_t nJets = aodRecJets->GetEntriesFast();
+
+  // ==== General variables needed
+  // We use statice array, not to fragment the memory
+  AliAODJet genJets[kMaxJets];
+  Int_t nGenJets = 0;
+  AliAODJet recJets[kMaxJets];
+  Int_t nRecJets = 0;
+  ///////////////////////////
+
+
+
+
   if(fBkgSubtraction){
      AliAODJetEventBackground* evBkg=(AliAODJetEventBackground*)fAOD->FindListObject(fBranchBkg.Data()); 
 
@@ -685,7 +700,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
      ///just to start: some very simple plots containing rho, sigma and area of the background. 
      
-     Int_t nJets = aodRecJets->GetEntriesFast();
+     
      Float_t pthardest=0.;
      if(nJets!=0){
   
@@ -715,6 +730,9 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	 Float_t ptsub1=jet->Pt()-bkg1*jet->EffectiveAreaCharged();
 	 Float_t ptsub2=jet->Pt()-bkg2*jet->EffectiveAreaCharged();
          Float_t ptsub3=jet->Pt()-bkg3*jet->EffectiveAreaCharged();
+         if(ptsub2<0.) ptsub2=0.;
+         if(ptsub1<0.) ptsub1=0.;
+         if(ptsub3<0.) ptsub3=0.;
 	 Float_t err1=sigma1*sqrt(area1);
 	 Float_t err2=sigma2*sqrt(area2);
          Float_t err3=sigma3*sqrt(area3);	 
@@ -727,31 +745,32 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	   fh1Ptjetsubhardest1->Fill(ptsub1);
 	   fh1Ptjetsubhardest2->Fill(ptsub2);
            fh1Ptjetsubhardest3->Fill(ptsub3);
-	   fh1Errorvspthardest1->Fill(ptsub1,err1/ptsub1);
-	   fh1Errorvspthardest2->Fill(ptsub2,err2/ptsub2);
-           fh1Errorvspthardest3->Fill(ptsub3,err3/ptsub3);
+	   fh2Errorvspthardest1->Fill(ptsub1,err1/ptsub1);
+	   fh2Errorvspthardest2->Fill(ptsub2,err2/ptsub2);
+           fh2Errorvspthardest3->Fill(ptsub3,err3/ptsub3);
 	 }
+
+              Float_t ptsub=0.;
+              if(fFillCorrBkg==1) ptsub=ptsub1;
+              if(fFillCorrBkg==2) ptsub=ptsub2;
+              if(fFillCorrBkg==3) ptsub=ptsub3;
+              Float_t subphi=jet->Phi();
+              Float_t subtheta=jet->Theta();
+              Float_t subpz = ptsub/TMath::Tan(subtheta);
+              Float_t subpx=ptsub*TMath::Cos(subphi);
+              Float_t subpy=ptsub * TMath::Sin(subphi);
+              Float_t subp  = TMath::Sqrt(ptsub*ptsub+subpz*subpz);
+	      if(k<kMaxJets){
+		genJets[k].SetPxPyPzE(subpx,subpy,subpz,subp);
+		nGenJets = k+1;
+	      }
        }
-       fh1Rhovspthardest1->Fill(pthardest,bkg1);
-       fh1Rhovspthardest2->Fill(pthardest,bkg2);
-       fh1Rhovspthardest3->Fill(pthardest,bkg3); 
-
-
-
+       fh2Rhovspthardest1->Fill(pthardest,bkg1);
+       fh2Rhovspthardest2->Fill(pthardest,bkg2);
+       fh2Rhovspthardest3->Fill(pthardest,bkg3); 
      }
   }// background subtraction
   
-
-  // ==== General variables needed
-  
-  
-  // We use statice array, not to fragment the memory
-  AliAODJet genJets[kMaxJets];
-  Int_t nGenJets = 0;
-  AliAODJet recJets[kMaxJets];
-  Int_t nRecJets = 0;
-  ///////////////////////////
-
 
   Double_t eventW = 1;
   Double_t ptHard = 0; 
@@ -994,7 +1013,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   }
   
   nRecJets = TMath::Min(nRecJets,kMaxJets);
-  
+  nJets = TMath::Min(nJets,kMaxJets);
   Int_t iCountRec = 0;
   for(int ir = 0;ir < nRecJets;++ir){
     AliAODJet *tmp = dynamic_cast<AliAODJet*>(aodRecJets->At(ir));
@@ -1016,8 +1035,11 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     iGenIndex[i] = iRecIndex[i] = -1;
   }
 
+
   AliAnalysisHelperJetTasks::GetClosestJets(genJets,nGenJets,recJets,nRecJets,
 					    iGenIndex,iRecIndex,fDebug);
+
+
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
 
   if(fDebug){
@@ -1223,10 +1245,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	fh2PsiPtRec[ir]->Fill(r,ptRec,rhoSum);
       }
     }
-
-
-    containerPhiZ[2] = zLeading;
-
+    
     // Fill Correlation
     Int_t ig = iGenIndex[ir];
     if(ig>=0 && ig<nGenJets){
@@ -1236,7 +1255,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       Double_t phiGen = genJets[ig].Phi();
       if(phiGen<0)phiGen+=TMath::Pi()*2.; 
       Double_t etaGen = genJets[ig].Eta();
-
+      
       container[3] = ptGen;
       container[4] = etaGen;
       container[5] = phiGen;
@@ -1244,7 +1263,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       // 
       // we accept only jets which are detected within a smaller window, to avoid ambigious pair association at the edges of the acceptance
       // 
-
+      
       if(TMath::Abs(etaGen)<fRecEtaWindow)fhnJetContainer[kStep4+kMaxStep]->Fill(container,eventW);
       if(TMath::Abs(etaRec)<fRecEtaWindow){
 	fhnJetContainer[kStep3+kMaxStep]->Fill(container,eventW);
@@ -1254,9 +1273,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	  fh2RelPtFGen->Fill(ptGen,delta,eventW);
 	}
 	if(fhnCorrelationPhiZRec)fhnCorrelationPhiZRec->Fill(containerPhiZ);
-
-      }// if etarec in window
-
+      }// if etarec in window      
     } 
     else{
       containerPhiZ[3] = 0;
