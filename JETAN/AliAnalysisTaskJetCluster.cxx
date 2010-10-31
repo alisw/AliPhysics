@@ -78,6 +78,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fUseGlobalSelection(kFALSE),
+  fUseBackgroundCalc(kFALSE),
   fFilterMask(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),  
@@ -161,6 +162,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fUseGlobalSelection(kFALSE),
+  fUseBackgroundCalc(kFALSE),
   fFilterMask(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -282,12 +284,13 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       AddAODBranch("TClonesArray",&tcaran,fNonStdFile.Data());
 
 
-     if(!AODEvent() || !AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
-	AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
-	evBkg->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
-	AddAODBranch("AliAODJetEventBackground",&evBkg,fNonStdFile.Data());
-       
-     }
+      if(fUseBackgroundCalc){
+	if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
+	  AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
+	  evBkg->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
+	  AddAODBranch("AliAODJetEventBackground",&evBkg,fNonStdFile.Data());  
+	}
+      }
 
       if(fNonStdFile.Length()!=0){
 	// 
@@ -557,10 +560,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     if(!jarrayran)jarrayran = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",fNonStdBranch.Data(),"random")));
     if(jarrayran)jarrayran->Delete();    // this is our responsibility, clear before filling again
 
-    if(AODEvent())evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
-    if(!evBkg)  evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
-    if(evBkg)evBkg->Reset(); 
-
+    if(fUseBackgroundCalc){
+      if(AODEvent())evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
+      if(!evBkg)  evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
+      if(evBkg)evBkg->Reset(); 
+    }
   }
 
 
@@ -714,7 +718,12 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   // employ setters for these...
 
  
-  // now create the object that holds info about ghosts                         
+  // now create the object that holds info about ghosts                        
+  if(!fUseBackgroundCalc&& fNonStdBranch.Length()==0){
+    // reduce CPU time...
+    fGhostArea = 0.5; 
+    fActiveAreaRepeats = 0; 
+  }
   fastjet::GhostedAreaSpec ghostSpec(fGhostEtamax, fActiveAreaRepeats, fGhostArea);
   fastjet::AreaType areaType =   fastjet::active_area;
   fastjet::AreaDefinition areaDef = fastjet::AreaDefinition(areaType,ghostSpec);
