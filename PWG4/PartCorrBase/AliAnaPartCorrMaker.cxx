@@ -33,6 +33,8 @@
 //#include <TObjectTable.h>
 
 //---- AliRoot system ---- 
+#include "AliAnalysisManager.h"
+#include "AliVEventHandler.h"
 #include "AliAnaPartCorrBaseClass.h" 
 #include "AliAnaPartCorrMaker.h" 
 
@@ -301,6 +303,10 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   }
 	
   fCaloUtils->SetGeometryTransformationMatrices(fReader->GetInputEvent());	
+  
+  //Magic line to write events to file
+  if(fReader->WriteDeltaAODToFile())AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+
   
   //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
   //gObjectTable->Print();
