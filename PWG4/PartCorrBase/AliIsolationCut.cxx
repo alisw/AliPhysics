@@ -135,12 +135,14 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   Float_t etaC  = pCandidate->Eta() ;
   Float_t ptC   = pCandidate->Pt() ;
   Float_t pt    = -100. ;
-  Float_t eta   = -100.  ;
-  Float_t phi   = -100.  ;
-  Float_t rad   = -100 ;
-  n = 0 ;
+  Float_t eta   = -100. ;
+  Float_t phi   = -100. ;
+  Float_t rad   = -100. ;
+  
+  n         = 0 ;
+  nfrac     = 0 ;
   coneptsum = 0.; 
-  isolated = kFALSE;
+  isolated  = kFALSE;
 
   //Initialize the array with refrences
   TObjArray * refclusters = 0x0;
@@ -164,10 +166,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
       //if at the same side has particle larger than candidate, then candidate can not be the leading, skip such events
       if(pt > ptC){
-        n = -1;
-        nfrac = -1;
+        n         = -1;
+        nfrac     = -1;
         coneptsum = -1;
-        isolated = kFALSE;
+        isolated  = kFALSE;
         if(bFillAOD && reftracks) reftracks->Clear(); 
         return ;
       }
@@ -179,14 +181,17 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
           ntrackrefs++;
           if(ntrackrefs == 1){
             reftracks = new TObjArray(0);
-            reftracks->SetName(Form("Tracks%s",aodArrayRefName.Data()));
+            //reftracks->SetName(Form("Tracks%s",aodArrayRefName.Data()));
+            TString tempo(aodArrayRefName)  ; 
+            tempo += "Tracks" ; 
+            reftracks->SetName(tempo);
             reftracks->SetOwner(kFALSE);
           }
           reftracks->Add(track);
         }
         //printf("charged in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
         coneptsum+=pt;
-        if(pt > fPtThreshold ) n++;
+        if(pt > fPtThreshold )    n++;
         if(pt > fPtFraction*ptC ) nfrac++;  
       } // Inside cone
     }// charged particle loop
@@ -235,12 +240,12 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
       //if at the same side has particle larger than candidate, then candidate can not be the leading, skip such events
       if(pt > ptC){
-        n = -1;
-        nfrac = -1;
+        n         = -1;
+        nfrac     = -1;
         coneptsum = -1;
-        isolated = kFALSE;
+        isolated  = kFALSE;
         if(bFillAOD){
-          if(reftracks)  reftracks->Clear(); 
+          if(reftracks)  reftracks  ->Clear(); 
           if(refclusters)refclusters->Clear(); 
         }
         return ;
@@ -253,17 +258,20 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
           nclusterrefs++;
           if(nclusterrefs==1){
             refclusters = new TObjArray(0);
-            refclusters->SetName(Form("Clusters%s",aodArrayRefName.Data()));
+            //refclusters->SetName(Form("Clusters%s",aodArrayRefName.Data()));
+            TString tempo(aodArrayRefName)  ; 
+            tempo += "Clusters" ; 
+            reftracks->SetName(tempo);
             refclusters->SetOwner(kFALSE);
           }
           refclusters->Add(calo);
         }
         //printf("neutral in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
         coneptsum+=pt;
-        if(pt > fPtThreshold ) n++;
+        if(pt > fPtThreshold )     n++;
         //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
         if(fPtFraction*ptC<fPtThreshold) {
-            if(pt>fPtThreshold) nfrac++ ;
+            if(pt>fPtThreshold)    nfrac++ ;
         }
         else {
             if(pt>fPtFraction*ptC) nfrac++; 
