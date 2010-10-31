@@ -33,12 +33,15 @@
 #include <Riostream.h>
 #include <TClass.h>
 #include <TH1F.h> 
+#include <TF1.h> 
+#include <TFitResultPtr.h>
 #include <TH2.h> 
 #include <TIterator.h> 
 #include <TKey.h> 
 #include <TFile.h> 
 #include <TMath.h>
 #include <TString.h>
+#include <TPaveText.h>
 
 // --- Standard library ---
 
@@ -51,6 +54,36 @@
 #include "AliT0QAChecker.h"
 
 ClassImp(AliT0QAChecker)
+//____________________________________________________________________________
+AliT0QAChecker::AliT0QAChecker() :
+AliQACheckerBase("T0","T0 Quality Assurance Checker")
+
+{
+  // Standard constructor
+
+}
+
+//____________________________________________________________________________
+AliT0QAChecker::AliT0QAChecker(const AliT0QAChecker& qac):
+  AliQACheckerBase(qac.GetName(), qac.GetTitle()) 
+{
+  // copy constructor
+  AliError("Copy should not be used with this class\n");
+}
+//____________________________________________________________________________
+AliT0QAChecker& AliT0QAChecker::operator=(const AliT0QAChecker& qac){
+  // assignment operator
+  this->~AliT0QAChecker();
+  new(this)AliT0QAChecker(qac);
+  return *this;
+}
+
+
+//____________________________________________________________________________
+AliT0QAChecker::~AliT0QAChecker(){
+  // destructor
+
+}
 
 //__________________________________________________________________
 void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
@@ -59,7 +92,7 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
     
-  char * detOCDBDir = Form("T0/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
+ char * detOCDBDir = Form("T0/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
 
   AliCDBEntry *QARefRec = AliQAManager::QAManager()->Get(detOCDBDir);
   //  QARefRec->Dump();
@@ -67,205 +100,168 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
     AliInfo("QA reference data NOT retrieved for Reconstruction check. No T0 reference distribution");
   }
   
-   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
     test[specie]    = 10.0 ; 
 
-  Double_t nent[500];
-  TString hname[500];
-  const char *cname;
-  memset(nent,0,500*sizeof(Double_t));
-  Double_t w[500];
-  memset(w,1,500*sizeof(Double_t));
-  TH2 *fhRecDiff[3];  
-  TH1 *fhRawEff[500];
-  TH2 *fhRawTime[500];
-  TH1 *fhESD[2];
-  TH2 *fhHits[10];
-  
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     //  TString dataType = AliQAv1::GetAliTaskName(index);
     if (list[specie]->GetEntries() == 0){
       test[specie] = 1. ; // nothing to check
     }
     else {
-      TH1 * hdata ;
-      TH2 * h ;
-      for (Int_t ir=0; ir<list[specie]->GetEntries(); ir++) {
+      if (index == AliQAv1::kRAW && AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)
+       //      if (index == AliQAv1::kRAW )
+	{
+	  test[specie] = CheckRaw(list[specie]);
+	}
       
-	//hits
-
-	if(index == AliQAv1::kSIM && AliQAv1::GetTaskName(AliQAv1::kHITS)){
-	  h =  (TH2*) list[specie]->UncheckedAt(ir);
-	  cname = h->GetName();
-	  hname[ir] = cname;
-	  fhHits[ir] = h;
-	}
-
-	//raw
-      if(index == AliQAv1::kRAW ){
-        if(ir > 204 && ir<208 ) {
-          hdata = (TH1*) list[specie]->UncheckedAt(ir);
-          if(hdata) {
-            cname = hdata->GetName();
-            hname[ir] = cname;
-            fhRawEff[ir] = hdata;
-          }
-        }
-	if((ir>207 && ir<210)  && specie == AliRecoParam::kCalib) {
-	  h =  (TH2*) list[specie]->UncheckedAt(ir);
-	  if(h) {
-	    cname = h->GetName();
-	    hname[ir] = cname;
-	    fhRawTime[ir] = h;
-          AliDebug(AliQAv1::GetQADebugLevel(), Form("count %i %s ",ir, hname[ir].Data()) );
-	  }
-	}
-      }
-      //rec
-      if(index == AliQAv1::kREC){
-        h = (TH2*) list[specie]->UncheckedAt(ir);
-        if(h) {
-          cname = h->GetName();
-          hname[ir] = cname;
-           fhRecDiff[ir] = h;
-        }
-      }
-      //esd
-      if(index ==  AliQAv1::kESD){
-        hdata = (TH1*) list[specie]->UncheckedAt(ir);
-        if(hdata){
-          fhESD[ir] = hdata;
-          AliDebug(AliQAv1::GetQADebugLevel(), Form("count %i %s ",ir, hname[ir].Data()) );
-        }
-      }
+       if (index == AliQAv1::kESD && AliRecoParam::Convert(specie) != AliRecoParam::kCalib)
+	  test[specie] = CheckESD(list[specie]);
     }
-
-
-
-    //raw data
-
-      if (index == AliQAv1::kRAW && specie == AliRecoParam::kCalib){
-	test[specie] = CheckRaw(list[specie],dynamic_cast<TObjArray*>(dynamic_cast<TList *>(QARefRec->GetObject())->First()));
-      }
-      
-      if(index == AliQAv1::kREC){
-        //rec points
-        for (Int_t icase=0; icase<2; icase++) {
-          for (Int_t idet=0; idet<24; idet++) {
-            Double_t mean = fhRecDiff[icase]->
-            ProjectionY(Form("%s_py", fhRecDiff[icase]->GetName()),
-                        idet,idet+1)->GetMean();
-            Double_t rms= fhRecDiff[icase]->
-            ProjectionY(Form("%s_py", fhRecDiff[icase]->GetName()),
-                        idet,idet+1)->GetRMS();
-            AliDebug(AliQAv1::GetQADebugLevel(), Form("name %s icase %i idet %i mean %f, rms %f\n",
-                         fhRecDiff[icase]->GetName(), icase, idet, mean,rms)); 
-	  	  
-            if(TMath::Abs(mean) >1.5 || rms >1){
-              test[specie]=0.25;
-              AliDebug(AliQAv1::GetQADebugLevel(), Form(" calibration is nor perfect; test=%f", test[specie])) ;
-            }
-            if(mean>3 || rms >5) {
-              test[specie] = 0.1;
-              AliDebug(AliQAv1::GetQADebugLevel(), Form(" wrong calibration test=%f", test[specie])) ;
-            } 
-          }
-        }	 
-      }
-      if (index == AliQAv1::kESD) {
-        //ESD
-        for (Int_t icase=0; icase<2; icase++) {
-          Double_t rmsVertex = fhESD[icase]->GetRMS();
-          Double_t meanVertex = fhESD[icase]->GetMean();
-          test[specie]=1;
-          AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %f meanVertex %f rmsVertex %f", fhESD[icase]->GetEntries(), meanVertex, rmsVertex));
-          if (TMath::Abs(rmsVertex)>3) {
-            test[specie]=0.25;
-            AliDebug(AliQAv1::GetQADebugLevel(), Form("Vertex position resolution not good  , rms= %f test=%f",
-                            rmsVertex, test[specie])) ; 
-          }
-          if (TMath::Abs(meanVertex)>3) {
-            test[specie]=0.25;
-            AliDebug(AliQAv1::GetQADebugLevel(), Form("Vertex position bad calibrated  , Mean= %f test=%f",
-                            meanVertex, test[specie])) ; 
-          }
-        }
-      }
-    } //  if (list->GetEntries() != 0
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test[specie])) ;
-  } 
+  
+  }
 }
 
 //--------------------------------------------------------------------------
-Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec , TObjArray *listref) const
+Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const
 {
-  
-    //TH1 *fhRawEff;
-    //TH1 *fhRawRef;
-  TH2 *fhRawRec2d;
-  TH2 *fhTime;
+   Float_t checkr = 0;
+   
+  TString hname[10];
+   TH1*hdata; 
+   const char *cname;
+   TH1 *fhRawEff[10];
+   Int_t nh=0;
+ 
 
-  TIter next(listref) ;
-    //Int_t counter=0;
-  Float_t refmean[50][25]; 
-  Float_t refrms[50][25]; 
-  Float_t checkr = 0;
-  
-    //Int_t nref = listref->GetEntries(); 
-    //Int_t nrec = listrec->GetEntries(); 
-  
-  for (Int_t iii=4; iii<6; iii++){
-    fhRawRec2d =(TH2*) listref->At(iii); 
-    for (Int_t idet=1; idet<25; idet++) {
-      
-      refmean[iii-4][idet] = fhRawRec2d->	
-	ProjectionY(Form("%s_py_%i_%i",                                                              fhRawRec2d ->GetName(), idet,iii-4),
-		    idet,idet+1)->GetMean();
-      
-      refrms[iii-4][idet] = fhRawRec2d->
-	ProjectionY(Form("%s_py%i_%i", 
-			 fhRawRec2d ->GetName(), idet,iii-4),
-		    idet,idet+1)->GetRMS();
-      
-      }
-  }
-
-  
-  TString nameDev[2] = {"CDF", "LED"};
-  for (Int_t icase=208; icase<210; icase++) {
-    fhTime = (TH2*) listrec->At(icase);
-    for (Int_t idet=1; idet<25; idet++) {
-      Double_t binmean = fhTime->
-      ProjectionY(Form("%s_py_%i_%i",                                                              fhTime ->GetName(), idet,icase),
-		    idet,idet+1)->GetMean();
-//        Double_t rms= fhTime ->ProjectionY(Form("%s_py%i_%i", 
-//                                              fhTime ->GetName(), idet,icase),
-//                                         idet,idet+1)->GetRMS();
-      Double_t diffmean = binmean-refmean[icase-208][idet];
-      
-      if (TMath::Abs(diffmean) < 2 ) {
-	checkr = 1;
-	//	printf(" Laser calibration signal sits on its place %f for PMT %s %i : check = %f\n",  diffmean, nameDev[icase-208].Data() ,idet, checkr);
-	AliDebug(AliQAv1::GetQADebugLevel(),
-		 Form(" Laser calibration signal sits on its place %f for PMT %s %i : check = %f\n",  diffmean, nameDev[icase-208].Data(),idet, checkr)) ; 
-     }
-     if (TMath::Abs(diffmean) <= 5 && TMath::Abs(diffmean) >= 2 ){
-       checkr = 0.5;
-       // printf(" Laser calibration signal shifted by  %f ps for PMT %s %i : check = %f\n",  diffmean*24.4, nameDev[icase-208].Data(),idet, checkr);
-       AliDebug(AliQAv1::GetQADebugLevel(),
-		Form(" Laser calibration signal shifted by  %f ps (%f channels) for PMT %s %i : check = %f\n",  diffmean*24.4 ,diffmean , nameDev[icase-208].Data(),idet, checkr)) ; 
-      }
-     if (TMath::Abs(diffmean) > 5) { 
-       checkr = 0.25;
-       //   printf(" Big problems :laser calibration signal shifted by  %f ps (%f channels) for PMT %s %i : check = %f\n",  diffmean*24.4, diffmean, nameDev[icase-208].Data(),idet, checkr);
-       AliDebug(AliQAv1::GetQADebugLevel(),
-		Form(" Big problems :laser calibration signal shifted by  %f ps (%f channels) for PMT %s %i : check = %f\n",  diffmean*24.4, diffmean, nameDev[icase-208].Data(),idet, checkr)) ; 
-       
-     }
+   Int_t nnn[4] = { 420, 458, 459, 460};
+   for (Int_t ir=0; ir<4; ir++)
+     {
+	 hdata = (TH1*) listrec->UncheckedAt(nnn[ir]);
+	 if(hdata) {
+	   cname = hdata->GetName();
+	   hname[ir] = cname;
+	   fhRawEff[nh] = hdata;
+	   nh++;
+	 }
+    }
      
-   }
- }
+   TLine *linelowyellow = new TLine(0, 0.7, 24, 0.7);    
+   linelowyellow->SetLineColor(5);
+   linelowyellow->SetLineStyle(3);
+   linelowyellow->SetLineWidth(4);
+   TLine *linelowred = new TLine(0, 0.2, 24, 0.2);    
+   linelowred->SetLineColor(2);
+   linelowred->SetLineStyle(3);
+   linelowred->SetLineWidth(4);
 
+   Float_t thryell = 0.7;
+   //   TPaveText* text = new TPaveText(0.30,0.50,0.99,0.99,"NDC");    
+   Float_t thrred = 0.2;
+   Float_t chcont =0;
+    for (Int_t ih= 0; ih<4; ih++)
+     { 
+       fhRawEff[ih]->SetLineWidth(2);
+       fhRawEff[ih]->SetMaximum(2.);
+       fhRawEff[ih]->SetMinimum(0.);
+       fhRawEff[ih]->GetListOfFunctions()->Add(linelowyellow);
+       fhRawEff[ih]->GetListOfFunctions()->Add(linelowred);
+
+       Int_t nbins= fhRawEff[ih]->GetNbinsX();
+       Bool_t yell = kFALSE;
+       Bool_t red = kFALSE;
+       for (Int_t in=1; in<nbins-1; in++)
+	 {
+	   if(ih==0 && in==5) continue;
+	   chcont=fhRawEff[ih]->GetBinContent(in);
+	   if (chcont < thryell  ) yell = kTRUE;
+	   if (chcont < thrred  ) red = kTRUE;
+	 }
+       
+       if (! yell && !red) {
+	 AliDebug(AliQAv1::GetQADebugLevel(), Form(" efficiency in all channes %s  is good", fhRawEff[ih]->GetName() ));
+	 checkr=1.;
+	 //	 text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
+	 //	 text->AddText(Form(" No problems "));
+	 //	 text->SetFillColor(3);
+       }
+       
+       if(red ) {
+	 checkr = 0.;
+	 AliDebug(AliQAv1::GetQADebugLevel(), Form(" efficiency in all channes %s  is not so good", fhRawEff[ih]->GetName() ));
+	 //	 text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
+	 //	 text->AddText(Form("Very serious problem, call expert "));
+	 //	 text->SetFillColor(2);
+       }
+       
+       if ( yell && !red) {
+	 AliDebug(AliQAv1::GetQADebugLevel(), Form(" efficiency in all channes %s  is not so good", fhRawEff[ih]->GetName() ));
+	 checkr=0.75;
+	 //	 text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
+	 //	 text->AddText(Form("Some problems "));
+	 //	 text->SetFillColor(5);
+      }
+       // fhRawEff[ih]->GetListOfFunctions()->Add(text);	
+
+     }
   return checkr;
+  
 }
 
+
+//--------------------------------------------------------------------------
+Double_t AliT0QAChecker::CheckESD(TObjArray *listrec ) const
+{
+  Float_t checkr = 0;
+  TH1 *fhESD;
+ 
+  fhESD  = (TH1*) listrec->UncheckedAt(2);
+  if(fhESD){
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("count %s ", fhESD->GetName()) );
+     TF1 *f1 = new TF1("f1","gaus",-1,1);
+    fhESD->Fit("f1","R","Q", -1,1);
+    Double_t par[3];
+    f1->GetParameters(&par[0]);
+    
+    TPaveText* text = new TPaveText(0.30,0.50,0.99,0.99,"NDC");
+    
+    text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
+    
+    printf("numentries %f mean %f #sigma %f ", fhESD->GetEntries(), par[2], par[2]);
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %d mean %f  #sigma %f", fhESD->GetEntries(),par[1], par[2]));
+    
+    
+    if (par[2] > 0.07 && par[2] < 1.) {
+      checkr=0.5;
+       text->AddText(Form("not good resolution :\n %f ns\n", par[2] ));
+       text->SetFillColor(5);
+       printf("T0 detector resolution is not good enouph: %f ns\n",par[2] );
+    }
+    if(TMath::Abs(par[1])>0.05) {
+      checkr = 0.5;
+      text->AddText(Form(" Check clock shift on %f ns", par[1]));
+      text->SetFillColor(5);
+    }
+    if (par[2] >  1. || TMath::Abs(par[1])>0.1) {
+      checkr = 0.25;
+      text->AddText(Form(" Bad resolution:\n mean %f ns sigma %f ns", par[1], par[2]));
+      text->SetFillColor(2);
+      
+      fhESD->GetListOfFunctions()->Add(text);	
+      printf("Please, repeate calibration: shift= %f resolution %f test=%f\n",
+	     par[1], par[2], checkr );
+       AliDebug(AliQAv1::GetQADebugLevel(),
+		Form("Please, check calibration: shift= %f resolution %f test=%f\n",
+		     par[1], par[2], checkr) ) ; 
+    }
+  }
+  else
+    {
+      AliDebug(AliQAv1::GetQADebugLevel(),
+	       Form("No ESD QA histogram found, nothing to check"));
+	checkr=0;
+    }
+  
+  
+  return checkr;
+}
