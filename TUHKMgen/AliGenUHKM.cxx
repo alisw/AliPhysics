@@ -332,20 +332,23 @@ void AliGenUHKM::Generate()
 
   fTrials = 0;
 
-  Int_t nt  = 0;
-
-  fUHKMgen->GenerateEvent();
-  fTrials++;
-
-  fUHKMgen->ImportParticles(&fParticles,"All");
-
-  Int_t np = fParticles.GetEntriesFast();
-
+  Int_t nt  =  0;
+  Int_t np  = -1;
+  while (np <= 0 && fTrials < 100) {
+    fUHKMgen->GenerateEvent();
+    fTrials++;
+    fUHKMgen->ImportParticles(&fParticles,"All");
+    np = fParticles.GetEntriesFast();
+  }
+  if (np <= 0) {
+    AliFatal(Form("Attempted %d trials, giving up", fTrials));
+    return;
+  }
 
   Int_t* idsOnStack = new Int_t[np];
   Int_t* newPos     = new Int_t[np];
   for(Int_t i=0; i<np; i++) newPos[i] = i;
-
+  
   //_________ Loop for particle selection
   for(Int_t i=0; i<np; i++) {
     TParticle *iparticle = (TParticle*)fParticles.At(i);
@@ -359,26 +362,26 @@ void AliGenUHKM::Generate()
       // Add it only once with coordinates not
       // smeared with primary vertex position
       Float_t p[3] = {p[0] = iparticle->Px(),
-                      p[1] = iparticle->Py(),
-                      p[2] = iparticle->Pz()};
+		      p[1] = iparticle->Py(),
+		      p[2] = iparticle->Pz()};
       mass = TDatabasePDG::Instance()->GetParticle(kf)->Mass();
       energy = sqrt(mass*mass + p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
       v[0] = iparticle->Vx();
       v[1] = iparticle->Vy();
       v[2] = iparticle->Vz();
       Float_t time = iparticle->T();
-
+      
       Int_t imo = -1;
       if(hasMother) {
-        imo = iparticle->GetFirstMother(); //index of mother particle in fParticles
+	imo = iparticle->GetFirstMother(); //index of mother particle in fParticles
       } // if has mother
       Bool_t trackFlag = kFALSE;   // tFlag is kFALSE --> do not track the particle
       
       PushTrack(trackFlag, (imo>=0 ? idsOnStack[imo] : imo), kf,
-                p[0], p[1], p[2], energy,
-                v[0], v[1], v[2], time,
-                polar[0], polar[1], polar[2],
-                (hasMother ? kPDecay : kPNoProcess), nt);
+		p[0], p[1], p[2], energy,
+		v[0], v[1], v[2], time,
+		polar[0], polar[1], polar[2],
+		(hasMother ? kPDecay : kPNoProcess), nt);
       idsOnStack[i] = nt;
       
       fNprimaries++;
@@ -394,54 +397,54 @@ void AliGenUHKM::Generate()
       //   this one will be tracked
       
       Float_t p[3] = {p[0] = iparticle->Px(),
-                      p[1] = iparticle->Py(),
-                      p[2] = iparticle->Pz()};
+		      p[1] = iparticle->Py(),
+		      p[2] = iparticle->Pz()};
       mass = TDatabasePDG::Instance()->GetParticle(kf)->Mass();
       energy = sqrt(mass*mass + p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
       v[0] = iparticle->Vx();
       v[1] = iparticle->Vy();
       v[2] = iparticle->Vz();
-
+      
       Int_t type    = iparticle->GetStatusCode(); // 1-from jet / 0-from hydro 
       Int_t coeffT=1;
       if(type==1) coeffT=-1; //to separate particles from jets
       
-
+      
       Int_t imo = -1;
       
       if(hasMother) {
-        imo = iparticle->GetFirstMother();
+	imo = iparticle->GetFirstMother();
       } // if has mother
       
       Bool_t trackFlag = kFALSE;  // tFlag = kFALSE --> do not track this one, its for femtoscopy
       PushTrack(trackFlag, (imo>=0 ? idsOnStack[imo] : imo), kf,
-                p[0], p[1], p[2], energy,
-                v[0], v[1], v[2], (iparticle->T())*coeffT,
-                polar[0], polar[1], polar[2],
-                hasMother ? kPDecay:kPNoProcess, nt);
+		p[0], p[1], p[2], energy,
+		v[0], v[1], v[2], (iparticle->T())*coeffT,
+		polar[0], polar[1], polar[2],
+		hasMother ? kPDecay:kPNoProcess, nt);
       
       idsOnStack[i] = nt;
       fNprimaries++;
       KeepTrack(nt);
-
+      
       origin[0] = origin0[0]+v[0];
       origin[1] = origin0[1]+v[1];
       origin[2] = origin0[2]+v[2];
       imo = nt;
       
       trackFlag = kTRUE;    // tFlag = kTRUE --> track this one
-
+      
       PushTrack(trackFlag, imo, kf,
-                p[0], p[1], p[2], energy,
-                origin[0], origin[1], origin[2], iparticle->T(),
-                polar[0], polar[1], polar[2],
-                hasMother ? kPDecay:kPNoProcess, nt);
+		p[0], p[1], p[2], energy,
+		origin[0], origin[1], origin[2], iparticle->T(),
+		polar[0], polar[1], polar[2],
+		hasMother ? kPDecay:kPNoProcess, nt);
       
       fNprimaries++;
       KeepTrack(nt);
     }
   }
-
+  
   SetHighWaterMark(fNprimaries);
 
   TArrayF eventVertex;

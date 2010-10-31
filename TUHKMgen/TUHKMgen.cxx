@@ -284,13 +284,13 @@ Int_t TUHKMgen::ImportParticles(TClonesArray *particles, const Option_t* option)
     Int_t type = it->GetType();  
       
     if (im1> -1) {
-     // particle not a primary -> set the daughter indexes for the mother particle"<< endl;
+      // particle not a primary -> set the daughter indexes for the mother particle"<< endl;
       TParticle *mother = (TParticle*) (particlesR.UncheckedAt(im1));
       mother->SetLastDaughter(nump);
       if(mother->GetFirstDaughter()==-1)
 	mother->SetFirstDaughter(nump);
-    }
-      
+    } else 
+      ++numprim;
     
     new (particlesR[nump]) TParticle(it->Encoding(), type,			                        //pdg,stat
 				     im1, im2, id1, id2,				                //m1,m2,d1,d2
