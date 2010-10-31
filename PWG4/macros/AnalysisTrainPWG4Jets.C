@@ -426,10 +426,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCluster.C");
      AliAnalysisTaskJetCluster *taskCl = 0;
      if(iPWG4Cluster&1){
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT",0.4,0,1); // this one is for the background jets
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT",0.5,0,1); // this one is for the background jets
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT",0.4,0,1); // this one is for the background random jets
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT",0.6,0,1); // this one is for the background jets
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT",0.7,0,1); // this one is for the background jets
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"ANTIKT",0.4,0,1); // this one is for the background random jets
+
+       if(kUseAODMC){
+	 taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelection,"KT",0.6,0,1); // this one is for the background jets
+	 taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelection,"KT",0.6,0,1); // this one is for the background jets
+	 taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelection,"KT",0.4,0,1); // this one is for the background random jets
+	 taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelection,"KT",0.4,0,1); // this one is for the background random jets
+       }
 
        if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
      }
@@ -438,6 +444,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        if(!iAODanalysis) selection = 0xffffff;
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
        selection&=~(1<<4); // exluded R = .04 already the dafault
+       selection&=~(1<<6); // exluded R = .04 already the dafault
        AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"KT",selection);
      }
      if(iPWG4Cluster&4){
@@ -447,6 +454,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 selection &= ~(1<<1)&~(1<<3)&~(1<<5)&~(1<<7)&~(1<<9);
        }
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
+       selection&=~(1<<4); // exluded R = .04 already the dafault
+       selection&=~(1<<6); // exluded R = .04 already the dafault
        AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"ANTIKT",selection);
        //       AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"ANTIKT",0.4,0,1);
 
@@ -1736,7 +1745,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    // Optionally resubmit threshold.
    // plugin->SetMasterResubmitThreshold(90);
    // Optionally set time to live (default 30000 sec)
-   plugin->SetTTL(50400); // 14h...
+   plugin->SetTTL(54000); // 15h...
    // Optionally set input format (default xml-single)
    plugin->SetInputFormat("xml-single");
    // Optionally modify the name of the generated JDL (default analysis.jdl)
