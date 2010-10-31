@@ -52,6 +52,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
     virtual void SetLimitGenJetEta(Bool_t b){fLimitGenJetEta = b;}
     virtual void SetBkgSubtraction(Bool_t b){fBkgSubtraction = b;}
+    virtual void SetFillCorrBkg(Int_t i){fFillCorrBkg = i;}
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
     virtual void SetMinJetPt(Float_t f){fMinJetPt = f;}
     virtual void SetDeltaPhiWindow(Float_t f){fDeltaPhiWindow = f;}
@@ -115,6 +116,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Bool_t        fUseExternalWeightOnly; // use only external weight
     Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
     Bool_t        fBkgSubtraction;        //flag for bckg subtraction
+    Int_t         fFillCorrBkg;           //flag for filling bckg response matrix
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fEventSelectionMask;    // Selection information used to filter events
     Int_t         fAnalysisType;          // Analysis type 
@@ -202,16 +204,16 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1Ptjetsubhardest1;//! subtracted hardest jet spectrum (Bkg1)
     TH1F*         fh1Ptjetsubhardest2;//! subtracted hardest jet spectrum (Bkg2)
     TH1F*         fh1Ptjetsubhardest3;//! subtracted hardest jet spectrum (Bkg3)
-    TH2F*         fh1Rhovspthardest1;//! rho vs hardest subtracted jet pt (Bkg1)
-    TH2F*         fh1Rhovspthardest2;//! rho vs hardest subtracted jet pt (Bkg2)
-    TH2F*         fh1Rhovspthardest3;//! rho vs hardest subtracted jet pt (Bkg3)
-    TH2F*         fh1Errorvspthardest1;//! relative error vs hardest subtracted jet pt (Bkg1)
-    TH2F*         fh1Errorvspthardest2;//! relative error vs hardest subtracted jet pt (Bkg2)
-    TH2F*         fh1Errorvspthardest3;//! relative error vs hardest subtracted jet pt (Bkg3)    
+    TH2F*         fh2Rhovspthardest1;//! rho vs hardest subtracted jet pt (Bkg1)
+    TH2F*         fh2Rhovspthardest2;//! rho vs hardest subtracted jet pt (Bkg2)
+    TH2F*         fh2Rhovspthardest3;//! rho vs hardest subtracted jet pt (Bkg3)
+    TH2F*         fh2Errorvspthardest1;//! relative error vs hardest subtracted jet pt (Bkg1)
+    TH2F*         fh2Errorvspthardest2;//! relative error vs hardest subtracted jet pt (Bkg2)
+    TH2F*         fh2Errorvspthardest3;//! relative error vs hardest subtracted jet pt (Bkg3)    
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 9) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 10) // Analysis task for standard jet analysis
 };
  
 #endif
