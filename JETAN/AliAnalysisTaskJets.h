@@ -34,6 +34,7 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     virtual void SetJetFinder(AliJetFinder *finder) {fJetFinder = finder;}
     virtual void SetNonStdBranch(const char *c){fNonStdBranch = c;}
     virtual void SetNonStdOutputFile(const char *c){fNonStdFile = c;}
+    virtual void SetBookAODBackground(Bool_t b){fUseAODBackground = b;}
     virtual void Terminate(Option_t *option);
     virtual void ReadAODFromOutput() {fReadAODFromOutput = kTRUE;}
     virtual void SetFilterPt(Float_t f){fFilterPt = f;}
@@ -53,8 +54,9 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
   TChain*       fChain;             //  Chain 
   Int_t         fOpt;               //  Detector configuration used
   Bool_t        fReadAODFromOutput; //  Force reading of the AOD from the output
+  Bool_t        fUseAODBackground;  // decide wether we book the backround branch or not 
   Float_t       fFilterPt;          // use this as a switch for writing the AOD, minium p_T of leading jet   
-  ClassDef(AliAnalysisTaskJets, 5); // Analysis task for standard jet analysis
+  ClassDef(AliAnalysisTaskJets, 6); // Analysis task for standard jet analysis
 };
  
 #endif

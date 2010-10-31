@@ -57,6 +57,7 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
   fChain(0x0),
   fOpt(0),
   fReadAODFromOutput(0),
+  fUseAODBackground(kFALSE),
   fFilterPt(0.)
 {
   // Default constructor
@@ -74,6 +75,7 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
   fChain(0x0),
   fOpt(0),
   fReadAODFromOutput(0),
+  fUseAODBackground(kFALSE),
   fFilterPt(0.)
 {
   // Default constructor
@@ -92,6 +94,7 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name, TChain* chain):
   fChain(chain),
   fOpt(0),
   fReadAODFromOutput(0),
+  fUseAODBackground(kFALSE),
   fFilterPt(0.)
 {
   // Default constructor
@@ -105,14 +108,19 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
   //
   if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
 
+  AliJetHeader *fH = fJetFinder->GetHeader();
+
   if(fNonStdBranch.Length()==0)
     {
       //  Connec default AOD to jet finder
       // create a new branch for the background
-      if(!AODEvent()->FindListObject(AliAODJetEventBackground::StdBranchName())){
-	AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
-	evBkg->SetName(AliAODJetEventBackground::StdBranchName());
-	AddAODBranch("AliAODJetEventBackground",&evBkg);
+
+      if(fUseAODBackground){
+	if(!AODEvent()->FindListObject(AliAODJetEventBackground::StdBranchName())){
+	  AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
+	  evBkg->SetName(AliAODJetEventBackground::StdBranchName());
+	  AddAODBranch("AliAODJetEventBackground",&evBkg);
+	}
       }
       fJetFinder->ConnectAOD(AODEvent());
     }
@@ -126,12 +134,13 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
       TClonesArray *tca = new TClonesArray("AliAODJet", 0);
       tca->SetName(fNonStdBranch.Data());
       AddAODBranch("TClonesArray",&tca,fNonStdFile.Data());
-      if(!AODEvent() || !AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
-	AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
-	evBkg->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
-	AddAODBranch("AliAODJetEventBackground",&evBkg,fNonStdFile.Data());
+      if(fUseAODBackground){
+	if(!AODEvent() || !AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
+	  AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
+	  evBkg->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
+	  AddAODBranch("AliAODJetEventBackground",&evBkg,fNonStdFile.Data());
+	}
       }
-
       if(fNonStdFile.Length()!=0){
 	// 
 	// case that we have an AOD extension we need to fetch the jets from the extended output
@@ -176,7 +185,6 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
   fHistos->AddHistosToList(fListOfHistos);
   
   // Add the JetFinderInformation to the Outputlist
-  AliJetHeader *fH = fJetFinder->GetHeader();
   
   // Compose a characteristic output name
   // with the name of the output branch
@@ -230,16 +238,20 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
 
   if(fNonStdBranch.Length()==0) {
     jarray = AODEvent()->GetJets();
-    evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(AliAODJetEventBackground::StdBranchName()));
-    evBkg->Reset();
+    if(fUseAODBackground){
+      evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(AliAODJetEventBackground::StdBranchName()));
+      evBkg->Reset();
+    }
   }
   else {
     if(AODEvent())jarray = (TClonesArray*)(AODEvent()->FindListObject(fNonStdBranch.Data()));
     if(!jarray)jarray = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data()));
     if(jarray)jarray->Delete();    // this is our responsibility, clear before filling again
-    if(AODEvent())evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
-    if(!evBkg)  evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
-    if(evBkg)evBkg->Reset();
+    if(fUseAODBackground){
+      if(AODEvent())evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
+      if(!evBkg)  evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
+      if(evBkg)evBkg->Reset();
+    }
   }
 
   if (dynamic_cast<AliAODEvent*>(InputEvent()) !=  0 && !fReadAODFromOutput) {

@@ -64,6 +64,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetJetOutputBranch(const char *c){fNonStdBranch = c;}
     virtual void SetJetOutputFile(const char *c){fNonStdFile = c;}
     virtual void SetJetOutputMinPt(Float_t x){fJetOutputMinPt = x;}
+    virtual void SetBackgroundCalc(Bool_t b){fUseBackgroundCalc = b;} 
 
     // for Fast Jet
     fastjet::JetAlgorithm        GetAlgorithm()         const {return fAlgorithm;}
@@ -108,6 +109,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Bool_t        fUseAODTrackInput;      // take track from input AOD not from ouptu AOD
     Bool_t        fUseAODMCInput;         // take MC from input AOD not from ouptu AOD
     Bool_t        fUseGlobalSelection;    // Limit the eta of the generated jets
+    Bool_t        fUseBackgroundCalc;     // switches on background calculations
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
@@ -192,7 +194,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 6) 
+    ClassDef(AliAnalysisTaskJetCluster, 7) 
 };
  
 #endif
