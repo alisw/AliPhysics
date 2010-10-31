@@ -1,15 +1,41 @@
-class AliAnalysisMultPbTrackHistoManager;
+#include "AliAnalysisMultPbTrackHistoManager.h"
+#include "TH2D.h"
+#include "TH1D.h"
+#include "TF1.h"
+#include "TCanvas.h"
+#include "TFile.h"
+#include "TSystem.h"
+#include "TROOT.h"
+#include <iostream>
+#include "TDatabasePDG.h"
+#include "AliPhysicsSelection.h"
+#include "AliESDtrackCuts.h"
+
+using namespace std;
 
 AliAnalysisMultPbTrackHistoManager * hManData = 0;
 AliAnalysisMultPbTrackHistoManager * hManCorr = 0;
 TH2D * hEvStatData = 0;
 TH2D * hEvStatCorr = 0;
 
+const Int_t kHistoFitCompoments = 2;
+TH1D * gHistoCompoments[kHistoFitCompoments];
+
 void LoadLibs();
 void LoadData(TString dataFolder, TString correctionFolder);
 void SetStyle();
 Double_t CheckSecondaries();
 void ShowAcceptanceInVzSlices() ;
+TH1D * GetRatioIntegratedFractions (TH1 * hNum, TH1 * hDenum) ;
+  TH1D * GetCumulativeHisto (TH1 * h) ;
+static Double_t HistoSum(const double * x, const double* p);
+TF1 * GetFunctionHistoSum() ;
+TF1 * GetMTExp(Float_t norm=68, Float_t t=25) ;
+TF1 * GetHagedorn(Float_t norm=68, Float_t pt0=25, Float_t n=13) ;
+TF1 * GetLevy(Double_t temp=0.1, Double_t n=7, Double_t norm=10, const char * name="fLevy") ;
+
+
+
 
 void correct(TString dataFolder = "output/LHC09d_000104892_p4/", TString correctionFolder = "output/LHC10a8_104867/") {
 
@@ -42,6 +68,7 @@ void correct(TString dataFolder = "output/LHC09d_000104892_p4/", TString correct
   //  hMCPtRec->Draw("same");
 
   TCanvas * cMC = new TCanvas ("cMC", "Monte Carlo");
+  cMC->cd();
   hMCPtGen ->Draw();
   hMCPtRec ->Draw("same");
   hMCPtPri ->Draw("same");
@@ -103,7 +130,7 @@ Double_t CheckSecondaries() {
 
   // Some shorthands
   TH1D * hDataDCA   = hManData->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
-  TH1D * hMCDCAGen  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoGen       );
+  //  TH1D * hMCDCAGen  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoGen       );
   TH1D * hMCDCARec  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
   TH1D * hMCDCAPri  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim   );
   TH1D * hMCDCASW  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak    );
@@ -112,6 +139,7 @@ Double_t CheckSecondaries() {
  
 
   TCanvas * cCumulative = new TCanvas("cDCAculumative","DCA cumulative distributions");
+  cCumulative->cd();
   GetCumulativeHisto(hMCDCAPri )->Draw();
   GetRatioIntegratedFractions(hMCDCASW, hMCDCARec  )->Draw("same");
   GetRatioIntegratedFractions(hMCDCASM, hMCDCARec  )->Draw("same");
@@ -133,38 +161,18 @@ Double_t CheckSecondaries() {
   TH1D * hMCPrimSMFak = (TH1D*) hMCDCAPri->Clone("hMCPrimSMFak");
   hMCPrimSMFak->Add(hMCDCASM);
   hMCPrimSMFak->Add(hMCDCAFak);
-  Int_t ncomp = 2;
-  MyHistoFitter * fitter = new MyHistoFitter (ncomp);
-  //  fitter->SetFCN(fcnhistoNoMCErr);
-  fitter->SetHistoToFit(hDataDCA);
-  fitter->SetMaxXValue(50);
-  fitter->SetHistoComponent(0,hMCPrimSMFak);
-  //fitter->SetHistoComponent(0,hMCPrimSM);
-  fitter->SetHistoComponent(1,hMCDCASW);
-  //  fitter->SetHistoComponent(2,hMCDCAFak);
-  fitter->SetParName(0,"Primaries + Secondaries Material + Fakes");
-  fitter->SetParName(1,"Secondaries (Weak)");
-  //  fitter->SetParName(2,"Fakes");
-  fitter->SetFactor(0,1);
-  fitter->SetFactor(1,1);
-  //  fitter->SetFactor(2,1);
-  fitter->SetFactorLimits(0,0.5,3);
-  fitter->SetFactorLimits(1,0.5,3);
-  //  fitter->SetFactorLimits(2,0.5,3);
-  //  fitter->SetFactorLimits(2,0.5,30);
-  //  fitter->FixFactor(2);// FIXME: THIS IS BUGGY!
-  //  fitter->SetFactorLimits(3,0.9,1.1);
-  fitter->SetScaleHistos();
-  fitter->Fit();
-  fitter->PrintFitResults();
-  fitter->GetHistoToFit()->Draw("");
-  fitter->GetHistoFitted()->Draw("chist,same");
-  for(Int_t icomp = 0; icomp < ncomp; icomp++){
-    fitter->GetHistoComponent(icomp)->Draw("same");
-  }
-  
-  
-  return fitter->GetFactor(1)/fitter->GetFactor(0);
+
+  gHistoCompoments[0] = (TH1D*) hMCPrimSMFak->Clone();
+  gHistoCompoments[1] = (TH1D*) hMCDCASW->Clone();
+  TF1 * fHistos = GetFunctionHistoSum();
+  fHistos->SetParameters(1,1);
+  hDataDCA->Fit(fHistos,"","",0,50);
+  hMCPrimSMFak->Scale(fHistos->GetParameter(0));
+  hMCDCASW    ->Scale(fHistos->GetParameter(1));
+  hMCPrimSMFak->Draw("same");
+  hMCDCASW    ->Draw("same");
+  return fHistos->GetParameter(1)/fHistos->GetParameter(0);
+
 
 }
 
@@ -183,6 +191,7 @@ void LoadLibs() {
   gSystem->Load("libPWG0base"); 
    
   gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0"));
+  gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
   // Load helper classes
   // TODO: replace this by a list of TOBJStrings
   TString taskName("AliAnalysisTaskMultPbTracks.cxx+");
@@ -198,7 +207,7 @@ void LoadLibs() {
 
   // Histo fitter
   gROOT->LoadMacro("/Users/mfloris/Work/ALICE/ANALYSIS/HistoFitter/fcn.cxx+g");
-  gROOT->LoadMacro("/Users/mfloris/Work/ALICE/ANALYSIS/HistoFitter/MyHistoFitter.cxx+g");
+  gROOT->LoadMacro("/Users/mfloris/Work/ALICE/ANALYSIS/HistoFitter/AliHistoFitter.cxx+g");
 
 
 }
@@ -290,7 +299,7 @@ void LoadData(TString dataFolder, TString correctionFolder){
   }
 }
 
-TF1 * GetHagedorn(Float_t norm=68, Float_t pt0=25, Float_t n=13) {
+TF1 * GetHagedorn(Float_t norm, Float_t pt0, Float_t n) {
 
   TF1 * f =0;
   Double_t mass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
@@ -305,7 +314,7 @@ TF1 * GetHagedorn(Float_t norm=68, Float_t pt0=25, Float_t n=13) {
 
 }
 
-TF1 * GetMTExp(Float_t norm=68, Float_t t=25) {
+TF1 * GetMTExp(Float_t norm, Float_t t) {
 
   TF1 * f =0;
   Double_t mass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
@@ -320,7 +329,7 @@ TF1 * GetMTExp(Float_t norm=68, Float_t t=25) {
 
 }
 
-TF1 * GetLevy(Double_t temp=0.1, Double_t n=7, Double_t norm=10, const char * name="fLevy") {
+TF1 * GetLevy(Double_t temp, Double_t n, Double_t norm, const char * name) {
 
   char formula[500];
   Double_t mass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
@@ -342,7 +351,7 @@ TF1 * GetLevy(Double_t temp=0.1, Double_t n=7, Double_t norm=10, const char * na
 TH1D * GetCumulativeHisto (TH1 * h) { 
   // Returns a cumulative histogram
   // FIXME: put this method in a tools class
-  TH1D * hInt = h->Clone(TString(h->GetName())+"_Int");
+  TH1D * hInt = (TH1D*) h->Clone(TString(h->GetName())+"_Int");
   hInt->Reset();
   Float_t integral = h->Integral(-1,-1); // Consider under/over flow!
   Int_t nbin = h->GetNbinsX();
@@ -356,7 +365,7 @@ TH1D * GetCumulativeHisto (TH1 * h) {
 TH1D * GetRatioIntegratedFractions (TH1 * hNum, TH1 * hDenum) { 
   // Returns the the ratio of integrated histograms 
   // FIXME: put this method in a tools class
-  TH1D * hRatio = hNum->Clone(TString(hNum->GetName())+hDenum->GetName()+"_RatioIntegrated");
+  TH1D * hRatio = (TH1D*) hNum->Clone(TString(hNum->GetName())+hDenum->GetName()+"_RatioIntegrated");
   hRatio->Reset();
   Int_t nbin = hNum->GetNbinsX();
   for(Int_t ibin = 1; ibin <= nbin; ibin++){
@@ -372,7 +381,7 @@ void ShowAcceptanceInVzSlices() {
     TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim ,   -0.5,0.5,ivz,ivz+4);
     TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        -0.5,0.5,ivz,ivz+4);
     //    hEff= hMCPtGen;
-    TH1D * hEff = hMCPtPri->Clone(Form("hEff_vz_%d_%d",ivz,ivz+4));
+    TH1D * hEff = (TH1D*)hMCPtPri->Clone(Form("hEff_vz_%d_%d",ivz,ivz+4));
     hEff->Divide(hMCPtPri,hMCPtGen,1,1,"B");
     cout << "ivz " << ivz << endl;
     if(ivz < -9) {
@@ -395,5 +404,32 @@ void ShowAcceptanceInVzSlices() {
    hManCorr->GetHistoVz(AliAnalysisMultPbTrackHistoManager::kHistoRec )->Draw("");
   hManCorr->GetHistoVz(AliAnalysisMultPbTrackHistoManager::kHistoGen     )->Draw("same");      
 
+
+}
+
+TF1 * GetFunctionHistoSum() {
+
+  TF1 * f = new TF1 ("fHistoSum",HistoSum,0,50,kHistoFitCompoments);
+  f->SetParNames("All", "Sec. Weak decays");
+  f->SetNpx(1000);
+  return f;
+
+}
+
+static Double_t HistoSum(const double * x, const double* p){
+  // This function uses a global array of histograms, rescaled by some
+  // parameters, to define a function
+  // The array is called gHistoCompoments
+  // The size of the arrays is given by the global constant kHistoFitCompoments
+  
+  Double_t xx = x[0];
+  Double_t value = 0;
+  for(Int_t icomp = 0; icomp < kHistoFitCompoments; icomp++){
+    //    value += gHistoCompoments[icomp]-Interpolate(xx) * p[icomp];
+    Int_t ibin = gHistoCompoments[icomp]->FindBin(xx);
+    value += gHistoCompoments[icomp]->GetBinContent(ibin) * p[icomp];
+  }
+  
+  return value;
 
 }
