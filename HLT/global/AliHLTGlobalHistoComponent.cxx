@@ -206,6 +206,7 @@ int AliHLTGlobalHistoComponent::ResetVariables()
 {
   /// reset all filling variables
   fNofTracks=0;
+  fNofV0s=0;
   fTrackVariables.ResetCount();
   fTrackVariablesInt.ResetCount();
   return 0;
