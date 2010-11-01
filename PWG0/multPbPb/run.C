@@ -29,6 +29,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   if(isMC) {
     AliMCEventHandler* handler = new AliMCEventHandler;
+    handler->SetPreReadMode(AliMCEventHandler::kLmPreRead);
     mgr->SetMCtruthEventHandler(handler);
   }
 

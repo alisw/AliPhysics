@@ -150,13 +150,12 @@ Double_t CheckSecondaries() {
   c1->SetLogy();
   // Draw all
   //  hDataDCA->Draw();
-  // //  hMCDCAGen ->Draw("same");
   //  hMCDCARec ->Draw("same");
   // hMCDCAPri ->Draw("same");
   // hMCDCASW ->Draw("same");
   // hMCDCASM ->Draw("same");
   // hMCDCAFak ->Draw("same");
-  //  return;
+  //  return 1;
   
   TH1D * hMCPrimSMFak = (TH1D*) hMCDCAPri->Clone("hMCPrimSMFak");
   hMCPrimSMFak->Add(hMCDCASM);
