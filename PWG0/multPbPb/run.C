@@ -1,12 +1,12 @@
 // TODO:
 // 1. Check cuts for 2010 (Jochen?)
-
+// 2. Run with many centrality bins at once
 
 enum { kMyRunModeLocal = 0, kMyRunModeCAF};
 
 TChain * GetAnalysisChain(const char * incollection);
 
-void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, const char* option = "",Int_t workers = -1)
+void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Int_t centrBin = 0, const char * centrEstimator = "VOM", const char* option = "",Int_t workers = -1)
 {
   // runMode:
   //
@@ -24,7 +24,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
   // Do I need any of this? 
-  esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks AliESDTZERO ALIESDACORDE MuonTracks TrdTracks");
+  //  esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks AliESDTZERO ALIESDACORDE MuonTracks TrdTracks");
   mgr->SetInputEventHandler(esdH);
 
   if(isMC) {
@@ -36,6 +36,12 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   physicsSelectionTask = AddTaskPhysicsSelection(isMC);
 
+  // Centrality
+  AliCentralitySelectionTask *taskCentr = new AliCentralitySelectionTask("CentralitySelection");
+  taskCentr->SetPercentileFile("$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root");
+  taskCentr->SetPercentileFile2("$ALICE_ROOT/ANALYSIS/test_AliCentralityByFunction.root");
+  mgr->AddTask(taskCentr);
+  mgr->ConnectInput (taskCentr,0, mgr->GetCommonInputContainer());
 
 
   // Parse option strings
@@ -69,13 +75,20 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     cout << ">>>> USING TPC only tracks" << endl;
     pathsuffix="TPC";
   }
+
+  Bool_t useMCKinematics = isMC;
+  if (optionStr.Contains("NOMCKIN")) {
+    cout << ">>>> Ignoring MC kinematics" << endl;
+    useMCKinematics=kFALSE;
+  }
   
   
   // load my task
   gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
   AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts); // kTRUE enables DCA cut
-  task->SetIsMC(isMC);
-   if(isMC) task->GetHistoManager()->SetSuffix("MC");
+  task->SetIsMC(useMCKinematics);
+  task->SetCentralityBin(centrBin);
+  task->SetCentralityEstimator(centrEstimator);
   
   if (!mgr->InitAnalysis()) return;
 	
@@ -83,6 +96,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   
   if (runMode == kMyRunModeLocal ) {
     // If running in local mode, create chain of ESD files
+    cout << "RUNNING LOCAL, CHAIN" << endl;    
     TChain * chain = GetAnalysisChain(data);
     chain->Print();
     mgr->StartAnalysis("local",chain,nev);
@@ -180,25 +194,26 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     gSystem->Load("libPWG0base");
     
     gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0"));
+    //    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background/"));
   }
   // Load helper classes
   // TODO: replace this by a list of TOBJStrings
   TString taskName("AliAnalysisTaskMultPbTracks.cxx+");
   TString histoManName("AliAnalysisMultPbTrackHistoManager.cxx+");
-  TString centrName("AliAnalysisMultPbCentralitySelector.cxx+");
   TString listName("AliHistoListWrapper.cxx+");
 
   // Create, add task
   if (runMode == kMyRunModeCAF) {
     gProof->Load(listName+(debug?"+g":""));   
     gProof->Load(histoManName+(debug?"+g":""));
-    gProof->Load(centrName+(debug?"+g":""));   
     gProof->Load(taskName+(debug?"+g":""));
+    gProof->Load("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx++g");      
   } else {
     gROOT->LoadMacro(listName+(debug?"+g":""));   
     gROOT->LoadMacro(histoManName+(debug?"+g":""));
-    gROOT->LoadMacro(centrName+(debug?"+g":""));   
     gROOT->LoadMacro(taskName+(debug?"+g":""));    
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx++g");
+
   }
 
 
