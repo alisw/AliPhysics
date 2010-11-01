@@ -254,7 +254,20 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
   
   return returnCode;
 }
-    
+
+//______________________________________________________________________________
+TObject *AliPhysicsSelection::GetStatistics(Option_t *option) const
+{
+// Get the statistics histograms ("ALL" and "BIN0")
+   TString opt(option);
+   opt.ToUpper();
+   Int_t ihist = 0;
+   if (opt == "ALL") ihist = kStatIdxAll;
+   if (opt == "BIN0") ihist = kStatIdxBin0;
+   return fHistStatistics[ihist];
+}   
+
+//______________________________________________________________________________
 UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 {
   // checks if the given event is a collision candidate

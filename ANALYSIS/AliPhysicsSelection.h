@@ -80,6 +80,7 @@ public:
     
   const TH2F* GetStatisticsHistogram(Int_t idx=kStatIdxAll) const { return fHistStatistics[idx]; }
   const TH2F* GetBunchCrossingHistogram() const { return fHistBunchCrossing; }
+  virtual TObject *GetStatistics(Option_t *option) const;
     
   void SetBIFactors(const AliESDEvent * aESD);
   
