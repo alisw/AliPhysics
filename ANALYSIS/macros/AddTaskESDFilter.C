@@ -1,7 +1,8 @@
 AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, 
                                            Bool_t writeMuonAOD=kFALSE,
                                            Bool_t writeDimuonAOD=kFALSE,
-					   Bool_t usePhysicsSelection=kFALSE)
+					   Bool_t usePhysicsSelection=kFALSE,
+					   Bool_t useCentralityTask=kFALSE)
 {
 // Creates a filter task and adds it to the analysis manager.
 
@@ -57,6 +58,14 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
       kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
       mgr->AddTask(kinefilter);
    }   
+
+   AliAnalysisTaskAODCentralityMaker* ctask = 0;
+   
+   if (useCentralityTask) {
+       ctask = new AliAnalysisTaskAODCentralityMaker("AODCentralityMaker");
+       ctask->SetDeltaAODFileName("AliAODCentrality.root");
+       mgr->AddTask(ctask);
+   }
 
    // Cuts on primary tracks
    AliESDtrackCuts* esdTrackCutsL = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -141,6 +150,10 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
       AliAnalysisDataContainer *coutputEx = mgr->CreateContainer("cFilterList", TList::Class(),
 								   AliAnalysisManager::kOutputContainer,"pyxsec_hists.root");
       mgr->ConnectOutput (kinefilter,  1,coutputEx);
+      if (useCentralityTask) {
+	mgr->ConnectInput (ctask, 0, mgr->GetCommonInputContainer());
+	mgr->ConnectOutput(ctask, 0, mgr->GetCommonOutputContainer());
+      }
    }   
    return esdfilter;
  }
