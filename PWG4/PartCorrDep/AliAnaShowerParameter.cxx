@@ -728,7 +728,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillAOD()
     
     //Set PID bits for later selection (AliAnaPi0 for example)
     //GetPDG already called in SetPIDBits.
-    GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph);
+    GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph, GetCaloUtils());
     if(GetDebug() > 1) printf("AliAnaShowerParameter::MakeAnalysisFillAOD() - PID Bits set \n");		    
     
     //Play with the MC stack if available

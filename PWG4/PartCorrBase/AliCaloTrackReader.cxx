@@ -706,6 +706,10 @@ void AliCaloTrackReader::FillInputEMCAL() {
       }//EMCAL cluster
     }// cluster exists
   }// cluster loop
+  
+  //Recalculate track matching
+  GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent);
+  
   //fAODEMCALNormalInputEntries = fAODEMCAL->GetEntriesFast();
   if(fDebug > 1) printf("AliCaloTrackReader::FillInputEMCAL() - aod entries %d\n",  fAODEMCAL->GetEntriesFast());//fAODEMCALNormalInputEntries);
   

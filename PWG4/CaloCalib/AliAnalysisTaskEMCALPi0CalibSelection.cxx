@@ -370,24 +370,27 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   //Int_t runNum = aod->GetRunNumber();
   //if(DebugLevel() > 1) printf("Run number: %d\n",runNum);
   
-  //FIXME Not need the matrices for the moment MEFIX
   //Get the matrix with geometry information
   //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
-  //  if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) {
-  //    if(DebugLevel() > 1) 
-  //      printf("AliAnalysisTaskEMCALPi0CalibSelection Use ideal geometry, values geometry matrix not kept in AODs.\n");
-  //  }
-  //  else{	
-  //    if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
-  //    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
-  //    if(!esd) {
-  //      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - This event does not contain ESDs?");
-  //      return;
-  //    }
-  //    for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
-  //      if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
-  //    }
-  //  }
+  if(!gGeoManager && fhNEvents->GetEntries()==1){
+    printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - Get geo matrices from data\n");
+    if(!strcmp(event->GetName(),"AliAODEvent")) {
+        if(DebugLevel() > 1) 
+          printf("AliAnalysisTaskEMCALPi0CalibSelection Use ideal geometry, values geometry matrix not kept in AODs.\n");
+    }//AOD
+    else {	
+      if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
+        AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event) ;
+        if(!esd) {
+          printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - This event does not contain ESDs?");
+        return;
+        }
+        for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+          if(DebugLevel() > 1) esd->GetEMCALMatrix(mod)->Print();
+          if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
+        } 
+    }//ESD
+  }//first event
   
   if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
   Int_t absId1   = -1;
@@ -538,22 +541,24 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
             Float_t opangle = p1.Angle(p2.Vect())*TMath::RadToDeg();
             //printf("*******>>>>>>>> In PEAK pt %f, angle %f \n",p12.Pt(),opangle);
             
-            //Inciden angle of each photon
-            Float_t posSM1cen[3]={0.,0.,0.};
-            Float_t depth = fRecoUtils->GetDepth(p1.Energy(),fRecoUtils->GetParticleType(),iSupMod1);
-            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod1, depth, fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM1cen); 
-            Float_t posSM2cen[3]={0.,0.,0.}; 
-            depth = fRecoUtils->GetDepth(p2.Energy(),fRecoUtils->GetParticleType(),iSupMod2);
-            fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod2, depth, fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM2cen); 
-            //printf("SM1 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod1,posSM1cen[0],posSM1cen[1],posSM1cen[2]);
-            //printf("SM2 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod2,posSM2cen[0],posSM2cen[1],posSM2cen[2]);
-            
-            TVector3 vecSM1cen(posSM1cen[0]-v[0],posSM1cen[1]-v[1],posSM1cen[2]-v[2]); 
-            TVector3 vecSM2cen(posSM2cen[0]-v[0],posSM2cen[1]-v[1],posSM2cen[2]-v[2]); 
-            Float_t inangle1 = p1.Angle(vecSM1cen)*TMath::RadToDeg();
-            Float_t inangle2 = p2.Angle(vecSM2cen)*TMath::RadToDeg();
-            //printf("Incident angle: cluster 1 %2.3f; cluster 2 %2.3f\n",inangle1,inangle2);
-            
+            //Incident angle of each photon
+            Float_t inangle1 =0., inangle2=0.;
+            if(gGeoManager){
+              Float_t posSM1cen[3]={0.,0.,0.};
+              Float_t depth = fRecoUtils->GetDepth(p1.Energy(),fRecoUtils->GetParticleType(),iSupMod1);
+              fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod1, depth, fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM1cen); 
+              Float_t posSM2cen[3]={0.,0.,0.}; 
+              depth = fRecoUtils->GetDepth(p2.Energy(),fRecoUtils->GetParticleType(),iSupMod2);
+              fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod2, depth, fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM2cen); 
+              //printf("SM1 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod1,posSM1cen[0],posSM1cen[1],posSM1cen[2]);
+              //printf("SM2 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod2,posSM2cen[0],posSM2cen[1],posSM2cen[2]);
+              
+              TVector3 vecSM1cen(posSM1cen[0]-v[0],posSM1cen[1]-v[1],posSM1cen[2]-v[2]); 
+              TVector3 vecSM2cen(posSM2cen[0]-v[0],posSM2cen[1]-v[1],posSM2cen[2]-v[2]); 
+              inangle1 = p1.Angle(vecSM1cen)*TMath::RadToDeg();
+              inangle2 = p2.Angle(vecSM2cen)*TMath::RadToDeg();
+              //printf("Incident angle: cluster 1 %2.3f; cluster 2 %2.3f\n",inangle1,inangle2);
+            }
             fHOpeningAngle ->Fill(opangle,p12.Pt()); 
             fHIncidentAngle->Fill(inangle1,p1.Pt()); 
             fHIncidentAngle->Fill(inangle2,p2.Pt()); 

@@ -49,7 +49,8 @@ ClassImp(AliCalorimeterUtils)
     fNCellsFromPHOSBorder(0), fRecalibration(kFALSE),
     fPHOSRecalibrationFactors(),
     fEMCALRecoUtils(new AliEMCALRecoUtils),
-    fRecalculatePosition(kFALSE),fCorrectELinearity(kFALSE)
+    fRecalculatePosition(kFALSE),fCorrectELinearity(kFALSE),
+    fRecalculateMatching(kFALSE),fCutR(20), fCutZ(20)
 {
   //Ctor
   
@@ -510,6 +511,7 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
   printf("Recalibrate Clusters? %d\n",fRecalibration);
   printf("Recalculate Clusters Position? %d\n",fRecalculatePosition);
   printf("Recalculate Clusters Energy? %d\n",fCorrectELinearity);
+  printf("Matching criteria: dR < %2.2f[cm], dZ < %2.2f[cm]\n",fCutR,fCutZ);
 
   printf("    \n") ;
 } 

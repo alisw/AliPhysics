@@ -137,6 +137,7 @@ class AliCalorimeterUtils : public TObject {
 
   Float_t RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
 
+  //EMCAL specific utils for the moment
   void SetEMCALRecoUtils(AliEMCALRecoUtils * ru) {fEMCALRecoUtils = ru;}
   AliEMCALRecoUtils* GetEMCALRecoUtils() const {return fEMCALRecoUtils;}
   
@@ -154,6 +155,19 @@ class AliCalorimeterUtils : public TObject {
   }
   void RecalculateClusterPID(AliVCluster* clu) {fEMCALRecoUtils->RecalculateClusterPID(clu);}
 
+  //Track matching recalculation
+  void RecalculateClusterTrackMatching(AliVEvent * event)         {if (fRecalculateMatching) fEMCALRecoUtils->FindMatches(event);}
+  void GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ) {if (fRecalculateMatching) fEMCALRecoUtils->GetMatchedResiduals(index,dR,dZ);}
+  //This could be used for PHOS ...
+  void SwitchOnRecalculateClusterTrackMatching()      { fRecalculateMatching = kTRUE; } 
+  void SwitchOffRecalculateClusterTrackMatching()     { fRecalculateMatching = kFALSE; } 
+  Bool_t IsRecalculationOfClusterTrackMatchingOn()  const { return fRecalculateMatching ; }
+  Float_t GetCutR() const { return fCutR; }
+  Float_t GetCutZ() const { return fCutZ; }
+  
+  void SetCutR(Float_t cutR) { fCutR=cutR; fEMCALRecoUtils->SetCutR(cutR); }
+  void SetCutZ(Float_t cutZ) { fCutZ=cutZ; fEMCALRecoUtils->SetCutZ(cutZ);}
+  
  private:
 
   Int_t              fDebug;                 //  Debugging level
@@ -171,8 +185,11 @@ class AliCalorimeterUtils : public TObject {
   AliEMCALRecoUtils* fEMCALRecoUtils;        //  EMCAL utils for cluster rereconstruction
   Bool_t             fRecalculatePosition;   // Recalculate cluster position
   Bool_t             fCorrectELinearity  ;   // Correct cluster energy linearity
-  
-  ClassDef(AliCalorimeterUtils,3)
+  Bool_t             fRecalculateMatching;   // Recalculate cluster position
+  Float_t            fCutR;                  // dR cut on matching
+  Float_t            fCutZ;                  // dZ cut on matching
+
+  ClassDef(AliCalorimeterUtils,4)
 } ;
 
 
