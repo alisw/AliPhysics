@@ -493,7 +493,6 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
 
   AliHLTUInt32_t eventType=0;
   if (!IsDataEvent(&eventType)) {
-    if (eventType==gkAliEventTypeEndOfRun) PrintStatistics(fTrigger, kHLTLogImportant, 0);
     if (fDataEventsOnly)
     {
       IgnoreEvent();  // dont generate any trigger decision.
@@ -609,11 +608,16 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   
   static UInt_t lastTime=0;
   TDatime time;
-  if (time.Get()-lastTime>60) {
+  if (time.Get()-lastTime>60)
+  {
     lastTime=time.Get();
     PrintStatistics(fTrigger, kHLTLogImportant);
   }
-
+  else if (eventType==gkAliEventTypeEndOfRun)
+  {
+    PrintStatistics(fTrigger, kHLTLogImportant, 0);
+  }
+  
   // add readout filter to event done data
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
 
