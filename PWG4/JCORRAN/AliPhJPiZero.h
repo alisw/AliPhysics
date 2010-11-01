@@ -39,7 +39,7 @@ public:
   AliPhJPiZero(const AliPhJPiZero& a);//{PhotSum.SetPxPyPzE(0,0,0,0);}   //constructor
   ~AliPhJPiZero(){;}		      //destructor
 
-  bool SetMass(AliPhJPhoton* g1, AliPhJPhoton* g2);
+  bool SetMass(const AliPhJPhoton* g1, const AliPhJPhoton* g2);
 
   float GetInvMass()  const {return fPizM;}
   float GetAsymm()    const {return fAsymm;}

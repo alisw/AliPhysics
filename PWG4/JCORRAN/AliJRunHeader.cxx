@@ -68,7 +68,7 @@ AliJRunHeader::AliJRunHeader(const AliJRunHeader& ap):
 }
 //________________________________________________________________________
 
-void AliJRunHeader::SetActiveTriggersAlice(TString *triggers){
+void AliJRunHeader::SetActiveTriggersAlice(const TString *triggers){
   // fill aliroot trigger table
   for(Int_t t=0;t<kRangeTriggerTableAlice;t++){
     ((TObjString*) (fActiveTriggersAlice.At(t)))->SetString(triggers[t].Data());
@@ -78,7 +78,7 @@ void AliJRunHeader::SetActiveTriggersAlice(TString *triggers){
 }
 //________________________________________________________________________
 
-void AliJRunHeader::SetActiveTriggersJCorran(TString *triggers, Int_t range){
+void AliJRunHeader::SetActiveTriggersJCorran(const TString *triggers, Int_t range){
   //fill jcorran trigger table
   for(Int_t t=0;t<range;t++){
     ((TObjString*) (fActiveTriggersJCorran.At(t)))->SetString(triggers[t].Data());

@@ -62,7 +62,7 @@ class AliPhJBaseTrack : public TObject {
         void SetPtot(float ptot){ fBasePtot = ptot;}
 
         void PrintOut(const char *message) const;
-        void PrintJetInput(char *message) const;
+        void PrintJetInput(const char *message) const;
 
        AliPhJBaseTrack& operator=(const AliPhJBaseTrack& trk);
 

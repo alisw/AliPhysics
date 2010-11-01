@@ -87,6 +87,7 @@ void  AliJPhoton::SetCellsAbsId(const UShort_t *array)
 {
     //  Set the array of cell absId numbers 
     if (fNCells) {
+        if(fCellsAbsId){ delete [] fCellsAbsId; fCellsAbsId = NULL; }
 	fCellsAbsId = new  UShort_t[fNCells];
 	for (Int_t i = 0; i < fNCells; i++) fCellsAbsId[i] = array[i];
     }
@@ -97,6 +98,7 @@ void  AliJPhoton::SetCellsAmplitudeFraction(const Double32_t *array)
 {
     //  Set the array of cell amplitude fraction
     if (fNCells) {
+	if(fCellsAmpFraction){ delete [] fCellsAmpFraction; fCellsAmpFraction = NULL;}
 	fCellsAmpFraction = new  Double32_t[fNCells];
 	for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];
     }
