@@ -138,7 +138,7 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     Int_t centrBin = centrality->GetCentralityClass5(fCentralityEstimator.Data()) ;
     cout << fCentralityEstimator.Data() << " BIN: " << centrBin << endl;
     
-    if (centrBin != fCentrBin) return;
+    if (centrBin != fCentrBin && fCentrBin != -1) return;
   }
 
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatCentr);

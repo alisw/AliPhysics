@@ -180,6 +180,8 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
     gProof->UploadPackage("$ALICE_ROOT/PWG0base");
     gProof->EnablePackage("$ALICE_ROOT/PWG0base");
+    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
+    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
   }
   else
   {
@@ -194,14 +196,21 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libPWG0base");
     
-    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0"));
+    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
+    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
     //    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background/"));
   }
   // Load helper classes
   // TODO: replace this by a list of TOBJStrings
-  TString taskName("AliAnalysisTaskMultPbTracks.cxx+");
-  TString histoManName("AliAnalysisMultPbTrackHistoManager.cxx+");
-  TString listName("AliHistoListWrapper.cxx+");
+  TString taskName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+");
+  TString histoManName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+");
+  TString listName("$ALICE_ROOT/PWG1/background/AliHistoListWrapper.cxx+");
+
+  gSystem->ExpandPathName(taskName);
+  gSystem->ExpandPathName(histoManName);
+  gSystem->ExpandPathName(listName);
+
+
 
   // Create, add task
   if (runMode == kMyRunModeCAF) {
