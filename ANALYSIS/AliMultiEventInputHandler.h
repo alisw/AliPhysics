@@ -33,6 +33,7 @@ class AliMultiEventInputHandler : public AliInputEventHandler {
     virtual AliVEvent       *GetEvent(Int_t iev) const;
     AliVEvent               *GetLatestEvent()    const {return fEventBuffer[fIndex];}
     Int_t                    GetFormat() { return fFormat ;} 
+    void                     EventSkipped() {fEventSkipped = kTRUE;}
     // From the interface
     virtual Bool_t Init(Option_t* /*opt*/)    {return kTRUE;}
     virtual Bool_t Init(TTree* tree, Option_t* /*opt*/);
@@ -53,6 +54,7 @@ class AliMultiEventInputHandler : public AliInputEventHandler {
     Bool_t         fInit;         // Current event
     AliVEventPool* fEventPool;    // Pointer to the pool
     AliVEvent**    fEventBuffer;  //! The event buffer
+    Bool_t         fEventSkipped; // User requires event to be skip
     ClassDef(AliMultiEventInputHandler, 1);
 };
 

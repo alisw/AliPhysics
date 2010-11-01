@@ -7,7 +7,7 @@
 /* $Id$ */
 
 #include "AliAnalysisTask.h"
-class AliVEvent;
+#include "AliVEvent.h"
 class AliAODEvent;
 class AliInputEventHandler;
 class TTree;
@@ -35,6 +35,7 @@ class AliAnalysisTaskME : public AliAnalysisTask
     virtual void UserExec(Option_t* /*option*/) {;}
     // Helpers for adding branches to the AOD
     virtual void   AddAODBranch(const char* cname, void* addobj, const char *fname="");
+    virtual void   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
     // Getters
     virtual Int_t          DebugLevel()              {return fDebug;     }
     virtual AliVEvent*     GetEvent(Int_t iev);
@@ -50,6 +51,9 @@ class AliAnalysisTaskME : public AliAnalysisTask
     AliMultiEventInputHandler* fInputHandler;    //! Input Handler
     AliAODEvent*               fOutputAOD;       //! AOD out 
     TTree*                     fTreeA;           //  AOD output Tree
+    // Event Selection
+    UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
+
     ClassDef(AliAnalysisTaskME, 1); // Analysis task for standard jet analysis
 };
  

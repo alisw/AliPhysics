@@ -31,7 +31,7 @@
 #include "AliLog.h"
 
 
-ClassImp(AliAnalysisTaskME)
+ClassImp(AliAnalysisTaskME);
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -42,7 +42,8 @@ AliAnalysisTaskME::AliAnalysisTaskME():
     fFreshBufferOnly(kFALSE),
     fInputHandler(0x0),
     fOutputAOD(0x0),
-    fTreeA(0x0)
+    fTreeA(0x0),
+    fOfflineTriggerMask(0)
 {
   // Default constructor
 }
@@ -54,7 +55,8 @@ AliAnalysisTaskME::AliAnalysisTaskME(const char* name):
     fFreshBufferOnly(kFALSE),
     fInputHandler(0x0),
     fOutputAOD(0x0),
-    fTreeA(0x0)
+    fTreeA(0x0),
+    fOfflineTriggerMask(0)
 {
   // Default constructor
     DefineInput (0, TChain::Class());
@@ -68,14 +70,16 @@ AliAnalysisTaskME::AliAnalysisTaskME(const AliAnalysisTaskME& obj):
     fFreshBufferOnly(kFALSE),
     fInputHandler(0x0),
     fOutputAOD(0x0),
-    fTreeA(0x0)
+    fTreeA(0x0),
+    fOfflineTriggerMask(0)
 {
 // Copy constructor
     fDebug        = obj.fDebug;
     fEntry        = obj.fEntry;
     fInputHandler = obj.fInputHandler;
     fOutputAOD    = obj.fOutputAOD;
-    fTreeA        = obj.fTreeA;    
+    fTreeA        = obj.fTreeA; 
+    fOfflineTriggerMask = obj.fOfflineTriggerMask;
 }
 
 
@@ -89,6 +93,7 @@ AliAnalysisTaskME& AliAnalysisTaskME::operator=(const AliAnalysisTaskME& other)
     fInputHandler    = other.fInputHandler;
     fOutputAOD       = other.fOutputAOD;
     fTreeA           = other.fTreeA;    
+    fOfflineTriggerMask = other.fOfflineTriggerMask;
     return *this;
 }
 
@@ -146,7 +151,22 @@ void AliAnalysisTaskME::Exec(Option_t* option)
 
     AliAODHandler* outputHandler = (AliAODHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());         
+//
+// Was event selected ? If no event selection mechanism, the event SHOULD be selected (AG)
+    UInt_t isSelected = AliVEvent::kAny;
+    if( fInputHandler && fInputHandler->GetEventSelection()) {
+      // Get the actual offline trigger mask for the event and AND it with the
+      // requested mask. If no mask requested select by default the event.
+      if (fOfflineTriggerMask)
+	isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
+    }
+    if (!isSelected) { 
+	if (fDebug > 1) AliInfo("Event rejected \n");
+	fInputHandler->EventSkipped();
+	return;
+    }
 // Call the user analysis    
+    
     if (fInputHandler->IsBufferReady()) {
 	if ((fFreshBufferOnly && fInputHandler->IsFreshBuffer()) || !fFreshBufferOnly)
 	{

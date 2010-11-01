@@ -26,6 +26,7 @@
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliVEventPool.h"
+#include "AliVCuts.h"
 #include "AliLog.h"
 #include <TObjArray.h>
 #include <TTree.h>
@@ -45,7 +46,8 @@ AliMultiEventInputHandler::AliMultiEventInputHandler() :
     fCurrentEvt(0),
     fInit(0),
     fEventPool(0),
-    fEventBuffer(0)
+    fEventBuffer(0),
+    fEventSkipped(0)
 {
   // Default constructor
 }
@@ -61,7 +63,8 @@ AliMultiEventInputHandler::AliMultiEventInputHandler(Int_t size, Int_t format) :
     fCurrentEvt(0),
     fInit(0),
     fEventPool(0),
-    fEventBuffer(0)
+    fEventBuffer(0),
+    fEventSkipped(0)
 {
   // constructor
 }
@@ -77,7 +80,8 @@ AliMultiEventInputHandler::AliMultiEventInputHandler(const char* name, const cha
     fCurrentEvt(0),
     fInit(0),
     fEventPool(0),
-    fEventBuffer(0)
+    fEventBuffer(0),
+    fEventSkipped(0)
 {
     // Constructor
 
@@ -144,6 +148,16 @@ Bool_t AliMultiEventInputHandler::BeginEvent(Long64_t /*entry*/)
 	fCurrentBin = fEventPool->BinNumber();
 	fNBuffered = 0;
     }
+  //
+  // Event selection
+  // 
+    if (fFormat == 0) {
+      fIsSelectedResult = 0;
+      if (fEventCuts && !IsUserCallSelectionMask())
+	fIsSelectedResult = 
+	  fEventCuts->GetSelectionMask((AliESDEvent*)fEventBuffer[fIndex]); 
+    }
+    
     return kTRUE;
 }
 
@@ -151,9 +165,9 @@ Bool_t AliMultiEventInputHandler::FinishEvent()
 {
     // 
     // Connect the next event in the buffer to the tree
-    fIndex++;
-    
+    if (!fEventSkipped) fIndex++;
     fIndex %= fBufferSize;
+
     AliInfo(Form("Connecting buffer entry %5d", fIndex));
     fEventBuffer[fIndex]->Clear();
     fCurrentEvt++;
