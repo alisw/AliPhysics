@@ -151,8 +151,10 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     } else {
       
       //loop on the MC event
-      Int_t nMCTracks = fMCEvent->GetNumberOfTracks();
-      for (Int_t ipart=0; ipart<nMCTracks; ipart++) { 
+      //      Int_t nMCTracks = fMCEvent->GetNumberOfTracks();
+      Int_t offset    = fMCEvent->GetPrimaryOffset();
+      Int_t nMCTracks = fMCEvent->GetNumberOfPrimaries()+offset;
+      for (Int_t ipart=offset; ipart<nMCTracks; ipart++) { 
 	
 	AliMCParticle *mcPart  = (AliMCParticle*)fMCEvent->GetTrack(ipart);
 	
