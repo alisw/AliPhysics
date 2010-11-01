@@ -48,9 +48,12 @@ private:
 
   Int_t fnEventCal; 
   Int_t fnEventPhys; 
-  Int_t feffC[24]; 
+  Int_t feffC[24];
+  Int_t feffPhysC[24]; 
   Int_t feffA[24]; 
+  Int_t feffPhysA[24];
   Int_t feffqtc[24]; 
+  Int_t feffqtcPhys[24];
   Float_t fTrEffCal[6];
   Float_t fTrEffPhys[6];
 
