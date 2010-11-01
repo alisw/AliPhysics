@@ -261,7 +261,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
             //refclusters->SetName(Form("Clusters%s",aodArrayRefName.Data()));
             TString tempo(aodArrayRefName)  ; 
             tempo += "Clusters" ; 
-            reftracks->SetName(tempo);
+            refclusters->SetName(tempo);
             refclusters->SetOwner(kFALSE);
           }
           refclusters->Add(calo);
