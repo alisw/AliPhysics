@@ -18,7 +18,7 @@ AliAnalysisMultPbTrackHistoManager * hManCorr = 0;
 TH2D * hEvStatData = 0;
 TH2D * hEvStatCorr = 0;
 
-const Int_t kHistoFitCompoments = 2;
+const Int_t kHistoFitCompoments = 3;
 TH1D * gHistoCompoments[kHistoFitCompoments];
 
 void LoadLibs();
@@ -158,18 +158,21 @@ Double_t CheckSecondaries() {
   //  return 1;
   
   TH1D * hMCPrimSMFak = (TH1D*) hMCDCAPri->Clone("hMCPrimSMFak");
-  hMCPrimSMFak->Add(hMCDCASM);
+  //  hMCPrimSMFak->Add(hMCDCASM);
   hMCPrimSMFak->Add(hMCDCAFak);
 
   gHistoCompoments[0] = (TH1D*) hMCPrimSMFak->Clone();
   gHistoCompoments[1] = (TH1D*) hMCDCASW->Clone();
+  gHistoCompoments[2] = (TH1D*) hMCDCASM->Clone();
   TF1 * fHistos = GetFunctionHistoSum();
   fHistos->SetParameters(1,1);
-  hDataDCA->Fit(fHistos,"","",0,50);
+  hDataDCA->Fit(fHistos,"","",0,200);
   hMCPrimSMFak->Scale(fHistos->GetParameter(0));
   hMCDCASW    ->Scale(fHistos->GetParameter(1));
+  hMCDCASM    ->Scale(fHistos->GetParameter(2));
   hMCPrimSMFak->Draw("same");
   hMCDCASW    ->Draw("same");
+  hMCDCASM    ->Draw("same");
   return fHistos->GetParameter(1)/fHistos->GetParameter(0);
 
 
@@ -189,14 +192,19 @@ void LoadLibs() {
   gSystem->Load("libPWG2Spectra");
   gSystem->Load("libPWG0base"); 
    
-  gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0"));
+  gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPbPb"));
   gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
   // Load helper classes
   // TODO: replace this by a list of TOBJStrings
-  TString taskName("AliAnalysisTaskMultPbTracks.cxx+");
-  TString histoManName("AliAnalysisMultPbTrackHistoManager.cxx+");
-  TString centrName("AliAnalysisMultPbCentralitySelector.cxx+");
+  TString taskName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+");
+  TString histoManName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+");
+  TString centrName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbCentralitySelector.cxx+");
   TString listName("$ALICE_ROOT/PWG1/background/AliHistoListWrapper.cxx+");
+
+  gSystem->ExpandPathName(taskName);
+  gSystem->ExpandPathName(histoManName);
+  gSystem->ExpandPathName(centrName);
+  gSystem->ExpandPathName(listName);
 
   Bool_t debug=0;
   gROOT->LoadMacro(listName    +(debug?"+g":""));   
@@ -243,7 +251,7 @@ void SetStyle() {
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetLineColor(kRed  );
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim)->SetLineColor(kGreen);
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat) ->SetLineColor(kBlue );
-  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetLineColor(kBlue );
+  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetLineColor(kBlue-7 );
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecFake)->SetLineColor(kCyan );
 
   hManData->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetMarkerColor(kBlack);    
@@ -251,7 +259,7 @@ void SetStyle() {
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetMarkerColor(kRed  );
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim)->SetMarkerColor(kGreen);
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat) ->SetMarkerColor(kBlue );
-  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetMarkerColor(kBlue );
+  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetMarkerColor(kBlue-7 );
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecFake)->SetMarkerColor(kCyan );
 
   hManData->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetMarkerStyle(kFullCircle);    
@@ -409,7 +417,7 @@ void ShowAcceptanceInVzSlices() {
 TF1 * GetFunctionHistoSum() {
 
   TF1 * f = new TF1 ("fHistoSum",HistoSum,0,50,kHistoFitCompoments);
-  f->SetParNames("All", "Sec. Weak decays");
+  f->SetParNames("Primaries+Fakes", "Sec. Weak decays","Sec. Material");
   f->SetNpx(1000);
   return f;
 
