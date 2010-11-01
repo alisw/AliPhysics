@@ -615,7 +615,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   }
   else if (eventType==gkAliEventTypeEndOfRun)
   {
-    PrintStatistics(fTrigger, kHLTLogImportant, 0);
+    PrintStatistics(fTrigger, kHLTLogImportant);
   }
   
   // add readout filter to event done data
