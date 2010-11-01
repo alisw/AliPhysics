@@ -358,10 +358,13 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
   
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  AliMCEventHandler* eventHandler = 
+    dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()
+				      ->GetMCtruthEventHandler());
+  if (!eventHandler) return;
+
   AliMCEvent* mcEvent = eventHandler->MCEvent();
-  if(!mcEvent)
-    return;
+  if(!mcEvent) return;
   
   fLastTrackByStrip.Reset(-1);
   

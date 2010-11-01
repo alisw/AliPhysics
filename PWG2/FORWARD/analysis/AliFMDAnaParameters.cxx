@@ -469,7 +469,9 @@ Float_t AliFMDAnaParameters::GetConstant(Int_t det, Char_t ring, Float_t eta) {
   return mpv;
 }
 //____________________________________________________________________
-Float_t AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) {
+Float_t 
+AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) 
+{
   //Get 2 MIP weights of convoluted Landau fits
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
@@ -489,7 +491,9 @@ Float_t AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) 
   return twoMIPweight;
 }
 //____________________________________________________________________
-Float_t AliFMDAnaParameters::Get3MIPWeight(Int_t det, Char_t ring, Float_t eta) {
+Float_t 
+AliFMDAnaParameters::Get3MIPWeight(Int_t det, Char_t ring, Float_t eta) 
+{
   //Get 3 MIP weights of convoluted Landau fits
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
@@ -512,29 +516,27 @@ Float_t AliFMDAnaParameters::Get3MIPWeight(Int_t det, Char_t ring, Float_t eta) 
   return threeMIPweight;
 }
 //____________________________________________________________________
-Int_t AliFMDAnaParameters::GetNetaBins() {
-  return GetBackgroundCorrection(1,'I',5)->GetNbinsX();
-  
+Int_t AliFMDAnaParameters::GetNetaBins() 
+{
+  return GetBackgroundCorrection(1,'I',5)->GetNbinsX();  
 }
 //____________________________________________________________________
-Float_t AliFMDAnaParameters::GetEtaMin() {
-
+Float_t AliFMDAnaParameters::GetEtaMin() 
+{
   return GetBackgroundCorrection(1,'I',5)->GetXaxis()->GetXmin();
 } 
 //____________________________________________________________________
-Float_t AliFMDAnaParameters::GetEtaMax() {
-
-return GetBackgroundCorrection(1,'I',5)->GetXaxis()->GetXmax();
-
+Float_t AliFMDAnaParameters::GetEtaMax() 
+{
+  return GetBackgroundCorrection(1,'I',5)->GetXaxis()->GetXmax();
 }
 //____________________________________________________________________
-Int_t AliFMDAnaParameters::GetEtaBin(Float_t eta) {
-  
+Int_t AliFMDAnaParameters::GetEtaBin(Float_t eta) 
+{  
   TAxis testaxis(GetNetaBins(),GetEtaMin(),GetEtaMax());
   Int_t binnumber = testaxis.FindBin(eta) ;
   
   return binnumber;
-
 }
 //____________________________________________________________________
 
@@ -783,11 +785,11 @@ Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t
 Bool_t AliFMDAnaParameters::GetVertex(const AliESDEvent* esd, Double_t* vertexXYZ) 
 {
   //Get the vertex from the ESD
-  const AliESDVertex* vertex = 0;
-  vertex = esd->GetPrimaryVertexSPD();
+  const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
   
-  if(vertex)
-    vertex->GetXYZ(vertexXYZ);
+  if (!vertex) return kFALSE;
+
+  vertex->GetXYZ(vertexXYZ);
 
   //if(vertexXYZ[0] == 0 || vertexXYZ[1] == 0 )
   //  return kFALSE;

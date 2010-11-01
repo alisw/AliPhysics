@@ -63,7 +63,8 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing()
   DefineOutput(3, TList::Class());
 }
 //_____________________________________________________________________
-AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, Bool_t SE):
+AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, 
+						     Bool_t SE):
     AliAnalysisTask(name, "AnalysisTaskFMD"),
     fDebug(0),
     fESD(0x0),
@@ -93,18 +94,23 @@ Float_t AliFMDAnalysisTaskSharing::GetVtxEfficiencyFromData(){
   TH1F* hEventsVtx = (TH1F*)fDiagList->FindObject("hEventsVtx");
   TH1F* hEventsTr  = (TH1F*)fDiagList->FindObject("hEventsTr");
   
-  if(hEventsTr->GetEntries() != 0 && hEventsVtx->GetEntries() !=0 && hEventsTr->GetEntries() != hEventsVtx->GetEntries())
+  if(hEventsTr->GetEntries()  != 0 && 
+     hEventsVtx->GetEntries() != 0 && 
+     hEventsTr->GetEntries()  != hEventsVtx->GetEntries())
     return hEventsVtx->GetEntries() / hEventsTr->GetEntries();
   else return -1;
   
 }
 //_____________________________________________________________________
-Float_t AliFMDAnalysisTaskSharing::GetNSDVtxEfficiencyFromData(){
+Float_t AliFMDAnalysisTaskSharing::GetNSDVtxEfficiencyFromData()
+{
   
   TH1F* hEventsNSDVtx = (TH1F*)fDiagList->FindObject("hEventsNSDVtx");
-  TH1F* hEventsNSD  = (TH1F*)fDiagList->FindObject("hEventsNSD");
+  TH1F* hEventsNSD    = (TH1F*)fDiagList->FindObject("hEventsNSD");
   
-  if(hEventsNSD->GetEntries() != 0 && hEventsNSDVtx->GetEntries() !=0 && hEventsNSD->GetEntries() != hEventsNSDVtx->GetEntries())
+  if(hEventsNSD->GetEntries()    != 0 && 
+     hEventsNSDVtx->GetEntries() != 0 && 
+     hEventsNSD->GetEntries()    != hEventsNSDVtx->GetEntries())
     return hEventsNSDVtx->GetEntries() / hEventsNSD->GetEntries();
   else return -1;
   
@@ -127,11 +133,11 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
   fDiagList->SetName("Sharing diagnostics");
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  TH2F* hBg   = pars->GetBackgroundCorrection(1, 'I', 0);
-  TH1F* hPrimary = new TH1F("hMultvsEtaNoCuts","hMultvsEtaNoCuts",
-			    hBg->GetNbinsX(),
-			    hBg->GetXaxis()->GetXmin(),
-			    hBg->GetXaxis()->GetXmax());
+  TH2F* hBg                 = pars->GetBackgroundCorrection(1, 'I', 0);
+  TH1F* hPrimary            = new TH1F("hMultvsEtaNoCuts","hMultvsEtaNoCuts",
+				       hBg->GetNbinsX(),
+				       hBg->GetXaxis()->GetXmin(),
+				       hBg->GetXaxis()->GetXmax());
   hPrimary->Sumw2();
   fDiagList->Add(hPrimary);
   
@@ -144,7 +150,10 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
   
   TH1F* hXvtx = new TH1F("hXvtx","x vertex distribution",100,-2,2);
   TH1F* hYvtx = new TH1F("hYvtx","y vertex distribution",100,-2,2);
-  TH1F* hZvtx = new TH1F("hZvtx","z vertex distribution",4*pars->GetNvtxBins(),-4*pars->GetVtxCutZ(),4*pars->GetVtxCutZ());
+  TH1F* hZvtx = new TH1F("hZvtx","z vertex distribution",
+			 4*pars->GetNvtxBins(),
+			 -4*pars->GetVtxCutZ(),
+			 +4*pars->GetVtxCutZ());
   
   fDiagList->Add(hXvtx);
   fDiagList->Add(hYvtx);

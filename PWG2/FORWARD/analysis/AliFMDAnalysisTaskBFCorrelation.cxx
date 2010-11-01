@@ -452,16 +452,16 @@ void AliFMDAnalysisTaskBFCorrelation::ProjectAndMirror(TString sType) {
    
     // Retrieve the histograms to store the Singe Event information and reset
     
-    TH1D *hSEMult        = dynamic_cast<TH1D*>(fInternalList->FindObject(Form("%s%d", sMult.Data(),        i)));
+    TH1D *hSEMult        = static_cast<TH1D*>(fInternalList->FindObject(Form("%s%d", sMult.Data(),        i)));
     hSEMult->Reset();
     
-    TH1D *hSEMultMirror  = dynamic_cast<TH1D*>(fInternalList->FindObject(Form("%s%d", sMultMirror.Data(),  i)));
+    TH1D *hSEMultMirror  = static_cast<TH1D*>(fInternalList->FindObject(Form("%s%d", sMultMirror.Data(),  i)));
     hSEMultMirror->Reset();
     
-    TH1D *hSEMultW       = dynamic_cast<TH1D*>(fInternalList->FindObject(Form("%s%d", sMultW.Data(),       i)));
+    TH1D *hSEMultW       = static_cast<TH1D*>(fInternalList->FindObject(Form("%s%d", sMultW.Data(),       i)));
     hSEMultW->Reset();
     
-    TH1D *hSEMultMirrorW = dynamic_cast<TH1D*>(fInternalList->FindObject(Form("%s%d", sMultMirrorW.Data(), i)));
+    TH1D *hSEMultMirrorW = static_cast<TH1D*>(fInternalList->FindObject(Form("%s%d", sMultMirrorW.Data(), i)));
     hSEMultMirrorW->Reset();
     
     // Fill the histograms with the Single Event information
@@ -666,10 +666,13 @@ void AliFMDAnalysisTaskBFCorrelation::Terminate(Option_t */*option*/) {
 //_____________________________________________________________________
 void AliFMDAnalysisTaskBFCorrelation::ProcessPrimary() {
   
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  AliMCEventHandler* eventHandler = 
+    dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()
+				      ->GetMCtruthEventHandler());
+  if (!eventHandler) return;
+
   AliMCEvent* mcEvent = eventHandler->MCEvent();
-  if(!mcEvent)
-    return;
+  if(!mcEvent) return;
     
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   

@@ -27,6 +27,9 @@
 #include "AliGenDPMjetEventHeader.h"
 
 ClassImp(AliFMDAnalysisTaskGenerateCorrection)
+#if 0 
+; // This is for emacs - do not delete 
+#endif
 
 //_____________________________________________________________________
 AliFMDAnalysisTaskGenerateCorrection::AliFMDAnalysisTaskGenerateCorrection():
