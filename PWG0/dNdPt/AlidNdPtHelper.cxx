@@ -49,7 +49,7 @@
 ClassImp(AlidNdPtHelper)
 
 //____________________________________________________________________
-const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts, AnalysisMode analysisMode, Bool_t debug, Bool_t bRedoTPC, Bool_t bUseMeanVertex)
+const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, const AlidNdPtEventCuts *const evtCuts, const AlidNdPtAcceptanceCuts *const accCuts, const AliESDtrackCuts *const trackCuts, AnalysisMode analysisMode, Bool_t debug, Bool_t bRedoTPC, Bool_t bUseMeanVertex)
 {
   // Get the vertex from the ESD and returns it if the vertex is valid
   //
@@ -227,7 +227,7 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, const AliESDVer
 }
 
 //____________________________________________________________________
-Bool_t AlidNdPtHelper::IsGoodImpPar(AliESDtrack *const track)
+Bool_t AlidNdPtHelper::IsGoodImpPar(const AliESDtrack *const track)
 {
 //
 // check whether particle has good DCAr(Pt) impact
@@ -363,7 +363,7 @@ void AlidNdPtHelper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Tr
 }
 
 //____________________________________________________________________
-Int_t AlidNdPtHelper::ConvertPdgToPid(TParticle *particle) {
+Int_t AlidNdPtHelper::ConvertPdgToPid(const TParticle *const particle) {
 //
 // Convert Abs(pdg) to pid 
 // (0 - e, 1 - muons, 2 - pions, 3 - kaons, 4 - protons, 5 -all rest)
@@ -579,7 +579,7 @@ return allTracks;
 }
 
 //_____________________________________________________________________________
-AliESDtrack *AlidNdPtHelper::GetTPCOnlyTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
+AliESDtrack *AlidNdPtHelper::GetTPCOnlyTrackSPDvtx(const AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
 {
 //
 // Create ESD tracks from TPCinner parameters.
@@ -635,7 +635,7 @@ return tpcTrack;
 } 
 
 //_____________________________________________________________________________
-AliESDtrack *AlidNdPtHelper::GetTPCOnlyTrackTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
+AliESDtrack *AlidNdPtHelper::GetTPCOnlyTrackTrackSPDvtx(const AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
 {
 //
 // Create ESD tracks from TPCinner parameters.
@@ -694,7 +694,7 @@ return tpcTrack;
 } 
 
 //_____________________________________________________________________________
-AliESDtrack *AlidNdPtHelper::GetTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
+AliESDtrack *AlidNdPtHelper::GetTrackSPDvtx(const AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
 {
 //
 // Propagte track to DCA to SPD vertex.
@@ -735,7 +735,7 @@ return track;
 } 
 
 //_____________________________________________________________________________
-AliESDtrack *AlidNdPtHelper::GetTrackTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
+AliESDtrack *AlidNdPtHelper::GetTrackTrackSPDvtx(const AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
 {
 //
 // Propagte track to DCA to Track or SPD vertex.
@@ -781,7 +781,7 @@ return track;
 } 
 
 //_____________________________________________________________________________
-Int_t AlidNdPtHelper::GetTPCMBTrackMult(AliESDEvent *const esdEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts)
+Int_t AlidNdPtHelper::GetTPCMBTrackMult(const AliESDEvent *const esdEvent,const AlidNdPtEventCuts *const evtCuts, const AlidNdPtAcceptanceCuts *const accCuts,const  AliESDtrackCuts *const trackCuts)
 {
   //
   // get MB event track multiplicity
@@ -843,7 +843,7 @@ return mult;
 }
 
 //_____________________________________________________________________________
-Int_t AlidNdPtHelper::GetTPCMBPrimTrackMult(AliESDEvent *const esdEvent, AliStack *const  stack, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts)
+Int_t AlidNdPtHelper::GetTPCMBPrimTrackMult(const AliESDEvent *const esdEvent, AliStack *const  stack, const AlidNdPtEventCuts *const evtCuts, const AlidNdPtAcceptanceCuts *const accCuts, const AliESDtrackCuts *const trackCuts)
 {
   //
   // get MB primary event track multiplicity
@@ -946,7 +946,7 @@ return 1.5;
 }
 
 //___________________________________________________________________________
-Double_t AlidNdPtHelper::GetLinearInterpolationValue(Double_t const x1, Double_t const y1, Double_t const x2, Double_t const y2, const Double_t pt)
+Double_t AlidNdPtHelper::GetLinearInterpolationValue(const Double_t x1,const  Double_t y1,const  Double_t x2,const  Double_t y2, const Double_t pt)
 {
 //
 // linear interpolation
@@ -1068,7 +1068,7 @@ return hScale;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::CalcRelativeDifference(TH1 *const hist1, TH1 *const hist2) 
+TH1* AlidNdPtHelper::CalcRelativeDifference(const TH1 *const hist1, const TH1 *const hist2) 
 {
 //
 // calculate rel. difference 
@@ -1088,7 +1088,7 @@ return h1Clone;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::CalcRelativeDifferenceFun(TH1 *const hist1, TF1 *const fun) 
+TH1* AlidNdPtHelper::CalcRelativeDifferenceFun(const TH1 *const hist1, TF1 *const fun) 
 {
 //
 // calculate rel. difference
@@ -1108,7 +1108,7 @@ return h1Clone;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::NormalizeToEvent(TH2 *const hist1, TH1 *const hist2) 
+TH1* AlidNdPtHelper::NormalizeToEvent(const TH2 *const hist1, const TH1 *const hist2) 
 {
 // normalise to event for a given multiplicity bin
 // return pt histogram 
@@ -1142,8 +1142,8 @@ return histNorm;
 }
 
 //_____________________________________________________________________________
-//THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name) {
-THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, const char *name) {
+//THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *const hist1, const THnSparse *const hist2, char *const name) {
+THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *const hist1, const THnSparse *const hist2, const char *name) {
 // generate correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -1179,7 +1179,7 @@ return h;
 
 //_____________________________________________________________________________
 //THnSparse* AlidNdPtHelper::GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name) {
-THnSparse* AlidNdPtHelper::GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, const char* name) {
+THnSparse* AlidNdPtHelper::GenerateContCorrMatrix(THnSparse *const hist1, const THnSparse *const hist2, const char* name) {
 // generate contamination correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -1250,7 +1250,7 @@ return hist;
 }
 
 //_____________________________________________________________________________
-const AliESDVertex* AlidNdPtHelper::GetTPCVertexZ(AliESDEvent* const esdEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts, Float_t fraction, Int_t ntracksMin){
+const AliESDVertex* AlidNdPtHelper::GetTPCVertexZ(const AliESDEvent* const esdEvent, const AlidNdPtEventCuts *const evtCuts, const AlidNdPtAcceptanceCuts *const accCuts, const AliESDtrackCuts *const trackCuts, Float_t fraction, Int_t ntracksMin){
   //
   // TPC Z vertexer
   //
@@ -1327,7 +1327,7 @@ const AliESDVertex* AlidNdPtHelper::GetTPCVertexZ(AliESDEvent* const esdEvent, A
 }
 
 //_____________________________________________________________________________
-Int_t  AlidNdPtHelper::GetSPDMBTrackMult(AliESDEvent* const esdEvent, Float_t deltaThetaCut, Float_t deltaPhiCut) 
+Int_t  AlidNdPtHelper::GetSPDMBTrackMult(const AliESDEvent* const esdEvent, Float_t deltaThetaCut, Float_t deltaPhiCut) 
 {
   //
   // SPD track multiplicity
@@ -1366,7 +1366,7 @@ return inputCount;
 }
 
 //_____________________________________________________________________________
-Int_t  AlidNdPtHelper::GetSPDMBPrimTrackMult(AliESDEvent* const esdEvent, AliStack* const stack, Float_t deltaThetaCut, Float_t deltaPhiCut) 
+Int_t  AlidNdPtHelper::GetSPDMBPrimTrackMult(const AliESDEvent* const esdEvent, AliStack* const stack, Float_t deltaThetaCut, Float_t deltaPhiCut) 
 {
   //
   // SPD track multiplicity

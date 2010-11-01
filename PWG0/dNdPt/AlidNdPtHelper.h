@@ -15,6 +15,7 @@
 class TF1;
 class TH1;
 class TH2;
+class THnSparse;
 class TParticle;
 class AliHeader;
 class AliGenEventHeader;
@@ -49,44 +50,44 @@ class AlidNdPtHelper : public TObject
     enum EventObject  { kInvalidEventObject = -1, kAllEvents = 0, kTriggeredEvents, kAccEvents, kRecEvents, kMCEvents };
     enum CutSteps     { kCutSteps = 3 };
 
-    static const AliESDVertex* GetVertex(AliESDEvent* const aEsd, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts,  AnalysisMode analysisMethod, Bool_t debug = kFALSE,Bool_t bRedoTPC = kFALSE, Bool_t bUseMeanVertex = kFALSE);
+    static const AliESDVertex* GetVertex(AliESDEvent* const aEsd, const AlidNdPtEventCuts *const evtCuts,const  AlidNdPtAcceptanceCuts *const accCuts,const  AliESDtrackCuts *const trackCuts,  AnalysisMode analysisMethod, Bool_t debug = kFALSE,Bool_t bRedoTPC = kFALSE, Bool_t bUseMeanVertex = kFALSE);
 
-    static const AliESDVertex* GetTPCVertexZ(AliESDEvent* const aEsd, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts, Float_t fraction=0.8, Int_t ntracksMin=2);
+    static const AliESDVertex* GetTPCVertexZ(const AliESDEvent* const aEsd, const AlidNdPtEventCuts *const evtCuts, const AlidNdPtAcceptanceCuts *const accCuts, const AliESDtrackCuts *const trackCuts, Float_t fraction=0.8, Int_t ntracksMin=2);
 
     static Bool_t TestRecVertex(const AliESDVertex* vertex, const AliESDVertex* vertexSPD, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
     static Bool_t IsPrimaryParticle(AliStack *const stack, Int_t idx, ParticleMode particleMode);
     static Bool_t IsCosmicTrack(AliESDtrack *const track1, AliESDtrack *const track2);
-    static Bool_t IsGoodImpPar(AliESDtrack *const track);
-    static Int_t ConvertPdgToPid(TParticle *const particle);
+    static Bool_t IsGoodImpPar(const AliESDtrack *const track);
+    static Int_t ConvertPdgToPid(const TParticle *const particle);
 
     static TObjArray *GetAllChargedTracks(AliESDEvent *const esdEvent, AnalysisMode analysisMode);
 
     static TH1F* MakeResol(TH2F * const his, Int_t integ, Bool_t type, Bool_t drawBins, Int_t minHistEntries);
     static TH1F* CreateResHisto(TH2F* const hRes2, TH1F **phMean, Int_t integ,  Bool_t drawBinFits, Int_t minHistEntries);
 
-    static Int_t GetTPCMBTrackMult(AliESDEvent* const esdEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts);
-    static Int_t GetTPCMBPrimTrackMult(AliESDEvent* const esdEvent, AliStack * const stack,AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts);
+    static Int_t GetTPCMBTrackMult(const AliESDEvent* const esdEvent, const AlidNdPtEventCuts *const evtCuts,const  AlidNdPtAcceptanceCuts *const accCuts, const AliESDtrackCuts *const trackCuts);
+    static Int_t GetTPCMBPrimTrackMult(const AliESDEvent* const esdEvent, AliStack * const stack,const AlidNdPtEventCuts *const evtCuts, const AlidNdPtAcceptanceCuts *const accCuts, const AliESDtrackCuts *const trackCuts);
 
-    static Int_t GetSPDMBTrackMult(AliESDEvent* const esdEvent, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
-    static Int_t GetSPDMBPrimTrackMult(AliESDEvent* const esdEvent, AliStack *const  stack, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
+    static Int_t GetSPDMBTrackMult(const AliESDEvent* const esdEvent, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
+    static Int_t GetSPDMBPrimTrackMult(const AliESDEvent* const esdEvent, AliStack *const  stack, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
     static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts);
 
-    static AliESDtrack* GetTPCOnlyTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
-    static AliESDtrack* GetTPCOnlyTrackTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
-    static AliESDtrack* GetTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
-    static AliESDtrack* GetTrackTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
+    static AliESDtrack* GetTPCOnlyTrackSPDvtx(const AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
+    static AliESDtrack* GetTPCOnlyTrackTrackSPDvtx(const AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
+    static AliESDtrack* GetTrackSPDvtx(const AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
+    static AliESDtrack* GetTrackTrackSPDvtx(const AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
 
     static void PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger);
     static void PrintMCInfo(AliStack *const pStack, Int_t label);
 
     static TH1* ScaleByBinWidth(TH1 *const hist=0);
     static TH1* GetContCorrHisto(TH1 *const hist=0);
-    static TH1* CalcRelativeDifference(TH1 *const hist1=0, TH1 *const hist2=0);
-    static TH1* CalcRelativeDifferenceFun(TH1 *const hist=0, TF1 *const fun=0);
-    static TH1* NormalizeToEvent(TH2 *const hist1=0, TH1 *const hist2=0);
+    static TH1* CalcRelativeDifference(const TH1 *const hist1=0, const TH1 *const hist2=0);
+    static TH1* CalcRelativeDifferenceFun(const TH1 *const hist=0, TF1 *const fun=0);
+    static TH1* NormalizeToEvent(const TH2 *const hist1=0, const TH1 *const hist2=0);
 
-    //static THnSparse* GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name);
+    //static THnSparse* GenerateCorrMatrix(THnSparse *const hist1, const THnSparse *const hist2, char *const name);
     //static TH2* GenerateCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name);
     //static TH1* GenerateCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name);
 
@@ -94,11 +95,11 @@ class AlidNdPtHelper : public TObject
     //static TH2* GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name);
     //static TH1* GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name);
 
-    static THnSparse* GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, const char * name);
+    static THnSparse* GenerateCorrMatrix(THnSparse *const hist1, const THnSparse *const hist2, const char * name);
     static TH2* GenerateCorrMatrix(TH2 *const hist1, TH2 *const hist2, const char* name);
     static TH1* GenerateCorrMatrix(TH1 *const hist1, TH1 *const hist2, const char* name);
 
-    static THnSparse* GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, const char* name);
+    static THnSparse* GenerateContCorrMatrix(THnSparse *const hist1, const THnSparse *const hist2, const char* name);
     static TH2* GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, const char* name);
     static TH1* GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, const char* name);
 
