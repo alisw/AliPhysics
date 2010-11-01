@@ -1101,8 +1101,11 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       //
       // 0-multiplicity bin for LHC background correction
       //
-      if(GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
-         GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
+      if( GetAnalysisMode() == AlidNdPtHelper::kTPCITS || 
+          GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || 
+	  GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
+          GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || 
+	  GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt ) 
       {
         trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroTrackSPDvtx);
       } else {
@@ -1233,8 +1236,11 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
        multMBTracks = mult->GetNumberOfTracklets();
     
   } 
-  else if( GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
-           GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt)
+  else if( GetAnalysisMode() == AlidNdPtHelper::kTPCITS || 
+           GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || 
+	   GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
+           GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || 
+	   GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt )
   {
      if(vtxESD->GetStatus() && isRecVertex)
        multMBTracks = vtxESD->GetNContributors();
@@ -1312,30 +1318,8 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       if(esdTrackCuts->AcceptTrack(track)) 
       {
           if(accCuts->AcceptTrack(track)) multRecTemp++;
-        /*
-        if(GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) {
-          if(AlidNdPtHelper::IsGoodImpPar(track) && accCuts->AcceptTrack(track)) multRecTemp++;
-        }
-	else {
-          if(accCuts->AcceptTrack(track)) multRecTemp++;
-        }
-	*/
       }  
     }
-
-    /*
-    // check multiplicity
-    const AliMultiplicity* mult = esdEvent->GetMultiplicity();
-    Int_t trackletMult = 0;
-    if (mult) {
-       for(Int_t i=0; i<mult->GetNumberOfTracklets(); i++) {
-          if(TMath::Abs(mult->GetEta(i)) < accCuts->GetMaxEta() )
-	    trackletMult++;
-       }
-    }
-    // use tracklet multiplicity
-    multRecTemp = trackletMult;
-    */
 
     //
     for(Int_t i=0; i<entries;++i) 
