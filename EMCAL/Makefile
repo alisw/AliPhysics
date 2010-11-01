@@ -14,6 +14,8 @@ ALICEINC      = -I.
 ### if modification of EMCAL libraries, include STEER and RAW
 ifneq ($(STEERBase_INCLUDE),)
   ALICEINC += -I../$(STEERBase_INCLUDE)
+  ALICEINC += -I../$(ESD_INCLUDE)
+  ALICEINC += -I../$(AOD_INCLUDE)
 else
     ALICEINC += -I$(ALICE_ROOT)/include
     ALICEINC += -I$(ALICE_ROOT)/STEER

@@ -7,7 +7,6 @@ AliEMCALClusterizer.cxx \
 AliEMCALClusterizerv1.cxx \
 AliEMCALClusterizerNxN.cxx \
 AliEMCALUnfolding.cxx \
-AliEMCALTrack.cxx \
 AliEMCALTracker.cxx \
 AliEMCALPID.cxx \
 AliEMCALQADataMakerRec.cxx \
@@ -22,7 +21,7 @@ DHDR:=EMCALrecLinkDef.h
 # have to tune
 EINCLUDE:=PYTHIA6 RAW EVGEN THijing VZERO
 
-EXPORT:=AliEMCALTrack.h
+EXPORT:=
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

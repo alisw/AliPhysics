@@ -21,5 +21,6 @@
 #pragma link C++ class AliCaloPeakFinderVectors+;
 #pragma link C++ class AliEMCALHistoUtilities+;
 #pragma link C++ class AliEMCALRecoUtils+;
+#pragma link C++ class AliEMCALTrack+;
 
 #endif

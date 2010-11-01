@@ -16,14 +16,18 @@
 #include "TNamed.h"
 #include "TMath.h"
 #include "TObjArray.h"
+#include "TArrayI.h"
+#include "TArrayF.h"
 #include "TH2F.h"
 
 //AliRoot includes
 class AliVCluster;
 class AliVCaloCells;
+class AliVEvent;
 #include "AliLog.h"
 class AliEMCALGeometry;
 class AliEMCALPIDUtils;
+class AliESDtrack;
 
 class AliEMCALRecoUtils : public TNamed {
   
@@ -159,6 +163,47 @@ public:
 
   void RecalculateClusterShowerShapeParameters(AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
 
+  //Track matching
+  void FindMatches(AliVEvent *event);
+  void GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ);
+  Bool_t IsMatched(Int_t index);
+  Int_t FindMatchedPos(Int_t index) const;
+
+  Float_t GetCutR() const { return fCutR; }
+  Float_t GetCutZ() const { return fCutZ; }
+
+  void SetCutR(Float_t CutR) { fCutR=CutR; }
+  void SetCutZ(Float_t CutZ) { fCutZ=CutZ; }
+
+  //Track Cuts 
+  Bool_t IsAccepted(AliESDtrack *track);
+  void InitTrackCuts();
+
+  // track quality cut setters  
+  void SetMinNClustersTPC(Int_t min=-1)          {fCutMinNClusterTPC=min;}
+  void SetMinNClustersITS(Int_t min=-1)          {fCutMinNClusterITS=min;}
+  void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC=max;}
+  void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
+  void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
+  void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
+  void SetAcceptKinkDaughters(Bool_t b=kTRUE)    {fCutAcceptKinkDaughters=b;}
+  void SetMaxDCAToVertexXY(Float_t dist=1e10)         {fCutMaxDCAToVertexXY = dist;}
+  void SetMaxDCAToVertexZ(Float_t dist=1e10)          {fCutMaxDCAToVertexZ = dist;}
+  void SetDCAToVertex2D(Bool_t b=kFALSE)              {fCutDCAToVertex2D = b;}
+
+  // getters
+
+  Int_t   GetMinNClusterTPC()        const   { return fCutMinNClusterTPC;}
+  Int_t   GetMinNClustersITS()       const   { return fCutMinNClusterITS;}
+  Float_t GetMaxChi2PerClusterTPC()  const   { return fCutMaxChi2PerClusterTPC;}
+  Float_t GetMaxChi2PerClusterITS()  const   { return fCutMaxChi2PerClusterITS;}
+  Bool_t  GetRequireTPCRefit()       const   { return fCutRequireTPCRefit;}
+  Bool_t  GetRequireITSRefit()       const   { return fCutRequireITSRefit;}
+  Bool_t  GetAcceptKinkDaughters()   const   { return fCutAcceptKinkDaughters;}
+  Float_t GetMaxDCAToVertexXY()      const   { return fCutMaxDCAToVertexXY;}
+  Float_t GetMaxDCAToVertexZ()       const   { return fCutMaxDCAToVertexZ;}
+  Bool_t  GetDCAToVertex2D()         const   { return fCutDCAToVertex2D;}
+
 
 private:
   
@@ -177,9 +222,27 @@ private:
   Int_t      fNCellsFromEMCALBorder;     // Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Bool_t     fNoEMCALBorderAtEta0;       // Do fiducial cut in EMCAL region eta = 0?
 
+  TArrayI *fMatchedClusterIndex;  //Array that stores indexes of matched clusters
+  TArrayF *fResidualZ;            //Array that stores the residual z
+  TArrayF *fResidualR;            //Array that stores the residual r
+  Float_t fCutR; //dR cut on matching
+  Float_t fCutZ; //dZ cut on matching
+
+  enum { kNCuts = 10 }; 
+  Int_t   fCutMinNClusterTPC;         // min number of tpc clusters
+  Int_t   fCutMinNClusterITS;         // min number of its clusters  
+  Float_t fCutMaxChi2PerClusterTPC;   // max tpc fit chi2 per tpc cluster
+  Float_t fCutMaxChi2PerClusterITS;   // max its fit chi2 per its cluster
+  Bool_t  fCutRequireTPCRefit;        // require TPC refit
+  Bool_t  fCutRequireITSRefit;        // require ITS refit
+  Bool_t  fCutAcceptKinkDaughters;    // accepting kink daughters?
+  Float_t fCutMaxDCAToVertexXY;       // track-to-vertex cut in max absolute distance in xy-plane
+  Float_t fCutMaxDCAToVertexZ;        // track-to-vertex cut in max absolute distance in z-plane
+  Bool_t  fCutDCAToVertex2D;          // if true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
+
   AliEMCALPIDUtils * fPIDUtils;               // Recalculate PID parameters
   
-  ClassDef(AliEMCALRecoUtils, 5)
+  ClassDef(AliEMCALRecoUtils, 6)
   
 };
 
