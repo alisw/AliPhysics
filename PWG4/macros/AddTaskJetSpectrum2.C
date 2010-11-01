@@ -100,7 +100,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
 
    TString bBkgName = bBkg;
    if(kBackground&&bBkgName.Length()==0){
-     if(typeGen.Contains("AODMC2"))bBkgName = "jeteventbackground_clustersAODMC2_KT06";
+     if(typeRec.Contains("AODMC2"))bBkgName = "jeteventbackground_clustersAODMC2_KT06";
      else bBkgName = "jeteventbackground_clustersAOD_KT06";
    }
 
@@ -109,7 +109,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
 
    if(iFillCorrBkg)bGen = Form("SubBkg%d",iFillCorrBkg);   
    AliAnalysisTaskJetSpectrum2* pwg4spec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s-%s_%010d",bRec,bGen,iEventSelectionMask));
-      
+   pwg4spec->SetFillCorrBkg(iFillCorrBkg);
    // or a config file
    // pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum2::kAnaMC);
    // if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
