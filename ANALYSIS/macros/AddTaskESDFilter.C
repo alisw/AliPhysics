@@ -150,11 +150,11 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
       AliAnalysisDataContainer *coutputEx = mgr->CreateContainer("cFilterList", TList::Class(),
 								   AliAnalysisManager::kOutputContainer,"pyxsec_hists.root");
       mgr->ConnectOutput (kinefilter,  1,coutputEx);
-      if (useCentralityTask) {
-	mgr->ConnectInput (ctask, 0, mgr->GetCommonInputContainer());
-	mgr->ConnectOutput(ctask, 0, mgr->GetCommonOutputContainer());
-      }
    }   
+   if (useCentralityTask) {
+       mgr->ConnectInput (ctask, 0, mgr->GetCommonInputContainer());
+       mgr->ConnectOutput(ctask, 0, mgr->GetCommonOutputContainer());
+   }
    return esdfilter;
  }
  
