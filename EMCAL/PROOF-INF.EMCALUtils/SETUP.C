@@ -1,6 +1,7 @@
 void SETUP()
 {
-
+  gSystem->Load("libMatrix.so");
+  gSystem->Load("libPhysics.so");
    // Load library
    TString ocwd = gSystem->WorkingDirectory();
    gSystem->Load(ocwd+"/libEMCALUtils.so");

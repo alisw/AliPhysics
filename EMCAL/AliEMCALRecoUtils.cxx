@@ -56,7 +56,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fRecalibration(kFALSE), fEMCALRecalibrationFactors(),
   fRemoveBadChannels(kFALSE), fEMCALBadChannelMap(),
   fNCellsFromEMCALBorder(0), fNoEMCALBorderAtEta0(kTRUE),
-  fMatchedClusterIndex(0x0), fResidualZ(0x0), fResidualR(0x0), fCutR(40), fCutZ(20),
+  fMatchedClusterIndex(0x0), fResidualZ(0x0), fResidualR(0x0), fCutR(20), fCutZ(20),
   fCutMinNClusterTPC(0), fCutMinNClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(0), fCutRequireITSRefit(0), fCutAcceptKinkDaughters(0),
   fCutMaxDCAToVertexXY(0), fCutMaxDCAToVertexZ(0),fCutDCAToVertex2D(0),

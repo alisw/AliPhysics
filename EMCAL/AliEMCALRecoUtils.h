@@ -172,8 +172,8 @@ public:
   Float_t GetCutR() const { return fCutR; }
   Float_t GetCutZ() const { return fCutZ; }
 
-  void SetCutR(Float_t CutR) { fCutR=CutR; }
-  void SetCutZ(Float_t CutZ) { fCutZ=CutZ; }
+  void SetCutR(Float_t cutR) { fCutR=cutR; }
+  void SetCutZ(Float_t cutZ) { fCutZ=cutZ; }
 
   //Track Cuts 
   Bool_t IsAccepted(AliESDtrack *track);
