@@ -1143,6 +1143,43 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt)";
   }
 
+  // TPC+ITS combine tracking + DCAr(pt) + DCAz(pt)
+  if (cutMode == 71) 
+  {
+    Int_t    minclsTPC=70;
+    Double_t maxchi2perTPCcl=4.;
+    Double_t maxdcazITSTPC=1.e9;
+
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCuts->SetMinNClustersTPC(minclsTPC);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+    //
+    // ITS
+    //
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    //
+    // primary selection
+    //
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
+
+    // DCArphi parametrization (LHC10c pass2)
+    // 7*(0.0026+0.0050/pt^1.01)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+
+    // DCArphi parametrization (LHC10c pass2)
+    // 7*(0.01+0.011/pt^0.72)
+    esdTrackCuts->SetMaxDCAToVertexZPtDep("0.07+0.077/pt^0.72");
+
+    TString tag = "TPC+ITS combine tracking + DCAr(pt) + DCAz(pt)";
+  }
+
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) 4-sigma
   if (cutMode == 75) 
   {
