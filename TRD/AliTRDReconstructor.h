@@ -48,21 +48,27 @@ public:
 
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
-  static TClonesArray* GetClusters() {return fgClusters;}
-  static TClonesArray* GetTracklets() {return fgTracklets;}
-  static Int_t        GetNTimeBins() {return fgNTimeBins;}
+  static TClonesArray* GetClusters()             {return fgClusters;}
+  static TClonesArray* GetTracklets()            { return fgTracklets;}
+  static Int_t        GetNTimeBins()             { return fgNTimeBins;}
   Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}
   AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return GetRecoParam()->IsPIDNeuralNetwork() ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
-  static const AliTRDrecoParam* GetRecoParam() { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
+  static const AliTRDrecoParam* GetRecoParam()   { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
+  static Float_t      GetMinClustersInTrack()    { return fgkMinClustersInTrack;}
+  static Float_t      GetLabelFraction()         { return fgkLabelFraction;}
+  static Double_t     GetMaxChi2()               { return fgkMaxChi2;}
+  static Double_t     GetMaxSnp()                { return fgkMaxSnp;}
+  static Double_t     GetMaxStep()               { return fgkMaxStep;}
+  static Double_t     GetEpsilon()               { return fgkEpsilon;}
 
   virtual Bool_t      HasDigitConversion() const { return fSteerParam&kDigitsConversion;  };
-  Bool_t              IsCosmic() const { return GetRecoParam()->GetEventSpecie() & AliRecoParam::kCosmic;}
+  Bool_t              IsCosmic() const           { return GetRecoParam()->GetEventSpecie() & AliRecoParam::kCosmic;}
   Bool_t              IsWritingClusters() const  { return fSteerParam&kWriteClusters;}
   Bool_t              IsWritingTracklets() const { return fSteerParam&kWriteTracklets;}
   Bool_t              IsHLT() const              { return fSteerParam&kHLT;}
   Bool_t              IsSeeding() const          { return fSteerParam&kSeeding;}
   Bool_t              IsProcessingTracklets() const { return fSteerParam&kProcTracklets;}
-  Bool_t              IsDebugStreaming() const { return fSteerParam&kDebug;}
+  Bool_t              IsDebugStreaming() const   { return fSteerParam&kDebug;}
   Bool_t              UseClusterRadialCorrection() const { return fSteerParam&kClRadialCorr;}
 
   static void         Options(UInt_t steer=0);
@@ -82,6 +88,14 @@ private:
   static Char_t const   *fgTaskNames[AliTRDrecoParam::kTRDreconstructionTasks]; //! tasks names
   static Char_t const   *fgTaskFlags[AliTRDrecoParam::kTRDreconstructionTasks]; //! tasks flags
   UInt_t            fSteerParam;          // steering bits
+  // configuration vars for tracking
+  static const Double_t    fgkMaxChi2;                  // Max increment in track chi2
+  static const Float_t     fgkMinClustersInTrack;       // Min number of clusters in track
+  static const Float_t     fgkLabelFraction;            // Min fraction of same label
+  static const Double_t    fgkMaxSnp;                   // Maximal snp for tracking
+  static const Double_t    fgkMaxStep;                  // Maximal step for tracking
+  static const Double_t    fgkEpsilon;                  // Precision of radial coordinate
+
   TTreeSRedirector *fDebugStream[AliTRDrecoParam::kTRDreconstructionTasks];// Debug Streamer container;
  
   static TClonesArray *fgClusters;    //  list of clusters for local reconstructor

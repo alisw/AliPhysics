@@ -84,6 +84,7 @@ public:
   static Int_t    GetNTimeBins()             { return fgNTimeBins;}
   static void     GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]);
   static void     GetSeedingConfig(Int_t iconfig, Int_t planes[4]);
+
   static TLinearFitter*  GetTiltedRiemanFitter();
   static TLinearFitter*  GetTiltedRiemanFitterConstraint();
   static AliRieman*      GetRiemanFitter();
@@ -200,7 +201,6 @@ private:
   Float_t     GetChi2Z(const AliTRDseedV1 *const tracklets) const;
   Float_t     GetChi2Phi(const AliTRDseedV1 *const tracklets) const;
 
-private:
   const AliTRDReconstructor *fkReconstructor;           // reconstructor manager
   const AliTRDrecoParam     *fkRecoParam;               // reco param for the current event
   AliTRDgeometry      *fGeom;                           // Pointer to TRD geometry
@@ -211,13 +211,6 @@ private:
   TClonesArray        *fTracksESD;                      // List of ESD tracks in current SM
   Float_t              fR[kNPlanes];                    //! rough radial position of each TRD layer
 
-  // should go to the recoParam
-  static const Double_t    fgkMaxChi2;                  // Max increment in track chi2 
-  static const Float_t     fgkMinClustersInTrack;       // Min number of clusters in track
-  static const Float_t     fgkLabelFraction;            // Min fraction of same label
-  static const Double_t    fgkMaxSnp;                   // Maximal snp for tracking
-  static const Double_t    fgkMaxStep;                  // Maximal step for tracking  
-  
   // stand alone tracking
   static Double_t      fgTopologicQA[kNConfigs];        //  Topologic quality
   Double_t             fTrackQuality[kMaxTracksStack];  //  Track quality 
@@ -231,7 +224,7 @@ private:
   static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
   static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
   
-  ClassDef(AliTRDtrackerV1, 5)                          //  TRD tracker - tracklet based tracking
+  ClassDef(AliTRDtrackerV1, 6)                          //  TRD tracker - tracklet based tracking
 
 };
 #endif

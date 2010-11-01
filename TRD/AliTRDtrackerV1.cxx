@@ -61,11 +61,6 @@ ClassImp(AliTRDtrackerV1)
 ClassImp(AliTRDtrackerV1::AliTRDLeastSquare)
 ClassImp(AliTRDtrackerV1::AliTRDtrackFitterRieman)
 
-const  Float_t  AliTRDtrackerV1::fgkMinClustersInTrack =  0.5;  //
-const  Float_t  AliTRDtrackerV1::fgkLabelFraction      =  0.8;  //
-const  Double_t AliTRDtrackerV1::fgkMaxChi2            = 12.0;  //
-const  Double_t AliTRDtrackerV1::fgkMaxSnp             =  0.95; // Maximum local sine of the azimuthal angle
-const  Double_t AliTRDtrackerV1::fgkMaxStep            =  2.0;  // Maximal step size in propagation 
 Double_t AliTRDtrackerV1::fgTopologicQA[kNConfigs] = {
   0.5112, 0.5112, 0.5112, 0.0786, 0.0786,
   0.0786, 0.0786, 0.0579, 0.0579, 0.0474,
@@ -73,6 +68,8 @@ Double_t AliTRDtrackerV1::fgTopologicQA[kNConfigs] = {
 };  
 const Double_t AliTRDtrackerV1::fgkX0[kNPlanes]    = {
   300.2, 312.8, 325.4, 338.0, 350.6, 363.2};
+// Number of Time Bins/chamber should be also stored independently by the traker
+// (also in AliTRDReconstructor) in oder to be able to run HLT. Fix TODO
 Int_t AliTRDtrackerV1::fgNTimeBins = 0;
 AliRieman* AliTRDtrackerV1::fgRieman = NULL;
 TLinearFitter* AliTRDtrackerV1::fgTiltedRieman = NULL;
@@ -320,7 +317,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     // Propagate to the entrance in the TRD mother volume
     track.~AliTRDtrackV1();
     new(&track) AliTRDtrackV1(*seed);
-    if(AliTRDgeometry::GetXtrdBeg() > (fgkMaxStep + track.GetX()) && !PropagateToX(track, AliTRDgeometry::GetXtrdBeg(), fgkMaxStep)){ 
+    if(AliTRDgeometry::GetXtrdBeg() > (AliTRDReconstructor::GetMaxStep() + track.GetX()) && !PropagateToX(track, AliTRDgeometry::GetXtrdBeg(), AliTRDReconstructor::GetMaxStep())){
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
       continue;
     }    
@@ -328,7 +325,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
       continue;
     }
-    if(TMath::Abs(track.GetSnp()) > fgkMaxSnp) {
+    if(TMath::Abs(track.GetSnp()) > AliTRDReconstructor::GetMaxSnp()) {
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
       continue;
     }
@@ -375,7 +372,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       // Make backup for back propagation
       Int_t foundClr = track.GetNumberOfClusters();
       if (foundClr >= foundMin) {
-        track.CookLabel(1. - fgkLabelFraction);
+        track.CookLabel(1. - AliTRDReconstructor::GetLabelFraction());
         //if(track.GetBackupTrack()) UseClusters(track.GetBackupTrack());
 
         // Sign only gold tracks
@@ -430,7 +427,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
           xtof = TMath::Sqrt(glob[0]*glob[0]+glob[1]*glob[1]);
         }
       }
-      if(xtof > (fgkMaxStep + track.GetX()) && !PropagateToX(track, xtof, fgkMaxStep)){ 
+      if(xtof > (AliTRDReconstructor::GetMaxStep() + track.GetX()) && !PropagateToX(track, xtof, AliTRDReconstructor::GetMaxStep())){
         seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
         continue;
       }
@@ -438,7 +435,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
         seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
         continue;
       }
-      if(TMath::Abs(track.GetSnp()) > fgkMaxSnp){ 
+      if(TMath::Abs(track.GetSnp()) > AliTRDReconstructor::GetMaxSnp()){
         seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
         continue;
       }
@@ -514,7 +511,7 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
       }
 
       // Prolongate to TPC
-      if (PropagateToX(track, xTPC, fgkMaxStep)) { //  -with update
+      if (PropagateToX(track, xTPC, AliTRDReconstructor::GetMaxStep())) { //  -with update
         seed->UpdateTrackParams(&track, AliESDtrack::kTRDrefit);
         found++;
         kUPDATE = kTRUE;
@@ -524,7 +521,7 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
     // Prolongate to TPC without update
     if(!kUPDATE) {
       AliTRDtrackV1 tt(*seed);
-      if (PropagateToX(tt, xTPC, fgkMaxStep)) seed->UpdateTrackParams(&tt, AliESDtrack::kTRDbackup);
+      if (PropagateToX(tt, xTPC, AliTRDReconstructor::GetMaxStep())) seed->UpdateTrackParams(&tt, AliESDtrack::kTRDbackup);
     }
   }
   AliInfo(Form("Number of seeds: TRDout[%d]", nseed));
@@ -572,12 +569,12 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     }
     Double_t x  = tracklet->GetX();//GetX0();
     // reject tracklets which are not considered for inward refit
-    if(x > t.GetX()+fgkMaxStep) continue;
+    if(x > t.GetX()+AliTRDReconstructor::GetMaxStep()) continue;
 
     // append tracklet to track
     t.SetTracklet(tracklet, index);
     
-    if (x < (t.GetX()-fgkMaxStep) && !PropagateToX(t, x+fgkMaxStep, fgkMaxStep)) break;
+    if (x < (t.GetX()-AliTRDReconstructor::GetMaxStep()) && !PropagateToX(t, x+AliTRDReconstructor::GetMaxStep(), AliTRDReconstructor::GetMaxStep())) break;
     if (!AdjustSector(&t)) break;
     
     // Start global position
@@ -755,7 +752,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         !matrix ){ 
       AliDebug(4, Form("Missing Geometry ly[%d]. Guess radial position", ily));
       // propagate to the default radial position
-      if(fR[ily] > (fgkMaxStep + t.GetX()) && !PropagateToX(t, fR[ily], fgkMaxStep)){
+      if(fR[ily] > (AliTRDReconstructor::GetMaxStep() + t.GetX()) && !PropagateToX(t, fR[ily], AliTRDReconstructor::GetMaxStep())){
         n=-1; 
         t.SetStatus(AliTRDtrackV1::kPropagation);
         AliDebug(4, "Failed Propagation [Missing Geometry]");
@@ -767,7 +764,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         AliDebug(4, "Failed Adjust Sector [Missing Geometry]");
         break;
       }
-      if(TMath::Abs(t.GetSnp()) > fgkMaxSnp){
+      if(TMath::Abs(t.GetSnp()) > AliTRDReconstructor::GetMaxSnp()){
         n=-1; 
         t.SetStatus(AliTRDtrackV1::kSnp);
         AliDebug(4, "Failed Max Snp [Missing Geometry]");
@@ -783,8 +780,8 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     matrix->LocalToMaster(loc, glb);
 
     // Propagate to the radial distance of the current layer
-    x = glb[0] - fgkMaxStep;
-    if(x > (fgkMaxStep + t.GetX()) && !PropagateToX(t, x, fgkMaxStep)){
+    x = glb[0] - AliTRDReconstructor::GetMaxStep();
+    if(x > (AliTRDReconstructor::GetMaxStep() + t.GetX()) && !PropagateToX(t, x, AliTRDReconstructor::GetMaxStep())){
       n=-1; 
       t.SetStatus(AliTRDtrackV1::kPropagation);
       AliDebug(4, Form("Failed Initial Propagation to x[%7.2f]", x));
@@ -796,10 +793,10 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       AliDebug(4, "Failed Adjust Sector Start");
       break;
     }
-    if(TMath::Abs(t.GetSnp()) > fgkMaxSnp) {
+    if(TMath::Abs(t.GetSnp()) > AliTRDReconstructor::GetMaxSnp()) {
       n=-1; 
       t.SetStatus(AliTRDtrackV1::kSnp);
-      AliDebug(4, Form("Failed Max Snp[%f] MaxSnp[%f]", t.GetSnp(), fgkMaxSnp));
+      AliDebug(4, Form("Failed Max Snp[%f] MaxSnp[%f]", t.GetSnp(), AliTRDReconstructor::GetMaxSnp()));
       break;
     }
     Bool_t doRecalculate = kFALSE;
@@ -819,14 +816,14 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         continue;
       }
       matrix->LocalToMaster(loc, glb);
-      x = glb[0] - fgkMaxStep;
+      x = glb[0] - AliTRDReconstructor::GetMaxStep();
     }
 
     // check if track is well inside fiducial volume 
-    if (!t.GetProlongation(x+fgkMaxStep, y, z)) {
+    if (!t.GetProlongation(x+AliTRDReconstructor::GetMaxStep(), y, z)) {
       n=-1; 
       t.SetStatus(AliTRDtrackV1::kProlongation);
-      AliDebug(4, Form("Failed Prolongation to x[%7.2f] y[%7.2f] z[%7.2f]", x+fgkMaxStep, y, z));
+      AliDebug(4, Form("Failed Prolongation to x[%7.2f] y[%7.2f] z[%7.2f]", x+AliTRDReconstructor::GetMaxStep(), y, z));
       break;
     }
     if(fGeom->IsOnBoundary(det, y, z, .5)){ 
@@ -921,7 +918,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       continue;
     } 
     x = ptrTracklet->GetX(); //GetX0();
-    if(x > (fgkMaxStep + t.GetX()) && !PropagateToX(t, x, fgkMaxStep)) {
+    if(x > (AliTRDReconstructor::GetMaxStep() + t.GetX()) && !PropagateToX(t, x, AliTRDReconstructor::GetMaxStep())) {
       n=-1; 
       t.SetStatus(AliTRDtrackV1::kPropagation);
       AliDebug(4, Form("Failed Propagation to Tracklet x[%7.2f]", x));
@@ -933,10 +930,10 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       AliDebug(4, "Failed Adjust Sector");
       break;
     }
-    if(TMath::Abs(t.GetSnp()) > fgkMaxSnp) {
+    if(TMath::Abs(t.GetSnp()) > AliTRDReconstructor::GetMaxSnp()) {
       n=-1; 
       t.SetStatus(AliTRDtrackV1::kSnp);
-      AliDebug(4, Form("Failed Max Snp[%f] MaxSnp[%f]", t.GetSnp(), fgkMaxSnp));
+      AliDebug(4, Form("Failed Max Snp[%f] MaxSnp[%f]", t.GetSnp(), AliTRDReconstructor::GetMaxSnp()));
       break;
     }
     Double_t cov[3]; ptrTracklet->GetCovAt(x, cov);
@@ -1695,8 +1692,8 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 * const t
 
     while(ip < np){
       //don't do anything if next marker is after next update point.
-      if((up?-1:1) * (points[ip].GetX() - x) - fgkMaxStep < 0) break;
-      if(((up?-1:1) * (points[ip].GetX() - track->GetX()) < 0) && !PropagateToX(*track, points[ip].GetX(), fgkMaxStep)) return -1.;
+      if((up?-1:1) * (points[ip].GetX() - x) - AliTRDReconstructor::GetMaxStep() < 0) break;
+      if(((up?-1:1) * (points[ip].GetX() - track->GetX()) < 0) && !PropagateToX(*track, points[ip].GetX(), AliTRDReconstructor::GetMaxStep())) return -1.;
       
       Double_t xyz[3]; // should also get the covariance
       track->GetXYZ(xyz);
@@ -1707,10 +1704,10 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 * const t
     // printf("plane[%d] tracklet[%p] x[%f]\n", iplane, ptrTracklet, x);
 
     // Propagate closer to the next update point 
-    if(((up?-1:1) * (x - track->GetX()) + fgkMaxStep < 0) && !PropagateToX(*track, x + (up?-1:1)*fgkMaxStep, fgkMaxStep)) return -1.;
+    if(((up?-1:1) * (x - track->GetX()) + AliTRDReconstructor::GetMaxStep() < 0) && !PropagateToX(*track, x + (up?-1:1)*AliTRDReconstructor::GetMaxStep(), AliTRDReconstructor::GetMaxStep())) return -1.;
 
     if(!AdjustSector(track)) return -1;
-    if(TMath::Abs(track->GetSnp()) > fgkMaxSnp) return -1;
+    if(TMath::Abs(track->GetSnp()) > AliTRDReconstructor::GetMaxSnp()) return -1;
     
     //load tracklet to the tracker and the track
 /*    Int_t index;
@@ -1759,7 +1756,7 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 * const t
 
   // extrapolation
   while(ip < np){
-    if(((up?-1:1) * (points[ip].GetX() - track->GetX()) < 0) && !PropagateToX(*track, points[ip].GetX(), fgkMaxStep)) return -1.;
+    if(((up?-1:1) * (points[ip].GetX() - track->GetX()) < 0) && !PropagateToX(*track, points[ip].GetX(), AliTRDReconstructor::GetMaxStep())) return -1.;
     
     Double_t xyz[3]; // should also get the covariance
     track->GetXYZ(xyz); 
@@ -1804,15 +1801,13 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
   // Returns 1 if track reaches the plane, and 0 otherwise 
   //
 
-  const Double_t kEpsilon = 0.00001;
-
   // Current track X-position
   Double_t xpos = t.GetX();
 
   // Direction: inward or outward
   Double_t dir  = (xpos < xToGo) ? 1.0 : -1.0;
 
-  while (((xToGo - xpos) * dir) > kEpsilon) {
+  while (((xToGo - xpos) * dir) > AliTRDReconstructor::GetEpsilon()) {
 
     Double_t xyz0[3];
     Double_t xyz1[3];

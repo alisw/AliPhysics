@@ -626,7 +626,7 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
   // "xrho" - thickness*density    [g/cm^2] 
   // 
 
-  if (TMath::Abs(xk - GetX())<1.e-2) return kTRUE; // 100mum limit
+  if (TMath::Abs(xk - GetX())<AliTRDReconstructor::GetEpsilon()*0.1) return kTRUE; // 10% of the tracker precision
 
   Double_t xyz0[3] = {GetX(), GetY(), GetZ()}, // track position BEFORE propagation 
            b[3];    // magnetic field 

@@ -76,6 +76,12 @@ Char_t const * AliTRDReconstructor::fgTaskFlags[AliTRDrecoParam::kTRDreconstruct
  ,"pd"
 };
 Int_t AliTRDReconstructor::fgNTimeBins = -1;
+const  Float_t  AliTRDReconstructor::fgkMinClustersInTrack =  0.5;  //
+const  Float_t  AliTRDReconstructor::fgkLabelFraction      =  0.8;  //
+const  Double_t AliTRDReconstructor::fgkMaxChi2            = 12.0;  //
+const  Double_t AliTRDReconstructor::fgkMaxSnp             =  0.95; // Maximum local sine of the azimuthal angle
+const  Double_t AliTRDReconstructor::fgkMaxStep            =  2.0;  // Maximal step size in propagation
+const Double_t  AliTRDReconstructor::fgkEpsilon            = 1.e-5;                  // Precision of radial coordinate
 
 //_____________________________________________________________________________
 AliTRDReconstructor::AliTRDReconstructor()
