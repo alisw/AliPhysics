@@ -161,8 +161,7 @@ void HM_PHYSICS_V0002(
   config.AddItem(
 		 1, // priority group.
 		 "SOFTWARE || CALIBRATION || START_OF_DATA || END_OF_DATA",
-		 //"domainHLTOUT | domainALLDDL",
-		 "SOFTWARE | CALIBRATION | START_OF_DATA | END_OF_DATA",
+		 "SOFTWARE | CALIBRATION | START_OF_DATA | END_OF_DATA | domainHLTDDL",
 		 "H-SoftwareTrigger-V0001.001-ALL-ALL"
 		 );
 
