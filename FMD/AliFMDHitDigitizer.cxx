@@ -505,6 +505,7 @@ AliFMDHitDigitizer::AddDigit(UShort_t        detector,
   fFMD->AddSDigitByFields(detector, ring, sector, strip, edep,
 			  count1, count2, count3, count4, 
 			  ntotal, nprim, fStoreTrackRefs ? refs.fArray : 0);
+  if (fStoreTrackRefs && nprim > 3) fIgnoredLabels += nprim - 3;
 }
 
 //____________________________________________________________________

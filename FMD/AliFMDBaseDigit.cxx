@@ -203,8 +203,9 @@ AliFMDBaseDigit::AddTrack(Int_t track)
   else if (fTracks[1] == -1) fTracks[1] = track;
   else if (fTracks[2] == -1) fTracks[2] = track;
   else 
-    AliWarning(Form("While adding track label to %s for %s: "
-		    "All 3 track labels used, can't add reference to track %d",
+    AliFMDDebug(1, ("While adding track label to %s for %s: "
+		    "All 3 track labels used, can't add "
+		    "reference to track %d",
 		    ClassName(), GetName(), track));
 }
 

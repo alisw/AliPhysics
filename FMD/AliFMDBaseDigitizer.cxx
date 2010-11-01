@@ -231,7 +231,8 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer()
 	  AliFMDMap::kMaxSectors, 
 	  AliFMDMap::kMaxStrips),
     fShapingTime(6),
-    fStoreTrackRefs(kTRUE)
+    fStoreTrackRefs(kTRUE), 
+    fIgnoredLabels(0)
 {
   AliFMDDebug(1, ("Constructed"));
   // Default ctor - don't use it
@@ -244,7 +245,8 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager)
     fRunLoader(0),
     fEdep(0),        // nDet==0 means 51200 slots
     fShapingTime(6),
-    fStoreTrackRefs(kTRUE)
+    fStoreTrackRefs(kTRUE), 
+    fIgnoredLabels(0)
 {
   // Normal CTOR
   AliFMDDebug(1, ("Constructed"));
@@ -259,7 +261,8 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(const Char_t* name,
     fRunLoader(0),
     fEdep(0),        // nDet==0 means 51200 slots
     fShapingTime(6),
-    fStoreTrackRefs(kTRUE)
+    fStoreTrackRefs(kTRUE), 
+    fIgnoredLabels(0)
 {
   // Normal CTOR
   AliFMDDebug(1, (" Constructed"));
@@ -374,6 +377,7 @@ AliFMDBaseDigitizer::DigitizeHits() const
   // the digits array (AliFMD::fDigits)
   //
   AliFMDDebug(5, ("Will now digitize all the summed signals"));
+  fIgnoredLabels = 0;
   AliFMDGeometry* geometry = AliFMDGeometry::Instance();
   
   TArrayI counts(4);
@@ -453,6 +457,10 @@ AliFMDBaseDigitizer::DigitizeHits() const
       } // Sector 
     } // Ring 
   } // Detector 
+  if (fIgnoredLabels > 0) 
+    AliWarning(Form("%d track labels could not be associated with digits "
+		    "due to limited storage facilities in AliDigit", 
+		    fIgnoredLabels));
 }
 
 //____________________________________________________________________
@@ -568,6 +576,7 @@ AliFMDBaseDigitizer::AddDigit(UShort_t        detector,
   fFMD->AddDigitByFields(detector, ring, sector, strip, 
 			 count1, count2, count3, count4, 
 			 ntot, fStoreTrackRefs ? refs.fArray : 0);
+  if (fStoreTrackRefs && ntot > 3) fIgnoredLabels += ntot - 3;
 }
 
 //____________________________________________________________________

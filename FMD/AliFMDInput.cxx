@@ -105,7 +105,8 @@ AliFMDInput::AliFMDInput()
     fTreeMask(0), 
     fRawFile(""),
     fIsInit(kFALSE),
-    fEventCount(0)
+    fEventCount(0), 
+    fNEvents(-1)
 {
 
   // Constructor of an FMD input object.  Specify what data to read in
@@ -149,7 +150,8 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fTreeMask(0), 
     fRawFile(""),
     fIsInit(kFALSE),
-    fEventCount(0)
+    fEventCount(0),
+    fNEvents(-1)
 {
   
   // Constructor of an FMD input object.  Specify what data to read in
@@ -351,7 +353,6 @@ AliFMDInput::Begin(Int_t event)
 
   // Get the event 
   if (fLoader && fLoader->GetEvent(event)) return kFALSE;
-  AliInfo(Form("Now in event %8d/%8d", event, NEvents()));
 
   // Possibly load global kinematics information 
   if (TESTBIT(fTreeMask, kKinematics)) {
@@ -852,19 +853,25 @@ AliFMDInput::End()
 
 //____________________________________________________________________
 Bool_t
-AliFMDInput::Run()
+AliFMDInput::Run(UInt_t maxEvents)
 {
   // Run over all events and files references in galice.root 
 
   Bool_t retval;
   if (!(retval = Init())) return retval;
 
-  Int_t nEvents = NEvents();
-  for (Int_t event = 0; nEvents < 0 || event < nEvents; event++) {
+  fNEvents = NEvents();
+  if (fNEvents < 0)       fNEvents = maxEvents;
+  else if (maxEvents > 0) fNEvents = TMath::Min(fNEvents,Int_t(maxEvents));
+
+  Int_t event = 0;
+  for (; fNEvents < 0 || event < fNEvents; event++) {
+    printf("\rEvent %8d/%8d ...", event, fNEvents);
     if (!(retval = Begin(event))) break;
     if (!(retval = Event())) break;
     if (!(retval = End())) break;
   }
+  printf("Looped over %8d events\n", event+1);
   if (!retval) return retval;
   retval = Finish();
   return retval;

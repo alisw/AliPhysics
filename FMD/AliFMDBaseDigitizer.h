@@ -258,6 +258,7 @@ protected:
   AliFMDEdepMap   fEdep;             // Cache of Energy from hits 
   Float_t         fShapingTime;      // Shaping profile parameter
   Bool_t          fStoreTrackRefs;   // Wether to store track references
+  mutable Int_t   fIgnoredLabels;    //! Number of labels not assigned 
   
   /** Copy CTOR 
       @param o object to copy from  */
@@ -267,7 +268,8 @@ protected:
       fRunLoader(0),
       fEdep(o.fEdep),
       fShapingTime(o.fShapingTime),
-      fStoreTrackRefs(o.fStoreTrackRefs)
+      fStoreTrackRefs(o.fStoreTrackRefs), 
+      fIgnoredLabels(o.fIgnoredLabels)
   {}
   /** Assignment operator
       @return Reference to this object */
@@ -278,9 +280,11 @@ protected:
     fEdep           = o.fEdep;
     fShapingTime    = o.fShapingTime;
     fStoreTrackRefs = o.fStoreTrackRefs;
+    fIgnoredLabels  = o.fIgnoredLabels;
     return *this; 
   }
-  ClassDef(AliFMDBaseDigitizer,3) // Base class for FMD digitizers
+
+  ClassDef(AliFMDBaseDigitizer,4) // Base class for FMD digitizers
 };
 
 

@@ -158,7 +158,7 @@ public:
   virtual Bool_t Finish() { return kTRUE; }
   /** Run a full job. 
       @return @c false on error  */
-  virtual Bool_t Run();
+  virtual Bool_t Run(UInt_t maxEvents=0);
 
   /** Loop over all hits, and call ProcessHit with that hit, and
       optionally the corresponding kinematics track. 
@@ -318,7 +318,8 @@ protected:
       fTreeMask(0),
       fRawFile(""),      
       fIsInit(kFALSE),
-      fEventCount(0)
+      fEventCount(0),
+      fNEvents(-1)
   {}
   /** Assignement operator 
       @return  REference to this */
@@ -366,6 +367,7 @@ protected:
   TString          fRawFile;    // Raw input file
   Bool_t           fIsInit;     // Have we been initialized 
   Int_t            fEventCount; // Event counter 
+  Int_t            fNEvents;    // The maximum number of events
   ClassDef(AliFMDInput,0)  //Hits for detector FMD
 };
 

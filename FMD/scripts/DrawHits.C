@@ -14,6 +14,7 @@
 #include <TH2D.h>
 #include <AliFMDHit.h>
 #include <AliFMDInput.h>
+#include <AliStack.h>
 #include <iostream>
 #include <TStyle.h>
 #include <TArrayF.h>
@@ -42,17 +43,21 @@ class DrawHits : public AliFMDInput
 private:
   TH2D* fElossVsPMQ; // Histogram 
   TH1D* fEloss;
+  TH1D* fBetaGamma;
   TParticlePDG* fPdg;
   const Double_t fRho;
   const Double_t fBetaGammaMip;
 public:
   //__________________________________________________________________
   DrawHits(const char* pdgName="pi+",
-	   Int_t m=1000, Double_t emin=1, Double_t emax=1000, 
+	   Int_t m=500, Double_t emin=1, Double_t emax=1000, 
 	   Int_t n=900, Double_t tmin=1e-2, Double_t tmax=1e3) 
     : AliFMDInput("galice.root"),
+      fElossVsPMQ(0),
+      fEloss(0),
+      fBetaGamma(0),
       fPdg(0), 
-      fRho(2.33),
+      fRho(2.33), // 2.33),
       fBetaGammaMip(3.4601)
   { 
     AddLoad(kKinematics);
@@ -61,8 +66,9 @@ public:
     fPdg                = pdgDB->GetParticle(pdgName);
     if (!fPdg) Warning("DrawHits", "Particle %s not found", pdgName);
 
-    TArrayF tkine(MakeLogScale(n, tmin, tmax));
-    TArrayF eloss(MakeLogScale(m, emin, emax));
+    TArrayF tkine(MakeLogScale(n,    tmin, tmax));
+    TArrayF betag(MakeLogScale(n/10, tmin, tmax));
+    TArrayF eloss(MakeLogScale(m,    emin, emax));
     TString name("elossVsPMQ");
     TString title(Form("#Delta E/#Delta x / q^{2} vs. p/m, %s", 
 		       (pdgName ? pdgName : "")));
@@ -74,10 +80,16 @@ public:
     fElossVsPMQ->Sumw2();
     fEloss = new TH1D("eloss", "#Delta E/#Delta x / q^{2}", 
 		      eloss.fN-1, eloss.fArray);
-    fEloss->SetFillColor(2);
+    fEloss->SetFillColor(kRed);
     fEloss->SetFillStyle(3001);
     fEloss->SetXTitle("#Delta E/#Delta x / q^{2} [MeV/cm]");
     fEloss->Sumw2();
+
+    fBetaGamma = new TH1D("betaGamma", "#beta#gamma of particles", 
+			  betag.fN-1, betag.fArray);
+    fBetaGamma->SetXTitle("#beta#gamma");
+    fBetaGamma->SetFillColor(kBlue+1);
+    fBetaGamma->SetFillStyle(3001);
   }
   //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle* p) 
@@ -93,21 +105,75 @@ public:
     }
     // if (!p->IsPrimary()) return kTRUE;
     if (hit->IsStop()) return kTRUE;
-    if (hit->Length() == 0) return kTRUE;
-
-    Float_t x = hit->P();
-    Float_t y = hit->Edep()/hit->Length();
+    if (hit->Length() == 0) { 
+      Warning("ProcessHit", "Hit in %s has 0 length", hit->GetName());
+      return kTRUE;
+    }
+    
     Float_t q = hit->Q() / 3.;
     Float_t m = hit->M();
     if (m == 0 || q == 0) return kTRUE;
 
+    TLorentzVector pp;
+    p->Momentum(pp);
+    Double_t betagamma = 0;
+    Info("ProcessHit", "%s (%s) beta=%f", p->GetPDG()->GetName(), 
+	 fStack->IsPhysicalPrimary(hit->Track()) ? "primary" : "secondary", 
+	 pp.Beta());
+    if (pp.Beta() <= 1 && pp.Beta() >= 0) 
+      betagamma = pp.Beta() * pp.Gamma();
+    fBetaGamma->Fill(betagamma);
+#if 0
+    if (betagamma < 10) { 
+      Info("ProcessHit", "%s (%s) beta=%f gamma=%f beta*gamma=%f", 
+	   p->GetPDG()->GetName(), 
+	   fStack->IsPhysicalPrimary(hit->Track()) ? "primary" : 
+	   "secondary", 
+	   pp.Beta(), pp.Gamma(), betagamma);
+      return kTRUE;
+    }
+#endif
+
+    Float_t x = hit->P();
+    Float_t y = hit->Edep()/hit->Length();
+
     x /= hit->M();
-    y /= q * q;
+    // y /= q * q;
     fElossVsPMQ->Fill(x, y);
     fEloss->Fill(y);
     // fNHits++;
     return kTRUE;
   }
+  //__________________________________________________________________
+  void ShowFit(Double_t x1, Double_t y1, const char* title, 
+	       TF1* f, Double_t dx=0, Double_t dy=0.05)
+  {
+    Double_t x = x1, y = y1;
+    TLatex* latex = new TLatex(x, y, title);
+    latex->SetTextFont(132);
+    latex->SetTextSize(0.8*dy);
+    latex->SetNDC();
+    latex->Draw();
+    x -= dx;
+    y -= dy;
+    const Double_t eqDx=0.1;
+    Double_t chi2 = f->GetChisquare();
+    Int_t    ndf  = f->GetNDF();
+    Double_t prob = f->GetProb();
+    latex->DrawLatex(x, y, "#chi^{2}/NDF");
+    latex->DrawLatex(x+eqDx, y, Form("= %7.4f/%3d=%5.2f (%3d%%)", 
+				     chi2, ndf, chi2/ndf, int(100*prob)));
+    Int_t     n = f->GetNpar();
+    Double_t* p = f->GetParameters();
+    Double_t* e = f->GetParErrors();
+    for (int i = 0; i < n; i++) { 
+      x -= dx;
+      y -= dy;
+      latex->DrawLatex(x, y, f->GetParName(i));
+      latex->DrawLatex(x+eqDx, y, Form("= %7.4f", p[i]));
+      latex->DrawLatex(x+2*eqDx, y, Form("#pm %7.4f", e[i]));
+    }
+  }      
   //__________________________________________________________________
   Bool_t Finish()
   {
@@ -120,7 +186,9 @@ public:
     gStyle->SetCanvasBorderSize(0);
     gStyle->SetPadColor(0);
     gStyle->SetPadBorderSize(0);
-    TCanvas* c = new TCanvas("elossVsP", "Energy loss versus momentum");
+    gStyle->SetOptStat(0);
+    TCanvas* c = new TCanvas("elossVsP", "Energy loss versus momentum", 
+			     1200, 800);
     c->SetLogy();
     c->SetLogx();
 
@@ -137,6 +205,7 @@ public:
     // fElossVsPMQ->Draw("ACOLZ same");
     TLegend* l       = new TLegend(.5, .6, .89, .89);
     // l->AddEntry(fElossVsPMQ, fElossVsPMQ->GetTitle(), "pf");
+    l->SetFillColor(0);
     l->AddEntry(mate,        mate->GetTitle(),    "lf");
     l->AddEntry(bb,          bb->GetTitle(),      "l");
     l->AddEntry(nodelta,     nodelta->GetTitle(), "l");
@@ -154,36 +223,114 @@ public:
     c->Modified();
     c->Update();
     c->cd();
+    c->SaveAs("eloss_bethe.png");
 
-    c = new TCanvas("eloss", "Energy loss per unit material");
+    c = new TCanvas("cEloss", "Energy loss per unit material",
+		    1200, 800);
+    c->SetRightMargin(0.05);
+    c->SetTopMargin(0.05);
+    c->SetLeftMargin(0.05);
+    fEloss->SetStats(kFALSE);
     // c->SetLogx();
+    TF1* land     = new TF1("land", "landau");
+    land->SetParNames("A", "MPV", "width");
+    land->SetLineWidth(2);
+    land->SetLineColor(kGreen+1);
+
+    TF1* landgaus = new TF1("landgaus", "gaus(0)+landau(3)");
+    landgaus->SetParNames("A", "#mu", "#sigma", "B", "MPV", "width");
+    landgaus->SetLineWidth(2);
+    landgaus->SetLineColor(kMagenta+1);
+    TGraph*  corr  = GetCorr();
+    TGraph*  resp  = GetResp();
     if (fEloss->GetEntries() != 0) { 
       c->SetLogy();
       fEloss->Scale(1. / fEloss->GetEntries());
       fEloss->GetXaxis()->SetRangeUser(1, 10);
-      fEloss->Fit("landau", "", "", 1, 10);
-      TF1* land = fEloss->GetFunction("landau");
-      land->SetLineWidth(2);
-      Double_t max = fEloss->GetMaximum();
-      TGraph* resp  = GetResp();
-      Double_t* x   = resp->GetX();
-      Double_t* y   = resp->GetY();
-      TGraph*   g   = new TGraph(resp->GetN());
-      TGraph*   co  = GetCorr();
-      std::cout << "Correction factor: " << co->Eval(fBetaGammaMip) 
-		<< std::endl;
-      Double_t  xs  = fRho; // * 1.19; // / 
-      for (Int_t i = 0; i < g->GetN(); i++) 
-	g->SetPoint(i, x[i] * xs, y[i] * max);
-      g->Draw("C same");
+      fEloss->Fit(land, "+", "", 2, 10);
+      landgaus->SetParameters(land->GetParameter(0) / 100, 
+			      land->GetParameter(1), 
+			      land->GetParameter(2), 
+			      land->GetParameter(0),
+			      land->GetParameter(1), 
+			      land->GetParameter(2));
+      fEloss->Fit(landgaus, "+", "", 1, 10);
+      fEloss->DrawCopy("HIST SAME");
     }
     
-    l = new TLegend(.6, .6, .89, .89);
+    // fEloss->DrawCopy("E SAME");
+    // land->Draw("same");
+    // landgaus->Draw("same");
+    Double_t max = fEloss->GetMaximum();
+    Double_t* x   = resp->GetX();
+    Double_t* y   = resp->GetY();
+    TGraph*   g   = new TGraph(resp->GetN());
+    g->SetName(Form("%sCorr", resp->GetName()));
+    g->SetTitle(resp->GetTitle());
+    g->SetLineStyle(resp->GetLineStyle());
+    g->SetLineColor(resp->GetLineColor());
+    g->SetLineWidth(resp->GetLineWidth());
+    Double_t  xs2 = corr->Eval(fBetaGammaMip);
+    Double_t xss   = 1.1;
+    Double_t  xs  = fRho * xss;
+    std::cout << "Correction factor: " << xs2 << std::endl;
+    for (Int_t i = 0; i < g->GetN(); i++) 
+      g->SetPoint(i, x[i] * xs, y[i] * max);
+    g->Draw("C same");
+    
+    l = new TLegend(.05, .6, .4, .95);
+    l->SetFillColor(0);
+    l->SetBorderSize(1);
     l->AddEntry(fEloss, fEloss->GetTitle(), "lf");
-    // l->AddEntry(land,   "Landau fit", "l");
-    // l->AddEntry(resp,   "f(#Delta_{p}/x) [RPP fig 27.8]", "l");
+    if (land) 
+      l->AddEntry(land,   Form("Landau fit\t- #chi^{2}/NDF=%7.5f", 
+			       land->GetChisquare()/land->GetNDF()), "l");
+    if (landgaus) 
+      l->AddEntry(landgaus,   
+		  Form("Landau+Gauss fit\t- #chi^{2}/NDF=%7.5f", 
+		       landgaus->GetChisquare()/landgaus->GetNDF()), "l");
+    l->AddEntry(resp,   Form("f(%s#Delta/x) 320#mum Si [RPP fig 27.7]",
+			     xss != 1 ? Form("%4.2f#times", xss) : ""), 
+		"l");
     l->Draw("same");
+    
+    fEloss->GetYaxis()->SetRangeUser(1e-4, 100);
+    ShowFit(0.45,.9, "Landau+Gaus", landgaus, 0, 0.02);
+    ShowFit(0.70,.9, "Landau", land, 0, 0.02);
 
+    c->Modified();
+    c->Update();
+    c->cd();
+    c->SaveAs("eloss_landau.png");
+
+
+    c = new TCanvas("cBetaGamma", "beta gamma", 1200, 800);
+    c->SetLogx();
+    fBetaGamma->Draw();
+    Int_t mipbin = fBetaGamma->FindBin(fBetaGammaMip) + 1;
+    Int_t maxbin = fBetaGamma->GetNbinsX();
+    Int_t total  = fBetaGamma->Integral();
+    Int_t over   = fBetaGamma->Integral(mipbin,maxbin);
+    TH1*  res    = (TH1*)fBetaGamma->Clone("overMip");
+    res->SetFillColor(kRed+1);
+    for (int i = 0; i < mipbin; i++) 
+      res->SetBinContent(i, 0);
+    res->Draw("same");
+    std::cout << "Percentage over MIP : " << float(over) / total << std::endl;
+
+    Double_t yy = fBetaGamma->GetBinContent(mipbin) * 1.1; 
+    a = new TArrow(fBetaGammaMip, 0, fBetaGammaMip, yy, 3, "<|");
+    a->SetAngle(30);
+    a->Draw("same");
+    t = new TLatex(fBetaGammaMip, yy, "Minimum Ionising");
+    t->SetTextSize(0.04);
+    t->SetTextAlign(21);
+    t->Draw("same");
+    c->Modified();
+    c->Update();
+    c->cd();
+    c->SaveAs("eloss_betagamma.png");
+    
     return kTRUE;
   }
 
@@ -212,9 +359,9 @@ public:
       graph->GetHistogram()->SetXTitle("#beta#gamma");
       graph->GetHistogram()->SetYTitle("#Delta E/#Delta x [MeV/cm]");
       graph->SetFillColor(0);
-      graph->SetLineColor(2);
-      graph->SetLineStyle(1);
-      graph->SetLineWidth(1);
+      graph->SetLineColor(kRed+1);
+      graph->SetLineStyle(2);
+      graph->SetLineWidth(2);
       graph->SetName("full_stop");
       graph->SetTitle("Stopping (MeVcm^{2}/g) [RPP fig 27.1]");
       graph->SetPoint(0,0.001461622,40.17542);
@@ -256,9 +403,9 @@ public:
       graph->GetHistogram()->SetYTitle("(MeVcm^{2}/g)");
       graph->GetHistogram()->SetXTitle("#beta#gamma");
       graph->SetFillColor(0);
-      graph->SetLineColor(3);
-      graph->SetLineStyle(1);
-      graph->SetLineWidth(1);
+      graph->SetLineColor(kGreen+1);
+      graph->SetLineStyle(2);
+      graph->SetLineWidth(2);
       graph->SetPoint(0,0.001461622,40.17542);
       graph->SetPoint(1,0.003775053,91.28429);
       graph->SetPoint(2,0.01178769,202.7359);
@@ -298,9 +445,9 @@ public:
       graph->GetHistogram()->SetYTitle("(MeVcm^{2}/g)");
       graph->GetHistogram()->SetXTitle("#beta#gamma");
       graph->SetFillColor(0);
-      graph->SetLineStyle(1);
-      graph->SetLineColor(4);
-      graph->SetLineWidth(1);
+      graph->SetLineColor(kBlue+1);
+      graph->SetLineWidth(2);
+      graph->SetLineStyle(2);
       graph->SetPoint(0,0.001,24.3298);
       graph->SetPoint(1,0.003117649,74.35105);
       graph->SetPoint(2,0.008675042,172.8318);
@@ -337,10 +484,10 @@ public:
 		      "electronic only  [RPP fig. 27.6]");
       graph->GetHistogram()->SetYTitle("(MeVcm^{2}/g)");
       graph->GetHistogram()->SetXTitle("#mu E_{kin} (GeV)");
-      graph->SetFillColor(1);
-      graph->SetLineStyle(1);
-      graph->SetLineWidth(1);
-      graph->SetLineColor(1);
+      graph->SetFillColor(0);
+      graph->SetLineStyle(2);
+      graph->SetLineWidth(2);
+      graph->SetLineColor(kMagenta+1);
       graph->SetMarkerStyle(21);
       graph->SetMarkerSize(0.6);
       graph->SetPoint(0,0.1,1.346561);
@@ -373,11 +520,11 @@ public:
       gre->SetTitle("Energy loss 300#mu Si [GFMATE]");
       gre->GetHistogram()->SetXTitle("#beta#gamma");
       gre->GetHistogram()->SetYTitle("#Delta E/#Delta x [MeV/cm]");
-      gre->SetFillColor(6);
-      gre->SetFillStyle(3002);
-      gre->SetLineColor(1);
+      gre->SetFillColor(kGray);
+      gre->SetFillStyle(3001); // 0 /* 3002 */);
+      gre->SetLineColor(kGray+1);
       gre->SetLineStyle(1);
-      gre->SetLineWidth(1);
+      gre->SetLineWidth(2);
       gre->SetPoint(0,7.16486e-05,1218.84);
       gre->SetPoint(1,9.25378e-05,1221.38);
       gre->SetPoint(2,0.000119517,1180.12);
@@ -474,25 +621,79 @@ public:
       for (Int_t i = 0; i < gre->GetN(); i++) 
 	gre->SetPointError(i, 0, 2 * 0.1 * y[i]); // ! 1 sigma
     }
-    gre->DrawClone("c3 same");
+    gre->Draw("c3 same");
     return gre;
   }
 
   /** Get the response functin @f$ f(\Delta_p/x)@f$ from Review of
-      Particle Physics (fig. 27.2).  It is scaled to the value at
+      Particle Physics (fig. 27.7).  It is scaled to the value at
       MPV. */ 
   TGraph* GetResp()
   {
     static TGraph*  graph = 0;
     if (!graph) {
-      graph = new TGraph(16);
+      graph = new TGraph;
       graph->SetName("si_resp");
-      graph->SetTitle("f(#Delta_{p}/x) scaled to the MPV value ");
-      graph->GetHistogram()->SetXTitle("#Delta_{p}/x (MeVcm^{2}/g)");
-      graph->GetHistogram()->SetYTitle("f(#Delta_{p}/x)");
-      graph->SetFillColor(1);
+      graph->SetTitle("f(#Delta/x) scaled to the MPV value ");
+      graph->GetHistogram()->SetXTitle("#Delta/x (MeVcm^{2}/g)");
+      graph->GetHistogram()->SetYTitle("f(#Delta/x)");
+      graph->SetLineColor(kBlue+1);
+      graph->SetLineWidth(2);
+      graph->SetFillColor(kBlue+1);
       graph->SetMarkerStyle(21);
       graph->SetMarkerSize(0.6);
+#if 0
+      // Figure 27.7 or Review of Particle physics - Straggeling function in 
+      // silicon of 500 MeV Pions, normalised to unity at the most probable 
+      // value.   
+      graph->SetPoint(0,0.808094,0.00377358);
+      graph->SetPoint(1,0.860313,0.0566038);
+      graph->SetPoint(2,0.891645,0.116981);
+      graph->SetPoint(3,0.912533,0.181132);
+      graph->SetPoint(4,0.928198,0.260377);
+      graph->SetPoint(5,0.938642,0.320755);
+      graph->SetPoint(6,0.954308,0.377358);
+      graph->SetPoint(7,0.964752,0.433962);
+      graph->SetPoint(8,0.975196,0.490566);
+      graph->SetPoint(9,0.98564,0.550943);
+      graph->SetPoint(10,0.996084,0.611321);
+      graph->SetPoint(11,1.00653,0.667925);
+      graph->SetPoint(12,1.02219,0.732075);
+      graph->SetPoint(13,1.03264,0.784906);
+      graph->SetPoint(14,1.0483,0.845283);
+      graph->SetPoint(15,1.06397,0.901887);
+      graph->SetPoint(16,1.09008,0.958491);
+      graph->SetPoint(17,1.10574,0.984906);
+      graph->SetPoint(18,1.13708,1);
+      graph->SetPoint(19,1.13708,1);
+      graph->SetPoint(20,1.15796,0.988679);
+      graph->SetPoint(21,1.17363,0.966038);
+      graph->SetPoint(22,1.19974,0.916981);
+      graph->SetPoint(23,1.2154,0.89434);
+      graph->SetPoint(24,1.23629,0.837736);
+      graph->SetPoint(25,1.2624,0.784906);
+      graph->SetPoint(26,1.28329,0.724528);
+      graph->SetPoint(27,1.3094,0.664151);
+      graph->SetPoint(28,1.32507,0.611321);
+      graph->SetPoint(29,1.3564,0.550943);
+      graph->SetPoint(30,1.41384,0.445283);
+      graph->SetPoint(31,1.44517,0.392453);
+      graph->SetPoint(32,1.48695,0.335849);
+      graph->SetPoint(33,1.52872,0.286792);
+      graph->SetPoint(34,1.58094,0.237736);
+      graph->SetPoint(35,1.63838,0.196226);
+      graph->SetPoint(36,1.68016,0.169811);
+      graph->SetPoint(37,1.75326,0.135849);
+      graph->SetPoint(38,1.81593,0.113208);
+      graph->SetPoint(39,1.89426,0.0981132);
+      graph->SetPoint(40,1.96214,0.0830189);
+      graph->SetPoint(41,2.0718,0.0641509);
+      graph->SetPoint(42,2.19191,0.0490566);
+      graph->SetPoint(43,2.31723,0.0415094);
+      graph->SetPoint(44,2.453,0.0301887);
+      graph->SetPoint(45,2.53133,0.0264151);
+      graph->SetPoint(46,2.57833,0.0264151);
+#else
       graph->SetPoint(0,0.8115124,0.009771987);
       graph->SetPoint(1,0.9198646,0.228013);
       graph->SetPoint(2,0.996614,0.5895765);
@@ -509,6 +710,7 @@ public:
       graph->SetPoint(13,1.985327,0.08143322);
       graph->SetPoint(14,2.301354,0.04234528);
       graph->SetPoint(15,2.56772,0.02931596);
+#endif
     }
     return graph;
   }
