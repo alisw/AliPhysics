@@ -57,5 +57,7 @@ $(DICTAUTODEF): Makefile.am $(PKGDEF)
 	@echo '#pragma link off all classes;' >> $@
 	@echo '#pragma link off all functions;' >> $@
 	@$(foreach i, $(DICTHEADERS:.h=), \
-	   echo "#pragma link C++ class "`echo $(i)| sed -e 's|.*/||'`"+;" >> $@ ;)
+	   attribute='+' ;\
+	   cat $(srcdir)/$(i).cxx | grep -e  $(i)::Streamer | grep TBuffer > /dev/null && attribute='-' ;\
+	   echo "#pragma link C++ class "`echo $(i)| sed -e 's|.*/||'`"$$attribute;" >> $@ ;)
 	@echo '#endif' >> $@
