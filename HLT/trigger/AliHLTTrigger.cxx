@@ -139,14 +139,6 @@ int AliHLTTrigger::TriggerEvent(
   if (fTriggerEventResult != 0) return fTriggerEventResult;  // Do not do anything if a previous call failed.
   
   AliHLTReadoutList readoutlist = result->ReadoutList();
-  // mask the readout list according to the CTP trigger
-  // if the classes have been initialized (mask non-zero)
-  if (CTPData() != NULL and CTPData()->Mask() != 0x0) {
-    AliHLTReadoutList ctpreadout = CTPData()->ReadoutList(*GetTriggerData());
-    ctpreadout.Enable(AliHLTReadoutList::kHLT);
-    readoutlist.AndEq(ctpreadout);
-    result->ReadoutList(readoutlist); // override the readout list with the masked one.
-  }
   
   fTriggerEventResult = PushBack(result, type, spec);
   if (fTriggerEventResult == 0) {
