@@ -1889,7 +1889,7 @@ bool AliHLTGlobalTriggerComponent::FillSoftwareTrigger()
 int AliHLTGlobalTriggerComponent::PrintStatistics(const AliHLTGlobalTrigger* pTrigger, AliHLTComponentLogSeverity level, int offset) const
 {
   // print some statistics
-  int totalEvents=GetEventCount()+offset;
+  int totalEvents=fTotalEventCounter+offset;
   const TArrayL64& counters = pTrigger->GetCounters();
   if (pTrigger->CallFailed()) return -EPROTO;
   for (int i = 0; i < counters.GetSize(); i++) {
