@@ -1,4 +1,6 @@
-
+//
+// Object to store energy distribution corrections as used in the FMD
+// analysis.  
 #include "AliFMDAnaCalibEnergyDistribution.h"
 #include "TAxis.h"
 #include <AliLog.h>
@@ -6,8 +8,13 @@
 #include "TH2F.h"
 #include "AliFMDAnaParameters.h"
 ClassImp(AliFMDAnaCalibEnergyDistribution)
+#if 0  
+; // This is for Emacs 
+#endif 
 
-AliFMDAnaCalibEnergyDistribution::AliFMDAnaCalibEnergyDistribution() : TObject(),
+//____________________________________________________________________
+AliFMDAnaCalibEnergyDistribution::AliFMDAnaCalibEnergyDistribution() 
+: TObject(),
   fArray(), 
   fEmptyArray(), 
   fRingArray(), 
@@ -15,12 +22,12 @@ AliFMDAnaCalibEnergyDistribution::AliFMDAnaCalibEnergyDistribution() : TObject()
   fNetaBins(0),
   fEtaMax(0),
   fEtaMin(0){
-   
+  
   
 }
 //____________________________________________________________________
-void AliFMDAnaCalibEnergyDistribution::Init() {
-  
+void AliFMDAnaCalibEnergyDistribution::Init() 
+{
   if(fNetaBins == 0)
     AliFatal("Set Eta bins before doing Init or anything else");
   
@@ -33,9 +40,7 @@ void AliFMDAnaCalibEnergyDistribution::Init() {
     for(Int_t det = 1; det<=3;det++) {
       TObjArray* detArray = new TObjArray();
       etaArray->AddAtAndExpand(detArray,det);
-            
     }
-  
   }
   
 
@@ -56,24 +61,29 @@ void AliFMDAnaCalibEnergyDistribution::Init() {
 
 
 //____________________________________________________________________
-TH1F* AliFMDAnaCalibEnergyDistribution::GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta) {
+TH1F* 
+AliFMDAnaCalibEnergyDistribution::GetEnergyDistribution(Int_t det, 
+							Char_t ring, 
+							Float_t eta) {
   
   //TAxis testaxis(fNetaBins,fEtaMin,fEtaMax);
   //  Int_t binnumber = testaxis.FindBin(eta);
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
     
-  Int_t binnumber = pars->GetEtaBin(eta);
+  Int_t binnumber       = pars->GetEtaBin(eta);
   
-  Int_t ringNumber     = (ring == 'I' ? 0 : 1);
-  TObjArray* etaArray  = (TObjArray*)fArray.At(binnumber); 
-  TObjArray* detArray  = (TObjArray*)etaArray->At(det); 
-  TH1F* hEdist         = (TH1F*)detArray->At(ringNumber);    
+  Int_t      ringNumber = (ring == 'I' ? 0 : 1);
+  TObjArray* etaArray   = (TObjArray*)fArray.At(binnumber); 
+  TObjArray* detArray   = (TObjArray*)etaArray->At(det); 
+  TH1F*      hEdist     = (TH1F*)detArray->At(ringNumber);    
   
   return hEdist;
 }
 //____________________________________________________________________
-TH1F* AliFMDAnaCalibEnergyDistribution::GetEmptyEnergyDistribution(Int_t det, Char_t ring) {
-  
+TH1F* 
+AliFMDAnaCalibEnergyDistribution::GetEmptyEnergyDistribution(Int_t det, 
+							     Char_t ring) 
+{
   Int_t ringNumber     = (ring == 'I' ? 0 : 1);
   
   TObjArray* detArray  = (TObjArray*)fEmptyArray.At(det); 
@@ -82,7 +92,9 @@ TH1F* AliFMDAnaCalibEnergyDistribution::GetEmptyEnergyDistribution(Int_t det, Ch
   return hEdist;
 }
 //____________________________________________________________________
-TH1F* AliFMDAnaCalibEnergyDistribution::GetRingEnergyDistribution(Int_t det, Char_t ring) {
+TH1F* 
+AliFMDAnaCalibEnergyDistribution::GetRingEnergyDistribution(Int_t det, 
+							    Char_t ring) {
   
   Int_t ringNumber     = (ring == 'I' ? 0 : 1);
   
@@ -92,30 +104,39 @@ TH1F* AliFMDAnaCalibEnergyDistribution::GetRingEnergyDistribution(Int_t det, Cha
   return hEdist;
 }
 //____________________________________________________________________
-void  AliFMDAnaCalibEnergyDistribution::SetEnergyDistributionUser(Int_t det, Char_t ring, Float_t eta, TH1F* edist) {
+void  
+AliFMDAnaCalibEnergyDistribution::SetEnergyDistributionUser(Int_t det, 
+							    Char_t ring, 
+							    Float_t eta, 
+							    TH1F* edist) 
+{
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   Int_t binnumber = pars->GetEtaBin(eta);
   //std::cout<<binnumber<<std::endl;
   SetEnergyDistribution(det, ring, binnumber, edist );
 }
 //____________________________________________________________________
-void AliFMDAnaCalibEnergyDistribution::SetEnergyDistribution(Int_t det, Char_t ring, Int_t etabin, TH1F* edist ) {
-  
-  if(!fIsInit)
-    Init();
+void 
+AliFMDAnaCalibEnergyDistribution::SetEnergyDistribution(Int_t  det, 
+							Char_t ring, 
+							Int_t  etabin, 
+							TH1F*  edist) 
+{  
+  if(!fIsInit)  Init();
   
   Int_t ringNumber     = (ring == 'I' ? 0 : 1);
   TObjArray* etaArray  = (TObjArray*)fArray.At(etabin);
   TObjArray* detArray  = (TObjArray*)etaArray->At(det);
   
   detArray->AddAtAndExpand(edist,ringNumber);
-  
-
 }
 
 //____________________________________________________________________
-void AliFMDAnaCalibEnergyDistribution::SetEmptyEnergyDistribution(Int_t det, Char_t ring, TH1F* edist ) {
-  
+void 
+AliFMDAnaCalibEnergyDistribution::SetEmptyEnergyDistribution(Int_t  det, 
+							     Char_t ring, 
+							     TH1F*  edist) 
+{  
   if(!fIsInit)
     Init();
     
@@ -127,17 +148,17 @@ void AliFMDAnaCalibEnergyDistribution::SetEmptyEnergyDistribution(Int_t det, Cha
 
 }
 //____________________________________________________________________
-void AliFMDAnaCalibEnergyDistribution::SetRingEnergyDistribution(Int_t det, Char_t ring, TH1F* edist ) {
+void AliFMDAnaCalibEnergyDistribution::SetRingEnergyDistribution(Int_t  det, 
+								 Char_t ring, 
+								 TH1F*  edist) 
+{
   
-  if(!fIsInit)
-    Init();
+  if(!fIsInit) Init();
     
   Int_t ringNumber     = (ring == 'I' ? 0 : 1);
   TObjArray* detArray  = (TObjArray*)fRingArray.At(det);
   
   detArray->AddAtAndExpand(edist,ringNumber);
-  
-
 }
 //____________________________________________________________________
 //

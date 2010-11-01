@@ -303,7 +303,11 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
   TH2F* hSPDMultTrVtx = (TH2F*)fOutputList->FindObject(Form("multTrVtx_SPD_vtxbin%d",vtxbin));
   TH2F* hSPDMultNSD   = (TH2F*)fOutputList->FindObject(Form("multNSD_SPD_vtxbin%d",vtxbin));
   
-  AliESDInputHandler* eventHandler = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  AliESDInputHandler* eventHandler = 
+    dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()
+				       ->GetInputEventHandler());
+  if (!eventHandler) return;
+
   AliESDEvent* esd = eventHandler->GetEvent();
   
   const AliMultiplicity* spdmult = esd->GetMultiplicity();
