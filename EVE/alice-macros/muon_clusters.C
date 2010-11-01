@@ -33,6 +33,8 @@
 #include <Riostream.h>
 
 #endif
+class TIter;
+class TEvePointSet;
 
 //______________________________________________________________________________
 void add_muon_clusters(TIter* next, TEvePointSet* clusterList)
