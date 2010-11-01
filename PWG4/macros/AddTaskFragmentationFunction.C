@@ -166,6 +166,8 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetDiJetCuts();       // default: type of cut = 1 (cut in deltaPhi), deltaPhi = 0., cdf = 0.5, fraction of pt = 0.6
    task->SetKindSlices();      // default: kindSlice = 1 (inv mass)
    task->SetFFRadius();        // default: R = 0.4
+   task->SetFFBckgRadius();    // default: R = 0.7
+   task->SetBckgMode();        // default: bgMode = 1
    task->SetHighPtThreshold(); // default: pt > 5 Gev
    // Define histo bins
    task->SetFFHistoBins();

@@ -30,6 +30,7 @@
 #include "TProfile.h"
 #include "TFile.h"
 #include "TKey.h"
+#include "TRandom.h"
 
 #include "AliAODInputHandler.h" 
 #include "AliAODHandler.h" 
@@ -79,6 +80,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fDiJetCDFCut(0)
    ,fDiJetKindBins(0)
    ,fFFRadius(0)
+   ,fFFBckgRadius(0)
+   ,fBckgMode(0)
    ,fAvgTrials(0)
    ,fTracksRec(0)
    ,fTracksRecCuts(0)
@@ -211,6 +214,106 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fh1nRecEffJets(0)
    ,fhnSingleTrackRecEffHisto(0)
    ,fhnJetTrackRecEffHisto(0)
+   // Background
+   ,fh1OutLeadingMult(0)
+   ,fh1PerpMult(0)
+   ,fh1Out2JetsMult(0)
+   ,fh1Out3JetsMult(0)
+   ,fQABckgNoJetTrackHistosRec(0)      
+   ,fQABckgNoJetTrackHistosRecCuts(0)  
+   ,fQABckgNoJetTrackHistosGen(0)      
+   ,fQABckgLeadingTrackHistosRec(0)      
+   ,fQABckgLeadingTrackHistosRecCuts(0)  
+   ,fQABckgLeadingTrackHistosGen(0)      
+   ,fQABckg2JetsTrackHistosRec(0)      
+   ,fQABckg2JetsTrackHistosRecCuts(0)  
+   ,fQABckg2JetsTrackHistosGen(0)
+   ,fQABckg3JetsTrackHistosRec(0)      
+   ,fQABckg3JetsTrackHistosRecCuts(0)  
+   ,fQABckg3JetsTrackHistosGen(0)      
+   ,fQABckgPerpTrackHistosRec(0)      
+   ,fQABckgPerpTrackHistosRecCuts(0)  
+   ,fQABckgPerpTrackHistosGen(0)  
+   ,fFFBckgNoJetHistosRecCuts(0)
+   ,fFFBckgNoJetHistosRecLeading(0)
+   ,fFFBckgNoJetHistosGen(0)       
+   ,fFFBckgNoJetHistosGenLeading(0)
+   ,fFFBckgHistosRecCuts(0)
+   ,fFFBckgHistosRecLeading(0)
+   ,fFFBckgHistosGen(0)       
+   ,fFFBckgHistosGenLeading(0)
+   ,fFFBckgLeadingHistosRecCuts(0)
+   ,fFFBckgLeadingHistosRecLeading(0)
+   ,fFFBckgLeadingHistosGen(0)       
+   ,fFFBckgLeadingHistosGenLeading(0)
+   ,fFFBckg2JetsHistosRecCuts(0)     
+   ,fFFBckg2JetsHistosRecLeading(0)  
+   ,fFFBckg2JetsHistosGen(0)         
+   ,fFFBckg2JetsHistosGenLeading(0)  
+   ,fFFBckg3JetsHistosRecCuts(0)     
+   ,fFFBckg3JetsHistosRecLeading(0)  
+   ,fFFBckg3JetsHistosGen(0)         
+   ,fFFBckg3JetsHistosGenLeading(0)  
+   ,fFFBckgPerpHistosRecCuts(0)
+   ,fFFBckgPerpHistosRecLeading(0)
+   ,fFFBckgPerpHistosGen(0)       
+   ,fFFBckgPerpHistosGenLeading(0)
+   ,fFFBckgHistosStatRecCuts(0)
+   ,fFFBckgHistosStatRecLeading(0)
+   ,fFFBckgHistosStatGen(0)       
+   ,fFFBckgHistosStatGenLeading(0)
+   ,fFFBckgLeadingHistosStatRecCuts(0)
+   ,fFFBckgLeadingHistosStatRecLeading(0)
+   ,fFFBckgLeadingHistosStatGen(0)       
+   ,fFFBckgLeadingHistosStatGenLeading(0)
+   ,fFFBckg2JetsHistosStatRecCuts(0)     
+   ,fFFBckg2JetsHistosStatRecLeading(0)  
+   ,fFFBckg2JetsHistosStatGen(0)         
+   ,fFFBckg2JetsHistosStatGenLeading(0)  
+   ,fFFBckg3JetsHistosStatRecCuts(0)     
+   ,fFFBckg3JetsHistosStatRecLeading(0)  
+   ,fFFBckg3JetsHistosStatGen(0)         
+   ,fFFBckg3JetsHistosStatGenLeading(0)  
+   ,fIJBckgNoJetHistosRecCuts(0)   
+   ,fIJBckgNoJetHistosRecLeading(0)
+   ,fIJBckgNoJetHistosGen(0)       
+   ,fIJBckgNoJetHistosGenLeading(0)
+   ,fIJBckgHistosRecCuts(0)   
+   ,fIJBckgHistosRecLeading(0)
+   ,fIJBckgHistosGen(0)       
+   ,fIJBckgHistosGenLeading(0)
+   ,fIJBckgLeadingHistosRecCuts(0)   
+   ,fIJBckgLeadingHistosRecLeading(0)
+   ,fIJBckgLeadingHistosGen(0)       
+   ,fIJBckgLeadingHistosGenLeading(0)
+   ,fIJBckg2JetsHistosRecCuts(0)     
+   ,fIJBckg2JetsHistosRecLeading(0)  
+   ,fIJBckg2JetsHistosGen(0)         
+   ,fIJBckg2JetsHistosGenLeading(0)  
+   ,fIJBckg3JetsHistosRecCuts(0)     
+   ,fIJBckg3JetsHistosRecLeading(0)  
+   ,fIJBckg3JetsHistosGen(0)         
+   ,fIJBckg3JetsHistosGenLeading(0)  
+   ,fIJBckgPerpHistosRecCuts(0)   
+   ,fIJBckgPerpHistosRecLeading(0)
+   ,fIJBckgPerpHistosGen(0)       
+   ,fIJBckgPerpHistosGenLeading(0)
+   ,fIJBckgHistosStatRecCuts(0)   
+   ,fIJBckgHistosStatRecLeading(0)
+   ,fIJBckgHistosStatGen(0)       
+   ,fIJBckgHistosStatGenLeading(0)
+   ,fIJBckgLeadingHistosStatRecCuts(0)   
+   ,fIJBckgLeadingHistosStatRecLeading(0)
+   ,fIJBckgLeadingHistosStatGen(0)       
+   ,fIJBckgLeadingHistosStatGenLeading(0)
+   ,fIJBckg2JetsHistosStatRecCuts(0)     
+   ,fIJBckg2JetsHistosStatRecLeading(0)  
+   ,fIJBckg2JetsHistosStatGen(0)         
+   ,fIJBckg2JetsHistosStatGenLeading(0)  
+   ,fIJBckg3JetsHistosStatRecCuts(0)     
+   ,fIJBckg3JetsHistosStatRecLeading(0)  
+   ,fIJBckg3JetsHistosStatGen(0)         
+   ,fIJBckg3JetsHistosStatGenLeading(0) 
 {
    // default constructor
 }
@@ -243,6 +346,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fDiJetCDFCut(0)
   ,fDiJetKindBins(0)
   ,fFFRadius(0)
+  ,fFFBckgRadius(0)
+  ,fBckgMode(0)
   ,fAvgTrials(0)
   ,fTracksRec(0)
   ,fTracksRecCuts(0)
@@ -375,6 +480,106 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fh1nRecEffJets(0)
   ,fhnSingleTrackRecEffHisto(0)
   ,fhnJetTrackRecEffHisto(0)
+   // Background
+   ,fh1OutLeadingMult(0)
+   ,fh1PerpMult(0)
+   ,fh1Out2JetsMult(0)
+   ,fh1Out3JetsMult(0)
+   ,fQABckgNoJetTrackHistosRec(0)      
+   ,fQABckgNoJetTrackHistosRecCuts(0)  
+   ,fQABckgNoJetTrackHistosGen(0)      
+   ,fQABckgLeadingTrackHistosRec(0)      
+   ,fQABckgLeadingTrackHistosRecCuts(0)  
+   ,fQABckgLeadingTrackHistosGen(0)      
+   ,fQABckg2JetsTrackHistosRec(0)      
+   ,fQABckg2JetsTrackHistosRecCuts(0)  
+   ,fQABckg2JetsTrackHistosGen(0)
+   ,fQABckg3JetsTrackHistosRec(0)      
+   ,fQABckg3JetsTrackHistosRecCuts(0)  
+   ,fQABckg3JetsTrackHistosGen(0)      
+   ,fQABckgPerpTrackHistosRec(0)      
+   ,fQABckgPerpTrackHistosRecCuts(0)  
+   ,fQABckgPerpTrackHistosGen(0)  
+   ,fFFBckgNoJetHistosRecCuts(0)
+   ,fFFBckgNoJetHistosRecLeading(0)
+   ,fFFBckgNoJetHistosGen(0)       
+   ,fFFBckgNoJetHistosGenLeading(0)
+   ,fFFBckgHistosRecCuts(0)
+   ,fFFBckgHistosRecLeading(0)
+   ,fFFBckgHistosGen(0)       
+   ,fFFBckgHistosGenLeading(0)
+   ,fFFBckgLeadingHistosRecCuts(0)
+   ,fFFBckgLeadingHistosRecLeading(0)
+   ,fFFBckgLeadingHistosGen(0)       
+   ,fFFBckgLeadingHistosGenLeading(0)
+   ,fFFBckg2JetsHistosRecCuts(0)     
+   ,fFFBckg2JetsHistosRecLeading(0)  
+   ,fFFBckg2JetsHistosGen(0)         
+   ,fFFBckg2JetsHistosGenLeading(0)  
+   ,fFFBckg3JetsHistosRecCuts(0)     
+   ,fFFBckg3JetsHistosRecLeading(0)  
+   ,fFFBckg3JetsHistosGen(0)         
+   ,fFFBckg3JetsHistosGenLeading(0)  
+   ,fFFBckgPerpHistosRecCuts(0)
+   ,fFFBckgPerpHistosRecLeading(0)
+   ,fFFBckgPerpHistosGen(0)       
+   ,fFFBckgPerpHistosGenLeading(0)
+   ,fFFBckgHistosStatRecCuts(0)
+   ,fFFBckgHistosStatRecLeading(0)
+   ,fFFBckgHistosStatGen(0)       
+   ,fFFBckgHistosStatGenLeading(0)
+   ,fFFBckgLeadingHistosStatRecCuts(0)
+   ,fFFBckgLeadingHistosStatRecLeading(0)
+   ,fFFBckgLeadingHistosStatGen(0)       
+   ,fFFBckgLeadingHistosStatGenLeading(0)
+   ,fFFBckg2JetsHistosStatRecCuts(0)     
+   ,fFFBckg2JetsHistosStatRecLeading(0)  
+   ,fFFBckg2JetsHistosStatGen(0)         
+   ,fFFBckg2JetsHistosStatGenLeading(0)  
+   ,fFFBckg3JetsHistosStatRecCuts(0)     
+   ,fFFBckg3JetsHistosStatRecLeading(0)  
+   ,fFFBckg3JetsHistosStatGen(0)         
+   ,fFFBckg3JetsHistosStatGenLeading(0)  
+   ,fIJBckgNoJetHistosRecCuts(0)   
+   ,fIJBckgNoJetHistosRecLeading(0)
+   ,fIJBckgNoJetHistosGen(0)       
+   ,fIJBckgNoJetHistosGenLeading(0)
+   ,fIJBckgHistosRecCuts(0)   
+   ,fIJBckgHistosRecLeading(0)
+   ,fIJBckgHistosGen(0)       
+   ,fIJBckgHistosGenLeading(0)
+   ,fIJBckgLeadingHistosRecCuts(0)   
+   ,fIJBckgLeadingHistosRecLeading(0)
+   ,fIJBckgLeadingHistosGen(0)       
+   ,fIJBckgLeadingHistosGenLeading(0)
+   ,fIJBckg2JetsHistosRecCuts(0)     
+   ,fIJBckg2JetsHistosRecLeading(0)  
+   ,fIJBckg2JetsHistosGen(0)         
+   ,fIJBckg2JetsHistosGenLeading(0)  
+   ,fIJBckg3JetsHistosRecCuts(0)     
+   ,fIJBckg3JetsHistosRecLeading(0)  
+   ,fIJBckg3JetsHistosGen(0)         
+   ,fIJBckg3JetsHistosGenLeading(0)  
+   ,fIJBckgPerpHistosRecCuts(0)   
+   ,fIJBckgPerpHistosRecLeading(0)
+   ,fIJBckgPerpHistosGen(0)       
+   ,fIJBckgPerpHistosGenLeading(0)
+   ,fIJBckgHistosStatRecCuts(0)   
+   ,fIJBckgHistosStatRecLeading(0)
+   ,fIJBckgHistosStatGen(0)       
+   ,fIJBckgHistosStatGenLeading(0)
+   ,fIJBckgLeadingHistosStatRecCuts(0)   
+   ,fIJBckgLeadingHistosStatRecLeading(0)
+   ,fIJBckgLeadingHistosStatGen(0)       
+   ,fIJBckgLeadingHistosStatGenLeading(0)
+   ,fIJBckg2JetsHistosStatRecCuts(0)     
+   ,fIJBckg2JetsHistosStatRecLeading(0)  
+   ,fIJBckg2JetsHistosStatGen(0)         
+   ,fIJBckg2JetsHistosStatGenLeading(0)  
+   ,fIJBckg3JetsHistosStatRecCuts(0)     
+   ,fIJBckg3JetsHistosStatRecLeading(0)  
+   ,fIJBckg3JetsHistosStatGen(0)         
+   ,fIJBckg3JetsHistosStatGenLeading(0) 
 {
   // constructor
   
@@ -411,6 +616,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fDiJetCDFCut(copy.fDiJetCDFCut)
   ,fDiJetKindBins(copy.fDiJetKindBins)
   ,fFFRadius(copy.fFFRadius)
+  ,fFFBckgRadius(copy.fFFBckgRadius)
+  ,fBckgMode(copy.fBckgMode)
   ,fAvgTrials(copy.fAvgTrials)
   ,fTracksRec(copy.fTracksRec)
   ,fTracksRecCuts(copy.fTracksRecCuts)
@@ -543,6 +750,106 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fh1nRecEffJets(copy.fh1nRecEffJets)
   ,fhnSingleTrackRecEffHisto(copy.fhnSingleTrackRecEffHisto)
   ,fhnJetTrackRecEffHisto(copy.fhnJetTrackRecEffHisto)
+  // Background
+  ,fh1OutLeadingMult(copy.fh1OutLeadingMult)
+  ,fh1PerpMult(copy.fh1PerpMult)
+  ,fh1Out2JetsMult(copy.fh1Out2JetsMult)
+  ,fh1Out3JetsMult(copy.fh1Out3JetsMult)
+  ,fQABckgNoJetTrackHistosRec(copy.fQABckgNoJetTrackHistosRec)      
+  ,fQABckgNoJetTrackHistosRecCuts(copy.fQABckgNoJetTrackHistosRecCuts)  
+  ,fQABckgNoJetTrackHistosGen(copy.fQABckgNoJetTrackHistosGen)      
+  ,fQABckgLeadingTrackHistosRec(copy.fQABckgLeadingTrackHistosRec)      
+  ,fQABckgLeadingTrackHistosRecCuts(copy.fQABckgLeadingTrackHistosRecCuts)  
+  ,fQABckgLeadingTrackHistosGen(copy.fQABckgLeadingTrackHistosGen)      
+  ,fQABckg2JetsTrackHistosRec(copy.fQABckg2JetsTrackHistosRec)      
+  ,fQABckg2JetsTrackHistosRecCuts(copy.fQABckg2JetsTrackHistosRecCuts)  
+  ,fQABckg2JetsTrackHistosGen(copy.fQABckg2JetsTrackHistosGen)
+  ,fQABckg3JetsTrackHistosRec(copy.fQABckg3JetsTrackHistosRec)      
+  ,fQABckg3JetsTrackHistosRecCuts(copy.fQABckg3JetsTrackHistosRecCuts)  
+  ,fQABckg3JetsTrackHistosGen(copy.fQABckg3JetsTrackHistosGen)      
+  ,fQABckgPerpTrackHistosRec(copy.fQABckgPerpTrackHistosRec)      
+  ,fQABckgPerpTrackHistosRecCuts(copy.fQABckgPerpTrackHistosRecCuts)  
+  ,fQABckgPerpTrackHistosGen(copy.fQABckgPerpTrackHistosGen)      
+   ,fFFBckgNoJetHistosRecCuts(copy.fFFBckgNoJetHistosRecCuts)
+  ,fFFBckgNoJetHistosRecLeading(copy.fFFBckgNoJetHistosRecLeading)
+  ,fFFBckgNoJetHistosGen(copy.fFFBckgNoJetHistosGen)       
+  ,fFFBckgNoJetHistosGenLeading(copy.fFFBckgNoJetHistosGenLeading)
+  ,fFFBckgHistosRecCuts(copy.fFFBckgHistosRecCuts)
+  ,fFFBckgHistosRecLeading(copy.fFFBckgHistosRecLeading)
+  ,fFFBckgHistosGen(copy.fFFBckgHistosGen)       
+  ,fFFBckgHistosGenLeading(copy.fFFBckgHistosGenLeading)
+  ,fFFBckgLeadingHistosRecCuts(copy.fFFBckgLeadingHistosRecCuts)
+  ,fFFBckgLeadingHistosRecLeading(copy.fFFBckgLeadingHistosRecLeading)
+  ,fFFBckgLeadingHistosGen(copy.fFFBckgLeadingHistosGen)       
+  ,fFFBckgLeadingHistosGenLeading(copy.fFFBckgLeadingHistosGenLeading)
+  ,fFFBckg2JetsHistosRecCuts(copy.fFFBckg2JetsHistosRecCuts)     
+  ,fFFBckg2JetsHistosRecLeading(copy.fFFBckg2JetsHistosRecLeading)  
+  ,fFFBckg2JetsHistosGen(copy.fFFBckg2JetsHistosGen)         
+  ,fFFBckg2JetsHistosGenLeading(copy.fFFBckg2JetsHistosGenLeading)  
+  ,fFFBckg3JetsHistosRecCuts(copy.fFFBckg3JetsHistosRecCuts)     
+  ,fFFBckg3JetsHistosRecLeading(copy.fFFBckg3JetsHistosRecLeading)  
+  ,fFFBckg3JetsHistosGen(copy.fFFBckg3JetsHistosGen)         
+  ,fFFBckg3JetsHistosGenLeading(copy.fFFBckg3JetsHistosGenLeading)  
+  ,fFFBckgPerpHistosRecCuts(copy.fFFBckgPerpHistosRecCuts)     
+  ,fFFBckgPerpHistosRecLeading(copy.fFFBckgPerpHistosRecLeading)  
+  ,fFFBckgPerpHistosGen(copy.fFFBckgPerpHistosGen)         
+  ,fFFBckgPerpHistosGenLeading(copy.fFFBckgPerpHistosGenLeading) 
+  ,fFFBckgHistosStatRecCuts(copy.fFFBckgHistosStatRecCuts)
+  ,fFFBckgHistosStatRecLeading(copy.fFFBckgHistosStatRecLeading)
+  ,fFFBckgHistosStatGen(copy.fFFBckgHistosStatGen)       
+  ,fFFBckgHistosStatGenLeading(copy.fFFBckgHistosStatGenLeading)
+  ,fFFBckgLeadingHistosStatRecCuts(copy.fFFBckgLeadingHistosStatRecCuts)
+  ,fFFBckgLeadingHistosStatRecLeading(copy.fFFBckgLeadingHistosStatRecLeading)
+  ,fFFBckgLeadingHistosStatGen(copy.fFFBckgLeadingHistosStatGen)       
+  ,fFFBckgLeadingHistosStatGenLeading(copy.fFFBckgLeadingHistosStatGenLeading)
+  ,fFFBckg2JetsHistosStatRecCuts(copy.fFFBckg2JetsHistosStatRecCuts)     
+  ,fFFBckg2JetsHistosStatRecLeading(copy.fFFBckg2JetsHistosStatRecLeading)  
+  ,fFFBckg2JetsHistosStatGen(copy.fFFBckg2JetsHistosStatGen)         
+  ,fFFBckg2JetsHistosStatGenLeading(copy.fFFBckg2JetsHistosStatGenLeading)  
+  ,fFFBckg3JetsHistosStatRecCuts(copy.fFFBckg3JetsHistosStatRecCuts)     
+  ,fFFBckg3JetsHistosStatRecLeading(copy.fFFBckg3JetsHistosStatRecLeading)  
+  ,fFFBckg3JetsHistosStatGen(copy.fFFBckg3JetsHistosStatGen)         
+  ,fFFBckg3JetsHistosStatGenLeading(copy.fFFBckg3JetsHistosStatGenLeading)  
+  ,fIJBckgNoJetHistosRecCuts(copy.fIJBckgNoJetHistosRecCuts)   
+  ,fIJBckgNoJetHistosRecLeading(copy.fIJBckgNoJetHistosRecLeading)
+  ,fIJBckgNoJetHistosGen(copy.fIJBckgNoJetHistosGen)       
+  ,fIJBckgNoJetHistosGenLeading(copy.fIJBckgNoJetHistosGenLeading)
+  ,fIJBckgHistosRecCuts(copy.fIJBckgHistosRecCuts)   
+  ,fIJBckgHistosRecLeading(copy.fIJBckgHistosRecLeading)
+  ,fIJBckgHistosGen(copy.fIJBckgHistosGen)       
+  ,fIJBckgHistosGenLeading(copy.fIJBckgHistosGenLeading)
+  ,fIJBckgLeadingHistosRecCuts(copy.fIJBckgLeadingHistosRecCuts)   
+  ,fIJBckgLeadingHistosRecLeading(copy.fIJBckgLeadingHistosRecLeading)
+  ,fIJBckgLeadingHistosGen(copy.fIJBckgLeadingHistosGen)       
+  ,fIJBckgLeadingHistosGenLeading(copy.fIJBckgLeadingHistosGenLeading)
+  ,fIJBckg2JetsHistosRecCuts(copy.fIJBckg2JetsHistosRecCuts)     
+  ,fIJBckg2JetsHistosRecLeading(copy.fIJBckg2JetsHistosRecLeading)  
+  ,fIJBckg2JetsHistosGen(copy.fIJBckg2JetsHistosGen)         
+  ,fIJBckg2JetsHistosGenLeading(copy.fIJBckg2JetsHistosGenLeading)  
+  ,fIJBckg3JetsHistosRecCuts(copy.fIJBckg3JetsHistosRecCuts)     
+  ,fIJBckg3JetsHistosRecLeading(copy.fIJBckg3JetsHistosRecLeading)  
+  ,fIJBckg3JetsHistosGen(copy.fIJBckg3JetsHistosGen)         
+  ,fIJBckg3JetsHistosGenLeading(copy.fIJBckg3JetsHistosGenLeading) 
+  ,fIJBckgPerpHistosRecCuts(copy.fIJBckgPerpHistosRecCuts)   
+  ,fIJBckgPerpHistosRecLeading(copy.fIJBckgPerpHistosRecLeading)
+  ,fIJBckgPerpHistosGen(copy.fIJBckgPerpHistosGen)       
+  ,fIJBckgPerpHistosGenLeading(copy.fIJBckgPerpHistosGenLeading)
+  ,fIJBckgHistosStatRecCuts(copy.fIJBckgHistosStatRecCuts)   
+  ,fIJBckgHistosStatRecLeading(copy.fIJBckgHistosStatRecLeading)
+  ,fIJBckgHistosStatGen(copy.fIJBckgHistosStatGen)       
+  ,fIJBckgHistosStatGenLeading(copy.fIJBckgHistosStatGenLeading)
+  ,fIJBckgLeadingHistosStatRecCuts(copy.fIJBckgLeadingHistosStatRecCuts)   
+  ,fIJBckgLeadingHistosStatRecLeading(copy.fIJBckgLeadingHistosStatRecLeading)
+  ,fIJBckgLeadingHistosStatGen(copy.fIJBckgLeadingHistosStatGen)       
+  ,fIJBckgLeadingHistosStatGenLeading(copy.fIJBckgLeadingHistosStatGenLeading)
+  ,fIJBckg2JetsHistosStatRecCuts(copy.fIJBckg2JetsHistosStatRecCuts)     
+  ,fIJBckg2JetsHistosStatRecLeading(copy.fIJBckg2JetsHistosStatRecLeading)  
+  ,fIJBckg2JetsHistosStatGen(copy.fIJBckg2JetsHistosStatGen)         
+  ,fIJBckg2JetsHistosStatGenLeading(copy.fIJBckg2JetsHistosStatGenLeading)  
+  ,fIJBckg3JetsHistosStatRecCuts(copy.fIJBckg3JetsHistosStatRecCuts)     
+  ,fIJBckg3JetsHistosStatRecLeading(copy.fIJBckg3JetsHistosStatRecLeading)  
+  ,fIJBckg3JetsHistosStatGen(copy.fIJBckg3JetsHistosStatGen)         
+  ,fIJBckg3JetsHistosStatGenLeading(copy.fIJBckg3JetsHistosStatGenLeading) 
 {
   // copy constructor
 
@@ -581,6 +888,8 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fDiJetCDFCut                  = o.fDiJetCDFCut;
     fDiJetKindBins                = o.fDiJetKindBins;
     fFFRadius                     = o.fFFRadius;
+    fFFBckgRadius                 = o.fFFBckgRadius;
+    fBckgMode                     = o.fBckgMode;
     fAvgTrials                    = o.fAvgTrials;
     fTracksRec                    = o.fTracksRec;
     fTracksRecCuts                = o.fTracksRecCuts;
@@ -713,6 +1022,106 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fh1nRecEffJets                = o.fh1nRecEffJets;
     fhnSingleTrackRecEffHisto     = o.fhnSingleTrackRecEffHisto;
     fhnJetTrackRecEffHisto        = o.fhnJetTrackRecEffHisto;
+    // Background
+    fh1OutLeadingMult                  = o.fh1OutLeadingMult;
+    fh1PerpMult                        = o.fh1PerpMult;
+    fh1Out2JetsMult                    = o.fh1Out2JetsMult;
+    fh1Out3JetsMult                    = o.fh1Out3JetsMult;
+    fQABckgNoJetTrackHistosRec         = o.fQABckgNoJetTrackHistosRec;      
+    fQABckgNoJetTrackHistosRecCuts     = o.fQABckgNoJetTrackHistosRecCuts;  
+    fQABckgNoJetTrackHistosGen         = o.fQABckgNoJetTrackHistosGen;      
+    fQABckgLeadingTrackHistosRec       = o.fQABckgLeadingTrackHistosRec;      
+    fQABckgLeadingTrackHistosRecCuts   = o.fQABckgLeadingTrackHistosRecCuts;  
+    fQABckgLeadingTrackHistosGen       = o.fQABckgLeadingTrackHistosGen;      
+    fQABckg2JetsTrackHistosRec         = o.fQABckg2JetsTrackHistosRec;      
+    fQABckg2JetsTrackHistosRecCuts     = o.fQABckg2JetsTrackHistosRecCuts;  
+    fQABckg2JetsTrackHistosGen         = o.fQABckg2JetsTrackHistosGen;
+    fQABckg3JetsTrackHistosRec         = o.fQABckg3JetsTrackHistosRec;      
+    fQABckg3JetsTrackHistosRecCuts     = o.fQABckg3JetsTrackHistosRecCuts;  
+    fQABckg3JetsTrackHistosGen         = o.fQABckg3JetsTrackHistosGen;      
+    fQABckgPerpTrackHistosRec          = o.fQABckgPerpTrackHistosRec;      
+    fQABckgPerpTrackHistosRecCuts      = o.fQABckgPerpTrackHistosRecCuts;  
+    fQABckgPerpTrackHistosGen          = o.fQABckgPerpTrackHistosGen;      
+    fFFBckgNoJetHistosRecCuts          = o.fFFBckgNoJetHistosRecCuts;
+    fFFBckgNoJetHistosRecLeading       = o.fFFBckgNoJetHistosRecLeading;
+    fFFBckgNoJetHistosGen              = o.fFFBckgNoJetHistosGen;       
+    fFFBckgNoJetHistosGenLeading       = o.fFFBckgNoJetHistosGenLeading;
+    fFFBckgHistosRecCuts               = o.fFFBckgHistosRecCuts;
+    fFFBckgHistosRecLeading            = o.fFFBckgHistosRecLeading;
+    fFFBckgHistosGen                   = o.fFFBckgHistosGen;       
+    fFFBckgHistosGenLeading            = o.fFFBckgHistosGenLeading;
+    fFFBckgLeadingHistosRecCuts        = o.fFFBckgLeadingHistosRecCuts;
+    fFFBckgLeadingHistosRecLeading     = o.fFFBckgLeadingHistosRecLeading;
+    fFFBckgLeadingHistosGen            = o.fFFBckgLeadingHistosGen;       
+    fFFBckgLeadingHistosGenLeading     = o.fFFBckgLeadingHistosGenLeading;
+    fFFBckg2JetsHistosRecCuts          = o.fFFBckg2JetsHistosRecCuts;     
+    fFFBckg2JetsHistosRecLeading       = o.fFFBckg2JetsHistosRecLeading;  
+    fFFBckg2JetsHistosGen              = o.fFFBckg2JetsHistosGen;         
+    fFFBckg2JetsHistosGenLeading       = o.fFFBckg2JetsHistosGenLeading;  
+    fFFBckg3JetsHistosRecCuts          = o.fFFBckg3JetsHistosRecCuts;     
+    fFFBckg3JetsHistosRecLeading       = o.fFFBckg3JetsHistosRecLeading;  
+    fFFBckg3JetsHistosGen              = o.fFFBckg3JetsHistosGen;         
+    fFFBckg3JetsHistosGenLeading       = o.fFFBckg3JetsHistosGenLeading;  
+    fFFBckgPerpHistosRecCuts           = o.fFFBckgPerpHistosRecCuts;     
+    fFFBckgPerpHistosRecLeading        = o.fFFBckgPerpHistosRecLeading;  
+    fFFBckgPerpHistosGen               = o.fFFBckgPerpHistosGen;         
+    fFFBckgPerpHistosGenLeading        = o.fFFBckgPerpHistosGenLeading;
+    fFFBckgHistosStatRecCuts           = o.fFFBckgHistosStatRecCuts;
+    fFFBckgHistosStatRecLeading        = o.fFFBckgHistosStatRecLeading;
+    fFFBckgHistosStatGen               = o.fFFBckgHistosStatGen;       
+    fFFBckgHistosStatGenLeading        = o.fFFBckgHistosStatGenLeading;
+    fFFBckgLeadingHistosStatRecCuts    = o.fFFBckgLeadingHistosStatRecCuts;
+    fFFBckgLeadingHistosStatRecLeading = o.fFFBckgLeadingHistosStatRecLeading;
+    fFFBckgLeadingHistosStatGen        = o.fFFBckgLeadingHistosStatGen;       
+    fFFBckgLeadingHistosStatGenLeading = o.fFFBckgLeadingHistosStatGenLeading;
+    fFFBckg2JetsHistosStatRecCuts      = o.fFFBckg2JetsHistosStatRecCuts;     
+    fFFBckg2JetsHistosStatRecLeading   = o.fFFBckg2JetsHistosStatRecLeading;  
+    fFFBckg2JetsHistosStatGen          = o.fFFBckg2JetsHistosStatGen;         
+    fFFBckg2JetsHistosStatGenLeading   = o.fFFBckg2JetsHistosStatGenLeading;  
+    fFFBckg3JetsHistosStatRecCuts      = o.fFFBckg3JetsHistosStatRecCuts;     
+    fFFBckg3JetsHistosStatRecLeading   = o.fFFBckg3JetsHistosStatRecLeading;  
+    fFFBckg3JetsHistosStatGen          = o.fFFBckg3JetsHistosStatGen;         
+    fFFBckg3JetsHistosStatGenLeading   = o.fFFBckg3JetsHistosStatGenLeading;  
+    fIJBckgNoJetHistosRecCuts          = o.fIJBckgNoJetHistosRecCuts;   
+    fIJBckgNoJetHistosRecLeading       = o.fIJBckgNoJetHistosRecLeading;
+    fIJBckgNoJetHistosGen              = o.fIJBckgNoJetHistosGen;       
+    fIJBckgNoJetHistosGenLeading       = o.fIJBckgNoJetHistosGenLeading;
+    fIJBckgHistosRecCuts               = o.fIJBckgHistosRecCuts;   
+    fIJBckgHistosRecLeading            = o.fIJBckgHistosRecLeading;
+    fIJBckgHistosGen                   = o.fIJBckgHistosGen;       
+    fIJBckgHistosGenLeading            = o.fIJBckgHistosGenLeading;
+    fIJBckgLeadingHistosRecCuts        = o.fIJBckgLeadingHistosRecCuts;   
+    fIJBckgLeadingHistosRecLeading     = o.fIJBckgLeadingHistosRecLeading;
+    fIJBckgLeadingHistosGen            = o.fIJBckgLeadingHistosGen;       
+    fIJBckgLeadingHistosGenLeading     = o.fIJBckgLeadingHistosGenLeading;
+    fIJBckg2JetsHistosRecCuts          = o.fIJBckg2JetsHistosRecCuts;     
+    fIJBckg2JetsHistosRecLeading       = o.fIJBckg2JetsHistosRecLeading;  
+    fIJBckg2JetsHistosGen              = o.fIJBckg2JetsHistosGen;         
+    fIJBckg2JetsHistosGenLeading       = o.fIJBckg2JetsHistosGenLeading;  
+    fIJBckg3JetsHistosRecCuts          = o.fIJBckg3JetsHistosRecCuts;     
+    fIJBckg3JetsHistosRecLeading       = o.fIJBckg3JetsHistosRecLeading;  
+    fIJBckg3JetsHistosGen              = o.fIJBckg3JetsHistosGen;         
+    fIJBckg3JetsHistosGenLeading       = o.fIJBckg3JetsHistosGenLeading;  
+    fIJBckgPerpHistosRecCuts           = o.fIJBckgPerpHistosRecCuts;     
+    fIJBckgPerpHistosRecLeading        = o.fIJBckgPerpHistosRecLeading;  
+    fIJBckgPerpHistosGen               = o.fIJBckgPerpHistosGen;         
+    fIJBckgPerpHistosGenLeading        = o.fIJBckgPerpHistosGenLeading;  
+    fIJBckgHistosStatRecCuts           = o.fIJBckgHistosStatRecCuts;   
+    fIJBckgHistosStatRecLeading        = o.fIJBckgHistosStatRecLeading;
+    fIJBckgHistosStatGen               = o.fIJBckgHistosStatGen;       
+    fIJBckgHistosStatGenLeading        = o.fIJBckgHistosStatGenLeading;
+    fIJBckgLeadingHistosStatRecCuts    = o.fIJBckgLeadingHistosStatRecCuts;   
+    fIJBckgLeadingHistosStatRecLeading = o.fIJBckgLeadingHistosStatRecLeading;
+    fIJBckgLeadingHistosStatGen        = o.fIJBckgLeadingHistosStatGen;       
+    fIJBckgLeadingHistosStatGenLeading = o.fIJBckgLeadingHistosStatGenLeading;
+    fIJBckg2JetsHistosStatRecCuts      = o.fIJBckg2JetsHistosStatRecCuts;     
+    fIJBckg2JetsHistosStatRecLeading   = o.fIJBckg2JetsHistosStatRecLeading;  
+    fIJBckg2JetsHistosStatGen          = o.fIJBckg2JetsHistosStatGen;         
+    fIJBckg2JetsHistosStatGenLeading   = o.fIJBckg2JetsHistosStatGenLeading;  
+    fIJBckg3JetsHistosStatRecCuts      = o.fIJBckg3JetsHistosStatRecCuts;     
+    fIJBckg3JetsHistosStatRecLeading   = o.fIJBckg3JetsHistosStatRecLeading;  
+    fIJBckg3JetsHistosStatGen          = o.fIJBckg3JetsHistosStatGen;         
+    fIJBckg3JetsHistosStatGenLeading   = o.fIJBckg3JetsHistosStatGenLeading;  
   }
     
   return *this;
@@ -844,20 +1253,28 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::DefineHistos()
 }
 
 //_______________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::FillFF(Float_t trackPt, Float_t jetPt, Bool_t incrementJetPt)
+void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::FillFF(Float_t trackPt, Float_t jetPt, Bool_t incrementJetPt, Float_t norm)
 {
   // fill FF
  
-  if(incrementJetPt) fh1JetPt->Fill(jetPt);    
-  fh2TrackPt->Fill(jetPt,trackPt);
+  if(incrementJetPt && norm) fh1JetPt->Fill(jetPt,1/norm);
+  if(incrementJetPt) fh1JetPt->Fill(jetPt);
+  if(norm)fh2TrackPt->Fill(jetPt,trackPt,1/norm);
+  else fh2TrackPt->Fill(jetPt,trackPt);
   
   Double_t z = 0.;
   if(jetPt>0) z = trackPt / jetPt;
   Double_t xi = 0;
   if(z>0) xi = TMath::Log(1/z);
   
-  fh2Xi->Fill(jetPt,xi);
-  fh2Z->Fill(jetPt,z);
+  if(norm){
+    fh2Xi->Fill(jetPt,xi,1/norm);
+    fh2Z->Fill(jetPt,z,1/norm);
+  }
+  else {
+    fh2Xi->Fill(jetPt,xi);
+    fh2Z->Fill(jetPt,z);
+  }
 }
 
 //_________________________________________________________________________________
@@ -1255,7 +1672,7 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::DefineHist
 }
 
 //_______________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::FillIntraJet(const TLorentzVector* trackV, const TLorentzVector* jetV)
+void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::FillIntraJet(const TLorentzVector* trackV, const TLorentzVector* jetV, Float_t norm)
 {
   // fill IntraJet histos
  
@@ -1276,7 +1693,7 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::FillIntraJ
   Float_t pJ  = jetV->P();
 
   // Compute z
-  z = (Float_t)(ptT/ptJ);
+  if(ptJ>0) z = (Float_t)(ptT/ptJ);
 
   // Compute theta
   cosTheta = (pxT*pxJ+pyT*pyJ+pzT*pzJ)/(pT*pJ);
@@ -1291,15 +1708,23 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::FillIntraJ
   jt = TMath::Sin(trackP.Angle(jetP))*trackP.Mag();
 
   // Fill histos and THnSparse
-  fh2CosTheta->Fill(ptJ,cosTheta);
-  fh2Theta->Fill(ptJ,theta);
-  fh2Jt->Fill(ptJ,jt);
+  if(norm){
+    fh2CosTheta->Fill(ptJ,cosTheta,1/norm);
+    fh2Theta->Fill(ptJ,theta,1/norm);
+    fh2Jt->Fill(ptJ,jt,1/norm);
+  }
+  else {
+    fh2CosTheta->Fill(ptJ,cosTheta);
+    fh2Theta->Fill(ptJ,theta);
+    fh2Jt->Fill(ptJ,jt);
+  }
 
   // Fill THnSparse
   Double_t *content = new Double_t[fnDim];
   content[0]= ptJ; content[1] = theta; content[2] = cosTheta; content[3] = jt; content[4] = z; content[5] = ptT; 
 
-  fhnIntraJet->Fill(content);
+  if(norm)fhnIntraJet->Fill(content,1/norm);
+  else fhnIntraJet->Fill(content);
 
   delete content;
 
@@ -1766,7 +2191,7 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::AddToOutpu
 
 }
 
-
+//_________________________________________________________________________________
 Bool_t AliAnalysisTaskFragmentationFunction::Notify()
 {
   //
@@ -1867,6 +2292,11 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   fh1nRecJetsCuts            = new TH1F("fh1nRecJetsCuts","reconstructed jets per event",10,-0.5,9.5);
   fh1nGenJets                = new TH1F("fh1nGenJets","generated jets per event",10,-0.5,9.5);
   fh1nRecEffJets             = new TH1F("fh1nRecEffJets","reconstruction effiency: jets per event",10,-0.5,9.5);
+
+  fh1OutLeadingMult          = new TH1F("fh1OutLeadingMult","Background multiplicity - Cone outside leading jet",120,0,120.);
+  fh1PerpMult                = new TH1F("fh1PerpMult","Background multiplicity - Cone perpendicular to leading jet axis",120,0.,120.);
+  fh1Out2JetsMult            = new TH1F("fh1Out2JetsMult","Background multiplicity - Cone outside 2 jets",120,0.,120.);
+  fh1Out3JetsMult            = new TH1F("fh1Out3JetsMult","Background multiplicity - Cone outside 3 jets",120,0.,120.);
 
   // 5D single track eff histo: phi:eta:gen pt:rec pt:isReconstructed -  use binning as for track QA
   Int_t   nBinsSingleTrackEffHisto[5]      = { fQATrackNBinsPhi, fQATrackNBinsEta, fQATrackNBinsPt, fQATrackNBinsPt, 2 };
@@ -2040,6 +2470,517 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
 						       fQADiJetNBinsDeltaEta, fQADiJetDeltaEtaMin, fQADiJetDeltaEtaMax,
 						       fQADiJetNBinsDeltaPt, fQADiJetDeltaPtMin, fQADiJetDeltaPtMax);
 
+  // Background
+  if(fBckgMode){
+    fQABckgNoJetTrackHistosRec          = new AliFragFuncQATrackHistos("BckgNoJetRec", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								       fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								       fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								       fQATrackHighPtThreshold);
+    fQABckgNoJetTrackHistosRecCuts      = new AliFragFuncQATrackHistos("BckgNoJetRecCuts", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								       fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								       fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								       fQATrackHighPtThreshold);
+    fQABckgNoJetTrackHistosGen          = new AliFragFuncQATrackHistos("BckgNoJetGen", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								       fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								       fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								       fQATrackHighPtThreshold);
+    
+    fQABckgLeadingTrackHistosRec          = new AliFragFuncQATrackHistos("BckgLeadingRec", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+									 fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+									 fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+									 fQATrackHighPtThreshold);
+    fQABckgLeadingTrackHistosRecCuts      = new AliFragFuncQATrackHistos("BckgLeadingRecCuts", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+									 fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+									 fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+									 fQATrackHighPtThreshold);
+    fQABckgLeadingTrackHistosGen          = new AliFragFuncQATrackHistos("BckgLeadingGen", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+									 fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+									 fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+									 fQATrackHighPtThreshold);
+    
+    fQABckg2JetsTrackHistosRec          = new AliFragFuncQATrackHistos("Bckg2JetsRec", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								       fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								       fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								       fQATrackHighPtThreshold);
+    fQABckg2JetsTrackHistosRecCuts      = new AliFragFuncQATrackHistos("Bckg2JetsRecCuts", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								       fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								       fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+							    fQATrackHighPtThreshold);
+    fQABckg2JetsTrackHistosGen          = new AliFragFuncQATrackHistos("Bckg2JetsGen", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								       fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								       fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								       fQATrackHighPtThreshold);
+    
+    fQABckg3JetsTrackHistosRec          = new AliFragFuncQATrackHistos("Bckg3JetsRec", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								       fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								       fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								       fQATrackHighPtThreshold);
+    fQABckg3JetsTrackHistosRecCuts      = new AliFragFuncQATrackHistos("Bckg3JetsRecCuts", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+							    fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								       fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								       fQATrackHighPtThreshold);
+    fQABckg3JetsTrackHistosGen          = new AliFragFuncQATrackHistos("Bckg3JetsGen", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								       fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								       fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								       fQATrackHighPtThreshold);
+    
+    
+    fQABckgPerpTrackHistosRec          = new AliFragFuncQATrackHistos("BckgPerpRec", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								      fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+							    fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								      fQATrackHighPtThreshold);
+    fQABckgPerpTrackHistosRecCuts      = new AliFragFuncQATrackHistos("BckgPerpRecCuts", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								      fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								      fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								      fQATrackHighPtThreshold);
+    fQABckgPerpTrackHistosGen          = new AliFragFuncQATrackHistos("BckgPerpGen", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, 
+								      fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+								      fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, 
+								      fQATrackHighPtThreshold);
+
+    // event with no jets
+    fFFBckgNoJetHistosRecCuts    = new AliFragFuncHistos("NoJetBckgRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgNoJetHistosRecLeading = new AliFragFuncHistos("NoJetBckgRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgNoJetHistosGen   	 = new AliFragFuncHistos("NoJetBckgGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgNoJetHistosGenLeading = new AliFragFuncHistos("NoJetBckgGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    
+    fIJBckgNoJetHistosRecCuts   	     = new AliFragFuncIntraJetHistos("NoJetBckgRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgNoJetHistosRecLeading        = new AliFragFuncIntraJetHistos("NoJetBckgRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									fIJNBinsZ, fIJZMin, fIJZMax,  
+									fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgNoJetHistosGen   	     = new AliFragFuncIntraJetHistos("NoJetBckgGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								     fIJNBinsZ, fIJZMin, fIJZMax,  
+								     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgNoJetHistosGenLeading        = new AliFragFuncIntraJetHistos("NoJetBckgGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									fIJNBinsZ, fIJZMin, fIJZMax,  
+									fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									fIJNBinsJt , fIJJtMin , fIJJtMax);
+
+    
+    // outside leading jet or 2 jets or more
+    fFFBckgHistosRecCuts    = new AliFragFuncHistos("BckgRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+						    fFFNBinsPt, fFFPtMin, fFFPtMax, 
+						    fFFNBinsXi, fFFXiMin, fFFXiMax,  
+						    fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgHistosRecLeading = new AliFragFuncHistos("BckgRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+						    fFFNBinsPt, fFFPtMin, fFFPtMax, 
+						    fFFNBinsXi, fFFXiMin, fFFXiMax,  
+						    fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgHistosGen   	 = new AliFragFuncHistos("BckgGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+						 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+						 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+						 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgHistosGenLeading = new AliFragFuncHistos("BckgGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+						    fFFNBinsPt, fFFPtMin, fFFPtMax, 
+						    fFFNBinsXi, fFFXiMin, fFFXiMax,  
+						    fFFNBinsZ , fFFZMin , fFFZMax);
+    
+    // outside leading jet
+    fFFBckgLeadingHistosRecCuts    = new AliFragFuncHistos("BckgLeadingRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							   fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							   fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							   fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgLeadingHistosRecLeading = new AliFragFuncHistos("BckgLeadingRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							   fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							   fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							   fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgLeadingHistosGen   	 = new AliFragFuncHistos("BckgLeadingGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgLeadingHistosGenLeading = new AliFragFuncHistos("BckgLeadingGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							   fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							   fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							   fFFNBinsZ , fFFZMin , fFFZMax);
+    
+    // outside leading jet or 2 jets or more
+    fIJBckgHistosRecCuts   	     = new AliFragFuncIntraJetHistos("BckgRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								     fIJNBinsZ, fIJZMin, fIJZMax,  
+								     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+								     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgHistosRecLeading        = new AliFragFuncIntraJetHistos("BckgRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								   fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								   fIJNBinsZ, fIJZMin, fIJZMax,  
+								   fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								   fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								   fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgHistosGen   	     = new AliFragFuncIntraJetHistos("BckgGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+							     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+							     fIJNBinsZ, fIJZMin, fIJZMax,  
+							     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+							     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+							     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgHistosGenLeading        = new AliFragFuncIntraJetHistos("BckgGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								   fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								   fIJNBinsZ, fIJZMin, fIJZMax,  
+								   fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								   fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								   fIJNBinsJt , fIJJtMin , fIJJtMax);
+    
+    // outside leading jet
+    fIJBckgLeadingHistosRecCuts   	     = new AliFragFuncIntraJetHistos("BckgLeadingRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgLeadingHistosRecLeading        = new AliFragFuncIntraJetHistos("BckgLeadingRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									  fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									  fIJNBinsZ, fIJZMin, fIJZMax,  
+									  fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									  fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									  fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgLeadingHistosGen   	     = new AliFragFuncIntraJetHistos("BckgLeadingGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								     fIJNBinsZ, fIJZMin, fIJZMax,  
+								     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgLeadingHistosGenLeading        = new AliFragFuncIntraJetHistos("BckgLeadingGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									  fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									  fIJNBinsZ, fIJZMin, fIJZMax,  
+									  fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									  fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									  fIJNBinsJt , fIJJtMin , fIJJtMax);
+    
+    // outside 2 jets
+    fFFBckg2JetsHistosRecCuts    = new AliFragFuncHistos("Bckg2JetsRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg2JetsHistosRecLeading = new AliFragFuncHistos("Bckg2JetsRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg2JetsHistosGen   	 = new AliFragFuncHistos("Bckg2JetsGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg2JetsHistosGenLeading = new AliFragFuncHistos("Bckg2JetsGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    
+    // outside 2 jets
+    fIJBckg2JetsHistosRecCuts   	     = new AliFragFuncIntraJetHistos("Bckg2JetsRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg2JetsHistosRecLeading        = new AliFragFuncIntraJetHistos("Bckg2JetsRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									fIJNBinsZ, fIJZMin, fIJZMax,  
+									fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg2JetsHistosGen   	     = new AliFragFuncIntraJetHistos("Bckg2JetsGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								     fIJNBinsZ, fIJZMin, fIJZMax,  
+								     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg2JetsHistosGenLeading        = new AliFragFuncIntraJetHistos("Bckg2JetsGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									fIJNBinsZ, fIJZMin, fIJZMax,  
+									fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									fIJNBinsJt , fIJJtMin , fIJJtMax);
+    
+    // outside 3 jets
+    fFFBckg3JetsHistosRecCuts    = new AliFragFuncHistos("Bckg3JetsRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg3JetsHistosRecLeading = new AliFragFuncHistos("Bckg3JetsRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg3JetsHistosGen   	 = new AliFragFuncHistos("Bckg3JetsGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg3JetsHistosGenLeading = new AliFragFuncHistos("Bckg3JetsGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+
+    // outside 3 jets
+    fIJBckg3JetsHistosRecCuts   	     = new AliFragFuncIntraJetHistos("Bckg3JetsRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg3JetsHistosRecLeading        = new AliFragFuncIntraJetHistos("Bckg3JetsRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									fIJNBinsZ, fIJZMin, fIJZMax,  
+									fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg3JetsHistosGen   	     = new AliFragFuncIntraJetHistos("Bckg3JetsGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								     fIJNBinsZ, fIJZMin, fIJZMax,  
+								     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg3JetsHistosGenLeading        = new AliFragFuncIntraJetHistos("Bckg3JetsGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									fIJNBinsZ, fIJZMin, fIJZMax,  
+									fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									fIJNBinsJt , fIJJtMin , fIJJtMax);
+    
+    
+    // in the transverse jet axis direction
+    fFFBckgPerpHistosRecCuts    = new AliFragFuncHistos("BckgPerpRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgPerpHistosRecLeading = new AliFragFuncHistos("BckgPerpRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgPerpHistosGen   	 = new AliFragFuncHistos("BckgPerpGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgPerpHistosGenLeading = new AliFragFuncHistos("BckgPerpGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							fFFNBinsZ , fFFZMin , fFFZMax);
+
+    // In the transverse jet axis direction 
+    fIJBckgPerpHistosRecCuts   	     = new AliFragFuncIntraJetHistos("BckgPerpRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								     fIJNBinsZ, fIJZMin, fIJZMax,  
+								     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+								     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgPerpHistosRecLeading        = new AliFragFuncIntraJetHistos("BckgPerpRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								       fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								       fIJNBinsZ, fIJZMin, fIJZMax,  
+								       fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								       fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								       fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgPerpHistosGen   	     = new AliFragFuncIntraJetHistos("BckgPerpGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								     fIJNBinsZ, fIJZMin, fIJZMax,  
+								     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgPerpHistosGenLeading        = new AliFragFuncIntraJetHistos("BckgPerpGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								       fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								       fIJNBinsZ, fIJZMin, fIJZMax,  
+								       fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								       fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								       fIJNBinsJt , fIJJtMin , fIJJtMax);
+    
+    
+    // Statistical study
+    // outside leading jet or 2 jets or more
+    fFFBckgHistosStatRecCuts    = new AliFragFuncHistos("StatBckgRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgHistosStatRecLeading = new AliFragFuncHistos("StatBckgRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgHistosStatGen   	 = new AliFragFuncHistos("StatBckgGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgHistosStatGenLeading = new AliFragFuncHistos("StatBckgGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							fFFNBinsZ , fFFZMin , fFFZMax);
+  
+    // outside leading jet
+    fFFBckgLeadingHistosStatRecCuts    = new AliFragFuncHistos("StatBckgLeadingRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							       fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							       fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							       fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgLeadingHistosStatRecLeading = new AliFragFuncHistos("StatBckgLeadingRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							       fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							       fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							       fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgLeadingHistosStatGen   	 = new AliFragFuncHistos("StatBckgLeadingGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+								 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+								 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+								 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckgLeadingHistosStatGenLeading = new AliFragFuncHistos("StatBckgLeadingGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							       fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							       fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							       fFFNBinsZ , fFFZMin , fFFZMax);
+    
+    // outside leading jet or 2 jets or more
+    fIJBckgHistosStatRecCuts   	     = new AliFragFuncIntraJetHistos("StatBckgRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								     fIJNBinsZ, fIJZMin, fIJZMax,  
+								     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+								     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgHistosStatRecLeading        = new AliFragFuncIntraJetHistos("StatBckgRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								       fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								       fIJNBinsZ, fIJZMin, fIJZMax,  
+								       fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								       fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								       fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgHistosStatGen   	     = new AliFragFuncIntraJetHistos("StatBckgGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								     fIJNBinsZ, fIJZMin, fIJZMax,  
+								     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgHistosStatGenLeading        = new AliFragFuncIntraJetHistos("StatBckgGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+								       fIJNBinsPt, fIJPtMin, fIJPtMax, 
+								       fIJNBinsZ, fIJZMin, fIJZMax,  
+								       fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+								       fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+								       fIJNBinsJt , fIJJtMin , fIJJtMax);
+    
+    // outside leading jet
+    fIJBckgLeadingHistosStatRecCuts   	     = new AliFragFuncIntraJetHistos("StatBckgLeadingRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgLeadingHistosStatRecLeading        = new AliFragFuncIntraJetHistos("StatBckgLeadingRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									      fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									      fIJNBinsZ, fIJZMin, fIJZMax,  
+									      fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									      fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									      fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgLeadingHistosStatGen   	     = new AliFragFuncIntraJetHistos("StatBckgLeadingGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckgLeadingHistosStatGenLeading        = new AliFragFuncIntraJetHistos("StatBckgLeadingGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									      fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									      fIJNBinsZ, fIJZMin, fIJZMax,  
+									      fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									      fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									      fIJNBinsJt , fIJJtMin , fIJJtMax);
+
+    // outside 2 jets
+    fFFBckg2JetsHistosStatRecCuts    = new AliFragFuncHistos("StatBckg2JetsRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							     fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							     fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							     fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg2JetsHistosStatRecLeading = new AliFragFuncHistos("StatBckg2JetsRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							     fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							     fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							     fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg2JetsHistosStatGen   	 = new AliFragFuncHistos("StatBckg2JetsGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+								 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+								 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+								 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg2JetsHistosStatGenLeading = new AliFragFuncHistos("StatBckg2JetsGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							     fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							     fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							     fFFNBinsZ , fFFZMin , fFFZMax);
+    
+    // outside 2 jets
+    fIJBckg2JetsHistosStatRecCuts   	     = new AliFragFuncIntraJetHistos("StatBckg2JetsRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg2JetsHistosStatRecLeading        = new AliFragFuncIntraJetHistos("StatBckg2JetsRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									    fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									    fIJNBinsZ, fIJZMin, fIJZMax,  
+									    fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									    fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									    fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg2JetsHistosStatGen   	     = new AliFragFuncIntraJetHistos("StatBckg2JetsGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg2JetsHistosStatGenLeading        = new AliFragFuncIntraJetHistos("StatBckg2JetsGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									    fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									    fIJNBinsZ, fIJZMin, fIJZMax,  
+									    fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									    fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									    fIJNBinsJt , fIJJtMin , fIJJtMax);
+    
+    // outside 3 jets
+    fFFBckg3JetsHistosStatRecCuts    = new AliFragFuncHistos("StatBckg3JetsRecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							     fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							     fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							     fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg3JetsHistosStatRecLeading = new AliFragFuncHistos("StatBckg3JetsRecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							     fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							     fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							     fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg3JetsHistosStatGen   	 = new AliFragFuncHistos("StatBckg3JetsGen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+								 fFFNBinsPt, fFFPtMin, fFFPtMax, 
+								 fFFNBinsXi, fFFXiMin, fFFXiMax,  
+								 fFFNBinsZ , fFFZMin , fFFZMax);
+    fFFBckg3JetsHistosStatGenLeading = new AliFragFuncHistos("StatBckg3JetsGenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+							     fFFNBinsPt, fFFPtMin, fFFPtMax, 
+							     fFFNBinsXi, fFFXiMin, fFFXiMax,  
+							     fFFNBinsZ , fFFZMin , fFFZMax);
+    
+    // outside 3 jets
+    fIJBckg3JetsHistosStatRecCuts   	     = new AliFragFuncIntraJetHistos("StatBckg3JetsRecCuts", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax,
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg3JetsHistosStatRecLeading        = new AliFragFuncIntraJetHistos("StatBckg3JetsRecLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									    fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									    fIJNBinsZ, fIJZMin, fIJZMax,  
+									    fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									    fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									    fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg3JetsHistosStatGen   	     = new AliFragFuncIntraJetHistos("StatBckg3JetsGen", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									     fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									     fIJNBinsZ, fIJZMin, fIJZMax,  
+									     fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									     fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									     fIJNBinsJt , fIJJtMin , fIJJtMax);
+    fIJBckg3JetsHistosStatGenLeading        = new AliFragFuncIntraJetHistos("StatBckg3JetsGenLeading", fIJNBinsJetPt, fIJJetPtMin, fIJJetPtMax, 
+									    fIJNBinsPt, fIJPtMin, fIJPtMax, 
+									    fIJNBinsZ, fIJZMin, fIJZMax,  
+									    fIJNBinsCosTheta , fIJCosThetaMin , fIJCosThetaMax, 
+									    fIJNBinsTheta , fIJThetaMin , fIJThetaMax, 
+									    fIJNBinsJt , fIJJtMin , fIJJtMax);
+  }
 
   fQATrackHistosRec->DefineHistos();
   fQATrackHistosRecCuts->DefineHistos();
@@ -2075,6 +3016,125 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   fQADiJetHistosRecCuts->DefineQADiJetHistos();
   fQADiJetHistosGen->DefineQADiJetHistos();
 
+  // Background
+  if(fBckgMode){
+    fFFBckgNoJetHistosRecCuts->DefineHistos();
+    fFFBckgNoJetHistosRecLeading->DefineHistos();
+    fFFBckgNoJetHistosGen->DefineHistos();
+    fFFBckgNoJetHistosGenLeading->DefineHistos();
+    
+    fFFBckgHistosRecCuts->DefineHistos();
+    fFFBckgHistosRecLeading->DefineHistos();
+    fFFBckgHistosGen->DefineHistos();
+    fFFBckgHistosGenLeading->DefineHistos();
+    
+    fFFBckgLeadingHistosRecCuts->DefineHistos();
+    fFFBckgLeadingHistosRecLeading->DefineHistos();
+    fFFBckgLeadingHistosGen->DefineHistos();
+    fFFBckgLeadingHistosGenLeading->DefineHistos();
+    
+    fIJBckgNoJetHistosRecCuts->DefineHistos();
+    fIJBckgNoJetHistosRecLeading->DefineHistos();
+    fIJBckgNoJetHistosGen->DefineHistos();
+    fIJBckgNoJetHistosGenLeading->DefineHistos();
+    
+    fIJBckgHistosRecCuts->DefineHistos();
+    fIJBckgHistosRecLeading->DefineHistos();
+    fIJBckgHistosGen->DefineHistos();
+    fIJBckgHistosGenLeading->DefineHistos();
+    
+    fIJBckgLeadingHistosRecCuts->DefineHistos();
+    fIJBckgLeadingHistosRecLeading->DefineHistos();
+    fIJBckgLeadingHistosGen->DefineHistos();
+    fIJBckgLeadingHistosGenLeading->DefineHistos();
+    
+    fFFBckg2JetsHistosRecCuts->DefineHistos();
+    fFFBckg2JetsHistosRecLeading->DefineHistos();
+    fFFBckg2JetsHistosGen->DefineHistos();
+    fFFBckg2JetsHistosGenLeading->DefineHistos();
+    
+    fIJBckg2JetsHistosRecCuts->DefineHistos();
+    fIJBckg2JetsHistosRecLeading->DefineHistos();
+    fIJBckg2JetsHistosGen->DefineHistos();
+    fIJBckg2JetsHistosGenLeading->DefineHistos();
+    
+    fFFBckg3JetsHistosRecCuts->DefineHistos();
+    fFFBckg3JetsHistosRecLeading->DefineHistos();
+    fFFBckg3JetsHistosGen->DefineHistos();
+    fFFBckg3JetsHistosGenLeading->DefineHistos();
+    
+    fIJBckg3JetsHistosRecCuts->DefineHistos();
+    fIJBckg3JetsHistosRecLeading->DefineHistos();
+    fIJBckg3JetsHistosGen->DefineHistos();
+    fIJBckg3JetsHistosGenLeading->DefineHistos();
+    
+    fFFBckgPerpHistosRecCuts->DefineHistos();
+    fFFBckgPerpHistosRecLeading->DefineHistos();
+    fFFBckgPerpHistosGen->DefineHistos();
+    fFFBckgPerpHistosGenLeading->DefineHistos();
+    
+    fIJBckgPerpHistosRecCuts->DefineHistos();
+    fIJBckgPerpHistosRecLeading->DefineHistos();
+    fIJBckgPerpHistosGen->DefineHistos();
+    fIJBckgPerpHistosGenLeading->DefineHistos();
+    
+    fFFBckgHistosStatRecCuts->DefineHistos();
+    fFFBckgHistosStatRecLeading->DefineHistos();
+    fFFBckgHistosStatGen->DefineHistos();
+    fFFBckgHistosStatGenLeading->DefineHistos();
+    
+    fFFBckgLeadingHistosStatRecCuts->DefineHistos();
+    fFFBckgLeadingHistosStatRecLeading->DefineHistos();
+    fFFBckgLeadingHistosStatGen->DefineHistos();
+    fFFBckgLeadingHistosStatGenLeading->DefineHistos();
+    
+    fIJBckgHistosStatRecCuts->DefineHistos();
+    fIJBckgHistosStatRecLeading->DefineHistos();
+    fIJBckgHistosStatGen->DefineHistos();
+    fIJBckgHistosStatGenLeading->DefineHistos();
+    
+    fIJBckgLeadingHistosStatRecCuts->DefineHistos();
+    fIJBckgLeadingHistosStatRecLeading->DefineHistos();
+    fIJBckgLeadingHistosStatGen->DefineHistos();
+    fIJBckgLeadingHistosStatGenLeading->DefineHistos();
+    
+    fFFBckg2JetsHistosStatRecCuts->DefineHistos();
+    fFFBckg2JetsHistosStatRecLeading->DefineHistos();
+    fFFBckg2JetsHistosStatGen->DefineHistos();
+    fFFBckg2JetsHistosStatGenLeading->DefineHistos();
+
+    fIJBckg2JetsHistosStatRecCuts->DefineHistos();
+    fIJBckg2JetsHistosStatRecLeading->DefineHistos();
+    fIJBckg2JetsHistosStatGen->DefineHistos();
+    fIJBckg2JetsHistosStatGenLeading->DefineHistos();
+    
+    fFFBckg3JetsHistosStatRecCuts->DefineHistos();
+    fFFBckg3JetsHistosStatRecLeading->DefineHistos();
+    fFFBckg3JetsHistosStatGen->DefineHistos();
+    fFFBckg3JetsHistosStatGenLeading->DefineHistos();
+    
+    fIJBckg3JetsHistosStatRecCuts->DefineHistos();
+    fIJBckg3JetsHistosStatRecLeading->DefineHistos();
+    fIJBckg3JetsHistosStatGen->DefineHistos();
+    fIJBckg3JetsHistosStatGenLeading->DefineHistos();
+    
+    fQABckgNoJetTrackHistosRec->DefineHistos();
+    fQABckgNoJetTrackHistosRecCuts->DefineHistos();
+    fQABckgNoJetTrackHistosGen->DefineHistos();
+    fQABckgLeadingTrackHistosRec->DefineHistos();
+    fQABckgLeadingTrackHistosRecCuts->DefineHistos();
+    fQABckgLeadingTrackHistosGen->DefineHistos();
+    fQABckg2JetsTrackHistosRec->DefineHistos();
+    fQABckg2JetsTrackHistosRecCuts->DefineHistos();
+    fQABckg2JetsTrackHistosGen->DefineHistos();
+    fQABckg3JetsTrackHistosRec->DefineHistos();
+    fQABckg3JetsTrackHistosRecCuts->DefineHistos();
+    fQABckg3JetsTrackHistosGen->DefineHistos();
+    fQABckgPerpTrackHistosRec->DefineHistos();
+    fQABckgPerpTrackHistosRecCuts->DefineHistos();
+    fQABckgPerpTrackHistosGen->DefineHistos();
+  }
+  
   Bool_t genJets    = (fJetTypeGen != kJetsUndef) ? kTRUE : kFALSE;
   Bool_t genTracks  = (fTrackTypeGen != kTrackUndef) ? kTRUE : kFALSE;
   Bool_t recJetsEff = (fJetTypeRecEff != kJetsUndef) ? kTRUE : kFALSE;
@@ -2087,6 +3147,48 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
     fFFHistosRecLeading->AddToOutput(fCommonHistList);
     fFFHistosRecLeadingTrack->AddToOutput(fCommonHistList);
 
+    // Background
+    if(fBckgMode){
+      fFFBckgNoJetHistosRecCuts->AddToOutput(fCommonHistList);
+      fFFBckgNoJetHistosRecLeading->AddToOutput(fCommonHistList);
+      fFFBckgHistosRecCuts->AddToOutput(fCommonHistList);
+      fFFBckgHistosRecLeading->AddToOutput(fCommonHistList);
+      fFFBckgLeadingHistosRecCuts->AddToOutput(fCommonHistList);
+      fFFBckgLeadingHistosRecLeading->AddToOutput(fCommonHistList);
+      fFFBckg2JetsHistosRecCuts->AddToOutput(fCommonHistList);
+      fFFBckg2JetsHistosRecLeading->AddToOutput(fCommonHistList);
+      fFFBckg3JetsHistosRecCuts->AddToOutput(fCommonHistList);
+      fFFBckg3JetsHistosRecLeading->AddToOutput(fCommonHistList);
+      fFFBckgPerpHistosRecCuts->AddToOutput(fCommonHistList);
+      fFFBckgPerpHistosRecLeading->AddToOutput(fCommonHistList);
+      
+      fFFBckgHistosStatRecCuts->AddToOutput(fCommonHistList);
+      fFFBckgHistosStatRecLeading->AddToOutput(fCommonHistList);
+      fFFBckgLeadingHistosStatRecCuts->AddToOutput(fCommonHistList);
+      fFFBckgLeadingHistosStatRecLeading->AddToOutput(fCommonHistList);
+      fFFBckg2JetsHistosStatRecCuts->AddToOutput(fCommonHistList);
+      fFFBckg2JetsHistosStatRecLeading->AddToOutput(fCommonHistList);
+      fFFBckg3JetsHistosStatRecCuts->AddToOutput(fCommonHistList);
+      fFFBckg3JetsHistosStatRecLeading->AddToOutput(fCommonHistList);
+      
+      fQABckgNoJetTrackHistosRec->AddToOutput(fCommonHistList);
+      fQABckgNoJetTrackHistosRecCuts->AddToOutput(fCommonHistList);
+      fQABckgLeadingTrackHistosRec->AddToOutput(fCommonHistList);
+      fQABckgLeadingTrackHistosRecCuts->AddToOutput(fCommonHistList);
+      fQABckg2JetsTrackHistosRec->AddToOutput(fCommonHistList);
+      fQABckg2JetsTrackHistosRecCuts->AddToOutput(fCommonHistList);
+      fQABckg3JetsTrackHistosRec->AddToOutput(fCommonHistList);
+      fQABckg3JetsTrackHistosRecCuts->AddToOutput(fCommonHistList);
+      fQABckgPerpTrackHistosRec->AddToOutput(fCommonHistList);
+      fQABckgPerpTrackHistosRecCuts->AddToOutput(fCommonHistList);
+    }
+
+    fCommonHistList->Add(fh1OutLeadingMult);
+    fCommonHistList->Add(fh1PerpMult);
+    fCommonHistList->Add(fh1Out2JetsMult);
+    fCommonHistList->Add(fh1Out3JetsMult);
+
+
     if(genJets && genTracks){
        fFFHistosGen->AddToOutput(fCommonHistList);
        fFFHistosGenLeading->AddToOutput(fCommonHistList);
@@ -2096,6 +3198,37 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
        fCommonHistList->Add(fh1Trials);
        fCommonHistList->Add(fh1PtHard);
        fCommonHistList->Add(fh1PtHardTrials);
+
+       // Background
+       if(fBckgMode){
+	 fFFBckgNoJetHistosGen->AddToOutput(fCommonHistList);
+	 fFFBckgNoJetHistosGenLeading->AddToOutput(fCommonHistList);
+	 fFFBckgHistosGen->AddToOutput(fCommonHistList);
+	 fFFBckgHistosGenLeading->AddToOutput(fCommonHistList);
+	 fFFBckgLeadingHistosGen->AddToOutput(fCommonHistList);
+	 fFFBckgLeadingHistosGenLeading->AddToOutput(fCommonHistList);
+	 fFFBckg2JetsHistosGen->AddToOutput(fCommonHistList);
+	 fFFBckg2JetsHistosGenLeading->AddToOutput(fCommonHistList);
+	 fFFBckg3JetsHistosGen->AddToOutput(fCommonHistList);
+	 fFFBckg3JetsHistosGenLeading->AddToOutput(fCommonHistList);
+	 fFFBckgPerpHistosGen->AddToOutput(fCommonHistList);
+	 fFFBckgPerpHistosGenLeading->AddToOutput(fCommonHistList);
+	 
+	 fFFBckgHistosStatGen->AddToOutput(fCommonHistList);
+	 fFFBckgHistosStatGenLeading->AddToOutput(fCommonHistList);
+	 fFFBckgLeadingHistosStatGen->AddToOutput(fCommonHistList);
+	 fFFBckgLeadingHistosStatGenLeading->AddToOutput(fCommonHistList);
+	 fFFBckg2JetsHistosStatGen->AddToOutput(fCommonHistList);
+	 fFFBckg2JetsHistosStatGenLeading->AddToOutput(fCommonHistList);
+	 fFFBckg3JetsHistosStatGen->AddToOutput(fCommonHistList);
+	 fFFBckg3JetsHistosStatGenLeading->AddToOutput(fCommonHistList);
+	 
+	 fQABckgNoJetTrackHistosGen->AddToOutput(fCommonHistList);
+	 fQABckgLeadingTrackHistosGen->AddToOutput(fCommonHistList);
+	 fQABckg2JetsTrackHistosGen->AddToOutput(fCommonHistList);
+	 fQABckg3JetsTrackHistosGen->AddToOutput(fCommonHistList);
+	 fQABckgPerpTrackHistosGen->AddToOutput(fCommonHistList);
+       }
     }
   }
   if(saveLevel>1){
@@ -2126,10 +3259,60 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
     fIJHistosRecLeading->AddToOutput(fCommonHistList);
     fIJHistosRecLeadingTrack->AddToOutput(fCommonHistList);
 
+    // Background
+    if(fBckgMode){
+      fIJBckgNoJetHistosRecCuts->AddToOutput(fCommonHistList);
+      fIJBckgNoJetHistosRecLeading->AddToOutput(fCommonHistList);
+      fIJBckgHistosRecCuts->AddToOutput(fCommonHistList);
+      fIJBckgHistosRecLeading->AddToOutput(fCommonHistList);
+      fIJBckgLeadingHistosRecCuts->AddToOutput(fCommonHistList);
+      fIJBckgLeadingHistosRecLeading->AddToOutput(fCommonHistList);
+      fIJBckg2JetsHistosRecCuts->AddToOutput(fCommonHistList);
+      fIJBckg2JetsHistosRecLeading->AddToOutput(fCommonHistList);
+      fIJBckg3JetsHistosRecCuts->AddToOutput(fCommonHistList);
+      fIJBckg3JetsHistosRecLeading->AddToOutput(fCommonHistList);
+      fIJBckgPerpHistosRecCuts->AddToOutput(fCommonHistList);
+      fIJBckgPerpHistosRecLeading->AddToOutput(fCommonHistList);
+      
+      fIJBckgHistosStatRecCuts->AddToOutput(fCommonHistList);
+      fIJBckgHistosStatRecLeading->AddToOutput(fCommonHistList);
+      fIJBckgLeadingHistosStatRecCuts->AddToOutput(fCommonHistList);
+      fIJBckgLeadingHistosStatRecLeading->AddToOutput(fCommonHistList);
+      fIJBckg2JetsHistosStatRecCuts->AddToOutput(fCommonHistList);
+      fIJBckg2JetsHistosStatRecLeading->AddToOutput(fCommonHistList);
+      fIJBckg3JetsHistosStatRecCuts->AddToOutput(fCommonHistList);
+      fIJBckg3JetsHistosStatRecLeading->AddToOutput(fCommonHistList);
+    }
+
     if(genJets && genTracks){
        fIJHistosGen->AddToOutput(fCommonHistList);
        fIJHistosGenLeading->AddToOutput(fCommonHistList);
        fIJHistosGenLeadingTrack->AddToOutput(fCommonHistList);
+
+       // Background
+       if(fBckgMode){
+	 fIJBckgNoJetHistosGen->AddToOutput(fCommonHistList);
+	 fIJBckgNoJetHistosGenLeading->AddToOutput(fCommonHistList);
+	 fIJBckgHistosGen->AddToOutput(fCommonHistList);
+	 fIJBckgHistosGenLeading->AddToOutput(fCommonHistList);
+	 fIJBckgLeadingHistosGen->AddToOutput(fCommonHistList);
+	 fIJBckgLeadingHistosGenLeading->AddToOutput(fCommonHistList);
+	 fIJBckg2JetsHistosGen->AddToOutput(fCommonHistList);
+	 fIJBckg2JetsHistosGenLeading->AddToOutput(fCommonHistList);
+	 fIJBckg3JetsHistosGen->AddToOutput(fCommonHistList);
+	 fIJBckg3JetsHistosGenLeading->AddToOutput(fCommonHistList);
+	 fIJBckgPerpHistosGen->AddToOutput(fCommonHistList);
+	 fIJBckgPerpHistosGenLeading->AddToOutput(fCommonHistList);
+	 
+	 fIJBckgHistosStatGen->AddToOutput(fCommonHistList);
+	 fIJBckgHistosStatGenLeading->AddToOutput(fCommonHistList);
+	 fIJBckgLeadingHistosStatGen->AddToOutput(fCommonHistList);
+	 fIJBckgLeadingHistosStatGenLeading->AddToOutput(fCommonHistList);
+	 fIJBckg2JetsHistosStatGen->AddToOutput(fCommonHistList);
+	 fIJBckg2JetsHistosStatGenLeading->AddToOutput(fCommonHistList);
+	 fIJBckg3JetsHistosStatGen->AddToOutput(fCommonHistList);
+	 fIJBckg3JetsHistosStatGenLeading->AddToOutput(fCommonHistList);
+       }
     }
   }
   if(saveLevel>4){
@@ -2197,7 +3380,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
       return;
     }
   }
-  
+
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fESD){
     if(fDebug>3) Printf("%s:%d ESDEvent not found in the input", (char*)__FILE__,__LINE__);
@@ -2381,6 +3564,26 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     fQAJetHistosRec->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
   }
   
+  // List of tracks outside jets for background study
+  TList* tracklistout2jets     = new TList();
+  TList* tracklistout3jets     = new TList();
+  TList* tracklistout2jetsStat = new TList();
+  TList* tracklistout3jetsStat = new TList();
+  Double_t sumPtOut2Jets       = 0.;
+  Double_t sumPtOut3Jets       = 0.;
+  Double_t sumPtOut2JetsStat   = 0.;
+  Double_t sumPtOut3JetsStat   = 0.;
+  Double_t normFactor2Jets     = 0.;
+  Double_t normFactor3Jets     = 0.;
+
+  if(fBckgMode && nRecJetsCuts>1) {
+    GetOutNJetsTracks(2,fTracksRecCuts, tracklistout2jets, fJetsRecCuts, GetFFBckgRadius(), sumPtOut2Jets);
+    GetOutNJetsTracksStat(2,fTracksRecCuts, tracklistout2jetsStat, fJetsRecCuts, GetFFBckgRadius(), sumPtOut2JetsStat, normFactor2Jets);
+  }
+  if(fBckgMode && nRecJetsCuts>2) {
+    GetOutNJetsTracks(3,fTracksRecCuts, tracklistout3jets, fJetsRecCuts, GetFFBckgRadius(), sumPtOut3Jets);
+    GetOutNJetsTracksStat(3,fTracksRecCuts, tracklistout3jetsStat, fJetsRecCuts, GetFFBckgRadius(), sumPtOut3JetsStat, normFactor3Jets);
+  }
 
   for(Int_t ij=0; ij<nRecJetsCuts; ++ij){
 
@@ -2424,8 +3627,8 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
 	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	
-	fFFHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt);
-	fIJHistosRecCuts->FillIntraJet( trackV, jetV );
+	fFFHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt, 0);
+	fIJHistosRecCuts->FillIntraJet( trackV, jetV, 0);
 	
 	if(it==0){ 
 	  leadTrackPx = trackPx;
@@ -2433,23 +3636,329 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	  leadTrackPz = trackPz;
 	  leadTrackP  = trackP;
 	  leadTrackPt = trackPt;
-	  fFFHistosRecLeadingTrack->FillFF( leadTrackPt, jetPt, kTRUE);
+	  fFFHistosRecLeadingTrack->FillFF( leadTrackPt, jetPt, kTRUE, 0);
 
 	  leadTrackV->SetPxPyPzE(leadTrackPx,leadTrackPy,leadTrackPz,leadTrackP);
-	  fIJHistosRecLeadingTrack->FillIntraJet( leadTrackV, jetV );
+	  fIJHistosRecLeadingTrack->FillIntraJet( leadTrackV, jetV, 0);
 	}
-	fFFHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt);
-	fIJHistosRecLeading->FillIntraJet( trackV, leadTrackV );
+	fFFHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, 0);
+	fIJHistosRecLeading->FillIntraJet( trackV, leadTrackV, 0);
 
 	delete trackV;
 	delete jetV;
       }
+
+      // ff and ij for background study
+      if(fBckgMode){
+	TList* tracklistoutleading       = new TList();
+	TList* tracklistoutleadingStat   = new TList();
+	Double_t sumPtOutLeading     = 0.; 
+	Double_t sumPtOutLeadingStat = 0.; 
+	Double_t normFactorLeading   = 0.;
+	GetOutNJetsTracks(1,fTracksRecCuts, tracklistoutleading, fJetsRecCuts, GetFFBckgRadius(), sumPtOutLeading);
+	GetOutNJetsTracksStat(1,fTracksRecCuts, tracklistoutleadingStat, fJetsRecCuts, GetFFBckgRadius(), sumPtOutLeadingStat, normFactorLeading);
+	fh1OutLeadingMult->Fill(tracklistoutleading->GetSize());
+
+	for(Int_t it=0; it<tracklistoutleading->GetSize(); ++it){
+	  Float_t trackPx = (dynamic_cast<AliVParticle*> (tracklistoutleading->At(it)))->Px();
+	  Float_t trackPy = (dynamic_cast<AliVParticle*> (tracklistoutleading->At(it)))->Py();
+	  Float_t trackPz = (dynamic_cast<AliVParticle*> (tracklistoutleading->At(it)))->Pz();
+	  Float_t trackP = (dynamic_cast<AliVParticle*> (tracklistoutleading->At(it)))->P();
+	  Float_t trackPt = (dynamic_cast<AliVParticle*> (tracklistoutleading->At(it)))->Pt();
+	  Float_t trackEta = (dynamic_cast<AliVParticle*> (tracklistoutleading->At(it)))->Eta();
+	  Float_t trackPhi = (dynamic_cast<AliVParticle*> (tracklistoutleading->At(it)))->Phi();
+	  Float_t jetPx = jet->Px();
+	  Float_t jetPy = jet->Py();
+	  Float_t jetPz = jet->Pz();
+	  Float_t jetP  = jet->P();
+	  Float_t jetPt = jet->Pt();
+	  TLorentzVector* trackV = new TLorentzVector();
+	  TLorentzVector *jetV = new TLorentzVector();
+	  trackV->SetPxPyPzE(trackPx,trackPy,trackPz,trackP);
+	  jetV->SetPxPyPzE(jetPx,jetPy,jetPz,jetP);
+	  
+	  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	  
+	  fFFBckgLeadingHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt, 0);
+	  fIJBckgLeadingHistosRecCuts->FillIntraJet( trackV, jetV, 0 );
+	
+	  fFFBckgLeadingHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, 0);
+	  fIJBckgLeadingHistosRecLeading->FillIntraJet( trackV, leadTrackV, 0 );
+	  
+	  // Fill track QA for background
+	  fQABckgLeadingTrackHistosRecCuts->FillTrackQA( trackEta, TVector2::Phi_0_2pi(trackPhi), trackPt);
+	  
+	  // All cases included
+	  if(nRecJetsCuts==1){
+	    fFFBckgHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt, 0);
+	    fIJBckgHistosRecCuts->FillIntraJet( trackV, jetV, 0 );
+	    
+	    fFFBckgHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, 0);
+	    fIJBckgHistosRecLeading->FillIntraJet( trackV, leadTrackV, 0 );
+	  }
+	  
+	  delete trackV;
+	  delete jetV;
+	}
+
+	for(Int_t it=0; it<tracklistoutleadingStat->GetSize(); ++it){
+	  Float_t trackPx = (dynamic_cast<AliVParticle*> (tracklistoutleadingStat->At(it)))->Px();
+	  Float_t trackPy = (dynamic_cast<AliVParticle*> (tracklistoutleadingStat->At(it)))->Py();
+	  Float_t trackPz = (dynamic_cast<AliVParticle*> (tracklistoutleadingStat->At(it)))->Pz();
+	  Float_t trackP = (dynamic_cast<AliVParticle*> (tracklistoutleadingStat->At(it)))->P();
+	  Float_t trackPt = (dynamic_cast<AliVParticle*> (tracklistoutleadingStat->At(it)))->Pt();
+	  Float_t jetPx = jet->Px();
+	  Float_t jetPy = jet->Py();
+	  Float_t jetPz = jet->Pz();
+	  Float_t jetP  = jet->P();
+	  Float_t jetPt = jet->Pt();
+	  TLorentzVector* trackV = new TLorentzVector();
+	  TLorentzVector *jetV = new TLorentzVector();
+	  trackV->SetPxPyPzE(trackPx,trackPy,trackPz,trackP);
+	  jetV->SetPxPyPzE(jetPx,jetPy,jetPz,jetP);
+	  
+	  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	  
+	  // Stat plots
+	  fFFBckgLeadingHistosStatRecCuts->FillFF( trackPt, jetPt, incrementJetPt, normFactorLeading);
+	  fIJBckgLeadingHistosStatRecCuts->FillIntraJet( trackV, jetV, normFactorLeading);
+	  
+	  fFFBckgLeadingHistosStatRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, normFactorLeading);
+	  fIJBckgLeadingHistosStatRecLeading->FillIntraJet( trackV, leadTrackV, normFactorLeading);
+	
+	  // Fill track QA for background
+	  //fQABckgLeadingTrackHistosRecCuts->FillTrackQA( trackEta, TVector2::Phi_0_2pi(trackPhi), trackPt);
+	  
+	  // All cases included
+	  if(nRecJetsCuts==1){
+	    fFFBckgHistosStatRecCuts->FillFF( trackPt, jetPt, incrementJetPt, normFactorLeading);
+	    fIJBckgHistosStatRecCuts->FillIntraJet( trackV, jetV, normFactorLeading );
+	    
+	    fFFBckgHistosStatRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, normFactorLeading);
+	    fIJBckgHistosStatRecLeading->FillIntraJet( trackV, leadTrackV, normFactorLeading );
+	  }
+	  
+	  delete trackV;
+	  delete jetV;
+	}
+	
+	Double_t sumPtPerp = 0.;
+	TList* tracklistperp = new TList();
+	GetOutPerpJetTracks(fTracksRecCuts,tracklistperp,jet,GetFFRadius(),sumPtPerp);
+	fh1PerpMult->Fill(tracklistperp->GetSize());
+	
+	for(Int_t it=0; it<tracklistperp->GetSize(); ++it){
+	  Float_t trackPx = (dynamic_cast<AliVParticle*> (tracklistperp->At(it)))->Px();
+	  Float_t trackPy = (dynamic_cast<AliVParticle*> (tracklistperp->At(it)))->Py();
+	  Float_t trackPz = (dynamic_cast<AliVParticle*> (tracklistperp->At(it)))->Pz();
+	  Float_t trackP = (dynamic_cast<AliVParticle*> (tracklistperp->At(it)))->P();
+	  Float_t trackPt = (dynamic_cast<AliVParticle*> (tracklistperp->At(it)))->Pt();
+	  Float_t trackEta = (dynamic_cast<AliVParticle*> (tracklistperp->At(it)))->Eta();
+	  Float_t trackPhi = (dynamic_cast<AliVParticle*> (tracklistperp->At(it)))->Phi();
+	  Float_t jetPx = jet->Px();
+	  Float_t jetPy = jet->Py();
+	  Float_t jetPz = jet->Pz();
+	  Float_t jetP  = jet->P();
+	  Float_t jetPt = jet->Pt();
+	  TLorentzVector* trackV = new TLorentzVector();
+	  TLorentzVector *jetV = new TLorentzVector();
+	  trackV->SetPxPyPzE(trackPx,trackPy,trackPz,trackP);
+	  jetV->SetPxPyPzE(jetPx,jetPy,jetPz,jetP);
+	  
+	  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	  
+	  fFFBckgPerpHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt, 0);
+	  fIJBckgPerpHistosRecCuts->FillIntraJet( trackV, jetV, 0 );
+	  
+	  fFFBckgPerpHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, 0);
+	  fIJBckgPerpHistosRecLeading->FillIntraJet( trackV, leadTrackV , 0);
+	  
+	  // Fill track QA for background
+	  fQABckgPerpTrackHistosRecCuts->FillTrackQA( trackEta, TVector2::Phi_0_2pi(trackPhi), trackPt);
+	  
+	  delete trackV;
+	  delete jetV;
+	}
+
+	fh1Out2JetsMult->Fill(tracklistout2jets->GetSize());
+	for(Int_t it=0; it<tracklistout2jets->GetSize(); ++it){
+	  Float_t trackPx = (dynamic_cast<AliVParticle*> (tracklistout2jets->At(it)))->Px();
+	  Float_t trackPy = (dynamic_cast<AliVParticle*> (tracklistout2jets->At(it)))->Py();
+	  Float_t trackPz = (dynamic_cast<AliVParticle*> (tracklistout2jets->At(it)))->Pz();
+	  Float_t trackP = (dynamic_cast<AliVParticle*> (tracklistout2jets->At(it)))->P();
+	  Float_t trackPt = (dynamic_cast<AliVParticle*> (tracklistout2jets->At(it)))->Pt();
+	  Float_t trackEta = (dynamic_cast<AliVParticle*> (tracklistout2jets->At(it)))->Eta();
+	  Float_t trackPhi = (dynamic_cast<AliVParticle*> (tracklistout2jets->At(it)))->Phi();
+	  Float_t jetPx = jet->Px();
+	  Float_t jetPy = jet->Py();
+	  Float_t jetPz = jet->Pz();
+	  Float_t jetP  = jet->P();
+	  Float_t jetPt = jet->Pt();
+	  TLorentzVector* trackV = new TLorentzVector();
+	  TLorentzVector *jetV = new TLorentzVector();
+	  trackV->SetPxPyPzE(trackPx,trackPy,trackPz,trackP);
+	  jetV->SetPxPyPzE(jetPx,jetPy,jetPz,jetP);
+	  
+	  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	  
+	  fFFBckg2JetsHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt, 0);
+	  fIJBckg2JetsHistosRecCuts->FillIntraJet( trackV, jetV, 0 );
+	  
+	  fFFBckg2JetsHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, 0);
+	  fIJBckg2JetsHistosRecLeading->FillIntraJet( trackV, leadTrackV, 0 );
+	  
+	  fQABckg2JetsTrackHistosRecCuts->FillTrackQA( trackEta, TVector2::Phi_0_2pi(trackPhi), trackPt);
+	
+	  // All cases included
+	  if(nRecJetsCuts==2){
+	    fFFBckgHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt, 0);
+	    fIJBckgHistosRecCuts->FillIntraJet( trackV, jetV, 0 );
+	    
+	    fFFBckgHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, 0);
+	    fIJBckgHistosRecLeading->FillIntraJet( trackV, leadTrackV, 0 );
+	  }
+	  
+	  delete trackV;
+	  delete jetV;
+	}
+
+	for(Int_t it=0; it<tracklistout2jetsStat->GetSize(); ++it){
+	  Float_t trackPx = (dynamic_cast<AliVParticle*> (tracklistout2jetsStat->At(it)))->Px();
+	  Float_t trackPy = (dynamic_cast<AliVParticle*> (tracklistout2jetsStat->At(it)))->Py();
+	  Float_t trackPz = (dynamic_cast<AliVParticle*> (tracklistout2jetsStat->At(it)))->Pz();
+	  Float_t trackP = (dynamic_cast<AliVParticle*> (tracklistout2jetsStat->At(it)))->P();
+	  Float_t trackPt = (dynamic_cast<AliVParticle*> (tracklistout2jetsStat->At(it)))->Pt();
+	  Float_t jetPx = jet->Px();
+	  Float_t jetPy = jet->Py();
+	  Float_t jetPz = jet->Pz();
+	  Float_t jetP  = jet->P();
+	  Float_t jetPt = jet->Pt();
+	  TLorentzVector* trackV = new TLorentzVector();
+	  TLorentzVector *jetV = new TLorentzVector();
+	  trackV->SetPxPyPzE(trackPx,trackPy,trackPz,trackP);
+	  jetV->SetPxPyPzE(jetPx,jetPy,jetPz,jetP);
+	  
+	  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	  
+	  fFFBckg2JetsHistosStatRecCuts->FillFF( trackPt, jetPt, incrementJetPt, normFactor2Jets);
+	  fIJBckg2JetsHistosStatRecCuts->FillIntraJet( trackV, jetV, normFactor2Jets );
+	  
+	  fFFBckg2JetsHistosStatRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, normFactor2Jets);
+	  fIJBckg2JetsHistosStatRecLeading->FillIntraJet( trackV, leadTrackV, normFactor2Jets );
+	  
+	  //fQABckg2JetsTrackHistosRecCuts->FillTrackQA( trackEta, TVector2::Phi_0_2pi(trackPhi), trackPt);
+	
+	  // All cases included
+	  if(nRecJetsCuts==2){
+	    fFFBckgHistosStatRecCuts->FillFF( trackPt, jetPt, incrementJetPt, normFactor2Jets);
+	    fIJBckgHistosStatRecCuts->FillIntraJet( trackV, jetV, normFactor2Jets );
+	    
+	    fFFBckgHistosStatRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, normFactor2Jets);
+	    fIJBckgHistosStatRecLeading->FillIntraJet( trackV, leadTrackV, normFactor2Jets );
+	  }
+	  
+	  delete trackV;
+	  delete jetV;
+	}
+	
+	fh1Out3JetsMult->Fill(tracklistout3jets->GetSize());
       
+	for(Int_t it=0; it<tracklistout3jets->GetSize(); ++it){
+	  Float_t trackPx = (dynamic_cast<AliVParticle*> (tracklistout3jets->At(it)))->Px();
+	  Float_t trackPy = (dynamic_cast<AliVParticle*> (tracklistout3jets->At(it)))->Py();
+	  Float_t trackPz = (dynamic_cast<AliVParticle*> (tracklistout3jets->At(it)))->Pz();
+	  Float_t trackP = (dynamic_cast<AliVParticle*> (tracklistout3jets->At(it)))->P();
+	  Float_t trackPt = (dynamic_cast<AliVParticle*> (tracklistout3jets->At(it)))->Pt();
+	  Float_t trackEta = (dynamic_cast<AliVParticle*> (tracklistout3jets->At(it)))->Eta();
+	  Float_t trackPhi = (dynamic_cast<AliVParticle*> (tracklistout3jets->At(it)))->Phi();
+	  Float_t jetPx = jet->Px();
+	  Float_t jetPy = jet->Py();
+	  Float_t jetPz = jet->Pz();
+	  Float_t jetP  = jet->P();
+	  Float_t jetPt = jet->Pt();
+	  TLorentzVector* trackV = new TLorentzVector();
+	  TLorentzVector *jetV = new TLorentzVector();
+	  trackV->SetPxPyPzE(trackPx,trackPy,trackPz,trackP);
+	  jetV->SetPxPyPzE(jetPx,jetPy,jetPz,jetP);
+	  
+	  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	
+	  fFFBckg3JetsHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt, 0);
+	  fIJBckg3JetsHistosRecCuts->FillIntraJet( trackV, jetV, 0 );
+	  
+	  fFFBckg3JetsHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, 0);
+	  fIJBckg3JetsHistosRecLeading->FillIntraJet( trackV, leadTrackV, 0 );
+	  
+	  fQABckg3JetsTrackHistosRecCuts->FillTrackQA( trackEta, TVector2::Phi_0_2pi(trackPhi), trackPt);
+	  
+	  // All cases included
+	  if(nRecJetsCuts==3){
+	    fFFBckgHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt, 0);
+	    fIJBckgHistosRecCuts->FillIntraJet( trackV, jetV, 0 );
+	    
+	    fFFBckgHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt, 0);
+	    fIJBckgHistosRecLeading->FillIntraJet( trackV, leadTrackV, 0 );
+	  }
+	  
+	  delete trackV;
+	  delete jetV;
+	  
+      }
+	
+	for(Int_t it=0; it<tracklistout3jetsStat->GetSize(); ++it){
+	  Float_t trackPx = (dynamic_cast<AliVParticle*> (tracklistout3jetsStat->At(it)))->Px();
+	  Float_t trackPy = (dynamic_cast<AliVParticle*> (tracklistout3jetsStat->At(it)))->Py();
+	  Float_t trackPz = (dynamic_cast<AliVParticle*> (tracklistout3jetsStat->At(it)))->Pz();
+	  Float_t trackP = (dynamic_cast<AliVParticle*> (tracklistout3jetsStat->At(it)))->P();
+	  Float_t trackPt = (dynamic_cast<AliVParticle*> (tracklistout3jetsStat->At(it)))->Pt();
+	  Float_t jetPx = jet->Px();
+	  Float_t jetPy = jet->Py();
+	  Float_t jetPz = jet->Pz();
+	  Float_t jetP  = jet->P();
+	  Float_t jetPt = jet->Pt();
+	  TLorentzVector* trackV = new TLorentzVector();
+	  TLorentzVector *jetV = new TLorentzVector();
+	  trackV->SetPxPyPzE(trackPx,trackPy,trackPz,trackP);
+	  jetV->SetPxPyPzE(jetPx,jetPy,jetPz,jetP);
+	
+	  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	  
+	  fFFBckg3JetsHistosStatRecCuts->FillFF( trackPt, jetPt, incrementJetPt,normFactor3Jets);
+	  fIJBckg3JetsHistosStatRecCuts->FillIntraJet( trackV, jetV, normFactor3Jets);
+	  
+	  fFFBckg3JetsHistosStatRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt,normFactor3Jets);
+	  fIJBckg3JetsHistosStatRecLeading->FillIntraJet( trackV, leadTrackV, normFactor3Jets);
+	  
+	  //	fQABckg3JetsTrackHistosRecCuts->FillTrackQA( trackEta, TVector2::Phi_0_2pi(trackPhi), trackPt);
+	  
+	  // All cases included
+	  if(nRecJetsCuts==3){
+	    fFFBckgHistosStatRecCuts->FillFF( trackPt, jetPt, incrementJetPt,normFactor3Jets);
+	    fIJBckgHistosStatRecCuts->FillIntraJet( trackV, jetV, normFactor3Jets);
+	    
+	    fFFBckgHistosStatRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt,normFactor3Jets);
+	    fIJBckgHistosStatRecLeading->FillIntraJet( trackV, leadTrackV,normFactor3Jets );
+	  }
+
+	  delete trackV;
+	  delete jetV;
+	
+	}
+	
+	delete tracklistoutleading;
+	delete tracklistoutleadingStat;
+	delete tracklistperp;
+      } // end if(fBckgMode)
+
       delete leadTrackV;
       delete jettracklist;
     }
   }
-	
+
+  delete tracklistout2jets;
+  delete tracklistout3jets;
+  delete tracklistout2jetsStat;
+  delete tracklistout3jetsStat;
 
   for(Int_t ij=0; ij<nGenJets; ++ij){
 
@@ -2493,8 +4002,8 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
 	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 
-	fFFHistosGen->FillFF( trackPt, jetPt, incrementJetPt);
-	fIJHistosGen->FillIntraJet( trackV, jetV );
+	fFFHistosGen->FillFF( trackPt, jetPt, incrementJetPt, 0);
+	fIJHistosGen->FillIntraJet( trackV, jetV, 0);
 	
 	if(it==0){ 
 	  leadTrackPx = trackPx;
@@ -2502,13 +4011,13 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	  leadTrackPz = trackPz;
 	  leadTrackP  = trackP;
 	  leadTrackPt = trackPt;
-	  fFFHistosGenLeadingTrack->FillFF( leadTrackPt, jetPt, kTRUE);
+	  fFFHistosGenLeadingTrack->FillFF( leadTrackPt, jetPt, kTRUE, 0);
 
 	  leadTrackV->SetPxPyPzE(leadTrackPx,leadTrackPy,leadTrackPz,leadTrackP);
-	  fIJHistosGenLeadingTrack->FillIntraJet( leadTrackV, jetV );
+	  fIJHistosGenLeadingTrack->FillIntraJet( leadTrackV, jetV, 0);
 	}
-	fFFHistosGenLeading->FillFF( trackPt, leadTrackPt, incrementJetPt);
-	fIJHistosGenLeading->FillIntraJet( trackV, leadTrackV );
+	fFFHistosGenLeading->FillFF( trackPt, leadTrackPt, incrementJetPt, 0);
+	fIJHistosGenLeading->FillIntraJet( trackV, leadTrackV, 0);
 
 	delete trackV;
 	delete jetV;
@@ -3402,4 +4911,247 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackRecEffHisto(THnSparse*
     Double_t entries[8] = {jetPhi,jetEta,jetPtGen,jetPtRec,ptGen,z,xi,isRec};
     histo->Fill(entries);
   }
+}
+
+// ________________________________________________________________________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::GetOutPerpJetTracks(TList* inputlist, TList* outputlist, AliAODJet* jet, Double_t radius,Double_t& sumPt)
+{
+  // List of tracks in cone perpendicular to the jet azimuthal direction
+
+  Double_t jetMom[3];
+  jet->PxPyPz(jetMom);
+  TVector3 jet3mom(jetMom);
+  // Rotate phi and keep eta unchanged
+  Double_t ptPerp = jet3mom.Pt();
+  Double_t etaPerp = jet3mom.Eta();
+  Double_t phiPerp = TVector2::Phi_0_2pi(jet3mom.Phi()) + TMath::Pi()/2;
+  if(phiPerp > 2*TMath::Pi()) phiPerp = phiPerp - 2*TMath::Pi();
+  TVector3 vPerp;
+  vPerp.SetPtEtaPhi(ptPerp,etaPerp,phiPerp);
+
+  // Take orthogonal vector to jet direction
+  // TVector3 vPerp(jet3mom.Orthogonal());
+
+  for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){
+
+    AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
+
+    Double_t trackMom[3];
+    track->PxPyPz(trackMom);
+    TVector3 track3mom(trackMom);
+
+    Double_t dR = vPerp.DeltaR(track3mom);
+    if(dR<=radius){
+      outputlist->Add(track);
+      sumPt += track->Pt();
+    }
+  }
+
+}
+
+// ________________________________________________________________________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::GetOutNJetsTracks(Int_t nCases, TList* inputlist, TList* outputlist, TList* jetlist, const Double_t radius,Double_t& sumPt)
+{
+  // List of tracks outside cone around N jet axis  
+  // Particles taken randomly
+
+  sumPt = 0;
+  //  Int_t   nj  = jetlist->GetSize();
+  Float_t rc  = GetFFRadius();
+  Float_t rcl = GetFFBckgRadius();
+
+  // Estimate jet and background areas
+  Float_t* areaJet = new Float_t[nCases];
+  Float_t* areaJetLarge = new Float_t[nCases];
+  Float_t areaFull = (fTrackEtaMax-fTrackEtaMin)*(fTrackPhiMax-fTrackPhiMin);
+  Float_t areaOut = areaFull;
+
+  //estimate jets and background areas
+  Int_t nOut = 0;
+  Int_t ijet = 0;
+  TList* templist = new TList();
+  TClonesArray *vect3Jet = new TClonesArray("TVector3",nCases);
+
+  for(Int_t ij=0; ij<nCases; ++ij) 
+    {
+      // Get jet information
+      AliAODJet* jet = dynamic_cast<AliAODJet*>(jetlist->At(ij));
+      TVector3 jet3mom;
+      jet3mom.SetPtEtaPhi(jet->Pt(),jet->Eta(),jet->Phi());
+      new((*vect3Jet)[ijet]) TVector3((TVector3)jet3mom);
+      Float_t etaJet = (Float_t)((TVector3*) vect3Jet->At(ij))->Eta();
+
+      // Jet area
+      areaJet[ij] = CalcJetArea(etaJet,rc);
+
+      // Area jet larger angle
+      areaJetLarge[ij] = CalcJetArea(etaJet,rcl);
+
+      // Outside jet area
+      areaOut = areaOut - areaJetLarge[ij];
+      ijet++;
+    }
+
+  // List of all tracks outside jet areas
+  for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){
+    
+    AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
+    
+    Double_t trackMom[3];
+    track->PxPyPz(trackMom);
+    TVector3 track3mom(trackMom);
+    
+    Double_t *dR = new Double_t[nCases];
+    for(Int_t ij=0; ij<nCases; ij++)
+	dR[ij] = (Double_t)((TVector3*) vect3Jet->At(ij))->DeltaR(track3mom);
+
+    if((nCases==1 && (dR[0]>rcl)) ||
+       (nCases==2 && (dR[0]>rcl && dR[1]>rcl)) ||
+       (nCases==3 && (dR[0]>rcl && dR[1]>rcl && dR[2]>rcl)))
+      {
+	templist->Add(track);
+	nOut++;
+      }
+    delete [] dR;
+  }
+
+  Int_t nScaled = (Int_t) (nOut * areaJet[0] / areaOut + 0.5); 
+
+  TRandom* rd = new TRandom();
+
+  Int_t* t = new Int_t[nScaled];
+  for(Int_t i = 0; i < nScaled; i++)
+    t[i] = -1;
+
+  // Take randomly nScaled particles out of nOut and fill the list
+  for (Int_t it=0; it<nScaled; it++)
+    {
+      rd->SetSeed(0);
+      Int_t temp = rd->Integer(nOut);
+
+      Bool_t ok = 1;
+      for(Int_t j=0; j<nScaled; j++)
+        {
+          if(temp==t[j])
+            {
+              ok = 0;
+              break;
+            }
+        }
+
+      if(ok) 
+	{ 
+	  t[it] = temp;
+	  AliVParticle* track = dynamic_cast<AliVParticle*>(templist->At(temp));
+	  outputlist->Add(track);
+	  sumPt += track->Pt();
+	}
+  }
+
+  outputlist->Sort();
+
+  delete rd;
+  delete [] t;
+  delete vect3Jet;
+  delete templist;
+  delete [] areaJetLarge;
+  delete [] areaJet;
+
+}
+
+// ________________________________________________________________________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::GetOutNJetsTracksStat(Int_t nCases, TList* inputlist, TList* outputlist, TList* jetlist, const Double_t radius,Double_t& sumPt, Double_t &normFactor)
+{
+  // List of tracks outside cone around N jet axis  
+  // All particles taken + final scaling factor 
+
+  sumPt = 0;
+  Float_t rc  = GetFFRadius();
+  Float_t rcl = GetFFBckgRadius();
+
+  // Estimate jet and background areas
+  Float_t* areaJet = new Float_t[nCases];
+  Float_t* areaJetLarge = new Float_t[nCases];
+  Float_t areaFull = (fTrackEtaMax-fTrackEtaMin)*(fTrackPhiMax-fTrackPhiMin);
+  Float_t areaOut = areaFull;
+
+  //estimate jets and background areas
+  Int_t nOut = 0;
+  Int_t ijet = 0;
+  TClonesArray *vect3Jet = new TClonesArray("TVector3",nCases);
+
+  for(Int_t ij=0; ij<nCases; ++ij) 
+    {
+      // Get jet information
+      AliAODJet* jet = dynamic_cast<AliAODJet*>(jetlist->At(ij));
+      TVector3 jet3mom;
+      jet3mom.SetPtEtaPhi(jet->Pt(),jet->Eta(),jet->Phi());
+      new((*vect3Jet)[ijet]) TVector3((TVector3)jet3mom);
+      Float_t etaJet = (Float_t)((TVector3*) vect3Jet->At(ij))->Eta();
+
+      // Jet area
+      areaJet[ij] = CalcJetArea(etaJet,rc);
+
+      // Area jet larger angle
+      areaJetLarge[ij] = CalcJetArea(etaJet,rcl);
+
+      // Outside jets area
+      areaOut = areaOut - areaJetLarge[ij];
+      ijet++;
+    }
+
+  for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){
+    
+    AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
+    
+    Double_t trackMom[3];
+    track->PxPyPz(trackMom);
+    TVector3 track3mom(trackMom);
+    
+    Double_t *dR = new Double_t[nCases];
+    for(Int_t ij=0; ij<nCases; ij++)
+	dR[ij] = (Double_t)((TVector3*) vect3Jet->At(ij))->DeltaR(track3mom);
+
+    if((nCases==0) ||
+       (nCases==1 && (dR[0]>rcl)) ||
+       (nCases==2 && (dR[0]>rcl && dR[1]>rcl)) ||
+       (nCases==3 && (dR[0]>rcl && dR[1]>rcl && dR[2]>rcl)))
+      {
+	outputlist->Add(track);
+	sumPt += track->Pt();
+	nOut++;
+      }
+    delete [] dR;
+  }
+
+  if(nCases==0) areaJet[0] = TMath::Pi()*rc*rc;
+  normFactor = (Float_t) 1./(areaJet[0] / areaOut); 
+
+  outputlist->Sort();
+
+  delete vect3Jet;
+  delete [] areaJetLarge;
+  delete [] areaJet;
+
+}
+
+// ______________________________________________________________________________________________________________________________________________________
+Float_t AliAnalysisTaskFragmentationFunction::CalcJetArea(Float_t etaJet, Float_t rc)
+{
+
+  Float_t detamax = etaJet + rc;
+  Float_t detamin = etaJet - rc;
+  Float_t accmax = 0.0; Float_t accmin = 0.0;
+  if(detamax > fTrackEtaMax){ // sector outside etamax
+    Float_t h = fTrackEtaMax - etaJet;
+    accmax = rc*rc*TMath::ACos(h/rc) - h*TMath::Sqrt(rc*rc - h*h);
+  }
+  if(detamin < fTrackEtaMin){ // sector outside etamin
+    Float_t h = fTrackEtaMax + etaJet;
+    accmin = rc*rc*TMath::ACos(h/rc) - h*TMath::Sqrt(rc*rc - h*h);
+  }
+  Float_t areaJet = rc*rc*TMath::Pi() - accmax - accmin;
+  
+  return areaJet;
+
 }

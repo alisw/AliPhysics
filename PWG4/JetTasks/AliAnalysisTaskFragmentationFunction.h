@@ -40,7 +40,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     virtual ~AliFragFuncHistos();
     
     virtual void DefineHistos();
-    virtual void FillFF(Float_t trackPt, Float_t jetPt,Bool_t incrementJetPt);
+    virtual void FillFF(Float_t trackPt, Float_t jetPt,Bool_t incrementJetPt, Float_t norm);
     virtual void AddToOutput(TList* list) const;
 
   private:
@@ -165,7 +165,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     virtual ~AliFragFuncIntraJetHistos();
     
     virtual void DefineHistos();
-    virtual void FillIntraJet(const TLorentzVector* trackV, const TLorentzVector* jetV);
+    virtual void FillIntraJet(const TLorentzVector* trackV, const TLorentzVector* jetV, Float_t norm);
     virtual void AddToOutput(TList* list) const;
 
   private:
@@ -346,6 +346,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetKindSlices(Int_t slice = 1) {fDiJetKindBins = slice;}
 
   virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }
+  virtual void   SetFFBckgRadius(Float_t r = 0.7) { fFFBckgRadius = r; }
+  virtual void   SetBckgMode(Bool_t bg = 1) { fBckgMode = bg; }
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH2* h,const char* x, const char* y,const char* z);
@@ -403,15 +405,19 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   }
 
   Float_t  GetFFRadius() const { return fFFRadius; }
+  Float_t  GetFFBckgRadius() const { return fFFBckgRadius; }
   void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j);
   void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& pt);  
+  void	   GetOutNJetsTracks(Int_t nCases, TList* in, TList* out, TList* jets, const Double_t r, Double_t& pt);
+  void	   GetOutNJetsTracksStat(Int_t nCases, TList* in, TList* out, TList* jets, const Double_t r, Double_t& pt, Double_t &normFactor);
+  void     GetOutPerpJetTracks(TList* inputlist, TList* outputlist, AliAODJet* jet, Double_t radius,Double_t& sumPt);
   Double_t GetDiJetBin(Double_t invMass, Double_t leadingJetPt, Double_t eMean, Int_t kindSlices); // function to find which bin fill
   Double_t InvMass(const AliAODJet* jet1, const AliAODJet* jet2);
   void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isGenPrim);
   void     FillSingleTrackRecEffHisto(THnSparse* histo, TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr, const TArrayS& isGenPrim);
   void     FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi,Double_t jetEta,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, TList* tracksGen,
 				   const TArrayI& indexAODTr,const TArrayS& isGenPrim);
-
+  Float_t  CalcJetArea(Float_t etaJet, Float_t rc);
     
   // Consts
   
@@ -463,7 +469,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Int_t   fDiJetKindBins;       // type of bins: invmass, etleading, emean
 
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
-
+  Float_t fFFBckgRadius;    // compute background outside cone of this radius around jet axes
+  Bool_t  fBckgMode;        // Set background subtraction mode
   Float_t fAvgTrials;       // average number of trials per event
   
   TList* fTracksRec;            //! reconstructed tracks
@@ -644,7 +651,118 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   THnSparseF *fhnSingleTrackRecEffHisto; //! track reconstruction efficiency 
   THnSparseF *fhnJetTrackRecEffHisto;    //! reconstruction efficiency jet tracks 
 
-  ClassDef(AliAnalysisTaskFragmentationFunction, 6);
+  // Background
+  TH1F  *fh1OutLeadingMult;       //! background multiplicity outside leading jet
+  TH1F  *fh1PerpMult;             //! background multiplicity perpendicular to the leading jet
+  TH1F  *fh1Out2JetsMult;         //! background multiplicity outside 2 jets
+  TH1F  *fh1Out3JetsMult;         //! background multiplicity outside 3 jets
+
+  AliFragFuncQATrackHistos* fQABckgNoJetTrackHistosRec;      //! track QA: reconstructed tracks
+  AliFragFuncQATrackHistos* fQABckgNoJetTrackHistosRecCuts;  //! track QA: reconstructed tracks after cuts
+  AliFragFuncQATrackHistos* fQABckgNoJetTrackHistosGen;      //! track QA: generated tracks
+  
+  AliFragFuncQATrackHistos* fQABckgLeadingTrackHistosRec;      //! track QA: reconstructed tracks
+  AliFragFuncQATrackHistos* fQABckgLeadingTrackHistosRecCuts;  //! track QA: reconstructed tracks after cuts
+  AliFragFuncQATrackHistos* fQABckgLeadingTrackHistosGen;      //! track QA: generated tracks
+  
+  AliFragFuncQATrackHistos* fQABckg2JetsTrackHistosRec;      //! track QA: reconstructed tracks
+  AliFragFuncQATrackHistos* fQABckg2JetsTrackHistosRecCuts;  //! track QA: reconstructed tracks after cuts
+  AliFragFuncQATrackHistos* fQABckg2JetsTrackHistosGen;      //! track QA: generated tracks
+  
+  AliFragFuncQATrackHistos* fQABckg3JetsTrackHistosRec;      //! track QA: reconstructed tracks
+  AliFragFuncQATrackHistos* fQABckg3JetsTrackHistosRecCuts;  //! track QA: reconstructed tracks after cuts
+  AliFragFuncQATrackHistos* fQABckg3JetsTrackHistosGen;      //! track QA: generated tracks
+
+  AliFragFuncQATrackHistos* fQABckgPerpTrackHistosRec;      //! track QA: reconstructed tracks
+  AliFragFuncQATrackHistos* fQABckgPerpTrackHistosRecCuts;  //! track QA: reconstructed tracks after cuts
+  AliFragFuncQATrackHistos* fQABckgPerpTrackHistosGen;      //! track QA: generated tracks
+
+  AliFragFuncHistos*  fFFBckgNoJetHistosRecCuts;       //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFBckgNoJetHistosRecLeading;    //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgNoJetHistosGen;           //! Bckg (outside leading jet or 2 jets or more) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckgNoJetHistosGenLeading;    //! Bckg (outside leading jet or 2 jets or more) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgHistosRecCuts;       //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFBckgHistosRecLeading;    //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgHistosGen;           //! Bckg (outside leading jet or 2 jets or more) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckgHistosGenLeading;    //! Bckg (outside leading jet or 2 jets or more) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgLeadingHistosRecCuts;       //! Bckg (outside leading jet) FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFBckgLeadingHistosRecLeading;    //! Bckg (outside leading jet) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgLeadingHistosGen;           //! Bckg (outside leading jet) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckgLeadingHistosGenLeading;    //! Bckg (outside leading jet) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckg2JetsHistosRecCuts;         //! Bckg (outside 2 jets) FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFBckg2JetsHistosRecLeading;      //! Bckg (outside 2 jets) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckg2JetsHistosGen;             //! Bckg (outside 2 jets) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckg2JetsHistosGenLeading;      //! Bckg (outside 2 jets) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckg3JetsHistosRecCuts;         //! Bckg (outside 3 jets) FF reconstructed tracks after cuts
+  AliFragFuncHistos*  fFFBckg3JetsHistosRecLeading;      //! Bckg (outside 3 jets) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckg3JetsHistosGen;             //! Bckg (outside 3 jets) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckg3JetsHistosGenLeading;      //! Bckg (outside 3 jets) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgPerpHistosRecCuts;      //! Bckg (outside 3 jets) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgPerpHistosRecLeading;      //! Bckg (outside 3 jets) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgPerpHistosGen;             //! Bckg (outside 3 jets) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckgPerpHistosGenLeading;      //! Bckg (outside 3 jets) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+
+  AliFragFuncHistos*  fFFBckgHistosStatRecCuts;       //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFBckgHistosStatRecLeading;    //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgHistosStatGen;           //! Bckg (outside leading jet or 2 jets or more) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckgHistosStatGenLeading;    //! Bckg (outside leading jet or 2 jets or more) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgLeadingHistosStatRecCuts;       //! Bckg (outside leading jet) FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFBckgLeadingHistosStatRecLeading;    //! Bckg (outside leading jet) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgLeadingHistosStatGen;           //! Bckg (outside leading jet) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckgLeadingHistosStatGenLeading;    //! Bckg (outside leading jet) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckg2JetsHistosStatRecCuts;         //! Bckg (outside 2 jets) FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFBckg2JetsHistosStatRecLeading;      //! Bckg (outside 2 jets) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckg2JetsHistosStatGen;             //! Bckg (outside 2 jets) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckg2JetsHistosStatGenLeading;      //! Bckg (outside 2 jets) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckg3JetsHistosStatRecCuts;         //! Bckg (outside 3 jets) FF reconstructed tracks after cuts
+  AliFragFuncHistos*  fFFBckg3JetsHistosStatRecLeading;      //! Bckg (outside 3 jets) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckg3JetsHistosStatGen;             //! Bckg (outside 3 jets) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckg3JetsHistosStatGenLeading;      //! Bckg (outside 3 jets) FF generated tracks after cuts: all reconstructed tracks pt / leading track pt  
+
+  AliFragFuncIntraJetHistos*  fIJBckgNoJetHistosRecCuts;    //!
+  AliFragFuncIntraJetHistos*  fIJBckgNoJetHistosRecLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgNoJetHistosGen;        //!
+  AliFragFuncIntraJetHistos*  fIJBckgNoJetHistosGenLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgHistosRecCuts;    //!
+  AliFragFuncIntraJetHistos*  fIJBckgHistosRecLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgHistosGen;        //!
+  AliFragFuncIntraJetHistos*  fIJBckgHistosGenLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgLeadingHistosRecCuts;    //!
+  AliFragFuncIntraJetHistos*  fIJBckgLeadingHistosRecLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgLeadingHistosGen;        //!
+  AliFragFuncIntraJetHistos*  fIJBckgLeadingHistosGenLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckg2JetsHistosRecCuts;      //!
+  AliFragFuncIntraJetHistos*  fIJBckg2JetsHistosRecLeading;   //!
+  AliFragFuncIntraJetHistos*  fIJBckg2JetsHistosGen;          //!
+  AliFragFuncIntraJetHistos*  fIJBckg2JetsHistosGenLeading;   //!
+  AliFragFuncIntraJetHistos*  fIJBckg3JetsHistosRecCuts;      //!
+  AliFragFuncIntraJetHistos*  fIJBckg3JetsHistosRecLeading;   //!
+  AliFragFuncIntraJetHistos*  fIJBckg3JetsHistosGen;          //!
+  AliFragFuncIntraJetHistos*  fIJBckg3JetsHistosGenLeading;   //!
+  AliFragFuncIntraJetHistos*  fIJBckgPerpHistosRecCuts;   //!
+  AliFragFuncIntraJetHistos*  fIJBckgPerpHistosRecLeading;   //!
+  AliFragFuncIntraJetHistos*  fIJBckgPerpHistosGen;          //!
+  AliFragFuncIntraJetHistos*  fIJBckgPerpHistosGenLeading;   //!
+
+  AliFragFuncIntraJetHistos*  fIJBckgHistosStatRecCuts;    //!
+  AliFragFuncIntraJetHistos*  fIJBckgHistosStatRecLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgHistosStatGen;        //!
+  AliFragFuncIntraJetHistos*  fIJBckgHistosStatGenLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgLeadingHistosStatRecCuts;    //!
+  AliFragFuncIntraJetHistos*  fIJBckgLeadingHistosStatRecLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgLeadingHistosStatGen;        //!
+  AliFragFuncIntraJetHistos*  fIJBckgLeadingHistosStatGenLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckg2JetsHistosStatRecCuts;      //!
+  AliFragFuncIntraJetHistos*  fIJBckg2JetsHistosStatRecLeading;   //!
+  AliFragFuncIntraJetHistos*  fIJBckg2JetsHistosStatGen;          //!
+  AliFragFuncIntraJetHistos*  fIJBckg2JetsHistosStatGenLeading;   //!
+  AliFragFuncIntraJetHistos*  fIJBckg3JetsHistosStatRecCuts;      //!
+  AliFragFuncIntraJetHistos*  fIJBckg3JetsHistosStatRecLeading;   //!
+  AliFragFuncIntraJetHistos*  fIJBckg3JetsHistosStatGen;          //!
+  AliFragFuncIntraJetHistos*  fIJBckg3JetsHistosStatGenLeading;   //!
+
+
+  ClassDef(AliAnalysisTaskFragmentationFunction, 7);
 };
 
 #endif
