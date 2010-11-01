@@ -351,7 +351,7 @@ TEveTrackList* esd_tracks()
   cont->SetMainColor(6);
 
   esd_track_propagator_setup(cont->GetPropagator(),
-			     0.1*esd->GetMagneticField(), 350);
+			     0.1*esd->GetMagneticField(), 520);
 
   gEve->AddElement(cont);
 
