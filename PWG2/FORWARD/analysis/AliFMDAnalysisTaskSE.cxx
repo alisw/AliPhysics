@@ -106,16 +106,13 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
   //
-  
   AliESDEvent* fESD = (AliESDEvent*)InputEvent();
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   // Centrality selection - work in progress
   Float_t centrality = 1;
-  
-  if( centrality < fCentralityLow || centrality > fCentralityHigh )
-    return;
+  if( centrality < fCentralityLow || centrality > fCentralityHigh )  return;
   
   //End of centrality selection
   
@@ -133,10 +130,8 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
     fDensity.Exec("");
     if(fDensity.GetEventStatus()) {
       fBackground.Exec("");  
-      if(pars->GetRunDndeta())
-	fDndeta.Exec("");
-      if(pars->GetRunBFCorrelation())
-	fBFCorrelation.Exec("");
+      if(pars->GetRunDndeta())        fDndeta.Exec("");
+      if(pars->GetRunBFCorrelation()) fBFCorrelation.Exec("");
     }
     else return;
   }
@@ -164,7 +159,11 @@ void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
       fDndeta.SetVtxEfficiency(fSharing.GetVtxEfficiencyFromData());
     else
       fDndeta.SetVtxEfficiency(pars->GetVtxSelectionEffFromMC());
-    std::cout<<fSharing.GetNSDVtxEfficiencyFromData()<<"   "<<fSharing.GetVtxEfficiencyFromData()<<"   "<<pars->GetVtxSelectionEffFromMC()<<std::endl;
+    
+    AliInfo(Form("Vertex efficiencies:  NSD_data=%f, INEL_data=%f, INEL_mc=%f", 
+		 fSharing.GetNSDVtxEfficiencyFromData(),
+		 fSharing.GetVtxEfficiencyFromData(),
+		 pars->GetVtxSelectionEffFromMC()));
     
     if(fSharing.GetNSDVtxEfficiencyFromData() > 0)
       fDndeta.SetVtxEfficiencyNSD(fSharing.GetNSDVtxEfficiencyFromData());

@@ -386,7 +386,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
    
   if (!fmd) return;
   Int_t nHits[3][2] = {{0,0},{0,0},{0,0}};
-
+  //Int_t nDead = 0;
   for(UShort_t det=1;det<=3;det++) {
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
@@ -403,14 +403,19 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 	for(UShort_t strip = 0; strip < nstr; strip++) {
 	  foutputESDFMD->SetMultiplicity(det,ring,sec,strip,0.);
 	  Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
+	  //if(mult == AliESDFMD::kInvalidMult) 
+	  //  nDead++;
+	  //  if(mult > 0)
+	  //  std::cout<<mult<<std::endl;
 	  
-	  if(mult == AliESDFMD::kInvalidMult || mult == 0) continue;
-	  
+	  if(mult == AliESDFMD::kInvalidMult || mult == 0 || mult > 20) continue;
 	 
 	  //Double_t eta = fmd->Eta(det,ring,sec,strip);
 	  Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex[2]);
 	  	  
 	  hEdist->Fill(mult);
+	  
+	  
 	  if(fmd->IsAngleCorrected())
 	    mult = mult/TMath::Cos(Eta2Theta(eta));
 	  Float_t prevE = 0;
@@ -429,9 +434,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 	    }
 	  
 	  Float_t mergedEnergy = GetMultiplicityOfStrip(mult,eta,prevE,nextE,det,ring,sec,strip);
-	  //if(mult> (pars->GetMPV(det,ring,eta) - pars->GetSigma(det,ring,eta))) 
-	  //  mergedEnergy = mult;
-	  //else mergedEnergy = 0;
+	  
 	  if(mergedEnergy > 0.3 )
 	    nHits[det-1][ir]++;
 	  foutputESDFMD->SetMultiplicity(det,ring,sec,strip,mergedEnergy);
@@ -441,10 +444,13 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
       }
     }
   }
+  
+  //std::cout<<nDead<<std::endl;
+  
   //cluster cut
   //if(testmult->GetNumberOfSingleClusters() > 15 + nTrackLets)
   //  {fStatus = kFALSE; std::cout<<"FMD : "<<nHits[0][0]<<"  "<<nHits[1][0]<<"   "<<nHits[1][1]<<"   "<<nHits[2][0]<<"   "<<nHits[2][1]<<" tracks  "<<testmult->GetNumberOfSingleClusters()<<"   "<<nTrackLets<<std::endl; return;}
-
+  
   TH2F*  hCorrelationFMD23  = (TH2F*)fDiagList->FindObject("hCorrelationFMD23");
   TH2F*  hCorrelationFMD12  = (TH2F*)fDiagList->FindObject("hCorrelationFMD12");
   TH2F*  hCorrelationFMD2diff23  = (TH2F*)fDiagList->FindObject("hCorrelationFMD2diff23");
@@ -587,7 +593,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   hCorrelationFMDGoodtracks->Fill(ngood,nTotalFMDhits);
   hCorrelationFMDBadtracks->Fill(nbad,nTotalFMDhits);
   hCorrelationGoodbadtracks->Fill(ngood,nbad);
-    
+  
   if(fStandalone) {
     PostData(0, foutputESDFMD); 
     PostData(1, fEsdVertex); 

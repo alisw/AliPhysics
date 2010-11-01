@@ -49,6 +49,9 @@ private:
   TH1F*         fZvtxDist;
   Int_t         fEvents;
   Int_t         fEmptyEvents;
+  Float_t       fClusters;
+  Float_t       fClustersEmpty;
+  
   ClassDef(AliFMDAnalysisTaskCollector, 0); // Analysis task for FMD analysis
 };
  
