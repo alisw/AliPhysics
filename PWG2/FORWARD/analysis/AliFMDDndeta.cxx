@@ -869,6 +869,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
 	  l->Draw();
 	  multhistproj->DrawCopy("same");
 	  TH1D* hSPDanavtxbin = 0;
+	  if(what == kMult || what == kMultTrVtx || what == kMultNSD)  {
+	  
 	  if(what == kMult)
 	    hSPDanavtxbin = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",v));
 	  if(what == kMultTrVtx)
@@ -876,6 +878,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
 	  
 	  if(what == kMultNSD)
 	    hSPDanavtxbin = (TH1D*)fList->FindObject(Form("dNdetaNSD_SPD_vtxbin%d_proj",v));
+	  
 	  hSPDanavtxbin->SetMarkerColor(kBlue);
 	  hSPDanavtxbin->SetMarkerStyle(kStar);
 	  hSPDanavtxbin->Scale(xb1 / xr1);
@@ -890,27 +893,28 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
 	     graph->Draw("sameP");
 	     graph2->Draw("sameP");
 	   }
+	  }
 	}
 	else
 	  multhistproj->DrawCopy("same");
 	
-	
+      
       }
     }
   }
   
   //Legends for corrections
   if(fDrawAll) {
-  for(Int_t v=0; v< nVertexBins; v++) {
-    TPad* pad= (TPad*)cCorrectionsPhi->cd(v+1);
-    pad->BuildLegend(0.15,0.45,0.45,0.9);
-    Double_t delta = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
-    Float_t vtxZ1   = (delta*v) - pars->GetVtxCutZ();
-    Float_t vtxZ2   = (delta*(v+1)) - pars->GetVtxCutZ();
-    TLatex* l = new TLatex(0.14,0.92,Form("Vtx range [%.1f, %.1f]",vtxZ1,vtxZ2));
-    l->SetNDC(kTRUE);
-    l->Draw();
-  }
+    for(Int_t v=0; v< nVertexBins; v++) {
+      TPad* pad= (TPad*)cCorrectionsPhi->cd(v+1);
+      pad->BuildLegend(0.15,0.45,0.45,0.9);
+      Double_t delta = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
+      Float_t vtxZ1   = (delta*v) - pars->GetVtxCutZ();
+      Float_t vtxZ2   = (delta*(v+1)) - pars->GetVtxCutZ();
+      TLatex* l = new TLatex(0.14,0.92,Form("Vtx range [%.1f, %.1f]",vtxZ1,vtxZ2));
+      l->SetNDC(kTRUE);
+      l->Draw();
+    }
   }
   for(Int_t v=0; v< nVertexBins; v++) {
     TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMult_vtxbin%d_%s",v,fAnalysisNames[what].Data()));
@@ -933,9 +937,9 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
     }
   }
   
- 
+  
   // End of SPD
-
+  
   
   //TH1F*  hPrim = (TH1F*)fList->FindObject(fPrimEvents.Data());
   //  TFile testhit("/home/canute/ALICE/Simulations/TestOfAnalysis2/hitsdist.root");

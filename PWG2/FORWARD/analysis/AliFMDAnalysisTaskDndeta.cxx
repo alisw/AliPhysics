@@ -29,6 +29,7 @@
 #include "AliFMDStripIndex.h"
 #include "AliESDInputHandler.h"
 #include "AliGenDPMjetEventHeader.h"
+#include "AliLog.h"
 ClassImp(AliFMDAnalysisTaskDndeta)
 
 
@@ -310,12 +311,20 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
       for(Int_t i =0; i<nVtxbins; i++) {
 	
 	TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i));
-	if(fVtxEff)
+	fOutputList->Add(hMultTotal->Clone(Form("%s_orig", hMultTotal->GetName())));
+	if(fVtxEff) { 
+	  AliInfo(Form("scaling %s with vertex efficiency %f", 
+		       hMultTotal->GetName(), fVtxEff));
 	  hMultTotal->Scale(fVtxEff);
+	}
 	
 	TH2F* hMultTotalNSD = (TH2F*)fOutputList->FindObject(Form("dNdetaNSD_FMD%d%c_vtxbin%d",det,ringChar,i));
-	if(fVtxEffNSD)
+	fOutputList->Add(hMultTotalNSD->Clone(Form("%s_orig", hMultTotalNSD->GetName())));
+	if(fVtxEffNSD) { 
+	  AliInfo(Form("scaling %s with vertex efficiency %f", 
+		       hMultTotalNSD->GetName(), fVtxEffNSD));
 	  hMultTotalNSD->Scale(fVtxEffNSD);
+	}
 	
 	//TH2F* hMultTrVtx = (TH2F*)hMultTotal->Clone(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d",det,ringChar,i));
 	TH2F* hMultTrVtx = (TH2F*)fOutputList->FindObject(Form("dNdetaTrVtx_FMD%d%c_vtxbin%d",det,ringChar,i));

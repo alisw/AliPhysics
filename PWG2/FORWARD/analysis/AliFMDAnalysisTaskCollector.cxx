@@ -40,6 +40,7 @@
 #include "AliMultiplicity.h"
 #include "AliESDVertex.h"
 #include "AliFMDAnaParameters.h"
+
 //#include "AliFMDGeometry.h"
 
 
@@ -189,6 +190,16 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
   if(!physics && !empty)
     return;
   
+  const AliMultiplicity* spdMult = esd->GetMultiplicity();
+  if(physics)
+    fClusters+= (spdMult->GetNumberOfSingleClusters() + spdMult->GetNumberOfTracklets());
+  
+  if(empty)
+    fClustersEmpty+= (spdMult->GetNumberOfSingleClusters() + spdMult->GetNumberOfTracklets());
+  
+  if(empty)
+    std::cout<<spdMult->GetNumberOfSingleClusters()<<"  "<<spdMult->GetNumberOfTracklets()<<std::endl;
+  
   TH1F* Edist = 0;
   TH1F* emptyEdist = 0;
   TH1F* ringEdist = 0;
@@ -241,6 +252,8 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
   
 void AliFMDAnalysisTaskCollector::Terminate(Option_t */*option*/) {
   std::cout<<"Analysed "<<fEvents<<" events and "<<fEmptyEvents<<" empty"<<std::endl;
+  std::cout<<fClusters / fEvents << " clusters per physics event and "<<fClustersEmpty / fEmptyEvents<< " clusters per empty event"<<std::endl;
+
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
  
     
