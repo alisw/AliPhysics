@@ -238,7 +238,7 @@ TH1D * AliAnalysisMultPbTrackHistoManager::BookHistoDCA(const char * name, const
   AliInfo(Form("Booking %s",hname.Data()));
   
 
-  TH1D * h = new TH1D (hname,title, 100,0,50);
+  TH1D * h = new TH1D (hname,title, 200,0,200);
 
   h->SetXTitle("#Delta DCA");
   h->Sumw2();
