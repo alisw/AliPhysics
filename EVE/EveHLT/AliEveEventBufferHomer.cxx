@@ -66,12 +66,17 @@ void AliEveEventBufferHomer::AddToBuffer(TObject * event) {
 ///______________________________________________________________________
 void AliEveEventBufferHomer::Initialize() {
   //Add TList pointers to the buffer array
+
+  //Create TLists in all of buffer
   for(Int_t i = 0; i < fBufferSize; i++) {
     TList * list = new TList();
     list->SetOwner(kTRUE);
     fEventBuffer->AddAt(list, i);
   }
 
+  //Create the async list
+  fAsyncList = new TList();
+  fAsyncList->SetOwner(kTRUE);
 
   Int_t iResult = fHomer->Initialize();
   if(iResult) {

@@ -97,6 +97,8 @@ protected:
 
   void SetEventId(Int_t eventId) { fEventId[fBIndex[kCurrent]] = eventId;}
   
+  void SetBufferMonStarted(Bool_t started) {fBufferMonStarted = started;}
+  Bool_t GetBufferMonStarted () const { return fBufferMonStarted;}
 
 private:
 
@@ -119,6 +121,9 @@ private:
   //Current event id
   Int_t * fEventId;
   
+  Bool_t fBufferMonStarted;
+
+
 
   ClassDef(AliEveEventBuffer, 0); // Manage connections to HLT data-sources.
 };

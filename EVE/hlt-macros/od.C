@@ -124,7 +124,7 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
   // -- Initialize Eve
   // -------------------
   cout << "Initializing the EVE viewer"<<endl;
-  initializeEveViewer( showBarrel, showMuon );
+  initializeEveViewer( showBarrel, showMuon, fGeoManager );
 
   // -- Reset gGeoManager to the original pointer
   // ----------------------------------------------
@@ -191,7 +191,7 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
 }
 
 // -------------------------------------------------------------------------
-Int_t initializeEveViewer( Bool_t showBarrel, Bool_t showMuon ) {
+Int_t initializeEveViewer( Bool_t showBarrel, Bool_t showMuon, TGeoManager * manager ) {
   
   //=============================================================================
   // Visualization database
@@ -228,11 +228,22 @@ Int_t initializeEveViewer( Bool_t showBarrel, Bool_t showMuon ) {
   gEMCALNode = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
 
   TEveGeoTopNode* emcal_re = new TEveGeoTopNode(gGeoManager, gEMCALNode);
+  emcal_re->SetVisLevel(1);
+  //  emcal_re->FirstChild()->Dump();
+
+  // for(Int_t i = 4; i < 11; i++) {
+  //   emcal_re->FindChild(Form("SMOD_%d", i))->SetRnrState(kFALSE);
+  // }
+  // emcal_re->FindChild("SM10_1")->SetRnrState(kFALSE);
+  // emcal_re->FindChild("SM10_2")->SetRnrState(kFALSE);
+
+
+
   gEve->AddGlobalElement(emcal_re);
   gEve->Redraw3D();
 
   if (gShowMUON) 
-    gGeomGentleMUON = geom_gentle_muon(kFALSE);
+    gGeomGentleMUON = geom->geom_gentle_muon(kFALSE);
   
   // -- Scenes
   // -----------

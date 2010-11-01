@@ -146,6 +146,9 @@ void AliEveHLTEventManager::StartBufferMonitor() {
 Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
 
   //We have a new event, reset display items (need to check if there really is anything interesting in event before resetting. ie not just histos)
+
+  gEve->DisableRedraw();
+
   
   cout << "reset()"<<endl;
   
@@ -167,6 +170,9 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
   
   cout << "update()"<<endl;
   UpdateDisplay();
+
+  gEve->Redraw3D(0, 1);
+  gEve->EnableRedraw();
 
   return 0;
 

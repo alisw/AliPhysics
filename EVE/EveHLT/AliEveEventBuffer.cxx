@@ -23,7 +23,8 @@ AliEveEventBuffer::AliEveEventBuffer() :
   fBIndex(),
   fTimer(NULL),
   fThread(NULL),
-  fEventId()
+  fEventId(),
+  fBufferMonStarted(kFALSE)
  {
   // see header file for class documentation
   fEventBuffer = new TObjArray(10, 0);
@@ -61,8 +62,11 @@ AliEveEventBuffer::~AliEveEventBuffer() {
 
 ///___________________________________________________________________________
 void * AliEveEventBuffer::BufferThread(void * buffer) {
-  if(buffer)
-    reinterpret_cast<AliEveEventBuffer*>(buffer)->StartBufferMonitor();
+  if(buffer) {
+    if (!reinterpret_cast<AliEveEventBuffer*>(buffer)->GetBufferMonStarted()) {
+      reinterpret_cast<AliEveEventBuffer*>(buffer)->StartBufferMonitor();
+    }
+  }
   return (void*)0;
 }
 

@@ -23,3 +23,4 @@
 #pragma link C++ class AliEveEventBuffer+;
 #pragma link C++ class AliEveEventBufferOffline+;
 #pragma link C++ class AliEveEventBufferHomer+;
+#pragma link C++ class AliEveHltGeometry+;
