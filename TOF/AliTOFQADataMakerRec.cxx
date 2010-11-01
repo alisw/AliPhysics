@@ -294,15 +294,15 @@ void AliTOFQADataMakerRec::InitRaws()
   }
 
   Add2RawsList(h0,   0, !expert,  image, !saveCorr) ;
-  Add2RawsList(h1,   1,  expert,  image, !saveCorr) ;
-  Add2RawsList(h2,   2,  expert,  image, !saveCorr) ;
-  Add2RawsList(h3,   3,  expert,  image, !saveCorr) ;
-  Add2RawsList(h4,   4,  expert,  image, !saveCorr) ;
+  Add2RawsList(h1,   1,  expert,  !image, !saveCorr) ;
+  Add2RawsList(h2,   2,  expert,  !image, !saveCorr) ;
+  Add2RawsList(h3,   3,  expert,  !image, !saveCorr) ;
+  Add2RawsList(h4,   4,  expert,  !image, !saveCorr) ;
   Add2RawsList(h5,   5, !expert,  image, !saveCorr) ;
-  Add2RawsList(h6,   6,  expert,  image, !saveCorr) ;
-  Add2RawsList(h7,   7,  expert,  image, !saveCorr) ;
-  Add2RawsList(h8,   8,  expert,  image, !saveCorr) ;
-  Add2RawsList(h9,   9,  expert,  image, !saveCorr) ;
+  Add2RawsList(h6,   6,  expert,  !image, !saveCorr) ;
+  Add2RawsList(h7,   7,  expert,  !image, !saveCorr) ;
+  Add2RawsList(h8,   8,  expert,  !image, !saveCorr) ;
+  Add2RawsList(h9,   9,  expert,  !image, !saveCorr) ;
   Add2RawsList(h10, 10, !expert,  image, !saveCorr) ;
   Add2RawsList(h11, 11,  expert, !image, !saveCorr) ;
   Add2RawsList(h12, 12,  expert, !image, !saveCorr) ;
@@ -806,8 +806,8 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 		//normalize TRM hits plots to the number of enabled channels from OCDB object
 		//TH1F * hTrmChannels035 = new TH1F("hTrmchannels035", "Active channels per TRM - crates 0 to 35;TRM index = SMid(crate*10)+TRM(0-9);Active channels",  361, 0., 361.) ;
 		//TH1F * hTrmChannels3671 = new TH1F("hTrmChannels3671","Active channels per TRM - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Active channels", 361, 360., 721.) ;
-	      hTrmChannels035->Clear();
-	      hTrmChannels3671->Clear();
+		if (hTrmChannels035) hTrmChannels035->Clear();
+		if (hTrmChannels3671) hTrmChannels3671->Clear();
 		for (Int_t ch = 0; ch <  fCalibData->GetSize(); ch++) {
 		    if (!(fCalibData->GetNoiseStatus(ch)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
 			&& (fCalibData->GetHWStatus(ch) == AliTOFChannelOnlineStatusArray::kTOFHWOk)){
@@ -825,6 +825,10 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 		GetRawsData(17)->Divide(hTrmChannels3671);
 		GetRawsData(17)->SetTitle("TRMs average hit number per active channel - crates 36-71");
 		GetRawsData(17)->GetYaxis()->SetTitle("hits/active channels");
+
+		//if (hTrmChannels035) delete hTrmChannels035;
+		//if (hTrmChannels3671) delete hTrmChannels3671;
+
 	    }
 	    
 	    //set minima and maxima to allow log scale
@@ -878,8 +882,8 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	}
     }
 
-    delete hTrmChannels035;
-    delete hTrmChannels3671;
+    if (hTrmChannels035) delete hTrmChannels035;
+    if (hTrmChannels3671) delete hTrmChannels3671;
 
     AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
 }
