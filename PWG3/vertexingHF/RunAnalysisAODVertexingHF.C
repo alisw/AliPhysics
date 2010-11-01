@@ -21,7 +21,7 @@ void RunAnalysisAODVertexingHF()
   TString analysisMode = "grid"; // "local", "grid", or "proof"
   TString inputMode    = "list"; // "list", "xml", or "dataset"
   Long64_t nentries=123567890,firstentry=0;
-  Bool_t useParFiles=kTRUE;
+  Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
   TString pluginmode="full";
   Bool_t saveProofToAlien=kFALSE;
@@ -285,28 +285,29 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    plugin->SetNtestFiles(3);
    // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-27-05-build3");
-   plugin->SetAliROOTVersion("v4-20-10-AN");
+   plugin->SetROOTVersion("v5-27-06a-1");
+   plugin->SetAliROOTVersion("v4-21-02-AN");
    // Declare input data to be processed.
    //************************************************
    // Set data search pattern for DATA
    //************************************************
-   /*
-   plugin->SetGridDataDir("/alice/data/2010/LHC10b"); // specify LHC period
-   plugin->SetDataPattern("pass2/AOD006/*AliAOD.root"); // specify reco pass and AOD set
+   
+   plugin->SetGridDataDir("/alice/data/2010/LHC10d"); // specify LHC period
+   plugin->SetDataPattern("pass2/AOD018/*AliAOD.root"); // specify reco pass and AOD set
    plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
    // OR plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
    // Adds only the good runs from the Monalisa Run Condition Table
    // More than one period can be added but the period name has to be removed from GridDataDir (to be tested)
    Int_t totruns=0;
-   totruns += AddGoodRuns(plugin,"LHC10b"); // specify LHC period
+   //totruns += AddGoodRuns(plugin,"LHC10b"); // specify LHC period
    //totruns += AddGoodRuns(plugin,"LHC10c"); // specify LHC period
+   totruns += AddGoodRuns(plugin,"LHC10d"); // specify LHC period
    plugin->SetNrunsPerMaster(totruns);
-   */
+   
    //************************************************
    // Set data search pattern for MONTECARLO
    //************************************************
-   
+   /* 
    plugin->SetGridDataDir("/alice/sim/LHC10d3"); // specify MC sample
    plugin->SetDataPattern("AOD005/*AliAOD.root"); // specify AOD set
    plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
@@ -318,7 +319,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //totruns += AddGoodRuns(plugin,"LHC10c","LHC10f7"); // specify LHC period for anchor runs;  and the name of the MC production
    //totruns += AddGoodRuns(plugin,"LHC10d","LHC10f7"); // specify LHC period for anchor runs;  and the name of the MC production
    plugin->SetNrunsPerMaster(totruns);
-   
+   */
    //
    // plugin->SetMaxMergeFiles(100);
    // Define alien work directory where all files will be copied. Relative to alien $HOME.
