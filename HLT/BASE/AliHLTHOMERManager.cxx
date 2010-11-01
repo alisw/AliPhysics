@@ -765,6 +765,7 @@ Int_t AliHLTHOMERManager::HandleBlocks() {
     
   if ( IsSyncBlocks() ) {
     //AddBlockListToBuffer();
+    fBlockList->Clear();
     AddToBlockList();
   } else {
     AddToAsyncBlockList();
@@ -784,6 +785,11 @@ Bool_t AliHLTHOMERManager::IsSyncBlocks() {
   do {          
     
     if ( !GetBlkType().CompareTo("ALIESDV0")) {
+      bResult = kTRUE;
+      break;
+    }
+
+    if ( !GetBlkType().CompareTo("GLOBTRIG")) {
       bResult = kTRUE;
       break;
     }

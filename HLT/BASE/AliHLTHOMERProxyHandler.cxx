@@ -281,7 +281,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   TDOMParser xmlParser;
   xmlParser.SetValidate(kFALSE);
 
-  HLTDebug(Form("XMLResponse: %s",fXmlRpcResponse.Data()));
+  HLTInfo(Form("XMLResponse: %s",fXmlRpcResponse.Data()));
   
   iResult = xmlParser.ParseBuffer(fXmlRpcResponse.Data(), fXmlRpcResponse.Length());
   if ( iResult < 0 ) {

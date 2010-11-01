@@ -22,6 +22,7 @@
 #include "AliHLTHOMERBlockDesc.h"
 #include "AliHLTEveBase.h"
 #include "AliEveHLTEventManager.h"
+#include "AliHLTGlobalTriggerDecision.h"
 #include "TEveManager.h"
 #include "TEvePointSet.h"
 #include "TEveTrack.h"
@@ -60,7 +61,7 @@ AliHLTEveHLT::AliHLTEveHLT() :
   // Constructor.
   //CreateHistograms();
 }
-
+///___________________________________________________________________
 AliHLTEveHLT::~AliHLTEveHLT()
 {
   //Destructor, not implemented
@@ -68,7 +69,7 @@ AliHLTEveHLT::~AliHLTEveHLT()
     delete fTrackList;
   fTrackList = NULL;
 }
-
+///____________________________________________________________________
 void AliHLTEveHLT::ProcessEsdEvent( AliESDEvent * esd ) {
   //See header file for documentation
   if(!fTrackList) CreateTrackList();
@@ -90,7 +91,12 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   } 
 
   else if ( ! block->GetDataType().CompareTo("HLTRDLST") ) {
+    cout << "ignoring hlt rdlst"<<endl;
     //processHLTRDLST( block );
+  } 
+
+  else if ( ! block->GetDataType().CompareTo("GLOBTRIG") ) {
+    ProcessGlobalTrigger( block );
   } 
 
   else if ( !block->GetDataType().CompareTo("ROOTHIST") ) {      
@@ -117,8 +123,12 @@ void AliHLTEveHLT::ResetElements(){
   
   cout << "destroy"<<endl;
   if(fTrackList) {
-    RemoveElement(fTrackList);
+    fTrackList->Destroy();
     fTrackList = NULL;
+    // RemoveElement(fTrackList);
+    // TThread * destructor = new TThread(DestroyGarbage, (void*) this);
+    // destructor->Run();
+    // fTrackList = NULL;
   }
   
   if(fPointSetVertex) fPointSetVertex->Reset();
@@ -190,7 +200,16 @@ void AliHLTEveHLT::CreateVertexPointSet() {
   AddElement(fPointSetVertex);
 }
 
+///________________________________________________________________________
+void AliHLTEveHLT::ProcessGlobalTrigger( AliHLTHOMERBlockDesc * block ) {
+  //See header file for documentation
+  AliHLTGlobalTriggerDecision * decision = dynamic_cast<AliHLTGlobalTriggerDecision*>(block->GetTObject());
+  decision->Print();
 
+}
+
+
+///______________________________________________________________________
 void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList * cont ) {
   //See header file for documentation
 

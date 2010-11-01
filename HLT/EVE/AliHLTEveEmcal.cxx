@@ -24,7 +24,6 @@
 #include "TCanvas.h"
 #include "AliHLTEveBase.h"
 #include "TEveBoxSet.h"
-#include "AliPHOSGeometry.h"
 #include "TVector3.h"
 #include "AliEveHLTEventManager.h"
 #include "TEveManager.h"
@@ -59,14 +58,7 @@ AliHLTEveEmcal::~AliHLTEveEmcal()
 
 void AliHLTEveEmcal::CreateElementList() {
   
-
-  //TEveGeoShapeExtract * shape = new TEveGeoShapeExtract();
   TGeoNode * gEMCALNode = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
-  //TEveGeoNode * eveNode = new TEveGeoNode(gEMCALNode);
-  //TEveGeoShapeExtract* juice = eveNode->DumpShapeTree(this, shape, kFALSE);
-  //juice->Dump();
-  //eveNode->WriteExtract("out.root", kFALSE);
-
   
   //gStyle->SetPalette(1, 0);
   TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);

@@ -82,6 +82,9 @@ private:
   //Process histogram block
   void ProcessHistograms(AliHLTHOMERBlockDesc * block, TCanvas * canvas);
 
+  //Process trigger block
+  void ProcessGlobalTrigger(AliHLTHOMERBlockDesc * block);
+
   //Create tpc qa histograms
   void CreateHistograms();
 
