@@ -12,6 +12,7 @@
 
 #include "AliAODPid.h"
 #include "AliAODTrack.h"
+#include "AliTPCPIDResponse.h"
 
 class AliAODPidHF : public AliAODPid{
 
@@ -42,6 +43,7 @@ class AliAODPidHF : public AliAODPid{
  void SetMatch(Int_t match){fMatch=match;return;}
  void SetCompat(Bool_t comp){fCompat=comp;return;}
  void SetMC(Bool_t mc){fMC=mc;return;}
+ void SetOnePad(Bool_t onepad){fOnePad=onepad;return;}
  
  //Getters
  Double_t GetSigma(Int_t idet) const{return fnSigma[idet];}
@@ -82,6 +84,7 @@ class AliAODPidHF : public AliAODPid{
  void BayesianProbabilityTPC(AliAODTrack *track,Double_t *prob) const;
  void BayesianProbabilityTOF(AliAODTrack *track,Double_t *prob) const;
  void BayesianProbabilityTRD(AliAODTrack *track,Double_t *prob) const;
+ void SetBetheBloch(AliTPCPIDResponse tpcResp) const;
 
  private:
  Int_t fnNSigma; // number of sigmas
@@ -99,6 +102,7 @@ class AliAODPidHF : public AliAODPid{
  Int_t fMatch; //switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
  Bool_t fCompat; // compatibility region : useful only if fMatch=1
  Bool_t fMC; // MC(kTRUE) or real data (kFALSE, default option)
+ Bool_t fOnePad; //  real data with one pad clusters 
  
 
 

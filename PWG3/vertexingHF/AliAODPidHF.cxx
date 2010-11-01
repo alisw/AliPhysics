@@ -48,7 +48,8 @@ AliAODPidHF::AliAODPidHF():
   fTRD(kFALSE),
   fMatch(0),
   fCompat(kFALSE),
-  fMC(kFALSE)
+  fMC(kFALSE),
+  fOnePad(kFALSE)
 {
  //
  // Default constructor
@@ -93,7 +94,8 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fTRD(pid.fTRD),
   fMatch(pid.fMatch),
   fCompat(pid.fCompat),
-  fMC(kFALSE)
+  fMC(pid.fMC),
+  fOnePad(pid.fOnePad)
   {
   
   for(Int_t i=0;i<5;i++){
@@ -174,6 +176,8 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
   Double_t dedx=pidObj->GetTPCsignal();
   Double_t mom = pidObj->GetTPCmomentum();
   AliTPCPIDResponse tpcResponse;
+  SetBetheBloch(tpcResponse); 
+
   Int_t pid=-1;
   if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
    Double_t nsigmaMax=fnSigma[0];
@@ -438,6 +442,7 @@ Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
   Double_t dedx=pidObj->GetTPCsignal();
   
   AliTPCPIDResponse tpcResponse;
+  SetBetheBloch(tpcResponse); 
   AliPID::EParticleType type=AliPID::EParticleType(specie);
   Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,track->GetTPCNcls(),type)); 
 
@@ -642,4 +647,43 @@ Int_t AliAODPidHF::MakeRawPid(AliAODTrack *track, Int_t specie){
   }
  } 
   
+}
+//--------------------------------------------
+void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse tpcResp) const{
+
+ Double_t alephParameters[5];
+ if(fMC){
+  alephParameters[0] = 2.15898e+00/50.;
+  alephParameters[1] = 1.75295e+01;
+  alephParameters[2] = 3.40030e-09;
+  alephParameters[3] = 1.96178e+00;
+  alephParameters[4] = 3.91720e+00;
+
+ }else{
+
+  if(fOnePad){
+   
+    alephParameters[0] = 1.63246/50.;
+    alephParameters[1] = 2.20028e+01;
+    alephParameters[2] = TMath::Exp(-2.48879e+01);
+    alephParameters[3] = 2.39804e+00;
+    alephParameters[4] = 5.12090e+00;
+
+  }else{
+
+    alephParameters[0] = 0.0283086/0.97;
+    alephParameters[1] = 2.63394e+01;
+    alephParameters[2] = 5.04114e-11;
+    alephParameters[3] = 2.12543e+00;
+    alephParameters[4] = 4.88663e+00;
+
+  }
+
+ }
+
+ tpcResp.SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
+
+
+ return;
+
 }
