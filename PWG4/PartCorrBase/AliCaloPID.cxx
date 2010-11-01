@@ -49,6 +49,8 @@
 #include "AliVCluster.h"
 #include "AliAODPWG4Particle.h"
 #include "AliEMCALPIDUtils.h"
+#include "AliCalorimeterUtils.h"
+
 ClassImp(AliCaloPID)
 
 
@@ -62,7 +64,8 @@ fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) ,
 fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0), 
 //fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
 fDispCut(0.),fTOFCut(0.), fDebug(-1), 
-fRecalculateBayesian(kFALSE), fParticleFlux(kLow), fEMCALPIDUtils(new AliEMCALPIDUtils)
+fRecalculateBayesian(kFALSE), fParticleFlux(kLow), 
+fEMCALPIDUtils(new AliEMCALPIDUtils)
 {
   //Ctor
   
@@ -80,7 +83,8 @@ fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) ,
 fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0), 
 //fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
 fDispCut(0.),fTOFCut(0.), fDebug(-1), 
-fRecalculateBayesian(kTRUE), fParticleFlux(flux), fEMCALPIDUtils(new AliEMCALPIDUtils)
+fRecalculateBayesian(kTRUE), fParticleFlux(flux), 
+fEMCALPIDUtils(new AliEMCALPIDUtils)
 {
 	//Ctor
 	
@@ -98,7 +102,8 @@ fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) ,
 fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0), 
 //fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
 fDispCut(0.),fTOFCut(0.), fDebug(-1), 
-fRecalculateBayesian(kTRUE), fParticleFlux(-1), fEMCALPIDUtils( (AliEMCALPIDUtils*) emcalpid)
+fRecalculateBayesian(kTRUE), fParticleFlux(-1), 
+fEMCALPIDUtils( (AliEMCALPIDUtils*) emcalpid)
 {
 	//Ctor
 	
@@ -416,7 +421,7 @@ void AliCaloPID::Print(const Option_t * opt) const
 } 
 
 //_______________________________________________________________
-void AliCaloPID::SetPIDBits(const TString calo, const AliVCluster * cluster, AliAODPWG4Particle * ph) {
+void AliCaloPID::SetPIDBits(const TString calo, const AliVCluster * cluster, AliAODPWG4Particle * ph, const AliCalorimeterUtils* cu) {
   //Set Bits for PID selection
   
   //Dispersion/lambdas
@@ -454,7 +459,7 @@ void AliCaloPID::SetPIDBits(const TString calo, const AliVCluster * cluster, Ali
   //Bool_t isNeutral = kTRUE ;
   //if(cluster->IsPHOS())  isNeutral = cluster->GetEmcCpvDistance() > 5. ;
   //else 
-  Bool_t isNeutral = IsTrackMatched(cluster);
+  Bool_t isNeutral = IsTrackMatched(cluster,cu);
   
   ph->SetChargedBit(isNeutral);
   
@@ -469,7 +474,7 @@ void AliCaloPID::SetPIDBits(const TString calo, const AliVCluster * cluster, Ali
 }
 
 //__________________________________________________________________________
-Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster) const {
+Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimeterUtils * cu) const {
   //Check if there is any track attached to this cluster
   
   Int_t nMatches = cluster->GetNTracksMatched();
@@ -478,8 +483,17 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster) const {
   //  if     (cluster->GetTrackMatched(0))        printf("\t matched track id %d\n",((AliVTrack*)cluster->GetTrackMatched(0))->GetID()) ;
   //  else if(cluster->GetTrackMatchedIndex()>=0) printf("\t matched track id %d\n",((AliVTrack*) GetReader()->GetInputEvent()->GetTrack(cluster->GetTrackMatchedIndex()))->GetID()) ;
   
+  
   if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
   {
+    //If EMCAL track matching needs to be recalculated
+    if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
+      Float_t dR = 999., dZ = 999.;
+      cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dR,dZ);
+      if(dR < 999) return kTRUE;
+      else         return kFALSE;
+    }
+    
     if (nMatches > 0) {
       if (nMatches == 1 ) {
         Int_t iESDtrack = cluster->GetTrackMatchedIndex();
@@ -495,9 +509,15 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster) const {
   else
   {
     //AODs
-    if(nMatches > 0) return kTRUE; //There is at least one match.
-    else             return kFALSE;
-    
+    if(cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
+      Float_t dR = TMath::Abs(cluster->GetEmcCpvDistance()) ; //FIXME
+      if(dR > cu->GetCutR()) return kFALSE;
+      else                   return kTRUE;
+    }
+    else {
+      if(nMatches > 0) return kTRUE; //There is at least one match.
+      else             return kFALSE;
+    }
   }//AODs or MC (copy into AOD)
   
   return kFALSE;
