@@ -17,12 +17,12 @@
 ////////////////////////////////////////////////////
 
 #ifndef ROOT_TObject
-#include <TObject.h>
+//#include <TObject.h>
 #endif
 
 #include "AliPhJBaseHeader.h"
 
-//class TObject;
+class TObject;
 
 class AliJHeader : public AliPhJBaseHeader {
   

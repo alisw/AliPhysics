@@ -12,26 +12,33 @@
 */
 ////////////////////////////////////////////////////
 
+#include <iostream>
+#include <fstream>
+#include <stdlib.h>
+#include <stdio.h>
+
+
 #ifndef ROOT_TObject
 #include <TObject.h>
 #include <TNamed.h>
 #endif
 
-#include <iostream>
-#include <fstream>
-#include <stdlib.h>
-#include <stdio.h>
 #include <TString.h>
 #include <TObjString.h>
 #include <TObjArray.h>
 
+
 #include "JConst.h"
 
+
 using namespace std;
-
-//class TObjString;
-//class TObject;
-
+/*
+class TObject;
+class TNamed;
+class TString;
+class TObjString;
+class TObjArray;
+*/
 class AliJRunHeader : public TNamed {
 
 public:
@@ -53,7 +60,7 @@ public:
   Double_t GetL3MagnetFieldIntensity() const { return fMagneticFieldL3;}
 
   //-- Alice trigger table --
-  void SetActiveTriggersAlice(TString *triggers);
+  void SetActiveTriggersAlice(const TString *triggers);
 
   Int_t GetActiveTriggerBitAlice(TString TriggerName);
 
@@ -62,7 +69,7 @@ public:
   }
 
   //-- JCorran trigger table -- 
-  void SetActiveTriggersJCorran(TString *triggers, Int_t range);
+  void SetActiveTriggersJCorran(const TString *triggers, Int_t range);
 
   TString GetActiveTriggerJCorran(Int_t TriggerBit) const {
     return ((TObjString*) (fActiveTriggersJCorran.At(TriggerBit)))->GetString();

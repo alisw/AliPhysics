@@ -13,10 +13,11 @@
 #ifndef ALIJPHOTON_H
 #define ALIJPHOTON_H
 
+/*
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif
-
+*/
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -24,12 +25,12 @@
 #include "TMath.h"
 
 #include "JConst.h"
-#include "AliPhJBaseTrack.h"
-#include "AliPhJPhoton.h"
+//#include "AliPhJBaseTrack.h"
+//#include "AliPhJPhoton.h"
 
-//class  AliPhJBaseTrack;
-//class  TObject;
-
+class  TObject;
+class  AliPhJBaseTrack;
+class  AliPhJPhoton;
 
 class AliJPhoton : public AliPhJPhoton {
 
@@ -58,7 +59,10 @@ public:
 
   AliJPhoton();	    	     // default constructor
   AliJPhoton(const AliJPhoton& a);
-  ~AliJPhoton(){;}		   //destructor  
+  ~AliJPhoton(){   //destructor  
+    if(fCellsAbsId)       delete [] fCellsAbsId; 
+    if(fCellsAmpFraction) delete [] fCellsAmpFraction;
+  }		 
   
   Bool_t InPHOS()  const {return fCaloType==kPHOSCalo ? kTRUE:kFALSE ;}
   Bool_t InEMCAL() const {return fCaloType==kEMCALCalo ? kTRUE:kFALSE ;}

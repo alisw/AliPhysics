@@ -47,12 +47,13 @@ AliJTrack::AliJTrack() :
   fTPCClustPerFindClust(-999),
   fTPCChi2PerClust(-999),
   fKinkIndex(-999),
-  fstatus(-999)
-
+  fstatus(-999),
+  fITSLabel(-999),
+  fTPCLabel(-999)
 {
   // default constructor
   SetPID((Double_t*)NULL);
-  SetExternalDiaCovariance((Double_t*)NULL);
+  //SetExternalDiaCovariance((Double_t*)NULL);
 }
 
 //______________________________________________________________________________
@@ -70,11 +71,13 @@ AliJTrack::AliJTrack(const AliJTrack& a):
   fTPCClustPerFindClust(a.fTPCClustPerFindClust),
   fTPCChi2PerClust(a.fTPCChi2PerClust),
   fKinkIndex(a.fKinkIndex),
-  fstatus(a.fstatus)
+  fstatus(a.fstatus),
+  fITSLabel(a.fITSLabel),
+  fTPCLabel(a.fTPCLabel)
 { 
   //copy constructor
   for(Int_t i=0;i<10;i++) ftrkPID[i]=a.ftrkPID[i];
-  for(Int_t i=0;i<5;i++)  fextDiaCov[i]=a.fextDiaCov[i];
+  //  for(Int_t i=0;i<5;i++)  fextDiaCov[i]=a.fextDiaCov[i];
 }
 //______________________________________________________________________________
 void AliJTrack::ConvertAliPID(){
@@ -114,9 +117,9 @@ AliJTrack&  AliJTrack::operator=(const AliJTrack& trk){
     fTPCChi2PerClust      = trk.fTPCChi2PerClust;
     fKinkIndex  = trk.fKinkIndex;
     fstatus     = trk.fstatus;
-    for(Int_t i=0; i<5; i++){
-      fextDiaCov[i] = trk.fextDiaCov[i];
-    }
+//    for(Int_t i=0; i<5; i++){
+ //     fextDiaCov[i] = trk.fextDiaCov[i];
+ //   }
   }
 
   return *this;
@@ -134,11 +137,11 @@ void AliJTrack::SetPID(const Double_t *pid) {
 }
 
 //___________________________________________________________________
-void AliJTrack::SetExternalDiaCovariance(const Double_t *ecov) {
+/*void AliJTrack::SetExternalDiaCovariance(const Double_t *ecov) {
   //set diagonal elements of the covariance  matrix 
   if(ecov) {
     for(Int_t i=0; i<5; i++) fextDiaCov[i]=ecov[i];
   } else {
     for(Int_t i=0; i<5;i++) fextDiaCov[i]=-999;
   }
-}
+}*/

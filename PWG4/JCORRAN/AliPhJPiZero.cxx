@@ -73,7 +73,7 @@ AliPhJPiZero::AliPhJPiZero(const AliPhJPiZero& a):
 
 //______________________________________________________________________________
 
-bool AliPhJPiZero::SetMass(AliPhJPhoton *g1, AliPhJPhoton *g2){
+bool AliPhJPiZero::SetMass(const AliPhJPhoton *g1, const AliPhJPhoton *g2){
   //set pi0 four-momentum, assymetry, inv. mass, pT, phi, theta, energy
   fV1.SetXYZ(g1->GetX(), g1->GetY(), g1->GetZ() );  //Z is corrected in main  for vertex Z
   fPhoton1.SetPxPyPzE(g1->GetE()*sin(fV1.Theta())*cos(fV1.Phi()),

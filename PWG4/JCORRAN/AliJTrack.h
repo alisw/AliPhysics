@@ -13,11 +13,11 @@
 
 #ifndef ALIJTRACK_H
 #define ALIJTRACK_H
-
+/*
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif
-
+*/
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -28,7 +28,8 @@
 #include "AliPhJBaseTrack.h"
 #include "JConst.h"
 
-//class TObject;
+class TObject;
+//class AliPhJBaseTrack;
 
 class AliJTrack : public AliPhJBaseTrack {
 
@@ -78,8 +79,8 @@ public:
   void     SetChi2perNDF(Double_t chi2) {fChi2perNDF = chi2;}
   void     SetChi2Trig(Double_t chi2) {fChi2Trig = chi2;}
   
-  ULong_t  GetRecFlags() const { return fRecFlags; }
-  void     SetRecFlags(ULong_t flags) { fRecFlags = flags; }
+  //FK same as status//ULong_t  GetRecFlags() const { return fRecFlags; }
+  //FK//void     SetRecFlags(ULong_t flags) { fRecFlags = flags; }
   
   Double_t GetTPCdEdx() const {return fTPCdEdx;}
   void     SetTPCdEdx(Double_t dedx) {fTPCdEdx = dedx;}
@@ -108,14 +109,19 @@ public:
   Int_t GetKinkIndex() const {return fKinkIndex;}
   void     SetKinkIndex(Int_t ival) {fKinkIndex = ival;}
 
-  UInt_t GetStatus() const {return fstatus;}
-  void     SetStatus(UInt_t ival) {fstatus = ival;}
+  ULong_t GetStatus() const {return fstatus;}
+  void     SetStatus(ULong_t ival) {fstatus = ival;}
 
-  void GetExternalDiaCovariance(Double_t *ecov) const {
-    for(Int_t i=0; i<5; i++) ecov[i]=fextDiaCov[i];
-  }
+  //void GetExternalDiaCovariance(Double_t *ecov) const {
+ //   for(Int_t i=0; i<5; i++) ecov[i]=fextDiaCov[i];
+  //}
     
-  void SetExternalDiaCovariance(const Double_t *ecov);
+ //FK// void SetExternalDiaCovariance(const Double_t *ecov);
+
+  void SetITSLabel(Int_t label){ fITSLabel=label;}
+  void SetTPCLabel(Int_t label){ fTPCLabel=label;} 
+  Int_t GetITSLabel() const { return fITSLabel;}
+  Int_t GetTPCLabel() const { return fTPCLabel;} 
 
   AliJTrack& operator=(const AliJTrack& trk);
   
@@ -129,7 +135,7 @@ private:
   
   //TPC 
   Double_t   fTPCdEdx;        // track TPC dE/dx
-  int        fTPCnClust;      // track TPC nclusters 
+  Int_t        fTPCnClust;      // track TPC nclusters 
   Double_t   fImapactXY;     // distance of a track to the event vertex in xy plane
   Double_t   fImapactZ;      // distance of a track to the event vertex in z direction
   Double_t   fTPCDCAXY;      // track impact parameter in XY
@@ -138,9 +144,11 @@ private:
   Double_t   fTPCChi2PerClust;  //tpc chi2 per cluster
   //ESD track cuts
   Int_t fKinkIndex;  //kink index ... indication of  kink daughters
-  UInt_t fstatus;    // reconstruction flag status
-  Double_t fextDiaCov[5];//track parameters covariance matrix
+  ULong_t fstatus;    // reconstruction flag status
+  //FK//Double_t fextDiaCov[5];//track parameters covariance matrix
   
+  Int_t fITSLabel; // track label in ITS
+  Int_t fTPCLabel; // track label in TPC
 
   ClassDef(AliJTrack,1)
 };

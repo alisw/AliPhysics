@@ -101,7 +101,7 @@ AliPhJBaseTrack& AliPhJBaseTrack::operator=(const AliPhJBaseTrack& trk){
 }
 
 //_____________________________________________________________
-void AliPhJBaseTrack::PrintJetInput(char *message=" " ) const{
+void AliPhJBaseTrack::PrintJetInput(const char *message=" " ) const{
     std::cout<<message
     <<"\t"<< GetPx() <<"\t"<< GetPy() <<"\t"<< GetPz()<<"\t"<<GetE() << std::endl;
 }
