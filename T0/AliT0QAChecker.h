@@ -21,15 +21,18 @@ class TH1F ;
 
 // --- AliRoot header files ---
 #include "AliQACheckerBase.h"
-
 class AliT0QAChecker: public AliQACheckerBase {
 
 public:
-  AliT0QAChecker() : AliQACheckerBase("T0","T0 Quality Assurance Data Checker") {;}          // ctor
-  AliT0QAChecker(const AliT0QAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
- // dtor
- virtual ~AliT0QAChecker() {;}
- Double_t CheckRaw(TObjArray *listrec , TObjArray *listref) const ;
+  AliT0QAChecker();    
+  AliT0QAChecker(const AliT0QAChecker& qac);
+  AliT0QAChecker& operator=(const AliT0QAChecker& qac);  
+  // dtor
+  virtual ~AliT0QAChecker();
+  Double_t CheckRaw(TObjArray *listrec ) const ;
+  Double_t CheckESD(TObjArray *listrec ) const ;
+   
+ 
 private:
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t, TObjArray ** list, const AliDetectorRecoParam * recoParam) ;
   
