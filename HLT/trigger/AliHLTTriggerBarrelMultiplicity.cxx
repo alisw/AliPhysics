@@ -81,6 +81,11 @@ AliHLTComponent* AliHLTTriggerBarrelMultiplicity::Spawn()
 int AliHLTTriggerBarrelMultiplicity::DoTrigger()
 {
   // see header file for class documentation
+
+  if (!IsDataEvent()) {
+    IgnoreEvent();  // dont generate any trigger decision.
+  }
+
   int iResult=0;
   int numberOfTracks=-1;
 
