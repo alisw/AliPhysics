@@ -225,8 +225,8 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
 
   AliKFParticle::SetField( esd->GetMagneticField() );
 
-  const double kKsMass = 0.49767;
-  const double kLambdaMass = 1.11568;
+  //const double kKsMass = 0.49767;
+  //const double kLambdaMass = 1.11568;
   //const double kPi0Mass = 0.13498;
 
   std::vector<AliKFParticle> vGammas;
