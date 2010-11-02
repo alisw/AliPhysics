@@ -15,7 +15,7 @@
 #include "AliITSCalibrationSDD.h"
 #endif
 
-/*  $Id$    */
+/*  $Id: PlotCalibSDDVsTime.C 41568 2010-06-03 09:08:39Z prino $    */
 
 // Macro to plot the calibration parameters from the OCDB files 
 // created from PEDESTAL and PULSER runs vs. Time

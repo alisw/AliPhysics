@@ -15,7 +15,7 @@
 #include "AliITSresponseSDD.h"
 #endif
 
-/*  $Id$    */
+/*  $Id: ShowResponseSDD.C 44072 2010-10-04 15:48:32Z prino $    */
 
 // Macro to plot the calibration parameters 
 // (time zero, ADCtokeV and Vdrift correction)

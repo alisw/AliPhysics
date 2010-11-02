@@ -20,7 +20,7 @@
 #include "AliITSgeomTGeo.h"
 #endif
 
-/*  $Id$    */
+/*  $Id: PlotDriftSpeedSDDVsTime.C 41510 2010-06-01 09:21:24Z prino $    */
 
 
 // Macro to plot the drift speed vs. time from the OCDB files 
