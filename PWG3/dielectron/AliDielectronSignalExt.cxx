@@ -83,6 +83,10 @@ void AliDielectronSignalExt::Process(TObjArray* const arrhist)
       ProcessEM(arrhist);    // process event mixing method
       break;
 
+  case kRotation:
+      ProcessRotation(arrhist);
+      break;
+
     default :
       AliWarning("Subtraction method not supported. Please check SetMethod() function.");
   }
@@ -94,9 +98,9 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   //
   // signal subtraction 
   //
-  fHistDataPP = (TH1F*)(arrhist->At(0))->Clone("histPP");  // ++    SE
-  fHistDataPM = (TH1F*)(arrhist->At(1))->Clone("histPM");  // +-    SE
-  fHistDataMM = (TH1F*)(arrhist->At(2))->Clone("histMM");  // --    SE   
+  fHistDataPP = (TH1*)(arrhist->At(0))->Clone("histPP");  // ++    SE
+  fHistDataPM = (TH1*)(arrhist->At(1))->Clone("histPM");  // +-    SE
+  fHistDataMM = (TH1*)(arrhist->At(2))->Clone("histMM");  // --    SE
   fHistDataPP->Sumw2();
   fHistDataPM->Sumw2();
   fHistDataMM->Sumw2();
@@ -108,10 +112,10 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
     fHistDataMM->Rebin(fRebin);
   }       
 
-  fHistSignal = new TH1F("HistSignal", "Like-Sign substracted signal", 
+  fHistSignal = new TH1D("HistSignal", "Like-Sign substracted signal",
 			 fHistDataPM->GetXaxis()->GetNbins(),
 			 fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
-  fHistBackground = new TH1F("HistBackground", "Like-sign contribution", 
+  fHistBackground = new TH1D("HistBackground", "Like-sign contribution",
 			     fHistDataPM->GetXaxis()->GetNbins(),
 			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
 
@@ -153,6 +157,46 @@ void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
   //
   printf("event mixing method is not implemented yet. Like-sign method will be used.\n");
   ProcessLS(arrhist);
+}
+
+//______________________________________________
+void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
+{
+  //
+  // signal subtraction
+  //
+  fHistDataPM = (TH1*)(arrhist->At(1))->Clone("histPM");  // +-    SE
+  if (!fHistDataPM){
+    AliError("Unlike sign histogram not available. Cannot extract the signal.");
+    return;
+  }
+  fHistDataPM->Sumw2();
+
+  fHistBackground=(TH1*)arrhist->At(10)->Clone("histRotation");
+  if (!fHistBackground){
+    AliError("Histgram from rotation not available. Cannot extract the signal.");
+    delete fHistDataPM;
+    fHistDataPM=0x0;
+    return;
+  }
+
+  //scale histograms to match integral between 3.2 and 4. GeV
+  ScaleHistograms(fHistDataPM,fHistBackground,3.2,4.0);
+  fHistSignal=(TH1*)fHistDataPM->Clone("histSignal");
+  fHistSignal->Add(fHistBackground,-1.);
+
+    // signal
+  fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
+                                             fHistSignal->FindBin(fIntMax), fErrors(0));
+  // background
+  fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
+                                                 fHistBackground->FindBin(fIntMax),
+                                                 fErrors(1));
+  // S/B and significance
+  SetSignificanceAndSOB();
+  
+  fProcessed = kTRUE;
+  
 }
 
 //______________________________________________

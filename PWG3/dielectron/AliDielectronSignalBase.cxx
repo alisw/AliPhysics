@@ -136,3 +136,19 @@ void AliDielectronSignalBase::Print(Option_t */*option*/) const
     printf("Mass res.: %.5g #pm %.5g\n", fValues(5), fErrors(5));
   }
 }
+
+//______________________________________________
+void AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax)
+{
+  //
+  // scale histBackground to match the integral of histRaw in the interval intMin, intMax
+  //
+  
+  Double_t intRaw  = histRaw->Integral(histRaw->FindBin(intMin),histRaw->FindBin(intMax));
+  Double_t intBack = histBackground->Integral(histBackground->FindBin(intMin),histBackground->FindBin(intMax));
+  if (intBack>0){
+    histBackground->Sumw2();
+    histBackground->Scale(1./intBack);
+    histBackground->Scale(intRaw);
+  }
+}

@@ -23,6 +23,8 @@
 
 class AliDielectron;
 class TH1D;
+class AliAnalysisCuts;
+class AliTriggerAnalysis;
 
 class AliAnalysisTaskMultiDielectron : public AliAnalysisTaskSE {
   
@@ -35,23 +37,32 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void FinishTaskOutput();
   //temporary
-  virtual void NotifyRun(){AliDielectronPID::SetCorrVal((Double_t)fCurrentRunNumber);}
+//   virtual void NotifyRun(){AliDielectronPID::SetCorrVal((Double_t)fCurrentRunNumber);}
   
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
   void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
   UInt_t GetTriggerMask() const { return fTriggerMask; }
-  
+
+  void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
+  void SetTriggerOnV0AND(Bool_t v0and=kTRUE)    { fTriggerOnV0AND=v0and;    }
+  void SetRejectPileup(Bool_t pileup=kTRUE)     { fRejectPileup=pileup;     }
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
   
 private:
-  
+  enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
   TList fListDielectron;             // List of dielectron framework instances
   TList fListHistos;                 //! List of histogram manager lists in the framework classes
   TList fListCF;                     //! List with CF Managers
 
   Bool_t fSelectPhysics;             // Whether to use physics selection
   UInt_t fTriggerMask;               // Event trigger mask
+  Bool_t fTriggerOnV0AND;            // if to trigger on V0and
+  Bool_t fRejectPileup;              // pileup rejection wanted
+  
+  AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis class
 
+  AliAnalysisCuts *fEventFilter;     // event filter
+  
   TH1D *fEventStat;                  //! Histogram with event statistics
   
   AliAnalysisTaskMultiDielectron(const AliAnalysisTaskMultiDielectron &c);

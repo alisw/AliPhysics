@@ -322,6 +322,7 @@ void DrawUnbinned(){
   
 Int_t baseColors[5]={kRed, kGreen+1, kAzure-4, kMagenta, kCyan+1};
   Int_t sigmaColorOffset=0;
+Int_t baseColors[5]={kRed, kRed, kRed, kRed, kRed};
 
   Double_t sigmas[5]={3,3,3,3,3};
   Double_t masses[5];
@@ -336,7 +337,7 @@ Int_t baseColors[5]={kRed, kGreen+1, kAzure-4, kMagenta, kCyan+1};
   alephParameters[2] = 5.04114e-11;
   alephParameters[3] = 2.12543e+00;
   alephParameters[4] = 4.88663e+00;
-  Double_t mip=49.2;
+  Double_t mip=50;
 
   Color_t color=kRed;
   Int_t lineWidth=2;
@@ -723,7 +724,7 @@ c->SetAlias("Ptcut","Leg1_Pt>1&&Leg2_Pt>1")
 c->SetAlias("TOFcut","abs(Leg1_TOF_nSigma_Electrons)<3&&abs(Leg2_TOF_nSigma_Electrons)<3");
 c->SetAlias("TOFcut2","(Leg1_P_InnerParam<1.3&&abs(Leg1_TOF_nSigma_Electrons)<3||Leg1_P_InnerParam>=1.3)&&(Leg2_P_InnerParam<1.3&&abs(Leg2_TOF_nSigma_Electrons)<3||Leg2_P_InnerParam>=1.3)");
 c->SetAlias("TPCcut","(Leg1_TPC_signal>70*(1-exp(-1*(Leg1_P_InnerParam+2))))&&(Leg2_TPC_signal>70*(1-exp(-1*(Leg2_P_InnerParam+2))))")
-c->SetAlias("NClcut","Leg1_NclsTPC>120&&Leg2_NclsTPC>120");
+c->SetAlias("NClcut","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
 
 c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-2.65*exp(-0.6757*Leg1_P_InnerParam)&&Leg2_TPC_nSigma_Electrons>-2.65*exp(-0.6757*Leg2_P_InnerParam)")
 c->SetAlias("cut","PairType==1&&eleParam&&Run<127719")
@@ -920,5 +921,33 @@ c1->Print("pics/M_nClCut_tpc_tof.png");
 
 
 
+c->SetAlias("NClcut","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
+c->SetAlias("Ptcut","Leg1_Pt>1&&Leg2_Pt>1")
+c->SetAlias("PairT","PairType==1");
+c->SetAlias("cut","NClcut&&Ptcut&&PairT")
+
+
+c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
+c->SetAlias("cut","NClcut&&Ptcut&&PairT&&cutE&&cutPi&&cutP")
+
+c->SetAlias("eta","abs(Leg1_Eta)<0.88&&abs(Leg1_Eta)<0.88");
+c->SetAlias("rap","abs(Y)<0.88");
+c->SetAlias("spdFirst","(Leg1_ITS_clusterMap&1)==1&&(Leg2_ITS_clusterMap&1)==1")
+c->SetAlias("cut","NClcut&&Ptcut&&PairT&&cutE&&cutPi&&cutP&&eta&&rap&&spdFirst")
+ c->Draw("M>>hM(50,1.98,1.98+50*.04)","cut","e")
+
+
+c->SetAlias("cutProL1",Form("Leg1_TPC_nSigma_Electrons>(%f*%f+(AliExternalTrackParam::BetheBlochAleph(Leg1_P_InnerParam/%f,0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00)-AliExternalTrackParam::BetheBlochAleph(Leg1_P_InnerParam/%f,0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00)))/%f",nSigma,resolution, AliPID::ParticleMass(AliPID::kProton), AliPID::ParticleMass(AliPID::kElectron), resolution))
+
+c->SetAlias("cutProL2",Form("Leg2_TPC_nSigma_Electrons>(%f*%f+(AliExternalTrackParam::BetheBlochAleph(Leg2_P_InnerParam/%f,0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00)-AliExternalTrackParam::BetheBlochAleph(Leg2_P_InnerParam/%f,0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00)))/%f",nSigma,resolution, AliPID::ParticleMass(AliPID::kProton), AliPID::ParticleMass(AliPID::kElectron), resolution))
+
+c->SetAlias("cutPioL1",Form("Leg1_TPC_nSigma_Electrons>(%f*%f+(AliExternalTrackParam::BetheBlochAleph(Leg1_P_InnerParam/%f,0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00)-AliExternalTrackParam::BetheBlochAleph(Leg1_P_InnerParam/%f,0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00)))/%f",nSigma,resolution, AliPID::ParticleMass(AliPID::kPion), AliPID::ParticleMass(AliPID::kElectron), resolution))
+
+c->SetAlias("cutPioL2",Form("Leg2_TPC_nSigma_Electrons>(%f*%f+(AliExternalTrackParam::BetheBlochAleph(Leg2_P_InnerParam/%f,0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00)-AliExternalTrackParam::BetheBlochAleph(Leg2_P_InnerParam/%f,0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00)))/%f",nSigma,resolution, AliPID::ParticleMass(AliPID::kPion), AliPID::ParticleMass(AliPID::kElectron), resolution))
+
+c->SetAlias("cutPro","cutProL1&&cutProL2");
+c->SetAlias("cutPio","cutPioL1&&cutPioL2");
 */
 

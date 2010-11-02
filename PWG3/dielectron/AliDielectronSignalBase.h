@@ -34,7 +34,8 @@ public:
   enum EBackgroundMethod {
     kFitted = 0,
     kLikeSign,
-    kEventMixing
+    kEventMixing,
+    kRotation
   };
 
   AliDielectronSignalBase();
@@ -65,9 +66,12 @@ public:
   Double_t GetMassWidth()            const { return fValues(5);}
   Double_t GetMassWidthError()       const { return fErrors(5);}
 
-  TH1F* GetSignalHistogram()      const {return fHistSignal;}
-  TH1F* GetBackgroundHistogram()  const {return fHistBackground;}
-
+  TH1* GetSignalHistogram()      const {return fHistSignal;}
+  TH1* GetBackgroundHistogram()  const {return fHistBackground;}
+  TH1* GetUnlikeSignHistogram()  const {return fHistDataPM;}
+  
+  static void ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax);
+  
   virtual void Print(Option_t *option="") const;
 
   /**
@@ -82,11 +86,11 @@ public:
     
 protected: 
 
-  TH1F *fHistSignal;                  // histogram of pure signal
-  TH1F *fHistBackground;              // histogram of background (fitted=0, like-sign=1, event mixing=2)
-  TH1F *fHistDataPM;                  // histogram of selected +- pair candidates
-  TH1F *fHistDataPP;                  // histogram of selected ++ pair candidates
-  TH1F *fHistDataMM;                  // histogram of selected -- pair candidates
+  TH1 *fHistSignal;                  // histogram of pure signal
+  TH1 *fHistBackground;              // histogram of background (fitted=0, like-sign=1, event mixing=2)
+  TH1 *fHistDataPM;                  // histogram of selected +- pair candidates
+  TH1 *fHistDataPP;                  // histogram of selected ++ pair candidates
+  TH1 *fHistDataMM;                  // histogram of selected -- pair candidates
 
   TVectorD fValues;                   // values
   TVectorD fErrors;                   // value errors

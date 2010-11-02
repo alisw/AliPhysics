@@ -118,6 +118,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 };
 
 AliESDpid* AliDielectronVarManager::fgESDpid = 0x0;
+AliAODpidUtil* AliDielectronVarManager::fgAODpidUtil = 0x0;
 AliVEvent* AliDielectronVarManager::fgEvent  = 0x0;
 AliKFVertex* AliDielectronVarManager::fgKFVertex  = 0x0;
 //________________________________________________________________

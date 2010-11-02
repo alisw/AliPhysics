@@ -32,6 +32,8 @@ Detailed description
 #include <AliVTrack.h>
 #include <AliLog.h>
 #include <AliESDtrack.h>
+#include <AliESDpid.h>
+#include <AliAODpidUtil.h>
 
 #include "AliDielectronVarManager.h"
 
@@ -45,7 +47,8 @@ Double_t AliDielectronPID::fgCorr=0.0;
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
   fNcuts(0),
-  fESDpid(0x0)
+  fESDpid(0x0),
+  fAODpidUtil(0x0)
 {
   //
   // Default Constructor
@@ -68,7 +71,8 @@ AliDielectronPID::AliDielectronPID() :
 AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
   AliAnalysisCuts(name, title),
   fNcuts(0),
-  fESDpid(0x0)
+  fESDpid(0x0),
+  fAODpidUtil(0x0)
 {
   //
   // Named Constructor
@@ -191,6 +195,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
   
   Bool_t selected=kFALSE;
   fESDpid=AliDielectronVarManager::GetESDpid();
+  fAODpidUtil=AliDielectronVarManager::GetAODpidUtil();
   
   for (UChar_t icut=0; icut<fNcuts; ++icut){
     Double_t pMin=fPmin[icut];
@@ -239,11 +244,11 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut) const
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
     numberOfSigmas=fESDpid->NumberOfSigmasITS(track, fPartType[icut]);
-  }else{
+  }else if(part->IsA()==AliAODTrack::Class()){
     // AOD case
     // FIXME: Is there a place to check whether the PID is was set in ESD???
     AliAODTrack *track=static_cast<AliAODTrack*>(part);
-    numberOfSigmas=NumberOfSigmasITS(track, fPartType[icut]);
+    numberOfSigmas=fAODpidUtil->NumberOfSigmasITS(track, fPartType[icut]);
   }
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
   return selected;
@@ -265,15 +270,15 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut) const
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
     numberOfSigmas=fESDpid->NumberOfSigmasTPC(track, fPartType[icut]);
-  }else{
+  }else if(part->IsA()==AliAODTrack::Class()){
     // AOD case
     // FIXME: Is there a place to check whether the PID is was set in ESD???
     AliAODTrack *track=static_cast<AliAODTrack*>(part);
-    numberOfSigmas=NumberOfSigmasTPC(track, fPartType[icut]);
+    numberOfSigmas=fAODpidUtil->NumberOfSigmasTPC(track, fPartType[icut]);
   }
-//   if (fPartType[icut]==AliPID::kElectron){
-//     numberOfSigmas-=fgCorr;
-//   }
+  if (fPartType[icut]==AliPID::kElectron){
+    numberOfSigmas-=fgCorr;
+  }
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
   return selected;
 }
@@ -303,11 +308,11 @@ Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut) const
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
     numberOfSigmas=fESDpid->NumberOfSigmasTOF(track, fPartType[icut], fESDpid->GetTOFResponse().GetTimeZero());
-  }else{
+  }else if(part->IsA()==AliAODTrack::Class()){
     // AOD case
     // FIXME: Is there a place to check whether the PID is was set in ESD???
     AliAODTrack *track=static_cast<AliAODTrack*>(part);
-    numberOfSigmas=NumberOfSigmasTOF(track, fPartType[icut]);
+    numberOfSigmas=fAODpidUtil->NumberOfSigmasTOF(track, fPartType[icut]);
   }
   
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
