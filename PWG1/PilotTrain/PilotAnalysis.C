@@ -4,7 +4,7 @@ void AddAnalysisTasks();
 class AliAnalysisAlien;                                                                                                                    
 AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
-Int_t runNumbers[5] = {121040};
+Int_t runNumbers[5] = {130848};
 
 Bool_t doCDBconnect   = 1;
 Bool_t doQAsym        = 1;
@@ -22,6 +22,8 @@ Bool_t doCALO         = 1;
 Bool_t doMUONTrig     = 1;
 Bool_t doImpParRes    = 1;
 Bool_t doMUON         = 1;
+Bool_t doTOF          = 1;  // new TOF QA
+Bool_t doHMPID        = 0;  // new HMPID QA
 
 Bool_t doMUONEff      = 0;   // NEEDS geometry
 Bool_t doV0           = 0;   // NEEDS MCtruth 
@@ -35,10 +37,10 @@ TString     job_comment        = "PWG1 QA train"; // Can add observations here
                // Job tag (DON'T CHANGE)
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
                // Package versions - Modify as needed
-TString     root_version       = "v5-27-05";
-TString     aliroot_version    = "v4-20-07-AN";
+TString     root_version       = "v5-27-06a-1";
+TString     aliroot_version    = "v4-21-02-AN";
                // Production directory - change as needed for test mode
-TString     grid_datadir       = "/alice/data/2010/LHC10c";
+TString     grid_datadir       = "/alice/data/2010/LHC10e";
                // Work directory in GRID (DON'T CHANGE)
 TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/QA/QA$2";
                // Job splitting
@@ -46,7 +48,7 @@ Int_t       grid_split         = 20;       // Splitting
                // Debug level
 Int_t       debug_level        = 1;        // Debugging
                // Data pattern - change as needed for test mode
-TString     data_pattern       = "*ESDs/pass2/*ESDs.root";
+TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
                // Output directory (DON'T CHANGE)
 TString     alien_outdir       = "$1/QA$2";
                // Input collection (production mode)
@@ -56,7 +58,7 @@ TString     terminateFiles     = "trending.root"; // Files produced during Termi
 
 Bool_t useProductionMode       = kTRUE;
 Bool_t useMergeViaJDL          = kTRUE;
-Bool_t useFastReadOption       = kTRUE;
+Bool_t useFastReadOption       = kFALSE;
 Bool_t useOverwriteMode        = kFALSE;
 Bool_t useDevelopmentVersion   = kFALSE;
 
@@ -95,6 +97,8 @@ void PilotAnalysis(const char *plugin_mode = "full")
   out << "   doTRD           = " << doTRD << ";" << endl;
   out << "   doImpParRes     = " << doImpParRes << ";" << endl;
   out << "   doMUON          = " << doMUON << ";" << endl;
+  out << "   doTOF           = " << doTOF << ";" << endl;
+  out << "   doHMPID         = " << doHMPID << ";" << endl;
   out << "   doEventStat     = " << doEventStat << ";" << endl;
   out << "}" << endl;
   out.close();
@@ -289,6 +293,7 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskV0QA.C");
       AliAnalysisTaskV0QA *taskv0QA = AddTaskV0QA(kFALSE);
   }
+  //
   // Impact parameter resolution (xianbao.yuan@pd.infn.it, andrea.dainese@pd.infn.it)
   //
   if (doImpParRes) {
@@ -296,12 +301,28 @@ void AddAnalysisTasks()
     AliAnalysisTaskSE* taskimpparres= AddTaskImpParRes();
     taskimpparres->SelectCollisionCandidates();
   }  
+  //
   // MUON QA (Philippe Pillot)
   //
   if (doMUON) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/AddTaskMuonQA.C");
     AliAnalysisTaskSE* taskmuonqa= AddTaskMuonQA();
   }  
+  //
+  // TOF (Francesca Bellini)
+  //
+  if (doTOF) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG1/TOF/AddTaskTOFQA.C");
+    AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA();
+    tofQA->SelectCollisionCandidates();
+  }  
+  //
+  // HMPID QA (Giacomo Volpe)
+  //
+  if (doHMPID) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG1/HMPID/AddTaskHmpidQA.C");
+    AliAnalysisTaskSE* taskhmpidqa= AddTaskHmpidQA(kFALSE);
+  }      
 }
 
 //______________________________________________________________________________
