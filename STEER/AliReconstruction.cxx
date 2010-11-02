@@ -1703,7 +1703,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fRunLoader->GetHeader()->Reset(fRawReader->GetRunNumber(), 
 				   iEvent, iEvent);
     fRunLoader->TreeE()->Fill();
-    if (fRawReader /* && fRawReader->UseAutoSaveESD() */)
+    if (fRawReader && fRawReader->UseAutoSaveESD())
       fRunLoader->TreeE()->AutoSave("SaveSelf");
   }
 
@@ -2089,11 +2089,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
 
     // Auto-save the ESD tree in case of prompt reco @P2
-    if (fRawReader /* && fRawReader->UseAutoSaveESD() */) {
+    if (fRawReader && fRawReader->UseAutoSaveESD()) {
       ftree->AutoSave("SaveSelf");
       if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
-//      TFile *friendfile = (TFile *)(gROOT->GetListOfFiles()->FindObject("AliESDfriends.root"));
-//      if (friendfile) friendfile->Save();
     }
 
     // write HLT ESD
@@ -3457,18 +3455,6 @@ Bool_t AliReconstruction::InitAliEVE()
     macroStr.Form("%s/EVE/macros/alieve_online.C",gSystem->ExpandPathName("$ALICE_ROOT"));
 
   AliInfo(Form("Loading AliEVE macro: %s",macroStr.Data()));
-
-/*
-  TString macroPath;
-  macroPath.Form(".:%s:%s/EVE/macros/",
-		 gROOT->GetMacroPath(),
-		 gSystem->ExpandPathName("$ALICE_ROOT"));
-  gROOT->SetMacroPath(macroPath.Data());
-
-  TString macroStr("alieve_online.C");
-  AliInfo(Form("Loading AliEVE macro: %s (%s)",macroStr.Data(), 
-	       gSystem->Which(gROOT->GetMacroPath(), macroStr.Data())));
-*/
 
   if (gROOT->LoadMacro(macroStr.Data()) != 0) return kFALSE;
 
