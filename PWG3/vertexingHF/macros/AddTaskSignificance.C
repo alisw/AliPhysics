@@ -1,4 +1,4 @@
-AliAnalysisTaskSESignificanceN *AddTaskSignificanceN(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8)
+AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D meson candidates
