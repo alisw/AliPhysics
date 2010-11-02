@@ -19,8 +19,9 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 	        physics/AliHLTCaloHistoInvMass.h \
 		physics/AliHLTCaloHistoMatchedTracks.h \
 		physics/AliHLTCaloHistoClusterEnergy.h \
-		physics/AliHLTCaloHistoCellEnergy.h \
-		physics/AliHLTdNdPtAnalysisComponent.h
+		physics/AliHLTCaloHistoCellEnergy.h 
+#		physics/AliHLTdNdPtAnalysisComponent.h \
+#		physics/AliHLTdNdPtAnalysisMergerComponent.h
 #//
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
