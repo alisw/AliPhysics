@@ -834,32 +834,32 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   }
 
  
-  Int_t ncl = fCluLayer[layer]->GetEntries();
+  Int_t ncl = fCluLayer[layer]->GetEntriesFast();
   for (Int_t index=0; index<ncl; index++) {
-    AliITSRecPoint *c = (AliITSRecPoint*)fCluLayer[layer]->At(index);
+    AliITSRecPoint *c = (AliITSRecPoint*)fCluLayer[layer]->UncheckedAt(index);
     if (!c) continue;
     if (c->GetQ()<=0) continue;
     if(layer>1 && c->GetQ()<=fMinQ) continue;
     
-     AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(layer,index);
-     Double_t phi = arr->GetPhi();
-     if (TMath::Abs(phi-fPhiEstimate)>phiwindow) continue;
-
-     Double_t lambda = arr->GetLambda();
-     if (TMath::Abs(lambda-fLambdac)>lambdawindow) continue;
-
-     if(trs->GetNumberOfClustersSA()==trs->GetMaxNumberOfClusters()) return 0;
-     if(trs->GetNumberOfMarked(layer)==trs->GetMaxNMarkedPerLayer()) return 0;
-     Int_t orind = arr->GetOrInd();
-     trs->AddClusterSA(layer,orind);
-     trs->AddClusterMark(layer,index);
-     nc++;
-     fLambdac=lambda;
-     fPhiEstimate=phi;
-
-     fPointc[0]=arr->GetX();
-     fPointc[1]=arr->GetY();
-
+    AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(layer,index);
+    Double_t phi = arr->GetPhi();
+    if (TMath::Abs(phi-fPhiEstimate)>phiwindow) continue;
+    
+    Double_t lambda = arr->GetLambda();
+    if (TMath::Abs(lambda-fLambdac)>lambdawindow) continue;
+    
+    if(trs->GetNumberOfClustersSA()==trs->GetMaxNumberOfClusters()) return 0;
+    if(trs->GetNumberOfMarked(layer)==trs->GetMaxNMarkedPerLayer()) return 0;
+    Int_t orind = arr->GetOrInd();
+    trs->AddClusterSA(layer,orind);
+    trs->AddClusterMark(layer,index);
+    nc++;
+    fLambdac=lambda;
+    fPhiEstimate=phi;
+    
+    fPointc[0]=arr->GetX();
+    fPointc[1]=arr->GetY();
+    
   }
   return nc;
 }
@@ -868,7 +868,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
 Bool_t AliITStrackerSA::SetFirstPoint(Int_t lay, Int_t clu, Double_t* primaryVertex){
   // Sets the first point (seed) for tracking
 
-  AliITSRecPoint* cl = (AliITSRecPoint*)fCluLayer[lay]->At(clu);
+  AliITSRecPoint* cl = (AliITSRecPoint*)fCluLayer[lay]->UncheckedAt(clu);
   if(!cl) return kFALSE;
   if (cl->GetQ()<=0) return kFALSE;
   if(lay>1 && cl->GetQ()<=fMinQ) return kFALSE;
