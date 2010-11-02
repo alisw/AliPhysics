@@ -408,8 +408,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t  GetFFBckgRadius() const { return fFFBckgRadius; }
   void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j);
   void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& pt);  
-  void	   GetOutNJetsTracks(Int_t nCases, TList* in, TList* out, TList* jets, const Double_t r, Double_t& pt);
-  void	   GetOutNJetsTracksStat(Int_t nCases, TList* in, TList* out, TList* jets, const Double_t r, Double_t& pt, Double_t &normFactor);
+  void	   GetOutNJetsTracks(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt);
+  void	   GetOutNJetsTracksStat(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt, Double_t &normFactor);
   void     GetOutPerpJetTracks(TList* inputlist, TList* outputlist, AliAODJet* jet, Double_t radius,Double_t& sumPt);
   Double_t GetDiJetBin(Double_t invMass, Double_t leadingJetPt, Double_t eMean, Int_t kindSlices); // function to find which bin fill
   Double_t InvMass(const AliAODJet* jet1, const AliAODJet* jet2);

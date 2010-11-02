@@ -3577,12 +3577,12 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   Double_t normFactor3Jets     = 0.;
 
   if(fBckgMode && nRecJetsCuts>1) {
-    GetOutNJetsTracks(2,fTracksRecCuts, tracklistout2jets, fJetsRecCuts, GetFFBckgRadius(), sumPtOut2Jets);
-    GetOutNJetsTracksStat(2,fTracksRecCuts, tracklistout2jetsStat, fJetsRecCuts, GetFFBckgRadius(), sumPtOut2JetsStat, normFactor2Jets);
+    GetOutNJetsTracks(2,fTracksRecCuts, tracklistout2jets, fJetsRecCuts, sumPtOut2Jets);
+    GetOutNJetsTracksStat(2,fTracksRecCuts, tracklistout2jetsStat, fJetsRecCuts,sumPtOut2JetsStat, normFactor2Jets);
   }
   if(fBckgMode && nRecJetsCuts>2) {
-    GetOutNJetsTracks(3,fTracksRecCuts, tracklistout3jets, fJetsRecCuts, GetFFBckgRadius(), sumPtOut3Jets);
-    GetOutNJetsTracksStat(3,fTracksRecCuts, tracklistout3jetsStat, fJetsRecCuts, GetFFBckgRadius(), sumPtOut3JetsStat, normFactor3Jets);
+    GetOutNJetsTracks(3,fTracksRecCuts, tracklistout3jets, fJetsRecCuts, sumPtOut3Jets);
+    GetOutNJetsTracksStat(3,fTracksRecCuts, tracklistout3jetsStat, fJetsRecCuts, sumPtOut3JetsStat, normFactor3Jets);
   }
 
   for(Int_t ij=0; ij<nRecJetsCuts; ++ij){
@@ -3655,8 +3655,8 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	Double_t sumPtOutLeading     = 0.; 
 	Double_t sumPtOutLeadingStat = 0.; 
 	Double_t normFactorLeading   = 0.;
-	GetOutNJetsTracks(1,fTracksRecCuts, tracklistoutleading, fJetsRecCuts, GetFFBckgRadius(), sumPtOutLeading);
-	GetOutNJetsTracksStat(1,fTracksRecCuts, tracklistoutleadingStat, fJetsRecCuts, GetFFBckgRadius(), sumPtOutLeadingStat, normFactorLeading);
+	GetOutNJetsTracks(1,fTracksRecCuts, tracklistoutleading, fJetsRecCuts, sumPtOutLeading);
+	GetOutNJetsTracksStat(1,fTracksRecCuts, tracklistoutleadingStat, fJetsRecCuts, sumPtOutLeadingStat, normFactorLeading);
 	fh1OutLeadingMult->Fill(tracklistoutleading->GetSize());
 
 	for(Int_t it=0; it<tracklistoutleading->GetSize(); ++it){
@@ -4950,7 +4950,7 @@ void AliAnalysisTaskFragmentationFunction::GetOutPerpJetTracks(TList* inputlist,
 }
 
 // ________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetOutNJetsTracks(Int_t nCases, TList* inputlist, TList* outputlist, TList* jetlist, const Double_t radius,Double_t& sumPt)
+void AliAnalysisTaskFragmentationFunction::GetOutNJetsTracks(Int_t nCases, TList* inputlist, TList* outputlist, TList* jetlist, Double_t& sumPt)
 {
   // List of tracks outside cone around N jet axis  
   // Particles taken randomly
@@ -5060,7 +5060,7 @@ void AliAnalysisTaskFragmentationFunction::GetOutNJetsTracks(Int_t nCases, TList
 }
 
 // ________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetOutNJetsTracksStat(Int_t nCases, TList* inputlist, TList* outputlist, TList* jetlist, const Double_t radius,Double_t& sumPt, Double_t &normFactor)
+void AliAnalysisTaskFragmentationFunction::GetOutNJetsTracksStat(Int_t nCases, TList* inputlist, TList* outputlist, TList* jetlist, Double_t& sumPt, Double_t &normFactor)
 {
   // List of tracks outside cone around N jet axis  
   // All particles taken + final scaling factor 
