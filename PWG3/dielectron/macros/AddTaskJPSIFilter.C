@@ -8,7 +8,7 @@ AliAnalysisTask *AddTaskJPSIFilter(){
   
   //check for output aod handler
   if (!mgr->GetOutputEventHandler()||mgr->GetOutputEventHandler()->IsA()!=AliAODHandler::Class()) {
-    Error("AddTaskJPSIFilter","No AOD output handler available. Cannot Proceed!");
+    Warning("AddTaskJPSIFilter","No AOD output handler available. Not adding the task!");
     return 0;
   }
 
@@ -17,6 +17,24 @@ AliAnalysisTask *AddTaskJPSIFilter(){
   
   //Do we run on AOD?
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
+
+  if(isAOD) {
+    //add options to AliAODHandler to duplicate input event
+    AliAODHandler *aodHandler = (AliAODHandler*)mgr->GetOutputEventHandler();
+    aodHandler->SetCreateNonStandardAOD();
+    aodHandler->SetNeedsHeaderReplication();
+    aodHandler->SetNeedsTracksBranchReplication();
+    aodHandler->SetNeedsVerticesBranchReplication();
+    aodHandler->SetNeedsV0sBranchReplication();
+    aodHandler->SetNeedsCascadesBranchReplication();
+    aodHandler->SetNeedsTrackletsBranchReplication();
+    aodHandler->SetNeedsPMDClustersBranchReplication();
+    aodHandler->SetNeedsJetsBranchReplication();
+    aodHandler->SetNeedsFMDClustersBranchReplication();
+    aodHandler->SetNeedsCaloClustersBranchReplication();
+    //aodHandler->SetNeedsMCParticlesBranchReplication();
+    aodHandler->SetNeedsDimuonsBranchReplication();
+  }
   
   //Create task and add it to the analysis manager
   AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");

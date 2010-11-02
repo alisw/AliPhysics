@@ -42,6 +42,8 @@ public:
   void Initialize();                              // initialization
   Int_t GetNMCTracks();                                     // return number of generated tracks
   Int_t GetNMCTracksFromStack();                            // return number of generated tracks from stack
+  Int_t GetNPrimary();                                            // return number of primary tracks
+  Int_t GetNPrimaryFromStack();                                   // return number of primary tracks from stack
   Int_t GetMCPID(const AliESDtrack* _track);                      // return MC PID
   Int_t GetMCPIDFromStack(const AliESDtrack* _track);             // return MC PID
   Int_t GetMotherPDG(const AliESDtrack* _track);                  // return mother PID from the MC stack

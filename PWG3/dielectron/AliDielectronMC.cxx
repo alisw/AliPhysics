@@ -114,6 +114,26 @@ Int_t AliDielectronMC::GetNMCTracksFromStack()
 }
 
 //____________________________________________________________
+Int_t AliDielectronMC::GetNPrimary()
+{
+  //
+  //  return the number of primary track from MC event
+  //
+  if (!fMCEvent){ AliError("No fMCEvent"); return 0; }
+  return fMCEvent->GetNumberOfPrimaries();
+}
+
+//____________________________________________________________
+Int_t AliDielectronMC::GetNPrimaryFromStack()
+{
+  //
+  //  return the number of primary track from stack
+  //
+  if (!fStack){ AliError("No fStack"); return -999; }
+  return fStack->GetNprimary();
+}
+
+//____________________________________________________________
 AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t itrk)
 {
   //

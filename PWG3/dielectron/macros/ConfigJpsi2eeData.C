@@ -43,6 +43,9 @@ AliDielectron* ConfigJpsi2ee(Int_t cutDefinition, Bool_t isAOD=kFALSE)
 //   if (cutDefinition<nDie-1)
   InitCFDieleData(diele, cutDefinition, isAOD);
 
+  AliDielectronTrackRotator *rot=new AliDielectronTrackRotator;
+  rot->SetIterations(10);
+  diele->SetTrackRotator(rot);
   return diele;
 }
 
@@ -174,6 +177,10 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
   for (Int_t i=0; i<3; ++i){
     histos->AddClass(Form("Track_Legs_%s",AliDielectron::PairClassName(i)));
   }
+  //track rotation
+  histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(10)));
+  histos->AddClass(Form("Track_Legs_%s",AliDielectron::PairClassName(10)));
+  
   
   //add histograms to event class
   if (cutDefinition==0){
@@ -220,7 +227,7 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   
   cf->AddVariable(AliDielectronVarManager::kY,40,-2,2);
   cf->AddVariable(AliDielectronVarManager::kM,50,1.98,1.98+50*.04); //40Mev Steps
-  cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
+  cf->AddVariable(AliDielectronVarManager::kPairType,11,0,11);
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kPt,"0.0, 0.8, 1.2, 100.0",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kNclsTPC,"0, 100, 120, 160",kTRUE);

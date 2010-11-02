@@ -63,7 +63,8 @@ public:
 
   TObjArray* CollectHistosProj(Int_t dim, Int_t *vars, const char* slices);
   TH1* Project(Int_t ndim, Int_t *vars, Int_t slice);
-
+  TH1* Project(const Option_t* var, Int_t slice);
+  
   //Draw efficiencies
   void DrawEfficiency(const char* varnames, const char* nominators, Int_t denominator=0, const char* opt="sameleg2");
   void DrawEfficiency(Int_t var, const char* nominators, Int_t denominator=0, const char* opt="sameleg", Int_t type=0);

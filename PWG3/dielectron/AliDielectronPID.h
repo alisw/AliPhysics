@@ -20,7 +20,6 @@
 //#############################################################
 
 #include <AliPID.h>
-#include <AliESDpid.h>
 #include <AliAODTrack.h>
 #include <AliAODPid.h>
 
@@ -30,6 +29,8 @@ class TF1;
 class TList;
 class AliVTrack;
 class TGraph;
+class AliESDpid;
+class AliAODpidUtil;
 
 class AliDielectronPID : public AliAnalysisCuts {
 public:
@@ -82,8 +83,8 @@ private:
   UChar_t  fRequirePIDbit[kNmaxPID]; //How to make use of the pid bit (see)
 
   AliESDpid *fESDpid;             //! esd pid object
-
-                                  
+  AliAODpidUtil *fAODpidUtil;     //! AOD pid object
+  
   static TGraph *fgFitCorr;       //spline fit object to correct the nsigma deviation in the TPC electron band
   static Double_t fgCorr;         //!correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
@@ -93,50 +94,10 @@ private:
   Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut) const;
   Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut) const;
 
-  Float_t NumberOfSigmasITS(const AliAODTrack *track, AliPID::EParticleType type) const;
-  Float_t NumberOfSigmasTPC(const AliAODTrack *track, AliPID::EParticleType type) const;
-  Float_t NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type) const;
-  
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
   ClassDef(AliDielectronPID,3)         // Dielectron PID
 };
-
-
-//
-// Inline functions for AOD as long as ther is no AOD pid object we have to fake it
-//
-
-inline Float_t AliDielectronPID::NumberOfSigmasITS(const AliAODTrack *track, AliPID::EParticleType type) const {
-  AliAODPid *pid=track->GetDetPid();
-  if (!pid) return -1000.;
-  
-  return fESDpid->GetITSResponse().GetNumberOfSigmas(track->P(),pid->GetITSsignal(),type);
-}
-
-inline Float_t AliDielectronPID::NumberOfSigmasTPC(const AliAODTrack *track, AliPID::EParticleType type) const {
-  AliAODPid *pid=track->GetDetPid();
-  if (!pid) return -1000.;
-    
-  Double_t mom = pid->GetTPCmomentum();
-  if (mom<0) mom=track->P();
-
-  //FIXME: rough estimate of the number of clusters used for PID. Needs to be fixed!!!
-  Int_t ncl=(Int_t)track->GetTPCClusterMap().CountBits();
-  return fESDpid->GetTPCResponse().GetNumberOfSigmas(mom,pid->GetTPCsignal(),ncl,type);
-}
-
-inline Float_t AliDielectronPID::NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type) const {
-  AliAODPid *pid=track->GetDetPid();
-  if (!pid) return -1000.;
-  
-  Double_t times[AliPID::kSPECIES];
-  pid->GetIntegratedTimes(times);
-  Double_t tofRes = fESDpid->GetTOFResponse().GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
-  return (pid->GetTOFsignal() - times[type])/ tofRes;
-}
-
-
 
 #endif

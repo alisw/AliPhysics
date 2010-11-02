@@ -28,6 +28,7 @@
 #include <AliVEvent.h>
 #include <AliInputEventHandler.h>
 #include <AliESDInputHandler.h>
+#include <AliAODInputHandler.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronMC.h"
@@ -39,11 +40,11 @@ ClassImp(AliAnalysisTaskDielectronFilter)
 
 //_________________________________________________________________________________
 AliAnalysisTaskDielectronFilter::AliAnalysisTaskDielectronFilter() :
-  AliAnalysisTaskSE(),
-  fDielectron(0),
-  fSelectPhysics(kTRUE),
-  fTriggerMask(AliVEvent::kMB),
-  fEventStat(0x0)
+AliAnalysisTaskSE(),
+fDielectron(0),
+fSelectPhysics(kTRUE),
+fTriggerMask(AliVEvent::kMB),
+fEventStat(0x0)
 {
   //
   // Constructor
@@ -52,11 +53,11 @@ AliAnalysisTaskDielectronFilter::AliAnalysisTaskDielectronFilter() :
 
 //_________________________________________________________________________________
 AliAnalysisTaskDielectronFilter::AliAnalysisTaskDielectronFilter(const char *name) :
-  AliAnalysisTaskSE(name),
-  fDielectron(0),
-  fSelectPhysics(kTRUE),
-  fTriggerMask(AliVEvent::kMB),
-  fEventStat(0x0)
+AliAnalysisTaskSE(name),
+fDielectron(0),
+fSelectPhysics(kTRUE),
+fTriggerMask(AliVEvent::kMB),
+fEventStat(0x0)
 {
   //
   // Constructor
@@ -99,7 +100,7 @@ void AliAnalysisTaskDielectronFilter::UserCreateOutputObjects()
     fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
     fEventStat->GetXaxis()->SetBinLabel(3,"After Cand. Sel.");
   }
-
+  
   PostData(2,fEventStat);
 }
 
@@ -120,14 +121,30 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
     //load esd pid bethe bloch parameters depending on the existance of the MC handler
     // yes: MC parameters
     // no:  data parameters
-    if (!AliDielectronVarManager::GetESDpid()){
-      if (AliDielectronMC::Instance()->HasMC()) {
-        AliDielectronVarManager::InitESDpid();
-      } else {
-        AliDielectronVarManager::InitESDpid(1);
+    
+    //ESD case
+    if (man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+      if (!AliDielectronVarManager::GetESDpid()){
+        
+        if (AliDielectronMC::Instance()->HasMC()) {
+          AliDielectronVarManager::InitESDpid();
+        } else {
+          AliDielectronVarManager::InitESDpid(1);
+        }
+      }
+    }
+    //AOD case
+    if (man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+      if (!AliDielectronVarManager::GetAODpidUtil()){
+        if (AliDielectronMC::Instance()->HasMC()) {
+          AliDielectronVarManager::InitAODpidUtil();
+        } else {
+          AliDielectronVarManager::InitAODpidUtil(1);
+        }
       }
     }
   }
+  
   // Was event selected ?
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   UInt_t isSelected = AliVEvent::kAny;
@@ -135,7 +152,7 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
     isSelected = inputHandler->IsEventSelected();
     isSelected&=fTriggerMask;
   }
-
+  
   //Before physics selection
   fEventStat->Fill(0.);
   if (isSelected==0) {
@@ -152,43 +169,53 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   fDielectron->Process(InputEvent());
   
   if(fDielectron->HasCandidates()){
-    //If input event is an AliESDevent
-    // replace the references of the legs with the AOD references
-    if(man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
-      AliAODEvent *aod = ((AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()))->GetAOD();
-      TObjArray *obj = 0x0;
-      AliAODTrack *leg1 = 0x0;
-      AliAODTrack *leg2 = 0x0;
-      for(Int_t i=0; i < 10; i++ ){
-        obj = (TObjArray*)(*(fDielectron->GetPairArraysPointer()))->UncheckedAt(i);
-        if(!obj) continue;
-        for(int j=0;j<obj->GetEntriesFast();j++)
-        {
-          AliDielectronPair *pairObj = (AliDielectronPair*)obj->UncheckedAt(j);
-          Int_t id1 = ((AliESDtrack*)pairObj->GetFirstDaughter())->GetID();
-          Int_t id2 = ((AliESDtrack*)pairObj->GetSecondDaughter())->GetID();
-          for(Int_t it=0;it<aod->GetNumberOfTracks();it++){
-            if(aod->GetTrack(it)->GetID() == id1) leg1 = aod->GetTrack(it);
-            if(aod->GetTrack(it)->GetID() == id2) leg2 = aod->GetTrack(it);
-          }
-          if(!leg1 || !leg2) continue;
-          pairObj->SetRefFirstDaughter(leg1);
-          pairObj->SetRefSecondDaughter(leg2);
+    AliAODEvent *aod = ((AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()))->GetAOD();
+    
+    //replace the references of the legs with the AOD references
+    TObjArray *obj = 0x0;
+    for(Int_t i=0; i < 10; i++ ){
+      obj = (TObjArray*)((*(fDielectron->GetPairArraysPointer()))->UncheckedAt(i));
+      if(!obj) continue;
+      for(int j=0;j<obj->GetEntriesFast();j++){
+        AliAODTrack *leg1 = 0x0;
+        AliAODTrack *leg2 = 0x0;
+        AliDielectronPair *pairObj = (AliDielectronPair*)obj->UncheckedAt(j);
+        Int_t id1 = ((AliVTrack*)pairObj->GetFirstDaughter())->GetID();
+        Int_t id2 = ((AliVTrack*)pairObj->GetSecondDaughter())->GetID();
+        
+        for(Int_t it=0;it<aod->GetNumberOfTracks();it++){
+          if(aod->GetTrack(it)->GetID() == id1) leg1 = aod->GetTrack(it);
+          if(aod->GetTrack(it)->GetID() == id2) leg2 = aod->GetTrack(it);
         }
+        if(!leg1 || !leg2) continue;
+        
+        if(man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
+          leg1->ResetBit(kIsReferenced);
+          leg1->SetUniqueID(0);
+          leg2->ResetBit(kIsReferenced);
+          leg2->SetUniqueID(0);
+        }
+        pairObj->SetRefFirstDaughter(leg1);
+        pairObj->SetRefSecondDaughter(leg2);
       }
     }
-      
-    AliAODExtension *extDielectron = dynamic_cast<AliAODHandler*>
-        ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler())->GetFilteredAOD("AliAOD.Dielectron.root");
+    
+    AliAODExtension *extDielectron = dynamic_cast<AliAODHandler*>       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler())->GetFilteredAOD("AliAOD.Dielectron.root");
     extDielectron->SelectEvent();
     //after candidate selection
     fEventStat->Fill(2.);
     
     //see if dielectron candidate branch exists, if not create is
     TTree *t=extDielectron->GetTree();
+
+    if(!t->GetListOfBranches()->GetEntries() && man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class())
+      t->Branch(aod->GetList());
+    
     if (!t->GetBranch("dielectrons")){
       t->Bronch("dielectrons","TObjArray",fDielectron->GetPairArraysPointer());
     }
+    
+    if(man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()) t->Fill();
   }
   
   PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));

@@ -29,14 +29,17 @@ class AliVEvent;
 class THashList;
 class AliDielectronCF;
 class AliDielectronDebugTree;
+class AliDielectronTrackRotator;
 
 //________________________________________________________________
 class AliDielectron : public TNamed {
   
 public:
-  enum ParticleValues { kPx=0, kPy, kPz, kPt, kP, kXv, kYv, kZv, kOneOverPt,
-      kPhi, kTheta, kE, kM, kEta, kY, kCharge, kNParticleValues };
-  enum PairValues { kChi2NDF=kNParticleValues, kDecayLength, kR, kOpeningAngle, kMerr, kNPairValues };
+  enum EPairType { kEv1PP=0, kEv1PM, kEv1MM,
+      kEv1PEv2P, kEv1MEv2P, kEv2PP,
+      kEv1PEv2M, kEv1MEv2M, kEv2PM,
+      kEv2MM, kEv1PMRot };
+  enum ELegType  { kEv1P, kEv1M, kEv2P, kEv2M };
   
   AliDielectron();
   AliDielectron(const char* name, const char* title);
@@ -76,10 +79,13 @@ public:
   void SetCFManagerPair(AliDielectronCF * const cf) { fCfManagerPair=cf; }
   AliDielectronCF* GetCFManagerPair() const { return fCfManagerPair; }
 
+  void SetTrackRotator(AliDielectronTrackRotator * const rot) { fTrackRotator=rot; }
+  AliDielectronTrackRotator* GetTrackRotator() const { return fTrackRotator; }
+  
   void SetDebugTree(AliDielectronDebugTree * const tree) { fDebugTree=tree; }
   
   static const char* TrackClassName(Int_t i) { return (i>=0&&i<4)?fgkTrackClassNames[i]:""; }
-  static const char* PairClassName(Int_t i)  { return (i>=0&&i<10)?fgkPairClassNames[i]:""; }
+  static const char* PairClassName(Int_t i)  { return (i>=0&&i<11)?fgkPairClassNames[i]:""; }
 
   void SaveDebugTree();
   
@@ -110,12 +116,13 @@ private:
                                   //TODO: better way to store it? TClonesArray?
 
   AliDielectronCF *fCfManagerPair;//Correction Framework Manager for the Pair
-
+  AliDielectronTrackRotator *fTrackRotator; //Track rotator
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
   
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2);
   void FillPairArrays(Int_t arr1, Int_t arr2);
+  void FillPairArrayTR();
   
   Int_t GetPairIndex(Int_t arr1, Int_t arr2) const {return arr1>=arr2?arr1*(arr1+1)/2+arr2:arr2*(arr2+1)/2+arr1;}
 
@@ -125,11 +132,13 @@ private:
   TObjArray* PairArray(Int_t i);
   
   static const char* fgkTrackClassNames[4];   //Names for track arrays
-  static const char* fgkPairClassNames[10];   //Names for pair arrays
+  static const char* fgkPairClassNames[11];   //Names for pair arrays
 
   void ProcessMC();
   
   void  FillHistograms(const AliVEvent *ev);
+  void  FillHistogramsPair(AliDielectronPair *pair);
+    
   void  FillDebugTree();
   
   AliDielectron(const AliDielectron &c);

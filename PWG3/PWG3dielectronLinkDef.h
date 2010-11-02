@@ -25,5 +25,8 @@
 #pragma link C++ class AliDielectronSignalExt+;
 #pragma link C++ class AliDielectronSpectrum+;
 #pragma link C++ class AliDielectronDebugTree+;
+#pragma link C++ class AliDielectronTrackRotator+;
 #pragma link C++ class AliDielectronPID+;
+#pragma link C++ class AliDielectronCutGroup+;
+#pragma link C++ class AliDielectronEventCuts+;
 #endif

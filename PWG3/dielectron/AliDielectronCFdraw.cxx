@@ -349,7 +349,7 @@ TObjArray* AliDielectronCFdraw::CollectHistosProj(Int_t dim, Int_t *vars, const 
 TH1* AliDielectronCFdraw::Project(Int_t ndim, Int_t *vars, Int_t slice)
 {
   //
-  // Do an nim projection
+  // Do an ndim projection
   //
   switch (ndim){
   case 1:
@@ -363,6 +363,35 @@ TH1* AliDielectronCFdraw::Project(Int_t ndim, Int_t *vars, Int_t slice)
     break;
   }
   return 0x0;
+}
+
+//________________________________________________________________
+TH1* AliDielectronCFdraw::Project(const Option_t* var, Int_t slice)
+{
+  //
+  // translate variable names and do projection
+  //
+  TObjArray *arrVars=TString(var).Tokenize(":");
+  Int_t entries=arrVars->GetEntriesFast();
+  if (entries<1||entries>3){
+    AliError("Wrong number of variables, supported are 1 - 3 dimensions");
+    delete arrVars;
+    return 0x0;
+  }
+  
+  TIter next(arrVars);
+  TObjString *ostr=0x0;
+  Int_t ivar[3]={-1,-1,-1};
+  for (Int_t i=0; i<entries; ++i){
+    ostr=static_cast<TObjString*>(next());
+    if (ostr->GetString().IsDigit()){
+      ivar[i]=ostr->GetString().Atoi();
+    } else {
+      ivar[i]=fCfContainer->GetVar(ostr->GetName());
+    }
+  }
+  delete arrVars;
+  return Project(entries,ivar,slice);
 }
 
 //________________________________________________________________

@@ -111,11 +111,26 @@ void AliAnalysisTaskDielectronSE::UserExec(Option_t *)
     //load esd pid bethe bloch parameters depending on the existance of the MC handler
     // yes: MC parameters
     // no:  data parameters
-    if (!AliDielectronVarManager::GetESDpid()){
-      if (AliDielectronMC::Instance()->HasMC()) {
-        AliDielectronVarManager::InitESDpid();
-      } else {
-        AliDielectronVarManager::InitESDpid(1);
+    
+    //ESD case
+    if (man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+      if (!AliDielectronVarManager::GetESDpid()){
+        
+        if (AliDielectronMC::Instance()->HasMC()) {
+          AliDielectronVarManager::InitESDpid();
+        } else {
+          AliDielectronVarManager::InitESDpid(1);
+        }
+      }
+    }
+    //AOD case
+    if (man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+      if (!AliDielectronVarManager::GetAODpidUtil()){
+        if (AliDielectronMC::Instance()->HasMC()) {
+          AliDielectronVarManager::InitAODpidUtil();
+        } else {
+          AliDielectronVarManager::InitAODpidUtil(1);
+        }
       }
     }
   }

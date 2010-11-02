@@ -58,7 +58,8 @@ public:
   virtual void Process(TObjArray* const arrhist);
   void ProcessLS(TObjArray* const arrhist);  // like-sign method
   void ProcessEM(TObjArray* const arrhist);  // event mixing method
-  
+  void ProcessRotation(TObjArray* const arrhist);  // event mixing method
+
   virtual void Draw(const Option_t* option = "");
 
 private:

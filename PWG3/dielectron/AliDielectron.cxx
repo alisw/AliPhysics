@@ -36,7 +36,7 @@ The names are available via the function PairClassName(Int_t i)
 8: ev2+ ev2-  (same event unlike sign)
 9: ev2- ev2-  (same event like sign -)
 
-
+10: ev1+ ev1- (same event track rotation)
 
 */
 //                                                                       //
@@ -57,6 +57,7 @@ The names are available via the function PairClassName(Int_t i)
 #include "AliDielectronCF.h"
 #include "AliDielectronMC.h"
 #include "AliDielectronVarManager.h"
+#include "AliDielectronTrackRotator.h"
 #include "AliDielectronDebugTree.h"
 
 #include "AliDielectron.h"
@@ -70,7 +71,7 @@ const char* AliDielectron::fgkTrackClassNames[4] = {
   "ev2-"
 };
 
-const char* AliDielectron::fgkPairClassNames[10] = {
+const char* AliDielectron::fgkPairClassNames[11] = {
   "ev1+_ev1+",
   "ev1+_ev1-",
   "ev1-_ev1-",
@@ -80,7 +81,8 @@ const char* AliDielectron::fgkPairClassNames[10] = {
   "ev1+_ev2-",
   "ev1-_ev2-",
   "ev2+_ev2-",
-  "ev2-_ev2-"
+  "ev2-_ev2-",
+  "ev1+_ev1-_TR"
 };
 
 //________________________________________________________________
@@ -97,6 +99,7 @@ AliDielectron::AliDielectron() :
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
   fCfManagerPair(0x0),
+  fTrackRotator(0x0),
   fDebugTree(0x0)
 {
   //
@@ -119,6 +122,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
   fCfManagerPair(0x0),
+  fTrackRotator(0x0),
   fDebugTree(0x0)
 {
   //
@@ -145,6 +149,7 @@ void AliDielectron::Init()
   // Initialise objects
   //
   if (fCfManagerPair) fCfManagerPair->InitialiseContainer(fPairFilter);
+  if (fTrackRotator)  fTrackRotator->SetTrackArrays(&fTracks[0],&fTracks[1]);
   if (fDebugTree) fDebugTree->SetDielectron(this);
 } 
 
@@ -195,6 +200,9 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     }
   }
 
+  //track rotation
+  if (fTrackRotator) FillPairArrayTR();
+  
   //in case there is a histogram manager, fill the QA histograms
   if (fHistos) FillHistograms(ev1);
 
@@ -284,6 +292,43 @@ void AliDielectron::FillHistograms(const AliVEvent *ev)
   }
   
 }
+//________________________________________________________________
+void AliDielectron::FillHistogramsPair(AliDielectronPair *pair)
+{
+  //
+  // Fill Histogram information for pairs and the track in the pair
+  // NOTE: in this funtion the leg information may be filled multiple
+  //       times. This funtion is used in the track rotation pairing
+  //       and those legs are not saved!
+  //
+  TString  className,className2;
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  
+  //Fill Pair information, separately for all pair candidate arrays and the legs
+  TObjArray arrLegs(100);
+  const Int_t type=pair->GetType();
+  className.Form("Pair_%s",fgkPairClassNames[type]);
+  className2.Form("Track_Legs_%s",fgkPairClassNames[type]);
+  
+  Bool_t pairClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
+  Bool_t legClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
+  
+  //fill pair information
+  if (pairClass){
+    AliDielectronVarManager::Fill(pair, values);
+    fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+  }
+
+  if (legClass){
+    AliVParticle *d1=pair->GetFirstDaughter();
+    AliDielectronVarManager::Fill(d1, values);
+    fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+    
+    AliVParticle *d2=pair->GetSecondDaughter();
+    AliDielectronVarManager::Fill(d2, values);
+    fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+  }
+}
 
 //________________________________________________________________
 void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr)
@@ -318,7 +363,8 @@ void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr)
 }
 
 //________________________________________________________________
-void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2) {
+void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2)
+{
   //
   // Prefilter tracks from pairs
   // Needed for datlitz rejections
@@ -395,7 +441,8 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
 }
 
 //________________________________________________________________
-void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2) {
+void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
+{
   //
   // select pairs and fill pair candidate arrays
   //
@@ -442,6 +489,30 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2) {
   }
   //delete the surplus candidate
   delete candidate;
+}
+
+//________________________________________________________________
+void AliDielectron::FillPairArrayTR()
+{
+  //
+  // select pairs and fill pair candidate arrays
+  //
+  UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
+  
+  while ( fTrackRotator->NextCombination() ){
+    AliDielectronPair candidate;
+    candidate.SetTracks(fTrackRotator->GetTrackP(), fPdgLeg1, fTrackRotator->GetTrackN(), fPdgLeg2);
+    candidate.SetType(10);
+    
+    //pair cuts
+    UInt_t cutMask=fPairFilter.IsSelected(&candidate);
+    
+    //CF manager for the pair
+    if (fCfManagerPair) fCfManagerPair->Fill(cutMask,&candidate);
+    
+    //apply cut
+    if (cutMask==selectedMask&&fHistos) FillHistogramsPair(&candidate);
+  }
 }
 
 //________________________________________________________________
