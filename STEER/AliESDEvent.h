@@ -253,8 +253,8 @@ public:
 
   void SetTOFHeader(const AliTOFHeader * tofEventTime);
   const AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
-  const Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
-  const Float_t GetTOFTimeResolution() const {if (fTOFHeader) return fTOFHeader->GetTOFResolution(); else return 0.;}
+  Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
+  Float_t GetTOFTimeResolution() const {if (fTOFHeader) return fTOFHeader->GetTOFResolution(); else return 0.;}
 
 
   void SetMultiplicity(const AliMultiplicity *mul);
