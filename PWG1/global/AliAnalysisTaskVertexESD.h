@@ -76,6 +76,9 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   TH1F        *fhTRKTrklets; //! output histo
   TH1F        *fhTRKcTrklets; //! output histo
   TH1F        *fhTRKncTrklets; //! output histo
+  TH1F        *fhTPCTrklets; //! output histo
+  TH1F        *fhTPCcTrklets; //! output histo
+  TH1F        *fhTPCncTrklets; //! output histo
   TH1F        *fhSPD3DZreco; //! output histo
   TH1F        *fhSPDZZreco; //! output histo
 
