@@ -184,7 +184,9 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   if(vertex->GetNContributors()<fMinVtxContr) return kFALSE; 
 
   // switch to settings for 1-pad cls in TPC
-  if(event->GetRunNumber()>121693) fPidHF->SetOnePad(kTRUE);
+  if(fPidHF) {
+    if(event->GetRunNumber()>121693) fPidHF->SetOnePad(kTRUE);
+  }
 
   if(fOptPileup==kRejectPileupEvent){
     Int_t cutc=(Int_t)fMinContrPileup;
