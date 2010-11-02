@@ -15,11 +15,12 @@ workers=26
 analysismode=9; #SPD + field on
 centrBin=0
 centrEstimator="V0M"
+runTriggerStudy=no
 
 give_help() {
 
 cat <<ENDOFGUIDE
-This scripts runs the mupliplicity analysis.
+This scripts runs the mupliplicity analysis and the trigger study class
 
 Available options:
  Mode control, at least one of the following options should be used
@@ -28,11 +29,13 @@ Available options:
                                   0 local
                                   1 caf    
   -c                           Run the correction
+  -s                           Run the trigger study task (by default it runs the multiplicity analysis)
  Proof settings
   -w nworkers                  Set the number of worker nodes
   -n <nev>                     Number of events to be analized 
  Misc
   -d <dataset>                 Dataset or data collection (according to run mode) [default=$dataset]
+ Options specific to the multiplicity analysis
   -b <bin>                     Set centrality bin [default=$centrBin]
   -e <estimator>               Set centrality estimator [default=$centrEstimator]
                                Available choiches:
@@ -46,10 +49,11 @@ Available options:
                                 - ZEMvsZDC = correlation between ZEM and ZDC     
   -o <option>                  Misc option [default=$option]
                                Available options: 
-                                - SAVE:     Move results to a different output folder
+                                - SAVE:     Move results to a different output folder*
                                 - ITSsa:    Use ITSsa tracks
                                 - TPC:      Use TPC only tracks
                                 - NOMCKINE: Skip MC kinematics (runs way faster)
+                                * == can be used in trigger studies task
   -t <option>                  Command line option for root [defaul=$ropt]
   -m                           Use this to run on Monte Carlo
   -g                           Debug mode
@@ -58,11 +62,14 @@ ENDOFGUIDE
 
 }
 
-while getopts "r:cgmd:o:w:n:e:b:" opt; do
+while getopts "sr:cgmd:o:w:n:e:b:" opt; do
   case $opt in
     r)
       run=yes
       runmode=$OPTARG
+      ;;      
+    s)
+      runTriggerStudy=yes
       ;;      
     c)
       correct=yes
@@ -121,7 +128,12 @@ fi
 
 if [ "$run" = "yes" ]
     then
-    root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",\"$option\",$workers\)
+    if [ "$runTriggerStudy" = "yes" ]
+	then
+	root $ropt runTriggerStudy.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,\"$option\",$workers\)
+    else
+	root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",\"$option\",$workers\)
+    fi
 fi
 
 if [ "$correct" = "yes" ]

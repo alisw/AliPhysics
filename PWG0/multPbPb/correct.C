@@ -149,13 +149,13 @@ Double_t CheckSecondaries() {
   TCanvas * c1 = new TCanvas("cDCAFit", "Fit to the DCA distributions");  
   c1->SetLogy();
   // Draw all
-  //  hDataDCA->Draw();
-  //  hMCDCARec ->Draw("same");
-  // hMCDCAPri ->Draw("same");
-  // hMCDCASW ->Draw("same");
-  // hMCDCASM ->Draw("same");
-  // hMCDCAFak ->Draw("same");
-  //  return 1;
+   hDataDCA->Draw();
+   hMCDCARec ->Draw("same");
+  hMCDCAPri ->Draw("same");
+  hMCDCASW ->Draw("same");
+  hMCDCASM ->Draw("same");
+  hMCDCAFak ->Draw("same");
+   return 1;
   
   TH1D * hMCPrimSMFak = (TH1D*) hMCDCAPri->Clone("hMCPrimSMFak");
   //  hMCPrimSMFak->Add(hMCDCASM);

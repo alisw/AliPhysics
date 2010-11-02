@@ -1,12 +1,8 @@
-// TODO:
-// 1. Check cuts for 2010 (Jochen?)
-// 2. Run with many centrality bins at once
-
 enum { kMyRunModeLocal = 0, kMyRunModeCAF};
 
 TChain * GetAnalysisChain(const char * incollection);
 
-void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Int_t centrBin = 0, const char * centrEstimator = "VOM", const char* option = "",Int_t workers = -1)
+void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, const char* option = "",Int_t workers = -1)
 {
   // runMode:
   //
@@ -33,17 +29,6 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     mgr->SetMCtruthEventHandler(handler);
   }
 
-  // physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  physicsSelectionTask = AddTaskPhysicsSelection(isMC);
-
-  // Centrality
-  AliCentralitySelectionTask *taskCentr = new AliCentralitySelectionTask("CentralitySelection");
-  taskCentr->SetPercentileFile("$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root");
-  taskCentr->SetPercentileFile2("$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityByFunction.root");
-  mgr->AddTask(taskCentr);
-  mgr->ConnectInput (taskCentr,0, mgr->GetCommonInputContainer());
-
 
   // Parse option strings
   TString optionStr(option);
@@ -58,38 +43,23 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     doSave = kTRUE;
   }
 
-  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
-  TString pathsuffix = "";
-  // cuts->SetPtRange(0.15,0.2);// FIXME pt cut
-  // const char * pathsuffix = "_pt_015_020_nofakes";
-
-  if (optionStr.Contains("ITSsa")) {
-    delete cuts;
-    cuts = AliESDtrackCuts::GetStandardITSPureSATrackCuts2009();
-    cout << ">>>> USING ITS sa tracks" << endl;
-    pathsuffix="ITSsa";
-  }
-
-  if (optionStr.Contains("TPC")) {
-    delete cuts;
-    cuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    cout << ">>>> USING TPC only tracks" << endl;
-    pathsuffix="TPC";
-  }
-
-  Bool_t useMCKinematics = isMC;
-  if (optionStr.Contains("NOMCKIN")) {
-    cout << ">>>> Ignoring MC kinematics" << endl;
-    useMCKinematics=kFALSE;
-  }
   
   
   // load my task
-  gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
-  AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts); // kTRUE enables DCA cut
-  task->SetIsMC(useMCKinematics);
-  task->SetCentralityBin(centrBin);
-  task->SetCentralityEstimator(centrEstimator);
+  AliAnalysisTaskTriggerStudy *task = new AliAnalysisTaskTriggerStudy("TaskOfflineTrigger");
+  mgr->AddTask(task);
+  // Set I/O
+  AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cTrigStudy",
+							    AliHistoListWrapper::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    "Trig_Temp.root");
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task,1,coutput1);
+
+
+
+  task->SetIsMC(isMC);
   
   if (!mgr->InitAnalysis()) return;
 	
@@ -99,7 +69,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     // If running in local mode, create chain of ESD files
     cout << "RUNNING LOCAL, CHAIN" << endl;    
     TChain * chain = GetAnalysisChain(data);
-    chain->Print();
+    //    chain->Print();
     mgr->StartAnalysis("local",chain,nev);
   } else if (runMode == kMyRunModeCAF) {
     mgr->StartAnalysis("proof",TString(data)+"#esdTree",nev);
@@ -107,7 +77,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     cout << "ERROR: unknown run mode" << endl;        
   }
 
-  if (doSave) MoveOutput(data, pathsuffix.Data());
+  if (doSave) MoveOutput(data, "");
 
   
 }
@@ -115,13 +85,12 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
 void MoveOutput(const char * data, const char * suffix = ""){
 
-  TString path("output/");
+  TString path("outTrigger/");
   path = path + TString(data).Tokenize("/")->Last()->GetName() + suffix;
   
-  TString fileName = "multPbPbtracks.root";
+  TString fileName = "trigger_study.root";
   gSystem->mkdir(path, kTRUE);
   gSystem->Rename(fileName, path + "/" + fileName);
-  gSystem->Rename("event_stat.root", path + "/event_stat.root");      
   Printf(">>>>> Moved files to %s", path.Data());
 }  
 
@@ -202,12 +171,10 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   }
   // Load helper classes
   // TODO: replace this by a list of TOBJStrings
-  TString taskName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+");
-  TString histoManName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+");
+  TString taskName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskTriggerStudy.cxx+");
   TString listName("$ALICE_ROOT/PWG1/background/AliHistoListWrapper.cxx+");
 
   gSystem->ExpandPathName(taskName);
-  gSystem->ExpandPathName(histoManName);
   gSystem->ExpandPathName(listName);
 
 
@@ -215,15 +182,10 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   // Create, add task
   if (runMode == kMyRunModeCAF) {
     gProof->Load(listName+(debug?"+g":""));   
-    gProof->Load(histoManName+(debug?"+g":""));
     gProof->Load(taskName+(debug?"+g":""));
-    gProof->Load("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx++g");      
   } else {
     gROOT->LoadMacro(listName+(debug?"+g":""));   
-    gROOT->LoadMacro(histoManName+(debug?"+g":""));
     gROOT->LoadMacro(taskName+(debug?"+g":""));    
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx++g");
-
   }
 
 
