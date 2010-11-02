@@ -1025,6 +1025,9 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 	Int_t imo =  p->GetFirstMother();
 	TParticle* pm  = Particle(imo);
 	Int_t mpdg = TMath::Abs(pm->GetPdgCode());
+// Check for Sigma0 
+	if ((mpdg == 3212) &&  (imo <  GetNprimary())) return kTRUE;
+// 
 // Check if it comes from a pi0 decay
 //
 // What about the pi0 Dalitz ??
