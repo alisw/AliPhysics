@@ -40,6 +40,7 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fCheckTOF(kTRUE),
   fUseGlobal(kTRUE),
   fUseITSSA(kTRUE),
+  fPID(AliPID::kKaon),
   fMaxEta(1E6),
   fMaxITSband(3.0),
   fTPCpLimit(0.35),
@@ -102,6 +103,7 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fCheckTOF(copy.fCheckTOF),
   fUseGlobal(copy.fUseGlobal),
   fUseITSSA(copy.fUseITSSA),
+  fPID(copy.fPID),
   fMaxEta(copy.fMaxEta),
   fMaxITSband(copy.fMaxITSband),
   fTPCpLimit(copy.fTPCpLimit),
@@ -144,6 +146,7 @@ AliRsnCutESD2010& AliRsnCutESD2010::operator=(const AliRsnCutESD2010& copy)
   fCheckTOF = copy.fCheckTOF;
   fUseGlobal = copy.fUseGlobal;
   fUseITSSA = copy.fUseITSSA;
+  fPID = copy.fPID;
   fMaxEta = copy.fMaxEta;
   fMaxITSband = copy.fMaxITSband;
   fTPCpLimit = copy.fTPCpLimit;
@@ -310,8 +313,8 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   {
     track->GetIntegratedTimes(times);
     tofTime  = (Double_t)track->GetTOFsignal();
-    tofSigma = fTOFmaker->GetExpectedSigma(mom, times[AliPID::kKaon], AliPID::ParticleMass(AliPID::kKaon));
-    tofRef   = times[AliPID::kKaon];
+    tofSigma = fTOFmaker->GetExpectedSigma(mom, times[(Int_t)fPID], AliPID::ParticleMass((Int_t)fPID));
+    tofRef   = times[(Int_t)fPID];
     if (tofRef <= 0.0 && tofSigma <= 0.0) isTOF = kFALSE;
   }
   
@@ -330,7 +333,7 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
     // check TPC dE/dx:
     if (fCheckTPC)
     {
-      tpcNSigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, AliPID::kKaon));
+      tpcNSigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, fPID));
       if (track->GetInnerParam()->P() > fTPCpLimit) tpcMaxNSigma = fMinTPCband; else tpcMaxNSigma = fMaxTPCband;
       okTPC = (tpcNSigma <= tpcMaxNSigma);
       AliDebug(AliLog::kDebug + 2, Form("TPC nsigma = %f -- max = %f -- cut %s", tpcNSigma, tpcMaxNSigma, (okTPC ? "passed" : "failed")));
@@ -350,8 +353,8 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
         // TOF can be checked only when track is matched there
         track->GetIntegratedTimes(times);
         tofTime  = (Double_t)track->GetTOFsignal();
-        tofSigma = fTOFmaker->GetExpectedSigma(mom, times[AliPID::kKaon], AliPID::ParticleMass(AliPID::kKaon));
-        tofRef   = times[AliPID::kKaon];
+        tofSigma = fTOFmaker->GetExpectedSigma(mom, times[(Int_t)fPID], AliPID::ParticleMass((Int_t)fPID));
+        tofRef   = times[(Int_t)fPID];
         /*
         tofRel   = (tofTime - tofRef) / tofRef;
         ymax     = a1 / (mom - b1) + c1;
@@ -388,7 +391,7 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
       nITS      = 0;
       for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITS;
       if (nITS < 3) return kFALSE;
-      itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, AliPID::kKaon, nITS, kTRUE);
+      itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, fPID, nITS, kTRUE);
       okITS = (TMath::Abs(itsNSigma) <= fMaxITSband);
       AliDebug(AliLog::kDebug + 2, Form("ITS nsigma = %f -- max = %f -- cut %s", itsNSigma, fMaxITSband, (okITS ? "passed" : "failed")));
     }
