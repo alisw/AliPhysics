@@ -60,6 +60,7 @@ AliInputEventHandler::AliInputEventHandler(const char* name, const char* title):
   fIsSelectedResult(0),
   fMixingHandler(0)
 {
+// Named constructor.
 }
 
 void AliInputEventHandler::SwitchOffBranches() const {
@@ -91,7 +92,15 @@ void AliInputEventHandler::SwitchOnBranches() const {
   }
 }
 
-
-
+TObject *AliInputEventHandler::GetStatistics(Option_t *) const
+{
+// Returns the statistics object(s) (TH2F histogram) produced by the physics
+// selection. Implementations both for ESD and AOD input handlers.
+  return NULL;
+}
+   
 Long64_t AliInputEventHandler::GetReadEntry() const 
-{return fTree->GetReadEntry();}
+{
+  // Get the current entry.
+  return fTree->GetReadEntry();
+}

@@ -470,3 +470,16 @@ Int_t AliESDInputHandler::GetNFilesEmpty()
   return iFilesEmpty;
   
 }
+
+//______________________________________________________________________________
+TObject *AliESDInputHandler::GetStatistics(Option_t *option) const
+{
+// Get the statistics histogram(s) from the physics selection object. This
+// should be called during FinishTaskOutput(). Option can be empty (default
+// statistics histogram) or BIN0.
+   if (!fEventCuts) return NULL;
+   TString opt(option);
+   opt.ToUpper();
+   if (opt=="BIN0") return fEventCuts->GetStatistics("BIN0");
+   else return fEventCuts->GetStatistics("ALL");
+}   

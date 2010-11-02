@@ -24,9 +24,11 @@
 #include <TList.h>
 #include <TNamed.h>
 #include <TFile.h>
+#include <TH2.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAODEvent.h"
+#include "AliVCuts.h"
 
 ClassImp(AliAODInputHandler)
 
@@ -45,6 +47,7 @@ AliAODInputHandler::AliAODInputHandler() :
     fMergeOffset(0)
 {
   // Default constructor
+  fHistStatistics[0] = fHistStatistics[1] = NULL;
 }
 
 //______________________________________________________________________________
@@ -60,70 +63,71 @@ AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
   fMergeOffset(0)
 {
     // Constructor
+  fHistStatistics[0] = fHistStatistics[1] = NULL;
 }
 
 //______________________________________________________________________________
 AliAODInputHandler::~AliAODInputHandler() 
 {
 // Destructor
-    fFriends->Delete();
+  fFriends->Delete();
+  if (fHistStatistics[0]) {
+    delete fHistStatistics[0];
+    fHistStatistics[0] = 0;
+  }
+  if (fHistStatistics[1]) {
+    delete fHistStatistics[1];
+    fHistStatistics[1] = 0;
+  }
 }
 
-
+//______________________________________________________________________________
 Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* opt)
 {
     // Initialisation necessary for each new tree
-    if (!fMergeEvents) {
-	fTree = tree;
-	TIter next(fFriends);
-	TNamed* obj;
+  if (!fMergeEvents) {
+    fTree = tree;
+    TIter next(fFriends);
+    TNamed* obj;
 	
-	if (!fTree) return kFALSE;
-	fTree->GetEntry(0);
-	TString aodTreeFName,aodFriendTreeFName;
-	
-	while((obj = (TNamed*)next())) {
-	    if (fTree->GetTree()) {
-		aodTreeFName = (fTree->GetTree()->GetCurrentFile())->GetName();
-		aodFriendTreeFName = aodTreeFName;
-		aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
-		aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
-		(fTree->GetTree())->AddFriend("aodTree", aodFriendTreeFName.Data());
-	    } else {
-		aodTreeFName = (fTree->GetCurrentFile())->GetName();
-		aodFriendTreeFName = aodTreeFName;
-		aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
-		aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
-		fTree->AddFriend("aodTree", aodFriendTreeFName.Data());
-	    }
-	}
-    } else {
-	// Friends have to be merged
-	TNamed* filename = (TNamed*) (fFriends->At(0));
-	fFileToMerge = new TFile(filename->GetName());
-	if (fFileToMerge) {
-	    fFileToMerge->GetObject("aodTree", fTreeToMerge);
-	    if (!fAODEventToMerge) fAODEventToMerge = new AliAODEvent();
-	    fAODEventToMerge->ReadFromTree(fTreeToMerge);
-	}
+    if (!fTree) return kFALSE;
+    fTree->GetEntry(0);
+    TString aodTreeFName,aodFriendTreeFName;
+    TTree *ttree = fTree->GetTree();
+    if (!ttree) ttree = fTree;
+    aodTreeFName = ttree->GetCurrentFile()->GetName();
+
+    while((obj = (TNamed*)next())) {
+      aodFriendTreeFName = aodTreeFName;
+      aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
+      aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
+      ttree->AddFriend("aodTree", aodFriendTreeFName.Data());
     }
-    
-    
- 
+  } else {
+  // Friends have to be merged
+    TNamed* filename = (TNamed*) (fFriends->At(0));
+    fFileToMerge = new TFile(filename->GetName());
+	 if (fFileToMerge) {
+      fFileToMerge->GetObject("aodTree", fTreeToMerge);
+	   if (!fAODEventToMerge) fAODEventToMerge = new AliAODEvent();
+	   fAODEventToMerge->ReadFromTree(fTreeToMerge);
+    }
+  }
 
-    SwitchOffBranches();
-    SwitchOnBranches();
+  SwitchOffBranches();
+  SwitchOnBranches();
     
-    // Get pointer to AOD event
-    if (!fEvent) fEvent = new AliAODEvent();
+  // Get pointer to AOD event
+  if (!fEvent) fEvent = new AliAODEvent();
 
-    fEvent->ReadFromTree(fTree);
-    
-    if (fMixingHandler) fMixingHandler->Init(tree, opt);
+  fEvent->ReadFromTree(fTree);
+  
+  if (fMixingHandler) fMixingHandler->Init(tree, opt);
 
-    return kTRUE;
+  return kTRUE;
 }
 
+//______________________________________________________________________________
 Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
 {
     //
@@ -138,13 +142,41 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
     return kTRUE;
 }
 
+//______________________________________________________________________________
 Bool_t AliAODInputHandler::Notify(const char* path)
 {
   // Notifaction of directory change
   if (fMixingHandler) fMixingHandler->Notify(path);
+  TTree *ttree = fTree->GetTree();
+  if (!ttree) ttree = fTree;
+  TString statFname = ttree->GetCurrentFile()->GetName();
+  statFname.ReplaceAll("AliAOD.root", "EventStat_temp.root");
+  TFile *statFile = TFile::Open(statFname, "READ");
+  if (statFile) {
+     TList *list = (TList*)statFile->Get("cstatsout");
+     if (list) {
+        AliVCuts *physSel = (AliVCuts*)list->At(0);
+        if (physSel) {
+           TH2F *hAll = dynamic_cast<TH2F*>(physSel->GetStatistics("ALL"));
+           TH2F *hBin0 = dynamic_cast<TH2F*>(physSel->GetStatistics("BIN0"));
+           if (fHistStatistics[0] && hAll) {
+              TList tmplist;
+              tmplist.Add(hAll);
+              fHistStatistics[0]->Merge(&tmplist);
+              tmplist.Clear();
+              tmplist.Add(hBin0);
+              if (fHistStatistics[1] && hBin0) fHistStatistics[1]->Merge(&tmplist);
+           } else {
+              fHistStatistics[0] = hAll;
+              fHistStatistics[1] = hBin0;
+           }   
+        }
+     }
+  }
   return kTRUE;
 }
 
+//______________________________________________________________________________
 Bool_t AliAODInputHandler::FinishEvent()
 {
   // Finish event
@@ -152,6 +184,7 @@ Bool_t AliAODInputHandler::FinishEvent()
   return kTRUE;
 }
 
+//______________________________________________________________________________
 void AliAODInputHandler::AddFriend(char* filename)
 {
     // Add a friend tree 
@@ -159,8 +192,21 @@ void AliAODInputHandler::AddFriend(char* filename)
     fFriends->Add(obj);
 }
 
+//______________________________________________________________________________
 Option_t *AliAODInputHandler::GetDataType() const
 {
 // Returns handled data type.
    return gAODDataType;
 }
+
+//______________________________________________________________________________
+TObject *AliAODInputHandler::GetStatistics(Option_t *option) const
+{
+// Get the statistics histogram(s) from the physics selection object. This
+// should be called during FinishTaskOutput(). Option can be empty (default
+// statistics histogram) or BIN0.
+   TString opt(option);
+   opt.ToUpper();
+   if (opt=="BIN0") return fHistStatistics[1];
+   return fHistStatistics[0];
+}   

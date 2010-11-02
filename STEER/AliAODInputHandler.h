@@ -16,6 +16,7 @@
 
 class TList;
 class AliMCEvent;
+class TH2F;
 
 class AliAODInputHandler : public AliInputEventHandler {
 
@@ -33,6 +34,8 @@ class AliAODInputHandler : public AliInputEventHandler {
     virtual Bool_t       Notify(const char* path);
     virtual Bool_t       FinishEvent();
     Option_t            *GetDataType() const;
+    // Get the statistics object (currently TH2). Option can be BIN0.
+    virtual TObject     *GetStatistics(Option_t *option="") const;
     // Provisions for event merging
     void                 SetMergeEvents(Bool_t flag) {fMergeEvents = flag;}
     Bool_t               GetMergeEvents() const {return fMergeEvents;}
@@ -51,6 +54,7 @@ class AliAODInputHandler : public AliInputEventHandler {
     TTree          *fTreeToMerge;     //! Tree for merging
     AliAODEvent    *fAODEventToMerge; //! Event for merging
     Int_t           fMergeOffset;     //! Event offset for merging
+    TH2F*           fHistStatistics[2]; //! how many events are cut away why {all,bin 0}
     ClassDef(AliAODInputHandler, 2);
 };
 

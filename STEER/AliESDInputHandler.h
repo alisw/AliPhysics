@@ -54,6 +54,8 @@ class AliESDInputHandler : public AliInputEventHandler {
     // Tag analysis
     void SetReadTags() {fUseTags = kTRUE;}
     AliRunTag           *GetRunTag() const {return fRunTag;}
+    // Get the statistics object (currently TH2). Option can be BIN0.
+    virtual TObject     *GetStatistics(Option_t *option="") const;
  private:
     AliESDInputHandler(const AliESDInputHandler& handler);             
     AliESDInputHandler& operator=(const AliESDInputHandler& handler);  

@@ -51,6 +51,8 @@ class AliInputEventHandler : public AliVEventHandler {
      // Getters
     virtual AliVEvent   *GetEvent()        const                      {return 0;}
     virtual AliRunTag   *GetRunTag()       const                      {return 0;}
+    // Get the statistics object (currently TH2). Option can be BIN0.
+    virtual TObject     *GetStatistics(Option_t *option="") const;
     virtual Option_t    *GetAnalysisType() const                      {return 0;}
     virtual TTree       *GetTree( )        const                      {return fTree;}
     virtual AliVCuts    *GetEventSelection() const                    {return fEventCuts;}
