@@ -719,9 +719,10 @@ Int_t AliRunLoader::LoadHeader()
 Int_t AliRunLoader::LoadTrigger(Option_t* option)
 {
    //Load treeCT
-
+   static Bool_t warned = kFALSE;
    if( TreeCT() ) {
-      AliWarning("Trigger is already loaded. Nothing done");
+      if (!warned) AliWarning("Trigger is already loaded. Nothing done. Message will not be repeated.");
+      warned = kTRUE;
       return 0;
    }
  
