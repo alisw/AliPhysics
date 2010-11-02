@@ -68,6 +68,8 @@ fFillNtuples(kFALSE),
 fUseITSSAforNtuples(kFALSE),
 fUsePhysSel(kFALSE),
 fESD(0), 
+fMinMult(0),
+fMaxMult(1000000),
 fOutput(0), 
 fHistNEvents(0),
 fHistNEventsFrac(0),
@@ -265,6 +267,8 @@ fFillNtuples(kFALSE),
 fUseITSSAforNtuples(kFALSE),
 fUsePhysSel(kFALSE),
 fESD(0), 
+fMinMult(0),
+fMaxMult(1000000),
 fOutput(0), 
 fHistNEvents(0),
 fHistNEventsFrac(0),
@@ -1349,6 +1353,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     return;
   }
 
+  // only events in the requested multiplicity range
+  if(!IsSelectedCentrality()) return;
 
   fHistNEvents->Fill(-1);
 
@@ -2341,6 +2347,23 @@ Int_t AliAnalysisTaskITSTrackingCheck::MakeITSflag(AliESDtrack *track) const {
   }
 
   return iITSflag;
+}
+//---------------------------------------------------------------------------
+Bool_t AliAnalysisTaskITSTrackingCheck::IsSelectedCentrality() const
+{
+  //
+  // check if events is in the required multiplicity range
+  //
+
+  const AliMultiplicity *alimult = fESD->GetMultiplicity();
+  Int_t ntrklets=1;
+  if(alimult) {
+    ntrklets = alimult->GetNumberOfTracklets();
+  }
+
+  if(ntrklets<fMinMult || ntrklets>fMaxMult) return kFALSE;
+
+  return kTRUE;
 }
 
 

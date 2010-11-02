@@ -1,6 +1,8 @@
 AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
 						       Bool_t readRP=kFALSE,
-						       Bool_t fillNtuples=kFALSE) 
+						       Bool_t fillNtuples=kFALSE,
+						       Int_t minmult=0,
+						       Int_t maxmult=1000000) 
 {
   //
   // Task for check of ITS tracking
@@ -19,6 +21,7 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
 
   // Create the task
   AliAnalysisTaskITSTrackingCheck *taskITS = new AliAnalysisTaskITSTrackingCheck("ITStracking");
+  taskITS->SetMultRange(minmult,maxmult);
   taskITS->SetReadMC(readMC);
   taskITS->SetReadRPLabels(readRP);
   taskITS->SetFillNtuples(fillNtuples);
@@ -29,7 +32,12 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
 
   //
   // Create containers for input/output
-  AliAnalysisDataContainer *cOutputITS = mgr->CreateContainer("cOutputITS",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:ITS_Performance",mgr->GetCommonFileName()));
+  TString cname="cOutputITS";
+  if(maxmult<1000000) {
+    cname.Append("_"); cname+=minmult; 
+    cname.Append("_"); cname+=maxmult;
+  } 
+  AliAnalysisDataContainer *cOutputITS = mgr->CreateContainer(cname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:ITS_Performance",mgr->GetCommonFileName()));
 
 
   // Attach input
