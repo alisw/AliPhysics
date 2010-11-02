@@ -40,7 +40,8 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   void           SetUseITSSAforNtuples(Bool_t flag=kTRUE) { fUseITSSAforNtuples=flag; }
   void           SetESDtrackCutsTPC(AliESDtrackCuts *c) { fESDtrackCutsTPC=c; }
   void           SetESDtrackCutsITSTPC(AliESDtrackCuts *c) { fESDtrackCutsITSTPC=c; }
-  
+  void           SetMultiplicityRange(Int_t min,Int_t max) { fMinMult=min; fMaxMult=max; }
+
  protected:
   Bool_t       fReadMC; // read Monte Carlo
   Bool_t       fReadRPLabels; // read MC labels from ITS.RecPoints
@@ -48,6 +49,8 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   Bool_t       fUseITSSAforNtuples; // fill expert ntuples with ITSSA tracks
   Bool_t       fUsePhysSel; // use AliPhysicsSelection
   AliESDEvent  *fESD;    // ESD object
+  Int_t        fMinMult; // minimum multiplicity
+  Int_t        fMaxMult; // maximum multiplicity
   TList        *fOutput; //! list send on output slot 0
   TH1F         *fHistNEvents; //! output hist
   TH1F         *fHistNEventsFrac; //! output hist
@@ -245,8 +248,9 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   Double_t ParticleImpParMC(TParticle *part,AliESDVertex *vert,Double_t bzT) const;
   Bool_t SelectPt(Double_t pt);
   Int_t MakeITSflag(AliESDtrack *track) const;
+  Bool_t IsSelectedCentrality() const;
 
-  ClassDef(AliAnalysisTaskITSTrackingCheck,10); // ITS tracks analysis
+  ClassDef(AliAnalysisTaskITSTrackingCheck,11); // ITS tracks analysis
 };
 
 #endif
