@@ -15,6 +15,7 @@
 #include "AliTriggerDetector.h"
 
 class AliTOFrawData;
+class AliTOFTriggerMask;
 
 class AliTOFTrigger : public AliTriggerDetector
 {
@@ -22,7 +23,7 @@ class AliTOFTrigger : public AliTriggerDetector
   AliTOFTrigger();  // constructor
   AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow); //constructor with parameters
   AliTOFTrigger(const AliTOFTrigger & tr);
-  virtual ~AliTOFTrigger(){}  // destructor
+  virtual ~AliTOFTrigger();  // destructor
   virtual void    CreateInputs();
   virtual void    Trigger();
   Int_t   GetHighMultTh() const {return fHighMultTh;}
@@ -35,6 +36,7 @@ class AliTOFTrigger : public AliTriggerDetector
   Float_t Getdeltamaxro() const {return fdeltamaxro;}
   Int_t  GetstripWindow() const {return fstripWindow;}
 
+  void LoadActiveMask(); // Load active channel trigger mask
   void GetMap(Bool_t **map) const;
   //void PrintMap(); // to be checked because of warning problems
   void GetTRDmap(Bool_t **map) const;
@@ -56,6 +58,16 @@ class AliTOFTrigger : public AliTriggerDetector
   void   Setdeltamaxro(Float_t deltamaxro){fdeltamaxro = deltamaxro;}
   void   SetstripWindow(Int_t stripWindow){fstripWindow = stripWindow;}
 
+  Bool_t Return(Int_t i){if(i==0) return fSel1;
+			 else if(i==1) return fSel2;
+                         else if(i==2) return fSel3;
+                         else if(i==3) return fSel4;
+			};
+
+  Int_t GetNumberOfCrateOn(){return fNCrateOn;}; 
+  Int_t GetNumberOfMaxipadOn(){return fNMaxipadOn;}; 
+  Int_t GetNumberOfMaxipadOnAll(){return fNMaxipadOnAll;}; 
+  Bool_t *GetLTMarray(){return fLTMarray;};
   void   CreateCTTMMatrix();
   void   CreateLTMMatrix();
   void   CreateLTMMatrixFromDigits();
@@ -70,9 +82,12 @@ class AliTOFTrigger : public AliTriggerDetector
     kNLTMtoTRDchannels = 8  //Number of channels in a CTTM
   };
 
+  AliTOFTrigger& operator=(const AliTOFTrigger &/*source*/); // ass. op.
+
   void    GetCTTMIndex(Int_t *detind, Int_t *indexCTTM);
   void    GetLTMIndex(const Int_t * const detind, Int_t *LTMIndex);
-  Bool_t  fLTMmatrix[kNLTM][kNLTMchannels];         //LTM matrix  
+  Bool_t  fLTMmatrix[kNLTM][kNLTMchannels];         //LTM matrix 
+  Bool_t  fLTMarray[kNCTTM];        //LTM array for UPpurposes
   Bool_t  fCTTMmatrixFront[kNCTTM][kNCTTMchannels];//CTTM matrix for TOP FPGA 
   Bool_t  fCTTMmatrixBack[kNCTTM][kNCTTMchannels]; //CTTM matrix for BOTTOM FPGA
   Int_t   fHighMultTh;             //threshold for High Multiplicity trigger
@@ -85,6 +100,16 @@ class AliTOFTrigger : public AliTriggerDetector
   Float_t fdeltamaxro;             //max delta phi for ro decay (UP trigger)
   Int_t   fstripWindow;            //strip window for triggering
 
+  Bool_t fSel1,fSel2,fSel3,fSel4; // ppMB, PbPbMB2, PbPbMB3, PbPbUP
+
+  UInt_t fPowerMask[kNCTTMchannels+1];  // mask for 24 TDC channels
+
+  Int_t fNCrateOn; // number of crate fired
+  Int_t fNMaxipadOn; // number of Maxipad fired
+  Int_t fNMaxipadOnAll; // number of Maxipad fired w/o TDC dead mask
+  AliTOFTriggerMask *fTOFTrigMask; // class with the TOF trigger mask
+
   ClassDef(AliTOFTrigger,1)  // TOF Trigger Detector class
 };
 #endif
+

@@ -45,6 +45,7 @@
 #include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFTrigger.h"
+#include "AliTOFTriggerMask.h"
 
 extern AliRun* gAlice;
 
@@ -55,17 +56,26 @@ ClassImp(AliTOFTrigger)
   AliTOFTrigger::AliTOFTrigger() :
     AliTriggerDetector(),
     fHighMultTh(1000),
-    fppMBTh(4),
-    fMultiMuonTh(2),
+    fppMBTh(4),//4:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    fMultiMuonTh(4),
     fUPTh(2),
-    fdeltaminpsi(150),
-    fdeltamaxpsi(170),
+    fdeltaminpsi(150), //150
+    fdeltamaxpsi(170), //170
     fdeltaminro(70),
     fdeltamaxro(110),
-    fstripWindow(2)
+    fstripWindow(2),
+    fSel1(0),
+    fSel2(0),
+    fSel3(0),
+    fSel4(0),
+    fNCrateOn(0),
+    fNMaxipadOn(0),
+    fNMaxipadOnAll(0),
+    fTOFTrigMask(0)
 {
   //main ctor
   for (Int_t i=0;i<kNLTM;i++){
+  fLTMarray[i] = kFALSE;  //*******************************************************************************************************
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=kFALSE;
     }
@@ -76,8 +86,15 @@ ClassImp(AliTOFTrigger)
       }
     }
   }
+
+  fPowerMask[0] = 1;
+  for(Int_t i=1;i <= kNCTTMchannels;i++){
+      fPowerMask[i] = fPowerMask[i-1]*2;
+  }
+
   SetName("TOF");
   CreateInputs();
+
 }
 
 //----------------------------------------------------------------------
@@ -92,11 +109,19 @@ AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, 
   fdeltamaxpsi(deltamaxpsi),
   fdeltaminro(deltaminro),
   fdeltamaxro(deltamaxro),
-  fstripWindow(stripWindow)
-
+  fstripWindow(stripWindow),
+  fSel1(0),
+  fSel2(0),
+  fSel3(0),
+  fSel4(0),
+  fNCrateOn(0),
+  fNMaxipadOn(0),
+  fNMaxipadOnAll(0),
+  fTOFTrigMask(0)
 {
   //ctor with thresholds for triggers
   for (Int_t i=0;i<kNLTM;i++){
+  fLTMarray[i] = kFALSE;  //*******************************************************************************************************
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=kFALSE;
     }
@@ -107,6 +132,12 @@ AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, 
       }
     }
   }
+
+  fPowerMask[0] = 1;
+  for(Int_t i=1;i <= kNCTTMchannels;i++){
+      fPowerMask[i] = fPowerMask[i-1]*2;
+  }
+
   SetName("TOF");
   CreateInputs();
 }
@@ -123,10 +154,19 @@ AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):
   fdeltamaxpsi(tr.fdeltamaxpsi),
   fdeltaminro(tr.fdeltaminro),
   fdeltamaxro(tr.fdeltamaxro),
-  fstripWindow(tr.fstripWindow)
+  fstripWindow(tr.fstripWindow),
+  fSel1(tr.fSel1),
+  fSel2(tr.fSel2),
+  fSel3(tr.fSel3),
+  fSel4(tr.fSel4),
+  fNCrateOn(tr.fNCrateOn),
+  fNMaxipadOn(tr.fNMaxipadOn),
+  fNMaxipadOnAll(tr.fNMaxipadOnAll),
+  fTOFTrigMask(0)
 {
   //copy ctor
   for (Int_t i=0;i<kNLTM;i++){
+  fLTMarray[i] = tr.fLTMarray[i]; 
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=tr.fLTMmatrix[i][j];
     }
@@ -137,9 +177,21 @@ AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):
       }
     }
   }
+
+  fPowerMask[0] = 1;
+  for(Int_t i=1;i <= kNCTTMchannels;i++){
+      fPowerMask[i] = fPowerMask[i-1]*2;
+  }
+
+  if(tr.fTOFTrigMask){
+      fTOFTrigMask = new AliTOFTriggerMask();  
+      fTOFTrigMask->SetTriggerMaskArray(tr.fTOFTrigMask->GetTriggerMaskArray());
+  }
+
   SetName(tr.GetName());
-  CreateInputs();
   //fInputs=&(tr.GetInputs());
+  CreateInputs();
+
 }
 
 //----------------------------------------------------------------------
@@ -150,9 +202,13 @@ void AliTOFTrigger::CreateInputs()
   // Do not create inputs again!!
   if( fInputs.GetEntriesFast() > 0 ) return;
 
+  LoadActiveMask();
+
   fInputs.AddLast(new AliTriggerInput("TOF_Cosmic_MultiMuon_L0","TOF",0));
   fInputs.AddLast(new AliTriggerInput("0OIN","TOF",0)); // was "TOF_pp_MB_L0"
-  fInputs.AddLast(new AliTriggerInput("0OX1","TOF",0)); // was "TOF_UltraPer_Coll_L0"
+  fInputs.AddLast(new AliTriggerInput("0OM2","TOF",0)); // was "TOF_PbPb_MB2_L0"
+  fInputs.AddLast(new AliTriggerInput("0OM3","TOF",0)); // was "TOF_PbPb_MB3_L0"
+  fInputs.AddLast(new AliTriggerInput("0OUP","TOF",0)); // was "TOF_UltraPer_Coll_L0"
 
   fInputs.AddLast(new AliTriggerInput("0OHM","TOF",0)); // was "TOF_High_Mult_L0"
   fInputs.AddLast(new AliTriggerInput("TOF_Jet_L1","TOF",0));
@@ -162,11 +218,18 @@ void AliTOFTrigger::CreateInputs()
 //----------------------------------------------------------------------
 void AliTOFTrigger::Trigger() {
   //triggering method
+  fSel1=0;
+  fSel2=0;
+  fSel3=0;
+  fSel4=0;
 
   CreateLTMMatrix();
   Int_t nchonFront = 0;
   Int_t nchonBack = 0;
   Int_t nchonTot = 0;
+  Int_t nSectOn = 0; // °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
+  Int_t DeSlots = -1;// °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
+  Int_t AntiDeSlots = -1;// °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
   Int_t nchonFrontBack = 0;
   Int_t nchonFront1 = 0;
   Int_t nchonBack1 = 0;
@@ -189,15 +252,30 @@ void AliTOFTrigger::Trigger() {
   }
 
   nchonTot = nchonFront + nchonBack;
+//  fNMaxipadOn = nchonTot;
+  for(Int_t i=0;i<kNCTTM;i++) { if(fLTMarray[i]) nSectOn++; } 
 
   //pp Minimum Bias Trigger
   if (nchonTot >= fppMBTh) {
     SetInput("0OIN");
+    fSel1=1;
+    //printf("0OIN - MB\n");
+  }
+
+  // PbPb MB
+  if (nchonTot >= 2) {
+    SetInput("0OM2");
+    fSel2=1;
+  }
+  if (nchonTot >= 3) {
+    SetInput("0OM3");
+    fSel3=1;
   }
 
   //High Multiplicity Trigger
   if (nchonTot >= fHighMultTh) {
     SetInput("0OHM");
+    //printf("0OHM - High Mult\n");
   }
 
 
@@ -270,108 +348,76 @@ void AliTOFTrigger::Trigger() {
 	}
       }
       if (fCTTMmatrixBack[i][j]){
-	boolCTTMor = kFALSE;
-	for (Int_t i2=i2min;i2<=i2max;i2++){
-	  for (Int_t j2 = j2min;j2<=j2max;j2++){
-	    boolCTTMor |= fCTTMmatrixBack[i2][j2];
+	  boolCTTMor = kFALSE;
+	  for (Int_t i2=i2min;i2<=i2max;i2++){
+	      for (Int_t j2 = j2min;j2<=j2max;j2++){
+		  boolCTTMor |= fCTTMmatrixBack[i2][j2];
+	      }
 	  }
-	}
-	if (boolCTTMor) {
-	  nchonBack++;
-	}
+	  if (boolCTTMor) {
+	      nchonBack++;
+	  }
       }
     }
   }
-
+  
   nchonFrontBack1 = nchonFront1+nchonBack1;
-
+  
   if (nchonFrontBack >= fMultiMuonTh || nchonFrontBack1 >= fMultiMuonTh) {
-    SetInput("TOF_Cosmic_MultiMuon_L0");
+      SetInput("TOF_Cosmic_MultiMuon_L0");
   }
-
+  
   //Ultra-Peripheral collision Trigger
-  Bool_t boolpsi = kFALSE;
-  Bool_t boolro = kFALSE;
-  if (nchonTot == fUPTh){
-    for (Int_t i=0;i<kNCTTM;i++){
-      for (Int_t j=0;j<kNCTTMchannels;j++){
-	Int_t minipsi = i+mindeltapsi;
-	Int_t maxipsi = i+maxdeltapsi;
-	if (minipsi>=kNCTTM) minipsi = mindeltapsi-((kNCTTM-1)-i)-1;
-	if (maxipsi>=kNCTTM) maxipsi = maxdeltapsi-((kNCTTM-1)-i)-1;
-	Int_t miniro = i+mindeltaro;
-	Int_t maxiro = i+maxdeltaro;
-	if (miniro>=kNCTTM) miniro = mindeltaro-((kNCTTM-1)-i)-1;
-	if (maxiro>=kNCTTM) maxiro = maxdeltaro-((kNCTTM-1)-i)-1;
-	Int_t j2min = j-fstripWindow;
-	Int_t j2max = j+fstripWindow;
-	if (j2min<0) j2min =0;
-	if (j2max>=kNCTTMchannels) j2max =kNCTTMchannels-1;
-	if (fCTTMmatrixFront[i][j]){
-	  for (Int_t i2=minipsi;i2<=maxipsi;i2++){
-	    for (Int_t j2 = j2min;j2<=j2max;j2++){
-	      if (fCTTMmatrixFront[i2][j2]) {
-		SetInput("0OX1");
-		boolpsi = kTRUE;
-		//exiting loops
-		j2 = j2max+1;
-		i2 = maxipsi+1;
-		j=kNCTTMchannels;
-		i=kNCTTM;
-	      }
-	    }
+  
+  // °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
+  // DeSlots = (k+1)_Array Element - k_Array Element
+  // AntiDeSlots = kNCTTM - DeSlots
+  
+  if((!fSel1))// && nchonFront < 4 && nchonBack < 4)
+  {  
+      // printf("nHitMaxipad CLASSE: %i \n",fNMaxipadOn);
+      // printf("Total Number per event of Switched-On sectors : %i \n", nSectOn);
+      // printf("mindeltapsi %i \n", mindeltapsi);
+      //printf("maxdeltapsi %i \n", maxdeltapsi); 
+      for(Int_t i = 0; i < kNCTTM; i++){    
+	  if(fLTMarray[i]){
+	      // printf(" i-sect On:  %i\n",i);
+	      for(Int_t j = i+1; j < kNCTTM; j++){
+		  if(fLTMarray[j]) {
+		      //  printf(" j-sect On:  %i\n",j);
+		      DeSlots = j-i;
+		      AntiDeSlots = kNCTTM - DeSlots;
+		      //printf("DeSlots = %i \n",DeSlots);
+		      //printf("AntiDeSlots = %i \n",AntiDeSlots);
+		      if(DeSlots >= mindeltapsi && DeSlots <= maxdeltapsi){
+			  fSel4=1;
+			  SetInput("0OUP");
+			  //printf("trigger On with DeSlot \n");
+		      }
+		      if(AntiDeSlots >= mindeltapsi && AntiDeSlots <= maxdeltapsi){
+			  fSel4=1;
+			  SetInput("0OUP");
+			  //printf("trigger On with AntiDeSlot \n");
+		      }
+		      
+		      
+		      if(DeSlots >= mindeltaro && DeSlots <= maxdeltaro){
+			  fSel4=1;
+			  SetInput("0OUP");
+			  //printf("trigger On with DeSlot \n");
+		      }
+		      if(AntiDeSlots >= mindeltaro && AntiDeSlots <= maxdeltaro){
+			  fSel4=1;
+			  SetInput("0OUP");
+			  //printf("trigger On with AntiDeSlot \n");
+		      }	
+		      
+		  } 
+		  
+	      }    
 	  }
-	  if (!boolpsi){
-	    for (Int_t i2=miniro;i2<=maxiro;i2++){
-	      for (Int_t j2 = j2min;j2<=j2max;j2++){
-		if (fCTTMmatrixFront[i2][j2]) {
-		  SetInput("0OX1");
-		  boolro = kTRUE;
-		  //exiting loops
-		  j2 = j2max+1;
-		  i2 = maxiro+1;
-		  j=kNCTTMchannels;
-		  i=kNCTTM;
-		}
-	      }
-	    }
-	  }
-	}
-
-	else if (fCTTMmatrixBack[i][j]){
-	  for (Int_t i2=minipsi;i2<=maxipsi;i2++){
-	    for (Int_t j2 = j2min;j2<=j2max;j2++){
-	      if (fCTTMmatrixBack[i2][j2]) {
-		SetInput("0OX1");
-		boolpsi = kTRUE;
-		//exiting loops
-		j2 = j2max+1;
-		i2 = maxipsi+1;
-		j=kNCTTMchannels;
-		i=kNCTTM;
-	      }
-	    }
-	  }
-	  if (!boolpsi){
-	    for (Int_t i2=miniro;i2<=maxiro;i2++){
-	      for (Int_t j2 = j2min;j2<=j2max;j2++){
-		if (fCTTMmatrixBack[i2][j2]) {
-		  SetInput("0OX1");
-		  boolro = kTRUE;
-		  //exiting loops
-		  j2 = j2max+1;
-		  i2 = maxiro+1;
-		  j=kNCTTMchannels;
-		  i=kNCTTM;
-		}
-	      }
-	    }
-	  } 
-	}
       }
-    }
-  }
-
+  } 
 }
 
 //-----------------------------------------------------------------------------
@@ -390,6 +436,7 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
 
   //initialization
   for (Int_t i=0;i<kNLTM;i++){
+  fLTMarray[i]= kFALSE;
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=kFALSE;
     }
@@ -419,7 +466,7 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
   treeD->GetEvent(0);
   Int_t ndigits = tofDigits->GetEntriesFast();
   Int_t detind[5]; //detector indexes: 0 -> sector
-  //                                   1 -> plate
+  //                                   1 -> plate(modulo)
   //                                   2 -> strip
   //                                   3 -> padz
   //                                   4 -> padx
@@ -436,7 +483,11 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
     GetLTMIndex(detind,indexLTM);
 
     fLTMmatrix[indexLTM[0]][indexLTM[1]] = kTRUE;
-  }
+    fLTMarray[indexLTM[0]%36] = kTRUE; //dimensione MAX array 36 = kNCTTM 
+    }
+  fNCrateOn = 0; 
+  for(Int_t j=0; j < kNCTTM; j++) {if(fLTMarray[j]) fNCrateOn++;}
+
 
   tofLoader->UnloadDigits();
   //   rl->UnloadgAlice();
@@ -633,7 +684,7 @@ void AliTOFTrigger::GetMap(Bool_t **map) const
 
   for(Int_t i = 0; i<kNLTM;i++)
     for(Int_t j = 0; j<kNCTTMchannels;j++)
-      map[i][j]=(i<36)?fCTTMmatrixFront[i][j]:fCTTMmatrixBack[i-36][j];
+      map[i][j]=(i<36)?fCTTMmatrixFront[i][j]:fCTTMmatrixBack[i][j];
 
 }
 
@@ -656,7 +707,7 @@ void AliTOFTrigger::GetTRDmap(Bool_t **map) const
   for(int i = kNLTM/2; i<kNLTM;i++)
     for(int j = 0; j<AliTOFTrigger::kNCTTMchannels;j++){
       UInt_t uTRDbit=j/3;
-      if(fCTTMmatrixBack[i - kNLTM/2][j]) map[i][uTRDbit]=kTRUE;
+      if(fCTTMmatrixBack[i][j]) map[i][uTRDbit]=kTRUE;
     }
 }
 
@@ -672,7 +723,7 @@ void AliTOFTrigger::SetBit(Int_t *detind)
   if(index[0]<36)
     fCTTMmatrixFront[index[0]][index[1]]=kTRUE;
   else
-    fCTTMmatrixBack[index[0]-36][index[1]]=kTRUE;
+    fCTTMmatrixBack[index[0]][index[1]]=kTRUE;
 
 }
 
@@ -709,7 +760,7 @@ void AliTOFTrigger::SetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
     if (index[0]<36)
       fCTTMmatrixFront[index[0]][index[1]]=kTRUE;
     else
-      fCTTMmatrixBack[index[0]-36][index[1]]=kTRUE; // AdC
+      fCTTMmatrixBack[index[0]][index[1]]=kTRUE;
   }
   else
     AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
@@ -728,7 +779,7 @@ void AliTOFTrigger::ResetBit(Int_t *detind)
   if(index[0]<36)
     fCTTMmatrixFront[index[0]][index[1]]=kFALSE;
   else
-    fCTTMmatrixBack[index[0]-36][index[1]]=kFALSE; // AdC
+    fCTTMmatrixBack[index[0]][index[1]]=kFALSE;
 
 }
 
@@ -765,7 +816,7 @@ void AliTOFTrigger::ResetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
     if (index[0]<36)
       fCTTMmatrixFront[index[0]][index[1]]=kFALSE;
     else
-      fCTTMmatrixBack[index[0]-36][index[1]]=kFALSE; // AdC
+      fCTTMmatrixBack[index[0]][index[1]]=kFALSE;
   }
   else
     AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
@@ -781,7 +832,7 @@ Bool_t AliTOFTrigger::GetBit(Int_t *detind)
 
   Int_t index[2];
   GetCTTMIndex(detind,index);
-  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]-36][index[1]]; // AdC
+  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]][index[1]];
 
 }
 
@@ -823,7 +874,7 @@ Bool_t AliTOFTrigger::GetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
     iLTMindex++;
   iChannelindex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
   Int_t index[2]={iLTMindex,iChannelindex};
-  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]-36][index[1]]; // AdC
+  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]][index[1]];
 
 }
 
@@ -833,17 +884,29 @@ void AliTOFTrigger::CreateCTTMMatrix() {
   //
   // Create CTTM bit map
   //
+    fNMaxipadOnAll=0;
+    fNMaxipadOn=0;
 
-  for(Int_t i = 0; i<kNLTM;i++){
-    if(i<kNCTTM){
-      for(Int_t j = 0; j<kNCTTMchannels;j++)
-        fCTTMmatrixFront[i][j]=fLTMmatrix[i][2*j]||fLTMmatrix[i][2*j+1];
+    for(Int_t i = 0; i<kNLTM;i++){
+	UInt_t currentMask = fPowerMask[kNCTTMchannels]-1;
+	if(fTOFTrigMask) currentMask=fTOFTrigMask->GetTriggerMask(i);
+	if(i<kNCTTM){
+	    for(Int_t j = 0; j<kNCTTMchannels;j++){
+		fCTTMmatrixFront[i][j]=fLTMmatrix[i][2*j]||fLTMmatrix[i][2*j+1];
+		if(fCTTMmatrixFront[i][j]) fNMaxipadOnAll++;
+		if(!(currentMask & fPowerMask[j])) fCTTMmatrixFront[i][j]=0;
+		if(fCTTMmatrixFront[i][j]) fNMaxipadOn++;
+	    }
+	}
+	else{
+	    for(Int_t j = 0; j<kNCTTMchannels;j++){
+		fCTTMmatrixBack[i-kNCTTM][j]=fLTMmatrix[i][2*j]||fLTMmatrix[i][2*j+1];;
+		if(fCTTMmatrixBack[i-kNCTTM][j]) fNMaxipadOnAll++;
+		if(!(currentMask & fPowerMask[j])) fCTTMmatrixBack[i-kNCTTM][j]=0;
+		if(fCTTMmatrixBack[i-kNCTTM][j]) fNMaxipadOn++;
+	    }
+	}
     }
-    else{
-      for(Int_t j = 0; j<kNCTTMchannels;j++)
-        fCTTMmatrixBack[i-kNCTTM][j]=fLTMmatrix[i][2*j]||fLTMmatrix[i][2*j+1];;
-    }
-  }
 }     
 //-----------------------------------------------------------------------------
 
@@ -854,5 +917,35 @@ void AliTOFTrigger::GetCTTMIndex(Int_t *detind, Int_t *indexCTTM) {
 
   GetLTMIndex(detind,indexCTTM);
   indexCTTM[1]/=2;
+
+}
+//-----------------------------------------------------------------------------
+void AliTOFTrigger::LoadActiveMask(){
+//
+// Load OCDB current mask
+//
+    UInt_t maskArray[kNLTM];
+    if(fTOFTrigMask == NULL) fTOFTrigMask = new AliTOFTriggerMask();
+    for (Int_t k = 0; k < kNLTM ; k++) maskArray[k] = fPowerMask[kNCTTMchannels]-1;
+    for (Int_t k = 0; k < kNLTM ; k+=2) maskArray[k] = 0;
+    
+    fTOFTrigMask->SetTriggerMaskArray(maskArray);
+}
+
+
+//-----------------------------------------------------------------------------
+AliTOFTrigger::~AliTOFTrigger()
+{
+  // dtor
+
+  if (fTOFTrigMask) delete fTOFTrigMask;
+
+}
+
+//-----------------------------------------------------------------------------
+AliTOFTrigger& AliTOFTrigger::operator=(const AliTOFTrigger &/*source*/)
+{
+  // ass. op.
+  return *this;
 
 }
