@@ -374,6 +374,9 @@ void AliESDpid::SetTOFResponse(AliESDEvent *event,EStartTimeType_t option){
     AliTOFHeader *tofHeader =(AliTOFHeader*)event->GetTOFHeader();
 
     if(tofHeader){
+      fTOFResponse.SetTimeResolution(tofHeader->GetTOFResolution());
+      t0spread = tofHeader->GetT0spread();
+      if(t0spread < 10) t0spread = 80;
 
       flagT0TOF=kTRUE;
       for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
