@@ -1,4 +1,4 @@
-void runCentrality(const char * type = "a")
+void runCentrality(const char * type = "a", const char *mode="grid")
 {
   // Load common libraries
   gSystem->Load("libCore.so");  
@@ -13,16 +13,15 @@ void runCentrality(const char * type = "a")
   gSystem->Load("libANALYSISalice");   
   // Use AliRoot includes to compile our task
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
-  // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG2/FORWARD/analysis"));
 
   // form filename 
   TString filenameStr = Form("%s",type);
-  filenameStr = TString("LHC10f8")+filenameStr;
+  filenameStr = TString("LHC10g2")+filenameStr;
   const char * filename = filenameStr.Data();
   
   // Create and configure the alien handler plugin
-  gROOT->LoadMacro("CreateAlienHandler.C");
-  AliAnalysisGrid *alienHandler = CreateAlienHandler(filename);  
+  gROOT->LoadMacro("CreateAlienHandlerAOD.C");
+  AliAnalysisGrid *alienHandler = CreateAlienHandlerAOD(filename);  
   if(!alienHandler) return;
  
  // Create the analysis manager
@@ -32,8 +31,8 @@ void runCentrality(const char * type = "a")
   mgr->SetGridHandler(alienHandler);
   
   // My task
-  gROOT->LoadMacro("AliAnalysisTaskCentralityTreeMaker.cxx++g");   
-  AliAnalysisTaskCentralityTreeMaker *task = new AliAnalysisTaskCentralityTreeMaker("CentralityTask");  
+  gROOT->LoadMacro("AliAnalysisTaskCentrality.cxx++g");   
+  AliAnalysisTaskCentrality *task = new AliAnalysisTaskCentrality("CentralityTask");  
   // Writing (or not) output tree
   //task->SetTreeFilling(writeTree);
   task->SetMCInput();
@@ -59,11 +58,11 @@ void runCentrality(const char * type = "a")
   					    "cenHistos.root");
   mgr->ConnectOutput(task, 1, coutput1);
   
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("coutput2",TTree::Class(),
-  					    AliAnalysisManager::kOutputContainer,
-        				    "cenTree.root");
-  coutput2->SetSpecialOutput();  
-  mgr->ConnectOutput(task, 2, coutput2);
+//   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("coutput2",TTree::Class(),
+//   					    AliAnalysisManager::kOutputContainer,
+//         				    "cenTree.root");
+// //   coutput2->SetSpecialOutput();  
+//   mgr->ConnectOutput(task, 2, coutput2);
 
   // Enable debug printouts
   mgr->SetDebugLevel(2);
@@ -72,6 +71,6 @@ void runCentrality(const char * type = "a")
 
   mgr->PrintStatus();
   // Start analysis in grid.
-  mgr->StartAnalysis("grid");
+  mgr->StartAnalysis(mode);
 
 };
