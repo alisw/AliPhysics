@@ -66,7 +66,7 @@ AliAnalysisTaskVertexESD::AliAnalysisTaskVertexESD(const char *name) :
 AliAnalysisTaskSE(name), 
   fCheckEventType(kTRUE),
   fReadMC(kFALSE),
-  fRecoVtxTPC(kFALSE),
+  fRecoVtxTPC(kTRUE),
   fRecoVtxITSTPC(kTRUE),
   fRecoVtxITSTPCHalfEvent(kFALSE),
   fOnlyITSTPCTracks(kFALSE),
@@ -93,6 +93,9 @@ AliAnalysisTaskSE(name),
   fhTRKTrklets(0),
   fhTRKcTrklets(0),
   fhTRKncTrklets(0),
+  fhTPCTrklets(0),
+  fhTPCcTrklets(0),
+  fhTPCncTrklets(0),
   fhSPD3DZreco(0),
   fhSPDZZreco(0),
   fhSPDVertexXPile(0),
@@ -184,8 +187,8 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fTreeBeamSpot->Branch("ntrksTRKnc", &ntrksTRKnc, "ntrksTRKnc/s");
   fOutput->Add(fTreeBeamSpot);
 
-  Int_t nbinTrklets=11;
-  Float_t lowTrklets[12]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,7.5,10.5,50.5,100.5,200.};
+  Int_t nbinTrklets=29;
+  Float_t lowTrklets[30]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,7.5,10.5,25.5,50.5,75.5,100.5,150.5,200.5,300.5,400.5,500.5,600.5,800.5,1000.5,1500.5,2000.5,2500.5,3000.5,4000.5,5000.5,6000.5,8000.5,10000.5};
   fhTriggeredTrklets = new TH1F("fhTriggeredTrklets","trklets dist for triggered ev.; ntrklets; entries",nbinTrklets,lowTrklets);
   fOutput->Add(fhTriggeredTrklets);
   fhSPD3DTrklets = new TH1F("fhSPD3DTrklets","trklets dist for SPD3D ev.; ntrklets; entries",nbinTrklets,lowTrklets);
@@ -198,6 +201,12 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput->Add(fhTRKcTrklets);
   fhTRKncTrklets = new TH1F("fhTRKncTrklets","trklets dist for TRKnc ev.; ntrklets; entries",nbinTrklets,lowTrklets);
   fOutput->Add(fhTRKncTrklets);
+  fhTPCTrklets = new TH1F("fhTPCTrklets","trklets dist for TPC ev.; ntrklets; entries",nbinTrklets,lowTrklets);
+  fOutput->Add(fhTPCTrklets);
+  fhTPCcTrklets = new TH1F("fhTPCcTrklets","trklets dist for TPCc ev.; ntrklets; entries",nbinTrklets,lowTrklets);
+  fOutput->Add(fhTPCcTrklets);
+  fhTPCncTrklets = new TH1F("fhTPCncTrklets","trklets dist for TPCnc ev.; ntrklets; entries",nbinTrklets,lowTrklets);
+  fOutput->Add(fhTPCncTrklets);
   
   Int_t nbinZreco = 16;
   Double_t lowZreco[17]={-15.0,-10.0,-7.0,-5,-4,-3,-2,-1,0,1,2,3,4,5,7,10,15};
@@ -404,22 +413,28 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 
   
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   // filling Vertex reco efficiency plots
+  
   if(eventTriggered ? 1. : 0.){
     fhTriggeredTrklets->Fill(ntrklets);
-    if(spdv->GetNContributors()>0.5){
-      TString spdtitle = spdv->GetTitle();
-      if(spdtitle.Contains("vertexer: 3D") ? 1. : 0.){
-	fhSPD3DTrklets->Fill(ntrklets);
-	fhSPD3DZreco->Fill(spdv->GetZv());
-      }
-      else{
-	fhSPDZTrklets->Fill(ntrklets);
-	fhSPDZZreco->Fill(spdv->GetZv());
+    
+    if(spdv){
+      if(spdv->GetNContributors()>0.5){
+	TString spdtitle = spdv->GetTitle();
+	if(spdtitle.Contains("vertexer: 3D") ? 1. : 0.){
+	  fhSPD3DTrklets->Fill(ntrklets);
+	  fhSPD3DZreco->Fill(spdv->GetZv());
+	}
+	else{
+	  fhSPDZTrklets->Fill(ntrklets);
+	  fhSPDZZreco->Fill(spdv->GetZv());
+	}
       }
     }
-    if(trkv->GetNContributors()>0.5)fhTRKTrklets->Fill(ntrklets);
+    
+    if(trkv){
+      if(trkv->GetNContributors()>0.5)fhTRKTrklets->Fill(ntrklets);
+    }
     if(fRecoVtxITSTPC) {
       AliESDVertex *trkvc = ReconstructPrimaryVertexITSTPC(kTRUE);
       if(trkvc->GetNContributors()>0.5)fhTRKcTrklets->Fill(ntrklets);
@@ -427,7 +442,19 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
       AliESDVertex *trkvnc = ReconstructPrimaryVertexITSTPC(kFALSE);
       if(trkvnc->GetNContributors()>0.5)fhTRKncTrklets->Fill(ntrklets);
       delete trkvnc; trkvnc=0;
-    } 
+    }
+    
+    if(tpcv){
+      if(tpcv->GetNContributors()>0.5)fhTPCTrklets->Fill(ntrklets);
+    }
+    if(fRecoVtxTPC) {
+	AliESDVertex *tpcvc = ReconstructPrimaryVertexTPC(kTRUE);
+	if(tpcvc->GetNContributors()>0.5)fhTPCcTrklets->Fill(ntrklets);
+	delete tpcvc; tpcvc=0;
+	AliESDVertex *tpcvnc = ReconstructPrimaryVertexTPC(kFALSE);
+	if(tpcvnc->GetNContributors()>0.5)fhTPCncTrklets->Fill(ntrklets);
+	delete tpcvnc; tpcvnc=0;
+      }
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   

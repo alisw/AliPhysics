@@ -29,8 +29,10 @@ void setDrawAtt(Int_t markerstyle,Int_t markercolor,Int_t markersize,Int_t linec
   }
 
 void MakeVtxEffPlots(TString foldname="",Bool_t savefile=kFALSE){
-
-  //Make efficiency plots for SPD vertex and TRK Vertex
+  
+  //Make efficiency plots for SPD vertex, TRK Vertex and TPC Vertex
+  // Author: 
+  // L. Milano, milano@to.infn.it
   
   TFile *infil=new TFile(Form("%sAnalysisResults.root",foldname.Data()),"read");
   TDirectory *dirFile=(TDirectory*)infil->Get("Vertex_Performance");
@@ -42,6 +44,9 @@ void MakeVtxEffPlots(TString foldname="",Bool_t savefile=kFALSE){
   TH1F *fhTRKTrklets=(TH1F*)cOutput->FindObject("fhTRKTrklets");
   TH1F *fhTRKcTrklets=(TH1F*)cOutput->FindObject("fhTRKcTrklets");
   TH1F *fhTRKncTrklets=(TH1F*)cOutput->FindObject("fhTRKncTrklets");
+  TH1F *fhTPCTrklets=(TH1F*)cOutput->FindObject("fhTPCTrklets");
+  TH1F *fhTPCcTrklets=(TH1F*)cOutput->FindObject("fhTPCcTrklets");
+  TH1F *fhTPCncTrklets=(TH1F*)cOutput->FindObject("fhTPCncTrklets");
   TH1F *fhSPDZZreco=(TH1F*)cOutput->FindObject("fhSPDZZreco");
   TH1F *fhSPD3DZreco=(TH1F*)cOutput->FindObject("fhSPD3DZreco");
   
@@ -60,12 +65,18 @@ void MakeVtxEffPlots(TString foldname="",Bool_t savefile=kFALSE){
   fhTRKcEffTrklets->SetName("fhTRKcEffTrklets");
   TGraphAsymmErrors *fhTRKncEffTrklets=new TGraphAsymmErrors(fhTRKncTrklets,fhTriggeredTrklets,"w");
   fhTRKncEffTrklets->SetName("fhTRKncEffTrklets");
+  TGraphAsymmErrors *fhTPCEffTrklets=new TGraphAsymmErrors(fhTPCTrklets,fhTriggeredTrklets,"w");
+  fhTPCEffTrklets->SetName("fhTPCEffTrklets");
+  TGraphAsymmErrors *fhTPCcEffTrklets=new TGraphAsymmErrors(fhTPCcTrklets,fhTriggeredTrklets,"w");
+  fhTPCcEffTrklets->SetName("fhTPCcEffTrklets");
+  TGraphAsymmErrors *fhTPCncEffTrklets=new TGraphAsymmErrors(fhTPCncTrklets,fhTriggeredTrklets,"w");
+  fhTPCncEffTrklets->SetName("fhTPCncEffTrklets");
   TH1F * fhSPDOverallZreco=(TH1F*)fhSPDZZreco->Clone("fhSPDOverallZreco");
   fhSPDOverallZreco->Add(fhSPD3DZreco);
   TGraphAsymmErrors *fhSPDEffZreco=new TGraphAsymmErrors(fhSPD3DZreco,fhSPDOverallZreco,"w");
   fhSPDEffZreco->SetName("fhSPDEffZreco");
 
-  TH1F *fhEff = new TH1F("hEff","hEff",6,0.5,6.5);
+  TH1F *fhEff = new TH1F("hEff","hEff",9,0.5,9.5);
   Int_t count=1;
   if(fhSPDZTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
     fhEff->Fill(count,fhSPDZTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
@@ -109,6 +120,25 @@ void MakeVtxEffPlots(TString foldname="",Bool_t savefile=kFALSE){
   fhEff->GetXaxis()->SetBinLabel(count,"TRKnc");
   
   count++;
+  if(fhTPCTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
+    fhEff->Fill(count,fhTPCTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
+    fhEff->SetBinError(count,fhEff->GetBinContent(count)*TMath::Sqrt(1/fhTPCTrklets->GetEntries()+1/fhTriggeredTrklets->GetEntries()));
+  }
+  fhEff->GetXaxis()->SetBinLabel(count,"TPC");
+  
+  count++;
+  if(fhTPCcTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
+    fhEff->Fill(count,fhTPCcTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
+    fhEff->SetBinError(count,fhEff->GetBinContent(count)*TMath::Sqrt(1/fhTPCcTrklets->GetEntries()+1/fhTriggeredTrklets->GetEntries()));
+  }
+  fhEff->GetXaxis()->SetBinLabel(count,"TPCc");
+  
+  count++;
+  if(fhTPCncTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
+    fhEff->Fill(count,fhTPCncTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
+    fhEff->SetBinError(count,fhEff->GetBinContent(count)*TMath::Sqrt(1/fhTPCncTrklets->GetEntries()+1/fhTriggeredTrklets->GetEntries()));
+  }
+  fhEff->GetXaxis()->SetBinLabel(count,"TPCnc");
   
   TCanvas *canvSPDTrklets=new TCanvas("canvSPDTrklets","SPD Eff vs tracklet multiplicy");
   canvSPDTrklets->SetBottomMargin(0.14);
@@ -117,7 +147,6 @@ void MakeVtxEffPlots(TString foldname="",Bool_t savefile=kFALSE){
   canvSPDTrklets->SetRightMargin(0.08);
   fhSPDZEffTrklets->SetMinimum(0);
   fhSPDZEffTrklets->SetMaximum(1.2);
-  fhSPDZEffTrklets->GetXaxis()->SetLimits(0,30);
   fhSPDZEffTrklets->GetXaxis()->SetTitle("tracklet multiplicity");
   fhSPDZEffTrklets->GetXaxis()->SetTitleSize(0.05);
   fhSPDZEffTrklets->GetYaxis()->SetTitle("efficiency");
@@ -142,7 +171,6 @@ void MakeVtxEffPlots(TString foldname="",Bool_t savefile=kFALSE){
   canvTRKTrklets->SetRightMargin(0.08);
   fhTRKEffTrklets->SetMinimum(0);
   fhTRKEffTrklets->SetMaximum(1.2);
-  fhTRKEffTrklets->GetXaxis()->SetLimits(0,30);
   fhTRKEffTrklets->GetXaxis()->SetTitle("tracklet multiplicity");
   fhTRKEffTrklets->GetXaxis()->SetTitleSize(0.05);
   fhTRKEffTrklets->GetYaxis()->SetTitle("efficiency");
@@ -159,6 +187,30 @@ void MakeVtxEffPlots(TString foldname="",Bool_t savefile=kFALSE){
   legTRK->AddEntry(fhTRKcEffTrklets,"TRKc","P");
   legTRK->AddEntry(fhTRKncEffTrklets,"TRKnc","P");
   legTRK->Draw();
+  
+  TCanvas *canvTPCTrklets=new TCanvas("canvTPCTrklets","TPC Eff vs tracklet multiplicy");
+  canvTPCTrklets->SetBottomMargin(0.14);
+  canvTPCTrklets->SetTopMargin(0.08);
+  canvTPCTrklets->SetLeftMargin(0.14);
+  canvTPCTrklets->SetRightMargin(0.08);
+  fhTPCEffTrklets->SetMinimum(0);
+  fhTPCEffTrklets->SetMaximum(1.2);
+  fhTPCEffTrklets->GetXaxis()->SetTitle("tracklet multiplicity");
+  fhTPCEffTrklets->GetXaxis()->SetTitleSize(0.05);
+  fhTPCEffTrklets->GetYaxis()->SetTitle("efficiency");
+  fhTPCEffTrklets->GetYaxis()->SetTitleSize(0.05);
+  setDrawAtt(22,4,2,4,2,fhTPCEffTrklets);
+  setDrawAtt(23,2,2,2,2,fhTPCcEffTrklets);
+  setDrawAtt(24,1,2,1,2,fhTPCncEffTrklets);
+  fhTPCEffTrklets->SetTitle("TPC efficiency");
+  fhTPCEffTrklets->Draw("ALP");
+  fhTPCcEffTrklets->Draw("PLSAME");
+  fhTPCncEffTrklets->Draw("PLSAME"); 
+  TLegend *legTPC=new TLegend(0.6,0.2,0.9,0.4);
+  legTPC->AddEntry(fhTPCEffTrklets,"TPC","P");  
+  legTPC->AddEntry(fhTPCcEffTrklets,"TPCc","P");
+  legTPC->AddEntry(fhTPCncEffTrklets,"TPCnc","P");
+  legTPC->Draw();
   
   TCanvas *canvZ=new TCanvas("canvZ","3D/reco vs Z");
   canvZ->SetBottomMargin(0.14);
@@ -185,7 +237,6 @@ void MakeVtxEffPlots(TString foldname="",Bool_t savefile=kFALSE){
   canvOverall->SetRightMargin(0.08);
   fhEff->SetMinimum(0);
   fhEff->SetMaximum(1.2);
-  fhEff->GetXaxis()->SetLimits(0,30);
   fhEff->GetXaxis()->SetTitleSize(0.05);
   fhEff->GetYaxis()->SetTitle("efficiency");
   fhEff->GetYaxis()->SetTitleSize(0.05);
