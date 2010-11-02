@@ -35,10 +35,10 @@
 AliTOFTenderSupply::AliTOFTenderSupply() :
   AliTenderSupply(),
   fESDpid(0x0),
+  fIsMC(kFALSE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
-  fTOFres(100.),
-  fIsMC(kFALSE)
+  fTOFres(100.)
 {
   //
   // default ctor
@@ -49,10 +49,10 @@ AliTOFTenderSupply::AliTOFTenderSupply() :
 AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender) :
   AliTenderSupply(name,tender),
   fESDpid(0x0),
+  fIsMC(kFALSE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
-  fTOFres(100.),
-  fIsMC(kFALSE)
+  fTOFres(100.)
 {
   //
   // named ctor
@@ -115,7 +115,7 @@ void AliTOFTenderSupply::ProcessEvent()
 
   //recalculate TOF signal
   if (fTender->RunChanged()){
-    fTOFCalib->Init();
+    fTOFCalib->Init(fTender->GetRun());
   }
   fTOFCalib->CalibrateESD(event);
 
