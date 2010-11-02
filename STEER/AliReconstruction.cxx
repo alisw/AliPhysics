@@ -1889,7 +1889,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
 
     // AdC+FN
-    GetReconstructor(3)->FillEventTimeWithTOF(fesd,&pid);
+    if (fReconstructor[3])
+      GetReconstructor(3)->FillEventTimeWithTOF(fesd,&pid);
 
     // combined PID
     pid.MakePID(fesd);
