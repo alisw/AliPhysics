@@ -673,7 +673,6 @@ AliEveFMDLoader::LoadRaw()
     return;
   }
   rr->Reset();
-  std::cout<<"Now in event # " << *(rr->GetEventId()) << std::endl;
   AliFMDRawReader* fr = new AliFMDRawReader(rr, 0);
   TClonesArray* digits = &fRawCache;
   fRawCache.Clear();
