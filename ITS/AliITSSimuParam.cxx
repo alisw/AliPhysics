@@ -77,6 +77,7 @@ fSDDMaxAdc(0.),
 fSDDChargeLoss(fgkSDDChargeLossDefault),
 fSDDTrigDelay(fgkSDDTrigDelayDefault),
 fSDDRawFormat(7),
+fSSDLorentzDrift(kTRUE),
 fSSDCouplingPR(0),
 fSSDCouplingPL(0),
 fSSDCouplingNR(0),
@@ -126,6 +127,7 @@ fSDDMaxAdc(simpar.fSDDMaxAdc),
 fSDDChargeLoss(simpar.fSDDChargeLoss),
 fSDDTrigDelay(simpar.fSDDTrigDelay),
 fSDDRawFormat(simpar.fSDDRawFormat),
+fSSDLorentzDrift(simpar.fSSDLorentzDrift),
 fSSDCouplingPR(simpar.fSSDCouplingPR),
 fSSDCouplingPL(simpar.fSSDCouplingPL),
 fSSDCouplingNR(simpar.fSSDCouplingNR),
@@ -200,6 +202,7 @@ void AliITSSimuParam::PrintParameters() const{
   printf("Raw Data Format           = %d\n",fSDDRawFormat);  
   printf("\n");
   printf("=====  SSD parameters  =====\n");
+  printf("Flag to add Lorentz Drift = %d\n",fSSDLorentzDrift);
   printf("Coupling PR               = %f\n",fSSDCouplingPR);
   printf("Coupling PL               = %f\n",fSSDCouplingPL);
   printf("Coupling NR               = %f\n",fSSDCouplingNR);

@@ -213,10 +213,10 @@ fMultCutK0SFromDecay(-10.),
 fMultCutMaxDCA(1.),
 //
 fCorrectLorentzAngleSPD(kFALSE),
-fLorentzAngleHolesSPD(0.),
+fTanLorentzAngleHolesSPD(0.017455), // tan(1 degree)
 fCorrectLorentzAngleSSD(kFALSE),
-fLorentzAngleHolesSSD(0.),
-fLorentzAngleElectronsSSD(0.),
+fTanLorentzAngleHolesSSD(0.016),  // tan(0.94 degrees)
+fTanLorentzAngleElectronsSSD(0.068), // tan(3.98 degrees)
 //
 fESDV0Params(NULL)
 {

@@ -103,6 +103,11 @@ class AliITSSimuParam : public TObject {
   void    SetSDDRawDataFormatCarlos() {fSDDRawFormat=7;}
   void    SetSDDRawDataFormatFixLen8bitEncoded() {fSDDRawFormat=0;}
   Char_t  GetSDDRawDataFormat() const {return fSDDRawFormat;}
+
+  // Use Lorentz's angle
+  void    SetSSDLorentzDrift(Bool_t ison) {fSSDLorentzDrift=ison;}
+  Bool_t  GetSSDLorentzDrift() const {return fSSDLorentzDrift;}
+
   Int_t GetSSDZSThreshold() const { // ZS threshold
     return fSSDZSThreshold; }
   virtual void SetSSDZSThreshold(Int_t zsth) { fSSDZSThreshold = zsth; }
@@ -240,6 +245,8 @@ class AliITSSimuParam : public TObject {
   Float_t  fSDDTrigDelay;    // SDD time-zero
   Char_t   fSDDRawFormat;    // Index for SDD RawFormat
   
+  Bool_t   fSSDLorentzDrift;     // Flag to decide whether to simulate the Lorentz Drift or not in SSD
+
   Double_t fSSDCouplingPR;  // SSD couplings
   Double_t fSSDCouplingPL;  // SSD couplings
   Double_t fSSDCouplingNR;  // SSD couplings

@@ -24,10 +24,13 @@
 //                                                                        //
 ///////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
-#include "AliLog.h"
-
 #include "AliITSClusterFinderV2SSD.h"
+
+#include <Riostream.h>
+#include <TGeoGlobalMagField.h>
+
+#include "AliLog.h"
+#include "AliMagF.h"
 #include "AliITSRecPoint.h"
 #include "AliITSRecPointContainer.h"
 #include "AliITSgeomTGeo.h"
@@ -66,15 +69,34 @@ const Float_t AliITSClusterFinderV2SSD::fgkCosmic2008StripShifts[16][9] =
 ClassImp(AliITSClusterFinderV2SSD)
 
 
-AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp),
-									     fLastSSD1(AliITSgeomTGeo::GetModuleIndex(6,1,1)-1)
+  AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp),fLastSSD1(AliITSgeomTGeo::GetModuleIndex(6,1,1)-1), fLorentzShiftP(0), fLorentzShiftN(0)
 {
 //Default constructor
+  static AliITSRecoParam *repa = NULL;  
+  if(!repa){
+    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
+    if(!repa){
+      repa = AliITSRecoParam::GetHighFluxParam();
+      AliWarning("Using default AliITSRecoParam class");
+    }
+  }
 
+  if (repa->GetCorrectLorentzAngleSSD()) {
+    AliMagF* field = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField()); 
+    if (field == 0)
+      AliError("Cannot get magnetic field from TGeoGlobalMagField");
+    Float_t Bfield = field->SolenoidField();
+    // NB: spatial shift has opposite sign for lay 5 and 6, but strip numbering also changes direction, so no sign-change 
+    // Shift due to ExB on drift N-side, units: strip width 
+    fLorentzShiftP = -repa->GetTanLorentzAngleElectronsSSD() * 150.e-4/95.e-4 * Bfield / 5.0;
+    // Shift due to ExB on drift P-side, units: strip width 
+    fLorentzShiftN = -repa->GetTanLorentzAngleHolesSSD() * 150.e-4/95.e-4 * Bfield / 5.0;
+    AliDebug(1,Form("Bfield %f Lorentz Shift P-side %f N-side %f",Bfield,fLorentzShiftN,fLorentzShiftP));
+  }
 }
  
 //______________________________________________________________________
-AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(const AliITSClusterFinderV2SSD &cf) : AliITSClusterFinder(cf),						fLastSSD1(cf.fLastSSD1)
+AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(const AliITSClusterFinderV2SSD &cf) : AliITSClusterFinder(cf), fLastSSD1(cf.fLastSSD1), fLorentzShiftP(cf.fLorentzShiftP), fLorentzShiftN(cf.fLorentzShiftN)
 {
   // Copy constructor
 }
@@ -162,6 +184,9 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   cout<<endl;
   cout<<endl;
   */
+  Int_t layer = 4;
+  if (fModule>fLastSSD1) 
+    layer = 5;
 
   //--------------------------------------------------------
   // start 1D-clustering from the first digit in the digits array
@@ -221,7 +246,14 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
 
 	if(flag5) {
 	  //cout<<"here1"<<endl;
-         c[*n].SetY(y/q);
+	  Float_t dLorentz = 0;
+	  if (!flag) { // P-side is neg clust
+	    dLorentz = fLorentzShiftN;
+	  }
+	  else { // N-side is p clust
+	    dLorentz = fLorentzShiftP;
+	  }
+         c[*n].SetY(y/q+dLorentz);
          c[*n].SetQ(q);
          c[*n].SetNd(nd);
 	 CheckLabels2(milab);
@@ -232,14 +264,14 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
 
 	   //Split suspiciously big cluster
 	   if (nd>4&&nd<25) {
-	     c[*n].SetY(y/q-0.25*nd);
+	     c[*n].SetY(y/q-0.25*nd+dLorentz);
 	     c[*n].SetQ(0.5*q);
 	     (*n)++;
 	     if (*n==kMax) {
 	       Error("FindClustersSSD","Too many 1D clusters !");
 	       return;
 	     }
-	     c[*n].SetY(y/q+0.25*nd);
+	     c[*n].SetY(y/q+0.25*nd+dLorentz);
 	     c[*n].SetQ(0.5*q);
 	     c[*n].SetNd(nd);
 	     c[*n].SetLabels(milab);
@@ -311,8 +343,15 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   if(flag5) {
 
     //	cout<<"here2"<<endl;
-
-    c[*n].SetY(y/q);
+    Float_t dLorentz = 0;
+    if (!flag) { // P-side is neg clust
+      dLorentz = fLorentzShiftN;
+    }
+    else { // N-side is p clust
+      dLorentz = fLorentzShiftP;
+    }
+    
+    c[*n].SetY(y/q + dLorentz);
     c[*n].SetQ(q);
     c[*n].SetNd(nd);
     c[*n].SetLabels(lab);
@@ -321,14 +360,14 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
       
       //Split suspiciously big cluster
       if (nd>4 && nd<25) {
-	c[*n].SetY(y/q-0.25*nd);
+	c[*n].SetY(y/q-0.25*nd + dLorentz);
 	c[*n].SetQ(0.5*q);
 	(*n)++;
 	if (*n==kMax) {
 	  Error("FindClustersSSD","Too many 1D clusters !");
 	  return;
 	}
-	c[*n].SetY(y/q+0.25*nd);
+	c[*n].SetY(y/q+0.25*nd + dLorentz);
 	c[*n].SetQ(0.5*q);
 	c[*n].SetNd(nd);
 	c[*n].SetLabels(lab);
@@ -367,7 +406,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
 
 void AliITSClusterFinderV2SSD::RawdataToClusters(AliRawReader* rawReader){
 
-    //------------------------------------------------------------
+  //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
@@ -461,6 +500,10 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 //CM channels are always present even everything is suppressed 
 	  continue;
 	}
+	
+	Int_t layer = 4;
+	if (fModule>fLastSSD1) 
+	  layer = 5;
 
 	AliITSCalibrationSSD* cal = (AliITSCalibrationSSD*)fDetTypeRec->GetCalibrationModel(fModule);
 	if( !cal ){
@@ -486,6 +529,14 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 	  Int_t nDigits = 0;
 	  Int_t ostrip = -2;
 	  Bool_t snFlag = 0;
+
+	  Float_t dLorentz = 0;
+	  if (side==0) { // P-side is neg clust
+	    dLorentz = fLorentzShiftN;
+	  }
+	  else { // N-side is pos clust
+	    dLorentz = fLorentzShiftP;
+	  }
 	  
 	  Int_t n = nStrips[adc][side];
 	  for( int istr = 0; istr<n+1; istr++ ){
@@ -522,7 +573,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 		}else {
 		  
 		  Ali1Dcluster &cluster = clusters1D[side][nClusters1D[side]++];
-		  cluster.SetY( y / q + dStrip);
+		  cluster.SetY( y / q + dStrip + dLorentz);
 		  cluster.SetQ(q);
 		  cluster.SetNd(nDigits);
 		  cluster.SetLabels(lab);
@@ -532,10 +583,10 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 		  if( repa->GetUseUnfoldingInClusterFinderSSD()
 		      && nDigits > 4 && nDigits < 25 
 		      ){
-		    cluster.SetY(y/q + dStrip - 0.25*nDigits);	    
+		    cluster.SetY(y/q + dStrip - 0.25*nDigits + dLorentz);	    
 		    cluster.SetQ(0.5*q);	  
 		    Ali1Dcluster& cluster2 = clusters1D[side][nClusters1D[side]++];
-		    cluster2.SetY(y/q + dStrip + 0.25*nDigits);	    
+		    cluster2.SetY(y/q + dStrip + 0.25*nDigits + dLorentz);	    
 		    cluster2.SetQ(0.5*q);
 		    cluster2.SetNd(nDigits);
 		    cluster2.SetLabels(lab);	  

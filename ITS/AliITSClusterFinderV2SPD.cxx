@@ -21,6 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
+#include <TGeoGlobalMagField.h>
 #include "AliITSCalibrationSPD.h"
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSRecPoint.h"
@@ -33,6 +34,8 @@
 #include "AliITSdigitSPD.h"
 #include "AliITSFOSignalsSPD.h"
 #include "AliITSRecPointContainer.h"
+#include "AliMagF.h"
+#include "AliITSsegmentationSPD.h"
 
 ClassImp(AliITSClusterFinderV2SPD)
 
@@ -87,6 +90,8 @@ void AliITSClusterFinderV2SPD::RawdataToClusters(AliRawReader* rawReader){
 Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,TClonesArray* clusters,Int_t maxBins,Int_t nzbins,Int_t iModule,Bool_t rawdata){
   
   //Cluster finder for SPD (from digits and from rawdata)
+  const Double_t kmictocm = 1.0e-4; // convert microns to cm.
+  const Double_t defaultField = 5.0; // default Bz value at which Tan(theta_Lorentz) is given in RecoParam
 
   static AliITSRecoParam *repa = NULL;
   if(!repa){
@@ -97,6 +102,20 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
     }
   }
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(iModule);
+
+  // Lorentz angle correction
+  Double_t tanLorentzAngle=0; 
+  AliITSsegmentationSPD *seg = (AliITSsegmentationSPD*)(GetDetTypeRec()->GetSegmentationModel(0));
+  Double_t thick = 0.5*kmictocm*seg->Dy();  // Half Thickness in cm
+  if(repa->GetCorrectLorentzAngleSPD()) { // only if CorrectLorentzAngleSPD required
+    // here retrieve the value of the field
+    AliMagF* field = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+    if (field == 0)
+      AliError("Cannot get magnetic field from TGeoGlobalMagField");
+    Float_t magField = field->SolenoidField();
+    tanLorentzAngle=repa->GetTanLorentzAngleHolesSPD() * magField / defaultField ;
+  }
+  //
 
    if (repa->GetSPDRemoveNoisyFlag()) {
     // Loop on noisy pixels and reset them
@@ -240,6 +259,10 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	z /= q;
 	y -= fHwSPD;
 	z -= fHlSPD;
+
+        // Lorentz drift effect in local y
+        y -= tanLorentzAngle*thick;
+        //
 
 	Float_t hit[5]; //y,z,sigma(y)^2, sigma(z)^2, charge
         {

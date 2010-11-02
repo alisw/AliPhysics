@@ -72,6 +72,19 @@ class AliITSsimulationSSD: public AliITSsimulation {
     //Sets the Drift velocity for the P and N sides
     void SetDriftVelocity(Double_t v0=0.86E+06,Double_t v1=2.28E+06)
 	{fDriftVel[0] = v0;fDriftVel[1] = v1;}
+
+
+    //  Decide whether to use or not the Lorentz drift 
+    void SetLorentzDrift(Bool_t b=kFALSE)
+      {fLorentz=b; if(fLorentz) SetTanLorAngle();};
+    // Set the Lorentz angles
+    Bool_t SetTanLorAngle();
+    // Getter for the Lorentz angles
+    Double_t GetTanLorAngleP() const {return fTanLorAngP;};
+    Double_t GetTanLorAngleN() const {return fTanLorAngN;};
+    //
+
+
     // Standard ascii class print function
     void Print(ostream *os);
     // Standard ascii class read function
@@ -127,6 +140,11 @@ class AliITSsimulationSSD: public AliITSsimulation {
     Double_t    fDriftVel[2]; // Drift velocities [P,N sides] cm/sec
 
     TF1         *fTimeResponse; // signal time response function
+
+   Bool_t        fLorentz;      // kTRUE if Lorentz drift has been allowed 
+   Double_t      fTanLorAngP;    //! Tangent of the Lorentz Angle for holes 
+   Double_t      fTanLorAngN;    //! Tangent of the Lorentz Angle for electrons
+
 
     ClassDef(AliITSsimulationSSD,3) // SSD signal simulation class
 

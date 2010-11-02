@@ -21,6 +21,7 @@
 #include <TObjArray.h>
 #include <TRandom.h>
 
+#include <TGeoGlobalMagField.h>
 #include "AliITSmodule.h"
 #include "AliITSMapA2.h"
 #include "AliITSpList.h"
@@ -31,6 +32,7 @@
 #include "AliITShit.h"
 #include "AliITSdigitSSD.h"
 #include "AliRun.h"
+#include "AliMagF.h"
 #include "AliITSgeom.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSTableSSD.h"
@@ -54,7 +56,11 @@ fMapA2(0),
 fIonE(0.0),
 fDifConst(),
 fDriftVel(),
-fTimeResponse(NULL){
+fTimeResponse(NULL),
+fLorentz(kFALSE),
+fTanLorAngP(0),
+fTanLorAngN(0)
+{
     //default Constructor
     //Inputs:
     // none.
@@ -71,7 +77,11 @@ fMapA2(0),
 fIonE(0.0),
 fDifConst(),
 fDriftVel(),
-fTimeResponse(NULL){
+fTimeResponse(NULL),
+fLorentz(kFALSE),
+fTanLorAngP(0),
+fTanLorAngN(0)
+{
     // Constructor 
     // Input:
     //   AliITSDetTypeSim    Pointer to the SSD dettype to be used
@@ -94,13 +104,38 @@ void AliITSsimulationSSD::Init(){
   // Return
   //   none.
   AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
+  AliITSSimuParam* simpar = fDetType->GetSimuParam();
   
   SetDriftVelocity(); // use default values in .h file
   SetIonizeE();       // use default values in .h file
   SetDiffConst();     // use default values in .h file
   fpList           = new AliITSpList(2,GetNStrips());
   fMapA2           = new AliITSMapA2(seg);
+  SetLorentzDrift(simpar->GetSSDLorentzDrift());
+  if (fLorentz) SetTanLorAngle();
 }
+
+//______________________________________________________________________
+Bool_t AliITSsimulationSSD::SetTanLorAngle() {
+    // This function set the Tangent of the Lorentz angles. 
+    // output: Bool_t : kTRUE in case of success
+    //
+
+    if(!fDetType) {
+      AliError("AliITSsimulationSPD::SetTanLorAngle: AliITSDetTypeSim* fDetType not set ");
+      return kFALSE;}
+
+    AliITSSimuParam* simpar = fDetType->GetSimuParam();
+    AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+    if (!fld) AliFatal("The field is not initialized");
+    Double_t bz = fld->SolenoidField();
+
+    fTanLorAngN = TMath::Tan( simpar->LorentzAngleElectron(bz) );
+    fTanLorAngP = TMath::Tan( simpar->LorentzAngleHole(bz) );
+
+    return kTRUE;
+}
+
 //______________________________________________________________________
 AliITSsimulationSSD& AliITSsimulationSSD::operator=(
                                          const AliITSsimulationSSD &s){
@@ -116,6 +151,9 @@ AliITSsimulationSSD& AliITSsimulationSSD::operator=(
   this->fDriftVel[0] = s.fDriftVel[0];
   this->fDriftVel[1] = s.fDriftVel[1];
   this->fTimeResponse = s.fTimeResponse;
+  this->fLorentz   = s.fLorentz;
+  this->fTanLorAngP = s.fTanLorAngP;
+  this->fTanLorAngN = s.fTanLorAngN;
   return *this;
 }
 /*
@@ -138,7 +176,11 @@ fMapA2(source.fMapA2),
 fIonE(source.fIonE),
 fDifConst(),
 fDriftVel(),
-fTimeResponse(source.fTimeResponse){
+fTimeResponse(source.fTimeResponse),
+fLorentz(source.fLorentz),
+fTanLorAngP(source.fTanLorAngP),
+fTanLorAngN(source.fTanLorAngN)
+{
   // copy constructor
   fDifConst[0] = source.fDifConst[0];
   fDifConst[1] = source.fDifConst[1];
@@ -238,6 +280,7 @@ void AliITSsimulationSSD::HitsToAnalogDigits(AliITSmodule *mod,
   module = mod->GetIndex();
   if ( mod->GetLayer() == 6 ) seg->SetLayer(6);
   if ( mod->GetLayer() == 5 ) seg->SetLayer(5);
+
   for(Int_t i=0; i<nhits; i++) {    
     // LineSegmentL returns 0 if the hit is entering
     // If hits is exiting returns positions of entering and exiting hits
@@ -288,7 +331,15 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
   Double_t tdrift[2] = {0.,0.}; // time of drift
   Double_t w;
   Double_t inf[2], sup[2], par0[2];                 
-  
+ 
+  // Set up corrections for Lorentz drift (ExB)
+  Double_t TanLorAngP = fTanLorAngP;
+  Double_t TanLorAngN = fTanLorAngN;
+  if(seg->GetLayer()==6) {
+    TanLorAngP = -1.*fTanLorAngP;
+    TanLorAngN = -1.*fTanLorAngN;
+  }
+
   // Steps in the module are determined "manually" (i.e. No Geant)
   // NumOfSteps divide path between entering and exiting hits in steps 
   Int_t numOfSteps = NumOfSteps(x1, y1, z1, dex, dey, dez);
@@ -319,16 +370,23 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
       y=-y; // Lay6 module has sensor up-side-down!!!
     }
     
-    // w is the coord. perpendicular to the strips
-    //    Float_t xp=x*1.e+4,zp=z*1.e+4; // microns    
-    Float_t xp=x,zp=z; 
-    seg->GetPadTxz(xp,zp);
-
     Int_t k;
     //---------------------------------------------------------
     // Pside
     //------------------------------------------------------------
     k=0;
+
+    // w is the coord. perpendicular to the strips
+    //    Float_t xp=x*1.e+4,zp=z*1.e+4; // microns    
+    Float_t xp=x,zp=z; 
+
+    // correction for the Lorentz's angle
+    if(fLorentz) {
+      Float_t deltaxp = (y+(seg->Dy()*1.0E-4)/2)*TanLorAngP;
+      xp+=deltaxp;  
+    }
+
+    seg->GetPadTxz(xp,zp);
     
     // calculate drift time
     // y is the minimum path
@@ -342,8 +400,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
       if(GetDebug(4)) cout << "Dead SSD region, x,z="<<x<<","<<z<<endl;
       return; // There are dead region on the SSD sensitive volume!!!
     } // end if
-    
-      // sigma is the standard deviation of the diffusion gaussian
+    // sigma is the standard deviation of the diffusion gaussian
     if(tdrift[k]<0) return;
     
     sigma[k] = TMath::Sqrt(2*GetDiffConst(k)*tdrift[k]);
@@ -370,6 +427,18 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
     // Nside
     //-------------------------------------------------------
     k=1;
+
+    xp=x; zp=z; 
+
+    // correction for the Lorentz's angle
+    if(fLorentz) {
+      Float_t deltaxn = ((seg->Dy()*1.0E-4)/2-y)*TanLorAngN;
+      xp+=deltaxn;
+    }
+    
+
+    seg->GetPadTxz(xp,zp);
+
     tdrift[1] = ((seg->Dy()*1.0E-4)/2-y)/GetDriftVelocity(1);
     
     //tang[k]=TMath::Tan(tang[k]);
