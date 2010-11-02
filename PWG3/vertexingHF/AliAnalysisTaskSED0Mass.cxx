@@ -547,7 +547,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 14,-0.5,13.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 15,-0.5,14.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -563,9 +563,10 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(12,"PID=3");
   fNentries->GetXaxis()->SetBinLabel(13,"K");
   fNentries->GetXaxis()->SetBinLabel(14,"Lambda");
+  fNentries->GetXaxis()->SetBinLabel(15,"Pile-up Rej");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
-  fCounter = new AliNormalizationCounter("NormalizationCounter");
+  fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(6)->GetContainer()->GetName()));
 
   // Post the data
   PostData(1,fOutputMass);
@@ -664,7 +665,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
   fCounter->StoreEvent(aod,fReadMC);   
-  if(!fCuts->IsEventSelected(aod)) return;
+  if(!fCuts->IsEventSelected(aod)) {
+    if(fCuts->GetWhyRejection()==1) // rejected for pileup
+      fNentries->Fill(14);
+    return;
+  }
   
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
