@@ -1,8 +1,8 @@
-//#include <Riostream.h>
-//#include <TFile.h>
-//#include <AliRDHFCutsD0toKpi.h>
-//#include <TClonesArray.h>
-//#include <TParameter.h>
+#include <Riostream.h>
+#include <TFile.h>
+#include <AliRDHFCutsD0toKpi.h>
+#include <TClonesArray.h>
+#include <TParameter.h>
 
 
 //Use:
@@ -122,7 +122,7 @@ void makeInputAliAnalysisTaskSED0Mass(){
   rdcutsvalPPR[8][4]=0.8;
   */
   Double_t arrcuts[9]={0.2,0.03,0.8,0.3,0.3,0.1,0.1,-0.0004,0.7};
-
+  //cout<<"here"<<endl;
   //setting my cut values
 
   //0-1 GeV
@@ -175,7 +175,7 @@ void makeInputAliAnalysisTaskSED0Mass(){
 
 
   //5-6 GeV - 6-8 GeV - 8-12 GeV - 12-16 GeV
-  arrcuts[2]=0.015;  arrcuts[7]=-0.0001;
+  arrcuts[1]=0.015;  arrcuts[7]=-0.0001;
 
   rdcutsvalmine[0][5]=rdcutsvalmine[0][6]=rdcutsvalmine[0][7]=rdcutsvalmine[0][8]=arrcuts[0];
   rdcutsvalmine[1][5]=rdcutsvalmine[1][6]=rdcutsvalmine[1][7]=rdcutsvalmine[1][8]=arrcuts[1];
@@ -206,7 +206,7 @@ void makeInputAliAnalysisTaskSED0Mass(){
   if(pidflag) cout<<"PID is used"<<endl;
   else cout<<"PID is not used"<<endl;
 
-  //pid settings
+    //pid settings
   AliAODPidHF* pidObj=new AliAODPidHF();
   //pidObj->SetName("pid4D0");
   Int_t mode=1;
@@ -226,9 +226,12 @@ void makeInputAliAnalysisTaskSED0Mass(){
 
   RDHFD0toKpi->SetUseDefaultPID(kFALSE); //to use the AliAODPidHF
 
+  //activate pileup rejection
+  RDHFD0toKpi->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+
   cout<<"This is the odject I'm going to save:"<<endl;
   RDHFD0toKpi->PrintAll();
-  TFile* fout=new TFile("D0toKpiCuts.root","recreate");   //set this!! 
+  TFile* fout=new TFile("D0toKpiCutsStdpileup.root","recreate");   //set this!! 
   fout->cd();
   RDHFD0toKpi->Write();
   fout->Close();
@@ -259,7 +262,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
 
   const Int_t nvars=9;
 
-  const Int_t nptbins=11;
+  const Int_t nptbins=10; //change this when adding pt bins!
   Float_t ptbins[nptbins+1];
   ptbins[0]=0.;
   ptbins[1]=0.5;
@@ -271,8 +274,9 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   ptbins[7]=6.;
   ptbins[8]=8.;
   ptbins[9]=12.;
-  ptbins[10]=16.;
-  ptbins[11]=9999.;
+  //ptbins[10]=16.;
+  ptbins[10]=9999.;
+
   
   RDHFD0toKpi->SetPtBins(nptbins+1,ptbins);
   
@@ -295,29 +299,154 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
     //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
     //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
 
-   Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.2,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* pt<0.5*/
-						  {0.2,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 0.5<pt<1*/
-						  {0.2,200.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 1<pt<2 */
-						  {0.2,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 2<pt<3 */
-						  {0.2,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 3<pt<4 */
-						  {0.2,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 4<pt<5 */
-						  {0.2,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 5<pt<6 */
-						  {0.2,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 6<pt<8 */
-						  {0.2,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 8<pt<12 */
-						  {0.2,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/*12<pt<16 */
-						  {0.2,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7}};/*pt>16 */
+  /*
+  //setting PPR cut values
+  rdcutsvalPPR[0][0]=0.7;
+  rdcutsvalPPR[1][0]=0.04;
+  rdcutsvalPPR[2][0]=0.8;
+  rdcutsvalPPR[3][0]=0.5;
+  rdcutsvalPPR[4][0]=0.5;
+  rdcutsvalPPR[5][0]=0.05;
+  rdcutsvalPPR[6][0]=0.05;
+  rdcutsvalPPR[7][0]=-0.0002;
+  rdcutsvalPPR[8][0]=0.5;
+
+  rdcutsvalPPR[0][1]=rdcutsvalPPR[0][2]=0.7;
+  rdcutsvalPPR[1][1]=rdcutsvalPPR[1][2]=0.02;
+  rdcutsvalPPR[2][1]=rdcutsvalPPR[2][2]=0.8;
+  rdcutsvalPPR[3][1]=rdcutsvalPPR[3][2]=0.7;
+  rdcutsvalPPR[4][1]=rdcutsvalPPR[4][2]=0.7;
+  rdcutsvalPPR[5][1]=rdcutsvalPPR[5][2]=0.05;
+  rdcutsvalPPR[6][1]=rdcutsvalPPR[6][2]=0.05;
+  rdcutsvalPPR[7][1]=rdcutsvalPPR[7][2]=-0.0002;
+  rdcutsvalPPR[8][1]=rdcutsvalPPR[8][2]=0.6;
+
+  rdcutsvalPPR[0][3]=0.7;
+  rdcutsvalPPR[1][3]=0.02;
+  rdcutsvalPPR[2][3]=0.8;
+  rdcutsvalPPR[3][3]=0.7;
+  rdcutsvalPPR[4][3]=0.7;
+  rdcutsvalPPR[5][3]=0.05;
+  rdcutsvalPPR[6][3]=0.05;
+  rdcutsvalPPR[7][3]=-0.0001;
+  rdcutsvalPPR[8][3]=0.8;
+
+  rdcutsvalPPR[0][4]=0.7;
+  rdcutsvalPPR[1][4]=0.02;
+  rdcutsvalPPR[2][4]=0.8;
+  rdcutsvalPPR[3][4]=0.7;
+  rdcutsvalPPR[4][4]=0.7;
+  rdcutsvalPPR[5][4]=0.05;
+  rdcutsvalPPR[6][4]=0.05;
+  rdcutsvalPPR[7][4]=-0.00005;
+  rdcutsvalPPR[8][4]=0.8;
+  */
+  /*
+  //setting my cut values
+
+  Float_t passcut[9]={0.7,0.04,0.8,0.7,0.7,0.1,0.1,-0.00015,0.5};
+
+  //setting my cut values
+  //0-1
+  rdcutsvalmine[0][0]=passcut[0];//0.7;
+  rdcutsvalmine[1][0]=passcut[1];//0.04;
+  rdcutsvalmine[2][0]=passcut[2];//0.8;
+  rdcutsvalmine[3][0]=passcut[3];//0.5;
+  rdcutsvalmine[4][0]=passcut[4];//0.5;
+  rdcutsvalmine[5][0]=passcut[5];//0.05;
+  rdcutsvalmine[6][0]=passcut[6];//0.05;
+  rdcutsvalmine[7][0]=passcut[7];//-0.00025;
+  rdcutsvalmine[8][0]=passcut[8];//0.7;
+
+  //1-2;2-3
+  passcut[1]=0.02;
+  passcut[8]=0.7;
+  rdcutsvalmine[0][1]=rdcutsvalmine[0][2]=passcut[0];//0.7;
+  rdcutsvalmine[1][1]=rdcutsvalmine[1][2]=passcut[1];//0.02;
+  rdcutsvalmine[2][1]=rdcutsvalmine[2][2]=passcut[2];//0.8;
+  rdcutsvalmine[3][1]=rdcutsvalmine[3][2]=passcut[3];//0.7;
+  rdcutsvalmine[4][1]=rdcutsvalmine[4][2]=passcut[4];//0.7;
+  rdcutsvalmine[5][1]=rdcutsvalmine[5][2]=passcut[5];//1.;
+  rdcutsvalmine[6][1]=rdcutsvalmine[6][2]=passcut[6];//1.;
+  rdcutsvalmine[7][1]=rdcutsvalmine[7][2]=passcut[7];//-0.00025;
+  rdcutsvalmine[8][1]=rdcutsvalmine[8][2]=passcut[8];//0.8;
+
+  //3-5
+  passcut[7]=-0.00005;
+  passcut[8]=0.6;
+  rdcutsvalmine[0][3]=passcut[0];//0.7;
+  rdcutsvalmine[1][3]=passcut[1];//0.02;
+  rdcutsvalmine[2][3]=passcut[2];//0.8;
+  rdcutsvalmine[3][3]=passcut[3];//0.7;
+  rdcutsvalmine[4][3]=passcut[4];//0.7;
+  rdcutsvalmine[5][3]=passcut[5];//0.05;
+  rdcutsvalmine[6][3]=passcut[6];//0.05;
+  rdcutsvalmine[7][3]=passcut[7];//-0.00015;
+  rdcutsvalmine[8][3]=passcut[8];//0.8;
+
+  //5-8
+  passcut[7]=-0.00001;
+  passcut[8]=0.6;
+  rdcutsvalmine[0][4]=passcut[0];//0.7;
+  rdcutsvalmine[1][4]=passcut[1];//0.02;
+  rdcutsvalmine[2][4]=passcut[2];//0.8;
+  rdcutsvalmine[3][4]=passcut[3];//0.7;
+  rdcutsvalmine[4][4]=passcut[4];//0.7;
+  rdcutsvalmine[5][4]=passcut[5];//0.05;
+  rdcutsvalmine[6][4]=passcut[6];//0.05;
+  rdcutsvalmine[7][4]=passcut[7];//-0.00015;
+  rdcutsvalmine[8][4]=passcut[8];//0.9;
+
+  //8-12
+  passcut[7]=-0.00000;
+  rdcutsvalmine[0][5]=passcut[0];
+  rdcutsvalmine[1][5]=passcut[1];
+  rdcutsvalmine[2][5]=passcut[2];
+  rdcutsvalmine[3][5]=passcut[3];
+  rdcutsvalmine[4][5]=passcut[4];
+  rdcutsvalmine[5][5]=passcut[5];
+  rdcutsvalmine[6][5]=passcut[6];
+  rdcutsvalmine[7][5]=passcut[7];
+  rdcutsvalmine[8][5]=passcut[8];
+
+  //>12
+  passcut[7]=-0.00000;
+  rdcutsvalmine[0][6]=passcut[0];
+  rdcutsvalmine[1][6]=passcut[1];
+  rdcutsvalmine[2][6]=passcut[2];
+  rdcutsvalmine[3][6]=passcut[3];
+  rdcutsvalmine[4][6]=passcut[4];
+  rdcutsvalmine[5][6]=passcut[5];
+  rdcutsvalmine[6][6]=passcut[6];
+  rdcutsvalmine[7][6]=passcut[7];
+  rdcutsvalmine[8][6]=passcut[8];
+  */
+
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.2,400.*1E-4,0.7,0.3,0.3,1000.*1E-4,1000.*1E-4,-0.00005,0.85},/* pt<0.5*/
+						  {0.2,400.*1E-4,0.7,0.3,0.3,1000.*1E-4,1000.*1E-4,-0.00005,0.85},/* 0.5<pt<1*/ 
+						  {0.2,400.*1E-4,0.7,0.4,0.4,1000.*1E-4,1000.*1E-4,-0.00005,0.85},/* 1<pt<2 */
+						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 2<pt<3 */
+						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 3<pt<4 */
+						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 4<pt<5 */
+						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 5<pt<6 */
+						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 6<pt<8 */
+						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.0002,0.7},/* 8<pt<12 */ 
+						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.0002,0.7}};/*pt>12 */ 
+
   
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
   for (Int_t ibin=0;ibin<nptbins;ibin++){
     for (Int_t ivar = 0; ivar<nvars; ivar++){
-      rdcutsvalmine[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];
+      cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];
     }
   }
+  RDHFD0toKpi->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
 
-  RDHFD0toKpi->SetCuts(nvars,nptbins,rdcutsvalmine);
 
   Int_t nvarsforopt=RDHFD0toKpi->GetNVarsForOpt();
-  Int_t dim=2; //set this!!
+  Int_t dim=3; //set this!!
   Bool_t *boolforopt;
   boolforopt=new Bool_t[nvars];
   if(dim>nvarsforopt){
@@ -351,68 +480,63 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
 
 
   Float_t tighterval[dim][nptbins];
-  //dca
+  //dca  <- this
   //costhetastar
   //d0d0 <-this 
   //costhetapoint <-this 
 
   
-  //number of steps for each variable is 4 now (set in the AddTask)
+  //number of steps for each variable is 4 now
   //set this!!
   // tighterval[0][0]=0.01;
-  // tighterval[1][0]=0.8;
-   tighterval[0][0]=-0.0006;
-  tighterval[1][0]=0.95;
+  tighterval[0][0]=100e-4;
+  tighterval[1][0]=-0.0006;
+  tighterval[2][0]=1.;
 
   // tighterval[0][1]=0.01;
-  // tighterval[1][1]=0.8;
-  tighterval[0][1]=-0.0006;
-  tighterval[1][1]=0.95;
+  tighterval[0][1]=100e-4;
+  tighterval[1][1]=-0.0007; //try with tighter in this bin
+  tighterval[2][1]=1.;
  
  // tighterval[0][2]=0.01;
-  // tighterval[1][2]=0.8;
-  tighterval[0][2]=-0.0006;
-  tighterval[1][2]=0.95;
+  tighterval[0][2]=100e-4;
+  tighterval[1][2]=-0.0006;
+  tighterval[2][2]=1.;
  
   // tighterval[0][3]=0.01;
-  // tighterval[1][3]=0.8;
-  tighterval[0][3]=-0.0006;
-  tighterval[1][3]=0.95;
+  tighterval[0][3]=100e-4;
+  tighterval[1][3]=-0.0006;
+  tighterval[2][3]=0.95;
 
   // tighterval[0][4]=0.01;
-  // tighterval[1][4]=0.8;
-  tighterval[0][4]=-0.0006;
-  tighterval[1][4]=0.95;
+  tighterval[0][4]=100e-4;
+  tighterval[1][4]=-0.0006;
+  tighterval[2][4]=0.95;
 
   // tighterval[0][5]=0.01;
-  // tighterval[1][5]=0.8;
-  tighterval[0][5]=-0.0006;
-  tighterval[1][5]=0.95;
+  tighterval[0][5]=100e-4;
+  tighterval[1][5]=-0.0006;
+  tighterval[2][5]=0.95;
 
   // tighterval[0][6]=0.01;
-  // tighterval[1][6]=0.8;
-  tighterval[0][6]=-0.0006;
-  tighterval[1][6]=0.95;
+  tighterval[0][6]=100e-4;
+  tighterval[1][6]=-0.0006;
+  tighterval[2][6]=0.95;
 
   // tighterval[0][6]=0.01;
-  // tighterval[1][6]=0.8;
-  tighterval[0][7]=-0.0006;
-  tighterval[1][7]=0.95;
+  tighterval[0][7]=100e-4;
+  tighterval[1][7]=-0.0006;
+  tighterval[2][7]=0.95;
 
   // tighterval[0][6]=0.01;
-  // tighterval[1][6]=0.8;
-  tighterval[0][8]=-0.0006;
-  tighterval[1][8]=0.95;
+  tighterval[0][8]=100e-4;
+  tighterval[1][8]=-0.0006;
+  tighterval[2][8]=0.95;
 
   // tighterval[0][6]=0.01;
-  // tighterval[1][6]=0.8;
-  tighterval[0][9]=-0.0006;
-  tighterval[1][9]=0.95;
-
-  // tighterval[0][6]=0.01;
-  // tighterval[1][6]=0.8;
-  tighterval[0][10]=-0.0006;
-  tighterval[1][10]=0.95;
+  tighterval[0][9]=100e-4;
+  tighterval[1][9]=-0.0006;
+  tighterval[2][9]=0.95;
 
 
   TString name=""; 
@@ -426,13 +550,12 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
       new(max[jpt*dim+ival])TParameter<float>(name.Data(),tighterval[ival][jpt]);
     }
   }
-  cout<<"Looser cuts are: "<<endl;
-  RDHFD0toKpi->PrintAll();
-
   Bool_t flagPID=kTRUE;
   RDHFD0toKpi->SetUsePID(flagPID);
+  RDHFD0toKpi->PrintAll();
   printf("Use PID? %s\n",flagPID ? "yes" : "no");
 
+  
   //pid settings
   AliAODPidHF* pidObj=new AliAODPidHF();
   //pidObj->SetName("pid4D0");
@@ -451,11 +574,13 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   pidObj->SetTOF(kTRUE);
   RDHFD0toKpi->SetPidHF(pidObj);
 
-
- 
   RDHFD0toKpi->SetUseDefaultPID(kFALSE); //to use the AliAODPidHF
+  
+  //activate pileup rejection
+  RDHFD0toKpi->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
 
-  TFile* fout=new TFile("cuts4SignifMaxim.root","recreate");   //set this!! 
+
+  TFile* fout=new TFile("cuts4SignifMaxim10binspileup.root","recreate");   //set this!! 
   fout->cd();
   RDHFD0toKpi->Write();
   max.Write();

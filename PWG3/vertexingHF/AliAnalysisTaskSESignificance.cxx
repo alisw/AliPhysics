@@ -280,11 +280,12 @@ void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
     }
   }
 
-  fHistNEvents=new TH1F("fHistNEvents","Number of AODs scanned",4,0,4.);
+  fHistNEvents=new TH1F("fHistNEvents","Number of AODs scanned",5,0,5.);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvNotSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"nCandidatesSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"nTotEntries Mass hists");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Pile-up Rej");
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fOutput->Add(fHistNEvents);
 
@@ -460,6 +461,8 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 
   if(!fRDCuts->IsEventSelected(aod)){
     fHistNEvents->Fill(1);
+    if(fRDCuts->GetWhyRejection()==1) // rejected for pileup
+      fHistNEvents->Fill(4);
     return;
   }
 

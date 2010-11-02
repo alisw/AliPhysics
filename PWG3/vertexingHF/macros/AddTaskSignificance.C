@@ -1,4 +1,4 @@
-AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8)
+AliAnalysisTaskSESignificanceN *AddTaskSignificanceN(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D meson candidates
@@ -10,7 +10,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   //============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskSignificance", "No analysis manager to connect to.");
+    ::Error("AddTaskSignificanceN", "No analysis manager to connect to.");
     return NULL;
   }
 
