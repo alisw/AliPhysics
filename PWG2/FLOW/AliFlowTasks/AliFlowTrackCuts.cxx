@@ -56,6 +56,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   AliFlowTrackSimpleCuts(),
   fAliESDtrackCuts(new AliESDtrackCuts()),
   fQA(kFALSE),
+  fCutMC(kFALSE),
   fCutMCprocessType(kFALSE),
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
@@ -68,9 +69,11 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutSPDtrackletDeltaPhi(kFALSE),
   fSPDtrackletDeltaPhiMax(FLT_MAX),
   fSPDtrackletDeltaPhiMin(-FLT_MAX),
+  fIgnoreTPCzRange(kFALSE),
+  fIgnoreTPCzRangeMax(FLT_MAX),
+  fIgnoreTPCzRangeMin(-FLT_MAX),
   fParamType(kGlobal),
   fParamMix(kPure),
-  fCleanupTrack(kFALSE),
   fTrack(NULL),
   fTrackPhi(0.),
   fTrackEta(0.),
@@ -78,7 +81,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fTrackLabel(INT_MIN),
   fMCevent(NULL),
   fMCparticle(NULL),
-  fEvent(NULL)
+  fEvent(NULL),
+  fTPCtrack()
 {
   //constructor 
 }
@@ -88,6 +92,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   AliFlowTrackSimpleCuts(that),
   fAliESDtrackCuts(new AliESDtrackCuts(*(that.fAliESDtrackCuts))),
   fQA(that.fQA),
+  fCutMC(that.fCutMC),
   fCutMCprocessType(that.fCutMCprocessType),
   fMCprocessType(that.fMCprocessType),
   fCutMCPID(that.fCutMCPID),
@@ -100,9 +105,11 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutSPDtrackletDeltaPhi(that.fCutSPDtrackletDeltaPhi),
   fSPDtrackletDeltaPhiMax(that.fSPDtrackletDeltaPhiMax),
   fSPDtrackletDeltaPhiMin(that.fSPDtrackletDeltaPhiMin),
+  fIgnoreTPCzRange(that.fIgnoreTPCzRange),
+  fIgnoreTPCzRangeMax(that.fIgnoreTPCzRangeMax),
+  fIgnoreTPCzRangeMin(that.fIgnoreTPCzRangeMin),
   fParamType(that.fParamType),
   fParamMix(that.fParamMix),
-  fCleanupTrack(kFALSE),
   fTrack(NULL),
   fTrackPhi(0.),
   fTrackEta(0.),
@@ -110,7 +117,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fTrackLabel(INT_MIN),
   fMCevent(NULL),
   fMCparticle(NULL),
-  fEvent(NULL)
+  fEvent(NULL),
+  fTPCtrack(that.fTPCtrack)
 {
   //copy constructor
 }
@@ -122,6 +130,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   AliFlowTrackSimpleCuts::operator=(that);
   *fAliESDtrackCuts=*(that.fAliESDtrackCuts);
   fQA=that.fQA;
+  fCutMC=that.fCutMC;
   fCutMCprocessType=that.fCutMCprocessType;
   fMCprocessType=that.fMCprocessType;
   fCutMCPID=that.fCutMCPID;
@@ -134,10 +143,12 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutSPDtrackletDeltaPhi=that.fCutSPDtrackletDeltaPhi;
   fSPDtrackletDeltaPhiMax=that.fSPDtrackletDeltaPhiMax;
   fSPDtrackletDeltaPhiMin=that.fSPDtrackletDeltaPhiMin;
+  fIgnoreTPCzRange=that.fIgnoreTPCzRange;
+  fIgnoreTPCzRangeMax=that.fIgnoreTPCzRangeMax;
+  fIgnoreTPCzRangeMin=that.fIgnoreTPCzRangeMin;
   fParamType=that.fParamType;
   fParamMix=that.fParamMix;
 
-  fCleanupTrack=kFALSE;
   fTrack=NULL;
   fTrackPhi=0.;
   fTrackPhi=0.;
@@ -154,7 +165,6 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
 AliFlowTrackCuts::~AliFlowTrackCuts()
 {
   //dtor
-  if (fCleanupTrack) delete fTrack;
   delete fAliESDtrackCuts;
 }
 
@@ -172,12 +182,32 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
 }
 
 //-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::IsSelectedMCtruth(TObject* obj, Int_t id)
+{
+  //check cuts
+  AliVParticle* vparticle = dynamic_cast<AliVParticle*>(obj);
+  if (vparticle) 
+  {
+    return PassesMCcuts(fMCevent,vparticle->GetLabel());
+  }
+  AliMultiplicity* tracklets = dynamic_cast<AliMultiplicity*>(obj);
+  if (tracklets)
+  {
+    Int_t label0 = tracklets->GetLabel(id,0);
+    Int_t label1 = tracklets->GetLabel(id,1);
+    Int_t label = (label0==label1)?tracklets->GetLabel(id,1):-666;
+    return PassesMCcuts(fMCevent,label);
+  }
+  return kFALSE;  //default when passed wrong type of object
+}
+
+//-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesCuts(AliFlowTrackSimple* track)
 {
   //check cuts on a flowtracksimple
 
   //clean up from last iteration
-  if (fCleanupTrack) delete fTrack; fTrack = NULL;
+  fTrack = NULL;
   return AliFlowTrackSimpleCuts::PassesCuts(track);
 }
 
@@ -187,7 +217,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliMultiplicity* tracklet, Int_t id)
   //check cuts on a tracklets
 
   //clean up from last iteration, and init label
-  if (fCleanupTrack) delete fTrack; fTrack = NULL;
+  fTrack = NULL;
   fMCparticle=NULL;
   fTrackLabel=-1;
 
@@ -203,26 +233,26 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliMultiplicity* tracklet, Int_t id)
   Int_t label0 = tracklet->GetLabel(id,0);
   Int_t label1 = tracklet->GetLabel(id,1);
   fTrackLabel = (label0==label1)?tracklet->GetLabel(id,1):-1;
-  if (!PassesMCcuts()) return kFALSE;
+  if (fCutMC && !PassesMCcuts()) return kFALSE;
   return kTRUE;
 }
 
 //-----------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::PassesMCcuts()
+Bool_t AliFlowTrackCuts::PassesMCcuts(AliMCEvent* mcEvent, Int_t label)
 {
   //check the MC info
-  if (!fMCevent) return kFALSE;
-  if (fTrackLabel<0) return kFALSE;//otherwise AliCMevent prints a warning before returning NULL
-  fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
-  if (!fMCparticle) {AliError("no MC track"); return kFALSE;}
+  if (!mcEvent) return kFALSE;
+  if (label<0) return kFALSE;//otherwise AliCMevent prints a warning before returning NULL
+  AliMCParticle* mcparticle = static_cast<AliMCParticle*>(mcEvent->GetTrack(label));
+  if (!mcparticle) {AliError("no MC track"); return kFALSE;}
 
   if (fCutMCisPrimary)
   {
-    if (IsPhysicalPrimary(fMCevent,fTrackLabel) != fMCisPrimary) return kFALSE;
+    if (IsPhysicalPrimary(mcEvent,label) != fMCisPrimary) return kFALSE;
   }
   if (fCutMCPID)
   {
-    Int_t pdgCode = fMCparticle->PdgCode();
+    Int_t pdgCode = mcparticle->PdgCode();
     if (fIgnoreSignInPID) 
     {
       if (TMath::Abs(fMCPID) != TMath::Abs(pdgCode)) return kFALSE;
@@ -234,11 +264,19 @@ Bool_t AliFlowTrackCuts::PassesMCcuts()
   }
   if ( fCutMCprocessType )
   {
-    TParticle* particle = fMCparticle->Particle();
+    TParticle* particle = mcparticle->Particle();
     Int_t processID = particle->GetUniqueID();
     if (processID != fMCprocessType ) return kFALSE;
   }
   return kTRUE;
+}
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesMCcuts()
+{
+  if (!fMCevent) return kFALSE;
+  if (fTrackLabel<0) return kFALSE;//otherwise AliCMevent prints a warning before returning NULL
+  fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
+  return PassesMCcuts(fMCevent,fTrackLabel);
 }
 
 //-----------------------------------------------------------------------
@@ -250,7 +288,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   //  start by preparing the track parameters to cut on //////////
   ////////////////////////////////////////////////////////////////
   //clean up from last iteration
-  if (fCleanupTrack) delete fTrack; fTrack=NULL; 
+  fTrack=NULL; 
 
   //get the label and the mc particle
   fTrackLabel = (fFakesAreOK)?TMath::Abs(vparticle->GetLabel()):vparticle->GetLabel();
@@ -270,6 +308,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
 
+  if (!fTrack) return kFALSE;
   Bool_t pass=kTRUE;
   //check the common cuts for the current particle fTrack (MC,AOD,ESD)
   if (fCutPt) {if (fTrack->Pt() < fPtMin || fTrack->Pt() >= fPtMax ) pass=kFALSE;}
@@ -286,11 +325,26 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   //if(fCutPID) {if (fTrack->PID() != fPID) pass=kFALSE;}
 
   //when additionally MC info is required
-  if (!PassesMCcuts()) pass=kFALSE;
+  if (fCutMC && !PassesMCcuts()) pass=kFALSE;
 
   //check all else for ESDs using aliesdtrackcuts
   if (esdTrack && (fParamType!=kMC) ) 
+  {
+    if (fIgnoreTPCzRange)
+    {
+      const AliExternalTrackParam* pin = esdTrack->GetOuterParam();
+      const AliExternalTrackParam* pout = esdTrack->GetInnerParam();
+      if (pin&&pout)
+      {
+        Double_t zin = pin->GetZ();
+        Double_t zout = pout->GetZ();
+        if (zin*zout<0) pass=kFALSE;   //reject if cross the membrane
+        if (zin < fIgnoreTPCzRangeMin || zin > fIgnoreTPCzRangeMax) pass=kFALSE;
+        if (zout < fIgnoreTPCzRangeMin || zout > fIgnoreTPCzRangeMax) pass=kFALSE;
+      }
+    }
     if (!fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack))) pass=kFALSE;
+  }
 
   return pass; //true by default, if we didn't set any cuts
 }
@@ -302,7 +356,6 @@ void AliFlowTrackCuts::HandleVParticle(AliVParticle* track)
   switch (fParamType)
   {
     default:
-      fCleanupTrack = kFALSE;
       fTrack = track;
   }
 }
@@ -315,12 +368,16 @@ void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
   {
     case kGlobal:
       fTrack = track;
-      fCleanupTrack = kFALSE;
       break;
     case kESD_TPConly:
-      fTrack = new AliESDtrack();
-      track->FillTPCOnlyTrack(*(static_cast<AliESDtrack*>(fTrack)));
-      fCleanupTrack = kTRUE;
+      if (!track->FillTPCOnlyTrack(fTPCtrack))
+      {
+        fTrack=NULL;
+        fMCparticle=NULL;
+        fTrackLabel=-1;
+        return;
+      }
+      fTrack = &fTPCtrack;
       //recalculate the label and mc particle, they may differ as TPClabel != global label
       fTrackLabel = (fFakesAreOK)?TMath::Abs(fTrack->GetLabel()):fTrack->GetLabel();
       if (fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
@@ -328,7 +385,6 @@ void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
       break;
     default:
       fTrack = track;
-      fCleanupTrack = kFALSE;
   }
 }
 
@@ -392,6 +448,7 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
   }
   else
   {
+    if (!fTrack) return NULL;
     switch(fParamMix)
     {
       case kPure:

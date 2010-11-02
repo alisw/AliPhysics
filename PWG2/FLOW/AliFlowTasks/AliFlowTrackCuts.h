@@ -12,6 +12,7 @@
 #include "AliFlowTrackSimpleCuts.h"
 #include "AliESDtrackCuts.h"
 #include "TMCProcess.h"
+#include "AliESDtrack.h"
 
 class TDirectory;
 class AliVParticle;
@@ -60,6 +61,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetFakesAreOK( Bool_t b ) {fFakesAreOK=b;}
   void SetSPDtrackletDeltaPhiMax( Double_t m ) {fSPDtrackletDeltaPhiMax=m; fCutSPDtrackletDeltaPhi=kTRUE;}
   void SetSPDtrackletDeltaPhiMin( Double_t m ) {fSPDtrackletDeltaPhiMin=m; fCutSPDtrackletDeltaPhi=kTRUE;}
+  void SetIgnoreSignInPID( Bool_t b ) {fIgnoreSignInPID=b;}
+  void SetIgnoreTPCzRange( Double_t min, Double_t max ) 
+                         { fIgnoreTPCzRange=kTRUE; fIgnoreTPCzRangeMin=min; fIgnoreTPCzRangeMax=max; } 
 
   Int_t GetMinNClustersTPC() const {return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {return fAliESDtrackCuts->GetMinNClustersITS();}
@@ -89,10 +93,13 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TDirectory* GetQA() const {return fQA;}
 
   //MC stuff
-  void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; }
+  void SetCutMC( Bool_t b=kTRUE ) {fCutMC=b;}
+  void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; fCutMC=kTRUE;}
+  void SetMCisPrimary( Bool_t b ) { fMCisPrimary=b; fCutMCisPrimary=kTRUE; fCutMC=kTRUE;}
+  void SetMCPID( Int_t pid ) { fMCPID=pid; fCutMCPID=kTRUE; fCutMC=kTRUE; }
   TMCProcess GetMCprocessType() const { return fMCprocessType; }
-  void SetMCisPrimary( Bool_t b ) { fMCisPrimary=b; fCutMCisPrimary=kTRUE; }
   Bool_t GetMCisPrimary() const {return fMCisPrimary;}
+  Int_t GetMCPID() const {return fMCPID;}
 
   void SetParamType(trackParameterType paramType) {fParamType=paramType;}
   trackParameterType GetParamType() const {return fParamType;}
@@ -101,6 +108,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   trackParameterMix GetParamMix() const {return fParamMix;}
 
   virtual Bool_t IsSelected(TObject* obj, Int_t id=-666);
+  virtual Bool_t IsSelectedMCtruth(TObject* obj, Int_t id=-666);
   AliVParticle* GetTrack() const {return fTrack;}
   AliMCParticle* GetMCparticle() const {return fMCparticle;}
   AliFlowTrack* MakeFlowTrack() const;
@@ -119,6 +127,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesCuts(AliFlowTrackSimple* track);
   Bool_t PassesCuts(AliMultiplicity* track, Int_t id);
   Bool_t PassesMCcuts();
+  Bool_t PassesMCcuts(AliMCEvent* mcevent, Int_t label);
   void HandleESDtrack(AliESDtrack* track);
   void HandleVParticle(AliVParticle* track);
   void DefineHistograms();
@@ -126,6 +135,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
   TDirectory* fQA;                   //qa histograms go here
+  Bool_t fCutMC;                     //do we cut on MC?
   Bool_t fCutMCprocessType;          //do we cut on mc process type?
   TMCProcess fMCprocessType;         //mc process type
   Bool_t fCutMCPID;                  //cut on MC pid?
@@ -138,10 +148,12 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutSPDtrackletDeltaPhi; //are we cutting on the trcklet deltaphi?
   Double_t fSPDtrackletDeltaPhiMax; //maximal deltaphi for tracklets
   Double_t fSPDtrackletDeltaPhiMin; //minimal deltaphi for tracklets
+  Bool_t fIgnoreTPCzRange;   //ignore tracks going close to central membrane
+  Double_t fIgnoreTPCzRangeMax; //max z to ignore
+  Double_t fIgnoreTPCzRangeMin; //min z to ignore
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
-  Bool_t fCleanupTrack;              //check if we need to delete the track
   AliVParticle* fTrack;              //!the track to apply cuts on
   Double_t fTrackPhi;                //!track phi
   Double_t fTrackEta;                //!track eta
@@ -150,6 +162,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliMCEvent* fMCevent;              //!mc event
   AliMCParticle* fMCparticle;        //!mc particle
   AliVEvent* fEvent;                 //!placeholder for current event
+  AliESDtrack fTPCtrack;             //!placeholder for TPC only track to avoid new/delete on every track
 
   ClassDef(AliFlowTrackCuts,3)
 };
