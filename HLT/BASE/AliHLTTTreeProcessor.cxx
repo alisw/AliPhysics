@@ -251,6 +251,7 @@ int AliHLTTTreeProcessor::ScanConfigurationArgument(int argc, const char** argv)
 
 TH1* AliHLTTTreeProcessor::CreateHistogram(const AliHLTHistogramDefinition& d)
 {
+
   // create a histogram from the tree
   if (!fTree) {
     HLTError("fTree is a null pointer, try to call AliHLTTTreeProcessor::DoInit first.");
@@ -272,7 +273,16 @@ TH1* AliHLTTTreeProcessor::CreateHistogram(const AliHLTHistogramDefinition& d)
     return 0;
   }
 
-  return dynamic_cast<TH1*>(gDirectory->Get(d.GetName().Data()));
+  //Now, cut off the binning part of a name
+  histName = histName(0, histName.Index("("));
+  TH1 * hist = dynamic_cast<TH1*>(gDirectory->Get(histName.Data()));
+  if (!hist) {
+    //const TString msg(TString::Form("Hist %s is a null pointer, selection was %s, strange name or hist's type\n", histName.Data(), d.GetExpression().Data()));
+    const TString msg(Form("Hist %s is a null pointer, selection was %s, strange name or hist's type\n", histName.Data(), d.GetExpression().Data()));
+    HLTError(msg.Data());
+  }
+
+  return hist;
 }
 
 int AliHLTTTreeProcessor::ParseHistogramDefinition(int argc, const char** argv, int pos, AliHLTHistogramDefinition& dst)const
