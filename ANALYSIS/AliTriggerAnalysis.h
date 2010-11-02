@@ -49,7 +49,7 @@ class AliTriggerAnalysis : public TObject
     Bool_t IsTriggerClassFired(const AliESDEvent* aEsd, const Char_t* tclass) const;
     
     // some "raw" trigger functions
-    Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE);
+  Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE, Int_t layer = 0);
     Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin);
     V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
     Bool_t ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const;

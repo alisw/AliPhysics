@@ -631,12 +631,15 @@ Int_t AliTriggerAnalysis::SSDClusters(const AliESDEvent* aEsd)
 }
 
 
-Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists)
+Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists, Int_t layer)
 {
   // returns the number of fired chips in the SPD
   //
   // origin = 0 --> aEsd->GetMultiplicity()->GetNumberOfFiredChips() (filled from clusters)
   // origin = 1 --> aEsd->GetMultiplicity()->TestFastOrFiredChips() (from hardware bits)
+  // layer  = 0 --> both layers
+  // layer  = 1 --> inner
+  // layer  = 2 --> outer
   
   const AliMultiplicity* mult = aEsd->GetMultiplicity();
   if (!mult)
@@ -645,12 +648,23 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, B
     return -1;
   }
   
-  if (origin == 0)
-    return mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
+  if (origin == 0){
+    if (layer == 0) 
+      return mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
+
+    return mult->GetNumberOfFiredChips(layer-1); 
+  }
     
   if (origin == 1)
   {
     Int_t nChips = 0;
+    Int_t firstChip = 0;
+    Int_t lastChip  = 1200;
+    if(layer == 1)
+      lastChip  = 400;
+    if(layer == 2)
+      firstChip = 400;
+
     for (Int_t i=0; i<1200; i++)
     {
       if (mult->TestFastOrFiredChips(i) == kTRUE)
