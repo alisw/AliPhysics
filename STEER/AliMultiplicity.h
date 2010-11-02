@@ -164,7 +164,7 @@ class AliMultiplicity : public TObject {
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
   TBits fClusterFiredChips;  // Map of fired chips (= at least one cluster)
 
-  ClassDef(AliMultiplicity,17);
+  ClassDef(AliMultiplicity,18);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const

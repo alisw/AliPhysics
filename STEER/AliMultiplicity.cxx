@@ -547,21 +547,43 @@ void AliMultiplicity::Print(Option_t *opt) const
 	 fDPhiShift,fDPhiWindow2,fDThetaWindow2,fNStdDev,GetScaleDThetaBySin2T() ? "ON":"OFF");
   TString opts = opt; opts.ToLower();
   int t0spd1=-1,t1spd1=-1,t0spd2=-1,t1spd2=-1;
+  UInt_t t[2][2][10],nt[2][2];
   //
   if (opts.Contains("t")) {
     for (int i=0;i<fNtracks;i++) {
-      GetTrackletTrackIDs(i,0,t0spd1,t0spd2);
-      GetTrackletTrackIDs(i,1,t1spd1,t1spd2);
-      printf("T#%3d| Eta:%+5.2f Th:%+6.3f Phi:%+6.3f DTh:%+6.3f DPhi:%+6.3f L1:%6d L2:%6d U:L1[%5d/%5d] L2[%5d/%5d]\n",
-	     i,GetEta(i),fTh[i],fPhi[i],fDeltTh[i],fDeltPhi[i],fLabels[i],fLabelsL2[i],t0spd1,t1spd1,t0spd2,t1spd2);
+      if (GetMultTrackRefs()) for (int il=2;il--;)for(int it=2;it--;) nt[il][it] = GetTrackletTrackIDsLay(il,i,it,t[il][it],10);
+      else {
+	GetTrackletTrackIDs(i,0,t0spd1,t0spd2);
+	GetTrackletTrackIDs(i,1,t1spd1,t1spd2);
+      }
+      printf("T#%3d| Eta:%+5.2f Th:%+6.3f Phi:%+6.3f DTh:%+6.3f DPhi:%+6.3f L1:%5d L2:%5d ",
+	     i,GetEta(i),fTh[i],fPhi[i],fDeltTh[i],fDeltPhi[i],fLabels[i],fLabelsL2[i]);
+      if (!GetMultTrackRefs()) printf("U:L1[%4d/%4d] L2[%4d/%4d]\n",t0spd1,t1spd1,t0spd2,t1spd2);
+      else {
+	printf("U:L1[");
+	if (!nt[0][0]) printf("%4d ",-1); else for(int j=0;j<nt[0][0];j++) printf("%4d ",t[0][0][j]); printf("/");
+	if (!nt[0][1]) printf("%4d ",-1); else for(int j=0;j<nt[0][1];j++) printf("%4d ",t[0][1][j]); printf("]");
+	//
+	printf(" L2[");
+	if (!nt[1][0]) printf("%4d ",-1); else for(int j=0;j<nt[1][0];j++) printf("%4d ",t[1][0][j]); printf("/");
+	if (!nt[1][1]) printf("%4d ",-1); else for(int j=0;j<nt[1][1];j++) printf("%4d ",t[1][1][j]); printf("]\n");      
+      }      
     }
   }
   if (opts.Contains("s")) {
     for (int i=0;i<fNsingle;i++) {
-      GetSingleClusterTrackID(i,0,t0spd1);
-      GetSingleClusterTrackID(i,1,t1spd1);
-      printf("S#%3d| Th:%+6.3f Phi:%+6.3f L:%6d U:[%5d/%5d]\n",
-	     i,fThsingle[i],fPhisingle[i],fLabelssingle[i], t0spd1,t1spd1);
+      if (GetMultTrackRefs()) for(int it=2;it--;) nt[0][it] = GetSingleClusterTrackIDs(i,it,t[0][it],10);
+      else {
+	GetSingleClusterTrackID(i,0,t0spd1);
+	GetSingleClusterTrackID(i,1,t1spd1);
+      }
+      printf("S#%3d| Th:%+6.3f Phi:%+6.3f L:%6d ",i,fThsingle[i],fPhisingle[i],fLabelssingle[i]);
+      if (!GetMultTrackRefs()) printf("U:[%4d/%4d]\n", t0spd1,t1spd1);
+      else {
+	printf("U:["); 
+	if (!nt[0][0]) printf("%4d ",-1); else for(int j=0;j<nt[0][0];j++) printf("%4d ",t[0][0][j]); printf("/");
+	if (!nt[0][1]) printf("%4d ",-1); else for(int j=0;j<nt[0][1];j++) printf("%4d ",t[0][1][j]); printf("]\n");	
+      }
     }
   }
   //
