@@ -391,7 +391,10 @@ void AliMultiplicity::SetTrackletData(Int_t id, const Float_t* tlet, UInt_t trSP
   fDeltTh[id]  = tlet[3];
   fLabels[id]   = Int_t(tlet[4]);
   fLabelsL2[id] = Int_t(tlet[5]);
-  if (!GetMultTrackRefs()) fUsedClusT[id] = (((ULong64_t)trSPD2)<<32) + trSPD1;
+  if (!GetMultTrackRefs()) {
+    if (!fUsedClusT) {fUsedClusT = new ULong64_t[fNtracks]; memset(fUsedClusT,0,fNtracks*sizeof(ULong64_t));}
+    fUsedClusT[id] = (((ULong64_t)trSPD2)<<32) + trSPD1;
+  }
   //
 }
 
@@ -403,7 +406,10 @@ void AliMultiplicity::SetSingleClusterData(Int_t id, const Float_t* scl, UInt_t 
   fThsingle[id]  = scl[0];
   fPhisingle[id] = scl[1];
   fLabelssingle[id] = Int_t(scl[2]); 
-  if (!GetMultTrackRefs()) fUsedClusS[id] = tr;
+  if (!GetMultTrackRefs()) {
+    if (!fUsedClusS) {fUsedClusS = new UInt_t[fNsingle]; memset(fUsedClusS,0,fNsingle*sizeof(UInt_t));}
+    fUsedClusS[id] = tr;
+  }
   //
 }
 
@@ -546,8 +552,8 @@ void AliMultiplicity::Print(Option_t *opt) const
 	 fNtracks,fNsingle,GetMultTrackRefs() ? "ON":"OFF",
 	 fDPhiShift,fDPhiWindow2,fDThetaWindow2,fNStdDev,GetScaleDThetaBySin2T() ? "ON":"OFF");
   TString opts = opt; opts.ToLower();
-  int t0spd1=-1,t1spd1=-1,t0spd2=-1,t1spd2=-1;
-  UInt_t t[2][2][10],nt[2][2];
+  int t0spd1=-1,t1spd1=-1,t0spd2=-1,t1spd2=-1,nt[2][2]={{0}};
+  UInt_t t[2][2][10]={{{0}}};
   //
   if (opts.Contains("t")) {
     for (int i=0;i<fNtracks;i++) {
