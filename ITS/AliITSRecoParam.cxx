@@ -91,6 +91,7 @@ fMaxChi2(0),
 fMaxRoad(0),
 fMaxChi2In(0),
 fChi2PerCluster(0),
+fSearchForExtras(kTRUE),			     
 fXV(0), 
 fYV(0),
 fZV(0),
@@ -383,8 +384,10 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fMaxChi2sR[4] = 30.;   
   param->fMaxChi2sR[5] = 40.;   
 
+
   param->fChi2PerCluster = 9.;
   // not used
+  param->fSearchForExtras = kFALSE;
 
   param->fXV = 0.;
   param->fYV = 0.;

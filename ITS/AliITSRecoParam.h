@@ -161,6 +161,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t GetMaxRoad() const { return fMaxRoad; }
   Double_t GetMaxNormChi2ForGolden(Int_t i) const { return 3.+0.5*i; }
 
+  void     SetSearchForExtraClusters(Bool_t opt=kTRUE){ fSearchForExtras=opt; }
+  Double_t GetSearchForExtraClusters() const { return fSearchForExtras; }
+
   Double_t GetXVdef() const { return fXV; }
   Double_t GetYVdef() const { return fYV; }
   Double_t GetZVdef() const { return fZV; }
@@ -535,6 +538,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t fMaxChi2In; // (NOT USED)
   Double_t fMaxChi2sR[AliITSgeomTGeo::kNLayers];  // (NOT USED) 
   Double_t fChi2PerCluster; // (NOT USED)
+  // search for extra clusters
+  Bool_t   fSearchForExtras; // swicth yes/no for the search of extra-clusters in RefitInward step
   //
   // default primary vertex (MI,V2)
   Double_t fXV;  // x
@@ -711,7 +716,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,32) // ITS reco parameters
+  ClassDef(AliITSRecoParam,33) // ITS reco parameters
 };
 
 #endif
