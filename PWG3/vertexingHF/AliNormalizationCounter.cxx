@@ -27,7 +27,7 @@ AliCounterCollection(name),
 fESD(kFALSE)
 {
   //default constructor
-  AddRubric("Event","triggered/V0AND/Candles0.2/Candles0.25/Candles0.3/2xCandles0.2/PrimaryVTracks/PrimaryV/!V0A&Candle02/!V0A&Candle025/!V0A&Candle03/!V0A&PrimaryVTracks/!V0A&PrimaryV/!V0A&2xCandles02/Candid(Filter)/Candid(Analysis)/NCandid(Filter)/NCandid(Analysis)");//new line
+  AddRubric("Event","triggered/V0AND/PileUp/Candles0.2/Candles0.25/Candles0.3/2xCandles0.2/PrimaryVTracks/PrimaryV/!V0A&Candle02/!V0A&Candle025/!V0A&Candle03/!V0A&PrimaryVTracks/!V0A&PrimaryV/!V0A&2xCandles02/Candid(Filter)/Candid(Analysis)/NCandid(Filter)/NCandid(Analysis)");//new line
   AddRubric("Run", 10000000);//new line
   Init();//new line
 }
@@ -55,7 +55,6 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,Bool_t mc){
   Int_t runNumber = event->GetRunNumber();
  
   //Find CINT1B
-  
   AliESDEvent *eventESD = (AliESDEvent*)event;
   if(!eventESD){AliError("ESD event not available");return;}
   if(mc&&event->GetEventType() != 0)return;
@@ -70,6 +69,10 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,Bool_t mc){
   v0A = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0A);
   if(v0A&&v0B){Count(Form("Event:V0AND/Run:%d",runNumber));}
   
+  //PileUp
+  AliAODEvent *eventAOD = (AliAODEvent*)event;
+  if(eventAOD->IsPileupFromSPD())Count(Form("Event:PileUp/Run:%d",runNumber));
+
   //Find Candle
   Int_t trkEntries = (Int_t)event->GetNumberOfTracks();
   
@@ -140,20 +143,25 @@ void AliNormalizationCounter::StoreCandidates(AliVEvent *event,Int_t nCand,Bool_
 //_______________________________________________________________________
 TH1D* AliNormalizationCounter::DrawAgainstRuns(TString candle="candid(filter)"){
   //
+  SortRubric("Run");
   TString selection;
   selection.Form("event:%s",candle.Data());
   TH2D* hist = Draw("event","run",selection.Data());
   TH1D* histoneD =(TH1D*)(hist->ProjectionX()->Clone());
+  histoneD->Sumw2();
   histoneD->DrawClone();
   return histoneD;
 }
 //___________________________________________________________________________
 TH1D* AliNormalizationCounter::DrawRatio(TString candle1="candid(filter)",TString candle2="triggered"){
   //
+  SortRubric("Run");
   TString name;
   name.Form("%s/%s",candle1.Data(),candle2.Data());
   TH1D* num=(TH1D*)(DrawAgainstRuns(candle1.Data())->Clone(name.Data()));
   TH1D* den=DrawAgainstRuns(candle2.Data());
+  num->Sumw2();
+  den->Sumw2();
   den->SetTitle(candle2.Data());
   den->SetName(candle2.Data());
   printf("%f %f",num->GetEntries(),den->GetEntries());
