@@ -604,6 +604,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       return ; 
     if ( evtIndex1 == -2 )
       continue ; 
+    if(TMath::Abs(vert[2]) > GetZvertexCut()) continue ;   //vertex cut
     if (evtIndex1 != currentEvtIndex) {
       //Get Reaction Plan position and calculate RP bin
       //does not exist in ESD yet????
@@ -921,25 +922,26 @@ void AliAnaPi0::Terminate(TList* outputList)
   hIMAllPt->Draw();
 
   cIM->cd(2) ; 
-  TH3F * hRe1Pt5 = (TH3F*)fhRe1[0]->Clone(Form("IMPt5_%s",fCalorimeter.Data()));
-  hRe1Pt5->GetXaxis()->SetRangeUser(0,5);
-  TH1D * hIMPt5 = (TH1D*) hRe1Pt5->Project3D(Form("IMPt5_%s_pz",fCalorimeter.Data()));
+  TH1D * hIMPt5 = (TH1D*) fhRe1[0]->ProjectionZ(Form("IMPt0-5_%s",fCalorimeter.Data()),0, fhRe1[0]->GetXaxis()->FindBin(5.),0, -1, "");
+//  hRe1Pt5->GetXaxis()->SetRangeUser(0,5);
+//  TH1D * hIMPt5 = (TH1D*) hRe1Pt5->Project3D(Form("IMPt5_%s_pz",fCalorimeter.Data()));
   hIMPt5->SetLineColor(2);  
   hIMPt5->SetTitle("0 < p_{T, #gamma#gamma} < 5 GeV/c");
   hIMPt5->Draw();
   
   cIM->cd(3) ; 
-  TH3F * hRe1Pt10 =  (TH3F*)fhRe1[0]->Clone(Form("IMPt10_%s",fCalorimeter.Data()));
-  hRe1Pt10->GetXaxis()->SetRangeUser(5,10);
-  TH1D * hIMPt10 = (TH1D*) hRe1Pt10->Project3D(Form("IMPt10_%s_pz",fCalorimeter.Data()));
+  TH1D * hIMPt10 =  (TH1D*) fhRe1[0]->ProjectionZ(Form("IMPt5-10_%s",fCalorimeter.Data()), fhRe1[0]->GetXaxis()->FindBin(5.),fhRe1[0]->GetXaxis()->FindBin(10.),0, -1,"");
+//  hRe1Pt10->GetXaxis()->SetRangeUser(5,10);
+//  TH1D * hIMPt10 = (TH1D*) hRe1Pt10->Project3D(Form("IMPt10_%s_pz",fCalorimeter.Data()));
   hIMPt10->SetLineColor(2);  
   hIMPt10->SetTitle("5 < p_{T, #gamma#gamma} < 10 GeV/c");
   hIMPt10->Draw();
   
   cIM->cd(4) ; 
-  TH3F * hRe1Pt20 =  (TH3F*)fhRe1[0]->Clone(Form("IMPt20_%s",fCalorimeter.Data()));
-  hRe1Pt20->GetXaxis()->SetRangeUser(10,20);
-  TH1D * hIMPt20 = (TH1D*) hRe1Pt20->Project3D(Form("IMPt20_%s_pz",fCalorimeter.Data()));
+  TH1D * hIMPt20 =  (TH1D*) fhRe1[0]->ProjectionZ(Form("IMPt10-20_%s",fCalorimeter.Data()), fhRe1[0]->GetXaxis()->FindBin(10.),fhRe1[0]->GetXaxis()->FindBin(20.),0, -1,"");
+ // TH3F * hRe1Pt20 =  (TH3F*)fhRe1[0]->Clone(Form("IMPt20_%s",fCalorimeter.Data()));
+//  hRe1Pt20->GetXaxis()->SetRangeUser(10,20);
+//  TH1D * hIMPt20 = (TH1D*) hRe1Pt20->Project3D(Form("IMPt20_%s_pz",fCalorimeter.Data()));
   hIMPt20->SetLineColor(2);  
   hIMPt20->SetTitle("10 < p_{T, #gamma#gamma} < 20 GeV/c");
   hIMPt20->Draw();
@@ -961,25 +963,28 @@ void AliAnaPi0::Terminate(TList* outputList)
   hPt->Draw();
 
   cPt->cd(2) ; 
-  TH3F * hRe1IM1 = (TH3F*)fhRe1[0]->Clone(Form("Pt1_%s",fCalorimeter.Data()));
-  hRe1IM1->GetZaxis()->SetRangeUser(0.05,0.21);
-  TH1D * hPtIM1 = (TH1D*) hRe1IM1->Project3D("x");
+  TH1D * hPtIM1 = (TH1D*)fhRe1[0]->ProjectionX(Form("Pt1_%s",fCalorimeter.Data()), fhRe1[0]->GetZaxis()->FindBin(0.05),fhRe1[0]->GetZaxis()->FindBin(0.21),0, -1,""); 
+//  TH3F * hRe1IM1 = (TH3F*)fhRe1[0]->Clone(Form("Pt1_%s",fCalorimeter.Data()));
+//  hRe1IM1->GetZaxis()->SetRangeUser(0.05,0.21);
+//  TH1D * hPtIM1 = (TH1D*) hRe1IM1->Project3D("x");
   hPtIM1->SetLineColor(2);  
   hPtIM1->SetTitle("0.05 < M_{#gamma#gamma} < 0.21 GeV/c^{2}");
   hPtIM1->Draw();
   
   cPt->cd(3) ; 
-  TH3F * hRe1IM2 = (TH3F*)fhRe1[0]->Clone(Form("Pt2_%s",fCalorimeter.Data()));
-  hRe1IM2->GetZaxis()->SetRangeUser(0.09,0.17);
-  TH1D * hPtIM2 = (TH1D*) hRe1IM2->Project3D("x");
+  TH1D * hPtIM2 = (TH1D*)fhRe1[0]->ProjectionX(Form("Pt2_%s",fCalorimeter.Data()), fhRe1[0]->GetZaxis()->FindBin(0.09),fhRe1[0]->GetZaxis()->FindBin(0.17),0, -1,""); 
+//  TH3F * hRe1IM2 = (TH3F*)fhRe1[0]->Clone(Form("Pt2_%s",fCalorimeter.Data()));
+//  hRe1IM2->GetZaxis()->SetRangeUser(0.09,0.17);
+//  TH1D * hPtIM2 = (TH1D*) hRe1IM2->Project3D("x");
   hPtIM2->SetLineColor(2);  
   hPtIM2->SetTitle("0.09 < M_{#gamma#gamma} < 0.17 GeV/c^{2}");
   hPtIM2->Draw();
 
   cPt->cd(4) ; 
-  TH3F * hRe1IM3 = (TH3F*)fhRe1[0]->Clone(Form("Pt3_%s",fCalorimeter.Data()));
-  hRe1IM3->GetZaxis()->SetRangeUser(0.11,0.15);
-  TH1D * hPtIM3 = (TH1D*) hRe1IM1->Project3D("x");
+  TH1D * hPtIM3 = (TH1D*)fhRe1[0]->ProjectionX(Form("Pt3_%s",fCalorimeter.Data()), fhRe1[0]->GetZaxis()->FindBin(0.11),fhRe1[0]->GetZaxis()->FindBin(0.15),0, -1,""); 
+//  TH3F * hRe1IM3 = (TH3F*)fhRe1[0]->Clone(Form("Pt3_%s",fCalorimeter.Data()));
+//  hRe1IM3->GetZaxis()->SetRangeUser(0.11,0.15);
+//  TH1D * hPtIM3 = (TH1D*) hRe1IM1->Project3D("x");
   hPtIM3->SetLineColor(2);  
   hPtIM3->SetTitle("0.11 < M_{#gamma#gamma} < 0.15 GeV/c^{2}");
   hPtIM3->Draw();

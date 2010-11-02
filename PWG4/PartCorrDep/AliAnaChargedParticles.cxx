@@ -264,7 +264,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   //Do analysis and fill aods
   if(!GetAODCTS() || GetAODCTS()->GetEntriesFast() == 0) return ;
   Int_t ntracks = GetAODCTS()->GetEntriesFast();
-  
+  Double_t vert[3] = {0,0,0}; //vertex ;
   //Some prints
   if(GetDebug() > 0)
     printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
@@ -272,7 +272,6 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   //Fill AODParticle with CTS aods
   TVector3 p3;
   Int_t evtIndex = 0;
-  Double_t vert[3]={0,0,0};
   for(Int_t i = 0; i < ntracks; i++){
     
     AliAODTrack * track =  (AliAODTrack*) (GetAODCTS()->At(i));
@@ -292,8 +291,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         evtIndex = GetMixedEvent()->EventIndex(track->GetID()) ;
       }        
       GetVertex(vert,evtIndex); 
-      if(TMath::Abs(vert[2])> GetZvertexCut()) continue;
-      
+      if(TMath::Abs(vert[2])> GetZvertexCut()) return;      
       AliAODPWG4Particle tr = AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
       tr.SetDetector("CTS");
       tr.SetLabel(track->GetLabel());
@@ -317,14 +315,15 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   
   //Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
-  if(naod!=0)fhNtracks->Fill(GetAODCTS()->GetEntriesFast()) ;
   Double_t v[3] = {0,0,0}; //vertex ;
   GetReader()->GetVertex(v);
   fhVertex->Fill(v[0],v[1],v[2]);
+  if(TMath::Abs(v[2]) >GetZvertexCut()) return ;
+  fhNtracks->Fill(GetReader()->GetTrackMultiplicity()) ;
   if(GetDebug() > 0) printf("AliAnaChargedParticles::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4Particle* tr =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
-    
+        
     fhPt->Fill(tr->Pt());
     fhPhi->Fill(tr->Pt(), tr->Phi());
     fhEta->Fill(tr->Pt(), tr->Eta());
