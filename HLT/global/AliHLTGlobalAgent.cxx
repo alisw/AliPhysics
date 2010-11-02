@@ -40,6 +40,7 @@
 #include "AliHLTGlobalHistoComponent.h"
 #include "AliHLTGlobalHistoCollector.h"
 #include "AliHLTGlobalDCSPublisherComponent.h"
+#include "AliHLTMultiplicityCorrelationsComponent.h"
 
 /** global instance for agent registration */
 AliHLTGlobalAgent gAliHLTGlobalAgent;
@@ -77,6 +78,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTV0HistoComponent );
   //pHandler->AddComponent(new AliHLTdNdPtAnalysisComponent );
   //pHandler->AddComponent(new AliHLTdNdPtAnalysisMergerComponent );
+  pHandler->AddComponent(new AliHLTMultiplicityCorrelationsComponent );
   pHandler->AddComponent(new AliHLTGlobalHistoCollector );
   pHandler->AddComponent(new AliHLTGlobalDCSPublisherComponent );
   return 0;
@@ -178,6 +180,8 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   
   //pHandler->CreateConfiguration("GLOBAL-dNdPtAnalysis", "dNdPtAnalysis", "GLOBAL-esd-converter", "");
  
+  pHandler->CreateConfiguration("GLOBAL-MultCorr", "MultiplicityCorrelations", "GLOBAL-esd-converter", "");
+
   return 0;
 }
 
