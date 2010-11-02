@@ -33,6 +33,7 @@
 #include "TH2D.h"
 #include "TH3D.h"
 #include "TAxis.h"
+#include "AliCFUnfolding.h"
 
 //____________________________________________________________________
 ClassImp(AliCFGridSparse)
@@ -988,3 +989,15 @@ Float_t AliCFGridSparse::GetUnderFlows(Int_t ivar, Bool_t exclusive) const
   return unfl;
 }
 
+
+//____________________________________________________________________
+void AliCFGridSparse::Smooth() {
+  //
+  // smoothing function: TO USE WITH CARE
+  //
+
+  AliInfo("Your GridSparse is going to be smoothed");
+  AliInfo(Form("N TOTAL  BINS : %li",GetNBinsTotal()));
+  AliInfo(Form("N FILLED BINS : %li",GetNFilledBins()));
+  AliCFUnfolding::SmoothUsingNeighbours(fData);
+}

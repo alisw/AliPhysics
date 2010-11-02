@@ -518,30 +518,35 @@ Short_t AliCFUnfolding::Smooth() {
     AliDebug(2,Form("Smoothing spectrum with fit function %p",fSmoothFunction));
     return SmoothUsingFunction();
   }
-  else return SmoothUsingNeighbours();
+  else return SmoothUsingNeighbours(fUnfolded);
 }
 
 //______________________________________________________________
 
-Short_t AliCFUnfolding::SmoothUsingNeighbours() {
+Short_t AliCFUnfolding::SmoothUsingNeighbours(THnSparse* hist) {
   //
   // Smoothes the unfolded spectrum using neighouring bins
   //
 
-  Int_t* numBins = new Int_t[fNVariables];
-  for (Int_t iVar=0; iVar<fNVariables; iVar++) numBins[iVar]=fUnfolded->GetAxis(iVar)->GetNbins();
+  Int_t  const nDimensions = hist->GetNdimensions() ;
+  Int_t* coordinates = new Int_t[nDimensions];
+
+  Int_t* numBins = new Int_t[nDimensions];
+  for (Int_t iVar=0; iVar<nDimensions; iVar++) numBins[iVar] = hist->GetAxis(iVar)->GetNbins();
   
-  //need a copy because fUnfolded will be updated during the loop, and this creates problems
-  THnSparse* copy = (THnSparse*)fUnfolded->Clone();
+  //need a copy because hist will be updated during the loop, and this creates problems
+  THnSparse* copy = (THnSparse*)hist->Clone();
 
   for (Long_t iBin=0; iBin<copy->GetNbins(); iBin++) { //loop on non-empty bins
-    Double_t content = copy->GetBinContent(iBin,fCoordinatesN_T);
+    Double_t content = copy->GetBinContent(iBin,coordinates);
     Double_t error2  = TMath::Power(copy->GetBinError(iBin),2);
+
+    printf("coord = [%d,%d]\n",coordinates[0],coordinates[1]);
 
     // skip the under/overflow bins...
     Bool_t isOutside = kFALSE ;
-    for (Int_t iVar=0; iVar<fNVariables; iVar++) {
-      if (fCoordinatesN_T[iVar]<1 || fCoordinatesN_T[iVar]>numBins[iVar]) {
+    for (Int_t iVar=0; iVar<nDimensions; iVar++) {
+      if (coordinates[iVar]<1 || coordinates[iVar]>numBins[iVar]) {
 	isOutside=kTRUE;
 	break;
       }
@@ -550,27 +555,28 @@ Short_t AliCFUnfolding::SmoothUsingNeighbours() {
     
     Int_t neighbours = 0; // number of neighbours to average with
 
-    for (Int_t iVar=0; iVar<fNVariables; iVar++) {
-      if (fCoordinatesN_T[iVar] > 1) { // must not be on low edge border
-	fCoordinatesN_T[iVar]-- ; //get lower neighbouring bin 
-	content += copy->GetBinContent(fCoordinatesN_T);
-	error2  += TMath::Power(copy->GetBinError(fCoordinatesN_T),2);
+    for (Int_t iVar=0; iVar<nDimensions; iVar++) {
+      if (coordinates[iVar] > 1) { // must not be on low edge border
+	coordinates[iVar]-- ; //get lower neighbouring bin 
+	content += copy->GetBinContent(coordinates);
+	error2  += TMath::Power(copy->GetBinError(coordinates),2);
 	neighbours++;
-	fCoordinatesN_T[iVar]++ ; //back to initial coordinate
+	coordinates[iVar]++ ; //back to initial coordinate
       }
-      if (fCoordinatesN_T[iVar] < numBins[iVar]) { // must not be on up edge border
-	fCoordinatesN_T[iVar]++ ; //get upper neighbouring bin
-	content += copy->GetBinContent(fCoordinatesN_T);
-	error2  += TMath::Power(copy->GetBinError(fCoordinatesN_T),2);
+      if (coordinates[iVar] < numBins[iVar]) { // must not be on up edge border
+	coordinates[iVar]++ ; //get upper neighbouring bin
+	content += copy->GetBinContent(coordinates);
+	error2  += TMath::Power(copy->GetBinError(coordinates),2);
 	neighbours++;
-	fCoordinatesN_T[iVar]-- ; //back to initial coordinate
+	coordinates[iVar]-- ; //back to initial coordinate
       }
     }
     // make an average
-    fUnfolded->SetBinContent(fCoordinatesN_T,content/(1.+neighbours));
-    fUnfolded->SetBinError  (fCoordinatesN_T,TMath::Sqrt(error2)/(1.+neighbours));
+    hist->SetBinContent(coordinates,content/(1.+neighbours));
+    hist->SetBinError  (coordinates,TMath::Sqrt(error2)/(1.+neighbours));
   }
   delete [] numBins;
+  delete [] coordinates ;
   delete copy;
   return 0;
 }

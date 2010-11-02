@@ -97,6 +97,7 @@ class AliCFContainer : public AliCFFrame
   virtual TH3D* ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, const Double_t *varMin, const Double_t *varMax, Int_t istep, Bool_t useBins=0) const ;
   virtual AliCFContainer* MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins=0) const ;
   virtual AliCFContainer* MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t nStep, const Int_t* steps, Bool_t useBins=0) const ;
+  virtual void  Smooth(Int_t istep) {GetGrid(istep)->Smooth();}
 
   virtual void  SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, Int_t istep) ;
   virtual void  SetRangeUser(Double_t* varMin, Double_t* varMax, Int_t istep) ;

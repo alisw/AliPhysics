@@ -80,6 +80,7 @@ class AliCFGridSparse : public AliCFFrame
   virtual void             SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax) ;
   virtual void             SetRangeUser(const Double_t* varMin, const Double_t* varMax) ;
   virtual void             UseAxisRange(Bool_t b) const ;
+  virtual void             Smooth() ;
 
   //basic operations
   virtual void     SumW2();

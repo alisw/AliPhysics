@@ -47,6 +47,8 @@ class AliCFUnfolding : public TNamed {
   THnSparse* GetConditional()     const {return fConditional;}
   TF1*       GetSmoothFunction()  const {return fSmoothFunction;}
 
+  static Short_t  SmoothUsingNeighbours(THnSparse*); // smoothes the unfolded spectrum using the neighbouring cells
+
  private :
   
   // user-related settings
@@ -88,7 +90,6 @@ class AliCFUnfolding : public TNamed {
   void     CreateFlatPrior();       // creates a flat a priori distribution in case the one given in the constructor is null
   Double_t GetChi2();               // returns the chi2 between unfolded and prior spectra
   Short_t  Smooth();                // function calling smoothing methods
-  Short_t  SmoothUsingNeighbours(); // smoothes the unfolded spectrum using the neighbouring cells
   Short_t  SmoothUsingFunction();   // smoothes the unfolded spectrum using a fit function
 
   ClassDef(AliCFUnfolding,0);
