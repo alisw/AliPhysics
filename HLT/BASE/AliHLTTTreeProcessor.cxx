@@ -277,9 +277,10 @@ TH1* AliHLTTTreeProcessor::CreateHistogram(const AliHLTHistogramDefinition& d)
   histName = histName(0, histName.Index("("));
   TH1 * hist = dynamic_cast<TH1*>(gDirectory->Get(histName.Data()));
   if (!hist) {
-    //const TString msg(TString::Form("Hist %s is a null pointer, selection was %s, strange name or hist's type\n", histName.Data(), d.GetExpression().Data()));
     const TString msg(Form("Hist %s is a null pointer, selection was %s, strange name or hist's type\n", histName.Data(), d.GetExpression().Data()));
     HLTError(msg.Data());
+  }else if (d.GetDrawOption().Length()) {
+    hist->SetOption(d.GetDrawOption().Data());
   }
 
   return hist;
