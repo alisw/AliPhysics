@@ -19,9 +19,12 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 	        physics/AliHLTCaloHistoInvMass.h \
 		physics/AliHLTCaloHistoMatchedTracks.h \
 		physics/AliHLTCaloHistoClusterEnergy.h \
-		physics/AliHLTCaloHistoCellEnergy.h 
+		physics/AliHLTCaloHistoCellEnergy.h \
+		physics/AliHLTMultiplicityCorrelations.h \
+		physics/AliHLTMultiplicityCorrelationsComponent.h
+
 #		physics/AliHLTdNdPtAnalysisComponent.h \
-#		physics/AliHLTdNdPtAnalysisMergerComponent.h
+#		physics/AliHLTdNdPtAnalysisMergerComponent.h \
 #//
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
@@ -38,12 +41,13 @@ EINCLUDE 	:= HLT/global HLT/global/physics \
 		   TRD \
 		   STEER \
 		   PHOS \
+		   ANALYSIS \
 		   PWG0 PWG0/dNdPt 
 
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
                -lRAWDatarec -lRAWDatabase -lTRDbase \
-               -L$(ROOTLIBDIR) -lEG
+               -L$(ROOTLIBDIR) -lEG -lANALYSIS
 
 ###############################################################################
 #
