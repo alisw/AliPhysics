@@ -101,12 +101,12 @@ AliHLTESDTrackCuts* AliHLTESDTrackCuts::GetStandardTrackCuts2010pp() {
 
   // -- CleanSample
   esdTrackCuts->SetMaxDCAToVertexXY(3.0);
-  esdTrackCuts->SetMaxDCAToVertexZ(10.0);
-  esdTrackCuts->SetEtaRange(-1.0,1.0);
+  esdTrackCuts->SetMaxDCAToVertexZ(3.0);
+  esdTrackCuts->SetEtaRange(-0.9,0.9);
   esdTrackCuts->SetMinNClustersTPC(60);
 
   // -- CleanSample Pt
-  esdTrackCuts->SetPtRange(0.3);         
+  esdTrackCuts->SetPtRange(0.3,200.);         
   
   return esdTrackCuts;
 }
