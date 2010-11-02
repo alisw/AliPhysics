@@ -22,7 +22,7 @@ TString     train_tag          = "pass1";        // Train special tag appended t
                // Name in train page (DON'T CHANGE)
 TString     visible_name       = Form("FILTER%s$2_$3", train_tag.Data()); //# FIXED #
                // Add train composition and other comments
-TString     job_comment        = "Tender+PhysSel -> AODs: std(+jets)/(di)muon/vertexing/dielectrons";
+TString     job_comment        = "PhysSel+Tender -> AODs: std(+jets)/(di)muon/vertexing/dielectrons";
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
 //==============================================================================
 
@@ -47,8 +47,8 @@ Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
 // AliRoot.
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
-TString     root_version       = "v5-27-06-1";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     aliroot_version    = "v4-20-12-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     root_version       = "v5-27-06a-1";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     aliroot_version    = "v4-21-02-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here (test mode)
 TString     alien_datadir      = "/alice/data/2010/LHC10e";
                // Work directory in GRID (DON'T CHANGE)
@@ -56,7 +56,7 @@ TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/AOD/AOD$2";
                // Data pattern - change as needed for test mode
 TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
 // Set the run range
-Int_t run_numbers[10] = {128913}; // **********************!!!!!!!
+Int_t run_numbers[10] = {130848}; // **********************!!!!!!!
 //Int_t       run_range[2]       =  {114786, 114949};  // LHC09a7   *CHANGE ME*
 // AliEn output directory. If blank will become output_<train_name>
                // Output directory (DON'T CHANGE)
@@ -85,6 +85,7 @@ TString     local_xmldataset   = "";
 // ### Other flags to steer the analysis
 //==============================================================================
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
+Bool_t      useCentrality       = kTRUE; // centrality delta AOD
 Bool_t      useTender           = kTRUE; // use tender wagon
 Bool_t      useV0tender         = kTRUE;  // use V0 correction in tender
 Bool_t      useMergeViaJDL      = kTRUE;  // merge via JDL
@@ -375,9 +376,9 @@ void AddAnalysisTasks()
          printf("Registering delta AOD file\n");
          mgr->RegisterExtraFile("AliAOD.Muons.root");
          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kTRUE, usePhysicsSelection);
+         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kTRUE, usePhysicsSelection, useCentrality);
       } else {
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, usePhysicsSelection);
+         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, usePhysicsSelection, useCentrality);
       }   
    }   
 
@@ -1240,7 +1241,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       plugin->SetOutputToRunNo();
    }   
    plugin->SetJobTag(job_tag);
-   plugin->SetNtestFiles(1);
+   plugin->SetNtestFiles(5);
    plugin->SetCheckCopy(kFALSE);
    plugin->SetOneStageMerging(kTRUE);
 // Set versions of used packages
