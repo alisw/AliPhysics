@@ -529,6 +529,12 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTdEdxDataTypeID {'D','E','D','X',' ',' ',' ',' '}
 
+/** dNdPt  data
+ * Common data type for the dNdPt output object
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTdNdPtDataTypeID {'D','N','D','P','T',' ',' ',' '}
+
 using namespace std;
 
 extern "C" {
@@ -1203,6 +1209,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypedEdx;
+
+  /** Container of dNdPt
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypedNdPt;
 
   //////////////////////////////////////////////////////////////////////////
   //

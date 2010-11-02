@@ -99,7 +99,7 @@ void AliHLTdNdPtAnalysisComponent::GetInputDataTypes(AliHLTComponentDataTypeList
 AliHLTComponentDataType AliHLTdNdPtAnalysisComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTDataTypeHistogram  | kAliHLTDataOriginOut;
+  return kAliHLTDataTypedNdPt  | kAliHLTDataOriginOut;
 }
 
 void AliHLTdNdPtAnalysisComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -424,8 +424,7 @@ int AliHLTdNdPtAnalysisComponent::DoEvent(const AliHLTComponentEventData& evtDat
   }
 
   fBenchmark.StartNewEvent();
-  fBenchmark.Start(0);
-  
+  fBenchmark.Start(0);  
 
   if( fUID == 0 ){
     TTimeStamp t;
@@ -448,8 +447,11 @@ int AliHLTdNdPtAnalysisComponent::DoEvent(const AliHLTComponentEventData& evtDat
     fAnalysis->Process(esdEvent);
     fBenchmark.Stop(1);
   }
+
+  if( fAnalysis ) PushBack( (TObject*) fAnalysis, kAliHLTDataTypedNdPt,fUID);
+
   fBenchmark.Stop(0);
-  HLTWarning(fBenchmark.GetStatistics());
+  HLTInfo(fBenchmark.GetStatistics());
   return 0;
 }
 

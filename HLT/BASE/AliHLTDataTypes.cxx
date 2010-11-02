@@ -219,6 +219,9 @@ const AliHLTComponentDataType kAliHLTDataTypeCaloCluster = AliHLTComponentDataTy
 /** Container of dEdx */
 const AliHLTComponentDataType kAliHLTDataTypedEdx = AliHLTComponentDataTypeInitializer( "DEDX    ", kAliHLTDataOriginAny );
 
+/** Container of dNdPt */
+const AliHLTComponentDataType kAliHLTDataTypedNdPt = AliHLTComponentDataTypeInitializer( "DNDPT   ", kAliHLTDataOriginAny );
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Data origin variables, to be used with the operator|
