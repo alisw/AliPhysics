@@ -12,6 +12,7 @@
 #ifndef ALIRSNCUTESD2010_H
 #define ALIRSNCUTESD2010_H
 
+#include "AliPID.h"
 #include "AliESDtrackCuts.h"
 #include "AliRsnCut.h"
 
@@ -39,6 +40,7 @@ class AliRsnCutESD2010 : public AliRsnCut
     void             SetUseGlobal(Bool_t yn = kTRUE) {fUseGlobal = yn;}
     void             SetUseITSSA (Bool_t yn = kTRUE) {fUseITSSA = yn;}
     void             SetMaxEta   (Double_t v)        {fMaxEta = v;}
+    void             SetPID      (AliPID::EParticleType t) {fPID = t;}
     
     void             SetITSband(Double_t v) {fMaxITSband = v;}
     
@@ -58,35 +60,36 @@ class AliRsnCutESD2010 : public AliRsnCut
 
   protected:
   
-    Bool_t           fIsMC;             //  switch for MC analysis
-    Bool_t           fCheckITS;         //  switch for ITS dE/dx check
-    Bool_t           fCheckTPC;         //  switch for TPC dE/dx check
-    Bool_t           fCheckTOF;         //  switch for TOF time check
-    Bool_t           fUseGlobal;        //  switch to use TPC global tracks
-    Bool_t           fUseITSSA;         //  switch to use ITS standalone tracks
+    Bool_t                  fIsMC;             //  switch for MC analysis
+    Bool_t                  fCheckITS;         //  switch for ITS dE/dx check
+    Bool_t                  fCheckTPC;         //  switch for TPC dE/dx check
+    Bool_t                  fCheckTOF;         //  switch for TOF time check
+    Bool_t                  fUseGlobal;        //  switch to use TPC global tracks
+    Bool_t                  fUseITSSA;         //  switch to use ITS standalone tracks
+    AliPID::EParticleType   fPID;              //  PID reference type used for checks
     
-    Double_t         fMaxEta;           //  cut in eta
+    Double_t                fMaxEta;           //  cut in eta
 
-    Double_t         fMaxITSband;       //  range for ITS de/dx band
+    Double_t                fMaxITSband;       //  range for ITS de/dx band
 
-    Double_t         fTPCpLimit;        //  limit to choose what band to apply
-    Double_t         fTPCpar[5];        //  parameters for TPC bethe-Bloch
-    Double_t         fMinTPCband;       //  range for TPC de/dx band - min
-    Double_t         fMaxTPCband;       //  range for TPC de/dx band - max
+    Double_t                fTPCpLimit;        //  limit to choose what band to apply
+    Double_t                fTPCpar[5];        //  parameters for TPC bethe-Bloch
+    Double_t                fMinTPCband;       //  range for TPC de/dx band - min
+    Double_t                fMaxTPCband;       //  range for TPC de/dx band - max
     
-    AliESDtrackCuts  fESDtrackCutsTPC;  //  ESD standard defined track cuts for TPC tracks
-    AliESDtrackCuts  fESDtrackCutsITS;  //  ESD standard defined track cuts for ITS-SA tracks
+    AliESDtrackCuts         fESDtrackCutsTPC;  //  ESD standard defined track cuts for TPC tracks
+    AliESDtrackCuts         fESDtrackCutsITS;  //  ESD standard defined track cuts for ITS-SA tracks
     AliESDpid       *fESDpid;           //! PID manager
     AliTOFT0maker   *fTOFmaker;         //! TOF time0 computator
     AliTOFcalib     *fTOFcalib;         //! TOF calibration
-    Bool_t           fTOFcalibrateESD;  //  TOF settings
-    Bool_t           fTOFcorrectTExp;   //  TOF settings
-    Bool_t           fTOFuseT0;         //  TOF settings
-    Bool_t           fTOFtuneMC;        //  TOF settings
-    Double_t         fTOFresolution;    //  TOF settings
-    Double_t         fMinTOF;           //  range for TOF PID (min)
-    Double_t         fMaxTOF;           //  range for TOF PID (max)
-    Int_t            fLastRun;          //  last run number
+    Bool_t                  fTOFcalibrateESD;  //  TOF settings
+    Bool_t                  fTOFcorrectTExp;   //  TOF settings
+    Bool_t                  fTOFuseT0;         //  TOF settings
+    Bool_t                  fTOFtuneMC;        //  TOF settings
+    Double_t                fTOFresolution;    //  TOF settings
+    Double_t                fMinTOF;           //  range for TOF PID (min)
+    Double_t                fMaxTOF;           //  range for TOF PID (max)
+    Int_t                   fLastRun;          //  last run number
 
     ClassDef(AliRsnCutESD2010, 1)
 };
