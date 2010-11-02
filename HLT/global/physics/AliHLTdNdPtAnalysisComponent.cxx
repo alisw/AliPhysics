@@ -129,29 +129,15 @@ void AliHLTdNdPtAnalysisComponent::SetDefaultConfiguration()
     HLTError("Out of memory");
     return ;
   }
-
-  Float_t zvWindow=20.;
-  float etaWindow=0.9;
-  Float_t ptMin=0.15;
   
-  fEventCuts->SetZvRange(-zvWindow,zvWindow);  
-  fEventCuts->SetMeanXYZv(0.0,0.0,0.0);
-  fEventCuts->SetSigmaMeanXYZv(1.0,1.0,10.0);  
   fEventCuts->SetTriggerRequired(kFALSE);
 
-  fAcceptanceCuts->SetEtaRange(-etaWindow,etaWindow);
-  fAcceptanceCuts->SetPtRange(ptMin,1.e10);
-  fAcceptanceCuts->SetMaxDCAr(3.0);
-  fAcceptanceCuts->SetMaxDCAz(30.0);
-
-  float maxDCAtoVertex = 3.0; // cm
-
-  fESDtrackCuts->SetRequireSigmaToVertex(kFALSE);
-  fESDtrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertex);    
-  fESDtrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertex);    
   fESDtrackCuts->SetRequireTPCRefit(kFALSE);
   fESDtrackCuts->SetAcceptKinkDaughters(kTRUE);
   fESDtrackCuts->DefineHistograms();
+
+  ReadConfigurationString("-vertexZRange 20. -meanVertexXYZ 0. 0. 0. -meanVertexXYZSigma 1. 1. 10. -etaRange 0.9 -ptRange 0.15 1.e10 -maxDCAr 3.0 -maxDCAz 30.0 -maxDCAToVertexXY 3.0 -maxDCAToVertexZ 3.0 -requireSigmaToVertex 1");
+
 }
 
 
@@ -225,12 +211,12 @@ int AliHLTdNdPtAnalysisComponent::ReadConfigurationString(  const char* argument
       float ptMin = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       float ptMax = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
-      fAcceptanceCuts->SetPtRange(ptMin,1.e10);
+      fAcceptanceCuts->SetPtRange(ptMin,ptMax);
       HLTInfo( "pt range is set to [%f,%f]", -ptMin,ptMax);
       continue;
     }
  
-    if ( argument.CompareTo( "-dcaRmax" ) == 0 ) {
+    if ( argument.CompareTo( "-maxDCAr" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       float x = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
       fAcceptanceCuts->SetMaxDCAr(x);
@@ -238,7 +224,7 @@ int AliHLTdNdPtAnalysisComponent::ReadConfigurationString(  const char* argument
       continue;
     }
  
-    if ( argument.CompareTo( "-dcaZmax" ) == 0 ) {
+    if ( argument.CompareTo( "-maxDCAz" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       float x = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
       fAcceptanceCuts->SetMaxDCAz(x);
@@ -246,15 +232,15 @@ int AliHLTdNdPtAnalysisComponent::ReadConfigurationString(  const char* argument
       continue;
     }
 
-    if ( argument.CompareTo( "-dcaVtxRmax" ) == 0 ) {
+    if ( argument.CompareTo( "-maxDCAToVertexXY" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       float x = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
       fESDtrackCuts->SetMaxDCAToVertexXY(x);    
-      HLTInfo( "max DCA R to vertex  is set to %f", x);
+      HLTInfo( "max DCA to XY vertex  is set to %f", x);
       continue;
     }
 
-    if ( argument.CompareTo( "-dcaVtxZmax" ) == 0 ) {
+    if ( argument.CompareTo( "-maxDCAToVertexZ" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       float x = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
       fESDtrackCuts->SetMaxDCAToVertexZ(x);    
@@ -262,7 +248,7 @@ int AliHLTdNdPtAnalysisComponent::ReadConfigurationString(  const char* argument
       continue;
     }
 
-    if ( argument.CompareTo( "-sigmaToVertex" ) == 0 ) {
+    if ( argument.CompareTo( "-requireSigmaToVertex" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       bool x = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
       fESDtrackCuts->SetRequireSigmaToVertex(x);
@@ -286,11 +272,11 @@ int AliHLTdNdPtAnalysisComponent::ReadConfigurationString(  const char* argument
 int AliHLTdNdPtAnalysisComponent::ReadCDBEntry( const char* cdbEntry, const char* chainId )
 {
   // see header file for class documentation
-  return 0;//SG!!!
+
   const char* defaultNotify = "";
   
   if ( !cdbEntry ) {
-    cdbEntry = ""; 
+    cdbEntry = "HLT/ConfigAnalysis/dNdPtAnalysis"; 
     defaultNotify = " (default)";
     chainId = 0;
   }
@@ -331,7 +317,7 @@ int AliHLTdNdPtAnalysisComponent::Configure( const char* cdbEntry, const char* c
   }
 
   //* read hard-coded values
-
+  
   SetDefaultConfiguration();
 
   //* read the default CDB entry
