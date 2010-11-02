@@ -10,10 +10,9 @@
 //  Author : Gustavo Conesa Balbastre (INFN-LNF)
 //
 //-------------------------------------------------
-enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
-//mLocal: Analyze locally files in your computer
-//mLocalCAF: Analyze locally CAF files
-//mPROOF: Analyze CAF files with PROOF
+enum anaModes {mLocal=0, mGRID=3};
+//mLocal    = 0: Analyze locally files in your computer
+//mGRID     = 3: Analyze files on GRID
 
 //---------------------------------------------------------------------------
 //Settings to read locally several files, only for "mLocal" mode
@@ -39,7 +38,8 @@ const char * kXSFileName = "pyxsec.root";
 const Bool_t kMC = kFALSE; //With real data kMC = kFALSE
 const TString kInputData = "ESD"; //ESD, AOD, MC, deltaAOD
 const Bool_t  outAOD = kFALSE; //Some tasks doesnt need it.
-TString kTreeName = "esdTree";
+TString kTreeName;
+const Bool_t kUsePAR = kFALSE; //set to kFALSE for libraries
 const Int_t kFilter = kFALSE; //Use ESD filter
 
 void ana(Int_t mode=mLocal)
@@ -51,9 +51,9 @@ void ana(Int_t mode=mLocal)
   // Look at the method below, 
   // change whatever you need for your analysis case
   // ------------------------------------------------------------------
-  LoadLibraries(mode) ;
+  LoadLibraries() ;
   // TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
-
+  
   //-------------------------------------------------------------------------------------------------
   //Create chain from ESD and from cross sections files, look below for options.
   //-------------------------------------------------------------------------------------------------
@@ -64,6 +64,8 @@ void ana(Int_t mode=mLocal)
     cout<<"Wrong  data type "<<kInputData<<endl;
     break;
   }
+  
+  if(kFilter) outAOD = kTRUE;
   
   TChain *chain       = new TChain(kTreeName) ;
   TChain * chainxs = new TChain("Xsection") ;
@@ -86,7 +88,7 @@ void ana(Int_t mode=mLocal)
       mcHandler->SetReadTR(kFALSE);//Do not search TrackRef file
       mgr->SetMCtruthEventHandler(mcHandler);
       if( kInputData == "MC") {
-	cout<<"INPUT EVENT HANDLER"<<endl;
+	cout<<"MC INPUT EVENT HANDLER"<<endl;
 	mgr->SetInputEventHandler(NULL);
       }
     }
@@ -132,41 +134,50 @@ void ana(Int_t mode=mLocal)
 	
 	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
 	AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+	
 	if(kFilter){
+
+	  // Set of cuts
+	  //for standard global track cuts
+	  AliESDtrackCuts* esdTrackCutsGlobal =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
+	  esdTrackCutsGlobal->SetName("StandardFromAliESDTrackCuts");
+	  
+	  //for TPC tracks only
+	  //    AliESDtrackCuts* esdTrackCutsTPC =  AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+	  //      esdTrackCutsTPC->SetRequireTPCRefit(kTRUE); 
+	  //      esdTrackCutsTPC->SetMinNClustersTPC(70);
+	  
+	  AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
+	  trackFilter->AddCuts(esdTrackCutsGlobal); 
+	  //trackFilter->AddCuts(esdTrackCutsTPC); 
+	  
 	  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
 	  AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kFALSE);
+	  esdfilter->SetTrackFilter(trackFilter);
+	  kInputData = "AOD" ;
+	  kTreeName = "aodTree" ;
 	}
       }
     }
     
     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
-    TString data = kInputData;
-    if(kFilter && kInputData=="ESD" && outAOD) data = "AOD";
-    //data="MC";
-    AliAnalysisTaskParticleCorrelation *taskEMCAL = AddTaskPartCorr(data,"EMCAL", kFALSE,kFALSE, kFALSE);	
+   
+    AliAnalysisTaskParticleCorrelation *taskEMCAL = AddTaskPartCorr(kInputData,"EMCAL", kFALSE,kFALSE, kFALSE);	
     //mgr->ProfileTask("PartCorrEMCAL");
     
-    //AliAnalysisTaskParticleCorrelation *taskPHOS  = AddTaskPartCorr(data,"PHOS", kFALSE,kFALSE,kFALSE);
+    //AliAnalysisTaskParticleCorrelation *taskPHOS  = AddTaskPartCorr(kInputData,"PHOS", kFALSE,kFALSE,kFALSE);
     //mgr->ProfileTask("PartCorrPHOS");
     
-    //gROOT->LoadMacro("AddTaskCalorimeterQA.C");
-    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
-    AliAnalysisTaskParticleCorrelation *taskQA = AddTaskCalorimeterQA(kInputData,kFALSE,kFALSE);
+    //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
+    //AliAnalysisTaskParticleCorrelation *taskQA = AddTaskCalorimeterQA(kInputData,kFALSE,kFALSE);
     //mgr->ProfileTask("CalorimeterPerformance");      
     
     //-----------------------
     // Run the analysis
     //-----------------------    
-    TString smode = "";
-    if (mode==mLocal || mode == mLocalCAF) 
-      smode = "local";
-    else if (mode==mPROOF) 
-      smode = "proof";
-    else if (mode==mGRID) 
-      smode = "local";
     mgr->InitAnalysis();
     mgr->PrintStatus();
-    mgr->StartAnalysis(smode.Data(),chain);
+    mgr->StartAnalysis("local",chain);
 
     cout <<" Analysis ended sucessfully "<< endl ;
     
@@ -177,7 +188,7 @@ void ana(Int_t mode=mLocal)
   
 }
 
-void  LoadLibraries(const anaModes mode) {
+void  LoadLibraries() {
   
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
@@ -188,10 +199,22 @@ void  LoadLibraries(const anaModes mode) {
   gSystem->Load("libXMLIO.so");
   gSystem->Load("libMatrix.so");
   gSystem->Load("libPhysics.so");
-  //----------------------------------------------------------
-  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
-  //----------------------------------------------------------
-  if (mode==mLocal || mode == mLocalCAF || mode == mGRID) {
+
+  if(kUsePAR){
+    //--------------------------------------------------------
+    //If you want to use root and par files from aliroot
+    //--------------------------------------------------------  
+    SetupPar("STEERBase");
+    SetupPar("ESD");
+    SetupPar("AOD");
+    SetupPar("ANALYSIS");
+    SetupPar("ANALYSISalice");
+    SetupPar("PHOSUtils");
+    SetupPar("EMCALUtils");
+    SetupPar("PWG4PartCorrBase");
+    SetupPar("PWG4PartCorrDep");
+  }
+  else{
     //--------------------------------------------------------
     // If you want to use already compiled libraries 
     // in the aliroot distribution
@@ -210,70 +233,7 @@ void  LoadLibraries(const anaModes mode) {
       gSystem->Load("libPWG3base.so");
       gSystem->Load("libPWG3muon.so");
     }
-
-    //--------------------------------------------------------
-    //If you want to use root and par files from aliroot
-    //--------------------------------------------------------  
-    /*
-     SetupPar("STEERBase");
-     SetupPar("ESD");
-     SetupPar("AOD");
-     SetupPar("ANALYSIS");
-     SetupPar("ANALYSISalice");
-     //If your analysis needs PHOS geometry uncomment following lines
-     SetupPar("PHOSUtils");
-     SetupPar("EMCALUtils");
-     //Create Geometry
-     SetupPar("PWG4PartCorrBase");
-     SetupPar("PWG4PartCorrDep");
-     if(kFilter){
-     gSystem->Load("libCORRFW.so");
-     gSystem->Load("libPWG3base.so");
-     gSystem->Load("libPWG3muon.so");
-    }
-    */
   }
-
-  //---------------------------------------------------------
-  // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
-  //---------------------------------------------------------
-  else if (mode==mPROOF) {
-    //
-    // Connect to proof
-    // Put appropriate username here
-    // TProof::Reset("proof://mgheata@lxb6046.cern.ch"); 
-    TProof::Open("proof://mgheata@lxb6046.cern.ch");
-    
-    //    gProof->ClearPackages();
-    //    gProof->ClearPackage("ESD");
-    //    gProof->ClearPackage("AOD");
-    //    gProof->ClearPackage("ANALYSIS");   
-    //    gProof->ClearPackage("PWG4PartCorrBase");
-    //    gProof->ClearPackage("PWG4PartCorrDep");
-    
-    // Enable the STEERBase Package
-    gProof->UploadPackage("STEERBase.par");
-    gProof->EnablePackage("STEERBase");
-    // Enable the ESD Package
-    gProof->UploadPackage("ESD.par");
-    gProof->EnablePackage("ESD");
-    // Enable the AOD Package
-    gProof->UploadPackage("AOD.par");
-    gProof->EnablePackage("AOD");
-    // Enable the Analysis Package
-    gProof->UploadPackage("ANALYSIS.par");
-    gProof->EnablePackage("ANALYSIS");
-	// Enable the PHOS geometry Package
-    //gProof->UploadPackage("PHOSUtils.par");
-    //gProof->EnablePackage("PHOSUtils");
-    // Enable PartCorr analysis
-    gProof->UploadPackage("PWG4PartCorrBase.par");
-    gProof->EnablePackage("PWG4PartCorrBase");
-    gProof->UploadPackage("PWG4PartCorrDep.par");
-    gProof->EnablePackage("PWG4PartCorrDep");    
-    gProof->ShowEnabledPackages();
-  }  
-  
 }
 
 void SetupPar(char* pararchivename)
@@ -284,14 +244,14 @@ void SetupPar(char* pararchivename)
  
   TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
   TString parpar(Form("%s.par", pararchivename)) ; 
-  if ( gSystem->AccessPathName(parpar.Data()) ) {
-    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
-    TString processline(Form(".! make %s", parpar.Data())) ; 
-    gROOT->ProcessLine(processline.Data()) ;
-    gSystem->ChangeDirectory(cdir) ; 
-    processline = Form(".! mv $ALICE_ROOT/%s .", parpar.Data()) ;
-    gROOT->ProcessLine(processline.Data()) ;
-  } 
+//  if ( gSystem->AccessPathName(parpar.Data()) ) {
+//    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+//     TString processline(Form(".! make %s", parpar.Data())) ; 
+//     gROOT->ProcessLine(processline.Data()) ;
+//     gSystem->ChangeDirectory(cdir) ; 
+//     processline = Form(".! mv $ALICE_ROOT/%s .", parpar.Data()) ;
+//     gROOT->ProcessLine(processline.Data()) ;
+//   } 
   if ( gSystem->AccessPathName(pararchivename) ) {  
     TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
     gROOT->ProcessLine(processline.Data());
@@ -331,20 +291,10 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
   //Fills chain with data
   TString ocwd = gSystem->WorkingDirectory();
   
-  //-----------------------------------------------------------
-  //Analysis of CAF data locally and with PROOF
-  //-----------------------------------------------------------
-  if(mode ==mPROOF || mode ==mLocalCAF){
-    // Chain from CAF
-    gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-    // The second parameter is the number of input files in the chain
-    chain = CreateESDChain("ESD12001.txt", 5);  
-  }
-  
   //---------------------------------------
   //Local files analysis
   //---------------------------------------
-  else if(mode == mLocal){    
+  if(mode == mLocal){    
     //If you want to add several ESD files sitting in a common directory INDIR
     //Specify as environmental variables the directory (INDIR), the number of files 
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)

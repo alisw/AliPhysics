@@ -16,6 +16,8 @@
 // 4. Make decay photon-hadron correlations where decay contribute pi0 mass (2010/09/09)
 // 5. fill the pout to extract kt at the end, also to study charge asymmetry(2010/10/06) 
 // 6. Add the possibality for event selection analysis based on vertex and multiplicity bins (10/10/2010)
+// 7. change the way of delta phi cut for UE study due to memory issue (reduce histograms)
+
 // --- ROOT system ---
 class TH3D;
 
@@ -41,7 +43,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   Double_t GetDeltaPhiMinCut() const {return fDeltaPhiMinCut ; }
   void SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
   {fDeltaPhiMaxCut =phimax;  fDeltaPhiMinCut =phimin;}
-
+ 
   Double_t GetUeDeltaPhiMaxCut() const {return fUeDeltaPhiMaxCut ; }
   Double_t GetUeDeltaPhiMinCut() const {return fUeDeltaPhiMinCut ; }
   void SetUeDeltaPhiCutRange(Double_t uephimin, Double_t uephimax)
@@ -63,20 +65,6 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   Bool_t OnlyIsolated() const {return fSelectIsolated ; }
   void SelectIsolated(Bool_t select) {fSelectIsolated = select ; }
 
-//  //Setters for parameters of event buffers
-//  void SetMultiBin(Int_t n=1) {fMultiBin=n ;} //number of bins in Multiplicity 
-//  void SetNRPBin(Int_t n=1)    {fNrpBin=n ;}    //number of bins in reaction plain  
-//  //Setters for event selection
-//  void SetZvertexCut(Float_t zcut=40.){fZvtxCut=zcut ;} //cut on vertex position
-//  Int_t GetMultiBin() const {return fMultiBin ;} //number of bins in Multiplicity 
-//  Int_t GetNRPBin()    const {return fNrpBin=n ;}    //number of bins in reaction plain  
-//  //Getters for event selection
-//  Float_t GetZvertexCut() const {return fZvtxCut ;} //cut on vertex position  
-//  void SwitchOnEventSelection()    {fUseSelectEvent = kTRUE ; }
-//  void SwitchOffEventSelection()   {fUseSelectEvent = kFALSE ; } s
-//  // Do correlation analysis with different event buffers
-//  Bool_t IsEventSelect() const {return fUseSelectEvent ; }
-  
   void InitParameters();
   
   void Print(const Option_t * opt) const;
@@ -105,16 +93,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TString    fPi0AODBranchName;     // Name of AOD branch with pi0, not trigger
   Bool_t     fNeutralCorr ;          // switch the analysis with neutral particles
   Bool_t     fPi0Trigger ;          // switch the analysis with decay photon from pi0 trigger
-//  Int_t      fMultiBin ;	  // Number of bins in event container for multiplicity
-//  Int_t      fNZvertBin ;	  // Number of bins in event container for vertex position
-//  Int_t      fNrpBin ;	    // Number of bins in event container for reaction plain
-//  Float_t    fZvtxCut ;	    // Cut on vertex position  
-//  Bool_t     fUseSelectEvent ; // Select events based on multiplicity and vertex cuts
-  
   
   //Histograms
-  TH2F * fhNclustersNtracks; //charge and cluster multiplicity distribution
-  TH3D * fhVertex; //vertex position
+//  TH2F * fhNclustersNtracks; //charge and cluster multiplicity distribution
   //leading particles 
   TH1F * fhPtLeading;         //! pT distribution of leading particles
   TH2F * fhPhiLeading;        //! phi distribution vs pT of leading particles
@@ -145,7 +126,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhPtHbpUeRightCharged  ;      //! Trigger particle -underlying charged hadron momentim HBP histogram  
 
   //for pout and kt extraction
-  TH2F * fhPoutTrig  ; // Pout =associated pt*sin(delta phi) distribution vs trigger pt
+  TH3D * fhPoutPtTrigPtAssoc  ; // Pout =associated pt*sin(delta phi) distribution vs trigger pt vs associated pt
+  TH3D * fhUePoutPtTrigPtAssoc  ; // UE Pout =associated pt*sin(delta phi) distribution vs trigger pt vs associated pt
   TH2F * fhPtTrigCharged ; //trigger and correlated particl pt, to be used for mean value for kt	
   
   //if different multiplicity analysis asked
@@ -176,7 +158,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhPtHbpUeRightNeutral  ;      //! Trigger particle -underlying neutral hadron momentim HBP histogram 
   
   //for decay photon trigger correlation
-  TH3D * fhPtPi0DecayRatio ;          //! for pi0 pt and ratio of decay photon pt
+  TH2F * fhPtPi0DecayRatio ;          //! for pi0 pt and ratio of decay photon pt
   TH2F * fhDeltaPhiDecayCharged  ;   //! Difference of charged particle phi and decay trigger
   TH2F * fhPtImbalanceDecayCharged ; //! Trigger particle (decay from pi0)-charged hadron momentim imbalance histogram    
   TH2F * fhDeltaPhiDecayNeutral  ;   //! Difference of neutral particle phi and decay trigger

@@ -1,4 +1,4 @@
-AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, Bool_t outputAOD=kFALSE, Bool_t oldAOD=kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, Bool_t outputAOD=kFALSE, Bool_t oldAOD=kFALSE)
 {
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
   
@@ -9,24 +9,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     ::Error("AddTaskPartCorr", "No analysis manager to connect to.");
     return NULL;
   }  
-  
-  // Check the analysis type using the event handlers connected to the analysis manager.
-  //==============================================================================
-  if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskPartCorr", "This task requires an input event handler");
-    return NULL;
-  }
-  TString inputDataType = "AOD";
-  if(!data.Contains("delta"))
-    inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  //cout<<"DATA TYPE :: "<<inputDataType<<endl;
-  // inputDataType: data managed by the input handler
-  // data: can be same as one managed by input handler, or the output AOD created by the filter. By default use AOD
-  
+ 
   Bool_t kUseKinematics = kFALSE; 
   if(kSimulation) { 
     kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
-    if (!kUseKinematics && data=="AOD" && inputDataType != "ESD") kUseKinematics = kTRUE; //AOD primary should be available ... 
+    if (!kUseKinematics && inputDataType == "AOD") kUseKinematics = kTRUE; //AOD primary should be available ... 
   } 
   
   cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
@@ -35,10 +22,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //===========================================================================
   
   // *** Reader ***
-  AliCaloTrackReader * reader = ;
-  if(data.Contains("AOD")) reader = new AliCaloTrackAODReader();
-  else if(data=="ESD") reader = new AliCaloTrackESDReader();
-  else if(data=="MC" && inputDataType == "ESD") reader = new AliCaloTrackMCReader();
+  AliCaloTrackReader * reader =0x0 ;
+  if(inputDataType.Contains("AOD")) reader = new AliCaloTrackAODReader();
+  else if(inputDataType=="ESD") reader = new AliCaloTrackESDReader();
+  else if(inputDataType=="MC" && inputDataType == "ESD") reader = new AliCaloTrackMCReader();
   reader->SetDebug(-1);//10 for lots of messages
   reader->SwitchOnCTS();
   //reader->SetDeltaAODFileName("");
@@ -52,8 +39,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     reader->SwitchOnPHOS();
   }
   
-  // for case data="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
-  if(data.Contains("delta")){
+  // for case inputDataType="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
+  if(inputDataType.Contains("delta")){
     reader->SwitchOffEMCAL();
     reader->SwitchOffPHOS();
     reader->SwitchOffEMCALCells(); 
@@ -72,9 +59,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   }
   
   //Min particle pT
-  reader->SetEMCALPtMin(0.1); 
-  reader->SetPHOSPtMin(0.);
-  reader->SetCTSPtMin(0.);
+  reader->SetEMCALPtMin(0.3); 
+  reader->SetPHOSPtMin(0.3);
+  reader->SetCTSPtMin(0.1);
   if(outputAOD)  reader->SwitchOnWriteDeltaAOD()  ;
   if(oldAOD) reader->SwitchOnOldAODs();
   if(kPrintSettings) reader->Print("");
@@ -127,6 +114,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   AliAnaPhoton *anaphoton = new AliAnaPhoton();
   anaphoton->SetDebug(-1); //10 for lots of messages
+  //settings for different multiplicity analysis
+  anaphoton->SwitchOffEventSelection() ;
+  anaphoton->SetZvertexCut(10.);
+  anaphoton->SetMultiplicity(80, 120);
+
   if(calorimeter == "PHOS"){
     anaphoton->SetNCellCut(0);// At least 2 cells
     anaphoton->SetMinPt(0.);
@@ -153,7 +145,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
   }
   
-  if(!data.Contains("delta")) {
+  if(!inputDataType.Contains("delta")) {
     anaphoton->SetOutputAODName(Form("Photons%s",calorimeter.Data()));
     anaphoton->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   }
@@ -182,15 +174,15 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
     fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
     fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
-  }  
-	
+  }  	
   anapi0->SetNPID(1); //Available from tag AliRoot::v4-18-15-AN
   //settings for pp collision
   anapi0->SwitchOnOwnMix();
+  anapi0->SwitchOnEventSelection() ;
   anapi0->SetNCentrBin(1);
-  anapi0->SetNZvertBin(1);
-  anapi0->SetNRPBin(1);
-  anapi0->SetNMaxEvMix(10);
+  anapi0->SetZvertexCut(10.);
+  anapi0->SetMultiplicity(80, 120);
+  anapi0->SetMultiBin(1);  
   if(kUseKinematics)anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else anapi0->SwitchOffDataMC() ;
   if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
@@ -207,12 +199,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //---------------------------  
   
   AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
+  anapi0ebe->SwitchOffEventSelection() ;
+  anapi0ebe->SetZvertexCut(10.);
+  anapi0ebe->SetMultiplicity(80, 120);
+  anapi0ebe->SetMultiBin(1);  
   anapi0ebe->SetDebug(-1);//10 for lots of messages
   anapi0ebe->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
   anapi0ebe->SetMinPt(0);
   anapi0ebe->SetCalorimeter(calorimeter);
   anapi0ebe->SetInputAODName(Form("Photons%s",calorimeter.Data()));
-  if(!data.Contains("delta")) {
+  if(!inputDataType.Contains("delta")) {
     anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
     anapi0ebe->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   }
@@ -301,9 +297,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //Do isolation cut
   AliIsolationCut * ic =  anaisol->GetIsolationCut();	
   ic->SetConeSize(0.4);
-  ic->SetPtThreshold(0.2);
+  ic->SetPtThreshold(0.7);
+  ic->SetPtFraction(0.1);
+  ic->SetSumPtThreshold(1.0) ;
   ic->SetParticleTypeInCone(AliIsolationCut::kOnlyCharged);
-  ic->SetICMethod(AliIsolationCut::kPtThresIC);
+  ic->SetICMethod(AliIsolationCut::kSumPtFracIC);
   if(kPrintSettings) ic->Print("");
   
   //Do or not do isolation with previously produced AODs.
@@ -333,8 +331,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //Do isolation cut
   AliIsolationCut * ic2 =  anaisolpi0->GetIsolationCut();	
   ic2->SetConeSize(0.4);
-  ic2->SetPtThreshold(0.2);
-  ic2->SetICMethod(AliIsolationCut::kPtThresIC);
+  ic2->SetPtThreshold(0.7);
+  ic2->SetPtFraction(0.1);
+  ic2->SetSumPtThreshold(1.0) ;
+  ic2->SetICMethod(AliIsolationCut::kSumPtFracIC);
+  ic2->SetParticleTypeInCone(AliIsolationCut::kOnlyCharged);
   if(kPrintSettings) ic2->Print("");
   //Do or not do isolation with previously produced AODs.
   //No effect if use of SwitchOnSeveralIsolation()
@@ -375,7 +376,21 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrhadron->SetAODObjArrayName("PhotonHadronCorr"); 
   anacorrhadron->SetDebug(-1);
   anacorrhadron->SwitchOffCaloPID();
-  anacorrhadron->SwitchOffFiducialCut();
+  if(kSimulation){
+    anacorrhadron->SwitchOnFiducialCut();
+    AliFiducialCut * fidCut1stYear = anacorrhadron->GetFiducialCut();
+    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
+    fidCut1stYear->DoCTSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleCTSFiducialCut(0.8,0.,360.);    
+  }
+  anacorrhadron->SwitchOnDecayCorr();
+  anacorrhadron->SetMultiBin(1);
+  anacorrhadron->SetZvertexCut(10.);
+  anacorrhadron->SwitchOffNeutralCorr();
+  anacorrhadron->SwitchOffEventSelection();
   anacorrhadron->SetPtCutRange(0.1,100);
   anacorrhadron->SetDeltaPhiCutRange(1.5,4.5);
   anacorrhadron->SwitchOnSeveralUECalculation();
@@ -401,7 +416,21 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrisohadron->SetAODObjArrayName("IsoPhotonHadronCorr"); 
   anacorrisohadron->SetDebug(-1);
   anacorrisohadron->SwitchOffCaloPID();
-  anacorrisohadron->SwitchOffFiducialCut();
+    if(kSimulation){
+    anacorrisohadron->SwitchOnFiducialCut();
+    AliFiducialCut * fidCut1stYear = anacorrisohadron->GetFiducialCut();
+    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
+    fidCut1stYear->DoCTSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleCTSFiducialCut(0.8,0.,360.);    
+  }
+  anacorrisohadron->SwitchOnDecayCorr();
+  anacorrisohadron->SetMultiBin(1);
+  anacorrisohadron->SetZvertexCut(10.);
+  anacorrisohadron->SwitchOffNeutralCorr();
+  anacorrisohadron->SwitchOffEventSelection();
   anacorrisohadron->SetPtCutRange(0.1,100);
   anacorrisohadron->SetDeltaPhiCutRange(1.5,4.5);
   anacorrisohadron->SwitchOnSeveralUECalculation();
@@ -428,7 +457,21 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrhadronpi0->SetAODObjArrayName("Pi0HadronCorr"); 
   anacorrhadronpi0->SetDebug(-1);
   anacorrhadronpi0->SwitchOffCaloPID();
-  anacorrhadronpi0->SwitchOffFiducialCut();
+  if(kSimulation){
+    anacorrhadronpi0->SwitchOnFiducialCut();
+    AliFiducialCut * fidCut1stYear = anacorrhadronpi0->GetFiducialCut();
+    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
+    fidCut1stYear->DoCTSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleCTSFiducialCut(0.8,0.,360.);    
+  }
+  anacorrhadronpi0->SwitchOnDecayCorr();
+  anacorrhadronpi0->SetMultiBin(1);
+  anacorrhadronpi0->SetZvertexCut(10.);
+  anacorrhadronpi0->SwitchOffNeutralCorr();
+  anacorrhadronpi0->SwitchOffEventSelection();
   anacorrhadronpi0->SetPtCutRange(0.1,100);
   anacorrhadronpi0->SetDeltaPhiCutRange(1.5,4.5);
   anacorrhadronpi0->SelectIsolated(kFALSE); // do correlation with non isolated pi0
@@ -454,7 +497,21 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrhadronisopi0->SetAODObjArrayName("IsoPi0HadronCorr"); 
   anacorrhadronisopi0->SetDebug(-1);
   anacorrhadronisopi0->SwitchOffCaloPID();
-  anacorrhadronisopi0->SwitchOffFiducialCut();
+    if(kSimulation){
+    anacorrhadronisopi0->SwitchOnFiducialCut();
+    AliFiducialCut * fidCut1stYear = anacorrhadronisopi0->GetFiducialCut();
+    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
+    fidCut1stYear->DoCTSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleCTSFiducialCut(0.8,0.,360.);    
+  }
+  anacorrhadronisopi0->SwitchOnDecayCorr();
+  anacorrhadronisopi0->SetMultiBin(1);
+  anacorrhadronisopi0->SetZvertexCut(10.);
+  anacorrhadronisopi0->SwitchOffNeutralCorr();
+  anacorrhadronisopi0->SwitchOffEventSelection();
   anacorrhadronisopi0->SetPtCutRange(0.1,100);
   anacorrhadronisopi0->SetDeltaPhiCutRange(1.5,4.5);
   anacorrhadronisopi0->SelectIsolated(kTRUE); // do correlation with isolated pi0
@@ -496,7 +553,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anacorrhadronisopi0,n);
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
-  if(data.Contains("delta")) maker->SwitchOffAODsMaker()  ;
+  if(inputDataType.Contains("delta")) maker->SwitchOffAODsMaker()  ;
   else                       maker->SwitchOnAODsMaker()  ;
 	
   if(kPrintSettings) maker->Print("");
@@ -512,7 +569,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //task->SetDebugLevel(-1);
   task->SelectCollisionCandidates();
   task->SetAnalysisMaker(maker);
-  //if(!kSimulation)task->SelectCollisionCandidates(); //AliPhysicsSelection has to be attached before.
+  if(inputDataType=="ESD" && !kSimulation) task->SelectCollisionCandidates(); //AliPhysicsSelection has to be attached before.
   mgr->AddTask(task);
   
   //Create containers
@@ -537,7 +594,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //==============================================================================
   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
   // AOD output slot will be used in a different way in future
-  if(!data.Contains("delta")   && outputAOD) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
+  if(!inputDataType.Contains("delta")   && outputAOD) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
   mgr->ConnectOutput (task, 2, cout_cuts);
   

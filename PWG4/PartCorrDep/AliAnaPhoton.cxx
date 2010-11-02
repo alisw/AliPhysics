@@ -26,6 +26,7 @@
   
 // --- ROOT system --- 
 #include <TH2F.h>
+#include <TH3D.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
 //#include <Riostream.h>
@@ -51,6 +52,7 @@ ClassImp(AliAnaPhoton)
     fMinDist(0.),fMinDist2(0.),fMinDist3(0.),fRejectTrackMatch(0),
     fCheckConversion(kFALSE),fAddConvertedPairsToAOD(kFALSE), fMassCut(0),
     fTimeCutMin(-1), fTimeCutMax(9999999), fNCellsCut(0),
+    fhVertex(0), fhNtraNclu(0),
     fhPtPhoton(0),fhPhiPhoton(0),fhEtaPhoton(0),
     //MC
     fhDeltaE(0), fhDeltaPt(0),fhRatioE(0), fhRatioPt(0),fh2E(0),fh2Pt(0),
@@ -128,6 +130,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Float_t etamin = GetHistoEtaMin();	
   
   //Histograms of highest Photon identified in Event
+  fhVertex  = new TH3D ("Vertex","vertex position", 100,-50.,50., 100,-50.,50., 100,-50.,50.); 
+  fhVertex->SetXTitle("X");
+  fhVertex->SetYTitle("Y");
+  fhVertex->SetZTitle("Z");
+  outputContainer->Add(fhVertex);
+  
+  fhNtraNclu  = new TH2F ("hNtracksNcluster","# of tracks vs # of clusters", 500,0,500, 500,0,500); 
+  fhNtraNclu->SetXTitle("# of tracks");
+  fhNtraNclu->SetYTitle("# of clusters");
+  outputContainer->Add(fhNtraNclu);
+  
   fhPtPhoton  = new TH1F("hPtPhoton","Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
   fhPtPhoton->SetYTitle("N");
   fhPtPhoton->SetXTitle("p_{T #gamma}(GeV/c)");
@@ -396,7 +409,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if (GetMixedEvent()) {
       evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
       //Get the vertex and check it is not too large in z
-      if(TMath::Abs(GetVertex(evtIndex)[2])> GetZvertexCut()) continue ;  
+      if(TMath::Abs(GetVertex(evtIndex)[2])> GetZvertexCut()) return ;  
     }
 
     //Cluster selection, not charged, with photon id and in fiducial cut
@@ -630,7 +643,12 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 	}// is data and MC
 	
 	//Loop on stored AOD photons
+  Double_t v[3] = {0,0,0}; //vertex ;
+  GetReader()->GetVertex(v);
+  fhVertex->Fill(v[0],v[1],v[2]);  
+  if(TMath::Abs(v[2]) > GetZvertexCut()) return ;  
 	Int_t naod = GetOutputAODBranch()->GetEntriesFast();
+  fhNtraNclu->Fill(GetReader()->GetTrackMultiplicity(), naod);
 	if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
 	
 	for(Int_t iaod = 0; iaod < naod ; iaod++){

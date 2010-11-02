@@ -16,6 +16,7 @@
 // --- ROOT system ---
 class TH2F ;
 class TH1F;
+class TH3D;
 class TString ;
 class TObjString;
 
@@ -96,7 +97,9 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   Double_t fTimeCutMax  ;    // Remove clusters/cells with time larger than this value, in ns
   Int_t fNCellsCut ;     // Accept for the analysis clusters with more than fNCellsCut cells
 	
-  //Histograms  
+  //Histograms 
+  TH3D * fhVertex; //! vertex distribution
+  TH2F * fhNtraNclu; //! track multiplicity distribution vs cluster multiplicity
   TH1F * fhPtPhoton   ; //! Number of identified photon vs transerse momentum 
   TH2F * fhPhiPhoton  ; //! Azimuthal angle of identified  photon vs transerse momentum 
   TH2F * fhEtaPhoton  ; //! Pseudorapidity of identified  photon vs transerse momentum 

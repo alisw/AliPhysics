@@ -1,57 +1,45 @@
 /* $Id$ */
-//--------------------------------------------------
-// Example macro to do analysis with the 
-// analysis classes in PWG4PartCorr
-// Can be executed with Root and AliRoot
-//
-// Pay attention to the options and definitions
-// set in the lines below
-//
-//  Author : Gustavo Conesa Balbastre (INFN-LNF)
-//
 //-------------------------------------------------
-enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
-//mLocal: Analyze locally files in your computer
-//mLocalCAF: Analyze locally CAF files
-//mPROOF: Analyze CAF files with PROOF
+enum anaModes {mLocal, mGRID};
+//mLocal    = 0: Analyze locally files in your computer
+//mGRID     = 3: Analyze files on GRID
 
 //---------------------------------------------------------------------------
 //Settings to read locally several files, only for "mLocal" mode
 //The different values are default, they can be set with environmental 
-//variables: INDIR, PATTERN, NFILES, respectivelly
-//char * kInDir = "/Users/Gustavo/Work/mixed/data"; 
-char * kPattern = ""; // Data are in files kInDir/kPattern+i 
+//variables: INDIR, PATTERN, NFILES, respectively
+char * kInDir = "/Users/ymao/group/ana/7TeV/corr";
+char * kPattern = ""; // Data are in files kInDir/kPattern+i
 Int_t kFile = 1; // Number of files
 //---------------------------------------------------------------------------
 //Collection file for grid analysis
 char * kXML = "collection.xml";
-//---------------------------------------------------------------------------
-//Scale histograms from file. Change to kTRUE when xsection file exists
-//Put name of file containing xsection 
-//Put number of events per ESD file
-//This is an specific case for normalization of Pythia files.
-const Bool_t kGetXSectionFromFileAndScale = kFALSE ;
-const char * kXSFileName = "pyxsec.root";
+
 //---------------------------------------------------------------------------
 
 const Bool_t kMC = kFALSE; //With real data kMC = kFALSE
-const TString kInputData = "AOD"; //ESD, AOD, MC
+TString kInputData = "ESD";//ESD, AOD, MC
 TString kTreeName ;
+const TString calorimeter = "EMCAL" ;
+const Bool_t kUsePAR = kFALSE; //set to kFALSE for libraries
+//const Bool_t kUsePAR = kTRUE; //set to kFALSE for libraries
+const Bool_t kDoESDFilter = kFALSE;  //filter the tracks from the esd
 
-void anaM(Int_t mode=mLocal)
+Int_t mode = mGRID;
+
+void anaM()
 {
   // Main
-
   //--------------------------------------------------------------------
   // Load analysis libraries
   // Look at the method below, 
   // change whatever you need for your analysis case
   // ------------------------------------------------------------------
-  LoadLibraries(mode) ;
+  LoadLibraries() ;
   
   //-------------------------------------------------------------------------------------------------
   //Create chain from ESD and from cross sections files, look below for options.
-  //-------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------- 
   if(kInputData == "ESD") kTreeName = "esdTree" ;
   else if(kInputData == "AOD") kTreeName = "aodTree" ;
   else if (kInputData == "MC") kTreeName = "TE" ;
@@ -59,12 +47,13 @@ void anaM(Int_t mode=mLocal)
     cout<<"Wrong  data type "<<kInputData<<endl;
     break;
   }
-
-  TChain *chain       = new TChain(kTreeName) ;
-  TChain * chainxs = new TChain("Xsection") ;
-  CreateChain(mode, chain, chainxs);  
-
-  if(chain){
+  
+  TChain * chain   = new TChain(kTreeName) ;
+  
+	CreateChain(mode, chain);//, chainxs);  
+  cout<<"Chain created"<<endl;
+  
+  if( chain ){
     AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
     
     //--------------------------------------
@@ -72,24 +61,23 @@ void anaM(Int_t mode=mLocal)
     //-------------------------------------
     AliAnalysisManager *mgr  = new AliAnalysisManager("Manager", "Manager");
     // MC handler
-    if((kMC || kInputData == "MC") && kInputData!="AOD"){
+    if( (kMC && (kInputData == "ESD")) || kInputData == "MC"){
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
       mcHandler->SetReadTR(kFALSE);//Do not search TrackRef file
       mgr->SetMCtruthEventHandler(mcHandler);
-	  if( kInputData == "MC") mgr->SetInputEventHandler(NULL);
+      if( kInputData == "MC") mgr->SetInputEventHandler(NULL);
     }
-
-    // AOD output handler
-//      AliAODHandler* aodoutHandler   = new AliAODHandler();
-//     aodoutHandler->SetOutputFileName("aod.root");
-//     ////aodoutHandler->SetCreateNonStandardAOD();
-//     mgr->SetOutputEventHandler(aodoutHandler);
+    
+//    // AOD output handler
+//    AliAODHandler* aodoutHandler   = new AliAODHandler();
+//    aodoutHandler->SetOutputFileName("AliAOD.root");
+//    mgr->SetOutputEventHandler(aodoutHandler);
     
     //input
     Int_t maxiterations = 1;
     AliEventPoolLoop* pool = new AliEventPoolLoop(maxiterations);
     pool->SetChain(chain);
-    Int_t eventsInPool = 2;
+    Int_t eventsInPool = 10;
     AliMultiEventInputHandler *inpHandler = NULL ; 
     if(kInputData == "ESD"){
       // ESD handler
@@ -104,59 +92,53 @@ void anaM(Int_t mode=mLocal)
     cout<<"Input handler "<<mgr->GetInputEventHandler()<<endl;
     mgr->SetEventPool(pool);
     inpHandler->SetEventPool(pool);
-
-      //mgr->SetDebugLevel(10); // For debugging, do not uncomment if you want no messages.
-
+    
+    //mgr->SetDebugLevel(-1); // For debugging, do not uncomment if you want no messages.
+    
+    // select triigger events for physics run
+    
+//    if(!kMC){
+//      gROOT->LoadMacro("AddTaskPhysicsSelection.C");
+//      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+//      mgr->AddTask(physSelTask);    
+//    }
+    
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
-    //    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-    // AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
-
-    //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
-    //AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kTRUE);
-
+    
+    //correlation analysis
     gROOT->LoadMacro("AddTaskPartCorrM.C");
-   
-    AliAnalysisTaskParticleCorrelationM *taskEMCAL = AddTaskPartCorrM(kInputData,"EMCAL", kFALSE,kFALSE,kFALSE,kTRUE);	
+    
+    AliAnalysisTaskParticleCorrelationM *taskEMCAL = AddTaskPartCorrM(kInputData,"EMCAL",kFALSE);
+
     mgr->AddTask(taskEMCAL);
-    AliAnalysisTaskParticleCorrelationM *taskPHOS  = AddTaskPartCorrM(kInputData,"PHOS", kFALSE, kFALSE);
+    
+    AliAnalysisTaskParticleCorrelationM *taskPHOS  = AddTaskPartCorrM(kInputData,"PHOS", kFALSE);
+
     mgr->AddTask(taskPHOS);
-
-    //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCalorimeterQA.C");
-    //gROOT->LoadMacro("AddTaskCalorimeterQA.C");
-    //AliAnalysisTaskParticleCorrelation *taskQA = AddTaskCalorimeterQA(kInputData,kFALSE,kTRUE);
-
-    //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskomega3pi.C");
-    //AliAnalysisTaskOmegaPi0PiPi * taskomega = AddTaskomega3pi();
-    //mgr->AddTask(taskomega);
-
-
-
-    //-----------------------
+    
+    //gROOT->LoadMacro("AddTaskChargeCorr.C");
+    AliAnalysisTaskParticleCorrelationM *taskCharge  = AddTaskPartCorrM(kInputData, "CTS",kFALSE);
+//    if(!kMC)
+//      taskCharge->SelectCollisionCandidates();
+    mgr->AddTask(taskCharge);
+    
+     //-----------------------
     // Run the analysis
     //-----------------------    
-    TString smode = "";
-    if (mode==mLocal || mode == mLocalCAF) 
-      smode = "mix";
-    else if (mode==mPROOF) 
-      smode = "proof";
-    else if (mode==mGRID) 
-      smode = "mix";
-    
+    //mgr->ResetAnalysis();
     mgr->InitAnalysis();
     mgr->PrintStatus();
-    mgr->StartAnalysis(smode.Data(),chain,1000);
-
-cout <<" Analysis ended sucessfully "<< endl ;
-
+    mgr->StartAnalysis("mix",chain);
+    
+    cout <<" Analysis ended sucessfully "<< endl ;
   }
   else cout << "Chain was not produced ! "<<endl;
   
 }
 
-void  LoadLibraries(const anaModes mode) {
-  
+void  LoadLibraries() {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
@@ -164,97 +146,36 @@ void  LoadLibraries(const anaModes mode) {
   gSystem->Load("libGeom.so");
   gSystem->Load("libVMC.so");
   gSystem->Load("libXMLIO.so");
-  gSystem->Load("libMatrix.so");
-  gSystem->Load("libPhysics.so");
-
-  //----------------------------------------------------------
-  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
-  //----------------------------------------------------------
-  if (mode==mLocal || mode == mLocalCAF || mode == mGRID) {
+  if(kUsePAR){
+    //--------------------------------------------------------
+    //If you want to use root and par files from aliroot
+    //--------------------------------------------------------  
+    SetupPar("STEERBase");
+    SetupPar("ESD");
+    SetupPar("AOD");
+    SetupPar("ANALYSIS");
+    SetupPar("ANALYSISalice");
+    SetupPar("PHOSUtils");
+    SetupPar("EMCALUtils");
+    
+    SetupPar("PWG4PartCorrBase");
+    SetupPar("PWG4PartCorrDep");
+  }
+  else{
     //--------------------------------------------------------
     // If you want to use already compiled libraries 
     // in the aliroot distribution
     //--------------------------------------------------------
-    //gSystem->Load("/Users/Gustavo/Work/analysis/STEERBase/libSTEERBase.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/ESD/libESD.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/AOD/libAOD.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/ANALYSIS/libANALYSIS.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/ANALYSISalice/libANALYSISalice.so");
-    //gSystem->Load("libPHOSUtils");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/PWG4PartCorrBase/libPWG4PartCorrBase.so");
-    //gSystem->Load("/Users/Gustavo/Work/analysis/PWG4PartCorrDep/libPWG4PartCorrDep.so");
-	
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libPHOSUtils");
-    gSystem->Load("libEMCALUtils");
-    gSystem->Load("libPWG4PartCorrBase.so");
-    gSystem->Load("libPWG4PartCorrDep.so");
-//     gSystem->Load("libPWG4omega3pi.so");
-//     gSystem->Load("libCORRFW.so");
-//     gSystem->Load("libPWG3base.so");
-//     gSystem->Load("libPWG3muon.so");
- 
-    //--------------------------------------------------------
-    //If you want to use root and par files from aliroot
-    //--------------------------------------------------------  
-//     SetupPar("STEERBase");
-//     SetupPar("ESD");
-//     SetupPar("AOD");
-//     SetupPar("ANALYSIS");
-//     SetupPar("ANALYSISalice");
-//     //If your analysis needs PHOS geometry uncomment following lines
-//     SetupPar("PHOSUtils");
-//     SetupPar("EMCALUtils");
-//     //	//Create Geometry
-//     //    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
-//     SetupPar("PWG4PartCorrBase");
-//     SetupPar("PWG4PartCorrDep");
-//     //SetupPar("PWG4omega3pi");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+	  gSystem->Load("libPHOSUtils");
+	  gSystem->Load("libEMCALUtils");
+    gSystem->Load("libPWG4PartCorrBase");
+    gSystem->Load("libPWG4PartCorrDep");
   }
-
-  //---------------------------------------------------------
-  // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
-  //---------------------------------------------------------
-  else if (mode==mPROOF) {
-    //
-    // Connect to proof
-    // Put appropriate username here
-    // TProof::Reset("proof://mgheata@lxb6046.cern.ch"); 
-    TProof::Open("proof://mgheata@lxb6046.cern.ch");
-    
-    //    gProof->ClearPackages();
-    //    gProof->ClearPackage("ESD");
-    //    gProof->ClearPackage("AOD");
-    //    gProof->ClearPackage("ANALYSIS");   
-    //    gProof->ClearPackage("PWG4PartCorrBase");
-    //    gProof->ClearPackage("PWG4PartCorrDep");
-    
-    // Enable the STEERBase Package
-    gProof->UploadPackage("STEERBase.par");
-    gProof->EnablePackage("STEERBase");
-    // Enable the ESD Package
-    gProof->UploadPackage("ESD.par");
-    gProof->EnablePackage("ESD");
-    // Enable the AOD Package
-    gProof->UploadPackage("AOD.par");
-    gProof->EnablePackage("AOD");
-    // Enable the Analysis Package
-    gProof->UploadPackage("ANALYSIS.par");
-    gProof->EnablePackage("ANALYSIS");
-    // Enable the PHOS geometry Package
-    //gProof->UploadPackage("PHOSUtils.par");
-    //gProof->EnablePackage("PHOSUtils");
-    // Enable PartCorr analysis
-    gProof->UploadPackage("PWG4PartCorrBase.par");
-    gProof->EnablePackage("PWG4PartCorrBase");
-    gProof->UploadPackage("PWG4PartCorrDep.par");
-    gProof->EnablePackage("PWG4PartCorrDep");    
-    gProof->ShowEnabledPackages();
-  }  
   
 }
 
@@ -263,17 +184,9 @@ void SetupPar(char* pararchivename)
   //Load par files, create analysis libraries
   //For testing, if par file already decompressed and modified
   //classes then do not decompress.
- 
+  
   TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
   TString parpar(Form("%s.par", pararchivename)) ; 
-  if ( gSystem->AccessPathName(parpar.Data()) ) {
-    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
-    TString processline(Form(".! make %s", parpar.Data())) ; 
-    gROOT->ProcessLine(processline.Data()) ;
-    gSystem->ChangeDirectory(cdir) ; 
-    processline = Form(".! mv $ALICE_ROOT/%s .", parpar.Data()) ;
-    gROOT->ProcessLine(processline.Data()) ;
-  } 
   if ( gSystem->AccessPathName(pararchivename) ) {  
     TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
     gROOT->ProcessLine(processline.Data());
@@ -309,126 +222,56 @@ void SetupPar(char* pararchivename)
 
 
 
-void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
+void CreateChain(const anaModes mode, TChain * chain){//, TChain * chainxs){
   //Fills chain with data
-  TString ocwd = gSystem->WorkingDirectory();
   
-  //-----------------------------------------------------------
-  //Analysis of CAF data locally and with PROOF
-  //-----------------------------------------------------------
-  if(mode ==mPROOF || mode ==mLocalCAF){
-    // Chain from CAF
-    gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-    // The second parameter is the number of input files in the chain
-    chain = CreateESDChain("ESD12001.txt", 5);  
-  }
+  TString datafileName="";
+  if(kInputData == "ESD") datafileName = "AliESDs.root" ;
+  else if(kInputData == "AOD") datafileName = "AliAOD.root" ;
+  else if(kInputData == "MC")  datafileName = "galice.root" ;
+  
+  TString ocwd = gSystem->WorkingDirectory();
   
   //---------------------------------------
   //Local files analysis
   //---------------------------------------
-  else if(mode == mLocal){    
+  if(mode == mLocal){
     //If you want to add several ESD files sitting in a common directory INDIR
     //Specify as environmental variables the directory (INDIR), the number of files 
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)
-
-    if(gSystem->Getenv("INDIR"))  
-      kInDir = gSystem->Getenv("INDIR") ; 
-    else cout<<"INDIR not set, use default: "<<kInDir<<endl;	
     
-    if(gSystem->Getenv("PATTERN"))   
-      kPattern = gSystem->Getenv("PATTERN") ; 
-    else  cout<<"PATTERN not set, use default: "<<kPattern<<endl;
+    cout<<"INDIR : "<<kInDir<<endl;
+    cout<<"NFILES : "<<kFile<<endl;
+    cout<<"PATTERN: " <<kPattern<<endl;
     
-    if(gSystem->Getenv("NFILES"))
-      kFile = atoi(gSystem->Getenv("NFILES")) ;
-    else cout<<"NFILES not set, use default: "<<kFile<<endl;
     
-    //Check if env variables are set and are correct
-    if ( kInDir  && kFile) {
-      printf("Get %d files from directory %s\n",kFile,kInDir);
-      if ( ! gSystem->cd(kInDir) ) {//check if ESDs directory exist
-	printf("%s does not exist\n", kInDir) ;
-	return ;
+    //Loop on ESD files, add them to chain
+    TString FileName ;      
+    for (Int_t iFile = 0 ; iFile < kFile ; iFile++) {
+      FileName = Form("%s/%s%d/%s", kInDir,kPattern,iFile,datafileName.Data()) ; 
+      //cout << "FileName: " << FileName <<endl ;
+      TFile * dataFile = 0 ; 
+      //Check if file exists and add it, if not skip it
+      if ( dataFile = TFile::Open(FileName.Data())) {
+        if ( dataFile->Get(kTreeName) ) { 
+          Int_t nEventsPerFile = ((TTree*) dataFile->Get(kTreeName)) ->GetEntries();
+          printf(" ++++ Adding %s, with %d events \n", FileName.Data(), nEventsPerFile) ;
+          chain->AddFile(FileName);
+        }
       }
-
-      //if(gSystem->Getenv("XSFILE"))  
-      //kXSFileName = gSystem->Getenv("XSFILE") ; 
-      //else cout<<" XS file name not set, use default: "<<kXSFileName<<endl;	
-      char * kGener = gSystem->Getenv("GENER");
-      if(kGener) {
-	cout<<"GENER "<<kGener<<endl;
-	if(!strcmp(kGener,"PYTHIA")) kXSFileName = "pyxsec.root";
-	else if(!strcmp(kGener,"HERWIG")) kXSFileName = "hexsec.root";
-	else cout<<" UNKNOWN GENER, use default: "<<kXSFileName<<endl;
-      }
-      else cout<<" GENER not set, use default xs file name: "<<kXSFileName<<endl;
-
-      cout<<"INDIR   : "<<kInDir<<endl;
-      cout<<"NFILES  : "<<kFile<<endl;
-      cout<<"PATTERN : " <<kPattern<<endl;
-      cout<<"XSFILE  : "<<kXSFileName<<endl;
-
-      TString datafile="";
-      if(kInputData == "ESD") datafile = "AliESDs.root" ;
-      else if(kInputData == "AOD") datafile = "AliAOD.root" ;
-      else if(kInputData == "MC")  datafile = "galice.root" ;
-      
-      //Loop on ESD files, add them to chain
-      Int_t event =0;
-      Int_t skipped=0 ; 
-      char file[120] ;
-      char filexs[120] ;
-      
-      for (event = 0 ; event < kFile ; event++) {
-	sprintf(file, "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ; 
-	sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ; 
-	TFile * fESD = 0 ; 
-	//Check if file exists and add it, if not skip it
-	if ( fESD = TFile::Open(file)) {
-	  if ( fESD->Get(kTreeName) ) { 
-	    printf("++++ Adding %s\n", file) ;
-	    chain->AddFile(file);
-	    chainxs->Add(filexs) ; 
-	  }
-	}
-	else { 
-	  printf("---- Skipping %s\n", file) ;
-	  skipped++ ;
-	}
-      }
-      printf("number of entries # %lld, skipped %d\n", chain->GetEntries(), skipped*100) ; 	
-    }
-    else {
-      TString input = "AliESDs.root" ;
-      cout<<">>>>>> No list added, take a single file <<<<<<<<< "<<input<<endl;
-      chain->AddFile(input);
-    }
-    
+    }    
+    printf("number of entries # %lld \n", chain->GetEntries()) ; 	
   }// local files analysis
   
   //------------------------------
   //GRID xml files
   //-----------------------------
   else if(mode == mGRID){
-    //Get colection file. It is specified by the environmental
-    //variable XML
-
-    if(gSystem->Getenv("XML") )
-      kXML = gSystem->Getenv("XML");
-    else
-      sprintf(kXML, "collection.xml") ; 
-    
-    if (!TFile::Open(kXML)) {
-      printf("No collection file with name -- %s -- was found\n",kXML);
-      return ;
-    }
-    else cout<<"XML file "<<kXML<<endl;
-
     //Load necessary libraries and connect to the GRID
     gSystem->Load("libNetx.so") ; 
     gSystem->Load("libRAliEn.so"); 
     TGrid::Connect("alien://") ;
-
+    
     //Feed Grid with collection file
     //TGridCollection * collection =  (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)", kXML));
     TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
@@ -437,61 +280,17 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       return kFALSE ; 
     }
     TGridResult* result = collection->GetGridResult("",0 ,0);
-   
+    
     // Makes the ESD chain 
     printf("*** Getting the Chain       ***\n");
+    Int_t nEventsPerFile = 0;
     for (Int_t index = 0; index < result->GetEntries(); index++) {
       TString alienURL = result->GetKey(index, "turl") ; 
       cout << "================== " << alienURL << endl ; 
       chain->Add(alienURL) ; 
-      alienURL.ReplaceAll("AliESDs.root",kXSFileName);
-      chainxs->Add(alienURL) ; 
+      
     }
   }// xml analysis
   
   gSystem->ChangeDirectory(ocwd.Data());
 }
-
-//________________________________________________
-void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
-{
-  // Read the PYTHIA statistics from the file pyxsec.root created by
-  // the function WriteXsection():
-  // integrated cross section (xsection) and
-  // the  number of Pyevent() calls (ntrials)
-  // and calculate the weight per one event xsection/ntrials
-  // The spectrum calculated by a user should be
-  // multiplied by this weight, something like this:
-  // TH1F *userSpectrum ... // book and fill the spectrum
-  // userSpectrum->Scale(weight)
-  //
-  // Yuri Kharlov 19 June 2007
-  // Gustavo Conesa 15 April 2008
-  Double_t xsection = 0;
-  UInt_t    ntrials = 0;
-  xs = 0;
-  ntr = 0;
-  
-  Int_t nfiles =  tree->GetEntries()  ;
-  if (tree && nfiles > 0) {
-    tree->SetBranchAddress("xsection",&xsection);
-    tree->SetBranchAddress("ntrials",&ntrials);
-    for(Int_t i = 0; i < nfiles; i++){
-      tree->GetEntry(i);
-      xs += xsection ;
-      ntr += ntrials ;
-      cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl; 
-    }
-    
-    xs =   xs /  nfiles;
-    ntr =  ntr / nfiles;
-    cout << "-----------------------------------------------------------------"<<endl;
-    cout << "Average of "<< nfiles<<" files: xsection " <<xs<<" ntrials "<<ntr<<endl; 
-    cout << "-----------------------------------------------------------------"<<endl;
-  } 
-  else cout << " >>>> Empty tree !!!! <<<<< "<<endl;
-  
-}
-
-
-
