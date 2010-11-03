@@ -8,6 +8,7 @@ class TEveProjectionManager;
 class TEveGeoShape;
 class TEveUtil;
 class AliTriggerAnalysis;
+class AliSysInfo;
 
 TH2D* V0StateHistogram;
 
@@ -67,19 +68,19 @@ void alieve_online_init()
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus HMPID", "hmpid_clusters.C++", "hmpid_clusters"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus MUON",  "muon_clusters.C++",  "muon_clusters"));
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TOF",   "emcal_digits.C++",   "emcal_digits"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG EMCAL",   "emcal_digits.C++",   "emcal_digits"));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ITS",     "its_raw.C",     "its_raw"));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TPC",     "tpc_raw.C",     "tpc_raw"));
+  //  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TPC",     "tpc_raw.C",     "tpc_raw"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TOF",     "tof_raw.C",     "tof_raw"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw", "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw", "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON",    "muon_raw.C++",  "muon_raw"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW FMD",     "fmd_raw.C",     "fmd_raw"));
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks",             "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks_MI",          "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks_by_category", "", kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C++",        "esd_tracks",             "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C++",        "esd_tracks_MI",          "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C++",        "esd_tracks_by_category", "", kTRUE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track MUON", "esd_muon_tracks.C++", "esd_muon_tracks",        "kTRUE,kFALSE", kTRUE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC FMD",        "fmd_esd.C",           "fmd_esd",                "", kTRUE));
 
@@ -185,6 +186,7 @@ TTimeStamp g_pic_prev(0, 0);
 
 void alieve_online_on_new_event()
 {
+  AliSysInfo::AddStamp("on_new_event_start");
 
   AliTriggerAnalysis atr;
 
@@ -249,6 +251,7 @@ void alieve_online_on_new_event()
   if( decisionV0c == AliTriggerAnalysis::kV0BG ) c = 3.5;
 
   V0StateHistogram->Fill(a,c);
+  AliSysInfo::AddStamp("on_new_event_after_trig");
 
   TGLViewer *glv = multiView->Get3DView()->GetGLViewer();
   TGLViewer *glv1 = multiView->GetRPhiView()->GetGLViewer();
@@ -283,6 +286,8 @@ void alieve_online_on_new_event()
     multiView->SetCenterRhoZ(x[0], x[1], x[2]);
   multiView->ImportEventRhoZ(top);
 
+  AliSysInfo::AddStamp("on_new_event_after_rozphi");
+
   if(multiView->IsMuonView()) { multiView->DestroyEventMuon(); multiView->ImportEventMuon(top); }
 
   if(gEve->GetScenes()->FindChild("Event scene")->FindChild("Online Event")->FindChild("MUON Clusters"))
@@ -315,20 +320,20 @@ void alieve_online_on_new_event()
     {
       if(gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("MUON Clusters [P]"))
       {
-        gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("MUON Clusters [P]")->SetRnrSelf(kTRUE);
-        gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("MUON Clusters [P]")->SetRnrChildren(kTRUE);
+	gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("MUON Clusters [P]")->SetRnrSelf(kTRUE);
+	gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("MUON Clusters [P]")->SetRnrChildren(kTRUE);
       }
 
       if(gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Clusters [P]"))
       {
-        gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Clusters [P]")->SetRnrSelf(kTRUE);
-        gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Clusters [P]")->SetRnrChildren(kTRUE);
+	gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Clusters [P]")->SetRnrSelf(kTRUE);
+	gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Clusters [P]")->SetRnrChildren(kTRUE);
       }
 
       if(gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Tracks [P]"))
       {
-        gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Tracks [P]")->SetRnrSelf(kTRUE);
-        gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Tracks [P]")->SetRnrChildren(kTRUE);
+	gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Tracks [P]")->SetRnrSelf(kTRUE);
+	gEve->GetScenes()->FindChild("Muon Event Data")->FindChild("Online Event [P]")->FindChild("ESD MUON Tracks [P]")->SetRnrChildren(kTRUE);
       }
     }
   }
@@ -339,8 +344,8 @@ void alieve_online_on_new_event()
     {
       if(gEve->GetScenes()->FindChild("RhoZ Event Data")->FindChild("Online Event [P]")->FindChild("FMD [P]"))
       {
-        gEve->GetScenes()->FindChild("RhoZ Event Data")->FindChild("Online Event [P]")->FindChild("FMD [P]")->SetRnrSelf(kFALSE);
-        gEve->GetScenes()->FindChild("RhoZ Event Data")->FindChild("Online Event [P]")->FindChild("FMD [P]")->SetRnrChildren(kFALSE);
+	gEve->GetScenes()->FindChild("RhoZ Event Data")->FindChild("Online Event [P]")->FindChild("FMD [P]")->SetRnrSelf(kFALSE);
+	gEve->GetScenes()->FindChild("RhoZ Event Data")->FindChild("Online Event [P]")->FindChild("FMD [P]")->SetRnrChildren(kFALSE);
       }
     }
   }
@@ -356,6 +361,7 @@ void alieve_online_on_new_event()
       }
     }
   }
+  AliSysInfo::AddStamp("on_new_event_after_muon");
 
   gEve->FullRedraw3D();
 
@@ -368,6 +374,7 @@ void alieve_online_on_new_event()
   printf("Pre image dump: host='%s', delta=%f.\n",
 	 gSystem->HostName(), delta);
 
+  AliSysInfo::AddStamp("on_new_event_pic");
   if (pichost == gSystem->HostName() && delta >= 30)
   {
     TString id;      id.Form("online-viz-%03d", g_pic_id);
@@ -397,4 +404,6 @@ void alieve_online_on_new_event()
       g_pic_id = 0;
     g_pic_prev.Set();
   }
+  AliSysInfo::AddStamp("on_new_event_end");
+
 }

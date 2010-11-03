@@ -10,6 +10,7 @@
 #include "AliEveMacroExecutor.h"
 #include "AliEveMacro.h"
 #include "AliEveEventManager.h"
+#include "AliSysInfo.h"
 
 #include <TEveUtil.h>
 #include <TList.h>
@@ -127,7 +128,9 @@ void AliEveMacroExecutor::ExecMacros()
       Long_t                   result = 0;
       TInterpreter::EErrorCode error  = TInterpreter::kNoError;
 
+      AliSysInfo::AddStamp(Form("%s_%s_before",mac->GetMacro().Data(), mac->GetFunc().Data()));
       result = gInterpreter->ProcessLine(cmd, &error);
+      AliSysInfo::AddStamp(Form("%s_%s_after",mac->GetMacro().Data(), mac->GetFunc().Data()));
 
       // Try to fix broken cint state? Code taken form pyroot.
       if (G__get_return(0) > G__RETURN_NORMAL)
