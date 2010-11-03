@@ -172,7 +172,7 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
   AliHLTUInt32_t averageCycleTime=0;
 
   AliHLTUInt32_t proctime=0;
-  bool bDoFilling=false;
+  bool bDoFilling=true;
   if (fpEventTimer && fpCycleTimer) {
     averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
     proctime=fpEventTimer->RealTime()*fgkTimeScale;
