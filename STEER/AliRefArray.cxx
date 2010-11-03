@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include "AliRefArray.h"
+#include <string.h>
 
 ClassImp(AliRefArray)
 
