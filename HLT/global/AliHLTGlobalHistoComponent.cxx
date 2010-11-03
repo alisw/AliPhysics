@@ -40,6 +40,7 @@ AliHLTGlobalHistoComponent::AliHLTGlobalHistoComponent()
   , fEvent(0)
   , fNofTracks(0)
   , fNofV0s(0)
+  , fNofUPCpairs(0)
   , fNofContributors(0)
   , fVertexX(-99)
   , fVertexY(-99)
@@ -48,6 +49,7 @@ AliHLTGlobalHistoComponent::AliHLTGlobalHistoComponent()
   , fTrackVariables()
   , fTrackVariablesInt()
   , fV0Variables()
+  , fUPCVariables()
   , fNEvents(0)
   , fNGammas(0)
   , fNKShorts(0)
@@ -68,6 +70,7 @@ AliHLTGlobalHistoComponent::~AliHLTGlobalHistoComponent()
   fTrackVariables.Reset();
   fTrackVariablesInt.Reset();
   fV0Variables.Reset();
+  fUPCVariables.Reset();
 }
 
 void AliHLTGlobalHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list){
@@ -118,10 +121,21 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
     "length "
     "sigmaLength "
     "r "
- };
+  };
+  
+  const char* UPCVariableNames = {
+    // Note the black at the end of each name!
+    "nClusters_1 "
+    "nClusters_2 "
+    "polarity_1 "
+    "polarity_2 "
+    "pt_1 "
+    "pt_2 "
+  };
   
   int maxTrackCount = 20000; // FIXME: make configurable
   int maxV0Count    = 100000;
+  int maxUPCCount   = 1;
     
   if ((iResult=fTrackVariables.Init(maxTrackCount, trackVariableNames))<0) {
     HLTError("failed to initialize internal structure for track properties (float)");
@@ -132,6 +146,9 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
   if ((iResult=fV0Variables.Init(maxV0Count, V0VariableNames))<0) {
     HLTError("failed to initialize internal structure for V0 properties (float)");
   }
+  if ((iResult=fUPCVariables.Init(maxUPCCount, UPCVariableNames))<0) {
+    HLTError("failed to initialize internal structure for UPC properties (float)");
+  }
   
   if (iResult>=0) {
     pTree->Branch("event",        &fEvent,           "event/I");
@@ -140,6 +157,7 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
     pTree->Branch("vertexY",      &fVertexY,         "vertexY/F");
     pTree->Branch("vertexZ",      &fVertexZ,         "vertexZ/F");
     pTree->Branch("V0",           &fNofV0s,          "V0/I");
+    pTree->Branch("UPC",          &fNofUPCpairs,     "UPC/I");
     pTree->Branch("nContributors",&fNofContributors, "nContributors/I");
     pTree->Branch("vertexStatus", &fVertexStatus,    "vertexStatus/I");
 
@@ -164,6 +182,12 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
       float* pArray=fV0Variables.GetArray(specifier);
       specifier+="[V0]/f";
       pTree->Branch(fV0Variables.GetKey(i), pArray, specifier.Data());
+    }
+    for (i=0; i<fUPCVariables.Variables(); i++) {
+      TString specifier=fUPCVariables.GetKey(i);
+      float* pArray=fUPCVariables.GetArray(specifier);
+      specifier+="[UPC]/f";
+      pTree->Branch(fUPCVariables.GetKey(i), pArray, specifier.Data());
     }
   } else {
     delete pTree;
@@ -198,6 +222,7 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
   fNofV0s          = esd->GetNumberOfV0s();
   fNofContributors = esd->GetPrimaryVertexTracks()->GetNContributors();
   fVertexStatus    = esd->GetPrimaryVertexTracks()->GetStatus();
+  fNofUPCpairs     = 1;
   
   for (int i=0; i<fNofTracks; i++) {
     AliESDtrack *esdTrack = esd->GetTrack(i);
@@ -217,19 +242,34 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
     fTrackVariables.Fill("Track_DCAr"      , DCAr                        	 );
     fTrackVariables.Fill("Track_DCAz"      , DCAz                                );   
     fTrackVariables.Fill("Track_dEdx"      , esdTrack->GetTPCsignal()            );   
-    fTrackVariablesInt.Fill("Track_status" , esdTrack->GetStatus()               );   
+    fTrackVariablesInt.Fill("Track_status" , esdTrack->GetStatus()               );      
   }
   //HLTInfo("added parameters for %d tracks", fNofTracks);
-
-
-
+  
+  if(fNofTracks==2){
+     AliESDtrack *esdTrack1 = esd->GetTrack(0);
+     if(!esdTrack1) return 0;
+     AliESDtrack *esdTrack2 = esd->GetTrack(1); 
+     if(!esdTrack2) return 0;
+     
+     if(esdTrack1->Charge()*esdTrack2->Charge()<0){
+     
+       fUPCVariables.Fill("nClusters_1", esdTrack1->GetTPCNcls() );
+       fUPCVariables.Fill("nClusters_2", esdTrack2->GetTPCNcls() );
+       fUPCVariables.Fill("polarity_1",  esdTrack1->Charge()     );
+       fUPCVariables.Fill("polarity_2",  esdTrack2->Charge()     );
+       fUPCVariables.Fill("pt_1",        esdTrack1->Pt()         );
+       fUPCVariables.Fill("pt_2",        esdTrack2->Pt()         );
+    } 
+  }
+  
   AliKFParticle::SetField( esd->GetMagneticField() );
 
   //const double kKsMass = 0.49767;
   //const double kLambdaMass = 1.11568;
   //const double kPi0Mass = 0.13498;
 
-  std::vector<AliKFParticle> vGammas;
+  //std::vector<AliKFParticle> vGammas;
   
   
   for (int i=0; i<fNofV0s; i++) {
@@ -423,6 +463,7 @@ int AliHLTGlobalHistoComponent::ResetVariables()
   fTrackVariables.ResetCount();
   fTrackVariablesInt.ResetCount();
   fV0Variables.ResetCount();
+  fUPCVariables.ResetCount();
   return 0;
 }
 

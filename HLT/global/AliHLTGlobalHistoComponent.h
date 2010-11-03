@@ -223,6 +223,8 @@ private:
   int fNofTracks; //!
   /// V0 count, tree filling variable
   int fNofV0s; //!
+  /// UPC pair count (=1), tree filling variable
+  int fNofUPCpairs; //!
   /// contributors count, tree filling variable
   int fNofContributors; //!
  /// x coordinate of vertex
@@ -240,6 +242,9 @@ private:
  
   /// filling arrays for V0 parameters
   AliHLTGlobalHistoVariables<float> fV0Variables; //!
+ 
+  /// filling arrays for UPC parameters
+  AliHLTGlobalHistoVariables<float> fUPCVariables; //!
   
  
   Double_t fGammaCuts[8];  // cuts for gammas
