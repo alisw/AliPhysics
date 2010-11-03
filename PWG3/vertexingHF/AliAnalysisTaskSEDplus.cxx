@@ -696,8 +696,17 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     fOutput->Add(fMassHistLSTC[i]);
   }
   
-
-  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events; ; Events",3,-1.5,1.5);
+  
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",6,-0.5,5.5);
+   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents with good vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"no. of  pileup events");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"no. of candidate");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"no. of D+ after loose cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"no. of D+ after tight cuts");
+ 
+  fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
+  
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
@@ -775,9 +784,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
   fCounter->StoreEvent(aod,fReadMC);
-  fHistNEvents->Fill(0); // count event
+   fHistNEvents->Fill(0); // count event
   // Post the data already here
-  PostData(1,fOutput);
+  if(fRDCutsAnalysis->IsEventSelected(aod))fHistNEvents->Fill(1);
+  
+  if(fRDCutsAnalysis->GetWhyRejection()==1)fHistNEvents->Fill(2); 
+ PostData(1,fOutput);
  
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
@@ -785,7 +797,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
   //    vtx1->Print();
-  
+   TString primTitle = vtx1->GetTitle();
+   //if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0)fHistNEvents->Fill(2);
+ 
   // load MC particles
   if(fReadMC){
     
@@ -815,7 +829,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   Int_t nSelectedloose=0,nSelectedtight=0;
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
-    
+    fHistNEvents->Fill(3);
     
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
@@ -825,7 +839,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
     if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate)) {
 
-  
+      
 
       Int_t iPtBin = -1;
       Double_t ptCand = d->Pt();
@@ -836,7 +850,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       
       Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate);
      
-
+     
       Int_t labDp=-1;
       Float_t deltaPx=0.;
       Float_t deltaPy=0.;
@@ -914,6 +928,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       
 	index=GetHistoIndex(iPtBin);
 	if(isFidAcc){
+	  fHistNEvents->Fill(4);
 	  nSelectedloose++;
 	  fMassHist[index]->Fill(invMass);
 	  fCosPHist[index]->Fill(cosp);
@@ -923,7 +938,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  fPtMaxHist[index]->Fill(ptmax);
 	  fDCAHist[index]->Fill(dca);
 	  
-	  if(passTightCuts){
+	  if(passTightCuts){ fHistNEvents->Fill(5);
 	    nSelectedtight++;
 	    fMassHistTC[index]->Fill(invMass);
 	    if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
