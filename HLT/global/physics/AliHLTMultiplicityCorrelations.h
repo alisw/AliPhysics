@@ -101,6 +101,15 @@ public:
     fCaloBinning = i; fCaloBinningMin = f1; fCaloBinningMax = f2;
   }
 
+  /** Set process PHOS */
+  void SetProcessPhos(Bool_t v = true) {
+    fProcessPhos = v;
+  }
+  /** Set process EMCAL */
+  void SetProcessEmcal(Bool_t v = true) {
+    fProcessEmcal = v;
+  }
+
   /*
    * ---------------------------------------------------------------------------------
    *                                 Getter - public

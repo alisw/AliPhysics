@@ -547,14 +547,37 @@ Int_t AliHLTMultiplicityCorrelations::SetupCorrelations() {
   //   ZDC vs CALO
   // ----------------------------------------------------
   fHistList->Add(new TH2F("fCorrZdcTotEvsPhosTotEt", 
-			  "Total E_{ZDC} vs Total E_{T} in PHOS C;Total E_{ZDC} (TeV);E_{T} (GeV)", 
+			  "Total E_{ZDC} vs Total E_{T} in PHOS;Total E_{ZDC} (TeV);E_{T} (GeV)", 
 			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
   fHistList->Add(new TH2F("fCorrZdcTotEvsEmcalTotEt", 
-			  "Total E_{ZDC} vs Total E_{T} in EMCAL C;Total E_{ZDC} (TeV);E_{T} (GeV)", 
+			  "Total E_{ZDC} vs Total E_{T} in EMCAL;Total E_{ZDC} (TeV);E_{T} (GeV)", 
 			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
   fHistList->Add(new TH2F("fCorrZdcTotEvsTotEt", 
-			  "Total E_{ZDC} vs Total E_{T} in calorimeters C;Total E_{ZDC} (TeV);E_{T} (GeV)", 
+			  "Total E_{ZDC} vs Total E_{T} in calorimeters;Total E_{ZDC} (TeV);E_{T} (GeV)", 
 			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  
+  // ----------------------------------------------------
+  //   VZERO vs CALO
+  // ----------------------------------------------------
+  fHistList->Add(new TH2F("fCorrVzerovsPhosTotEt", 
+			  "Multiplicity^{VZERO} vs Total E_{T} in PHOS;Multiplicity^{VZERO};E_{T} (GeV)", 
+			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  fHistList->Add(new TH2F("fCorrVzerovsEmcalTotEt", 
+			  "Multiplicity^{VZERO} vs Total E_{T} in EMCAL;Multiplicity^{VZERO};E_{T} (GeV)", 
+			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  fHistList->Add(new TH2F("fCorrVzerovsTotEt", 
+			  "Multiplicity^{VZERO} vs Total E_{T} in Calorimeters;Multiplicity^{VZERO};E_{T} (GeV)", 
+			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  
+  fHistList->Add(new TH2F("fCorrVzeroFlaggedvsPhosTotEt", 
+			  "Multiplicity_{flagged}^{VZERO} vs Total E_{T} in PHOS;Multiplicity_{flagged}^{VZERO};E_{T} (GeV)", 
+			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  fHistList->Add(new TH2F("fCorrVzeroFlaggedvsEmcalTotEt", 
+			  "Multiplicity_{flagged}^{VZERO} vs Total E_{T} in EMCAL;Multiplicity_{flagged}^{VZERO};E_{T} (GeV)", 
+			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  fHistList->Add(new TH2F("fCorrVzeroFlaggedvsTotEt", 
+			  "Multiplicity_{flagged}^{VZERO} vs Total E_{T} in Calorimeters;Multiplicity_{flagged}^{VZERO};E_{T} (GeV)", 
+			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
 			  
   // ----------------------------------------------------
   //  
@@ -715,7 +738,22 @@ Int_t AliHLTMultiplicityCorrelations::ProcessVZERO() {
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFANch")))->Fill(fVzeroMultFlaggedA, fTpcTracksA);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFCNch")))->Fill(fVzeroMultFlaggedC, fTpcTracksA);
   }
-
+  
+  // -- VZERO - CALO correlations
+  if (fProcessPhos || fProcessEmcal) {
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrVzerovsTotEt")))->Fill(fVzeroMult, fPhosTotalEt + fEmcalTotalEt);
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFlaggedvsTotEt")))->Fill(fVzeroMultFlagged, fPhosTotalEt + fEmcalTotalEt);
+    if(fProcessPhos)
+    {
+      (static_cast<TH2F*>(fHistList->FindObject("fCorrVzerovsPhosTotEt")))->Fill(fVzeroMult, fPhosTotalEt);
+      (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFlaggedvsPhosTotEt")))->Fill(fVzeroMultFlagged, fPhosTotalEt);
+    }
+    if(fProcessEmcal)
+    {
+      (static_cast<TH2F*>(fHistList->FindObject("fCorrVzerovsEmcalTotEt")))->Fill(fVzeroMult, fEmcalTotalEt);
+      (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFlaggedvsEmcalTotEt")))->Fill(fVzeroMultFlagged, fEmcalTotalEt);
+    }
+  }
   return iResult;
 }
 
