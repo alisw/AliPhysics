@@ -328,15 +328,16 @@ void AliEMCALShishKebabTrd1Module::GetPositionAtCenterCellLine(Int_t ieta, Doubl
 {
   // Jul 30, 2007
   static Double_t theta=0., x=0., y=0.;
-  if(ieta==0) {
+  if(ieta==0) {    
     v     = fOB2;
-    theta = fThetaOB2;
+    theta = fTheta;
   } else if(ieta==1) {
     v     = fOB1;
-    theta = fThetaOB1;
+    theta = fTheta;
   } else {
     assert(0);
   }
+  
   x = v.X() + TMath::Cos(theta) * dist;
   y = v.Y() + TMath::Sin(theta) * dist;
   //  printf(" GetPositionAtCenterCellLine() %s : dist %f : ieta %i : x %f %f v.X() | y %f %f v.Y() : cos %f sin %f \n", 

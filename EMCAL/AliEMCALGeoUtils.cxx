@@ -1341,7 +1341,11 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
   //           particle type (photon 0, electron 1, hadron 2 )
   //           misalignment shifts to global position in case of need.
   // Federico.Ronchetti@cern.ch
-
+  
+  // To use in a print later
+  //Int_t iphi = drow;
+  //Int_t ieta = dcol;
+  
   if(gGeoManager){
     //Recover some stuff
     
@@ -1366,16 +1370,16 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
       drow = 23. - drow;
     }
     
-    Int_t i = 0; // one always needs "i"
+    Int_t i      = 0; // one always needs "i"
     Int_t istrip = 0;
-    Float_t z0 = 0;
-    Float_t zb = 0;
+    Float_t z0   = 0;
+    Float_t zb   = 0;
     Float_t z_is = 0;
     
     Float_t x,y,z; // return variables in terry's RF
     
     //***********************************************************
-    //Do not like this: too many hardcoded values, is it no stored somewhere else?
+    //Do not like this: too many hardcoded values, is it not already stored somewhere else?
     //                : need more comments in the code 
     //***********************************************************
     
@@ -1410,8 +1414,11 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     
     for (int is=0; is<= istrip; is++) {
       
-      teta1 = TMath::DegToRad() * (is+1) * 1.5;
-      z_is = z_is + 2*dz*(TMath::Sin(teta1)*TMath::Tan(teta1) + TMath::Cos(teta1));
+      teta1 = TMath::DegToRad() * (is*1.5 + 0.75);
+      if(is==0)
+        z_is = z_is + 2*dz*TMath::Cos(teta1);
+      else
+        z_is = z_is + 2*dz*TMath::Cos(teta1) + 2*dz*TMath::Sin(teta1)*TMath::Tan(teta1-0.75*TMath::DegToRad());
       
     }
     
@@ -1427,15 +1434,16 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     // to the GEANT one
     
     double xx =  y - geoBox[i]->GetDX();
-    double yy = -x + geoBox[i]->GetDY() - 0.512; //to center the towers in the box
-    double zz =  z - geoBox[i]->GetDZ() + 1; //gap at z = 0
-    
+    double yy = -x + geoBox[i]->GetDY(); 
+    double zz =  z - geoBox[i]->GetDZ(); 
     const double localIn[3] = {xx, yy, zz};
     double dglobal[3];
+    //geoSMMatrix[i]->Print();
+    //printf("TFF Local    (row = %d, col = %d, x = %3.2f,  y = %3.2f, z = %3.2f)\n", iphi, ieta, localIn[0], localIn[1], localIn[2]);
     geoSMMatrix[i]->LocalToMaster(localIn, dglobal);
+    //printf("TFF Global   (row = %2.0f, col = %2.0f, x = %3.2f,  y = %3.2f, z = %3.2f)\n", drow, dcol, dglobal[0], dglobal[1], dglobal[2]);
     
-    
-    //hardcoded global shifts
+    //apply global shifts
     if(sm == 2 || sm == 3) {//sector 1
       global[0] = dglobal[0] + misaligTransShifts[3] + misaligRotShifts[3]*TMath::Sin(TMath::DegToRad()*20) ; 
       global[1] = dglobal[1] + misaligTransShifts[4] + misaligRotShifts[4]*TMath::Cos(TMath::DegToRad()*20) ; 
