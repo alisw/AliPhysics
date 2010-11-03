@@ -299,6 +299,7 @@ void AliAnalysisTaskCaloConv::ConnectInputData(Option_t *option){
 //____________________________________________________________
 void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
 {
+  //UserCreateOutputObjects
   if(fDebug)gDirectory->Print() ;
   // Create the output container
   if(fOutputContainer != NULL){
@@ -801,7 +802,7 @@ void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
 }
 //________________________________________________________________
 void AliAnalysisTaskCaloConv::SelectPHOSPhotons(){
-
+  //SelectPHOSPhotons
   // Loop over all CaloClusters 
   if(fPHOSEvent)
     fPHOSEvent->Clear() ;
@@ -921,7 +922,7 @@ void AliAnalysisTaskCaloConv::SelectPHOSPhotons(){
 }
 //____________________________________________________________
 void AliAnalysisTaskCaloConv::SelectEMCALPhotons(){
-
+  //SelectEMCALPhotons
   // Loop over all CaloClusters
   if(fEMCALEvent)
     fEMCALEvent->Clear() ;
@@ -2054,7 +2055,7 @@ void AliAnalysisTaskCaloConv::FillRealMixed(){
 }
 //___________________________________________________________________________
 void AliAnalysisTaskCaloConv::ProcessMC(){
-
+  //ProcessMC
   //fill histograms for efficiensy etc. calculation
   if(!fStack) return ;
   
@@ -2579,6 +2580,7 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloConv::FillHistogram(const char * key,Double_t x)const{
+  //FillHistogram
   TH1F * tmp = dynamic_cast<TH1F*>(fOutputContainer->FindObject(key)) ;
   if(!tmp)
     AliError(Form("can not find histogram <%s> ",key)) ;
@@ -2586,6 +2588,7 @@ void AliAnalysisTaskCaloConv::FillHistogram(const char * key,Double_t x)const{
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloConv::FillHistogram(const char * key,Double_t x,Double_t y)const{
+  //FillHistogram
   TObject * tmp = fOutputContainer->FindObject(key) ;
   if(!tmp)
     AliError(Form("can not find histogram <%s> ",key)) ;

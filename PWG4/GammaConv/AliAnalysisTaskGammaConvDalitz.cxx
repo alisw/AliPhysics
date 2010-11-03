@@ -56,7 +56,7 @@ ClassImp( AliAnalysisTaskGammaConvDalitz )
 AliAnalysisTaskGammaConvDalitz::AliAnalysisTaskGammaConvDalitz():
  AliAnalysisTaskSE(),
  fStack(0),
- fMCEvent(0),
+// fMCEvent(0),
  fESDEvent(0),
  fEposCandidateIndex(),
  fEnegCandidateIndex(),
@@ -86,7 +86,7 @@ AliAnalysisTaskGammaConvDalitz::AliAnalysisTaskGammaConvDalitz():
  fReadMagFieldSign(kTRUE),
  fUseAliKF(kFALSE),
  fMagFieldSign(1),
- fElectronMass(0.00051099891),
+ fkElectronMass(0.00051099891),
  fPsiPairCut(0.45),
  fDeltaPhiCutMin(0.),
  fDeltaPhiCutMax(0.12),
@@ -99,6 +99,8 @@ AliAnalysisTaskGammaConvDalitz::AliAnalysisTaskGammaConvDalitz():
  fNSigmaAboveProtonTPCbethe(3.),
  fTrkSelectionCriteria(kGlobalTrack)
 {
+  // constructor
+
 	AdoptITSsaTrackCuts();
 	AdoptESDtrackCuts();
 	AdoptESDpidCuts();
@@ -111,7 +113,7 @@ AliAnalysisTaskGammaConvDalitz::AliAnalysisTaskGammaConvDalitz():
 AliAnalysisTaskGammaConvDalitz::AliAnalysisTaskGammaConvDalitz( const char* name ):
  AliAnalysisTaskSE( name ),
  fStack(0),
- fMCEvent(0),
+ // fMCEvent(0),
  fESDEvent(0),
  fEposCandidateIndex(),
  fEnegCandidateIndex(),
@@ -141,7 +143,7 @@ AliAnalysisTaskGammaConvDalitz::AliAnalysisTaskGammaConvDalitz( const char* name
  fReadMagFieldSign(kTRUE),
  fUseAliKF(kFALSE),
  fMagFieldSign(1),
- fElectronMass(0.00051099891),
+ fkElectronMass(0.00051099891),
  fPsiPairCut(0.45),
  fDeltaPhiCutMin(0.),
  fDeltaPhiCutMax(0.12),
@@ -154,6 +156,7 @@ AliAnalysisTaskGammaConvDalitz::AliAnalysisTaskGammaConvDalitz( const char* name
  fNSigmaAboveProtonTPCbethe(3.),
  fTrkSelectionCriteria(kGlobalTrack)
 {
+  //constructor
     // Common I/O in slot 0
     DefineInput (0, TChain::Class());
 
@@ -164,7 +167,7 @@ AliAnalysisTaskGammaConvDalitz::AliAnalysisTaskGammaConvDalitz( const char* name
     AdoptITSsaTrackCuts();
     AdoptESDtrackCuts();
     AdoptESDpidCuts();
-   // fElectronMass = TDatabasePDG::Instance()->GetParticle( ::kElectron )->Mass(); //
+   // fkElectronMass = TDatabasePDG::Instance()->GetParticle( ::kElectron )->Mass(); //
 
     fGammaPool = new TClonesArray("AliKFParticle", fPoolMaxSize);
     fGammaPool->SetOwner(kTRUE);
@@ -173,6 +176,7 @@ AliAnalysisTaskGammaConvDalitz::AliAnalysisTaskGammaConvDalitz( const char* name
 //-----------------------------------------------------------------------------------------------
 AliAnalysisTaskGammaConvDalitz::~AliAnalysisTaskGammaConvDalitz()
 {
+  //destructor
     if( fOutputContainer )          delete fOutputContainer;
     if( fHistograms )               delete fHistograms;
     if( fStandalone && fV0Reader )  delete fV0Reader;
@@ -200,6 +204,7 @@ void AliAnalysisTaskGammaConvDalitz::ConnectInputData(Option_t *option)
 //-----------------------------------------------------------------------------------------------
 void AliAnalysisTaskGammaConvDalitz::UserCreateOutputObjects()
 {
+  //usercreateoutputobjects
     if( fDebug ) AliInfo("=> UserCreateOutputObjects");
 
     // Create the output container
@@ -221,6 +226,7 @@ void AliAnalysisTaskGammaConvDalitz::UserCreateOutputObjects()
 // Execute analysis for current event
 void AliAnalysisTaskGammaConvDalitz::UserExec(Option_t */*option*/)
 {
+  //userexec
     if( fDebug ) AliInfo("=> UserExec");
 
     if( fV0Reader == 0 )
@@ -288,6 +294,7 @@ void AliAnalysisTaskGammaConvDalitz::Terminate(Option_t */*option*/)
 //
 void AliAnalysisTaskGammaConvDalitz::AdoptITSsaTrackCuts( AliESDtrackCuts* esdCuts )
 {
+  //AdoptITSsaTrackCuts
     if( fITSsaTrackCuts ) delete fITSsaTrackCuts;
 
     if( esdCuts )
@@ -317,6 +324,7 @@ void AliAnalysisTaskGammaConvDalitz::AdoptITSsaTrackCuts( AliESDtrackCuts* esdCu
 //
 void AliAnalysisTaskGammaConvDalitz::AdoptESDtrackCuts( AliESDtrackCuts* esdCuts )
 {
+  //AdoptESDtrackCuts
     if( fESDtrackCuts ) delete fESDtrackCuts;
 
     if( esdCuts )
@@ -348,6 +356,7 @@ void AliAnalysisTaskGammaConvDalitz::AdoptESDtrackCuts( AliESDtrackCuts* esdCuts
 //-----------------------------------------------------------------------------------------------
 void AliAnalysisTaskGammaConvDalitz::AdoptESDpidCuts( AliESDpidCuts* esdPIDCuts )
 {
+  //AdoptESDpidCuts
     if( fESDpidCuts ) delete fESDpidCuts;
     if( esdPIDCuts )
     {
@@ -365,6 +374,7 @@ void AliAnalysisTaskGammaConvDalitz::AdoptESDpidCuts( AliESDpidCuts* esdPIDCuts 
 // Process generation
 void AliAnalysisTaskGammaConvDalitz::ProcessMCData()
 {
+  //ProcessMCData
 	if( fDebug ) AliInfo("=> ProcessMCData");
 	
 	fHistograms->FillTable("Table_Generation", 0);  //number of events
@@ -543,6 +553,7 @@ void AliAnalysisTaskGammaConvDalitz::ProcessMCData()
 // Dalitz pair candidates
 void AliAnalysisTaskGammaConvDalitz::CreateListOfDalitzPairCandidates()
 {
+  //CreateListOfDalitzPairCandidates
 	if( fDebug ) AliInfo("=> CreateListOfDalitzPairCandidates");
 	
 	fEposCandidateIndex.clear();
@@ -740,6 +751,7 @@ void AliAnalysisTaskGammaConvDalitz::CreateListOfDalitzPairCandidates()
 //-----------------------------------------------------------------------------------------------
 void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 {
+  //ProcessGammaElectronsForDalitzAnalysis
 	if( fDebug ) AliInfo("=> ProcessGammaElectronsForDalitzAnalysis");
 	
 	fHistograms->FillTable( "Table_Reconstruction", 0); // number of events
@@ -975,9 +987,10 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 //--------------------------------------------------------------------------
 Double_t AliAnalysisTaskGammaConvDalitz::Rapidity(const TParticle* p) const
 {
-	const double EPSILON=1.e-16;
+  //Rapidity
+	const double epsilon=1.e-16;
 	
-	if(p->Energy() - TMath::Abs(p->Pz()) < EPSILON )
+	if(p->Energy() - TMath::Abs(p->Pz()) < epsilon )
 	{
 		return 1.e10;
 	}
@@ -987,6 +1000,7 @@ Double_t AliAnalysisTaskGammaConvDalitz::Rapidity(const TParticle* p) const
 //--------------------------------------------------------------------------
 void AliAnalysisTaskGammaConvDalitz::FillPsiPair(const TClonesArray* pos, const TClonesArray* neg, const TString& hName)
 {
+  //FillPsiPair
 	for(Int_t i=0; i < pos->GetEntriesFast(); ++i )
 	{
 		AliKFParticle* posKF = (AliKFParticle*) pos->At(i);
@@ -1003,6 +1017,7 @@ void AliAnalysisTaskGammaConvDalitz::FillPsiPair(const TClonesArray* pos, const 
 //--------------------------------------------------------------------------
 void AliAnalysisTaskGammaConvDalitz::FillAngle(const TClonesArray* x, const TClonesArray* y, const TString& hName)
 {
+  //FillAngle
 	for(Int_t i=0; i < x->GetEntriesFast(); ++i )
 	{
 		AliKFParticle* xKF = (AliKFParticle*) x->At(i);
@@ -1020,6 +1035,7 @@ void AliAnalysisTaskGammaConvDalitz::FillAngle(const TClonesArray* x, const TClo
 
 void AliAnalysisTaskGammaConvDalitz::FillPidTable(const TParticle* p, Int_t pid)
 {
+  //FillPidTable
 	Int_t iGen=-1;
 	switch(TMath::Abs(p->GetPdgCode()))
 	{
@@ -1046,6 +1062,7 @@ void AliAnalysisTaskGammaConvDalitz::FillPidTable(const TParticle* p, Int_t pid)
 //--------------------------------------------------------------------------
 void AliAnalysisTaskGammaConvDalitz::GetGammaCandidates(TClonesArray*& gamma, vector<Int_t>& posIndex, vector<Int_t>& negIndex)
 {
+  //GetGammaCandidates
 	posIndex.clear();
 	negIndex.clear();
 	
@@ -1069,6 +1086,7 @@ void AliAnalysisTaskGammaConvDalitz::GetGammaCandidates(TClonesArray*& gamma, ve
 //--------------------------------------------------------------------------
 TClonesArray* AliAnalysisTaskGammaConvDalitz::IndexToAliKFParticle(const vector<Int_t>& index, Int_t PDG)
 {
+  //IndexToAliKFParticle
 	TClonesArray* indexKF = new TClonesArray("AliKFParticle",index.size());
 	indexKF->SetOwner(kTRUE);
 	
@@ -1084,6 +1102,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::IndexToAliKFParticle(const vector<
 //--------------------------------------------------------------------------
 TClonesArray* AliAnalysisTaskGammaConvDalitz::FindElectronFromPi0Dalitz(const vector<Int_t>& candidates, Int_t PDG)
 {
+  //FindElectronFromPi0Dalitz
 	TClonesArray* elec = new TClonesArray("AliKFParticle");
 	elec->SetOwner(kTRUE);
 	
@@ -1104,6 +1123,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindElectronFromPi0Dalitz(const ve
 //--------------------------------------------------------------------------
 TClonesArray* AliAnalysisTaskGammaConvDalitz::FindGammaFromPi0Dalitz(const TClonesArray* gamma, const vector<Int_t>& posIdx, const vector<Int_t>& negIdx)
 {
+  //FindGammaFromPi0Dalitz
 	TClonesArray* gammaPi0 = new TClonesArray("AliKFParticle");
 	gammaPi0->SetOwner(kTRUE);
 	
@@ -1131,6 +1151,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindGammaFromPi0Dalitz(const TClon
 //--------------------------------------------------------------------------
 TClonesArray* AliAnalysisTaskGammaConvDalitz::FindGamma(const TClonesArray* gamma, const vector<Int_t>& posIdx, const vector<Int_t>& negIdx)
 {
+  //FindGamma
 	TClonesArray* gammaConv = new TClonesArray("AliKFParticle");
 	gammaConv->SetOwner(kTRUE);
 	
@@ -1157,6 +1178,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindGamma(const TClonesArray* gamm
 // Remove repeated electron candidate tracks according to the gamma candidate array
 void AliAnalysisTaskGammaConvDalitz::ESDtrackIndexCut(vector<Int_t>& pos, vector<Int_t>& neg, const TClonesArray* gamma)
 {
+  //ESDtrackIndexCut
 	vector<Bool_t> posTag(pos.size(),kTRUE);
 	vector<Bool_t> negTag(neg.size(),kTRUE);
 	
@@ -1184,6 +1206,7 @@ void AliAnalysisTaskGammaConvDalitz::ESDtrackIndexCut(vector<Int_t>& pos, vector
 // Remove electron candidates from gamma conversions according to the Psi pair angle
 void AliAnalysisTaskGammaConvDalitz::PsiPairCut(vector<Int_t>& pos, vector<Int_t>& neg)
 {
+  //PsiPairCut
     vector<Bool_t> posTag(pos.size(), kTRUE);
     vector<Bool_t> negTag(neg.size(), kTRUE);
 
@@ -1214,6 +1237,7 @@ void AliAnalysisTaskGammaConvDalitz::PsiPairCut(vector<Int_t>& pos, vector<Int_t
 // Remove electron candidates pairs with mass not in the range (fMassCutMin,fMassCutMax)
 void AliAnalysisTaskGammaConvDalitz::MassCut(vector<Int_t>& pos, vector<Int_t>& neg)
 {
+  //MassCut
     vector<Bool_t> posTag(pos.size(), kTRUE);
     vector<Bool_t> negTag(neg.size(), kTRUE);
 
@@ -1223,7 +1247,7 @@ void AliAnalysisTaskGammaConvDalitz::MassCut(vector<Int_t>& pos, vector<Int_t>& 
 
         Double_t posMom[3]; posTrack->GetConstrainedPxPyPz(posMom);
         TLorentzVector posLV;
-        posLV.SetXYZM(posMom[0],posMom[1],posMom[2],fElectronMass);
+        posLV.SetXYZM(posMom[0],posMom[1],posMom[2],fkElectronMass);
 
         for( UInt_t j=0; j < neg.size(); ++j )
         {
@@ -1231,7 +1255,7 @@ void AliAnalysisTaskGammaConvDalitz::MassCut(vector<Int_t>& pos, vector<Int_t>& 
 
             Double_t negMom[3]; negTrack->GetConstrainedPxPyPz(negMom);
             TLorentzVector negLV;
-            negLV.SetXYZM(negMom[0],negMom[1],negMom[2],fElectronMass);
+            negLV.SetXYZM(negMom[0],negMom[1],negMom[2],fkElectronMass);
 
             TLorentzVector posnegLV = posLV + negLV;
 
@@ -1250,6 +1274,7 @@ void AliAnalysisTaskGammaConvDalitz::MassCut(vector<Int_t>& pos, vector<Int_t>& 
 //-----------------------------------------------------------------------------------------------
 void AliAnalysisTaskGammaConvDalitz::CleanArray(vector<Int_t>& x, const vector<Bool_t>& tag)
 {
+  //CleanArray
 	vector<Int_t> tmp;
 	
 	for(UInt_t i=0; i< x.size(); ++i)
@@ -1264,6 +1289,7 @@ void AliAnalysisTaskGammaConvDalitz::CleanArray(vector<Int_t>& x, const vector<B
 // Remove gamma candidates according to the angle between the plane e+,e- and the gamma
 void AliAnalysisTaskGammaConvDalitz::AngleEposEnegGammaCut( const vector<Int_t>& posIdx, const vector<Int_t>& negIdx, const TClonesArray* candidates, TClonesArray*& gamma, vector<Int_t>& posGamIdx, vector<Int_t>& negGamIdx)
 {
+  //AngleEposEnegGammaCut
 	vector<Bool_t> gammaTag(candidates->GetEntriesFast(), kTRUE);
 	
 	for( UInt_t iPos=0; iPos < posIdx.size(); ++iPos )
@@ -1317,6 +1343,7 @@ void AliAnalysisTaskGammaConvDalitz::AngleEposEnegGammaCut( const vector<Int_t>&
 //
 TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const TClonesArray* pos, const TClonesArray* neg)
 {
+  //FindDalitzPair
 	TClonesArray* dalitz = new TClonesArray("TLorentzVector");
 	dalitz->SetOwner(kTRUE);
 	
@@ -1325,14 +1352,14 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const TClonesArray*
 		AliKFParticle* posKF = (AliKFParticle*)pos->At(iPos);
 		
 		TLorentzVector posLV;
-		posLV.SetXYZM(posKF->Px(),posKF->Py(),posKF->Pz(),fElectronMass);
+		posLV.SetXYZM(posKF->Px(),posKF->Py(),posKF->Pz(),fkElectronMass);
 		
 		for( Int_t iNeg=0; iNeg < neg->GetEntriesFast(); ++iNeg )
 		{
 			AliKFParticle* negKF = (AliKFParticle*)neg->At(iNeg);
 			
 			TLorentzVector negLV;
-			negLV.SetXYZM(negKF->Px(),negKF->Py(),negKF->Pz(),fElectronMass);
+			negLV.SetXYZM(negKF->Px(),negKF->Py(),negKF->Pz(),fkElectronMass);
 			
 			if(fUseAliKF)
 			{
@@ -1355,6 +1382,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const TClonesArray*
 //--------------------------------------------------------------------------
 TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const TClonesArray* pos, const TClonesArray* neg, const TClonesArray* gamma)
 {
+  //FindPi0Dalitz
 	TClonesArray* pi0 = new TClonesArray("TLorentzVector");
 	pi0->SetOwner(kTRUE);
 	
@@ -1363,14 +1391,14 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const TClonesArray* 
 		AliKFParticle* posKF = (AliKFParticle*)pos->At(iPos);
 		
 		TLorentzVector posLV;
-		posLV.SetXYZM(posKF->Px(),posKF->Py(),posKF->Pz(),fElectronMass);
+		posLV.SetXYZM(posKF->Px(),posKF->Py(),posKF->Pz(),fkElectronMass);
 		
 		for( Int_t iNeg=0; iNeg < neg->GetEntriesFast(); ++iNeg )
 		{
 			AliKFParticle* negKF = (AliKFParticle*)neg->At(iNeg);
 			
 			TLorentzVector negLV;
-			negLV.SetXYZM(negKF->Px(),negKF->Py(),negKF->Pz(),fElectronMass);
+			negLV.SetXYZM(negKF->Px(),negKF->Py(),negKF->Pz(),fkElectronMass);
 			
 			for(Int_t iGam=0; iGam < gamma->GetEntriesFast(); ++iGam)
 			{
@@ -1401,6 +1429,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const TClonesArray* 
 // Only with montecarlo
 TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx)
 {
+  //FindDalitzPair
 	TClonesArray* dalitz = new TClonesArray("TLorentzVector");
 	dalitz->SetOwner(kTRUE);
 	
@@ -1411,7 +1440,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const vector<Int_t>
 		Int_t posLabel = TMath::Abs(posTrack->GetLabel());
 		
 		TLorentzVector posLV;
-		posLV.SetXYZM(posMom[0],posMom[1],posMom[2],fElectronMass);
+		posLV.SetXYZM(posMom[0],posMom[1],posMom[2],fkElectronMass);
 		
 		AliKFParticle posKF( *posTrack->GetConstrainedParam(), ::kPositron );
 		
@@ -1437,7 +1466,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const vector<Int_t>
 				Double_t negMom[3]; negTrack->GetConstrainedPxPyPz(negMom);
 				
 				TLorentzVector negLV;
-				negLV.SetXYZM(negMom[0],negMom[1],negMom[2],fElectronMass);
+				negLV.SetXYZM(negMom[0],negMom[1],negMom[2],fkElectronMass);
 				
 				new ((*dalitz)[j++]) TLorentzVector(posLV + negLV);
 			}
@@ -1451,6 +1480,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const vector<Int_t>
 // Only with montecarlo
 TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx, const TClonesArray* gamma, const vector<Int_t>& posGam, const vector<Int_t>& negGam)
 {
+  //FindPi0Dalitz
 	TClonesArray* pi0 = new TClonesArray("TLorentzVector");
 	pi0->SetOwner(kTRUE);
 	
@@ -1461,7 +1491,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const vector<Int_t>&
 		Int_t posLabel = TMath::Abs(posTrack->GetLabel());
 		
 		TLorentzVector posLV;
-		posLV.SetXYZM(posMom[0],posMom[1],posMom[2],fElectronMass);
+		posLV.SetXYZM(posMom[0],posMom[1],posMom[2],fkElectronMass);
 		
 		AliKFParticle posKF( *posTrack->GetConstrainedParam(), ::kPositron );
 		
@@ -1475,7 +1505,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const vector<Int_t>&
 			Double_t negMom[3]; negTrack->GetConstrainedPxPyPz(negMom);
 			
 			TLorentzVector negLV;
-			negLV.SetXYZM(negMom[0],negMom[1],negMom[2],fElectronMass);
+			negLV.SetXYZM(negMom[0],negMom[1],negMom[2],fkElectronMass);
 			
 			AliKFParticle negKF( *negTrack->GetConstrainedParam(), ::kElectron );
 			
@@ -1517,6 +1547,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const vector<Int_t>&
 //-----------------------------------------------------------------------------------------------
 void AliAnalysisTaskGammaConvDalitz::UpdateGammaPool(const TClonesArray* gamma)
 {
+  //UpdateGammaPool
 	if( fDebug ) AliInfo("=> UpdateGammaPool");
 	
 	// cycle
@@ -1534,6 +1565,7 @@ void AliAnalysisTaskGammaConvDalitz::UpdateGammaPool(const TClonesArray* gamma)
 
 void AliAnalysisTaskGammaConvDalitz::UpdateElectronPool(TClonesArray* elec) // FIXME: const
 {
+  //UpdateElectronPool
 	fBGEventHandler->AddElectronEvent(elec,fESDEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetMultiplicity());
 }
 
@@ -1541,6 +1573,7 @@ void AliAnalysisTaskGammaConvDalitz::UpdateElectronPool(TClonesArray* elec) // F
 // returns a copy of gammas from events with same multiplicity and Z
 TClonesArray* AliAnalysisTaskGammaConvDalitz::GammasFromBGHandler() const
 {
+  //GammasFromBGHandler
 	if( fDebug ) AliInfo("=> GammasFromBGHandler");
 	
 	TClonesArray* gammaPool = new TClonesArray("AliKFParticle");
@@ -1562,6 +1595,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::GammasFromBGHandler() const
 // returns a copy of electron from events with same multiplicity and Z
 TClonesArray* AliAnalysisTaskGammaConvDalitz::ElectronFromBGHandler() const
 {
+  //ElectronFromBGHandler
 	if( fDebug ) AliInfo("=> ElectronFromBGHandler");
 	
 	TClonesArray* electronPool = new TClonesArray("AliKFParticle");
@@ -1582,6 +1616,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::ElectronFromBGHandler() const
 //-----------------------------------------------------------------------------------------------
 Int_t AliAnalysisTaskGammaConvDalitz::GetMonteCarloPid(const AliESDtrack* t) const
 {
+  //GetMonteCarloPid
     Int_t label   = TMath::Abs(t->GetLabel());
     Int_t pdgCode = TMath::Abs(fStack->Particle(label)->GetPdgCode());
 
@@ -1600,6 +1635,7 @@ Int_t AliAnalysisTaskGammaConvDalitz::GetMonteCarloPid(const AliESDtrack* t) con
 //-----------------------------------------------------------------------------------------------
 Int_t AliAnalysisTaskGammaConvDalitz::GetBayesPid(const AliESDtrack* t, Int_t trackType ) const
 {
+  //GetBayesPid
         //FIXME PID ITS
         // NOTE prior should be estimated from data
         // NOTE: move to config
@@ -1622,6 +1658,7 @@ Int_t AliAnalysisTaskGammaConvDalitz::GetBayesPid(const AliESDtrack* t, Int_t tr
 //-----------------------------------------------------------------------------------------------
 Int_t AliAnalysisTaskGammaConvDalitz::GetNSigmaPid(const AliESDtrack* t, Int_t trackType ) const
 {
+  //GetNSigmaPid
         // ITS Number of sigmas (FIXME: add new fESDpidCuts)
         // NOTE there is not AliESDpidCuts::SetITSnSigmaCut yet
 
@@ -1663,6 +1700,7 @@ Int_t AliAnalysisTaskGammaConvDalitz::GetNSigmaPid(const AliESDtrack* t, Int_t t
 // returns true if the two particles is a Dalitz pair
 Bool_t AliAnalysisTaskGammaConvDalitz::IsDalitzPair( Int_t posLabel, Int_t negLabel ) const
 {
+  //IsDalitzPair
 	if(!HaveSameMother(posLabel, negLabel)) return kFALSE;
 
 	TParticle* pos = fStack->Particle( posLabel );
@@ -1690,6 +1728,7 @@ Bool_t AliAnalysisTaskGammaConvDalitz::IsDalitzPair( Int_t posLabel, Int_t negLa
 // returns true if the particle comes from Pi0 -> e+ e- gamma
 Bool_t AliAnalysisTaskGammaConvDalitz::IsPi0DalitzDaughter( Int_t label ) const
 {
+  //IsPi0DalitzDaughter
 	Bool_t ePlusFlag  = kFALSE;
 	Bool_t eMinusFlag = kFALSE;
 	Bool_t gammaFlag  = kFALSE;
@@ -1734,6 +1773,7 @@ Bool_t AliAnalysisTaskGammaConvDalitz::IsFromGammaConversion( Double_t psiPair, 
 //--------------------------------------------------------------------------
 Bool_t AliAnalysisTaskGammaConvDalitz::IsFromGammaConversion( Int_t posLabel, Int_t negLabel ) const
 {
+  //IsFromGammaConversion
 	if( !HaveSameMother(posLabel,negLabel) ) return kFALSE;
 	
 	TParticle* pos = fStack->Particle( posLabel );
@@ -1757,6 +1797,7 @@ Bool_t AliAnalysisTaskGammaConvDalitz::IsFromGammaConversion( Int_t posLabel, In
 //-----------------------------------------------------------------------------------------------
 Bool_t AliAnalysisTaskGammaConvDalitz::HaveSameMother( Int_t label1, Int_t label2 ) const
 {
+  //HaveSameMother
 	if(fStack->Particle( label1 )->GetMother(0) < 0 ) return kFALSE;
 	return (fStack->Particle( label1 )->GetMother(0) == fStack->Particle( label2 )->GetMother(0));
 }
@@ -1771,19 +1812,19 @@ Double_t AliAnalysisTaskGammaConvDalitz::GetPsiPair( const AliESDtrack* trackPos
     //      Master Thesis. Thorsten Dahms. 2005
     // https://twiki.cern.ch/twiki/pub/ALICE/GammaPhysicsPublications/tdahms_thesis.pdf
 
-    Double_t MomPos[3];
-    Double_t MomNeg[3];
-    if( trackPos->GetConstrainedPxPyPz(MomPos) == 0 ) trackPos->GetPxPyPz( MomPos );
-    if( trackNeg->GetConstrainedPxPyPz(MomNeg) == 0 ) trackNeg->GetPxPyPz( MomNeg );
+    Double_t momPos[3];
+    Double_t momNeg[3];
+    if( trackPos->GetConstrainedPxPyPz(momPos) == 0 ) trackPos->GetPxPyPz( momPos );
+    if( trackNeg->GetConstrainedPxPyPz(momNeg) == 0 ) trackNeg->GetPxPyPz( momNeg );
 
-    TVector3 PosDaughter;
-    TVector3 NegDaughter;
+    TVector3 posDaughter;
+    TVector3 negDaughter;
 
-    PosDaughter.SetXYZ( MomPos[0], MomPos[1], MomPos[2] );
-    NegDaughter.SetXYZ( MomNeg[0], MomNeg[1], MomNeg[2] );
+    posDaughter.SetXYZ( momPos[0], momPos[1], momPos[2] );
+    negDaughter.SetXYZ( momNeg[0], momNeg[1], momNeg[2] );
 
-    Double_t deltaTheta = NegDaughter.Theta() - PosDaughter.Theta();
-    Double_t openingAngle =  PosDaughter.Angle( NegDaughter );  //TMath::ACos( PosDaughter.Dot(NegDaughter)/(NegDaughter.Mag()*PosDaughter.Mag()) );
+    Double_t deltaTheta = negDaughter.Theta() - posDaughter.Theta();
+    Double_t openingAngle =  posDaughter.Angle( negDaughter );  //TMath::ACos( posDaughter.Dot(negDaughter)/(negDaughter.Mag()*posDaughter.Mag()) );
     if( openingAngle < 1e-20 ) return 0.;
     Double_t psiAngle = TMath::ASin( deltaTheta/openingAngle );
 
@@ -1791,10 +1832,11 @@ Double_t AliAnalysisTaskGammaConvDalitz::GetPsiPair( const AliESDtrack* trackPos
 }
 
 //-----------------------------------------------------------------------------------------------
-Double_t AliAnalysisTaskGammaConvDalitz::GetPsiPair( AliKFParticle* xPos, AliKFParticle* yNeg ) const // FIXME: alikf const
+Double_t AliAnalysisTaskGammaConvDalitz::GetPsiPair( const AliKFParticle* xPos, const AliKFParticle* yNeg ) const // FIXME: alikf const
 {
-    TVector3 pos(xPos->Px(), xPos->Py(), xPos->Pz());
-    TVector3 neg(yNeg->Px(), yNeg->Py(), yNeg->Pz());
+  //GetPsiPair
+    TVector3 pos(xPos->GetPx(), xPos->GetPy(), xPos->GetPz());
+    TVector3 neg(yNeg->GetPx(), yNeg->GetPy(), yNeg->GetPz());
 
     Double_t deltaTheta = neg.Theta() - pos.Theta();
     Double_t openingAngle = pos.Angle( neg );
@@ -1807,6 +1849,7 @@ Double_t AliAnalysisTaskGammaConvDalitz::GetPsiPair( AliKFParticle* xPos, AliKFP
 //-----------------------------------------------------------------------------------------------
 Double_t AliAnalysisTaskGammaConvDalitz::GetPsiPair(const TLorentzVector* xPos, const TLorentzVector* yNeg ) const
 {
+  //GetPsiPair
 	Double_t deltaTheta = yNeg->Theta() - xPos->Theta();
 	Double_t openingAngle = xPos->Angle( yNeg->Vect() );
 	
@@ -1845,18 +1888,18 @@ Double_t AliAnalysisTaskGammaConvDalitz::GetPsiAngleV0(
     Double_t Rpos = radiusVO + trackPos->Pt()*TMath::Sin( kForceDeltaPhi ) / MagnFieldG;
     Double_t Rneg = radiusVO + trackNeg->Pt()*TMath::Sin( kForceDeltaPhi ) / MagnFieldG;
 
-    Double_t MomPos[3];
-    Double_t MomNeg[3];
-    if( trackPos->GetPxPyPzAt( Rpos, MagnField, MomPos ) == 0 ) trackPos->GetPxPyPz( MomPos );
-    if( trackNeg->GetPxPyPzAt( Rneg, MagnField, MomNeg ) == 0 ) trackNeg->GetPxPyPz( MomNeg );
+    Double_t momPos[3];
+    Double_t momNeg[3];
+    if( trackPos->GetPxPyPzAt( Rpos, MagnField, momPos ) == 0 ) trackPos->GetPxPyPz( momPos );
+    if( trackNeg->GetPxPyPzAt( Rneg, MagnField, momNeg ) == 0 ) trackNeg->GetPxPyPz( momNeg );
 
-    TVector3 PosDaughter;
-    TVector3 NegDaughter;
-    PosDaughter.SetXYZ( MomPos[0], MomPos[1], MomPos[2] );
-    NegDaughter.SetXYZ( MomNeg[0], MomNeg[1], MomNeg[2] );
+    TVector3 posDaughter;
+    TVector3 negDaughter;
+    posDaughter.SetXYZ( momPos[0], momPos[1], momPos[2] );
+    negDaughter.SetXYZ( momNeg[0], momNeg[1], momNeg[2] );
 
-    Double_t deltaTheta = NegDaughter.Theta() - PosDaughter.Theta();
-    Double_t chiPar = PosDaughter.Angle( NegDaughter );  //TMath::ACos( PosDaughter.Dot(NegDaughter) / (NegDaughter.Mag()*PosDaughter.Mag()) );
+    Double_t deltaTheta = negDaughter.Theta() - posDaughter.Theta();
+    Double_t chiPar = posDaughter.Angle( negDaughter );  //TMath::ACos( posDaughter.Dot(negDaughter) / (negDaughter.Mag()*posDaughter.Mag()) );
     if( chiPar < 1e-20 ) return psiAngle;
 
     psiAngle = TMath::ASin( deltaTheta / chiPar );

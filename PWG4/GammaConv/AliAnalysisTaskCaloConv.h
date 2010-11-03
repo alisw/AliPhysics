@@ -13,6 +13,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "TH2.h"
 
+
 class AliESDInputHandler;
 class AliESDEvent;
 class AliAODEvent;
@@ -24,7 +25,6 @@ class AliESDpid ;
 class AliEMCALGeoUtils ;
 class AliPHOSGeoUtils ;
 class AliExternalTrackParam ;
-
 
 class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
 {
@@ -135,16 +135,16 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
   TClonesArray * fPHOSEvent ;    //PHOS photons in current event
   TClonesArray * fEMCALEvent ;   //EMCAL  photons in current event
 
-  Double_t fnSigmaAboveElectronLine;
-  Double_t fnSigmaBelowElectronLine;
-  Double_t fnSigmaAbovePionLine;
-  Double_t fpnSigmaAbovePionLine;
-  Double_t fprobCut;
-  Double_t fmaxR ;
-  Double_t fmaxZ ;
-  Double_t fetaCut ;
-  Double_t fptCut ;
-  Double_t fchi2CutConversion ;
+  Double_t fnSigmaAboveElectronLine; //fnSigmaAboveElectronLine
+  Double_t fnSigmaBelowElectronLine; //fnSigmaBelowElectronLine
+  Double_t fnSigmaAbovePionLine;     //fnSigmaAbovePionLine
+  Double_t fpnSigmaAbovePionLine;    //fpnSigmaAbovePionLine
+  Double_t fprobCut;                 //fprobCut
+  Double_t fmaxR ;                   //fmaxR
+  Double_t fmaxZ ;                   //fmaxZ
+  Double_t fetaCut ;                 //fetaCut
+  Double_t fptCut ;                  //fptCut
+  Double_t fchi2CutConversion ;      //fchi2CutConversion
 
   ClassDef(AliAnalysisTaskCaloConv, 1); // Analysis task for conversion + calorimeters
 };
