@@ -2,9 +2,6 @@
 
 This program reads the DAQ data files passed as argument using the monitoring library.
 
-It computes the average event size and populates local "./result.txt" file with the 
-result.
-
 The program reports about its processing progress.
 
 Messages on stdout are exported to DAQ log system.
@@ -39,8 +36,6 @@ Trigger Types Used: Standalone Trigger
 #include <TROOT.h>
 #include <TPluginManager.h>
 #include <TH1F.h>
-#include <TH2F.h>
-#include <TProfile.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TFitter.h>
@@ -58,7 +53,6 @@ Trigger Types Used: Standalone Trigger
 */
 int main(int argc, char **argv) {
   
-
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
 					"*",
 					"TStreamerInfo",
@@ -71,12 +65,10 @@ int main(int argc, char **argv) {
   TVirtualFitter::SetDefaultFitter("Minuit");
 
   int status = 0;
-  // No. of ZDC cabled ch.
   int const kNModules = 10;
   int const kNChannels = 24;
   int const kNScChannels = 32;
   Int_t kFirstADCGeo=0, kLastADCGeo=1; // NO out-of-time signals!!!
-
             
   Int_t iMod=-1;
   Int_t modGeo[kNModules], modType[kNModules],modNCh[kNModules];
@@ -116,30 +108,17 @@ int main(int argc, char **argv) {
   
   // --- Preparing histos for EM dissociation spectra
   //
-  //TH1F* histoEMDRaw[4];
+  TH1F::AddDirectory(0);
   TH1F* histoEMDCorr[4];
   //
   //char namhistr[50];
   char namhistc[50];
   for(Int_t i=0; i<4; i++) {
-     if(i==0){
-       //sprintf(namhistr,"ZN%d-EMDRaw",i+1);
-       sprintf(namhistc,"ZN%d-EMDCorr",i+1);
-     }
-     else if(i==1){
-       //sprintf(namhistr,"ZP%d-EMDRaw",i);
-       sprintf(namhistc,"ZP%d-EMDCorr",i);
-     }
-     else if(i==2){
-       //sprintf(namhistr,"ZN%d-EMDRaw",i);
-       sprintf(namhistc,"ZN%d-EMDCorr",i);
-     }
-     else if(i==3){
-       //sprintf(namhistr,"ZP%d-EMDRaw",i-1);
-       sprintf(namhistc,"ZP%d-EMDCorr",i-1);
-     }
-     //histoEMDRaw[i] = new TH1F(namhistr,namhistr,100,0.,4000.);
-     histoEMDCorr[i] = new TH1F(namhistc,namhistc,100,0.,4000.);
+     if(i==0) sprintf(namhistc,"ZN%d-EMDCorr",i+1);
+     else if(i==1) sprintf(namhistc,"ZP%d-EMDCorr",i);
+     else if(i==2) sprintf(namhistc,"ZN%d-EMDCorr",i);
+     else if(i==3) sprintf(namhistc,"ZP%d-EMDCorr",i-1);
+     histoEMDCorr[i] = new TH1F(namhistc,namhistc,200,0.,2000.);
   }
 
    // --- Preparing histos for tower inter-calibration
@@ -168,8 +147,8 @@ int main(int argc, char **argv) {
     printf("Failed to open file\n");
     return -1;
   }
-  
-  FILE *mapFile4Shuttle;
+  /* report progress */
+  daqDA_progressReport(10);
 
   // *** To analyze EMD events you MUST have a pedestal data file!!!
   // *** -> check if a pedestal run has been analyzed
@@ -188,8 +167,8 @@ int main(int argc, char **argv) {
   }
 
   // 144 = 48 in-time + 48 out-of-time + 48 correlations
-  Float_t readValues[2][3*2*kNChannels];
-  Float_t MeanPed[2*kNChannels];
+  Float_t readValues[2][6*kNChannels];
+  Float_t MeanPedhg[kNChannels], MeanPedlg[kNChannels];
   Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
   // ***************************************************
   //   Unless we have a narrow correlation to fit we
@@ -201,18 +180,24 @@ int main(int argc, char **argv) {
     for(int ii=0; ii<2; ii++){
        fscanf(filePed,"%f",&readValues[ii][jj]);
     }
-    if(jj<2*kNChannels){
-      MeanPed[jj] = readValues[0][jj];
-      //printf("\t MeanPed[%d] = %1.1f\n",jj, MeanPed[jj]);
+    if(jj<kNChannels){
+      MeanPedhg[jj] = readValues[0][jj];
+      //printf("\t MeanPedhg[%d] = %1.1f\n",jj, MeanPedhg[jj]);
     }
-    else if(jj>2*kNChannels){
+    else if(jj>=kNChannels && jj<2*kNChannels){
+      MeanPedlg[jj-kNChannels] = readValues[0][jj];
+      //printf("\t MeanPedlg[%d] = %1.1f\n",jj-kNChannels, MeanPedlg[jj-kNChannels]);
+    }
+    else if(jj>4*kNChannels){
       CorrCoeff0[jj-4*kNChannels] = readValues[0][jj]; 
       CorrCoeff1[jj-4*kNChannels] = readValues[1][jj];;
     }
   }
+  
+  FILE *mapFile4Shuttle;
 
   /* report progress */
-  daqDA_progressReport(10);
+  daqDA_progressReport(20);
 
 
   /* init some counters */
@@ -234,7 +219,7 @@ int main(int argc, char **argv) {
 
     /* report progress */
     /* in this example, indexed on the number of files */
-    daqDA_progressReport(10+80*n/argc);
+    daqDA_progressReport(20+70*n/argc);
 
     /* read the file */
     for(;;){
@@ -267,7 +252,9 @@ int main(int argc, char **argv) {
       eventT=event->eventType;
       
       if(eventT==START_OF_DATA){
-	  		
+
+	iMod=-1; ich=0; iScCh=0; itdcCh=0;
+	  			  		
 	rawStreamZDC->SetSODReading(kTRUE);
 	
 	// --------------------------------------------------------
@@ -337,18 +324,17 @@ int main(int argc, char **argv) {
         fclose(mapFile4Shuttle);
       }// SOD event
     
-    if(eventT==PHYSICS_EVENT){
+     else if(eventT==PHYSICS_EVENT){
       // --- Reading data header
       reader->ReadHeader();
       const AliRawDataHeader* header = reader->GetDataHeader();
       if(header){
          UChar_t message = header->GetAttributes();
 	 if((message & 0x70) == 0x70){ // DEDICATED EMD RUN
-	    //printf("\t STANDALONE_EMD_RUN raw data found\n");
-	    continue;
+	    //printf("\t CALIBRATION_EMD_RUN raw data found\n");
 	 }
 	 else{
-	    printf("\t NO STANDALONE_EMD_RUN raw data found\n");
+	    printf("\t NO CALIBRATION_EMD_RUN raw data found\n");
 	    return -1;
 	 }
       }
@@ -370,21 +356,21 @@ int main(int argc, char **argv) {
         rawStreamZDC->SetMapTow(jk, sec[jk]);
       }
       //
-/*      Float_t ZDCRawADC[4], ZDCCorrADC[4], ZDCCorrADCSum[4];
+      Float_t ZDCCorrADC[4], ZDCCorrADCSum[4];
       for(Int_t g=0; g<4; g++){
            ZDCCorrADCSum[g] = 0.;
-	   ZDCRawADC[g] = 0.;
+	   ZDCCorrADC[g] = 0.;
       }
-*/
+
       //
       while(rawStreamZDC->Next()){
 	Int_t detID = rawStreamZDC->GetSector(0);
 	Int_t quad = rawStreamZDC->GetSector(1);
-        
-	if(rawStreamZDC->IsADCDataWord() && !(rawStreamZDC->IsUnderflow())
-	     && !(rawStreamZDC->IsOverflow()) && detID!=-1 && detID!=3 
-	     && (rawStreamZDC->GetADCGain() == 1 && // Selecting LOW RES ch.s
-             rawStreamZDC->GetADCModule()>=kFirstADCGeo && rawStreamZDC->GetADCModule()<=kLastADCGeo)){
+	
+	if((rawStreamZDC->IsADCDataWord()) && !(rawStreamZDC->IsUnderflow())
+	   && !(rawStreamZDC->IsOverflow()) && (detID!=-1) && (detID!=3) 
+	   && (rawStreamZDC->GetADCGain() == 1) && // Selecting LOW RES ch.s
+           (rawStreamZDC->GetADCModule()>=kFirstADCGeo && rawStreamZDC->GetADCModule()<=kLastADCGeo)){
 	  
 	  // Taking LOW RES channels -> ch.+kNChannels !!!!
 	  Int_t DetIndex=999, PedIndex=999;
@@ -392,50 +378,47 @@ int main(int argc, char **argv) {
 	  if(quad!=5){ 
 	    if(detID == 1){
 	      DetIndex = detID-1;
-	      PedIndex = quad+kNChannels; 
+	      PedIndex = quad; 
 	    }
 	    else if(detID==2){
 	      DetIndex = detID-1;
-	      PedIndex = quad+5+kNChannels;
+	      PedIndex = quad+5;
 	    }
 	    else if(detID == 4){
 	      DetIndex = detID-2;
-	      PedIndex = quad+12+kNChannels;
+	      PedIndex = quad+12;
 	    }
 	    else if(detID == 5){
 	      DetIndex = detID-2;
-	      PedIndex = quad+17+kNChannels;
+	      PedIndex = quad+17;
 	    }
 	    // Mean pedestal subtraction 
-	    Float_t Pedestal = MeanPed[PedIndex];
+	    Float_t Pedestal = MeanPedlg[PedIndex];
 	    // Pedestal subtraction from correlation with out-of-time signals
 	    //Float_t Pedestal = CorrCoeff0[PedIndex]+CorrCoeff1[PedIndex]*MeanPedOOT[PedIndex];
-            
+	    
 	    // Run 2010 -> we decide to fit only PMCs
-	    if(DetIndex!=999 || PedIndex!=999){ 
+/*	    if(DetIndex!=999 || PedIndex!=999){ 
 	      if(quad==0){ 
 	        Float_t corrADCval = (rawStreamZDC->GetADCValue()) - Pedestal;
 		if(detID==1 || detID==2) histoEMDCorr[detID-1]->Fill(corrADCval);
 		else if(detID==4 || detID==5) histoEMDCorr[detID-2]->Fill(corrADCval);
 	      }
 	    }
-
-/*	    if(DetIndex!=999 || PedIndex!=999){ 
-	      //
-	      ZDCRawADC[DetIndex] += (Float_t) rawStreamZDC->GetADCValue();
-	      //
+*/
+	    if(DetIndex!=999 || PedIndex!=999){ 
 	      //
 	      ZDCCorrADC[DetIndex] = (rawStreamZDC->GetADCValue()) - Pedestal;
 	      ZDCCorrADCSum[DetIndex] += ZDCCorrADC[DetIndex];
 	      //
-	      //printf("\t det %d quad %d res %d pedInd %d "
-	      //   "Pedestal %1.0f -> ADCCorr = %d ZDCCorrADCSum = %d\n", 
-	      //   detID,quad,rawStreamZDC->GetADCGain(),PedIndex,Pedestal, 
-	      //   (Int_t) ZDCCorrADC[DetIndex],(Int_t) ZDCCorrADCSum[DetIndex]);
-	      	      
+	      /*printf("\t det %d quad %d res %d pedInd %d "
+	         "Pedestal %1.0f -> ADCCorr = %d ZDCCorrADCSum = %d\n", 
+	         detID,quad,rawStreamZDC->GetADCGain(),PedIndex,Pedestal, 
+	         (Int_t) ZDCCorrADC[DetIndex],(Int_t) ZDCCorrADCSum[DetIndex]);
+	      	*/      
 	    }
 	    // Not common PM 
-	    if(quad!=0){
+	    /*if(quad!=0){
 	      Float_t corrADCval = (rawStreamZDC->GetADCValue()) - Pedestal;
 	      if(detID==1)      histZNCtow[quad-1]->Fill(corrADCval);
 	      else if(detID==2) histZPCtow[quad-1]->Fill(corrADCval);
@@ -444,8 +427,8 @@ int main(int argc, char **argv) {
 	      //
 	      //printf("\t det %d tow %d fill histo w. value %1.0f\n", 
 	      //  detID,quad,corrADCval);
-	    }
-*/
+	    }*/
+
 	    if(DetIndex==999 || PedIndex==999) 
 	       printf(" WARNING! Detector a/o pedestal index are WRONG!!!\n");
  
@@ -459,11 +442,10 @@ int main(int argc, char **argv) {
        delete reader;
        delete rawStreamZDC;
        //
-/*       for(Int_t j=0; j<4; j++){
-          //histoEMDRaw[j]->Fill(ZDCRawADC[j]);
+       for(Int_t j=0; j<4; j++){
           histoEMDCorr[j]->Fill(ZDCCorrADCSum[j]);
        }
-*/
+
     }//(if PHYSICS_EVENT)
       
     /* exit when last event received, no need to wait for TERM signal */
@@ -487,27 +469,24 @@ int main(int argc, char **argv) {
   Int_t BinMax[4]={0,0,0,0};
   Float_t YMax[4]={0.,0.,0.,0.};
   Int_t NBinsx[4]={0,0,0,0};
-  Float_t MeanFitVal[4]={0.,0.,0.,0.};
+  Float_t MeanFitVal[4]={1.,1.,1.,1.};
   TF1 *fitfun[4];
   for(Int_t k=0; k<4; k++){
-     if(histoEMDCorr[k]->GetEntries() == 0){
-       printf("\n WARNING! Empty histos -> ending DA WITHOUT writing output\n\n");
-       return -1;
-     } 
-     //
-     BinMax[k] = histoEMDCorr[k]->GetMaximumBin();
-     if(BinMax[k]<=6){
-       printf("\n WARNING! Something wrong with det %d histo -> ending DA WITHOUT writing output\n\n", k);
-       return -1;
+     if(histoEMDCorr[k]->GetEntries()!=0 || histoEMDCorr[k]->GetMean()>0){
+       BinMax[k] = histoEMDCorr[k]->GetMaximumBin();
+       if(BinMax[k]<=1){
+         printf("\n WARNING! Something wrong with det %d histo -> ending DA WITHOUT writing output\n\n", k);
+         continue;
+       }
+       // 
+       YMax[k] = (histoEMDCorr[k]->GetXaxis())->GetXmax();
+       NBinsx[k] = (histoEMDCorr[k]->GetXaxis())->GetNbins();
+       //printf("\n\t Det%d -> BinMax = %d, ChXMax = %f\n", k+1, BinMax[k], BinMax[k]*YMax[k]/NBinsx[k]);
+       histoEMDCorr[k]->Fit("gaus","Q","",BinMax[k]*YMax[k]/NBinsx[k]*0.7,BinMax[k]*YMax[k]/NBinsx[k]*1.25);
+       fitfun[k] = histoEMDCorr[k]->GetFunction("gaus");
+       MeanFitVal[k] = (Float_t) (fitfun[k]->GetParameter(1));
+       //printf("\n\t Mean Value from gaussian fit = %f\n", MeanFitVal[k]);
      }
-     // 
-     YMax[k] = (histoEMDCorr[k]->GetXaxis())->GetXmax();
-     NBinsx[k] = (histoEMDCorr[k]->GetXaxis())->GetNbins();
-     //printf("\n\t Det%d -> BinMax = %d, ChXMax = %f\n", k+1, BinMax[k], BinMax[k]*YMax[k]/NBinsx[k]);
-     histoEMDCorr[k]->Fit("gaus","Q","",BinMax[k]*YMax[k]/NBinsx[k]*0.7,BinMax[k]*YMax[k]/NBinsx[k]*1.25);
-     fitfun[k] = histoEMDCorr[k]->GetFunction("gaus");
-     MeanFitVal[k] = (Float_t) (fitfun[k]->GetParameter(1));
-     //printf("\n\t Mean Value from gaussian fit = %f\n", MeanFitVal[k]);
   }
   //
   Float_t CalibCoeff[6];     
