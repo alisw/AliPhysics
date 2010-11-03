@@ -29,7 +29,7 @@ ClassImp(AliAnalysisTaskTriggerStudy)
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 : AliAnalysisTaskSE("TaskTriggerStudy"),
-  fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0)
+  fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix("")
 {
   // constructor
 
@@ -38,7 +38,7 @@ AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 }
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0)
+    fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix("")
 {
   //
   // Standard constructur which should be used
@@ -49,12 +49,13 @@ AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy(const char * name)
 }
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy(const AliAnalysisTaskTriggerStudy& obj) : 
-  AliAnalysisTaskSE(obj) ,fESD (0), fIsMC(0), fTriggerAnalysis(0)
+  AliAnalysisTaskSE(obj) ,fESD (0), fIsMC(0), fTriggerAnalysis(0),fHistoSuffix("")
 {
   //copy ctor
   fESD = obj.fESD ;
   fHistoList = obj.fHistoList;
   fTriggerAnalysis = obj.fTriggerAnalysis;
+  fHistoSuffix = obj.fHistoSuffix;
 }
 
 AliAnalysisTaskTriggerStudy::~AliAnalysisTaskTriggerStudy(){
@@ -102,15 +103,13 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   const AliMultiplicity* mult = fESD->GetMultiplicity();
   Int_t ntracklets = mult->GetNumberOfTracklets();
 
+  // Reset histo suffix and fill reference histograms without any suffix
+  fHistoSuffix = "";
   GetHistoTracklets("all","All events")->Fill(ntracklets);
 
   // Fast or in the outer layer  
   Int_t nFastOrOnline  = fTriggerAnalysis->SPDFiredChips(fESD, 1, 0, 2); // offline
   Int_t nFastOrOffline = fTriggerAnalysis->SPDFiredChips(fESD, 0, 0, 2); // online
-
-  if(nFastOrOffline != nFastOrOnline) {
-    GetHistoTracklets("mismatchingFastOr", "Events where fast or offline differs from fast-or online")->Fill(ntracklets);
-  }
   
   Bool_t c0sm1 = nFastOrOffline >= 1;
   Bool_t c0sm2 = nFastOrOffline >= 2;
@@ -122,16 +121,8 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t c0v0A       = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0A);
   Bool_t c0v0C       = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0C);
   Bool_t v0AHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
-  Bool_t v0CHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw tr
+  Bool_t v0CHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
 
-  if (c0v0A != v0AHW){
-    GetHistoTracklets("mismatchingV0A", "Events where V0A offline differs from V0A online")->Fill(ntracklets);
-  }
-
-  if (c0v0C != v0CHW){
-    GetHistoTracklets("mismatchingV0C", "Events where V0C offline differs from V0C online")->Fill(ntracklets);
-  }
-  
   // TOF triggers 
   // FIXME: implement real triggers
   Bool_t c0OM2 = kFALSE;
@@ -142,23 +133,65 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t cMBS2C = c0sm2 && c0v0C;
   Bool_t cMBAC  = c0v0A && c0v0C;
 
-  // Fill a tracklet histo for each trigger type
-  if(c0sm1)  GetHistoTracklets("c0sm1" ,"Events were trigger c0sm1 fired" )->Fill(ntracklets);
-  if(c0sm2)  GetHistoTracklets("c0sm2" ,"Events were trigger c0sm2 fired" )->Fill(ntracklets);
-  if(c0sm3)  GetHistoTracklets("c0sm3" ,"Events were trigger c0sm3 fired" )->Fill(ntracklets);
-  if(c0sm4)  GetHistoTracklets("c0sm4" ,"Events were trigger c0sm4 fired" )->Fill(ntracklets);
-  if(c0sm5)  GetHistoTracklets("c0sm5" ,"Events were trigger c0sm5 fired" )->Fill(ntracklets);
-  if(c0OM2)  GetHistoTracklets("c0OM2" ,"Events were trigger c0OM2 fired" )->Fill(ntracklets);
-  if(c0OM3)  GetHistoTracklets("c0OM3" ,"Events were trigger c0OM3 fired" )->Fill(ntracklets);
-  if(c0v0A)  GetHistoTracklets("c0v0A" ,"Events were trigger c0v0A fired" )->Fill(ntracklets);
-  if(c0v0C)  GetHistoTracklets("c0v0C" ,"Events were trigger c0v0C fired" )->Fill(ntracklets);
-  if(cMBS2A) GetHistoTracklets("cMBS2A","Events were trigger cMBS2A fired")->Fill(ntracklets);
-  if(cMBS2C) GetHistoTracklets("cMBS2C","Events were trigger cMBS2C fired")->Fill(ntracklets);
-  if(cMBAC ) GetHistoTracklets("cMBAC ","Events were trigger cMBAC  fired")->Fill(ntracklets);
-  //  if() GetHistoTracklets("","Events were trigger  fired");
+  FillTriggerOverlaps("All", "All Events", nFastOrOffline,c0v0A,c0v0C,c0OM2,c0OM3,cMBS2A,cMBS2C,cMBAC);
+  
 
+  // loop over trigger classes in the event
+  TObjArray * tokens = 0;
+  if(fIsMC) {
+    // in case of montecarlo I override the trigger class
+    tokens = new TObjArray;
+    tokens->SetOwner();
+    //    tokens->Add(new TObjString("CINT1B-ABCE-NOPF-ALL")); 
+    tokens->Add(new TObjString("MC")); 
+  }
+  else {  
+    TString trgClasses = fESD->GetFiredTriggerClasses();
+    tokens = trgClasses.Tokenize(" ");
+  }
+  TIter iter(tokens);
+    
+  while(TObjString * tok = (TObjString*) iter.Next()){
+    // clean up trigger name
+    TString trg = tok->GetString();
+    trg.Strip(TString::kTrailing, ' ');
+    trg.Strip(TString::kLeading, ' ');
 
-  // if (fIsMC) {
+    fHistoSuffix = "_";
+    fHistoSuffix += trg;
+
+    // Fill histograms mismatchs
+    // TODO: check mismatch trigger class 
+    if(nFastOrOffline != nFastOrOnline) {
+      GetHistoTracklets("mismatchingFastOr", "Events where fast or offline differs from fast-or online")->Fill(ntracklets);
+    }
+    
+    if (c0v0A != v0AHW){
+      GetHistoTracklets("mismatchingV0A", "Events where V0A offline differs from V0A online")->Fill(ntracklets);
+    }
+    
+    if (c0v0C != v0CHW){
+      GetHistoTracklets("mismatchingV0C", "Events where V0C offline differs from V0C online")->Fill(ntracklets);
+    }    
+    
+    // Fill a tracklet histo for each trigger type
+    if(c0sm1)  GetHistoTracklets("c0sm1" ,"Events were trigger c0sm1 fired" )->Fill(ntracklets);
+    if(c0sm2)  GetHistoTracklets("c0sm2" ,"Events were trigger c0sm2 fired" )->Fill(ntracklets);
+    if(c0sm3)  GetHistoTracklets("c0sm3" ,"Events were trigger c0sm3 fired" )->Fill(ntracklets);
+    if(c0sm4)  GetHistoTracklets("c0sm4" ,"Events were trigger c0sm4 fired" )->Fill(ntracklets);
+    if(c0sm5)  GetHistoTracklets("c0sm5" ,"Events were trigger c0sm5 fired" )->Fill(ntracklets);
+    if(c0OM2)  GetHistoTracklets("c0OM2" ,"Events were trigger c0OM2 fired" )->Fill(ntracklets);
+    if(c0OM3)  GetHistoTracklets("c0OM3" ,"Events were trigger c0OM3 fired" )->Fill(ntracklets);
+    if(c0v0A)  GetHistoTracklets("c0v0A" ,"Events were trigger c0v0A fired" )->Fill(ntracklets);
+    if(c0v0C)  GetHistoTracklets("c0v0C" ,"Events were trigger c0v0C fired" )->Fill(ntracklets);
+    if(cMBS2A) GetHistoTracklets("cMBS2A","Events were trigger cMBS2A fired")->Fill(ntracklets);
+    if(cMBS2C) GetHistoTracklets("cMBS2C","Events were trigger cMBS2C fired")->Fill(ntracklets);
+    if(cMBAC ) GetHistoTracklets("cMBAC ","Events were trigger cMBAC  fired")->Fill(ntracklets);
+    //  if() GetHistoTracklets("","Events were trigger  fired");
+    delete tokens;
+  }
+    
+    // if (fIsMC) {
     
 
   //   if (!fMCEvent) {
@@ -219,10 +252,11 @@ void   AliAnalysisTaskTriggerStudy::Terminate(Option_t *){
 }
 
 TH1 *   AliAnalysisTaskTriggerStudy::GetHistoTracklets(const char * name, const char * title){
-  // terminate
+  // Book histo of events vs ntracklets, if needed
 
-  TString hname = "h";
-  hname+=name;
+  TString hname = "hTracklets_";
+  hname+=name;  
+  hname+=fHistoSuffix;
   TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
   
   if(!h) {
@@ -238,4 +272,60 @@ TH1 *   AliAnalysisTaskTriggerStudy::GetHistoTracklets(const char * name, const 
   return h;
 }
 
+void AliAnalysisTaskTriggerStudy::FillTriggerOverlaps (const char * name, const char * title, 
+						       Int_t nFastOrOffline,
+						       Bool_t v0A, Bool_t v0C, Bool_t OM2, Bool_t OM3, 
+						       Bool_t cMBS2A,Bool_t cMBS2C, Bool_t cMBAC) {
+  //Fills a histo with the different trigger statistics in a venn like diagramm. Books it if needed.
 
+  // Get or book histo
+  TString hname = "hTrigStat_";
+  hname+=name;  
+  hname+=fHistoSuffix;
+  TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
+  
+  if(!h) {
+    AliInfo(Form("Booking histo %s",hname.Data()));
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    Int_t nbins = 14;
+    h = new TH1I (hname, title, nbins, 0.5, nbins+0.5);
+    fHistoList->GetList()->Add(h);
+    TH1::AddDirectory(oldStatus);
+  }
+
+  // we look at the combinations of 4 triggers
+  Int_t ibin = 1;
+  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0A & V0C & OM2"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0C & OM2"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0A & OM2"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0A & V0C"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0A"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0C"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & OM2"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"OM2 & V0A"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"OM2 & V0C"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"V0A & V0C"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"FO2"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"V0A"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"V0C"); 
+  h->GetXaxis()->SetBinLabel(ibin++,"OM2"); 
+  
+  Bool_t fo2 = nFastOrOffline>=2;
+
+  if(fo2 && v0A && v0C && OM2)     {cout << "Bin5: " << ibin << endl;  h->Fill(1);}
+  if(fo2 && !v0A && v0C && OM2)    {cout << "Bin6: " << ibin << endl;  h->Fill(2);}
+  if(fo2 && v0A && !v0C && OM2)    {cout << "Bin7: " << ibin << endl;  h->Fill(3);}
+  if(fo2 && v0A && v0C && !OM2)    {cout << "Bin8: " << ibin << endl;  h->Fill(4);}
+  if(fo2 && v0A && !v0C && !OM2)   {cout << "Bin9: " << ibin << endl;  h->Fill(5);}
+  if(fo2 && !v0A && v0C && !OM2)   {cout << "Bin10: " << ibin << endl; h->Fill(6);}
+  if(fo2 && !v0A && !v0C && OM2)   {cout << "Bin11: " << ibin << endl; h->Fill(7);}
+  if(!fo2 && v0A && !v0C && OM2)   {cout << "Bin12: " << ibin << endl; h->Fill(8);}
+  if(!fo2 && !v0A && v0C && OM2)   {cout << "Bin13: " << ibin << endl; h->Fill(9);}
+  if(!fo2 && v0A && v0C && !OM2)   {cout << "Bin14: " << ibin << endl; h->Fill(10);}
+  if(fo2 && !v0A && !v0C && !OM2)  {cout << "Bin1: " << ibin << endl;  h->Fill(11);}
+  if(!fo2 && v0A && !v0C && !OM2)  {cout << "Bin2: " << ibin << endl;  h->Fill(12);}
+  if(!fo2 && !v0A && v0C && !OM2)  {cout << "Bin3: " << ibin << endl;  h->Fill(13);}
+  if(!fo2 && !v0A && !v0C && OM2)  {cout << "Bin4: " << ibin << endl;  h->Fill(14);}
+
+}
