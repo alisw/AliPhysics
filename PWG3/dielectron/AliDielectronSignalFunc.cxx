@@ -36,7 +36,7 @@ can be used.
 #include <TPaveText.h>
 #include <TList.h>
 #include <TFitResult.h>
-#include <../hist/hist/src/TF1Helper.h>
+//#include <../hist/hist/src/TF1Helper.h>
 
 #include <AliLog.h>
 
@@ -137,7 +137,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
   // by the user in its macro
   fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
   TFitResultPtr pmFitPtr = fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
-  TFitResult *pmFitResult = pmFitPtr.Get();
+  //TFitResult *pmFitResult = pmFitPtr.Get(); // used only with TF1Helper
   fFuncSignal->SetParameters(fFuncSigBack->GetParameters());
   fFuncBackground->SetParameters(fFuncSigBack->GetParameters()+fFuncSignal->GetNpar());
   
@@ -148,6 +148,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
     Double_t bknd = fFuncBackground->Eval(m);
     Double_t ebknd = 0;
     for(Int_t iPar=fFuncSignal->GetNpar(); iPar<fFuncSigBack->GetNpar(); iPar++) {
+/* TF1Helper problem on alien compilation
       for(Int_t jPar=iPar; jPar<fFuncSigBack->GetNpar(); jPar++) {
         TF1 gradientIpar("gradientIpar",
                          ROOT::TF1Helper::TGradientParFunction(iPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
@@ -157,6 +158,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
           gradientIpar.Eval(m)*gradientJpar.Eval(m)*
           (iPar==jPar ? 1.0 : 2.0);
       }
+*/
     }
     Double_t signal = pm-bknd;
     Double_t error = TMath::Sqrt(epm*epm+ebknd);
@@ -171,6 +173,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
     fValues(0) = fFuncSignal->Integral(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);
     fErrors(0) = 0;
     for(Int_t iPar=0; iPar<fFuncSignal->GetNpar(); iPar++) {
+/* TF1Helper problem on alien compilation
       for(Int_t jPar=iPar; jPar<fFuncSignal->GetNpar(); jPar++) {
         TF1 gradientIpar("gradientIpar",
                          ROOT::TF1Helper::TGradientParFunction(iPar,fFuncSignal),0,0,0);
@@ -180,11 +183,13 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
           gradientIpar.Integral(fIntMin,fIntMax)*gradientJpar.Integral(fIntMin,fIntMax)*
           (iPar==jPar ? 1.0 : 2.0);
       }
+*/
     }
     // background
     fValues(1) = fFuncBackground->Integral(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);
     fErrors(1) = 0;
     for(Int_t iPar=fFuncSignal->GetNpar(); iPar<fFuncSigBack->GetNpar(); iPar++) {
+/* TF1Helper problem on alien compilation
       for(Int_t jPar=iPar; jPar<fFuncSigBack->GetNpar(); jPar++) {
         TF1 gradientIpar("gradientIpar",
                          ROOT::TF1Helper::TGradientParFunction(iPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
@@ -194,6 +199,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
           gradientIpar.Integral(fIntMin, fIntMax)*gradientJpar.Integral(fIntMin, fIntMax)*
           (iPar==jPar ? 1.0 : 2.0);
       }
+*/
     }
   }
   else {
@@ -263,6 +269,7 @@ void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
     Double_t epm = fHistDataPM->GetBinError(iBin);
     Double_t epp = 0;
     for(Int_t iPar=0; iPar<funcClonePP->GetNpar(); iPar++) {
+/* TF1Helper problem on alien compilation
       for(Int_t jPar=iPar; jPar<funcClonePP->GetNpar(); jPar++) {
         TF1 gradientIpar("gradientIpar",
                          ROOT::TF1Helper::TGradientParFunction(iPar,funcClonePP),0,0,0);
@@ -272,9 +279,11 @@ void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
           gradientIpar.Eval(m)*gradientJpar.Eval(m)*
           (iPar==jPar ? 1.0 : 2.0);
       }
+*/
     }
     Double_t emm = 0;
     for(Int_t iPar=0; iPar<funcCloneMM->GetNpar(); iPar++) {
+/* TF1Helper problem on alien compilation
       for(Int_t jPar=iPar; jPar<funcCloneMM->GetNpar(); jPar++) {
         TF1 gradientIpar("gradientIpar",
                          ROOT::TF1Helper::TGradientParFunction(iPar,funcCloneMM),0,0,0);
@@ -284,6 +293,7 @@ void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
           gradientIpar.Eval(m)*gradientJpar.Eval(m)*
           (iPar==jPar ? 1.0 : 2.0);
       }
+*/
     }
     
     Double_t signal = pm-2.0*TMath::Sqrt(pp*mm);
