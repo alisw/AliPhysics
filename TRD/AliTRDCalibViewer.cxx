@@ -196,21 +196,17 @@ const char* AliTRDCalibViewer::AddAbbreviations(char* c, Bool_t printDrawCommand
    Int_t nVariables = listOfVariables->GetEntriesFast();
    Int_t nNorm = listOfNormalizationVariables->GetEntriesFast();
    
-   //Int_t *varLengths = new Int_t[nVariables];
-   int *varLengths = new int[nVariables];
+   Int_t *varLengths = new Int_t[nVariables];
    for (Int_t i = 0; i < nVariables; i++) {
       varLengths[i] = ((TObjString*)listOfVariables->At(i))->String().Length();
    }
-   //Int_t *normLengths = new Int_t[nNorm];
-   int *normLengths = new int[nNorm];
+   Int_t *normLengths = new Int_t[nNorm];
    for (Int_t i = 0; i < nNorm; i++) {
       normLengths[i] = ((TObjString*)listOfNormalizationVariables->At(i))->String().Length();
    }
-   //Int_t *varSort = new Int_t[nVariables];
-   int *varSort = new int[nVariables];
+   Int_t *varSort = new Int_t[nVariables];
    TMath::Sort(nVariables, varLengths, varSort, kTRUE);
-   //Int_t *normSort = new Int_t[nNorm];
-   int *normSort = new int[nNorm];
+   Int_t *normSort = new Int_t[nNorm];
    TMath::Sort(nNorm, normLengths, normSort, kTRUE);
       
    for (Int_t ivar = 0; ivar < nVariables; ivar++) {
