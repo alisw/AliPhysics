@@ -70,6 +70,8 @@ class AliHLTMultiplicityCorrelations;
  *       bins (Int_t), minBin (Float_t), maxBin (Float_t)
  * \li -binningZem    <i> bins min max  </i> <br>
  *       bins (Int_t), minBin (Float_t), maxBin (Float_t)
+ * \li -binningCalo    <i> bins min max  </i> <br>
+ *       bins (Int_t), minBin (Float_t), maxBin (Float_t)
  *
  * <h2>Default CDB entries:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->

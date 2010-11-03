@@ -425,6 +425,21 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     fCorrObj->SetBinningZem(binning, min, max);
     return 4;
   }
+  // binningZem
+  if (argument.CompareTo("-binningCalo")==0) {
+    if (++ii>=argc) return -EPROTO;
+    argument=argv[ii];
+    Int_t binning = argument.Atoi();
+    if (++ii>=argc) return -EPROTO;
+    argument=argv[ii];
+    Float_t min = argument.Atof();
+    if (++ii>=argc) return -EPROTO;
+    argument=argv[ii];
+    Float_t max = argument.Atof();
+
+    fCorrObj->SetBinningCalo(binning, min, max);
+    return 4;
+  }
 
   // unknown argument
   return -EINVAL;

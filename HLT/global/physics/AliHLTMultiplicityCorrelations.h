@@ -96,6 +96,11 @@ public:
     fZnpBinning = i; fZnpBinningMin = f1; fZnpBinningMax = f2;
   }
 
+  /** Set Binning of CALO */
+  void SetBinningCalo(Int_t i=1, Float_t f1=0., Float_t f2=1.) {
+    fCaloBinning = i; fCaloBinningMin = f1; fCaloBinningMax = f2;
+  }
+
   /*
    * ---------------------------------------------------------------------------------
    *                                 Getter - public
@@ -150,6 +155,9 @@ public:
 
   /** Setup correlation histograms */
   Int_t SetupCorrelations();
+  
+  /** Setup CALO histograms */
+  Int_t SetupCALO();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -165,6 +173,11 @@ public:
 
   /** Process current event - ZDC and correlations */
   Int_t ProcessZDC();
+  
+  /** Process current event - CALO */
+  Int_t ProcessCALO();
+  
+  
 
   /*
    * ---------------------------------------------------------------------------------
@@ -245,6 +258,19 @@ public:
   Int_t   fZnpBinning;
   Float_t fZnpBinningMin;
   Float_t fZnpBinningMax;
+  
+  /** CALO flags */
+  Bool_t fProcessPhos; 
+  Bool_t fProcessEmcal;
+  
+  /** CALO variables */
+  Float_t fPhosTotalEt;
+  Float_t fEmcalTotalEt;
+  
+  /** Binnning CALO */
+  Int_t   fCaloBinning;
+  Float_t fCaloBinningMin;
+  Float_t fCaloBinningMax;
   
   ClassDef(AliHLTMultiplicityCorrelations, 1);
 };

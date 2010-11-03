@@ -61,7 +61,10 @@ AliHLTMultiplicityCorrelations::AliHLTMultiplicityCorrelations() :
   fTpcBinning(200),fTpcBinningMin(0.),fTpcBinningMax(8000.),
   fZdcBinning(280),fZdcBinningMin(0.),fZdcBinningMax(140.),
   fZemBinning(100),fZemBinningMin(0.),fZemBinningMax(5.),
-  fZnpBinning(200),fZnpBinningMin(0.),fZnpBinningMax(100.) {
+  fZnpBinning(200),fZnpBinningMin(0.),fZnpBinningMax(100.),
+  fProcessPhos(true), fProcessEmcal(true),
+  fPhosTotalEt(0.0), fEmcalTotalEt(0.0),
+  fCaloBinning(100),fCaloBinningMin(0.),fCaloBinningMax(100.){
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -121,7 +124,10 @@ Int_t AliHLTMultiplicityCorrelations::ProcessEvent( AliESDEvent *esd ) {
   // -- TPC .. To be done before the others
   if (fESDEvent->GetNumberOfTracks() > 0)
     iResult = ProcessTPC();
-
+  
+  // -- CALO, process with or without clusters, we want the zero-bin
+  iResult = ProcessCALO();
+  
   // -- VZERO
   if (fESDVZERO)
     iResult = ProcessVZERO();
@@ -188,6 +194,7 @@ Int_t AliHLTMultiplicityCorrelations::SetupHistograms() {
   iResult = SetupVZERO();
   iResult = SetupZDC();
   iResult = SetupTPC();
+  iResult = SetupCALO();
   iResult = SetupCorrelations();
 
   return iResult;
@@ -537,9 +544,44 @@ Int_t AliHLTMultiplicityCorrelations::SetupCorrelations() {
 			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
 
   // ----------------------------------------------------
+  //   ZDC vs CALO
+  // ----------------------------------------------------
+  fHistList->Add(new TH2F("fCorrZdcTotEvsPhosTotEt", 
+			  "Total E_{ZDC} vs Total E_{T} in PHOS C;Total E_{ZDC} (TeV);E_{T} (GeV)", 
+			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  fHistList->Add(new TH2F("fCorrZdcTotEvsEmcalTotEt", 
+			  "Total E_{ZDC} vs Total E_{T} in EMCAL C;Total E_{ZDC} (TeV);E_{T} (GeV)", 
+			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  fHistList->Add(new TH2F("fCorrZdcTotEvsTotEt", 
+			  "Total E_{ZDC} vs Total E_{T} in calorimeters C;Total E_{ZDC} (TeV);E_{T} (GeV)", 
+			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+			  
+  // ----------------------------------------------------
   //  
   // ----------------------------------------------------
 
+  return 0;
+}
+
+//##################################################################################
+Int_t AliHLTMultiplicityCorrelations::SetupCALO()
+{
+  // Calo histos
+  if(fProcessPhos)
+  {
+    fHistList->Add(new TH1F("fPhosEt",  "Total E_{T} in PHOS:E (GeV)",   
+			    fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  }
+  if(fProcessEmcal)
+  {
+    fHistList->Add(new TH1F("fEmcalEt",  "Total E_{T} in EMCAL:E (GeV)",   
+			    fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  }
+  if(fProcessPhos || fProcessEmcal)
+  {
+    fHistList->Add(new TH1F("fTotalEt",  "Total E_{T} in calorimeters:E (GeV)",   
+			    fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  }
   return 0;
 }
 
@@ -806,5 +848,51 @@ Int_t AliHLTMultiplicityCorrelations::ProcessZDC() {
     (static_cast<TH2F*>(fHistList->FindObject("fCorrZdcbVzeroFC")))->Fill(fESDZDC->GetImpactParamSideC(), fVzeroMultFlaggedC);
   }
 
+  // -- ZDC - CALO correlations
+  if (fProcessPhos || fProcessEmcal) {
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrZdcTotEvsTotEt")))->Fill(zdcE, fPhosTotalEt + fEmcalTotalEt);
+    if(fProcessPhos)
+    {
+      (static_cast<TH2F*>(fHistList->FindObject("fCorrZdcTotEvsPhosTotEt")))->Fill(zdcE, fPhosTotalEt);
+    }
+    if(fProcessEmcal)
+    {
+      (static_cast<TH2F*>(fHistList->FindObject("fCorrZdcTotEvsEmcalTotEt")))->Fill(zdcE, fEmcalTotalEt);
+    }
+  }
+
   return iResult;
+}
+
+//##################################################################################
+Int_t AliHLTMultiplicityCorrelations::ProcessCALO()
+{
+  // CALO 
+  
+  TH1F* hPhosEt = static_cast<TH1F*>(fHistList->FindObject("fPhosEt")); // PHOS Tot E_T
+  TH1F* hEmcalEt = static_cast<TH1F*>(fHistList->FindObject("fEmcalEt")); // EMCAL Tot E_T
+  TH1F* hTotalEt = static_cast<TH1F*>(fHistList->FindObject("fTotalEt")); // CALO Tot E_T
+  
+  fPhosTotalEt = 0;
+  fEmcalTotalEt = 0;
+  
+  for(Int_t cl = 0; cl < fESDEvent->GetNumberOfCaloClusters(); cl++)
+  {
+    
+    AliESDCaloCluster *cluster = fESDEvent->GetCaloCluster(cl);
+    if(cluster->IsPHOS() && fProcessPhos)
+    {
+      fPhosTotalEt += cluster->E();
+    }
+    if(cluster->IsEMCAL() && fProcessEmcal)
+    {
+      fEmcalTotalEt += cluster->E();
+    }
+  }
+
+  if(hPhosEt)hPhosEt->Fill(fPhosTotalEt);
+  if(hEmcalEt)hEmcalEt->Fill(fEmcalTotalEt);
+  if(hTotalEt)hTotalEt->Fill(fPhosTotalEt + fEmcalTotalEt);
+  
+  return 0;
 }
