@@ -1,5 +1,5 @@
-#ifndef _ALIANALYSISTASKGAMMACONVDALITZ_H_
-#define _ALIANALYSISTASKGAMMACONVDALITZ_H_
+#ifndef ALIANALYSISTASKGAMMACONVDALITZ_H
+#define ALIANALYSISTASKGAMMACONVDALITZ_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -27,7 +27,7 @@ class AliAnalysisTaskGammaConvDalitz: public AliAnalysisTaskSE
 
 	virtual void UserExec(Option_t *option);
 	virtual void UserCreateOutputObjects();
-	virtual void ConnectInputData(Option_t *);
+	virtual void ConnectInputData(Option_t * option);
 	virtual void Terminate(Option_t *option);
 	
 	enum TrackSelectionCriteria { kITSsaTrack=0, kGlobalTrack=1, kITSsaGlobalTrack=2 };
@@ -91,7 +91,7 @@ class AliAnalysisTaskGammaConvDalitz: public AliAnalysisTaskSE
 	Bool_t IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi ) const;
 	Bool_t HaveSameMother( Int_t label1, Int_t label2 ) const;
 	
-	Double_t GetPsiPair( AliKFParticle* pos, AliKFParticle* neg ) const;
+	Double_t GetPsiPair( const AliKFParticle* pos, const AliKFParticle* neg ) const;
 	Double_t GetPsiPair( const TLorentzVector* pos, const TLorentzVector* neg ) const;
 	Double_t GetPsiPair( const AliESDtrack* trackPos, const AliESDtrack* trackNeg ) const;
 	
@@ -111,7 +111,7 @@ class AliAnalysisTaskGammaConvDalitz: public AliAnalysisTaskSE
   private:
 
 	AliStack*   fStack;                 //! MC particle stack
-	AliMCEvent* fMCEvent;               //! for CF pointer to the MC Event
+	//	AliMCEvent* fMCEvent;               //! for CF pointer to the MC Event
 
 	AliESDEvent* fESDEvent;             //! ESD event
 
@@ -148,7 +148,7 @@ class AliAnalysisTaskGammaConvDalitz: public AliAnalysisTaskSE
 	Bool_t fUseAliKF;          // Use AliKFParticle to reconstruct the pi0 instead of TLorentzVector class
 	
 	Int_t fMagFieldSign;                 // Magnetic field sign
-	const Double_t fElectronMass;        // Electron mass
+	const Double_t fkElectronMass;        // Electron mass
 	Double_t fPsiPairCut;                // Psi pair cut value
 	Double_t fDeltaPhiCutMin;              // Delta_Phi minimum cut value
 	Double_t fDeltaPhiCutMax;              // Delta_Phi maximum cut value
@@ -170,4 +170,4 @@ class AliAnalysisTaskGammaConvDalitz: public AliAnalysisTaskSE
 	ClassDef( AliAnalysisTaskGammaConvDalitz, 2 );
 };
 
-#endif // _ALIANALYSISTASKGAMMACONVDALITZ_H_
+#endif // ALIANALYSISTASKGAMMACONVDALITZ_H
