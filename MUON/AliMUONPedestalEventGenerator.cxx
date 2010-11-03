@@ -450,6 +450,7 @@ AliMUONPedestalEventGenerator::LoadRun(const char* mode)
   if (!runLoader) 
   {
     AliError("No run loader found in file galice.root");
+    return 0x0;
   }
     
   TString smode(mode);

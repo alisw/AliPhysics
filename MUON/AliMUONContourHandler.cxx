@@ -341,13 +341,13 @@ AliMUONContourHandler::Print(Option_t* opt) const
 {
   /// printout
   
-  if ( fAllContourMap ) 
-  {
-    cout << Form("Contour map : collisions = %5.3f size = %d capacity = %d", 
-                 fAllContourMap->AverageCollisions(),
-                 fAllContourMap->GetSize(),
-                 fAllContourMap->Capacity()) << endl;
-  }
+  if ( ! fAllContourMap )  return;
+  
+  cout << Form("Contour map : collisions = %5.3f size = %d capacity = %d", 
+               fAllContourMap->AverageCollisions(),
+               fAllContourMap->GetSize(),
+               fAllContourMap->Capacity()) << endl;
+
   TString sopt(opt);
   sopt.ToUpper();
   

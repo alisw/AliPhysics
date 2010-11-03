@@ -215,8 +215,10 @@ AliMUONTriggerCrateStore::ReadFromFile(AliMUONCalibrationData* calibData)
    AliWarning("No valid trigger LUT in CDB");
   
   AliMUONRegionalTriggerConfig* regionalConfig = calibData->RegionalTriggerConfig();
-  if (!regionalConfig)
-     AliWarning("No valid regional trigger configuration in CDB");
+  if (!regionalConfig) {
+     AliError("No valid regional trigger configuration in CDB");
+     return;
+  }   
   
   TIter next(AliMpDDLStore::Instance()->GetRegionalTrigger()->CreateCrateIterator());
   AliMpTriggerCrate* crateMapping;

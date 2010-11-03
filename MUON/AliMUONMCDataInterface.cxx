@@ -642,6 +642,7 @@ AliMUONMCDataInterface::Open(const char* filename)
   {
     AliError(Form("Cannot open file %s",filename));    
     fIsValid = kFALSE;
+    return;
   }
   
   // Get run number and set it to CDB manager

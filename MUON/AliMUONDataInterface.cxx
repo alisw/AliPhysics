@@ -564,6 +564,7 @@ AliMUONDataInterface::Open(const char* filename)
   {
     AliError(Form("Cannot open file %s",filename));    
     fIsValid = kFALSE;
+    return;
   }
 
   runLoader->LoadHeader();

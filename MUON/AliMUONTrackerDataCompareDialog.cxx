@@ -211,12 +211,14 @@ AliMUONTrackerDataCompareDialog::CompareData(const char* d1name,
   if (!d1)
   {
     AliError(Form("Cannot find data source %s",d1name));
+    return;
   }
   
   AliMUONVTrackerData* d2 = reg->DataSource(d2name);
   if (!d2)
   {
     AliError(Form("Cannot find data source %s",d2name));
+    return;
   }
   
   Double_t (*difffunction)(Double_t,Double_t)=0x0;

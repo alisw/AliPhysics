@@ -199,8 +199,7 @@ AliMUONPolygon::SetVertex(Int_t i, Double_t x, Double_t y)
   /// Set one vertex
   if ( i >= fN ) 
   {
-    TObject* o(0x0);
-    o->Print(); // to crash
+    AliFatal("Wrong index");
   }
   fX[i] = x;
   fY[i] = y;

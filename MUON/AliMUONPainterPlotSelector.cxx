@@ -409,9 +409,8 @@ AliMUONPainterPlotSelector::SourceButtonWasClicked(Int_t id)
   TGButton* button = fDataSourceNames->GetButton(id);
   if ( !button ) 
   {
-    AliError(Form("Could not get DataSource button id=%d",id));
     StdoutToAliDebug(1,AliMUONPainterInterfaceHelper::Dump(*fDataSourceNames));
-    button->GetUserData(); // to trigger a crash so gdb is possible ;-)
+    AliFatal(Form("Could not get DataSource button id=%d",id));
   }
   
   AliMUONVTrackerData* data = reinterpret_cast<AliMUONVTrackerData*>(button->GetUserData());

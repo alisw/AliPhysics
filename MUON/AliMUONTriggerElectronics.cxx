@@ -223,7 +223,7 @@ void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
         }
         else
         {
-          AliError(Form("Could not get local board number %d",b->GetNumber()));
+          AliError(Form("Could not get local board number %d",nboard));
         }
       }
     }		
@@ -433,9 +433,10 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
   // Set mask
   
   AliMUONRegionalTriggerConfig* regionalConfig = calibData->RegionalTriggerConfig();
-  if (!regionalConfig)
-     AliWarning("No valid regional trigger configuration in CDB");
-
+  if (!regionalConfig) {
+     AliError("No valid regional trigger configuration in CDB");
+     return;
+  }   
   
   AliMUONTriggerCrate* cr;
   TIter next(fCrates->CreateCrateIterator());
@@ -480,8 +481,10 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
   }
   
    AliMUONGlobalCrateConfig * globalConfig = calibData->GlobalTriggerCrateConfig();
-  if (!globalConfig)
-     AliWarning("No valid trigger crate configuration in CDB");
+   if (!globalConfig) {
+     AliError("No valid trigger crate configuration in CDB");
+     return;
+   }   
 
     UInt_t gmask = 0;
     for (Int_t i = 0; i < 4; i++) {

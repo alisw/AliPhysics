@@ -68,9 +68,7 @@ AliMUONPainterGroup::AliMUONPainterGroup(const char* type, Int_t depth)
    /// ctor
    if ( fType == "" || fDepth < 0 ) 
    {
-     AliError("Sorry guy.");
-     TObject* o(0x0);
-     o->ls(); // to provoque a crash to be able to reach gdb...
+     AliFatal("Sorry guy.");
    }
 }
 

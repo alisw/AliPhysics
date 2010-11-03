@@ -125,10 +125,8 @@ AliMUONContourMaker::CreateContour(const TObjArray& polygons, const char* name) 
   
   if ( polygonVerticalEdges.GetLast()+1 < 2 ) 
   {
-    AliError(Form("Got too few edges here for createContour %s",name));
     polygons.Print();
-    TObject* o(0x0);
-    o->Print();
+    AliFatal(Form("Got too few edges here for createContour %s",name));
   }
   
   // Find the vertical edges of the merged contour. This is the meat of the algorithm...

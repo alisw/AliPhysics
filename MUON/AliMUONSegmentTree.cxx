@@ -46,9 +46,7 @@ AliMUONSegmentTree::AliMUONSegmentTree(const TArrayD& values)
   
   if ( values.GetSize() < 2 ) 
   {
-    AliError("cannot build a segmenttree with less than 2 values !");
-    TObject* forceACrash(0x0);
-    forceACrash->Print();
+    AliFatal("cannot build a segmenttree with less than 2 values !");
   }
   
   fRoot = Build(values,0,values.GetSize()-1);

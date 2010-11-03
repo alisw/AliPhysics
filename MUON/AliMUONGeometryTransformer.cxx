@@ -253,6 +253,7 @@ void AliMUONGeometryTransformer::FillModuleTransform(Int_t moduleId,
   if ( !moduleTransformer) {
     AliErrorStream() 
       << "Module " << moduleId << " has not volume path defined." << endl;
+    return;  
   }  
       
   // Build the transformation from the parameters
