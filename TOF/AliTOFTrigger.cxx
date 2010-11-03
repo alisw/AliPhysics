@@ -927,7 +927,7 @@ void AliTOFTrigger::LoadActiveMask(){
     UInt_t maskArray[kNLTM];
     if(fTOFTrigMask == NULL) fTOFTrigMask = new AliTOFTriggerMask();
     for (Int_t k = 0; k < kNLTM ; k++) maskArray[k] = fPowerMask[kNCTTMchannels]-1;
-    for (Int_t k = 0; k < kNLTM ; k+=2) maskArray[k] = 0;
+    //for (Int_t k = 0; k < kNLTM ; k+=2) maskArray[k] = 0;
     
     fTOFTrigMask->SetTriggerMaskArray(maskArray);
 }
