@@ -129,8 +129,10 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
     "nClusters_2 "
     "polarity_1 "
     "polarity_2 "
-    "pt_1 "
-    "pt_2 "
+    "px_1 "
+    "py_1 "
+    "px_2 "
+    "py_2 "
   };
   
   int maxTrackCount = 20000; // FIXME: make configurable
@@ -258,8 +260,10 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
        fUPCVariables.Fill("nClusters_2", esdTrack2->GetTPCNcls() );
        fUPCVariables.Fill("polarity_1",  esdTrack1->Charge()     );
        fUPCVariables.Fill("polarity_2",  esdTrack2->Charge()     );
-       fUPCVariables.Fill("pt_1",        esdTrack1->Pt()         );
-       fUPCVariables.Fill("pt_2",        esdTrack2->Pt()         );
+       fUPCVariables.Fill("px_1",        esdTrack1->Px()         );
+       fUPCVariables.Fill("py_1",        esdTrack1->Py()         );
+       fUPCVariables.Fill("px_2",        esdTrack2->Px()         );
+       fUPCVariables.Fill("py_2",        esdTrack2->Py()         );
     } 
   }
   
