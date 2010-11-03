@@ -422,6 +422,7 @@ int AliHLTGlobalHistoComponent::ResetVariables()
   fNofV0s=0;
   fTrackVariables.ResetCount();
   fTrackVariablesInt.ResetCount();
+  fV0Variables.ResetCount();
   return 0;
 }
 
