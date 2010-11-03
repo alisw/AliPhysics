@@ -530,9 +530,9 @@ Double_t kGClastXBinNV0   =  999.5;
 
 
 // Number of ESD track-Plot
-Int_t kGCnXBinsESDtrk      = 2000;
+Int_t kGCnXBinsESDtrk      = 10000;
 Double_t kGCfirstXBinESDtrk= -0.5;
-Double_t kGClastXBinESDtrk = 1999.5;
+Double_t kGClastXBinESDtrk = 9999.5;
 
 
 //EventQuality-plot
