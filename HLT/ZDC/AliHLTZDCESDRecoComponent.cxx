@@ -30,6 +30,7 @@ using namespace std;
 #include "AliHLTZDCESDRecoComponent.h"
 #include "AliHLTDefinitions.h"
 #include "AliRawReaderMemory.h"
+#include "AliGeomManager.h"
 #include "AliGRPObject.h"
 #include "AliZDCReconstructor.h"
 #include "AliZDCRecoParam.h"
@@ -100,6 +101,11 @@ int AliHLTZDCESDRecoComponent::DoInit( int argc, const char** argv )
   // see header file for class documentation
   int iResult=0;
 
+  // -- Load GeomManager
+  if(AliGeomManager::GetGeometry()==NULL){
+    AliGeomManager::LoadGeometry();
+  }
+  
   // read configuration object : HLT/ConfigZDC/
   TString cdbPath="HLT/ConfigZDC/";
   cdbPath+=GetComponentID();
@@ -116,6 +122,7 @@ int AliHLTZDCESDRecoComponent::DoInit( int argc, const char** argv )
   AliGRPObject* pGRP = pOCDBEntry?dynamic_cast<AliGRPObject*>(pOCDBEntry):NULL;
   Float_t  beamEnergy=0.;
   if(pGRP) beamEnergy = pGRP->GetBeamEnergy(); 
+
   TString beamType="";
   if(pGRP) beamType = pGRP->GetBeamType();
 
@@ -162,6 +169,9 @@ int AliHLTZDCESDRecoComponent::DoInit( int argc, const char** argv )
     else if((beamType.CompareTo("A-A"))==0) fReconstructor->SetRecoParam(AliZDCRecoParamPbPb::GetHighFluxParam(2*beamEnergy));
     else HLTWarning(" Beam type not known by ZDC!");
   
+    if((beamType.CompareTo("A-A"))==0)
+      beamEnergy = 2760.;
+
     fReconstructor->Init(beamType, beamEnergy);
   }
 
@@ -210,8 +220,8 @@ int AliHLTZDCESDRecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData
   // get ZDC raw input data block and set up the rawreader
   const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginZDC);
   if (!pBlock) {
-    HLTError("No ZDC input block !!!");
-    return -1;
+    HLTInfo("No ZDC input block !!!");
+    return 0;
   }
 
   // add input block to raw reader

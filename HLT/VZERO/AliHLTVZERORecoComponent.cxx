@@ -33,6 +33,7 @@ using namespace std;
 #include "AliRunInfo.h"
 #include "AliGRPObject.h"
 #include "AliRawReaderMemory.h"
+#include "AliGeomManager.h"
 
 #include "AliVZERORecoParam.h"
 #include "AliVZEROReconstructor.h"
@@ -154,6 +155,11 @@ Int_t AliHLTVZERORecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
 
   Int_t iResult=0;
 
+  // -- Load GeomManager
+  if(AliGeomManager::GetGeometry()==NULL){
+    AliGeomManager::LoadGeometry();
+  }
+  
   // -- Read configuration object : HLT/ConfigVZERO/VZEROReconstruction
   TString cdbPath="HLT/ConfigVZERO/";
   cdbPath+=GetComponentID();
@@ -320,8 +326,8 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   // -- Get VZERO raw dat a input block and set up the rawreader
   const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginVZERO);
   if (!pBlock) {
-    HLTError("No VZERO input block !!!");
-    return -1;
+    HLTInfo("No VZERO input block !!!");
+    return 0;
   }
   
   // -- Add input block to raw reader
