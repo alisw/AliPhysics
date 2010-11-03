@@ -34,6 +34,7 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <THnSparse.h>
 #include <TF1.h>
 #include <TGraph.h>
 #include <TGraphErrors.h>
@@ -117,6 +118,17 @@ void AliEMCALHistoUtilities::FillH2(TList *l, Int_t ind, Double_t x, Double_t y,
   }
 }
 
+void AliEMCALHistoUtilities:: FillHnSparse(TList *l, Int_t ind, Double_t* x, Double_t w)
+{
+  // Nov 02,2010: fill THnSparse hist
+  static THnSparse* hsp=0;
+  if(l==0 || x==0) return;
+  if(ind>=0 && ind < l->GetSize()){
+    hsp = dynamic_cast<THnSparse *>(l->At(ind));
+    if(hsp) hsp->Fill(x,w);
+  }
+}
+
 int AliEMCALHistoUtilities::SaveListOfHists(TList *mylist,const char* name,Bool_t kSingleKey,const char* opt)
 {
   //write histograms to file
@@ -154,7 +166,7 @@ int AliEMCALHistoUtilities::SaveListOfHists(TList *mylist,const char* name,Bool_
   return save;
 }
 
-void AliEMCALHistoUtilities::AddToNameAndTitle(TH1 *h, const char *name, const char *title)
+void AliEMCALHistoUtilities::AddToNameAndTitle(TNamed *h, const char *name, const char *title)
 {
   // Oct 15, 2007
   if(h==0) return;
@@ -169,8 +181,8 @@ void AliEMCALHistoUtilities::AddToNameAndTitleToList(TList *l, const char *name,
   if(name || title) {
     for(int i=0; i<l->GetSize(); i++) {
       TObject *o = l->At(i);
-      if(o->InheritsFrom("TH1")) {
-        TH1 *h = (TH1*)o;
+      if(o->InheritsFrom("TNamed")) {
+        TNamed *h = dynamic_cast<TNamed *>(o);
         AddToNameAndTitle(h, name, title);
       }
     }
