@@ -440,7 +440,20 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     fCorrObj->SetBinningCalo(binning, min, max);
     return 4;
   }
-
+  if (argument.CompareTo("-enablePhos")==0) {
+    if (++ii>=argc) return -EPROTO;
+    argument=argv[ii];
+    Int_t enabled = argument.Atoi();
+    fCorrObj->SetProcessPhos(enabled);
+    return 2;
+  }
+  if (argument.CompareTo("-enableEmcal")==0) {
+    if (++ii>=argc) return -EPROTO;
+    argument=argv[ii];
+    Int_t enabled = argument.Atoi();
+    fCorrObj->SetProcessEmcal(enabled);
+    return 2;
+  }
   // unknown argument
   return -EINVAL;
 }
