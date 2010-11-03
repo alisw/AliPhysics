@@ -20,6 +20,7 @@
 
 class TTree;
 class TH1;
+class TStopwatch;
 
 /**
  * @class AliHLTTTreeProcessor
@@ -133,6 +134,15 @@ private:
   unsigned fPublishInterval; //! publish interval in s
   /// time stamp - publish or not.
   unsigned fLastTime; //! last time the histogramms were published
+
+  TStopwatch* fpEventTimer; //! stopwatch for event processing
+  TStopwatch* fpCycleTimer; //! stopwatch for event cycle
+  AliHLTUInt32_t fMaxEventTime; //! allowed maximum processing time in usec
+  AliHLTUInt32_t fNofEventsForce; //! number of events to ignore the processing time
+  AliHLTUInt32_t fForcedEventsCount; //! event count for the forced events
+  AliHLTUInt32_t fSkippedEventsCount; //! number of skipped events
+
+  static const AliHLTUInt32_t fgkTimeScale;
 
   /// copy constructor prohibited
   AliHLTTTreeProcessor(const AliHLTTTreeProcessor&);

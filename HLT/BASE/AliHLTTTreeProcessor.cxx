@@ -31,6 +31,7 @@
 #include "TString.h"
 #include "TTree.h"
 #include "TH1.h"
+#include "TStopwatch.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTTreeProcessor)
@@ -41,7 +42,13 @@ AliHLTTTreeProcessor::AliHLTTTreeProcessor()
                           fTree(0),
                           fMaxEntries(kMaxEntries),
                           fPublishInterval(kInterval),
-                          fLastTime(0)
+                          fLastTime(0),
+                          fpEventTimer(NULL),
+                          fpCycleTimer(NULL),
+                          fMaxEventTime(0),
+                          fNofEventsForce(0),
+                          fForcedEventsCount(0),
+                          fSkippedEventsCount(0)
 {
   // see header file for class documentation
   // or
@@ -49,6 +56,8 @@ AliHLTTTreeProcessor::AliHLTTTreeProcessor()
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
+
+const AliHLTUInt32_t AliHLTTTreeProcessor::fgkTimeScale=1000000; // ticks per second
 
 AliHLTTTreeProcessor::~AliHLTTTreeProcessor()
 {
@@ -115,6 +124,18 @@ int AliHLTTTreeProcessor::DoInit(int argc, const char** argv)
     return -EINVAL;
   }
 
+  if (iResult>=0 && fMaxEventTime>0) {
+    fpEventTimer=new TStopwatch;
+    if (fpEventTimer) {
+      fpEventTimer->Reset();
+    }
+    fpCycleTimer=new TStopwatch;
+    if (fpCycleTimer) {
+      fpCycleTimer->Reset();
+    }
+  }
+  fSkippedEventsCount=0;
+
   return iResult;
 }
 
@@ -124,6 +145,12 @@ int AliHLTTTreeProcessor::DoDeinit()
   delete fTree;
   fTree = 0;
   fDefinitions.clear();
+
+  if (fpEventTimer) delete fpEventTimer;
+  fpEventTimer=NULL;
+  if (fpCycleTimer) delete fpCycleTimer;
+  fpCycleTimer=NULL;
+
   return 0;
 }
 
@@ -141,10 +168,30 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
     return -EINVAL;//-ENULLTREE? :)
   }
 
+  AliHLTUInt32_t averageEventTime=0;
+  AliHLTUInt32_t averageCycleTime=0;
+
+  AliHLTUInt32_t proctime=0;
+  bool bDoFilling=false;
+  if (fpEventTimer && fpCycleTimer) {
+    averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+    proctime=fpEventTimer->RealTime()*fgkTimeScale;
+    fpEventTimer->Start(kFALSE);
+    fpCycleTimer->Stop();
+    averageCycleTime=(fpCycleTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+    // adapt processing to 3/4 of the max time
+    bDoFilling=4*averageEventTime<3*fMaxEventTime || averageEventTime<averageCycleTime;
+    if (fNofEventsForce>0 && fForcedEventsCount<fNofEventsForce) {
+      fForcedEventsCount++;
+      bDoFilling=true;
+    }
+  }
+
   // process input data blocks and fill the tree
   int iResult = 0;
   if (eventType!=gkAliEventTypeEndOfRun) {
-    iResult=FillTree(fTree, evtData, trigData);
+    if (bDoFilling) iResult=FillTree(fTree, evtData, trigData);
+    else fSkippedEventsCount++;
   }
 
   if (iResult < 0)
@@ -152,7 +199,7 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
 
   const TDatime time;
 
-  if (fLastTime - time.Get() > fPublishInterval ||
+  if ( time.Get() - fLastTime > fPublishInterval ||
       eventType==gkAliEventTypeEndOfRun) {
     for (list_const_iterator i = fDefinitions.begin(); i != fDefinitions.end(); ++i) {
       if (TH1* h = CreateHistogram(*i)) {
@@ -165,6 +212,24 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
     }
 
     fLastTime = time.Get();
+  }
+
+  if (fpEventTimer) {
+    fpEventTimer->Stop();
+    proctime=fpEventTimer->RealTime()*fgkTimeScale-proctime;
+    averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+
+    // info output once every 5 seconds
+    static UInt_t lastTime=0;
+    if (time.Get()-lastTime>5 ||
+      eventType==gkAliEventTypeEndOfRun) {
+      lastTime=time.Get();
+      unsigned eventcount=GetEventCount();
+      HLTBenchmark("event time %d us, average time %d us, cycle time %d us, accumulated %d of %d events (%.1f%%)", proctime, averageEventTime, averageCycleTime, eventcount-fSkippedEventsCount, eventcount, eventcount>0?(100*float(eventcount-fSkippedEventsCount)/eventcount):0);
+    }
+  }
+  if (fpCycleTimer) {
+    fpCycleTimer->Start(kFALSE);
   }
 
   return iResult;
@@ -219,6 +284,37 @@ int AliHLTTTreeProcessor::ScanConfigurationArgument(int argc, const char** argv)
       }
 
       fPublishInterval = interval;
+
+      i += 2;
+    } else if (argument.CompareTo("-maxeventtime") == 0) { // max average processing time in us
+      if (i + 1 == argc) {
+        HLTError("Numeric value for '-maxeventtime' is expected");
+        return -EPROTO;
+      }
+
+      const Int_t time = TString(argv[i + 1]).Atoi();
+      if (time <= 0) {
+        HLTError("Bad value for '-maxeventtime' argument: %d", time);
+        return -EPROTO;
+      }
+
+      fMaxEventTime = time;
+
+      i += 2;
+    } else if (argument.CompareTo("-forced-events") == 0) { // number of forced events
+      if (i + 1 == argc) {
+        HLTError("Numeric value for '-forced-events' is expected");
+        return -EPROTO;
+      }
+
+      const Int_t count = TString(argv[i + 1]).Atoi();
+      if (count <= 0) {
+        HLTError("Bad value for '-forced-events' argument: %d", count);
+        return -EPROTO;
+      }
+
+      fNofEventsForce = count;
+      fForcedEventsCount=0;
 
       i += 2;
     } else if (argument.CompareTo("-histogram") == 0) { //3. Histogramm definition.
