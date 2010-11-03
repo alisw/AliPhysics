@@ -334,8 +334,9 @@ int main(int argc, char **argv) {
 	    //printf("\t CALIBRATION_EMD_RUN raw data found\n");
 	 }
 	 else{
-	    printf("\t NO CALIBRATION_EMD_RUN raw data found\n");
-	    return -1;
+	    // Temporary commented to validate DA with simulated data!!!
+	    //printf("\t NO CALIBRATION_EMD_RUN raw data found\n");
+	    //return -1;
 	 }
       }
       else{
@@ -380,7 +381,7 @@ int main(int argc, char **argv) {
 	      DetIndex = detID-1;
 	      PedIndex = quad; 
 	    }
-	    else if(detID==2){
+	    else if(detID == 2){
 	      DetIndex = detID-1;
 	      PedIndex = quad+5;
 	    }
@@ -415,7 +416,7 @@ int main(int argc, char **argv) {
 	         "Pedestal %1.0f -> ADCCorr = %d ZDCCorrADCSum = %d\n", 
 	         detID,quad,rawStreamZDC->GetADCGain(),PedIndex,Pedestal, 
 	         (Int_t) ZDCCorrADC[DetIndex],(Int_t) ZDCCorrADCSum[DetIndex]);
-	      	*/      
+	      */	 
 	    }
 	    // Not common PM 
 	    /*if(quad!=0){
@@ -442,9 +443,7 @@ int main(int argc, char **argv) {
        delete reader;
        delete rawStreamZDC;
        //
-       for(Int_t j=0; j<4; j++){
-          histoEMDCorr[j]->Fill(ZDCCorrADCSum[j]);
-       }
+       for(Int_t j=0; j<4; j++) histoEMDCorr[j]->Fill(ZDCCorrADCSum[j]);
 
     }//(if PHYSICS_EVENT)
       
@@ -472,20 +471,21 @@ int main(int argc, char **argv) {
   Float_t MeanFitVal[4]={1.,1.,1.,1.};
   TF1 *fitfun[4];
   for(Int_t k=0; k<4; k++){
-     if(histoEMDCorr[k]->GetEntries()!=0 || histoEMDCorr[k]->GetMean()>0){
+     if(histoEMDCorr[k]->GetEntries()!=0 && histoEMDCorr[k]->GetMean()>0){
        BinMax[k] = histoEMDCorr[k]->GetMaximumBin();
+       //printf("\n\t histoEMDCorr[%d]: BinMax = %d", k, BinMax[k]);
        if(BinMax[k]<=1){
-         printf("\n WARNING! Something wrong with det %d histo -> ending DA WITHOUT writing output\n\n", k);
+         printf("\n WARNING! Something wrong with det %d histo -> calibration coeff. set to 1\n\n", k);
          continue;
        }
        // 
        YMax[k] = (histoEMDCorr[k]->GetXaxis())->GetXmax();
        NBinsx[k] = (histoEMDCorr[k]->GetXaxis())->GetNbins();
-       //printf("\n\t Det%d -> BinMax = %d, ChXMax = %f\n", k+1, BinMax[k], BinMax[k]*YMax[k]/NBinsx[k]);
+       //printf(" ChXMax = %f\n", BinMax[k]*YMax[k]/NBinsx[k]);
        histoEMDCorr[k]->Fit("gaus","Q","",BinMax[k]*YMax[k]/NBinsx[k]*0.7,BinMax[k]*YMax[k]/NBinsx[k]*1.25);
        fitfun[k] = histoEMDCorr[k]->GetFunction("gaus");
        MeanFitVal[k] = (Float_t) (fitfun[k]->GetParameter(1));
-       //printf("\n\t Mean Value from gaussian fit = %f\n", MeanFitVal[k]);
+       //printf("\t Mean Value from gaussian fit = %f\n", MeanFitVal[k]);
      }
   }
   //
@@ -544,7 +544,6 @@ int main(int argc, char **argv) {
   fclose(fileShuttle2);
   
   for(Int_t ij=0; ij<4; ij++){
-    //delete histoEMDRaw[ij];
     delete histoEMDCorr[ij];
   }
   
