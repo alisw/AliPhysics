@@ -487,10 +487,10 @@ void AliHFPtSpectrum::SetReconstructedSpectrumSystematics(TGraphAsymmErrors *gRe
   // 
 
   // Check the compatibility with the reconstructed spectrum
-  Double_t gbinwidth = fgRECSystematics->GetErrorXlow(1) + fgRECSystematics->GetErrorXhigh(1) ;
+  Double_t gbinwidth = gRec->GetErrorXlow(1) + gRec->GetErrorXhigh(1) ;
   Double_t hbinwidth = fhRECpt->GetBinWidth(1);
   Double_t gxbincenter=0., gybincenter=0.;
-  fgRECSystematics->GetPoint(1,gxbincenter,gybincenter);
+  gRec->GetPoint(1,gxbincenter,gybincenter);
   Double_t hbincenter = fhRECpt->GetBinCenter(1);
   if ( TMath::Abs(gbinwidth - hbinwidth)>0.0001 || TMath::Abs(gxbincenter - hbincenter)>0.0001 ) {
     AliError(" The reconstructed spectrum and its systematics don't seem compatible");
@@ -1044,6 +1044,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumFc(){
 	  errvalueMax = value * ( fgRECSystematics->GetErrorYhigh(ibin) / fhRECpt->GetBinContent(ibin) );
 	  errvalueMin = value * ( fgRECSystematics->GetErrorYlow(ibin) / fhRECpt->GetBinContent(ibin) );
 	}
+	else { errvalueMax = 0.; errvalueMin = 0.; }
 	
 	// Extreme feed-down systematics
 	valueExtremeMax = fhRECpt->GetBinContent(ibin) * ( fhFc->GetBinContent(ibin) + fgFcExtreme->GetErrorYhigh(ibin) ) / fhRECpt->GetBinWidth(ibin) ;
@@ -1148,6 +1149,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
 	errvalueMax = fgRECSystematics->GetErrorYhigh(ibin) / fhRECpt->GetBinWidth(ibin) ;
 	errvalueMin = fgRECSystematics->GetErrorYlow(ibin) / fhRECpt->GetBinWidth(ibin);
       }
+      else { errvalueMax = 0.; errvalueMin = 0.; }
   
       // Feed-down systematics
       // min value with the maximum Nb
