@@ -91,7 +91,7 @@ void AliTOFTenderSupply::Init()
       fTOFCalib=new AliTOFcalib();
       fTOFCalib->SetCorrectTExp(kTRUE); // apply a fine tuning on the expected times at low momenta
       if(fIsMC) fTOFCalib->SetCalibrateTOFsignal(kFALSE); // no new calibration
-      fTOFCalib->Init();
+//      fTOFCalib->Init();
   }
   if (!fTOFT0maker) {
       fTOFT0maker = new AliTOFT0maker(fESDpid,fTOFCalib);
