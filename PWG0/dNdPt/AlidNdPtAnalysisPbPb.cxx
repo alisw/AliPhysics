@@ -1153,7 +1153,8 @@ Long64_t AlidNdPtAnalysisPbPb::Merge(TCollection* const list)
 
     // physics selection
     //printf("entry->GetPhysicsTriggerSelection() %p \n", entry->GetPhysicsTriggerSelection());
-    collPhysSelection->Add(entry->GetPhysicsTriggerSelection());
+    AliPhysicsSelection *physSel = entry->GetPhysicsTriggerSelection();
+    if( physSel ) collPhysSelection->Add(physSel); 
     
     //
     fTrackPtCorrelationMatrix->Add(entry->fTrackPtCorrelationMatrix);
@@ -1209,7 +1210,7 @@ Long64_t AlidNdPtAnalysisPbPb::Merge(TCollection* const list)
   }
 
   AliPhysicsSelection *trigSelection = GetPhysicsTriggerSelection();
-  trigSelection->Merge(collPhysSelection);
+  if( trigSelection ) trigSelection->Merge(collPhysSelection);
   if(collPhysSelection) delete collPhysSelection;
 
 return count;
