@@ -1228,7 +1228,7 @@ void AliTPCcalibDButil::UpdateRefDataFromOCDB()
       if (!fRefDataQA){
         AliError(Form("Could not get object from entry '%s'\nPlease check!!!",entry->GetId().GetPath().Data()));
       } else {
-        fRefDataQA=(AliTPCdataQA*)fDataQA->Clone();
+        fRefDataQA=(AliTPCdataQA*)fRefDataQA->Clone();
       }
       delete entry;
     }
