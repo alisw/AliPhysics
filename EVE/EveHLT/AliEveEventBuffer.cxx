@@ -254,7 +254,7 @@ void AliEveEventBuffer::StartBufferMonitor() {
   cout << "starting buffer mon"<<endl;
   CreateBufferThread();
   SetBufferMonStarted(kTRUE);
-  fTimer->Start(10000);
+  fTimer->Start(3000);
 }
 ///___________________________________________________________________________________
 void AliEveEventBuffer::StopBufferMonitor() {
