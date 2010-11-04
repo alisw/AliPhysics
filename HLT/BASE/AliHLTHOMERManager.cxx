@@ -62,6 +62,7 @@ ClassImp(AliHLTHOMERManager)
   fSourceList(NULL),
   fNBlks(0),
   fEventID(),
+  fEventId(-1),
   fCurrentBlk(0),
   fAsyncBlockList(NULL),
   fBlockList(NULL),
@@ -715,7 +716,15 @@ void AliHLTHOMERManager::AddToBlockList() {
   // see header file for class documentation
   HLTInfo("Adding blocks to the synchroneous block list");
 
+  ULong_t eventID = static_cast<ULong64_t>(fCurrentReader->GetEventID());  
   
+  if ( fEventId == eventID ) {
+    HLTInfo(Form("Event 0x%016lX (%lu) already in buffer.", eventID, eventID));
+    return;
+  }
+
+  fEventId = eventID;
+
   GetFirstBlk();
   do {
 

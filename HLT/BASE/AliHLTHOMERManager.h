@@ -87,7 +87,7 @@ public:
   virtual Int_t NextCycle() { return NextEvent(); }
 
   /** Get event ID */
-  ULong_t GetEventID() { return fEventID[fBufferTopIdx]; }
+  ULong_t GetEventID() { return fEventId; }
 
   Int_t GetNAvailableEvents() { return fNEventsAvailable;}
   
@@ -209,6 +209,7 @@ private:
   TList* fSourceList;                /** List to HOMER sources */
   ULong_t fNBlks;                    /** Number of blockes in current event */
   ULong64_t fEventID[BUFFERSIZE];    /** EventID of current event */
+  ULong64_t fEventId;
   ULong_t fCurrentBlk;               /** Current block in current event */
   TList* fAsyncBlockList;            /** List containing asychronous blocks */
   TList* fBlockList;            /** List containing asychronous blocks */
