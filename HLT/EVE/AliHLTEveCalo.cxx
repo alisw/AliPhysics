@@ -97,13 +97,14 @@ void AliHLTEveCalo::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     if ( block->GetDataType().CompareTo("CALOCLUS") == 0 ){
       //cout <<"Skipping calo clusters"<<endl;
       ProcessClusters( block );
-    }
-    else if ( block->GetDataType().CompareTo("DIGITTYP") == 0 ) {
+    } else if ( block->GetDataType().CompareTo("DIGITTYP") == 0 ) {
       //ProcessDigits( block);
       //
+    } else if ( block->GetDataType().CompareTo("CHANNELT") == 0 ) {
+      //ProcessClusters( block );
+    } else if (!block->GetDataType().CompareTo("ALIESDV0")) {
+      ProcessEsdBlock(block);
     }
-    else if ( block->GetDataType().CompareTo("CHANNELT") == 0 ) 
-      ProcessClusters( block );
   }
 }
 
@@ -145,6 +146,16 @@ void AliHLTEveCalo::ProcessHistogram(AliHLTHOMERBlockDesc * block ) {
 //   }
 
 // }
+
+void AliHLTEveCalo::ProcessEsdBlock(AliHLTHOMERBlockDesc * block) {
+  AliESDEvent * event = dynamic_cast<AliESDEvent*>(block->GetTObject());
+  if (event) {
+    ProcessEvent(event);
+  } else {
+    cout << "problem getting the event!"<<endl;
+  }
+
+}
 
 void AliHLTEveCalo::ProcessEvent(AliESDEvent * event) {
   //see header file for documentation

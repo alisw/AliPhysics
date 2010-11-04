@@ -46,6 +46,10 @@ public:
 
 protected :
 
+  /* Process ESD event block */
+  void ProcessEsdBlock(AliHLTHOMERBlockDesc * block);
+  
+
   /** Create the elementlist */
   virtual void CreateElementList() = 0;
   

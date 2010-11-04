@@ -139,6 +139,7 @@ void AliHLTEvePhos::ProcessESDCluster(AliESDCaloCluster * cluster) {
 
 }
 
+///____________________________________________________________________________________
 void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
 
   TVector3 localVector;
@@ -150,6 +151,9 @@ void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
   fBoxSetClusters[4-module].AddBox(localVector.X(), 0, localVector.Z(), 2.2, energy*40, 2.2 );
   fBoxSetClusters[4-module].DigitValue(static_cast<Int_t>(energy*10));
 }
+
+
+///_____________________________________________________________________________
 void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy, Int_t nCells) {
 
   TVector3 localVector;

@@ -182,7 +182,7 @@ void AliHLTEveHLT::ProcessHistograms(AliHLTHOMERBlockDesc * block, TCanvas * can
   canvas->cd();
 }
 
-
+///________________________________________________________________________________________
 void AliHLTEveHLT::CreateTrackList() {
   //See header file for documentation
   fTrackList = new TEveTrackList("ESD Tracks");
@@ -190,7 +190,7 @@ void AliHLTEveHLT::CreateTrackList() {
   AddElement(fTrackList);
 }
 
-
+///_________________________________________________________________________________________
 void AliHLTEveHLT::CreateVertexPointSet() {
   //See header file for documentation
   fPointSetVertex = new TEvePointSet("Primary Vertex");
@@ -218,12 +218,12 @@ void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList 
   
   ProcessEsdEvent(esd, cont);
 }
-
+///___________________________________________________________________________________
 void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
 
   esd->GetStdContent();
 
-  cout << esd->GetEventNumberInFile() << "  " << esd->GetNumberOfCaloClusters() << endl;
+  cout << "ProcessESDEvent() :"<< esd->GetEventNumberInFile()<< "  " << esd->GetNumberOfCaloClusters() << " tracks : " << esd->GetNumberOfTracks() << endl;
 
   //fEventManager->SetRunNumber(esd->GetRunNumber());
 
