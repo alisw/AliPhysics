@@ -342,9 +342,10 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
       AliMpTriggerCrate* crate = AliMpDDLStore::Instance()->
                                 GetTriggerCrate(fRawStreamTrigger->GetDDL(), iReg);
       
-      if (!crate) 
+      if (!crate) {
         fLogger->Log(Form("Missing crate number %d in DDL %d\n", iReg, fRawStreamTrigger->GetDDL()));
-     
+        continue;
+      }
       
       regHeader =  fRawStreamTrigger->GetRegionalHeader(iReg);
       
