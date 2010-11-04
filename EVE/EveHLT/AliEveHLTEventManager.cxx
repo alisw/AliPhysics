@@ -237,13 +237,15 @@ void AliEveHLTEventManager::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     
     else if ( ! block->GetDetector().CompareTo("HLT") ) {
       if(!fHLTElement) CreateHLTElement();
-      fHLTElement->ProcessBlock(block);
-
-      if(!fPhosElement) CreatePhosElement();
-      fPhosElement->ProcessBlock(block);
-
-      if(!fEmcalElement) CreateEmcalElement();
-      fEmcalElement->ProcessBlock(block);
+      
+      if(!block->GetDataType().CompareTo("ALIESDV0")) {
+	AliESDEvent * event = dynamic_cast<AliESDEvent *>(block->GetTObject());
+	if(event) {
+	  ProcessEvent(event);
+	}
+      } else {
+	fHLTElement->ProcessBlock(block);
+      }
     }
 
     else if ( ! block->GetDetector().CompareTo("ITS") ) {
