@@ -22,20 +22,19 @@ AliEveEventBuffer::AliEveEventBuffer() :
   fCurrentEvent(NULL),
   fBIndex(),
   fTimer(NULL),
-  fThread(NULL),
   fEventId(),
   fBufferMonStarted(kFALSE)
  {
   // see header file for class documentation
-  fEventBuffer = new TObjArray(10, 0);
-  fEventBuffer->SetOwner(kTRUE);
+  fEventBuffer = new TObjArray(fBufferSize, 0);
+  fEventBuffer->SetOwner(kFALSE);
   
   for(int id = 0; id < kSize; id++) {
     fBIndex[id] = -1;
   }
   
   fTimer = new TTimer();
-  fTimer->Connect("Timeout()", "AliEveEventBuffer", this, "MonitorBuffer()");
+  fTimer->Connect("Timeout()", "AliEveEventBuffer", this, "CreateBufferThread()");
 
   fEventId = new Int_t[fBufferSize];
 
@@ -60,12 +59,25 @@ AliEveEventBuffer::~AliEveEventBuffer() {
 
 }
 
+void AliEveEventBuffer::CreateBufferThread() {
+  cout << "hereherehere"<<endl;
+  TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
+  fThread->Run();
+
+}
+
 ///___________________________________________________________________________
 void * AliEveEventBuffer::BufferThread(void * buffer) {
+  cout <<"BufferThread : " <<endl;
   if(buffer) {
-    if (!reinterpret_cast<AliEveEventBuffer*>(buffer)->GetBufferMonStarted()) {
-      reinterpret_cast<AliEveEventBuffer*>(buffer)->StartBufferMonitor();
+    if (!reinterpret_cast<AliEveEventBuffer*>(buffer)->GetBusy()) {
+      reinterpret_cast<AliEveEventBuffer*>(buffer)->MonitorBuffer();
+    } else {
+      cout << "busy"<<endl;
     }
+    
+  } else {
+    cout << "no buffer"<<endl;
   }
   return (void*)0;
 }
@@ -93,14 +105,16 @@ void AliEveEventBuffer::MonitorBuffer() {
 ///_______________________________________________________________________________
 TObject * AliEveEventBuffer::NextEvent() {
   //See header file for documentation
-  if(fBusy) {
-    cout << "Event Buffer busy"<<endl;
-    return NULL;
-  }
-  else SetBusy(kTRUE);
   cout << "In enxtevent"<<endl;
+
+
+  // if(fBusy) {
+  //   cout << "Event Buffer busy"<<endl;
+  //   return NULL;
+  // }
+  //  else SetBusy(kTRUE);
   TObject * nextEvent = GetNextUnSeen();
-  SetBusy(kFALSE);
+  //SetBusy(kFALSE);
   return nextEvent;
 }
 
@@ -138,7 +152,7 @@ TObject * AliEveEventBuffer::Fwd() {
 ///________________________________________________________________________________
 TObject * AliEveEventBuffer::GetNextUnSeen() {
   //See header file for documentation
-  cout << "GetNextUnSeend"<<endl;
+  cout << "GetNextUnSeen"<<endl;
   PrintIndeces();
   if(CalculateDifference(fBIndex[kTop], fBIndex[kLast])) {
     fBIndex[kLast] = CalculateNext(fBIndex[kLast]);
@@ -183,8 +197,9 @@ void AliEveEventBuffer::AddToBuffer(TObject * event) {
 
   fBIndex[kTop] = CalculateNext(fBIndex[kTop]);
   //Delete the event already there (ok to delete as object, not aliesdevent, TList?)
-  TObject * object = fEventBuffer->At(fBIndex[kTop]);
-  if (object) delete object;
+  //TObject * object = fEventBuffer->At(fBIndex[kTop]);
+  fEventBuffer->RemoveAt(fBIndex[kTop]);
+  //if (object) delete object;
   fEventBuffer->AddAt(event, fBIndex[kTop]);
 }
 
@@ -228,11 +243,13 @@ Int_t AliEveEventBuffer::CalculateDifference(Int_t top, Int_t low) {
 void AliEveEventBuffer::StartBufferMonitor() {
   //cout << "NOT !!! starting buffer mon"<<endl;
   cout << "starting buffer mon"<<endl;
+  SetBufferMonStarted(kTRUE);
   fTimer->Start(5000);
 }
 ///___________________________________________________________________________________
 void AliEveEventBuffer::StopBufferMonitor() {
   cout << "Stopping buffer mon"<<endl;
+  SetBufferMonStarted(kFALSE);
   fTimer->Stop();
 }
 

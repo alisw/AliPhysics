@@ -126,6 +126,7 @@ void AliEveHLTEventManager::DestroyDetectorElements(){
   
 
 }
+
 ///_______________________________________________________________________________________
 void AliEveHLTEventManager::ConnectEventBuffer() {
   GetEventBuffer()->ConnectToSource();
@@ -135,13 +136,9 @@ void AliEveHLTEventManager::ConnectEventBuffer() {
 ///___________________________________________________________________________________________
 void AliEveHLTEventManager::StartBufferMonitor() { 
   AliEveEventBuffer * buffer = GetEventBuffer();
-  if(buffer) {
-    TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) buffer);
-    fThread->Run();
-  } else {
-    cout << "Buffer does not exist " << endl;
-  }
+  buffer->StartBufferMonitor();
 }
+
 //______________________________________________________________________________________________
 Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
 
@@ -206,6 +203,7 @@ Int_t AliEveHLTEventManager::ProcessEvent(TList * blockList) {
   return 0;
 
 }
+///___________________________________________________________________________________________
 
 void AliEveHLTEventManager::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation

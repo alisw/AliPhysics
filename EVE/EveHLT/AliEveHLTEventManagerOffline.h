@@ -30,8 +30,6 @@ public:
 
   /** Process the event data */
   //Int_t ProcessEvent(AliESDEvent * event);
-  
-  AliESDEvent * fEvent;
   AliEveEventBufferOffline * fEventBuffer;
   AliEveEventBuffer * GetEventBuffer() {return fEventBuffer;}
 

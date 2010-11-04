@@ -214,7 +214,7 @@ void off ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
   // -------------------------
  
   gEventManager = new AliEveHLTEventManagerOffline("/home/slindal/alice/data/PbPb/AliESDs.root");
-  //gEventManager = new AliEveHLTEventManagerOffline("/home/slindal/alice/QAtasks/AliESDs.root");
+
   gEventManager->SetEveManager(gEve);
   gEventManager->SetGeoManager(gGeoManager);
   gEventManager->SetRPhiManager(gRPhiMgr);

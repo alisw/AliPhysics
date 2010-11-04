@@ -36,7 +36,8 @@ public:
 
   void SetBufferSize(Int_t bs) { fBufferSize = bs;}
   void SetBusy(Bool_t busy) { fBusy = busy;}
-
+  Bool_t GetBusy() { return fBusy;}
+  
   //Navigate the event buffer
   // TObject *  NavigateFwd();
   // TObject *  NavigateBack();
@@ -57,6 +58,9 @@ public:
   }
 
   Int_t GetEventId() const { return fEventId[fBIndex[kCurrent]];}
+
+  void CreateBufferThread();
+
 
 protected:
   
@@ -108,6 +112,7 @@ private:
   /** assignment operator prohibited */
   AliEveEventBuffer& operator=(const AliEveEventBuffer&);
 
+  
 
   TObject *  GetNextUnSeen();
 
@@ -115,8 +120,6 @@ private:
   void PrintBuffer();
 
   TTimer * fTimer;
-
-  TThread * fThread;
 
   //Current event id
   Int_t * fEventId;

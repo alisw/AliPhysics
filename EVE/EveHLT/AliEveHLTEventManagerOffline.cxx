@@ -16,7 +16,6 @@ ClassImp(AliEveHLTEventManagerOffline)
 
 AliEveHLTEventManagerOffline::AliEveHLTEventManagerOffline() : 
   AliEveHLTEventManager(),
-  fEvent(NULL),
   fEventBuffer(NULL)
 {
   // see header file for class documentation
@@ -29,7 +28,6 @@ AliEveHLTEventManagerOffline::AliEveHLTEventManagerOffline() :
 
 AliEveHLTEventManagerOffline::AliEveHLTEventManagerOffline(TString filename) : 
   AliEveHLTEventManager(),
-  fEvent(NULL),
   fEventBuffer(NULL)
 {
   // see header file for class documentation
@@ -46,10 +44,6 @@ AliEveHLTEventManagerOffline::~AliEveHLTEventManagerOffline() {
   //DestroyElements();
   //DestroyDetectorElements();  
 
-  if(fEvent)
-    delete fEvent;
-  fEvent = NULL;
-
   if(fEventBuffer)
     delete fEventBuffer;
   fEventBuffer = NULL;
@@ -58,20 +52,22 @@ AliEveHLTEventManagerOffline::~AliEveHLTEventManagerOffline() {
 
 void AliEveHLTEventManagerOffline::NextEvent() {
   //See header file for documentation
-  fEvent = dynamic_cast<AliESDEvent*>(fEventBuffer->NextEvent());
-  if(fEvent) {
-    //Int_t eventId = fBuffer->GetEventId();
-    ProcessEvent(fEvent);
-  } else {
-    cout << "couldn't get the event"<<endl;
+    AliESDEvent * event = dynamic_cast<AliESDEvent*>(fEventBuffer->NextEvent());
+
+    if(event) {
+      //Int_t eventId = fBuffer->GetEventId();
+      ProcessEvent(event);
+    } else {
+      cout << "couldn't get the event"<<endl;
+    }
   }
 }
 
 void AliEveHLTEventManagerOffline::NavigateFwd() {
   //See header file for documentation
-  fEvent = dynamic_cast<AliESDEvent*>(fEventBuffer->Fwd());
-  if(fEvent) {
-    ProcessEvent(fEvent);
+  AliESDEvent * event = dynamic_cast<AliESDEvent*>(fEventBuffer->Fwd());
+  if(event) {
+    ProcessEvent(event);
   } else {
     cout << "couldn't get the fwd event"<<endl;
   }
@@ -79,9 +75,9 @@ void AliEveHLTEventManagerOffline::NavigateFwd() {
 
 void AliEveHLTEventManagerOffline::NavigateBack() {
   //See header file for documentation
-  fEvent = dynamic_cast<AliESDEvent*>(fEventBuffer->Back());
-  if(fEvent) {
-    ProcessEvent(fEvent);
+  AliESDEvent * event = dynamic_cast<AliESDEvent*>(fEventBuffer->Back());
+  if(event) {
+    ProcessEvent(event);
   } else {
     cout << "couldn't get the back event"<<endl;
   }

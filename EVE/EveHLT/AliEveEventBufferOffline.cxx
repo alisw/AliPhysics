@@ -84,12 +84,12 @@ TObject * AliEveEventBufferOffline::GetEventFromSource() {
   }
 
   //Copy event into new event (must be deleted when no longer needed in list!!
-  AliESDEvent * event = new AliESDEvent();
-  fEvent->Copy(*event);
-  cout << event->GetNumberOfCaloClusters() << endl;
+  //AliESDEvent * event = new AliESDEvent();
+  //fEvent->Copy(*event);
+  //cout << event->GetNumberOfCaloClusters() << endl;
 
-  if (event) {
-    return dynamic_cast<TObject*>(event);
+  if (fEvent) {
+    return dynamic_cast<TObject*>(fEvent);
   } else {
     cout << "error getting event" << endl;
     return NULL;
