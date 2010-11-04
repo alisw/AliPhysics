@@ -52,16 +52,16 @@ AliEveHLTEventManagerOffline::~AliEveHLTEventManagerOffline() {
 
 void AliEveHLTEventManagerOffline::NextEvent() {
   //See header file for documentation
-    AliESDEvent * event = dynamic_cast<AliESDEvent*>(fEventBuffer->NextEvent());
-
-    if(event) {
-      //Int_t eventId = fBuffer->GetEventId();
-      ProcessEvent(event);
-    } else {
-      cout << "couldn't get the event"<<endl;
-    }
+  AliESDEvent * event = dynamic_cast<AliESDEvent*>(fEventBuffer->NextEvent());
+  
+  if(event) {
+    //Int_t eventId = fBuffer->GetEventId();
+    ProcessEvent(event);
+  } else {
+    cout << "couldn't get the event"<<endl;
   }
 }
+
 
 void AliEveHLTEventManagerOffline::NavigateFwd() {
   //See header file for documentation
