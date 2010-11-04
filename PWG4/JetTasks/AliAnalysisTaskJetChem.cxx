@@ -76,7 +76,7 @@ fDeltaAOD(kFALSE),
 fDeltaAODBranch(""),
 fAODBranch("jets"),
 fDeltaAODBranchMC(""),
-fAODBranchMC("jetsMC"),
+fAODBranchMC(""),
 fArrayJetsAOD(0x0), 
 fArrayJetsMC(0x0),
 fAOD(0x0),            
@@ -512,14 +512,14 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
 
   if(fUseLOConeMCJets)    fArrayJetsMC = FindChargedParticleJetsMC(); 
   else if(fUsePythiaJets) fArrayJetsMC = GetPythiaJets();
-  else{
+  else if( fAODBranchMC.Length() || fDeltaAODBranchMC.Length() ){
 
     if(fDeltaAOD){
       if (fDebug > 1) AliInfo(" ==== MC Jets From  Delta-AODs !");
       if (fDebug > 1) AliInfo(Form(" ====  Reading Branch: %s  ",fDeltaAODBranchMC.Data()));
       fArrayJetsMC = (TClonesArray*)fAODjets->GetList()->FindObject(fDeltaAODBranchMC.Data());
       if (!fArrayJetsMC){
-	AliFatal(" No jet-array! ");
+	AliFatal(" No MC jet-array! ");
 	return;
       }
     }
@@ -750,6 +750,7 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
   CompLeadingJets(leadingJetAOD,leadingJetMC,pythiaPID,foundK0AOD,foundK0MC);
   FillReferencePlotsTracks();
   FillReferenceFF(leadingJetAOD);
+
   
 
   if(fUseLOConeJets && fArrayJetsAOD){
@@ -2750,19 +2751,25 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
       Double_t massK0         = v0->MassK0Short();
       Double_t massLambda     = v0->MassLambda();
       Double_t massAntiLambda = v0->MassAntiLambda();
-      Double_t radiusV0       = v0->RadiusV0();
+
+      fhV0InvMassK0->Fill(massK0);
+      fhV0InvMassLambda->Fill(massLambda);
+      fhV0InvMassAntiLambda->Fill(massAntiLambda);
+
+      if(!(IsK0InvMass(massK0))) continue; // moved invMass cut for HI - otherwise too slow
+
+      //Double_t radiusV0       = v0->RadiusV0(); // slow
 
       Double_t etaV0          = v0->Eta();
       Double_t fDCAV0ToVertex = v0->DcaV0ToPrimVertex();
       Double_t fDCADaughters  = v0->DcaV0Daughters();
 
-
       Double_t v0Mom[3];
       v0->PxPyPz(v0Mom);
       TVector3 v0MomVect(v0Mom);
       
-      AliAODTrack *trackPos = (AliAODTrack *) (v0->GetSecondaryVtx()->GetDaughter(0));
-      AliAODTrack *trackNeg = (AliAODTrack *) (v0->GetSecondaryVtx()->GetDaughter(1));   
+      AliAODTrack *trackPos = (AliAODTrack *) (v0->GetSecondaryVtx()->GetDaughter(0)); // slow 
+      AliAODTrack *trackNeg = (AliAODTrack *) (v0->GetSecondaryVtx()->GetDaughter(1)); // slow  
 
       Double_t posMom[3], negMom[3];
       trackPos->PxPyPz(posMom);
@@ -2788,12 +2795,9 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
       Double_t pV0       = TMath::Sqrt(v0->Ptot2V0());
       Double_t ptV0      = TMath::Sqrt(v0->Pt2V0());
      
-      fhV0InvMassK0->Fill(massK0);
-      fhV0InvMassLambda->Fill(massLambda);
-      fhV0InvMassAntiLambda->Fill(massAntiLambda);
     
       fhV0DCADaughters->Fill(fDCADaughters);
-      fhV0Radius->Fill(radiusV0);
+      //fhV0Radius->Fill(radiusV0);
       fhV0DCAToVertex->Fill(fDCAV0ToVertex);
       fhdNdptV0->Fill(ptV0);
 
@@ -3684,8 +3688,11 @@ Int_t AliAnalysisTaskJetChem::GetPythiaProcessID(){
     return -1;
   }
   
-  AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+  //AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent); // not OK for HiJing
   
+  AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+  AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+
   if (!pythiaGenHeader) {
     AliInfo("Could not retrieve pythiaEventHeader");
     return -1;

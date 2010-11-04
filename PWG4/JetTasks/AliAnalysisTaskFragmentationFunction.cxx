@@ -4379,7 +4379,7 @@ Double_t AliAnalysisTaskFragmentationFunction::GetDiJetBin(Double_t invMass, Dou
     {
       for(Int_t i=0; i<fDiJetNBinsJetInvMass; ++i)
 	{
-	  jetBin = fDiJetJetInvMassMin + i*stepInvMass/2.;
+	  jetBin = fDiJetJetInvMassMin + i*stepInvMass + stepInvMass/2.;
 	  if(((fDiJetJetInvMassMin+i*stepInvMass) <= invMass) &&
 	     (fDiJetJetInvMassMin + (i+1)*stepInvMass) > invMass) {jetBinOk = jetBin; break;}
           else jetBinOk = -1.;
@@ -4389,7 +4389,7 @@ Double_t AliAnalysisTaskFragmentationFunction::GetDiJetBin(Double_t invMass, Dou
     {
       for(Int_t i=0; i<fDiJetNBinsJetPt; ++i)
 	{
-	  jetBin = fDiJetJetPtMin + i*stepPt/2.;
+	  jetBin = fDiJetJetPtMin + i*stepPt + stepPt/2.;
 	  if(((fDiJetJetPtMin+i*stepPt) <= EtMean) &&
 	     (fDiJetJetPtMin + (i+1)*stepPt) > EtMean) {jetBinOk = jetBin; break;}
           else jetBinOk = -1.;
@@ -4399,7 +4399,7 @@ Double_t AliAnalysisTaskFragmentationFunction::GetDiJetBin(Double_t invMass, Dou
     {
       for(Int_t i=0; i<fDiJetNBinsJetPt; ++i)
 	{
-	  jetBin = fDiJetJetPtMin + i*stepPt/2.;
+	  jetBin = fDiJetJetPtMin + i*stepPt + stepPt/2.;
 	  if(((fDiJetJetPtMin+i*stepPt) <= leadingJetPt) &&
 	     (fDiJetJetPtMin + (i+1)*stepPt) > leadingJetPt) {jetBinOk = jetBin; break;}
           else jetBinOk = -1.;

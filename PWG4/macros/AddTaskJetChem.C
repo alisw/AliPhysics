@@ -39,8 +39,8 @@ AliAnalysisTask *AddTaskJetChem(){
   // configure task 
 
 
-  task->SetUseLOConeJets();
-  task->SetUseLOConeMCJets();
+  //task->SetUseLOConeJets();
+  //task->SetUseLOConeMCJets();
   
   //task->SetUsePythiaJets();
   task->SetConeRadius(0.4);
@@ -60,8 +60,8 @@ AliAnalysisTask *AddTaskJetChem(){
   task->SetUseOnFlyV0s(); 
   task->SetCutnSigdEdx(2); 
  
-  //task->ReadDeltaAOD(); // uncomment for DeltaAODs
-  //task->SelectDeltaAODBranch("bla"); 
+  task->ReadDeltaAOD(); // uncomment for DeltaAODs
+  task->SelectDeltaAODBranch("jetsAOD_FASTJET04"); 
   //task->SelectAODBranch("jetsAOD_FASTKT04");
   //task->SelectAODBranch("jetsAOD_UA107");
   //task->SelectAODBranch("jets");
