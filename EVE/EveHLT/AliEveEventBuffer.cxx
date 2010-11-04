@@ -60,7 +60,7 @@ AliEveEventBuffer::~AliEveEventBuffer() {
 }
 
 void AliEveEventBuffer::CreateBufferThread() {
-  cout << "hereherehere"<<endl;
+  //  cout << "hereherehere"<<endl;
   TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
   fThread->Run();
 
@@ -85,22 +85,22 @@ void * AliEveEventBuffer::BufferThread(void * buffer) {
 ///_____________________________________________________________________________
 void AliEveEventBuffer::MonitorBuffer() {
   cout << "Monitorbuffer: " << endl;
-  if(fBusy) {
-    cout << "Already called FetchEvent()" << endl;
-    return;
-  } else {
-    cout << "fbusy = false"<<endl;
-    
-    if ( (CalculateDifference(fBIndex[kTop],fBIndex[kLast]) < fPreBuffer) ) {
+  if ( (CalculateDifference(fBIndex[kTop],fBIndex[kLast]) < fPreBuffer) ) {
+    if(GetBusy()) {
+      cout << "Already called FetchEvent()" << endl;
+      return;
+    } else {
       fBusy = kTRUE;
       FetchEvent();
       fBusy = kFALSE;
-    } else {
-      //StopBufferMonitor();
-      fBusy = kFALSE;
     }
+  } else {
+    //StopBufferMonitor();
+    
+    fBusy = kFALSE;
   }
 }
+
 
 ///_______________________________________________________________________________
 TObject * AliEveEventBuffer::NextEvent() {
@@ -243,8 +243,9 @@ Int_t AliEveEventBuffer::CalculateDifference(Int_t top, Int_t low) {
 void AliEveEventBuffer::StartBufferMonitor() {
   //cout << "NOT !!! starting buffer mon"<<endl;
   cout << "starting buffer mon"<<endl;
+  CreateBufferThread();
   SetBufferMonStarted(kTRUE);
-  fTimer->Start(5000);
+  fTimer->Start(10000);
 }
 ///___________________________________________________________________________________
 void AliEveEventBuffer::StopBufferMonitor() {

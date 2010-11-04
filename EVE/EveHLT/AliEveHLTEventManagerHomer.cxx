@@ -47,10 +47,18 @@ AliEveHLTEventManagerHomer::~AliEveHLTEventManagerHomer() {
 ///________________________________________________________________________________
 void AliEveHLTEventManagerHomer::NextEvent() {
   //See header file for documentation
+  if(fEventBuffer->GetBusy() ) {
+    cout << "event buffer already busy"<<endl;
+    return;
+  }else {
+    fEventBuffer->SetBusy(kTRUE);
+  }
+  
   TList * fEvent = static_cast<TList*>(fEventBuffer->NextEvent());
   if(fEvent) {
     cout << "Got the event " <<endl;
     ProcessEvent(fEvent);
+
   } else {
     cout << "could't get the sync event"<<endl;
   }

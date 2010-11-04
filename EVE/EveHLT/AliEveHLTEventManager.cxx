@@ -238,6 +238,12 @@ void AliEveHLTEventManager::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     else if ( ! block->GetDetector().CompareTo("HLT") ) {
       if(!fHLTElement) CreateHLTElement();
       fHLTElement->ProcessBlock(block);
+
+      if(!fPhosElement) CreatePhosElement();
+      fPhosElement->ProcessBlock(block);
+
+      if(!fEmcalElement) CreateEmcalElement();
+      fEmcalElement->ProcessBlock(block);
     }
 
     else if ( ! block->GetDetector().CompareTo("ITS") ) {
@@ -343,8 +349,9 @@ void AliEveHLTEventManager::PrintScreens() {
 void AliEveHLTEventManager::StartLoop() {
   //See header file for documentation
   //fTimer->SetCommand("NextEvent()", "AliEveHLTEventManager", this);
+  NextEvent();
   SetEventLoopStarted(kTRUE);
-  fTimer->Start(10000);
+  fTimer->Start(15000);
 }
 
 void AliEveHLTEventManager::StopLoop() {
