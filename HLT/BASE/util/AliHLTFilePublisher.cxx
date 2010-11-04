@@ -109,6 +109,7 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
   int iResult=0;
+  fOpenFilesAtStart = false;
   if ((iResult=ConfigureFromArgumentString(argc, argv))<0) return iResult;
 
   if (iResult>=0 && fEvents.GetSize()==0) {
@@ -131,7 +132,6 @@ int AliHLTFilePublisher::ScanConfigurationArgument(int argc, const char** argv)
   int bMissingParam=0;
   int bHaveDatatype=0;
   int bHaveSpecification=0;
-  fOpenFilesAtStart = false;
   AliHLTComponentDataType currDataType=kAliHLTVoidDataType;
   AliHLTUInt32_t          currSpecification=kAliHLTVoidDataSpec;
   EventFiles*             pCurrEvent=NULL;
@@ -162,8 +162,8 @@ int AliHLTFilePublisher::ScanConfigurationArgument(int argc, const char** argv)
       if (pFile && !pFile->IsZombie()) {
 	pFile->Seek(0);
 	TArrayC buffer;
-	buffer.Set(pFile->GetSize());
-	if (pFile->ReadBuffer(buffer.GetArray(), buffer.GetSize())==0) {
+        buffer.Set(pFile->GetSize()+1);
+        if (pFile->ReadBuffer(buffer.GetArray(), pFile->GetSize())==0) {
 	  const char* argbuffer=buffer.GetArray();
 	  if ((iResult=ConfigureFromArgumentString(1, &argbuffer))<0) {
 	    iResult=-EPROTO;
