@@ -149,7 +149,7 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
   // -- Set EventID in Window Title  
   TString winTitle("Eve Main Window");
   winTitle += Form("-- Run Number: %d", fRunNumber); 
-  winTitle += Form("-- Event ID : 0x%lu ", GetEventBuffer()->GetEventId() );
+  winTitle += Form("-- Event ID : 0x%016lX ", GetEventBuffer()->GetEventId() );
   GetEveManager()->GetBrowser()->SetWindowName(winTitle);
 
 
