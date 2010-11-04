@@ -248,6 +248,7 @@ Int_t AliHLTEveCalo::GetPadNumber(TString name) {
   if(fPadTitles[GetMaxHistograms()].CompareTo("")) {
     cout << "AliHLTEveCalo::GetPadNumber:  We have more histograms than we have room for"<< endl;
   }
+  cout << "returning one"<<endl;
   return 1;
 
 }
