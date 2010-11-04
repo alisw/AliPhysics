@@ -42,6 +42,7 @@
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSEDs.h"
+#include "AliNormalizationCounter.h"
 
 ClassImp(AliAnalysisTaskSEDs)
 
@@ -62,6 +63,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fListCuts(0),
   fMassRange(0.2),
   fMassBinSize(0.002),
+  fCounter(0),
   fProdCuts(0),
   fAnalysisCuts(0)
 {
@@ -84,6 +86,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
   fListCuts(0),
   fMassRange(0.2),
   fMassBinSize(0.002),
+  fCounter(0),
   fProdCuts(productioncuts),
   fAnalysisCuts(analysiscuts)
 {
@@ -96,6 +99,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
   DefineOutput(1,TList::Class());  //My private output
 
   DefineOutput(2,TList::Class());
+
+  DefineOutput(3,AliNormalizationCounter::Class());
 }
 
 //________________________________________________________________________
@@ -187,6 +192,11 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     fYVsPtSigAC=0;
   }
 
+  if(fCounter){
+    delete fCounter;
+    fCounter = 0;
+  }
+  
   if (fProdCuts) {
     delete fProdCuts;
     fProdCuts = 0;
@@ -372,6 +382,9 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->Add(fYVsPtSig);
   fOutput->Add(fYVsPtSigAC);
 
+  //Counter for Normalization
+  fCounter = new AliNormalizationCounter("NormalizationCounter");
+
   return;
 }
 
@@ -416,7 +429,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   fHistNEvents->Fill(0); // count event
   // Post the data already here
   PostData(1,fOutput);
- 
+
+  fCounter->StoreEvent(aod,fReadMC);
+
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
 
@@ -446,6 +461,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   
   
   Int_t pdgDstoKKpi[3]={321,321,211};
+  Int_t nSelectedloose=0;
+  Int_t nSelectedtight=0;
+
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
     
@@ -493,6 +511,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       if(retCodeAnalysisCuts) fYVsPtAC->Fill(ptCand,rapid);
  
       Bool_t isFidAcc=fAnalysisCuts->IsInFiducialAcceptance(ptCand,rapid);
+
+      if(isFidAcc){
+	nSelectedloose++;
+	if(retCodeAnalysisCuts>0)nSelectedtight++;
+      }
 
       Int_t index=GetHistoIndex(iPtBin);
       Int_t type=0;
@@ -653,8 +676,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
  
-   
-  PostData(1,fOutput);    
+  fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);
+  fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);
+
+  PostData(1,fOutput); 
+  PostData(3,fCounter);    
+
   return;
 }
 
@@ -686,6 +713,7 @@ void AliAnalysisTaskSEDs::Terminate(Option_t */*option*/)
   fChanHistCuts[2] = dynamic_cast<TH1F*>(fOutput->FindObject("hChanBkgCuts"));
   fChanHistCuts[3] = dynamic_cast<TH1F*>(fOutput->FindObject("hChanReflSigCuts"));
 
+  fCounter = dynamic_cast<AliNormalizationCounter*>(GetOutputData(3)); 
 
   TString hisname;
   TString htype;
@@ -747,3 +775,4 @@ void AliAnalysisTaskSEDs::Terminate(Option_t */*option*/)
   }
   return;
 }
+
