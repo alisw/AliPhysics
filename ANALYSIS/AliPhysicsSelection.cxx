@@ -180,7 +180,11 @@ AliPhysicsSelection::~AliPhysicsSelection()
     delete fHistTriggerPattern;
     fHistTriggerPattern = 0;
   }
-
+  if (fBackgroundIdentification)
+  { 
+    delete fBackgroundIdentification;
+    fBackgroundIdentification = 0;
+  }  
 }
 
 UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const
