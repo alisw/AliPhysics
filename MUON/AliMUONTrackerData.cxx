@@ -1601,7 +1601,7 @@ AliMUONTrackerData::Merge(TCollection* list)
   while ( ( o = next() ) )
   {
     const AliMUONTrackerData* data = dynamic_cast<const AliMUONTrackerData*>(o);
-    if (!o)
+    if (!data)
     {
       AliError(Form("Object named %s is not an AliMUONTrackerData ! Skipping it",
                     o->GetName()));

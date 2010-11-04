@@ -484,6 +484,9 @@ AliMUONTrackerIO::DecodeCapacitances(const char* data, AliMUONVStore& capaStore)
       }      
       continue;
     }
+    
+    if (!param) continue;
+    
     Int_t channel;
     Float_t capaValue;
     Float_t injectionGain;

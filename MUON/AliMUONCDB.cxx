@@ -1524,10 +1524,10 @@ AliMUONCDB::ShowConfig(Bool_t withStatusMap)
   
     statusMaker->SetLimits(*recoParam);
   
-    delete recoParam;
-  
     UInt_t mask = recoParam->PadGoodnessMask();
-  
+
+    delete recoParam;
+    
     const Bool_t deferredInitialization = kFALSE;
   
     statusMapMaker = new AliMUONPadStatusMapMaker(*cd,mask,deferredInitialization);
