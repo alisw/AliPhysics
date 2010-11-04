@@ -24,6 +24,7 @@
 
 #include "AliAnalysisTaskME.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisDataSlot.h"
 #include "AliAODEvent.h"
 #include "AliVEvent.h"
 #include "AliAODHandler.h"
@@ -172,7 +173,9 @@ void AliAnalysisTaskME::Exec(Option_t* option)
 	{
 	    if (outputHandler) outputHandler->SetFillAOD(kTRUE);
 	    UserExec(option);
-	    PostData(0, fTreeA);
+	    // Added protection in case the derived task is not an AOD producer.
+	    AliAnalysisDataSlot *out0 = GetOutputSlot(0);
+	    if (out0 && out0->IsConnected()) PostData(0, fTreeA);
 	} else {
 	    if (outputHandler) outputHandler->SetFillAOD(kFALSE);
 	}
