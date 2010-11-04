@@ -12,6 +12,7 @@
 #pragma link C++ class AliAODRecoCascadeHF+;
 #pragma link C++ class AliAODPidHF+;
 #pragma link C++ class AliRDHFCuts+;
+#pragma link C++ class AliHFSystErr+;
 #pragma link C++ class AliRDHFCutsD0toKpi+;
 #pragma link C++ class AliRDHFCutsJpsitoee+;
 #pragma link C++ class AliRDHFCutsDplustoKpipi+;

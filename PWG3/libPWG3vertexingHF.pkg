@@ -6,6 +6,7 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliAODRecoCascadeHF.cxx \
        vertexingHF/AliAODPidHF.cxx \
        vertexingHF/AliRDHFCuts.cxx \
+       vertexingHF/AliHFSystErr.cxx \
        vertexingHF/AliRDHFCutsD0toKpi.cxx \
        vertexingHF/AliRDHFCutsJpsitoee.cxx \
        vertexingHF/AliRDHFCutsDplustoKpipi.cxx \
