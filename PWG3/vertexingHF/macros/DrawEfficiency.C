@@ -199,7 +199,7 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 
 		//The efficiency along the variables
 		hpteffCF = eff->Project(ipt); 
-		SetHisto(hpteffCF,8,20,"mcAcc_over_mcLimAcc");
+		SetHistoEff(hpteffCF,8,20,"mcAcc_over_mcLimAcc");
 		hpteffCF->Draw("hist");
 		hpteffCF->Draw("err same");
 		fileEff->cd();
@@ -225,7 +225,7 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 		
 		//The efficiency along the variables
 		hpteffCF = eff->Project(ipt); 
-		SetHisto(hpteffCF,8,20, "recAnCuts_over_mcAcc");
+		SetHistoEff(hpteffCF,8,20, "recAnCuts_over_mcAcc");
 		hpteffCF->Draw("hist");
 		hpteffCF->Draw("err same");
 		fileEff->cd();
@@ -251,7 +251,7 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 		
 		//The efficiency along the variables
 		hpteffCF = eff->Project(ipt); 
-		SetHisto(hpteffCF,8,20,"recPID_over_mcAcc");
+		SetHistoEff(hpteffCF,8,20,"recPID_over_mcAcc");
 		hpteffCF->Draw("hist");
 		hpteffCF->Draw("err same");
 		fileEff->cd();
@@ -267,10 +267,26 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 	
 	cutsRDHF->Write("Cuts");
 
+	// writing single distributions
+	TH1D *hMCAccpt = data->ShowProjection(ipt, AliCFTaskVertexingHF::kStepAcceptance);
+	SetHistoDistribution(hMCAccpt, 1, 20);
+	hMCAccpt->Draw();
+	TH1D *hMCLimAccpt = data->ShowProjection(ipt, AliCFHeavyFlavourTaskMultiVarMultiStep::kStepGeneratedLimAcc);
+	SetHistoDistribution(hMCLimAccpt, 4, 20);
+	TH1D *hRecoAnCutspt = data->ShowProjection(ipt, AliCFTaskVertexingHF::kStepRecoPPR);
+	SetHistoDistribution(hRecoAnCutspt, 8, 20);
+	TH1D *hRecoPIDpt = data->ShowProjection(ipt, AliCFTaskVertexingHF::kStepRecoPID);
+	SetHistoDistribution(hRecoPIDpt, 6, 20);
+	hMCAccpt->Write("hMCAccpt");
+	hMCLimAccpt->Write("hMCLimAccpt");
+	hRecoAnCutspt->Write("hRecoAnCutspt");
+	hRecoPIDpt->Write("hRecoPIDpt");
+
 	//	fileEff->Close(); // commented out to see the canvas on the screen....
+
 }
 
-void SetHisto(TH1D* h, Int_t color, Int_t style, const char* effType){
+void SetHistoEff(TH1D* h, Int_t color, Int_t style, const char* effType){
 
 	h->SetLineColor(color);
 	h->SetLineWidth(3);
@@ -278,7 +294,19 @@ void SetHisto(TH1D* h, Int_t color, Int_t style, const char* effType){
 	h->SetMarkerColor(color);
 	h->SetMarkerSize(1.2);
 	h->GetYaxis()->SetTitleOffset(1.5);
+	h->GetXaxis()->SetTitleOffset(1.2);
 	h->GetXaxis()->SetTitle("p_{t} [GeV/c]");
 	h->GetYaxis()->SetTitle(Form("%s, Efficiency",effType));
+	return;
+}
+void SetHistoDistribution(TH1D* h, Int_t color, Int_t style){
+
+	h->SetLineColor(color);
+	h->SetLineWidth(3);
+	h->SetMarkerStyle(style);
+	h->SetMarkerColor(color);
+	h->SetMarkerSize(1.2);
+	h->GetXaxis()->SetTitleOffset(1.2);
+	h->GetXaxis()->SetTitle("p_{t} [GeV/c]");
 	return;
 }
