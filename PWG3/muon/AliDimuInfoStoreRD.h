@@ -33,7 +33,7 @@ class AliDimuInfoStoreRD : public TObject {
   Short_t  Charge()   const { return fCharge;   }
   Double_t InvM()     const { return fInvM;     }
 
-  Bool_t DimuSelection();
+  Bool_t IsSelected();
 
   static const char* StdBranchName() { return fgkStdBranchName.Data(); }
   static void SetSelectionCuts(Double_t cuts[12]) { for (Int_t i=12; i--;) fgCutd[i]=cuts[i]; }

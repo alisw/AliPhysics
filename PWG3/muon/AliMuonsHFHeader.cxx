@@ -23,7 +23,7 @@
 
 #include <TMath.h>
 #include <TH1.h>
-#include <TH1F.h>
+#include <TH1D.h>
 #include <TList.h>
 
 #include "AliMuonInfoStoreRD.h"
@@ -33,7 +33,7 @@
 #include "AliMuonsHFHeader.h"
 
 class TNamed;
-class AliESDVertex;
+class AliVVertex;
 
 ClassImp(AliMuonsHFHeader)
 
@@ -103,7 +103,7 @@ void AliMuonsHFHeader::SetEvent(AliVVertex *vertex)
 }
 
 //_____________________________________________________________________________
-Bool_t AliMuonsHFHeader::EventSelection()
+Bool_t AliMuonsHFHeader::IsSelected()
 {
   // select event according to the event selection cuts
   if (this->VtxContrsN()<fgCuts[0])     return kFALSE;
@@ -154,9 +154,9 @@ void AliMuonsHFHeader::CreateHistosEvnH(TList *list)
   Double_t xlow[nHistos] = {  -40.,    0.,         -2.5 };
   Double_t  xup[nHistos] = {   40.,    4.,        199.5 };
 
-  TH1F *histo = 0;
+  TH1D *histo = 0;
   for (Int_t i=0; i<nHistos; i++) {
-    histo = new TH1F(tname[i], tname[i].Data(), nbins[i], xlow[i], xup[i]);
+    histo = new TH1D(tname[i], tname[i].Data(), nbins[i], xlow[i], xup[i]);
     histo->Sumw2(); list->Add(histo); histo = 0;
   }
 
@@ -176,14 +176,14 @@ void AliMuonsHFHeader::CreateHistosMuon(TList *list, TString sName)
   
   const Int_t nHistos = 8;
   TString tName[nHistos] = {   "P",  "Pt",  "Eta",  "DCA",  "TrM",  "Charge", "Rabs", "UnfVtx" };
-  Int_t   nbins[nHistos] = { 1500 ,  300 ,   100 ,   500 ,    4  ,       3  ,   300 ,      80  };
-  Double_t xlow[nHistos] = {    0.,    0.,   -10.,     0.,   -0.5,      -1.5,     0.,     -40. };
-  Double_t  xup[nHistos] = {  150.,   30.,     0.,   500.,    3.5,       1.5,   150.,      40. };
+  Int_t   nbins[nHistos] = { 1500 ,  300 ,    15 ,  1000 ,    4  ,       3  ,    48 ,      80  };
+  Double_t xlow[nHistos] = {    0.,    0.,   -4.0,     0.,   -0.5,      -1.5,   17.6,     -40. };
+  Double_t  xup[nHistos] = {  150.,   30.,   -2.5,   500.,    3.5,       1.5,   80.0,      40. };
 
-  TH1F *histo = 0;
+  TH1D *histo = 0;
   for (Int_t i=0; i<nHistos; i++) {
     char *hName = Form("h%s_%s", sName.Data(), tName[i].Data());
-    histo = new TH1F(hName, hName, nbins[i], xlow[i], xup[i]);
+    histo = new TH1D(hName, hName, nbins[i], xlow[i], xup[i]);
     histo->Sumw2(); list->Add(histo); histo = 0;
   }
 
@@ -201,7 +201,7 @@ void AliMuonsHFHeader::CreateHistosDimu(TList *list, TString sName)
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  TH1F *histo = 0;
+  TH1D *histo = 0;
   const Int_t nHistos = 3;
   TString tName[nHistos] = {   "P",  "Pt",  "InvM"   };
   Int_t   nbins[nHistos] = { 1500 ,  300 ,    300    };
@@ -211,7 +211,7 @@ void AliMuonsHFHeader::CreateHistosDimu(TList *list, TString sName)
   for (Int_t i=0; i<3; i++) {
     for (Int_t j=0; j<nHistos; j++) {
       char *hName = Form("h%s_%s_%s", sName.Data(), dimuName[i].Data(), tName[j].Data());
-      histo = new TH1F(hName, hName, nbins[j], xlow[j], xup[j]);
+      histo = new TH1D(hName, hName, nbins[j], xlow[j], xup[j]);
       histo->Sumw2(); list->Add(histo); histo = 0;
     }
   }
@@ -226,12 +226,12 @@ void AliMuonsHFHeader::FillHistosEvnH(TList *list)
   // fill histograms at event level according to event selection cuts
 
   if (!list)                   return;
-  if (!this->EventSelection()) return;
+  if (!this->IsSelected()) return;
 
   const Int_t    nHistos = 3;
   TString tname[nHistos] = {      "hVz",      "hVt",       "hVtxNcontr" };
   Double_t dist[nHistos] = { this->Vz(), this->Vt(), this->VtxContrsN() };
-  for (Int_t i=nHistos; i--;) ((TH1F*)list->FindObject(tname[i].Data()))->Fill(dist[i]);
+  for (Int_t i=nHistos; i--;) ((TH1D*)list->FindObject(tname[i].Data()))->Fill(dist[i]);
   return;
 }
 
@@ -240,9 +240,9 @@ void AliMuonsHFHeader::FillHistosMuon(TList *list, AliMuonInfoStoreRD* const inf
 {
   // fill histograms for single muon according to event & muon track selection cuts
 
-  if (!list)                       return;
-  if (!this->EventSelection())     return;
-  if (!infoStore->MuonSelection()) return;
+  if (!list)                    return;
+  if (!this->IsSelected())      return;
+  if (!infoStore->IsSelected()) return;
 
   const Int_t nHistos    = 8;
   TString tName[nHistos] = { "P", "Pt", "Eta", "DCA", "TrM", "Charge", "Rabs", "UnfVtx" };
@@ -254,11 +254,11 @@ void AliMuonsHFHeader::FillHistosMuon(TList *list, AliMuonInfoStoreRD* const inf
                              infoStore->Charge(),
                              infoStore->RabsEnd(),
                              this->Vz() };
-  for (Int_t i=nHistos; i--;) ((TH1F*)list->FindObject(Form("h%s_%s","",tName[i].Data())))->Fill(dist[i]);
+  for (Int_t i=nHistos; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","",tName[i].Data())))->Fill(dist[i]);
 
   if (fgIsMC && src>=0) {
     TString sName[6] = { "BottomMu", "CharmMu", "PrimaryMu", "SecondaryMu", "Hadron", "Unidentified" };
-    for (Int_t i=nHistos; i--;) ((TH1F*)list->FindObject(Form("h%s_%s",sName[src].Data(),tName[i].Data())))->Fill(dist[i]);
+    for (Int_t i=nHistos; i--;) ((TH1D*)list->FindObject(Form("h%s_%s",sName[src].Data(),tName[i].Data())))->Fill(dist[i]);
   }
 
   return; 
@@ -269,9 +269,9 @@ void AliMuonsHFHeader::FillHistosDimu(TList *list, AliDimuInfoStoreRD* const inf
 {
   // fill histograms for dimuon according to evnet & dimuon candidates selection cuts
 
-  if (!list)                       return;
-  if (!this->EventSelection())     return;
-  if (!infoStore->DimuSelection()) return;
+  if (!list)                    return;
+  if (!this->IsSelected())      return;
+  if (!infoStore->IsSelected()) return;
 
   TString dimuName = "DimuNN";
   if (infoStore->Charge()==0)     dimuName = "DimuNP";
@@ -282,11 +282,11 @@ void AliMuonsHFHeader::FillHistosDimu(TList *list, AliDimuInfoStoreRD* const inf
   Double_t dist[nHistos] = { infoStore->Momentum().Mag(),
                              infoStore->Momentum().Pt(),
                              infoStore->InvM() };
-  for (Int_t i=nHistos; i--;) ((TH1F*)list->FindObject(Form("h%s_%s_%s","",dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
+  for (Int_t i=nHistos; i--;) ((TH1D*)list->FindObject(Form("h%s_%s_%s","",dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
 
   if (fgIsMC && src>=0) {
     TString sName[6] = { "BBdiff", "BBsame", "DDdiff", "DDsame", "Resonance", "Uncorr" };
-    for (Int_t i=nHistos; i--;) ((TH1F*)list->FindObject(Form("h%s_%s_%s",sName[src].Data(),dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
+    for (Int_t i=nHistos; i--;) ((TH1D*)list->FindObject(Form("h%s_%s_%s",sName[src].Data(),dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
   }
 
   return;

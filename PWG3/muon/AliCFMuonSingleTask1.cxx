@@ -201,7 +201,7 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 
 	      containerInput[7] = 3;
 	      containerInput[10] = rmc ; // radius at production      
-	      containerInput[15] = 45 ;  // rabsmc
+	      containerInput[15] = 175. ;  // rabsmc
 	      
 	      // fill the container at the first step
 	      fCFManager->GetParticleContainer()->Fill(containerInput,0);
@@ -272,9 +272,12 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 	Float_t rabs = mu1->GetRAtAbsorberEnd();
 	Float_t thetar ;
 	thetar = TMath::Abs(-TMath::Pi()+TMath::ASin(ptr/pr)); 
-  
+
 // rapidity and Pt cuts (default -4<y<-2.5 et 0<pt<20)
 	if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mu1)) continue;
+
+        Float_t thetaAbs = 180.*(1.-TMath::ATan(rabs/505.)/TMath::Pi());
+        if (thetaAbs<171 || thetaAbs>178) continue;
 
 	containerInput[0] = etar ;   
 	containerInput[1] = rapr ;   
@@ -291,7 +294,7 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 	containerInput[12] = trig ;
 	containerInput[13] = dcar ;
 	containerInput[14] = zr ;
-	containerInput[15] = rabs ;
+	containerInput[15] = thetaAbs;
 	containerInput[16] = charger ;
 	containerInput[17] = thetar ;
 

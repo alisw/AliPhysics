@@ -39,7 +39,7 @@ class AliMuonInfoStoreRD : public TObject {
   Double_t Chi2MatchTrigger() const { return fChi2MatchTrigger; }
   Double_t RabsEnd()          const { return fRabsEnd;          }
 
-  Bool_t MuonSelection();
+  Bool_t IsSelected();
 
   static const char* StdBranchName()                  { return fgkStdBranchName.Data(); }
   static void SelectionCust(Double_t cuts[12])  { for (Int_t i=12; i--;) cuts[i]=fgCuts[i]; }
