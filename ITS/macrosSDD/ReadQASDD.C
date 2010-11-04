@@ -13,7 +13,9 @@
 void ReadQASDD(Int_t runNb = 101498,Int_t year=2009,Char_t period[10]="LHC09c",Char_t pass[8]="pass1",Char_t filetosearch[50]="Merged.QA.Data.root",Char_t initfileout[50]="File.QA")
 {
 
-  //****************** Connection to alien ***************************************** 
+  //****************** Connection to alien *****************************************
+  gSystem->Load("libNetx.so") ; 
+  gSystem->Load("libRAliEn.so"); 
   TGrid::Connect("alien://",0,0,"t"); 
   //TGrid *gGrid = TGrid::Connect("alien"); 
   if(!gGrid||!gGrid->IsConnected()) {
@@ -42,18 +44,40 @@ void ReadQASDD(Int_t runNb = 101498,Int_t year=2009,Char_t period[10]="LHC09c",C
 
   Int_t mergedFiles = 0;
   Int_t nFiles = gr->GetEntries();
+  if(nFiles>600) nFiles=600; 
   for (Int_t i = 0; i <nFiles ; i++) { 
-    printf("File %i/%i\n",i,nFiles); 
-    sprintf(directory,"%s",gr->GetKey(i,"turl")); 
-    if (merger.AddFile(directory))
-      mergedFiles++;
+    printf("File %i/%i\n",i+1,nFiles); 
+    sprintf(directory,"%s",gr->GetKey(i,"turl"));
+    printf("%s\n\n", directory);
+       if(i==0) 
+      {
+	TFile *checkfile=TFile::Open(directory);
+	if(checkfile->GetKey("ITS")==0x0){
+	  printf("file: %s \n Run %d, In this run ITS QA has not been executed.-- Exit macro\n",directory, runNb);
+	  break;
+	  //mergedFiles=-1;
+	}
+	checkfile->Close();
+	delete checkfile;
+	checkfile=NULL;
+      }
+       if (merger.AddFile(directory))
+	 mergedFiles++;
   }
-  //printf("Add done\n");
-  if(merger.Merge()==kTRUE){
-    printf("merged %d files\n", mergedFiles);
-    printf("output written on %s\n", fileName);
-    printf("Merge done!\n");
-  }
+// ------------------------------in this section we create a file that will contain the number of chunks to normalize later
+  if(mergedFiles>0){
+    FILE * pChunkNumber;
+    pChunkNumber = fopen ("ChunkNumber.txt","w+");
+    fprintf (pChunkNumber, "%f\n", mergedFiles);
+    fclose (pChunkNumber);
+    
+    //printf("Add done\n");
+    if(merger.Merge()==kTRUE){
+      printf("merged %d files\n", mergedFiles);
+      printf("output written on %s\n", fileName);
+      printf("Merge done!\n");
+    }
+    else{printf("no files merged\n");return;}
+  } 
   else{printf("no files merged\n");return;}
-
 }

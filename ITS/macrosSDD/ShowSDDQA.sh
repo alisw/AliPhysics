@@ -4,6 +4,9 @@ PERIOD='LHC10a'
 PASS='pass1'
 YEAR='2010'
 ALICE_ITS='$ALICE_ROOT/ITS'
+TMPPLACE='/tmp'
+TMPFOLDER='1'
+EXECFOLDER='$HOME/macroQAshifter'
 echo "Run Number   :[${RUN}]"
 read
 if [ "$REPLY" != "" ]; then
@@ -28,6 +31,22 @@ if [ "$REPLY" != "" ]; then
 export YEAR=$REPLY
 echo "Year    $YEAR"
 fi
+echo "folder with macros     :[${EXECFOLDER}]"
+read
+if [ "$REPLY" != "" ]; then
+export EXECFOLDER=$REPLY
+echo "Folder:    $EXECFOLDER"
+fi
+echo "local or lxplus (1=local 2=lxplus)   :[${TMPFOLDER}]"
+read
+if [ "$REPLY" != "" ]; then
+export TMPFOLDER=$REPLY
+fi
+if [ "$TMPFOLDER" == "1" ]; then
+export TMPPLACE='/tmp'
+else
+export TMPPLACE='/tmp/$USERNAME'
+fi
 if [ ls -l "run$RUN" >/dev/null 2>&1 ]; then
 echo "directory run$RUN exists "
 else
@@ -40,14 +59,16 @@ else
 mkdir $PASS
 cd $PASS
 fi
-time aliroot >>merge.log 2>&1 <<EOI
-.x $ALICE_ITS/ReadQASDD.C($RUN,$YEAR,"${PERIOD}","${PASS}" ); 
+time aliroot -l <<EOI|tee merge.log
+EOF
+.x $EXECFOLDER/ReadQASDD.C($RUN,$YEAR,"${PERIOD}","${PASS}" ); 
 .q
 EOI
-time aliroot  >> plot.log 2>&1 <<EOI
-.x $ALICE_ITS/PlotQASDD.C("File.QA.${YEAR}.${PERIOD}.${PASS}.Run.${RUN}.root");
+time aliroot -l <<EOI|tee plot.log
+.x $EXECFOLDER/PlotQASDD.C("File.QA.${YEAR}.${PERIOD}.${PASS}.Run.${RUN}.root");
+.q
 EOI
-
+rm File.QA.${YEAR}.${PERIOD}.${PASS}.Run.${RUN}.root
 if [ls -l "images" >/dev/null 2>&1 ]; then
 echo "directory images exists"
 else
@@ -61,4 +82,5 @@ gv $i &
 sleep 2
 done
 echo "Plots Done!!"
-
+rm -rf $TMPPLACE/*.root
+cd ../../../
