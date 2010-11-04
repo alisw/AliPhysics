@@ -31,6 +31,8 @@
 // -- Authors: F. Pierella, A. Seganti, D. Vicinanza                       //
 //_________________________________________________________________________//
 
+#include "AliLog.h"
+
 #include "AliTOFGeometry.h"
 #include "AliTOFSDigit.h"
 
@@ -207,10 +209,11 @@ void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
 	  (*fTracks)[sameTime*kMAXDIGITS+iTrack] = track;
 	  break;
 	}
-	// write warning about many tracks going to this pad
+	// write warning about many tracks going to this pad at same time
 	if (iTrack == kMAXDIGITS-1) {
-	  printf("W-AliTOFSDigit::Update: Many different tracks in the same TOF pad (%2d %1d %2d %1d %2d)\n",
-		 fSector,fPlate,fStrip,fPadz,fPadx);
+	  AliDebug(1,Form("Update: Many different tracks in the same TOF pad"
+			  " (%2d %1d %2d %1d %2d)\n",
+			  fSector,fPlate,fStrip,fPadz,fPadx));
 	  //ToAliWarning(PrintPad());
 	}
       }
