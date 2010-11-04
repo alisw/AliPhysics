@@ -34,7 +34,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static AliFlowTrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
 
   enum trackParameterType { kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet };
-  enum trackParameterMix  { kPure, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt };
+  enum trackParameterMix  { kPure, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt, kTrackWithPtFromFirstMother };
 
   //setters (interface to AliESDtrackCuts)
   void SetMinNClustersTPC( Int_t a ) {fAliESDtrackCuts->SetMinNClustersTPC(a);}
