@@ -231,8 +231,14 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TObject* inputObject, TH2
     }
     else {
       TGraph* inputGraph = dynamic_cast<TGraph*>(inputObject);
-      if ( inputGraph->GetN() == 0 ){
-	return kTRUE;
+      if ( inputGraph ) {
+        if ( inputGraph->GetN() == 0 ){
+	  return kTRUE;
+        }
+      }  
+      else {
+        AliWarning("The object should inherit from TH1 or TGraph!");
+        return kFALSE;
       }
     }
   }
@@ -438,13 +444,12 @@ void AliMUONTriggerDisplay::FillBins(TObject* inputObject, TH2* displayHisto,
   /// Given the bin in inputHisto, search the corresponding bins
   /// in display histo and fill it.
   //
-  TString className = inputObject->ClassName();
   Int_t binY=0;
   Float_t binContent=0;
-  if ( className.Contains("TH") ) {
-    TH1* inputHisto = dynamic_cast<TH1*>(inputObject);
+  TH1* inputHisto = dynamic_cast<TH1*>(inputObject);
+  if ( inputHisto ) {
     Int_t binX = inputHisto->GetXaxis()->FindBin(iElement1);
-    if(className.Contains("TH2")) {
+    if ( inputObject->IsA()->InheritsFrom("TH2") ) {
       binY = inputHisto->GetYaxis()->FindBin(iElement2);
       binContent = inputHisto->GetBinContent(binX, binY);
     }
@@ -452,15 +457,18 @@ void AliMUONTriggerDisplay::FillBins(TObject* inputObject, TH2* displayHisto,
   }
   else {
     TGraph* inputGraph = dynamic_cast<TGraph*>(inputObject);
-    Double_t xpt, ypt;
-    for ( Int_t ipt=0; ipt<inputGraph->GetN(); ipt++){
-      inputGraph->GetPoint(ipt, xpt, ypt);
-      if ( TMath::Abs(xpt - iElement1) < 0.1 ) {
-	binContent = ypt;
-	break;
+    if ( inputGraph ) {
+      Double_t xpt, ypt;
+      for ( Int_t ipt=0; ipt<inputGraph->GetN(); ipt++){
+        inputGraph->GetPoint(ipt, xpt, ypt);
+        if ( TMath::Abs(xpt - iElement1) < 0.1 ) {
+	  binContent = ypt;
+	  break;
+        }
       }
     }
-  }
+    else return;
+  }  
 
   if(binContent==0) {
     if(displayOpt==kShowZeroes) binContent = 1e-5;

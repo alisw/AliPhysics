@@ -242,7 +242,11 @@ AliMUONTriggerChamberEfficiency::FillFromList(Bool_t useMeanValues)
 	histoName.ReplaceAll("Count","Eff");
 	effGraph->SetName(histoName.Data());
 	fEfficiencyObjects->AddAt(effGraph, index);
-	AliDebug(5,Form("Adding object %s (%s/%s) at index %i",effGraph->GetName(),histoNum->GetName(),histoDen->GetName(),index));
+
+	TString debugString = Form("Adding object %s",effGraph->GetName());
+	if ( histoDen ) debugString += Form(" (%s/%s)",histoNum->GetName(),histoDen->GetName());
+	debugString += Form(" index %i",index);
+	AliDebug(5,debugString.Data());
 
 	if ( useMeanValues ){
 	  Int_t currChamber = ich + AliMpConstants::NofTrackingChambers();
