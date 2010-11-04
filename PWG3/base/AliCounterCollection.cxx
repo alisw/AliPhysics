@@ -42,7 +42,8 @@ AliCounterCollection::AliCounterCollection(const char* name) :
 TNamed(name,name),
 fRubrics(new THashList(10)),
 fRubricsSize(new TArrayI(10)),
-fCounters(0x0)
+fCounters(0x0),
+fWeightedCounters(kFALSE)
 {
   /// Constructor
   fRubrics->SetOwner();
@@ -64,6 +65,7 @@ void AliCounterCollection::Clear(Option_t*)
   fRubrics->Clear();
   fRubricsSize->Reset();
   delete fCounters; fCounters = 0x0;
+  fWeightedCounters = kFALSE;
 }
 
 //-----------------------------------------------------------------------
@@ -121,13 +123,17 @@ void AliCounterCollection::AddRubric(TString name, Int_t maxNKeyWords)
 }
 
 //-----------------------------------------------------------------------
-void AliCounterCollection::Init()
+void AliCounterCollection::Init(Bool_t weightedCounters)
 {
   /// Initialize the internal counters from the added rubrics.
   
   // create the counters
   delete fCounters;
-  fCounters = new THnSparseT<TArrayI>("hCounters", "hCounters", fRubrics->GetSize(), fRubricsSize->GetArray(), 0x0, 0x0);
+  fWeightedCounters = weightedCounters;
+  if (fWeightedCounters)
+    fCounters = new THnSparseT<TArrayF>("hCounters", "hCounters", fRubrics->GetSize(), fRubricsSize->GetArray(), 0x0, 0x0);
+  else
+    fCounters = new THnSparseT<TArrayI>("hCounters", "hCounters", fRubrics->GetSize(), fRubricsSize->GetArray(), 0x0, 0x0);
   
   // loop over axis
   TObject* rubric = 0x0;
@@ -470,8 +476,25 @@ void AliCounterCollection::Count(TString externalKey, Int_t value)
 {
   /// Add "value" to the counter referenced by "externalKey".
   /// The externalKey format must be rubric:keyWord/rubric:keyWord/rubric:keyWord/...
+  if (value > 0) CountAsDouble(externalKey, (Double_t)value);
+  else if (value < 0) AliError("cannot count negative values");
+}
+
+//-----------------------------------------------------------------------
+void AliCounterCollection::Count(TString externalKey, Double_t value)
+{
+  /// Add "value" to the counter referenced by "externalKey".
+  /// The externalKey format must be rubric:keyWord/rubric:keyWord/rubric:keyWord/...
+  if (fWeightedCounters) CountAsDouble(externalKey, value);
+  else AliError("non-weighted counters can only be filled with intergers");
+}
+
+//-----------------------------------------------------------------------
+void AliCounterCollection::CountAsDouble(TString externalKey, Double_t value)
+{
+  /// Add "value" to the counter referenced by "externalKey".
+  /// The externalKey format must be rubric:keyWord/rubric:keyWord/rubric:keyWord/...
   
-  if (value < 1) return;
   if (!fCounters) {
     AliError("counters are not initialized");
     return;
@@ -492,7 +515,7 @@ void AliCounterCollection::Count(TString externalKey, Int_t value)
   }
   
   // increment the corresponding counter
-  fCounters->AddBinContent(bins, (Double_t)value);
+  fCounters->AddBinContent(bins, value);
   
   // clean memory
   delete[] bins;
@@ -525,7 +548,7 @@ void AliCounterCollection::Print(const Option_t* opt) const
   for (Long64_t i=0; i<fCounters->GetNbins(); ++i) {
     
     // get the content of the bin
-    Int_t value = (Int_t) fCounters->GetBinContent(i, bins);
+    Double_t value = fCounters->GetBinContent(i, bins);
     
     // build the corresponding counter name
     TString counter;
@@ -533,7 +556,8 @@ void AliCounterCollection::Print(const Option_t* opt) const
     counter += "/";
     
     // print value
-    printf("\n%s   %d", counter.Data(), value);
+    if (fWeightedCounters) printf("\n%s   %g", counter.Data(), value);
+    else printf("\n%s   %d", counter.Data(), (Int_t)value);
   }
   printf("\n\n");
   
@@ -566,6 +590,49 @@ TString AliCounterCollection::GetKeyWords(TString rubric) const
   keyWords.Remove(TString::kTrailing, ',');
   
   return keyWords;
+}
+
+//-----------------------------------------------------------------------
+Double_t AliCounterCollection::GetSum(TString selections)
+{
+  /// Get the overall statistics for the given selection (result is integrated over not specified rubrics):
+  /// - format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
+  
+  if (!fCounters) {
+    AliError("counters are not initialized");
+    return 0.;
+  }
+  
+  selections.ToUpper();
+  
+  // decode the selections
+  Short_t** select = DecodeSelection(selections, TObjArray());
+  if (!select) return 0.;
+  
+  // loop over every filled counters and compute integral
+  Double_t sum = 0.;
+  Int_t nDims = fCounters->GetNdimensions();
+  Int_t* coord = new Int_t[nDims];
+  for (Long64_t i=0; i<fCounters->GetNbins(); ++i) {
+    
+    // get the content of the counter
+    Double_t value = fCounters->GetBinContent(i, coord);
+    
+    // discard not selected counters and compute the selection factor
+    Int_t selectionFactor = 1;
+    for (Int_t dim = 0; dim < nDims && selectionFactor != 0; dim++) selectionFactor *= select[dim][coord[dim]];
+    if (selectionFactor == 0) continue;
+    
+    // compute integral
+    sum += selectionFactor * value;
+  }
+  
+  // clean memory
+  for (Int_t iDim=0; iDim<nDims; iDim++) delete[] select[iDim];
+  delete[] select;
+  delete[] coord;
+  
+  return sum;
 }
 
 //-----------------------------------------------------------------------
@@ -629,7 +696,8 @@ void AliCounterCollection::PrintValue(TString selections)
   }
   
   // print value
-  printf("\n%d\n\n", (Int_t) fCounters->GetBinContent(selectedBins));
+  if (fWeightedCounters) printf("\n%g\n\n", fCounters->GetBinContent(selectedBins));
+  else printf("\n%d\n\n", (Int_t) fCounters->GetBinContent(selectedBins));
   
   // clean memory
   delete[] selectedBins;
@@ -693,43 +761,9 @@ void AliCounterCollection::PrintSum(TString selections)
 {
   /// Print the overall statistics for the given selection (result is integrated over not specified rubrics):
   /// - format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
-  
-  if (!fCounters) {
-    AliError("counters are not initialized");
-    return;
-  }
-  
-  selections.ToUpper();
-  
-  // decode the selections
-  Short_t** select = DecodeSelection(selections, TObjArray());
-  if (!select) return;
-  
-  // loop over every filled counters and compute integral
-  Int_t sum = 0;
-  Int_t nDims = fCounters->GetNdimensions();
-  Int_t* coord = new Int_t[nDims];
-  for (Long64_t i=0; i<fCounters->GetNbins(); ++i) {
-    
-    // get the content of the counter
-    Double_t value = fCounters->GetBinContent(i, coord);
-    
-    // discard not selected counters and compute the selection factor
-    Int_t selectionFactor = 1;
-    for (Int_t dim = 0; dim < nDims && selectionFactor != 0; dim++) selectionFactor *= select[dim][coord[dim]];
-    if (selectionFactor == 0) continue;
-    
-    // compute integral
-    sum += selectionFactor * ((Int_t) value);
-  }
-  
-  // clean memory
-  for (Int_t iDim=0; iDim<nDims; iDim++) delete[] select[iDim];
-  delete[] select;
-  delete[] coord;
-  
-  // print result
-  printf("\n%d\n\n", sum);
+  Double_t sum = GetSum(selections);
+  if (fWeightedCounters) printf("\n%g\n\n", sum);
+  else printf("\n%d\n\n", (Int_t)sum);
 }
 
 //-----------------------------------------------------------------------
@@ -739,14 +773,17 @@ void AliCounterCollection::PrintList(const TH1D* hist) const
   
   // set the format to print labels
   THashList* labels = hist->GetXaxis()->GetLabels();
-  TString format(Form("\n%%%ds %%9d",GetMaxLabelSize(labels)));
+  TString format = "";
+  if (fWeightedCounters) format = Form("\n%%%ds %%9g",GetMaxLabelSize(labels));
+  else format = Form("\n%%%ds %%9d",GetMaxLabelSize(labels));
   
   // print value for each label
   TObjString* label = 0x0;
   TIter nextLabel(labels);
   while ((label = static_cast<TObjString*>(nextLabel()))) {
     Int_t bin = (Int_t) label->GetUniqueID();
-    printf(format.Data(), label->String().Data(), (Int_t) hist->GetBinContent(bin));
+    if (fWeightedCounters) printf(format.Data(), label->String().Data(), hist->GetBinContent(bin));
+    else printf(format.Data(), label->String().Data(), (Int_t) hist->GetBinContent(bin));
   }
   printf("\n\n");
 }
@@ -765,6 +802,7 @@ void AliCounterCollection::PrintArray(const TH2D* hist) const
   Int_t maxLabelSizeY = TMath::Max(9, GetMaxLabelSize(labelsY));
   TString formatYs(Form("%%%ds ",maxLabelSizeY));
   TString formatYd(Form("%%%dd ",maxLabelSizeY));
+  TString formatYg(Form("%%%dg ",maxLabelSizeY));
   
   // print labels in Y axis
   printf(formatX.Data()," ");
@@ -786,7 +824,8 @@ void AliCounterCollection::PrintArray(const TH2D* hist) const
     nextLabelY.Reset();
     while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
       Int_t binY = (Int_t) labelY->GetUniqueID();
-      printf(formatYd.Data(), (Int_t) hist->GetBinContent(binX, binY));
+      if (fWeightedCounters) printf(formatYg.Data(), hist->GetBinContent(binX, binY));
+      else printf(formatYd.Data(), (Int_t) hist->GetBinContent(binX, binY));
     }
   }
   printf("\n\n");
@@ -806,6 +845,7 @@ void AliCounterCollection::PrintListOfArrays(const THnSparse* hist) const
   Int_t maxLabelSizeY = TMath::Max(9, GetMaxLabelSize(labelsY));
   TString formatYs(Form("%%%ds ",maxLabelSizeY));
   TString formatYd(Form("%%%dd ",maxLabelSizeY));
+  TString formatYg(Form("%%%dg ",maxLabelSizeY));
   
   // create a list containing each combination of labels refering the arrays to be printout
   TList listOfCombis;
@@ -912,7 +952,8 @@ void AliCounterCollection::PrintListOfArrays(const THnSparse* hist) const
       nextLabelY.Reset();
       while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
 	bins[1] = (Int_t) labelY->GetUniqueID();
-	printf(formatYd.Data(), (Int_t) hist->GetBinContent(bins));
+	if (fWeightedCounters) printf(formatYg.Data(), hist->GetBinContent(bins));
+	else printf(formatYd.Data(), (Int_t) hist->GetBinContent(bins));
       }
     }
     printf("\n\n");
@@ -1095,6 +1136,7 @@ TObject* AliCounterCollection::Projection(const TObjArray& data, const TString& 
   TObject* hist;
   if (nTargetDims == 1) hist = new TH1D(name.Data(), title.Data(), nNewBins[0], 0., 1.);
   else if (nTargetDims == 2) hist = new TH2D(name.Data(), title.Data(), nNewBins[0], 0., 1., nNewBins[1], 0., 1.);
+  else if (fWeightedCounters) hist = new THnSparseT<TArrayF>(name.Data(), title.Data(), nTargetDims, nNewBins.GetArray(), 0x0, 0x0);
   else hist = new THnSparseT<TArrayI>(name.Data(), title.Data(), nTargetDims, nNewBins.GetArray(), 0x0, 0x0);
   
   // Set new axis labels
@@ -1185,6 +1227,9 @@ Int_t* AliCounterCollection::CheckConsistency(const AliCounterCollection* c)
     AliError("counters are not initialized");
     return 0x0;
   }
+  
+  // check if both counters are weighted or not
+  if (c->fWeightedCounters != fWeightedCounters) AliWarning("merging non-weighted with weigthed counters");
   
   // check if the number of rubrics is the same
   Int_t nRubrics = fRubrics->GetSize();
@@ -1411,7 +1456,10 @@ void AliCounterCollection::Sort(const Bool_t* rubricsToSort, Bool_t asInt)
   // create a new counter
   THnSparse* oldCounters = fCounters;
   Int_t nRubrics = fRubrics->GetSize();
-  fCounters = new THnSparseT<TArrayI>("hCounters", "hCounters", nRubrics, fRubricsSize->GetArray(), 0x0, 0x0);
+  if (fWeightedCounters)
+    fCounters = new THnSparseT<TArrayF>("hCounters", "hCounters", nRubrics, fRubricsSize->GetArray(), 0x0, 0x0);
+  else 
+    fCounters = new THnSparseT<TArrayI>("hCounters", "hCounters", nRubrics, fRubricsSize->GetArray(), 0x0, 0x0);
   Int_t** newBins = new Int_t*[nRubrics];
   
   // define the new axes

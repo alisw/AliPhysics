@@ -32,13 +32,17 @@ public:
   // Add a new rubric containing at maximum maxNKeyWords key words
   void AddRubric(TString name, Int_t maxNKeyWords);
   // Initialize the internal counters from the added rubrics
-  void Init();
+  void Init(Bool_t weightedCounters = kFALSE);
   
   // return the list of key words for the given rubric
   TString GetKeyWords(TString rubric) const;
   
   // Add "value" to the counter referenced by "externalKey"
   void Count(TString externalKey, Int_t value = 1);
+  void Count(TString externalKey, Double_t value);
+  
+  // Get the overall statistics for the given selection (result is integrated over not specified rubrics)
+  Double_t GetSum(TString selections = "");
   
   // Print every individual counters if opt=="", else call "Print(TString rubrics=opt, TString selections="")"
   virtual void Print(const Option_t* opt = "") const;
@@ -96,6 +100,9 @@ private:
   // Make sure all strings appear only once in this list
   void CleanListOfStrings(TObjArray* list);
   
+  // Add "value" to the counter referenced by "externalKey"
+  void CountAsDouble(TString externalKey, Double_t value);
+  
   // Print the content of 1D histogram as a list
   void PrintList(const TH1D* hist) const;
   // Print the content of 2D histogram as an array
@@ -122,8 +129,9 @@ private:
   THashList* fRubrics;        ///< list of rubrics with associated key words
   TArrayI*   fRubricsSize;    ///< maximum number of key words in the corresponding rubric
   THnSparse* fCounters;       ///< histogram of nRubrics dimensions used as n-dimensional counter
+  Bool_t fWeightedCounters;   ///< use THnSparseF instead of THnSparseI
   
-  ClassDef(AliCounterCollection, 1); // collection of mergeable counters
+  ClassDef(AliCounterCollection, 2); // collection of mergeable counters
 };
 
 #endif
