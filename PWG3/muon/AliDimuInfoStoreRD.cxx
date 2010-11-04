@@ -126,7 +126,7 @@ void AliDimuInfoStoreRD::FillDimuInfo()
 }
 
 //-----------------------------------------------------------------------------
-Bool_t AliDimuInfoStoreRD::DimuSelection()
+Bool_t AliDimuInfoStoreRD::IsSelected()
 {
   // select dimuon candidates according to the corresponding two muon tracks cuts
 
@@ -135,8 +135,8 @@ Bool_t AliDimuInfoStoreRD::DimuSelection()
   AliMuonInfoStoreRD::SetSelectionCuts(AliDimuInfoStoreRD::fgCutd);
   AliMuonInfoStoreRD *trk0 = (AliMuonInfoStoreRD*)fMuonRef[0].GetObject();
   AliMuonInfoStoreRD *trk1 = (AliMuonInfoStoreRD*)fMuonRef[1].GetObject(); 
-  if (!trk0->MuonSelection()) { AliMuonInfoStoreRD::SetSelectionCuts(cutsOld); return kFALSE; }
-  if (!trk1->MuonSelection()) { AliMuonInfoStoreRD::SetSelectionCuts(cutsOld); return kFALSE; }
+  if (!trk0->IsSelected()) { AliMuonInfoStoreRD::SetSelectionCuts(cutsOld); return kFALSE; }
+  if (!trk1->IsSelected()) { AliMuonInfoStoreRD::SetSelectionCuts(cutsOld); return kFALSE; }
 
   AliMuonInfoStoreRD::SetSelectionCuts(cutsOld);
   return kTRUE;

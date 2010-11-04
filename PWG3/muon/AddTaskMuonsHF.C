@@ -39,8 +39,8 @@ AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Bool_t isMC=kFALSE, Bool_
                           999999.0,   //   7, DCAmax
                          -999999.0,   //   8, for trigger
                           999999.0,   //   9, for trigger
-                         -999999.0,   //  10, RabsEndMin
-                          999999.0,};  // 11, RabsEndMax
+                         -999999.0,   //  10, ThetaAbsEndMin
+                          999999.0,};  // 11, ThetaAbsEndMax
   Double_t cutsDimu[12]={-999999.0, 999999.0,  // single muon cuts used for dimuon selection
                          -999999.0, 999999.0,
                          -999999.0, 999999.0,

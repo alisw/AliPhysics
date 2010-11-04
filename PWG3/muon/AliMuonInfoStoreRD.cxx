@@ -177,7 +177,7 @@ void AliMuonInfoStoreRD::FillMuonInfo(AliESDMuonTrack *trk)
 }
 
 //-----------------------------------------------------------------------------
-Bool_t AliMuonInfoStoreRD::MuonSelection()
+Bool_t AliMuonInfoStoreRD::IsSelected()
 {
   // select muon tracks according to the selection cuts
 
@@ -196,8 +196,8 @@ Bool_t AliMuonInfoStoreRD::MuonSelection()
   Int_t trigger = this->MatchTrigger();
   if (trigger<AliMuonInfoStoreRD::fgCuts[8] || trigger>AliMuonInfoStoreRD::fgCuts[9]) return kFALSE;
 
-  Double_t rAbs = this->RabsEnd();
-  if (rAbs<AliMuonInfoStoreRD::fgCuts[10] || rAbs>AliMuonInfoStoreRD::fgCuts[11])     return kFALSE;
+  Double_t theta = 180.*(1.-TMath::ATan(this->RabsEnd()/505.)/TMath::Pi());
+  if (theta<AliMuonInfoStoreRD::fgCuts[10] || theta>AliMuonInfoStoreRD::fgCuts[11])   return kFALSE;
 
   return kTRUE;
 }

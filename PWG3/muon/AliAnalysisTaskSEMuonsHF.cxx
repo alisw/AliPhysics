@@ -39,6 +39,7 @@
 #include "AliDimuInfoStoreRD.h"
 #include "AliDimuInfoStoreMC.h"
 #include "AliAnalysisTaskSEMuonsHF.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisTaskSEMuonsHF)
 
@@ -153,6 +154,7 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
     } else { AliError("MC event not found. Nothing done!"); return; }
   }
 
+  if (fIsOutputTree) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
   fHeader->SetEvent(((AliVVertex*)InputEvent()->GetPrimaryVertex()));
   fHeader->FillHistosEvnH(fListOutput);
 

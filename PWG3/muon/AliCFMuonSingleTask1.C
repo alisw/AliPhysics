@@ -15,10 +15,10 @@ Bool_t AliCFMuonSingleTask1(Int_t runmin = 17, Int_t runmax = 17)
 	analysisChain->Add(RunFile);
     }
 
-    enum             { kEta,  kY, kPhi, kPt, kP3, kHit, kChi2Fit, kTrM, kChi2TrM,  kContrN,  kVt,  kVz, kTrig, kDCA, kZcoor, kRabs, kCharge, kTheta, kNVars };
-    Int_t  nBins[] = {   5 , 5  ,  45 , 60 ,150 ,  20 ,      20 ,  4  ,      20 ,     202 , 100 ,  100 ,  10 , 500 ,   1000,  100 ,     3 , 100      };
-    Double_t min[] = {  -4.,-4. ,-180.,  0.,  0.,   0.,       0., -0.5,       0.,     -2.5,   0., -100.,   0.,   0., -3000.,    0.,  -1.5 , 2.95      };
-    Double_t max[] = {-2.5.,-2.5, 180., 30.,150.,  20.,      20.,  3.5,      10.,    199.5, 200.,  100.,  10., 500.,  1000.,  100.,   1.5 , 3.15     };
+    enum             { kEta,  kY, kPhi, kPt, kP3, kHit, kChi2Fit, kTrM, kChi2TrM,  kContrN,  kVt,  kVz, kTrig, kDCA, kZcoor, kRabs, kCharge, kTheta,kNVars };
+    Int_t  nBins[] = {   5 , 5  ,  45 , 60 ,150 ,  20 ,      20 ,  4  ,      20 ,     202 , 100 ,  100 ,  10 , 500 ,   1000,    7 ,     3 , 100      };
+    Double_t min[] = {  -4.,-4. ,-180.,  0.,  0.,   0.,       0., -0.5,       0.,     -2.5,   0., -100.,   0.,   0., -3000.,  171.,  -1.5 , 2.95      };
+    Double_t max[] = {-2.5.,-2.5, 180., 30.,150.,  20.,      20.,  3.5,      10.,    199.5, 200.,  100.,  10., 500.,  1000.,  178.,   1.5 , 3.15     };
     
     Double_t *binLimits = 0;
     Int_t nSteps=1; if (isMC) nSteps=2;

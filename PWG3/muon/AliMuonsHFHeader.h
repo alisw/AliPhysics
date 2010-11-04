@@ -42,7 +42,7 @@ class AliMuonsHFHeader : public TNamed {
 
   void SetEvent(AliVVertex *vertex);
   void SetFiredTriggerClass(TString trigger) { fFiredTriggerClass=trigger; }
-  Bool_t EventSelection();
+  Bool_t IsSelected();
 
   void CreateHistograms(TList *list);
   void FillHistosEvnH(TList *list);
