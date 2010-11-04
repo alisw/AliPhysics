@@ -531,7 +531,7 @@ Long64_t AliMUONTrackerDataMaker::Merge(TCollection* list)
   while ( ( o = next() ) )
   {
     const AliMUONTrackerDataMaker* data = dynamic_cast<const AliMUONTrackerDataMaker*>(o);
-    if (!o)
+    if (!data)
     {
       AliError(Form("Object named %s is not an AliMUONTrackerDataMaker ! Skipping it",
                     o->GetName()));
