@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliZDCDigit.cxx AliZDCRawStream.cxx AliZDCPedestals.cxx\
+SRCS= AliZDCDigit.cxx AliZDCRawStream.cxx AliZDCCalib.cxx AliZDCPedestals.cxx\
       AliZDCLaserCalib.cxx AliZDCEnCalib.cxx AliZDCTowerCalib.cxx \
       AliZDCMBCalib.cxx AliZDCChMap.cxx AliZDCMisAligner.cxx \
       AliZDCDataDCS.cxx AliZDCPreprocessor.cxx AliZDCQAChecker.cxx
