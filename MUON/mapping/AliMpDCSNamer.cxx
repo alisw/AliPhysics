@@ -65,6 +65,7 @@ const char* AliMpDCSNamer::fgkDCSSideTrackerName[] = { "Left", "Right" };
 
 const char* AliMpDCSNamer::fgkDCSSwitchSt345Pattern = "MchDE%04dsw%d.inValue";
 
+const char* AliMpDCSNamer::fgkDCSChannelTriggerPatternRead[] = {"MTR_%3sSIDE_MT%2i_RPC%i_HV.%14s", "MTR_%2sSIDE_MT%2i_RPC%i_HV.%14s"};
 const char* AliMpDCSNamer::fgkDCSChannelTriggerPattern[] = {"MTR_%3sSIDE_MT%2i_RPC%i_HV.%s", "MTR_%2sSIDE_MT%2i_RPC%i_HV.%s"};
 const char* AliMpDCSNamer::fgkDCSSideTriggerName[] = { "OUT", "IN" };
 const char* AliMpDCSNamer::fgkDCSMeasureName[] = { "vEff", "actual.iMon" };
@@ -515,7 +516,7 @@ AliMpDCSNamer::DetElemIdFromDCSAlias(const char* dcsAlias) const
   }
   else if ( sDcsAlias.Contains("MT") )
   {
-    sscanf(sDcsAlias.Data(),fgkDCSChannelTriggerPattern[side],cside,&n1,&n3,type);
+    sscanf(sDcsAlias.Data(),fgkDCSChannelTriggerPatternRead[side],cside,&n1,&n3,type);
     detElemId = DCS2DE(n1,side,n3);
     AliDebug(1,Form("Slat side=%d n1=%d n3=%d de=%d",side,n1,n3,detElemId));
   }

@@ -83,7 +83,8 @@ private:
   static const char* fgkDCSSwitchSt345Pattern; ///< DCS Tracker Switch name template
   static const char* fgkDCSSideTrackerName[]; ///< DCS Tracker Name of the side written in DCS
 
-  static const char* fgkDCSChannelTriggerPattern[]; ///< DCS Trigger Channel name template
+  static const char* fgkDCSChannelTriggerPatternRead[]; ///< DCS Trigger Channel name template for input
+  static const char* fgkDCSChannelTriggerPattern[]; ///< DCS Trigger Channel name template for output 
   static const char* fgkDCSSideTriggerName[]; ///< DCS Trigger Name of the side written in DCS
   static const char* fgkDCSMeasureName[]; ///< DCS Trigger Name of the measure (HV or current) written in DCS
 

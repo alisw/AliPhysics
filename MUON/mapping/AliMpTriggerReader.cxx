@@ -572,7 +572,7 @@ AliMpTriggerReader::ReadLocalBoardMapping()
     {      
   
       if (!in.getline(line,80)) break; 
-      sscanf(line,"%02d %s %03d %03x", &j, localBoardName, &localBoardId, &switches);
+      sscanf(line,"%02d %19s %03d %03x", &j, localBoardName, &localBoardId, &switches);
       if (localBoardId <= AliMpConstants::NofLocalBoards()) 
       {
 	fLocalBoardMap.Add(new TObjString(localBoardName), new TObjString(Form("%d",localBoardId)));

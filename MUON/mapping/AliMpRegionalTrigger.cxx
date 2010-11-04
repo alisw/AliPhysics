@@ -156,7 +156,7 @@ Bool_t AliMpRegionalTrigger::ReadData(istream& in)
     for ( Int_t i = 0; i < nofBoards; ++i ) 
     {
         in.getline(line,80);
-        sscanf(line,"%02d %s %03d %03x",&slot,localBoardName,&localBoardId,&switches);
+        sscanf(line,"%02d %19s %03d %03x",&slot,localBoardName,&localBoardId,&switches);
         AliMpLocalBoard* board = new AliMpLocalBoard(localBoardId, localBoardName, slot); 
         board->SetSwitch(switches);
         board->SetCrate(crateName);
