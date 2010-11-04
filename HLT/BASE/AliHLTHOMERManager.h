@@ -87,7 +87,7 @@ public:
   virtual Int_t NextCycle() { return NextEvent(); }
 
   /** Get event ID */
-  ULong_t GetEventID() { return fEventID[fCurrentBufferIdx]; }
+  ULong_t GetEventID() { return fEventID[fBufferTopIdx]; }
 
   Int_t GetNAvailableEvents() { return fNEventsAvailable;}
   
