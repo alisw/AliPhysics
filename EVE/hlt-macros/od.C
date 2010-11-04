@@ -102,7 +102,7 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
 
   // -- Loading Geometry
   // ---------------------
-  Int_t run = 67179;
+  Int_t run = 0;
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(run);
   AliGeomManager::LoadGeometry();
@@ -111,7 +111,7 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
   // However for the current setting of +ve L3 and +ve Dipole magnetic field
   // the following setting creates the field close to real field with currect polarity
   if(showMuon)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1, AliMagF::k5kG));
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));
 
   // Get the pointer to gGeoManager before it's broken (bug in alieve)
   fGeoManager = gGeoManager;
@@ -139,6 +139,7 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
 
   cout << "Creating the Event Manager"<<endl;
   gEventManager = new AliEveHLTEventManagerHomer();
+  gEventManager->SetShowMuon(showMuon);
   gEventManager->SetEveManager(gEve);
   gEventManager->SetGeoManager(gGeoManager);
   gEventManager->SetRPhiManager(gRPhiMgr);
@@ -243,7 +244,7 @@ Int_t initializeEveViewer( Bool_t showBarrel, Bool_t showMuon, TGeoManager * man
   gEve->Redraw3D();
 
   if (gShowMUON) 
-    gGeomGentleMUON = geom->geom_gentle_muon(kFALSE);
+    gGeomGentleMUON = geom_gentle_muon(kFALSE);
   
   // -- Scenes
   // -----------

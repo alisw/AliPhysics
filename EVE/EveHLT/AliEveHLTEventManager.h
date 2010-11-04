@@ -60,6 +60,9 @@ public:
   void StartLoop();
   void StopLoop();
 
+  //* Show muon arm*//
+  void SetShowMuon(Bool_t showmuon) { fShowMuon = showmuon; }
+
   /** Print the screens to a file **/
   void PrintScreens();
 

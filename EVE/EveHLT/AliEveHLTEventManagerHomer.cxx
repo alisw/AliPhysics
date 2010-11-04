@@ -51,18 +51,20 @@ void AliEveHLTEventManagerHomer::NextEvent() {
   if(fEvent) {
     cout << "Got the event " <<endl;
     ProcessEvent(fEvent);
-
   } else {
-    cout << "couldn't get the sync event"<<endl;
+    cout << "could't get the sync event"<<endl;
   }
+  
+ //  cout  << "doint async block"<<endl;
+ //  TList * async = static_cast<TList*>(fEventBuffer->GetAList());
+ //  if(async) {
+ // 	ProcessEvent(async);
+ //   }  else {
+ // 	 cout << "No async bloc"<<endl;
+ // }
 
-  TList * async = static_cast<TList*>(fEventBuffer->GetAList());
-  if(async) {
-	ProcessEvent(async);
-   }  else {
-	 cout << "No async bloc"<<endl;
- }
-    fEventBuffer->SetBusy(kFALSE);
+
+fEventBuffer->SetBusy(kFALSE);
 }
 
 
