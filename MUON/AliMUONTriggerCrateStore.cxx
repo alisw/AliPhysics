@@ -36,6 +36,8 @@
 #include <TSystem.h>
 #include <Riostream.h>
 
+#include <cstdio>
+
 //-----------------------------------------------------------------------------
 /// \class AliMUONTriggerCrateStore
 /// 
@@ -158,7 +160,7 @@ TString AliMUONTriggerCrateStore::GetCrateName(Int_t ddl, Int_t reg) const
   switch(reg) {
       case 0:
       case 1:
-	sprintf(name,"%d", reg+1);
+	snprintf(name,10,"%d", reg+1);
 	break;
       case 2:
 	strcpy(name, "2-3");
@@ -168,15 +170,15 @@ TString AliMUONTriggerCrateStore::GetCrateName(Int_t ddl, Int_t reg) const
       case 5:
       case 6:
       case 7:
-	sprintf(name,"%d", reg);
+	snprintf(name,10,"%d", reg);
 	break;
   }
 
   // crate Right for first DDL
   if (ddl == 0)
-    strcat(name, "R");
+    strncat(name, "R", 1);
   else 
-    strcat(name, "L"); 
+    strncat(name, "L", 1); 
 
   return TString(name);
 }

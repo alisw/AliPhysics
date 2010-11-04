@@ -34,6 +34,7 @@
 #include <Riostream.h>
 
 #include <sstream>
+#include <cstdio>
 
 #define  NFITPARAMS 4
 
@@ -625,7 +626,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	      char bpmanuname[256];
 	      AliMUONErrorCounter* uncalcounter;
 
-	      sprintf(bpmanuname,"bp%dmanu%d",busPatchId,manuId);
+	      snprintf(bpmanuname,256,"bp%dmanu%d",busPatchId,manuId);
 	      if (!(uncalcounter = (AliMUONErrorCounter*)uncalBuspatchManuTable->FindObject(bpmanuname)))
 		{
 		  // New buspatch_manu name
@@ -659,14 +660,14 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 
 		      graphErr = new TGraphErrors(nEntries,pedMean,injCharge,pedSigma,injChargeErr);
 
-		      sprintf(graphName,"BusPatch_%d_Manu_%d_Ch_%d",busPatchId, manuId,channelId);
+		      snprintf(graphName,256,"BusPatch_%d_Manu_%d_Ch_%d",busPatchId, manuId,channelId);
 
 		      graphErr->SetTitle(graphName);
 		      graphErr->SetMarkerColor(3);
 		      graphErr->SetMarkerStyle(12);
 		      graphErr->Write(graphName);
 
-		      sprintf(graphName,"f2_BusPatch_%d_Manu_%d_Ch_%d",busPatchId, manuId,channelId);
+		      snprintf(graphName,256,"f2_BusPatch_%d_Manu_%d_Ch_%d",busPatchId, manuId,channelId);
 		      f2Calib->SetTitle(graphName);
 		      f2Calib->SetLineColor(4);
 		      f2Calib->SetParameters(par);

@@ -53,6 +53,8 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
 
+#include <cstdio>
+
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerGUIbdmap)
@@ -104,10 +106,10 @@ AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow
   fCanvasSize = 200;
 
   TRootEmbeddedCanvas *recanvas[4];
-  Char_t ecname[1];
+  Char_t ecname[2];
   for (Int_t i = 0; i < kNMT; i++) {
 
-    sprintf(ecname,"%1d",i+1);
+    snprintf(ecname,2,"%1d",i+1);
     recanvas[i] = new TRootEmbeddedCanvas(ecname,fMain,fCanvasSize,fCanvasSize);
     
     fCanvas[i] = recanvas[i]->GetCanvas();
@@ -282,7 +284,7 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
   TGText txt;
   Char_t buffer[20];
 
-  sprintf(buffer,"Local trigger info\n");
+  snprintf(buffer,20,"Local trigger info\n");
   fLocTrigE->LoadBuffer(buffer);
 
   AliMUONVTriggerStore *triggerStore;
@@ -293,7 +295,7 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
   } else if (fRawTriggerStore != 0x0) {
     triggerStore = static_cast<AliMUONVTriggerStore*>(fRawTriggerStore);
   } else {
-    sprintf(buffer,"No data loaded yet...\n");
+    snprintf(buffer,20,"No data loaded yet...\n");
     txt.LoadBuffer(buffer);
     fLocTrigE->AddText(&txt);
     return;
@@ -332,43 +334,43 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
 	iStripY = loStripY;
       }
 
-      sprintf(buffer,"Circuit = %03d",loCircuit);
+      snprintf(buffer,20,"Circuit = %03d",loCircuit);
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
-      sprintf(buffer,"LoStripX = %2d",loStripX);
+      snprintf(buffer,20,"LoStripX = %2d",loStripX);
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
-      sprintf(buffer,"LoStripY = %2d",loStripY);
+      snprintf(buffer,20,"LoStripY = %2d",loStripY);
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
-      sprintf(buffer,"LoDev = %2d",loDev);
+      snprintf(buffer,20,"LoDev = %2d",loDev);
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
-      sprintf(buffer,"--------------------");
+      snprintf(buffer,20,"--------------------");
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
-      sprintf(buffer,"X-strip = %2d ( %2d )",iStripX,(loStripX+loDev+1)/2);
+      snprintf(buffer,20,"X-strip = %2d ( %2d )",iStripX,(loStripX+loDev+1)/2);
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
-      sprintf(buffer,"Y-strip = %2d",iStripY);
+      snprintf(buffer,20,"Y-strip = %2d",iStripY);
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
-      sprintf(buffer,"--------------------");
+      snprintf(buffer,20,"--------------------");
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
-      sprintf(buffer,"LoLpt = %2d",loLpt);
+      snprintf(buffer,20,"LoLpt = %2d",loLpt);
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
-      sprintf(buffer,"LoHpt = %2d",loHpt);
+      snprintf(buffer,20,"LoHpt = %2d",loHpt);
       txt.LoadBuffer(buffer);
       fLocTrigE->AddText(&txt);
 
@@ -460,7 +462,7 @@ void AliMUONTriggerGUIbdmap::EditStrips(Int_t event, Int_t x, Int_t y, TObject *
   Int_t np = 5;
   Double_t xMin, xMax, yMin, yMax;
   Float_t xd, yd, fxDim, fyDim, cDim;
-  Char_t cln[2];
+  Char_t cln[3];
 
   cDim = (Float_t)fCanvasSize;
   
@@ -511,7 +513,7 @@ void AliMUONTriggerGUIbdmap::EditStrips(Int_t event, Int_t x, Int_t y, TObject *
 	      fXDigBox[iMT][ix]->SetFillStyle(1001);
 	      fXDigBox[iMT][ix]->SetFillColor(2);
 
-	      sprintf(cln,"%2d",ix);
+	      snprintf(cln,3,"%2d",ix);
 
 	      fXLabelL[iMT][ix]->Clear();
 	      fXLabelL[iMT][ix]->AddText(cln);
@@ -585,7 +587,7 @@ void AliMUONTriggerGUIbdmap::EditStrips(Int_t event, Int_t x, Int_t y, TObject *
 	      fYDigBox[iMT][iy]->SetFillStyle(1001);
 	      fYDigBox[iMT][iy]->SetFillColor(2);
 
-	      sprintf(cln,"%2d",iy);
+	      snprintf(cln,3,"%2d",iy);
 
 	      fYLabelL[iMT][iy]->Clear();
 	      fYLabelL[iMT][iy]->AddText(cln);
@@ -975,7 +977,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 	    fXDigBox[i][iy-iY1]->SetY2(ypmax);
 	    fXDigBox[i][iy-iY1]->Draw();
 	    
-	    sprintf(cln,"%2d",(iy-iY1));
+	    snprintf(cln,3,"%2d",(iy-iY1));
 	    fXLabelL[i][iy-iY1]->Clear();
 	    fXLabelL[i][iy-iY1]->AddText(cln);
 	    fXLabelL[i][iy-iY1]->Draw();
@@ -1025,7 +1027,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 	    fYDigBox[i][ix-iX1]->SetY2(ypmax);
 	    fYDigBox[i][ix-iX1]->Draw();
 	    
-	    sprintf(cln,"%2d",(ix-iX1));
+	    snprintf(cln,3,"%2d",(ix-iX1));
 	    fYLabelL[i][ix-iX1]->Clear();
 	    fYLabelL[i][ix-iX1]->AddText(cln);
 	    fYLabelL[i][ix-iX1]->Draw();
@@ -1091,7 +1093,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 	    fXDigBox[i][ix]->SetY2(yMax);
 	  }
 	  
-	  sprintf(cln,"%2d",ix);
+	  snprintf(cln,3,"%2d",ix);
 	  
 	  fXLabelL[i][ix]->Clear();
 	  fXLabelL[i][ix]->AddText(cln);
@@ -1140,7 +1142,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 	    fYDigBox[i][iy]->SetY2(yMax);
 	  }
 	  
-	  sprintf(cln,"%2d",iy);
+	  snprintf(cln,3,"%2d",iy);
 	  
 	  fYLabelL[i][iy]->Clear();
 	  fYLabelL[i][iy]->AddText(cln);
@@ -1287,7 +1289,7 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
 	      fYDigBox[i][ixDig]->DrawBox(xpmin,ypmin,xpmax,ypmax);
 	      */
 	      if (makeLabelsY) {
-		sprintf(cln,"%2d",(ix-iX1));
+		snprintf(cln,3,"%2d",(ix-iX1));
 		ptx1 = xpmin;
 		ptx2 = xpmax;
 		
@@ -1378,7 +1380,7 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
 	      fXDigBox[i][iyDig]->DrawBox(xpmin,ypmin,xpmax,ypmax);
 	      */
 	      if (makeLabelsX) {
-		sprintf(cln,"%2d",(iy-iY1));
+		snprintf(cln,3,"%2d",(iy-iY1));
 		pty1 = ypmin;
 		pty2 = ypmax;
 		

@@ -50,6 +50,8 @@
 #include "TParticle.h"
 #include "TString.h"
 
+#include <cstdio>
+
 ClassImp(AliMUONTrackLight) 
 
 //===================================================================
@@ -328,22 +330,22 @@ void AliMUONTrackLight::PrintInfo(const Option_t* opt){
     TString pdg = "", line = "";
     for(int i = 3; i >= 0; i--){
       if(this->GetQuarkPythiaLine(i)>= 0){
-	sprintf(name, "%4d --> ", this->GetQuarkPythiaLine(i));
+	snprintf(name, 100, "%4d --> ", this->GetQuarkPythiaLine(i));
 	line += name;
-	sprintf(name, "%4d --> ", this->GetQuarkPDGCode(i));
+	snprintf(name, 100, "%4d --> ", this->GetQuarkPDGCode(i));
 	pdg += name;
       }
     }
     for(int i = 0; i < fNParents; i++){ 
       if(this->GetParentPythiaLine(i)>= 0){
-	sprintf(name, "%7d --> ", this->GetParentPythiaLine(i));
+	snprintf(name, 100, "%7d --> ", this->GetParentPythiaLine(i));
 	line += name;
-	sprintf(name, "%7d --> ", this->GetParentPDGCode(i));
+	snprintf(name, 100, "%7d --> ", this->GetParentPDGCode(i));
 	pdg += name;
       }
     }
-    sprintf(name, "%4d", this->GetTrackPythiaLine()); line += name;
-    sprintf(name, "%4d", this->GetTrackPDGCode()); pdg += name;
+    snprintf(name, 100, "%4d", this->GetTrackPythiaLine()); line += name;
+    snprintf(name, 100, "%4d", this->GetTrackPDGCode()); pdg += name;
 
     printf("\nmuon's decay history:\n");
     printf(" PDG: %s\n", pdg.Data());

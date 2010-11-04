@@ -41,6 +41,8 @@
 #include <TStopwatch.h>
 #include <TSystem.h>
 
+#include <cstdio>
+
 //-----------------------------------------------------------------------------
 /// \class AliMUONPedestalEventGenerator
 ///
@@ -174,7 +176,7 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
     char command[256];
     // Note the option -s. It is used in order to avoid
     // the generation of SOR/EOR events.
-    sprintf(command, "dateStream -c -D -o %s.LDC%d -# %d -C", 
+    snprintf(command, 256, "dateStream -c -D -o %s.LDC%d -# %d -C", 
             fDateFileName.Data(), iFile, runLoader->GetNumberOfEvents());
     pipe[iFile] = gSystem->OpenPipe(command, "w");
   }
@@ -191,7 +193,7 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
       ldc += AliDAQ::NumberOfLdcs(kIDet) / AliDAQ::NumberOfDdls(kIDet);
       
       char rawFileName[256];
-      sprintf(rawFileName, "raw%d/%s", 
+      snprintf(rawFileName, 256, "raw%d/%s", 
               iEvent, AliDAQ::DdlFileName(kIDet,iDDL));
       
       // check existence and size of raw data file
@@ -220,7 +222,7 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); ++iEvent) 
   {
     char command[256];
-    sprintf(command, "rm -r raw%d", iEvent);
+    snprintf(command, 256, "rm -r raw%d", iEvent);
     gSystem->Exec(command);
   }
   
@@ -333,7 +335,7 @@ AliMUONPedestalEventGenerator::Digits2Raw(Int_t event)
   TString baseDir = gSystem->WorkingDirectory();
   
   char dirName[256];
-  sprintf(dirName, "raw%d", event);
+  snprintf(dirName, 256, "raw%d", event);
   gSystem->MakeDirectory(dirName);
   if (!gSystem->ChangeDirectory(dirName)) 
   {

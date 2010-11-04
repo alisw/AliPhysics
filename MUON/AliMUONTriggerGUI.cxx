@@ -71,6 +71,8 @@
 #include <TGImageMap.h>
 #include <TGTextBuffer.h>
 
+#include <cstdio>
+
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerGUI)
 /// \endcond
@@ -1372,22 +1374,22 @@ void AliMUONTriggerGUI::OpenBoard(Int_t id)
   bf = new AliMUONTriggerGUIbdmap(gClient->GetRoot(), fMain, 400, 200);
 
   if (status & kGood) {
-    sprintf(text,"%s (Circuit %4d) status : working",
+    snprintf(text,200,"%s (Circuit %4d) status : working",
 	    board->GetBoardName(),board->GetIdCircuit());
   }
 
   if (status & kWithProblems) {
-    sprintf(text,"%s (Circuit %4d)  status : has problems...",
+    snprintf(text,200,"%s (Circuit %4d)  status : has problems...",
 	    board->GetBoardName(),board->GetIdCircuit());
   }
 
   if (status & kNotWorking) {
-    sprintf(text,"%s (Circuit %4d)  status : not working",
+    snprintf(text,200,"%s (Circuit %4d)  status : not working",
 	    board->GetBoardName(),board->GetIdCircuit());
   }
 
   if (status & kUnknown) {
-    sprintf(text,"%s (Circuit %4d)  status : unknown",
+    snprintf(text,200,"%s (Circuit %4d)  status : unknown",
 	    board->GetBoardName(),board->GetIdCircuit());
   }
 
@@ -1586,7 +1588,7 @@ void AliMUONTriggerGUI::InitBoards()
     reg = new TGRegion(5,xp,yp);
     fImageMap->AddRegion(*reg, ib);
 
-    sprintf(text,"%s (crate %s circuit %3d, number %3d)",board->GetBoardName(),board->GetCrateName(),board->GetIdCircuit(),board->GetNumber());
+    snprintf(text,256,"%s (crate %s circuit %3d, number %3d)",board->GetBoardName(),board->GetCrateName(),board->GetIdCircuit(),board->GetNumber());
     fImageMap->SetToolTipText(ib, text);
 
     // Set coordinates of strips boxes

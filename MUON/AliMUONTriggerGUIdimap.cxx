@@ -46,6 +46,8 @@
 
 #include "AliMUONDigitStoreV1.h"
 
+#include <cstdio>
+
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerGUIdimap)
 /// \endcond
@@ -255,7 +257,7 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
   TPaveText *label;
   TBox *boxd;
 
-  Char_t cln[2];
+  Char_t cln[3];
   Int_t detElemId, cathode, ix, iy, charge, color;
   Int_t holdS, holdL, holdC;
   Float_t xCenter, yCenter, xWidth, yWidth, holdXC, holdYC;
@@ -324,7 +326,7 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
 
     if (holdL == 9) {
 
-      sprintf(cln,"C%1d",holdC);
+      snprintf(cln,3,"C%1d",holdC);
 
       ptx1 = holdXC - lWidth;
       ptx2 = holdXC + lWidth;
@@ -339,7 +341,7 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
     }
     if (holdL == 1) {
 
-      sprintf(cln,"C%1d",holdC);
+      snprintf(cln,3,"C%1d",holdC);
 
       ptx1 = holdXC - lWidth;
       ptx2 = holdXC + lWidth;
@@ -354,7 +356,7 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
     }
     if (holdS == 0 && holdC == 7) {
 
-      sprintf(cln,"L%1d",holdL);
+      snprintf(cln,3,"L%1d",holdL);
 
       ptx1 = -1.07*frameXmax - lWidth;
       ptx2 = -1.07*frameXmax + lWidth;
@@ -369,7 +371,7 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
     }
     if (holdS == 1 && holdC == 7) {
 
-      sprintf(cln,"L%1d",holdL);
+      snprintf(cln,3,"L%1d",holdL);
 
       ptx1 = +1.07*frameXmax - lWidth;
       ptx2 = +1.07*frameXmax + lWidth;
