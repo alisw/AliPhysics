@@ -48,7 +48,8 @@ AliHLTTTreeProcessor::AliHLTTTreeProcessor()
                           fMaxEventTime(0),
                           fNofEventsForce(0),
                           fForcedEventsCount(0),
-                          fSkippedEventsCount(0)
+                          fSkippedEventsCount(0),
+                          fNewEventsCount(0)
 {
   // see header file for class documentation
   // or
@@ -171,14 +172,18 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
   AliHLTUInt32_t averageEventTime=0;
   AliHLTUInt32_t averageCycleTime=0;
 
-  AliHLTUInt32_t proctime=0;
+  int fillingtime=0;
+  int publishtime=0;
   bool bDoFilling=true;
+  bool bDoPublishing=false;
+  const int cycleResetInterval=1000;
   if (fpEventTimer && fpCycleTimer) {
     averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
-    proctime=fpEventTimer->RealTime()*fgkTimeScale;
+    fillingtime=fpEventTimer->RealTime()*fgkTimeScale;
+    publishtime=fillingtime;
     fpEventTimer->Start(kFALSE);
     fpCycleTimer->Stop();
-    averageCycleTime=(fpCycleTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+    averageCycleTime=(fpCycleTimer->RealTime()*fgkTimeScale)/((GetEventCount()%cycleResetInterval)+1);
     // adapt processing to 3/4 of the max time
     bDoFilling=4*averageEventTime<3*fMaxEventTime || averageEventTime<averageCycleTime;
     if (fNofEventsForce>0 && fForcedEventsCount<fNofEventsForce) {
@@ -190,8 +195,13 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
   // process input data blocks and fill the tree
   int iResult = 0;
   if (eventType!=gkAliEventTypeEndOfRun) {
-    if (bDoFilling) iResult=FillTree(fTree, evtData, trigData);
+    if (bDoFilling) {iResult=FillTree(fTree, evtData, trigData); fNewEventsCount++;}
     else fSkippedEventsCount++;
+  }
+  if (fpEventTimer) {
+    fpEventTimer->Stop();
+    fillingtime=fpEventTimer->RealTime()*fgkTimeScale-fillingtime;
+    fpEventTimer->Start(kFALSE);
   }
 
   if (iResult < 0)
@@ -199,8 +209,9 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
 
   const TDatime time;
 
-  if ( time.Get() - fLastTime > fPublishInterval ||
+  if (( time.Get() - fLastTime > fPublishInterval && fNewEventsCount>0) ||
       eventType==gkAliEventTypeEndOfRun) {
+    bDoPublishing=true;
     for (list_const_iterator i = fDefinitions.begin(); i != fDefinitions.end(); ++i) {
       if (TH1* h = CreateHistogram(*i)) {
         //I do not care about errors here - since I'm not able
@@ -210,26 +221,34 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
         PushBack(h, GetOriginDataType(), GetDataSpec());
       }
     }
+      unsigned eventcount=GetEventCount()+1;
+      HLTBenchmark("publishing %d histograms, %d entries in tree, %d new events since last publishing, accumulated %d of %d events (%.1f%%)", fDefinitions.size(), fTree->GetEntriesFast(), fNewEventsCount, eventcount-fSkippedEventsCount, eventcount, eventcount>0?(100*float(eventcount-fSkippedEventsCount)/eventcount):0);
+    fNewEventsCount=0;
 
     fLastTime = time.Get();
   }
 
   if (fpEventTimer) {
     fpEventTimer->Stop();
-    proctime=fpEventTimer->RealTime()*fgkTimeScale-proctime;
+    publishtime=fpEventTimer->RealTime()*fgkTimeScale-publishtime;
+    if (publishtime>fillingtime) publishtime-=fillingtime;
+    else publishtime=0;
+
     averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
 
     // info output once every 5 seconds
     static UInt_t lastTime=0;
     if (time.Get()-lastTime>5 ||
-      eventType==gkAliEventTypeEndOfRun) {
+	eventType==gkAliEventTypeEndOfRun ||
+	bDoPublishing) {
       lastTime=time.Get();
-      unsigned eventcount=GetEventCount();
-      HLTBenchmark("event time %d us, average time %d us, cycle time %d us, accumulated %d of %d events (%.1f%%)", proctime, averageEventTime, averageCycleTime, eventcount-fSkippedEventsCount, eventcount, eventcount>0?(100*float(eventcount-fSkippedEventsCount)/eventcount):0);
+      unsigned eventcount=GetEventCount()+1;
+      HLTBenchmark("filling time %d us, publishing time %d, average total processing time %d us, cycle time %d us, accumulated %d of %d events (%.1f%%)", fillingtime, publishtime, averageEventTime, averageCycleTime, eventcount-fSkippedEventsCount, eventcount, eventcount>0?(100*float(eventcount-fSkippedEventsCount)/eventcount):0);
     }
   }
   if (fpCycleTimer) {
-    fpCycleTimer->Start(kFALSE);
+    bool bReset=(GetEventCount()%cycleResetInterval)==0;
+    fpCycleTimer->Start(bReset);
   }
 
   return iResult;

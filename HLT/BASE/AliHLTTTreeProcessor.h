@@ -141,6 +141,7 @@ private:
   AliHLTUInt32_t fNofEventsForce; //! number of events to ignore the processing time
   AliHLTUInt32_t fForcedEventsCount; //! event count for the forced events
   AliHLTUInt32_t fSkippedEventsCount; //! number of skipped events
+  AliHLTUInt32_t fNewEventsCount; //! number of new events since last publishing
 
   static const AliHLTUInt32_t fgkTimeScale;
 
