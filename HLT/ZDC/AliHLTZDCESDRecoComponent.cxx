@@ -126,6 +126,11 @@ int AliHLTZDCESDRecoComponent::DoInit( int argc, const char** argv )
   TString beamType="";
   if(pGRP) beamType = pGRP->GetBeamType();
 
+  //!!! set the beam type and the energy explicitly
+
+  beamType="A-A"; 
+  beamEnergy = 2760.;
+
   // implement the component initialization
   do {
     if (iResult<0) break;
@@ -165,14 +170,13 @@ int AliHLTZDCESDRecoComponent::DoInit( int argc, const char** argv )
   }
 
   if (iResult>=0) {
-    if((beamType.CompareTo("p-p"))==0) fReconstructor->SetRecoParam(AliZDCRecoParampp::GetLowFluxParam());
-    else if((beamType.CompareTo("A-A"))==0) fReconstructor->SetRecoParam(AliZDCRecoParamPbPb::GetHighFluxParam(2*beamEnergy));
+
+   if((beamType.CompareTo("p-p"))==0) fReconstructor->SetRecoParam(AliZDCRecoParampp::GetLowFluxParam());
+    else if((beamType.CompareTo("A-A"))==0) fReconstructor->SetRecoParam(AliZDCRecoParamPbPb::GetHighFluxParam(beamEnergy));
     else HLTWarning(" Beam type not known by ZDC!");
   
-    if((beamType.CompareTo("A-A"))==0)
-      beamEnergy = 2760.;
 
-    fReconstructor->Init(beamType, beamEnergy);
+    fReconstructor->Init(beamType, beamEnergy/2);
   }
 
   return iResult;
