@@ -21,6 +21,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsDstoKKpi.h"
+#include "AliNormalizationCounter.h"
 
 class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {
@@ -90,11 +91,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Double_t fMassRange;                // range for mass histogram 
   Double_t fMassBinSize;              // bin size for inv. mass histo
 
+  AliNormalizationCounter *fCounter;//!Counter for normalization
   AliRDHFCutsDstoKKpi *fProdCuts;     // Cuts for Analysis
   AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,6);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,7);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif
+
 
