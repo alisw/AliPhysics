@@ -62,7 +62,7 @@ AliTPCSpaceCharge3D::AliTPCSpaceCharge3D()
     fSCLookUpPOCsFileNameRZ(""),
     fSCLookUpPOCsFileNameRPhi(""),
     fSCdensityInRZ(0),
-    fSCdensityInRPhiA(0),
+    fSCdensityInRPhiA(0), 
     fSCdensityInRPhiC(0)
 {
   //
@@ -85,8 +85,9 @@ AliTPCSpaceCharge3D::AliTPCSpaceCharge3D()
 
   fSCLookUpPOCsFileName3D="$(ALICE_ROOT)/TPC/Calib/maps/sc_3D_raw_18-18-26_17p-18p-25p-MN30.root"; // rough estimate
   fSCLookUpPOCsFileNameRZ="$(ALICE_ROOT)/TPC/Calib/maps/sc_radSym_35-01-51_34p-01p-50p_MN60.root";
-  fSCLookUpPOCsFileNameRPhi="$(ALICE_ROOT)/TPC/Calib/maps/sc_cChInZ_35-36-26_34p-18p-01p-MN40.root";
-  //  fSCLookUpPOCsFileNameRPhi="$(ALICE_ROOT)/TPC/Calib/maps/sc_cChInZ_35-18-26_34p-18p-01p-MN40.root";
+  fSCLookUpPOCsFileNameRPhi="$(ALICE_ROOT)/TPC/Calib/maps/sc_cChInZ_35-144-26_34p-18p-01p-MN30.root";
+  //  fSCLookUpPOCsFileNameRPhi="$(ALICE_ROOT)/TPC/Calib/maps/sc_cChInZ_35-36-26_34p-18p-01p-MN40.root";
+ 
 
 
   // standard location of the space charge distibution ... can be changes
@@ -204,9 +205,9 @@ void AliTPCSpaceCharge3D::GetCorrection(const Float_t x[],const Short_t roc,Floa
   Double_t dz = intdEz * fCorrectionFactor * fgkdvdE;
  
   // Calculate correction in cartesian coordinates
-  dx[0] = r * TMath::Cos(phi) - x[0];
-  dx[1] = r * TMath::Sin(phi) - x[1]; 
-  dx[2] = dz;  // z distortion - (scaled with driftvelocity dependency on the Ez field and the overall scaling factor)
+  dx[0] = - (r * TMath::Cos(phi) - x[0]);
+  dx[1] = - (r * TMath::Sin(phi) - x[1]); 
+  dx[2] = - dz;  // z distortion - (scaled with driftvelocity dependency on the Ez field and the overall scaling factor)
 
 }
 
@@ -1513,9 +1514,9 @@ void AliTPCSpaceCharge3D::WriteChargeDistributionToFile(const char* fname) {
   // some 'arbitrary' GG leaks
   Int_t   nGGleaks = 5;
   Double_t secPosA[5]    = {3,6,6,11,13};         // sector
-  Double_t radialPosA[5] = {125,100,160,200,190}; // radius in cm
-  Double_t secPosC[5]    = {5,8,12,15,15};        // sector
-  Double_t radialPosC[5] = {210,170,140,120,190}; // radius in cm
+  Double_t radialPosA[5] = {125,100,160,200,230}; // radius in cm
+  Double_t secPosC[5]    = {1,8,12,15,15};        // sector
+  Double_t radialPosC[5] = {245,120,140,120,190}; // radius in cm
 
   for (Int_t ir=1;ir<=nr;++ir) {
     Double_t rp = histoRPhi->GetXaxis()->GetBinCenter(ir);

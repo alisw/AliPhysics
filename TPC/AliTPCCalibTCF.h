@@ -16,7 +16,9 @@
 
 class TObject;
 class TGraph;
+class AliRawReader;
 class AliTPCRawStream;
+class AliTPCRawStreamV3;
 class TNtuple;
 class TH1F;
 class TH2F;
@@ -33,6 +35,9 @@ public:
   AliTPCCalibTCF& operator = (const  AliTPCCalibTCF &source);
 
  
+  void ProcessRawFileV3(const char *nameRawFile, const char *nameFileOut);
+  void ProcessRawEventV3(AliRawReader *rawReader,AliTPCRawStreamV3 *rawStream, const char *nameFileOut);
+
   void ProcessRawFile(const char *nameRawFile, const char *nameFileOut, bool bUseHLTOUT=false);
   void ProcessRawEvent(AliTPCRawStream *rawStream, const char *nameFileOut);
 

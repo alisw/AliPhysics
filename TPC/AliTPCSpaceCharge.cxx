@@ -150,10 +150,10 @@ void AliTPCSpaceCharge::GetCorrection(const Float_t x[],const Short_t roc,Float_
   Double_t dz = intdEz*fCorrectionFactor;
  
   // Calculate correction in cartesian coordinates
-  dx[0] = r * TMath::Cos(phi) - x[0];
-  dx[1] = r * TMath::Sin(phi) - x[1]; 
-  dx[2] = dz;  // z distortion - (internally scaled with driftvelocity dependency 
-               // on the Ez field 
+  dx[0] = - (r * TMath::Cos(phi) - x[0]);
+  dx[1] = - (r * TMath::Sin(phi) - x[1]); 
+  dx[2] = - dz;  // z distortion - (internally scaled with driftvelocity dependency 
+                 // on the Ez field 
 
 }
 

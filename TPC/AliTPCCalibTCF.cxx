@@ -41,6 +41,7 @@
 #include "AliRawReaderRoot.h"
 #include "AliRawHLTManager.h"
 #include "AliTPCRawStream.h"
+#include "AliTPCRawStreamV3.h"
 #include "AliTPCROC.h"
 
 #include "AliTPCAltroEmulator.h"
@@ -52,13 +53,13 @@ ClassImp(AliTPCCalibTCF)
   
 AliTPCCalibTCF::AliTPCCalibTCF() :
   TNamed(),
-  fGateWidth(80),
+  fGateWidth(50),
   fSample(900),
-  fPulseLength(500),
+  fPulseLength(400),
   fLowPulseLim(30),
-  fUpPulseLim(1000),
-  fRMSLim(2.5),
-  fRatioIntLim(2.5)
+  fUpPulseLim(900),
+  fRMSLim(1.0),
+  fRatioIntLim(2)
 
 {
   //
@@ -121,6 +122,51 @@ AliTPCCalibTCF::~AliTPCCalibTCF()
   //
 }
 
+
+//_____________________________________________________________________________
+void AliTPCCalibTCF::ProcessRawFileV3(const char *nameRawFile, const char *nameFileOut) {
+  //
+  // New RCU data format!: Standard middle of 2009 
+  //
+  // Loops over all events within one RawData file and collects proper pulses 
+  // (according to given tresholds) per pad
+  // Histograms per pad are stored in 'nameFileOut'
+  //
+  
+  AliRawReader *rawReader = AliRawReader::Create(nameRawFile);
+  if (!rawReader) {
+    printf("Could not create a raw reader for %s\n",nameRawFile);
+    return;
+  } 
+
+  rawReader->RewindEvents(); // just to make sure
+  
+  rawReader->Select("TPC");
+
+  if (!rawReader->NextEvent()) {
+    printf("no events found in %s\n",nameRawFile);
+    return;
+  }
+
+  // TPC stream reader 
+  AliTPCRawStreamV3 rawStream(rawReader);
+  
+  Int_t ievent=0;
+  do {  
+    AliSysInfo::AddStamp(Form("start_event_%d",ievent), ievent,-1,-1);
+    printf("Reading next event ... Nr: %d\n",ievent);
+    // Start the basic data extraction
+    ProcessRawEventV3(rawReader, &rawStream, nameFileOut);
+    AliSysInfo::AddStamp(Form("end_event_%d",ievent), ievent,-1,-1);
+    ievent++;
+
+  } while (rawReader->NextEvent());
+
+  rawReader->~AliRawReader();
+  
+}
+
+
 //_____________________________________________________________________________
 void AliTPCCalibTCF::ProcessRawFile(const char *nameRawFile, const char *nameFileOut, bool bUseHLTOUT) {
   //
@@ -163,6 +209,178 @@ void AliTPCCalibTCF::ProcessRawFile(const char *nameRawFile, const char *nameFil
 
   rawReader->~AliRawReader();
   
+}
+
+
+//_____________________________________________________________________________
+void AliTPCCalibTCF::ProcessRawEventV3( AliRawReader *rawReader, AliTPCRawStreamV3 *rawStream, const char *nameFileOut) {
+  //
+  // New RCU data format!: Standard middle of 2009 
+  //
+  // Extracts proper pulses (according the given tresholds) within one event
+  // and accumulates them into one histogram per pad. All histograms are
+  // saved in the file 'nameFileOut'. 
+  // The first bins of the histograms contain the following information:
+  //   bin 1: Number of accumulated pulses
+  //   bin 2;3;4: Sector; Row; Pad; 
+  // 
+  
+  TFile fileOut(nameFileOut,"UPDATE");
+  fileOut.cd();  
+  
+  TH1I *tempHis = new TH1I("tempHis","tempHis",fSample,fGateWidth,fSample+fGateWidth);
+  TH1I *tempRMSHis = new TH1I("tempRMSHis","tempRMSHis",2000,0,2000);
+  
+  // loop over the data in this event
+
+  while (rawStream->NextDDL() ) { 
+
+    Int_t ddl = rawReader->GetDDLID();
+    
+    while (rawStream->NextChannel() ) {
+      
+      while (rawStream->NextBunch() ) {
+
+	Int_t t0 = rawStream->GetStartTimeBin();
+	Int_t bl = rawStream->GetBunchLength();
+
+	if (bl<fSample+fGateWidth) continue;
+
+	Int_t sector = rawStream->GetSector();
+	Int_t row =    rawStream->GetRow();
+	Int_t pad =    rawStream->GetPad();
+
+	UShort_t *signals=(UShort_t*)rawStream->GetSignals();
+	if (!signals) continue;
+	
+	// Write to temporary histogramm
+	for (Int_t i=0;i<bl;++i) {
+	  UShort_t time=t0-i;
+	  UShort_t signal=signals[i];
+	  if ( (fGateWidth<time) && (time<=fSample+fGateWidth) ) {
+	    tempHis->SetBinContent(time-fGateWidth,signal);
+	  }
+	}
+         
+	// calculation of the pulse properties and comparison to thresholds settings
+	
+	Int_t max = (Int_t)tempHis->GetMaximum(FLT_MAX);
+	Int_t maxpos =  tempHis->GetMaximumBin();
+	
+	Int_t first = (Int_t)TMath::Max(maxpos-10, 0);
+	Int_t last  = TMath::Min((Int_t)maxpos+fPulseLength-10, fSample+fGateWidth);
+	
+	// simple baseline substraction ? better one needed ? (pedestalsubstr.?)
+	// and RMS calculation with timebins before the pulse and at the end of
+	// the signal 
+	for (Int_t ipos = 0; ipos<6; ipos++) {
+	  // before the pulse
+	  tempRMSHis->Fill(tempHis->GetBinContent(first+ipos));
+	}
+	for (Int_t ipos = 0; ipos<20; ipos++) {
+	  // at the end to get rid of pulses with serious baseline fluctuations
+	  tempRMSHis->Fill(tempHis->GetBinContent(last-ipos)); 
+	}
+	
+	Double_t baseline = tempRMSHis->GetMean();
+	Double_t rms = tempRMSHis->GetRMS();
+	tempRMSHis->Reset();
+	
+	Double_t lowLim = fLowPulseLim+baseline;
+	Double_t upLim = fUpPulseLim+baseline;
+
+	// get rid of pulses which contain gate signal and/or too much noise
+	// with the help of ratio of integrals
+	Double_t intHist = 0;
+	Double_t intPulse = 0;
+	Double_t binValue;
+	for(Int_t ipos=first; ipos<=last; ipos++) {
+	  binValue = TMath::Abs(tempHis->GetBinContent(ipos) - baseline);
+	  intHist += binValue;
+	  if(ipos>=first+5 && ipos<=first+15) {intPulse += binValue;}
+	}
+        
+	// gets rid of high frequency noise:
+	// calculating ratio (value one to the right of maximum)/(maximum)
+	// has to be >= 0.1; if maximum==0 set ratio to 0.1
+	Double_t maxCorr = max - baseline;
+	Double_t binRatio = 0.1;
+	if(TMath::Abs(maxCorr)>1e-5) {
+	  binRatio = (tempHis->GetBinContent(maxpos+1) - baseline) / maxCorr;
+	}
+	
+	// Decision if found pulse is a proper one according to given tresholds
+        if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim && (intHist/intPulse)<fRatioIntLim &&intPulse>10&& (binRatio >= 0.1) ) {
+
+	  // 1D histogramm for mean pulse per pad
+	  char hname[100];
+	  snprintf(hname,100,"sec%drow%dpad%d",sector,row,pad);
+	  
+	  TH1F *his = (TH1F*)fileOut.Get(hname);
+	  
+	  if (!his ) { // new entry (pulse in new pad found)
+	    
+	    his = new TH1F(hname,hname, fPulseLength+5, 0, fPulseLength+5);
+	    his->SetBinContent(1,1);        //  pulse counter (1st pulse)
+	    his->SetBinContent(2,sector);   //  sector
+	    his->SetBinContent(3,row);      //  row
+	    his->SetBinContent(4,pad);      //  pad	  
+	    
+	    for (Int_t ipos=0; ipos<last-first; ipos++){
+	      Int_t signal = (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
+	      his->SetBinContent(ipos+5,signal);
+	    }
+	    his->Write(hname);
+	    printf("new  %s: Signal %d at bin %d \n", hname, max-(Int_t)baseline, maxpos+fGateWidth);
+	    
+	  } else {  // adding pulse to existing histogram (pad already found)
+	    
+	    his->AddBinContent(1,1); //  pulse counter for each pad
+	    for (Int_t ipos=0; ipos<last-first; ipos++){
+	      Int_t signal= (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
+	      his->AddBinContent(ipos+5,signal);
+	    }
+	    printf("adding ...  %s: Signal %d at bin %d \n", hname, max-(Int_t)baseline, maxpos+fGateWidth);
+	    his->Write(hname,kOverwrite);
+	  }	
+
+
+	  // 2D histogramm for pulse spread within a DDL (normalized to one)
+	  char hname2d[100];
+	  snprintf(hname2d,100,"2Dhisto_ddl%d",ddl);
+	  TH2F *his2d = (TH2F*)fileOut.Get(hname2d);
+	  if (!his2d ) { // new entry (ddl was not seen before)
+
+	    his2d = new TH2F(hname2d,hname2d, fPulseLength, 0., (Double_t)fPulseLength, 50,-0.02,0.02);
+	    for (Int_t ipos=0; ipos<last-first; ipos++){
+	      Double_t signal = tempHis->GetBinContent(ipos+first)-baseline;
+	      his2d->Fill(ipos,signal/maxCorr);
+	    }
+	    his2d->Write(hname2d);
+	    printf("new  %s: \n", hname2d);
+
+	  } else {  // adding pulse to existing histogram 
+
+	    for (Int_t ipos=0; ipos<last-first; ipos++){
+	      Double_t signal= tempHis->GetBinContent(ipos+first)-baseline;
+	      his2d->Fill(ipos,signal/maxCorr);
+	    }
+	    his2d->Write(hname2d,kOverwrite);
+	  }
+	  
+	  tempHis->Reset();
+
+        } // pulse stored
+
+      } // bunch loop
+    }// channel loop
+  } // ddl loop
+  
+  tempHis->~TH1I();
+  tempRMSHis->~TH1I();
+  printf("Finished to read event ... \n");
+  fileOut.Close();
+
 }
 
 
@@ -370,8 +588,11 @@ void AliTPCCalibTCF::MergeHistoPerSector(const char *nameFileIn) {
   while ( (key=(TKey*)next()) ) {
 
     iHist++;
+    TString name(key->GetName());
+    if (name.Contains("ddl") ) continue;  // ignore the 2d histogramms per ddl
 
-    hisPad = (TH1F*)fileIn.Get(key->GetName()); // copy object to memory
+    hisPad = (TH1F*)fileIn.Get(name.Data()); // copy object to memory
+
     Int_t pulseLength = hisPad->GetNbinsX() -4; 
     // -4 because first four timebins contain pad specific informations
     Int_t npulse = (Int_t)hisPad->GetBinContent(1);
@@ -397,7 +618,7 @@ void AliTPCCalibTCF::MergeHistoPerSector(const char *nameFileIn) {
       for (Int_t ipos=0; ipos<pulseLength; ipos++){
 	his->AddBinContent(ipos+5,hisPad->GetBinContent(ipos+5));
       }
-      his->Write(hname,kOverwrite);
+      his->Write(hname,kOverwrite); 
     }
 
     if (iHist%500==0) {
@@ -444,7 +665,10 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse, 
   while ((key = (TKey *) next())) { // loop over histograms
     ++iHist;
     if(iHist < histStart || iHist  > histEnd) {continue;}
-   
+
+    TString name(key->GetName());
+    if (name.Contains("ddl") ) continue;  // ignore the 2d histogramms per ddl
+
     hisIn = (TH1F*)fileIn.Get(key->GetName()); // copy object to memory
 
     Int_t numPulse = (Int_t)hisIn->GetBinContent(1); 
@@ -586,6 +810,9 @@ void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameF
   while ((key = (TKey *) next())) { // loop over saved histograms
     
     //  loading pulse to memory;
+    TString name(key->GetName());
+    if (name.Contains("ddl") ) continue;  // ignore the 2d histogramms per ddl
+
     printf("validating pulse %d out of %d\n",++iHist,nHist);
     hisIn = (TH1F*)fileIn.Get(key->GetName()); 
 
@@ -761,7 +988,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	for(Int_t ipos=first; ipos<=last; ipos++) {
 	  binValue = TMath::Abs(tempHis->GetBinContent(ipos) - baseline);
 	  intHist += binValue;
-	  if(ipos>=first+5 && ipos<=first+25) {intPulse += binValue;}
+	  if(ipos>=first+5 && ipos<=first+15) {intPulse += binValue;}
 	}
 	
 	// gets rid of high frequency noise:
@@ -868,6 +1095,10 @@ TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side)
 
   while ((key = (TKey *) next())) { // loop over histograms within the file
     iHist++;
+    
+    TString name(key->GetName());
+    if (name.Contains("ddl") ) continue;  // ignore the 2d histogramms per ddl
+
     his = (TH1F*)fileIn.Get(key->GetName()); // copy object to memory
 
     npulse = (Int_t)his->GetBinContent(1);
@@ -942,6 +1173,10 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
   Int_t secWise = 0;
 
   while ((key = (TKey *) next())) { // loop over histograms within the file
+    
+    TString name(key->GetName());
+    if (name.Contains("ddl") ) continue;  // ignore the 2d histogramms per ddl
+
     his = (TH1F*)file->Get(key->GetName()); // copy object to memory
     iHist++;
     Int_t npulse = (Int_t)his->GetBinContent(1);
@@ -1683,6 +1918,9 @@ void AliTPCCalibTCF::MergeHistoPerFile(const char *fileNameIn, const char *fileN
 
   while((key=(TKey*)next())) {
     const char *hisName = key->GetName();
+
+    TString name(key->GetName());
+    if (name.Contains("ddl") ) continue;  // ignore the 2d histogramms per ddl
 
     hisIn=(TH1F*)fileIn.Get(hisName);          
     Int_t numPulse=(Int_t)hisIn->GetBinContent(1);
