@@ -1179,6 +1179,7 @@ AliTPCCalibVdrift *     AliTPCcalibDB::GetVdrift(Int_t run){
   //
   // Get the interface to the the vdrift 
   //
+  if (run>fVdriftArray.GetEntriesFast())  UpdateRunInformations(run);
   AliTPCCalibVdrift  * vdrift = (AliTPCCalibVdrift*)fVdriftArray.At(run);
   if (!vdrift) {
     UpdateRunInformations(run);
@@ -1322,7 +1323,7 @@ Float_t AliTPCcalibDB::GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char 
   return val;
 }
 
-Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits) {
+Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits, Bool_t current) {
   //
   // return the chamber HV for given run and time: 0-35 IROC, 36-72 OROC
   // if timeStamp==-1 return mean value
@@ -1340,6 +1341,16 @@ Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t run, Int_t sector, Int_t time
   }else{
     //OROC
     sensorName=Form("TPC_ANODE_O_%c%02d_0_VMEAS",sideName,sector%18);
+  }
+  if (current){
+    if (sector<36){
+      //IROC
+      sensorName=Form("TPC_ANODE_I_%c%02d_IMEAS",sideName,sector%18);
+  }else{
+      //OROC
+      sensorName=Form("TPC_ANODE_O_%c%02d_0_IMEAS",sideName,sector%18);
+    }
+
   }
   if (timeStamp==-1){
     val=AliTPCcalibDB::GetDCSSensorMeanValue(voltageArray, sensorName.Data(),sigDigits);

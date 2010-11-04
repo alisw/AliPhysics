@@ -125,7 +125,7 @@ class AliTPCcalibDB : public TObject
   static Float_t GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp, const char * sensorName, Int_t sigDigits=-1);
   static Float_t GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char * sensorName, Int_t sigDigits=-1);
   //Voltage information
-  static Float_t GetChamberHighVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
+  static Float_t GetChamberHighVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0, Bool_t current=kFALSE);
   static Float_t GetSkirtVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
   static Float_t GetCoverVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
   static Float_t GetGGoffsetVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
