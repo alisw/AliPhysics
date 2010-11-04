@@ -96,7 +96,8 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F  *fMomentumOff;       //! momentum	
     TH1F  *fMomentumOffTpc;         //! pseudorapidity for kTPCin
     TH1F  *fMomentumOffTpcIts;      //! pseudorapidity for kTPCin && kITSin
-    TH1F  *fDCAOff;            //! track DCA to beam line	 
+    TH1F  *fDCArOff;           //! track DCAr to beam line	 
+    TH1F  *fDCAzOff;           //! track DCAz to beam line	 
     TH1F  *fNclusterOff;       //! #clusters per track
     TH1F  *fNclusterOffwCut;   //! #clusters per track w cuts
     TH1F  *fdEdxOff;           //! TPC signal (offline)
@@ -104,10 +105,6 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F  *fPhiOff;            //! azimuthal angle distribution
     TH1F  *fThetaOff;          //! polar angle distribution
     TH1F  *fMultOff;           //! track multiplicity of the event
-    TH2F  *fXVertexVSNtracksOff;//! X Vertex resolution vs nr contrib tracks  
-    TH2F  *fYVertexVSNtracksOff;//! Y Vertex resolution vs nr contrib tracks  
-    TH2F  *fZVertexVSNtracksOff;//! Z Vertex resolution vs nr contrib tracks  
-    TH1F  *fZVertexOffTemp;    //! Temporary histogram to calculate vertex distribution  
     TH2F  *fXYvertexOff;       //! XY primary vertex distribution
     TH1F  *fXvertexOff;        //! X primary vertex distribution
     TH1F  *fYvertexOff;        //! Y primary vertex distribution
@@ -124,7 +121,8 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F  *fMomentumHLT;       //! momentum	
     TH1F  *fMomentumHLTTpc;    //! pseudorapidity for kTPCin
     TH1F  *fMomentumHLTTpcIts; //! pseudorapidity for kTPCin && kITSin
-    TH1F  *fDCAHLT;	       //! track DCA to beam line	 
+    TH1F  *fDCArHLT;	       //! track DCAr to beam line	 
+    TH1F  *fDCAzHLT;	       //! track DCAz to beam line	 
     TH1F  *fNclusterHLT;       //! #clusters per track
     TH1F  *fNclusterHLTwCut;   //! #clusters per track with cuts
     TH1F  *fdEdxHLT;	       //! TPC signal (offline)
@@ -132,10 +130,6 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F  *fPhiHLT;	       //! azimuthal angle distribution
     TH1F  *fThetaHLT;          //! polar angle distribution
     TH1F  *fMultHLT;	       //! track multiplicity of the event   
-    TH2F  *fXVertexVSNtracksHLT;//! X Vertex resolution vs nr contrib tracks
-    TH2F  *fYVertexVSNtracksHLT;//! Y Vertex resolution vs nr contrib tracks
-    TH2F  *fZVertexVSNtracksHLT;//! Z Vertex resolution vs nr contrib tracks
-    TH1F  *fZVertexHLTTemp;    //! Temporary histogram to calculate vertex distribution   
     TH2F  *fXYvertexHLT;       //! XY primary vertex distribution
     TH1F  *fXvertexHLT;        //! X primary vertex distribution
     TH1F  *fYvertexHLT;        //! Y primary vertex distribution
@@ -151,15 +145,7 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     
     TObjArray *fTrgClsArray; //! array of trigger classes
 
-
-    TH1F  *fXvertexVSNcontriOff[7];  //! X vertex distribution for various number of contributors
-    TH1F  *fYvertexVSNcontriOff[7];  //! Y vertex distribution for various number of contributors
-    TH1F  *fZvertexVSNcontriOff[7];  //! Z vertex distribution for various number of contributors
-    TH1F  *fXvertexVSNcontriHLT[7];  //! X vertex distribution for various number of contributors
-    TH1F  *fYvertexVSNcontriHLT[7];  //! Y vertex distribution for various number of contributors
-    TH1F  *fZvertexVSNcontriHLT[7];  //! Z vertex distribution for various number of contributors
-
-
+ 
   
 //     TH1F *fDCAOff_trig;      //! track DCA to beam line for triggered events
 //     TH1F *fNclusterOff_trig; //! #clusters per track for triggered events
