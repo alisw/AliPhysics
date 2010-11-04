@@ -68,18 +68,6 @@ void AliEveEventBufferHomer::AddToBuffer(TObject * event) {
   }
 }
 
-// ///___________________________________________________________________________
-// void AliEveEventBufferHomer::AddToBuffer(TObject * event, ULong64_t eventId ) {
-//   cout << "Add to buffer"<<endl;
-//   if(!event) return;
-//   fBIndex[kTop] = CalculateNext(fBIndex[kTop]);
-//   TList * list = dynamic_cast<TList*>(fEventBuffer->At(fBIndex[kTop]));
-//   if(list) {
-//     list->Clear();
-//     list->AddAll(dynamic_cast<TList*>(event));
-//     fEventId[fBIndex[kTop]] = eventId;  
-//   }
-// }
 
 
 ///______________________________________________________________________

@@ -61,12 +61,12 @@ AliEveEventBuffer::~AliEveEventBuffer() {
   fCurrentEvent = NULL;
 
 }
-
+///___________________________________________________________________________
 void AliEveEventBuffer::CreateBufferThread() {
-  //  cout << "hereherehere"<<endl;
+  cout << "CreateBufferThread()"<<endl;
   TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
   fThread->Run();
-
+  cout << "Done BufferThread"<<endl;
 }
 
 ///___________________________________________________________________________
@@ -252,9 +252,15 @@ Int_t AliEveEventBuffer::CalculateDifference(Int_t top, Int_t low) {
 void AliEveEventBuffer::StartBufferMonitor() {
   //cout << "NOT !!! starting buffer mon"<<endl;
   cout << "starting buffer mon"<<endl;
-  CreateBufferThread();
-  SetBufferMonStarted(kTRUE);
-  fTimer->Start(3000);
+  if(!GetBufferMonStarted()) {
+    CreateBufferThread();
+    SetBufferMonStarted(kTRUE);
+    fTimer->Start(3000);
+  } else {
+    cout << "Stopping buffer monitor"<<endl;
+    fTimer->Stop();
+    SetBufferMonStarted(kFALSE);
+  }
 }
 ///___________________________________________________________________________________
 void AliEveEventBuffer::StopBufferMonitor() {

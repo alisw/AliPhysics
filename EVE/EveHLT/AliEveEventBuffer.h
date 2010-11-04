@@ -87,7 +87,6 @@ protected:
   
   //Add event to buffer
   virtual void AddToBuffer(TObject * event);
-  //  virtual void AddToBuffer(TObject * event, ULong64_t eventId);
   virtual TObject * GetEventFromSource() = 0;
   virtual ULong64_t GetEventIdFromSource() { return 0;}
 
