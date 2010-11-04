@@ -1,0 +1,22 @@
+#-*- Mode: Makefile -*-
+
+SRCS := AMPT/AliAmptRndm.cxx
+
+HDRS := $(SRCS:.cxx=.h) 
+
+DHDR := amptLinkDef.h
+
+FSRCS := AMPT/ampt.f \
+         AMPT/amptset.f \
+         AMPT/amptsetdef.f \
+         AMPT/amptsub.f \
+         AMPT/art1f.f \
+         AMPT/hijing1.383_ampt.f \
+         AMPT/hipyset1.35.f \
+         AMPT/linana.f \
+         AMPT/profile.f \
+         AMPT/zpc.f
+
+ifeq (macosxicc,$(ALICE_TARGET))
+PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))
+endif

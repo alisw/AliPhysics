@@ -56,7 +56,7 @@ TDPMjet/module.mk:	TDPMjet/libTDPMjet.pkg
 TTherminator/module.mk:	TTherminator/libTTherminator.pkg
 CORRFW/module.mk:       CORRFW/libCORRFW.pkg
 TRIGGER/module.mk:      TRIGGER/libTRIGGERbase.pkg
-
+TAmpt/module.mk:	TAmpt/libampt.pkg TAmpt/libTAmpt.pkg
 ifeq (win32gcc,$(ALICE_TARGET))
 $(LIBPATH)/libAOD.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
 $(LIBPATH)/libCDB.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
