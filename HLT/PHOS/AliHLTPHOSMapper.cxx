@@ -161,6 +161,7 @@ AliHLTPHOSMapper::InitDDLSpecificationMapping()
         fSpecificationMapPtr[ddl].fRcuXOffset = fCaloConstants->GetNXCOLUMNSRCU()*(fSpecificationMapPtr[ddl].fRcuX);
 
     }
+    fDDLMapInitialised = true;
 }
 
 
