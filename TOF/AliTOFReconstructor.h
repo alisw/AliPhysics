@@ -37,7 +37,7 @@ public:
 
   virtual void         FillESD(AliRawReader*, TTree*clustersTree, AliESDEvent*esd) const
   {FillESD((TTree*)NULL,clustersTree,esd);}
-  virtual void         FillESD(TTree*, TTree*, AliESDEvent*) const {}
+  virtual void         FillESD(TTree *, TTree *, AliESDEvent *esdEvent) const;
 
   static const AliTOFRecoParam* GetRecoParam() { return dynamic_cast<const AliTOFRecoParam*>(AliReconstructor::GetRecoParam(3)); } // getting RecoParam obj
 

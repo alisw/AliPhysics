@@ -149,6 +149,7 @@ public:
   Bool_t Init(Int_t run = -1); // init
   Double_t GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l0l1, UInt_t timestamp); // get time correction
   void CalibrateESD(AliESDEvent *event); // calibrate ESD
+  void CalibrateTExp(AliESDEvent *event) const; // calibrate TExp
   void SetRemoveMeanT0(Bool_t value) {fRemoveMeanT0 = value;}; // setter
   void SetCalibrateTOFsignal(Bool_t value) {fCalibrateTOFsignal = value;}; // setter
   void SetCorrectTExp(Bool_t value) {fCorrectTExp = value;}; // setter

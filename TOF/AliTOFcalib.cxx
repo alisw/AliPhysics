@@ -2133,19 +2133,17 @@ AliTOFcalib::Init(Int_t run)
     return kFALSE;
   }
   /* get response params */
-  if (fCorrectTExp) {
-    TFile *responseFile = TFile::Open("$ALICE_ROOT/TOF/data/AliTOFresponsePar.root");
-    if (!responseFile || !responseFile->IsOpen()) {
-      AliError("cannot open \"ResponseParams\" local file");
-      return kFALSE;
-    }
-    fResponseParams = (AliTOFResponseParams *)responseFile->Get("ResponseParams");
-    if (!fResponseParams) {
-      AliError("cannot get \"ResponseParams\" object from local file");
-      return kFALSE;
-    }
-    responseFile->Close();
+  TFile *responseFile = TFile::Open("$ALICE_ROOT/TOF/data/AliTOFresponsePar.root");
+  if (!responseFile || !responseFile->IsOpen()) {
+    AliError("cannot open \"ResponseParams\" local file");
+    return kFALSE;
   }
+  fResponseParams = (AliTOFResponseParams *)responseFile->Get("ResponseParams");
+  if (!fResponseParams) {
+    AliError("cannot get \"ResponseParams\" object from local file");
+    return kFALSE;
+  }
+  responseFile->Close();
 
   /* all done */
   fInitFlag = kTRUE;
@@ -2281,3 +2279,39 @@ AliTOFcalib::IsChannelEnabled(Int_t index)
   return kTRUE;
 
 }
+
+//----------------------------------------------------------------------------
+
+void
+AliTOFcalib::CalibrateTExp(AliESDEvent *event) const
+{
+  /*
+   * calibrate TExp
+   */
+
+  if (!fInitFlag) {
+    AliError("class not yet initialized. Initialize it before.");
+    return;
+  }
+
+  /* loop over tracks */
+  AliESDtrack *track = NULL;
+  Double_t texp[AliPID::kSPECIES];
+  for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
+
+    /* get track */
+    track = event->GetTrack(itrk);
+    if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) continue;
+
+    /* get integrated times */
+    track->GetIntegratedTimes(texp);
+    /* loop over particle types and correct expected time */
+    for (Int_t ipart = 0; ipart < AliPID::kSPECIES; ipart++)
+      texp[ipart] += fResponseParams->EvalTExpCorr(ipart, track->P());
+    /* set integrated times */
+    track->SetIntegratedTimes(texp);
+
+  }
+
+}
+
