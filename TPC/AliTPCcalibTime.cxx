@@ -155,6 +155,9 @@ AliTPCcalibTime::AliTPCcalibTime()
   for (Int_t i=0;i<12;i++) {
     fTPCVertex[i]=0;
   }
+  for (Int_t i=0;i<5;i++) {
+    fTPCVertexCorrelation[i]=0;
+  }
   static Int_t counter=0;
   if (1) {
     TTimeStamp s;
@@ -290,6 +293,9 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   for (Int_t i=0;i<12;i++) {
     fTPCVertex[i]=0;
   }
+  for (Int_t i=0;i<5;i++) {
+    fTPCVertexCorrelation[i]=0;
+  }
   BookDistortionMaps();
   
 }
@@ -343,6 +349,9 @@ AliTPCcalibTime::~AliTPCcalibTime(){
 
   if (fTPCVertex) {
     for (Int_t i=0;i<12;i++)  delete fTPCVertex[i];
+  }
+  if (fTPCVertexCorrelation) {
+    for (Int_t i=0;i<5;i++)  delete fTPCVertexCorrelation[i];
   }
   
   fAlignITSTPC->SetOwner(kTRUE);
@@ -772,23 +781,30 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
   //
   // 
   const Int_t kMinClusters  =80;
-  const Int_t kMinTracks    =2;    // minimal number of tracks to define the vertex
+  const Int_t kMinTracks    =2;      // minimal number of tracks to define the vertex
+  const Int_t kMinTracksVertex=30;   // minimal number of tracks to define the cumulative vertex
   const Double_t kMaxTgl    =1.2;    // maximal Tgl (z angle)
-  const Double_t kMinPt     =0.2;  // minimal pt
-  const Double_t kMaxD0     =10;   // cut on distance to the primary vertex first guess
+  const Double_t kMinPt     =0.2;    // minimal pt
+  const Double_t kMaxD0     =5.;     // cut on distance to the primary vertex first guess
   const Double_t kMaxZ0     =20; 
-  const Double_t kMaxD      =5;    // cut on distance to the primary vertex 
-  const Double_t kMaxZ      =4;    // maximal z distance between tracks form the same side
-  const Double_t kMaxChi2   =15;   // maximal chi2 of the TPCvertex 
-  const Double_t kCumulCovarXY=0.01; //increase the error of cumul vertex 100 microns profile
-  const Double_t kCumulCovarZ=250.; //increase the error of cumul vertex
+  const Double_t kMaxD      =2.5;    // cut on distance to the primary vertex 
+  const Double_t kMaxZ      =4;      // maximal z distance between tracks form the same side
+  const Double_t kMaxChi2   =15;     // maximal chi2 of the TPCvertex 
+  const Double_t kCumulCovarXY=0.003; //increase the error of cumul vertex 30 microns profile
+  const Double_t kCumulCovarZ=250.;  //increase the error of cumul vertex
+  const Double_t kMaxDvertex = 1.0;  // cut to accept the vertex; 
+  //
+  Int_t  flags=0;
+  const  Int_t  kBuffSize=100;
+  static Double_t deltaZ[kBuffSize]={0};
+  static Int_t counterZ=0;
+  static AliKFVertex cumulVertexA, cumulVertexC, cumulVertexAC; // cumulative vertex 
+  AliKFVertex vertexA, vertexC;
 
   Float_t  dca0[2]={0,0};
   Double_t dcaVertex[2]={0,0};
-
   Int_t ntracks=event->GetNumberOfTracks();
   if (ntracks==0) return;
-  if (ntracks > fCutTracks) return;
   //
   AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
   //
@@ -835,20 +851,15 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
       }
     }
   }
-  Double_t medianZA=TMath::Median(ntracksA, vertexZA);
-  Double_t medianZC=TMath::Median(ntracksC, vertexZC);
-  Int_t flags=0;
-  static Double_t deltaZ[1000]={0};
-  static Int_t counterZ=0;
-  static AliKFVertex cumulVertexA, cumulVertexC, cumulVertexAC; // cumulative vertex 
-  AliKFVertex vertexA, vertexC;
+  Double_t medianZA=TMath::Median(ntracksA, vertexZA);  // tracks median
+  Double_t medianZC=TMath::Median(ntracksC, vertexZC);  // tracks median
   //
   ntracksA= tracksA.GetEntriesFast();
   ntracksC= tracksC.GetEntriesFast();
   if (ntracksA>kMinTracks && ntracksC>kMinTracks){
-    deltaZ[counterZ%1000]=medianZA-medianZC;
+    deltaZ[counterZ%kBuffSize]=medianZA-medianZC;
     counterZ+=1;
-    Double_t medianDelta=(counterZ>=1000)? TMath::Median(1000, deltaZ): TMath::Median(counterZ, deltaZ);
+    Double_t medianDelta=(counterZ>=kBuffSize)? TMath::Median(kBuffSize, deltaZ): TMath::Median(counterZ, deltaZ);
     if (TMath::Abs(medianDelta-(medianZA-medianZC))>kMaxZ) flags+=16;
     // increse the error of cumulative vertex at the beginning of event
     cumulVertexA.Covariance(0,0)+=kCumulCovarXY*kCumulCovarXY;
@@ -867,8 +878,6 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
       if (TMath::Abs(aliTrack->GetZ()-medianZA)>kMaxZ) continue;
       AliKFParticle part(*aliTrack,211);
       vertexA+=part;
-      cumulVertexA+=part;
-      cumulVertexAC+=part;
     }	
     for (Int_t iC=0; iC<ntracksC; iC++){
       if (flags!=0) continue;
@@ -876,46 +885,90 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
       if (TMath::Abs(aliTrack->GetZ()-medianZC)>kMaxZ) continue;
       AliKFParticle part(*aliTrack,211);
       vertexC+=part;
-      cumulVertexC+=part;
-      cumulVertexAC+=part;
     }	 
+    //
     if (vertexA.GetNDF()<kMinTracks) flags+=32;
     if (vertexC.GetNDF()<kMinTracks) flags+=32;
     if (TMath::Abs(vertexA.Z()-medianZA)>kMaxZ) flags+=1;   //apply cuts
     if (TMath::Abs(vertexC.Z()-medianZC)>kMaxZ) flags+=2;
     if (TMath::Abs(vertexA.GetChi2()/vertexA.GetNDF()+vertexC.GetChi2()/vertexC.GetNDF())> kMaxChi2) flags+=4;
-    if (flags==0 &&cumulVertexC.GetNDF()>20&&cumulVertexA.GetNDF()){
-      Double_t cont[2]={0,fTime};
+    //
+    if (flags==0){
+      for (Int_t iA=0; iA<ntracksA; iA++){
+	if (flags!=0) continue;
+	AliExternalTrackParam *aliTrack =  (AliExternalTrackParam *)tracksA.At(iA);
+	if (TMath::Abs(aliTrack->GetZ()-medianZA)>kMaxZ) continue;
+	AliKFParticle part(*aliTrack,211);
+	cumulVertexA+=part;
+	cumulVertexAC+=part;
+      }	
+      for (Int_t iC=0; iC<ntracksC; iC++){
+	if (flags!=0) continue;
+	AliExternalTrackParam *aliTrack =  (AliExternalTrackParam *)tracksC.At(iC);
+	if (TMath::Abs(aliTrack->GetZ()-medianZC)>kMaxZ) continue;
+	AliKFParticle part(*aliTrack,211);
+	cumulVertexC+=part;
+	cumulVertexAC+=part;
+      }	     
       //
-      cont[0]= cumulVertexA.X();
-      fTPCVertex[0]->Fill(cont);
-      cont[0]= cumulVertexC.X();
-      fTPCVertex[1]->Fill(cont);
-      cont[0]= 0.5*(cumulVertexA.X()-cumulVertexC.X());
-      fTPCVertex[2]->Fill(cont);
-      cont[0]= 0.5*(cumulVertexA.X()+cumulVertexC.X())-vertex->GetX();
-      fTPCVertex[3]->Fill(cont);
+      if (TMath::Abs(cumulVertexA.X()-vertexA.X())>kMaxDvertex) flags+=64;
+      if (TMath::Abs(cumulVertexA.Y()-vertexA.Y())>kMaxDvertex) flags+=64;
+      if (TMath::Abs(cumulVertexA.Z()-vertexA.Z())>kMaxDvertex) flags+=64;
       //
-      cont[0]= cumulVertexA.Y();
-      fTPCVertex[4]->Fill(cont);
-      cont[0]= cumulVertexC.Y();
-      fTPCVertex[5]->Fill(cont);
-      cont[0]= 0.5*(cumulVertexA.Y()-cumulVertexC.Y());
-      fTPCVertex[6]->Fill(cont);
-      cont[0]= 0.5*(cumulVertexA.Y()+cumulVertexC.Y())-vertex->GetY();
-      fTPCVertex[7]->Fill(cont);
-      //
-      //
-      cont[0]= 0.5*(cumulVertexA.Z()+cumulVertexC.Z());
-      fTPCVertex[8]->Fill(cont);
-      cont[0]= 0.5*(cumulVertexA.Z()-cumulVertexC.Z());
-      fTPCVertex[9]->Fill(cont);
-      cont[0]= 0.5*(cumulVertexA.Z()-cumulVertexC.Z());
-      fTPCVertex[10]->Fill(cont);      
-      cont[0]= 0.5*(cumulVertexA.Z()+cumulVertexC.Z())-vertex->GetZ();
-      fTPCVertex[11]->Fill(cont);
-    }
-    //        
+      if (TMath::Abs(cumulVertexC.X()-vertexC.X())>kMaxDvertex) flags+=64;
+      if (TMath::Abs(cumulVertexC.Y()-vertexC.Y())>kMaxDvertex) flags+=64;
+      if (TMath::Abs(cumulVertexC.Z()-vertexC.Z())>kMaxDvertex) flags+=64;
+      
+      
+      if ( flags==0 && cumulVertexC.GetNDF()>kMinTracksVertex&&cumulVertexA.GetNDF()>kMinTracksVertex){
+	Double_t cont[2]={0,fTime};
+	//
+	cont[0]= cumulVertexA.X();
+	fTPCVertex[0]->Fill(cont);
+	cont[0]= cumulVertexC.X();
+	fTPCVertex[1]->Fill(cont);
+	cont[0]= 0.5*(cumulVertexA.X()-cumulVertexC.X());
+	fTPCVertex[2]->Fill(cont);
+	cont[0]= 0.5*(cumulVertexA.X()+cumulVertexC.X())-vertexSPD->GetX();
+	fTPCVertex[3]->Fill(cont);
+	//
+	cont[0]= cumulVertexA.Y();
+	fTPCVertex[4]->Fill(cont);
+	cont[0]= cumulVertexC.Y();
+	fTPCVertex[5]->Fill(cont);
+	cont[0]= 0.5*(cumulVertexA.Y()-cumulVertexC.Y());
+	fTPCVertex[6]->Fill(cont);
+	cont[0]= 0.5*(cumulVertexA.Y()+cumulVertexC.Y())-vertexSPD->GetY();
+	fTPCVertex[7]->Fill(cont);
+	//
+	//
+	cont[0]= 0.5*(cumulVertexA.Z()+cumulVertexC.Z());
+	fTPCVertex[8]->Fill(cont);
+	cont[0]= 0.5*(cumulVertexA.Z()-cumulVertexC.Z());
+	fTPCVertex[9]->Fill(cont);
+	cont[0]= 0.5*(cumulVertexA.Z()-cumulVertexC.Z());
+	fTPCVertex[10]->Fill(cont);      
+	cont[0]= 0.5*(cumulVertexA.Z()+cumulVertexC.Z())-vertexSPD->GetZ();
+	fTPCVertex[11]->Fill(cont);
+	//
+	Double_t correl[2]={0,0};
+	//
+	correl[0]=cumulVertexC.Z();
+	correl[1]=cumulVertexA.Z();
+	fTPCVertexCorrelation[0]->Fill(correl);   // fill A side :TPC
+	correl[0]=cumulVertexA.Z();
+	correl[1]=cumulVertexC.Z(); 
+	fTPCVertexCorrelation[1]->Fill(correl);   // fill C side :TPC
+	//
+	correl[0]=vertexSPD->GetZ();
+	correl[1]=cumulVertexA.Z()-correl[0];
+	fTPCVertexCorrelation[2]->Fill(correl);   // fill A side :ITS
+	correl[1]=cumulVertexC.Z()-correl[0]; 
+	fTPCVertexCorrelation[3]->Fill(correl);   // fill C side :ITS
+	correl[1]=0.5*(cumulVertexA.Z()+cumulVertexC.Z())-correl[0]; 
+	fTPCVertexCorrelation[4]->Fill(correl);   // fill C side :ITS
+      }
+    }        
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
       /*
@@ -1063,6 +1116,12 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
       }
     }
     //
+    if (fTPCVertexCorrelation && cal->fTPCVertexCorrelation){
+      for (Int_t imeas=0; imeas<5; imeas++){
+	if (fTPCVertexCorrelation[imeas] && cal->fTPCVertexCorrelation[imeas]) fTPCVertexCorrelation[imeas]->Add(cal->fTPCVertexCorrelation[imeas]);
+      }
+    }
+      
     if (fTPCVertex && cal->fTPCVertex) 
       for (Int_t imeas=0; imeas<12; imeas++){
 	if (fTPCVertex[imeas] && cal->fTPCVertex[imeas]) fTPCVertex[imeas]->Add(cal->fTPCVertex[imeas]);
@@ -1429,28 +1488,23 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   const Int_t    kMinITS  = 3;     // minimal number of ITS cluster
   const Double_t kMinZ    = 10;    // maximal dz distance
   const Double_t kMaxDy   = 2.;    // maximal dy distance
-  const Double_t kMaxAngle= 0.05;  // maximal angular distance
+  const Double_t kMaxAngle= 0.07;  // maximal angular distance
   const Double_t kSigmaCut= 5;     // maximal sigma distance to median
   const Double_t kVdErr   = 0.1;  // initial uncertainty of the vd correction 
   const Double_t kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
   const Double_t kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
   const Double_t kMinPt   = 0.3;   // minimal pt
+  const Double_t kMax1Pt=0.5;        //maximal 1/pt distance
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
-  /*
-    0. Standrd cuts:
-    TCut cut="abs(pTPC.fP[2]-pITS.fP[2])<0.01&&abs(pTPC.fP[3]-pITS.fP[3])<0.01&&abs(pTPC.fP[2]-pITS.fP[2])<1";
-  */
   //
   // 0. Apply standard cuts
-  //
+  // 
   Int_t dummycl[1000];
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
-  if (track->GetITSclusters(dummycl)<kMinITS) return;  // minimal amount of clusters
   if (!track->IsOn(AliESDtrack::kTPCrefit)) return;
-  if (!friendTrack->GetITSOut()) return;  
   if (!track->GetInnerParam())   return;
   if (!track->GetOuterParam())   return;
   if (track->GetInnerParam()->Pt()<kMinPt)  return;
@@ -1460,11 +1514,14 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   if (track->GetInnerParam()->GetX()>90)   return;
   //
   AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(track->GetInnerParam()));
-  AliExternalTrackParam pITS(*(friendTrack->GetITSOut()));   // ITS standalone if possible
-  AliExternalTrackParam pITS2(*(friendTrack->GetITSOut()));  //TPC-ITS track
-  pITS2.Rotate(pTPC.GetAlpha());
-  //  pITS2.PropagateTo(pTPC.GetX(),fMagF);
-  AliTracker::PropagateTrackToBxByBz(&pITS2,pTPC.GetX(),0.1,0.1,kFALSE);
+  //  
+  AliExternalTrackParam pITS;   // ITS standalone if possible
+  AliExternalTrackParam pITS2;  //TPC-ITS track
+  if (friendTrack->GetITSOut()){
+    pITS2=(*(friendTrack->GetITSOut()));  //TPC-ITS track - snapshot ITS out
+    pITS2.Rotate(pTPC.GetAlpha());
+    AliTracker::PropagateTrackToBxByBz(&pITS2,pTPC.GetX(),0.1,0.1,kFALSE);
+  }
 
   AliESDfriendTrack *itsfriendTrack=0;
   //
@@ -1473,21 +1530,27 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   Bool_t hasAlone=kFALSE;
   Int_t ntracks=event->GetNumberOfTracks();
   for (Int_t i=0; i<ntracks; i++){
-    AliESDtrack *trackS = event->GetTrack(i);
-    if (trackS->GetTPCNcls()>0) continue;   //continue if has TPC info
+    AliESDtrack * trackITS = event->GetTrack(i); 
+    if (!trackITS) continue;
+    if (trackITS->GetITSclusters(dummycl)<kMinITS) continue;  // minimal amount of clusters
     itsfriendTrack = esdFriend->GetTrack(i);
     if (!itsfriendTrack) continue;
     if (!itsfriendTrack->GetITSOut()) continue;
-    if (TMath::Abs(pITS2.GetTgl()-itsfriendTrack->GetITSOut()->GetTgl())> kMaxAngle) continue;
+     
+    if (TMath::Abs(pTPC.GetTgl()-itsfriendTrack->GetITSOut()->GetTgl())> kMaxAngle) continue;
+    if (TMath::Abs(pTPC.GetSigned1Pt()-itsfriendTrack->GetITSOut()->GetSigned1Pt())> kMax1Pt) continue;
     pITS=(*(itsfriendTrack->GetITSOut()));
     //
     pITS.Rotate(pTPC.GetAlpha());
-    //pITS.PropagateTo(pTPC.GetX(),fMagF);
     AliTracker::PropagateTrackToBxByBz(&pITS,pTPC.GetX(),0.1,0.1,kFALSE);
-    if (TMath::Abs(pITS2.GetY()-pITS.GetY())> kMaxDy) continue;
+    if (TMath::Abs(pTPC.GetY()-pITS.GetY())> kMaxDy) continue;
+    if (TMath::Abs(pTPC.GetSnp()-pITS.GetSnp())> kMaxAngle) continue;
     hasAlone=kTRUE;
   }
-  if (!hasAlone) pITS=pITS2;
+  if (!hasAlone) {
+    if (track->GetITSclusters(dummycl)<kMinITS) return;
+    pITS=pITS2;  // use combined track if it has ITS
+  }
   //
   if (TMath::Abs(pITS.GetY()-pTPC.GetY())    >kMaxDy)    return;
   if (TMath::Abs(pITS.GetSnp()-pTPC.GetSnp())>kMaxAngle) return;
@@ -2039,6 +2102,16 @@ void  AliTPCcalibTime::BookDistortionMaps(){
     fTPCVertex[ihis]=new THnSparseF(hnames[ihis],hnames[ihis],2,binsVertex,aminVertex,amaxVertex);
     fTPCVertex[ihis]->GetAxis(1)->SetTitle("Time");
     fTPCVertex[ihis]->GetAxis(0)->SetTitle(anames[ihis]);
+  }
+  
+  Int_t    binsVertexC[2]={40, 300};
+  Double_t aminVertexC[2]={-20,-30};
+  Double_t amaxVertexC[2]={20,30};
+  const char* hnamesC[5]={"TPCA_TPC","TPCC_TPC","TPCA_ITS","TPCC_ITS","TPC_ITS"};
+  for (Int_t ihis=0; ihis<5; ihis++) {
+    fTPCVertexCorrelation[ihis]=new THnSparseF(hnamesC[ihis],hnamesC[ihis],2,binsVertexC,aminVertexC,amaxVertexC);
+    fTPCVertexCorrelation[ihis]->GetAxis(1)->SetTitle("z (cm)");
+    fTPCVertexCorrelation[ihis]->GetAxis(0)->SetTitle("z (cm)");
   }
 }
 

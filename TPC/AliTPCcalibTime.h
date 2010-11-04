@@ -60,6 +60,7 @@ public:
   TObjArray* GetAlignTOFTPC() const {return fAlignTOFTPC;}              // alignemnt array TOF TPC match
 
   THnSparse * GetTPCVertexHisto(Int_t index) { return fTPCVertex[index%12];}
+  THnSparse * GetTPCVertexHistoCorrelation(Int_t index) { return fTPCVertexCorrelation[index%5];}
 
   THnSparse*  GetResHistoTPCCE(Int_t index) const { return (index<5) ? fResHistoTPCCE[index]:0;}        //TPC-CE    matching map
   THnSparse*  GetResHistoTPCITS(Int_t index) const { return (index<5) ? fResHistoTPCITS[index]:0;}        //TPC-ITS    matching map
@@ -112,7 +113,8 @@ protected:
   //
   // TPC vertex A side C side histo
   //
-  THnSparse * fTPCVertex[12];                  // TPC vertex histograms A side c side - A+C -ESD
+  THnSparse * fTPCVertex[12];           // TPC vertex histograms A side c side - A+C -ESD
+  THnSparse * fTPCVertexCorrelation[5];       // TPC vertex correlation A side C side with TPC vertex and ITS vertex     
   // DELTA Z histo
   TObjArray* fArrayDz;                  // array of DZ histograms for different triggers
   TObjArray* fAlignITSTPC;              // alignemnt array ITS TPC match
@@ -139,7 +141,7 @@ private:
   AliTPCcalibTime(const AliTPCcalibTime&); 
   AliTPCcalibTime& operator=(const AliTPCcalibTime&); 
 
-  ClassDef(AliTPCcalibTime, 8); 
+  ClassDef(AliTPCcalibTime, 10); 
 };
 
 #endif
