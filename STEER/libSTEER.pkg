@@ -78,7 +78,6 @@ AliDCSArray.cxx AliLHCReader.cxx \
 AliLHCDipValT.cxx AliLHCData.cxx \
 AliCTPTimeParams.cxx AliCTPInputTimeParams.cxx \
 AliLHCClockPhase.cxx \
-AliRefArray.cxx \
 AliLTUConfig.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 

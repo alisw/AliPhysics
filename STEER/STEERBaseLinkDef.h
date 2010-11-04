@@ -88,5 +88,6 @@
 #pragma link C++ class AliTRDPIDResponse+;
 
 #pragma link C++ class AliDAQ+;
+#pragma link C++ class AliRefArray+;
 
 #endif

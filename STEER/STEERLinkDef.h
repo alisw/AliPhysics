@@ -174,7 +174,6 @@
 #pragma link C++ class AliLHCData+;
 
 #pragma link C++ class AliLHCClockPhase+;
-#pragma link C++ class AliRefArray+;
 
 #pragma link C++ class AliLTUConfig+;
 
