@@ -803,7 +803,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 					}
 				}
 				if (!foundBeamStart){
-					AliInfo("No value for the Machine Mode found before start of run, the Machine Mode will remain empty");
+					AliInfo("No value for the Beam Type found before start of run, the Machine Mode will remain empty");
 				}
 				else {
 					AliDCSArray* beam = (AliDCSArray*)beamArray->At(indexBeam);
@@ -814,13 +814,19 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 						AliInfo("Setting beam type to p-p");
 						grpobj->SetBeamType("p-p");
 					}
-					else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase) == 0){
+					else { // if there is no PROTON beam, we suppose it is Pb, and we put A-A
+						AliInfo("Setting beam type to A-A");
+						grpobj->SetBeamType("A-A");
+					}
+					/*
+					  else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase) == 0){
 						AliInfo("Setting beam type to Pb-Pb");
 						grpobj->SetBeamType("Pb-Pb");
 					}
 					else{
 						AliError("Beam Type not known, leaving it empty");
 					}
+					*/
 					if (indexBeam < nBeam-1){
 						AliDCSArray* beam1 = (AliDCSArray*)beamArray->At(indexBeam+1);
 						if (beam1){
