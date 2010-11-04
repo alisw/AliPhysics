@@ -33,6 +33,7 @@
 #include "AliGenEposEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenGeVSimEventHeader.h"
+#include "AliCollisionGeometry.h"
 #include "AliMultiplicity.h"
 #include "AliFlowTrackCuts.h"
 #include "AliFlowEventSimple.h"
@@ -117,6 +118,12 @@ void AliFlowEvent::SetMCReactionPlaneAngle(const AliMCEvent* mcEvent)
   {
     AliGenEposEventHeader* headerE = dynamic_cast<AliGenEposEventHeader*>(mcEvent->GenEventHeader());
     if (headerE) AliFlowEventSimple::SetMCReactionPlaneAngle( headerE->ReactionPlaneAngle() );
+  }
+  //Hydjet
+  else
+  {
+    AliCollisionGeometry* header = dynamic_cast<AliCollisionGeometry*>(mcEvent->GenEventHeader());
+    if (header) AliFlowEventSimple::SetMCReactionPlaneAngle( header->ReactionPlaneAngle() );
   }
 }
 
