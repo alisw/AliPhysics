@@ -36,8 +36,11 @@ AliEveEventBuffer::AliEveEventBuffer() :
   fTimer = new TTimer();
   fTimer->Connect("Timeout()", "AliEveEventBuffer", this, "CreateBufferThread()");
 
-  fEventId = new Int_t[fBufferSize];
-
+  fEventId = new ULong64_t[fBufferSize];
+  for(Int_t id = 0; id < fBufferSize; id++ ) {
+    fEventId[id] = -2;
+  }
+  
 
 }
 
@@ -134,6 +137,8 @@ TObject * AliEveEventBuffer::Back() {
   }
 }
 
+
+
 ///______________________________________________________________________________
 TObject * AliEveEventBuffer::Fwd() {
   PrintIndeces();
@@ -184,7 +189,12 @@ void AliEveEventBuffer::PrintBuffer() {
 void AliEveEventBuffer::FetchEvent() {
   cout << "FetchEvent " << endl;
   TObject * event = GetEventFromSource();
-  if(event) AddToBuffer(event);
+  ULong64_t eventId = GetEventIdFromSource();
+  if(event) {
+    AddToBuffer(event);
+    fEventId[fBIndex[kTop]] = eventId;  
+  }
+  
   PrintIndeces();
   cout << "FetchedEvent " << endl;
   
@@ -201,9 +211,8 @@ void AliEveEventBuffer::AddToBuffer(TObject * event) {
   fEventBuffer->RemoveAt(fBIndex[kTop]);
   //if (object) delete object;
   fEventBuffer->AddAt(event, fBIndex[kTop]);
+
 }
-
-
 
 ///_____________________________________________________________________________________
 Int_t AliEveEventBuffer::CalculateNext(Int_t current) {

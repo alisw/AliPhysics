@@ -38,7 +38,7 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   fButtonNavigateBack(0),
   fButtonNavigateFwd(0),
   fButtonPrintScreens(NULL),
-  fBoxTriggerSelector(0),
+//fBoxTriggerSelector(0),
 //  fBoxEventLoopSpeed(0),
   fButtonEventLoopText(0),
   fButtonUpdateEvents(NULL),
@@ -46,26 +46,16 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
  fEventLoopStarted(kFALSE) 
 {
 
+  MakeTitle("AliEveHLTEventManager");
+
   fButtonUpdateEvents = new TGTextButton(this, " Fill buffer.. ");
   AddFrame(fButtonUpdateEvents); //, new TGLayoutHints(...));
   fButtonUpdateEvents->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "PollEvents()");
-
-
-  MakeTitle("AliEveHLTEventManager");
 
   // Create widgets
   // fXYZZ = new TGSomeWidget(this, ...);
   // AddFrame(fXYZZ, new TGLayoutHints(...));
   // fXYZZ->Connect("SignalName()", "AliEveHLTEventManagerEditor", this, "DoXYZZ()");
-
-  fButtonConnect = new TGTextButton(this, " Reconnect ");
-  AddFrame(fButtonConnect); //, new TGLayoutHints(...));
-  fButtonConnect->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "ConnectToHLT()");
-
-  fButtonWriteToFile = new TGTextButton(this, " Write to file  ");
-  AddFrame(fButtonWriteToFile); //, new TGLayoutHints(...));
-  fButtonWriteToFile->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "WriteBlockListToFile()");
-
 
   fButtonNextEvent = new TGTextButton(this, "  NextEvent  ");
   AddFrame(fButtonNextEvent); //, new TGLayoutHints(...));
@@ -83,17 +73,28 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   fButtonPrintScreens = new TGTextButton(this, "  Save Viewers  ");
   AddFrame(fButtonPrintScreens); //, new TGLayoutHints(...));
   fButtonPrintScreens->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "PrintScreens()");
+  
+  fButtonWriteToFile = new TGTextButton(this, " Write to file  ");
+  AddFrame(fButtonWriteToFile); //, new TGLayoutHints(...));
+  fButtonWriteToFile->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "WriteBlockListToFile()");
+
+  fButtonConnect = new TGTextButton(this, " Reconnect ");
+  AddFrame(fButtonConnect); //, new TGLayoutHints(...));
+  fButtonConnect->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "ConnectToHLT()");
+
+ 
+ 
 
 
-  fBoxTriggerSelector = new TGComboBox(this, "Select Trigger");
-  fBoxTriggerSelector->AddEntry("HLT Global Trigger", 0);
-  fBoxTriggerSelector->AddEntry("Barrel multiplicity trigger", 1);
-  fBoxTriggerSelector->AddEntry("PHOS Geometry trigger", 2);
-  fBoxTriggerSelector->AddEntry("No trigger selection", 3);
-  fBoxTriggerSelector->Connect("Selected(Int_t)","AliEveHLTEventManagerEditor", this, "SetTriggerString(int)");
-  fBoxTriggerSelector->SetWidth(150);
-  fBoxTriggerSelector->SetHeight(25);
-  AddFrame(fBoxTriggerSelector);
+  // fBoxTriggerSelector = new TGComboBox(this, "Select Trigger");
+  // fBoxTriggerSelector->AddEntry("HLT Global Trigger", 0);
+  // fBoxTriggerSelector->AddEntry("Barrel multiplicity trigger", 1);
+  // fBoxTriggerSelector->AddEntry("PHOS Geometry trigger", 2);
+  // fBoxTriggerSelector->AddEntry("No trigger selection", 3);
+  // fBoxTriggerSelector->Connect("Selected(Int_t)","AliEveHLTEventManagerEditor", this, "SetTriggerString(int)");
+  // fBoxTriggerSelector->SetWidth(150);
+  // fBoxTriggerSelector->SetHeight(25);
+  // AddFrame(fBoxTriggerSelector);
 
   fButtonEventLoopText = new TGTextButton(this, "  Loop Events  ");
   AddFrame(fButtonEventLoopText); //, new TGLayoutHints(...));

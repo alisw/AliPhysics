@@ -60,10 +60,13 @@ private:
 
   ///Inherited from AliEveEventBuffer
   TObject * GetEventFromSource();
+  
+  ULong64_t GetEventIdFromSource();
+
 
   ///Inherited form AliEveEventBuffer
   void AddToBuffer(TObject * event);
-
+  //void AddToBuffer(TObject * event, ULong64_t eventId);
   AliEveHOMERManager * fHomer;
   Int_t fEventNo;
   TList * fAsyncList;

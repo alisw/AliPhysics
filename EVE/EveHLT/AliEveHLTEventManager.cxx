@@ -146,6 +146,13 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
 
   gEve->DisableRedraw();
 
+  // -- Set EventID in Window Title  
+  TString winTitle("Eve Main Window");
+  winTitle += Form("-- Run Number: %d", fRunNumber); 
+  winTitle += Form("-- Event ID : 0x%lu ", GetEventBuffer()->GetEventId() );
+  GetEveManager()->GetBrowser()->SetWindowName(winTitle);
+
+
   
   cout << "reset()"<<endl;
   
@@ -187,9 +194,9 @@ Int_t AliEveHLTEventManager::ProcessEvent(TList * blockList) {
     return -1;
   }
  
-  cout << "reset ()"<<endl;
+  cout << "ProcessEvent()::reset ()"<<endl;
   ResetDisplay();
-  cout << "done reset()"<<endl;
+  cout << "ProcessEvent() :: done reset()"<<endl;
   AliHLTHOMERBlockDesc * block = NULL;
   TIter next(blockList);
   while ((block = (AliHLTHOMERBlockDesc*)next())) {
@@ -411,12 +418,6 @@ void  AliEveHLTEventManager::UpdateDisplay() {
   if(fAnyElement) fAnyElement->UpdateElements();
   if(fMuonElement) fMuonElement->UpdateElements();
 
-
-  // -- Set EventID in Window Title  
-  TString winTitle("Eve Main Window");
-  winTitle += Form("-- Run Number: %d", fRunNumber); 
-  //winTitle += Form("-- Event ID : 0x%lu ", GetEventID(fCurrentEventIdx) );
-  GetEveManager()->GetBrowser()->SetWindowName(winTitle);
 
   //==============================================================================
   // -- Import global scene into projection scenes

@@ -51,7 +51,7 @@ protected:
   TGTextButton     *fButtonNavigateBack; // Button to navigate back
   TGTextButton     *fButtonNavigateFwd;  // Button to navigate fwd
   TGTextButton     *fButtonPrintScreens;  // Button to print viewers
-  TGComboBox       *fBoxTriggerSelector; // Drop down menu to select trigger criteria.
+  //TGComboBox       *fBoxTriggerSelector; // Drop down menu to select trigger criteria.
   TGTextButton     *fButtonEventLoopText; //Text button to start / stop event loop.
   TGTextButton    *fButtonUpdateEvents;
   //TGComboBox       *fBoxEventLoopSpeed; // Drop down menu to set the speed of the loop.

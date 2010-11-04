@@ -57,10 +57,9 @@ public:
     ;
   }
 
-  Int_t GetEventId() const { return fEventId[fBIndex[kCurrent]];}
-
   void CreateBufferThread();
 
+  ULong64_t GetEventId() const { return fEventId[fBIndex[kCurrent]]; }
 
 protected:
   
@@ -88,8 +87,10 @@ protected:
   
   //Add event to buffer
   virtual void AddToBuffer(TObject * event);
-  
+  //  virtual void AddToBuffer(TObject * event, ULong64_t eventId);
   virtual TObject * GetEventFromSource() = 0;
+  virtual ULong64_t GetEventIdFromSource() { return 0;}
+
 
   void FetchEvent();
   
@@ -99,7 +100,7 @@ protected:
   Int_t CalculatePrevious(Int_t current);
   Int_t CalculateNext(Int_t current);
 
-  void SetEventId(Int_t eventId) { fEventId[fBIndex[kCurrent]] = eventId;}
+  void SetEventId(ULong64_t eventId) { fEventId[fBIndex[kCurrent]] = eventId;}
   
   void SetBufferMonStarted(Bool_t started) {fBufferMonStarted = started;}
   Bool_t GetBufferMonStarted () const { return fBufferMonStarted;}
@@ -122,7 +123,7 @@ private:
   TTimer * fTimer;
 
   //Current event id
-  Int_t * fEventId;
+  ULong64_t * fEventId;
   
   Bool_t fBufferMonStarted;
 

@@ -36,6 +36,10 @@ AliEveEventBufferHomer::~AliEveEventBufferHomer() {
 
 
 
+ULong64_t AliEveEventBufferHomer::GetEventIdFromSource() {
+  ///
+  return fHomer->GetEventID();
+}
 
 ///______________________________________________________________________
 TObject * AliEveEventBufferHomer::GetEventFromSource() {
@@ -43,6 +47,7 @@ TObject * AliEveEventBufferHomer::GetEventFromSource() {
   if(fHomer) {
     cout << "calling nexthomerevent"<<endl;
     TList * blockList = fHomer->NextHOMEREvent();
+    
     if(blockList)  return dynamic_cast<TObject*>(blockList);
     else return NULL;
   } 
@@ -50,6 +55,7 @@ TObject * AliEveEventBufferHomer::GetEventFromSource() {
   cout << "AliEveEventBufferHomer::GetEventFromSource() : fHomer is null pointer!!"<<endl;
   return NULL;
 }
+
 ///___________________________________________________________________________
 void AliEveEventBufferHomer::AddToBuffer(TObject * event) {
   cout << "Add to buffer"<<endl;
@@ -61,6 +67,19 @@ void AliEveEventBufferHomer::AddToBuffer(TObject * event) {
     list->AddAll(dynamic_cast<TList*>(event));
   }
 }
+
+// ///___________________________________________________________________________
+// void AliEveEventBufferHomer::AddToBuffer(TObject * event, ULong64_t eventId ) {
+//   cout << "Add to buffer"<<endl;
+//   if(!event) return;
+//   fBIndex[kTop] = CalculateNext(fBIndex[kTop]);
+//   TList * list = dynamic_cast<TList*>(fEventBuffer->At(fBIndex[kTop]));
+//   if(list) {
+//     list->Clear();
+//     list->AddAll(dynamic_cast<TList*>(event));
+//     fEventId[fBIndex[kTop]] = eventId;  
+//   }
+// }
 
 
 ///______________________________________________________________________
