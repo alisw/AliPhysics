@@ -924,7 +924,8 @@ Bool_t AliEMCALRecoUtils::IsMatched(Int_t index)
 {
   //Given a cluster index as in AliESDEvent::GetCaloCluster(index)
   //Returns if cluster has a match
-  if(FindMatchedPos(index)>-1) return kTRUE;
+  if(FindMatchedPos(index)>-1) 
+    return kTRUE;
   else
     return kFALSE;
 }
@@ -943,7 +944,7 @@ Int_t AliEMCALRecoUtils::FindMatchedPos(Int_t index) const
 	  pos=i;
 	  tmpR=fResidualR->At(i);
 	}
-      //printf("Matched cluster pos: %d, index: %d, dR: %2.4f, dZ: %2.4f.\n",i,fMatchedClusterIndex->At(i),fResidualR->At(i),fResidualZ->At(i));
+      AliDebug(3,Form("Matched cluster pos: %d, index: %d, dR: %2.4f, dZ: %2.4f.\n",i,fMatchedClusterIndex->At(i),fResidualR->At(i),fResidualZ->At(i)));
     }
   return pos;
 }
@@ -967,7 +968,14 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
     chi2PerClusterITS = esdTrack->GetITSchi2()/Float_t(nClustersITS);
   if (nClustersTPC!=0) 
     chi2PerClusterTPC = esdTrack->GetTPCchi2()/Float_t(nClustersTPC);
-      
+
+
+  //DCA cuts
+  Float_t MaxDCAToVertexXYPtDep = 0.0182 + 0.0350/TMath::Power(esdTrack->Pt(),1.01); //This expression comes from AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()
+  //AliDebug(3,Form("Track pT = %f, DCAtoVertexXY = %f",esdTrack->Pt(),MaxDCAToVertexXYPtDep));
+  SetMaxDCAToVertexXY(MaxDCAToVertexXYPtDep); //Set pT dependent DCA cut to vertex in x-y plane
+
+
   Float_t b[2];
   Float_t bCov[3];
   esdTrack->GetImpactParameters(b,bCov);
@@ -1012,6 +1020,10 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
   if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) > fCutMaxDCAToVertexZ)
     cuts[9] = kTRUE;
 
+  //Require at least one SPD point + anything else in ITS
+  if( (esdTrack->HasPointOnITSLayer(0) || esdTrack->HasPointOnITSLayer(1)) == kFALSE)
+    cuts[10] = kTRUE;
+
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
     if (cuts[i]) {cut = kTRUE;}
@@ -1026,15 +1038,19 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
 void AliEMCALRecoUtils::InitTrackCuts()
 {
   //Intilize the track cut criteria
-  //By default these cuts are set according to AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
+  //By default these cuts are set according to AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()
   //Also you can customize the cuts using the setters
-
-  SetMinNClustersTPC(50);
+  
+  //TPC
+  SetMinNClustersTPC(70);
   SetMaxChi2PerClusterTPC(4);
   SetAcceptKinkDaughters(kFALSE);
-  SetMaxDCAToVertexZ(3.2);
-  SetMaxDCAToVertexXY(2.4);
-  SetDCAToVertex2D(kTRUE);
+  SetRequireTPCRefit(kTRUE);
+  
+  //ITS
+  SetRequireITSRefit(kTRUE);
+  SetMaxDCAToVertexZ(2);
+  SetDCAToVertex2D(kFALSE);
 }
 
 //__________________________________________________

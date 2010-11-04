@@ -228,7 +228,7 @@ private:
   Float_t fCutR; //dR cut on matching
   Float_t fCutZ; //dZ cut on matching
 
-  enum { kNCuts = 10 }; 
+  enum { kNCuts = 11 }; 
   Int_t   fCutMinNClusterTPC;         // min number of tpc clusters
   Int_t   fCutMinNClusterITS;         // min number of its clusters  
   Float_t fCutMaxChi2PerClusterTPC;   // max tpc fit chi2 per tpc cluster
