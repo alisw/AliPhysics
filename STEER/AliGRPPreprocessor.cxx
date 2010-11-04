@@ -2346,7 +2346,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	
 	// main logbook
 	TString sqlQuery;
-	sqlQuery.Form("SELECT DAQ_time_start, run_type, detectorMask, L3_magnetCurrent, Dipole_magnetCurrent FROM logbook WHERE run = %d", run);
+	sqlQuery.Form("SELECT DAQ_time_start, run_type, detectorMask, L3_magnetCurrent, Dipole_magnetCurrent,beamType FROM logbook WHERE run = %d", run);
 	TSQLResult* result = server->Query(sqlQuery);
 	if (!result)
 		{
@@ -2374,6 +2374,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	TString detectorMaskString(row->GetField(2));
 	TString l3CurrentString(row->GetField(3));
 	TString dipoleCurrentString(row->GetField(4));
+	TString beamTypeString(row->GetField(5));
 	time_t timeStart = (time_t)(timeStartString.Atoi());
 	UInt_t detectorMask = (UInt_t)(detectorMaskString.Atoi());
 	Float_t l3Current = (Float_t)(TMath::Abs(l3CurrentString.Atof()));
@@ -2390,6 +2391,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	grpObj->SetL3Polarity(l3Polarity);
 	grpObj->SetDipolePolarity(dipolePolarity);
 	grpObj->SetPolarityConventionLHC();  // after the dipole cables swap we comply with LHC convention
+	grpObj->SetBeamType((TString)(row->GetField(5)));
 
 	delete row;
 	row = 0;
