@@ -232,7 +232,10 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliMultiplicity* tracklet, Int_t id)
   //and should therefore not pass the mc cuts
   Int_t label0 = tracklet->GetLabel(id,0);
   Int_t label1 = tracklet->GetLabel(id,1);
+  //if possible get label and mcparticle
   fTrackLabel = (label0==label1)?tracklet->GetLabel(id,1):-1;
+  if (fTrackLabel>=0 && fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
+  //check MC cuts
   if (fCutMC && !PassesMCcuts()) return kFALSE;
   return kTRUE;
 }
@@ -419,28 +422,41 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
   //caller is resposible for deletion
   //if construction fails return NULL
   AliFlowTrack* flowtrack=NULL;
+  TParticle *tmpTParticle=NULL;
+  AliMCParticle* tmpAliMCParticle=NULL;
   if (fParamType==kESD_SPDtracklet)
   {
-    flowtrack = new AliFlowTrack();
     switch (fParamMix)
     {
       case kPure:
+        flowtrack = new AliFlowTrack();
         flowtrack->SetPhi(fTrackPhi);
         flowtrack->SetEta(fTrackEta);
         break;
       case kTrackWithMCkine:
         if (!fMCparticle) return NULL;
+        flowtrack = new AliFlowTrack();
         flowtrack->SetPhi( fMCparticle->Phi() );
         flowtrack->SetEta( fMCparticle->Eta() );
         flowtrack->SetPt( fMCparticle->Pt() );
         break;
       case kTrackWithMCpt:
         if (!fMCparticle) return NULL;
+        flowtrack = new AliFlowTrack();
         flowtrack->SetPhi(fTrackPhi);
         flowtrack->SetEta(fTrackEta);
         flowtrack->SetPt(fMCparticle->Pt());
         break;
+      case kTrackWithPtFromFirstMother:
+        if (!fMCparticle) return NULL;
+        flowtrack = new AliFlowTrack();
+        flowtrack->SetPhi(fTrackPhi);
+        flowtrack->SetEta(fTrackEta);
+        tmpTParticle = fMCparticle->Particle();
+        tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+        flowtrack->SetPt(tmpAliMCParticle->Pt());
       default:
+        flowtrack = new AliFlowTrack();
         flowtrack->SetPhi(fTrackPhi);
         flowtrack->SetEta(fTrackEta);
     }
@@ -465,6 +481,12 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
         if (!fMCparticle) return NULL;
         flowtrack = new AliFlowTrack(fTrack);
         flowtrack->SetPt(fMCparticle->Pt());
+      case kTrackWithPtFromFirstMother:
+        if (!fMCparticle) return NULL;
+        flowtrack = new AliFlowTrack(fTrack);
+        tmpTParticle = fMCparticle->Particle();
+        tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+        flowtrack->SetPt(tmpAliMCParticle->Pt());
       default:
         flowtrack = new AliFlowTrack(fTrack);
     }
