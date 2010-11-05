@@ -166,7 +166,7 @@ int AliHLTZDCESDRecoComponent::DoInit( int argc, const char** argv )
     else HLTWarning(" Beam type not known by ZDC!");
   
 
-    fReconstructor->Init(beamType, beamEnergy/2);
+    fReconstructor->Init(beamType, beamEnergy);
   }
 
   return iResult;
