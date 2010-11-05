@@ -514,12 +514,7 @@ void AliMUONLocalTriggerBoard::Module(char *mod)
 ///
    const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
-   if ( TString(GetName()).Length() > 100 ) {
-     AliErrorStream() << "Name too long: " << GetName() << endl;
-     return;
-   }   
-   
-   char s[100]; strcpy(s, GetName());
+   char s[100]; strncpy(s, GetName(), 100);
 
    Int_t numlines = 0;
 
@@ -1206,12 +1201,7 @@ Int_t AliMUONLocalTriggerBoard::GetI() const
 
    const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
-   if ( TString(GetName()).Length() > 100 ) {
-     AliErrorStream() << "Name too long: " << GetName() << endl;
-     return 0;
-   }   
-   
-   char s[100]; strcpy(s, GetName());
+   char s[100]; strncpy(s, GetName(), 100);
 
    Int_t numlines = 0;
 

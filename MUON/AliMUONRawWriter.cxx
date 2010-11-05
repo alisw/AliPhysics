@@ -585,14 +585,14 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 
       if (!crate) {
         AliError(Form("Missing crate number %d in DDL %d\n", iReg, iDDL));
-        return 0;
+        continue;
       }  
 
       // regional info tree, make sure that no reg card missing
       AliMUONRegionalTrigger* regTrg  = triggerStore.FindRegional(crate->GetId());
       if (!regTrg) {
         AliError(Form("Missing regional board %d in trigger Store\n", crate->GetId()));
-        return 0;
+        continue;
       }  
     
       // Regional card header
