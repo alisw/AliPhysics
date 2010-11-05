@@ -162,14 +162,13 @@ AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
 {
   // also the TTree contents
   AddInfo(&sig);
-  for (Int_t i = 0; i<2*fgkMaxTowers; i++) {
-    if(i < fgkMaxTowers){
+  for (Int_t i = 0; i<fgkMaxTowers; i++) {
       fNHighGain[i] = sig.fNHighGain[i];
       fNLowGain[i]  = sig.fNLowGain[i]; 
-    }
+  }
+  for (Int_t i = 0; i<(2*fgkMaxRefs); i++) {
     fNRef[i] = sig.fNRef[i]; 
   }
-  
   
   
 }
@@ -809,7 +808,7 @@ Bool_t AliCaloCalibSignal::Analyze()
       for (int gain=0; gain<2; gain++) {
 	fRefNum = GetRefNum(i, j, gain);
 	if (fNRef[fRefNum] > 0) { 
-	  sprintf(name, "profileLEDRef%d", fRefNum);
+	  snprintf(name, buffersize, "profileLEDRef%d", fRefNum);
 	  profileLED[fRefNum] = new TProfile(name, name, numProfBins, timeMin, timeMax, "s");
 	} 
       }// gain

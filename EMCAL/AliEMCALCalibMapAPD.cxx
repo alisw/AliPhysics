@@ -74,7 +74,7 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
   for (Int_t i = 0; i < fNSuperModule; i++) {
     AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[i];
     if (!inputFile) {
-      printf("AliEMCALCalibMapAPD::ReadCalibMapAPDInfo - Error while reading input file; likely EOF..");
+      printf("AliEMCALCalibMapAPD::ReadCalibMapAPDInfo - Error while reading input file; likely EOF..\n");
       return;
     }
     inputFile >> iSM;
@@ -86,6 +86,13 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
 		>> par[0] >> par[1] >> par[2]
 		>> parErr[0] >> parErr[1] >> parErr[2]
 		>> iBreakDown >> darkCurrent;
+
+      // check that input values are not out bounds
+      if (iCol<0 || iCol>(AliEMCALGeoParams::fgkEMCALCols-1) ||
+	  iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) ) {
+	printf("AliEMCALCalibMapAPD::ReadCalibMapAPDInfo - Error while reading input file; j %d iCol %d iRow %d\n", j, iCol, iRow);
+      return;
+      }
 
       // assume that this info is already swapped and done for this basis?
       if (swapSides) {

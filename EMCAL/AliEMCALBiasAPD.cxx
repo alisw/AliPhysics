@@ -69,7 +69,7 @@ void AliEMCALBiasAPD::ReadTextBiasAPDInfo(Int_t nSM, const TString &txtFileName,
     AliEMCALSuperModuleBiasAPD * t = (AliEMCALSuperModuleBiasAPD*) fSuperModuleData[i];
 
     if (!inputFile) {
-      printf("AliEMCALBiasAPD::ReadBiasAPDInfo - Error while reading input file; likely EOF..");
+      printf("AliEMCALBiasAPD::ReadBiasAPDInfo - Error while reading input file; likely EOF..\n");
       return;
     }
     inputFile >> iSM;
@@ -77,6 +77,13 @@ void AliEMCALBiasAPD::ReadTextBiasAPDInfo(Int_t nSM, const TString &txtFileName,
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       inputFile >> iCol >> iRow >> iElecId >> iDAC >> voltage;
+
+      // check that input values are not out bounds
+      if (iCol<0 || iCol>(AliEMCALGeoParams::fgkEMCALCols-1) ||
+	  iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) ) {
+	printf("AliEMCALBiasAPD::ReadBiasAPDInfo - Error while reading input file; j %d iCol %d iRow %d\n", j, iCol, iRow);
+      return;
+      }
 
       // assume that this info is already swapped and done for this basis?
       if (swapSides) {

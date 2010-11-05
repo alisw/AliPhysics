@@ -257,9 +257,11 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
     metaData.SetBeamPeriod(0);
     metaData.SetResponsible(kMetaResponsible);
     metaData.SetComment("Preprocessor AliEMCAL status.");
-    Store("Calib", "PreprocStatus", resultArray, &metaData, 0, kFALSE);
+    Bool_t storeOK = Store("Calib", "PreprocStatus", resultArray, &metaData, 0, kFALSE);
     resultArray->Delete();
-    return 0;
+    result = 0;
+    if ( !storeOK )  result=1;
+    return result;
   } 
   else { 
     return result;

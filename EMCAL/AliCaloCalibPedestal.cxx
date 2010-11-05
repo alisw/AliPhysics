@@ -1069,7 +1069,7 @@ void AliCaloCalibPedestal::ComputeDeadTowers(const char * deadMapFile)
     }
     if (!diff->is_open()) {
       delete diff;
-      fout = 0;//Set the pointer to empty if the file was not opened
+      diff = 0;//Set the pointer to empty if the file was not opened
     }
   }
  

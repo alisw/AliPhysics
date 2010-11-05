@@ -81,7 +81,7 @@ void AliEMCALCalibReference::ReadTextCalibReferenceInfo(Int_t nSM, const TString
   for (Int_t i = 0; i < fNSuperModule; i++) {
     AliEMCALSuperModuleCalibReference * t = (AliEMCALSuperModuleCalibReference*) fSuperModuleData[i];
     if (!inputFile) {
-      printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; likely EOF..");
+      printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; likely EOF..\n");
       return;
     }
     inputFile >> iSM;
@@ -94,12 +94,21 @@ void AliEMCALCalibReference::ReadTextCalibReferenceInfo(Int_t nSM, const TString
     // second: additional info for LED Reference and SM temperature
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
       inputFile >> id >> iLEDRefHighLow >> rLEDRefAmp >> rLEDRefAmpRMS;
+      if (id<0 || id>(AliEMCALGeoParams::fgkEMCALLEDRefs-1) ) {
+	printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; LEDRef j %d id %d\n", j, id);
+	return;
+      }
       t->SetLEDRefHighLow(id, iLEDRefHighLow);
       t->SetLEDRefAmp(id, rLEDRefAmp);
       t->SetLEDRefAmpRMS(id, rLEDRefAmpRMS);
     }
+
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
       inputFile >> id >> temperature >> temperatureRMS;
+      if (id<0 || id>(AliEMCALGeoParams::fgkEMCALTempSensors-1) ) {
+	printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; TempSensor j %d id %d\n", j, id);
+	return;
+      }
       t->SetTemperature(id, temperature);
       t->SetTemperatureRMS(id, temperatureRMS);
     }
@@ -108,6 +117,13 @@ void AliEMCALCalibReference::ReadTextCalibReferenceInfo(Int_t nSM, const TString
     for (Int_t j=0; j<nAPDPerSM; j++) {
       inputFile >> iCol >> iRow 
 		>> iHighLow >> rLEDAmp >> rLEDAmpRMS;
+
+      // check that input values are not out bounds
+      if (iCol<0 || iCol>(AliEMCALGeoParams::fgkEMCALCols-1) ||
+	  iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) ) {
+	printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; j %d iCol %d iRow %d\n", j, iCol, iRow);
+      return;
+      }
 
       // assume that this info is already swapped and done for this basis?
       if (swapSides) {

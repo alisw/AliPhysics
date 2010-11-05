@@ -74,7 +74,7 @@ void AliEMCALCalibAbs::ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileNam
   for (Int_t i = 0; i < fNSuperModule; i++) {
     AliEMCALSuperModuleCalibAbs * t = (AliEMCALSuperModuleCalibAbs*) fSuperModuleData[i];
     if (!inputFile) {
-      printf("AliEMCALCalibAbs::ReadCalibAbsInfo - Error while reading input file; likely EOF..");
+      printf("AliEMCALCalibAbs::ReadCalibAbsInfo - Error while reading input file; likely EOF..\n");
       return;
     }
     inputFile >> iSM;
@@ -88,8 +88,14 @@ void AliEMCALCalibAbs::ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileNam
 
     // third: info for each tower
     for (Int_t j=0; j<nAPDPerSM; j++) {
-      inputFile >> iCol >> iRow 
-		>> relativeCalib;
+      inputFile >> iCol >> iRow >> relativeCalib;
+
+      // check that input values are not out bounds
+      if (iCol<0 || iCol>(AliEMCALGeoParams::fgkEMCALCols-1) ||
+	  iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) ) {
+	printf("AliEMCALCalibAbs::ReadCalibAbsInfo - Error while reading input file; j %d iCol %d iRow %d\n", j, iCol, iRow);
+      return;
+      }
 
       // assume that this info is already swapped and done for this basis?
       if (swapSides) {
