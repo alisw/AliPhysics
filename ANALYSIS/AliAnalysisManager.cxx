@@ -84,7 +84,9 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fExtraFiles(""),
                     fAutoBranchHandling(kTRUE), 
                     fTable(),
-                    fRunFromPath(0)
+                    fRunFromPath(0),
+                    fNcalls(0),
+                    fStatisticsMsg()
 {
 // Default constructor.
    fgAnalysisManager = this;
@@ -129,7 +131,9 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fExtraFiles(),
                     fAutoBranchHandling(other.fAutoBranchHandling), 
                     fTable(),
-                    fRunFromPath(0)
+                    fRunFromPath(0),
+                    fNcalls(other.fNcalls),
+                    fStatisticsMsg(other.fStatisticsMsg)
 {
 // Copy constructor.
    fTasks      = new TObjArray(*other.fTasks);
@@ -178,6 +182,8 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fAutoBranchHandling = other.fAutoBranchHandling;
       fTable.Clear("nodelete");
       fRunFromPath = other.fRunFromPath;
+      fNcalls     = other. fNcalls;
+      fStatisticsMsg = other.fStatisticsMsg;
    }
    return *this;
 }
@@ -509,7 +515,9 @@ void AliAnalysisManager::PackOutput(TList *target)
          gROOT->cd();
          if (fDebug > 1) printf("<-FinishTaskOutput: task %s\n", task->GetName());
       }
-   }      
+   }
+   // Write statistics message on the workers.
+   WriteStatisticsMsg(fNcalls);
    
    if (fMode == kProofAnalysis) {
       TIter next(fOutputs);
@@ -956,7 +964,8 @@ void AliAnalysisManager::Terminate()
       if (opwd) opwd->cd();
    }   
    delete allOutputs;
-
+   //Write statistics information on the client
+   WriteStatisticsMsg(fNcalls);
    if (getsysInfo) {
       TDirectory *crtdir = gDirectory;
       TFile f("syswatch.root", "RECREATE");
@@ -1835,34 +1844,33 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
 void AliAnalysisManager::ExecAnalysis(Option_t *option)
 {
 // Execute analysis.
-   static Long64_t ncalls = 0;
    static Long64_t nentries = 0;
    static TTree *lastTree = 0;
    static TStopwatch *timer = new TStopwatch();
-   if (fDebug > 0) printf("MGR: Processing event #%lld\n", ncalls);
+   if (fDebug > 0) printf("MGR: Processing event #%d\n", fNcalls);
    else {
       if (fTree && (fTree != lastTree)) {
          nentries += fTree->GetEntries();
          lastTree = fTree;
       }   
-      if (!ncalls) timer->Start();
-      if (!fIsRemote && TObject::TestBit(kUseProgressBar)) ProgressBar("Processing event", ncalls, nentries, timer, kFALSE);
+      if (!fNcalls) timer->Start();
+      if (!fIsRemote && TObject::TestBit(kUseProgressBar)) ProgressBar("Processing event", fNcalls, nentries, timer, kFALSE);
    }
    gROOT->cd();
    TDirectory *cdir = gDirectory;
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
-   if (getsysInfo && ((ncalls%fNSysInfo)==0)) AliSysInfo::AddStamp("Exec_start", (Int_t)ncalls);
-   ncalls++;
+   if (getsysInfo && ((fNcalls%fNSysInfo)==0)) AliSysInfo::AddStamp("Exec_start", (Int_t)fNcalls);
    if (!fInitOK) {
       Error("ExecAnalysis", "Analysis manager was not initialized !");
       cdir->cd();
       return;
    }
+   fNcalls++;
    AliAnalysisTask *task;
    // Check if the top tree is active.
    if (fTree) {
-      if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
-         AliSysInfo::AddStamp("Handlers_BeginEventGroup",(Int_t)ncalls, 1002, 0);
+      if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
+         AliSysInfo::AddStamp("Handlers_BeginEventGroup",fNcalls, 1002, 0);
       TIter next(fTasks);
    // De-activate all tasks
       while ((task=(AliAnalysisTask*)next())) task->SetActive(kFALSE);
@@ -1881,8 +1889,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);
       if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(entry);
       gROOT->cd();
-      if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
-         AliSysInfo::AddStamp("Handlers_BeginEvent",(Int_t)ncalls, 1000, 0);
+      if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
+         AliSysInfo::AddStamp("Handlers_BeginEvent",fNcalls, 1000, 0);
 //
 //    Execute the tasks
 //      TIter next1(cont->GetConsumers());
@@ -1894,8 +1902,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          }   	 
          task->ExecuteTask(option);
          gROOT->cd();
-         if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
-            AliSysInfo::AddStamp(task->ClassName(),(Int_t)ncalls, itask, 1);
+         if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
+            AliSysInfo::AddStamp(task->ClassName(), fNcalls, itask, 1);
          itask++;   
       }
 //
@@ -1904,8 +1912,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (fOutputEventHandler)  fOutputEventHandler ->FinishEvent();
       if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
       // Gather system information if requested
-      if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
-         AliSysInfo::AddStamp("Handlers_FinishEvent",(Int_t)ncalls, 1001, 1);
+      if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
+         AliSysInfo::AddStamp("Handlers_FinishEvent",fNcalls, 1001, 1);
       cdir->cd();   
       return;
    }   
@@ -1916,8 +1924,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(-1);
    if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(-1);
    gROOT->cd();
-   if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
-      AliSysInfo::AddStamp("Handlers_BeginEvent",(Int_t)ncalls, 1000, 0);
+   if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
+      AliSysInfo::AddStamp("Handlers_BeginEvent",fNcalls, 1000, 0);
    TIter next2(fTopTasks);
    while ((task=(AliAnalysisTask*)next2())) {
       task->SetActive(kTRUE);
@@ -1932,8 +1940,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    if (fInputEventHandler)   fInputEventHandler  ->FinishEvent();
    if (fOutputEventHandler)  fOutputEventHandler ->FinishEvent();
    if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
-   if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
-      AliSysInfo::AddStamp("Handlers_FinishEvent",(Int_t)ncalls, 1000, 1);
+   if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
+      AliSysInfo::AddStamp("Handlers_FinishEvent",fNcalls, 1000, 1);
    cdir->cd();   
 }
 
@@ -2168,4 +2176,26 @@ void AliAnalysisManager::DoLoadBranch(const char *name)
   if (br->GetReadEntry()==GetCurrentEntry())
     return;
   br->GetEntry(GetCurrentEntry());
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::AddStatisticsMsg(const char *line)
+{
+// Add a line in the statistics message. If available, the statistics message is written
+// at the end of the SlaveTerminate phase on workers AND at the end of Terminate
+// on the client.
+   if (!strlen(line)) return;
+   if (!fStatisticsMsg.IsNull()) fStatisticsMsg += "\n";
+   fStatisticsMsg += line;
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::WriteStatisticsMsg(Int_t nevents)
+{
+// Write the statistics message in a file named <nevents.stat>
+   if (!nevents) return;
+   ofstream out;
+   out.open(Form("%09d.stat", nevents), ios::out);
+   if (!fStatisticsMsg.IsNull()) out << fStatisticsMsg << endl;
+   out.close();
 }

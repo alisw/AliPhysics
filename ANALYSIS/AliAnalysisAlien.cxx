@@ -1094,7 +1094,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
                delete arr;
             }
             files.ReplaceAll(".root", "*.root");
-            outputArchive += Form("root_archive.zip:%s@disk=%d",files.Data(),fNreplicas);
+            outputArchive += Form("root_archive.zip:%s,*.stat@disk=%d",files.Data(),fNreplicas);
          } else {
             TString files = fOutputArchive;
             files.ReplaceAll(".root", "*.root"); // nreplicas etc should be already atttached by use

@@ -927,11 +927,12 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   return h;
 }
 
-void AliPhysicsSelection::Print(Option_t* /* option */) const
+void AliPhysicsSelection::Print(Option_t *option) const
 {
   // print the configuration
-  
+  TString msg;
   Printf("Configuration initialized for run %d (MC: %d):", fCurrentRun, fMC);
+  msg += Form("Configuration initialized for run %d (MC: %d):\n", fCurrentRun, fMC);
   
   Printf("Collision trigger classes:");
   for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
@@ -958,15 +959,19 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
     for (Int_t i=0; i<fCollTrigClasses.GetEntries(); i++)
     {
       Printf("\nSelection statistics for collision trigger %s:", ((TObjString*) fCollTrigClasses.At(i))->String().Data());
+      msg += Form("\nSelection statistics for collision trigger %s:\n", ((TObjString*) fCollTrigClasses.At(i))->String().Data());
       
       Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(1, i+1));
+      msg += Form("Total events with correct trigger class: %d\n", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(1, i+1));
       Printf("Selected collision candidates: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(fHistStatistics[kStatIdxAll]->GetXaxis()->FindBin("Accepted"), i+1));
+      msg += Form("Selected collision candidates: %d\n", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(fHistStatistics[kStatIdxAll]->GetXaxis()->FindBin("Accepted"), i+1));
     }
   }
   
   if (fHistBunchCrossing)
   {
     Printf("\nBunch crossing statistics:");
+    msg += "\nBunch crossing statistics:\n";
     
     for (Int_t i=1; i<=fHistBunchCrossing->GetNbinsY(); i++)
     {
@@ -976,8 +981,10 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
       for (Int_t j=1; j<=fHistBunchCrossing->GetNbinsX(); j++)
         if (fHistBunchCrossing->GetBinContent(j, i) > 0)
           str += Form("%d, ", (Int_t) fHistBunchCrossing->GetXaxis()->GetBinCenter(j));
-       
+             
       Printf("%s", str.Data());
+      msg += str;
+      msg += "\n";
     }
     
     for (Int_t j=1; j<=fHistBunchCrossing->GetNbinsX(); j++)
@@ -1007,7 +1014,12 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
     Printf("WARNING: Ignoring V0 information in selection");
   if(!fBin0CallBack) 
     Printf("WARNING: Callback not set: will not fill the statistics for the bin 0");
-
+  TString opt(option);
+  opt.ToUpper();
+  if (opt == "STAT") {
+     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+     if (mgr) mgr->AddStatisticsMsg(msg);
+  }
 }
 
 Long64_t AliPhysicsSelection::Merge(TCollection* list)

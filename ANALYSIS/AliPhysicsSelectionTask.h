@@ -20,6 +20,7 @@ class AliPhysicsSelectionTask : public AliAnalysisTaskSE {
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t*);
+    virtual void   FinishTaskOutput();
     virtual void   Terminate(Option_t*);
 
     void SetOption(const char* opt) { fOption = opt; }

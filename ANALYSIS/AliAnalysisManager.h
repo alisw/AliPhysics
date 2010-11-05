@@ -167,6 +167,10 @@ enum EAliAnalysisFlags {
    void                 ProfileTask(const char *name, const char *option="VM") const;
    void                 ProfileTask(Int_t itop, const char *option="VM") const;
    static void          ProgressBar(const char *opname, Long64_t current, Long64_t size, TStopwatch * const watch=0, Bool_t last=kFALSE, Bool_t refresh=kFALSE);
+   void                 AddStatisticsMsg(const char *line);
+   const char          *GetStatisticsMsg() const {return fStatisticsMsg.Data();}
+   void                 WriteStatisticsMsg(Int_t nevents);
+   Int_t                GetNcalls() const {return fNcalls;}
    Bool_t               ValidateOutputFiles() const;
 
 protected:
@@ -202,9 +206,10 @@ private:
    Bool_t                  fAutoBranchHandling;  // def=kTRUE, turn off if you use LoadBranch
    THashTable              fTable;               // keep branch ptrs in case of manual branch loading
    Int_t                   fRunFromPath;         // Run number retrieved from path to input data
-
+   Int_t                   fNcalls;              // Total number of calls (events) of ExecAnalysis
+   TString                 fStatisticsMsg;       // Statistics user message
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,9)  // Analysis manager class
+   ClassDef(AliAnalysisManager,10)  // Analysis manager class
 };   
 #endif

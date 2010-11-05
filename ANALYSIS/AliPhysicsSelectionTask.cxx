@@ -92,6 +92,14 @@ void AliPhysicsSelectionTask::UserExec(Option_t*)
   PostData(1, fOutput);
 }
 
+void AliPhysicsSelectionTask::FinishTaskOutput()
+{
+// This gets called at the end of the processing on the worker. It allows dumping
+// statistics printed by the physics selection object to the statistics message
+// handled by the analysis manager.
+   if (fPhysicsSelection) fPhysicsSelection->Print("STAT");
+}
+
 void AliPhysicsSelectionTask::Terminate(Option_t *)
 {
   // The Terminate() function is the last function to be called during
