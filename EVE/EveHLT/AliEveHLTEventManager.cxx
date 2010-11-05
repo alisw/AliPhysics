@@ -158,8 +158,6 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
   
   cout << "reset()"<<endl;
   
-  ResetDisplay();
-  
   cout << "process()"<<endl;
   if(!fHLTElement) {
     fHLTElement = new AliHLTEveHLT();
@@ -173,9 +171,6 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
   
   if(!fEmcalElement) CreateEmcalElement();
   fEmcalElement->ProcessEvent(event);
-  
-  cout << "update()"<<endl;
-  UpdateDisplay();
 
   gEve->Redraw3D(0, 1);
   gEve->EnableRedraw();
@@ -196,6 +191,10 @@ Int_t AliEveHLTEventManager::ProcessEvent(TList * blockList) {
     return -1;
   }
  
+    
+  ResetDisplay();
+  
+
   AliHLTHOMERBlockDesc * block = NULL;
   TIter next(blockList);
   while ((block = (AliHLTHOMERBlockDesc*)next())) {
@@ -203,6 +202,11 @@ Int_t AliEveHLTEventManager::ProcessEvent(TList * blockList) {
     ProcessBlock(block);
   } 
   
+  
+  cout << "update()"<<endl;
+  UpdateDisplay();
+
+
   return 0;
 
 }
