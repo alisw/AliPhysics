@@ -167,7 +167,7 @@ public:
   void FindMatches(AliVEvent *event);
   void GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ);
   Bool_t IsMatched(Int_t index);
-  Int_t FindMatchedPos(Int_t index) const;
+  UInt_t FindMatchedPos(Int_t index) const;
 
   Float_t GetCutR() const { return fCutR; }
   Float_t GetCutZ() const { return fCutZ; }

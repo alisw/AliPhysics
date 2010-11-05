@@ -908,7 +908,7 @@ void AliEMCALRecoUtils::GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &d
   //Get the residuals dR and dZ for this cluster
   //It only works with ESDs, not AODs
 
-  if( FindMatchedPos(index)==-1 )
+  if( FindMatchedPos(index) >= 999 )
   {
     AliDebug(2,"No matched tracks found!\n");
     dR=999.;
@@ -924,18 +924,18 @@ Bool_t AliEMCALRecoUtils::IsMatched(Int_t index)
 {
   //Given a cluster index as in AliESDEvent::GetCaloCluster(index)
   //Returns if cluster has a match
-  if(FindMatchedPos(index)>-1) 
+  if(FindMatchedPos(index) < 999) 
     return kTRUE;
   else
     return kFALSE;
 }
 //__________________________________________________
-Int_t AliEMCALRecoUtils::FindMatchedPos(Int_t index) const
+UInt_t AliEMCALRecoUtils::FindMatchedPos(Int_t index) const
 {
   //Given a cluster index as in AliESDEvent::GetCaloCluster(index)
   //Returns the position of the match in the fMatchedClusterIndex array
   Float_t tmpR = fCutR;
-  Int_t pos=-1;
+  UInt_t pos = 999;
 
   for(Int_t i=0; i<fMatchedClusterIndex->GetSize(); i++)
     {
