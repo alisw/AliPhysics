@@ -69,10 +69,10 @@ class AliTOFHeader : public TObject {
   Int_t    fNbins;                 // number of bins with TOF event
 				   // time values different from
 				   // default one
-  TArrayF *fEventTimeValues;       //! array for TOF event time values
-				   //different from default one
-  TArrayF *fEventTimeRes;          //! array for TOF event time resolutions
-  TArrayI *fNvalues;               //! array for order numbers of momentum bin
+  TArrayF *fEventTimeValues;       // array for TOF event time values
+				   // different from default one
+  TArrayF *fEventTimeRes;          // array for TOF event time resolutions
+  TArrayI *fNvalues;               // array for order numbers of momentum bin
   Float_t fTOFtimeResolution;      // TOF time resolution as written in TOF OCDB
   Float_t fT0spread;               // t0spread as written in TOF OCDB
 
