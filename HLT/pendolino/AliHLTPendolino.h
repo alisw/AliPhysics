@@ -400,6 +400,11 @@ class AliHLTPendolino : public AliShuttleInterface {
 		virtual UInt_t GetEndTimeDCSQuery();
 #endif
 				
+  /**
+   * method introduced as pure virtual in r43691
+   * needs to be implemented to create pendolino instances
+   */
+  virtual void SendMLFromDet(const char* /*value*/) {}
 		
 	protected:
 
