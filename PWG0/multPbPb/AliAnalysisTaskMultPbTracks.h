@@ -29,10 +29,10 @@ public:
   AliAnalysisTaskMultPbTracks(const char * name);
   AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMultPbTracks& obj) ;
   ~AliAnalysisTaskMultPbTracks();
-  //void SetCentralitySelector(AliAnalysisMultPbCentralitySelector * centr) { fCentrSelector=centr;}
   void SetTrackCuts(AliESDtrackCuts * cuts) { fTrackCuts = cuts;}
-  void SetCentralityBin(Int_t bin = 0) { fCentrBin = bin; }
-  void SetCentralityEstimator(const char * centr) { fCentralityEstimator = centr; }
+  void SetCentralitySelector(AliAnalysisMultPbCentralitySelector * centr) { fCentrSelector=centr;}
+  // void SetCentralityBin(Int_t bin = 0) { fCentrBin = bin; }
+  // void SetCentralityEstimator(const char * centr) { fCentralityEstimator = centr; }
 
   void SetIsMC(Bool_t flag=kTRUE) { fIsMC = flag;}
   AliAnalysisMultPbTrackHistoManager * GetHistoManager() { return fHistoManager;}
@@ -50,9 +50,9 @@ private:
   AliESDEvent *  fESD;    //! ESD object  AliVEvent*     fEvent;
   //  TList * fListHisto;     // list of output object
   AliAnalysisMultPbTrackHistoManager  * fHistoManager; // wrapper for the list, takes care of merging + histo booking and getters
-  //  AliAnalysisMultPbCentralitySelector * fCentrSelector; // centrality selector
-  Int_t fCentrBin; // centrality bin selected (5% XS percentiles)
-  TString fCentralityEstimator; // Name of the centrality estimator, for AliESDCentrality
+  AliAnalysisMultPbCentralitySelector * fCentrSelector; // centrality selector
+  // Int_t fCentrBin; // centrality bin selected (5% XS percentiles)
+  // TString fCentralityEstimator; // Name of the centrality estimator, for AliESDCentrality
   AliESDtrackCuts * fTrackCuts; // track cuts
   AliESDtrackCuts * fTrackCutsNoDCA; // copy of the previous one, but with no DCA cuts
   

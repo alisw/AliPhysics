@@ -10,6 +10,7 @@
 #include "TDatabasePDG.h"
 #include "AliPhysicsSelection.h"
 #include "AliESDtrackCuts.h"
+#include "AliAnalysisMultPbCentralitySelector.h"
 
 using namespace std;
 
@@ -319,6 +320,8 @@ void LoadData(TString dataFolder, TString correctionFolder){
   cutsData->Print();
   hEvStatData = (TH2D*) fStatData->Get("fHistStatistics");
   hEvStatCorr = (TH2D*) fStatCorr->Get("fHistStatistics");
+
+  AliAnalysisMultPbCentralitySelector * centrData = (AliAnalysisMultPbCentralitySelector*) fData->Get("");
 
   // Normalize
   Int_t irowGoodTrigger = 1;
