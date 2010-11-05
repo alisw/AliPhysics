@@ -191,9 +191,6 @@ Int_t AliEveHLTEventManager::ProcessEvent(TList * blockList) {
     return -1;
   }
  
-    
-  ResetDisplay();
-  
 
   AliHLTHOMERBlockDesc * block = NULL;
   TIter next(blockList);
@@ -202,10 +199,6 @@ Int_t AliEveHLTEventManager::ProcessEvent(TList * blockList) {
     ProcessBlock(block);
   } 
   
-  
-  cout << "update()"<<endl;
-  UpdateDisplay();
-
 
   return 0;
 
