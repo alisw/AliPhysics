@@ -2381,6 +2381,9 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	Float_t dipoleCurrent = (Float_t)(TMath::Abs(dipoleCurrentString.Atof()));
 	Char_t l3Polarity = (l3CurrentString.Atof() < 0) ? 1 : 0;
 	Char_t dipolePolarity = (dipoleCurrentString.Atof() < 0) ? 1 : 0;
+	if (beamTypeString.CompareTo("Pb-Pb",TString::kIgnoreCase) == 0){
+		beamTypeString="A-A";
+	}
 	
 	AliGRPObject * grpObj = new AliGRPObject();
 	grpObj->SetTimeStart(timeStart); 
@@ -2391,7 +2394,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	grpObj->SetL3Polarity(l3Polarity);
 	grpObj->SetDipolePolarity(dipolePolarity);
 	grpObj->SetPolarityConventionLHC();  // after the dipole cables swap we comply with LHC convention
-	grpObj->SetBeamType((TString)(row->GetField(5)));
+	grpObj->SetBeamType(beamTypeString);
 
 	delete row;
 	row = 0;
