@@ -91,16 +91,11 @@ void * AliEveEventBuffer::BufferThread(void * buffer) {
 
 ///_____________________________________________________________________________
 void AliEveEventBuffer::MonitorBuffer() {
-  cout << "Monitorbuffer: " << endl;
-  if(GetBusy()) {
-    cout << "Already called FetchEvent()" << endl;
-  } else {
-    SetBusy(kTRUE);
-    FetchEvent();
-    SetBusy(kFALSE);
-  }
-  
+  cout << "Monitorbuffer() " << ;
+  SetBusy(kTRUE);
+  FetchEvent();
   SetBusy(kFALSE);
+  cout << "done " << endl;
 }
 
 
@@ -108,15 +103,7 @@ void AliEveEventBuffer::MonitorBuffer() {
 TObject * AliEveEventBuffer::NextEvent() {
   //See header file for documentation
   cout << "NextEvent()"<<endl;
-
-
-  // if(fBusy) {
-  //   cout << "Event Buffer busy"<<endl;
-  //   return NULL;
-  // }
-  //  else SetBusy(kTRUE);
   TObject * nextEvent = GetNextUnSeen();
-  //SetBusy(kFALSE);
   return nextEvent;
 }
 
