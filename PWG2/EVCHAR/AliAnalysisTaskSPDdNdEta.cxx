@@ -27,142 +27,115 @@
 #include "TH1F.h"
 #include "TH2F.h" 
 #include "TH3F.h" 
+#include "TList.h"
 
 #include "AliAnalysisManager.h"
 
 #include "AliMultiplicity.h"
+#include "AliESDEvent.h"  
 #include "AliESDInputHandler.h"
+
+#include "AliESDInputHandlerRP.h"
+#include "../ITS/AliITSRecPoint.h"
+#include "AliCDBPath.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBStorage.h"
+#include "AliGeomManager.h"
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliLog.h"
 #include "AliTrackReference.h"
 
-#include "AliGenEventHeader.h" 
-#include "AliGenPythiaEventHeader.h"
-#include "AliGenDPMjetEventHeader.h"
+#include "AliGenHijingEventHeader.h" 
+
+#include "AliLog.h"
+
+#include "AliTriggerAnalysis.h" 
+#include "AliPhysicsSelection.h"
+#include "AliESDCentrality.h" 
+#include "AliTrackletAlg.h" 
 #include "AliAnalysisTaskSPDdNdEta.h"
 
 
 ClassImp(AliAnalysisTaskSPDdNdEta)
-
 //________________________________________________________________________
 AliAnalysisTaskSPDdNdEta::AliAnalysisTaskSPDdNdEta(const char *name) 
-  : AliAnalysisTask(name, "SPDdNdEtaTask"), 
+  : AliAnalysisTaskSE(name), 
 
-  fESD(0), 
+  fmyESD(0), 
   fOutput(0), 
+
+  fMCCentralityBin(AliAnalysisTaskSPDdNdEta::kall),
+  fCentrLowLim(0),
+  fCentrUpLim(0),
+  fCentrEst(""),
   
-  fpythia(kTRUE),
-  fCorr(kFALSE), 
-  fTrigger(0),
+  fUseMC(kFALSE), 
+  fPbPb(kFALSE),
+  fTrigger(AliTriggerAnalysis::kAcceptAll),
+  fTR(kFALSE),
+  fRecoTracklets(kFALSE),
 
-  // Data to be corrected
   fHistSPDRAWMultvsZ(0),
-  fHistSPDRAWMultvsZTriggEvts(0),
+  fHistSPDRAWMultvsZTriggCentrEvts(0),
+  fHistSPDRAWMultvsZCentrEvts(0),
   fHistSPDRAWEtavsZ(0),
-
-  // Clusters inner layer and tracklets
+ 
   fHistSPDmultEtacut(0),
   fHistSPDmult(0),
-  fHistSPDeta(0),               
-  fHistSPDcl1multEtacutLay1(0),
-  fHistSPDcl1mult(0),
-  fHistSPDcl1eta(0),
+  fHistSPDmultcl1(0),
+  fHistSPDeta(0),
   fHistSPDphi(0),
-  fHistSPDcl1phi(0),
   fHistSPDtheta(0),
-  fHistSPDcl1theta(0),
   fHistSPDdePhi(0),
-  fHistSPDdePhiZ(0),
-  fHistSPDdePhi3D(0),
-  fHistSPDphivsSPDeta(0),
-  fHistSPDcl1phivsSPDcl1eta(0),
+  fHistSPDphivsSPDeta(0),  
   fHistSPDdeTheta(0),
+  fHistSPDvtxAnalysis(0),
+  fHistSPDdePhideTheta(0),
 
-  // SPD vertex 
-  fHistSPDvtxAnalysis(0),                 
-  fHistSPDvtx3D(0),
-  fHistSPDvtxZ(0),
-  fHistNcontribSPDvtxvsSPDvtx(0),
-  fHistNcontribSPDvtx3D(0),
-  fHistNcontribSPDvtxZ(0),
-  fHistNcontribSPDvtxall(0),
-
-  // SPD fired chips  
-  fHistSPDcl1multvsnFiredChipsLay1(0),
-  fHistSPDmultvsnFiredChipsLay1(0),
-  fHistSPDmultvsnFiredChipsLay2(0),
-  fHistnFiredChipsLay2vsnFiredChipsLay1(0),
-  fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec(0),
-  fHistSPDvtxRec(0),
-
-  // Track level correction histograms
-  fHistBkgCorrNum(0),   
   fHistBkgCorrDen(0),
-
+  fHistBkgCorrDenPrimGen(0),
+  fHistBkgCorrNum(0),
   fHistAlgEffNum(0),
-
-  fHistNonDetectableCorrNum(0),  
   fHistNonDetectableCorrDen(0),
 
-  fHistTrackTrigVtxCorrNum(0),   
-  fHistTrackTrigCorrDen(0),      
+  fHistNonDetectableCorrNum(0),
+  fHistAllPrimaries(0),
+  fHistTrackCentrEvts(0),
+  fHistTrackTrigCentrEvts(0),
 
-  fHistTrackTrigVtxCorrNumNSD(0), 
-  fHistTrackTrigNSD(0),
+  fHistAllEvts(0),
+  fHistCentrEvts(0),
+  fHistTrigCentrEvts(0),
+  fHistSelEvts(0),
 
-  // Event level correction histograms
-  fHistTrigVtxCorrNum(0),           
-  fHistTrigVtxCorrDen(0),           
-  
-  fHistTrigCorrDen(0),              
-  fHistTrigVtxCorrNumNSD(0),
-  fHistEvTrigNSD(0),
+  fHistMCmultEtacut(0),
+  fHistMCmultEtacutvsSPDmultEtacut(0),
+ 
+  fHistMCvtxx(0),
+  fHistMCvtxy(0),
+  fHistMCvtxz(0),
 
-  // MC distributions
-  fHistMCEtavsZTriggMCvtxEvts(0),
-  fHistMCEtavsZTriggESDvtxEvts(0),
-  fHistMCEtavsZ(0),                
+  fHistRecvsGenImpactPar(0),
+  fHistMCNpart(0), 
 
-  // MC dN/dEta for each process type
-  fHistMCEtaInel(0),
-  fHistMCEtaNonDiffractive(0), 
-  fHistMCEtaNonSingleDiffractive(0), 
-  fHistoProcessType(0),
-  fHistoProcessTypeTriggered(0),
-  
-  // Additional check histos
-  fHistContributorsvsMCVtx(0),
-  fHistoDetectableNotr(0),
-  fHistoDetectabletr(0),
-  fHistoNonStoppingTracks(0),
-  fHistoDetectedLay1(0),
-  fHistoDetectedLay2(0),
-  fHistoPt(0),
-  fHistoRTRm1(0),
-  fHistMCvtx(0),
+  fHistdPhiPP(0),
+  fHistdPhiSS(0),
+  fHistdPhiComb(0),
 
-  // Trigger efficiency vs MC multiplicity 
-  fHistMultAllNonDiff(0), 
-
-  fHistMultAllSingleDiff(0),
-  fHistMultAllDoubleDiff(0),
-  fHistMultTrVtxNonDiff(0),
-  fHistMultTrVtxSingleDiff(0),
-  fHistMultTrVtxDoubleDiff(0),
-
-  fHistMCEtaNonSingleDiffractiveLargeBin(0) 
+  fHistDeVtx(0)
 
 {
 
   // Constructor
 
   // Define input and output slots here
-
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TList::Class());  
+  // Input slot #0 works with a TChain
+//  DefineInput(0, TChain::Class());
+  // Output slot #0 id reserved by the base class for AOD
+  DefineOutput(1, TList::Class());  
 
 }
 //________________________________________________________________________
@@ -174,897 +147,629 @@ AliAnalysisTaskSPDdNdEta::~AliAnalysisTaskSPDdNdEta()
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
 
-  if (fOutput) {
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutput;
     fOutput = 0;
   }
 
 }
 //________________________________________________________________________
-void AliAnalysisTaskSPDdNdEta::ConnectInputData(Option_t *) 
+void AliAnalysisTaskSPDdNdEta::UserCreateOutputObjects() 
 {
-
-  // Connect ESD 
-  // Called once
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));   
-
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } else {
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else fESD = esdH->GetEvent();
+  if (fRecoTracklets) {
+    AliCDBManager *man = AliCDBManager::Instance();
+//  man->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB");
+    man->SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Residual");
+//  man->SetSpecificStorage("GRP/Geometry/Data","local://");
+//  man->SetSpecificStorage("ITS/Align/Data","local://");
+    man->SetRun(130844); 
+    AliCDBEntry* obj = man->Get(AliCDBPath("GRP", "Geometry", "Data"));
+////  AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",130845,7);
+////  AliCDBEntry* obj = man->Get(AliCDBPath("ITS", "Align", "Data"));
+    AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
+    AliGeomManager::GetNalignable("ITS");
+    AliGeomManager::ApplyAlignObjsFromCDB("ITS");
+////  AliGeomManager::ApplyAlignObjsToGeom("ITS",130845,5,-1);
   }
-  // Disable info messages of AliMCEvent (per event)
-  AliLog::SetClassDebugLevel("AliMCEvent", AliLog::kWarning - AliLog::kDebug + 1);  
-
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskSPDdNdEta::CreateOutputObjects()
-{
-
   // Create histograms
-  fOutput = new TList;
-  fOutput->SetOwner();
+  fOutput = new TList();
+  fOutput->SetOwner(); 
 
-  const Int_t nBinMultCorr = 28;
+  Int_t nBinMultCorr = 200;
+  Float_t nMaxMult = 20000.;
   Double_t binLimMultCorr[nBinMultCorr+1];
-  for (Int_t i = 0; i<nBinMultCorr+1; ++i) {
-    if (i<21) binLimMultCorr[i] = (Double_t) i;
-    else if (i<27) binLimMultCorr[i] = (Double_t) 20 +5*(i-20);
-    else if (i==27) binLimMultCorr[i] = 100;
-    else if (i==28) binLimMultCorr[i] = 200; 
+  binLimMultCorr[0] = 0.;
+  binLimMultCorr[1] = 1.;
+  for (Int_t i = 2; i<=nBinMultCorr;++i) {
+    binLimMultCorr[i] = (i-1)*nMaxMult/nBinMultCorr;
   }
 
-  // Event level correction   
-  fHistSPDRAWMultvsZ= new TH2F("fHistSPDRAWMultvsZ", "",nBinMultCorr,binLimMultCorr,20,-20.,20.);
+  if(!fPbPb) { 
+    for (Int_t i = 0; i<nBinMultCorr+1; ++i) {
+      if (i<21) binLimMultCorr[i] = (Double_t) i;
+      else if (i>=21&&i<27) binLimMultCorr[i] = (Double_t) 20 +5*(i-20);
+      else if (i==27) binLimMultCorr[i] = 100;
+      else if (i==28) binLimMultCorr[i] = 200; 
+      else if (i==29) binLimMultCorr[i] = 400;
+      else if (i==30) binLimMultCorr[i] = 600;
+    }
+  }  
+
+  Int_t nBinEtaCorr = 60; 
+  Float_t etaMax = 3.;
+  Float_t etaMin = -3.;
+  Double_t *binLimEtaCorr = new Double_t[nBinEtaCorr+1];
+  for (Int_t i = 0; i<nBinEtaCorr+1; ++i) {
+    binLimEtaCorr[i] = (Double_t) etaMin+i*(etaMax*2.)/nBinEtaCorr;
+  } 
+
+  // Data to be corrected
+  // ...event level    
+  fHistSPDRAWMultvsZ = new TH2F("fHistSPDRAWMultvsZ", "",nBinMultCorr,binLimMultCorr,20,-20.,20.);
+  fHistSPDRAWMultvsZ->GetXaxis()->SetTitle("Tracklet multiplicity");
+  fHistSPDRAWMultvsZ->GetYaxis()->SetTitle("z_{SPDvtx} [cm]");
   fHistSPDRAWMultvsZ->Sumw2();
-  fOutput->Add(fHistSPDRAWMultvsZ);
+  fOutput->Add(fHistSPDRAWMultvsZ); 
 
-  fHistSPDRAWMultvsZTriggEvts = new TH2F("fHistSPDRAWMultvsZTriggEvts", "",nBinMultCorr,binLimMultCorr,20,-20.,20.);
-  fHistSPDRAWMultvsZTriggEvts->Sumw2();
-  fOutput->Add(fHistSPDRAWMultvsZTriggEvts);
+  fHistSPDRAWMultvsZTriggCentrEvts = new TH2F("fHistSPDRAWMultvsZTriggCentrEvts", "",nBinMultCorr,binLimMultCorr,20,-20.,20.);
+  fHistSPDRAWMultvsZTriggCentrEvts->GetXaxis()->SetTitle("Tracklet multiplicity");
+  fHistSPDRAWMultvsZTriggCentrEvts->GetYaxis()->SetTitle("z_{SPDvtx} [cm]");
+  fHistSPDRAWMultvsZTriggCentrEvts->Sumw2();
+  fOutput->Add(fHistSPDRAWMultvsZTriggCentrEvts);
 
-  fHistSPDRAWEtavsZ = new TH2F("fHistSPDRAWEtavsZ", "Tracklet pseudorapidity distribution", 120, -3.,3.,40,-20.,20.);
+  fHistSPDRAWMultvsZCentrEvts = new TH2F("fHistSPDRAWMultvsZCentrEvts", "",nBinMultCorr,binLimMultCorr,20,-20.,20.);
+  fHistSPDRAWMultvsZCentrEvts->GetXaxis()->SetTitle("Tracklet multiplicity");
+  fHistSPDRAWMultvsZCentrEvts->GetYaxis()->SetTitle("z_{SPDvtx} [cm]");
+  fHistSPDRAWMultvsZCentrEvts->Sumw2();
+  fOutput->Add(fHistSPDRAWMultvsZCentrEvts);
+
+  // ...track level
+  fHistSPDRAWEtavsZ = new TH2F("fHistSPDRAWEtavsZ", "Tracklet pseudorapidity distribution", nBinEtaCorr,binLimEtaCorr,20,-20.,20.);
   fHistSPDRAWEtavsZ->GetXaxis()->SetTitle("Pseudorapidity #eta");
   fHistSPDRAWEtavsZ->GetYaxis()->SetTitle("z_{SPDvtx} [cm]");
   fHistSPDRAWEtavsZ->Sumw2();
   fOutput->Add(fHistSPDRAWEtavsZ);
   
-  fHistSPDmultEtacut = new TH1F("fHistSPDmultEtacut", "Tracklet multiplicity distribution",201,-0.5,200.5);
-  fHistSPDmultEtacut->GetXaxis()->SetTitle("Reconstructed multiplicity (|#eta|<1.5)");
+
+  fHistSPDmultEtacut = new TH1F("fHistSPDmultEtacut", "Tracklet multiplicity distribution",nBinMultCorr,binLimMultCorr);
+  fHistSPDmultEtacut->GetXaxis()->SetTitle("Tracklet multiplicity (|#eta|<1.4)");
   fHistSPDmultEtacut->GetYaxis()->SetTitle("Entries");
   fOutput->Add(fHistSPDmultEtacut);
 
-  fHistSPDmult = new TH1F("fHistSPDmult", "Tracklet multiplicity distribution", 201,-0.5,200.5);
-  fHistSPDmult->GetXaxis()->SetTitle("Reconstructed tracklet multiplicity");
+  fHistSPDmult = new TH1F("fHistSPDmult", "Tracklet multiplicity distribution", nBinMultCorr,binLimMultCorr);
+  fHistSPDmult->GetXaxis()->SetTitle("Tracklet multiplicity");
   fHistSPDmult->GetYaxis()->SetTitle("Entries");
   fOutput->Add(fHistSPDmult);
 
-  fHistSPDeta = new TH1F("fHistSPDeta", "Tracklet pseudorapidity distribution", 120, -3.,3.);
-  fHistSPDeta->GetXaxis()->SetTitle("Pseudorapidity #eta");
-  fHistSPDeta->GetYaxis()->SetTitle("Entries");
-  fHistSPDeta->SetLineColor(kGreen);
-  fHistSPDeta->SetLineWidth(3);
-  fHistSPDeta->Sumw2();
-  fOutput->Add(fHistSPDeta); 
-
-  fHistSPDcl1multEtacutLay1 = new TH1F("fHistSPDcl1multEtacutLay1", "Cluster multiplicity (inner layer)",201,-0.5,200.5);
-  fHistSPDcl1multEtacutLay1->GetXaxis()->SetTitle("Cluster multiplicity lay1 (|#eta|<2.)");
-  fHistSPDcl1multEtacutLay1->GetYaxis()->SetTitle("Entries");
-  fOutput->Add(fHistSPDcl1multEtacutLay1);
-
-  fHistSPDcl1mult = new TH1F("fHistSPDcl1mult", "Cluster multiplicity (inner layer)",201,-0.5,200.5);
-  fHistSPDcl1mult->GetXaxis()->SetTitle("Cluster multiplicity lay1");
-  fHistSPDcl1mult->GetYaxis()->SetTitle("Entries");
-  fOutput->Add(fHistSPDcl1mult);
-
-  fHistSPDcl1eta  = new TH1F("fHistSPDcl1eta", "Cluster pseudorapidity (inner layer)", 120, -3.,3.);
-  fHistSPDcl1eta->GetXaxis()->SetTitle("Pseudorapidity #eta");
-  fHistSPDcl1eta->GetYaxis()->SetTitle("Entries");
-  fHistSPDcl1eta->Sumw2();
-  fOutput->Add(fHistSPDcl1eta);
+  fHistSPDmultcl1 = new TH1F("fHistSPDmultcl1", "Inner layer cluster multiplicity distribution", nBinMultCorr,binLimMultCorr);
+  fHistSPDmultcl1->GetXaxis()->SetTitle("Inner layer cluster multiplicity");
+  fHistSPDmultcl1->GetYaxis()->SetTitle("Entries");
+  fOutput->Add(fHistSPDmultcl1);
 
   fHistSPDphi = new TH1F("fHistSPDphi", "Tracklet #phi  distribution", 360, 0.,2*TMath::Pi());
   fHistSPDphi->GetXaxis()->SetTitle("#varphi [rad]");
   fHistSPDphi->GetYaxis()->SetTitle("Entries");
   fOutput->Add(fHistSPDphi);
 
-  fHistSPDcl1phi= new TH1F("fHistSPDcl1phi", "Cluster #phi (inner layer) ", 360, 0.,2*TMath::Pi());
-  fHistSPDcl1phi->GetXaxis()->SetTitle("#varphi [rad]");
-  fHistSPDcl1phi->GetYaxis()->SetTitle("Entries");
-  fOutput->Add(fHistSPDcl1phi);
-
   fHistSPDtheta = new TH1F("fHistSPDtheta", "Tracklet #theta  distribution", 180, 0.,TMath::Pi());
   fHistSPDtheta->GetXaxis()->SetTitle("#theta [rad]");
   fHistSPDtheta->GetYaxis()->SetTitle("Entries");
   fOutput->Add(fHistSPDtheta);
-
-  fHistSPDcl1theta = new TH1F("fHistSPDcl1theta", "Cluster #theta (inner layer)", 180, 0.,TMath::Pi());
-  fHistSPDcl1theta->GetXaxis()->SetTitle("#theta [rad]");
-  fHistSPDcl1theta->GetYaxis()->SetTitle("Entries");
-  fOutput->Add(fHistSPDcl1theta);
 
   fHistSPDdePhi= new TH1F("fHistSPDdePhi", "Tracklet #Delta#varphi  distribution",400,-0.1,.1);
   fHistSPDdePhi->GetXaxis()->SetTitle("#Delta#varphi [rad]");
   fHistSPDdePhi->GetYaxis()->SetTitle("Entries");
   fOutput->Add(fHistSPDdePhi);
 
-  fHistSPDdePhiZ= new TH1F("fHistSPDdePhiZ", "Tracklet #Delta#varphi  distribution",400,-0.1,.1);
-  fOutput->Add(fHistSPDdePhiZ);
-
-  fHistSPDdePhi3D= new TH1F("fHistSPDdePhi3D", "Tracklet #Delta#varphi  distribution",400,-0.1,.1);
-  fOutput->Add(fHistSPDdePhi3D);
-
   fHistSPDphivsSPDeta= new TH2F("fHistSPDphivsSPDeta", "Tracklets - #varphi vs #eta",120,-3.,3,360,0.,2*TMath::Pi());
   fHistSPDphivsSPDeta->GetXaxis()->SetTitle("Pseudorapidity #eta");
   fHistSPDphivsSPDeta->GetYaxis()->SetTitle("#varphi [rad]");
   fOutput->Add(fHistSPDphivsSPDeta);
-
-  fHistSPDcl1phivsSPDcl1eta= new TH2F("fHistSPDcl1phivsSPDcl1eta", "Clusters layer1 - #varphi vs #eta",120,-3.,3,360,0.,2*TMath::Pi());
-  fHistSPDcl1phivsSPDcl1eta->GetXaxis()->SetTitle("Pseudorapidity #eta");
-  fHistSPDcl1phivsSPDcl1eta->GetYaxis()->SetTitle("#varphi [rad]");
-  fOutput->Add(fHistSPDcl1phivsSPDcl1eta);
 
   fHistSPDdeTheta= new TH1F("fHistSPDdeTheta", "Tracklet #Delta#theta distribution",100,-0.05,.05);
   fHistSPDdeTheta->GetXaxis()->SetTitle("#Delta#theta [rad]");
   fHistSPDdeTheta->GetYaxis()->SetTitle("Entries");
   fOutput->Add(fHistSPDdeTheta);
 
-
-  fHistSPDvtxAnalysis = new TH1F("fHistSPDvtxAnalysis", "SPD vertex  distribution - all events",20,-20.,20.);
+  fHistSPDvtxAnalysis = new TH1F("fHistSPDvtxAnalysis", "SPD vertex distribution: events selected for the analysis",20,-20.,20.);
   fHistSPDvtxAnalysis->GetXaxis()->SetTitle("z_{SPDvtx} [cm]");
   fHistSPDvtxAnalysis->GetYaxis()->SetTitle("Entries");
   fOutput->Add(fHistSPDvtxAnalysis);
 
-  fHistSPDvtx3D = new TH3F("fHistSPDvtx3D", "SPD vertex distribution",100,-1.,1.,100,-1.,1.,500,-50.,50.);
-  fOutput->Add(fHistSPDvtx3D);
-
-  fHistSPDvtxZ = new TH1F("fHistSPDvtxZ", "SPD vertex distribution",500,-50.,50.);
-  fOutput->Add(fHistSPDvtxZ);
-
-  fHistNcontribSPDvtxvsSPDvtx= new TH2F("fHistNcontribSPDvtxvsSPDvtx", " ",100,-50.,50.,10002,-2.,10000.);
-  fHistNcontribSPDvtxvsSPDvtx->GetXaxis()->SetTitle("z_{SPDvtx} [cm]");
-  fHistNcontribSPDvtxvsSPDvtx->GetYaxis()->SetTitle("# contributors");
-  fOutput->Add(fHistNcontribSPDvtxvsSPDvtx);
-
-  fHistNcontribSPDvtx3D= new TH1F("fHistNcontribSPDvtx3D", "SPD vtx 3D",10002,-2.,10000.);
-  fHistNcontribSPDvtx3D->GetXaxis()->SetTitle("# contributors");
-  fHistNcontribSPDvtx3D->GetYaxis()->SetTitle("Entries");
-  fOutput->Add(fHistNcontribSPDvtx3D);
-
-  fHistNcontribSPDvtxZ= new TH1F("fHistNcontribSPDvtxZ", "SPD vtx Z",10002,-2.,10000.);
-  fHistNcontribSPDvtxZ->GetXaxis()->SetTitle("# contributors");
-  fHistNcontribSPDvtxZ->GetYaxis()->SetTitle("Entries");
-  fOutput->Add(fHistNcontribSPDvtxZ);
-
-  fHistNcontribSPDvtxall= new TH1F("fHistNcontribSPDvtxall", "SPD vtx - all events",10002,-2.,10000.);
-  fHistNcontribSPDvtxall->GetXaxis()->SetTitle("# contributors");
-  fHistNcontribSPDvtxall->GetYaxis()->SetTitle("Entries");
-  fOutput->Add(fHistNcontribSPDvtxall);
-
-  fHistSPDcl1multvsnFiredChipsLay1 = new TH2F("fHistSPDcl1multvsnFiredChipsLay1", "",401,0.,401.,201,-0.5,200.5);
-  fHistSPDcl1multvsnFiredChipsLay1->GetXaxis()->SetTitle("# fired chips lay1");
-  fHistSPDcl1multvsnFiredChipsLay1->GetYaxis()->SetTitle("Cluster lay1 multiplicity");
-  fOutput->Add(fHistSPDcl1multvsnFiredChipsLay1);
-
-  fHistSPDmultvsnFiredChipsLay1 = new TH2F("fHistSPDmultvsnFiredChipsLay1","",401,0.,401.,201,-0.5,200.5);
-  fHistSPDmultvsnFiredChipsLay1->GetXaxis()->SetTitle("# fired chips lay1");
-  fHistSPDmultvsnFiredChipsLay1->GetYaxis()->SetTitle("Tracklet multiplicity");
-  fOutput->Add(fHistSPDmultvsnFiredChipsLay1);
-
-  fHistSPDmultvsnFiredChipsLay2 = new TH2F("fHistSPDmultvsnFiredChipsLay2","",801,0.,801.,201,-0.5,200.5);
-  fHistSPDmultvsnFiredChipsLay2->GetXaxis()->SetTitle("# fired chips lay2");
-  fHistSPDmultvsnFiredChipsLay2->GetYaxis()->SetTitle("Tracklet multiplicity");
-  fOutput->Add(fHistSPDmultvsnFiredChipsLay2);
-
-  fHistnFiredChipsLay2vsnFiredChipsLay1 = new TH2F("fHistnFiredChipsLay2vsnFiredChipsLay1","",401,0.,401.,801,0.,801.);
-  fHistnFiredChipsLay2vsnFiredChipsLay1->GetXaxis()->SetTitle("# fired chips lay1");
-  fHistnFiredChipsLay2vsnFiredChipsLay1->GetYaxis()->SetTitle("# fired chip lay2");
-  fOutput->Add(fHistnFiredChipsLay2vsnFiredChipsLay1);
-
-  fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec = new TH2F("fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec","",401,0.,401.,801,0.,801.);
-  fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec->GetXaxis()->SetTitle("# fired chips lay1");
-  fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec->GetYaxis()->SetTitle("# fired chip lay2");
-  fOutput->Add(fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec);
-
-  fHistSPDvtxRec = new TH1F("fHistSPDvtxRec", "SPD vertex  distribution",80,-20.,20.);
-  fHistSPDvtxRec->GetXaxis()->SetTitle("z_{SPDvtx} [cm]");
-  fHistSPDvtxRec->GetYaxis()->SetTitle("Entries");
-  fOutput->Add(fHistSPDvtxRec);
+  fHistSPDdePhideTheta= new TH2F("fHistSPDdePhideTheta", "Tracklet #Delta#varphi  distribution",2000,-1.,1.,1000,-0.25,.25);
+  fHistSPDdePhideTheta->GetXaxis()->SetTitle("#Delta#varphi [rad]");
+  fHistSPDdePhideTheta->GetYaxis()->SetTitle("#Delta#theta [rad]");
+  fOutput->Add(fHistSPDdePhideTheta);
 
 
-  if (fCorr) {
-    fHistBkgCorrNum = new TH2F("fHistBkgCorrNum","",60,-3.00,3.00,20,-20.,20.);
-    fOutput->Add(fHistBkgCorrNum);
+  if (fUseMC) {
 
-    fHistBkgCorrDen = new TH2F("fHistBkgCorrDen","",60,-3.00,3.00,20,-20.,20.);
+    // Track level correction histograms 
+    fHistBkgCorrDen = new TH2F("fHistBkgCorrDen","",nBinEtaCorr,binLimEtaCorr,20,-20.,20.);
     fOutput->Add(fHistBkgCorrDen);
+    
+    fHistBkgCorrDenPrimGen = new TH2F("fHistBkgCorrDenPrimGen","",nBinEtaCorr,binLimEtaCorr,20,-20.,20.);
+    fOutput->Add(fHistBkgCorrDenPrimGen);
 
-    fHistAlgEffNum = new TH2F("fHistAlgEffNum","",120,-3.00,3.00,40,-20.,20.);
-    fOutput->Add(fHistAlgEffNum);  
+    if (fTR) {
+      fHistBkgCorrNum = new TH2F("fHistBkgCorrNum","",nBinEtaCorr,binLimEtaCorr,20,-20.,20.);
+      fOutput->Add(fHistBkgCorrNum);
+ 
+      fHistAlgEffNum = new TH2F("fHistAlgEffNum","",nBinEtaCorr,binLimEtaCorr,20,-20.,20.);
+      fOutput->Add(fHistAlgEffNum);  
 
-    fHistNonDetectableCorrNum = new TH2F("fHistNonDetectableCorrNum","",60,-3.00,3.00,20,-20.,20.);
+      fHistNonDetectableCorrDen = new TH2F("fHistNonDetectableCorrDen","",nBinEtaCorr,binLimEtaCorr,20,-20.,20.);
+      fOutput->Add(fHistNonDetectableCorrDen);
+
+    }
+
+    fHistNonDetectableCorrNum = new TH2F("fHistNonDetectableCorrNum","",nBinEtaCorr,binLimEtaCorr,20,-20.,
+20.);
     fOutput->Add(fHistNonDetectableCorrNum);
+    
+    fHistAllPrimaries = new TH2F("fHistAllPrimaries","",nBinEtaCorr,binLimEtaCorr,20,-20.,20.);
+    fOutput->Add(fHistAllPrimaries);
 
-    fHistNonDetectableCorrDen = new TH2F("fHistNonDetectableCorrDen","",120,-3.00,3.00,40,-20.,20.);
-    fOutput->Add(fHistNonDetectableCorrDen);
+    fHistTrackCentrEvts = new TH2F("fHistTrackCentrEvts","",nBinEtaCorr,binLimEtaCorr,20,-20.,20.);
+    fOutput->Add(fHistTrackCentrEvts);
 
-    fHistTrackTrigVtxCorrNum = new TH2F("fHistTrackTrigVtxCorrNum","",60,-3.00,3.00,20,-20.,20.);
-    fOutput->Add(fHistTrackTrigVtxCorrNum);
-
-    fHistTrackTrigCorrDen = new TH2F("fHistTrackTrigCorrDen","",60,-3.00,3.00,20,-20.,20.);
-    fOutput->Add(fHistTrackTrigCorrDen);
-
-    fHistTrackTrigVtxCorrNumNSD = new TH2F("fHistTrackTrigVtxCorrNumNSD","",60,-3.00,3.00,20,-20.,20.);
-    fOutput->Add(fHistTrackTrigVtxCorrNumNSD);
-
-    fHistTrackTrigNSD = new TH2F("fHistTrackTrigNSD","",60,-3.00,3.00,20,-20.,20.);
-    fOutput->Add(fHistTrackTrigNSD);
+    fHistTrackTrigCentrEvts = new TH2F("fHistTrackTrigCentrEvts","",nBinEtaCorr,binLimEtaCorr,20,-20.,20.);
+    fOutput->Add(fHistTrackTrigCentrEvts);
 
 
     // Event level correction histograms  
-    fHistTrigVtxCorrNum = new TH2F("fHistTrigVtxCorrNum","",nBinMultCorr,binLimMultCorr,20,-20.,20.);
-    fOutput->Add(fHistTrigVtxCorrNum);
+    fHistAllEvts = new TH2F("fHistAllEvts","",nBinMultCorr,binLimMultCorr,20,-20.,20.);
+    fOutput->Add(fHistAllEvts);
 
-    fHistTrigVtxCorrDen = new TH2F("fHistTrigVtxCorrDen","",nBinMultCorr,binLimMultCorr,20,-20.,20.);
-    fOutput->Add(fHistTrigVtxCorrDen);
+    fHistCentrEvts = new TH2F("fHistCentrEvts","",nBinMultCorr,binLimMultCorr,20,-20.,20.);
+    fOutput->Add(fHistCentrEvts);
 
-    fHistTrigCorrDen = new TH2F("fHistTrigCorrDen","",nBinMultCorr,binLimMultCorr,20,-20.,20.);
-    fOutput->Add(fHistTrigCorrDen);
+    fHistTrigCentrEvts = new TH2F("fHistTrigCentrEvts","",nBinMultCorr,binLimMultCorr,20,-20.,20.);
+    fOutput->Add(fHistTrigCentrEvts);
 
-    fHistTrigVtxCorrNumNSD = new TH2F("fHistTrigVtxCorrNumNSD","",nBinMultCorr,binLimMultCorr,20,-20.,20.);
-    fOutput->Add(fHistTrigVtxCorrNumNSD);
+    fHistSelEvts = new TH2F("fHistSelEvts","",nBinMultCorr,binLimMultCorr,20,-20.,20.);
+    fOutput->Add(fHistSelEvts);
 
-    fHistEvTrigNSD = new TH2F("fHistEvTrigNSD","",nBinMultCorr,binLimMultCorr,20,-20.,20.);
-    fOutput->Add(fHistEvTrigNSD);
 
     // MC distributions
-    fHistMCEtavsZTriggMCvtxEvts = new TH2F("fHistMCEtavsZTriggMCvtxEvts","Generated pseudorapidity distribution",60,-3.00,3.00,20,-20.,20.);
-    fHistMCEtavsZTriggMCvtxEvts->GetXaxis()->SetTitle("Pseudorapidity #eta");
-    fHistMCEtavsZTriggMCvtxEvts->GetYaxis()->SetTitle("z_{MCvtx} [cm]");
-    fHistMCEtavsZTriggMCvtxEvts->Sumw2();
-    fOutput->Add(fHistMCEtavsZTriggMCvtxEvts);
+    fHistMCmultEtacut = new TH1F("fHistMCmultEtacut","Generated multiplicity",nBinMultCorr,binLimMultCorr);
+    fHistMCmultEtacut->GetXaxis()->SetTitle("Generated multiplicity |#eta|<1.4");
+    fHistMCmultEtacut->GetYaxis()->SetTitle("Entries");
+    fOutput->Add(fHistMCmultEtacut);
 
-    fHistMCEtavsZTriggESDvtxEvts = new TH2F("fHistMCEtavsZTriggESDvtxEvts","Generated pseudorapidity distribution",60,-3.00,3.00,20,-20.,20.);
-    fHistMCEtavsZTriggESDvtxEvts->GetXaxis()->SetTitle("Pseudorapidity #eta");
-    fHistMCEtavsZTriggESDvtxEvts->GetYaxis()->SetTitle("z_{SPDvtx} [cm]");
-    fHistMCEtavsZTriggESDvtxEvts->Sumw2();
-    fOutput->Add(fHistMCEtavsZTriggESDvtxEvts);
+    fHistMCmultEtacutvsSPDmultEtacut = new TH2F("fHistMCmultEtacutvsSPDmultEtacut","",nBinMultCorr,binLimMultCorr,nBinMultCorr,binLimMultCorr);
+    fHistMCmultEtacutvsSPDmultEtacut->GetXaxis()->SetTitle("Generated multiplicity |#eta|<1.4");
+    fHistMCmultEtacutvsSPDmultEtacut->GetYaxis()->SetTitle("Tracklet multiplicity |#eta|<1.4");
+    fOutput->Add(fHistMCmultEtacutvsSPDmultEtacut);
 
-    fHistMCEtavsZ = new TH2F("fHistMCEtavsZ","Generated pseudorapidity distribution",60,-3.00,3.00,20,-20.,20.);
-    fHistMCEtavsZ->GetXaxis()->SetTitle("Pseudorapidity #eta");
-    fHistMCEtavsZ->GetYaxis()->SetTitle("z_{MCvtx} [cm]");
-    fHistMCEtavsZ->Sumw2();
-    fOutput->Add(fHistMCEtavsZ);
+    fHistMCvtxx = new TH1F("fHistMCvtxx", "MC vertex distribution - x",100,-.5,.5);
+    fOutput->Add(fHistMCvtxx);
+    fHistMCvtxy = new TH1F("fHistMCvtxy", "MC vertex distribution - y",100,-.5,.5);
+    fOutput->Add(fHistMCvtxy);
+    fHistMCvtxz = new TH1F("fHistMCvtxz", "MC vertex distribution - z",500,-50.,50.);
+    fOutput->Add(fHistMCvtxz);
 
-    fHistMCEtaInel = new TH1F("fHistMCEtaInel","",7,-3.5,3.5);
-    fHistMCEtaInel->GetXaxis()->SetTitle("Pseudorapidity #eta");
-    fOutput->Add(fHistMCEtaInel);
+    fHistRecvsGenImpactPar= new TH2F("fHistRecvsGenImpactPar","",20,0.,20.,20,0.,20.);
+    fHistRecvsGenImpactPar->GetXaxis()->SetTitle("b_{gen} [fm]");
+    fHistRecvsGenImpactPar->GetYaxis()->SetTitle("b_{rec} [fm]");
+    fOutput->Add(fHistRecvsGenImpactPar);
 
-    fHistMCEtaNonDiffractive = new TH1F("fHistMCEtaNonDiffractive","",60,-3.,3.);
-    fHistMCEtaNonDiffractive->GetXaxis()->SetTitle("Pseudorapidity #eta");
-    fOutput->Add(fHistMCEtaNonDiffractive);
-
-    fHistMCEtaNonSingleDiffractive = new TH1F("fHistMCEtaNonSingleDiffractive","",60,-3.,3.);
-    fHistMCEtaNonSingleDiffractive->GetXaxis()->SetTitle("Pseudorapidity #eta");
-    fOutput->Add(fHistMCEtaNonSingleDiffractive);
-
-
-    
-    fHistoProcessType = new TH1F("fHistoProcessType","",5,0.,5.);
-    fOutput->Add(fHistoProcessType);
-
-    fHistoProcessTypeTriggered = new TH1F("fHistoProcessTypeTriggered","",5,0.,5);
-    fOutput->Add(fHistoProcessTypeTriggered);
-
-    fHistContributorsvsMCVtx = new TH2F("fHistContributorsvsMCVtx","",200,-20.,20.,202,-2.,200.);
-    fOutput->Add(fHistContributorsvsMCVtx);
-
-    fHistoDetectableNotr = new TH3F("fHistoDetectableNotr","",60,-3.00,3.00,20,-20.,20.,100,0.,10.); 
-    fOutput->Add(fHistoDetectableNotr);
+    fHistMCNpart = new TH1F("fHistMCNpart","Number of participants",450,0,450);
+    fHistMCNpart->GetXaxis()->SetTitle("N_{part}");
+    fHistMCNpart->GetYaxis()->SetTitle("Entries"); 
+    fOutput->Add(fHistMCNpart);
  
-    fHistoDetectabletr = new TH2F("fHistoDetectabletr","",60,-3.00,3.00,20,-20.,20.);
-    fOutput->Add(fHistoDetectabletr);
+    fHistdPhiPP = new TH1F("fHistdPhiPP","",400,-0.1,.1);
+    fOutput->Add(fHistdPhiPP);
+    fHistdPhiSS = new TH1F("fHistdPhiSS","",400,-0.1,.1);
+    fOutput->Add(fHistdPhiSS);
+    fHistdPhiComb = new TH1F("fHistdPhiComb","",400,-0.1,.1);
+    fOutput->Add(fHistdPhiComb);
 
-    fHistoNonStoppingTracks = new TH2F("fHistoNonStoppingTracks","",60,-3.00,3.00,20,-20.,20.);
-    fOutput->Add(fHistoNonStoppingTracks);
-
-    fHistoDetectedLay1 = new TH2F("fHistoDetectedLay1","",60,-3.00,3.00,20,-20.,20.);
-    fOutput->Add(fHistoDetectedLay1);
-
-    fHistoDetectedLay2 = new TH2F("fHistoDetectedLay2","",60,-3.00,3.00,20,-20.,20.);
-    fOutput->Add(fHistoDetectedLay2);
-
-    fHistoPt = new TH1F("fHistoPt","",100,.0,10.);
-    fOutput->Add(fHistoPt);
-
-    fHistoRTRm1 = new TH1F("fHistoRTRm1","",10000,0.,5000);
-    fOutput->Add(fHistoRTRm1);
-
-    fHistMCvtx = new TH3F("fHistMCvtx", "MC vertex distribution",100,-.5,.5,100,-.5,.5,500,-50.,50.);
-    fOutput->Add(fHistMCvtx);
-
-    fHistMultAllNonDiff  = new TH1F("fHistMultAllNonDiff","",20,-0.5,19.5);
-    fOutput->Add(fHistMultAllNonDiff);
-    fHistMultAllSingleDiff = new TH1F("fHistMultAllSingleDiff","",20,-0.5,19.5);
-    fHistMultAllSingleDiff->Sumw2();
-    fOutput->Add(fHistMultAllSingleDiff);
-    fHistMultAllDoubleDiff = new TH1F("fHistMultAllDoubleDiff","",20,-0.5,19.5);
-    fHistMultAllDoubleDiff->Sumw2();
-    fOutput->Add(fHistMultAllDoubleDiff);
-    fHistMultTrVtxNonDiff = new TH1F("fHistMultTrVtxNonDiff","",20,-0.5,19.5);
-    fHistMultTrVtxNonDiff->Sumw2();
-    fOutput->Add(fHistMultTrVtxNonDiff);
-    fHistMultTrVtxSingleDiff = new TH1F("fHistMultTrVtxSingleDiff","",20,-0.5,19.5);
-    fHistMultTrVtxSingleDiff->Sumw2();
-    fOutput->Add(fHistMultTrVtxSingleDiff);
-    fHistMultTrVtxDoubleDiff = new TH1F("fHistMultTrVtxDoubleDiff","",20,-0.5,19.5);
-    fHistMultTrVtxDoubleDiff->Sumw2();
-    fOutput->Add(fHistMultTrVtxDoubleDiff);
-   
-    fHistMCEtaNonSingleDiffractiveLargeBin = new TH1F("fHistMCEtaNonSingleDiffractiveLargeBin","",7,-3.5,3.5);
-    fHistMCEtaNonSingleDiffractiveLargeBin->GetXaxis()->SetTitle("Pseudorapidity #eta");
-    fOutput->Add(fHistMCEtaNonSingleDiffractiveLargeBin);
+    fHistDeVtx = new TH2F("fHistDeVtx","",80,-20.,20.,5000,-0.5,0.5);
+    fHistDeVtx->GetXaxis()->SetTitle("z_{MCvtx} [cm]");
+    fHistDeVtx->GetYaxis()->SetTitle("z_{MCvtx}-z_{SPDvtx} [cm]");
+    fOutput->Add(fHistDeVtx);
 
   }
+  PostData(1, fOutput);
+//  Printf("Output objects created...");
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSPDdNdEta::Exec(Option_t *) 
+void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *) 
 {
   // Main loop
+
   // Called for each event
+//  Printf("User exec..........");
 
+  AliESDInputHandlerRP *hand = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
-  if (!fESD) {
+  fmyESD = dynamic_cast<AliESDEvent*>(InputEvent()); 
+  if (!fmyESD) {
     Printf("ERROR: fESD not available");
     return;
   }
 
-  // ESD vertex
-  Bool_t eventWithVertex = kFALSE;
-  const AliESDVertex* vtxESD = fESD->GetVertex();
-  Double_t esdvtx[3];
-  vtxESD->GetXYZ(esdvtx);
-  Int_t nContrib = vtxESD->GetNContributors();
-  //... check resolution
-  Double_t zRes = vtxESD->GetZRes();
-  const AliMultiplicity* multESD = fESD->GetMultiplicity();
 
-  // Loading tracklets...
-  Int_t multSPD = 0;
-  multSPD = multESD->GetNumberOfTracklets();
+  // Trigger selection
+  Bool_t eventTriggered = kTRUE;
+  static AliTriggerAnalysis* triggerAnalysis = 0; 
+  if (eventTriggered) // applying an offline trigger
+    eventTriggered = triggerAnalysis->IsTriggerFired(fmyESD, fTrigger);
+  if (!eventTriggered)
+    Printf("No trigger");
 
-  AliMultiplicity * mult1 = (AliMultiplicity*)multESD;
-  Short_t nFiredChipsLay1 = mult1->GetNumberOfFiredChips(0);
-  Short_t nFiredChipsLay2 = mult1->GetNumberOfFiredChips(1);
-  Int_t multSPDEtacut = 0;
-  Int_t multSPDcl1 = 0;
-  Int_t nSingleCl1 = 0;
-  Int_t multSPDcl1EtacutLay1 = 0;
-  nSingleCl1 = multESD->GetNumberOfSingleClusters();
-  multSPDcl1 = nSingleCl1 + multSPD;
-  Float_t* recEtaSPDcl1 = new Float_t[multSPD+nSingleCl1];
-  if (esdvtx[2]!=0.) fHistSPDvtxRec->Fill(esdvtx[2]);
 
-  if (esdvtx[2]!=0.&&zRes<0.1) eventWithVertex = kTRUE;
+  // Centrality selection 
+  Bool_t eventInCentralityBin = kFALSE;
+  // Centrality selection
+  AliESDCentrality *centrality = fmyESD->GetCentrality();
+  if (fCentrEst=="") eventInCentralityBin = kTRUE;
   else {
-    esdvtx[2] = 0.;
-    multSPD = 0;
+    if(!centrality) {
+      AliError("Centrality object not available"); 
+    }  else {
+      if (centrality->IsEventInCentralityClass(fCentrLowLim,fCentrUpLim,fCentrEst.Data())) eventInCentralityBin = kTRUE;
+    }
   }
 
-//  Printf("There are %d tracklets in this event", multSPD);
 
-  // Trigger
-  Bool_t eventTriggered = kFALSE;
-  ULong64_t triggerMask;
-  ULong64_t spdFO   = (1 << 14);
-  ULong64_t v0left  = (1 << 11);
-  ULong64_t v0right = (1 << 12);
-
-  triggerMask=fESD->GetTriggerMask();
-
-  // No trigger
-  if (fTrigger==0) eventTriggered = kTRUE;
-  // MB1: GFO || V0OR
-  if (fTrigger==1) eventTriggered = triggerMask&spdFO || ((triggerMask&v0left) || (triggerMask&v0right));
-  // MB2: GFO && V0OR
-  if (fTrigger==2) eventTriggered = triggerMask&spdFO && ((triggerMask&v0left) || (triggerMask&v0right));
-
-  PostData(0, fOutput);
+  // ESD vertex
+  Bool_t eventWithVertex = kFALSE;
+  const AliESDVertex* vtxESD = fmyESD->GetVertex();
+  Double_t esdvtx[3];
+  vtxESD->GetXYZ(esdvtx);
+  //... check resolution
+//  Double_t zRes = vtxESD->GetZRes();
+//  Double_t zDisp = vtxESD->GetDispersion();
+  if (esdvtx[2]!=0) eventWithVertex = kTRUE; //vertex selection in PbPb  
 
 
-  // Selected events: triggered with vertex
-  if (eventTriggered&&eventWithVertex) {
+  // Reconstructing or loading tracklets...
+  const AliMultiplicity* multESD = fmyESD->GetMultiplicity();
+  Int_t multSPD = multESD->GetNumberOfTracklets();
+  Int_t nSingleCl1 = multESD->GetNumberOfSingleClusters();
+  Int_t multSPDcl1 = nSingleCl1 + multSPD;  
+  Int_t multSPDEtacut = 0;
+  Int_t multSPDAna = 0;
 
-    if (multSPD!=0) fHistSPDvtxAnalysis->Fill(esdvtx[2]);
-    if (strcmp(vtxESD->GetTitle(),"vertexer: 3D") == 0) fHistSPDvtx3D->Fill(esdvtx[0],esdvtx[1],esdvtx[2]);
-    else fHistSPDvtxZ->Fill(esdvtx[2]);
+  fHistSPDmultcl1->Fill(multSPDcl1);
+
+  Float_t trackletCoord[multSPDcl1][5];
+  Float_t trackletLab[multSPDcl1][2];
+
+  // Selected events: in centrality bin, triggered with vertex
+  if (eventTriggered&&eventWithVertex&&eventInCentralityBin) {
+
+    if (fRecoTracklets) {
+      // Load ITS rec points tree
+      TTree *itsClusterTree = hand->GetTreeR("ITS");
+      if (!itsClusterTree) {
+        AliError(" Invalid ITS cluster tree !\n");
+        return;
+      }
+      float vtxf[3] = {vtxESD->GetX(),vtxESD->GetY(),vtxESD->GetZ()};
+
+      AliTrackletAlg *fMultReco = new AliTrackletAlg();
+
+      fMultReco->SetPhiWindow(0.8);
+//      fMultReco->SetPhiWindow(.08); //def
+      fMultReco->SetThetaWindow(0.025); //def
+//      fMultReco->SetThetaWindow(0.25);
+      fMultReco->SetPhiShift(0.0045); //def
+      fMultReco->SetRemoveClustersFromOverlaps(kFALSE); // def
+      fMultReco->SetPhiOverlapCut(0.005); //def
+      fMultReco->SetZetaOverlapCut(0.05); //def
+      fMultReco->SetPhiRotationAngle(0.0); // def
+//      fMultReco->SetPhiRotationAngle(TMath::Pi());
+      fMultReco->SetHistOn(kFALSE); //def
+      fMultReco->Reconstruct(itsClusterTree,vtxf,vtxf);
+//      Printf("cl 1 from alg %d",fMultReco->GetNClustersLayer1());
+//      Printf("cl 2 from alg %d",fMultReco->GetNClustersLayer2());
+      multSPD = fMultReco->GetNTracklets(); 
+//      Printf("tracklets found...%d",multSPD);
+      nSingleCl1 = fMultReco->GetNSingleClusters();
+//      Printf("singl found...%d",nSingleCl1);
+      for (Int_t itr = 0; itr<multSPD;++itr) {
+        trackletCoord[itr][3] = fMultReco->GetTracklet(itr)[0]; //theta
+        trackletCoord[itr][2] = fMultReco->GetTracklet(itr)[1]; //phi
+        trackletCoord[itr][1] = fMultReco->GetTracklet(itr)[3]; //deTheta
+        trackletCoord[itr][0] = fMultReco->GetTracklet(itr)[2]; //dephi
+        trackletCoord[itr][4] = -TMath::Log(TMath::Tan(trackletCoord[itr][3]/2.));
+        trackletLab[itr][0] = static_cast<Int_t>(fMultReco->GetTracklet(itr)[4]);
+        trackletLab[itr][1] = static_cast<Int_t>(fMultReco->GetTracklet(itr)[5]);
+      }
+      delete  fMultReco;
+    } else {
+      // set variables from ESD
+      for (Int_t itr = 0; itr<multSPD;++itr) {
+        trackletCoord[itr][3] = multESD->GetTheta(itr);       //theta
+        trackletCoord[itr][2] = multESD->GetPhi(itr);         //phi
+        trackletCoord[itr][1] = multESD->GetDeltaTheta(itr);  //deTheta
+        trackletCoord[itr][0] = multESD->GetDeltaPhi(itr);    //dePhi
+        trackletCoord[itr][4] = multESD->GetEta(itr);         //Eta 
+        trackletLab[itr][0] = multESD->GetLabel(itr,0);       //label lay1
+        trackletLab[itr][1] = multESD->GetLabel(itr,1);       //label lay2
+      }
+    }
+//    Printf("tracklets in ESD...%d",multESD->GetNumberOfTracklets());
 
     for (Int_t itracklet=0; itracklet<multSPD; ++itracklet) {
-      Float_t thetaTr= multESD->GetTheta(itracklet);
-      Float_t phiTr= multESD->GetPhi(itracklet);
-      Float_t dePhiTr= multESD->GetDeltaPhi(itracklet);
-//      Double_t deThetaTr= multESD->GetDeltaTheta(itracklet);
-      Float_t recEtaSPD =multESD->GetEta(itracklet);
-      recEtaSPDcl1[itracklet] = recEtaSPD;
-
-      fHistSPDeta->Fill(recEtaSPD);
-      fHistSPDRAWEtavsZ->Fill(recEtaSPD,esdvtx[2]);
-      fHistSPDcl1eta->Fill(recEtaSPD);
-      fHistSPDphi->Fill(phiTr);
-      fHistSPDcl1phi->Fill(phiTr);
-      fHistSPDtheta->Fill(thetaTr);
-      fHistSPDcl1theta->Fill(thetaTr);
-      fHistSPDdePhi->Fill(dePhiTr);
-//      fHistSPDdeTheta->Fill(deThetaTr);
+      if (TMath::Abs(trackletCoord[itracklet][0])<0.08) { // select tracklets with tighter cuts
+        fHistSPDRAWEtavsZ->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+        fHistSPDphi->Fill(trackletCoord[itracklet][2]);
+        fHistSPDtheta->Fill(trackletCoord[itracklet][3]);
+        fHistSPDdePhi->Fill(trackletCoord[itracklet][0]);
+        fHistSPDdeTheta->Fill(trackletCoord[itracklet][1]);
  
-      if (strcmp(vtxESD->GetTitle(),"vertexer: Z") == 0) fHistSPDdePhiZ->Fill(dePhiTr);
-      if (strcmp(vtxESD->GetTitle(),"vertexer: 3D") == 0) fHistSPDdePhi3D->Fill(dePhiTr);
-      fHistSPDphivsSPDeta->Fill(recEtaSPD,phiTr);
-      fHistSPDcl1phivsSPDcl1eta->Fill(recEtaSPD,phiTr);
+        fHistSPDphivsSPDeta->Fill(trackletCoord[itracklet][4],trackletCoord[itracklet][2]);
+        multSPDAna++;
+        // Calculate multiplicity in etacut
+        if (TMath::Abs(trackletCoord[itracklet][4])<1.4) multSPDEtacut++;
+      }
+      // for combinatorial background normalization
+      fHistSPDdePhideTheta->Fill(trackletCoord[itracklet][0], trackletCoord[itracklet][1]);
 
-      // Calculate multiplicity in etacut
-      if (TMath::Abs(recEtaSPD)<1.5) multSPDEtacut++;
-      if (TMath::Abs(recEtaSPD)<2.)  multSPDcl1EtacutLay1++;
     }
-
-    for (Int_t iCl1=0; iCl1<nSingleCl1; ++iCl1) {
-      Float_t thetaSingleCl1 = multESD->GetThetaSingle(iCl1);
-      // Calculate eta
-      Float_t etaSingleCl1 = -TMath::Log(TMath::Tan(thetaSingleCl1/2.));
-      Float_t phiSingleCl1 = multESD->GetPhiSingle(iCl1);
-      recEtaSPDcl1[iCl1+multSPD] = etaSingleCl1;
-
-      fHistSPDcl1eta->Fill(etaSingleCl1);
-      fHistSPDcl1phi->Fill(phiSingleCl1);
-      fHistSPDcl1theta->Fill(thetaSingleCl1);
-      fHistSPDcl1phivsSPDcl1eta->Fill(etaSingleCl1,phiSingleCl1);
-      if (TMath::Abs(etaSingleCl1)<2.) multSPDcl1EtacutLay1++;
-    }
-
+    if (multSPDAna!=0) fHistSPDvtxAnalysis->Fill(esdvtx[2]);
     fHistSPDmultEtacut->Fill(multSPDEtacut);
-    fHistSPDmult->Fill(multSPD);
-    fHistSPDcl1multEtacutLay1->Fill(multSPDcl1EtacutLay1);
-    if (strcmp(vtxESD->GetTitle(),"vertexer: 3D") == 0) {
-      fHistNcontribSPDvtx3D->Fill(nContrib);
-    }
-    if (strcmp(vtxESD->GetTitle(),"vertexer: Z") == 0)  {
-     fHistNcontribSPDvtxZ->Fill(nContrib);
-    }
-    fHistNcontribSPDvtxvsSPDvtx->Fill(esdvtx[2],nContrib);
-    fHistSPDRAWMultvsZ->Fill(multSPD,esdvtx[2]);
-    fHistSPDmultvsnFiredChipsLay1->Fill(nFiredChipsLay1,multSPD);
-    fHistSPDmultvsnFiredChipsLay2->Fill(nFiredChipsLay2,multSPD);
+    fHistSPDmult->Fill(multSPDAna); 
+
+    fHistSPDRAWMultvsZ->Fill(multSPDAna,esdvtx[2]);
 
   } // End selected events
 
-  if (eventTriggered) {
-    fHistSPDRAWMultvsZTriggEvts->Fill(multSPD,esdvtx[2]); 
+  if (eventInCentralityBin) {
+    fHistSPDRAWMultvsZCentrEvts->Fill(multSPDAna,esdvtx[2]);  
+    if (eventTriggered) fHistSPDRAWMultvsZTriggCentrEvts->Fill(multSPDAna,esdvtx[2]);
   }
 
-  fHistSPDcl1mult->Fill(multSPDcl1);
-  fHistNcontribSPDvtxall->Fill(nContrib);
+  if (fUseMC) {
 
-  fHistSPDcl1multvsnFiredChipsLay1->Fill(nFiredChipsLay1,multSPDcl1);
-
-  fHistnFiredChipsLay2vsnFiredChipsLay1->Fill(nFiredChipsLay1,nFiredChipsLay2);
-
-  if (esdvtx[2]==0.) {  
-    fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec->Fill(nFiredChipsLay1,nFiredChipsLay2);
-  }
- 
-  delete[] recEtaSPDcl1;
-
-  if (fCorr) {
+    if (!fMCEvent) {
+      AliError("No MC info found");
+      return;
+    } 
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!eventHandler) {
       Printf("ERROR: Could not retrieve MC event handler");
       return;
     }
 
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
-    if (!mcEvent) {
-       Printf("ERROR: Could not retrieve MC event");
-       return;
-    }
-
-    AliStack* stack = mcEvent->Stack();
+    AliStack* stack = fMCEvent->Stack();
     if (!stack) {
       AliDebug(AliLog::kError, "Stack not available");
       return;
     }
 
-    AliHeader* header = mcEvent->Header();
-    if (!header) {
-      AliDebug(AliLog::kError, "Header not available");
-      return;
-    }
-    AliGenEventHeader* genHeader = header->GenEventHeader();
-    // MC vertex
-    TArrayF vtxMC(3);
-    genHeader->PrimaryVertex(vtxMC);
-
-    fHistMCvtx->Fill(vtxMC[0],vtxMC[1],vtxMC[2]);   
-
-    //Adding process type selection
-    Int_t processType;
-    Bool_t nsdEv = kFALSE;
-    Bool_t ndEv = kFALSE; 
-    Bool_t sdEv = kFALSE;
-    Bool_t ddEv = kFALSE;
-    Bool_t inelEv = kFALSE;
-
-    AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
-
-    AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
-
-    if (fpythia&&pythiaGenHeader) { 
-      processType = pythiaGenHeader->ProcessType();
-      if (processType!=91&&processType!=92&&processType!=93&&processType!=94)  ndEv = kTRUE; // non difffractive
-      if (processType!=91&&processType!=92&&processType!=93)  nsdEv = kTRUE;                 // non single diffractive
-      if (processType==92||processType==93)  sdEv = kTRUE;                                   //single diffractive
-      if (processType==94)  ddEv = kTRUE;                                                    //double diffractive
-      if (processType!=91)  inelEv = kTRUE;                                                  //inelastic
-      
-    } else if (!fpythia&&dpmHeader) {
-      processType = dpmHeader->ProcessType(); 
-      if (processType==1)  ndEv = kTRUE;                                         // non diffractive
-      if (processType!=2&&processType!=5&&processType!=6)  nsdEv = kTRUE;        // non single diffractive
-      if (processType==5||processType==6)  sdEv = kTRUE;                         // single diffractive
-      if (processType==4||processType==7)  ddEv = kTRUE;                         // double diffractive
-      if (processType!=2)  inelEv = kTRUE;                                       // inelastic 
-    } else if (!pythiaGenHeader&&!dpmHeader) {
-      printf("Unknown header type: neither DPMjet nor Pythia. \n");
+    AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(fMCEvent->Header()->GenEventHeader());
+    if (!hijingHeader) {
+      Printf("Unknown header type. \n");
       return ;
     }
+    Float_t impactParameter = hijingHeader->ImpactParameter();
+    Bool_t IsEventInMCCentralityBin = kFALSE;
+    switch (fMCCentralityBin) {
 
-    if (ndEv) {
-      fHistoProcessType->Fill(0);
-      if (eventTriggered) fHistoProcessTypeTriggered->Fill(0);
-    } 
-    if (nsdEv) {
-      fHistoProcessType->Fill(1);
-      if (eventTriggered) fHistoProcessTypeTriggered->Fill(1);
-    } else if (sdEv) {
-      fHistoProcessType->Fill(3);
-      if (eventTriggered) fHistoProcessTypeTriggered->Fill(3);
+    case 1: if (impactParameter<3) IsEventInMCCentralityBin = kTRUE;
+    break;
+    case 2: if (impactParameter>3&&impactParameter<6) IsEventInMCCentralityBin = kTRUE;
+    break;
+    case 3: if (impactParameter>6&&impactParameter<9) IsEventInMCCentralityBin = kTRUE;
+    break;
+    case 4: if (impactParameter>9&&impactParameter<12) IsEventInMCCentralityBin = kTRUE;
+    break;
+    case 5: if (impactParameter>12&&impactParameter<15) IsEventInMCCentralityBin = kTRUE;
+    break;
+    case 6: if (impactParameter>15) IsEventInMCCentralityBin = kTRUE;
+    break;
+    case 7:  IsEventInMCCentralityBin = kTRUE;
+    break;
+
     }
-    if (ddEv) {
-      fHistoProcessType->Fill(4);
-      if (eventTriggered) fHistoProcessTypeTriggered->Fill(4);
-    }
-    if (inelEv) {
-      fHistoProcessType->Fill(2);                          // inel is always true
-      if (eventTriggered) fHistoProcessTypeTriggered->Fill(2);
-    } 
- 
+
+    if (IsEventInMCCentralityBin) {
+    // MC vertex
+    TArrayF vtxMC(3);
+    fMCEvent->GenEventHeader()->PrimaryVertex(vtxMC);
+    fHistMCvtxx->Fill(vtxMC[0]);   
+    fHistMCvtxy->Fill(vtxMC[1]);
+    fHistMCvtxz->Fill(vtxMC[2]);
+//    Printf("Impact parameter gen: %f", impactParameter);
+    Int_t npart = hijingHeader->TargetParticipants()+hijingHeader->ProjectileParticipants();
+    //Rec centrality vs gen centrality
+    // Centrality (reconstructed)
+    AliESDZDC *zdcRec = fmyESD->GetESDZDC();
+    Double_t impactParameterZDC = zdcRec->GetImpactParameter();
+//    Printf("Impact parameter rec: %f", impactParameterZDC);
+
+    fHistRecvsGenImpactPar->Fill(impactParameter,impactParameterZDC);
+    fHistMCNpart->Fill(npart);
     // Tracks from MC
     Int_t  multMCCharged = 0;
     Int_t  multMCChargedEtacut = 0;
     Int_t  nMCPart = stack->GetNprimary();
     Float_t* etagen = new Float_t[nMCPart];  
-    Float_t* ptgen = new Float_t[nMCPart];
     Int_t* stackIndexOfPrimaryParts = new Int_t[nMCPart];
-    Int_t* reconstructedPrimaryPart = new Int_t[nMCPart];
-    Int_t* detectedPrimaryPartLay1 = new Int_t[nMCPart];
-    Int_t* detectedPrimaryPartLay2 = new Int_t[nMCPart];
-    Int_t* detectablePrimaryPart = new Int_t[nMCPart];
+    Bool_t* reconstructedPrimaryPart = new Bool_t[nMCPart];
+    Bool_t* detectedPrimaryPartLay1 = new Bool_t[nMCPart];
+    Bool_t* detectedPrimaryPartLay2 = new Bool_t[nMCPart];
+    Bool_t* detectablePrimaryPart = new Bool_t[nMCPart];
+    Bool_t* primCounted = new Bool_t[nMCPart];
 
-    // Loading track references...
-    Float_t rminL1 = 3.4;
-    Float_t rmaxL1 = 4.4;
-    Float_t rminL2 = 6.9;
-    Float_t rmaxL2 = 7.9;
-
-    TTree* tRefTree = eventHandler->TreeTR();
-
-    AliTrackReference *tref=0x0;
-    mcEvent->ConnectTreeTR(tRefTree);
+    TTree* tRefTree;  
+    if (fTR) {
+      tRefTree = eventHandler->TreeTR(); 
+      fMCEvent->ConnectTreeTR(tRefTree); 
+    }
 
     // Loop over MC particles
     for (Int_t imc=0; imc<nMCPart; imc++) {
-      TParticle* part = stack->Particle(imc);
+      AliMCParticle *mcpart  = (AliMCParticle*)fMCEvent->GetTrack(imc);
       Bool_t isPrimary = stack->IsPhysicalPrimary(imc);
       if (!isPrimary)                        continue;
-      TParticlePDG* pdgPart = part->GetPDG();
-      if (TMath::Abs(pdgPart->Charge())!=3)  continue;
-      Float_t theta = part->Theta();
+      if (mcpart->Charge() == 0) continue;
+      Float_t theta = mcpart->Theta();
       if (theta==0 || theta==TMath::Pi())    continue;
-      Float_t eta = part->Eta();
-      Float_t pt = part->Pt();
+      Float_t eta = mcpart->Eta();
+//      Float_t pt = mcpart->Pt();
       etagen[multMCCharged] = eta; 
-      ptgen[multMCCharged] = pt;
       stackIndexOfPrimaryParts[multMCCharged] = imc;
 
       reconstructedPrimaryPart[multMCCharged]=kFALSE;
       detectedPrimaryPartLay1[multMCCharged]=kFALSE;
       detectedPrimaryPartLay2[multMCCharged]=kFALSE;
       detectablePrimaryPart[multMCCharged]=kFALSE;
+      primCounted[multMCCharged]=kFALSE;
 
-      fHistoPt->Fill(ptgen[multMCCharged]);
-      if (ndEv)                                                    // non difffractive
-        fHistMCEtaNonDiffractive->Fill(etagen[multMCCharged]);
-      if (nsdEv) {                                                 // non single diffractive
-        fHistMCEtaNonSingleDiffractive->Fill(etagen[multMCCharged]);
-        fHistMCEtaNonSingleDiffractiveLargeBin->Fill(etagen[multMCCharged]);
+      if (fTR) {
+        Int_t nref = mcpart->GetNumberOfTrackReferences();
+        if (nref==0) {
+          detectablePrimaryPart[multMCCharged]= kTRUE;
+        } else if (nref>0) {
+          // Check if the primary is detectable 
+          detectablePrimaryPart[multMCCharged] = IsDetectablePrimary(nref,mcpart);
+          // Check if the primary is detected (if SPD 100% efficient) 
+          if (detectablePrimaryPart[multMCCharged]) {
+            detectedPrimaryPartLay1[multMCCharged] = IsDetectedPrimary(nref,mcpart,0);
+            detectedPrimaryPartLay2[multMCCharged] = IsDetectedPrimary(nref,mcpart,1);
+          }
+        }  
       }
-      // inel is always true     
-      fHistMCEtaInel->Fill(etagen[multMCCharged]); 
-      
-
-      AliMCParticle* mcpart = (AliMCParticle*) mcEvent->GetTrack(imc);
-      Int_t nref = mcpart->GetNumberOfTrackReferences();
-
-      // Detectable primaries 
-      if (nref==0) {
-        detectablePrimaryPart[multMCCharged]=kTRUE;
-        fHistoDetectableNotr->Fill(etagen[multMCCharged],vtxMC[2],ptgen[multMCCharged]);
-      } else if (nref>0) {
-        tref = mcpart->GetTrackReference(nref-1);
-        if (tref->DetectorId()!=-1) {
-          detectablePrimaryPart[multMCCharged]=kTRUE;  
-          fHistoNonStoppingTracks->Fill(etagen[multMCCharged],vtxMC[2]); 
-          for (Int_t iref=0;iref<nref;iref++) { //since it is detectable, check if it is also detected
-            tref = mcpart->GetTrackReference(iref);
-            if (tref) {
-              if (tref->R()>rminL2&&tref->R()<rmaxL2) {
-                if (tref->DetectorId()==0) {
-                  detectedPrimaryPartLay2[multMCCharged]=kTRUE;
-                  fHistoDetectedLay2->Fill(etagen[multMCCharged],vtxMC[2]);
-                  break;
-                }
-              }
-            }
-          }
-        } else { //last is -1 -> particle disappeared. Where?
-          tref = mcpart->GetTrackReference(nref-1);
-          fHistoRTRm1->Fill(tref->R());
-          if (tref->R()>rmaxL2) {
-            detectablePrimaryPart[multMCCharged]=kTRUE;
-            fHistoDetectabletr->Fill(etagen[multMCCharged],vtxMC[2]);
-            for (Int_t iref=0;iref<nref;iref++) { //since it is detectable, check if it is also detected
-              tref = mcpart->GetTrackReference(iref);
-              if (tref) {
-                if (tref->R()>rminL2&&tref->R()<rmaxL2) {
-                  if (tref->DetectorId()==0) {
-                    detectedPrimaryPartLay2[multMCCharged]=kTRUE;
-                    fHistoDetectedLay2->Fill(etagen[multMCCharged],vtxMC[2]);
-                    break;
-                  }
-                }
-              }
-            }
-          } else if (tref->R()>=rminL2&&tref->R()<=rmaxL2) {
-            for (Int_t iref=0;iref<nref;iref++) {
-              tref = mcpart->GetTrackReference(iref);
-              if (tref) {
-                if (tref->R()>rminL2&&tref->R()<rmaxL2) {
-                  if (tref->DetectorId()==0) {
-                    detectablePrimaryPart[multMCCharged]=kTRUE;
-                    detectedPrimaryPartLay2[multMCCharged]=kTRUE;
-                    fHistoDetectedLay2->Fill(etagen[multMCCharged],vtxMC[2]);
-                    fHistoDetectabletr->Fill(etagen[multMCCharged],vtxMC[2]);
-                    break;
-                  } 
-                }
-              }
-            }
-          }
-        }
-        // Find out detected prims on each layer
-        for (Int_t iref=0; iref<nref; iref++) {
-          tref = mcpart->GetTrackReference(iref);
-          if (tref->R()>rminL1&&tref->R()<rmaxL1&&tref->DetectorId()==0) {
-            detectedPrimaryPartLay1[multMCCharged] = kTRUE;
-            fHistoDetectedLay1->Fill(etagen[multMCCharged],vtxMC[2]);
-          }
-        }
-      } 
-
       multMCCharged++;
       if (TMath::Abs(eta)<1.4) multMCChargedEtacut++;
-    } // End of MC particle loop
+    } // end of MC particle loop
+    fHistMCmultEtacut->Fill(multMCChargedEtacut);
 
-
-    if (ndEv) { // non diffractive
-      fHistMultAllNonDiff->Fill(multMCChargedEtacut);
-      if (eventTriggered&&esdvtx[2]!=0.) fHistMultTrVtxNonDiff->Fill(multMCChargedEtacut);
-
-    }
-    if (sdEv) { // single diffractive
-      fHistMultAllSingleDiff->Fill(multMCChargedEtacut);
-      if (eventTriggered&&esdvtx[2]!=0.) fHistMultTrVtxSingleDiff->Fill(multMCChargedEtacut);
-    }
-    if (ddEv) { // double diffractive
-      fHistMultAllDoubleDiff->Fill(multMCChargedEtacut);
-      if (eventTriggered&&esdvtx[2]!=0.) fHistMultTrVtxDoubleDiff->Fill(multMCChargedEtacut);
-    }
- 
-    if (esdvtx[2]==0.) {
-      fHistContributorsvsMCVtx->Fill(vtxMC[2],nContrib);
-    }
     // Event selection
-    if (eventTriggered&&eventWithVertex) {
+    if (eventTriggered&&eventWithVertex&&eventInCentralityBin) {
+    
+      fHistDeVtx->Fill(vtxMC[2],vtxMC[2]-esdvtx[2]);      
 
       for (Int_t itracklet=0; itracklet<multSPD; ++itracklet) {
+        if (TMath::Abs(trackletCoord[itracklet][0])<0.08) {
+          fHistBkgCorrDen->Fill(trackletCoord[itracklet][4],esdvtx[2]);
 
-        Int_t labL1 = multESD->GetLabel(itracklet,0);
-        Int_t labL2 = multESD->GetLabel(itracklet,1);
-
-        fHistBkgCorrDen->Fill(multESD->GetEta(itracklet),esdvtx[2]);
-
-        if (labL1==labL2) {
-          for (Int_t imc=0; imc<multMCCharged; imc++) {
-            if (labL1==stackIndexOfPrimaryParts[imc]) {
-              if (detectedPrimaryPartLay1[imc]&&detectedPrimaryPartLay2[imc]) {
-                reconstructedPrimaryPart[imc]=kTRUE;
+          if (trackletLab[itracklet][0]==trackletLab[itracklet][1]) {
+            Bool_t trakletByPrim = kFALSE; 
+            for (Int_t imc=0; imc<multMCCharged; imc++) {
+              if (trackletLab[itracklet][0]==stackIndexOfPrimaryParts[imc]) {
+                if (!primCounted[imc]) {
+                  primCounted[imc] = kTRUE;
+                }
+                fHistdPhiPP->Fill(trackletCoord[itracklet][0]);
+                fHistBkgCorrDenPrimGen->Fill(etagen[imc],vtxMC[2]);
+                trakletByPrim = kTRUE; 
+                if (detectedPrimaryPartLay1[imc]&&detectedPrimaryPartLay2[imc]) {
+                  reconstructedPrimaryPart[imc]=kTRUE; // tracklet by prim and tr (=rp) on both layers 
+                }
                 break;
-              }
+              }  
             }
+            if (!trakletByPrim) {
+              fHistdPhiSS->Fill(trackletCoord[itracklet][0]);
+              fHistBkgCorrDenPrimGen->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+            }
+          } else {
+            fHistdPhiComb->Fill(trackletCoord[itracklet][0]);
+            fHistBkgCorrDenPrimGen->Fill(trackletCoord[itracklet][4],esdvtx[2]);
           }
-        }
+        }  
       }
 
       for (Int_t imc=0; imc<multMCCharged; imc++) {
-        if (reconstructedPrimaryPart[imc]) {
-          fHistBkgCorrNum->Fill(etagen[imc],vtxMC[2]);
+        if (fTR) {
+          if (reconstructedPrimaryPart[imc]) fHistBkgCorrNum->Fill(etagen[imc],vtxMC[2]); // only for separate corrections
+          if (detectedPrimaryPartLay1[imc]&&detectedPrimaryPartLay2[imc]) fHistAlgEffNum->Fill(etagen[imc],vtxMC[2]);
+          if (detectablePrimaryPart[imc]) fHistNonDetectableCorrDen->Fill(etagen[imc],vtxMC[2]); 
         }
-        if (detectedPrimaryPartLay1[imc]&&detectedPrimaryPartLay2[imc]) fHistAlgEffNum->Fill(etagen[imc],vtxMC[2]);
-
         fHistNonDetectableCorrNum->Fill(etagen[imc],vtxMC[2]);
-
-        if (detectablePrimaryPart[imc]) fHistNonDetectableCorrDen->Fill(etagen[imc],vtxMC[2]);
-
-        fHistMCEtavsZTriggESDvtxEvts->Fill(etagen[imc],esdvtx[2]);
-        fHistMCEtavsZTriggMCvtxEvts->Fill(etagen[imc],vtxMC[2]);
       }
 
-      fHistTrigVtxCorrDen->Fill(multSPD,vtxMC[2]);
-    } // End of selected events
+      fHistSelEvts->Fill(multSPDAna,vtxMC[2]);
+    } // end of selected events
 
-    if (eventTriggered) {
-        fHistTrigCorrDen->Fill(multSPD,vtxMC[2]);
-        fHistTrigVtxCorrNum->Fill(multSPD,vtxMC[2]);
-      if (nsdEv) {
-        fHistEvTrigNSD->Fill(multSPD,vtxMC[2]); //to compute errors
-        fHistTrigVtxCorrNumNSD->Fill(multSPD,vtxMC[2]);
-      }
-      for (Int_t imc=0; imc<multMCCharged; imc++) {
-        fHistTrackTrigCorrDen->Fill(etagen[imc],vtxMC[2]);
-        if (nsdEv) fHistTrackTrigNSD->Fill(etagen[imc],vtxMC[2]); //to compute errors 
-      }
-    } else {
-       fHistTrigVtxCorrNum->Fill(0.,vtxMC[2]); 
-       if (nsdEv) fHistTrigVtxCorrNumNSD->Fill(0.,vtxMC[2]); 
+    fHistMCmultEtacutvsSPDmultEtacut->Fill(multMCChargedEtacut,multSPDEtacut);
 
+    fHistAllEvts->Fill(multSPDAna,vtxMC[2]);
+
+    if (eventInCentralityBin) {
+      fHistCentrEvts->Fill(multSPDAna,vtxMC[2]);
+      if (eventTriggered) {
+        fHistTrigCentrEvts->Fill(multSPDAna,vtxMC[2]);
+      }
     }
 
-    for (Int_t imc=0; imc<multMCCharged; imc++) {
-      fHistTrackTrigVtxCorrNum->Fill(etagen[imc],vtxMC[2]);
-      fHistMCEtavsZ->Fill(etagen[imc],vtxMC[2]);
-      if (nsdEv) 
-        fHistTrackTrigVtxCorrNumNSD->Fill(etagen[imc],vtxMC[2]);
-    }
-
+    for (Int_t imc=0; imc<multMCCharged; imc++) { 
+      fHistAllPrimaries->Fill(etagen[imc],vtxMC[2]);
+      if (eventInCentralityBin) {
+        fHistTrackCentrEvts->Fill(etagen[imc],vtxMC[2]);
+        if (eventTriggered) fHistTrackTrigCentrEvts->Fill(etagen[imc],vtxMC[2]); 
+      }
+    } 
+    
     delete[] etagen;
-    delete[] ptgen;
     delete[] stackIndexOfPrimaryParts;
     delete[] reconstructedPrimaryPart;
     delete[] detectedPrimaryPartLay1;
     delete[] detectedPrimaryPartLay2;
     delete[] detectablePrimaryPart;
+  }  
   }
+  PostData(1, fOutput);
 }      
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSPDdNdEta::IsDetectedPrimary(Int_t nref, AliMCParticle* mcpart, Int_t Layer)
+{
+  Double_t rMinLay1 = 3.4; //min rad for track ref first SPD layer 
+  Double_t rMaxLay1 = 4.4; //max rad for track ref first SPD layer 
+  Double_t rMinLay2 = 6.9; //min rad for track ref second SPD layer  
+  Double_t rMaxLay2 = 7.9; //max rad for track ref second SPD layer 
+  Double_t rmin = (Layer > 0 ? rMinLay2 : rMinLay1);
+  Double_t rmax = (Layer > 0 ? rMaxLay2 : rMaxLay1);
+  AliTrackReference *tref=0x0;
 
+  for (Int_t iref=0;iref<nref;iref++) {
+     tref = mcpart->GetTrackReference(iref);
+   if (tref) {
+       if (tref->R()>rmin&&tref->R()<rmax) {
+         if (tref->DetectorId()==0) {
+           return kTRUE;
+         }
+       }
+     }
+  }
+  return kFALSE;
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSPDdNdEta::IsDetectablePrimary(Int_t nref, AliMCParticle* mcpart)
+{
+  Double_t rMinLay2 = 6.9; //min rad for track ref second SPD layer  
+  Double_t rMaxLay2 = 7.9; //max rad for track ref second SPD layer 
+
+  AliTrackReference *tref= mcpart->GetTrackReference(nref-1);
+  if (tref->DetectorId()!=-1) {
+    return kTRUE;
+  } else { //last is -1 -> particle disappeared. Where?
+    if (tref->R()>rMaxLay2) {
+      return kTRUE;  
+    } else if (tref->R()>=rMinLay2&&tref->R()<=rMaxLay2) { // this last tr is in lay 2
+      for (Int_t iref=0;iref<nref;iref++) {  // look for other tr in lay 2
+        tref = mcpart->GetTrackReference(iref);
+        if (tref) 
+          if (tref->R()>=rMinLay2&&tref->R()<=rMaxLay2) 
+            if (tref->DetectorId()==0) return kTRUE; 
+      } 
+    } // else particle disappeared before lay2
+  }
+  return kFALSE; 
+}
 //________________________________________________________________________
 void AliAnalysisTaskSPDdNdEta::Terminate(Option_t *) 
 {
-  // Called once at the end of the query
-  fOutput = dynamic_cast<TList*> (GetOutputData(0));
-  if (!fOutput) {     Printf("ERROR: fOutput not available");
-    return;
-  }
-  
-  fHistSPDRAWMultvsZ= dynamic_cast<TH2F*> (fOutput->FindObject("fHistSPDRAWMultvsZ"));
-  fHistSPDRAWMultvsZTriggEvts = dynamic_cast<TH2F*> (fOutput->FindObject("fHistSPDRAWMultvsZTriggEvts"));
-  fHistSPDRAWEtavsZ = dynamic_cast<TH2F*> (fOutput->FindObject("fHistSPDRAWEtavsZ"));
+  Printf("Terminating...");
+//  AliAnalysisTaskSE::Terminate();
 
-  fHistSPDmultEtacut = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDmultEtacut"));
-  fHistSPDmult = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDmult"));
-  fHistSPDeta = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDeta"));
-  fHistSPDcl1multEtacutLay1 = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDcl1multEtacutLay1"));
-  fHistSPDcl1mult = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDcl1mult"));
-  fHistSPDcl1eta = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDcl1eta"));
-  fHistSPDphi = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDphi"));
-  fHistSPDcl1phi = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDcl1phi"));
-  fHistSPDtheta = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDtheta"));
-  fHistSPDcl1theta = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDcl1theta"));
-  fHistSPDdePhi = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDdePhi"));
-  fHistSPDdePhiZ = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDdePhiZ"));
-  fHistSPDdePhi3D = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDdePhi3D"));
-  fHistSPDphivsSPDeta= dynamic_cast<TH2F*> (fOutput->FindObject("fHistSPDphivsSPDeta"));
-  fHistSPDcl1phivsSPDcl1eta= dynamic_cast<TH2F*> (fOutput->FindObject("fHistSPDcl1phivsSPDcl1eta"));
-  fHistSPDdeTheta = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDdeTheta"));
-
-  fHistSPDvtxAnalysis = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDvtxAnalysis"));
-  fHistSPDvtx3D = dynamic_cast<TH3F*> (fOutput->FindObject("fHistSPDvtx3D"));
-  fHistSPDvtxZ = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDvtxZ"));
-  fHistNcontribSPDvtxvsSPDvtx = dynamic_cast<TH2F*> (fOutput->FindObject("fHistNcontribSPDvtxvsSPDvtx"));
-  fHistNcontribSPDvtx3D = dynamic_cast<TH1F*> (fOutput->FindObject("fHistNcontribSPDvtx3D"));
-  fHistNcontribSPDvtxZ = dynamic_cast<TH1F*> (fOutput->FindObject("fHistNcontribSPDvtxZ"));
-  fHistNcontribSPDvtxall = dynamic_cast<TH1F*> (fOutput->FindObject("fHistNcontribSPDvtxall"));
-
-  fHistSPDcl1multvsnFiredChipsLay1= dynamic_cast<TH2F*> (fOutput->FindObject("fHistSPDcl1multvsnFiredChipsLay1"));
-  fHistSPDmultvsnFiredChipsLay1= dynamic_cast<TH2F*> (fOutput->FindObject("fHistSPDmultvsnFiredChipsLay1"));
-  fHistSPDmultvsnFiredChipsLay2= dynamic_cast<TH2F*> (fOutput->FindObject("fHistSPDmultvsnFiredChipsLay2"));
-  fHistnFiredChipsLay2vsnFiredChipsLay1= dynamic_cast<TH2F*> (fOutput->FindObject("fHistnFiredChipsLay2vsnFiredChipsLay1"));
-  fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec= dynamic_cast<TH2F*> (fOutput->FindObject("fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec"));
-
-  fHistSPDvtxRec = dynamic_cast<TH1F*> (fOutput->FindObject("fHistSPDvtxRec"));
-
-  if (fCorr) {
-
-    fHistBkgCorrNum = dynamic_cast<TH2F*> (fOutput->FindObject("fHistBkgCorrNum"));
-    fHistBkgCorrDen = dynamic_cast<TH2F*> (fOutput->FindObject("fHistBkgCorrDen"));
-
-    fHistAlgEffNum = dynamic_cast<TH2F*> (fOutput->FindObject("fHistAlgEffNum"));
-
-    fHistNonDetectableCorrNum = dynamic_cast<TH2F*> (fOutput->FindObject("fHistNonDetectableCorrNum"));
-    fHistNonDetectableCorrDen = dynamic_cast<TH2F*> (fOutput->FindObject("fHistNonDetectableCorrDen"));
-
-    fHistTrackTrigVtxCorrNum = dynamic_cast<TH2F*> (fOutput->FindObject("fHistTrackTrigVtxCorrNum"));
-
-    fHistTrackTrigCorrDen = dynamic_cast<TH2F*> (fOutput->FindObject("fHistTrackTrigCorrDen")); 
-    fHistTrackTrigVtxCorrNumNSD = dynamic_cast<TH2F*> (fOutput->FindObject("fHistTrackTrigVtxCorrNumNSD"));
-    fHistTrackTrigNSD = dynamic_cast<TH2F*> (fOutput->FindObject("fHistTrackTrigNSD"));
-
-
-    fHistTrigVtxCorrNum = dynamic_cast<TH2F*> (fOutput->FindObject("fHistTrigVtxCorrNum"));
-    fHistTrigVtxCorrDen = dynamic_cast<TH2F*> (fOutput->FindObject("fHistTrigVtxCorrDen"));
-
-    fHistTrigCorrDen = dynamic_cast<TH2F*> (fOutput->FindObject("fHistTrigCorrDen"));
-
-    fHistTrigVtxCorrNumNSD = dynamic_cast<TH2F*> (fOutput->FindObject("fHistTrigVtxCorrNumNSD"));
-    fHistEvTrigNSD = dynamic_cast<TH2F*> (fOutput->FindObject("fHistEvTrigNSD"));
-
-    fHistMCEtavsZTriggMCvtxEvts = dynamic_cast<TH2F*> (fOutput->FindObject("fHistMCEtavsZTriggMCvtxEvts"));
-    fHistMCEtavsZTriggESDvtxEvts = dynamic_cast<TH2F*> (fOutput->FindObject("fHistMCEtavsZTriggESDvtxEvts"));
-    fHistMCEtavsZ = dynamic_cast<TH2F*> (fOutput->FindObject("fHistMCEtavsZ"));
-
-    fHistMCEtaInel = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMCEtaInel"));
-    fHistMCEtaNonDiffractive = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMCEtaNonDiffractive"));
-    fHistMCEtaNonSingleDiffractive = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMCEtaNonSingleDiffractive"));
-
-    fHistoProcessType = dynamic_cast<TH1F*> (fOutput->FindObject("fHistoProcessType")); 
-    fHistoProcessTypeTriggered = dynamic_cast<TH1F*> (fOutput->FindObject("fHistoProcessTypeTriggered"));
-
-    fHistContributorsvsMCVtx = dynamic_cast<TH2F*> (fOutput->FindObject("fHistContributorsvsMCVtx"));
-
-    fHistoDetectableNotr = dynamic_cast<TH3F*> (fOutput->FindObject("fHistoDetectableNotr"));
-    fHistoDetectabletr = dynamic_cast<TH2F*> (fOutput->FindObject("fHistoDetectabletr"));
-
-    fHistoNonStoppingTracks = dynamic_cast<TH2F*> (fOutput->FindObject("fHistoNonStoppingTracks"));
-
-    fHistoDetectedLay1 = dynamic_cast<TH2F*> (fOutput->FindObject("fHistoDetectedLay1"));
-    fHistoDetectedLay2 = dynamic_cast<TH2F*> (fOutput->FindObject("fHistoDetectedLay2"));
-
-    fHistoPt = dynamic_cast<TH1F*> (fOutput->FindObject("fHistoPt"));
-
-    fHistoRTRm1 = dynamic_cast<TH1F*> (fOutput->FindObject("fHistoRTRm1"));
-    fHistMCvtx = dynamic_cast<TH3F*> (fOutput->FindObject("fHistMCvtx"));  
-   
-    fHistMultAllNonDiff = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMultAllNonDiff"));
-    fHistMultAllSingleDiff = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMultAllSingleDiff"));
-    fHistMultAllDoubleDiff = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMultAllDoubleDiff"));
-    fHistMultTrVtxNonDiff = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMultTrVtxNonDiff"));
-    fHistMultTrVtxSingleDiff = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMultTrVtxSingleDiff"));
-    fHistMultTrVtxDoubleDiff = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMultTrVtxDoubleDiff"));
-
-    fHistMCEtaNonSingleDiffractiveLargeBin = dynamic_cast<TH1F*> (fOutput->FindObject("fHistMCEtaNonSingleDiffractiveLargeBin"));
-  }
 }
