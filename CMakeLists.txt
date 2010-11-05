@@ -114,7 +114,7 @@ set(BINLIBDIRS "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 # Standard Modules
 # ------------------------------
-set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet PWG0 PWG1 PWG2 PWG3 PWG4 TRIGGER PYTHIA8 )
+set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet PWG0 PWG1 PWG2 PWG3 PWG4 TRIGGER PYTHIA8 TAmpt )
 
 if(THydjet)
   list(APPEND ALIROOTMODULES THydjet)
@@ -190,7 +190,7 @@ set(EXPORTFILES)
 add_custom_target(alilibs-static)
 add_custom_target(include-headers)
 add_custom_target(DA-all)
-
+add_custom_target(check-all)
 
 # Add Modules
 # ------------------------------
@@ -198,6 +198,8 @@ foreach(MODULE ${MODDIRS})
   set(${MODULE}ALIBS)
   configure_file(${PROJECT_SOURCE_DIR}/cmake/Module.tmp ${PROJECT_SOURCE_DIR}/${MODULE}/CMakeLists.txt @ONLY)
   add_custom_target(${MODULE}-all ALL)
+  add_custom_target(${MODULE}-check-all)
+  add_dependencies(check-all "${MODULE}-check-all")
   add_custom_target(${MODULE}-all-static)
   add_dependencies(alilibs-static "${MODULE}-static")
   add_subdirectory(${MODULE})
