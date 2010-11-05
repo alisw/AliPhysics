@@ -353,7 +353,7 @@ void AliEveHLTEventManager::StartLoop() {
   //fTimer->SetCommand("NextEvent()", "AliEveHLTEventManager", this);
   NextEvent();
   SetEventLoopStarted(kTRUE);
-  fTimer->Start(15000);
+  fTimer->Start(45000);
 }
 
 void AliEveHLTEventManager::StopLoop() {
