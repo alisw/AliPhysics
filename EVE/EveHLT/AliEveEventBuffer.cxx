@@ -67,8 +67,8 @@ void AliEveEventBuffer::CreateBufferThread() {
   if(GetBusy()) {
     cout << "Buffer is busy, no thread created"<< endl;
   } else {
-    SetBusy(kTRUE);
     if ( (CalculateDifference(fBIndex[kTop],fBIndex[kLast]) < fPreBuffer) ) {
+      SetBusy(kTRUE);
       cout << "CreateBufferThread()"<<endl;
       TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
       fThread->Run();
