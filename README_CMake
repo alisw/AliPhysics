@@ -42,6 +42,14 @@ eg.	make STEER-all STEER-all-static
 
 eg.	make STEERbase STEERbase-static
 
+8. The code can be checked for the ALICE coding conventions on a package or module level using the following targets. 
+
+  make check-all
+  make <Module>-check-all
+  make <Package>-check
+
+  The resulting violations will be written to the folder $ALICE_ROOT/<Module>/check/viols
+
 !IMPORTANT! - Make sure your source folder is clean. If you used the old make system to build aliroot run make clean in the source directory before you run cmake
  
 

@@ -327,7 +327,6 @@ macro(ALICE_BuildPackage)
       message(STATUS "No dictionary generated for ${PACKAGE}")  
     endif(lib)
   endif(WITHDICT)
-  
   if(PS OR PCS OR PFS)
     if(lib)
       ALICE_BuildLibrary()
@@ -335,6 +334,7 @@ macro(ALICE_BuildPackage)
       ALICE_BuildExecutable()
     endif(lib)
   endif(PS OR PCS OR PFS)
+  ALICE_CheckModule()
 
 endmacro(ALICE_BuildPackage)
 
