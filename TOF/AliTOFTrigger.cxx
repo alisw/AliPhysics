@@ -47,6 +47,10 @@
 #include "AliTOFTrigger.h"
 #include "AliTOFTriggerMask.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+
+
 extern AliRun* gAlice;
 
 //-------------------------------------------------------------------------
@@ -483,10 +487,8 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
     GetLTMIndex(detind,indexLTM);
 
     fLTMmatrix[indexLTM[0]][indexLTM[1]] = kTRUE;
-    fLTMarray[indexLTM[0]%36] = kTRUE; //dimensione MAX array 36 = kNCTTM 
+//    fLTMarray[indexLTM[0]%36] = kTRUE; //dimensione MAX array 36 = kNCTTM 
     }
-  fNCrateOn = 0; 
-  for(Int_t j=0; j < kNCTTM; j++) {if(fLTMarray[j]) fNCrateOn++;}
 
 
   tofLoader->UnloadDigits();
@@ -895,7 +897,10 @@ void AliTOFTrigger::CreateCTTMMatrix() {
 		fCTTMmatrixFront[i][j]=fLTMmatrix[i][2*j]||fLTMmatrix[i][2*j+1];
 		if(fCTTMmatrixFront[i][j]) fNMaxipadOnAll++;
 		if(!(currentMask & fPowerMask[j])) fCTTMmatrixFront[i][j]=0;
-		if(fCTTMmatrixFront[i][j]) fNMaxipadOn++;
+		if(fCTTMmatrixFront[i][j]){
+		    fNMaxipadOn++;
+		    fLTMarray[i] = kTRUE;
+		}
 	    }
 	}
 	else{
@@ -903,10 +908,17 @@ void AliTOFTrigger::CreateCTTMMatrix() {
 		fCTTMmatrixBack[i-kNCTTM][j]=fLTMmatrix[i][2*j]||fLTMmatrix[i][2*j+1];;
 		if(fCTTMmatrixBack[i-kNCTTM][j]) fNMaxipadOnAll++;
 		if(!(currentMask & fPowerMask[j])) fCTTMmatrixBack[i-kNCTTM][j]=0;
-		if(fCTTMmatrixBack[i-kNCTTM][j]) fNMaxipadOn++;
+		if(fCTTMmatrixBack[i-kNCTTM][j]){
+		    fNMaxipadOn++;
+		    fLTMarray[i-kNCTTM] = kTRUE;
+		}
 	    }
 	}
     }
+  
+    fNCrateOn = 0; 
+    for(Int_t j=0; j < kNCTTM; j++) {if(fLTMarray[j]) fNCrateOn++;}
+
 }     
 //-----------------------------------------------------------------------------
 
@@ -924,12 +936,27 @@ void AliTOFTrigger::LoadActiveMask(){
 //
 // Load OCDB current mask
 //
-    UInt_t maskArray[kNLTM];
-    if(fTOFTrigMask == NULL) fTOFTrigMask = new AliTOFTriggerMask();
-    for (Int_t k = 0; k < kNLTM ; k++) maskArray[k] = fPowerMask[kNCTTMchannels]-1;
-    //for (Int_t k = 0; k < kNLTM ; k+=2) maskArray[k] = 0;
+
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    if(cdb->GetRun() < 0 || !(cdb->GetDefaultStorage())){
+	if(!(cdb->GetDefaultStorage())){
+	    cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+	    printf("AliTOFTrigger (WARNING): probably CDB first instance - Default Sorage set to \"local://$ALICE_ROOT/OCDB\"\n");
+	}
+	if(cdb->GetRun() < 0){
+	    cdb->SetRun(0);
+         printf("AliTOFTrigger (WARNING): probably CDB first instance - number of run set to 0\n");
+	}
+    }
+    AliCDBEntry *cdbe = cdb->Get("TRIGGER/TOF/TriggerMask");
+    fTOFTrigMask= (AliTOFTriggerMask *)cdbe->GetObject();
     
-    fTOFTrigMask->SetTriggerMaskArray(maskArray);
+//     UInt_t maskArray[kNLTM];
+//     if(fTOFTrigMask == NULL) fTOFTrigMask = new AliTOFTriggerMask();
+//     for (Int_t k = 0; k < kNLTM ; k++) maskArray[k] = fPowerMask[kNCTTMchannels]-1;
+//     //for (Int_t k = 0; k < kNLTM ; k+=2) maskArray[k] = 0;
+    
+//     fTOFTrigMask->SetTriggerMaskArray(maskArray);
 }
 
 
@@ -949,3 +976,4 @@ AliTOFTrigger& AliTOFTrigger::operator=(const AliTOFTrigger &/*source*/)
   return *this;
 
 }
+
