@@ -1012,6 +1012,12 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
       Double_t vtxSig[3] = {0., 0., 0.};
       AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
       AliESDVertex* vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
+      if(vertex) {
+	  if(vertex->GetXRes()>2.8) { // > pipe radius --> it's a dummy object, don't use it 
+	      entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
+	      vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
+	  }
+      }
       if (vertex) {
 	  vertex->GetXYZ(vtxPos);
 	  vertex->GetSigmaXYZ(vtxSig);
