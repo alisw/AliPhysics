@@ -129,9 +129,6 @@ class AliHLTZDCESDRecoComponent : public AliHLTProcessor
   	/** assignment operator prohibited */
  	AliHLTZDCESDRecoComponent& operator=(const AliHLTZDCESDRecoComponent&);
 
-	/** cluster tree */
-	TTree               *fClusterTree;   //! transient
-
   	/** rawreader instance */
   	AliRawReaderMemory  *fRawReader;     //! transient
       

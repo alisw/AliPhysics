@@ -47,8 +47,7 @@ ClassImp(AliHLTZDCESDRecoComponent)
     
 //_____________________________________________________________________
 AliHLTZDCESDRecoComponent::AliHLTZDCESDRecoComponent()
-  : AliHLTProcessor(),
-    fClusterTree(NULL),
+  : AliHLTProcessor(),    
     fRawReader(NULL),
     fReconstructor(NULL)
 {
@@ -147,20 +146,11 @@ int AliHLTZDCESDRecoComponent::DoInit( int argc, const char** argv )
       break;
     }
 
-    fClusterTree = new TTree("TreeR", "Tree for reco points in HLT");;
-    if (!fClusterTree) {
-      iResult=-ENOMEM;
-      break;
-    }
-
     // implement further initialization
   } while (0);
 
   if (iResult<0) {
     // implement cleanup
-
-    if (fClusterTree) delete fClusterTree;
-    fClusterTree = NULL;
 
     if (fRawReader) delete fRawReader;
     fRawReader = NULL;
@@ -206,7 +196,6 @@ int AliHLTZDCESDRecoComponent::DoDeinit()
 {
     if(fRawReader) delete fRawReader;
     if(fReconstructor) delete fReconstructor;
-    if(fClusterTree) delete fClusterTree;
     return 0;
 }
 
@@ -235,14 +224,19 @@ int AliHLTZDCESDRecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData
     iResult = -1;
   }
   
+  TTree *clusterTree = new TTree();
+  if (!clusterTree) {
+    iResult=-ENOMEM;
+  }
+
   if (iResult >= 0) {
 
     // set ZDC EquipmentID
     fRawReader->SetEquipmentID(3840);
 
-    fReconstructor->Reconstruct(fRawReader, fClusterTree);
+    fReconstructor->Reconstruct(fRawReader, clusterTree);
 
-    fReconstructor->FillZDCintoESD(fClusterTree, (AliESDEvent *) NULL);
+    fReconstructor->FillZDCintoESD(clusterTree, (AliESDEvent *) NULL);
 
     // send AliESDZDC
     PushBack(static_cast<TObject*>(fReconstructor->GetZDCESDData()), 
@@ -250,8 +244,9 @@ int AliHLTZDCESDRecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData
    
   }
 
+  delete clusterTree;
+
   // clear the rawreader
-  fClusterTree->Reset();
   fRawReader->ClearBuffers();    
   
   return iResult;
