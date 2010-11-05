@@ -1,5 +1,5 @@
-AliAnalysisTaskSEITSsaSpectra *AddTaskITSsaSpectra(Bool_t optNtuple=kFALSE){
-	// Creates, configures and attaches to the train the task for pi, K , spectra
+AliAnalysisTaskSEITSsaSpectra *AddTaskITSsaSpectra(Bool_t optNtuple=kFALSE,Bool_t readMC=kFALSE,Int_t LowMult=0,Int_t UpMult=9999){
+	// Creates, configures and attaches to the train the task for pi, K , p spectra
 	// with ITS standalone tracks
 	// Get the pointer to the existing analysis manager via the static access method.
 	//==============================================================================
@@ -22,14 +22,22 @@ AliAnalysisTaskSEITSsaSpectra *AddTaskITSsaSpectra(Bool_t optNtuple=kFALSE){
 		return NULL;
 	}
 
-	Bool_t isMC=kFALSE;
-	if (mgr->GetMCtruthEventHandler()) isMC=kTRUE;
+	//Bool_t isMC=kFALSE;
+	//if (mgr->GetMCtruthEventHandler()) isMC=kTRUE;
 
+	// Add MC handler (for kinematics)
+	if(readMC){
+		AliMCEventHandler* handler = new AliMCEventHandler;
+		handler->SetReadTR(kFALSE);
+		mgr->SetMCtruthEventHandler(handler);
+	}
 	// Create and configure the task
 	AliAnalysisTaskSEITSsaSpectra *taskits = new AliAnalysisTaskSEITSsaSpectra();
 	taskits->SelectCollisionCandidates();
-	taskits->SetReadMC(isMC);
+	taskits->SetReadMC(readMC);
 	taskits->SetFillNtuple(optNtuple);
+	taskits->SetMultBin(LowMult,UpMult);
+	
 	mgr->AddTask(taskits);
 
 	// Create ONLY the output containers for the data produced by the task.
@@ -38,7 +46,7 @@ AliAnalysisTaskSEITSsaSpectra *AddTaskITSsaSpectra(Bool_t optNtuple=kFALSE){
 	TString outputFileName = AliAnalysisManager::GetCommonFileName();
 	outputFileName += ":PWG2SpectraITSsa";
 
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistITSsa",
+	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("clistITSsaMult%ito%i",LowMult,UpMult),
 			TList::Class(),
 			AliAnalysisManager::kOutputContainer,
 			outputFileName );

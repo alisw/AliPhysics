@@ -42,6 +42,7 @@
 #include "AliMCEvent.h"
 #include "AliPhysicsSelection.h"
 #include "AliAnalysisTaskSEITSsaSpectra.h"
+#include "AliESDtrackCuts.h"
 
 ClassImp(AliAnalysisTaskSEITSsaSpectra)
 
@@ -51,7 +52,10 @@ AliAnalysisTaskSE("Task CFits"),
   fESD(0),
   fOutput(0),
   fHistNEvents(0),
+  fHistMult(0),
   fHistNTracks(0),
+  fHistNTracksPos(0),
+  fHistNTracksNeg(0),
   fHistDEDX(0),
   fHistDEDXdouble(0),
   fHistBeforeEvSel(0),
@@ -59,11 +63,13 @@ AliAnalysisTaskSE("Task CFits"),
   fMinSPDPts(1),
   fMinNdEdxSamples(3),
   fMindEdx(0.),
-  fMinNSigma(3.),
+  fMinNSigma(1.5),
   fMaxY(0.5),
-  fMaxChi2Clu(1.),
+  fMaxChi2Clu(2.5),
   fNSigmaDCAxy(7.),
   fNSigmaDCAz(7.),
+  fLowMult(0),
+  fUpMult(9999),
   fMC(kFALSE), 
   fSmearMC(kFALSE),
   fSmearP(0.),
@@ -211,15 +217,30 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
   fOutput->SetOwner();
   fOutput->SetName("Spiderman");
   
-  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events",6,0.5,6.5);
+  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events",7,-0.5,6.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
+  
+  fHistMult = new TH1F("fHistMult", "Event Multiplicity",1000,-0.5,999.5);
+  fHistMult->Sumw2();
+  fHistMult->SetMinimum(0);
+  fOutput->Add(fHistMult);
   
   fHistNTracks = new TH1F("fHistNTracks", "Number of ITSsa tracks",20,0.5,20.5);
   fHistNTracks->Sumw2();
   fHistNTracks->SetMinimum(0);
   fOutput->Add(fHistNTracks);
+  
+  fHistNTracksPos = new TH1F("fHistNTracksPos", "Number of positive ITSsa tracks",20,0.5,20.5);
+  fHistNTracksPos->Sumw2();
+  fHistNTracksPos->SetMinimum(0);
+  fOutput->Add(fHistNTracksPos);
+  
+  fHistNTracksNeg = new TH1F("fHistNTracksNeg", "Number of negative ITSsa tracks",20,0.5,20.5);
+  fHistNTracksNeg->Sumw2();
+  fHistNTracksNeg->SetMinimum(0);
+  fOutput->Add(fHistNTracksNeg);
   
   //binning for the histogram
   const Int_t hnbins=400;
@@ -419,7 +440,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
 
   }
   
-  fNtupleNSigma = new TNtuple("fNtupleNSigma","fNtupleNSigma","p:pt:dedx:ncls:sign:run:eta:impactXY:impactZ:isph:pdgcode:mfl");
+  fNtupleNSigma = new TNtuple("fNtupleNSigma","fNtupleNSigma","p:pt:dedx:ncls:sign:run:eta:impactXY:impactZ:isph:pdgcode:mfl:chi2ncls");
   fOutput->Add(fNtupleNSigma);
   fNtupleMC = new TNtuple("fNtupleMC","fNtupleMC","ptMC:pdgcode:signMC:etaMC:yMC:isph:evSel:run");
   fOutput->Add(fNtupleMC);
@@ -437,8 +458,31 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
     return;
   } 
+  fHistNEvents->Fill(0);
+
+  //selection on the event multiplicity
+  AliESDtrackCuts* esdTrackCutsMult = new AliESDtrackCuts;
+  // TPC  
+  esdTrackCutsMult->SetMinNClustersTPC(70);
+  esdTrackCutsMult->SetMaxChi2PerClusterTPC(4);
+  esdTrackCutsMult->SetAcceptKinkDaughters(kFALSE);
+  esdTrackCutsMult->SetRequireTPCRefit(kTRUE);
+  // ITS
+  esdTrackCutsMult->SetRequireITSRefit(kTRUE);
+  esdTrackCutsMult->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					     AliESDtrackCuts::kAny);
+  esdTrackCutsMult->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/TMath::Power(pt,0.9)");  
+  esdTrackCutsMult->SetMaxDCAToVertexZ(20);
+  esdTrackCutsMult->SetDCAToVertex2D(kFALSE);
+  esdTrackCutsMult->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCutsMult->SetEtaRange(-0.8,+0.8);
+  esdTrackCutsMult->SetPtRange(0.15, 1e10);
   
-  //binning for the dEdx distributions
+  Int_t multiplicity = esdTrackCutsMult->CountAcceptedTracks(fESD);
+  if(multiplicity < fLowMult || multiplicity > fUpMult)return;
+  Printf("Multiplicity of the event: %i\n",multiplicity);
+  
+  fHistMult->Fill(multiplicity);
 
   //variables
   Float_t pdgmass[4]={0.13957,0.493677,0.938272,1.8756}; //mass for pi, K, P (Gev/c^2)
@@ -598,39 +642,120 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     if (!track) continue;
     
     //track selection
-    fHistNTracks->Fill(1);
+    Int_t countBinTrk=1;
+    TString label;
+    
+    label="no selection";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;  
+    
     status=track->GetStatus();
     if((status&AliESDtrack::kITSpureSA)==0) continue; //its standalone
-    fHistNTracks->Fill(2);
+  
+    label="ITSsa";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;    
+    
     if((status&AliESDtrack::kITSrefit)==0) continue; //its refit
-    fHistNTracks->Fill(3);
+    
+    label="ITSrefit";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;
+    
     if(TMath::Abs(track->GetSign())<0.0001) continue; //no neutral particles
-    fHistNTracks->Fill(4);
+    
+    label="neutral particle";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;  
     
     //cluster in ITS
     UInt_t clumap = track->GetITSClusterMap();
     Int_t nSPD=0;
     for(Int_t il=0; il<2; il++) if(TESTBIT(clumap,il)) nSPD++;
     if(nSPD<fMinSPDPts) continue;
-    fHistNTracks->Fill(5);
+    
+    label="SPDcls";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;  
+    
     Int_t count=0;
     for(Int_t j=2;j<6;j++) if(TESTBIT(clumap,j)) count++;
     if(count<fMinNdEdxSamples) continue; //at least 3 points on SSD/SDD
-    fHistNTracks->Fill(6);
+    
+    label="SDD+SSD cls";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;  
+    
     //chisquare/nclusters	
     Int_t nclu=nSPD+count;
     if(track->GetITSchi2()/nclu > fMaxChi2Clu) continue; 
-    fHistNTracks->Fill(7);
+    
+    label="chi2/ncls";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;  
+    
     //pseudorapidity and rapidity
     if(TMath::Abs(track->Eta()) > 0.9) continue;
-    fHistNTracks->Fill(8);
+    
+    label="eta";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;  
+    
     //truncated mean
     //if(fMC) for(Int_t j=0;j<2;j++) s[j]*=3.34/5.43;//correction for SDD miscalibration of the MCpass4
     track->GetITSdEdxSamples(s);
     Double_t dedx = CookdEdx(s);
     if(dedx<0) continue;
-    fHistNTracks->Fill(9);
 
+    label="de/dx<0";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;  
+    
     Float_t pt = track->Pt();
     Int_t theBin=-1;
     for(Int_t m=0; m<kNbins; m++){
@@ -701,7 +826,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	}
       }
     }
-  Float_t xnt[12];
+  Float_t xnt[13];
     Int_t index=0;
     xnt[index++]=(Float_t)track->GetP();
     xnt[index++]=(Float_t)track->Pt();
@@ -714,7 +839,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     xnt[index++]=(Float_t)impactZ;
     xnt[index++]=(Float_t)isph;
     xnt[index++]=(Float_t)code;
-    xnt[index]=(Float_t)mfl;
+    xnt[index++]=(Float_t)mfl;
+    xnt[index]=(Float_t)track->GetITSchi2()/nclu;
 	  
     if(fFillNtuple) fNtupleNSigma->Fill(xnt);
     
@@ -787,13 +913,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       } 
     }
     
-    if(track->GetSign()>0)fHistNTracks->Fill(11);
-    if(track->GetSign()<0)fHistNTracks->Fill(12);
     //DCA cut on xy and z
     if(!DCAcut(impactXY,impactZ,pt,fMC)) continue;
-    fHistNTracks->Fill(10);
-    if(track->GetSign()>0)fHistNTracks->Fill(13);
-    if(track->GetSign()<0)fHistNTracks->Fill(14);
+    
+    label="DCA";
+    fHistNTracks->Fill(countBinTrk);
+    if(track->GetSign()>0)fHistNTracksPos->Fill(countBinTrk);
+    if(track->GetSign()<0)fHistNTracksNeg->Fill(countBinTrk);
+    fHistNTracks->GetXaxis()->SetBinLabel(fHistNTracks->FindBin(countBinTrk),label.Data());
+    fHistNTracksPos->GetXaxis()->SetBinLabel(fHistNTracksPos->FindBin(countBinTrk),label.Data());
+    fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
+    countBinTrk++;  
     
     //Filling Histos for Reco Efficiency
     //information from the MC kinematics
@@ -937,7 +1067,10 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
     return;
   } 
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
+  fHistMult = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMult"));
   fHistNTracks = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNTracks"));
+  fHistNTracksPos = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNTracksPos"));
+  fHistNTracksNeg = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNTracksNeg"));
   fHistDEDX = dynamic_cast<TH2F*>(fOutput->FindObject("fHistDEDX"));
   fHistDEDXdouble = dynamic_cast<TH2F*>(fOutput->FindObject("fHistDEDXdouble"));
 
