@@ -47,6 +47,7 @@ AliAnalysisTaskSE(),
 fReadMC(kFALSE),
 fSelectedPdg(-1),
 fUseDiamond(kFALSE),
+fSkipTrack(kTRUE),
 fOutputitspureSARec(0),
 fOutputitspureSASkip(0), 
 fOutputallPointRec(0),
@@ -94,6 +95,7 @@ AliAnalysisTaskSE(name),
 fReadMC(kFALSE),
 fSelectedPdg(-1),
 fUseDiamond(kFALSE),
+fSkipTrack(kTRUE),
 fOutputitspureSARec(0),
 fOutputitspureSASkip(0), 
 fOutputallPointRec(0),
@@ -1144,7 +1146,6 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   Int_t nTrks = esd->GetNumberOfTracks();
   Bool_t highMult=(nTrks>500 ? kTRUE : kFALSE);
 
-
   
   // diamond constraint
   Float_t diamondcovxy[3];
@@ -1253,7 +1254,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     skipped[0] = (Int_t)esdtrack->GetID();
     vertexer.SetSkipTracks(1,skipped);      
     // create vertex with new!
-    if(!highMult) {
+    if(!highMult && fSkipTrack) {
       vtxESDSkip = (AliESDVertex*)vertexer.FindPrimaryVertex(esd);
       if(vtxESDSkip->GetNContributors()<1) {
 	delete vtxESDSkip; vtxESDSkip=NULL;
