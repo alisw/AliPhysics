@@ -433,7 +433,7 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in,
   
   AliDebugStream(2) << nofPadRows << endl;
   
-  if ( nofPadRows < 0 ) {
+  if ( nofPadRows < 0 || nofPadRows >= std::numeric_limits<Int_t>::max()) {
     AliErrorStream() << "Wrong nofPadRows value." << endl;
     return;
   }         
