@@ -465,10 +465,10 @@ void AliJCORRANTask::ReadAODTracks(const AliAODEvent * aod)
           ctrack->SetTPCdEdx(pidAOD->GetTPCsignal());
         } 
  
-        Double_t impactDCA[2];
+        Double_t impactDCA[3];
         if( track->GetPosition(impactDCA)){
-          ctrack->SetImapactXY(impactDCA[0]);//impactXY);
-          ctrack->SetImapactZ(impactDCA[1]);//impactZ);          
+          ctrack->SetImapactXY(sqrt(impactDCA[0]*impactDCA[0] + impactDCA[1]*impactDCA[1]));//impactXY);
+          ctrack->SetImapactZ(impactDCA[2]);//impactZ);          
         }       
 
         ctrack->SetChi2perNDF(track->Chi2perNDF());
@@ -885,16 +885,16 @@ bool AliJCORRANTask::AcceptAODTrack(AliAODTrack* aodTrack){
 
 
    //            C u t s   o n    D C A
-   Float_t impactDCA[2];
+   Float_t impactDCA[3];
    if( aodTrack->GetPosition(impactDCA)){
      if((fEsdTrackCuts->GetMaxDCAToVertexXY()>0) && 
-       (fEsdTrackCuts->GetMaxDCAToVertexXY() < TMath::Abs(impactDCA[0]))) return kFALSE;
+       (fEsdTrackCuts->GetMaxDCAToVertexXY() < sqrt(impactDCA[0]*impactDCA[0] + impactDCA[1]*impactDCA[1]))) return kFALSE;
      if((fEsdTrackCuts->GetMaxDCAToVertexZ()>0) &&
-       (fEsdTrackCuts->GetMaxDCAToVertexZ() < TMath::Abs(impactDCA[1]))) return kFALSE;
+       (fEsdTrackCuts->GetMaxDCAToVertexZ() < TMath::Abs(impactDCA[2]))) return kFALSE;
    } else return kFALSE; 
  
    if(f1CutMaxDCAToVertexXYPtDep){ 
-     if(f1CutMaxDCAToVertexXYPtDep->Eval(aodTrack->Pt()) < TMath::Abs(impactDCA[0])) return kFALSE; 
+     if(f1CutMaxDCAToVertexXYPtDep->Eval(aodTrack->Pt()) < sqrt(impactDCA[0]*impactDCA[0] + impactDCA[1]*impactDCA[1])) return kFALSE; 
    }
 
 
