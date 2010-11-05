@@ -1171,6 +1171,8 @@ void AliMUONTrack::Print(Option_t*) const
 {
   /// Printing Track information 
 
+  streamsize curW = cout.width();
+  streamsize curPrecision = cout.precision();
   cout << "<AliMUONTrack> No.Clusters=" << setw(2)   << GetNClusters() << 
       ", Match2Trig=" << setw(1) << GetMatchTrigger()  << 
       ", LoTrgNum=" << setw(3) << LoCircuit()  << 
@@ -1178,6 +1180,8 @@ void AliMUONTrack::Print(Option_t*) const
   cout << Form(" HitTriggerPattern %x",fHitsPatternInTrigCh);
   cout << Form(" MClabel=%d",fTrackID) << endl;
   if (fTrackParamAtCluster) fTrackParamAtCluster->First()->Print("FULL");
+  cout.width(curW);
+  cout.precision(curPrecision);
 }
 
 //__________________________________________________________________________
