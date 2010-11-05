@@ -42,8 +42,6 @@ public:
   virtual TFolder *ExportToFolder(TObjArray * const array=0) = 0;
 
   //
-  AlidNdPt(const AlidNdPt&); // not implemented
-  AlidNdPt& operator=(const AlidNdPt&); // not implemented
 
   //
   void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
@@ -69,6 +67,9 @@ public:
   AlidNdPtBackgroundCuts* GetBackgroundCuts() const             { return fdNdPtBackgroundCuts; }
 
 private:
+
+  AlidNdPt(const AlidNdPt&); // not implemented
+  AlidNdPt& operator=(const AlidNdPt&); // not implemented
 
   AlidNdPtEventCuts      *fdNdPtEventCuts;      // event cuts
   AlidNdPtAcceptanceCuts *fdNdPtAcceptanceCuts; // acceptance cuts
