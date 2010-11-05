@@ -19,6 +19,11 @@ class AliHistoListWrapper;
 class AliTriggerAnalysis;
 class AliAnalysisTaskTriggerStudy : public AliAnalysisTaskSE {
 
+  // offline trigger enum
+  enum {kC0MBS1,kC0MBS2,kC0MBS3,kC0MBS4,kC0MBS5,kC0VBA,kC0VBC,kC0OM2,kCO0M3};
+  // enum for triggers to be included in the venn-like histogram
+  enum {kVDC0MBS2,kVDC0VBA,kVDC0VBC,kVDC0OM2,kNVDEntries};
+    
 public:
 
   AliAnalysisTaskTriggerStudy();
@@ -29,9 +34,10 @@ public:
   void SetIsMC(Bool_t flag=kTRUE) { fIsMC = flag;}
   AliHistoListWrapper * GetHistoList() { return fHistoList;}
 
+  void SetNTrackletsCut(Int_t cut) { fNTrackletsCut = cut;}
+
   TH1 * GetHistoTracklets   (const char * name, const char * title);
-  void  FillTriggerOverlaps (const char * name, const char * title, Int_t nFastOrOffline, Bool_t v0A, Bool_t v0C, Bool_t OM2, 
-			     Bool_t OM3, Bool_t cMBS2A,Bool_t cMBS2C, Bool_t cMBAC) ;
+  void  FillTriggerOverlaps (const char * name, const char * title, Bool_t * vdArray) ;
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -49,7 +55,9 @@ private:
   AliTriggerAnalysis * fTriggerAnalysis; // trigger analysis object, to get the offline triggers
   TString fHistoSuffix; // suffix appended to all histos, set in the user exec.
 
+  Int_t fNTrackletsCut; // max number of tracklets
 
+  static const char * kVDNames[];       // names of the venn hist
   AliAnalysisTaskTriggerStudy& operator=(const AliAnalysisTaskTriggerStudy& task);
   
   ClassDef(AliAnalysisTaskTriggerStudy, 2)

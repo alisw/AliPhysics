@@ -1,4 +1,4 @@
-void TriggerStudyResults(const char * filename = "outTrigger/LHC10g1f_130844/trigger_study.root") {
+void TriggerStudyResults(const char * filename = "outTrigger/LHC10g1f_130844/trigger_study.root", TString trigger = "MB") {
 
   TFile * f = new TFile (filename);
 
@@ -7,6 +7,7 @@ void TriggerStudyResults(const char * filename = "outTrigger/LHC10g1f_130844/tri
 
   // Draw trigger venn diagram
   TH1 * hVenn = (TH1*) f->Get("hTrigStat_All");
+  hVenn->Draw();
   Int_t colors[] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15};
   TPie * pie = new TPie(hVenn);
   Int_t nbin = hVenn->GetNbinsX();
@@ -22,25 +23,25 @@ void TriggerStudyResults(const char * filename = "outTrigger/LHC10g1f_130844/tri
   pie->SetLabelsOffset(.01);
   pie->SetLabelFormat("");//#splitline{%val (%perc)}{%txt}");
   pie->SetFillColors(colors);
-  pie->SetTextSize(0.01)
+  //  pie->SetTextSize(0.01);
   pie->Draw("");
   
   pie->MakeLegend(0.224832, 0.66958, 0.833893, 0.97028);
   cout << pie << endl;
   
   // Make a table of trigger efficiencies for all histos results
-  // FIXME: select on trigger class here?
   AliLatexTable table(2,"cc");
   //  table.InsertCustomRow("\\multicolumn{c}{2}{Integrated efficiency}");
-  table.InsertCustomRow("Trigger Name & Efficiency\\\\");
+  table.InsertCustomRow(Form("Trigger Name & Efficiency (%s)\\\\",trigger.Data()));
   table.InsertHline();
   TList * l = gDirectory->GetListOfKeys();
   TIterator * iter = l->MakeIterator();
   TKey * key = 0;
-  TH1F * hall = (TH1F*) gDirectory->Get("hTracklets_all"); 
+  TH1F * hall = (TH1F*) gDirectory->Get("hTracklets_all"); // FIXME: get the normalization for a given trigger?
   while (key = (TKey*) iter->Next()){
     TString name = key->GetName();
     if(!name.Contains("Tracklets")) continue;
+    if(!name.Contains(trigger)) continue;
     if(name.Contains("all")) continue;
     TH1F * h = (TH1F*) gDirectory->Get(name);
     TString label = name(name.Index("_")+1, name.Index("_",name.Index("_")+1)-name.Index("_")-1);

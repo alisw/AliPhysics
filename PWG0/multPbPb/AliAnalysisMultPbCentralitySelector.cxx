@@ -1,8 +1,17 @@
+// AliAnalysisMultPbCentralitySelector 
+// Interface class to centrality estimators for the PbPb
+// track-multiplicity analysis
+// Michele Floris, CERN
+
 #include "AliAnalysisMultPbCentralitySelector.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDCentrality.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
+
+
+
+// FIXME: bookkeep here all parameters of centrality estimate (files, estimator, selected bin...)
 
 ClassImp(AliAnalysisMultPbCentralitySelector)
 
