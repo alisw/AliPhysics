@@ -33,6 +33,7 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t readMC) { fReadMC=readMC; return; }
   void SetSelectedPdg(Int_t pdg) { fSelectedPdg=pdg; return; }
   void SetUseDiamond(Bool_t use=kFALSE) { fUseDiamond=use; return; }
+  void SetSkipTrack(Bool_t skip=kFALSE) { fSkipTrack=skip; return; }
 
  private:
   
@@ -47,6 +48,7 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   Bool_t fReadMC;       // flag used to switch on/off MC reading
   Int_t  fSelectedPdg;  // only for a given particle species (-1 takes all tracks)
   Bool_t fUseDiamond;   // use diamond constraint in primary vertex
+  Bool_t fSkipTrack;    // redo primary vertex for each track
   TList *fOutputitspureSARec;  //! ITS StandAlone: with track in vtx 
   TList *fOutputitspureSASkip; //! ITS StandAlone: w/o track in vtx
   TList *fOutputallPointRec;   //! ITS+TPC: 6 ITScls, with track in vtx      
@@ -83,7 +85,7 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   TH1F  *fNentries;   //! histogram of number of events
   TH1F  *fEstimVtx;   //! vertex resolution
 
-  ClassDef(AliAnalysisTaskSEImpParRes,3); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  ClassDef(AliAnalysisTaskSEImpParRes,4); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif
