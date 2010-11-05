@@ -42,6 +42,9 @@ public:
 
   TH1I * GetHistoStats();
   TH1D * GetHistoDCA(Histo_t id);
+  TH1D * GetHistoMult(Histo_t id);
+
+  TH1D * GetHistoSpecies(Histo_t id);
 
   // Misch utils
   void ScaleHistos (Double_t nev, Option_t * option="");
@@ -52,6 +55,7 @@ public:
   TH3D * BookHistoPtEtaVz(const char * name, const char * title);
   TH1D * BookHistoDCA(const char * name, const char * title);
   TH1I * BookHistoStats();
+  TH1D * BookHistoMult(const char * name, const char * title);
 
   // 
   TH1 * GetHisto(const char * name);
@@ -61,6 +65,7 @@ private:
   static const char * kStatStepNames[];       // names of the step hist
   static const char * kHistoPtEtaVzNames[];   // names of the 3D histograms pt/eta/vz
   static const char * kHistoDCANames[];   // names of the DCA histograms 
+  static const char * kHistoPrefix[];   // prefix for histo names // FIXME: remove the others and keep only this 
   TString fHNameSuffix; // Suffix added to all histo names. Useful if you have in the same session e.g. MC and data.
 
   AliAnalysisMultPbTrackHistoManager& operator=(const AliAnalysisMultPbTrackHistoManager& task);

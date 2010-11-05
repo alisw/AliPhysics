@@ -4,6 +4,8 @@
 #include "TH3D.h"
 #include "TH1I.h"
 #include "TROOT.h"
+#include "TMCProcess.h"
+
 #include <iostream>
 using namespace std;
 ClassImp(AliAnalysisMultPbTrackHistoManager)
@@ -12,6 +14,7 @@ const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All E
 const char * AliAnalysisMultPbTrackHistoManager::kHistoPtEtaVzNames[] = { "hGenPtEtaVz", "hRecPtEtaVz", "hRecPtEtaVzPrim", 
 									  "hRecPtEtaVzSecWeak", "hRecPtEtaVzSecMaterial", "hRecPtEtaVzFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoDCANames[]     = { "hGenDCA", "hRecDCA", "hRecDCAPrim", "hRecDCASecWeak","hRecDCASecMaterial", "hRecDCAFake"};
+const char * AliAnalysisMultPbTrackHistoManager::kHistoPrefix[]     = { "hGen", "hRec", "hRecPrim", "hRecSecWeak","hRecSecMaterial", "hRecFake"};
 
 
 
@@ -58,6 +61,20 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoDCA(Histo_t id) {
 
 }
 
+TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoMult(Histo_t id) {
+  // Returns a 3D histo of Pt/eta/vtx. It it does not exist, books it.
+
+  TString name = kHistoPrefix[id];
+  name += "Mult";
+  TH1D * h = (TH1D*) GetHisto(name.Data());
+  if (!h) {
+    h = BookHistoMult(name.Data(), Form("Multiplicity distribution (%s)",kHistoPrefix[id]));
+  }
+
+  return h;
+
+}
+
 TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoPt (Histo_t id, 
 						       Float_t minEta, Float_t maxEta, 
 						       Float_t minVz, Float_t maxVz, 
@@ -84,7 +101,8 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoPt (Histo_t id,
 
   
   if (gROOT->FindObjectAny(hname.Data())){
-    AliError(Form("An object called %s already exists",hname.Data()));
+    AliError(Form("An object called %s already exists,adding suffix",hname.Data()));
+    hname += "_2";
   }
 
   TH1D * h = h3D->ProjectionX(hname.Data(), min1, max1, min2, max2, "E");
@@ -119,7 +137,8 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoVz (Histo_t id,
   hname = hname +  "_Vz_" + long (min1)  + "_" + long(max1) + "_" + long (min2)  + "_" + long(max2);
 
   if (gROOT->FindObjectAny(hname.Data())){
-    AliError(Form("An object called %s already exists",hname.Data()));
+    AliError(Form("An object called %s already exists, adding suffix",hname.Data()));
+    hname+="_2";
   }
 
   TH1D * h = h3D->ProjectionZ(hname.Data(), min1, max1, min2, max2, "E");
@@ -153,13 +172,44 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoEta (Histo_t id,
   hname = hname +  "_Eta_" + long (min1)  + "_" + long(max1) + "_" + long (min2)  + "_" + long(max2);
 
   if (gROOT->FindObjectAny(hname.Data())){
-    AliError(Form("An object called %s already exists",hname.Data()));
+    AliError(Form("An object called %s already exists, adding suffix",hname.Data()));
+    hname+="_2";
   }
 
   TH1D * h = h3D->ProjectionY(hname.Data(), min1, max1, min2, max2, "E");
   if(scaleWidth) h ->Scale(1.,"width");
   return h;
 }
+
+TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoSpecies(Histo_t id) {
+
+  // Returns histogram with particle specties
+
+  TString name = TString(kHistoPrefix[id])+"_Species";
+
+  TH1D * h =  (TH1D*) GetHisto(name);
+  if (!h) {
+    name+=fHNameSuffix;
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+
+    AliInfo(Form("Booking histo %s",name.Data()));
+
+    h = new TH1D (name.Data(), Form("Particle species (%s)",kHistoPrefix[id]), kPNoProcess+1, -0.5, kPNoProcess+1-0.5);			 
+    Int_t nbin = kPNoProcess+1;
+    for(Int_t ibin = 0; ibin < nbin; ibin++){
+      h->GetXaxis()->SetBinLabel(ibin+1,TMCProcessName[ibin]);      
+    }
+    TH1::AddDirectory(oldStatus);
+    fList->Add(h);
+
+
+  }
+  return h;
+  
+
+}
+
 
 
 TH1I * AliAnalysisMultPbTrackHistoManager::GetHistoStats() {
@@ -189,7 +239,7 @@ void AliAnalysisMultPbTrackHistoManager::ScaleHistos(Double_t nev, Option_t * op
     if (!h->InheritsFrom("TH1")) {
       AliFatal (Form("%s does not inherits from TH1, cannot scale",h->GetName()));
     }
-    cout << "Scaling " << h->GetName() << " " << nev << endl;
+    AliInfo(Form("Scaling %s, nev %2.2f", h->GetName(), nev));
     
     h->Scale(1./nev,option);
   }
@@ -208,15 +258,39 @@ TH3D * AliAnalysisMultPbTrackHistoManager::BookHistoPtEtaVz(const char * name, c
 
   AliInfo(Form("Booking %s",hname.Data()));
   
+  // Binning from Jacek task
+  const Int_t nptbins = 68;
+  const Double_t binsPt[] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
+  
+  const Int_t netabins=20;
+  Double_t binsEta[netabins+1];
+  Float_t minEta = -1;
+  Float_t maxEta =  1;
+  Float_t etaStep = (maxEta-minEta)/netabins;
+  for(Int_t ibin = 0; ibin < netabins; ibin++){    
+    binsEta[ibin]   = minEta + ibin*etaStep;
+    binsEta[ibin+1] = minEta + ibin*etaStep + etaStep;
+  }
+
+  const Int_t nvzbins=10;
+  Double_t binsVz[nvzbins+1];
+  Float_t minVz = -10;
+  Float_t maxVz =  10;
+  Float_t vzStep = (maxVz-minVz)/nvzbins;
+  for(Int_t ibin = 0; ibin < nvzbins; ibin++){    
+    binsVz[ibin]   = minVz + ibin*vzStep;
+    binsVz[ibin+1] = minVz + ibin*vzStep + vzStep;
+  }
+ 
 
   TH3D * h = new TH3D (hname,title, 
-		       50,0,10, // Pt
-		       20,-1, 1,   // Eta
-		       10,-10,10 // Vz
+		       nptbins,  binsPt,
+		       netabins, binsEta,
+		       nvzbins,  binsVz
 		       );
 
-  h->SetYTitle("#eta");
   h->SetXTitle("p_{T}");
+  h->SetYTitle("#eta");
   h->SetZTitle("V_{z} (cm)");
   h->Sumw2();
   
@@ -241,6 +315,28 @@ TH1D * AliAnalysisMultPbTrackHistoManager::BookHistoDCA(const char * name, const
   TH1D * h = new TH1D (hname,title, 200,0,200);
 
   h->SetXTitle("#Delta DCA");
+  h->Sumw2();
+  
+  fList->Add(h);
+
+  TH1::AddDirectory(oldStatus);
+  return h;
+}
+TH1D * AliAnalysisMultPbTrackHistoManager::BookHistoMult(const char * name, const char * title) {
+  // Books a multiplicity histo 
+
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
+  TString hname = name;
+  hname+=fHNameSuffix;
+
+  AliInfo(Form("Booking %s",hname.Data()));
+  
+
+  TH1D * h = new TH1D (hname,title, 600, 0,6000);
+
+  h->SetXTitle("N tracks");
   h->Sumw2();
   
   fList->Add(h);

@@ -1,12 +1,15 @@
 // TODO:
 // 1. Check cuts for 2010 (Jochen?)
 // 2. Run with many centrality bins at once
+#include <string.h>
 
-enum { kMyRunModeLocal = 0, kMyRunModeCAF};
+enum { kMyRunModeLocal = 0, kMyRunModeCAF, kMyRunModeGRID};
+
+TList * listToLoad = new TList();
 
 TChain * GetAnalysisChain(const char * incollection);
 
-void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Int_t centrBin = 0, const char * centrEstimator = "VOM", const char* option = "",Int_t workers = -1)
+void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Int_t centrBin = 0, const char * centrEstimator = "VOM", const char* option = "",TString customSuffix = "", Int_t workers = -1)
 {
   // runMode:
   //
@@ -33,6 +36,21 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     mgr->SetMCtruthEventHandler(handler);
   }
 
+
+  // If we are running on grid, we need the alien handler
+  if (runMode == kMyRunModeGRID) {
+    // Create and configure the alien handler plugin
+    gROOT->LoadMacro("CreateAlienHandler.C");
+    AliAnalysisGrid *alienHandler = CreateAlienHandler(data, listToLoad, "test", isMC);  
+    if (!alienHandler) {
+      cout << "Cannot create alien handler" << endl;    
+      exit(1);
+    }
+    mgr->SetGridHandler(alienHandler);  
+  }
+
+
+
   // physics selection
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   physicsSelectionTask = AddTaskPhysicsSelection(isMC);
@@ -58,7 +76,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     doSave = kTRUE;
   }
 
-  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
+  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
   TString pathsuffix = "";
   // cuts->SetPtRange(0.15,0.2);// FIXME pt cut
   // const char * pathsuffix = "_pt_015_020_nofakes";
@@ -88,6 +106,11 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
   AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts); // kTRUE enables DCA cut
   task->SetIsMC(useMCKinematics);
+  if(useMCKinematics) task->GetHistoManager()->SetSuffix("MC");
+  if(customSuffix!=""){
+    cout << "Setting custom suffix: " << customSuffix << endl;    
+    task->GetHistoManager()->SetSuffix(customSuffix);
+  }
   task->SetCentralityBin(centrBin);
   task->SetCentralityEstimator(centrEstimator);
   
@@ -103,10 +126,13 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     mgr->StartAnalysis("local",chain,nev);
   } else if (runMode == kMyRunModeCAF) {
     mgr->StartAnalysis("proof",TString(data)+"#esdTree",nev);
+  } else if (runMode == kMyRunModeGRID) {
+    mgr->StartAnalysis("grid");
   } else {
     cout << "ERROR: unknown run mode" << endl;        
   }
 
+  pathsuffix = pathsuffix + "_" + centrEstimator + "_bin_"+long(centrBin);
   if (doSave) MoveOutput(data, pathsuffix.Data());
 
   
@@ -159,6 +185,14 @@ TChain * GetAnalysisChain(const char * incollection){
 
 
 void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug=0) {
+  // Loads libs and par files + custom task and classes
+
+  // Custom stuff to be loaded
+  listToLoad->Add(new TObjString("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx+"));
+  listToLoad->Add(new TObjString("$ALICE_ROOT/PWG1/background/AliHistoListWrapper.cxx+"));
+  listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+"));
+  listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+"));
+
 
   if (runMode == kMyRunModeCAF)
   {
@@ -185,7 +219,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   }
   else
   {
-    cout << "Init in Local mode" << endl;
+    cout << "Init in Local or Grid mode" << endl;
 
     gSystem->Load("libVMC");
     gSystem->Load("libTree");
@@ -201,30 +235,16 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     //    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background/"));
   }
   // Load helper classes
-  // TODO: replace this by a list of TOBJStrings
-  TString taskName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+");
-  TString histoManName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+");
-  TString listName("$ALICE_ROOT/PWG1/background/AliHistoListWrapper.cxx+");
-
-  gSystem->ExpandPathName(taskName);
-  gSystem->ExpandPathName(histoManName);
-  gSystem->ExpandPathName(listName);
-
-
-
-  // Create, add task
-  if (runMode == kMyRunModeCAF) {
-    gProof->Load(listName+(debug?"+g":""));   
-    gProof->Load(histoManName+(debug?"+g":""));
-    gProof->Load(taskName+(debug?"+g":""));
-    gProof->Load("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx++g");      
-  } else {
-    gROOT->LoadMacro(listName+(debug?"+g":""));   
-    gROOT->LoadMacro(histoManName+(debug?"+g":""));
-    gROOT->LoadMacro(taskName+(debug?"+g":""));    
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx++g");
-
+  TIterator * iter = listToLoad->MakeIterator();
+  TObjString * name = 0;
+  while (name = (TObjString *)iter->Next()) {
+    gSystem->ExpandPathName(name->String());
+    cout << name->String().Data();
+    if (runMode == kMyRunModeCAF) {
+      gProof->Load(name->String()+(debug?"+g":""));   
+    } else {
+      gROOT->LoadMacro(name->String()+(debug?"+g":""));   
+    }
   }
-
 
 }

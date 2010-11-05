@@ -24,50 +24,57 @@ TH1D * gHistoCompoments[kHistoFitCompoments];
 void LoadLibs();
 void LoadData(TString dataFolder, TString correctionFolder);
 void SetStyle();
-Double_t CheckSecondaries();
+void CheckSecondaries(Double_t & fracWeak, Double_t &fracMaterial);
+void CheckVz(); 
 void ShowAcceptanceInVzSlices() ;
 TH1D * GetRatioIntegratedFractions (TH1 * hNum, TH1 * hDenum) ;
-  TH1D * GetCumulativeHisto (TH1 * h) ;
+TH1D * GetCumulativeHisto (TH1 * h) ;
 static Double_t HistoSum(const double * x, const double* p);
 TF1 * GetFunctionHistoSum() ;
 TF1 * GetMTExp(Float_t norm=68, Float_t t=25) ;
 TF1 * GetHagedorn(Float_t norm=68, Float_t pt0=25, Float_t n=13) ;
 TF1 * GetLevy(Double_t temp=0.1, Double_t n=7, Double_t norm=10, const char * name="fLevy") ;
+void PrintCanvas(TCanvas* c,const TString formats) ;
+
+// global switches
+Bool_t doPrint=kFALSE;// disable PrintCanvas
 
 
-
-
-void correct(TString dataFolder = "output/LHC09d_000104892_p4/", TString correctionFolder = "output/LHC10a8_104867/") {
+void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TString correctionFolder = "./output/LHC10g2a_130844_V0M_bin_10/") {
 
   // Load stuff and set some styles
   LoadLibs();
   LoadData(dataFolder,correctionFolder);
   SetStyle();
-  // ShowAcceptanceInVzSlices();
-  // return;
+  ShowAcceptanceInVzSlices();
+  return;
 
   // TODO add some cool printout for cuts and centrality selection
   
-  Double_t fractionWeak = CheckSecondaries();
-  cout << "Rescaling weak correction: " << fractionWeak << endl;
+  CheckVz();
+
+  Double_t fractionWeak = 1, fractionMaterial=1; 
+  //  CheckSecondaries(fractionWeak, fractionMaterial);
+  cout << "Rescaling secondaries correction, weak: " << fractionWeak << ", material: " << fractionMaterial <<endl;
   
 
   // Some shorthands
   // FIXME: Gen should be projected including overflow in z?
-  TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,        -0.5,0.5,-10,10)->Clone("hDataPt");
-  TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        -0.5,0.5,-10,10);
-  TH1D * hMCPtRec  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,        -0.5,0.5,-10,10);
-  TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim,    -0.5,0.5,-10,10);
-  TH1D * hMCPtSeM  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat,  -0.5,0.5,-10,10);
-  TH1D * hMCPtSeW  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak, -0.5,0.5,-10,10);
-  TH1D * hMCPtFak  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecFake,    -0.5,0.5,-10,10);
+  TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec, -0.5,0.5,-10,10)->Clone("hDataPt");
+  TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         -0.5,0.5,-10,10);
+  TH1D * hMCPtRec  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,         -0.5,0.5,-10,10);
+  TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim,     -0.5,0.5,-10,10);
+  TH1D * hMCPtSeM  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat,   -0.5,0.5,-10,10);
+  TH1D * hMCPtSeW  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak,  -0.5,0.5,-10,10);
+  TH1D * hMCPtFak  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecFake,     -0.5,0.5,-10,10);
  
   TCanvas * cdata = new TCanvas ("cData", "Data");  
-
+  cdata->SetLogy();
   hDataPt->Draw();
   //  hMCPtRec->Draw("same");
 
   TCanvas * cMC = new TCanvas ("cMC", "Monte Carlo");
+  cMC->SetLogy();
   cMC->cd();
   hMCPtGen ->Draw();
   hMCPtRec ->Draw("same");
@@ -90,6 +97,7 @@ void correct(TString dataFolder = "output/LHC09d_000104892_p4/", TString correct
 
   TH1D * hCorSeM = (TH1D*) hMCPtSeM->Clone("hEffPt");
   hCorSeM->Divide(hMCPtSeM,hMCPtRec,1,1,"B");
+  hCorSeM->Scale(fractionMaterial);// rescale material correction
   hCorSeM->Multiply(hDataPt);
 
   TH1D * hCorSeW = (TH1D*) hMCPtSeW->Clone("hEffPt");
@@ -125,7 +133,7 @@ void correct(TString dataFolder = "output/LHC09d_000104892_p4/", TString correct
   hDataGen->Draw("same");
 }
 
-Double_t CheckSecondaries() {
+void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {
   // Returns the fraction you need to rescale the secondaries from weak decays for.
 
   // Some shorthands
@@ -149,32 +157,51 @@ Double_t CheckSecondaries() {
   TCanvas * c1 = new TCanvas("cDCAFit", "Fit to the DCA distributions");  
   c1->SetLogy();
   // Draw all
-   hDataDCA->Draw();
-   hMCDCARec ->Draw("same");
-  hMCDCAPri ->Draw("same");
-  hMCDCASW ->Draw("same");
-  hMCDCASM ->Draw("same");
-  hMCDCAFak ->Draw("same");
-   return 1;
+  //  hDataDCA->Draw();
+  //  hMCDCARec ->Draw("same");
+  // hMCDCAPri ->Draw("same");
+  // hMCDCASW ->Draw("same");
+  // hMCDCASM ->Draw("same");
+  // hMCDCAFak ->Draw("same");
+  // return;
   
+  // Fit the DCA distribution. Uses a TF1 made by summing histograms
   TH1D * hMCPrimSMFak = (TH1D*) hMCDCAPri->Clone("hMCPrimSMFak");
   //  hMCPrimSMFak->Add(hMCDCASM);
   hMCPrimSMFak->Add(hMCDCAFak);
 
+  // Set the components which are used in HistoSum, the static
+  // function for GetFunctionHistoSum
   gHistoCompoments[0] = (TH1D*) hMCPrimSMFak->Clone();
   gHistoCompoments[1] = (TH1D*) hMCDCASW->Clone();
   gHistoCompoments[2] = (TH1D*) hMCDCASM->Clone();
   TF1 * fHistos = GetFunctionHistoSum();
-  fHistos->SetParameters(1,1);
+  fHistos->SetParameters(1,1,1);
+  fHistos->SetLineColor(kRed);
+  // Fit!
   hDataDCA->Fit(fHistos,"","",0,200);
+  // Rescale the components and draw to see how it looks like
   hMCPrimSMFak->Scale(fHistos->GetParameter(0));
   hMCDCASW    ->Scale(fHistos->GetParameter(1));
   hMCDCASM    ->Scale(fHistos->GetParameter(2));
   hMCPrimSMFak->Draw("same");
   hMCDCASW    ->Draw("same");
   hMCDCASM    ->Draw("same");
-  return fHistos->GetParameter(1)/fHistos->GetParameter(0);
+  // compute scaling factors
+  fracWeak     = hMCDCASW->Integral()/(hMCPrimSMFak->Integral()+hMCDCASW->Integral()+hMCDCASM->Integral());
+  fracMaterial = hMCDCASM->Integral()/(hMCPrimSMFak->Integral()+hMCDCASW->Integral()+hMCDCASM->Integral());
 
+
+}
+
+void CheckVz() {
+  // compares the Vz distribution in data and in MC
+  TCanvas * c1 = new TCanvas("cVz", "Vertex Z distribution");
+  c1->cd();
+  TH1D * hData  = hManData->GetHistoVz(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
+  TH1D * hCorr  = hManCorr->GetHistoVz(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
+  hCorr->Draw("");
+  hData->Draw("same");
 
 }
 
@@ -297,8 +324,10 @@ void LoadData(TString dataFolder, TString correctionFolder){
   Int_t irowGoodTrigger = 1;
   if (hEvStatCorr && hEvStatData) {
     //  hManData->ScaleHistos(75351.36/1.015);// Nint for run 104892 estimated correcting for the trigger efficiency, multiplied for the physics selection efficiency which I'm not correcting for the time being
-    hManData->ScaleHistos(hEvStatData->GetBinContent(AliPhysicsSelection::kStatAccepted,irowGoodTrigger));
-    hManCorr->ScaleHistos(hEvStatCorr->GetBinContent(AliPhysicsSelection::kStatAccepted,irowGoodTrigger));
+    // hManData->ScaleHistos(hEvStatData->GetBinContent(AliPhysicsSelection::kStatAccepted,irowGoodTrigger));
+    // hManCorr->ScaleHistos(hEvStatCorr->GetBinContent(AliPhysicsSelection::kStatAccepted,irowGoodTrigger));
+    hManData->ScaleHistos(hManData->GetHistoStats()->GetBinContent(2));
+    hManCorr->ScaleHistos(hManCorr->GetHistoStats()->GetBinContent(2));
   } else {
     cout << "WARNING!!! ARBITRARY SCALING" << endl;
     hManData->ScaleHistos(1000);
@@ -384,22 +413,32 @@ TH1D * GetRatioIntegratedFractions (TH1 * hNum, TH1 * hDenum) {
 
 void ShowAcceptanceInVzSlices() {
   TCanvas * cvz = new TCanvas("cvz","acc #times eff vs vz");
-  for(Int_t ivz = -10; ivz < 10; ivz+=4){
-    TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim ,   -0.5,0.5,ivz,ivz+4);
-    TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        -0.5,0.5,ivz,ivz+4);
+  for(Int_t ivz = -10; ivz < -6; ivz+=2){
+    ivz=0;//FIXME  
+    Bool_t first = kTRUE;
+    TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim ,   -0.5,0.5,ivz,ivz+2);
+    TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        -0.5,0.5,ivz,ivz+2);
+    TH1D * hMCPtPriD  = hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim ,   -0.5,0.5,ivz,ivz+2);
+    TH1D * hMCPtGenD  = hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        -0.5,0.5,ivz,ivz+2);
     //    hEff= hMCPtGen;
-    TH1D * hEff = (TH1D*)hMCPtPri->Clone(Form("hEff_vz_%d_%d",ivz,ivz+4));
+    TH1D * hEff = (TH1D*)hMCPtPri->Clone(Form("hEff_vz_%d_%d",ivz,ivz+2));
     hEff->Divide(hMCPtPri,hMCPtGen,1,1,"B");
+    TH1D * hEffD = (TH1D*)hMCPtPriD->Clone(Form("hEffD_vz_%d_%d",ivz,ivz+2));
+    hEffD->Divide(hMCPtPriD,hMCPtGenD,1,1,"B");
+    hEffD->SetLineColor(kRed);
     cout << "ivz " << ivz << endl;
-    if(ivz < -9) {
+    if(first) {
+      first=kFALSE;
       cout << "First" << endl;
       hEff->Draw();
+      hEffD->Draw("same");
       // hMCPtGen->Draw();
       // hMCPtPri->Draw("same");
     }
     else {
       cout << "Same" << endl;
       hEff->Draw("same");
+      hEffD->Draw("same");
       // hMCPtGen->Draw("");
       // hMCPtPri->Draw("same");
     }
@@ -408,8 +447,8 @@ void ShowAcceptanceInVzSlices() {
   }
   
   //hManCorr->GetHistoVz(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim )->Draw();
-   hManCorr->GetHistoVz(AliAnalysisMultPbTrackHistoManager::kHistoRec )->Draw("");
-  hManCorr->GetHistoVz(AliAnalysisMultPbTrackHistoManager::kHistoGen     )->Draw("same");      
+  //  hManCorr->GetHistoVz(AliAnalysisMultPbTrackHistoManager::kHistoRec )->Draw("");
+  // hManCorr->GetHistoVz(AliAnalysisMultPbTrackHistoManager::kHistoGen     )->Draw("same");      
 
 
 }
@@ -439,4 +478,22 @@ static Double_t HistoSum(const double * x, const double* p){
   
   return value;
 
+}
+
+void PrintCanvas(TCanvas* c,const TString formats) {
+  // print a canvas in every of the given comma-separated formats
+  // ensure the canvas is updated
+  if(!doPrint) return;
+  c->Update();
+  gSystem->ProcessEvents();
+  TObjArray * arr = formats.Tokenize(",");
+  TIterator * iter = arr->MakeIterator();
+  TObjString * element = 0;
+  TString name  =c ->GetName();
+  name.ReplaceAll(" ","_");
+  name.ReplaceAll("+","Plus");
+  name.ReplaceAll("-","");
+  while ((element = (TObjString*) iter->Next())) {
+    c->Print(name+ "."+element->GetString());
+  }
 }

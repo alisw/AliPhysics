@@ -16,11 +16,12 @@ analysismode=9; #SPD + field on
 centrBin=0
 centrEstimator="V0M"
 runTriggerStudy=no
+customSuffix=""
 
 give_help() {
 
 cat <<ENDOFGUIDE
-This scripts runs the mupliplicity analysis and the trigger study class
+This scripts runs the mupliplicity analysis and the trigger study task
 
 Available options:
  Mode control, at least one of the following options should be used
@@ -28,6 +29,7 @@ Available options:
                                Modes [default=$runmode]:
                                   0 local
                                   1 caf    
+                                  2 grid    
   -c                           Run the correction
   -s                           Run the trigger study task (by default it runs the multiplicity analysis)
  Proof settings
@@ -35,6 +37,10 @@ Available options:
   -n <nev>                     Number of events to be analized 
  Misc
   -d <dataset>                 Dataset or data collection (according to run mode) [default=$dataset]
+                                - local mode: a single ESD file, an xml collection of files on 
+                                  grid or a text file with a ESD per line
+                                - caf mode: a dataset
+                                - grid mode: a directory on alien
  Options specific to the multiplicity analysis
   -b <bin>                     Set centrality bin [default=$centrBin]
   -e <estimator>               Set centrality estimator [default=$centrEstimator]
@@ -56,17 +62,21 @@ Available options:
                                 * == can be used in trigger studies task
   -t <option>                  Command line option for root [defaul=$ropt]
   -m                           Use this to run on Monte Carlo
+  -x  <suffix>                 Set a custom suffix in the histo manager        
   -g                           Debug mode
   -h                           This help
 ENDOFGUIDE
 
 }
 
-while getopts "sr:cgmd:o:w:n:e:b:" opt; do
+while getopts "x:sr:cgmd:o:w:n:e:b:t:" opt; do
   case $opt in
     r)
       run=yes
       runmode=$OPTARG
+      ;;      
+    x)
+      customSuffix=$OPTARG
       ;;      
     s)
       runTriggerStudy=yes
@@ -132,7 +142,7 @@ if [ "$run" = "yes" ]
 	then
 	root $ropt runTriggerStudy.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,\"$option\",$workers\)
     else
-	root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",\"$option\",$workers\)
+	root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",\"$option\",\"$customSuffix\",$workers\)
     fi
 fi
 
