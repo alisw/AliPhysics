@@ -20,6 +20,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   // settings for collisions
   info->SetCollision(/*kFALSE*/);
   if(info->IsCollision()){
+    /*
     if(!mc) info->SetTrigger(
       "CINT1B-ABCE-NOPF-ALL"
       " CINT5-B-NOPF-ALL"
@@ -27,6 +28,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
       " CINT5WU-B-NOPF-ALL"
       " CSCO1-ABCE-NOPF-CENT" // cosmic SPD trigger
     );
+    */
     info->SetLocalEvSelection();
   }
   
