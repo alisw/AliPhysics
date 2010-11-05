@@ -56,6 +56,27 @@ AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
   // constructor
 }
 
+AlidNdPt::AlidNdPt(const AlidNdPt&): TNamed()
+, fdNdPtEventCuts(0)
+, fdNdPtAcceptanceCuts(0)
+, fEsdTrackCuts(0)
+, fUseMCInfo(kFALSE)
+, fAnalysisMode(AlidNdPtHelper::kTPC) 
+, fTrigger(AliTriggerAnalysis::kMB1) 
+, fTriggerClass(0) 
+, fParticleMode(AlidNdPtHelper::kAllPart) 
+, fPhysicsSelection(0)
+, fdNdPtBackgroundCuts(0)
+{
+  // not implemented
+}
+
+AlidNdPt& AlidNdPt::operator=(const AlidNdPt&)
+{
+  // not implemented
+  return *this;
+}
+
 //_____________________________________________________________________________
 AlidNdPt::~AlidNdPt() {
   // destructor
