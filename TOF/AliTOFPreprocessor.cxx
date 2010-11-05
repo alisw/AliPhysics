@@ -1045,6 +1045,8 @@ AliTOFPreprocessor::ProcessNoiseCalibTrg()
     rate_err /= fMatchingWindow[ich] * 1.e-9;
     hNoiseRate->SetBinContent(ich + 1, rate);
     hNoiseRate->SetBinError(ich + 1, rate_err);
+    /* check error */
+    if (rate_err == 0.) continue;
     /* check noise rate and set noise flags */
     if ((rate - 3. * rate_err) > noiseThr) {
       Log(Form("channel %d detected as noisy: rate = (%f +- %f) Hz", ich, rate, rate_err));
