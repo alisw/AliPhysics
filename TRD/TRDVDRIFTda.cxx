@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       rawReader->Select("TRD");
 
-      Int_t result = calibra->ProcessEventDAQ3((AliRawReader *)rawReader);
+      Int_t result = calibra->ProcessEventDAQ2((AliRawReader *)rawReader);
       if(!result) passvdrift = kFALSE;
       else nbvdrift += (Int_t) result/2;
              
@@ -247,3 +247,5 @@ int main(int argc, char **argv) {
   if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
   } 
 */
+
+

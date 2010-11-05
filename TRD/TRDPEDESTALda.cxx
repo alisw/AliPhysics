@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
 	// for debug
 	//rawReader->SelectEquipment(-1,1024,1025);
 	
-	Int_t result = calipad.ProcessEvent3((AliRawReader *) rawReader);
+	Int_t result = calipad.ProcessEvent2((AliRawReader *) rawReader);
 	// 0 error, 1 no input, 2 output
 	if(result == 2) nevents++;
 	if(result == 0) passpadstatus = kFALSE;

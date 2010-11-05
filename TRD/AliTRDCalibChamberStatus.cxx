@@ -47,7 +47,6 @@
 #include "AliTRDfeeParam.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDSignalIndex.h"
-#include "AliTRDrawFastStream.h"
 #include "AliTRDpadPlane.h"
 #include "./Cal/AliTRDCalChamberStatus.h"
 #include "./Cal/AliTRDCalDCS.h"
@@ -266,77 +265,6 @@ void AliTRDCalibChamberStatus::Init()
 }
 //_____________________________________________________________________
 void AliTRDCalibChamberStatus::ProcessEvent(AliRawReader * rawReader, Int_t nevents_physics)
-{
-  //
-  // Event Processing loop 
-  //
-  //
-  
-  Bool_t notEmpty = kFALSE;
-    
-  AliTRDrawFastStream *rawStream = new AliTRDrawFastStream(rawReader);
-  if (!rawStream) return;
-  rawStream->SetNoErrorWarning();
-  rawStream->SetSharedPadReadout(kFALSE);
-
-  AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager(kTRUE);
-  if (!digitsManager) return;
-  digitsManager->CreateArrays();
-  
-  Int_t det    = 0;
-  while ((det = rawStream->NextChamber(digitsManager, NULL, NULL)) >= 0) { 
-
-    //nextchamber loop
-    
-    // do the QA analysis
-    if (digitsManager->GetIndexes(det)->HasEntry()) {//QA
-      // printf("there is ADC data on this chamber!\n");
-      
-      AliTRDSignalIndex *indexes = digitsManager->GetIndexes(det);
-      if (indexes->IsAllocated() == kFALSE) {
-	// AliError("Indexes do not exist!");
-	break;
-      }
-      
-      Int_t iRow  = 0;
-      Int_t iCol  = 0;
-      indexes->ResetCounters();
-      
-      while (indexes->NextRCIndex(iRow, iCol)){
-	Int_t iMcm        = (Int_t)(iCol/18);   // current group of 18 col pads
-	
-	Int_t layer = AliTRDgeometry::GetLayer(det);
-	Int_t sm    = AliTRDgeometry::GetSector(det);
-	Int_t stac  = AliTRDgeometry::GetStack(det);
-	Double_t rphi = 0.5;
-	if(iMcm > 3) rphi = 1.5;
-
-	Double_t val[4] = {sm,layer,stac,rphi}; 
-	fHnSparseI->Fill(&val[0]); 
-	notEmpty = kTRUE;
-	
-	//---------//
-	//  Debug  //
-	if(fDebugLevel > 0) {
-	  Int_t detector = AliTRDgeometry::GetDetector(layer,stac,sm);
-	  Double_t valu[3] = {nevents_physics,detector,rphi};
-	  fHnSparseEvtDet->Fill(&valu[0]); 
-	}
-	//  Debug  //
-	//---------//
-      }
-      
-    }
-    digitsManager->ClearArrays(det);
-  }
-
-  if(notEmpty) fCounterEventNotEmpty++;
-
-  delete digitsManager;
-  delete rawStream;
-   
-}//_____________________________________________________________________
-void AliTRDCalibChamberStatus::ProcessEvent3(AliRawReader * rawReader, Int_t nevents_physics)
 {
   //
   // Event Processing loop with AliTRDrawStream

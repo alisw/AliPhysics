@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       rawReader->Select("TRD");
       
-      calipad.ProcessEvent3((AliRawReader *) rawReader,nevents);
+      calipad.ProcessEvent((AliRawReader *) rawReader,nevents);
       nevents++;
       delete rawReader;
       
@@ -222,3 +222,5 @@ void SendToAmoreDB(TObject *o, unsigned long32 runNb)
   // reset env var
   if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
 }
+
+
