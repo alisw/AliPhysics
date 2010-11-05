@@ -104,14 +104,13 @@ fRawWriter(0x0)
   }
   
   AliRunLoader* runLoader = LoadRun("recreate");
-  
-  runLoader->SetNumberOfEventsPerFile(nevents);
-  
   if (!runLoader)
   {
     AliError("Could not create RunLoader");
     return;
   }
+  
+  runLoader->SetNumberOfEventsPerFile(nevents);
   
   // Initialize event headers.
   runLoader->MakeTree("E");
