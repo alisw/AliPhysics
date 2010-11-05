@@ -94,10 +94,6 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
     AliFatal("Not processing ESDs");
   }
 
-  // FIXME: two options here: either we add a loop setting the name of
-  // the histos with the trigger class in them (there may be a global
-  // SetHistoNamePrefix) or I put a cut to select only collision
-  // classes
   
   // get the multiplicity object
   const AliMultiplicity* mult = fESD->GetMultiplicity();
@@ -209,19 +205,9 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   // 	// We don't care about neutrals and non-physical primaries
   // 	if(mcPart->Charge() == 0) continue;
 
-  // 	// FIXME: add kTransportBit (uncomment below)
-  // 	if(!fMCEvent->Stack()->IsPhysicalPrimary(ipart)) continue;
-
-  // 	//check if current particle is a physical primary
-  // 	// Bool_t physprim=fMCEvent->IsPhysicalPrimary(label);
-  // 	// if (!physprim) continue;
-  // 	// if (!track) return kFALSE;
-  // 	// Bool_t transported = mcPart->Particle()->TestBit(kTransportBit);
-  // 	// if(!transported) return kFALSE;
- 
+  // PHYSICAL PRIMARY
   // 	// Get MC vertex
-  // 	//FIXME: which vertex do I take for MC?
-  // 	TArrayF   vertex;
+    // 	TArrayF   vertex;
   // 	fMCEvent->GenEventHeader()->PrimaryVertex(vertex);
   // 	Float_t zv = vertex[2];
   // 	//	Float_t zv = vtxESD->GetZ();
@@ -313,19 +299,19 @@ void AliAnalysisTaskTriggerStudy::FillTriggerOverlaps (const char * name, const 
   
   Bool_t fo2 = nFastOrOffline>=2;
 
-  if(fo2 && v0A && v0C && OM2)     {cout << "Bin5: " << ibin << endl;  h->Fill(1);}
-  if(fo2 && !v0A && v0C && OM2)    {cout << "Bin6: " << ibin << endl;  h->Fill(2);}
-  if(fo2 && v0A && !v0C && OM2)    {cout << "Bin7: " << ibin << endl;  h->Fill(3);}
-  if(fo2 && v0A && v0C && !OM2)    {cout << "Bin8: " << ibin << endl;  h->Fill(4);}
-  if(fo2 && v0A && !v0C && !OM2)   {cout << "Bin9: " << ibin << endl;  h->Fill(5);}
-  if(fo2 && !v0A && v0C && !OM2)   {cout << "Bin10: " << ibin << endl; h->Fill(6);}
-  if(fo2 && !v0A && !v0C && OM2)   {cout << "Bin11: " << ibin << endl; h->Fill(7);}
-  if(!fo2 && v0A && !v0C && OM2)   {cout << "Bin12: " << ibin << endl; h->Fill(8);}
-  if(!fo2 && !v0A && v0C && OM2)   {cout << "Bin13: " << ibin << endl; h->Fill(9);}
-  if(!fo2 && v0A && v0C && !OM2)   {cout << "Bin14: " << ibin << endl; h->Fill(10);}
-  if(fo2 && !v0A && !v0C && !OM2)  {cout << "Bin1: " << ibin << endl;  h->Fill(11);}
-  if(!fo2 && v0A && !v0C && !OM2)  {cout << "Bin2: " << ibin << endl;  h->Fill(12);}
-  if(!fo2 && !v0A && v0C && !OM2)  {cout << "Bin3: " << ibin << endl;  h->Fill(13);}
-  if(!fo2 && !v0A && !v0C && OM2)  {cout << "Bin4: " << ibin << endl;  h->Fill(14);}
+  if(fo2 && v0A && v0C && OM2)     { h->Fill(1);}
+  if(fo2 && !v0A && v0C && OM2)    { h->Fill(2);}
+  if(fo2 && v0A && !v0C && OM2)    { h->Fill(3);}
+  if(fo2 && v0A && v0C && !OM2)    { h->Fill(4);}
+  if(fo2 && v0A && !v0C && !OM2)   { h->Fill(5);}
+  if(fo2 && !v0A && v0C && !OM2)   { h->Fill(6);}
+  if(fo2 && !v0A && !v0C && OM2)   { h->Fill(7);}
+  if(!fo2 && v0A && !v0C && OM2)   { h->Fill(8);}
+  if(!fo2 && !v0A && v0C && OM2)   { h->Fill(9);}
+  if(!fo2 && v0A && v0C && !OM2)   { h->Fill(10);}
+  if(fo2 && !v0A && !v0C && !OM2)  { h->Fill(11);}
+  if(!fo2 && v0A && !v0C && !OM2)  { h->Fill(12);}
+  if(!fo2 && !v0A && v0C && !OM2)  { h->Fill(13);}
+  if(!fo2 && !v0A && !v0C && OM2)  { h->Fill(14);}
 
 }
