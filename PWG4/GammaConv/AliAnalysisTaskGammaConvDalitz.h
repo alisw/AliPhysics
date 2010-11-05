@@ -27,7 +27,7 @@ class AliAnalysisTaskGammaConvDalitz: public AliAnalysisTaskSE
 
 	virtual void UserExec(Option_t *option);
 	virtual void UserCreateOutputObjects();
-	virtual void ConnectInputData(Option_t * option);
+	virtual void ConnectInputData(Option_t *option);
 	virtual void Terminate(Option_t *option);
 	
 	enum TrackSelectionCriteria { kITSsaTrack=0, kGlobalTrack=1, kITSsaGlobalTrack=2 };
@@ -111,7 +111,7 @@ class AliAnalysisTaskGammaConvDalitz: public AliAnalysisTaskSE
   private:
 
 	AliStack*   fStack;                 //! MC particle stack
-	//	AliMCEvent* fMCEvent;               //! for CF pointer to the MC Event
+	AliMCEvent* fGCMCEvent;               //! for CF pointer to the MC Event
 
 	AliESDEvent* fESDEvent;             //! ESD event
 

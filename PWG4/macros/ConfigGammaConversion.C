@@ -106,7 +106,7 @@ Bool_t kGCRemovePileUp = kFALSE;
 Bool_t kGCSelectV0AND = kFALSE;
 /** ---------------------------------- define pi0 dalitz cuts here ------------------------------------*/
 
-Bool_t kGCRunStandalone    = kFALSE;
+Bool_t kGCRunStandalone    = kTRUE;
 Bool_t kGCUseBayesPID      = kFALSE;
 Bool_t kGCUseTrackIndexCut = kTRUE;
 Bool_t kGCUsePsiPairCut    = kTRUE;
