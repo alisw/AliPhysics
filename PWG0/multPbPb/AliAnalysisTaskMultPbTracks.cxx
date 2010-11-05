@@ -20,6 +20,7 @@
 #include "AliESDCentrality.h"
 
 #include <iostream>
+#include "AliAnalysisMultPbCentralitySelector.h"
 
 using namespace std;
 
@@ -27,13 +28,13 @@ ClassImp(AliAnalysisTaskMultPbTracks)
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 : AliAnalysisTaskSE("TaskMultPbTracks"),
-  fESD(0),fHistoManager(0),fCentrBin(0),fCentralityEstimator(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0)
+  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0)
 {
   // constructor
 
   DefineOutput(1, AliAnalysisMultPbTrackHistoManager::Class());
   DefineOutput(2, AliESDtrackCuts::Class());
-  //  DefineOutput(3, AliAnalysisMultPbCentralitySelector::Class());
+  DefineOutput(3, AliAnalysisMultPbCentralitySelector::Class());
 
   fHistoManager = new AliAnalysisMultPbTrackHistoManager("histoManager","Hitograms, Multiplicity, Track analysis");
   if(fIsMC) fHistoManager->SetSuffix("MC");
@@ -41,7 +42,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 }
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoManager(0),fCentrBin(0),fCentralityEstimator(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0)
+    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0)
 {
   //
   // Standard constructur which should be used
@@ -49,7 +50,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
 
   DefineOutput(1, AliAnalysisMultPbTrackHistoManager::Class());
   DefineOutput(2, AliESDtrackCuts::Class());
-  //  DefineOutput(3, AliAnalysisMultPbCentralitySelector::Class());
+  DefineOutput(3, AliAnalysisMultPbCentralitySelector::Class());
 
   fHistoManager = new AliAnalysisMultPbTrackHistoManager("histoManager","Hitograms, Multiplicity, Track analysis");
   if(fIsMC) fHistoManager->SetSuffix("MC");
@@ -57,15 +58,14 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
 }
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMultPbTracks& obj) : 
-  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrBin(0), fCentralityEstimator(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0)
+  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0)
 {
   //copy ctor
   fESD = obj.fESD ;
   fHistoManager= obj.fHistoManager;
-  fCentrBin = obj.fCentrBin;
-  fCentralityEstimator = obj.fCentralityEstimator;
   fTrackCuts  = obj.fTrackCuts;
   fTrackCutsNoDCA  = obj.fTrackCutsNoDCA;
+  fCentrSelector = obj.fCentrSelector;
 
 }
 
@@ -104,7 +104,7 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   /* PostData(0) is taken care of by AliAnalysisTaskSE */
   PostData(1,fHistoManager);
   PostData(2,fTrackCuts);
-  //  PostData(3,fCentralityEstimator);
+  PostData(3,fCentrSelector);
 
   // Cache histogram pointers
   static TH3D * hTracks  [AliAnalysisMultPbTrackHistoManager::kNHistos];
@@ -124,7 +124,8 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat]  = fHistoManager->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat );
   hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak] = fHistoManager->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak);
 
-  hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]        = fHistoManager->GetHistoMult(AliAnalysisMultPbTrackHistoManager::kHistoGen       );
+  hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]        = fHistoManager->GetHistoMult(AliAnalysisMultPbTrackHistoManager::kHistoGen );
+  hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]        = fHistoManager->GetHistoMult(AliAnalysisMultPbTrackHistoManager::kHistoRec );
 
   fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
   if (strcmp(fESD->ClassName(),"AliESDEvent")) {
@@ -135,18 +136,18 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatAll);
 
   // Centrality selection
-  // Bool_t isCentralitySelected = fCentrSelector->IsSelected(fESD);  
-  // if(!isCentralitySelected) return;
+  Bool_t isCentralitySelected = fCentrSelector->IsCentralityBinSelected(fESD,fTrackCuts);  
+  if(!isCentralitySelected) return;
 
-  AliESDCentrality *centrality = fESD->GetCentrality();
-  if(!centrality) {
-    AliFatal("Centrality object not available"); 
-  }
-  else {
-    Int_t centrBin = centrality->GetCentralityClass5(fCentralityEstimator.Data()) ;
+  // AliESDCentrality *centrality = fESD->GetCentrality();
+  // if(!centrality) {
+  //   AliFatal("Centrality object not available"); 
+  // }
+  // else {
+  //   Int_t centrBin = centrality->GetCentralityClass5(fCentralityEstimator.Data()) ;
     
-    if (centrBin != fCentrBin && fCentrBin != -1) return;
-  }
+  //   if (centrBin != fCentrBin && fCentrBin != -1) return;
+  // }
 
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatCentr);
 
@@ -200,7 +201,7 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 
   // loop on tracks
   Int_t ntracks = fESD->GetNumberOfTracks();
-
+  Int_t acceptedTracks = 0;
 
   for (Int_t itrack = 0; itrack<ntracks; itrack++) {    
     AliESDtrack * esdTrack = fESD->GetTrack(itrack);
@@ -208,6 +209,8 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     // Fill DCA distibutions, without the DCA cut, Fill the other stuff, with all cuts!
     Bool_t accepted = fTrackCuts->AcceptTrack(esdTrack);
     Bool_t acceptedNoDCA = fTrackCutsNoDCA->AcceptTrack(esdTrack);
+
+    if(accepted) acceptedTracks++;
 
     // Compute weighted offset
     // TODO: other choiches for the DCA?
@@ -296,6 +299,9 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 
 
   }
+  //  cout << acceptedTracks << endl;
+  
+  hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]  ->Fill(acceptedTracks);
 
 
 }

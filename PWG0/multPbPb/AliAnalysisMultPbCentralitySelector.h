@@ -30,7 +30,7 @@ class AliAnalysisMultPbCentralitySelector : public AliAnalysisCuts
 {
 public:
 
-  AliAnalysisMultPbCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000) {;}
+  AliAnalysisMultPbCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fFile1(""), fFile2(""), fUseMultRange(kFALSE) {;}
   virtual ~AliAnalysisMultPbCentralitySelector(){}
     
   // AliAnalysisCuts interface
@@ -41,18 +41,25 @@ public:
   Bool_t IsCentralityBinSelected(AliESDEvent* aEsd, AliESDtrackCuts * trackCuts);
     
   void SetAnalyzeMC(Bool_t flag = kTRUE, Double_t multMin = 0, Double_t multMax=10000) { fIsMC = flag; fMultMin = multMin; fMultMax = multMax; }
+  void SetMultRange(Double_t multMin = 0, Double_t multMax=10000) { fMultMin = multMin; fMultMax = multMax; }
+  void SetUseMultRange(Bool_t flag = kTRUE) {fUseMultRange = flag;}
   void SetCentralityEstimator(const char * estimator) { fCentrEstimator = estimator; }
-
+  void SetCentralityBin(Int_t bin) { fCentrBin = bin; }
+  void SetCentrTaskFiles(const char * file1, const char * file2) { fFile1 = file1; fFile2 = file2; }
   virtual void Print(Option_t* option = "") const ;
   virtual Long64_t Merge(TCollection* list){list->GetEntries();return 0;}
   
 protected:
   Bool_t fIsMC;             // flag if MC is analyzed
   TString fCentrEstimator;  // Centrality estimator for AliESDCentrality
-  TString fCentrBin; // centrality bin to be selected
+  Int_t   fCentrBin; // centrality bin to be selected
   Int_t fMultMin ; // Minimum multiplicity, because on MC we cut on tracks rather than on the estimator  
   Int_t fMultMax ; // Maximum multiplicity, because on MC we cut on tracks rather than on the estimator  
-  ClassDef(AliAnalysisMultPbCentralitySelector, 1)
+  TString fFile1; // file used by centrality task. Set here for bookkeeping
+  TString fFile2; // file used by centrality task. Set here for bookkeeping
+  Bool_t fUseMultRange; // if true, use track bins rather than multiplicity estimator
+
+  ClassDef(AliAnalysisMultPbCentralitySelector, 2)
     
   private:
   AliAnalysisMultPbCentralitySelector(const AliAnalysisMultPbCentralitySelector&); // not implemented

@@ -57,11 +57,21 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   // Centrality
   AliCentralitySelectionTask *taskCentr = new AliCentralitySelectionTask("CentralitySelection");
-  taskCentr->SetPercentileFile("$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root");
-  taskCentr->SetPercentileFile2("$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityByFunction.root");
+  const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root";
+  const char * file2 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityByFunction.root";
+  taskCentr->SetPercentileFile (file1);
+  taskCentr->SetPercentileFile2(file2);
   mgr->AddTask(taskCentr);
   mgr->ConnectInput (taskCentr,0, mgr->GetCommonInputContainer());
 
+  // Create my own centrality selector
+  AliAnalysisMultPbCentralitySelector * centrSelector = new AliAnalysisMultPbCentralitySelector();
+  centrSelector->SetCentrTaskFiles(file1,file2);
+  centrSelector->SetCentralityBin(centrBin);
+  centrSelector->SetCentralityEstimator(centrEstimator);
+  // FIXME!!!
+  centrSelector->SetUseMultRange();
+  centrSelector->SetMultRange(10,20);
 
   // Parse option strings
   TString optionStr(option);
@@ -104,15 +114,13 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   
   // load my task
   gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
-  AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts); // kTRUE enables DCA cut
+  AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts, centrSelector); // kTRUE enables DCA cut
   task->SetIsMC(useMCKinematics);
   if(useMCKinematics) task->GetHistoManager()->SetSuffix("MC");
   if(customSuffix!=""){
     cout << "Setting custom suffix: " << customSuffix << endl;    
     task->GetHistoManager()->SetSuffix(customSuffix);
   }
-  task->SetCentralityBin(centrBin);
-  task->SetCentralityEstimator(centrEstimator);
   
   if (!mgr->InitAnalysis()) return;
 	
@@ -191,6 +199,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   listToLoad->Add(new TObjString("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx+"));
   listToLoad->Add(new TObjString("$ALICE_ROOT/PWG1/background/AliHistoListWrapper.cxx+"));
   listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+"));
+  listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbCentralitySelector.cxx+"));
   listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+"));
 
 

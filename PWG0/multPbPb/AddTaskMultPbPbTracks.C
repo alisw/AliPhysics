@@ -1,4 +1,4 @@
-AliAnalysisTaskMultPbTracks * AddTaskMultPbPbTracks(const char * outfilename, AliESDtrackCuts * esdTrackCuts = 0)
+AliAnalysisTaskMultPbTracks * AddTaskMultPbPbTracks(const char * outfilename, AliESDtrackCuts * esdTrackCuts = 0, AliAnalysisMultPbCentralitySelector * centr)
 {
   // TODO: add some parameters to set the centrality for this task, and maybe the name of the task
   // TODO: shall I use the same file and different dirs for the different centralities?
@@ -36,11 +36,12 @@ AliAnalysisTaskMultPbTracks * AddTaskMultPbPbTracks(const char * outfilename, Al
       return;
     }  
   task->SetTrackCuts(esdTrackCuts);
-  
+
+  // set centrality
+  task->SetCentralitySelector(centr);
+
   // TODO:
   // IO into folders in a file?
-  // FIXME:
-  // Add centrality selection configuration (included arguments)
 
   // Set I/O
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
@@ -52,15 +53,15 @@ AliAnalysisTaskMultPbTracks * AddTaskMultPbPbTracks(const char * outfilename, Al
 							    AliESDtrackCuts::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outfilename);
-  // AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cmultPbTracksOutCM",
-  // 							    AliAnalysisMultPbCentralitySelector::Class(),
-  // 							    AliAnalysisManager::kOutputContainer,
-  // 							    outfilename);
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cmultPbTracksOutCM",
+  							    AliAnalysisMultPbCentralitySelector::Class(),
+  							    AliAnalysisManager::kOutputContainer,
+  							    outfilename);
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
-  //  mgr->ConnectOutput(task,3,coutput3);
+  mgr->ConnectOutput(task,3,coutput3);
 
   return task;
 }   
