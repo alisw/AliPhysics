@@ -1,0 +1,414 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TF1.h>
+#include <TPad.h>
+#include <TGraphErrors.h>
+#include <TROOT.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TGrid.h>
+#include <TGridResult.h>
+#include <TMath.h>
+#include <TSystem.h>
+#include <TNtuple.h>
+#include <TCanvas.h>
+#include <TStyle.h>
+#include <TLatex.h>
+#include <TLegend.h>
+#include <TLegendEntry.h>
+#include "AliITSgeomTGeo.h"
+#endif
+
+Double_t LangausFun(Double_t *x, Double_t *par);
+void MakePlots(TString ntupleFileName);
+
+
+void TrendQAtrainSDD(TString period,
+		     TString recoPass,
+		     TString qaTrain,
+		     Int_t firstRun=0,
+		     Int_t lastRun=999999999,
+		     TString fileName="QAresults.root"){
+
+  gStyle->SetOptStat(0);
+  
+
+  TGrid::Connect("alien:");
+  Int_t year=0;
+  if(period.Contains("LHC09")) year=2009;
+  else if(period.Contains("LHC10")) year=2010;
+
+  TString outFilNam=Form("TrendingSDD_%s_%s_%s.root",period.Data(),recoPass.Data(),qaTrain.Data());
+
+
+  const Int_t nVariables=15;
+  TNtuple* ntsdd=new TNtuple("ntsdd","SDD trending","nrun:meanTrPts3:errmeanTrPts3:meanTrPts4:errmeanTrPts4:minDrTime:errminDrTime:meanDrTime:errmeanDrTime:fracExtra:errfracExtra:meandEdxTB0:errmeandEdxTB0:meandEdxTB5:errmeandEdxTB5");
+  Float_t xnt[nVariables];
+
+  TBits* readRun=new TBits(999999);
+  readRun->ResetAllBits();
+  if(!gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",outFilNam.Data()))){
+    TFile* oldfil=new TFile(outFilNam.Data());
+    TNtuple* ntmp=(TNtuple*)oldfil->Get("ntsdd");
+    Bool_t isOK=kFALSE;
+    if(ntmp){
+      if(ntmp->GetNvar()==ntsdd->GetNvar()){
+	isOK=kTRUE;
+	TObjArray* arr1=(TObjArray*)ntsdd->GetListOfBranches();
+	TObjArray* arr2=(TObjArray*)ntmp->GetListOfBranches();
+	for(Int_t iV=0; iV<ntmp->GetNvar(); iV++){
+	  TString vnam1=arr1->At(iV)->GetName();
+	  TString vnam2=arr2->At(iV)->GetName();
+	  if(vnam1!=vnam2) isOK=kFALSE;
+	  ntmp->SetBranchAddress(vnam2.Data(),&xnt[iV]);
+	}
+	if(isOK){
+	  for(Int_t nE=0; nE<ntmp->GetEntries(); nE++){
+	    ntmp->GetEvent(nE);
+	    Int_t theRun=(Int_t)(xnt[0]+0.0001);
+	    readRun->SetBitNumber(theRun);
+	    ntsdd->Fill(xnt);
+	  }
+	}
+      }
+    }
+    if(!isOK){
+      printf("Ntuple in local file not OK -> will be recreated\n");
+    }
+    oldfil->Close();
+    delete oldfil;
+  }
+
+  if(!gGrid||!gGrid->IsConnected()) {
+    printf("gGrid not found! exit macro\n");
+    return;
+  }
+
+  TString  path=Form("/alice/data/%d/%s/",year,period.Data(),recoPass.Data());
+  TGridResult *gr = gGrid->Query(path,fileName);
+  Int_t nFiles = gr->GetEntries();
+  printf("================>%d files found\n", nFiles);
+  if (nFiles < 1) return;
+
+
+  if (nFiles > 1){
+    for (Int_t iFil = 0; iFil <nFiles ; iFil++) { 
+      TString fileNameLong=Form("%s",gr->GetKey(iFil,"turl"));
+      if(!fileNameLong.Contains(recoPass.Data())) continue;
+      if(!fileNameLong.Contains(qaTrain.Data())) continue;
+      if(!fileNameLong.Contains(Form("%s/%s",qaTrain.Data(),fileName.Data()))) continue;
+      TString runNumber=fileNameLong;
+      runNumber.ReplaceAll(Form("alien:///alice/data/%d/%s/",year,period.Data()),"");
+      runNumber.Remove(9,runNumber.Sizeof());
+   
+      Int_t iRun=atoi(runNumber.Data());
+      if(readRun->TestBitNumber(iRun)){ 
+	printf("Run %d aleady in local ntuple -> skipping it\n",iRun);
+	continue;
+      }
+      if(iRun<firstRun) continue;
+      if(iRun>lastRun) continue;
+
+      TFile* f=TFile::Open(fileNameLong.Data());  
+
+      TDirectoryFile* df=(TDirectoryFile*)f->Get("SDD_Performance");
+      if(!df){
+	printf("Run %d SDD_Performance MISSING -> Exit\n",iRun);
+	continue;
+      }
+      TList* l=(TList*)df->Get("coutputRP");
+      if(!df){
+	printf("Run %d coutputRP TList MISSING -> Exit\n",iRun);
+	continue;
+      }
+      TH1F* hmodT=(TH1F*)l->FindObject("hTPMod");
+      TH1F* hgamod=(TH1F*)l->FindObject("hGAMod");
+      Int_t bestMod=0;
+      for(Int_t iMod=0; iMod<260;iMod++){
+	Int_t gda=(Int_t)hgamod->GetBinContent(iMod+1);
+	if(gda>bestMod) bestMod=gda;
+      }
+      Int_t nChunks=1;
+      if(bestMod>512){
+	nChunks=(Int_t)(bestMod/512.+0.5);
+      }
+      hgamod->Scale(1./nChunks);
+
+      TH1F* hev=(TH1F*)l->FindObject("hNEvents");
+      Int_t nTotEvents=hev->GetBinContent(2);
+      Int_t nTrigEvents=hev->GetBinContent(3);
+      Int_t nEvents=nTotEvents;
+      printf("Run %d Number of Events = %d Triggered=%d\n",iRun,nTotEvents,nTrigEvents);
+      if(nTrigEvents>0){ 
+	nEvents=nTrigEvents;
+      }
+
+      Int_t nModGood3=0;
+      Int_t nModGood4=0;
+      Int_t nModBadAn=0;
+      Float_t sumtp3=0;
+      Float_t sumtp4=0;
+      Float_t sumEtp3=0;
+      Float_t sumEtp4=0;
+      for(Int_t iMod=0; iMod<260; iMod++){
+	Float_t tps=hmodT->GetBinContent(iMod+1);
+	Float_t ga=hgamod->GetBinContent(iMod+1);
+	if(ga<500) nModBadAn++;
+	Float_t tpsN=0.;
+	Float_t etpsN=0.;
+	if(ga>0){
+	  tpsN=tps/ga/(Float_t)nEvents;
+	  etpsN=TMath::Sqrt(tps)/ga/(Float_t)nEvents;
+	  if(iMod<84){
+	    sumtp3+=tpsN;
+	    sumEtp3+=(etpsN*etpsN);
+	    nModGood3++;
+	  }
+	  else{
+	    sumtp4+=tpsN;
+	    sumEtp4+=(etpsN*etpsN);
+	    nModGood4++;
+	  }
+	}
+      }
+
+      TH1F* htimT=(TH1F*)l->FindObject("hDrTimTPAll");
+      TH1F* htimTe=(TH1F*)l->FindObject("hDrTimTPExtra");
+      
+      Double_t fracExtra=0.;
+      Double_t errFracExtra=0.;
+      if(htimT->GetEntries()>0){
+	fracExtra=htimTe->GetEntries()/htimT->GetEntries();
+	errFracExtra=TMath::Sqrt(htimTe->GetEntries())/htimT->GetEntries();
+      }
+      Double_t averPoints=0.;
+      Double_t cntBins=0.;
+      for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
+	Float_t tim=htimT->GetBinCenter(iBin);
+	if(tim>2000. && tim<4000.){
+	  averPoints+=htimT->GetBinContent(iBin);
+	  cntBins+=1;
+	}
+      }
+      Double_t minTime=-999.;
+      Double_t errMinTime=0.;
+      if(cntBins>0){ 
+	averPoints/=cntBins;
+	for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
+	  if(htimT->GetBinContent(iBin)>0.5*averPoints){
+	    minTime=htimT->GetBinCenter(iBin);
+	    errMinTime=0.5*htimT->GetBinWidth(iBin);
+	    break;
+	  }
+	}
+      }
+      TH1F* hSigTim0=(TH1F*)l->FindObject("hSigTimeInt0");
+      TH1F* hSigTim5=(TH1F*)l->FindObject("hSigTimeInt5");
+
+      xnt[0]=(Float_t)iRun;
+      xnt[1]=sumtp3/nModGood3;
+      xnt[2]=TMath::Sqrt(sumEtp3)/nModGood3;
+      xnt[3]=sumtp4/nModGood4;
+      xnt[4]=TMath::Sqrt(sumEtp4)/nModGood4;
+      xnt[5]=minTime;
+      xnt[6]=errMinTime;
+      xnt[7]=htimT->GetMean();
+      xnt[8]=htimT->GetMeanError();
+      xnt[9]=fracExtra;
+      xnt[10]=errFracExtra;
+      xnt[11]=hSigTim0->GetMean();
+      xnt[12]=hSigTim0->GetMeanError();
+      xnt[13]=hSigTim5->GetMean();
+      xnt[14]=hSigTim5->GetMeanError();
+      
+      ntsdd->Fill(xnt);
+    }
+  }
+
+  TFile* outfil=new TFile(outFilNam.Data(),"recreate");
+  outfil->cd();
+  ntsdd->Write();
+  outfil->Close();
+
+  MakePlots(outFilNam);
+
+}
+
+void MakePlots(TString ntupleFileName){
+  TFile* fil=new TFile(ntupleFileName.Data(),"read");
+  if(!fil){
+    printf("File with ntuple does not exist\n");
+    return;
+  }
+  TNtuple* ntsdd=(TNtuple*)fil->Get("ntsdd");
+
+  Float_t nrun;
+  Float_t meanTrPts3,errmeanTrPts3,meanTrPts4,errmeanTrPts4;
+  Float_t minDrTime,errminDrTime,meanDrTime,errmeanDrTime;
+  Float_t fracExtra,errfracExtra;
+  Float_t meandEdxTB0,errmeandEdxTB0,meandEdxTB5,errmeandEdxTB5;
+
+  ntsdd->SetBranchAddress("nrun",&nrun);
+  ntsdd->SetBranchAddress("meanTrPts3",&meanTrPts3);
+  ntsdd->SetBranchAddress("errmeanTrPts3",&errmeanTrPts3);
+  ntsdd->SetBranchAddress("meanTrPts4",&meanTrPts4);
+  ntsdd->SetBranchAddress("errmeanTrPts4",&errmeanTrPts4);
+  ntsdd->SetBranchAddress("minDrTime",&minDrTime);
+  ntsdd->SetBranchAddress("errminDrTime",&errminDrTime);
+  ntsdd->SetBranchAddress("meanDrTime",&meanDrTime);
+  ntsdd->SetBranchAddress("errmeanDrTime",&errmeanDrTime);
+  ntsdd->SetBranchAddress("fracExtra",&fracExtra);
+  ntsdd->SetBranchAddress("errfracExtra",&errfracExtra);
+  ntsdd->SetBranchAddress("meandEdxTB0",&meandEdxTB0);
+  ntsdd->SetBranchAddress("errmeandEdxTB0",&errmeandEdxTB0);
+  ntsdd->SetBranchAddress("meandEdxTB5",&meandEdxTB5);
+  ntsdd->SetBranchAddress("errmeandEdxTB5",&errmeandEdxTB5);
+
+  TH1F* histotrp3=new TH1F("histotrp3","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histotrp4=new TH1F("histotrp4","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histominTime=new TH1F("histominTime","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histomeanTime=new TH1F("histomeanTime","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histofracExtra=new TH1F("histofracExtra","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histodEdxTB0=new TH1F("histodEdxTB0","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histodEdxTB5=new TH1F("histodEdxTB5","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+
+  for(Int_t i=0; i<ntsdd->GetEntries();i++){
+    ntsdd->GetEvent(i);
+    histominTime->SetBinContent(i+1,minDrTime);
+    histominTime->SetBinError(i+1,errminDrTime);
+    histominTime->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histomeanTime->SetBinContent(i+1,meanDrTime);
+    histomeanTime->SetBinError(i+1,errmeanDrTime);
+    histomeanTime->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histotrp3->SetBinContent(i+1,meanTrPts3);
+    histotrp3->SetBinError(i+1,errmeanTrPts3);
+    histotrp3->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histotrp4->SetBinContent(i+1,meanTrPts4);
+    histotrp4->SetBinError(i+1,errmeanTrPts3);
+    histotrp4->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histofracExtra->SetBinContent(i+1,fracExtra);
+    histofracExtra->SetBinError(i+1,errfracExtra);
+    histofracExtra->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histodEdxTB0->SetBinContent(i+1,meandEdxTB0);
+    histodEdxTB0->SetBinError(i+1,errmeandEdxTB0);
+    histodEdxTB0->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histodEdxTB5->SetBinContent(i+1,meandEdxTB5);
+    histodEdxTB5->SetBinError(i+1,errmeandEdxTB5);
+    histodEdxTB5->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+  }
+
+  gStyle->SetOptStat(0);
+
+
+  TCanvas* c1=new TCanvas("c1","Occupancy");
+  histotrp3->SetLineColor(1);
+  histotrp3->SetMarkerStyle(20);
+  histotrp3->Draw();
+  histotrp3->SetMinimum(0.);
+  histotrp4->SetLineColor(2);
+  histotrp4->SetMarkerColor(2);
+  histotrp4->SetMarkerStyle(22);
+  histotrp4->Draw("same");
+  histotrp3->GetYaxis()->SetTitle("Track Point Occupancy");
+  TLegend* leg=new TLegend(0.7,0.15,0.88,0.35);
+  TLegendEntry* ent=leg->AddEntry(histotrp3,"Layer3","PL");
+  ent=leg->AddEntry(histotrp4,"Layer4","PL");
+  ent->SetTextColor(histotrp4->GetMarkerColor());
+  leg->SetFillStyle(0);
+  leg->Draw();
+  c1->Update();
+
+  TCanvas* c2=new TCanvas("c2","DriftTime",600,900);
+  c2->Divide(1,2);
+  c2->cd(1);
+  histominTime->Draw();
+  histominTime->SetMinimum(250);
+  histominTime->SetMaximum(1000);
+  histominTime->GetYaxis()->SetTitle("Minimum Drift Time (ns)");
+  c2->cd(2);
+  histomeanTime->Draw();
+  histomeanTime->GetYaxis()->SetTitle("Average Drift Time (ns)");
+  c2->Update();
+
+  TCanvas* c3=new TCanvas("c3","ExtraClusters");
+  histofracExtra->Draw();
+  histofracExtra->GetYaxis()->SetTitle("Fraction of Extra Clusters");
+  c3->Update();
+
+
+  TCanvas* c4=new TCanvas("c4","Charge");
+  histodEdxTB0->SetLineColor(1);
+  histodEdxTB0->SetMarkerStyle(20);
+  histodEdxTB0->Draw();
+  histodEdxTB0->SetMinimum(0.);
+  histodEdxTB5->SetLineColor(4);
+  histodEdxTB5->SetMarkerColor(4);
+  histodEdxTB5->SetMarkerStyle(23);
+  histodEdxTB5->Draw("same");
+  histodEdxTB0->GetYaxis()->SetTitle("Track Point Occupancy");
+  TLegend* leg2=new TLegend(0.6,0.15,0.88,0.35);
+  ent=leg2->AddEntry(histodEdxTB0,"Small drift time","PL");
+  ent=leg2->AddEntry(histodEdxTB5,"Large drift time","PL");
+  ent->SetTextColor(histodEdxTB5->GetMarkerColor());
+  leg2->SetFillStyle(0);
+  leg2->Draw();
+  c4->Update();
+
+
+
+}
+
+Double_t LangausFun(Double_t *x, Double_t *par) {
+
+  //Fit parameters:
+  //par[0]=Width (scale) parameter of Landau density
+  //par[1]=Most Probable (MP, location) parameter of Landau density
+  //par[2]=Total area (integral -inf to inf, normalization constant)
+  //par[3]=Width (sigma) of convoluted Gaussian function
+  //
+  //In the Landau distribution (represented by the CERNLIB approximation), 
+  //the maximum is located at x=-0.22278298 with the location parameter=0.
+  //This shift is corrected within this function, so that the actual
+  //maximum is identical to the MP parameter.
+
+  // Numeric constants
+  Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+  Double_t mpshift  = -0.22278298;       // Landau maximum location
+
+  // Control constants
+  Double_t np = 100.0;      // number of convolution steps
+  Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
+
+  // Variables
+  Double_t xx;
+  Double_t mpc;
+  Double_t fland;
+  Double_t sum = 0.0;
+  Double_t xlow,xupp;
+  Double_t step;
+  Double_t i;
+
+
+  // MP shift correction
+  mpc = par[1] - mpshift * par[0]; 
+
+  // Range of convolution integral
+  xlow = x[0] - sc * par[3];
+  xupp = x[0] + sc * par[3];
+
+  step = (xupp-xlow) / np;
+
+  // Convolution integral of Landau and Gaussian by sum
+  for(i=1.0; i<=np/2; i++) {
+    xx = xlow + (i-.5) * step;
+    fland = TMath::Landau(xx,mpc,par[0]) / par[0];
+    sum += fland * TMath::Gaus(x[0],xx,par[3]);
+
+    xx = xupp - (i-.5) * step;
+    fland = TMath::Landau(xx,mpc,par[0]) / par[0];
+    sum += fland * TMath::Gaus(x[0],xx,par[3]);
+  }
+
+  return (par[2] * step * sum * invsq2pi / par[3]);
+}
