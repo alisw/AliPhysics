@@ -21,7 +21,7 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
 
   // Create the task
   AliAnalysisTaskITSTrackingCheck *taskITS = new AliAnalysisTaskITSTrackingCheck("ITStracking");
-  taskITS->SetMultRange(minmult,maxmult);
+  taskITS->SetMultiplicityRange(minmult,maxmult);
   taskITS->SetReadMC(readMC);
   taskITS->SetReadRPLabels(readRP);
   taskITS->SetFillNtuples(fillNtuples);
