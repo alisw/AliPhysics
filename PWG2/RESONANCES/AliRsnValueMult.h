@@ -26,9 +26,9 @@ class AliRsnValueMult : public AliRsnValue
     };
     
     AliRsnValueMult();
-    AliRsnValueMult(const char *name, EValueType type, Int_t n = 0, Double_t min = 0.0, Double_t max = 0.0);
-    AliRsnValueMult(const char *name, EValueType type, Double_t min, Double_t max, Double_t step);
-    AliRsnValueMult(const char *name, EValueType type, Int_t n, Double_t *array);
+    AliRsnValueMult(const char *name, EMode mode, Int_t n = 0, Double_t min = 0.0, Double_t max = 0.0);
+    AliRsnValueMult(const char *name, EMode mode, Double_t min, Double_t max, Double_t step);
+    AliRsnValueMult(const char *name, EMode mode, Int_t n, Double_t *array);
     AliRsnValueMult(const AliRsnValueMult& copy) : AliRsnValue(copy),fMode(copy.fMode),fESDcuts(copy.fESDcuts) {}
     AliRsnValueMult& operator=(const AliRsnValueMult& copy) {AliRsnValue::operator=(copy); fMode=copy.fMode; fESDcuts=copy.fESDcuts;return (*this);}
     virtual ~AliRsnValueMult() { }

@@ -28,9 +28,9 @@ AliRsnValueMult::AliRsnValueMult() :
 
 //_____________________________________________________________________________
 AliRsnValueMult::AliRsnValueMult
-(const char *name, EValueType type, Int_t nbins, Double_t min, Double_t max) :
-  AliRsnValue(name, type, nbins, min, max),
-  fMode(kESDcuts),
+(const char *name, EMode mode, Int_t nbins, Double_t min, Double_t max) :
+  AliRsnValue(name, AliRsnValue::kValueTypes, nbins, min, max),
+  fMode(mode),
   fESDcuts()
 {
 //
@@ -43,9 +43,9 @@ AliRsnValueMult::AliRsnValueMult
 
 //_____________________________________________________________________________
 AliRsnValueMult::AliRsnValueMult
-(const char *name, EValueType type, Double_t min, Double_t max, Double_t step) :
-  AliRsnValue(name, type, min, max, step),
-  fMode(kESDcuts),
+(const char *name, EMode mode, Double_t min, Double_t max, Double_t step) :
+  AliRsnValue(name, AliRsnValue::kValueTypes, min, max, step),
+  fMode(mode),
   fESDcuts()
 {
 //
@@ -57,9 +57,9 @@ AliRsnValueMult::AliRsnValueMult
 
 //_____________________________________________________________________________
 AliRsnValueMult::AliRsnValueMult
-(const char *name, EValueType type, Int_t nbins, Double_t *array) :
-  AliRsnValue(name, type, nbins, array),
-  fMode(kESDcuts),
+(const char *name, EMode mode, Int_t nbins, Double_t *array) :
+  AliRsnValue(name, AliRsnValue::kValueTypes, nbins, array),
+  fMode(mode),
   fESDcuts()
 {
 //
