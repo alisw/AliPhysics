@@ -319,7 +319,7 @@ void AliMUONPairLight::SetProcess(){
 }
 
 //====================================
-void AliMUONPairLight::SetMuons(AliMUONTrackLight mu0, AliMUONTrackLight mu1){
+void AliMUONPairLight::SetMuons(const AliMUONTrackLight& mu0, const AliMUONTrackLight& mu1){
   /// set the two muons 
   fMu0 = mu0; 
   fMu1 = mu1; 
