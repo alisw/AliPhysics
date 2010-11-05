@@ -18,6 +18,7 @@
 
 #include "AliHLTCaloGeometry.h"
 #include "AliEMCALGeoUtils.h"
+#include "AliEMCALRecoUtils.h"
 
 class TGeoManager;
 class AliCDBManager;
@@ -33,8 +34,8 @@ class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
 	virtual ~AliHLTEMCALGeometry();
 	void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord );
 	void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
-	virtual void ConvertRecPointCoordinates(Double_t &x, Double_t &y, Double_t &z) const;
 	virtual Int_t InitialiseGeometry();
+	
 
 
 protected:
@@ -46,6 +47,7 @@ private:
 
 	// EMCal Geometry
 	AliEMCALGeoUtils *fGeo;
+	AliEMCALRecoUtils *fReco;
 
 };
 
