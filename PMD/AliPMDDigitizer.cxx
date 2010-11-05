@@ -1452,9 +1452,13 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
   Float_t sigrr     = 0.605016 - 0.000273*adc12bit + 6.54e-8*adc12bit*adc12bit;
   Float_t adcwithrr = gRandom->Gaus(adc12bit,sigrr);
 
-  if(adcwithrr < 1600.0)
+  if(adcwithrr < 0.)
     {
-      adc = (Float_t) adcwithrr;
+      adc = 0.;
+    }
+  else if(adcwithrr >= 0. && adcwithrr < 1600.0)
+    {
+      adc = adcwithrr;
     }
   else if (adcwithrr >= 1600.0)
     {

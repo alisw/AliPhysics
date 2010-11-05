@@ -225,9 +225,6 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       Int_t  iskip[5];
       UInt_t ddlEndWord[2] = {0xDEADFACE, 0xDEADFACE};
 
-      Int_t bknJunk = 0;
-
-
       for (Int_t iblock = 0; iblock < 2; iblock++)
 	{
 	  // DSP Block Header
@@ -321,8 +318,6 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
 		  outfile->WriteBuffer((char*)patchBusHeaderWord,4*sizeof(UInt_t));
 
-		  bknJunk += patchbusRDL;
-
 		  for (Int_t iword = 0; iword < patchbusRDL; iword++)
 		    {
 		      buffer[iword] = busPatch[busno][iword];
@@ -376,11 +371,8 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
   UInt_t mcmno = 0, chno = 0;
   UInt_t adc = 0;
   Int_t  det = 0, smn = 0, irow = 0, icol = 0;
-  Int_t  parity = 0;
+  UInt_t  parity = 0;
   
-  //  Int_t totPatchBus = 0, bPatchBus = 0, ePatchBus = 0;
-  //  Int_t ibus = 0, totmcm = 0, rows = 0, cols = 0, rowe = 0, cole = 0;
-  //  Int_t moduleno = 0;
   Int_t busno = 0;
   Int_t patchBusNo[kMaxBus], mcmperBus[kMaxBus];
   Int_t startRowBus[kMaxBus], startColBus[kMaxBus];
@@ -440,7 +432,9 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
       smn    = pmddigit->GetSMNumber();
       irow   = pmddigit->GetRow();
       icol   = pmddigit->GetColumn();
-      adc    = (UInt_t) pmddigit->GetADC();
+      Float_t aadc = pmddigit->GetADC();
+      if (aadc < 0.) aadc = 0.;
+      adc    = (UInt_t) aadc;
 
       TransformS2H(smn,irow,icol);
       
@@ -791,17 +785,17 @@ void AliPMDDDLRawData::GetMCMCh(Int_t imodule, Int_t row, Int_t col,
 
 //____________________________________________________________________________
 
-Int_t AliPMDDDLRawData::ComputeParity(UInt_t baseword)
+UInt_t AliPMDDDLRawData::ComputeParity(UInt_t baseword)
 {
   // Generate the parity bit
 
-  Int_t count = 0;
+  UInt_t count = 0;
   for(Int_t j=0; j<29; j++)
     {
       if (baseword & 0x01 ) count++;
       baseword >>= 1;
     }
-  Int_t parity = count%2;
+  UInt_t parity = count%2;
   return parity;
 }
 //____________________________________________________________________________

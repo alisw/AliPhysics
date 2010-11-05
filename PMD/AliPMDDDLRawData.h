@@ -57,11 +57,11 @@ class AliPMDDDLRawData:public TObject
   AliPMDddlinfoData  *fDdlinfo;    //! ddl info data
   AliPMDMappingData  *fMapData;    //! Mapping data
 
-  Int_t ComputeParity(UInt_t baseword);
+  UInt_t ComputeParity(UInt_t baseword);
 
   TClonesArray *fDigits;    //! List of digits
 
-  ClassDef(AliPMDDDLRawData,10)    // To make RAW Data
+  ClassDef(AliPMDDDLRawData,11)    // To make RAW Data
 };
 #endif
 
