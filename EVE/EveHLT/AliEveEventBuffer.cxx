@@ -91,7 +91,7 @@ void * AliEveEventBuffer::BufferThread(void * buffer) {
 
 ///_____________________________________________________________________________
 void AliEveEventBuffer::MonitorBuffer() {
-  cout << "Monitorbuffer() " << ;
+  cout << "Monitorbuffer() ";
   SetBusy(kTRUE);
   FetchEvent();
   SetBusy(kFALSE);
