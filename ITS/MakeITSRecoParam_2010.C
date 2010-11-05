@@ -122,6 +122,12 @@ void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLo
     itsRecoParam->SetTrackleterZetaWindowL2(0.4);
     itsRecoParam->SetTrackleterPhiWindowL1(0.10);
     itsRecoParam->SetTrackleterZetaWindowL1(0.6);
+    //
+    itsRecoParam->SetTrackleterPhiWindow(0.06);
+    itsRecoParam->SetTrackleterThetaWindow(0.025);
+    itsRecoParam->SetTrackleterNStdDevCut(25);
+    itsRecoParam->SetTrackleterScaleDThetaBySin2T(kTRUE);
+    //
     // Removal of tracklets reconstructed in the SPD overlaps 
     itsRecoParam->SetTrackleterRemoveClustersFromOverlaps(kTRUE);
 

@@ -436,6 +436,11 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fMultCutK0SFromDecay = -10.;
   param->fMultCutMaxDCA = 1.;  
   //
+  // trackleter
+  param->fTrackleterPhiWindow = 0.06;
+  param->fTrackleterNStdDev = 25.;
+  param->fScaleDTBySin2T = kTRUE;
+
   return param;
 }
 //_____________________________________________________________________________

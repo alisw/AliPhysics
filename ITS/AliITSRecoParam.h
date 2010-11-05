@@ -727,7 +727,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,35) // ITS reco parameters
+  ClassDef(AliITSRecoParam,36) // ITS reco parameters
 };
 
 #endif
