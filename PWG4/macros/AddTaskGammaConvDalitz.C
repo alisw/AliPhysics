@@ -77,10 +77,10 @@ AliAnalysisTaskGammaConvDalitz* AddTaskGammaConvDalitz(
 	dalitzTask->AdoptESDtrackCuts( esdTrackCuts );
 	
 	// --------------------- electrons pid cuts -----------------------------
-    esdPidCuts = new AliESDpidCuts("Electrons", "Electron PID cuts");
-    //   esdPidCuts->SetTPCnSigmaCut(AliPID::kElectron, 3.);
-    esdPidCuts->SetTPCnSigmaCut(AliPID::kElectron, -3., 3.);
-    //esdPidCuts->SetTPCnSigmaCut(AliPID::kPion, -1000., 0.);
+        esdPidCuts = new AliESDpidCuts("Electrons", "Electron PID cuts");
+        //   esdPidCuts->SetTPCnSigmaCut(AliPID::kElectron, 3.);
+        esdPidCuts->SetTPCnSigmaCut(AliPID::kElectron, -3., 3.);
+        //esdPidCuts->SetTPCnSigmaCut(AliPID::kPion, -1000., 0.);
 
     dalitzTask->AdoptESDpidCuts( esdPidCuts );
 
@@ -202,6 +202,15 @@ void AddHistogramsDalitz( AliGammaConversionHistograms *histograms )
     histograms->AddHistogram("MC_Acceptance_GammaPi0Dalitz_Pt", "\\gamma from \\pi^{0} Dalitz,  \\pi^{0} within acceptance ",  kGCnXBinsPt,kGCfirstXBinPt,kGClastXBinPt/5.,"p_{t} (GeV/c)","");
     histograms->AddHistogram("MC_Acceptance_GammaPi0Dalitz_Eta", "\\gamma from \\pi^{0} Dalitz,  \\pi^{0} within acceptance ",  kGCnXBinsEta,kGCfirstXBinEta,kGClastXBinEta,"\\eta","");
     
+    // e+
+    histograms->AddHistogram("MC_Acceptance_EposPi0Dalitz_Pt",  "e+ from \\pi^{0} Dalitz,  \\pi^{0} within acceptance", kGCnXBinsPt,kGCfirstXBinPt,kGClastXBinPt/5.,"p_{t} (GeV/c)","");
+    histograms->AddHistogram("MC_Acceptance_EposPi0Dalitz_Eta", "e+ from \\pi^{0} Dalitz,  \\pi^{0} within acceptance", kGCnXBinsEta,kGCfirstXBinEta,kGClastXBinEta,"\\eta","");
+    
+    // e-
+    histograms->AddHistogram("MC_Acceptance_EnegPi0Dalitz_Pt",  "e- from \\pi^{0} Dalitz,  \\pi^{0} within acceptance",              kGCnXBinsPt,kGCfirstXBinPt,kGClastXBinPt/5.,"p_{t} (GeV/c)","");
+    histograms->AddHistogram("MC_Acceptance_EnegPi0Dalitz_Eta", "e- from \\pi^{0} Dalitz,  \\pi^{0} within acceptance",              kGCnXBinsEta,kGCfirstXBinEta,kGClastXBinEta,"\\eta","");
+    
+    
     histograms->AddHistogram("MC_Acceptance_DalitzPair_OpeningAngle", "Dalitz pair within acceptance", kGCnXBinsEPosNegAngle,kGCfirstXBinEPosNegAngle,kGClastXBinEPosNegAngle,"Angle(e+,e-) (rad)","");
     histograms->AddHistogram("MC_GC_GammaPi0Dalitz_All_Z_vs_R",    "\\gamma from \\pi^{0} Dalitz decay", kGCnXBinsZR, kGCfirstXBinZR, kGClastXBinZR, kGCnYBinsZR, kGCfirstYBinZR, kGClastYBinZR, "Z (cm)"," R (cm)");
 
@@ -233,6 +242,7 @@ void AddHistogramsDalitz( AliGammaConversionHistograms *histograms )
     // ---------------------------------------------------------------------------
 
     // reconstructed epos
+    histograms->AddHistogram("ESD_Debug_Table","Table Debug",10,-5,5,"Quality","");
     histograms->AddHistogram("ESD_EposCandidates_Pt", "Reconstructed e+ candidates",   kGCnXBinsPt,kGCfirstXBinPt,kGClastXBinPt/5.,"p_{t} (GeV/c)","");
     histograms->AddHistogram("ESD_EposCandidates_Eta", "Reconstructed e+ candidates",       kGCnXBinsEta,kGCfirstXBinEta,kGClastXBinEta,"\\eta","");
 
