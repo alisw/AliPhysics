@@ -21,7 +21,6 @@
 #pragma link C++ class AliMUONTrackParam+; 
 #pragma link C++ class AliMUONTrackExtrap+; 
 #pragma link C++ class AliMUONTriggerTrack+; 
-#pragma link C++ class AliMUONRecoTrack+; 
 #pragma link C++ class AliMUONVClusterFinder+;
 #pragma link C++ class AliMUONPad+;
 #pragma link C++ class AliMUONCluster+;
