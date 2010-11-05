@@ -61,24 +61,24 @@ AliEveEventBuffer::~AliEveEventBuffer() {
   fCurrentEvent = NULL;
 
 }
+
 ///___________________________________________________________________________
 void AliEveEventBuffer::CreateBufferThread() {
-  cout << "CreateBufferThread()"<<endl;
-  TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
-  fThread->Run();
-  cout << "Done BufferThread"<<endl;
+  if(GetBusy()) {
+    cout << "Buffer is busy"<< endl;
+  } else {
+    cout << "CreateBufferThread()"<<endl;
+    TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
+    fThread->Run();
+    cout << "Done BufferThread"<<endl;
+  } 
 }
 
 ///___________________________________________________________________________
 void * AliEveEventBuffer::BufferThread(void * buffer) {
   cout <<"BufferThread : " <<endl;
   if(buffer) {
-    if (!reinterpret_cast<AliEveEventBuffer*>(buffer)->GetBusy()) {
       reinterpret_cast<AliEveEventBuffer*>(buffer)->MonitorBuffer();
-    } else {
-      cout << "busy"<<endl;
-    }
-    
   } else {
     cout << "no buffer"<<endl;
   }

@@ -47,6 +47,7 @@ TObject * AliEveEventBufferHomer::GetEventFromSource() {
   if(fHomer) {
     cout << "calling nexthomerevent"<<endl;
     TList * blockList = fHomer->NextHOMEREvent();
+    cout  << "getting async block list"<<endl;
     TList * aList = fHomer->GetAsyncBlockList();
     fAsyncList = aList;
     if(blockList)  return dynamic_cast<TObject*>(blockList);
