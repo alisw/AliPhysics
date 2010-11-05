@@ -154,7 +154,8 @@ AliGlauberMC::AliGlauberMC(const AliGlauberMC& in):
   fSy2Coll(in.fSy2Coll),
   fSxyColl(in.fSxyColl),
   fX(in.fX),
-  fNpp(in.fNpp)
+  fNpp(in.fNpp),
+  fDoPartProd(1)
 {
   //copy ctor
   memcpy(fdNdEtaParam,in.fdNdEtaParam,2*sizeof(Double_t));
@@ -666,7 +667,7 @@ Bool_t AliGlauberMC::NextEvent(Double_t bgen)
     {
       bgen = TMath::Sqrt((fBMax*fBMax-fBMin*fBMin)*gRandom->Rndm()+fBMin*fBMin);
     }
-    if ( succes=CalcEvent(bgen) ) break; //ends if we have particparts
+    if ( (succes=CalcEvent(bgen)) ) break; //ends if we have particparts
   }
   return succes;
 }
