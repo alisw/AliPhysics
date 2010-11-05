@@ -31,13 +31,13 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
-  void SetMaxChi2Clu(Double_t chi=1.){
+  void SetMaxChi2Clu(Double_t chi=2.5){
     fMaxChi2Clu=chi;
   }
   void SetRapidityRange(Double_t dy=0.5){
     fMaxY=dy;
   }
-  void SetMinNSigma(Double_t ns=3.){
+  void SetMinNSigma(Double_t ns=1.5){
     fMinNSigma=ns;
   }
   void SetMindEdx(Double_t mind=0.){
@@ -52,6 +52,10 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   void SetDCACuts(Double_t nsxy=7., Double_t nsz=7.){
     fNSigmaDCAxy=nsxy;
     fNSigmaDCAz=nsz; 
+  }
+  void SetMultBin(Int_t LowBin=0,Int_t UpBin=9999){
+    fLowMult=LowBin;
+    fUpMult=UpBin;
   }
 
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
@@ -75,7 +79,10 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   AliESDEvent *fESD; //ESD object
   TList *fOutput; //! tlist with output
   TH1F *fHistNEvents; //! histo with number of events
+  TH1F *fHistMult; //! histo with multiplicity of the events
   TH1F *fHistNTracks; //! histo with number of tracks
+  TH1F *fHistNTracksPos; //! histo with number of tracks
+  TH1F *fHistNTracksNeg; //! histo with number of tracks
   
   TH2F *fHistDEDX; //! histo with dedx versus momentum
   TH2F *fHistDEDXdouble; //! histo with dedx versus signed momentum
@@ -173,7 +180,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   Double_t fMaxChi2Clu;      // maximum cluster
   Double_t fNSigmaDCAxy;     // DCA cut in bend. plane
   Double_t fNSigmaDCAz;      // DCA cut along z
-
+  Int_t fLowMult;      // Multiplicity bin
+  Int_t fUpMult;      // Multiplicity bin
+ 
   Bool_t   fMC;        //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fSmearMC;   // flag to apply extra smearing on MC 
   Double_t fSmearP;    // extra relative smearing on simulated momentum
