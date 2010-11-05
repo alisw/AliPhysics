@@ -42,7 +42,8 @@ ClassImp(AliHMPIDTaskQA)
 AliHMPIDTaskQA::AliHMPIDTaskQA() :
   fESD(0x0),fMC(0x0),fUseMC(kTRUE),
   fHmpHistList(0x0),
-  fHmpMipTrkDistX(0x0),fHmpMipTrkDistY(0x0),fHmpMipCharge3cm(0x0),
+  fHmpPesdPhmp(0x0),fHmpCkovPesd(0x0),fHmpCkovPhmp(0x0),
+  fHmpMipTrkDistX(0x0),fHmpMipCharge3cm(0x0),
   fHmpTrkFlags(0x0),
   fN1(6),
   fN2(8),
@@ -57,13 +58,13 @@ AliHMPIDTaskQA::AliHMPIDTaskQA() :
   fProtNot(0x0),
   fPionCon(0x0),
   fKaonCon(0x0),
-  fProtCon(0x0),
-  fTree(0x0)
+  fProtCon(0x0)
 {
   //
   //Default ctor
   //
-  for (Int_t i=0; i<28; i++) fVar[i]=0;
+  for (Int_t i=0; i<7; i++)
+    fHmpMipTrkDistPosY[i] = fHmpMipTrkDistNegY[i] = 0x0;
 }
 
 //___________________________________________________________________________
@@ -71,8 +72,8 @@ AliHMPIDTaskQA::AliHMPIDTaskQA(const Char_t* name) :
   AliAnalysisTaskSE(name),
   fESD(0x0), fMC(0x0), fUseMC(kTRUE),
   fHmpHistList(0x0),
-  fHmpMipTrkDistX(0x0), fHmpMipTrkDistY(0x0),
-  fHmpMipCharge3cm(0x0),
+  fHmpPesdPhmp(0x0),fHmpCkovPesd(0x0),fHmpCkovPhmp(0x0),
+  fHmpMipTrkDistX(0x0),fHmpMipCharge3cm(0x0),
   fHmpTrkFlags(0x0),
   fN1(6),
   fN2(8),
@@ -87,16 +88,15 @@ AliHMPIDTaskQA::AliHMPIDTaskQA(const Char_t* name) :
   fProtNot(0x0),
   fPionCon(0x0),
   fKaonCon(0x0),
-  fProtCon(0x0),
-  fTree(0x0)
+  fProtCon(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
   //
-  for (Int_t i=0; i<28; i++) fVar[i]=0;
+  for (Int_t i=0; i<7; i++)
+    fHmpMipTrkDistPosY[i] = fHmpMipTrkDistNegY[i] = 0x0;
 
   DefineOutput(1,TList::Class());
-  DefineOutput(2,TTree::Class());
 }
 
 //___________________________________________________________________________
@@ -111,8 +111,10 @@ AliHMPIDTaskQA& AliHMPIDTaskQA::operator=(const AliHMPIDTaskQA& c)
     fMC              = c.fMC;
     fUseMC           = c.fUseMC;
     fHmpHistList     = c.fHmpHistList;
+    fHmpPesdPhmp     = c.fHmpPesdPhmp;
+    fHmpCkovPesd     = c.fHmpCkovPesd;
+    fHmpCkovPhmp     = c.fHmpCkovPhmp;
     fHmpMipTrkDistX  = c.fHmpMipTrkDistX;
-    fHmpMipTrkDistY  = c.fHmpMipTrkDistY;
     fHmpMipCharge3cm = c.fHmpMipCharge3cm;
     fHmpTrkFlags     = c.fHmpTrkFlags;
     fN1              = c.fN1;
@@ -129,8 +131,10 @@ AliHMPIDTaskQA& AliHMPIDTaskQA::operator=(const AliHMPIDTaskQA& c)
     fPionCon         = c.fPionCon;
     fKaonCon         = c.fKaonCon;
     fProtCon         = c.fProtCon;
-    fTree            = c.fTree;
-    for (Int_t i=0; i<28; i++) fVar[i]=c.fVar[i];
+    for (Int_t i=0; i<7; i++){
+      fHmpMipTrkDistPosY[i] = c.fHmpMipTrkDistPosY[i];
+      fHmpMipTrkDistNegY[i] = c.fHmpMipTrkDistNegY[i];
+    }
   }
   return *this;
 }
@@ -140,7 +144,8 @@ AliHMPIDTaskQA::AliHMPIDTaskQA(const AliHMPIDTaskQA& c) :
   AliAnalysisTaskSE(c),
   fESD(c.fESD),fMC(c.fMC),fUseMC(c.fUseMC),
   fHmpHistList(c.fHmpHistList),
-  fHmpMipTrkDistX(c.fHmpMipTrkDistX),fHmpMipTrkDistY(c.fHmpMipTrkDistY),
+  fHmpPesdPhmp(c.fHmpPesdPhmp),fHmpCkovPesd(c.fHmpCkovPesd),fHmpCkovPhmp(c.fHmpCkovPhmp),
+  fHmpMipTrkDistX(c.fHmpMipTrkDistX),
   fHmpMipCharge3cm(c.fHmpMipCharge3cm),
   fHmpTrkFlags(c.fHmpTrkFlags),
   fN1(c.fN1),
@@ -156,13 +161,15 @@ AliHMPIDTaskQA::AliHMPIDTaskQA(const AliHMPIDTaskQA& c) :
   fProtNot(c.fProtNot),
   fPionCon(c.fPionCon),
   fKaonCon(c.fKaonCon),
-  fProtCon(c.fProtCon),
-  fTree(c.fTree)
+  fProtCon(c.fProtCon)
 {
   //
   // Copy Constructor
   //
-  for (Int_t i=0; i<28; i++) fVar[i]=c.fVar[i];
+  for (Int_t i=0; i<7; i++){
+    fHmpMipTrkDistPosY[i] = c.fHmpMipTrkDistPosY[i];
+    fHmpMipTrkDistNegY[i] = c.fHmpMipTrkDistNegY[i];
+  }
 }
  
 //___________________________________________________________________________
@@ -175,10 +182,11 @@ AliHMPIDTaskQA::~AliHMPIDTaskQA() {
 }
 
 //___________________________________________________________________________
-void AliHMPIDTaskQA::ConnectInputData(Option_t *)
+void AliHMPIDTaskQA::ConnectInputData(Option_t *option)
 {
-  // Connect ESD here
+  AliAnalysisTaskSE::ConnectInputData(option);
 
+  // Connect ESD here
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!esdH) {
     AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
@@ -204,8 +212,6 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
   Double_t probs[5];
   AliPID *pPid = new AliPID();
   pPid->SetPriors(priors);
-  Double_t n = 1.293;
-  Double_t dGeVMass[] = {0.000511,0.105658,0.13957018,0.493677,0.938272};
   AliESDtrack *track=0;
   TParticle *pPart=0;
   AliStack* pStack = 0;
@@ -221,7 +227,6 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
 
     track = fESD->GetTrack(iTrack);
     if(!track) continue;
-    Double_t dPtr = track->P();
     Double_t rin[3], rout[3];
     track->GetInnerXYZ(rin);
     track->GetOuterXYZ(rout);
@@ -245,16 +250,15 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
 
     if(Equal(x,0.,ktol) && Equal(y,0.,ktol) && Equal(xpc,0.,ktol) && Equal(ypc,0.,ktol)) continue;
 
+    Float_t sign = track->GetSign();
+    Int_t ch = track->GetHMPIDcluIdx()/1000000;
     Double_t dist = TMath::Sqrt( (xpc-x)*(xpc-x) + (ypc - y)*(ypc - y));
-    if(q>100.) fHmpMipTrkDistX->Fill(xpc - x);
-    if(q>100.) fHmpMipTrkDistY->Fill(ypc - y);
+    fHmpMipTrkDistX->Fill(xpc - x);
+    if (sign > 0.) fHmpMipTrkDistPosY[ch]->Fill(ypc - y);
+    if (sign < 0.) fHmpMipTrkDistNegY[ch]->Fill(ypc - y);
     Double_t pHmp[3] = {0}, pHmp3 = 0;
     if (track->GetOuterHmpPxPyPz(pHmp)) pHmp3 = TMath::Sqrt(pHmp[0]*pHmp[0]+pHmp[1]*pHmp[1]+pHmp[2]*pHmp[2]);
     if (dist <= 3.0) fHmpMipCharge3cm->Fill(q);
-
-    Float_t b[2];
-    Float_t bCov[3];
-    track->GetImpactParameters(b,bCov);    
 
     track->GetHMPIDpid(probs);
     pPid->SetProbabilities(probs);
@@ -264,6 +268,9 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
     }
 
     if(track->GetHMPIDsignal() > 0 ){
+      if (pHmp3) fHmpPesdPhmp->Fill(track->P(),pHmp3);
+      fHmpCkovPesd->Fill(track->P(),track->GetHMPIDsignal());
+      if (pHmp3) fHmpCkovPhmp->Fill(pHmp3,track->GetHMPIDsignal());
 
       if (fUseMC && dist<0.5 && TMath::Abs(th)<0.13){
         if (!pStack->IsPhysicalPrimary(label)) continue;
@@ -300,42 +307,11 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
         }
       }
     }//there is signal
-
-    fVar[0] = track->GetHMPIDcluIdx()/1000000;
-    fVar[1] = pHmp3;
-    fVar[2] = dPtr;
-    fVar[3] = xpc;
-    fVar[4] = ypc;
-    fVar[5] = x;
-    fVar[6] = y;
-    fVar[7] = (Float_t)track->GetHMPIDsignal();
-    fVar[8] = q;
-    fVar[9] = th;
-    fVar[10] = ph;
-    fVar[11] = (Float_t)track->GetSign();
-    fVar[12] = (Float_t)nph;
-    fVar[13] = (Float_t)track->GetNcls(1);
-    fVar[14] = (Float_t)probs[0];
-    fVar[15] = (Float_t)probs[1];
-    fVar[16] = (Float_t)probs[2];
-    fVar[17] = (Float_t)probs[3];
-    fVar[18] = (Float_t)probs[4];
-    fVar[19] = (Float_t)track->GetTOFsignal();
-    fVar[20] = (Float_t)track->GetKinkIndex(0);
-    fVar[21] = (Float_t)track->Xv();
-    fVar[22] = (Float_t)track->Yv();
-    fVar[23] = (Float_t)track->Zv();
-    fVar[24] = (Float_t)track->GetTPCchi2();
-    fVar[25] = b[0];
-    fVar[26] = b[1];
-    fVar[27] = track->GetHMPIDcluIdx()%1000000/1000;
-    fTree->Fill();
   }//track loop
   delete pPid;
 
   /* PostData(0) is taken care of by AliAnalysisTaskSE */
   PostData(1,fHmpHistList);
-  PostData(2,fTree);
 }
 
 //___________________________________________________________________________
@@ -358,14 +334,29 @@ void AliHMPIDTaskQA::UserCreateOutputObjects() {
   //
 
   //slot #1
-   OpenFile(1);
+//   OpenFile(1);
    fHmpHistList = new TList();
+   fHmpHistList->SetOwner();
+
+   fHmpPesdPhmp = new TH2F("fHmpPesdPhmp","HMPID: ESD p - running p;HMP p (GeV/c);ESD p (Gev/c)",100,0,10,100,0,10);
+   fHmpHistList->Add(fHmpPesdPhmp);
+
+   fHmpCkovPesd = new TH2F("fHmpCkovPesd","HMPID: ThetaCherenkov vs P;p_esd (GeV/c);#Theta_C;Entries",100,0,10,110,0,1.1);
+   fHmpHistList->Add(fHmpCkovPesd);
+
+   fHmpCkovPhmp = new TH2F("fHmpCkovPhmp","HMPID: ThetaCherenkov vs P;p_hmp (GeV/c);#Theta_C;Entries",100,0,10,110,0,1.1);
+   fHmpHistList->Add(fHmpCkovPhmp);
 
    fHmpMipTrkDistX = new TH1F("fHmpMipTrkDistX","HMPID MIP-Track distance in local X;distance (cm);Entries",800,-20,20);
    fHmpHistList->Add(fHmpMipTrkDistX);
 
-   fHmpMipTrkDistY = new TH1F("fHmpMipTrkDistY","HMPID MIP-Track distance in local Y;distance (cm);Entries",800,-20,20);
-   fHmpHistList->Add(fHmpMipTrkDistY);
+   for (Int_t i=0; i<7; i++){
+     TString title=Form("MIP-Track distance in local Y, Chamber %d;distance (cm);Entries",i);
+     fHmpMipTrkDistPosY[i] = new TH1F(Form("fHmpMipTrkDistPosY%d",i),title.Data(),800,-20,20);
+     fHmpHistList->Add(fHmpMipTrkDistPosY[i]);
+     fHmpMipTrkDistNegY[i] = new TH1F(Form("fHmpMipTrkDistNegY%d",i),title.Data(),800,-20,20);
+     fHmpHistList->Add(fHmpMipTrkDistNegY[i]);
+   }
 
    fHmpMipCharge3cm = new TH1F("fHmpMipCharge3cm","HMPID MIP Charge;MIP Charge (ADC);Entries",5001,-0.5,5000.5);
    fHmpHistList->Add(fHmpMipCharge3cm);
@@ -393,36 +384,7 @@ void AliHMPIDTaskQA::UserCreateOutputObjects() {
    fHmpHistList->Add(fPionNot); fHmpHistList->Add(fKaonNot); fHmpHistList->Add(fProtNot);
    fHmpHistList->Add(fPionCon); fHmpHistList->Add(fKaonCon); fHmpHistList->Add(fProtCon);
 
-   OpenFile(2);
-   fTree = new TTree("Tree","Tree with data");
-   fTree->Branch("Chamber",&fVar[0]);
-   fTree->Branch("pHmp3",&fVar[1]);
-   fTree->Branch("P",&fVar[2]);
-   fTree->Branch("Xpc",&fVar[3]);
-   fTree->Branch("Ypc",&fVar[4]);
-   fTree->Branch("X",&fVar[5]);
-   fTree->Branch("Y",&fVar[6]);
-   fTree->Branch("HMPIDsignal",&fVar[7]);
-   fTree->Branch("Charge",&fVar[8]);
-   fTree->Branch("Theta",&fVar[9]);
-   fTree->Branch("Phi",&fVar[10]);
-   fTree->Branch("Sign",&fVar[11]);
-   fTree->Branch("NumPhotons",&fVar[12]);
-   fTree->Branch("NumTPCclust",&fVar[13]);
-   fTree->Branch("Prob0",&fVar[14]);
-   fTree->Branch("Prob1",&fVar[15]);
-   fTree->Branch("Prob2",&fVar[16]);
-   fTree->Branch("Prob3",&fVar[17]);
-   fTree->Branch("Prob4",&fVar[18]);
-   fTree->Branch("TOFsignal",&fVar[19]);
-   fTree->Branch("KinkIndex",&fVar[20]);
-   fTree->Branch("Xv",&fVar[21]);
-   fTree->Branch("Yv",&fVar[22]);
-   fTree->Branch("Zv",&fVar[23]);
-   fTree->Branch("TPCchi2",&fVar[24]);
-   fTree->Branch("b0",&fVar[25]);
-   fTree->Branch("b1",&fVar[26]);
-   fTree->Branch("ClustSize",&fVar[27]);
+   PostData(1,fHmpHistList);
 }
 
 //____________________________________________________________________________________________________________________________________
