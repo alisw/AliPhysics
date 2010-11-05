@@ -41,7 +41,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   if (runMode == kMyRunModeGRID) {
     // Create and configure the alien handler plugin
     gROOT->LoadMacro("CreateAlienHandler.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandler(data, listToLoad, "test", isMC);  
+    AliAnalysisGrid *alienHandler = CreateAlienHandler(data, listToLoad, "full", isMC);  
     if (!alienHandler) {
       cout << "Cannot create alien handler" << endl;    
       exit(1);
@@ -220,15 +220,27 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   else
   {
     cout << "Init in Local or Grid mode" << endl;
-
-    gSystem->Load("libVMC");
-    gSystem->Load("libTree");
+    gSystem->Load("libCore.so");  
+    gSystem->Load("libTree.so");
+    gSystem->Load("libGeom.so");
+    gSystem->Load("libVMC.so");
+    gSystem->Load("libPhysics.so");
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gSystem->Load("libPWG0base");
+    gSystem->Load("libANALYSISalice");   
+  // Use AliRoot includes to compile our task
+    gROOT->ProcessLine(".include $ALICE_ROOT/include");
+
+    // gSystem->Load("libVMC");
+    // gSystem->Load("libTree");
+    // gSystem->Load("libSTEERBase");
+    // gSystem->Load("libESD");
+    // gSystem->Load("libAOD");
+    // gSystem->Load("libANALYSIS");
+    // gSystem->Load("libANALYSISalice");
+    // gSystem->Load("libPWG0base");
     
     gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
     gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
