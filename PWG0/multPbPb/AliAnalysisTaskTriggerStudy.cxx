@@ -27,9 +27,11 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskTriggerStudy)
 
+const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0MBS2","C0VBA","C0VBC","C0OM2"};       
+
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 : AliAnalysisTaskSE("TaskTriggerStudy"),
-  fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix("")
+  fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix(""),fNTrackletsCut(1000000)
 {
   // constructor
 
@@ -38,7 +40,7 @@ AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 }
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix("")
+    fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix(""),fNTrackletsCut(1000000)
 {
   //
   // Standard constructur which should be used
@@ -99,6 +101,8 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   const AliMultiplicity* mult = fESD->GetMultiplicity();
   Int_t ntracklets = mult->GetNumberOfTracklets();
 
+  if(ntracklets > fNTrackletsCut) return;
+
   // Reset histo suffix and fill reference histograms without any suffix
   fHistoSuffix = "";
   GetHistoTracklets("all","All events")->Fill(ntracklets);
@@ -120,16 +124,24 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t v0CHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
 
   // TOF triggers 
-  // FIXME: implement real triggers
-  Bool_t c0OM2 = kFALSE;
-  Bool_t c0OM3 = kFALSE;
+  // FIXME: move to triggeranalysis?
+  AliESDHeader*h = fESD->GetHeader(); // taken the header from AliESDEvent 
+  Bool_t c0OM2 = h->IsTriggerInputFired("0OM2"); // thr >= 2 (input 19)
+  Bool_t c0OM3 = h->IsTriggerInputFired("0OM3"); // thr >= 3 (input 20)
 
   // Some macros for the online triggers
   Bool_t cMBS2A = c0sm2 && c0v0A;
   Bool_t cMBS2C = c0sm2 && c0v0C;
   Bool_t cMBAC  = c0v0A && c0v0C;
+  
 
-  FillTriggerOverlaps("All", "All Events", nFastOrOffline,c0v0A,c0v0C,c0OM2,c0OM3,cMBS2A,cMBS2C,cMBAC);
+  Bool_t vdArray[kNVDEntries];
+  vdArray[kVDC0MBS2] = c0sm2;
+  vdArray[kVDC0VBA]  = c0v0A;
+  vdArray[kVDC0VBC]  = c0v0C;
+  vdArray[kVDC0OM2]  = c0OM2;
+
+  FillTriggerOverlaps("All", "All Events",vdArray);
   
 
   // loop over trigger classes in the event
@@ -184,6 +196,10 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
     if(cMBS2C) GetHistoTracklets("cMBS2C","Events were trigger cMBS2C fired")->Fill(ntracklets);
     if(cMBAC ) GetHistoTracklets("cMBAC ","Events were trigger cMBAC  fired")->Fill(ntracklets);
     //  if() GetHistoTracklets("","Events were trigger  fired");
+    
+    // Fill trigger overlaps
+    FillTriggerOverlaps("All", "All Events in trigger class",vdArray);
+
     delete tokens;
   }
     
@@ -258,10 +274,7 @@ TH1 *   AliAnalysisTaskTriggerStudy::GetHistoTracklets(const char * name, const 
   return h;
 }
 
-void AliAnalysisTaskTriggerStudy::FillTriggerOverlaps (const char * name, const char * title, 
-						       Int_t nFastOrOffline,
-						       Bool_t v0A, Bool_t v0C, Bool_t OM2, Bool_t OM3, 
-						       Bool_t cMBS2A,Bool_t cMBS2C, Bool_t cMBAC) {
+void AliAnalysisTaskTriggerStudy::FillTriggerOverlaps (const char * name, const char * title, Bool_t * vdArray){
   //Fills a histo with the different trigger statistics in a venn like diagramm. Books it if needed.
 
   // Get or book histo
@@ -274,44 +287,43 @@ void AliAnalysisTaskTriggerStudy::FillTriggerOverlaps (const char * name, const 
     AliInfo(Form("Booking histo %s",hname.Data()));
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
-    Int_t nbins = 14;
-    h = new TH1I (hname, title, nbins, 0.5, nbins+0.5);
+    Int_t nbins = 0;
+    for(Int_t ientry = 0; ientry < kNVDEntries; ientry++){
+      nbins = nbins | (1<<ientry);
+    }
+    
+    h = new TH1I (hname, title, nbins, -0.5, nbins-0.5);
     fHistoList->GetList()->Add(h);
     TH1::AddDirectory(oldStatus);
+  
+    // we look at the combinations of n triggers
+    // We set a bit for each trigger to fill the diagram
+    // This is much simpler and faster than any recursive function
+    h->GetXaxis()->SetBinLabel(1,"NONE"); 
+    for(Int_t ibin = 1; ibin < nbins; ibin++){
+      TString binname = "";
+      Bool_t first = kTRUE;
+      for(Int_t ivdentry = 0; ivdentry < kNVDEntries; ivdentry++){
+	if (ibin & (1<<ivdentry)) {
+	  if(!first) binname += " & ";
+	  binname += kVDNames[ivdentry];
+	  first=kFALSE;
+	}
+      }
+      h->GetXaxis()->SetBinLabel(ibin+1,binname.Data());
+    }
+    
   }
 
-  // we look at the combinations of 4 triggers
-  Int_t ibin = 1;
-  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0A & V0C & OM2"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0C & OM2"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0A & OM2"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0A & V0C"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0A"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & V0C"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"FO2 & OM2"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"OM2 & V0A"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"OM2 & V0C"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"V0A & V0C"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"FO2"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"V0A"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"V0C"); 
-  h->GetXaxis()->SetBinLabel(ibin++,"OM2"); 
+  UInt_t mask = 0;
+  for(Int_t ivdentry = 0; ivdentry < kNVDEntries; ivdentry++){
+    if(vdArray[ivdentry]) {
+      mask  = mask | (1<<ivdentry);
+      //      cout << " 1 "   ;
+    } //else cout << " 0 ";
+  }
+  //  cout << hex << " = " << mask << endl;
   
-  Bool_t fo2 = nFastOrOffline>=2;
-
-  if(fo2 && v0A && v0C && OM2)     { h->Fill(1);}
-  if(fo2 && !v0A && v0C && OM2)    { h->Fill(2);}
-  if(fo2 && v0A && !v0C && OM2)    { h->Fill(3);}
-  if(fo2 && v0A && v0C && !OM2)    { h->Fill(4);}
-  if(fo2 && v0A && !v0C && !OM2)   { h->Fill(5);}
-  if(fo2 && !v0A && v0C && !OM2)   { h->Fill(6);}
-  if(fo2 && !v0A && !v0C && OM2)   { h->Fill(7);}
-  if(!fo2 && v0A && !v0C && OM2)   { h->Fill(8);}
-  if(!fo2 && !v0A && v0C && OM2)   { h->Fill(9);}
-  if(!fo2 && v0A && v0C && !OM2)   { h->Fill(10);}
-  if(fo2 && !v0A && !v0C && !OM2)  { h->Fill(11);}
-  if(!fo2 && v0A && !v0C && !OM2)  { h->Fill(12);}
-  if(!fo2 && !v0A && v0C && !OM2)  { h->Fill(13);}
-  if(!fo2 && !v0A && !v0C && OM2)  { h->Fill(14);}
+  h->Fill(mask);
 
 }

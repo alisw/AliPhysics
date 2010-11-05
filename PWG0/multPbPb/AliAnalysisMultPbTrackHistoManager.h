@@ -18,7 +18,6 @@ class TH1I;
 //-------------------------------------------------------------------------
 
 
-
 class AliAnalysisMultPbTrackHistoManager : public AliHistoListWrapper {
 
 public:
