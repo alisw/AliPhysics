@@ -786,6 +786,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
       triggerAnalysis->SetAnalyzeMC(fMC);
       triggerAnalysis->EnableHistograms();
       triggerAnalysis->SetSPDGFOThreshhold(1);
+      triggerAnalysis->SetDoFMD(kFALSE);
       fTriggerAnalysis.Add(triggerAnalysis);
     }
       

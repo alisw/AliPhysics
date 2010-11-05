@@ -66,7 +66,8 @@ class AliTriggerAnalysis : public TObject
     void SetV0AdcThr(Float_t thr) { fV0AdcThr = thr; }
     void SetV0HwPars(Float_t thr, Float_t winLow, Float_t winHigh) { fV0HwAdcThr = thr; fV0HwWinLow = winLow; fV0HwWinHigh = winHigh; }
     void SetFMDThreshold(Float_t low, Float_t hit) { fFMDLowCut = low; fFMDHitCut = hit; }
-    
+    void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
+
     Int_t GetSPDGFOThreshhold() const { return fSPDGFOThreshold; }
     Float_t GetV0TimeOffset() const { return fV0TimeOffset; }
     Float_t GetV0AdcThr()     const { return fV0AdcThr; }
@@ -100,6 +101,7 @@ class AliTriggerAnalysis : public TObject
     Float_t fV0HwWinLow;            // online V0 trigger - lower edge of time window
     Float_t fV0HwWinHigh;           // online V0 trigger - upper edge of time window
 
+    Bool_t  fDoFMD;                 // If false, skips the FMD (physics selection runs much faster)
     Float_t fFMDLowCut;		    // 
     Float_t fFMDHitCut;		    // 
     

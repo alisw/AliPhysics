@@ -54,6 +54,7 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fV0HwAdcThr(2.5),
   fV0HwWinLow(61.5),
   fV0HwWinHigh(86.5),
+  fDoFMD(kTRUE),
   fFMDLowCut(0.2),
   fFMDHitCut(0.5),
   fHistBitsSPD(0),
@@ -603,8 +604,10 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd)
     AliError("AliESDZDC not available");
   }
   
-  fHistFMDA->Fill(FMDHitCombinations(aEsd, kASide, kTRUE));
-  fHistFMDC->Fill(FMDHitCombinations(aEsd, kCSide, kTRUE));
+  if (fDoFMD) {
+    fHistFMDA->Fill(FMDHitCombinations(aEsd, kASide, kTRUE));
+    fHistFMDC->Fill(FMDHitCombinations(aEsd, kCSide, kTRUE));
+  }
 }
   
 void AliTriggerAnalysis::FillTriggerClasses(const AliESDEvent* aEsd)
@@ -942,6 +945,9 @@ Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide 
   // returns number of hit combinations agove threshold
   //
   // Authors: FMD team, Hans Dalsgaard (code merged from FMD/AliFMDOfflineTrigger)
+
+  if (!fDoFMD)
+    return -1;
 
   // Workaround for AliESDEvent::GetFMDData is not const!
   const AliESDFMD* fmdData = (const_cast<AliESDEvent*>(aEsd))->GetFMDData();
