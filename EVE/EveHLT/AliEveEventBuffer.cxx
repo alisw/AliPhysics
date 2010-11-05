@@ -23,7 +23,8 @@ AliEveEventBuffer::AliEveEventBuffer() :
   fBIndex(),
   fTimer(NULL),
   fEventId(),
-  fBufferMonStarted(kFALSE)
+  fBufferMonStarted(kFALSE),
+  fThread(NULL)
  {
   // see header file for class documentation
   fEventBuffer = new TObjArray(fBufferSize, 0);
@@ -40,6 +41,9 @@ AliEveEventBuffer::AliEveEventBuffer() :
   for(Int_t id = 0; id < fBufferSize; id++ ) {
     fEventId[id] = -2;
   }
+
+  fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
+
   
 
 }
@@ -64,13 +68,14 @@ AliEveEventBuffer::~AliEveEventBuffer() {
 
 ///___________________________________________________________________________
 void AliEveEventBuffer::CreateBufferThread() {
+  cout << "Threadexists: " << fThread->Exists() << endl;
   if(GetBusy()) {
     cout << "Buffer is busy, no thread created"<< endl;
+    
   } else {
     if ( (CalculateDifference(fBIndex[kTop],fBIndex[kLast]) < fPreBuffer) ) {
       SetBusy(kTRUE);
-      cout << "CreateBufferThread()"<<endl;
-      TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
+      cout << "StartBufferThread()"<<endl;
       fThread->Run();
       cout << "Started BufferThread"<<endl;
     } else { 
@@ -78,6 +83,7 @@ void AliEveEventBuffer::CreateBufferThread() {
     }
   }
 }
+
 ///___________________________________________________________________________
 void * AliEveEventBuffer::BufferThread(void * buffer) {
   cout <<"BufferThread : " <<endl;

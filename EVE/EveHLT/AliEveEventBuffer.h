@@ -124,6 +124,7 @@ private:
   
   Bool_t fBufferMonStarted;
 
+  TThread * fThread;
 
 
   ClassDef(AliEveEventBuffer, 0); // Manage connections to HLT data-sources.
