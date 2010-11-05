@@ -4,7 +4,6 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnMother.cxx \
       RESONANCES/AliRsnEvent.cxx \
       RESONANCES/AliRsnValue.cxx \
-      RESONANCES/AliRsnValueMult.cxx \
       RESONANCES/AliRsnFunction.cxx \
       RESONANCES/AliRsnExpression.cxx \
       RESONANCES/AliRsnVariableExpression.cxx \

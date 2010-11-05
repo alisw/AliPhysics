@@ -11,6 +11,7 @@
 
 #include "TNamed.h"
 #include "TArrayD.h"
+#include "AliESDtrackCuts.h"
 
 class AliRsnPairDef;
 class AliRsnMother;
@@ -51,6 +52,7 @@ class AliRsnValue : public TNamed
       kLeadingPt,
       kQInv,
       kEventMult,
+      kEventMultESDcuts,
       kValueTypes
     };
 
@@ -58,13 +60,14 @@ class AliRsnValue : public TNamed
     AliRsnValue(const char *name, EValueType type, Int_t n = 0, Double_t min = 0.0, Double_t max = 0.0);
     AliRsnValue(const char *name, EValueType type, Double_t min, Double_t max, Double_t step);
     AliRsnValue(const char *name, EValueType type, Int_t n, Double_t *array);
-    AliRsnValue(const AliRsnValue& copy) : TNamed(copy),fValue(copy.fValue),fType(copy.fType),fArray(copy.fArray) {}
-    AliRsnValue& operator=(const AliRsnValue& copy) {SetName(copy.GetName());fType=copy.fType;fValue=copy.fValue;fArray=copy.fArray;return (*this);}
+    AliRsnValue(const AliRsnValue& copy) : TNamed(copy),fValue(copy.fValue),fType(copy.fType),fArray(copy.fArray),fESDCuts(copy.fESDCuts) {}
+    AliRsnValue& operator=(const AliRsnValue& copy) {SetName(copy.GetName());fType=copy.fType;fValue=copy.fValue;fArray=copy.fArray;fESDCuts=copy.fESDCuts;return (*this);}
     virtual ~AliRsnValue() { }
     
-    TArrayD     GetArray() const {return fArray;}
-    Double_t    GetValue() const {return fValue;}
-    EValueType  GetValueType() {return fType;}
+    TArrayD          GetArray() const {return fArray;}
+    Double_t         GetValue() const {return fValue;}
+    EValueType       GetValueType() {return fType;}
+    AliESDtrackCuts* GetCuts() {return &fESDCuts;}
 
     void        SetValueType(EValueType type) {fType = type;}
     void        SetBins(Int_t n, Double_t min, Double_t max);
@@ -80,12 +83,10 @@ class AliRsnValue : public TNamed
 
   protected:
   
-    Double_t   fValue;   // computed value
-  
-  private:
-
-    EValueType fType;    // value type
-    TArrayD    fArray;   // array of bins (when necessary)
+    Double_t        fValue;   // computed value
+    EValueType      fType;    // value type
+    TArrayD         fArray;   // array of bins (when necessary)
+    AliESDtrackCuts fESDCuts; // ESD track cuts used for a way to compute multiplicity
     
     // ROOT dictionary
     ClassDef(AliRsnValue, 1)
