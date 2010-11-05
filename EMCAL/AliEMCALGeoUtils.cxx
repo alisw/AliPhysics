@@ -185,7 +185,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const Text_t* name, const Text_t* title)
 
 //____________________________________________________________________________
 AliEMCALGeoUtils & AliEMCALGeoUtils::operator = (const AliEMCALGeoUtils  & /*rvalue*/) { 
-
+  //assing operator
   Fatal("assignment operator", "not implemented") ; 
     return *this ;
 }
@@ -980,7 +980,7 @@ Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t 
 {
 	//Trigger mapping method, get  FastOr Index from TRU
 
-    if (iTRU > 31 || iTRU < 0 || iADC > 95 || iADC < 0) 
+  if (iTRU > 31 || iTRU < 0 || iADC > 95 || iADC < 0) 
 	{
 		AliError("TRU out of range!");
 		return kFALSE;
@@ -1065,6 +1065,8 @@ Bool_t AliEMCALGeoUtils::GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeoUtils::GetPositionInEMCALFromAbsFastORIndex(const Int_t id, Int_t& iEta, Int_t& iPhi) const
 {
+  //Trigger mapping method, get position in EMCAL from FastOR index
+
 	Int_t iSM=-1;
 	
 	if (GetPositionInSMFromAbsFastORIndex(id, iSM, iEta, iPhi))
@@ -1098,7 +1100,8 @@ Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, co
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromPositionInSM(const Int_t  iSM, const Int_t iEta, const Int_t iPhi, Int_t& id) const
 {
-	//
+  //Trigger mapping method, from position in SM Index get FastOR index 
+
 	if (iSM < 0 || iSM > 11 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 11) 
 	{
 		AliError("Out of range!");
@@ -1122,7 +1125,8 @@ Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromPositionInSM(const Int_t  iSM, con
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromPositionInEMCAL(const Int_t iEta, const Int_t iPhi, Int_t& id) const
 {
-	//
+  //Trigger mapping method, from position in EMCAL Index get FastOR index 
+
 	if (iEta < 0 || iEta > 47 || iPhi < 0 || iPhi > 63 ) 
 	{
 		AliError("Out of range!");
@@ -1143,6 +1147,8 @@ Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromPositionInEMCAL(const Int_t iEta, 
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeoUtils::GetFastORIndexFromCellIndex(const Int_t id, Int_t& idx) const
 {
+  //Trigger mapping method, from cell index get FastOR index 
+
 	Int_t iSupMod, nModule, nIphi, nIeta, iphim, ietam;
 	
 	Bool_t isOK = GetCellIndex( id, iSupMod, nModule, nIphi, nIeta );
@@ -1160,7 +1166,9 @@ Bool_t AliEMCALGeoUtils::GetFastORIndexFromCellIndex(const Int_t id, Int_t& idx)
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeoUtils::GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4]) const
 {
-	Int_t iSM=-1, iEta=-1, iPhi=-1;
+  //Trigger mapping method, from FASTOR index get cell index 
+
+  Int_t iSM=-1, iEta=-1, iPhi=-1;
 	if (GetPositionInSMFromAbsFastORIndex(id, iSM, iEta, iPhi))
 	{
 		Int_t ix = 2 * iEta;
@@ -1183,6 +1191,8 @@ Bool_t AliEMCALGeoUtils::GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeoUtils::GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) const
 {
+  //Trigger mapping method, from STU index get TRU index 
+
 	if (id > 31 || id < 0) 
 	{
 		AliError(Form("TRU index out of range: %d",id));
@@ -1197,6 +1207,8 @@ Bool_t AliEMCALGeoUtils::GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) con
 //________________________________________________________________________________________________
 Int_t AliEMCALGeoUtils::GetTRUIndexFromSTUIndex(const Int_t id) const
 {
+  //Trigger mapping method, from STU index get TRU index 
+
 	if (id > 31 || id < 0) 
 	{
 		AliError(Form("TRU index out of range: %d",id));
@@ -1234,6 +1246,7 @@ void AliEMCALGeoUtils::BuildFastOR2DMap()
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeoUtils::GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const
 {
+  //Trigger mapping method, from L0 index get FastOR index 
 	if (size <= 0 ||size > 4)
 	{
 		AliError("Size not supported!");
@@ -1245,7 +1258,7 @@ Bool_t AliEMCALGeoUtils::GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t
 	switch (size)
 	{
 		case 1: // Cosmic trigger
-			if (!GetAbsFastORIndexFromTRU(iTRU, id, idx[0])) return kFALSE;
+			if (!GetAbsFastORIndexFromTRU(iTRU, id, idx[1])) return kFALSE;
 			break;
 		case 4: // 4 x 4
 			for (Int_t k = 0; k < 4; k++)
