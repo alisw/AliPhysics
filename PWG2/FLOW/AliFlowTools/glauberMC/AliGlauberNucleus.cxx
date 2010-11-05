@@ -109,7 +109,7 @@ void AliGlauberNucleus::Draw(Double_t xs, Int_t col)
    e.SetLineWidth(1);
 
    for (Int_t i = 0;i<fNucleons->GetEntries();++i) {
-      AliGlauberNucleon* gn = (AliGlauberNucleon*) fNucleons->At(i);
+      AliGlauberNucleon* gn = (AliGlauberNucleon*) fNucleons->UncheckedAt(i);
       e.SetLineStyle(1);
       if (gn->IsSpectator()) e.SetLineStyle(3);
       e.DrawEllipse(gn->GetX(),gn->GetY(),r,r,0,360,0,"");
@@ -246,8 +246,8 @@ void AliGlauberNucleus::ThrowNucleons(Double_t xshift)
       Double_t ctheta = 2*gRandom->Rndm() - 1 ;
       Double_t stheta = sqrt(1-ctheta*ctheta);
      
-      AliGlauberNucleon *nucleon1=(AliGlauberNucleon*)(fNucleons->At(0));
-      AliGlauberNucleon *nucleon2=(AliGlauberNucleon*)(fNucleons->At(1));
+      AliGlauberNucleon *nucleon1=(AliGlauberNucleon*)(fNucleons->UncheckedAt(0));
+      AliGlauberNucleon *nucleon2=(AliGlauberNucleon*)(fNucleons->UncheckedAt(1));
       nucleon1->Reset();
       nucleon1->SetXYZ(r * stheta * cos(phi) + xshift,
 		       r * stheta * sin(phi),
@@ -261,7 +261,7 @@ void AliGlauberNucleus::ThrowNucleons(Double_t xshift)
    }
 
    for (Int_t i = 0; i<fN; i++) {
-      AliGlauberNucleon *nucleon=(AliGlauberNucleon*)(fNucleons->At(i));
+      AliGlauberNucleon *nucleon=(AliGlauberNucleon*)(fNucleons->UncheckedAt(i));
       nucleon->Reset();
       while(1) {
          fTrials++;
@@ -276,7 +276,7 @@ void AliGlauberNucleus::ThrowNucleons(Double_t xshift)
          if(fMinDist<0) break;
          Bool_t test=1;
          for (Int_t j = 0; j<i; j++) {
-            AliGlauberNucleon *other=(AliGlauberNucleon*)fNucleons->At(j);
+            AliGlauberNucleon *other=(AliGlauberNucleon*)fNucleons->UncheckedAt(j);
             Double_t xo=other->GetX();
             Double_t yo=other->GetY();
             Double_t zo=other->GetZ();
@@ -302,7 +302,7 @@ void AliGlauberNucleus::ThrowNucleons(Double_t xshift)
       sumy = sumy/fN;  
       sumz = sumz/fN;  
       for (Int_t i = 0; i<fN; i++) {
-         AliGlauberNucleon *nucleon=(AliGlauberNucleon*)(fNucleons->At(i));
+         AliGlauberNucleon *nucleon=(AliGlauberNucleon*)(fNucleons->UncheckedAt(i));
          nucleon->SetXYZ(nucleon->GetX()-sumx-xshift,
                          nucleon->GetY()-sumy,
                          nucleon->GetZ()-sumz);

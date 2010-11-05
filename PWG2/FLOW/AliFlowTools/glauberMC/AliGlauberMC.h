@@ -67,6 +67,7 @@ private:
    Double_t     fSxyColl;            //Covariance of x and y of binaruy collisions
    Double_t     fX;              //hard particle production fraction
    Double_t     fNpp;            //Multiplicity normalization
+   Bool_t       fDoPartProd;     //=1 then particle production on
    Bool_t       CalcResults(Double_t bgen);
 
 public:
@@ -121,14 +122,19 @@ public:
    void   SetdNdEtaNBDParam(Double_t k=3, Double_t nmean=4, Double_t beta=0.13);
    void   SetdNdEtaTwoNBDParam(Double_t alpha = 0.4, Double_t k1 = 3, Double_t nmean1 = 4., Double_t k2 = 2., Double_t nmean2 = 11., Double_t beta=0.13);
    void   SetMinDistance(Double_t d)  {fANucleus.SetMinDist(d); fBNucleus.SetMinDist(d);}
+   void   SetDoPartProduction(Bool_t b) { fDoPartProd = b; }
+   void   Setr(Double_t r)  {fANucleus.SetR(r); fBNucleus.SetR(r);}
+   void   Seta(Double_t a)  {fANucleus.SetA(a); fBNucleus.SetA(a);}
    static void       PrintVersion()         {cout << "AliGlauberMC " << Version() << endl;}
    static const char *Version()             {return "v1.2";}
    static void       runAndSaveNtuple( Int_t n,
-                                       Option_t *sysA="Au",
-                                       Option_t *sysB="Au",
-                                       Double_t signn=42,
+                                       Option_t *sysA="Pb",
+                                       Option_t *sysB="Pb",
+                                       Double_t signn=65,
                                        Double_t mind=0.4,
-                                       const char *fname="glau_auau_ntuple.root");
+				       Double_t r=6.62,
+				       Double_t a=0.546,
+                                       const char *fname="glau_pbpb_ntuple.root");
    void runAndSaveNucleons( Int_t n,
                             Option_t *sysA,
                             Option_t *sysB,

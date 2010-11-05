@@ -83,7 +83,8 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
   fSy2Coll(0.),
   fSxyColl(0.),
   fX(0.13),
-  fNpp(8.)
+  fNpp(8.),
+  fDoPartProd(1)
 {
   fdNdEtaParam[0] = 8.0;
   fdNdEtaParam[1] = 0.13;
@@ -222,7 +223,7 @@ Bool_t AliGlauberMC::CalcEvent(Double_t bgen)
   fAN = fANucleus.GetN();
   for (Int_t i = 0; i<fAN; i++)
   {
-    AliGlauberNucleon *nucleonA=(AliGlauberNucleon*)(fNucleonsA->At(i));
+    AliGlauberNucleon *nucleonA=(AliGlauberNucleon*)(fNucleonsA->UncheckedAt(i));
     nucleonA->SetInNucleusA();
   }
   fBNucleus.ThrowNucleons(bgen/2.);
@@ -230,7 +231,7 @@ Bool_t AliGlauberMC::CalcEvent(Double_t bgen)
   fBN = fBNucleus.GetN();
   for (Int_t i = 0; i<fBN; i++)
   {
-    AliGlauberNucleon *nucleonB=(AliGlauberNucleon*)(fNucleonsB->At(i));
+    AliGlauberNucleon *nucleonB=(AliGlauberNucleon*)(fNucleonsB->UncheckedAt(i));
     nucleonB->SetInNucleusB();
   }
 
@@ -240,10 +241,10 @@ Bool_t AliGlauberMC::CalcEvent(Double_t bgen)
   // for each of the A nucleons in nucleus B
   for (Int_t i = 0; i<fBN; i++)
   {
-    AliGlauberNucleon *nucleonB=(AliGlauberNucleon*)(fNucleonsB->At(i));
+    AliGlauberNucleon *nucleonB=(AliGlauberNucleon*)(fNucleonsB->UncheckedAt(i));
     for (Int_t j = 0 ; j < fAN ; j++)
     {
-      AliGlauberNucleon *nucleonA=(AliGlauberNucleon*)(fNucleonsA->At(j));
+      AliGlauberNucleon *nucleonA=(AliGlauberNucleon*)(fNucleonsA->UncheckedAt(j));
       Double_t dx = nucleonB->GetX()-nucleonA->GetX();
       Double_t dy = nucleonB->GetY()-nucleonA->GetY();
       Double_t dij = dx*dx+dy*dy;
@@ -285,7 +286,7 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
 
   for (Int_t i = 0; i<fAN; i++)
   {
-    AliGlauberNucleon *nucleonA=(AliGlauberNucleon*)(fNucleonsA->At(i));
+    AliGlauberNucleon *nucleonA=(AliGlauberNucleon*)(fNucleonsA->UncheckedAt(i));
     Double_t xA=nucleonA->GetX();
     Double_t yA=nucleonA->GetY();
     fMeanXSystem  += xA;
@@ -306,7 +307,7 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
 
   for (Int_t i = 0; i<fBN; i++)
   {
-    AliGlauberNucleon *nucleonB=(AliGlauberNucleon*)(fNucleonsB->At(i));
+    AliGlauberNucleon *nucleonB=(AliGlauberNucleon*)(fNucleonsB->UncheckedAt(i));
     Double_t xB=nucleonB->GetX();
     Double_t yB=nucleonB->GetY();
     fMeanXSystem  += xB;
@@ -455,11 +456,11 @@ TObjArray *AliGlauberMC::GetNucleons()
   allnucleons->SetOwner();
   for (Int_t i = 0; i<fAN; i++)
   {
-    allnucleons->Add(fNucleonsA->At(i));
+    allnucleons->Add(fNucleonsA->UncheckedAt(i));
   }
   for (Int_t i = 0; i<fBN; i++)
   {
-    allnucleons->Add(fNucleonsB->At(i));
+    allnucleons->Add(fNucleonsB->UncheckedAt(i));
   }
   return allnucleons;
 }
@@ -508,7 +509,6 @@ Int_t AliGlauberMC::DoubleNegativeBinomialRandom( Int_t k,
   return TMath::BinarySearch(fMaxPlot,array,r)+2;
 }
 
-
 //______________________________________________________________________________
 void AliGlauberMC::SetdNdEtaParam(Double_t nnp, Double_t x)
 {
@@ -525,6 +525,7 @@ void AliGlauberMC::SetdNdEtaGBWParam(Double_t delta, Double_t lambda, Double_t s
   fdNdEtaGBWParam[1]=lambda;
   fdNdEtaGBWParam[2]=snn;
 }
+
 //______________________________________________________________________________
 void AliGlauberMC::SetdNdEtaNBDParam(Double_t k, Double_t nmean, Double_t beta)
 {
@@ -533,6 +534,7 @@ void AliGlauberMC::SetdNdEtaNBDParam(Double_t k, Double_t nmean, Double_t beta)
   fdNdEtaNBDParam[1]=nmean;
   fdNdEtaNBDParam[2]=beta;
 }
+
 //______________________________________________________________________________
 void AliGlauberMC::SetdNdEtaTwoNBDParam( Double_t k1, 
                                          Double_t nmean1, 
@@ -549,6 +551,7 @@ void AliGlauberMC::SetdNdEtaTwoNBDParam( Double_t k1,
   fdNdEtaTwoNBDParam[4]=alpha;
   fdNdEtaTwoNBDParam[5]=beta;
 }
+
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetdNdEta(Double_t nnp, Double_t x)
 {
@@ -569,8 +572,8 @@ Double_t AliGlauberMC::GetdNdEtaGBW( Double_t delta,
   return fNpart*0.47*TMath::Sqrt(TMath::Power(snn,lambda))
          * TMath::Power(fNpart,(1.-delta)/3./delta);
 }
-//_______________________________________________________________________________
 
+//_______________________________________________________________________________
 Double_t AliGlauberMC::GetdNdEtaNBD ( Int_t k, Double_t nmean, Double_t beta)
 {
   //Get particle density per unit of rapidity
@@ -590,8 +593,8 @@ Double_t AliGlauberMC::GetdNdEtaNBD ( Int_t k, Double_t nmean, Double_t beta)
   }
   return (1-beta)*mulnp/2+beta*mulnb;
 }
-//______________________________________________________________________________
 
+//______________________________________________________________________________
 Double_t AliGlauberMC::GetdNdEtaTwoNBD ( Int_t k1,
                                          Double_t nmean1,
                                          Int_t k2,
@@ -619,8 +622,8 @@ Double_t AliGlauberMC::GetdNdEtaTwoNBD ( Int_t k1,
   }
   Double_t mul=(1-beta)*mulnp/2+beta*mulnb;
   return mul;
-
 }
+
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetEccentricityPart() const
 {
@@ -650,6 +653,7 @@ Double_t AliGlauberMC::GetEccentricityColl() const
   //get standard eccentricity of binary collisions
   return ((fSy2Coll-fSx2Coll)/(fSy2Coll+fSx2Coll));
 }
+
 //______________________________________________________________________________
 Bool_t AliGlauberMC::NextEvent(Double_t bgen)
 {
@@ -676,7 +680,7 @@ void AliGlauberMC::Run(Int_t nevents)
   if (fnt == 0)
   {
     fnt = new TNtuple(name,title,
-                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:VarEColl:VarEPart:VarEPartColl:dNdEta:dNdEtaGBW:dNdEtaNBD:dNdEtaTwoNBD");
+                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:VarEColl:VarEPart:VarEPartColl:dNdEta:dNdEtaGBW:dNdEtaNBD:dNdEtaTwoNBD:xsect:tAA");
     fnt->SetDirectory(0);
   }
   Int_t q = 0;
@@ -691,7 +695,7 @@ void AliGlauberMC::Run(Int_t nevents)
     }
 
     q++;
-    Float_t v[25];
+    Float_t v[27];
     v[0]  = GetNpart();
     v[1]  = GetNcoll();
     v[2]  = fB_MC;
@@ -713,17 +717,29 @@ void AliGlauberMC::Run(Int_t nevents)
     v[18] = GetEccentricityColl();
     v[19] = GetEccentricityPart();
     v[20] = GetEccentricityPartColl();
-    v[21] = GetdNdEta( fdNdEtaParam[0],fdNdEtaParam[1] );
-    v[22] = GetdNdEtaGBW( fdNdEtaGBWParam[0],fdNdEtaGBWParam[1],fdNdEtaGBWParam[2] );
-    v[23] = GetdNdEtaNBD( TMath::Nint(fdNdEtaNBDParam[0]),
-                          fdNdEtaNBDParam[1],
-                          fdNdEtaNBDParam[2] );
-    v[24] = GetdNdEtaTwoNBD( TMath::Nint(fdNdEtaTwoNBDParam[0]),
-                             fdNdEtaTwoNBDParam[1],
-                             TMath::Nint(fdNdEtaTwoNBDParam[2]),
-                             fdNdEtaTwoNBDParam[3],
-                             fdNdEtaTwoNBDParam[4],
-                             fdNdEtaTwoNBDParam[5] );
+    if (fDoPartProd) {
+      v[21] = GetdNdEta( fdNdEtaParam[0],fdNdEtaParam[1] );
+      v[22] = GetdNdEtaGBW( fdNdEtaGBWParam[0],fdNdEtaGBWParam[1],fdNdEtaGBWParam[2] );
+      v[23] = GetdNdEtaNBD( TMath::Nint(fdNdEtaNBDParam[0]),
+                            fdNdEtaNBDParam[1],
+                            fdNdEtaNBDParam[2] );
+      v[24] = GetdNdEtaTwoNBD( TMath::Nint(fdNdEtaTwoNBDParam[0]),
+                               fdNdEtaTwoNBDParam[1],
+                               TMath::Nint(fdNdEtaTwoNBDParam[2]),
+                               fdNdEtaTwoNBDParam[3],
+                               fdNdEtaTwoNBDParam[4],
+                               fdNdEtaTwoNBDParam[5] );
+    } else {
+      v[21] = 0;
+      v[22] = 0;
+      v[23] = 0;
+      v[24] = 0;
+    }
+    v[25]=fXSect;
+
+    Float_t mytAA=-999;
+    if (GetNcoll()>0) mytAA=GetNcoll()/fXSect;
+    v[26]=mytAA;
     fnt->Fill(v);
 
     if ((i%50)==0) std::cout << "Generating Event # " << i << "... \r" << flush;
@@ -737,14 +753,19 @@ void AliGlauberMC::runAndSaveNtuple( Int_t n,
                                      Option_t *sysB,
                                      Double_t signn,
                                      Double_t mind,
+				     Double_t r,
+				     Double_t a,
                                      const char *fname)
 {
   AliGlauberMC mcg(sysA,sysB,signn);
   mcg.SetMinDistance(mind);
+  mcg.Setr(r);
+  mcg.Seta(a);
   mcg.Run(n);
   TNtuple  *nt=mcg.GetNtuple();
   TFile out(fname,"recreate",fname,9);
   if(nt) nt->Write();
+  printf("total cross section with a nucleon-nucleon cross section \t%f is \t%f",signn,mcg.GetTotXSect());
   out.Close();
 }
 
@@ -783,7 +804,7 @@ void AliGlauberMC::runAndSaveNucleons( Int_t n,
       Int_t nNucls=nucleons->GetEntries();
       for(Int_t iNucl=0; iNucl<nNucls; iNucl++)
       {
-        AliGlauberNucleon *nucl=(AliGlauberNucleon *)nucleons->At(iNucl);
+        AliGlauberNucleon *nucl=(AliGlauberNucleon *)nucleons->UncheckedAt(iNucl);
         Char_t nucleus='A';
         if(nucl->IsInNucleusB()) nucleus='B';
         Double_t x=nucl->GetX();
