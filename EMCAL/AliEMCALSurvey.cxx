@@ -320,8 +320,7 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     } else {
       smc.fZ1 = -zpos;
     }
-    
-    //printf("PHI OF IDEAL SM = %.2f\n",smc.fPhi);
+    printf("<SM %d> IDEAL x,y,z positions: %.2f,%.2f,%.2f, IDEAL phi,theta,psi angles: %.2f,%.2f,%.2f\n",smodnum,smc.fX1,smc.fY1,smc.fZ1,smc.fPhi,smc.fTheta,smc.fPsi);
     
   }
   
@@ -334,6 +333,9 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     AliEMCALSuperModuleCoords &smc = realSM[smodnum];
     Double_t zLength = pars[2]*2.; //length of SM in z from software
     Double_t halfHeight = pars[0]; //half the height of the SM in y direction
+    Double_t halfWidth = pars[1];
+
+    printf("AliEMCALGeometry says zlength = %.2f, halfheight = %.2f, halfwidth = %.2f\n",zLength,halfHeight,halfWidth);
     
     snprintf(substr,buffersize,"4096%d",smodnum);
     //retrieve components of four face points and determine average position of center
@@ -358,13 +360,13 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     Double_t activeX = ((xval[0] + (xval[2] - xval[0])/2.)        //x00 and x10
                         +(xval[1] + (xval[3] - xval[1])/2.) ) /2.; //x01 and x11
     
-    //    Double_t activeY = ((yval[0] + (yval[2] - yval[0])/2.)
-    //			+(yval[1] + (yval[3] - yval[1])/2.) ) /2.;
-    //    
-    //    Double_t activeZ = ((zval[0] + (zval[2] - zval[0])/2.)
-    //			+(zval[1] + (zval[3] - zval[1])/2.) ) /2.;
+        Double_t activeY = ((yval[0] + (yval[2] - yval[0])/2.)
+    			+(yval[1] + (yval[3] - yval[1])/2.) ) /2.;
+        
+        Double_t activeZ = ((zval[0] + (zval[2] - zval[0])/2.)
+    			+(zval[1] + (zval[3] - zval[1])/2.) ) /2.;
     
-    //printf("Bottom Center of active area of SM %s: %.2f, %.2f, %.2f\n",substr,activeX,activeY,activeZ);
+    printf("Bottom Center of active area of SM %s: %.2f, %.2f, %.2f\n",substr,activeX,activeY,activeZ);
     
     //compute angles for each SM
     //rotation about each axis
@@ -388,16 +390,17 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     
     //theta = angle in y-z plane
     Double_t realtheta = TMath::Pi()/2. 
-    - (TMath::ATan((zval[2] - zval[3])/(yval[3] - yval[2]))
+    + (TMath::ATan((zval[2] - zval[3])/(yval[3] - yval[2]))
        +TMath::ATan((zval[0] - zval[1])/(yval[1] - yval[0])) )/2.;
-    
-    //printf("Old edge of %s 01: %.2f, %.2f, %.2f\n",substr,xval[1],yval[1],zval[1]);
-    //printf("Old edge of %s 11: %.2f, %.2f, %.2f\n",substr,xval[3],yval[3],zval[3]);
-    
+        
+    printf("Old edge of %s 01: %.2f, %.2f, %.2f\n",substr,xval[1],yval[1],zval[1]);
+    printf("Old edge of %s 11: %.2f, %.2f, %.2f\n",substr,xval[3],yval[3],zval[3]);
+    printf("Real theta angle (degrees) = %.2f\n",realtheta*TMath::RadToDeg());
+
     //Now calculate the center of the box in z with length added to the 01
     //and 11 corners, corrected by the theta angle
     Double_t activeLength = TMath::Abs(((zval[1] - zval[0]) + (zval[3] - zval[2]))/2.);
-    //printf("ACTIVE LENGTH = %.2f\n",activeLength);
+    printf("ACTIVE LENGTH = %.2f\n",activeLength);
     if(smodnum%2 == 0) {
       yval[1] += (zLength - activeLength)*sin(realtheta);
       yval[3] += (zLength - activeLength)*sin(realtheta);
@@ -410,8 +413,8 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
       zval[3] -= (zLength - activeLength)*cos(realtheta);
     }
     
-    //printf("New extended edge of %s 01: %.2f, %.2f, %.2f\n",substr,xval[1],yval[1],zval[1]);            
-    //printf("New extended edge of %s 11: %.2f, %.2f, %.2f\n",substr,xval[3],yval[3],zval[3]);
+    printf("New extended edge of %s 01: %.2f, %.2f, %.2f\n",substr,xval[1],yval[1],zval[1]);            
+    printf("New extended edge of %s 11: %.2f, %.2f, %.2f\n",substr,xval[3],yval[3],zval[3]);
     
     //Compute the center of the bottom of the box in x,y,z
     Double_t realX = activeX;    
@@ -421,7 +424,7 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
                       +(zval[1] + (zval[3] - zval[1])/2.) ) /2.;
     
     
-    //printf("Bottom Center of SM %s Box: %.2f, %.2f, %.2f\n",substr,realX,realY,realZ);
+    printf("Bottom Center of SM %s Box: %.2f, %.2f, %.2f\n",substr,realX,realY,realZ);
     
     //correct the SM centers so that we have the center of the box in
     //x,y using the phi,theta angles                   
@@ -429,8 +432,8 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     realY += halfHeight*(TMath::Sin(TMath::Pi()/2+realphi) + TMath::Sin(realtheta));
     realZ += halfHeight*TMath::Cos(TMath::Pi()/2-realtheta);
     
-    //printf("Rotation angles of SM %s: %.4f, %.4f, %.4f\n",substr,realphi*TMath::RadToDeg(),realpsi*TMath::RadToDeg(),realtheta*TMath::RadToDeg());
-    //printf("Middle of SM %s: %.2f, %.2f, %.2f\n\n",substr,realX,realY,realZ);
+    printf("Rotation angles of SM %s (phi,psi,theta) in degrees: %.4f, %.4f, %.4f\n",substr,realphi*TMath::RadToDeg(),realpsi*TMath::RadToDeg(),realtheta*TMath::RadToDeg());
+    printf("Middle of SM %s: %.2f, %.2f, %.2f\n\n",substr,realX,realY,realZ);
     
     smc.fX1 = realX;
     smc.fY1 = realY;
@@ -441,7 +444,28 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     smc.fPsi = 0. + realpsi*TMath::RadToDeg();
     
   }//loop over supermodules
-  
+
+  //Now take average values for A and C side SMs (0&1,2&3) and set
+  //their values to be equal to that average
+  for (Int_t i = 0; i < fNSuperModule; i++) {
+    if(i%2==0) {
+      AliEMCALSuperModuleCoords &realA = realSM[i];
+      AliEMCALSuperModuleCoords &realC = realSM[i+1];
+      Double_t avgx = (realA.fX1 + realC.fX1)/2.;
+      Double_t avgy = (realA.fY1 + realC.fY1)/2.;
+      Double_t avgphi = (realA.fPhi + realC.fPhi)/2.;
+      Double_t avgtheta = (realA.fTheta + realC.fTheta)/2.;
+      Double_t avgpsi = (realA.fPsi + realC.fPsi)/2.;
+      printf("AVERAGE VALUES: %.2f,%.2f,%.2f,%.2f,%.2f\n",avgx,avgy,avgphi,avgtheta,avgpsi);
+      
+      realA.fX1 = avgx;         realC.fX1 = avgx;
+      realA.fY1 = avgy;         realC.fY1 = avgy;
+      realA.fPhi = avgphi;      realC.fPhi = avgphi;
+      realA.fTheta = avgtheta;  realC.fTheta = avgtheta;
+      realA.fPsi = avgpsi;      realC.fPhi = avgphi;
+    }
+  }
+
   fSuperModuleData = new AliEMCALSuperModuleDelta[fNSuperModule];
   
   for (Int_t i = 0; i < fNSuperModule; ++i) {
@@ -454,7 +478,7 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     t.fPhi = real.fPhi - ideal.fPhi;
     t.fTheta = real.fTheta - ideal.fTheta;
     t.fPsi = real.fPsi - ideal.fPsi;
-    
+
     printf("===================== SM %d =======================\n",i);
     printf("real x (%.2f) - ideal x (%.2f) = shift in x (%.2f)\n",real.fX1,ideal.fX1,t.fXShift);
     printf("real y (%.2f) - ideal y (%.2f) = shift in y (%.2f)\n",real.fY1,ideal.fY1,t.fYShift);

@@ -1,6 +1,6 @@
 enum SurveyDataType_t { kSurvey = 0, kDummy = 1};
 
-void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_FIRSTYEAR",TString surveyFilename = "emcal_survey_FIRSTYEAR.txt",SurveyDataType_t type = kSurvey){
+void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_FIRSTYEARv1",TString surveyFilename = "emcal_survey_FIRSTYEARv1.txt",SurveyDataType_t type = kSurvey){
   // Create TClonesArray of full misalignment objects for EMCAL
   //
   const char* macroname = "MakeEMCALFullMisAlignment.C";
