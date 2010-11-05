@@ -424,7 +424,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
     //GrandParent
     AliAODMCParticle * parent = NULL ;
     Int_t pPdg = -1;
-    if(iParent >= 0 && parent){
+    if(iParent >= 0){
       parent = (AliAODMCParticle *) mcparticles->At(iParent);
       pPdg = TMath::Abs(parent->GetPdgCode());
     }
