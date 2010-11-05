@@ -98,7 +98,7 @@ void AliHLTEveEmcal::CreateElementList() {
 void AliHLTEveEmcal::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
   //See header file for documentation
 
-  fBoxSetClusters[module].AddBox(pos[0], pos[1], pos[2], 6.1, 200*energy, 6.1);
+  fBoxSetClusters[module].AddBox(pos[0], pos[1], pos[2], 6.0, energy, 6.0);
   fBoxSetClusters[module].DigitValue(static_cast<Int_t>(energy));
 
   //cout << "Cluster " << pos[0] << " " << pos[1] << " " << pos[2] << endl;
@@ -108,12 +108,16 @@ void AliHLTEveEmcal::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
 
 void AliHLTEveEmcal::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t energy) {
   //See header file for documentation
-  Int_t absid = fGeoUtils->GetAbsCellIdFromCellIndexes(module, fZ, fX);
+  //Float_t x = (fX - 24)* 6.0;		
+  //Float_t z = (fZ - 48) * 6.0;
+	
+  Int_t absid = fGeoUtils->GetAbsCellIdFromCellIndexes(module, fX, fZ);
   Double_t posX, posY, posZ;
   if(fGeoUtils->RelPosCellInSModule(absid, posX, posY, posZ)) {
     
-    // cout << "digits " << posX << "  " << posY << "  " << posZ << endl;
-    fBoxSetDigits[module].AddBox(15, posY, posZ, energy*1, 6.1, 6.1);
+    cout << "digits " << posX << "  " << posY << "  " << posZ << endl;
+    fBoxSetDigits[module].AddBox(15, posY, posZ, energy*10, 6.0, 6.0);
+
     fBoxSetDigits[module].DigitValue(static_cast<Int_t>(energy));
   } else  {
     cout <<"AliHLTEveEmcal::AddClusters:  fail"<<endl;
