@@ -39,7 +39,6 @@ class AliRsnValueMult : public AliRsnValue
     
     virtual Bool_t   Eval(AliRsnMother * const mother, AliRsnPairDef * const pairDef, AliRsnEvent * const event);
     virtual Bool_t   Eval(AliRsnDaughter * const daughter, AliRsnEvent * const event);
-    virtual void     Print(Option_t *option = "") const;
   
   protected:
   
