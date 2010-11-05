@@ -156,7 +156,14 @@ AliMUONClusterFinderMLEM::NextCluster()
 //  AliCodeTimerAuto("",0)
   
   // if the list of clusters is not void, pick one from there
-  TObject* o = fClusterList.At(++fClusterNumber);
+  TObject* o(0x0);
+  
+  // do we have clusters in our list ?
+  if ( fClusterNumber < fClusterList.GetLast() )
+  {
+    o = fClusterList.At(++fClusterNumber);
+  }
+  
   if ( o != 0x0 ) return static_cast<AliMUONCluster*>(o);
   
   //FIXME : at this point, must check whether we've used all the digits
