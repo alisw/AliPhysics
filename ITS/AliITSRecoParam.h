@@ -357,7 +357,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t GetTrackleterZetaOverlapCut() const {return fTrackleterZetaOverlapCut;}
   void    SetTrackleterPhiRotationAngle(Float_t w=0.0) {fTrackleterPhiRotationAngle=w;}
   Float_t GetTrackleterPhiRotationAngle() const {return fTrackleterPhiRotationAngle;}
-
+  //
+  void    SetTrackleterNStdDevCut(Float_t f=1.)          {fTrackleterNStdDev = f<0.01 ? 0.01 : f;}
+  Float_t GetTrackleterNStdDevCut()               const  {return fTrackleterNStdDev;}
+  void    SetTrackleterScaleDThetaBySin2T(Bool_t v=kFALSE)  {fScaleDTBySin2T = v;}
+  Bool_t  GetTrackleterScaleDThetaBySin2T()       const  {return fScaleDTBySin2T;}
   //
   void   SetSPDRemoveNoisyFlag(Bool_t value) {fSPDRemoveNoisyFlag = value;}
   Bool_t GetSPDRemoveNoisyFlag() const {return fSPDRemoveNoisyFlag;}
@@ -653,6 +657,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fTrackleterPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
   Float_t fTrackleterPhiRotationAngle;             // Angle to rotate cluster in the SPD inner layer for combinatorial reco only
+  Float_t fTrackleterNStdDev;      // cut on the number of standard deviations
+  Bool_t  fScaleDTBySin2T;         // scale Dtheta by 1/sin^2(theta)
+
   Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
 

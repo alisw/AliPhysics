@@ -17,6 +17,8 @@
 // distance is selected. 
 //_________________________________________________________________________
 #include "AliTrackleter.h"
+#include "AliITSsegmentationSPD.h"
+#include "TMath.h"
 
 class TBits;
 class TTree;
@@ -29,6 +31,7 @@ class AliESDtrack;
 class AliVertex;
 class AliESDVertex;
 class AliMultiplicity;
+class AliRefArray;
 
 class AliITSMultReconstructor : public AliTrackleter
 {
@@ -42,7 +45,8 @@ public:
   virtual ~AliITSMultReconstructor();
 
   void Reconstruct(AliESDEvent* esd, TTree* treeRP);
-  void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes);   // old reconstructor invocation
+  void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes=0);   // old reconstructor invocation
+  void ReconstructMix(TTree* clusterTree, TTree* clusterTreeMix, Float_t* vtx, Float_t* vtrRes=0);
   void FindTracklets(const Float_t* vtx); 
   void LoadClusterFiredChips(TTree* tree);
   void FlagClustersInOverlapRegions(Int_t ic1,Int_t ic2);
@@ -52,29 +56,37 @@ public:
   void ProcessESDTracks();
   Bool_t  CanBeElectron(const AliESDtrack* trc) const;
   
-  void CreateMultiplicityObject();
+  virtual void CreateMultiplicityObject();
   //
   // Following members are set via AliITSRecoParam
-  void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
-  void SetThetaWindow(Float_t w=0.025) {fThetaWindow=w;}
+  void SetPhiWindow(Float_t w=0.08)    {fDPhiWindow=w;   fDPhiWindow2 = w*w;}
+  void SetThetaWindow(Float_t w=0.025) {fDThetaWindow=w; fDThetaWindow2=w*w;}
   void SetPhiShift(Float_t w=0.0045) {fPhiShift=w;}
   void SetRemoveClustersFromOverlaps(Bool_t b = kFALSE) {fRemoveClustersFromOverlaps = b;}
   void SetPhiOverlapCut(Float_t w=0.005) {fPhiOverlapCut=w;}
   void SetZetaOverlapCut(Float_t w=0.05) {fZetaOverlapCut=w;}
   void SetPhiRotationAngle(Float_t w=0.0) {fPhiRotationAngle=w;}
 
-  Int_t GetNClustersLayer1() const {return fNClustersLay1;}
-  Int_t GetNClustersLayer2() const {return fNClustersLay2;}
+  Int_t GetNClustersLayer1() const {return fNClustersLay[0];}
+  Int_t GetNClustersLayer2() const {return fNClustersLay[1];}
+  Int_t GetNClustersLayer(Int_t i) const {return fNClustersLay[i];}
   Int_t GetNTracklets() const {return fNTracklets;}
   Int_t GetNSingleClusters() const {return fNSingleCluster;}
   Short_t GetNFiredChips(Int_t layer) const {return fNFiredChips[layer];}
 
-  Float_t* GetClusterLayer1(Int_t n) {return &fClustersLay1[n*kClNPar];}
-  Float_t* GetClusterLayer2(Int_t n) {return &fClustersLay2[n*kClNPar];}
-
+  Float_t* GetClusterLayer1(Int_t n) {return &fClustersLay[0][n*kClNPar];}
+  Float_t* GetClusterLayer2(Int_t n) {return &fClustersLay[1][n*kClNPar];}
+  Float_t* GetClusterOfLayer(Int_t lr,Int_t n) {return &fClustersLay[lr][n*kClNPar];}
+  
   Float_t* GetTracklet(Int_t n) {return fTracklets[n];}
   Float_t* GetCluster(Int_t n) {return fSClusters[n];}
 
+  void     SetScaleDThetaBySin2T(Bool_t v=kTRUE)         {fScaleDTBySin2T = v;}
+  Bool_t   GetScaleDThetaBySin2T()               const   {return fScaleDTBySin2T;}
+  //
+  void     SetNStdDev(Float_t f=1.)                      {fNStdDev = f<0.01 ? 0.01 : f; fNStdDevSq=TMath::Sqrt(fNStdDev);}
+  Float_t  GetNStdDev()                          const   {return fNStdDev;}
+  //
   void SetHistOn(Bool_t b=kFALSE) {fHistOn=b;}
   void SaveHists();
 
@@ -123,42 +135,66 @@ public:
   Float_t GetCutK0SFromDecay()                 const {return fCutK0SFromDecay;}
   Float_t GetCutMaxDCA()                       const {return fCutMaxDCA;}
   //
-protected:
+  void  InitAux();
+  void  ClusterPos2Angles(const Float_t *vtx);
+  void  ClusterPos2Angles(Float_t *clPar, const Float_t *vtx);
+  Int_t AssociateClusterOfL1(Int_t iC1);
+  Int_t StoreTrackletForL2Cluster(Int_t iC2);
+  void  StoreL1Singles();
+  TClonesArray* GetClustersOfLayer(Int_t il)   const {return fClArr[il];}
+  void  LoadClusters()                               {LoadClusterArrays(fTreeRP);}
+  void  SetTreeRP(TTree* rp)                         {fTreeRP    = rp;}
+  void  SetTreeRPMix(TTree* rp=0)                    {fTreeRPMix = rp;}
+  Bool_t AreClustersLoaded()                   const {return fClustersLoaded;}
+  Bool_t GetCreateClustersCopy()               const {return fCreateClustersCopy;}
+  Bool_t IsRecoDone()                          const {return fRecoDone;}
+  void  SetCreateClustersCopy(Bool_t v=kTRUE)        {fCreateClustersCopy=v;}
+  //
+  Float_t* GetClustersArray(Int_t lr)          const {return (Float_t*) (lr==0) ? fClustersLay[0]:fClustersLay[1];}
+  Int_t*   GetPartnersOfL2()                   const {return (Int_t*)fPartners;}
+  Float_t* GetMinDistsOfL2()                   const {return (Float_t*)fMinDists;}
+  Double_t GetDPhiShift()                      const {return fDPhiShift;}
+  Double_t GetDPhiWindow2()                    const {return fDPhiWindow2;}
+  Double_t GetDThetaWindow2()                  const {return fDThetaWindow2;}
+  Double_t CalcDist(Double_t dphi, Double_t dtheta, Double_t theta) const; 
+  //
+ protected:
+  void   SetClustersLoaded(Bool_t v=kTRUE)           {fClustersLoaded = v;}
   AliITSMultReconstructor(const AliITSMultReconstructor& mr);
   AliITSMultReconstructor& operator=(const AliITSMultReconstructor& mr);
+  void              CalcThetaPhi(float dx,float dy,float dz,float &theta,float &phi) const;
   AliITSDetTypeRec* fDetTypeRec;            //! pointer to DetTypeRec
   AliESDEvent*      fESDEvent;              //! pointer to ESD event
   TTree*            fTreeRP;                //! ITS recpoints
+  TTree*            fTreeRPMix;             //! ITS recpoints for mixing
+  AliRefArray*      fUsedClusLay[2][2];     //! RS: clusters usage in ESD tracks
+  //
+  Float_t*      fClustersLay[2];            //! clusters in the SPD layers of ITS 
+  Int_t*        fDetectorIndexClustersLay[2];  //! module index for clusters in ITS layers
+  Bool_t*       fOverlapFlagClustersLay[2];  //! flag for clusters in the overlap regions in ITS layers
 
-  UInt_t*       fUsedClusLay1;               // RS: flag of clusters usage in ESD tracks: 0=unused, else ID+1 in word0=TPC/ITS+ITSSA, word1=ITSSA_Pure
-  UInt_t*       fUsedClusLay2;               // RS: flag of clusters usage in ESD tracks: 0=unused, else ID+1 word0=TPC/ITS+ITSSA, word1=ITSSA_Pure
-
-  Float_t*      fClustersLay1;               // clusters in the 1st layer of ITS 
-  Float_t*      fClustersLay2;               // clusters in the 2nd layer of ITS 
-  Int_t*        fDetectorIndexClustersLay1;  // module index for clusters 1st ITS layer
-  Int_t*        fDetectorIndexClustersLay2;  // module index for clusters 2nd ITS layer
-  Bool_t*       fOverlapFlagClustersLay1;    // flag for clusters in the overlap regions 1st ITS layer
-  Bool_t*       fOverlapFlagClustersLay2;    // flag for clusters in the overlap regions 2nd ITS layer 
-
-  Float_t**     fTracklets;            // tracklets 
-  Float_t**     fSClusters;            // single clusters (unassociated)
+  Float_t**     fTracklets;            //! tracklets 
+  Float_t**     fSClusters;            //! single clusters (unassociated)
   
-  Int_t         fNClustersLay1;        // Number of clusters (Layer1)
-  Int_t         fNClustersLay2;        // Number of clusters (Layer2)
+  Int_t         fNClustersLay[2];      // Number of clusters on each layer
   Int_t         fNTracklets;           // Number of tracklets
   Int_t         fNSingleCluster;       // Number of unassociated clusters
   Short_t       fNFiredChips[2];       // Number of fired chips in the two SPD layers
   //
   // Following members are set via AliITSRecoParam
   //
-  Float_t       fPhiWindow;                    // Search window in phi
-  Float_t       fThetaWindow;                  // Search window in theta
+  Float_t       fDPhiWindow;                   // Search window in phi
+  Float_t       fDThetaWindow;                 // Search window in theta
   Float_t       fPhiShift;                     // Phi shift reference value (at 0.5 T) 
   Bool_t        fRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
   Float_t       fPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t       fZetaOverlapCut;               // Fiducial window in eta for overlap cut
   Float_t       fPhiRotationAngle;             // Angle to rotate the inner layer cluster for combinatorial reco only 
-
+  //
+  Bool_t        fScaleDTBySin2T;               // use in distance definition
+  Float_t       fNStdDev;                      // number of standard deviations to keep
+  Float_t       fNStdDevSq;                    // sqrt of number of standard deviations to keep
+  //
   // cuts for secondaries identification
   Float_t       fCutPxDrSPDin;                 // max P*DR for primaries involving at least 1 SPD
   Float_t       fCutPxDrSPDout;                // max P*DR for primaries not involving any SPD
@@ -199,10 +235,63 @@ protected:
   TH1F*         fhetaClustersLay1;     // Pseudorapidity distr. for Clusters L. 1
   TH1F*         fhphiClustersLay1;     // Azimuthal (Phi) distr. for Clusters L. 1 
 
+  // temporary stuff for single event trackleting
+  Double_t      fDPhiShift;            // shift in dphi due to the curvature
+  Double_t      fDPhiWindow2;          // phi window^2
+  Double_t      fDThetaWindow2;        // theta window^2
+  Int_t*        fPartners;             //! L2 partners of L1
+  Int_t*        fAssociatedLay1;       //! association flag
+  Float_t*      fMinDists;             //! smallest distances for L2->L1
+  AliRefArray*  fBlackList;            //! blacklisted cluster references
+  Bool_t        fStoreRefs[2][2];      //! which cluster to track refs to store
+  //
+  // this is for the analysis mode only
+  TClonesArray  *fClArr[2];            //! original clusters
+  Bool_t        fCreateClustersCopy;   //  read and clone clusters directly from the tree
+  Bool_t        fClustersLoaded;       // flag of clusters loaded
+  Bool_t        fRecoDone;             // flag that reconstruction is done
+  //
+  AliITSsegmentationSPD fSPDSeg;       // SPD segmentation model
+  //
+  void LoadClusterArrays(TTree* tree, TTree* treeMix=0);
+  void LoadClusterArrays(TTree* tree,int il);
 
-  void LoadClusterArrays(TTree* tree);
-
-  ClassDef(AliITSMultReconstructor,9)
+  ClassDef(AliITSMultReconstructor,10)
 };
+
+//____________________________________________________________________
+inline void AliITSMultReconstructor::ClusterPos2Angles(Float_t *clPar, const Float_t *vtx)
+{
+  // convert cluster coordinates to angles wrt vertex
+  Float_t x = clPar[kClTh] - vtx[0];
+  Float_t y = clPar[kClPh] - vtx[1];
+  Float_t z = clPar[kClZ]  - vtx[2];
+  Float_t r    = TMath::Sqrt(x*x + y*y + z*z);
+  clPar[kClTh] = TMath::ACos(z/r);                   // Store Theta
+  clPar[kClPh] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi 
+  //
+}
+
+//____________________________________________________________________
+inline Double_t AliITSMultReconstructor::CalcDist(Double_t dphi, Double_t dtheta, Double_t theta) const
+{
+  // calculate eliptical distance. theta is the angle of cl1, dtheta = tht(cl1)-tht(cl2)
+  dphi = TMath::Abs(dphi) - fDPhiShift;
+  if (fScaleDTBySin2T) {
+    double sinTI = TMath::Sin(theta-dtheta/2);
+    sinTI *= sinTI;
+    dtheta /= sinTI>1.e-6 ? sinTI : 1.e-6;
+  }
+  return dphi*dphi/fDPhiWindow2 + dtheta*dtheta/fDThetaWindow2;
+}
+
+//____________________________________________________________________
+inline void AliITSMultReconstructor::CalcThetaPhi(float x, float y,float z,float &theta,float &phi) const
+{
+  // get theta and phi in tracklet convention
+  theta = TMath::ACos(z/TMath::Sqrt(x*x + y*y + z*z));
+  phi   = TMath::Pi() + TMath::ATan2(-y,-x);
+}
+
 
 #endif
