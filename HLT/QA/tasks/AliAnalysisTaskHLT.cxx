@@ -605,7 +605,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
   AliVertex *primVertexOFF = new AliVertex(vertexOFF, 0., 0);
   Bool_t testVertex=kTRUE;
 
-  Int_t nr_contributorsOff= vertHLT->GetNContributors();
+  //Int_t nr_contributorsOff= vertHLT->GetNContributors();
 
   if(vertOff->GetNContributors()<1) {
     // SPD vertex
