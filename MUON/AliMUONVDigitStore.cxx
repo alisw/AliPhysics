@@ -153,9 +153,8 @@ AliMUONVDigitStore::GetSize(Int_t detElemId, Int_t cathode) const
 {
   /// Return the number of digits we have for a given detection element
   TIter next(CreateIterator(detElemId,detElemId,cathode));
-  AliMUONVDigit* digit;
   Int_t n(0);
-  while ( ( digit = static_cast<AliMUONVDigit*>(next()) ) )
+  while ( ( next() ) )
   {
     ++n;
   }
