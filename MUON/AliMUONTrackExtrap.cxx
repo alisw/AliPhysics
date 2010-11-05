@@ -1250,7 +1250,8 @@ Bool_t AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t ste
 /// </pre>
 
     Double_t h2, h4, f[4];
-    Double_t xyzt[3], a, b, c, ph,ph2;
+    Double_t xyzt[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+    Double_t a, b, c, ph,ph2;
     Double_t secxs[4],secys[4],seczs[4],hxp[3];
     Double_t g1, g2, g3, g4, g5, g6, ang2, dxt, dyt, dzt;
     Double_t est, at, bt, ct, cba;

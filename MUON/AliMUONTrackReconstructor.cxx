@@ -1256,6 +1256,7 @@ void AliMUONTrackReconstructor::Fit(AliMUONTrack &track, Bool_t includeMCS, Bool
     // Covariance matrix according to HESSE status
     // If problem then keep only the diagonal terms (variances)
     Double_t matrix[5][5];
+    for (Int_t i=0; i<5; i++) for (Int_t j=0; j<5; j++) matrix[i][j] = 0.;
     gMinuit->mnemat(&matrix[0][0],5);
     if (covStatus == 3) trackParam->SetCovariances(matrix);
     else trackParam->SetVariances(matrix);
