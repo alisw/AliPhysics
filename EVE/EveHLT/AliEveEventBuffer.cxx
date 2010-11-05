@@ -65,15 +65,19 @@ AliEveEventBuffer::~AliEveEventBuffer() {
 ///___________________________________________________________________________
 void AliEveEventBuffer::CreateBufferThread() {
   if(GetBusy()) {
-    cout << "Buffer is busy"<< endl;
+    cout << "Buffer is busy, no thread created"<< endl;
   } else {
-    cout << "CreateBufferThread()"<<endl;
-    TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
-    fThread->Run();
-    cout << "Done BufferThread"<<endl;
-  } 
+    SetBusy(kTRUE);
+    if ( (CalculateDifference(fBIndex[kTop],fBIndex[kLast]) < fPreBuffer) ) {
+      cout << "CreateBufferThread()"<<endl;
+      TThread * fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
+      fThread->Run();
+      cout << "Started BufferThread"<<endl;
+    } else { 
+      cout << "Buffer is full already"<<endl;
+    }
+  }
 }
-
 ///___________________________________________________________________________
 void * AliEveEventBuffer::BufferThread(void * buffer) {
   cout <<"BufferThread : " <<endl;
@@ -88,27 +92,22 @@ void * AliEveEventBuffer::BufferThread(void * buffer) {
 ///_____________________________________________________________________________
 void AliEveEventBuffer::MonitorBuffer() {
   cout << "Monitorbuffer: " << endl;
-  if ( (CalculateDifference(fBIndex[kTop],fBIndex[kLast]) < fPreBuffer) ) {
-    if(GetBusy()) {
-      cout << "Already called FetchEvent()" << endl;
-      return;
-    } else {
-      fBusy = kTRUE;
-      FetchEvent();
-      fBusy = kFALSE;
-    }
+  if(GetBusy()) {
+    cout << "Already called FetchEvent()" << endl;
   } else {
-    //StopBufferMonitor();
-    
-    fBusy = kFALSE;
+    SetBusy(kTRUE);
+    FetchEvent();
+    SetBusy(kFALSE);
   }
+  
+  SetBusy(kFALSE);
 }
 
 
 ///_______________________________________________________________________________
 TObject * AliEveEventBuffer::NextEvent() {
   //See header file for documentation
-  cout << "In enxtevent"<<endl;
+  cout << "NextEvent()"<<endl;
 
 
   // if(fBusy) {
