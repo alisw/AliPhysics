@@ -119,11 +119,11 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   AliRsnCutSet *cutSetDaughterCommon = new AliRsnCutSet("commonDaughterCuts", AliRsnCut::kDaughter);
 
   // --> add related cuts
-  //cutSetDaughterCommon->AddCut(cuts2010);
-  cutSetDaughterCommon->AddCut(cutPID);
+  cutSetDaughterCommon->AddCut(cuts2010);
+  //cutSetDaughterCommon->AddCut(cutPID);
 
   // --> define schemes
-  cutSetDaughterCommon->SetCutScheme("cutPID");
+  cutSetDaughterCommon->SetCutScheme("cuts2010");
    
   // cut managers
   // define a proper name for each mult bin, to avoid omonyme output histos
@@ -132,18 +132,20 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
 
   // function axes
   Double_t ybins[] = {-0.8, -0.7, -0.6, -0.5, 0.5, 0.6, 0.7, 0.8};
-  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass, 50,  0.9,  1.4);
-  AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt,      0.0, 20.0, 0.1);
-  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY,       sizeof(ybins)/sizeof(ybins[0]), ybins);
-  AliRsnValue *axisQinv = new AliRsnValue("QInv", AliRsnValue::kQInv,       100,  0.0, 10.0);
+  AliRsnValue     *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass,  50,  0.9,  1.4);
+  AliRsnValue     *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt,       0.0, 20.0, 0.1);
+  AliRsnValue     *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY,       sizeof(ybins)/sizeof(ybins[0]), ybins);
+  AliRsnValue     *axisQinv = new AliRsnValue("QInv", AliRsnValue::kQInv,        100,  0.0, 10.0);
+  AliRsnValueMult *axisMult = new AliRsnValue("Mult", AliRsnValueMult::kESDcuts, 100,  0.0, 100.0);
 
   // functions for TH1-like output
   AliRsnFunction *fcnPt    = new AliRsnFunction;
   // --> add axes
   fcnPt   ->AddAxis(axisIM);
-  fcnPt   ->AddAxis(axisPt);
-  fcnPt   ->AddAxis(axisY);
-  fcnPt   ->AddAxis(axisQinv);
+  //fcnPt   ->AddAxis(axisPt);
+  //fcnPt   ->AddAxis(axisY);
+  //fcnPt   ->AddAxis(axisQinv);
+  //fcnPt   ->AddAxis(axisMult);
   
   // add functions to TH1-like output
   pairPMhist->AddFunction(fcnPt);
@@ -154,6 +156,7 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   pairPMntp->AddValue(axisPt);
   pairPMntp->AddValue(axisY);
   pairPMntp->AddValue(axisQinv);
+  pairPMntp->AddValue(axisMult);
   
   // add everything to analysis manager
   task->GetAnalysisManager()->Add(pairPMhist);

@@ -21,7 +21,8 @@ AliRsnValue::AliRsnValue() :
   TNamed(),
   fValue(0.0),
   fType(kValueTypes),
-  fArray(0)
+  fArray(0),
+  fESDCuts()
 {
 //
 // Main constructor (version 1)
@@ -35,7 +36,8 @@ AliRsnValue::AliRsnValue
   TNamed(name, ""),
   fValue(0.0),
   fType(type),
-  fArray(0)
+  fArray(0),
+  fESDCuts()
 {
 //
 // Main constructor (version 1)
@@ -51,7 +53,8 @@ AliRsnValue::AliRsnValue
   TNamed(name, ""),
   fValue(0.0),
   fType(type),
-  fArray(0)
+  fArray(0),
+  fESDCuts()
 {
 //
 // Main constructor (version 2)
@@ -66,7 +69,8 @@ AliRsnValue::AliRsnValue
   TNamed(name, ""),
   fValue(0.0),
   fType(type),
-  fArray(0)
+  fArray(0),
+  fESDCuts()
 {
 //
 // Main constructor (version 2)
@@ -248,6 +252,23 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
       }
       else fValue = (Double_t)event->GetMultiplicity();
       break;
+    case kEventMultESDcuts:
+      if (!event)
+      {
+        fValue = 0.0;
+        return kFALSE;
+      }
+      else
+      {
+        AliESDEvent *esd = event->GetRefESD();
+        if (!esd)
+        {
+          AliError("Cannot use method based on ESD cuts when input is not ESD.");
+          fValue = 0.0;
+          return kFALSE;
+        }
+        fValue = (Double_t)fESDCuts.CountAcceptedTracks(esd);
+      }
     case kLeadingPt:
       if (!event) 
       {
