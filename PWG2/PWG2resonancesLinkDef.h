@@ -5,6 +5,7 @@
 #pragma link C++ class AliRsnEvent+;
 
 #pragma link C++ class AliRsnValue+;
+#pragma link C++ class AliRsnValueMult+;
 #pragma link C++ class AliRsnFunction+;
 
 #pragma link C++ class AliRsnExpression+;
