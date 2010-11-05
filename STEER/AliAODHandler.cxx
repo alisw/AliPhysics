@@ -756,7 +756,8 @@ Bool_t AliAODExtension::Init(Option_t *option)
   if (opt.Contains("proof")) {
     // proof
     // Merging via files. Need to access analysis manager via interpreter.
-    gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(\"%s\", \"RECREATE\");", fName.Data()));
+    gROOT->ProcessLine(Form("AliAnalysisDataContainer *c_common_out = AliAnalysisManager::GetAnalysisManager()->GetCommonOutputContainer();"));
+    gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(c_common_out, \"RECREATE\", \"%s\");", fName.Data()));
     fFileE = gFile;
   } else {
     fFileE = new TFile(GetName(), "RECREATE");

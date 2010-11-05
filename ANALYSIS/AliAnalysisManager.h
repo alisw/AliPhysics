@@ -72,7 +72,7 @@ enum EAliAnalysisFlags {
    virtual Bool_t      Notify();
    virtual Bool_t      ProcessCut(Long64_t entry) {return Process(entry);}
    virtual Bool_t      Process(Long64_t entry);
-   TFile              *OpenProofFile(AliAnalysisDataContainer *cont, const char *option);
+   TFile              *OpenProofFile(AliAnalysisDataContainer *cont, const char *option, const char *extaod="");
    static TFile       *OpenFile(AliAnalysisDataContainer *cont, const char *option, Bool_t ignoreProof=kFALSE);
    void                PackOutput(TList *target);
    void                RegisterExtraFile(const char *fname);

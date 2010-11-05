@@ -1726,13 +1726,16 @@ TFile *AliAnalysisManager::OpenFile(AliAnalysisDataContainer *cont, const char *
 }    
  
 //______________________________________________________________________________
-TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const char *option)
+TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const char *option, const char *extaod)
 {
 // Opens a special output file used in PROOF.
   TString line;
   TString filename = cont->GetFileName();
   if (cont == fCommonOutput) {
-     if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
+     if (fOutputEventHandler) {
+        if (strlen(extaod)) filename = extaod;
+        filename = fOutputEventHandler->GetOutputFileName();
+     }   
      else Fatal("OpenProofFile","No output container. Exiting.");
   }   
   TFile *f = NULL;
