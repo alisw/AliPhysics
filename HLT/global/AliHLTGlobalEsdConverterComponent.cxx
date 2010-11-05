@@ -434,6 +434,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   }
 
   // 2) convert the TPC tracks to ESD tracks
+  
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     fBenchmark.AddInput(pBlock->fSize);
@@ -509,7 +510,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  if( dEdxTPC ) HLTWarning("Wrong number of dEdx TPC labels");
 	}
 	iotrack.SetLabel(mcLabel);
-	pESD->AddTrack(&iotrack);
+	pESD->AddTrack(&iotrack);	
 	if (fVerbosity>0) element->Print();
       }
       HLTInfo("converted %d track(s) to AliESDtrack and added to ESD", tracks.size());
@@ -607,10 +608,17 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // TODO 2010-07-12 this propagates also the TPC inner param to beamline
   // sounds not very reasonable
   // https://savannah.cern.ch/bugs/index.php?69873
-  for (int i=0; i<pESD->GetNumberOfTracks(); i++) {
+  for (UInt_t i=0; (int) i<pESD->GetNumberOfTracks(); i++) {
     if (!pESD->GetTrack(i) || 
 	!pESD->GetTrack(i)->GetTPCInnerParam() ) continue;
-    pESD->GetTrack(i)->RelateToVertexTPC(pESD->GetPrimaryVertexTracks(), fSolenoidBz, 1000 );    
+
+    AliESDtrack* tESD=pESD->GetTrack(i);
+    AliHLTGlobalBarrelTrack inner(*tESD->GetTPCInnerParam());
+    inner.SetLabel(tESD->GetLabel());
+
+    tESD->RelateToVertexTPC(pESD->GetPrimaryVertexTracks(), fSolenoidBz, 1000 );
+    // Restore TPC inner parameters!!!
+    tESD->UpdateTrackParams(&inner, AliESDtrack::kTPCin);
   }
 
   // loop over all tracks and set the TPC refit flag by updating with the
