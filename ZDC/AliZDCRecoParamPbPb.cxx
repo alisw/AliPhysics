@@ -138,22 +138,24 @@ AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetHighFluxParam(Float_t beamEnergy)
   TFile *fileGlauberMC =  TFile::Open("$ALICE_ROOT/ZDC/GlauberMCDist.root");
   if(!fileGlauberMC) printf(" AliZDCRecoParamPbPb::GetHighFluxParam() ERROR opening file $ALICE_ROOT/ZDC/SpectatorSignal.root\n");
   
+  Float_t sqrtS = 2*beamEnergy;
+  
   TH1D *hNpartDist=0x0, *hbDist=0x0;
-  if(TMath::Abs(beamEnergy-5500)<100.){
+  if(TMath::Abs(sqrtS-5500)<100.){
     fileGlauberMC->cd("energy5500");
     fileGlauberMC->GetObject("energy5500/hNpartGlauber;1", hNpartDist);
     if(!hNpartDist) printf("  AliZDCRecoParamPbPb::GetHighFluxParam() PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
     fileGlauberMC->GetObject("energy5500/hbGlauber;1", hbDist);
     if(!hbDist) printf("  AliZDCRecoParamPbPb::GetHighFluxParam() PROBLEM!!! Can't get Glauber MC b distribution from file GlauberMCDist.root\n");
   }
-  else if(TMath::Abs(beamEnergy-2760)<100.){
+  else if(TMath::Abs(sqrtS-2760)<100.){
     fileGlauberMC->cd("energy2760");
     fileGlauberMC->GetObject("energy2760/hNpartGlauber;1", hNpartDist);
     if(!hNpartDist) printf("  PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
     fileGlauberMC->GetObject("energy2760/hbGlauber;1", hbDist);
     if(!hbDist) printf("  AliZDCRecoParamPbPb::GetHighFluxParam() PROBLEM!!! Can't get Glauber MC b distribution from file GlauberMCDist.root\n");
   }
-  else printf(" No AliZDCRecoParam provided for Pb-Pb @ sqrt(s) = %1.0f GeV\n", beamEnergy);
+  else printf(" No AliZDCRecoParam provided for Pb-Pb @ sqrt(s) = %1.0f GeV\n", sqrtS);
   //
   hNpartDist->SetDirectory(0);
   hbDist->SetDirectory(0);

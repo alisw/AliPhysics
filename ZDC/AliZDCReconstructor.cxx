@@ -146,8 +146,9 @@ void AliZDCReconstructor::Init(TString beamType, Float_t beamEnergy)
   }
   else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
     fRecoMode=2;
-  }
-    
+    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
+    if( fgRecoParam ) fgRecoParam->SetGlauberMCDist(fBeamEnergy);	
+  }    
   
   fESDZDC = new AliESDZDC();
   
@@ -821,6 +822,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
   // write the output tree
   clustersTree->Fill();
+  delete reco;
 }
 
 //_____________________________________________________________________________
@@ -1019,8 +1021,11 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   if(fIsCalibrationMB == kFALSE){
     // ******	Reconstruction parameters ------------------ 
     if(!fgMBCalibData) fgMBCalibData = const_cast<AliZDCMBCalib*>(GetMBCalibData()); 
-    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam()); 
-    fgRecoParam->SetGlauberMCDist(fBeamEnergy);
+    if(!fgRecoParam){
+      fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
+      if(!fgRecoParam) return;
+      fgRecoParam->SetGlauberMCDist(fBeamEnergy);     
+    }
      
     TH2F *hZDCvsZEM  = fgMBCalibData->GethZDCvsZEM();
     TH2F *hZDCCvsZEM = fgMBCalibData->GethZDCCvsZEM();
@@ -1229,7 +1234,8 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     if(nGenSpec>416) nGenSpec=416; if(nGenSpec<0) nGenSpec=0;
     if(nGenSpecC>416) nGenSpecC=416; if(nGenSpecC<0) nGenSpecC=0;
     if(nGenSpecA>416) nGenSpecA=416; if(nGenSpecA<0) nGenSpecA=0;    
-  
+    
+    delete line; 
     delete lineC;  delete lineA;
 
   } // ONLY IF fIsCalibrationMB==kFALSE
@@ -1247,6 +1253,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   //reco->Print("");
   // write the output tree
   clustersTree->Fill();
+  delete reco;
 }
 
 
