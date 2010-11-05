@@ -120,7 +120,7 @@ class AliTriggerAnalysis : public TObject
     Bool_t fMC;              // flag if MC is analyzed
     AliESDtrackCuts* fEsdTrackCuts;  //Track Cuts to select ESD tracks
 
-    ClassDef(AliTriggerAnalysis, 10)
+    ClassDef(AliTriggerAnalysis, 11)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
