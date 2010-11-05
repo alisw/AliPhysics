@@ -38,7 +38,6 @@ public:
   virtual ~AliEveHLTEventManager();
 
 
-  void SetRunNumber(Int_t rn) { fRunNumber = rn; }
 
   /**Set and get the global instance of the Eve manager */
   void SetEveManager(TEveManager * manager) {fEveManager = manager;}
@@ -106,6 +105,12 @@ public:
   void UpdateDisplay(); 
 
 
+  Int_t GetRunNumber() const { return fRunNumber; }
+  ULong64_t GetEventId() const { return fEventId; }
+  void SetRunNumber(Int_t rn) { fRunNumber = rn; }
+  void SetEventId(ULong64_t id) { fEventId = id; }
+
+
   void CreatePhosElement();
   void CreateEmcalElement();
   void CreateTPCElement();
@@ -151,6 +156,7 @@ public:
   Bool_t fShowMuon;                                 // Display Muon arm ?
 
   Int_t fRunNumber;
+  ULong64_t fEventId;
 
   ClassDef(AliEveHLTEventManager, 0);
 

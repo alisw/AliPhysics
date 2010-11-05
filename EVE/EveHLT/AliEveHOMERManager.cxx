@@ -103,7 +103,7 @@ Int_t AliEveHOMERManager::CreateEveSourcesList() {
 ///_______________________________________________________________
 void AliEveHOMERManager::StartEveSourceListLoop() {
   HLTInfo("Starting source list timer");
-  fSourceListTimer->Start(5000); 
+  fSourceListTimer->Start(1000); 
 }
 ///_______________________________________________________________
 void AliEveHOMERManager::StopEveSourceListLoop() {
@@ -154,7 +154,7 @@ Int_t AliEveHOMERManager::ReConnectHOMER( TString /*detector*/ ){
   // see header file for class documentation
   Int_t iResult = 0;
   if (Connected()) DisconnectHOMER();
-  StartEveSourceListLoop();
+  CreateEveSourcesListLoop();
   return iResult;
 }
 
@@ -163,23 +163,28 @@ TList * AliEveHOMERManager::NextHOMEREvent() {
   //See header file for documentation  
   
   if(!Connected()) {
-    cout << "AliEveHOMERManager::NextHOMEREvent(): HOMER is not connected to a source!"<<endl;
-    return NULL;
+    HLTInfo("Homer is not connected, trying to reconnect!");
+    Int_t iResult = ReConnectHOMER();
+    if(iResult)  {
+      HLTError("Error establishing connection to sources");
+      return NULL;
+    } else {
+      HLTInfo("New connection established, trying again to fetch event");
+      return NextHOMEREvent();
+    }
   }
-
+  
   
   if ( NextEvent() ) {
     
     HLTInfo("Failed getting next event, trying to reconnect");
-    
     Int_t iResult = ReConnectHOMER();
     if(iResult)  {
       HLTError("Error establishing connection to sources");
-    }
-    
-    return NULL;
+      return NULL;
+    }    
   }
- 
+  
   return GetBlockList();
   
 }

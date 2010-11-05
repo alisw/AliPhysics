@@ -6,7 +6,6 @@
 #include "TEveViewer.h"
 #include "TEveEventManager.h"
 
-//#include "AliHLTTriggerDecision.h"
 #include "AliHLTEvePhos.h"
 #include "AliHLTEveEmcal.h"
 #include "AliHLTEveTPC.h"
@@ -56,7 +55,8 @@ AliEveHLTEventManager::AliEveHLTEventManager() :
   fCenterProjectionsAtPrimaryVertex(kFALSE),
   fShowBarrel(kTRUE),
   fShowMuon(kFALSE), 
-  fRunNumber(-1)  
+  fRunNumber(-1),
+  fEventId(-1)
 {
   // see header file for class documentation
   // or
@@ -148,8 +148,10 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
 
   // -- Set EventID in Window Title  
   TString winTitle("Eve Main Window");
-  winTitle += Form("-- Run Number: %d", event->GetRunNumber()); 
-  winTitle += Form("-- Event ID : 0x%016lX ", GetEventBuffer()->GetEventId() );
+  SetRunNumber(event->GetRunNumber());
+  SetEventId(GetEventBuffer()->GetEventId());
+  winTitle += Form("-- Run Number: %d", GetRunNumber()); 
+  winTitle += Form("-- Event ID : 0x%016lX ", GetEventId() );
   GetEveManager()->GetBrowser()->SetWindowName(winTitle);
 
 
@@ -194,18 +196,12 @@ Int_t AliEveHLTEventManager::ProcessEvent(TList * blockList) {
     return -1;
   }
  
-  cout << "ProcessEvent()::reset ()"<<endl;
-  ResetDisplay();
-  cout << "ProcessEvent() :: done reset()"<<endl;
   AliHLTHOMERBlockDesc * block = NULL;
   TIter next(blockList);
   while ((block = (AliHLTHOMERBlockDesc*)next())) {
     cout <<"Process Block"<<endl;
     ProcessBlock(block);
   } 
-
-  cout << "update() "<<endl;
-  UpdateDisplay();
   
   return 0;
 
@@ -348,9 +344,9 @@ void AliEveHLTEventManager::ResetDisplay () {
 void AliEveHLTEventManager::PrintScreens() {
 //   //See header file for documentation
 
-//   fEveManager->GetDefaultGLViewer()->SavePicture(Form("%d_0x%lu_3D.gif", fRunNumber, GetEventID(fCurrentEventIdx)));
-//   fRhoZViewer->GetGLViewer()->SavePicture(Form("%d_0x%lu_RhoZ.gif", fRunNumber, GetEventID(fCurrentEventIdx)));
-//   fRPhiViewer->GetGLViewer()->SavePicture(Form("%d_0x%lu_RPhi.gif", fRunNumber, GetEventID(fCurrentEventIdx)));
+  fEveManager->GetDefaultGLViewer()->SavePicture(Form("%d_0x%016lX_3D.gif", fRunNumber, GetEventId()));
+  fRhoZViewer->GetGLViewer()->SavePicture(Form("%d_0x%016lX_RhoZ.gif", fRunNumber, GetEventId()));
+  fRPhiViewer->GetGLViewer()->SavePicture(Form("%d_0x%016lX_RPhi.gif", fRunNumber, GetEventId()));
   return;
 }
 
@@ -450,7 +446,9 @@ void  AliEveHLTEventManager::UpdateDisplay() {
 
 void AliEveHLTEventManager::SaveEveryThing() {
 
-  GetEventBuffer()->WriteToFile();
+  PrintScreens();
+
+  GetEventBuffer()->WriteToFile(GetRunNumber());
   //Save everything to file
   //fEventBuffer->SaveBlockList();
   //fEventBuffer->SaveAsyncBlockList();

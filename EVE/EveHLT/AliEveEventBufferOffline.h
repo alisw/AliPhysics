@@ -39,7 +39,7 @@ public:
   virtual ~AliEveEventBufferOffline();
 
   void ConnectToSource();
-  void WriteToFile();
+  void WriteToFile(Int_t runnumber);
 
 private:
 

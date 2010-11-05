@@ -44,9 +44,9 @@ public:
 
   AliEveHOMERManager * GetHomerManager() const { return fHomer;}
 
-  TList * GetAList() { return fAsyncList;}
+  TList * GetASyncEvent() { return fAsyncList;}
 
-  void WriteToFile();
+  void WriteToFile(Int_t runnumber);
 
 
 private:

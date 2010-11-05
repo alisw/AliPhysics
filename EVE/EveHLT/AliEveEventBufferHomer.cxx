@@ -47,7 +47,8 @@ TObject * AliEveEventBufferHomer::GetEventFromSource() {
   if(fHomer) {
     cout << "calling nexthomerevent"<<endl;
     TList * blockList = fHomer->NextHOMEREvent();
-    
+    TList * aList = fHomer->GetAsyncBlockList();
+    fAsyncList = aList;
     if(blockList)  return dynamic_cast<TObject*>(blockList);
     else return NULL;
   } 
@@ -106,14 +107,14 @@ void AliEveEventBufferHomer::ConnectToSource () {
 }
 
 ///_____________________________________________________________________
-void AliEveEventBufferHomer::WriteToFile(){
+void AliEveEventBufferHomer::WriteToFile(Int_t runnumber){
 
-  TFile * file = TFile::Open(Form("Event_0x%016X_ITS.root", 100), "RECREATE"); 
-  fEventBuffer->At(fBIndex[kTop])->Write("blockList", TObject::kSingleKey);
+  TFile * file = TFile::Open(Form("%d_0x%016X_ESD.root", runnumber, GetEventId()), "RECREATE"); 
+  fEventBuffer->At(fBIndex[kCurrent])->Write("blockList", TObject::kSingleKey);
   file->Close();
   
   if(fAsyncList) {
-    TFile * afile = TFile::Open(Form("Event_0x%016X_Async.root", 100), "RECREATE"); 
+    TFile * afile = TFile::Open(Form("%d_0x%016X_Async.root",  runnumber, GetEventId()), "RECREATE"); 
     fAsyncList->Write("blockList", TObject::kSingleKey);
     afile->Close();
   }

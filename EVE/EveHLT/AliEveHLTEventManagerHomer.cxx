@@ -53,26 +53,37 @@ void AliEveHLTEventManagerHomer::NextEvent() {
   }else {
     fEventBuffer->SetBusy(kTRUE);
   }
-  
-  TList * fEvent = static_cast<TList*>(fEventBuffer->NextEvent());
-  if(fEvent) {
-    cout << "Got the event " <<endl;
-    ProcessEvent(fEvent);
 
+  TList * aSyncEvent = fEventBuffer->GetASyncEvent();
+  TList * event = static_cast<TList*>(fEventBuffer->NextEvent());
+  if(event) {
+    cout << "Got the event, reset the display " <<endl;
+    ResetDisplay();
+    cout << "Process event"<<endl;
+    ProcessEvent(event);
+    if(aSyncEvent) {
+      cout  << "Process asynchroneous event" << endl;
+      ProcessEvent(aSyncEvent);
+    }  else {
+      cout << "Could not get async event"<<endl;
+    }
+    
+    cout << "Upate the display"<<endl;
+    UpdateDisplay();
+  
   } else {
     cout << "could't get the sync event"<<endl;
   }
   
- //  cout  << "doint async block"<<endl;
- //  TList * async = static_cast<TList*>(fEventBuffer->GetAList());
- //  if(async) {
- // 	ProcessEvent(async);
- //   }  else {
- // 	 cout << "No async bloc"<<endl;
- // }
+  //  cout  << "doint async block"<<endl;
+  //  TList * async = static_cast<TList*>(fEventBuffer->GetAList());
+  //  if(async) {
+  // 	ProcessEvent(async);
+  //   }  else {
+  // 	 cout << "No async bloc"<<endl;
+  // }
 
-
-fEventBuffer->SetBusy(kFALSE);
+  fEventBuffer->SetBusy(kFALSE);
 }
 
 

@@ -53,13 +53,12 @@ public:
   void MonitorBuffer();
 
   static void * BufferThread(void * buffer);
-  virtual void WriteToFile() {//Do nothing
-    ;
-  }
+  virtual void WriteToFile(Int_t runnumber) = 0; 
 
   void CreateBufferThread();
 
   ULong64_t GetEventId() const { return fEventId[fBIndex[kCurrent]]; }
+  void SetEventId(ULong64_t eventId) { fEventId[fBIndex[kCurrent]] = eventId;}
 
 protected:
   
@@ -99,7 +98,6 @@ protected:
   Int_t CalculatePrevious(Int_t current);
   Int_t CalculateNext(Int_t current);
 
-  void SetEventId(ULong64_t eventId) { fEventId[fBIndex[kCurrent]] = eventId;}
   
   void SetBufferMonStarted(Bool_t started) {fBufferMonStarted = started;}
   Bool_t GetBufferMonStarted () const { return fBufferMonStarted;}
