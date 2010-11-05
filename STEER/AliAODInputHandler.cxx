@@ -172,6 +172,7 @@ Bool_t AliAODInputHandler::Notify(const char* path)
            }   
         }
      }
+     delete statFile;
   }
   return kTRUE;
 }
