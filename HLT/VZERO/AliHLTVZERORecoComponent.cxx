@@ -54,8 +54,7 @@ ClassImp(AliHLTVZERORecoComponent)
 // #################################################################################
 AliHLTVZERORecoComponent::AliHLTVZERORecoComponent() :
   AliHLTProcessor(),
-  fRunInfo(NULL),
-  fDigitsTree(NULL),
+  fRunInfo(NULL),  
   fVZERORecoParam(NULL),
   fVZEROReconstructor(NULL),
   fRawReader(NULL) {
@@ -212,12 +211,6 @@ Int_t AliHLTVZERORecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
       break;
     }
 
-    fDigitsTree = new TTree("D", "Digits Tree");
-    if (!fDigitsTree) {
-      iResult=-ENOMEM;
-      break;
-    }
-
     fVZERORecoParam = new AliVZERORecoParam;
     if (!fVZERORecoParam) {
       iResult=-ENOMEM;
@@ -239,10 +232,6 @@ Int_t AliHLTVZERORecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
     if (fRawReader) 
       delete fRawReader;
     fRawReader = NULL;
-
-    if (!fDigitsTree)
-      delete fDigitsTree;
-    fDigitsTree = NULL;
 
     if (fVZERORecoParam)
       delete fVZERORecoParam;
@@ -293,10 +282,6 @@ Int_t AliHLTVZERORecoComponent::DoDeinit() {
     delete fRawReader;
   fRawReader = NULL;
   
-  if (!fDigitsTree)
-    delete fDigitsTree;
-  fDigitsTree = NULL;
-    
   if (fVZERORecoParam)
     delete fVZERORecoParam;
   fVZERORecoParam = NULL;
@@ -337,16 +322,21 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
     iResult = -1;
   }
   
+  TTree *digitsTree = new TTree("D", "Digits Tree");
+  if (!digitsTree) {
+    iResult=-ENOMEM;
+  }
+
   if (iResult >= 0) {
 
     // -- Set VZERO EquipmentID
     fRawReader->SetEquipmentID(3584);
   
     // -- 1. step VZERO reconstruction
-    fVZEROReconstructor->ConvertDigits(fRawReader, fDigitsTree);
+    fVZEROReconstructor->ConvertDigits(fRawReader, digitsTree);
 
     // -- 2. step VZERO reconstruction -- fill AliESDVZERO object
-    fVZEROReconstructor->FillESD(fDigitsTree, NULL, NULL);
+    fVZEROReconstructor->FillESD(digitsTree, NULL, NULL);
 
     // -- Send AliESDVZERO
     PushBack(static_cast<TObject*>(fVZEROReconstructor->GetESDVZERO()),
@@ -354,7 +344,7 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   }
   
   // -- Clean up
-  fDigitsTree->Reset();
+  delete digitsTree;
   fRawReader->ClearBuffers();   
 
   return iResult;

@@ -205,9 +205,6 @@ private:
   /** runInfo Object */
   AliRunInfo            *fRunInfo;            // see above
 
-  /** Digits Tree */
-  TTree                 *fDigitsTree;         //! transient
-
   /** VZERO reco param instance */
   AliVZERORecoParam     *fVZERORecoParam;     //! transient
 
