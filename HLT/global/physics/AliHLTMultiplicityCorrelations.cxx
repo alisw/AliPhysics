@@ -113,7 +113,8 @@ Int_t AliHLTMultiplicityCorrelations::Initialize() {
  */
 
 //##################################################################################
-Int_t AliHLTMultiplicityCorrelations::ProcessEvent( AliESDEvent *esd, Int_t nSpdClusters) {
+Int_t AliHLTMultiplicityCorrelations::ProcessEvent( AliESDEvent *esd, AliESDVZERO* esdVZERO, 
+						    Int_t nSpdClusters) {
   // see header file for class documentation  
 
   Int_t iResult = 0;
@@ -122,6 +123,9 @@ Int_t AliHLTMultiplicityCorrelations::ProcessEvent( AliESDEvent *esd, Int_t nSpd
     HLTWarning("No ESD event.");
     return -1;
   }
+  
+  if ( esdVZERO )
+    fESDVZERO = esdVZERO;
 
   // -- TPC .. To be done before the others
   if (fESDEvent->GetNumberOfTracks() > 0)

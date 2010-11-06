@@ -27,7 +27,7 @@ using namespace std;
 
 #include "TMap.h"
 #include "TObjString.h"
-
+#include "AliESDVZERO.h"
 #include "AliESDtrackCuts.h"
 #include "AliHLTMultiplicityCorrelations.h"
 
@@ -85,6 +85,7 @@ void AliHLTMultiplicityCorrelationsComponent::GetInputDataTypes( vector<AliHLTCo
   // see header file for class documentation
   list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginAny);
   list.push_back(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD);
+  list.push_back(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
 }
 
 // #################################################################################
@@ -515,6 +516,18 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEven
     esdEvent->GetStdContent();
   }
 
+  // -- Get VZEROESD object 
+  AliESDVZERO *esdVZERO = NULL;
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO); 
+	iter != NULL; iter = GetNextInputObject() ) {
+    esdVZERO = dynamic_cast<AliESDVZERO*>(const_cast<TObject*>( iter ) );
+    if( !esdVZERO ){ 
+      HLTWarning("Wrong VZERO ESDEvent object received");
+      iResult = -1;
+      continue;
+    }
+  }
+
   // -- Get SPD clusters
   // ---------------------
   const AliHLTComponentBlockData* iter = NULL;
@@ -531,7 +544,7 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEven
   // -- Process Event
   // ------------------
   if (esdEvent)
-    iResult = fCorrObj->ProcessEvent(esdEvent,totalSpacePoint);
+    iResult = fCorrObj->ProcessEvent(esdEvent,esdVZERO,totalSpacePoint);
 
   if (iResult) {
     HLTError("Error while processing event inside multiplicity correlation object");

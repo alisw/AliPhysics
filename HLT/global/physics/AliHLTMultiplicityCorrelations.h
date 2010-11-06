@@ -131,10 +131,10 @@ public:
    */
   
   /** Process current event */
-  Int_t ProcessEvent( AliESDEvent *esd, Int_t nSpdClusters );
+  Int_t ProcessEvent( AliESDEvent *esd, AliESDVZERO* esdVZERO, Int_t nSpdClusters );
 
   Int_t ProcessEvent( AliESDEvent *esd ) {
-    return ProcessEvent(esd, 0);
+    return ProcessEvent(esd, NULL, 0);
   }
 
 
