@@ -1,4 +1,4 @@
-void TriggerStudyResults(const char * filename = "outTrigger/LHC10g1f_130844/trigger_study.root", TString trigger = "MB") {
+void TriggerStudyResults(const char * filename = "outTrigger/collection_136854.xml/trigger_study.root", TString trigger = "C0SM1-A-NOPF-ALL") {
 
   TFile * f = new TFile (filename);
 
@@ -6,7 +6,12 @@ void TriggerStudyResults(const char * filename = "outTrigger/LHC10g1f_130844/tri
   LoadLibs();
 
   // Draw trigger venn diagram
-  TH1 * hVenn = (TH1*) f->Get("hTrigStat_All");
+  //    hTrigStat_All_C0OM2-A-NOPF-ALL
+  TString vennName = "hTrigStat_All";
+  if (trigger != "") vennName = vennName+"_"+trigger;
+  cout << "Venn name: " << vennName.Data() << endl;
+  
+  TH1 * hVenn = (TH1*) f->Get(vennName);
   hVenn->Draw();
   Int_t colors[] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15};
   TPie * pie = new TPie(hVenn);
@@ -26,7 +31,7 @@ void TriggerStudyResults(const char * filename = "outTrigger/LHC10g1f_130844/tri
   //  pie->SetTextSize(0.01);
   pie->Draw("");
   
-  pie->MakeLegend(0.224832, 0.66958, 0.833893, 0.97028);
+  pie->MakeLegend(0.224832, 0.66958, 0.833893, 0.97028, trigger.Data());
   cout << pie << endl;
   
   // Make a table of trigger efficiencies for all histos results

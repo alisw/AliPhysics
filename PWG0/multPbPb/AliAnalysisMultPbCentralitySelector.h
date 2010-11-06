@@ -40,8 +40,8 @@ public:
     
   Bool_t IsCentralityBinSelected(AliESDEvent* aEsd, AliESDtrackCuts * trackCuts);
     
-  void SetAnalyzeMC(Bool_t flag = kTRUE, Double_t multMin = 0, Double_t multMax=10000) { fIsMC = flag; fMultMin = multMin; fMultMax = multMax; }
-  void SetMultRange(Double_t multMin = 0, Double_t multMax=10000) { fMultMin = multMin; fMultMax = multMax; }
+  void SetIsMC(Bool_t flag = kTRUE, Int_t multMin = 0, Int_t multMax=10000) { fIsMC = flag; fMultMin = multMin; fMultMax = multMax; }
+  void SetMultRange(Int_t multMin = 0, Int_t multMax=10000) { fMultMin = multMin; fMultMax = multMax; }
   void SetUseMultRange(Bool_t flag = kTRUE) {fUseMultRange = flag;}
   void SetCentralityEstimator(const char * estimator) { fCentrEstimator = estimator; }
   void SetCentralityBin(Int_t bin) { fCentrBin = bin; }
