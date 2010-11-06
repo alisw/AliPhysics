@@ -20,7 +20,8 @@ CLASS_HDRS:= 	AliHLTEveBase.h \
 		AliHLTEveISDD.h \
 		AliHLTEveTRD.h \
 		AliHLTEveMuon.h \
-		AliHLTEveAny.h
+		AliHLTEveAny.h \
+		AliHLTEveMultCorr.h
 
 
 # library sources and headers are set in hlteve.conf according to
