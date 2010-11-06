@@ -416,7 +416,7 @@ void AliMpSectorReader::ReadRowSpecialData(istream& in, AliMp::XDirection direct
     while (!subZone && j<fSector->GetNofZones())
       subZone = fSector->GetZone(++j)->FindSubZone(segment->GetMotif(i));
     
-    subZone->AddRowSegment(segment);
+    if (subZone) subZone->AddRowSegment(segment);
   }  
 }  
 

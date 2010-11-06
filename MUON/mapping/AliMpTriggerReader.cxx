@@ -717,6 +717,11 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
         AliDebug(1,Form("Got motifType %s from motifMap",sMotifType.Data()));        
       }
       
+      if (! pcb)
+      {
+        AliError("pcb null");
+        continue;
+      }
       pcb->Add(motifType,ix,iy);
     }
   }
