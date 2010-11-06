@@ -234,9 +234,9 @@ void AliFMDQATask::Terminate(Option_t *)
 
 
   char line[1024] ; 
-  sprintf(line, ".!tar -zcvf %s.tar.gz *.eps", GetName()) ; 
+  snprintf(line, 1024, ".!tar -zcvf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
-  sprintf(line, ".!rm -fR *.eps"); 
+  snprintf(line, 1024, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);
  
   AliInfo(Form("!!! All the eps files are in %s.tar.gz !!! \n", GetName())) ;
