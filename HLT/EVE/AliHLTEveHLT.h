@@ -19,6 +19,7 @@ class TEveTrackPropagator;
 class TString;
 class AliExternalTrackParam;
 class TH1F;
+class TH1;
 class AliESDEvent;
 
 class AliHLTEveHLT : public AliHLTEveBase {
@@ -91,7 +92,7 @@ private:
   //Draw tpc qa histograms
   void DrawHistograms();
 
-
+  void AddHistogramToCanvas(TH1 * histogram, TCanvas * canvas, Int_t &cdCount);
 
   Bool_t fTrueField;        //Use true field?
   Bool_t fUseIpOnFailedITS; // Use IP as origin if ITS refit fails?
@@ -102,7 +103,8 @@ private:
   TEvePointSet * fPointSetVertex;      //Display primary vertex
 
   TCanvas * fTrCanvas;  //Canvas for track qa histos
-
+  TCanvas * fVertexCanvas; //Other canvas
+  
   TH1F * fHistPt;      //Pt histo 
   TH1F * fHistP;       //p histo
   TH1F * fHistEta;     //Eta histo
@@ -110,6 +112,9 @@ private:
   TH1F * fHistPhi;     //Phi histo
   TH1F * fHistnClusters;//nClusters histo
   TH1F * fHistMult;    //Mult histo
+
+  Int_t fTrCount;
+  Int_t fVCount;
 
   ClassDef(AliHLTEveHLT, 0);
 };

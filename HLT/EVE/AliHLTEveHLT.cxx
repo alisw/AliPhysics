@@ -35,6 +35,7 @@
 #include "TPCLib/tracking-ca/AliHLTTPCCATrackParam.h"
 #include "TPCLib/tracking-ca/AliHLTTPCCATrackConvertor.h"
 #include "AliEveMagField.h"
+#include "TH1.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TThread.h"
@@ -50,13 +51,16 @@ AliHLTEveHLT::AliHLTEveHLT() :
   fOldTrackList(NULL),
   fPointSetVertex(NULL),
   fTrCanvas(NULL),
+  fVertexCanvas(NULL),
   fHistPt(NULL), 
   fHistP(NULL), 
   fHistEta(NULL),
   fHistTheta(NULL),
   fHistPhi(NULL),
   fHistnClusters(NULL),
-  fHistMult(NULL)
+  fHistMult(NULL),
+  fTrCount(0), 
+  fVCount(0)
 {
   // Constructor.
   //CreateHistograms();
@@ -111,11 +115,14 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
 ///____________________________________________________________________________
 void AliHLTEveHLT::UpdateElements() {
   //See header file for documentation
-  //if(fCanvas) fCanvas->Update();
+  //
   //DrawHistograms();
   if(fTrackList) fTrackList->ElementChanged();
   if(fPointSetVertex) fPointSetVertex->ResetBBox();
-
+  if(fTrCanvas) fTrCanvas->Update();
+  if(fVertexCanvas) fVertexCanvas->Update();
+  if(fCanvas) fCanvas->Update();
+  
 }
 ///_________________________________________________________________________________
 void AliHLTEveHLT::ResetElements(){
@@ -154,10 +161,22 @@ void AliHLTEveHLT::DestroyOldTrackList() {
 ///_____________________________________________________________________________________
 void AliHLTEveHLT::ProcessHistograms(AliHLTHOMERBlockDesc * block, TCanvas * canvas) {
   //See header file for documentation
+  if (!fTrCanvas) {
+    fTrCanvas = CreateCanvas("TPC ESD QA", "TPC ESD QA");
+    fTrCanvas->Divide(4, 2);
+  }
+  if(!fVertexCanvas) {
+    fVertexCanvas = CreateCanvas("Vertex QA", "Vertex");
+    fVertexCanvas->Divide(4, 2);
+  }
+
+
+
   if ( ! block->GetClassName().CompareTo("TH1F")) {
     TH1F* histo = reinterpret_cast<TH1F*>(block->GetTObject());
     if( histo ){
       TString name(histo->GetName());
+      cout << "TH1F " <<name << endl;
       if( !name.CompareTo("primVertexZ") ){
 	canvas->cd(2);
 	histo->Draw();
@@ -167,20 +186,36 @@ void AliHLTEveHLT::ProcessHistograms(AliHLTHOMERBlockDesc * block, TCanvas * can
       }else if( !name.CompareTo("primVertexY") ){
 	canvas->cd(4);
 	histo->Draw();
+      } else if ( name.Contains("Track")) {
+	AddHistogramToCanvas(histo, fTrCanvas, fTrCount);
+      } else {
+	AddHistogramToCanvas(histo, fVertexCanvas, fVCount);
       }
     }
   }  else if ( ! block->GetClassName().CompareTo("TH2F")) {
     TH2F *hista = reinterpret_cast<TH2F*>(block->GetTObject());
     if (hista ){
        TString name(hista->GetName());
+       cout << "TH2F " << name << endl;
        if( !name.CompareTo("primVertexXY")) {      
 	 canvas->cd(1);
 	 hista->Draw();
-       }
+       } else if ( name.Contains("Track")) {
+	AddHistogramToCanvas(hista, fTrCanvas, fTrCount);
+      } else {
+	AddHistogramToCanvas(hista, fVertexCanvas, fVCount);
+      }
     }
   }
   canvas->cd();
 }
+
+///_____________________________________________________________________________________
+void AliHLTEveHLT::AddHistogramToCanvas(TH1* histogram, TCanvas * canvas, Int_t &cdCount) {
+  canvas->cd(++cdCount);
+  histogram->Draw();
+}
+
 
 ///________________________________________________________________________________________
 void AliHLTEveHLT::CreateTrackList() {
@@ -276,29 +311,7 @@ void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
 void AliHLTEveHLT::DrawHistograms(){
   //See header file for documentation
 
-  if (!fTrCanvas) {
-    fTrCanvas = CreateCanvas("TPC Tr QA", "TPC Track QA");
-    fTrCanvas->Divide(4, 2);
-  }
 
-  Int_t icd = 1;
-  fTrCanvas->cd(icd++);
-  fHistPt->Draw();
-  fTrCanvas->cd(icd++);
-  fHistP->Draw();
-  fTrCanvas->cd(icd++);
-  fHistEta->Draw();
-  fTrCanvas->cd(icd++);
-  fHistTheta->Draw();
-  fTrCanvas->cd(icd++);
-  fHistPhi->Draw();
-  fTrCanvas->cd(icd++);
-  fHistnClusters->Draw();
-  fTrCanvas->cd(icd++);
-  fHistMult->Draw();
-  fTrCanvas->cd();
-
-  fTrCanvas->Update();
 
 }
 
