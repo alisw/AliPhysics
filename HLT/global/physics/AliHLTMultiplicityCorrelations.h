@@ -101,6 +101,11 @@ public:
     fCaloBinning = i; fCaloBinningMin = f1; fCaloBinningMax = f2;
   }
 
+  /** Set Binning of SPD */
+  void SetBinningSpd(Int_t i=1, Float_t f1=0., Float_t f2=1.) {
+    fSpdBinning = i; fSpdBinningMin = f1; fSpdBinningMax = f2;
+  }
+
   /** Set process PHOS */
   void SetProcessPhos(Bool_t v = true) {
     fProcessPhos = v;
@@ -126,7 +131,12 @@ public:
    */
   
   /** Process current event */
-  Int_t ProcessEvent( AliESDEvent *esd );
+  Int_t ProcessEvent( AliESDEvent *esd, Int_t nSpdClusters );
+
+  Int_t ProcessEvent( AliESDEvent *esd ) {
+    return ProcessEvent(esd, 0);
+  }
+
 
   ///////////////////////////////////////////////////////////////////////////////////
   
@@ -168,6 +178,9 @@ public:
   /** Setup CALO histograms */
   Int_t SetupCALO();
 
+  /** Setup SPD histograms */
+  Int_t SetupSPD();
+
   /*
    * ---------------------------------------------------------------------------------
    *                             Process - private
@@ -176,6 +189,9 @@ public:
 
   /** Process current event - TPC */
   Int_t ProcessTPC();
+
+  /** Process current event - SPD */
+  Int_t ProcessSPD();
   
   /** Process current event - VZERO */
   Int_t ProcessVZERO();
@@ -186,8 +202,6 @@ public:
   /** Process current event - CALO */
   Int_t ProcessCALO();
   
-  
-
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private
@@ -241,6 +255,9 @@ public:
   /** VZERO flagged mult C */
   Float_t fVzeroMultFlaggedC;
 
+  /** Spd N clusters */
+  Int_t   fSpdNClusters;
+
   // -- -- -- 
 
   /** Binnning VZERO */
@@ -280,6 +297,11 @@ public:
   Int_t   fCaloBinning;
   Float_t fCaloBinningMin;
   Float_t fCaloBinningMax;
+
+  /** Binnning SPD */
+  Int_t   fSpdBinning;
+  Float_t fSpdBinningMin;
+  Float_t fSpdBinningMax;
   
   ClassDef(AliHLTMultiplicityCorrelations, 1);
 };

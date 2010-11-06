@@ -34,6 +34,7 @@ using namespace std;
 #include "AliHLTErrorGuard.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTMultiplicityCorrelationsComponent.h"
+#include "AliHLTITSClusterDataFormat.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMultiplicityCorrelationsComponent)
@@ -83,6 +84,7 @@ const Char_t* AliHLTMultiplicityCorrelationsComponent::GetComponentID() {
 void AliHLTMultiplicityCorrelationsComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
   // see header file for class documentation
   list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginAny);
+  list.push_back(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD);
 }
 
 // #################################################################################
@@ -378,6 +380,22 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     return 4;
   }
 
+  // binningSpd
+  if (argument.CompareTo("-binningSpd")==0) {
+    if (++ii>=argc) return -EPROTO;
+    argument=argv[ii];
+    Int_t binning = argument.Atoi();
+    if (++ii>=argc) return -EPROTO;
+    argument=argv[ii];
+    Float_t min = argument.Atof();
+    if (++ii>=argc) return -EPROTO;
+    argument=argv[ii];
+    Float_t max = argument.Atof();
+
+    fCorrObj->SetBinningSpd(binning, min, max);
+    return 4;
+  }
+
   // binningZdc
   if (argument.CompareTo("-binningZdc")==0) {
     if (++ii>=argc) return -EPROTO;
@@ -484,18 +502,36 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEven
   if (!IsDataEvent()) 
     return 0;
 
-  // -- Get ESD object 
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
 
-    AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+  // -- Get ESD object 
+  AliESDEvent *esdEvent = NULL;
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
+    esdEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
     if( !esdEvent ){ 
       HLTWarning("Wrong ESDEvent object received");
       iResult = -1;
       continue;
     }
     esdEvent->GetStdContent();
-    iResult = fCorrObj->ProcessEvent(esdEvent);
   }
+
+  // -- Get SPD clusters
+  // ---------------------
+  const AliHLTComponentBlockData* iter = NULL;
+  Int_t totalSpacePoint = 0;
+
+  for ( iter = GetFirstInputBlock(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD); 
+	iter != NULL; iter = GetNextInputBlock() ) {
+    
+    const AliHLTITSClusterData* clusterData = (const AliHLTITSClusterData*) iter->fPtr;
+    Int_t nSpacepoint = (Int_t) clusterData->fSpacePointCnt;
+    totalSpacePoint += nSpacepoint;
+  }
+
+  // -- Process Event
+  // ------------------
+  if (esdEvent)
+    iResult = fCorrObj->ProcessEvent(esdEvent,totalSpacePoint);
 
   if (iResult) {
     HLTError("Error while processing event inside multiplicity correlation object");

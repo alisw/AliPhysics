@@ -36,6 +36,7 @@ MODULE_DHDR:=
 EINCLUDE 	:= HLT/global HLT/global/physics \
 		   HLT/BASE \
 		   HLT/BASE/util \
+		   HLT/ITS \
 		   TPC \
 		   RAW \
 		   TRD \
@@ -44,7 +45,7 @@ EINCLUDE 	:= HLT/global HLT/global/physics \
 		   ANALYSIS \
 		   PWG0 PWG0/dNdPt 
 
-LIBRARY_DEP := -lHLTbase -lAliHLTUtil \
+LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lAliHLTITS \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
                -lRAWDatarec -lRAWDatabase -lTRDbase \
                -L$(ROOTLIBDIR) -lEG -lANALYSIS
