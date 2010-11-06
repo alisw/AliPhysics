@@ -20,6 +20,7 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
+#include <TSystem.h>
 #include <TTree.h>
 #include <TList.h>
 #include <TNamed.h>
@@ -149,8 +150,8 @@ Bool_t AliAODInputHandler::Notify(const char* path)
   if (fMixingHandler) fMixingHandler->Notify(path);
   TTree *ttree = fTree->GetTree();
   if (!ttree) ttree = fTree;
-  TString statFname = ttree->GetCurrentFile()->GetName();
-  statFname.ReplaceAll("AliAOD.root", "EventStat_temp.root");
+  TString statFname(gSystem->DirName(ttree->GetCurrentFile()->GetName()));
+  statFname += "/EventStat_temp.root";
   TFile *statFile = TFile::Open(statFname, "READ");
   if (statFile) {
      TList *list = (TList*)statFile->Get("cstatsout");
@@ -167,10 +168,13 @@ Bool_t AliAODInputHandler::Notify(const char* path)
               tmplist.Add(hBin0);
               if (fHistStatistics[1] && hBin0) fHistStatistics[1]->Merge(&tmplist);
            } else {
-              fHistStatistics[0] = hAll;
-              fHistStatistics[1] = hBin0;
+             fHistStatistics[0] = static_cast<TH2F*>(hAll->Clone());
+             fHistStatistics[1] = static_cast<TH2F*>(hBin0->Clone());
+             fHistStatistics[0]->SetDirectory(0);
+             fHistStatistics[1]->SetDirectory(0);
            }   
         }
+        delete list;
      }
      delete statFile;
   }
