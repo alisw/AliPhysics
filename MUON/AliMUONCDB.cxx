@@ -439,6 +439,8 @@ AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
                             nbins,xmin[i],xmax[i]);
         AliInfoGeneral("AliMUONCDB", Form("Created histogram %s",h[i]->GetName()));
       }
+      delete [] xmin;
+      delete [] xmax;
     }
     
     Int_t detElemId = param->ID0();
