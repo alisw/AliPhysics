@@ -13,7 +13,8 @@
 Bool_t AddRsnAnalysis
 (
   const char *options,
-  const char *configs = "RsnConfigNoSA.C RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C"
+  const char *configs = "RsnConfigNoSA.C RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C",
+  const char *path    = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi"
 )
 {
   // retrieve analysis manager
@@ -50,7 +51,7 @@ Bool_t AddRsnAnalysis
   {
     TObjString *ostr = (TObjString*)list->At(iConfig);
     cout << "***** Processing config macro '" << ostr->GetString().Data() << endl;
-    gROOT->ProcessLine(Form(".x %s(\"%s\",\"%s\")", ostr->GetString().Data(), task->GetName(), options));
+    gROOT->ProcessLine(Form(".x %s/%s(\"%s\",\"%s\")", path, ostr->GetString().Data(), task->GetName(), options));
   }
 
   // connect input container according to source choice

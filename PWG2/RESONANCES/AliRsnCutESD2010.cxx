@@ -129,6 +129,9 @@ AliRsnCutESD2010::AliRsnCutESD2010
 
   Int_t i = 0;
   for (i = 0; i < 5; i++) fTPCpar[i] = copy.fTPCpar[i];
+  
+  copy.GetCutsTPC()->Copy(fESDtrackCutsTPC);
+  copy.GetCutsITS()->Copy(fESDtrackCutsITS);
 }
 
 //_________________________________________________________________________________________________
@@ -152,8 +155,6 @@ AliRsnCutESD2010& AliRsnCutESD2010::operator=(const AliRsnCutESD2010& copy)
   fTPCpLimit = copy.fTPCpLimit;
   fMinTPCband = copy.fMinTPCband;
   fMaxTPCband = copy.fMaxTPCband;
-  fESDtrackCutsTPC = copy.fESDtrackCutsTPC;
-  fESDtrackCutsITS = copy.fESDtrackCutsITS;
   fTOFcalibrateESD = copy.fTOFcalibrateESD;
   fTOFcorrectTExp = copy.fTOFcorrectTExp;
   fTOFuseT0 = copy.fTOFuseT0;
@@ -165,6 +166,9 @@ AliRsnCutESD2010& AliRsnCutESD2010::operator=(const AliRsnCutESD2010& copy)
   
   Int_t i = 0;
   for (i = 0; i < 5; i++) fTPCpar[i] = copy.fTPCpar[i];
+  
+  copy.GetCutsTPC()->Copy(fESDtrackCutsTPC);
+  copy.GetCutsITS()->Copy(fESDtrackCutsITS);
   
   return (*this);
 }
