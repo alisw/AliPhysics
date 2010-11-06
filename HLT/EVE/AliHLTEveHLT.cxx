@@ -138,6 +138,9 @@ void AliHLTEveHLT::ResetElements(){
     // fTrackList = NULL;
   }
   
+  fTrCount = 0;
+  fVCount = 0;
+
   if(fPointSetVertex) fPointSetVertex->Reset();
   cout<< "reset done"<<endl;
   fHistoCount = 0;
@@ -285,7 +288,7 @@ void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
   SetUpTrackPropagator(cont->GetPropagator(),-0.1*esd->GetMagneticField(), 520);
 
   for (Int_t iter = 0; iter < esd->GetNumberOfTracks(); ++iter) {
-    AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esd->GetTrack(iter), cont));
+    AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esd->GetTrack(iter), cont));        
     cont->AddElement(track);
    
     // fHistPt->Fill(esd->GetTrack(iter)->Pt());   // KK
@@ -387,9 +390,9 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     track->AddPathMark( startPoint );    
   }
 
-
+  bool ok = 1;
   if( at->GetOuterParam() && at->GetTPCPoints(2)>80 ){
-  
+
     //
     // use AliHLTTPCCATrackParam propagator 
     // since AliExternalTrackParam:PropagateTo()
@@ -397,7 +400,7 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     //
     double rot = at->GetOuterParam()->GetAlpha() - trackParam.GetAlpha();
     double crot = cos(rot), srot = sin(rot);
-    double xEnd = at->GetTPCPoints(2)*crot +  at->GetTPCPoints(3)*srot;
+    double xEnd = at->GetTPCPoints(2)*crot -  at->GetTPCPoints(3)*srot;
   // take parameters constrained to vertex (if they are)
  
 
@@ -407,12 +410,18 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     Double_t x0 = trackParam.GetX();
     Double_t dx = xEnd - x0;
     
+    if( dx<0 ) ok = 0;
     //
     // set a reference at the half of trajectory for better drawing
     //
     
-    for( double dxx=dx/2; TMath::Abs(dxx)>=1.; dxx*=.9 ){
-      if( !t.TransportToX(x0+dxx, bz, .999 ) ) continue;
+    for( double dxx=dx/2; ok && TMath::Abs(dxx)>=1.; dxx*=.9 ){
+
+      if( !t.TransportToX(x0+dxx, bz, .999 ) ){
+	ok = 0;
+	break;
+	continue;
+      }
       AliExternalTrackParam tt;
       AliHLTTPCCATrackConvertor::GetExtParam( t, tt, trackParam.GetAlpha() ); 
       tt.GetXYZ(vbuf);
@@ -430,12 +439,22 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     // and a "decay point", to let the event display know where the track ends
     //
     
-    for( ; 1; dx*=.9 ){
+    for( ; ok; dx*=.9 ){
+
       if( !t.TransportToX(x0+dx, bz, .999 ) ){
-	if( TMath::Abs(dx)<1. ) break;
+	ok = 0; 
+	break;
+	if( TMath::Abs(dx)<1. ) break;      
 	continue;
       }
-       AliExternalTrackParam tt;
+      break;
+    }
+
+    {
+      if( !ok ){ 
+	AliHLTTPCCATrackConvertor::SetExtParam( t, trackParam );
+      }
+      AliExternalTrackParam tt;
       AliHLTTPCCATrackConvertor::GetExtParam( t, tt, trackParam.GetAlpha() ); 
       tt.GetXYZ(vbuf);
       tt.GetPxPyPz(pbuf);
@@ -446,12 +465,11 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
       decPoint.fV.Set(vbuf);
       decPoint.fP.Set(pbuf);
       track->AddPathMark( endPoint );
-      track->AddPathMark( decPoint );      
-      break;
+      track->AddPathMark( decPoint );
     }  
   }
 
-  if (at->IsOn(AliESDtrack::kTPCrefit))
+  if ( ok &&  at->IsOn(AliESDtrack::kTPCrefit))
   {
     if ( ! innerTaken)
     {
@@ -459,6 +477,7 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     }
     AddTrackParamToTrack(track, at->GetOuterParam());
   }
+  
   return track;
 }
 
