@@ -188,7 +188,7 @@ private:
   // ----------------------
 
   /** Pointer to data of the block */
-  Char_t* fData;                    //! transient
+  Char_t* fData;                    //
 	      
   /** Size of data */
   ULong_t fSize;                    // see above
@@ -209,10 +209,10 @@ private:
   // ------------------------
 
   /** AliHTMessage object containg a TObject */
-  AliHLTMessage* fMessage;          //! transient
+  AliHLTMessage* fMessage;          //
 
   /** TObject extracted out of @see AliHLTMessage */
-  TObject*       fTObject;          //! transient
+  TObject*       fTObject;          //
 
   /** Class Name of the block */
   TString        fClassName;        // see above
