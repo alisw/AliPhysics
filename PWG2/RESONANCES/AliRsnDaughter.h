@@ -23,6 +23,7 @@
 #include "AliESDv0.h"
 #include "AliAODv0.h"
 #include "AliMCParticle.h"
+#include "AliAODMCParticle.h"
 
 typedef AliPID::EParticleType EPARTYPE;
 
@@ -73,24 +74,27 @@ class AliRsnDaughter : public TObject
     Char_t  ChargeChar()        const {if (IsPos()) return '+'; else if (IsNeg()) return '-'; else return '0';}
 
     // MC info & references
-    AliVParticle*  GetRef()         const {return fRef;}
-    AliMCParticle* GetRefMCtrack()  const {return dynamic_cast<AliMCParticle*>(fRef);}
-    AliESDtrack*   GetRefESDtrack() const {return dynamic_cast<AliESDtrack*>(fRef);}
-    AliAODTrack*   GetRefAODtrack() const {return dynamic_cast<AliAODTrack*>(fRef);}
-    AliESDv0*      GetRefESDv0()    const {return dynamic_cast<AliESDv0*>(fRef);}
-    AliAODv0*      GetRefAODv0()    const {return dynamic_cast<AliAODv0*>(fRef);}
-    AliMCParticle* GetRefMC()       const {return fRefMC;}
-    TParticle*     GetParticle()    const {if (fRefMC) return fRefMC->Particle(); else return 0x0;}
-    Int_t          GetMotherPDG()   const {return fMotherPDG;}
-    Bool_t         IsMC()           const {if (GetRefMCtrack()) return kTRUE; return kFALSE;}
-    Bool_t         IsAOD()          const {if (GetRefAODtrack() || GetRefAODv0()) return kTRUE; return kFALSE;}
-    Bool_t         IsESD()          const {if (GetRefESDtrack() || GetRefESDv0()) return kTRUE; return kFALSE;}
-    Bool_t         IsTrack()        const {if (GetRefESDtrack() || GetRefAODtrack() || GetRefMCtrack()) return kTRUE; return kFALSE;}
-    Bool_t         IsV0()           const {if (GetRefESDv0() || GetRefAODv0()) return kTRUE; return kFALSE;}
-    ERefType       RefType()        const {if (IsTrack()) return kTrack; if (IsV0()) return kV0; return kNoType;}
-    void           SetRef(AliVParticle *ref) {fRef = ref;}
-    void           SetRefMC(AliMCParticle *refMC) {fRefMC = refMC;}
-    void           SetMotherPDG(Int_t value) {fMotherPDG = value;}
+    AliVParticle*     GetRef()         const {return fRef;}
+    AliMCParticle*    GetRefMCtrack()  const {return dynamic_cast<AliMCParticle*>(fRef);}
+    AliESDtrack*      GetRefESDtrack() const {return dynamic_cast<AliESDtrack*>(fRef);}
+    AliAODTrack*      GetRefAODtrack() const {return dynamic_cast<AliAODTrack*>(fRef);}
+    AliESDv0*         GetRefESDv0()    const {return dynamic_cast<AliESDv0*>(fRef);}
+    AliAODv0*         GetRefAODv0()    const {return dynamic_cast<AliAODv0*>(fRef);}
+    AliVParticle*     GetRefMC()       const {return fRefMC;}
+    AliMCParticle*    GetRefMCESD()    const {return dynamic_cast<AliMCParticle*>(fRefMC);}
+    AliAODMCParticle* GetRefMCAOD()    const {return dynamic_cast<AliAODMCParticle*>(fRefMC);}
+    TParticle*        GetParticle()    const {if (GetRefMCESD()) return GetRefMCESD()->Particle(); else return 0x0;}
+    Int_t             GetPDG(Bool_t abs = kTRUE) const;
+    Int_t             GetMotherPDG()   const {return fMotherPDG;}
+    Bool_t            IsMC()           const {if (GetRefMCtrack()) return kTRUE; return kFALSE;}
+    Bool_t            IsAOD()          const {if (GetRefAODtrack() || GetRefAODv0()) return kTRUE; return kFALSE;}
+    Bool_t            IsESD()          const {if (GetRefESDtrack() || GetRefESDv0()) return kTRUE; return kFALSE;}
+    Bool_t            IsTrack()        const {if (GetRefESDtrack() || GetRefAODtrack() || GetRefMCtrack()) return kTRUE; return kFALSE;}
+    Bool_t            IsV0()           const {if (GetRefESDv0() || GetRefAODv0()) return kTRUE; return kFALSE;}
+    ERefType          RefType()        const {if (IsTrack()) return kTrack; if (IsV0()) return kV0; return kNoType;}
+    void              SetRef(AliVParticle *ref) {fRef = ref;}
+    void              SetRefMC(AliVParticle *refMC) {fRefMC = refMC;}
+    void              SetMotherPDG(Int_t value) {fMotherPDG = value;}
 
   private:
 
@@ -102,7 +106,7 @@ class AliRsnDaughter : public TObject
     TLorentzVector fPMC;               // 4-vector filled with track info from MC ref (if present)
     
     AliVParticle  *fRef;               // reference to track in ESD/AOD/MC (all info are taken from this object)
-    AliMCParticle *fRefMC;             // reference to corresponding MC particle
+    AliVParticle  *fRefMC;             // reference to corresponding MC particle
 
     ClassDef(AliRsnDaughter, 8)
 };
