@@ -43,6 +43,15 @@ AliEveHLTEventManagerHomer::~AliEveHLTEventManagerHomer() {
 
 }
 
+///________________________________________________________________________________
+void AliEveHLTEventManagerHomer::ProcessList(TList * blockList) {
+
+  ProcessEvent(blockList);
+  UpdateDisplay();
+
+}
+
+
 
 ///________________________________________________________________________________
 void AliEveHLTEventManagerHomer::NextEvent() {
@@ -72,7 +81,7 @@ void AliEveHLTEventManagerHomer::NextEvent() {
     UpdateDisplay();
   
   } else {
-    cout << "could't get the sync event"<<endl;
+    cout << "couldn't get the sync event"<<endl;
   }
   
   //  cout  << "doint async block"<<endl;
@@ -92,7 +101,9 @@ void AliEveHLTEventManagerHomer::NavigateFwd() {
   //See header file for documentation
   TList * fEvent = dynamic_cast<TList*>(fEventBuffer->Fwd());
   if(fEvent) {
+    ResetDisplay();
     ProcessEvent(fEvent);
+    UpdateDisplay();
   } else {
     cout << "couldn't get the fwd event"<<endl;
   }
@@ -104,7 +115,9 @@ void AliEveHLTEventManagerHomer::NavigateBack() {
   //See header file for documentation
   TList * fEvent = dynamic_cast<TList*>(fEventBuffer->Back());
   if(fEvent) {
+    ResetDisplay();
     ProcessEvent(fEvent);
+    UpdateDisplay();
   } else {
     cout << "couldn't get the back event"<<endl;
   }

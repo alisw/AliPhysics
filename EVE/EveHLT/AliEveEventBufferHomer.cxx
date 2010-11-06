@@ -37,7 +37,7 @@ AliEveEventBufferHomer::~AliEveEventBufferHomer() {
 
 
 ULong64_t AliEveEventBufferHomer::GetEventIdFromSource() {
-  ///
+  ///see header file for documentation
   return fHomer->GetEventID();
 }
 
@@ -107,7 +107,7 @@ void AliEveEventBufferHomer::Initialize() {
 
   fHomer->SetRetryCount(1,15);
   fHomer->SetBlockOwner(kFALSE);
-  fHomer->StartEveSourceListLoop();
+  //fHomer->StartEveSourceListLoop();
 }
 
 
@@ -128,6 +128,7 @@ void AliEveEventBufferHomer::WriteToFile(Int_t runnumber){
   if(fAsyncList) {
     TFile * afile = TFile::Open(Form("%d_0x%016X_Async.root",  runnumber, GetEventId()), "RECREATE"); 
     fAsyncList->Write("blockList", TObject::kSingleKey);
+    //aFile-
     afile->Close();
   }
 }	     

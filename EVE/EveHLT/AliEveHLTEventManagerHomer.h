@@ -21,6 +21,8 @@ public:
   void NavigateFwd();
   void NavigateBack();
 
+  void ProcessList(TList * blockList);
+
  private:
 
 
