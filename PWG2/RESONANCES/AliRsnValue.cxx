@@ -80,6 +80,36 @@ AliRsnValue::AliRsnValue
 }
 
 //_____________________________________________________________________________
+AliRsnValue::AliRsnValue(const AliRsnValue& copy) : 
+  TNamed(copy),
+  fValue(copy.fValue),
+  fType(copy.fType),
+  fArray(copy.fArray),
+  fESDCuts(copy.fESDCuts)
+{
+//
+// Copy constructor
+//
+}
+
+//_____________________________________________________________________________
+AliRsnValue& AliRsnValue::operator=(const AliRsnValue& copy)
+{
+//
+// Assignment operator
+//
+
+  SetName(copy.GetName());
+  
+  fType = copy.fType;
+  fValue = copy.fValue;
+  fArray = copy.fArray;
+  fESDCuts = copy.fESDCuts;
+  
+  return (*this);
+}
+
+//_____________________________________________________________________________
 void AliRsnValue::SetBins(Int_t nbins, Double_t min, Double_t max)
 {
 //

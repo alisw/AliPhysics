@@ -60,14 +60,14 @@ class AliRsnValue : public TNamed
     AliRsnValue(const char *name, EValueType type, Int_t n = 0, Double_t min = 0.0, Double_t max = 0.0);
     AliRsnValue(const char *name, EValueType type, Double_t min, Double_t max, Double_t step);
     AliRsnValue(const char *name, EValueType type, Int_t n, Double_t *array);
-    AliRsnValue(const AliRsnValue& copy) : TNamed(copy),fValue(copy.fValue),fType(copy.fType),fArray(copy.fArray),fESDCuts(copy.fESDCuts) {}
-    AliRsnValue& operator=(const AliRsnValue& copy) {SetName(copy.GetName());fType=copy.fType;fValue=copy.fValue;fArray=copy.fArray;fESDCuts=copy.fESDCuts;return (*this);}
+    AliRsnValue(const AliRsnValue& copy);
+    AliRsnValue& operator=(const AliRsnValue& copy);
     virtual ~AliRsnValue() { }
     
-    TArrayD          GetArray() const {return fArray;}
-    Double_t         GetValue() const {return fValue;}
-    EValueType       GetValueType() {return fType;}
-    AliESDtrackCuts* GetCuts() {return &fESDCuts;}
+    TArrayD                GetArray() const {return fArray;}
+    Double_t               GetValue() const {return fValue;}
+    EValueType             GetValueType() const {return fType;}
+    const AliESDtrackCuts* GetCuts() const {return &fESDCuts;}
 
     void        SetValueType(EValueType type) {fType = type;}
     void        SetBins(Int_t n, Double_t min, Double_t max);

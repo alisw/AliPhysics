@@ -29,9 +29,9 @@ class AliRsnCutESD2010 : public AliRsnCut
     AliRsnCutESD2010& operator=(const AliRsnCutESD2010& copy);
     virtual ~AliRsnCutESD2010() {;};
 
-    AliESDtrackCuts* GetCutsTPC() {return &fESDtrackCutsTPC;}
-    AliESDtrackCuts* GetCutsITS() {return &fESDtrackCutsITS;}
-    virtual Bool_t   IsSelected(TObject *obj1, TObject *obj2 = 0x0);
+    const AliESDtrackCuts* GetCutsTPC() const {return &fESDtrackCutsTPC;}
+    const AliESDtrackCuts* GetCutsITS() const {return &fESDtrackCutsITS;}
+    virtual Bool_t         IsSelected(TObject *obj1, TObject *obj2 = 0x0);
     
     void             SetMC       (Bool_t yn = kTRUE);
     void             SetCheckITS (Bool_t yn = kTRUE) {fCheckITS = yn;}
