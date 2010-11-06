@@ -86,7 +86,7 @@ void AliHLTEveEmcal::CreateElementList() {
     fBoxSetClusters[sm].SetOwnIds(kTRUE);
     
     fBoxSetClusters[sm].Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
-    //    fBoxSetClusters[sm].RefMainTrans().SetFrom(*gEMCALNode->GetDaughter(sm)->GetMatrix());
+    fBoxSetClusters[sm].RefMainTrans().SetFrom(*gEMCALNode->GetDaughter(sm)->GetMatrix());
     fBoxSetClusters[sm].SetPalette(pal);
     
     AddElement(&fBoxSetClusters[sm]);
@@ -98,7 +98,13 @@ void AliHLTEveEmcal::CreateElementList() {
 void AliHLTEveEmcal::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
   //See header file for documentation
 
-  fBoxSetClusters[module].AddBox(pos[0], pos[1], pos[2], 6.0, energy, 6.0);
+  TVector3 vec(pos);
+  Int_t absId = -1;
+  fGeoUtils->GetAbsCellIdFromEtaPhi(vec.Eta(), vec.Phi(), absId);
+  
+  TVector3 localVec;
+  fGeoUtils->RelPosCellInSModule(absId, localVec);
+  fBoxSetClusters[module].AddBox(15, localVec[0],  localVec[2], energy, 6.0, 6.0);
   fBoxSetClusters[module].DigitValue(static_cast<Int_t>(energy));
 
   //cout << "Cluster " << pos[0] << " " << pos[1] << " " << pos[2] << endl;
