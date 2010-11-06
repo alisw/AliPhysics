@@ -147,9 +147,8 @@ fLastEvent(-1)
   /// Ctor in which we take the ownership of the rawReader, so we can rewind
   /// and advance it as we wish
   
-  if (fRawReader) 
+  if ( fRawReader && fRawReader->NextEvent() ) 
   {
-    fRawReader->NextEvent(); // to be sure to get run number available
     fRunNumber = fRawReader->GetRunNumber();
     fRawReader->RewindEvents();
   }
@@ -183,9 +182,8 @@ fFirstEvent(-1),
 fLastEvent(-1)
 {
   /// Ctor from raw data reader
-  if (fRawReader) 
+  if ( fRawReader && fRawReader->NextEvent() ) 
   {
-    fRawReader->NextEvent(); // to be sure to get run number available
     fRunNumber = fRawReader->GetRunNumber();
     fRawReader->RewindEvents();
   }
