@@ -27,7 +27,7 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskTriggerStudy)
 
-const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0MBS2","C0VBA","C0VBC","C0OM2"};       
+const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA","C0VBC","C0OM2"};       
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 : AliAnalysisTaskSE("TaskTriggerStudy"),
@@ -129,6 +129,11 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t c0OM2 = h->IsTriggerInputFired("0OM2"); // thr >= 2 (input 19)
   Bool_t c0OM3 = h->IsTriggerInputFired("0OM3"); // thr >= 3 (input 20)
 
+  // ZDC triggers
+  Bool_t zdcA   = fTriggerAnalysis->ZDCTrigger(fESD, AliTriggerAnalysis::kASide) ;
+  Bool_t zdcC   = fTriggerAnalysis->ZDCTrigger(fESD, AliTriggerAnalysis::kCSide) ;
+  Bool_t zdcBar = fTriggerAnalysis->ZDCTrigger(fESD, AliTriggerAnalysis::kCentralBarrel) ;
+
   // Some macros for the online triggers
   Bool_t cMBS2A = c0sm2 && c0v0A;
   Bool_t cMBS2C = c0sm2 && c0v0C;
@@ -136,6 +141,7 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   
 
   Bool_t vdArray[kNVDEntries];
+  vdArray[kVDC0MBS1] = c0sm1;
   vdArray[kVDC0MBS2] = c0sm2;
   vdArray[kVDC0VBA]  = c0v0A;
   vdArray[kVDC0VBC]  = c0v0C;
@@ -194,7 +200,10 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
     if(c0v0C)  GetHistoTracklets("c0v0C" ,"Events were trigger c0v0C fired" )->Fill(ntracklets);
     if(cMBS2A) GetHistoTracklets("cMBS2A","Events were trigger cMBS2A fired")->Fill(ntracklets);
     if(cMBS2C) GetHistoTracklets("cMBS2C","Events were trigger cMBS2C fired")->Fill(ntracklets);
-    if(cMBAC ) GetHistoTracklets("cMBAC ","Events were trigger cMBAC  fired")->Fill(ntracklets);
+    if(cMBAC ) GetHistoTracklets("cMBAC", "Events were trigger cMBAC  fired")->Fill(ntracklets);
+    if(zdcA )  GetHistoTracklets("cZDCA", "Events were trigger cZDCA  fired")->Fill(ntracklets);
+    if(zdcC )  GetHistoTracklets("cZDCC", "Events were trigger cZDCC  fired")->Fill(ntracklets);
+    if(zdcBar) GetHistoTracklets("cZDCBar","Events were trigger cZDCB  fired")->Fill(ntracklets);
     //  if() GetHistoTracklets("","Events were trigger  fired");
     
     // Fill trigger overlaps

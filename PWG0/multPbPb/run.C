@@ -54,7 +54,14 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   // physics selection
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   physicsSelectionTask = AddTaskPhysicsSelection(isMC);
-
+  // FIXME!!
+  AliPhysicsSelection * physSel = physicsSelectionTask->GetPhysicsSelection();
+  physSel->AddCollisionTriggerClass("+CTRUE-B-NOPF-ALL");
+  physSel->AddCollisionTriggerClass("+C0SM1-A-NOPF-ALL");
+  physSel->AddCollisionTriggerClass("+C0SM1-B-NOPF-ALL");
+  physSel->AddCollisionTriggerClass("+C0SM1-C-NOPF-ALL");
+  physSel->AddCollisionTriggerClass("+C0SM1-E-NOPF-ALL");
+  physSel->SetSkipTriggerClassSelection(kTRUE);
   // Centrality
   AliCentralitySelectionTask *taskCentr = new AliCentralitySelectionTask("CentralitySelection");
   const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root";
@@ -71,7 +78,8 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   centrSelector->SetCentralityEstimator(centrEstimator);
   // FIXME!!!
   centrSelector->SetUseMultRange();
-  centrSelector->SetMultRange(10,20);
+  centrSelector->SetIsMC(isMC,1000,2000);
+  //  centrSelector->SetMultRange(10,20);
 
   // Parse option strings
   TString optionStr(option);
@@ -130,7 +138,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     // If running in local mode, create chain of ESD files
     cout << "RUNNING LOCAL, CHAIN" << endl;    
     TChain * chain = GetAnalysisChain(data);
-    chain->Print();
+    //    chain->Print();
     mgr->StartAnalysis("local",chain,nev);
   } else if (runMode == kMyRunModeCAF) {
     mgr->StartAnalysis("proof",TString(data)+"#esdTree",nev);
