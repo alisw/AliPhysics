@@ -60,8 +60,19 @@ TObject * AliEveEventBufferHomer::GetEventFromSource() {
 
 ///___________________________________________________________________________
 void AliEveEventBufferHomer::AddToBuffer(TObject * event) {
-  cout << "Add to buffer"<<endl;
-  if(!event) return;
+  cout << "AliEveEventBufferHomer::Add to buffer"<<endl;
+  if(!event) {
+    cout << "event is NULL pointer, return" << endl;
+    return;
+  }
+
+
+  TList * listIn = dynamic_cast<TList*>(event);
+  if(!(listIn->GetSize() > 0)) {
+    cout  << "AliEveEventBufferHomer::AddToBuffer(): List Is empty, not added to buffer!"<<endl;
+    return;
+  }
+  
   fBIndex[kTop] = CalculateNext(fBIndex[kTop]);
   TList * list = dynamic_cast<TList*>(fEventBuffer->At(fBIndex[kTop]));
   if(list) {
