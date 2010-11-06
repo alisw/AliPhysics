@@ -100,7 +100,7 @@ Int_t AliHLTMultiplicityCorrelations::Initialize() {
 
   fHistList = new TList();
   fHistList->SetOwner(kTRUE);
-
+  fHistList->SetName("MultiplicityCorrelations");
   iResult = SetupHistograms();
 
   return iResult;
@@ -220,6 +220,9 @@ Int_t AliHLTMultiplicityCorrelations::SetupVZERO() {
   fHistList->Add(new TH1F("fVzeroMultC", "Multiplicity^{VZERO} C;Multiplicity^{VZERO};N_{Events}", 
 			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax)); 
 
+  fHistList->Add(new TH2F("fVzeroMultAC", "Multiplicity^{VZERO} A vs C;Multiplicity^{VZERO}A ;Multiplicity^{VZERO} C", 
+			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax)); 
+
   // Flagged VzeroMult
   fHistList->Add(new TH1F("fVzeroFlaggedMult",  "Multiplicity_{flagged}^{VZERO};Multiplicity^{VZERO};N_{Events}",   
 			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax)); 
@@ -228,6 +231,9 @@ Int_t AliHLTMultiplicityCorrelations::SetupVZERO() {
   fHistList->Add(new TH1F("fVzeroFlaggedMultC", "Multiplicity_{flagged}^{VZERO} C;Multiplicity^{VZERO};N_{Events}", 
 			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax)); 
   
+  fHistList->Add(new TH2F("fVzeroFlaggedMultAC", "Multiplicity_flagged^{VZERO} A vs C;Multiplicity^{VZERO}A ;Multiplicity^{VZERO} C", 
+			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax)); 
+
   fHistList->Add(new TH1F("fVzeroTime",  "Time;Time;N_{Events}",   500, 0, 1000));
   fHistList->Add(new TH1F("fVzeroTimeA", "Time A;Time;N_{Events}", 500, 0, 1000));
   fHistList->Add(new TH1F("fVzeroTimeC", "Time B;Time;N_{Events}", 500, 0, 1000));
@@ -745,7 +751,8 @@ Int_t AliHLTMultiplicityCorrelations::ProcessVZERO() {
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroMult")))->Fill(fVzeroMult);
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroMultA")))->Fill(fVzeroMultA);
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroMultC")))->Fill(fVzeroMultC);
-  
+  (static_cast<TH1F*>(fHistList->FindObject("fVzeroMultAC")))->Fill(fVzeroMultA,fVzeroMultC);
+
   fVzeroMultFlaggedA = 0.;
   fVzeroMultFlaggedC = 0.;
   
@@ -777,7 +784,8 @@ Int_t AliHLTMultiplicityCorrelations::ProcessVZERO() {
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroFlaggedMult")))->Fill(fVzeroMultFlagged);
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroFlaggedMultA")))->Fill(fVzeroMultFlaggedA);
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroFlaggedMultC")))->Fill(fVzeroMultFlaggedC);
-  
+  (static_cast<TH1F*>(fHistList->FindObject("fVzeroFlaggedMultAC")))->Fill(fVzeroMultFlaggedA,fVzeroMultFlaggedC);
+
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroTime")))->Fill(vzeroTime);
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroTimeA")))->Fill(vzeroTimeA);
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroTimeC")))->Fill(vzeroTimeC);
