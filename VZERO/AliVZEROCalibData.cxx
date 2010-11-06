@@ -652,3 +652,30 @@ void  AliVZEROCalibData::InitPMGains()
     fPMGainsB[i] = gains->GetBinContent(i+1,2);
   }
 }
+
+Float_t AliVZEROCalibData::GetCalibDiscriThr(Int_t channel, Bool_t scaled)
+{
+  // The method returns actual TDC discri threshold
+  // extracted from the data.
+  //
+  // In case scaled flag is set the threshold is scaled
+  // so that to get 4.0 for a FEE threshold of 4.0.
+  // In this way we avoid a change in the slewing correction
+  // for the entire 2010 p-p data.
+  //
+  // The method is to be moved to OCDB object.
+
+  Float_t thr = GetDiscriThr(channel);
+
+  Float_t calThr = 0;
+  if (thr <= 1.) 
+    calThr = 3.1;
+  else if (thr >= 2.)
+    calThr = (3.1+1.15*thr-1.7);
+  else
+    calThr = (3.1-0.3*thr+0.3*thr*thr);
+
+  if (scaled) calThr *= 4./(3.1+1.15*4.-1.7);
+
+  return calThr;
+}

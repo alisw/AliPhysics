@@ -482,7 +482,7 @@ Float_t AliVZEROReconstructor::CorrectLeadingTime(Int_t i, Float_t time, Float_t
   if (adc < 1e-6) return time;
 
   // Slewing correction
-  Float_t thr = fCalibData->GetDiscriThr(i);
+  Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
   time -= fTimeSlewing->Eval(adc/thr);
 
   return time;

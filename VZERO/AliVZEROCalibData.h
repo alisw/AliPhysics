@@ -115,6 +115,8 @@ class AliVZEROCalibData: public TNamed {
   Float_t *GetPMGainsA() const { return fPMGainsA; }
   Float_t *GetPMGainsB() const { return fPMGainsB; }
 
+  Float_t  GetCalibDiscriThr(Int_t channel, Bool_t scaled);
+
  protected:
   void     InitLightYields();
   void     InitPMGains();

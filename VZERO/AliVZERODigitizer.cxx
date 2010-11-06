@@ -449,7 +449,7 @@ void AliVZERODigitizer::DigitizeSDigits()
   Float_t maximum = 0.9*fSignalShape->GetMaximum(0,200); // Not exact, one needs to do this on the convoluted
   Float_t integral2 = fSignalShape->Integral(0,200); // function. Anyway the effect is small <10% on the 2.5 ADC thr
   for (Int_t ipmt = 0; ipmt < 64; ++ipmt) {
-    Float_t thr = fCalibData->GetDiscriThr(ipmt)*kChargePerADC*maximum*fBinSize[ipmt]/integral2;
+    Float_t thr = fCalibData->GetCalibDiscriThr(ipmt,kFALSE)*kChargePerADC*maximum*fBinSize[ipmt]/integral2;
     Bool_t ltFound = kFALSE, ttFound = kFALSE;
     for (Int_t iBin = 0; iBin < fNBins[ipmt]; ++iBin) {
       Float_t t = fBinSize[ipmt]*Float_t(iBin);
