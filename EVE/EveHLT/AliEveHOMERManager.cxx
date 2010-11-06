@@ -103,7 +103,7 @@ Int_t AliEveHOMERManager::CreateEveSourcesList() {
 ///_______________________________________________________________
 void AliEveHOMERManager::StartEveSourceListLoop() {
   HLTInfo("Starting source list timer");
-  fSourceListTimer->Start(1000); 
+  fSourceListTimer->Start(5000); 
 }
 ///_______________________________________________________________
 void AliEveHOMERManager::StopEveSourceListLoop() {
@@ -164,25 +164,15 @@ TList * AliEveHOMERManager::NextHOMEREvent() {
   
   if(!Connected()) {
     HLTInfo("Homer is not connected, trying to reconnect!");
-    Int_t iResult = ReConnectHOMER();
-    if(iResult)  {
-      HLTError("Error establishing connection to sources");
-      return NULL;
-    } else {
-      HLTInfo("New connection established, trying again to fetch event");
-      return NextHOMEREvent();
-    }
+    ReConnectHOMER();
+    return NULL;
   }
   
   
   if ( NextEvent() ) {
-    
     HLTInfo("Failed getting next event, trying to reconnect");
-    Int_t iResult = ReConnectHOMER();
-    if(iResult)  {
-      HLTError("Error establishing connection to sources");
-      return NULL;
-    }    
+    ReConnectHOMER();
+    return NULL;
   }
   
   return GetBlockList();
