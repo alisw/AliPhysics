@@ -26,6 +26,7 @@ AliEveHLTEventManagerHomer::AliEveHLTEventManagerHomer() :
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   fEventBuffer = new AliEveEventBufferHomer();
+  fEventBuffer->StartBufferMonitor();
   //AliEveHOMERManager * hm = fEventBuffer->GetHomerManager();
   //if(hm) GetEveManager()->AddToListTree(hm, kTRUE);
   

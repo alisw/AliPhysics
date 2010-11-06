@@ -38,47 +38,42 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   fButtonNavigateBack(0),
   fButtonNavigateFwd(0),
   fButtonPrintScreens(NULL),
-//fBoxTriggerSelector(0),
-//  fBoxEventLoopSpeed(0),
   fButtonEventLoopText(0),
   fButtonUpdateEvents(NULL),
   fButtonEventLoop(0),
- fEventLoopStarted(kFALSE) 
+  fEventLoopStarted(kFALSE),
+  fBufferLoopStarted(kTRUE)
 {
 
   MakeTitle("AliEveHLTEventManager");
 
-  fButtonUpdateEvents = new TGTextButton(this, "- Fill buffer - ");
+  fButtonUpdateEvents = new TGTextButton(this, "  Stop buffer loop  ");
+  fButtonUpdateEvents->SetWidth(30);
   AddFrame(fButtonUpdateEvents); //, new TGLayoutHints(...));
   fButtonUpdateEvents->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "PollEvents()");
 
-  // Create widgets
-  // fXYZZ = new TGSomeWidget(this, ...);
-  // AddFrame(fXYZZ, new TGLayoutHints(...));
-  // fXYZZ->Connect("SignalName()", "AliEveHLTEventManagerEditor", this, "DoXYZZ()");
-
-  fButtonNextEvent = new TGTextButton(this, "-   NextEvent  -");
+  fButtonNextEvent = new TGTextButton(this, "   NextEvent  ");
   AddFrame(fButtonNextEvent); //, new TGLayoutHints(...));
   fButtonNextEvent->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "NextEvent()");
 
-  fButtonNavigateBack = new TGTextButton(this, "-  Navigate Back - ");
+  fButtonNavigateBack = new TGTextButton(this, "  Navigate Back  ");
   AddFrame(fButtonNavigateBack); //, new TGLayoutHints(...));
   fButtonNavigateBack->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "NavigateBack()");
 
-  fButtonNavigateFwd = new TGTextButton(this, "-  Navigate Fwd  -");
+  fButtonNavigateFwd = new TGTextButton(this, "  Navigate Fwd  ");
   AddFrame(fButtonNavigateFwd); //, new TGLayoutHints(...));
   fButtonNavigateFwd->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "NavigateFwd()");
 
 
-  fButtonPrintScreens = new TGTextButton(this, "-  Save Viewers - ");
+  fButtonPrintScreens = new TGTextButton(this, "  Save Viewers  ");
   AddFrame(fButtonPrintScreens); //, new TGLayoutHints(...));
   fButtonPrintScreens->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "PrintScreens()");
   
-  fButtonWriteToFile = new TGTextButton(this, "-  Write to file  -");
+  fButtonWriteToFile = new TGTextButton(this, "  Save to file  ");
   AddFrame(fButtonWriteToFile); //, new TGLayoutHints(...));
   fButtonWriteToFile->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "WriteBlockListToFile()");
 
-  fButtonConnect = new TGTextButton(this, "-     Reconnect   - ");
+  fButtonConnect = new TGTextButton(this, "    Reconnect   ");
   AddFrame(fButtonConnect); //, new TGLayoutHints(...));
   fButtonConnect->Connect("Clicked()", "AliEveHLTEventManagerEditor", this, "ConnectToHLT()");
 
@@ -148,6 +143,14 @@ void AliEveHLTEventManagerEditor::NavigateBack() {
 }
 
 void AliEveHLTEventManagerEditor::PollEvents() {
+  if(fBufferLoopStarted) {
+    fButtonUpdateEvents->SetText(  "  Start buffer loop  ");
+    fBufferLoopStarted = kFALSE;
+  } else {
+    fButtonUpdateEvents->SetText("-  Stop buffer loop - ");
+    fBufferLoopStarted = kTRUE;
+  }
+  
   fM->StartBufferMonitor();
 }
 
@@ -156,7 +159,7 @@ void AliEveHLTEventManagerEditor::EventLoop() {
   // Start/stop event loop
   if ( !fEventLoopStarted ) {
     fEventLoopStarted = kTRUE;
-    fButtonEventLoopText->SetText(" Stop Loop ");
+    fButtonEventLoopText->SetText(" Stop event Loop ");
     fM->StartLoop();
   } else {
     fM->StopLoop();

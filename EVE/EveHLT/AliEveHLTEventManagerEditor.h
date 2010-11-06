@@ -63,6 +63,7 @@ private:
   AliEveHLTEventManagerEditor& operator=(const AliEveHLTEventManagerEditor&); // Not implemented
 
   Bool_t fEventLoopStarted;
+  Bool_t fBufferLoopStarted;
 
   ClassDef(AliEveHLTEventManagerEditor, 0); // Editor for AliEveHLTEventManager
 };

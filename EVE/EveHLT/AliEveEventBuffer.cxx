@@ -247,7 +247,7 @@ void AliEveEventBuffer::StartBufferMonitor() {
   if(!GetBufferMonStarted()) {
     CreateBufferThread();
     SetBufferMonStarted(kTRUE);
-    fTimer->Start(3000);
+    fTimer->Start(10000);
   } else {
     cout << "Stopping buffer monitor"<<endl;
     fTimer->Stop();
