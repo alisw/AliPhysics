@@ -156,7 +156,7 @@ AliHLTComponentDataType AliHLTITSClusterFinderComponent::GetOutputDataType()
 void AliHLTITSClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
   // see header file for class documentation
   constBase = 0;
-  inputMultiplier = 100;
+  inputMultiplier = 20;
 }
 
 AliHLTComponent* AliHLTITSClusterFinderComponent::Spawn() {
