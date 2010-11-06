@@ -151,12 +151,30 @@ void AliRsnDaughter::Print(Option_t * const /*option*/) const
   if (fRefMC) 
   {
     AliInfo(Form(".......Px, Py, Pz, Pt (ref MC): %f %f %f %f", fP.X(), fP.Y(), fP.Z(), fP.Perp())); 
-    AliInfo(Form(".......PDG code               : %d", fRefMC->Particle()->GetPdgCode()));
-    AliInfo(Form(".......Mother (label)         : %d", fRefMC->Particle()->GetFirstMother()));
-    AliInfo(Form(".......Mother (PDG code)      : %d", fMotherPDG));
+    
+    AliInfo(Form(".......PDG code               : %d", GetPDG()));
   } else AliInfo("....... absent REF MC");
   
   AliInfo("===== END ALIRSNDAUGHTER INFORMATION ==========================================");
+}
+
+//_____________________________________________________________________________
+Int_t AliRsnDaughter::GetPDG(Bool_t abs) const
+{
+//
+// Return the PDG code of the particle from MC ref (if any)
+//
+
+  AliMCParticle    *esdPart = GetRefMCESD();
+  AliAODMCParticle *aodPart = GetRefMCAOD();
+  
+  Int_t pdg = 0;
+  if (esdPart) pdg = esdPart->Particle()->GetPdgCode();
+  if (aodPart) pdg = aodPart->GetPdgCode();
+  
+  if (abs) pdg = TMath::Abs(pdg);
+  
+  return pdg;
 }
 
 //_____________________________________________________________________________

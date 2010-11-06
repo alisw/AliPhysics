@@ -11,6 +11,8 @@
 //
 #include <Riostream.h>
 #include <TVector3.h>
+#include "AliAODMCParticle.h"
+#include "AliMCParticle.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnPairDef.h"
 #include "AliRsnMother.h"
@@ -252,8 +254,8 @@ Bool_t AliRsnMother::MatchesDef(AliRsnPairDef *def)
 
   Bool_t decayMatch = kFALSE;
   Int_t  pdg[2], ref[2];
-  pdg[0] = fDaughter[0]->GetRefMC()->Particle()->GetPdgCode();
-  pdg[1] = fDaughter[1]->GetRefMC()->Particle()->GetPdgCode();
+  pdg[0] = fDaughter[0]->GetPDG();
+  pdg[1] = fDaughter[1]->GetPDG();
   ref[0] = TMath::Abs(AliPID::ParticleCode(def->GetPID(0)));
   ref[1] = TMath::Abs(AliPID::ParticleCode(def->GetPID(1)));
 

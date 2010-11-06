@@ -123,7 +123,7 @@ Bool_t AliRsnCutPID::ComputeWeights(AliRsnDaughter *daughter)
   if (perfectPID)
   {
     i = TMath::Abs(AliPID::ParticleCode(fMinI));
-    j = TMath::Abs(daughter->GetRefMC()->Particle()->GetPdgCode());
+    j = daughter->GetPDG();
     return (i == j);
   }
   
@@ -238,8 +238,7 @@ Int_t AliRsnCutPID::PerfectPID(AliRsnDaughter * const daughter)
   if (!daughter->GetRefMC()) return AliPID::kUnknown;
   
   // get the PDG code of the particle
-  TParticle *part = daughter->GetRefMC()->Particle();
-  Int_t      pdg  = TMath::Abs(part->GetPdgCode());
+  Int_t pdg = daughter->GetPDG();
   
   // loop over all species listed in AliPID to find the match
   Int_t i;
