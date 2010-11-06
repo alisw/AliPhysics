@@ -752,20 +752,20 @@ void AliMUONClusterFinderMLEM::PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, Ali
 
 //_____________________________________________________________________________
 void
-AliMUONClusterFinderMLEM::Plot(const char* basename)
+AliMUONClusterFinderMLEM::Plot(const char* /*basename*/)
 {
   /// Make a plot and save it as png
   
   return; //AZ
-  if (!fPlot) return;
-  
-  TCanvas* c = new TCanvas("MLEM","MLEM",800,600);
-  c->Draw();
-  Draw();
-  c->Modified();
-  c->Update();
-  c->Print(Form("%s.EVT%d.DE%d.CLU%d.png",basename,fEventNumber,
-                fDetElemId,fClusterNumber));
+//  if (!fPlot) return;
+//  
+//  TCanvas* c = new TCanvas("MLEM","MLEM",800,600);
+//  c->Draw();
+//  Draw();
+//  c->Modified();
+//  c->Update();
+//  c->Print(Form("%s.EVT%d.DE%d.CLU%d.png",basename,fEventNumber,
+//                fDetElemId,fClusterNumber));
 }
 
 //_____________________________________________________________________________

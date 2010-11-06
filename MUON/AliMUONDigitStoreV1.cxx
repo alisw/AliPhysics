@@ -215,8 +215,6 @@ AliMUONDigitStoreV1::ChamberDigitsPtr(Int_t chamberId) const
 {
   /// Get the address of the TClonesArray storing digits for chamberId.
 
-  return fDigits->GetObjectRef(fDigits->UncheckedAt(chamberId));
-
   TObject* object = fDigits->At(chamberId);
 
   if (!object)
