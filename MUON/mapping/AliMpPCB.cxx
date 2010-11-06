@@ -693,14 +693,7 @@ AliMpPCB::Print(Option_t* option) const
   {
     for ( Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
     {
-      if (option)
-	    {
-	      fMotifPositions[i]->Print(option+1);
-	    }
-      else
-	    {
-	      fMotifPositions[i]->Print();
-	    }
+       fMotifPositions[i]->Print(option+1);
     }
   }
 }
