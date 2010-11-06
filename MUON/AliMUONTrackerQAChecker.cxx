@@ -316,11 +316,6 @@ AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, const AliMUONRecoParam* re
     Int_t neventsseen = TMath::Nint(hneventsseen->GetBinContent(1));
     Int_t neventsused = TMath::Nint(hneventsused->GetBinContent(1));
         
-    if ( !hneventsseen || !hneventsused )
-    {
-      continue;
-    }
-    
     AliMUONVQAChecker::ECheckCode c1 = AliMUONVQAChecker::kInfo;
     AliMUONVQAChecker::ECheckCode c2 = AliMUONVQAChecker::kInfo;
     AliMUONVQAChecker::ECheckCode c3 = AliMUONVQAChecker::kInfo;
