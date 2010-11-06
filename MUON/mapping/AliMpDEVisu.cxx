@@ -55,6 +55,8 @@
 #include <TGTextView.h>
 #include <TGTextEntry.h>
 
+#include <cstdio>
+
 // Category: graphics
 
 //-----------------------------------------------------------------------------
@@ -145,7 +147,7 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
   fDEComboIdx.Set(26);
   for(i = 0; i < 10; i++)
   {
-    sprintf(text,"%d",i+1);
+    snprintf(text,20,"%d",i+1);
     fChamberCombo->AddEntry(text,i);
   }
   fChamberCombo->Resize(40,20);
@@ -415,13 +417,13 @@ void AliMpDEVisu::DrawManuMotif(Bool_t popup)
   
   if (AliMpDEManager::GetStationType(fCurrentDetElem) == AliMp::kStation345 ) {
     
-    sprintf(command, "%s%d", "PMCI:", (Int_t)fNumberEntry->GetIntNumber());
+    snprintf(command, 255, "%s%d", "PMCI:", (Int_t)fNumberEntry->GetIntNumber());
     
     DrawSlat(command, popup);
     
   } else {   
     
-    sprintf(command, "%s%d", "RSMCI:", (Int_t)fNumberEntry->GetIntNumber());
+    snprintf(command, 255, "%s%d", "RSMCI:", (Int_t)fNumberEntry->GetIntNumber());
     
     DrawQuadrant(command, popup);
     

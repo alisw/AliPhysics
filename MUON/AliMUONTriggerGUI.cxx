@@ -1951,8 +1951,8 @@ void AliMUONTriggerGUI::WriteTriggerRawData()
 
   char command[256];
   char dateFileName[256];
-  sprintf(dateFileName,"TriggerGUI.date");
-  sprintf(command, "dateStream -c -s -D -o %s -# %d -C -run %d",
+  snprintf(dateFileName,256,"TriggerGUI.date");
+  snprintf(command, 256,"dateStream -c -s -D -o %s -# %d -C -run %d",
           dateFileName, 1, 0);
   FILE* pipe = gSystem->OpenPipe(command, "w");
 
@@ -1970,7 +1970,7 @@ void AliMUONTriggerGUI::WriteTriggerRawData()
       ldc += AliDAQ::NumberOfLdcs(iDet) / AliDAQ::NumberOfDdls(iDet);
       
       char rawFileName[256];
-      sprintf(rawFileName, "%s",AliDAQ::DdlFileName(iDet,iDDL));
+      snprintf(rawFileName, 256,"%s",AliDAQ::DdlFileName(iDet,iDDL));
       // check existence and size of raw data file
       FILE* file = fopen(rawFileName, "rb");
       if (!file) continue;
@@ -1992,7 +1992,7 @@ void AliMUONTriggerGUI::WriteTriggerRawData()
   // AliSimulation::ConvertDateToRoot
 
   char rootFileName[256];
-  sprintf(rootFileName,"TriggerGUI.root");
+  snprintf(rootFileName,256,"TriggerGUI.root");
 
   // ALIMDC setup
   const Int_t kDBSize = 2000000000;
