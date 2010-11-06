@@ -25,6 +25,7 @@ class AliHLTEveISPD;
 class AliHLTEveTRD;
 class AliHLTEveAny;
 class AliHLTEveMuon;
+class AliHLTEveMultCorr;
 class AliEveEventBuffer;
 class AliESDEvent;
 
@@ -112,6 +113,7 @@ public:
 
 
   void CreatePhosElement();
+  void CreateMultCorrElement();
   void CreateEmcalElement();
   void CreateTPCElement();
   void CreateITSElement();
@@ -146,6 +148,7 @@ public:
   AliHLTEveISDD  * fISDDElement;     //ISDD
   AliHLTEveTRD   * fTRDElement;      //TRD
   AliHLTEveMuon  * fMuonElement;     //MUON
+  AliHLTEveMultCorr  * fMultCorrElement;     //Mult corr
   AliHLTEveAny   * fAnyElement;      //Catch all
 
 

@@ -16,6 +16,7 @@
 #include "AliHLTEveISDD.h"
 #include "AliHLTEveTRD.h"
 #include "AliHLTEveMuon.h"
+#include "AliHLTEveMultCorr.h"
 #include "AliHLTEveAny.h"
 
 #include "AliEveHLTEventManager.h"
@@ -50,6 +51,7 @@ AliEveHLTEventManager::AliEveHLTEventManager() :
   fISDDElement(NULL),
   fTRDElement(NULL),
   fMuonElement(NULL),
+  fMultCorrElement(NULL),
   fAnyElement(NULL),
   fEventLoopStarted(kFALSE),
   fCenterProjectionsAtPrimaryVertex(kFALSE),
@@ -119,6 +121,10 @@ void AliEveHLTEventManager::DestroyDetectorElements(){
   if(fMuonElement)
     delete fMuonElement;
   fMuonElement = NULL;
+
+  if(fMultCorrElement)
+    delete fMultCorrElement;
+  fMultCorrElement = NULL;
  
   if(fAnyElement)
     delete fAnyElement;
@@ -243,6 +249,12 @@ void AliEveHLTEventManager::ProcessBlock(AliHLTHOMERBlockDesc * block) {
 	if(event) {
 	  ProcessEvent(event);
 	}
+      
+      } else if(!(block->GetDataType().CompareTo("ROOTTOBJ"))) {
+
+	if(!fMultCorrElement) CreateMultCorrElement();
+	fMultCorrElement->ProcessBlock(block);
+      
       } else {
 	fHLTElement->ProcessBlock(block);
       }
@@ -463,6 +475,12 @@ void AliEveHLTEventManager::CreatePhosElement() {
   fPhosElement = new AliHLTEvePhos();
   fPhosElement->SetEventManager(this);
   gEve->AddElement(fPhosElement);
+}
+
+void AliEveHLTEventManager::CreateMultCorrElement() {
+  fMultCorrElement = new AliHLTEveMultCorr("MultCorr");
+  fMultCorrElement->SetEventManager(this);
+  gEve->AddElement(fMultCorrElement);
 }
 
 void AliEveHLTEventManager::CreateEmcalElement() {
