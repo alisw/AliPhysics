@@ -543,7 +543,12 @@ void AliCaloTrackReader::FillVertexArray() {
 
   } else { // MultiEvent analysis
     for (Int_t iev = 0; iev < fNMixedEvent; iev++) {
-      fMixedEvent->GetVertexOfEvent(iev)->GetXYZ(fVertex[iev]);
+      if (fMixedEvent->GetVertexOfEvent(iev))
+        fMixedEvent->GetVertexOfEvent(iev)->GetXYZ(fVertex[iev]);
+      else { // no vertex found !!!!
+        AliWarning("No vertex found");
+      }
+
       if(fDebug > 1)
         printf("AliCaloTrackReader::FillVertexArray() - Multi Event %d Vertex : %f,%f,%f\n",iev,fVertex[iev][0],fVertex[iev][1],fVertex[iev][2]);
 
