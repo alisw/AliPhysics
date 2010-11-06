@@ -341,9 +341,13 @@ void AliEveHLTEventManager::ResetDisplay () {
 void AliEveHLTEventManager::PrintScreens() {
 //   //See header file for documentation
 
-  fEveManager->GetDefaultGLViewer()->SavePicture(Form("%d_0x%016lX_3D.gif", fRunNumber, GetEventId()));
-  fRhoZViewer->GetGLViewer()->SavePicture(Form("%d_0x%016lX_RhoZ.gif", fRunNumber, GetEventId()));
-  fRPhiViewer->GetGLViewer()->SavePicture(Form("%d_0x%016lX_RPhi.gif", fRunNumber, GetEventId()));
+  Float_t scale = 4.f;
+  //Int_t width = 4000;
+  //Int_t height = 2000;
+
+  fEveManager->GetDefaultGLViewer()->SavePictureScale(Form("run_%d_0x%016lX_3D.gif", fRunNumber, GetEventId()), scale);
+  fRhoZViewer->GetGLViewer()->SavePictureScale(Form("run_%d_0x%016lX_RhoZ.gif", fRunNumber, GetEventId()), scale);
+  fRPhiViewer->GetGLViewer()->SavePictureScale(Form("run_%d_0x%016lX_RPhi.gif", fRunNumber, GetEventId()), scale);
   return;
 }
 
