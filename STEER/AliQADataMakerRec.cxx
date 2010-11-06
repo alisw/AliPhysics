@@ -203,8 +203,10 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
     } 
     else if ( fCorrNt ) {
       if (fCorrNt[specie] && AliQAv1::GetDetIndex(GetName()) == AliQAv1::kCORR) {
-        eventSpecieDir->cd() ; 
-        fCorrNt[specie]->Write() ; 
+        if (fCorrNt[specie]->GetNvar() != 0) {
+          eventSpecieDir->cd() ; 
+          fCorrNt[specie]->Write() ; 
+        }
       }
       fOutput->Save() ; 
     }
