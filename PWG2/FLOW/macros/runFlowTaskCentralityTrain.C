@@ -81,7 +81,7 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
   }
 
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
-  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+COSM1-B-NOPF-ALL");
+  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0SM1-B-NOPF-ALL");
   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBA-B-NOPF-ALL");
   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBC-B-NOPF-ALL");
 
