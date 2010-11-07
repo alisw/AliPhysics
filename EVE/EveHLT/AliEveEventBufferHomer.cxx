@@ -35,7 +35,7 @@ AliEveEventBufferHomer::~AliEveEventBufferHomer() {
 }
 
 
-
+///____________________________________________________________
 ULong64_t AliEveEventBufferHomer::GetEventIdFromSource() {
   ///see header file for documentation
   return fHomer->GetEventID();
@@ -76,7 +76,7 @@ void AliEveEventBufferHomer::AddToBuffer(TObject * event) {
   fBIndex[kTop] = CalculateNext(fBIndex[kTop]);
   TList * list = dynamic_cast<TList*>(fEventBuffer->At(fBIndex[kTop]));
   if(list) {
-    list->Clear();
+    list->Delete();
     list->AddAll(dynamic_cast<TList*>(event));
   }
 }

@@ -161,11 +161,6 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
   winTitle += Form("-- Event ID : 0x%016lX ", GetEventId() );
   GetEveManager()->GetBrowser()->SetWindowName(winTitle);
 
-
-  
-  cout << "reset()"<<endl;
-  
-  cout << "process()"<<endl;
   if(!fHLTElement) {
     fHLTElement = new AliHLTEveHLT();
     fHLTElement->SetEventManager(this);
@@ -416,6 +411,7 @@ void AliEveHLTEventManager::StopLoop() {
 
 void  AliEveHLTEventManager::UpdateDisplay() {
   //See header file for documentation
+  cout << "AliHLTEventManager::UpdateDisplay(); " <<endl;
   if(fPhosElement) fPhosElement->UpdateElements();
   if(fEmcalElement) fEmcalElement->UpdateElements();
   if(fTPCElement) fTPCElement->UpdateElements();
@@ -460,14 +456,10 @@ void  AliEveHLTEventManager::UpdateDisplay() {
 
 void AliEveHLTEventManager::SaveEveryThing() {
 
+  //Print the screens
   PrintScreens();
-
+  //Save block lists to file
   GetEventBuffer()->WriteToFile(GetRunNumber());
-  //Save everything to file
-  //fEventBuffer->SaveBlockList();
-  //fEventBuffer->SaveAsyncBlockList();
-
-
 }
 
 

@@ -56,7 +56,9 @@ void AliEveHLTEventManagerOffline::NextEvent() {
   
   if(event) {
     //Int_t eventId = fBuffer->GetEventId();
+    ResetDisplay();
     ProcessEvent(event);
+    UpdateDisplay();
   } else {
     cout << "couldn't get the event"<<endl;
   }
@@ -67,7 +69,9 @@ void AliEveHLTEventManagerOffline::NavigateFwd() {
   //See header file for documentation
   AliESDEvent * event = dynamic_cast<AliESDEvent*>(fEventBuffer->Fwd());
   if(event) {
+    ResetDisplay();
     ProcessEvent(event);
+    UpdateDisplay();
   } else {
     cout << "couldn't get the fwd event"<<endl;
   }
@@ -77,7 +81,9 @@ void AliEveHLTEventManagerOffline::NavigateBack() {
   //See header file for documentation
   AliESDEvent * event = dynamic_cast<AliESDEvent*>(fEventBuffer->Back());
   if(event) {
+    ResetDisplay();
     ProcessEvent(event);
+    UpdateDisplay();
   } else {
     cout << "couldn't get the back event"<<endl;
   }
