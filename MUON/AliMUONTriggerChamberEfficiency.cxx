@@ -248,7 +248,7 @@ AliMUONTriggerChamberEfficiency::FillFromList(Bool_t useMeanValues)
 	debugString += Form(" index %i",index);
 	AliDebug(5,debugString.Data());
 
-	if ( useMeanValues ){
+	if ( useMeanValues && rebuildEfficiency ){
 	  Int_t currChamber = ich + AliMpConstants::NofTrackingChambers();
 	  histoName = fEfficiencyMap->GetHistoName(AliMUONTriggerEfficiencyCells::kHboardCount, hType, ich);
 	  TH1F* auxHistoNum = (TH1F*)fEfficiencyMap->GetHistoList()->FindObject(histoName.Data())->Clone("tempHistoNum");
