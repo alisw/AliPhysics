@@ -120,9 +120,11 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F  *fChargeHLT;         //! Charge distribution 
     TH1F  *fMomentumHLT;       //! momentum	
     TH1F  *fMomentumHLTTpc;    //! pseudorapidity for kTPCin
-    TH1F  *fMomentumHLTTpcIts; //! pseudorapidity for kTPCin && kITSin
+    TH1F  *fMomentumHLTTpcIts; //! pseudorapidity for kTPCin && kITSin 
     TH1F  *fDCArHLT;	       //! track DCAr to beam line	 
     TH1F  *fDCAzHLT;	       //! track DCAz to beam line	 
+    TH1F  *fDCArHLTSG;	       //! track DCAr to beam line as calculated in the HLT reco	 
+    TH1F  *fDCAzHLTSG;	       //! track DCAz to beam line as calculated in the HLT reco	 
     TH1F  *fNclusterHLT;       //! #clusters per track
     TH1F  *fNclusterHLTwCut;   //! #clusters per track with cuts
     TH1F  *fdEdxHLT;	       //! TPC signal (offline)

@@ -35,11 +35,13 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
   
 
 
- TH1F *h3 = l1->FindObject("fDCA_hlt");
- TH1F *h4 = l1->FindObject("fDCA_off"); 
+ TH1F *h3  = l1->FindObject("fDCA_hlt");
+ TH1F *h4  = l1->FindObject("fDCA_off"); 
+ TH1F *hSG = l1->FindObject("fDCA_hltSG"); 
  h3->SetTitle("DCA between track and vertex on XY plane");
  h3->GetXaxis()->SetTitle("DCAr (cm)");
  h4->SetLineColor(2);
+ hSG->SetLineColor(kBlue);
  if(h3->GetMaximum() >= h4->GetMaximum()) h4->SetMaximum(1.1*h3->GetMaximum());
  else h3->SetMaximum(1.1*h4->GetMaximum());
  
@@ -153,6 +155,7 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  c1->cd(2)->SetLogy();
  h3->Draw();
  h4->Draw("sames");
+ hSG->Draw("sames");
  leg1->Draw("same");
 
  gPad->Update();
@@ -167,6 +170,15 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  st4->SetTextColor(h4->GetLineColor());
  st4->SetFillStyle(0);
  st4->Draw();
+
+ gPad->Update();
+ TPaveStats *stSG = (TPaveStats*)hSG->FindObject("stats");
+ stSG->SetY1NDC(st4->GetY1NDC()-0.05);
+ stSG->SetY2NDC(st4->GetY2NDC()-0.05);
+ stSG->SetLineColor(0);
+ stSG->SetTextColor(hSG->GetLineColor());
+ stSG->SetFillStyle(0);
+ stSG->Draw();
  
 //======================
 

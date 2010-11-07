@@ -87,6 +87,8 @@ AliAnalysisTaskSE()
   ,fMomentumHLTTpcIts(0)
   ,fDCArHLT(0)  
   ,fDCAzHLT(0)  
+  ,fDCArHLTSG(0)  
+  ,fDCAzHLTSG(0)  
   ,fNclusterHLT(0)
   ,fNclusterHLTwCut(0)
   ,fdEdxHLT(0)    
@@ -161,8 +163,8 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   ,fMomentumHLT(0)
   ,fMomentumHLTTpc(0)
   ,fMomentumHLTTpcIts(0)
-  ,fDCArHLT(0)  
-  ,fDCAzHLT(0)  
+  ,fDCArHLTSG(0)  
+  ,fDCAzHLTSG(0)  
   ,fNclusterHLT(0)
   ,fNclusterHLTwCut(0)
   ,fdEdxHLT(0)    
@@ -261,11 +263,13 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fMomentumOffTpcIts = new TH1F("fMomentumTpcIts_off","Momentum for kTPCin && kITSin (offline)",100,-3,3);
   fMomentumHLTTpcIts = new TH1F("fMomentumTpcIts_hlt","Momentum for kTPCin && kITSin (HLT)",    100,-3,3);
  
-  fDCArOff = new TH1F("fDCA_off","DCAr to beam line (offline)",200, -20, 20);
-  fDCArHLT = new TH1F("fDCA_hlt","DCAr to beam line (HLT)",    200, -20, 20);
+  fDCArOff   = new TH1F("fDCA_off",  "DCAr to beam line (offline)",200, -20, 20);
+  fDCArHLT   = new TH1F("fDCA_hlt",  "DCAr to beam line (HLT)",    200, -20, 20);
+  fDCArHLTSG = new TH1F("fDCA_hltSG","DCAr to beam line (HLT)",    200, -20, 20);
 
-  fDCAzOff = new TH1F("fDCAz_off","DCAz to beam line (offline)",200, -20, 20);
-  fDCAzHLT = new TH1F("fDCAz_hlt","DCAz to beam line (HLT)",    200, -20, 20);
+  fDCAzOff   = new TH1F("fDCAz_off",  "DCAz to beam line (offline)",200, -20, 20);
+  fDCAzHLT   = new TH1F("fDCAz_hlt",  "DCAz to beam line (HLT)",    200, -20, 20);
+  fDCAzHLTSG = new TH1F("fDCAz_hltSG","DCAz to beam line (HLT)",    200, -20, 20);
  
   fNclusterOff = new TH1F("fNcluster_off","clusters per track (offline)", 200, 0, 200);
   fNclusterHLT = new TH1F("fNcluster_hlt","clusters per track (HLT)",     200, 0, 200);
@@ -358,6 +362,8 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fMomentumHLTTpcIts);
   fOutputList->Add(fDCArHLT);	  
   fOutputList->Add(fDCAzHLT);	  
+  fOutputList->Add(fDCArHLTSG);	  
+  fOutputList->Add(fDCAzHLTSG);	  
   fOutputList->Add(fNclusterHLT); 
   fOutputList->Add(fNclusterHLTwCut); 
   fOutputList->Add(fdEdxHLT);	  
@@ -542,10 +548,11 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
       Float_t dca[2];
       esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
 
-//       // plotting the DCA calculated by Sergey 
-//       Float_t DCAr, DCAz = -99;
-//       esdtrackHLT->GetImpactParametersTPC(DCAr, DCAz);
-//       fDCArHLT->Fill(DCAr);
+      // plotting the DCA calculated by Sergey 
+      Float_t DCAr, DCAz = -99;
+      esdtrackHLT->GetImpactParametersTPC(DCAr, DCAz);
+      fDCArHLTSG->Fill(DCAr);
+      fDCAzHLTSG->Fill(DCAz);
 
       fDCArHLT->Fill(dca[0]);  
       fDCAzHLT->Fill(dca[1]);
