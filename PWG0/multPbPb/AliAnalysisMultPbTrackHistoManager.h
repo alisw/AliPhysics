@@ -23,7 +23,7 @@ class AliAnalysisMultPbTrackHistoManager : public AliHistoListWrapper {
 public:
 
   typedef enum {kHistoGen, kHistoRec, kHistoRecPrim, kHistoRecSecWeak, kHistoRecSecMat, kHistoRecFake, kNHistos} Histo_t;
-  typedef enum {kStatAll, kStatCentr, kStatVtx, kNStatBins} Stat_t;
+  typedef enum {kStatAll, kStatPhysSel, kStatCentr, kStatVtx, kNStatBins} Stat_t;
 
   AliAnalysisMultPbTrackHistoManager();
   AliAnalysisMultPbTrackHistoManager(const char * name,const char * title);

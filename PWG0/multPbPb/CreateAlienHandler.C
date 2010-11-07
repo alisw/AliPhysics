@@ -48,9 +48,14 @@ AliAnalysisGrid* CreateAlienHandler(TString dataset, TList * listToLoad, const c
    TString sources = "";
    while (name = (TObjString *)iter->Next()) {
      gSystem->ExpandPathName(name->String());
-     name->String().ReplaceAll("+","");     
-     sources = sources + gSystem->BaseName(name->String().Data()) + " ";
+     name->String().ReplaceAll("+","");
+     sources = sources + name->String() + " ";
    }
+   // while (name = (TObjString *)iter->Next()) {
+   //   gSystem->ExpandPathName(name->String());
+   //   name->String().ReplaceAll("+","");     
+   //   sources = sources + gSystem->BaseName(name->String().Data()) + " ";
+   // }
    plugin->SetAnalysisSource(sources.Data());
 // Declare all libraries (other than the default ones for the framework. These will be
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
@@ -74,12 +79,12 @@ AliAnalysisGrid* CreateAlienHandler(TString dataset, TList * listToLoad, const c
 
 // Declare the output file names separated by blancs.
 // (can be like: file.root or file.root@ALICE::Niham::File)
-   plugin->SetDefaultOutputs(kFALSE);
+//   plugin->SetDefaultOutputs(kFALSE);
    //   plugin->SetOutputFiles(Form("EventStat_temp.root %s",outfilename));
-   plugin->SetOutputFiles("EventStat_temp.root multPbPbtracks.root");
+   //   plugin->SetOutputFiles("EventStat_temp.root multPbPbtracks.root");
 // Optionally define the files to be archived.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:*.root@ALICE::NIHAM::File");
-   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
+//   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro("AnalysisMultPb.C");
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
