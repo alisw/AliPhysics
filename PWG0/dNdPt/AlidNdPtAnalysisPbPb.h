@@ -101,12 +101,13 @@ public :
   THnSparseF *GetMCSecTrackHist1(Int_t i) const {return fMCSecTrackHist1[i];}
 
   THnSparseF *GetRecTrackHist1(Int_t i) const {return fRecTrackHist1[i];}
+  THnSparseF *GetRecTrackHist2(Int_t i) const {return fRecTrackHist2[i];}
   THnSparseF *GetRecTrackMultHist1(Int_t i) const {return fRecTrackMultHist1[i];}
 
 
   THnSparseF *GetMCMultRecTrackHist1() const {return fMCMultRecTrackHist1;}
 
-  THnSparseF *GetRecTrackHist2() const {return fRecTrackHist2;}
+  THnSparseF *GetRecTrackHist3() const {return fRecTrackHist3;}
 
 private:
 
@@ -171,18 +172,19 @@ private:
   THnSparseF *fMCSecTrackHist1[AlidNdPtHelper::kCutSteps];  //-> mcPt:mcEta:pid:mech:mother
 
   THnSparseF *fRecTrackHist1[AlidNdPtHelper::kCutSteps];     //-> Pt:Eta:Phi
+  THnSparseF *fRecTrackHist2[AlidNdPtHelper::kCutSteps];     //-> Zv:Pt:Eta
   THnSparseF *fRecTrackMultHist1[AlidNdPtHelper::kCutSteps]; //-> Pt:mult
   THnSparseF *fRecMCTrackHist1; //-> mcPt:mcEta:(Pt-mcPt)/mcPt:(Eta-mcEta)
 
   //multple reconstructed tracks
   THnSparseF *fMCMultRecTrackHist1; //-> mcPt:mcEta:pid
   // track control histograms
-  THnSparseF *fRecTrackHist2;  //-> nclust:chi2:Pt:Eta:Phi
+  THnSparseF *fRecTrackHist3;  //-> nclust:chi2:Pt:Eta:Phi
 
   AlidNdPtAnalysisPbPb(const AlidNdPtAnalysisPbPb&); // not implemented
   AlidNdPtAnalysisPbPb& operator=(const AlidNdPtAnalysisPbPb&); // not implemented
 
-  ClassDef(AlidNdPtAnalysisPbPb,2);
+  ClassDef(AlidNdPtAnalysisPbPb,3);
 };
 
 #endif
