@@ -62,7 +62,7 @@ class AliUEHist : public TObject
   TH1D* GetTrackingEfficiencyCorrection(Int_t axis);
   TH2D* GetTrackingEfficiencyCorrection();
 
-  void ExtendTrackingEfficiency();
+  void ExtendTrackingEfficiency(Bool_t verbose = kFALSE);
   
   void Correct(AliUEHist* corrections);
   void CorrectTracks(CFStep step1, CFStep step2, TH1* trackCorrection, Int_t var1, Int_t var2 = -1);

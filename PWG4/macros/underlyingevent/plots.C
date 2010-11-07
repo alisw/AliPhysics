@@ -30,7 +30,8 @@ void PlotTrackingEfficiencies()
       continue;
 
     TString fileName;
-    fileName.Form("%s/%s/PWG4_JetTasksOutput.root", "alien:///alice/cern.ch/user/k/kleinb/analysisESD/LHC10d4/output_pwg4train_LHC10d4_101001a", line.Data());
+    //fileName.Form("%s/%s/PWG4_JetTasksOutput.root", "alien:///alice/cern.ch/user/k/kleinb/analysisESD/LHC10d4/output_pwg4train_LHC10d4_101001a", line.Data());
+    fileName.Form("%s/%s/PWG4_JetTasksOutput.root", "maps", line.Data());
     Printf("%s", fileName.Data());
     file = TFile::Open(fileName);
     if (!file)
@@ -119,6 +120,7 @@ void CheckTrackingEfficiency(const char* reference = 0, const char* fileName = "
     hist->DrawCopy("SAME");
     if (!all)
       break;
+    Printf("%d", i);
   }
 }
 
@@ -137,6 +139,18 @@ void PlotSingleTrackingEfficiency(const char* fileName, Int_t what = 0)
     eff = (TH2*) h->GetNumberDensitypT()->GetTrackingContamination();
 
   eff->Draw("colz");
+}
+
+void ExtendTrackingEfficiency(const char* fileName)
+{
+  loadlibs();
+
+  file = TFile::Open(fileName);
+  list = (TList*) file->Get("PWG4_LeadingTrackUE/histosLeadingTrackUE");
+  AliUEHistograms* h = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+  h->SetEtaRange(-0.79, 0.79);
+
+  h->GetUEHist(0)->ExtendTrackingEfficiency(1);
 }
 
 void PlotSystUncertainties()

@@ -30,6 +30,93 @@ void Prepare1DPlot(TH1* hist)
   SetRanges(hist);
 }
 
+TH1* GetSystematicUncertainty(TH1* corr)
+{
+  Int_t energy = 900;
+  Int_t ueHist = 0;
+
+  systError = (TH1*) corr->Clone("systError");
+  systError->Reset();
+  
+  Float_t constantUnc = 0;
+  
+  // particle composition
+  constantUnc += 0.8 ** 2;
+  
+  // tpc efficiency
+  if (energy == 900 && gLeadingpTMin < 1.0)
+    constantUnc += 1.0 ** 2;
+  else if (energy == 900 && gLeadingpTMin < 1.5)
+    constantUnc += 0.5 ** 2;
+  if (energy == 7000 && gLeadingpTMin < 1.0)
+    constantUnc += 1.0 ** 2;
+  else if (energy == 7000 && gLeadingpTMin < 1.5)
+    constantUnc += 0.6 ** 2;
+  
+  // track cuts
+  if (energy == 900 && gLeadingpTMin < 1.0)
+    constantUnc += 2.5 ** 2;
+  else if (energy == 900 && gLeadingpTMin < 1.5)
+    constantUnc += 2.0 ** 2;
+  if (energy == 7000)
+    constantUnc += 3.0 ** 2;
+
+  // difference corrected with pythia and phojet
+  if (energy == 900 && gLeadingpTMin < 1.0)
+    constantUnc += 0.6 ** 2;
+  else if (energy == 900 && gLeadingpTMin < 1.5)
+    constantUnc += 0.8 ** 2;
+    
+  for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
+    systError->SetBinContent(bin, constantUnc);
+
+  // mis id bias
+  if (ueHist == 0 || ueHist == 2)
+    systError->Fill(0.75, 4.0 ** 2);
+  if (ueHist == 1)
+    systError->Fill(0.75, 5.0 ** 2);
+
+  if (energy == 900)
+  {
+    if (gLeadingpTMin < 1.0)
+      systError->Fill(1.25, 1.0 ** 2);
+    else if (gLeadingpTMin < 1.5)
+      systError->Fill(1.25, 2.0 ** 2);
+  }
+  
+  // non-closure in MC
+  if (energy == 900)
+    for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
+      systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 1.0 ** 2);
+      
+  if (energy == 7000)
+    systError->Fill(0.75, 2.0 ** 2);
+    
+  // vertex efficiency
+  systError->Fill(0.75, 1.0 ** 2);
+
+  // strangeness
+  for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
+  {
+    if (energy == 900)
+      systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 0.5 ** 2);
+    if (energy == 7000 && systError->GetXaxis()->GetBinCenter(bin) < 1.5)
+      systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 2.0 ** 2);
+    else if (energy == 7000)
+      systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 1.0 ** 2);
+  }  
+    
+  systError->SetFillColor(kGray);
+  systError->SetFillStyle(1001);
+  systError->SetMarkerStyle(0);
+  systError->SetLineColor(0);
+  
+  for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
+    systError->SetBinContent(bin, TMath::Sqrt(systError->GetBinContent(bin)));
+  
+  return systError;
+}
+
 void DrawRatio(TH1* corr, TH1* mc, const char* name)
 {
   mc->SetLineColor(2);
@@ -79,7 +166,20 @@ void DrawRatio(TH1* corr, TH1* mc, const char* name)
   dummy->GetYaxis()->SetTitleSize(0.08);
   dummy->GetYaxis()->SetTitleOffset(0.8);
   dummy->DrawCopy();
-
+  
+    
+  // systematic uncertainty
+  TH1* syst = GetSystematicUncertainty(corr);
+  
+  systError = (TH1*) syst->Clone("corrSystError");
+  for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
+  {
+    systError->SetBinError(bin, corr->GetBinContent(bin) * syst->GetBinContent(bin) / 100);
+    systError->SetBinContent(bin, corr->GetBinContent(bin));
+  }
+  
+  systError->Draw("E2 ][ SAME");
+  
   corr->Draw("SAME");
   mc->Draw("SAME");
 
@@ -113,10 +213,24 @@ void DrawRatio(TH1* corr, TH1* mc, const char* name)
   dummy3.GetYaxis()->SetTitleSize(0.08);
   dummy3.GetYaxis()->SetTitleOffset(0.8);
   dummy3.DrawCopy();
+  
+  // for the ratio add in quadrature
+  for (Int_t bin=1; bin<=syst->GetNbinsX(); bin++)
+  {
+    if (corr->GetBinError(bin) > 0)
+      syst->SetBinError(bin, TMath::Sqrt(TMath::Power(syst->GetBinContent(bin) / 100, 2) + TMath::Power(corr->GetBinError(bin) / corr->GetBinContent(bin), 2)));
+    else
+      syst->SetBinError(bin, 0);
+    syst->SetBinContent(bin, 1);
+  }
+  
+  syst->Draw("E2 ][ SAME");
+  dummy3.DrawCopy("SAME");
 
   ratio->Draw("SAME");
 
   canvas3->Modified();
+
 }
 
 void loadlibs()
@@ -228,6 +342,8 @@ void CompareEventHist(const char* fileName1, const char* fileName2, Int_t id, In
 
 void CompareStep(const char* fileName1, const char* fileName2, Int_t id, Int_t step, Int_t region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1)
 {
+  // fileName1 is labelled Corrected in the plot
+
   loadlibs();
 
   Compare(fileName1, fileName2, id, step, step, region, ptLeadMin, ptLeadMax);
@@ -310,10 +426,10 @@ void DrawRatios(void* correctedVoid, void* comparisonVoid, Int_t compareStep = -
   AliUEHistograms* corrected = (AliUEHistograms*) correctedVoid;
   AliUEHistograms* comparison = (AliUEHistograms*) comparisonVoid;
 
-  if (compareUEHist == 2)
+  if (1 && compareUEHist == 2)
   {
-    for (Float_t ptLeadMin = 1.01; ptLeadMin < 4; ptLeadMin += 2)
-      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 0.48);      
+    for (Float_t ptLeadMin = 0.51; ptLeadMin < 4; ptLeadMin += 2.5)
+      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 2.48);      
     return;
   }
 
@@ -397,7 +513,7 @@ void correctMC(const char* fileNameCorrections, const char* fileNameESD = 0, Int
 
 // function to compare only final step for all regions and distributions
 
-void correctData(const char* fileNameCorrections, const char* fileNameESD, Int_t compareStep = -1, Int_t compareRegion = 2, Int_t compareUEHist = 0)
+void correctData(const char* fileNameCorrections, const char* fileNameESD, const char* contEnhancement, Float_t contEncUpTo = 1.0, Int_t compareStep = -1, Int_t compareRegion = 2, Int_t compareUEHist = 0)
 {
   // corrects fileNameESD with fileNameCorrections and compares the two
   
@@ -415,6 +531,19 @@ void correctData(const char* fileNameCorrections, const char* fileNameESD, Int_t
   SetupRanges(esd);
   
   corr->ExtendTrackingEfficiency();
+  
+  TFile::Open(contEnhancement);
+  contEncHist = (TH1*) gFile->Get("histo");
+  contEncHistFullRange = (TH1*) corr->GetUEHist(0)->GetTrackingEfficiency(1)->Clone("contEncHistFullRange");
+  
+  contEncHistFullRange->Reset();
+  for (Int_t i=1; i<=contEncHistFullRange->GetNbinsX(); i++)
+  {
+    contEncHistFullRange->SetBinContent(i, 1);
+    if (i <= contEncHist->GetNbinsX() && contEncHist->GetXaxis()->GetBinCenter(i) < contEncUpTo && contEncHist->GetBinContent(i) > 0)
+      contEncHistFullRange->SetBinContent(i, contEncHist->GetBinContent(i));
+  }
+  corr->SetContaminationEnhancement((TH1F*) contEncHistFullRange);
   
   esd->Correct(corr);
   
@@ -447,11 +576,11 @@ void ITSTPCEfficiency(const char* fileNameData, Int_t id, Int_t itsTPC = 0)
 
   new TCanvas; effHist->Draw();
 
-  EffectOfModifiedTrackingEfficiency(fileNameData, id, effHist, 1, -1, (itsTPC == 0) ? "ITS" : "TPC");
+  EffectOfModifiedTrackingEfficiency(fileNameData, id, 2, effHist, 1, -1, (itsTPC == 0) ? "ITS" : "TPC");
 } 
 
 
-void EffectOfModifiedTrackingEfficiency(const char* fileNameData, Int_t id, TH1* trackingEff, Int_t axis1, Int_t axis2 = -1, const char* name = "EffectOfModifiedTrackingEfficiency")
+void EffectOfModifiedTrackingEfficiency(const char* fileNameData, Int_t id, Int_t region, TH1* trackingEff, Int_t axis1, Int_t axis2 = -1, const char* name = "EffectOfModifiedTrackingEfficiency")
 {
   // trackingEff should contain the change in tracking efficiency, i.e. between before and after in the eta-pT plane
 
@@ -463,10 +592,18 @@ void EffectOfModifiedTrackingEfficiency(const char* fileNameData, Int_t id, TH1*
   SetupRanges(corrected);
   
   AliUEHist* ueHist = corrected->GetUEHist(id);
-  Int_t region = 2;
   
+  Float_t ptLeadMin = -1;
+  Float_t ptLeadMax = -1;
+  if (id == 2)
+  {
+    // the uncertainty is flat in delta phi, so use this trick to get directly the uncertainty as function of leading pT
+    //ptLeadMin = 1.01;
+    //ptLeadMax = 1.99;
+  }
+    
   // histogram before
-  TH1* before = ueHist->GetUEHist(AliUEHist::kCFStepAll, region);
+  TH1* before = ueHist->GetUEHist(AliUEHist::kCFStepAll, region, ptLeadMin, ptLeadMax);
 
   // copy histogram
   // the CFStepTriggered step is overwritten here and cannot be used for comparison afterwards anymore
@@ -476,7 +613,7 @@ void EffectOfModifiedTrackingEfficiency(const char* fileNameData, Int_t id, TH1*
   ueHist->CorrectTracks(AliUEHist::kCFStepTriggered, AliUEHist::kCFStepAll, trackingEff, axis1, axis2);
 
   // histogram after
-  TH1* after = ueHist->GetUEHist(AliUEHist::kCFStepAll, region);
+  TH1* after = ueHist->GetUEHist(AliUEHist::kCFStepAll, region, ptLeadMin, ptLeadMax);
   
   DrawRatio(before, after, name);
   gPad->GetCanvas()->SaveAs(Form("%s.png", name));
@@ -518,7 +655,7 @@ void EffectOfTrackCuts(const char* fileNameData, Int_t id, const char* systFile)
    
       //new TCanvas; systEffect->Draw("COLZ"); new TCanvas; effHist->Draw("COLZ");
  
-      EffectOfModifiedTrackingEfficiency(fileNameData, id, effHist, 0, 1, histName);
+      EffectOfModifiedTrackingEfficiency(fileNameData, id, (id == 2) ? 0 : 2, effHist, 0, 1, histName);
 
       //return;
     }
@@ -562,8 +699,10 @@ void ModifyComposition(const char* fileNameData, const char* fileNameCorrections
   for (Int_t region=0; region<maxRegion; region++)
     before[region] = ueHistData->GetUEHist(AliUEHist::kCFStepAll, region, ptLeadMin, ptLeadMax);
   
-  defaultEff = ueHistCorrections->GetTrackingEfficiency();
-  defaultEffpT = ueHistCorrections->GetTrackingEfficiency(1);
+  //defaultEff = ueHistCorrections->GetTrackingEfficiency();
+  defaultEff = ueHistCorrections->GetTrackingCorrection();
+  //defaultEffpT = ueHistCorrections->GetTrackingEfficiency(1);
+  defaultEffpT = ueHistCorrections->GetTrackingCorrection(1);
   defaultContainer = ueHistCorrections->GetTrackHistEfficiency();
   
   c = new TCanvas;
@@ -615,12 +754,14 @@ void ModifyComposition(const char* fileNameData, const char* fileNameCorrections
     ueHistCorrections->SetTrackHistEfficiency(newContainer);
     
     // ratio
-    modifiedEff = ueHistCorrections->GetTrackingEfficiency();
+    //modifiedEff = ueHistCorrections->GetTrackingEfficiency();
+    modifiedEff = ueHistCorrections->GetTrackingCorrection();
     modifiedEff->Divide(modifiedEff, defaultEff);
     //modifiedEff->Draw("COLZ");
     
     c->cd();
-    modifiedEffpT = ueHistCorrections->GetTrackingEfficiency(1);
+    //modifiedEffpT = ueHistCorrections->GetTrackingEfficiency(1);
+    modifiedEffpT = ueHistCorrections->GetTrackingCorrection(1);
     modifiedEffpT->SetLineColor(i+1);
     modifiedEffpT->Draw("SAME");
     
@@ -650,3 +791,95 @@ void ModifyComposition(const char* fileNameData, const char* fileNameCorrections
   for (Int_t i=0; i<maxRegion; i++)
     Printf("Largest deviation in region %d is %f", i, largestDeviation[i]);
 }    
+
+void MergeList()
+{
+  loadlibs();
+
+  ifstream in;
+  in.open("list");
+
+  TFileMerger m;
+
+  TString line;
+  while (in.good())
+  {
+    in >> line;
+
+    if (line.Length() == 0)
+      continue;
+
+    TString fileName;
+    fileName.Form("%s/%s/PWG4_JetTasksOutput.root", "maps", line.Data());
+    Printf("%s", fileName.Data());
+    
+    m.AddFile(fileName);
+  }
+  
+  m.SetFastMethod();
+  m.OutputFile("merged.root");
+  m.Merge();
+}
+
+void MergeList2(const char* listFile, Bool_t onlyPrintEvents = kFALSE)
+{
+  loadlibs();
+
+  ifstream in;
+  in.open(listFile);
+  
+  AliUEHistograms* final = 0;
+  TList* finalList = 0;
+
+  TString line;
+  while (in.good())
+  {
+    in >> line;
+
+    if (line.Length() == 0)
+      continue;
+
+    TString fileName;
+    fileName.Form("%s/%s/PWG4_JetTasksOutput.root", "maps", line.Data());
+    Printf("%s", fileName.Data());
+    
+    file = TFile::Open(fileName);
+    if (!file)
+      continue;
+      
+    list = (TList*) file->Get(objectName);
+    
+    if (!final)
+    {
+      final = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+      //final->GetEventCount()->Draw(); return;
+      Printf("Events: %d", (Int_t) final->GetEventCount()->ProjectionX()->GetBinContent(4));
+      finalList = list;
+    }
+    else
+    {
+      additional = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+      Printf("Events: %d", (Int_t) additional->GetEventCount()->ProjectionX()->GetBinContent(4));
+      
+      if (!onlyPrintEvents)
+      {
+        TList list2;
+        list2.Add(additional);
+        final->Merge(&list2);
+      }
+      delete additional;
+      file->Close();
+    }
+  }
+  
+  if (onlyPrintEvents)
+    return;
+    
+  Printf("Total events (at step 0): %d", (Int_t) final->GetEventCount()->ProjectionX()->GetBinContent(4));
+  
+  file3 = TFile::Open("merged.root", "RECREATE");
+  file3->mkdir("PWG4_LeadingTrackUE");
+  file3->cd("PWG4_LeadingTrackUE");
+  finalList->Write(0, TObject::kSingleKey);
+  file3->Close();
+}
