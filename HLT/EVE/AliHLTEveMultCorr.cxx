@@ -100,12 +100,16 @@ void AliHLTEveMultCorr::ProcessBlock(AliHLTHOMERBlockDesc* block)
             if (!fTpcMultCanvas) 
 	    {
 	      fTpcMultCanvas = CreateCanvas("TPC Mult", "TPC Multiplicities");
-	      fTpcMultCanvas->Divide(2);
+	      fTpcMultCanvas->Divide(2, 2);
 	    }
             oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fTpcNch2"));
             AddHistogramToCanvas(oneDf, fTpcMultCanvas, cd);
 	    cd++;
             oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fTpcNch3"));
+            AddHistogramToCanvas(oneDf, fTpcMultCanvas, cd);
+	    cd++;
+	    oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fSpdNClusters"));
+	    
             AddHistogramToCanvas(oneDf, fTpcMultCanvas, cd);
 
 	    cd = 1;
@@ -208,6 +212,8 @@ void AliHLTEveMultCorr::AddHistogramToCanvas(TH1* hist, TCanvas* canvas, Int_t& 
         if (!strcmp(hist->ClassName(), "TH1F"))
         {
 	    canvas->cd(cdCount);
+	    TPad * pad = dynamic_cast<TPad*>(canvas->cd(cdCount));
+	    pad->SetLogy();
             dynamic_cast<TH1F*>(hist)->Draw();
         }
         else if (!strcmp(hist->ClassName(), "TH2F"))
