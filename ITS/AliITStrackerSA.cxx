@@ -838,19 +838,24 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   }
 
  
+  Double_t phiExpect=fPhiEstimate;
+  Double_t lamExpect=fLambdac;
+
   Int_t ncl = fCluLayer[layer]->GetEntriesFast();
   for (Int_t index=0; index<ncl; index++) {
     AliITSRecPoint *c = (AliITSRecPoint*)fCluLayer[layer]->UncheckedAt(index);
     if (!c) continue;
-    if (c->GetQ()<=0) continue;
-    if(layer>1 && c->GetQ()<=fMinQ) continue;
     
     AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(layer,index);
-    Double_t phi = arr->GetPhi();
-    if (TMath::Abs(phi-fPhiEstimate)>phiwindow) continue;
-    
+
     Double_t lambda = arr->GetLambda();
-    if (TMath::Abs(lambda-fLambdac)>lambdawindow) continue;
+    if (TMath::Abs(lambda-lamExpect)>lambdawindow) continue;
+
+    Double_t phi = arr->GetPhi();
+    Double_t deltaPhi = phi-phiExpect;
+    if(deltaPhi>TMath::Pi()) deltaPhi-=2*TMath::Pi();
+    else if(deltaPhi<-TMath::Pi()) deltaPhi+=2*TMath::Pi();
+    if (TMath::Abs(deltaPhi)>phiwindow) continue;
     
     if(trs->GetNumberOfClustersSA()==trs->GetMaxNumberOfClusters()) return 0;
     if(trs->GetNumberOfMarked(layer)==trs->GetMaxNMarkedPerLayer()) return 0;
