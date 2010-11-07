@@ -60,6 +60,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
   if (strlen(reqHist) == 0)
     return;
     
+  AliLog::SetClassDebugLevel("AliCFContainer", -1);
+    
   const char* title = "";
     
   // track level
@@ -481,8 +483,8 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
   else
   {
     fTrackHist[region]->GetGrid(step)->SetRangeUser(2, ptLeadMin, ptLeadMax);
-    tracks = fTrackHist[region]->GetGrid(step)->Project(4);
-    Printf("Calculated histogram in %.2f <= pT <= %.2f --> %f entries", ptLeadMin, ptLeadMax, tracks->Integral());
+    tracks = (TH1D*) fTrackHist[region]->GetGrid(step)->Project(4);
+    Printf("Calculated histogram in %.2f <= pT <= %.2f --> %f tracks", ptLeadMin, ptLeadMax, tracks->Integral());
     fTrackHist[region]->GetGrid(step)->SetRangeUser(2, 0, -1);
     
     // normalize to get a density (deta dphi)
@@ -495,6 +497,7 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
     Int_t nEvents = (Int_t) events->Integral(events->FindBin(ptLeadMin), events->FindBin(ptLeadMax));
     if (nEvents > 0)
       tracks->Scale(1.0 / nEvents);
+    Printf("Calculated histogram in %.2f <= pT <= %.2f --> %d events", ptLeadMin, ptLeadMax, nEvents);
   }
 
   ResetBinLimits(fTrackHist[region]->GetGrid(step));
@@ -973,12 +976,12 @@ TH1* AliUEHist::GetBias(CFStep step1, CFStep step2, Int_t region, const char* ax
   ResetBinLimits(fEventHist->GetGrid(step2));
   SetBinLimits(tmp->GetGrid(step2));
   
-  TH1D* events1 = fEventHist->Project(0, step1);
-  TH3D* hist1 = tmp->Project(0, tmp->GetNVar()-1, 2, step1);
+  TH1D* events1 = (TH1D*)fEventHist->Project(0, step1);
+  TH3D* hist1 = (TH3D*)tmp->Project(0, tmp->GetNVar()-1, 2, step1);
   WeightHistogram(hist1, events1);
   
-  TH1D* events2 = fEventHist->Project(0, step2);
-  TH3D* hist2 = tmp->Project(0, tmp->GetNVar()-1, 2, step2);
+  TH1D* events2 = (TH1D*)fEventHist->Project(0, step2);
+  TH3D* hist2 = (TH3D*)tmp->Project(0, tmp->GetNVar()-1, 2, step2);
   WeightHistogram(hist2, events2);
   
   TH1* generated = hist1;
@@ -1166,15 +1169,17 @@ void AliUEHist::CopyReconstructedData(AliUEHist* from)
       continue;
   
     fTrackHist[region]->SetGrid(AliUEHist::kCFStepReconstructed, from->fTrackHist[region]->GetGrid(AliUEHist::kCFStepReconstructed));
+    //fTrackHist[region]->SetGrid(AliUEHist::kCFStepTrackedOnlyPrim, from->fTrackHist[region]->GetGrid(AliUEHist::kCFStepTrackedOnlyPrim));
     fTrackHist[region]->SetGrid(AliUEHist::kCFStepBiasStudy,     from->fTrackHist[region]->GetGrid(AliUEHist::kCFStepBiasStudy));
   }
     
   fEventHist->SetGrid(AliUEHist::kCFStepReconstructed, from->fEventHist->GetGrid(AliUEHist::kCFStepReconstructed));
+  //fEventHist->SetGrid(AliUEHist::kCFStepTrackedOnlyPrim, from->fEventHist->GetGrid(AliUEHist::kCFStepTrackedOnlyPrim));
   fEventHist->SetGrid(AliUEHist::kCFStepBiasStudy,     from->fEventHist->GetGrid(AliUEHist::kCFStepBiasStudy));
 }
 
 //____________________________________________________________________
-void AliUEHist::ExtendTrackingEfficiency()
+void AliUEHist::ExtendTrackingEfficiency(Bool_t verbose)
 {
   // fits the tracking efficiency at high pT with a constant and fills all bins with this tracking efficiency
 
@@ -1184,15 +1189,17 @@ void AliUEHist::ExtendTrackingEfficiency()
 
   TH1* obj = GetTrackingEfficiency(1);
 
-  //new TCanvas; obj->Draw();
-  obj->Fit("pol0", "+0", "SAME", fitRangeBegin, fitRangeEnd);
+  if (verbose)
+    new TCanvas; obj->Draw();
+  obj->Fit("pol0", (verbose) ? "+" : "+0", "SAME", fitRangeBegin, fitRangeEnd);
 
   Float_t trackingEff = obj->GetFunction("pol0")->GetParameter(0);
 
   obj = GetTrackingContamination(1);
 
-  //new TCanvas; obj->Draw();
-  obj->Fit("pol0", "+0", "SAME", fitRangeBegin, fitRangeEnd);
+  if (verbose)
+    new TCanvas; obj->Draw();
+  obj->Fit("pol0", (verbose) ? "+" : "+0", "SAME", fitRangeBegin, fitRangeEnd);
 
   Float_t trackingCont = obj->GetFunction("pol0")->GetParameter(0);
 
@@ -1201,17 +1208,15 @@ void AliUEHist::ExtendTrackingEfficiency()
   // extend up to pT 100
   for (Int_t x = fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMin); x <= fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMax); x++)
     for (Int_t y = fTrackHistEfficiency->GetAxis(1, 0)->FindBin(extendRangeBegin); y <= fTrackHistEfficiency->GetNBins(1); y++)
-      for (Int_t z = 1; z <= fTrackHistEfficiency->GetNBins(2); z++)
+      for (Int_t z = 1; z <= fTrackHistEfficiency->GetNBins(2); z++) // particle type axis
       {
-      // TODO fit contamination as well
         Int_t bins[3];
         bins[0] = x;
         bins[1] = y;
         bins[2] = z;
         
-        fTrackHistEfficiency->GetGrid(0)->SetElement(bins, 1);
-        fTrackHistEfficiency->GetGrid(1)->SetElement(bins, trackingEff);
-        fTrackHistEfficiency->GetGrid(2)->SetElement(bins, trackingEff / trackingCont);
+        fTrackHistEfficiency->GetGrid(0)->SetElement(bins, 100);
+        fTrackHistEfficiency->GetGrid(1)->SetElement(bins, 100.0 * trackingEff);
+        fTrackHistEfficiency->GetGrid(2)->SetElement(bins, 100.0 * trackingEff / trackingCont);
       }
 }
-
