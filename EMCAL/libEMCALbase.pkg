@@ -9,7 +9,6 @@ AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
 AliEMCALDigit.cxx \
 AliEMCALCalibData.cxx \
-AliEMCALCalibHistoProducer.cxx \
 AliEMCALCalibTimeDep.cxx \
 AliEMCALCalibTimeDepCorrection.cxx \
 AliEMCALPreprocessor.cxx \
@@ -26,6 +25,7 @@ AliEMCALBiasAPD.cxx \
 AliEMCALCalibAbs.cxx \
 AliEMCALCalibReference.cxx \
 AliEMCALCalibMapAPD.cxx \
+AliEMCALCalibTempCoeff.cxx \
 SMcalib/AliEMCALCCUSBRawStream.cxx \
 AliEMCALRawDigit.cxx \
 AliEMCALTrigger.cxx \

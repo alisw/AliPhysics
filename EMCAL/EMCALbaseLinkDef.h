@@ -12,7 +12,6 @@
 #pragma link C++ class AliEMCALDigitizer+;
 #pragma link C++ class AliEMCALDigit+;
 #pragma link C++ class AliEMCALCalibData+;
-#pragma link C++ class AliEMCALCalibHistoProducer+;
 #pragma link C++ class AliEMCALCalibTimeDep+;
 #pragma link C++ class AliEMCALCalibTimeDepCorrection+;
 #pragma link C++ class AliEMCALPreprocessor+;
@@ -31,6 +30,7 @@
 #pragma link C++ class AliEMCALCalibAbs+;
 #pragma link C++ class AliEMCALCalibReference+;
 #pragma link C++ class AliEMCALCalibMapAPD+;
+#pragma link C++ class AliEMCALCalibTempCoeff+;
 #pragma link C++ class AliEMCALSuperModuleBiasAPD+;
 #pragma link C++ class AliEMCALSuperModuleCalibAbs+;
 #pragma link C++ class AliEMCALCalibReferenceVal+;

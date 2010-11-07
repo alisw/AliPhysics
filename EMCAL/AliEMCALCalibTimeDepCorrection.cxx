@@ -133,8 +133,9 @@ void AliEMCALCalibTimeDepCorrection::ReadTextInfo(Int_t nSM, const TString &txtF
 
       // check that input values are not out bounds
       if (iCol<0 || iCol>(AliEMCALGeoParams::fgkEMCALCols-1) ||
-	  iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) ) {
-	printf("AliEMCALCalibTimeDepCorrection::ReadTextInfo - Error while reading input file; j %d iCol %d iRow %d\n", j, iCol, iRow);
+	  iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) || 
+	  nCorr<0 ) {
+	printf("AliEMCALCalibTimeDepCorrection::ReadTextInfo - Error while reading input file; j %d iCol %d iRow %d nCorr %d\n", j, iCol, iRow, nCorr);
       return;
       }
 
