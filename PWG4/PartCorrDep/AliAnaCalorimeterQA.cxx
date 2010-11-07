@@ -58,7 +58,7 @@ ClassImp(AliAnaCalorimeterQA)
 AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
 AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), 
 fFillAllPosHisto(kFALSE), fFillAllTH12(kFALSE),
-fCorrelateCalos(kFALSE), fNModules(12), fNRCU(2),
+fCorrelate(kTRUE), fNModules(12), fNRCU(2),
 fTimeCutMin(-1), fTimeCutMax(9999999),
 fEMCALCellAmpMin(0),fPHOSCellAmpMin(0), 
 fHistoFinePtBins(1000),    fHistoFinePtMax(5.),        fHistoFinePtMin(0.),
@@ -90,6 +90,9 @@ fhDeltaCellClusterRE(0),     fhDeltaCellClusterXE(0),     fhDeltaCellClusterYE(0
 fhNCells(0), fhAmplitude(0), fhAmpId(0), fhEtaPhiAmp(0), 
 fhTime(0), fhTimeId(0), fhTimeAmp(0), //fhT0Time(0), fhT0TimeId(0), fhT0TimeAmp(0), 
 fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
+fhCaloV0SCorrNClusters(0), fhCaloV0SCorrEClusters(0), fhCaloV0SCorrNCells(0), fhCaloV0SCorrECells(0),
+fhCaloV0MCorrNClusters(0), fhCaloV0MCorrEClusters(0), fhCaloV0MCorrNCells(0), fhCaloV0MCorrECells(0),
+fhCaloTrackMCorrNClusters(0), fhCaloTrackMCorrEClusters(0), fhCaloTrackMCorrNCells(0), fhCaloTrackMCorrECells(0),
 fhEMod(0), fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
 fhGridCellsMod(0), fhGridCellsEMod(0), fhGridCellsTimeMod(0), 
 fhAmplitudeMod(0), fhAmplitudeModFraction(0),fhTimeAmpPerRCU(0), //fhT0TimeAmpPerRCU(0), fhTimeCorrRCU(0),
@@ -176,7 +179,10 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
   Int_t ybins       = GetHistoYBins();            Float_t ymax      = GetHistoYMax();            Float_t ymin      = GetHistoYMin(); 
   Int_t zbins       = GetHistoZBins();            Float_t zmax      = GetHistoZMax();            Float_t zmin      = GetHistoZMin(); 
   Int_t ssbins      = GetHistoShowerShapeBins();  Float_t ssmax     = GetHistoShowerShapeMax();  Float_t ssmin     = GetHistoShowerShapeMin();
-  
+  Int_t nv0sbins    = GetHistoV0SignalBins();     Int_t nv0smax     = GetHistoV0SignalMax();     Int_t nv0smin     = GetHistoV0SignalMin(); 
+  Int_t nv0mbins    = GetHistoV0MultiplicityBins();Int_t nv0mmax    = GetHistoV0MultiplicityMax();Int_t nv0mmin    = GetHistoV0MultiplicityMin(); 
+  Int_t ntrmbins    = GetHistoTrackMultiplicityBins();Int_t ntrmmax = GetHistoTrackMultiplicityMax();Int_t ntrmmin = GetHistoTrackMultiplicityMin(); 
+
   //EMCAL
   Int_t colmax = 48;
   Int_t rowmax = 24;
@@ -515,13 +521,14 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     //		outputContainer->Add(fhT0TimeAmp);
   }
 	
-  if(fCorrelateCalos){
+  if(fCorrelate){
+    //PHOS vs EMCAL
     fhCaloCorrNClusters  = new TH2F ("hCaloCorrNClusters","# clusters in EMCAL vs PHOS", nbins,nmin,nmax,nbins,nmin,nmax); 
     fhCaloCorrNClusters->SetXTitle("number of clusters in EMCAL");
     fhCaloCorrNClusters->SetYTitle("number of clusters in PHOS");
     outputContainer->Add(fhCaloCorrNClusters);
     
-    fhCaloCorrEClusters  = new TH2F ("hCaloCorrEClusters","summed energy of clusters in EMCAL vs PHOS", nptbins*2,ptmin,ptmax*2,nptbins,ptmin,ptmax*2); 
+    fhCaloCorrEClusters  = new TH2F ("hCaloCorrEClusters","summed energy of clusters in EMCAL vs PHOS", nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
     fhCaloCorrEClusters->SetXTitle("#Sigma E of clusters in EMCAL (GeV)");
     fhCaloCorrEClusters->SetYTitle("#Sigma E of clusters in PHOS (GeV)");
     outputContainer->Add(fhCaloCorrEClusters);
@@ -531,10 +538,75 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhCaloCorrNCells->SetYTitle("number of Cells in PHOS");
     outputContainer->Add(fhCaloCorrNCells);
     
-    fhCaloCorrECells  = new TH2F ("hCaloCorrECells","summed energy of Cells in EMCAL vs PHOS", nptbins*2,ptmin,ptmax*2,nptbins,ptmin,ptmax*2); 
+    fhCaloCorrECells  = new TH2F ("hCaloCorrECells","summed energy of Cells in EMCAL vs PHOS", nptbins*2,ptmin,ptmax*2,nptbins*2,ptmin,ptmax*2); 
     fhCaloCorrECells->SetXTitle("#Sigma E of Cells in EMCAL (GeV)");
     fhCaloCorrECells->SetYTitle("#Sigma E of Cells in PHOS (GeV)");
     outputContainer->Add(fhCaloCorrECells);
+    
+    //Calorimeter VS V0 signal
+    fhCaloV0SCorrNClusters  = new TH2F ("hCaloV0SNClusters",Form("# clusters in %s vs V0 signal",fCalorimeter.Data()), nv0sbins,nv0smin,nv0smax,nbins,nmin,nmax); 
+    fhCaloV0SCorrNClusters->SetXTitle("V0 signal");
+    fhCaloV0SCorrNClusters->SetYTitle(Form("number of clusters in %s",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloV0SCorrNClusters);
+    
+    fhCaloV0SCorrEClusters  = new TH2F ("hCaloV0SEClusters",Form("summed energy of clusters in Calorimeter vs V0 signal",fCalorimeter.Data()), nv0sbins,nv0smin,nv0smax,nptbins,ptmin,ptmax); 
+    fhCaloV0SCorrEClusters->SetXTitle("V0 signal");
+    fhCaloV0SCorrEClusters->SetYTitle(Form("#Sigma E of clusters in %s (GeV)",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloV0SCorrEClusters);
+    
+    fhCaloV0SCorrNCells  = new TH2F ("hCaloV0SNCells",Form("# Cells in Calorimeter vs V0 signal",fCalorimeter.Data()), nv0sbins,nv0smin,nv0smax, nbins,nmin,nmax); 
+    fhCaloV0SCorrNCells->SetXTitle("V0 signal");
+    fhCaloV0SCorrNCells->SetYTitle(Form("number of Cells in %s",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloV0SCorrNCells);
+    
+    fhCaloV0SCorrECells  = new TH2F ("hCaloV0SECells",Form("summed energy of Cells in %s vs V0 signal",fCalorimeter.Data()), nv0sbins,nv0smin,nv0smax,nptbins,ptmin,ptmax); 
+    fhCaloV0SCorrECells->SetXTitle("V0 signal");
+    fhCaloV0SCorrECells->SetYTitle(Form("#Sigma E of Cells in %s (GeV)",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloV0SCorrECells);    
+    
+    //Calorimeter VS V0 multiplicity
+    fhCaloV0MCorrNClusters  = new TH2F ("hCaloV0MNClusters",Form("# clusters in %s vs V0 signal",fCalorimeter.Data()), nv0mbins,nv0mmin,nv0mmax,nbins,nmin,nmax); 
+    fhCaloV0MCorrNClusters->SetXTitle("V0 signal");
+    fhCaloV0MCorrNClusters->SetYTitle(Form("number of clusters in %s",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloV0MCorrNClusters);
+    
+    fhCaloV0MCorrEClusters  = new TH2F ("hCaloV0MEClusters",Form("summed energy of clusters in Calorimeter vs V0 signal",fCalorimeter.Data()), nv0mbins,nv0mmin,nv0mmax,nptbins,ptmin,ptmax); 
+    fhCaloV0MCorrEClusters->SetXTitle("V0 signal");
+    fhCaloV0MCorrEClusters->SetYTitle(Form("#Sigma E of clusters in %s (GeV)",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloV0MCorrEClusters);
+    
+    fhCaloV0MCorrNCells  = new TH2F ("hCaloV0MNCells",Form("# Cells in Calorimeter vs V0 signal",fCalorimeter.Data()), nv0mbins,nv0mmin,nv0mmax, nbins,nmin,nmax); 
+    fhCaloV0MCorrNCells->SetXTitle("V0 signal");
+    fhCaloV0MCorrNCells->SetYTitle(Form("number of Cells in %s",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloV0MCorrNCells);
+    
+    fhCaloV0MCorrECells  = new TH2F ("hCaloV0MECells",Form("summed energy of Cells in %s vs V0 signal",fCalorimeter.Data()), nv0mbins,nv0mmin,nv0mmax,nptbins,ptmin,ptmax); 
+    fhCaloV0MCorrECells->SetXTitle("V0 signal");
+    fhCaloV0MCorrECells->SetYTitle(Form("#Sigma E of Cells in %s (GeV)",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloV0SCorrECells);    
+    
+    //Calorimeter VS Track multiplicity
+    fhCaloTrackMCorrNClusters  = new TH2F ("hCaloTrackMNClusters",Form("# clusters in %s vs V0 signal",fCalorimeter.Data()), ntrmbins,ntrmmin,ntrmmax,nbins,nmin,nmax); 
+    fhCaloTrackMCorrNClusters->SetXTitle("Track Multiplicity");
+    fhCaloTrackMCorrNClusters->SetYTitle(Form("number of clusters in %s",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloTrackMCorrNClusters);
+    
+    fhCaloTrackMCorrEClusters  = new TH2F ("hCaloTrackMEClusters",Form("summed energy of clusters in Calorimeter vs V0 signal",fCalorimeter.Data()), ntrmbins,ntrmmin,ntrmmax,nptbins,ptmin,ptmax); 
+    fhCaloTrackMCorrEClusters->SetXTitle("Track Multiplicity");
+    fhCaloTrackMCorrEClusters->SetYTitle(Form("#Sigma E of clusters in %s (GeV)",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloTrackMCorrEClusters);
+    
+    fhCaloTrackMCorrNCells  = new TH2F ("hCaloTrackMNCells",Form("# Cells in Calorimeter vs V0 signal",fCalorimeter.Data()), ntrmbins,ntrmmin,ntrmmax, nbins,nmin,nmax); 
+    fhCaloTrackMCorrNCells->SetXTitle("Track Multiplicity");
+    fhCaloTrackMCorrNCells->SetYTitle(Form("number of Cells in %s",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloTrackMCorrNCells);
+    
+    fhCaloTrackMCorrECells  = new TH2F ("hCaloTrackMECells",Form("summed energy of Cells in %s vs V0 signal",fCalorimeter.Data()), ntrmbins,ntrmmin,ntrmmax,nptbins,ptmin,ptmax); 
+    fhCaloTrackMCorrECells->SetXTitle("Track Multiplicity");
+    fhCaloTrackMCorrECells->SetYTitle(Form("#Sigma E of Cells in %s (GeV)",fCalorimeter.Data()));
+    outputContainer->Add(fhCaloV0SCorrECells);    
+    
+    
   }//correlate calorimeters
   
   //Module histograms
@@ -1282,10 +1354,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   }
   else{
     //----------------------------------------------------------
-    //Correlate Calorimeters
+    //Correlate Calorimeters and V0 and track Multiplicity
     //----------------------------------------------------------
-    //if(fCorrelateCalos)	CorrelateCalorimeters(caloClusters);
-    if(fCorrelateCalos)	CorrelateCalorimeters();
+    if(fCorrelate)	Correlate();
     
     
     //----------------------------------------------------------
@@ -2191,72 +2262,18 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
   
 }// Clusters
 
-//__________________________________
-//void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
-//  // Correlate information from PHOS and EMCAL
-//	TRefArray * caloClustersEMCAL = 0;
-//	TRefArray * caloClustersPHOS  = 0;
-//	
-//  // Get once the array of clusters per calorimeter, avoid an extra loop.
-//  if(fCalorimeter == "EMCAL"){ 
-//    caloClustersPHOS = new TRefArray();
-//    GetReader()->GetInputEvent()->GetPHOSClusters(caloClustersPHOS);
-//    caloClustersEMCAL = new TRefArray(*refArray);
-//  }
-//  else if(fCalorimeter == "PHOS") { 
-//    caloClustersEMCAL = new TRefArray();
-//    GetReader()->GetInputEvent()->GetEMCALClusters (caloClustersEMCAL);
-//    caloClustersPHOS = new TRefArray(*refArray);
-//  }
-//  
-//  //Fill histograms with clusters
-//  
-//  fhCaloCorrNClusters->Fill(caloClustersEMCAL->GetEntriesFast(),caloClustersPHOS->GetEntriesFast());
-//  Float_t sumClusterEnergyEMCAL = 0;
-//  Float_t sumClusterEnergyPHOS  = 0;
-//  Int_t iclus = 0;
-//  for(iclus = 0 ; iclus <  caloClustersEMCAL->GetEntriesFast() ; iclus++) 
-//    sumClusterEnergyEMCAL += ((AliVCluster*)caloClustersEMCAL->At(iclus))->E();
-//  for(iclus = 0 ; iclus <  caloClustersPHOS->GetEntriesFast(); iclus++) 
-//    sumClusterEnergyPHOS += ((AliVCluster*)caloClustersPHOS->At(iclus))->E();
-//  fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
-//  
-//  //Fill histograms with cells
-//  
-//  AliVCaloCells * cellsEMCAL = GetReader()->GetInputEvent()->GetEMCALCells();
-//  AliVCaloCells * cellsPHOS  = GetReader()->GetInputEvent()->GetPHOSCells();
-//  fhCaloCorrNCells   ->Fill(cellsEMCAL->GetNumberOfCells(),cellsPHOS->GetNumberOfCells());
-//  
-//  Int_t icell = 0;
-//  Float_t sumCellEnergyEMCAL = 0;
-//  Float_t sumCellEnergyPHOS  = 0;
-//  for(icell = 0 ; icell < cellsEMCAL->GetNumberOfCells()  ; icell++) 
-//    sumCellEnergyEMCAL += cellsEMCAL->GetAmplitude(icell);
-//  for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
-//    sumCellEnergyPHOS += cellsPHOS->GetAmplitude(icell);
-//  fhCaloCorrECells->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);
-//  if(GetDebug() > 0 ){
-//    printf("AliAnaCalorimeterQA::CorrelateCalorimeters() - ESD: \n");
-//    printf("\t EMCAL: N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
-//           cellsEMCAL->GetNumberOfCells(),caloClustersEMCAL->GetEntriesFast(),sumCellEnergyEMCAL,sumClusterEnergyEMCAL);
-//    printf("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
-//           cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
-//  }
-//	
-//	delete caloClustersEMCAL;
-//	delete caloClustersPHOS;
-//	
-//}
 
 //__________________________________
-void AliAnaCalorimeterQA::CorrelateCalorimeters(){
-  // Correlate information from PHOS and EMCAL
+void AliAnaCalorimeterQA::Correlate(){
+  // Correlate information from PHOS and EMCAL and with V0 and track multiplicity
+ 
+  //Clusters 
   TObjArray * caloClustersEMCAL = GetAODEMCAL();
   TObjArray * caloClustersPHOS  = GetAODPHOS();
   
-  //Fill histograms with clusters
+  Int_t nclEMCAL = caloClustersEMCAL->GetEntriesFast();
+  Int_t nclPHOS  = caloClustersPHOS ->GetEntriesFast();
   
-  fhCaloCorrNClusters->Fill(caloClustersEMCAL->GetEntriesFast(),caloClustersPHOS->GetEntriesFast());
   Float_t sumClusterEnergyEMCAL = 0;
   Float_t sumClusterEnergyPHOS  = 0;
   Int_t iclus = 0;
@@ -2264,28 +2281,75 @@ void AliAnaCalorimeterQA::CorrelateCalorimeters(){
     sumClusterEnergyEMCAL += ((AliVCluster*)caloClustersEMCAL->At(iclus))->E();
   for(iclus = 0 ; iclus <  caloClustersPHOS->GetEntriesFast(); iclus++) 
     sumClusterEnergyPHOS += ((AliVCluster*)caloClustersPHOS->At(iclus))->E();
-  fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
   
-  //Fill histograms with cells
+
+  //Cells
   
   AliVCaloCells * cellsEMCAL = GetEMCALCells();
   AliVCaloCells * cellsPHOS  = GetPHOSCells();
-  fhCaloCorrNCells   ->Fill(cellsEMCAL->GetNumberOfCells(),cellsPHOS->GetNumberOfCells());
+
+  Int_t ncellsEMCAL = cellsEMCAL->GetNumberOfCells();
+  Int_t ncellsPHOS  = cellsPHOS ->GetNumberOfCells();
   
-  Int_t icell = 0;
   Float_t sumCellEnergyEMCAL = 0;
   Float_t sumCellEnergyPHOS  = 0;
+  Int_t icell = 0;
   for(icell = 0 ; icell < cellsEMCAL->GetNumberOfCells()  ; icell++) 
     sumCellEnergyEMCAL += cellsEMCAL->GetAmplitude(icell);
   for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
     sumCellEnergyPHOS += cellsPHOS->GetAmplitude(icell);
-  fhCaloCorrECells->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);
-  if(GetDebug() > 0 ){
-    printf("AliAnaCalorimeterQA::CorrelateCalorimeters() - ESD: \n");
+  
+  
+  //Fill Histograms
+  fhCaloCorrNClusters->Fill(nclEMCAL,nclPHOS);
+  fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
+  fhCaloCorrNCells   ->Fill(ncellsEMCAL,ncellsPHOS);
+  fhCaloCorrECells   ->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);
+
+  Int_t v0S = GetV0Signal(0)+GetV0Signal(1);
+  Int_t v0M = GetV0Multiplicity(0)+GetV0Multiplicity(1);
+  Int_t trM = GetTrackMultiplicity();
+  if(fCalorimeter=="PHOS"){
+    fhCaloV0MCorrNClusters   ->Fill(v0M,nclPHOS);
+    fhCaloV0MCorrEClusters   ->Fill(v0M,sumClusterEnergyPHOS);
+    fhCaloV0MCorrNCells      ->Fill(v0M,ncellsPHOS);
+    fhCaloV0MCorrECells      ->Fill(v0M,sumCellEnergyPHOS);
+
+    fhCaloV0SCorrNClusters   ->Fill(v0S,nclPHOS);
+    fhCaloV0SCorrEClusters   ->Fill(v0S,sumClusterEnergyPHOS);
+    fhCaloV0SCorrNCells      ->Fill(v0S,ncellsPHOS);
+    fhCaloV0SCorrECells      ->Fill(v0S,sumCellEnergyPHOS);
+
+    fhCaloTrackMCorrNClusters->Fill(trM,nclPHOS);
+    fhCaloTrackMCorrEClusters->Fill(trM,sumClusterEnergyPHOS);    
+    fhCaloTrackMCorrNCells   ->Fill(trM,ncellsPHOS);
+    fhCaloTrackMCorrECells   ->Fill(trM,sumCellEnergyPHOS);
+  }
+  else{
+    fhCaloV0MCorrNClusters   ->Fill(v0M,nclEMCAL);
+    fhCaloV0MCorrEClusters   ->Fill(v0M,sumClusterEnergyEMCAL);
+    fhCaloV0MCorrNCells      ->Fill(v0M,ncellsEMCAL);
+    fhCaloV0MCorrECells      ->Fill(v0M,sumCellEnergyEMCAL);
+    
+    fhCaloV0SCorrNClusters   ->Fill(v0S,nclEMCAL);
+    fhCaloV0SCorrEClusters   ->Fill(v0S,sumClusterEnergyEMCAL);
+    fhCaloV0SCorrNCells      ->Fill(v0S,ncellsEMCAL);
+    fhCaloV0SCorrECells      ->Fill(v0S,sumCellEnergyEMCAL);
+    
+    fhCaloTrackMCorrNClusters->Fill(trM,nclEMCAL);
+    fhCaloTrackMCorrEClusters->Fill(trM,sumClusterEnergyEMCAL);    
+    fhCaloTrackMCorrNCells   ->Fill(trM,ncellsEMCAL);
+    fhCaloTrackMCorrECells   ->Fill(trM,sumCellEnergyEMCAL);
+  }
+  
+  if(GetDebug() > 0 )
+  {
+    printf("AliAnaCalorimeterQA::Correlate(): \n");
     printf("\t EMCAL: N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
-           cellsEMCAL->GetNumberOfCells(),caloClustersEMCAL->GetEntriesFast(),sumCellEnergyEMCAL,sumClusterEnergyEMCAL);
+           ncellsEMCAL,nclEMCAL, sumCellEnergyEMCAL,sumClusterEnergyEMCAL);
     printf("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
-           cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
+           ncellsPHOS,nclPHOS,sumCellEnergyPHOS,sumClusterEnergyPHOS);
+    printf("\t V0 : Signal %d, Multiplicity  %d, Track Multiplicity %d \n", v0S,v0M,trM);
   }
 }
 
@@ -2439,11 +2503,26 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
   }
   
   
-  if(fCorrelateCalos){
+  if(fCorrelate){
     fhCaloCorrNClusters = (TH2F *) outputList->At(index++);
     fhCaloCorrEClusters = (TH2F *) outputList->At(index++); 
     fhCaloCorrNCells    = (TH2F *) outputList->At(index++); 
     fhCaloCorrECells    = (TH2F *) outputList->At(index++); 
+    
+    fhCaloV0SCorrNClusters = (TH2F *) outputList->At(index++);
+    fhCaloV0SCorrEClusters = (TH2F *) outputList->At(index++); 
+    fhCaloV0SCorrNCells    = (TH2F *) outputList->At(index++); 
+    fhCaloV0SCorrECells    = (TH2F *) outputList->At(index++); 
+    
+    fhCaloV0MCorrNClusters = (TH2F *) outputList->At(index++);
+    fhCaloV0MCorrEClusters = (TH2F *) outputList->At(index++); 
+    fhCaloV0MCorrNCells    = (TH2F *) outputList->At(index++); 
+    fhCaloV0MCorrECells    = (TH2F *) outputList->At(index++); 
+    
+    fhCaloTrackMCorrNClusters = (TH2F *) outputList->At(index++);
+    fhCaloTrackMCorrEClusters = (TH2F *) outputList->At(index++); 
+    fhCaloTrackMCorrNCells    = (TH2F *) outputList->At(index++); 
+    fhCaloTrackMCorrECells    = (TH2F *) outputList->At(index++); 
   }
   
   //Module histograms
@@ -4129,7 +4208,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
   //---------------------------------------------
   //Calorimeter Correlation, PHOS vs EMCAL
   //---------------------------------------------
-  if(fCorrelateCalos){
+  if(fCorrelate){
     
     snprintf(cname,buffersize,"QA_%s_CaloCorr_EMCALvsPHOS",fCalorimeter.Data());
     TCanvas  * ccorr = new TCanvas(cname, " EMCAL vs PHOS", 400, 400) ;

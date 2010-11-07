@@ -323,7 +323,9 @@ void AliCaloTrackReader::InitParameters()
   
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
 
-  
+  fV0ADC[0] = 0;   fV0ADC[1] = 0; 
+  fV0Mul[0] = 0;   fV0Mul[1] = 0; 
+
 }
 
 //________________________________________________________________
@@ -445,6 +447,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
   if(fFillPHOS)  
     FillInputPHOS();
 
+  FillInputVZERO();
 	
   return kTRUE ;
 }
@@ -458,6 +461,10 @@ void AliCaloTrackReader::ResetLists() {
   if(fAODPHOS)    fAODPHOS    -> Clear();
   if(fEMCALCells) fEMCALCells -> Clear();
   if(fPHOSCells)  fPHOSCells  -> Clear();
+
+  fV0ADC[0] = 0;   fV0ADC[1] = 0; 
+  fV0Mul[0] = 0;   fV0Mul[1] = 0; 
+
 }
 
 //____________________________________________________________________________
@@ -844,6 +851,7 @@ void AliCaloTrackReader::FillInputPHOSCells() {
   fPHOSCells = fInputEvent->GetPHOSCells(); 
   
 }
+
 
 //____________________________________________________________________________
 Bool_t AliCaloTrackReader::IsEMCALCluster(AliVCluster* cluster) const {

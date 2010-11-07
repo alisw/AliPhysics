@@ -40,7 +40,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   reader->SwitchOnPHOSCells(); 
   reader->SwitchOnEMCAL();
   reader->SwitchOnPHOS();
-  reader->SwitchOffCTS();
+  reader->SwitchOnCTS();
   reader->SetEMCALPtMin(0.); 
   reader->SetPHOSPtMin (0.);
   reader->SetCTSPtMin  (0.);
@@ -113,11 +113,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   //emcalQA->SetFiducialCut(fidCut);
   emcalQA->SwitchOffFiducialCut();
   emcalQA->SwitchOffPlotsMaking();
-  emcalQA->SwitchOnCalorimetersCorrelation();
+  emcalQA->SwitchOnCorrelation();
   if(!kUseKinematics)emcalQA->SetTimeCut(400,850);//Open for the moment
   //Set Histrograms bins and ranges
   emcalQA->SetHistoPtRangeAndNBins(0, 5, 50) ;
-  emcalQA->SetHistoFinePtRangeAndNBins(0, 5, 1000) ; // bining for fhAmpId
+  emcalQA->SetHistoFinePtRangeAndNBins(0, 5, 200) ; // bining for fhAmpId
   emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 100) ;
   emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 200) ;
   emcalQA->SetNumberOfModules(4); //EMCAL first year
@@ -134,7 +134,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   emcalQA->SetHistoYRangeAndNBins(370,450,40);
   emcalQA->SetHistoZRangeAndNBins(-400,400,200);
   emcalQA->SetHistoRRangeAndNBins(400,450,25);
-  
+  emcalQA->SetHistoV0SignalRangeAndNBins(0,5000,500);
+  emcalQA->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
+  emcalQA->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
   //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
 	
   if(kPrintSettings) emcalQA->Print("");	
@@ -151,7 +153,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   phosQA->SwitchOffPlotsMaking();
   //Set Histrograms bins and ranges
   phosQA->SetHistoPtRangeAndNBins(0, 5, 50) ;
-  phosQA->SetHistoFinePtRangeAndNBins(0, 5, 1000) ; // bining for fhAmpId
+  phosQA->SetHistoFinePtRangeAndNBins(0, 5, 200) ; // bining for fhAmpId
   phosQA->SetHistoPhiRangeAndNBins(259*TMath::DegToRad(), 321*TMath::DegToRad(), 130) ;
   phosQA->SetHistoEtaRangeAndNBins(-0.125, 0.125, 57) ;
   phosQA->SetNumberOfModules(3); //PHOS first year
@@ -167,7 +169,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   phosQA->SetHistoXRangeAndNBins(-100,400,100);
   phosQA->SetHistoYRangeAndNBins(-490,-290,100);
   phosQA->SetHistoZRangeAndNBins(-80,80,100);
-  phosQA->SetHistoRRangeAndNBins(440,480,80);
+  phosQA->SetHistoRRangeAndNBins(440,480,80);  
+  phosQA->SetHistoV0SignalRangeAndNBins(0,5000,500);
+  phosQA->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
+  phosQA->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
 	
   //if(kPrintSettings)phosQA->Print("");	
 	

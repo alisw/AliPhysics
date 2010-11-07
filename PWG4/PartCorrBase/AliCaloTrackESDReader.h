@@ -32,6 +32,8 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
 	
   TString GetFiredTriggerClasses() {return ((AliESDEvent*)GetInputEvent())->GetFiredTriggerClasses();}
+  
+  void FillInputVZERO();
 
   ClassDef(AliCaloTrackESDReader,1)
 } ;

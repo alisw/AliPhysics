@@ -62,10 +62,9 @@ public:
   void SwitchOnFillAllTH12Histogram()   {fFillAllTH12 = kTRUE  ;}
   void SwitchOffFillAllTH12Histogram()  {fFillAllTH12 = kFALSE ;}
   
-  void SwitchOnCalorimetersCorrelation()  {fCorrelateCalos = kTRUE  ;}
-  void SwitchOffCalorimetersCorrelation() {fCorrelateCalos = kFALSE ;}
-  //void CorrelateCalorimeters(TRefArray* caloClusters);
-  void CorrelateCalorimeters();
+  void SwitchOnCorrelation()  {fCorrelate = kTRUE  ;}
+  void SwitchOffCorrelation() {fCorrelate = kFALSE ;}
+  void Correlate();
   
   void Terminate(TList * outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
@@ -227,7 +226,7 @@ public:
   TString  fStyleMacro  ;    // Location of macro for plots style
   Bool_t   fFillAllPosHisto; // Fill all the position related histograms 
   Bool_t   fFillAllTH12 ;    // Fill simple histograms which information is already in TH3 histograms
-  Bool_t   fCorrelateCalos ; // Correlate PHOS/EMCAL clusters
+  Bool_t   fCorrelate   ;    // Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
   Int_t    fNModules    ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
   Int_t    fNRCU        ;    // Number of EMCAL/PHOS RCU, set as many histogras as RCU 
   Double_t fTimeCutMin  ;    // Remove clusters/cells with time smaller than this value, in ns
@@ -366,6 +365,22 @@ public:
   TH2F * fhCaloCorrNCells; // EMCAL vs PHOS, number of cells
   TH2F * fhCaloCorrECells; // EMCAL vs PHOS,  total measured cell energy
 	
+  //V0 Correlation
+  TH2F * fhCaloV0SCorrNClusters; // Calo vs V0 signal , number of clusters	
+  TH2F * fhCaloV0SCorrEClusters; // Calo vs V0 signal, total measured cluster energy
+  TH2F * fhCaloV0SCorrNCells; // Calo vs V0 signal, number of cells
+  TH2F * fhCaloV0SCorrECells; // Calo vs V0 signal,  total measured cell energy
+  TH2F * fhCaloV0MCorrNClusters; // Calo vs V0 multiplicity , number of clusters	
+  TH2F * fhCaloV0MCorrEClusters; // Calo vs V0 multiplicity, total measured cluster energy
+  TH2F * fhCaloV0MCorrNCells; // Calo vs V0 multiplicity, number of cells
+  TH2F * fhCaloV0MCorrECells; // Calo vs V0 multiplicity,  total measured cell energy
+  
+  //Track Correlation
+  TH2F * fhCaloTrackMCorrNClusters; // Calo vs Track Multiplicity, number of clusters	
+  TH2F * fhCaloTrackMCorrEClusters; // Calo vs Track Multiplicity, total measured cluster energy
+  TH2F * fhCaloTrackMCorrNCells; // Calo vs V0 Track Multiplicity, number of cells
+  TH2F * fhCaloTrackMCorrECells; // Calo vs V0 Track Multipliticy,  total measured cell energy
+  
   //Module histograms
   TH1F ** fhEMod  ;               //! E distribution for different module, Reco
   TH1F ** fhNClustersMod ;        //! Number of clusters for different module, Reco
@@ -488,7 +503,7 @@ public:
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-  ClassDef(AliAnaCalorimeterQA,12)
+  ClassDef(AliAnaCalorimeterQA,13)
 } ;
 
 
