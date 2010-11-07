@@ -39,7 +39,8 @@ ClassImp(AliHLTGlobalHistoCollector) //ROOT macro for the implementation of ROOT
   AliHLTGlobalHistoCollector::AliHLTGlobalHistoCollector()
     :    
     fUID(0),
-    fStore()
+    fStore(),
+    fBenchmark("GlobalHistoCollector")
 {
   // see header file for class documentation
   // or
@@ -69,13 +70,13 @@ void AliHLTGlobalHistoCollector::GetInputDataTypes( vector<AliHLTComponentDataTy
   // see header file for class documentation
 
   list.clear(); 
-  list.push_back( kAliHLTVoidDataType );
+  list.push_back( kAliHLTAllDataTypes );
 }
 
 AliHLTComponentDataType AliHLTGlobalHistoCollector::GetOutputDataType() 
 { 
   // see header file for class documentation
-  return kAliHLTVoidDataType;
+  return kAliHLTAllDataTypes;
 }
 
 
@@ -97,7 +98,10 @@ int AliHLTGlobalHistoCollector::DoInit( int argc, const char** argv )
   // see header file for class documentation
 
   Clear(); 
-  
+  fBenchmark.Reset();
+  fBenchmark.SetTimer(0,"total");
+  fBenchmark.SetTimer(1,"merging");
+
   int iResult=0;
   
   TString configuration="";
@@ -220,49 +224,61 @@ void AliHLTGlobalHistoCollector::Clear()
 int AliHLTGlobalHistoCollector::DoEvent(const AliHLTComponentEventData & evtData, AliHLTComponentTriggerData& /*trigData*/)
 {
   // see header file for class documentation
+  //cout<<"\n\nDoEvent called"<<endl;
 
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
+
+  fBenchmark.StartNewEvent();
+  fBenchmark.Start(0);
 
   if( fUID == 0 ){
     TTimeStamp t;
     fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
   }
 
- 
+  for( const AliHLTComponentBlockData *i= GetFirstInputBlock(); i!=NULL; i=GetNextInputBlock() ){
+    fBenchmark.AddInput(i->fSize);
+  }
+
   const TObject *iter = NULL;
   for(iter = GetFirstInputObject(); iter != NULL; iter = GetNextInputObject()){
     
     if( !iter ) continue;            
-    const TH1 *histo = dynamic_cast<TH1*>(const_cast<TObject*>( iter ) );
-    const TSeqCollection *list = dynamic_cast<TSeqCollection*>(const_cast<TObject*>( iter ) );
-  
-    if( !histo && !list ) continue;
+    
+    if( !iter->InheritsFrom(TH1::Class()) 
+	&& !iter->InheritsFrom(TSeqCollection::Class()) ) continue;
 
-    cout<<"received object "<<iter->GetName()<<" with id="<<GetSpecification(iter)<<endl;
+    //cout<<"received object "<<iter->GetName()<<" with id="<<GetSpecification(iter)<<endl;
 
     //search for the base entry, if not exist then create a new entry   
 
-    int iBase = -1;
+    int iColl = -1;
     for( unsigned int i=0; i<fStore.size(); i++ ){
-      if( fStore[i].fHLTDataType == GetDataType(iter) &&
-	  TString(fStore[i].fMergedObject->GetName()).CompareTo(iter->GetName())==0){
-	iBase = i;
+      if( fStore[i].fHLTDataType != GetDataType(iter) ) continue;
+      if( fStore[i].fInstances.size()<1 ) continue; 
+      TObject * obj = fStore[i].fInstances[0].fObject;
+      if( !obj ) continue;
+      if( TString(obj->GetName()).CompareTo(iter->GetName())==0){
+	iColl = i;
 	break;
       }
     }
-
-    if( iBase<0 ){
+    //cout<<"Collection found: "<<iColl<<endl;
+    if( iColl<0 ){
       AliHLTGlobalHCCollection c;
       c.fHLTDataType = GetDataType(iter);
-      c.fMergedObject = iter->Clone();
+      c.fMergedObject = 0;
+      c.fNeedToMerge = 1;
       fStore.push_back(c);
-      iBase = fStore.size()-1;
+      iColl = fStore.size()-1;
+    }else{
+      fStore[iColl].fNeedToMerge = 1;
     }
 
     // search for the specific entry, if not exist then create a new one
     
-    AliHLTGlobalHCCollection &c = fStore[iBase];
-    
+    AliHLTGlobalHCCollection &c = fStore[iColl];
+   
     int iSpec=-1;
     for( unsigned int i=0; i<c.fInstances.size(); i++ ){
       AliHLTGlobalHCInstance &inst = c.fInstances[i];
@@ -271,7 +287,7 @@ int AliHLTGlobalHistoCollector::DoEvent(const AliHLTComponentEventData & evtData
 	break;
       }
     }
-
+    //cout<<"Instance found:"<<iSpec<<endl;
     if( iSpec<0 ){
       AliHLTGlobalHCInstance inst;
       inst.fHLTSpecification = GetSpecification(iter);
@@ -282,31 +298,52 @@ int AliHLTGlobalHistoCollector::DoEvent(const AliHLTComponentEventData & evtData
       delete c.fInstances[iSpec].fObject;
     }
 
-
     c.fInstances[iSpec].fObject = iter->Clone();
     
-    cout<<"index = "<<iBase<<","<<iSpec<<endl;
-    
-    // merge histos 
+    //cout<<"index = "<<iColl<<","<<iSpec<<endl;
 
+  } // end for loop over input blocks
+
+  fBenchmark.Start(1);
+ 
+  
+  // merge histos 
+
+  for( unsigned int iColl = 0; iColl<fStore.size(); iColl++){
+    AliHLTGlobalHCCollection &c = fStore[iColl];
+    if( !c.fNeedToMerge && c.fMergedObject ) continue;
+    if( c.fInstances.size() <1 ) continue;
     delete c.fMergedObject;
     c.fMergedObject = c.fInstances[0].fObject->Clone();
-
+    TList l;
     for( unsigned int i=1; i<c.fInstances.size(); i++ ){
-      if( histo ){
-	dynamic_cast<TH1*>(c.fMergedObject)->Add(dynamic_cast<TH1*>(c.fInstances[i].fObject),1);
-      }
-      else if (list ){
-	dynamic_cast<TSeqCollection*>(c.fMergedObject)->Merge(dynamic_cast<TSeqCollection*>(c.fInstances[i].fObject));	
-      }
+      l.Add(c.fInstances[i].fObject);
     }
-    //cout<<" merged="<<b.fMergedHisto->GetEntries()<<endl;
 
-  } // end for loop over histogram blocks
+    if( c.fMergedObject->InheritsFrom(TH1::Class()) ){
+      TH1 *histo = dynamic_cast<TH1*>(c.fMergedObject);
+      if( histo ) histo->Merge(&l);
+    }
+    else if( c.fMergedObject->InheritsFrom(TSeqCollection::Class()) ){
+      TSeqCollection *list = dynamic_cast<TSeqCollection*>(c.fMergedObject);
+      if( list ) list->Merge(&l);
+    }    
+    c.fNeedToMerge = 0;
+  }
+  fBenchmark.Stop(1);
+ 
+  // send output 
 
   for( unsigned int i=0; i<fStore.size(); i++ ){
-    PushBack((TObject*) fStore[i].fMergedObject, fStore[i].fHLTDataType, fUID );
+    if( fStore[i].fMergedObject ){
+      PushBack((TObject*) fStore[i].fMergedObject, fStore[i].fHLTDataType, fUID );
+      fBenchmark.AddOutput(GetLastObjectSize());
+    }
   }
+
+  fBenchmark.Stop(0);
+  HLTInfo(fBenchmark.GetStatistics());
+
   return 0;
 }
   

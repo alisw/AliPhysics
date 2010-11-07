@@ -22,6 +22,7 @@
 
 #include "AliHLTProcessor.h"
 #include "AliHLTDataTypes.h"
+#include "AliHLTComponentBenchmark.h"
 #include <vector>
 
 class TH1;
@@ -61,12 +62,13 @@ public:
   struct AliHLTGlobalHCCollection
   {
   public:
-    AliHLTGlobalHCCollection():fMergedObject(0),fHLTDataType(kAliHLTVoidDataType),fInstances(){}
-    AliHLTGlobalHCCollection( const AliHLTGlobalHCCollection &x):fMergedObject(x.fMergedObject),fHLTDataType(x.fHLTDataType),fInstances(x.fInstances){}
+    AliHLTGlobalHCCollection():fMergedObject(0),fHLTDataType(kAliHLTVoidDataType),fInstances(),fNeedToMerge(0){}
+    AliHLTGlobalHCCollection( const AliHLTGlobalHCCollection &x):fMergedObject(x.fMergedObject),fHLTDataType(x.fHLTDataType),fInstances(x.fInstances),fNeedToMerge(x.fNeedToMerge){}
     AliHLTGlobalHCCollection &operator=( const AliHLTGlobalHCCollection &x){
       fMergedObject = x.fMergedObject;
       fHLTDataType = x.fHLTDataType;
-      fInstances = x.fInstances;
+      fInstances = x.fInstances;   
+      fNeedToMerge = x.fNeedToMerge;
       return *this;
     }
 
@@ -75,6 +77,7 @@ public:
     TObject *fMergedObject;
     AliHLTComponentDataType fHLTDataType;
     std::vector<AliHLTGlobalHCInstance> fInstances;
+    bool fNeedToMerge;
   };
 
   /** standard constructor */    
@@ -123,6 +126,7 @@ private:
   AliHLTUInt32_t fUID;// uID of the component
 
   std::vector<AliHLTGlobalHCCollection> fStore;
+  AliHLTComponentBenchmark fBenchmark;// benchmark
 
 };
 
