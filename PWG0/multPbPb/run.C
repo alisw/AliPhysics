@@ -55,13 +55,15 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   physicsSelectionTask = AddTaskPhysicsSelection(isMC);
   // FIXME!!
-  AliPhysicsSelection * physSel = physicsSelectionTask->GetPhysicsSelection();
-  physSel->AddCollisionTriggerClass("+CTRUE-B-NOPF-ALL");
-  physSel->AddCollisionTriggerClass("+C0SM1-A-NOPF-ALL");
-  physSel->AddCollisionTriggerClass("+C0SM1-B-NOPF-ALL");
-  physSel->AddCollisionTriggerClass("+C0SM1-C-NOPF-ALL");
-  physSel->AddCollisionTriggerClass("+C0SM1-E-NOPF-ALL");
-  physSel->SetSkipTriggerClassSelection(kTRUE);
+  if(!isMC) {
+    AliPhysicsSelection * physSel = physicsSelectionTask->GetPhysicsSelection();
+    //    physSel->AddCollisionTriggerClass("+CTRUE-B-NOPF-ALL");
+    physSel->AddCollisionTriggerClass("+C0SM1-B-NOPF-ALL");
+    physSel->AddBGTriggerClass       ("+C0SM1-A-NOPF-ALL");
+    physSel->AddBGTriggerClass       ("+C0SM1-C-NOPF-ALL");
+    physSel->AddBGTriggerClass       ("+C0SM1-E-NOPF-ALL");
+  }
+
   // Centrality
   AliCentralitySelectionTask *taskCentr = new AliCentralitySelectionTask("CentralitySelection");
   const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root";
@@ -73,12 +75,12 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   // Create my own centrality selector
   AliAnalysisMultPbCentralitySelector * centrSelector = new AliAnalysisMultPbCentralitySelector();
-  centrSelector->SetCentrTaskFiles(file1,file2);
+  centrSelector->SetCentrTaskFiles(file1,file2); // for bookkeping only
   centrSelector->SetCentralityBin(centrBin);
   centrSelector->SetCentralityEstimator(centrEstimator);
   // FIXME!!!
-  centrSelector->SetUseMultRange();
-  centrSelector->SetIsMC(isMC,1000,2000);
+  // centrSelector->SetUseMultRange();
+  // centrSelector->SetIsMC(isMC,1000,2000);
   //  centrSelector->SetMultRange(10,20);
 
   // Parse option strings
@@ -124,6 +126,11 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
   AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts, centrSelector); // kTRUE enables DCA cut
   task->SetIsMC(useMCKinematics);
+  if (isMC) {
+    task->SetOfflineTrigger(AliVEvent::kMB);
+  } else {
+    task->SetOfflineTrigger(AliVEvent::kUserDefined);
+  }
   if(useMCKinematics) task->GetHistoManager()->SetSuffix("MC");
   if(customSuffix!=""){
     cout << "Setting custom suffix: " << customSuffix << endl;    

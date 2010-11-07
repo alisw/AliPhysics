@@ -135,6 +135,12 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   // FIXME: use physics selection here to keep track of events lost?
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatAll);
 
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTrigger);
+
+  if(!isSelected) return;
+  fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatPhysSel);
+
+
   // Centrality selection
   Bool_t isCentralitySelected = fCentrSelector->IsCentralityBinSelected(fESD,fTrackCuts);  
   if(!isCentralitySelected) return;

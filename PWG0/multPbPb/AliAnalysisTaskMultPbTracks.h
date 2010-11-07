@@ -37,6 +37,7 @@ public:
   void SetIsMC(Bool_t flag=kTRUE) { fIsMC = flag;}
   AliAnalysisMultPbTrackHistoManager * GetHistoManager() { return fHistoManager;}
   Bool_t IsPhysicalPrimaryAndTransportBit(Int_t ipart) ;
+  void SetOfflineTrigger(UInt_t mask) { fOfflineTrigger = mask; }
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -55,12 +56,12 @@ private:
   // TString fCentralityEstimator; // Name of the centrality estimator, for AliESDCentrality
   AliESDtrackCuts * fTrackCuts; // track cuts
   AliESDtrackCuts * fTrackCutsNoDCA; // copy of the previous one, but with no DCA cuts
-  
+  UInt_t fOfflineTrigger ; // offline trigger mask
   Bool_t fIsMC; // true if processing montecarlo
 
   AliAnalysisTaskMultPbTracks& operator=(const AliAnalysisTaskMultPbTracks& task);
   
-  ClassDef(AliAnalysisTaskMultPbTracks, 2)
+  ClassDef(AliAnalysisTaskMultPbTracks, 3)
 
 
 };

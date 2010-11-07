@@ -10,7 +10,7 @@
 using namespace std;
 ClassImp(AliAnalysisMultPbTrackHistoManager)
 
-const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After centrality selection", "With Vertex" };
+const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After physics Selection", "After centrality selection", "With Vertex" };
 const char * AliAnalysisMultPbTrackHistoManager::kHistoPtEtaVzNames[] = { "hGenPtEtaVz", "hRecPtEtaVz", "hRecPtEtaVzPrim", 
 									  "hRecPtEtaVzSecWeak", "hRecPtEtaVzSecMaterial", "hRecPtEtaVzFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoDCANames[]     = { "hGenDCA", "hRecDCA", "hRecDCAPrim", "hRecDCASecWeak","hRecDCASecMaterial", "hRecDCAFake"};
