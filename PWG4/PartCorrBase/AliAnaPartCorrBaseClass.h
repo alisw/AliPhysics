@@ -73,9 +73,7 @@ public:
   
   virtual AliCaloTrackReader * GetReader() const {return fReader ; }
   virtual void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }
-  
-  Int_t GetTrackMultiplicity() const {return fReader->GetTrackMultiplicity();}
-  
+    
   //Calorimeter helper class access methods
   AliEMCALGeoUtils *  GetEMCALGeometry() const { return fCaloUtils->GetEMCALGeometry(); }
   AliPHOSGeoUtils  *  GetPHOSGeometry()  const { return fCaloUtils->GetPHOSGeometry() ; }
@@ -237,6 +235,39 @@ public:
   virtual Float_t GetHistoAsymmetryMin()   const { return fHistoAsymMin ; }
   virtual Float_t GetHistoAsymmetryMax()   const { return fHistoAsymMax ; }	
   
+  
+  //VZero
+  virtual void SetHistoV0SignalRangeAndNBins(Int_t min, Int_t max, Int_t n) {
+    fHistoV0SBins = n ;
+    fHistoV0SMax  = max ;
+    fHistoV0SMin  = min ;
+  }
+	
+  virtual Int_t   GetHistoV0SignalBins()  const { return fHistoV0SBins ; }
+  virtual Float_t GetHistoV0SignalMin()   const { return fHistoV0SMin ; }
+  virtual Float_t GetHistoV0SignalMax()   const { return fHistoV0SMax ; }
+	
+  virtual void SetHistoV0MultiplicityRangeAndNBins(Int_t min, Int_t max, Int_t n) {
+    fHistoV0MBins = n ;
+    fHistoV0MMax  = max ;
+    fHistoV0MMin  = min ;
+  }
+	
+  virtual Int_t   GetHistoV0MultiplicityBins()  const { return fHistoV0MBins ; }
+  virtual Float_t GetHistoV0MultiplicityMin()   const { return fHistoV0MMin ; }
+  virtual Float_t GetHistoV0MultiplicityMax()   const { return fHistoV0MMax ; }
+  
+  virtual void SetHistoTrackMultiplicityRangeAndNBins(Int_t min, Int_t max, Int_t n) {
+    fHistoTrMBins = n ;
+    fHistoTrMMax  = max ;
+    fHistoTrMMin  = min ;
+  }
+	
+  virtual Int_t   GetHistoTrackMultiplicityBins()  const { return fHistoTrMBins ; }
+  virtual Float_t GetHistoTrackMultiplicityMin()   const { return fHistoTrMMin ; }
+  virtual Float_t GetHistoTrackMultiplicityMax()   const { return fHistoTrMMax ; }
+  
+  
   virtual AliMixedEvent * GetMixedEvent()          { return GetReader()->GetMixedEvent() ; } 
   virtual Int_t           GetNMixedEvent()   const { return GetReader()->GetNMixedEvent() ; } 
   
@@ -250,23 +281,29 @@ public:
   void SwitchOffPlotsMaking() {fMakePlots = kFALSE ;}
   Bool_t MakePlotsOn() const  {return fMakePlots;}
   
+  //MULTIPLICITY
+  Int_t GetTrackMultiplicity() const {return fReader->GetTrackMultiplicity();}
+  //VZERO
+  Int_t GetV0Signal(Int_t i )       const {return fReader->GetV0Signal(i);}
+  Int_t GetV0Multiplicity(Int_t i ) const {return fReader->GetV0Multiplicity(i);}
+
 private:    
   
-  Bool_t  fDataMC ;             // Flag to access MC data when using ESD or AOD     
-  Int_t   fDebug ;              // Debug level
-  Bool_t  fCheckFidCut ;        // Do analysis for clusters in defined region         
-  Bool_t  fCheckCaloPID ;       // Do analysis for calorimeters
-  Bool_t  fRecalculateCaloPID ; // Recalculate PID or use PID weights in calorimeters
-  Float_t fMinPt ;              // Maximum pt of (trigger) particles in the analysis
-  Float_t fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
-  Int_t    fMultiBin ;	  // Number of bins in event container for multiplicity
-  Int_t    fNZvertBin ;	  // Number of bins in event container for vertex position
-  Int_t    fNrpBin ;	    // Number of bins in event container for reaction plain
-  Float_t  fZvtxCut ;	    // Cut on vertex position  
-  Int_t    fMaxMulti ;              // Maximum multiplicity of particles in the analysis
-  Int_t    fMinMulti ;              // Maximum multiplicity of particles in the analysis
-  Bool_t   fUseSelectEvent ; // Select events based on multiplicity and vertex cuts
-  Bool_t   fMakePlots   ;    // Print plots
+  Bool_t   fDataMC ;             // Flag to access MC data when using ESD or AOD     
+  Int_t    fDebug ;              // Debug level
+  Bool_t   fCheckFidCut ;        // Do analysis for clusters in defined region         
+  Bool_t   fCheckCaloPID ;       // Do analysis for calorimeters
+  Bool_t   fRecalculateCaloPID ; // Recalculate PID or use PID weights in calorimeters
+  Float_t  fMinPt ;              // Maximum pt of (trigger) particles in the analysis
+  Float_t  fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
+  Int_t    fMultiBin ;	         // Number of bins in event container for multiplicity
+  Int_t    fNZvertBin ;	         // Number of bins in event container for vertex position
+  Int_t    fNrpBin ;	           // Number of bins in event container for reaction plain
+  Float_t  fZvtxCut ;	           // Cut on vertex position  
+  Int_t    fMaxMulti ;           // Maximum multiplicity of particles in the analysis
+  Int_t    fMinMulti ;           // Maximum multiplicity of particles in the analysis
+  Bool_t   fUseSelectEvent ;     // Select events based on multiplicity and vertex cuts
+  Bool_t   fMakePlots   ;        // Print plots
 
 	
   AliCaloTrackReader * fReader; // Acces to ESD/AOD/MC data
@@ -304,8 +341,17 @@ private:
   Int_t   fHistoAsymBins ;  // Number of bins in asymmetry axis
   Float_t fHistoAsymMax  ;  // Maximum value of asymmetry histogram range
   Float_t fHistoAsymMin  ;  // Minimum value of asymmetry histogram range
+  Int_t   fHistoV0SBins  ;  // Number of bins in V0 signal axis
+  Int_t   fHistoV0SMax   ;  // Maximum value of V0 signal histogram range
+  Int_t   fHistoV0SMin   ;  // Minimum value of V0 signal histogram range
+  Int_t   fHistoV0MBins  ;  // Number of bins in V0 multiplicity axis
+  Int_t   fHistoV0MMax   ;  // Maximum value of V0 multiplicity histogram range
+  Int_t   fHistoV0MMin   ;  // Minimum value of V0 multiplicity histogram range
+  Int_t   fHistoTrMBins  ;  // Number of bins in V0 multiplicity axis
+  Int_t   fHistoTrMMax   ;  // Maximum value of track multiplicity histogram range
+  Int_t   fHistoTrMMin   ;  // Minimum value of track multiplicity histogram range
   
-  ClassDef(AliAnaPartCorrBaseClass,11)
+  ClassDef(AliAnaPartCorrBaseClass,13)
 } ;
 
 

@@ -217,6 +217,10 @@ public:
   Bool_t WriteDeltaAODToFile() const {return fWriteOutputDeltaAOD ; } 
   
   
+  virtual void FillInputVZERO(){;}
+  Int_t GetV0Signal(Int_t i) const { return fV0ADC[i];}
+  Int_t GetV0Multiplicity(Int_t i)   const { return fV0Mul[i];}
+
   //MC reader methods:
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/)  { ; }  
@@ -297,6 +301,10 @@ public:
   
   Bool_t           fWriteOutputDeltaAOD;// Write the created delta AOD objects into file  
 	Bool_t           fOldAOD;             // Old AODs, before revision 4.20
+  
+  Int_t            fV0ADC[2]    ;       // Integrated V0 signal
+  Int_t            fV0Mul[2]    ;       // Integrated V0 Multiplicity
+
   
   ClassDef(AliCaloTrackReader,20)
 } ;

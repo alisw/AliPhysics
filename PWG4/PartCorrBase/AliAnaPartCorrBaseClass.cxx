@@ -59,81 +59,17 @@ ClassImp(AliAnaPartCorrBaseClass)
     fHistoPhiBins(0),  fHistoPhiMax(0.),  fHistoPhiMin(0.),
     fHistoEtaBins(0),  fHistoEtaMax(0.),  fHistoEtaMin(0.),
     fHistoMassBins(0), fHistoMassMax(0.), fHistoMassMin(0.),
-    fHistoAsymBins(0), fHistoAsymMax(0.), fHistoAsymMin(0.)
+    fHistoAsymBins(0), fHistoAsymMax(0.), fHistoAsymMin(0.),
+    fHistoV0SBins(0),  fHistoV0SMax(0),   fHistoV0SMin(0),
+    fHistoV0MBins(0),  fHistoV0MMax(0),   fHistoV0MMin(0),
+    fHistoTrMBins(0),  fHistoTrMMax(0),   fHistoTrMMin(0)
 {
   //Default Ctor
     
   //Initialize parameters
   InitParameters();
 }
-/*
-//___________________________________________________________
-AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass & abc) :   
-  TObject(), fDataMC(abc.fDataMC), fDebug(abc.fDebug),
-  fCheckFidCut(abc.fCheckFidCut),  fCheckCaloPID(abc. fCheckCaloPID),
-  fRecalculateCaloPID(abc.fRecalculateCaloPID),
-  fMinPt(abc.fMinPt), fMaxPt(abc.fMaxPt), fReader(new AliCaloTrackReader(*abc.fReader)),  
-  fInputAODBranch(new TClonesArray(*abc.fInputAODBranch)), fInputAODName(abc.fInputAODName),
-  fOutputAODBranch(new TClonesArray(*abc.fOutputAODBranch)),fNewAOD(abc.fNewAOD), 
-  fOutputAODName(abc.fOutputAODName), fOutputAODClassName(abc.fOutputAODClassName),
-  fAODObjArrayName(abc.fAODObjArrayName),
-  fAddToHistogramsName(abc.fAddToHistogramsName),
-  fCaloPID(new AliCaloPID(*abc.fCaloPID)), fFidCut(new AliFiducialCut(*abc.fFidCut)), fIC(new AliIsolationCut(*abc.fIC)),
-  fMCUtils(new AliMCAnalysisUtils(*abc.fMCUtils)), fNMS(new AliNeutralMesonSelection(*abc.fNMS)),
-  fCaloUtils(new AliCalorimeterUtils(*abc.fCaloUtils)),
-  fHistoPtBins(abc.fHistoPtBins),     fHistoPtMax(abc.fHistoPtMax),     fHistoPtMin(abc.fHistoPtMin),
-  fHistoPhiBins(abc.fHistoPhiBins),   fHistoPhiMax(abc.fHistoPhiMax),   fHistoPhiMin(abc.fHistoPhiMin),
-  fHistoEtaBins(abc.fHistoEtaBins),   fHistoEtaMax(abc.fHistoEtaMax),   fHistoEtaMin(abc.fHistoEtaMin),
-  fHistoMassBins(abc.fHistoMassBins), fHistoMassMax(abc.fHistoMassMax), fHistoMassMin(abc.fHistoMassMin),
-  fHistoAsymBins(abc.fHistoAsymBins), fHistoAsymMax(abc.fHistoAsymMax), fHistoAsymMin(abc.fHistoAsymMin)
-{
-  // cpy ctor
 
-}
-*/
-  /*
-//_________________________________________________________________________
-AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartCorrBaseClass & abc)
-{
-  // assignment operator
-  
-  if(this == &abc) return *this;
-  ((TObject *)this)->operator=(abc);
-  
-  fDataMC             = abc.fDataMC;
-  fDebug              = abc.fDebug ;
-  fRecalculateCaloPID = abc.fRecalculateCaloPID ;
-  fCheckCaloPID       = abc.fCheckCaloPID ;
-  fCheckFidCut        = abc.fCheckFidCut ; 
-	
-  fMinPt   = abc.fMinPt;
-  fMaxPt   = abc.fMaxPt;
-	
-  delete fCaloPID;   fCaloPID   = new AliCaloPID        (*abc.fCaloPID);
-  delete fFidCut;    fFidCut    = new AliFiducialCut    (*abc.fFidCut);
-  delete fMCUtils;   fMCUtils   = new AliMCAnalysisUtils(*abc.fMCUtils);
-  delete fIC;        fIC        = new AliIsolationCut   (*abc.fIC);
-  delete fNMS;       fNMS       = new AliNeutralMesonSelection(*abc.fNMS);
-  delete fCaloUtils; fCaloUtils = new AliCalorimeterUtils(*abc.fCaloUtils);
-  delete fReader;    fReader    = new AliCaloTrackReader(*abc.fReader) ;
-	
-  delete fInputAODBranch;  fInputAODBranch      = new TClonesArray(*abc.fInputAODBranch) ;
-  fInputAODName        = abc.fInputAODName;
-  delete fOutputAODBranch; fOutputAODBranch     = new TClonesArray(*abc.fOutputAODBranch) ;
-  fNewAOD              = abc.fNewAOD ; 
-  fOutputAODName       = abc.fOutputAODName; 
-  fOutputAODClassName  = abc.fOutputAODClassName;
-  fAddToHistogramsName = abc.fAddToHistogramsName;
-  fAODObjArrayName     = abc.fAODObjArrayName;
-
-  fHistoPtBins  = abc.fHistoPtBins;  fHistoPtMax  = abc.fHistoPtMax;  fHistoPtMin  = abc.fHistoPtMin;
-  fHistoPhiBins = abc.fHistoPhiBins; fHistoPhiMax = abc.fHistoPhiMax; fHistoPhiMin = abc.fHistoPhiMin;
-  fHistoEtaBins = abc.fHistoEtaBins; fHistoEtaMax = abc.fHistoEtaMax; fHistoEtaMin = abc.fHistoEtaMin;
-  
-  return *this;
-  
-}
-  */
 //____________________________________________________________________________
 AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass() 
 {
@@ -498,6 +434,18 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fHistoAsymBins  = 10 ;
   fHistoAsymMax   = 1. ;
   fHistoAsymMin   = 0. ;
+  
+  fHistoV0SBins   = 100 ;
+  fHistoV0SMax    = 10000  ;
+  fHistoV0SMin    = 0  ;
+  
+  fHistoV0MBins  = 100;
+  fHistoV0MMax   = 10000 ;
+  fHistoV0MMin   = 0 ;
+	
+  fHistoTrMBins  = 100 ;
+  fHistoTrMMax   = 10000 ;
+  fHistoTrMMin   = 0 ;
   	
 }
 
@@ -526,6 +474,10 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   printf("Histograms: %3.1f < eta < %3.1f, Nbin = %d\n", fHistoEtaMin, fHistoEtaMax, fHistoEtaBins);
   printf("Histograms: %3.1f < mass < %3.1f, Nbin = %d\n", fHistoMassMin, fHistoMassMax, fHistoMassBins);
   printf("Histograms: %3.1f < asymmetry < %3.1f, Nbin = %d\n", fHistoAsymMin, fHistoAsymMax, fHistoAsymBins);
+  printf("Histograms: %d < V0 Signal < %d, Nbin = %d\n", fHistoV0SMin, fHistoV0SMax, fHistoV0SBins);
+  printf("Histograms: %d < V0 Mult < %d, Nbin = %d\n", fHistoV0MMin, fHistoV0MMax, fHistoV0MBins);
+  printf("Histograms: %d < Track Mult < %d, Nbin = %d\n", fHistoTrMMin, fHistoTrMMax, fHistoTrMBins);
+
   printf("Name of reference array      : %s\n", fAODObjArrayName.Data());	
   printf("String added histograms name : %s\n",fAddToHistogramsName.Data());
 	
