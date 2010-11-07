@@ -57,7 +57,7 @@ AliEveHLTEventManager::AliEveHLTEventManager() :
   fCenterProjectionsAtPrimaryVertex(kFALSE),
   fShowBarrel(kTRUE),
   fShowMuon(kFALSE), 
-  fRunNumber(-1),
+  fRunNumber(666),
   fEventId(-1)
 {
   // see header file for class documentation
@@ -152,6 +152,7 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
 
   gEve->DisableRedraw();
 
+  event->GetStdContent();
   // -- Set EventID in Window Title  
   TString winTitle("Eve Main Window");
   SetRunNumber(event->GetRunNumber());
