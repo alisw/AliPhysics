@@ -105,14 +105,11 @@ private:
   TCanvas * fTrCanvas;  //Canvas for track qa histos
   TCanvas * fVertexCanvas; //Other canvas
   
-  TH1F * fHistPt;      //Pt histo 
-  TH1F * fHistP;       //p histo
   TH1F * fHistEta;     //Eta histo
-  TH1F * fHistTheta;   //Theta histo
   TH1F * fHistPhi;     //Phi histo
   TH1F * fHistnClusters;//nClusters histo
   TH1F * fHistMult;    //Mult histo
-
+  TH1F * fHistDCAr;    //DCA r histo
   Int_t fTrCount;
   Int_t fVCount;
 

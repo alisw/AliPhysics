@@ -28,6 +28,7 @@
 #include "TEveTrack.h"
 #include "TCanvas.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "TEveTrackPropagator.h"
 #include "AliEveTrack.h"
 #include "TEveVSDStructs.h"
@@ -52,18 +53,17 @@ AliHLTEveHLT::AliHLTEveHLT() :
   fPointSetVertex(NULL),
   fTrCanvas(NULL),
   fVertexCanvas(NULL),
-  fHistPt(NULL), 
-  fHistP(NULL), 
   fHistEta(NULL),
-  fHistTheta(NULL),
   fHistPhi(NULL),
   fHistnClusters(NULL),
   fHistMult(NULL),
+  fHistDCAr(NULL),
   fTrCount(0), 
   fVCount(0)
 {
   // Constructor.
-  //CreateHistograms();
+  CreateHistograms();
+
 }
 ///___________________________________________________________________
 AliHLTEveHLT::~AliHLTEveHLT()
@@ -79,8 +79,37 @@ void AliHLTEveHLT::ProcessEsdEvent( AliESDEvent * esd ) {
   if(!fTrackList) CreateTrackList();
   if(!fPointSetVertex) CreateVertexPointSet();
   ProcessEsdEvent(esd, fTrackList);
-    
+ 
 }
+
+///________________________________________________________________________
+void AliHLTEveHLT::CreateHistograms(){
+  //See header file for documentation
+
+  //fHistPt        = new TH1F("fHistPt",       "transverse momentum",    100, 0, 10); // KK   
+  //fHistP         = new TH1F("fHistP",        "signed momentum",        100,-7,  7);	   
+
+  //fHistPt   ->SetXTitle("p_{t} (GeV/c)");   // KK
+  //fHistP    ->SetXTitle("P*charge (GeV/c)");
+
+  // fHistTheta     = new TH1F("fHistTheta",    "polar angle",            180, 0,180);   
+  // fHistTheta->SetXTitle("#theta (degrees)");
+  
+  fHistEta       = new TH1F("fHistEta",      "pseudorapidity",         100,-2,  2);	   
+  fHistEta  ->SetXTitle("#eta");
+
+  fHistPhi	 = new TH1F("fHistPhi",      "azimuthal angle",        180, 0,360);   
+  fHistPhi  ->SetXTitle("#phi (degrees)");
+
+  fHistnClusters = new TH1F("fHistnClusters","TPC clusters per track", 160, 0,160);
+
+  fHistMult      = new TH1F("fHistMult",     "event track multiplicity",50, 0, 50);    
+  
+  fHistDCAr = new TH1F("fHistDCAr", "DCA r", 200, -100, 100);
+
+}
+
+
 ///_____________________________________________________________________
 void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
@@ -105,8 +134,8 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
 
   else if ( !block->GetDataType().CompareTo("ROOTHIST") ) {      
     if( !fCanvas ) { 
-      fCanvas = CreateCanvas("Primary Vertex", "Primary Vertex");
-      fCanvas->Divide(3, 2);
+      fCanvas = CreateCanvas("PVtx/Tr QA", "PrimV");
+      fCanvas->Divide(3, 3);
     }
     ProcessHistograms( block , fCanvas);
   }  
@@ -116,7 +145,7 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
 void AliHLTEveHLT::UpdateElements() {
   //See header file for documentation
   //
-  //DrawHistograms();
+  DrawHistograms();
   if(fTrackList) fTrackList->ElementChanged();
   if(fPointSetVertex) fPointSetVertex->ResetBBox();
   if(fTrCanvas) fTrCanvas->Update();
@@ -165,11 +194,12 @@ void AliHLTEveHLT::DestroyOldTrackList() {
 void AliHLTEveHLT::ProcessHistograms(AliHLTHOMERBlockDesc * block, TCanvas * canvas) {
   //See header file for documentation
   if (!fTrCanvas) {
-    fTrCanvas = CreateCanvas("TPC ESD QA", "TPC ESD QA");
+    fTrCanvas = CreateCanvas("ESD", "ESD");
     fTrCanvas->Divide(4, 2);
   }
+
   if(!fVertexCanvas) {
-    fVertexCanvas = CreateCanvas("Vertex QA", "Vertex");
+    fVertexCanvas = CreateCanvas("Vtx", "Vtx");
     fVertexCanvas->Divide(4, 2);
   }
 
@@ -271,8 +301,6 @@ void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList 
 ///___________________________________________________________________________________
 void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
 
-  esd->GetStdContent();
-
   cout << "ProcessESDEvent() :"<< esd->GetEventNumberInFile()<< "  " << esd->GetNumberOfCaloClusters() << " tracks : " << esd->GetNumberOfTracks() << endl;
 
   //fEventManager->SetRunNumber(esd->GetRunNumber());
@@ -288,20 +316,29 @@ void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
   SetUpTrackPropagator(cont->GetPropagator(),-0.1*esd->GetMagneticField(), 520);
 
   for (Int_t iter = 0; iter < esd->GetNumberOfTracks(); ++iter) {
-    AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esd->GetTrack(iter), cont));        
+
+    AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(esd->GetTrack(iter));
+
+    AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esdTrack, cont));        
     cont->AddElement(track);
    
-    // fHistPt->Fill(esd->GetTrack(iter)->Pt());   // KK
-    // fHistP->Fill(esd->GetTrack(iter)->P()*esd->GetTrack(iter)->Charge());
-    // fHistEta->Fill(esd->GetTrack(iter)->Eta());
-    // fHistTheta->Fill(esd->GetTrack(iter)->Theta()*TMath::RadToDeg());
-    // fHistPhi->Fill(esd->GetTrack(iter)->Phi()*TMath::RadToDeg());
-    // if(esd->GetTrack(iter)->GetStatus()&AliESDtrack::kTPCin || (esd->GetTrack(iter)->GetStatus()&AliESDtrack::kTPCin && esd->GetTrack(iter)->GetStatus()&AliESDtrack::kITSin)){
-    //    fHistnClusters->Fill(esd->GetTrack(iter)->GetTPCNcls());  
-    //}
+    fHistEta->Fill(esdTrack->Eta());
+    // fHistTheta->Fill(esdTrack->Theta()*TMath::RadToDeg());
+    fHistPhi->Fill(esdTrack->Phi()*TMath::RadToDeg());
+
+
+    Float_t DCAr, DCAz = -99;
+    esdTrack->GetImpactParametersTPC(DCAr, DCAz);
+    fHistDCAr->Fill(DCAr);
+
+
+    if(esdTrack->GetStatus()&AliESDtrack::kTPCin || (esdTrack->GetStatus()&AliESDtrack::kTPCin && esdTrack->GetStatus()&AliESDtrack::kITSin)){
+      fHistnClusters->Fill(esdTrack->GetTPCNcls());  
+    }
   }
   
-//fHistMult->Fill(esd->GetNumberOfTracks()); // KK
+
+  fHistMult->Fill(esd->GetNumberOfTracks()); // KK
   
   
   cont->SetTitle(Form("N=%d", esd->GetNumberOfTracks()) );
@@ -309,12 +346,29 @@ void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
   
 }
 
-
-
 void AliHLTEveHLT::DrawHistograms(){
   //See header file for documentation
+  if(!fCanvas) {
+    fCanvas = CreateCanvas("PVtx/Tr QA", "Primary vertex, Track QA");
+    fCanvas->Divide(3, 3);
+  }
 
+  fCanvas->cd(5);
+  fHistEta->Draw();
 
+  fCanvas->cd(6);
+  fHistPhi->Draw();
+
+  fCanvas->cd(7);
+  fHistnClusters->Draw();
+
+  fCanvas->cd(8);
+  fHistMult->Draw();
+
+  fCanvas->cd(9);
+  fHistDCAr->Draw();
+
+  fCanvas->cd();
 
 }
 
