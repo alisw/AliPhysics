@@ -338,8 +338,12 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
     // -- 2. step VZERO reconstruction -- fill AliESDVZERO object
     fVZEROReconstructor->FillESD(digitsTree, NULL, NULL);
 
+    AliESDVZERO *esdVZERO = fVZEROReconstructor->GetESDVZERO();
+    
+    HLTInfo("VZERO Multiplicity A %f - C %f", esdVZERO->GetMTotV0A(), esdVZERO->GetMTotV0A() );
+
     // -- Send AliESDVZERO
-    PushBack(static_cast<TObject*>(fVZEROReconstructor->GetESDVZERO()),
+    PushBack(static_cast<TObject*>(esdVZERO),
 	     kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO,0);
   }
   
