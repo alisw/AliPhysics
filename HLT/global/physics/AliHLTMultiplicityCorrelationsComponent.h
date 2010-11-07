@@ -220,6 +220,9 @@ private:
   /** correlations object */
   AliHLTMultiplicityCorrelations *fCorrObj;   //! transient
 
+  /** UID for merging */
+  AliHLTUInt32_t fUID;                        // see above
+
   ClassDef(AliHLTMultiplicityCorrelationsComponent, 0)
 };
 #endif

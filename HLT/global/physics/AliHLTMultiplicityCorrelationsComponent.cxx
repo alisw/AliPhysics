@@ -26,10 +26,13 @@ using namespace std;
 #endif
 
 #include "TMap.h"
+#include "TSystem.h"
+#include "TTimeStamp.h"
 #include "TObjString.h"
 #include "AliESDVZERO.h"
 #include "AliESDtrackCuts.h"
 #include "AliHLTMultiplicityCorrelations.h"
+#include <AliHLTDAQ.h>
 
 #include "AliHLTErrorGuard.h"
 #include "AliHLTDataTypes.h"
@@ -49,7 +52,8 @@ ClassImp(AliHLTMultiplicityCorrelationsComponent)
 AliHLTMultiplicityCorrelationsComponent::AliHLTMultiplicityCorrelationsComponent() :
   AliHLTProcessor(),
   fESDTrackCuts(NULL),  
-  fCorrObj(NULL) {
+  fCorrObj(NULL),
+  fUID(0) {
   // an example component which implements the ALICE HLT processor
   // interface and does some analysis on the input raw data
   //
@@ -150,6 +154,8 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoInit( Int_t argc, const Char_t*
       break;
     }
 
+    fUID = 0;
+    
     // implement further initialization
   } while (0);
 
@@ -346,7 +352,6 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     return 2;
   }
 
-
   // -- BINNING --------------
 
   // binningVzero
@@ -489,11 +494,13 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoDeinit() {
     delete fESDTrackCuts;
   fESDTrackCuts = NULL;
   
+  fUID = 0;
+
   return 0;
 }
 
 // #################################################################################
-Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
+Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEventData& evtData,
 					AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
 
@@ -502,7 +509,11 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEven
   // -- Only use data event
   if (!IsDataEvent()) 
     return 0;
-
+  
+  if( fUID == 0 ){
+    TTimeStamp t;
+    fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
+  }
 
   // -- Get ESD object 
   AliESDEvent *esdEvent = NULL;
@@ -531,20 +542,30 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEven
   // -- Get SPD clusters
   // ---------------------
   const AliHLTComponentBlockData* iter = NULL;
-  Int_t totalSpacePoint = 0;
+  Int_t totalClusters = 0;
+  Int_t innerClusters = 0;
+  Int_t outerClusters = 0;
 
   for ( iter = GetFirstInputBlock(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD); 
 	iter != NULL; iter = GetNextInputBlock() ) {
+
+    AliHLTITSClusterData *clusterData = reinterpret_cast<AliHLTITSClusterData*>(iter->fPtr);
+    Int_t nClusters = clusterData->fSpacePointCnt;
+    for( int icl=0; icl<nClusters; icl++ ) {
+      AliHLTITSSpacePointData &d = clusterData->fSpacePoints[icl];
+      if ( d.fLayer == 0 ) ++innerClusters;
+      else if ( d.fLayer == 1 ) ++outerClusters;
+    }  
     
-    const AliHLTITSClusterData* clusterData = (const AliHLTITSClusterData*) iter->fPtr;
-    Int_t nSpacepoint = (Int_t) clusterData->fSpacePointCnt;
-    totalSpacePoint += nSpacepoint;
+    totalClusters += nClusters;
   }
+
+  fCorrObj->SetSPDClusters(innerClusters,outerClusters);
 
   // -- Process Event
   // ------------------
   if (esdEvent)
-    iResult = fCorrObj->ProcessEvent(esdEvent,esdVZERO,totalSpacePoint);
+    iResult = fCorrObj->ProcessEvent(esdEvent,esdVZERO,totalClusters);
 
   if (iResult) {
     HLTError("Error while processing event inside multiplicity correlation object");
@@ -553,7 +574,7 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEven
 
   // -- Send histlist
   PushBack(dynamic_cast<TObject*>(fCorrObj->GetHistList()),
-	   kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,0);
+	   kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
  
   return iResult;
 }

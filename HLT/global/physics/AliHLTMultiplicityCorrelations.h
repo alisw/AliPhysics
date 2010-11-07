@@ -71,6 +71,9 @@ public:
   /** Set ESD track cuts */
   void SetESDTrackCuts(AliESDtrackCuts *cuts) { fESDTrackCuts = cuts; }
 
+  /** Set SPD clusters from inner and outer layer */
+  void SetSPDClusters(Int_t inner, Int_t outer) { fSpdNClustersInner = inner; fSpdNClustersOuter = outer; }
+
   /** Set Binning of VZERO */
   void SetBinningVzero(Int_t i=1, Float_t f1=0., Float_t f2=1.) {
     fVzeroBinning = i; fVzeroBinningMin = f1; fVzeroBinningMax = f2;
@@ -257,6 +260,12 @@ public:
 
   /** Spd N clusters */
   Int_t   fSpdNClusters;
+
+  /** Spd N clusters inner layer*/
+  Int_t   fSpdNClustersInner;
+
+  /** Spd N clusters outer layer */
+  Int_t   fSpdNClustersOuter;
 
   // -- -- -- 
 

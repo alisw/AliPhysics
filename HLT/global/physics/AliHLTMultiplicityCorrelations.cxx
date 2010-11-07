@@ -57,7 +57,7 @@ AliHLTMultiplicityCorrelations::AliHLTMultiplicityCorrelations() :
   fTpcTracks(0), fTpcTracksA(0),
   fVzeroMult(0.), fVzeroMultA(0.), fVzeroMultC(0.),
   fVzeroMultFlagged(0.), fVzeroMultFlaggedA(0.), fVzeroMultFlaggedC(0.),
-  fSpdNClusters(0),
+  fSpdNClusters(0), fSpdNClustersInner(0), fSpdNClustersOuter(0),
   fVzeroBinning(350), fVzeroBinningMin(0.), fVzeroBinningMax(35000.),
   fTpcBinning(200),fTpcBinningMin(0.),fTpcBinningMax(8000.),
   fZdcBinning(280),fZdcBinningMin(0.),fZdcBinningMax(140.),
@@ -670,6 +670,12 @@ Int_t AliHLTMultiplicityCorrelations::SetupSPD() {
   fHistList->Add(new TH1F("fSpdNClusters", "Multplicity_{SPD};Multplicity_{SPD};N_{Events}",   
 			  fSpdBinning,fSpdBinningMin,fSpdBinningMax));
 
+  fHistList->Add(new TH1F("fSpdNClustersInner", "Multplicity_{SPD} Layer 0;Multplicity_{SPD};N_{Events}",   
+			  fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+
+  fHistList->Add(new TH1F("fSpdNClustersOuter", "Multplicity_{SPD} Layer 1;Multplicity_{SPD};N_{Events}",   
+			  fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+
   return 0;
 }
 
@@ -1027,6 +1033,8 @@ Int_t AliHLTMultiplicityCorrelations::ProcessSPD() {
   // see header file for class documentation
   
   (static_cast<TH2F*>(fHistList->FindObject("fSpdNClusters")))->Fill(fSpdNClusters);
+  (static_cast<TH2F*>(fHistList->FindObject("fSpdNClustersInner")))->Fill(fSpdNClustersInner);
+  (static_cast<TH2F*>(fHistList->FindObject("fSpdNClustersOuter")))->Fill(fSpdNClustersOuter);
   (static_cast<TH2F*>(fHistList->FindObject("fCorrSpdTpcNch")))->Fill(fSpdNClusters,fTpcTracksA);
 
   return 0;
