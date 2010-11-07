@@ -110,13 +110,17 @@ public:
   }
 
   /** Set process PHOS */
-  void SetProcessPhos(Bool_t v = true) {
-    fProcessPhos = v;
-  }
+  void SetProcessPhos(Bool_t b=kTRUE)  { fProcessPhos  = b; }
   /** Set process EMCAL */
-  void SetProcessEmcal(Bool_t v = true) {
-    fProcessEmcal = v;
-  }
+  void SetProcessEmcal(Bool_t b=kTRUE) { fProcessEmcal = b; }
+
+
+  /** Enable / Disable detectors */
+  void SetProcessCALO(Bool_t b = kTRUE) { fProcessCALO = b; }
+  void SetProcessSPD(Bool_t b = kTRUE)  { fProcessSPD = b; }
+  void SetProcessTPC(Bool_t b = kTRUE)  { fProcessTPC = b; }
+  void SetProcessZDC(Bool_t b = kTRUE)  { fProcessZDC = b; }
+  void SetProcessVZERO(Bool_t b = kTRUE){ fProcessVZERO = b; }
 
   /*
    * ---------------------------------------------------------------------------------
@@ -225,6 +229,23 @@ public:
 
   /** Ptr to AliESD track cuts */
   AliESDtrackCuts *fESDTrackCuts;         //! transient
+
+  // -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+
+  /** Process TPC information */
+  Bool_t           fProcessTPC;
+
+  /** Process SPD information */
+  Bool_t           fProcessSPD;
+
+  /** Process VZERO information */
+  Bool_t           fProcessVZERO;
+
+  /** Process ZDC information */
+  Bool_t           fProcessZDC;
+
+  /** Process CALO information */
+  Bool_t           fProcessCALO;
 
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 

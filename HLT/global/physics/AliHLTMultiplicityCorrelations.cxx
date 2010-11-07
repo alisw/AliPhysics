@@ -53,6 +53,8 @@ AliHLTMultiplicityCorrelations::AliHLTMultiplicityCorrelations() :
   fESDZDC(NULL),
   fESDVZERO(NULL),
   fESDTrackCuts(NULL),
+  fProcessTPC(kTRUE), fProcessSPD(kTRUE),
+  fProcessVZERO(kTRUE), fProcessZDC(kTRUE), fProcessCALO(kTRUE),
   fEsdTracks(0), fEsdTracksA(0),
   fTpcTracks(0), fTpcTracksA(0),
   fVzeroMult(0.), fVzeroMultA(0.), fVzeroMultC(0.),
@@ -102,6 +104,12 @@ Int_t AliHLTMultiplicityCorrelations::Initialize() {
   fHistList->SetOwner(kTRUE);
   fHistList->SetName("MultiplicityCorrelations");
   iResult = SetupHistograms();
+  
+  if (fProcessZDC)   { HLTInfo ("Processing of ZDC enabled"); }
+  if (fProcessTPC)   { HLTInfo ("Processing of TPC enabled"); }
+  if (fProcessSPD)   { HLTInfo ("Processing of SPD enabled"); }
+  if (fProcessVZERO) { HLTInfo ("Processing of VZERO enabled"); }
+  if (fProcessCALO)  { HLTInfo ("Processing of CALO enabled"); }
 
   return iResult;
 }
@@ -128,26 +136,25 @@ Int_t AliHLTMultiplicityCorrelations::ProcessEvent( AliESDEvent *esd, AliESDVZER
     fESDVZERO = esdVZERO;
 
   // -- TPC .. To be done before the others
-  if (fESDEvent->GetNumberOfTracks() > 0)
+  if (fESDEvent->GetNumberOfTracks() > 0 && fProcessTPC)
     iResult = ProcessTPC();
-
+  
   fSpdNClusters = nSpdClusters;
-  iResult = ProcessSPD();
+  if (fProcessSPD)
+    iResult = ProcessSPD();
   
   // -- CALO, process with or without clusters, we want the zero-bin
-  iResult = ProcessCALO();
+  if (fProcessCALO)
+    iResult = ProcessCALO();
   
   // -- VZERO
-  if (fESDVZERO)
+  if (fESDVZERO && fProcessVZERO)
     iResult = ProcessVZERO();
 
   // -- ZDC and Correlations
-  if (fESDZDC)
+  if (fESDZDC && fProcessZDC)
     iResult = ProcessZDC();
-
-  
-
-
+ 
   return iResult;
 }
 
@@ -202,11 +209,12 @@ Int_t AliHLTMultiplicityCorrelations::SetupHistograms() {
 
   Int_t iResult = 0;
   
-  iResult = SetupVZERO();
-  iResult = SetupZDC();
-  iResult = SetupTPC();
-  iResult = SetupCALO();
-  iResult = SetupSPD();
+  if (fProcessVZERO) iResult = SetupVZERO();
+  if (fProcessZDC)   iResult = SetupZDC();
+  if (fProcessTPC)   iResult = SetupTPC();
+  if (fProcessCALO)  iResult = SetupCALO();
+  if (fProcessSPD)   iResult = SetupSPD();
+  
   iResult = SetupCorrelations();
 
   return iResult;
@@ -353,293 +361,302 @@ Int_t AliHLTMultiplicityCorrelations::SetupCorrelations() {
   // ----------------------------------------------------
   //   ZDC vs TPC
   // ----------------------------------------------------
+  if (fProcessTPC && fProcessZDC) {
 
-  // E_{ZDC} vs N_{ch}
-  fHistList->Add(new TH2F("fCorrEzdcNch", "E_{ZDC} vs N_{ch}^{TPC};E_{ZDC} (TeV);N_{ch}^{TPC}",   
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrEzdcANch","E_{ZDC} vs N_{ch}^{TPC} A;E_{ZDC} (TeV);N_{ch}^{TPC}", 
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrEzdcCNch","E_{ZDC} vs N_{ch}^{TPC} C;E_{ZDC} (TeV);N_{ch}^{TPC}", 
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    // E_{ZDC} vs N_{ch}
+    fHistList->Add(new TH2F("fCorrEzdcNch", "E_{ZDC} vs N_{ch}^{TPC};E_{ZDC} (TeV);N_{ch}^{TPC}",   
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrEzdcANch","E_{ZDC} vs N_{ch}^{TPC} A;E_{ZDC} (TeV);N_{ch}^{TPC}", 
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrEzdcCNch","E_{ZDC} vs N_{ch}^{TPC} C;E_{ZDC} (TeV);N_{ch}^{TPC}", 
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    
+    // E_{ZEM} vs N_{ch}
+    fHistList->Add(new TH2F("fCorrEzemNch", "E_{ZEM} vs N_{ch}^{TPC};E_{ZEM} (TeV);N_{ch}^{TPC}",   
+			    fZemBinning,fZemBinningMin,fZemBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrEzemANch","E_{ZEM} vs N_{ch}^{TPC} A;E_{ZEM} (TeV);N_{ch}^{TPC}", 
+			    fZemBinning,fZemBinningMin,fZemBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrEzemCNch","E_{ZEM} vs N_{ch}^{TPC} C;E_{ZEM} (TeV);N_{ch}^{TPC}", 
+			    fZemBinning,fZemBinningMin,fZemBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
   
-  // E_{ZEM} vs N_{ch}
-  fHistList->Add(new TH2F("fCorrEzemNch", "E_{ZEM} vs N_{ch}^{TPC};E_{ZEM} (TeV);N_{ch}^{TPC}",   
-			  fZemBinning,fZemBinningMin,fZemBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrEzemANch","E_{ZEM} vs N_{ch}^{TPC} A;E_{ZEM} (TeV);N_{ch}^{TPC}", 
-			  fZemBinning,fZemBinningMin,fZemBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrEzemCNch","E_{ZEM} vs N_{ch}^{TPC} C;E_{ZEM} (TeV);N_{ch}^{TPC}", 
-			  fZemBinning,fZemBinningMin,fZemBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  
-  // E_{ZP} vs N_{ch}
-  fHistList->Add(new TH2F("fCorrEzpNch", "E_{ZP} vs N_{ch}^{TPC};E_{ZP} (TeV);N_{ch}^{TPC}",   
+    // E_{ZP} vs N_{ch}
+    fHistList->Add(new TH2F("fCorrEzpNch", "E_{ZP} vs N_{ch}^{TPC};E_{ZP} (TeV);N_{ch}^{TPC}",   
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrEzpANch","E_{ZP} vs N_{ch}^{TPC} A;E_{ZP} (TeV);N_{ch}^{TPC}", 
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrEzpCNch","E_{ZP} vs N_{ch}^{TPC} C;E_{ZP} (TeV);N_{ch}^{TPC}", 
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    
+    // E_{ZN} vs N_{ch}
+    fHistList->Add(new TH2F("fCorrEznNch", "E_{ZN} vs N_{ch}^{TPC};E_{ZN} (TeV);N_{ch}^{TPC}",   
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrEznANch","E_{ZN} vs N_{ch}^{TPC} A;E_{ZN} (TeV);N_{ch}^{TPC}", 
 			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrEzpANch","E_{ZP} vs N_{ch}^{TPC} A;E_{ZP} (TeV);N_{ch}^{TPC}", 
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrEzpCNch","E_{ZP} vs N_{ch}^{TPC} C;E_{ZP} (TeV);N_{ch}^{TPC}", 
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  
-  // E_{ZN} vs N_{ch}
-  fHistList->Add(new TH2F("fCorrEznNch", "E_{ZN} vs N_{ch}^{TPC};E_{ZN} (TeV);N_{ch}^{TPC}",   
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrEznANch","E_{ZN} vs N_{ch}^{TPC} A;E_{ZN} (TeV);N_{ch}^{TPC}", 
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrEznCNch","E_{ZN} vs N_{ch}^{TPC} C;E_{ZN} (TeV);N_{ch}^{TPC}", 
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  
-  // N_{Part} vs N_{ch}
-  fHistList->Add(new TH2F("fCorrZdcNpartNch", "N_{part} vs N_{ch}^{TPC};N_{Events};N_{ch}^{TPC}",   
-			  50,0,499, fTpcBinning,fTpcBinningMin,fTpcBinningMax)); 
-  fHistList->Add(new TH2F("fCorrZdcNpartANch","N_{part} vs N_{ch}^{TPC} A;N_{Events};N_{ch}^{TPC}", 
-			  50,0,499, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcNpartCNch","N_{part} vs N_{ch}^{TPC} C;N_{Events};N_{ch}^{TPC}", 
-			  50,0,499, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-
-  // b vs N_{ch}
-  fHistList->Add(new TH2F("fCorrZdcbNch", "b_{ZDC} vs N_{ch}^{TPC};b (fm);N_{ch}^{TPC}",  
+    fHistList->Add(new TH2F("fCorrEznCNch","E_{ZN} vs N_{ch}^{TPC} C;E_{ZN} (TeV);N_{ch}^{TPC}", 
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    
+    // N_{Part} vs N_{ch}
+    fHistList->Add(new TH2F("fCorrZdcNpartNch", "N_{part} vs N_{ch}^{TPC};N_{Events};N_{ch}^{TPC}",   
+			    50,0,499, fTpcBinning,fTpcBinningMin,fTpcBinningMax)); 
+    fHistList->Add(new TH2F("fCorrZdcNpartANch","N_{part} vs N_{ch}^{TPC} A;N_{Events};N_{ch}^{TPC}", 
+			    50,0,499, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcNpartCNch","N_{part} vs N_{ch}^{TPC} C;N_{Events};N_{ch}^{TPC}", 
+			    50,0,499, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    
+    // b vs N_{ch}
+    fHistList->Add(new TH2F("fCorrZdcbNch", "b_{ZDC} vs N_{ch}^{TPC};b (fm);N_{ch}^{TPC}",  
 			  31,0,30, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcbANch","b_{ZDC} vs N_{ch}^{TPC} A;b (fm);N_{ch}^{TPC}", 
-			  31,0,30, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcbCNch","b_{ZDC} vs N_{ch}^{TPC} C;b (fm);N_{ch}^{TPC}", 
-			  31,0,30, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-
+    fHistList->Add(new TH2F("fCorrZdcbANch","b_{ZDC} vs N_{ch}^{TPC} A;b (fm);N_{ch}^{TPC}", 
+			    31,0,30, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcbCNch","b_{ZDC} vs N_{ch}^{TPC} C;b (fm);N_{ch}^{TPC}", 
+			    31,0,30, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+  }
   // ----------------------------------------------------
   //   ZDC vs VZERO
   // ----------------------------------------------------
+  if (fProcessZDC && fProcessVZERO) {
 
-  // E_{ZDC} vs Multiplicty VZERO
-  fHistList->Add(new TH2F("fCorrEzdcVzero", 
-			  "E_{ZDC} vs Multiplicity^{VZERO};E_{ZDC} (TeV);Multiplicity^{VZERO}",  
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzdcVzeroA",
-			  "E_{ZDC} vs Multiplicity^{VZERO} A;E_{ZDC} (TeV);Multiplicity^{VZERO}",
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzdcVzeroC",
-			  "E_{ZDC} vs Multiplicity^{VZERO} C;E_{ZDC} (TeV);Multiplicity^{VZERO}",
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  
-  // E_{ZEM} vs Multiplicty VZERO
-  fHistList->Add(new TH2F("fCorrEzemVzero", 
-			  "E_{ZEM} vs Multiplicity^{VZERO};E_{ZEM} (TeV);Multiplicity^{VZERO}",  
-			  fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzemVzeroA",
-			  "E_{ZEM} vs Multiplicity^{VZERO} A;E_{ZEM} (TeV);Multiplicity^{VZERO}",
-			  fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzemVzeroC",
-			  "E_{ZEM} vs Multiplicity^{VZERO} C;E_{ZEM} (TeV);Multiplicity^{VZERO}",
-			  fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  
-  // E_{ZP} vs Multiplicty VZERO
-  fHistList->Add(new TH2F("fCorrEzpVzero", 
-			  "E_{ZP} vs Multiplicity^{VZERO};E_{ZP} (TeV);Multiplicity^{VZERO}",  
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzpVzeroA",
-			  "E_{ZP} vs Multiplicity^{VZERO} A;E_{ZP} (TeV);Multiplicity^{VZERO}",
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzpVzeroC",
-			  "E_{ZP} vs Multiplicity^{VZERO} C;E_{ZP} (TeV);Multiplicity^{VZERO}",
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  
-  // E_{ZN} vs Multiplicty VZERO
-  fHistList->Add(new TH2F("fCorrEznVzero", 
-			  "E_{ZN} vs Multiplicity^{VZERO};E_{ZN} (TeV);Multiplicity^{VZERO}",   
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEznVzeroA",
-			  "E_{ZN} vs Multiplicity^{VZERO} A;E_{ZN} (TeV);Multiplicity^{VZERO}",
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEznVzeroC",
-			  "E_{ZN} vs Multiplicity^{VZERO} C;E_{ZN} (TeV);Multiplicity^{VZERO}",
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  
-  // N_{Part} vs Multiplicty VZERO
-  fHistList->Add(new TH2F("fCorrZdcNpartVzero", 
-			  "N_{part} vs Multiplicity^{VZERO};N_{Events};Multiplicity^{VZERO}",   
-			  50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax)); 
-  fHistList->Add(new TH2F("fCorrZdcNpartVzeroA",
-			  "N_{part} vs Multiplicity^{VZERO} A;N_{Events};Multiplicity^{VZERO}", 
-			  50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcNpartVzeroC",
-			  "N_{part} vs Multiplicity^{VZERO} C;N_{Events};Multiplicity^{VZERO}",
-			  50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    // E_{ZDC} vs Multiplicty VZERO
+    fHistList->Add(new TH2F("fCorrEzdcVzero", 
+			    "E_{ZDC} vs Multiplicity^{VZERO};E_{ZDC} (TeV);Multiplicity^{VZERO}",  
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzdcVzeroA",
+			    "E_{ZDC} vs Multiplicity^{VZERO} A;E_{ZDC} (TeV);Multiplicity^{VZERO}",
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzdcVzeroC",
+			    "E_{ZDC} vs Multiplicity^{VZERO} C;E_{ZDC} (TeV);Multiplicity^{VZERO}",
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // E_{ZEM} vs Multiplicty VZERO
+    fHistList->Add(new TH2F("fCorrEzemVzero", 
+			    "E_{ZEM} vs Multiplicity^{VZERO};E_{ZEM} (TeV);Multiplicity^{VZERO}",  
+			    fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzemVzeroA",
+			    "E_{ZEM} vs Multiplicity^{VZERO} A;E_{ZEM} (TeV);Multiplicity^{VZERO}",
+			    fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzemVzeroC",
+			    "E_{ZEM} vs Multiplicity^{VZERO} C;E_{ZEM} (TeV);Multiplicity^{VZERO}",
+			    fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // E_{ZP} vs Multiplicty VZERO
+    fHistList->Add(new TH2F("fCorrEzpVzero", 
+			    "E_{ZP} vs Multiplicity^{VZERO};E_{ZP} (TeV);Multiplicity^{VZERO}",  
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzpVzeroA",
+			    "E_{ZP} vs Multiplicity^{VZERO} A;E_{ZP} (TeV);Multiplicity^{VZERO}",
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzpVzeroC",
+			    "E_{ZP} vs Multiplicity^{VZERO} C;E_{ZP} (TeV);Multiplicity^{VZERO}",
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // E_{ZN} vs Multiplicty VZERO
+    fHistList->Add(new TH2F("fCorrEznVzero", 
+			    "E_{ZN} vs Multiplicity^{VZERO};E_{ZN} (TeV);Multiplicity^{VZERO}",   
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEznVzeroA",
+			    "E_{ZN} vs Multiplicity^{VZERO} A;E_{ZN} (TeV);Multiplicity^{VZERO}",
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEznVzeroC",
+			    "E_{ZN} vs Multiplicity^{VZERO} C;E_{ZN} (TeV);Multiplicity^{VZERO}",
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // N_{Part} vs Multiplicty VZERO
+    fHistList->Add(new TH2F("fCorrZdcNpartVzero", 
+			    "N_{part} vs Multiplicity^{VZERO};N_{Events};Multiplicity^{VZERO}",   
+			    50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax)); 
+    fHistList->Add(new TH2F("fCorrZdcNpartVzeroA",
+			    "N_{part} vs Multiplicity^{VZERO} A;N_{Events};Multiplicity^{VZERO}", 
+			    50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcNpartVzeroC",
+			    "N_{part} vs Multiplicity^{VZERO} C;N_{Events};Multiplicity^{VZERO}",
+			    50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // b vs Multiplicty VZERO
+    fHistList->Add(new TH2F("fCorrZdcbVzero", "b_{ZDC} vs Multiplicity^{VZERO};b (fm);Multiplicity^{VZERO}",    
+			    31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcbVzeroA","b_{ZDC} vs Multiplicity^{VZERO} A;b (fm);Multiplicity^{VZERO}",  
+			    31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcbVzeroC","b_{ZDC} vs Multiplicity^{VZERO} C;b (fm);Multiplicity^{VZERO}",  
+			    31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
 
-  // b vs Multiplicty VZERO
-  fHistList->Add(new TH2F("fCorrZdcbVzero", "b_{ZDC} vs Multiplicity^{VZERO};b (fm);Multiplicity^{VZERO}",    
-			  31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcbVzeroA","b_{ZDC} vs Multiplicity^{VZERO} A;b (fm);Multiplicity^{VZERO}",  
-			  31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcbVzeroC","b_{ZDC} vs Multiplicity^{VZERO} C;b (fm);Multiplicity^{VZERO}",  
-			  31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-
-  // -- -- -- -- -- -- -- 
-
-  // E_{ZDC} vs Multiplicty VZERO flagged
-  fHistList->Add(new TH2F("fCorrEzdcVzeroF", 
-			  "E_{ZDC} vs Multiplicity_{flagged}^{VZERO};E_{ZDC} (TeV);Multiplicity^{VZERO}",   
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzdcVzeroFA",
-			  "E_{ZDC} vs Multiplicity_{flagged}^{VZERO} A;E_{ZDC} (TeV);Multiplicity^{VZERO}", 
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzdcVzeroFC",
-			  "E_{ZDC} vs Multiplicity_{flagged}^{VZERO} C;E_{ZDC} (TeV);Multiplicity^{VZERO}", 
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  
-  // E_{ZEM} vs Multiplicty VZERO flagged
-  fHistList->Add(new TH2F("fCorrEzemVzeroF", 
-			  "E_{ZEM} vs Multiplicity_{flagged}^{VZERO};E_{ZEM} (TeV);Multiplicity^{VZERO}",   
-			  fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzemVzeroFA",
-			  "E_{ZEM} vs Multiplicity_{flagged}^{VZERO} A;E_{ZEM} (TeV);Multiplicity^{VZERO}", 
-			  fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzemVzeroFC",
-			  "E_{ZEM} vs Multiplicity_{flagged}^{VZERO} C;E_{ZEM} (TeV);Multiplicity^{VZERO}", 
-			  fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  
-  // E_{ZP} vs Multiplicty VZERO flagged
-  fHistList->Add(new TH2F("fCorrEzpVzeroF", 
-			  "E_{ZP} vs Multiplicity_{flagged}^{VZERO};E_{ZP} (TeV);Multiplicity^{VZERO}",   
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzpVzeroFA",
-			  "E_{ZP} vs Multiplicity_{flagged}^{VZERO} A;E_{ZP} (TeV);Multiplicity^{VZERO}", 
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEzpVzeroFC",
-			  "E_{ZP} vs Multiplicity_{flagged}^{VZERO} C;E_{ZP} (TeV);Multiplicity^{VZERO}",
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  
-  // E_{ZN} vs Multiplicty VZERO flagged
-  fHistList->Add(new TH2F("fCorrEznVzeroF", 
-			  "E_{ZN} vs Multiplicity_{flagged}^{VZERO};E_{ZN} (TeV);Multiplicity^{VZERO}",  
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEznVzeroFA",
-			  "E_{ZN} vs Multiplicity_{flagged}^{VZERO} A;E_{ZN} (TeV);Multiplicity^{VZERO}", 
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrEznVzeroFC",
-			  "E_{ZN} vs Multiplicity_{flagged}^{VZERO} C;E_{ZN} (TeV);Multiplicity^{VZERO}", 
-			  fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  
-  // N_{Part} vs Multiplicty VZERO flagged
-  fHistList->Add(new TH2F("fCorrZdcNpartVzeroF", 
-			  "N_{part} vs Multiplicity_{flagged}^{VZERO};N_{Events};Multiplicity^{VZERO}",   
-			  50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax)); 
-  fHistList->Add(new TH2F("fCorrZdcNpartVzeroFA",
-			  "N_{part} vs Multiplicity_{flagged}^{VZERO} A;N_{Events};Multiplicity^{VZERO}", 
-			  50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcNpartVzeroFC",
-			  "N_{part} vs Multiplicity_{flagged}^{VZERO} C;N_{Events};Multiplicity^{VZERO}", 
-			  50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-
-  // b vs Multiplicty VZERO flagged
-  fHistList->Add(new TH2F("fCorrZdcbVzeroF", 
-			  "b_{ZDC} vs Multiplicity_{flagged}^{VZERO};b (fm);Multiplicity^{VZERO}",    
-			  31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcbVzeroFA",
-			  "b_{ZDC} vs Multiplicity_{flagged}^{VZERO} A;b (fm);Multiplicity^{VZERO}",  
-			  31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcbVzeroFC",
-			  "b_{ZDC} vs Multiplicity_{flagged}^{VZERO} C;b (fm);Multiplicity^{VZERO}",  
-			  31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
-
+    // -- -- -- -- -- -- -- 
+    
+    // E_{ZDC} vs Multiplicty VZERO flagged
+    fHistList->Add(new TH2F("fCorrEzdcVzeroF", 
+			    "E_{ZDC} vs Multiplicity_{flagged}^{VZERO};E_{ZDC} (TeV);Multiplicity^{VZERO}",   
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzdcVzeroFA",
+			    "E_{ZDC} vs Multiplicity_{flagged}^{VZERO} A;E_{ZDC} (TeV);Multiplicity^{VZERO}", 
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzdcVzeroFC",
+			    "E_{ZDC} vs Multiplicity_{flagged}^{VZERO} C;E_{ZDC} (TeV);Multiplicity^{VZERO}", 
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // E_{ZEM} vs Multiplicty VZERO flagged
+    fHistList->Add(new TH2F("fCorrEzemVzeroF", 
+			    "E_{ZEM} vs Multiplicity_{flagged}^{VZERO};E_{ZEM} (TeV);Multiplicity^{VZERO}",   
+			    fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzemVzeroFA",
+			    "E_{ZEM} vs Multiplicity_{flagged}^{VZERO} A;E_{ZEM} (TeV);Multiplicity^{VZERO}", 
+			    fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzemVzeroFC",
+			    "E_{ZEM} vs Multiplicity_{flagged}^{VZERO} C;E_{ZEM} (TeV);Multiplicity^{VZERO}", 
+			    fZemBinning,fZemBinningMin,fZemBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // E_{ZP} vs Multiplicty VZERO flagged
+    fHistList->Add(new TH2F("fCorrEzpVzeroF", 
+			    "E_{ZP} vs Multiplicity_{flagged}^{VZERO};E_{ZP} (TeV);Multiplicity^{VZERO}",   
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzpVzeroFA",
+			    "E_{ZP} vs Multiplicity_{flagged}^{VZERO} A;E_{ZP} (TeV);Multiplicity^{VZERO}", 
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEzpVzeroFC",
+			    "E_{ZP} vs Multiplicity_{flagged}^{VZERO} C;E_{ZP} (TeV);Multiplicity^{VZERO}",
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // E_{ZN} vs Multiplicty VZERO flagged
+    fHistList->Add(new TH2F("fCorrEznVzeroF", 
+			    "E_{ZN} vs Multiplicity_{flagged}^{VZERO};E_{ZN} (TeV);Multiplicity^{VZERO}",  
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEznVzeroFA",
+			    "E_{ZN} vs Multiplicity_{flagged}^{VZERO} A;E_{ZN} (TeV);Multiplicity^{VZERO}", 
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrEznVzeroFC",
+			    "E_{ZN} vs Multiplicity_{flagged}^{VZERO} C;E_{ZN} (TeV);Multiplicity^{VZERO}", 
+			    fZnpBinning,fZnpBinningMin,fZnpBinningMax, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // N_{Part} vs Multiplicty VZERO flagged
+    fHistList->Add(new TH2F("fCorrZdcNpartVzeroF", 
+			    "N_{part} vs Multiplicity_{flagged}^{VZERO};N_{Events};Multiplicity^{VZERO}",   
+			    50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax)); 
+    fHistList->Add(new TH2F("fCorrZdcNpartVzeroFA",
+			    "N_{part} vs Multiplicity_{flagged}^{VZERO} A;N_{Events};Multiplicity^{VZERO}", 
+			    50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcNpartVzeroFC",
+			    "N_{part} vs Multiplicity_{flagged}^{VZERO} C;N_{Events};Multiplicity^{VZERO}", 
+			    50,0,499, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    
+    // b vs Multiplicty VZERO flagged
+    fHistList->Add(new TH2F("fCorrZdcbVzeroF", 
+			    "b_{ZDC} vs Multiplicity_{flagged}^{VZERO};b (fm);Multiplicity^{VZERO}",    
+			    31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcbVzeroFA",
+			    "b_{ZDC} vs Multiplicity_{flagged}^{VZERO} A;b (fm);Multiplicity^{VZERO}",  
+			    31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcbVzeroFC",
+			    "b_{ZDC} vs Multiplicity_{flagged}^{VZERO} C;b (fm);Multiplicity^{VZERO}",  
+			    31,0,30, fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax));
+  }
   // ----------------------------------------------------
   //   VZERO vs TPC
   // ----------------------------------------------------
+  if ( fProcessTPC && fProcessVZERO ) {
 
-  fHistList->Add(new TH2F("fCorrVzeroNch", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{TPC};Multiplicity^{VZERO};N_{ch}^{TPC}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroANch", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{TPC} A;Multiplicity^{VZERO};N_{ch}^{TPC}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroCNch", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{TPC} C;Multiplicity^{VZERO};N_{ch}^{TPC}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-
-  fHistList->Add(new TH2F("fCorrVzeroFNch", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{TPC};Multiplicity_{flagged}^{VZERO};N_{ch}^{TPC}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroFANch", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{TPC} A;Multiplicity_{flagged}^{VZERO};N_{ch}^{TPC}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroFCNch", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{TPC} C;Multiplicity_{flagged}^{VZERO};N_{ch}^{TPC}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
-
+    fHistList->Add(new TH2F("fCorrVzeroNch", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{TPC};Multiplicity^{VZERO};N_{ch}^{TPC}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroANch", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{TPC} A;Multiplicity^{VZERO};N_{ch}^{TPC}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroCNch", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{TPC} C;Multiplicity^{VZERO};N_{ch}^{TPC}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    
+    fHistList->Add(new TH2F("fCorrVzeroFNch", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{TPC};Multiplicity_{flagged}^{VZERO};N_{ch}^{TPC}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroFANch", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{TPC} A;Multiplicity_{flagged}^{VZERO};N_{ch}^{TPC}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroFCNch", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{TPC} C;Multiplicity_{flagged}^{VZERO};N_{ch}^{TPC}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));
+  }
   // ----------------------------------------------------
   //   ZDC vs CALO
   // ----------------------------------------------------
-  fHistList->Add(new TH2F("fCorrZdcTotEvsPhosTotEt", 
-			  "Total E_{ZDC} vs Total E_{T} in PHOS;Total E_{ZDC} (TeV);E_{T} (GeV)", 
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcTotEvsEmcalTotEt", 
-			  "Total E_{ZDC} vs Total E_{T} in EMCAL;Total E_{ZDC} (TeV);E_{T} (GeV)", 
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
-  fHistList->Add(new TH2F("fCorrZdcTotEvsTotEt", 
-			  "Total E_{ZDC} vs Total E_{T} in calorimeters;Total E_{ZDC} (TeV);E_{T} (GeV)", 
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
-  
+  if ( fProcessZDC && fProcessCALO ) {
+    fHistList->Add(new TH2F("fCorrZdcTotEvsPhosTotEt", 
+			    "Total E_{ZDC} vs Total E_{T} in PHOS;Total E_{ZDC} (TeV);E_{T} (GeV)", 
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcTotEvsEmcalTotEt", 
+			    "Total E_{ZDC} vs Total E_{T} in EMCAL;Total E_{ZDC} (TeV);E_{T} (GeV)", 
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+    fHistList->Add(new TH2F("fCorrZdcTotEvsTotEt", 
+			    "Total E_{ZDC} vs Total E_{T} in calorimeters;Total E_{ZDC} (TeV);E_{T} (GeV)", 
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  }
   // ----------------------------------------------------
   //   VZERO vs CALO
   // ----------------------------------------------------
-  fHistList->Add(new TH2F("fCorrVzerovsPhosTotEt", 
-			  "Multiplicity^{VZERO} vs Total E_{T} in PHOS;Multiplicity^{VZERO};E_{T} (GeV)", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
-  fHistList->Add(new TH2F("fCorrVzerovsEmcalTotEt", 
-			  "Multiplicity^{VZERO} vs Total E_{T} in EMCAL;Multiplicity^{VZERO};E_{T} (GeV)", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
-  fHistList->Add(new TH2F("fCorrVzerovsTotEt", 
-			  "Multiplicity^{VZERO} vs Total E_{T} in Calorimeters;Multiplicity^{VZERO};E_{T} (GeV)", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
-  
-  fHistList->Add(new TH2F("fCorrVzeroFlaggedvsPhosTotEt", 
-			  "Multiplicity_{flagged}^{VZERO} vs Total E_{T} in PHOS;Multiplicity_{flagged}^{VZERO};E_{T} (GeV)", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroFlaggedvsEmcalTotEt", 
-			  "Multiplicity_{flagged}^{VZERO} vs Total E_{T} in EMCAL;Multiplicity_{flagged}^{VZERO};E_{T} (GeV)", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroFlaggedvsTotEt", 
-			  "Multiplicity_{flagged}^{VZERO} vs Total E_{T} in Calorimeters;Multiplicity_{flagged}^{VZERO};E_{T} (GeV)", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
-  
+  if ( fProcessVZERO && fProcessCALO ) {
+
+    fHistList->Add(new TH2F("fCorrVzerovsPhosTotEt", 
+			    "Multiplicity^{VZERO} vs Total E_{T} in PHOS;Multiplicity^{VZERO};E_{T} (GeV)", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+    fHistList->Add(new TH2F("fCorrVzerovsEmcalTotEt", 
+			    "Multiplicity^{VZERO} vs Total E_{T} in EMCAL;Multiplicity^{VZERO};E_{T} (GeV)", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+    fHistList->Add(new TH2F("fCorrVzerovsTotEt", 
+			    "Multiplicity^{VZERO} vs Total E_{T} in Calorimeters;Multiplicity^{VZERO};E_{T} (GeV)", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+    
+    fHistList->Add(new TH2F("fCorrVzeroFlaggedvsPhosTotEt", 
+			    "Multiplicity_{flagged}^{VZERO} vs Total E_{T} in PHOS;Multiplicity_{flagged}^{VZERO};E_{T} (GeV)", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroFlaggedvsEmcalTotEt", 
+			    "Multiplicity_{flagged}^{VZERO} vs Total E_{T} in EMCAL;Multiplicity_{flagged}^{VZERO};E_{T} (GeV)", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroFlaggedvsTotEt", 
+			    "Multiplicity_{flagged}^{VZERO} vs Total E_{T} in Calorimeters;Multiplicity_{flagged}^{VZERO};E_{T} (GeV)", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fCaloBinning,fCaloBinningMin,fCaloBinningMax));
+  }
   // ----------------------------------------------------
   //   SPD vs TPC
   // ----------------------------------------------------
+  if ( fProcessSPD && fProcessTPC ) {
 
-  fHistList->Add(new TH2F("fCorrSpdTpcNch", "N_{clusters}^{SPD} vs N_{ch}^{TPC};N_{clusters}^{SPD};N_{ch}^{TPC}",   
-			  fSpdBinning,fSpdBinningMin,fSpdBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));  
-
+    fHistList->Add(new TH2F("fCorrSpdTpcNch", "N_{clusters}^{SPD} vs N_{ch}^{TPC};N_{clusters}^{SPD};N_{ch}^{TPC}",   
+			    fSpdBinning,fSpdBinningMin,fSpdBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));  
+  }
   // ----------------------------------------------------
   //   SPD vs VZERO
   // ----------------------------------------------------
+  if ( fProcessSPD && fProcessVZERO ) {
 
-  fHistList->Add(new TH2F("fCorrVzeroSpd", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{SPD};Multiplicity^{VZERO};N^{SPD}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroASpd", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{SPD} A;Multiplicity^{VZERO};N^{SPD}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroCSpd", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{SPD} C;Multiplicity^{VZERO};N^{SPD}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
-
-  fHistList->Add(new TH2F("fCorrVzeroFSpd", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{SPD};Multiplicity_{flagged}^{VZERO};N^{SPD}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroFASpd", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{SPD} A;Multiplicity_{flagged}^{VZERO};N^{SPD}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
-  fHistList->Add(new TH2F("fCorrVzeroFCSpd", 
-			  "Multiplicity^{VZERO} vs N_{ch}^{SPD} C;Multiplicity_{flagged}^{VZERO};N^{SPD}", 
-			  fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
-
+    fHistList->Add(new TH2F("fCorrVzeroSpd", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{SPD};Multiplicity^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroASpd", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{SPD} A;Multiplicity^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroCSpd", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{SPD} C;Multiplicity^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    
+    fHistList->Add(new TH2F("fCorrVzeroFSpd", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{SPD};Multiplicity_{flagged}^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroFASpd", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{SPD} A;Multiplicity_{flagged}^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroFCSpd", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{SPD} C;Multiplicity_{flagged}^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+  }
   // ----------------------------------------------------
   //   SPD vs ZDC
   // ----------------------------------------------------
+  if ( fProcessSPD && fProcessZDC) {
 
-  // E_{ZDC} vs Multiplicty SPD
-  fHistList->Add(new TH2F("fCorrEzdcSpd", "E_{ZDC} vs N_{ch}^{SPD};E_{ZDC} (TeV);N^{SPD}",   
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
-  fHistList->Add(new TH2F("fCorrEzdcASpd","E_{ZDC} vs N_{ch}^{SPD} A;E_{ZDC} (TeV);N^{SPD}", 
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
-  fHistList->Add(new TH2F("fCorrEzdcCSpd","E_{ZDC} vs N_{ch}^{SPD} C;E_{ZDC} (TeV);N^{SPD}", 
-			  fZdcBinning,fZdcBinningMin,fZdcBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
-  
+    // E_{ZDC} vs Multiplicty SPD
+    fHistList->Add(new TH2F("fCorrEzdcSpd", "E_{ZDC} vs N_{ch}^{SPD};E_{ZDC} (TeV);N^{SPD}",   
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrEzdcASpd","E_{ZDC} vs N_{ch}^{SPD} A;E_{ZDC} (TeV);N^{SPD}", 
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrEzdcCSpd","E_{ZDC} vs N_{ch}^{SPD} C;E_{ZDC} (TeV);N^{SPD}", 
+			    fZdcBinning,fZdcBinningMin,fZdcBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+  }
 
   return 0;
 }
@@ -805,7 +822,7 @@ Int_t AliHLTMultiplicityCorrelations::ProcessVZERO() {
   (static_cast<TH1F*>(fHistList->FindObject("fVzeroADCC")))->Fill(vzeroAdcC);
 
   // -- VZERO - TPC correlations
-  if (fESDEvent->GetNumberOfTracks() > 0) {
+  if (fESDEvent->GetNumberOfTracks() > 0 && fProcessTPC) {
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroNch")))->Fill(fVzeroMult, fTpcTracksA);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroANch")))->Fill(fVzeroMultA, fTpcTracksA);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroCNch")))->Fill(fVzeroMultC, fTpcTracksA);
@@ -816,7 +833,7 @@ Int_t AliHLTMultiplicityCorrelations::ProcessVZERO() {
   }
 
   // -- VZERO - SPD correlations
-  if (fESDEvent->GetNumberOfTracks() > 0) {
+  if (fESDEvent->GetNumberOfTracks() > 0 && fProcessSPD) {
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroSpd")))->Fill(fVzeroMult, fSpdNClusters);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroASpd")))->Fill(fVzeroMultA, fSpdNClusters);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroCSpd")))->Fill(fVzeroMultC, fSpdNClusters);
@@ -827,16 +844,14 @@ Int_t AliHLTMultiplicityCorrelations::ProcessVZERO() {
   }
   
   // -- VZERO - CALO correlations
-  if (fProcessPhos || fProcessEmcal) {
+  if ((fProcessPhos || fProcessEmcal) && fProcessCALO ){
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzerovsTotEt")))->Fill(fVzeroMult, fPhosTotalEt + fEmcalTotalEt);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFlaggedvsTotEt")))->Fill(fVzeroMultFlagged, fPhosTotalEt + fEmcalTotalEt);
-    if(fProcessPhos)
-    {
+    if(fProcessPhos) {
       (static_cast<TH2F*>(fHistList->FindObject("fCorrVzerovsPhosTotEt")))->Fill(fVzeroMult, fPhosTotalEt);
       (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFlaggedvsPhosTotEt")))->Fill(fVzeroMultFlagged, fPhosTotalEt);
     }
-    if(fProcessEmcal)
-    {
+    if(fProcessEmcal) {
       (static_cast<TH2F*>(fHistList->FindObject("fCorrVzerovsEmcalTotEt")))->Fill(fVzeroMult, fEmcalTotalEt);
       (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFlaggedvsEmcalTotEt")))->Fill(fVzeroMultFlagged, fEmcalTotalEt);
     }
@@ -895,7 +910,7 @@ Int_t AliHLTMultiplicityCorrelations::ProcessZDC() {
   (static_cast<TH1F*>(fHistList->FindObject("fZdcBC")))->Fill(fESDZDC->GetImpactParamSideC());
  
   // -- ZDC - TPC correlations
-  if (fESDEvent->GetNumberOfTracks() > 0) {
+  if (fESDEvent->GetNumberOfTracks() > 0 && fProcessTPC) {
     (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcNch")))->Fill(zdcE, fTpcTracksA);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcANch")))->Fill(zdcEA, fTpcTracksA);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcCNch")))->Fill(zdcEC, fTpcTracksA);
@@ -922,13 +937,14 @@ Int_t AliHLTMultiplicityCorrelations::ProcessZDC() {
   }
   
   // -- ZDC - SPD correlations
-  (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcSpd")))->Fill(zdcE, fSpdNClusters);
-  (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcASpd")))->Fill(zdcEA, fSpdNClusters);
-  (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcCSpd")))->Fill(zdcEC, fSpdNClusters);
-    
+  if (fProcessSPD) {
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcSpd")))->Fill(zdcE, fSpdNClusters);
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcASpd")))->Fill(zdcEA, fSpdNClusters);
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcCSpd")))->Fill(zdcEC, fSpdNClusters);
+  }
 
   // -- VZERO - ZDC correlations
-  if (fESDVZERO) {
+  if (fESDVZERO && fProcessVZERO) {
     (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcVzero")))->Fill(zdcE, fVzeroMult);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcVzeroA")))->Fill(zdcEA, fVzeroMultA);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrEzdcVzeroC")))->Fill(zdcEC, fVzeroMultC);
@@ -981,14 +997,12 @@ Int_t AliHLTMultiplicityCorrelations::ProcessZDC() {
   }
 
   // -- ZDC - CALO correlations
-  if (fProcessPhos || fProcessEmcal) {
+  if ((fProcessPhos || fProcessEmcal) && fProcessCALO){
     (static_cast<TH2F*>(fHistList->FindObject("fCorrZdcTotEvsTotEt")))->Fill(zdcE, fPhosTotalEt + fEmcalTotalEt);
-    if(fProcessPhos)
-    {
+    if(fProcessPhos) {
       (static_cast<TH2F*>(fHistList->FindObject("fCorrZdcTotEvsPhosTotEt")))->Fill(zdcE, fPhosTotalEt);
     }
-    if(fProcessEmcal)
-    {
+    if(fProcessEmcal) {
       (static_cast<TH2F*>(fHistList->FindObject("fCorrZdcTotEvsEmcalTotEt")))->Fill(zdcE, fEmcalTotalEt);
     }
   }
@@ -1011,12 +1025,10 @@ Int_t AliHLTMultiplicityCorrelations::ProcessCALO() {
   {
     
     AliESDCaloCluster *cluster = fESDEvent->GetCaloCluster(cl);
-    if(cluster->IsPHOS() && fProcessPhos)
-    {
+    if(cluster->IsPHOS() && fProcessPhos) {
       fPhosTotalEt += cluster->E();
     }
-    if(cluster->IsEMCAL() && fProcessEmcal)
-    {
+    if(cluster->IsEMCAL() && fProcessEmcal) {
       fEmcalTotalEt += cluster->E();
     }
   }
@@ -1035,7 +1047,12 @@ Int_t AliHLTMultiplicityCorrelations::ProcessSPD() {
   (static_cast<TH2F*>(fHistList->FindObject("fSpdNClusters")))->Fill(fSpdNClusters);
   (static_cast<TH2F*>(fHistList->FindObject("fSpdNClustersInner")))->Fill(fSpdNClustersInner);
   (static_cast<TH2F*>(fHistList->FindObject("fSpdNClustersOuter")))->Fill(fSpdNClustersOuter);
-  (static_cast<TH2F*>(fHistList->FindObject("fCorrSpdTpcNch")))->Fill(fSpdNClusters,fTpcTracksA);
+
+  
+  // -- SPD vs TPC correlations
+  if (fProcessTPC) {
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrSpdTpcNch")))->Fill(fSpdNClusters,fTpcTracksA);
+  }
 
   return 0;
 }

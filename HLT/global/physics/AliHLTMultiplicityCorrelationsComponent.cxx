@@ -478,6 +478,51 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     fCorrObj->SetProcessEmcal(enabled);
     return 2;
   }
+
+  // -- enable
+  if (argument.CompareTo("-enableCALO")==0) {
+    fCorrObj->SetProcessCALO(kTRUE);
+    return 1;
+  }
+  if (argument.CompareTo("-enableVZERO")==0) {
+    fCorrObj->SetProcessVZERO(kTRUE);
+    return 1;
+  }
+  if (argument.CompareTo("-enableZDC")==0) {
+    fCorrObj->SetProcessZDC(kTRUE);
+    return 1;
+  }
+  if (argument.CompareTo("-enableTPC")==0) {
+    fCorrObj->SetProcessTPC(kTRUE);
+    return 1;
+  }
+  if (argument.CompareTo("-enableSPD")==0) {
+    fCorrObj->SetProcessSPD(kTRUE);
+    return 1;
+  }
+
+  // -- disable
+  if (argument.CompareTo("-disableCALO")==0) {
+    fCorrObj->SetProcessCALO(kFALSE);
+    return 1;
+  }
+  if (argument.CompareTo("-disableVZERO")==0) {
+    fCorrObj->SetProcessVZERO(kFALSE);
+    return 1;
+  }
+  if (argument.CompareTo("-disableZDC")==0) {
+    fCorrObj->SetProcessZDC(kFALSE);
+    return 1;
+  }
+  if (argument.CompareTo("-disableTPC")==0) {
+    fCorrObj->SetProcessTPC(kFALSE);
+    return 1;
+  }
+  if (argument.CompareTo("-disableSPD")==0) {
+    fCorrObj->SetProcessSPD(kFALSE);
+    return 1;
+  }
+
   // unknown argument
   return -EINVAL;
 }
