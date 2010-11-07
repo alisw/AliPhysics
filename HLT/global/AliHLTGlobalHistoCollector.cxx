@@ -69,13 +69,13 @@ void AliHLTGlobalHistoCollector::GetInputDataTypes( vector<AliHLTComponentDataTy
   // see header file for class documentation
 
   list.clear(); 
-  list.push_back( kAliHLTDataTypeHistogram );
+  list.push_back( kAliHLTVoidDataType );
 }
 
 AliHLTComponentDataType AliHLTGlobalHistoCollector::GetOutputDataType() 
 { 
   // see header file for class documentation
-  return kAliHLTDataTypeHistogram;
+  return kAliHLTVoidDataType;
 }
 
 
@@ -206,10 +206,10 @@ void AliHLTGlobalHistoCollector::Clear()
   // reset the store
 
   for( unsigned int i=0; i<fStore.size(); i++ ){
-    for( unsigned int j=0; j<fStore[i].fHistos.size(); j++ ){
-      delete fStore[i].fHistos[j].fHisto;
+    for( unsigned int j=0; j<fStore[i].fInstances.size(); j++ ){
+      delete fStore[i].fInstances[j].fObject;
     }
-    delete fStore[i].fMergedHisto;
+    delete fStore[i].fMergedObject;
   }
   fStore.clear();
 }
@@ -229,69 +229,83 @@ int AliHLTGlobalHistoCollector::DoEvent(const AliHLTComponentEventData & evtData
   }
 
  
-  const TObject *iter = NULL;        
-  for(iter = GetFirstInputObject(kAliHLTDataTypeHistogram); iter != NULL; iter = GetNextInputObject()){
-  
-    if( !( GetDataType(iter) == kAliHLTDataTypeHistogram )) continue;    
+  const TObject *iter = NULL;
+  for(iter = GetFirstInputObject(); iter != NULL; iter = GetNextInputObject()){
     
-    const TH1 *h = dynamic_cast<TH1*>(const_cast<TObject*>( iter ) );
-    if( !h ) continue;
-    //cout<<"received histo "<<h->GetName()<<" with id="<<GetSpecification(iter)<<endl;
-    // search for the base entry, if not exist then create a new entry   
+    if( !iter ) continue;            
+    const TH1 *histo = dynamic_cast<TH1*>(const_cast<TObject*>( iter ) );
+    const TSeqCollection *list = dynamic_cast<TSeqCollection*>(const_cast<TObject*>( iter ) );
+  
+    if( !histo && !list ) continue;
+
+    cout<<"received object "<<iter->GetName()<<" with id="<<GetSpecification(iter)<<endl;
+
+    //search for the base entry, if not exist then create a new entry   
 
     int iBase = -1;
     for( unsigned int i=0; i<fStore.size(); i++ ){
-      if( fStore[i].fDataType == GetDataType(iter) &&
-	  TString(fStore[i].fMergedHisto->GetName()).CompareTo(h->GetName())==0){
+      if( fStore[i].fHLTDataType == GetDataType(iter) &&
+	  TString(fStore[i].fMergedObject->GetName()).CompareTo(iter->GetName())==0){
 	iBase = i;
 	break;
       }
     }
 
-   if( iBase<0 ){
-      AliHLTHistoBaseData b;
-      b.fDataType = GetDataType(iter);
-      b.fMergedHisto = (TH1*) iter->Clone();
-      fStore.push_back(b);
+    if( iBase<0 ){
+      AliHLTGlobalHCCollection c;
+      c.fHLTDataType = GetDataType(iter);
+      c.fMergedObject = iter->Clone();
+      fStore.push_back(c);
       iBase = fStore.size()-1;
     }
 
     // search for the specific entry, if not exist then create a new one
-
-    AliHLTHistoBaseData &b = fStore[iBase];
+    
+    AliHLTGlobalHCCollection &c = fStore[iBase];
     
     int iSpec=-1;
-    for( unsigned int i=0; i<fStore[iBase].fHistos.size(); i++ ){
-      AliHLTHistoData &d = b.fHistos[i];
-      if( d.fSpecification == GetSpecification(iter) ){
+    for( unsigned int i=0; i<c.fInstances.size(); i++ ){
+      AliHLTGlobalHCInstance &inst = c.fInstances[i];
+      if( inst.fHLTSpecification == GetSpecification(iter) ){
 	iSpec = i;
 	break;
       }
     }
 
     if( iSpec<0 ){
-      AliHLTHistoData d;
-      d.fSpecification = GetSpecification(iter);
-      d.fHisto = (TH1*) iter->Clone();
-      b.fHistos.push_back(d);
-      iSpec = b.fHistos.size()-1;      
+      AliHLTGlobalHCInstance inst;
+      inst.fHLTSpecification = GetSpecification(iter);
+      inst.fObject = 0;
+      c.fInstances.push_back(inst);
+      iSpec = c.fInstances.size()-1;      
+    }else{
+      delete c.fInstances[iSpec].fObject;
     }
-    b.fHistos[iSpec].fHisto->Reset();
-    b.fHistos[iSpec].fHisto->Add( (TH1*)iter, 1);
-    //cout<<"index = "<<iBase<<","<<iSpec<<", nentr="<<b.fHistos[iSpec].fHisto->GetEntries()<<endl;
+
+
+    c.fInstances[iSpec].fObject = iter->Clone();
+    
+    cout<<"index = "<<iBase<<","<<iSpec<<endl;
     
     // merge histos 
-    b.fMergedHisto->Reset();
 
-    for( unsigned int i=0; i<b.fHistos.size(); i++ ){
-      b.fMergedHisto->Add(b.fHistos[i].fHisto,1);
+    delete c.fMergedObject;
+    c.fMergedObject = c.fInstances[0].fObject->Clone();
+
+    for( unsigned int i=1; i<c.fInstances.size(); i++ ){
+      if( histo ){
+	dynamic_cast<TH1*>(c.fMergedObject)->Add(dynamic_cast<TH1*>(c.fInstances[i].fObject),1);
+      }
+      else if (list ){
+	dynamic_cast<TSeqCollection*>(c.fMergedObject)->Merge(dynamic_cast<TSeqCollection*>(c.fInstances[i].fObject));	
+      }
     }
     //cout<<" merged="<<b.fMergedHisto->GetEntries()<<endl;
 
   } // end for loop over histogram blocks
 
   for( unsigned int i=0; i<fStore.size(); i++ ){
-    PushBack((TObject*) fStore[i].fMergedHisto, fStore[i].fDataType, fUID );
+    PushBack((TObject*) fStore[i].fMergedObject, fStore[i].fHLTDataType, fUID );
   }
   return 0;
 }

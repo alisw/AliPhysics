@@ -52,23 +52,30 @@ class TH2;
 class AliHLTGlobalHistoCollector : public AliHLTProcessor {
     
 public:
-  struct AliHLTHistoData
+  struct AliHLTGlobalHCInstance
   {
-    TH1 *fHisto;
-    AliHLTUInt32_t fSpecification;
+    TObject *fObject;
+    AliHLTUInt32_t fHLTSpecification;
   };
 
-  struct AliHLTHistoBaseData
+  struct AliHLTGlobalHCCollection
   {
-    AliHLTHistoBaseData():fMergedHisto(0),fDataType(kAliHLTVoidDataType),fHistos(){}
-    AliHLTHistoBaseData( const AliHLTHistoBaseData &x):fMergedHisto(x.fMergedHisto),fDataType(x.fDataType),fHistos(x.fHistos){}
-    AliHLTHistoBaseData &operator=( const AliHLTHistoBaseData &x){ fMergedHisto= x.fMergedHisto; fDataType=x.fDataType; fHistos = x.fHistos; return *this; }
-    TH1 *fMergedHisto;
-    AliHLTComponentDataType fDataType;
-    std::vector<AliHLTHistoData> fHistos;
+  public:
+    AliHLTGlobalHCCollection():fMergedObject(0),fHLTDataType(kAliHLTVoidDataType),fInstances(){}
+    AliHLTGlobalHCCollection( const AliHLTGlobalHCCollection &x):fMergedObject(x.fMergedObject),fHLTDataType(x.fHLTDataType),fInstances(x.fInstances){}
+    AliHLTGlobalHCCollection &operator=( const AliHLTGlobalHCCollection &x){
+      fMergedObject = x.fMergedObject;
+      fHLTDataType = x.fHLTDataType;
+      fInstances = x.fInstances;
+      return *this;
+    }
+
+   ~AliHLTGlobalHCCollection(){}
+    
+    TObject *fMergedObject;
+    AliHLTComponentDataType fHLTDataType;
+    std::vector<AliHLTGlobalHCInstance> fInstances;
   };
-  //typedef struct AliHLTHistoData AliHLTHistoData; //!
-  //typedef struct AliHLTHistoBaseData AliHLTHistoBaseData; //!
 
   /** standard constructor */    
   AliHLTGlobalHistoCollector();           
@@ -115,9 +122,8 @@ private:
 
   AliHLTUInt32_t fUID;// uID of the component
 
-  std::vector<AliHLTHistoBaseData> fStore;
+  std::vector<AliHLTGlobalHCCollection> fStore;
 
-  ClassDef(AliHLTGlobalHistoCollector, 0)
 };
 
 #endif
