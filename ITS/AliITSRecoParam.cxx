@@ -319,7 +319,7 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   //
   AliITSRecoParam *param = new AliITSRecoParam();
   param->SetVertexer3DDefaults();
-
+  param->SetSPDVertexerPileupAlgoOff();
   // use of bads from OCDB
   param->SetUseBadZonesFromOCDB(kTRUE);
   param->SetUseSingleBadChannelsFromOCDB(kFALSE);

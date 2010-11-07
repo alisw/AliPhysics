@@ -128,7 +128,7 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
       if(nolines>=2){
 	rc=Prepare3DVertex(1);
 	if(fPileupAlgo == 2 && rc == 0) FindVertex3DIterative();
-	else if(fPileupAlgo<2 && rc == 0) FindVertex3D(itsClusterTree);
+	else if(fPileupAlgo!=2 && rc == 0) FindVertex3D(itsClusterTree);
 	if(rc!=0) fVert3D.SetNContributors(0); // exclude this vertex      
       }
     }
@@ -178,6 +178,7 @@ void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
     switch(fPileupAlgo){
     case 0: PileupFromZ(); break;
     case 1: FindOther3DVertices(itsClusterTree); break;
+    case 3: break; // no pileup algo  
     default: AliError("Wrong pileup algorithm"); break;
     }
     if(fNoVertices==1){

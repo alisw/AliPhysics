@@ -119,6 +119,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
     SetVertexer3DDeltaPhiCuts();
     SetVertexer3DDCACut();    
   }
+  void SetSPDVertexerPileupAlgoOff(){fVtxr3DPileupAlgo=3;}
   void SetSPDVertexerPileupAlgoZ(){fVtxr3DPileupAlgo=0;}
   void SetSPDVertexerPileupAlgo3DTwoSteps(){fVtxr3DPileupAlgo=1;}
   void SetSPDVertexerPileupAlgo3DOneShot(){fVtxr3DPileupAlgo=2;}
