@@ -78,6 +78,8 @@ class AliUEHist : public TObject
   
   void CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_t ptLeadMax);
   
+  void AdditionalDPhiCorrection(Int_t step);
+  
   void SetBinLimits(AliCFGridSparse* grid);
   void ResetBinLimits(AliCFGridSparse* grid);
   

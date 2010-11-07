@@ -61,6 +61,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
     return;
     
   AliLog::SetClassDebugLevel("AliCFContainer", -1);
+  AliLog::SetClassDebugLevel("AliCFGridSparse", -3);
     
   const char* title = "";
     
@@ -482,22 +483,39 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
   }
   else
   {
-    fTrackHist[region]->GetGrid(step)->SetRangeUser(2, ptLeadMin, ptLeadMax);
-    tracks = (TH1D*) fTrackHist[region]->GetGrid(step)->Project(4);
-    Printf("Calculated histogram in %.2f <= pT <= %.2f --> %f tracks", ptLeadMin, ptLeadMax, tracks->Integral());
-    fTrackHist[region]->GetGrid(step)->SetRangeUser(2, 0, -1);
+    // the efficiency to have find an event depends on leading pT and this is not corrected for because anyway per bin we calculate tracks over events
+    // therefore the number density must be calculated here per leading pT bin and then summed
+  
+    Int_t firstBin = fTrackHist[region]->GetAxis(2, step)->FindBin(ptLeadMin);
+    Int_t lastBin = fTrackHist[region]->GetAxis(2, step)->FindBin(ptLeadMax);
     
-    // normalize to get a density (deta dphi)
-    TAxis* axis = fTrackHist[region]->GetGrid(step)->GetAxis(0);
-    Float_t normalization = fTrackHist[region]->GetGrid(step)->GetAxis(4)->GetBinWidth(1) * (axis->GetBinUpEdge(axis->GetLast()) - axis->GetBinLowEdge(axis->GetFirst()));
-    //Printf("Normalization: %f", normalization);
-    tracks->Scale(1.0 / normalization);
-    
-    TH1D* events = fEventHist->ShowProjection(0, step);
-    Int_t nEvents = (Int_t) events->Integral(events->FindBin(ptLeadMin), events->FindBin(ptLeadMax));
-    if (nEvents > 0)
-      tracks->Scale(1.0 / nEvents);
-    Printf("Calculated histogram in %.2f <= pT <= %.2f --> %d events", ptLeadMin, ptLeadMax, nEvents);
+    for (Int_t bin=firstBin; bin<=lastBin; bin++)
+    {
+      fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(2)->SetRange(bin, bin);
+      TH1D* tracksTmp = (TH1D*) fTrackHist[region]->GetGrid(step)->Project(4);
+      Printf("Calculated histogram in bin %d --> %f tracks", bin, tracksTmp->Integral());
+      fTrackHist[region]->GetGrid(step)->SetRangeUser(2, 0, -1);
+      
+      // normalize to get a density (deta dphi)
+      TAxis* axis = fTrackHist[region]->GetGrid(step)->GetAxis(0);
+      Float_t normalization = fTrackHist[region]->GetGrid(step)->GetAxis(4)->GetBinWidth(1) * (axis->GetBinUpEdge(axis->GetLast()) - axis->GetBinLowEdge(axis->GetFirst()));
+      //Printf("Normalization: %f", normalization);
+      tracksTmp->Scale(1.0 / normalization);
+      
+      TH1D* events = fEventHist->ShowProjection(0, step);
+      Int_t nEvents = (Int_t) events->GetBinContent(bin);
+      if (nEvents > 0)
+        tracksTmp->Scale(1.0 / nEvents);
+      Printf("Calculated histogram in bin %d --> %d events", bin, nEvents);
+      
+      if (!tracks)
+        tracks = tracksTmp;
+      else
+      {
+        tracks->Add(tracksTmp);
+        delete tracksTmp;
+      }
+    }
   }
 
   ResetBinLimits(fTrackHist[region]->GetGrid(step));
@@ -691,12 +709,12 @@ void AliUEHist::Correct(AliUEHist* corrections)
   vertexCorrectionObs->Reset();
   
   TF1* func = new TF1("func", "[1]+[0]/(x-[2])");
-  vertexCorrection->Fit(func, "0", "", 0, 3);
+  vertexCorrection->Fit(func, "0I", "", 0, 3);
 
   for (Int_t i=1; i<=vertexCorrectionObs->GetNbinsX(); i++)
   {
     Float_t xPos = 1.0 / 0.77 * vertexCorrectionObs->GetXaxis()->GetBinCenter(i);
-    if (xPos < 4)
+    if (xPos < 3)
       vertexCorrectionObs->SetBinContent(i, func->Eval(xPos));
     else
       vertexCorrectionObs->SetBinContent(i, vertexCorrection->Interpolate(xPos));
@@ -1219,4 +1237,36 @@ void AliUEHist::ExtendTrackingEfficiency(Bool_t verbose)
         fTrackHistEfficiency->GetGrid(1)->SetElement(bins, 100.0 * trackingEff);
         fTrackHistEfficiency->GetGrid(2)->SetElement(bins, 100.0 * trackingEff / trackingCont);
       }
+}
+
+void AliUEHist::AdditionalDPhiCorrection(Int_t step)
+{
+  // corrects the dphi distribution with an extra factor close to dphi ~ 0
+
+  Printf("WARNING: In AliUEHist::AdditionalDPhiCorrection.");
+
+  THnSparse* grid = fTrackHist[0]->GetGrid(step)->GetGrid();
+  
+  // optimized implementation
+  for (Int_t binIdx = 0; binIdx < grid->GetNbins(); binIdx++)
+  {
+    Int_t bins[5];
+    Double_t value = grid->GetBinContent(binIdx, bins);
+    Double_t error = grid->GetBinError(binIdx);
+    
+    Float_t binCenter = grid->GetAxis(4)->GetBinCenter(bins[4]);
+    if (TMath::Abs(binCenter) < 0.2)
+    {
+      value *= 0.985;
+      error *= 0.985;
+    }
+    else if (TMath::Abs(binCenter) < 0.3)
+    {
+      value *= 0.9925;
+      error *= 0.9925;
+    }
+    
+    grid->SetBinContent(bins, value);
+    grid->SetBinError(bins, error);
+  }
 }

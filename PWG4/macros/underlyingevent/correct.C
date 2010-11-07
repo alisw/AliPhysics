@@ -1,11 +1,19 @@
 const char* objectName = "PWG4_LeadingTrackUE/histosLeadingTrackUE";
 Float_t gLeadingpTMin = 0.51;
+Int_t gUEHist = 0;
+Bool_t gCache = 0;
+void* gFirst = 0;
+void* gSecond = 0;
+Float_t gForceRange = -1;
+Int_t gEnergy = 900;
+Int_t gRegion = 0;
+
 //const char* objectName = "PWG4_LeadingTrackUE/histosLeadingTrackUE_filterbit32";
 
 void SetRanges(TAxis* axis)
 {
   if (strcmp(axis->GetTitle(), "leading p_{T} (GeV/c)") == 0)
-    axis->SetRangeUser(0, 10);
+    axis->SetRangeUser(0, (gEnergy == 900) ? 10 : 25);
 
   if (strcmp(axis->GetTitle(), "multiplicity") == 0)
     axis->SetRangeUser(0, 10);
@@ -32,9 +40,6 @@ void Prepare1DPlot(TH1* hist)
 
 TH1* GetSystematicUncertainty(TH1* corr)
 {
-  Int_t energy = 900;
-  Int_t ueHist = 0;
-
   systError = (TH1*) corr->Clone("systError");
   systError->Reset();
   
@@ -44,39 +49,49 @@ TH1* GetSystematicUncertainty(TH1* corr)
   constantUnc += 0.8 ** 2;
   
   // tpc efficiency
-  if (energy == 900 && gLeadingpTMin < 1.0)
+  if (gEnergy == 900 && gLeadingpTMin < 1.0)
     constantUnc += 1.0 ** 2;
-  else if (energy == 900 && gLeadingpTMin < 1.5)
+  else if (gEnergy == 900 && gLeadingpTMin < 1.5)
     constantUnc += 0.5 ** 2;
-  if (energy == 7000 && gLeadingpTMin < 1.0)
+  if (gEnergy == 7000 && gLeadingpTMin < 1.0)
     constantUnc += 1.0 ** 2;
-  else if (energy == 7000 && gLeadingpTMin < 1.5)
+  else if (gEnergy == 7000 && gLeadingpTMin < 1.5)
     constantUnc += 0.6 ** 2;
   
   // track cuts
-  if (energy == 900 && gLeadingpTMin < 1.0)
+  if (gEnergy == 900 && gLeadingpTMin < 1.0)
     constantUnc += 2.5 ** 2;
-  else if (energy == 900 && gLeadingpTMin < 1.5)
+  else if (gEnergy == 900 && gLeadingpTMin < 1.5)
     constantUnc += 2.0 ** 2;
-  if (energy == 7000)
+  if (gEnergy == 7000)
     constantUnc += 3.0 ** 2;
 
   // difference corrected with pythia and phojet
-  if (energy == 900 && gLeadingpTMin < 1.0)
+  if (gEnergy == 900 && gLeadingpTMin < 1.0)
     constantUnc += 0.6 ** 2;
-  else if (energy == 900 && gLeadingpTMin < 1.5)
+  else if (gEnergy == 900 && gLeadingpTMin < 1.5)
     constantUnc += 0.8 ** 2;
+  
+  if (gEnergy == 7000 && gLeadingpTMin < 1.0)
+  {
+    if (gUEHist == 0)
+      constantUnc += 0.6 ** 2;
+    if (gUEHist == 1)
+      constantUnc += 0.8 ** 2;
+  }
+  else if (gEnergy == 7000 && gLeadingpTMin < 1.5)
+    constantUnc += 1.0 ** 2;
     
   for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
     systError->SetBinContent(bin, constantUnc);
 
   // mis id bias
-  if (ueHist == 0 || ueHist == 2)
+  if (gUEHist == 0 || gUEHist == 2)
     systError->Fill(0.75, 4.0 ** 2);
-  if (ueHist == 1)
+  if (gUEHist == 1)
     systError->Fill(0.75, 5.0 ** 2);
 
-  if (energy == 900)
+  if (gEnergy == 900)
   {
     if (gLeadingpTMin < 1.0)
       systError->Fill(1.25, 1.0 ** 2);
@@ -85,11 +100,11 @@ TH1* GetSystematicUncertainty(TH1* corr)
   }
   
   // non-closure in MC
-  if (energy == 900)
+  if (gEnergy == 900)
     for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
       systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 1.0 ** 2);
       
-  if (energy == 7000)
+  if (gEnergy == 7000)
     systError->Fill(0.75, 2.0 ** 2);
     
   // vertex efficiency
@@ -98,11 +113,11 @@ TH1* GetSystematicUncertainty(TH1* corr)
   // strangeness
   for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
   {
-    if (energy == 900)
+    if (gEnergy == 900)
       systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 0.5 ** 2);
-    if (energy == 7000 && systError->GetXaxis()->GetBinCenter(bin) < 1.5)
+    if (gEnergy == 7000 && systError->GetXaxis()->GetBinCenter(bin) < 1.5)
       systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 2.0 ** 2);
-    else if (energy == 7000)
+    else if (gEnergy == 7000)
       systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 1.0 ** 2);
   }  
     
@@ -165,8 +180,20 @@ void DrawRatio(TH1* corr, TH1* mc, const char* name)
   dummy->GetXaxis()->SetTitleSize(0.08);
   dummy->GetYaxis()->SetTitleSize(0.08);
   dummy->GetYaxis()->SetTitleOffset(0.8);
+  
+  if (gForceRange > 0)
+    dummy->GetYaxis()->SetRangeUser(0, gForceRange);
+  
   dummy->DrawCopy();
   
+  if (gUEHist != 2)
+  {
+    const char* regionStr[] = { "Toward Region", "Away Region", "Transverse Region" };
+    latex = new TLatex(0.65, 0.1, regionStr[gRegion]);
+    latex->SetTextSize(0.075);
+    latex->SetNDC();
+    latex->Draw();
+  }
     
   // systematic uncertainty
   TH1* syst = GetSystematicUncertainty(corr);
@@ -196,8 +223,8 @@ void DrawRatio(TH1* corr, TH1* mc, const char* name)
   Float_t minR = TMath::Min(0.91, ratio->GetMinimum() * 0.95);
   Float_t maxR = TMath::Max(1.09, ratio->GetMaximum() * 1.05);
   
-  minR = 0.8;
-  maxR = 1.2;
+  minR = 0.6;
+  maxR = 1.4;
 
   TH1F dummy3("dummy3", ";;Ratio: MC / corr", 100, corr->GetXaxis()->GetBinLowEdge(1), corr->GetXaxis()->GetBinUpEdge(corr->GetNbinsX()));
   dummy3.SetXTitle(corr->GetXaxis()->GetTitle());
@@ -228,6 +255,8 @@ void DrawRatio(TH1* corr, TH1* mc, const char* name)
   dummy3.DrawCopy("SAME");
 
   ratio->Draw("SAME");
+  
+  ratio->Fit("pol0", "N");
 
   canvas3->Modified();
 
@@ -303,21 +332,38 @@ void CompareBiasWithData(const char* mcFile = "PWG4_JetTasksOutput.root", const 
 void Compare(const char* fileName1, const char* fileName2, Int_t id, Int_t step1, Int_t step2, Int_t region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1)
 {
   loadlibs();
-
-  file1 = TFile::Open(fileName1);
-  list = (TList*) file1->Get(objectName);
-  AliUEHistograms* h = (AliUEHistograms*) list->FindObject("AliUEHistograms");
-  SetupRanges(h);
-
-  file2 = TFile::Open(fileName2);
-  list = (TList*) file2->Get(objectName);
-  AliUEHistograms* h2 = (AliUEHistograms*) list->FindObject("AliUEHistograms");
-  SetupRanges(h2);
-
+  
+  if (!gCache || !gFirst)
+  {
+    file1 = TFile::Open(fileName1);
+    list = (TList*) file1->Get(objectName);
+    AliUEHistograms* h = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+    SetupRanges(h);
+  
+    file2 = TFile::Open(fileName2);
+    list = (TList*) file2->Get(objectName);
+    AliUEHistograms* h2 = (AliUEHistograms*) list->FindObject("AliUEHistograms");
+    SetupRanges(h2);
+  }
+  
+  if (gCache)
+  {
+    if (!gFirst)
+    {
+      gFirst = h;
+      gSecond = h2;
+    }
+    else
+    {
+      AliUEHistograms* h = (AliUEHistograms*) gFirst;
+      AliUEHistograms* h2 = (AliUEHistograms*) gSecond;
+    }
+  }
+    
   TH1* hist1 = h->GetUEHist(id)->GetUEHist(step1, region, ptLeadMin, ptLeadMax);
   TH1* hist2 = h2->GetUEHist(id)->GetUEHist(step2, region, ptLeadMin, ptLeadMax);
 
-  DrawRatio(hist1, hist2, "compare");
+  DrawRatio(hist1, hist2, Form("%s_%d_%d_%d", TString(fileName1).Tokenize(".")->First()->GetName(), id, step1, region));
 }  
 
 void CompareEventHist(const char* fileName1, const char* fileName2, Int_t id, Int_t step, Int_t var)
@@ -346,6 +392,8 @@ void CompareStep(const char* fileName1, const char* fileName2, Int_t id, Int_t s
 
   loadlibs();
 
+  gUEHist = id;
+  gRegion = region;
   Compare(fileName1, fileName2, id, step, step, region, ptLeadMin, ptLeadMax);
 }
 
@@ -428,8 +476,8 @@ void DrawRatios(void* correctedVoid, void* comparisonVoid, Int_t compareStep = -
 
   if (1 && compareUEHist == 2)
   {
-    for (Float_t ptLeadMin = 0.51; ptLeadMin < 4; ptLeadMin += 2.5)
-      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 2.48);      
+    for (Float_t ptLeadMin = 1.01; ptLeadMin < 10; ptLeadMin += 2)
+      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 1.98);      
     return;
   }
 
@@ -505,6 +553,7 @@ void correctMC(const char* fileNameCorrections, const char* fileNameESD = 0, Int
   SetupRanges(esd);
   
   esd->Correct(corr);
+  esd->GetUEHist(2)->AdditionalDPhiCorrection(0);
   
   DrawRatios(esd, testSample, compareStep, compareRegion, compareUEHist);
   
@@ -546,6 +595,7 @@ void correctData(const char* fileNameCorrections, const char* fileNameESD, const
   corr->SetContaminationEnhancement((TH1F*) contEncHistFullRange);
   
   esd->Correct(corr);
+  esd->GetUEHist(2)->AdditionalDPhiCorrection(0);
   
   file3 = TFile::Open("corrected.root", "RECREATE");
   file3->mkdir("PWG4_LeadingTrackUE");
@@ -883,3 +933,28 @@ void MergeList2(const char* listFile, Bool_t onlyPrintEvents = kFALSE)
   finalList->Write(0, TObject::kSingleKey);
   file3->Close();
 }
+
+void PlotAll(const char* correctedFile, const char* mcFile)
+{
+  gCache = 1;
+  
+  if (gEnergy == 900)
+  {
+    Float_t range[] = { 1.5, 2 };
+  }
+  else
+  {
+    Float_t range[] = { 3, 10 };
+  }
+  
+  for (Int_t id=0; id<2; id++)
+  {
+    gForceRange = range[id];
+    for (Int_t region=0; region<3; region++)
+    {
+      CompareStep(correctedFile, mcFile, id, 0, region);
+      gPad->GetCanvas()->SaveAs(Form("%s_%s_%d_%d.png", TString(correctedFile).Tokenize(".")->First()->GetName(), TString(mcFile).Tokenize(".")->First()->GetName(), id, region));
+    }
+  }
+}
+ 
