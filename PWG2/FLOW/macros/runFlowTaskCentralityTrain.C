@@ -12,13 +12,13 @@ const Int_t numberOfCentralityBins = 1;
 Int_t centralityArray[numberOfCentralityBins+1] = {0,10000}; // in terms of reference multiplicity
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
-void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10, 
-                 Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
+//void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10, 
+//Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
 
 //void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
-		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG4/morsch/HIJING_CENT_4EV", Int_t offset=0) //hijing Pb Pb pilot
+//		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10e_000130795_p1", Int_t offset=0) //hijing Pb Pb pilot
 
-//void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kFALSE)
+void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
 {
   // Time:
   TStopwatch timer;
@@ -81,6 +81,9 @@ void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10,
   }
 
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
+  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CTRUE-B-NOPF-ALL");
+  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+COSM1-B-NOPF-ALL");
+
   if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   // Enable debug printouts:
   mgr->SetDebugLevel(2);
@@ -165,7 +168,7 @@ void LoadLibraries(const anaModes mode)
     SetupPar("AOD");
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
-        SetupPar("CORRFW");
+    SetupPar("CORRFW");
     SetupPar("PWG2flowCommon");
     cerr<<"PWG2flowCommon.par loaded..."<<endl;
     SetupPar("PWG2flowTasks");
@@ -176,8 +179,6 @@ void LoadLibraries(const anaModes mode)
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
   //---------------------------------------------------------
   else if (mode==mPROOF) {
-    //
-    //gEnv->SetValue("XSec.GSI.DelegProxy","2");    
     //  set to debug root versus if needed
     //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a_dbg");
     //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a");
@@ -185,21 +186,15 @@ void LoadLibraries(const anaModes mode)
     // Connect to proof
     printf("*** Connect to PROOF ***\n");
     gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    // Put appropriate username here
-    //TProof::Open("abilandz@alicecaf.cern.ch");
-    //TProof::Open("nkolk@alicecaf.cern.ch");
-    //TProof::Open("snelling@localhost");
     TProof::Open("alice-caf.cern.ch");
     //TProof::Open("skaf.saske.sk");
-    //TProof::Open("prf000-iep-grid.saske.sk");
-    //Info("runSKAF.C","Loading libs on proof (may take while, around 1 min) ...");
-    // list the data available
+     // list the data available
     //gProof->ShowDataSets("/*/*"); 
     //gProof->ShowDataSets("/alice/sim/"); //for MC Data
     //gProof->ShowDataSets("/alice/data/"); //for REAL Data 
  
     // Clear the Packages
-    
+    /*    
     gProof->ClearPackage("STEERBase.par");
     gProof->ClearPackage("ESD.par");
     gProof->ClearPackage("AOD.par");
@@ -209,7 +204,7 @@ void LoadLibraries(const anaModes mode)
     
     gProof->ClearPackage("PWG2flowCommon");
     gProof->ClearPackage("PWG2flowTasks");
-    
+    */
     // Upload the Packages
     gProof->UploadPackage("STEERBase.par");
     gProof->UploadPackage("ESD.par");    

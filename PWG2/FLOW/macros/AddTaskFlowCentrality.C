@@ -279,7 +279,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-    taskFE->SelectCollisionCandidates();
+    taskFE->SelectCollisionCandidates(AliVEvent::kUserDefined);
     cout<<"Using Physics Selection"<<endl;
   }
   mgr->AddTask(taskFE);
