@@ -2354,11 +2354,15 @@ void SetCutsWindow::DrawHistosAll()
 
    TCanvas* pad1 = 0;
    TCanvas* pad2 = 0;
+//   TCanvas* pad3 = 0;
+
+//   TH1D* histMult = new TH1D("Multiplicity\n", "AliEve Multiplicity histogram", 1000, 0.0, 1000.0);
+//   TH1D* histNcls = new TH1D("Number of ITS clusters\n", "AliEve Multiplicity histogram", 10000, 0.0, 10000.0);
 
    if(gDrawHistograms[6])
    {
          nHistos1++;
-         TH1D* histPt = new TH1D("Pt\nAll Events", "AliEve Pt histogram", 100, 0.0, 5.0);
+         TH1D* histPt = new TH1D("Pt\n", "AliEve Pt histogram", 1000, 0.0, 1000.0);
    }
 
    if(gDrawHistograms[7])
@@ -2395,11 +2399,22 @@ void SetCutsWindow::DrawHistosAll()
 
    AliEveEventManager::GetMaster()->GotoEvent(0);
 
+  ofstream myresult1(TString::Format("foundMultiplicity.txt"));
+
    for(Int_t i = 0; i <= nEvents; i++)
    {
 
    AliESDEvent* esd = AliEveEventManager::AssertESD();
+/*
+   if(esd->GetMultiplicity())
+     histMult->Fill(esd->GetMultiplicity()->GetNumberOfTracklets());
 
+   if(esd->GetMultiplicity())
+      histNcls->Fill(esd->GetMultiplicity()->GetNumberOfITSClusters(0));
+
+   if(esd->GetMultiplicity()->GetNumberOfTracklets())
+       myresult1 << i << "   " << esd->GetMultiplicity()->GetNumberOfTracklets() << endl;
+*/
    if(esd->GetNumberOfTracks())
    {
 
@@ -2534,6 +2549,17 @@ void SetCutsWindow::DrawHistosAll()
       default:
          break;
    }
+
+/*
+   pad3 = new TCanvas("AliEve 1D histograms - All Events","AliEve 1D histograms - All Events",1200,500);
+   pad3->Divide(2,1);
+   pad3->cd(1);
+   histMult->Draw();
+   pad3->cd(2);
+   histNcls->Draw();
+*/
+
+  myresult1.close();
 
    return;
 
@@ -3220,6 +3246,7 @@ kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, k
    }
  
 //  fTrackListV0Neg->MakeTracks();
+//  fTrackListV0Neg->SetRnrChildren(kFALSE);
 //  gEve->AddElement(fTrackListV0Neg);
 
   gEve->AddElement(momentumVectorList);
@@ -3523,8 +3550,29 @@ kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, k
 
                      for(z = x; z != y; z++)
                      {
-                        TEveElement* trackSingle = (TEveElement*) *z;
-                        trackSingle->SetRnrSelf(kTRUE);
+
+                        AliEveTrack* trackSingle1 = dynamic_cast<AliEveTrack*>((TEveElement*) *z);
+
+                        if(trackSingle1->GetESDTrack()->GetSign() > 0)
+                        {
+                           if(posTrackColor == 0)
+                              trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+                        else
+                        {
+                           if(negTrackColor == 0)
+                              trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+
+//                        trackSingle1->SetLineStyle(3);
+                        trackSingle1->SetRnrSelf(kTRUE);
+
+//                        TEveElement* trackSingle = (TEveElement*) *z;
+//                        trackSingle->SetRnrSelf(kTRUE);
                      }
                   }
                }
@@ -3543,8 +3591,30 @@ kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, k
 
                      for(z = x; z != y; z++)
                      {
-                        TEveElement* trackSingle = (TEveElement*) *z;
-                        trackSingle->SetRnrSelf(kTRUE);
+
+                        AliEveTrack* trackSingle1 = dynamic_cast<AliEveTrack*>((TEveElement*) *z);
+
+                        if(trackSingle1->GetESDTrack()->GetSign() > 0)
+                        {
+                           if(posTrackColor == 0)
+                              trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+                        else
+                        {
+                           if(negTrackColor == 0)
+                              trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+
+//                        trackSingle1->SetLineStyle(3);
+                        trackSingle1->SetRnrSelf(kTRUE);
+
+
+//                        TEveElement* trackSingle = (TEveElement*) *z;
+//                        trackSingle->SetRnrSelf(kTRUE);
                      }
                   }
                }
@@ -3563,8 +3633,31 @@ kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, k
 
                      for(z = x; z != y; z++)
                      {
-                        TEveElement* trackSingle = (TEveElement*) *z;
-                        trackSingle->SetRnrSelf(kTRUE);
+
+                        AliEveTrack* trackSingle1 = dynamic_cast<AliEveTrack*>((TEveElement*) *z);
+
+                        if(trackSingle1->GetESDTrack()->GetSign() > 0)
+                        {
+                           if(posTrackColor == 0)
+                              trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+                        else
+                        {
+                           if(negTrackColor == 0)
+                              trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+
+//                        trackSingle1->SetLineStyle(3);
+                        trackSingle1->SetRnrSelf(kTRUE);
+
+
+
+//                        TEveElement* trackSingle = (TEveElement*) *z;
+//                        trackSingle->SetRnrSelf(kTRUE);
                      }
                   }
                }
@@ -3583,8 +3676,30 @@ kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, k
 
                      for(z = x; z != y; z++)
                      {
-                        TEveElement* trackSingle = (TEveElement*) *z;
-                        trackSingle->SetRnrSelf(kTRUE);
+
+                        AliEveTrack* trackSingle1 = dynamic_cast<AliEveTrack*>((TEveElement*) *z);
+
+                        if(trackSingle1->GetESDTrack()->GetSign() > 0)
+                        {
+                           if(posTrackColor == 0)
+                              trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+                        else
+                        {
+                           if(negTrackColor == 0)
+                              trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
+                        }
+
+//                        trackSingle1->SetLineStyle(3);
+                        trackSingle1->SetRnrSelf(kTRUE);
+
+
+//                        TEveElement* trackSingle = (TEveElement*) *z;
+//                        trackSingle->SetRnrSelf(kTRUE);
                      }
                   }
                }
