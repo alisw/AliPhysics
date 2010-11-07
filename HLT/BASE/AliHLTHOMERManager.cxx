@@ -128,7 +128,7 @@ AliHLTHOMERManager::~AliHLTHOMERManager() {
   fBlockList = NULL;
 
   if ( fAsyncBlockList ) {
-    fAsyncBlockList->Clear();
+    fAsyncBlockList->Delete();
     delete fAsyncBlockList;
   }
   fAsyncBlockList = NULL;
@@ -415,7 +415,7 @@ Int_t AliHLTHOMERManager::NextEvent(){
   }
 
   // -- Reset asyncronous BlockList
-  fAsyncBlockList->Clear();
+  fAsyncBlockList->Delete();
 
   // ***
   // *** Loop over all readers and get new event data
@@ -699,13 +699,6 @@ void AliHLTHOMERManager::AddToAsyncBlockList() {
     
 
     fAsyncBlockList->Add( block );
-
-    // -- Check sources list if block is requested
-    // if ( CheckIfRequested( block ) ) 
-    //   fAsyncBlockList->Add( block );
-    // else {
-    //   // XXX HACK Jochen
-    // }
  
   } while( GetNextBlk() );
 
