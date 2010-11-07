@@ -28,6 +28,7 @@ using namespace std;
 #include "TTree.h"
 #include "TMap.h"
 #include "TObjString.h"
+#include "TDatime.h"
 
 #include "AliLog.h"
 #include "AliRunInfo.h"
@@ -340,11 +341,16 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
 
     AliESDVZERO *esdVZERO = fVZEROReconstructor->GetESDVZERO();
     
-    HLTInfo("VZERO Multiplicity A %f - C %f", esdVZERO->GetMTotV0A(), esdVZERO->GetMTotV0A() );
+    // Send info every 10 s
+    const TDatime time;    
+    static UInt_t lastTime=0;
+    if (time.Get()-lastTime>10) {
+      lastTime=time.Get();
+      HLTInfo("VZERO Multiplicity A %f - C %f", esdVZERO->GetMTotV0A(), esdVZERO->GetMTotV0A() );
+    }
 
     // -- Send AliESDVZERO
-    PushBack(static_cast<TObject*>(esdVZERO),
-	     kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO,0);
+    PushBack(esdVZERO, kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO,0);
   }
   
   // -- Clean up
