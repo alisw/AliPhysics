@@ -905,8 +905,9 @@ void AliMUONAlignment::ProcessTrack(AliMUONTrack * track) {
   for(Int_t iCluster=0; iCluster<nTrackParam; iCluster++) {
     // and get new pointers
     fTrackParam = (AliMUONTrackParam *) fTrack->GetTrackParamAtCluster()->At(iCluster);
+    if (!fTrackParam) continue;
     fCluster = fTrackParam->GetClusterPtr();
-    if (!fCluster || !fTrackParam) continue;
+    if (!fCluster) continue;
     // fill local variables for this position --> one measurement
     FillDetElemData();        
     FillRecPointData();
