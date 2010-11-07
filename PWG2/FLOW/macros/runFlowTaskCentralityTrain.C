@@ -9,16 +9,16 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
  
 // CENTRALITY DEFINITION
 const Int_t numberOfCentralityBins = 1;
-Int_t centralityArray[numberOfCentralityBins+1] = {0,10000}; // in terms of reference multiplicity
+Int_t centralityArray[numberOfCentralityBins+1] = {0,1000000}; // in terms of reference multiplicity
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
 //void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10, 
 //Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
 
-//void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
-//		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10e_000130795_p1", Int_t offset=0) //hijing Pb Pb pilot
+void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
+		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137045_p1", Int_t offset=0) 
 
-void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
+//void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
 {
   // Time:
   TStopwatch timer;
@@ -199,17 +199,18 @@ void LoadLibraries(const anaModes mode)
     gProof->ClearPackage("STEERBase.par");
     gProof->ClearPackage("ESD.par");
     gProof->ClearPackage("AOD.par");
+    */
     gProof->ClearPackage("ANALYSIS.par");
     gProof->ClearPackage("ANALYSISalice.par");
     gProof->ClearPackage("CORRFW.par");
     
     gProof->ClearPackage("PWG2flowCommon");
     gProof->ClearPackage("PWG2flowTasks");
-    */
+    
     // Upload the Packages
-    gProof->UploadPackage("STEERBase.par");
-    gProof->UploadPackage("ESD.par");    
-    gProof->UploadPackage("AOD.par");
+    //gProof->UploadPackage("STEERBase.par");
+    //gProof->UploadPackage("ESD.par");    
+    //gProof->UploadPackage("AOD.par");
        
     gProof->UploadPackage("ANALYSIS.par"); 
     gProof->UploadPackage("ANALYSISalice.par");
@@ -219,12 +220,13 @@ void LoadLibraries(const anaModes mode)
 
     // Enable the Packages 
     // The global package
+    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-04-AN");
     //gProof->EnablePackage("aliroot_v4-19-05-AN",kTRUE);
     // Or separate
     
-    gProof->EnablePackage("STEERBase");
-    gProof->EnablePackage("ESD");
-    gProof->EnablePackage("AOD");
+    //gProof->EnablePackage("STEERBase");
+    //gProof->EnablePackage("ESD");
+    //gProof->EnablePackage("AOD");
     
     // Always needed
     gProof->EnablePackage("ANALYSIS");
