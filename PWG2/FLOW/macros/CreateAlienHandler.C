@@ -18,25 +18,25 @@ AliAnalysisGrid* CreateAlienHandler() {
 
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-27-06-1");
-  plugin->SetAliROOTVersion("v4-20-12-AN");  
+  plugin->SetROOTVersion("v5-27-06b");
+  plugin->SetAliROOTVersion("v4-21-04-AN");  
   
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
   // ============================================================================
   //  Example 1: MC production (set in macro runFlowTask.C: DATA = kFALSE)
-  plugin->SetGridDataDir("/alice/sim/LHC10d4");
-  plugin->SetDataPattern("*AliESDs.root"); // The default data pattern, other may be "*tag.root", "*ESD.tag.root", etc
-  plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(105044,106044); to add more runs in one go  
-  plugin->SetOutputToRunNo();  
+  //plugin->SetGridDataDir("/alice/sim/LHC10d4");
+  //plugin->SetDataPattern("*AliESDs.root"); // The default data pattern, other may be "*tag.root", "*ESD.tag.root", etc
+  //plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(105044,106044); to add more runs in one go  
+  //plugin->SetOutputToRunNo(); 
   // ============================================================================
   //  Example 2: Real data (set in macro runFlowTask.C: DATA = kTRUE, MCEP = kFALSE)
-  // plugin->SetGridDataDir("/alice/data/2010/LHC10c");
-  // plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
-  // plugin->SetRunPrefix("000"); // IMPORTANT!
-  // plugin->AddRunNumber(120244); 
+  plugin->SetGridDataDir("/alice/data/2010/LHC10h");
+  plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
+  plugin->SetRunPrefix("000"); // IMPORTANT!
+  plugin->AddRunNumber(137042); 
   // plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
-  // plugin->SetOutputToRunNo();  
+  plugin->SetOutputToRunNo();  
   // ============================================================================
  
   // METHOD 2: Declare existing data files (raw collections, xml collections, root file)
