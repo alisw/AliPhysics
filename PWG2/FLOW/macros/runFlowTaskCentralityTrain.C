@@ -81,8 +81,9 @@ void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
   }
 
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
-  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CTRUE-B-NOPF-ALL");
   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+COSM1-B-NOPF-ALL");
+  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBA-B-NOPF-ALL");
+  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBC-B-NOPF-ALL");
 
   if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   // Enable debug printouts:
