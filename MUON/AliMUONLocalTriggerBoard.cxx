@@ -514,7 +514,7 @@ void AliMUONLocalTriggerBoard::Module(char *mod)
 ///
    const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
-   char s[100]; strncpy(s, GetName(), 100);
+   char s[100]; strncpy(s, GetName(), 99);
 
    Int_t numlines = 0;
 
@@ -1201,7 +1201,7 @@ Int_t AliMUONLocalTriggerBoard::GetI() const
 
    const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
-   char s[100]; strncpy(s, GetName(), 100);
+   char s[100]; strncpy(s, GetName(), 99);
 
    Int_t numlines = 0;
 
