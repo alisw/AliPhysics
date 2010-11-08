@@ -53,7 +53,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   // physics selection
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  physicsSelectionTask = AddTaskPhysicsSelection(isMC);
+  physicsSelectionTask = AddTaskPhysicsSelection(isMC,1);
   // FIXME!!
   if(!isMC) {
     AliPhysicsSelection * physSel = physicsSelectionTask->GetPhysicsSelection();
@@ -66,8 +66,10 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   // Centrality
   AliCentralitySelectionTask *taskCentr = new AliCentralitySelectionTask("CentralitySelection");
-  const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root";
-  const char * file2 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityByFunction.root";
+  // const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root";
+  // const char * file2 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityByFunction.root";
+  const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_LHC10g2a_100.root";
+  const char * file2 = "$ALICE_ROOT/ANALYSIS/macros/AliCentralityByFunction_LHC10g2a_100.root";
   taskCentr->SetPercentileFile (file1);
   taskCentr->SetPercentileFile2(file2);
   mgr->AddTask(taskCentr);
@@ -80,7 +82,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   centrSelector->SetCentralityEstimator(centrEstimator);
   // FIXME!!!
   // centrSelector->SetUseMultRange();
-  // centrSelector->SetIsMC(isMC,1000,2000);
+  centrSelector->SetIsMC(isMC,1500,2300);
   //  centrSelector->SetMultRange(10,20);
 
   // Parse option strings
@@ -136,9 +138,9 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     cout << "Setting custom suffix: " << customSuffix << endl;    
     task->GetHistoManager()->SetSuffix(customSuffix);
   }
-  
+  //  task->SelectCollisionCandidates(AliVEvent::kUserDefined);
   if (!mgr->InitAnalysis()) return;
-	
+  
   mgr->PrintStatus();
   
   if (runMode == kMyRunModeLocal ) {
@@ -156,6 +158,8 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   }
 
   pathsuffix = pathsuffix + "_" + centrEstimator + "_bin_"+long(centrBin);
+  pathsuffix += customSuffix;
+
   if (doSave) MoveOutput(data, pathsuffix.Data());
 
   

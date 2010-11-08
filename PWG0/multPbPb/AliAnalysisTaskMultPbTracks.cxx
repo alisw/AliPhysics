@@ -18,7 +18,7 @@
 #include "AliMCParticle.h"
 #include "AliGenEventHeader.h"
 #include "AliESDCentrality.h"
-
+#include "AliMultiplicity.h"
 #include <iostream>
 #include "AliAnalysisMultPbCentralitySelector.h"
 
@@ -308,6 +308,8 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   //  cout << acceptedTracks << endl;
   
   hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]  ->Fill(acceptedTracks);
+  // FIXME
+  //  hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]  ->Fill(fESD->GetMultiplicity()->GetNumberOfTracklets());
 
 
 }
