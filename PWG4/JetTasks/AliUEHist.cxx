@@ -709,8 +709,9 @@ void AliUEHist::Correct(AliUEHist* corrections)
   vertexCorrectionObs->Reset();
   
   TF1* func = new TF1("func", "[1]+[0]/(x-[2])");
+  // some defaults
+  func->SetParameters(0.1, 1, -0.7);
   vertexCorrection->Fit(func, "0I", "", 0, 3);
-
   for (Int_t i=1; i<=vertexCorrectionObs->GetNbinsX(); i++)
   {
     Float_t xPos = 1.0 / 0.77 * vertexCorrectionObs->GetXaxis()->GetBinCenter(i);
@@ -720,7 +721,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
       vertexCorrectionObs->SetBinContent(i, vertexCorrection->Interpolate(xPos));
   }
  
-  #if 0
+  #if 1
   new TCanvas;
   vertexCorrection->DrawCopy();
   vertexCorrectionObs->SetLineColor(2);
