@@ -5,6 +5,8 @@
 #include "TH1.h"
 #include "TCanvas.h"
 
+class AliHLTEveHistoMerger;
+
 class AliHLTEveMultCorr : public AliHLTEveBase
 {
 
@@ -29,17 +31,23 @@ protected:
     
     virtual void AddHistogramsToCanvas(AliHLTHOMERBlockDesc* block, TCanvas* canvas, Int_t& cdCount);
 
-    virtual void AddHistogramToCanvas(TH1* block, TCanvas* canvas, Int_t& cdCount);
+    virtual void AddHistogramToCanvas(TH1* hist, TCanvas* canvas, Int_t& cdCount, Bool_t zoom = false);
+    
+    virtual TH1* FindHistogram(TCollection *coll, const char *name);
 
 private:
 
     TCanvas *fVzeroMultCanvas;
     TCanvas *fZdcMultCanvas;
-    TCanvas *fTpcMultCanvas;
+    TCanvas *fTrackMultCanvas;
     TCanvas *fCorrCanvas;
     TCanvas *fEtCorrCanvas;
     TCanvas *fZdcVzeroSpdCorrCanvas;
  
+    AliHLTEveHistoMerger *fMerger;
+
+    TList *fMyList;
+    
     /** Default constructor prohibited */
     AliHLTEveMultCorr();
     

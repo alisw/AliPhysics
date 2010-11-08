@@ -4,21 +4,33 @@
 #include <iostream>
 #include <TCanvas.h>
 #include "AliHLTHOMERBlockDesc.h"
+#include "AliHLTEveHistoMerger.h"
 #include "TList.h"
+#include "AliLog.h"
 
 AliHLTEveMultCorr::AliHLTEveMultCorr(const char* name): AliHLTEveBase(name)
         ,fVzeroMultCanvas(0)
         ,fZdcMultCanvas(0)
-        ,fTpcMultCanvas(0)
+        ,fTrackMultCanvas(0)
         ,fCorrCanvas(0)
         ,fEtCorrCanvas(0)
         ,fZdcVzeroSpdCorrCanvas(0)
+        ,fMerger(0)
+        ,fMyList(0)
 {
-
+  fMerger = new AliHLTEveHistoMerger();
 }
 
 AliHLTEveMultCorr::~AliHLTEveMultCorr()
 {
+  if(fMerger)
+  {
+    delete fMerger;
+  }
+  if(fMyList)
+  {
+    delete fMyList;
+  }
 }
 
 void AliHLTEveMultCorr::ResetElements()
@@ -30,7 +42,7 @@ void AliHLTEveMultCorr::UpdateElements()
 {
     fVzeroMultCanvas->Update();
     fZdcMultCanvas->Update();
-    fTpcMultCanvas->Update();
+    fTrackMultCanvas->Update();
     fCorrCanvas->Update();
     fEtCorrCanvas->Update();
     fZdcVzeroSpdCorrCanvas->Update();
@@ -39,7 +51,23 @@ void AliHLTEveMultCorr::UpdateElements()
 
 void AliHLTEveMultCorr::ProcessBlock(AliHLTHOMERBlockDesc* block)
 {
+    TString msg;
+    
     TList *hlist = dynamic_cast<TList*>(block->GetTObject());
+    if(kFALSE)
+    {
+      hlist = dynamic_cast<TList*>(fMerger->Process(hlist, block->GetSpecification()));
+    }
+    else
+    {
+      if(fMyList)
+      {
+	delete fMyList;
+	fMyList = 0;
+      }
+      fMyList = dynamic_cast<TList*>(hlist->Clone());
+      hlist = fMyList;
+    }
     if (hlist)
     {
 
@@ -52,114 +80,114 @@ void AliHLTEveMultCorr::ProcessBlock(AliHLTHOMERBlockDesc* block)
             //VZERO multiplicity hists
             if (!fVzeroMultCanvas) 
 	    {
-	      fVzeroMultCanvas = CreateCanvas("V0 Mult", "V0 Multiplicities");
+	      fVzeroMultCanvas = CreateCanvas("V0 M", "V0 Multiplicities");
 	      fVzeroMultCanvas->Divide(2, 2);
 	    }
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fVzeroMult"));
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fVzeroMult"));
             AddHistogramToCanvas(oneDf, fVzeroMultCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fVzeroMultAC"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fVzeroMultAC"));
             AddHistogramToCanvas(twoDf, fVzeroMultCanvas, cd);
 	    cd++;
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fVzeroFlaggedMult"));
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fVzeroFlaggedMult"));
             AddHistogramToCanvas(oneDf, fVzeroMultCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fVzeroFlaggedMultAC"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fVzeroFlaggedMultAC"));
             AddHistogramToCanvas(twoDf, fVzeroMultCanvas, cd);
 
 	    cd = 1;
             //ZDC multiplicity hists
             if (!fZdcMultCanvas) 
 	    {
-	      fZdcMultCanvas = CreateCanvas("ZDC Mult", "ZDC Multiplicities");
-	      fZdcMultCanvas->Divide(2, 4);
+	      fZdcMultCanvas = CreateCanvas("ZDC M", "ZDC Multiplicities");
+	      fZdcMultCanvas->Divide(3, 3);
 	    }
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fZdcEzdc"));
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fZdcEzdc"));
             AddHistogramToCanvas(oneDf, fZdcMultCanvas, cd);
 	    cd++;
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fZdcEzn"));
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fZdcEzn"));
             AddHistogramToCanvas(oneDf, fZdcMultCanvas, cd);
 	    cd++;
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fZdcEzp"));
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fZdcEzp"));
             AddHistogramToCanvas(oneDf, fZdcMultCanvas, cd);
 	    cd++;
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fZdcEzem"));
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fZdcEzem"));
             AddHistogramToCanvas(oneDf, fZdcMultCanvas, cd);
 	    cd++;
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fZdcNpart"));
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fZdcNpart"));
             AddHistogramToCanvas(oneDf, fZdcMultCanvas, cd);
 	    cd++;
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fZdcB"));
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fZdcB"));
             AddHistogramToCanvas(oneDf, fZdcMultCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fZdcEzemEzdc"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fZdcEzemEzdc"));
             AddHistogramToCanvas(twoDf, fZdcMultCanvas, cd);
 
 	    cd = 1;
             // TPC multiplicity
-            if (!fTpcMultCanvas) 
+            if (!fTrackMultCanvas) 
 	    {
-	      fTpcMultCanvas = CreateCanvas("TPC Mult", "TPC Multiplicities");
-	      fTpcMultCanvas->Divide(2, 2);
+	      fTrackMultCanvas = CreateCanvas("Track M", "Track Multiplicities");
+	      fTrackMultCanvas->Divide(2, 2);
 	    }
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fTpcNch2"));
-            AddHistogramToCanvas(oneDf, fTpcMultCanvas, cd);
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fTpcNch2"));
+            AddHistogramToCanvas(oneDf, fTrackMultCanvas, cd);
 	    cd++;
-            oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fTpcNch3"));
-            AddHistogramToCanvas(oneDf, fTpcMultCanvas, cd);
+            oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fTpcNch3"));
+            AddHistogramToCanvas(oneDf, fTrackMultCanvas, cd);
 	    cd++;
-	    oneDf = dynamic_cast<TH1F*>(hlist->FindObject("fSpdNClusters"));
+	    oneDf = dynamic_cast<TH1F*>(FindHistogram(hlist, "fSpdNClusters"));
 	    
-            AddHistogramToCanvas(oneDf, fTpcMultCanvas, cd);
+            AddHistogramToCanvas(oneDf, fTrackMultCanvas, cd);
 
 	    cd = 1;
             // Correlations
             if (!fCorrCanvas) 
 	    {
-	      fCorrCanvas = CreateCanvas("Correlations", "Multiplicity Correlations");
-	      fCorrCanvas->Divide(2, 3);
+	      fCorrCanvas = CreateCanvas("Corr", "Multiplicity Correlations");
+	      fCorrCanvas->Divide(3, 2);
 	    }
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrEzdcNch"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrEzdcNch"));
             AddHistogramToCanvas(twoDf, fCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrVzeroNch"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrVzeroNch"));
             AddHistogramToCanvas(twoDf, fCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrSpdTpcNch"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrSpdTpcNch"));
             AddHistogramToCanvas(twoDf, fCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrEzemNch"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrEzemNch"));
             AddHistogramToCanvas(twoDf, fCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrEzdcVzero"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrEzdcVzero"));
             AddHistogramToCanvas(twoDf, fCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrEzemVzero"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrEzemVzero"));
             AddHistogramToCanvas(twoDf, fCorrCanvas, cd);
 	    
 	    cd = 1;
             // ET Correlations
             if (!fEtCorrCanvas) 
 	    {
-	      fEtCorrCanvas = CreateCanvas("E_{T} corr", "E_{T} Correlations");
-	      fEtCorrCanvas->Divide(2, 3);
+	      fEtCorrCanvas = CreateCanvas("ET", "E_{T} Correlations");
+	      fEtCorrCanvas->Divide(3, 2);
 	    }
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrZdcTotEvsPhosTotEt"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrZdcTotEvsPhosTotEt"));
             AddHistogramToCanvas(twoDf, fEtCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrZdcTotEvsEmcalTotEt"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrZdcTotEvsEmcalTotEt"));
             AddHistogramToCanvas(twoDf, fEtCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrZdcTotEvsTotEt"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrZdcTotEvsTotEt"));
             AddHistogramToCanvas(twoDf, fEtCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrVzerovsPhosTotEt"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrVzerovsPhosTotEt"));
             AddHistogramToCanvas(twoDf, fEtCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrVzerovsEmcalTotEt"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrVzerovsEmcalTotEt"));
             AddHistogramToCanvas(twoDf, fEtCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrVzerovsTotEt"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrVzerovsTotEt"));
             AddHistogramToCanvas(twoDf, fEtCorrCanvas, cd);
 
 	    cd = 1;
@@ -167,35 +195,35 @@ void AliHLTEveMultCorr::ProcessBlock(AliHLTHOMERBlockDesc* block)
             if (!fZdcVzeroSpdCorrCanvas) 
 	    {
 	      fZdcVzeroSpdCorrCanvas = CreateCanvas("ZDC/V0 vs SPD", "ZDC/V0 vs. SPD");
-	      fZdcVzeroSpdCorrCanvas->Divide(2, 3);
+	      fZdcVzeroSpdCorrCanvas->Divide(3, 2);
 	      
 	    }
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrVzeroSpd"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrVzeroSpd"));
             AddHistogramToCanvas(twoDf, fZdcVzeroSpdCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrVzeroASpd"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrVzeroASpd"));
             AddHistogramToCanvas(twoDf, fZdcVzeroSpdCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrVzeroCSpd"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrVzeroCSpd"));
             AddHistogramToCanvas(twoDf, fZdcVzeroSpdCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrEzdcSpd"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrEzdcSpd"));
             AddHistogramToCanvas(twoDf, fZdcVzeroSpdCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrEzdcASpd"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrEzdcASpd"));
             AddHistogramToCanvas(twoDf, fZdcVzeroSpdCorrCanvas, cd);
 	    cd++;
-            twoDf = dynamic_cast<TH2F*>(hlist->FindObject("fCorrEzdcCSpd"));
+            twoDf = dynamic_cast<TH2F*>(FindHistogram(hlist, "fCorrEzdcCSpd"));
             AddHistogramToCanvas(twoDf, fZdcVzeroSpdCorrCanvas, cd);
         }
         else
         {
-            std::cout << "ERROR: This block does not contain what you think it contains!" << std::endl;
+            AliWarning("This block does not contain what you think it contains!");
         }
     }
     else
     {
-      std::cout << "ERROR: There is no TList object in the block" << std::endl;
+      AliWarning("There is no TList object in the block");
     }
 
 
@@ -205,8 +233,10 @@ void AliHLTEveMultCorr::AddHistogramsToCanvas(AliHLTHOMERBlockDesc* /*block*/, T
 {
 }
 
-void AliHLTEveMultCorr::AddHistogramToCanvas(TH1* hist, TCanvas* canvas, Int_t& cdCount)
+void AliHLTEveMultCorr::AddHistogramToCanvas(TH1* hist, TCanvas* canvas, Int_t& cdCount, Bool_t zoom)
 {
+  
+  TString msg;
     if (hist)
     {
         if (!strcmp(hist->ClassName(), "TH1F"))
@@ -214,21 +244,44 @@ void AliHLTEveMultCorr::AddHistogramToCanvas(TH1* hist, TCanvas* canvas, Int_t& 
 	    canvas->cd(cdCount);
 	    TPad * pad = dynamic_cast<TPad*>(canvas->cd(cdCount));
 	    pad->SetLogy();
+	    if(zoom) 
+	    {
+	      TH1F *h = dynamic_cast<TH1F*>(hist);
+	      h->GetXaxis()->SetRange(0, h->GetMaximumBin() + h->GetMaximumBin()*0.2);
+	    }
             dynamic_cast<TH1F*>(hist)->Draw();
         }
         else if (!strcmp(hist->ClassName(), "TH2F"))
         {
 	    canvas->cd(cdCount);
+	    if(zoom)
+	    {
+	      TH2F *h = dynamic_cast<TH2F*>(hist);
+	      h->GetXaxis()->SetRange(0, h->GetMaximumBin() + h->GetMaximumBin()*0.2);
+	      h->GetYaxis()->SetRange(0, h->GetMaximumBin() + h->GetMaximumBin()*0.2);
+	    }
             dynamic_cast<TH2F*>(hist)->Draw("COLZ");
         }
         else
-        {
-            std::cout << "I don't want histograms of type " << hist->ClassName() << std::endl;
+        {	
+	  msg.Form("I don't want histograms of type %s", hist->ClassName());
+	  AliWarning(msg.Data());
         }
     }
     else
     {
-      std::cout << "ERROR (AddHistogramsToCanvas): You gave me a null pointer" << std::endl;
+      AliWarning("You gave me a null pointer!");
     }
 }
 
+TH1* AliHLTEveMultCorr::FindHistogram(TCollection* coll, const char* name)
+{
+  TString msg;
+  TH1 *hist = dynamic_cast<TH1*>(coll->FindObject(name));
+  if(!hist)
+  {
+    msg.Form("Could not find object %s", name);
+    AliWarning(msg);
+  }
+  return hist;
+}
