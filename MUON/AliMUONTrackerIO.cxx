@@ -325,6 +325,8 @@ AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
         {
           if ( nDAC < 100 ) 
           {
+            delete[] runs;
+            delete[] dac;
             runs = new Int_t[nDAC];
             dac = new Int_t[nDAC];
             // skip two lines
