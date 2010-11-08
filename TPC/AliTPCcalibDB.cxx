@@ -1093,7 +1093,7 @@ AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
   if (map){
     AliDCSSensor * sensor = 0;
     TObject *osensor=0;
-    if (type==0) osensor = ((*map)("fCavernPressure"));
+    if (type==0) osensor = ((*map)("fCavernPressure2"));
     if (type==1) osensor = ((*map)("fP2Pressure"));
     sensor =dynamic_cast<AliDCSSensor *>(osensor); 
     if (sensor) return sensor;
@@ -1179,7 +1179,7 @@ AliTPCCalibVdrift *     AliTPCcalibDB::GetVdrift(Int_t run){
   //
   // Get the interface to the the vdrift 
   //
-  if (run>fVdriftArray.GetEntriesFast())  UpdateRunInformations(run);
+  if (run>=fVdriftArray.GetEntriesFast())  UpdateRunInformations(run);
   AliTPCCalibVdrift  * vdrift = (AliTPCCalibVdrift*)fVdriftArray.At(run);
   if (!vdrift) {
     UpdateRunInformations(run);
