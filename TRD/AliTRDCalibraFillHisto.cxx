@@ -2673,7 +2673,6 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ2(AliRawReader *rawReader)
   // Same algorithm as TestBeam but different reader
   //
 
-   //  AliTRDrawFastStream *rawStream = AliTRDrawFastStream::GetRawStream(rawReader);
   AliTRDrawStream *rawStream = new AliTRDrawStream(rawReader);
   rawStream->SetNoErrorWarning();
   rawStream->SetSharedPadReadout(kFALSE);

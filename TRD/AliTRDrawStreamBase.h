@@ -41,10 +41,9 @@ class AliTRDrawStreamBase : public TObject
 
   enum STREAMTYPE
     {
-      kTRDsimStream  =  0,
-      kTRDrealStream =  1,
-      kTRDfastStream =  2,
-      kTRDdefaultStream = 3
+      kTRDsimStream     =  0,
+      kTRDrealStream    =  1,
+      kTRDdefaultStream =  2
     };
 
   enum { kDDLOffset = 0x400 };                                // Offset for DDL numbers
