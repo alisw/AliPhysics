@@ -26,6 +26,7 @@
 #include "TEveManager.h"
 #include "TEvePointSet.h"
 #include "TEveTrack.h"
+#include "TEveElement.h"
 #include "TCanvas.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -49,6 +50,7 @@ AliHLTEveHLT::AliHLTEveHLT() :
   fUseIpOnFailedITS(kFALSE),
   fUseRkStepper(kFALSE),
   fTrackList(NULL),
+  fTrackLists(NULL),
   fOldTrackList(NULL),
   fPointSetVertex(NULL),
   fTrCanvas(NULL),
@@ -59,7 +61,8 @@ AliHLTEveHLT::AliHLTEveHLT() :
   fHistMult(NULL),
   fHistDCAr(NULL),
   fTrCount(0), 
-  fVCount(0)
+  fVCount(0),
+  fNTrackBins(10)
 {
   // Constructor.
   CreateHistograms();
@@ -72,15 +75,14 @@ AliHLTEveHLT::~AliHLTEveHLT()
   if(fTrackList)
     delete fTrackList;
   fTrackList = NULL;
+
+  if(fTrackLists)
+    delete fTrackLists;
+  fTrackLists = NULL;
+
+
 }
-///____________________________________________________________________
-void AliHLTEveHLT::ProcessEsdEvent( AliESDEvent * esd ) {
-  //See header file for documentation
-  if(!fTrackList) CreateTrackList();
-  if(!fPointSetVertex) CreateVertexPointSet();
-  ProcessEsdEvent(esd, fTrackList);
- 
-}
+
 
 ///________________________________________________________________________
 void AliHLTEveHLT::CreateHistograms(){
@@ -103,7 +105,7 @@ void AliHLTEveHLT::CreateHistograms(){
 
   fHistnClusters = new TH1F("fHistnClusters","TPC clusters per track", 160, 0,160);
 
-  fHistMult      = new TH1F("fHistMult",     "event track multiplicity",150, 0, 15000);    
+  fHistMult      = new TH1F("fHistMult",     "event track multiplicity",50, 0, 50);    
   
   fHistDCAr = new TH1F("fHistDCAr", "DCA r", 200, -100, 100);
 
@@ -114,9 +116,7 @@ void AliHLTEveHLT::CreateHistograms(){
 void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
   if ( ! block->GetDataType().CompareTo("ALIESDV0") ) {
-    if(!fTrackList) CreateTrackList();
-    if(!fPointSetVertex) CreateVertexPointSet();
-    ProcessEsdBlock(block, fTrackList);
+    ProcessEsdBlock(block);
   } 
   
   else if ( ! block->GetDataType().CompareTo("ROOTTOBJ") ) {
@@ -144,28 +144,36 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
 ///____________________________________________________________________________
 void AliHLTEveHLT::UpdateElements() {
   //See header file for documentation
-  //
+
   DrawHistograms();
-  if(fTrackList) fTrackList->ElementChanged();
+
+  if(fTrackLists) {
+    for(Int_t il = 0; il < fNTrackBins; il++) {
+      TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", il)));
+      trackList->ElementChanged();
+    } 
+  }
+
   if(fPointSetVertex) fPointSetVertex->ResetBBox();
   if(fTrCanvas) fTrCanvas->Update();
   if(fVertexCanvas) fVertexCanvas->Update();
   if(fCanvas) fCanvas->Update();
   
 }
+
 ///_________________________________________________________________________________
 void AliHLTEveHLT::ResetElements(){
   //See header file for documentation
   
   cout << "destroy"<<endl;
-  if(fTrackList) {
-    fTrackList->Destroy();
-    fTrackList = NULL;
-    // RemoveElement(fTrackList);
-    // TThread * destructor = new TThread(DestroyGarbage, (void*) this);
-    // destructor->Run();
-    // fTrackList = NULL;
+
+  if(fTrackLists) {
+    for(Int_t il = 0; il < fNTrackBins; il++) {
+      TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", il)));
+      trackList->DestroyElements();
+    } 
   }
+
   
   fTrCount = 0;
   fVCount = 0;
@@ -254,21 +262,22 @@ void AliHLTEveHLT::AddHistogramToCanvas(TH1* histogram, TCanvas * canvas, Int_t 
 void AliHLTEveHLT::CreateTrackList() {
   //See header file for documentation
   fTrackList = new TEveTrackList("ESD Tracks");
-  fTrackList->SetMainColor(6);
+  fTrackList->SetMainColor(kOrange);
   AddElement(fTrackList);
 }
-// ///________________________________________________________________________________________
-// void AliHLTEveHLT::CreateTrackList() {
-//   //See header file for documentation
-//   fTrackList = new TEveElementList("ESD tracks");
-//   for (Int_t i = 0; i < 10; i++ ) {
-//     TEveTrackList * trackList = new TEveTrackList(Form("Tracklist_%d", i));
-//     trackList->SetMainColor(i);
-//     fTrackList->AddElement(trackList);
-//   }
-  
-//   AddElement(fTrackList);
-// }
+
+///________________________________________________________________________________________
+void AliHLTEveHLT::CreateTrackLists() {
+  //See header file for documentation
+  fTrackLists = new TEveElementList("ESD Track lists");
+  AddElement(fTrackLists);
+  for(Int_t i = 0; i < 10; i++) {
+    TEveTrackList * trackList = new TEveTrackList(Form("Tracks_%d", i));
+    trackList->SetMainColor(kOrange-i);
+    fTrackLists->AddElement(trackList);
+  }
+}
+
 
 ///_________________________________________________________________________________________
 void AliHLTEveHLT::CreateVertexPointSet() {
@@ -290,16 +299,57 @@ void AliHLTEveHLT::ProcessGlobalTrigger( AliHLTHOMERBlockDesc * block ) {
 
 
 ///______________________________________________________________________
-void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList * cont ) {
+void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
 
   AliESDEvent* esd = (AliESDEvent *) (block->GetTObject());
   if (!esd) return;
   
-  ProcessEsdEvent(esd, cont);
+  ProcessEsdEvent(esd);
 }
-///___________________________________________________________________________________
-void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
+
+
+
+///_________________________________________________________________________________
+Color_t AliHLTEveHLT::GetColor(Float_t pt) {
+  //See header file
+  Color_t baseColor = kOrange;
+  
+  Float_t binlimit = 0.1;
+  for(Int_t i = 0; i< 10; i++) {
+   
+    if (pt < binlimit)
+      return baseColor - i;
+    
+    binlimit +=0.1;
+  }
+  
+  return baseColor - 9;
+
+}
+
+///_________________________________________________________________________________
+Int_t AliHLTEveHLT::GetColorBin(Float_t pt) {
+  //See header file
+  
+  Float_t binlimit = 0.1;
+  for(Int_t i = 0; i< 10; i++) {
+   
+    if (pt < binlimit)
+      return i;
+    
+    binlimit +=0.1;
+  }
+  
+  return 9;
+  
+}
+
+///____________________________________________________________________
+void AliHLTEveHLT::ProcessEsdEvent( AliESDEvent * esd ) {
+  //See header file for documentation
+  if(!fPointSetVertex) CreateVertexPointSet();
+  if(!fTrackLists) CreateTrackLists();
 
   cout << "ProcessESDEvent() :"<< esd->GetEventNumberInFile()<< "  " << esd->GetNumberOfCaloClusters() << " tracks : " << esd->GetNumberOfTracks() << endl;
 
@@ -313,24 +363,35 @@ void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
     fPointSetVertex->SetNextPoint(vertex[0], vertex[1], vertex[2]);
   }
   
-  SetUpTrackPropagator(cont->GetPropagator(),-0.1*esd->GetMagneticField(), 520);
+  SetUpTrackPropagator(dynamic_cast<TEveTrackList*>(fTrackLists->FirstChild())->GetPropagator(),-0.1*esd->GetMagneticField(), 520);
 
   for (Int_t iter = 0; iter < esd->GetNumberOfTracks(); ++iter) {
 
-    AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(esd->GetTrack(iter));
-
-    AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esdTrack, cont));        
-    cont->AddElement(track);
+   AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(esd->GetTrack(iter));
+   FillTrackList(esdTrack);
+   FillHistograms(esdTrack);
    
-    FillHistograms(esdTrack);
-
   }
   fHistMult->Fill(esd->GetNumberOfTracks()); // KK
   
-  
-  cont->SetTitle(Form("N=%d", esd->GetNumberOfTracks()) );
-  cont->MakeTracks();
-  
+  //BALLE hardcoded size
+  for(Int_t il = 0; il < fNTrackBins; il++) {
+    TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", il)));
+    trackList->MakeTracks();
+  } 
+}
+///__________________________________________________________________________
+void AliHLTEveHLT::FillTrackList(AliESDtrack * esdTrack) {
+  //See header file for documentation
+  AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esdTrack, dynamic_cast<TEveTrackList*>(fTrackLists->FirstChild())));        
+  Int_t bin = GetColorBin(esdTrack->Pt());
+  TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", bin)));
+  if(trackList) {
+    track->SetAttLineAttMarker(trackList);
+    trackList->AddElement(track);
+  } else cout << "BALLE"<<endl;
+
+
 }
 
 
@@ -353,9 +414,6 @@ void AliHLTEveHLT::FillHistograms(AliESDtrack * esdTrack) {
     fHistnClusters->Fill(esdTrack->GetTPCNcls());  
   }
 }
-
-///_________________________________________________________________________________________
-
 
 void AliHLTEveHLT::DrawHistograms(){
   //See header file for documentation
@@ -385,6 +443,9 @@ void AliHLTEveHLT::DrawHistograms(){
 
 AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
   //See header file for documentation
+  
+    
+
 
 
   const double kCLight = 0.000299792458;
@@ -432,7 +493,6 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
   }
 
   AliEveTrack* track = new AliEveTrack(&rt, cont->GetPropagator());
-  track->SetAttLineAttMarker(cont);
   track->SetName(Form("AliEveTrack %d", at->GetID()));
   track->SetElementTitle(CreateTrackTitle(at));
   track->SetSourceObject(at);

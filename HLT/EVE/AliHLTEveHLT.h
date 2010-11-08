@@ -63,10 +63,7 @@ private:
   AliEveTrack * MakeEsdTrack(AliESDtrack *at, TEveTrackList* cont);
 
   // Process the ESD block and call the functions necessary to fill the tracklist
-  void ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList * cont );
-
-  // Process ESD event
-  void ProcessEsdEvent( AliESDEvent * esd, TEveTrackList * cont);
+  void ProcessEsdBlock( AliHLTHOMERBlockDesc * block );
 
   //Set up the track propagator
   void SetUpTrackPropagator(TEveTrackPropagator* trkProp, Float_t magF, Float_t maxR);
@@ -89,17 +86,32 @@ private:
   //Create tpc qa histograms
   void CreateHistograms();
 
+  //Create eve tracks and put them in track list
+  void FillTrackList(AliESDtrack * esdTrack);
+
+  //Create track lists
+  void CreateTrackLists();
+
   //Draw tpc qa histograms
   void DrawHistograms();
   void FillHistograms(AliESDtrack * esdTrack);
 
+
+  //Add histograms to a canvas in pad number cdCount
   void AddHistogramToCanvas(TH1 * histogram, TCanvas * canvas, Int_t &cdCount);
+
+  //Get color from pt
+  Color_t GetColor(Float_t pt);
+  //Get color bin track belongs to
+  Int_t GetColorBin(Float_t pt);
+
 
   Bool_t fTrueField;        //Use true field?
   Bool_t fUseIpOnFailedITS; // Use IP as origin if ITS refit fails?
   Bool_t fUseRkStepper;    // Use Runge Kutta for something something?
 
   TEveTrackList * fTrackList;  //Eve tracklist 
+  TEveElementList * fTrackLists; //Holder for tracklists
   TEveTrackList * fOldTrackList;  //Eve tracklist 
   TEvePointSet * fPointSetVertex;      //Display primary vertex
 
@@ -113,7 +125,9 @@ private:
   TH1F * fHistDCAr;    //DCA r histo
   Int_t fTrCount;
   Int_t fVCount;
-
+  
+  Int_t fNTrackBins;
+  
   ClassDef(AliHLTEveHLT, 0);
 };
 
