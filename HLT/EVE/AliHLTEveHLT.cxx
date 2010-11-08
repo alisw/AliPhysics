@@ -103,7 +103,7 @@ void AliHLTEveHLT::CreateHistograms(){
 
   fHistnClusters = new TH1F("fHistnClusters","TPC clusters per track", 160, 0,160);
 
-  fHistMult      = new TH1F("fHistMult",     "event track multiplicity",50, 0, 50);    
+  fHistMult      = new TH1F("fHistMult",     "event track multiplicity",150, 0, 15000);    
   
   fHistDCAr = new TH1F("fHistDCAr", "DCA r", 200, -100, 100);
 
@@ -322,22 +322,9 @@ void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
     AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esdTrack, cont));        
     cont->AddElement(track);
    
-    fHistEta->Fill(esdTrack->Eta());
-    // fHistTheta->Fill(esdTrack->Theta()*TMath::RadToDeg());
-    fHistPhi->Fill(esdTrack->Phi()*TMath::RadToDeg());
+    FillHistograms(esdTrack);
 
-
-    Float_t DCAr, DCAz = -99;
-    esdTrack->GetImpactParametersTPC(DCAr, DCAz);
-    fHistDCAr->Fill(DCAr);
-
-
-    if(esdTrack->GetStatus()&AliESDtrack::kTPCin || (esdTrack->GetStatus()&AliESDtrack::kTPCin && esdTrack->GetStatus()&AliESDtrack::kITSin)){
-      fHistnClusters->Fill(esdTrack->GetTPCNcls());  
-    }
   }
-  
-
   fHistMult->Fill(esd->GetNumberOfTracks()); // KK
   
   
@@ -345,6 +332,30 @@ void AliHLTEveHLT::ProcessEsdEvent(AliESDEvent * esd, TEveTrackList * cont) {
   cont->MakeTracks();
   
 }
+
+
+///____________________________________________________________________________________
+void AliHLTEveHLT::FillHistograms(AliESDtrack * esdTrack) {
+
+  if(esdTrack->GetTPCNcls() == 0) return;
+  
+  fHistEta->Fill(esdTrack->Eta());
+  // fHistTheta->Fill(esdTrack->Theta()*TMath::RadToDeg());
+  fHistPhi->Fill(esdTrack->Phi()*TMath::RadToDeg());
+  
+  
+  Float_t DCAr, DCAz = -99;
+  esdTrack->GetImpactParametersTPC(DCAr, DCAz);
+  fHistDCAr->Fill(DCAr);
+  
+  
+  if(esdTrack->GetStatus()&AliESDtrack::kTPCin || (esdTrack->GetStatus()&AliESDtrack::kTPCin && esdTrack->GetStatus()&AliESDtrack::kITSin)){
+    fHistnClusters->Fill(esdTrack->GetTPCNcls());  
+  }
+}
+
+///_________________________________________________________________________________________
+
 
 void AliHLTEveHLT::DrawHistograms(){
   //See header file for documentation

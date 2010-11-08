@@ -121,7 +121,7 @@ void AliHLTEveEmcal::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t e
   Double_t posX, posY, posZ;
   if(fGeoUtils->RelPosCellInSModule(absid, posX, posY, posZ)) {
     
-    cout << "digits " << posX << "  " << posY << "  " << posZ << endl;
+    //cout << "digits " << posX << "  " << posY << "  " << posZ << endl;
     fBoxSetDigits[module].AddBox(15, posY, posZ, energy*10, 6.0, 6.0);
 
     fBoxSetDigits[module].DigitValue(static_cast<Int_t>(energy));

@@ -91,6 +91,7 @@ private:
 
   //Draw tpc qa histograms
   void DrawHistograms();
+  void FillHistograms(AliESDtrack * esdTrack);
 
   void AddHistogramToCanvas(TH1 * histogram, TCanvas * canvas, Int_t &cdCount);
 
