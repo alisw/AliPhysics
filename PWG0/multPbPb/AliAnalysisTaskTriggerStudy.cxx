@@ -27,7 +27,8 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskTriggerStudy)
 
-const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA","C0VBC","C0OM2"};       
+//const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA","C0VBC","C0OM2"};       
+const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA","C0VBC"};//,"C0OM2"};       
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 : AliAnalysisTaskSE("TaskTriggerStudy"),
@@ -145,10 +146,17 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   vdArray[kVDC0MBS2] = c0sm2;
   vdArray[kVDC0VBA]  = c0v0A;
   vdArray[kVDC0VBC]  = c0v0C;
-  vdArray[kVDC0OM2]  = c0OM2;
+  //vdArray[kVDC0OM2]  = c0OM2;
 
   FillTriggerOverlaps("All", "All Events",vdArray);
   
+  // Fill some combination of trigger classes
+  Bool_t cmbs1aOnline = fESD->IsTriggerClassFired("CMBS1A-B-NOPF-ALL");
+  Bool_t cmbs1cOnline = fESD->IsTriggerClassFired("CMBS1C-B-NOPF-ALL");
+  Bool_t cmbacOnline  = fESD->IsTriggerClassFired("CMBAC-B-NOPF-ALL");
+  
+  if (cmbs1aOnline || cmbs1cOnline ||cmbacOnline) GetHistoTracklets("TwoOutOfThree" ,"Events 2-out-of-3 online" )->Fill(ntracklets);
+
 
   // loop over trigger classes in the event
   TObjArray * tokens = 0;
@@ -161,11 +169,20 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   }
   else {  
     TString trgClasses = fESD->GetFiredTriggerClasses();
-    tokens = trgClasses.Tokenize(" ");
+    tokens = trgClasses.Tokenize("  ");
   }
-  TIter iter(tokens);
-    
-  while(TObjString * tok = (TObjString*) iter.Next()){
+  TIterator  * iter = (TIterator*) tokens->MakeIterator();
+  
+  TString classes = fESD->GetFiredTriggerClasses();
+
+  // if (classes.Contains("SMH")) {
+  //    tokens->Print();
+  //    cout << classes.Data() << endl;
+  // }
+  //  iter->Reset();
+  Int_t itoken = 0;
+  TObjString * tok=0;
+  while((tok = (TObjString*) iter->Next())){
     // clean up trigger name
     TString trg = tok->GetString();
     trg.Strip(TString::kTrailing, ' ');
@@ -173,6 +190,14 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
 
     fHistoSuffix = "_";
     fHistoSuffix += trg;
+
+    //    cout << itoken++ << " " << trg.Data() << endl;
+    // continue;
+    //    if (trg.Contains("SMH")) cout << itoken++ << " " << trg.Data() << endl;
+    
+    // Fill tracklets 
+    GetHistoTracklets("All" ,"Events no offline trigger" )->Fill(ntracklets);
+
 
     // Fill histograms mismatchs
     // TODO: check mismatch trigger class 
@@ -209,8 +234,8 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
     // Fill trigger overlaps
     FillTriggerOverlaps("All", "All Events in trigger class",vdArray);
 
-    delete tokens;
   }
+  delete tokens;
     
     // if (fIsMC) {
     
@@ -274,7 +299,8 @@ TH1 *   AliAnalysisTaskTriggerStudy::GetHistoTracklets(const char * name, const 
     AliInfo(Form("Booking histo %s",hname.Data()));
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
-    h = new TH1F (hname.Data(), title, 50, 0.5, 200);
+    // h = new TH1F (hname.Data(), title, 1000, -0.5, 10000-0.5);
+    h = new TH1F (hname.Data(), title, 4000, -0.5, 4000-0.5);
     h->Sumw2();
     h->SetXTitle("ntracklets");
     fHistoList->GetList()->Add(h);
@@ -300,7 +326,8 @@ void AliAnalysisTaskTriggerStudy::FillTriggerOverlaps (const char * name, const 
     for(Int_t ientry = 0; ientry < kNVDEntries; ientry++){
       nbins = nbins | (1<<ientry);
     }
-    
+    //    cout << "NBINS " << nbins << endl;
+    nbins = nbins+1;
     h = new TH1I (hname, title, nbins, -0.5, nbins-0.5);
     fHistoList->GetList()->Add(h);
     TH1::AddDirectory(oldStatus);
