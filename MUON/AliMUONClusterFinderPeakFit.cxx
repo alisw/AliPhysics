@@ -809,6 +809,9 @@ Int_t AliMUONClusterFinderPeakFit::FindLocalMaxima(TObjArray *pixArray, Int_t *l
   Double_t xylim[4] = {999, 999, 999, 999};
 
   Int_t nPix = pixArray->GetEntriesFast();
+  
+  if ( nPix <= 0 ) return 0;
+
   AliMUONPad *pixPtr = 0;
   for (Int_t ipix = 0; ipix < nPix; ++ipix) {
     pixPtr = (AliMUONPad*) pixArray->UncheckedAt(ipix);

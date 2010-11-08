@@ -245,13 +245,16 @@ AliMUONTrackerDataCompareDialog::CompareData(const char* d1name,
     suffix = "ARD";
   }
   
-  TString basename = fBasename->GetText(); 
+  if ( difffunction ) 
+  {
+    TString basename = fBasename->GetText(); 
   
-  AliMUONVTrackerData* d = CompareData(*d1,*d2,Form("%s:%s",basename.Data(),suffix.Data()),difffunction);
-  
-  AliMUONVTrackerDataMaker* dw = new AliMUONTrackerDataWrapper(d);
-  
-  AliMUONPainterDataRegistry::Instance()->Register(dw);
+    AliMUONVTrackerData* d = CompareData(*d1,*d2,Form("%s:%s",basename.Data(),suffix.Data()),difffunction);
+    
+    AliMUONVTrackerDataMaker* dw = new AliMUONTrackerDataWrapper(d);
+    
+    AliMUONPainterDataRegistry::Instance()->Register(dw);
+  }
 }
 
 //______________________________________________________________________________
