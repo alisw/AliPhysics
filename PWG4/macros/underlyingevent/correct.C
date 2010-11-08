@@ -38,10 +38,15 @@ void Prepare1DPlot(TH1* hist)
   SetRanges(hist);
 }
 
-TH1* GetSystematicUncertainty(TH1* corr)
+TH1* GetSystematicUncertainty(TH1* corr, TH1* trackHist)
 {
-  systError = (TH1*) corr->Clone("systError");
-  systError->Reset();
+  if (!trackHist)
+  {
+    systError = (TH1*) corr->Clone("systError");
+    systError->Reset();
+  }
+  else  // for dphi evaluation
+    systError = new TH1F("systError", "", 100, 0, 50);
   
   Float_t constantUnc = 0;
   
@@ -121,18 +126,37 @@ TH1* GetSystematicUncertainty(TH1* corr)
       systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 1.0 ** 2);
   }  
     
+  for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
+    systError->SetBinContent(bin, TMath::Sqrt(systError->GetBinContent(bin)));
+  
+  if (trackHist)
+  {
+    //new TCanvas; trackHist->Draw();
+    //new TCanvas; systError->DrawCopy("");
+    
+    Float_t uncFlat = 0;
+    for (Int_t i=1; i<=trackHist->GetNbinsX(); i++)
+      uncFlat += trackHist->GetBinContent(i) * systError->GetBinContent(systError->FindBin(trackHist->GetBinCenter(i)));
+    uncFlat /= trackHist->Integral();
+    
+    systError = (TH1F*) corr->Clone("systError");
+    systError->Reset();
+  
+    for (Int_t i=1; i<=systError->GetNbinsX(); i++)
+      systError->SetBinContent(i, uncFlat);
+      
+    //new TCanvas; systError->DrawCopy("");
+  }
+  
   systError->SetFillColor(kGray);
   systError->SetFillStyle(1001);
   systError->SetMarkerStyle(0);
   systError->SetLineColor(0);
   
-  for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
-    systError->SetBinContent(bin, TMath::Sqrt(systError->GetBinContent(bin)));
-  
   return systError;
 }
 
-void DrawRatio(TH1* corr, TH1* mc, const char* name)
+void DrawRatio(TH1* corr, TH1* mc, const char* name, TH1* syst = 0)
 {
   mc->SetLineColor(2);
 
@@ -160,7 +184,11 @@ void DrawRatio(TH1* corr, TH1* mc, const char* name)
   pad1->SetGridx();
   pad1->SetGridy();
 
-  TLegend* legend = new TLegend(0.15, 0.65, 0.55, 0.90);
+  if (gUEHist != 2)
+    TLegend* legend = new TLegend(0.15, 0.65, 0.55, 0.90);
+  else
+    TLegend* legend = new TLegend(0.55, 0.65, 0.95, 0.90);
+
   legend->SetFillColor(0);
   legend->AddEntry(corr, "Corrected");
   legend->AddEntry(mc, "MC prediction");
@@ -194,18 +222,18 @@ void DrawRatio(TH1* corr, TH1* mc, const char* name)
     latex->SetNDC();
     latex->Draw();
   }
-    
-  // systematic uncertainty
-  TH1* syst = GetSystematicUncertainty(corr);
   
-  systError = (TH1*) syst->Clone("corrSystError");
-  for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
+  if (syst)
   {
-    systError->SetBinError(bin, corr->GetBinContent(bin) * syst->GetBinContent(bin) / 100);
-    systError->SetBinContent(bin, corr->GetBinContent(bin));
+    systError = (TH1*) syst->Clone("corrSystError");
+    for (Int_t bin=1; bin<=systError->GetNbinsX(); bin++)
+    {
+      systError->SetBinError(bin, corr->GetBinContent(bin) * syst->GetBinContent(bin) / 100);
+      systError->SetBinContent(bin, corr->GetBinContent(bin));
+    }
+    
+    systError->Draw("E2 ][ SAME");
   }
-  
-  systError->Draw("E2 ][ SAME");
   
   corr->Draw("SAME");
   mc->Draw("SAME");
@@ -241,18 +269,21 @@ void DrawRatio(TH1* corr, TH1* mc, const char* name)
   dummy3.GetYaxis()->SetTitleOffset(0.8);
   dummy3.DrawCopy();
   
-  // for the ratio add in quadrature
-  for (Int_t bin=1; bin<=syst->GetNbinsX(); bin++)
+  if (syst)
   {
-    if (corr->GetBinError(bin) > 0)
-      syst->SetBinError(bin, TMath::Sqrt(TMath::Power(syst->GetBinContent(bin) / 100, 2) + TMath::Power(corr->GetBinError(bin) / corr->GetBinContent(bin), 2)));
-    else
-      syst->SetBinError(bin, 0);
-    syst->SetBinContent(bin, 1);
+    // for the ratio add in quadrature
+    for (Int_t bin=1; bin<=syst->GetNbinsX(); bin++)
+    {
+      if (corr->GetBinError(bin) > 0)
+        syst->SetBinError(bin, TMath::Sqrt(TMath::Power(syst->GetBinContent(bin) / 100, 2) + TMath::Power(corr->GetBinError(bin) / corr->GetBinContent(bin), 2)));
+      else
+        syst->SetBinError(bin, 0);
+      syst->SetBinContent(bin, 1);
+    }
+    
+    syst->Draw("E2 ][ SAME");
+    dummy3.DrawCopy("SAME");
   }
-  
-  syst->Draw("E2 ][ SAME");
-  dummy3.DrawCopy("SAME");
 
   ratio->Draw("SAME");
   
@@ -363,7 +394,20 @@ void Compare(const char* fileName1, const char* fileName2, Int_t id, Int_t step1
   TH1* hist1 = h->GetUEHist(id)->GetUEHist(step1, region, ptLeadMin, ptLeadMax);
   TH1* hist2 = h2->GetUEHist(id)->GetUEHist(step2, region, ptLeadMin, ptLeadMax);
 
-  DrawRatio(hist1, hist2, Form("%s_%d_%d_%d", TString(fileName1).Tokenize(".")->First()->GetName(), id, step1, region));
+  TH1* trackHist = 0;
+  if (id == 2)
+  {
+    trackHist = h->GetUEHist(id)->GetTrackHist(region)->ShowProjection(2, 0);
+    // only keep bins under consideration
+    for (Int_t bin=1; bin<=trackHist->GetNbinsX(); bin++)
+      if (bin < trackHist->FindBin(ptLeadMin) || bin > trackHist->FindBin(ptLeadMax))
+        trackHist->SetBinContent(bin, 0);
+  }
+
+  // systematic uncertainty
+  TH1* syst = GetSystematicUncertainty(hist1, trackHist);
+  
+  DrawRatio(hist1, hist2, Form("%s_%d_%d_%d_%.2f_%.2f", TString(fileName1).Tokenize(".")->First()->GetName(), id, step1, region, ptLeadMin, ptLeadMax), syst);
 }  
 
 void CompareEventHist(const char* fileName1, const char* fileName2, Int_t id, Int_t step, Int_t var)
@@ -947,13 +991,29 @@ void PlotAll(const char* correctedFile, const char* mcFile)
     Float_t range[] = { 3, 10 };
   }
   
-  for (Int_t id=0; id<2; id++)
+  for (Int_t id=2; id<3; id++)
   {
-    gForceRange = range[id];
-    for (Int_t region=0; region<3; region++)
+    if (id < 2)
+      gForceRange = range[id];
+    else
+      gForceRange = -1;
+      
+    if (id < 2)
     {
-      CompareStep(correctedFile, mcFile, id, 0, region);
-      gPad->GetCanvas()->SaveAs(Form("%s_%s_%d_%d.png", TString(correctedFile).Tokenize(".")->First()->GetName(), TString(mcFile).Tokenize(".")->First()->GetName(), id, region));
+      for (Int_t region=0; region<3; region++)
+      {
+        CompareStep(correctedFile, mcFile, id, 0, region);
+        gPad->GetCanvas()->SaveAs(Form("%s_%s_%d_%d.png", TString(correctedFile).Tokenize(".")->First()->GetName(), TString(mcFile).Tokenize(".")->First()->GetName(), id, region));
+      }
+    }
+    else
+    {
+      Float_t leadingPtArr[] = { 0.50, 2.0, 4.0, 6.0, 10.0, 20.0, 50.0 };
+      for (Int_t leadingPtID=0; leadingPtID<6; leadingPtID++)
+      {
+        CompareStep(correctedFile, mcFile, id, 0, 0, leadingPtArr[leadingPtID] + 0.01, leadingPtArr[leadingPtID+1] - 0.01);
+        gPad->GetCanvas()->SaveAs(Form("%s_%s_%d_%.2f_%.2f.png", TString(correctedFile).Tokenize(".")->First()->GetName(), TString(mcFile).Tokenize(".")->First()->GetName(), id, leadingPtArr[leadingPtID], leadingPtArr[leadingPtID+1]));
+      }
     }
   }
 }
