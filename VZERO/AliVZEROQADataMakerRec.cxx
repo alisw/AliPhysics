@@ -699,8 +699,8 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 			if (nphe>1.e-6) timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
 				      p1*p1/nphe+
 				      p2*p2*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*
-				      TMath::Power(adc[offlineCh]/fCalibData->GetDiscriThr(offlineCh),2.*(fTimeSlewing->GetParameter(1)-1.))/
-				      (fCalibData->GetDiscriThr(offlineCh)*fCalibData->GetDiscriThr(offlineCh)));
+				      TMath::Power(adc[offlineCh]/fCalibData->GetCalibDiscriThr(offlineCh,kTRUE),2.*(fTimeSlewing->GetParameter(1)-1.))/
+				      (fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)*fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)));
 
 			if (timeErr>1.e-6) {
 			  if (offlineCh<32) {
@@ -897,7 +897,7 @@ Float_t AliVZEROQADataMakerRec::CorrectLeadingTime(Int_t i, Float_t time, Float_
   if (adc < 1e-6) return time;
 
   // Slewing correction
-  Float_t thr = fCalibData->GetDiscriThr(i);
+  Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
   //AliInfo(Form("adc %f thr %f dtime %f ", adc,thr,fTimeSlewing->Eval(adc/thr)));
   time -= fTimeSlewing->Eval(adc/thr);
 

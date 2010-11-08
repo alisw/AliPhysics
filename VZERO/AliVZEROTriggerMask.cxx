@@ -130,8 +130,8 @@ void AliVZEROTriggerMask::FillMasks(AliESDVZERO *esdV0,
 	Float_t timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
 				      p1*p1/nphe+
 				      p2*p2*(slewing->GetParameter(0)*slewing->GetParameter(1))*(slewing->GetParameter(0)*slewing->GetParameter(1))*
-				      TMath::Power(adc/cal->GetDiscriThr(i),2.*(slewing->GetParameter(1)-1.))/
-				      (cal->GetDiscriThr(i)*cal->GetDiscriThr(i)));
+				      TMath::Power(adc/cal->GetCalibDiscriThr(i,kTRUE),2.*(slewing->GetParameter(1)-1.))/
+				      (cal->GetCalibDiscriThr(i,kTRUE)*cal->GetCalibDiscriThr(i,kTRUE)));
 
 	if (i < 32) { // in V0C
 	  ntimeC++;
