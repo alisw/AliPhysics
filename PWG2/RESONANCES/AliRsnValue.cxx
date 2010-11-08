@@ -300,6 +300,7 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
         }
         fValue = (Double_t)fESDCuts.CountAcceptedTracks(esd);
       }
+      break;
     case kLeadingPt:
       if (!event) 
       {
@@ -372,6 +373,7 @@ Bool_t AliRsnValue::Eval(AliRsnDaughter * const daughter, AliRsnEvent * const ev
         }
         fValue = (Double_t)fESDCuts.CountAcceptedTracks(esd);
       }
+      break;
     case kLeadingPt:
       if (!event) 
       {

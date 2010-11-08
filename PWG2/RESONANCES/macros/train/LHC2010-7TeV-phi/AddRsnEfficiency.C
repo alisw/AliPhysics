@@ -97,10 +97,10 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
     task[itask]->AddPairDef(pairPhi);
 
     // add the output histogram axis
-    //task[itask]->AddAxis(axisIM);
+    task[itask]->AddAxis(axisIM);
     task[itask]->AddAxis(axisPt);
-    //task[itask]->AddAxis(axisY);
-    //task[itask]->AddAxis(axisMult);
+    task[itask]->AddAxis(axisY);
+    task[itask]->AddAxis(axisMult);
     
     // add the cut only when working on ESD, not on MC only
     task[itask]->GetEventCuts()->AddCut(cutVertex);
