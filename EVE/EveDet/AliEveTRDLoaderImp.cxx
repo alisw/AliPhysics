@@ -224,7 +224,7 @@ Bool_t AliEveTRDLoaderRaw::LoadEvent()
   fRawRootReader->SelectEquipment(0, 1024, 1041);
   fRawRootReader->Select("TRD");
   
-  AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDfastStream);
+  AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDdefaultStream);
 //   AliTRDrawStream::AllowCorruptedData();
 //   AliTRDrawStream::DisableStackNumberChecker();
 //   AliTRDrawStream::DisableStackLinkNumberChecker();
