@@ -195,18 +195,17 @@ Bool_t RsnConfig
   Int_t    npt    = sizeof(pt  ) / sizeof(pt  [0]);
   Int_t    ny     = sizeof(y   ) / sizeof(y   [0]);
   Int_t    nmult  = sizeof(mult) / sizeof(mult[0]);
-  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 1000 , 0.9,  1.9);
+  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 500 , 0.9,  1.4);
   AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , npt  , pt);
   AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           , ny   , y);
-  //AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, nmult, mult);
-  AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, 100, 0, 100);
+  AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, nmult, mult);
   ConfigESDCutsTPC(axisMult->GetCuts());
 
   // create function and add axes
   AliRsnFunction *fcnImPtY = new AliRsnFunction;
-  //fcnImPtY->AddAxis(axisIM);
-  //fcnImPtY->AddAxis(axisPt);
-  //fcnImPtY->AddAxis(axisY);
+  fcnImPtY->AddAxis(axisIM);
+  fcnImPtY->AddAxis(axisPt);
+  fcnImPtY->AddAxis(axisY);
   fcnImPtY->AddAxis(axisMult);
 
   // add functions to pairs
@@ -223,7 +222,7 @@ Bool_t RsnConfig
   task->GetAnalysisManager()->Add(pairPM);
   task->GetAnalysisManager()->Add(pairPP);
   task->GetAnalysisManager()->Add(pairMM);
-  if (isSim) task->GetAnalysisManager()->Add(truePM);
+  //if (isSim) task->GetAnalysisManager()->Add(truePM);
 
   return kTRUE;
 }
