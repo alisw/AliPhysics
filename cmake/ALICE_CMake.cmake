@@ -334,6 +334,7 @@ macro(ALICE_BuildPackage)
       ALICE_BuildExecutable()
     endif(lib)
   endif(PS OR PCS OR PFS)
+  ALICE_BuildPAR()
   ALICE_CheckModule()
 
 endmacro(ALICE_BuildPackage)
@@ -575,4 +576,19 @@ macro(ALICE_GenerateLinkDef)
   file (APPEND ${PDAL} "#endif\n")
 endmacro(ALICE_GenerateLinkDef)
 
+macro(ALICE_BuildPAR)
+  if(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
+    add_custom_target(${PACKAGE}.par
+                      COMMAND mkdir -p ${PACKAGE}
+                      COMMAND cp -pR ${SRCS} ${HDRS} ${DHDR} ${PACKAGE}
+                      COMMAND sed -e 's/include .\(ROOTSYS\)\\/test\\/Makefile.arch/include Makefile.arch/\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/' < Makefile > ${PACKAGE}/Makefile
+                      COMMAND cp -pR ${ROOTSYS}/test/Makefile.arch ${PACKAGE}/Makefile.arch
+                      COMMAND cp -pR PROOF-INF.${PACKAGE} ${PACKAGE}/PROOF-INF
+                      COMMAND cp -pR lib${PACKAGE}.pkg ${PACKAGE}
+                      COMMAND tar --exclude=.svn -czhf ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${PACKAGE}
+                      COMMAND ${CMAKE_COMMAND} -E remove_directory ${PACKAGE}
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+    add_dependencies(par-all ${PACKAGE}.par)
+  endif(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
+endmacro(ALICE_BuildPAR)
 

@@ -191,6 +191,7 @@ add_custom_target(alilibs-static)
 add_custom_target(include-headers)
 add_custom_target(DA-all)
 add_custom_target(check-all)
+add_custom_target(par-all)
 
 # Add Modules
 # ------------------------------
