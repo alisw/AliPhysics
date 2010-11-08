@@ -290,17 +290,21 @@ Bool_t AliTRDptrgFEB::LoadParams()
       lut = new AliTRDptrgLUT(); 
       this->fLUTArray.AddLast(lut);
 			// the following lines are only needed for test reasons
-      lut = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
       Int_t* initData = new Int_t[256]; // 2^8
-      for (Int_t i = 0; i < 256; i++ ) {
-        initData[i] = i;
+      lut = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
+      if (lut) {
+        for (Int_t i = 0; i < 256; i++ ) {
+          initData[i] = i;
+        }
+        lut->InitTable(8, 8, initData, kTRUE); // make copy of initData
       }
-      lut->InitTable(8, 8, initData, kTRUE); // make copy of initData
       lut = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(1));
-      for (Int_t i = 255; i >= 0; i--) {
-        initData[255 - i] = i;  // inverse ramp
+      if (lut) {
+        for (Int_t i = 255; i >= 0; i--) {
+          initData[255 - i] = i;  // inverse ramp
+        }
+        lut->InitTable(8, 8, initData, kTRUE);
       }
-      lut->InitTable(8, 8, initData, kTRUE);
     }
     else {
       // initialize threshold
@@ -317,15 +321,20 @@ Bool_t AliTRDptrgFEB::LoadParams()
       // the following lines are only needed for test reasons
       lut = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
       Int_t* initData = new Int_t[4096]; // 2^12
-      for (Int_t i = 0; i < 4096; i++ ) {
-        initData[i] = i;
+      if (lut) {
+        for (Int_t i = 0; i < 4096; i++ ) {
+          initData[i] = i;
+        }
+        lut->InitTable(12, 12, initData, kTRUE); // make a copy of the table
       }
-      lut->InitTable(12, 12, initData, kTRUE); // make a copy of the table
       lut = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(1));
-      for (Int_t i = 4095; i >= 0; i--) {
-        initData[4096 - i] = i;  // inverse ramp
+      if (lut) {
+        //for (Int_t i = 4095; i >= 0; i--) {
+        for (Int_t i = 4096; i > 0; i--) {
+          initData[4096 - i] = i;  // inverse ramp
+        }
+        lut->InitTable(12, 12, initData, kTRUE); // make a copy of the table
       }
-      lut->InitTable(12, 12, initData, kTRUE); // make a copy of the table
       delete[] initData;    
     }
     return false;
@@ -399,8 +408,10 @@ Int_t* AliTRDptrgFEB::Simulate()
       AliDebug(4, Form("FEB: (pos=%d,id=%d,lut=%d,vector=0x%x)", 
                        this->fPosition, this->fID, iLUT, inputVector));
 
-      result[iLUT + 1] = 
-       dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray[iLUT])->LookUp(inputVector);
+      AliTRDptrgLUT *lutTmp = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray[iLUT]);
+      if (lutTmp) {
+        result[iLUT + 1] =  lutTmp->LookUp(inputVector);
+      }
       AliDebug(4, Form("FEB result[%d] = 0x%x",(iLUT + 1),result[iLUT + 1])); 
     }
   }

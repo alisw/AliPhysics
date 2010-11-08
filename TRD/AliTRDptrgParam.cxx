@@ -1106,8 +1106,10 @@ Bool_t AliTRDptrgParam::ParseFEB(TString identifier, TString value) {
       return kFALSE; 
     }
     for (Int_t iValue = 0; iValue < arr.GetEntries(); iValue++) {
-      this->fFEBT0Thresholds[0][iValue] =  
-        (dynamic_cast<TObjString*>(arr[iValue])->GetString()).Atoi();
+      TObjString *ostrng = dynamic_cast<TObjString*>(arr[iValue]);
+      if (ostrng) {
+        this->fFEBT0Thresholds[0][iValue] = (ostrng->GetString()).Atoi();
+      }
       AliDebug(5, Form("FEB/T0/A/THR[%d]=%d", iValue, 
                        this->fFEBT0Thresholds[0][iValue])); 
     }
@@ -1127,8 +1129,10 @@ Bool_t AliTRDptrgParam::ParseFEB(TString identifier, TString value) {
       return kFALSE; 
     }
     for (Int_t iValue = 0; iValue < arr.GetEntries(); iValue++) {
-      this->fFEBT0Thresholds[1][iValue] =  
-        (dynamic_cast<TObjString*>(arr[iValue])->GetString()).Atoi();
+      TObjString *ostrng = dynamic_cast<TObjString*>(arr[iValue]);
+      if (ostrng) {
+        this->fFEBT0Thresholds[1][iValue] = (ostrng->GetString()).Atoi();
+      }
       AliDebug(5, Form("FEB/T0/C/THR[%d]=%d", iValue, 
                        this->fFEBT0Thresholds[1][iValue])); 
     }
@@ -1154,8 +1158,11 @@ Bool_t AliTRDptrgParam::ParseFEB(TString identifier, TString value) {
       return kFALSE; 
     }
     for (Int_t iValue = 0; iValue < arr.GetEntries(); iValue++) {
-      this->fFEBV0Thresholds[0][cardID][iValue] =  
-        (dynamic_cast<TObjString*>(arr[iValue])->GetString()).Atoi();
+      TObjString *ostrng = dynamic_cast<TObjString*>(arr[iValue]);
+      if (ostrng) {
+        this->fFEBV0Thresholds[0][cardID][iValue] =  
+          (ostrng->GetString()).Atoi();
+      }
       AliDebug(5, Form("FEB/V0/A%d/THR[%d]=%d", cardID, iValue, 
                        this->fFEBV0Thresholds[0][cardID][iValue])); 
     }
@@ -1180,8 +1187,10 @@ Bool_t AliTRDptrgParam::ParseFEB(TString identifier, TString value) {
       return kFALSE; 
     }
     for (Int_t iValue = 0; iValue < arr.GetEntries(); iValue++) {
-      this->fFEBV0Thresholds[1][cardID][iValue] =  
-        (dynamic_cast<TObjString*>(arr[iValue])->GetString()).Atoi();
+      TObjString *ostrng = dynamic_cast<TObjString*>(arr[iValue]);
+      if (ostrng) {
+        this->fFEBV0Thresholds[1][cardID][iValue] = (ostrng->GetString()).Atoi();
+      }
       AliDebug(5, Form("FEB/V0/C%d/THR[%d]=%d", cardID, iValue, 
                        this->fFEBV0Thresholds[1][cardID][iValue])); 
     }
@@ -1457,14 +1466,21 @@ Bool_t AliTRDptrgParam::ParseTLMU(TString identifier, TString value) {
 
     SplitUpValues(value, arr);
     
-    TString t0 = (dynamic_cast<TObjString*>(arr[0]))->GetString();
-    TString t1 = (dynamic_cast<TObjString*>(arr[1]))->GetString();
+    TObjString *ostrng0 = dynamic_cast<TObjString*>(arr[0]);
+    TObjString *ostrng1 = dynamic_cast<TObjString*>(arr[1]);
+
+    if (ostrng0 && ostrng1) {
+
+      TString t0 = ostrng0->GetString();
+      TString t1 = ostrng1->GetString();
   
-    this->fTLMUmultiplicity[index][0] = t0.Atoi();
-    this->fTLMUmultiplicity[index][1] = t1.Atoi();
+      this->fTLMUmultiplicity[index][0] = t0.Atoi();
+      this->fTLMUmultiplicity[index][1] = t1.Atoi();
  
-    AliDebug(5, Form("%d: %d  %d", index, this->fTLMUmultiplicity[index][0], 
-                     this->fTLMUmultiplicity[index][1]));      
+      AliDebug(5, Form("%d: %d  %d", index, this->fTLMUmultiplicity[index][0], 
+                       this->fTLMUmultiplicity[index][1]));      
+
+    }
 
     return kTRUE;
   }
@@ -1481,7 +1497,9 @@ Bool_t AliTRDptrgParam::ParseTLMU(TString identifier, TString value) {
     } 
   
     for (Int_t iEntry = 0; iEntry < arr.GetEntries(); iEntry++) {
-      TString t = (dynamic_cast<TObjString*>(arr[iEntry]))->GetString(); 
+
+      TObjString *ostrng = dynamic_cast<TObjString*>(arr[iEntry]);
+      TString t = ostrng->GetString(); 
       
       TString indexStr = t(2,1);
       if (t.Index("CM") == 0) { // coincidence matrix
@@ -1572,6 +1590,7 @@ void AliTRDptrgParam::MergeResults(TArrayI*& partResult1, TArrayI*& partResult2,
   if ((partResult1 == 0x0) || (partResult2 == 0x0) || 
       (signalsInvolved1 == 0x0) || (signalsInvolved2 == 0x0)) {
     AliError("fatal logical equation processing error!");
+    return;
   }
  
   // allocate results and signalsInvolved 

@@ -128,30 +128,37 @@ Bool_t AliTRDptrgCBB::LoadParams()
   else {
     // load default parameters 
     // initialize LUTsoutputWidth=<value optimized out>
-    AliTRDptrgLUT* LUT = new AliTRDptrgLUT();
-    this->fLUTArray.AddLast(LUT);
-    LUT = new AliTRDptrgLUT(); // this->fRunLoader
-    this->fLUTArray.AddLast(LUT);
-    LUT = new AliTRDptrgLUT(); // this->fRunLoader
-    this->fLUTArray.AddLast(LUT);
+    AliTRDptrgLUT* lut = new AliTRDptrgLUT();
+    this->fLUTArray.AddLast(lut);
+    lut = new AliTRDptrgLUT(); // this->fRunLoader
+    this->fLUTArray.AddLast(lut);
+    lut = new AliTRDptrgLUT(); // this->fRunLoader
+    this->fLUTArray.AddLast(lut);
     // the following lines are only needed for test reasons
-    LUT = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
     Int_t* initData = new Int_t[4096]; // 2^12
-    for (Int_t i = 0; i < 4096; i++ ) {
-      initData[i] = i;
+    lut = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
+    if (lut) {
+      for (Int_t i = 0; i < 4096; i++ ) {
+        initData[i] = i;
+      }
+      lut->InitTable(12, 12, initData, kTRUE); // make a copy
     }
-    LUT->InitTable(12, 12, initData, kTRUE); // make a copy
-    LUT = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
-    for (Int_t i = 0; i < 4096; i++ ) {
-      initData[i] = i;
+    lut = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
+    if (lut) {
+      for (Int_t i = 0; i < 4096; i++ ) {
+        initData[i] = i;
+      }
+      lut->InitTable(12, 12, initData, kTRUE); // make a copy
     }
-    LUT->InitTable(12, 12, initData, kTRUE); // make a copy
-    LUT = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(1));
-    for (Int_t i = 4096; i >= 0; i--) {
-      initData[4096 - i] = i;  // inverse ramp
+    lut = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(1));
+    if (lut) {
+      //for (Int_t i = 4096; i >= 0; i--) {
+      for (Int_t i = 4096; i > 0; i--) {
+        initData[4096 - i] = i;  // inverse ramp
+      }
+      lut->InitTable(12, 12, initData, kTRUE); // make a copy 
     }
-    LUT->InitTable(12, 12, initData, kTRUE); // make a copy 
-  
+
     AliTRDptrgParam::AliTRDptrgPTmasks* masks = 
       new AliTRDptrgParam::AliTRDptrgPTmasks();  
     masks->fLUTs[0] = kTRUE;
@@ -184,7 +191,6 @@ Int_t* AliTRDptrgCBB::Simulate()
   partResults[1] = this->fCBC->Simulate(); // CB-C
   partResults[2] = this->fTLMU->Simulate(); // TLMU
   
-  
   // combine partResults and create inputVectors  
   Int_t mask = 0x1;
   for (Int_t i = 0; i < 3 ; i++) {
@@ -203,8 +209,10 @@ Int_t* AliTRDptrgCBB::Simulate()
   result[0] = nLUTs + 1; // storage array length in the first array value
   for (Int_t iLUT = 0; iLUT < nLUTs; iLUT++) { 
     // process the return value for each LUT and store the result in the array
-    result[iLUT + 1] = 
-      dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray[iLUT])->LookUp(inputVector);
+    AliTRDptrgLUT *lutTmp = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray[iLUT]);
+    if (lutTmp) {
+      result[iLUT + 1] = lutTmp->LookUp(inputVector);
+    }
     AliDebug(4, Form("CBB result[%d] = 0x%x\n",(iLUT + 1),result[iLUT + 1])); 
   }
   
@@ -237,7 +245,11 @@ Int_t* AliTRDptrgCBB::Simulate()
     }
   }
   AliDebug(4, Form("CBB TRD Wake up result = %d", result[nLUTs + 1]));
+
+  delete [] partResults;
+
   return result;
+
 }
 
 //______________________________________________________________________________
