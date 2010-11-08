@@ -173,19 +173,17 @@ Bool_t AliAnalysisTaskSESignificance::CheckConsistency(){
 	Float_t min = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetMinLimit(ic);
 	Float_t max = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetMaxLimit(ic);
 	if(min==max){
-	  printf("AliAnalysisTaskSESignificance::CheckConsistency: ERROR! \n tight and loose cut for optimization variable number %d are the same in ptbin %d\n",ic,i);
-	  result = kFALSE;
+	  AliFatal(Form("tight and loose cut for optimization variable number %d are the same in ptbin %d\n",ic,i));
+	  return kFALSE;
 	}
 	Bool_t lowermdv = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetGreaterThan(ic);
 	if(uppervars[ivar]&&lowermdv){
-	  AliWarning(Form("%s is declared as uppercut, but as been given tighter cut larger then loose cut in ptbin %d \n ---Task will use swapped Tight/Loose cuts \n ",names[ivar].Data(),i));
-	  ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->SwapLimits(ic);
-	  result = kTRUE;
+	  AliFatal(Form("%s is declared as uppercut, but as been given tighter cut larger then loose cut in ptbin %d \n ---please check your cuts \n ",names[ivar].Data(),i));
+	  return kFALSE;
 	}
 	if(!uppervars[ivar]&&!lowermdv){
-	  AliWarning(Form("%s is declared as lower cut, but as been given tighter cut smaller then loose cut in ptbin %d \n ---Task will use swapped Tight/Loose cuts \n",names[ivar].Data(),i));
-	  ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->SwapLimits(ic);
-	  result = kTRUE;
+	  AliFatal(Form("%s is declared as lower cut, but as been given tighter cut smaller then loose cut in ptbin %d \n ---please check your cuts \n",names[ivar].Data(),i));
+	  return kFALSE;
 	}
 	ic++;
       }
