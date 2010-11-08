@@ -70,9 +70,12 @@ const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype);
 
 void AddTaskFlowCentrality( Int_t refMultMin=0,
                             Int_t refMultMax=1e10,
-                            TString fileName="AnalysisResults.root" )
+                            TString fileNameBase="AnalysisResults",
+                            Int_t binnumber=0 )
 {
-
+  TString fileName(fileNameBase);
+  fileName+=binnumber;
+  fileName.Append(".root");
   //===========================================================================
   printf("CREATE CUTS\n");
   cout << "Used for RP: "<< rptypestr << endl;  
@@ -82,6 +85,8 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   cutsEvent->SetRefMultRange(refMultMin,refMultMax);
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
+  cutsEvent->SetNContributorsRange(1);
+  cutsEvent->SetPrimaryVertexZrange(-10.,10.);
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
@@ -379,6 +384,11 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
     taskNL->SetOppositeChargesPOI(kFALSE); // POIs psi1 and psi2 in cos[n(psi1+psi2-2phi3)] will have opposite charges  
     mgr->AddTask(taskNL);
   }
+
+  AliAnalysisTaskQAflow* taskQAflow = new AliAnalysisTaskQAflow("TaskQAflow");
+  taskQAflow->SetEventCuts(cutsEvent);
+  taskQAflow->SetTrackCuts(cutsRP);
+  mgr->AddTask(taskQAflow);
   
   // Create the output container for the data produced by the task
   // Connect to the input and output containers
@@ -562,6 +572,16 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
     //  cinputWeights->SetData(weightsList);
     //} 
   }
+
+  TString taskQAoutputFileName(fileNameBase);
+  taskQAoutputFileName+=binnumber;
+  taskQAoutputFileName.Append("_QA.root");
+  AliAnalysisDataContainer* coutputQAtask = mgr->CreateContainer("flowQA",
+                                            TObjArray::Class(),
+                                            AliAnalysisManager::kOutputContainer,
+                                            taskQAoutputFileName.Data());
+  mgr->ConnectInput(taskQAflow,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(taskQAflow,1,coutputQAtask);
 }
 
 

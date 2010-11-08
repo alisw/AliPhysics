@@ -62,14 +62,11 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
   {
     Int_t lowCentralityBinEdge = centralityArray[i];
     Int_t highCentralityBinEdge = centralityArray[i+1];
-    TString filename(commonOutputFileName.Data());
-    filename += i;
-    //TDirectory* dir = new TDirectory(filename.Data(),"");
-    filename += ".root";
     Printf("\nWagon for centrality bin %i:",i);
     AddTaskFlowCentrality( lowCentralityBinEdge,
                            highCentralityBinEdge,
-                           filename );
+                           commonOutputFileName,
+                           i );
    
   } // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
 
