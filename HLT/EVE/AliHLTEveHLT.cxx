@@ -470,7 +470,9 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     trackParam = *at->GetConstrainedParam();
   }
   else if( at->GetInnerParam() ){
-    trackParam = *(at->GetInnerParam());
+    float x = at->GetX();
+    float y = at->GetY();
+    if(sqrt(x*x+y*y)>.5 ) trackParam = *(at->GetInnerParam());
   }
   if( at->GetStatus()&AliESDtrack::kTRDin ){
     // transport to TRD in
