@@ -14,7 +14,7 @@
 #include "TMCProcess.h"
 #include "AliESDtrack.h"
 
-class TDirectory;
+class TObjArray;
 class AliVParticle;
 class AliMCParticle;
 class AliFlowTrack;
@@ -42,7 +42,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetClusterRequirementITS( AliESDtrackCuts::Detector det,
                                  AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff )
                                  { fAliESDtrackCuts->SetClusterRequirementITS(det,req); } 
-  void SetMaxChi2PerClusterTPC( Float_t a ) {fAliESDtrackCuts->SetMaxChi2PerClusterTPC(a);}
+  void SetMaxChi2PerClusterTPC( Float_t a ) {fMaxChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
+  void SetMinChi2PerClusterTPC( Float_t a ) {fMinChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
   void SetMaxChi2PerClusterITS( Float_t a ) {fAliESDtrackCuts->SetMaxChi2PerClusterITS(a);}
   void SetRequireTPCRefit( Bool_t a ) {fAliESDtrackCuts->SetRequireTPCRefit(a);}
   void SetRequireTPCStandAlone( Bool_t a) {fAliESDtrackCuts->SetRequireTPCStandAlone(a);}
@@ -90,7 +91,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t GetSPDtrackletDeltaPhiMin() const {return fSPDtrackletDeltaPhiMin;}
 
   void SetQA(const char* dirname);
-  TDirectory* GetQA() const {return fQA;}
+  TObjArray* GetQA() const {return fQA;}
 
   //MC stuff
   void SetCutMC( Bool_t b=kTRUE ) {fCutMC=b;}
@@ -134,7 +135,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
-  TDirectory* fQA;                   //qa histograms go here
+  TObjArray* fQA;                   //qa histograms go here
   Bool_t fCutMC;                     //do we cut on MC?
   Bool_t fCutMCprocessType;          //do we cut on mc process type?
   TMCProcess fMCprocessType;         //mc process type
@@ -151,6 +152,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fIgnoreTPCzRange;   //ignore tracks going close to central membrane
   Double_t fIgnoreTPCzRangeMax; //max z to ignore
   Double_t fIgnoreTPCzRangeMin; //min z to ignore
+  Bool_t fCutChi2PerClusterTPC; //cut on tpc chi2
+  Float_t fMaxChi2PerClusterTPC; //max chi2 tpc/cluster
+  Float_t fMinChi2PerClusterTPC; //min chi2 tpc/cluster
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
