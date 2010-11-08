@@ -83,6 +83,8 @@ TH1* GetSystematicUncertainty(TH1* corr, TH1* trackHist)
       constantUnc += 0.6 ** 2;
     if (gUEHist == 1)
       constantUnc += 0.8 ** 2;
+    if (gUEHist == 2)
+      constantUnc += 1.0 ** 2;
   }
   else if (gEnergy == 7000 && gLeadingpTMin < 1.5)
     constantUnc += 1.0 ** 2;
@@ -110,8 +112,13 @@ TH1* GetSystematicUncertainty(TH1* corr, TH1* trackHist)
       systError->Fill(systError->GetXaxis()->GetBinCenter(bin), 1.0 ** 2);
       
   if (gEnergy == 7000)
-    systError->Fill(0.75, 2.0 ** 2);
-    
+  {
+    if (gUEHist == 0 && gUEHist == 1)
+      systError->Fill(0.75, 2.0 ** 2);
+    if (gUEHist == 2)
+      systError->Fill(0.75, 1.2 ** 2);
+  }
+  
   // vertex efficiency
   systError->Fill(0.75, 1.0 ** 2);
 
@@ -520,8 +527,8 @@ void DrawRatios(void* correctedVoid, void* comparisonVoid, Int_t compareStep = -
 
   if (1 && compareUEHist == 2)
   {
-    for (Float_t ptLeadMin = 1.01; ptLeadMin < 10; ptLeadMin += 2)
-      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 1.98);      
+    for (Float_t ptLeadMin = 0.51; ptLeadMin < 10; ptLeadMin += 1.5)
+      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 0.48);      
     return;
   }
 
