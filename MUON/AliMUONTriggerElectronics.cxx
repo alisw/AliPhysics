@@ -576,7 +576,7 @@ void AliMUONTriggerElectronics::GlobalResponse()
   AliMUONTriggerCrate* cr;
   Int_t irb(0);
   
-  if ( !fCrates->NumberOfCrates() >= 16 ) 
+  if ( fCrates->NumberOfCrates() > 16 ) 
   {
     AliFatal(Form("Something is wrong : too many crates %d",
                   fCrates->NumberOfCrates()));
