@@ -30,6 +30,7 @@
 #pragma link C++ class AliEMCALCalibAbs+;
 #pragma link C++ class AliEMCALCalibReference+;
 #pragma link C++ class AliEMCALCalibMapAPD+;
+#pragma link C++ class AliEMCALSuperModuleCalibTempCoeff+;
 #pragma link C++ class AliEMCALCalibTempCoeff+;
 #pragma link C++ class AliEMCALSuperModuleBiasAPD+;
 #pragma link C++ class AliEMCALSuperModuleCalibAbs+;
