@@ -37,10 +37,12 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
   Int_t    npt    = sizeof(pt  ) / sizeof(pt  [0]);
   Int_t    ny     = sizeof(y   ) / sizeof(y   [0]);
   Int_t    nmult  = sizeof(mult) / sizeof(mult[0]);
-  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 1000 , 0.9,  1.9);
-  AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , npt  , pt);
-  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           , ny   , y);
+  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 500  , 0.9,  1.4);
+  //AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , npt  , pt);
+  //AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           , ny   , y);
   AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, nmult, mult);
+  AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 100,  0.0, 10.0);
+  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           ,  20, -1.0,  1.0);
   ConfigESDCutsTPC(axisMult->GetCuts());
   
   // define cuts for event selection:
@@ -95,10 +97,10 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
     task[itask]->AddPairDef(pairPhi);
 
     // add the output histogram axis
-    task[itask]->AddAxis(axisIM);
+    //task[itask]->AddAxis(axisIM);
     task[itask]->AddAxis(axisPt);
-    task[itask]->AddAxis(axisY);
-    task[itask]->AddAxis(axisMult);
+    //task[itask]->AddAxis(axisY);
+    //task[itask]->AddAxis(axisMult);
     
     // add the cut only when working on ESD, not on MC only
     task[itask]->GetEventCuts()->AddCut(cutVertex);

@@ -290,7 +290,7 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   status  = (ULong_t)track->GetStatus();
   mom     = track->P();
   isTPC   = ((status & AliESDtrack::kTPCin) != 0);
-  isITSSA = ((status & AliESDtrack::kTPCin)  == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
+  isITSSA = (((status & AliESDtrack::kTPCin)  == 0) && ((status & AliESDtrack::kITSrefit) != 0) && ((status & AliESDtrack::kITSpureSA) == 0) && ((status & AliESDtrack::kITSpid) != 0));
   isTOF   = (((status & AliESDtrack::kTOFout) != 0) && ((status & AliESDtrack::kTIME) != 0) /* && mom > TMath::Max(b1, b2)*/);
   
   // check if the track type matches what is required

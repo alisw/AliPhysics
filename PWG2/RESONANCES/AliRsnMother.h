@@ -41,7 +41,8 @@ class AliRsnMother : public TObject
 
     Bool_t            IsLabelEqual() const {return abs(fDaughter[0]->GetLabel()) == abs(fDaughter[1]->GetLabel());}
     Bool_t            IsIndexEqual() const {return (fDaughter[0]->GetID() == fDaughter[1]->GetID());}
-    Int_t             CommonMother() const;
+    Int_t             CommonMother(Int_t &m0, Int_t &m1) const;
+    Int_t             CommonMother() const {Int_t d0, d1; return CommonMother(d0,d1);}
 
     void              SetDaughters(AliRsnDaughter * const daughter1, Double_t mass1, AliRsnDaughter * const daughter2, Double_t mass2);
     void              ResetPair();

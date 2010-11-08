@@ -14,6 +14,7 @@
 #pragma link C++ class AliRsnCutPID+;
 #pragma link C++ class AliRsnCutBetheBloch+;
 #pragma link C++ class AliRsnCutESDPrimary+;
+#pragma link C++ class AliRsnCutESDCutMultiplicity+;
 #pragma link C++ class AliRsnCutPrimaryVertex+;
 #pragma link C++ class AliRsnCutDaughterType+;
 #pragma link C++ class AliRsnCutESD2010+;

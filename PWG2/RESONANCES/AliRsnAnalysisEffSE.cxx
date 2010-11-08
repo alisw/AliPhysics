@@ -280,10 +280,11 @@ void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
   chargeD[1] = pairDef->GetChargeShort(1);
 
   // other utility variables
-  Int_t   label[2] = {-1, -1}, first, j, ipart;
-  Short_t charge[2] = {0, 0};
-  Short_t pairDefMatch[2] = {-1, -1};
-  Int_t   esdIndex[2];
+  Int_t      first, j, ipart;
+  Int_t      label[2] = {-1, -1};
+  Short_t    charge[2] = {0, 0};
+  Short_t    pairDefMatch[2] = {-1, -1};
+  Int_t      esdIndex[2] = {-1, -1};
   TParticle *part[2] = {0, 0};
 
   // in this case, we first take the resonance from MC

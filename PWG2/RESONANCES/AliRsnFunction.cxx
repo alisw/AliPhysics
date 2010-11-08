@@ -314,6 +314,7 @@ Bool_t AliRsnFunction::Fill()
     // check presence of output histogram
     if (!fHSparse) {
       AliError("Required a THnSparseF which is not initialized");
+      delete [] values;
       return kFALSE;
     }
     

@@ -190,22 +190,23 @@ Bool_t RsnConfig
 
   // function axes
   Double_t pt  [] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 9.0, 10.0};
-  Double_t y   [] = {-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
-  Double_t mult[] = {0.0, 5.0, 9.0, 14.0, 22.0, 100000.0};
+  Double_t y   [] = {-0.8, -0.7, -0.6, 0.6, 0.7, 0.8};
+  Double_t mult[] = {0.0, 5.0, 9.0, 14.0, 22.0, 1000.0};
   Int_t    npt    = sizeof(pt  ) / sizeof(pt  [0]);
   Int_t    ny     = sizeof(y   ) / sizeof(y   [0]);
   Int_t    nmult  = sizeof(mult) / sizeof(mult[0]);
   AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 1000 , 0.9,  1.9);
   AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , npt  , pt);
   AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           , ny   , y);
-  AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, nmult, mult);
+  //AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, nmult, mult);
+  AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, 100, 0, 100);
   ConfigESDCutsTPC(axisMult->GetCuts());
 
   // create function and add axes
   AliRsnFunction *fcnImPtY = new AliRsnFunction;
-  fcnImPtY->AddAxis(axisIM);
-  fcnImPtY->AddAxis(axisPt);
-  fcnImPtY->AddAxis(axisY);
+  //fcnImPtY->AddAxis(axisIM);
+  //fcnImPtY->AddAxis(axisPt);
+  //fcnImPtY->AddAxis(axisY);
   fcnImPtY->AddAxis(axisMult);
 
   // add functions to pairs

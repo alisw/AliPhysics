@@ -112,19 +112,7 @@ void AliRsnDaughter::Reset()
 void AliRsnDaughter::Print(Option_t * const /*option*/) const
 {
 //
-// Prints the values of data members, using the options:
-// - P --> momentum
-// - V --> DCA vertex
-// - C --> electric charge
-// - F --> flags
-// - I --> identification (PID, probability and mass)
-// - W --> PID weights
-// - M --> Montecarlo
-// - L --> index & label
-// - A --> angles
-// - ALL --> All oprions switched on
-//
-// Index and label are printed by default.
+// Prints the values of data members.
 //
   
   Char_t type[50], source[50];
@@ -218,16 +206,14 @@ Bool_t AliRsnDaughter::HasFlag(ULong_t flag) const
 Bool_t AliRsnDaughter::SetMass(Double_t mass)
 {
 //
-// The argument defines a mass to be assigned to the 4-momentum.
-// This value is not stored as a data-member, but serves just to modify
-// the energy of the 4-momentum both in the MC and non-MC objects,
-// while the vector momentum is taken from the respective references.
-// The method returns a BOOL outcome which is kFALSE in the case that
-// mass is meaningless or when both references are NULL or the goodness 
-// flag is not positive.
+// Assign a mass hypothesis to the track.
+// This causes the 4-momentum data members to be initialized
+// using the reconstructed or MC momentum and this mass.
+// This step is fundamental for the following of the analysis.
+// Of course, this operation is successful only if the mass is
+// a meaningful positive number, and the pointers are properly initialized.
 //
 
-  if (!fOK) return kFALSE;
   if (mass < 0.) return kFALSE;
   if (!fRef && !fRefMC) return kFALSE;
   
