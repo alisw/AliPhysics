@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliEMCALGeoParams.cxx AliEMCALGeoUtils.cxx AliEMCALGeometry.cxx AliEMCALEMCGeometry.cxx AliEMCALShishKebabTrd1Module.cxx AliEMCALPIDUtils.cxx AliCaloNeuralFit.cxx AliCaloRawAnalyzer.cxx AliCaloBunchInfo.cxx AliCaloFitResults.cxx AliCaloFitSubarray.cxx AliCaloRawAnalyzerCrude.cxx AliCaloRawAnalyzerLMS.cxx AliCaloRawAnalyzerNN.cxx AliCaloPeakFinderVectors.cxx AliEMCALHistoUtilities.cxx AliEMCALRecoUtils.cxx)
+set ( SRCS  AliEMCALGeoParams.cxx AliEMCALGeoUtils.cxx AliEMCALGeometry.cxx AliEMCALEMCGeometry.cxx AliEMCALShishKebabTrd1Module.cxx AliEMCALPIDUtils.cxx AliCaloNeuralFit.cxx AliCaloRawAnalyzer.cxx AliCaloBunchInfo.cxx AliCaloFitResults.cxx AliCaloFitSubarray.cxx AliCaloRawAnalyzerCrude.cxx AliCaloRawAnalyzerLMS.cxx AliCaloRawAnalyzerNN.cxx AliCaloPeakFinderVectors.cxx AliEMCALHistoUtilities.cxx AliEMCALRecoUtils.cxx AliEMCALTrack.cxx) 
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -33,7 +33,7 @@ set(HDRS ${HDRS} AliCaloConstants.h)
 
 set ( DHDR  EMCALUtilsLinkDef.h)
 
-set ( EXPORT AliEMCALGeoParams.h AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h AliCaloNeuralFit.h AliCaloRawAnalyzer.h AliCaloBunchInfo.h AliCaloFitResults.h AliCaloRawAnalyzerCrude.h AliCaloRawAnalyzerLMS.h AliCaloRawAnalyzerPeakFinder.h AliCaloRawAnalyzerNN.h AliEMCALGeometry.h AliEMCALRecoUtils.h)
+set ( EXPORT AliEMCALGeoParams.h AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h AliCaloNeuralFit.h AliCaloRawAnalyzer.h AliCaloBunchInfo.h AliCaloFitResults.h AliCaloRawAnalyzerCrude.h AliCaloRawAnalyzerLMS.h AliCaloRawAnalyzerPeakFinder.h AliCaloRawAnalyzerNN.h AliEMCALGeometry.h AliEMCALRecoUtils.h AliEMCALTrack.h)
 
 set ( PACKCXXFLAGS "${CXXFLAGS} -D__EMCALUTIL__")
 
