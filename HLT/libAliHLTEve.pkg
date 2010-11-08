@@ -21,7 +21,8 @@ CLASS_HDRS:= 	AliHLTEveBase.h \
 		AliHLTEveTRD.h \
 		AliHLTEveMuon.h \
 		AliHLTEveAny.h \
-		AliHLTEveMultCorr.h
+		AliHLTEveMultCorr.h \
+		AliHLTEveHistoMerger.h 
 
 
 # library sources and headers are set in hlteve.conf according to
@@ -40,7 +41,7 @@ MODULE_HDRS:=
 MODULE_DHDR:=
 
 EINCLUDE := HLT/BASE HLT/shuttle HLT/EVE EVE/EveHLT EVE/EveBase EVE/EveDet \
-	    HLT/BASE/util HLT/BASE/HOMER  HLT/TPCLib \
+	    HLT/BASE/util HLT/global HLT/BASE/HOMER  HLT/TPCLib \
 	    ITS PHOS TRIGGER VZERO EMCAL \
 	    STEER TRD HLT/TRD  \
 	    HLT/MUON MUON \
