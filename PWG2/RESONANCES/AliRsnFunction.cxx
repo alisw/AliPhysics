@@ -242,6 +242,8 @@ THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
     }
     fHSparse->SetBinEdges(i, fcnAxis->GetArray().GetArray());
   }
+  
+  delete [] nbins;
 
   return fHSparse;
 }
