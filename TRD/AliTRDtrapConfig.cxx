@@ -650,15 +650,14 @@ Int_t AliTRDtrapConfig::GetTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t mc
        }
        else {
          AliError("Invalid MCM specified or register is individual");
-         return -1;
+         return 0;
        }
     }
     else {  // should never be reached
       AliError("MCM register status neither kGlobal nor kIndividual");
-      return -1;
+      return 0;
     }
   }
-  return -1;
 }
 
 

@@ -140,12 +140,13 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
 	}
 	for (Int_t i = 5; i < tokens->GetEntriesFast(); i++) {
 	    UInt_t trackletWord = 0;
-	    sscanf(((TObjString*) tokens->At(i))->GetString().Data(), "%x", &trackletWord);
+	    sscanf(((TObjString*) tokens->At(i))->GetString().Data(), "%u", &trackletWord);
 	    if (trackletWord == 0x10001000) 
 		break;
 	    AliDebug(2,Form("%i. tracklet: %s -> 0x%08x", i-4, ((TObjString*) tokens->At(i))->GetString().Data(), trackletWord));
 	    AliTRDtrackletWord *trkl = new AliTRDtrackletWord(trackletWord);
-	    fTMU->AddTracklet(trkl, iLink);
+	    if (fTMU)
+	      fTMU->AddTracklet(trkl, iLink);
 	}
     }
     
@@ -216,7 +217,8 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
 	    iSecPrev = iSec;
 	}
 	AliDebug(1, Form("adding tracklet: 0x%08x", trkl->GetTrackletWord()));
-	fTMU->AddTracklet(trkl, iLink);
+	if (fTMU)
+	  fTMU->AddTracklet(trkl, iLink);
     }
     
     if (fTMU) {

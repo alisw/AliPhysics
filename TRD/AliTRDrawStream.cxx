@@ -635,11 +635,13 @@ Int_t AliTRDrawStream::ReadLinkData()
 	   *fPayloadCurr != fgkDataEndmarker)
       fPayloadCurr++;
   }
-  
-  fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fBytes     += (fPayloadCurr - startPosLink) * sizeof(UInt_t);
-  fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fBytesRead += count * sizeof(UInt_t);
-  fStats.fStatsSector[fCurrSm].fBytesRead                      += count * sizeof(UInt_t);
-  fStats.fBytesRead                                            += count * sizeof(UInt_t);
+
+  if (fCurrSm > -1 && fCurrSm < 18) {
+    fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fBytes     += (fPayloadCurr - startPosLink) * sizeof(UInt_t);
+    fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fBytesRead += count * sizeof(UInt_t);
+    fStats.fStatsSector[fCurrSm].fBytesRead                      += count * sizeof(UInt_t);
+    fStats.fBytesRead                                            += count * sizeof(UInt_t);
+  }
 
   return count;
 }
@@ -1001,14 +1003,18 @@ Int_t AliTRDrawStream::ReadZSData()
       channelcount++;
     }
 
-    fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNChannels += channelcount;
-    fStats.fStatsSector[fCurrSm].fNChannels                      += channelcount;
+    if (fCurrSm > -1 && fCurrSm < 18) {
+      fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNChannels += channelcount;
+      fStats.fStatsSector[fCurrSm].fNChannels                      += channelcount;
+    }
     if (channelcount != channelcountExp)
       MCMError(kAdcChannelsMiss);
     
     mcmcount++;
-    fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNMCMs++;
-    fStats.fStatsSector[fCurrSm].fNMCMs++;
+    if (fCurrSm > -1 && fCurrSm < 18) {
+      fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNMCMs++;
+      fStats.fStatsSector[fCurrSm].fNMCMs++;
+    }
 
     if (IsDumping() && DumpingMCM(fCurrHC/2, fCurrRobPos, fCurrMcmPos)) {
       DumpRaw(Form("Event %i: Det %3i ROB %i MCM %2i", fRawReader->GetEventIndex(), fCurrHC/2, fCurrRobPos, fCurrMcmPos),

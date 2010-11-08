@@ -23,6 +23,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include "TROOT.h"
 #include "TMath.h"
 #include "TMatrix.h"
 #include "TDecompLU.h"
@@ -73,6 +74,12 @@ AliTRDgtuParam::AliTRDgtuParam() :
   fRefLayers[0] = 3;
   fRefLayers[1] = 2;
   fRefLayers[2] = 1;
+  for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
+    fAki[iLayer] = 0.;
+    fBki[iLayer] = 0.;
+    fCki[iLayer] = 0.;
+  }
+
   GenerateZChannelMap(); 
 }
 
@@ -193,7 +200,7 @@ Bool_t AliTRDgtuParam::DisplayZChannelMap(Int_t zchannel, Int_t subchannel) cons
 {
   // display the z-channel map 
 
-  if (zchannel > fgkNZChannels) {
+  if (zchannel >= fgkNZChannels) {
     AliError("Invalid Z channel!");
     return kFALSE;
   }
@@ -227,11 +234,13 @@ Bool_t AliTRDgtuParam::DisplayZChannelMap(Int_t zchannel, Int_t subchannel) cons
   }
   graph->SetMarkerStyle(kDot);
   graph->Draw("AP");
+  gROOT->Add(graph);
   for (Int_t zch = zchmin; zch < zchmax; zch++) {
     graphz[zch]->SetMarkerStyle(kCircle);
     graphz[zch]->SetMarkerColor(zch+2);
     graphz[zch]->SetMarkerSize(0.3 + zch*0.2);
     graphz[zch]->Draw("P");
+    gROOT->Add(graphz[zch]);
   }
   return kTRUE;
 }
@@ -391,10 +400,13 @@ Bool_t AliTRDgtuParam::GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2)
     }
   }
 
-  x1 = fGeo->GetTime0(l1) + 10./6 * (nHits -1);
-  x2 = fGeo->GetTime0(l2) - 10./6 * (nHits -1);
-
-  return ( (l1 >= 0) && (l2 >= 0) );
+  if ( (l1 >= 0) && (l2 >= 0) ) {
+    x1 = fGeo->GetTime0(l1) + 10./6 * (nHits -1);
+    x2 = fGeo->GetTime0(l2) - 10./6 * (nHits -1);
+    return kTRUE;
+  }
+  else
+    return kFALSE;
 }
 
 Float_t AliTRDgtuParam::GetPt(Int_t a, Float_t /* b */, Float_t x1, Float_t x2) const

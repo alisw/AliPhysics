@@ -676,6 +676,26 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
     
     Uniquifier(tracksZMergedStage1, ListOfTracks);
     
+    // cleaning up                                                                                                                         
+    for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) {
+      delete tracksRefMerged[zch];
+      delete tracksRefUnique[zch];
+    }
+    delete [] tracksRefMerged;
+    delete [] tracksRefUnique;
+
+
+    delete tracksZMergedStage0;
+    delete tracksZUniqueStage0;
+
+    for (Int_t i = 0; i < 2; i++)
+      delete tracksZSplitted[i];
+    delete tracksZSplitted;
+
+    delete tracksZMergedStage1;
+
+    delete [] trkInRefLayer;
+
     return kTRUE;
 }
 

@@ -1388,7 +1388,7 @@ void AliTRDmcmSim::CalcFitreg()
               }
             }
           }
-	  Int_t index[maxLabels];
+	  Int_t index[2*maxLabels];
 	  TMath::Sort(maxLabels, count, index);
 	  for (Int_t i = 0; i < 3; i++) {
 	    if (count[index[i]] <= 0)
@@ -1677,7 +1677,7 @@ void AliTRDmcmSim::FitTracklet()
 	      }
 	    }
 	  }
-	  Int_t index[maxLabels];
+	  Int_t index[2*maxLabels];
 	  TMath::Sort(maxLabels, count, index);
 	  for (Int_t i = 0; i < 3; i++) {
 	    if (count[index[i]] <= 0)
