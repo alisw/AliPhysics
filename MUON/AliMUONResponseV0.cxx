@@ -301,13 +301,13 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t ti
                                         kFALSE);
       if ( pad.IsValid() )
       {
-        AliWarning(Form("Got an invalid iterator bug (area.Position() is within "
+        AliDebug(1, Form("Got an invalid iterator bug (area.Position() is within "
                       " DE but the iterator is void) for detElemId %d cath %d",
                       detElemId,cath));        
       }
       else
       {
-        AliError(Form("Got an invalid iterator bug for detElemId %d cath %d."
+        AliDebug(1, Form("Got an invalid iterator bug for detElemId %d cath %d."
                       "Might be a bad hit ? area.Position()=(%e,%e) "
                       "Dimensions()=(%e,%e)",
                       detElemId,cath,area.GetPositionX(),area.GetPositionY(),
