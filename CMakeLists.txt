@@ -192,6 +192,7 @@ add_custom_target(include-headers)
 add_custom_target(DA-all)
 add_custom_target(check-all)
 add_custom_target(par-all)
+add_custom_target(test-par-all)
 
 # Add Modules
 # ------------------------------
@@ -200,6 +201,8 @@ foreach(MODULE ${MODDIRS})
   configure_file(${PROJECT_SOURCE_DIR}/cmake/Module.tmp ${PROJECT_SOURCE_DIR}/${MODULE}/CMakeLists.txt @ONLY)
   add_custom_target(${MODULE}-all ALL)
   add_custom_target(${MODULE}-check-all)
+  add_custom_target(${MODULE}-par-all)
+  add_custom_target(test-${MODULE}-par-all)
   add_dependencies(check-all "${MODULE}-check-all")
   add_custom_target(${MODULE}-all-static)
   add_dependencies(alilibs-static "${MODULE}-static")

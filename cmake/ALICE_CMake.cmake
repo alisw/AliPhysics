@@ -579,16 +579,38 @@ endmacro(ALICE_GenerateLinkDef)
 macro(ALICE_BuildPAR)
   if(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
     add_custom_target(${PACKAGE}.par
-                      COMMAND mkdir -p ${PACKAGE}
-                      COMMAND cp -pR ${SRCS} ${HDRS} ${DHDR} ${PACKAGE}
                       COMMAND sed -e 's/include .\(ROOTSYS\)\\/test\\/Makefile.arch/include Makefile.arch/\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/' < Makefile > ${PACKAGE}/Makefile
                       COMMAND cp -pR ${ROOTSYS}/test/Makefile.arch ${PACKAGE}/Makefile.arch
                       COMMAND cp -pR PROOF-INF.${PACKAGE} ${PACKAGE}/PROOF-INF
                       COMMAND cp -pR lib${PACKAGE}.pkg ${PACKAGE}
                       COMMAND tar --exclude=.svn -czhf ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${PACKAGE}
                       COMMAND ${CMAKE_COMMAND} -E remove_directory ${PACKAGE}
+                      COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --red --bold "${PACKAGE}.par has been created in ${CMAKE_BINARY_DIR}"
+                      DEPENDS ${SRCS} ${HDRS} ${FSRCS} ${DHDR}
                       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+
+    foreach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
+      get_filename_component(srcdir ${file} PATH)
+      add_custom_command(OUTPUT ${file}                         
+                         COMMAND mkdir -p ${PACKAGE}/${srcdir}
+                         COMMAND cp -pR ${file} ${PACKAGE}/${file}
+                         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+    endforeach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
+
     add_dependencies(par-all ${PACKAGE}.par)
+    add_dependencies(${MODULE}-par-all ${PACKAGE}.par)
+
+    add_custom_target(test-${PACKAGE}.par
+                      COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --red --bold "The file ${PACKAGE}.par is now being tested, in case of an error check in par-tmp/${PACKAGE}."
+                      COMMAND ${CMAKE_COMMAND} -E make_directory par-tmp
+                      COMMAND ${CMAKE_COMMAND} -E chdir par-tmp tar xfz ../${PACKAGE}.par && ${CMAKE_COMMAND} -E chdir par-tmp/${PACKAGE} PROOF-INF/BUILD.sh
+                      COMMAND ${CMAKE_COMMAND} -E remove_directory par-tmp
+                      COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "${PACKAGE}.par testing succeeded"
+                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+    add_dependencies(test-par-all test-${PACKAGE}.par)
+    add_dependencies(test-${MODULE}-par-all test-${PACKAGE}.par)
+
   endif(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
 endmacro(ALICE_BuildPAR)
 
