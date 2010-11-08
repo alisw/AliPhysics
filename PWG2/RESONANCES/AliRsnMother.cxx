@@ -89,13 +89,14 @@ AliRsnMother::~AliRsnMother()
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnMother::CommonMother() const
+Int_t AliRsnMother::CommonMother(Int_t &m0, Int_t &m1) const
 {
 //
 // Checks if the two tracks in the pair have the same mother.
 // This can be known if MC info is present.
 // If the mother label is the same, rhe PDG code of the mother is returned,
 // otherwise the method returns 0.
+// In the two arguments passed by reference, the mothers of the two daghters are stored
 //
 
   // if MC info is not available, the pairs is not true by default
@@ -106,8 +107,25 @@ Int_t AliRsnMother::CommonMother() const
   }
 
   // check that labels are the same
-  if (fDaughter[0]->GetParticle()->GetFirstMother() != fDaughter[1]->GetParticle()->GetFirstMother())
-    return 0;
+  m0 = -1;
+  m1 = -2;
+  if (fDaughter[0]->IsESD() && fDaughter[1]->IsESD() )
+  {
+    if (fDaughter[0]->GetRefMCESD() && fDaughter[1]->GetRefMCESD())
+    {
+      m0 = fDaughter[0]->GetRefMCESD()->Particle()->GetFirstMother();
+      m1 = fDaughter[1]->GetRefMCESD()->Particle()->GetFirstMother();
+    }
+  }
+  if (fDaughter[0]->IsAOD() && fDaughter[1]->IsAOD())
+  {
+    if (fDaughter[0]->GetRefMCAOD() && fDaughter[1]->GetRefMCAOD())
+    {
+      m0 = fDaughter[0]->GetRefMCAOD()->GetMother();
+      m1 = fDaughter[1]->GetRefMCAOD()->GetMother();
+    }
+  }
+  if (m0 != m1) return 0;
 
   // if we reach this point, the two tracks have the same mother
   // let's check now the PDG code of this common mother

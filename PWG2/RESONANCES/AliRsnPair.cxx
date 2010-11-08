@@ -171,16 +171,10 @@ Bool_t AliRsnPair::Fill
   // if required a true pair, check this here and eventually return a fail message
   if (fOnlyTrue)
   {
-    // are we in a MonteCarlo?
-    if (!daughter0->GetParticle() || !daughter1->GetParticle()) return kFALSE;
-    
     // are the daughters really secondaries (in MC)?
-    Int_t m0 = daughter0->GetParticle()->GetFirstMother();
-    Int_t m1 = daughter1->GetParticle()->GetFirstMother();
+    Int_t m0, m1;
+    if (!fMother.CommonMother(m0, m1)) return kFALSE;
     if (m0 < 0 || m1 < 0) return kFALSE;
-    
-    // if they are, do they come from the same mother?
-    if (m0 != m1) return kFALSE;
     
     //cout << "Checking a true pair..." << endl;
     
@@ -195,8 +189,8 @@ Bool_t AliRsnPair::Fill
     if (fCheckDecay)
     {
       //cout << "Checking decay tree..." << endl;
-      Int_t pdg0 = TMath::Abs(daughter0->GetParticle()->GetPdgCode());
-      Int_t pdg1 = TMath::Abs(daughter1->GetParticle()->GetPdgCode());
+      Int_t pdg0 = TMath::Abs(daughter0->GetPDG());
+      Int_t pdg1 = TMath::Abs(daughter1->GetPDG());
       if (AliPID::ParticleCode(fPairDef->GetPID(0)) != pdg0) return kFALSE; // {cout << "PDG0 is " << pdg0 << " instead of " << fPairDef->GetPID(0) << endl; return kFALSE;};
       if (AliPID::ParticleCode(fPairDef->GetPID(1)) != pdg1) return kFALSE; // {cout << "PDG1 is " << pdg1 << " instead of " << fPairDef->GetPID(1) << endl; return kFALSE;};
       //cout << "Decay tree accepted!" << endl;

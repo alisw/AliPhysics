@@ -7,6 +7,7 @@
 // in the resonance package.
 //
 
+#include <Riostream.h>
 #include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
@@ -354,6 +355,23 @@ Bool_t AliRsnValue::Eval(AliRsnDaughter * const daughter, AliRsnEvent * const ev
       }
       else fValue = (Double_t)event->GetMultiplicity();
       break;
+    case kEventMultESDcuts:
+      if (!event)
+      {
+        fValue = 0.0;
+        return kFALSE;
+      }
+      else
+      {
+        AliESDEvent *esd = event->GetRefESD();
+        if (!esd)
+        {
+          AliError("Cannot use method based on ESD cuts when input is not ESD.");
+          fValue = 0.0;
+          return kFALSE;
+        }
+        fValue = (Double_t)fESDCuts.CountAcceptedTracks(esd);
+      }
     case kLeadingPt:
       if (!event) 
       {

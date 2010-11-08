@@ -34,9 +34,15 @@ Bool_t AddRsnAnalysis
   // if not MC kinematics, set cuts for events : primary vertex range and type
   if (!isMC)
   {
-    AliRsnCutPrimaryVertex *cutVertex   = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+    gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/ConfigESDCutsTPC.C");
+    AliRsnCutPrimaryVertex      *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+    AliRsnCutESDCutMultiplicity *cutMult   = new AliRsnCutESDCutMultiplicity("cutMult", 0, 10);
+    
+    ConfigESDCutsTPC(cutMult->GetCuts());
+    
     task->GetEventCuts()->AddCut(cutVertex);
-    task->GetEventCuts()->SetCutScheme("cutVertex");
+    task->GetEventCuts()->AddCut(cutMult);
+    task->GetEventCuts()->SetCutScheme("cutVertex&cutMult");
   }
 
   // add the task to manager

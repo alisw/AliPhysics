@@ -13,6 +13,7 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnCutBetheBloch.cxx \
       RESONANCES/AliRsnCutPrimaryVertex.cxx \
       RESONANCES/AliRsnCutESDPrimary.cxx \
+      RESONANCES/AliRsnCutESDCutMultiplicity.cxx \
       RESONANCES/AliRsnCutDaughterType.cxx \
       RESONANCES/AliRsnCutESD2010.cxx \
       RESONANCES/AliRsnCutAOD2010.cxx \
