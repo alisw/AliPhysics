@@ -55,8 +55,6 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       virtual TString  GetCrate() const {return fMpLocalBoard->GetCrate();}
 
 
-      virtual void     Module(char *mod);
-
                        /// Return X34
       virtual void     GetX34(UShort_t *X) const {for (Int_t i=0;i<2;i++) X[i] = fXY[0][i+2];}
 

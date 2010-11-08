@@ -508,30 +508,6 @@ void AliMUONLocalTriggerBoard::BP(const Option_t *option) const
 }
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::Module(char *mod)
-{
-/// get module from name
-///
-   const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
-
-   char s[100]; strncpy(s, GetName(), 99);
-
-   Int_t numlines = 0;
-
-   for (char *token = strtok(s, "B");
-        token != NULL;
-        token = strtok(NULL, " "))
-   {
-      fields[numlines] = new char[strlen(token)+1];
-      strcpy(fields[numlines++],token);
-   }
- 
-   strcpy(mod,fields[0]);
-   
-   delete [] fields;
-}
-
-//___________________________________________
 void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[32], Int_t ch4q[32])
 {
 /// note : coinc44 = flag 0 or 1 (0 coincidence -> 3/4, 1 coincidence -> 4/4) \n
