@@ -105,7 +105,7 @@ void AliHLTEveHLT::CreateHistograms(){
 
   fHistnClusters = new TH1F("fHistnClusters","TPC clusters per track", 160, 0,160);
 
-  fHistMult      = new TH1F("fHistMult",     "event track multiplicity",50, 0, 50);    
+  fHistMult      = new TH1F("fHistMult",     "event track multiplicity",150, 0, 15000);    
   
   fHistDCAr = new TH1F("fHistDCAr", "DCA r", 200, -100, 100);
 
