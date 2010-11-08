@@ -9,6 +9,7 @@
 #pragma link C++ class AliAnalysisTaskRecoCheck+;
 #pragma link C++ class AliAnalysisTaskESDMCLabelAddition+;
 #pragma link C++ class AliAnalysisTaskMuonResolution+;
+#pragma link C++ class AliAnalysisTaskPileup+;
 #endif
 
 
