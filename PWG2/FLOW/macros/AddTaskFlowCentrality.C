@@ -40,11 +40,11 @@ Bool_t GFC      = kTRUE;  // cumulants based on generating function
 Bool_t QC       = kTRUE;  // cumulants using Q vectors
 Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
 Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
-Bool_t LYZ1PROD = kTRUE;  // Lee Yang Zeroes using product generating function (integrated v)
+Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
 Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
 Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
 Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
-Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
+Bool_t MH       = kFALSE;  // azimuthal correlators in mixed harmonics  
 Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
@@ -88,40 +88,40 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   cutsRP->SetParamType(rptype);
   cutsRP->SetParamMix(rpmix);
   cutsRP->SetPtRange(0.2,10.);
-  cutsRP->SetEtaRange(-0.7,0.7);
+  cutsRP->SetEtaRange(-0.8,0.8);
   cutsRP->SetRequireCharge(kTRUE);
   //cutsRP->SetCharge(chargeRP);
   //cutsRP->SetPID(PdgRP);
-  cutsRP->SetMinNClustersTPC(80);
-  cutsRP->SetMaxChi2PerClusterTPC(4.0);
-  cutsRP->SetMinNClustersITS(2);
+  //cutsRP->SetMinNClustersTPC(80);
+  //cutsRP->SetMaxChi2PerClusterTPC(4.0);
+  //cutsRP->SetMinNClustersITS(2);
   //cutsRP->SetMaxChi2PerClusterITS(1.e+09);
   cutsRP->SetMaxDCAToVertexXY(2.4);
   cutsRP->SetMaxDCAToVertexZ(3.2);
-  cutsRP->SetDCAToVertex2D(kFALSE);
-  cutsRP->SetMaxNsigmaToVertex(1.e+10);
-  cutsRP->SetRequireSigmaToVertex(kFALSE);
-  cutsRP->SetAcceptKinkDaughters(kFALSE);
+  //cutsRP->SetDCAToVertex2D(kTRUE);
+  //cutsRP->SetMaxNsigmaToVertex(1.e+10);
+  //cutsRP->SetRequireSigmaToVertex(kFALSE);
+  //cutsRP->SetAcceptKinkDaughters(kFALSE);
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts();
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
-  cutsPOI->SetPtRange(0.2,10.);
-  cutsPOI->SetEtaRange(-0.7,0.7);
+  cutsPOI->SetPtRange(0.1,100.);
+  cutsPOI->SetEtaRange(-1.2,1.2);
   cutsPOI->SetRequireCharge(kTRUE);
   //cutsPOI->SetCharge(chargeRP);
   //cutsPOI->SetPID(PdgRP);
-  cutsPOI->SetMinNClustersTPC(80);
-  cutsPOI->SetMaxChi2PerClusterTPC(4.0);
-  cutsPOI->SetMinNClustersITS(2);
+  //cutsPOI->SetMinNClustersTPC(80);
+  //cutsPOI->SetMaxChi2PerClusterTPC(4.0);
+  //cutsPOI->SetMinNClustersITS(2);
   //cutsPOI->SetMaxChi2PerClusterITS(1.e+09);
   cutsPOI->SetMaxDCAToVertexXY(2.4);
   cutsPOI->SetMaxDCAToVertexZ(3.2);
-  cutsPOI->SetDCAToVertex2D(kFALSE);
-  cutsPOI->SetMaxNsigmaToVertex(1.e+10);
-  cutsPOI->SetRequireSigmaToVertex(kFALSE);
-  cutsPOI->SetAcceptKinkDaughters(kFALSE);
+  //cutsPOI->SetDCAToVertex2D(kTRUE);
+  //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
+  //cutsPOI->SetRequireSigmaToVertex(kFALSE);
+  //cutsPOI->SetAcceptKinkDaughters(kFALSE);
 
 
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
@@ -298,7 +298,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if (SP){
     AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",WEIGHTS[0]);
     taskSP->SetRelDiffMsub(1.0);
-    taskSP->SetApplyCorrectionForNUA(kFALSE);
+    taskSP->SetApplyCorrectionForNUA(kTRUE);
     mgr->AddTask(taskSP);
   }
   if (LYZ1SUM){
@@ -344,6 +344,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
     taskQC->SetnBinsMult(10000);
     taskQC->SetMinMult(0.);
     taskQC->SetMaxMult(10000.);
+    taskQC->SetApplyCorrectionForNUA(kTRUE);
     mgr->AddTask(taskQC);
   }
   if (FQD){
