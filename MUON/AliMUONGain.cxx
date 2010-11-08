@@ -398,12 +398,11 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 
   //  plot out 
 
-  TFile* gainFile = 0x0;
   TTree* tg = 0x0;
   if(fPlotLevel>0)
     {
       fHistoFileName=Form("%s.root",fPrefixDA.Data());
-      gainFile = new TFile(fHistoFileName.Data(),"RECREATE","MUON Tracking gains");
+      new TFile(fHistoFileName.Data(),"RECREATE","MUON Tracking gains");
       tg = new TTree("tg","TTree avec class Manu_DiMu");
 
       tg->Branch("bp",&busPatchId, "busPatchId/I");

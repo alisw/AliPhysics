@@ -105,7 +105,6 @@ void AliMUONPedestal::LoadConfig(const char* dbfile)
     { 
       filein >> busPatchId >> manuId;
 
-      AliMUONErrorCounter* manuCounter;
       AliMUONVCalibParam* ped = 
 	static_cast<AliMUONVCalibParam*>(fPedestalStore ->FindObject(busPatchId, manuId));
 
@@ -115,10 +114,10 @@ void AliMUONPedestal::LoadConfig(const char* dbfile)
   ped = new AliMUONCalibParamND(2, AliMpConstants::ManuNofChannels(),busPatchId, manuId, -1.); // put default wise -1, not connected channel
 	fPedestalStore ->Add(ped);  
 
-	if (!(manuCounter = static_cast<AliMUONErrorCounter*>(fManuBuspatchTable->FindObject(busPatchId,manuId))))
+        if ( ! fManuBuspatchTable->FindObject(busPatchId,manuId) )
 	  {
 	    // New (buspatch,manu)
-	    manuCounter = new AliMUONErrorCounter(busPatchId,manuId);
+	    AliMUONErrorCounter* manuCounter = new AliMUONErrorCounter(busPatchId,manuId);
 	    fManuBuspatchTable->Add(manuCounter);
 	  }
       }
