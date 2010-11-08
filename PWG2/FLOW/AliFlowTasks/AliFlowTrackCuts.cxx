@@ -37,6 +37,7 @@
 #include <limits.h>
 #include <float.h>
 #include "TParticle.h"
+#include "TObjArray.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
@@ -72,6 +73,9 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fIgnoreTPCzRange(kFALSE),
   fIgnoreTPCzRangeMax(FLT_MAX),
   fIgnoreTPCzRangeMin(-FLT_MAX),
+  fCutChi2PerClusterTPC(kFALSE),
+  fMaxChi2PerClusterTPC(FLT_MAX),
+  fMinChi2PerClusterTPC(-FLT_MAX),
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -108,6 +112,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fIgnoreTPCzRange(that.fIgnoreTPCzRange),
   fIgnoreTPCzRangeMax(that.fIgnoreTPCzRangeMax),
   fIgnoreTPCzRangeMin(that.fIgnoreTPCzRangeMin),
+  fCutChi2PerClusterTPC(that.fCutChi2PerClusterTPC),
+  fMaxChi2PerClusterTPC(that.fMaxChi2PerClusterTPC),
+  fMinChi2PerClusterTPC(that.fMinChi2PerClusterTPC),
   fParamType(that.fParamType),
   fParamMix(that.fParamMix),
   fTrack(NULL),
@@ -146,6 +153,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fIgnoreTPCzRange=that.fIgnoreTPCzRange;
   fIgnoreTPCzRangeMax=that.fIgnoreTPCzRangeMax;
   fIgnoreTPCzRangeMin=that.fIgnoreTPCzRangeMin;
+  fCutChi2PerClusterTPC=that.fCutChi2PerClusterTPC;
+  fMaxChi2PerClusterTPC=that.fMaxChi2PerClusterTPC;
+  fMinChi2PerClusterTPC=that.fMinChi2PerClusterTPC;
   fParamType=that.fParamType;
   fParamMix=that.fParamMix;
 
@@ -312,6 +322,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   ////////////////////////////////////////////////////////////////
 
   if (!fTrack) return kFALSE;
+  
   Bool_t pass=kTRUE;
   //check the common cuts for the current particle fTrack (MC,AOD,ESD)
   if (fCutPt) {if (fTrack->Pt() < fPtMin || fTrack->Pt() >= fPtMax ) pass=kFALSE;}
@@ -347,6 +358,15 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
       }
     }
     if (!fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack))) pass=kFALSE;
+    if (fCutChi2PerClusterTPC)
+    {
+      Float_t tpcchi2 = (fParamType==kESD_TPConly)?
+                         esdTrack->GetTPCchi2Iter1():esdTrack->GetTPCchi2();
+      Int_t ntpccls = esdTrack->GetTPCNcls();
+      tpcchi2 = (ntpccls>0)?tpcchi2/ntpccls:-FLT_MAX;
+      if (tpcchi2<fMinChi2PerClusterTPC || tpcchi2 >=fMaxChi2PerClusterTPC)
+        pass=kFALSE;
+    }
   }
 
   return pass; //true by default, if we didn't set any cuts

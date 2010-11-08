@@ -201,51 +201,31 @@ AliFlowEventCuts* AliFlowEventCuts::StandardCuts()
 Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
 {
   //calculate the reference multiplicity, if all fails return 0
-  Int_t refmult=0;
-
-  //in the case of an ESD
-  const AliESDEvent* esd=dynamic_cast<const AliESDEvent*>(event);
-  if (esd) 
+  if (!fRefMultCuts)
   {
-    AliMultiplicity* tracklets=NULL;
     switch (fRefMultMethod)
     {
       case kTPConly:
-        if (!fRefMultCuts)
-        {
-          //if not explicitly passed, make default cuts
-          fRefMultCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
-          fRefMultCuts->SetEtaRange(-0.8,0.8);
-          fRefMultCuts->SetPtMin(0.15);
-        }
-        for (Int_t i=0; i<esd->GetNumberOfTracks();i++)
-        {
-          AliESDtrack* track = esd->GetTrack(i);
-          if (fRefMultCuts->IsSelected(track)) refmult++;
-        }
+        fRefMultCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
+        fRefMultCuts->SetEtaRange(-0.8,0.8);
+        fRefMultCuts->SetPtMin(0.15);
         break;
       case kSPDtracklets:
-        if (!fRefMultCuts)
-        {
-          //if not explicitly passed, make default fRefMultCuts
-          fRefMultCuts = new AliFlowTrackCuts();
-          fRefMultCuts->SetEtaRange(-0.8,0.8);
-        }
-        tracklets = const_cast<AliMultiplicity*>(esd->GetMultiplicity());
-        for (Int_t i=0; i<tracklets->GetNumberOfTracklets(); i++)
-        {
-          if (fRefMultCuts->IsSelected(tracklets,i)) refmult++;
-        }
+        fRefMultCuts = new AliFlowTrackCuts();
+        fRefMultCuts->SetParamType(AliFlowTrackCuts::kESD_SPDtracklet);
+        fRefMultCuts->SetEtaRange(-0.8,0.8);
         break;
       default:
         return 0;
     }
-    return refmult;
   }
 
-  //in case of MC event
-  AliMCEvent* mc=const_cast<AliMCEvent*>(dynamic_cast<const AliMCEvent*>(event));
-  if (mc) return mc->GetNumberOfPrimaries();
-
-  return event->GetNumberOfTracks(); //default, at least returns some number
+  fRefMultCuts->SetEvent(const_cast<AliVEvent*>(event));
+  Int_t refmult=0;
+  for (Int_t i=0; i<fRefMultCuts->GetNumberOfInputObjects(); i++)
+  {
+    if (fRefMultCuts->IsSelected(fRefMultCuts->GetInputObject(i),i))
+      refmult++;
+  }
+  return refmult;
 }
