@@ -39,6 +39,7 @@
 #include "AliESDTrdTrack.h"
 
 #include "AliTRDgtuSim.h"
+#include "AliTRDfeeParam.h"
 #include "AliTRDgtuTMU.h"
 #include "AliTRDtrackGTU.h"
 #include "AliTRDtrackletWord.h"
@@ -50,6 +51,7 @@ ClassImp(AliTRDgtuSim)
 AliTRDgtuSim::AliTRDgtuSim(AliRunLoader *rl) 
   : TObject(),
   fRunLoader(rl),
+  fFeeParam(AliTRDfeeParam::Instance()),
   fTMU(0x0),
   fTrackletArray(0x0),
   fTrackTree(0x0),
@@ -172,6 +174,9 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
   // run the GTU on tracklets taken from the loader
   // if specified the GTU tracks are written to the ESD event 
 
+  if (!fFeeParam->GetTracklet())
+    return kFALSE;
+
     if (!LoadTracklets(loader)) {
 	AliError("Could not load the tracklets. Nothing done ...");
 	return kFALSE;
@@ -243,6 +248,9 @@ Bool_t AliTRDgtuSim::LoadTracklets(AliLoader *const loader)
   // load the tracklets using the given loader
 
   AliDebug(1,"Loading tracklets ...");
+
+  if (!fFeeParam->GetTracklet())
+    return kFALSE;
 
   if (!loader) {
     AliError("No loader given!");
@@ -418,7 +426,7 @@ Bool_t AliTRDgtuSim::WriteTracksToLoader()
   // these tracks contain more information than the ones in the ESD
 
   if (!fTrackTree) {
-    AliError("No track tree found!");
+    AliDebug(1, "No track tree found!");
     return kFALSE;
   }
 

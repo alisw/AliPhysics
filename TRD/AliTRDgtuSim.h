@@ -18,6 +18,7 @@ class AliLoader;
 class AliESDEvent;
 
 class AliTRDgtuTMU;
+class AliTRDfeeParam;
 class TTree;
 class TList;
 
@@ -40,6 +41,7 @@ class AliTRDgtuSim : public TObject {
 
  protected:
   AliRunLoader 	*fRunLoader;  	//!
+  AliTRDfeeParam *fFeeParam;    //!
   AliTRDgtuTMU 	*fTMU; 		// pointer to TMU simulation class
   TClonesArray 	*fTrackletArray;	// array of tracklets
   TTree 	*fTrackTree; 	// tree to hold the tracks of one event, used for writing in WriteTracksToFile()
