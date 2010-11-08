@@ -23,6 +23,7 @@ Trigger Types Used: Standalone Trigger
 */
 #define PEDDATA_FILE  "ZDCPedestal.dat"
 #define MAPDATA_FILE  "ZDCChMapping.dat"
+#define ENCALIBDATA_FILE   "ZDCEnergyCalib.dat"
 #define MBCALIBDATA_FILE   "ZDCMBCalib.root"
 
 #include <stdio.h>
@@ -113,9 +114,9 @@ int main(int argc, char **argv) {
   
   // --- Preparing histos for EM dissociation spectra
   //
-  TH2F * hZDCvsZEM  = new TH2F("hZDCvsZEM","EZDCTot vs. EZEM",100,0.,5.,100,0.,800.);
-  TH2F * hZDCCvsZEM = new TH2F("hZDCCvsZEM","EZDCC vs. EZEM",100,0.,5.,100,0.,400.);
-  TH2F * hZDCAvsZEM = new TH2F("hZDCAvsZEM","EZDCA vs. EZEM",100,0.,5.,100,0.,400.);
+  TH2F * hZDCvsZEM  = new TH2F("hZDCvsZEM","EZDCTot vs. EZEM",100,0.,8.,100,0.,800.);
+  TH2F * hZDCCvsZEM = new TH2F("hZDCCvsZEM","EZDCC vs. EZEM",100,0.,8.,100,0.,400.);
+  TH2F * hZDCAvsZEM = new TH2F("hZDCAvsZEM","EZDCA vs. EZEM",100,0.,8.,100,0.,400.);
   
   /* open result file */
   FILE *fp=NULL;
@@ -173,7 +174,17 @@ int main(int argc, char **argv) {
 
   /* report progress */
   daqDA_progressReport(10);
-
+  
+  FILE *fileEnCal = fopen(ENCALIBDATA_FILE,"r");
+  if(fileEnCal==NULL) {
+    printf("\t ERROR!!! Can't open ZDCEnergyCalib.dat file!!!\n");
+    return -1;
+  }
+  
+  Float_t calibCoeff[6];
+  for(Int_t irow=0; irow<6; irow++){
+     fscanf(fileEnCal,"%f",&calibCoeff[irow]);
+  }
 
   /* init some counters */
   int nevents_physics=0;
@@ -304,12 +315,12 @@ int main(int argc, char **argv) {
       if(header){
          UChar_t message = header->GetAttributes();
 	 if((message & 0xf0) == 0x60){ // DEDICATED CALIBRATION MB RUN
-	    //printf("\t STANDALONE_CALIBRAION_MB_RUN raw data found\n");
+	    //printf("\t CALIBRATION_MB_RUN raw data found\n");
 	    continue;
 	 }
 	 else{
-	    printf("\t NO STANDALONE_MB_RUN raw data found\n");
-	    return -1;
+	    //printf("\t NO CALIBRAION_MB_RUN raw data found\n");
+	    //return -1;
 	 }
       }
       else{
@@ -330,9 +341,10 @@ int main(int argc, char **argv) {
         rawStreamZDC->SetMapTow(jk, sec[jk]);
       }
       //
-      Float_t rawZDC=0., rawZEM=0.;
-      Float_t corrZDC=0., corrZEM=0.;
-      Float_t corrZDCTot=0., corrZDCC=0., corrZDCA=0., corrZEMTot=0.;
+      Float_t rawZNC=0., rawZPC=0., rawZNA=0., rawZPA=0., rawZEM1=0., rawZEM2=0.;
+      Float_t corrZNC=0., corrZPC=0., corrZNA=0., corrZPA=0., corrZEM1=0.,corrZEM2=0.;
+      Float_t calZNC=0., calZPC=0., calZNA=0., calZPA=0., calZEM1=0., calZEM2=0.;
+      Float_t calZDCTot=0., calZDCC=0., calZDCA=0., calZEM=0.;
       //
       while(rawStreamZDC->Next()){
 	Int_t detector = rawStreamZDC->GetSector(0);
@@ -366,26 +378,51 @@ int main(int argc, char **argv) {
             //
 	    if(index!=-1 && quad!=5){ 
 	      //
-	      if(detector==3){
-	       rawZEM  = (Float_t) rawStreamZDC->GetADCValue();
-	       corrZEM = (rawStreamZDC->GetADCValue()) - Pedestal;
-	       corrZEMTot += corrZEM;
+	      if(detector==1){
+	       rawZNC  = (Float_t) rawStreamZDC->GetADCValue();
+	       corrZNC = rawZNC - Pedestal;
 	      }
-	      else{
-	       rawZDC  = (Float_t) rawStreamZDC->GetADCValue();
-	       corrZDC = rawZDC - Pedestal;
-	       if(detector==1 || detector==2) corrZDCC += corrZDC;
-	       else corrZDCA += corrZDC;
-	       corrZDCTot += corrZDC;
+	      else if(detector==2){
+	       rawZPC  = (Float_t) rawStreamZDC->GetADCValue();
+	       corrZPC = rawZPC - Pedestal;
+	      }
+	      else if(detector==3){
+	       if(quad==1){
+	         rawZEM1  = (Float_t) rawStreamZDC->GetADCValue();
+	         corrZEM1 = (rawStreamZDC->GetADCValue()) - Pedestal;
+	       }
+	       else{
+	         rawZEM2  = (Float_t) rawStreamZDC->GetADCValue();
+	         corrZEM2 = (rawStreamZDC->GetADCValue()) - Pedestal;
+	       }
+	      }
+	      else if(detector==4){
+	       rawZNA  = (Float_t) rawStreamZDC->GetADCValue();
+	       corrZNA = rawZNA - Pedestal;
+	      }
+	      else if(detector==5){
+	       rawZPA  = (Float_t) rawStreamZDC->GetADCValue();
+	       corrZPA = rawZPA - Pedestal;
 	      }
 	    }
 	}//IsADCDataWord()
 	
        } // Next()
-	
-       hZDCvsZEM ->Fill(corrZDCTot, corrZEMTot);
-       hZDCCvsZEM->Fill(corrZDCC, corrZEMTot);
-       hZDCAvsZEM->Fill(corrZDCA, corrZEMTot);
+       
+       calZNC = calibCoeff[0]*corrZNC;
+       calZPC = calibCoeff[1]*corrZPC;
+       calZNA = calibCoeff[2]*corrZNA;
+       calZPA = calibCoeff[3]*corrZPA;
+       calZEM1 = calibCoeff[4]*corrZEM1;
+       calZEM2 = calibCoeff[4]*corrZEM2;
+       calZDCTot = calZNC+calZPC+calZPA+calZNA;
+       calZDCC = calZNC+calZPC;
+       calZDCA = calZNA+calZPA;
+       calZEM = calZEM1+calZEM2;
+       //
+       hZDCvsZEM ->Fill(calZDCTot/1000, calZEM/1000);
+       hZDCCvsZEM->Fill(calZDCC/1000, calZEM/1000);
+       hZDCAvsZEM->Fill(calZDCA/1000, calZEM/1000);
 
        nevents_physics++;
     }//(if PHYSICS_EVENT)
