@@ -54,6 +54,13 @@ eg.	make STEERbase STEERbase-static
 
   make par-all 
   make <Package>.par
+  make <Module>-par-all   build all par packages in the module
+
+10. To test PARs after building run
+
+  make test-par-all
+  make test-<Package>
+  make test-<Module>-par-all
 
 !IMPORTANT! - Make sure your source folder is clean. If you used the old make system to build aliroot run make clean in the source directory before you run cmake
  
