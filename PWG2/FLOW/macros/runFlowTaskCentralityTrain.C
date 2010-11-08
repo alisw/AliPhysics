@@ -9,16 +9,16 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
  
 // CENTRALITY DEFINITION
 const Int_t numberOfCentralityBins = 1;
-Int_t centralityArray[numberOfCentralityBins+1] = {0,1000000}; // in terms of reference multiplicity
+Int_t centralityArray[numberOfCentralityBins+1] = {10,8000}; // in terms of reference multiplicity
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
 //void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10, 
 //Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
 
-void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
-		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137045_p1", Int_t offset=0) 
+//void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
+//Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137045_p1", Int_t offset=0) 
 
-//void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
+void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
 {
   // Time:
   TStopwatch timer;
@@ -51,8 +51,8 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
   // Event handlers:
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);
-  AliMCEventHandler *mc = new AliMCEventHandler();
-  mgr->SetMCtruthEventHandler(mc); 
+  //  AliMCEventHandler *mc = new AliMCEventHandler();
+  //  mgr->SetMCtruthEventHandler(mc); 
   
   // Load the analysis task:
   gROOT->LoadMacro("AddTaskFlowCentrality.C");
@@ -84,6 +84,7 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0SM1-B-NOPF-ALL");
   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBA-B-NOPF-ALL");
   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBC-B-NOPF-ALL");
+  physicsSelTask->GetPhysicsSelection()->SetSkipV0(kTRUE);
 
   if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   // Enable debug printouts:
@@ -199,21 +200,21 @@ void LoadLibraries(const anaModes mode)
     gProof->ClearPackage("STEERBase.par");
     gProof->ClearPackage("ESD.par");
     gProof->ClearPackage("AOD.par");
-    */
-    gProof->ClearPackage("ANALYSIS.par");
-    gProof->ClearPackage("ANALYSISalice.par");
+    
+    //gProof->ClearPackage("ANALYSIS.par");
+    //gProof->ClearPackage("ANALYSISalice.par");
     gProof->ClearPackage("CORRFW.par");
     
     gProof->ClearPackage("PWG2flowCommon");
     gProof->ClearPackage("PWG2flowTasks");
-    
+    */
     // Upload the Packages
     //gProof->UploadPackage("STEERBase.par");
     //gProof->UploadPackage("ESD.par");    
     //gProof->UploadPackage("AOD.par");
        
-    gProof->UploadPackage("ANALYSIS.par"); 
-    gProof->UploadPackage("ANALYSISalice.par");
+    //gProof->UploadPackage("ANALYSIS.par"); 
+    //gProof->UploadPackage("ANALYSISalice.par");
     gProof->UploadPackage("CORRFW.par");
     gProof->UploadPackage("PWG2flowCommon.par");
     gProof->UploadPackage("PWG2flowTasks.par");
@@ -229,8 +230,8 @@ void LoadLibraries(const anaModes mode)
     //gProof->EnablePackage("AOD");
     
     // Always needed
-    gProof->EnablePackage("ANALYSIS");
-    gProof->EnablePackage("ANALYSISalice");
+    //gProof->EnablePackage("ANALYSIS");
+    //gProof->EnablePackage("ANALYSISalice");
     gProof->EnablePackage("CORRFW");
     gProof->EnablePackage("PWG2flowCommon");
     gProof->EnablePackage("PWG2flowTasks");
