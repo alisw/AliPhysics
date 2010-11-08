@@ -15,10 +15,10 @@ TString commonOutputFileName = "outputCentrality"; // e.g.: result for centralit
 //void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10, 
 //Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
 
-//void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
-//Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137045_p1", Int_t offset=0) 
+void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
+				Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137133_p1", Int_t offset=0) 
 
-void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
+//void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
 {
   // Time:
   TStopwatch timer;
@@ -80,11 +80,27 @@ void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
     gROOT->LoadMacro("AddTaskPhysicsSelection.C"); 
   }
 
+  //  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0SM1-B-NOPF-ALL");
+  //  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBA-B-NOPF-ALL");
+  //  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBC-B-NOPF-ALL");
+  //  physicsSelTask->GetPhysicsSelection()->SetSkipV0(kTRUE);
+
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
-  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0SM1-B-NOPF-ALL");
-  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBA-B-NOPF-ALL");
-  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBC-B-NOPF-ALL");
-  physicsSelTask->GetPhysicsSelection()->SetSkipV0(kTRUE);
+  if(DATA) {
+   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBS1C-B-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBS1A-B-NOPF-ALL");
+// This are needed only to fill the statistics tables
+   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBAC-C-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1C-C-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1A-C-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBAC-A-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1C-A-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1A-A-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBAC-E-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1C-E-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1A-E-NOPF-ALL");
+  }  
 
   if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   // Enable debug printouts:

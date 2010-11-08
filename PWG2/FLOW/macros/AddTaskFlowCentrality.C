@@ -56,8 +56,8 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 //---------Data selection----------
 //kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet
-AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
-AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
+AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kESD_TPConly;
+AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kESD_TPConly;
 
 //---------Parameter mixing--------
 //kPure - no mixing, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt
@@ -80,8 +80,8 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   // EVENTS CUTS:
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts();
   cutsEvent->SetRefMultRange(refMultMin,refMultMax);
-  //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
-  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
+  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
+  //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
@@ -92,12 +92,12 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   cutsRP->SetRequireCharge(kTRUE);
   //cutsRP->SetCharge(chargeRP);
   //cutsRP->SetPID(PdgRP);
-  //cutsRP->SetMinNClustersTPC(80);
-  //cutsRP->SetMaxChi2PerClusterTPC(4.0);
+  cutsRP->SetMinNClustersTPC(80);
+  cutsRP->SetMaxChi2PerClusterTPC(4.0);
   //cutsRP->SetMinNClustersITS(2);
   //cutsRP->SetMaxChi2PerClusterITS(1.e+09);
-  cutsRP->SetMaxDCAToVertexXY(2.4);
-  cutsRP->SetMaxDCAToVertexZ(3.2);
+  //cutsRP->SetMaxDCAToVertexXY(2.4);
+  //cutsRP->SetMaxDCAToVertexZ(3.2);
   //cutsRP->SetDCAToVertex2D(kTRUE);
   //cutsRP->SetMaxNsigmaToVertex(1.e+10);
   //cutsRP->SetRequireSigmaToVertex(kFALSE);
@@ -116,8 +116,8 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   //cutsPOI->SetMaxChi2PerClusterTPC(4.0);
   //cutsPOI->SetMinNClustersITS(2);
   //cutsPOI->SetMaxChi2PerClusterITS(1.e+09);
-  cutsPOI->SetMaxDCAToVertexXY(2.4);
-  cutsPOI->SetMaxDCAToVertexZ(3.2);
+  //cutsPOI->SetMaxDCAToVertexXY(2.4);
+  //cutsPOI->SetMaxDCAToVertexZ(3.2);
   //cutsPOI->SetDCAToVertex2D(kTRUE);
   //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
   //cutsPOI->SetRequireSigmaToVertex(kFALSE);
