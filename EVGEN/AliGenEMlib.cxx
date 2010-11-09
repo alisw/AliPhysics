@@ -189,7 +189,7 @@ Double_t AliGenEMlib::YPhi( const Double_t *py, const Double_t */*dummy*/ )
 
 }
 
-Double_t AliGenEMlib::YFlat(Double_t y)
+Double_t AliGenEMlib::YFlat(Double_t /*y*/)
 {
 //--------------------------------------------------------------------------
 //
