@@ -2397,7 +2397,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             TIter next(list);
             TObjString *package;
             while((package=(TObjString*)next())) {
-               if (gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
+               if (!gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
                   if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\",kTRUE);", package->GetName()))) {
                      Error("StartAnalysis", "There was an error trying to enable package %s", package->GetName());
                      return kFALSE;
@@ -3181,7 +3181,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "// Compile the package and set it up." << endl;
          out << "   TString pkgdir = package;" << endl;
          out << "   pkgdir.ReplaceAll(\".par\",\"\");" << endl;
-         out << "   gSystem->Exec(Form(\"tar xvzf %s.par\", pkgdir.Data()));" << endl;
+         out << "   gSystem->Exec(TString::Format(\"tar xvzf %s.par\", pkgdir.Data()));" << endl;
          out << "   TString cdir = gSystem->WorkingDirectory();" << endl;
          out << "   gSystem->ChangeDirectory(pkgdir);" << endl;
          out << "   // Check for BUILD.sh and execute" << endl;
@@ -3192,11 +3192,13 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "      if (gSystem->Exec(\"PROOF-INF/BUILD.sh\")) {" << endl;
          out << "         ::Error(\"SetupPar\", \"Cannot build par archive %s\", pkgdir.Data());" << endl;
          out << "         gSystem->ChangeDirectory(cdir);" << endl;
+         out << "         gSystem->Exec(TString::Format(\"rm -rf %s\",pkgdir.Data()));" << endl;
          out << "         return kFALSE;" << endl;
          out << "      }" << endl;
          out << "   } else {" << endl;
          out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/BUILD.sh for package %s\", pkgdir.Data());" << endl;
          out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      gSystem->Exec(TString::Format(\"rm -rf %s\",pkgdir.Data()));" << endl;
          out << "      return kFALSE;" << endl;
          out << "   }" << endl;
          out << "   // Check for SETUP.C and execute" << endl;
@@ -3208,10 +3210,12 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   } else {" << endl;
          out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/SETUP.C for package %s\", pkgdir.Data());" << endl;
          out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      gSystem->Exec(TString::Format(\"rm -rf %s\",pkgdir.Data()));" << endl;
          out << "      return kFALSE;" << endl;
          out << "   }" << endl;
          out << "   // Restore original workdir" << endl;
          out << "   gSystem->ChangeDirectory(cdir);" << endl;
+         out << "   gSystem->Exec(TString::Format(\"rm -rf %s\",pkgdir.Data()));" << endl;
          out << "   return kTRUE;" << endl;
          out << "}" << endl;
       }
@@ -3462,7 +3466,7 @@ void AliAnalysisAlien::WriteMergingMacro()
          out << "// Compile the package and set it up." << endl;
          out << "   TString pkgdir = package;" << endl;
          out << "   pkgdir.ReplaceAll(\".par\",\"\");" << endl;
-         out << "   gSystem->Exec(Form(\"tar xvzf %s.par\", pkgdir.Data()));" << endl;
+         out << "   gSystem->Exec(TString::Format(\"tar xvzf %s.par\", pkgdir.Data()));" << endl;
          out << "   TString cdir = gSystem->WorkingDirectory();" << endl;
          out << "   gSystem->ChangeDirectory(pkgdir);" << endl;
          out << "   // Check for BUILD.sh and execute" << endl;
@@ -3473,11 +3477,13 @@ void AliAnalysisAlien::WriteMergingMacro()
          out << "      if (gSystem->Exec(\"PROOF-INF/BUILD.sh\")) {" << endl;
          out << "         ::Error(\"SetupPar\", \"Cannot build par archive %s\", pkgdir.Data());" << endl;
          out << "         gSystem->ChangeDirectory(cdir);" << endl;
+         out << "         gSystem->Exec(TString::Format(\"rm -rf %s\",pkgdir.Data()));" << endl;
          out << "         return kFALSE;" << endl;
          out << "      }" << endl;
          out << "   } else {" << endl;
          out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/BUILD.sh for package %s\", pkgdir.Data());" << endl;
          out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      gSystem->Exec(TString::Format(\"rm -rf %s\",pkgdir.Data()));" << endl;
          out << "      return kFALSE;" << endl;
          out << "   }" << endl;
          out << "   // Check for SETUP.C and execute" << endl;
@@ -3489,10 +3495,12 @@ void AliAnalysisAlien::WriteMergingMacro()
          out << "   } else {" << endl;
          out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/SETUP.C for package %s\", pkgdir.Data());" << endl;
          out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      gSystem->Exec(TString::Format(\"rm -rf %s\",pkgdir.Data()));" << endl;
          out << "      return kFALSE;" << endl;
          out << "   }" << endl;
          out << "   // Restore original workdir" << endl;
          out << "   gSystem->ChangeDirectory(cdir);" << endl;
+         out << "   gSystem->Exec(TString::Format(\"rm -rf %s\",pkgdir.Data()));" << endl;
          out << "   return kTRUE;" << endl;
          out << "}" << endl;
       }
@@ -3517,7 +3525,7 @@ Bool_t AliAnalysisAlien::SetupPar(const char *package)
 // LD_LIBRARY_PATH
    TString pkgdir = package;
    pkgdir.ReplaceAll(".par","");
-   gSystem->Exec(Form("tar xvzf %s.par", pkgdir.Data()));
+   gSystem->Exec(TString::Format("tar xzf %s.par", pkgdir.Data()));
    TString cdir = gSystem->WorkingDirectory();
    gSystem->ChangeDirectory(pkgdir);
    // Check for BUILD.sh and execute
@@ -3528,11 +3536,13 @@ Bool_t AliAnalysisAlien::SetupPar(const char *package)
       if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
          ::Error("SetupPar", "Cannot build par archive %s", pkgdir.Data());
          gSystem->ChangeDirectory(cdir);
+         gSystem->Exec(TString::Format("rm -rf %s",pkgdir.Data()));
          return kFALSE;
       }
    } else {
       ::Error("SetupPar","Cannot access PROOF-INF/BUILD.sh for package %s", pkgdir.Data());
       gSystem->ChangeDirectory(cdir);
+      gSystem->Exec(TString::Format("rm -rf %s",pkgdir.Data()));
       return kFALSE;
    }
    // Check for SETUP.C and execute
@@ -3545,10 +3555,12 @@ Bool_t AliAnalysisAlien::SetupPar(const char *package)
    } else {
       ::Error("SetupPar","Cannot access PROOF-INF/SETUP.C for package %s", pkgdir.Data());
       gSystem->ChangeDirectory(cdir);
+      gSystem->Exec(TString::Format("rm -rf %s",pkgdir.Data()));
       return kFALSE;
    }   
    // Restore original workdir
    gSystem->ChangeDirectory(cdir);
+   gSystem->Exec(TString::Format("rm -rf %s",pkgdir.Data()));
    return kTRUE;
 }
 
