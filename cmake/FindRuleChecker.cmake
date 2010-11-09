@@ -36,6 +36,12 @@ macro(ALICE_CheckModule)
   if(RULECHECKER_FOUND)
     set(CHECKDIR ${CMAKE_BINARY_DIR}/${MODULE}/check)
     set(violFiles)
+    add_custom_command( OUTPUT ${MODULE}-${PACKAGE}-factFile
+                        COMMAND ${CMAKE_COMMAND} -E make_directory ${CHECKDIR}
+                        COMMAND ${CMAKE_COMMAND} -E make_directory ${CHECKDIR}/viols
+                        COMMAND ${JAVA_RUNTIME} -jar ${FACTEXTRACTOR_JAR} ${CHECKDIR} ${CHECKDIR} 
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
     foreach(_srcfile ${SRCS})
       string (REGEX REPLACE "cxx$" "h" _header ${_srcfile})
       get_filename_component(_srcname ${_srcfile} NAME)
@@ -43,31 +49,28 @@ macro(ALICE_CheckModule)
       string (REGEX REPLACE "cxx$" "cxx.xml" _srcxml ${_srcname})
       string (REGEX REPLACE "cxx$" "h.xml" _hxml ${_srcname})
       string (REGEX REPLACE ".cxx$" "" _class ${_srcname})
-      set(depends)
+      set(_depends ${_srcfile} ${MODULE}-${PACKAGE}-factFile)
+
       if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_header})
         list(APPEND depends ${_header})
         add_custom_command( OUTPUT ${_viol}
-                          COMMAND ${CMAKE_COMMAND} -E make_directory ${CHECKDIR}
-                          COMMAND ${CMAKE_COMMAND} -E make_directory ${CHECKDIR}/viols
                           COMMAND ${RULECHECKER_SRCML} ${_srcfile} ${CHECKDIR}/${_srcxml}
                           COMMAND ${RULECHECKER_SRCML} ${_header} ${CHECKDIR}/${_hxml}
-                          COMMAND ${JAVA_RUNTIME} -jar ${FACTEXTRACTOR_JAR} ${CHECKDIR} ${CHECKDIR}
                           COMMAND ${JAVA_RUNTIME} -jar ${RULECHECKER_JAR} ${CHECKDIR}/${_srcxml} ${CHECKDIR}/${_hxml} ${CHECKDIR}/factFile.xml ${RULECHECKER_RULES} > ${CHECKDIR}/viols/${_viol}
                           DEPENDS ${_depends}
                           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         list(APPEND violFiles ${_viol})
       else()
         add_custom_command( OUTPUT ${_viol}
-                          COMMAND ${CMAKE_COMMAND} -E make_directory ${CHECKDIR}
-                          COMMAND ${CMAKE_COMMAND} -E make_directory ${CHECKDIR}/viols
                           COMMAND ${RULECHECKER_SRCML} ${_srcfile} ${CHECKDIR}/${_srcxml}
-                          COMMAND ${JAVA_RUNTIME} -jar ${FACTEXTRACTOR_JAR} ${CHECKDIR} ${CHECKDIR}
                           COMMAND ${JAVA_RUNTIME} -jar ${RULECHECKER_JAR} ${CHECKDIR}/${_srcxml} ${CHECKDIR}/${_hxml} ${CHECKDIR}/factFile.xml ${RULECHECKER_RULES} > ${CHECKDIR}/viols/${_viol}
                           DEPENDS ${_depends}
                           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         list(APPEND violFiles ${_viol})
       endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_header})
-      add_custom_target(${MODULE}-${_class}-check DEPENDS ${_viol})
+      if(CLASSCHECK STREQUAL "YES")
+        add_custom_target(${MODULE}-${_class}-check DEPENDS ${_viol})
+      endif(CLASSCHECK STREQUAL "YES")
     endforeach(_srcfile ${SRCS})
     if(violFiles)
       add_custom_target(${PACKAGE}-check DEPENDS ${violFiles})

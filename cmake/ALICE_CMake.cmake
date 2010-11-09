@@ -578,24 +578,27 @@ endmacro(ALICE_GenerateLinkDef)
 
 macro(ALICE_BuildPAR)
   if(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
-    add_custom_target(${PACKAGE}.par
-                      COMMAND sed -e 's/include .\(ROOTSYS\)\\/test\\/Makefile.arch/include Makefile.arch/\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/' < Makefile > ${PACKAGE}/Makefile
-                      COMMAND cp -pR ${ROOTSYS}/test/Makefile.arch ${PACKAGE}/Makefile.arch
-                      COMMAND cp -pR PROOF-INF.${PACKAGE} ${PACKAGE}/PROOF-INF
-                      COMMAND cp -pR lib${PACKAGE}.pkg ${PACKAGE}
-                      COMMAND tar --exclude=.svn -czhf ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${PACKAGE}
-                      COMMAND ${CMAKE_COMMAND} -E remove_directory ${PACKAGE}
-                      COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --red --bold "${PACKAGE}.par has been created in ${CMAKE_BINARY_DIR}"
-                      DEPENDS ${SRCS} ${HDRS} ${FSRCS} ${DHDR}
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
-
+    set(PARSRCS)
     foreach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
       get_filename_component(srcdir ${file} PATH)
-      add_custom_command(OUTPUT ${file}                         
-                         COMMAND mkdir -p ${PACKAGE}/${srcdir}
-                         COMMAND cp -pR ${file} ${PACKAGE}/${file}
+      add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/${file}-par                         
+                         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/${srcdir}
+                         COMMAND cp -pR ${file} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/${file}
                          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+      list(APPEND PARSRCS ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/${file}-par)
     endforeach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
+    
+    add_custom_target(${PACKAGE}.par
+                      COMMAND sed -e 's/include .\(ROOTSYS\)\\/test\\/Makefile.arch/include Makefile.arch/\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/' < Makefile > ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile
+                      COMMAND cp -pR ${ROOTSYS}/test/Makefile.arch ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile.arch
+                      COMMAND cp -pR PROOF-INF.${PACKAGE} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/PROOF-INF
+                      COMMAND cp -pR lib${PACKAGE}.pkg ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}
+                      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar --exclude=.svn -czhf ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${PACKAGE}
+                      COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}
+                      COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --red --bold "${PACKAGE}.par has been created in ${CMAKE_BINARY_DIR}"
+                      DEPENDS ${PARSRCS} 
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+
 
     add_dependencies(par-all ${PACKAGE}.par)
     add_dependencies(${MODULE}-par-all ${PACKAGE}.par)
