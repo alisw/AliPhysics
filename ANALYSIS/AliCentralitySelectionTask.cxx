@@ -76,6 +76,7 @@ AliAnalysisTaskSE(),
   fCentTRK(0),
   fCentTKL(0),
   fCentCL0(0),
+  fCentCL1(0),
   fCentV0MvsFMD(0),
   fCentTKLvsV0M(0),
   fCentZEMvsZDC(0),
@@ -84,6 +85,7 @@ AliAnalysisTaskSE(),
   fHtempTRK(0),
   fHtempTKL(0),
   fHtempCL0(0),
+  fHtempCL1(0),
   fHtempV0MvsFMD(0),
   fHtempTKLvsV0M(0),
   fHtempZEMvsZDC(0)
@@ -106,6 +108,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fCentTRK(0),
   fCentTKL(0),
   fCentCL0(0),
+  fCentCL1(0),
   fCentV0MvsFMD(0),
   fCentTKLvsV0M(0),
   fCentZEMvsZDC(0),
@@ -114,6 +117,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHtempTRK(0),
   fHtempTKL(0),
   fHtempCL0(0),
+  fHtempCL1(0),
   fHtempV0MvsFMD(0),
   fHtempTKLvsV0M(0),
   fHtempZEMvsZDC(0)
@@ -146,6 +150,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fCentTRK(ana.fCentTRK),
   fCentTKL(ana.fCentTKL),
   fCentCL0(ana.fCentCL0),
+  fCentCL1(ana.fCentCL1),
   fCentV0MvsFMD(ana.fCentV0MvsFMD),
   fCentTKLvsV0M(ana.fCentTKLvsV0M),
   fCentZEMvsZDC(ana.fCentZEMvsZDC),
@@ -154,6 +159,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHtempTRK(ana.fHtempTRK),
   fHtempTKL(ana.fHtempTKL),
   fHtempCL0(ana.fHtempCL0),
+  fHtempCL1(ana.fHtempCL1),
   fHtempV0MvsFMD(ana.fHtempV0MvsFMD),
   fHtempTKLvsV0M(ana.fHtempTKLvsV0M),
   fHtempZEMvsZDC(ana.fHtempZEMvsZDC)
@@ -180,14 +186,14 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   if(fDebug>1) printf(" **** AliCentralitySelectionTask::UserExec() \n");
   
-  Float_t  zncEnergy;               //  ZNC Energy
-  Float_t  zpcEnergy;               //  ZPC Energy
-  Float_t  znaEnergy;               //  ZNA Energy
-  Float_t  zpaEnergy;               //  ZPA Energy
+  Float_t  zncEnergy;          //  ZNC Energy
+  Float_t  zpcEnergy;          //  ZPC Energy
+  Float_t  znaEnergy;          //  ZNA Energy
+  Float_t  zpaEnergy;          //  ZPA Energy
   Float_t  zem1Energy = 0.;         //  ZEM1 Energy
   Float_t  zem2Energy = 0.;         //  ZEM2 Energy
   
-  Int_t    nTracks    = 0;          //  no. tracks
+  Int_t    nTracks = 0;             //  no. tracks
   Int_t    nTracklets = 0;          //  no. tracklets
   Int_t    nClusters[6];            //  no. clusters on 6 ITS layers
   Int_t    nChips[2];               //  no. chips on 2 SPD layers
@@ -284,6 +290,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   fCentTRK = fHtempTRK->GetBinContent(fHtempTRK->FindBin(nTracks));
   fCentTKL = fHtempTKL->GetBinContent(fHtempTKL->FindBin(nTracklets));
   fCentCL0 = fHtempCL0->GetBinContent(fHtempCL0->FindBin(nClusters[0]));
+  fCentCL1 = fHtempCL1->GetBinContent(fHtempCL1->FindBin(nClusters[1]));
   
   fCentV0MvsFMD = fHtempV0MvsFMD->GetBinContent(fHtempV0MvsFMD->FindBin((multV0A+multV0C)));
   fCentTKLvsV0M = fHtempTKLvsV0M->GetBinContent(fHtempTKLvsV0M->FindBin(nTracklets));
@@ -294,6 +301,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   esdCent->SetCentralityTRK(fCentTRK);
   esdCent->SetCentralityTKL(fCentTKL);
   esdCent->SetCentralityCL0(fCentCL0);
+  esdCent->SetCentralityCL1(fCentCL1);
   esdCent->SetCentralityV0MvsFMD(fCentV0MvsFMD);
   esdCent->SetCentralityTKLvsV0M(fCentTKLvsV0M);
   esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
@@ -308,6 +316,7 @@ void AliCentralitySelectionTask::ReadCentralityHistos()
   fHtempTRK  = (TH1D*) (fFile->Get("hNtracks_percentile")); 
   fHtempTKL  = (TH1D*) (fFile->Get("hNtracklets_percentile")); 
   fHtempCL0  = (TH1D*) (fFile->Get("hNclusters0_percentile")); 
+  fHtempCL1  = (TH1D*) (fFile->Get("hNclusters1_percentile")); 
 }  
   
 void AliCentralitySelectionTask::ReadCentralityHistos2() 

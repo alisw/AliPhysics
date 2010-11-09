@@ -27,6 +27,7 @@ class AliESDCentrality : public TNamed
   void SetCentralityTRK(Float_t cent) {fCentralityTRK = cent;}
   void SetCentralityTKL(Float_t cent) {fCentralityTKL = cent;}
   void SetCentralityCL0(Float_t cent) {fCentralityCL0 = cent;}
+  void SetCentralityCL1(Float_t cent) {fCentralityCL1 = cent;}
   void SetCentralityV0MvsFMD(Float_t cent) {fCentralityV0MvsFMD = cent;}
   void SetCentralityTKLvsV0M(Float_t cent) {fCentralityTKLvsV0M = cent;}
   void SetCentralityZEMvsZDC(Float_t cent) {fCentralityZEMvsZDC = cent;}
@@ -43,6 +44,7 @@ class AliESDCentrality : public TNamed
   Float_t fCentralityTRK;   // Centrality from tracks
   Float_t fCentralityTKL;   // Centrality from tracklets
   Float_t fCentralityCL0;   // Centrality from Clusters in layer 0
+  Float_t fCentralityCL1;   // Centrality from Clusters in layer 0
   Float_t fCentralityV0MvsFMD;   // Centrality from V0 vs FMD
   Float_t fCentralityTKLvsV0M;   // Centrality from tracklets vs V0
   Float_t fCentralityZEMvsZDC;   // Centrality from ZEM vs ZDC

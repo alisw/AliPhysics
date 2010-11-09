@@ -29,6 +29,7 @@ AliESDCentrality::AliESDCentrality() : TNamed("ESDCentrality", "Centrality"),
   fCentralityTRK(0),
   fCentralityTKL(0),
   fCentralityCL0(0),
+  fCentralityCL1(0),
   fCentralityV0MvsFMD(0),
   fCentralityTKLvsV0M(0),
   fCentralityZEMvsZDC(0)
@@ -43,6 +44,7 @@ AliESDCentrality::AliESDCentrality(const AliESDCentrality& cnt) :
   fCentralityTRK(cnt.fCentralityTRK),
   fCentralityTKL(cnt.fCentralityTKL),
   fCentralityCL0(cnt.fCentralityCL0),
+  fCentralityCL1(cnt.fCentralityCL1),
   fCentralityV0MvsFMD(cnt.fCentralityV0MvsFMD),
   fCentralityTKLvsV0M(cnt.fCentralityTKLvsV0M),
   fCentralityZEMvsZDC(cnt.fCentralityZEMvsZDC)
@@ -60,6 +62,7 @@ AliESDCentrality& AliESDCentrality::operator=(const AliESDCentrality& c)
     fCentralityTRK = c.fCentralityTRK;
     fCentralityTKL = c.fCentralityTKL;
     fCentralityCL0 = c.fCentralityCL0;
+    fCentralityCL1 = c.fCentralityCL1;
     fCentralityV0MvsFMD = c.fCentralityV0MvsFMD;
     fCentralityTKLvsV0M = c.fCentralityTKLvsV0M;
     fCentralityZEMvsZDC = c.fCentralityZEMvsZDC;
@@ -81,6 +84,7 @@ Float_t AliESDCentrality::GetCentralityPercentile(const char *x)
   if(method.CompareTo("TRK")==0)      return fCentralityTRK;
   if(method.CompareTo("TKL")==0)      return fCentralityTKL;
   if(method.CompareTo("CL0")==0)      return fCentralityCL0;
+  if(method.CompareTo("CL1")==0)      return fCentralityCL1;
   if(method.CompareTo("V0MvsFMD")==0) return fCentralityV0MvsFMD;
   if(method.CompareTo("TKLvsV0M")==0) return fCentralityTKLvsV0M;
   if(method.CompareTo("ZENvsZDC")==0) return fCentralityZEMvsZDC;
@@ -95,6 +99,7 @@ Int_t AliESDCentrality::GetCentralityClass10(const char *x)
   if(method.CompareTo("TRK")==0)      return (Int_t) (fCentralityTRK / 10.0);
   if(method.CompareTo("TKL")==0)      return (Int_t) (fCentralityTKL / 10.0);
   if(method.CompareTo("CL0")==0)      return (Int_t) (fCentralityCL0 / 10.0);
+  if(method.CompareTo("CL1")==0)      return (Int_t) (fCentralityCL1 / 10.0);
   if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 10.0);
   if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 10.0);
   if(method.CompareTo("ZENvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 10.0);
@@ -109,6 +114,7 @@ Int_t AliESDCentrality::GetCentralityClass5(const char *x)
   if(method.CompareTo("TRK")==0)      return (Int_t) (fCentralityTRK / 5.0);
   if(method.CompareTo("TKL")==0)      return (Int_t) (fCentralityTKL / 5.0);
   if(method.CompareTo("CL0")==0)      return (Int_t) (fCentralityCL0 / 5.0);
+  if(method.CompareTo("CL1")==0)      return (Int_t) (fCentralityCL1 / 5.0);
   if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 5.0);
   if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 5.0);
   if(method.CompareTo("ZENvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 5.0);
@@ -123,6 +129,7 @@ Bool_t AliESDCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const ch
   if ((method.CompareTo("TRK")==0) && (fCentralityTRK >=a && fCentralityTRK < b)) return kTRUE;
   if ((method.CompareTo("TKL")==0) && (fCentralityTKL >=a && fCentralityTKL < b)) return kTRUE;
   if ((method.CompareTo("CL0")==0) && (fCentralityCL0 >=a && fCentralityCL0 < b)) return kTRUE;
+  if ((method.CompareTo("CL1")==0) && (fCentralityCL1 >=a && fCentralityCL1 < b)) return kTRUE;
   if ((method.CompareTo("V0MvsFMD")==0) && (fCentralityV0MvsFMD >=a && fCentralityV0MvsFMD < b)) return kTRUE;
   if ((method.CompareTo("TKLvsV0M")==0) && (fCentralityTKLvsV0M >=a && fCentralityTKLvsV0M < b)) return kTRUE;
   if ((method.CompareTo("ZEMvsZDC")==0) && (fCentralityZEMvsZDC >=a && fCentralityZEMvsZDC < b)) return kTRUE;

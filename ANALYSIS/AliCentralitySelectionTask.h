@@ -52,6 +52,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t  fCentTRK;            // percentile centrality from tracks
   Float_t  fCentTKL;            // percentile centrality from tracklets
   Float_t  fCentCL0;            // percentile centrality from clusters in layer 0
+  Float_t  fCentCL1;            // percentile centrality from clusters in layer 0
   Float_t  fCentV0MvsFMD;       // percentile centrality from V0 vs FMD
   Float_t  fCentTKLvsV0M;       // percentile centrality from tracklets vs V0
   Float_t  fCentZEMvsZDC;       // percentile centrality from ZEM vs ZDC
@@ -61,6 +62,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1D    *fHtempTRK;           // histogram with centrality vs multiplicity using tracks
   TH1D    *fHtempTKL;           // histogram with centrality vs multiplicity using tracklets
   TH1D    *fHtempCL0;           // histogram with centrality vs multiplicity using clusters in layer 0
+  TH1D    *fHtempCL1;           // histogram with centrality vs multiplicity using clusters in layer 0
   TH1D    *fHtempV0MvsFMD;           // histogram with centrality vs multiplicity using V0 vs FMD   
   TH1D    *fHtempTKLvsV0M;           // histogram with centrality vs multiplicity using tracklets vs V0
   TH1D    *fHtempZEMvsZDC;           // histogram with centrality vs multiplicity using ZEM vs ZDC 
