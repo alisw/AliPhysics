@@ -65,6 +65,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   TH1D *hDirectMCptMin=0;        // Input MC minimum c-->D spectra
   TH1D *hFeedDownMCptMax=0;      // Input MC maximum b-->D spectra
   TH1D *hFeedDownMCptMin=0;      // Input MC minimum b-->D spectra
+  TGraphAsymmErrors *gPrediction=0; // Input MC c-->D spectra
   TH1D *hDirectEffpt=0;          // c-->D Acceptance and efficiency correction
   TH1D *hFeedDownEffpt=0;        // b-->D Acceptance and efficiency correction
   TH1D *hRECpt=0;                // all reconstructed D
@@ -78,30 +79,37 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   //
   // Define/Get the input histograms
   //
+  Int_t decay=0;
   TFile * mcfile = new TFile(mcfilename,"read");
   if (isD0Kpi){
+    decay = 1;
     hDirectMCpt = (TH1D*)mcfile->Get("hD0Kpipred_central");
     hFeedDownMCpt = (TH1D*)mcfile->Get("hD0KpifromBpred_central");
     hDirectMCptMax = (TH1D*)mcfile->Get("hD0Kpipred_max");
     hDirectMCptMin = (TH1D*)mcfile->Get("hD0Kpipred_min");
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hD0KpifromBpred_max");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hD0KpifromBpred_min");
+    gPrediction = (TGraphAsymmErrors*)mcfile->Get("D0Kpiprediction");
   }
   else if (isDplusKpipi){
+    decay = 2;
     hDirectMCpt = (TH1D*)mcfile->Get("hDpluskpipipred_central");
     hFeedDownMCpt = (TH1D*)mcfile->Get("hDpluskpipifromBpred_central");
     hDirectMCptMax = (TH1D*)mcfile->Get("hDpluskpipipred_max");
     hDirectMCptMin = (TH1D*)mcfile->Get("hDpluskpipipred_min");
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hDpluskpipifromBpred_max");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hDpluskpipifromBpred_min");
+    gPrediction = (TGraphAsymmErrors*)mcfile->Get("Dpluskpipiprediction");
   }
   else if(isDstarD0pi){
+    decay = 3;
     hDirectMCpt = (TH1D*)mcfile->Get("hDstarD0pipred_central");
     hFeedDownMCpt = (TH1D*)mcfile->Get("hDstarD0pifromBpred_central");
     hDirectMCptMax = (TH1D*)mcfile->Get("hDstarD0pipred_max");
     hDirectMCptMin = (TH1D*)mcfile->Get("hDstarD0pipred_min");
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hDstarD0pifromBpred_max");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hDstarD0pifromBpred_min");
+    gPrediction = (TGraphAsymmErrors*)mcfile->Get("DstarD0piprediction");
   }
   //
   hDirectMCpt->SetNameTitle("hDirectMCpt","direct MC spectra");
@@ -210,8 +218,16 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 
   cout << " and the normalization" <<endl;
   // Set normalization factors (uncertainties set to 0. as example)
-  spectra->SetLuminosity(lumi,0.);
+  double lumiUnc = 0.10*lumi; // 10% uncertainty on the luminosity
+  spectra->SetLuminosity(lumi,lumiUnc);
   spectra->SetTriggerEfficiency(effTrig,0.);
+
+  // Set the global uncertainties on the efficiencies (in percent)
+  double globalEffUnc = 0.15; 
+  double globalBCEffRatioUnc = 0.15;
+  //  double globalEffUnc = 0.; 
+  //  double globalBCEffRatioUnc = 0.;
+  spectra->SetAccEffPercentageUncertainty(globalEffUnc,globalBCEffRatioUnc);
 
   // Do the calculations
   cout << " Doing the calculation... "<< endl;
@@ -220,6 +236,10 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   double branchingRatioBintoFinalDecay = 1.0; // this is relative to the input theoretical prediction
   spectra->ComputeHFPtSpectrum(deltaY,branchingRatioC,branchingRatioBintoFinalDecay);
   cout << "   ended the calculation, getting the histograms back " << endl;
+
+  // Set the systematics externally
+  bool combineFeedDown = true;
+  spectra->ComputeSystUncertainties(decay,combineFeedDown);
 
   //
   // Get the output histograms
@@ -555,6 +575,10 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     if(asym && gFcExtreme) gFcExtreme->Write();
     if(asym && gFcConservative) gFcConservative->Write();
   }
+
+
+  // Draw the cross-section 
+  spectra->DrawSpectrum(gPrediction);
 
   //  out->Close();
 
