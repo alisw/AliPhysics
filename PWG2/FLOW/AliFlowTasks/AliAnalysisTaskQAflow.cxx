@@ -169,7 +169,10 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     }
     
   }
-  Int_t trackmult = AliESDtrackCuts::GetReferenceMultiplicity(event,kTRUE);
+  //Int_t trackmult = AliESDtrackCuts::GetReferenceMultiplicity(event,kTRUE);
+  AliFlowEventCuts newcuts;
+  newcuts.SetRefMultCuts(fTrackCuts);
+  Int_t trackmult = newcuts.RefMult(event);
   Int_t refmult = fEventCuts->RefMult(event);
   Bool_t passevent = fEventCuts->IsSelected(event);
   htrackletmultB->Fill(ntracklets); if (passevent) htrackletmultA->Fill(ntracklets); 
