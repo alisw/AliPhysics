@@ -2,6 +2,7 @@
 #define ALIANALYSISTASKEFFICIENCYPRIMARIES_CXX
 
 class TObjArray;
+class TNtuple;
 class AliESDEvent;
 class AliFlowEventCuts;
 class AliFlowTrackCuts;
@@ -21,9 +22,12 @@ class AliAnalysisTaskQAflow: public AliAnalysisTaskSE
 
     void SetTrackCuts(AliFlowTrackCuts* trackcuts) {fTrackCuts=trackcuts;}
     void SetEventCuts(AliFlowEventCuts* eventcuts) {fEventCuts=eventcuts;}
+    void SetFillNTuple(Bool_t b) {fFillNtuple=b;}
   
   private:
     TObjArray* fOutput; //output histograms
+    Bool_t fFillNtuple;  //fil; the ntuple
+    TNtuple* fNtuple; //output ntuple
     AliFlowEventCuts* fEventCuts; //AliAnalysisCuts - applied before analysis - for comparing different event classes
     AliFlowTrackCuts* fTrackCuts; //AliFlowTrackCuts go in here
 

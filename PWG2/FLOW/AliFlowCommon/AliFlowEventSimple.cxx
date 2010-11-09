@@ -589,6 +589,19 @@ void AliFlowEventSimple::TagSubeventsInEta( Double_t etaMinA,
 }
 
 //_____________________________________________________________________________
+void AliFlowEventSimple::TagSubeventsByCharge()
+{
+  //Flag two subevents in given eta ranges
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    Int_t charge=track->Charge();
+    if (charge<0) track->SetForSubevent(0);
+    if (charge>0) track->SetForSubevent(1);
+  }
+}
+
+//_____________________________________________________________________________
 void AliFlowEventSimple::AddV1( Double_t v1 )
 {
   //add v2 to all tracks wrt the reaction plane angle

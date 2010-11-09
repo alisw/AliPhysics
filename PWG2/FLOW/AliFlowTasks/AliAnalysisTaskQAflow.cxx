@@ -9,6 +9,7 @@
 #include "TLorentzVector.h"
 #include "TDirectory.h"
 #include "TROOT.h"
+#include "TNtuple.h"
 
 #include "AliLog.h"
 #include "AliVParticle.h"
@@ -23,6 +24,8 @@
 #include "AliMultiplicity.h"
 #include "AliESDtrackCuts.h"
 #include "AliVertex.h"
+#include "AliFlowEventSimple.h"
+#include "AliFlowVector.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -35,6 +38,8 @@ ClassImp(AliAnalysisTaskQAflow)
 AliAnalysisTaskQAflow::AliAnalysisTaskQAflow()
   : AliAnalysisTaskSE(),
     fOutput(NULL),
+    fFillNtuple(kFALSE),
+    fNtuple(NULL),
     fEventCuts(NULL),
     fTrackCuts(NULL)
 {
@@ -45,10 +50,13 @@ AliAnalysisTaskQAflow::AliAnalysisTaskQAflow()
 AliAnalysisTaskQAflow::AliAnalysisTaskQAflow(const char* name)
   : AliAnalysisTaskSE(name),
     fOutput(NULL),
+    fFillNtuple(kFALSE),
+    fNtuple(NULL),
     fEventCuts(NULL),
     fTrackCuts(NULL)
 {
   // Constructor
+  DefineInput(1, AliFlowEventSimple::Class());
   DefineOutput(1, TObjArray::Class());
 }
 
@@ -57,6 +65,7 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
 {
   // Called once at the beginning
   fOutput=new TObjArray();
+  fNtuple = new TNtuple("flowQAtree","flowQAtree","meanpt:qx:qy:mult:refmult:trig:tpcvtxx:tpcvtxy:tpcvtxz:ntrackletsA:ntrackletsC");
   //TDirectory* before = gDirectory->mkdir("before cuts","before cuts");
   //TDirectory* after = gDirectory->mkdir("after cuts","after cuts");
   TObjArray* before = new TObjArray();
@@ -155,10 +164,14 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   AliMultiplicity* tracklets = const_cast<AliMultiplicity*>(event->GetMultiplicity());
   Int_t ntracklets=0;
   Int_t nspdclusters=0;
+  Int_t nspd1clusters=0;
+  Int_t ntrackletsA=0;
+  Int_t ntrackletsC=0;
   if (tracklets)
   {
     ntracklets = tracklets->GetNumberOfTracklets();
     nspdclusters = tracklets->GetNumberOfITSClusters(0,1);
+    nspd1clusters = tracklets->GetNumberOfITSClusters(1);
     for (Int_t i=0; i<tracklets->GetNumberOfTracklets(); i++)
     {
       Bool_t pass=fTrackCuts->IsSelected(tracklets,i);
@@ -166,6 +179,8 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       Float_t eta=tracklets->GetEta(i);
       hphitrackletsB->Fill(phi); if (pass) hphitrackletsA->Fill(phi);
       hetatrackletsB->Fill(eta); if (pass) hetatrackletsA->Fill(eta); 
+      if (eta>0) ntrackletsC++;
+      else ntrackletsA++;
     }
     
   }
@@ -180,20 +195,31 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   hrefmultB->Fill(refmult); if (passevent) hrefmultA->Fill( refmult); 
   hspdclustersB->Fill(nspdclusters); if (passevent) hspdclustersA->Fill( nspdclusters);
   const AliVertex* vertex = event->GetPrimaryVertex();
-  Float_t vtxz=0.;
+  Float_t vtxz=0.0;
+  Float_t vtxx=0.0;
+  Float_t vtxy=0.0;
   if (vertex)
   {
     vtxz = vertex->GetZ();
+    vtxx = vertex->GetX();
+    vtxy = vertex->GetY();
     hprimvtxzB->Fill(vtxz); if (passevent) hprimvtxzA->Fill(vtxz);
   }
   const AliVertex* vertextpc = event->GetPrimaryVertexTPC();
+  Float_t vtxTPCx=0.0;
+  Float_t vtxTPCy=0.0;
+  Float_t vtxTPCz=0.0;
   if (vertextpc)
   {
-    vtxz = vertextpc->GetZ();
-    hprimvtxzTPCB->Fill(vtxz); if (passevent) hprimvtxzTPCA->Fill(vtxz);
+    vtxTPCx = vertextpc->GetX();
+    vtxTPCy = vertextpc->GetY();
+    vtxTPCz = vertextpc->GetZ();
+    hprimvtxzTPCB->Fill(vtxTPCz); if (passevent) hprimvtxzTPCA->Fill(vtxTPCz);
   }
   fTrackCuts->SetEvent(event);
-  for (Int_t i=0; i<fTrackCuts->GetNumberOfInputObjects(); i++)
+  Float_t meanpt=0;
+  Int_t ntracks=fTrackCuts->GetNumberOfInputObjects();
+  for (Int_t i=0; i<ntracks; i++)
   {
     TObject* obj = fTrackCuts->GetInputObject(i);
     Bool_t pass = fTrackCuts->IsSelected(obj,i);
@@ -213,6 +239,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       ntpccls=track->GetTPCNcls();
       eta=track->Eta();
       phi=track->Phi();
+      meanpt+=track->Pt();
       tpcchi2percls= (ntpccls==0)?0.0:tpcchi2/ntpccls;
       nitscls = track->GetNcls(0);
       hITSclsB->Fill(nitscls); if (pass) hITSclsA->Fill( nitscls);
@@ -224,6 +251,23 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       hphitracksB->Fill(phi); if (pass) hphitracksA->Fill(phi);
     }
   }
+  meanpt = meanpt/ntracks;
+
+  ///////////////////////////////////////////////////////////////////////
+  //the ntuple part/////////////
+  AliFlowEventSimple* flowevent = dynamic_cast<AliFlowEventSimple*>(GetInputData(1));
+  if (flowevent && fFillNtuple)
+  {
+    AliFlowVector qvec = flowevent->GetQ(2);
+    Double_t qx = qvec.X();
+    Double_t qy = qvec.Y();
+    TString triggers = event->GetFiredTriggerClasses();
+    Int_t trig=0;
+    if (triggers.Contains("CMBAC-B-NOPF-ALL")) trig+=1;
+    if (triggers.Contains("CMBS2C-B-NOPF-ALL")) trig+=10;
+    if (triggers.Contains("CMBS2A-B-NOPF-ALL")) trig+=100;
+    fNtuple->Fill(meanpt,qx,qy,trackmult,refmult,trig,vtxTPCx,vtxTPCy,vtxTPCz,ntrackletsA,ntrackletsC);
+  }//if flowevent
 }
 
 //________________________________________________________________________
