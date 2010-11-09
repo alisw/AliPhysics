@@ -46,7 +46,7 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
  TH1F *h3  = l1->FindObject("fDCA_hlt");
  TH1F *h4  = l1->FindObject("fDCA_off"); 
- TH1F *hSG = l1->FindObject("fDCA_hltSG"); 
+ TH1F *hSG = l1->FindObject("fDCA_hltSG");
  h3->SetTitle("DCA between track and vertex on XY plane");
  h3->GetXaxis()->SetTitle("DCAr (cm)");
  h4->SetLineColor(2);
@@ -231,7 +231,7 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  
 //======================
  
- c1->cd(5);
+ c1->cd(5)->SetLogy();
  h9->Draw();
  h10->Draw("sames");
  leg1->Draw("same");

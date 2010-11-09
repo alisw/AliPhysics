@@ -252,7 +252,6 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
 
   fChargeOff = new TH1F("fCharge_off", "Charge distribution (Offline)", 12, -3, 3);  
   fChargeHLT = new TH1F("fCharge_hlt", "Charge distribution (HLT)", 12, -3, 3);  
-
   
   fMomentumOff = new TH1F("fMomentum_off", "momentum (offline)",1000, 0., 100);
   fMomentumHLT = new TH1F("fMomentum_hlt", "momentum (HLT)",    1000, 0., 100);
@@ -263,9 +262,9 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fMomentumOffTpcIts = new TH1F("fMomentumTpcIts_off","Momentum for kTPCin && kITSin (offline)",100,-3,3);
   fMomentumHLTTpcIts = new TH1F("fMomentumTpcIts_hlt","Momentum for kTPCin && kITSin (HLT)",    100,-3,3);
  
-  fDCArOff   = new TH1F("fDCA_off",  "DCAr to beam line (offline)",200, -20, 20);
-  fDCArHLT   = new TH1F("fDCA_hlt",  "DCAr to beam line (HLT)",    200, -20, 20);
-  fDCArHLTSG = new TH1F("fDCA_hltSG","DCAr to beam line (HLT)",    200, -20, 20);
+  fDCArOff   = new TH1F("fDCA_off",  "DCAr to beam line (offline)",200, -100, 100);
+  fDCArHLT   = new TH1F("fDCA_hlt",  "DCAr to beam line (HLT)",    200, -100, 100);
+  fDCArHLTSG = new TH1F("fDCA_hltSG","DCAr to beam line (HLT)",    200, -100, 100);
 
   fDCAzOff   = new TH1F("fDCAz_off",  "DCAz to beam line (offline)",200, -20, 20);
   fDCAzHLT   = new TH1F("fDCAz_hlt",  "DCAz to beam line (HLT)",    200, -20, 20);
@@ -289,17 +288,17 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fThetaOff = new TH1F("fTheta_off","polar angle distribution (offline)",180,0,180);
   fThetaHLT = new TH1F("fTheta_hlt","polar angle distribution (HLT)",    180,0,180);
   
-  fMultOff = new TH1F("fMult_off","track multiplicity (offline)",100,0,100);
-  fMultHLT = new TH1F("fMult_hlt","track multiplicity (HLT)",    100,0,100);
+  fMultOff = new TH1F("fMult_off","track multiplicity (offline)",150,0,15000);
+  fMultHLT = new TH1F("fMult_hlt","track multiplicity (HLT)",    150,0,15000);
  
   fXYvertexOff = new TH2F("fXYvertex_off","XY primary vertex (offline)",100,-5,5,100,-5,5);
   fXYvertexHLT = new TH2F("fXYvertex_hlt","XY primary vertex (HLT)",    100,-5,5,100,-5,5);
   
-  fXvertexOff = new TH1F("fXvertex_off","X primary vertex (offline)",1000,-1,1);
-  fXvertexHLT = new TH1F("fXvertex_hlt","X primary vertex (HLT)",    1000,-1,1);
+  fXvertexOff = new TH1F("fXvertex_off","X primary vertex (offline)",500,-5,5);
+  fXvertexHLT = new TH1F("fXvertex_hlt","X primary vertex (HLT)",    500,-5,5);
  
-  fYvertexOff = new TH1F("fYvertex_off","Y primary vertex (offline)",1000,-1,1);
-  fYvertexHLT = new TH1F("fYvertex_hlt","Y primary vertex (HLT)",    1000,-1,1);
+  fYvertexOff = new TH1F("fYvertex_off","Y primary vertex (offline)",500,-5,5);
+  fYvertexHLT = new TH1F("fYvertex_hlt","Y primary vertex (HLT)",    500,-5,5);
  
   fZvertexOff = new TH1F("fZvertex_off","Z primary vertex (offline)",250,-30,30);
   fZvertexHLT = new TH1F("fZvertex_hlt","Z primary vertex (HLT)",    250,-30,30);
