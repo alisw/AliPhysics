@@ -422,26 +422,21 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 		TString filter;
 		MakeQueryFilter(selectedId.GetFirstRun(), selectedId.GetLastRun(), 0, filter);
 
-		TString pattern = Form("%s/Run*", selectedId.GetPath().Data());
-		TString optionQuery = "-y";
+		TString pattern = ".root";
+		TString optionQuery = "-y -m";
 		if(selectedId.GetVersion() >= 0) {
-			pattern += Form("_v%d*",selectedId.GetVersion());
+			pattern.Prepend(Form("_v%d*",selectedId.GetVersion()));
 			optionQuery = "";
 		}
 
-		pattern += ".root";
-		TString det = pattern(0,4);
-		TString patternCopy(pattern);
-		patternCopy.Remove(0,4);
-		TString folderCopy(fDBFolder);
-		folderCopy += det;
+		TString folderCopy(Form("%s%s/Run",fDBFolder.Data(),selectedId.GetPath().Data()));
 
-		if (optionQuery == "-y"){
+		if (optionQuery.Contains("-y")){
 			AliInfo("Only latest version will be returned");
 		}
 
-		AliDebug(2,Form("** fDBFolder = %s, pattern = %s, filter = %s",folderCopy.Data(), patternCopy.Data(), filter.Data()));
-		TGridResult *res = gGrid->Query(folderCopy, patternCopy, filter, optionQuery.Data());
+		AliDebug(2,Form("** fDBFolder = %s, pattern = %s, filter = %s",folderCopy.Data(), pattern.Data(), filter.Data()));
+		TGridResult *res = gGrid->Query(folderCopy, pattern, filter, optionQuery.Data());
 		if (res) {
 			AliCDBId validFileId;
 			for(int i=0; i<res->GetEntries(); i++){
