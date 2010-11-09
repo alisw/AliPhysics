@@ -364,14 +364,16 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
       if (pPdg == 111) { SetTagBit(tag,kMCPi0Decay); } //Pi0 Dalitz decay
       else if (pPdg == 221) { SetTagBit(tag,kMCEtaDecay); } //Eta Dalitz decay
       else if((499 < pPdg && pPdg < 600)||(4999 < pPdg && pPdg < 6000)) { SetTagBit(tag,kMCEFromB); } //b-->e decay
-      else if((399 < pPdg && pPdg < 500)||(3999 < pPdg && pPdg < 5000) && parent) { //check charm decay
-        Int_t iGrandma = parent->GetFirstMother();
-        if(iGrandma >= 0) {
-          TParticle* gma = (TParticle*)stack->Particle(iGrandma); //get mother of charm
-          Int_t gPdg = TMath::Abs(gma->GetPdgCode());
-          if((499 < gPdg && gPdg < 600)||(4999 < gPdg && gPdg < 6000)) SetTagBit(tag,kMCEFromCFromB); //b-->c-->e
-          else SetTagBit(tag,kMCEFromC); //c-->e 
-        } else SetTagBit(tag,kMCEFromC); //c-->e 
+      else if((399 < pPdg && pPdg < 500)||(3999 < pPdg && pPdg < 5000)) { //check charm decay
+        if(parent){
+          Int_t iGrandma = parent->GetFirstMother();
+          if(iGrandma >= 0) {
+            TParticle* gma = (TParticle*)stack->Particle(iGrandma); //get mother of charm
+            Int_t gPdg = TMath::Abs(gma->GetPdgCode());
+            if((499 < gPdg && gPdg < 600)||(4999 < gPdg && gPdg < 6000)) SetTagBit(tag,kMCEFromCFromB); //b-->c-->e
+            else SetTagBit(tag,kMCEFromC); //c-->e 
+          } else SetTagBit(tag,kMCEFromC); //c-->e 
+        }//parent
       } else {
         //if it is not from any of the above, where is it from?
         if(pPdg > 10000) SetTagBit(tag,kMCUnknown);
@@ -578,14 +580,16 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
       if (pPdg == 111) { SetTagBit(tag,kMCPi0Decay); } //Pi0 Dalitz decay
       else if (pPdg == 221) { SetTagBit(tag,kMCEtaDecay); } //Eta Dalitz decay
       else if((499 < pPdg && pPdg < 600)||(4999 < pPdg && pPdg < 6000)) { SetTagBit(tag,kMCEFromB);} //b-hadron decay
-      else if((399 < pPdg && pPdg < 500)||(3999 < pPdg && pPdg < 5000) && parent) { //c-hadron decay check
-        Int_t iGrandma = parent->GetMother();
-        if(iGrandma >= 0) {
-          AliAODMCParticle* gma = (AliAODMCParticle*)mcparticles->At(iGrandma); //charm's mother
-          Int_t gPdg = TMath::Abs(gma->GetPdgCode());
-          if((499 < gPdg && gPdg < 600)||(4999 < gPdg && gPdg < 6000)) SetTagBit(tag,kMCEFromCFromB); //b-->c-->e decay
-          else SetTagBit(tag,kMCEFromC); //c-hadron decay
-        } else SetTagBit(tag,kMCEFromC); //c-hadron decay
+      else if((399 < pPdg && pPdg < 500)||(3999 < pPdg && pPdg < 5000)) { //c-hadron decay check
+        if(parent){
+          Int_t iGrandma = parent->GetMother();
+          if(iGrandma >= 0) {
+            AliAODMCParticle* gma = (AliAODMCParticle*)mcparticles->At(iGrandma); //charm's mother
+            Int_t gPdg = TMath::Abs(gma->GetPdgCode());
+            if((499 < gPdg && gPdg < 600)||(4999 < gPdg && gPdg < 6000)) SetTagBit(tag,kMCEFromCFromB); //b-->c-->e decay
+            else SetTagBit(tag,kMCEFromC); //c-hadron decay
+          } else SetTagBit(tag,kMCEFromC); //c-hadron decay
+        }//parent
       } else { //prompt or other decay
         TParticlePDG* foo = TDatabasePDG::Instance()->GetParticle(pPdg);
         TParticlePDG* foo1 = TDatabasePDG::Instance()->GetParticle(mPdg);
