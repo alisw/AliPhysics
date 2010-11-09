@@ -139,9 +139,9 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   Int_t nMuons=0;
   Int_t nDimuons=0;
   Int_t jDimuons=0;
-  Int_t nMuonTrack[10];
+  Int_t nMuonTrack[100];
   
-  for(int imuon=0;imuon<10;imuon++) nMuonTrack[imuon]=0;
+  for(int imuon=0;imuon<100;imuon++) nMuonTrack[imuon]=0;
 
   for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
     esdMuTrack = esd->GetMuonTrack(nMuTrack);

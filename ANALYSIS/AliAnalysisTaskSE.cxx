@@ -400,8 +400,8 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		TClonesArray& dimuons = *fgAODDimuons;
 		TClonesArray& tracksnew = *fgAODTracks;
 		
-                Int_t nMuonTrack[10]; 
-                for(Int_t imuon = 0; imuon < 10; imuon++) nMuonTrack[imuon] = 0;
+                Int_t nMuonTrack[100]; 
+                for(Int_t imuon = 0; imuon < 100; imuon++) nMuonTrack[imuon] = 0;
                 Int_t nMuons=0;
 		for(Int_t ii=0; ii < fgAODTracks->GetEntries(); ii++){
 		    AliAODTrack *track = (AliAODTrack*) fgAODTracks->At(ii);
