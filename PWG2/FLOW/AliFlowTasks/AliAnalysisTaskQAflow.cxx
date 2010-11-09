@@ -106,6 +106,8 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
   before->Add(hist); after->Add(hist->Clone()); //13
   hist = new TH1D("TPC_vertex_z", "TPC vertex z", 100,-20.0,20.0);
   before->Add(hist); after->Add(hist->Clone()); //14
+  hist = new TH1D("ptyield", "p_{t} spectrum", 10000,0.0,10.0);
+  before->Add(hist); after->Add(hist->Clone()); //15
   
   //post data here as it doesn't change anyway (the pointer to list anyway)
 
@@ -160,6 +162,8 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   TH1* hetatracksA = dynamic_cast<TH1*>(after->At(13));
   TH1* hprimvtxzTPCB = dynamic_cast<TH1*>(before->At(14));
   TH1* hprimvtxzTPCA = dynamic_cast<TH1*>(after->At(14));
+  TH1* hptyieldB = dynamic_cast<TH1*>(before->At(15));
+  TH1* hptyieldA = dynamic_cast<TH1*>(after->At(15));
 
   AliMultiplicity* tracklets = const_cast<AliMultiplicity*>(event->GetMultiplicity());
   Int_t ntracklets=0;
@@ -231,6 +235,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     Int_t nitscls=0;
     Float_t eta=0.0;
     Float_t phi=0.0;
+    Float_t pt=0.0;
     AliESDtrack* track = dynamic_cast<AliESDtrack*>(fTrackCuts->GetTrack());
     if (track)
     {
@@ -239,7 +244,8 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       ntpccls=track->GetTPCNcls();
       eta=track->Eta();
       phi=track->Phi();
-      meanpt+=track->Pt();
+      pt=track->Pt();
+      meanpt+=pt;
       tpcchi2percls= (ntpccls==0)?0.0:tpcchi2/ntpccls;
       nitscls = track->GetNcls(0);
       hITSclsB->Fill(nitscls); if (pass) hITSclsA->Fill( nitscls);
@@ -249,6 +255,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       hdcazB->Fill(dcaz); if (pass) hdcazA->Fill(dcaz);
       hetatracksB->Fill(eta); if (pass) hetatracksA->Fill(eta);
       hphitracksB->Fill(phi); if (pass) hphitracksA->Fill(phi);
+      hptyieldB->Fill(pt); if (pass) hptyieldA->Fill(pt);
     }
   }
   meanpt = meanpt/ntracks;
