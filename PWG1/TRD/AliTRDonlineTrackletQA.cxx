@@ -60,10 +60,16 @@ AliTRDonlineTrackletQA::AliTRDonlineTrackletQA(const char *name) :
   fHistdYdiff(0x0),
   fHistdYdYraw(0x0),
   fTreeTracklets(0x0),
+  fY(0.),
+  fDY(0.),
+  fYdiff(0.),
+  fDYdiff(0.),
+  fQ0(0),
+  fQ1(0),
+  fNHits(0),
   fMinPt(1.),
   fGeo(new AliTRDgeometry),
   fNevent(0),
-  fTrackletFile(0x0),
   fTrackletTree(0x0),
   fTrackletTreeRaw(0x0)
 {
@@ -83,8 +89,10 @@ AliTRDonlineTrackletQA::~AliTRDonlineTrackletQA()
   delete fGeo;
 }
 
-void AliTRDonlineTrackletQA::ConnectInputData(const Option_t *option)
+void AliTRDonlineTrackletQA::ConnectInputData(const Option_t * /* option */)
 {
+  // connect input data
+
   fInputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   if (fInputHandler)
     fInputEvent = fInputHandler->GetEvent();
@@ -96,6 +104,8 @@ void AliTRDonlineTrackletQA::ConnectInputData(const Option_t *option)
 
 void AliTRDonlineTrackletQA::CreateOutputObjects()
 {
+  // create output objects
+
   OpenFile(1); 
   
   fOutputList = new TList();
@@ -217,7 +227,7 @@ void AliTRDonlineTrackletQA::CreateOutputObjects()
   fOutputList->Add(fTreeTracklets);
 }
 
-void AliTRDonlineTrackletQA::Exec(const Option_t *option)
+void AliTRDonlineTrackletQA::Exec(const Option_t * /* option */)
 {
   // execute this for each event
 
@@ -262,7 +272,7 @@ void AliTRDonlineTrackletQA::Exec(const Option_t *option)
   if (fTrackletsSim) {
     for (Int_t iTracklet = 0; iTracklet < fTrackletsSim->GetEntries(); iTracklet++) {
       trkl = (AliTRDtrackletMCM*) (*fTrackletsSim)[iTracklet];
-      Int_t label = trkl->GetLabel();
+//      Int_t label = trkl->GetLabel();
 //      if (label > -1 && label < maxTracks) 
 //	mcTrackToTrackletMCM[label].idx[mcTrackToTrackletMCM[label].size < 10 ? mcTrackToTrackletMCM[label].size++ : 0] = iTracklet;
       fHistYpos->Fill(trkl->GetY());
@@ -426,6 +436,7 @@ void AliTRDonlineTrackletQA::Exec(const Option_t *option)
   if (fESD) {
     for (Int_t iTrack = 0; iTrack < fESD->GetNumberOfTracks(); iTrack++) {
       AliESDtrack *esdTrack = fESD->GetTrack(iTrack);
+      AliDebug(1, Form("ESD track pt: %7.2f", esdTrack->Pt()));
     }
   }
 
@@ -437,8 +448,10 @@ void AliTRDonlineTrackletQA::LocalInit()
 
 }
 
-void AliTRDonlineTrackletQA::Terminate(const Option_t *option)
+void AliTRDonlineTrackletQA::Terminate(const Option_t * /* option */)
 {
+  // upon terminate
+
   fOutputList = dynamic_cast<TList*> (GetOutputData(1));
 
   if (!fOutputList) {
@@ -569,6 +582,7 @@ void AliTRDonlineTrackletQA::PlotMC(AliTRDtrackletMCM *trkl)
 
 void AliTRDonlineTrackletQA::PlotESD(AliTRDtrackletMCM *trkl)
 {
+  // plot comparison to ESD
 
   Float_t xTrkl = trkl->GetX();
   Float_t yTrkl = trkl->GetY();
@@ -591,7 +605,7 @@ void AliTRDonlineTrackletQA::PlotESD(AliTRDtrackletMCM *trkl)
 
     AliExternalTrackParam *param = new AliExternalTrackParam(*(track->GetOuterParam()));
 
-    AliDebug(10, Form("track %i at x = %f", 
+    AliDebug(10, Form("track %i at x = %f, y = %f", 
 		      iTrack, param->GetX(), param->GetY()));
     param->Propagate(alpha, xTrkl, mag);
     AliDebug(10, Form("after propagating track %i at x = %f, y = %f", 
@@ -617,6 +631,7 @@ void AliTRDonlineTrackletQA::PlotESD(AliTRDtrackletMCM *trkl)
 
 void AliTRDonlineTrackletQA::PlotESD(AliTRDtrackletWord *trkl) 
 {
+  // plot comparison to ESD
 
   Float_t xTrkl = trkl->GetX();
   Float_t yTrkl = trkl->GetY();
@@ -639,7 +654,7 @@ void AliTRDonlineTrackletQA::PlotESD(AliTRDtrackletWord *trkl)
 
     AliExternalTrackParam *param = new AliExternalTrackParam(*(track->GetOuterParam()));
 
-    AliDebug(10, Form("track %i at x = %f", 
+    AliDebug(10, Form("track %i at x = %f, y = %f", 
 		      iTrack, param->GetX(), param->GetY()));
     param->Propagate(alpha, xTrkl, mag);
     AliDebug(10, Form("after propagating track %i at x = %f, y = %f", 
@@ -662,7 +677,10 @@ void AliTRDonlineTrackletQA::PlotESD(AliTRDtrackletWord *trkl)
 }
 
 
-Int_t AliTRDonlineTrackletQA::GetTrackletsForMC(Int_t label, Int_t idx[])
+Int_t AliTRDonlineTrackletQA::GetTrackletsForMC(Int_t /* label */, Int_t /*idx*/ [])
 {
+  // get tracklets for MC label
+  // not implemented
+
   return 0;
 }

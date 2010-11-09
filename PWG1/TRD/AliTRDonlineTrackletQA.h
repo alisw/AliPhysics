@@ -35,15 +35,15 @@ class AliTRDonlineTrackletQA : public AliAnalysisTask
   Int_t GetTrackletsForMC(Int_t label, Int_t idx[]);
 
  protected:
-  AliESDEvent *fESD;                    //!
+  AliESDEvent *fESD;                    //! current ESD event
 
-  AliInputEventHandler *fInputHandler;  //!
-  AliVEvent            *fInputEvent;    //!
-  AliAODEvent          *fOutputAOD;     //!
-  AliMCEvent           *fMCEvent;       //!
+  AliInputEventHandler *fInputHandler;  //! input handler
+  AliVEvent            *fInputEvent;    //! input event
+  AliAODEvent          *fOutputAOD;     //! output AOD
+  AliMCEvent           *fMCEvent;       //! MC event
 
-  TClonesArray         *fTrackletsRaw;  //!
-  TClonesArray         *fTrackletsSim;  //!
+  TClonesArray         *fTrackletsRaw;  //! array of raw tracklets
+  TClonesArray         *fTrackletsSim;  //! array of sim tracklets
 
   // ----- output objects -----
   TList                *fOutputList;	//! list of output objects
@@ -72,13 +72,13 @@ class AliTRDonlineTrackletQA : public AliAnalysisTask
   TTree                *fTreeTracklets; //! store tracklet information
 
   // ----- temporary storage -----
-  Float_t fY;
-  Float_t fDY;
-  Float_t fYdiff;
-  Float_t fDYdiff;
-  Int_t   fQ0;
-  Int_t   fQ1;
-  Int_t   fNHits;
+  Float_t fY;			// y-position
+  Float_t fDY;			// deflection length
+  Float_t fYdiff;		// difference in y-position
+  Float_t fDYdiff;		// difference in deflection
+  Int_t   fQ0;			// accumulated charge in first window
+  Int_t   fQ1;			// accumulated charge in second window
+  Int_t   fNHits;		// no. of hits
 
   // ----- configuration -----
   Float_t fMinPt;                       // minimal pt for tracks and track reference
@@ -87,15 +87,10 @@ class AliTRDonlineTrackletQA : public AliAnalysisTask
   // ----- internal use -----
   AliTRDgeometry       *fGeo; //! TRD geometry
 
-  Int_t fNevent;
+  Int_t fNevent;             // current event number
 
-  TString fPath; //!
-  TFile *fTrackletFile; //!
-  Int_t fNEventsPerFile; //!
-  Int_t fEvent;  //!
-  Int_t fFileNumber; //!
-  TTree *fTrackletTree;  //!
-  TTree *fTrackletTreeRaw; //!
+  TTree *fTrackletTree;  //! tracklets from simulation
+  TTree *fTrackletTreeRaw; //! tracklets from raw data
 
  private:
   AliTRDonlineTrackletQA(const AliTRDonlineTrackletQA&); // not implemented

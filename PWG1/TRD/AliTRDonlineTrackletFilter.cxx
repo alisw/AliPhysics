@@ -34,12 +34,16 @@ AliTRDonlineTrackletFilter::AliTRDonlineTrackletFilter(const char *name) :
   fMCEvent(0x0),
   fTrackletsRaw(new TClonesArray("AliTRDtrackletWord")),
   fTrackletsSim(new TClonesArray("AliTRDtrackletMCM")),
+  fTrackletTree(0x0),
   fGeo(new AliTRDgeometry),
   fNevent(0),
+  fPath(""),
   fTrackletFile(0x0),
+  fNEventsPerFile(0),
+  fEvent(0),
+  fFileNumber(0),
   fTrackletTreeSim(0x0),
-  fTrackletTreeRaw(0x0), 
-  fTrackletTree(0x0)
+  fTrackletTreeRaw(0x0)
 {
   // ctor
 
@@ -58,7 +62,7 @@ AliTRDonlineTrackletFilter::~AliTRDonlineTrackletFilter()
   delete fGeo;
 }
 
-void AliTRDonlineTrackletFilter::ConnectInputData(const Option_t *option)
+void AliTRDonlineTrackletFilter::ConnectInputData(const Option_t */* option */)
 {
   fInputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   if (fInputHandler)
@@ -107,10 +111,12 @@ Bool_t AliTRDonlineTrackletFilter::Notify()
 
   fEvent = -1;
   fFileNumber = 0;
+
+  return kTRUE;
 }
 
 
-void AliTRDonlineTrackletFilter::Exec(const Option_t *option)
+void AliTRDonlineTrackletFilter::Exec(const Option_t * /* option */)
 {
   // execute this for each event
 
@@ -158,7 +164,7 @@ void AliTRDonlineTrackletFilter::LocalInit()
 
 }
 
-void AliTRDonlineTrackletFilter::Terminate(const Option_t *option)
+void AliTRDonlineTrackletFilter::Terminate(const Option_t * /* option */)
 {
 
 }
