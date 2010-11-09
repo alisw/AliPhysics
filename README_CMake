@@ -42,13 +42,14 @@ eg.	make STEER-all STEER-all-static
 
 eg.	make STEERbase STEERbase-static
 
-8. The code can be checked for the ALICE coding conventions on a package or module level using the following targets. 
+8. The code can be checked for the ALICE coding conventions on a package, module or class level using the following targets. 
 
   make check-all
   make <Module>-check-all
   make <Package>-check
+  make <Module>-<ClassName>-check
 
-  The resulting violations will be written to the folder $ALICE_ROOT/<Module>/check/viols
+  The resulting violations will be written to the folder <Build_Directory>/<Module>/check/viols
 
 9. To Build PARs the following targets can be used. The resulting packages will be created in the cmake build directory
 
