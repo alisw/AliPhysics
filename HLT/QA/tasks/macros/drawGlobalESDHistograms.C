@@ -17,8 +17,17 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  gStyle->SetPalette(1);
  gStyle->SetOptStat(10);
 
- TFile *f1 = TFile::Open(filename);
+ TFile *f1 = TFile::Open(filename); 
+ if(!f1 || f1->IsZombie()) {
+    printf("file %s does not exist or there is an error opening it\n", filename);
+    return;
+ }
+
  TList *l1 = (TList*)f1->Get("global_histograms");
+ if(!l1){
+    printf("No list %s contained in your input file\n", l1->GetName()); 
+    return; 
+ }
  
 
 //=================================================================//
