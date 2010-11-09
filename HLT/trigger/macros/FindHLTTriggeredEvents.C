@@ -31,6 +31,10 @@
  *   > aliroot -b -q $ALICE_ROOT/HLT/trigger/macros/FindHLTTriggeredEvents.C
  * \endcode
  *
+ * It is also possible to use as input a file or a chunk sitting on the GRID.
+ * \code 
+ *   > aliroot -b -q  $ALICE_ROOT/HLT/trigger/macros/FindHLTTriggeredEvents.C'("alien:///alice/data/2010/LHC10h/000137124/raw/10000137124054.10.root")'
+ *   > aliroot -b -q  $ALICE_ROOT/HLT/trigger/macros/FindHLTTriggeredEvents.C'("raw://run137124")'
  * \author Artur Szostak <artursz@iafrica.com>
  */
 
@@ -83,6 +87,9 @@ bool FindHLTTriggeredEvents(
 	gSystem->Load("libAliHLTMUON.so");
 	gSystem->Load("libAliHLTTrigger.so");
 	
+	TString strfile = dataSource;
+	if(strfile.BeginsWith("alien://") || strfile.BeginsWith("raw://")) TGrid::Connect("alien");
+
 	// Setup the raw reader and HLTOUT handler.
 	AliRawReader* rawReader = AliRawReader::Create(dataSource);
 	if (rawReader == NULL)
