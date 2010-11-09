@@ -23,7 +23,7 @@ public AliGenLib
 {
  public:
     enum constants{kPion, kChargedPion, kPi0Flat, kKaon, kChargedKaon, kKaon0L,
-		   kEta, kEtaFlat,kOmega, kEtaPrime, kPhi, 
+		   kEta, kEtaFlat,kOmega, kOmegaFlat, kEtaPrime, kPhi, 
 		   kBaryon, kProton, kAProton, kNeutron, kANeutron};
     GenFunc   GetPt(Int_t param, const char* tname=0) const;
     GenFunc   GetY (Int_t param, const char* tname=0) const;
@@ -61,7 +61,12 @@ public AliGenLib
     static Double_t PtOmega(const Double_t *px, const Double_t *dummy);
     static Double_t YOmega( const Double_t *py, const Double_t *dummy);
     static Int_t    IpOmega(TRandom *ran);
-    
+   
+// omegas  Flat Distribution
+    static Double_t PtOmegaFlat(const Double_t *px, const Double_t *dummy);
+    static Double_t YOmegaFlat( const Double_t *py, const Double_t *dummy);
+    static Int_t    IpOmegaFlat(TRandom *ran); 
+
 // etaprime
     static Double_t PtEtaprime(const Double_t *px, const Double_t *dummy);
     static Double_t YEtaprime( const Double_t *py, const Double_t *dummy);

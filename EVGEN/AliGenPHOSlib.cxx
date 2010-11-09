@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -39,6 +38,7 @@
 //  Additional particle species simulation options has been added: 
 //  Charged Pion, Charged Kaons, KLong Proton, Anti-Proton, Neutron, 
 //  Anti-Neutron --> Changes made by Gustavo Conesa in November 2004
+//  Add flat Omega(782) distribution in Nov. 2010 by Renzhuo WAN
 //======================================================================
 
 #include "TMath.h"
@@ -102,23 +102,7 @@ ClassImp(AliGenPHOSlib)
 //                 particle composition pi+, pi0, pi-
 //
 
-     Float_t random = ran->Rndm();
-
-     if ( (3.*random)  < 1. ) 
-     {
-           return 211 ;
-     } 
-     else
-     {  
-       if ( (3.*random) >= 2.)
-       {
-          return -211 ;
-       }
-       else 
-       {
         return 111  ;
-      }
-    }
 }
  Int_t AliGenPHOSlib::IpChargedPion(TRandom *ran)
 {
@@ -376,6 +360,39 @@ Double_t AliGenPHOSlib::YEtaFlat( const Double_t */*py*/, const Double_t *)
 }
 // End Omega
 //============================================================================
+//======================================================================
+//    Omega(782) Flat Distribution
+//    Transverse momentum distribution PtOmegaFlat
+//    Rapidity distribution YOmegaFlat
+//    Particle distribution IdOmegaFlat  223(0mega)
+//
+
+Double_t AliGenPHOSlib::PtOmegaFlat(const Double_t */*px*/, const Double_t *)
+{
+//     omega transverse momentum flat distribution 
+
+return 1;
+
+}
+
+Double_t AliGenPHOSlib::YOmegaFlat( const Double_t */*py*/, const Double_t *)
+{
+
+// omega y-distribution
+//
+  return 1.;
+}
+
+ Int_t AliGenPHOSlib::IpOmegaFlat(TRandom *)
+{
+
+//                 particle composition omega
+//
+        return 223 ;
+}
+// End OmegaFlat
+
+
 //============================================================================
 //    E  T  A  P  R  I  M  E
  Double_t AliGenPHOSlib::PtEtaprime( const Double_t *px, const Double_t *)
@@ -529,8 +546,6 @@ Double_t AliGenPHOSlib::YEtaFlat( const Double_t */*py*/, const Double_t *)
 // End Baryons
 //===================================================================
 
-
-
 typedef Double_t (*GenFunc) (const Double_t*,  const Double_t*);
 GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* /*tname*/) const
 {
@@ -557,6 +572,9 @@ GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* /*tname*/) const
       case kOmega:
         func=PtOmega;
         break;
+      case kOmegaFlat:
+        func=PtOmegaFlat;
+      break;
       case kEtaPrime:
         func=PtEtaprime;
         break;
@@ -593,6 +611,9 @@ GenFunc AliGenPHOSlib::GetY(Int_t param, const char* /*tname*/) const
       break;
     case kOmega:
       func=YOmega;
+      break;
+    case kOmegaFlat:
+      func=YOmegaFlat;
       break;
     case kEtaPrime:
       func=YEtaprime;
@@ -643,6 +664,9 @@ GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* /*tname*/) const
       
     case kOmega:
       func=IpOmega;
+      break;
+    case kOmegaFlat:
+      func=IpOmegaFlat;
       break;
     case kEtaPrime:
       func=IpEtaprime;
