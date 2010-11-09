@@ -295,6 +295,9 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     of->Seekp(hpos);         // Rewind to header position
     of->WriteBuffer((char *) (& header), sizeof(header));
     delete of;
+
+    delete [] iwbuffer;
+
   } // loop over sector(SM)
   
   delete [] hcBuffer;
@@ -442,8 +445,8 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 	
 	if (trackletOn) {
 	  tempBuffer = new UInt_t[maxSize];
-	  tempnw = new Int_t(0);
-	  tempof = new Int_t(0);
+	  tempnw     = new Int_t(0);
+	  tempof     = new Int_t(0);
 	}
 	  
 	WriteIntermediateWords(tempBuffer,*tempnw,*tempof,maxSize,det,side);
@@ -494,12 +497,15 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 	    else {
 	      AliError("Buffer overflow detected");
 	    }
-	    delete [] tempBuffer;
-	    delete tempof;
-	    delete tempnw;
 	  }
 	}
 
+        if (trackletOn) {
+	  delete [] tempBuffer;
+	  delete tempof;
+          delete tempnw;
+	}
+    
   	// Write end of raw data marker
   	if (nw+3 < maxSize) {
           buf[nw++] = fgkEndOfDataMarker;
@@ -558,10 +564,16 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
     trklLoader = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
     AliRunLoader::Instance()->GetLoader("TRDLoader")->AddDataLoader(trklLoader);
   }
+  if (!trklLoader) {
+    return 0x0;
+  }
   AliTreeLoader *trklTreeLoader = dynamic_cast<AliTreeLoader*> (trklLoader->GetBaseLoader("tracklets-raw"));
   if (!trklTreeLoader) {
     trklTreeLoader = new AliTreeLoader("tracklets-raw", trklLoader);
     trklLoader->AddBaseLoader(trklTreeLoader);
+  }
+  if (!trklTreeLoader) {
+    return 0x0;
   }
 
   if (!trklTreeLoader->Tree())
@@ -591,10 +603,8 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 	}
     }
 
-  if (trklTreeLoader)
-    trklTreeLoader->WriteData("OVERWRITE");
-  if (trklLoader) 
-    trklLoader->UnloadAll();
+  trklTreeLoader->WriteData("OVERWRITE");
+  trklLoader->UnloadAll();
 
   if (fTrackletContainer){
     delete [] fTrackletContainer[0];
@@ -607,6 +617,7 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   pinput = NULL;
 
   return digitsManager;
+
 }
 
 //_____________________________________________________________________________
