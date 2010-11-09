@@ -1499,15 +1499,20 @@ Bool_t AliTRDptrgParam::ParseTLMU(TString identifier, TString value) {
     for (Int_t iEntry = 0; iEntry < arr.GetEntries(); iEntry++) {
 
       TObjString *ostrng = dynamic_cast<TObjString*>(arr[iEntry]);
-      TString t = ostrng->GetString(); 
+      if (ostrng) {
+
+        TString t = ostrng->GetString(); 
       
-      TString indexStr = t(2,1);
-      if (t.Index("CM") == 0) { // coincidence matrix
-        this->fTLMUoutput[iEntry][0] = indexStr.Atoi();
+        TString indexStr = t(2,1);
+        if (t.Index("CM") == 0) { // coincidence matrix
+          this->fTLMUoutput[iEntry][0] = indexStr.Atoi();
+        }
+        else if (t.Index("MC") == 0) { // multiplicity
+          this->fTLMUoutput[iEntry][1] = indexStr.Atoi();
+        }
+
       }
-      else if (t.Index("MC") == 0) { // multiplicity
-        this->fTLMUoutput[iEntry][1] = indexStr.Atoi();
-      }
+
       AliDebug(5, Form("TLMU output: cm = %d, mc = %d", 
                        this->fTLMUoutput[iEntry][0], 
                        this->fTLMUoutput[iEntry][1]));
@@ -1900,29 +1905,36 @@ Int_t* AliTRDptrgParam::GenerateLUTbasedOnEq(TString eq, Int_t inputWidth,
  
   ConvertLogicalEqToBitVectors(eq, results, signalsInvolved);
   // generate bit vectors
-
-  CheckSignalsInvolved(results, signalsInvolved, inputWidth);
-  // add bit vectors for signals which are not taken into account
-
-  Int_t lutSize =  0x1 << inputWidth; // 2^inputwidth elements
-  Int_t* resultingLUT = new Int_t[lutSize]; // create LUT
-  for (Int_t iLUTentry = 0; iLUTentry < lutSize; iLUTentry++) { // init LUT
-    resultingLUT[iLUTentry] = 0;
-  }
-  for (Int_t iEntry = 0; iEntry < results->GetSize(); iEntry++) {
-    resultingLUT[(*results)[iEntry]] = initValue;
-  }
   
-  if (results != 0x0) {
+  if ((results != 0x0) && (signalsInvolved != 0x0)) {
+
+    CheckSignalsInvolved(results, signalsInvolved, inputWidth);
+    // add bit vectors for signals which are not taken into account
+
+    Int_t lutSize =  0x1 << inputWidth; // 2^inputwidth elements
+    Int_t* resultingLUT = new Int_t[lutSize]; // create LUT
+    for (Int_t iLUTentry = 0; iLUTentry < lutSize; iLUTentry++) { // init LUT
+      resultingLUT[iLUTentry] = 0;
+    }
+    for (Int_t iEntry = 0; iEntry < results->GetSize(); iEntry++) {
+      resultingLUT[(*results)[iEntry]] = initValue;
+    }
+  
     delete results;
     results = 0x0;
-  }
-  if (signalsInvolved != 0x0) {
+
     delete signalsInvolved;
     signalsInvolved = 0x0;
-  }
   
-  return resultingLUT;
+    return resultingLUT;
+
+  }
+  else {
+
+    return 0x0;
+
+  }
+
 }
 
 //______________________________________________________________________________

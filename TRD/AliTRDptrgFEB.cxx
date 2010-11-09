@@ -305,6 +305,7 @@ Bool_t AliTRDptrgFEB::LoadParams()
         }
         lut->InitTable(8, 8, initData, kTRUE);
       }
+      delete [] initData;
     }
     else {
       // initialize threshold
@@ -335,7 +336,7 @@ Bool_t AliTRDptrgFEB::LoadParams()
         }
         lut->InitTable(12, 12, initData, kTRUE); // make a copy of the table
       }
-      delete[] initData;    
+      delete [] initData;    
     }
     return false;
   }

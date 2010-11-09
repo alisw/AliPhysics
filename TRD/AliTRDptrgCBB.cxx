@@ -158,6 +158,7 @@ Bool_t AliTRDptrgCBB::LoadParams()
       }
       lut->InitTable(12, 12, initData, kTRUE); // make a copy 
     }
+    delete [] initData;
 
     AliTRDptrgParam::AliTRDptrgPTmasks* masks = 
       new AliTRDptrgParam::AliTRDptrgPTmasks();  
