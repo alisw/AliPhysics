@@ -142,7 +142,7 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
 	}
 	for (Int_t i = 5; i < tokens->GetEntriesFast(); i++) {
 	    UInt_t trackletWord = 0;
-	    sscanf(((TObjString*) tokens->At(i))->GetString().Data(), "%u", &trackletWord);
+	    sscanf(((TObjString*) tokens->At(i))->GetString().Data(), "%i", &trackletWord);
 	    if (trackletWord == 0x10001000) 
 		break;
 	    AliDebug(2,Form("%i. tracklet: %s -> 0x%08x", i-4, ((TObjString*) tokens->At(i))->GetString().Data(), trackletWord));

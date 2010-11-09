@@ -181,6 +181,7 @@ class AliTRDmcmSim : public TObject {
 	  // hit detection
 	  // individual hits can be stored as MC info
 	  struct Hit_t {                                // Array of detected hits (only available in MC)
+	  Hit_t() : fChannel(0), fTimebin(0), fQtot(0), fYpos(0) { fLabel[0] = 0; fLabel[1] = 0; fLabel[2] = 0; }
 	    Int_t fChannel;                             // ADC channel of the hit
 	    Int_t fTimebin;                             // timebin of the hit
 	    Int_t fQtot;                                // total charge of the hit

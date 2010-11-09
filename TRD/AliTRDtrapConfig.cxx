@@ -636,7 +636,7 @@ Int_t AliTRDtrapConfig::GetTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t mc
 
   if ((reg < 0) || (reg >= kLastReg)) {
     AliError("Non-existing register requested");
-    return -1;
+    return 0;
   }
   else {
     if (fRegisterValue[reg].state == RegValue_t::kGlobal) {

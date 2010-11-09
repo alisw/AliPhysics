@@ -88,6 +88,14 @@ AliTRDmcmSim::AliTRDmcmSim() :
   // AliTRDmcmSim default constructor
   // By default, nothing is initialized.
   // It is necessary to issue Init before use.
+
+  for (Int_t iDict = 0; iDict < 3; iDict++)
+    fDict[iDict] = 0x0;
+
+  fFitPtr[0] = 0;
+  fFitPtr[1] = 0;
+  fFitPtr[2] = 0;
+  fFitPtr[3] = 0;
 }
 
 AliTRDmcmSim::~AliTRDmcmSim() 
@@ -1552,7 +1560,7 @@ void AliTRDmcmSim::FitTracklet()
       nHits   = fit0->fNhits + fit1->fNhits; // number of hits
       sumX    = fit0->fSumX  + fit1->fSumX;
       sumX2   = fit0->fSumX2 + fit1->fSumX2;
-      denom   = nHits*sumX2 - sumX*sumX;
+      denom   = ((Long64_t) nHits)*((Long64_t) sumX2) - ((Long64_t) sumX)*((Long64_t) sumX);
 
       mult    = mult / denom; // exactly like in the TRAP program
       q0      = fit0->fQ0    + fit1->fQ0;

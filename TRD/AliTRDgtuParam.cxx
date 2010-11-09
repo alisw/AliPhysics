@@ -242,6 +242,7 @@ Bool_t AliTRDgtuParam::DisplayZChannelMap(Int_t zchannel, Int_t subchannel) cons
     graphz[zch]->Draw("P");
     gROOT->Add(graphz[zch]);
   }
+  delete [] graphz;
   return kTRUE;
 }
 

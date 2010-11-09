@@ -690,7 +690,7 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 
     for (Int_t i = 0; i < 2; i++)
       delete tracksZSplitted[i];
-    delete tracksZSplitted;
+    delete [] tracksZSplitted;
 
     delete tracksZMergedStage1;
 
