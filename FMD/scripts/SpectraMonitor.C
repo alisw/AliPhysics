@@ -15,8 +15,8 @@ SpectraMonitor(const char* file="",
 	       const char* cdbSrc="local://$ALICE_ROOT/OCDB", 
 	       UShort_t    over=0)
 {
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libFMDanalysis.so");
+  // gSystem->Load("libANALYSIS.so");
+  // gSystem->Load("libFMDanalysis.so");
   gSystem->Load("libFMDutil.so");
   // AliLog::SetModuleDebugLevel("FMD", 8);
   TString fname(file);
@@ -49,9 +49,9 @@ SpectraMonitor(const char* file="",
   if (over != 0) AliFMDParameters::Instance()->SetSampleRate(over);
   
   AliFMDSpectraDisplay* d = new AliFMDSpectraDisplay;
-  // d->AddLoad(AliFMDInput::kRaw);
-  d->AddLoad(AliFMDInput::kDigits);
-  // d->SetRawFile(file);
+  d->AddLoad(AliFMDInput::kRaw);
+  // d->AddLoad(AliFMDInput::kDigits);
+  d->SetRawFile(file);
   d->Run();
 }
 
