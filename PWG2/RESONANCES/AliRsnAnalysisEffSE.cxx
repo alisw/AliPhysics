@@ -10,6 +10,7 @@
 #include <Riostream.h>
 #include "AliStack.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliMCEvent.h"
 
 #include "AliCFContainer.h"
@@ -217,17 +218,37 @@ void AliRsnAnalysisEffSE::RsnUserExec(Option_t*)
   */
 
   AliDebug(AliLog::kDebug+2,"<-");
-  if (!fESDEvent || !fMCEvent) {
-    AliError("This task can process only ESD + MC events");
+  if (fMCOnly && fMCEvent)
+  {
+    fRsnEvent.SetRef  (fMCEvent);
+    fRsnEvent.SetRefMC(fMCEvent);
+  }
+  else if (fESDEvent)
+  {
+    fRsnEvent.SetRef  (fESDEvent);
+    fRsnEvent.SetRefMC(fMCEvent);
+  }
+  else if (fAODEventOut)
+  {
+    fRsnEvent.SetRef  (fAODEventOut);
+    fRsnEvent.SetRefMC(fAODEventOut);
+  }
+  else if (fAODEventIn)
+  {
+    fRsnEvent.SetRef  (fAODEventIn);
+    fRsnEvent.SetRefMC(fAODEventIn);
+  }
+  else {
+    AliError("NO ESD or AOD object!!! Skipping ...");
     return;
   }
-  fRsnEvent.SetRef(fESDEvent, fMCEvent);
 
   // if general event cuts are added to the task (recommended)
   // they are checked here on the RSN event interface and,
   // if the event does not pass them, it is skipped and ProcessInfo
   // is updated accordingly
-  if (!fEventCuts.IsSelected(&fRsnEvent)) {
+  if (!fEventCuts.IsSelected(&fRsnEvent)) 
+  {
     fTaskInfo.SetEventUsed(kFALSE);
     return;
   }
@@ -241,9 +262,8 @@ void AliRsnAnalysisEffSE::RsnUserExec(Option_t*)
   TObjArrayIter iter(&fPairDefList);
   while ( (pairDef = (AliRsnPairDef*)iter.Next()) )
   {
-    //ProcessEventMC(pairDef);
-    //ProcessEventESD(pairDef);
-    ProcessEvent(pairDef);
+    if (fRsnEvent.IsESD()) ProcessEventESD(pairDef);
+    if (fRsnEvent.IsAOD()) ProcessEventAOD(pairDef);
   }
 
   // Post the data
@@ -253,7 +273,7 @@ void AliRsnAnalysisEffSE::RsnUserExec(Option_t*)
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
+void AliRsnAnalysisEffSE::ProcessEventESD(AliRsnPairDef *pairDef)
 {
 //
 // Process current event with the definitions of the specified step in MC list
@@ -261,9 +281,9 @@ void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
 // It is associated with the AliCFContainer with the name of the pair.
 //
 
-  AliStack      *stack = fRsnEvent.GetRefMC()->Stack();
+  AliStack      *stack = fRsnEvent.GetRefMCESD()->Stack();
   AliESDEvent   *esd   = fRsnEvent.GetRefESD();
-  AliMCEvent    *mc    = fRsnEvent.GetRefMC();
+  AliMCEvent    *mc    = fRsnEvent.GetRefMCESD();
   AliMCParticle *mother;
 
   if (!pairDef) return;
@@ -271,11 +291,12 @@ void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
   if (!cont) return;
   
   // get informations from pairDef
-  Int_t pdgM = 0, pdgD[2] = {0, 0};
+  Int_t   pdgM = 0;
+  Int_t   pdgD[2] = {0, 0};
   Short_t chargeD[2] = {0, 0};
-  pdgM    = pairDef->GetMotherPDG();
-  pdgD[0] = AliPID::ParticleCode(pairDef->GetPID(0));
-  pdgD[1] = AliPID::ParticleCode(pairDef->GetPID(1));
+  pdgM       = pairDef->GetMotherPDG();
+  pdgD   [0] = AliPID::ParticleCode(pairDef->GetPID(0));
+  pdgD   [1] = AliPID::ParticleCode(pairDef->GetPID(1));
   chargeD[0] = pairDef->GetChargeShort(0);
   chargeD[1] = pairDef->GetChargeShort(1);
 
@@ -393,91 +414,138 @@ void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisEffSE::ProcessEventMC(AliRsnPairDef */*pairDef*/)
+void AliRsnAnalysisEffSE::ProcessEventAOD(AliRsnPairDef *pairDef)
 {
 //
 // Process current event with the definitions of the specified step in MC list
-// and store results in the container slot defined in second argument
+// and store results in the container slot defined in second argument.
+// It is associated with the AliCFContainer with the name of the pair.
 //
 
-  /*
-  AliStack      *stack = fMCEvent->Stack();
-  AliMCParticle *mother, *daughter;
+  AliAODEvent      *aod   = fRsnEvent.GetRefAOD();
+  AliAODMCParticle *mother;
+  TClonesArray     *mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  if (!mcArray) return;
 
   if (!pairDef) return;
-  AliCFContainer *cont = (AliCFContainer*)fContainerList->FindObject(pairDef->GetPairName().Data());
+  AliCFContainer *cont = (AliCFContainer*)fContainerList->FindObject(pairDef->GetPairName());
   if (!cont) return;
+  
+  // get informations from pairDef
+  Int_t   pdgM = 0;
+  Int_t   pdgD[2] = {0, 0};
+  Short_t chargeD[2] = {0, 0};
+  pdgM       = pairDef->GetMotherPDG();
+  pdgD   [0] = AliPID::ParticleCode(pairDef->GetPID(0));
+  pdgD   [1] = AliPID::ParticleCode(pairDef->GetPID(1));
+  chargeD[0] = pairDef->GetChargeShort(0);
+  chargeD[1] = pairDef->GetChargeShort(1);
 
   // other utility variables
-  Int_t i[2], j, ipart;
+  Int_t             first, j;
+  Int_t             label [2] = {-1, -1};
+  Short_t           charge[2] = {0, 0};
+  Short_t           pairDefMatch[2] = {-1, -1};
+  Int_t             aodIndex[2] = {-1, -1};
+  AliAODMCParticle *part[2] = {0, 0};
+  
+  // loop on MC particles
+  TObjArrayIter next(mcArray);
+  while ( (mother = (AliAODMCParticle*)next()) )
+  {  
+    // check that it is a binary decay and the PDG code matches
+    if (mother->GetNDaughters() != 2) continue;
+    if (mother->GetPdgCode() != pdgM) continue;
 
-  // in this case, we first take the resonance from MC
-  // and then we find its daughters and compute cuts on them
-  for (ipart = 0; ipart < stack->GetNprimary(); ipart++) 
-  {
-    mother = (AliMCParticle*) fMCEvent->GetTrack(ipart);
-    if (mother->Particle()->GetNDaughters() != 2) continue;
-
-    i[0] = mother->Particle()->GetFirstDaughter();
-    i[1] = mother->Particle()->GetLastDaughter();
-
-    for (j = 0; j < 2; j++) 
+    // store the labels of the two daughters
+    label[0] = mother->GetDaughter(0);
+    label[1] = mother->GetDaughter(1);
+    
+    // retrieve the particles and other stuff
+    // check if they match the order in the pairDef
+    for (j = 0; j < 2; j++)
     {
-      daughter = (AliMCParticle*) fMCEvent->GetTrack(i[j]);
-      fDaughter[j].SetRef(daughter);
-      fDaughter[j].SetRefMC(daughter);
-      fDaughter[j].FindMotherPDG(stack);
+      if (label[j] < 0) continue;
+      part[j]   = (AliAODMCParticle*)mcArray->At(label[j]);
+      pdgD[j]   = TMath::Abs(part[j]->GetPdgCode());
+      charge[j] = (Short_t)(part[j]->Charge());
+      if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(0)) && charge[j] == pairDef->GetChargeShort(0))
+        pairDefMatch[j] = 0;
+      else if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(1)) && charge[j] == pairDef->GetChargeShort(1))
+        pairDefMatch[j] = 1;
+      else
+        pairDefMatch[j] = -1;
+        
+      // find corresponding ESD particle: first try rejecting fakes,
+      // and in case of failure, try accepting fakes
+      aodIndex[j] = FindAODtrack(label[j], aod, kTRUE);
+      if (aodIndex[j] < 0) aodIndex[j] = FindAODtrack(label[j], aod, kFALSE);
     }
-
-    if (fDaughter[0].ChargeC() != pairDef->GetCharge(0)) continue;
-    if (fDaughter[1].ChargeC() != pairDef->GetCharge(1)) continue;
-    if (fDaughter[0].PerfectPID() != pairDef->GetType(0)) continue;
-    if (fDaughter[1].PerfectPID() != pairDef->GetType(1)) continue;
-
-    fPair.SetDaughters(&fDaughter[0], &fDaughter[1]);
-
-    // create pair
+    
+    // since each candidate good resonance is taken once, we must check
+    // that it matches the pair definition in any order, and reject in case
+    // in none of them the pair is OK
+    // anyway, we must associate the correct daughter to the correct data member
+    if (pairDefMatch[0] == 0 && pairDefMatch[1] == 1)
+    {
+      // 1st track --> 1st member of PairDef
+      fDaughter[0].SetRef((AliAODMCParticle*)mcArray->At(label[0]));
+      fDaughter[0].SetRefMC((AliAODMCParticle*)mcArray->At(label[0]));
+      fDaughter[0].SetGood();
+      // 2nd track --> 2nd member of PairDef
+      fDaughter[1].SetRef((AliAODMCParticle*)mcArray->At(label[1]));
+      fDaughter[1].SetRefMC((AliAODMCParticle*)mcArray->At(label[1]));
+      fDaughter[1].SetGood();
+    }
+    else if ((pairDefMatch[0] == 1 && pairDefMatch[1] == 0))
+    {
+      // 1st track --> 2nd member of PairDef
+      fDaughter[0].SetRef((AliAODMCParticle*)mcArray->At(label[1]));
+      fDaughter[0].SetRefMC((AliAODMCParticle*)mcArray->At(label[1]));
+      fDaughter[0].SetGood();
+      // 2nd track --> 1st member of PairDef
+      fDaughter[1].SetRef((AliAODMCParticle*)mcArray->At(label[0]));
+      fDaughter[1].SetRefMC((AliAODMCParticle*)mcArray->At(label[0]));
+      fDaughter[1].SetGood();
+    }
+    else
+    {
+      fDaughter[0].SetBad();
+      fDaughter[1].SetBad();
+    }
+    
+    // reject the pair if the matching was unsuccessful
+    if (!fDaughter[0].IsOK() || !fDaughter[1].IsOK()) continue;
+    
+    // first, we set the internal AliRsnMother object to
+    // the MC particles and then operate the selections on MC
+    fPair.SetDaughters(&fDaughter[0], pairDef->GetMass(0), &fDaughter[1], pairDef->GetMass(1));
     FillContainer(cont, &fStepListMC, pairDef, 0);
-  }
-  */
-}
-
-//_____________________________________________________________________________
-void AliRsnAnalysisEffSE::ProcessEventESD(AliRsnPairDef */*pairDef*/)
-{
-//
-// Process current event with the definitions of the specified step in ESD list
-// and store results in the container slot defined in second argument
-//
-
-  /*
-  Int_t i0, i1, first = (Int_t)fStepListMC.GetEntries();
-
-  if (!pairDef) return;
-  AliCFContainer *cont = (AliCFContainer*)fContainerList->FindObject(pairDef->GetPairName().Data());
-  if (!cont) return;
-
-  // external loop on tracks
-  for (i0 = 0; i0 < a0->GetSize(); i0++) {
-    // connect interface
-    fRsnEvent.SetDaughter(fDaughter[0], a0->At(i0));
-    if (!fDaughter[0].IsOK()) continue;
-    fDaughter[0].SetRequiredPID(pairDef->GetType(0));
-
-    // internal loop on tracks
-    for (i1 = 0; i1 < a1->GetSize(); i1++) {
-      // connect interface
-      fRsnEvent.SetDaughter(fDaughter[1], a1->At(i1));
-      if (!fDaughter[1].IsOK()) continue;
-      fDaughter[1].SetRequiredPID(pairDef->GetType(1));
-      // build pair
-      fPair.SetPair(&fDaughter[0], &fDaughter[1]);
-      if (TMath::Abs(fPair.CommonMother()) != pairDef->GetMotherPDG()) continue;
-      // fill containers
-      FillContainer(cont, &fStepListESD, pairDef, first);
+    
+    // then, if both particles found a good match in the AOD
+    // reassociate the AOD tracks to the pair and fill AOD containers
+    if (aodIndex[0] < 0 || aodIndex[1] < 0) continue;
+    if (pairDefMatch[0] == 0 && pairDefMatch[1] == 1)
+    {
+      // 1st track --> 1st member of PairDef
+      fDaughter[0].SetRef(aod->GetTrack(aodIndex[0]));
+      // 2nd track --> 2nd member of PairDef
+      fDaughter[1].SetRef(aod->GetTrack(aodIndex[1]));
+      //cout << "****** MATCHING SCHEME 1" << endl;
     }
+    else if ((pairDefMatch[0] == 1 && pairDefMatch[1] == 0))
+    {
+      // 1st track --> 2nd member of PairDef
+      fDaughter[0].SetRef(aod->GetTrack(aodIndex[1]));
+      // 2nd track --> 1st member of PairDef
+      fDaughter[1].SetRef(aod->GetTrack(aodIndex[0]));
+      //cout << "****** MATCHING SCHEME 2" << endl;
+    }
+    //cout << "****** IDs = " << fDaughter[0].GetID() << ' ' << fDaughter[1].GetID() << endl;
+    // here we must remember how many steps were already filled
+    first = (Int_t)fStepListMC.GetEntries();
+    FillContainer(cont, &fStepListESD, pairDef, first);
   }
-  */
 }
 
 //_____________________________________________________________________________
@@ -664,3 +732,132 @@ TArrayI AliRsnAnalysisEffSE::FindESDtracks(Int_t label, AliESDEvent *esd)
   array.Set(nfound);
   return array;
 }
+
+//_____________________________________________________________________________
+Int_t AliRsnAnalysisEffSE::FindAODtrack(Int_t label, AliAODEvent *aod, Bool_t rejectFakes)
+{
+//
+// Finds in the ESD a track whose label corresponds to that in argument.
+// When global tracks are enabled, tries first to find a global track 
+// satisfying that requirement.
+// If no global tracks are found, if ITS-SA are enable, tries to search among them
+// otherwise return a negative number.
+// If global tracks are disabled, search only among ITS SA
+//
+
+  Int_t   i = 0;
+  Int_t   ntracks = aod->GetNumberOfTracks();
+  ULong_t status;
+  Bool_t  isTPC;
+  Bool_t  isITSSA;
+  
+  // loop for global tracks
+  if (fUseGlobal)
+  {
+    for (i = 0; i < ntracks; i++)
+    {
+      AliAODTrack *track = aod->GetTrack(i);
+      status  = (ULong_t)track->GetStatus();
+      isTPC   = ((status & AliESDtrack::kTPCin)  != 0);
+      if (!isTPC) continue;
+      
+      // check that label match
+      if (TMath::Abs(track->GetLabel()) != label) continue;
+      
+      // if required, reject fakes
+      if (rejectFakes && track->GetLabel() < 0) continue;
+      
+      // if all checks are passed and we are searching among global
+      // this means that thie track is a global one with the right label
+      // then, the return value is set to this, and returned
+      return i;
+    }
+  }
+  
+  // loop for ITS-SA tracks (this happens only if no global tracks were found
+  // or searching among globals is disabled)
+  if (fUseITSSA)
+  {
+    for (i = 0; i < ntracks; i++)
+    {
+      AliAODTrack *track = aod->GetTrack(i);
+      status  = (ULong_t)track->GetStatus();
+      isITSSA = ((status & AliESDtrack::kTPCin)  == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
+      if (!isITSSA) continue;
+      
+      // check that label match
+      if (TMath::Abs(track->GetLabel()) != label) continue;
+            
+      // if required, reject fakes
+      if (rejectFakes && track->GetLabel() < 0) continue;
+      
+      // if all checks are passed and we are searching among global
+      // this means that thie track is a global one with the right label
+      // then, the return value is set to this, and returned
+      return i;
+    }
+  }
+  
+  // if we reach this point, no match were found
+  return -1;
+}
+
+//_____________________________________________________________________________
+TArrayI AliRsnAnalysisEffSE::FindAODtracks(Int_t label, AliAODEvent *aod)
+{
+//
+// Finds in the ESD a track whose label corresponds to that in argument.
+// When global tracks are enabled, tries first to find a global track 
+// satisfying that requirement.
+// If no global tracks are found, if ITS-SA are enable, tries to search among them
+// otherwise return a negative number.
+// If global tracks are disabled, search only among ITS SA
+//
+
+  Int_t   i = 0;
+  Int_t   ntracks = aod->GetNumberOfTracks();
+  ULong_t status;
+  Bool_t  isTPC;
+  Bool_t  isITSSA;
+  TArrayI array(100);
+  Int_t   nfound = 0;
+  
+  // loop for global tracks
+  if (fUseGlobal)
+  {
+    for (i = 0; i < ntracks; i++)
+    {
+      AliAODTrack *track = aod->GetTrack(i);
+      status  = (ULong_t)track->GetStatus();
+      isTPC   = ((status & AliESDtrack::kTPCin)  != 0);
+      if (!isTPC) continue;
+      
+      // check that label match
+      if (TMath::Abs(track->GetLabel()) != label) continue;
+      
+      array[nfound++] = i;
+    }
+  }
+  
+  // loop for ITS-SA tracks (this happens only if no global tracks were found
+  // or searching among globals is disabled)
+  if (fUseITSSA)
+  {
+    for (i = 0; i < ntracks; i++)
+    {
+      AliAODTrack *track = aod->GetTrack(i);
+      status  = (ULong_t)track->GetStatus();
+      isITSSA = ((status & AliESDtrack::kTPCin)  == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
+      if (!isITSSA) continue;
+      
+      // check that label match
+      if (TMath::Abs(track->GetLabel()) != label) continue;
+            
+      array[nfound++] = i;
+    }
+  }
+  
+  array.Set(nfound);
+  return array;
+}
+

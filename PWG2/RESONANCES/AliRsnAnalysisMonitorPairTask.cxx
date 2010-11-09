@@ -165,7 +165,8 @@ void AliRsnAnalysisMonitorPairTask::UserExec(Option_t *)
   
   // create interface objects to AliRsnEvent to check event cuts
   AliRsnEvent event;
-  event.SetRef(esd, fMCEvent);
+  event.SetRef(esd);
+  event.SetRefMC(fMCEvent);
   if (!fEventCuts.IsSelected(&event)) return;
   
   // check the event
@@ -296,7 +297,8 @@ Bool_t AliRsnAnalysisMonitorPairTask::ProcessTrack(Int_t myIndex, Int_t esdIndex
 
   // create interfacr objects
   AliRsnEvent    event;
-  event.SetRef(esd, fMCEvent);
+  event.SetRef(esd);
+  event.SetRefMC(fMCEvent);
   AliRsnDaughter daughter;
   AliESDtrack *track = esd->GetTrack(esdIndex);
   event.SetDaughter(daughter, esdIndex, AliRsnDaughter::kTrack);

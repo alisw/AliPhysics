@@ -158,7 +158,7 @@ void AliRsnValue::SetBins(Int_t nbins, Double_t *array)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pairDef, AliRsnEvent * const event)
+Bool_t AliRsnValue::Eval(AliRsnMother *mother, AliRsnPairDef *pairDef, AliRsnEvent *event)
 {
 //
 // Evaluation of the required value.
@@ -247,26 +247,14 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
     case kPairCosThetaStar:
       fValue = mother->CosThetaStar();
       break;
-    case kPairCosThetaStar1:
-      //fValue = TMath::Cos(mother->ThetaStar(kTRUE, kFALSE));
-      break;
-    case kPairCosThetaStar2:
-      //fValue = TMath::Cos(mother->ThetaStar(kFALSE, kFALSE));
-      break;
-    case kPairCosThetaStarMC1:
-      //fValue = TMath::Cos(mother->ThetaStar(kTRUE, kTRUE));
-      break;
-    case kPairCosThetaStarMC2:
-      //fValue = TMath::Cos(mother->ThetaStar(kFALSE, kTRUE));
-      break;
     case kAngleToLeading:
       {
     	  int ID1 = (mother->GetDaughter(0))->GetID();
     	  int ID2 = (mother->GetDaughter(1))->GetID();
     	  int leadingID = event->SelectLeadingParticle(0);
     	  if(leadingID == ID1 || leadingID == ID2) return kFALSE;
-    	  AliRsnDaughter  leadingPart = event->GetDaughter(leadingID);
-    	  AliVParticle *ref = leadingPart.GetRef();
+    	  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
+    	  AliVParticle  *ref = leadingPart.GetRef();
 
     	  fValue = ref->Phi() - mother->Sum().Phi();
     	  //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
@@ -281,25 +269,15 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
         fValue = 0.0;
         return kFALSE;
       }
-      else fValue = (Double_t)event->GetMultiplicity();
+      else fValue = (Double_t)event->GetMultiplicity(0x0);
       break;
-    case kEventMultESDcuts:
-      if (!event)
+    case kEventMultESDCuts:
+      if (!event) 
       {
         fValue = 0.0;
         return kFALSE;
       }
-      else
-      {
-        AliESDEvent *esd = event->GetRefESD();
-        if (!esd)
-        {
-          AliError("Cannot use method based on ESD cuts when input is not ESD.");
-          fValue = 0.0;
-          return kFALSE;
-        }
-        fValue = (Double_t)fESDCuts.CountAcceptedTracks(esd);
-      }
+      else fValue = (Double_t)event->GetMultiplicity(&fESDCuts);
       break;
     case kLeadingPt:
       if (!event) 
@@ -356,23 +334,13 @@ Bool_t AliRsnValue::Eval(AliRsnDaughter * const daughter, AliRsnEvent * const ev
       }
       else fValue = (Double_t)event->GetMultiplicity();
       break;
-    case kEventMultESDcuts:
-      if (!event)
+    case kEventMultESDCuts:
+      if (!event) 
       {
         fValue = 0.0;
         return kFALSE;
       }
-      else
-      {
-        AliESDEvent *esd = event->GetRefESD();
-        if (!esd)
-        {
-          AliError("Cannot use method based on ESD cuts when input is not ESD.");
-          fValue = 0.0;
-          return kFALSE;
-        }
-        fValue = (Double_t)fESDCuts.CountAcceptedTracks(esd);
-      }
+      else fValue = (Double_t)event->GetMultiplicity(&fESDCuts);
       break;
     case kLeadingPt:
       if (!event) 

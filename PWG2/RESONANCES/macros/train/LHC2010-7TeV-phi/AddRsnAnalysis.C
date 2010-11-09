@@ -41,8 +41,9 @@ Bool_t AddRsnAnalysis
     ConfigESDCutsTPC(cutMult->GetCuts());
     
     task->GetEventCuts()->AddCut(cutVertex);
-    task->GetEventCuts()->AddCut(cutMult);
-    task->GetEventCuts()->SetCutScheme("cutVertex&cutMult");
+    //task->GetEventCuts()->AddCut(cutMult);
+    //task->GetEventCuts()->SetCutScheme("cutVertex&cutMult");
+    task->GetEventCuts()->SetCutScheme("cutVertex");
   }
 
   // add the task to manager

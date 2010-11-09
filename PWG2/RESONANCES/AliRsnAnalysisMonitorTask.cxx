@@ -152,7 +152,8 @@ void AliRsnAnalysisMonitorTask::UserExec(Option_t *)
   
   // create interface objects to AliRsnEvent to check event cuts
   AliRsnEvent event;
-  event.SetRef(esd, fMCEvent);
+  event.SetRef(esd);
+  event.SetRefMC(fMCEvent);
   if (!fEventCuts.IsSelected(&event)) return;
   
   // check the event
@@ -218,7 +219,8 @@ void AliRsnAnalysisMonitorTask::ProcessESD
   // create interfacr objects
   AliRsnEvent    event;
   AliRsnDaughter daughter;
-  event.SetRef(esd, fMCEvent);
+  event.SetRef(esd);
+  event.SetRefMC(fMCEvent);
 
   // ITS stuff #1 
   // create the response function and initialize it to MC or not

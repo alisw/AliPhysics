@@ -183,13 +183,25 @@ void AliRsnVAnalysisTaskSE::UserExec(Option_t* opt)
   // otherwise the AOD event is used;
   // if the MC information is available, it is linked
   if (fMCOnly && fMCEvent)
-    fRsnEvent.SetRef(fMCEvent, fMCEvent);
+  {
+    fRsnEvent.SetRef  (fMCEvent);
+    fRsnEvent.SetRefMC(fMCEvent);
+  }
   else if (fESDEvent)
-    fRsnEvent.SetRef(fESDEvent, fMCEvent);
+  {
+    fRsnEvent.SetRef  (fESDEvent);
+    fRsnEvent.SetRefMC(fMCEvent);
+  }
   else if (fAODEventOut)
-    fRsnEvent.SetRef(fAODEventOut);
+  {
+    fRsnEvent.SetRef  (fAODEventOut);
+    fRsnEvent.SetRefMC(fAODEventOut);
+  }
   else if (fAODEventIn)
-    fRsnEvent.SetRef(fAODEventIn);
+  {
+    fRsnEvent.SetRef  (fAODEventIn);
+    fRsnEvent.SetRefMC(fAODEventIn);
+  }
   else {
     AliError("NO ESD or AOD object!!! Skipping ...");
     return;

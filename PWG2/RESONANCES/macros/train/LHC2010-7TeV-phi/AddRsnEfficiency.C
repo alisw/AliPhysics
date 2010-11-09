@@ -40,7 +40,7 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
   AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 500  , 0.9,  1.4);
   //AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , npt  , pt);
   //AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           , ny   , y);
-  AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, nmult, mult);
+  //AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, nmult, mult);
   AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 100,  0.0, 10.0);
   AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           ,  20, -1.0,  1.0);
   ConfigESDCutsTPC(axisMult->GetCuts());

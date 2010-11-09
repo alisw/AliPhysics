@@ -13,16 +13,7 @@
 //
 
 #include <TParticle.h>
-
-#include "AliStack.h"
-#include "AliMCEvent.h"
-#include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliESDtrack.h"
-#include "AliAODEvent.h"
 #include "AliAODVertex.h"
-#include "AliAODTrack.h"
-
 #include "AliRsnDaughter.h"
 
 ClassImp(AliRsnDaughter)
@@ -32,8 +23,8 @@ AliRsnDaughter::AliRsnDaughter() :
   fOK(kFALSE),
   fLabel(-1),
   fMotherPDG(0),
-  fP(0.0, 0.0, 0.0, 0.0),
-  fPMC(0.0, 0.0, 0.0, 0.0),
+  fPrec(0.0, 0.0, 0.0, 0.0),
+  fPsim(0.0, 0.0, 0.0, 0.0),
   fRef(0x0),
   fRefMC(0x0)
 {
@@ -48,8 +39,8 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
   fOK(copy.fOK),
   fLabel(copy.fLabel),
   fMotherPDG(copy.fMotherPDG),
-  fP(copy.fP),
-  fPMC(copy.fPMC),
+  fPrec(copy.fPrec),
+  fPsim(copy.fPsim),
   fRef(copy.fRef),
   fRefMC(copy.fRefMC)
 {
@@ -72,21 +63,12 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
   fOK        = copy.fOK;
   fLabel     = copy.fLabel;
   fMotherPDG = copy.fMotherPDG;
-  fP         = copy.fP;
-  fPMC       = copy.fPMC;
+  fPrec      = copy.fPrec;
+  fPsim      = copy.fPsim;
   fRef       = copy.fRef;
   fRefMC     = copy.fRefMC;
 
   return (*this);
-}
-
-//_____________________________________________________________________________
-AliRsnDaughter::~AliRsnDaughter()
-{
-//
-// Destructor.
-// Since pointers do not allocate new objects, no 'delete' is done.
-//
 }
 
 //_____________________________________________________________________________
@@ -104,69 +86,35 @@ void AliRsnDaughter::Reset()
   fRef       = 0x0;
   fRefMC     = 0x0;
   
-  fP  .SetXYZM(0.0, 0.0, 0.0, 0.0);
-  fPMC.SetXYZM(0.0, 0.0, 0.0, 0.0);
+  fPrec.SetXYZM(0.0, 0.0, 0.0, 0.0);
+  fPsim.SetXYZM(0.0, 0.0, 0.0, 0.0);
 }
 
 //_____________________________________________________________________________
-void AliRsnDaughter::Print(Option_t * const /*option*/) const
+Int_t AliRsnDaughter::GetPDG(Bool_t abs)
 {
 //
-// Prints the values of data members.
-//
-  
-  Char_t type[50], source[50];
-  if (IsTrack()) snprintf(type, 5, "track");
-  else if (IsV0()) snprintf(type, 2, "V0");
-  else snprintf(type, 4, "none");
-  
-  if (IsESD()) snprintf(source, 3, "ESD");
-  else if (IsAOD()) snprintf(source, 3, "AOD");
-  else if (fRefMC != 0x0) snprintf(source, 7, "MC only");
-  else snprintf(source, 4, "none");
-  
-  AliInfo("===== ALIRSNDAUGHTER INFORMATION ==============================================");
-  AliInfo(Form(".......Index                  : %d", GetID()));
-  AliInfo(Form(".......Label                  : %d", GetLabel()));
-  AliInfo(Form(".......Type, source           : %s %s", type, source));
-  AliInfo(Form(".......Charge                 : %c", ChargeChar()));
-  
-  if (fRef)
-  {
-    AliInfo(Form(".......Px, Py, Pz, Pt (ref)   : %f %f %f %f", fP.X(), fP.Y(), fP.Z(), fP.Perp()));
-  } else AliInfo("....... absent REF");
-  
-  if (fRefMC) 
-  {
-    AliInfo(Form(".......Px, Py, Pz, Pt (ref MC): %f %f %f %f", fP.X(), fP.Y(), fP.Z(), fP.Perp())); 
-    
-    AliInfo(Form(".......PDG code               : %d", GetPDG()));
-  } else AliInfo("....... absent REF MC");
-  
-  AliInfo("===== END ALIRSNDAUGHTER INFORMATION ==========================================");
-}
-
-//_____________________________________________________________________________
-Int_t AliRsnDaughter::GetPDG(Bool_t abs) const
-{
-//
-// Return the PDG code of the particle from MC ref (if any)
+// Return the PDG code of the particle from MC ref (if any).
+// If argument is kTRUE, returns its absolute value.
 //
 
-  AliMCParticle    *esdPart = GetRefMCESD();
-  AliAODMCParticle *aodPart = GetRefMCAOD();
-  
   Int_t pdg = 0;
-  if (esdPart) pdg = esdPart->Particle()->GetPdgCode();
-  if (aodPart) pdg = aodPart->GetPdgCode();
+
+  // ESD
+  AliMCParticle *esd = GetRefMCESD();
+  if (esd) pdg = esd->Particle()->GetPdgCode();
   
+  // AOD
+  AliAODMCParticle *aod = GetRefMCAOD();
+  if (aod) pdg = aod->GetPdgCode();
+  
+  // abs value if required
   if (abs) pdg = TMath::Abs(pdg);
-  
   return pdg;
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnDaughter::GetID() const
+Int_t AliRsnDaughter::GetID()
 {
 //
 // Return reference index, using the "GetID" method
@@ -174,32 +122,34 @@ Int_t AliRsnDaughter::GetID() const
 // In case of V0s, since this method is unsuccessful, return the label.
 //
 
-  const AliESDtrack *esd = GetRefESDtrack();
+  // ESD tracks
+  AliESDtrack *esd = GetRefESDtrack();
   if (esd) return esd->GetID();
 
-  const AliAODTrack *aod = GetRefAODtrack();
+  // AOD tracks
+  AliAODTrack *aod = GetRefAODtrack();
   if (aod) return aod->GetID();
 
+  // whatever else
   return GetLabel();
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnDaughter::HasFlag(ULong_t flag) const
+Bool_t AliRsnDaughter::HasFlag(ULong_t flag)
 {
 //
 // Checks that the 'status' flag of the source object has one or 
-// a combination of status flags combined with the bitwise OR.
-// Works only with track-like objects.
+// a combination of status flags specified in argument.
+// Works only with track-like objects, irrespectively if they
+// are ESD or AOD tracks, since it refers to their AliVTrack base class.
 //
 
-  if (IsTrack())
-  {
-    AliVTrack *track  = dynamic_cast<AliVTrack*>(fRef);
-    ULong_t    status = (ULong_t)track->GetStatus();
-    return ((status & flag) != 0);
-  }
+  AliVTrack *track  = dynamic_cast<AliVTrack*>(fRef);
+  if (!track) return kFALSE;
   
-  return kTRUE;
+  ULong_t status = (ULong_t)track->GetStatus();
+  
+  return ((status & flag) != 0);
 }
 
 //_____________________________________________________________________________
@@ -208,17 +158,16 @@ Bool_t AliRsnDaughter::SetMass(Double_t mass)
 //
 // Assign a mass hypothesis to the track.
 // This causes the 4-momentum data members to be initialized
-// using the reconstructed or MC momentum and this mass.
+// using the momenta of referenced tracks/v0s and this mass.
 // This step is fundamental for the following of the analysis.
 // Of course, this operation is successful only if the mass is
 // a meaningful positive number, and the pointers are properly initialized.
 //
 
   if (mass < 0.) return kFALSE;
-  if (!fRef && !fRefMC) return kFALSE;
   
-  if (fRef)   fP  .SetXYZM(fRef  ->Px(), fRef  ->Py(), fRef  ->Pz(), mass);
-  if (fRefMC) fPMC.SetXYZM(fRefMC->Px(), fRefMC->Py(), fRefMC->Pz(), mass);
+  if (fRef)   fPrec.SetXYZM(fRef  ->Px(), fRef  ->Py(), fRef  ->Pz(), mass);
+  if (fRefMC) fPsim.SetXYZM(fRefMC->Px(), fRefMC->Py(), fRefMC->Pz(), mass);
   
   return kTRUE;
 }

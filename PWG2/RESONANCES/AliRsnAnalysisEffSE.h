@@ -17,6 +17,7 @@
 #include "AliRsnVAnalysisTaskSE.h"
 #include "AliRsnEvent.h"
 #include "AliRsnMother.h"
+#include "AliRsnDaughter.h"
 
 class AliPID;
 
@@ -53,12 +54,13 @@ class AliRsnAnalysisEffSE : public AliRsnVAnalysisTaskSE
   private:
 
     AliRsnAnalysisEffSE& operator=(const AliRsnAnalysisEffSE& /*copy*/) {return *this;}
-    void                 ProcessEvent(AliRsnPairDef *pairDef);
-    void                 ProcessEventMC(AliRsnPairDef *pairDef);
     void                 ProcessEventESD(AliRsnPairDef *pairDef);
+    void                 ProcessEventAOD(AliRsnPairDef *pairDef);
     void                 FillContainer(AliCFContainer *cont, const TObjArray *stepList, AliRsnPairDef *pd, Int_t firstOutStep);
-    Int_t                FindESDtrack(Int_t label, AliESDEvent *esd, Bool_t rejectFakes);
+    Int_t                FindESDtrack (Int_t label, AliESDEvent *esd, Bool_t rejectFakes);
     TArrayI              FindESDtracks(Int_t label, AliESDEvent *esd);
+    Int_t                FindAODtrack (Int_t label, AliAODEvent *aod, Bool_t rejectFakes);
+    TArrayI              FindAODtracks(Int_t label, AliAODEvent *aod);
 
     Bool_t                fUseITSSA;                // switch to use ITS standalone tracks
     Bool_t                fUseGlobal;               // switch to use global tracks

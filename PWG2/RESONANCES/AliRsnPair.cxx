@@ -126,7 +126,7 @@ Bool_t AliRsnPair::Fill
   // and that of the mother, according to current pair def
   // this could be needed for some cuts
   fMother.SetDaughters(daughter0, fPairDef->GetMass(0), daughter1, fPairDef->GetMass(1));
-  
+    
   // check for correct type-charge match for first element
   if (daughter0->RefType() != fPairDef->GetDaughterType(0)) return kFALSE;
   if (daughter0->ChargeChar() != fPairDef->GetCharge(0)) return kFALSE;

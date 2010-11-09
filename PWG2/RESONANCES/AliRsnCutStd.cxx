@@ -208,7 +208,7 @@ Bool_t AliRsnCutStd::IsDaughterSelected(AliRsnDaughter *daughter)
       if (!fEvent->GetRefMC()) return kFALSE;
       else
       {
-        return fEvent->GetRefMC()->Stack()->IsPhysicalPrimary(TMath::Abs(((AliVTrack*)ref)->GetLabel()));
+        return fEvent->GetRefMCESD()->Stack()->IsPhysicalPrimary(TMath::Abs(((AliVTrack*)ref)->GetLabel()));
       }
     default:
       AliWarning(Form("Value %d is not included in available cuts for DAUGHTER. Cut skipped.", fType));
@@ -243,7 +243,7 @@ Bool_t AliRsnCutStd::IsMotherSelected(AliRsnMother * const mother)
       fCutValueD = ref.Rapidity();
       return OkRange();
     case kDipAngle:
-      fCutValueD = mother->GetDaughter(0)->P().Angle(mother->GetDaughter(1)->P().Vect());
+      fCutValueD = mother->GetDaughter(0)->Prec().Angle(mother->GetDaughter(1)->Prec().Vect());
       fCutValueD = TMath::Abs(TMath::ACos(fCutValueD));
       return OkRangeD();
     case kSameLabel:
