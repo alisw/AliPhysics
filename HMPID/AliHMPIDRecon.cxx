@@ -89,10 +89,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
 // Arguments:   pTrk     - track for which Ckov angle is to be found
 //              pCluLst  - list of clusters for this chamber   
 //   Returns:            - track ckov angle, [rad], 
-    
-   
-  AliESDfriendTrack *pFriendTrk = (AliESDfriendTrack*)pTrk->GetFriendTrack();
-  
+       
   const Int_t nMinPhotAcc = 3;                      // Minimum number of photons required to perform the pattern recognition
   
   Int_t nClusTot = pCluLst->GetEntries();
@@ -141,11 +138,9 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
     
   fMipPos.Set(mipX,mipY);
     
-  TClonesArray *pPhotCluLst = pFriendTrk->GetHmpPhotClus();
-  
 //PATTERN RECOGNITION STARTED: 
   
-  Int_t iNrec=FlagPhot(HoughResponse(),pCluLst,pPhotCluLst);                                                      //flag photons according to individual theta ckov with respect to most probable
+  Int_t iNrec=FlagPhot(HoughResponse(),pCluLst,pTrk);                                                      //flag photons according to individual theta ckov with respect to most probable
   
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNrec);                                                    //store mip info 
 
@@ -362,7 +357,7 @@ Double_t AliHMPIDRecon::FindRingCkov(Int_t)
   return weightThetaCerenkov;
 }//FindCkovRing()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDRecon::FlagPhot(Double_t ckov,TClonesArray *pCluLst, TClonesArray *pPhotCluLst)
+Int_t AliHMPIDRecon::FlagPhot(Double_t ckov,TClonesArray *pCluLst, AliESDtrack *pTrk)
 {
 // Flag photon candidates if their individual ckov angle is inside the window around ckov angle returned by  HoughResponse()
 // Arguments: ckov- value of most probable ckov angle for track as returned by HoughResponse()
@@ -391,13 +386,12 @@ Int_t AliHMPIDRecon::FlagPhot(Double_t ckov,TClonesArray *pCluLst, TClonesArray 
     }
   }
       
-  Int_t nPhot = 0;
-     
   for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
     AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster
     for(Int_t j=0; j<iInsideCnt; j++){
       if(iClu==PhotIndex[j]) {
-      new ((*pPhotCluLst)[nPhot++]) AliHMPIDCluster(*pClu);  //add this raw cluster 
+      AliHMPIDCluster *pClus = new AliHMPIDCluster(*pClu);  
+      pTrk->AddCalibObject(pClus); 
      } 
     }
   } 

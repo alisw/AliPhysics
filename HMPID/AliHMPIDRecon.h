@@ -33,7 +33,7 @@ public :
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
   void     FindRingGeom (Double_t ckovAng,Int_t level=1                                     );     //estimated area of ring in cm^2 and portion accepted by geometry
   TVector2 IntWithEdge  (TVector2 p1,TVector2 p2                                            )const;//find intercection between plane and lines of 2 thetaC
-  Int_t    FlagPhot     (Double_t ckov,TClonesArray *pCluLst,TClonesArray *pPhotCluLst      );     //is photon ckov near most probable track ckov
+  Int_t    FlagPhot     (Double_t ckov,TClonesArray *pCluLst,AliESDtrack *pTrk              );     //is photon ckov near most probable track ckov
   Double_t HoughResponse(                                                                   );     //most probable track ckov angle
   void     Propagate    (const TVector3  dir,      TVector3 &pos,Double_t z                 )const;//propagate photon alogn the line  
   void     Refract      (      TVector3 &dir,                    Double_t n1,    Double_t n2)const;//refract photon on the boundary
