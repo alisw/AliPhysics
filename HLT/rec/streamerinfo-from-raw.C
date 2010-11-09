@@ -4,9 +4,8 @@
  * @brief Extract the streamer info for a raw file and AliRoot version
  *
  * This macro generates the streamer info for all objects in the HLTOUT
- * payload of the specified raw file. The AliRoot version of the when
- * running this macro needs to be the same as the HLTOUT payload was
- * generatted with.
+ * payload of the specified raw file. The AliRoot version needs to be the
+ * same as the one the HLTOUT payload was generated with.
  *
  * The macro has two optional parameters:
  * - filename:  default 'raw://'
