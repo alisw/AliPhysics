@@ -1354,8 +1354,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 
 
     // ITS standalone
-    if (!(esdtrack->GetStatus()&AliESDtrack::kTPCrefit) && 
-	 (esdtrack->GetStatus()&AliESDtrack::kITSpureSA)
+    if (esdtrack->GetNcls(1)==0 && 
+	(esdtrack->GetStatus()&AliESDtrack::kITSrefit)
 	&& npointsSPD>0 && npointsITS>=4) {
       char *named0ITSpureSArphiRec = Form("d0itspureSArphiRec_%d", bin);
       char *named0ITSpureSArphiSkip = Form("d0itspureSArphiSkip_%d", bin);
