@@ -996,7 +996,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
     accept = fDButil->FilterTemperature(temp)>0.1;
   }
   if (press) {
-    const Double_t kMinP=950.;
+    const Double_t kMinP=900.;
     const Double_t kMaxP=1050.;
     const Double_t kMaxdP=10.;
     const Double_t kSigmaCut=4.;
