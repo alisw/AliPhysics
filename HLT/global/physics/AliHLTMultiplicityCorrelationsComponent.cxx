@@ -347,7 +347,7 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     TString title = fESDTrackCuts->GetTitle();
     if (!title.CompareTo("No track cuts")) title = "";
     else title += " && ";
-    title += Form("Eta[%f,%f]", argument.Atof());
+    title += Form("Eta[%f,%f]", argument.Atof(),argument.Atof());
     fESDTrackCuts->SetTitle(title);
     return 2;
   }
