@@ -57,7 +57,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
   if (aProof)
   {
-    TProof::Open("alicecaf"); 
+    TProof::Open("alice-caf"); 
 
     Bool_t fullAliroot = kFALSE;
     // Enable the needed package
@@ -125,8 +125,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   //AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn | AliPWG0Helper::kSPDOnlyL0;
   //AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPCITS | AliPWG0Helper::kFieldOn;
   
-  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag;
-  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle;
+  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag;
+  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle;
   
   //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kSPDGFOBits | AliTriggerAnalysis::kOfflineFlag;
   //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kSPDGFOBits | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle;
@@ -199,7 +199,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   }
 
   // FO efficiency (for MC)
-  if (1 && requiredData != 2)
+  if (0 && requiredData != 2)
   {
     //const char* fastORFile = "spdFOEff_run104824_52.root";
     //const char* fastORFile = "spdFOEff_run104867_92.root";
