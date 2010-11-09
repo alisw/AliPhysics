@@ -31,6 +31,8 @@ Double_t excludePhiMax = 0.;
 // use physics selection class
 Bool_t  UsePhysicsSelection = kTRUE;
 
+// generate the control ntuple
+Bool_t FillQAntuple=kFALSE;
 
 // RUN SETTINGS
 // Flow analysis method can be:(set to kTRUE or kFALSE)
@@ -388,6 +390,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   AliAnalysisTaskQAflow* taskQAflow = new AliAnalysisTaskQAflow("TaskQAflow");
   taskQAflow->SetEventCuts(cutsEvent);
   taskQAflow->SetTrackCuts(cutsRP);
+  taskQAflow->SetFillNTuple(FillQAntuple);
   mgr->AddTask(taskQAflow);
   
   // Create the output container for the data produced by the task
@@ -580,7 +583,13 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
                                             TObjArray::Class(),
                                             AliAnalysisManager::kOutputContainer,
                                             taskQAoutputFileName.Data());
+  AliAnalysisDataContainer* coutputQAtaskTree = mgr->CreateContainer(Form("flowQAntuple_%i",binnumber),
+                                            TTree::Class(),
+                                            AliAnalysisManager::kOutputContainer,
+                                            taskQAoutputFileName.Data());
   mgr->ConnectInput(taskQAflow,0,mgr->GetCommonInputContainer());
+  mgr->ConnectInput(taskQAflow,1,coutputFE);
+  mgr->ConnectOutput(taskQAflow,0,coutputQAtaskTree);
   mgr->ConnectOutput(taskQAflow,1,coutputQAtask);
 }
 

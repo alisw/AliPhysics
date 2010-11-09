@@ -64,6 +64,7 @@ class AliFlowEventSimple: public TObject {
 
   void ResolutionPt(Double_t res);
   void TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
+  void TagSubeventsByCharge();
   void TagRP(AliFlowTrackSimpleCuts* cuts );
   void TagPOI(AliFlowTrackSimpleCuts* cuts );
   void CloneTracks(Int_t n);
