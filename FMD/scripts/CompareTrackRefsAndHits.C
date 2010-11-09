@@ -6,7 +6,7 @@
 #include "TClonesArray.h"
 #include "AliTrackReference.h"
 #include "AliFMDStripIndex.h"
-
+#include "TParticle.h"
 //Script to compare the hits and the FMD track references for one event.
 //To run:
 //>gSystem->Load("libFMDutil")
@@ -19,28 +19,47 @@ class ReadHits : public AliFMDInput{
 
 private:
   Int_t nHits;
-  
+  Int_t nTracks;
 public:
   
   
   
   ReadHits(){
     AddLoad(kKinematics);
+    AddLoad(kTracks);
+    AddLoad(kTrackRefs);
     AddLoad(kHits);
     nHits = 0;
+    nTracks = 0;
+    fGAliceFile.Form("galice.root");
   }
 
   Bool_t ProcessHit(AliFMDHit* hit, TParticle* p) 
   {
     nHits++;
-    std::cout<<hit->Px()<<"   "<<hit->Py()<<"   "<<hit->Pz()<<std::endl;
-    std::cout<<hit->Detector()<<"   "<<hit->Ring()<<"    "<<hit->Sector()<<"    "<<hit->Strip()<<std::endl;
+    // std::cout<<hit->Px()<<"   "<<hit->Py()<<"   "<<hit->Pz()<<std::endl;
+    //std::cout<<hit->Detector()<<"   "<<hit->Ring()<<"    "<<hit->Sector()<<"    "<<hit->Strip()<<std::endl;
     return kTRUE;
   }
+  Bool_t ProcessTrackRef(AliTrackReference* trackRef, TParticle* p) 
+  {
+    UShort_t det,sec,strip;
+    Char_t ring;
+    if(trackRef->DetectorId() == AliTrackReference::kFMD) {
+      nTracks++;
+      AliFMDStripIndex::Unpack(trackRef->UserId(),det,ring,sec,strip);
+      //std::cout<<p->Px()<<"   "<<p->Py()<<"   "<<p->Pz()<<std::endl;
+      //std::cout<<det<<"   "<<ring<<"    "<<sec<<"    "<<strip<<std::endl;
+    }
+        
+    return kTRUE;
+  }
+
+  
   Bool_t Finish()
   {
-    Int_t nTracks = 0;
-    TFile* f=TFile::Open("TrackRefs.root");
+    // Int_t nTracks = 0;
+    /* TFile* f=TFile::Open("TrackRefs.root");
     TTree* tree = (TTree*)f->Get("Event0/TreeTR");
     
     
@@ -65,7 +84,8 @@ public:
       
     }
     
-    }
+  }
+    */
     std::cout<<nTracks<<"     "<<nHits<<std::endl;
     return kTRUE;
   }
