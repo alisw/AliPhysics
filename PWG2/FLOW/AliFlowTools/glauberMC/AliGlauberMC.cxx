@@ -645,7 +645,7 @@ Double_t AliGlauberMC::GetEccentricityPartColl() const
 Double_t AliGlauberMC::GetEccentricity() const
 {
   //get standard eccentricity of participants
-  if (fNcoll<2) return 0.0;
+  if (fNpart<2) return 0.0;
   return ((fSy2-fSx2)/(fSy2+fSx2));
 }
 
