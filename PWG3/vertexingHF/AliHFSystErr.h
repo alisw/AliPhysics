@@ -11,7 +11,7 @@
 
 #include <TNamed.h>
 #include <TH1F.h>
-#include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
 
 
 class AliHFSystErr : public TNamed 
@@ -23,7 +23,7 @@ class AliHFSystErr : public TNamed
   
   virtual ~AliHFSystErr();
   
-  void DrawErrors(TGraphErrors *grErrFeeddown=0) const; 
+  void DrawErrors(TGraphAsymmErrors *grErrFeeddown=0) const; 
 
   Double_t GetNormErr() const {return (fNorm ? fNorm->GetBinContent(0) : 0.);}
   Double_t GetBRErr() const {return (fBR ? fBR->GetBinContent(0) : 0.);}
