@@ -476,9 +476,3 @@ AliHLTComponentDataType AliHLTGlobalHistoComponent::GetOriginDataType() const
   // get the origin of the output data
   return kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT;
 }
-
-// AliHLTUInt32_t AliHLTGlobalHistoComponent::GetDataSpec() const;
-// {
-//   // get specifications of the output data
-//   return 0;
-// }

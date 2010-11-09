@@ -206,8 +206,6 @@ class AliHLTGlobalHistoComponent : public AliHLTTTreeProcessor
                        AliHLTComponentTriggerData& trigData );
   /// dtOrigin for PushBack.
   AliHLTComponentDataType GetOriginDataType() const;
-  /// spec for PushBack
-  AliHLTUInt32_t GetDataSpec() const {return 0;}
 
   int ResetVariables();
   
