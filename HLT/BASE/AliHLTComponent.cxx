@@ -1393,7 +1393,7 @@ AliHLTUInt32_t AliHLTComponent::GetSpecification(const AliHLTComponentBlockData*
   return iSpec;
 }
 
-int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec, 
+int AliHLTComponent::PushBack(const TObject* pObject, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec, 
 			      void* pHeader, int headerSize)
 {
   // see header file for function documentation
@@ -1445,7 +1445,7 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
   return iResult;
 }
 
-int AliHLTComponent::PushBack(TObject* pObject, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec,
+int AliHLTComponent::PushBack(const TObject* pObject, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec,
 			      void* pHeader, int headerSize)
 {
   // see header file for function documentation
@@ -1530,7 +1530,7 @@ int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, con
   return iResult;
 }
 
-int AliHLTComponent::EstimateObjectSize(TObject* pObject) const
+int AliHLTComponent::EstimateObjectSize(const TObject* pObject) const
 {
   // see header file for function documentation
   if (!pObject) return 0;
@@ -2137,7 +2137,13 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   if (fPushbackPeriod>0) {
     // suppress the output
     TDatime time;
-    if (fLastPushBackTime<0 || (int)time.Get()-fLastPushBackTime>=fPushbackPeriod) {
+    if (fLastPushBackTime<0) {
+      // choose a random offset at beginning to equalize traffic for multiple instances
+      // of the component
+      gRandom->SetSeed(fChainIdCrc);
+      fLastPushBackTime=time.Get();
+      fLastPushBackTime-=gRandom->Integer(fPushbackPeriod);
+    } else if ((int)time.Get()-fLastPushBackTime>=fPushbackPeriod) {
       fLastPushBackTime=time.Get();
     }
   }
