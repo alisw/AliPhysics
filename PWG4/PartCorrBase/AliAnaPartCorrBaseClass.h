@@ -243,9 +243,9 @@ public:
     fHistoV0SMin  = min ;
   }
 	
-  virtual Int_t   GetHistoV0SignalBins()  const { return fHistoV0SBins ; }
-  virtual Float_t GetHistoV0SignalMin()   const { return fHistoV0SMin ; }
-  virtual Float_t GetHistoV0SignalMax()   const { return fHistoV0SMax ; }
+  virtual Int_t GetHistoV0SignalBins()  const { return fHistoV0SBins ; }
+  virtual Int_t GetHistoV0SignalMin()   const { return fHistoV0SMin ; }
+  virtual Int_t GetHistoV0SignalMax()   const { return fHistoV0SMax ; }
 	
   virtual void SetHistoV0MultiplicityRangeAndNBins(Int_t min, Int_t max, Int_t n) {
     fHistoV0MBins = n ;
@@ -253,9 +253,9 @@ public:
     fHistoV0MMin  = min ;
   }
 	
-  virtual Int_t   GetHistoV0MultiplicityBins()  const { return fHistoV0MBins ; }
-  virtual Float_t GetHistoV0MultiplicityMin()   const { return fHistoV0MMin ; }
-  virtual Float_t GetHistoV0MultiplicityMax()   const { return fHistoV0MMax ; }
+  virtual Int_t GetHistoV0MultiplicityBins()  const { return fHistoV0MBins ; }
+  virtual Int_t GetHistoV0MultiplicityMin()   const { return fHistoV0MMin ; }
+  virtual Int_t GetHistoV0MultiplicityMax()   const { return fHistoV0MMax ; }
   
   virtual void SetHistoTrackMultiplicityRangeAndNBins(Int_t min, Int_t max, Int_t n) {
     fHistoTrMBins = n ;
@@ -263,10 +263,9 @@ public:
     fHistoTrMMin  = min ;
   }
 	
-  virtual Int_t   GetHistoTrackMultiplicityBins()  const { return fHistoTrMBins ; }
-  virtual Float_t GetHistoTrackMultiplicityMin()   const { return fHistoTrMMin ; }
-  virtual Float_t GetHistoTrackMultiplicityMax()   const { return fHistoTrMMax ; }
-  
+  virtual Int_t GetHistoTrackMultiplicityBins()  const { return fHistoTrMBins ; }
+  virtual Int_t GetHistoTrackMultiplicityMin()   const { return fHistoTrMMin ; }
+  virtual Int_t GetHistoTrackMultiplicityMax()   const { return fHistoTrMMax ; }
   
   virtual AliMixedEvent * GetMixedEvent()          { return GetReader()->GetMixedEvent() ; } 
   virtual Int_t           GetNMixedEvent()   const { return GetReader()->GetNMixedEvent() ; } 

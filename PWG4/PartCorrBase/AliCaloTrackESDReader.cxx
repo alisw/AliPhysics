@@ -105,10 +105,10 @@ void AliCaloTrackESDReader::FillInputVZERO(){
   {
     for (Int_t i = 0; i < 32; i++)
     {
-      fV0ADC[0] += esdV0->GetAdcV0C(i);
-      fV0ADC[1] += esdV0->GetAdcV0A(i);
-      fV0Mul[0] += esdV0->GetMultiplicityV0C(i);
-      fV0Mul[1] += esdV0->GetMultiplicityV0A(i);
+      fV0ADC[0] += (Int_t)esdV0->GetAdcV0C(i);
+      fV0ADC[1] += (Int_t)esdV0->GetAdcV0A(i);
+      fV0Mul[0] += (Int_t)esdV0->GetMultiplicityV0C(i);
+      fV0Mul[1] += (Int_t)esdV0->GetMultiplicityV0A(i);
     }
     if(fDebug > 0)
       printf("V0: ADC (%d,%d), Multiplicity (%d,%d) \n",fV0ADC[0],fV0ADC[1],fV0Mul[0],fV0Mul[1]);
