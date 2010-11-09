@@ -335,6 +335,9 @@ if (im>=kNModule || ic>=kNChip || iw>=kNWing || is>=kNSubWing)
    if(Kfound) fFound[key]++;
    return kTRUE;
  }
+ else {
+   return kFALSE;
+ }
 }
 //_________________________________________________________________________
 void AliITSPlaneEffSDD::ChipAndWingFromAnode(const UInt_t anode, UInt_t& chip,
