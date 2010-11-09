@@ -60,8 +60,8 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
   // retrieve ESD event
   AliRsnEvent *rsn = dynamic_cast<AliRsnEvent*>(obj1);
   if (!rsn) return kFALSE;
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(rsn->GetRef());
-  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(rsn->GetRef());
+  AliESDEvent *esd = rsn->GetRefESD();
+  AliAODEvent *aod = rsn->GetRefAOD();
   
   if (esd)
   {
@@ -106,11 +106,16 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
   else if (aod)
   {
     // lines suggested by Andrea to reject TPC-only events
-    if(!aod->GetPrimaryVertexSPD()) return kFALSE;
-    if(aod->GetPrimaryVertexSPD()->GetNContributors() < 1) return kFALSE;
+    if(!fAcceptTPC)
+    {
+      if (!aod->GetPrimaryVertexSPD()) return kFALSE;
+      else if(aod->GetPrimaryVertexSPD()->GetNContributors() < 1) return kFALSE;
+    }
     
     AliAODVertex *prim = (AliAODVertex*)aod->GetPrimaryVertex();
-    fCutValueI = prim->GetNContributors();
+    if (!prim) return kFALSE;
+
+    //fCutValueI = prim->GetNContributors();
     fCutValueD = prim->GetZ();
   }
   else

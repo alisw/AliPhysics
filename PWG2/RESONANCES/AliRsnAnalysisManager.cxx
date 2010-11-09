@@ -209,7 +209,7 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
   for (i0 = 0; i0 < nTracks[0]; i0++)
   {
     // skip not physical primaries
-    if (!ev0->GetRefMC()->Stack()->IsPhysicalPrimary(i0)) continue;
+    if (!ev0->GetRefMCESD()->Stack()->IsPhysicalPrimary(i0)) continue;
     
     // assign first track
     ev0->SetDaughterMC(daughter0, i0);
@@ -221,7 +221,7 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
       if (ev0 == ev1 && i0 == i1) continue;
       
       // skip not physical primaries
-      if (!ev1->GetRefMC()->Stack()->IsPhysicalPrimary(i1)) continue;
+      if (!ev1->GetRefMCESD()->Stack()->IsPhysicalPrimary(i1)) continue;
       
       // assign second track
       ev1->SetDaughterMC(daughter1, i1);

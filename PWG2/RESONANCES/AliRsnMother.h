@@ -15,6 +15,7 @@
 
 #include <TLorentzVector.h>
 
+#include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
 
 class AliRsnPairDef;
@@ -29,15 +30,16 @@ class AliRsnMother : public TObject
     virtual ~AliRsnMother();
     
     void              SetDefaultMass(Double_t mass) {fDefaultMass = mass; fRef.SetXYZM(fSum.X(),fSum.Y(),fSum.Z(),mass); fRefMC.SetXYZM(fSumMC.X(),fSumMC.Y(),fSumMC.Z(),mass);}
-    TLorentzVector&   Sum() {return fSum;}
-    TLorentzVector&   Ref() {return fRef;}
+    TLorentzVector&   Sum()   {return fSum;}
+    TLorentzVector&   Ref()   {return fRef;}
     TLorentzVector&   SumMC() {return fSumMC;}
     TLorentzVector&   RefMC() {return fRefMC;}
     Double_t          OpeningAngle(Bool_t mc = kFALSE) const {if (fDaughter[0] && fDaughter[1]) return fDaughter[0]->P(mc).Angle(fDaughter[1]->P(mc).Vect()); return 1E6;}
     Double_t          AngleTo(AliRsnDaughter track, Bool_t mc = kFALSE) const {return fSum.Angle(track.P(mc).Vect());}
     Double_t          CosThetaStar(Bool_t first = kTRUE, Bool_t useMC = kFALSE);
 
-    AliRsnDaughter*   GetDaughter(const Int_t &index) const {if (index==0||index==1) return fDaughter[index]; return 0x0;}
+    AliRsnDaughter*   GetDaughter   (const Int_t &index) const {if (index==0||index==1) return fDaughter[index]; return 0x0;}
+    AliRsnDaughter&   GetDaughterRef(const Int_t &index) const {if (index==1) return (*fDaughter[1]); return (*fDaughter[0]);}
 
     Bool_t            IsLabelEqual() const {return abs(fDaughter[0]->GetLabel()) == abs(fDaughter[1]->GetLabel());}
     Bool_t            IsIndexEqual() const {return (fDaughter[0]->GetID() == fDaughter[1]->GetID());}

@@ -44,15 +44,11 @@ class AliRsnValue : public TNamed
       kPairPtRatio,
       kPairDipAngle,
       kPairCosThetaStar,
-      kPairCosThetaStar1,
-      kPairCosThetaStar2,
-      kPairCosThetaStarMC1,
-      kPairCosThetaStarMC2,
       kAngleToLeading,
       kLeadingPt,
       kQInv,
       kEventMult,
-      kEventMultESDcuts,
+      kEventMultESDCuts,
       kValueTypes
     };
 
@@ -77,8 +73,8 @@ class AliRsnValue : public TNamed
     void        Set(EValueType type, Double_t min, Double_t max, Double_t step) {fType = type; SetBins(min, max, step);}
     void        Set(EValueType type, Int_t n, Double_t *array) {fType = type; SetBins(n, array);}
     
-    virtual Bool_t  Eval(AliRsnMother * const mother, AliRsnPairDef * const pairDef, AliRsnEvent * const event);
-    virtual Bool_t  Eval(AliRsnDaughter * const daughter, AliRsnEvent * const event);
+    virtual Bool_t  Eval(AliRsnMother *mother, AliRsnPairDef *pairDef, AliRsnEvent *event);
+    virtual Bool_t  Eval(AliRsnDaughter *daughter, AliRsnEvent *event);
     virtual void    Print(Option_t *option = "") const;
 
   protected:
