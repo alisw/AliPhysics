@@ -31,6 +31,7 @@
 #include <TCanvas.h>
 #include <TH2F.h>
 #include <TLegend.h>
+#include <TColor.h>
 
 #include "AliHFSystErr.h"
 
@@ -125,7 +126,7 @@ void AliHFSystErr::InitD0toKpi() {
   fRawYield->SetBinContent(1,1);
   fRawYield->SetBinContent(2,1);
   fRawYield->SetBinContent(3,0.15);
-  for(Int_t i=4;i<=20;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=4;i<=20;i++) fRawYield->SetBinContent(i,0.065);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
@@ -173,7 +174,7 @@ void AliHFSystErr::InitDplustoKpipi() {
   fRawYield->SetBinContent(1,1);
   fRawYield->SetBinContent(2,1);
   fRawYield->SetBinContent(3,0.10);
-  for(Int_t i=4;i<=20;i++) fRawYield->SetBinContent(i,0.05);  //5 to 10%
+  for(Int_t i=4;i<=20;i++) fRawYield->SetBinContent(i,0.055);  //5 to 10%
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
@@ -299,7 +300,7 @@ Double_t AliHFSystErr::GetTotalSystErr(Double_t pt,Double_t feeddownErr) const {
   return TMath::Sqrt(err);
 }
 //---------------------------------------------------------------------------
-void AliHFSystErr::DrawErrors(TGraphErrors *grErrFeeddown) const {
+void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   //
   // Draw errors
   //
@@ -309,6 +310,8 @@ void AliHFSystErr::DrawErrors(TGraphErrors *grErrFeeddown) const {
   cSystErr->SetFillColor(0);
 
   TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{t} [GeV/c]; Relative Error",20,0,20,100,0,+1);
+  hFrame->SetAxisRange(2.,11.9,"X");
+  hFrame->SetAxisRange(0.,0.5,"Y");
   hFrame->Draw();
 
   TLegend *leg=new TLegend(0.5,0.5,0.9,0.9);
@@ -317,24 +320,34 @@ void AliHFSystErr::DrawErrors(TGraphErrors *grErrFeeddown) const {
 
   if(fNorm) {
     fNorm->SetFillColor(1);
-    fNorm->SetFillStyle(3001);
+    fNorm->SetFillStyle(3002);
     fNorm->Draw("same");
     leg->AddEntry(fNorm,"Normalization","f");
   }
+  if(grErrFeeddown) {
+    grErrFeeddown->SetFillColor(kTeal-8);
+    grErrFeeddown->SetFillStyle(3001);
+    grErrFeeddown->Draw("2");
+    leg->AddEntry(grErrFeeddown,"Feed-down from B","f");
+  }
   if(fTrackingEff) {
-    fTrackingEff->SetFillColor(2);
-    fTrackingEff->SetFillStyle(3004);
+    fTrackingEff->SetFillColor(4);
+    fTrackingEff->SetFillStyle(3006);
     fTrackingEff->Draw("same");
     leg->AddEntry(fTrackingEff,"Tracking efficiency","f");
   }
   if(fBR) {
     fBR->SetFillColor(6);
     fBR->SetFillStyle(3005);
+    //fBR->SetFillStyle(3020);
     fBR->Draw("same");
     leg->AddEntry(fBR,"Branching ratio","f");
   }
   if(fRawYield) {
-    fRawYield->SetLineColor(3);
+    Int_t ci;   // for color index setting
+    ci = TColor::GetColor("#00cc00");
+    fRawYield->SetLineColor(ci);
+    //    fRawYield->SetLineColor(3);
     fRawYield->SetLineWidth(3);
     fRawYield->Draw("same");
     leg->AddEntry(fRawYield,"Inv. mass analysis","l");
@@ -352,29 +365,36 @@ void AliHFSystErr::DrawErrors(TGraphErrors *grErrFeeddown) const {
     leg->AddEntry(fPIDEff,"PID efficiency","l");
   }
   if(fMCPtShape) {
-    fMCPtShape->SetLineColor(8);
+    Int_t ci = TColor::GetColor("#9933ff");
+    fMCPtShape->SetLineColor(ci);
+    //    fMCPtShape->SetLineColor(8);
     fMCPtShape->SetLineWidth(3);
     fMCPtShape->Draw("same");
     leg->AddEntry(fMCPtShape,"MC p_{t} shape","l");
   }
   if(fPartAntipart) {
-    fPartAntipart->SetLineColor(9);
+    Int_t ci = TColor::GetColor("#ff6600");
+    fPartAntipart->SetLineColor(ci);
+    //    fPartAntipart->SetLineColor(9);
     fPartAntipart->SetLineWidth(3);
     fPartAntipart->Draw("same");
     leg->AddEntry(fPartAntipart,"D = #bar{D}","l");
-  }
-  if(grErrFeeddown) {
-    grErrFeeddown->SetFillColor(11);    
-    grErrFeeddown->SetFillStyle(3001);
-    grErrFeeddown->Draw("f");
-    leg->AddEntry(grErrFeeddown,"Feed-down from B","f");
   }
 
   
   TH1F *hTotErr=new TH1F("hTotErr","",20,0,20);
   for(Int_t i=1;i<=20;i++) {
     Double_t pt=hTotErr->GetBinCenter(i);
-    hTotErr->SetBinContent(i,GetTotalSystErr(pt));
+    if(grErrFeeddown) {
+      Double_t x=0., y=0., erryh = 0.;
+      for(Int_t j=0; j<grErrFeeddown->GetN(); j++) {
+	grErrFeeddown->GetPoint(j,x,y);
+	if ( TMath::Abs(x - pt) < 0.5) erryh = grErrFeeddown->GetErrorYhigh(j);   
+      }
+      hTotErr->SetBinContent(i,GetTotalSystErr(pt,erryh));
+    } else { 
+      hTotErr->SetBinContent(i,GetTotalSystErr(pt));
+    }
   }
   hTotErr->SetLineColor(1);
   hTotErr->SetLineWidth(3);
@@ -383,6 +403,8 @@ void AliHFSystErr::DrawErrors(TGraphErrors *grErrFeeddown) const {
   
 
   leg->Draw();
+
+  cSystErr->SaveAs("RelativeSystematics.eps");
 
   return;
 }
