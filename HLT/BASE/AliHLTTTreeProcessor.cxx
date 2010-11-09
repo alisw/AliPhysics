@@ -26,12 +26,16 @@
 #include <memory>
 
 #include "AliHLTTTreeProcessor.h"
+#include "AliHLTErrorGuard.h"
 #include "TDirectory.h"
 #include "TDatime.h"
 #include "TString.h"
 #include "TTree.h"
 #include "TH1.h"
 #include "TStopwatch.h"
+#include "TUUID.h"
+#include "TSystem.h"
+#include "TRandom3.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTTreeProcessor)
@@ -45,11 +49,15 @@ AliHLTTTreeProcessor::AliHLTTTreeProcessor()
                           fLastTime(0),
                           fpEventTimer(NULL),
                           fpCycleTimer(NULL),
+                          fMaxMemory(700000),
                           fMaxEventTime(0),
                           fNofEventsForce(0),
                           fForcedEventsCount(0),
                           fSkippedEventsCount(0),
-                          fNewEventsCount(0)
+                          fNewEventsCount(0),
+                          fUniqueId(0),
+                          fIgnoreCycleTime(10),
+                          fCycleTimeFactor(1.0)
 {
   // see header file for class documentation
   // or
@@ -92,6 +100,18 @@ int AliHLTTTreeProcessor::DoInit(int argc, const char** argv)
   // init component
   // ask child to create the tree.
   int iResult = 0;
+
+  // calculating a unique id from the hostname and process id
+  // used for identifying output of multiple components
+  TUUID guid = GenerateGUID();
+  union
+  {
+    UChar_t buf[16];
+    UInt_t bufAsInt[4];
+  };
+  guid.GetUUID(buf);
+  fUniqueId = bufAsInt[0];
+  
 
   if (!fTree) {
     std::auto_ptr<TTree> ptr(CreateTree(argc, argv));
@@ -185,12 +205,20 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
     fpCycleTimer->Stop();
     averageCycleTime=(fpCycleTimer->RealTime()*fgkTimeScale)/((GetEventCount()%cycleResetInterval)+1);
     // adapt processing to 3/4 of the max time
-    bDoFilling=4*averageEventTime<3*fMaxEventTime || averageEventTime<averageCycleTime;
+    bDoFilling=4*averageEventTime<3*fMaxEventTime ||
+      (averageEventTime<fCycleTimeFactor*averageCycleTime && fpCycleTimer->RealTime()>fIgnoreCycleTime);
     if (fNofEventsForce>0 && fForcedEventsCount<fNofEventsForce) {
       fForcedEventsCount++;
       bDoFilling=true;
     }
   }
+
+  // FIXME: there is still an unclear increase in memory consumption, even if the number of entries
+  // in the tree is restricted. Valgrind studies did not show an obvious memory leak. This is likely
+  // to be caused by something deep in the Root TTree functionality and needs to be studied in detail.
+  ProcInfo_t ProcInfo;
+  gSystem->GetProcInfo(&ProcInfo);
+  if (ProcInfo.fMemResident>fMaxMemory) bDoFilling=false;
 
   // process input data blocks and fill the tree
   int iResult = 0;
@@ -201,17 +229,21 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
   if (fpEventTimer) {
     fpEventTimer->Stop();
     fillingtime=fpEventTimer->RealTime()*fgkTimeScale-fillingtime;
+    if (fillingtime<0) fillingtime=0;
     fpEventTimer->Start(kFALSE);
   }
 
-  if (iResult < 0)
+  if (iResult < 0) {
+    ALIHLTERRORGUARD(5, "FillTree failed with %d, first event %d", iResult, GetEventCount());
     return iResult;
+  }
 
   const TDatime time;
 
   if (( time.Get() - fLastTime > fPublishInterval && fNewEventsCount>0) ||
       eventType==gkAliEventTypeEndOfRun) {
-    bDoPublishing=true;
+    if ((bDoPublishing=fLastTime>0)) { // publish earliest after the first interval but set the timer
+
     for (list_const_iterator i = fDefinitions.begin(); i != fDefinitions.end(); ++i) {
       if (TH1* h = CreateHistogram(*i)) {
         //I do not care about errors here - since I'm not able
@@ -219,13 +251,22 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
 	// TODO: in case of -ENOSPC et the size of the last object by calling
 	// GetLastObjectSize() and accumulate the necessary output buffer size
         PushBack(h, GetOriginDataType(), GetDataSpec());
+	delete h;
       }
     }
-      unsigned eventcount=GetEventCount()+1;
-      HLTBenchmark("publishing %d histograms, %d entries in tree, %d new events since last publishing, accumulated %d of %d events (%.1f%%)", fDefinitions.size(), fTree->GetEntriesFast(), fNewEventsCount, eventcount-fSkippedEventsCount, eventcount, eventcount>0?(100*float(eventcount-fSkippedEventsCount)/eventcount):0);
+    unsigned eventcount=GetEventCount()+1;
+    HLTBenchmark("publishing %d histograms, %d entries in tree, %d new events since last publishing, accumulated %d of %d events (%.1f%%)", fDefinitions.size(), fTree->GetEntriesFast(), fNewEventsCount, eventcount-fSkippedEventsCount, eventcount, eventcount>0?(100*float(eventcount-fSkippedEventsCount)/eventcount):0);
     fNewEventsCount=0;
+    HLTBenchmark("current memory usage %d %d", ProcInfo.fMemResident, ProcInfo.fMemVirtual);
+    }
 
-    fLastTime = time.Get();
+    fLastTime=time.Get();
+    if (fLastTime==0) {
+      // choose a random offset at beginning to equalize traffic for multiple instances
+      // of the component
+      gRandom->SetSeed(fUniqueId);
+      fLastTime-=gRandom->Integer(fPublishInterval);
+    }
   }
 
   if (fpEventTimer) {
@@ -297,7 +338,7 @@ int AliHLTTTreeProcessor::ScanConfigurationArgument(int argc, const char** argv)
       }
 
       const Int_t interval = TString(argv[i + 1]).Atoi();
-      if (interval <= 0) {
+      if (interval < 0) {
         HLTError("Bad value for '-interval' argument: %d", interval);
         return -EPROTO;
       }
@@ -312,7 +353,7 @@ int AliHLTTTreeProcessor::ScanConfigurationArgument(int argc, const char** argv)
       }
 
       const Int_t time = TString(argv[i + 1]).Atoi();
-      if (time <= 0) {
+      if (time < 0) {
         HLTError("Bad value for '-maxeventtime' argument: %d", time);
         return -EPROTO;
       }
@@ -327,7 +368,7 @@ int AliHLTTTreeProcessor::ScanConfigurationArgument(int argc, const char** argv)
       }
 
       const Int_t count = TString(argv[i + 1]).Atoi();
-      if (count <= 0) {
+      if (count < 0) {
         HLTError("Bad value for '-forced-events' argument: %d", count);
         return -EPROTO;
       }
@@ -335,6 +376,48 @@ int AliHLTTTreeProcessor::ScanConfigurationArgument(int argc, const char** argv)
       fNofEventsForce = count;
       fForcedEventsCount=0;
 
+      i += 2;
+    } else if (argument.CompareTo("-ignore-cycletime") == 0) { // ignore cycle time for n sec
+      if (i + 1 == argc) {
+        HLTError("Numeric value for '-ignore-cycletime' is expected");
+        return -EPROTO;
+      }
+
+      const Int_t time = TString(argv[i + 1]).Atoi();
+      if (time < 0) {
+        HLTError("Bad value for '-ignore-cycletime' argument: %d", time);
+        return -EPROTO;
+      }
+
+      fIgnoreCycleTime = time;
+      i += 2;
+    } else if (argument.CompareTo("-maxmemory") == 0) { // maximum of memory in kByte to be used by the component
+      if (i + 1 == argc) {
+        HLTError("Numeric value for '-maxmemory' is expected");
+        return -EPROTO;
+      }
+
+      const Int_t mem = TString(argv[i + 1]).Atoi();
+      if (mem < 0) {
+        HLTError("Bad value for '-maxmemory' argument: %d", time);
+        return -EPROTO;
+      }
+
+      fMaxMemory = mem;
+      i += 2;
+    } else if (argument.CompareTo("-cycletime-factor") == 0) { // weight factor for cycle time
+      if (i + 1 == argc) {
+        HLTError("Numeric value for '-cycletime-factor' is expected");
+        return -EPROTO;
+      }
+
+      const Float_t factor = TString(argv[i + 1]).Atof();
+      if (factor < 0) {
+        HLTError("Bad value for '-cycletime-factor' argument: %f", factor);
+        return -EPROTO;
+      }
+
+      fCycleTimeFactor = factor;
       i += 2;
     } else if (argument.CompareTo("-histogram") == 0) { //3. Histogramm definition.
       const int nParsed = ParseHistogramDefinition(argc, argv, i, def);

@@ -117,7 +117,7 @@ private:
   /// dtOrigin for PushBack.
   virtual AliHLTComponentDataType GetOriginDataType()const = 0;
   /// spec for PushBack
-  virtual AliHLTUInt32_t GetDataSpec()const = 0;
+  virtual AliHLTUInt32_t GetDataSpec()const {return fUniqueId;}
   /// default histogram definitions.
   virtual void FillHistogramDefinitions() = 0;
 
@@ -137,11 +137,15 @@ private:
 
   TStopwatch* fpEventTimer; //! stopwatch for event processing
   TStopwatch* fpCycleTimer; //! stopwatch for event cycle
+  AliHLTUInt32_t fMaxMemory; //! maximum memory consumption allowed for the process
   AliHLTUInt32_t fMaxEventTime; //! allowed maximum processing time in usec
   AliHLTUInt32_t fNofEventsForce; //! number of events to ignore the processing time
   AliHLTUInt32_t fForcedEventsCount; //! event count for the forced events
   AliHLTUInt32_t fSkippedEventsCount; //! number of skipped events
   AliHLTUInt32_t fNewEventsCount; //! number of new events since last publishing
+  AliHLTUInt32_t fUniqueId; //! a unique id for this process used to identify the output of multiple processes
+  AliHLTUInt32_t fIgnoreCycleTime; //! ignore cycle time for n seconds
+  float          fCycleTimeFactor; //! weight for the cycle time
 
   static const AliHLTUInt32_t fgkTimeScale;
 
