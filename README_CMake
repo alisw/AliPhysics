@@ -47,7 +47,7 @@ eg.	make STEERbase STEERbase-static
   make check-all
   make <Module>-check-all
   make <Package>-check
-  make <Module>-<ClassName>-check
+  make <Module>-<ClassName>-check  // To use this run cmake with -DCLASSCHECK="YES" option. It is turned off by default since it bloats the Makefile and slows down the internal makefile rule checking
 
   The resulting violations will be written to the folder <Build_Directory>/<Module>/check/viols
 
@@ -55,7 +55,7 @@ eg.	make STEERbase STEERbase-static
 
   make par-all 
   make <Package>.par
-  make <Module>-par-all   build all par packages in the module
+  make <Module>-par-all   //build all par packages in the module
 
 10. To test PARs after building run
 
