@@ -26,7 +26,6 @@ Compile(const char* script, Option_t* option="g")
   }
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libFMDanalysis.so");
   gSystem->Load("libFMDutil.so");
   gSystem->Load("libFMDflow.so");
   TString macroPath(gROOT->GetMacroPath());
