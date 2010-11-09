@@ -215,7 +215,7 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
   AliESDtrack *track=0;
   TParticle *pPart=0;
   AliStack* pStack = 0;
-  Int_t label;
+  Int_t label = -1;
   if (fUseMC){
     pStack = fMC->Stack();
   }
