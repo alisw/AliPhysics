@@ -3,7 +3,7 @@
 
 class AliESDEvent;
 
-class AliEveHLTEventManager;
+#include "AliEveHLTEventManager.h" 
 #include "AliEveEventBufferHomer.h"
 #include "AliEveEventBuffer.h"
 class TList;
