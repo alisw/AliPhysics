@@ -678,7 +678,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	    zem2TDC[iMultZEM2TDC] = (0.025*(stream.GetZDCTDCDatum()));
 	    iMultZEM2TDC++;
 	 }
-	 else if(stream.GetChannel()==15) tdcGate = (0.025*(stream.GetZDCTDCDatum()));
+	 else if(stream.GetChannel()==14) tdcGate = (0.025*(stream.GetZDCTDCDatum()));
 	 
 	 if(stream.GetChannel()==16 && tdcGate!=-999.){
 	   for(Int_t iHit=0; iHit<10; iHit++){
