@@ -1433,7 +1433,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
   //------- event selection --------
   Int_t   mincontrSPDvtx=1;
   Double_t maxzSPDvtx=20.;
-  Double_t maxrSPDvtx=1.;
+  Double_t maxrSPDvtx=0.5;
   Bool_t useTRKvtx=kTRUE;
   Bool_t useSPDvtxifNotTRK=kTRUE;
   Int_t   mincontrTRKvtx=1;
