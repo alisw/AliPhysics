@@ -749,6 +749,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
   
   // First Track loop, Selection of good tracks
 
+  fTracks->Clear();
   for (Int_t itrk=0; itrk<ntrk; itrk++) {
     AliESDtrack *t=fEvent->GetTrack(itrk);
     Double_t momOld=t->GetP();
@@ -778,7 +779,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 //     cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
   
   //AliESDtrack **fGTracks=new AliESDtrack*[ngoodtrk];
-  
+
+  fGTracks->Clear();
   //for (Int_t jtrk=0; jtrk< ngoodtrk; jtrk++) {
   for (Int_t jtrk=0; jtrk< fTracks->GetEntries(); jtrk++) {
     //AliESDtrack *t=fTracks[jtrk];
@@ -830,6 +832,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	Float_t chisquarebest=99999.;
 	Int_t npionbest=0;
 	
+	fTracksT0->Clear();
 	Int_t ntracksinsetmy=0;      
 	//AliESDtrack **fTracksT0=new AliESDtrack*[ntracksinset];
 	for (Int_t itrk=0; itrk<ntracksinset; itrk++) {
