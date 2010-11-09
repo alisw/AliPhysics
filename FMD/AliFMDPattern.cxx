@@ -50,6 +50,9 @@
 #include "AliFMDRing.h"
 // #include "AliFMDDetector.h"
 #include "AliFMDHit.h"
+#include "AliMultiplicity.h"
+#include "AliESDEvent.h"
+#include "AliESDVertex.h"
 // #include <AliLog.h>
 #include "AliFMDDebug.h" // Better debug macros
 class AliFMDDetector;
@@ -217,6 +220,8 @@ AliFMDPattern::AliFMDPatternDetector::End()
   // Simply resets number of points at each level to 
   // the seen number of hits at that level. 
   // Avoid deleting memory. 
+  
+ 
   TIter   next(&fGraphs);
   TGraph* g = 0;
   Int_t   i = 0;
@@ -297,7 +302,7 @@ AliFMDPattern::AliFMDPattern(const char* gAliceFile)
 
   SetName("AliFMDPattern");
   SetName("2D display of FMD data");
-  
+  fPhysicsSelection = new AliPhysicsSelection();
   // RemoveLoad(kGeometry);
   fEvent.SetBit(TLatex::kTextNDC);
   fFMD1Sum.SetBit(TLatex::kTextNDC);
@@ -452,6 +457,16 @@ AliFMDPattern::Begin(Int_t event)
   fFMD1.Clear();
   fFMD2.Clear();
   fFMD3.Clear();
+  
+  TString triggers = fESDEvent->GetFiredTriggerClasses();
+  const AliESDVertex* vertex = fESDEvent->GetPrimaryVertexSPD();
+  Double_t vertexXYZ[3];
+  vertex->GetXYZ(vertexXYZ);
+  const AliMultiplicity* mult = fESDEvent->GetMultiplicity();
+  Int_t nTrackLets = mult->GetNumberOfTracklets();
+  std::cout<<triggers.Data()<<"  "<<fPhysicsSelection->IsCollisionCandidate(fESDEvent)<<"    "<<nTrackLets<<"   "<<vertexXYZ[0]<<"   "<<vertexXYZ[1]<<"   "<<vertexXYZ[2]<<std::endl;
+  
+  
   return AliFMDInput::Begin(event);
 }
 

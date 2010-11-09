@@ -23,6 +23,7 @@
 #include <TObjArray.h>
 // #include <TGraph.h>
 #include <TLatex.h>
+#include "AliPhysicsSelection.h"
 #include <TLine.h>
 class TCanvas;
 class TPad;
@@ -168,6 +169,8 @@ public:
   Double_t fFMD2Area;   // 
   Double_t fFMD3Area;   // 
 
+  AliPhysicsSelection* fPhysicsSelection;
+  
   ClassDef(AliFMDPattern,0) // Display FMD data as hit-patterns. 
 };
 
