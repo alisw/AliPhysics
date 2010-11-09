@@ -1093,7 +1093,7 @@ AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
   if (map){
     AliDCSSensor * sensor = 0;
     TObject *osensor=0;
-    if (type==0) osensor = ((*map)("fCavernPressure2"));
+    if (type==0) osensor = ((*map)("fCavernPressure"));
     if (type==1) osensor = ((*map)("fP2Pressure"));
     sensor =dynamic_cast<AliDCSSensor *>(osensor); 
     if (sensor) return sensor;
@@ -1107,7 +1107,7 @@ AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
     grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.At(run));
     if (!grpRun) return 0; 
   }
-  AliDCSSensor * sensor = grpRun->GetCavernAtmosPressure2();
+  AliDCSSensor * sensor = grpRun->GetCavernAtmosPressure();
   if (type==1) sensor = grpRun->GetSurfaceAtmosPressure();
   return sensor; 
 }
@@ -1627,7 +1627,7 @@ AliGRPObject * AliTPCcalibDB::MakeGRPObjectFromMap(TMap *map){
   if (!sensor) return 0;
   //
   AliDCSSensor * sensor2 = new AliDCSSensor(*sensor);
-  osensor = ((*map)("fCavernPressure2"));
+  osensor = ((*map)("fCavernPressure"));
   TGraph * gr = new TGraph(2);
   gr->GetX()[0]= -100000.;
   gr->GetX()[1]= 1000000.;
@@ -1639,6 +1639,7 @@ AliGRPObject * AliTPCcalibDB::MakeGRPObjectFromMap(TMap *map){
 
   AliGRPObject *grpRun = new AliGRPObject; 
   grpRun->ReadValuesFromMap(map);
+  grpRun->SetCavernAtmosPressure(sensor2);
   grpRun->SetCavernAtmosPressure(sensor2);
   grpRun->SetSurfaceAtmosPressure(sensor);
   return grpRun;

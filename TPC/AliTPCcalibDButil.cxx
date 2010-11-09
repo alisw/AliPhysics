@@ -1945,7 +1945,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCLaserTracksOnline(Double_t &dist, Int_t
   TObjArray*  cearray =AliTPCcalibDB::Instance()->GetCEData();
   
   AliTPCSensorTempArray *temp = (AliTPCSensorTempArray*)cearray->FindObject("TempMap");
-  AliDCSSensor *press         = (AliDCSSensor*)cearray->FindObject("CavernAtmosPressure2");
+  AliDCSSensor *press         = (AliDCSSensor*)cearray->FindObject("CavernAtmosPressure");
   
   Double_t corrPTA=0;
   Double_t corrPTC=0;
@@ -2511,7 +2511,7 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
   //
   //
   AliTPCSensorTempArray *tempMapCE = (AliTPCSensorTempArray *)cearray->FindObject("TempMap");
-  AliDCSSensor * cavernPressureCE  = (AliDCSSensor *) cearray->FindObject("CavernAtmosPressure2");
+  AliDCSSensor * cavernPressureCE  = (AliDCSSensor *) cearray->FindObject("CavernAtmosPressure");
   if ( tempMapCE && cavernPressureCE){
     //
     //     Bool_t isOK = FilterTemperature(tempMapCE)>0.1;
