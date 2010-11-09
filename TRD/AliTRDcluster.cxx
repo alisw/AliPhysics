@@ -803,6 +803,8 @@ void AliTRDcluster::SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x, F
   }
 
   // store tg^2(phi-a_L) and tg^2(a_L)
+  // limit parametrization to a maximum angle of 25 deg
+  if(TMath::Abs(tgp)>0.466) tgp = (tgp>0.)?0.466:-0.466;
   Double_t tgg = (tgp-exb)/(1.+tgp*exb); tgg *= tgg;
   Double_t exb2= exb*exb;
 
