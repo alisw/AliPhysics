@@ -143,6 +143,11 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
         fParameterList[AliRecoParam::AConvert(fEventSpecie)] = new TList() ; 
       fParameterList[AliRecoParam::AConvert(fEventSpecie)]->Add(p) ;
     }
+    TObject* old = list[AliRecoParam::AConvert(fEventSpecie)]->At(index);
+    if (old) {
+      AliError(Form("%s - OUPS ! Already got an object (%p,%s) for index=%d => will most probably get a memory leak by replacing it with (%p,%s) !",
+                    GetName(),old,old->GetName(),index,hist,hist->GetName()));
+    }
     list[AliRecoParam::AConvert(fEventSpecie)]->AddAtAndExpand(hist, index) ; 
     rv = list[AliRecoParam::AConvert(fEventSpecie)]->GetLast() ;
   }
