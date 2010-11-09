@@ -576,7 +576,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   TString taskQAoutputFileName(fileNameBase);
   taskQAoutputFileName+=binnumber;
   taskQAoutputFileName.Append("_QA.root");
-  AliAnalysisDataContainer* coutputQAtask = mgr->CreateContainer("flowQA",
+  AliAnalysisDataContainer* coutputQAtask = mgr->CreateContainer(Form("flowQA_%i",binnumber),
                                             TObjArray::Class(),
                                             AliAnalysisManager::kOutputContainer,
                                             taskQAoutputFileName.Data());
