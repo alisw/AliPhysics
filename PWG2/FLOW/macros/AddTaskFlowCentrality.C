@@ -582,11 +582,11 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   AliAnalysisDataContainer* coutputQAtask = mgr->CreateContainer(Form("flowQA_%i",binnumber),
                                             TObjArray::Class(),
                                             AliAnalysisManager::kOutputContainer,
-                                            taskQAoutputFileName.Data());
+                                            taskQAoutputFileName);
   AliAnalysisDataContainer* coutputQAtaskTree = mgr->CreateContainer(Form("flowQAntuple_%i",binnumber),
                                             TTree::Class(),
                                             AliAnalysisManager::kOutputContainer,
-                                            taskQAoutputFileName.Data());
+                                            taskQAoutputFileName);
   mgr->ConnectInput(taskQAflow,0,mgr->GetCommonInputContainer());
   mgr->ConnectInput(taskQAflow,1,coutputFE);
   mgr->ConnectOutput(taskQAflow,0,coutputQAtaskTree);
