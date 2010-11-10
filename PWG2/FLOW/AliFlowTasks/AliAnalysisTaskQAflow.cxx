@@ -112,6 +112,7 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
   //post data here as it doesn't change anyway (the pointer to list anyway)
 
   //restore dir add status
+  PostData(0, fNtuple);
   PostData(1, fOutput);
 }
 
