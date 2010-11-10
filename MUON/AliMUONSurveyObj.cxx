@@ -356,7 +356,7 @@ void AliMUONSurveyObj::DrawSTargets() {
   }
   gST->DrawClone("P0");
 
-  if (gST) gST->Delete();
+  delete gST;
 }
 
 Double_t AliMUONSurveyObj::FitPlane() {
@@ -388,7 +388,7 @@ Double_t AliMUONSurveyObj::FitPlane() {
   }
   gST->Fit(fPlane);
 
-  if (gST) gST->Delete();
+  delete gST;
 
   return fPlane->GetChisquare();
 }

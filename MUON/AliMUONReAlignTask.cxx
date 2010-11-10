@@ -391,10 +391,17 @@ void AliMUONReAlignTask::Exec(Option_t *)
 	padInfo.SetPadADC(digit->ADC());
 	padInfo.SetSaturated(digit->IsSaturated());
 	padInfo.SetCalibrated(digit->IsCalibrated());
-	padInfo.SetPedestal(ped->ValueAsFloatFast(manuChannel,0), ped->ValueAsFloatFast(manuChannel,1));
-	padInfo.SetGain(gain->ValueAsFloatFast(manuChannel,0), gain->ValueAsFloatFast(manuChannel,1),
-			gain->ValueAsIntFast(manuChannel,2), gain->ValueAsIntFast(manuChannel,3));
-	
+	if (ped) {
+	  padInfo.SetPedestal(ped->ValueAsFloatFast(manuChannel,0), ped->ValueAsFloatFast(manuChannel,1));
+	} else {
+	  padInfo.SetPedestal(-250.,-5.);
+	}
+	if (gain) {
+	  padInfo.SetGain(gain->ValueAsFloatFast(manuChannel,0), gain->ValueAsFloatFast(manuChannel,1),
+			  gain->ValueAsIntFast(manuChannel,2), gain->ValueAsIntFast(manuChannel,3));
+	} else {
+	  padInfo.SetGain(-1.,-0.1,-4095,-1);
+	} 	
 	fClusterInfo->AddPad(padInfo);
       }
       	  

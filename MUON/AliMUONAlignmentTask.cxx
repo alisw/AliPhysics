@@ -165,6 +165,14 @@ AliMUONAlignmentTask::AliMUONAlignmentTask(const AliMUONAlignmentTask& obj)
   fMSDEz = obj.fMSDEz;
   fMSDEp = obj.fMSDEp;
   fList = obj.fList;  
+
+  // initialize parameters ...
+  for(Int_t k=0;k<4*156;k++) {
+    fParameters[k]=obj.fParameters[k];
+    fErrors[k]=obj.fErrors[k];
+    fPulls[k]=obj.fPulls[k];
+  }
+
 }
 
 //________________________________________________________________________
@@ -186,6 +194,13 @@ AliMUONAlignmentTask& AliMUONAlignmentTask::operator=(const AliMUONAlignmentTask
   fMSDEz = other.fMSDEz;
   fMSDEp = other.fMSDEp;
   fList = other.fList;  
+
+  // initialize parameters ...
+  for(Int_t k=0;k<4*156;k++) {
+    fParameters[k]=other.fParameters[k];
+    fErrors[k]=other.fErrors[k];
+    fPulls[k]=other.fPulls[k];
+  }
   
   return *this;
 }
