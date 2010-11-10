@@ -97,7 +97,7 @@ ClassImp(AliGenPHOSlib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenPHOSlib::IpPion(TRandom *ran)
+Int_t AliGenPHOSlib::IpPion(TRandom */*ran*/)
 {
 //                 particle composition pi+, pi0, pi-
 //
