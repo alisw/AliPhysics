@@ -227,8 +227,7 @@ Double_t AliT0QAChecker::CheckESD(TObjArray *listrec ) const
     
     text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
     
-    printf("numentries %f mean %f #sigma %f ", fhESD->GetEntries(), par[2], par[2]);
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %d mean %f  #sigma %f", fhESD->GetEntries(),par[1], par[2]));
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %f mean %f  #sigma %f", fhESD->GetEntries(),par[1], par[2]));
     
     
     if (par[2] > 0.07 && par[2] < 1.) {
@@ -248,8 +247,6 @@ Double_t AliT0QAChecker::CheckESD(TObjArray *listrec ) const
       text->SetFillColor(2);
       
       fhESD->GetListOfFunctions()->Add(text);	
-      printf("Please, repeate calibration: shift= %f resolution %f test=%f\n",
-	     par[1], par[2], checkr );
        AliDebug(AliQAv1::GetQADebugLevel(),
 		Form("Please, check calibration: shift= %f resolution %f test=%f\n",
 		     par[1], par[2], checkr) ) ; 
