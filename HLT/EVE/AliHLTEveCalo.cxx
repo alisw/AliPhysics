@@ -54,7 +54,7 @@ AliHLTEveCalo::AliHLTEveCalo(Int_t nm, TString name) :
 {
   // Constructor.
 
-  SetMaxHistograms(6);
+  SetMaxHistograms(9);
 
   fPadTitles = new TString[GetMaxHistograms()];
  
@@ -232,8 +232,6 @@ void AliHLTEveCalo::ResetElements(){
 Int_t AliHLTEveCalo::GetPadNumber(TString name) {
 
 
-  //cout << "GetPadNumber name   " << name << endl;
-
   for(int i = 0; i < GetMaxHistograms(); i++) {
     if (!fPadTitles[i].CompareTo(name)){
       return i+1;
@@ -245,10 +243,7 @@ Int_t AliHLTEveCalo::GetPadNumber(TString name) {
     }
   }
   
-  if(fPadTitles[GetMaxHistograms()].CompareTo("")) {
-    cout << "AliHLTEveCalo::GetPadNumber:  We have more histograms than we have room for"<< endl;
-  }
-  cout << "returning one"<<endl;
+  cout << "AliHLTEveCalo()->GetPadNUmber():returning one"<<endl;
   return 1;
 
 }
