@@ -19,6 +19,7 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTDataGenerator.h \
 		AliHLTBlockFilterComponent.h \
 		AliHLTMonitoringRelay.h \
+		AliHLTObjectCompressionComponent.h \
 		AliHLTCompStatCollector.h \
 		AliHLTGlobalBarrelTrack.h \
 		AliHLTAgentUtil.h \
