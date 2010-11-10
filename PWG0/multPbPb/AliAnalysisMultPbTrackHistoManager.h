@@ -7,6 +7,7 @@
 class TH3D;
 class TH1D;
 class TH1I;
+class AliMCParticle;
 
 //-------------------------------------------------------------------------
 //                      AliAnalysisMultPbTrackHistoManager
@@ -24,6 +25,8 @@ public:
 
   typedef enum {kHistoGen, kHistoRec, kHistoRecPrim, kHistoRecSecWeak, kHistoRecSecMat, kHistoRecFake, kNHistos} Histo_t;
   typedef enum {kStatAll, kStatPhysSel, kStatCentr, kStatVtx, kNStatBins} Stat_t;
+  typedef enum {kPartPiPlus, kPartKPlus, kPartP, kPartLPlus, kPartPiMinus, kPartKMinus, kPartPBar, kPartLMinus, kPartOther, kNPart} Part_t;
+
 
   AliAnalysisMultPbTrackHistoManager();
   AliAnalysisMultPbTrackHistoManager(const char * name,const char * title);
@@ -44,11 +47,12 @@ public:
   TH1D * GetHistoMult(Histo_t id);
 
   TH1D * GetHistoSpecies(Histo_t id);
+  TH1D * GetHistoProcess(Histo_t id);
 
   // Misch utils
   void ScaleHistos (Double_t nev, Option_t * option="");
-  
-
+  Int_t GetLocalParticleID(AliMCParticle * part);
+  void FillParticleID(Histo_t id, AliMCParticle * part) { GetHistoSpecies(id)->Fill(GetLocalParticleID(part));}
 
   // Histo bookers
   TH3D * BookHistoPtEtaVz(const char * name, const char * title);
@@ -65,11 +69,12 @@ private:
   static const char * kHistoPtEtaVzNames[];   // names of the 3D histograms pt/eta/vz
   static const char * kHistoDCANames[];   // names of the DCA histograms 
   static const char * kHistoPrefix[];   // prefix for histo names // FIXME: remove the others and keep only this 
+  static const char * kSpeciesName[];   // Particle species
   TString fHNameSuffix; // Suffix added to all histo names. Useful if you have in the same session e.g. MC and data.
 
   AliAnalysisMultPbTrackHistoManager& operator=(const AliAnalysisMultPbTrackHistoManager& task);
   
-  ClassDef(AliAnalysisMultPbTrackHistoManager, 2)
+  ClassDef(AliAnalysisMultPbTrackHistoManager, 3)
 
 
 };

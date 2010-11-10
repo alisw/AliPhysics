@@ -47,15 +47,15 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   LoadLibs();
   LoadData(dataFolder,correctionFolder);
   SetStyle();
-  ShowAcceptanceInVzSlices();
-  return;
+  // ShowAcceptanceInVzSlices();
+  // return;
 
   // TODO add some cool printout for cuts and centrality selection
   
   CheckVz();
 
   Double_t fractionWeak = 1, fractionMaterial=1; 
-  CheckSecondaries(fractionWeak, fractionMaterial);
+  //  CheckSecondaries(fractionWeak, fractionMaterial);
   cout << "Rescaling secondaries correction, weak: " << fractionWeak << ", material: " << fractionMaterial <<endl;
   
 

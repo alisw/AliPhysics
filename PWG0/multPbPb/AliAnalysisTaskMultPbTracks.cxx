@@ -177,9 +177,9 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	if(!IsPhysicalPrimaryAndTransportBit(ipart)) continue;
  
 	nPhysicalPrimaries++;
-	// Fill species histo
-	fHistoManager->GetHistoSpecies(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Fill(mcPart->Particle()->GetUniqueID());
-
+	// Fill species histo and particle species
+	fHistoManager->GetHistoProcess(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Fill(mcPart->Particle()->GetUniqueID());
+	fHistoManager->FillParticleID(AliAnalysisMultPbTrackHistoManager::kHistoGen, mcPart);
 	
 	// Get MC vertex
 	//FIXME: which vertex do I take for MC?
@@ -267,7 +267,7 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
       else {
 	if(IsPhysicalPrimaryAndTransportBit(label)) {
 	  // Fill species histo
-	  fHistoManager->GetHistoSpecies(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim)->Fill(mcPart->Particle()->GetUniqueID());
+	  fHistoManager->GetHistoProcess(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim)->Fill(mcPart->Particle()->GetUniqueID());
 	  if(accepted)
 	    hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRecPrim]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
 	  if(acceptedNoDCA)
@@ -282,13 +282,13 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	    mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
 	  }
 	  if(mfl==3){ // strangeness
-	    fHistoManager->GetHistoSpecies(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak)->Fill(mcPart->Particle()->GetUniqueID());
+	    fHistoManager->GetHistoProcess(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak)->Fill(mcPart->Particle()->GetUniqueID());
 	    if(accepted)
 	      hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
 	    if(acceptedNoDCA)
 	      hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak]->Fill(weightedDCA);	  
 	  }else{ // material
-	    fHistoManager->GetHistoSpecies(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat)->Fill(mcPart->Particle()->GetUniqueID());
+	    fHistoManager->GetHistoProcess(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat)->Fill(mcPart->Particle()->GetUniqueID());
 	    if(accepted)
 	      hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
 	    if(acceptedNoDCA)
