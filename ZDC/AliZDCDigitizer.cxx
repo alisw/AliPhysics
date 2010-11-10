@@ -217,7 +217,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     }
 
   // impact parameter and number of spectators
-  Float_t impPar = -1;
+  Float_t impPar = 0;
   Int_t specNTarg = 0, specPTarg = 0;
   Int_t specNProj = 0, specPProj = 0;
   Float_t signalTime0 = 0.;
