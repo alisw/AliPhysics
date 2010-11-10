@@ -36,7 +36,7 @@ class AliPhysicsSelection : public AliAnalysisCuts
 public:
 
 public:
-  enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatFMD,kStatFO1,kStatFO2,kStatV0A,kStatV0C,kStatSSD1,kStatFO1AndV0,kStatV0,kStatAny2Hits,kStatOffline,kStatBG,kStatAccepted};
+  enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatFMD,kStatFO1,kStatFO2,kStatFO2L1,kStatV0A,kStatV0C,kStatZDCA,kStatZDCC,kStatZDCAC,kStatV0,kStatOffline,kStatBG,kStatAccepted};
 
 #ifdef VERBOSE_STAT
   enum {kStatRowBG=0,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowErrGood,kStatRowGood}; // offset wrt fBGStatOffset
@@ -45,7 +45,7 @@ public:
 #endif
 
   enum {kStatIdxAll=0,kStatIdxBin0=1};
-
+  enum ETriggerLogic { kCINT1 = 0, kCMBS2A, kCMBS2C, kCMBAC };
 
   typedef Bool_t (*Bin0Callback_t)(const AliESDEvent *);
 
@@ -91,7 +91,7 @@ public:
   void SetBin0CallbackViaPointer( Bin0Callback_t cb) {fBin0CallBackPointer = cb;}// WARNING: THIS SHOULD NOT BE USED, WILL BE REMOVED SOON
   
 protected:
-  UInt_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
+  UInt_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const;
   Int_t GetTriggerScheme(UInt_t runNumber) const;
   const char * GetBXIDs(UInt_t runNumber, const char * trigger ) ;
   const char * GetFillingScheme(UInt_t runNumber) ;

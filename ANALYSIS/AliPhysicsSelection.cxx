@@ -187,18 +187,20 @@ AliPhysicsSelection::~AliPhysicsSelection()
   }  
 }
 
-UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const
+UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const
 {
   // checks if the given trigger class(es) are found for the current event
-  // format of trigger: +TRIGGER1 -TRIGGER2 [#XXX] [&YY]
+  // format of trigger: +TRIGGER1 -TRIGGER2 [#XXX] [&YY] [*ZZ]
   //   requires TRIGGER1 and rejects TRIGGER2
   //   in bunch crossing XXX
   //   if successful, YY is returned (for association between entry in fCollTrigClasses and AliVEvent::EOfflineTriggerTypes)
+  //   triggerLogic is filled with ZZ, defaults to kCINT1
   
   Bool_t foundBCRequirement = kFALSE;
   Bool_t foundCorrectBC = kFALSE;
   
   UInt_t returnCode = AliVEvent::kUserDefined;
+  triggerLogic = kCINT1;
   
   TString str(trigger);
   TObjArray* tokens = str.Tokenize(" ");
@@ -246,6 +248,12 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
       str2.Remove(0, 1);
       
       returnCode = str2.Atoll();
+    }
+    else if (str2[0] == '*')
+    {
+      str2.Remove(0, 1);
+      
+      triggerLogic = str2.Atoi();
     }
     else
       AliFatal(Form("Invalid trigger syntax: %s", trigger));
@@ -319,7 +327,9 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   
     triggerAnalysis->FillTriggerClasses(aEsd);
     
-    UInt_t singleTriggerResult = CheckTriggerClass(aEsd, triggerClass);
+    Int_t triggerLogic = 0; 
+    UInt_t singleTriggerResult = CheckTriggerClass(aEsd, triggerClass, triggerLogic);
+    
     if (singleTriggerResult)
     {
       triggerAnalysis->FillHistograms(aEsd);
@@ -335,21 +345,19 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	}
       } else if (fBin0CallBackPointer) {
 	  isBin0 = (*fBin0CallBackPointer)(aEsd);
-	
       }
       
-
-      
-      // hardware trigger (should only remove events for MC)
-      // replay CINT1B hardware trigger
-      // TODO this has to depend on the actual hardware trigger (and that depends on the run...)
+      // hardware trigger
       Int_t fastORHW = triggerAnalysis->SPDFiredChips(aEsd, 1); // SPD number of chips from trigger bits (!)
-      Bool_t v0A       = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0A);
-      Bool_t v0C       = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0C);
+      Int_t fastORHWL1 = triggerAnalysis->SPDFiredChips(aEsd, 1, kFALSE, 2); // SPD number of chips from trigger bits in second layer (!)
       Bool_t v0AHW     = fSkipV0 ? 0 :(triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
       Bool_t v0CHW     = fSkipV0 ? 0 :(triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
+      
       // offline trigger
       Int_t fastOROffline = triggerAnalysis->SPDFiredChips(aEsd, 0); // SPD number of chips from clusters (!)
+      Int_t fastOROfflineL1 = triggerAnalysis->SPDFiredChips(aEsd, 0, kFALSE, 2); // SPD number of chips from clusters in second layer (!)
+      Bool_t v0A       = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0A);
+      Bool_t v0C       = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0C);
       Bool_t v0ABG = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0ABG);
       Bool_t v0CBG = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0CBG);
       Bool_t v0BG = v0ABG || v0CBG;
@@ -361,6 +369,11 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
     
       // SSD
       Int_t ssdClusters = triggerAnalysis->SSDClusters(aEsd);
+      
+      // ZDC
+      Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCA);
+      Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCC);
+      
 
       // Some "macros"
       Bool_t mb1 = (fastOROffline > 0 || v0A || v0C) && (!v0BG);
@@ -371,14 +384,23 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       if (fBackgroundIdentification)
         bgID = ! fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd));
       
-      Int_t ntrig = fastOROffline; // any 2 hits
+      /*Int_t ntrig = fastOROffline; // any 2 hits
       if(v0A)              ntrig += 1;
       if(v0C)              ntrig += 1; //v0C alone is enough
       if(fmd)              ntrig += 1;
-      if(ssdClusters>1)    ntrig += 1;
+      if(ssdClusters>1)    ntrig += 1;*/
 
-
-      Bool_t hwTrig = fastORHW > 0 || v0AHW || v0CHW;
+      // replay hardware trigger (should only remove events for MC)
+      
+      Bool_t hwTrig = kFALSE;
+      switch (triggerLogic)
+      {
+        case kCINT1:  hwTrig = fastORHW > 0 || v0AHW || v0CHW; break;
+        case kCMBS2A: hwTrig = fastORHWL1 > 1 && v0AHW; break;
+        case kCMBS2C: hwTrig = fastORHWL1 > 1 && v0CHW; break;
+        case kCMBAC:  hwTrig = v0AHW && v0CHW; break;
+        default: AliFatal(Form("Undefined trigger logic %d", triggerLogic)); break;
+      }
 
       // Fill trigger pattern histo
       Int_t tpatt = 0;
@@ -393,8 +415,6 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	if (iHistStat == kStatIdxBin0 && !isBin0) continue; // skip the filling of bin0 stats if the event is not in the bin0
       
 	fHistStatistics[iHistStat]->Fill(kStatTriggerClass, i);
-
-
 
 	// We fill the rest only if hw trigger is ok
 	if (!hwTrig)
@@ -423,34 +443,49 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	if (fmd)
 	  fHistStatistics[iHistStat]->Fill(kStatFMD, i);
 
-	if(ssdClusters>1)
-	  fHistStatistics[iHistStat]->Fill(kStatSSD1, i);
-
-	if(ntrig >= 2 && !v0BG) 
-	  fHistStatistics[iHistStat]->Fill(kStatAny2Hits, i);
+	//if(ntrig >= 2 && !v0BG) 
+	//  fHistStatistics[iHistStat]->Fill(kStatAny2Hits, i);
 
 	if (fastOROffline > 0)
 	  fHistStatistics[iHistStat]->Fill(kStatFO1, i);
 	if (fastOROffline > 1)
 	  fHistStatistics[iHistStat]->Fill(kStatFO2, i);
+	if (fastOROfflineL1 > 1)
+	  fHistStatistics[iHistStat]->Fill(kStatFO2L1, i);
         
 	if (v0A)
 	  fHistStatistics[iHistStat]->Fill(kStatV0A, i);
 	if (v0C)
 	  fHistStatistics[iHistStat]->Fill(kStatV0C, i);
+	  
+	if (zdcA)
+	  fHistStatistics[iHistStat]->Fill(kStatZDCA, i);
+	if (zdcC)
+	  fHistStatistics[iHistStat]->Fill(kStatZDCC, i);
+	if (zdcA && zdcC)
+	  fHistStatistics[iHistStat]->Fill(kStatZDCAC, i);
         
 	//       if (fastOROffline > 1 && !v0BG)
 	//         fHistStatistics[iHistStat]->Fill(kStatFO2NoBG, i);
             
-	if (fastOROffline > 0 && (v0A || v0C) && !v0BG)
-	  fHistStatistics[iHistStat]->Fill(kStatFO1AndV0, i);
+	//if (fastOROffline > 0 && (v0A || v0C) && !v0BG)
+	//  fHistStatistics[iHistStat]->Fill(kStatFO1AndV0, i);
   
 	if (v0A && v0C && !v0BG && !bgID)
 	  fHistStatistics[iHistStat]->Fill(kStatV0, i);
 
+        Bool_t offlineAccepted = kFALSE;
+        
+        switch (triggerLogic)
+        {
+          case kCINT1:  offlineAccepted = mb1; break;
+          case kCMBS2A: offlineAccepted = fastOROfflineL1 > 1 && v0A; break;
+          case kCMBS2C: offlineAccepted = fastOROfflineL1 > 1 && v0C; break;
+          case kCMBAC:  offlineAccepted = v0A && v0C; break;
+          default: AliFatal(Form("Undefined trigger logic %d", triggerLogic)); break;
+        }
 
-	if ( mb1 )
-	
+	if ( offlineAccepted )
 	  {
 	    if (!v0BG || fSkipV0)
 	      {
@@ -463,7 +498,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 		  }
 		else
 		  {
-		    AliDebug(AliLog::kDebug, "Accepted event for histograms");
+		    AliDebug(AliLog::kDebug, Form("Accepted event for histograms with trigger logic %d", triggerLogic));
             
 		    fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
 		    if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
@@ -475,7 +510,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	      AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
 	  }
 	else
-	  AliDebug(AliLog::kDebug, "Rejecting event because trigger condition is not fulfilled");
+	  AliDebug(AliLog::kDebug, Form("Rejecting event because trigger logic %d is not fulfilled", triggerLogic));
       }
     }
   }
@@ -490,8 +525,17 @@ Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t runNumber) const
 {
   // returns the current trigger scheme (classes that are accepted/rejected)
   
+  Bool_t pp = kTRUE;
+  if (runNumber >= 136849)  // last pp run 2010
+    pp = kFALSE;
+  
   if (fMC)
-    return 0;
+  {
+    if (pp)
+      return 0; // pp
+    else
+      return -1; // HI
+  }
     
   // TODO dependent on run number
   
@@ -504,8 +548,11 @@ Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t runNumber) const
       return 2;
   }
   
-  // default: CINT1 suite
-  return 1;
+  // defaults
+  if (pp)
+    return 1;
+  else
+    return 3;
 }  
 
 const char * AliPhysicsSelection::GetFillingScheme(UInt_t runNumber)  {
@@ -622,11 +669,21 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
    //   else AliError(Form("Unknown trigger: %s", trigger));
 
   }
-  else if (runNumber >= 117220 && runNumber <= 119163) {
+  else if ((runNumber >= 117220 && runNumber <= 118555) || (runNumber >= 118784 && runNumber <= 119163)) 
+  {
     //    return "Single_2b_1_1_1";
     if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #346 ";
     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131 ";
     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019 ";
+    else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1238 ";
+    //    else AliError(Form("Unknown trigger: %s", trigger));						    
+  }
+  else if (runNumber >= 118556 && runNumber <= 118783) {
+    //    return "Single_2b_1_1_1"; 
+    // same as previous but was misaligned by 1 BX in fill 1069
+    if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #345 ";
+    else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2130 ";
+    else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3018 ";
     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1238 ";
     //    else AliError(Form("Unknown trigger: %s", trigger));						    
   }
@@ -726,11 +783,23 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     } else {
       switch (triggerScheme)
       {
+      case -1:
+        // MC Heavy-Ion
+        
+        fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+        fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+        fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+        break;
+      
       case 0:
-        fCollTrigClasses.Add(new TObjString(Form("&%u", (UInt_t) AliVEvent::kMB)));
+        // MC Proton-Proton
+        
+        fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCINT1)));
         break;
         
       case 1:
+        // Proton-Proton
+        
       	// trigger classes used before August 2010
         fCollTrigClasses.Add(new TObjString(Form("%s%s &%u","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
         fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
@@ -764,13 +833,31 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
         break;
         
       case 2:
+        // Proton-Proton
+        
         fCollTrigClasses.Add(new TObjString(Form("+CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
         fBGTrigClasses.Add(new TObjString(Form("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
         fBGTrigClasses.Add(new TObjString(Form("+CSMBC-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
         break;
         
       case 3:
-        // 
+        // Heavy-ion
+        
+        fCollTrigClasses.Add(new TObjString(Form("+CMBS2A-B-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-A-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-C-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-E-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+        
+        fCollTrigClasses.Add(new TObjString(Form("+CMBS2C-B-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2C-A-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2C-C-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2C-E-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+        
+        fCollTrigClasses.Add(new TObjString(Form("+CMBAC-B-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-A-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-C-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-E-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+        
         break;
         
       default:
@@ -883,18 +970,21 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   h->GetXaxis()->SetBinLabel(kStatHWTrig,	 "Hardware trigger");
   h->GetXaxis()->SetBinLabel(kStatFO1,	         "FO >= 1");
   h->GetXaxis()->SetBinLabel(kStatFO2,	         "FO >= 2");
+  h->GetXaxis()->SetBinLabel(kStatFO2L1,         "FO (L1) >= 2");
   h->GetXaxis()->SetBinLabel(kStatV0A,	         "V0A");
   h->GetXaxis()->SetBinLabel(kStatV0C,	         "V0C");
   h->GetXaxis()->SetBinLabel(kStatFMD,	         "FMD");
-  h->GetXaxis()->SetBinLabel(kStatSSD1,	         "SSD >= 2");
   h->GetXaxis()->SetBinLabel(kStatV0ABG,	 "V0A BG");
   h->GetXaxis()->SetBinLabel(kStatV0CBG,	 "V0C BG");
+  h->GetXaxis()->SetBinLabel(kStatZDCA,          "ZDCA");
+  h->GetXaxis()->SetBinLabel(kStatZDCC,          "ZDCC");
+  h->GetXaxis()->SetBinLabel(kStatZDCAC,         "ZDCA & ZDCC");
   h->GetXaxis()->SetBinLabel(kStatMB1,	         "(FO >= 1 | V0A | V0C) & !V0 BG");
   h->GetXaxis()->SetBinLabel(kStatMB1Prime,      "(FO >= 2 | (FO >= 1 & (V0A | V0C)) | (V0A &v0C) ) & !V0 BG");
-  h->GetXaxis()->SetBinLabel(kStatFO1AndV0,	 "FO >= 1 & (V0A | V0C) & !V0 BG");
+  //h->GetXaxis()->SetBinLabel(kStatFO1AndV0,	 "FO >= 1 & (V0A | V0C) & !V0 BG");
   h->GetXaxis()->SetBinLabel(kStatV0,	         "V0A & V0C & !V0 BG & !BG ID");
   h->GetXaxis()->SetBinLabel(kStatOffline,	 "Offline Trigger");
-  h->GetXaxis()->SetBinLabel(kStatAny2Hits,	 "2 Hits & !V0 BG");
+  //h->GetXaxis()->SetBinLabel(kStatAny2Hits,	 "2 Hits & !V0 BG");
   h->GetXaxis()->SetBinLabel(kStatBG,	         "Background identification");
   h->GetXaxis()->SetBinLabel(kStatAccepted,      "Accepted");
 
@@ -1054,11 +1144,20 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
     Int_t currentRun = entry->GetCurrentRun();
     // Nothing to merge with since run number was not initialized.
     if (currentRun < 0) continue;
-    if (fCurrentRun < 0) fCurrentRun = currentRun;
+    if (fCurrentRun < 0) 
+    {
+      fCurrentRun = currentRun;
+      fMC = entry->fMC;
+      for (Int_t i=0; i<entry->fCollTrigClasses.GetEntries(); i++)
+        fCollTrigClasses.Add(entry->fCollTrigClasses.At(i)->Clone());
+      for (Int_t i=0; i<entry->fBGTrigClasses.GetEntries(); i++)
+        fBGTrigClasses.Add(entry->fBGTrigClasses.At(i)->Clone());
+    }
     if (fCurrentRun != currentRun)
        AliWarning(Form("Current run %d not matching the one to be merged with %d", fCurrentRun, currentRun));
     
-    collections[0].Add(&(entry->fTriggerAnalysis));
+    if (entry->fTriggerAnalysis.GetEntries() > 0)
+      collections[0].Add(&(entry->fTriggerAnalysis));
     if (entry->fHistStatistics[0])
       collections[1].Add(entry->fHistStatistics[0]);
     if (entry->fHistStatistics[1])
@@ -1073,15 +1172,54 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
     count++;
   }
 
+  if (fTriggerAnalysis.GetEntries() == 0 && collections[0].GetEntries() > 0)
+  {
+    TList* firstList = (TList*) collections[0].First();
+    for (Int_t i=0; i<firstList->GetEntries(); i++)
+      fTriggerAnalysis.Add(firstList->At(i)->Clone());
+    
+    collections[0].RemoveAt(0);
+  }
   fTriggerAnalysis.Merge(&collections[0]);
+  
+  // if this instance is empty (not initialized) nothing would be merged here --> copy first entry
+  if (!fHistStatistics[0] && collections[1].GetEntries() > 0)
+  {
+    fHistStatistics[0] = (TH2F*) collections[1].First()->Clone();
+    collections[1].RemoveAt(0);
+  }
   if (fHistStatistics[0])
     fHistStatistics[0]->Merge(&collections[1]);
+    
+  if (!fHistStatistics[1] && collections[2].GetEntries() > 0)
+  {
+    fHistStatistics[1] = (TH2F*) collections[2].First()->Clone();
+    collections[2].RemoveAt(0);
+  }
   if (fHistStatistics[1])
     fHistStatistics[1]->Merge(&collections[2]);
+    
+  if (!fHistBunchCrossing && collections[3].GetEntries() > 0)
+  {
+    fHistBunchCrossing = (TH2F*) collections[3].First()->Clone();
+    collections[3].RemoveAt(0);
+  }
   if (fHistBunchCrossing)
     fHistBunchCrossing->Merge(&collections[3]);
+  
+  if (!fHistTriggerPattern && collections[4].GetEntries() > 0)
+  {
+    fHistTriggerPattern = (TH1F*) collections[4].First()->Clone();
+    collections[4].RemoveAt(0);
+  }
   if (fHistTriggerPattern)
     fHistTriggerPattern->Merge(&collections[4]);
+  
+  if (!fBackgroundIdentification && collections[5].GetEntries() > 0)
+  {
+    fBackgroundIdentification = (AliAnalysisCuts*) collections[5].First()->Clone();
+    collections[5].RemoveAt(0);
+  }
   if (fBackgroundIdentification)
     fBackgroundIdentification->Merge(&collections[5]);
   
