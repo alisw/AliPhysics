@@ -797,7 +797,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 			// fCurrentBusPatch->GetData() returns a pointer to the start of
 			// bus patches data, so the difference divided by 4 gives the 32
 			// bit word number.
-			word = ((unsigned long)location - (unsigned long)fCurrentBusPatch->GetData())
+			word = (reinterpret_cast<size_t>(location) - reinterpret_cast<size_t>(fCurrentBusPatch->GetData()))
 				/ sizeof(UInt_t);
 			message = Form(
 				"Parity error in word %d for manuId %d and channel %d in buspatch %d. %s",
