@@ -30,6 +30,9 @@
 #include "AliTracker.h"
 #include "AliGeomManager.h"
 
+#include "AliESDVZERO.h"
+#include "AliMultiplicity.h"
+
 #include "AliESDtrackCuts.h"
 #include "AliMCEventHandler.h"
 #include "dNdPt/AlidNdPt.h"
@@ -51,6 +54,8 @@ AlidNdPtTask::AlidNdPtTask(const char *name)
   , fPitList(0)
   , fCompList(0)
   , fUseMCInfo(kFALSE)
+  , fUseCentrality(0)    // default = off
+  , fUseCentralityBin(0)
 {
   // Constructor
 
@@ -133,6 +138,10 @@ void AlidNdPtTask::UserCreateOutputObjects()
     count++;
   }
   Printf("UserCreateOutputObjects(): Number of output objects: %d \n", count);
+
+  if(fUseCentrality) {
+    Printf("Use Centrality - Bin %d", fUseCentralityBin);
+  }
 }
 
 //_____________________________________________________________________________
@@ -159,11 +168,24 @@ void AlidNdPtTask::UserExec(Option_t *)
   }
 
   // Process analysis
-  AlidNdPt *pObj = 0;
-  fPitList->Reset();
-  while((pObj = (AlidNdPt *)fPitList->Next()) != NULL) {
-    pObj->Process(fESD,fMC);
+  
+  Bool_t process = kTRUE;
+
+  // Check fo centrality
+  if (fUseCentrality) {
+    if ( CalculateCentralityBin() != fUseCentralityBin ) {
+      process = kFALSE;
+    }
   }
+
+  if (process) {
+    AlidNdPt *pObj = 0;
+    fPitList->Reset();
+    while((pObj = (AlidNdPt *)fPitList->Next()) != NULL) {
+      pObj->Process(fESD,fMC);
+    }
+  }
+
 
   // Post output data.
   PostData(1, fOutput);
@@ -180,4 +202,55 @@ void AlidNdPtTask::Terminate(Option_t *)
     Printf("ERROR: AlidNdPtTask::Terminate(): Output data not avaiable GetOutputData(0)==0x0 ..." );
     return;
   }
+}
+
+//________________________________________________________________________
+Int_t AlidNdPtTask::CalculateCentralityBin(){
+  // Get Centrality bin
+
+  Int_t centrality = -1;
+
+  if (fUseCentrality == 0)
+    return centrality;
+
+  AliESDVZERO* esdV0 = fESD->GetVZEROData();
+  Float_t multV0 = esdV0->GetMTotV0A() + esdV0->GetMTotV0C();
+  
+  Float_t nClusters[6];
+
+  const AliMultiplicity *mult = fESD->GetMultiplicity();
+  for(Int_t ilay = 0; ilay < 6; ilay++){
+   nClusters[ilay] = mult->GetNumberOfITSClusters(ilay);
+  }
+  
+  if ( fUseCentrality == 1 ) {
+    // -- centrality cuts V0
+    if (      multV0 >=    0.   && multV0 <=   106.75 ) centrality = 90;
+    else if ( multV0 >   106.75 && multV0 <=   277.55 ) centrality = 80;
+    else if ( multV0 >   277.55 && multV0 <=   661.85 ) centrality = 70;
+    else if ( multV0 >   661.85 && multV0 <=  1345.05 ) centrality = 60;
+    else if ( multV0 >  1345.05 && multV0 <=  2412.55 ) centrality = 50;
+    else if ( multV0 >  2412.55 && multV0 <=  3907.05 ) centrality = 40;
+    else if ( multV0 >  3907.05 && multV0 <=  6042.05 ) centrality = 30;
+    else if ( multV0 >  6042.05 && multV0 <=  8902.95 ) centrality = 20;
+    else if ( multV0 >  8902.95 && multV0 <= 12788.6  ) centrality = 10;
+    else if ( multV0 > 12788.6  && multV0 <= 15222.5  ) centrality = 5;
+    else if ( multV0 > 15222.5  && multV0 <= 19449.8  ) centrality = 0;
+  }
+  else if ( fUseCentrality == 2 ) {
+    if (      nClusters[1] >=    0.  && nClusters[1] <=    7.18 )  centrality = 100;
+    else if ( nClusters[1] >    7.18 && nClusters[1] <=   35.9  )  centrality = 90;
+    else if ( nClusters[1] >   35.9  && nClusters[1] <=   93.34 )  centrality = 80;
+    else if ( nClusters[1] >   93.34 && nClusters[1] <=  222.58 )  centrality = 70;
+    else if ( nClusters[1] >  222.58 && nClusters[1] <=  437.98 )  centrality = 60;
+    else if ( nClusters[1] >  437.98 && nClusters[1] <=  768.26 )  centrality = 50;
+    else if ( nClusters[1] >  768.26 && nClusters[1] <= 1242.14 )  centrality = 40;
+    else if ( nClusters[1] > 1242.14 && nClusters[1] <= 1888.34 )  centrality = 30;
+    else if ( nClusters[1] > 1888.34 && nClusters[1] <= 2735.58 )  centrality = 20;
+    else if ( nClusters[1] > 2735.58 && nClusters[1] <= 3884.38 )  centrality = 10;
+    else if ( nClusters[1] > 3884.38 && nClusters[1] <= 4573.66 )  centrality = 5;
+    else if ( nClusters[1] > 4573.66 && nClusters[1] <= 6540.98 )  centrality = 0;
+  }
+  
+  return centrality;
 }
