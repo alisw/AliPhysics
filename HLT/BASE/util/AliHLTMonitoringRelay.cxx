@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTMonitoringRelay.cxx
-    @author Matthias Richter
-    @date   2009-11-11
-    @brief  Relay components for monitoring objects.
-*/
+/// @file   AliHLTMonitoringRelay.cxx
+/// @author Matthias Richter
+/// @date   2009-11-11
+/// @brief  Relay components for monitoring objects.
+///
 
 #include <cstdlib>
 #include <cassert>
@@ -28,6 +28,7 @@
 #include "AliHLTMessage.h"
 #include "TArrayC.h"
 #include "TObject.h"
+#include "TDatime.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMonitoringRelay)
@@ -36,6 +37,7 @@ AliHLTMonitoringRelay::AliHLTMonitoringRelay()
   : AliHLTProcessor()
   , fItems()
   , fOutputSize()
+  , fFlags(0)
 {
   // see header file for class documentation
   // or
@@ -91,7 +93,10 @@ int AliHLTMonitoringRelay::ScanConfigurationArgument(int argc, const char** argv
   if (argument.CompareTo("-verbose")==0) {
     // 
     return 1;
-  }    
+  } else if (argument.CompareTo("-check-object")==0) { // check the objects in the blocks
+    SetFlag(kCheckObject);
+    return 1;
+  }
 
   return 0;
 }
@@ -119,12 +124,14 @@ int AliHLTMonitoringRelay::DoEvent(const AliHLTComponentEventData& /*evtData*/,
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
        pBlock!=NULL; 
        pBlock=GetNextInputBlock()) {
-    TObject* pObject=AliHLTMessage::Extract(pBlock->fPtr, pBlock->fSize);
-    if (!pObject) continue; // consider only TObjects
+    // ignore private blocks
+    if (pBlock->fDataType==(kAliHLTAnyDataType|kAliHLTDataOriginPrivate)) continue;
+    TObject* pObject=NULL;
+    if (CheckFlag(kCheckObject)) pObject=AliHLTMessage::Extract(pBlock->fPtr, pBlock->fSize);
     
     AliHLTMonitoringItem* pItem=FindItem(pBlock, pObject);
     if (pItem) {
-      HLTInfo("found block %s 0x%0lx %s %s", DataType2Text(pItem->GetDataType()).c_str(), pItem->GetSpecification(), pObject->GetName(), pObject->GetName());
+      HLTInfo("found block %s 0x%0lx %s %s", DataType2Text(pItem->GetDataType()).c_str(), pItem->GetSpecification(), pObject?pObject->GetName():"", pObject?pObject->GetName():"");
       if (pItem->GetSize()<pBlock->fSize) {
 	// update with the new maximum
 	assert(fOutputSize>=pItem->GetSize());
@@ -137,18 +144,27 @@ int AliHLTMonitoringRelay::DoEvent(const AliHLTComponentEventData& /*evtData*/,
       pItem=new AliHLTMonitoringItem(pBlock, pObject);
       fItems.push_back(pItem);
       fOutputSize+=pBlock->fSize;
-      HLTInfo("new item size %d (%d),  %s 0x%0lx %s %s", pItem->GetSize(), fOutputSize, DataType2Text(pItem->GetDataType()).c_str(), pItem->GetSpecification(), pObject->GetName(), pObject->GetName());
+      HLTInfo("new item size %d (%d),  %s 0x%0lx %s %s", pItem->GetSize(), fOutputSize, DataType2Text(pItem->GetDataType()).c_str(), pItem->GetSpecification(), pObject?pObject->GetName():"", pObject?pObject->GetName():"");
     }
-    delete pObject;
+    if (pObject) delete pObject;
   }
 
+  int nofObjects=0;
   for (AliHLTMonitoringItemPList::iterator element=fItems.begin();
        element!=fItems.end(); element++) {
     AliHLTMonitoringItem* pItem=*element;
     if (pItem) {
       HLTInfo("push back item size %d (%d),  %s 0x%0lx", pItem->GetSize(), fOutputSize, DataType2Text(pItem->GetDataType()).c_str(), pItem->GetSpecification());
       PushBack(pItem->GetBuffer(), pItem->GetSize(), pItem->GetDataType(), pItem->GetSpecification());
+      if (!pItem->GetObjectName().IsNull()) nofObjects++;
     }
+  }
+  // info output once every 5 seconds
+  const TDatime time;
+  static UInt_t lastTime=0;
+  if (time.Get()-lastTime>5) {
+      lastTime=time.Get();
+      HLTBenchmark("accumulated %d items containing %d TObjects", fItems.size(), nofObjects);
   }
 
   return iResult;

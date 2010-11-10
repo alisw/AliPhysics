@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTMonitoringRelay.h
-    @author Matthias Richter
-    @date   2009-11-11
-    @brief  Relay components for monitoring objects.
-*/
+/// @file   AliHLTMonitoringRelay.h
+/// @author Matthias Richter
+/// @date   2009-11-11
+/// @brief  Relay components for monitoring objects.
+///
 
 #include "AliHLTProcessor.h"
 #include "TString.h"
@@ -46,6 +46,9 @@ class TObject;
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -verbose                                                         <br>
  *      print out some more info messages, mainly for the sake of tutorials
+ * \li -check-object                                                    <br>
+ *      unpack the object from the binary block and use also object name
+ *      and title for indexing
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -89,6 +92,10 @@ class AliHLTMonitoringRelay : public AliHLTProcessor
   /// inherited from AliHLTComponent, create a component
   virtual AliHLTComponent* Spawn() {return new AliHLTMonitoringRelay;}
 
+  enum {
+    kCheckObject = 0x1
+  };
+
   /// descriptor of monitoring items
   class AliHLTMonitoringItem {
   public:
@@ -110,6 +117,8 @@ class AliHLTMonitoringRelay : public AliHLTProcessor
     const AliHLTComponentDataType& GetDataType() const;
     /// get specification
     AliHLTUInt32_t GetSpecification() const;
+    /// get object name
+    const TString& GetObjectName() const {return fName;}
 
     bool operator==(const AliHLTComponentBlockData& bd) const;
     bool operator!=(const AliHLTComponentBlockData& bd) const;
@@ -122,7 +131,7 @@ class AliHLTMonitoringRelay : public AliHLTProcessor
     AliHLTMonitoringItem(const AliHLTMonitoringItem&);
     /// assignment operator prohibited
     AliHLTMonitoringItem& operator=(const AliHLTMonitoringItem&);
-    
+
     AliHLTComponentDataType fDt;                //! transient
     AliHLTUInt32_t          fSpecification;     //! transient
     TString                 fName;              //! transient
@@ -157,10 +166,15 @@ class AliHLTMonitoringRelay : public AliHLTProcessor
   /// find a block of data type and specificaton
   AliHLTMonitoringItem* FindItem(const AliHLTComponentBlockData* pBlock, const TObject* pObject) const;
 
+  void SetFlag(unsigned flag) {fFlags|=flag;}
+  bool CheckFlag(unsigned flag) const {return (fFlags&flag)!=0;}
+
   /// the list of items
   AliHLTMonitoringItemPList  fItems; //! transient
   /// actual size of the data sample
   unsigned fOutputSize; //! transient
+  /// operation flags
+  unsigned fFlags; //! transient
 
   ClassDef(AliHLTMonitoringRelay, 0)
 };
