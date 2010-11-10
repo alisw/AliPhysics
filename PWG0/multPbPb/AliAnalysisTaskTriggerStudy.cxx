@@ -22,6 +22,7 @@
 #include "AliMultiplicity.h"
 #include "TFile.h"
 #include "AliLog.h"
+#include "AliESDtrackCuts.h"
 
 using namespace std;
 
@@ -32,7 +33,7 @@ const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA",
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 : AliAnalysisTaskSE("TaskTriggerStudy"),
-  fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix(""),fNTrackletsCut(1000000)
+  fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix(""),fNTrackletsCut(1000000),fNTrackletsCutKine(100),fRejectBGWithV0(0)
 {
   // constructor
 
@@ -41,7 +42,7 @@ AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 }
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix(""),fNTrackletsCut(1000000)
+    fESD(0),fHistoList(0),fIsMC(0),fTriggerAnalysis(0),fHistoSuffix(""),fNTrackletsCut(1000000),fNTrackletsCutKine(100),fRejectBGWithV0(0)
 {
   //
   // Standard constructur which should be used
@@ -52,13 +53,16 @@ AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy(const char * name)
 }
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy(const AliAnalysisTaskTriggerStudy& obj) : 
-  AliAnalysisTaskSE(obj) ,fESD (0), fIsMC(0), fTriggerAnalysis(0),fHistoSuffix("")
+  AliAnalysisTaskSE(obj) ,fESD (0), fIsMC(0), fTriggerAnalysis(0),fHistoSuffix(""),fNTrackletsCut(1000000),fNTrackletsCutKine(100),fRejectBGWithV0(0)
 {
   //copy ctor
   fESD = obj.fESD ;
   fHistoList = obj.fHistoList;
   fTriggerAnalysis = obj.fTriggerAnalysis;
   fHistoSuffix = obj.fHistoSuffix;
+  fNTrackletsCut = obj.fNTrackletsCut;
+  fNTrackletsCutKine = obj.fNTrackletsCutKine;
+  fRejectBGWithV0 = obj.fRejectBGWithV0;
 }
 
 AliAnalysisTaskTriggerStudy::~AliAnalysisTaskTriggerStudy(){
@@ -106,7 +110,6 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
 
   // Reset histo suffix and fill reference histograms without any suffix
   fHistoSuffix = "";
-  GetHistoTracklets("all","All events")->Fill(ntracklets);
 
   // Fast or in the outer layer  
   Int_t nFastOrOnline  = fTriggerAnalysis->SPDFiredChips(fESD, 1, 0, 2); // offline
@@ -123,6 +126,11 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t c0v0C       = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0C);
   Bool_t v0AHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
   Bool_t v0CHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
+
+  Bool_t v0ABG = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0ABG);
+  Bool_t v0CBG = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0CBG);
+  Bool_t v0BG  = v0ABG || v0CBG;
+
 
   // TOF triggers 
   // FIXME: move to triggeranalysis?
@@ -148,6 +156,14 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   vdArray[kVDC0VBC]  = c0v0C;
   //vdArray[kVDC0OM2]  = c0OM2;
 
+  // Reject background
+  if (v0BG && fRejectBGWithV0) {
+    cout << "Rejection BG" << endl;
+    
+    return;
+  }
+  // Fill global histos
+  GetHistoTracklets("all","All events")->Fill(ntracklets);
   FillTriggerOverlaps("All", "All Events",vdArray);
   
   // Fill some combination of trigger classes
@@ -155,7 +171,9 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t cmbs1cOnline = fESD->IsTriggerClassFired("CMBS1C-B-NOPF-ALL");
   Bool_t cmbacOnline  = fESD->IsTriggerClassFired("CMBAC-B-NOPF-ALL");
   
-  if (cmbs1aOnline || cmbs1cOnline ||cmbacOnline) GetHistoTracklets("TwoOutOfThree" ,"Events 2-out-of-3 online" )->Fill(ntracklets);
+  Bool_t twoOutOfThree = kFALSE;
+  if (cmbs1aOnline || cmbs1cOnline ||cmbacOnline) twoOutOfThree = kTRUE;
+  if (twoOutOfThree) GetHistoTracklets("All_TwoOutOfThree" ,"Events 2-out-of-3 online" )->Fill(ntracklets);
 
 
   // loop over trigger classes in the event
@@ -196,7 +214,7 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
     //    if (trg.Contains("SMH")) cout << itoken++ << " " << trg.Data() << endl;
     
     // Fill tracklets 
-    GetHistoTracklets("All" ,"Events no offline trigger" )->Fill(ntracklets);
+    GetHistoTracklets("All" ,"Events no offline trigger" )->Fill(ntracklets);    
 
 
     // Fill histograms mismatchs
@@ -227,12 +245,40 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
     if(cMBS2C) GetHistoTracklets("cMBS2C","Events were trigger cMBS2C fired")->Fill(ntracklets);
     if(cMBAC ) GetHistoTracklets("cMBAC", "Events were trigger cMBAC  fired")->Fill(ntracklets);
     if(zdcA )  GetHistoTracklets("cZDCA", "Events were trigger cZDCA  fired")->Fill(ntracklets);
-    if(zdcC )  GetHistoTracklets("cZDCC", "Events were trigger cZDCC  fired")->Fill(ntracklets);
+    if(zdcC )  GetHistoTracklets("cZDCC", "Events were trigger cZDCC  fired")->Fill(ntracklets);    
+    if(!zdcA && !zdcC )  GetHistoTracklets("NoZDC", "Events were zdc trigger don't  fired")->Fill(ntracklets);
+    if( (zdcA && !zdcC) || (!zdcA && zdcC) )  GetHistoTracklets("OneSideZDC", "Events were only 1 ZDC  fired")->Fill(ntracklets);
+    if( (zdcA && zdcC) )  GetHistoTracklets("TwoSideZDC", "Events were both  ZDC  fired")->Fill(ntracklets);
+
+    if(twoOutOfThree) {
+      if(!zdcA && !zdcC )  GetHistoTracklets("NoZDC_TwoOutOfThree", "Events were zdc trigger don't  fired")->Fill(ntracklets);
+      if( (zdcA && !zdcC) || (!zdcA && zdcC) )  GetHistoTracklets("OneSideZDC_TwoOutOfThree", "Events were only 1 ZDC  fired")->Fill(ntracklets);
+      if( (zdcA && zdcC) )  GetHistoTracklets("TwoSideZDC_TwoOutOfThree", "Events were both  ZDC  fired")->Fill(ntracklets);
+    }
     if(zdcBar) GetHistoTracklets("cZDCBar","Events were trigger cZDCB  fired")->Fill(ntracklets);
     //  if() GetHistoTracklets("","Events were trigger  fired");
     
     // Fill trigger overlaps
     FillTriggerOverlaps("All", "All Events in trigger class",vdArray);
+
+
+    // Fill kinematic variables for peripheral events
+    static AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(); // FIXME: change this ?
+    if (ntracklets < fNTrackletsCutKine) {
+      // 1. Loop on tracklets
+      for(Int_t itracklet = 0; itracklet < ntracklets; itracklet++){      
+	GetHistoEta("All", Form("Tracklet #eta distribution, ntracklets < %d",fNTrackletsCutKine))->Fill(mult->GetEta(itracklet));
+      }
+      // 2. loop on tracks
+      TObjArray * goodTracks = cuts->GetAcceptedTracks(fESD);
+      TIterator * iterTracks = goodTracks->MakeIterator();
+      AliESDtrack * esdTrack = 0;
+      while ((esdTrack = (AliESDtrack*) iterTracks->Next())) {
+	GetHistoPt("All", Form("Tracklet p_{T} distribution, ntracklets < %d",fNTrackletsCutKine))->Fill(esdTrack->Pt());	
+      }
+      delete goodTracks;
+    }
+    
 
   }
   delete tokens;
@@ -303,6 +349,50 @@ TH1 *   AliAnalysisTaskTriggerStudy::GetHistoTracklets(const char * name, const 
     h = new TH1F (hname.Data(), title, 4000, -0.5, 4000-0.5);
     h->Sumw2();
     h->SetXTitle("ntracklets");
+    fHistoList->GetList()->Add(h);
+    TH1::AddDirectory(oldStatus);
+  }
+  return h;
+}
+
+TH1 *   AliAnalysisTaskTriggerStudy::GetHistoEta(const char * name, const char * title){
+  // Book histo of events vs ntracklets, if needed
+
+  TString hname = "hEta_";
+  hname+=name;  
+  hname+=fHistoSuffix;
+  TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
+  
+  if(!h) {
+    AliInfo(Form("Booking histo %s",hname.Data()));
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    // h = new TH1F (hname.Data(), title, 1000, -0.5, 10000-0.5);
+    h = new TH1F (hname.Data(), title, 20, -2, 2);
+    h->Sumw2();
+    h->SetXTitle("#eta");
+    fHistoList->GetList()->Add(h);
+    TH1::AddDirectory(oldStatus);
+  }
+  return h;
+}
+
+TH1 *   AliAnalysisTaskTriggerStudy::GetHistoPt(const char * name, const char * title){
+  // Book histo of pt distribution, if needed
+
+  TString hname = "hPt_";
+  hname+=name;  
+  hname+=fHistoSuffix;
+  TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
+  
+  if(!h) {
+    AliInfo(Form("Booking histo %s",hname.Data()));
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    // h = new TH1F (hname.Data(), title, 1000, -0.5, 10000-0.5);
+    h = new TH1F (hname.Data(), title, 100, -0.5, 1-0.5);
+    h->Sumw2();
+    h->SetXTitle("p_{T}");
     fHistoList->GetList()->Add(h);
     TH1::AddDirectory(oldStatus);
   }

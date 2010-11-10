@@ -9,7 +9,9 @@ TList * listToLoad = new TList();
 
 TChain * GetAnalysisChain(const char * incollection);
 
-void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Int_t centrBin = 0, const char * centrEstimator = "VOM", const char* option = "",TString customSuffix = "", Int_t workers = -1)
+void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, 
+	 Int_t centrBin = 0, const char * centrEstimator = "VOM", Bool_t useTrackCentralityCut = kFALSE, Int_t trackMin=0, Int_t trackMax=10000, 
+	 const char* option = "",TString customSuffix = "", Int_t workers = -1)
 {
   // runMode:
   //
@@ -27,7 +29,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
   // Do I need any of this? 
-  //  esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks AliESDTZERO ALIESDACORDE MuonTracks TrdTracks");
+  esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks AliESDTZERO ALIESDACORDE MuonTracks TrdTracks");
   mgr->SetInputEventHandler(esdH);
 
   if(isMC) {
@@ -53,15 +55,24 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   // physics selection
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  physicsSelectionTask = AddTaskPhysicsSelection(isMC,1);
+  physicsSelectionTask = AddTaskPhysicsSelection(isMC,0);//FIXME
   // FIXME!!
   if(!isMC) {
     AliPhysicsSelection * physSel = physicsSelectionTask->GetPhysicsSelection();
     //    physSel->AddCollisionTriggerClass("+CTRUE-B-NOPF-ALL");
-    physSel->AddCollisionTriggerClass("+C0SM1-B-NOPF-ALL");
-    physSel->AddBGTriggerClass       ("+C0SM1-A-NOPF-ALL");
-    physSel->AddBGTriggerClass       ("+C0SM1-C-NOPF-ALL");
-    physSel->AddBGTriggerClass       ("+C0SM1-E-NOPF-ALL");
+    physSel->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
+    physSel->AddCollisionTriggerClass("+CMBS1C-B-NOPF-ALL");
+    physSel->AddCollisionTriggerClass("+CMBS1A-B-NOPF-ALL");
+    physSel->AddBGTriggerClass("+CMBAC-C-NOPF-ALL");
+    physSel->AddBGTriggerClass("+CMBS1C-C-NOPF-ALL");
+    physSel->AddBGTriggerClass("+CMBS1A-C-NOPF-ALL");
+    physSel->AddBGTriggerClass("+CMBAC-A-NOPF-ALL");
+    physSel->AddBGTriggerClass("+CMBS1C-A-NOPF-ALL");
+    physSel->AddBGTriggerClass("+CMBS1A-A-NOPF-ALL");
+    physSel->AddBGTriggerClass("+CMBAC-E-NOPF-ALL");
+    physSel->AddBGTriggerClass("+CMBS1C-E-NOPF-ALL");
+    physSel->AddBGTriggerClass("+CMBS1A-E-NOPF-ALL");
+    //    physSel->AddBGTriggerClass       ("+C0SM1-E-NOPF-ALL");
   }
 
   // Centrality
@@ -81,9 +92,12 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   centrSelector->SetCentralityBin(centrBin);
   centrSelector->SetCentralityEstimator(centrEstimator);
   // FIXME!!!
-  // centrSelector->SetUseMultRange();
-  centrSelector->SetIsMC(isMC,1500,2300);
-  //  centrSelector->SetMultRange(10,20);
+
+  //centrSelector->SetIsMC(isMC,1500,2300);
+  if(useTrackCentralityCut){
+    centrSelector->SetUseMultRange();
+    centrSelector->SetMultRange(trackMin,trackMax);
+  }
 
   // Parse option strings
   TString optionStr(option);
@@ -157,7 +171,11 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     cout << "ERROR: unknown run mode" << endl;        
   }
 
-  pathsuffix = pathsuffix + "_" + centrEstimator + "_bin_"+long(centrBin);
+  if (!useTrackCentralityCut) {
+    pathsuffix = pathsuffix + "_" + centrEstimator + "_bin_"+long(centrBin);
+  } else {
+    pathsuffix = pathsuffix + "_TrackRange_" + long(trackMin) + "_" + long(trackMax);
+  }
   pathsuffix += customSuffix;
 
   if (doSave) MoveOutput(data, pathsuffix.Data());
@@ -228,6 +246,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     
     gEnv->SetValue("XSec.GSI.DelegProxy", "2");
     TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
+    //    TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");
     
     // Enable the needed package
     gProof->UploadPackage("$ALICE_ROOT/STEERBase");
