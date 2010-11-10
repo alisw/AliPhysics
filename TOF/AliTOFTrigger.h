@@ -22,7 +22,6 @@ class AliTOFTrigger : public AliTriggerDetector
  public:
   AliTOFTrigger();  // constructor
   AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow); //constructor with parameters
-  AliTOFTrigger(const AliTOFTrigger & tr);
   virtual ~AliTOFTrigger();  // destructor
   virtual void    CreateInputs();
   virtual void    Trigger();
@@ -83,6 +82,7 @@ class AliTOFTrigger : public AliTriggerDetector
   };
 
   AliTOFTrigger& operator=(const AliTOFTrigger &/*source*/); // ass. op.
+  AliTOFTrigger(const AliTOFTrigger & tr);
 
   void    GetCTTMIndex(Int_t *detind, Int_t *indexCTTM);
   void    GetLTMIndex(const Int_t * const detind, Int_t *LTMIndex);

@@ -146,6 +146,8 @@ AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, 
   CreateInputs();
 }
 
+
+#if 0 /*** COPY CONSTRUCTOR SUPPRESSED **/
 //____________________________________________________________________________
 
 AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):
@@ -197,6 +199,7 @@ AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):
   CreateInputs();
 
 }
+#endif /*** COPY CONTRUCTOR SUPPRESSED ***/
 
 //----------------------------------------------------------------------
 
@@ -968,8 +971,6 @@ void AliTOFTrigger::LoadActiveMask(){
 AliTOFTrigger::~AliTOFTrigger()
 {
   // dtor
-
-  if (fTOFTrigMask) delete fTOFTrigMask;
 
 }
 
