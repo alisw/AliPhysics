@@ -258,7 +258,7 @@ void AliHLTEveCalo::DrawInvMassHistogram(TH1F * histo) {
   fInvMassCanvas->cd(++fHistoCount);
 
   histo->SetAxisRange(histo->GetXaxis()->GetBinLowEdge(histo->FindFirstBinAbove(0, 1) - 3), histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1) + 3), "X");
-  histo->Fit("gaus", "", "", histo->GetXaxis()->GetBinLowEdge(histo->FindFirstBinAbove(0, 1)), histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1)));
+  //histo->Fit("gaus", "", "", histo->GetXaxis()->GetBinLowEdge(histo->FindFirstBinAbove(0, 1)), histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1)));
 
   histo->Draw();
 
