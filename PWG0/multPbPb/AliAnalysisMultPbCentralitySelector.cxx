@@ -13,7 +13,6 @@
 using namespace std;
 
 
-// FIXME: bookkeep here all parameters of centrality estimate (files, estimator, selected bin...)
 
 ClassImp(AliAnalysisMultPbCentralitySelector)
 
@@ -30,20 +29,21 @@ Bool_t AliAnalysisMultPbCentralitySelector::IsCentralityBinSelected(AliESDEvent*
     if(!trackCuts){
       AliFatal("Track cuts object is invalid");
     }
-    //    cout << "Hey!" << endl;
+    //    cout << "Hey! " << fCentrBin << " " << fMultMin <<" - " << fMultMax << endl;
     
     if (fCentrBin == -1) return kTRUE;
     if (trackCuts->CountAcceptedTracks(aEsd) < fMultMin) return kFALSE;
     if (trackCuts->CountAcceptedTracks(aEsd) > fMultMax) return kFALSE;						       
-  }
+  } else {
 
-  AliESDCentrality *centrality = aEsd->GetCentrality();
-  if(!centrality && !fUseMultRange) {
-    AliFatal("Centrality object not available"); 
-  }
-  else {
-    Int_t centrBin = centrality->GetCentralityClass5(fCentrEstimator.Data()) ;    
-    if (centrBin != fCentrBin && fCentrBin != -1 && !fUseMultRange) return kFALSE;
+    AliESDCentrality *centrality = aEsd->GetCentrality();
+    if(!centrality && !fUseMultRange) {
+      AliFatal("Centrality object not available"); 
+    }
+    else {
+      Int_t centrBin = centrality->GetCentralityClass5(fCentrEstimator.Data()) ;    
+      if (centrBin != fCentrBin && fCentrBin != -1 && !fUseMultRange) return kFALSE;
+    }
   }
 
   //  cout << "Selected" << endl;

@@ -1,8 +1,8 @@
-enum { kMyRunModeLocal = 0, kMyRunModeCAF};
+enum { kMyRunModeLocal = 0, kMyRunModeCAF, kMyRunModeGRID};
 
 TChain * GetAnalysisChain(const char * incollection);
 
-void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, const char* option = "",Int_t workers = -1)
+void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Int_t ntrackletsKine = 100, Bool_t rejectBGV0Trigger = kFALSE, const char* option = "", Int_t workers = -1)
 {
   // runMode:
   //
@@ -29,6 +29,17 @@ void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_
     mgr->SetMCtruthEventHandler(handler);
   }
 
+  // If we are running on grid, we need the alien handler
+  if (runMode == kMyRunModeGRID) {
+    // Create and configure the alien handler plugin
+    gROOT->LoadMacro("CreateAlienHandlerTrigger.C");
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerTrigger(data,"pass1",isMC);  
+    if (!alienHandler) {
+      cout << "Cannot create alien handler" << endl;    
+      exit(1);
+    }
+    mgr->SetGridHandler(alienHandler);  
+  }
 
   // Parse option strings
   TString optionStr(option);
@@ -60,7 +71,9 @@ void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_
 
 
   task->SetIsMC(isMC);
-  
+  task->SetNTrackletsCutKine(ntrackletsKine);
+  task->SetRejectBGWithV0(rejectBGV0Trigger);
+
   if (!mgr->InitAnalysis()) return;
 	
   mgr->PrintStatus();
@@ -73,11 +86,13 @@ void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_
     mgr->StartAnalysis("local",chain,nev);
   } else if (runMode == kMyRunModeCAF) {
     mgr->StartAnalysis("proof",TString(data)+"#esdTree",nev);
-  } else {
+  } else if (runMode == kMyRunModeGRID) {
+    mgr->StartAnalysis("grid");
+  }else {
     cout << "ERROR: unknown run mode" << endl;        
   }
 
-  if (doSave) MoveOutput(data, "");
+  if (doSave) MoveOutput(data, Form("_TrkCut_%d_V0BGCUT_%d",ntrackletsKine,rejectBGV0Trigger));
 
   
 }
@@ -154,7 +169,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   }
   else
   {
-    cout << "Init in Local mode" << endl;
+    cout << "Init in Local or Grid mode" << endl;
 
     gSystem->Load("libVMC");
     gSystem->Load("libTree");

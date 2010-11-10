@@ -3,8 +3,6 @@
 // Author: Michele Floris, CERN
 // TODO:
 // - Add chi2/cluster plot for primary, secondaries and fakes
-// FIXME:
-// - re-implement centrality estimator to cut on tracks and multiplicity
 
 #include "AliAnalysisTaskMultPbTracks.h"
 #include "AliESDInputHandler.h"
@@ -330,3 +328,10 @@ Bool_t AliAnalysisTaskMultPbTracks::IsPhysicalPrimaryAndTransportBit(Int_t ipart
   return kTRUE;
 
 }
+
+// void AliAnalysisTaskEvil::PrintProcInfo()
+// {
+//   ProcInfo_t info;
+//   gSystem->GetProcInfo(&info);
+//   AliInfo(Form("fMemResident=%10ld kB  fMemVirtual=%10ld kB",info.fMemResident,info.fMemVirtual));
+// }

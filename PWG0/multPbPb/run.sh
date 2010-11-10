@@ -6,7 +6,7 @@ run=no
 correct=no
 nev=-1
 offset=0
-debug=kTRUE
+debug=kFALSE
 runmode=1
 dataset=/alice/sim/LHC10f8a_130844
 ropt="-l"
@@ -17,6 +17,11 @@ centrBin=0
 centrEstimator="V0M"
 runTriggerStudy=no
 customSuffix=""
+ntrackletsTrigger=50
+rejectBGV0Trigger=kFALSE
+useTrackCentralityCut=kFALSE
+trackMin=0
+trackMax=100
 
 give_help() {
 
@@ -53,6 +58,8 @@ Available options:
                                 - V0MvsFMD = correlation between V0 and FMD
                                 - TKLvsV0 = correlation between tracklets and V0
                                 - ZEMvsZDC = correlation between ZEM and ZDC     
+  -y <min,max>                 Select centrality based on "good tracks" rather than on centrality
+                               estimator [off by default]
   -o <option>                  Misc option [default=$option]
                                Available options: 
                                 - SAVE:     Move results to a different output folder*
@@ -65,21 +72,37 @@ Available options:
   -x  <suffix>                 Set a custom suffix in the histo manager        
   -g                           Debug mode
   -h                           This help
+
+ Options specific to the trigger study task
+  -k <ntracklets>              Max number of tracklets to fill eta and pt 
+                               distributions [default=$ntrackletsTrigger]
+  -v                           Reject BG with the V0
 ENDOFGUIDE
 
 }
 
-while getopts "x:sr:cgmd:o:w:n:e:b:t:" opt; do
+while getopts "x:sr:cgmd:o:w:n:e:b:t:k:vy:" opt; do
   case $opt in
     r)
       run=yes
       runmode=$OPTARG
       ;;      
+    y)
+      useTrackCentralityCut=kTRUE
+      trackMin=${OPTARG%%,*}
+      trackMax=${OPTARG##*,}
+      ;;      
     x)
       customSuffix=$OPTARG
       ;;      
+    k)
+      ntrackletsTrigger=$OPTARG
+      ;;      
     s)
       runTriggerStudy=yes
+      ;;      
+    v)
+      rejectBGV0Trigger=kTRUE
       ;;      
     c)
       correct=yes
@@ -140,9 +163,9 @@ if [ "$run" = "yes" ]
     then
     if [ "$runTriggerStudy" = "yes" ]
 	then
-	root $ropt runTriggerStudy.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,\"$option\",$workers\)
+	root $ropt runTriggerStudy.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$ntrackletsTrigger,$rejectBGV0Trigger,\"$option\",$workers\)
     else
-	root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",\"$option\",\"$customSuffix\",$workers\)
+	root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",$useTrackCentralityCut,$trackMin,$trackMax,\"$option\",\"$customSuffix\",$workers\)
     fi
 fi
 

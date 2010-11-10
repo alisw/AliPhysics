@@ -55,7 +55,7 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   CheckVz();
 
   Double_t fractionWeak = 1, fractionMaterial=1; 
-  //  CheckSecondaries(fractionWeak, fractionMaterial);
+  CheckSecondaries(fractionWeak, fractionMaterial);
   cout << "Rescaling secondaries correction, weak: " << fractionWeak << ", material: " << fractionMaterial <<endl;
   
 
@@ -127,10 +127,10 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   hCorrected->Fit(f,"", "same");
   hCorrected->Fit(f,"IME", "same");
   cout << "dN/deta = " << f->Integral(0,100) << " +- " << f->IntegralError(0,100) << endl;
-  cout << "Generated dN/deta (correction) = " << hMCPtGen->Integral() << endl;
+  cout << "Generated dN/deta (correction) = " << hMCPtGen->Integral("width") << endl;
   // FIXME: comment this out
   TH1D * hDataGen  = hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        -0.5,0.5,-10,10);
-  cout << "Generated dN/deta (data) =       " << hDataGen->Integral() << endl;
+  cout << "Generated dN/deta (data) =       " << hDataGen->Integral("width") << endl;
   hDataGen->Draw("same");
 }
 
@@ -189,8 +189,8 @@ void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {
   hMCDCASW    ->Draw("same");
   hMCDCASM    ->Draw("same");
   // compute scaling factors
-  fracWeak     = hMCDCASW->Integral()/(hMCPrimSMFak->Integral()+hMCDCASW->Integral()+hMCDCASM->Integral());
-  fracMaterial = hMCDCASM->Integral()/(hMCPrimSMFak->Integral()+hMCDCASW->Integral()+hMCDCASM->Integral());
+  fracWeak     = fHistos->GetParameter(1)/fHistos->GetParameter(0);
+  fracMaterial = fHistos->GetParameter(2)/fHistos->GetParameter(0);
 
 
 }
@@ -329,8 +329,8 @@ void LoadData(TString dataFolder, TString correctionFolder){
     //  hManData->ScaleHistos(75351.36/1.015);// Nint for run 104892 estimated correcting for the trigger efficiency, multiplied for the physics selection efficiency which I'm not correcting for the time being
     // hManData->ScaleHistos(hEvStatData->GetBinContent(AliPhysicsSelection::kStatAccepted,irowGoodTrigger));
     // hManCorr->ScaleHistos(hEvStatCorr->GetBinContent(AliPhysicsSelection::kStatAccepted,irowGoodTrigger));
-    hManData->ScaleHistos(hManData->GetHistoStats()->GetBinContent(2));
-    hManCorr->ScaleHistos(hManCorr->GetHistoStats()->GetBinContent(2));
+    hManData->ScaleHistos(hManData->GetHistoStats()->GetBinContent(AliAnalysisMultPbTrackHistoManager::kStatVtx));
+    hManCorr->ScaleHistos(hManCorr->GetHistoStats()->GetBinContent(AliAnalysisMultPbTrackHistoManager::kStatVtx));
   } else {
     cout << "WARNING!!! ARBITRARY SCALING" << endl;
     hManData->ScaleHistos(1000);
