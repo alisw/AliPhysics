@@ -69,24 +69,24 @@ void print_RAW_HLTdecision(const char* rawFileName,
       break;
     }
     bool found=false;
-    do {
-      TObject* decision=NULL;
-      // in the original implementation, the GlobalTriggerDecision has been
-      // sent with data type kAliHLTDataTypeTObject, thats why we check for
-      // both
-      if (pHLTOUT->SelectFirstDataBlock(kAliHLTDataTypeGlobalTrigger)>=0 ||
-	  pHLTOUT->SelectFirstDataBlock(kAliHLTDataTypeTObject)>=0) {
-	decision=pHLTOUT->GetDataObject();
-      }
-      if (decision) {
-	if (decision->IsA() == AliHLTGlobalTriggerDecision::Class()) {
-	  cout << "HLT Global Trigger: " << decision->GetOption() << "   " << decision->GetTitle() << endl;
-	  decision->Print();
-	  found=true;
-	}
-	pHLTOUT->ReleaseDataObject(decision);
-      }
-    } while (!found && pHLTOUT->SelectNextDataBlock());
+    
+    // in the original implementation, the GlobalTriggerDecision has been
+    // sent with data type kAliHLTDataTypeTObject, thats why we check for
+    // both
+    if (pHLTOUT->SelectFirstDataBlock(kAliHLTDataTypeGlobalTrigger)>=0 ||
+        pHLTOUT->SelectFirstDataBlock(kAliHLTDataTypeTObject)>=0) {
+      do {
+        TObject* decision = pHLTOUT->GetDataObject();
+        if (decision) {
+	  if (decision->IsA() == AliHLTGlobalTriggerDecision::Class()) {
+	    cout << "HLT Global Trigger: " << decision->GetOption() << "   " << decision->GetTitle() << endl;
+	    decision->Print();
+	    found=true;
+	  }
+	  pHLTOUT->ReleaseDataObject(decision);
+        }
+      } while (!found && pHLTOUT->SelectNextDataBlock());
+    }
 
     if (!found) {
       cout << "   no HLT decision found" << endl;
