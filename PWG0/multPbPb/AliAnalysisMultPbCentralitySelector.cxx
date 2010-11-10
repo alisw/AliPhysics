@@ -8,6 +8,7 @@
 #include "AliESDCentrality.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
+#include "AliESDVZERO.h"
 #include <iostream>
 
 using namespace std;
@@ -23,9 +24,23 @@ Bool_t AliAnalysisMultPbCentralitySelector::IsCentralityBinSelected(AliESDEvent*
   // On data cuts using AliESDCentrality and the cut requested in ntracks
 
   //  cout << "Tracks " << trackCuts->CountAcceptedTracks(aEsd) << endl;
+  ///  cout << "CENTRALITY " << fUseV0CutRange << " " << fUseMultRange << " " << fMultMin << " " << fMultMax << endl;
   
 
-  if(fIsMC || fUseMultRange) {
+  if (fUseV0CutRange) {
+
+    AliESDVZERO* esdV0 = aEsd->GetVZEROData();
+    Float_t multV0A=esdV0->GetMTotV0A();
+    Float_t multV0C=esdV0->GetMTotV0C();
+    Float_t multV0 = multV0A+multV0C;
+    //    cout << "V0 Mult: " << multV0 << " " << fMultMin << " " << fMultMax << endl;
+    
+    if (multV0 < fMultMin) return kFALSE;
+    if (multV0 > fMultMax) return kFALSE;
+    //    cout << "ok" << endl;
+
+  }
+  else if(fIsMC || fUseMultRange) {
     if(!trackCuts){
       AliFatal("Track cuts object is invalid");
     }
@@ -62,10 +77,13 @@ void AliAnalysisMultPbCentralitySelector::Print(Option_t* option ) const {
   Printf(" - File1 used for centrality estimate: [%s]", fFile1.Data());
   Printf(" - File2 used for centrality estimate: [%s]", fFile2.Data());
   if ( fUseMultRange ) {
-    Printf ("Using multiplicity range [%d - %d]",fMultMin,fMultMax);
+    Printf ("Using multiplicity range [%1.1f - %1.1f]",fMultMin,fMultMax);
+  }
+  if ( fUseV0CutRange ) {
+    Printf ("Using V0 range [%1.1f - %1.1f]",fMultMin,fMultMax);
   }
   if ( fIsMC ) {    
-    Printf("Running on Monte Carlo, actual cut was on tracks multiplicity [%d - %d]",fMultMin,fMultMax);    
+    Printf("Running on Monte Carlo, actual cut was on tracks multiplicity [%1.1f - %1.1f]",fMultMin,fMultMax);    
   } 
   
 }

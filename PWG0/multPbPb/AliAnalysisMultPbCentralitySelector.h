@@ -30,7 +30,7 @@ class AliAnalysisMultPbCentralitySelector : public AliAnalysisCuts
 {
 public:
 
-  AliAnalysisMultPbCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fFile1(""), fFile2(""), fUseMultRange(kFALSE) {;}
+  AliAnalysisMultPbCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fFile1(""), fFile2(""), fUseMultRange(kFALSE), fUseV0CutRange(kFALSE) {;}
   virtual ~AliAnalysisMultPbCentralitySelector(){}
     
   // AliAnalysisCuts interface
@@ -43,6 +43,7 @@ public:
   void SetIsMC(Bool_t flag = kTRUE, Int_t multMin = 0, Int_t multMax=10000) { fIsMC = flag; fMultMin = multMin; fMultMax = multMax; }
   void SetMultRange(Int_t multMin = 0, Int_t multMax=10000) { fMultMin = multMin; fMultMax = multMax; }
   void SetUseMultRange(Bool_t flag = kTRUE) {fUseMultRange = flag;}
+  void SetUseV0Range(Bool_t flag = kTRUE) {fUseV0CutRange = flag;}
   void SetCentralityEstimator(const char * estimator) { fCentrEstimator = estimator; }
   void SetCentralityBin(Int_t bin) { fCentrBin = bin; }
   void SetCentrTaskFiles(const char * file1, const char * file2) { fFile1 = file1; fFile2 = file2; }
@@ -53,11 +54,12 @@ protected:
   Bool_t fIsMC;             // flag if MC is analyzed
   TString fCentrEstimator;  // Centrality estimator for AliESDCentrality
   Int_t   fCentrBin; // centrality bin to be selected
-  Int_t fMultMin ; // Minimum multiplicity, because on MC we cut on tracks rather than on the estimator  
-  Int_t fMultMax ; // Maximum multiplicity, because on MC we cut on tracks rather than on the estimator  
+  Float_t fMultMin ; // Minimum multiplicity, because on MC we cut on tracks rather than on the estimator . Also used for other estimators
+  Float_t fMultMax ; // Maximum multiplicity, because on MC we cut on tracks rather than on the estimator . Also used for other estimators
   TString fFile1; // file used by centrality task. Set here for bookkeeping
   TString fFile2; // file used by centrality task. Set here for bookkeeping
   Bool_t fUseMultRange; // if true, use track bins rather than multiplicity estimator
+  Bool_t fUseV0CutRange; // if true, use v0 range rather than multiplicity estimator
 
   ClassDef(AliAnalysisMultPbCentralitySelector, 2)
     

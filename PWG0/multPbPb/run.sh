@@ -19,7 +19,7 @@ runTriggerStudy=no
 customSuffix=""
 ntrackletsTrigger=50
 rejectBGV0Trigger=kFALSE
-useTrackCentralityCut=kFALSE
+useTrackCentralityCut=0
 trackMin=0
 trackMax=100
 
@@ -60,6 +60,8 @@ Available options:
                                 - ZEMvsZDC = correlation between ZEM and ZDC     
   -y <min,max>                 Select centrality based on "good tracks" rather than on centrality
                                estimator [off by default]
+  -0 <min,max>                 Select centrality based on v0 multiplicity range rather than on centrality
+                               estimator [off by default]
   -o <option>                  Misc option [default=$option]
                                Available options: 
                                 - SAVE:     Move results to a different output folder*
@@ -81,14 +83,19 @@ ENDOFGUIDE
 
 }
 
-while getopts "x:sr:cgmd:o:w:n:e:b:t:k:vy:" opt; do
+while getopts "x:sr:cgmd:o:w:n:e:b:t:k:vy:0:" opt; do
   case $opt in
     r)
       run=yes
       runmode=$OPTARG
       ;;      
     y)
-      useTrackCentralityCut=kTRUE
+      useTrackCentralityCut=1
+      trackMin=${OPTARG%%,*}
+      trackMax=${OPTARG##*,}
+      ;;      
+    0)
+      useTrackCentralityCut=2
       trackMin=${OPTARG%%,*}
       trackMax=${OPTARG##*,}
       ;;      

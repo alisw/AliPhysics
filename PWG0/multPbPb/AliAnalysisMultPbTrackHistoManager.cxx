@@ -5,9 +5,12 @@
 #include "TH1I.h"
 #include "TROOT.h"
 #include "TMCProcess.h"
+#include "AliMCParticle.h"
 
 #include <iostream>
+
 using namespace std;
+
 ClassImp(AliAnalysisMultPbTrackHistoManager)
 
 const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After physics Selection", "After centrality selection", "With Vertex" };
@@ -15,7 +18,7 @@ const char * AliAnalysisMultPbTrackHistoManager::kHistoPtEtaVzNames[] = { "hGenP
 									  "hRecPtEtaVzSecWeak", "hRecPtEtaVzSecMaterial", "hRecPtEtaVzFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoDCANames[]     = { "hGenDCA", "hRecDCA", "hRecDCAPrim", "hRecDCASecWeak","hRecDCASecMaterial", "hRecDCAFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoPrefix[]     = { "hGen", "hRec", "hRecPrim", "hRecSecWeak","hRecSecMaterial", "hRecFake"};
-
+const char * AliAnalysisMultPbTrackHistoManager::kSpeciesName[]     = { "#pi+", "K+", "p", "l+",  "#pi-", "K-", "#bar{p}", "l-", "Others"};
 
 
 AliAnalysisMultPbTrackHistoManager::AliAnalysisMultPbTrackHistoManager() : AliHistoListWrapper(), fHNameSuffix(""){ 
@@ -181,6 +184,36 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoEta (Histo_t id,
   return h;
 }
 
+TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoProcess(Histo_t id) {
+
+  // Returns histogram with particle specties
+
+  TString name = TString(kHistoPrefix[id])+"_Process";
+
+  TH1D * h =  (TH1D*) GetHisto(name);
+  if (!h) {
+    name+=fHNameSuffix;
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+
+    AliInfo(Form("Booking histo %s",name.Data()));
+
+    h = new TH1D (name.Data(), Form("Particle production process (%s)",kHistoPrefix[id]), kPNoProcess+1, -0.5, kPNoProcess+1-0.5);			 
+    Int_t nbin = kPNoProcess+1;
+    for(Int_t ibin = 0; ibin < nbin; ibin++){
+      h->GetXaxis()->SetBinLabel(ibin+1,TMCProcessName[ibin]);      
+    }
+    TH1::AddDirectory(oldStatus);
+    fList->Add(h);
+
+
+  }
+  return h;
+  
+
+}
+
+
 TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoSpecies(Histo_t id) {
 
   // Returns histogram with particle specties
@@ -195,10 +228,10 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoSpecies(Histo_t id) {
 
     AliInfo(Form("Booking histo %s",name.Data()));
 
-    h = new TH1D (name.Data(), Form("Particle species (%s)",kHistoPrefix[id]), kPNoProcess+1, -0.5, kPNoProcess+1-0.5);			 
-    Int_t nbin = kPNoProcess+1;
+    h = new TH1D (name.Data(), Form("Particle species (%s)",kHistoPrefix[id]), kNPart+1, -0.5, kNPart+1-0.5);			 
+    Int_t nbin = kNPart+1;
     for(Int_t ibin = 0; ibin < nbin; ibin++){
-      h->GetXaxis()->SetBinLabel(ibin+1,TMCProcessName[ibin]);      
+      h->GetXaxis()->SetBinLabel(ibin+1,kSpeciesName[ibin]);      
     }
     TH1::AddDirectory(oldStatus);
     fList->Add(h);
@@ -364,7 +397,46 @@ TH1I * AliAnalysisMultPbTrackHistoManager::BookHistoStats() {
   return h;
 }
 
+Int_t AliAnalysisMultPbTrackHistoManager::GetLocalParticleID(AliMCParticle * part) {
+  // returns the local code (Part_t)
+  
+  Int_t pdgcode = part->PdgCode();
+  switch(pdgcode) {
 
+  case 211:
+    return kPartPiPlus;
+    break;
+  case -211:
+    return kPartPiMinus;
+    break;
+  case 2212:
+    return kPartP;
+    break;
+  case -2212:
+    return kPartPBar;
+    break;
+  case 321:
+    return kPartKPlus;
+    break;
+  case -321:
+    return kPartKMinus;
+    break;
+  case -11:
+    return kPartLMinus;
+    break;
+  case 11:
+    return kPartLPlus;
+    break;
+  case -13:
+    return kPartLMinus;
+    break;
+  case 13:
+    return kPartLPlus;
+    break;
+  default:
+    return kPartOther;
+  }
+}
 
 
  
