@@ -25,7 +25,6 @@
 
 #include "TList.h"
 #include "TTimer.h"
-
 #include "TThread.h"
 
 ClassImp(AliEveHLTEventManager);
@@ -423,6 +422,7 @@ void  AliEveHLTEventManager::UpdateDisplay() {
   if(fTRDElement) fTRDElement->UpdateElements();
   if(fAnyElement) fAnyElement->UpdateElements();
   if(fMuonElement) fMuonElement->UpdateElements();
+  if(fMultCorrElement) fMultCorrElement->UpdateElements();
 
 
   //==============================================================================
