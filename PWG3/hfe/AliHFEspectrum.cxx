@@ -164,8 +164,8 @@ void AliHFEspectrum::Correct(AliCFContainer *datacontainer,AliCFContainer *mccon
     TCanvas * cbackgroundsubtraction = new TCanvas("backgroundsubtraction","backgroundsubtraction",1000,700);
     if(fBackground) cbackgroundsubtraction->Divide(3,1);
     cbackgroundsubtraction->cd(1);
-    measuredTH1Daftersubstraction = dataspectrumaftersubstraction->Project(0);
-    measuredTH1Dbeforesubstraction = dataspectrumbeforesubstraction->Project(0);
+    measuredTH1Daftersubstraction = (TH1D*)dataspectrumaftersubstraction->Project(0);
+    measuredTH1Dbeforesubstraction = (TH1D*)dataspectrumbeforesubstraction->Project(0);
     CorrectFromTheWidth(measuredTH1Daftersubstraction);
     CorrectFromTheWidth(measuredTH1Dbeforesubstraction);
     measuredTH1Daftersubstraction->SetStats(0);
@@ -203,7 +203,7 @@ void AliHFEspectrum::Correct(AliCFContainer *datacontainer,AliCFContainer *mccon
     ratiomeasuredcontamination->Draw();
     if(fBackground) {
       cbackgroundsubtraction->cd(3);
-      measuredTH1background = fBackground->Project(0);
+      measuredTH1background = (TH1D*)fBackground->Project(0);
       CorrectFromTheWidth(measuredTH1background);
       measuredTH1background->SetStats(0);
       measuredTH1background->SetTitle("");
@@ -220,9 +220,9 @@ void AliHFEspectrum::Correct(AliCFContainer *datacontainer,AliCFContainer *mccon
     TCanvas * ccontaminationspectrum = new TCanvas("contaminationspectrum","contaminationspectrum",1000,700);
     ccontaminationspectrum->Divide(3,1);
     ccontaminationspectrum->cd(1);
-    TH2D * contaminationspectrum2dpteta = contaminationspectrum->Project(1,0);
-    TH2D * contaminationspectrum2dptphi = contaminationspectrum->Project(2,0);
-    TH2D * contaminationspectrum2detaphi = contaminationspectrum->Project(1,2);
+    TH2D * contaminationspectrum2dpteta = (TH2D*)contaminationspectrum->Project(1,0);
+    TH2D * contaminationspectrum2dptphi = (TH2D*)contaminationspectrum->Project(2,0);
+    TH2D * contaminationspectrum2detaphi = (TH2D*)contaminationspectrum->Project(1,2);
     contaminationspectrum2dpteta->SetStats(0);
     contaminationspectrum2dpteta->SetTitle("");
     contaminationspectrum2dpteta->GetXaxis()->SetTitle("#eta");
@@ -274,7 +274,7 @@ void AliHFEspectrum::Correct(AliCFContainer *datacontainer,AliCFContainer *mccon
   legres->Draw("same");
   cresidual->cd(2);
   TH1D *residualTH1D = residualspectrum->Projection(0);
-  TH1D *measuredTH1D = dataspectrum->Project(0);
+  TH1D *measuredTH1D = (TH1D*)dataspectrum->Project(0);
   TH1D* ratioresidual = (TH1D*)residualTH1D->Clone();
   ratioresidual->SetName("ratioresidual");
   ratioresidual->SetTitle("");
@@ -313,7 +313,7 @@ void AliHFEspectrum::Correct(AliCFContainer *datacontainer,AliCFContainer *mccon
   legcorrected->Draw("same");
   ccorrected->cd(2);
   TH1D *correctedTH1D = correctedspectrum->Projection(0);
-  TH1D *alltogetherTH1D = alltogetherCorrection->Project(0);
+  TH1D *alltogetherTH1D = (TH1D*)alltogetherCorrection->Project(0);
   TH1D* ratiocorrected = (TH1D*)correctedTH1D->Clone();
   ratiocorrected->SetName("ratiocorrected");
   ratiocorrected->SetTitle("");
@@ -333,22 +333,22 @@ void AliHFEspectrum::Correct(AliCFContainer *datacontainer,AliCFContainer *mccon
   
   TCanvas * cefficiency = new TCanvas("efficiency","efficiency",1000,700);
   cefficiency->cd(1);
-  TH1D* efficiencymcPIDD = efficiencymcPID->Project(0);
+  TH1D* efficiencymcPIDD = (TH1D*)efficiencymcPID->Project(0);
   efficiencymcPIDD->SetTitle("");
   efficiencymcPIDD->SetStats(0);
   efficiencymcPIDD->SetMarkerStyle(25);
   efficiencymcPIDD->Draw();
-  TH1D* efficiencymctrackinggeoD = efficiencymctrackinggeo->Project(0);
+  TH1D* efficiencymctrackinggeoD = (TH1D*)efficiencymctrackinggeo->Project(0);
   efficiencymctrackinggeoD->SetTitle("");
   efficiencymctrackinggeoD->SetStats(0);
   efficiencymctrackinggeoD->SetMarkerStyle(26);
   efficiencymctrackinggeoD->Draw("same");
-  TH1D* efficiencymcallD = efficiencymcall->Project(0);
+  TH1D* efficiencymcallD = (TH1D*)efficiencymcall->Project(0);
   efficiencymcallD->SetTitle("");
   efficiencymcallD->SetStats(0);
   efficiencymcallD->SetMarkerStyle(27);
   efficiencymcallD->Draw("same");
-  TH1D* efficiencyesdallD = efficiencyesdall->Project(0);
+  TH1D* efficiencyesdallD = (TH1D*)efficiencyesdall->Project(0);
   efficiencyesdallD->SetTitle("");
   efficiencyesdallD->SetStats(0);
   efficiencyesdallD->SetMarkerStyle(24);
@@ -641,7 +641,7 @@ TGraphErrors *AliHFEspectrum::Normalize(AliCFDataGrid * const spectrum) const {
   //
   if(fNEvents > 0) {
 
-    TH1D* projection = spectrum->Project(0);
+    TH1D* projection = (TH1D*)spectrum->Project(0);
     CorrectFromTheWidth(projection);
     TGraphErrors *graphError = NormalizeTH1(projection);
     return graphError;
