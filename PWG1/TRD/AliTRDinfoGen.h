@@ -38,6 +38,23 @@ public:
    ,kCollision            = BIT(21)
    ,kOCDB                 = BIT(22)
   };
+  enum AliTRDinfoGenObjects{
+    kTracksESD     =  0
+    ,kTracksMC     =  1
+    ,kV0           =  2
+    ,kTPC          =  3
+    ,kTRDin        =  4
+    ,kTRDout       =  5
+    ,kBarrel       =  6
+    ,kBarrelMC     =  7
+    ,kSA           =  8
+    ,kSAMC         =  9
+    ,kKink         = 10
+    ,kKinkMC       = 11
+    ,kBarrelFriend = 12
+    ,kSAFriend     = 13
+    ,kNObjects     = 14
+  };
 
   AliTRDinfoGen();
   AliTRDinfoGen(char* name);
