@@ -287,7 +287,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   // returns a bit word describing the fired offline triggers (see AliVEvent::EOfflineTriggerTypes)
   
   if (fCurrentRun != aEsd->GetRunNumber()) {
-    if (!Initialize(aEsd->GetRunNumber()))
+    if (!Initialize(aEsd))
       AliFatal(Form("Could not initialize for run %d", aEsd->GetRunNumber()));
     if(fComputeBG) SetBIFactors(aEsd); // is this safe here?
   }
@@ -368,7 +368,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Bool_t fmd  = fmdA || fmdC;
     
       // SSD
-      Int_t ssdClusters = triggerAnalysis->SSDClusters(aEsd);
+      //Int_t ssdClusters = triggerAnalysis->SSDClusters(aEsd);
       
       // ZDC
       Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCA);
@@ -525,17 +525,8 @@ Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t runNumber) const
 {
   // returns the current trigger scheme (classes that are accepted/rejected)
   
-  Bool_t pp = kTRUE;
-  if (runNumber >= 136849)  // last pp run 2010
-    pp = kFALSE;
-  
   if (fMC)
-  {
-    if (pp)
-      return 0; // pp
-    else
-      return -1; // HI
-  }
+    return 0;
     
   // TODO dependent on run number
   
@@ -549,10 +540,7 @@ Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t runNumber) const
   }
   
   // defaults
-  if (pp)
-    return 1;
-  else
-    return 3;
+  return 1;
 }  
 
 const char * AliPhysicsSelection::GetFillingScheme(UInt_t runNumber)  {
@@ -740,8 +728,20 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
 
   return "";
 }
-    
-Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
+
+Bool_t AliPhysicsSelection::Initialize(const AliESDEvent* aEsd)
+{
+  // initializes the object for the given ESD
+  
+  AliInfo(Form(("Initializing for beam type: %s", aEsd->GetESDRun()->GetBeamType()));
+  Bool_t pp = kTRUE;
+  if (strcmp(aEsd->GetESDRun()->GetBeamType(), "Pb-Pb") == 0)
+    pp = kFALSE;
+  
+  return Initialize(aEsd->GetRunNumber(), pp);
+}
+
+Bool_t AliPhysicsSelection::Initialize(Int_t runNumber, Bool_t pp)
 {
   // initializes the object for the given run
   // TODO having the run number here and parameters hardcoded is clearly temporary, a way needs to be found to have a CDB-like configuration also for analysis
@@ -781,87 +781,98 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     if (fUsingCustomClasses) {
       AliInfo("Using user-provided trigger classes");
     } else {
-      switch (triggerScheme)
+      if (pp)
       {
-      case -1:
-        // MC Heavy-Ion
+        switch (triggerScheme)
+        {
+        case 0:
+          // MC Proton-Proton
+          
+          fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCINT1)));
+          break;
+          
+        case 1:
+          // Proton-Proton
+          
+          // trigger classes used before August 2010
+          fCollTrigClasses.Add(new TObjString(Form("%s%s &%u","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1C-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1-E-NOPF-ALL",      GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
+  
+          // Muon trigger have the same BXIDs of the corresponding CINT triggers
+          fCollTrigClasses.Add(new TObjString(Form("%s%s &%u","+CMUS1B-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CMUS1A-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CMUS1C-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CMUS1-E-NOPF-MUON"    ,  GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
+          
+          // triggers classes used from August 2010
+          // MB
+          fCollTrigClasses.Add(new TObjString(Form("%s%s &%u", "+CINT1-B-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "B"),  (UInt_t) AliVEvent::kMB)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CINT1-AC-NOPF-ALLNOTRD", GetBXIDs(runNumber, "AC"), (UInt_t) AliVEvent::kMB)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CINT1-E-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "E"),  (UInt_t) AliVEvent::kMB)));
+                                                                                        
+          // MUON					  	 			      
+          fCollTrigClasses.Add(new TObjString(Form("%s%s &%u", "+CMUS1-B-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "B"),  (UInt_t) AliVEvent::kMUON)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CMUS1-AC-NOPF-ALLNOTRD", GetBXIDs(runNumber, "AC"), (UInt_t) AliVEvent::kMUON)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CMUS1-E-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "E"),  (UInt_t) AliVEvent::kMUON)));
+                                                                                      
+          // High Multiplicity			  				     
+          fCollTrigClasses.Add(new TObjString(Form("%s%s &%u", "+CSH1-B-NOPF-ALLNOTRD"  , GetBXIDs(runNumber, "B"),  (UInt_t) AliVEvent::kHighMult)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CSH1-AC-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "AC"), (UInt_t) AliVEvent::kHighMult)));
+          fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CSH1-E-NOPF-ALLNOTRD"  , GetBXIDs(runNumber, "E"),  (UInt_t) AliVEvent::kHighMult)));
+  
+          // WARNING: IF YOU ADD MORE TRIGGER CLASSES, PLEASE CHECK THAT THE REGULAR EXPRESSION IN GetStatRow IS STILL VALID
+  
+          break;
+          
+        case 2:
+          // Proton-Proton
+          
+          fCollTrigClasses.Add(new TObjString(Form("+CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
+          fBGTrigClasses.Add(new TObjString(Form("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
+          fBGTrigClasses.Add(new TObjString(Form("+CSMBC-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
+          break;
+          
+        default:
+          AliFatal(Form("Unsupported trigger scheme %d", triggerScheme));
+        }
+      }
+      else
+      {
+        switch (triggerScheme)
+        {
+        case 0:
+          // MC Heavy-Ion
+          
+          fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+          fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+          fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+          break;
         
-        fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
-        fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
-        fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
-        break;
-      
-      case 0:
-        // MC Proton-Proton
+        case 1:
+          // Data Heavy-ion
+          
+          fCollTrigClasses.Add(new TObjString(Form("+CMBS2A-B-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-A-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-C-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-E-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
+          
+          fCollTrigClasses.Add(new TObjString(Form("+CMBS2C-B-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBS2C-A-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBS2C-C-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBS2C-E-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
+          
+          fCollTrigClasses.Add(new TObjString(Form("+CMBAC-B-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-A-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-C-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-E-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+          
+          break;
         
-        fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCINT1)));
-        break;
-        
-      case 1:
-        // Proton-Proton
-        
-      	// trigger classes used before August 2010
-        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1C-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1-E-NOPF-ALL",      GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
-
-        // Muon trigger have the same BXIDs of the corresponding CINT triggers
-        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u","+CMUS1B-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CMUS1A-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CMUS1C-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CMUS1-E-NOPF-MUON"    ,  GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
-        
-        // triggers classes used from August 2010
-        // MB
-        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u", "+CINT1-B-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "B"),  (UInt_t) AliVEvent::kMB)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CINT1-AC-NOPF-ALLNOTRD", GetBXIDs(runNumber, "AC"), (UInt_t) AliVEvent::kMB)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CINT1-E-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "E"),  (UInt_t) AliVEvent::kMB)));
-        					  	 			      
-	// MUON					  	 			      
-        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u", "+CMUS1-B-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "B"),  (UInt_t) AliVEvent::kMUON)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CMUS1-AC-NOPF-ALLNOTRD", GetBXIDs(runNumber, "AC"), (UInt_t) AliVEvent::kMUON)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CMUS1-E-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "E"),  (UInt_t) AliVEvent::kMUON)));
-						  				     
-	// High Multiplicity			  				     
-        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u", "+CSH1-B-NOPF-ALLNOTRD"  , GetBXIDs(runNumber, "B"),  (UInt_t) AliVEvent::kHighMult)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CSH1-AC-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "AC"), (UInt_t) AliVEvent::kHighMult)));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CSH1-E-NOPF-ALLNOTRD"  , GetBXIDs(runNumber, "E"),  (UInt_t) AliVEvent::kHighMult)));
-
-	// WARNING: IF YOU ADD MORE TRIGGER CLASSES, PLEASE CHECK THAT THE REGULAR EXPRESSION IN GetStatRow IS STILL VALID
-
-        break;
-        
-      case 2:
-        // Proton-Proton
-        
-        fCollTrigClasses.Add(new TObjString(Form("+CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
-        fBGTrigClasses.Add(new TObjString(Form("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
-        fBGTrigClasses.Add(new TObjString(Form("+CSMBC-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
-        break;
-        
-      case 3:
-        // Heavy-ion
-        
-        fCollTrigClasses.Add(new TObjString(Form("+CMBS2A-B-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-A-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-C-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-E-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
-        
-        fCollTrigClasses.Add(new TObjString(Form("+CMBS2C-B-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2C-A-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2C-C-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMBS2C-E-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
-        
-        fCollTrigClasses.Add(new TObjString(Form("+CMBAC-B-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-A-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-C-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-E-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
-        
-        break;
-        
-      default:
-        AliFatal(Form("Unsupported trigger scheme %d", triggerScheme));
+        default:
+          AliFatal(Form("Unsupported trigger scheme %d", triggerScheme));
+        }
       }
     }
     

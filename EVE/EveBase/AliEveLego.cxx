@@ -125,7 +125,7 @@ AliEveLego::AliEveLego(const char* name) :
 
   // Loading Physics Selection to determine the collision candidates
   fPhysicsSelection = new AliPhysicsSelection();
-  fPhysicsSelection->Initialize(fEsd->GetRunNumber());
+  fPhysicsSelection->Initialize(fEsd);
 
   fHistopos       = new TH2F("histopos","Histo 2d positive", 100, -1.5, 1.5, 80, -kPi, kPi);
   fHistoneg       = new TH2F("histoneg","Histo 2d negative", 100, -1.5, 1.5, 80, -kPi, kPi);
@@ -954,7 +954,7 @@ void AliEveLego::SwitchDataType(Bool_t status)
   // Re-initialization of physics selection
   fPhysicsSelection = new AliPhysicsSelection();
   fPhysicsSelection->SetAnalyzeMC(fIsMC);
-  fPhysicsSelection->Initialize(fEsd->GetRunNumber());
+  fPhysicsSelection->Initialize(fEsd);
   FilterAllData();
 }
 

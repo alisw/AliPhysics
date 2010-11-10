@@ -59,7 +59,8 @@ public:
     
   Int_t  GetCurrentRun() const {return fCurrentRun;}
   UInt_t IsCollisionCandidate(const AliESDEvent* aEsd);
-  Bool_t Initialize(Int_t runNumber);
+  Bool_t Initialize(const AliESDEvent* aEsd);
+  Bool_t Initialize(Int_t runNumber, Bool_t pp);
     
   void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
   void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { fSkipTriggerClassSelection = flag; }

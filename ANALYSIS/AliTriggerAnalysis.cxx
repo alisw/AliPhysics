@@ -621,8 +621,6 @@ void AliTriggerAnalysis::FillTriggerClasses(const AliESDEvent* aEsd)
     fTriggerClasses->Add(new TObjString(aEsd->GetFiredTriggerClasses().Data()), count);
   }
   count->SetVal(count->GetVal() + 1);
-  
-  // TODO add first and last orbit number here
 }
 
 Int_t AliTriggerAnalysis::SSDClusters(const AliESDEvent* aEsd)

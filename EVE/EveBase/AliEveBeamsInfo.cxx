@@ -78,7 +78,7 @@ AliEveBeamsInfo::AliEveBeamsInfo(const char* name) :
   // AliPhysicsSelection
   fPhysicsSelection = new AliPhysicsSelection();
   fPhysicsSelection->SetAnalyzeMC(kFALSE);
-  fPhysicsSelection->Initialize(fEsd->GetRunNumber());
+  fPhysicsSelection->Initialize(fEsd);
 
   // Loading physics selection and triggers buttons
   CreateEventPanel();
@@ -400,7 +400,7 @@ void AliEveBeamsInfo::SwitchDataType(Bool_t status)
 
   fPhysicsSelection = new AliPhysicsSelection();
   fPhysicsSelection->SetAnalyzeMC(fIsMC);
-  fPhysicsSelection->Initialize(fEsd->GetRunNumber());
+  fPhysicsSelection->Initialize(fEsd);
   Update();
 }
 
