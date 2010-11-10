@@ -977,15 +977,15 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   Float_t calibTowZN1[10], calibTowZN2[10], calibTowZP1[10], calibTowZP2[10];
   for(Int_t gi=0; gi<5; gi++){
      // High gain chain
-     calibTowZN1[gi] = equalTowZN1[gi]*calibEne[0]*8.;
-     calibTowZP1[gi] = equalTowZP1[gi]*calibEne[1]*8.;
-     calibTowZN2[gi] = equalTowZN2[gi]*calibEne[2]*8.;
-     calibTowZP2[gi] = equalTowZP2[gi]*calibEne[3]*8.;
+     calibTowZN1[gi] = equalTowZN1[gi]*2*calibEne[0]*8.;
+     calibTowZP1[gi] = equalTowZP1[gi]*2*calibEne[1]*8.;
+     calibTowZN2[gi] = equalTowZN2[gi]*2*calibEne[2]*8.;
+     calibTowZP2[gi] = equalTowZP2[gi]*2*calibEne[3]*8.;
      // Low gain chain
-     calibTowZN1[gi+5] = equalTowZN1[gi+5]*calibEne[0];
-     calibTowZP1[gi+5] = equalTowZP1[gi+5]*calibEne[1];
-     calibTowZN2[gi+5] = equalTowZN2[gi+5]*calibEne[2];
-     calibTowZP2[gi+5] = equalTowZP2[gi+5]*calibEne[3];
+     calibTowZN1[gi+5] = equalTowZN1[gi+5]*2*calibEne[0];
+     calibTowZP1[gi+5] = equalTowZP1[gi+5]*2*calibEne[1];
+     calibTowZN2[gi+5] = equalTowZN2[gi+5]*2*calibEne[2];
+     calibTowZP2[gi+5] = equalTowZP2[gi+5]*2*calibEne[3];
   }
 
   // Ch. debug
