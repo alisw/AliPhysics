@@ -18,6 +18,7 @@
 #pragma link C++ class AlidNdPtEventCuts+;
 #pragma link C++ class AlidNdPt+;
 #pragma link C++ class AlidNdPtCutAnalysis+;
+#pragma link C++ class AlidNdPtCutAnalysisPbPb+;
 
 #pragma link C++ class AlidNdPtBackgroundCuts+;
 
