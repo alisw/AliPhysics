@@ -102,7 +102,7 @@ void AliEveHLTEventManagerHomer::TryNextEvent() {
     cout << "couldn't get the sync event"<<endl;
     fEventBuffer->UnLockMutex();
     fEventBuffer->CreateBufferThread();
-    fNextEventTimer->Start(1000);
+    fNextEventTimer->Start(10000);
   
   }
   
