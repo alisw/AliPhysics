@@ -84,6 +84,7 @@ void AliEveEventBuffer::CreateBufferThread() {
       cout << "Started BufferThread"<<endl;
     } else { 
       cout << "Buffer is full already"<<endl;
+      fMutex->UnLock();
     }
   }
 }

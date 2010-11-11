@@ -13,22 +13,25 @@
 #include "TList.h"
 #include "AliEveHOMERManager.h"
 #include "TEveManager.h"
+#include "TTimer.h"
+#include "TGLOverlayButton.h"
 
 ClassImp(AliEveHLTEventManagerHomer)
 
 AliEveHLTEventManagerHomer::AliEveHLTEventManagerHomer() : 
   AliEveHLTEventManager(),
-  fEventBuffer(NULL)
+  fEventBuffer(NULL), 
+  fNextEventTimer(NULL),
+  fInfoButton(NULL)
 {
   // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
   fEventBuffer = new AliEveEventBufferHomer();
   fEventBuffer->StartBufferMonitor();
-  //AliEveHOMERManager * hm = fEventBuffer->GetHomerManager();
-  //if(hm) GetEveManager()->AddToListTree(hm, kTRUE);
+    
+  fNextEventTimer = new TTimer();
+  fNextEventTimer->Connect("Timeout()", "AliEveHLTEventManagerHomer", this, "TryNextEvent()" );
+   
   
 
 }
@@ -51,17 +54,22 @@ void AliEveHLTEventManagerHomer::ProcessList(TList * blockList) {
   UpdateDisplay();
 
 }
-
-
+void AliEveHLTEventManagerHomer::NextEvent() {
+  fNextEventTimer->Start(1000);
+}
 
 ///________________________________________________________________________________
-void AliEveHLTEventManagerHomer::NextEvent() {
+void AliEveHLTEventManagerHomer::TryNextEvent() {
   //See header file for documentation
-  if(fEventBuffer->LockMutex() ) {
-    cout << "event buffer already busy"<<endl;
+    
+  if ( fEventBuffer->LockMutex() ) {
+    cout << "try again in 1 sec"<<endl;
     return;
-  } else {
-
+  }
+  
+  fNextEventTimer->Stop();
+    
+  cout << "Mutex is freeee!!"<<endl;
   TList * aSyncEvent = fEventBuffer->GetASyncEvent();
   TList * event = static_cast<TList*>(fEventBuffer->NextEvent());
   if(event) {
@@ -83,14 +91,6 @@ void AliEveHLTEventManagerHomer::NextEvent() {
     cout << "couldn't get the sync event"<<endl;
   }
   
-  //  cout  << "doint async block"<<endl;
-  //  TList * async = static_cast<TList*>(fEventBuffer->GetAList());
-  //  if(async) {
-  // 	ProcessEvent(async);
-  //   }  else {
-  // 	 cout << "No async bloc"<<endl;
-  // }
-  }
   
   fEventBuffer->UnLockMutex();
 }
