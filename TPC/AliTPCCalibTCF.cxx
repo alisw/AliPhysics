@@ -354,16 +354,17 @@ void AliTPCCalibTCF::ProcessRawEventV3( AliRawReader *rawReader, AliTPCRawStream
 	    his2d = new TH2F(hname2d,hname2d, fPulseLength, 0., (Double_t)fPulseLength, 50,-0.02,0.02);
 	    for (Int_t ipos=0; ipos<last-first; ipos++){
 	      Double_t signal = tempHis->GetBinContent(ipos+first)-baseline;
-	      his2d->Fill(ipos,signal/maxCorr);
+	      if (TMath::Abs(signal/maxCorr)>1e-10)  // zero bins are biased
+		his2d->Fill(ipos,signal/maxCorr);
 	    }
 	    his2d->Write(hname2d);
 	    printf("new  %s: \n", hname2d);
-
 	  } else {  // adding pulse to existing histogram 
 
 	    for (Int_t ipos=0; ipos<last-first; ipos++){
 	      Double_t signal= tempHis->GetBinContent(ipos+first)-baseline;
-	      his2d->Fill(ipos,signal/maxCorr);
+	      if (TMath::Abs(signal/maxCorr)>1e-10) // zero bins are biased
+		his2d->Fill(ipos,signal/maxCorr);
 	    }
 	    his2d->Write(hname2d,kOverwrite);
 	  }
@@ -670,7 +671,7 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse, 
     if (name.Contains("ddl") ) continue;  // ignore the 2d histogramms per ddl
 
     hisIn = (TH1F*)fileIn.Get(key->GetName()); // copy object to memory
-
+  
     Int_t numPulse = (Int_t)hisIn->GetBinContent(1); 
     if ( numPulse >= minNumPulse ) {
       printf("Analyze histogram %d out of %d\n",iHist,nHist);
@@ -815,6 +816,7 @@ void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameF
 
     printf("validating pulse %d out of %d\n",++iHist,nHist);
     hisIn = (TH1F*)fileIn.Get(key->GetName()); 
+ 
 
     // find the correct TCF parameter according to the his infos (first 4 bins)
     Int_t nPulse = FindCorTCFparam(hisIn, nameFileTCF, coefZ, coefP); 
@@ -1923,6 +1925,7 @@ void AliTPCCalibTCF::MergeHistoPerFile(const char *fileNameIn, const char *fileN
     if (name.Contains("ddl") ) continue;  // ignore the 2d histogramms per ddl
 
     hisIn=(TH1F*)fileIn.Get(hisName);          
+    
     Int_t numPulse=(Int_t)hisIn->GetBinContent(1);
     Int_t sec=(Int_t)hisIn->GetBinContent(2);
     Int_t pulseLength= hisIn->GetNbinsX()-4;    
@@ -2004,8 +2007,10 @@ void AliTPCCalibTCF::MergeToOneFile(const char *nameFileSum) {
       TIter next(fileSumSec->GetListOfKeys());
       while( (key=(TKey*)next()) ) {
         const char *hisName = key->GetName();
-
+	TString name(hisName);
+	if (name.Contains("ddl") ) continue;  // ignore the 2d histogramms per ddl
         hisIn=(TH1F*)fileSumSec->Get(hisName);
+
 
         if (iHist%100==0) {
           printf("found histogram %d / %d, %s\n",iHist,nHist,hisName);
