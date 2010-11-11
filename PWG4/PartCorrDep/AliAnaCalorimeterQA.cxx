@@ -583,7 +583,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhCaloV0MCorrECells  = new TH2F ("hCaloV0MECells",Form("summed energy of Cells in %s vs V0 signal",fCalorimeter.Data()), nv0mbins,nv0mmin,nv0mmax,nptbins,ptmin,ptmax); 
     fhCaloV0MCorrECells->SetXTitle("V0 signal");
     fhCaloV0MCorrECells->SetYTitle(Form("#Sigma E of Cells in %s (GeV)",fCalorimeter.Data()));
-    outputContainer->Add(fhCaloV0SCorrECells);    
+    outputContainer->Add(fhCaloV0MCorrECells);    
     
     //Calorimeter VS Track multiplicity
     fhCaloTrackMCorrNClusters  = new TH2F ("hCaloTrackMNClusters",Form("# clusters in %s vs V0 signal",fCalorimeter.Data()), ntrmbins,ntrmmin,ntrmmax,nbins,nmin,nmax); 
@@ -604,7 +604,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhCaloTrackMCorrECells  = new TH2F ("hCaloTrackMECells",Form("summed energy of Cells in %s vs V0 signal",fCalorimeter.Data()), ntrmbins,ntrmmin,ntrmmax,nptbins,ptmin,ptmax); 
     fhCaloTrackMCorrECells->SetXTitle("Track Multiplicity");
     fhCaloTrackMCorrECells->SetYTitle(Form("#Sigma E of Cells in %s (GeV)",fCalorimeter.Data()));
-    outputContainer->Add(fhCaloV0SCorrECells);    
+    outputContainer->Add(fhCaloTrackMCorrECells);    
     
     
   }//correlate calorimeters
@@ -672,9 +672,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     
     if(fCalorimeter == "EMCAL"){
       for(Int_t ifrac = 0; ifrac < 3; ifrac++){
-	fhAmplitudeModFraction[imod*3+ifrac]  = new TH1F (Form("hAmplitude_Mod%d_Frac%d",imod,ifrac),Form("Cell reconstructed Energy in Module %d, Fraction %d ",imod,ifrac), nptbins,ptmin,ptmax); 
-	fhAmplitudeModFraction[imod*3+ifrac]->SetXTitle("E (GeV)");
-	outputContainer->Add(fhAmplitudeModFraction[imod*3+ifrac]);
+        fhAmplitudeModFraction[imod*3+ifrac]  = new TH1F (Form("hAmplitude_Mod%d_Frac%d",imod,ifrac),Form("Cell reconstructed Energy in Module %d, Fraction %d ",imod,ifrac), nptbins,ptmin,ptmax); 
+        fhAmplitudeModFraction[imod*3+ifrac]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAmplitudeModFraction[imod*3+ifrac]);
       }
       
     }
@@ -1186,6 +1186,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhMCNeutral1pOverER02->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMCNeutral1pOverER02);
   }
+  
+//  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
+//    printf("i=%d, name= %s\n",i,outputContainer->At(i)->GetName());
   
   return outputContainer;
 }
