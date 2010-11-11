@@ -409,7 +409,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if (GetMixedEvent()) {
       evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
       //Get the vertex and check it is not too large in z
-      if(TMath::Abs(GetVertex(evtIndex)[2])> GetZvertexCut()) return ;  
+      if(TMath::Abs(GetVertex(evtIndex)[2])> GetZvertexCut()) continue;
     }
 
     //Cluster selection, not charged, with photon id and in fiducial cut
