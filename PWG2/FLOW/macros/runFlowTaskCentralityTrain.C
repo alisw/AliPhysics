@@ -8,10 +8,8 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
 //          (Remark: when using this mode set also Bool_t bUseParFiles = kTRUE; in CreateAlienHandler.C)
  
 // CENTRALITY DEFINITION
-//const Int_t numberOfCentralityBins = 6;
-//Int_t centralityArray[numberOfCentralityBins+1] = {10, 100, 500, 1000, 1500, 2000, 10000}; // in terms of reference multiplicity
-const Int_t numberOfCentralityBins = 1;
-Int_t centralityArray[numberOfCentralityBins+1] = {1,10000}; // in terms of reference multiplicity
+const Int_t numberOfCentralityBins = 9;
+Int_t centralityArray[numberOfCentralityBins+1] = {41,80,146,245,384,576,835,1203,1471,10000}; // in terms of reference multiplicity
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
 //void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10, 
@@ -19,8 +17,7 @@ TString commonOutputFileName = "outputCentrality"; // e.g.: result for centralit
 
 void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
 				Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_plusplusplus", Int_t offset=0) 
-
-//void runFlowTaskCentralityTrain(Int_t mode = mGrid, Bool_t DATA = kTRUE)
+//void runFlowTaskCentralityTrain(Int_t mode = mGridPAR, Bool_t DATA = kTRUE)
 {
   // Time:
   TStopwatch timer;
@@ -85,12 +82,13 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
   //  physicsSelTask->GetPhysicsSelection()->SetSkipV0(kTRUE);
 
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(0,0);
+
   /*
   if(DATA) {
    physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBS2C-B-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBS2A-B-NOPF-ALL");
-// This are needed only to fill the statistics tables
+   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBS1C-B-NOPF-ALL");
+   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBS1A-B-NOPF-ALL");
+   // This are needed only to fill the statistics tables
    physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBAC-C-NOPF-ALL");
    physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1C-C-NOPF-ALL");
    physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1A-C-NOPF-ALL");
@@ -102,6 +100,7 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
    physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1A-E-NOPF-ALL");
   }  
   */
+  
   if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   // Enable debug printouts:
   mgr->SetDebugLevel(2);
@@ -170,6 +169,17 @@ void LoadLibraries(const anaModes mode)
     }
     if(mode==mGridPAR) 
     {
+     SetupPar("STEERBase");
+     cerr<<"STEERBase.par loaded..."<<endl;
+     SetupPar("ESD");
+     cerr<<"ESD.par loaded..."<<endl;
+     SetupPar("AOD");
+     cerr<<"AOD.par loaded..."<<endl;
+     SetupPar("ANALYSIS");
+     cerr<<"ANALYSIS.par loaded..."<<endl;
+     SetupPar("ANALYSISalice");
+     cerr<<"ANALYSISalice.par loaded..."<<endl;
+     SetupPar("CORRFW");
      SetupPar("PWG2flowCommon");
      cerr<<"PWG2flowCommon.par loaded..."<<endl;
      SetupPar("PWG2flowTasks");
