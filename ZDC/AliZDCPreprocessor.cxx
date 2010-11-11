@@ -439,8 +439,9 @@ UInt_t AliZDCPreprocessor::ProcessCalibData(Float_t beamEnergy)
       for(Int_t j=0; j<6; j++){        
         if(j<6){
           int iread = fscanf(file,"%f",&fitValEMD[j]);
-          if(iread==0) AliDebug(3," Failing reading daa from EMD calibration data file");
-          eCalib->SetEnCalib(j, beamEnergy/fitValEMD[j]);
+          if(iread==0) AliDebug(3," Failing reading data from EMD calibration data file");
+          if(fitValEMD[j]!=1.) eCalib->SetEnCalib(j, beamEnergy/fitValEMD[j]);
+	  else eCalib->SetEnCalib(j, fitValEMD[j]);
         }
       }
       //

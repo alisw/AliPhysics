@@ -90,8 +90,9 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
-  //shuttle->AddInputRunParameter("beamType", "A-A");
-  shuttle->AddInputRunParameter("beamType", "p-p");
+  shuttle->AddInputRunParameter("beamType", "A-A");
+  shuttle->AddInputRunParameter("beamEnergy", "1380");
+  //shuttle->AddInputRunParameter("beamType", "p-p");
   shuttle->AddInputRunParameter("totalEvents", "1000");
   shuttle->AddInputRunParameter("NumberOfGDCs", "1");
 
