@@ -2270,10 +2270,11 @@ void AliSimulation::WriteGRPEntry()
   grpObj->SetBeamEnergyIsSqrtSHalfGeV(); // new format of GRP: store sqrt(s)/2 in GeV
 
   const AliGenerator *gen = gAlice->GetMCApp()->Generator();
+  Int_t a = 0;
+  Int_t z = 0;
+
   if (gen) {
-    grpObj->SetBeamEnergy(gen->GetEnergyCMS()/2);
     TString projectile;
-    Int_t a,z;
     gen->GetProjectile(projectile,a,z);
     TString target;
     gen->GetTarget(target,a,z);
@@ -2281,9 +2282,15 @@ void AliSimulation::WriteGRPEntry()
     beamType.ReplaceAll(" ","");
     if (!beamType.CompareTo("-")) {
       grpObj->SetBeamType("UNKNOWN");
+      grpObj->SetBeamEnergy(gen->GetEnergyCMS()/2);
     }
     else {
       grpObj->SetBeamType(beamType);
+      if (z != 0) {
+	  grpObj->SetBeamEnergy(gen->GetEnergyCMS()/2 * a / z);
+      } else {
+	  grpObj->SetBeamEnergy(gen->GetEnergyCMS()/2 );
+      }
       // Heavy ion run, the event specie is set to kHighMult
       fEventSpecie = AliRecoParam::kHighMult;
       if ((strcmp(beamType,"p-p") == 0) ||
