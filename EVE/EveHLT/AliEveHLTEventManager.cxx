@@ -172,8 +172,8 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
   
   if(!fEmcalElement) CreateEmcalElement();
   fEmcalElement->ProcessEvent(event);
-
-  gEve->Redraw3D(0, 1);
+  
+  gEve->FullRedraw3D(0, 1);
   gEve->EnableRedraw();
 
   return 0;
@@ -192,6 +192,7 @@ Int_t AliEveHLTEventManager::ProcessEvent(TList * blockList) {
     return -1;
   }
  
+  gEve->DisableRedraw();
 
   AliHLTHOMERBlockDesc * block = NULL;
   TIter next(blockList);
@@ -282,6 +283,15 @@ void AliEveHLTEventManager::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     
     else if ( ! block->GetDetector().CompareTo("MUON") ) {
       //Do Nothing
+      if(!block->GetDataType().CompareTo("ROOTHIST")) {
+	if(!fMuonElement) {
+	  fMuonElement = new AliHLTEveMuon();
+	  fMuonElement->SetEventManager(this);
+	  gEve->AddElement(fMuonElement);
+	}
+	fMuonElement->ProcessBlock(block);
+      }
+    
     } else {
       if(!fAnyElement) {
 	fAnyElement = new AliHLTEveAny();
