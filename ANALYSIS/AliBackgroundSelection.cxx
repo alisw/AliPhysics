@@ -228,13 +228,13 @@ void AliBackgroundSelection::BookClusterVsTrackletsHisto(const char * trigger_na
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  TH2F * h1 = new TH2F(GetClusterVsTrackletsHistoName(trigger_name),trigger_name, 50, -0.5, 49.5, 1000, -0.5, 999.5);
+  TH2F * h1 = new TH2F(GetClusterVsTrackletsHistoName(trigger_name),trigger_name, 300, -0.5, 2999.5, 1000, -0.5, 9999.5);
   h1->SetXTitle("Tracklets");
   h1->SetYTitle("SPD Clusters");
   AliInfo(Form("Creating histos: %s, all and accepted", GetClusterVsTrackletsHistoName(trigger_name)));
 
   TH2F * h2 = new TH2F(GetClusterVsTrackletsHistoNameAccepted(trigger_name),TString(trigger_name)+ "(accepted)", 
-		       50, -0.5, 49.5, 1000, -0.5, 999.5);
+		       300, -0.5, 2999.5, 1000, -0.5, 9999.5);
   h2->SetXTitle("Tracklets");
   h2->SetYTitle("SPD Clusters");
 

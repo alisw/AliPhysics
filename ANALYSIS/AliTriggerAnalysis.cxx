@@ -62,6 +62,7 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fHistV0A(0),       
   fHistV0C(0),
   fHistZDC(0),    
+  fHistTDCZDC(0),    
   fHistFMDA(0),    
   fHistFMDC(0),   
   fHistFMDSingle(0),
@@ -102,6 +103,11 @@ AliTriggerAnalysis::~AliTriggerAnalysis()
   }
 
   if (fHistZDC)
+  {
+    delete fHistZDC;
+    fHistZDC = 0;
+  }
+  if (fHistTDCZDC)
   {
     delete fHistZDC;
     fHistZDC = 0;
@@ -157,6 +163,7 @@ void AliTriggerAnalysis::EnableHistograms()
   fHistV0A = new TH1F("fHistV0A", "V0A;leading time (ns);events", 400, -100, 100);
   fHistV0C = new TH1F("fHistV0C", "V0C;leading time (ns);events", 400, -100, 100);
   fHistZDC = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
+  fHistTDCZDC = new TH1F("fHistTDCZDC", "ZDC;TDC bits;events", 32, -0.5, 32-0.5);
   
   // TODO check limits
   fHistFMDA = new TH1F("fHistFMDA", "FMDA;combinations above threshold;events", 102, -1.5, 100.5);
@@ -577,7 +584,9 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd)
   
   V0Trigger(aEsd, kASide, kFALSE, kTRUE);
   V0Trigger(aEsd, kCSide, kFALSE, kTRUE);
-  
+  ZDCTDCTrigger(aEsd,kASide,kFALSE,kFALSE,kTRUE);
+
+
   AliESDZDC* zdcData = aEsd->GetESDZDC();
   if (zdcData)
   {
@@ -907,6 +916,35 @@ Float_t AliTriggerAnalysis::V0LeadingTimeWeight(Float_t adc) const
   return 1./(p1*p1*TMath::Power(adc,2.*(p2-1.))+p3*p3);
 }
 
+
+Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t useZN, Bool_t useZP, Bool_t fillHists) const
+{
+  // Returns if ZDC triggered, based on TDC information 
+  
+  AliESDZDC *esdZDC = aEsd->GetESDZDC();
+
+  Bool_t tdc[32] = {kFALSE};
+  for(Int_t itdc=0; itdc<32; itdc++){
+    for(Int_t i=0; i<4; i++){
+      if (0.025*esdZDC->GetZDCTDCData(itdc, i) != 0){
+	tdc[itdc] = kTRUE;
+      }
+    }
+    if(fillHists && tdc[itdc]) {
+      fHistTDCZDC->Fill(itdc);
+    }    
+  }
+  Bool_t zdcNA = tdc[12];
+  Bool_t zdcNC = tdc[10];
+  Bool_t zdcPA = tdc[13];
+  Bool_t zdcPC = tdc[11];
+
+
+  if (side == kASide) return ((useZP&&zdcPA) || (useZN&&zdcNA)); 
+  if (side == kCSide) return ((useZP&&zdcPC) || (useZN&&zdcNC)); 
+  return kFALSE;
+}
+
 Bool_t AliTriggerAnalysis::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const
 {
   // Returns if ZDC triggered
@@ -1024,7 +1062,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  const Int_t nHists = 9;
+  const Int_t nHists = 10;
   TList collections[nHists];
 
   Int_t count = 0;
@@ -1038,6 +1076,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
     collections[n++].Add(entry->fHistV0A);
     collections[n++].Add(entry->fHistV0C);
     collections[n++].Add(entry->fHistZDC);
+    collections[n++].Add(entry->fHistTDCZDC);
     collections[n++].Add(entry->fHistFMDA);
     collections[n++].Add(entry->fHistFMDC);
     collections[n++].Add(entry->fHistFMDSingle);
@@ -1073,6 +1112,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   fHistV0A->Merge(&collections[n++]);
   fHistV0C->Merge(&collections[n++]);
   fHistZDC->Merge(&collections[n++]);
+  fHistTDCZDC->Merge(&collections[n++]);
   fHistFMDA->Merge(&collections[n++]);
   fHistFMDC->Merge(&collections[n++]);
   fHistFMDSingle->Merge(&collections[n++]);
@@ -1099,6 +1139,7 @@ void AliTriggerAnalysis::SaveHistograms() const
   fHistV0A->Write();
   fHistV0C->Write();
   fHistZDC->Write();
+  fHistTDCZDC->Write();
   fHistFMDA->Write();
   fHistFMDC->Write();
   fHistFMDSingle->Write();

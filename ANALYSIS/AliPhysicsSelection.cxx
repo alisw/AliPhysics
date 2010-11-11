@@ -371,8 +371,10 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       //Int_t ssdClusters = triggerAnalysis->SSDClusters(aEsd);
       
       // ZDC
-      Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCA);
-      Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCC);
+      // Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCA);
+      // Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCC);
+      Bool_t zdcA = triggerAnalysis->ZDCTDCTrigger(aEsd, AliTriggerAnalysis::kASide);
+      Bool_t zdcC = triggerAnalysis->ZDCTDCTrigger(aEsd, AliTriggerAnalysis::kCSide);
       
 
       // Some "macros"
