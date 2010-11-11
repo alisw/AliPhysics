@@ -167,6 +167,8 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
     }
   }
 
+  Float_t thrGood = TMath::Max(Float_t(500.),fT0width*3);
+
   fT0TOF->Init(esd);
   AliTOFT0v1* t0maker= fT0TOF;
 
@@ -198,11 +200,13 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
   fCalculated[6]=sigmaFill; // sigma t0 fill
   fCalculated[7] = t0tof[3];  // n TOF tracks used for T0
 
+  if(fCalculated[7] > 30) thrGood = 10000000;
+
   //statistics
   fCalculated[8] = t0tof[4]; // real time in s
   fCalculated[9] = t0tof[5]; // cpu time in s
 
-  if(fCalculated[1] < sigmaFill && TMath::Abs(fCalculated[0] - t0fill) < 500 && fCalculated[1] < fTimeResolution*1.2){
+  if(fCalculated[1] < sigmaFill && TMath::Abs(fCalculated[0] - t0fill) < thrGood && fCalculated[1] < fTimeResolution*1.2){
     fT0sigma=fCalculated[1];
     lT0Current=fCalculated[0];
   }
@@ -233,7 +237,7 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
     }
   }
 
-  if(fT0sigma < sigmaFill && TMath::Abs(lT0Current - t0fill) < 500){
+  if(fT0sigma < sigmaFill && TMath::Abs(lT0Current - t0fill) < thrGood){
     fCalculated[1]=fT0sigma;
     fCalculated[0]=lT0Current;
   }
@@ -259,7 +263,7 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
       Float_t t0bin =-1000*t0tof[0]; // best t0
       Float_t t0binRes =1000*t0tof[1]; // sigma best t0
       
-      if(t0binRes < sigmaFill  && t0binRes < fTimeResolution * 1.2 && TMath::Abs(t0bin - t0fill) < 500){
+      if(t0binRes < sigmaFill  && t0binRes < fTimeResolution * 1.2 && TMath::Abs(t0bin - t0fill) < thrGood){
 	// Ok T0
 	if(t0sigma < 1000){
 	  Double_t w1 = 1./t0sigma/t0sigma;
