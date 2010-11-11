@@ -3,6 +3,7 @@
 #include "TObjArray.h"
 #include "TTimer.h"
 #include "TThread.h"
+#include "TMutex.h"
 #include "AliEveEventBuffer.h"
 
 
@@ -24,7 +25,8 @@ AliEveEventBuffer::AliEveEventBuffer() :
   fTimer(NULL),
   fEventId(),
   fBufferMonStarted(kFALSE),
-  fThread(NULL)
+  fThread(NULL),
+  fMutex(NULL)
  {
   // see header file for class documentation
   fEventBuffer = new TObjArray(fBufferSize, 0);
@@ -43,7 +45,7 @@ AliEveEventBuffer::AliEveEventBuffer() :
   }
 
   fThread = new TThread(AliEveEventBuffer::BufferThread, (void*) this);
-
+  fMutex = new TMutex();
   
 
 }
@@ -68,10 +70,12 @@ AliEveEventBuffer::~AliEveEventBuffer() {
 
 ///___________________________________________________________________________
 void AliEveEventBuffer::CreateBufferThread() {
+  
+  
   cout << "Threadexists: " << fThread->Exists() << endl;
-  if(GetBusy()) {
+  if( fMutex->TryLock() ) {
     cout << "Buffer is busy, no thread created"<< endl;
-    
+    return;
   } else {
     if ( (CalculateDifference(fBIndex[kTop],fBIndex[kLast]) < fPreBuffer) ) {
       SetBusy(kTRUE);
@@ -98,9 +102,9 @@ void * AliEveEventBuffer::BufferThread(void * buffer) {
 ///_____________________________________________________________________________
 void AliEveEventBuffer::MonitorBuffer() {
   cout << "Monitorbuffer() ";
-  SetBusy(kTRUE);
   FetchEvent();
-  SetBusy(kFALSE);
+  fMutex->UnLock();
+
   cout << "done " << endl;
 }
 
@@ -247,7 +251,7 @@ void AliEveEventBuffer::StartBufferMonitor() {
   if(!GetBufferMonStarted()) {
     CreateBufferThread();
     SetBufferMonStarted(kTRUE);
-    fTimer->Start(10000);
+    fTimer->Start(15000);
   } else {
     cout << "Stopping buffer monitor"<<endl;
     fTimer->Stop();

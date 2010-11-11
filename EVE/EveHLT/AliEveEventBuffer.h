@@ -21,7 +21,7 @@ class TObjArray;
 class TObject;
 class TTimer;
 class TThread;
-
+#include "TMutex.h"
 #include "TTimer.h"
 
 class AliEveEventBuffer : public TObject{
@@ -59,6 +59,10 @@ public:
 
   ULong64_t GetEventId() const { return fEventId[fBIndex[kCurrent]]; }
   void SetEventId(ULong64_t eventId) { fEventId[fBIndex[kCurrent]] = eventId;}
+
+  Int_t LockMutex() { return fMutex->TryLock();}
+  Int_t UnLockMutex() { return fMutex->UnLock();}
+
 
 protected:
   
@@ -125,7 +129,7 @@ private:
   Bool_t fBufferMonStarted;
 
   TThread * fThread;
-
+ TMutex * fMutex;
 
   ClassDef(AliEveEventBuffer, 0); // Manage connections to HLT data-sources.
 };

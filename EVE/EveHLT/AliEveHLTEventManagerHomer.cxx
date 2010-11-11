@@ -57,12 +57,10 @@ void AliEveHLTEventManagerHomer::ProcessList(TList * blockList) {
 ///________________________________________________________________________________
 void AliEveHLTEventManagerHomer::NextEvent() {
   //See header file for documentation
-  if(fEventBuffer->GetBusy() ) {
+  if(fEventBuffer->LockMutex() ) {
     cout << "event buffer already busy"<<endl;
     return;
-  }else {
-    fEventBuffer->SetBusy(kTRUE);
-  }
+  } else {
 
   TList * aSyncEvent = fEventBuffer->GetASyncEvent();
   TList * event = static_cast<TList*>(fEventBuffer->NextEvent());
@@ -92,8 +90,9 @@ void AliEveHLTEventManagerHomer::NextEvent() {
   //   }  else {
   // 	 cout << "No async bloc"<<endl;
   // }
-
-  fEventBuffer->SetBusy(kFALSE);
+  }
+  
+  fEventBuffer->UnLockMutex();
 }
 
 
