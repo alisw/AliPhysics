@@ -22,10 +22,12 @@
 
 #include <limits.h>
 #include <float.h>
+#include "TMath.h"
 #include "TNamed.h"
 #include "AliVVertex.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
+#include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 #include "AliMCEvent.h"
 #include "AliFlowEventCuts.h"
@@ -201,6 +203,9 @@ AliFlowEventCuts* AliFlowEventCuts::StandardCuts()
 Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
 {
   //calculate the reference multiplicity, if all fails return 0
+  AliESDVZERO* vzero = NULL;
+  const AliESDEvent* esdevent = dynamic_cast<const AliESDEvent*>(event);
+  Int_t refmult=0;
   if (!fRefMultCuts)
   {
     switch (fRefMultMethod)
@@ -215,13 +220,19 @@ Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
         fRefMultCuts->SetParamType(AliFlowTrackCuts::kESD_SPDtracklet);
         fRefMultCuts->SetEtaRange(-0.8,0.8);
         break;
+      case kV0:
+        if (!esdevent) return 0;
+        vzero=esdevent->GetVZEROData();
+        if (!vzero) return 0;
+        refmult+=TMath::Nint(vzero->GetMTotV0A());
+        refmult+=TMath::Nint(vzero->GetMTotV0C());
+        return refmult;
       default:
         return 0;
     }
   }
 
   fRefMultCuts->SetEvent(const_cast<AliVEvent*>(event));
-  Int_t refmult=0;
   for (Int_t i=0; i<fRefMultCuts->GetNumberOfInputObjects(); i++)
   {
     if (fRefMultCuts->IsSelected(fRefMultCuts->GetInputObject(i),i))

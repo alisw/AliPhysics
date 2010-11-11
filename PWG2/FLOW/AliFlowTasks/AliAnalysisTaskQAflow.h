@@ -20,6 +20,7 @@ class AliAnalysisTaskQAflow: public AliAnalysisTaskSE
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *);
 
+
     void SetTrackCuts(AliFlowTrackCuts* trackcuts) {fTrackCuts=trackcuts;}
     void SetEventCuts(AliFlowEventCuts* eventcuts) {fEventCuts=eventcuts;}
     void SetFillNTuple(Bool_t b) {fFillNtuple=b;}

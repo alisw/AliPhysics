@@ -13,6 +13,7 @@ void plotQAflow(const char* filename="")
    TH1* hbefore = dynamic_cast<TH1*>(before->At(i));
    TH1* hafter = dynamic_cast<TH1*>(after->At(i));
    TCanvas* canvas = new TCanvas(hbefore->GetName(), hbefore->GetTitle());
+   canvas->SetLogy();
    TLegend* legend = new TLegend(0.8,0.8,1.0,1.0);
    hbefore->SetAxisRange(0.1,hbefore->GetBinContent(hbefore->GetMaximumBin()),"Y");
    hbefore->Draw();

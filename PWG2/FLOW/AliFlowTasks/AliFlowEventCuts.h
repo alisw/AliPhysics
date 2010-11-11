@@ -19,7 +19,7 @@ class AliFlowTrackCuts;
 class AliFlowEventCuts : public TNamed {
 
  public:
-  enum refMultMethod { kTPConly, kSPDtracklets };
+  enum refMultMethod { kTPConly, kSPDtracklets, kV0 };
 
   AliFlowEventCuts();
   AliFlowEventCuts(const char* name, const char* title = "AliFlowEventCuts");
