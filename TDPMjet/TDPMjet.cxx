@@ -517,13 +517,14 @@ Int_t TDPMjet::GetTargWounded() const
 {
 	return DTGLCP.nwbsam;
 }
+
 //______________________________________________________________________________
-Int_t TDPMjet::GetProjSpectators() const
+Int_t TDPMjet::GetProjParticipants() const
 {
 	return DTGLCP.nwtaac;
 }
 //______________________________________________________________________________
-Int_t TDPMjet::GetTargSpectators() const
+Int_t TDPMjet::GetTargParticipants() const
 {
 	return DTGLCP.nwtbac;
 }

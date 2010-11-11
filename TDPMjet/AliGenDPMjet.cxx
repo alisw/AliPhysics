@@ -441,17 +441,12 @@ void AliGenDPMjet::MakeHeader()
     ((AliGenDPMjetEventHeader*) header)->SetNProduced(fDPMjet->GetNumStablePc());
     ((AliGenDPMjetEventHeader*) header)->SetImpactParameter(fDPMjet->GetBImpac());
     ((AliGenDPMjetEventHeader*) header)->SetTotalEnergy(fDPMjet->GetTotEnergy());
-    ((AliGenDPMjetEventHeader*) header)->SetParticipants(fDPMjet->GetfIp(), 
-    							 fDPMjet->GetfIt());
-    ((AliGenDPMjetEventHeader*) header)->SetSpectators(fDPMjet->GetProjSpectators(), 
-						       0,
-						       fDPMjet->GetTargSpectators(),
-						       0);
-
- ((AliGenDPMjetEventHeader*) header)->SetProcessType(fDPMjet->GetProcessCode());
-// Bookkeeping for kinematic bias
+    ((AliGenDPMjetEventHeader*) header)->SetParticipants(fDPMjet->GetProjParticipants(), 
+    							 fDPMjet->GetTargParticipants());
+     ((AliGenDPMjetEventHeader*) header)->SetProcessType(fDPMjet->GetProcessCode());
+    // Bookkeeping for kinematic bias
     ((AliGenDPMjetEventHeader*) header)->SetTrials(fTrials);
-// Event Vertex
+    // Event Vertex
     header->SetPrimaryVertex(fVertex);
     gAlice->SetGenEventHeader(header);    
     AddHeader(header);

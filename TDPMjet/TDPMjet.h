@@ -95,8 +95,8 @@ public:
    virtual Double_t GetTargRadius() const;
    virtual Int_t GetProjWounded() const;
    virtual Int_t GetTargWounded() const;
-   virtual Int_t GetProjSpectators() const;
-   virtual Int_t GetTargSpectators() const;
+   virtual Int_t GetProjParticipants() const;
+   virtual Int_t GetTargParticipants() const;
    virtual Int_t    GetProcessCode() const;
 
    // Phojet access (POEVT1)
