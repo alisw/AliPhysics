@@ -45,7 +45,15 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   // Use Terminate function
   void SetUseTerminate(Bool_t useTerminate = kTRUE) {fUseTerminate = useTerminate;}
 
+  // Use centrality - if yes, which one
+  void  SetUseCentrality(Int_t cent)   { fUseCentrality = cent; }
+  Int_t GetUseCentrality()             { return fUseCentrality; }
+
  private:
+
+  // Calculate centrality
+  Int_t CalculateCentralityBin();
+
   AliESDEvent *fESD;          //! ESD event
   AliESDfriend *fESDfriend;   //! ESD friend event
   AliMCEvent *fMC;            //! MC event
@@ -61,10 +69,12 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
 
   Bool_t fUseTerminate;       // use terminate function
 
+  Int_t  fUseCentrality;      // use centrality (0=off(default),1=VZERO,2=SPD)
+
   AliPerformanceTask(const AliPerformanceTask&); // not implemented
   AliPerformanceTask& operator=(const AliPerformanceTask&); // not implemented
   
-  ClassDef(AliPerformanceTask, 4); // example of analysis
+  ClassDef(AliPerformanceTask, 5); // example of analysis
 };
 
 #endif

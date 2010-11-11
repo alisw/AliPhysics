@@ -47,7 +47,7 @@ AliPerformanceTask* AddTaskPerformanceITSTPCMatch(Bool_t bUseMCInfo=kFALSE, Bool
   AliRecInfoCuts *pRecInfoCutsMATCH = new AliRecInfoCuts(); 
   if(pRecInfoCutsMATCH) {
     pRecInfoCutsMATCH->SetMaxDCAToVertexXY(3.0);
-    pRecInfoCutsMATCH->SetMaxDCAToVertexZ(3.0);
+    pRecInfoCutsMATCH->SetMaxDCAToVertexZ(3..0);
     pRecInfoCutsMATCH->SetRequireSigmaToVertex(kFALSE);
     pRecInfoCutsMATCH->SetRequireTPCRefit(kFALSE);
     pRecInfoCutsMATCH->SetAcceptKinkDaughters(kTRUE);
@@ -132,6 +132,9 @@ AliPerformanceTask* AddTaskPerformanceITSTPCMatch(Bool_t bUseMCInfo=kFALSE, Bool
   //
   AliAnalysisDataContainer *coutput_tpc = mgr->CreateContainer("ITSTPCMatch", TList::Class(), AliAnalysisManager::kOutputContainer, Form("TPC.%sDet.root", task->GetName()));
   mgr->ConnectOutput(task, 1, coutput_tpc);
+
+  AliAnalysisDataContainer *coutput2_tpc = mgr->CreateContainer("TPCTPCMatchSummary", TTree::Class(), AliAnalysisManager::kParamContainer, "trending.root:SummaryTPCQA"); 
+  mgr->ConnectOutput(task, 2, coutput2_tpc);
 
 return task;  
 }

@@ -1,5 +1,5 @@
 /**************************************************************************
-* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+* Copyright(c) 1998-1999, ALICE Experiment at CERF, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
 * Contributors are mentioned in the code where appropriate.              *
@@ -49,7 +49,8 @@ AliPerformanceObject::AliPerformanceObject():
   fTriggerClass(0),
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(kFALSE),
-  fUseKinkDaughters(kTRUE)
+  fUseKinkDaughters(kTRUE),
+  fUseCentralityBin(0)
 {
   // constructor
 }
@@ -63,7 +64,8 @@ AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, 
   fTriggerClass(0),
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(kFALSE),
-  fUseKinkDaughters(kTRUE)
+  fUseKinkDaughters(kTRUE),
+  fUseCentralityBin(0)
 {
   // constructor
 }
