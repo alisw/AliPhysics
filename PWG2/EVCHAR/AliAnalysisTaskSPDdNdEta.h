@@ -15,6 +15,7 @@ class TH3F;
 class AliESDEvent;
 class TList;
 class AliTrackletAlg;
+class AliMCParticle;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliTriggerAnalysis.h"
