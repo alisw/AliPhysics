@@ -100,10 +100,12 @@ void AliEveHLTEventManagerHomer::TryNextEvent() {
   
   } else {
     cout << "couldn't get the sync event"<<endl;
+    fInfoButton->SetAlphaValues(0.8, 0.8);
+    fInfoButton->SetText("Waiting for buffer...");
     fEventBuffer->UnLockMutex();
     fEventBuffer->CreateBufferThread();
-    fNextEventTimer->Start(10000);
-  
+    fNextEventTimer->Start(3000);
+    return;
   }
   
   fInfoButton->SetAlphaValues(0.0, 0.0);
