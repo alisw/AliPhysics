@@ -87,6 +87,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   cutsEvent->SetRefMultRange(refMultMin,refMultMax);
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
+  //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
   cutsEvent->SetNContributorsRange(1);
   cutsEvent->SetPrimaryVertexZrange(-10.,10.);
   
@@ -99,11 +100,11 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   cutsRP->SetRequireCharge(kTRUE);
   //cutsRP->SetCharge(chargeRP);
   //cutsRP->SetPID(PdgRP);
-  cutsRP->SetMinNClustersTPC(80);
+  cutsRP->SetMinNClustersTPC(50);
   cutsRP->SetMaxChi2PerClusterTPC(4.0);
   //cutsRP->SetMinNClustersITS(2);
   //cutsRP->SetMaxChi2PerClusterITS(1.e+09);
-  //cutsRP->SetMaxDCAToVertexXY(2.4);
+  cutsRP->SetMaxDCAToVertexXY(2.4);
   //cutsRP->SetMaxDCAToVertexZ(3.2);
   //cutsRP->SetDCAToVertex2D(kTRUE);
   //cutsRP->SetMaxNsigmaToVertex(1.e+10);
@@ -115,7 +116,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(0.1,100.);
-  cutsPOI->SetEtaRange(-1.2,1.2);
+  cutsPOI->SetEtaRange(-0.9,0.9);
   cutsPOI->SetRequireCharge(kTRUE);
   //cutsPOI->SetCharge(chargeRP);
   //cutsPOI->SetPID(PdgRP);
@@ -123,7 +124,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   //cutsPOI->SetMaxChi2PerClusterTPC(4.0);
   //cutsPOI->SetMinNClustersITS(2);
   //cutsPOI->SetMaxChi2PerClusterITS(1.e+09);
-  //cutsPOI->SetMaxDCAToVertexXY(2.4);
+  cutsPOI->SetMaxDCAToVertexXY(2.4);
   //cutsPOI->SetMaxDCAToVertexZ(3.2);
   //cutsPOI->SetDCAToVertex2D(kTRUE);
   //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
@@ -286,7 +287,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-    taskFE->SelectCollisionCandidates(AliVEvent::kUserDefined);
+    taskFE->SelectCollisionCandidates(AliVEvent::kMB);
     cout<<"Using Physics Selection"<<endl;
   }
   mgr->AddTask(taskFE);
