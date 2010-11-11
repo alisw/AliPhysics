@@ -485,7 +485,7 @@ Int_t AliHLTHOMERManager::NextEvent(){
 
   } // while( (object = next()) ) {
 
-  return 0;  
+  return iResult;  
 }
 
 /* ---------------------------------------------------------------------------------
