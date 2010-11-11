@@ -57,7 +57,10 @@ AliFlowEventCuts::AliFlowEventCuts():
   fPrimaryVertexZmin(INT_MIN),
   fCutNContributors(kFALSE),
   fNContributorsMax(INT_MAX),
-  fNContributorsMin(INT_MIN)
+  fNContributorsMin(INT_MIN),
+  fCutMeanPt(kFALSE),
+  fMeanPtMax(INT_MAX),
+  fMeanPtMin(INT_MIN)
 {
   //constructor 
 }
@@ -84,7 +87,10 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fPrimaryVertexZmin(INT_MIN),
   fCutNContributors(kFALSE),
   fNContributorsMax(INT_MAX),
-  fNContributorsMin(INT_MIN)
+  fNContributorsMin(INT_MIN),
+  fCutMeanPt(kFALSE),
+  fMeanPtMax(INT_MAX),
+  fMeanPtMin(INT_MIN)
 {
   //constructor 
 }
@@ -111,7 +117,10 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fPrimaryVertexZmin(that.fPrimaryVertexZmin),
   fCutNContributors(that.fCutNContributors),
   fNContributorsMax(that.fNContributorsMax),
-  fNContributorsMin(that.fNContributorsMin)
+  fNContributorsMin(that.fNContributorsMin),
+  fCutMeanPt(that.fCutMeanPt),
+  fMeanPtMax(that.fMeanPtMax),
+  fMeanPtMin(that.fMeanPtMin)
 {
   //copy constructor 
   if (that.fRefMultCuts)
@@ -140,6 +149,9 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fCutNContributors=that.fCutNContributors;
   fNContributorsMax=that.fNContributorsMax;
   fNContributorsMin=that.fNContributorsMin;
+  fCutMeanPt=that.fCutMeanPt;
+  fMeanPtMax=that.fMeanPtMax;
+  fMeanPtMin=that.fMeanPtMin;
   return *this;
 }
 
@@ -187,6 +199,19 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
   {
     if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
       return kFALSE;
+  }
+  if (fCutMeanPt)
+  {
+    Float_t meanpt=0.0;
+    Int_t ntracks=event->GetNumberOfTracks();
+    for (Int_t i=0; i<ntracks; i++)
+    {
+      AliVParticle* track = event->GetTrack(i);
+      if (!track) continue;
+      meanpt += track->Pt();
+    }
+    meanpt=meanpt/ntracks;
+    if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) return kFALSE;
   }
   return kTRUE;
 }

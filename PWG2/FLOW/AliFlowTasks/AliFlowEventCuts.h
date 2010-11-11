@@ -47,6 +47,7 @@ class AliFlowEventCuts : public TNamed {
        {fCutPrimaryVertexZ=kTRUE; fPrimaryVertexZmin=min; fPrimaryVertexZmax=max;}
   void SetNContributorsRange(Int_t min, Int_t max=INT_MAX) 
        {fCutNContributors=kTRUE; fNContributorsMin=min; fNContributorsMax=max;}
+  void SetMeanPtRange(Int_t min, Int_t max) {fCutMeanPt=kTRUE; fMeanPtMax=max; fMeanPtMin=min;}
 
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
   Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
@@ -82,6 +83,9 @@ class AliFlowEventCuts : public TNamed {
   Bool_t fCutNContributors; //cut on number of contributors
   Int_t fNContributorsMax; //maximal number of contrib
   Int_t fNContributorsMin; //minimal number of contrib
+  Bool_t fCutMeanPt; //cut on mean pt
+  Int_t fMeanPtMax; //max mean pt
+  Int_t fMeanPtMin; //min mean pt
 
 
   ClassDef(AliFlowEventCuts,2)
