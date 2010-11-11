@@ -188,7 +188,7 @@ const Char_t* AliTRDpwg1Helper::MergeBatch(const Char_t *mark, const Char_t *fil
       continue;
     }
     if(kSVN){ // download SVN info for trending
-      if(gSystem->Exec(Form("if [ ! -f svnInfo.log ]; then cp -v %s/svnInfo.log %s; fi", Basename(filename.c_str()), gSystem->ExpandPathName("$PWD"))) == 0) kSVN=kFALSE;
+      if(gSystem->Exec(Form("if [ ! -f svnInfo.log ]; then cp -v %s/svnInfo.log %s; fi", Dirname(filename.c_str()), gSystem->ExpandPathName("$PWD"))) == 0) kSVN=kFALSE;
     }
     Info("MergeBatch()", filename.c_str());
     if(!fFM.AddFile(filename.c_str())) return NULL;
