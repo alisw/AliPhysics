@@ -15,6 +15,7 @@
 #include "TEveManager.h"
 #include "TTimer.h"
 #include "TGLOverlayButton.h"
+#include "TGLViewer.h"
 
 ClassImp(AliEveHLTEventManagerHomer)
 
@@ -32,6 +33,9 @@ AliEveHLTEventManagerHomer::AliEveHLTEventManagerHomer() :
   fNextEventTimer = new TTimer();
   fNextEventTimer->Connect("Timeout()", "AliEveHLTEventManagerHomer", this, "TryNextEvent()" );
    
+  fInfoButton = new TGLOverlayButton(dynamic_cast<TGLViewerBase*>(gEve->GetDefaultGLViewer()),  "", 0, 540, 210, 25);
+    fInfoButton->SetAlphaValues(0.0, 0.8);
+  
   
 
 }
@@ -63,10 +67,14 @@ void AliEveHLTEventManagerHomer::TryNextEvent() {
   //See header file for documentation
     
   if ( fEventBuffer->LockMutex() ) {
+    fInfoButton->SetAlphaValues(0.8, 0.8);
+    fInfoButton->SetText("Waiting for buffer...");
+    gEve->Redraw3D(kFALSE);
     cout << "try again in 1 sec"<<endl;
     return;
   }
-  
+  fInfoButton->SetAlphaValues(0.8, 0.8);
+
   fNextEventTimer->Stop();
     
   cout << "Mutex is freeee!!"<<endl;
@@ -74,8 +82,10 @@ void AliEveHLTEventManagerHomer::TryNextEvent() {
   TList * event = static_cast<TList*>(fEventBuffer->NextEvent());
   if(event) {
     cout << "Got the event, reset the display " <<endl;
+    fInfoButton->SetText("Reset display..");
     ResetDisplay();
     cout << "Process event"<<endl;
+    fInfoButton->SetText("Processing event..");
     ProcessEvent(event);
     if(aSyncEvent) {
       cout  << "Process asynchroneous event" << endl;
@@ -85,14 +95,21 @@ void AliEveHLTEventManagerHomer::TryNextEvent() {
     }
     
     cout << "Upate the display"<<endl;
+    fInfoButton->SetText("Updating display...");
     UpdateDisplay();
   
   } else {
     cout << "couldn't get the sync event"<<endl;
+    fEventBuffer->UnLockMutex();
+    fEventBuffer->CreateBufferThread();
+    fNextEventTimer->Start(1000);
+  
   }
   
-  
+  fInfoButton->SetAlphaValues(0.0, 0.0);
+  fInfoButton->SetText("Done..");
   fEventBuffer->UnLockMutex();
+
 }
 
 
