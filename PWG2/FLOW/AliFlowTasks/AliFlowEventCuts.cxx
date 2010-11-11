@@ -46,6 +46,7 @@ AliFlowEventCuts::AliFlowEventCuts():
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
   fRefMultCuts(NULL),
+  fMeanPtCuts(NULL),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -76,6 +77,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
   fRefMultCuts(NULL),
+  fMeanPtCuts(NULL),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -106,6 +108,7 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fRefMultMax(that.fRefMultMax),
   fRefMultMin(that.fRefMultMin),
   fRefMultCuts(NULL),
+  fMeanPtCuts(NULL),
   fCutPrimaryVertexX(that.fCutPrimaryVertexX),
   fPrimaryVertexXmax(that.fPrimaryVertexXmax),
   fPrimaryVertexXmin(that.fPrimaryVertexXmin),
@@ -125,6 +128,16 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   //copy constructor 
   if (that.fRefMultCuts)
     fRefMultCuts = new AliFlowTrackCuts(*(that.fRefMultCuts));
+  if (that.fMeanPtCuts)
+    fMeanPtCuts = new AliFlowTrackCuts(*(that.fMeanPtCuts));
+}
+
+////-----------------------------------------------------------------------
+AliFlowEventCuts::~AliFlowEventCuts()
+{
+  //dtor
+  delete fMeanPtCuts;
+  delete fRefMultCuts;
 }
 
 ////-----------------------------------------------------------------------
@@ -139,6 +152,7 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fRefMultMax=that.fRefMultMax;
   fRefMultMin=that.fRefMultMin;
   if (that.fRefMultCuts) *fRefMultCuts=*(that.fRefMultCuts);
+  if (that.fMeanPtCuts) *fMeanPtCuts=*(that.fMeanPtCuts);
   fCutPrimaryVertexX=that.fCutPrimaryVertexX;
   fPrimaryVertexXmin=that.fPrimaryVertexXmin;
   fPrimaryVertexXmax=that.fPrimaryVertexXmax;
@@ -208,7 +222,9 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
     {
       AliVParticle* track = event->GetTrack(i);
       if (!track) continue;
-      meanpt += track->Pt();
+      Bool_t pass=kTRUE;
+      if (fMeanPtCuts) pass=fMeanPtCuts->IsSelected(track);
+      if (pass) meanpt += track->Pt();
     }
     meanpt=meanpt/ntracks;
     if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) return kFALSE;

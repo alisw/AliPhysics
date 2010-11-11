@@ -14,7 +14,7 @@
 #include "TNamed.h"
 
 class AliVEvent;
-class AliFlowTrackCuts;
+#include "AliFlowTrackCuts.h"
 
 class AliFlowEventCuts : public TNamed {
 
@@ -25,7 +25,7 @@ class AliFlowEventCuts : public TNamed {
   AliFlowEventCuts(const char* name, const char* title = "AliFlowEventCuts");
   AliFlowEventCuts(const AliFlowEventCuts& someCuts);
   AliFlowEventCuts& operator=(const AliFlowEventCuts& someCuts);
-  virtual  ~AliFlowEventCuts() {}
+  virtual  ~AliFlowEventCuts();
   
   virtual Bool_t IsSelected(const TObject* obj);
 
@@ -55,7 +55,8 @@ class AliFlowEventCuts : public TNamed {
   Int_t GetRefMultMin() const {return fRefMultMin;}
   void SetRefMultMethod(refMultMethod m) {fRefMultMethod=m;}
   refMultMethod GetRefMultMethod() const {return fRefMultMethod;}
-  void SetRefMultCuts( AliFlowTrackCuts* cuts ) {fRefMultCuts=cuts;}
+  void SetRefMultCuts( AliFlowTrackCuts* cuts ) {fRefMultCuts=static_cast<AliFlowTrackCuts*>(cuts->Clone());}
+  void SetMeanPtCuts( AliFlowTrackCuts* cuts ) {fMeanPtCuts=static_cast<AliFlowTrackCuts*>(cuts->Clone());}
   AliFlowTrackCuts* GetRefMultCuts() const {return fRefMultCuts;}
 
   Int_t RefMult(const AliVEvent* event);
@@ -71,6 +72,7 @@ class AliFlowEventCuts : public TNamed {
   Int_t fRefMultMax; //max refmult
   Int_t fRefMultMin; //min refmult
   AliFlowTrackCuts* fRefMultCuts; //cuts
+  AliFlowTrackCuts* fMeanPtCuts; //mean pt cuts
   Bool_t fCutPrimaryVertexX; //cut on x of prim vtx
   Double_t fPrimaryVertexXmax; //max x prim vtx
   Double_t fPrimaryVertexXmin; //min x prim vtx
