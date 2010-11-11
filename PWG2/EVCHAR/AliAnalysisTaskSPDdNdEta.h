@@ -14,8 +14,10 @@ class TH2F;
 class TH3F;
 class AliESDEvent;
 class TList;
+class AliTrackletAlg;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliTriggerAnalysis.h"
 
 class AliAnalysisTaskSPDdNdEta : public AliAnalysisTaskSE {
  public:
