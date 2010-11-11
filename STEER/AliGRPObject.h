@@ -52,7 +52,7 @@ class AliGRPObject : public TObject {
  	Bool_t    IsUniformBMap() const {return TestBit(kUniformBMap);}
 	time_t    GetTimeStart() const {return fTimeStart;}
 	time_t    GetTimeEnd() const {return fTimeEnd;}
-	Float_t   GetBeamEnergy() const {return IsBeamEnergyIsSqrtSHalfGeV() ? fBeamEnergy : fBeamEnergy/2;}
+	Float_t   GetBeamEnergy() const;
 	TString   GetBeamType() const {return fBeamType;}
 	Char_t    GetNumberOfDetectors() const {return fNumberOfDetectors;}
 	UInt_t    GetDetectorMask() const {return fDetectorMask;}

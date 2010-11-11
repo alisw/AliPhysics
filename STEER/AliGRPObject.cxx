@@ -441,3 +441,18 @@ void AliGRPObject::ReadValuesFromMap(const TMap* mapGRP){
 	return;
 
 }
+//-------------------------------------------------------------------------------
+
+Float_t AliGRPObject::GetBeamEnergy() const {
+
+	//
+	// Getting the energy
+	// in case of BeamType = A-A, multiplying by 82/208 (for PbPb)
+	//
+
+	Float_t energy = fBeamEnergy;
+	if (fBeamType=="A-A"){
+		energy = energy*82./208;
+	}
+	return IsBeamEnergyIsSqrtSHalfGeV() ? energy : energy/2;
+}
