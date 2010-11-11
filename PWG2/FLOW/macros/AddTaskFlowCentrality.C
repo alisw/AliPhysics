@@ -58,8 +58,8 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 //---------Data selection----------
 //kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet
-AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kESD_TPConly;
-AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kESD_TPConly;
+AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
+AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
 
 //---------Parameter mixing--------
 //kPure - no mixing, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt
@@ -85,43 +85,43 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   // EVENTS CUTS:
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts();
   cutsEvent->SetRefMultRange(refMultMin,refMultMax);
-  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
-  //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
+  //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
-  cutsEvent->SetNContributorsRange(1);
+  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
+  cutsEvent->SetNContributorsRange(2);
   cutsEvent->SetPrimaryVertexZrange(-10.,10.);
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
   cutsRP->SetParamType(rptype);
   cutsRP->SetParamMix(rpmix);
-  cutsRP->SetPtRange(0.2,10.);
-  cutsRP->SetEtaRange(-0.8,0.8);
-  cutsRP->SetRequireCharge(kTRUE);
+  cutsRP->SetPtRange(0.2,5.);
+  cutsRP->SetEtaRange(-0.7,0.7);
+  //cutsRP->SetRequireCharge(kTRUE);
   //cutsRP->SetCharge(chargeRP);
   //cutsRP->SetPID(PdgRP);
-  cutsRP->SetMinNClustersTPC(50);
+  cutsRP->SetMinNClustersTPC(70);
   cutsRP->SetMaxChi2PerClusterTPC(4.0);
-  //cutsRP->SetMinNClustersITS(2);
+  cutsRP->SetMinNClustersITS(2);
   //cutsRP->SetMaxChi2PerClusterITS(1.e+09);
-  cutsRP->SetMaxDCAToVertexXY(2.4);
+  cutsRP->SetMaxDCAToVertexXY(0.5);
   //cutsRP->SetMaxDCAToVertexZ(3.2);
   //cutsRP->SetDCAToVertex2D(kTRUE);
   //cutsRP->SetMaxNsigmaToVertex(1.e+10);
   //cutsRP->SetRequireSigmaToVertex(kFALSE);
-  //cutsRP->SetAcceptKinkDaughters(kFALSE);
+  cutsRP->SetAcceptKinkDaughters(kFALSE);
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts();
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
-  cutsPOI->SetPtRange(0.1,100.);
-  cutsPOI->SetEtaRange(-0.9,0.9);
-  cutsPOI->SetRequireCharge(kTRUE);
+  cutsPOI->SetPtRange(0.0,10.);
+  cutsPOI->SetEtaRange(-1.2,1.2);
+  //cutsPOI->SetRequireCharge(kTRUE);
   //cutsPOI->SetCharge(chargeRP);
   //cutsPOI->SetPID(PdgRP);
-  //cutsPOI->SetMinNClustersTPC(80);
-  //cutsPOI->SetMaxChi2PerClusterTPC(4.0);
+  cutsPOI->SetMinNClustersTPC(80);
+  cutsPOI->SetMaxChi2PerClusterTPC(4.0);
   //cutsPOI->SetMinNClustersITS(2);
   //cutsPOI->SetMaxChi2PerClusterITS(1.e+09);
   cutsPOI->SetMaxDCAToVertexXY(2.4);
@@ -287,6 +287,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
+    //taskFE->SelectCollisionCandidates(AliVEvent::kUserDefined);
     taskFE->SelectCollisionCandidates(AliVEvent::kMB);
     cout<<"Using Physics Selection"<<endl;
   }
@@ -370,9 +371,9 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   if (MH){
     AliAnalysisTaskMixedHarmonics *taskMH = new AliAnalysisTaskMixedHarmonics("TaskMixedHarmonics",useWeights);
     taskMH->SetHarmonic(1); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
-    taskMH->SetNoOfMultipicityBins(10);
-    taskMH->SetMultipicityBinWidth(2);
-    taskMH->SetMinMultiplicity(3);
+    taskMH->SetNoOfMultipicityBins(10000);
+    taskMH->SetMultipicityBinWidth(1.);
+    taskMH->SetMinMultiplicity(1.);
     taskMH->SetCorrectForDetectorEffects(kTRUE);
     taskMH->SetEvaluateDifferential3pCorrelator(kFALSE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)    
     taskMH->SetOppositeChargesPOI(kFALSE); // POIs psi1 and psi2 in cos[n(psi1+psi2-2phi3)] will have opposite charges  
