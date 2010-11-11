@@ -18,6 +18,8 @@
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
+#include "AliESDVZERO.h"
+#include "AliESDZDC.h"
 #include "AliESDtrack.h"
 #include "AliFlowTrackCuts.h"
 #include "AliFlowEventCuts.h"
@@ -58,6 +60,7 @@ AliAnalysisTaskQAflow::AliAnalysisTaskQAflow(const char* name)
   // Constructor
   DefineInput(1, AliFlowEventSimple::Class());
   DefineOutput(1, TObjArray::Class());
+  DefineOutput(2,TNtuple::Class());
 }
 
 //________________________________________________________________________
@@ -65,7 +68,7 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
 {
   // Called once at the beginning
   fOutput=new TObjArray();
-  fNtuple = new TNtuple("flowQAtree","flowQAtree","meanpt:qx:qy:mult:refmult:trig:tpcvtxx:tpcvtxy:tpcvtxz:ntrackletsA:ntrackletsC");
+  fNtuple = new TNtuple("flowQAtree","flowQAtree","mpt:qx:qy:mul:rmul:trg:vtxx:vtxy:vtxz:ntra:ntrc:mv0a:mv0c:zdcp1:zdcn1:zdcp2:zdcn2:zdcpart1:zdcpart2");
   //TDirectory* before = gDirectory->mkdir("before cuts","before cuts");
   //TDirectory* after = gDirectory->mkdir("after cuts","after cuts");
   TObjArray* before = new TObjArray();
@@ -108,12 +111,17 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
   before->Add(hist); after->Add(hist->Clone()); //14
   hist = new TH1D("ptyield", "p_{t} spectrum", 10000,0.0,10.0);
   before->Add(hist); after->Add(hist->Clone()); //15
+  hist = new TH1D("ptyieldplus", "p_{t} spectrum +", 10000,0.0,10.0);
+  before->Add(hist); after->Add(hist->Clone()); //16
+  hist = new TH1D("ptyieldneg", "p_{t} spectrum +", 10000,0.0,10.0);
+  before->Add(hist); after->Add(hist->Clone()); //17
   
   //post data here as it doesn't change anyway (the pointer to list anyway)
 
   //restore dir add status
   PostData(0, fNtuple);
   PostData(1, fOutput);
+  PostData(2, fNtuple);
 }
 
 //________________________________________________________________________
@@ -165,6 +173,10 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   TH1* hprimvtxzTPCA = dynamic_cast<TH1*>(after->At(14));
   TH1* hptyieldB = dynamic_cast<TH1*>(before->At(15));
   TH1* hptyieldA = dynamic_cast<TH1*>(after->At(15));
+  TH1* hptyieldplusB = dynamic_cast<TH1*>(before->At(16));
+  TH1* hptyieldplusA = dynamic_cast<TH1*>(after->At(16));
+  TH1* hptyieldnegB = dynamic_cast<TH1*>(before->At(17));
+  TH1* hptyieldnegA = dynamic_cast<TH1*>(after->At(17));
 
   AliMultiplicity* tracklets = const_cast<AliMultiplicity*>(event->GetMultiplicity());
   Int_t ntracklets=0;
@@ -187,7 +199,6 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       if (eta>0) ntrackletsC++;
       else ntrackletsA++;
     }
-    
   }
   //Int_t trackmult = AliESDtrackCuts::GetReferenceMultiplicity(event,kTRUE);
   AliFlowEventCuts newcuts;
@@ -221,6 +232,16 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     vtxTPCz = vertextpc->GetZ();
     hprimvtxzTPCB->Fill(vtxTPCz); if (passevent) hprimvtxzTPCA->Fill(vtxTPCz);
   }
+  AliESDVZERO* vzero=event->GetVZEROData();
+  AliESDZDC* zdc=event->GetESDZDC();
+  Float_t mv0a=vzero->GetMTotV0A();
+  Float_t mv0c=vzero->GetMTotV0C();
+  Float_t zdcp1=zdc->GetZDCP1Energy();
+  Float_t zdcn1=zdc->GetZDCN1Energy();
+  Float_t zdcp2=zdc->GetZDCP2Energy();
+  Float_t zdcn2=zdc->GetZDCN2Energy();
+  Float_t zdcpart1=zdc->GetZDCPartSideA();
+  Float_t zdcpart2=zdc->GetZDCPartSideC();
   fTrackCuts->SetEvent(event);
   Float_t meanpt=0;
   Int_t ntracks=fTrackCuts->GetNumberOfInputObjects();
@@ -237,6 +258,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     Float_t eta=0.0;
     Float_t phi=0.0;
     Float_t pt=0.0;
+    Double_t charge=0.0;
     AliESDtrack* track = dynamic_cast<AliESDtrack*>(fTrackCuts->GetTrack());
     if (track)
     {
@@ -246,6 +268,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       eta=track->Eta();
       phi=track->Phi();
       pt=track->Pt();
+      charge=track->Charge();
       meanpt+=pt;
       tpcchi2percls= (ntpccls==0)?0.0:tpcchi2/ntpccls;
       nitscls = track->GetNcls(0);
@@ -257,6 +280,8 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       hetatracksB->Fill(eta); if (pass) hetatracksA->Fill(eta);
       hphitracksB->Fill(phi); if (pass) hphitracksA->Fill(phi);
       hptyieldB->Fill(pt); if (pass) hptyieldA->Fill(pt);
+      if (charge>0) {hptyieldplusB->Fill(pt); if (pass) hptyieldplusA->Fill(pt);}
+      if (charge<0) {hptyieldnegB->Fill(pt); if (pass) hptyieldnegA->Fill(pt);}
     }
   }
   meanpt = meanpt/ntracks;
@@ -271,10 +296,17 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     Double_t qy = qvec.Y();
     TString triggers = event->GetFiredTriggerClasses();
     Int_t trig=0;
-    if (triggers.Contains("CMBAC-B-NOPF-ALL")) trig+=1;
+    if (triggers.Contains("CMBAC-B-NOPF-ALL"))  trig+=1;
     if (triggers.Contains("CMBS2C-B-NOPF-ALL")) trig+=10;
     if (triggers.Contains("CMBS2A-B-NOPF-ALL")) trig+=100;
-    fNtuple->Fill(meanpt,qx,qy,trackmult,refmult,trig,vtxTPCx,vtxTPCy,vtxTPCz,ntrackletsA,ntrackletsC);
+    if (triggers.Contains("C0VBA-B-NOPF-ALL"))  trig+=1000;
+    if (triggers.Contains("C0VBC-B-NOPF-ALL"))  trig+=10000;
+    Float_t x[19];
+    x[0]=meanpt; x[1]=qx; x[2]=qy; x[3]=trackmult; x[4]=refmult; x[5]=trig;
+    x[6]=vtxTPCx; x[7]=vtxTPCy; x[8]=vtxTPCz; x[9]=ntrackletsA; x[10]=ntrackletsC;
+    x[11]=mv0a; x[12]=mv0c; x[13]=zdcp1; x[14]=zdcn1; x[15]=zdcp2; x[16]=zdcn2;
+    x[17]=zdcpart1; x[18]=zdcpart2;
+    fNtuple->Fill(x);
   }//if flowevent
 }
 
