@@ -148,7 +148,7 @@ void AlidNdPtCutAnalysisPbPb::Init(){
   // THnSparse track histograms
   //
 
-  //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:kinkIdx:isPrim:polarity
+  //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isPrim:polarity
   Int_t binsRecMCTrackHist[11]={160,80,80,100,100,90,90,ptNbins, 3, 2, 2};
   Double_t minRecMCTrackHist[11]={0., 0., 0., -1.,-1.,-1.5, 0., ptMin, -1., 0., 0.};
   Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 1.,1.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2.};
@@ -164,7 +164,7 @@ void AlidNdPtCutAnalysisPbPb::Init(){
   fRecMCTrackHist->GetAxis(5)->SetTitle("#eta");
   fRecMCTrackHist->GetAxis(6)->SetTitle("#phi (rad)");
   fRecMCTrackHist->GetAxis(7)->SetTitle("p_{T} (GeV/c)");
-  fRecMCTrackHist->GetAxis(8)->SetTitle("kinkIdx"); // 0 - no kink, -1 - kink mother, 1 - kink daugther 
+  fRecMCTrackHist->GetAxis(8)->SetTitle("hasStrangeMother");
   fRecMCTrackHist->GetAxis(9)->SetTitle("isPrim");
   fRecMCTrackHist->GetAxis(10)->SetTitle("polarity");
   fRecMCTrackHist->Sumw2();
@@ -377,6 +377,7 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
   // Fill rec vs MC information
   //
   Bool_t isPrim = kTRUE;
+  Bool_t hasStrangeMother = kTRUE;
 
   if(IsUseMCInfo()) {
     if(!stack) return;
@@ -387,13 +388,23 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
     isPrim = stack->IsPhysicalPrimary(label);
 
     //if(isPrim && pt > 1.5 && kinkIdx == -1) printf("nClust  %d \n", nClust);
+  
+    // check whether has stange mother
+    //
+    Int_t motherPdg = -1; 
+    TParticle* mother = 0; 
+       
+    Int_t motherLabel = particle->GetMother(0);  
+    if(motherLabel>0) mother = stack->Particle(motherLabel); 
+    if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only 
+    Int_t mech = particle->GetUniqueID(); // production mechanism 
   }
   
   // fill histo
   Int_t polarity = -2;
   if (esdTrack->Charge() < 0.) polarity = 0; 
   else polarity = 1; 
-  Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,kinkIdx,isPrim, polarity }; 
+  Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,hasStrangeMother,isPrim, polarity }; 
   fRecMCTrackHist->Fill(vRecMCTrackHist);
 }
 
