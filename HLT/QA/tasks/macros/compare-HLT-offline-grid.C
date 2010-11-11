@@ -16,12 +16,21 @@
  * - GRID output directory with respect to the working one, where the output files of the task are located (you have to create it yourself in advance)
  * - run in full mode, i.e. completely on the GRID with all the chunks of the run processed
  * - specify the analysis task you want to run
+ * - specify whether you are interested only in HLT triggered events
  *
  * @ingroup alihlt_qa
- * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
+ * @author Hege.Erdal@student.uib.no, Kalliopi.Kanaki@ift.uib.no
  */
 
-void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWorkingDir, TString gridOutputDir, const char* mode = "full", const char* detectorTask="global"){
+void compare_HLT_offline_grid(TString runNumber, 
+                              TString dataDir, 
+			      TString gridWorkingDir, 
+			      TString gridOutputDir, 
+			      const char* mode = "full", 
+			      const char* detectorTask="global",
+			      bool fUseHLTTrigger=kFALSE
+			     )
+{
  
   TStopwatch timer;
   timer.Start();
@@ -41,7 +50,7 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libHLTbase");
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
 
   
   Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE;
@@ -55,10 +64,6 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
          argument=((TObjString*)pTokens->At(i))->GetString();
          if(argument.IsNull()) continue;
 
-         if(argument.CompareTo("tpc", TString::kIgnoreCase)==0){
-	    bTPC = kTRUE;
-	    continue;
-         }
          if(argument.CompareTo("phos", TString::kIgnoreCase)==0){
   	    bPHOS = kTRUE;
 	    continue;
@@ -67,10 +72,6 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
   	    bEMCAL = kTRUE;
 	    continue;
          }         
-	 if(argument.CompareTo("its", TString::kIgnoreCase)==0){
-  	    bITS = kTRUE;
-	    continue;
-         }	
 	 if(argument.CompareTo("global", TString::kIgnoreCase)==0){
   	    bGLOBAL = kTRUE;
 	    continue;
@@ -80,10 +81,8 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
 	   continue;
 	 }  
 	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
-	    bTPC    = kTRUE;
 	    bPHOS   = kTRUE;
-	    bEMCAL   = kTRUE;
-	    bITS    = kTRUE;
+	    bEMCAL  = kTRUE;
 	    bGLOBAL = kTRUE;
 	    bAll    = kTRUE;
 	    continue;
@@ -102,8 +101,8 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
   mgr->SetNSysInfo(1000);
 
   //To use Physics Selection
-  AliPhysicsSelectionTask* physSelTask =AddTaskPhysicsSelection(kFALSE,kTRUE);
-  
+  //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kFALSE,kTRUE);
+
   // Create and configure the alien handler plugin
   gROOT->LoadMacro("CreateAlienHandler.C");
   AliAnalysisGrid *alienHandler = CreateAlienHandler(runNumber, dataDir, gridWorkingDir, gridOutputDir, mode, detectorTask);
@@ -113,7 +112,6 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
   mgr->SetGridHandler(alienHandler);
  
   //-------------- Compile the analysis tasks ---------- //
-  if(bTPC)    gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
   if(bPHOS && bEMCAL) {
     AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
     pHLT->LoadComponentLibraries("libHLTbase");
@@ -133,65 +131,53 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
     gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+");  
   }
   else if(bEMCAL) {
-     AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
+    AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
     pHLT->LoadComponentLibraries("libHLTbase");
     pHLT->LoadComponentLibraries("libAliHLTUtil");
     pHLT->LoadComponentLibraries("libAliHLTGlobal");
     gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
     gROOT->LoadMacro("AliAnalysisTaskHLTEMCAL.cxx+");  
   }
-  if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
   if(bD0)     gROOT->LoadMacro("AliAnalysisTaskD0Trigger.cxx+"); 
    
   //-------------- define the tasks ------------//
   
-  if(bTPC){ 
-     AliAnalysisTaskHLTTPC *taskTPC = new AliAnalysisTaskHLTTPC("offhlt_comparison_TPC");
-     mgr->AddTask(taskTPC);
-     AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer("tpc_histograms", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-TPC-comparison.root");  
-     mgr->ConnectInput(taskTPC,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskTPC,1,coutput1);
-  }
-
   if(bPHOS){
      AliAnalysisTaskHLTPHOS *taskPHOS = new AliAnalysisTaskHLTPHOS("offhlt_comparison_PHOS");
      mgr->AddTask(taskPHOS);
-     AliAnalysisDataContainer *coutput2 =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
+     AliAnalysisDataContainer *coutputPHOS =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
      mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskPHOS,1,coutput2);
+     mgr->ConnectOutput(taskPHOS,1,coutputPHOS);
   }
   if(bEMCAL){
      AliAnalysisTaskHLTEMCAL *taskEMCAL = new AliAnalysisTaskHLTEMCAL("offhlt_comparison_EMCAL");
      mgr->AddTask(taskEMCAL);
-     AliAnalysisDataContainer *coutput5 =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
+     AliAnalysisDataContainer *coutputEMCAL =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
      mgr->ConnectInput(taskEMCAL,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskEMCAL,1,coutput5);
+     mgr->ConnectOutput(taskEMCAL,1,coutputEMCAL);
   }
   
-  if(bITS){
-     AliAnalysisTaskHLTITS *taskITS = new AliAnalysisTaskHLTITS("offhlt_comparison_ITS");
-     mgr->AddTask(taskITS);
-     AliAnalysisDataContainer *coutput3 =  mgr->CreateContainer("its_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-ITS-comparison.root");  
-     mgr->ConnectInput(taskITS,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskITS,1,coutput3);
-  }
- 
   if(bGLOBAL){
      AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL");
-     taskGLOBAL->SelectCollisionCandidates();
+     taskGLOBAL->SetUseHLTTriggerDecision(fUseHLTTrigger);
+     if(fUseHLTTrigger==kTRUE) printf("\n\nOnly HLT triggered events will be used to fill the distributions for task %s.\n\n", taskGLOBAL->GetName());
+     //taskGLOBAL->SelectCollisionCandidates();
      mgr->AddTask(taskGLOBAL);
-     AliAnalysisDataContainer *coutput4 =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
+     if(fUseHLTTrigger==kTRUE)
+       AliAnalysisDataContainer *coutputGLOBAL =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
+     else
+       AliAnalysisDataContainer *coutputGLOBAL =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison_triggered.root");  
      mgr->ConnectInput(taskGLOBAL,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskGLOBAL,1,coutput4);
+     mgr->ConnectOutput(taskGLOBAL,1,coutputGLOBAL);
   }
   if(bD0){
     float cuts[7]={0.5,0.04,0.7,0.8,0.05,-0.00025,0.7};
     AliAnalysisTaskD0Trigger *taskD0 = new AliAnalysisTaskD0Trigger("offhlt_comparison_D0_Trigger",cuts);
     mgr->AddTask(taskD0);
-    AliAnalysisDataContainer *coutput6 =  mgr->CreateContainer("D0_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-D0-comparison.root");  
+    AliAnalysisDataContainer *coutputD0 =  mgr->CreateContainer("D0_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-D0-comparison.root");  
     mgr->ConnectInput(taskD0,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskD0,1,coutput6);
+    mgr->ConnectOutput(taskD0,1,coutputD0);
   }
   // Enable debug printouts
   mgr->SetDebugLevel(2);
@@ -202,4 +188,12 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
 
   timer.Stop();
   timer.Print();
+}
+
+void compare_HLT_offline_grid(){
+  cout << " " << endl;
+  cout << " Usage examples:" << endl;
+  cout << "    compare-HLT-offline-grid.C'(runNumber, dataDir, gridWorkingDir, gridOutputDir, mode, taskOption, fUseHLTTrigger)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-grid.C'(\"000115322\",\"/alice/data/2010/LHC10b\",\"ESDcomparison\",\"output\",\"full\",\"global\",kTRUE)' 2>&1 | tee log" << endl;
+  cout << " " << endl;
 }

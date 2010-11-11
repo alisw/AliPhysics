@@ -23,8 +23,14 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   
   // check the versions available on alien with the command 'packages'
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-27-06");
-  plugin->SetAliROOTVersion("v4-20-12-AN");
+  plugin->SetROOTVersion("v5-27-06b");
+  plugin->SetAliROOTVersion("v4-21-04-AN");
+  
+  cout << "===========================================================================================" << endl;
+  cout << "  " << endl;
+  cout << " The user is responsible for updating the AliRoot and ROOT versions for running on the GRID."<< endl;  
+  cout << "  " << endl; 
+  cout << "===========================================================================================" << endl;
 
   //Allow non-default outputs
   plugin->SetDefaultOutputs(kFALSE);
@@ -120,8 +126,9 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
     plugin->SetOutputFiles("HLT-OFFLINE-EMCAL-comparison.root");    
   }
   if(bGLOBAL){  
+    plugin->AddIncludePath("-I$ALICE_ROOT/HLT/BASE");
     plugin->SetAnalysisSource("AliAnalysisTaskHLT.cxx");  
-    plugin->SetAdditionalLibs("AliAnalysisTaskHLT.h AliAnalysisTaskHLT.cxx"); 
+    plugin->SetAdditionalLibs("libHLTbase.so AliAnalysisTaskHLT.h AliAnalysisTaskHLT.cxx"); 
     plugin->SetOutputFiles("HLT-OFFLINE-GLOBAL-comparison.root");
   }
   if(bD0) {

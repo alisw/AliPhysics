@@ -51,7 +51,11 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     virtual void  Terminate(Option_t *);
     virtual void  NotifyRun();
 
- private:
+    //Use only triggered events
+    void SetUseHLTTriggerDecision(Bool_t useHLT = kFALSE) {fUseHLTTrigger = useHLT;}
+ 
+
+private:
 
     /** copy constructor */
     AliAnalysisTaskHLT(const AliAnalysisTaskHLT&); 
@@ -77,8 +81,7 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
      */
 
 
-    static const Int_t fNcontrArray[];   //! Array to hold the different number of contributors
-    static const Int_t fNcontr;          //! Array size
+    Bool_t fUseHLTTrigger;             // use HLT Trigger Decision
 
  
     //----------------------------------------------------------------------------------
@@ -114,7 +117,6 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH2F  *fNclusVSphiOff;     //! clusters per track vs. azimuthal angle 
     TH2F  *fNclusVSthetaOff;   //! clusters per track vs. polar angle 
     TH1F  *fStatusOff;         //! Status counters 
-    TH1F  *fStatusOff_Ocl;     //! Status counters for TPCNcl=0
     TH1F  *fEventSpecieOff;    //! Event Specie Offline
     
     TH1F  *fChargeHLT;         //! Charge distribution 
@@ -141,55 +143,11 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH2F  *fNclusVSphiHLT;     //! clusters per track vs. azimuthal angle 
     TH2F  *fNclusVSthetaHLT;   //! clusters per track vs. polar angle 
     TH1F  *fStatusHLT;         //! Status counters 
-    TH1F  *fStatusHLT_Ocl;     //! Status counters for TPCNcl=0
     TH1F  *fEventSpecieHLT;    //! Event Specie HLT
-
     
     TObjArray *fTrgClsArray; //! array of trigger classes
-
- 
-  
-//     TH1F *fDCAOff_trig;      //! track DCA to beam line for triggered events
-//     TH1F *fNclusterOff_trig; //! #clusters per track for triggered events
-//     
-//     TH1F *fDCAHLT_trig;     
-//     TH1F *fNclusterHLT_trig;
-   
-   
-//     TH1F *fHistOfflTrkDCANoTrigNclsCut1; //! with cut on #clusters>=60
-//     TH1F *fHistOfflTrkDCANoTrigNclsCut2; //! with cut on #clusters<60
-//     
-//     TH1F *fHistOfflResPtInv; //! resolution on 1/pt for offline tracks
-//     TH1F *fHistOnlResPtInv; //! resoltion on 1/pt for online tracks
-// 
-//     TH1F *fHistOffldZ;  //! resolution on z 
-//     TH1F *fHistOnldZ;   //! resolution on z 
-// 
-//     TH1F *fHistOffldX; //! resolution on r 
-//     TH1F *fHistOnldX;  //! resolution on r 
-//     
-//     TH1F *fHistOfflPhi;  //! resolution on azimuthal angle 
-//     TH1F *fHistOnlPhi;  //! resolution on azimuthal angle 
-// 
-//     TH1F *fHistOfflTheta; //! resolution on polar angle 
-//     TH1F *fHistOnlTheta; //! resolution on polar angle 
-// 
-//     TH2F *fHistOnlDZ;  //! online trigger tracks distance to beam and Z to IP
-//     TH2F *fHistOfflDZ; //! offline tracks distance to beam and Z to IP
-//     TH2F *fHistOfflDZTrig; //!
-//     TH2F *fHistOfflDZNoTrig; //!
-
-
-//     static const Float_t fgkPhiMin[5];
-//     static const Float_t fgkPhiMax[5];
-//     static const Float_t fgkEtaMin;
-//     static const Float_t fgkEtaMax;
-//     static const Float_t fgkNormX[5];
-//     static const Float_t fgkNormY[5];
-//     static const Float_t fgkInitPosX[5];
-//     static const Float_t fgkInitPosY[5];
-
-    ClassDef(AliAnalysisTaskHLT, 2);
+    
+    ClassDef(AliAnalysisTaskHLT, 0);
 };
 
 #endif

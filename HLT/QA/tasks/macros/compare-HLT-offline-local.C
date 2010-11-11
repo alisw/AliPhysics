@@ -6,10 +6,12 @@
  * The output is a root file containing the histograms defined in the
  * analysis task. There is one output file per detector.
  *
+ * Run without arguments to get a few examples how to use the macro.
+ *
  * Usage:
  * <pre>
- *   aliroot -b -q -l compare_HLT_offline_local.C'("/home/blabla/AliESDs.root","phos")' 2>&1 | tee task.log
- *   aliroot -b -q -l compare_HLT_offline_local.C'("/home/blabla/AliESDs.root","phos tpc global")' 2>&1 | tee task.log
+ *   aliroot -b -q -l compare_HLT_offline_local.C'("/home/blabla/AliESDs.root","global","./",kTRUE,10)' 2>&1 | tee task.log
+ *   aliroot -b -q -l compare_HLT_offline_local.C'("/home/blabla/AliESDs.root","phos global pwg1",kTRUE,10)' 2>&1 | tee task.log
  *   aliroot -q compare-HLT-offline-local.C'("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root","global")' 2>&1 | tee log
  * </pre>
  * 
@@ -19,10 +21,16 @@
  * The .txt file takes the place of the first argument in that case.
  *
  * @ingroup alihlt_qa
- * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no, Hege.Erdal@student.uib.no
+ * @author Kalliopi.Kanaki@ift.uib.no, Hege.Erdal@student.uib.no
  */
 
-void compare_HLT_offline_local(TString file="files.txt", const char* detectorTask="global", Long64_t nEvents=1234567890){
+void compare_HLT_offline_local(TString file, 
+                               const char* detectorTask="global",
+			       TString taskFolder="$ALICE_ROOT/HLT/QA/tasks/", 
+			       bool fUseHLTTrigger=kFALSE, 
+			       Long64_t nEvents=1234567890
+			      )
+{
 
   TStopwatch timer;
   timer.Start();
@@ -52,7 +60,7 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
   gSystem->Load("libPWG1.so");
  
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   
   Bool_t bPHOS=kFALSE, bGLOBAL=kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE, bD0=kFALSE;
  
@@ -102,21 +110,36 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
     gSystem->Load("libHLTbase");
     gSystem->Load("libAliHLTUtil");
     gSystem->Load("libAliHLTGlobal");
-    gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/AliAnalysisTaskHLTCalo.cxx+"); 
-    gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/AliAnalysisTaskHLTPHOS.cxx+"); 
+    TString strTask1("AliAnalysisTaskCalo.cxx+");
+    TString strTask2("AliAnalysisTaskPHOS.cxx+");    
+    gROOT->LoadMacro(taskFolder+strTask1); 
+    gROOT->LoadMacro(taskFolder+strTask2); 
+    cout << "\n========= You are loading the following tasks --> "<< taskFolder+strTask1  << " and " <<  taskFolder+strTask2 << endl;
   }
   
   if(bEMCAL){
     gSystem->Load("libHLTbase");
     gSystem->Load("libAliHLTUtil");
     gSystem->Load("libAliHLTGlobal");
-    gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/AliAnalysisTaskHLTCalo.cxx+"); 
-    gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/AliAnalysisTaskHLTEMCAL.cxx+"); 
+    TString strTask1("AliAnalysisTaskCalo.cxx+");
+    TString strTask2("AliAnalysisTaskEMCAL.cxx+");
+    gROOT->LoadMacro(taskFolder+strTask1); 
+    gROOT->LoadMacro(taskFolder+strTask2); 
+    cout << "\n========= You are loading the following tasks --> "<< taskFolder+strTask1  << " and " <<  taskFolder+strTask2 << endl;
   }  
   
-  if(bGLOBAL) gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/AliAnalysisTaskHLT.cxx+");
-  if(bPWG1)   gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/AddTaskPerformance.C");
-  if(bD0)     gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/AliAnalysisTaskD0Trigger.cxx+"); 
+  if(bGLOBAL){
+     TString strTask("AliAnalysisTaskHLT.cxx+");
+     gROOT->LoadMacro(taskFolder+strTask);
+     cout << "\n========= You are loading the following task --> "<< taskFolder+strTask  << endl;
+  }
+  if(bD0){
+     TString strTask("AliAnalysisTaskD0Trigger.cxx+");
+     gROOT->LoadMacro(taskFolder+strTask); 
+     cout << "\n========= You are loading the following task --> "<< taskFolder+strTask  << endl;
+  }
+  
+  if(bPWG1) gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/AddTaskPerformance.C");
    
   if(file.Contains("alien")) TGrid::Connect("alien://");
     
@@ -137,7 +160,8 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
     return;
   }
 
-
+  //To only select HLT triggered events
+  //Bool_t fUseHLTTrigger=kFALSE;
    
   //-------- Make the analysis manager ---------------//
  
@@ -157,26 +181,31 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
   if(bPHOS){
     AliAnalysisTaskHLTPHOS *taskPHOS = new AliAnalysisTaskHLTPHOS("offhlt_comparison_PHOS");
     mgr->AddTask(taskPHOS);
-    AliAnalysisDataContainer *coutput2 =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
+    AliAnalysisDataContainer *coutputPHOS =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
     mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskPHOS,1,coutput2);
+    mgr->ConnectOutput(taskPHOS,1,coutputPHOS);
   }
 
   if(bEMCAL){
     AliAnalysisTaskHLTEMCAL *taskEMCAL = new AliAnalysisTaskHLTEMCAL("offhlt_comparison_EMCAL");
     mgr->AddTask(taskEMCAL);
-    AliAnalysisDataContainer *coutput5 =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
+    AliAnalysisDataContainer *coutputEMCAL =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
     mgr->ConnectInput(taskEMCAL,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskEMCAL,1,coutput5);
+    mgr->ConnectOutput(taskEMCAL,1,coutputEMCAL);
   }
   
   if(bGLOBAL){
     AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL");
+    taskGLOBAL->SetUseHLTTriggerDecision(fUseHLTTrigger);
+    if(fUseHLTTrigger==kTRUE) printf("\n\nOnly HLT triggered events will be used to fill the distributions for task %s.\n\n", taskGLOBAL->GetName());
     //taskGLOBAL->SelectCollisionCandidates();
     mgr->AddTask(taskGLOBAL);
-    AliAnalysisDataContainer *coutput4 =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
+    if(fUseHLTTrigger==kFALSE)
+      AliAnalysisDataContainer *coutputGLOBAL =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
+    else 
+      AliAnalysisDataContainer *coutputGLOBAL =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer,"HLT-OFFLINE-GLOBAL-comparison_triggered.root");  
     mgr->ConnectInput(taskGLOBAL,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskGLOBAL,1,coutput4);
+    mgr->ConnectOutput(taskGLOBAL,1,coutputGLOBAL);
   }
 
   if(bPWG1){
@@ -193,9 +222,9 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
     float cuts[7]={0.5,0.04,0.7,0.8,0.05,-0.00025,0.7};
     AliAnalysisTaskD0Trigger *taskD0 = new AliAnalysisTaskD0Trigger("offhlt_comparison_D0",cuts);
     mgr->AddTask(taskD0);
-    AliAnalysisDataContainer *coutput6 =  mgr->CreateContainer("D0_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-D0-comparison.root");  
+    AliAnalysisDataContainer *coutputD0 =  mgr->CreateContainer("D0_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-D0-comparison.root");  
     mgr->ConnectInput(taskD0,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskD0,1,coutput6);
+    mgr->ConnectOutput(taskD0,1,coutputD0);
   }
   
   if (!mgr->InitAnalysis()) return;
@@ -204,4 +233,16 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
 
   timer.Stop();
   timer.Print();
+}
+
+void compare_HLT_offline_local(){
+  cout << " " << endl;
+  cout << " Usage examples:" << endl;
+  cout << "    compare-HLT-offline-local.C'(file, taskOption, taskFolder, fUseHLTTrigger, nEvents)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\")' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\",\"./\",kFALSE,nEvents)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global phos pwg1 D0\", \"./\", kTRUE, nEvents)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"files.txt\",\"all\")' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root\",\"global\")' 2>&1 | tee log" << endl;
+  cout << " " << endl;
 }

@@ -30,6 +30,8 @@
 class AliAnalysisTask;
 class AliAnalysisManager;
 
+
+#include "AliHLTGlobalTriggerDecision.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TF1.h"
@@ -51,6 +53,7 @@ ClassImp(AliAnalysisTaskHLT)
 AliAnalysisTaskHLT::AliAnalysisTaskHLT()
 :
 AliAnalysisTaskSE()
+  ,fUseHLTTrigger(kFALSE)
   ,fESDOfftrackCuts(0)
   ,fESDHLTtrackCuts(0)
   ,fOutputList(0)
@@ -78,7 +81,6 @@ AliAnalysisTaskSE()
   ,fNclusVSphiOff(0)
   ,fNclusVSthetaOff(0)
   ,fStatusOff(0)
-  ,fStatusOff_Ocl(0)
   ,fEventSpecieOff(0)
   
   ,fChargeHLT(0)
@@ -105,7 +107,6 @@ AliAnalysisTaskSE()
   ,fNclusVSphiHLT(0)	    
   ,fNclusVSthetaHLT(0)
   ,fStatusHLT(0)
-  ,fStatusHLT_Ocl(0)
   ,fEventSpecieHLT(0)
   ,fTrgClsArray(0)
   
@@ -128,7 +129,8 @@ AliAnalysisTaskSE()
  
 AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   :
-  AliAnalysisTaskSE(name)    
+  AliAnalysisTaskSE(name) 
+  ,fUseHLTTrigger(kFALSE)   
   ,fESDOfftrackCuts(0)
   ,fESDHLTtrackCuts(0)
   ,fOutputList(0)
@@ -156,7 +158,6 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   ,fNclusVSphiOff(0)
   ,fNclusVSthetaOff(0)
   ,fStatusOff(0)
-  ,fStatusOff_Ocl(0)
   ,fEventSpecieOff(0)
 
   ,fChargeHLT(0)      
@@ -181,7 +182,6 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   ,fNclusVSphiHLT(0)	    
   ,fNclusVSthetaHLT(0)
   ,fStatusHLT(0)
-  ,fStatusHLT_Ocl(0)    
   ,fEventSpecieHLT(0)
   ,fTrgClsArray(0)
   //     ,fDCArOff_trig(0)
@@ -200,14 +200,6 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   DefineOutput(1, TList::Class());
 }
 
-// const Float_t AliAnalysisTaskHLT::fgkEtaMin = -0.12;  
-// const Float_t AliAnalysisTaskHLT::fgkEtaMax =  0.12;  
-// const Float_t AliAnalysisTaskHLT::fgkPhiMin[5]   = {3.83972, 4.18879, 4.53786, 4.88692, 5.23599};  
-// const Float_t AliAnalysisTaskHLT::fgkPhiMax[5]   = {4.18879, 4.53786, 4.88692, 5.23599, 5.58505};  
-// const Float_t AliAnalysisTaskHLT::fgkNormX[5]    = {-0.642788, -0.34202, 0, 0.34202, 0.642788};  
-// const Float_t AliAnalysisTaskHLT::fgkNormY[5]    = {-0.766044, -0.939693, -1, -0.939693, -0.766044};  
-// const Float_t AliAnalysisTaskHLT::fgkInitPosX[5] = {-295.682, -157.329, 0, 157.329, 295.682};  
-// const Float_t AliAnalysisTaskHLT::fgkInitPosY[5] = {-352.38, -432.259, -460, -432.259, -352.38};
 
 //----------------------------------------------------------------------------------------------------
 
@@ -242,11 +234,11 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   (fHistTrigger->GetXaxis())->SetBinLabel(8,"onlTrkThruCE"); 
   */
 
-  fHistTrigger = new TH1F("fHistTrigger", "CTP trigger counter",21 , 0, 21);
+  fHistTrigger = new TH1F("fHistTrigger", "CTP trigger counter",24 , 0, 24);
   fHistTrigger->GetXaxis()->SetTitle("");  
   fHistTrigger->GetYaxis()->SetTitle("#Events"); 
 
-  fHistHLTTrigger = new TH1F("fHistHLTTrigger", "HLT CTP trigger counter", 21, 0, 21); 
+  fHistHLTTrigger = new TH1F("fHistHLTTrigger", "HLT CTP trigger counter", 24, 0, 24); 
   fHistHLTTrigger->GetXaxis()->SetTitle("");
   fHistHLTTrigger->GetYaxis()->SetTitle("#Events");
 
@@ -318,9 +310,6 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fStatusOff = new TH1F("fStatus_off", "Status for different detectors (offline)",12, 0, 12);
   fStatusHLT = new TH1F("fStatus_hlt", "Status for different detectors (HLT)",    12, 0, 12);
   
-  fStatusOff_Ocl = new TH1F("fStatus_Ocl_off", "Status for different detectors when #TPCcl=0 (offline)",12, 0, 12);
-  fStatusHLT_Ocl = new TH1F("fStatus_Ocl_hlt", "Status for different detectors when #TPCcl=0 (HLT)",    12, 0, 12);
-
   fEventSpecieOff = new TH1F("fEventSpecie_off","Eventspecie for Offline",18, 0, 18);
   fEventSpecieHLT = new TH1F("fEventSpecie_hlt","Eventspecie for HLT",18, 0, 18);
 
@@ -352,7 +341,6 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fNclusVSphiOff);  
   fOutputList->Add(fNclusVSthetaOff);
   fOutputList->Add(fStatusOff);
-  fOutputList->Add(fStatusOff_Ocl);
   fOutputList->Add(fEventSpecieOff);
 
   fOutputList->Add(fChargeHLT);  
@@ -379,7 +367,6 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fNclusVSphiHLT);  
   fOutputList->Add(fNclusVSthetaHLT);
   fOutputList->Add(fStatusHLT);
-  fOutputList->Add(fStatusHLT_Ocl);
   fOutputList->Add(fEventSpecieHLT);
 
   SetupESDtrackCuts();
@@ -417,10 +404,7 @@ void AliAnalysisTaskHLT::NotifyRun(){
   for(int iii=0;iii<12;iii++){
     (fStatusHLT->GetXaxis())->SetBinLabel(iii+1,Statusnames[iii]);
     (fStatusOff->GetXaxis())->SetBinLabel(iii+1,Statusnames[iii]);
-    (fStatusHLT_Ocl->GetXaxis())->SetBinLabel(iii+1,Statusnames[iii]);
-    (fStatusOff_Ocl->GetXaxis())->SetBinLabel(iii+1,Statusnames[iii]);
   }
-
 }
 
 void AliAnalysisTaskHLT::UserExec(Option_t *){
@@ -442,27 +426,27 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     return;
   }
 
-  
   //Fill CTP Trigger stuff
   //fHistTrigger->Fill(esdOFF->GetTriggerMask());
  
-
   for(Int_t i=0; i<fTrgClsArray->GetEntries(); i++){
     if((esdOFF->GetFiredTriggerClasses()).Contains(((TObjString *)fTrgClsArray->At(i))->GetString()))// && esdOFF->GetEventSpecie()==16)  
       fHistTrigger->Fill(i);
     if((esdHLT->GetFiredTriggerClasses()).Contains(((TObjString *)fTrgClsArray->At(i))->GetString()))// && esdOFF->GetEventSpecie()==16)  
       fHistHLTTrigger->Fill(i);
+  }  
+
+  //reject laser events -> Use offline info (HLT do not set this flag)
+  if((esdOFF->GetEventSpecie()==16)) return;
+  
+  // To check if anything was triggered in HLT.
+  if(fUseHLTTrigger){  
+    if (!((AliHLTGlobalTriggerDecision*)esdHLT->GetHLTTriggerDecision())->Result()){
+      return;
+      // Process all and any events that were triggered by HLT.
+    } 
   }
 
-
-  Double_t DCAcut = 7.0;
-  Double_t Momcut= 0.3;
-
-  char Titlename[100];
-  sprintf(Titlename,"pseudorapidity (HLT), DCA cut = %f,\n Momentum cut = %f, TPC clusters > 70" , DCAcut, Momcut);
-  fEtaMomentumcutHLT->SetTitle(Titlename);
-  sprintf(Titlename,"pseudorapidity (offline), DCA cut = %f, Momentum cut = %f, TPC clusters > 70", DCAcut, Momcut);
-  fEtaMomentumcutOff->SetTitle(Titlename);
 
   Double_t bfield = esdOFF->GetMagneticField();
  
@@ -512,91 +496,81 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
   }
   //At the moment no constrains on vertex before filling histograms
   //Should be changed. 
-  if(1){
-   //if( vertHLT && vertHLT->GetNContributors() >= 5 && (TMath::Abs(vertHLT->GetZ())<5.5) ){
 
-    fEventSpecieHLT->Fill(esdHLT->GetEventSpecie());
+  //if( vertHLT && vertHLT->GetNContributors() >= 5 && (TMath::Abs(vertHLT->GetZ())<5.5) ){
 
-    for(Int_t i=0; i<esdHLT->GetNumberOfTracks(); i++){ 
+  fEventSpecieHLT->Fill(esdHLT->GetEventSpecie());
+
+  for(Int_t i=0; i<esdHLT->GetNumberOfTracks(); i++){ 
   
-      AliESDtrack *esdtrackHLT = esdHLT->GetTrack(i); 
-      if(!esdtrackHLT){
-	continue;
-      }
+    AliESDtrack *esdtrackHLT = esdHLT->GetTrack(i); 
+    if(!esdtrackHLT) continue;
 
-      //Fill which status flags that are set for an event
-      for(int jjj=0;jjj<12;jjj++){
-	if(esdtrackHLT->GetStatus()&Statusnames[jjj]) {
-	  fStatusHLT->Fill(jjj);
-	  if(esdtrackHLT->GetTPCNcls()==0) fStatusHLT_Ocl->Fill(jjj);
-	}
-      } 
+    //Fill which status flags that are set for an event
+    for(int jjj=0;jjj<12;jjj++){
+      if(esdtrackHLT->GetStatus()&Statusnames[jjj]) fStatusHLT->Fill(jjj);
+    } 
 
-      //reject laser events -> Use offline info (HLT do not set this flag)
-      if((esdOFF->GetEventSpecie()==16)) continue;
+    //This condition is mostly affecting Offline->will cut away tracks that are counted twice 
+    //With both kITSin and kTPCin flags set.
+    if(!(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin)) continue;
 
-      //This condition is mostly affecting Offline->will cut away tracks that are counted twice 
-      //With both kITSin and kTPCin flags set.
-      if(!(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin)) continue;
+    //ESD-cut 
+    //At the moment not included!
+    //if(!fESDHLTtrackCuts->AcceptTrack(esdtrackHLT)) continue; 		    
 
-      //ESD-cut 
-      //At the moment not included!
-      //if(!fESDHLTtrackCuts->AcceptTrack(esdtrackHLT)) continue;		      
+    //Calculating DCA "old" fashion
+    Float_t dca[2];
+    esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
 
-      //Calculating DCA "old" fashion
-      Float_t dca[2];
-      esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
+    // plotting the DCA calculated by Sergey 
+    Float_t DCAr, DCAz = -99;
+    esdtrackHLT->GetImpactParametersTPC(DCAr, DCAz);
+    fDCArHLTSG->Fill(DCAr);
+    fDCAzHLTSG->Fill(DCAz);
 
-      // plotting the DCA calculated by Sergey 
-      Float_t DCAr, DCAz = -99;
-      esdtrackHLT->GetImpactParametersTPC(DCAr, DCAz);
-      fDCArHLTSG->Fill(DCAr);
-      fDCAzHLTSG->Fill(DCAz);
+    fDCArHLT->Fill(dca[0]);  
+    fDCAzHLT->Fill(dca[1]);
+    
+    fChargeHLT->Fill(esdtrackHLT->Charge());
 
-      fDCArHLT->Fill(dca[0]);  
-      fDCAzHLT->Fill(dca[1]);
-      
-      fChargeHLT->Fill(esdtrackHLT->Charge());
+    if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout))
+      fNclusterHLT->Fill(esdtrackHLT->GetTPCNcls());
 
-      if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout))
-	fNclusterHLT->Fill(esdtrackHLT->GetTPCNcls());
+    nr_tracksHLT++;
+    
+    if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout)){
+      fNclusVSphiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
+      fNclusVSthetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
+    }
 
-      nr_tracksHLT++;
-      
-      if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout)){
-	fNclusVSphiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
-	fNclusVSthetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
-      }
+    if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) fMomentumHLTTpc->Fill(esdtrackHLT->Pt());
+    if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kITSin)   fMomentumHLTTpcIts->Fill(esdtrackHLT->Pt());   
 
-      if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) fMomentumHLTTpc->Fill(esdtrackHLT->Pt());
-      if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kITSin)	 fMomentumHLTTpcIts->Fill(esdtrackHLT->Pt());   
+    fEtaHLT->Fill(esdtrackHLT->Eta()); 
+    fdEdxHLT->Fill( esdtrackHLT->GetTPCsignal() );
+    fdEdxVSPHLT->Fill( TMath::Abs(esdtrackHLT->Pt()), esdtrackHLT->GetTPCsignal() );	     
 
-      fEtaHLT->Fill(esdtrackHLT->Eta()); 
-      fdEdxHLT->Fill( esdtrackHLT->GetTPCsignal() );
-      fdEdxVSPHLT->Fill( TMath::Abs(esdtrackHLT->Pt()), esdtrackHLT->GetTPCsignal() );         
+    fPhiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
+    fThetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg());
+    fMomentumHLT->Fill( TMath::Abs(esdtrackHLT->Pt()) );  
+   
+    if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) 
+      fMomentumHLTTpc->Fill(esdtrackHLT->Pt());
+    if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kITSin)   
+      fMomentumHLTTpcIts->Fill(esdtrackHLT->Pt());  
 
-      fPhiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
-      fThetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg());
-      fMomentumHLT->Fill( TMath::Abs(esdtrackHLT->Pt()) );  
-     
-      if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) 
-	fMomentumHLTTpc->Fill(esdtrackHLT->Pt());
-      if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kITSin)	 
-	fMomentumHLTTpcIts->Fill(esdtrackHLT->Pt());  
+    if(TMath::Abs(esdtrackHLT->Pt()) <0.3) continue; 
+    fEtaMomentumcutHLT->Fill(esdtrackHLT->Eta());
+    if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout))
+      fNclusterHLTwCut->Fill(esdtrackHLT->GetTPCNcls());
+    
+    if(esdHLT->IsHLTTriggerFired()){
+        	 
+    }// end if for triggered hlt events        
+  } // end of loop over hlt tracks
 
-      if(TMath::Abs(esdtrackHLT->Pt()) <Momcut) continue; 
-      fEtaMomentumcutHLT->Fill(esdtrackHLT->Eta());
-      if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout))
-	fNclusterHLTwCut->Fill(esdtrackHLT->GetTPCNcls());
-      
-      if(esdHLT->IsHLTTriggerFired()){
-	    	   
-      }// end if for triggered hlt events	 
-    } // end of loop over hlt tracks
-  }  
-
-  if(nr_tracksHLT>0)
-    fMultHLT->Fill(nr_tracksHLT);
+  if(nr_tracksHLT>0) fMultHLT->Fill(nr_tracksHLT);
 
   //----------------- OFFLINE ESD tree ----------------//
   
@@ -611,7 +585,6 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
   AliVertex *primVertexOFF = new AliVertex(vertexOFF, 0., 0);
   Bool_t testVertex=kTRUE;
 
-  //Int_t nr_contributorsOff= vertHLT->GetNContributors();
 
   if(vertOff->GetNContributors()<1) {
     // SPD vertex
@@ -631,130 +604,79 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 
   //At the moment no constrains on vertex before filling histograms
   //Should be changed. 
-  if(1){
-    fEventSpecieOff->Fill(esdOFF->GetEventSpecie());
+  fEventSpecieOff->Fill(esdOFF->GetEventSpecie());
 
-    for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){ 
-     
-      AliESDtrack *esdtrackOFF = esdOFF->GetTrack(i); 
-      if (!esdtrackOFF) continue;
+  for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){ 
+   
+    AliESDtrack *esdtrackOFF = esdOFF->GetTrack(i); 
+    if (!esdtrackOFF) continue;
 
+    //Fill histograms with which flags are set
+    for(int jjj=0;jjj<12;jjj++){
+      if(esdtrackOFF->GetStatus()&Statusnames[jjj]) fStatusOff->Fill(jjj);
+    } 
 
-      //Fill histograms with which flags are set
-      for(int jjj=0;jjj<12;jjj++){
-	if(esdtrackOFF->GetStatus()&Statusnames[jjj]) {
-	  fStatusOff->Fill(jjj);
-	  if(esdtrackOFF->GetTPCNcls()==0) fStatusOff_Ocl->Fill(jjj);
-	}
-      } 
+    //This condition is mostly affecting Offline->will cut away tracks that are counted twice 
+    //With both kITSin and kTPCin flags set.
+    if(!(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin))continue; 
 
-      // reject laser events
-      if((esdOFF->GetEventSpecie()==16)) continue;  
+    // -- ESD cuts
+    //Not included at the moment
+    //if(!fESDOfftrackCuts->AcceptTrack(esdtrackOFF) ) continue;
+    nr_tracksOff++;
 
-      //This condition is mostly affecting Offline->will cut away tracks that are counted twice 
-      //With both kITSin and kTPCin flags set.
-      if(!(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin))continue; 
+    //Filling of DCA for Offline
 
-      // -- ESD cuts
-      //Not included at the moment
-      //if(!fESDOfftrackCuts->AcceptTrack(esdtrackOFF) ) continue;
-      nr_tracksOff++;
+    Double_t x[3]; 
+    esdtrackOFF->GetXYZ(x);
+    Double_t b[3]; 
+    AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdtrackOFF->RelateToVertexTPCBxByBz(vertOff, b, kVeryBig);
+    if(!isOK) return;
+    
+    const AliExternalTrackParam *track = esdtrackOFF->GetTPCInnerParam();
+    if(!track) return;
+    
+    Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
+    esdtrackOFF->GetImpactParametersTPC(dca,cov);
 
-      //Filling of DCA for Offline
+    fDCArOff->Fill(dca[0]);
+    fDCAzOff->Fill(dca[1]);
+    fChargeOff->Fill(esdtrackOFF->Charge());
 
-      Double_t x[3]; 
-      esdtrackOFF->GetXYZ(x);
-      Double_t b[3]; 
-      AliTracker::GetBxByBz(x,b);
-      Bool_t isOK = esdtrackOFF->RelateToVertexTPCBxByBz(vertOff, b, kVeryBig);
-      if(!isOK) return;
-      
-      const AliExternalTrackParam *track = esdtrackOFF->GetTPCInnerParam();
-      if(!track) return;
-      
-      Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-      esdtrackOFF->GetImpactParametersTPC(dca,cov);
+    if((esdtrackOFF->GetStatus()&AliESDtrack::kTPCin) || (esdtrackOFF->GetStatus()&AliESDtrack::kTPCin && esdtrackOFF->GetStatus()&AliESDtrack::kTPCout))
+      fNclusterOff->Fill(esdtrackOFF->GetTPCNcls()); 
 
-      fDCArOff->Fill(dca[0]);
-      fDCAzOff->Fill(dca[1]);
-      fChargeOff->Fill(esdtrackOFF->Charge());
+    if(esdtrackOFF->GetTPCNcls()>0) fNclusVSphiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
+    if(esdtrackOFF->GetTPCNcls()>0) fNclusVSthetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
 
-      if((esdtrackOFF->GetStatus()&AliESDtrack::kTPCin) || (esdtrackOFF->GetStatus()&AliESDtrack::kTPCin && esdtrackOFF->GetStatus()&AliESDtrack::kTPCout))
-	fNclusterOff->Fill(esdtrackOFF->GetTPCNcls()); 
+    if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin) fMomentumOffTpc->Fill(esdtrackOFF->Pt());
+    if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin && esdtrackOFF->GetStatus()&AliESDtrack::kITSin)   fMomentumOffTpcIts->Fill(esdtrackOFF->Pt());   
 
-      if(esdtrackOFF->GetTPCNcls()>0) fNclusVSphiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
-      if(esdtrackOFF->GetTPCNcls()>0) fNclusVSthetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
+    fEtaOff->Fill(esdtrackOFF->Eta());  	
+    fdEdxOff->Fill( esdtrackOFF->GetTPCsignal() );
+    fdEdxVSPOff->Fill( TMath::Abs(esdtrackOFF->Pt()), esdtrackOFF->GetTPCsignal() );	     
+    
+    fPhiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg());
+    fThetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg());
+    fMomentumOff->Fill( TMath::Abs(esdtrackOFF->Pt()) ); 
 
-      if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin) fMomentumOffTpc->Fill(esdtrackOFF->Pt());
-      if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin && esdtrackOFF->GetStatus()&AliESDtrack::kITSin)	 fMomentumOffTpcIts->Fill(esdtrackOFF->Pt());   
+    if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin) 
+      fMomentumOffTpc->Fill(esdtrackOFF->Pt());
+    if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin && esdtrackOFF->GetStatus()&AliESDtrack::kITSin)
+      fMomentumOffTpcIts->Fill(esdtrackOFF->Pt());  
 
-      fEtaOff->Fill(esdtrackOFF->Eta());	  
-      fdEdxOff->Fill( esdtrackOFF->GetTPCsignal() );
-      fdEdxVSPOff->Fill( TMath::Abs(esdtrackOFF->Pt()), esdtrackOFF->GetTPCsignal() );         
-      
-      fPhiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg());
-      fThetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg());
-      fMomentumOff->Fill( TMath::Abs(esdtrackOFF->Pt()) ); 
+    if(TMath::Abs(esdtrackOFF->Pt()) < 0.3) continue;
+    fEtaMomentumcutOff->Fill(esdtrackOFF->Eta()); 
+    if(esdtrackOFF->GetTPCNcls()>0) fNclusterOffwCut->Fill(esdtrackOFF->GetTPCNcls()); 
+                  
+//     if(esdHLT->IsHLTTriggerFired()){
+//           
+//     } // end if for triggered offl events
 
-      if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin) 
-	fMomentumOffTpc->Fill(esdtrackOFF->Pt());
-      if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin && esdtrackOFF->GetStatus()&AliESDtrack::kITSin)
-	fMomentumOffTpcIts->Fill(esdtrackOFF->Pt());  
-
-      if(TMath::Abs(esdtrackOFF->Pt()) < Momcut) continue;
-      fEtaMomentumcutOff->Fill(esdtrackOFF->Eta()); 
-      if(esdtrackOFF->GetTPCNcls()>0) 
-	fNclusterOffwCut->Fill(esdtrackOFF->GetTPCNcls()); 
-	    
-	  
-      if(esdHLT->IsHLTTriggerFired()){
-	    
-      } // end if for triggered offl events
-
-    } // end of loop over offl tracks
+  } // end of loop over offline tracks
   
-  }
-  if(nr_tracksOff>0)
-    fMultOff->Fill(nr_tracksOff);
-
-  //   if(esdHLT->IsHLTTriggerFired()){
-  // 
-  //      for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){ 
-  //         
-  // 	 AliESDtrack *esdTrk = esdOFF->GetTrack(i);      
-  //          Double_t dz[2] = {-999., -999.};  
-  //          Double_t covar[3] = {0};
-  //          esdTrk->PropagateToDCA(vtx, bfield, 250., dz, covar);
-  //          fHistOfflDZTrig->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1]));
-  //       
-  //          fHistOfflDZ->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1]));
-  //       
-  //          /*
-  //          Double_t pnt[3] = {0., 0., 0.};
-  //          Double_t norm[3] = {0., 0., 1.};
-  //          if(esdTrk->Intersect(pnt, norm, bfield)){
-  //       	   if(TMath::Sqrt(pnt[0]*pnt[0]+pnt[1]*pnt[1]) < 250) {
-  //       	     fNtracksThruZ0++;
-  //       	     fNtracksThruZ0Trig++;
-  //       	     fHistTrigger->Fill(6., 1);
-  //       	     fHistTrigger->Fill(7., 1);
-  //       	   }
-  //          }
-  //          */
-  // 
-  //          fHistOfflTrkDCATrig->Fill(TMath::Abs(esdTrk->GetD(0., 0., bfield)));
-  //          fDCAOff->Fill(TMath::Abs(esdTrk->GetD(0., 0., bfield))); 
-  // 
-  //          if(esdTrk->GetTPCNcls()>0){
-  // 	    fHistOfflTrkNclsTrig->Fill(esdTrk->GetTPCNcls()); 
-  // 	    fHistOfflTrkNcls->Fill(esdTrk->GetTPCNcls());
-  //          }
-  // 
-  //          fHistOfflTrkPTrig->Fill(TMath::Abs(esdTrk->P()));
-  //          fHistOfflTrkP->Fill(TMath::Abs(esdTrk->P()));
-  //          fHistOffldEdx->Fill( esdTrk->GetTPCsignal());
-  //          fHistOffldEdxVsP->Fill(TMath::Abs(esdTrk->P()), esdTrk->GetTPCsignal());
-  //      }
+  if(nr_tracksOff>0) fMultOff->Fill(nr_tracksOff);
   
   delete primVertexOFF;
   delete primVertexHLT;
@@ -765,131 +687,6 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 
 void AliAnalysisTaskHLT::Terminate(Option_t *){
   // see header file of AliAnalysisTask for documentation
-// 
-//   // Draw result to the screen
-//   // Called once at the end of the query
-// 
-//   Bool_t print_png=kFALSE;
-//   if(print_png){
-//   
-//     //Drawing histograms
-//     Int_t maxbin =0;
-//     TCanvas *c1 = new TCanvas("c1","Info pr track, Offline vs Online",10,10,1210,810);
-//      
-//     c1->Divide(3,2);
-//      
-//     c1->cd(1);
-//     maxbin =fEtaOff->GetBinContent(fEtaOff->GetMaximumBin());
-//     if(maxbin < fEtaHLT->GetBinContent(fEtaHLT->GetMaximumBin()))
-//       maxbin=fEtaHLT->GetBinContent(fEtaHLT->GetMaximumBin());
-//     fEtaOff->SetMaximum(maxbin+20);
-//     fEtaOff->SetTitle("Pseudorapidity (without momentum cut)");
-//     fEtaOff->SetLineColor(2);
-//     fEtaOff->DrawCopy("");
-//     fEtaHLT->DrawCopy("sameS");
-//  
-//     TLegend *legend = new TLegend(0.70,0.60,0.90,0.75);
-//     legend->AddEntry(fEtaOff, "Offline", "LP");
-//     legend->AddEntry(fEtaHLT,"HLT","LP");
-//     legend->SetFillColor(10);
-//     legend->SetBorderSize(0);
-//     legend->Draw("");
-// 
-//     c1->cd(2);
-//     maxbin =fEtaMomentumcutOff->GetBinContent(fEtaMomentumcutOff->GetMaximumBin());
-//     if(maxbin < fEtaMomentumcutHLT->GetBinContent(fEtaMomentumcutHLT->GetMaximumBin()))
-//       maxbin=fEtaMomentumcutHLT->GetBinContent(fEtaMomentumcutHLT->GetMaximumBin());
-//     fEtaMomentumcutOff->SetMaximum(maxbin+20);
-//     fEtaMomentumcutOff->SetTitle("Pseudorapidity");
-//     fEtaMomentumcutOff->SetLineColor(2);
-//     fEtaMomentumcutOff->DrawCopy("");
-//     fEtaMomentumcutHLT->DrawCopy("sames");
-// 
-//     c1->cd(3);
-//     maxbin =fNclusterOff->GetBinContent(fNclusterOff->GetMaximumBin());
-//     if(maxbin < fNclusterHLT->GetBinContent(fNclusterHLT->GetMaximumBin()))
-//       maxbin=fNclusterHLT->GetBinContent(fNclusterHLT->GetMaximumBin());
-//     fNclusterOff->SetMaximum(maxbin+20);
-//     fNclusterOff->SetLineColor(2);
-//     fNclusterOff->SetTitle("Nr clusters per track");
-//     fNclusterOff->DrawCopy("");
-//     fNclusterHLT->DrawCopy("sames");
-// 
-//     c1->cd(4);
-//     maxbin =fPhiOff->GetBinContent(fPhiOff->GetMaximumBin());
-//     if(maxbin < fPhiHLT->GetBinContent(fPhiHLT->GetMaximumBin()))
-//       maxbin=fPhiHLT->GetBinContent(fPhiHLT->GetMaximumBin());
-//     fPhiOff->SetMinimum(0);
-//     fPhiOff->SetMaximum(maxbin+20);
-//     fPhiOff->SetLineColor(2);
-//     fPhiOff->SetTitle("Azimuthal angle distribution");
-//     fPhiOff->DrawCopy("");
-//     fPhiHLT->DrawCopy("sames");
-// 
-//     c1->cd(5);
-//     maxbin =fThetaOff->GetBinContent(fThetaOff->GetMaximumBin());
-//     if(maxbin < fThetaHLT->GetBinContent(fThetaHLT->GetMaximumBin()))
-//       maxbin=fThetaHLT->GetBinContent(fThetaHLT->GetMaximumBin());
-//     fThetaOff->SetMaximum(maxbin+20);
-//     fThetaOff->SetLineColor(2);
-//     fThetaOff->SetTitle("Polar angle distribution");
-//     fThetaOff->DrawCopy("");
-//     fThetaHLT->DrawCopy("sames");
-// 
-//     c1->cd(6);
-//     maxbin =fMomentumOff->GetBinContent(fMomentumOff->GetMaximumBin());
-//     if(maxbin < fMomentumHLT->GetBinContent(fMomentumHLT->GetMaximumBin()))
-//       maxbin=fMomentumHLT->GetBinContent(fMomentumHLT->GetMaximumBin());
-//     fMomentumOff->SetMaximum(maxbin+200);
-//     fMomentumOff->GetXaxis()->SetRangeUser(0,5);
-//     fMomentumOff->SetLineColor(2);
-//     fMomentumOff->SetTitle("Momentum");
-//     fMomentumOff->DrawCopy("");
-//     fMomentumHLT->DrawCopy("sames");
-// 
-//     TCanvas *c2= new TCanvas("c2", "Info pr event, Offline vs Online", 10 , 10,1210, 810);
-//     TLegend *legend2 = new TLegend(0.70,0.60,0.90,0.75);
-//     c2->Divide(3,2);
-//     c2->cd(1);
-//     fXvertexOff->SetTitle("Primary Vertex Distribution in X");
-//     fXvertexOff->SetLineColor(2);
-//     fXvertexOff->GetXaxis()->SetRangeUser(-0.5,0.5);
-//     legend2->AddEntry(fXvertexOff,"Offline","LP");
-//     fXvertexOff->DrawCopy("");
-//     fXvertexHLT->DrawCopy("sames");
-//     legend2->AddEntry(fXvertexHLT,"HLT","LP");
-//     legend2->SetFillColor(10);
-//     legend2->SetBorderSize(0);
-//     legend2->Draw();
-//     c2->cd(2);
-//     fYvertexOff->SetTitle("Primary Vertex Distribution in Y");
-//     fYvertexOff->SetLineColor(2);
-//     fYvertexOff->GetXaxis()->SetRangeUser(-0.5,0.5);
-//     fYvertexOff->DrawCopy("");
-//     fYvertexHLT->DrawCopy("sames");
-//     c2->cd(3);
-//     fZvertexOff->SetTitle("Primary Vertex Distribution in Z");
-//     fZvertexOff->SetLineColor(2);
-//     fZvertexOff->DrawCopy("");
-//     fZvertexHLT->DrawCopy("sames");
-//   
-//     c2->cd(4);
-//     fMultHLT->SetTitle("Track Multiplicity, NumberTracks>0");
-//     fMultHLT->DrawCopy("");
-//     fMultOff->SetLineColor(2);
-//     fMultOff->DrawCopy("sames");
-// 
-//     string filename="Info_pr_track";
-//     char plotname[100];
-//     sprintf(plotname,"%s.png",filename.c_str());
-//     //  c1->Print("Info_pr_track.png","png");
-//     c1->Print(plotname,"png");
-//  
-//     filename="Info_pr_Event";
-//     sprintf(plotname,"%s.png",filename.c_str());
-//     c2->Print(plotname,"png");
-//   }
-
 }
 
 void AliAnalysisTaskHLT::SetupESDtrackCuts() {
