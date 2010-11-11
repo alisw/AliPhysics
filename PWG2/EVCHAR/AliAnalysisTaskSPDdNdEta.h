@@ -15,9 +15,6 @@ class TH3F;
 class AliESDEvent;
 class TList;
 
-#include "AliTriggerAnalysis.h"
-#include "AliMCEvent.h"
-#include "AliMCEventHandler.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskSPDdNdEta : public AliAnalysisTaskSE {
@@ -33,13 +30,22 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTaskSE {
 
   void SetReadMC(Bool_t readmc = kFALSE) { fUseMC = readmc; }
   void SetTrigger(AliTriggerAnalysis::Trigger trigger) { fTrigger = trigger; }
-  void SetReadPbPb(Bool_t pbpb = kFALSE) { fPbPb = pbpb; } 
   void SetReadTrackRefs(Bool_t readtr = kFALSE) { fTR = readtr; }
   void SetRecoTracklets(Bool_t recotracklets = kFALSE) { fRecoTracklets = recotracklets; }
   void SetMCCentralityBin(MCCentralityBin mccentrbin) {fMCCentralityBin=mccentrbin;}
   void SetCentralityLowLim(Float_t centrlowlim) {fCentrLowLim=centrlowlim;}
   void SetCentralityUpLim(Float_t centruplim) {fCentrUpLim=centruplim;}
   void SetCentralityEst(TString centrest) {fCentrEst=centrest;}
+  void SetMinClusterMultLay2(Int_t minClMultLay2=0) {fMinClMultLay2=minClMultLay2;}
+
+  void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
+  void SetThetaWindow(Float_t w=0.025) {fThetaWindow=w;}
+  void SetPhiShift(Float_t w=0.0045) {fPhiShift=w;}
+  void SetRemoveClustersFromOverlaps(Bool_t b = kFALSE) {fRemoveClustersFromOverlaps = b;}
+  void SetPhiOverlapCut(Float_t w=0.005) {fPhiOverlapCut=w;}
+  void SetZetaOverlapCut(Float_t w=0.05) {fZetaOverlapCut=w;}
+  void SetPhiRotationAngle(Float_t w=0.0) {fPhiRotationAngle=w;}
+  void SetPhiWindowAna(Float_t w=0.08) {fPhiWindowAna=w;}
  
   Bool_t IsDetectablePrimary(Int_t nref, AliMCParticle* mcpart);
   Bool_t IsDetectedPrimary(Int_t nref, AliMCParticle* mcpart, Int_t Layer);
@@ -47,18 +53,29 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTaskSE {
  protected:
   AliESDEvent *fmyESD;             // ! ESD object 
   TList *fOutput;                  // ! output list send on output slot 1 
-  
-  MCCentralityBin fMCCentralityBin; // to select MC centrality bin in which corrections are calculated
-  Float_t fCentrLowLim;             // to select centrality bin on data
-  Float_t fCentrUpLim;              // to select centrality bin on data
-  TString fCentrEst;                // to select centrality estimator
-
 
   Bool_t fUseMC;                   // flag to enable the calculation of correction histograms
   Bool_t fPbPb;                    // flag to analyze PbPb data 
   AliTriggerAnalysis::Trigger fTrigger;  
   Bool_t fTR;                      // to read track references and calculate factors of track to particle correction 
   Bool_t fRecoTracklets;           // flag to recostruct tracklets
+  
+  MCCentralityBin fMCCentralityBin; // to select MC centrality bin in which corrections are calculated
+  Float_t fCentrLowLim;             // to select centrality bin on data
+  Float_t fCentrUpLim;              // to select centrality bin on data
+  TString fCentrEst;                // to select centrality estimator
+  Int_t fMinClMultLay2;             // to select multiplicity class
+
+  Float_t       fPhiWindow;                    // Search window in phi
+  Float_t       fThetaWindow;                  // Search window in theta
+  Float_t       fPhiShift;                     // Phi shift reference value (at 0.5 T)
+  Bool_t        fRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
+  Float_t       fPhiOverlapCut;                // Fiducial window in phi for overlap cut
+  Float_t       fZetaOverlapCut;               // Fiducial window in eta for overlap cut
+  Float_t       fPhiRotationAngle;             // Angle to rotate the inner layer cluster for combinatorial reco only
+  Float_t       fPhiWindowAna;                 // Final analysis tracklet definition window in phi
+
+  AliTrackletAlg *fMultReco;       // tracklet reconstruction class
 
   TH2F        *fHistSPDRAWMultvsZ;          // ! data to be corrected 
   TH2F        *fHistSPDRAWMultvsZTriggCentrEvts; // ! data to be corrected
@@ -68,16 +85,25 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTaskSE {
 
   TH1F        *fHistSPDmultEtacut;          // ! cluster inner layer and tracklet check histos
   TH1F        *fHistSPDmult;                // ! cluster inner layer and tracklet check histos
-  TH1F        *fHistSPDmultcl1;
+  TH1F        *fHistSPDmultcl1;             // ! cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDmultcl2;             // ! cluster inner layer and tracklet check histos
+  TH2F        *fHistSPDmultcl1vscl2;        // ! cluster inner layer and tracklet check histos
+  TH2F        *fHistSPDmultvscl1;        // ! cluster inner layer and tracklet check histos
+  TH2F        *fHistSPDmultvscl2;        // ! cluster inner layer and tracklet check histos
+
   TH1F        *fHistSPDeta;                 // ! cluster inner layer and tracklet check histos
   TH1F        *fHistSPDphi;                 // ! cluster inner layer and tracklet check histos
   TH1F        *fHistSPDtheta;               // ! cluster inner layer and tracklet check histos
   TH1F        *fHistSPDdePhi;               // ! cluster inner layer and tracklet check histos
   TH2F        *fHistSPDphivsSPDeta;         // ! cluster inner layer and tracklet check histos
   TH1F        *fHistSPDdeTheta;             // ! cluster inner layer and tracklet check histos
-
+  
+  TH1F        *fHistSPDvtx;                 // ! SPD vertex distributions
   TH1F        *fHistSPDvtxAnalysis;         // ! SPD vertex distributions
   TH2F        *fHistSPDdePhideTheta;        // ! histogram for combinatorial background studies
+
+  TH1F        *fHistSPDphicl1;                 // ! cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDphicl2;                 // ! cluster inner layer and tracklet check histos
 
   TH2F* fHistBkgCorrDen;             // ! track level correction histograms
   TH2F* fHistBkgCorrDenPrimGen;      // ! track level correction histograms
@@ -97,6 +123,8 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTaskSE {
 
   TH1F* fHistMCmultEtacut;           // ! MC distributions
   TH2F* fHistMCmultEtacutvsSPDmultEtacut; // ! MC distributions
+  TH2F* fHistMCmultEtacutvsSPDmultcl1;  // ! MC distributions
+  TH2F* fHistMCmultEtacutvsSPDmultcl2;  // ! MC distributions
 
   TH1F* fHistMCvtxx;                 // ! MC vertex
   TH1F* fHistMCvtxy;                 // ! MC vertex
