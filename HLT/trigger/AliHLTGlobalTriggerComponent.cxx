@@ -773,6 +773,11 @@ int AliHLTGlobalTriggerComponent::LoadTriggerMenu(const char* cdbPath, const Ali
     return -EIO;
   }
   Int_t version = store->GetLatestVersion(cdbPath, GetRunNo());
+  if (version < 0)
+  {
+    HLTError("Could not find an entry in the CDB for \"%s\".", cdbPath);
+    return -EIO;
+  }
   Int_t subVersion = store->GetLatestSubVersion(cdbPath, GetRunNo(), version);
   AliCDBEntry* entry = AliCDBManager::Instance()->Get(cdbPath, GetRunNo(), version, subVersion);
   if (entry == NULL)
