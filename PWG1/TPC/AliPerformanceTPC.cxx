@@ -146,7 +146,7 @@ void AliPerformanceTPC::Init()
 
   // set pt bins
   Int_t nPtBins = 50;
-  Double_t ptMin = 1.e-2, ptMax = 10.;
+  Double_t ptMin = 1.e-2, ptMax = 20.;
 
   Double_t *binsPt = 0;
   if (IsHptGenerator())  { 
@@ -169,17 +169,18 @@ void AliPerformanceTPC::Init()
   //
 
   //
-  //padRow:phi:TPCSide:pad:detector
-  Int_t binsTPCClustHisto[5] =   {160,  180,  2, 256, 512};
-  Double_t minTPCClustHisto[5] = {0.,   0.,   0., -128, 0};
-  Double_t maxTPCClustHisto[5] = {160., 2.*TMath::Pi(), 2., 128, 512};
+  //padRow:phi:TPCSide:pad:detector:glZ
+  Int_t binsTPCClustHisto[6] =   {160,  180,  2, 256, 512, 250};
+  Double_t minTPCClustHisto[6] = {0.,   0.,   0., -128, 0, -250};
+  Double_t maxTPCClustHisto[6] = {160., 2.*TMath::Pi(), 2., 128, 512,250};
 
-  fTPCClustHisto = new THnSparseF("fTPCClustHisto","padRow:phi:TPCSide:pad:detector",5,binsTPCClustHisto,minTPCClustHisto,maxTPCClustHisto);
+  fTPCClustHisto = new THnSparseF("fTPCClustHisto","padRow:phi:TPCSide:pad:detector:gZ",6,binsTPCClustHisto,minTPCClustHisto,maxTPCClustHisto);
   fTPCClustHisto->GetAxis(0)->SetTitle("padRow");
   fTPCClustHisto->GetAxis(1)->SetTitle("phi (rad)");
   fTPCClustHisto->GetAxis(2)->SetTitle("TPCSide");
   fTPCClustHisto->GetAxis(3)->SetTitle("pad");
   fTPCClustHisto->GetAxis(4)->SetTitle("detector");
+  fTPCClustHisto->GetAxis(5)->SetTitle("glZ (cm)");
   //fTPCClustHisto->Sumw2();
   
   Int_t maxMult;
@@ -502,7 +503,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
 	     Double_t phi = TMath::ATan2(gclf[1],gclf[0]);
 	     if(phi < 0) phi += 2.*TMath::Pi();
 	    
-             Double_t vTPCClust[5] = { irow, phi, TPCside, pad, detector };
+             Double_t vTPCClust[6] = { irow, phi, TPCside, pad, detector, gclf[2] };
              fTPCClustHisto->Fill(vTPCClust);
         }
       }

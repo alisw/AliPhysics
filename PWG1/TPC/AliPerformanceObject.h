@@ -93,6 +93,10 @@ public :
   void SetUseKinkDaughters(Bool_t kinkDaughters = kTRUE) { fUseKinkDaughters = kinkDaughters; }
   Bool_t IsUseKinkDaughters() { return fUseKinkDaughters; }
 
+  // Centrality bin to be used
+  void  SetUseCentralityBin(Int_t bin) { fUseCentralityBin = bin; }
+  Int_t GetUseCentralityBin()          { return fUseCentralityBin; }
+  
 protected: 
 
   void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, TString* selString = 0);
@@ -117,6 +121,8 @@ protected:
   Bool_t fHighMultiplicity; // flag to switch between pp and PbPb  
 
   Bool_t fUseKinkDaughters; // use kink daughthers, default is yes
+
+  Int_t  fUseCentralityBin;  // centrality bin to be used 
 
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
