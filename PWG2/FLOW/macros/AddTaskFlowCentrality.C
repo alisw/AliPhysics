@@ -101,11 +101,14 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   //cutsRP->SetCharge(chargeRP);
   //cutsRP->SetPID(PdgRP);
   cutsRP->SetMinNClustersTPC(70);
+  cutsRP->SetMinChi2PerClusterTPC(0.2);
   cutsRP->SetMaxChi2PerClusterTPC(4.0);
   cutsRP->SetMinNClustersITS(2);
+  cutsRP->SetRequireITSRefit(kTRUE);
+  cutsRP->SetRequireTPCRefit(kTRUE);
   //cutsRP->SetMaxChi2PerClusterITS(1.e+09);
-  cutsRP->SetMaxDCAToVertexXY(0.5);
-  //cutsRP->SetMaxDCAToVertexZ(3.2);
+  cutsRP->SetMaxDCAToVertexXY(0.3);
+  cutsRP->SetMaxDCAToVertexZ(0.3);
   //cutsRP->SetDCAToVertex2D(kTRUE);
   //cutsRP->SetMaxNsigmaToVertex(1.e+10);
   //cutsRP->SetRequireSigmaToVertex(kFALSE);
@@ -121,15 +124,18 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   //cutsPOI->SetCharge(chargeRP);
   //cutsPOI->SetPID(PdgRP);
   cutsPOI->SetMinNClustersTPC(80);
+  cutsPOI->SetMinChi2PerClusterTPC(0.2);
   cutsPOI->SetMaxChi2PerClusterTPC(4.0);
-  //cutsPOI->SetMinNClustersITS(2);
+  cutsPOI->SetRequireITSRefit(kTRUE);
+  cutsPOI->SetRequireTPCRefit(kTRUE);
+  cutsPOI->SetMinNClustersITS(2);
   //cutsPOI->SetMaxChi2PerClusterITS(1.e+09);
-  cutsPOI->SetMaxDCAToVertexXY(2.4);
-  //cutsPOI->SetMaxDCAToVertexZ(3.2);
+  cutsPOI->SetMaxDCAToVertexXY(0.3);
+  cutsPOI->SetMaxDCAToVertexZ(0.3);
   //cutsPOI->SetDCAToVertex2D(kTRUE);
   //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
   //cutsPOI->SetRequireSigmaToVertex(kFALSE);
-  //cutsPOI->SetAcceptKinkDaughters(kFALSE);
+  cutsPOI->SetAcceptKinkDaughters(kFALSE);
 
 
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];

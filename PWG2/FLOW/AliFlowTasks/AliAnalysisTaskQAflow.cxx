@@ -192,7 +192,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   if (tracklets)
   {
     ntracklets = tracklets->GetNumberOfTracklets();
-    nspdclusters = tracklets->GetNumberOfITSClusters(0,1);
+    nspdclusters = tracklets->GetNumberOfITSClusters(1);
     nspd1clusters = tracklets->GetNumberOfITSClusters(1);
     for (Int_t i=0; i<tracklets->GetNumberOfTracklets(); i++)
     {
