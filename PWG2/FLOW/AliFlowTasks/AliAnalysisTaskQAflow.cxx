@@ -70,7 +70,7 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
 {
   // Called once at the beginning
   fOutput=new TObjArray();
-  fNtuple = new TNtuple("flowQAtree","flowQAtree","mpt:qx:qy:mul:rmul:phys:vtxtpcx:vtxtpcy:vtxtpcz:ntra:ntrc:mv0a:mv0c:zdcp1:zdcn1:zdcp2:zdcn2:zdcpart1:zdcpart2:t1:t2:t3:t4:t5:vtxspdx:vtxspdy:vtxspdz:vtxx:vtxy:vtxz:rawmeanpt:maxpt");
+  fNtuple = new TNtuple("flowQAtree","flowQAtree","mpt:qx:qy:mul:rmul:phys:vtxtpcx:vtxtpcy:vtxtpcz:ntra:ntrc:mv0a:mv0c:zdcp1:zdcn1:zdcp2:zdcn2:zdcpart1:zdcpart2:t1:t2:t3:t4:t5:vtxspdx:vtxspdy:vtxspdz:vtxx:vtxy:vtxz:rawmeanpt:maxpt:qxp:qyp:qxn:qyn:qxa:qya:qxb:qyb:qm:qmp:qmn:qma:qmb");
   //TDirectory* before = gDirectory->mkdir("before cuts","before cuts");
   //TDirectory* after = gDirectory->mkdir("after cuts","after cuts");
   TObjArray* before = new TObjArray();
@@ -257,15 +257,17 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   Float_t zdcn2=zdc->GetZDCN2Energy();
   Float_t zdcpart1=zdc->GetZDCPartSideA();
   Float_t zdcpart2=zdc->GetZDCPartSideC();
-  Float_t meanpt=0;
-  Float_t rawmeanpt=0;
+  Float_t meanpt=0.;
+  Float_t rawmeanpt=0.;
   Float_t maxpt=0.0;
   Int_t ntracks=fTrackCuts->GetNumberOfInputObjects();
+  Int_t nselected=0;
   for (Int_t i=0; i<ntracks; i++)
   {
     TObject* obj = fTrackCuts->GetInputObject(i);
     if (!obj) continue;
     Bool_t pass = fTrackCuts->IsSelected(obj,i);
+    if (pass) nselected++;
     Float_t dcaxy=0.0;
     Float_t dcaz=0.0;
     Float_t tpcchi2=0.0;
@@ -304,23 +306,68 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       hchargesB->Fill(charge); if (pass) hchargesA->Fill(charge);
     }
   }
-  if (ntracks!=0) meanpt = meanpt/ntracks;
+  if (ntracks!=0) meanpt = meanpt/nselected;
+  if (ntracks!=0) rawmeanpt = rawmeanpt/ntracks;
   
   Bool_t isSelectedEventSelection = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
   
   ///////////////////////////////////////////////////////////////////////
-  //the ntuple part/////////////
   if (fFillNtuple)
   {
     Double_t qx = 0.0;
     Double_t qy = 0.0;
+    Double_t qm = 0.0;
+    Double_t qxp = 0.0;
+    Double_t qyp = 0.0;
+    Double_t qmp = 0.0;
+    Double_t qxn = 0.0;
+    Double_t qyn = 0.0;
+    Double_t qmn = 0.0;
+    Double_t qxa = 0.0;
+    Double_t qya = 0.0;
+    Double_t qma = 0.0;
+    Double_t qxb = 0.0;
+    Double_t qyb = 0.0;
+    Double_t qmb = 0.0;
     AliFlowVector qvec;
     AliFlowEventSimple* flowevent = dynamic_cast<AliFlowEventSimple*>(GetInputData(1));
     if (!flowevent) flowevent = new AliFlowEvent(fTrackCuts,fTrackCuts);
+
+    AliFlowTrackCuts cutspos(*fTrackCuts);
+    cutspos.SetCharge(1);
+    AliFlowTrackCuts cutsneg(*fTrackCuts);
+    cutsneg.SetCharge(-1);
+    AliFlowTrackCuts cutssuba(*fTrackCuts);
+    cutssuba.SetEtaRange(-0.8,-0.1);
+    AliFlowTrackCuts cutssubb(*fTrackCuts);
+    cutssubb.SetEtaRange(0.1,0.8);
+    AliFlowEvent evpos(&cutspos,&cutspos);
+    AliFlowEvent evneg(&cutsneg,&cutsneg);
+    AliFlowEvent evsuba(&cutssuba,&cutssuba);
+    AliFlowEvent evsubb(&cutssubb, &cutssubb);
+
     qvec = flowevent->GetQ(2);
     qx = qvec.X();
     qy = qvec.Y();
-    Float_t x[32];
+    qm = qvec.GetMult();
+    qvec = evpos.GetQ(2);
+    qxp = qvec.X();
+    qyp = qvec.Y();
+    qmp = qvec.GetMult();
+    qvec = evneg.GetQ(2);
+    qxn = qvec.X();
+    qyn = qvec.Y();
+    qmn = qvec.GetMult();
+    qvec = evsuba.GetQ(2);
+    qxa = qvec.X();
+    qya = qvec.Y();
+    qma = qvec.GetMult();
+    qvec = evsubb.GetQ(2);
+    qxb = qvec.X();
+    qyb = qvec.Y();
+    qmb = qvec.GetMult();
+
+    Float_t x[45];
     x[0]=meanpt; x[1]=qx; x[2]=qy; x[3]=trackmult; x[4]=refmult; x[5]=(isSelectedEventSelection)?1:0;
     x[6]=vtxTPCx; x[7]=vtxTPCy; x[8]=vtxTPCz; x[9]=ntrackletsA; x[10]=ntrackletsC;
     x[11]=mv0a; x[12]=mv0c; x[13]=zdcp1; x[14]=zdcn1; x[15]=zdcp2; x[16]=zdcn2;
@@ -338,6 +385,19 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     x[29]=vtxz;
     x[30]=rawmeanpt;
     x[31]=maxpt;
+    x[32]=qxp;
+    x[33]=qyp;
+    x[34]=qxn;
+    x[35]=qyn;
+    x[36]=qxa;
+    x[37]=qya;
+    x[38]=qxb;
+    x[39]=qyb;
+    x[40]=qm;
+    x[41]=qmp;
+    x[42]=qmn;
+    x[43]=qma;
+    x[44]=qmb;
     fNtuple->Fill(x);
   }//if flowevent
 }

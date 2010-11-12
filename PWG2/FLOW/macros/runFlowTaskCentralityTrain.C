@@ -171,20 +171,20 @@ void LoadLibraries(const anaModes mode)
     }
     if(mode==mGridPAR) 
     {
-     SetupPar("STEERBase");
+     AliAnalysisAlien::SetupPar("STEERBase");
      cerr<<"STEERBase.par loaded..."<<endl;
-     SetupPar("ESD");
+     AliAnalysisAlien::SetupPar("ESD");
      cerr<<"ESD.par loaded..."<<endl;
-     SetupPar("AOD");
+     AliAnalysisAlien::SetupPar("AOD");
      cerr<<"AOD.par loaded..."<<endl;
-     SetupPar("ANALYSIS");
+     AliAnalysisAlien::SetupPar("ANALYSIS");
      cerr<<"ANALYSIS.par loaded..."<<endl;
-     SetupPar("ANALYSISalice");
+     AliAnalysisAlien::SetupPar("ANALYSISalice");
      cerr<<"ANALYSISalice.par loaded..."<<endl;
-     SetupPar("CORRFW");
-     SetupPar("PWG2flowCommon");
+     AliAnalysisAlien::SetupPar("CORRFW");
+     AliAnalysisAlien::SetupPar("PWG2flowCommon");
      cerr<<"PWG2flowCommon.par loaded..."<<endl;
-     SetupPar("PWG2flowTasks");
+     AliAnalysisAlien::SetupPar("PWG2flowTasks");
      cerr<<"PWG2flowTasks.par loaded..."<<endl;
     }
   }
@@ -193,15 +193,15 @@ void LoadLibraries(const anaModes mode)
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
-    SetupPar("STEERBase");
-    SetupPar("ESD");
-    SetupPar("AOD");
-    SetupPar("ANALYSIS");
-    SetupPar("ANALYSISalice");
-    SetupPar("CORRFW");
-    SetupPar("PWG2flowCommon");
+    AliAnalysisAlien::SetupPar("STEERBase");
+    AliAnalysisAlien::SetupPar("ESD");
+    AliAnalysisAlien::SetupPar("AOD");
+    AliAnalysisAlien::SetupPar("ANALYSIS");
+    AliAnalysisAlien::SetupPar("ANALYSISalice");
+    AliAnalysisAlien::SetupPar("CORRFW");
+    AliAnalysisAlien::SetupPar("PWG2flowCommon");
     cerr<<"PWG2flowCommon.par loaded..."<<endl;
-    SetupPar("PWG2flowTasks");
+    AliAnalysisAlien::SetupPar("PWG2flowTasks");
     cerr<<"PWG2flowTasks.par loaded..."<<endl;
   }
   
@@ -269,59 +269,6 @@ void LoadLibraries(const anaModes mode)
   }  
   
 } // end of void LoadLibraries(const anaModes mode) 
-
-//===============================================================================================
-
-void SetupPar(char* pararchivename) 
-{
-  //Load par files, create analysis libraries
-  //For testing, if par file already decompressed and modified
-  //classes then do not decompress.
-  
-  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
-  TString parpar(Form("%s.par", pararchivename)) ; 
-  if ( gSystem->AccessPathName(parpar.Data()) ) {
-    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
-    TString processline(Form(".! make %s", parpar.Data())) ; 
-    gROOT->ProcessLine(processline.Data()) ;
-    gSystem->ChangeDirectory(cdir) ; 
-    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
-    gROOT->ProcessLine(processline.Data()) ;
-  } 
-  if ( gSystem->AccessPathName(pararchivename) ) {  
-    TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
-    gROOT->ProcessLine(processline.Data());
-  }
-  
-  TString ocwd = gSystem->WorkingDirectory();
-  gSystem->ChangeDirectory(pararchivename);
-  
-  // check for BUILD.sh and execute
-  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
-    printf("*******************************\n");
-    printf("*** Building PAR archive    ***\n");
-    cout<<pararchivename<<endl;
-    printf("*******************************\n");
-    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
-      Error("runProcess","Cannot Build the PAR Archive! - Abort!");
-      return -1;
-    }
-  }
-  // check for SETUP.C and execute
-  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
-    printf("*******************************\n");
-    printf("*** Setup PAR archive       ***\n");
-    cout<<pararchivename<<endl;
-    printf("*******************************\n");
-    gROOT->Macro("PROOF-INF/SETUP.C");
-  }
-  
-  gSystem->ChangeDirectory(ocwd.Data());
-  printf("Current dir: %s\n", ocwd.Data());
-
-} // end of void SetupPar(char* pararchivename) 
-
-//===============================================================================================
 
 // Helper macros for creating chains
 // from: CreateESDChain.C,v 1.10 jgrosseo Exp
