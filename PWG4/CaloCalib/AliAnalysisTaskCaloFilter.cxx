@@ -37,6 +37,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliESDtrackCuts.h"
+#include "TGeoManager.h"
 
 ClassImp(AliAnalysisTaskCaloFilter)
   
@@ -45,12 +46,16 @@ ClassImp(AliAnalysisTaskCaloFilter)
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
   AliAnalysisTaskSE(), //fCuts(0x0),
   fCaloFilter(0), fCorrect(kFALSE), 
-  fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEAR"), 
+  fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEARV1"), 
   fEMCALRecoUtils(new AliEMCALRecoUtils),
-  fESDtrackCuts(0), fTrackMultEtaCut(0.9)
+  fESDtrackCuts(0), fTrackMultEtaCut(0.8),
+  fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
+  fGeoMatrixSet(kFALSE)
 {
   // Default constructor
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
+  //for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
 
 }
 
@@ -58,12 +63,16 @@ AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter(const char* name):
   AliAnalysisTaskSE(name), //fCuts(0x0),
   fCaloFilter(0), fCorrect(kFALSE),
-  fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEAR"), 
+  fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEARV1"), 
   fEMCALRecoUtils(new AliEMCALRecoUtils),
-  fESDtrackCuts(0), fTrackMultEtaCut(0.9)
+  fESDtrackCuts(0), fTrackMultEtaCut(0.8),
+  fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
+  fGeoMatrixSet(kFALSE)
 {
   // Constructor
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
+  //for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
 
 }
 
@@ -75,6 +84,7 @@ AliAnalysisTaskCaloFilter::~AliAnalysisTaskCaloFilter()
   if(fEMCALGeo)       delete fEMCALGeo;	
   if(fEMCALRecoUtils) delete fEMCALRecoUtils;
   if(fESDtrackCuts)   delete fESDtrackCuts;
+
 }
 
 //__________________________________________________
@@ -118,7 +128,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
       AliVTrack * track = (AliVTrack*)InputEvent()->GetTrack(itrack) ; // retrieve track from esd
       if(!fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
-      //Count the tracks in eta < 0.9
+      //Count the tracks in eta < 0.8
       if(TMath::Abs(track->Eta())< fTrackMultEtaCut) trackMult++;
     }    
   }
@@ -200,6 +210,44 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   //If EMCAL, and requested, correct energy, position ...
   //Need to do this in a separate loop before filling the ESDs because of the track matching recalculations
   if(fCorrect && (fCaloFilter==kEMCAL || fCaloFilter==kBoth) ) {
+    
+    if(!fGeoMatrixSet){
+      if(fLoadEMCALMatrices){
+        printf("AliAnalysisTaskCaloFilter::UserExec() - Load user defined geometry matrices\n");
+        for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+          if(fEMCALMatrix[mod]){
+            if(DebugLevel() > 1) 
+              fEMCALMatrix[mod]->Print();
+            fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod) ;  
+          }
+          fGeoMatrixSet=kTRUE;
+        }//SM loop
+      }//Load matrices
+      else if(!gGeoManager){
+        printf("AliAnalysisTaskCaloFilter::UserExec() - Get geo matrices from data\n");
+        //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
+        if(!strcmp(event->GetName(),"AliAODEvent")) {
+          if(DebugLevel() > 1) 
+            printf("AliAnalysisTaskCaloFilter Use ideal geometry, values geometry matrix not kept in AODs.\n");
+        }//AOD
+        else {	
+          if(DebugLevel() > 1) printf("AliAnalysisTaskCaloFilter Load Misaligned matrices. \n");
+          AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event) ;
+          if(!esd) {
+            printf("AliAnalysisTaskCaloFilter::UserExec() - This event does not contain ESDs?");
+            return;
+          }
+          for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+            //if(DebugLevel() > 1) 
+            esd->GetEMCALMatrix(mod)->Print();
+            if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
+          } 
+          fGeoMatrixSet=kTRUE;
+        }//ESD
+      }//Load matrices from Data 
+    }//first event
+    
+    
     //Cluster Loop
     for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
       
@@ -216,25 +264,29 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       //      }
       if(DebugLevel() > 2)
       { 
-        printf("Filter, before  : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClust,cluster->E(),
-               cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20());
+        printf("Filter, before  : i %d, E %f, dispersion %f, m02 %f, m20 %f, distToBad %f\n",iClust,cluster->E(),
+               cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20(), cluster->GetDistanceToBadChannel());
         cluster->GetPosition(position);
         printf("Filter, before  : i %d, x %f, y %f, z %f\n",cluster->GetID(), position[0], position[1], position[2]);
       }
       
+      //Recalculate distance to bad channels, if new list of bad channels provided
+      fEMCALRecoUtils->RecalculateClusterDistanceToBadChannel(fEMCALGeo, event->GetEMCALCells(), cluster);
+
       if(fEMCALRecoUtils->IsRecalibrationOn())	{
         fEMCALRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, cluster, event->GetEMCALCells());
         fEMCALRecoUtils->RecalculateClusterShowerShapeParameters(fEMCALGeo, event->GetEMCALCells(),cluster);
         fEMCALRecoUtils->RecalculateClusterPID(cluster);
       }
+      
       cluster->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(cluster));
       
       fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, event->GetEMCALCells(),cluster);
       
       if(DebugLevel() > 2)
       { 
-        printf("Filter, after   : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",cluster->GetID(),cluster->E(),
-               cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20());
+        printf("Filter, after   : i %d, E %f, dispersion %f, m02 %f, m20 %f, distToBad %f\n",cluster->GetID(),cluster->E(),
+               cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20(), cluster->GetDistanceToBadChannel());
         cluster->GetPosition(position);
         printf("Filter, after   : i %d, x %f, y %f, z %f\n",cluster->GetID(), position[0], position[1], position[2]);
       }    
@@ -394,6 +446,8 @@ void AliAnalysisTaskCaloFilter::PrintInfo(){
   printf("TASK: AnalysisCaloFilter \n");
   printf("\t Not only filter, correct Clusters? %d\n",fCorrect);
   printf("\t Calorimeter Filtering Option     ? %d\n",fCaloFilter);
+  //printf("\t Use handmade geo matrices?   EMCAL %d, PHOS %d\n",fLoadEMCALMatrices, fLoadPHOSMatrices);
+  printf("\t Use handmade geo matrices?   EMCAL %d, PHOS 0\n",fLoadEMCALMatrices);
 
 }
 
