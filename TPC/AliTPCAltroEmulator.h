@@ -42,12 +42,13 @@ class AliTPCAltroEmulator : public TNamed {
   void ConfigAltro(Int_t ONBaselineCorrection1, Int_t ONTailcancellation, Int_t ONBaselineCorrection2, Int_t ONClipping, Int_t ONZerosuppression, Int_t ONDataFormatting);
   void ConfigBaselineCorrection1(Int_t mode, Int_t ValuePeDestal, Int_t *PedestalMem, Int_t polarity);
   void ConfigTailCancellationFilter(Int_t K1, Int_t K2, Int_t K3, Int_t L1, Int_t L2, Int_t L3);
+  void ConfigTailCancellationFilterForRAWfiles(Int_t* K1, Int_t* K2, Int_t* K3, Int_t* L1, Int_t* L2, Int_t* L3);
   void ConfigBaselineCorrection2(Int_t HighThreshold, Int_t LowThreshold, Int_t Offset, Int_t Presamples, Int_t Postsamples);
   void ConfigZerosuppression(Int_t Threshold, Int_t MinSamplesaboveThreshold, Int_t Presamples, Int_t Postsamples);
 
   void SetChannelData(Int_t timebins, Short_t* Channel);
   void PrintParameters();
-  void RunEmulation();
+  void RunEmulation(Int_t roc=-1); // if -1, the standard "single" TCF is used
   Float_t CalculateCompression();
 
   // perform altro emulation on raw-reader level
@@ -100,6 +101,7 @@ class AliTPCAltroEmulator : public TNamed {
   Int_t fConfiguredAltro;   // ConfiguredAltro
   Int_t fConfiguredBSL1;    // ConfiguredBSL1
   Int_t fConfiguredTCF;     // ConfiguredTCF
+  Int_t fConfiguredTCFraw;  // ConfiguredTCF for RAW data files
   Int_t fConfiguredBSL2;    // ConfiguredBSL2
   Int_t fConfiguredZSU;     // ConfiguredZSU
 
@@ -121,6 +123,13 @@ class AliTPCAltroEmulator : public TNamed {
   Int_t fTCFL1Int; // L1Int
   Int_t fTCFL2Int; // L2Int
   Int_t fTCFL3Int; // L3Int
+
+  Int_t fTCFK1IntROC[2]; // K1Int (IROC/OROC)
+  Int_t fTCFK2IntROC[2]; // K2Int (IROC/OROC)
+  Int_t fTCFK3IntROC[2]; // K3Int (IROC/OROC)
+  Int_t fTCFL1IntROC[2]; // L1Int (IROC/OROC)
+  Int_t fTCFL2IntROC[2]; // L2Int (IROC/OROC)
+  Int_t fTCFL3IntROC[2]; // L3Int (IROC/OROC)
 
   Int_t fBSL2HighThreshold; // BSL2HighThreshold
   Int_t fBSL2LowThreshold;  // BSL2LowThreshold

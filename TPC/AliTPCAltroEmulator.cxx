@@ -69,6 +69,7 @@ AliTPCAltroEmulator::AliTPCAltroEmulator(Int_t timebins, short* Channel) :
   fConfiguredAltro(0),   // ConfiguredAltro
   fConfiguredBSL1(0),    // ConfiguredBSL1
   fConfiguredTCF(0),     // ConfiguredTCF
+  fConfiguredTCFraw(0),     // ConfiguredTCF
   fConfiguredBSL2(0),    // ConfiguredBSL2
   fConfiguredZSU(0),     // ConfiguredZSU
   fBSL1mode(0),          // BSL1mode
@@ -151,6 +152,7 @@ AliTPCAltroEmulator::AliTPCAltroEmulator(const AliTPCAltroEmulator &altro):
   fConfiguredAltro(0),   // ConfiguredAltro
   fConfiguredBSL1(0),    // ConfiguredBSL1
   fConfiguredTCF(0),     // ConfiguredTCF
+  fConfiguredTCFraw(0),  // ConfiguredTCF
   fConfiguredBSL2(0),    // ConfiguredBSL2
   fConfiguredZSU(0),     // ConfiguredZSU
   fBSL1mode(0),          // BSL1mode
@@ -322,6 +324,32 @@ void AliTPCAltroEmulator::ConfigTailCancellationFilter(Int_t K1, Int_t K2, Int_t
   fTCFL3Int = InRange(L3,0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","L3");
   fConfiguredTCF = 1;
 }
+void AliTPCAltroEmulator::ConfigTailCancellationFilterForRAWfiles(Int_t *K1, Int_t *K2, Int_t *K3, Int_t *L1, Int_t *L2, Int_t *L3){
+  //
+  // Configures the Tail Cancellation Filter (TCF) Module - Different settings for IROC and OROC
+  //
+  // conf from Int_t to fp:  (int)*(pow(2,-16)-1)
+  //             backway:  (Float_t)*(pow(2,16)-1)
+
+  // IROC
+  fTCFK1IntROC[0] = InRange(K1[0],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","K1[0]");
+  fTCFK2IntROC[0] = InRange(K2[0],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","K2[0]");
+  fTCFK3IntROC[0] = InRange(K3[0],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","K3[0]");
+  fTCFL1IntROC[0] = InRange(L1[0],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","L1[0]");
+  fTCFL2IntROC[0] = InRange(L2[0],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","L2[0]");
+  fTCFL3IntROC[0] = InRange(L3[0],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","L3[0]");
+  // OROC
+  fTCFK1IntROC[1] = InRange(K1[1],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","K1[1]");
+  fTCFK2IntROC[1] = InRange(K2[1],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","K2[1]");
+  fTCFK3IntROC[1] = InRange(K3[1],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","K3[1]");
+  fTCFL1IntROC[1] = InRange(L1[1],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","L1[1]");
+  fTCFL2IntROC[1] = InRange(L2[1],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","L2[1]");
+  fTCFL3IntROC[1] = InRange(L3[1],0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","L3[1]");
+
+
+  fConfiguredTCFraw = 1;
+}
+
 
 /**  @brief Configures the Moving Average Filter (BSL2) Module
  *
@@ -449,11 +477,10 @@ void AliTPCAltroEmulator::SetChannelData(Int_t timebins, Short_t* channelData) {
  *	Runs the emulation of all configured Modules. This changes then the content of the
  *	input Array
  */
-void AliTPCAltroEmulator::RunEmulation(){
+void AliTPCAltroEmulator::RunEmulation(Int_t roc){
   //
   // Runs the emulation of all configured Modules.
   //
-
 
   if (!fChannelShort) {
     printf("ERROR cant run Altro Emulation: Channel input not set.\nUse for example: SetChannelData(Int_t timebins, Short_t* Channel)\n");
@@ -478,11 +505,28 @@ void AliTPCAltroEmulator::RunEmulation(){
   
   //cout << "AliTPCAltroEmulator::RunEmulation | start TCF on: " << fOnTCF << " configures: " << fConfiguredTCF << endl;
   if(fOnTCF == 1){
-    if(fConfiguredTCF == 1){
-      TailCancellationFilterFixedPoint(fTCFK1Int, fTCFK2Int, fTCFK3Int, fTCFL1Int, fTCFL2Int, fTCFL3Int);
-    }else{
-      cout << "ERROR cant run Tail Cancellation Filter because not configured" << endl;
-      return;
+    if (roc==-1) { // use one set of TCF params
+      if(fConfiguredTCF == 1){
+	TailCancellationFilterFixedPoint(fTCFK1Int, fTCFK2Int, fTCFK3Int, fTCFL1Int, fTCFL2Int, fTCFL3Int);
+      }else{
+	cout << "ERROR cant run Tail Cancellation Filter because not configured" << endl;
+	return;
+      }
+    } else { // use different TCF params for IROC and OROC
+      if(fConfiguredTCFraw == 1){
+	if (roc==0)      //IROC
+	  TailCancellationFilterFixedPoint(fTCFK1IntROC[0], fTCFK2IntROC[0], fTCFK3IntROC[0], 
+					   fTCFL1IntROC[0], fTCFL2IntROC[0], fTCFL3IntROC[0]);
+	else if (roc==1) // OROC
+	  TailCancellationFilterFixedPoint(fTCFK1IntROC[1], fTCFK2IntROC[1], fTCFK3IntROC[1], 
+					   fTCFL1IntROC[1], fTCFL2IntROC[1], fTCFL3IntROC[1]);
+	else
+	  cout << "ERROR cant run Tail Cancellation Filter because TCF settings for ROC not found" << endl;
+      } else {
+	cout << "ERROR cant run Tail Cancellation Filter because not configured (for RAW data files!)" << endl;
+	return;
+      }
+
     }
   }
   
@@ -577,7 +621,7 @@ void AliTPCAltroEmulator::BaselineCorrection1(Int_t mode, Int_t ValuePeDestal, I
 
 Int_t AliTPCAltroEmulator::Multiply36(Int_t P, Int_t N){
   //
-  // multiply function to emulate the 36 bit fixed poInt_t multiplication of the Altro.
+  // multiply function to emulate the 36 bit fixed point multiplication of the Altro.
   //
   long long retval =0;
   long long temp = 0;
@@ -625,6 +669,9 @@ void AliTPCAltroEmulator::TailCancellationFilterFixedPoint(Int_t K1, Int_t K2, I
   Int_t dout = 0;
   Int_t din = 0;
   Int_t bit = 0;
+
+  //  printf("%5d %5d %5d %5d %5d %5d\n",K1,K2,K3,L1,L2,L3);
+
   for(Int_t i = 0; i < ftimebins; i++){
     din = fChannelShort[i];
     
@@ -819,8 +866,8 @@ void AliTPCAltroEmulator::Clipping(){
   // implement if no BC2 clipping has to run
   //
   for(Int_t i = 0; i < ftimebins; i++){
-    if(fChannelShort[i] < 0)
-      fChannelShort[i] = 0;
+    if(fChannelShort[i] < -1)
+      fChannelShort[i] = -1;
   }
 }
 
@@ -832,6 +879,7 @@ void AliTPCAltroEmulator::Zerosuppression(Int_t Threshold, Int_t MinSamplesabove
   //TODO: Implement "Altro zsu merging"
   //Int_t Postsamplecounter = 0;
   //Int_t setPostsample = 0;
+
   for(Int_t i = 0; i < ftimebins; i++){
     if(fChannelShort[i] >= Threshold){
       fADCkeep[i] = 1;
@@ -842,10 +890,10 @@ void AliTPCAltroEmulator::Zerosuppression(Int_t Threshold, Int_t MinSamplesabove
   Int_t endofClustersInSequence = -1;
   
   for(Int_t i = 0; i < ftimebins; i++){
-    if( (fADCkeep[i] == 1) && (GetElement(fADCkeep,i-1) == 0) ){
+    if( (fADCkeep[i] == 1) && (GetElement(fADCkeep,i-1) == -1) ){
       startofclustersequence = i;
     }
-    if( (fADCkeep[i] == 1) && (GetElement(fADCkeep,i+1) == 0) ){
+    if( (fADCkeep[i] == 1) && (GetElement(fADCkeep,i+1) == -1) ){
       endofClustersInSequence = i;
     }
     //cout << i << " startofclustersequence: " << startofclustersequence << " endofClustersInSequence: " << endofClustersInSequence;
@@ -900,8 +948,8 @@ void AliTPCAltroEmulator::Zerosuppression(Int_t Threshold, Int_t MinSamplesabove
   }
 
   for(Int_t i = 0; i < ftimebins; i++){
-    if( !GetKeepChannel(i) ) {
-      SetElement(fChannelShort,i+1,-1); // set non relevant data to -1
+    if( !GetKeepChannel(i) || GetShortChannel(i)<Threshold) {
+      SetElement(fChannelShort,i,-1); // set non relevant data to -1
     }
   }
 
@@ -1304,11 +1352,15 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
   
   TH1F hisO("DINO","DINO",1014,0,1014); 
   TH1F his("DIN","DIN",1014,0,1014); 
-  TCanvas c1("c1","c1");
+
   Int_t chanCount=0;
   his.GetYaxis()->SetRangeUser(-20,90);
   Short_t *data = new Short_t[1014]; 
-
+  TCanvas *c1 =0;
+  if (plotFlag) {
+    c1 = new TCanvas("c1","c1");
+    c1->SetGridx(); c1->SetGridy();
+  }
 
   // event loop
   Int_t ievent=0;
@@ -1320,7 +1372,7 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
     Int_t ddlC =0;
     while (fDecoder->NextDDL()) {
       Int_t ddlID=fDecoder->GetDDLNumber();
-      printf("ddl: %d (%d)\n",ddlID,ddlC++);
+      printf("ddl: %d (%d/216)\n",ddlID,++ddlC);
      
       Bool_t  *channelsDDL=fChannels+ddlID*4096     ;
       Short_t *adcsDDL    =fADCs    +ddlID*4096*1024;
@@ -1335,6 +1387,9 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
       // PAYLOAD
       while (fDecoder->NextChannel()) {
 	Int_t hwaddr=fDecoder->GetHWAddress();
+	Int_t sector=fDecoder->GetSector();
+	Int_t row=fDecoder->GetRow();
+	Int_t pad=fDecoder->GetPad();
 	Short_t *adcsChannel=adcsDDL+hwaddr*1024;
 	while (fDecoder->NextBunch()) {
 	  UInt_t          ts     =fDecoder->GetStartTimeBin();
@@ -1356,50 +1411,48 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
 	  }
 	}
 
-
-	if (1) {
-
-	  // search start of aquisition
-	  Int_t t0 = 0; 	 while (adcsChannel[t0]==-1) t0++;
-	  // search end of aquisition
-	  Int_t tE = 1014; while (adcsChannel[tE]==-1) tE--;
-	  //	printf("S:%d  E:%d\n",t0,tE);
+	// search start of aquisition
+	Int_t t0 = 0; 	 while (adcsChannel[t0]==-1) t0++;
+	// search end of aquisition
+	Int_t tE = 1014; while (adcsChannel[tE]==-1) tE--;
 	
-	  // SR TEST:
-	  // channel is complete - Perform Altro Emulation
-	  if (plotFlag && !(chanCount%1000)) {
-	    for (Int_t t=0; t<1014; t++) {
-	      his.SetBinContent(t+1,adcsChannel[t]);
-	    }
-	    his.SetStats(0); his.GetXaxis()->SetTitle("timebin"); 
-	    his.DrawCopy();
+	// SR TEST:
+	// channel is complete - Perform Altro Emulation
+	if (plotFlag!=0 && !(chanCount%plotFlag) ) {
+	  for (Int_t t=0; t<1014; t++) {
+	    his.SetBinContent(t+1,adcsChannel[t]);
 	  }
-	  // FEED THE ALTRO EMULATOR WITH CLEAN SIGNAL (not aquisition window ghosts)
-	  Int_t timebins = tE-t0;
-
-	  for (Int_t t=t0;t<(t0+timebins);t++)
-	    data[t-t0]=adcsChannel[t];
-	  //SetChannelData(timebins, adcsChannel);//data);
-	  SetChannelData(timebins,data);
-	  RunEmulation(); // emulation on single channel
-	  for (Int_t t=t0;t<(t0+timebins);t++) 
-	    adcsChannel[t]=data[t-t0];
-	  
-	  // SR TEST:
-	  if (plotFlag && !(chanCount%1000) ) {
-	    for (Int_t t=0; t<1014; t++)
-	      hisO.SetBinContent(t+1,adcsChannel[t]);
-	    hisO.SetStats(0); hisO.SetLineColor(2);
-	    hisO.DrawCopy("same");
-	    
-	    c1.SaveAs(Form("/tmp/chanCount_%07d.png",chanCount));
-	    
-	    his.Reset();
-	    hisO.Reset();
-
-	  }
-	  chanCount++;
+	  his.SetTitle(Form("sig_sec%d_row%d_pad%d",sector,row,pad));
+	  his.SetStats(0); his.GetXaxis()->SetTitle("timebin"); 
+	  his.DrawCopy();
 	}
+
+	// FEED THE ALTRO EMULATOR WITH CLEAN SIGNAL (no aquisition-window ghosts)
+	Int_t timebins = tE-t0;
+	for (Int_t t=t0;t<(t0+timebins);t++)
+	  data[t-t0]=adcsChannel[t];
+	SetChannelData(timebins,data);
+	
+	Int_t roc = (sector%36)>=18; // 0 for IROC, 1 for OROC
+	RunEmulation(roc); 
+	for (Int_t t=t0;t<(t0+timebins);t++) 
+	  adcsChannel[t]=data[t-t0];
+	  
+	// SR TEST:
+	if (plotFlag!=0 && !(chanCount%plotFlag) ) {
+	  for (Int_t t=0; t<1014; t++)
+	    hisO.SetBinContent(t+1,adcsChannel[t]);
+	  hisO.SetStats(0); hisO.SetLineColor(2);
+	  hisO.DrawCopy("same");
+	    
+	  c1->SaveAs(Form("/tmp/sig_sec%02d_row%02d_pad%03d_%d%d%d%d%d.png",
+			  sector,row,pad,fOnBSL1,fOnTCF,fOnBSL2,fOnClip,fOnZSU));
+	    
+	  his.Reset();
+	  hisO.Reset();
+
+	}
+	chanCount++;
 
       }
       
