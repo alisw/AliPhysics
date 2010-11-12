@@ -25,6 +25,7 @@
 #include "TROOT.h"
 #include "TAxis.h"
 #include "AliGenDPMjetEventHeader.h"
+#include <TFile.h>
 
 ClassImp(AliFMDAnalysisTaskGenerateCorrection)
 #if 0 

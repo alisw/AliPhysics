@@ -1458,11 +1458,15 @@ void AliFMDDndeta::CreateSharingEfficiency(const Char_t* filename, Bool_t store)
   Int_t nVertexBins = pars->GetNvtxBins();
   
   SetNames(kHits);
+  // "nEvents";
   TH1I* hEvents          = (TH1I*)fList->FindObject(fEvents.Data());
+  // "nMCEventsNoCuts"
   TH1I* hPrimEvents      = (TH1I*)fList->FindObject(fPrimEvents.Data());
 
   SetNames(kHitsTrVtx);
+  // "nEvents";
   TH1I* hEventsTrVtx     = (TH1I*)fList->FindObject(fEvents.Data());
+  // "nMCEvents"
   TH1I* hPrimEventsTrVtx = (TH1I*)fList->FindObject(fPrimEvents.Data());
   
   AliFMDAnaCalibSharingEfficiency* sharEff = new AliFMDAnaCalibSharingEfficiency();
@@ -1472,9 +1476,17 @@ void AliFMDDndeta::CreateSharingEfficiency(const Char_t* filename, Bool_t store)
     for(Int_t ring = 0;ring<=maxRing;ring++) {
       Char_t ringChar = (ring == 0 ? 'I' : 'O');
       for(Int_t v=0; v< nVertexBins; v++) {
+	// Get histograms like  hits_NoCuts_FMD%d%c_vtxbin%d_proj
+	// - from AliFMDAnalysisTaskBackgroundCorrection.cxx
 	TH1F* hHits = (TH1F*)fList->FindObject(GetAnalysisName(kHits,det, ringChar, v));
+	// Get histograms like hits_FMD%d%c_vtxbin%d_proj 
+	// - from AliFMDAnalysisTaskBackgroundCorrection.cxx 
 	TH1F* hHitsTrVtx   = (TH1F*)fList->FindObject(GetAnalysisName(kHitsTrVtx,det, ringChar, v));
+	// Get histograms like "hMCHits_nocuts_FMD%d%c_vtxbin%d"
+	// - from AliFMDAnalysisTaskSharing.cxx
 	TH1F* hMCHits      = (TH1F*)fList->FindObject(GetPrimName(kHits,det, ringChar, v));
+	// Get histograms like "hMCHits_FMD%d%c_vtxbin%d"
+	// - from AliFMDAnalysisTaskSharing.cxx
 	TH1F* hMCHitsTrVtx = (TH1F*)fList->FindObject(GetPrimName(kHitsTrVtx,det, ringChar, v));
 	
 	TH1F* hCorrection  = (TH1F*)hHits->Clone(Form("hCorrection_FMD%d%c_vtx%d",det, ringChar, v));

@@ -40,6 +40,10 @@
 #include "AliMultiplicity.h"
 #include "AliESDVertex.h"
 #include "AliFMDAnaParameters.h"
+#include "AliFMDAnaCalibBackgroundCorrection.h"
+#include "AliFMDAnaCalibEnergyDistribution.h"
+#include "AliFMDAnaCalibEventSelectionEfficiency.h"
+#include "AliFMDAnaCalibSharingEfficiency.h"
 
 //#include "AliFMDGeometry.h"
 
@@ -70,7 +74,11 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector()
   fArray(0),
   fZvtxDist(0),
   fEvents(0),
-  fEmptyEvents(0)
+  fEmptyEvents(0),
+  fClusters(0),
+  fClustersEmpty(0),
+  fFirstEvent(kTRUE),
+  fParam(0)
 {
   // Default constructor
   
@@ -84,21 +92,26 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector(const char* name):
     fArray(0),
     fZvtxDist(0),
     fEvents(0),
-    fEmptyEvents(0)
+    fEmptyEvents(0),
+    fClusters(0),
+    fClustersEmpty(0),
+    fFirstEvent(kTRUE),
+    fParam(0)
 {
   // Default constructor
   
   DefineOutput(1, TList::Class());
+  fParam = AliFMDAnaParameters::Instance();
 }
 //____________________________________________________________________
 void AliFMDAnalysisTaskCollector::UserCreateOutputObjects()
 {
   // Create the output container
   printf("AnalysisTaskFMD::CreateOutPutData() \n");
-  
+  fFirstEvent = kTRUE;
   fOutputList = new TList();//(TList*)GetOutputData(0);
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  
+
   fArray     = new TObjArray();
   fArray->SetName("FMD");
   fArray->SetOwner();
@@ -158,6 +171,12 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
   }
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   pars->SetTriggerStatus(esd);
+  if (fFirstEvent) { 
+    pars->SetParametersFromESD(esd);
+    pars->PrintStatus();
+    fFirstEvent = kFALSE;
+  }
+
   TString triggers = esd->GetFiredTriggerClasses();
   //if(!triggers.IsNull()) return;
   //Bool_t trigger = pars->IsEventTriggered(esd);

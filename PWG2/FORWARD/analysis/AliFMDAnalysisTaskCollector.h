@@ -11,15 +11,15 @@
 class AliESDEvent;
 class TChain;
 class AliAODEvent;
-
+class AliFMDAnaParameters;
 
 
 
 class AliFMDAnalysisTaskCollector : public AliAnalysisTaskSE
 {
  public:
-    AliFMDAnalysisTaskCollector();
-    AliFMDAnalysisTaskCollector(const char* name);
+  AliFMDAnalysisTaskCollector();
+  AliFMDAnalysisTaskCollector(const char* name);
   AliFMDAnalysisTaskCollector(const AliFMDAnalysisTaskCollector& o) : 
     AliAnalysisTaskSE(),
     fDebug(o.fDebug),
@@ -27,7 +27,12 @@ class AliFMDAnalysisTaskCollector : public AliAnalysisTaskSE
     fArray(o.fArray),
     fZvtxDist(o.fZvtxDist),
     fEvents(0),
-    fEmptyEvents(0)    {}
+    fEmptyEvents(0),
+    fClusters(0),
+    fClustersEmpty(0),
+    fFirstEvent(kTRUE), 
+    fParam(0)
+  {}
   
   AliFMDAnalysisTaskCollector& operator=(const AliFMDAnalysisTaskCollector&) { return *this; }
   virtual ~AliFMDAnalysisTaskCollector() {;}
@@ -51,7 +56,9 @@ private:
   Int_t         fEmptyEvents;
   Float_t       fClusters;
   Float_t       fClustersEmpty;
-  
+  Bool_t        fFirstEvent;
+  AliFMDAnaParameters* fParam;
+
   ClassDef(AliFMDAnalysisTaskCollector, 0); // Analysis task for FMD analysis
 };
  
