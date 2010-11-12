@@ -37,6 +37,7 @@ CLASS_HDRS:= \
 		AliHLTMuonSpectroScalars.h                  \
 		AliHLTMuonSpectroTriggerComponent.h	    \
 		AliHLTUpcTriggerComponent.h                 \
+		AliHLTTriggerCounterComponent.h             \
 		AliHLTTriggerCounters.h
 
 # library sources

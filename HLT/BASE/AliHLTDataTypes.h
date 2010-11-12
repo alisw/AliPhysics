@@ -66,8 +66,9 @@
  *           Adding data block type for ESD content
  *           Adding data block type for forwarded component table blocks
  *           Adding new event type for software triggers.
+ *  15       Modifying data block types for trigger counter blocks.
  */
-#define ALIHLT_DATA_TYPES_VERSION 14
+#define ALIHLT_DATA_TYPES_VERSION 15
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -492,12 +493,6 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 #define kAliHLTTNtupleDataTypeID              {'R','O','O','T','T','U','P','L'}
 
-/** HLT trigger counters.
- * - For the AliHLTTriggerCounters object. Normally with HLT as origin.
- * @ingroup alihlt_component_datatypes
- */
-# define kAliHLTTriggerCountersDataTypeID       {'T','R','G','C','O','U','N','T'}
-
 /** HLT Track
  * - Struct for Tracks based on AliExternalTrackParam
  * - varying origin
@@ -534,6 +529,16 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTdNdPtDataTypeID {'D','N','D','P','T',' ',' ',' '}
+
+/** Global input trigger counters data block type.
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTInputTriggerCountersDataTypeID      {'I','N','T','R','G','C','N','T'}
+
+/** Global output trigger counters data block type.
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTOutputTriggerCountersDataTypeID     {'O','T','T','R','G','C','N','T'}
 
 using namespace std;
 
@@ -1166,10 +1171,17 @@ extern "C" {
    */							  		
   extern const AliHLTComponentDataType kAliHLTDataTypeTNtuple;		  // {ROOTTUPL,"***"}
 
-  /** AliHLTTriggerCounters object for HLT global trigger counters.
+  /** Global input trigger counters.
+   * - origin : kAliHLTDataOriginOut ( HLT )
    * @ingroup alihlt_component_datatypes
-   */							  		
-  extern const AliHLTComponentDataType kAliHLTDataTypeTriggerCounters;		  // {TRGCOUNT,"HLT "}
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeInputTriggerCounters;     // {INTRGCNT:HLT }
+
+  /** Global output trigger counters.
+   * - origin : kAliHLTDataOriginOut ( HLT )
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeOutputTriggerCounters;     // {OTTRGCNT:HLT }
 
   /** General track array for the barrel tracks based on AliExternalTrackParam
    * Data format defined by AliHLTTracksData

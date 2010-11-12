@@ -190,10 +190,6 @@ const AliHLTComponentDataType kAliHLTDataTypeHistogram = AliHLTComponentDataType
 const char kAliHLTTNtupleDataTypeIDstring[8] = kAliHLTTNtupleDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeTNtuple = AliHLTComponentDataTypeInitializer(kAliHLTTNtupleDataTypeIDstring, kAliHLTDataOriginAny);
 
-/** AliHLTTriggerCounters object */
-const char kAliHLTTriggerCountersDataTypeIDstring[8] = kAliHLTTriggerCountersDataTypeID;
-const AliHLTComponentDataType kAliHLTDataTypeTriggerCounters = AliHLTComponentDataTypeInitializer(kAliHLTTriggerCountersDataTypeIDstring, kAliHLTDataOriginHLT);
-
 /** Array of HLT Tracks (AliHLTTracksData) */
 const char kAliHLTTrackDataTypeIDstring[8] = kAliHLTTrackDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeTrack = AliHLTComponentDataTypeInitializer(kAliHLTTrackDataTypeIDstring, kAliHLTDataOriginAny);
@@ -221,6 +217,14 @@ const AliHLTComponentDataType kAliHLTDataTypedEdx = AliHLTComponentDataTypeIniti
 
 /** Container of dNdPt */
 const AliHLTComponentDataType kAliHLTDataTypedNdPt = AliHLTComponentDataTypeInitializer( "DNDPT   ", kAliHLTDataOriginAny );
+
+/** Input trigger counters */
+const char kAliHLTInputTriggerCountersDataTypeIDstring[8] = kAliHLTInputTriggerCountersDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeInputTriggerCounters = AliHLTComponentDataTypeInitializer(kAliHLTInputTriggerCountersDataTypeIDstring, kAliHLTDataOriginHLT);
+
+/** Input trigger counters */
+const char kAliHLTOutputTriggerCountersDataTypeIDstring[8] = kAliHLTOutputTriggerCountersDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeOutputTriggerCounters = AliHLTComponentDataTypeInitializer(kAliHLTOutputTriggerCountersDataTypeIDstring, kAliHLTDataOriginHLT);
 
 //////////////////////////////////////////////////////////////////////////
 //

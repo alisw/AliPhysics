@@ -50,6 +50,7 @@
 #include "AliHLTTriggerGammaConversion.h"
 #include "AliHLTMuonSpectroTriggerComponent.h"
 #include "AliHLTUpcTriggerComponent.h"
+#include "AliHLTTriggerCounterComponent.h"
 
 
 /** global instance for agent registration */
@@ -91,6 +92,7 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   pHandler->AddComponent(new AliHLTTriggerGammaConversion);
   pHandler->AddComponent(new AliHLTMuonSpectroTriggerComponent);
   pHandler->AddComponent(new AliHLTUpcTriggerComponent);
+  pHandler->AddComponent(new AliHLTTriggerCounterComponent);
   return 0;
 }
 
