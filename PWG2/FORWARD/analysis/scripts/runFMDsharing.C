@@ -1,9 +1,9 @@
-void runFMDcollector() 
+void runFMDsharing() 
 {
   // Mandatory fields for the collector analysis
   TString runMode   = "full";
   TString anaSource = "";
-  TString anaType   = "collector";
+  TString anaType   = "sharing";
   TString dataDir   = "/alice/sim/LHC10e13/";
   TString anaName   = "FMDCollector900GeVPythia";
   TString colSys    = "p-p";
