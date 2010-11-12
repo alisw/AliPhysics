@@ -246,6 +246,7 @@ Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
   //calculate the reference multiplicity, if all fails return 0
   AliESDVZERO* vzero = NULL;
   const AliESDEvent* esdevent = dynamic_cast<const AliESDEvent*>(event);
+  const AliMultiplicity* mult = esdevent->GetMultiplicity();
   Int_t refmult=0;
   if (!fRefMultCuts)
   {
@@ -265,9 +266,13 @@ Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
         if (!esdevent) return 0;
         vzero=esdevent->GetVZEROData();
         if (!vzero) return 0;
-        refmult+=TMath::Nint(vzero->GetMTotV0A());
-        refmult+=TMath::Nint(vzero->GetMTotV0C());
+        refmult += TMath::Nint(vzero->GetMTotV0A());
+        refmult += TMath::Nint(vzero->GetMTotV0C());
         return refmult;
+      case kSPD1clusters:
+        if (!esdevent) return 0;
+        refmult = mult->GetNumberOfITSClusters(1);
+        break;
       default:
         return 0;
     }
