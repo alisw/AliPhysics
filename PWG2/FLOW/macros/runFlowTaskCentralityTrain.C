@@ -78,30 +78,8 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
     gROOT->LoadMacro("AddTaskPhysicsSelection.C"); 
   }
 
-  //  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0SM1-B-NOPF-ALL");
-  //  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBA-B-NOPF-ALL");
-  //  physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+C0VBC-B-NOPF-ALL");
-  //  physicsSelTask->GetPhysicsSelection()->SetSkipV0(kTRUE);
 
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(0,0);
-
-  /*
-  if(DATA) {
-   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBS1C-B-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CMBS1A-B-NOPF-ALL");
-   // This are needed only to fill the statistics tables
-   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBAC-C-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1C-C-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1A-C-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBAC-A-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1C-A-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1A-A-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBAC-E-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1C-E-NOPF-ALL");
-   physicsSelTask->GetPhysicsSelection()->AddBGTriggerClass("+CMBS1A-E-NOPF-ALL");
-  }  
-  */
   
   if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   // Enable debug printouts:
@@ -141,7 +119,7 @@ void LoadLibraries(const anaModes mode)
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  //gSystem->Load("libTree");
+
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libXMLIO");

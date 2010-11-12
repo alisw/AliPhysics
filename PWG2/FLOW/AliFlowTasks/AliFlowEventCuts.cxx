@@ -218,15 +218,20 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
   {
     Float_t meanpt=0.0;
     Int_t ntracks=event->GetNumberOfTracks();
+    Int_t nselected=0;
     for (Int_t i=0; i<ntracks; i++)
     {
       AliVParticle* track = event->GetTrack(i);
       if (!track) continue;
       Bool_t pass=kTRUE;
       if (fMeanPtCuts) pass=fMeanPtCuts->IsSelected(track);
-      if (pass) meanpt += track->Pt();
+      if (pass) 
+      {
+        meanpt += track->Pt();
+        nselected++;
+      }
     }
-    meanpt=meanpt/ntracks;
+    meanpt=meanpt/nselected;
     if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) return kFALSE;
   }
   return kTRUE;
