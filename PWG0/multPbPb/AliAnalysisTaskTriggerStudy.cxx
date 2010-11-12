@@ -198,7 +198,7 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   //    cout << classes.Data() << endl;
   // }
   //  iter->Reset();
-  Int_t itoken = 0;
+  //Int_t itoken = 0;
   TObjString * tok=0;
   while((tok = (TObjString*) iter->Next())){
     // clean up trigger name

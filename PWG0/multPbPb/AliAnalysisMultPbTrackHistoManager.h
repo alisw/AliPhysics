@@ -37,7 +37,7 @@ public:
   void SetSuffix(const char * suffix) { fHNameSuffix = suffix;}
 
   // Histo getters
-  TH3D * GetHistoPtEtaVz(Histo_t id);
+  TH3D * GetHistoPtEtaVz(Histo_t id, Int_t particle = -1);
   TH1D * GetHistoPt (Histo_t id, Float_t minEta = -22222, Float_t maxEta = -22222, Float_t minVz  = -22222, Float_t maxVz  = -22222, Bool_t scaleWidth = kTRUE);
   TH1D * GetHistoEta(Histo_t id, Float_t minPt  = -22222, Float_t maxPt  = -22222, Float_t minVz  = -22222, Float_t maxVz  = -22222, Bool_t scaleWidth = kTRUE);
   TH1D * GetHistoVz (Histo_t id, Float_t minPt  = -22222, Float_t maxPt  = -22222, Float_t minEta = -22222, Float_t maxEta = -22222, Bool_t scaleWidth = kTRUE);
@@ -48,6 +48,9 @@ public:
 
   TH1D * GetHistoSpecies(Histo_t id);
   TH1D * GetHistoProcess(Histo_t id);
+  TH1D * GetHistoVzEvent(Histo_t id);
+
+
 
   // Misch utils
   void ScaleHistos (Double_t nev, Option_t * option="");
