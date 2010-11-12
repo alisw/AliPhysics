@@ -300,8 +300,8 @@ Int_t AliEMCALTriggerDCSConfigDB::GetTRUSegmentation(Int_t iTRU)
         return 2;
       else
         return 1;
-    } else AliFatal("TRUDCSConf Null!") ;
-  }else AliFatal("TriggerDCSConf Null!") ;
+    } else AliError("TRUDCSConf Null!") ;
+  }else AliError("TriggerDCSConf Null!") ;
   
   return -1;
 }
@@ -317,8 +317,8 @@ Int_t AliEMCALTriggerDCSConfigDB::GetTRUGTHRL0(Int_t iTRU)
     AliEMCALTriggerTRUDCSConfig* truConf = dcsConf->GetTRUDCSConfig(iTRU);
     if(truConf){
       return truConf->GetGTHRL0();
-    } else AliFatal("TRUDCSConf Null!") ;
-  }else AliFatal("TriggerDCSConf Null!") ;
+    } else AliError("TRUDCSConf Null!") ;
+  }else AliError("TriggerDCSConf Null!") ;
   
   return -1;
 }
