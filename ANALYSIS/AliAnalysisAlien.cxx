@@ -2397,6 +2397,9 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             TIter next(list);
             TObjString *package;
             while((package=(TObjString*)next())) {
+               TString spkg = package->GetName();
+               spkg.ReplaceAll(".par", "");
+               gSystem->Exec(TString::Format("rm -rf %s", spkg.Data()));
                if (!gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
                   if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\",kTRUE);", package->GetName()))) {
                      Error("StartAnalysis", "There was an error trying to enable package %s", package->GetName());
@@ -2423,6 +2426,9 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          while ((package=next())) {
             // Skip packages already enabled
             if (parLibs.Contains(package->GetName())) continue;
+            TString spkg = package->GetName();
+            spkg.ReplaceAll(".par", "");
+            gSystem->Exec(TString::Format("rm -rf %s", spkg.Data()));
             if (gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
                if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\",kTRUE);", package->GetName()))) {
                   Error("StartAnalysis", "There was an error trying to enable package %s", package->GetName());
