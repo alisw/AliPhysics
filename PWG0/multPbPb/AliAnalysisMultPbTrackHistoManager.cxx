@@ -8,6 +8,7 @@
 #include "AliMCParticle.h"
 
 #include <iostream>
+#include "TH2D.h"
 
 using namespace std;
 
@@ -121,6 +122,44 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoPt (Histo_t id,
   return h;
 
 }
+
+
+TH2D * AliAnalysisMultPbTrackHistoManager::GetHistoPtVz (Histo_t id, 
+							 Float_t minEta, Float_t maxEta, 
+							 Bool_t scaleWidth) {
+  // Returns a projection of the 3D histo pt/eta/vz.
+  // WARNING: since that is a histo, the requested range will be discretized to the binning.
+  // Always avoids under (over) flows
+  // If scaleWidth = kTRUE, the projection is scaled for the bin width (default)
+
+  // FIXME: what do I do here for the scaling?
+
+  TH3D * h3D = GetHistoPtEtaVz(id);
+
+  // Get range in terms of bin numners.  If the float range is
+  // less than -11111 take the range from the first to the last bin (i.e. no
+  // under/over-flows)
+  Int_t min1 = minEta  < -11111 ? -1 : h3D ->GetYaxis()->FindBin(minEta);
+  Int_t max1 = maxEta  < -11111 ? -1 : h3D ->GetYaxis()->FindBin(maxEta-0.00001);
+
+
+  TString hname = h3D->GetName();
+  hname = hname +  "_ptvz_" + long (min1)  + "_" + long(max1);
+  
+  if (gROOT->FindObjectAny(hname.Data())){
+    AliError(Form("An object called %s already exists,adding suffix",hname.Data()));
+    hname += "_2";
+  }
+
+  h3D->GetYaxis()->SetRange(min1,max1);
+  
+  TH2D * h =  (TH2D*) h3D->Project3D("zxe");
+  if(scaleWidth) h ->Scale(1.,"width");
+
+  return h;
+
+}
+
 
 TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoVz (Histo_t id, 
 						       Float_t minPt, Float_t maxPt,

@@ -41,6 +41,7 @@ public:
   TH1D * GetHistoPt (Histo_t id, Float_t minEta = -22222, Float_t maxEta = -22222, Float_t minVz  = -22222, Float_t maxVz  = -22222, Bool_t scaleWidth = kTRUE);
   TH1D * GetHistoEta(Histo_t id, Float_t minPt  = -22222, Float_t maxPt  = -22222, Float_t minVz  = -22222, Float_t maxVz  = -22222, Bool_t scaleWidth = kTRUE);
   TH1D * GetHistoVz (Histo_t id, Float_t minPt  = -22222, Float_t maxPt  = -22222, Float_t minEta = -22222, Float_t maxEta = -22222, Bool_t scaleWidth = kTRUE);
+  TH2D * GetHistoPtVz (Histo_t id, Float_t minEta = -22222, Float_t maxEta = -22222, Bool_t scaleWidth = kFALSE);
 
   TH1I * GetHistoStats();
   TH1D * GetHistoDCA(Histo_t id);

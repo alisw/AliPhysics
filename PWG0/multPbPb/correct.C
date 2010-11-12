@@ -23,7 +23,7 @@ TH2D * hEvStatCorr = 0;
 const Int_t kHistoFitCompoments = 3;
 TH1D * gHistoCompoments[kHistoFitCompoments];
 
-void LoadLibs();
+void LoadLibs(  Bool_t debug=0);
 void LoadData(TString dataFolder, TString correctionFolder);
 void SetStyle();
 void CheckSecondaries(Double_t & fracWeak, Double_t &fracMaterial);
@@ -41,6 +41,7 @@ void PrintCanvas(TCanvas* c,const TString formats) ;
 // global switches
 Bool_t doPrint=kFALSE;// disable PrintCanvas
 
+#define CORRECT_2D
 
 void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TString correctionFolder = "./output/LHC10g2a_130844_V0M_bin_10/") {
 
@@ -62,8 +63,9 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
 
   // Some shorthands
   // FIXME: Gen should be projected including overflow in z?
-  Float_t zmin = 0;
-  Float_t zmax = 2;
+  Float_t zmin = -10;
+  Float_t zmax = 10;
+#if defined CORRECT_1D
   TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec, -0.5,0.5,zmin,zmax)->Clone("hDataPt");
   TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         -0.5,0.5,-22222,-22222);
   TH1D * hMCPtRec  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,         -0.5,0.5,zmin,zmax);
@@ -71,6 +73,15 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   TH1D * hMCPtSeM  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat,   -0.5,0.5,zmin,zmax);
   TH1D * hMCPtSeW  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak,  -0.5,0.5,zmin,zmax);
   TH1D * hMCPtFak  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecFake,     -0.5,0.5,zmin,zmax);
+#elif defined CORRECT_2D
+  TH1  * hDataPt   = (TH2D*) hManData->GetHistoPtVz(AliAnalysisMultPbTrackHistoManager::kHistoRec,         -0.5,0.5)->Clone("hDataPt");
+  TH1  * hMCPtGen  = (TH2D*) hManCorr->GetHistoPtVz(AliAnalysisMultPbTrackHistoManager::kHistoGen,         -0.5,0.5);
+  TH1  * hMCPtRec  = (TH2D*) hManCorr->GetHistoPtVz(AliAnalysisMultPbTrackHistoManager::kHistoRec,         -0.5,0.5);
+  TH1  * hMCPtPri  = (TH2D*) hManCorr->GetHistoPtVz(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim,     -0.5,0.5);
+  TH1  * hMCPtSeM  = (TH2D*) hManCorr->GetHistoPtVz(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat,   -0.5,0.5);
+  TH1  * hMCPtSeW  = (TH2D*) hManCorr->GetHistoPtVz(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak,  -0.5,0.5);
+  TH1  * hMCPtFak  = (TH2D*) hManCorr->GetHistoPtVz(AliAnalysisMultPbTrackHistoManager::kHistoRecFake,     -0.5,0.5);
+#endif
  
   TCanvas * cdata = new TCanvas ("cData", "Data");  
   cdata->SetLogy();
@@ -147,7 +158,35 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   // hMCPtSeW->Draw("same");
 
 
-  cdata->cd();
+  // hDataPt->Draw();
+  // return;
+
+  cdata->cd();  
+#ifdef CORRECT_2D
+  Int_t minProj = hDataPt->GetYaxis()->FindBin(zmin);
+  Int_t maxProj = hDataPt->GetYaxis()->FindBin(zmax-0.0001);
+
+  cout << minProj << "-" << maxProj << endl;
+  
+  // This correction accounts for the vertex cut;
+
+  hDataPt    = ((TH2D*)hDataPt   )->ProjectionX("_px",minProj,maxProj,"E");
+  hCorrected = ((TH2D*)hCorrected)->ProjectionX("_px",minProj,maxProj,"E");
+  hMCPtGen   = ((TH2D*)hMCPtGen  )->ProjectionX("_px",minProj,maxProj,"E");
+
+  Float_t vertexCutCorrection = 
+    hManCorr->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Integral(-1,-1) /
+    hManCorr->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Integral(minProj,maxProj) ;
+  // cout << vertexCutCorrection << " " << hMCPtGen->Integral(-1,-1)  << " " << hMCPtPri->Integral() << endl;
+  // vertexCutCorrection /= hMCPtGen->Integral(-1,-1);
+  //  vertexCutCorrection = 1; // FIXME
+  cout << "Vertex cut correction " << vertexCutCorrection << " (Efficiency " << 1./vertexCutCorrection << ")" << endl;
+
+  hDataPt    ->Scale(1.,"width");
+  hCorrected ->Scale(vertexCutCorrection,"width");
+  hMCPtGen   ->Scale(1.,"width");
+#endif
+
   hDataPt->Draw();
   hDataPt ->GetXaxis()->SetRangeUser(0,4.5);
   hDataPt ->GetYaxis()->SetRangeUser(0.1,1e4);
@@ -157,9 +196,10 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   hMCPtGen->DrawClone("same");
   TF1 * f = GetLevy();
   hCorrected->Fit(f,"", "same");
-  hCorrected->Fit(f,"IME", "same");
+  hCorrected->Fit(f,"IME", "same",0,2);
   cout << "dN/deta (function)  = " << f->Integral(0,100) << " +- " << f->IntegralError(0,100) << endl;
   cout << "dN/deta (func+data) = " << f->Integral(0,0.1) + hCorrected->Integral(3,-1,"width") << endl;//
+  cout << "dN/deta (func+data) = " << f->Integral(0,0.15) + hCorrected->Integral(4,-1,"width") << endl;//
   cout << "Generated dN/deta (correction) = " << hMCPtGen->Integral("width") << endl;
   // FIXME: comment this out
   TH1D * hDataGen  = hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        -0.5,0.5,-22222,-22222);
@@ -245,7 +285,7 @@ void CheckVz() {
 
 }
 
-void LoadLibs() {
+void LoadLibs(  Bool_t debug) {
 
   gSystem->Load("libVMC");
   gSystem->Load("libTree");
@@ -273,7 +313,7 @@ void LoadLibs() {
   gSystem->ExpandPathName(centrName);
   gSystem->ExpandPathName(listName);
 
-  Bool_t debug=0;
+
   gROOT->LoadMacro(listName    +(debug?"+g":""));   
   gROOT->LoadMacro(histoManName+(debug?"+g":""));
   gROOT->LoadMacro(centrName   +(debug?"+g":""));   
@@ -360,8 +400,11 @@ void LoadData(TString dataFolder, TString correctionFolder){
   hEvStatData = (TH2D*) fStatData->Get("fHistStatistics");
   hEvStatCorr = (TH2D*) fStatCorr->Get("fHistStatistics");
 
-  AliAnalysisMultPbCentralitySelector * centrData = (AliAnalysisMultPbCentralitySelector*) fData->Get("");
-
+  AliAnalysisMultPbCentralitySelector * centrData = (AliAnalysisMultPbCentralitySelector*) fData->Get("Cuts");
+  if(!centrData) {
+    cout << "ERROR:  cannot read centrality data" << endl;
+  }
+  centrData->Print();
   // Normalize
   Int_t irowGoodTrigger = 1;
   if (hEvStatCorr && hEvStatData) {
