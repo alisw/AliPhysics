@@ -36,7 +36,7 @@ ClassImp(AliEventPoolLoop)
 AliEventPoolLoop::AliEventPoolLoop():
     AliVEventPool(),
     fMaxIterations(0),
-    fNIteration(0),
+    fNIteration(1),
     fChainClone(0)
 {
   // Default constructor
@@ -45,7 +45,7 @@ AliEventPoolLoop::AliEventPoolLoop():
 AliEventPoolLoop::AliEventPoolLoop(Int_t nit):
     AliVEventPool(),
     fMaxIterations(nit),
-    fNIteration(0),
+    fNIteration(1),
     fChainClone(0)
 {
   // Default constructor
@@ -54,7 +54,7 @@ AliEventPoolLoop::AliEventPoolLoop(Int_t nit):
 AliEventPoolLoop::AliEventPoolLoop(const char* name, const char* title):
     AliVEventPool(name, title),
     fMaxIterations(0),
-    fNIteration(0),
+    fNIteration(1),
     fChainClone(0)
 {
   // Constructor
@@ -85,7 +85,7 @@ void AliEventPoolLoop::Init()
 // Initialisation
 
     fMaxIterations = 0;
-    fNIteration    = 0;
+    fNIteration    = 1;
 }
 
 TChain* AliEventPoolLoop::GetNextChain()
