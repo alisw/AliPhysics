@@ -118,6 +118,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fPropagateErrorAlsoFromNIT(kFALSE), 
  fCalculateCumulantsVsM(kTRUE), 
  fMinimumBiasReferenceFlow(kTRUE), 
+ fForgetAboutCovariances(kTRUE), 
  fReQ(NULL),
  fImQ(NULL),
  fSMpk(NULL),
@@ -752,11 +753,12 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fPropagateErrorAlsoFromNIT = (Bool_t)fIntFlowFlags->GetBinContent(9);  
  fCalculateCumulantsVsM = (Bool_t)fIntFlowFlags->GetBinContent(10); 
  fMinimumBiasReferenceFlow = (Bool_t)fIntFlowFlags->GetBinContent(11); 
+ fForgetAboutCovariances = (Bool_t)fIntFlowFlags->GetBinContent(12); 
  fEvaluateIntFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(1);
  fEvaluateDiffFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(2); 
  fCrossCheckInPtBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(3);
  fCrossCheckInEtaBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(4); 
-    
+     
  // d) Calculate reference cumulants (not corrected for detector effects):
  this->FinalizeCorrelationsIntFlow();
  this->CalculateCovariancesIntFlow();
@@ -1483,7 +1485,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // a) Book profile to hold all flags for integrated flow:
  TString intFlowFlagsName = "fIntFlowFlags";
  intFlowFlagsName += fAnalysisLabel->Data();
- fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",11,0,11);
+ fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",12,0,12);
  fIntFlowFlags->SetTickLength(-0.01,"Y");
  fIntFlowFlags->SetMarkerStyle(25);
  fIntFlowFlags->SetLabelSize(0.05);
@@ -1499,6 +1501,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowFlags->GetXaxis()->SetBinLabel(9,"Propagate errors to v_{n} from correlations?");
  fIntFlowFlags->GetXaxis()->SetBinLabel(10,"Calculate cumulants vs M");
  fIntFlowFlags->GetXaxis()->SetBinLabel(11,"fMinimumBiasReferenceFlow");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(12,"fForgetAboutCovariances");
  fIntFlowList->Add(fIntFlowFlags);
 
  // b) Book event-by-event quantities:
@@ -4083,12 +4086,21 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
  Double_t sixError = fIntFlowCorrelationsHist->GetBinError(3); // statistical error of <6> 
  Double_t eightError = fIntFlowCorrelationsHist->GetBinError(4); // statistical error of <8> 
  // Covariances (multiplied by prefactor depending on weights - see comments in CalculateCovariancesIntFlow()):
- Double_t wCov24 = fIntFlowCovariances->GetBinContent(1); // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
- Double_t wCov26 = fIntFlowCovariances->GetBinContent(2); // Cov(<2>,<6>) * prefactor(w_<2>,w_<6>)
- Double_t wCov28 = fIntFlowCovariances->GetBinContent(3); // Cov(<2>,<8>) * prefactor(w_<2>,w_<8>)
- Double_t wCov46 = fIntFlowCovariances->GetBinContent(4); // Cov(<4>,<6>) * prefactor(w_<4>,w_<6>)
- Double_t wCov48 = fIntFlowCovariances->GetBinContent(5); // Cov(<4>,<8>) * prefactor(w_<4>,w_<8>)
- Double_t wCov68 = fIntFlowCovariances->GetBinContent(6); // Cov(<6>,<8>) * prefactor(w_<6>,w_<8>) 
+ Double_t wCov24 = 0.; // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
+ Double_t wCov26 = 0.; // Cov(<2>,<6>) * prefactor(w_<2>,w_<6>)
+ Double_t wCov28 = 0.; // Cov(<2>,<8>) * prefactor(w_<2>,w_<8>)
+ Double_t wCov46 = 0.; // Cov(<4>,<6>) * prefactor(w_<4>,w_<6>)
+ Double_t wCov48 = 0.; // Cov(<4>,<8>) * prefactor(w_<4>,w_<8>)
+ Double_t wCov68 = 0.; // Cov(<6>,<8>) * prefactor(w_<6>,w_<8>)  
+ if(!fForgetAboutCovariances)
+ {
+  wCov24 = fIntFlowCovariances->GetBinContent(1); // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
+  wCov26 = fIntFlowCovariances->GetBinContent(2); // Cov(<2>,<6>) * prefactor(w_<2>,w_<6>)
+  wCov28 = fIntFlowCovariances->GetBinContent(3); // Cov(<2>,<8>) * prefactor(w_<2>,w_<8>)
+  wCov46 = fIntFlowCovariances->GetBinContent(4); // Cov(<4>,<6>) * prefactor(w_<4>,w_<6>)
+  wCov48 = fIntFlowCovariances->GetBinContent(5); // Cov(<4>,<8>) * prefactor(w_<4>,w_<8>)
+  wCov68 = fIntFlowCovariances->GetBinContent(6); // Cov(<6>,<8>) * prefactor(w_<6>,w_<8>) 
+ }
  // Q-cumulants: 
  Double_t qc2 = 0.; // QC{2}
  Double_t qc4 = 0.; // QC{4}
@@ -4194,12 +4206,15 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
   sixError = fIntFlowCorrelationsVsMHist[2]->GetBinError(b); // statistical error of <6> 
   eightError = fIntFlowCorrelationsVsMHist[3]->GetBinError(b); // statistical error of <8> 
   // Covariances (multiplied by prefactor depending on weights - see comments in CalculateCovariancesIntFlow()):
-  wCov24 = fIntFlowCovariancesVsM[0]->GetBinContent(b); // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
-  wCov26 = fIntFlowCovariancesVsM[1]->GetBinContent(b); // Cov(<2>,<6>) * prefactor(w_<2>,w_<6>)
-  wCov28 = fIntFlowCovariancesVsM[2]->GetBinContent(b); // Cov(<2>,<8>) * prefactor(w_<2>,w_<8>)
-  wCov46 = fIntFlowCovariancesVsM[3]->GetBinContent(b); // Cov(<4>,<6>) * prefactor(w_<4>,w_<6>)
-  wCov48 = fIntFlowCovariancesVsM[4]->GetBinContent(b); // Cov(<4>,<8>) * prefactor(w_<4>,w_<8>)
-  wCov68 = fIntFlowCovariancesVsM[5]->GetBinContent(b); // Cov(<6>,<8>) * prefactor(w_<6>,w_<8>) 
+  if(!fForgetAboutCovariances)
+  {
+   wCov24 = fIntFlowCovariancesVsM[0]->GetBinContent(b); // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
+   wCov26 = fIntFlowCovariancesVsM[1]->GetBinContent(b); // Cov(<2>,<6>) * prefactor(w_<2>,w_<6>)
+   wCov28 = fIntFlowCovariancesVsM[2]->GetBinContent(b); // Cov(<2>,<8>) * prefactor(w_<2>,w_<8>)
+   wCov46 = fIntFlowCovariancesVsM[3]->GetBinContent(b); // Cov(<4>,<6>) * prefactor(w_<4>,w_<6>)
+   wCov48 = fIntFlowCovariancesVsM[4]->GetBinContent(b); // Cov(<4>,<8>) * prefactor(w_<4>,w_<8>)
+   wCov68 = fIntFlowCovariancesVsM[5]->GetBinContent(b); // Cov(<6>,<8>) * prefactor(w_<6>,w_<8>) 
+  }
   // Q-cumulants: 
   qc2 = 0.; // QC{2}
   qc4 = 0.; // QC{4}
@@ -7201,7 +7216,11 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, TString ptOr
  Double_t fourReducedError = 0.; 
 
  // covariances:
- Double_t wCovTwoFour = fIntFlowCovariances->GetBinContent(1);// // Cov(<2>,<4>) * prefactor(<2>,<4>)
+ Double_t wCovTwoFour = 0.; // Cov(<2>,<4>) * prefactor(<2>,<4>)
+ if(!fForgetAboutCovariances)
+ {
+  wCovTwoFour = fIntFlowCovariances->GetBinContent(1); // Cov(<2>,<4>) * prefactor(<2>,<4>)
+ }
  Double_t wCovTwoTwoReduced = 0.; // Cov(<2>,<2'>) * prefactor(<2>,<2'>)
  Double_t wCovTwoFourReduced = 0.; // Cov(<2>,<4'>) * prefactor(<2>,<4'>)
  Double_t wCovFourTwoReduced = 0.; // Cov(<4>,<2'>) * prefactor(<4>,<2'>)
@@ -7229,11 +7248,14 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, TString ptOr
   fourReduced = fDiffFlowCorrelationsHist[t][pe][1]->GetBinContent(b);
   fourReducedError = fDiffFlowCorrelationsHist[t][pe][1]->GetBinError(b);
   // covariances:
-  wCovTwoTwoReduced = fDiffFlowCovariances[t][pe][0]->GetBinContent(b);
-  wCovTwoFourReduced = fDiffFlowCovariances[t][pe][1]->GetBinContent(b);
-  wCovFourTwoReduced = fDiffFlowCovariances[t][pe][2]->GetBinContent(b);
-  wCovFourFourReduced = fDiffFlowCovariances[t][pe][3]->GetBinContent(b);
-  wCovTwoReducedFourReduced = fDiffFlowCovariances[t][pe][4]->GetBinContent(b);
+  if(!fForgetAboutCovariances)
+  {
+   wCovTwoTwoReduced = fDiffFlowCovariances[t][pe][0]->GetBinContent(b);
+   wCovTwoFourReduced = fDiffFlowCovariances[t][pe][1]->GetBinContent(b);
+   wCovFourTwoReduced = fDiffFlowCovariances[t][pe][2]->GetBinContent(b);
+   wCovFourFourReduced = fDiffFlowCovariances[t][pe][3]->GetBinContent(b);
+   wCovTwoReducedFourReduced = fDiffFlowCovariances[t][pe][4]->GetBinContent(b);
+  }
   // differential flow:
   // v'{2}:
   if(two>0.) 
@@ -7344,6 +7366,7 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  fIntFlowFlags->Fill(8.5,(Int_t)fPropagateErrorAlsoFromNIT);
  fIntFlowFlags->Fill(9.5,(Int_t)fCalculateCumulantsVsM);
  fIntFlowFlags->Fill(10.5,(Int_t)fMinimumBiasReferenceFlow);
+ fIntFlowFlags->Fill(11.5,(Int_t)fForgetAboutCovariances);
  
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
@@ -8716,35 +8739,66 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
  Double_t a5 = 4.*c1*s1-s2;
  
  // Covariances (including weight dependent prefactor):
- Double_t wCov1 = fIntFlowCovariancesNUA->GetBinContent(1); // w*Cov(<2>,<cos(phi)) 
- Double_t wCov2 = fIntFlowCovariancesNUA->GetBinContent(2); // w*Cov(<2>,<sin(phi))
- Double_t wCov3 = fIntFlowCovariancesNUA->GetBinContent(3); // w*Cov(<cos(phi),<sin(phi))
- Double_t wCov4 = fIntFlowCovariances->GetBinContent(1); // w*Cov(<2>,<4>) 
- Double_t wCov5 = fIntFlowCovariancesNUA->GetBinContent(4); // w*Cov(<2>,<cos(#phi_{1}+#phi_{2})>)
- Double_t wCov6 = fIntFlowCovariancesNUA->GetBinContent(6); // w*Cov(<2>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov7 = fIntFlowCovariancesNUA->GetBinContent(5); // w*Cov(<2>,<sin(#phi_{1}+#phi_{2})>)
- Double_t wCov8 = fIntFlowCovariancesNUA->GetBinContent(7); // w*Cov(<2>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov9 = fIntFlowCovariancesNUA->GetBinContent(8); // w*Cov(<4>,<cos(#phi)>
- Double_t wCov10 = fIntFlowCovariancesNUA->GetBinContent(10); // w*Cov(<4>,<cos(#phi_{1}+#phi_{2})>)
- Double_t wCov11 = fIntFlowCovariancesNUA->GetBinContent(12); // w*Cov(<4>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov12 = fIntFlowCovariancesNUA->GetBinContent(9); // w*Cov(<4>,<sin(#phi)>
- Double_t wCov13 = fIntFlowCovariancesNUA->GetBinContent(11); // w*Cov(<4>,<sin(#phi_{1}+#phi_{2})>)
- Double_t wCov14 = fIntFlowCovariancesNUA->GetBinContent(13); // w*Cov(<4>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov15 = fIntFlowCovariancesNUA->GetBinContent(14); // w*Cov(<cos(#phi)>,<cos(#phi_{1}+#phi_{2})>)
- Double_t wCov16 = fIntFlowCovariancesNUA->GetBinContent(16); // w*Cov(<cos(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov17 = fIntFlowCovariancesNUA->GetBinContent(15); // w*Cov(<cos(#phi)>,<sin(#phi_{1}+#phi_{2})>)
- Double_t wCov18 = fIntFlowCovariancesNUA->GetBinContent(17); // w*Cov(<cos(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov19 = fIntFlowCovariancesNUA->GetBinContent(23); // w*Cov(<cos(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov20 = fIntFlowCovariancesNUA->GetBinContent(18); // w*Cov(<sin(#phi)>,<cos(#phi_{1}+#phi_{2})>)
- Double_t wCov21 = fIntFlowCovariancesNUA->GetBinContent(22); // w*Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}+#phi_{2})>)
- Double_t wCov22 = fIntFlowCovariancesNUA->GetBinContent(24); // w*Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov23 = fIntFlowCovariancesNUA->GetBinContent(20); // w*Cov(<sin(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov24 = fIntFlowCovariancesNUA->GetBinContent(25); // w*Cov(<sin(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov25 = fIntFlowCovariancesNUA->GetBinContent(27); // w*Cov(<cos(#phi_{1}-#phi_{2}-#phi_{3}>,<sin(#phi_{1}-#phi_{2}-#phi_{3}>)
- Double_t wCov26 = fIntFlowCovariancesNUA->GetBinContent(19); // w*Cov(<sin(#phi)>,<sin(#phi_{1}+#phi_{2})>)
- Double_t wCov27 = fIntFlowCovariancesNUA->GetBinContent(21); // w*Cov(<sin(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
- Double_t wCov28 = fIntFlowCovariancesNUA->GetBinContent(26); // w*Cov(<sin(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
-
+ Double_t wCov1 = 0.; // w*Cov(<2>,<cos(phi)) 
+ Double_t wCov2 = 0.; // w*Cov(<2>,<sin(phi))
+ Double_t wCov3 = 0.; // w*Cov(<cos(phi),<sin(phi))
+ Double_t wCov4 = 0.; // w*Cov(<2>,<4>) 
+ Double_t wCov5 = 0.; // w*Cov(<2>,<cos(#phi_{1}+#phi_{2})>)
+ Double_t wCov6 = 0.; // w*Cov(<2>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov7 = 0.; // w*Cov(<2>,<sin(#phi_{1}+#phi_{2})>)
+ Double_t wCov8 = 0.; // w*Cov(<2>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov9 = 0.; // w*Cov(<4>,<cos(#phi)>
+ Double_t wCov10 = 0.; // w*Cov(<4>,<cos(#phi_{1}+#phi_{2})>)
+ Double_t wCov11 = 0.; // w*Cov(<4>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov12 = 0.; // w*Cov(<4>,<sin(#phi)>
+ Double_t wCov13 = 0.; // w*Cov(<4>,<sin(#phi_{1}+#phi_{2})>)
+ Double_t wCov14 = 0.; // w*Cov(<4>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov15 = 0.; // w*Cov(<cos(#phi)>,<cos(#phi_{1}+#phi_{2})>)
+ Double_t wCov16 = 0.; // w*Cov(<cos(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov17 = 0.; // w*Cov(<cos(#phi)>,<sin(#phi_{1}+#phi_{2})>)
+ Double_t wCov18 = 0.; // w*Cov(<cos(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov19 = 0.; // w*Cov(<cos(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov20 = 0.; // w*Cov(<sin(#phi)>,<cos(#phi_{1}+#phi_{2})>)
+ Double_t wCov21 = 0.; // w*Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}+#phi_{2})>)
+ Double_t wCov22 = 0.; // w*Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov23 = 0.; // w*Cov(<sin(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov24 = 0.; // w*Cov(<sin(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov25 = 0.; // w*Cov(<cos(#phi_{1}-#phi_{2}-#phi_{3}>,<sin(#phi_{1}-#phi_{2}-#phi_{3}>)
+ Double_t wCov26 = 0.; // w*Cov(<sin(#phi)>,<sin(#phi_{1}+#phi_{2})>)
+ Double_t wCov27 = 0.; // w*Cov(<sin(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+ Double_t wCov28 = 0.; // w*Cov(<sin(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+ if(!fForgetAboutCovariances)
+ {
+  wCov1 = fIntFlowCovariancesNUA->GetBinContent(1); // w*Cov(<2>,<cos(phi)) 
+  wCov2 = fIntFlowCovariancesNUA->GetBinContent(2); // w*Cov(<2>,<sin(phi))
+  wCov3 = fIntFlowCovariancesNUA->GetBinContent(3); // w*Cov(<cos(phi),<sin(phi))
+  wCov4 = fIntFlowCovariances->GetBinContent(1); // w*Cov(<2>,<4>) 
+  wCov5 = fIntFlowCovariancesNUA->GetBinContent(4); // w*Cov(<2>,<cos(#phi_{1}+#phi_{2})>)
+  wCov6 = fIntFlowCovariancesNUA->GetBinContent(6); // w*Cov(<2>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov7 = fIntFlowCovariancesNUA->GetBinContent(5); // w*Cov(<2>,<sin(#phi_{1}+#phi_{2})>)
+  wCov8 = fIntFlowCovariancesNUA->GetBinContent(7); // w*Cov(<2>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov9 = fIntFlowCovariancesNUA->GetBinContent(8); // w*Cov(<4>,<cos(#phi)>
+  wCov10 = fIntFlowCovariancesNUA->GetBinContent(10); // w*Cov(<4>,<cos(#phi_{1}+#phi_{2})>)
+  wCov11 = fIntFlowCovariancesNUA->GetBinContent(12); // w*Cov(<4>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov12 = fIntFlowCovariancesNUA->GetBinContent(9); // w*Cov(<4>,<sin(#phi)>
+  wCov13 = fIntFlowCovariancesNUA->GetBinContent(11); // w*Cov(<4>,<sin(#phi_{1}+#phi_{2})>)
+  wCov14 = fIntFlowCovariancesNUA->GetBinContent(13); // w*Cov(<4>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov15 = fIntFlowCovariancesNUA->GetBinContent(14); // w*Cov(<cos(#phi)>,<cos(#phi_{1}+#phi_{2})>)
+  wCov16 = fIntFlowCovariancesNUA->GetBinContent(16); // w*Cov(<cos(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov17 = fIntFlowCovariancesNUA->GetBinContent(15); // w*Cov(<cos(#phi)>,<sin(#phi_{1}+#phi_{2})>)
+  wCov18 = fIntFlowCovariancesNUA->GetBinContent(17); // w*Cov(<cos(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov19 = fIntFlowCovariancesNUA->GetBinContent(23); // w*Cov(<cos(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov20 = fIntFlowCovariancesNUA->GetBinContent(18); // w*Cov(<sin(#phi)>,<cos(#phi_{1}+#phi_{2})>)
+  wCov21 = fIntFlowCovariancesNUA->GetBinContent(22); // w*Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}+#phi_{2})>)
+  wCov22 = fIntFlowCovariancesNUA->GetBinContent(24); // w*Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov23 = fIntFlowCovariancesNUA->GetBinContent(20); // w*Cov(<sin(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov24 = fIntFlowCovariancesNUA->GetBinContent(25); // w*Cov(<sin(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov25 = fIntFlowCovariancesNUA->GetBinContent(27); // w*Cov(<cos(#phi_{1}-#phi_{2}-#phi_{3}>,<sin(#phi_{1}-#phi_{2}-#phi_{3}>)
+  wCov26 = fIntFlowCovariancesNUA->GetBinContent(19); // w*Cov(<sin(#phi)>,<sin(#phi_{1}+#phi_{2})>)
+  wCov27 = fIntFlowCovariancesNUA->GetBinContent(21); // w*Cov(<sin(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+  wCov28 = fIntFlowCovariancesNUA->GetBinContent(26); // w*Cov(<sin(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)
+ } // end of if(!fForgetAboutCovariances)
+ 
  // Calculating generalized QC{2}:
  //  Generalized QC{2}:
  Double_t gQC2 = two - pow(c1,2.) - pow(s1,2.);

@@ -53,7 +53,9 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   void SetCalculateCumulantsVsM(Bool_t const ccvm) {this->fCalculateCumulantsVsM = ccvm;};
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
-  Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};        
+  Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};     
+  void SetForgetAboutCovariances(Bool_t const fac) {this->fForgetAboutCovariances = fac;};
+  Bool_t GetForgetAboutCovariances() const {return this->fForgetAboutCovariances;};       
   // Multiparticle correlations vs multiplicity:
   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
   Int_t GetnBinsMult() const {return this->fnBinsMult;};  
@@ -87,6 +89,7 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fStoreDistributions;        // store or not distributions of correlations
   Bool_t fCalculateCumulantsVsM;     // calculate cumulants versus multiplicity  
   Bool_t fMinimumBiasReferenceFlow;  // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     
+  Bool_t fForgetAboutCovariances;    // when propagating error forget about the covariances  
   // Multiparticle correlations vs multiplicity:
   Int_t fnBinsMult;                   // number of multiplicity bins for flow analysis versus multiplicity  
   Double_t fMinMult;                  // minimal multiplicity for flow analysis versus multiplicity  
