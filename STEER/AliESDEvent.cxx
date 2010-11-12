@@ -136,7 +136,7 @@ AliESDEvent::AliESDEvent():
   fConnected(kFALSE),
   fUseOwnList(kFALSE),
   fTOFHeader(0),
-  fCentrality(new AliESDCentrality())
+  fCentrality(0)
 {
 }
 //______________________________________________________________________________
@@ -320,7 +320,7 @@ AliESDEvent::~AliESDEvent()
       delete fESDObjects;
       fESDObjects = 0;
     }
-  delete fCentrality;
+  if (fCentrality) delete fCentrality;
   
 }
 
@@ -1743,4 +1743,10 @@ void  AliESDEvent::SetTOFHeader(const AliTOFHeader *header)
     //AddObject(fTOFHeader);
   }
 
+}
+
+AliESDCentrality* AliESDEvent::GetCentrality()
+{
+    if (!fCentrality) fCentrality = new AliESDCentrality();
+    return  fCentrality;
 }

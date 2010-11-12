@@ -186,16 +186,15 @@ public:
   Double_t GetZDCP2Energy() const {return fESDZDC?fESDZDC->GetZDCP2Energy():0;}
   Double_t GetZDCEMEnergy(Int_t i=0) const {return fESDZDC?fESDZDC->GetZDCEMEnergy(i):0;}
   Int_t    GetZDCParticipants() const {return fESDZDC?fESDZDC->GetZDCParticipants():0;}
-  AliESDCentrality* GetCentrality() {return fCentrality;}
+  AliESDCentrality* GetCentrality();
+    
 
   void     SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t em1Energy, Float_t em2Energy,
                   Float_t n2Energy, Float_t p2Energy, Int_t participants, Int_t nPartA,
 	 	  Int_t nPartC, Double_t b, Double_t bA, Double_t bC, UInt_t recoflag)
   {if(fESDZDC) fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, 
             participants, nPartA, nPartC, b, bA, bC,  recoflag);}
-
-  void SetCentrality(AliESDCentrality* cent) {fCentrality = cent;}
-  // FMD
+    // FMD
   void SetFMDData(AliESDFMD * obj);
   AliESDFMD *GetFMDData() const { return fESDFMD; }
 
@@ -470,7 +469,7 @@ protected:
 			     //  combinatorial algorithm.
                              //  It contains also TOF time resolution
                              //  and T0spread as written in OCDB
-  AliESDCentrality *fCentrality; // Centrality for AA collision
+  AliESDCentrality *fCentrality; //! Centrality for AA collision
   ClassDef(AliESDEvent,12)  //ESDEvent class 
 };
 #endif 
