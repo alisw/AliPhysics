@@ -125,7 +125,8 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     doSave = kTRUE;
   }
 
-  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
+  //  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
   TString pathsuffix = "";
   // cuts->SetPtRange(0.15,0.2);// FIXME pt cut
   // const char * pathsuffix = "_pt_015_020_nofakes";

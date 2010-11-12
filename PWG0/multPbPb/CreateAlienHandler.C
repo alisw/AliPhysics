@@ -46,33 +46,33 @@ AliAnalysisGrid* CreateAlienHandler(TString dataset, TList * listToLoad, const c
    TIterator * iter = listToLoad->MakeIterator();
    TObjString * name = 0;
    TString sources = "";
-   while (name = (TObjString *)iter->Next()) {
-     gSystem->ExpandPathName(name->String());
-     name->String().ReplaceAll("+","");
-     sources = sources + name->String() + " ";
-   }
    // while (name = (TObjString *)iter->Next()) {
    //   gSystem->ExpandPathName(name->String());
-   //   name->String().ReplaceAll("+","");     
-   //   sources = sources + gSystem->BaseName(name->String().Data()) + " ";
+   //   name->String().ReplaceAll("+","");
+   //   sources = sources + name->String() + " ";
    // }
+   while (name = (TObjString *)iter->Next()) {
+     gSystem->ExpandPathName(name->String());
+     name->String().ReplaceAll("+","");     
+     sources = sources + gSystem->BaseName(name->String().Data()) + " ";
+   }
    plugin->SetAnalysisSource(sources.Data());
 // Declare all libraries (other than the default ones for the framework. These will be
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
 //   plugin->SetAdditionalLibs("AliCollisionsNormalization.cxx AliCollisionNormalizationTask.cxx AliPhysicsSelection.cxx AliCollisionsNormalization.h AliCollisionNormalizationTask.h AliPhysicsSelection.h");
-   iter = listToLoad->MakeIterator();
-   name = 0;
-   sources = "";
+   // iter = listToLoad->MakeIterator();
+   // name = 0;
+   // sources = "";
    // while (name = (TObjString *)iter->Next()) {
    //   gSystem->ExpandPathName(name->String());
    //   name->String().ReplaceAll("+","");     
    //   sources = sources + gSystem->BaseName(name->String().Data()) + " ";
    // }
-   while (name = (TObjString *)iter->Next()) {
-     gSystem->ExpandPathName(name->String());
-     name->String().ReplaceAll("+","");
-     sources = sources + name->String() + " ";
-   }
+   // while (name = (TObjString *)iter->Next()) {
+   //   gSystem->ExpandPathName(name->String());
+   //   name->String().ReplaceAll("+","");
+   //   sources = sources + name->String() + " ";
+   // }
    plugin->SetAdditionalLibs(sources.Data());
    // I'm using a modified ANALYSISalice package, so I need to load par files for everything
    // plugin->EnablePackage("STEERBase");

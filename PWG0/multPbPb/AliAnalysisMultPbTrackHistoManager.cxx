@@ -18,7 +18,7 @@ const char * AliAnalysisMultPbTrackHistoManager::kHistoPtEtaVzNames[] = { "hGenP
 									  "hRecPtEtaVzSecWeak", "hRecPtEtaVzSecMaterial", "hRecPtEtaVzFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoDCANames[]     = { "hGenDCA", "hRecDCA", "hRecDCAPrim", "hRecDCASecWeak","hRecDCASecMaterial", "hRecDCAFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoPrefix[]     = { "hGen", "hRec", "hRecPrim", "hRecSecWeak","hRecSecMaterial", "hRecFake"};
-const char * AliAnalysisMultPbTrackHistoManager::kSpeciesName[]     = { "#pi+", "K+", "p", "l+",  "#pi-", "K-", "#bar{p}", "l-", "Others"};
+const char * AliAnalysisMultPbTrackHistoManager::kSpeciesName[]     = { "pi+", "K+", "p", "l+",  "pi-", "K-", "barp", "l-", "Others"};
 
 
 AliAnalysisMultPbTrackHistoManager::AliAnalysisMultPbTrackHistoManager() : AliHistoListWrapper(), fHNameSuffix(""){ 
@@ -40,12 +40,16 @@ AliAnalysisMultPbTrackHistoManager::~AliAnalysisMultPbTrackHistoManager() {
 
 }
 
-TH3D * AliAnalysisMultPbTrackHistoManager::GetHistoPtEtaVz(Histo_t id) {
+TH3D * AliAnalysisMultPbTrackHistoManager::GetHistoPtEtaVz(Histo_t id, Int_t particle) {
   // Returns a 3D histo of Pt/eta/vtx. It it does not exist, books it.
 
-  TH3D * h = (TH3D*) GetHisto(kHistoPtEtaVzNames[id]);
+  TString name = kHistoPtEtaVzNames[id];
+
+  if(particle >= 0) name += kSpeciesName[particle];
+
+  TH3D * h = (TH3D*) GetHisto(name.Data());
   if (!h) {
-    h = BookHistoPtEtaVz(kHistoPtEtaVzNames[id], Form("Pt Eta Vz distribution (%s)",kHistoPtEtaVzNames[id]));
+    h = BookHistoPtEtaVz(name.Data(), Form("Pt Eta Vz distribution (%s)",kHistoPtEtaVzNames[id]));
   }
 
   return h;
@@ -92,11 +96,14 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoPt (Histo_t id,
   // Get range in terms of bin numners.  If the float range is
   // less than -11111 take the range from the first to the last bin (i.e. no
   // under/over-flows)
-  Int_t min1 = minEta  < -11111 ? 1 : h3D ->GetYaxis()->FindBin(minEta);
-  Int_t min2  = minVz  < -11111 ? 1 : h3D ->GetZaxis()->FindBin(minVz) ;
+  // FIXME: UNDERFLOWS
+  Int_t min1 = minEta  < -11111 ? -1 : h3D ->GetYaxis()->FindBin(minEta);
+  Int_t min2  = minVz  < -11111 ? -1 : h3D ->GetZaxis()->FindBin(minVz) ;
 
-  Int_t max1 = maxEta  < -11111 ? h3D->GetNbinsY() : h3D ->GetYaxis()->FindBin(maxEta-0.00001);
-  Int_t max2  = maxVz  < -11111 ? h3D->GetNbinsZ() : h3D ->GetZaxis()->FindBin(maxVz -0.00001);
+  // Int_t max1 = maxEta  < -11111 ? h3D->GetNbinsY() : h3D ->GetYaxis()->FindBin(maxEta-0.00001);
+  // Int_t max2  = maxVz  < -11111 ? h3D->GetNbinsZ() : h3D ->GetZaxis()->FindBin(maxVz -0.00001);
+  Int_t max1 = maxEta  < -11111 ? -1 : h3D ->GetYaxis()->FindBin(maxEta-0.00001);
+  Int_t max2  = maxVz  < -11111 ? -1 : h3D ->GetZaxis()->FindBin(maxVz -0.00001);
 
 
   TString hname = h3D->GetName();
@@ -243,6 +250,33 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoSpecies(Histo_t id) {
 
 }
 
+TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoVzEvent(Histo_t id) {
+
+  // Returns histogram with Vz of the event
+
+  TString name = TString(kHistoPrefix[id])+"_VzEvent";
+
+  TH1D * h =  (TH1D*) GetHisto(name);
+  if (!h) {
+    name+=fHNameSuffix;
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+
+    AliInfo(Form("Booking histo %s",name.Data()));
+
+    h = new TH1D (name.Data(), Form("Vz of the event (%s)",kHistoPrefix[id]), 10, -10, 10);			 
+    h->Sumw2();
+    h->SetXTitle("V_{z}^{event} (cm)");
+    TH1::AddDirectory(oldStatus);
+    fList->Add(h);
+
+
+  }
+  return h;
+  
+
+}
+
 
 
 TH1I * AliAnalysisMultPbTrackHistoManager::GetHistoStats() {
@@ -324,9 +358,9 @@ TH3D * AliAnalysisMultPbTrackHistoManager::BookHistoPtEtaVz(const char * name, c
 		       nvzbins,  binsVz
 		       );
 
-  h->SetXTitle("p_{T}");
+  h->SetXTitle("p_{T} (GeV)");
   h->SetYTitle("#eta");
-  h->SetZTitle("V_{z} (cm)");
+  h->SetZTitle("V_{z}^{tracks} (cm)");
   h->Sumw2();
   
   fList->Add(h);

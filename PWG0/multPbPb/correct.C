@@ -11,6 +11,7 @@
 #include "AliPhysicsSelection.h"
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisMultPbCentralitySelector.h"
+#include "TLegend.h"
 
 using namespace std;
 
@@ -61,13 +62,15 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
 
   // Some shorthands
   // FIXME: Gen should be projected including overflow in z?
-  TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec, -0.5,0.5,-10,10)->Clone("hDataPt");
-  TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         -0.5,0.5,-10,10);
-  TH1D * hMCPtRec  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,         -0.5,0.5,-10,10);
-  TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim,     -0.5,0.5,-10,10);
-  TH1D * hMCPtSeM  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat,   -0.5,0.5,-10,10);
-  TH1D * hMCPtSeW  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak,  -0.5,0.5,-10,10);
-  TH1D * hMCPtFak  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecFake,     -0.5,0.5,-10,10);
+  Float_t zmin = 0;
+  Float_t zmax = 2;
+  TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec, -0.5,0.5,zmin,zmax)->Clone("hDataPt");
+  TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         -0.5,0.5,-22222,-22222);
+  TH1D * hMCPtRec  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,         -0.5,0.5,zmin,zmax);
+  TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim,     -0.5,0.5,zmin,zmax);
+  TH1D * hMCPtSeM  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat,   -0.5,0.5,zmin,zmax);
+  TH1D * hMCPtSeW  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak,  -0.5,0.5,zmin,zmax);
+  TH1D * hMCPtFak  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecFake,     -0.5,0.5,zmin,zmax);
  
   TCanvas * cdata = new TCanvas ("cData", "Data");  
   cdata->SetLogy();
@@ -83,6 +86,18 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   hMCPtSeM ->Draw("same");
   hMCPtSeW ->Draw("same");
   hMCPtFak ->Draw("same");
+  
+  hMCPtGen ->GetXaxis()->SetRangeUser(0,4.5);
+  hMCPtGen ->GetYaxis()->SetRangeUser(0.1,1e4);
+  TLegend * lMC = new TLegend(0.505034, 0.59965, 0.877517, 0.926573,"Monte Carlo");
+  lMC->AddEntry( hMCPtGen, "Generated");
+  lMC->AddEntry( hMCPtRec, "All Rec");
+  lMC->AddEntry( hMCPtPri, "Rec Primaries");
+  lMC->AddEntry( hMCPtSeM, "Rec Sec. Material");
+  lMC->AddEntry( hMCPtSeW, "Rec Sec. Weak");
+  lMC->AddEntry( hMCPtFak, "Rec Fakes");
+  lMC->Draw();
+
 
   cout << "Fake/All Rec  = " << hMCPtFak->Integral()/hMCPtRec->Integral()  << endl;
   cout << "SM/All   Rec  = " << hMCPtSeM->Integral()/hMCPtRec->Integral()  << endl;
@@ -93,20 +108,21 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   // PRIM_DATA = ALL_DATA - SEC_MC/ALL_MC*ALL_DATA - FAK_MC/ALL_MC*ALL_DATA
   // TRUE_DATA = PRIM_DATA * GEN_MC/PRIM_MC
 
+
   TH1D * hEffPt = (TH1D*) hMCPtPri->Clone("hEffPt");
   hEffPt->Divide(hMCPtPri,hMCPtGen,1,1,"B");
 
-  TH1D * hCorSeM = (TH1D*) hMCPtSeM->Clone("hEffPt");
+  TH1D * hCorSeM = (TH1D*) hMCPtSeM->Clone("hCorSeM");
   hCorSeM->Divide(hMCPtSeM,hMCPtRec,1,1,"B");
   hCorSeM->Scale(fractionMaterial);// rescale material correction
-  hCorSeM->Multiply(hDataPt);
+  hCorSeM->Multiply(hDataPt); 
 
-  TH1D * hCorSeW = (TH1D*) hMCPtSeW->Clone("hEffPt");
+  TH1D * hCorSeW = (TH1D*) hMCPtSeW->Clone("hCorSeW");
   hCorSeW->Divide(hMCPtSeW,hMCPtRec,1,1,"B");
   hCorSeW->Scale(fractionWeak);// rescale weak correction
   hCorSeW->Multiply(hDataPt); 
 
-  TH1D * hCorFak = (TH1D*) hMCPtFak->Clone("hEffPt");
+  TH1D * hCorFak = (TH1D*) hMCPtFak->Clone("hCorFak");
   hCorFak->Divide(hMCPtFak,hMCPtRec,1,1,"B");
   hCorFak->Multiply(hDataPt);
 
@@ -117,8 +133,24 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   hCorrected->Divide(hEffPt);
   hCorrected->SetMarkerStyle(kOpenStar);
 
+
+  TCanvas * cCorrections = new TCanvas("cCorrections", "cCorrections");
+
+  hEffPt->Draw();
+  // hCorSeM->Draw();
+  // hCorSeM->SetLineColor(kRed);
+  // hCorSeM->SetMarkerColor(kRed);
+  // hMCPtSeM->Draw("same");  
+  // hCorSeW->Draw("same");
+  // hCorSeW->SetLineColor(kRed);
+  // hCorSeW->SetMarkerColor(kRed);
+  // hMCPtSeW->Draw("same");
+
+
   cdata->cd();
   hDataPt->Draw();
+  hDataPt ->GetXaxis()->SetRangeUser(0,4.5);
+  hDataPt ->GetYaxis()->SetRangeUser(0.1,1e4);
   hCorrected->SetLineColor(kBlack);
   hCorrected->SetMarkerColor(kBlack);
   hCorrected->Draw("same");
@@ -126,12 +158,19 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   TF1 * f = GetLevy();
   hCorrected->Fit(f,"", "same");
   hCorrected->Fit(f,"IME", "same");
-  cout << "dN/deta = " << f->Integral(0,100) << " +- " << f->IntegralError(0,100) << endl;
+  cout << "dN/deta (function)  = " << f->Integral(0,100) << " +- " << f->IntegralError(0,100) << endl;
+  cout << "dN/deta (func+data) = " << f->Integral(0,0.1) + hCorrected->Integral(3,-1,"width") << endl;//
   cout << "Generated dN/deta (correction) = " << hMCPtGen->Integral("width") << endl;
   // FIXME: comment this out
-  TH1D * hDataGen  = hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        -0.5,0.5,-10,10);
+  TH1D * hDataGen  = hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        -0.5,0.5,-22222,-22222);
   cout << "Generated dN/deta (data) =       " << hDataGen->Integral("width") << endl;
-  hDataGen->Draw("same");
+  hDataGen->Draw("same");  
+  TLegend * l = new TLegend(0.520134, 0.676573, 0.885906, 0.923077,"137161, p1+++");
+  l->AddEntry(hDataPt, "Raw data");
+  l->AddEntry(hCorrected, "Corrected data");
+  l->AddEntry(hMCPtGen, "Monte Carlo (generated)");
+  l->AddEntry(f, "Levy Fit");
+  l->Draw();
 }
 
 void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {

@@ -155,8 +155,14 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatCentr);
 
+
+
   if (fIsMC) {
-    
+    // Get MC vertex
+    //FIXME: which vertex do I take for MC?
+    TArrayF   vertex;
+    fMCEvent->GenEventHeader()->PrimaryVertex(vertex);
+    Float_t zvGen = vertex[2];    
 
     if (!fMCEvent) {
       AliError("No MC info found");
@@ -181,18 +187,19 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	fHistoManager->GetHistoProcess(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Fill(mcPart->Particle()->GetUniqueID());
 	fHistoManager->FillParticleID(AliAnalysisMultPbTrackHistoManager::kHistoGen, mcPart);
 	
-	// Get MC vertex
-	//FIXME: which vertex do I take for MC?
-	TArrayF   vertex;
-	fMCEvent->GenEventHeader()->PrimaryVertex(vertex);
-	Float_t zv = vertex[2];
 	//	Float_t zv = vtxESD->GetZ();
 	// Fill generated histo
-	hTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]->Fill(mcPart->Pt(),mcPart->Eta(),zv);
+	hTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]->Fill(mcPart->Pt(),mcPart->Eta(),zvGen);
+	Int_t partCode = fHistoManager->GetLocalParticleID(mcPart);
+	if (partCode == AliAnalysisMultPbTrackHistoManager::kPartPiPlus  || 
+	    partCode == AliAnalysisMultPbTrackHistoManager::kPartPiMinus)
+	  fHistoManager->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoGen, partCode);
 	
       }
       hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]->Fill(nPhysicalPrimaries);
-
+      fHistoManager->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Fill(zvGen);
+  
+    
     }
   }
   
@@ -200,8 +207,15 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   // FIXME: shall I take the primary vertex?
   const AliESDVertex* vtxESD = fESD->GetPrimaryVertex();
   if(!vtxESD) return;
+  // FIXME: leave the cuts here or find a better place?)
+  // Quality cut on vertexer Z, as suggested by Francesco Prino
+  if(vtxESD->IsFromVertexerZ()) {
+    if (vtxESD->GetNContributors() <= 0) return;
+    if (vtxESD->GetDispersion() >= 0.04) return;
+    if (vtxESD->GetZRes() >= 0.25) return;
+  }
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatVtx);
-
+  fHistoManager->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(vtxESD->GetZ());
 
   // loop on tracks
   Int_t ntracks = fESD->GetNumberOfTracks();
@@ -268,8 +282,13 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	if(IsPhysicalPrimaryAndTransportBit(label)) {
 	  // Fill species histo
 	  fHistoManager->GetHistoProcess(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim)->Fill(mcPart->Particle()->GetUniqueID());
-	  if(accepted)
+	  if(accepted) {
 	    hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRecPrim]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
+	    Int_t partCode = fHistoManager->GetLocalParticleID(mcPart);
+	    if (partCode == AliAnalysisMultPbTrackHistoManager::kPartPiPlus  || 
+		partCode == AliAnalysisMultPbTrackHistoManager::kPartPiMinus)
+	      fHistoManager->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim, partCode);
+	  }
 	  if(acceptedNoDCA)
 	    hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecPrim]->Fill(weightedDCA);
 	} 
