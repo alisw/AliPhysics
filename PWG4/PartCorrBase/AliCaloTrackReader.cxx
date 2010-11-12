@@ -589,6 +589,12 @@ void AliCaloTrackReader::FillInputCTS() {
     
     if(fDataType==kESD && !fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
     
+    // Track filter selection
+    //if (fTrackFilter) {
+	  //  selectInfo = fTrackFilter->IsSelected(esdTrack);
+	  //  if (!selectInfo && !(esd->GetPrimaryVertex())->UsesTrack(esdTrack->GetID())) continue;
+   // }
+    
     //Count the tracks in eta < 0.9
     //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
     if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
@@ -697,6 +703,9 @@ void AliCaloTrackReader::FillInputEMCAL() {
             GetCaloUtils()->RecalculateClusterPID(clus);
 
           }
+
+          //Recalculate distance to bad channels, if new list of bad channels provided
+          GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
           
           //Correct non linearity
           if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn()){

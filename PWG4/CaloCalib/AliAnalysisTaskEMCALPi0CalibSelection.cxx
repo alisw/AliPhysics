@@ -50,14 +50,14 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
   AliAnalysisTaskSE(name),fEMCALGeo(0x0),//fCalibData(0x0), 
   fEmin(0.5), fEmax(15.), fAsyCut(1.),fMinNCells(2), fGroupNCells(0),
   fLogWeight(4.5), fSameSM(kFALSE), fOldAOD(kFALSE), fFilteredInput(kFALSE),
-  fCorrectClusters(kFALSE), fEMCALGeoName("EMCAL_FIRSTYEAR"), 
+  fCorrectClusters(kFALSE), fEMCALGeoName("EMCAL_FIRSTYEARV1"), 
   fRecoUtils(new AliEMCALRecoUtils),
   fNbins(300), fMinBin(0.), fMaxBin(300.),fOutputContainer(0x0),
   fHmgg(0x0),           fHmggDifferentSM(0x0), 
   fHOpeningAngle(0x0),  fHOpeningAngleDifferentSM(0x0),  
   fHIncidentAngle(0x0), fHIncidentAngleDifferentSM(0x0),
   fHAsymmetry(0x0),  fHAsymmetryDifferentSM(0x0),  
-  fhNEvents(0x0),fCuts(0x0)
+  fhNEvents(0x0),fCuts(0x0),fLoadMatrices(0)
 {
   //Named constructor which should be used.
   
@@ -81,6 +81,7 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
     fhTowerDecayPhotonHit[iSM] =0;
     fhTowerDecayPhotonEnergy[iSM]=0;
     fhTowerDecayPhotonAsymmetry[iSM]=0;
+    fMatrix[iSM] = 0x0;
   }
   
   DefineOutput(1, TList::Class());
@@ -99,9 +100,8 @@ AliAnalysisTaskEMCALPi0CalibSelection::~AliAnalysisTaskEMCALPi0CalibSelection()
   }
 	
   //if(fCalibData)  delete fCalibData;
-  if(fEMCALGeo)   delete fEMCALGeo;
-	
-  if(fRecoUtils) delete fRecoUtils ;
+  if(fEMCALGeo)   delete fEMCALGeo  ;
+  if(fRecoUtils)  delete fRecoUtils ;
 
 }
 
@@ -126,7 +126,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::LocalInit()
 	snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, Analyze Old AODs? %d, Mass per channel same SM clusters? %d ",
             fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fOldAOD, fSameSM) ;
 	fCuts->Add(new TObjString(onePar));
-	snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >",fEMCALGeoName.Data()) ;
+	snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >, Load Matrices? %d",fEMCALGeoName.Data(),fLoadMatrices) ;
 	fCuts->Add(new TObjString(onePar));
 
 	// Post Data
@@ -371,25 +371,38 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   //if(DebugLevel() > 1) printf("Run number: %d\n",runNum);
   
   //Get the matrix with geometry information
-  //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
-  if(!gGeoManager && fhNEvents->GetEntries()==1){
-    printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - Get geo matrices from data\n");
-    if(!strcmp(event->GetName(),"AliAODEvent")) {
+  if(fhNEvents->GetEntries()==1){
+    if(fLoadMatrices){
+      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - Load user defined geometry matrices\n");
+      for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+        if(fMatrix[mod]){
+          if(DebugLevel() > 1) 
+            fMatrix[mod]->Print();
+          fEMCALGeo->SetMisalMatrix(fMatrix[mod],mod) ;   
+        }
+      }//SM loop
+    }//Load matrices
+    else if(!gGeoManager){
+      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - Get geo matrices from data\n");
+      //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
+      if(!strcmp(event->GetName(),"AliAODEvent")) {
         if(DebugLevel() > 1) 
           printf("AliAnalysisTaskEMCALPi0CalibSelection Use ideal geometry, values geometry matrix not kept in AODs.\n");
-    }//AOD
-    else {	
-      if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
+      }//AOD
+      else {	
+        if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
         AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event) ;
         if(!esd) {
           printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - This event does not contain ESDs?");
-        return;
+          return;
         }
         for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-          if(DebugLevel() > 1) esd->GetEMCALMatrix(mod)->Print();
+          //if(DebugLevel() > 1) 
+            esd->GetEMCALMatrix(mod)->Print();
           if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
         } 
-    }//ESD
+      }//ESD
+    }//Load matrices from Data 
   }//first event
   
   if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
@@ -401,7 +414,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   Int_t iSupMod2 = -1;
   Int_t iphi2    = -1;
   Int_t ieta2    = -1;
-	
+	Bool_t shared  = kFALSE;
+  
   TLorentzVector p1;
   TLorentzVector p2;
   TLorentzVector p12;
@@ -484,7 +498,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     //clu1.EvalEnergy();
     //clu1.EvalAll(fLogWeight, fEMCALGeoName);
     
-    fRecoUtils->GetMaxEnergyCell(fEMCALGeo, emCells,c1,absId1,iSupMod1,ieta1,iphi1);
+    fRecoUtils->GetMaxEnergyCell(fEMCALGeo, emCells,c1,absId1,iSupMod1,ieta1,iphi1,shared);
     c1->GetMomentum(p1,v);
     //newc1.GetMomentum(p1,v);
     
@@ -506,7 +520,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       //clu2.EvalEnergy();
       //clu2.EvalAll(fLogWeight,fEMCALGeoName);
       
-      fRecoUtils->GetMaxEnergyCell(fEMCALGeo, emCells,c2,absId2,iSupMod2,ieta2,iphi2);
+      fRecoUtils->GetMaxEnergyCell(fEMCALGeo, emCells,c2,absId2,iSupMod2,ieta2,iphi2,shared);
       c2->GetMomentum(p2,v);
       //newc2.GetMomentum(p2,v);
       p12 = p1+p2;
@@ -670,7 +684,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::PrintInfo(){
 	printf("Histograms: bins %d; energy range: %2.2f < E < %2.2f GeV\n",fNbins,fMinBin,fMaxBin) ;
 	printf("Switchs:\n \t Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, \n \t Analyze Old AODs? %d, Mass per channel same SM clusters? %d\n",
            fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fOldAOD, fSameSM) ;
-	printf("EMCAL Geometry name: < %s >\n",fEMCALGeoName.Data()) ;
+	printf("EMCAL Geometry name: < %s >, Load Matrices %d\n",fEMCALGeoName.Data(), fLoadMatrices) ;
+  if(fLoadMatrices) {for(Int_t ism = 0; ism < 4; ism++) fMatrix[ism]->Print();}
 
   
 }

@@ -62,6 +62,14 @@ class AliCalorimeterUtils : public TObject {
 
   void SetGeometryTransformationMatrices(AliVEvent* inputEvent) ;
 	
+  void SwitchOnLoadOwnEMCALGeometryMatrices()              { fLoadEMCALMatrices = kTRUE  ; }
+  void SwitchOffLoadOwnEMCALGeometryMatrices()             { fLoadEMCALMatrices = kFALSE ; }
+  void SetEMCALGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fEMCALMatrix[i]    = m      ; }
+  
+  void SwitchOnLoadOwnPHOSGeometryMatrices()               { fLoadPHOSMatrices = kTRUE  ; }
+  void SwitchOffLoadOwnPHOSGeometryMatrices()              { fLoadPHOSMatrices = kFALSE ; }
+  void SetPHOSGeometryMatrixInSM(TGeoHMatrix* m, Int_t i)  { fPHOSMatrix[i]    = m      ; }
+  
   // Bad channels
   Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
   void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; fEMCALRecoUtils->SwitchOnBadChannelsRemoval(); InitPHOSBadChannelStatusMap();}
@@ -153,6 +161,11 @@ class AliCalorimeterUtils : public TObject {
   void RecalculateClusterShowerShapeParameters(AliVCaloCells* cells, AliVCluster* clu){
     fEMCALRecoUtils->RecalculateClusterShowerShapeParameters((AliEMCALGeometry*)fEMCALGeo, cells, clu);
   }
+  
+  void RecalculateClusterDistanceToBadChannel(AliVCaloCells* cells, AliVCluster* clu){
+    fEMCALRecoUtils->RecalculateClusterDistanceToBadChannel((AliEMCALGeometry*)fEMCALGeo, cells, clu);
+  }
+  
   void RecalculateClusterPID(AliVCluster* clu) {fEMCALRecoUtils->RecalculateClusterPID(clu);}
 
   //Track matching recalculation
@@ -177,19 +190,24 @@ class AliCalorimeterUtils : public TObject {
   AliPHOSGeoUtils  * fPHOSGeo  ;             //! PHOS  geometry pointer  
   Bool_t             fEMCALGeoMatrixSet;     //  Check if the transformation matrix is set for EMCAL
   Bool_t             fPHOSGeoMatrixSet ;     //  Check if the transformation matrix is set for PHOS
+  Bool_t             fLoadEMCALMatrices;     //  Matrices set from configuration, not get from geometry.root or from ESDs/AODs
+  TGeoHMatrix *      fEMCALMatrix[10];       //  Geometry matrices with alignments
+  Bool_t             fLoadPHOSMatrices;      //  Matrices set from configuration, not get from geometry.root or from ESDs/AODs
+  TGeoHMatrix *      fPHOSMatrix[5];         //  Geometry matrices with alignments
   Bool_t             fRemoveBadChannels;     //  Check the channel status provided and remove clusters with bad channels
   TObjArray        * fPHOSBadChannelMap;     //  Array of histograms with map of bad channels, PHOS
   Int_t              fNCellsFromPHOSBorder;  //  Number of cells from PHOS  border the cell with maximum amplitude has to be.
   Bool_t             fRecalibration;         //  Switch on or off the recalibration
   TObjArray        * fPHOSRecalibrationFactors;  // Array of histograms with map of recalibration factors, PHOS
   AliEMCALRecoUtils* fEMCALRecoUtils;        //  EMCAL utils for cluster rereconstruction
-  Bool_t             fRecalculatePosition;   // Recalculate cluster position
-  Bool_t             fCorrectELinearity  ;   // Correct cluster energy linearity
-  Bool_t             fRecalculateMatching;   // Recalculate cluster position
-  Float_t            fCutR;                  // dR cut on matching
-  Float_t            fCutZ;                  // dZ cut on matching
+  Bool_t             fRecalculatePosition;   //  Recalculate cluster position
+  Bool_t             fCorrectELinearity  ;   //  Correct cluster energy linearity
+  Bool_t             fRecalculateMatching;   //  Recalculate cluster position
+  Float_t            fCutR;                  //  dR cut on matching
+  Float_t            fCutZ;                  //  dZ cut on matching
 
-  ClassDef(AliCalorimeterUtils,4)
+  
+  ClassDef(AliCalorimeterUtils,5)
 } ;
 
 
