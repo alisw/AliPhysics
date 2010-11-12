@@ -45,6 +45,7 @@
 #include "AliESDtrackCuts.h"
 
 ClassImp(AliAnalysisTaskSEITSsaSpectra)
+/* $Id$ */
 
 //________________________________________________________________________
 AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
@@ -70,6 +71,7 @@ AliAnalysisTaskSE("Task CFits"),
   fNSigmaDCAz(7.),
   fLowMult(0),
   fUpMult(9999),
+  fYear(2010),
   fMC(kFALSE), 
   fSmearMC(kFALSE),
   fSmearP(0.),
@@ -145,20 +147,38 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::DCAcut(Double_t impactXY, Double_t impactZ
   Double_t xyP[3];
   Double_t zP[3];
   if(optMC){
-    xyP[0]=88.63;//SIMpass4a12
-    xyP[1]=19.57;
-    xyP[2]=1.65;
-    zP[0]=140.98;
-    zP[1]=62.33;
-    zP[2]=1.15;
+    if(fYear==2009){
+      xyP[0]=88.63; //MC LHC10a12
+      xyP[1]=19.57;
+      xyP[2]=1.65;
+      zP[0]=140.98;
+      zP[1]=62.33;
+      zP[2]=1.15;
+    }else{
+      xyP[0]=36.; //MC LHC10d1
+      xyP[1]=43.9;
+      xyP[2]=1.3;
+      zP[0]=111.9;
+      zP[1]=59.8;
+      zP[2]=1.2;
+    }
   }
   else{
-    xyP[0]=85.28;//DATApass6
-    xyP[1]=25.78;
-    xyP[2]=1.55;
-    zP[0]=146.80;
-    zP[1]=70.07;
-    zP[2]=1.11;
+    if(fYear==2009){
+      xyP[0]=85.28;//DATA 900 GeV pass6
+      xyP[1]=25.78;
+      xyP[2]=1.55;
+      zP[0]=146.80;
+      zP[1]=70.07;
+      zP[2]=1.11;
+    }else{
+      xyP[0]=32.7;//DATA 7 TeV pass2
+      xyP[1]=44.8;
+      xyP[2]=1.3;
+      zP[0]=117.3;
+      zP[1]=66.8;
+      zP[2]=1.2;
+    }
   }
   Double_t xySigma = xyP[0] + xyP[1]/TMath::Power(TMath::Abs(pt),xyP[2]);
   Double_t xyMax = fNSigmaDCAxy*xySigma; //in micron
@@ -365,7 +385,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
     fOutput->Add(fHistNegK[i]);
     fOutput->Add(fHistNegP[i]);
     
-    fOutput->Add(fHistDCAPosPi[i]);//DCA distr.
+    fOutput->Add(fHistDCAPosPi[i]); //DCA distr
     fOutput->Add(fHistDCAPosK[i]);
     fOutput->Add(fHistDCAPosP[i]);
     fOutput->Add(fHistDCANegPi[i]);
@@ -471,8 +491,13 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   esdTrackCutsMult->SetRequireITSRefit(kTRUE);
   esdTrackCutsMult->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					     AliESDtrackCuts::kAny);
-  esdTrackCutsMult->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/TMath::Power(pt,0.9)");  
-  esdTrackCutsMult->SetMaxDCAToVertexZ(20);
+  if(fYear==2009){
+    esdTrackCutsMult->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/TMath::Power(pt,0.9)");  //2009 standard cut
+    esdTrackCutsMult->SetMaxDCAToVertexZ(20); //2009 standard cut
+  }else{
+    esdTrackCutsMult->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); //2010 standard cut
+    esdTrackCutsMult->SetMaxDCAToVertexZ(2); //2010 standard cut
+  }
   esdTrackCutsMult->SetDCAToVertex2D(kFALSE);
   esdTrackCutsMult->SetRequireSigmaToVertex(kFALSE);
   esdTrackCutsMult->SetEtaRange(-0.8,+0.8);

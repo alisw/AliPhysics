@@ -12,6 +12,8 @@
 // F. Prino, prino@to.infn.it
 ///////////////////////////////////////////////////////////////////////////
 
+/* $Id$ */
+
 class TString;
 class TTree;
 class TH1F;
@@ -58,6 +60,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
     fUpMult=UpBin;
   }
 
+  void SetYear(Int_t year){fYear=year;}
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillNtuple(Bool_t fill=kTRUE) {fFillNtuple=fill;}
   void SetSmearMC(Double_t smearp, Double_t smeardedx){
@@ -118,7 +121,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistNegK[kNbins]; //! histo with dedx distibution in the kaons hypotesis (negative)
   TH1F *fHistNegP[kNbins]; //! histo with dedx distibution in the protons hypotesis (negative)
   
-  TH1F *fHistDCAPosPi[kNbins]; //! histo with DCA distibution in the pions hypotesis (positive)
+  TH1F *fHistDCAPosPi[kNbins]; //! histo with DCA distibution in the kaons hypotesis (positive)
   TH1F *fHistDCAPosK[kNbins]; //! histo with DCA distibution in the kaons hypotesis (positive)
   TH1F *fHistDCAPosP[kNbins]; //! histo with DCA distibution in the protons hypotesis (positive)
   TH1F *fHistDCANegPi[kNbins]; //! histo with DCA distibution in the pions hypotesis (negative)
@@ -182,17 +185,17 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   Double_t fNSigmaDCAz;      // DCA cut along z
   Int_t fLowMult;      // Multiplicity bin
   Int_t fUpMult;      // Multiplicity bin
- 
+  Int_t fYear;        // Year (2009, 2010)
   Bool_t   fMC;        //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fSmearMC;   // flag to apply extra smearing on MC 
   Double_t fSmearP;    // extra relative smearing on simulated momentum
   Double_t fSmeardEdx; // extra relative smearing on simulated dE/dx
-  TRandom3* fRandGener;    // generator for smaring
+  TRandom3* fRandGener;    // generator for smearing
   Bool_t       fFillNtuple;      // fill ntuple  
   TNtuple     *fNtupleNSigma;//! output ntuple
   TNtuple     *fNtupleMC;//! output MC ntuple
   
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 1);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 2);
 };
 
 #endif
