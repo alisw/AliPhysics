@@ -3,15 +3,12 @@ void runFMDbackground() {
   // Mandatory fields for the background correction
   TString runMode   = "full";
   TString anaSource = "";
-  TString addLibs   = "libPWG2forward.so";
   TString anaType   = "background";
-  
-  // Optional fields - Must however be asserted a value for the analysis to run 
-  TString dataDir  = "/alice/sim/LHC10f6/126437";
-  TString anaName  = "Correction";
-  TString colSys   = "p-p";
-  Float_t cmsNNGeV = 900;
-  Float_t bkG      = 5;
+  TString dataDir   = "/alice/sim/LHC10f6/126437";
+  TString anaName   = "Correction";
+  TString colSys    = "p-p";
+  Float_t cmsNNGeV  = 900;
+  Float_t bkG       = 5;
 
   
   /** 
@@ -35,7 +32,6 @@ void runFMDbackground() {
 	    anaType, 
 	    dataDir, 
 	    anaSource, 
-	    addLibs, 
 	    anaName, 
 	    colSys, 
 	    cmsNNGeV, 
@@ -43,3 +39,6 @@ void runFMDbackground() {
 }
   
     
+// 
+// EOF
+//

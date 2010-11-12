@@ -1,3 +1,4 @@
+//____________________________________________________________________
 /** 
  * Run an FMD corrections job. 
  * 
@@ -5,7 +6,6 @@
  * @param anaType     What to do (background, collector, sharing)
  * @param dataDir     Input data directory 
  * @param anaSource   Analysis source (if any)
- * @param addLibs     Libraries to add 
  * @param anaName     Analysis name 
  * @param colSys      Collision system (p-p, Pb-Pb, A-A)
  * @param cmsNNGeV    Center of mass energy per nucleon in GeV
@@ -19,7 +19,6 @@ runFMDjob(const TString& runMode   = "",
 	  const TString& anaType   = "background",
 	  const TString& dataDir   = "",
 	  const TString& anaSource = "",
-	  const TString& addLibs   = "",
 	  const TString& anaName   = "", 
 	  const TString& colSys    = "p-p", 
 	  Float_t        cmsNNGeV  = 900, 
@@ -28,32 +27,21 @@ runFMDjob(const TString& runMode   = "",
 	  const TString& rootTag   = "v5-27-06b", 
 	  const TString& apiTag    = "V1.1x")
 {
+  // --- Load libraries needed  -------------------------------------
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libPWG2forward");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/PWG2/FORWARD/analysis");
+
   // --- Some initial checks and setup -------------------------------
   TString outFileName = anaName;
   outFileName.ToLower();
   outFileName += ".root";
-  
 
   // --- Manager setup -----------------------------------------------
   // Create the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager(anaName.Data());
 
-  // --- AliEN handler setup -----------------------------------------
-  // Create and configure the alien handler plugin, and connect to manager 
-  AliAnalysisGrid *alienHandler = CreateAlienHandler(runMode, 
-						     dataDir, 
-						     anaSource, 
-						     addLibs, 
-						     anaName, 
-						     outFileName,
-						     aliceTag,
-						     rootTag, 
-						     apiTag);  
-  if (!alienHandler) {
-    Error("runFMDjob", "Failed to set up alien handler");
-    return;
-  }
-  mgr->SetGridHandler(alienHandler);
   
   // --- ESD setup ---------------------------------------------------
   // Connect the EDS's to the manager and switch off unused branches
@@ -74,24 +62,35 @@ runFMDjob(const TString& runMode   = "",
 
   // --- Task setup --------------------------------------------------
   // Configure the analysis manager to the specific task
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWG2/FORWARD/analysis");
-
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libPWG2forward");
-
   TString type = anaType.ToLower();
+  TString addLibs;
   if (type.Contains("background")) 
-    AddBackgroundTask(outFileName);
+    addLibs = AddBackgroundTask(outFileName);
   else if (type.Contains("collector")) 
-    AddCollectorTask(outFileName, colSys, cmsNNGeV, bkG);
+    addLibs = AddCollectorTask(outFileName, colSys, cmsNNGeV, bkG);
   else if (type.Contains("sharing")) 
-    AddSharingTask(outFileName, colsys, cmsNNGeV, bkG);
+    addLibs = AddSharingTask(outFileName, colsys, cmsNNGeV, bkG);
   else {
     Error("runFMDjob", "Unknown type '%s', please fix this macro", 
 	  anaType);
     return;
   }
+
+  // --- AliEN handler setup -----------------------------------------
+  // Create and configure the alien handler plugin, and connect to manager 
+  if (!CreateAlienHandler(runMode, 
+			  dataDir, 
+			  anaSource, 
+			  addLibs, 
+			  anaName, 
+			  outFileName,
+			  aliceTag,
+			  rootTag, 
+			  apiTag)) {
+    Error("runFMDjob", "Failed to set up alien handler");
+    return;
+  }
+  mgr->SetGridHandler(alienHandler);
   
   // --- final job setup and execution -------------------------------
   // Enable debug printouts
@@ -108,10 +107,20 @@ runFMDjob(const TString& runMode   = "",
   Info("runFMDjob", "Job is done");
 }
 
+
 //____________________________________________________________________
+/** 
+ * Create a background correction task 
+ * 
+ * @param outFileName 
+ *
+ * @return A list of additional files that should be uploaded 
+ */
 void 
 AddBackgroundTask(const TString& outFileName) 
 {
+  AliAnalysisManager* mgr = AliAnalysisManager::Instance();
+
   // --- Make and configure task -------------------------------------
   AliFMDAnalysisTaskGenerateCorrection *task = 
     new AliFMDAnalysisTaskGenerateCorrection("background");
@@ -139,6 +148,8 @@ AddBackgroundTask(const TString& outFileName)
     i++;
     ptr++;
   }
+
+  return "";
 }
 
 
@@ -150,12 +161,16 @@ AddBackgroundTask(const TString& outFileName)
  * @param col          Collision system (one of "p-p", "Pb-Pb", or "A-A")
  * @param cmsNNGeV     Center of mass energy per nucleon in GeV
  * @param bkG          Magnetic field in kilo gauss 
+ *
+ * @return A list of additional files that should be uploaded 
  */
 void AddCollectorTask(const TString& outFileName,
 		      const TString& col, 
 		      Float_t        cmsNNGeV, 
 		      Float_t        bkG) 
 {
+  AliAnalysisManager* mgr = AliAnalysisManager::Instance();
+
   // --- Initialize the analysis parameters --------------------------
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();  
   pars->SetCollisionSystem(col);
@@ -163,7 +178,8 @@ void AddCollectorTask(const TString& outFileName,
   pars->SetMagField(bkG);
   pars->SetBackgroundPath("./");
   pars->Init(kTRUE,AliFMDAnaParameters::kBackgroundCorrection);
-  
+  TString bgFile = pars->GetPath(AliFMDAnaParameters::GetBackgroundID());
+
   // --- Create and add our task -------------------------------------
   AliFMDAnalysisTaskCollector *task = 
     new AliFMDAnalysisTaskCollector("collector");
@@ -184,6 +200,8 @@ void AddCollectorTask(const TString& outFileName,
   // --- Connect input/output ----------------------------------------
   mgr->ConnectInput(task,  0, cin_esd);
   mgr->ConnectOutput(task, 1, cout_fmd1);
+
+  return bgFile;
 }
 
 //_______________________________________________________________
@@ -194,12 +212,17 @@ void AddCollectorTask(const TString& outFileName,
  * @param col          Collision system (one of "p-p", "Pb-Pb", or "A-A")
  * @param cmsNNGeV     Center of mass energy per nucleon in GeV
  * @param bkG          Magnetic field in kilo gauss 
+ *
+ * @return A list of additional files that should be uploaded 
  */
-void AddSharingTask(const TString& outFileName,
-		    const TString& col, 
-		    Float_t        cmsNNGeV, 
-		    Float_t        bkG) 
+TString 
+AddSharingTask(const TString& outFileName,
+	       const TString& col, 
+	       Float_t        cmsNNGeV, 
+	       Float_t        bkG) 
 {
+  AliAnalysisManager* mgr = AliAnalysisManager::Instance();
+
   // --- Initialize the analysis parameters --------------------------
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();  
   pars->SetCollisionSystem(col);
@@ -212,6 +235,12 @@ void AddSharingTask(const TString& outFileName,
 	     AliFMDAnaParameters::kBackgroundCorrection|
 	     AliFMDAnaParameters::kEnergyDistributions|
 	     AliFMDAnaParameters::kEventSelectionEfficiency);
+  TString files;
+  files.Append(pars->GetPath(AliFMDAnaParameters::GetBackgroundID()));
+  files.Append(" ");
+  files.Append(pars->GetPath(AliFMDAnaParameters::GetEdistID()));
+  files.Append(" ");
+  files.Append(pars->GetPath(AliFMDAnaParameters::GetEventSelectionEffID()));
   
   // --- Create and add our task -------------------------------------
   AliFMDAnalysisTaskSE *task = new AliFMDAnalysisTaskSE("sharing");
@@ -230,6 +259,8 @@ void AddSharingTask(const TString& outFileName,
   
   mgr->ConnectInput(taskfmd, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskfmd, 1, cout_fmd);
+
+  return files;
 }
 
 //____________________________________________________________________
@@ -247,7 +278,7 @@ void AddSharingTask(const TString& outFileName,
  * 
  * @return Valid object or null
  */
-AliAnalysisGrid* 
+Bool_t
 CreateAlienHandler(const TString& runMode,
 		   const TString& dataDir,
 		   const TString& anaSource,
@@ -350,7 +381,11 @@ CreateAlienHandler(const TString& runMode,
   // Optionally modify split mode (default 'se')    
   plugin->SetSplitMode("se"); 
   
-  return plugin;
+  // connect to manager 
+  AliAnalysisManager* mgr = AliAnalysisManager::Instance();
+  mgr->SetGridHandler(alienHandler);
+  
+  return kTRUE
 } 
 //____________________________________________________________________
 //
