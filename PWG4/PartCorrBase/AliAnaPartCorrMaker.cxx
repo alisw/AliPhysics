@@ -47,7 +47,7 @@ TObject(),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE), fMakeAOD(kFALSE), fAnaDebug(0), 
 fReader(0), fCaloUtils(0), 
-fCuts(new TList), fhNEvents(0x0)
+fCuts(new TList), fhNEvents(0x0), fhTrackMult(0x0)
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker  Constructor *** \n");
@@ -64,7 +64,7 @@ fMakeHisto(maker.fMakeHisto), fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),
 fReader(),//new AliCaloTrackReader(*maker.fReader)), 
 fCaloUtils(),//(new AliCalorimeterUtils(*maker.fCaloUtils)),
-fCuts(new TList()), fhNEvents(maker.fhNEvents)
+fCuts(new TList()),fhNEvents(maker.fhNEvents) ,fhTrackMult(maker.fhTrackMult)
 {
   // cpy ctor
 	
@@ -195,9 +195,14 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
       }// Analysis with histograms as output on
     }//Loop on analysis defined
   }//Analysis list available
+  
+  //General event histograms
+  
   fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
   fOutputContainer->Add(fhNEvents);
-	
+  fhTrackMult      = new TH1I("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
+  fOutputContainer->Add(fhTrackMult);
+  
   return fOutputContainer;
   
 }
@@ -325,7 +330,8 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   }
 	
   fhNEvents->Fill(0); //Event analyzed
-	
+  fhTrackMult->Fill(fReader->GetTrackMultiplicity()); 
+
   fReader->ResetLists();
   
   //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");

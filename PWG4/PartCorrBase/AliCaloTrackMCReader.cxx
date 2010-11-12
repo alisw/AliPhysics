@@ -213,10 +213,10 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
   
   fEventNumber = iEntry;
   fCurrentFileName = TString(currentFileName);
-	
+  fTrackMult = 0;
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
   if(fComparePtHardAndJetPt && GetStack()) {
-	if(!ComparePtHardAndJetPt()) return kFALSE ;
+    if(!ComparePtHardAndJetPt()) return kFALSE ;
   }
 	
   //Fill Vertex array
@@ -242,66 +242,69 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
       particle->Momentum(momentum);
       //---------- Charged particles ----------------------
       if(charge != 0){
-		 if(fFillCTS && (momentum.Pt() > fCTSPtMin)){
-	  //Particles in CTS acceptance
-		
-	  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
-		 
-    if(TMath::Abs(pdg) == 11 && GetStack()->Particle(particle->GetFirstMother())->GetPdgCode()==22) continue ;
-       
-	  if(fDebug > 3 && momentum.Pt() > 0.2)
-	    printf("AliCaloTrackMCReader::FillInputEvent() - CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-		   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-	  
-	  x[0] = particle->Vx(); x[1] = particle->Vy(); x[2] = particle->Vz();
-	  p[0] = particle->Px(); p[1] = particle->Py(); p[2] = particle->Pz();
-	  //Create object and write it to file
-	  AliAODTrack *aodTrack = new AliAODTrack(0, iParticle, p, kTRUE, x, kFALSE,NULL, 0, 0, 
-			NULL,
-			0x0,//primary,
-			kFALSE, // No fit performed
-			kFALSE, // No fit performed
-			AliAODTrack::kPrimary, 
-			0);
-	  SetTrackChargeAndPID(pdg, aodTrack);
-	  fAODCTS->Add(aodTrack);//reference the selected object to the list
-	}
-	//Keep some charged particles in calorimeters lists
-	if((fFillPHOS || fFillEMCAL) && KeepChargedParticles(pdg)) FillCalorimeters(iParticle, particle, momentum);
-	
+        
+        if(TMath::Abs(momentum.Eta())< fTrackMultEtaCut) fTrackMult++;
+        
+        if(fFillCTS && (momentum.Pt() > fCTSPtMin)){
+          //Particles in CTS acceptance
+          
+          if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
+          
+          if(TMath::Abs(pdg) == 11 && GetStack()->Particle(particle->GetFirstMother())->GetPdgCode()==22) continue ;
+          
+          if(fDebug > 3 && momentum.Pt() > 0.2)
+            printf("AliCaloTrackMCReader::FillInputEvent() - CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+                   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
+          
+          x[0] = particle->Vx(); x[1] = particle->Vy(); x[2] = particle->Vz();
+          p[0] = particle->Px(); p[1] = particle->Py(); p[2] = particle->Pz();
+          //Create object and write it to file
+          AliAODTrack *aodTrack = new AliAODTrack(0, iParticle, p, kTRUE, x, kFALSE,NULL, 0, 0, 
+                                                  NULL,
+                                                  0x0,//primary,
+                                                  kFALSE, // No fit performed
+                                                  kFALSE, // No fit performed
+                                                  AliAODTrack::kPrimary, 
+                                                  0);
+          SetTrackChargeAndPID(pdg, aodTrack);
+          fAODCTS->Add(aodTrack);//reference the selected object to the list
+        }
+        //Keep some charged particles in calorimeters lists
+        if((fFillPHOS || fFillEMCAL) && KeepChargedParticles(pdg)) FillCalorimeters(iParticle, particle, momentum);
+        
       }//Charged
       
       //-------------Neutral particles ----------------------
       else if(charge == 0 && (fFillPHOS || fFillEMCAL)){
-	//Skip neutrinos or other neutral particles
-	//if(SkipNeutralParticles(pdg) || particle->IsPrimary()) continue ; // protection added (MG)
-	if(SkipNeutralParticles(pdg)) continue ;
-	//Fill particle/calocluster arrays
-	if(!fDecayPi0) {
-	  FillCalorimeters(iParticle, particle, momentum);
-	}
-	else {
-	  //Sometimes pi0 are stable for the generator, if needed decay it by hand
-	  if(pdg == 111 ){
-	    if(momentum.Pt() >  fPHOSPtMin || momentum.Pt() >  fEMCALPtMin){
-	      TLorentzVector lvGamma1, lvGamma2 ;
-	      //Double_t angle = 0;
-	      
-	      //Decay
-	      MakePi0Decay(momentum,lvGamma1,lvGamma2);//,angle);
-	      
-	      //Check if Pi0 is in the acceptance of the calorimeters, if aperture angle is small, keep it
-	      TParticle * pPhoton1 = new TParticle(22,1,iParticle,0,0,0,lvGamma1.Px(),lvGamma1.Py(),
-						   lvGamma1.Pz(),lvGamma1.E(),0,0,0,0);   
-	      TParticle * pPhoton2 = new TParticle(22,1,iParticle,0,0,0,lvGamma2.Px(),lvGamma2.Py(),
-						   lvGamma2.Pz(),lvGamma2.E(),0,0,0,0);
-	      //Fill particle/calocluster arrays
-	      FillCalorimeters(iParticle,pPhoton1,lvGamma1);
-	      FillCalorimeters(iParticle,pPhoton2,lvGamma2);
-	    }//pt cut
-	  }//pi0
-	  else FillCalorimeters(iParticle,particle, momentum); //Add the rest
-	}
+        //Skip neutrinos or other neutral particles
+        //if(SkipNeutralParticles(pdg) || particle->IsPrimary()) continue ; // protection added (MG)
+        if(SkipNeutralParticles(pdg)) continue ;
+        //Fill particle/calocluster arrays
+        if(!fDecayPi0) {
+          FillCalorimeters(iParticle, particle, momentum);
+        }
+        else {
+          //Sometimes pi0 are stable for the generator, if needed decay it by hand
+          if(pdg == 111 ){
+            if(momentum.Pt() >  fPHOSPtMin || momentum.Pt() >  fEMCALPtMin){
+              TLorentzVector lvGamma1, lvGamma2 ;
+              //Double_t angle = 0;
+              
+              //Decay
+              MakePi0Decay(momentum,lvGamma1,lvGamma2);//,angle);
+              
+              //Check if Pi0 is in the acceptance of the calorimeters, if aperture angle is small, keep it
+              TParticle * pPhoton1 = new TParticle(22,1,iParticle,0,0,0,lvGamma1.Px(),lvGamma1.Py(),
+                                                   lvGamma1.Pz(),lvGamma1.E(),0,0,0,0);   
+              TParticle * pPhoton2 = new TParticle(22,1,iParticle,0,0,0,lvGamma2.Px(),lvGamma2.Py(),
+                                                   lvGamma2.Pz(),lvGamma2.E(),0,0,0,0);
+              //Fill particle/calocluster arrays
+              FillCalorimeters(iParticle,pPhoton1,lvGamma1);
+              FillCalorimeters(iParticle,pPhoton2,lvGamma2);
+            }//pt cut
+          }//pi0
+          else FillCalorimeters(iParticle,particle, momentum); //Add the rest
+        }
       }//neutral particles
     } //particle with correct status
   }//particle loop
@@ -309,7 +312,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
   fIndex2ndPhoton = -1; //In case of overlapping studies, reset for each event	
  	
   return kTRUE;	
-
+  
 }
 
 //________________________________________________________________
