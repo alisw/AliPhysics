@@ -50,6 +50,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kTRUE), 
  fMinimumBiasReferenceFlow(kTRUE), 
+ fForgetAboutCovariances(kTRUE),  
  fnBinsMult(10000),
  fMinMult(0.),  
  fMaxMult(10000.), 
@@ -92,6 +93,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE),  
  fMinimumBiasReferenceFlow(kFALSE), 
+ fForgetAboutCovariances(kFALSE), 
  fnBinsMult(0),
  fMinMult(0.),  
  fMaxMult(0.), 
@@ -125,6 +127,7 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC->SetStoreDistributions(fStoreDistributions);
  fQC->SetCalculateCumulantsVsM(fCalculateCumulantsVsM);
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow); 
+ fQC->SetForgetAboutCovariances(fForgetAboutCovariances); 
  // Multiparticle correlations vs multiplicity:
  fQC->SetnBinsMult(fnBinsMult);
  fQC->SetMinMult(fMinMult);

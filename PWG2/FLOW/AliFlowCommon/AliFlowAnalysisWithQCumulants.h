@@ -225,6 +225,8 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};   
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
   Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};  
+  void SetForgetAboutCovariances(Bool_t const fac) {this->fForgetAboutCovariances = fac;};
+  Bool_t GetForgetAboutCovariances() const {return this->fForgetAboutCovariances;};  
   // Reference flow profiles:
   void SetAvMultiplicity(TProfile* const avMultiplicity) {this->fAvMultiplicity = avMultiplicity;};
   TProfile* GetAvMultiplicity() const {return this->fAvMultiplicity;};
@@ -434,6 +436,7 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t fPropagateErrorAlsoFromNIT; // propagate error by taking into account also non-isotropic terms (not sure if resulting error then is correct - to be improved)
   Bool_t fCalculateCumulantsVsM; // calculate cumulants versus multiplicity  
   Bool_t fMinimumBiasReferenceFlow; // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)   
+  Bool_t fForgetAboutCovariances; // when propagating error forget about the covariances  
   //  3c.) event-by-event quantities:
   TMatrixD *fReQ; // fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
