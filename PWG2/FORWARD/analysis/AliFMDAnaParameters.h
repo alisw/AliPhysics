@@ -22,32 +22,26 @@
 #ifndef ROOT_TArrayI
 # include <TArrayI.h>
 #endif
-#ifndef ALIFMDUSHORTMAP_H
-# include <AliFMDUShortMap.h>
-#endif
-#ifndef ALIFMDBOOLMAP_H
-# include <AliFMDBoolMap.h>
-#endif
-#include "AliCDBEntry.h"
 
-#include "TFile.h"
-#include "TObjArray.h"
+// #include "TFile.h"
+// #include "TObjArray.h"
 #include "TH2F.h"
 #include "TAxis.h"
 #include "TH1F.h"
 #include "TH3F.h"
-#include "AliFMDAnaCalibBackgroundCorrection.h"
-#include "AliFMDAnaCalibEnergyDistribution.h"
-#include "AliFMDAnaCalibEventSelectionEfficiency.h"
-#include "AliFMDAnaCalibSharingEfficiency.h"
 #include "AliPhysicsSelection.h"
 #include <TVector2.h>
 #include <TString.h>
 //#include "AliPWG0Helper.h"
-#include "AliESDEvent.h"
+// #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
-//class AliESDEvent;
+class AliESDEvent;
+class TObjArray;
+class AliFMDAnaCalibBackgroundCorrection;
+class AliFMDAnaCalibEnergyDistribution;
+class AliFMDAnaCalibEventSelectionEfficiency;
+class AliFMDAnaCalibSharingEfficiency;
 
 /**
  * @ingroup FMD_ana

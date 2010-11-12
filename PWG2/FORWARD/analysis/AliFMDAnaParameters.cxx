@@ -38,7 +38,11 @@
 #include "AliMultiplicity.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-
+#include "AliFMDAnaCalibBackgroundCorrection.h"
+#include "AliFMDAnaCalibEnergyDistribution.h"
+#include "AliFMDAnaCalibEventSelectionEfficiency.h"
+#include "AliFMDAnaCalibSharingEfficiency.h"
+#include "TFile.h"
 
 //====================================================================
 ClassImp(AliFMDAnaParameters)
