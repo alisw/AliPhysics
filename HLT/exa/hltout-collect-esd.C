@@ -70,7 +70,7 @@ void hltout_collect_esd(const char *filename,
   TString arg;
 
   // the publisher configuration
-  arg.Form("-typeid ESD_TREE -typeid ALIESDV0");
+  arg.Form("-typeid ALIESDV0");
   AliHLTConfiguration publisher("hltout-publisher", "AliHLTOUTPublisher" , NULL, arg.Data());
 
   // the writer configuration
