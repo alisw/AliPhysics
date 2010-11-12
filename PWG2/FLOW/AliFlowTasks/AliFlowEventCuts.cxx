@@ -60,8 +60,8 @@ AliFlowEventCuts::AliFlowEventCuts():
   fNContributorsMax(INT_MAX),
   fNContributorsMin(INT_MIN),
   fCutMeanPt(kFALSE),
-  fMeanPtMax(INT_MAX),
-  fMeanPtMin(INT_MIN)
+  fMeanPtMax(-DBL_MAX),
+  fMeanPtMin(DBL_MAX)
 {
   //constructor 
 }
@@ -91,8 +91,8 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fNContributorsMax(INT_MAX),
   fNContributorsMin(INT_MIN),
   fCutMeanPt(kFALSE),
-  fMeanPtMax(INT_MAX),
-  fMeanPtMin(INT_MIN)
+  fMeanPtMax(-DBL_MAX),
+  fMeanPtMin(DBL_MAX)
 {
   //constructor 
 }

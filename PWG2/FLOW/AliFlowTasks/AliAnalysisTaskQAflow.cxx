@@ -118,11 +118,10 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
   hist = new TH1D("ptyieldneg", "p_{t} spectrum -", 10000,0.0,10.0);
   before->Add(hist); after->Add(hist->Clone()); //17
   hist = new TH1D("charges", "charge distribution", 5,-2.5,2.5);
-  before->Add(hist); after->Add(hist->Clone()); //17
+  before->Add(hist); after->Add(hist->Clone()); //18
   
   //post data here as it doesn't change anyway (the pointer to list anyway)
 
-  //restore dir add status
   PostData(1, fOutput);
   PostData(2, fNtuple);
 }
@@ -138,6 +137,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     AliFatal("no ESD event");
     return;
   }
+  fTrackCuts->SetEvent(event);
 
   //TObjArray* before = ((TDirectory*)fOutput->At(0))->GetList();
   //TObjArray* after = ((TDirectory*)fOutput->At(1))->GetList();
@@ -257,7 +257,6 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   Float_t zdcn2=zdc->GetZDCN2Energy();
   Float_t zdcpart1=zdc->GetZDCPartSideA();
   Float_t zdcpart2=zdc->GetZDCPartSideC();
-  fTrackCuts->SetEvent(event);
   Float_t meanpt=0;
   Float_t rawmeanpt=0;
   Float_t maxpt=0.0;
@@ -265,6 +264,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   for (Int_t i=0; i<ntracks; i++)
   {
     TObject* obj = fTrackCuts->GetInputObject(i);
+    if (!obj) continue;
     Bool_t pass = fTrackCuts->IsSelected(obj,i);
     Float_t dcaxy=0.0;
     Float_t dcaz=0.0;
@@ -301,10 +301,10 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       hptyieldB->Fill(pt); if (pass) hptyieldA->Fill(pt);
       if (charge>0) {hptyieldplusB->Fill(pt); if (pass) hptyieldplusA->Fill(pt);}
       if (charge<0) {hptyieldnegB->Fill(pt); if (pass) hptyieldnegA->Fill(pt);}
-      if (charge<0) {hchargesB->Fill(charge); if (pass) hchargesA->Fill(charge);}
+      hchargesB->Fill(charge); if (pass) hchargesA->Fill(charge);
     }
   }
-  meanpt = meanpt/ntracks;
+  if (ntracks!=0) meanpt = meanpt/ntracks;
   
   Bool_t isSelectedEventSelection = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
   
