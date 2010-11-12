@@ -49,7 +49,7 @@ AliMUONVClusterFinder::~AliMUONVClusterFinder()
 //_____________________________________________________________________________
 Bool_t 
 AliMUONVClusterFinder::Prepare(Int_t /*detElemId*/,
-                               TClonesArray* /*pads*/[2],
+                               TObjArray* /*pads*/[2],
                                const AliMpArea& /*area*/)
 {
 /// Not implemented
@@ -61,7 +61,7 @@ AliMUONVClusterFinder::Prepare(Int_t /*detElemId*/,
 //_____________________________________________________________________________
 Bool_t 
 AliMUONVClusterFinder::Prepare(Int_t /*detElemId*/,
-                               TClonesArray* /*pads*/[2],
+                               TObjArray* /*pads*/[2],
                                const AliMpArea& /*area*/,
                                const AliMpVSegmentation* /*segmentations*/[2])
 {

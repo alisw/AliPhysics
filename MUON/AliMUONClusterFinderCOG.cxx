@@ -62,7 +62,7 @@ AliMUONClusterFinderCOG::~AliMUONClusterFinderCOG()
 //_____________________________________________________________________________
 Bool_t 
 AliMUONClusterFinderCOG::Prepare(Int_t detElemId,
-                                 TClonesArray* pads[2],
+                                 TObjArray* pads[2],
                                  const AliMpArea& area)
 {
   /// Prepare for clustering

@@ -25,7 +25,6 @@
 #include "AliMUONMathieson.h"
 #include "AliMUONPad.h"
 #include "AliMpArea.h"
-#include "TClonesArray.h"
 #include "TObjArray.h"
 #include "TVector2.h"
 #include "TVirtualFitter.h"
@@ -111,7 +110,7 @@ AliMUONClusterFinderSimpleFit::~AliMUONClusterFinderSimpleFit()
 //_____________________________________________________________________________
 Bool_t 
 AliMUONClusterFinderSimpleFit::Prepare(Int_t detElemId,
-                                       TClonesArray* pads[2],
+                                       TObjArray* pads[2],
                                        const AliMpArea& area)
 {
   /// Prepare for clustering

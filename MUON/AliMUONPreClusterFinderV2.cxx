@@ -21,7 +21,7 @@
 #include "AliMUONCluster.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpPad.h"
-#include "TClonesArray.h"
+#include "TObjArray.h"
 #include "TVector2.h"
 #include "AliMUONPad.h"
 #include "AliMUONVDigit.h"
@@ -69,7 +69,7 @@ AliMUONPreClusterFinderV2::UsePad(const AliMUONPad& pad)
     return kFALSE;
   }
   
-  new ((*fPads[pad.Cathode()])[fPads[pad.Cathode()]->GetLast()+1]) AliMUONPad(pad); 
+  fPads[pad.Cathode()]->Add(new AliMUONPad(pad)); 
   // FIXME: should set the ClusterId of that new pad to be -1
   return kTRUE;
 }
@@ -77,7 +77,7 @@ AliMUONPreClusterFinderV2::UsePad(const AliMUONPad& pad)
 //_____________________________________________________________________________
 Bool_t
 AliMUONPreClusterFinderV2::Prepare(Int_t detElemId,
-                                   TClonesArray* pads[2],
+                                   TObjArray* pads[2],
                                    const AliMpArea& area,
                                    const AliMpVSegmentation* seg[2])
 {
@@ -115,7 +115,7 @@ AliMUONPreClusterFinderV2::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
   pad->SetClusterId(cluster.GetUniqueID());
   
   Int_t cathode = pad->Cathode();
-  TClonesArray& padArray = *fPads[cathode];
+  TObjArray& padArray = *fPads[cathode];
   padArray.Remove(pad);
   TIter next(&padArray);
   

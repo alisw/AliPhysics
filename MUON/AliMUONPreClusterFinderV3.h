@@ -30,7 +30,7 @@ public:
   using AliMUONVClusterFinder::Prepare;
 
   virtual Bool_t Prepare(Int_t detElemId,                         
-                         TClonesArray* pads[2],
+                         TObjArray* pads[2],
                          const AliMpArea& area,
                          const AliMpVSegmentation* seg[2]);
   
@@ -54,7 +54,7 @@ private:
 private:
   TClonesArray* fClusters; //!< the clusters we've found (owner)
   const AliMpVSegmentation** fkSegmentations; //!< segmentations (not owner)
-  TClonesArray** fPads; //!< the pads corresponding to the digits (not owner)
+  TObjArray** fPads; //!< the pads corresponding to the digits (not owner)
   TClonesArray* fPreClusters[2]; //!< the preclusters per cathode (owner)
   Int_t fDetElemId; //!< which DE we're considering
   TIterator* fIterator; //!< iterator on fClusters

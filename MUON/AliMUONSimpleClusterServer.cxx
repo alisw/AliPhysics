@@ -38,7 +38,7 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include <Riostream.h>
-#include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TString.h>
 #include <float.h>
 
@@ -137,10 +137,10 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
   {
     Int_t detElemId = it.CurrentDEId();
     
-    TClonesArray* pads[2] = 
+    TObjArray* pads[2] = 
     { 
-      static_cast<TClonesArray*>(fPads[0]->GetValue(detElemId)),
-      static_cast<TClonesArray*>(fPads[1]->GetValue(detElemId)) 
+      static_cast<TObjArray*>(fPads[0]->GetValue(detElemId)),
+      static_cast<TObjArray*>(fPads[1]->GetValue(detElemId)) 
     };
     
     if ( ( pads[0] && pads[0]->GetLast()>=0 ) || 
@@ -299,12 +299,12 @@ AliMUONSimpleClusterServer::Overlap(Int_t detElemId,
 }
 
 //_____________________________________________________________________________
-TClonesArray* 
+TObjArray* 
 AliMUONSimpleClusterServer::PadArray(Int_t detElemId, Int_t cathode) const
 {
   /// Return array for given cathode of given DE
   
-  return static_cast<TClonesArray*>(fPads[cathode]->GetValue(detElemId));
+  return static_cast<TObjArray*>(fPads[cathode]->GetValue(detElemId));
 }
 
 //_____________________________________________________________________________
@@ -349,20 +349,20 @@ AliMUONSimpleClusterServer::UseDigits(TIter& next, AliMUONVDigitStore* digitStor
       GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
     AliMpPad pad = seg->PadByIndices(ix,iy);
     
-    TClonesArray* padArray = PadArray(detElemId,cathode);
+    TObjArray* padArray = PadArray(detElemId,cathode);
     if (!padArray)
     {
-      padArray = new TClonesArray("AliMUONPad",100);
+      padArray = new TObjArray(100);
       fPads[cathode]->Add(detElemId,padArray);
     }
     
-    AliMUONPad mpad(detElemId,cathode,
+    AliMUONPad* mpad = new AliMUONPad(detElemId,cathode,
                     ix,iy,pad.GetPositionX(),pad.GetPositionY(),
                     pad.GetDimensionX(),pad.GetDimensionY(),
                     d->Charge());
-    if ( d->IsSaturated() ) mpad.SetSaturated(kTRUE);
-    mpad.SetUniqueID(d->GetUniqueID());
-    new ((*padArray)[padArray->GetLast()+1]) AliMUONPad(mpad);      
+    if ( d->IsSaturated() ) mpad->SetSaturated(kTRUE);
+    mpad->SetUniqueID(d->GetUniqueID());
+    padArray->Add(mpad);      
   }
 }
 
@@ -461,7 +461,7 @@ AliMUONSimpleClusterServer::Print(Option_t*) const
       {
         cout << Form("  -- Cathode %1d",cathode) << endl;
         
-        TClonesArray* padArray = PadArray(detElemId,cathode);
+        TObjArray* padArray = PadArray(detElemId,cathode);
         
         if (!padArray)
         {

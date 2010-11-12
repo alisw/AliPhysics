@@ -31,7 +31,7 @@
 #include "AliLog.h"
 
 #include <Riostream.h>
-#include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TVector2.h>
 
 //-----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ AliMUONPreClusterFinder::UsePad(const AliMUONPad& pad)
     return kFALSE;
   }
   
-  new ((*fPads[pad.Cathode()])[fPads[pad.Cathode()]->GetLast()+1]) AliMUONPad(pad); 
+  fPads[pad.Cathode()]->Add(new AliMUONPad(pad)); 
   // FIXME: should set the ClusterId of that new pad to be -1
   return kTRUE;
 }
@@ -84,7 +84,7 @@ AliMUONPreClusterFinder::UsePad(const AliMUONPad& pad)
 //_____________________________________________________________________________
 Bool_t
 AliMUONPreClusterFinder::Prepare(Int_t detElemId,
-                                 TClonesArray* pads[2],
+                                 TObjArray* pads[2],
                                  const AliMpArea& area)
 {
   /// Prepare for clustering, by giving access to segmentations and digit lists
@@ -119,7 +119,7 @@ AliMUONPreClusterFinder::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
   cluster.AddPad(*pad);
   
   Int_t cathode = pad->Cathode();
-  TClonesArray& padArray = *fPads[cathode];
+  TObjArray& padArray = *fPads[cathode];
   // WARNING: this Remove method uses the AliMUONPad::IsEqual if that method is
   // present (otherwise just compares pointers) : so that one must be correct
   // if implemented !
@@ -251,7 +251,7 @@ AliMUONPreClusterFinder::NextCluster()
     if ( !ShouldAbort() ) 
     {
       // On the 2nd cathode, only add pads overlapping with the current cluster
-      TClonesArray& padArray = *fPads[1];
+      TObjArray& padArray = *fPads[1];
       TIter next(&padArray);
       AliMUONPad* testPad;
       

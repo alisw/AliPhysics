@@ -170,7 +170,7 @@ AliMUONClusterFinderPeakFit::~AliMUONClusterFinderPeakFit()
 
 //_____________________________________________________________________________
 Bool_t 
-AliMUONClusterFinderPeakFit::Prepare(Int_t detElemId, TClonesArray* pads[2],
+AliMUONClusterFinderPeakFit::Prepare(Int_t detElemId, TObjArray* pads[2],
                                      const AliMpArea& area, 
                                      const AliMpVSegmentation* seg[2])
 {

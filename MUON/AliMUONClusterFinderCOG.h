@@ -25,7 +25,7 @@ public:
   using AliMUONVClusterFinder::Prepare;
   
   virtual Bool_t Prepare(Int_t detElemId,
-                         TClonesArray* pads[2],
+                         TObjArray* pads[2],
                          const AliMpArea& area);
   
   virtual AliMUONCluster* NextCluster();

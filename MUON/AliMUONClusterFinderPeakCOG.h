@@ -24,7 +24,6 @@
 class AliMUONPad;
 
 class TH2D;
-class TClonesArray;
 
 class AliMUONClusterFinderPeakCOG : public AliMUONVClusterFinder
 {
@@ -37,7 +36,7 @@ public:
 
   using AliMUONVClusterFinder::Prepare;
 
-  virtual Bool_t Prepare(Int_t detElemId, TClonesArray* pads[2],
+  virtual Bool_t Prepare(Int_t detElemId, TObjArray* pads[2],
                          const AliMpArea& area, const AliMpVSegmentation* seg[2]);
   
   virtual AliMUONCluster* NextCluster();

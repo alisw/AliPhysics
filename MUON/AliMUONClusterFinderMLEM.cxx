@@ -106,7 +106,7 @@ AliMUONClusterFinderMLEM::~AliMUONClusterFinderMLEM()
 //_____________________________________________________________________________
 Bool_t 
 AliMUONClusterFinderMLEM::Prepare(Int_t detElemId,
-                                  TClonesArray* pads[2],
+                                  TObjArray* pads[2],
                                   const AliMpArea& area,
                                   const AliMpVSegmentation* seg[2])
 {

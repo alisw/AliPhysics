@@ -98,7 +98,7 @@ AliMUONClusterFinderPeakCOG::~AliMUONClusterFinderPeakCOG()
 
 //_____________________________________________________________________________
 Bool_t 
-AliMUONClusterFinderPeakCOG::Prepare(Int_t detElemId, TClonesArray* pads[2],
+AliMUONClusterFinderPeakCOG::Prepare(Int_t detElemId, TObjArray* pads[2],
                                      const AliMpArea& area, 
                                      const AliMpVSegmentation* seg[2])
 {

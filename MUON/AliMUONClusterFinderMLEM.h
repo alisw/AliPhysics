@@ -13,7 +13,6 @@
 //
 
 class TH2D;
-class TClonesArray;
 class TMinuit;
 
 #ifndef ROOT_TObjArray
@@ -40,7 +39,7 @@ public:
   using AliMUONVClusterFinder::Prepare;
 
   virtual Bool_t Prepare(Int_t detElemId,
-                         TClonesArray* pads[2],
+                         TObjArray* pads[2],
                          const AliMpArea& area,
                          const AliMpVSegmentation* segmentations[2]);
   

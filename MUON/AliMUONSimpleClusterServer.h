@@ -56,7 +56,7 @@ private:
     
   void Global2Local(Int_t detElemId, const AliMpArea& globalArea, AliMpArea& localArea) const;
 
-  TClonesArray* PadArray(Int_t detElemId, Int_t cathode) const;
+  TObjArray* PadArray(Int_t detElemId, Int_t cathode) const;
   
   Int_t FindMCLabel(const AliMUONCluster& cluster, Int_t detElemId, const AliMpVSegmentation* seg[2]) const;
   
