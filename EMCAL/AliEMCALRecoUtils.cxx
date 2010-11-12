@@ -230,8 +230,9 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCl
   //If the distance to the border is 0 or negative just exit accept all clusters
 	if(cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 ) return kTRUE;
   
-  Int_t absIdMax	= -1, iSM =-1, ieta = -1, iphi = -1;  
-  GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSM, ieta, iphi);
+  Int_t absIdMax	= -1, iSM =-1, ieta = -1, iphi = -1;
+  Bool_t shared = kFALSE;
+  GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSM, ieta, iphi, shared);
 
   AliDebug(2,Form("Cluster Max AbsId %d, Cell Energy %2.2f, Cluster Energy %2.2f, Ncells from border %d, EMCAL eta=0 %d\n", 
            absIdMax, cells->GetCellAmplitude(absIdMax), cluster->E(), fNCellsFromEMCALBorder, fNoEMCALBorderAtEta0));
@@ -367,7 +368,7 @@ Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, const Int_t iParticle
   //Calculate shower depth for a given cluster energy and particle type
 
   // parameters 
-  Float_t x0    = 1.23;
+  Float_t x0    = 1.31;
   Float_t ecr   = 8;
   Float_t depth = 0;
   
@@ -411,7 +412,8 @@ Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, const Int_t iParticle
 }
 
 //__________________________________________________
-void AliEMCALRecoUtils::GetMaxEnergyCell(AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu, Int_t & absId,  Int_t& iSupMod, Int_t& ieta, Int_t& iphi)
+void AliEMCALRecoUtils::GetMaxEnergyCell(AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu, 
+                                         Int_t & absId,  Int_t& iSupMod, Int_t& ieta, Int_t& iphi, Bool_t &shared)
 {
   //For a given CaloCluster gets the absId of the cell 
   //with maximum energy deposit.
@@ -425,15 +427,21 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(AliEMCALGeometry *geom, AliVCaloCells* 
   Int_t iTower  = -1;
   Int_t iIphi   = -1;
   Int_t iIeta   = -1;
+  Int_t iSupMod0= -1;
 	//printf("---Max?\n");
   for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
     cellAbsId = clu->GetCellAbsId(iDig);
     fraction  = clu->GetCellAmplitudeFraction(iDig);
     //printf("a Cell %d, id, %d, amp %f, fraction %f\n",iDig,cellAbsId,cells->GetCellAmplitude(cellAbsId),fraction);
     if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
+    geom->GetCellIndex(cellAbsId,iSupMod,iTower,iIphi,iIeta); 
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
+    if(iDig==0) iSupMod0=iSupMod;
+    else if(iSupMod0!=iSupMod) {
+      shared = kTRUE;
+      //printf("AliEMCALRecoUtils::GetMaxEnergyCell() - SHARED CLUSTER\n");
+    }
     if(IsRecalibrationOn()) {
-      geom->GetCellIndex(cellAbsId,iSupMod,iTower,iIphi,iIeta); 
-      geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
       recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
     }
     eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
@@ -463,7 +471,7 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors(){
 	Bool_t oldStatus = TH1::AddDirectoryStatus();
 	TH1::AddDirectory(kFALSE);
   
-	fEMCALRecalibrationFactors = new TObjArray(12);
+	fEMCALRecalibrationFactors = new TObjArray(10);
 	for (int i = 0; i < 12; i++) fEMCALRecalibrationFactors->Add(new TH2F(Form("EMCALRecalFactors_SM%d",i),Form("EMCALRecalFactors_SM%d",i),  48, 0, 48, 24, 0, 24));
 	//Init the histograms with 1
 	for (Int_t sm = 0; sm < 12; sm++) {
@@ -489,7 +497,7 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap(){
 	Bool_t oldStatus = TH1::AddDirectoryStatus();
 	TH1::AddDirectory(kFALSE);
 	
-	fEMCALBadChannelMap = new TObjArray(12);
+	fEMCALBadChannelMap = new TObjArray(10);
 	//TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
 	for (int i = 0; i < 12; i++) {
 		fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_Mod%d",i),Form("EMCALBadChannelMap_Mod%d",i), 48, 0, 48, 24, 0, 24));
@@ -570,9 +578,10 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(AliEMCALGeomet
   Float_t  weight = 0.,  totalWeight=0.;
   Float_t  newPos[3] = {0,0,0};
   Double_t pLocal[3], pGlobal[3];
-  
+  Bool_t shared = kFALSE;
+
   Float_t  clEnergy = clu->E(); //Energy already recalibrated previously
-  GetMaxEnergyCell(geom, cells, clu, absId,  iSupModMax, ieta, iphi);
+  GetMaxEnergyCell(geom, cells, clu, absId,  iSupModMax, ieta, iphi,shared);
   Double_t depth = GetDepth(clEnergy,fParticleType,iSupModMax) ;
   
   //printf("** Cluster energy %f, ncells %d, depth %f\n",clEnergy,clu->GetNCells(),depth);
@@ -645,9 +654,10 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(AliEMCALGeometr
   Int_t iIphi   = -1, iIeta   = -1;
 	Int_t iSupMod = -1, iSupModMax = -1;
   Int_t iphi = -1, ieta =-1;
-  
+  Bool_t shared = kFALSE;
+
   Float_t clEnergy = clu->E(); //Energy already recalibrated previously.
-  GetMaxEnergyCell(geom, cells, clu, absId,  iSupModMax, ieta, iphi);
+  GetMaxEnergyCell(geom, cells, clu, absId,  iSupModMax, ieta, iphi,shared);
   Float_t  depth = GetDepth(clEnergy,fParticleType,iSupMod) ;
 
   Float_t weight = 0., weightedCol = 0., weightedRow = 0., totalWeight=0.;
@@ -694,6 +704,82 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(AliEMCALGeometr
   }
   
   clu->SetPosition(xyzNew);
+  
+}
+
+//____________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster){           
+	
+  //re-evaluate distance to bad channel with updated bad map
+  
+  if(!fRemoveBadChannels) return;
+  
+	//Get channels map of the supermodule where the cluster is.
+	
+  Int_t absIdMax	= -1, iSupMod =-1, icolM = -1, irowM = -1;
+  Bool_t shared = kFALSE;
+  GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSupMod, icolM, irowM, shared);
+  TH2D* hMap  = (TH2D*)fEMCALBadChannelMap->At(iSupMod);
+
+  Int_t dRrow, dRcol;	
+	Float_t  minDist = 10000.;
+	Float_t  dist    = 0.;
+  
+  //Loop on tower status map 
+	for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++){
+		for(Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++){
+			//Check if tower is bad.
+			if(hMap->GetBinContent(icol,irow)==0) continue;
+      //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - \n \t Bad channel in SM %d, col %d, row %d, \n \t Cluster max in col %d, row %d\n",
+      //       iSupMod,icol, irow, icolM,irowM);
+      
+      dRrow=TMath::Abs(irowM-irow);
+      dRcol=TMath::Abs(icolM-icol);
+      dist=TMath::Sqrt(dRrow*dRrow+dRcol*dRcol);
+			if(dist < minDist){
+        //printf("MIN DISTANCE TO BAD %2.2f\n",dist);
+        minDist = dist;
+      }
+      
+		}
+	}
+  
+	//In case the cluster is shared by 2 SuperModules, need to check the map of the second Super Module
+	if (shared) {
+		TH2D* hMap2 = 0;
+		Int_t iSupMod2 = -1;
+    
+		//The only possible combinations are (0,1), (2,3) ... (8,9)
+		if(iSupMod%2) iSupMod2 = iSupMod-1;
+		else          iSupMod2 = iSupMod+1;
+		hMap2  = (TH2D*)fEMCALBadChannelMap->At(iSupMod2);
+    
+		//Loop on tower status map of second super module
+		for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++){
+			for(Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++){
+				//Check if tower is bad.
+				if(hMap2->GetBinContent(icol,irow)==0) continue;
+				//printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels(shared) - \n \t Bad channel in SM %d, col %d, row %d \n \t Cluster max in SM %d, col %d, row %d\n",
+          //     iSupMod2,icol, irow,iSupMod,icolM,irowM);
+        
+        dRrow=TMath::Abs(irow-irowM);
+        
+        if(iSupMod%2) {
+				  dRcol=TMath::Abs(icol-(AliEMCALGeoParams::fgkEMCALCols+icolM));
+				}
+        else {
+          dRcol=TMath::Abs(AliEMCALGeoParams::fgkEMCALCols+icol-icolM);
+				}                    
+        
+				dist=TMath::Sqrt(dRrow*dRrow+dRcol*dRcol);
+        if(dist < minDist) minDist = dist;        
+        
+			}
+		}
+    
+	}// shared cluster in 2 SuperModules
+  //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - Distance to Bad Channel %2.2f\n",minDist);
+	cluster->SetDistanceToBadChannel(minDist);
   
 }
 

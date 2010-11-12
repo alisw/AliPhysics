@@ -52,7 +52,7 @@ public:
   Float_t  GetDepth(const Float_t eCluster, const Int_t iParticle, const Int_t iSM) const ; 
   
   void     GetMaxEnergyCell(AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu, 
-                            Int_t & absId,  Int_t& iSupMod, Int_t& ieta, Int_t& iphi);
+                            Int_t & absId,  Int_t& iSupMod, Int_t& ieta, Int_t& iphi, Bool_t &shared);
   
   Float_t  GetMisalTransShift(const Int_t i) const {
     if(i < 15 ){return fMisalTransShift[i]; }
@@ -158,7 +158,9 @@ public:
   Bool_t ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, Int_t nCells);
  
   //Recalculate other cluster parameters
+  void RecalculateClusterDistanceToBadChannel(AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
   void RecalculateClusterPID(AliVCluster * cluster);
+
   AliEMCALPIDUtils * GetPIDUtils() { return fPIDUtils;}
 
   void RecalculateClusterShowerShapeParameters(AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
