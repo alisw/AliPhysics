@@ -90,9 +90,10 @@ class AliAnaPartCorrMaker : public TObject {
 
   TList * fCuts ;	           //! List with analysis cuts
 
-  TH1I  * fhNEvents;           //! Number of events counter histogram
-	
-  ClassDef(AliAnaPartCorrMaker,7)
+  TH1I  * fhNEvents;         //! Number of events counter histogram
+  TH1I  * fhTrackMult;       //! Number of tracks per event histogram
+
+  ClassDef(AliAnaPartCorrMaker,8)
 } ;
  
 

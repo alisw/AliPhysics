@@ -63,7 +63,7 @@ ClassImp(AliCaloTrackReader)
 //    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
 //    fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
 //    fAODPHOSNormalInputEntries(0), 
-    fTrackStatus(0),   fESDtrackCuts(0), fTrackMult(0), fTrackMultEtaCut(0.9),
+    fTrackStatus(0),   fESDtrackCuts(0), fTrackMult(0), fTrackMultEtaCut(0.8),
     fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
     fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
     fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
@@ -143,34 +143,34 @@ AliCaloTrackReader::~AliCaloTrackReader() {
 
 //_________________________________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(){
-	// Check the event, if the requested ptHard is much larger than the jet pT, then there is a problem.
-	// Only for PYTHIA.
-	if(!fReadStack) return kTRUE; //Information not filtered to AOD
-	
-	if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader")){
-		TParticle * jet =  0;
-		AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
-		Int_t nTriggerJets =  pygeh->NTriggerJets();
-		Float_t ptHard = pygeh->GetPtHard();
-		
-		//if(fDebug > 1) printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %f\n",nTriggerJets, ptHard);
+  // Check the event, if the requested ptHard is much larger than the jet pT, then there is a problem.
+  // Only for PYTHIA.
+  if(!fReadStack) return kTRUE; //Information not filtered to AOD
+  
+  if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader")){
+    TParticle * jet =  0;
+    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
+    Int_t nTriggerJets =  pygeh->NTriggerJets();
+    Float_t ptHard = pygeh->GetPtHard();
+    
+    //if(fDebug > 1) printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %f\n",nTriggerJets, ptHard);
     Float_t tmpjet[]={0,0,0,0};
-		for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
-			pygeh->TriggerJet(ijet, tmpjet);
-			jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
-			//Compare jet pT and pt Hard
-			//if(fDebug > 1) printf("AliMCAnalysisUtils:: %d pycell jet pT %f\n",ijet, jet->Pt());
-			if(jet->Pt() > fPtHardAndJetPtFactor * ptHard) {
-				printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
-					   nTriggerJets, ptHard, jet->Pt(), fPtHardAndJetPtFactor);
-				return kFALSE;
-			}
-		}
+    for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+      pygeh->TriggerJet(ijet, tmpjet);
+      jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+      //Compare jet pT and pt Hard
+      //if(fDebug > 1) printf("AliMCAnalysisUtils:: %d pycell jet pT %f\n",ijet, jet->Pt());
+      if(jet->Pt() > fPtHardAndJetPtFactor * ptHard) {
+	printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
+	       nTriggerJets, ptHard, jet->Pt(), fPtHardAndJetPtFactor);
+	return kFALSE;
+      }
+    }
     if(jet) delete jet; 
-	}
-	  
-	return kTRUE ;
-	
+  }
+  
+  return kTRUE ;
+  
 }
 
 //____________________________________________________________________________
@@ -233,24 +233,24 @@ TClonesArray* AliCaloTrackReader::GetAODMCParticles(Int_t input) const {
 
 //____________________________________________________________________________
 AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const {
-	//Return MC header in AOD. Do it for the corresponding input event.
+  //Return MC header in AOD. Do it for the corresponding input event.
   AliAODMCHeader *mch = NULL;
-	if(fDataType == kAOD){
-		//Normal input AOD
-		if(input == 0) {
+  if(fDataType == kAOD){
+    //Normal input AOD
+    if(input == 0) {
       mch = (AliAODMCHeader*)((AliAODEvent*)fInputEvent)->FindListObject("mcheader");
     }
-//		//Second input AOD
-//		else if(input == 1){ 
-//       mch = (AliAODMCHeader*) fSecondInputAODEvent->FindListObject("mcheader");
-//  }
-		else {
-			printf("AliCaloTrackReader::GetAODMCHeader() - wrong AOD input index, %d\n",input);
-		}
-	}
-	else {
-		printf("AliCaloTrackReader::GetAODMCHeader() - Input are not AODs\n");
-	}
+    //		//Second input AOD
+    //		else if(input == 1){ 
+    //       mch = (AliAODMCHeader*) fSecondInputAODEvent->FindListObject("mcheader");
+    //  }
+    else {
+      printf("AliCaloTrackReader::GetAODMCHeader() - wrong AOD input index, %d\n",input);
+    }
+  }
+  else {
+    printf("AliCaloTrackReader::GetAODMCHeader() - Input are not AODs\n");
+  }
   
   return mch;
 }
@@ -258,17 +258,17 @@ AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const {
 //_______________________________________________________________
 void AliCaloTrackReader::Init()
 {
-	//Init reader. Method to be called in AliAnaPartCorrMaker
-	
-	//Get the file with second input events if the filename is given
-	//Get the tree and connect the AODEvent. Only with AODs
-
-	if(fReadStack && fReadAODMCParticles){
-		printf("AliCaloTrackReader::Init() - Cannot access stack and mcparticles at the same time, change them \n");
-		fReadStack = kFALSE;
-		fReadAODMCParticles = kFALSE;
-	}
-	
+  //Init reader. Method to be called in AliAnaPartCorrMaker
+  
+  //Get the file with second input events if the filename is given
+  //Get the tree and connect the AODEvent. Only with AODs
+  
+  if(fReadStack && fReadAODMCParticles){
+    printf("AliCaloTrackReader::Init() - Cannot access stack and mcparticles at the same time, change them \n");
+    fReadStack = kFALSE;
+    fReadAODMCParticles = kFALSE;
+  }
+  
 //	if(fSecondInputFileName!=""){
 //		if(fDataType == kAOD){
 //			TFile * input2   = new TFile(fSecondInputFileName,"read");
@@ -440,8 +440,11 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
   if(fFillPHOSCells)  
     FillInputPHOSCells();
 	
-  if(fFillCTS)   
+  if(fFillCTS){   
     FillInputCTS();
+    //Accept events with at least one track
+    if(fTrackMult == 0) return kFALSE;
+  }
   if(fFillEMCAL) 
     FillInputEMCAL();
   if(fFillPHOS)  
