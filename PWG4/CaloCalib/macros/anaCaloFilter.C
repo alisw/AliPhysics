@@ -28,76 +28,7 @@ char * kXML = "collection.xml";
 
 const TString kInputData = "ESD"; //ESD, AOD, MC
 TString kTreeName = "esdTree";
-
-
-void SetRecoUtilsParams(AliEMCALRecoUtils* reco){
-
-    reco->SetParticleType(AliEMCALRecoUtils::kPhoton);
-    reco->SetW0(4.5);
-
-    reco->SetPositionAlgorithm(AliEMCALRecoUtils::kUnchanged);
-
-//     reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
-//     reco->SetMisalTransShift(0,1.134);   reco->SetMisalTransShift(1,8.2); reco->SetMisalTransShift(2,1.197);
-//     reco->SetMisalTransShift(3,-3.093);  reco->SetMisalTransShift(4,6.82);reco->SetMisalTransShift(5,1.635);
-
-//     reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerIndex);
-//     reco->SetMisalTransShift(0,1.08);   reco->SetMisalTransShift(1,8.35); reco->SetMisalTransShift(2,1.12);
-//     reco->SetMisalRotShift(3,-8.05);    reco->SetMisalRotShift(4,8.05);  
-//     reco->SetMisalTransShift(3,-0.42);  reco->SetMisalTransShift(5,1.55);
-
-    reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
-
-//     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaGamma);
-//     reco->SetNonLinearityParam(0,1.04);     reco->SetNonLinearityParam(1,-0.1445);
-//     reco->SetNonLinearityParam(2,1.046);    
-
-//     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0GammaConversion);
-//     reco->SetNonLinearityParam(0,1.033);     reco->SetNonLinearityParam(1,0.0566186);
-//     reco->SetNonLinearityParam(2,0.982133);    
-
-
-//      reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
-//      reco->SetNonLinearityParam(0,1.001);     reco->SetNonLinearityParam(1,-0.01264);
-//      reco->SetNonLinearityParam(2,-0.03632);    
-//      reco->SetNonLinearityParam(3,0.1798);     reco->SetNonLinearityParam(4,-0.522);
-
-//      reco->SwitchOnRecalibration();
-//      TFile * f = new TFile("RecalibrationFactors.root","read");
-//      TH2F * h0 = (TH2F*)f->Get("EMCALRecalFactors_SM0")->Clone();
-//      TH2F * h1 = (TH2F*)f->Get("EMCALRecalFactors_SM1")->Clone();
-//      TH2F * h2 = (TH2F*)f->Get("EMCALRecalFactors_SM2")->Clone();
-//      TH2F * h3 = (TH2F*)f->Get("EMCALRecalFactors_SM3")->Clone();
-
-//      reco->SetEMCALChannelRecalibrationFactors(0,h0);
-//      reco->SetEMCALChannelRecalibrationFactors(1,h1);
-//      reco->SetEMCALChannelRecalibrationFactors(2,h2);
-//      reco->SetEMCALChannelRecalibrationFactors(3,h3);
-
-    reco->SwitchOnBadChannelsRemoval();
-    // SM0
-    reco->SetEMCALChannelStatus(0,3,13);  reco->SetEMCALChannelStatus(0,44,1); reco->SetEMCALChannelStatus(0,3,13); 
-    reco->SetEMCALChannelStatus(0,20,7);  reco->SetEMCALChannelStatus(0,38,2);   
-    // SM1
-    reco->SetEMCALChannelStatus(1,4,7);   reco->SetEMCALChannelStatus(1,4,13);  reco->SetEMCALChannelStatus(1,9,20); 
-    reco->SetEMCALChannelStatus(1,14,15); reco->SetEMCALChannelStatus(1,23,16); reco->SetEMCALChannelStatus(1,32,23); 
-    reco->SetEMCALChannelStatus(1,37,5);  reco->SetEMCALChannelStatus(1,40,1);  reco->SetEMCALChannelStatus(1,40,2);
-    reco->SetEMCALChannelStatus(1,40,5);  reco->SetEMCALChannelStatus(1,41,0);  reco->SetEMCALChannelStatus(1,41,1);
-    reco->SetEMCALChannelStatus(1,41,2);  reco->SetEMCALChannelStatus(1,41,4);
-    // SM2        
-    reco->SetEMCALChannelStatus(2,14,15); reco->SetEMCALChannelStatus(2,18,16); reco->SetEMCALChannelStatus(2,18,17); 
-    reco->SetEMCALChannelStatus(2,18,18); reco->SetEMCALChannelStatus(2,18,20); reco->SetEMCALChannelStatus(2,18,21); 
-    reco->SetEMCALChannelStatus(2,18,23); reco->SetEMCALChannelStatus(2,19,16); reco->SetEMCALChannelStatus(2,19,17); 
-    reco->SetEMCALChannelStatus(2,19,19); reco->SetEMCALChannelStatus(2,19,20); reco->SetEMCALChannelStatus(2,19,21); 
-    reco->SetEMCALChannelStatus(2,19,22);
-    //SM3
-    reco->SetEMCALChannelStatus(3,4,7);
-
-    reco->SetNumberOfCellsFromEMCALBorder(1);
-
-    //reco->Print("");
-
-}
+Bool_t kUsePhysSel = kFALSE;
 
 void anaCaloFilter(Int_t mode=mLocal)
 {
@@ -168,24 +99,79 @@ void anaCaloFilter(Int_t mode=mLocal)
     //-------------------------------------------------------------------------
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
-
-    // ESD filter task
-    //if(kInputData == "ESD"){
-    //  gROOT->LoadMacro("AddTaskPhysicsSelection.C");
-    //  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-    //}
+    
+    // ESD physics selection task
+    if(kInputData == "ESD" && kUsePhysSel){
+      gROOT->LoadMacro("AddTaskPhysicsSelection.C");
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+    }
     
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
-
+    
     AliAnalysisTaskCaloFilter * filter = new AliAnalysisTaskCaloFilter("EMCALFilter");
-    //filter->SelectCollisionCandidates(); 
-    filter->SetCaloFilter(AliAnalysisTaskCaloFilter::kEMCAL); //kPHOS or kBoth
-    filter->SwitchOffClusterCorrection();
+    if(kUsePhysSel)filter->SelectCollisionCandidates(); 
+    filter->SetCaloFilter(AliAnalysisTaskCaloFilter::kBoth); //kPHOS or kBoth
+    filter->SwitchOnClusterCorrection();
     filter->PrintInfo();
+    //filter->SetDebugLevel(10);
     AliEMCALRecoUtils * reco = filter->GetEMCALRecoUtils();
-    SetRecoUtilsParams(reco);
+    reco->SetParticleType(AliEMCALRecoUtils::kPhoton);
+    reco->SetW0(4.5);
+        
+    reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
+
+    TGeoHMatrix *matrix[4];
+    
+    double rotationMatrix[4][9] = {-0.014585, -0.999892, -0.002031, 0.999892, -0.014589,  0.001950, -0.001979, -0.002003,  0.999996,
+				   -0.014585,  0.999892,  0.002031, 0.999892,  0.014589, -0.001950, -0.001979,  0.002003, -0.999996,
+				   -0.345861, -0.938280, -0.003412, 0.938281, -0.345869,  0.001950, -0.003010, -0.002527,  0.999992,
+				   -0.345861,  0.938280,  0.003412, 0.938281,  0.345869, -0.001950, -0.003010,  0.002527, -0.999992};
+    
+    double translationMatrix[4][3] = {0.367264,    446.508738,  175.97185+0.3,
+				      1.078181,    445.826258, -174.026758+0.3,
+				      -153.843916, 418.304256,  175.956905+0.8,
+				      -152.649580, 417.621779, -174.040392+0.8};
+    for(int j=0; j<4; j++)
+      {
+	matrix[j] = new TGeoHMatrix();
+	matrix[j]->SetRotation(rotationMatrix[j]);
+	matrix[j]->SetTranslation(translationMatrix[j]);
+	matrix[j]->Print();
+	filter->SetEMCALGeometryMatrixInSM(matrix[j],j);
+      }
+    
+    
+    filter->SwitchOnLoadOwnEMCALGeometryMatrices();
+    
+    
+    reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
+    
+    reco->SwitchOnRecalibration();
+    TFile * f = new TFile("RecalibrationFactors.root","read");
+    TH2F * h0 = (TH2F*)f->Get("EMCALRecalFactors_SM0");
+    TH2F * h1 = (TH2F*)f->Get("EMCALRecalFactors_SM1");
+    TH2F * h2 = (TH2F*)f->Get("EMCALRecalFactors_SM2");
+    TH2F * h3 = (TH2F*)f->Get("EMCALRecalFactors_SM3");
+    
+    reco->SetEMCALChannelRecalibrationFactors(0,h0);
+    reco->SetEMCALChannelRecalibrationFactors(1,h1);
+    reco->SetEMCALChannelRecalibrationFactors(2,h2);
+    reco->SetEMCALChannelRecalibrationFactors(3,h3);
+    
+    reco->SwitchOnBadChannelsRemoval();
+    reco->SwitchOnDistToBadChannelRecalculation();
+    TFile * fbad = new TFile("BadChannels.root","read");
+    TH2I * hbad0 = (TH2I*)fbad->Get("EMCALBadChannelMap_Mod0");
+    TH2I * hbad1 = (TH2I*)fbad->Get("EMCALBadChannelMap_Mod1");
+    TH2I * hbad2 = (TH2I*)fbad->Get("EMCALBadChannelMap_Mod2");
+    TH2I * hbad3 = (TH2I*)fbad->Get("EMCALBadChannelMap_Mod3");
+    reco->SetEMCALChannelStatusMap(0,hbad0);
+    reco->SetEMCALChannelStatusMap(1,hbad1);
+    reco->SetEMCALChannelStatusMap(2,hbad2);
+    reco->SetEMCALChannelStatusMap(3,hbad3);
+
     //reco->Print("");
     
     mgr->AddTask(filter);
@@ -228,7 +214,9 @@ void  LoadLibraries(const anaModes mode) {
   gSystem->Load("libGeom.so");
   gSystem->Load("libVMC.so");
   gSystem->Load("libXMLIO.so");
-  
+  gSystem->Load("libMatrix.so");
+  gSystem->Load("libPhysics.so");  
+
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   //----------------------------------------------------------
@@ -244,9 +232,14 @@ void  LoadLibraries(const anaModes mode) {
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
     gSystem->Load("libANALYSISalice.so");
-    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
-    gSystem->Load("libPWG4CaloCalib.so");
-    //SetupPar("PWG4CaloCalib");
+    gSystem->Load("libPHOSUtils.so"); 
+    //gSystem->Load("libEMCALUtils.so");  
+    SetupPar("EMCALUtils"); 
+    SetupPar("PWG4CaloCalib"); 
+    
+    //TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
+    //gSystem->Load("libPWG4CaloCalib.so");
+   
     /*
       //     gSystem->Load("libPWG4omega3pi.so");
       //     gSystem->Load("libCORRFW.so");
