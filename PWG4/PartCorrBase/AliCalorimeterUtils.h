@@ -74,7 +74,11 @@ class AliCalorimeterUtils : public TObject {
   Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
   void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; fEMCALRecoUtils->SwitchOnBadChannelsRemoval(); InitPHOSBadChannelStatusMap();}
   void SwitchOffBadChannelsRemoval()  {fRemoveBadChannels = kFALSE ; fEMCALRecoUtils->SwitchOffBadChannelsRemoval();}
-	
+  
+  Bool_t IsDistanceToBadChannelRecalculated() const { return  IsDistanceToBadChannelRecalculated()         ; }
+  void SwitchOnDistToBadChannelRecalculation ()  {fEMCALRecoUtils->SwitchOnDistToBadChannelRecalculation() ; }
+  void SwitchOffDistToBadChannelRecalculation()  {fEMCALRecoUtils->SwitchOffDistToBadChannelRecalculation(); }
+  
   void InitPHOSBadChannelStatusMap () ;
 
   Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
