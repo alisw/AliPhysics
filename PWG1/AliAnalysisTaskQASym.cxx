@@ -1134,12 +1134,12 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   AliESDtrack *tpcP = 0x0;
   Int_t fNTracksAccepted=0;
   const Int_t arrSize = event->GetNumberOfTracks();
-  Float_t phiArray   [arrSize];
-  Float_t etaArray   [arrSize];
-  Float_t ptArray    [arrSize];
-  Float_t dcaArray   [arrSize];
-  Int_t chargeArray[arrSize];
-  Bool_t acceptedArray[arrSize];
+  Float_t * phiArray      = new Float_t[arrSize];
+  Float_t * etaArray      = new Float_t[arrSize];
+  Float_t * ptArray       = new Float_t[arrSize];
+  Float_t * dcaArray      = new Float_t[arrSize];
+  Int_t   * chargeArray   = new Int_t  [arrSize];
+  Bool_t  * acceptedArray = new Bool_t [arrSize];
 
   for (Int_t i = 0; i < event->GetNumberOfTracks(); i++) {
     phiArray[i]     = 0.;
@@ -1536,8 +1536,37 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     delete tpcP;
     tpcP = 0;
   }
-  
 
+  if(phiArray){
+    delete[] phiArray; 
+    phiArray=0; 
+  }
+  
+  if(etaArray){
+    delete[] etaArray; 
+    etaArray=0; 
+  }
+  
+  if(dcaArray){
+    delete[] dcaArray; 
+    dcaArray=0; 
+  }
+  
+  if(ptArray){
+    delete[] ptArray; 
+    ptArray=0; 
+  }
+  
+  if(chargeArray){
+    delete[] chargeArray; 
+    chargeArray=0; 
+  }
+  
+  if(acceptedArray){
+    delete[] acceptedArray; 
+    acceptedArray=0; 
+  }
+  
   // Post output data.
   // PostData(1, fHistPt);
   PostData(1, fHists);
