@@ -1133,12 +1133,13 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
   AliESDtrack *tpcP = 0x0;
   Int_t fNTracksAccepted=0;
-  Float_t phiArray   [event->GetNumberOfTracks()];
-  Float_t etaArray   [event->GetNumberOfTracks()];
-  Float_t ptArray    [event->GetNumberOfTracks()];
-  Float_t dcaArray   [event->GetNumberOfTracks()];
-  Int_t chargeArray[event->GetNumberOfTracks()];
-  Bool_t acceptedArray[event->GetNumberOfTracks()];
+  const Int_t arrSize = event->GetNumberOfTracks();
+  Float_t phiArray   [arrSize];
+  Float_t etaArray   [arrSize];
+  Float_t ptArray    [arrSize];
+  Float_t dcaArray   [arrSize];
+  Int_t chargeArray[arrSize];
+  Bool_t acceptedArray[arrSize];
 
   for (Int_t i = 0; i < event->GetNumberOfTracks(); i++) {
     phiArray[i]     = 0.;
