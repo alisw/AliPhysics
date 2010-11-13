@@ -40,6 +40,8 @@ void PrintCanvas(TCanvas* c,const TString formats) ;
 
 // global switches
 Bool_t doPrint=kFALSE;// disable PrintCanvas
+Float_t zmin = -10;
+Float_t zmax = 10;
 
 #define CORRECT_2D
 
@@ -63,11 +65,10 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
 
   // Some shorthands
   // FIXME: Gen should be projected including overflow in z?
-  Float_t zmin = -10;
-  Float_t zmax = 10;
 #if defined CORRECT_1D
   TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec, -0.5,0.5,zmin,zmax)->Clone("hDataPt");
-  TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         -0.5,0.5,-22222,-22222);
+  TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         -0.5,0.5,-22222,-22222); //FIXME: che si fa qui?
+  //zTH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         -0.5,0.5,zmin,zmax);
   TH1D * hMCPtRec  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,         -0.5,0.5,zmin,zmax);
   TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim,     -0.5,0.5,zmin,zmax);
   TH1D * hMCPtSeM  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat,   -0.5,0.5,zmin,zmax);
@@ -179,7 +180,7 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
     hManCorr->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Integral(minProj,maxProj) ;
   // cout << vertexCutCorrection << " " << hMCPtGen->Integral(-1,-1)  << " " << hMCPtPri->Integral() << endl;
   // vertexCutCorrection /= hMCPtGen->Integral(-1,-1);
-  //  vertexCutCorrection = 1; // FIXME
+  vertexCutCorrection = 1; // FIXME
   cout << "Vertex cut correction " << vertexCutCorrection << " (Efficiency " << 1./vertexCutCorrection << ")" << endl;
 
   hDataPt    ->Scale(1.,"width");
@@ -411,8 +412,12 @@ void LoadData(TString dataFolder, TString correctionFolder){
     //  hManData->ScaleHistos(75351.36/1.015);// Nint for run 104892 estimated correcting for the trigger efficiency, multiplied for the physics selection efficiency which I'm not correcting for the time being
     // hManData->ScaleHistos(hEvStatData->GetBinContent(AliPhysicsSelection::kStatAccepted,irowGoodTrigger));
     // hManCorr->ScaleHistos(hEvStatCorr->GetBinContent(AliPhysicsSelection::kStatAccepted,irowGoodTrigger));
-    hManData->ScaleHistos(hManData->GetHistoStats()->GetBinContent(AliAnalysisMultPbTrackHistoManager::kStatVtx));
-    hManCorr->ScaleHistos(hManCorr->GetHistoStats()->GetBinContent(AliAnalysisMultPbTrackHistoManager::kStatVtx));
+    // hManData->ScaleHistos(hManData->GetHistoStats()->GetBinContent(AliAnalysisMultPbTrackHistoManager::kStatVtx));
+    // hManCorr->ScaleHistos(hManCorr->GetHistoStats()->GetBinContent(AliAnalysisMultPbTrackHistoManager::kStatVtx));
+    TH1D* hvzData = hManData->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec);
+    TH1D* hvzCorr = hManCorr->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec);
+    hManData->ScaleHistos(hvzData->Integral(hvzData->FindBin(zmin),hvzData->FindBin(zmax-0.001)));
+    hManCorr->ScaleHistos(hvzCorr->Integral(hvzCorr->FindBin(zmin),hvzCorr->FindBin(zmax-0.001)));
   } else {
     cout << "WARNING!!! ARBITRARY SCALING" << endl;
     hManData->ScaleHistos(1000);
