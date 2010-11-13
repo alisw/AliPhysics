@@ -8,10 +8,14 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
 //          (Remark: when using this mode set also Bool_t bUseParFiles = kTRUE; in CreateAlienHandler.C)
  
 // CENTRALITY DEFINITION
-Int_t binfirst = 4;  //where do we start numbering bins
-Int_t binlast = 6;  //where do we stop numbering bins
-const Int_t numberOfCentralityBins = 9;
-Int_t centralityArray[numberOfCentralityBins+1] = {41,80,146,245,384,576,835,1203,1471,10000}; // in terms of reference multiplicity
+//Int_t binfirst = 4;  //where do we start numbering bins
+//Int_t binlast = 6;  //where do we stop numbering bins
+//const Int_t numberOfCentralityBins = 9;
+//Int_t centralityArray[numberOfCentralityBins+1] = {41,80,146,245,384,576,835,1203,1471,10000}; // in terms of reference multiplicity
+Int_t binfirst = 0;  //where do we start numbering bins
+Int_t binlast = 0;  //where do we stop numbering bins
+const Int_t numberOfCentralityBins = 1;
+Int_t centralityArray[numberOfCentralityBins+1] = {41,10000}; // in terms of reference multiplicity
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
 //void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10, 
@@ -52,9 +56,11 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
   // Event handlers:
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);
-  //  AliMCEventHandler *mc = new AliMCEventHandler();
-  //  mgr->SetMCtruthEventHandler(mc); 
-  
+  if (!DATA) {
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc); 
+  }
+
   // Load the analysis task:
   gROOT->LoadMacro("AddTaskFlowCentrality.C");
   
@@ -67,8 +73,7 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
     AddTaskFlowCentrality( lowCentralityBinEdge,
                            highCentralityBinEdge,
                            commonOutputFileName,
-                           i );
-   
+                           i ); 
   } // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
 
   // Task to check the offline trigger:
@@ -79,9 +84,8 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
   }
 
 
-  AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(0,0);
+  AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(!DATA,0);
   
-  if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   // Enable debug printouts:
   mgr->SetDebugLevel(2);
   // Run the analysis:
