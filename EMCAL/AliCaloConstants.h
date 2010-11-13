@@ -26,19 +26,19 @@ namespace CaloConstants
   {
     enum fitAlgorithm { kLMS = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4,
 			kLogFit = 5, kStandard = 6,  kNONE = 7};
-  };
+  }
 
   namespace ReturnCodes
   {
     enum kReturnCode {kFitPar=1, kDummy=-1, kCrude=-9, kNoFit=-99, kInvalid=-9999};// possible return values
-  };
+  }
 
   namespace PeakFinderConstants
   {
     const int  MAXSTART = 3;
     const int  SAMPLERANGE = 15;
-  };
-};
+  }
+}
 
 
 //For easier notation
