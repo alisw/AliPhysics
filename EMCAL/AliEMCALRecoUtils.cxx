@@ -54,7 +54,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction (kNoCorrection), fParticleType(kPhoton),
   fPosAlgo(kUnchanged),fW0(4.),
   fRecalibration(kFALSE), fEMCALRecalibrationFactors(),
-  fRemoveBadChannels(kFALSE), fEMCALBadChannelMap(),
+  fRemoveBadChannels(kFALSE), fRecalDistToBadChannels(kFALSE), fEMCALBadChannelMap(),
   fNCellsFromEMCALBorder(0), fNoEMCALBorderAtEta0(kTRUE),
   fMatchedClusterIndex(0x0), fResidualZ(0x0), fResidualR(0x0), fCutR(20), fCutZ(20),
   fCutMinNClusterTPC(0), fCutMinNClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2PerClusterITS(0),
@@ -93,7 +93,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
 : TNamed(reco), fNonLinearityFunction(reco.fNonLinearityFunction), 
   fParticleType(reco.fParticleType), fPosAlgo(reco.fPosAlgo), fW0(reco.fW0), 
   fRecalibration(reco.fRecalibration),fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
-  fRemoveBadChannels(reco.fRemoveBadChannels),fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
+  fRemoveBadChannels(reco.fRemoveBadChannels),fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
+  fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
   fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0),
   fMatchedClusterIndex(reco.fMatchedClusterIndex?new TArrayI(*reco.fMatchedClusterIndex):0x0),
   fResidualZ(reco.fResidualZ?new TArrayF(*reco.fResidualZ):0x0),
@@ -133,6 +134,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fRecalibration         = reco.fRecalibration;
   fEMCALRecalibrationFactors = reco.fEMCALRecalibrationFactors;
   fRemoveBadChannels     = reco.fRemoveBadChannels;
+  fRecalDistToBadChannels= reco.fRecalDistToBadChannels;
   fEMCALBadChannelMap    = reco.fEMCALBadChannelMap;
   fNCellsFromEMCALBorder = reco.fNCellsFromEMCALBorder;
   fNoEMCALBorderAtEta0   = reco.fNoEMCALBorderAtEta0;
@@ -712,10 +714,9 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry 
 	
   //re-evaluate distance to bad channel with updated bad map
   
-  if(!fRemoveBadChannels) return;
+  if(!fRecalDistToBadChannels) return;
   
 	//Get channels map of the supermodule where the cluster is.
-	
   Int_t absIdMax	= -1, iSupMod =-1, icolM = -1, irowM = -1;
   Bool_t shared = kFALSE;
   GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSupMod, icolM, irowM, shared);
@@ -731,7 +732,7 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry 
 			//Check if tower is bad.
 			if(hMap->GetBinContent(icol,irow)==0) continue;
       //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - \n \t Bad channel in SM %d, col %d, row %d, \n \t Cluster max in col %d, row %d\n",
-      //       iSupMod,icol, irow, icolM,irowM);
+        //     iSupMod,icol, irow, icolM,irowM);
       
       dRrow=TMath::Abs(irowM-irow);
       dRcol=TMath::Abs(icolM-icol);
@@ -778,7 +779,8 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry 
 		}
     
 	}// shared cluster in 2 SuperModules
-  //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - Distance to Bad Channel %2.2f\n",minDist);
+  
+  AliDebug(2,Form("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - Max cluster cell (SM,col,row)=(%d %d %d) - Distance to Bad Channel %2.2f\n",iSupMod, icolM, irowM, minDist));
 	cluster->SetDistanceToBadChannel(minDist);
   
 }

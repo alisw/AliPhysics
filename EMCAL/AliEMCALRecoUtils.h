@@ -111,7 +111,7 @@ public:
   void RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells * cells);
 
   Bool_t IsRecalibrationOn()  const { return fRecalibration ; }
-  void SwitchOnRecalibration()    {fRecalibration = kTRUE ; InitEMCALRecalibrationFactors();}
+  void SwitchOnRecalibration()    {fRecalibration = kTRUE ; if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors();}
   void SwitchOffRecalibration()   {fRecalibration = kFALSE ; }
   
   void InitEMCALRecalibrationFactors() ;
@@ -139,9 +139,13 @@ public:
   
   // Bad channels
   Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
-  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; InitEMCALBadChannelStatusMap();}
+  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap();}
   void SwitchOffBadChannelsRemoval()  {fRemoveBadChannels = kFALSE ; }
 	
+  Bool_t IsDistanceToBadChannelRecalculated()  const { return fRecalDistToBadChannels ; }
+  void SwitchOnDistToBadChannelRecalculation()   {fRecalDistToBadChannels = kTRUE  ; if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap();}
+  void SwitchOffDistToBadChannelRecalculation()  {fRecalDistToBadChannels = kFALSE ; }
+  
   void InitEMCALBadChannelStatusMap() ;
 	
   Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
@@ -220,6 +224,7 @@ private:
   Bool_t     fRecalibration;             // Switch on or off the recalibration
   TObjArray* fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
   Bool_t     fRemoveBadChannels;         // Check the channel status provided and remove clusters with bad channels
+  Bool_t     fRecalDistToBadChannels;    // Calculate distance from highest energy tower of cluster to closes bad channel
   TObjArray* fEMCALBadChannelMap;        // Array of histograms with map of bad channels, EMCAL
   Int_t      fNCellsFromEMCALBorder;     // Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Bool_t     fNoEMCALBorderAtEta0;       // Do fiducial cut in EMCAL region eta = 0?
