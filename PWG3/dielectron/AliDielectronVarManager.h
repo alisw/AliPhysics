@@ -76,6 +76,7 @@ public:
     kCharge,                 // charge
     kNclsITS,                // number of clusters assigned in the ITS
     kNclsTPC,                // number of clusters assigned in the TPC
+    kNclsTPCiter1,           // number of clusters assigned in the TPC after first iteration
     kNFclsTPC,               // number of findable clusters in the TPC
     kTPCsignalN,             // number of points used for dEdx
     kTPCchi2Cl,              // chi2/cl in TPC
@@ -267,6 +268,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   Double_t tpcNcls=particle->GetTPCNcls();
   values[AliDielectronVarManager::kNclsITS]       = particle->GetNcls(0); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNclsTPC]       = tpcNcls; // TODO: get rid of the plain numbers
+  values[AliDielectronVarManager::kNclsTPC]       = particle->GetTPCNclsIter1(); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNFclsTPC]      = particle->GetTPCNclsF();
   values[AliDielectronVarManager::kTPCsignalN]    = particle->GetTPCsignalN();
   values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2); // TODO: get rid of the plain numbers
@@ -363,6 +365,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   // Reset AliESDtrack interface specific information
   values[AliDielectronVarManager::kNclsITS]       = 0;
   values[AliDielectronVarManager::kNclsTPC]       = particle->GetTPCNcls();
+  values[AliDielectronVarManager::kNclsTPCiter1]  = particle->GetTPCNcls(); // not really available in AOD
   values[AliDielectronVarManager::kNFclsTPC]      = 0;
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
@@ -428,12 +431,34 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   // Fill track information available for histogramming into an array
   //
 
+  values[AliDielectronVarManager::kNclsITS]       = 0;
+  values[AliDielectronVarManager::kNclsTPC]       = 0;
+  values[AliDielectronVarManager::kNclsTPCiter1]  = 0; 
+  values[AliDielectronVarManager::kNFclsTPC]      = 0;
+  values[AliDielectronVarManager::kNclsTRD]       = 0;
+  values[AliDielectronVarManager::kTRDntracklets] = 0;
+  values[AliDielectronVarManager::kTRDpidQuality] = 0;
+  values[AliDielectronVarManager::kTPCchi2Cl]     = 0;
+  values[AliDielectronVarManager::kTrackStatus]   = 0;
+  values[AliDielectronVarManager::kTRDprobEle]    = 0;
+  values[AliDielectronVarManager::kTRDprobPio]    = 0;
+  values[AliDielectronVarManager::kTPCsignalN]    = 0;
+  values[AliDielectronVarManager::kImpactParXY]   = 0;
+  values[AliDielectronVarManager::kImpactParZ]    = 0;
+  values[AliDielectronVarManager::kPIn]           = 0;
+  values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaKao]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaPro]  = 0;
+  values[AliDielectronVarManager::kITSclusterMap] = 0;
+  
+  values[AliDielectronVarManager::kPdgCode]       = 0;
+  values[AliDielectronVarManager::kPdgCodeMother] = 0;
+  
   // Fill common AliVParticle interface information
   FillVarVParticle(particle, values);
-
-
-  values[AliDielectronVarManager::kPdgCode]=0;
-  values[AliDielectronVarManager::kPdgCodeMother]=0;
   
   AliDielectronMC *mc=AliDielectronMC::Instance();
 
@@ -453,13 +478,35 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
   // Fill track information available for histogramming into an array
   //
 
+  values[AliDielectronVarManager::kNclsITS]       = 0;
+  values[AliDielectronVarManager::kNclsTPC]       = 0;
+  values[AliDielectronVarManager::kNclsTPCiter1]  = 0;
+  values[AliDielectronVarManager::kNFclsTPC]      = 0;
+  values[AliDielectronVarManager::kNclsTRD]       = 0;
+  values[AliDielectronVarManager::kTRDntracklets] = 0;
+  values[AliDielectronVarManager::kTRDpidQuality] = 0;
+  values[AliDielectronVarManager::kTPCchi2Cl]     = 0;
+  values[AliDielectronVarManager::kTrackStatus]   = 0;
+  values[AliDielectronVarManager::kTRDprobEle]    = 0;
+  values[AliDielectronVarManager::kTRDprobPio]    = 0;
+  values[AliDielectronVarManager::kTPCsignalN]    = 0;
+  values[AliDielectronVarManager::kImpactParXY]   = 0;
+  values[AliDielectronVarManager::kImpactParZ]    = 0;
+  values[AliDielectronVarManager::kPIn]           = 0;
+  values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaKao]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaPro]  = 0;
+  values[AliDielectronVarManager::kITSclusterMap] = 0;
+  
+  values[AliDielectronVarManager::kPdgCode]       = 0;
+  values[AliDielectronVarManager::kPdgCodeMother] = 0;
+  
   // Fill common AliVParticle interface information
   FillVarVParticle(particle, values);
-
-
-  values[AliDielectronVarManager::kPdgCode]=0;
-  values[AliDielectronVarManager::kPdgCodeMother]=0;
-
+  
   AliDielectronMC *mc=AliDielectronMC::Instance();
 
 

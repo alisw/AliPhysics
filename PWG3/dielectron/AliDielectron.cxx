@@ -96,11 +96,13 @@ AliDielectron::AliDielectron() :
   fPdgMother(443),
   fPdgLeg1(11),
   fPdgLeg2(11),
+  fNoPairing(kFALSE),
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
   fCfManagerPair(0x0),
   fTrackRotator(0x0),
-  fDebugTree(0x0)
+  fDebugTree(0x0),
+  fPreFilterUnlikeOnly(kFALSE)
 {
   //
   // Default constructor
@@ -119,11 +121,13 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPdgMother(443),
   fPdgLeg1(11),
   fPdgLeg2(11),
+  fNoPairing(kFALSE),
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
   fCfManagerPair(0x0),
   fTrackRotator(0x0),
-  fDebugTree(0x0)
+  fDebugTree(0x0),
+  fPreFilterUnlikeOnly(kFALSE)
 {
   //
   // Named constructor
@@ -188,20 +192,29 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   AliDielectronVarManager::SetEvent(ev1);
   
   //fill track arrays for the first event
-  if (ev1) FillTrackArrays(ev1);
-
-  //fill track arrays for the second event
-  if (ev2) FillTrackArrays(ev2,1);
-
-  // create pairs and fill pair candidate arrays
-  for (Int_t itrackArr1=0; itrackArr1<4; ++itrackArr1){
-    for (Int_t itrackArr2=itrackArr1; itrackArr2<4; ++itrackArr2){
-      FillPairArrays(itrackArr1, itrackArr2);
-    }
+  if (ev1){
+    FillTrackArrays(ev1);
+    if ((fPreFilterUnlikeOnly) && ( fPairPreFilter.GetCuts()->GetEntries()>0 )) PairPreFilter(0, 1, fTracks[0], fTracks[1]);
   }
 
-  //track rotation
-  if (fTrackRotator) FillPairArrayTR();
+
+  //fill track arrays for the second event
+  if (ev2) {
+    FillTrackArrays(ev2,1);
+    if ((fPreFilterUnlikeOnly) && ( fPairPreFilter.GetCuts()->GetEntries()>0 )) PairPreFilter(2, 3, fTracks[2], fTracks[3]);
+  }
+
+  if (!fNoPairing){
+    // create pairs and fill pair candidate arrays
+    for (Int_t itrackArr1=0; itrackArr1<4; ++itrackArr1){
+      for (Int_t itrackArr2=itrackArr1; itrackArr2<4; ++itrackArr2){
+        FillPairArrays(itrackArr1, itrackArr2);
+      }
+    }
+
+    //track rotation
+    if (fTrackRotator) FillPairArrayTR();
+  }
   
   //in case there is a histogram manager, fill the QA histograms
   if (fHistos) FillHistograms(ev1);
@@ -229,6 +242,28 @@ void AliDielectron::ProcessMC()
   }
 }
 
+//________________________________________________________________
+void AliDielectron::FillHistogramsTracks(TObjArray **tracks)
+{
+  //
+  // Fill Histogram information for tracks after prefilter
+  // ignore mixed events - for prefilter, only single tracks +/- are relevant 
+  //
+  
+  TString  className,className2;
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  
+  //Fill track information, separately for the track array candidates
+  for (Int_t i=0; i<2; ++i){
+    className.Form("Pre_%s",fgkTrackClassNames[i]);
+    if (!fHistos->GetHistogramList()->FindObject(className.Data())) continue;
+    Int_t ntracks=tracks[i]->GetEntriesFast();
+    for (Int_t itrack=0; itrack<ntracks; ++itrack){
+      AliDielectronVarManager::Fill(tracks[i]->UncheckedAt(itrack), values);
+      fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+    }
+  }
+}
 //________________________________________________________________
 void AliDielectron::FillHistograms(const AliVEvent *ev)
 {
@@ -300,7 +335,7 @@ void AliDielectron::FillHistogramsPair(AliDielectronPair *pair)
   // NOTE: in this funtion the leg information may be filled multiple
   //       times. This funtion is used in the track rotation pairing
   //       and those legs are not saved!
-  //
+  //=fHistos
   TString  className,className2;
   Double_t values[AliDielectronVarManager::kNMaxValues];
   
@@ -378,6 +413,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
   AliDielectronPair candidate;
   
   UInt_t selectedMask=(1<<fPairPreFilter.GetCuts()->GetEntries())-1;
+  UInt_t selectedMaskPair=(1<<fPairFilter.GetCuts()->GetEntries())-1;
   
   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
     Int_t end=ntrack2;
@@ -398,6 +434,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
       
       //apply cut
       if (cutMask!=selectedMask) continue;
+      if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,&candidate);
       accepted=kTRUE;
       //remove the tracks from the Track arrays
       arrTracks2.AddAt(0x0,itrack2);
@@ -407,6 +444,9 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
     if ( accepted ) arrTracks1.AddAt(0x0,itrack1);
   }
   //compress the track arrays
+  
+
+
   arrTracks1.Compress();
   arrTracks2.Compress();
   
@@ -417,6 +457,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
     for (Int_t itrack=0; itrack<arrTracks1.GetEntriesFast();++itrack){
       //test cuts
       UInt_t cutMask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
+      
       //apply cut
       if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);;
     }
@@ -438,6 +479,11 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
       
     }
   }
+  //For unlike-sign monitor track-cuts:
+  if (arr1!=arr2) {
+    TObjArray *unlikesignArray[2] = {&arrTracks1,&arrTracks2};
+    FillHistogramsTracks(unlikesignArray);
+  }
 }
 
 //________________________________________________________________
@@ -451,7 +497,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
   TObjArray arrTracks2=fTracks[arr2];
 
   //process pre filter if set
-  if ( fPairPreFilter.GetCuts()->GetEntries()>0 ) PairPreFilter(arr1, arr2, arrTracks1, arrTracks2);
+  if ((!fPreFilterUnlikeOnly) && ( fPairPreFilter.GetCuts()->GetEntries()>0 ))  PairPreFilter(arr1, arr2, arrTracks1, arrTracks2);
   
   Int_t pairIndex=GetPairIndex(arr1,arr2);
 

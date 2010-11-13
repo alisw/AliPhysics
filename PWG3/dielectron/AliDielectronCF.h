@@ -42,6 +42,7 @@ public:
   void SetStepForMCtruth(Bool_t steps=kTRUE)           { fStepForMCtruth=steps;           }
   void SetStepForNoCutsMCmotherPid(Bool_t steps=kTRUE) { fStepForNoCutsMCmotherPid=steps; }
   void SetStepForAfterAllCuts(Bool_t steps=kTRUE)      { fStepForAfterAllCuts=steps;      }
+  void SetStepForPreFilter(Bool_t steps=kTRUE)         { fStepForPreFilter=steps;         }
   void SetStepsForEachCut(Bool_t steps=kTRUE)          { fStepsForEachCut=steps;          }
   void SetStepsForCutsIncreasing(Bool_t steps=kTRUE)   { fStepsForCutsIncreasing=steps;   }
   void SetStepsForSignal(Bool_t steps=kTRUE)           { fStepsForSignal=steps;           }
@@ -83,6 +84,7 @@ private:
   Bool_t fStepForMCtruth;               //create a step for the MC truth
   Bool_t fStepForNoCutsMCmotherPid;     //create a step for before cuts, but with MC truth of the mother
   Bool_t fStepForAfterAllCuts;          //create a step for before cuts, but with MC truth of the mother
+  Bool_t fStepForPreFilter;             //create a step after PreFilter application
   Bool_t fStepsForEachCut;              //create steps for each cut?
   Bool_t fStepsForCutsIncreasing;       //create steps for increasing cut combinatons?
                                         //e.g. cut1&cut2, cut1&cut2&cut3 ...

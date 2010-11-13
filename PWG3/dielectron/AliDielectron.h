@@ -64,7 +64,8 @@ public:
   Int_t GetMotherPdg() const { return fPdgMother; }
   Int_t GetLeg1Pdg()   const { return fPdgLeg1;   }
   Int_t GetLeg2Pdg()   const { return fPdgLeg2;   }
-  
+
+  void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
   const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
   const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<10)?
       static_cast<TObjArray*>(fPairCandidates->UncheckedAt(i)):0;}
@@ -78,6 +79,8 @@ public:
 
   void SetCFManagerPair(AliDielectronCF * const cf) { fCfManagerPair=cf; }
   AliDielectronCF* GetCFManagerPair() const { return fCfManagerPair; }
+
+  void SetPreFilterUnlikeOnly(Bool_t setValue=kTRUE){fPreFilterUnlikeOnly=setValue;};
 
   void SetTrackRotator(AliDielectronTrackRotator * const rot) { fTrackRotator=rot; }
   AliDielectronTrackRotator* GetTrackRotator() const { return fTrackRotator; }
@@ -101,11 +104,13 @@ private:
   Int_t fPdgMother;     // pdg code of mother tracks
   Int_t fPdgLeg1;       // pdg code leg1
   Int_t fPdgLeg2;       // pdg code leg2
-  
+
+  Bool_t fNoPairing;    // if to skip pairing, can be used for track QA only
+    
   AliDielectronHistos *fHistos;   // Histogram manager
                                   //  Streaming and merging should be handled
                                   //  by the analysis framework
-  
+ 
   TObjArray fTracks[4];           //! Selected track candidates
                                   //  0: Event1, positive particles
                                   //  1: Event1, negative particles
@@ -118,6 +123,9 @@ private:
   AliDielectronCF *fCfManagerPair;//Correction Framework Manager for the Pair
   AliDielectronTrackRotator *fTrackRotator; //Track rotator
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
+
+  Bool_t fPreFilterUnlikeOnly;  //Apply PreFilter either in +- or to ++/--/+- individually
+
   
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2);
@@ -138,7 +146,8 @@ private:
   
   void  FillHistograms(const AliVEvent *ev);
   void  FillHistogramsPair(AliDielectronPair *pair);
-    
+  void  FillHistogramsTracks(TObjArray **tracks);
+
   void  FillDebugTree();
   
   AliDielectron(const AliDielectron &c);
