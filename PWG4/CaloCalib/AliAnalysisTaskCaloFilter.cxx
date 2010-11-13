@@ -213,7 +213,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     
     if(!fGeoMatrixSet){
       if(fLoadEMCALMatrices){
-        printf("AliAnalysisTaskCaloFilter::UserExec() - Load user defined geometry matrices\n");
+        printf("AliAnalysisTaskCaloFilter::UserExec() - Load user defined EMCAL geometry matrices\n");
         for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
           if(fEMCALMatrix[mod]){
             if(DebugLevel() > 1) 
