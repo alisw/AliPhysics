@@ -70,7 +70,7 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
                                         Double_t etaMin,
                                         Double_t etaMax):
   fTrackCollection(new TObjArray(n)),
-  fReferenceMultiplicity(n),
+  fReferenceMultiplicity(0),
   fNumberOfTracks(0),
   fNumberOfRPs(0),
   fMCReactionPlaneAngle(0.),

@@ -118,10 +118,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   
   void SetMCevent(AliMCEvent* mcEvent) {fMCevent=mcEvent;}
   AliMCEvent* GetMCevent() const {return fMCevent;}
-  void SetEvent(AliVEvent* event) {fEvent=event;}
+  void SetEvent(AliVEvent* event) {Clear();fEvent=event;}
   AliVEvent* GetEvent() const {return fEvent;}
   Int_t GetNumberOfInputObjects() const;
   TObject* GetInputObject(Int_t i);
+  void Clear(Option_t* option="");
 
  protected:
   Bool_t PassesCuts(AliVParticle* track);
@@ -168,7 +169,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliVEvent* fEvent;                 //!placeholder for current event
   AliESDtrack fTPCtrack;             //!placeholder for TPC only track to avoid new/delete on every track
 
-  ClassDef(AliFlowTrackCuts,3)
+  ClassDef(AliFlowTrackCuts,4)
 };
 
 #endif
