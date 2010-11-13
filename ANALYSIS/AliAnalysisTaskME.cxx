@@ -32,7 +32,7 @@
 #include "AliLog.h"
 
 
-ClassImp(AliAnalysisTaskME);
+ClassImp(AliAnalysisTaskME)
 
 ////////////////////////////////////////////////////////////////////////
 
