@@ -72,7 +72,8 @@ class AliCalorimeterUtils : public TObject {
   
   // Bad channels
   Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
-  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; fEMCALRecoUtils->SwitchOnBadChannelsRemoval(); InitPHOSBadChannelStatusMap();}
+  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; fEMCALRecoUtils->SwitchOnBadChannelsRemoval(); 
+    if(!fPHOSBadChannelMap) InitPHOSBadChannelStatusMap();}
   void SwitchOffBadChannelsRemoval()  {fRemoveBadChannels = kFALSE ; fEMCALRecoUtils->SwitchOffBadChannelsRemoval();}
   
   Bool_t IsDistanceToBadChannelRecalculated() const { return  IsDistanceToBadChannelRecalculated()         ; }
@@ -95,6 +96,9 @@ class AliCalorimeterUtils : public TObject {
 	if(!fPHOSBadChannelMap) InitPHOSBadChannelStatusMap() ; 
 	((TH2I*)fPHOSBadChannelMap->At(imod))->SetBinContent(iCol,iRow,c);}
     
+  void SetEMCALChannelStatusMap(Int_t iSM , TH2I* h) {fEMCALRecoUtils->SetEMCALChannelStatusMap(iSM,h);}
+  void SetPHOSChannelStatusMap(Int_t imod , TH2I* h) {fPHOSBadChannelMap ->AddAt(h,imod);}
+  
   TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return fEMCALRecoUtils->GetEMCALChannelStatusMap(iSM);}
   TH2I * GetPHOSChannelStatusMap(Int_t imod) const {return (TH2I*)fPHOSBadChannelMap->At(imod);}
 
