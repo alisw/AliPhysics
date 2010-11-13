@@ -26,7 +26,7 @@ class AliESDInputHandler : public AliInputEventHandler {
     AliESDInputHandler();
     AliESDInputHandler(const char* name, const char* title);
     virtual ~AliESDInputHandler();
-    virtual Bool_t       Init(Option_t* opt) {return AliInputEventHandler::Notify(opt);}
+    virtual Bool_t       Init(Option_t* opt) {return AliInputEventHandler::Init(opt);}
     virtual Bool_t       Init(TTree* tree, Option_t* opt);
     virtual Bool_t       BeginEvent(Long64_t entry);
     virtual Bool_t       Notify() { return AliInputEventHandler::Notify(); };
