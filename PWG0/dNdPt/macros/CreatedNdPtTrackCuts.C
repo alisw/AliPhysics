@@ -528,6 +528,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
     esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
+    esdTrackCuts->SetRequireITSRefit(kFALSE);
     esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
     esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
