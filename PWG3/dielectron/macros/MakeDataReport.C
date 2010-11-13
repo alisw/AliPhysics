@@ -200,7 +200,7 @@ void DrawUnbinned(){
 
 
   // data
-  Double_t res=5.7e-2;
+  Double_t res=5.2e-2;
   alephParameters[0] = 0.0283086;
   alephParameters[1] = 2.63394e+01;
   alephParameters[2] = 5.04114e-11;
@@ -208,14 +208,20 @@ void DrawUnbinned(){
   alephParameters[4] = 4.88663e+00;
   Color_t color=kRed;
 
+    alephParameters[0] = 0.0283086/0.97;
+    //alephParameters[0] = 0.0283086;
+    alephParameters[1] = 2.63394e+01;
+    alephParameters[2] = 5.04114e-11;
+    alephParameters[3] = 2.12543e+00;
+    alephParameters[4] = 4.88663e+00;
 
 
   TF1 *foDataProton = new TF1("foDataProton", "50*AliExternalTrackParam::BetheBlochAleph(x/0.93827,[0],[1],[2],[3],[4])",0.05,20);
-  TF1 *foDataProtonP = new TF1("foDataProtonP",Form( "50*AliExternalTrackParam::BetheBlochAleph(x/0.93827,[0],[1],[2],[3],[4])*(1+%f)",res),0.05,20);
+  TF1 *foDataProtonP = new TF1("foDataProtonP",Form( "50*AliExternalTrackParam::BetheBlochAleph(x/0.93827,[0],[1],[2],[3],[4])*(1+%f)",3*res),0.05,20);
   TF1 *foDataProtonM = new TF1("foDataProtonM", Form("50*AliExternalTrackParam::BetheBlochAleph(x/0.93827,[0],[1],[2],[3],[4])*(1-%f)",res),0.05,20);
 
   TF1 *foDataPion = new TF1("foDataPion", "50*AliExternalTrackParam::BetheBlochAleph(x/0.13957,[0],[1],[2],[3],[4])",0.05,20);
-  TF1 *foDataPionP = new TF1("foDataPionP",Form( "50*AliExternalTrackParam::BetheBlochAleph(x/0.93827,[0],[1],[2],[3],[4])*(1+%f)",res),0.05,20);
+  TF1 *foDataPionP = new TF1("foDataPionP",Form( "50*AliExternalTrackParam::BetheBlochAleph(x/0.13957,[0],[1],[2],[3],[4])*(1+%f)",res),0.05,20);
   TF1 *foDataPionM = new TF1("foDataPionM", Form("50*AliExternalTrackParam::BetheBlochAleph(x/0.93827,[0],[1],[2],[3],[4])*(1-%f)",res),0.05,20);
 
   TF1 *foDataElec = new TF1("foDataElec", "50*AliExternalTrackParam::BetheBlochAleph(x/0.000511,[0],[1],[2],[3],[4])",0.05,20);
@@ -380,128 +386,92 @@ for (Int_t i=0; i<5; ++i){
 
 */
 
+
 /*
 
-c->SetLineColor(kRed); c->Draw("M","Leg1_Pt>1.2","same");
-c->SetLineColor(kGreen); c->Draw("M","Leg1_Pt>1.5","same");
-c->SetLineColor(kBlue); c->Draw("M","Leg1_Pt>2","same");
-c->SetLineColor(kMagenta); c->Draw("M","Leg1_Pt>2.5","same");
-c->SetLineColor(kGreen-4); c->Draw("M","Leg1_Pt>3","same");
+    Double_t resolution=0.052;
+    Double_t nSigma=3.;
+    TF1 *ffPio=new TF1(Form("fBethe%d",AliPID::kPion), Form("(%f*%f+(AliExternalTrackParam::BetheBlochAleph(x/%f,[0],[1],[2],[3],[4])-AliExternalTrackParam::BetheBlochAleph(x/%f,[0],[1],[2],[3],[4])))/%f", nSigma,resolution, AliPID::ParticleMass(AliPID::kPion), AliPID::ParticleMass(AliPID::kElectron), resolution), 0.05,200.);
+    ffPio->SetParameters(0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00);
+fPPio->Draw("same");
 
-c->SetLineColor(kRed-2); c->Draw("M","Leg1_Pt>1.2&&Leg2_Pt>.5","same");
-c->SetLineColor(kRed-4); c->Draw("M","Leg1_Pt>1.2&&Leg2_Pt>.7","same");
-c->SetLineColor(kRed-6); c->Draw("M","Leg1_Pt>1.2&&Leg2_Pt>1","same");
-c->SetLineColor(kRed-8); c->Draw("M","Leg1_Pt>1.2&&Leg2_Pt>1.2","same");
+  TF1 f("fP","-8*exp(-0.6*x)",0,40);
+f.Draw("same")
 
 
-c=Pair
+*/
 
 
-c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-2&&(Leg2_TPC_nSigma_Electrons)>-2");
-c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<2&&abs(Leg2_TPC_nSigma_Electrons)<2");
+/*
 
-c->SetAlias("cutPi","Leg1_TPC_nSigma_Pions>2&&Leg2_TPC_nSigma_Pions>2");
-c->SetAlias("cutP","abs(Leg1_TPC_nSigma_Protons)>2&&abs(Leg2_TPC_nSigma_Protons)>2");
-c->SetAlias("cutK","abs(Leg1_TPC_nSigma_Kaons)>2&&abs(Leg2_TPC_nSigma_Kaons)>2");
-c->SetAlias("cutMu","abs(Leg1_TPC_nSigma_Muons)>1.5&&abs(Leg2_TPC_nSigma_Muons)>1.5");
 
+c->SetAlias("cut","PairType==1")
+
+
+c->SetAlias("nCls","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
+
+//--------PID
+
+//-- nsigma
 c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
-c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>2&&abs(Leg2_TPC_nSigma_Pions)>2");
-c->SetAlias("cutP","abs(Leg1_TPC_nSigma_Protons+.5)>2&&abs(Leg2_TPC_nSigma_Protons+.5)>2");
-c->SetAlias("pid","cutPi&&cutE");
+c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-1 && Leg2_TPC_nSigma_Electrons>-1");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3.&&(Leg2_TPC_nSigma_Protons)>3.");
+c->SetAlias("pidSig","cutE&&cutPi&&cutP");
+
+//-- Pi param
+// c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-2.65*exp(-0.6757*Leg1_P_InnerParam)&&Leg2_TPC_nSigma_Electrons>-8*exp(-0.6*Leg2_P_InnerParam)");
+c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-6*exp(-0.6*Leg1_P_InnerParam)&&Leg2_TPC_nSigma_Electrons>-6*exp(-0.6*Leg2_P_InnerParam)");
+c->SetAlias("pidParam","eleParam&&cutP");
 
 
 
-c->SetAlias("pid","cutPi&&cutP&&cutK&&cutE");
-c->SetAlias("pid","cutPi&&cutP&&cutK&&cutMu");
-c->Draw("M>>h(50,1.99,3.99)","pid&&PairType==1&&Leg2_Pt>1","e");
-hist=h
-TObjArray arr;
-arr.AddAt(hist,1);
-
-AliDielectronSignalFunc fun
-fun.SetDefaults(1);
-fun.Process(&arr);
-fun.Draw("samestat");
+c->SetAlias("LegEta","abs(Leg1_Eta)<0.9&&abs(Leg2_Eta<0.9)");
+c->SetAlias("Rap","abs(Y)<0.9");
+c->SetAlias("QA","LegNcl&&LegEta&&Rap");
+c->SetAlias("spdFirst","(Leg1_ITS_clusterMap&1)==1 && (Leg2_ITS_clusterMap&1)==1");
 
 
+c->SetAlias("cut","PairType==1&&nCls&&pidSig&&LegEta&&Rap")
+
+c->SetMarkerStyle(20);
+c->SetMarkerSize(.8);
+c->SetMarkerColor(kBlack);
 c->SetLineColor(kBlack);
-c->Draw("M>>h(50,1.99,3.99)","cutPi&&PairType==1","e");
 
-c->SetLineColor(kRed);
-c->Draw("M>>h2(50,1.99,3.99)","cutPi&&cutK&&PairType==1","esame");
+// c->SetAlias("nCls","Leg1_NclsTPC>120&&Leg2_NclsTPC>120");
+c->Draw("M>>hM(50,2,4)","cut","e");
 
+c->SetMarkerColor(kBlue);
 c->SetLineColor(kBlue);
-c->Draw("M>>h3(50,1.99,3.99)","cutPi&&cutP&&PairType==1","esame");
+c->SetAlias("cut","PairType==1&&nCls&&pidParam&&LegEta&&Rap")
+// c->SetAlias("nCls","Leg1_NclsTPC>140&&Leg2_NclsTPC>140");
+c->Draw("M>>hM2(50,2,4)","cut","esame");
 
+c->SetMarkerColor(kGreen);
 c->SetLineColor(kGreen);
-c->Draw("M>>h4(50,1.99,3.99)","cutPi&&cutMu&&PairType==1","esame");
+c->SetAlias("nCls","Leg1_NclsTPC>150&&Leg2_NclsTPC>150");
+c->Draw("M>>hM3(50,2,4)","cut","esame");
 
 
 
 
-
-
-
-c->SetLineColor(kBlack);
-c->Draw("Leg1_Pt>>hPt(50,1.99,3.99)","cutPi&&PairType==1","goff");
-c->Draw("Leg2_Pt>>hPt+","cutPi&&PairType==1","e");
-
-c->SetLineColor(kRed);
-c->Draw("Leg1_Pt>>hPt2(50,1.99,3.99)","cutPi&&cutK&&PairType==1","goff");
-c->Draw("Leg2_Pt>>hPt2+","cutPi&&cutK&&PairType==1","esame");
-
-c->SetLineColor(kBlue);
-c->Draw("Leg1_Pt>>hPt3(50,1.99,3.99)","cutPi&&cutP&&PairType==1","goff");
-c->Draw("Leg2_Pt>>hPt3+","cutPi&&cutP&&PairType==1","esame");
-
-c->SetLineColor(kGreen);
-c->Draw("Leg1_Pt>>hPt4(50,1.99,3.99)","cutPi&&cutLeg1_Ptu&&PairType==1","goff");
-c->Draw("Leg1_Pt>>hPt4+","cutPi&&cutMu&&PairType==1","esame");
-
-
-
-
-c->Draw("M>>hM5(100,1.99,3.99)","Leg1_TPC_signal>65&&Leg2_TPC_signal>65&&Leg2_Pt>1.3&&PairType==1","e");
-
-
-c=Pair
-c->Draw("M>>hM5(100,1.99,3.99)","Leg1_TPC_signal>65&&Leg2_TPC_signal>65&&Leg2_Pt>1.&&PairType==1","e")
-hist=hM5
-AliDielectronSignalFunc fun
-fun.SetDefaults(1);
-fun.SetFitRange(2,4)
-fun.Process(hM)
-fun.Draw("samestat");
-
-c->Draw("M>>hM5(50,1.99,3.99)","Leg1_TPC_signal>65&&Leg2_TPC_signal>65&&Leg2_Pt>1.1&&PairType==1","e")
-
-
-
-
-c->SetAlias("cut","Leg1_TPC_signal>65&&Leg2_TPC_signal>65&&Leg2_Pt>1.&&PairType==1")
-c->SetAlias("cut","Leg2_Pt>1&&PairType==1")
-c->SetAlias("cut","Leg1_TPC_signal>65&&Leg2_TPC_signal>65&&cutP&&cutK&&PairType==1")
-c->SetAlias("cut","cutP&&PairType==1")
-c->SetAlias("cut","PairType==1&&abs(Leg1_TOF_nSigma_Protons)>2&&abs(Leg2_TOF_nSigma_Protons)>2")
-
-c->SetAlias("cut","abs(Leg2_TOF_nSigma_Protons)>3&&abs(Leg2_TOF_nSigma_Pions)>")
-c->SetAlias("cut","abs(Leg2_TOF_nSigma_Protons)>7-5.5/3*Leg2_P_InnerParam")
+c->SetAlias("cut","PairType==1&&nCls&&LegEta&&Rap")
 // histos
 AliDielectronHistos h("h","h");
 h.AddClass("TPCsignal");
 h.UserHistogram("TPCsignal","sigTPC","TPC signal;P [GeV];TPC signal [arb. Units]",400,.3,40,400,0.,200.,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","sigTPC")->SetDirectory(gDirectory)
 
-h.UserHistogram("TPCsignal","nSigE","TPC n #sigma Electrons;P [GeV];TPC n #sigma Electrons",200,.3,40.,100,-4.,4.,0,0,kTRUE,kFALSE)
+h.UserHistogram("TPCsignal","nSigE","TPC n #sigma Electrons;P [GeV];TPC n #sigma Electrons",200,.3,40.,100,-10.,10.,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","nSigE")->SetDirectory(gDirectory)
-h.UserHistogram("TPCsignal","nSigMu","TPC n #sigma Muons;P [GeV];TPC n #sigma Muons",400,.3,40.,400,-4.,4.,0,0,kTRUE,kFALSE)
+h.UserHistogram("TPCsignal","nSigMu","TPC n #sigma Muons;P [GeV];TPC n #sigma Muons",400,.3,40.,500,-10.,10.,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","nSigMu")->SetDirectory(gDirectory)
-h.UserHistogram("TPCsignal","nSigPi","TPC n #sigma Pions;P [GeV];TPC n #sigma Pions",400,.3,40.,400,-4.,4.,0,0,kTRUE,kFALSE)
+h.UserHistogram("TPCsignal","nSigPi","TPC n #sigma Pions;P [GeV];TPC n #sigma Pions",400,.3,40.,500,-10.,10.,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","nSigPi")->SetDirectory(gDirectory)
-h.UserHistogram("TPCsignal","nSigK","TPC n #sigma Kaons;P [GeV];TPC n #sigma Kaons",400,.3,40,400,-4,4,0,0,kTRUE,kFALSE)
+h.UserHistogram("TPCsignal","nSigK","TPC n #sigma Kaons;P [GeV];TPC n #sigma Kaons",400,.3,40,500,-10,10,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","nSigK")->SetDirectory(gDirectory)
-h.UserHistogram("TPCsignal","nSigP","TPC n #sigma Protons;P [GeV];TPC n #sigma Protons",400,.3,40.,400,-4,4.,0,0,kTRUE,kFALSE)
+h.UserHistogram("TPCsignal","nSigP","TPC n #sigma Protons;P [GeV];TPC n #sigma Protons",400,.3,40.,500,-10,10.,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","nSigP")->SetDirectory(gDirectory)
 
 
@@ -542,17 +512,21 @@ Pair->Scan("EventInFile:File.GetString()","","colsize=1 col=3.d:100.s")
 AliDielectronSignalFunc sig;
 sig.SetDefaults(1);
 
+
+
 //WooJins cuts:
 c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
-c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>2&&abs(Leg2_TPC_nSigma_Pions)>2");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>5&&abs(Leg2_TPC_nSigma_Pions)>5");
 // c->SetAlias("cutPi","Leg1_TPC_signal>65&&Leg2_TPC_signal>65");
-c->SetAlias("cutP","abs(Leg1_TPC_nSigma_Protons)>2&&abs(Leg2_TPC_nSigma_Protons)>2");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>5&&(Leg2_TPC_nSigma_Protons)>5");
 c->SetAlias("cutK","abs(Leg1_TPC_nSigma_Kaons)>2&&abs(Leg2_TPC_nSigma_Kaons)>2");
-c->SetAlias("pid","cutE&&cutPi&&cutP&&cutK");
+c->SetAlias("pid","cutE&&cutPi&&cutP");
+c->SetAlias("etaLeg","abs(Leg1_Eta)<.9&&abs(Leg2_Eta)<.9");
+c->SetAlias("rap","abs(Y)<.9");
 
 
 c->SetAlias("cutAdd","PairType==1&&abs(Leg1_ImpactParXY)<.02&&abs(Leg2_ImpactParXY)<.02&&Leg2_Pt>1.")
-c->Draw("M>>hM(100,2,4)","cutAdd&&pid","e");
+c->Draw("M>>hM(50,2,4)","PairType==1&&pid","e");
 h.Rebin();
 h.Rebin();
 h.Rebin();
@@ -563,16 +537,8 @@ sig.Draw("samestat");
 
 
 //test
-c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<2");
-c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>1&&abs(Leg2_TPC_nSigma_Pions)>2");
-c->SetAlias("cutPi","Leg1_TPC_signal>67&&Leg2_TPC_signal>67");
-c->SetAlias("cutP","abs(Leg1_TPC_nSigma_Protons)>2&&abs(Leg2_TPC_nSigma_Protons)>2");
-c->SetAlias("cutK","abs(Leg1_TPC_nSigma_Kaons)>2&&abs(Leg2_TPC_nSigma_Kaons)>2");
-
-
-c->SetAlias("pid","cutE&&cutPi&&cutP&&cutK");
 c->SetAlias("cutAdd","PairType==1&&abs(Leg1_ImpactParXY)<.03&&abs(Leg2_ImpactParXY)<.03&&Leg2_Pt>1")
-c->SetAlias("cut","cutAdd&&pid")
+c->SetAlias("cut","cutAdd&&pid&etaLeg&&rap")
 
 c->Draw("M>>hM(50,1.99,3.99)","cut","e");
 sig.Process(hM);

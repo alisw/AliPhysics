@@ -395,11 +395,11 @@ TH1* AliDielectronCFdraw::Project(const Option_t* var, Int_t slice)
 }
 
 //________________________________________________________________
-void AliDielectronCFdraw::DrawEfficiency(const char* varnames, const char* nominators, Int_t denominator, const char* opt)
+void AliDielectronCFdraw::DrawEfficiency(const char* varnames, const char* numerators, Int_t denominator, const char* opt)
 {
   //
   // plot efficiencies for variables. Variable may be up to 3 dim, separated by a ':'
-  // you may have several nominators, sparated by one of ',:;'
+  // you may have several numerators, sparated by one of ',:;'
   //
   
   TObjArray *arrVars=TString(varnames).Tokenize(":");
@@ -428,24 +428,24 @@ void AliDielectronCFdraw::DrawEfficiency(const char* varnames, const char* nomin
   
   switch (entries){
   case 1:
-    DrawEfficiency(ivar[0],nominators, denominator,opt,type);
+    DrawEfficiency(ivar[0],numerators, denominator,opt,type);
     break;
   case 2:
-    DrawEfficiency(ivar[1],ivar[0], nominators, denominator,opt,type);
+    DrawEfficiency(ivar[1],ivar[0], numerators, denominator,opt,type);
     break;
   case 3:
-    DrawEfficiency(ivar[2],ivar[1],ivar[0],nominators, denominator,opt,type);
+    DrawEfficiency(ivar[2],ivar[1],ivar[0],numerators, denominator,opt,type);
     break;
   }
   delete arrVars;
 }
 
 //________________________________________________________________
-void AliDielectronCFdraw::DrawEfficiency(Int_t var, const char* nominators, Int_t denominator, const char* opt, Int_t type)
+void AliDielectronCFdraw::DrawEfficiency(Int_t var, const char* numerators, Int_t denominator, const char* opt, Int_t type)
 {
   //
-  // Draw Efficiencies for all nominators
-  // nominators may be divided by and of ,;:
+  // Draw Efficiencies for all numerators
+  // numerators may be divided by and of ,;:
   //
   // if opt contains 'same' all histograms are drawn in the same pad
   // otherwise the pad will be divided in sub pads and the histograms
@@ -454,7 +454,7 @@ void AliDielectronCFdraw::DrawEfficiency(Int_t var, const char* nominators, Int_
   
   const Int_t ndim=1;
   Int_t vars[ndim]={var};
-  TObjArray *arr=CollectHistosEff(ndim,vars,nominators,denominator,type);
+  TObjArray *arr=CollectHistosEff(ndim,vars,numerators,denominator,type);
   TString drawOpt=opt;
   drawOpt+="eff";
   Draw(arr,drawOpt);
@@ -462,14 +462,14 @@ void AliDielectronCFdraw::DrawEfficiency(Int_t var, const char* nominators, Int_
 }
 
 //________________________________________________________________
-void AliDielectronCFdraw::DrawEfficiency(Int_t var0, Int_t var1, const char* nominators, Int_t denominator, const char* opt, Int_t type)
+void AliDielectronCFdraw::DrawEfficiency(Int_t var0, Int_t var1, const char* numerators, Int_t denominator, const char* opt, Int_t type)
 {
   //
   // Draw 2D case
   //
   const Int_t ndim=2;
   Int_t vars[ndim]={var0,var1};
-  TObjArray *arr=CollectHistosEff(ndim,vars,nominators,denominator,type);
+  TObjArray *arr=CollectHistosEff(ndim,vars,numerators,denominator,type);
   TString drawOpt=opt;
   drawOpt+="eff";
   Draw(arr,drawOpt);
@@ -477,14 +477,14 @@ void AliDielectronCFdraw::DrawEfficiency(Int_t var0, Int_t var1, const char* nom
 }
 
 //________________________________________________________________
-void AliDielectronCFdraw::DrawEfficiency(Int_t var0, Int_t var1, Int_t var2, const char* nominators, Int_t denominator, const char* opt, Int_t type)
+void AliDielectronCFdraw::DrawEfficiency(Int_t var0, Int_t var1, Int_t var2, const char* numerators, Int_t denominator, const char* opt, Int_t type)
 {
   //
   // Draw 3D case
   //
   const Int_t ndim=3;
   Int_t vars[ndim]={var0,var1,var2};
-  TObjArray *arr=CollectHistosEff(ndim,vars,nominators,denominator,type);
+  TObjArray *arr=CollectHistosEff(ndim,vars,numerators,denominator,type);
   TString drawOpt=opt;
   drawOpt+="eff";
   Draw(arr,drawOpt);
@@ -492,13 +492,13 @@ void AliDielectronCFdraw::DrawEfficiency(Int_t var0, Int_t var1, Int_t var2, con
 }
 
 //________________________________________________________________
-TObjArray* AliDielectronCFdraw::CollectHistosEff(Int_t dim, Int_t *vars, const char* nominators, Int_t denominator, Int_t type)
+TObjArray* AliDielectronCFdraw::CollectHistosEff(Int_t dim, Int_t *vars, const char* numerators, Int_t denominator, Int_t type)
 {
   //
   // Collect histos with 'dim'ension of the 'slices' separated by one of "':;'"
   // in a TObjArray and return it
   //
-  TObjArray *arr=TString(nominators).Tokenize(",:;");
+  TObjArray *arr=TString(numerators).Tokenize(",:;");
   TObjArray *arrHists=0x0;
 
   if (type==0){
@@ -697,4 +697,27 @@ void AliDielectronCFdraw::Draw(const TObjArray *arr, const char* opt)
     }
   }
   
+}
+
+//________________________________________________________________
+Double_t AliDielectronCFdraw::GetAverageEfficiency(Int_t numerator, Int_t denominator, Double_t &effErr)
+{
+  //
+  // Extract the mean efficiency of the numerator and denominator
+  //
+
+  //use variable 0 as default, since for the average it doesn't matter
+  TH1 *hDen=fCfContainer->Project(0,denominator);
+  Double_t entriesDen=hDen->GetEffectiveEntries();
+  TH1 *hproj=fCfContainer->Project(0,numerator);
+  if (!hproj) return -1.;
+  Double_t entriesNum=hproj->GetEffectiveEntries();
+  if (entriesDen<1||entriesNum<1) return -1;
+  
+  Double_t eff=-1.;
+  if (entriesDen>0) eff=entriesNum/entriesDen;
+  effErr=TMath::Sqrt(1./entriesNum+1./entriesDen)*eff;
+  delete hDen;
+  delete hproj;
+  return eff;
 }

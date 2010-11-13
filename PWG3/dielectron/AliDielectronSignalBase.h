@@ -69,8 +69,11 @@ public:
   TH1* GetSignalHistogram()      const {return fHistSignal;}
   TH1* GetBackgroundHistogram()  const {return fHistBackground;}
   TH1* GetUnlikeSignHistogram()  const {return fHistDataPM;}
+
+  void SetScaleRawToBackground(Double_t intMin, Double_t intMax) { fScaleMin=intMin; fScaleMax=intMax; }
+  Double_t GetScaleFactor() const { return fScaleFactor; }
   
-  static void ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax);
+  static Double_t ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax);
   
   virtual void Print(Option_t *option="") const;
 
@@ -102,16 +105,19 @@ protected:
 
   Int_t fRebin;                       // histogram rebin factor
   EBackgroundMethod fMethod;          // method for background substraction
-
+  Double_t fScaleMin;                 // min for scaling of raw and background histogram
+  Double_t fScaleMax;                 // max for scaling of raw and background histogram
+  Double_t fScaleFactor;              // scale factor of raw to background histogram scaling
+  
   Bool_t fProcessed;                  // flag
-
+  
   void SetSignificanceAndSOB();       // calculate the significance and S/B
   TPaveText* DrawStats(Double_t x1=0., Double_t y1=0., Double_t x2=0., Double_t y2=0.);
 
   AliDielectronSignalBase(const AliDielectronSignalBase &c);
   AliDielectronSignalBase &operator=(const AliDielectronSignalBase &c);
 
-  ClassDef(AliDielectronSignalBase,3) // Dielectron SignalBase
+  ClassDef(AliDielectronSignalBase,4) // Dielectron SignalBase
 };
 
 inline void AliDielectronSignalBase::SetSignificanceAndSOB()

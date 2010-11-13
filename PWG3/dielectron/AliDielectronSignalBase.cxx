@@ -50,6 +50,9 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
   fFitMax(0),
   fRebin(1),
   fMethod(kLikeSign),
+  fScaleMin(0.),
+  fScaleMax(0.),
+  fScaleFactor(0.),
   fProcessed(kFALSE)
 {
   //
@@ -73,6 +76,9 @@ AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* t
   fFitMax(0),
   fRebin(1),
   fMethod(kLikeSign),
+  fScaleMin(0.),
+  fScaleMax(0.),
+  fScaleFactor(0.),
   fProcessed(kFALSE)
 {
   //
@@ -88,6 +94,10 @@ AliDielectronSignalBase::~AliDielectronSignalBase()
   //
   if(fHistSignal) delete fHistSignal;
   if(fHistBackground) delete fHistBackground;
+  if (fHistDataPP) delete fHistDataPP;
+  if (fHistDataPM) delete fHistDataPM;
+  if (fHistDataMM) delete fHistDataMM;
+  
 }
 
 //______________________________________________
@@ -138,7 +148,7 @@ void AliDielectronSignalBase::Print(Option_t */*option*/) const
 }
 
 //______________________________________________
-void AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax)
+Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax)
 {
   //
   // scale histBackground to match the integral of histRaw in the interval intMin, intMax
@@ -146,9 +156,11 @@ void AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackground,
   
   Double_t intRaw  = histRaw->Integral(histRaw->FindBin(intMin),histRaw->FindBin(intMax));
   Double_t intBack = histBackground->Integral(histBackground->FindBin(intMin),histBackground->FindBin(intMax));
+  Double_t scaleFactor=intBack>0?intRaw/intBack:0.;
   if (intBack>0){
     histBackground->Sumw2();
-    histBackground->Scale(1./intBack);
-    histBackground->Scale(intRaw);
+    histBackground->Scale(scaleFactor);
   }
+
+  return scaleFactor;
 }

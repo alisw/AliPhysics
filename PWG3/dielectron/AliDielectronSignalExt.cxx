@@ -104,6 +104,9 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   fHistDataPP->Sumw2();
   fHistDataPM->Sumw2();
   fHistDataMM->Sumw2();
+  fHistDataPP->SetDirectory(0);
+  fHistDataPM->SetDirectory(0);
+  fHistDataMM->SetDirectory(0);
   
   // rebin the histograms
   if (fRebin>1) { 
@@ -115,10 +118,12 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   fHistSignal = new TH1D("HistSignal", "Like-Sign substracted signal",
 			 fHistDataPM->GetXaxis()->GetNbins(),
 			 fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  fHistSignal->SetDirectory(0);
   fHistBackground = new TH1D("HistBackground", "Like-sign contribution",
 			     fHistDataPM->GetXaxis()->GetNbins(),
 			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
-
+  fHistBackground->SetDirectory(0);
+  
   // fill out background and subtracted histogram
   for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
     Float_t pm = fHistDataPM->GetBinContent(ibin);
@@ -128,14 +133,20 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
 
     Float_t background = 2*TMath::Sqrt(pp*mm);
     Float_t ebackground = TMath::Sqrt(mm+pp);
-    Float_t signal = pm - background;
-    Float_t error = TMath::Sqrt(epm*epm+mm+pp);
+//     Float_t signal = pm - background;
+//     Float_t error = TMath::Sqrt(epm*epm+mm+pp);
 
-    fHistSignal->SetBinContent(ibin, signal);
-    fHistSignal->SetBinError(ibin, error);
+    fHistSignal->SetBinContent(ibin, pm);
+    fHistSignal->SetBinError(ibin, epm);
     fHistBackground->SetBinContent(ibin, background);
     fHistBackground->SetBinError(ibin, ebackground);
   }
+  //scale background histogram to match integral of the data histogram between fScaleMin and fScaleMax
+  if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
+
+  //subract background
+  fHistSignal->Add(fHistBackground,-1);
+  
   // signal
   fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
 	  			             fHistSignal->FindBin(fIntMax), fErrors(0));
@@ -180,8 +191,9 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
     return;
   }
 
-  //scale histograms to match integral between 3.2 and 4. GeV
-  ScaleHistograms(fHistDataPM,fHistBackground,3.2,4.0);
+  //scale histograms to match integral between fScaleMin and fScaleMax
+  if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
+  
   fHistSignal=(TH1*)fHistDataPM->Clone("histSignal");
   fHistSignal->Add(fHistBackground,-1.);
 
