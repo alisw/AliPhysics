@@ -501,7 +501,7 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap(){
 	
 	fEMCALBadChannelMap = new TObjArray(10);
 	//TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
-	for (int i = 0; i < 12; i++) {
+	for (int i = 0; i < 10; i++) {
 		fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_Mod%d",i),Form("EMCALBadChannelMap_Mod%d",i), 48, 0, 48, 24, 0, 24));
 	}
 	
@@ -732,7 +732,7 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry 
 			//Check if tower is bad.
 			if(hMap->GetBinContent(icol,irow)==0) continue;
       //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - \n \t Bad channel in SM %d, col %d, row %d, \n \t Cluster max in col %d, row %d\n",
-        //     iSupMod,icol, irow, icolM,irowM);
+      //       iSupMod,icol, irow, icolM,irowM);
       
       dRrow=TMath::Abs(irowM-irow);
       dRcol=TMath::Abs(icolM-icol);
@@ -780,8 +780,8 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry 
     
 	}// shared cluster in 2 SuperModules
   
-  AliDebug(2,Form("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - Max cluster cell (SM,col,row)=(%d %d %d) - Distance to Bad Channel %2.2f\n",iSupMod, icolM, irowM, minDist));
-	cluster->SetDistanceToBadChannel(minDist);
+  AliDebug(2,Form("Max cluster cell (SM,col,row)=(%d %d %d) - Distance to Bad Channel %2.2f",iSupMod, icolM, irowM, minDist));
+  cluster->SetDistanceToBadChannel(minDist);
   
 }
 

@@ -158,7 +158,8 @@ public:
 	
   TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap->At(iSM);}
   void   SetEMCALChannelStatusMap(TObjArray *map)  {fEMCALBadChannelMap = map;}
-	
+  void   SetEMCALChannelStatusMap(Int_t iSM , TH2I* h) {fEMCALBadChannelMap->AddAt(h,iSM);}
+
   Bool_t ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, Int_t nCells);
  
   //Recalculate other cluster parameters
