@@ -52,6 +52,7 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TAxis.h"
+#include "AliRecoParam.h"
 
 
 #include "AliLog.h"
@@ -201,26 +202,13 @@ Bool_t AliTPCcalibBase::HasLaser(AliESDEvent *event){
   //
   //
   //
-  // Thresholds more than 8 tracks with small dip angle
-  
-  const Int_t kMinLaserTracks = 8;
-  const Float_t kThrLaser       = 0.3;
-  const Float_t kLaserTgl       = 0.01;
-
-  Int_t ntracks = event->GetNumberOfTracks();
-  if (ntracks<kMinLaserTracks) return kFALSE;
-  Float_t nlaser=0;
-  Float_t nall=0;
-  for (Int_t i=0;i<ntracks;++i) {
-    AliESDtrack *track=event->GetTrack(i);
-    if (!track) continue;
-    if (track->GetTPCNcls()<=0) continue; 
-    nall++;
-    if (TMath::Abs(track->GetTgl())<kLaserTgl) nlaser++;
+  // Use event specie
+  Bool_t isLaser=kFALSE;
+  UInt_t specie = event->GetEventSpecie();  // select only cosmic events
+  if (specie==AliRecoParam::kCalib) {
+    isLaser = kTRUE;
   }
-  if (nlaser>kMinLaserTracks) return kTRUE;
-  if (nall>0 && nlaser/nall>kThrLaser) return kTRUE;
-  return kFALSE;
+  return isLaser;
 }
 
 
