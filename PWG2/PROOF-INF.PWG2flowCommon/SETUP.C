@@ -1,6 +1,10 @@
 void SETUP() {
+
+  TString dypath = gSystem->GetDynamicPath();
+  dypath.Prepend(".:");
+  gSystem->SetDynamicPath(dypath);
   gSystem->Load("libPWG2flowCommon");
-  
+
   // Set the include paths
   gROOT->ProcessLine(".include PWG2flowCommon/FLOW/AliFlowCommon");
 

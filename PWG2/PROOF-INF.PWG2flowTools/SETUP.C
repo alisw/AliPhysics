@@ -1,4 +1,9 @@
 void SETUP() {
+
+
+  TString dypath = gSystem->GetDynamicPath();
+  dypath.Prepend(".:");
+  gSystem->SetDynamicPath(dypath);
   gSystem->Load("libPWG2flowTools");
   
   // Set the include paths
