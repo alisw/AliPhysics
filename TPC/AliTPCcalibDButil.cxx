@@ -2378,6 +2378,23 @@ Double_t AliTPCcalibDButil::EvalGraphConst(TGraph * const graph, Double_t xref){
   return graph->Eval(xref);
 }
 
+Double_t AliTPCcalibDButil::EvalGraphConst(AliSplineFit *graph, Double_t xref){
+  //
+  // Use constant interpolation outside of range also for spline fits
+  //
+  if (!graph) {
+    printf("AliTPCcalibDButil::EvalGraphConst: 0 pointer\n");
+    return 0;
+  }
+  if (graph->GetKnots()<1){
+    printf("AliTPCcalibDButil::EvalGraphConst: Empty graph");
+    return 0;
+  }
+  if (xref<graph->GetX()[0]) return graph->GetY0()[0];
+  if (xref>graph->GetX()[graph->GetKnots()-1]) return graph->GetY0()[graph->GetKnots()-1]; 
+  return graph->Eval( xref);
+}
+
 Float_t AliTPCcalibDButil::FilterSensor(AliDCSSensor * sensor, Double_t ymin, Double_t ymax, Double_t maxdy,  Double_t sigmaCut){
   //
   // Filter DCS sensor information

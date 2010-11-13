@@ -144,6 +144,8 @@ public:
   static void SmoothGraph(TGraph *graph, Double_t delta);
   static Int_t     GetNearest(TGraph *graph, Double_t xref, Double_t &dx, Double_t &y);
   static Double_t EvalGraphConst(TGraph * const graph, Double_t xref);
+  static Double_t EvalGraphConst(AliSplineFit *graph, Double_t xref);
+
   //
   // Filter sensors
   //
