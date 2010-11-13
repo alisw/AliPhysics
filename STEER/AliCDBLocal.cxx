@@ -395,6 +395,8 @@ AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
 			if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue;
 			// aRunRange contains requested run!
 
+			AliDebug(1,Form("Filename %s matches\n",filename));
+
 			if (result->GetVersion() < aVersion) {
 				result->SetVersion(aVersion);
 				result->SetSubVersion(aSubVersion);

@@ -356,11 +356,11 @@ void AliESDpid::SetTOFResponse(AliESDEvent *event,EStartTimeType_t option){
 
     Bool_t flagT0TOF=kFALSE;
     Bool_t flagT0T0=kFALSE;
-    Float_t startTime[fTOFResponse.GetNmomBins()];
-    Float_t startTimeRes[fTOFResponse.GetNmomBins()];
+    Float_t *startTime = new Float_t[fTOFResponse.GetNmomBins()];
+    Float_t *startTimeRes = new Float_t[fTOFResponse.GetNmomBins()];
 
-    Float_t estimatedT0event[fTOFResponse.GetNmomBins()];
-    Float_t estimatedT0resolution[fTOFResponse.GetNmomBins()];
+    Float_t *estimatedT0event = new Float_t[fTOFResponse.GetNmomBins()];
+    Float_t *estimatedT0resolution = new Float_t[fTOFResponse.GetNmomBins()];
     for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
       estimatedT0event[i]=0.0;
       estimatedT0resolution[i]=0.0;
@@ -545,4 +545,8 @@ void AliESDpid::SetTOFResponse(AliESDEvent *event,EStartTimeType_t option){
 	fTOFResponse.SetT0event(estimatedT0event);
 	fTOFResponse.SetT0resolution(estimatedT0resolution);
     }
+    delete [] startTime;
+    delete [] startTimeRes;
+    delete [] estimatedT0event;
+    delete [] estimatedT0resolution;
 }
