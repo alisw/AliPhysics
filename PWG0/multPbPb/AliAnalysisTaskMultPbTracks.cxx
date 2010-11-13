@@ -214,6 +214,9 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     if (vtxESD->GetDispersion() >= 0.04) return;
     if (vtxESD->GetZRes() >= 0.25) return;
   }
+  // "Beam gas" vertex cut
+  const AliESDVertex * vtxESDTPC= fESD->GetPrimaryVertexTPC(); 
+  if (vtxESDTPC->GetNContributors()<(-10.+0.25*fESD->GetMultiplicity()->GetNumberOfITSClusters(0)))     return;
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatVtx);
   fHistoManager->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(vtxESD->GetZ());
 
