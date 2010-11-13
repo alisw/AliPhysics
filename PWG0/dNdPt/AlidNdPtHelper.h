@@ -44,7 +44,7 @@ class AlidNdPtHelper : public TObject
 
     enum ParticleMode { kAllPart = 0, kMCPion, kMCKaon, kMCProton, kPlus, kMinus, kCosmic, kBackgroundTrack, kMCRest, kVZEROCase1, kVZEROCase2};
 
-    enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kAnalysisPbPb , kCorrection, kSystematics };
+    enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kAnalysisPbPb, kCorrection, kSystematics, kCutAnalysisPbPb };
 
     enum TrackObject  { kInvalidTrackObject = -1, kAllTracks = 0, kAccTracks, kRecTracks, kMCTracks };
     enum EventObject  { kInvalidEventObject = -1, kAllEvents = 0, kTriggeredEvents, kAccEvents, kRecEvents, kMCEvents };
@@ -106,7 +106,7 @@ class AlidNdPtHelper : public TObject
     static Double_t GetStrangenessCorrFactor(const Double_t pt);
     static Double_t GetLinearInterpolationValue(const Double_t x1, const Double_t y1, const Double_t x2, const Double_t y2, const Double_t pt);
 
-    ClassDef(AlidNdPtHelper, 0);
+    ClassDef(AlidNdPtHelper, 1);
 
   private:
     AlidNdPtHelper(const AlidNdPtHelper&);

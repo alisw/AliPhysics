@@ -94,11 +94,11 @@ void AlidNdPtCutAnalysisPbPb::Init(){
   //
   // Init histograms
   //
-  const Int_t ptNbins = 56; 
+  const Int_t ptNbins = 58; 
   const Double_t ptMin = 0.; 
-  const Double_t ptMax = 16.; 
+  const Double_t ptMax = 20.; 
 
-  Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0};
+  Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0, 20.};
 
   // 
   Int_t binsEventCount[2]={2,2};
@@ -150,8 +150,8 @@ void AlidNdPtCutAnalysisPbPb::Init(){
 
   //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isPrim:polarity
   Int_t binsRecMCTrackHist[11]={160,80,80,100,100,90,90,ptNbins, 3, 2, 2};
-  Double_t minRecMCTrackHist[11]={0., 0., 0., -1.,-1.,-1.5, 0., ptMin, -1., 0., 0.};
-  Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 1.,1.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2.};
+  Double_t minRecMCTrackHist[11]={0., 0., 0., -5.,-5.,-1.5, 0., ptMin, -1., 0., 0.};
+  Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 5.,5.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2.};
 
   fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:kinkIdx:isPrim:polarity",11,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
   fRecMCTrackHist->SetBinEdges(7,binsPt);
@@ -277,13 +277,8 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
   Bool_t isRecVertex = kTRUE;
   if(evtCuts->IsRecVertexRequired()) 
   {
-//    Bool_t bRedoTPCVertex = evtCuts->IsRedoTPCVertex();
-    //Bool_t bUseConstraints = evtCuts->IsUseBeamSpotConstraint();
-    //vtxESD = AlidNdPtHelper::GetVertex(esdEvent,evtCuts,accCuts,esdTrackCuts,GetAnalysisMode(),kFALSE,bRedoTPCVertex,bUseConstraints); 
-    //isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, esdEvent->GetPrimaryVertexSPD(), GetAnalysisMode(), kFALSE);
-    if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
-      vtxESD = esdEvent->GetPrimaryVertexTPC();
-      //isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, esdEvent->GetPrimaryVertexSPD(), GetAnalysisMode(), kFALSE);
+     if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
+        vtxESD = esdEvent->GetPrimaryVertexTPC();
     }
   }
 
@@ -317,7 +312,7 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
       AliESDtrack *track = (AliESDtrack*)allChargedTracks->At(i);
       if(!track) continue;
 
-      if(!esdTrackCuts->AcceptTrack(track)) continue;
+      //if(!esdTrackCuts->AcceptTrack(track)) continue;
       FillHistograms(track, stack);
       multAll++;
     }
@@ -377,7 +372,7 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
   // Fill rec vs MC information
   //
   Bool_t isPrim = kTRUE;
-  Bool_t hasStrangeMother = kTRUE;
+  Bool_t hasStrangeMother = kFALSE;
 
   if(IsUseMCInfo()) {
     if(!stack) return;
@@ -398,6 +393,11 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
     if(motherLabel>0) mother = stack->Particle(motherLabel); 
     if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only 
     Int_t mech = particle->GetUniqueID(); // production mechanism 
+
+    if( (motherPdg == 3122) || (motherPdg == -3122) || (motherPdg == 310)) // lambda, antilambda, k0s
+    {
+      if( (mech == 4) || (mech == 5) ) hasStrangeMother = kTRUE;
+    }
   }
   
   // fill histo

@@ -13,6 +13,11 @@ void AddTask_mkoehler_dNdPtPbPb()
     return 0;
   }
 
+
+  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+//  Bool_t hasMC= kFALSE;
+
+
   // Switch off all AliInfo (too much output!!!)
   AliLog::SetGlobalLogLevel(AliLog::kError);
   mgr->SetDebugLevel(0);
@@ -20,7 +25,9 @@ void AddTask_mkoehler_dNdPtPbPb()
   //
   // Create physics trigger selection class
   //
-  AliPhysicsSelection *physTrigSel =  new AliPhysicsSelection();
+
+
+AliPhysicsSelection *physTrigSel =  new AliPhysicsSelection();
 
   //
   // Create event cuts
@@ -59,17 +66,26 @@ void AddTask_mkoehler_dNdPtPbPb()
     esdTrackCuts->SetHistogramsOn(kTRUE);
   }
 
-
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-
   //
   // Create task
   //
   AlidNdPtTask *task = new AlidNdPtTask("AlidNdPtTask");
   task->SetUseMCInfo(hasMC);
 
+  //TString datatype=gSystem->Getenv("CONFIG_FILE");
+  //if ( datatype == "PbPb" ){
+  //  task->SelectCollisionCandidates(AliVEvent::kUserDefined);
+  //}
+  //else
+  task->SelectCollisionCandidates(AliVEvent::kMB); 
+
+
+//     }
+//     else
+//       task->SelectCollisionCandidates(); 
+
  //
- // set analysis options from the Helper here !!!
+ // set analysis options from the Helper here
  //
  AlidNdPtHelper::OutputObject outputObject = AlidNdPtHelper::kAnalysisPbPb;
  AlidNdPtHelper::AnalysisMode analysisMode = AlidNdPtHelper::kTPC ;
@@ -103,31 +119,17 @@ void AddTask_mkoehler_dNdPtPbPb()
 
     task->AddAnalysisObject( fdNdPtAnalysisPbPb );
   }
+  
+  // Centrality
+  task->SetUseCentrality(1);     // 0=off, 1=VZERO, 2=SPD
+  task->SetUseCentralityBin(0);  // Bin to be used 0,5,10,20,30,40,50,60,70,80,90,(100=SPDonly)
+                                 // 0 = most centrality  
 
-  // create analysis object
-  if(outputObject==AlidNdPtHelper::kAnalysis) 
-  {
-    AlidNdPtAnalysis *fdNdPtAnalysis = new AlidNdPtAnalysis("dNdPtAnalysis","dN/dPt Analysis");
-    fdNdPtAnalysis->SetEventCuts(evtCuts);
-    fdNdPtAnalysis->SetAcceptanceCuts(accCuts);
-    fdNdPtAnalysis->SetTrackCuts(esdTrackCuts);
-    fdNdPtAnalysis->SetAnalysisMode(analysisMode); 
-    fdNdPtAnalysis->SetParticleMode(particleMode); 
-    if(hasMC) 
-    {
-       physTrigSel->SetAnalyzeMC();
-       fdNdPtAnalysis->SetPhysicsTriggerSelection(physTrigSel);
 
-       fdNdPtAnalysis->SetUseMCInfo(kTRUE);
-       fdNdPtAnalysis->SetHistogramsOn(kTRUE);
-       //fdNdPtAnalysis->SetHistogramsOn(kFALSE);
-    }
-    else { // online trigger
-    fdNdPtAnalysis->SetPhysicsTriggerSelection(physTrigSel); 
-    }
-
-    task->AddAnalysisObject( fdNdPtAnalysis );
-  }
+  // Centrality
+	  task->SetUseCentrality(1);     // 0=off, 1=VZERO, 2=SPD
+	  task->SetUseCentralityBin(0);  // Bin to be used 0,5,10,20,30,40,50,60,70,80,90,(100=SPDonly)
+	                                 // 0 = most centrality
 
  // Add task
   mgr->AddTask(task);
