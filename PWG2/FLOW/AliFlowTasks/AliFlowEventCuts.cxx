@@ -275,9 +275,9 @@ Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
         refmult += TMath::Nint(vzero->GetMTotV0C());
         return refmult;
       case kSPD1clusters:
-        if (!esdevent) return 0;
+        if (!mult) return 0;
         refmult = mult->GetNumberOfITSClusters(1);
-        break;
+        return refmult;
       default:
         return 0;
     }

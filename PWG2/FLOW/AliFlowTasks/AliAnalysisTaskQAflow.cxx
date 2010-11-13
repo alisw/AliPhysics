@@ -81,21 +81,21 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
   //define histograms
 
   TH1* hist;  
-  hist = new TH1I("tracklet_multiplicity","tracklet multiplicity",1000,0,20000);
+  hist = new TH1I("all_tracklet_multiplicity","all tracklets",5000,0,5000);
   before->Add(hist); after->Add(hist->Clone()); //0
-  hist = new TH1I("track_multiplicity", "standard TPC track multiplicity",1000,0,10000);
+  hist = new TH1I("rptrack_multiplicity", "RP selection track multiplicity",5000,0,5000);
   before->Add(hist); after->Add(hist->Clone()); //1
-  hist = new TH1I("refmult","refmult",1000, 0,10000);
+  hist = new TH1I("rprefmult","RP selection refmult",30000, 0,30000);
   before->Add(hist); after->Add(hist->Clone()); //2
-  hist = new TH1I("SPD_clusters","SPD clusters",1000,0,100000);
+  hist = new TH1I("SPD_clusters","SPD clusters",10000,0,10000);
   before->Add(hist); after->Add(hist->Clone()); //3
-  hist = new TH1D("primary_vertexZ","primary vertex z",100,-20,20);
+  hist = new TH1D("primary_vertexZ","primary vertex z",1000,-20,20);
   before->Add(hist); after->Add(hist->Clone()); //4
   hist = new TH1I("ITS_clusters_on_track", "ITS clusters on track", 8, 0, 8);
   before->Add(hist); after->Add(hist->Clone()); //5
   hist = new TH1I("TPC_clusters_on_track", "TPC clusters on track", 159, 1, 160);
   before->Add(hist); after->Add(hist->Clone()); //6
-  hist = new TH1D("TPC_chi2_per_cluster","TPC #chi^{2}/cluster",100,0.0,5.0);
+  hist = new TH1D("TPC_chi2_per_cluster","TPC #chi^{2}/cluster",1000,0.0,5.0);
   before->Add(hist); after->Add(hist->Clone()); //7
   hist = new TH1D("DCA_xy","DCA xy", 1000, -5.0, 5.0 );
   before->Add(hist); after->Add(hist->Clone()); //8
@@ -109,7 +109,7 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
   before->Add(hist); after->Add(hist->Clone()); //12
   hist = new TH1D("eta_tracks","#eta tracks", 1000, -2.0, 2.0 );
   before->Add(hist); after->Add(hist->Clone()); //13
-  hist = new TH1D("TPC_vertex_z", "TPC vertex z", 100,-20.0,20.0);
+  hist = new TH1D("TPC_vertex_z", "TPC vertex z", 1000,-20.0,20.0);
   before->Add(hist); after->Add(hist->Clone()); //14
   hist = new TH1D("ptyield", "p_{t} spectrum", 10000,0.0,10.0);
   before->Add(hist); after->Add(hist->Clone()); //15
@@ -119,6 +119,16 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
   before->Add(hist); after->Add(hist->Clone()); //17
   hist = new TH1D("charges", "charge distribution", 5,-2.5,2.5);
   before->Add(hist); after->Add(hist->Clone()); //18
+  hist = new TH1D("dphivsdeta", "#Delta#phi separation", 10000,-0.1,0.1);
+  before->Add(hist); after->Add(hist->Clone()); //19
+  hist = new TH1I("standardTPC_multiplicity", "standard TPC track multiplicity",10000,0,10000);
+  before->Add(hist); after->Add(hist->Clone()); //20
+  hist = new TH1I("standardV0_multiplicity", "standard V0 multiplicity",30000,0,30000);
+  before->Add(hist); after->Add(hist->Clone()); //21
+  hist = new TH1I("standardSPD1clusters_multiplicity", "standard SPD1 clusters multiplicity",30000,0,30000);
+  before->Add(hist); after->Add(hist->Clone()); //22
+  hist = new TH1I("standardSPDtracklets_multiplicity", "standard SPD tracklets multiplicity",30000,0,30000);
+  before->Add(hist); after->Add(hist->Clone()); //23
   
   //post data here as it doesn't change anyway (the pointer to list anyway)
 
@@ -182,18 +192,26 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   TH1* hptyieldnegA = dynamic_cast<TH1*>(after->At(17));
   TH1* hchargesB = dynamic_cast<TH1*>(before->At(18));
   TH1* hchargesA = dynamic_cast<TH1*>(after->At(18));
+  TH1* hphisepB = dynamic_cast<TH1*>(before->At(19));
+  TH1* hphisepA = dynamic_cast<TH1*>(after->At(19));
+  TH1* hstdtpcmultB = dynamic_cast<TH1*>(before->At(20));
+  TH1* hstdtpcmultA = dynamic_cast<TH1*>(after->At(20));
+  TH1* hstdv0multB = dynamic_cast<TH1*>(before->At(21));
+  TH1* hstdv0multA = dynamic_cast<TH1*>(after->At(21));
+  TH1* hstdspd1clsmultB = dynamic_cast<TH1*>(before->At(22));
+  TH1* hstdspd1clsmultA = dynamic_cast<TH1*>(after->At(22));
+  TH1* hstdspdtrmultB = dynamic_cast<TH1*>(before->At(23));
+  TH1* hstdspdtrmultA = dynamic_cast<TH1*>(after->At(23));
 
   AliMultiplicity* tracklets = const_cast<AliMultiplicity*>(event->GetMultiplicity());
   Int_t ntracklets=0;
   Int_t nspdclusters=0;
-  Int_t nspd1clusters=0;
   Int_t ntrackletsA=0;
   Int_t ntrackletsC=0;
   if (tracklets)
   {
     ntracklets = tracklets->GetNumberOfTracklets();
-    nspdclusters = tracklets->GetNumberOfITSClusters(1);
-    nspd1clusters = tracklets->GetNumberOfITSClusters(1);
+    nspdclusters = tracklets->GetNumberOfITSClusters(0,1);
     for (Int_t i=0; i<tracklets->GetNumberOfTracklets(); i++)
     {
       Bool_t pass=fTrackCuts->IsSelected(tracklets,i);
@@ -205,15 +223,35 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       else ntrackletsA++;
     }
   }
-  //Int_t trackmult = AliESDtrackCuts::GetReferenceMultiplicity(event,kTRUE);
+
   AliFlowEventCuts newcuts;
   newcuts.SetRefMultCuts(fTrackCuts);
+  AliFlowEventCuts stdtpcrefmultcuts;
+  stdtpcrefmultcuts.SetRefMultMethod(AliFlowEventCuts::kTPConly);
+  AliFlowEventCuts stdv0refmultcuts;
+  stdv0refmultcuts.SetRefMultMethod(AliFlowEventCuts::kV0);
+  AliFlowEventCuts stdspd1refmult;
+  stdspd1refmult.SetRefMultMethod(AliFlowEventCuts::kSPD1clusters);
+  AliFlowEventCuts stdspdrefmult;
+  stdspdrefmult.SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
+
   Int_t trackmult = newcuts.RefMult(event);
   Int_t refmult = fEventCuts->RefMult(event);
+  Int_t refmultv0 = stdv0refmultcuts.RefMult(event);
+  Int_t refmulttpc = stdtpcrefmultcuts.RefMult(event);
+  Int_t refmultspdtr = stdspdrefmult.RefMult(event);
+  Int_t refmultspdcls = stdspd1refmult.RefMult(event);
+
   Bool_t passevent = fEventCuts->IsSelected(event);
+
   htrackletmultB->Fill(ntracklets); if (passevent) htrackletmultA->Fill(ntracklets); 
   htrackmultB->Fill(trackmult); if (passevent) htrackmultA->Fill( trackmult); 
   hrefmultB->Fill(refmult); if (passevent) hrefmultA->Fill( refmult); 
+  hstdv0multB->Fill(refmultv0); if (passevent) hstdv0multA->Fill( refmultv0);
+  hstdtpcmultB->Fill(refmulttpc); if (passevent) hstdtpcmultA->Fill( refmulttpc);
+  hstdspd1clsmultB->Fill(refmultspdcls); if (passevent) hstdspd1clsmultA->Fill( refmultspdcls);
+  hstdspdtrmultB->Fill(refmultspdtr); if (passevent) hstdspdtrmultA->Fill( refmultspdtr);
+
   hspdclustersB->Fill(nspdclusters); if (passevent) hspdclustersA->Fill( nspdclusters);
   const AliVertex* vertex = event->GetPrimaryVertex();
   Float_t vtxz=0.0;
@@ -304,6 +342,18 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       if (charge>0) {hptyieldplusB->Fill(pt); if (pass) hptyieldplusA->Fill(pt);}
       if (charge<0) {hptyieldnegB->Fill(pt); if (pass) hptyieldnegA->Fill(pt);}
       hchargesB->Fill(charge); if (pass) hchargesA->Fill(charge);
+      for (Int_t j=i+1; j<ntracks; j++)
+      {
+        TObject* obj2 = fTrackCuts->GetInputObject(j);
+        if (!obj2) continue;
+        Bool_t pass2 = fTrackCuts->IsSelected(obj2,j);
+        AliESDtrack* track2 = dynamic_cast<AliESDtrack*>(fTrackCuts->GetTrack());
+        if (track2)
+        {
+          Double_t dphi = phi-track2->Phi();
+          hphisepB->Fill(dphi); if (pass&&pass2) hphisepA->Fill(dphi);
+        }
+      }
     }
   }
   if (ntracks!=0) meanpt = meanpt/nselected;
@@ -334,12 +384,16 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     if (!flowevent) flowevent = new AliFlowEvent(fTrackCuts,fTrackCuts);
 
     AliFlowTrackCuts cutspos(*fTrackCuts);
+    cutspos.SetEvent(event);
     cutspos.SetCharge(1);
     AliFlowTrackCuts cutsneg(*fTrackCuts);
+    cutsneg.SetEvent(event);
     cutsneg.SetCharge(-1);
     AliFlowTrackCuts cutssuba(*fTrackCuts);
+    cutssuba.SetEvent(event);
     cutssuba.SetEtaRange(-0.8,-0.1);
     AliFlowTrackCuts cutssubb(*fTrackCuts);
+    cutssubb.SetEvent(event);
     cutssubb.SetEtaRange(0.1,0.8);
     AliFlowEvent evpos(&cutspos,&cutspos);
     AliFlowEvent evneg(&cutsneg,&cutsneg);

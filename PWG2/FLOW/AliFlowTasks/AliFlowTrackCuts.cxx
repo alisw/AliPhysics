@@ -56,7 +56,7 @@ ClassImp(AliFlowTrackCuts)
 AliFlowTrackCuts::AliFlowTrackCuts():
   AliFlowTrackSimpleCuts(),
   fAliESDtrackCuts(new AliESDtrackCuts()),
-  fQA(kFALSE),
+  fQA(NULL),
   fCutMC(kFALSE),
   fCutMCprocessType(kFALSE),
   fMCprocessType(kPNoProcess),
@@ -95,7 +95,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
 AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   AliFlowTrackSimpleCuts(that),
   fAliESDtrackCuts(new AliESDtrackCuts(*(that.fAliESDtrackCuts))),
-  fQA(that.fQA),
+  fQA(NULL),
   fCutMC(that.fCutMC),
   fCutMCprocessType(that.fCutMCprocessType),
   fMCprocessType(that.fMCprocessType),
@@ -125,7 +125,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMCevent(NULL),
   fMCparticle(NULL),
   fEvent(NULL),
-  fTPCtrack(that.fTPCtrack)
+  fTPCtrack()
 {
   //copy constructor
 }
@@ -136,7 +136,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   //assignment
   AliFlowTrackSimpleCuts::operator=(that);
   *fAliESDtrackCuts=*(that.fAliESDtrackCuts);
-  fQA=that.fQA;
+  fQA=NULL;
   fCutMC=that.fCutMC;
   fCutMCprocessType=that.fCutMCprocessType;
   fMCprocessType=that.fMCprocessType;
@@ -607,4 +607,17 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       if (!fEvent) return NULL;
       return fEvent->GetTrack(i);
   }
+}
+
+//-----------------------------------------------------------------------
+void AliFlowTrackCuts::Clear(Option_t*)
+{
+  //clean up
+  fTrack=NULL;
+  fMCevent=NULL;
+  fMCparticle=NULL;
+  fTrackLabel=0;
+  fTrackWeight=0.0;
+  fTrackEta=0.0;
+  fTrackPhi=0.0;
 }
