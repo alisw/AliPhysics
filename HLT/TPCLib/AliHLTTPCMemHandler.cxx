@@ -1206,10 +1206,10 @@ void AliHLTTPCMemHandler::UpdateRowPointer(AliHLTTPCDigitRowData *&tempPt)
 {
   //Update the data pointer to the next padrow in memory.
   
-  Byte_t *tmp = (Byte_t*)tempPt;
+  Byte_t *tmp = reinterpret_cast<Byte_t*>(tempPt);
   Int_t size = sizeof(AliHLTTPCDigitRowData) + tempPt->fNDigit*sizeof(AliHLTTPCDigitData);
   tmp += size;
-  tempPt = (AliHLTTPCDigitRowData*)tmp;
+  tempPt = reinterpret_cast<AliHLTTPCDigitRowData*>(tmp);
 }
 
 Int_t  AliHLTTPCMemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t time) const

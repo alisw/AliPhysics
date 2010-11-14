@@ -130,8 +130,8 @@ TObject* AliHLTEveHistoMerger::Process(const TObject * evtData, AliHLTUInt32_t s
 
 // merge histos
 
-    for ( unsigned int iColl = 0; iColl<fStore.size(); iColl++) {
-        AliHLTGlobalHCCollection &c = fStore[iColl];
+    for ( unsigned int jColl = 0; jColl<fStore.size(); jColl++) {
+        AliHLTGlobalHCCollection &c = fStore[jColl];
         if ( !c.fNeedToMerge && c.fMergedObject ) continue;
         if ( c.fInstances.size() <1 ) continue;
         delete c.fMergedObject;

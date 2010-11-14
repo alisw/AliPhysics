@@ -301,9 +301,9 @@ void AliHLTTPCQADataMaker::MakeESDs(AliESDEvent * esd, AliESDEvent* hltesd)
   } 
   
   if(nESDTracks)
-    nClsOffline /= Float_t(nESDTracks);
+    nClsOffline = (Int_t)( Float_t(nClsOffline)/Float_t(nESDTracks) );
   if(nHLTesdTracks)
-    nClsHLT /= Float_t(nHLTesdTracks);
+    nClsHLT = (Int_t)( Float_t(nClsHLT)/ Float_t(nHLTesdTracks) );
 
   GetESDsData(kNCls)->Fill(nClsOffline, nClsHLT);
 

@@ -61,7 +61,7 @@ int AliHLTPHOSClusterizerComponentNbyN::ScanConfigurationArgument(int argc, cons
     {
         if (++i >= argc) return -EPROTO;
         argument = argv[i];
-        dynamic_cast<AliHLTCaloClusterizerNbyN*>(fClusterizerPtr)->SetGridDimension(argument.Atof());
+        dynamic_cast<AliHLTCaloClusterizerNbyN*>(fClusterizerPtr)->SetGridDimension(argument.Atoi());
         return 1;
     }
     
