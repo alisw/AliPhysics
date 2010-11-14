@@ -945,6 +945,20 @@ return 1.5;
 
 }
 
+//_____________________________________________________________________________
+Double_t AlidNdPtHelper::GetStrangenessCorrFactorPbPb(const Double_t pt)
+{
+// data driven correction factor for secondaries (PbPb)
+
+if (pt <= 0.25) return 1.0;
+if (pt <= 0.5) return GetLinearInterpolationValue(0.25,1.0,0.5,1.4, pt);
+if (pt <= 1.0) return GetLinearInterpolationValue(0.5,1.4,1.0,1.47, pt);
+if (pt <= 2.0) return GetLinearInterpolationValue(1.0,1.47,2.0,1.56,  pt);
+if (pt <= 5.0) return GetLinearInterpolationValue(2.0,1.56,5.0,1.67,  pt);
+return 1.67;
+
+}
+
 //___________________________________________________________________________
 Double_t AlidNdPtHelper::GetLinearInterpolationValue(const Double_t x1,const  Double_t y1,const  Double_t x2,const  Double_t y2, const Double_t pt)
 {
