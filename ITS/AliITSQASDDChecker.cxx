@@ -158,7 +158,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 2: L4 mean: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
 	    Int_t aboveThreshold = 0;
 	    for(Int_t k=0; k<= hdata->GetNbinsX(); k++) {if(hdata->GetBinLowEdge(k) > threshold) aboveThreshold += (int)(hdata->GetBinContent(k));}
-	    Float_t fractionAboveThreshold = ((Float_t) aboveThreshold)/hdata->GetEntries();
+	    Float_t fractionAboveThreshold=0.;
+	    if(hdata->GetEntries()>0.)fractionAboveThreshold=((Float_t) aboveThreshold)/hdata->GetEntries();
 	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 1, L3: Raw fractionAboveThreshold: %f",fractionAboveThreshold));
 	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 2, L4: Raw fractionAboveThreshold: %f",fractionAboveThreshold));
 	    if(fractionAboveThreshold > fThresholdForRelativeOccupancy) {SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
@@ -294,7 +295,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      for(Int_t k=0; k<= ((Int_t)hdata->GetNbinsX()); k++) {
 		if(hdata->GetBinLowEdge(k) > threshold) aboveThreshold += (Int_t)(hdata->GetBinContent(k));
 	      }
-	      Float_t fractionAboveThreshold = ((Float_t) aboveThreshold)/hdata->GetEntries();
+	      Float_t fractionAboveThreshold=0.;
+	      if(hdata->GetEntries()>0.) fractionAboveThreshold = ((Float_t) aboveThreshold)/hdata->GetEntries();
 	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 3, L3: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
 	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 4, L4: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
 	      if(fractionAboveThreshold > fThresholdForRelativeOccupancy) { 
