@@ -135,14 +135,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cRadius));
 
    TString cAdd = "";
-   if(filterMask==32){
-     // this is the standard mask do not add anything
-     // should be changed after current train over all data is finished 
-     // now needed for merging
-   }
-   else{
-     cAdd += Form("_Filter%05d",filterMask);
-   }
+   cAdd += Form("_Filter%05d",filterMask);
 
    TString c_jr(jr);
    c_jr.ToLower();
@@ -179,7 +172,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    jetana->SetConfigFile("");
    jetana->SetDebugLevel(2);
    if(TMath::Abs((radius-0.4))< 0.02&&c_jf.Contains("fastjet")){
-     jetana->SetFilterPt(10.);
+     jetana->SetFilterPt(100.);
    }
 
 

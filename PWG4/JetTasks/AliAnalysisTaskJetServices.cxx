@@ -70,6 +70,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fUseAODInput(kFALSE),
   fUsePhysicsSelection(kFALSE),
   fMC(kFALSE),
+  fPhysicsSelectionFlag(AliVEvent::kMB),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
   fAvgTrials(1),
@@ -105,6 +106,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fUseAODInput(kFALSE),
   fUsePhysicsSelection(kFALSE),
   fMC(kFALSE),
+  fPhysicsSelectionFlag(AliVEvent::kMB),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
   fAvgTrials(1),
@@ -391,7 +393,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   Bool_t aodEventSelected = IsEventSelected(aod);
 
-  Bool_t physicsSelection = ((fInputHandler->IsEventSelected())&AliVEvent::kMB);
+  Bool_t physicsSelection = ((fInputHandler->IsEventSelected())&fPhysicsSelectionFlag);
   fEventCutInfoESD |= kPhysicsSelectionCut; // other alreay set via IsEventSelected
   fh1EventCutInfoESD->Fill(fEventCutInfoESD);
 
