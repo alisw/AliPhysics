@@ -747,8 +747,16 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
     ResetTrackToFollow(*t);
     fTrackToFollow.ResetClusters();
 
-    if ((esd->GetStatus()&AliESDtrack::kTPCin)==0)
+    // ITS standalone tracks
+    if ((esd->GetStatus()&AliESDtrack::kTPCin)==0) {
       fTrackToFollow.ResetCovariance(10.);
+      // protection for loopers that can have parameters screwed up
+      if(TMath::Abs(fTrackToFollow.GetY())>1000. ||
+	 TMath::Abs(fTrackToFollow.GetZ())>1000.) {
+	delete t;
+	continue;
+      }
+    }
 
     //Refitting...
     Bool_t pe=(AliITSReconstructor::GetRecoParam()->GetComputePlaneEff() &&
@@ -2394,7 +2402,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      track->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 
 
-     if (extra) { // search for extra clusters in overlapped modules
+     if (extra && clAcc) { // search for extra clusters in overlapped modules
        AliITStrackV2 tmp(*track);
        if (!ComputeRoad(track,ilayer,idet,zmin,zmax,ymin,ymax)) return kFALSE;
        layer.SelectClusters(zmin,zmax,ymin,ymax);

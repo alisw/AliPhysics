@@ -1868,6 +1868,14 @@ Bool_t AliExternalTrackParam::PropagateToBxByBz(Double_t xk, const Double_t b[3]
   Double_t dx=xk-fX;
   if (TMath::Abs(dx)<=kAlmost0)  return kTRUE;
   if (TMath::Abs(fP[4])<=kAlmost0) return kFALSE;
+  // Do not propagate tracks outside the ALICE detector
+  if (TMath::Abs(dx)>1e5 ||
+      TMath::Abs(GetY())>1e5 ||
+      TMath::Abs(GetZ())>1e5) {
+    AliWarning(Form("Anomalous track, target X:%f",xk));
+    Print();
+    return kFALSE;
+  }
 
   Double_t crv=GetC(b[2]);
   if (TMath::Abs(b[2]) < kAlmost0Field) crv=0.;
