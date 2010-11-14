@@ -197,7 +197,7 @@ void AliRawReaderDateOnline::SelectEvents(Int_t type,
   for (Int_t i = 0; i < 50; i++) {
     if (triggerMask & (1ull << i)) {
 	if (!trSelection.IsNull()) trSelection += "&";
-	trSelection += Form("%d",i+1);
+	trSelection += Form("%d",i);
     }
   }
   table[7] = trSelection.Data();
