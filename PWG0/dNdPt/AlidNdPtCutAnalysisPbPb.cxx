@@ -147,13 +147,12 @@ void AlidNdPtCutAnalysisPbPb::Init(){
   //
   // THnSparse track histograms
   //
+  //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge
+  Int_t binsRecMCTrackHist[12]={160,20,40,100,100,30,90,ptNbins, 2, 2, 2, 3};
+  Double_t minRecMCTrackHist[12]={0., 0., 0., -10.,-10.,-1.5, 0., ptMin, 0., 0., 0., -1.};
+  Double_t maxRecMCTrackHist[12]={160.,10.,1.2, 10.,10.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2., 2.};
 
-  //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isPrim:polarity
-  Int_t binsRecMCTrackHist[11]={160,80,80,100,100,90,90,ptNbins, 3, 2, 2};
-  Double_t minRecMCTrackHist[11]={0., 0., 0., -5.,-5.,-1.5, 0., ptMin, -1., 0., 0.};
-  Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 5.,5.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2.};
-
-  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:kinkIdx:isPrim:polarity",11,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
+  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge",12,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
   fRecMCTrackHist->SetBinEdges(7,binsPt);
 
   fRecMCTrackHist->GetAxis(0)->SetTitle("nClust");
@@ -165,8 +164,9 @@ void AlidNdPtCutAnalysisPbPb::Init(){
   fRecMCTrackHist->GetAxis(6)->SetTitle("#phi (rad)");
   fRecMCTrackHist->GetAxis(7)->SetTitle("p_{T} (GeV/c)");
   fRecMCTrackHist->GetAxis(8)->SetTitle("hasStrangeMother");
-  fRecMCTrackHist->GetAxis(9)->SetTitle("isPrim");
-  fRecMCTrackHist->GetAxis(10)->SetTitle("polarity");
+  fRecMCTrackHist->GetAxis(9)->SetTitle("isFromMaterial");
+  fRecMCTrackHist->GetAxis(10)->SetTitle("isPrim");
+  fRecMCTrackHist->GetAxis(11)->SetTitle("charge");
   fRecMCTrackHist->Sumw2();
 
   // init output folder
@@ -281,7 +281,6 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
         vtxESD = esdEvent->GetPrimaryVertexTPC();
     }
   }
-
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex; 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
@@ -373,6 +372,7 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
   //
   Bool_t isPrim = kTRUE;
   Bool_t hasStrangeMother = kFALSE;
+  Bool_t isFromMaterial = kFALSE;
 
   if(IsUseMCInfo()) {
     if(!stack) return;
@@ -382,8 +382,6 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
     if(particle->GetPDG() && particle->GetPDG()->Charge()==0.) return;
     isPrim = stack->IsPhysicalPrimary(label);
 
-    //if(isPrim && pt > 1.5 && kinkIdx == -1) printf("nClust  %d \n", nClust);
-  
     // check whether has stange mother
     //
     Int_t motherPdg = -1; 
@@ -397,14 +395,18 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
     if( (motherPdg == 3122) || (motherPdg == -3122) || (motherPdg == 310)) // lambda, antilambda, k0s
     {
       if( (mech == 4) || (mech == 5) ) hasStrangeMother = kTRUE;
+    } 
+    else {
+      //if(isPrim==0 && mech == 13)   
+      //printf("mech %d \n", mech);
+      if(!isPrim) isFromMaterial = kTRUE; 
     }
   }
+
   
   // fill histo
-  Int_t polarity = -2;
-  if (esdTrack->Charge() < 0.) polarity = 0; 
-  else polarity = 1; 
-  Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,hasStrangeMother,isPrim, polarity }; 
+  Int_t charge = esdTrack->Charge();
+  Double_t vRecMCTrackHist[12] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,hasStrangeMother,isFromMaterial,isPrim,charge }; 
   fRecMCTrackHist->Fill(vRecMCTrackHist);
 }
 
