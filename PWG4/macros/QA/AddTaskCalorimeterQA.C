@@ -46,27 +46,27 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   reader->SetCTSPtMin  (0.);
   
   if(kUseKinematics){
-		if(inputDataType == "ESD"){
-			reader->SwitchOnStack();          
-			reader->SwitchOffAODMCParticles(); 
-		}
-		else if(inputDataType == "AOD"){
-			reader->SwitchOffStack();          
-			reader->SwitchOnAODMCParticles(); 
-		}
+    if(inputDataType == "ESD"){
+      reader->SwitchOnStack();          
+      reader->SwitchOffAODMCParticles(); 
+    }
+    else if(inputDataType == "AOD"){
+      reader->SwitchOffStack();          
+      reader->SwitchOnAODMCParticles(); 
+    }
   }
   //if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
   if(oldAOD)         reader->SwitchOnOldAODs();
   if(kPrintSettings) reader->Print("");
-	
+  
   // *** Calorimeters Utils	***
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
   cu->SetNumberOfCellsFromPHOSBorder(2);
-	
+  
   // Remove EMCAL hottest channels for first LHC10 periods 	
   cu->SwitchOnBadChannelsRemoval();
   // SM0
@@ -116,12 +116,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   emcalQA->SwitchOnCorrelation();
   if(!kUseKinematics)emcalQA->SetTimeCut(400,850);//Open for the moment
   //Set Histrograms bins and ranges
-  emcalQA->SetHistoPtRangeAndNBins(0, 5, 50) ;
-  emcalQA->SetHistoFinePtRangeAndNBins(0, 5, 200) ; // bining for fhAmpId
+  emcalQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  emcalQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
   emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 100) ;
   emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 200) ;
   emcalQA->SetNumberOfModules(4); //EMCAL first year
-  emcalQA->SetHistoMassRangeAndNBins(0., 0.6, 200) ;
+  emcalQA->SetHistoMassRangeAndNBins(0., 1, 400) ;
   emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
   emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
   emcalQA->SetHistodEdxRangeAndNBins(0.,200.,200);
@@ -129,7 +129,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   emcalQA->SetHistoTimeRangeAndNBins(300.,900,300);
   emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
   emcalQA->SetHistoVertexDistRangeAndNBins(0.,500.,500);
-  emcalQA->SetHistoNClusterCellRangeAndNBins(0,50,50);
+  emcalQA->SetHistoNClusterCellRangeAndNBins(0,500,500);
   emcalQA->SetHistoXRangeAndNBins(-230,90,120);
   emcalQA->SetHistoYRangeAndNBins(370,450,40);
   emcalQA->SetHistoZRangeAndNBins(-400,400,200);
@@ -152,12 +152,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   //phosQA->GetMCAnalysisUtils()->SetDebug(10);
   phosQA->SwitchOffPlotsMaking();
   //Set Histrograms bins and ranges
-  phosQA->SetHistoPtRangeAndNBins(0, 5, 50) ;
-  phosQA->SetHistoFinePtRangeAndNBins(0, 5, 200) ; // bining for fhAmpId
+  phosQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  phosQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
   phosQA->SetHistoPhiRangeAndNBins(259*TMath::DegToRad(), 321*TMath::DegToRad(), 130) ;
   phosQA->SetHistoEtaRangeAndNBins(-0.125, 0.125, 57) ;
   phosQA->SetNumberOfModules(3); //PHOS first year
-  phosQA->SetHistoMassRangeAndNBins(0., 0.6, 200) ;
+  phosQA->SetHistoMassRangeAndNBins(0., 1., 400) ;
   phosQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10) ;
   phosQA->SetHistoPOverERangeAndNBins(0,10.,100);
   phosQA->SetHistodEdxRangeAndNBins(0.,200.,200);
@@ -165,7 +165,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   phosQA->SetHistoTimeRangeAndNBins(0.,300,300);
   phosQA->SetHistoRatioRangeAndNBins(0.,2.,100);
   phosQA->SetHistoVertexDistRangeAndNBins(0.,500.,500);
-  phosQA->SetHistoNClusterCellRangeAndNBins(0,50,50);
+  phosQA->SetHistoNClusterCellRangeAndNBins(0,500,500);
   phosQA->SetHistoXRangeAndNBins(-100,400,100);
   phosQA->SetHistoYRangeAndNBins(-490,-290,100);
   phosQA->SetHistoZRangeAndNBins(-80,80,100);
