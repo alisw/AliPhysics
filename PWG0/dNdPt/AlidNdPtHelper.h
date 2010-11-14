@@ -104,6 +104,7 @@ class AlidNdPtHelper : public TObject
     static TH1* GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, const char* name);
 
     static Double_t GetStrangenessCorrFactor(const Double_t pt);
+    static Double_t GetStrangenessCorrFactorPbPb(const Double_t pt);    
     static Double_t GetLinearInterpolationValue(const Double_t x1, const Double_t y1, const Double_t x2, const Double_t y2, const Double_t pt);
 
     ClassDef(AlidNdPtHelper, 1);

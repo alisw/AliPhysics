@@ -167,6 +167,18 @@ void AlidNdPtTask::UserExec(Option_t *)
     }
   }
 
+  // track cuts from Jochen
+  const AliESDVertex* vtxESDTPC = fESD->GetPrimaryVertexTPC();
+  if( vtxESDTPC->GetNContributors() < 1 ) {   
+    return;
+  }
+
+  const AliMultiplicity* multESD = fESD->GetMultiplicity();
+  if( vtxESDTPC->GetNContributors() < (-10.+0.25*multESD->GetNumberOfITSClusters(0)) ) {
+    return;
+  } 
+  
+  
   // Process analysis
   
   Bool_t process = kTRUE;
@@ -225,6 +237,8 @@ Int_t AlidNdPtTask::CalculateCentralityBin(){
   
   if ( fUseCentrality == 1 ) {
     // -- centrality cuts V0
+#if 0 
+    // 2010-11-10 - now old cuts
     if (      multV0 >=    0.   && multV0 <=   106.75 ) centrality = 90;
     else if ( multV0 >   106.75 && multV0 <=   277.55 ) centrality = 80;
     else if ( multV0 >   277.55 && multV0 <=   661.85 ) centrality = 70;
@@ -236,8 +250,24 @@ Int_t AlidNdPtTask::CalculateCentralityBin(){
     else if ( multV0 >  8902.95 && multV0 <= 12788.6  ) centrality = 10;
     else if ( multV0 > 12788.6  && multV0 <= 15222.5  ) centrality = 5;
     else if ( multV0 > 15222.5  && multV0 <= 19449.8  ) centrality = 0;
+#else
+    // 2010-11-14
+    if (      multV0 >=    0.  && multV0 <=   124.5 ) centrality = 90;
+    else if ( multV0 >   124.5 && multV0 <=   274.5 ) centrality = 80;
+    else if ( multV0 >   274.5 && multV0 <=   574.5 ) centrality = 70;
+    else if ( multV0 >   574.5 && multV0 <=  1224.5 ) centrality = 60;
+    else if ( multV0 >  1224.5 && multV0 <=  2174.5 ) centrality = 50;
+    else if ( multV0 >  2174.5 && multV0 <=  3624.5 ) centrality = 40;
+    else if ( multV0 >  3624.5 && multV0 <=  5574.5 ) centrality = 30;
+    else if ( multV0 >  5574.5 && multV0 <=  8274.5 ) centrality = 20;
+    else if ( multV0 >  8274.5 && multV0 <= 12024.5 ) centrality = 10;
+    else if ( multV0 > 12024.5 && multV0 <= 14674.5 ) centrality = 5;
+    else if ( multV0 > 14674.5 && multV0 <= 19449.5 ) centrality = 0;
+#endif
   }
   else if ( fUseCentrality == 2 ) {
+#if 0 
+    // 2010-11-10 - now old cuts
     if (      nClusters[1] >=    0.  && nClusters[1] <=    7.18 )  centrality = 100;
     else if ( nClusters[1] >    7.18 && nClusters[1] <=   35.9  )  centrality = 90;
     else if ( nClusters[1] >   35.9  && nClusters[1] <=   93.34 )  centrality = 80;
@@ -250,6 +280,20 @@ Int_t AlidNdPtTask::CalculateCentralityBin(){
     else if ( nClusters[1] > 2735.58 && nClusters[1] <= 3884.38 )  centrality = 10;
     else if ( nClusters[1] > 3884.38 && nClusters[1] <= 4573.66 )  centrality = 5;
     else if ( nClusters[1] > 4573.66 && nClusters[1] <= 6540.98 )  centrality = 0;
+#else
+    // 2010-11-14
+    if      ( nClusters[1] >     0. && nClusters[1] <=   29.5 )  centrality = 90;
+    else if ( nClusters[1] >   29.5 && nClusters[1] <=   69.5 )  centrality = 80;
+    else if ( nClusters[1] >   69.5 && nClusters[1] <=  149.5 )  centrality = 70;
+    else if ( nClusters[1] >  149.5 && nClusters[1] <=  309.5 )  centrality = 60;
+    else if ( nClusters[1] >  309.5 && nClusters[1] <=  589.5 )  centrality = 50;
+    else if ( nClusters[1] >  589.5 && nClusters[1] <=  989.5 )  centrality = 40;
+    else if ( nClusters[1] >  989.5 && nClusters[1] <= 1569.5 )  centrality = 30;
+    else if ( nClusters[1] > 1569.5 && nClusters[1] <= 2369.5 )  centrality = 20;
+    else if ( nClusters[1] > 2369.5 && nClusters[1] <= 3509.5 )  centrality = 10;
+    else if ( nClusters[1] > 3509.5 && nClusters[1] <= 4349.5 )  centrality = 5;
+    else if ( nClusters[1] > 4349.5 && nClusters[1] <= 6540.5 )  centrality = 0;
+#endif
   }
   
   return centrality;
