@@ -1223,8 +1223,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number
-      fSpacePointData[counter].fID = counter
-	+((fCurrentSlice&0x7f)<<25)+((patch&0x7)<<22);//Uli
+      fSpacePointData[counter].SetID( fCurrentSlice, patch, counter );
 
 #ifdef do_mc
       Int_t trackID[3];
@@ -1375,8 +1374,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number
-      fSpacePointData[counter].fID = counter
-	+((fCurrentSlice&0x7f)<<25)+((patch&0x7)<<22);//Uli
+      fSpacePointData[counter].SetID( fCurrentSlice, patch, counter );
 
 #ifdef do_mc
       Int_t trackID[3];

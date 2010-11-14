@@ -282,16 +282,16 @@ int AliHLTTPCClusterConverterComponent::DoEvent(const AliHLTComponentEventData& 
        
            for(Int_t h=0; h<nHits; h++){
                UInt_t  idTrack        = hitnum[h];
-               Int_t   sliceTrack     = (idTrack>>25) & 0x7f;
-               Int_t   partitionTrack = (idTrack>>22) & 0x7;
-               UInt_t  posTrack       = idTrack&0x3fffff;
+               Int_t   sliceTrack     = AliHLTTPCSpacePointData::GetSlice(idTrack);
+               Int_t   partitionTrack = AliHLTTPCSpacePointData::GetPatch(idTrack);
+               UInt_t  posTrack       = AliHLTTPCSpacePointData::GetNumber(idTrack);
                  
 		 fOffArray->Clear();
                  for(Int_t cl=0; cl<numOfTotalSpacePoints; cl++){       
                      UInt_t  idCluster        = fClusters[cl].fID;
-                     Int_t   sliceCluster     = (idCluster>>25) & 0x7f;
-                     Int_t   partitionCluster = (idCluster>>22) & 0x7;
-                     UInt_t  posCluster       = idCluster&0x3fffff;
+                     Int_t   sliceCluster     = AliHLTTPCSpacePointData::GetSlice(idCluster);
+                     Int_t   partitionCluster = AliHLTTPCSpacePointData::GetPatch(idCluster);
+                     UInt_t  posCluster       = AliHLTTPCSpacePointData::GetNumber(idCluster);
 		      		     
                      
 		     if(sliceCluster==sliceTrack && partitionCluster==partitionTrack && posCluster==posTrack){

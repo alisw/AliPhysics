@@ -176,16 +176,16 @@ void AliHLTTPCCompModelConverter::Convert()
 	  outtrack->CalculateHelix();
 	  Int_t nhits = intrack->GetNHits();
 	  UInt_t *hitids = intrack->GetHitNumbers();
-	  Int_t origslice = (hitids[nhits-1]>>25)&0x7f;
+	  Int_t origslice = AliHLTTPCSpacePointData::GetSlice(hitids[nhits-1]);
 	  outtrack->Init(origslice,-1);
 	  
 	  for(Int_t j=nhits-1; j>=0; j--)
 	    {
 	      UInt_t id=hitids[j];
-	      Int_t slice = (id>>25)&0x7f;
-	      Int_t patch = (id>>22)&0x7;
-	      UInt_t pos = id&0x3fffff;	     
-	      
+	      Int_t slice = AliHLTTPCSpacePointData::GetSlice(id);
+	      Int_t patch = AliHLTTPCSpacePointData::GetPatch(id);
+	      UInt_t pos = AliHLTTPCSpacePointData::GetNumber(id);
+
 	      //UInt_t size;
 	      if ( !fClusters[slice][patch] )
 		{

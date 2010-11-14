@@ -135,8 +135,8 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& ev
 	
 	for(int i=0;i<nSpacepoints;i++){
 	  UInt_t idCluster = clusters[i].fID;
-	  Int_t slice = (idCluster>>25) & 0x7f;
-	  Int_t patch = (idCluster>>22) & 0x7;
+	  Int_t slice = AliHLTTPCSpacePointData::GetSlice(idCluster);
+	  Int_t patch = AliHLTTPCSpacePointData::GetPatch(idCluster);
 	  
 	  dump << "" << endl;
 	  dump << "ClusterNumber: " << spacePointCounter << endl;
@@ -183,8 +183,8 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& ev
 	
 	for(int i=0;i<nSpacepoints;i++){
 	  UInt_t idCluster = clusters[i].fID;
-	  Int_t slice = (idCluster>>25) & 0x7f;
-	  Int_t patch = (idCluster>>22) & 0x7;
+	  Int_t slice = AliHLTTPCSpacePointData::GetSlice(idCluster);
+	  Int_t patch = AliHLTTPCSpacePointData::GetPatch(idCluster);
 	  
 	  dump << "" << endl;
 	  dump << "ClusterNumber: " << spacePointCounter << endl;

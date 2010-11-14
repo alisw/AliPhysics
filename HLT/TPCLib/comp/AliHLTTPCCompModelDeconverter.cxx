@@ -156,9 +156,9 @@ int AliHLTTPCCompModelDeconverter::DeconvertTracks( AliHLTUInt8_t* data, UInt_t&
 	      //validation test
 	      //HLTInfo("Hello World %d !",jj);
 	      UInt_t slice, partition;
-	      slice = (tracklet->fPointIDs[jj]>>25) & 0x7f;
-	      partition = (tracklet->fPointIDs[jj]>>22) & 0x7;
-	      tracklet->fPointIDs[jj] = (clusterCounts[slice][partition] & ((1<<22)-1)) | ((partition & 0x7) << 22) | ((slice & 0x7F) << 25);
+	      slice = AliHLTTPCSpacePointData::GetSlice(tracklet->fPointIDs[jj]);
+	      partition = AliHLTTPCSpacePointData::GetPatch(tracklet->fPointIDs[jj]);
+	      tracklet->fPointIDs[jj] = AliHLTTPCSpacePointData::GetID(slice,partition,clusterCounts[slice][partition]);
 	      clusterCounts[slice][partition]++;
 	    }
 	  tracklet = (AliHLTTPCTrackSegmentData*) ( ((AliHLTUInt8_t*)tracklet)+sizeof(AliHLTTPCTrackSegmentData)+tracklet->fNPoints*sizeof(UInt_t) );
@@ -224,7 +224,8 @@ int AliHLTTPCCompModelDeconverter::DeconvertClusters( UInt_t slice, UInt_t patch
 	      clusters[clusterData->fSpacePointCnt].fCharge = charge;
 	      clusters[clusterData->fSpacePointCnt].fUsed = kTRUE;
 	      clusters[clusterData->fSpacePointCnt].fTrackN = i;
-	      clusters[clusterData->fSpacePointCnt].fID = (clusterData->fSpacePointCnt & ((1<<22)-1)) | ((patch & 0x7) << 22) | ((slice & 0x7F) << 25);
+	      clusters[clusterData->fSpacePointCnt].SetID(slice,patch,clusterData->fSpacePointCnt);
+
 	      clusterData->fSpacePointCnt++;
 	      outSize += sizeof(AliHLTTPCSpacePointData);
 	    }
@@ -276,7 +277,7 @@ int AliHLTTPCCompModelDeconverter::DeconvertClusters( UInt_t slice, UInt_t patch
 			      clusters[clusterData->fSpacePointCnt].fCharge = cl[ii].fCharge;
 			      clusters[clusterData->fSpacePointCnt].fUsed = kFALSE;
 			      clusters[clusterData->fSpacePointCnt].fTrackN = -1;
-			      clusters[clusterData->fSpacePointCnt].fID = (clusterData->fSpacePointCnt & ((1<<22)-1)) | ((patch & 0x7) << 22) | ((slice & 0x7F) << 25);
+			      clusters[clusterData->fSpacePointCnt].SetID(slice,patch,clusterData->fSpacePointCnt);
 			      clusterData->fSpacePointCnt++;
 			      outSize += sizeof(AliHLTTPCSpacePointData);
 			    }

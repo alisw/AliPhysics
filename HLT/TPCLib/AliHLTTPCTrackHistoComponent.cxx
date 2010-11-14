@@ -286,10 +286,10 @@ void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* it
        for(UInt_t i=0; i<element->GetNumberOfPoints(); i++){
            
       	   UInt_t idTrack   = hitnum[i];
-           Int_t sliceTrack = (idTrack>>25) & 0x7f;
-           Int_t patchTrack = (idTrack>>22) & 0x7;
-           UInt_t pos	    = idTrack&0x3fffff;
-
+           Int_t sliceTrack = AliHLTTPCSpacePointData::GetSlice(idTrack);
+           Int_t patchTrack = AliHLTTPCSpacePointData::GetPatch(idTrack);
+           UInt_t pos	    = AliHLTTPCSpacePointData::GetNumber(idTrack);
+ 
            if( !fClustersArray[sliceTrack][patchTrack] ) continue;	       
       	   
       	   if(sliceTrack<0 || sliceTrack>36 || patchTrack<0 || patchTrack>5 ){

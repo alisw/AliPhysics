@@ -31,6 +31,21 @@ struct AliHLTTPCSpacePointData{
   UInt_t fQMax;     // QMax of cluster
   Bool_t fUsed;     // only used in AliHLTTPCDisplay 
   Int_t fTrackN;    // only used in AliHLTTPCDisplay 
+
+  static UInt_t GetSlice( UInt_t Id )  { return (Id>>25)&0x3F; }
+  static UInt_t GetPatch( UInt_t Id )  { return (Id>>22)&0x7; }
+  static UInt_t GetNumber( UInt_t Id ) { return Id&0x003FFFFF; }
+  static UInt_t GetID( UInt_t Slice, UInt_t Patch, UInt_t Number ){
+    return ((Slice&0x3F)<<25)+((Patch&0x7)<<22) + (Number&0x003FFFFF);
+  }
+
+  void SetID( UInt_t Slice, UInt_t Patch, UInt_t Number ){
+    fID = GetID(Slice, Patch,Number);
+  }
+  UInt_t GetSlice() const { return GetSlice(fID); }
+  UInt_t GetPatch() const { return GetPatch(fID); }
+  UInt_t GetNumber() const { return GetNumber(fID); }
+
 };
 typedef struct AliHLTTPCSpacePointData AliHLTTPCSpacePointData;
 

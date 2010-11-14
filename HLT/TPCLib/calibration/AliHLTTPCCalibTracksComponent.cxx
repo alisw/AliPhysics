@@ -360,10 +360,10 @@ Int_t AliHLTTPCCalibTracksComponent::ProcessCalibration(const AliHLTComponentEve
       for(Int_t i=0; i<nSpacepoint; i++){
        
           UInt_t idCluster = clusters[i].fID;
-          Int_t  sliceCl   = (idCluster>>25) & 0x7f;
-          Int_t  patchCl   = (idCluster>>22) & 0x7;
-          UInt_t pos       = idCluster&0x3fffff;
-	  
+          Int_t  sliceCl   = AliHLTTPCSpacePointData::GetSlice(idCluster);
+          Int_t  patchCl   = AliHLTTPCSpacePointData::GetPatch(idCluster);
+          UInt_t pos       = AliHLTTPCSpacePointData::GetNumber(idCluster);
+
 	  //cout << idCluster <<"\t"<< patchCl << "\t"<< pos << endl;
 	  //cout << fTrackClusterID[sliceCl][patchCl].size()<< endl;
               
@@ -459,9 +459,9 @@ void AliHLTTPCCalibTracksComponent::ReadTracks(const AliHLTComponentBlockData *i
       for(UInt_t h=0; h<nHits; h++){
           
 	  UInt_t idTrack = hitnum[h];
-          Int_t sliceTrack = (idTrack>>25) & 0x7f;
-          Int_t patchTrack = (idTrack>>22) & 0x7;
-          UInt_t pos = idTrack&0x3fffff;
+          Int_t sliceTrack = AliHLTTPCSpacePointData::GetSlice(idTrack);
+          Int_t patchTrack = AliHLTTPCSpacePointData::GetPatch(idTrack);
+          UInt_t pos = AliHLTTPCSpacePointData::GetNumber(idTrack);
           fTrackClusterID[sliceTrack][patchTrack].push_back(pos);
       } // end for loop over hits
        

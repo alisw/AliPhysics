@@ -140,9 +140,9 @@ void AliHLTTPCFitter::SortTrackClusters(AliHLTTPCTrack *track) const
 	{
 	  id=ids[k];
 	  if(id < 0) continue;
-	  slice = (id>>25) & 0x7f;
-	  patch = (id>>22) & 0x7;
-	  pos = id&0x3fffff;	      
+	  slice = AliHLTTPCSpacePointData::GetSlice(id);
+	  patch = AliHLTTPCSpacePointData::GetPatch(id);
+	  pos = AliHLTTPCSpacePointData::GetNumber(id);
 	  AliHLTTPCSpacePointData *points = fClusters[slice][patch];
 	  padrow = points[pos].fPadRow;
 	  if(padrow > maxrow)
@@ -203,9 +203,9 @@ Int_t AliHLTTPCFitter::FitCircle()
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
     {
       UInt_t id = hitnum[i];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;
+      Int_t slice = AliHLTTPCSpacePointData::GetSlice(id);
+      Int_t patch = AliHLTTPCSpacePointData::GetPatch(id);
+      UInt_t pos = AliHLTTPCSpacePointData::GetNumber(id);
       AliHLTTPCSpacePointData *points = fClusters[slice][patch];
       fXYWeight[i] = 1./ (Double_t)(points[pos].fSigmaY2 + points[pos].fSigmaY2);
       wsum += fXYWeight[i];
@@ -232,9 +232,9 @@ Int_t AliHLTTPCFitter::FitCircle()
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
     { 
       UInt_t id = hitnum[i];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;
+      Int_t slice = AliHLTTPCSpacePointData::GetSlice(id);
+      Int_t patch = AliHLTTPCSpacePointData::GetPatch(id);
+      UInt_t pos = AliHLTTPCSpacePointData::GetNumber(id);
       AliHLTTPCSpacePointData *points = fClusters[slice][patch];
 
       xi = points[pos].fX -xav;
@@ -319,9 +319,9 @@ Int_t AliHLTTPCFitter::FitCircle()
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
     { 
       UInt_t id = hitnum[i];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;
+      Int_t slice = AliHLTTPCSpacePointData::GetSlice(id);
+      Int_t patch = AliHLTTPCSpacePointData::GetPatch(id);
+      UInt_t pos = AliHLTTPCSpacePointData::GetNumber(id);
       AliHLTTPCSpacePointData *points = fClusters[slice][patch];
       
       xold = points[pos].fX - xav ;
@@ -482,9 +482,9 @@ Int_t AliHLTTPCFitter::FitCircle()
   Double_t x0,y0,psi,pt ;
   Int_t lastid=fTrack->GetNHits()-1;
   UInt_t id = hitnum[lastid];
-  Int_t slice = (id>>25) & 0x7f;
-  Int_t patch = (id>>22) & 0x7;
-  UInt_t pos = id&0x3fffff;
+  Int_t slice = AliHLTTPCSpacePointData::GetSlice(id);
+  Int_t patch = AliHLTTPCSpacePointData::GetPatch(id);
+  UInt_t pos = AliHLTTPCSpacePointData::GetNumber(id);
   AliHLTTPCSpacePointData *points = fClusters[slice][patch];
   x0   =  points[pos].fX;
   y0   =  points[pos].fY;
@@ -535,9 +535,9 @@ Int_t AliHLTTPCFitter::FitLine ( )
   if (0)//fVertexConstraint==kTRUE)
     {
       UInt_t id = hitnum[0];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;
+      Int_t slice = AliHLTTPCSpacePointData::GetSlice(id);
+      Int_t patch = AliHLTTPCSpacePointData::GetPatch(id);
+      UInt_t pos = AliHLTTPCSpacePointData::GetNumber(id);
       AliHLTTPCSpacePointData *points = fClusters[slice][patch];
       
       dx = points[pos].fX - fVertex->GetX();
@@ -546,14 +546,14 @@ Int_t AliHLTTPCFitter::FitLine ( )
   else 
     {
       UInt_t id = hitnum[0];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t posf = id&0x3fffff;
+      Int_t slice = AliHLTTPCSpacePointData::GetSlice(id);
+      Int_t patch = AliHLTTPCSpacePointData::GetPatch(id);
+      UInt_t posf = AliHLTTPCSpacePointData::GetNumber(id);
       AliHLTTPCSpacePointData *pointsf = fClusters[slice][patch];
       id = hitnum[(fTrack->GetNHits()-1)];
-      slice = (id>>25) & 0x7f;
-      patch = (id>>22) & 0x7;
-      UInt_t posl = id&0x3fffff;
+      slice = AliHLTTPCSpacePointData::GetSlice(id);
+      patch = AliHLTTPCSpacePointData::GetPatch(id);
+      UInt_t posl = AliHLTTPCSpacePointData::GetNumber(id);
       AliHLTTPCSpacePointData *pointsl = fClusters[slice][patch];
       dx = pointsf[posf].fX - pointsl[posl].fX;
       dy = pointsf[posf].fY - pointsl[posl].fY;
@@ -576,18 +576,18 @@ Int_t AliHLTTPCFitter::FitLine ( )
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
     { 
       UInt_t id = hitnum[i];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;
+      Int_t slice = AliHLTTPCSpacePointData::GetSlice(id);
+      Int_t patch = AliHLTTPCSpacePointData::GetPatch(id);
+      UInt_t pos = AliHLTTPCSpacePointData::GetNumber(id);
       AliHLTTPCSpacePointData *points = fClusters[slice][patch];
       
       fZWeight[i] = 1./(Double_t)(points[pos].fSigmaZ2);
       if(i>0)
 	{
 	  id = hitnum[i-1];
-	  slice = (id>>25) & 0x7f;
-	  patch = (id>>22) & 0x7;
-	  UInt_t lastpos = id&0x3fffff;
+	  slice = AliHLTTPCSpacePointData::GetSlice(id);
+	  patch = AliHLTTPCSpacePointData::GetPatch(id);
+	  UInt_t lastpos = AliHLTTPCSpacePointData::GetNumber(id);
 	  AliHLTTPCSpacePointData *lastpoints = fClusters[slice][patch];
 	  dx = points[pos].fX -lastpoints[lastpos].fX;
 	  dy = points[pos].fY -lastpoints[lastpos].fY;
@@ -634,9 +634,9 @@ Int_t AliHLTTPCFitter::FitLine ( )
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
     { 
       UInt_t id = hitnum[i];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;
+      Int_t slice = AliHLTTPCSpacePointData::GetSlice(id);
+      Int_t patch = AliHLTTPCSpacePointData::GetPatch(id);
+      UInt_t pos = AliHLTTPCSpacePointData::GetNumber(id);
       AliHLTTPCSpacePointData *points = fClusters[slice][patch];
       r1   = points[pos].fZ - tanl * fS[i] - z0 ;
       chi2 += (Double_t) ( (Double_t)(fZWeight[i]) * (r1 * r1) );

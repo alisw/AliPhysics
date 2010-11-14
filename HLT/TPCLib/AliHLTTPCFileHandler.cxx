@@ -1306,7 +1306,7 @@ AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint
       data[n].fY = c->GetY();
       data[n].fX = fParam->GetPadRowRadii(sector,row);
       data[n].fCharge = (UInt_t)c->GetQ();
-      data[n].fID = n+((fSlice&0x7f)<<25)+((pat&0x7)<<22);//uli
+      data[n].SetID( fSlice, pat, n );
       data[n].fPadRow = lrow;
       data[n].fSigmaY2 = c->GetSigmaY2();
       data[n].fSigmaZ2 = c->GetSigmaZ2();

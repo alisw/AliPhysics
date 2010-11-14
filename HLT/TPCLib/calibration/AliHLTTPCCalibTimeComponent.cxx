@@ -318,9 +318,9 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
               tTPC.SetNumberOfClusters(currTrack->fNPoints);
           
 	      UInt_t id = currTrack->fPointIDs[ic];
-	      int iSlice = id>>25;
-	      int iPartition = (id>>22)&0x7; 
-	      int iCluster = id&0x3fffff;
+	      int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
+	      int iPartition = AliHLTTPCSpacePointData::GetPatch(id);
+	      int iCluster = AliHLTTPCSpacePointData::GetNumber(id);	
 	
 	      if(iSlice<0 || iSlice>36 || iPartition<0 || iPartition>5){
 	         HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);

@@ -201,9 +201,8 @@ Bool_t AliHLTTPCConfMapPoint::Read(const AliHLTTPCSpacePointData& hit)
 {
   //read the hits
   SetHitNumber(hit.fID);
-  SetPadRow(hit.fPadRow);
-  Int_t slice = (hit.fID>>25) & 0x7f;
-  SetSector(slice);
+  SetPadRow(hit.fPadRow);  
+  SetSector(hit.GetSlice());
   SetX(hit.fX);
   SetY(hit.fY);
   SetZ(hit.fZ);
