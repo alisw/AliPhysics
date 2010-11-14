@@ -6870,6 +6870,11 @@ void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
   Float_t zdrift = TMath::Abs((fkParam->GetZLength(0)-TMath::Abs(seed->GetZ())));
   Int_t type = (seed->GetSector() < fkParam->GetNSector()/2) ? 0: (row>126) ? 1:2;
   Double_t angulary  = seed->GetSnp();
+
+  if (TMath::Abs(angulary)>AliTPCReconstructor::GetMaxSnpTracker()) {
+    angulary = TMath::Sign(AliTPCReconstructor::GetMaxSnpTracker(),angulary);
+  }
+
   angulary = angulary*angulary/((1.-angulary)*(1.+angulary));
   Double_t angularz  = seed->GetTgl()*seed->GetTgl()*(1.+angulary);
   
