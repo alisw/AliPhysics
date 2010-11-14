@@ -30,7 +30,21 @@ public:
    *             each 'specie'
    * @param t    Reconstruction parameters - not used. 
    */
-  void Check(Double_t* rv, AliQAv1::ALITASK_t what, TObjArray** list, const AliDetectorRecoParam* t);
+  void Check(Double_t* rv, AliQAv1::ALITASK_t what, 
+	     TObjArray** list, const AliDetectorRecoParam* t);
+  /** 
+   * Make output images.  This is overridden relative to the base
+   * class so that we can set the log(y) scale and put everything on
+   * the same axis. 
+   * 
+   * @param list  List of specie array of histograms 
+   * @param task  What to show 
+   * @param mode  Mode 
+   */
+  void  MakeImage(TObjArray** list, 
+		  AliQAv1::TASKINDEX_t task, 
+		  AliQAv1::MODE_t mode);
+
 private:
   ClassDef(AliFMDQAChecker,0)  // Yves? what to do? 
 };

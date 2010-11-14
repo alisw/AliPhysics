@@ -32,6 +32,8 @@
 #include <TKey.h> 
 #include <TFile.h> 
 #include <iostream>
+#include <TCanvas.h>
+#include <TPaveText.h>
 
 // --- AliRoot header files ---
 #include "AliLog.h"
@@ -66,7 +68,7 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
     Int_t count   = 0;
     rv[specie]    = 0.; 
 
-    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
+    if (!AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ;
     
     if(!list[specie]) continue;
@@ -92,6 +94,102 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
 }
 
 
+//____________________________________________________________________________ 
+void 
+AliFMDQAChecker::MakeImage(TObjArray** list, 
+			   AliQAv1::TASKINDEX_t task, 
+			   AliQAv1::MODE_t mode) 
+{
+  // makes the QA image for sim and rec
+  // 
+  // Parameters: 
+  //    task What to check 
+  //    list Array of arrays of histograms.  There's one array for
+  //         each 'specie'
+  //    t    Reconstruction parameters - not used. 
+  // 
+  Int_t    nImages = 0 ;
+  Double_t max     = 0;
+  Double_t min     = 10000;
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue ;
+    
+    if(!list[specie]) continue;
+
+    TH1F* hist  = 0;
+    Int_t nHist = list[specie]->GetEntriesFast();
+    for(Int_t i= 0; i< nHist; i++) {
+      hist = static_cast<TH1F*>(list[specie]->At(i));
+      if (hist->TestBit(AliQAv1::GetImageBit())) {
+        nImages++; 
+	max = TMath::Max(max, hist->GetMaximum());
+	min = TMath::Min(min, hist->GetMinimum());
+      }
+    }
+    break ; 
+  }
+  min = TMath::Max(0.1, min);
+  max = TMath::Min(1.0, max);
+
+  if (nImages == 0) {
+    AliDebug(AliQAv1::GetQADebugLevel(), 
+	     Form("No histogram will be plotted for %s %s\n", GetName(), 
+		  AliQAv1::GetTaskName(task).Data()));
+    return;
+  }
+
+  AliDebug(AliQAv1::GetQADebugLevel(), 
+	   Form("%d histograms will be plotted for %s %s\n", 
+		nImages, GetName(), AliQAv1::GetTaskName(task).Data()));  
+
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue ;
+    
+    if(!list[specie]) continue;
+
+    const Char_t * title = Form("QA_%s_%s_%s", GetName(), 
+				AliQAv1::GetTaskName(task).Data(), 
+				AliRecoParam::GetEventSpecieName(specie)); 
+    if (!fImage[specie]) 
+      fImage[specie] = new TCanvas(title, title) ;
+    fImage[specie]->Clear() ; 
+    fImage[specie]->SetTitle(title) ; 
+    fImage[specie]->cd() ; 
+
+    TPaveText someText(0.015, 0.015, 0.98, 0.98) ;
+    someText.AddText(title) ;
+    someText.Draw() ; 
+    fImage[specie]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), 
+				AliQAv1::GetModeName(mode), 
+				AliQAChecker::Instance()->GetRunNumber(), 
+				AliQAv1::GetImageFileFormat()), "ps") ; 
+    fImage[specie]->Clear(); 
+
+    Int_t nx = (nImages + .5) / 2;
+    Int_t ny = 2;
+    fImage[specie]->Divide(nx, ny, 0, 0);
+    
+    
+    TH1F* hist  = 0;
+    Int_t nHist = list[specie]->GetEntriesFast();
+    Int_t j     = 0;
+    for (Int_t i = 0; i < nHist; i++) { 
+      hist = static_cast<TH1F*>(list[specie]->At(i));
+      if (!hist->TestBit(AliQAv1::GetImageBit())) continue;
+      
+      TVirtualPad* pad = fImage[specie]->cd(++j);
+      pad->SetLogy();
+      hist->SetMinimum(min);
+      hist->SetMaximum(max);
+      hist->DrawCopy();
+    }
+
+    fImage[specie]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), 
+			       AliQAv1::GetModeName(mode), 
+			       AliQAChecker::Instance()->GetRunNumber(), 
+			       AliQAv1::GetImageFileFormat()), "ps"); 
+  }
+}
 
 //__________________________________________________________________
 //
