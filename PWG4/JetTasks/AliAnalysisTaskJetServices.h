@@ -54,6 +54,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void SetRunRange(Float_t fLo,Float_t fUp){fRunRange[0] = fLo;fRunRange[1] = fUp;}
     virtual void SetMCData(Bool_t b){fMC = b;}
     virtual void SetUsePhysicsSelection(Bool_t b){fUsePhysicsSelection = b;}
+    virtual void SetPhysicsSelectionFlag(Int_t i){fPhysicsSelectionFlag = i;}
     Bool_t IsEventSelected(const AliESDEvent* esd);
     Bool_t IsEventSelected(const AliAODEvent* aod) const;
 
@@ -90,6 +91,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Bool_t        fUseAODInput;        // take jet from input AOD not from ouptu AOD
     Bool_t        fUsePhysicsSelection;// decide wether we take into account physicsselction task
     Bool_t        fMC;                 // true for MC data to allow correct trigger slection
+    UInt_t        fPhysicsSelectionFlag; // defines the glag for acceptance of events from physics selection
     UInt_t        fSelectionInfoESD;   // slection info bit mask
     UInt_t        fEventCutInfoESD;   // event selection info of what is cutted after physics selection
     Float_t       fAvgTrials;          // Average number of trials
@@ -119,7 +121,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 
     TList *fHistList; // Output list
    
-    ClassDef(AliAnalysisTaskJetServices,8)
+    ClassDef(AliAnalysisTaskJetServices,9)
 };
  
 #endif

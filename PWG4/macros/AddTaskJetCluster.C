@@ -1,32 +1,32 @@
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE);
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE);
 
 
-AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1,Char_t *jf = "KT", UInt_t iFlag){
+AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", UInt_t iFlag){
   AliAnalysisTaskJetCluster *js = 0;
   if(kUseAODMC&&false){// do not use the MC info yet
-    if(iFlag&(1<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.00001);
-    if(iFlag&(1<<1))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.1);
-    if(iFlag&(1<<2))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.2);
-    if(iFlag&(1<<4))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.4);
-    if(iFlag&(1<<6))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.6);
-    if(iFlag&(1<<8))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.8);
-    if(iFlag&(1<<10))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,1.0);
+    if(iFlag&(1<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelectionFlag,jf,0.00001);
+    if(iFlag&(1<<1))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelectionFlag,jf,0.1);
+    if(iFlag&(1<<2))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelectionFlag,jf,0.2);
+    if(iFlag&(1<<4))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelectionFlag,jf,0.4);
+    if(iFlag&(1<<6))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelectionFlag,jf,0.6);
+    if(iFlag&(1<<8))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelectionFlag,jf,0.8);
+    if(iFlag&(1<<10))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelectionFlag,jf,1.0);
   }
   else{
-    if(iFlag&(1<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.00001);
-    if(iFlag&(1<<1))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.1);
-    if(iFlag&(1<<2))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.2);
-    if(iFlag&(1<<4))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.4);
-    if(iFlag&(1<<6))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.6);
-    if(iFlag&(1<<8))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.8);
-    if(iFlag&(1<<10))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,1.0);
+    if(iFlag&(1<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelectionFlag,jf,0.00001);
+    if(iFlag&(1<<1))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelectionFlag,jf,0.1);
+    if(iFlag&(1<<2))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelectionFlag,jf,0.2);
+    if(iFlag&(1<<4))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelectionFlag,jf,0.4);
+    if(iFlag&(1<<6))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelectionFlag,jf,0.6);
+    if(iFlag&(1<<8))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelectionFlag,jf,0.8);
+    if(iFlag&(1<<10))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelectionFlag,jf,1.0);
   }
   
   return js;
 }
 
 
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,Int_t iPhysicsSelection,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD)
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD)
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
 
@@ -129,7 +129,7 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
 
    pwg4spec->SetNSkipLeadingRan(nSkip);
 
-   if(iPhysicsSelection)pwg4spec->SelectCollisionCandidates();
+   if(iPhysicsSelectionFlag)pwg4spec->SelectCollisionCandidates(iPhysicsSelectionFlag);
 
    mgr->AddTask(pwg4spec);
 

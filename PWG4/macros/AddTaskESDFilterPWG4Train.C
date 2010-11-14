@@ -80,6 +80,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // take the standard cuts, which include already 
    // ITSrefit and use only primaries...
 
+   // loose DCA cuts
    AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE); 
    esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
    esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
@@ -115,23 +116,23 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
 
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-   // 1
+   // 1, 1<<0
    trackFilter->AddCuts(esdTrackCutsL);
-   // 2
+   // 2 1<<1
    trackFilter->AddCuts(esdTrackCutsITSsa);
-   // 4
+   // 4 1<<2
    trackFilter->AddCuts(itsStrong);
    itsStrong->SetFilterMask(1);        // AND with Standard track cuts 
-   // 8
+   // 8 1<<3
    trackFilter->AddCuts(electronID);
    electronID->SetFilterMask(4);       // AND with Pixel Cuts
-   // 16
+   // 16 1<<4
    trackFilter->AddCuts(esdTrackCutsH);
-   // 32
+   // 32 1<<5
    trackFilter->AddCuts(esdTrackCutsH2);
-   // 64
+   // 64 1<<6
    trackFilter->AddCuts(esdTrackCutsH3);
-   // 128
+   // 128 1<<7
    trackFilter->AddCuts(esdTrackCutsH1);
  
    // Filter with cuts on V0s
