@@ -40,6 +40,8 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
 					 TGeoManager *mgr=gGeoManager);
     virtual void ServicesCableSupportSSD(TGeoVolume *moth,
 					 TGeoManager *mgr=gGeoManager);
+    virtual void ITSTPCSupports(TGeoVolume *moth,
+				TGeoManager *mgr=gGeoManager);
 
 
   private:

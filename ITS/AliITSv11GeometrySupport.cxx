@@ -8312,3 +8312,1165 @@ TGeoVolumeAssembly* AliITSv11GeometrySupport::CreateSDDSSDTraysSideC(
   return cableTrayC;
 }
 
+//______________________________________________________________________
+void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
+					      TGeoManager *mgr){
+//
+// Creates the elements suspending the ITS to the TPC and other fixed
+// elements used to hook the rails (0872/C and its daughters)
+//
+//         moth : the TGeoVolume owing the volume structure
+//         mgr  : the GeoManager (default gGeoManager)
+// Output:
+//
+// Return:
+//
+// Created:      28 Oct 2010  Mario Sitta
+//
+// Technical data are taken from AutoCAD drawings, L.Simonetti technical
+// drawings and other (oral) information given by F.Tosello
+//
+
+  // Dimensions and positions of the half ring C2/C3 (0872/C/04)
+  const Double_t kRingCZPos           =   733.000*fgkmm;
+
+  const Double_t kRingCThick          =    12.000*fgkmm;
+  const Double_t kRingCRmin           =   565.000*fgkmm;
+  const Double_t kRingCRmax           =   592.000*fgkmm;
+  const Double_t kRingCHeight         =   560.000*fgkmm;
+  const Double_t kRingCXToInsert      =   515.000*fgkmm;
+  const Double_t kRingCYToInsert      =   113.000*fgkmm;
+
+  const Int_t kNumberOfRingPoints     =    23; // N.points to approximate arc
+
+  // Dimensions of the forward upper hook (0872/C/09)
+  const Double_t kForwUpHookThick     =    20.000*fgkmm;
+  const Double_t kForwUpHookRext      =   590.000*fgkmm;
+  const Double_t kForwUpHookRint      =    20.000*fgkmm;
+  const Double_t kForwUpHookHiTot     =    89.000*fgkmm;
+  const Double_t kForwUpHookHiInt     =    59.000*fgkmm;
+  const Double_t kForwUpHookWide      =    96.000*fgkmm;
+  const Double_t kForwUpHookHalfBase  =    25.000*fgkmm;
+  const Double_t kForwUpHookBaseCut   =    10.000*fgkmm;
+  const Double_t kForwUpHookHoleWide  =    25.000*fgkmm;
+  const Double_t kForwUpHookHoleHi    =    22.500*fgkmm;
+  const Double_t kForwUpHookHoleBase  =     5.000*fgkmm;
+  const Double_t kForwUpHookHoleR5    =     5.000*fgkmm;
+  const Double_t kForwUpHookHoleY     =     8.000*fgkmm;
+  const Double_t kForwUpHookHollowHi  =    35.000*fgkmm;
+  const Double_t kForwUpHookHollowWide=     5.000*fgkmm;
+
+  const Int_t kNumberOfForwUpHookPts  =    11;
+  const Int_t kNumbOfForwUpHookHolePts=     5;
+
+  // Dimensions of the forward lower hook (0872/C/08)
+  const Double_t kForwLwHookThick     =    20.000*fgkmm;
+  const Double_t kForwLwHookRext      =   590.000*fgkmm;
+  const Double_t kForwLwHookRint      =    20.000*fgkmm;
+  const Double_t kForwLwHookHiTot     =    88.500*fgkmm;
+  const Double_t kForwLwHookWide      =    96.000*fgkmm;
+  const Double_t kForwLwHookHalfBase  =    25.000*fgkmm;
+  const Double_t kForwLwHookBaseCut   =    10.000*fgkmm;
+  const Double_t kForwLwHookYToHollow =     3.500*fgkmm;
+  const Double_t kForwLwHookHoleR     =     7.500*fgkmm;
+  const Double_t kForwLwHookHoleIntHi =    35.000*fgkmm;
+  const Double_t kForwLwHookHoleYPos  =    13.500*fgkmm;
+  const Double_t kForwLwHookHollowHi  =    62.000*fgkmm;
+  const Double_t kForwLwHookHollowWide=     5.000*fgkmm;
+
+  const Int_t kNumberOfForwLwHookPts  =    11;
+  const Int_t kNumbOfForwLwHookHolePts=     7;
+
+  // Dimensions of the rear upper hook (0872/C/10)
+  const Double_t kRearUpHookThick     =    15.000*fgkmm;
+  const Double_t kRearUpHookRext      =   590.000*fgkmm;
+  const Double_t kRearUpHookRint      =    20.000*fgkmm;
+  const Double_t kRearUpHookHiTot     =    53.500*fgkmm;
+  const Double_t kRearUpHookHiInt     =    23.500*fgkmm;
+  const Double_t kRearUpHookWide      =    96.000*fgkmm;
+  const Double_t kRearUpHookHalfBase  =    25.000*fgkmm;
+  const Double_t kRearUpHookHoleWide  =    25.000*fgkmm;
+  const Double_t kRearUpHookHoleHi    =    22.500*fgkmm;
+  const Double_t kRearUpHookHoleBase  =     5.000*fgkmm;
+  const Double_t kRearUpHookHoleR5    =     5.000*fgkmm;
+  const Double_t kRearUpHookHoleY     =     8.000*fgkmm;
+
+  const Int_t kNumberOfRearUpHookPts  =    10;
+  const Int_t kNumbOfRearUpHookHolePts=     5;
+
+  // Dimensions of the forward lower hook (0872/C/11)
+  const Double_t kRearLwHookThick     =    20.000*fgkmm;
+  const Double_t kRearLwHookRext      =   590.000*fgkmm;
+  const Double_t kRearLwHookHiTot     =    30.000*fgkmm;
+  const Double_t kRearLwHookWide      =    96.000*fgkmm;
+
+  const Int_t kNumberOfRearLwHookPts  =     3;
+
+  // Dimensions of the rear lower brackets (0872/C/16)
+  const Double_t kRearLwBracketThick  =    15.000*fgkmm;
+  const Double_t kRearLwBracketHi1    =    42.000*fgkmm;
+  const Double_t kRearLwBracketHi2    =    12.000*fgkmm;
+  const Double_t kRearLwBracketWide1  =    34.000*fgkmm;
+  const Double_t kRearLwBracketWide2  =    10.000*fgkmm;
+//  const Double_t kRearLwBracketR5     =     5.000*fgkmm
+
+  // Dimensions of the forward webcam supports (0872/C/V/01-03-04)
+  const Double_t kForwWebSStirrDep    =    20.000*fgkmm;
+  const Double_t kForwWebSStirrLen1   =    15.000*fgkmm;
+  const Double_t kForwWebSStirrLen2   =    55.000*fgkmm;
+  const Double_t kForwWebSStirrLen3   =    10.000*fgkmm;
+  const Double_t kForwWebSStirrWide1  =    45.000*fgkmm;
+  const Double_t kForwWebSStirrWide2  =    38.000*fgkmm;
+  const Double_t kForwWebSStirrWide3  =    23.000*fgkmm;
+  const Double_t kForwWebTStirrThick  =     5.000*fgkmm;
+  const Double_t kForwWebTStirrWide1  =    30.000*fgkmm;
+  const Double_t kForwWebTStirrWide2  =    10.000*fgkmm;
+  const Double_t kForwWebTStirrTotLen3=    58.500*fgkmm;
+  const Double_t kForwWebTStirrTotLen4=    36.000*fgkmm;
+  const Double_t kForwWebTStirrLen1   =    10.000*fgkmm;
+
+  // Dimensions of the forward and rear webcam clamps (0872/C/V/02)
+  const Double_t kFRWebClampThick     =    10.000*fgkmm;
+  const Double_t kFRWebClampExtWide   =    30.000*fgkmm;
+  const Double_t kFRWebClampIntWide   =    18.000*fgkmm;
+  const Double_t kFRWebClampExtHi     =    22.000*fgkmm;
+  const Double_t kFRWebClampIntHi     =    17.000*fgkmm;
+
+  // Dimensions of the webcam itself
+  const Double_t kWebcamLength        =    35.000*fgkmm;//ESTIMATED!!!
+
+  // Dimensions of the rear upper webcam supports (0872/C/V/05-06)
+  const Double_t kRearUpWebStirrWide  =    71.000*fgkmm;
+  const Double_t kRearUpWebStirrDep   =    15.000*fgkmm;
+  const Double_t kRearUpWebStirrThick =     5.000*fgkmm;
+  const Double_t kRearUpWebStirrH1    =    27.000*fgkmm;
+  const Double_t kRearUpWebStirrH2    =    32.000*fgkmm;
+  const Double_t kRearUpWebBarLen     =   130.000*fgkmm;
+  const Double_t kRearUpWebBarHi      =    20.000*fgkmm;
+  const Double_t kRearUpWebBarThick   =     5.000*fgkmm;
+
+  // Dimensions of the upper wheel slides (0872/C/Z/00-01-02)
+  const Double_t kUpperSlideTotHeight =    93.500*fgkmm;
+  const Double_t kUpperSlideBlockHi   =    62.500*fgkmm;
+  const Double_t kUpperSlideWidth     =    36.000*fgkmm;
+  const Double_t kUpperSlideTotDepth  =    51.000*fgkmm;
+  const Double_t kUpperSlideIntDepth  =    36.000*fgkmm;
+  const Double_t kUpperSlideStubHi    =    15.000*fgkmm;
+  const Double_t kUpperSlideStubDep   =     8.000*fgkmm;
+  const Double_t kUpperSlideWheelHi   =    18.500*fgkmm;
+  const Double_t kUpperSlideHoleRout  =    11.000*fgkmm;
+  const Double_t kUpperSlideHoleRint1 =     9.000*fgkmm;
+  const Double_t kUpperSlideHoleRint2 =    11.500*fgkmm;
+  const Double_t kUpperSlideHoleH1    =     7.000*fgkmm;
+  const Double_t kUpperSlideHoleH2    =    46.000*fgkmm;
+  const Double_t kUpperSlideHoleH3    =     1.100*fgkmm;
+  const Double_t kUpperSlideHoleXPos  =    20.000*fgkmm;
+  const Double_t kUpperSlidePinRmin   =     4.000*fgkmm;
+  const Double_t kUpperSlidePinRmax   =     6.000*fgkmm;
+  const Double_t kUpperSlidePinH1     =     7.000*fgkmm;
+  const Double_t kUpperSlidePinH2     =    46.000*fgkmm;
+  const Double_t kUpperSlidePinH3     =    25.500*fgkmm;
+
+  // Dimensions of the lower wheel slides (0872/C/W/00-01-02-03)
+  const Double_t kLowerSlideTotHeight =    80.000*fgkmm;
+  const Double_t kLowerSlideBlockHi   =    28.000*fgkmm;
+  const Double_t kLowerSlideWidth     =    36.000*fgkmm;
+  const Double_t kLowerSlideTotDepth  =    60.000*fgkmm;
+  const Double_t kLowerSlideHoleRout  =     9.500*fgkmm;
+  const Double_t kLowerSlideHoleRint  =     4.700*fgkmm;
+  const Double_t kLowerSlideHoleH1    =    12.000*fgkmm;
+  const Double_t kLowerSlideNoseBase  =    40.000*fgkmm;
+  const Double_t kLowerSlideNoseBasHi =     6.000*fgkmm;//Computed
+  const Double_t kLowerSlideNoseUpWid =    25.000*fgkmm;
+  const Double_t kLowerSlideNoseDepth =    10.000*fgkmm;
+  const Double_t kLowerSlidePinRmin   =     3.000*fgkmm;
+  const Double_t kLowerSlidePinRmax   =     4.000*fgkmm;
+  const Double_t kLowerSlidePinH1     =    12.000*fgkmm;
+  const Double_t kLowerSlidePinH2     =    10.000*fgkmm;
+
+
+  // Local variables
+  Double_t xprof[2*kNumberOfRingPoints],yprof[2*kNumberOfRingPoints];
+  Double_t xpos, ypos, zpos, alpha;
+  
+
+  // First create all needed shapes
+
+  // The Supporting Ring (0872/C/04): a really complex Xtru
+  // to approximate the arc with a polyline
+  TGeoXtru *ringC2C3 = new TGeoXtru(2);
+
+  for (Int_t j=0; j<11; j++) { // The external arc
+    xprof[j] = kRingCRmax*SinD(90*j/10);
+    yprof[j] = kRingCRmax*CosD(90*j/10);
+  }
+
+  xprof[11] = kRingCRmin;
+  yprof[11] = yprof[10];
+
+  alpha = TMath::ASin(kRingCYToInsert/kRingCRmin); // Now the insert
+  xprof[12] = kRingCRmin*TMath::Cos(alpha/2);
+  yprof[12] = kRingCRmin*TMath::Sin(alpha/2);
+  xprof[13] = kRingCRmin*TMath::Cos(alpha);
+  yprof[13] = kRingCRmin*TMath::Sin(alpha);
+
+  xprof[14] = kRingCXToInsert;
+  yprof[14] = yprof[13];
+
+  alpha = TMath::ACos(kRingCXToInsert/kRingCRmin); // The insert ending angle
+  xprof[15] = kRingCRmin*TMath::Cos(alpha);
+  yprof[15] = kRingCRmin*TMath::Sin(alpha);
+
+  for (Int_t j=7; j>1; j--) { // The internal arc
+    xprof[23-j] = kRingCRmin*SinD(90*j/10);
+    yprof[23-j] = kRingCRmin*CosD(90*j/10);
+  }
+
+  alpha = TMath::ASin(kRingCHeight/kRingCRmin);    // The angle till the notch
+  xprof[22] = kRingCRmin*TMath::Cos(alpha);
+  yprof[22] = kRingCRmin*TMath::Sin(alpha);
+
+  xprof[23] = xprof[0];
+  yprof[23] = yprof[22];
+
+  // We did the right side, now reflex on the left side
+  for (Int_t jp = 0; jp < 22; jp++) {
+    xprof[24+jp] = -xprof[23-1-jp];
+    yprof[24+jp] =  yprof[23-1-jp];
+  }
+
+  // wow! now the actual Xtru
+  ringC2C3->DefinePolygon(2*kNumberOfRingPoints, xprof, yprof);
+  ringC2C3->DefineSection(0, 0);
+  ringC2C3->DefineSection(1, kRingCThick);
+
+  // The Forward Upper Hook (0872/C/09): a Composite Shape made of
+  // a really complex Xtru to approximate the arc with a polyline,
+  // another Xtru for the hole, and a BBox for the hollow
+  // The main body
+  TGeoXtru *forwUpHookMainBody = new TGeoXtru(2);
+  forwUpHookMainBody->SetName("ITSforwUpHookMainBody");
+
+  xprof[ 0] = kForwUpHookHalfBase - kForwUpHookBaseCut;
+  yprof[ 0] = kForwUpHookRext - kForwUpHookHiTot;
+  xprof[ 1] = kForwUpHookHalfBase;
+  yprof[ 1] = yprof[0] + kForwUpHookBaseCut;
+  xprof[ 2] = xprof[1];
+  yprof[ 2] = yprof[0] + (kForwUpHookHiInt - kForwUpHookRint);
+  for (Int_t j=1; j<6; j++) {
+    xprof[2+j] = xprof[2] + kForwUpHookRint*(1 - CosD(90*j/5));
+    yprof[2+j] = yprof[2] + kForwUpHookRint*SinD(90*j/5);
+  }
+  xprof[ 8] = kForwUpHookWide/2;
+  yprof[ 8] = yprof[7];
+  xprof[ 9] = xprof[8];
+  alpha = TMath::ASin(0.5*kForwUpHookWide/kForwUpHookRext);
+  yprof[ 9] = kForwUpHookRext*TMath::Cos(alpha);
+  xprof[10] = kForwUpHookRext*TMath::Sin(alpha/2);
+  yprof[10] = kForwUpHookRext*TMath::Cos(alpha/2);
+  xprof[11] = 0;
+  yprof[11] = kForwUpHookRext;
+
+  // We did the right side, now reflex on the left side
+  for (Int_t jp = 0; jp < kNumberOfForwUpHookPts; jp++) {
+    xprof[12+jp] = -xprof[10-jp];
+    yprof[12+jp] =  yprof[10-jp];
+  }
+
+  // Now the actual Xtru
+  forwUpHookMainBody->DefinePolygon(2*kNumberOfForwUpHookPts+1, xprof, yprof);
+  forwUpHookMainBody->DefineSection(0, 0);
+  forwUpHookMainBody->DefineSection(1, kForwUpHookThick);
+
+  // The hole
+  TGeoXtru *forwUpHookHole = new TGeoXtru(2);
+  forwUpHookHole->SetName("ITSforwUpHookHole");
+
+  xprof[0] = kForwUpHookHoleBase/2;
+  yprof[0] = forwUpHookMainBody->GetY(0) + kForwUpHookHoleY;
+  xprof[1] = kForwUpHookHoleWide/2;
+  yprof[1] = yprof[0] + (xprof[1] - xprof[0]); // Go at 45deg
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[0] + kForwUpHookHoleHi - kForwUpHookHoleR5;
+  xprof[3] = xprof[2] - kForwUpHookHoleR5*(1 - CosD(45));
+  yprof[3] = yprof[2] + kForwUpHookHoleR5*SinD(45);
+  xprof[4] = xprof[2] - kForwUpHookHoleR5;
+  yprof[4] = yprof[0] + kForwUpHookHoleHi;
+
+  // We did the right side, now reflex on the left side
+  for (Int_t jp = 0; jp < kNumbOfForwUpHookHolePts; jp++) {
+    xprof[5+jp] = -xprof[4-jp];
+    yprof[5+jp] =  yprof[4-jp];
+  }
+
+  // Now the actual Xtru
+  forwUpHookHole->DefinePolygon(2*kNumbOfForwUpHookHolePts, xprof, yprof);
+  forwUpHookHole->DefineSection(0, -0.1);
+  forwUpHookHole->DefineSection(1, kForwUpHookThick+0.1);
+
+  // The hollow
+  TGeoBBox *forwUpHookHollow = new TGeoBBox(2.1 *kForwUpHookHalfBase,
+					    0.55*kForwUpHookHollowHi,
+					    0.55*kForwUpHookHollowWide);
+  forwUpHookHollow->SetName("ITSforwUpHookHollow");
+
+  TGeoTranslation *forwUpHookHollPos = new TGeoTranslation(0.,
+		      forwUpHookMainBody->GetY(0) + 0.5*kForwUpHookHollowHi,
+		      forwUpHookMainBody->GetZ(1) - 0.5*kForwUpHookHollowWide);
+  forwUpHookHollPos->SetName("ITSforwUpHookHollPos");
+  forwUpHookHollPos->RegisterYourself();
+
+  // Finally the actual shape: a CompositeShape
+  TGeoCompositeShape *forwUpHookShape = new TGeoCompositeShape("ITSforwUpHookMainBody-ITSforwUpHookHole-ITSforwUpHookHollow:ITSforwUpHookHollPos");
+
+  // The Forward Lower Hook (0872/C/08): a Composite Shape made of
+  // a really complex Xtru to approximate the arc with a polyline,
+  // another Xtru for the hole, and a BBox for the hollow
+  // The main body
+  TGeoXtru *forwLwHookMainBody = new TGeoXtru(2);
+  forwLwHookMainBody->SetName("ITSforwLwHookMainBody");
+
+  xprof[ 0] = kForwLwHookHalfBase - kForwLwHookBaseCut;
+  yprof[ 0] = kForwLwHookRext - kForwLwHookHiTot;
+  xprof[ 1] = kForwLwHookHalfBase;
+  yprof[ 1] = yprof[0] + kForwLwHookBaseCut;
+  xprof[ 2] = xprof[1];
+  yprof[ 2] = yprof[0] + (kForwLwHookHollowHi - kForwLwHookYToHollow
+			  - kForwLwHookRint);
+  for (Int_t j=1; j<6; j++) {
+    xprof[2+j] = xprof[2] + kForwLwHookRint*(1 - CosD(90*j/5));
+    yprof[2+j] = yprof[2] + kForwLwHookRint*SinD(90*j/5);
+  }
+  xprof[ 8] = kForwLwHookWide/2;
+  yprof[ 8] = yprof[7];
+  xprof[ 9] = xprof[8];
+  alpha = TMath::ASin(0.5*kForwLwHookWide/kForwLwHookRext);
+  yprof[ 9] = kForwLwHookRext*TMath::Cos(alpha);
+  xprof[10] = kForwLwHookRext*TMath::Sin(alpha/2);
+  yprof[10] = kForwLwHookRext*TMath::Cos(alpha/2);
+  xprof[11] = 0;
+  yprof[11] = kForwLwHookRext;
+
+  // We did the right side, now reflex on the left side
+  for (Int_t jp = 0; jp < kNumberOfForwLwHookPts; jp++) {
+    xprof[12+jp] = -xprof[10-jp];
+    yprof[12+jp] =  yprof[10-jp];
+  }
+
+  // Now the actual Xtru
+  forwLwHookMainBody->DefinePolygon(2*kNumberOfForwLwHookPts+1, xprof, yprof);
+  forwLwHookMainBody->DefineSection(0, 0);
+  forwLwHookMainBody->DefineSection(1, kForwLwHookThick);
+
+  // The hole
+  TGeoXtru *forwLwHookHole = new TGeoXtru(2);
+  forwLwHookHole->SetName("ITSforwLwHookHole");
+
+  xprof[0] = 0;
+  yprof[0] = forwLwHookMainBody->GetY(0) + kForwLwHookHoleYPos
+	   - kForwLwHookHoleR;
+  for (Int_t j=1; j<3; j++) {
+    xprof[0+j] = xprof[0] + kForwLwHookHoleR*SinD(90*j/3);
+    yprof[0+j] = yprof[0] + kForwLwHookHoleR*(1 - CosD(90*j/3));
+  }
+  xprof[3] = xprof[0] + kForwLwHookHoleR;
+  yprof[3] = yprof[0] + kForwLwHookHoleR;
+  xprof[4] = xprof[3];
+  yprof[4] = yprof[3] + kForwLwHookHoleIntHi;
+  for (Int_t j=1; j<3; j++) {
+    xprof[4+j] = xprof[4] - kForwLwHookHoleR*(1 - CosD(90*j/3));
+    yprof[4+j] = yprof[4] + kForwLwHookHoleR*SinD(90*j/3);
+  }
+  xprof[7] = xprof[0];
+  yprof[7] = yprof[4] + kForwLwHookHoleR;
+
+  // We did the right side, now reflex on the left side
+  for (Int_t jp = 0; jp < kNumbOfForwLwHookHolePts-1; jp++) {
+    xprof[8+jp] = -xprof[6-jp];
+    yprof[8+jp] =  yprof[6-jp];
+  }
+
+  // Now the actual Xtru
+  forwLwHookHole->DefinePolygon(2*kNumbOfForwLwHookHolePts, xprof, yprof);
+  forwLwHookHole->DefineSection(0, -0.1);
+  forwLwHookHole->DefineSection(1, kForwLwHookThick+0.1);
+
+  // The hollow
+  TGeoBBox *forwLwHookHollow = new TGeoBBox(2.1 *kForwLwHookHalfBase,
+					    0.55*kForwLwHookHollowHi,
+					    0.55*kForwLwHookHollowWide);
+  forwLwHookHollow->SetName("ITSforwLwHookHollow");
+
+  TGeoTranslation *forwLwHookHollPos = new TGeoTranslation(0.,
+		      forwLwHookMainBody->GetY(0) + 0.5*kForwLwHookHollowHi,
+		      forwLwHookMainBody->GetZ(1) - 0.5*kForwLwHookHollowWide);
+  forwLwHookHollPos->SetName("ITSforwLwHookHollPos");
+  forwLwHookHollPos->RegisterYourself();
+
+  // Finally the actual shape: a CompositeShape
+  TGeoCompositeShape *forwLwHookShape = new TGeoCompositeShape("ITSforwLwHookMainBody-ITSforwLwHookHole-ITSforwLwHookHollow:ITSforwLwHookHollPos");
+
+  // The Rear Upper Hook (0872/C/10): a Composite Shape made of
+  // a really complex Xtru to approximate the arc with a polyline,
+  // and another Xtru for the hole
+  // The main body
+  TGeoXtru *rearUpHookMainBody = new TGeoXtru(2);
+  rearUpHookMainBody->SetName("ITSrearUpHookMainBody");
+
+  xprof[0] = kRearUpHookHalfBase;
+  yprof[0] = kRearUpHookRext - kRearUpHookHiTot;
+  xprof[1] = xprof[0];
+  yprof[1] = yprof[0] + (kRearUpHookHiInt - kRearUpHookRint); 
+  for (Int_t j=1; j<6; j++) {
+    xprof[1+j] = xprof[1] + kRearUpHookRint*(1 - CosD(90*j/5));
+    yprof[1+j] = yprof[1] + kRearUpHookRint*SinD(90*j/5);
+  }
+  xprof[ 7] = kRearUpHookWide/2;
+  yprof[ 7] = yprof[5];
+  xprof[ 8] = xprof[7];
+  alpha = TMath::ASin(0.5*kRearUpHookWide/kRearUpHookRext);
+  yprof[ 8] = kRearUpHookRext*TMath::Cos(alpha);
+  xprof[ 9] = kRearUpHookRext*TMath::Sin(alpha/2);
+  yprof[ 9] = kRearUpHookRext*TMath::Cos(alpha/2);
+  xprof[10] = 0;
+  yprof[10] = kRearUpHookRext;
+
+  // We did the right side, now reflex on the left side
+  for (Int_t jp = 0; jp < kNumberOfRearUpHookPts; jp++) {
+    xprof[11+jp] = -xprof[9-jp];
+    yprof[11+jp] =  yprof[9-jp];
+  }
+
+  // Now the actual Xtru
+  rearUpHookMainBody->DefinePolygon(2*kNumberOfRearUpHookPts+1, xprof, yprof);
+  rearUpHookMainBody->DefineSection(0, 0);
+  rearUpHookMainBody->DefineSection(1, kRearUpHookThick);
+
+  // The hole
+  TGeoXtru *rearUpHookHole = new TGeoXtru(2);
+  rearUpHookHole->SetName("ITSrearUpHookHole");
+
+  xprof[0] = kRearUpHookHoleBase/2;
+  yprof[0] = rearUpHookMainBody->GetY(0) + kRearUpHookHoleY;
+  xprof[1] = kRearUpHookHoleWide/2;
+  yprof[1] = yprof[0] + (xprof[1] - xprof[0]); // Go at 45deg
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[0] + kRearUpHookHoleHi - kRearUpHookHoleR5;
+  xprof[3] = xprof[2] - kRearUpHookHoleR5*(1 - CosD(45));
+  yprof[3] = yprof[2] + kRearUpHookHoleR5*SinD(45);
+  xprof[4] = xprof[2] - kRearUpHookHoleR5;
+  yprof[4] = yprof[0] + kRearUpHookHoleHi;
+
+  // We did the right side, now reflex on the left side
+  for (Int_t jp = 0; jp < kNumbOfRearUpHookHolePts; jp++) {
+    xprof[5+jp] = -xprof[4-jp];
+    yprof[5+jp] =  yprof[4-jp];
+  }
+
+  // Now the actual Xtru
+  rearUpHookHole->DefinePolygon(2*kNumbOfRearUpHookHolePts, xprof, yprof);
+  rearUpHookHole->DefineSection(0, -0.1);
+  rearUpHookHole->DefineSection(1, kRearUpHookThick+0.1);
+
+  // Finally the actual shape: a CompositeShape
+  TGeoCompositeShape *rearUpHookShape = new TGeoCompositeShape("ITSrearUpHookMainBody-ITSrearUpHookHole");
+
+  // The Rear Lower Hook (0872/C/11): a Xtru
+  TGeoXtru *rearLwHookShape = new TGeoXtru(2);
+  rearLwHookShape->SetName("ITSrearLwHookShape");
+
+  xprof[0] = kRearLwHookWide/2;
+  yprof[0] = kRearLwHookRext - kRearLwHookHiTot;
+  xprof[1] = xprof[0];
+  alpha = TMath::ASin(0.5*kRearLwHookWide/kRearLwHookRext);
+  yprof[1] = kRearLwHookRext*TMath::Cos(alpha);
+  xprof[2] = kRearLwHookRext*TMath::Sin(alpha/2);
+  yprof[2] = kRearLwHookRext*TMath::Cos(alpha/2);
+  xprof[3] = 0;
+  yprof[3] = kRearLwHookRext;
+
+  // We did the right side, now reflex on the left side
+  for (Int_t jp = 0; jp < kNumberOfRearLwHookPts; jp++) {
+    xprof[4+jp] = -xprof[2-jp];
+    yprof[4+jp] =  yprof[2-jp];
+  }
+
+  // Now the actual Xtru
+  rearLwHookShape->DefinePolygon(2*kNumberOfRearLwHookPts+1, xprof, yprof);
+  rearLwHookShape->DefineSection(0, 0);
+  rearLwHookShape->DefineSection(1, kRearLwHookThick);
+
+  // The Rear Lower Bracket (0872/C/16): a Xtru
+  TGeoXtru *rearLwBrackShape = new TGeoXtru(2);
+  rearLwBrackShape->SetName("ITSrearLwBrackShape");
+
+  xprof[0] = 0;
+  yprof[0] = 0;
+  xprof[1] = xprof[0] + kRearLwBracketWide1 - kRearLwBracketWide2;
+  yprof[1] = yprof[0];
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[0] + kRearLwBracketHi2;
+  xprof[3] = xprof[2] - kRearLwBracketWide1;
+  yprof[3] = yprof[2];
+  xprof[4] = xprof[3];
+  yprof[4] = yprof[3] - kRearLwBracketHi1;
+  xprof[5] = xprof[0];
+  yprof[5] = yprof[4];
+
+  rearLwBrackShape->DefinePolygon(6, xprof, yprof);
+  rearLwBrackShape->DefineSection(0,-kRearLwBracketThick/2);
+  rearLwBrackShape->DefineSection(1, kRearLwBracketThick/2);
+
+  // The Forward S-shaped Stirrup for the webcam (0872/C/V/01): a Xtru
+  TGeoXtru *forwWebSStirrSh = new TGeoXtru(2);
+
+  xprof[0] = 0;
+  yprof[0] = 0;
+  xprof[1] = xprof[0] + kForwWebSStirrLen1;
+  yprof[1] = yprof[0];
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[1] + kForwWebSStirrWide1;
+  xprof[3] = xprof[0] - kForwWebSStirrLen2 + kForwWebSStirrLen3;
+  yprof[3] = yprof[2];
+  xprof[4] = xprof[3];
+  yprof[4] = yprof[3] + kForwWebSStirrWide3;
+  xprof[5] = xprof[4] - kForwWebSStirrLen3;
+  yprof[5] = yprof[4];
+  xprof[6] = xprof[5];
+  yprof[6] = yprof[0] + kForwWebSStirrWide2;
+  xprof[7] = xprof[0];
+  yprof[7] = yprof[6];
+
+  forwWebSStirrSh->DefinePolygon(8, xprof, yprof);
+  forwWebSStirrSh->DefineSection(0,-kForwWebSStirrDep/2);
+  forwWebSStirrSh->DefineSection(1, kForwWebSStirrDep/2);
+
+  // The Forward T-shaped Stirrups for the webcam (0872/C/V/03-04): two Xtru
+  TGeoXtru *forwWebTStirr3Sh = new TGeoXtru(2);
+
+  xprof[0] = -kForwWebTStirrWide2/2;
+  yprof[0] = 0;
+  xprof[1] = -kForwWebTStirrWide1/2;
+  yprof[1] = yprof[0];
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[1] - kForwWebTStirrLen1;
+  xprof[3] =-xprof[2];
+  yprof[3] = yprof[2];
+  xprof[4] = xprof[3];
+  yprof[4] = yprof[1];
+  xprof[5] =-xprof[0];
+  yprof[5] = yprof[4];
+  xprof[6] = xprof[5];
+  yprof[6] = kForwWebTStirrTotLen3 - kForwWebTStirrLen1;
+  xprof[7] = xprof[0];
+  yprof[7] = yprof[6];
+
+  forwWebTStirr3Sh->DefinePolygon(8, xprof, yprof);
+  forwWebTStirr3Sh->DefineSection(0, 0);
+  forwWebTStirr3Sh->DefineSection(1, kForwWebTStirrThick);
+
+  TGeoXtru *forwWebTStirr4Sh = new TGeoXtru(2);
+
+  yprof[6] = kForwWebTStirrTotLen4 - kForwWebTStirrLen1;
+  yprof[7] = yprof[6];
+
+  forwWebTStirr4Sh->DefinePolygon(8, xprof, yprof);
+  forwWebTStirr4Sh->DefineSection(0, 0);
+  forwWebTStirr4Sh->DefineSection(1, kForwWebTStirrThick);
+
+  // The Forward and Rear clamp for the webcam (0872/C/V/02): a Xtru
+  TGeoXtru *frWebClampSh = new TGeoXtru(2);
+
+  xprof[0] = kFRWebClampIntWide/2;
+  yprof[0] = kFRWebClampIntHi;
+  xprof[1] = xprof[0];
+  yprof[1] = 0;
+  xprof[2] = kFRWebClampExtWide/2;
+  yprof[2] = yprof[1];
+  xprof[3] = xprof[2];
+  yprof[3] = kFRWebClampExtHi;
+  for (Int_t jp = 0; jp < 4; jp++) {
+    xprof[4+jp] = -xprof[3-jp];
+    yprof[4+jp] =  yprof[3-jp];
+  }
+
+  frWebClampSh->DefinePolygon(8, xprof, yprof);
+  frWebClampSh->DefineSection(0,-kFRWebClampThick/2);
+  frWebClampSh->DefineSection(1, kFRWebClampThick/2);
+
+  // The Rear Upper Stirrup for the webcam (0872/C/V/05): a Xtru
+  TGeoXtru *upWebStirrSh = new TGeoXtru(2);
+
+  xprof[0] = 0;
+  yprof[0] = 0;
+  xprof[1] = xprof[0] - (kRearUpWebStirrWide - 2*kRearUpWebStirrThick);
+  yprof[1] = yprof[0];
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[1] + (kRearUpWebStirrH1 - kRearUpWebStirrThick);
+  xprof[3] = xprof[2] - kRearUpWebStirrThick;
+  yprof[3] = yprof[2];
+  xprof[4] = xprof[3];
+  yprof[4] = yprof[3] - kRearUpWebStirrH1;
+  xprof[5] = xprof[4] + kRearUpWebStirrWide;
+  yprof[5] = yprof[4];
+  xprof[6] = xprof[5];
+  yprof[6] = yprof[5] + kRearUpWebStirrH2;
+  xprof[7] = xprof[0];
+  yprof[7] = yprof[6];
+
+  upWebStirrSh->DefinePolygon(8, xprof, yprof);
+  upWebStirrSh->DefineSection(0,-kRearUpWebStirrDep/2);
+  upWebStirrSh->DefineSection(1, kRearUpWebStirrDep/2);
+
+  // The Rear Upper Bar for the webcam (0872/C/V/06): a BBox
+  TGeoBBox *upRearWebBarSh = new TGeoBBox(kRearUpWebBarLen/2,
+					  kRearUpWebBarHi/2,
+					  kRearUpWebBarThick/2);
+
+  // The Webcam: a BBox
+  TGeoBBox *webcamShape = new TGeoBBox(kFRWebClampIntWide/2,
+				       kWebcamLength/2,
+				       kFRWebClampIntHi/2);
+
+  // The Upper Wheel Slide (0872/C/Z/00-01-02)
+  // A mother volume of air (to avoid assembly) contains the Alluminum block
+  // (a Composite Shape: a Xtru and a Pcon for the hole) and the Steel pin
+  // (a Pcon) (The wheels are approximated as part of the block itself)
+  // The Air mother volume
+  TGeoXtru *upSlideAirSh = new TGeoXtru(2);
+  upSlideAirSh->SetName("ITSupperSlideAirShape");
+
+  xprof[0] = 0;
+  yprof[0] = 0;
+  xprof[1] = xprof[0];
+  yprof[1] = kUpperSlideBlockHi + kUpperSlideStubHi - kUpperSlideWheelHi;
+  xprof[2] = xprof[1] - kUpperSlideIntDepth;
+  yprof[2] = yprof[1];
+  xprof[3] = xprof[2];
+  yprof[3] = yprof[2] - kUpperSlideTotHeight;
+  xprof[4] = xprof[3] + kUpperSlideTotDepth;
+  yprof[4] = yprof[3];
+  xprof[5] = xprof[4];
+  yprof[5] = yprof[0];
+
+  upSlideAirSh->DefinePolygon(6, xprof, yprof);
+  upSlideAirSh->DefineSection(0,-kUpperSlideWidth/2);
+  upSlideAirSh->DefineSection(1, kUpperSlideWidth/2);
+
+  // The (filled) Aluminum block: a Xtru
+  TGeoXtru *upSlideAluSh = new TGeoXtru(2);
+  upSlideAluSh->SetName("ITSupperSlideAluShape");
+
+  xprof[0] = upSlideAirSh->GetX(0);
+  yprof[0] = upSlideAirSh->GetY(0);
+  xprof[1] = upSlideAirSh->GetX(1);
+  yprof[1] = upSlideAirSh->GetY(1);
+  xprof[2] = xprof[1] - kUpperSlideStubDep;
+  yprof[2] = yprof[1];
+  xprof[3] = xprof[2];
+  yprof[3] = yprof[2] - kUpperSlideStubHi;
+  xprof[4] = upSlideAirSh->GetX(2);
+  yprof[4] = yprof[3];
+  xprof[5] = xprof[4];
+  yprof[5] = yprof[4] - kUpperSlideBlockHi;
+  xprof[6] = upSlideAirSh->GetX(5);
+  yprof[6] = yprof[5];
+  xprof[7] = xprof[6];
+  yprof[7] = yprof[0];
+
+  upSlideAluSh->DefinePolygon(8, xprof, yprof);
+  upSlideAluSh->DefineSection(0, upSlideAirSh->GetZ(0));
+  upSlideAluSh->DefineSection(1, upSlideAirSh->GetZ(1));
+
+  // The cylindrical hole in the block; a Pcon
+  TGeoPcon *upSlideHoleSh = new TGeoPcon(0, 360, 10);
+  upSlideHoleSh->SetName("ITSupperSlideHoleShape");
+
+  zpos = upSlideAluSh->GetY(5);
+  upSlideHoleSh->DefineSection(0, zpos-0.1, 0, kUpperSlideHoleRout);
+  zpos += (kUpperSlideBlockHi - kUpperSlideHoleH3 - kUpperSlideHoleH2
+	- 2*kUpperSlideHoleH1);
+  upSlideHoleSh->DefineSection(1, zpos, 0, kUpperSlideHoleRout);
+  upSlideHoleSh->DefineSection(2, zpos, 0, kUpperSlideHoleRint2);
+  zpos += kUpperSlideHoleH3;
+  upSlideHoleSh->DefineSection(3, zpos, 0, kUpperSlideHoleRint2);
+  upSlideHoleSh->DefineSection(4, zpos, 0, kUpperSlideHoleRout);
+  zpos += kUpperSlideHoleH1;
+  upSlideHoleSh->DefineSection(5, zpos, 0, kUpperSlideHoleRout);
+  upSlideHoleSh->DefineSection(6, zpos, 0, kUpperSlideHoleRint1);
+  zpos += kUpperSlideHoleH2;
+  upSlideHoleSh->DefineSection(7, zpos, 0, kUpperSlideHoleRint1);
+  upSlideHoleSh->DefineSection(8, zpos, 0, kUpperSlideHoleRout);
+  zpos += kUpperSlideHoleH1;
+  upSlideHoleSh->DefineSection(9, zpos+0.1, 0, kUpperSlideHoleRout);
+
+  TGeoCombiTrans *upSlideHolePos = new TGeoCombiTrans(-kUpperSlideHoleXPos,0,0,
+				   new TGeoRotation("",0,-90,0) );
+  upSlideHolePos->SetName("ITSupperSlideHolePos");
+  upSlideHolePos->RegisterYourself();
+
+  // The actual block: a CompositeShape
+  TGeoCompositeShape *upSlideBlockSh = new TGeoCompositeShape("ITSupperSlideAluShape-ITSupperSlideHoleShape:ITSupperSlideHolePos");
+
+  // The Steel pin in the block; a Pcon
+  TGeoPcon *upSlidePinSh = new TGeoPcon(0, 360, 6);
+  upSlidePinSh->SetName("ITSupperSlidePinShape");
+
+  zpos = upSlideAluSh->GetY(5) - (kUpperSlidePinH1 + kUpperSlidePinH2
+       + kUpperSlidePinH3 - kUpperSlideBlockHi);
+  upSlidePinSh->DefineSection(0, zpos, 0, kUpperSlidePinRmin);
+  zpos += kUpperSlidePinH3;
+  upSlidePinSh->DefineSection(1, zpos, 0, kUpperSlidePinRmin);
+  upSlidePinSh->DefineSection(2, zpos, 0, kUpperSlidePinRmax);
+  zpos += kUpperSlidePinH2;
+  upSlidePinSh->DefineSection(3, zpos, 0, kUpperSlidePinRmax);
+  upSlidePinSh->DefineSection(4, zpos, 0, kUpperSlidePinRmin);
+  zpos += kUpperSlidePinH1;
+  upSlidePinSh->DefineSection(5, zpos, 0, kUpperSlidePinRmin);
+
+  // The Lower Wheel Slide (0872/C/W/00-01-02-03)
+  // A mother volume of air (to avoid assembly) contains the Alluminum block
+  // (a Composite Shape: a Xtru and a Pcon for the hole), the Alluminum nose
+  // (a Xtru) and the Steel pin (a Pcon)
+  // (The wheels are approximated as part of the block itself)
+  // The Air mother volume
+  TGeoXtru *lwSlideAirSh = new TGeoXtru(2);
+  lwSlideAirSh->SetName("ITSlowerSlideAirShape");
+
+  xprof[0] = 0;
+  yprof[0] = 0;
+  xprof[1] = xprof[0] + kLowerSlideTotDepth/2 - kLowerSlideNoseBase/2;
+  yprof[1] = yprof[0];
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[1] - (kLowerSlideBlockHi + kLowerSlidePinH2);
+  xprof[3] = xprof[2] - kLowerSlideTotDepth;
+  yprof[3] = yprof[2];
+  xprof[4] = xprof[3];
+  yprof[4] = yprof[3] + kLowerSlidePinH2 + kLowerSlideTotHeight;
+  xprof[5] = xprof[0];
+  yprof[5] = yprof[4];
+
+  lwSlideAirSh->DefinePolygon(6, xprof, yprof);
+  lwSlideAirSh->DefineSection(0,-kLowerSlideWidth/2);
+  lwSlideAirSh->DefineSection(1, kLowerSlideWidth/2);
+
+  // The (filled) Aluminum block: a Xtru
+  TGeoXtru *lwSlideAluSh = new TGeoXtru(2);
+  lwSlideAluSh->SetName("ITSlowerSlideAluShape");
+
+  xprof[0] = lwSlideAirSh->GetX(0);
+  yprof[0] = lwSlideAirSh->GetY(0);
+  xprof[1] = lwSlideAirSh->GetX(1);
+  yprof[1] = lwSlideAirSh->GetY(1);
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[1] - kLowerSlideBlockHi;
+  xprof[3] = lwSlideAirSh->GetX(3);
+  yprof[3] = yprof[2];
+  xprof[4] = xprof[3];
+  yprof[4] = yprof[3] + kLowerSlideBlockHi;
+  xprof[5] = xprof[4] + kLowerSlideTotDepth/2;
+  yprof[5] = yprof[4];
+  xprof[6] = xprof[5];
+  yprof[6] = lwSlideAirSh->GetY(4);
+  xprof[7] = xprof[0];
+  yprof[7] = yprof[6];
+
+  lwSlideAluSh->DefinePolygon(8, xprof, yprof);
+  lwSlideAluSh->DefineSection(0, lwSlideAirSh->GetZ(0));
+  lwSlideAluSh->DefineSection(1, lwSlideAirSh->GetZ(1));
+
+  // The cylindrical hole in the block; a Pcon
+  TGeoPcon *lwSlideHoleSh = new TGeoPcon(0, 360, 4);
+  lwSlideHoleSh->SetName("ITSlowerSlideHoleShape");
+
+  zpos = lwSlideAluSh->GetY(2);
+  lwSlideHoleSh->DefineSection(0, zpos-0.1, 0, kLowerSlideHoleRout);
+  zpos += kLowerSlideHoleH1;
+  lwSlideHoleSh->DefineSection(1, zpos, 0, kLowerSlideHoleRout);
+  lwSlideHoleSh->DefineSection(2, zpos, 0, kLowerSlideHoleRint);
+  zpos = lwSlideAluSh->GetY(4);
+  lwSlideHoleSh->DefineSection(3, zpos, 0, kLowerSlideHoleRint);
+
+  TGeoCombiTrans *lwSlideHolePos = new TGeoCombiTrans(lwSlideAluSh->GetX(5),
+						      0, 0,
+				   new TGeoRotation("",0,-90,0) );
+  lwSlideHolePos->SetName("ITSlowerSlideHolePos");
+  lwSlideHolePos->RegisterYourself();
+
+  // The actual block: a CompositeShape
+  TGeoCompositeShape *lwSlideBlockSh = new TGeoCompositeShape("ITSlowerSlideAluShape-ITSlowerSlideHoleShape:ITSlowerSlideHolePos");
+
+  // The Aluminum nose: a Xtru
+  TGeoXtru *lwSlideNoseSh = new TGeoXtru(2);
+  lwSlideNoseSh->SetName("ITSlowerSlideNoseShape");
+
+  xprof[0] = lwSlideAluSh->GetX(5);
+  yprof[0] = lwSlideAluSh->GetY(5);
+  xprof[1] = xprof[0] - kLowerSlideNoseBase/2;
+  yprof[1] = yprof[0];
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[1] + kLowerSlideNoseBasHi;
+  xprof[3] = lwSlideAluSh->GetX(0) - kLowerSlideNoseUpWid;
+  yprof[3] = lwSlideAluSh->GetY(6);
+  xprof[4] = xprof[0];
+  yprof[4] = yprof[3];
+
+  lwSlideNoseSh->DefinePolygon(5, xprof, yprof);
+  lwSlideNoseSh->DefineSection(0,-kLowerSlideNoseDepth/2);
+  lwSlideNoseSh->DefineSection(1, kLowerSlideNoseDepth/2);
+
+  // The Steel pin in the block; a Pcon
+  TGeoPcon *lwSlidePinSh = new TGeoPcon(0, 360, 4);
+  lwSlidePinSh->SetName("ITSlowerSlidePinShape");
+
+  zpos = lwSlideAirSh->GetY(2);
+  lwSlidePinSh->DefineSection(0, zpos, 0, kLowerSlidePinRmax);
+  zpos += kLowerSlidePinH2;
+  lwSlidePinSh->DefineSection(1, zpos, 0, kLowerSlidePinRmax);
+  lwSlidePinSh->DefineSection(2, zpos, 0, kLowerSlidePinRmin);
+  zpos += kLowerSlidePinH1;
+  lwSlidePinSh->DefineSection(3, zpos, 0, kLowerSlidePinRmin);
+
+
+  // We have all shapes: now create the real volumes
+  TGeoMedium *medAlcoa   = mgr->GetMedium("ITS_ALUMINUM$"); // To code!!!!!!
+  TGeoMedium *medHokotol = mgr->GetMedium("ITS_HOKOTOL$");
+  TGeoMedium *medAnticor = mgr->GetMedium("ITS_ANTICORODAL$");
+  TGeoMedium *medAisi    = mgr->GetMedium("ITS_AISI304L$");
+  TGeoMedium *medAir     = mgr->GetMedium("ITS_AIR$");
+  TGeoMedium *medPlexy   = mgr->GetMedium("ITS_PLEXYGLAS$");
+  TGeoMedium *medPVC     = mgr->GetMedium("ITS_PVC$");
+
+  TGeoVolume *suppRingC2C3  = new TGeoVolume("ITSTPCsupportRingC2C3",
+					     ringC2C3, medAlcoa);
+
+  suppRingC2C3->SetVisibility(kTRUE);
+  suppRingC2C3->SetLineColor(6); // Purple
+  suppRingC2C3->SetLineWidth(1);
+  suppRingC2C3->SetFillColor(suppRingC2C3->GetLineColor());
+  suppRingC2C3->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *forwUpHook  = new TGeoVolume("ITSTPCsupportForwUpHook",
+					   forwUpHookShape, medHokotol);
+
+  forwUpHook->SetVisibility(kTRUE);
+  forwUpHook->SetLineColor(6); // Purple
+  forwUpHook->SetLineWidth(1);
+  forwUpHook->SetFillColor(forwUpHook->GetLineColor());
+  forwUpHook->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *forwLwHook  = new TGeoVolume("ITSTPCsupportForwLwHook",
+					   forwLwHookShape, medHokotol);
+
+  forwLwHook->SetVisibility(kTRUE);
+  forwLwHook->SetLineColor(6); // Purple
+  forwLwHook->SetLineWidth(1);
+  forwLwHook->SetFillColor(forwLwHook->GetLineColor());
+  forwLwHook->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *rearUpHook  = new TGeoVolume("ITSTPCsupportRearUpHook",
+					   rearUpHookShape, medHokotol);
+
+  rearUpHook->SetVisibility(kTRUE);
+  rearUpHook->SetLineColor(6); // Purple
+  rearUpHook->SetLineWidth(1);
+  rearUpHook->SetFillColor(rearUpHook->GetLineColor());
+  rearUpHook->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *rearLwHook  = new TGeoVolume("ITSTPCsupportRearLwHook",
+					   rearLwHookShape, medAnticor);
+
+  rearLwHook->SetVisibility(kTRUE);
+  rearLwHook->SetLineColor(6); // Purple
+  rearLwHook->SetLineWidth(1);
+  rearLwHook->SetFillColor(rearLwHook->GetLineColor());
+  rearLwHook->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *rearLwBrack  = new TGeoVolume("ITSTPCsupportRearLwBracket",
+					    rearLwBrackShape, medAnticor);
+
+  rearLwBrack->SetVisibility(kTRUE);
+  rearLwBrack->SetLineColor(6); // Purple
+  rearLwBrack->SetLineWidth(1);
+  rearLwBrack->SetFillColor(rearLwBrack->GetLineColor());
+  rearLwBrack->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *forwWebSStirrup  = new TGeoVolume("ITSTPCsupportForwWebSStirrup",
+						forwWebSStirrSh, medAnticor);
+
+  forwWebSStirrup->SetVisibility(kTRUE);
+  forwWebSStirrup->SetLineColor(6); // Purple
+  forwWebSStirrup->SetLineWidth(1);
+  forwWebSStirrup->SetFillColor(forwWebSStirrup->GetLineColor());
+  forwWebSStirrup->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *forwWebTStirr3  = new TGeoVolume("ITSTPCsupportForwWebTStirrup3",
+					       forwWebTStirr3Sh, medAnticor);
+
+  forwWebTStirr3->SetVisibility(kTRUE);
+  forwWebTStirr3->SetLineColor(6); // Purple
+  forwWebTStirr3->SetLineWidth(1);
+  forwWebTStirr3->SetFillColor(forwWebTStirr3->GetLineColor());
+  forwWebTStirr3->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *forwWebTStirr4  = new TGeoVolume("ITSTPCsupportForwWebTStirrup4",
+					       forwWebTStirr4Sh, medAnticor);
+
+  forwWebTStirr4->SetVisibility(kTRUE);
+  forwWebTStirr4->SetLineColor(6); // Purple
+  forwWebTStirr4->SetLineWidth(1);
+  forwWebTStirr4->SetFillColor(forwWebTStirr4->GetLineColor());
+  forwWebTStirr4->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *frWebClamp  = new TGeoVolume("ITSTPCsupportForwRearWebClamp",
+					   frWebClampSh, medPlexy);
+
+  frWebClamp->SetVisibility(kTRUE);
+  frWebClamp->SetLineColor(kAzure);
+  frWebClamp->SetLineWidth(1);
+  frWebClamp->SetFillColor(frWebClamp->GetLineColor());
+  frWebClamp->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *upWebStirrup  = new TGeoVolume("ITSTPCsupportUpperWebStirrup",
+					     upWebStirrSh, medAnticor);
+
+  upWebStirrup->SetVisibility(kTRUE);
+  upWebStirrup->SetLineColor(6); // Purple
+  upWebStirrup->SetLineWidth(1);
+  upWebStirrup->SetFillColor(upWebStirrup->GetLineColor());
+  upWebStirrup->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *upRearWebBar  = new TGeoVolume("ITSTPCsupportUpperRearWebBar",
+					     upRearWebBarSh, medPlexy);
+
+  upRearWebBar->SetVisibility(kTRUE);
+  upRearWebBar->SetLineColor(kAzure);
+  upRearWebBar->SetLineWidth(1);
+  upRearWebBar->SetFillColor(upRearWebBar->GetLineColor());
+  upRearWebBar->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *webCam  = new TGeoVolume("ITSTPCsupportWebcam",
+				       webcamShape, medPVC);
+
+  webCam->SetVisibility(kTRUE);
+  webCam->SetLineColor(kBlack);
+  webCam->SetLineWidth(1);
+  webCam->SetFillColor(webCam->GetLineColor());
+  webCam->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *upSlideVol  = new TGeoVolume("ITSTPCsupportUpperSlide",
+					   upSlideAirSh, medAir);
+
+  upSlideVol->SetVisibility(kFALSE);
+
+  TGeoVolume *upSlideBlock  = new TGeoVolume("ITSTPCsupportUpperSlideBlock",
+					     upSlideBlockSh, medAnticor);
+
+  upSlideBlock->SetVisibility(kTRUE);
+  upSlideBlock->SetLineColor(6); // Purple
+  upSlideBlock->SetLineWidth(1);
+  upSlideBlock->SetFillColor(upSlideBlock->GetLineColor());
+  upSlideBlock->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *upSlidePin  = new TGeoVolume("ITSTPCsupportUpperSlidePin",
+					   upSlidePinSh, medAisi);
+
+  upSlidePin->SetVisibility(kTRUE);
+  upSlidePin->SetLineColor(kGray);
+  upSlidePin->SetLineWidth(1);
+  upSlidePin->SetFillColor(upSlidePin->GetLineColor());
+  upSlidePin->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *lwSlideVol  = new TGeoVolume("ITSTPCsupportLowerSlide",
+					   lwSlideAirSh, medAir);
+
+  lwSlideVol->SetVisibility(kFALSE);
+
+  TGeoVolume *lwSlideBlock  = new TGeoVolume("ITSTPCsupportLowerSlideBlock",
+					     lwSlideBlockSh, medAnticor);
+
+  lwSlideBlock->SetVisibility(kTRUE);
+  lwSlideBlock->SetLineColor(6); // Purple
+  lwSlideBlock->SetLineWidth(1);
+  lwSlideBlock->SetFillColor(lwSlideBlock->GetLineColor());
+  lwSlideBlock->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *lwSlideNose  = new TGeoVolume("ITSTPCsupportLowerSlideNose",
+					    lwSlideNoseSh, medAnticor);
+
+  lwSlideNose->SetVisibility(kTRUE);
+  lwSlideNose->SetLineColor(6); // Purple
+  lwSlideNose->SetLineWidth(1);
+  lwSlideNose->SetFillColor(lwSlideNose->GetLineColor());
+  lwSlideNose->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *lwSlidePin  = new TGeoVolume("ITSTPCsupportLowerSlidePin",
+					   lwSlidePinSh, medAisi);
+
+  lwSlidePin->SetVisibility(kTRUE);
+  lwSlidePin->SetLineColor(kGray);
+  lwSlidePin->SetLineWidth(1);
+  lwSlidePin->SetFillColor(lwSlidePin->GetLineColor());
+  lwSlidePin->SetFillStyle(4000); // 0% transparent
+
+
+  // Build up the wheel slides
+  upSlideVol->AddNode(upSlideBlock,1,0);
+  upSlideVol->AddNode(upSlidePin,  1,
+		      new TGeoCombiTrans(-kUpperSlideHoleXPos, 0, 0,
+					 new TGeoRotation("",0,-90,0) ) );
+
+  lwSlideVol->AddNode(lwSlideBlock,1,0);
+  lwSlideVol->AddNode(lwSlideNose ,1,0);
+  lwSlideVol->AddNode(lwSlidePin,  1,
+		      new TGeoCombiTrans(lwSlideAluSh->GetX(5), 0, 0,
+					 new TGeoRotation("",0,-90,0) ) );
+
+
+  // Finally put everything in the mother volume
+  moth->AddNode(suppRingC2C3,1,
+		new TGeoTranslation(0, 0, kRingCZPos) );
+  moth->AddNode(suppRingC2C3,2,
+		new TGeoCombiTrans( 0, 0,-kRingCZPos,
+				   new TGeoRotation("",0.,180.,0.) ) );
+  moth->AddNode(suppRingC2C3,3,
+		new TGeoCombiTrans( 0, 0, kRingCZPos,
+				   new TGeoRotation("",0.,0.,180.) ) );
+  moth->AddNode(suppRingC2C3,4,
+		new TGeoCombiTrans( 0, 0,-kRingCZPos,
+				   new TGeoRotation("",0.,180.,180.) ) );
+
+  zpos = kRingCZPos + kRingCThick;
+  moth->AddNode(forwUpHook,1,
+		new TGeoTranslation( 0, 0, zpos) );
+
+  zpos = kRingCZPos + kRingCThick;
+  moth->AddNode(forwLwHook,1,
+		new TGeoCombiTrans( 0, 0, zpos,
+				   new TGeoRotation("",0.,0.,180.) ) );
+
+  zpos = kRingCZPos + kRingCThick + kRearUpHookThick;
+  moth->AddNode(rearUpHook,1,
+		new TGeoTranslation( 0, 0,-zpos) );
+
+  zpos = kRingCZPos + kRingCThick + kRearLwHookThick;
+  moth->AddNode(rearLwHook,1,
+		new TGeoCombiTrans( 0, 0,-zpos,
+				   new TGeoRotation("",0.,0.,180.) ) );
+
+  xpos =  kRearLwHookWide/2 + kRearLwBracketThick/2;
+  ypos = -kRingCHeight;
+  moth->AddNode(rearLwBrack,1,
+		new TGeoCombiTrans( xpos, ypos,-zpos,
+				   new TGeoRotation("", 90.,-90.,-90.) ) );
+  moth->AddNode(rearLwBrack,2,
+		new TGeoCombiTrans(-xpos, ypos,-zpos,
+				   new TGeoRotation("", 90.,-90.,-90.) ) );
+
+  xpos = kForwUpHookWide/2;
+  ypos = (forwUpHookMainBody->GetY(8) + forwUpHookMainBody->GetY(9))/2;
+  zpos = kRingCZPos + kRingCThick;
+  moth->AddNode(forwWebSStirrup,1,
+		new TGeoCombiTrans( xpos, ypos, zpos,
+				   new TGeoRotation("", 0., 90., 0.) ) );
+  xpos = kForwLwHookWide/2;
+  ypos = (forwLwHookMainBody->GetY(8) + forwLwHookMainBody->GetY(9))/2;
+  moth->AddNode(forwWebSStirrup,2,
+		new TGeoCombiTrans( xpos,-ypos, zpos,
+				   new TGeoRotation("", 0., 90., 0.) ) );
+
+  xpos = kForwUpHookWide/2
+	+ (forwWebSStirrSh->GetX(4) + forwWebSStirrSh->GetX(5))/2;
+  ypos = (forwUpHookMainBody->GetY(8) + forwUpHookMainBody->GetY(9))/2
+	+  forwWebSStirrSh->GetZ(1) - forwWebTStirr3Sh->GetY(7);
+  zpos += (forwWebSStirrSh->GetY(4) - forwWebSStirrSh->GetY(0));
+  moth->AddNode(forwWebTStirr3,1,
+		new TGeoTranslation( xpos, ypos, zpos) );
+
+  ypos -= frWebClampSh->GetZ(1);
+  moth->AddNode(frWebClamp,1,
+		new TGeoCombiTrans( xpos, ypos, zpos+forwWebTStirr3Sh->GetZ(1),
+				   new TGeoRotation("", 0., 90., 0.) ) );
+
+  ypos -= webcamShape->GetDY()/2;
+  moth->AddNode(webCam,1,
+		new TGeoTranslation( xpos, ypos,
+		     zpos+forwWebTStirr3Sh->GetZ(1)+webcamShape->GetDZ()) );
+
+  xpos = kForwLwHookWide/2
+	+ (forwWebSStirrSh->GetX(4) + forwWebSStirrSh->GetX(5))/2;
+  ypos = (forwLwHookMainBody->GetY(8) + forwLwHookMainBody->GetY(9))/2
+	+  forwWebSStirrSh->GetZ(1) - forwWebTStirr4Sh->GetY(7);
+  moth->AddNode(forwWebTStirr4,1,
+		new TGeoCombiTrans( xpos,-ypos, zpos,
+				   new TGeoRotation("", 180., 0., 0.) ) );
+
+  ypos -= frWebClampSh->GetZ(1);
+  moth->AddNode(frWebClamp,2,
+		new TGeoCombiTrans( xpos,-ypos, zpos+forwWebTStirr4Sh->GetZ(1),
+				   new TGeoRotation("", 0., 90., 0.) ) );
+
+  ypos -= webcamShape->GetDY()/2;
+  moth->AddNode(webCam,2,
+		new TGeoTranslation( xpos,-ypos,
+		     zpos+forwWebTStirr4Sh->GetZ(1)+webcamShape->GetDZ()) );
+/*  // Overlaps with TPC_M_1 !!!! mods in TPC needed
+  xpos = kRearUpHookWide/2 + kRearUpWebStirrDep/2;
+  ypos = kRingCHeight;
+  zpos = kRingCZPos + kRingCThick;
+  moth->AddNode(upWebStirrup,1,
+		new TGeoCombiTrans( xpos, ypos,-zpos,
+				   new TGeoRotation("",-90.,-90., 90.) ) );
+  moth->AddNode(upWebStirrup,2,
+		new TGeoCombiTrans(-xpos, ypos,-zpos,
+				   new TGeoRotation("",-90.,-90., 90.) ) );
+
+  ypos = kRingCHeight + upWebStirrSh->GetY(2) - upRearWebBarSh->GetDY();
+  zpos = kRingCZPos + kRingCThick + upWebStirrSh->GetX(3)
+       - upRearWebBarSh->GetDZ();
+  moth->AddNode(upRearWebBar,1,
+		new TGeoTranslation( 0, ypos,-zpos) );
+
+  zpos -= upRearWebBarSh->GetDZ();
+  moth->AddNode(frWebClamp,3,
+		new TGeoCombiTrans( 0, ypos,-zpos,
+				   new TGeoRotation("", 0., 90., 0.) ) );
+
+  ypos -= webcamShape->GetDY()/2;
+  zpos -= webcamShape->GetDZ();
+  moth->AddNode(webCam,3,
+		new TGeoTranslation( 0, ypos,-zpos) );
+*/
+  xpos = ringC2C3->GetX(14) + kUpperSlideWidth/2;
+  ypos = ringC2C3->GetY(14);
+  zpos = kRingCZPos + kRingCThick;
+  moth->AddNode(upSlideVol,1,
+		new TGeoCombiTrans( xpos, ypos, zpos,
+				   new TGeoRotation("",-90.,-90., 90.) ) );
+  moth->AddNode(upSlideVol,2,
+		new TGeoCombiTrans(-xpos, ypos, zpos,
+				   new TGeoRotation("",-90.,-90., 90.) ) );
+  moth->AddNode(upSlideVol,3,
+		new TGeoCombiTrans( xpos, ypos, -zpos,
+				   new TGeoRotation("", 90.,-90.,-90.) ) );
+  moth->AddNode(upSlideVol,4,
+		new TGeoCombiTrans(-xpos, ypos, -zpos,
+				   new TGeoRotation("", 90.,-90.,-90.) ) );
+
+  moth->AddNode(lwSlideVol,1,
+		new TGeoCombiTrans( xpos,-ypos,-zpos,
+				   new TGeoRotation("",-90.,-90.,-90.) ) );
+  moth->AddNode(lwSlideVol,2,
+		new TGeoCombiTrans(-xpos,-ypos,-zpos,
+				   new TGeoRotation("",-90.,-90.,-90.) ) );
+  moth->AddNode(lwSlideVol,3,
+		new TGeoCombiTrans( xpos,-ypos, zpos,
+				   new TGeoRotation("", 90.,-90., 90.) ) );
+  moth->AddNode(lwSlideVol,4,
+		new TGeoCombiTrans(-xpos,-ypos, zpos,
+				   new TGeoRotation("", 90.,-90., 90.) ) );
+
+
+  return;
+}
+

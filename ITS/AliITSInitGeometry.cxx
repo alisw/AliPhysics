@@ -65,7 +65,7 @@ const Bool_t AliITSInitGeometry::fgkOldSPDshield = kFALSE;
 const Bool_t AliITSInitGeometry::fgkOldSDDshield = kTRUE;
 const Bool_t AliITSInitGeometry::fgkOldSSDshield = kTRUE;
 const Bool_t AliITSInitGeometry::fgkOldServices  = kFALSE;
-const Bool_t AliITSInitGeometry::fgkOldSupports  = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSupports  = kFALSE;
 //______________________________________________________________________
 AliITSInitGeometry::AliITSInitGeometry():
 TObject(),                   // Base Class

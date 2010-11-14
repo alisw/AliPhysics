@@ -1025,6 +1025,10 @@ void AliITSv11Hybrid::CreateGeometry() {
     fSSDgeom->SSDCables(vITSV);
     fSupgeom->ServicesCableSupport(vITSS);
   }
+
+  if (AliITSInitGeometry::SupportIsTGeoNative()) {
+    fSupgeom->ITSTPCSupports(vITSS);
+  }
 }
 
 //______________________________________________________________________
@@ -5523,6 +5527,12 @@ void AliITSv11Hybrid::CreateMaterials(){
 			   0.001399, 0.399760, 0.022365, 0.177875};
     Float_t dRyton = 1.65;
 
+    // Plexiglas (Poly(methyl methacrylate) (C5O2H8)n - M.S. 05 nov 10)
+    Float_t aPlexy[3] = { 12.0107, 15.9994,  1.00794};
+    Float_t zPlexy[3] = {  6.    , 8.     ,  1.   };
+    Float_t wPlexy[3] = {  5.    , 2.     ,  8.   };
+    Float_t dPlexy    = 1.18;
+
     //SSD NiSn capacitor ends
     Float_t aNiSn[2]  = { 56.6934,118.710};
     Float_t zNiSn[2]  = {     28.,     50.};
@@ -5584,6 +5594,9 @@ void AliITSv11Hybrid::CreateMaterials(){
 
     AliMixture(27,"GEN Air$",aAir,zAir,dAir,4,wAir);
     AliMedium(27,"GEN Air$",27,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
+
+    AliMixture(35,"PLEXYGLAS$",aPlexy,zPlexy,dPlexy,-3,wPlexy);
+    AliMedium(35,"PLEXYGLAS$",35,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(36,"STDGLASS$",aStdGlass,zStdGlass,dStdGlass,7,wStdGlass);
     AliMedium(36,"STDGLASS$",36,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
@@ -6030,10 +6043,67 @@ void AliITSv11Hybrid::CreateMaterials(){
 	      deemax,epsil,stmin);
 
 
-    // Anticorodal: Aliminum alloy for tray ring support on Side A
-    den = 2.710301;
-    AliMaterial(93,"ANTICORODAL$",0.26982E+02,0.13000E+02,den,0.89000E+01,0.99900E+03);
+    // Anticorodal (Aliminum alloy) - 08 nov 10
+    // A,Z from Root TGeoElementTable, W from Web sites
+    zZ[0] = 13.0; aA[0] =  26.9815; // Aluminium
+    zZ[1] = 29.0; aA[1] =  63.546 ; // Copper
+    zZ[2] = 26.0; aA[2] =  55.845 ; // Iron
+    zZ[3] = 25.0; aA[3] =  54.938 ; // Manganese
+    zZ[4] = 12.0; aA[4] =  24.305 ; // Magnesium
+    zZ[5] = 14.0; aA[5] =  28.0855; // Silicon
+    zZ[6] = 30.0; aA[6] =  65.39  ; // Zinc
+    zZ[7] = 24.0; aA[7] =  51.9961; // Chromium
+    zZ[8] = 22.0; aA[8] =  47.867 ; // Titanium
+
+    wW[1] = 0.001000;//Cu
+    wW[2] = 0.005000;//Fe
+    wW[3] = 0.007000;//Mn - mean value
+    wW[4] = 0.009000;//Mg - mean value
+    wW[5] = 0.001000;//Si - mean value
+    wW[6] = 0.002000;//Zn
+    wW[7] = 0.002500;//Cr
+    wW[8] = 0.001000;//Ti
+
+    Double_t totFrac = 0;
+    for (Int_t j=1; j<9; j++)
+      totFrac += wW[j];
+    wW[0] = 1. - totFrac;//Al - the remainder
+
+    den = 2.69;
+    AliMixture(93,"ANTICORODAL$",aA,zZ,den,+9,wW);
     AliMedium(93,"ANTICORODAL$",93,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    // Hokotol (another Aluminium alloy) - 08 nov 10
+    // A,Z from Root TGeoElementTable, W from Web sites
+    zZ[0] = 13.0; aA[0] =  26.9815; // Aluminium
+    zZ[1] = 29.0; aA[1] =  63.546 ; // Copper
+    zZ[2] = 26.0; aA[2] =  55.845 ; // Iron
+    zZ[3] = 25.0; aA[3] =  54.938 ; // Manganese
+    zZ[4] = 12.0; aA[4] =  24.305 ; // Magnesium
+    zZ[5] = 14.0; aA[5] =  28.0855; // Silicon
+    zZ[6] = 30.0; aA[6] =  65.39  ; // Zinc
+    zZ[7] = 24.0; aA[7] =  51.9961; // Chromium
+    zZ[8] = 22.0; aA[8] =  47.867 ; // Titanium
+    zZ[9] = 40.0; aA[9] =  91.224 ; // Zirconium
+
+    wW[1] = 0.020500;//Cu - mean value
+    wW[2] = 0.000300;//Fe
+    wW[3] = 0.022000;//Mn - mean value
+    wW[4] = 0.001000;//Mg - mean value
+    wW[5] = 0.002000;//Si - mean value
+    wW[6] = 0.066500;//Zn
+    wW[7] = 0.005000;//Cr
+    wW[8] = 0.000600;//Ti
+    wW[9] = 0.001650;//Zr - mean value
+
+    totFrac = 0;
+    for (Int_t j=1; j<10; j++)
+      totFrac += wW[j];
+    wW[0] = 1. - totFrac;//Al - the remainder
+
+    den = 2.69;
+    AliMixture(34,"HOKOTOL$",aA,zZ,den,+10,wW);
+    AliMedium(34,"HOKOTOL$",34,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
     
 }
 
