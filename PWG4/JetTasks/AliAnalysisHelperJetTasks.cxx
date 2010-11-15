@@ -218,7 +218,7 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
 }
 
 
-void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* cPattern,char *cOutFile){
+void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* cPattern,const char *cOutFile,Bool_t bUpdate){
   // Routine to merge only directories containing the pattern
   //
   TString outFile(cOutFile);
@@ -228,14 +228,16 @@ void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* 
   // open all files
   TList fileList;
   char cFile[240];
-  if(in1>>cFile){// only open the first file
-    fileList.Add(TFile::Open(cFile));
+  while(in1>>cFile){// only open the first file
+    Printf("Adding %s",cFile);
+    TFile *f1 = TFile::Open(cFile);
+    fileList.Add(f1);
   }
 
   TFile *fOut = 0;
   if(fileList.GetEntries()){// open the first file
     TFile* fIn = dynamic_cast<TFile*>(fileList.At(0));
-    if(fIn){
+    if(!fIn){
       Printf("Input File not Found");
     }
     // fetch the keys for the directories
@@ -249,14 +251,19 @@ void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* 
 	if(dName.Contains(cPattern)){
 	  // open new file if first match
 	  if(!fOut){
-	    fOut = new TFile(outFile.Data(),"RECREATE");
+	    if(bUpdate)fOut = new TFile(outFile.Data(),"UPDATE");
+	    else fOut = new TFile(outFile.Data(),"RECREATE");
 	  }
 	  // merge all the stuff that is in this directory
 	  TList *llKeys = dir->GetListOfKeys();
 	  TList *tmplist;
 	  TMethodCall callEnv;
+
+	  fOut->cd();
+	  TDirectory *dOut = fOut->mkdir(dir->GetName());
+
 	  for(int il = 0;il < llKeys->GetEntries();il++){
-	    TKey *lKey = (TKey*)llKeys->At(id);
+	    TKey *lKey = (TKey*)llKeys->At(il);
 	    TObject *object = dynamic_cast<TObject*>(lKey->ReadObj());
 	    //  from TSeqCollections::Merge
 	    if(!object)continue;
@@ -291,8 +298,8 @@ void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* 
 	    callEnv.SetParam((Long_t) tmplist);
 	    callEnv.Execute(object);
 	    delete tmplist;tmplist = 0;
-	    fOut->cd();
-	    object->Write();
+	    dOut->cd();
+	    object->Write(object->GetName(),TObject::kSingleKey);
 	  }
 	}
       }
