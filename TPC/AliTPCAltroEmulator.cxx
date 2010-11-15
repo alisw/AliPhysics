@@ -17,6 +17,7 @@
  *	\verbinclude Altro/Altro.C.log
  *
  */
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //     Class for emulation of the ALTRO chip (Altro digital Chain) in C++                          //
 //     Author: Roland Bramm                                                                        //
@@ -105,6 +106,7 @@ AliTPCAltroEmulator::AliTPCAltroEmulator(Int_t timebins, short* Channel) :
   
   fReader(0),           // for Altro Emulation on Raw Reader
   fDecoder(0),
+  fRunNumber(0), 
   fDDLFolderName("/tmp/"),
   fOutputDateFileName("/tmp/tmp.date"),
   fOutputRootFileName("/tmp/tmp.root"),
@@ -1129,11 +1131,14 @@ Bool_t AliTPCAltroEmulator::ConvertRawFilesToDate(Int_t nevents) {
   
   char command[100];
   FILE *pipe;
-  if (fReader->GetRunNumber()>0)
+
+  printf(" RAW to DATE CONVERSION: Run Number %d\n",fRunNumber);
+
+  if (fRunNumber>0)
     pipe=gSystem->OpenPipe(Form("dateStream -c -s -D -o %s -C -# %d -run %d", 
 				fOutputDateFileName.Data(),
 				nevents,
-				fReader->GetRunNumber()),
+				fRunNumber),
 			   "w");
   else
     pipe=gSystem->OpenPipe(Form("dateStream -c -s -D -o %s -C -# %d", 
@@ -1144,7 +1149,7 @@ Bool_t AliTPCAltroEmulator::ConvertRawFilesToDate(Int_t nevents) {
     fprintf(stderr,"error: cannot execute command: %s",command);
     return kFALSE;
   }
-  
+
   for (Int_t ievent=0;ievent<nevents;++ievent) {
     UInt_t detectorPattern = 0xFFFFFFFF;
     fprintf(pipe, "GDC DetectorPattern %u\n", detectorPattern);
@@ -1213,6 +1218,8 @@ Bool_t AliTPCAltroEmulator::ConvertDateToRoot() {
   //
 
   // from $ALICE_ROOT/STEER/AliSimulation.cxx
+
+  printf(" DATE to ROOT CONVERSION: Run Number %d\n",fRunNumber);
 
   // ALIMDC setup
   const Int_t kDBSize    = 2000000000; //2GB
@@ -1285,6 +1292,7 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
   Int_t ievent=0;
   while (fReader->NextEvent()) {
     
+    if (fReader->GetRunNumber()>0) fRunNumber=fReader->GetRunNumber();
     gSystem->Exec(Form("mkdir -p %s/raw%d/",fDDLFolderName.Data(),ievent));
     GDC2DDLs(const_cast<AliRawVEvent*>(fReader->GetEvent()),ievent);
     
@@ -1293,10 +1301,10 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
       Int_t ddlID=fDecoder->GetDDLNumber();
       printf("ddl: %d (%d/216)\n",ddlID,++ddlC);
      
-      Bool_t  *channelsDDL=fChannels+ddlID*4096     ;
-      Short_t *adcsDDL    =fADCs    +ddlID*4096*1024;
-      UInt_t  *cdhDDL     =fCDHs    +ddlID*8        ;
-      UInt_t  *trailerDDL =fTrailers+ddlID*9        ;
+      Bool_t  *channelsDDL=fChannels+ddlID*4096      ;
+      Short_t *adcsDDL    =fADCs    +ddlID*4096*1024 ;
+      UInt_t  *cdhDDL     =fCDHs    +ddlID*8         ;
+      UInt_t  *trailerDDL =fTrailers+ddlID*9         ;
       
       // CDH 
       for (Int_t i=0;i<8;++i)
@@ -1335,7 +1343,6 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
 	// search end of aquisition
 	Int_t tE = 1024; while (adcsChannel[tE]==-1) tE--;
 	
-	// SR TEST:
 	// channel is complete - Perform Altro Emulation
 	if (plotFlag!=0 && !(chanCount%plotFlag) ) {
 	  for (Int_t t=0; t<1024; t++) {
@@ -1357,7 +1364,6 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
 	for (Int_t t=t0;t<(t0+timebins);t++) 
 	  adcsChannel[t]=data[t-t0];
 	  
-	// SR TEST:
 	if (plotFlag!=0 && !(chanCount%plotFlag) ) {
 	  for (Int_t t=0; t<1024; t++)
 	    hisO.SetBinContent(t+1,adcsChannel[t]);
@@ -1383,7 +1389,7 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
       
     }
             
-    WriteEvent(ievent++);
+    if (ddlC>0) WriteEvent(ievent++);
   }
 
   delete[] data; // free space

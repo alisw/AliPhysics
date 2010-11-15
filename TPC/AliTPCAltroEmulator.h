@@ -177,6 +177,8 @@ class AliTPCAltroEmulator : public TNamed {
   AliRawReader      *fReader ; // RAW reader
   AliTPCRawStreamV3 *fDecoder; // ALTRO decoder
 
+  Int_t fRunNumber;            // Run Number
+
   TString fDDLFolderName;      // folder name for ddl files
   TString fOutputDateFileName; // filename for date output
   TString fOutputRootFileName; // filename for root output
