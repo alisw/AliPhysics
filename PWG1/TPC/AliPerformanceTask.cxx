@@ -84,6 +84,7 @@ AliPerformanceTask::AliPerformanceTask()
   , fUseHLT(kFALSE)
   , fUseTerminate(kTRUE)
   , fUseCentrality(0)
+  , fUseOCDB(kTRUE)
 {
   // Dummy Constructor
   // should not be used
@@ -104,6 +105,7 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
   , fUseHLT(kFALSE)
   , fUseTerminate(kTRUE)
   , fUseCentrality(0)
+  , fUseOCDB(kTRUE)
 {
   // Constructor
 
@@ -268,6 +270,12 @@ void AliPerformanceTask::Terminate(Option_t *)
         if (! pDEdx)  {   pDEdx = dynamic_cast<AliPerformanceDEdx*>(pObj); }
         if (! pMatch) {  pMatch = dynamic_cast<AliPerformanceMatch*>(pObj); }
     }
+   
+    if(!fUseOCDB)  { 
+      printf("DO NOT USE OCDB \n");
+      return;
+    }
+  
     if (! AliCDBManager::Instance()->GetDefaultStorage()) { AliCDBManager::Instance()->SetDefaultStorage("raw://"); }
     TUUID uuid;
     TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
