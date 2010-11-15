@@ -44,6 +44,7 @@ public:
   void SetMultRange(Int_t multMin = 0, Int_t multMax=10000) { fMultMin = multMin; fMultMax = multMax; }
   void SetUseMultRange(Bool_t flag = kTRUE) {fUseMultRange = flag;}
   void SetUseV0Range(Bool_t flag = kTRUE) {fUseV0CutRange = flag;}
+  void SetUseSPDOuterRange(Bool_t flag = kTRUE) {fUseSPDOuterRange = flag;}
   void SetCentralityEstimator(const char * estimator) { fCentrEstimator = estimator; }
   void SetCentralityBin(Int_t bin) { fCentrBin = bin; }
   void SetCentrTaskFiles(const char * file1, const char * file2) { fFile1 = file1; fFile2 = file2; }
@@ -60,8 +61,9 @@ protected:
   TString fFile2; // file used by centrality task. Set here for bookkeeping
   Bool_t fUseMultRange; // if true, use track bins rather than multiplicity estimator
   Bool_t fUseV0CutRange; // if true, use v0 range rather than multiplicity estimator
+  Bool_t fUseSPDOuterRange; // if true, use SPD outer cluster range rather than multiplicity estimator
 
-  ClassDef(AliAnalysisMultPbCentralitySelector, 2)
+  ClassDef(AliAnalysisMultPbCentralitySelector, 3)
     
   private:
   AliAnalysisMultPbCentralitySelector(const AliAnalysisMultPbCentralitySelector&); // not implemented

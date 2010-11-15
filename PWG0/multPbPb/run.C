@@ -111,6 +111,11 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     centrSelector->SetUseV0Range();
     centrSelector->SetMultRange(trackMin,trackMax);
   }
+  if(useOtherCentralityCut == 3){
+    cout << "SETTING SPD OUTER" << endl;    
+    centrSelector->SetUseSPDOuterRange();
+    centrSelector->SetMultRange(trackMin,trackMax);
+  }
 
   // Parse option strings
   TString optionStr(option);
@@ -125,8 +130,8 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     doSave = kTRUE;
   }
 
-  //  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
-  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE); //FIXME
+  //  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
   TString pathsuffix = "";
   // cuts->SetPtRange(0.15,0.2);// FIXME pt cut
   // const char * pathsuffix = "_pt_015_020_nofakes";
@@ -192,6 +197,8 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     pathsuffix = pathsuffix + "_TrackRange_" + long(trackMin) + "_" + long(trackMax);
   } else if(useOtherCentralityCut==2){
     pathsuffix = pathsuffix + "_V0Range_" + long(trackMin) + "_" + long(trackMax);
+  } else if(useOtherCentralityCut==3){
+    pathsuffix = pathsuffix + "_SPDOutRange_" + long(trackMin) + "_" + long(trackMax);
   }
   pathsuffix += customSuffix;
 
@@ -263,7 +270,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     
     gEnv->SetValue("XSec.GSI.DelegProxy", "2");
     TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
-    //    TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");
+    //TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");
     
     // Enable the needed package
     gProof->UploadPackage("$ALICE_ROOT/STEERBase");

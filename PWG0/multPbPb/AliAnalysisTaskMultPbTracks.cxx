@@ -133,11 +133,6 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   // FIXME: use physics selection here to keep track of events lost?
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatAll);
 
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTrigger);
-
-  if(!isSelected) return;
-  fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatPhysSel);
-
 
   // Centrality selection
   Bool_t isCentralitySelected = fCentrSelector->IsCentralityBinSelected(fESD,fTrackCuts);  
@@ -155,6 +150,10 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatCentr);
 
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTrigger);
+
+  if(!isSelected) return;
+  fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatPhysSel);
 
 
   if (fIsMC) {
@@ -272,8 +271,8 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     // FIXME: fakes? Is this the correct way to account for them?
     // Get label and corresponding mcPart;
     if (fIsMC) {
-      //      Int_t label = TMath::Abs(esdTrack->GetLabel()); // no fakes!!!
-      Int_t label = esdTrack->GetLabel(); // 
+      Int_t label = TMath::Abs(esdTrack->GetLabel()); // no fakes!!!
+      //Int_t label = esdTrack->GetLabel(); // 
       AliMCParticle *mcPart  = label < 0 ? 0 : (AliMCParticle*)fMCEvent->GetTrack(label);
       if (!mcPart)  {
 	if(accepted)
