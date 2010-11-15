@@ -35,14 +35,14 @@ class AliTPCAltroEmulator : public TNamed {
 
  public:
   AliTPCAltroEmulator(Int_t timebins=0, Short_t* Channel=0);
-  AliTPCAltroEmulator(const AliTPCAltroEmulator &sig);
+
   ~AliTPCAltroEmulator();
-  AliTPCAltroEmulator& operator = (const  AliTPCAltroEmulator &source);
 
   void ConfigAltro(Int_t ONBaselineCorrection1, Int_t ONTailcancellation, Int_t ONBaselineCorrection2, Int_t ONClipping, Int_t ONZerosuppression, Int_t ONDataFormatting);
   void ConfigBaselineCorrection1(Int_t mode, Int_t ValuePeDestal, Int_t *PedestalMem, Int_t polarity);
   void ConfigTailCancellationFilter(Int_t K1, Int_t K2, Int_t K3, Int_t L1, Int_t L2, Int_t L3);
-  void ConfigTailCancellationFilterForRAWfiles(Int_t* K1, Int_t* K2, Int_t* K3, Int_t* L1, Int_t* L2, Int_t* L3);
+  void ConfigTailCancellationFilterForRAWfiles(const Int_t* K1, const Int_t* K2, const Int_t* K3, 
+					       const Int_t* L1, const Int_t* L2, const Int_t* L3);
   void ConfigBaselineCorrection2(Int_t HighThreshold, Int_t LowThreshold, Int_t Offset, Int_t Presamples, Int_t Postsamples);
   void ConfigZerosuppression(Int_t Threshold, Int_t MinSamplesaboveThreshold, Int_t Presamples, Int_t Postsamples);
 
@@ -81,10 +81,14 @@ class AliTPCAltroEmulator : public TNamed {
     /**f(din) - f(din)*/		kFDINxFDIN,
     /**f(din - vpd) - f(din - vpd)*/    kFDINxVPDxFDINxVPD,
     /**din - fpd*/			kDINxFPD1,
-    /**din - fpd*/			kDINxFPD2
+    /**din - fpd*/			kDINxFPD2,
+    /** 16. din-mean*/                  kDINxMPD
   };
 
  private:
+
+  AliTPCAltroEmulator(const AliTPCAltroEmulator &sig);
+  AliTPCAltroEmulator& operator = (const  AliTPCAltroEmulator &source);
 
   Int_t ftimebins;          // timebins
 
@@ -147,20 +151,20 @@ class AliTPCAltroEmulator : public TNamed {
   void BaselineCorrection2RTL(Int_t HighThreshold, Int_t LowThreshold, Int_t Offset, Int_t Presamples, Int_t Postsamples);
   void Clipping();
   void Zerosuppression(Int_t Threshold, Int_t MinSamplesaboveThreshold, Int_t Presamples, Int_t Postsamples);
-  void DataFormater();
+  const void DataFormater();
 
-  Short_t GetElement(short* Array,Int_t index);
+  const Short_t GetElement(short* Array,Int_t index);
   void SetElement(short* Array,Int_t index,Short_t value);
 
-  Int_t InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold, Int_t HighThreshold);
-  Int_t InRange(Int_t parameter,Int_t Low,Int_t High,const char *Module,const char *ParameterName);
+  const Int_t InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold, Int_t HighThreshold);
+  const Int_t InRange(Int_t parameter,Int_t Low,Int_t High,const char *Module,const char *ParameterName);
   Short_t GetShortChannel(Int_t i);
   Short_t GetKeepChannel(Int_t i);
   Int_t Multiply36(Int_t P, Int_t N);
   long long Mask(long long in, Int_t left, Int_t right);
   long long Maskandshift(long long in, Int_t left, Int_t right);
 
-
+  
   
   void InitBuffers();
   Bool_t AddEvent(Int_t dt,Bool_t isFirst);

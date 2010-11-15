@@ -117,91 +117,11 @@ AliTPCAltroEmulator::AliTPCAltroEmulator(Int_t timebins, short* Channel) :
   //
   // Constructor of Altro Class
   //
-  /*
-  ftimebins = timebins;
-  
-  fChannelShort_T = Channel;
-  
-  fOnBSL1 = 0;
-  fOnTCF = 0;
-  fOnBSL2 = 0;
-  fOnClip = 0;
-  fOnZSU = 0;
-  
-  fConfiguredAltro = 0;
-  fConfiguredBSL1 = 0;
-  fConfiguredTCF = 0;
-  fConfiguredBSL2 = 0;
-  fConfiguredZSU = 0;
-  */
-}
 
-
-AliTPCAltroEmulator::AliTPCAltroEmulator(const AliTPCAltroEmulator &altro):
-  TNamed(),
-  ftimebins(altro.ftimebins),
-//  fChannelIn(Channel),
-  fChannelShort(altro.fChannelShort), 
-  fADCkeep(0),     
-  fOnBSL1(0), 
-  fOnTCF(0),  
-  fOnBSL2(0), 
-  fOnClip(0), 
-  fOnZSU(0),  
-
-  fConfiguredAltro(0),   // ConfiguredAltro
-  fConfiguredBSL1(0),    // ConfiguredBSL1
-  fConfiguredTCF(0),     // ConfiguredTCF
-  fConfiguredTCFraw(0),  // ConfiguredTCF
-  fConfiguredBSL2(0),    // ConfiguredBSL2
-  fConfiguredZSU(0),     // ConfiguredZSU
-  fBSL1mode(0),          // BSL1mode
-  fBSL1ValuePeDestal(0), // BSL1ValuePeDestal
-  fBSL1PedestalMem(0),  // BSL1PedestalMem
-  fBSL1polarity(0),      // BSL1polarity
-
-  fTCFK1(0), // K1
-  fTCFK2(0), // K2
-  fTCFK3(0), // K3
-  fTCFL1(0), // L1
-  fTCFL2(0), // L2
-  fTCFL3(0), // L3
-
-  fTCFK1Int(0), // K1Int
-  fTCFK2Int(0), // K2Int
-  fTCFK3Int(0), // K3Int
-  fTCFL1Int(0), // L1Int
-  fTCFL2Int(0), // L2Int
-  fTCFL3Int(0), // L3Int
-
-  fBSL2HighThreshold(0), // BSL2HighThreshold
-  fBSL2LowThreshold(0),  // BSL2LowThreshold
-  fBSL2Offset(0),        // BSL2Offset
-  fBSL2Presamples(0),    // BSL2Presamples(0),
-  fBSL2Postsamples(0),   // BSL2Postsamples
-
-  fZSUThreshold(0),      // ZSUThreshold
-
-  fZSUMinSamplesaboveThreshold(0), // ZSUMinSamplesaboveThreshold
-  fZSUPresamples(0),     // ZSUPresamples
-  fZSUPostsamples(0),     // ZSUPostsamples
-
-  fReader(0),           // for Altro Emulation on Raw Reader
-  fDecoder(0),
-  fDDLFolderName("/tmp/"),
-  fOutputDateFileName("/tmp/tmp.date"),
-  fOutputRootFileName("/tmp/tmp.root"),
-  fIsRandom(kTRUE),
-  fChannels(0),
-  fCDHs(0),
-  fADCs(0),
-  fTrailers(0),
-  fRawData(0) {
-  //
-  // copy constructor of Altro Class
-  //
+  fADCkeep = new Short_t[1024]; 
 
 }
+
 
 
 /**	@brief Destructor of Altro Class
@@ -213,8 +133,8 @@ AliTPCAltroEmulator::~AliTPCAltroEmulator() {
   // Destructor of Altro Class
   //
 
-  if(fConfiguredZSU == 1)
-    delete fADCkeep;
+  //  if(fConfiguredZSU == 1)
+  delete[] fADCkeep;
 
   delete[] fChannels;
   delete[] fCDHs    ;
@@ -224,21 +144,6 @@ AliTPCAltroEmulator::~AliTPCAltroEmulator() {
   delete fDecoder   ;
 
 }
-
-//_____________________________________________________________________________
-AliTPCAltroEmulator& AliTPCAltroEmulator::operator = (const AliTPCAltroEmulator &source)
-{
-  //
-  // AliTPCAltroEmulator assignment operator
-  //
-
-  if (&source == this) return *this;
-  new (this) AliTPCAltroEmulator(source);
-
-  return *this;
-
-}
-
 
 
 /**  @brief Configures which modules of the Altro should be on.
@@ -286,7 +191,7 @@ void AliTPCAltroEmulator::ConfigBaselineCorrection1(Int_t mode, Int_t ValuePeDes
   //
   // Configures the Base Line Correction 1 (BSL1) Module
   //
-  fBSL1mode          = InRange(mode,0,10,"AliTPCAltroEmulator::ConfigBaselineCorrection1","mode");
+  fBSL1mode          = InRange(mode,0,16,"AliTPCAltroEmulator::ConfigBaselineCorrection1","mode");
   fBSL1ValuePeDestal = InRange(ValuePeDestal,0,1023,"AliTPCAltroEmulator::BaselineCorrection1","ValuePeDestal");
   fBSL1PedestalMem = PedestalMem;
   fBSL1polarity = InRange(polarity,0,1,"AliTPCAltroEmulator::BaselineCorrection1","polarity");
@@ -324,7 +229,8 @@ void AliTPCAltroEmulator::ConfigTailCancellationFilter(Int_t K1, Int_t K2, Int_t
   fTCFL3Int = InRange(L3,0,65535,"AliTPCAltroEmulator::ConfigTailCancellationFilter","L3");
   fConfiguredTCF = 1;
 }
-void AliTPCAltroEmulator::ConfigTailCancellationFilterForRAWfiles(Int_t *K1, Int_t *K2, Int_t *K3, Int_t *L1, Int_t *L2, Int_t *L3){
+void AliTPCAltroEmulator::ConfigTailCancellationFilterForRAWfiles(const Int_t *K1, const Int_t *K2, const Int_t *K3, 
+								  const Int_t *L1, const Int_t *L2, const Int_t *L3){
   //
   // Configures the Tail Cancellation Filter (TCF) Module - Different settings for IROC and OROC
   //
@@ -394,7 +300,6 @@ void AliTPCAltroEmulator::ConfigZerosuppression(Int_t Threshold, Int_t MinSample
   fZSUMinSamplesaboveThreshold = InRange(MinSamplesaboveThreshold,1,3,"AliTPCAltroEmulator::BaselineCorrection1","MinSamplesaboveThreshold");
   fZSUPresamples               = InRange(Presamples,0,3,"AliTPCAltroEmulator::BaselineCorrection1","Presamples");
   fZSUPostsamples              = InRange(Postsamples,0,7,"AliTPCAltroEmulator::BaselineCorrection1","Postsamples");
-  fADCkeep = (Short_t *)calloc(sizeof(short),ftimebins);
   
   for(Int_t i = 0; i < ftimebins; i++){
     fADCkeep[i] = 0;
@@ -564,7 +469,17 @@ void AliTPCAltroEmulator::BaselineCorrection1(Int_t mode, Int_t ValuePeDestal, I
 
   //VPD == 0 !!
   Int_t fixedPeDestal = 0;
+
+  // take first and last bins to calculate a mean pedestal value
+  Int_t window = 3;
+  Int_t meanPeDestal = 0;
+  for(Int_t i = 0; i < window; i++) {
+    meanPeDestal += fChannelShort[i];
+    meanPeDestal += fChannelShort[ftimebins-1-i];
+  }
+  meanPeDestal /= (window*2);
   
+
   if(polarity ==1){
     for(Int_t i = 0; i < ftimebins; i++){
       fChannelShort[i]  = 1023 - fChannelShort[i];
@@ -615,6 +530,10 @@ void AliTPCAltroEmulator::BaselineCorrection1(Int_t mode, Int_t ValuePeDestal, I
   case kFTxFPD:
     for(Int_t i = 0; i < ftimebins; i++)
       fChannelShort[i]  = PedestalMem[i] - fixedPeDestal;
+    break;
+  case kDINxMPD:
+    for(Int_t i = 0; i < ftimebins; i++)
+      fChannelShort[i]  = fChannelShort[i] - meanPeDestal;
     break;
   }
 }
@@ -881,19 +800,20 @@ void AliTPCAltroEmulator::Zerosuppression(Int_t Threshold, Int_t MinSamplesabove
   //Int_t setPostsample = 0;
 
   for(Int_t i = 0; i < ftimebins; i++){
-    if(fChannelShort[i] >= Threshold){
+    if(fChannelShort[i] >= Threshold)
       fADCkeep[i] = 1;
-    }
+    else
+      fADCkeep[i] = 0;
   }
 
   Int_t startofclustersequence = -1;
   Int_t endofClustersInSequence = -1;
   
   for(Int_t i = 0; i < ftimebins; i++){
-    if( (fADCkeep[i] == 1) && (GetElement(fADCkeep,i-1) == -1) ){
+    if( (fADCkeep[i] == 1) && (GetElement(fADCkeep,i-1) == 0) ){
       startofclustersequence = i;
     }
-    if( (fADCkeep[i] == 1) && (GetElement(fADCkeep,i+1) == -1) ){
+    if( (fADCkeep[i] == 1) && (GetElement(fADCkeep,i+1) == 0) ){
       endofClustersInSequence = i;
     }
     //cout << i << " startofclustersequence: " << startofclustersequence << " endofClustersInSequence: " << endofClustersInSequence;
@@ -948,7 +868,7 @@ void AliTPCAltroEmulator::Zerosuppression(Int_t Threshold, Int_t MinSamplesabove
   }
 
   for(Int_t i = 0; i < ftimebins; i++){
-    if( !GetKeepChannel(i) || GetShortChannel(i)<Threshold) {
+    if( !GetKeepChannel(i) ) {
       SetElement(fChannelShort,i,-1); // set non relevant data to -1
     }
   }
@@ -962,7 +882,7 @@ void AliTPCAltroEmulator::Zerosuppression(Int_t Threshold, Int_t MinSamplesabove
  *
  */
 
-void AliTPCAltroEmulator::DataFormater(){
+const void AliTPCAltroEmulator::DataFormater(){
   //
   // formats the data like the ALTRO. Result is a 64 bit array
   //
@@ -1006,7 +926,7 @@ Float_t AliTPCAltroEmulator::CalculateCompression() {
   return retval;
 }
 
-Short_t AliTPCAltroEmulator::GetElement(short* Array,Int_t index){
+const Short_t AliTPCAltroEmulator::GetElement(short* Array,Int_t index){
   //
   // GetElement of array
   //
@@ -1030,7 +950,7 @@ void AliTPCAltroEmulator::SetElement(short* Array,Int_t index,Short_t value){
     Array[index] = value;
 }
 
-Int_t AliTPCAltroEmulator::InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold, Int_t HighThreshold){
+const Int_t AliTPCAltroEmulator::InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold, Int_t HighThreshold){
   //
   // check if it's within the band of search
   //
@@ -1042,7 +962,7 @@ Int_t AliTPCAltroEmulator::InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold, Int_t
     return 0;
 }
 
-Int_t AliTPCAltroEmulator::InRange(Int_t parameter,Int_t Low,Int_t High,const char *Module,const char *ParameterName){
+const Int_t AliTPCAltroEmulator::InRange(Int_t parameter,Int_t Low,Int_t High,const char *Module,const char *ParameterName){
   //
   // checks it it's within the range
   //
@@ -1350,12 +1270,11 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
 
   InitBuffers();
   
-  TH1F hisO("DINO","DINO",1014,0,1014); 
-  TH1F his("DIN","DIN",1014,0,1014); 
-
   Int_t chanCount=0;
+  TH1F hisO("DINO","DINO",1024,0,1024); 
+  TH1F his("DIN","DIN",1024,0,1024); 
   his.GetYaxis()->SetRangeUser(-20,90);
-  Short_t *data = new Short_t[1014]; 
+  Short_t *data = new Short_t[1024]; 
   TCanvas *c1 =0;
   if (plotFlag) {
     c1 = new TCanvas("c1","c1");
@@ -1381,8 +1300,8 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
       
       // CDH 
       for (Int_t i=0;i<8;++i)
-	// just to show how ugly it is...
-	cdhDDL[i]=reinterpret_cast<UInt_t*>(const_cast<AliRawDataHeader*>(fReader->GetDataHeader()))[i]; 
+      	// just to show how ugly it is...
+      	cdhDDL[i]=reinterpret_cast<UInt_t*>(const_cast<AliRawDataHeader*>(fReader->GetDataHeader()))[i]; 
       
       // PAYLOAD
       while (fDecoder->NextChannel()) {
@@ -1399,7 +1318,7 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
 	    Short_t s=signals[ci];
 	    Int_t   t=ts-ci;
 	    // TODO aqcuisition window
-	    if (20<=t&&t<=1014) {
+	    if (0<=t&&t<(1024-3)) {
 	      channelsDDL[hwaddr]=kTRUE;
 	      if (adcsChannel[t]<0)
 		adcsChannel[t]=s;
@@ -1414,12 +1333,12 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
 	// search start of aquisition
 	Int_t t0 = 0; 	 while (adcsChannel[t0]==-1) t0++;
 	// search end of aquisition
-	Int_t tE = 1014; while (adcsChannel[tE]==-1) tE--;
+	Int_t tE = 1024; while (adcsChannel[tE]==-1) tE--;
 	
 	// SR TEST:
 	// channel is complete - Perform Altro Emulation
 	if (plotFlag!=0 && !(chanCount%plotFlag) ) {
-	  for (Int_t t=0; t<1014; t++) {
+	  for (Int_t t=0; t<1024; t++) {
 	    his.SetBinContent(t+1,adcsChannel[t]);
 	  }
 	  his.SetTitle(Form("sig_sec%d_row%d_pad%d",sector,row,pad));
@@ -1428,7 +1347,7 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
 	}
 
 	// FEED THE ALTRO EMULATOR WITH CLEAN SIGNAL (no aquisition-window ghosts)
-	Int_t timebins = tE-t0;
+	Int_t timebins = tE-t0+1;
 	for (Int_t t=t0;t<(t0+timebins);t++)
 	  data[t-t0]=adcsChannel[t];
 	SetChannelData(timebins,data);
@@ -1440,7 +1359,7 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
 	  
 	// SR TEST:
 	if (plotFlag!=0 && !(chanCount%plotFlag) ) {
-	  for (Int_t t=0; t<1014; t++)
+	  for (Int_t t=0; t<1024; t++)
 	    hisO.SetBinContent(t+1,adcsChannel[t]);
 	  hisO.SetStats(0); hisO.SetLineColor(2);
 	  hisO.DrawCopy("same");
@@ -1460,14 +1379,14 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
       UChar_t *rcuTrailer;
       fDecoder->GetRCUTrailerData(rcuTrailer);
       for (Int_t i=0;i<= /* (!) */ fDecoder->GetRCUTrailerSize()/4;++i)
-	trailerDDL[i]=reinterpret_cast<UInt_t*>(rcuTrailer)[i]; // again: UGLY!
+      	trailerDDL[i]=reinterpret_cast<UInt_t*>(rcuTrailer)[i]; // again: UGLY!
       
     }
             
     WriteEvent(ievent++);
   }
 
-  delete data; // free space
+  delete[] data; // free space
 
   // convert to date and back
   ConvertRawFilesToDate(ievent);
