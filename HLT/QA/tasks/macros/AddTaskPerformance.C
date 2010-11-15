@@ -89,6 +89,7 @@ AliPerformanceTask* AddTaskPerformance(Bool_t bUseMCInfo=kTRUE,
   task->SelectCollisionCandidates();
   task->SetUseMCInfo(bUseMCInfo);
   task->SetUseESDfriend(bUseESDfriend);
+  task->SetUseTerminate(kFALSE);
   task->SetUseHLT(bUseHLT);
   //
   // Add task to analysis manager ------------------------------------------------------------------

@@ -50,136 +50,236 @@ void setCuts(THnSparse *htrack, Int_t cuts ) {
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
 
+  else if (cuts == 1) { // nClust_[50,160]_+_p_t_[0.3,9999]_+_DCA_[-7,6.99]_+_Eta_[-1.0,1.0] -----
+    htrack->GetAxis(0)->SetRangeUser(50,160);       // nClust
+    htrack->GetAxis(3)->SetRangeUser(-7,6.99);      // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-7,6.99);      // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0.3,9999);     // Pt
+    htrack->GetAxis(5)->SetRangeUser(-1, 1);    // Eta 
+
+  }
+
   // ===========================================================================
   // == Single Cuts
   // ===========================================================================
 
-  else if (cuts == 1) { // nClust_[70,160] -------------------------------------
+  else if (cuts == 2) { // nClust_[70,160] -------------------------------------
     htrack->GetAxis(0)->SetRangeUser(70,160);       // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 2) { // nClust_[60,160] -------------------------------------
+  else if (cuts == 3) { // nClust_[60,160] -------------------------------------
     htrack->GetAxis(0)->SetRangeUser(60,160);       // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 3) { // nClust_[50,160] -------------------------------------
+  else if (cuts == 4) { // nClust_[50,160] -------------------------------------
     htrack->GetAxis(0)->SetRangeUser(50,160);       // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 4) { // p_t_[0.4,10] ----------------------------------------
+  else if (cuts == 5) { // p_t_[0.4,10] ----------------------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0.4,10);       // Pt
   }
-  else if (cuts == 5) { // p_t_[0.3,10] ----------------------------------------
+  else if (cuts == 6) { // p_t_[0.3,10] ----------------------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0.3,10);       // Pt
   }
-  else if (cuts == 6) { // p_t_[0.2,10] ----------------------------------------
+  else if (cuts == 7) { // p_t_[0.2,10] ----------------------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0.2,10);       // Pt
   }
-  else if (cuts == 7) { // DCA_[-3,2.99] ---------------------------------------
+  else if (cuts == 8) { // DCA_[-3,2.99] ---------------------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-3,2.99);      // DCAr
     htrack->GetAxis(4)->SetRangeUser(-3,2.99);      // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 8) { // DCA_[-5,4.99] ---------------------------------------
+  else if (cuts == 9) { // DCA_[-5,4.99] ---------------------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-5,4.99);      // DCAr
     htrack->GetAxis(4)->SetRangeUser(-5,4.99);      // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 9) { // DCA_[-7,6.99] ---------------------------------------
+  else if (cuts == 10) { // DCA_[-7,6.99] ---------------------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-7,6.99);      // DCAr
     htrack->GetAxis(4)->SetRangeUser(-7,6.99);      // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
 
+
+
+  // ===========================================================================
+  // == Combined Cuts
+  // ===========================================================================
+
+  else if (cuts == 11) { // nClust_[70,160]_+_p_t_[0.4,10] ---------------------
+    htrack->GetAxis(0)->SetRangeUser(70,160);       // nClust
+    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0.4,10);       // Pt
+  }
+  else if (cuts == 12) { // nClust_[70,160]_+_DCA_[-3,2.99] --------------------
+    htrack->GetAxis(0)->SetRangeUser(70,160);       // nClust
+    htrack->GetAxis(3)->SetRangeUser(-3,2.99);      // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-3,2.99);      // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
+  }
+  else if (cuts == 13) { // DCA_[-3,2.99]_+_p_t_[0.4,10] -----------------------
+    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
+    htrack->GetAxis(3)->SetRangeUser(-3,2.99);      // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-3,2.99);      // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0.4,10);       // Pt
+  }
+  else if (cuts == 14) { // nClust_[60,160]_+_p_t_[0.3,10] ---------------------
+    htrack->GetAxis(0)->SetRangeUser(60,160);       // nClust
+    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0.3,10);       // Pt
+  }
+  else if (cuts == 15) { // nClust_[60,160]_+_DCA_[-5,4.99] --------------------
+    htrack->GetAxis(0)->SetRangeUser(60,160);       // nClust
+    htrack->GetAxis(3)->SetRangeUser(-5,4.99);      // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-5,4.99);      // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
+  }
+  else if (cuts == 16) { // DCA_[-5,4.99]_+_p_t_[0.3,10] -----------------------
+    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
+    htrack->GetAxis(3)->SetRangeUser(-5,4.99);      // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-5,4.99);      // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0.3,10);       // Pt
+  }
+
+  else if (cuts == 17) { // nClust_[50,160]_+_p_t_[0.2,10] ---------------------
+    htrack->GetAxis(0)->SetRangeUser(50,160);       // nClust
+    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0.2,10);       // Pt
+  }
+  else if (cuts == 18) { // nClust_[50,160]_+_DCA_[-7,6.99] --------------------
+    htrack->GetAxis(0)->SetRangeUser(50,160);       // nClust
+    htrack->GetAxis(3)->SetRangeUser(-7,6.99);      // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-7,6.99);      // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
+  }
+  else if (cuts == 19) { // DCA_[-7,6.99]_+_p_t_[0.2,10] -----------------------
+    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
+    htrack->GetAxis(3)->SetRangeUser(-7,6.99);      // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-7,6.99);      // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0.2,10);       // Pt
+  }
+
+  // ===========================================================================
+
+  else if (cuts == 20) { // nClust_[70,160]_+_p_t_[0.4,10]_+_DCA_[-3,2.99] -----
+    htrack->GetAxis(0)->SetRangeUser(70,160);       // nClust
+    htrack->GetAxis(3)->SetRangeUser(-3,2.99);      // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-3,2.99);      // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0.4,10);       // Pt
+  }
+  else if (cuts == 21) { // nClust_[60,160]_+_p_t_[0.3,10]_+_DCA_[-6,4.99] -----
+    htrack->GetAxis(0)->SetRangeUser(60,160);       // nClust
+    htrack->GetAxis(3)->SetRangeUser(-5,4.99);      // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-5,4.99);      // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0.3,10);       // Pt
+  }
+
+
+  // ===========================================================================
+  else if (cuts == 22) { // p_t_[1.0,10] ---------------------------------------
+    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
+    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
+    htrack->GetAxis(7)->SetRangeUser(1.0,10);       // Pt
+  }
+  else if (cuts == 23) { // ControlCut_p_t_[0,1.0] -----------------------------
+    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
+    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
+    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
+    htrack->GetAxis(7)->SetRangeUser(0,1.0);        // Pt
+  }
   // ===========================================================================
   // == Control Cuts
   // ===========================================================================
 
-  else if (cuts == 10) { // ControlCut_nClust_[0,70] ---------------------------
+  else if (cuts == 24) { // ControlCut_nClust_[0,70] ---------------------------
     htrack->GetAxis(0)->SetRangeUser(0,70);         // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 11) { // ControlCut_nClust_[0,60] ---------------------------
+  else if (cuts == 25) { // ControlCut_nClust_[0,60] ---------------------------
     htrack->GetAxis(0)->SetRangeUser(0,60);         // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 12) { // ControlCut_nClust_[0,50] ---------------------------
+  else if (cuts == 26) { // ControlCut_nClust_[0,50] ---------------------------
     htrack->GetAxis(0)->SetRangeUser(0,50);         // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 13) { // ControlCut_p_t_[0,0.4] -----------------------------
+  else if (cuts == 27) { // ControlCut_p_t_[0,0.4] -----------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,0.4);        // Pt
   }
-  else if (cuts == 14) { // ControlCut_p_t_[0,0.3] -----------------------------
+  else if (cuts == 28) { // ControlCut_p_t_[0,0.3] -----------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,0.3);        // Pt
   }
-  else if (cuts == 15) { // ControlCut_p_t_[0,0.2] -----------------------------
+  else if (cuts == 29) { // ControlCut_p_t_[0,0.2] -----------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,0.2);        // Pt
   }
-  else if (cuts == 16) { // ControlCut_DCA_[2.99,49.99] ------------------------
+  else if (cuts == 30) { // ControlCut_DCA_[2.99,49.99] ------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(2.99,49.99);   // DCAr
     htrack->GetAxis(4)->SetRangeUser(2.99,49.99);   // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 17) { // ControlCut_DCA_[-50,-3] ----------------------------
+  else if (cuts == 31) { // ControlCut_DCA_[-50,-3] ----------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,-3);       // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,-3);       // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 18) { // ControlCut_DCA_[4.99,49.99] ------------------------
+  else if (cuts == 32) { // ControlCut_DCA_[4.99,49.99] ------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(4.99,49.99);   // DCAr
     htrack->GetAxis(4)->SetRangeUser(4.99,49.99);   // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 19) { // ControlCut_DCA_[-50,-5] ----------------------------
+  else if (cuts == 33) { // ControlCut_DCA_[-50,-5] ----------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,-5);       // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,-5);       // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 20) { // ControlCut_DCA_[6.99,49.99] ------------------------
+  else if (cuts == 34) { // ControlCut_DCA_[6.99,49.99] ------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(6.99,49.99);   // DCAr
     htrack->GetAxis(4)->SetRangeUser(6.99,49.99);   // DCAz
     htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
   }
-  else if (cuts == 21) { // ControlCut_DCA_[-50,-7] ----------------------------
+  else if (cuts == 35) { // ControlCut_DCA_[-50,-7] ----------------------------
     htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
     htrack->GetAxis(3)->SetRangeUser(-50,-7);       // DCAr
     htrack->GetAxis(4)->SetRangeUser(-50,-7);       // DCAz
@@ -187,103 +287,10 @@ void setCuts(THnSparse *htrack, Int_t cuts ) {
   }
 
   // ===========================================================================
-  // == Combined Cuts
-  // ===========================================================================
-
-  else if (cuts == 22) { // nClust_[70,160]_+_p_t_[0.4,10] ---------------------
-    htrack->GetAxis(0)->SetRangeUser(70,160);       // nClust
-    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0.4,10);       // Pt
-  }
-  else if (cuts == 23) { // nClust_[70,160]_+_DCA_[-3,2.99] --------------------
-    htrack->GetAxis(0)->SetRangeUser(70,160);       // nClust
-    htrack->GetAxis(3)->SetRangeUser(-3,2.99);      // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-3,2.99);      // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
-  }
-  else if (cuts == 24) { // DCA_[-3,2.99]_+_p_t_[0.4,10] -----------------------
-    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
-    htrack->GetAxis(3)->SetRangeUser(-3,2.99);      // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-3,2.99);      // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0.4,10);       // Pt
-  }
-  else if (cuts == 25) { // nClust_[60,160]_+_p_t_[0.3,10] ---------------------
-    htrack->GetAxis(0)->SetRangeUser(60,160);       // nClust
-    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0.3,10);       // Pt
-  }
-  else if (cuts == 26) { // nClust_[60,160]_+_DCA_[-5,4.99] --------------------
-    htrack->GetAxis(0)->SetRangeUser(60,160);       // nClust
-    htrack->GetAxis(3)->SetRangeUser(-5,4.99);      // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-5,4.99);      // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
-  }
-  else if (cuts == 27) { // DCA_[-5,4.99]_+_p_t_[0.3,10] -----------------------
-    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
-    htrack->GetAxis(3)->SetRangeUser(-5,4.99);      // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-5,4.99);      // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0.3,10);       // Pt
-  }
-
-  else if (cuts == 28) { // nClust_[50,160]_+_p_t_[0.2,10] ---------------------
-    htrack->GetAxis(0)->SetRangeUser(50,160);       // nClust
-    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0.2,10);       // Pt
-  }
-  else if (cuts == 29) { // nClust_[50,160]_+_DCA_[-7,6.99] --------------------
-    htrack->GetAxis(0)->SetRangeUser(50,160);       // nClust
-    htrack->GetAxis(3)->SetRangeUser(-7,6.99);      // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-7,6.99);      // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0,9999);       // Pt
-  }
-  else if (cuts == 30) { // DCA_[-7,6.99]_+_p_t_[0.2,10] -----------------------
-    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
-    htrack->GetAxis(3)->SetRangeUser(-7,6.99);      // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-7,6.99);      // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0.2,10);       // Pt
-  }
-
-  // ===========================================================================
-
-  else if (cuts == 31) { // nClust_[70,160]_+_p_t_[0.4,10]_+_DCA_[-3,2.99] -----
-    htrack->GetAxis(0)->SetRangeUser(70,160);       // nClust
-    htrack->GetAxis(3)->SetRangeUser(-3,2.99);      // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-3,2.99);      // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0.4,10);       // Pt
-  }
-  else if (cuts == 32) { // nClust_[60,160]_+_p_t_[0.3,10]_+_DCA_[-6,4.99] -----
-    htrack->GetAxis(0)->SetRangeUser(60,160);       // nClust
-    htrack->GetAxis(3)->SetRangeUser(-5,4.99);      // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-5,4.99);      // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0.3,10);       // Pt
-  }
-  else if (cuts == 33) { // nClust_[50,160]_+_p_t_[0.2,10]_+_DCA_[-7,6.99] -----
-    htrack->GetAxis(0)->SetRangeUser(50,160);       // nClust
-    htrack->GetAxis(3)->SetRangeUser(-7,6.99);      // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-7,6.99);      // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0.2,10);       // Pt
-  }
-
-  // ===========================================================================
-  else if (cuts == 34) { // p_t_[1.0,10] ---------------------------------------
-    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
-    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
-    htrack->GetAxis(7)->SetRangeUser(1.0,10);       // Pt
-  }
-  else if (cuts == 35) { // ControlCut_p_t_[0,1.0] -----------------------------
-    htrack->GetAxis(0)->SetRangeUser(0,160);        // nClust
-    htrack->GetAxis(3)->SetRangeUser(-50,49.99);    // DCAr
-    htrack->GetAxis(4)->SetRangeUser(-50,49.99);    // DCAz
-    htrack->GetAxis(7)->SetRangeUser(0,1.0);        // Pt
-  }
-
-  // ===========================================================================
-
-  htrack->GetAxis(5)->SetRangeUser(-1.5, 1.5);        // eta -1.0 - 1.0
+  if(cuts==0)
+    htrack->GetAxis(5)->SetRangeUser(-1.5, 1.5);    // eta -1.0 - 1.0
+  else
+    htrack->GetAxis(5)->SetRangeUser(-1, 1);        // eta -1.0 - 1.0
   htrack->GetAxis(8)->SetRangeUser(-1, 1);          // Charge
 
   // ===========================================================================
@@ -301,8 +308,8 @@ drawPerformanceTPCQAofflineHLT(const Char_t* folder = "../..") {
   // ------ APPLY YOUR CUTS -----------------------------
   // ----------------------------------------------------
 
-  Int_t  nCutsMin = 5;
-  Int_t  nCutsMax = 10;
+  Int_t  nCutsMin = 0;
+  Int_t  nCutsMax = 5;
   Int_t  nCuts=nCutsMax+1;
 
   //----------------------------------------------------
@@ -314,7 +321,7 @@ drawPerformanceTPCQAofflineHLT(const Char_t* folder = "../..") {
   //----------------------------------------------------
 
   Int_t  nCanMin = 0;
-  Int_t  nCanMax = 0;
+  Int_t  nCanMax = 2;
   Int_t  nCans=nCanMax+1;
 
   // ----------------------------------------------------
@@ -388,17 +395,6 @@ drawPerformanceTPCQAofflineHLT(const Char_t* folder = "../..") {
   THnSparse *hevent = obj->GetTPCEventHisto(); 
   THnSparse *heventH = objH->GetTPCEventHisto(); 
 
-#if 1
-  // -- Scaled to events with Vertex
-  Double_t scale = (dynamic_cast<TH1D*>(hevent->Projection(6)))->GetBinContent(1);
-  Double_t scaleH = (dynamic_cast<TH1D*>(heventH->Projection(6)))->GetBinContent(1);
-#else
-  // -- Scaled to all events
-  Double_t scale = (dynamic_cast<TH1D*>(hevent->Projection(6)))->GetEntries();
-  Double_t scaleH = (dynamic_cast<TH1D*>(heventH->Projection(6)))->GetEntries();
-#endif
-
-  printf(" %f - %f \n", scale, scaleH);
 
   //  return;
 
@@ -426,12 +422,6 @@ drawPerformanceTPCQAofflineHLT(const Char_t* folder = "../..") {
   can0->SaveAs("perfImg/qa/event/TPC_offline-HLT_event_info.png");
   can0->SaveAs("perfRoot/TPC_offline_HLT_event_info.root");
 
-  TCanvas *can1 = new TCanvas("can1","HLT TPC event information",550,750); 
-  can1->Divide(2,3);
-  trackInfo0(can1,hevent,heventH);
-  //can1->SaveAs("perfImg/qa/event/HLTTPC_event_info.png");
-  //can1->SaveAs("perfRoot/HLTTPC_event_info.root");
-
 
   // ----------------------------------------------------
 
@@ -441,53 +431,47 @@ drawPerformanceTPCQAofflineHLT(const Char_t* folder = "../..") {
 
       Int_t idx = idxCan/2;
       
-      cout << "idx: " << idx << endl;
-      
-      aCan->Add(new TCanvas(Form("can%d_%d", idxCan, idxCut), 
-			    Form("TPC tracks1 %d - cuts %d", idx, idxCut), 1600, 1200) );  //1200, 750) );
-      (dynamic_cast<TCanvas*>(aCan->Last()))->Divide(3,3);  
+      cout << "idx: " << idx << "    idxCut: " << idxCut <<endl;
+  
+      if(idx==0){    
+	aCan->Add(new TCanvas(Form("can%d_%d", idxCan, idxCut), 
+			      Form("TPC HLT tracks1 %d - cuts %d", idx, idxCut), 1600, 1200) );  //1200, 750) );
+	(dynamic_cast<TCanvas*>(aCan->Last()))->Divide(3,3);  
 
-      fillCanvas(dynamic_cast<TCanvas*>(aCan->Last()), htrack, htrackH, idxCut, idx, 1.0);
+	fillCanvas(dynamic_cast<TCanvas*>(aCan->Last()), htrack, htrackH, idxCut, idx, 1.0);
 
-      (dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfImg/qa/%d/TPC_offline_HLT_tracks_%d-%d.png", idxCut, idxCut, idx));
-      (dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfRoot/TPC_tracks_%d-%d.root", idxCut, idx));
+	(dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfImg/qa/%d/TPC_offline_HLT_tracks_%d-%d.png", idxCut, idxCut, idx));
+	(dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfRoot/TPC_HLT_tracks_%d-%d.root", idxCut, idx));
+      }
+      else{
+	// -- -- -- -- -- -- -- --
       
-      // -- -- -- -- -- -- -- --
-      /*
-      aCan->Add(new TCanvas(Form("canS%d_%d", idxCan, idxCut), 
-			    Form("Scaled TPC tracks %d - cuts %d", idx, idxCut), 1200, 750) );
-      (dynamic_cast<TCanvas*>(aCan->Last()))->Divide(4,3);  
+	//if(idx==0) continue;
 
-      fillCanvas(dynamic_cast<TCanvas*>(aCan->Last()), htrack, idxCut, idx, scale);
+	aCan->Add(new TCanvas(Form("canS%d_%d", idxCan, idxCut), 
+			      Form("TPC tracks %d - cuts %d", idx, idxCut), 1200, 750) );
+	(dynamic_cast<TCanvas*>(aCan->Last()))->Divide(4,3);  
 
-      (dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfImg/qa/%d/Scaled_TPC_tracks_%d-%d.png", idxCut, idxCut, idx));
-      (dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfRoot/Scaled_TPC_tracks_%d-%d.root", idxCut, idx));*/
+	fillCanvas(dynamic_cast<TCanvas*>(aCan->Last()), htrack, idxCut, idx, 1.0);
+
+	(dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfImg/qa/%d/TPC_tracks_%d-%d.png", idxCut, idxCut, idx));
+	(dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfRoot/TPC_tracks_%d-%d.root", idxCut, idx));
       
-      // -- -- -- -- -- -- -- -- 
-      //++idxCan;
-      // -- -- -- -- -- -- -- -- 
+	// -- -- -- -- -- -- -- -- 
+	++idxCan;
+	// -- -- -- -- -- -- -- -- 
       
-      //aCan->Add(new TCanvas(Form("can%d_%d", idxCan, idxCut), 
-      //		    Form("HLTTPC tracks %d - cuts %d", idx, idxCut), 1300, 1000) )// 1200, 750) );
-	//(dynamic_cast<TCanvas*>(aCan->Last()))->Divide(4,3);
+	aCan->Add(new TCanvas(Form("can%d_%d", idxCan, idxCut), 
+			      Form("HLTTPC tracks %d - cuts %d", idx, idxCut), 1200, 750) );
+	(dynamic_cast<TCanvas*>(aCan->Last()))->Divide(4,3);
      
 
-      //fillCanvas(dynamic_cast<TCanvas*>(aCan->Last()), htrack,htrackH, idxCut, idx, 1.0);
+	fillCanvas(dynamic_cast<TCanvas*>(aCan->Last()), htrackH, idxCut, idx, 1.0);
 
 	     
-      //(dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfImg/qa/%d/HLTTPC_tracks_%d-%d.png", idxCut, idxCut, idx));
-      //(dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfRoot/HLTTPC_tracks_%d-%d.root", idxCut, idx));
-
-      // -- -- -- -- -- -- -- -- 
-      /*
-      aCan->Add(new TCanvas(Form("canS%d_%d", idxCan, idxCut), 
-			    Form("Scaled HLTTPC tracks %d - cuts %d", idx, idxCut), 1200, 750) );
-      (dynamic_cast<TCanvas*>(aCan->Last()))->Divide(4,3);
-      fillCanvas(dynamic_cast<TCanvas*>(aCan->Last()), htrackH, idxCut, idx, scaleH);
-	     
-      (dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfImg/qa/%d/Scaled_HLTTPC_tracks_%d-%d.png", idxCut, idxCut, idx));
-      (dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfRoot/Scaled_HLTTPC_tracks_%d-%d.root", idxCut, idx));
-      */
+	(dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfImg/qa/%d/HLTTPC_tracks_%d-%d.png", idxCut, idxCut, idx));
+	(dynamic_cast<TCanvas*>(aCan->Last()))->SaveAs(Form("perfRoot/HLTTPC_tracks_%d-%d.root", idxCut, idx));
+      }
     }
   }
 
@@ -499,7 +483,14 @@ void fillCanvas(TCanvas* can, THnSparse *htrack, THnSparse *htrackH, Int_t cuts,
  
   if ( idx == 0 )
     trackInfo1(can, htrack, htrackH, cuts ,scale);
-  else if ( idx == 1 )
+
+  return;
+}
+
+void fillCanvas(TCanvas* can, THnSparse *htrack, Int_t cuts, Int_t idx, Double_t scale ) {
+ 
+
+  if ( idx == 1 )
     trackInfo2(can, htrack, cuts, scale);
   else if ( idx == 2 )
     trackInfo3(can, htrack, cuts, scale);
@@ -521,6 +512,7 @@ void trackInfo0(TCanvas* can, THnSparse *hevent,  THnSparse *heventH) {
   TLegend *leg1 = new TLegend(0.6,0.6,0.8,0.8);
   leg1->SetFillColor(10);
   leg1->SetLineColor(10);
+
 
  //======================
 
@@ -689,6 +681,10 @@ void trackInfo1(TCanvas* can, THnSparse *htrack, THnSparse *htrackH, Int_t cuts,
   leg1->SetFillColor(10);
   leg1->SetLineColor(10);
 
+  TLegend *leg2 = new TLegend(0.6,0.2,0.8,0.4);
+  leg2->SetFillColor(10);
+  leg2->SetLineColor(10);
+
  //======================
 
   can->cd(1);
@@ -699,8 +695,11 @@ void trackInfo1(TCanvas* can, THnSparse *htrack, THnSparse *htrackH, Int_t cuts,
   histe->SetLineColor(2);
   if(histeH->GetMaximum() > histe->GetMaximum()) histe->SetMaximum(1.1*histeH->GetMaximum());
   else histeH->SetMaximum(1.1*histe->GetMaximum());
+
   leg1->AddEntry(histeH,"HLT", "l");
   leg1->AddEntry(histe,"Offline", "l");
+  leg2->AddEntry(histeH,"HLT", "l");
+  leg2->AddEntry(histe,"Offline", "l");
 
   histeH->Draw("histeH");
   histe->Draw("sames");
@@ -759,10 +758,10 @@ void trackInfo1(TCanvas* can, THnSparse *htrack, THnSparse *htrackH, Int_t cuts,
   else histeH->SetMaximum(1.1*histe->GetMaximum());
 
   can->cd(3);
-  gPad->SetLogy();
+  //  gPad->SetLogy();
   histeH->Draw("histeH");
   histe->Draw("sames");  
-  leg1->Draw("sames");
+  leg2->Draw("sames");
 
   gPad->Update();
   TPaveStats *st3 = (TPaveStats*)histeH->FindObject("stats");

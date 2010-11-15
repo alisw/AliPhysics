@@ -14,7 +14,10 @@ mkdir -p perfImg/qa
 #mkdir -p perfImg/res
 mkdir perfRoot
 
-for ii in {5..10} ; do
+nr1=0
+nr2=35
+
+for ii in {0..5} ; do
     if [ ! -d perfImg/$ii ] ; then
 	mkdir -p perfImg/qa/$ii
     fi
@@ -34,7 +37,7 @@ aliroot -b -l -q drawPerformanceTPCQAofflineHLT.C'('\"${FOLDER}\"')'
 #aliroot -b -l -q drawPerformanceTPCEff.C'('\"${FOLDER}\"')'
 #aliroot -b -l -q drawPerformanceTPCRes.C'('\"${FOLDER}\"')'
 
-for ii in {5..10} ; do
+for ii in {0..5} ; do
     name=`cat drawPerformanceTPCQAofflineHLT.C | grep "if (cuts == $ii"`
     title=`echo $name | awk -F'// ' '{ printf $2 }' | awk -F' --' '{ printf $1 }'`
 
