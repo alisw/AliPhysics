@@ -39,13 +39,17 @@ public:
   //virtual Bool_t Notify();
   virtual void NotifyRun();
 
-  virtual void DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD) {return;}
-  virtual void CreateSpecificStuff(TList  * fOutputList) {return;}
+  virtual void DoSpecificStuff(AliESDEvent* /*evESD*/, AliESDEvent* /*evHLTESD*/) {return;}
+  virtual void CreateSpecificStuff(TList* /*fOutputList*/) {return;}
   virtual Bool_t IsThisDetector(AliESDCaloCluster * cluster) { return cluster->IsPHOS(); }
   virtual Int_t GetClusters(AliESDEvent * event, TRefArray * clusters) { return event->GetPHOSClusters(clusters); }
+ 
+  //Use only triggered events
+  void SetUseHLTTriggerDecision(Bool_t useHLT = kFALSE) {fUseHLTTrigger = useHLT;}
 
 private:
   
+  Bool_t fUseHLTTrigger; 
   AliESDRun *fESDRun;  //!
   TList *fOutputList;
   

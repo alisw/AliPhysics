@@ -51,11 +51,14 @@
 #include "AliHLTCaloHistoMatchedTracks.h"
 #include "AliHLTCaloHistoProducer.h"
 
+#include "AliHLTGlobalTriggerDecision.h"
+
 ClassImp(AliAnalysisTaskHLTCalo)
 
 //===========================================================================================
 
 AliAnalysisTaskHLTCalo::AliAnalysisTaskHLTCalo() : AliAnalysisTaskSE()
+  ,fUseHLTTrigger(kFALSE)
   ,fESDRun(0)
   ,fOutputList(0)
   ,fHistOfflResiduals(NULL)
@@ -84,6 +87,7 @@ AliAnalysisTaskHLTCalo::AliAnalysisTaskHLTCalo() : AliAnalysisTaskSE()
 AliAnalysisTaskHLTCalo::AliAnalysisTaskHLTCalo(const char *name)
 : 
 AliAnalysisTaskSE(name)
+  ,fUseHLTTrigger(kFALSE)
   ,fESDRun(0)
   ,fOutputList(0)
   ,fHistOfflResiduals(NULL)
@@ -261,12 +265,15 @@ void AliAnalysisTaskHLTCalo::UserExec(Option_t *){
       return;
   }
 
-  
-  
-
+  // To check if anything was triggered in HLT.
+  if(fUseHLTTrigger){  
+    if (!((AliHLTGlobalTriggerDecision*)evHLTESD->GetHLTTriggerDecision())->Result()){
+      return;
+      // Process all and any events that were triggered by HLT.
+    } 
+  }
 
   DoSpecificStuff(evESD, evHLTESD);
-
   
   Double_t offE = 0.0;
   Double_t onE = 0.0;

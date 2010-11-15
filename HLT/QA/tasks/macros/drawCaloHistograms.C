@@ -1,11 +1,20 @@
-drawCaloHistograms() {
+drawCaloHistograms(const char* filename="HLT-OFFLINE-PHOS-comparison.root") {
   
 
   gStyle->SetPalette(1, 0);
   //gStyle->SetOptFit(1111);
 
-  TFile * file = TFile::Open("HLT-OFFLINE-PHOS-comparison.root");
+  TFile * file = TFile::Open(filename);
+  if(!file || file->IsZombie()){
+     printf("file %s does not exist or there is an error opening it\n", filename);
+     return;
+  }
+  
   TList * list = dynamic_cast<TList*>(file->Get("phos_histograms"));
+  if(!list){
+     printf("No list %s contained in your input file\n", list->GetName()); 
+     return; 
+  }
   
   TH1* hist = list->FindObject("fHistOfflResiduals");
   hist->SetLineColor(kRed);

@@ -62,7 +62,7 @@ void compare_HLT_offline_local(TString file,
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   
-  Bool_t bPHOS=kFALSE, bGLOBAL=kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE, bD0=kFALSE;
+  Bool_t bPHOS = kFALSE, bGLOBAL = kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE, bD0=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -107,22 +107,22 @@ void compare_HLT_offline_local(TString file,
   //-------------- Compile the analysis tasks ---------- //
   
   if(bPHOS){
-    gSystem->Load("libHLTbase");
+    //gSystem->Load("libHLTbase");
     gSystem->Load("libAliHLTUtil");
     gSystem->Load("libAliHLTGlobal");
-    TString strTask1("AliAnalysisTaskCalo.cxx+");
-    TString strTask2("AliAnalysisTaskPHOS.cxx+");    
+    TString strTask1("AliAnalysisTaskHLTCalo.cxx+");
+    TString strTask2("AliAnalysisTaskHLTPHOS.cxx+");    
     gROOT->LoadMacro(taskFolder+strTask1); 
     gROOT->LoadMacro(taskFolder+strTask2); 
     cout << "\n========= You are loading the following tasks --> "<< taskFolder+strTask1  << " and " <<  taskFolder+strTask2 << endl;
   }
   
   if(bEMCAL){
-    gSystem->Load("libHLTbase");
+    //gSystem->Load("libHLTbase");
     gSystem->Load("libAliHLTUtil");
     gSystem->Load("libAliHLTGlobal");
-    TString strTask1("AliAnalysisTaskCalo.cxx+");
-    TString strTask2("AliAnalysisTaskEMCAL.cxx+");
+    TString strTask1("AliAnalysisTaskHLTCalo.cxx+");
+    TString strTask2("AliAnalysisTaskHLTEMCAL.cxx+");
     gROOT->LoadMacro(taskFolder+strTask1); 
     gROOT->LoadMacro(taskFolder+strTask2); 
     cout << "\n========= You are loading the following tasks --> "<< taskFolder+strTask1  << " and " <<  taskFolder+strTask2 << endl;
@@ -159,9 +159,6 @@ void compare_HLT_offline_local(TString file,
     Printf("Chain is empty");
     return;
   }
-
-  //To only select HLT triggered events
-  //Bool_t fUseHLTTrigger=kFALSE;
    
   //-------- Make the analysis manager ---------------//
  
@@ -180,16 +177,26 @@ void compare_HLT_offline_local(TString file,
   
   if(bPHOS){
     AliAnalysisTaskHLTPHOS *taskPHOS = new AliAnalysisTaskHLTPHOS("offhlt_comparison_PHOS");
+    taskPHOS->SetUseHLTTriggerDecision(fUseHLTTrigger);
+    if(fUseHLTTrigger==kTRUE) printf("\n\nOnly HLT triggered events will be used to fill the distributions for task %s.\n\n", taskPHOS->GetName());
     mgr->AddTask(taskPHOS);
-    AliAnalysisDataContainer *coutputPHOS =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
+    if(fUseHLTTrigger==kFALSE)
+       AliAnalysisDataContainer *coutputPHOS =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
+    else 
+       AliAnalysisDataContainer *coutputPHOS =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison_triggered.root");      
     mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskPHOS,1,coutputPHOS);
   }
 
   if(bEMCAL){
     AliAnalysisTaskHLTEMCAL *taskEMCAL = new AliAnalysisTaskHLTEMCAL("offhlt_comparison_EMCAL");
+    taskEMCAL->SetUseHLTTriggerDecision(fUseHLTTrigger);
+    if(fUseHLTTrigger==kTRUE) printf("\n\nOnly HLT triggered events will be used to fill the distributions for task %s.\n\n", taskEMCAL->GetName());
     mgr->AddTask(taskEMCAL);
-    AliAnalysisDataContainer *coutputEMCAL =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
+    if(fUseHLTTrigger==kFALSE)
+       AliAnalysisDataContainer *coutputEMCAL =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
+    else
+      AliAnalysisDataContainer *coutputEMCAL =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison_triggered.root");      
     mgr->ConnectInput(taskEMCAL,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskEMCAL,1,coutputEMCAL);
   }
