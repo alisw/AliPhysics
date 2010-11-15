@@ -10,6 +10,7 @@
 #include "AliLog.h"
 #include "AliESDVZERO.h"
 #include <iostream>
+#include "AliMultiplicity.h"
 
 using namespace std;
 
@@ -26,6 +27,10 @@ Bool_t AliAnalysisMultPbCentralitySelector::IsCentralityBinSelected(AliESDEvent*
   //  cout << "Tracks " << trackCuts->CountAcceptedTracks(aEsd) << endl;
   ///  cout << "CENTRALITY " << fUseV0CutRange << " " << fUseMultRange << " " << fMultMin << " " << fMultMax << endl;
   
+  if (fUseMultRange && fUseV0CutRange && fUseSPDOuterRange) {
+    AliFatal(Form("Cannot use multiple estimators at once: fUseMultRange [%d], fUseV0CutRange[%d], fUseSPDOuterRange[%d]!!",
+		  fUseMultRange , fUseV0CutRange , fUseSPDOuterRange)); 
+  }
 
   if (fUseV0CutRange) {
 
@@ -39,16 +44,27 @@ Bool_t AliAnalysisMultPbCentralitySelector::IsCentralityBinSelected(AliESDEvent*
     if (multV0 > fMultMax) return kFALSE;
     //    cout << "ok" << endl;
 
+  } 
+  else if (fUseSPDOuterRange) {
+
+    const AliMultiplicity * mult = aEsd->GetMultiplicity();
+    Float_t outerLayerSPD = mult->GetNumberOfITSClusters(1);  
+    
+    if (outerLayerSPD < fMultMin) return kFALSE;
+    if (outerLayerSPD > fMultMax) return kFALSE;
+    //    cout << "ok" << endl;
+
   }
-  else if(fIsMC || fUseMultRange) {
+ else if(fIsMC || fUseMultRange) {
     if(!trackCuts){
       AliFatal("Track cuts object is invalid");
     }
-    //    cout << "Hey! " << fCentrBin << " " << fMultMin <<" - " << fMultMax << endl;
+    Float_t ntracks = trackCuts->CountAcceptedTracks(aEsd);
+    //    cout << "Hey! " << fCentrBin << " " << ntracks << " " << fMultMin <<" - " << fMultMax << endl;
     
     if (fCentrBin == -1) return kTRUE;
-    if (trackCuts->CountAcceptedTracks(aEsd) < fMultMin) return kFALSE;
-    if (trackCuts->CountAcceptedTracks(aEsd) > fMultMax) return kFALSE;						       
+    if (ntracks < fMultMin) return kFALSE;
+    if (ntracks > fMultMax) return kFALSE;						       
   } else {
 
     AliESDCentrality *centrality = aEsd->GetCentrality();

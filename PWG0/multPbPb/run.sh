@@ -22,6 +22,13 @@ rejectBGV0Trigger=kFALSE
 useTrackCentralityCut=0
 trackMin=0
 trackMax=100
+dataDir=""
+mcDir=""
+vzMin=-10
+vzMax=10
+etaMin=-0.5
+etaMax=0.5
+npart=381.188
 
 give_help() {
 
@@ -35,7 +42,8 @@ Available options:
                                   0 local
                                   1 caf    
                                   2 grid    
-  -c                           Run the correction
+  -c <data,mc>                 Run the correction data and MC are names of the folders. 
+                               ./output/ is added automatically in front of the folder names
   -s                           Run the trigger study task (by default it runs the multiplicity analysis)
  Proof settings
   -w nworkers                  Set the number of worker nodes
@@ -60,7 +68,9 @@ Available options:
                                 - ZEMvsZDC = correlation between ZEM and ZDC     
   -y <min,max>                 Select centrality based on "good tracks" rather than on centrality
                                estimator [off by default]
-  -0 <min,max>                 Select centrality based on v0 multiplicity range rather than on centrality
+  -0 <min,max>                 Select centrality based on v0 amplitude range rather than on centrality
+                               estimator [off by default]
+  -2 <min,max>                 Select centrality based on SPD outer layer clusters  rather than on centrality
                                estimator [off by default]
   -o <option>                  Misc option [default=$option]
                                Available options: 
@@ -79,11 +89,15 @@ Available options:
   -k <ntracklets>              Max number of tracklets to fill eta and pt 
                                distributions [default=$ntrackletsTrigger]
   -v                           Reject BG with the V0
+ Options specific for the corrections
+  -z <zmin,zmax>               Change vertex Z range [default = $vzMin,$vzMax]
+  -a <etamin,etamax>           Change eta range [default = $etaMin,$etaMax]
+  -p <npart>                   Number of participants, used only for dNdeta/npart [default=$npart]
 ENDOFGUIDE
 
 }
 
-while getopts "x:sr:cgmd:o:w:n:e:b:t:k:vy:0:" opt; do
+while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:" opt; do
   case $opt in
     r)
       run=yes
@@ -99,8 +113,16 @@ while getopts "x:sr:cgmd:o:w:n:e:b:t:k:vy:0:" opt; do
       trackMin=${OPTARG%%,*}
       trackMax=${OPTARG##*,}
       ;;      
+    2)
+      useTrackCentralityCut=3
+      trackMin=${OPTARG%%,*}
+      trackMax=${OPTARG##*,}
+      ;;      
     x)
       customSuffix=$OPTARG
+      ;;      
+    p)
+      npart=$OPTARG
       ;;      
     k)
       ntrackletsTrigger=$OPTARG
@@ -113,6 +135,16 @@ while getopts "x:sr:cgmd:o:w:n:e:b:t:k:vy:0:" opt; do
       ;;      
     c)
       correct=yes
+      dataDir="./output/${OPTARG%%,*}"
+      mcDir="./output/${OPTARG##*,}"
+      ;;      
+    z)
+      vzMin=${OPTARG%%,*}
+      vzMax=${OPTARG##*,}
+      ;;      
+    a)
+      etaMin=${OPTARG%%,*}
+      etaMax=${OPTARG##*,}
       ;;      
     g)
       debug=kTRUE;
@@ -178,5 +210,5 @@ fi
 
 if [ "$correct" = "yes" ]
     then
-    echo "To be implemented"
+    root $ropt correct.C+\(\"$dataDir\",\"$mcDir\",$vzMin,$vzMax,$etaMin,$etaMax,$npart\);
 fi
