@@ -2401,7 +2401,8 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
                spkg.ReplaceAll(".par", "");
                gSystem->Exec(TString::Format("rm -rf %s", spkg.Data()));
                if (!gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
-                  if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\",kTRUE);", package->GetName()))) {
+                  TString enablePackage = (testMode)?Form("gProof->EnablePackage(\"%s\",kFALSE);", package->GetName()):Form("gProof->EnablePackage(\"%s\",kTRUE);", package->GetName());
+                  if (gROOT->ProcessLine(enablePackage)) {
                      Error("StartAnalysis", "There was an error trying to enable package %s", package->GetName());
                      return kFALSE;
                   }
