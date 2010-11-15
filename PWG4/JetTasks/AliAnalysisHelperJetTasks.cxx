@@ -7,6 +7,8 @@
 #include "TH1F.h"
 #include "TProfile.h"
 #include "THnSparse.h"
+#include "TSeqCollection.h"
+#include "TMethodCall.h"
 #include "TFile.h"
 #include "TString.h"
 #include "AliMCEvent.h"
@@ -216,6 +218,90 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
 }
 
 
+void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* cPattern,char *cOutFile){
+  // Routine to merge only directories containing the pattern
+  //
+  TString outFile(cOutFile);
+  if(outFile.Length()==0)outFile = Form("%s.root",cPattern);
+  ifstream in1;
+  in1.open(cFiles);
+  // open all files
+  TList fileList;
+  char cFile[240];
+  if(in1>>cFile){// only open the first file
+    fileList.Add(TFile::Open(cFile));
+  }
+
+  TFile *fOut = 0;
+  if(fileList.GetEntries()){// open the first file
+    TFile* fIn = dynamic_cast<TFile*>(fileList.At(0));
+    if(fIn){
+      Printf("Input File not Found");
+    }
+    // fetch the keys for the directories
+    TList *ldKeys = fIn->GetListOfKeys();
+    for(int id = 0;id < ldKeys->GetEntries();id++){
+      // check if it is a directory
+      TKey *dKey = (TKey*)ldKeys->At(id);
+      TDirectory *dir = dynamic_cast<TDirectory*>(dKey->ReadObj());
+      if(dir){
+	TString dName(dir->GetName());
+	if(dName.Contains(cPattern)){
+	  // open new file if first match
+	  if(!fOut){
+	    fOut = new TFile(outFile.Data(),"RECREATE");
+	  }
+	  // merge all the stuff that is in this directory
+	  TList *llKeys = dir->GetListOfKeys();
+	  TList *tmplist;
+	  TMethodCall callEnv;
+	  for(int il = 0;il < llKeys->GetEntries();il++){
+	    TKey *lKey = (TKey*)llKeys->At(id);
+	    TObject *object = dynamic_cast<TObject*>(lKey->ReadObj());
+	    //  from TSeqCollections::Merge
+	    if(!object)continue;
+	    // If current object is not mergeable just skip it
+	    if (!object->IsA()) {
+	      continue;
+	    }
+	    callEnv.InitWithPrototype(object->IsA(), "Merge", "TCollection*");
+	    if (!callEnv.IsValid()) {
+	      continue;
+	    }
+	    // Current object mergeable - get corresponding objects in input lists
+	    tmplist = new TList();
+	    for(int i = 1; i < fileList.GetEntries();i++){
+	      TDirectory *fInTmp = dynamic_cast<TDirectory*>(fileList.At(i)); 
+	      if(!fInTmp){
+		Printf("File %d not found",i);
+		continue;
+	      }
+	      TDirectory *dTmp = (TDirectory*)fInTmp->Get(dName.Data());
+	      if(!dTmp){
+		Printf("Directory %s not found",dName.Data());
+		continue;
+	      }
+	      TObject* oTmp = (TObject*)dTmp->Get(object->GetName());
+	      if(!oTmp){
+		Printf("Object %s not found",object->GetName());
+		continue;
+	      }
+	      tmplist->Add(oTmp);
+	    }
+	    callEnv.SetParam((Long_t) tmplist);
+	    callEnv.Execute(object);
+	    delete tmplist;tmplist = 0;
+	    fOut->cd();
+	    object->Write();
+	  }
+	}
+      }
+    }
+    if(fOut){
+      fOut->Close();
+    }
+  }
+}
 
 void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cDir, char *cList,char *cOutFile,Bool_t bUpdate){
 
