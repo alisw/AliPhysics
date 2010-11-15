@@ -61,7 +61,8 @@ AliFlowEventCuts::AliFlowEventCuts():
   fNContributorsMin(INT_MIN),
   fCutMeanPt(kFALSE),
   fMeanPtMax(-DBL_MAX),
-  fMeanPtMin(DBL_MAX)
+  fMeanPtMin(DBL_MAX),
+  fCutSPDvertexerAnomaly(kTRUE)
 {
   //constructor 
 }
@@ -92,7 +93,8 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fNContributorsMin(INT_MIN),
   fCutMeanPt(kFALSE),
   fMeanPtMax(-DBL_MAX),
-  fMeanPtMin(DBL_MAX)
+  fMeanPtMin(DBL_MAX),
+  fCutSPDvertexerAnomaly(kTRUE)
 {
   //constructor 
 }
@@ -123,7 +125,8 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fNContributorsMin(that.fNContributorsMin),
   fCutMeanPt(that.fCutMeanPt),
   fMeanPtMax(that.fMeanPtMax),
-  fMeanPtMin(that.fMeanPtMin)
+  fMeanPtMin(that.fMeanPtMin),
+  fCutSPDvertexerAnomaly(that.fCutSPDvertexerAnomaly)
 {
   //copy constructor 
   if (that.fRefMultCuts)
@@ -166,6 +169,7 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fCutMeanPt=that.fCutMeanPt;
   fMeanPtMax=that.fMeanPtMax;
   fMeanPtMin=that.fMeanPtMin;
+  fCutSPDvertexerAnomaly=that.fCutSPDvertexerAnomaly;
   return *this;
 }
 
@@ -234,6 +238,19 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
     meanpt=meanpt/nselected;
     if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) return kFALSE;
   }
+  const AliESDEvent* esdevent = dynamic_cast<const AliESDEvent*>(event);
+  if (fCutSPDvertexerAnomaly&&esdevent)
+  {
+    const AliESDVertex* sdpvertex = esdevent->GetPrimaryVertexSPD();
+    if (sdpvertex->GetNContributors()<1) return kFALSE;
+    if (sdpvertex->GetDispersion()>0.04) return kFALSE;
+    if (sdpvertex->GetZRes()>0.25) return kFALSE;
+    const AliESDVertex* tpcvertex = esdevent->GetPrimaryVertexTPC();
+    if (tpcvertex->GetNContributors()<1) return kFALSE;
+    const AliMultiplicity* tracklets = esdevent->GetMultiplicity();
+    if (tpcvertex->GetNContributors()<(-10.0+0.25*tracklets->GetNumberOfITSClusters(0)))
+      return kFALSE;
+  }
   return kTRUE;
 }
 
@@ -271,8 +288,7 @@ Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
         if (!esdevent) return 0;
         vzero=esdevent->GetVZEROData();
         if (!vzero) return 0;
-        refmult += TMath::Nint(vzero->GetMTotV0A());
-        refmult += TMath::Nint(vzero->GetMTotV0C());
+        refmult = TMath::Nint(vzero->GetMTotV0A()+vzero->GetMTotV0C());
         return refmult;
       case kSPD1clusters:
         if (!mult) return 0;
