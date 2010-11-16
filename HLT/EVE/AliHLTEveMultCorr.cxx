@@ -247,7 +247,7 @@ void AliHLTEveMultCorr::AddHistogramToCanvas(TH1* hist, TCanvas* canvas, Int_t& 
 	    if(zoom) 
 	    {
 	      TH1F *h = dynamic_cast<TH1F*>(hist);
-	      h->GetXaxis()->SetRange(0, (Int_t)(h->GetMaximumBin() + h->GetMaximumBin()*0.2));
+	      h->GetXaxis()->SetRange(0, h->GetMaximumBin() + h->GetMaximumBin()*0.2);
 	    }
             dynamic_cast<TH1F*>(hist)->Draw();
         }
@@ -257,8 +257,8 @@ void AliHLTEveMultCorr::AddHistogramToCanvas(TH1* hist, TCanvas* canvas, Int_t& 
 	    if(zoom)
 	    {
 	      TH2F *h = dynamic_cast<TH2F*>(hist);
-	      h->GetXaxis()->SetRange(0, (Int_t)(h->GetMaximumBin() + h->GetMaximumBin()*0.2));
-	      h->GetYaxis()->SetRange(0, (Int_t)(h->GetMaximumBin() + h->GetMaximumBin()*0.2));
+	      h->GetXaxis()->SetRange(0, h->GetMaximumBin() + h->GetMaximumBin()*0.2);
+	      h->GetYaxis()->SetRange(0, h->GetMaximumBin() + h->GetMaximumBin()*0.2);
 	    }
             dynamic_cast<TH2F*>(hist)->Draw("COLZ");
         }

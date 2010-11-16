@@ -382,7 +382,7 @@ int AliHLTTPCCFComparisonComponent::ScanConfigurationArgument(int argc, const ch
   if (argument.CompareTo("-event-modulo")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fEvtMod=argument.Atoi();
+    fEvtMod=argument.Atof();
     return 2;
   }    
 
@@ -390,7 +390,7 @@ int AliHLTTPCCFComparisonComponent::ScanConfigurationArgument(int argc, const ch
   if (argument.CompareTo("-buffer-size")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fBufferSize=argument.Atoi();
+    fBufferSize=argument.Atof();
     return 2;
   }    
    

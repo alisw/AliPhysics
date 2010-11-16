@@ -145,7 +145,7 @@ Int_t AliHLTTPCCalibTimeComponent::ScanConfigurationArgument( Int_t argc, const 
   if (argument.CompareTo("-output-size")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fOutputSize=(AliHLTUInt32_t)argument.Atoi();
+    fOutputSize=argument.Atof();
     return 2;
   }
   return -EINVAL;
