@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTEsdManagerImplementation.h
-    @author Matthias Richter
-    @date   
-    @brief  Implementation of the AliHLTEsdManager
-*/
+/// @file   AliHLTEsdManagerImplementation.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Implementation of the AliHLTEsdManager
+///         This is an implementation of the abstract interface AliHLTEsdManager
 
 #include "AliHLTEsdManager.h"
 #include "AliESDEvent.h"
@@ -137,11 +137,6 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
     void SetDirectory(const char* directory);
 
     /**
-     * Delete the ESD file.
-     */
-    void Delete();
-
-    /**
      * Get name of the ESD file.
      */
     const char* GetFileName() const;
@@ -160,15 +155,6 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
     AliHLTEsdListEntry(const AliHLTEsdListEntry& src);
     /** assignment operator prohibited */
     AliHLTEsdListEntry& operator=(const AliHLTEsdListEntry& src);
-
-    /**
-     * Write ESD to temporary file.
-     * The ESD is embedded into a tree and saved to a temporary file.
-     * The file name is retrieved by TSystem::GetTempFileName and returned
-     * on success.
-     * @return file name, empty on failure
-     */
-    TString WriteTempFile(AliESDEvent* pESD) const;
 
     /** root file name */
     TString fName; //!transient
