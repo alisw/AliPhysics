@@ -48,6 +48,7 @@ ClassImp(AliHLTMultiplicityCorrelations)
 
 //##################################################################################
 AliHLTMultiplicityCorrelations::AliHLTMultiplicityCorrelations() :
+  TNamed(),
   fHistList(NULL),
   fESDEvent(NULL),
   fESDZDC(NULL),
@@ -60,15 +61,46 @@ AliHLTMultiplicityCorrelations::AliHLTMultiplicityCorrelations() :
   fVzeroMult(0.), fVzeroMultA(0.), fVzeroMultC(0.),
   fVzeroMultFlagged(0.), fVzeroMultFlaggedA(0.), fVzeroMultFlaggedC(0.),
   fSpdNClusters(0), fSpdNClustersInner(0), fSpdNClustersOuter(0),
-  fVzeroBinning(350), fVzeroBinningMin(0.), fVzeroBinningMax(35000.),
-  fTpcBinning(200),fTpcBinningMin(0.),fTpcBinningMax(8000.),
+  fVzeroBinning(1500), fVzeroBinningMin(0.), fVzeroBinningMax(30000.),
+  fTpcBinning(800),fTpcBinningMin(0.),fTpcBinningMax(8000.),
   fZdcBinning(280),fZdcBinningMin(0.),fZdcBinningMax(140.),
   fZemBinning(100),fZemBinningMin(0.),fZemBinningMax(5.),
   fZnpBinning(200),fZnpBinningMin(0.),fZnpBinningMax(100.),
   fProcessPhos(true), fProcessEmcal(true),
   fPhosTotalEt(0.0), fEmcalTotalEt(0.0),
   fCaloBinning(100),fCaloBinningMin(0.),fCaloBinningMax(100.),
-  fSpdBinning(200),fSpdBinningMin(0.),fSpdBinningMax(15000.) {
+  fSpdBinning(750),fSpdBinningMin(0.),fSpdBinningMax(15000.) {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  
+}
+//##################################################################################
+AliHLTMultiplicityCorrelations::AliHLTMultiplicityCorrelations(Char_t* name, Char_t* title) : 
+  TNamed(name,title), 
+  fHistList(NULL),
+  fESDEvent(NULL),
+  fESDZDC(NULL),
+  fESDVZERO(NULL),
+  fESDTrackCuts(NULL),
+  fProcessTPC(kTRUE), fProcessSPD(kTRUE),
+  fProcessVZERO(kTRUE), fProcessZDC(kTRUE), fProcessCALO(kTRUE),
+  fEsdTracks(0), fEsdTracksA(0),
+  fTpcTracks(0), fTpcTracksA(0),
+  fVzeroMult(0.), fVzeroMultA(0.), fVzeroMultC(0.),
+  fVzeroMultFlagged(0.), fVzeroMultFlaggedA(0.), fVzeroMultFlaggedC(0.),
+  fSpdNClusters(0), fSpdNClustersInner(0), fSpdNClustersOuter(0),
+  fVzeroBinning(1500), fVzeroBinningMin(0.), fVzeroBinningMax(30000.),
+  fTpcBinning(800),fTpcBinningMin(0.),fTpcBinningMax(8000.),
+  fZdcBinning(280),fZdcBinningMin(0.),fZdcBinningMax(140.),
+  fZemBinning(100),fZemBinningMin(0.),fZemBinningMax(5.),
+  fZnpBinning(200),fZnpBinningMin(0.),fZnpBinningMax(100.),
+  fProcessPhos(true), fProcessEmcal(true),
+  fPhosTotalEt(0.0), fEmcalTotalEt(0.0),
+  fCaloBinning(100),fCaloBinningMin(0.),fCaloBinningMax(100.),
+  fSpdBinning(750),fSpdBinningMin(0.),fSpdBinningMax(15000.) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -103,6 +135,26 @@ Int_t AliHLTMultiplicityCorrelations::Initialize() {
   fHistList = new TList();
   fHistList->SetOwner(kTRUE);
   fHistList->SetName("MultiplicityCorrelations");
+  iResult = SetupHistograms();
+  
+  if (fProcessZDC)   { HLTInfo ("Processing of ZDC enabled"); }
+  if (fProcessTPC)   { HLTInfo ("Processing of TPC enabled"); }
+  if (fProcessSPD)   { HLTInfo ("Processing of SPD enabled"); }
+  if (fProcessVZERO) { HLTInfo ("Processing of VZERO enabled"); }
+  if (fProcessCALO)  { HLTInfo ("Processing of CALO enabled"); }
+
+  return iResult;
+}
+
+//##################################################################################
+Int_t AliHLTMultiplicityCorrelations::Initialize( const Char_t* listName) {
+  // see header file for class documentation  
+
+  Int_t iResult = 0;
+
+  fHistList = new TList();
+  fHistList->SetOwner(kTRUE);
+  fHistList->SetName(Form("MultiplicityCorrelations_%s",listName));
   iResult = SetupHistograms();
   
   if (fProcessZDC)   { HLTInfo ("Processing of ZDC enabled"); }
@@ -618,6 +670,9 @@ Int_t AliHLTMultiplicityCorrelations::SetupCorrelations() {
 
     fHistList->Add(new TH2F("fCorrSpdTpcNch", "N_{clusters}^{SPD} vs N_{ch}^{TPC};N_{clusters}^{SPD};N_{ch}^{TPC}",   
 			    fSpdBinning,fSpdBinningMin,fSpdBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));  
+
+    fHistList->Add(new TH2F("fCorrSpdOuterTpcNch", "N_{clusters}^{SPD}_{Outer} vs N_{ch}^{TPC};N_{clusters}^{SPD};N_{ch}^{TPC}",   
+			    fSpdBinning,fSpdBinningMin,fSpdBinningMax, fTpcBinning,fTpcBinningMin,fTpcBinningMax));  
   }
   // ----------------------------------------------------
   //   SPD vs VZERO
@@ -628,21 +683,42 @@ Int_t AliHLTMultiplicityCorrelations::SetupCorrelations() {
 			    "Multiplicity^{VZERO} vs N_{ch}^{SPD};Multiplicity^{VZERO};N^{SPD}", 
 			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
     fHistList->Add(new TH2F("fCorrVzeroASpd", 
-			    "Multiplicity^{VZERO} vs N_{ch}^{SPD} A;Multiplicity^{VZERO};N^{SPD}", 
+			    "Multiplicity^{VZERO} A vs N_{ch}^{SPD};Multiplicity^{VZERO};N^{SPD}", 
 			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
     fHistList->Add(new TH2F("fCorrVzeroCSpd", 
-			    "Multiplicity^{VZERO} vs N_{ch}^{SPD} C;Multiplicity^{VZERO};N^{SPD}", 
+			    "Multiplicity^{VZERO} C vs N_{ch}^{SPD};Multiplicity^{VZERO};N^{SPD}", 
 			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
     
     fHistList->Add(new TH2F("fCorrVzeroFSpd", 
 			    "Multiplicity^{VZERO} vs N_{ch}^{SPD};Multiplicity_{flagged}^{VZERO};N^{SPD}", 
 			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
     fHistList->Add(new TH2F("fCorrVzeroFASpd", 
-			    "Multiplicity^{VZERO} vs N_{ch}^{SPD} A;Multiplicity_{flagged}^{VZERO};N^{SPD}", 
+			    "Multiplicity^{VZERO} A vs N_{ch}^{SPD};Multiplicity_{flagged}^{VZERO};N^{SPD}", 
 			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
     fHistList->Add(new TH2F("fCorrVzeroFCSpd", 
-			    "Multiplicity^{VZERO} vs N_{ch}^{SPD} C;Multiplicity_{flagged}^{VZERO};N^{SPD}", 
+			    "Multiplicity^{VZERO} C vs N_{ch}^{SPD};Multiplicity_{flagged}^{VZERO};N^{SPD}", 
 			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+
+    fHistList->Add(new TH2F("fCorrVzeroSpdOuter", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{SPD}_{Outer};Multiplicity^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroASpdOuter", 
+			    "Multiplicity^{VZERO} A vs N_{ch}^{SPD}_{Outer};Multiplicity^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroCSpdOuter", 
+			    "Multiplicity^{VZERO} C vs N_{ch}^{SPD}_{Outer};Multiplicity^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    
+    fHistList->Add(new TH2F("fCorrVzeroFSpdOuter", 
+			    "Multiplicity^{VZERO} vs N_{ch}^{SPD}_{Outer};Multiplicity_{flagged}^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroFASpdOuter", 
+			    "Multiplicity^{VZERO} A vs N_{ch}^{SPD}_{Outer};Multiplicity_{flagged}^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+    fHistList->Add(new TH2F("fCorrVzeroFCSpdOuter", 
+			    "Multiplicity^{VZERO} C vs N_{ch}^{SPD}_{Outer};Multiplicity_{flagged}^{VZERO};N^{SPD}", 
+			    fVzeroBinning,fVzeroBinningMin,fVzeroBinningMax, fSpdBinning,fSpdBinningMin,fSpdBinningMax));
+
   }
   // ----------------------------------------------------
   //   SPD vs ZDC
@@ -841,6 +917,14 @@ Int_t AliHLTMultiplicityCorrelations::ProcessVZERO() {
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFSpd")))->Fill(fVzeroMultFlagged, fSpdNClusters);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFASpd")))->Fill(fVzeroMultFlaggedA, fSpdNClusters);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFCSpd")))->Fill(fVzeroMultFlaggedC, fSpdNClusters);
+
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroSpdOuter")))->Fill(fVzeroMult, fSpdNClustersOuter);
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroASpdOuter")))->Fill(fVzeroMultA, fSpdNClustersOuter);
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroCSpdOuter")))->Fill(fVzeroMultC, fSpdNClustersOuter);
+    
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFSpdOuter")))->Fill(fVzeroMultFlagged, fSpdNClustersOuter);
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFASpdOuter")))->Fill(fVzeroMultFlaggedA, fSpdNClustersOuter);
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrVzeroFCSpdOuter")))->Fill(fVzeroMultFlaggedC, fSpdNClustersOuter);
   }
   
   // -- VZERO - CALO correlations
@@ -1052,6 +1136,7 @@ Int_t AliHLTMultiplicityCorrelations::ProcessSPD() {
   // -- SPD vs TPC correlations
   if (fProcessTPC) {
     (static_cast<TH2F*>(fHistList->FindObject("fCorrSpdTpcNch")))->Fill(fSpdNClusters,fTpcTracksA);
+    (static_cast<TH2F*>(fHistList->FindObject("fCorrSpdOuterTpcNch")))->Fill(fSpdNClustersOuter,fTpcTracksA);
   }
 
   return 0;

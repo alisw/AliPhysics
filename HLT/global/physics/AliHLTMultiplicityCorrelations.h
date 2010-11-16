@@ -38,7 +38,7 @@ class TH1;
  * @ingroup alihlt_physics
  */
 
-class AliHLTMultiplicityCorrelations : public TObject, public AliHLTLogging {
+class AliHLTMultiplicityCorrelations : public TNamed, public AliHLTLogging {
 public:
   
   /*
@@ -47,8 +47,11 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Constructor */
+  /** Default Constructor */
   AliHLTMultiplicityCorrelations();
+  
+  /** Constructor */
+  AliHLTMultiplicityCorrelations(Char_t* name, Char_t* title);
   
   /** Destructor */
   ~AliHLTMultiplicityCorrelations();
@@ -61,6 +64,9 @@ public:
 
   /** Initialize class and members */
   Int_t Initialize();
+
+  /** Initialize class and members */
+  Int_t Initialize( const Char_t* listName );
 
   /*
    * ---------------------------------------------------------------------------------
@@ -333,6 +339,6 @@ public:
   Float_t fSpdBinningMin;
   Float_t fSpdBinningMax;
   
-  ClassDef(AliHLTMultiplicityCorrelations, 1);
+  ClassDef(AliHLTMultiplicityCorrelations, 2);
 };
 #endif
