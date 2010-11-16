@@ -48,13 +48,10 @@ public:
   void SetUseHLTTriggerDecision(Bool_t useHLT = kFALSE) {fUseHLTTrigger = useHLT;}
 
 private:
-    Bool_t fUseHLTTrigger; 
+  Bool_t fUseHLTTrigger; // boolean to enable the HLT triggered events
   AliESDRun *fESDRun;  //!Transient, pointer to esds
   TList *fOutputList;  //List of histograms to be stored
   
-  Bool_t fUseHLTTrigger; 
-  AliESDRun *fESDRun;  //!
-  TList *fOutputList;
   TH1F *fHistOfflResiduals; //histogram
   TH1F *fHistOnlResiduals; //histogram
   TH1F *fHistOfflDz; //histogram
