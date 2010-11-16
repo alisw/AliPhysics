@@ -157,7 +157,9 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetRemovePileUp(Bool_t removePileUp) { fRemovePileUp = removePileUp; }
 
   void SetSelectV0AND(Bool_t selectV0AND) { fSelectV0AND = selectV0AND; }
-
+  void SetUseMultiplicity(Int_t useMultiplicity) {fUseMultiplicity=useMultiplicity;}
+  void SetUseMultiplicityBin(Int_t useMultiplicityBin) {fUseMultiplicityBin=useMultiplicityBin;}
+  Int_t CalculateMultiplicityBin();
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -295,7 +297,10 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fRemovePileUp;                 // Remove Pile Up
   Bool_t fSelectV0AND;                 // Select V0AND
   AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
-  ClassDef(AliAnalysisTaskGammaConversion, 14); // Analysis task for gamma conversions
+  Int_t fMultiplicity;
+  Int_t fUseMultiplicity;
+  Int_t fUseMultiplicityBin;
+  ClassDef(AliAnalysisTaskGammaConversion, 15); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

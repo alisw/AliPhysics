@@ -137,7 +137,10 @@ AliAnalysisTaskSE(),
   fKFReconstructedGammasV0Index(),
   fRemovePileUp(kFALSE),
   fSelectV0AND(kFALSE),
-  fTriggerAnalysis(NULL)
+  fTriggerAnalysis(NULL),
+  fMultiplicity(0),
+  fUseMultiplicity(0), 
+  fUseMultiplicityBin(0)
 {
   // Default constructor
 
@@ -228,7 +231,10 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fKFReconstructedGammasV0Index(),
   fRemovePileUp(kFALSE),
   fSelectV0AND(kFALSE),
-  fTriggerAnalysis(NULL)
+  fTriggerAnalysis(NULL),
+  fMultiplicity(0),
+  fUseMultiplicity(0), 
+  fUseMultiplicityBin(0)
 {
   // Common I/O in slot 0
   DefineInput (0, TChain::Class());
@@ -537,7 +543,6 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     return;
   }
 
- 
   Bool_t v0A       = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0A);
   Bool_t v0C       = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0C);
   Bool_t v0AND = v0A && v0C;
@@ -547,9 +552,25 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
     return;
   }
+  fMultiplicity = fEsdTrackCuts->CountAcceptedTracks(fV0Reader->GetESDEvent());
+
+  if( CalculateMultiplicityBin() != fUseMultiplicityBin){
+    eventQuality=6;
+    fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+    return;
+  }
 
   eventQuality=3;
   fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+
+
+
+  fHistograms->FillHistogram("ESD_NumberOfGoodESDTracks",fMultiplicity);
+  if (fV0Reader->GetNumberOfContributorsVtx()>=1){
+    fHistograms->FillHistogram("ESD_NumberOfGoodESDTracksVtx",fMultiplicity);
+  } 
+
+
 
   // Process the MC information
   if(fDoMCTruth){
@@ -2935,11 +2956,12 @@ void AliAnalysisTaskGammaConversion::CreateListOfChargedParticles(){
       numberOfESDTracks++;
     }
   }
-  fHistograms->FillHistogram("ESD_NumberOfGoodESDTracks",numberOfESDTracks);
-
-  if (fV0Reader->GetNumberOfContributorsVtx()>=1){
-    fHistograms->FillHistogram("ESD_NumberOfGoodESDTracksVtx",numberOfESDTracks);
-  } 
+// Moved to UserExec using CountAcceptedTracks function. runjet is not needed by default
+//   fHistograms->FillHistogram("ESD_NumberOfGoodESDTracks",numberOfESDTracks);
+//   cout<<"esdtracks::"<< numberOfESDTracks<<endl;
+//   if (fV0Reader->GetNumberOfContributorsVtx()>=1){
+//     fHistograms->FillHistogram("ESD_NumberOfGoodESDTracksVtx",numberOfESDTracks);
+//   } 
 }
 void AliAnalysisTaskGammaConversion::RecalculateV0ForGamma(){
   //recalculates v0 for gamma
@@ -4045,7 +4067,6 @@ TClonesArray AliAnalysisTaskGammaConversion::GetTLorentzVector(TClonesArray *con
 	
   //  return tlVtrack;
 }
-
 Int_t AliAnalysisTaskGammaConversion::GetProcessType(const AliMCEvent * mcEvt) {
 
   // Determine if the event was generated with pythia or phojet and return the process type
@@ -4100,4 +4121,22 @@ Int_t AliAnalysisTaskGammaConversion::GetProcessType(const AliMCEvent * mcEvt) {
   // no process type found?
   AliError(Form("Unknown header: %s", htmp->IsA()->GetName()));
   return kProcUnknown;
+}
+
+
+Int_t AliAnalysisTaskGammaConversion::CalculateMultiplicityBin(){
+  // Get Centrality bin
+
+  Int_t multiplicity = 0;
+
+  if ( fUseMultiplicity == 1 ) {
+
+    if (fMultiplicity>= 0 && fMultiplicity<= 5) multiplicity=1;
+    if (fMultiplicity>= 6 && fMultiplicity<= 9) multiplicity=2;
+    if (fMultiplicity>=10 && fMultiplicity<=14) multiplicity=3;
+    if (fMultiplicity>=15 && fMultiplicity<=22) multiplicity=4;
+    if (fMultiplicity>=23 )                     multiplicity=5;
+
+  }
+  return multiplicity;
 }

@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 22;
+const int c_array_size = 23;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -48,7 +48,7 @@ Bool_t kGCdoBGProbability=kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="9003562040100332102200"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="90035620401003321022000"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=20;
 
@@ -104,6 +104,9 @@ Double_t kGCminOpeningAngleGhostCut = 0.005;
 Bool_t kGCRemovePileUp = kFALSE;
 
 Bool_t kGCSelectV0AND = kFALSE;
+Bool_t kGCUseMultiplicity = kFALSE;
+Int_t  kGCUseMultiplicityBin=0;
+
 /** ---------------------------------- define pi0 dalitz cuts here ------------------------------------*/
 
 Bool_t kGCRunStandalone    = kTRUE;
@@ -536,9 +539,9 @@ Double_t kGClastXBinESDtrk = 9999.5;
 
 
 //EventQuality-plot
-Int_t kGCnXBinsEvtQ= 7;
+Int_t kGCnXBinsEvtQ= 8;
 Double_t kGCfirstXBinEvtQ=-1.5;
-Double_t kGClastXBinEvtQ=5.5;
+Double_t kGClastXBinEvtQ=6.5;
 
 //R-plots
 Int_t kGCnXBinsR = 400;
@@ -1544,6 +1547,8 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 
   gammaconversion->SetRemovePileUp(kGCRemovePileUp);
   gammaconversion->SetSelectV0AND(kGCSelectV0AND);
+  gammaconversion->SetUseMultiplicity(kGCUseMultiplicity);
+  gammaconversion->SetUseMultiplicityBin(kGCUseMultiplicityBin);
 
   // for CF
   gammaconversion->SetCFManager(man);
@@ -2455,9 +2460,11 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t NumberOfRotations=array[19];
   Int_t removePileUp=array[20];
   Int_t selectV0AND=array[21];
+  Int_t multiplicityBin=array[22];
 
-  cout<<"Select V0AND"<< selectV0AND<<endl;
-  cout<<"Remove PileUp"<< removePileUp<<endl;
+  cout<<"Multiplicity Bin::"<< multiplicityBin<<endl;
+  cout<<"Select V0AND::"<< selectV0AND<<endl;
+  cout<<"Remove PileUp::"<< removePileUp<<endl;
   cout<<"NumberOfRotations::"<<NumberOfRotations<<endl;
   cout<<"DegreesForRotationMethod::"<<DegreesForRotationMethod<<endl;
   cout<<"BackgroundScheme::"<<BackgroundScheme<<endl;
@@ -2932,6 +2939,34 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     return iResult;
   }
 
+  switch(multiplicityBin){
+  case 0:
+    kGCUseMultiplicity=kFALSE;
+    kGCUseMultiplicityBin=0;
+    break;
+  case 1:
+    kGCUseMultiplicity=kTRUE;
+    kGCUseMultiplicityBin=1;
+     break;
+  case 2:
+    kGCUseMultiplicity=kTRUE;
+    kGCUseMultiplicityBin=2;
+     break;
+  case 3:
+    kGCUseMultiplicity=kTRUE;
+    kGCUseMultiplicityBin=3;
+     break;
+  case 4:
+    kGCUseMultiplicity=kTRUE;
+    kGCUseMultiplicityBin=4;
+     break;
+  case 5:
+    kGCUseMultiplicity=kTRUE;
+    kGCUseMultiplicityBin=5;
+     break;
+  default:
+    return iResult;
+  }
   iResult=1;
   return iResult;
 
@@ -2965,6 +3000,7 @@ void string2array(const std::string& number, int a[c_array_size])
         ASSIGNARRAY(19);
         ASSIGNARRAY(20);
         ASSIGNARRAY(21);
+        ASSIGNARRAY(22);
   }
 }
 
