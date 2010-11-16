@@ -40,7 +40,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     virtual ~AliFragFuncHistos();
     
     virtual void DefineHistos();
-    virtual void FillFF(Float_t trackPt, Float_t jetPt,Bool_t incrementJetPt, Float_t norm);
+    virtual void FillFF(Float_t trackPt, Float_t jetPt,Bool_t incrementJetPt, Float_t norm = 0);
     virtual void AddToOutput(TList* list) const;
 
   private:
@@ -165,7 +165,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     virtual ~AliFragFuncIntraJetHistos();
     
     virtual void DefineHistos();
-    virtual void FillIntraJet(const TLorentzVector* trackV, const TLorentzVector* jetV, Float_t norm);
+    virtual void FillIntraJet(const TLorentzVector* trackV, const TLorentzVector* jetV, Float_t norm = 0);
     virtual void AddToOutput(TList* list) const;
 
   private:
@@ -348,6 +348,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }
   virtual void   SetFFBckgRadius(Float_t r = 0.7) { fFFBckgRadius = r; }
   virtual void   SetBckgMode(Bool_t bg = 1) { fBckgMode = bg; }
+  virtual void   UseRecEffRecJetPtBins(Bool_t useRec = kTRUE) { fUseRecEffRecJetPtBins = useRec; }
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH2* h,const char* x, const char* y,const char* z);
@@ -414,9 +415,9 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Double_t GetDiJetBin(Double_t invMass, Double_t leadingJetPt, Double_t eMean, Int_t kindSlices); // function to find which bin fill
   Double_t InvMass(const AliAODJet* jet1, const AliAODJet* jet2);
   void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isGenPrim);
-  void     FillSingleTrackRecEffHisto(THnSparse* histo, TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr, const TArrayS& isGenPrim);
-  void     FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi,Double_t jetEta,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, TList* tracksGen,
-				   const TArrayI& indexAODTr,const TArrayS& isGenPrim);
+  void     FillSingleTrackRecEffHisto(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, const TArrayI& indexAODTr, const TArrayS& isGenPrim);
+  void     FillJetTrackRecEffHisto(TObject* histGen,TObject* histRec,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, TList* tracksGen,
+				   const TArrayI& indexAODTr,const TArrayS& isGenPrim, const Bool_t useRecJetPt);
   Float_t  CalcJetArea(Float_t etaJet, Float_t rc);
     
   // Consts
@@ -471,6 +472,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
   Float_t fFFBckgRadius;    // compute background outside cone of this radius around jet axes
   Bool_t  fBckgMode;        // Set background subtraction mode
+  Bool_t  fUseRecEffRecJetPtBins; // bin track reconstruction efficiency in reconstructed/generated jet pt bins 
+
   Float_t fAvgTrials;       // average number of trials per event
   
   TList* fTracksRec;            //! reconstructed tracks
@@ -645,11 +648,17 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH1F  *fh1nRecJetsCuts;         //! number of jets from reconstructed tracks per event 
   TH1F  *fh1nGenJets;             //! number of jets from generated tracks per event
   TH1F  *fh1nRecEffJets;          //! number of jets for reconstruction eff per event
+  TH2F  *fh2PtRecVsGenPrim;       //! association rec/gen MC: rec vs gen pt 
 
   // tracking efficiency 
 
-  THnSparseF *fhnSingleTrackRecEffHisto; //! track reconstruction efficiency 
-  THnSparseF *fhnJetTrackRecEffHisto;    //! reconstruction efficiency jet tracks 
+  
+  AliFragFuncQATrackHistos* fQATrackHistosRecEffGen;      //! tracking efficiency: generated primaries 
+  AliFragFuncQATrackHistos* fQATrackHistosRecEffRec;      //! tracking efficiency: reconstructed primaries
+
+  AliFragFuncHistos*  fFFHistosRecEffGen;                 //! tracking efficiency: FF generated primaries  
+  AliFragFuncHistos*  fFFHistosRecEffRec;                 //! tracking efficiency: FF reconstructed primaries
+
 
   // Background
   TH1F  *fh1OutLeadingMult;       //! background multiplicity outside leading jet

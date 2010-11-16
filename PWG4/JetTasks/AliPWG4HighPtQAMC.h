@@ -77,6 +77,7 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   
   TH1F *fNEventAll;                            //! Event counter
   TH1F *fNEventSel;                            //! Event counter
+  TH1F *fNEventReject;                         //! Book keeping of reason of rejecting events
  
   TProfile*     fh1Xsec;                       //! pythia cross section and trials
   TH1F*         fh1Trials;                     //! trials which are added

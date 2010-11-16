@@ -66,6 +66,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fAvgTrials(1),
   fNEventAll(0),
   fNEventSel(0),
+  fNEventReject(0),
   fh1Xsec(0),
   fh1Trials(0),
   fh1PtHard(0),
@@ -111,6 +112,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fAvgTrials(1),
   fNEventAll(0),
   fNEventSel(0),
+  fNEventReject(0),
   fh1Xsec(0),
   fh1Trials(0),
   fh1PtHard(0),
@@ -211,6 +213,8 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fHistList->Add(fNEventAll);
   fNEventSel = new TH1F("fNEventSel","NEvent Selected for analysis",1,-0.5,0.5);
   fHistList->Add(fNEventSel);
+  fNEventReject = new TH1F("fNEventReject","Reason events are rejectected for analysis",20,0,20);
+  fHistList->Add(fNEventReject);
 
   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
@@ -360,6 +364,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
   if (!fESD) {
     AliDebug(2,Form("ERROR: fInputEvent not available\n"));
+    fNEventReject->Fill("noESD",1);
     PostData(0, fHistList);
     PostData(1, fHistListITS);
     return;
@@ -368,6 +373,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(!(isSelected&AliVEvent::kMB)) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
+    fNEventReject->Fill("Trigger",1);
     // Post output data
     PostData(0, fHistList);
     PostData(1, fHistListITS);
@@ -382,6 +388,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
   } else {
     AliDebug(2,Form("ERROR: Could not retrieve MC eventHandler"));
+    fNEventReject->Fill("noMCEvent",1);
     PostData(0, fHistList);
     PostData(1, fHistListITS);
     return;
@@ -394,21 +401,16 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   
   if(fMC){
     AliGenPythiaEventHeader*  pythiaGenHeader = GetPythiaEventHeader(fMC);
-     if(!pythiaGenHeader){
-       AliDebug(2,Form("ERROR: Could not retrieve AliGenPythiaEventHeader"));
-       PostData(0, fHistList);
-       PostData(1, fHistListITS);
-       return;
-     } else {
-        nTrials = pythiaGenHeader->Trials();
-        ptHard  = pythiaGenHeader->GetPtHard();
-
-        fh1PtHard->Fill(ptHard);
-        fh1PtHardTrials->Fill(ptHard,nTrials);
-
-        fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+     if(pythiaGenHeader){
+       nTrials = pythiaGenHeader->Trials();
+       ptHard  = pythiaGenHeader->GetPtHard();
+       
+       fh1PtHard->Fill(ptHard);
+       fh1PtHardTrials->Fill(ptHard,nTrials);
+       
+       fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
      }
-   }
+  }
 
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
   // Need vertex cut
@@ -418,6 +420,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     vtx = fESD->GetPrimaryVertexSPD();
     if(vtx->GetNContributors()<2) {
       vtx = 0x0;
+      fNEventReject->Fill("noVTX",1);
       // Post output data
       PostData(0, fHistList);
       PostData(1, fHistListITS);
@@ -428,6 +431,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   double primVtx[3];
   vtx->GetXYZ(primVtx);
   if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
+    fNEventReject->Fill("ZVTX>10",1);
     // Post output data
     PostData(0, fHistList);
     PostData(1, fHistListITS);
@@ -437,6 +441,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
 
   if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2)  {
+    fNEventReject->Fill("NTracks<2",1);
     PostData(0, fHistList);
     PostData(1, fHistListITS);
     return;
@@ -569,7 +574,7 @@ Bool_t AliPWG4HighPtQAMC::PythiaInfoFromFile(const char* currFile,Float_t &fXsec
     // not an archive take the basename....
     file.ReplaceAll(gSystem->BaseName(file.Data()),"");
   }
-  Printf("%s",file.Data());
+  //  Printf("%s",file.Data());
    
 
   TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
@@ -635,7 +640,7 @@ Bool_t AliPWG4HighPtQAMC::Notify()
       return kFALSE;
     }
     if(!fh1Xsec||!fh1Trials){
-      Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+      //      Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
       return kFALSE;
     }
     PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
@@ -658,7 +663,7 @@ AliGenPythiaEventHeader*  AliPWG4HighPtQAMC::GetPythiaEventHeader(AliMCEvent *mc
     AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
     
     if (!genCocktailHeader) {
-      AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Unknown header type (not Pythia or Cocktail)");
+      //      AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Unknown header type (not Pythia or Cocktail)");
       //      AliWarning(Form("%s %d: Unknown header type (not Pythia or Cocktail)",(char*)__FILE__,__LINE__));
       return 0;
     }

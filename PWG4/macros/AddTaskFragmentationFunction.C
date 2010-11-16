@@ -169,6 +169,8 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetFFBckgRadius();    // default: R = 0.7
    task->SetBckgMode();        // default: bgMode = 1
    task->SetHighPtThreshold(); // default: pt > 5 Gev
+   task->UseRecEffRecJetPtBins(); // efficiency in bins of rec/gen jet pt - default: kTRUE  
+
    // Define histo bins
    task->SetFFHistoBins();
    task->SetQAJetHistoBins();
