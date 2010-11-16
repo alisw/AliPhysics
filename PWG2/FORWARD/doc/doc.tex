@@ -1,0 +1,451 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2cm,twoside,a4paper]{geometry}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\newcommand{\AbbrName}[1]{{\ifmmode\text{\scshape #1}\else{\scshape #1}\fi}}
+\newcommand{\SPD}{\AbbrName{spd}}
+\newcommand{\ESD}{\AbbrName{esd}}
+\newcommand{\AOD}{\AbbrName{aod}}
+\newcommand{\INEL}{\AbbrName{inel}}
+\newcommand{\INELONE}{$\AbbrName{inel}>0$}
+\newcommand{\NSD}{\AbbrName{nsd}}
+\newcommand{\FMD}[1][]{\AbbrName{nsd\ifx|#1|\else#1\fi}}
+\newcommand{\dndetadphi}[1][]{{\ensuremath% 
+    \ifx|#1|\else\left.\fi%
+    \frac{d^2N_{ch}}{d\eta\,d\varphi}%
+    \ifx|#1|\else\right|_{#1}\fi%
+}}
+\newcommand{\landau}[1]{{\ensuremath% 
+    \text{landau}\left(#1\right)}}
+\newcommand{\dndeta}[1][]{{\ensuremath% 
+    \ifx|#1|\else\left.\fi%
+    \frac{1}{N}\frac{dN_{ch}}{d\eta}%
+    \ifx|#1|\else\right|_{#1}\fi%
+}}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0em}
+
+\title{Analysing the FMD data for $\dndeta$}
+\author{Christian Holm
+  Christensen\footnote{\texttt{$\langle$cholm@nbi,dk$\rangle$}}\quad\&\quad
+  Hans Hjersing Dalsgaard\footnote{\texttt{$\langle$canute@nbi,dk$\rangle$}}\\ 
+  Niels Bohr Institute\\
+  University of Copenhagen}
+\date{\today}
+\begin{document}
+\maketitle 
+
+\section*{Introduction}
+
+This document describes the steps performed in the analysis of the
+charged particle multiplicity in the forward pseudo--rapidity
+regions. 
+
+The analysis is performed as a two--step process.  
+\begin{enumerate}
+\item The Event--Summary--Data (\ESD{}) is processed event--by--event
+  and passed through a number of algorithms, and
+  $\dndetadphi$ for each event is output to an Analysis--Object--Data
+  (\AOD{}) tree.
+\item The \AOD{} data is read in and the sub--sample of the data under
+  investigation is selected (e.g., \INEL{}, \INELONE{}, \NSD{}, or
+  some centrality class) and the $\dndetadphi$ histogram read in for
+  those events to build up $\dndeta$
+\end{enumerate}
+The details of each step above will be expanded upon in the
+following. 
+
+\section*{Generating $\dndetadphi[i]$ event--by--event}
+
+When reading in the \ESD{}s and generating the $\dndetadphi$
+event--by--event the following steps are taken (in order) for each
+event $i$
+\begin{description}
+\item[Event inspection] The global properties of the event is
+  determined, including the trigger type, vertex $z$ coordinate, and
+  whether this is a low--flux event or not. 
+\item[Sharing filter] The \ESD{} object is read in and corrected for
+  sharing.  The result is a new \ESD{} object.
+\item[Density calculator] The (possibly un--corrected) \ESD{} object
+  is then inspected and an inclusive, per--ring charged particle
+  density $\dndetadphi[incl,r,v,i]$  is made.  This
+  calculation depends in general upon the interaction
+  vertex\footnote{In the following simply labelled 'primary vertex' or
+    'vertex'.} position along the $z$ axis ($v_z$).  
+\item[Corrections] The 5 $\dndetadphi[incl,r,v,i]$ are
+  corrected for secondary production, event selection efficiency, and
+  possibly the sharing efficiency.  These corrections are highly
+  dependent on the vertex $z$ coordinate.  The result is an per--ring,
+  charged primary particle density $\dndetadphi[r,v,i]$
+\item[Histogram collector] Finally, the 5 $\dndetadphi[r,v,i]$ are
+  summed into a single $\dndetadphi[v,i]$ histogram, taking care of
+  the overlaps between the detector rings.  In principle, this
+  histogram is independent of the vertex, except that the
+  pseudo--rapidity range, and possible holes in that range, depends on
+  $v_z$ --- or rather the bin in which the $v_z$ falls. 
+\end{description}
+
+Each of these steps will be detailed in the following. 
+
+\subsection*{Event inspection}
+
+The first thing to do, is to inspect the event for triggers.  A number
+of trigger bits, like \INEL{}, \INELONE{}, \NSD{}, and so on is then
+propagated to the \AOD{} output.  
+
+Next, the number of \emph{tracklets} reconstructed in the Silicon
+Pixel Detector (\SPD{}) compared to a threshold.  If the number of
+track--lets falls belows this threshold, the event is consider a
+low--flux event.   
+
+Just after the sharing filter (described below) but before any more
+processing, the vertex information is queried.  If there is no vertex
+information, or if the vertex $z$ coordinate is outside the
+pre--defined range, then no further processing takes place. 
+
+\subsection*{Sharing filter}
+
+The \FMD{} \ESD{} object contains the scaled energy deposited $\Delta
+E/\Delta E_{mip}$ for each of the 51,200 strips.  The \FMD{} is
+organised in 3 \emph{sub--detectors} \FMD{1}, \FMD{2}, and \FMD{3}, each
+consisting of 1 (\FMD{1}) or 2 (\FMD{2} and \FMD{3}) \emph{rings}.
+The rings fall into two types: \emph{Inner} or \emph{outer} rings.
+Each ring is in turn  azimuthal divided into \emph{sectors}, and each
+sector is radially divided into \emph{strips}.  How many sectors,
+strips, as well as the $\eta$ coverage is given in
+\tablename~\ref{tab:fmd:overview}. 
+
+\begin{table}[htbp]
+  \begin{center}
+    \caption{Physical dimensions of Si segments and strips.}
+    \label{tab:fmd:overview}
+    \vglue0.2cm
+    \begin{tabular}{|c|cc|cr@{\space--\space}l|r@{\space--\space}l|}
+      \hline
+      \textbf{Sub--detector/} &
+      \textbf{Azimuthal}&
+      \textbf{Radial} &
+      $z$ &
+      \multicolumn{2}{c|}{\textbf{$r$}} &
+      \multicolumn{2}{c|}{\textbf{$\eta$}} \\
+      \textbf{Ring}& 
+      \textbf{sectors} &
+      \textbf{strips} & 
+      \textbf{[cm]} &
+      \multicolumn{2}{c|}{\textbf{range [cm]}} &
+      \multicolumn{2}{c|}{\textbf{coverage}} \\
+      \hline
+      FMD1i & 20& 512& 320  &  4.2& 17.2& 3.68&  5.03\\
+      FMD2i & 20& 512&  83.4&  4.2& 17.2& 2.28&  3.68\\
+      FMD2o & 40& 256&  75.2& 15.4& 28.4& 1.70&  2.29\\
+      FMD3i & 20& 512& -75.2&  4.2& 17.2&-2.29& -1.70\\
+      FMD3o & 40& 256& -83.4& 15.4& 28.4&-3.40& -2.01\\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+A particle originating from the vertex can, because of it's incident
+angle on the \FMD{} sensors traverse more than one strip.  That means
+that the energy loss of the particle is distributed over 1 or more
+strips.  The signal in each strip should therefore possibly merged
+with it's neighbor strip signals to properly reconstruct the energy
+loss of a single particle.  
+
+The effect is most pronounced in low--flux events, like proton--proton
+collisions or peripheral Pb--Pb collisions, while in high--flux events
+the hit density is so high that most likely each and every strip will
+be hit and the effect cancel out on average. 
+
+Since the particles travel more or less in straight lines toward the
+\FMD{} sensors, the sharing effect predominantly in the $r$ or
+\emph{strip} direction.  Only neighboring strips in a given sector is
+therefor investigated for this effect.  
+
+Algorithm~\ref{algo:sharing} is applied to the signals in a given
+sector.
+
+\begin{algorithm}[htpb]
+  \SetKwData{usedThis}{current strip used}
+  \SetKwData{usedPrev}{previous strip used}
+  \SetKwData{Output}{output}
+  \SetKwData{Input}{input}
+  \SetKwData{Nstr}{\# strips}
+  \SetKwData{Signal}{current}
+  \SetKwData{Eta}{$\eta$}
+  \SetKwData{prevE}{previous strip signal} 
+  \SetKwData{nextE}{next strip signal} 
+  \SetKwData{lowFlux}{low flux flag} 
+  \SetKwFunction{SignalInStrip}{SignalInStrip}
+  \SetKwFunction{MultiplicityOfStrip}{MultiplicityOfStrip}
+  \usedThis $\leftarrow$ false\;
+  \usedPrev $\leftarrow$ false\;
+  \For{$t\leftarrow1$ \KwTo \Nstr}{ 
+    \Output${}_t\leftarrow 0$\;
+    \Signal $\leftarrow$ \SignalInStrip($t$)\;
+
+    \uIf{\Signal is not valid}{ 
+      \Output${}_t \leftarrow$ invalid\;
+    }
+    \uElseIf{\Signal is 0}{ 
+      \Output${}_t \leftarrow$ 0\;
+    }
+    \Else{
+      \Eta$\leftarrow$ $\eta$ of \Input${}_t$\;
+      \prevE$\leftarrow$ 0\;
+      \nextE$\leftarrow$ 0\;
+      \lIf{$t \ne 1$}{ 
+        \prevE$\leftarrow$ \SignalInStrip($t-1$)\;
+      }
+      \lIf{$t \ne $\Nstr}{ 
+        \nextE$\leftarrow$ \SignalInStrip($t+1$)\;
+      }
+      \Output${}_t\leftarrow$
+      \MultiplicityOfStrip(\Signal,\Eta,\prevE,\nextE,\\
+      \hfill\lowFlux,$t$,\usedPrev,\usedThis)\;
+    }   
+  }
+  \caption{Sharing correction}
+  \label{algo:sharing}
+\end{algorithm}
+
+Here the function \FuncSty{SignalInStrip}($t$) returns the properly
+path--length corrected signal in strip $t$.  The function
+\FuncSty{MultiplicityInStrip} is where the real processing takes
+place (see page \pageref{func:MultiplicityInStrip}). 
+
+\begin{function}[htbp]
+  \caption{MultiplicityInStrip(\DataSty{current},$\eta$,\DataSty{previous},\DataSty{next},\DataSty{low
+      flux flag},\DataSty{previous signal used},\DataSty{this signal
+      used})} 
+  \label{func:MultiplicityInStrip}
+  \SetKwData{Current}{current} 
+  \SetKwData{Next}{next} 
+  \SetKwData{Previous}{previous} 
+  \SetKwData{lowFlux}{low flux flag}
+  \SetKwData{usedPrev}{previous signal used}
+  \SetKwData{usedThis}{this signal used}
+  \SetKwData{lowCut}{low cut}
+  \SetKwData{total}{Total}
+  \SetKwData{highCut}{high cut}
+  \SetKwData{Eta}{$\eta$}  
+  \SetKwFunction{GetHighCut}{GetHighCut}
+  \If{\Current is very large or \Current $<$ \lowCut} {
+    \usedThis $\leftarrow$ false\;
+    \usedPrev $\leftarrow$ false\;
+    \Return{0}
+  }
+  \If{\usedThis}{ 
+    \usedThis $\leftarrow$ false\;
+    \usedPrev $\leftarrow$ true\;
+    \Return{0}
+  }
+  \highCut $\leftarrow$ \GetHighCut($t$,\Eta)\;
+  \If{\Current $<$ \Next and \Next $>$ \highCut and \lowFlux set}{ 
+    \usedThis $\leftarrow$ false\;
+    \usedPrev $\leftarrow$ false\;
+    \Return{0}
+  }
+  \total $\leftarrow$ \Current\;
+  \lIf{\lowCut $<$ \Previous $<$ \highCut and not \usedPrev}{ 
+    \total $\leftarrow$ \total + \Previous\;
+  }
+  \If{\lowCut $<$ \Next $<$ \highCut}{ 
+    \total $\leftarrow$ \total + \Next\;  
+    \usedThis $\leftarrow$ true\;
+  }
+  \eIf{\total $>$ 0}{ 
+    \usedPrev $\leftarrow$ true\;
+    \Return{\total}
+  }{
+    \usedPrev $\leftarrow$ false\;
+    \usedThis $\leftarrow$ false\;
+    \Return{0}
+  }
+\end{function}
+Here, the function \FuncSty{GetHighCut} evaluates a Landau
+distribution fitted to the energy spectrum in the $\eta$ bin
+specified.  It returns 
+$$
+\Delta_{mp} - 2 w
+$$
+where $\Delta_{mp}$ is the most probable energy loss, and $w$ is the
+width of the Landau distribution.  
+
+The \KwSty{if} in line 5, says that if the previous strip was merged
+with current one, and the signal of the current strip was added to
+that, then we the current signal is set to 0, and we mark it as used
+for the next iteration (\DataSty{previous signal
+  used}$\leftarrow$true). 
+
+The \KwSty{if} in line 10 checks if the current signal is smaller than
+the next signal, the next signal is larger than the upper cut defined
+above, and if we have a low--flux event.  If that condition is met,
+then the current signal is the smaller of two possible candidates for
+merging, and it should be merged into the next signal.  Note, that
+this \emph{only} applies in low--flux events.  
+
+On line 15, we test if the previous signal lies between our low and
+high cuts, and if it has not been marked as being used.  If so, we add
+it to our current signal.  
+
+The next \KwSty{if} on line 16 checks if the next signal is within our
+cut bounds.  If so, we add that signal to the current signal and mark
+it as used for the next iteration (\DataSty{this signal
+  used}$\leftarrow$true).  It will then be zero'ed on the next
+iteration by the condition on line 6.
+
+Finally, if our signal is still larger than 0, we return the signal
+and mark this signal as used (\DataSty{previous signal
+  used}$\leftarrow$true) so that it will not be used in the next
+iteration. Otherwise, we mark the current signal and the next signal
+as unused and return a 0. 
+
+
+\subsection*{Density calculator}
+
+The density calculator loops over all the strip signals and calculates
+the inclusive (primary + secondary) charged particle density in
+pre-defined $(\eta,\varphi)$ bins.  
+
+If the event is classified as a low--flux event, then the number of
+charged particles in a given by a simple threshold: 
+\begin{align}
+  N_{ch,t} &= \left\{
+    \begin{array}{cl}
+      0 & \Delta_t < \text{low cut}\\ 
+      1 & \Delta_t \ge \text{low cut}\\ 
+    \end{array}\right.\quad,
+\end{align}
+where $t$ is the strip identifier, $\Delta_t$ is the scaled energy
+deposition in that strip, and 'low cut' is a predefined cut.  For high
+flux events, the number charged particles in a strip is calculated
+using multiple Landau distributions fitted to the energy loss spectrum
+at a given $\eta$ value.  
+\begin{align}
+  \Delta_{2,mp} &= 2 \Delta_{mp}+ 2 w \log(2)\nonumber\\
+  \Delta_{3,mp} &= 3 \Delta_{mp}+ 3 w \log(2)\nonumber\\
+  N_{ch,t} &= \frac{\landau{\Delta_t,\Delta_{mp},w}+
+    2\,\alpha\,\landau{\Delta_t,\Delta_{2,mp},2w} + 
+    3\,\beta\,\landau{\Delta_t,\Delta_{3,mp},3w}}{% 
+    \landau{\Delta_t,\Delta_{mp},w}+
+    \alpha\,\landau{\Delta_t,\Delta_{2,mp},2w} + 
+    \beta\,\landau{\Delta_t,\Delta_{3,mp},3w}}\quad,
+\end{align}
+where $\landau{x,\psi,W}$ is the evaluation of the Landau distribution
+with most probable value $\psi$ and width $W$ at $x$, $w$ is the width
+of the first MIP peak, $\Delta_{mp}$ the most probable value of
+the first MIP peak, and $\alpha$ and
+$\beta$ are the relative strength of the second and third MIP peak in
+the fitted energy loss spectrum. 
+
+But before the signal $N_{ch,t}$ can be added to the $(\eta,\varphi)$
+bin in one of the 5 per--ring histograms, it needs to be corrected for
+the $\varphi$ acceptance of the strip, as well as a correction for
+double hits in low--flux events.   
+
+The acceptance correction is only applicable where the strip length
+does not cover the full sector.  This is the case for the outer strips
+in both the inner and outer type rings.  The acceptance correction is
+then simply 
+\begin{align}
+  \label{eq:acc_corr}
+  a_t &= \frac{l_t}{\Delta\varphi}\quad
+\end{align}
+where $l_t$ is the strip length in radians at constant $r$, and
+$\Delta\varphi$ is $2\pi$ divided by the number of sectors in the
+ring (20 for inner type rings, and 40 for outer type rings). 
+
+Even in low--flux events it is possible that more than one particle
+hits a strip.  However, for low--flux events, it is not possible to
+reconstruct the 3\textsuperscript{rd} nor even the
+2\textsuperscript{nd} MIP peak in the energy loss spectrum.
+Therefore, the strip signal needs to be corrected to the average
+number of particle impinging on a strip at a given $\eta$.  
+\begin{align}
+  d_t &= \left\{\begin{array}{cl} \langle n_t\rangle & \text{low
+        flux}\\
+      1 & \text{high flux}
+    \end{array}\right.
+\end{align}
+
+The final $(\eta,\varphi)$ content of the 5 output vertex dependent,
+per--ring histograms of the inclusive charged particle density is then
+given by
+\begin{align}
+  \dndetadphi[incl,r,v,i(\eta,\varphi)] &= \sum_t^{t\in(\eta,\varphi)}
+  N_{ch,t}\,a_t\,d_t
+\end{align}
+where $t$ runs over the strips in the $(\eta,\varphi)$ bin. 
+
+\subsection*{Corrections}
+
+The corrections code receives the five vertex dependent,
+per--ring histograms of the inclusive charged particle density
+$\dndetadphi[incl,r,v,i]$ from the density calculator and applies
+three corrections 
+\begin{description}
+\item[Secondary correction:] This is a 2 dimensional histogram
+  generated from simulations of the ratio of primary particles to the
+  total number of particles that fall within an $(\eta,\varphi)$ bin 
+  $$
+  s(\eta,\varphi) =
+  \frac{N_{ch,\text{primary}}(\eta,\varphi)}{N_{ch}(\eta,\varphi)}\quad.
+  $$
+  The $\eta$ and $\varphi$ of $N_{ch,primary}(\eta,\varphi)$ is given
+  by summing over the charged particles labelled as primaries \emph{at
+    the time of the collision} as defined in the simulation code.
+  That is, it is the number of primaries within the bin at the
+  collision point --- not at the \FMD{}.  $N_{ch}(\eta,\varphi)$ is
+  evaluated as the sum of all charged particle that hit the FMD in the
+  given $(\eta,\varphi)$ bin.
+\item[Event selection efficiency:]
+\item[Sharing correction efficiency:] 
+\end{description}
+
+The 5 output vertex dependent, per--ring histograms of the primary
+charged particle density is then given by
+\begin{align}
+  \dndetadphi[r,v,i(\eta,\varphi)] &= 
+  s(\eta,\varphi)\,e(\eta,\varphi)\,m(\eta)\dndetadphi[incl,r,v,i(\eta,\varphi)]
+\end{align}
+
+\subsection*{Histogram collector}
+
+The histogram collector collects the information from the 5 vertex
+dependent, per--ring histograms of the primary charged particle
+density $\dndetadphi[r,v,i]$ into a single vertex dependent histogram
+of the charged particle density $\dndetadphi[v,i]$.  
+
+To do this, it first calculates, for each vertex bin, the $\eta$ bin
+range to use for each ring.  It investigates the secondary correction
+maps $s(\eta,\varphi)$ to find the edges of the map, and then applies
+a safety margin of a few bins, to ensure that the data selected does
+not have too large corrections associated with it.  
+
+It then loops over the bins in the defined $\eta$ range and sums the
+contributions from each of the 5 histograms.   If the $\eta$ ranges of
+two rings overlap, then the collector calculates the average and adds
+the errors in quadrature. 
+
+The output vertex dependent histogram of the primary
+charged particle density is then given by
+\begin{align}
+  \dndetadphi[v,i(\eta,\varphi)] &=
+  \frac{1}{N_{r\in(\eta,\varphi)}}\sum_{r}^{r\in(\eta,\varphi)}  
+  \dndetadphi[r,v,i(\eta,\varphi)]\\
+  \delta\left[\dndetadphi[v,i(\eta,\varphi)]\right] &=
+  \frac{1}{N_{r\in(\eta,\varphi)}}\sqrt{\sum_{r}^{r\in(\eta,\varphi)}   
+    \delta\left[\dndetadphi[r,v,i(\eta,\varphi)]\right]^2}\\
+  \quad,
+\end{align}
+where $N_{r\in(\eta,\varphi)}$ is the number of overlapping histograms
+in the given $(\eta,\varphi)$ bin. 
+
+
+\section*{Building the final $\dndeta$}
+
+
+
+\end{document}
