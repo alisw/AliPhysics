@@ -584,10 +584,13 @@ void AliAnalysisTaskLeadingTrackUE::FillReducedEfficiency(Int_t eventId, AliUEHi
   if (!fkTrackingEfficiency)
     return;
     
-  TObjArray* particleList = (TObjArray*) ltRECO->Clone();
+  TObjArray* particleList =  new TObjArray(*ltRECO);
   AliVParticle* leading = (AliVParticle*) particleList->At(0);
   if (!leading)
+  {
+    delete particleList;
     return;
+  }
   
   // remove particles depending on tracking efficiency
   Int_t count = (twoStep) ? 2 : 1;
