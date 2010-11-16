@@ -33,7 +33,7 @@
 // p-p collisions
 ////////////////////////////////////////////////////////////////
 
-const Int_t    AliITSVertexer3D::fgkMaxNumOfClDefault = 500;
+const Int_t    AliITSVertexer3D::fgkMaxNumOfClDefault = 1000;
 
 ClassImp(AliITSVertexer3D)
 

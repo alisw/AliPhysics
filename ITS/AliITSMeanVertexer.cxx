@@ -16,8 +16,8 @@
 #include "AliITSVertexer3DTapan.h"
 #include "AliESDVertex.h"
 #include "AliMeanVertex.h"
-#include "AliMultiplicity.h"
 
+const Int_t AliITSMeanVertexer::fgkMaxNumOfEvents = 10000;
 ClassImp(AliITSMeanVertexer)
 
 ///////////////////////////////////////////////////////////////////////
@@ -44,26 +44,22 @@ fDetTypeRec(NULL),
 fVertexXY(NULL),
 fVertexZ(NULL),
 fNoEventsContr(0),
-fTotTracklets(0.),
-fAverTracklets(0.),
-fTotTrackletsSq(0.),
-fSigmaOnAverTracks(0.), 
+fTotContributors(0.),
+fAverContributors(0.), 
 fFilterOnContributors(0),
-fFilterOnTracklets(0),
 fMode(mode),
-fVertexer(NULL)
+fVertexer(NULL),
+fAccEvents(fgkMaxNumOfEvents), 
+fVertArray("AliESDVertex",fgkMaxNumOfEvents),
+fClu0(NULL),
+fIndex(0),
+fErrXCut(0.),
+fRCut(0.),
+fLowSPD0(0),
+fHighSPD0(0)
 {
   // Default Constructor
-  for(Int_t i=0;i<3;i++){
-    fWeighPosSum[i] = 0.;
-    fWeighSigSum[i] = 0.;
-    fAverPosSum[i] = 0.;
-    fWeighPos[i] = 0.;
-    fWeighSig[i] = 0.;
-    fAverPos[i] = 0.;
-    for(Int_t j=0; j<3;j++)fAverPosSq[i][j] = 0.;
-    for(Int_t j=0; j<3;j++)fAverPosSqSum[i][j] = 0.;
-  }
+  Reset();
 
   // Histograms initialization
   const Float_t xLimit = 5.0, yLimit = 5.0, zLimit = 50.0;
@@ -77,8 +73,29 @@ fVertexer(NULL)
   fVertexZ  = new TH1F("VertexZ"," Longitudinal Vertex Profile",
 		       2*(Int_t)(zLimit/zDelta),-zLimit,zLimit);
   fVertexZ->SetXTitle("Z , cm");
+  fClu0 = new UInt_t [fgkMaxNumOfEvents];
+  for(Int_t i=0;i<fgkMaxNumOfEvents;i++)fClu0[i]=0;
+  fAccEvents.ResetAllBits(kTRUE);
 }
 
+//______________________________________________________________________
+void AliITSMeanVertexer::Reset(){
+  // Reset averages 
+  for(Int_t i=0;i<3;i++){
+    fWeighPosSum[i] = 0.;
+    fWeighSigSum[i] = 0.;
+    fAverPosSum[i] = 0.;
+    fWeighPos[i] = 0.;
+    fWeighSig[i] = 0.;
+    fAverPos[i] = 0.;
+    for(Int_t j=0; j<3;j++)fAverPosSq[i][j] = 0.;
+    for(Int_t j=0; j<3;j++)fAverPosSqSum[i][j] = 0.;
+    fNoEventsContr=0;
+    fTotContributors = 0.;
+    if(fVertexXY)fVertexXY->Reset();
+    if(fVertexZ)fVertexZ->Reset();
+  }
+}
 //______________________________________________________________________
 Bool_t AliITSMeanVertexer::Init() {
   // Initialize filters
@@ -101,7 +118,9 @@ Bool_t AliITSMeanVertexer::Init() {
 
   // Initialize filter values to their defaults
   SetFilterOnContributors();
-  SetFilterOnTracklets();
+  SetCutOnErrX();
+  SetCutOnR();
+  SetCutOnCls();
 
   // Instatiate vertexer
   if (!fMode) {
@@ -110,7 +129,13 @@ Bool_t AliITSMeanVertexer::Init() {
   else {
     fVertexer = new AliITSVertexer3D();
     fVertexer->SetDetTypeRec(fDetTypeRec);
-    fVertexer->SetComputeMultiplicity(kTRUE);
+    AliITSVertexer3D* alias = (AliITSVertexer3D*)fVertexer;
+    alias->SetWideFiducialRegion(40.,0.5);
+    alias->SetNarrowFiducialRegion(0.5,0.5);
+    alias->SetDeltaPhiCuts(0.5,0.025);
+    alias->SetDCACut(0.1);
+    alias->SetPileupAlgo(3);
+    fVertexer->SetComputeMultiplicity(kFALSE);
   }
   return kTRUE;
 }
@@ -136,16 +161,22 @@ Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader){
   fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree,"SPD");
 
   Bool_t vtxOK = kFALSE;
+  UInt_t nl1=0;
   AliESDVertex *vtx = fVertexer->FindVertexForCurrentEvent(clustersTree);
   if (!fMode) {
     if (TMath::Abs(vtx->GetChi2()) < 0.1) vtxOK = kTRUE;
   }
   else {
-    AliMultiplicity *mult = fVertexer->GetMultiplicity();
-    if(Filter(vtx,mult)) vtxOK = kTRUE;
+    AliITSRecPointContainer* rpcont= AliITSRecPointContainer::Instance();
+    nl1=rpcont->GetNClustersInLayerFast(1);
+    if(Filter(vtx,nl1)) vtxOK = kTRUE;
   }
   delete clustersTree;
-  if (vtxOK) AddToMean(vtx);
+  if (vtxOK && fMode){
+    new(fVertArray[fIndex])AliESDVertex(*vtx);
+    fClu0[fIndex]=nl1;
+    fIndex++;
+  }
   if (vtx) delete vtx;
 
   return vtxOK;
@@ -158,27 +189,29 @@ void AliITSMeanVertexer::WriteVertices(const char *filename){
   // in a file
   
   TFile fmv(filename,"update");
+  Bool_t itisOK = kFALSE;
+  if(ComputeMean(kFALSE)){
+    if(ComputeMean(kTRUE)){
+      Double_t cov[6];
+      cov[0] =  fAverPosSq[0][0];  // variance x
+      cov[1] =  fAverPosSq[0][1];  // cov xy
+      cov[2] =  fAverPosSq[1][1];  // variance y
+      cov[3] =  fAverPosSq[0][2];  // cov xz
+      cov[4] =  fAverPosSq[1][2];  // cov yz
+      cov[5] =  fAverPosSq[2][2];  // variance z
+      AliMeanVertex mv(fWeighPos,fWeighSig,cov,fNoEventsContr,0,0.,0.);
+      mv.SetTitle("Mean Vertex");
+      mv.SetName("MeanVertex");
+      // we have to add chi2 here
+      AliESDVertex vtx(fWeighPos,cov,0,TMath::Nint(fAverContributors),"MeanVertexPos");
 
-  if(ComputeMean()){
-    Double_t cov[6];
-    cov[0] =  fAverPosSq[0][0];  // variance x
-    cov[1] =  fAverPosSq[0][1];  // cov xy
-    cov[2] =  fAverPosSq[1][1];  // variance y
-    cov[3] =  fAverPosSq[0][2];  // cov xz
-    cov[4] =  fAverPosSq[1][2];  // cov yz
-    cov[5] =  fAverPosSq[2][2];  // variance z
-    AliMeanVertex mv(fWeighPos,fWeighSig,cov,fNoEventsContr,fTotTracklets,fAverTracklets,fSigmaOnAverTracks);
-    mv.SetTitle("Mean Vertex");
-    mv.SetName("MeanVertex");
-    AliDebug(1,Form("Contrib av. trk = %10.2f ",mv.GetAverageNumbOfTracklets()));
-    AliDebug(1,Form("Sigma %10.4f ",mv.GetSigmaOnAvNumbOfTracks()));
-    // we have to add chi2 here
-    AliESDVertex vtx(fWeighPos,cov,0,TMath::Nint(fAverTracklets),"MeanVertexPos");
-
-    mv.Write(mv.GetName(),TObject::kOverwrite);
-    vtx.Write(vtx.GetName(),TObject::kOverwrite);
+      mv.Write(mv.GetName(),TObject::kOverwrite);
+      vtx.Write(vtx.GetName(),TObject::kOverwrite);
+      itisOK = kTRUE;
+    }
   }
-  else {
+
+  if(!itisOK){
     AliError(Form("Evaluation of mean vertex not possible. Number of used events = %d",fNoEventsContr));
   }
 
@@ -188,19 +221,20 @@ void AliITSMeanVertexer::WriteVertices(const char *filename){
 }
 
 //______________________________________________________________________
-Bool_t AliITSMeanVertexer::Filter(AliESDVertex *vert,AliMultiplicity *mult){
+Bool_t AliITSMeanVertexer::Filter(AliESDVertex *vert,UInt_t mult){
   // Apply selection criteria to events
   Bool_t status = kFALSE;
-  if(!vert || !mult)return status;
+  if(!vert)return status;
   // Remove vertices reconstructed with vertexerZ
   if(strcmp(vert->GetName(),"SPDVertexZ") == 0) return status;
   Int_t ncontr = vert->GetNContributors();
-  Int_t ntracklets = mult->GetNumberOfTracklets();
   AliDebug(1,Form("Number of contributors = %d",ncontr));
-  AliDebug(1,Form("Number of tracklets = %d",ntracklets));
-  if(ncontr>fFilterOnContributors && ntracklets > fFilterOnTracklets) status = kTRUE;
-  fTotTracklets += ntracklets;
-  fTotTrackletsSq += ntracklets*ntracklets;
+  Double_t ex = vert->GetXRes();
+  if(ncontr>fFilterOnContributors && (mult>fLowSPD0 && mult<fHighSPD0) && 
+     ((ex*1000.)<fErrXCut)) {
+    status = kTRUE;
+    fAccEvents.SetBitNumber(fIndex);
+  }
   return status;
 }
 
@@ -224,6 +258,7 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
     }
   }
 
+  fTotContributors+=vert->GetNContributors();
   fVertexXY->Fill(currentPos[0],currentPos[1]);
   fVertexZ->Fill(currentPos[2]);
 
@@ -231,25 +266,43 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
 }
 
 //______________________________________________________________________
-Bool_t AliITSMeanVertexer::ComputeMean(){
-  // compute mean vertex
-  if(fNoEventsContr < 2) return kFALSE;
-  Double_t nevents = fNoEventsContr;
-  for(Int_t i=0;i<3;i++){
-    fWeighPos[i] = fWeighPosSum[i]/fWeighSigSum[i]; 
-    fWeighSig[i] = 1./TMath::Sqrt(fWeighSigSum[i]);
-    fAverPos[i] = fAverPosSum[i]/nevents;
-  } 
-  for(Int_t i=0;i<3;i++){
-    for(Int_t j=i;j<3;j++){
-      fAverPosSq[i][j] = fAverPosSqSum[i][j]/(nevents -1.);
-      fAverPosSq[i][j] -= nevents/(nevents -1.)*fAverPos[i]*fAverPos[j];
-    }
-  } 
+ Bool_t AliITSMeanVertexer::ComputeMean(Bool_t killOutliers){
+   // compute mean vertex
+   // called once with killOutliers = kFALSE and then again with
+   // killOutliers = kTRUE
+   Double_t wpos[3];
+   for(Int_t i=0;i<3;i++)wpos[i]=fWeighPos[i];
+   Reset();
+   for(Int_t i=0;i<fVertArray.GetEntries();i++){
+     AliESDVertex* vert = NULL;
 
-  fAverTracklets = fTotTracklets/nevents;
-  fSigmaOnAverTracks = fTotTrackletsSq/(nevents - 1);
-  fSigmaOnAverTracks -= nevents/(nevents -1.)*fAverTracklets*fAverTracklets;
-  fSigmaOnAverTracks = TMath::Sqrt(fSigmaOnAverTracks);
-  return kTRUE;
-}
+     // second pass
+     if(killOutliers && fAccEvents.TestBitNumber(i)){
+       vert=(AliESDVertex*)fVertArray[i];
+       Double_t dist=(vert->GetXv()-wpos[0])*(vert->GetXv()-wpos[0]);
+       dist+=(vert->GetYv()-wpos[1])*(vert->GetYv()-wpos[1]);
+       dist=sqrt(dist)*10.;    // distance in mm
+       if(dist>fRCut)fAccEvents.SetBitNumber(i,kFALSE);
+     }
+     
+     if(!fAccEvents.TestBitNumber(i))continue;
+     vert=(AliESDVertex*)fVertArray[i];
+     AddToMean(vert);
+   }
+   if(fNoEventsContr < 2) return kFALSE;
+   Double_t nevents = fNoEventsContr;
+   for(Int_t i=0;i<3;i++){
+     fWeighPos[i] = fWeighPosSum[i]/fWeighSigSum[i]; 
+     fWeighSig[i] = 1./TMath::Sqrt(fWeighSigSum[i]);
+     fAverPos[i] = fAverPosSum[i]/nevents;
+   } 
+   for(Int_t i=0;i<3;i++){
+     for(Int_t j=i;j<3;j++){
+       fAverPosSq[i][j] = fAverPosSqSum[i][j]/(nevents -1.);
+       fAverPosSq[i][j] -= nevents/(nevents -1.)*fAverPos[i]*fAverPos[j];
+     }
+   } 
+   
+   fAverContributors = fTotContributors/nevents;
+   return kTRUE;
+ }

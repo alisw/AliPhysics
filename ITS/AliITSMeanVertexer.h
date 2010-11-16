@@ -11,11 +11,12 @@
 /* $Id$ */
 
 #include <TObject.h>
+#include <TBits.h>
 
+class TClonesArray;
 class TH1F;
 class TH2F;
 class AliRawReader;
-class AliMultiplicity;
 class AliESDVertex;
 class AliITSDetTypeRec;
 class AliITSVertexer;
@@ -30,12 +31,20 @@ class AliITSMeanVertexer : public TObject {
     Bool_t Init();
  
     void   SetFilterOnContributors(Int_t nc=1){fFilterOnContributors = nc;}
-    void   SetFilterOnTracklets(Int_t nc=1){fFilterOnTracklets = nc;}
     Bool_t Reconstruct(AliRawReader *rawReader);
+    void SetCutOnErrX(Double_t cut=3.){fErrXCut = cut;}
+    void SetCutOnR(Double_t cut=0.2){fRCut = cut;}
+    void SetCutOnCls(UInt_t vmin=50, UInt_t vmax=4000){fLowSPD0=vmin; fHighSPD0=vmax;}
     void   WriteVertices(const char *filename);
 
     const TH2F*GetVertexXY() const { return fVertexXY; }
     const TH1F*GetVertexZ()  const { return fVertexZ;  }
+
+    // Methods used for debug purposes
+    Int_t GetArrayEntries() const {return fVertArray.GetEntries();}
+    const AliESDVertex* GetElementAt(Int_t i) const {return (AliESDVertex*)fVertArray[i];}
+    UInt_t GetSPD0cls(Int_t i) const {return fClu0[i];}
+    Bool_t IsGoodVertex(Int_t i) const {return (fAccEvents.TestBitNumber(i)); }
  
  private:
     // copy constructor (NO copy allowed)
@@ -43,10 +52,12 @@ class AliITSMeanVertexer : public TObject {
     // assignment operator (NO assignment allowed)
     AliITSMeanVertexer& operator=(const AliITSMeanVertexer& /* vtxr */);
 
-    Bool_t Filter(AliESDVertex *vert,AliMultiplicity *mult);
+    Bool_t Filter(AliESDVertex *vert,UInt_t mult);
     void   AddToMean(AliESDVertex *vert);
-    Bool_t ComputeMean();
+    Bool_t ComputeMean(Bool_t killOutliers);
+    void Reset();
 
+    static const Int_t fgkMaxNumOfEvents;   // max. number of events 
     AliITSDetTypeRec *fDetTypeRec; //! ITS reco class
     TH2F    *fVertexXY;        //! histogram with transverse vertex distribution (vertex diamond)
     TH1F    *fVertexZ;         //! histogram with longitudinal vertex distribution
@@ -60,15 +71,21 @@ class AliITSMeanVertexer : public TObject {
     Double_t fAverPos[3];        //! average position
     Double_t fAverPosSq[3][3];   //! average square position for covariance
     Int_t fNoEventsContr;        //! number of events used for mean vertex
-    Float_t fTotTracklets;       //! total number of tracklets used (integrated)
-    Float_t fAverTracklets;      //! average number of tracklets per event
-    Float_t fTotTrackletsSq;     //! total squared number of tracklets (transient)
-    Float_t fSigmaOnAverTracks;  //! RMS of fAverTracklets
+    Double_t fTotContributors;      //! Integrated number of contributors
+    Double_t fAverContributors;  //! Average number of contributors
     Int_t fFilterOnContributors; //! Numb. of contrib must be > fFilter...
-    Int_t fFilterOnTracklets;    //! Numb. of tracklets must be > fFilterOnTr...
     Bool_t fMode;                //! kTRUE for Vertexer3D; 
                                  //! kFALSE for VertexerTapan
     AliITSVertexer* fVertexer;   //! vertexer
+
+    TBits fAccEvents;           //! bit string: 1 for good events 0 for bad ones
+    TClonesArray fVertArray;     //! array of vertices to be averaged
+    UInt_t *fClu0;              //! number of clusters on SPD inner layer
+    Int_t fIndex;               //! current index on the arrays
+    Double_t fErrXCut;          //! cut on error on X (error*1000<fErrXCut)
+    Double_t fRCut;             //| cut on distance from first estimate (mm)
+    UInt_t fLowSPD0;            //! low SPD0 cls value to accept event
+    UInt_t fHighSPD0;           //! high SPD0 cls value to accept event
 
     ClassDef(AliITSMeanVertexer,0)
 };
