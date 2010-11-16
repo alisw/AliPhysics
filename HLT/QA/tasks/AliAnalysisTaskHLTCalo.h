@@ -40,7 +40,7 @@ public:
   virtual void NotifyRun();
 
   virtual void DoSpecificStuff(const AliESDEvent * /*evESD*/, const AliESDEvent * /*evHLTESD*/) {return;}
-  virtual void CreateSpecificStuff(const TList  * /*fOutputList*/) {return;}
+  virtual void CreateSpecificStuff(const TList * /*fOutputList*/) {return;}
   virtual Bool_t IsThisDetector(AliESDCaloCluster * cluster) { return cluster->IsPHOS(); }
   virtual Int_t GetClusters(AliESDEvent * event, TRefArray * clusters) { return event->GetPHOSClusters(clusters); }
  
@@ -52,6 +52,9 @@ private:
   AliESDRun *fESDRun;  //!Transient, pointer to esds
   TList *fOutputList;  //List of histograms to be stored
   
+  Bool_t fUseHLTTrigger; 
+  AliESDRun *fESDRun;  //!
+  TList *fOutputList;
   TH1F *fHistOfflResiduals; //histogram
   TH1F *fHistOnlResiduals; //histogram
   TH1F *fHistOfflDz; //histogram
