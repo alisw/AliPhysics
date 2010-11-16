@@ -549,7 +549,7 @@ void AliHMPIDv3::DefineOpticalProperties()
     aQeAll[i] =1;                     //QE for all other materials except for PC must be 1.  
     aAbsMet[i] =0.0001;                aIdxMet[i]=0;                                             //metal ref idx must be 0 in order to reflect photon
                                        aIdxPc [i]=1;           aQePc [i]=pQeF->Eval(eV);         //PC ref idx must be 1 in order to apply photon to QE conversion 
-    dQePc [i]=pQeF->Eval(eV);
+    dQePc [i]= pQeF->Eval(eV);
     dReflMet[i] = 0.;     // no reflection on the surface of the pc (?)                                       
   }
   gMC->SetCerenkov((*fIdtmed)[kC6F14]    , kNbins, aEckov, aAbsRad  , aQeAll , aIdxRad );    
@@ -561,10 +561,11 @@ void AliHMPIDv3::DefineOpticalProperties()
   gMC->SetCerenkov((*fIdtmed)[kAl]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
 
   // Define a skin surface for the photocatode to enable 'detection' in G4
-  gMC->DefineOpSurface("surfPc", kGlisur /*kUnified*/,kDielectric_metal,kPolished, 0.);
-  gMC->SetMaterialProperty("surfPc", "EFFICIENCY", kNbins, dEckov, dQePc);
-  gMC->SetMaterialProperty("surfPc", "REFLECTIVITY", kNbins, dEckov, dReflMet);
-  gMC->SetSkinSurface("skinPc", "Rpc", "surfPc");
+  for(Int_t i=0; i<7; i++){
+  gMC->DefineOpSurface(Form("surfPc%i",i), kGlisur /*kUnified*/,kDielectric_metal,kPolished, 0.);
+  gMC->SetMaterialProperty(Form("surfPc%i",i), "EFFICIENCY", kNbins, dEckov, dQePc);
+  gMC->SetMaterialProperty(Form("surfPc%i",i), "REFLECTIVITY", kNbins, dEckov, dReflMet);
+  gMC->SetSkinSurface(Form("skinPc%i",i), Form("Hpad%i",i),Form("surfPc%i",i)); }
 
   delete pRaAF;delete pWiAF;delete pGaAF; delete pRaIF; delete pWiIF; delete pGaIF; delete pQeF;
 }
