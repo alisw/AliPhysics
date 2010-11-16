@@ -285,16 +285,25 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   }
 
   // ***** Centrality Selection
-  fCentV0M = fHtempV0M->GetBinContent(fHtempV0M->FindBin((multV0A+multV0C)));
-  fCentFMD = fHtempFMD->GetBinContent(fHtempFMD->FindBin((multFMDA+multFMDC)));
-  fCentTRK = fHtempTRK->GetBinContent(fHtempTRK->FindBin(nTracks));
-  fCentTKL = fHtempTKL->GetBinContent(fHtempTKL->FindBin(nTracklets));
-  fCentCL0 = fHtempCL0->GetBinContent(fHtempCL0->FindBin(nClusters[0]));
-  fCentCL1 = fHtempCL1->GetBinContent(fHtempCL1->FindBin(nClusters[1]));
+  if(fHtempV0M)  fCentV0M = fHtempV0M->GetBinContent(fHtempV0M->FindBin((multV0A+multV0C)));
+  else     printf("  Centrality by V0 not available!!!\n\n");
+  if(fHtempFMD) fCentFMD = fHtempFMD->GetBinContent(fHtempFMD->FindBin((multFMDA+multFMDC)));
+  else     printf("  Centrality by FMD not available!!!\n\n");
+  if(fHtempTRK) fCentTRK = fHtempTRK->GetBinContent(fHtempTRK->FindBin(nTracks));
+  else     printf("  Centrality by TRK not available!!!\n\n");
+  if(fHtempTKL) fCentTKL = fHtempTKL->GetBinContent(fHtempTKL->FindBin(nTracklets));
+  else     printf("  Centrality by TKL not available!!!\n\n");
+  if(fHtempCL0) fCentCL0 = fHtempCL0->GetBinContent(fHtempCL0->FindBin(nClusters[0]));
+  else     printf("  Centrality by CL0 not available!!!\n\n");
+  if(fHtempCL1) fCentCL1 = fHtempCL1->GetBinContent(fHtempCL1->FindBin(nClusters[1]));
+  else     printf("  Centrality by CL1 not available!!!\n\n");
   
-  fCentV0MvsFMD = fHtempV0MvsFMD->GetBinContent(fHtempV0MvsFMD->FindBin((multV0A+multV0C)));
-  fCentTKLvsV0M = fHtempTKLvsV0M->GetBinContent(fHtempTKLvsV0M->FindBin(nTracklets));
-  fCentZEMvsZDC = fHtempZEMvsZDC->GetBinContent(fHtempZEMvsZDC->FindBin((zem1Energy+zem2Energy)/1000.));
+  if(fHtempV0MvsFMD) fCentV0MvsFMD = fHtempV0MvsFMD->GetBinContent(fHtempV0MvsFMD->FindBin((multV0A+multV0C)));
+  else     printf("  Centrality by V0 vs FMD not available!!!\n\n");
+  if(fHtempTKLvsV0M) fCentTKLvsV0M = fHtempTKLvsV0M->GetBinContent(fHtempTKLvsV0M->FindBin(nTracklets));
+  else     printf("  Centrality by V0 vs TKL not available!!!\n\n");
+  if(fHtempZEMvsZDC) fCentZEMvsZDC = fHtempZEMvsZDC->GetBinContent(fHtempZEMvsZDC->FindBin((zem1Energy+zem2Energy)/1000.));
+  else     printf("  Centrality by ZEM vs ZDC not available!!!\n\n");
   
   esdCent->SetCentralityV0M(fCentV0M);
   esdCent->SetCentralityFMD(fCentFMD);
