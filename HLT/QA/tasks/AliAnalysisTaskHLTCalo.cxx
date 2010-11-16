@@ -72,7 +72,7 @@ AliAnalysisTaskHLTCalo::AliAnalysisTaskHLTCalo() : AliAnalysisTaskSE()
   ,fGlobalHistoProdArrOff(NULL)
   ,fGlobalHistoProdArrOn(NULL)
   ,fClustersArray(NULL)
-  ,fName("")
+  ,fCaloName("")
 {
   // Constructor
 
@@ -115,7 +115,7 @@ AliAnalysisTaskSE(name)
   ,fGlobalHistoProdArrOff(NULL)
   ,fGlobalHistoProdArrOn(NULL)
   ,fClustersArray(NULL)
-  ,fName(name)
+  ,fCaloName(name)
 {
   // Constructor
 
@@ -172,13 +172,13 @@ void AliAnalysisTaskHLTCalo::UserCreateOutputObjects(){
   fGlobalHistoProdArrOn = new TObjArray();
 
   
-  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoClusterEnergy(Form("%s_OFF", fName.Data()))));
-  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoInvMass(Form("%s_OFF", fName.Data() ))));
-  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoMatchedTracks(Form("%s_OFF", fName.Data() ))));
+  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoClusterEnergy(Form("%s_OFF", fCaloName.Data()))));
+  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoInvMass(Form("%s_OFF", fCaloName.Data() ))));
+  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoMatchedTracks(Form("%s_OFF", fCaloName.Data() ))));
 
-  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoClusterEnergy(Form("%s_ON", fName.Data() ))));
-  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoInvMass(Form("%s_ON", fName.Data() ))));
-  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoMatchedTracks(Form("%s_ON", fName.Data() ))));
+  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoClusterEnergy(Form("%s_ON", fCaloName.Data() ))));
+  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoInvMass(Form("%s_ON", fCaloName.Data() ))));
+  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoMatchedTracks(Form("%s_ON", fCaloName.Data() ))));
 
   fClustersArray = new TRefArray();
 

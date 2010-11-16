@@ -39,8 +39,8 @@ public:
   //virtual Bool_t Notify();
   virtual void NotifyRun();
 
-  virtual void DoSpecificStuff(AliESDEvent* /*evESD*/, AliESDEvent* /*evHLTESD*/) {return;}
-  virtual void CreateSpecificStuff(TList* /*fOutputList*/) {return;}
+  virtual void DoSpecificStuff(const AliESDEvent * /*evESD*/, const AliESDEvent * /*evHLTESD*/) {return;}
+  virtual void CreateSpecificStuff(const TList  * /*fOutputList*/) {return;}
   virtual Bool_t IsThisDetector(AliESDCaloCluster * cluster) { return cluster->IsPHOS(); }
   virtual Int_t GetClusters(AliESDEvent * event, TRefArray * clusters) { return event->GetPHOSClusters(clusters); }
  
@@ -48,47 +48,46 @@ public:
   void SetUseHLTTriggerDecision(Bool_t useHLT = kFALSE) {fUseHLTTrigger = useHLT;}
 
 private:
+    Bool_t fUseHLTTrigger; 
+  AliESDRun *fESDRun;  //!Transient, pointer to esds
+  TList *fOutputList;  //List of histograms to be stored
   
-  Bool_t fUseHLTTrigger; 
-  AliESDRun *fESDRun;  //!
-  TList *fOutputList;
-  
-  TH1F *fHistOfflResiduals; 
-  TH1F *fHistOnlResiduals; 
-  TH1F *fHistOfflDz; 
-  TH1F *fHistOnlDz; 
-  TH1F *fHistOfflDxy; 
-  TH1F *fHistOnlDxy; 
+  TH1F *fHistOfflResiduals; //histogram
+  TH1F *fHistOnlResiduals; //histogram
+  TH1F *fHistOfflDz; //histogram
+  TH1F *fHistOnlDz; //histogram
+  TH1F *fHistOfflDxy; //histogram
+  TH1F *fHistOnlDxy; //histogram
 
 
-  TH1F *fHistOfflResidualsPos; 
-  TH1F *fHistOnlResidualsPos; 
-  TH1F *fHistOfflDzPos; 
-  TH1F *fHistOnlDzPos; 
-  TH1F *fHistOfflDxyPos; 
-  TH1F *fHistOnlDxyPos; 
+  TH1F *fHistOfflResidualsPos; //histogram
+  TH1F *fHistOnlResidualsPos; //histogram
+  TH1F *fHistOfflDzPos; //histogram
+  TH1F *fHistOnlDzPos; //histogram
+  TH1F *fHistOfflDxyPos; //histogram
+  TH1F *fHistOnlDxyPos; //histogram
 
 
-  TH1F *fHistOfflResidualsNeg; 
-  TH1F *fHistOnlResidualsNeg; 
-  TH1F *fHistOfflDzNeg; 
-  TH1F *fHistOnlDzNeg; 
-  TH1F *fHistOfflDxyNeg; 
-  TH1F *fHistOnlDxyNeg; 
+  TH1F *fHistOfflResidualsNeg; //histogram
+  TH1F *fHistOnlResidualsNeg; //histogram
+  TH1F *fHistOfflDzNeg; //histogram
+  TH1F *fHistOnlDzNeg; //histogram
+  TH1F *fHistOfflDxyNeg; //histogram
+  TH1F *fHistOnlDxyNeg; //histogram
 
-  TH2F * fHistNclvsNcl; 
-  TH2F * fHistTotEVsTotE;
+  TH2F * fHistNclvsNcl; //histogram
+  TH2F * fHistTotEVsTotE;//histogram
 
   
-  Int_t fNevt;
-  TObjArray *fTrgClsArray;
+  Int_t fNevt; //Number of events
+  TObjArray *fTrgClsArray; //Trigger cluster array
   
-  TObjArray * fGlobalHistoProdArrOff; //!transient 
-  TObjArray * fGlobalHistoProdArrOn; //!transient 
+  TObjArray * fGlobalHistoProdArrOff; //!transient array of histogram producer classes 
+  TObjArray * fGlobalHistoProdArrOn; //!transient array of histogram producer classes 
 
-  TRefArray * fClustersArray; //!transient
+  TRefArray * fClustersArray; //!transient Array to contain calo clusters
 
-  TString fName; //!transient
+  TString fCaloName; //!transient PHOS or EMCAL
 
   /** copy constructor */
   AliAnalysisTaskHLTCalo(const AliAnalysisTaskHLTCalo&); 
