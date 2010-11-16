@@ -31,6 +31,7 @@
 #include "AliESDVZERO.h"
 #include "AliESDtrack.h"
 #include "AliGenDPMjetEventHeader.h"
+#include "AliLog.h"
 
 // This is the task to do the FMD sharing or hit merging.
 // It reads the input ESDFMD data and posts an ESDFMD object to
@@ -617,8 +618,14 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   Float_t mergedEnergy = 0;
   //Float_t nParticles = 0;
   Float_t cutLow  = 0.3;//0.15;
+ 
+  Double_t mpv     = pars->GetMPV(det,ring,eta);
   
-  Float_t cutHigh = pars->GetMPV(det,ring,eta) - 2*pars->GetSigma(det,ring,eta);
+  Double_t w       = pars->GetSigma(det,ring,eta);
+  if (mpv > 100) 
+    AliError(Form("FMD%d%c, eta=%f, MPV=%f w=%f", det, ring, eta, mpv, w));
+ 
+  Float_t cutHigh = mpv - 2 * w;
 
   // if(ring == 'I')
   //  cutLow = 0.1;

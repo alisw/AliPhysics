@@ -313,16 +313,12 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
 	TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i));
 	fOutputList->Add(hMultTotal->Clone(Form("%s_orig", hMultTotal->GetName())));
 	if(fVtxEff) { 
-	  AliInfo(Form("scaling %s with vertex efficiency %f", 
-		       hMultTotal->GetName(), fVtxEff));
 	  hMultTotal->Scale(fVtxEff);
 	}
 	
 	TH2F* hMultTotalNSD = (TH2F*)fOutputList->FindObject(Form("dNdetaNSD_FMD%d%c_vtxbin%d",det,ringChar,i));
 	fOutputList->Add(hMultTotalNSD->Clone(Form("%s_orig", hMultTotalNSD->GetName())));
 	if(fVtxEffNSD) { 
-	  AliInfo(Form("scaling %s with vertex efficiency %f", 
-		       hMultTotalNSD->GetName(), fVtxEffNSD));
 	  hMultTotalNSD->Scale(fVtxEffNSD);
 	}
 	

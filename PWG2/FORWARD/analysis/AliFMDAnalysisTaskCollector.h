@@ -59,7 +59,7 @@ private:
   Bool_t        fFirstEvent;
   AliFMDAnaParameters* fParam;
 
-  ClassDef(AliFMDAnalysisTaskCollector, 0); // Analysis task for FMD analysis
+  ClassDef(AliFMDAnalysisTaskCollector, 1); // Analysis task for FMD analysis
 };
  
 #endif
