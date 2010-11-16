@@ -100,6 +100,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   TList *fHistList;             //! List of output histograms
   TH1F  *fNEventAll;            //! Event counter
   TH1F  *fNEventSel;            //! Event counter: Selected events for analysis
+  TH1F *fNEventReject;          //! Book keeping of reason of rejecting events
 
   TProfile*     fh1Xsec;                       //! pythia cross section and trials
   TH1F*         fh1Trials;                     //! trials which are added

@@ -124,10 +124,10 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    if(iFillCorrBkg)pwg4spec->SetBranchGen("");  
    else {
      pwg4spec->SetBranchGen(bGen); 
-     if(typeGen.Contains("JETSAOD"))     pwg4spec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
+     if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))     pwg4spec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
    }
    pwg4spec->SetBranchRec(bRec); 
-   if(typeRec.Contains("JETSAOD"))     pwg4spec->SetBranchRec(Form("%s%s",bRec,cAdd.Data())); 
+   if(typeRec.Contains("JETSAOD")&&!typeRec.Contains("MC"))     pwg4spec->SetBranchRec(Form("%s%s",bRec,cAdd.Data())); 
 
    if(bBkgName.Length()>0)pwg4spec->SetBranchBkg(bBkgName.Data());
 
