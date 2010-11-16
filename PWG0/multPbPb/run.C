@@ -56,24 +56,6 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   // physics selection
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   physicsSelectionTask = AddTaskPhysicsSelection(isMC,0);//FIXME
-  // FIXME!!
-  // if(!isMC) {
-  //   AliPhysicsSelection * physSel = physicsSelectionTask->GetPhysicsSelection();
-  //   //    physSel->AddCollisionTriggerClass("+CTRUE-B-NOPF-ALL");
-  //   physSel->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
-  //   physSel->AddCollisionTriggerClass("+CMBS1C-B-NOPF-ALL");
-  //   physSel->AddCollisionTriggerClass("+CMBS1A-B-NOPF-ALL");
-  //   physSel->AddBGTriggerClass("+CMBAC-C-NOPF-ALL");
-  //   physSel->AddBGTriggerClass("+CMBS1C-C-NOPF-ALL");
-  //   physSel->AddBGTriggerClass("+CMBS1A-C-NOPF-ALL");
-  //   physSel->AddBGTriggerClass("+CMBAC-A-NOPF-ALL");
-  //   physSel->AddBGTriggerClass("+CMBS1C-A-NOPF-ALL");
-  //   physSel->AddBGTriggerClass("+CMBS1A-A-NOPF-ALL");
-  //   physSel->AddBGTriggerClass("+CMBAC-E-NOPF-ALL");
-  //   physSel->AddBGTriggerClass("+CMBS1C-E-NOPF-ALL");
-  //   physSel->AddBGTriggerClass("+CMBS1A-E-NOPF-ALL");
-  //   //    physSel->AddBGTriggerClass       ("+C0SM1-E-NOPF-ALL");
-  // }
 
   // Centrality
   AliCentralitySelectionTask *taskCentr = new AliCentralitySelectionTask("CentralitySelection");
@@ -86,7 +68,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   
   taskCentr->SetPercentileFile (file1);
   taskCentr->SetPercentileFile2(file2);
-  //FIXME
+  //FIXME: include back centrality estimator
   //  mgr->AddTask(taskCentr);
   //  mgr->ConnectInput (taskCentr,0, mgr->GetCommonInputContainer());
 
@@ -95,24 +77,21 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   centrSelector->SetCentrTaskFiles(file1,file2); // for bookkeping only
   centrSelector->SetCentralityBin(centrBin);
   centrSelector->SetCentralityEstimator(centrEstimator);
-  // FIXME!!!
 
-  //centrSelector->SetIsMC(isMC,1500,2300);
-  cout << "SETTING" << endl;
   
   if(useOtherCentralityCut == 1){
-    cout << "SETTING MULT" << endl;
+    cout << "Setting centrality by MULT" << endl;
     centrSelector->SetUseMultRange();
     centrSelector->SetMultRange(trackMin,trackMax);
   }
   if(useOtherCentralityCut == 2){
-    cout << "SETTING V0" << endl;
+    cout << "Setting centrality by V0" << endl;
     
     centrSelector->SetUseV0Range();
     centrSelector->SetMultRange(trackMin,trackMax);
   }
   if(useOtherCentralityCut == 3){
-    cout << "SETTING SPD OUTER" << endl;    
+    cout << "Setting centrality by SPD outer" << endl;    
     centrSelector->SetUseSPDOuterRange();
     centrSelector->SetMultRange(trackMin,trackMax);
   }
@@ -135,6 +114,14 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   TString pathsuffix = "";
   // cuts->SetPtRange(0.15,0.2);// FIXME pt cut
   // const char * pathsuffix = "_pt_015_020_nofakes";
+
+  if (optionStr.Contains("DCA")) {
+    delete cuts;
+    cuts = AliESDtrackCuts::GetStandardITSPureSATrackCuts2009();
+    cout << ">>>> USING DCA cut" << endl;
+    cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+    pathsuffix="DCAcut";
+  }
 
   if (optionStr.Contains("ITSsa")) {
     delete cuts;
@@ -159,9 +146,10 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   
   // load my task
   gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
-  AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts, centrSelector); // kTRUE enables DCA cut
+  AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts, centrSelector); 
   task->SetIsMC(useMCKinematics);
   task->SetOfflineTrigger(AliVEvent::kMB);
+  if(optionStr.Contains("TPC")) task->SetTPCOnly();
   // if (isMC) {
   //   task->SetOfflineTrigger(AliVEvent::kMB);
   // } else {

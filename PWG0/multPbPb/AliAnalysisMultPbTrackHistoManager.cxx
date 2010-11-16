@@ -14,7 +14,7 @@ using namespace std;
 
 ClassImp(AliAnalysisMultPbTrackHistoManager)
 
-const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After physics Selection", "After centrality selection", "With Vertex" };
+const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After centrality selection",  "After physics Selection", "With Vertex" };
 const char * AliAnalysisMultPbTrackHistoManager::kHistoPtEtaVzNames[] = { "hGenPtEtaVz", "hRecPtEtaVz", "hRecPtEtaVzPrim", 
 									  "hRecPtEtaVzSecWeak", "hRecPtEtaVzSecMaterial", "hRecPtEtaVzFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoDCANames[]     = { "hGenDCA", "hRecDCA", "hRecDCAPrim", "hRecDCASecWeak","hRecDCASecMaterial", "hRecDCAFake"};
@@ -344,6 +344,10 @@ void AliAnalysisMultPbTrackHistoManager::ScaleHistos(Double_t nev, Option_t * op
   while ((h = (TH1*) iter.Next())) {
     if (!h->InheritsFrom("TH1")) {
       AliFatal (Form("%s does not inherits from TH1, cannot scale",h->GetName()));
+    }
+    if (h->InheritsFrom("TH1I")) {
+      AliInfo (Form("Not scaling integer histo %s",h->GetName()));
+      continue;
     }
     AliInfo(Form("Scaling %s, nev %2.2f", h->GetName(), nev));
     

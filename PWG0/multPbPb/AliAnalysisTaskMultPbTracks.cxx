@@ -26,7 +26,7 @@ ClassImp(AliAnalysisTaskMultPbTracks)
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 : AliAnalysisTaskSE("TaskMultPbTracks"),
-  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0)
+  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0)
 {
   // constructor
 
@@ -40,7 +40,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 }
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0)
+    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0)
 {
   //
   // Standard constructur which should be used
@@ -56,7 +56,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
 }
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMultPbTracks& obj) : 
-  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0)
+  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0)
 {
   //copy ctor
   fESD = obj.fESD ;
@@ -64,6 +64,8 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMu
   fTrackCuts  = obj.fTrackCuts;
   fTrackCutsNoDCA  = obj.fTrackCutsNoDCA;
   fCentrSelector = obj.fCentrSelector;
+  fIsMC = obj.fIsMC;
+  fIsTPCOnly = obj.fIsTPCOnly;
 
 }
 
@@ -207,7 +209,17 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   const AliESDVertex* vtxESD = fESD->GetPrimaryVertex();
   if(!vtxESD) return;
   // FIXME: leave the cuts here or find a better place?)
-  // Quality cut on vertexer Z, as suggested by Francesco Prino
+ 
+  // FIXME: implement these latest cuts, 
+// const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
+// if (vtxESD->GetNContributors()<1) return;
+// if (vtxESD->GetDispersion()>0.04) return;
+// if (vtxESD->GetZRes()>0.25) return;
+// const AliMultiplicity* multESD = esd->GetMultiplicity();
+// const AliESDVertex* vtxESDTPC = esd->GetPrimaryVertexTPC();
+// if(vtxESDTPC->GetNContributors()<1) return;
+// if(vtxESDTPC->GetNContributors()<(-10.+0.25*multESD->GetNumberOfITSClusters(0))) 
+ // Quality cut on vertexer Z, as suggested by Francesco Prino
   if(vtxESD->IsFromVertexerZ()) {
     if (vtxESD->GetNContributors() <= 0) return;
     if (vtxESD->GetDispersion() >= 0.04) return;
@@ -224,8 +236,9 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   Int_t acceptedTracks = 0;
 
   for (Int_t itrack = 0; itrack<ntracks; itrack++) {    
-    AliESDtrack * esdTrack = fESD->GetTrack(itrack);
-
+    AliESDtrack * esdTrack = fIsTPCOnly ? fTrackCuts->GetTPCOnlyTrack(fESD,itrack) : fESD->GetTrack(itrack);// FIXMEL TrackCuts or TrackCutsNoDCA for the TPC?
+    if (!esdTrack) continue;
+          
     // Fill DCA distibutions, without the DCA cut, Fill the other stuff, with all cuts!
     Bool_t accepted = fTrackCuts->AcceptTrack(esdTrack);
     Bool_t acceptedNoDCA = fTrackCutsNoDCA->AcceptTrack(esdTrack);

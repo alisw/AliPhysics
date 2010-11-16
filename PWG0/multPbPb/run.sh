@@ -29,6 +29,7 @@ vzMax=10
 etaMin=-0.5
 etaMax=0.5
 npart=381.188
+weakFactor=-1
 
 give_help() {
 
@@ -75,6 +76,7 @@ Available options:
   -o <option>                  Misc option [default=$option]
                                Available options: 
                                 - SAVE:     Move results to a different output folder*
+                                - DCA:      Use DCA cut with global tracks
                                 - ITSsa:    Use ITSsa tracks
                                 - TPC:      Use TPC only tracks
                                 - NOMCKINE: Skip MC kinematics (runs way faster)
@@ -93,6 +95,7 @@ Available options:
   -z <zmin,zmax>               Change vertex Z range [default = $vzMin,$vzMax]
   -a <etamin,etamax>           Change eta range [default = $etaMin,$etaMax]
   -p <npart>                   Number of participants, used only for dNdeta/npart [default=$npart]
+  -k <weakFrac>                Scale ration secondaries from strangeness/all rec by this factor [default=$weakFactor]
 ENDOFGUIDE
 
 }
@@ -126,6 +129,7 @@ while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:" opt; do
       ;;      
     k)
       ntrackletsTrigger=$OPTARG
+      weakFactor=$OPTARG
       ;;      
     s)
       runTriggerStudy=yes
@@ -210,5 +214,5 @@ fi
 
 if [ "$correct" = "yes" ]
     then
-    root $ropt correct.C+\(\"$dataDir\",\"$mcDir\",$vzMin,$vzMax,$etaMin,$etaMax,$npart\);
+    root $ropt correct.C+\(\"$dataDir\",\"$mcDir\",$vzMin,$vzMax,$etaMin,$etaMax,$npart,$weakFactor\);
 fi

@@ -28,6 +28,7 @@ void LoadData(TString dataFolder, TString correctionFolder);
 void SetStyle();
 void CheckSecondaries(Double_t & fracWeak, Double_t &fracMaterial);
 void CheckSanity(); 
+void CheckCorrections();
 void ShowAcceptanceInVzSlices() ;
 TH1D * GetRatioIntegratedFractions (TH1 * hNum, TH1 * hDenum) ;
 TH1D * GetCumulativeHisto (TH1 * h) ;
@@ -48,7 +49,7 @@ Float_t etaMax = 0.5;
 #define CORRECT_2D
 
 void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TString correctionFolder = "./output/LHC10g2a_130844_V0M_bin_10/", 
-	     Float_t zminl=-10, Float_t zmaxl=10, Float_t etaMinl = -0.5, Float_t etaMaxl=0.5, Float_t npart=381.3) {
+	     Float_t zminl=-10, Float_t zmaxl=10, Float_t etaMinl = -0.5, Float_t etaMaxl=0.5, Float_t npart=381.3, Float_t scaleWeakByHand = -1) {
 
   // Set vertex 
   zmin = zminl;
@@ -68,15 +69,18 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   CheckSanity();
 
   Double_t fractionWeak = 1, fractionMaterial=1; 
-  CheckSecondaries(fractionWeak, fractionMaterial);
+  //  CheckSecondaries(fractionWeak, fractionMaterial);
   cout << "Rescaling secondaries correction, weak: " << fractionWeak << ", material: " << fractionMaterial <<endl;
-  
-
+  if(scaleWeakByHand >= 0) {
+    fractionWeak = scaleWeakByHand;
+    cout << "Scaling Strangeness by hand (factor " << fractionWeak <<")" << endl;
+    
+  }
   // Some shorthands
-  // FIXME: Gen should be projected including overflow in z?
+
 #if defined CORRECT_1D
   TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec, etaMin,etaMax,zmin,zmax)->Clone("hDataPt");
-  TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         etaMin,etaMax,zmin,zmax); //FIXME: che si fa qui?
+  TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         etaMin,etaMax,zmin,zmax); 
   //zTH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         etaMin,etaMax,zmin,zmax);
   TH1D * hMCPtRec  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,         etaMin,etaMax,zmin,zmax);
   TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim,     etaMin,etaMax,zmin,zmax);
@@ -130,7 +134,6 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   // Compute efficiency and subtract secondaries and fakes after rescaling to data
   // PRIM_DATA = ALL_DATA - SEC_MC/ALL_MC*ALL_DATA - FAK_MC/ALL_MC*ALL_DATA
   // TRUE_DATA = PRIM_DATA * GEN_MC/PRIM_MC
-
 
   TH1D * hEffPt = (TH1D*) hMCPtPri->Clone("hEffPt");
   hEffPt->Divide(hMCPtPri,hMCPtGen,1,1,"B");
@@ -212,19 +215,19 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   hCorrected->Fit(f,"", "same");
   hCorrected->Fit(f,"IME", "same",0,2);
   cout << "dN/deta (function)  = " << f->Integral(0,100) << " +- " << f->IntegralError(0,100) << endl;
-  cout << "dN/deta (data>0.15) = " <<  hCorrected->Integral(3,-1,"width") << endl;//
+  cout << "dN/deta (data>0.15) = " <<  hCorrected->Integral(4,-1,"width") << endl;//
   cout << "dN/deta (func+data) = " << f->Integral(0,0.1) + hCorrected->Integral(3,-1,"width") << endl;//
   cout << "dN/deta (func 0.15+data) = " << f->Integral(0,0.15) + hCorrected->Integral(4,-1,"width") << endl;//
   cout << "Generated dN/deta (correction) = " << hMCPtGen->Integral("width") << endl;
   cout << "Generated dN/deta (correction, <0.13) = " << hMCPtGen->Integral(1,2,"width") << endl;
   cout << "-------" << endl;
+  cout << "Rescaling secondaries correction, weak: " << fractionWeak << ", material: " << fractionMaterial <<endl;
   Double_t errorData = 0;
-  Float_t dNdeta  =  (f->Integral(0,0.1) + hCorrected->IntegralAndError(3,-1,errorData, "width")) / (etaMax-etaMin);
+  Float_t dNdeta  =  (f->Integral(0,0.1) + hCorrected->IntegralAndError(1,-1,errorData, "width")) / (etaMax-etaMin);
   Float_t dNdetaE = TMath::Sqrt(f->IntegralError(0,0.1)*f->IntegralError(0,0.1) + errorData*errorData) / (etaMax-etaMin);
   cout << "dN/deta          " << dNdeta << " +- " << dNdetaE << endl;
   cout << "(dN/deta)/Npart  " << dNdeta/npart << " +- " << dNdetaE/npart << endl;
   
-  // FIXME: comment this out
   TH1D * hDataGen  = hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        etaMin,etaMax,zmin,zmax);
   cout << "Generated dN/deta (data) =       " << hDataGen->Integral("width") << endl;
   hDataGen->Draw("same");  
@@ -304,8 +307,8 @@ void CheckSanity() {
   // compares various distributions in data and in MC
   TCanvas * c1 = new TCanvas("cVz", "Vertex Z distribution");
   c1->cd();
-  TH1D * hData  = hManData->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
-  TH1D * hCorr  = hManCorr->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
+  TH1 * hData  = hManData->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
+  TH1 * hCorr  = hManCorr->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
   hData->SetLineColor  (kBlack);
   hData->SetMarkerColor(kBlack);
   hData->SetMarkerStyle(kFullCircle);
@@ -353,6 +356,46 @@ void CheckSanity() {
   hData->Draw("");
   hCorr->Draw("same");
   l->Draw();
+
+  TCanvas * c4 = new TCanvas("cStatistics", "cStats");
+  c4->cd();
+  hData  = hManData->GetHistoStats();
+  hCorr  = hManCorr->GetHistoStats();
+  hData->SetLineColor  (kBlack);
+  hData->SetMarkerColor(kBlack);
+  //  hData->SetMarkerStyle(kFullCircle);
+  hCorr->SetLineColor  (kRed);
+  hCorr->SetMarkerColor(kRed);
+  //  hCorr->SetMarkerStyle(kOpenSquare);
+  l = new TLegend(0.575503, 0.70979, 0.86745, 0.917832);
+  l->AddEntry(hData, "Data");
+  l->AddEntry(hCorr, "MC");
+  hData->Draw("");
+  hCorr->Draw("same");
+  l->Draw();
+
+
+}
+
+void CheckCorrections() {
+
+  TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec, etaMin,etaMax,zmin,zmax)->Clone("hDataPt");
+  TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         etaMin,etaMax,zmin,zmax);
+  TH1D * hMCPtRec  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,         etaMin,etaMax,zmin,zmax);
+  TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim,     etaMin,etaMax,zmin,zmax);
+  TH1D * hMCPtSeM  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat,   etaMin,etaMax,zmin,zmax);
+  TH1D * hMCPtSeW  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak,  etaMin,etaMax,zmin,zmax);
+  TH1D * hMCPtFak  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecFake,     etaMin,etaMax,zmin,zmax);
+
+  hMCPtSeM->Divide(hMCPtRec);
+  hMCPtSeW->Divide(hMCPtRec);
+  hMCPtPri->Divide(hMCPtGen);
+  TCanvas * c1 = new TCanvas("cSecondaries", "Secondaries");
+  hMCPtSeM->Draw();
+  hMCPtSeW->Draw("same");
+
+  TCanvas * c2 = new TCanvas("cEfficiency", "Efficiency");
+  hMCPtPri->Draw();
 
 }
 
@@ -463,10 +506,11 @@ void LoadData(TString dataFolder, TString correctionFolder){
   hManCorr = (AliAnalysisMultPbTrackHistoManager*) fCorr->Get("histoManager");
   AliESDtrackCuts * cutsData = (AliESDtrackCuts*) fData->Get("AliESDtrackCuts");
   AliESDtrackCuts * cutsCorr = (AliESDtrackCuts*) fCorr->Get("AliESDtrackCuts");
-  if (cutsData != cutsCorr) {
-    cout << "ERROR: MC and data do not have the same cuts" << endl;
-    // FIXME: exit here
-  }
+
+  // FIXME: implement operator= and Print in AliESDtrackCuts
+  // if (cutsData != cutsCorr) {
+  //   cout << "ERROR: MC and data do not have the same cuts" << endl;
+  //   // }
   cutsData->Print();
   hEvStatData = (TH2D*) fStatData->Get("fHistStatistics");
   hEvStatCorr = (TH2D*) fStatCorr->Get("fHistStatistics");
@@ -546,7 +590,7 @@ TF1 * GetLevy(Double_t temp, Double_t n, Double_t norm, const char * name) {
 
 TH1D * GetCumulativeHisto (TH1 * h) { 
   // Returns a cumulative histogram
-  // FIXME: put this method in a tools class
+  // TODO: put this method in a tools class
   TH1D * hInt = (TH1D*) h->Clone(TString(h->GetName())+"_Int");
   hInt->Reset();
   Float_t integral = h->Integral(-1,-1); // Consider under/over flow!
@@ -560,7 +604,7 @@ TH1D * GetCumulativeHisto (TH1 * h) {
 
 TH1D * GetRatioIntegratedFractions (TH1 * hNum, TH1 * hDenum) { 
   // Returns the the ratio of integrated histograms 
-  // FIXME: put this method in a tools class
+  // TODO: put this method in a tools class
   TH1D * hRatio = (TH1D*) hNum->Clone(TString(hNum->GetName())+hDenum->GetName()+"_RatioIntegrated");
   hRatio->Reset();
   Int_t nbin = hNum->GetNbinsX();
@@ -657,3 +701,4 @@ void PrintCanvas(TCanvas* c,const TString formats) {
     c->Print(name+ "."+element->GetString());
   }
 }
+
