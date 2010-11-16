@@ -433,6 +433,8 @@ TObjArray*  AliAnalyseLeadingTrackUE::SortRegions(const AliVParticle* leading, T
   TList *transverse2 = new TList();
   
   TObjArray *regionParticles = new TObjArray;
+  regionParticles->SetOwner(kTRUE);
+  
   regionParticles->AddLast(toward);
   regionParticles->AddLast(away);
   regionParticles->AddLast(transverse1);
@@ -502,6 +504,8 @@ Bool_t  AliAnalyseLeadingTrackUE::TriggerSelection(const TObject* obj)
   if( !obj->InheritsFrom("AliAODInputHandler") ) { // not needed for AOD input 
 	if (!(((AliInputEventHandler*)obj)->IsEventSelected()&AliVEvent::kMB))return kFALSE;
         }                                
+
+  // TODO for AOD input trigger bit needs to be checked too (is stored in the AOD)
 
   return kTRUE;
 
