@@ -13,23 +13,62 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// AliTPCROCVoltError3D class                                               //
-// The class calculates the space point distortions due to residual voltage //
-// errors on Read Out Chambers of the TPC in 3D.                            //
-//                                                                          //
-// The class allows "effective Omega Tau" corrections.                      // 
-//                                                                          //
-// NOTE: This class is capable of calculating z distortions due to          //
-//       misalignment and the vd dependency on the residual drift field     //
-//                                                                          //
-// date: 08/08/2010                                                         //
-// Authors: Jim Thomas, Stefan Rossegger                                    //
-//                                                                          //
-// Example usage :                                                          //
-//  AliTPCROCVoltError3D ROCerror;                                            //
-//////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2> AliTPCROCVoltError3D class   </h2>    
+//   The class calculates the space point distortions due to z offsets of the 
+//   ROCs via the residual voltage technique (Poisson relaxation) in 3D. 
+//   Since the GG (part of the ROCs) represents the closure of the FC in z direction,
+//   every misalignment in z produces not only dz distortions but also electrical 
+//   field inhomogeneities throughout the volume, which produces additional dr and rd$\phi$ distortions.
+//   <p>
+//   Each ROC can be misaligned (in z direction) in three ways. A general z0 offset, 
+//   an inclination along the x and an inclination along the y axis. The z-misalignment's
+//   can be set via the function SetROCData(TMatrixD *mat) for each single chamber (ROC). 
+//   The array size has to be (72,3) representing the 72 chambers according to the 
+//   offline numbering scheme (IROC: roc$<$36; OROC: roc$\geq$36) and the three misalignment's
+//   (see the source code for further details).
+//   <p>
+//   Internally, these z offsets (unit is cm)  are recalculated into residual voltage 
+//   equivalents in order to make use of the relaxation technique. 
+//   <p>
+//   One has two possibilities when calculating the $dz$ distortions. The resulting 
+//   distortions are purely due to the change of the drift velocity (along with the 
+//   change of the drift field) when the SetROCDisplacement is FALSE. <br>
+//   For this class, this is a rather unphysical setting and should be avoided. <br>
+//   When the flag is set to TRUE, the corresponding offset in z is added to the dz 
+//   calculation of the outer ROCs. <br>
+//   For the Alice TPC gas, both effects are of similar magnitude. This means, if the 
+//   drift length is sufficiently large, a z-offset of a chamber appears to have (approx.) 
+//   twice the magnitude when one looks at the actual dz distortions.
+//   <p>
+//   In addition, this class allows a correction regarding the different arrival times 
+//   of the electrons due to the geometrical difference of the inner and outer chambers.
+//   The impact was simulated via Garfield. If the flag is set via the 
+//   function SetElectronArrivalCorrection, the electron-arrival correction is added to the dz calculation.
+// End_Html
+//
+// Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",500,400); 
+//   AliTPCROCVoltError3D roc; 
+//   roc.SetElectronArrivalCorrection(kFALSE);  // Correction for electron arrival offset, IROC vs OROC
+//   roc.SetROCDisplacement(kTRUE);   // include the chamber offset in z when calculating the dz 
+//   roc.SetOmegaTauT1T2(0,1,1); // B=0
+//   roc.CreateHistoDZinXY(1.,300,300)->Draw("colz"); 
+//   return c2;
+//   } 
+// End_Macro
+//
+// Begin_Html
+//   <p>
+//   Date: 08/08/2010    <br>                                                 
+//   Authors: Jim Thomas, Stefan Rossegger                                
+// End_Html 
+// _________________________________________________________________
+
 
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"

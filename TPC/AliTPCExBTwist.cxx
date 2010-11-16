@@ -14,22 +14,10 @@
  **************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////
-//                                                                        //
 // AliTPCExBTwist class                                                   //
-// The class calculates the space point distortions due to a mismatch     //
-// of the E and B field axis (original code from STAR)                    //
-// The class allows "effective Omega Tau" corrections.                    // 
-//                                                                        //
-// date: 27/04/2010                                                       //
-// Authors: Jim Thomas, Magnus Mager, Stefan Rossegger                    //
-//                                                                        //
-// Example usage:                                                         //
-//  AliTPCExBTwist twist;                                                 //
-//  twist.SetOmegaTauT1T2(0.32,1.,1.); // values ideally from OCDB        //
-//  twist.SetXTwist(0.001);   // set twist in X direction (in rad)        //
-//  // plot dRPhi distortions ...                                         //
-//  twist.CreateHistoDRPhiinZR(1.,100,100)->Draw("surf2");                //
 ////////////////////////////////////////////////////////////////////////////
+
+
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"
 #include "AliTPCcalibDB.h"

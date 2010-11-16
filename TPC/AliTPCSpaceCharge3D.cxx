@@ -13,26 +13,55 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// AliTPCSpaceCharge3D class                                                //
-// The class calculates the space point distortions due to a space charge   //
-// effect ....                                                              //
-// Method of calculation:                                                   //
-// The analytical solution for the poisson problem in 3D (cylindrical coord)//
-// is used in form of look up tables. PieceOfCake (POC) voxel were pre-     //
-// calculated and can be sumed up (weighted) according to the what is needed// 
-//                                                                          //
-// The class allows "effective Omega Tau" corrections.                      // 
-//                                                                          //
-// NOTE: This class is not  capable of calculation z distortions due to     //
-//       drift velocity change in dependence of the electric field!!!       //
-//                                                                          //
-// date: 19/06/2010                                                         //
-// Authors: Stefan Rossegger                                                //
-//                                                                          //
-// Example usage:                                                           //
-//////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2>  AliTPCSpaceCharge3D class   </h2>    
+//   The class calculates the space point distortions due to an arbitrary space
+//   charge distribution in 3D. 
+//   <p>
+//   The method of calculation is based on the analytical solution for the Poisson 
+//   problem in 3D (cylindrical coordinates). The solution is used in form of 
+//   look up tables, where the pre calculated solutions for different voxel 
+//   positions are stored. These voxel solutions can be summed up according 
+//   to the weight of the position of the applied space charge distribution.
+//   Further details can be found in \cite[chap.5]{PhD-thesis_S.Rossegger}.
+//   <p>
+//   The class also allows a simple scaling of the resulting distortions
+//   via the function SetCorrectionFactor. This speeds up the calculation 
+//   time under the assumption, that the distortions scales linearly with the 
+//   magnitude of the space charge distribution $\rho(r,z)$ and the shape stays 
+//   the same at higher luminosities.
+//   <p>
+//   In contrast to the implementation in 2D (see the class AliTPCSpaceChargeabove), 
+//   the input charge distribution can be of arbitrary character. An example on how 
+//   to produce a corresponding charge distribution can be found in the function 
+//   WriteChargeDistributionToFile. In there, a $\rho(r,z) = (A-B\,z)/r^2$, 
+//   with slightly different magnitude on the A and C side (due to the muon absorber),
+//   is superpositioned with a few leaking wires at arbitrary positions. 
+// End_Html
+//
+// Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",500,400); 
+//   AliTPCSpaceCharge3D sc;
+//   sc.WriteChargeDistributionToFile("SC_zr2_GGleaks.root");
+//   sc.SetSCDataFileName("SC_zr2_GGleaks.root");
+//   sc.SetOmegaTauT1T2(0,1,1); // B=0
+//   sc.InitSpaceCharge3DDistortion();
+//   sc.CreateHistoDRinXY(15,300,300)->Draw("colz");
+//   return c2;
+//   } 
+// End_Macro
+//
+// Begin_Html
+//   <p>
+//   Date: 19/06/2010  <br>                                                       
+//   Authors: Stefan Rossegger                                                
+// End_Html 
+// _________________________________________________________________
+
 
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"

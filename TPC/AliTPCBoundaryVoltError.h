@@ -5,7 +5,6 @@
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////////////////////////////////
-//                                                                        //
 // AliTPCBoundaryVoltError class                                          //
 // date: 01/06/2010                                                       //
 // Authors: Jim Thomas, Stefan Rossegger                                  //

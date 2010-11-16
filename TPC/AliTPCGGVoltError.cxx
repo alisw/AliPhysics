@@ -14,24 +14,7 @@
  **************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////
-//                                                                        //
 // AliTPCGGVoltError class                                                //
-// The class calculates the electric field and space point distortions    //
-// due a Gating Grid (GG) Error voltage. It uses the exact calculation    //
-// technique based on bessel functions. (original code from STAR)         //
-// The class allows "effective Omega Tau" corrections.                    // 
-//                                                                        //
-// date: 27/04/2010                                                       //
-// Authors: Jim Thomas, Stefan Rossegger, Magnus Mager                    //
-//                                                                        //
-// Example usage:                                                         //
-//  AliTPCGGVoltError GGerror;                                            //
-//  GGerror.SetOmegaTauT1T2(0.32,1.,1.); // values ideally from OCDB      //
-//  GGerror.SetDeltaVGGA(50.);           // voltage offset A-side         //
-//  GGerror.SetDeltaVGGC(50.);           // voltage offset C-side         //
-//  GGerror.InitGGVoltErrorDistortion(); // initialization of the look up //
-//  // plot dRPhi distortions ...                                         //
-//  GGerror.CreateHistoDRPhiinZR(1.,100,100)->Draw("surf2");              //
 ////////////////////////////////////////////////////////////////////////////
 
 

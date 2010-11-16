@@ -5,9 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCROCVoltError3D class                                              //
-// date: 01/06/2010                                                       //
+// AliTPCROCVoltError3D class                                             //
 // Authors: Jim Thomas, Stefan Rossegger                                  //
 ////////////////////////////////////////////////////////////////////////////
 

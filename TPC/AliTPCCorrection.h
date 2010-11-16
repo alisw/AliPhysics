@@ -4,30 +4,59 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2>  AliTPCCorrection class   </h2>    
+//                                                                          
+//   This class provides a general framework to deal with space point         
+//   distortions. An correction class which inherits from here is for example 
+//   AliTPCExBBShape or AliTPCExBTwist                                        
+//   <p>                                                                        
+//   General functions are (for example):  <br>                                    
+//   CorrectPoint(x,roc) where x is the vector of inital positions in        
+//   cartesian coordinates and roc represents the Read Out chamber number    
+//   according to the offline naming convention. The vector x is overwritten 
+//   with the corrected coordinates.                                         
+//   <p>                                                                        
+//   An alternative usage would be CorrectPoint(x,roc,dx), which leaves the    
+//   vector x untouched, put returns the distortions via the vector dx      
+//   <p>
+//   Several plot functionalities (see example below), general solvers as well as simplified interpolation techniques are implemented.
+//   <p>                                                                       
+//   The class allows "effective Omega Tau" corrections to be shifted to the 
+//   single distortion classes.                                              
+//   <p>                                                                      
+//   Note: This class is normally used via the class AliTPCComposedCorrection
+// End_Html
+//
+// Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",800,1200);  c2->Divide(2,3);
+//   AliTPCROCVoltError3D roc; // EXAMPLE PLOTS - SEE BELOW
+//   roc.SetOmegaTauT1T2(0,1,1); // B=0
+//   Float_t z0 = 1; // at +1 cm -> A side
+//   c2->cd(1); roc.CreateHistoDRinXY(1.,300,300)->Draw("cont4z"); 
+//   c2->cd(3);roc.CreateHistoDRPhiinXY(1.,300,300)->Draw("cont4z"); 
+//   c2->cd(5);roc.CreateHistoDZinXY(1.,300,300)->Draw("cont4z"); 
+//   Float_t phi0=0.5;
+//   c2->cd(2);roc.CreateHistoDRinZR(phi0)->Draw("surf2"); 
+//   c2->cd(4);roc.CreateHistoDRPhiinZR(phi0)->Draw("surf2"); 
+//   c2->cd(6);roc.CreateHistoDZinZR(phi0)->Draw("surf2"); 
+//   return c2;
+//   } 
+// End_Macro
+//
+// Begin_Html
+//   <p>
+//   Date: 27/04/2010  <br>
+//   Authors: Magnus Mager, Stefan Rossegger, Jim Thomas                     
+// End_Html 
+// _________________________________________________________________
+
 ////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
 // AliTPCCorrection class                                                     //
-//                                                                            //
-// This class provides a general framework to deal with space point           //
-// distortions. An correction class which inherits from here is for example   //
-// AliTPCExBBShape or AliTPCExBTwist                                          //
-//                                                                            //
-// General functions are (for example):                                       //
-//   CorrectPoint(x,roc) where x is the vector of inital positions in         //
-//   cartesian coordinates and roc represents the Read Out chamber number     //
-//   according to the offline naming convention. The vector x is overwritten  //
-//   with the corrected coordinates.                                          //
-//                                                                            //
-// An alternative usage would be CorrectPoint(x,roc,dx), which leaves the     //
-//   vector x untouched, put returns the distortions via the vector dx        //
-//                                                                            //
-// The class allows "effective Omega Tau" corrections to be shifted to the    //
-// single distortion classes.                                                 //
-//                                                                            //
-// Note: This class is normally used via the class AliTPCComposedCorrection   //
-//                                                                            //
-// date: 27/04/2010                                                           //
-// Authors: Magnus Mager, Stefan Rossegger, Jim Thomas                        //
 ////////////////////////////////////////////////////////////////////////////////
 
 

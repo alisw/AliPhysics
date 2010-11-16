@@ -13,31 +13,74 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliTPCCorrection class                                                     //
-//                                                                            //
-// This class provides a general framework to deal with space point           //
-// distortions. An correction class which inherits from here is for example   //
-// AliTPCExBBShape or AliTPCExBTwist                                          //
-//                                                                            //
-// General functions are (for example):                                       //
-//   CorrectPoint(x,roc) where x is the vector of inital positions in         //
-//   cartesian coordinates and roc represents the Read Out chamber number     //
-//   according to the offline naming convention. The vector x is overwritten  //
-//   with the corrected coordinates.                                          //
-//                                                                            //
-// An alternative usage would be CorrectPoint(x,roc,dx), which leaves the     //
-//   vector x untouched, put returns the distortions via the vector dx        //
-//                                                                            //
-// The class allows "effective Omega Tau" corrections to be shifted to the    //
-// single distortion classes.                                                 //
-//                                                                            //
-// Note: This class is normally used via the class AliTPCComposedCorrection   //
-//                                                                            //
-// date: 27/04/2010                                                           //
-// Authors: Magnus Mager, Stefan Rossegger, Jim Thomas                        //
-////////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2>  AliTPCCorrection class   </h2>    
+//  
+//   The AliTPCCorrection class provides a general framework to deal with space point distortions. 
+//   An correction class which inherits from here is for example AliTPCExBBShape or AliTPCExBTwist. <br> 
+//   General virtual functions are (for example) CorrectPoint(x,roc) where x is the vector of initial 
+//   positions in cartesian coordinates and roc represents the read-out chamber number according to 
+//   the offline numbering convention. The vector x is overwritten with the corrected coordinates. <br> 
+//   An alternative usage would be CorrectPoint(x,roc,dx), which leaves the vector x untouched, but 
+//   returns the distortions via the vector dx. <br>
+//   This class is normally used via the general class AliTPCComposedCorrection.   
+//   <p>
+//   Furthermore, the class contains basic geometrical descriptions like field cage radii 
+//   (fgkIFCRadius, fgkOFCRadius) and length (fgkTPCZ0) plus the voltages. Also, the definitions 
+//   of size and widths of the fulcrums building the grid of the final look-up table, which is 
+//   then interpolated, is defined in kNX and fgkXList).
+//   <p>
+//   All physics-model classes below are derived from this class in order to not duplicate code 
+//   and to allow a uniform treatment of all physics models.
+//   <p>
+//   <h3> Poisson solver </h3>    
+//   A numerical solver of the Poisson equation (relaxation technique) is implemented for 2-dimensional 
+//   geometries (r,z) as well as for 3-dimensional problems (r,$\phi$,z). The corresponding function 
+//   names are PoissonRelaxation?D. The relevant function arguments are the arrays of the boundary and 
+//   initial conditions (ArrayofArrayV, ArrayofChargeDensities) as well as the grid granularity which 
+//   is used during the calculation. These inputs can be chosen according to the needs of the physical 
+//   effect which is supposed to be simulated. In the 3D version, different symmetry conditions can be set
+//   in order to reduce the calculation time (used in AliTPCFCVoltError3D).
+//   <p>
+//   <h3> Unified plotting functionality  </h3>    
+//   Generic plot functions were implemented. They return a histogram pointer in the chosen plane of 
+//   the TPC drift volume with a selectable grid granularity and the magnitude of the correction vector.
+//   For example, the function CreateHistoDZinXY(z,nx,ny) returns a 2-dimensional histogram which contains 
+//   the longitudinal corrections $dz$ in the (x,y)-plane at the given z position with the granularity of 
+//   nx and ny. The magnitude of the corrections is defined by the class from which this function is called.
+//   In the same manner, standard plots for the (r,$\phi$)-plane and for the other corrections like $dr$ and $rd\phi$ are available  
+//   <p>                                                                      
+//   Note: This class is normally used via the class AliTPCComposedCorrection
+// End_Html
+//
+// Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",700,1050);  c2->Divide(2,3);
+//   AliTPCROCVoltError3D roc; // EXAMPLE PLOTS - SEE BELOW
+//   roc.SetOmegaTauT1T2(0,1,1); // B=0
+//   Float_t z0 = 1; // at +1 cm -> A side
+//   c2->cd(1); roc.CreateHistoDRinXY(1.,300,300)->Draw("cont4z"); 
+//   c2->cd(3);roc.CreateHistoDRPhiinXY(1.,300,300)->Draw("cont4z"); 
+//   c2->cd(5);roc.CreateHistoDZinXY(1.,300,300)->Draw("cont4z"); 
+//   Float_t phi0=0.5;
+//   c2->cd(2);roc.CreateHistoDRinZR(phi0)->Draw("surf2"); 
+//   c2->cd(4);roc.CreateHistoDRPhiinZR(phi0)->Draw("surf2"); 
+//   c2->cd(6);roc.CreateHistoDZinZR(phi0)->Draw("surf2"); 
+//   return c2;
+//   } 
+// End_Macro
+//
+// Begin_Html
+//   <p>
+//   Date: 27/04/2010  <br>
+//   Authors: Magnus Mager, Stefan Rossegger, Jim Thomas                     
+// End_Html 
+// _________________________________________________________________
+
+
 #include "Riostream.h"
 
 #include <TH2F.h>
@@ -1411,7 +1454,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   if (npoints2<npoints)  return 0;
   AliTrackerBase::PropagateTrackToBxByBz(track0,refX,kMass,2.,kTRUE,kMaxSnp);
   track1->Rotate(track0->GetAlpha());
-  AliTrackerBase::PropagateTrackToBxByBz(track1,refX,kMass,2.,kTRUE,kMaxSnp);
+  AliTrackerBase::PropagateTrackToBxByBz(track1,refX,kMass,2.,kFALSE,kMaxSnp);
 
   if (pcstream) (*pcstream)<<Form("fitDistort%s",GetName())<<
     "point0.="<<&pointArray0<<   //  points

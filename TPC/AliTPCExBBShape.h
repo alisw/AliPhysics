@@ -4,17 +4,35 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliExBBShape class                                                     //
-// The class calculates the space point distortions due to the B field    //
-// shape imperfections using a second order technique based on integrals  //
-// over Bz (e.g. int By/Bz) obtained via the AliMagF class                //
-// The class allows "effective Omega Tau" corrections.                    //
-//                                                                        //
-// date: 27/04/2010                                                       //
-// Authors: Magnus Mager, Jim Thomas, Stefan Rossegger                    //
-////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2>AliExBBShape class </h2>                                                    
+//   The class calculates the space point distortions due to the B field    
+//   shape imperfections using a second order technique based on integrals  
+//   over Bz (e.g. int By/Bz) obtained via the AliMagF class. The essential 
+//   input for this class is the magnetic field maps which can be set via the function SetBField.  
+//   <p>
+//   The class allows "effective Omega Tau" corrections.                    
+//   End_Html
+//   Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",500,300); 
+//   AliTPCExBBShape exb;                                                 
+//   AliMagF mag("mag","mag");        // 0.5 Tesla (solenoid)
+//   exb.SetBField(&mag);             // use Bfield from AliMagF        
+//   exb.SetOmegaTauT1T2(-0.32,1.,1.); // values ideally from OCDB     
+//   exb.CreateHistoDRPhiinZR(0,100,100)->Draw("surf2"); 
+//   return c2;
+//   } 
+// End_Macro
+// Begin_Html
+//   <p>
+//   Date: 27/04/2010 <br>                                                      
+//   Authors: Magnus Mager, Jim Thomas, Stefan Rossegger                    
+// End_Html 
+// _________________________________________________________________
 
 #include "AliTPCCorrection.h"
 

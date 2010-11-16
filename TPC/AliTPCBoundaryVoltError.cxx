@@ -13,36 +13,59 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// AliTPCBoundaryVoltError class                                            //
-// The class calculates the space point distortions due to residual voltage //
-// errors on the main boundaries of the TPC. For example, the inner vessel  //
-// of the TPC is shifted by a certain amount, whereas the ROCs on the A side//
-// and the ROCs on the C side follow this mechanical shift (at the inner    //
-// vessel) in z direction (see example below). This example is commonly     //
-// named "conical deformation" of the TPC field cage.                       //
-//                                                                          //
-// The class allows "effective Omega Tau" corrections.                      // 
-//                                                                          //
-// NOTE: This class is capable of calculating z distortions due to          //
-//       drift velocity change in dependence of the electric field!!!       //
-//                                                                          //
-// date: 01/06/2010                                                         //
-// Authors: Jim Thomas, Stefan Rossegger                                    //
-//                                                                          //
-// Example usage (e.g +1mm shift of "conical deformation")                  //
-//  AliTPCBoundaryVoltError bve;                                            //
-//  Float_t boundA[8] = {-40,-40,-40,0,0,0,0,-40}; // voltages A-side       //
-//  Float_t boundC[6] = { 40, 40, 40,0,0,0}; // voltages C-side             //
-//  bve.SetBoundariesA(boundA);                                             //
-//  bve.SetBoundariesC(boundC);                                             //
-//  bve.SetOmegaTauT1T2(0.32,1.,1.); // values ideally from OCDB            //
-//  // initialization of the look up                                        //
-//  bve.InitBoundaryVoltErrorDistortion();                                  // 
-//  // plot dRPhi distortions ...                                           //
-//  bve.CreateHistoDRPhiinZR(1.,100,100)->Draw("surf2");                    //
-//////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2> AliTPCBoundaryVoltError class   </h2>       
+//   This class calculates the space point distortions due to residual voltage errors on 
+//   the main boundaries of the TPC. For example, the inner vessel of the TPC is shifted 
+//   by a certain amount, whereas the ROCs on the A side and the C side follow this mechanical 
+//   shift (at the inner vessel) in z direction. This example can be named "conical deformation"
+//   of the TPC field cage (see example below).                    
+//   <p>
+//   The boundary conditions can be set via two arrays (A and C side) which contain the 
+//   residual voltage setting modeling a possible shift or an inhomogeneity on the TPC field 
+//   cage. In order to avoid that the user splits the Central Electrode (CE), the settings for 
+//   the C side is taken from the array on the A side (points: A.6 and A.7). The region betweem
+//    the points is interpolated linearly onto the boundaries.
+//   <p>
+//   The class uses the PoissonRelaxation2D (see AliTPCCorrection) to calculate the resulting 
+//   electrical field inhomogeneities in the (r,z)-plane. Then, the Langevin-integral formalism 
+//   is used to calculate the space point distortions. <br>
+//   Note: This class assumes a homogeneous magnetic field. 
+//   <p>
+//   One has two possibilities when calculating the $dz$ distortions. The resulting distortions 
+//   are purely due to the change of the drift velocity (along with the change of the drift field) 
+//   when the SetROCDisplacement is FALSE. This emulates for example a Gating-Grid Voltage offset 
+//   without moving the ROCs. When the flag is set to TRUE, the ROCs are assumed to be misaligned 
+//   and the corresponding offset in z is added.
+// End_Html
+//
+// Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",500,300); 
+//   AliTPCBoundaryVoltError bve;     
+//   Float_t val = 40;// [Volt]; 40V corresponds to 1mm
+//   /* IFC shift, CE follows, ROC follows by factor half */
+//   Float_t boundA[8] = { val, val, val,0,0,0,0,val}; // voltages A-side
+//   Float_t boundC[6] = {-val,-val,-val,0,0,0};       // voltages C-side  
+//   bve.SetBoundariesA(boundA);                                        
+//   bve.SetBoundariesC(boundC);                                        
+//   bve.SetOmegaTauT1T2(-0.32,1,1);
+//   bve.SetROCDisplacement(kTRUE); // include the chamber offset in z when calculating the dz distortions
+//   bve.CreateHistoDRinZR(0)->Draw("surf2"); 
+//   return c2;
+//   } 
+// End_Macro
+//
+// Begin_Html
+//   <p>
+// Date: 01/06/2010 <br>
+// Authors: Jim Thomas, Stefan Rossegger      
+// End_Html 
+// _________________________________________________________________
+
 
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"

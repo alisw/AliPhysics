@@ -13,23 +13,61 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// AliTPCFCVoltError3D class                                                //
-// The class calculates the space point distortions due to residual voltage //
-// errors on the Field Cage boundaries (rods) of the TPC in 3D.             //
-//                                                                          //
-// The class allows "effective Omega Tau" corrections.                      // 
-//                                                                          //
-// NOTE: This class is capable of calculating z distortions due to          //
-//       drift velocity changes in dependence of the electric field!!!      //
-//                                                                          //
-// date: 08/08/2010                                                         //
-// Authors: Jim Thomas, Stefan Rossegger                                    //
-//                                                                          //
-// Example usage :                                                          //
-//  AliTPCFCVoltError3D fcerror;                                            //
-//////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2>AliTPCFCVoltError3D class   </h2>       
+//   The class calculates the space point distortions due to residual voltage errors 
+//   on the Field Cage (FC) boundaries (rods and strips) of the TPC in 3D. It uses 
+//   the Poisson relaxation technique in three dimension as implemented in the parent class. 
+//   <p>
+//   Although the calculation is performed in 3D, the calculation time was significantly 
+//   reduced by using certain symmetry conditions within the calculation.
+//   <p>
+//   The input parameters can be set via the functions (e.g.) SetRodVoltShift(rod,dV) where 
+//   rod is the number of the rod on which the voltage offset dV is set. The corresponding 
+//   shift in z direction would be $dz=dV/40$ with an opposite sign for the C side. The 
+//   rods are numbered in anti-clock-wise direction starting at $\phi=0$. Rods in the IFC 
+//   are from 0 to 17, rods on the OFC go from 18 to 35. <br>
+//   This convention is following the offline numbering scheme of the ROCs.
+//   <p>
+//   Different misalignment scenarios can be modeled: 
+//   <ul>
+//   <li> A rotated clip scenario is only possible at two positions (Rod 11 at IFC, rod 3(+18) at OFC) 
+//        and can be set via SetRotatedClipVolt. The key feature is that at the mentioned positions,
+//        the strip-ends were combined. At these positions, a systematic offset of one strip-end in
+//        respect to the other is possible. 
+//   <li> A normal rod offset, where the strips follow the movement of the rod, can be set via 
+//        SetRodVoltShift. It has a anti-mirrored signature in terms of distortions when compared 
+//        to the rotated clip. This misalignment is possible at each single rod of the FC.
+//   <li> A simple rod offset, where the strips do not follow the shift, results in an even more 
+//        localized distortion close to the rod. The difference to a rod shift, where the strips follow,
+//        is more dominant on the OFC. This effect can be set via the function SetCopperRodShift.
+//   </ul>
+// End_Html
+//
+// Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",500,450); 
+//   AliTPCFCVoltError3D fc;
+//   fc.SetOmegaTauT1T2(0,1,1); 
+//   fc.SetRotatedClipVoltA(0,40);
+//   fc.SetRodVoltShiftA(3,40); 
+//   fc.SetCopperRodShiftA(7+18,40);
+//   fc.SetRodVoltShiftA(15+18,40); 
+//   fc.CreateHistoDRPhiinXY(10)->Draw("cont4z");
+//   return c2;
+//   } 
+// End_Macro
+//
+// Begin_Html
+//   <p>
+//   Date: 08/08/2010  <br>
+//   Authors: Jim Thomas, Stefan Rossegger  
+// End_Html 
+// _________________________________________________________________
+
 
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"

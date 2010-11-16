@@ -4,17 +4,45 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCGGVoltError class                                                //
-// The class calculates the electric field and space point distortions    //
-// due a Gating Grid (GG) Error voltage. It uses the exact calculation    //
-// technique based on bessel functions. (original code from STAR)         //
-// The class allows "effective Omega Tau" corrections.                    // 
-//                                                                        //
-// date: 27/04/2010                                                       //
-// Authors: Jim Thomas, Stefan Rossegger, Magnus Mager                    //
-////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2> AliTPCGGVoltError class   </h2>         
+//   The class calculates the electric field and the resulting space point distortions 
+//   due a Gating Grid (GG) voltage error. It uses the analytical solution for such a problem. 
+//   <p>
+//   The input is the effective GG voltage residual in respect to the ideal setting. The effective 
+//   residual voltage can be set via the functions SetDeltaVGGx. Note that this effective 
+//   voltage-residuals are approx. a factor 0.9 lower than the actual difference in the setting 
+//   of the GG due to the fact that the voltage on the GG is partially screened by the wire 
+//   structure. The calculation has to be performed with the observable effective voltage difference.
+//   <p>
+//   Unfortunately, the class is not capable of calculation the $dz$ offset due to possible changes 
+//   of the drift velocity in dependence of the electric field. The special case of the numerical 
+//   approximation (AliTPCBoundaryVoltError), which is capable of calculating the same effect, should 
+//   be used for this purpose. 
+// End_Html
+//
+// Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",500,300); 
+//   AliTPCGGVoltError gg;
+//   gg.SetDeltaVGGA(-40); gg.SetDeltaVGGC(-40); // 40 Volt offset
+//   gg.InitGGVoltErrorDistortion();
+//   gg.SetOmegaTauT1T2(0,1,1); // B=0
+//   gg.CreateHistoDRinZR(0)->Draw("surf2"); 
+//   return c2;
+//   } 
+// End_Macro
+//
+// Begin_Html
+//   <p>
+//   Date: 27/04/2010  <br>
+//   Authors: Jim Thomas, Stefan Rossegger, Magnus Mager   
+// End_Html 
+// _________________________________________________________________
+
 
 #include "AliTPCCorrection.h"
 

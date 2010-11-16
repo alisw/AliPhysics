@@ -5,9 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCSpaceCharge3D class                                           //
-// date: 19/06/2010                                                       //
+// AliTPCSpaceCharge3D class                                              //
 // Authors: Stefan Rossegger                                              //
 ////////////////////////////////////////////////////////////////////////////
 

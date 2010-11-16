@@ -5,9 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////////////////////////////////
-//                                                                        //
 // AliTPCSpaceCharge class                                                //
-// date: 19/06/2010                                                       //
 // Authors: Jim Thomas, Stefan Rossegger                                  //
 ////////////////////////////////////////////////////////////////////////////
 

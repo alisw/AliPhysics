@@ -14,23 +14,7 @@
  **************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliExBBShape class                                                     //
-// The class calculates the space point distortions due to the B field    //
-// shape imperfections using a second order technique based on integrals  //
-// over Bz (e.g. int By/Bz) obtained via the AliMagF class                //
-// The class allows "effective Omega Tau" corrections.                    //
-//                                                                        //
-// date: 27/04/2010                                                       //
-// Authors: Magnus Mager, Jim Thomas, Stefan Rossegger                    //
-//                                                                        //
-// Example usage:                                                         //
-//  AliMagF mag("mag","mag");                                             //
-//  AliTPCExBBShape exb;                                                  //
-//  exb.SetBField(&mag);             // use Bfield from AliMagF           //
-//  exb.SetOmegaTauT1T2(0.32,1.,1.); // values ideally from OCDB          //
-//  // plot dRPhi distortions ...                                         //
-//  exb.CreateHistoDRPhiinZR(0,100,100)->Draw("surf2");                   //
+// AliTPCExBBShape class                                                  //
 ////////////////////////////////////////////////////////////////////////////
 
 #include <AliMagF.h>

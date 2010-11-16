@@ -13,21 +13,46 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// AliTPCSpaceCharge class                                                  //
-// The class calculates the space point distortions due to a space charge   //
-// effect ....                                                              //
-// The class allows "effective Omega Tau" corrections.                      // 
-//                                                                          //
-// NOTE: This class is capable of calculating z distortions due to          //
-//       drift velocity change in dependence of the electric field!!!       //
-//                                                                          //
-// date: 23/08/2010                                                         //
-// Authors: Jim Thomas, Stefan Rossegger                                    //
-//                                                                          //
-// Example usage:                                                           //
-//////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2> AliTPCSpaceCharge class  </h2>    
+//   The class calculates the space point distortions due to a rotational 
+//   symmetric space charge distribution with the TPC drift volume. 
+//   <p>
+//   The class uses the PoissonRelaxation2D to calculate the resulting 
+//   electrical field inhomogeneities in the (r,z)-plane. Then, the 
+//   Langevin-integral formalism is used to calculate the space point distortions. 
+//   <p>
+//   The class assumes, that the distortions scales linearly with the magnitude 
+//   of the space charge distribution $\rho(r,z)$. The in here assumed distribution is 
+//   $$\rho(r,z) = \frac{(A-B\,z)}{r^2} $$ wherein the factors A and B scale with the
+//   event multiplicity and the interaction rate.
+//   <p>
+//   The scaling factor can be set via the function SetCorrectionFactor. An example of 
+//   the shape of the distortions is given below.
+// End_Html
+//
+// Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",500,300); 
+//   AliTPCSpaceCharge sc;
+//   sc.SetOmegaTauT1T2(-0.32,1,1); // B=0.5 Tesla
+//   sc.SetCorrectionFactor(0.0015);
+//   sc.CreateHistoDRinZR(0.)->Draw("surf2");
+//   return c2;
+//   } 
+// End_Macro
+//
+// Begin_Html
+//   <p>
+//   Date: 23/08/2010 <br>
+// Authors: Jim Thomas, Stefan Rossegger 
+// End_Html 
+// _________________________________________________________________
+
+
 
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"

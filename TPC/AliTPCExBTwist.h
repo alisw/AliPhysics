@@ -4,16 +4,39 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCExBTwist class                                                   //
-// The class calculates the space point distortions due to a mismatch     //
-// of the E and B field axis (original code from STAR)                    //
-// The class allows "effective Omega Tau" corrections.                    // 
-//                                                                        //
-// date: 27/04/2010                                                       //
-// Authors: Jim Thomas, Magnus Mager, Stefan Rossegger                    //
-////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________
+//
+// Begin_Html
+//   <h2> AliTPCExBTwist class    </h2>       
+//   The class calculates the space point distortions due to a mismatch     
+//   of the E and B field axis (original code from STAR)                    
+//   <p>
+//   It assumes a homogeneous magnetic and electric field. The calculations performed 
+//   within this class can be written in a compact form as well (compare notes of Jim Thomas)
+//   <p>
+//   The inputs to this class are the twist angles in the x and y plane ($\theta_x,\theta_y$) 
+//   in cartesian coordinates. They can be set via the member functions SetXTwist and SetYTwist.
+// End_Html
+//
+// Begin_Macro(source) 
+//   {
+//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
+//   TCanvas *c2 = new TCanvas("c2","c2",500,300); 
+//   AliTPCExBTwist twist;
+//   twist.SetXTwist(0.001);  // x angle in [rad]
+//   twist.SetXTwist(0.0005); // y angle in [rad]
+//   twist.SetOmegaTauT1T2(0.32,1,1);
+//   twist.CreateHistoDRPhiinXY(1.)->Draw("surf2"); // A side
+//   return c2;
+//   } 
+// End_Macro
+//
+// Begin_Html
+//   <p>
+// Date: 27/04/2010  <br>
+// Authors: Jim Thomas, Magnus Mager, Stefan Rossegger 
+// End_Html 
+// _________________________________________________________________
 
 #include "AliTPCCorrection.h"
 
