@@ -133,12 +133,15 @@ public:
   Bool_t   IsEventTriggered(Trigger trigger) ;
   void     SetTriggerStatus(const AliESDEvent *esd) ;
   void     SetEnergy(Energy energy) {fEnergy = energy;}
+  void     SetEnergy(Float_t cmsNNGeV);
   Energy   GetEnergy() {return fEnergy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
-  const char*    GetPath(const char* species);
+  void     SetMagField(Float_t bkG);
+  const char*    GetPath(const char* species) const;
   void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}
+  void     SetCollisionSystem(const TString& collsystem);
   Species  GetCollisionSystem() const {return fSpecies;}
-  void     PrintStatus() const;
+  void     PrintStatus(Bool_t showPaths=true)  const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
   const Char_t*  GetDndetaAnalysisName() const {return "PWG2forwardDnDeta";}
   TH1F*    GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);

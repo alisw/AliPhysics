@@ -121,7 +121,8 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   
 }
 //____________________________________________________________________
-const char* AliFMDAnaParameters::GetPath(const char* species)  {
+const char* AliFMDAnaParameters::GetPath(const char* species) const
+{
   //Get path of object
   static TString*  path = new TString();
  
@@ -279,23 +280,44 @@ void AliFMDAnaParameters::FindEtaLimits() {
 
 }
 //____________________________________________________________________
-void AliFMDAnaParameters::SetParametersFromESD(AliESDEvent* esd) {
+void AliFMDAnaParameters::SetEnergy(Float_t cmsNNGeV) 
+{
+  if (TMath::Abs(cmsNNGeV - 900.)   < 10)  fEnergy = k900;
+  if (TMath::Abs(cmsNNGeV - 2400.)  < 10)  fEnergy = k2400;
+  if (TMath::Abs(cmsNNGeV - 2750.)  < 10)  fEnergy = k2750;
+  if (TMath::Abs(cmsNNGeV - 5500.)  < 40)  fEnergy = k5500;
+  if (TMath::Abs(cmsNNGeV - 7000.)  < 10)  fEnergy = k7000;
+  if (TMath::Abs(cmsNNGeV - 10000.) < 10)  fEnergy = k10000;
+  if (TMath::Abs(cmsNNGeV - 14000.) < 10)  fEnergy = k14000;
+}
+//____________________________________________________________________
+void AliFMDAnaParameters::SetMagField(Float_t bkG) 
+{
+  if (TMath::Abs(bkG - 5.) < 1 ) fMagField = k5G;
+  if (TMath::Abs(bkG + 5.) < 1 ) fMagField = k5Gnegative;
+  if (TMath::Abs(bkG) < 1)       fMagField = k0G;
+}
+//____________________________________________________________________
+void AliFMDAnaParameters::SetCollisionSystem(const TString& sys) 
+{
+  if      (sys.Contains("p-p"))   fSpecies = kPP; 
+  else if (sys.Contains("Pb-Pb")) fSpecies = kPbPb;
+  else if (sys.Contains("A-A"))   fSpecies = kPbPb;
+}
+  
+//____________________________________________________________________
+void AliFMDAnaParameters::SetParametersFromESD(AliESDEvent* esd) 
+{
 
-  Float_t energy   = esd->GetBeamEnergy();
   Float_t magfield = esd->GetCurrentL3(); 
-  TString beamtype = esd->GetBeamType();
   
-  if(TMath::Abs(energy - 450.) < 1)  fEnergy = k900;
-  if(TMath::Abs(energy - 3500.) < 1) fEnergy = k7000;
-  if(TMath::Abs(energy - 2750.) < 20) fEnergy = k2750;
+  SetCollisionSystem(esd->GetBeamType());
+  SetEnergy(2*esd->GetBeamEnergy()); 
+  if (TMath::Abs(magfield - 30000.) < 10 ) fMagField = k5G;
+  if (TMath::Abs(magfield + 30000.) < 10 ) fMagField = k5Gnegative;
+  if (TMath::Abs(magfield) < 10 )          fMagField = k0G;
   
   
-  if(TMath::Abs(magfield - 30000.) < 10 ) fMagField = k5G;
-  if(TMath::Abs(magfield + 30000.) < 10 ) fMagField = k5Gnegative;
-  if(TMath::Abs(magfield) < 10 ) fMagField = k0G;
-  
-  if(beamtype.Contains("p-p"))   fSpecies = kPP; 
-  if(beamtype.Contains("Pb-Pb")) fSpecies = kPbPb;
   
   Init(kTRUE);
   
@@ -303,21 +325,25 @@ void AliFMDAnaParameters::SetParametersFromESD(AliESDEvent* esd) {
 
 //____________________________________________________________________
 
-void AliFMDAnaParameters::PrintStatus() const
+void AliFMDAnaParameters::PrintStatus(Bool_t showpaths) const
 {
   //Print current status
   TString energystring;
   switch(fEnergy) {
   case k900:
     energystring.Form("900 GeV");   break;
+  case k2400:
+    energystring.Form("2400 GeV"); break;
+  case k2750:
+    energystring.Form("2750 GeV"); break;
+  case k5500:
+    energystring.Form("5500 GeV"); break;
   case k7000:
     energystring.Form("7000 GeV");  break;
   case k10000:
     energystring.Form("10000 GeV"); break;
   case k14000:
     energystring.Form("14000 GeV"); break;
-  case k2750:
-    energystring.Form("2750 GeV"); break;
   default:
     energystring.Form("invalid energy"); break;
   }
@@ -375,7 +401,17 @@ void AliFMDAnaParameters::PrintStatus() const
   std::cout<<"Coll System  = "<<collsystemstring.Data()<<std::endl;
   std::cout<<"Data origin  = "<<datastring.Data()<<std::endl;
   std::cout<<"Basic trigger: "<<InelString.Data()<<std::endl;
-  
+
+  if (showpaths) {
+    TString bg = GetPath(fgkBackgroundID);
+    TString es = GetPath(fgkEventSelectionEffID);
+    TString ed = GetPath(fgkEnergyDistributionID);
+    TString me = GetPath(fgkSharingEffID);
+    std::cout << "2nd maps:     " << bg << "\n"
+	      << "Event sel.:   " << es << "\n"
+	      << "Energy dist.: " << ed << "\n"
+	      << "Merge eff.:   " << me << std::endl;
+  }
   
 }
 
@@ -446,8 +482,8 @@ Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring, Float_t eta) {
   TF1*  fitFunc         = hEnergyDist->GetFunction("FMDfitFunc");
   
   if(!fitFunc) {
-    AliWarning(Form("No function for FMD%d%c, eta %f",det,ring,eta));
-    std::cout<<hEnergyDist->GetEntries()<<"    "<<GetEtaBin(eta)<<std::endl;
+    AliWarning(Form("No function for FMD%d%c, eta %f (%d)",det,ring,eta,
+		    GetEtaBin(eta)));
     return 1024;
   }
   
@@ -580,7 +616,8 @@ TH2F* AliFMDAnaParameters::GetBackgroundCorrectionNSD(Int_t det,
   if(fBackground->GetNSDBgCorrection(det,ring,vtxbin))
     return fBackground->GetNSDBgCorrection(det,ring,vtxbin);
   else 
-    AliWarning("No NSD background map. You get usual one. Difference is probably negligible");
+    AliWarning("No NSD background map. You get usual one. "
+	       "Difference is probably negligible");
   
   return fBackground->GetBgCorrection(det,ring,vtxbin); 
 }
