@@ -244,6 +244,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliMultiplicity* tracklet, Int_t id)
   Int_t label1 = tracklet->GetLabel(id,1);
   //if possible get label and mcparticle
   fTrackLabel = (label0==label1)?tracklet->GetLabel(id,1):-1;
+  if (!fFakesAreOK && fTrackLabel<0) return kFALSE;
   if (fTrackLabel>=0 && fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
   //check MC cuts
   if (fCutMC && !PassesMCcuts()) return kFALSE;
@@ -325,6 +326,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   
   Bool_t pass=kTRUE;
   //check the common cuts for the current particle fTrack (MC,AOD,ESD)
+  if (!fFakesAreOK) {if (fTrackLabel<0) pass=kFALSE;}
   if (fCutPt) {if (fTrack->Pt() < fPtMin || fTrack->Pt() >= fPtMax ) pass=kFALSE;}
   if (fCutEta) {if (fTrack->Eta() < fEtaMin || fTrack->Eta() >= fEtaMax ) pass=kFALSE;}
   if (fCutPhi) {if (fTrack->Phi() < fPhiMin || fTrack->Phi() >= fPhiMax ) pass=kFALSE;}
