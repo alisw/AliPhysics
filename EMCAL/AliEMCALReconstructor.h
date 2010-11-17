@@ -55,7 +55,7 @@ public:
   virtual ~AliEMCALReconstructor() ; //dtor
 
   virtual  void Init() {;}
-  virtual  void InitClusterizer();
+  virtual  void InitClusterizer() const;
 
   Bool_t       Debug() const { return fDebug ; }
 

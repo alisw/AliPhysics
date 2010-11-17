@@ -119,9 +119,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   
   if(!fPedestalData)
     AliFatal("Dead map not found in CDB!");
-  
-  InitClusterizer();
-	
+  	
   if(!fGeom) AliFatal(Form("Could not get geometry!"));
 
   AliEMCALTriggerDCSConfigDB* dcsConfigDB = AliEMCALTriggerDCSConfigDB::Instance();
@@ -174,32 +172,50 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
 //    fList = AliEMCALHistoUtilities::GetTriggersListOfHists(kTRUE);
 // }
 
-//____________________________________________________________________________
-void AliEMCALReconstructor::InitClusterizer() 
+//____________________________________________________________________________                                  
+void AliEMCALReconstructor::InitClusterizer() const
 {
-  //Init the clusterizer with geometry and calibration pointers, avoid doing it twice.
-  
-  AliEMCALRecParam *recParam = NULL;
-  AliCDBEntry *entry = (AliCDBEntry*) 
-  AliCDBManager::Instance()->Get("EMCAL/Calib/RecoParam");
-  //Get The reco param for the default event specie
-  if (entry) 
-    recParam = (AliEMCALRecParam*)((TObjArray *) entry->GetObject())->At(0);
-  
-  if(!recParam){  
-    AliFatal("RecoParam not found in CDB!");
+  //Init the clusterizer with geometry and calibration pointers, avoid doing it twice.                          
+  Int_t clusterizerType = -1;
+  Int_t eventType = -1;
+  if(GetRecParam()) {
+    clusterizerType = GetRecParam()->GetClusterizerFlag();
+    eventType       = GetRecParam()->GetEventSpecie();
   }
   else{
-    if (recParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
-    {
-      fgClusterizer = new AliEMCALClusterizerv1(fGeom, fCalibData,fPedestalData); 
-    }
-    else
-    {
-      fgClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData,fPedestalData); 
+    AliCDBEntry *entry = (AliCDBEntry*)
+    AliCDBManager::Instance()->Get("EMCAL/Calib/RecoParam");
+    //Get The reco param for the default event specie                                                           
+    if (entry) {
+      AliEMCALRecParam *recParam  = (AliEMCALRecParam*)((TObjArray *) entry->GetObject())->At(0);
+      if(recParam) clusterizerType = recParam->GetClusterizerFlag(); 
     }
   }
   
+  //Check if clusterizer previously set corresponds to what is needed for this event type                       
+  if(fgClusterizer){
+    if(eventType!=AliRecoParam::kCalib){
+      //printf("ReCreate clusterizer? Clusterizer set <%d>, Clusterizer in use <%s>\n",
+        //     clusterizerType, fgClusterizer->Version());
+      
+      if     (clusterizerType == AliEMCALRecParam::kClusterizerv1 && !strcmp(fgClusterizer->Version(),"clu-v1")) return;
+      
+      else if(clusterizerType == AliEMCALRecParam::kClusterizerNxN && !strcmp(fgClusterizer->Version(),"clu-NxN")) return;
+      
+      //Need to create new clusterizer, the one set previously is not the correct one     
+      delete fgClusterizer;
+    }
+    else return;
+  }
+
+  if (clusterizerType  == AliEMCALRecParam::kClusterizerv1)
+  {
+    fgClusterizer = new AliEMCALClusterizerv1(fGeom, fCalibData,fPedestalData);
+  }
+  else
+  {
+    fgClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData,fPedestalData);
+  }
 }
 
 //____________________________________________________________________________
@@ -215,12 +231,14 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 
   ReadDigitsArrayFromTree(digitsTree);
 
+  InitClusterizer();
+  
   fgClusterizer->InitParameters();
   fgClusterizer->SetOutput(clustersTree);
- 	
+  
   //Skip clusterization of LED events
   if (GetRecParam()->GetEventSpecie()!=AliRecoParam::kCalib){
-
+ 	
 		if(fgDigitsArr && fgDigitsArr->GetEntries()) {
 
 		  fgClusterizer->SetInput(digitsTree);
