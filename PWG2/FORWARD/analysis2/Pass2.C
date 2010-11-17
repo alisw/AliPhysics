@@ -55,7 +55,11 @@ Pass2(const char* file="AliAODs.root",
 	 file, vzMin, vzMax, rebin, trgMask, trgs.Data(), energy, title);
   
   DrawRes dr;
+  TStopwatch t;
+  t.Start();
   dr.Run(file, vzMin, vzMax, rebin, trgMask, energy, title);
+  t.Stop();
+  t.Print();  
 }
 //
 // EOF

@@ -13,6 +13,7 @@
 #include <TGraph.h>
 #include <TGraphErrors.h>
 #include <TLatex.h>
+#include <TSystem.h>
 #include "AliAODForwardMult.h"
 #include "OtherData.C"
 
@@ -179,6 +180,11 @@ public:
  
     for (int i = 0; i < nAvailable; i++) { 
       fTree->GetEntry(i);
+      if (((i+1) % 100) == 0) {
+	fprintf(stdout,"Event # %9d of %9d, %9d accepted so far\r", 
+	       i+1, nAvailable, nAccepted);
+	fflush(stdout);
+      }
 
       // Create sum histogram on first event - to match binning to input
       if (!fSum) {
@@ -208,6 +214,7 @@ public:
       // Add contribution from this event
       fSum->Add(&(fAOD->GetHistogram()));
     }
+    printf("\n");
     fVtxEff = Double_t(nWithVertex)/nTriggered;
 
     Info("Process", "Total of %9d events\n"
@@ -316,20 +323,34 @@ public:
 
     // Make a legend
     TString trigs(AliAODForwardMult::GetTriggerString(mask));
-    TLegend* l = p1->BuildLegend(.3,p1->GetBottomMargin()+.01,.7,.4,
-				 Form("#sqrt{s}=%dGeV, %s", 
-				      energy, trigs.Data()));
+    TLegend* l = p1->BuildLegend(.15,p1->GetBottomMargin()+.01,.90,.35);
+    l->SetNColumns(2);
     l->SetFillColor(0);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
     p1->cd();
+
+    TLatex* tt = new TLatex(.5, .50, 
+			    Form("#sqrt{s}=%dGeV, %s", energy,
+				 AliAODForwardMult::GetTriggerString(mask)));
+    tt->SetNDC();
+    tt->SetTextAlign(22);
+    tt->Draw();
+
+    TLatex* pt = new TLatex(.5, .42, "Preliminary");
+    pt->SetNDC();
+    pt->SetTextSize(0.07);
+    pt->SetTextColor(kRed+1);
+    pt->SetTextAlign(22);
+    pt->Draw();
     c->cd();
 
     if (!ratios->GetHists() || ratios->GetHists()->GetEntries() <= 0) {
       p1->SetPad(0, 0, 1, 1);
       p1->SetBottomMargin(0.1);
       l->SetY1(0.11);
-      FixAxis(stack, (1-yd)/1,  "#frac{1}{N} #frac{dN_{ch}}{#eta}",false);
+      stack->SetMinimum(0);
+      FixAxis(stack, (1-yd)/1,  "#frac{1}{N} #frac{dN_{ch}}{#eta}",10,false);
       p1->cd();
       c->cd();
     }
@@ -342,11 +363,14 @@ public:
       p2->SetTicks(1,1);
       p2->Draw();
       p2->cd();
-      FixAxis(ratios, 1/yd/1.5, "Ratios");
+      FixAxis(ratios, 1/yd/1.5, "Ratios", 5);
+      ratios->SetMinimum(.58);
+      ratios->SetMaximum(1.22);
       p2->Clear();
       ratios->DrawClone("nostack e1");
       
-      TLegend* l2 = p2->BuildLegend(.3,p2->GetBottomMargin()+.01,.7,.6);
+      TLegend* l2 = p2->BuildLegend(.15,p2->GetBottomMargin()+.01,.9,.6);
+      l2->SetNColumns(2);
       l2->SetFillColor(0);
       l2->SetFillStyle(0);
       l2->SetBorderSize(0);
@@ -393,6 +417,10 @@ public:
   TH1* GetHHD(const char* fn="fmd_dNdeta_mult.root", bool nsd=false) 
   {
     TDirectory* savdir = gDirectory;
+    if (gSystem->AccessPathName(fn)) { 
+      Warning("GetHHD", "Output of HHD analysis (%s) not available", fn);
+      return 0;
+    }
     TFile* file = TFile::Open(fn, "READ");
     if (!file) { 
       Warning("GetHHD", "couldn't open HHD file %s", fn);
@@ -431,7 +459,7 @@ public:
    * @param force  Whether to draw the stack first or not 
    */
   void FixAxis(THStack* stack, Double_t s, const char* ytitle, 
-	       Bool_t force=true) 
+	       Int_t ynDiv=10, Bool_t force=true) 
   {
     if (force) stack->Draw("nostack e1");
 
@@ -451,8 +479,9 @@ public:
     }
     if (ya) { 
       ya->SetTitle(ytitle);
+      ya->SetDecimals();
       // ya->SetTicks("+-");
-      ya->SetNdivisions(10);
+      ya->SetNdivisions(ynDiv);
       ya->SetTitleSize(s*ya->GetTitleSize());
       ya->SetLabelSize(s*ya->GetLabelSize());
     }      
@@ -477,7 +506,7 @@ public:
     ret->Reset();
     ret->SetMarkerStyle(h->GetMarkerStyle());
     ret->SetMarkerColor(g->GetMarkerColor());
-    ret->SetMarkerSize(0.7*g->GetMarkerSize());
+    ret->SetMarkerSize(0.9*g->GetMarkerSize());
     Double_t xlow  = g->GetX()[0];
     Double_t xhigh = g->GetX()[g->GetN()-1];
     if (xlow > xhigh) { Double_t t = xhigh; xhigh = xlow; xlow = t; }
