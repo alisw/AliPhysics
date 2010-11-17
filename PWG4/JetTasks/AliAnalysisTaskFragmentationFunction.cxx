@@ -1742,7 +1742,7 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::FillIntraJ
   if(norm)fhnIntraJet->Fill(content,1/norm);
   else fhnIntraJet->Fill(content);
 
-  delete content;
+  delete [] content;
 
 }
 
