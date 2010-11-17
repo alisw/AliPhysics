@@ -44,6 +44,10 @@
  *      The default is to publish for every event.
  * \li -skipcdb  <br>
  *      If specified then the initial counter configuration is not loaded from the CDB.
+ * \li -countfalseinputs  <br>
+ *      Indicates that input triggers which have false decision results should also be counted.
+ * \li -countfalseoutputs  <br>
+ *      Indicates that output triggers which have false decision results should also be counted.
  *
  * <h2>Configuration:</h2>
  * Can only be configured with the command line arguments.
@@ -52,7 +56,7 @@
  * HLT/ConfigHLT/HLTTriggerCounter - Contains the initial counter configuration.
  *
  * <h2>Performance:</h2>
- * Can run over 2kHz in HLT online system.
+ * Can run up to 1.8kHz in the HLT online system.
  *
  * <h2>Memory consumption:</h2>
  * Negligible.
@@ -190,6 +194,8 @@ private:
 	THashTable fOutputTimes;  //! Cyclic buffer storing the time stamps when the output counters were received.
 	Double_t fLastPublishTime;  //! The last time the counters were pushed back to the output.
 	Double_t fPublishPeriod;  //! The time between calls to push back the counters to output.
+	bool fCountFalseInputs; //! Indicates if the false input trigger decisions should also be counted.
+	bool fCountFalseOutputs; //! Indicates if the false output trigger decisions should also be counted.
 	
 	static const char* fgkConfigCDBPath;  //! CDB configuration path.
 	static TMap fgInitialCounterConfig;   //! Initial configuration information for the counters.

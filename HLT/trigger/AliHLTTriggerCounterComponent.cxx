@@ -51,7 +51,9 @@ AliHLTTriggerCounterComponent::AliHLTTriggerCounterComponent() :
 	fInputTimes(TCollection::kInitHashTableCapacity, 2),
 	fOutputTimes(TCollection::kInitHashTableCapacity, 2),
 	fLastPublishTime(-1),
-	fPublishPeriod(-1)
+	fPublishPeriod(-1),
+	fCountFalseInputs(false),
+	fCountFalseOutputs(false)
 {
 	// Default constructor.
 	
@@ -126,6 +128,8 @@ Int_t AliHLTTriggerCounterComponent::DoInit(int argc, const char** argv)
 	fOutputTimes.Clear();
 	fLastPublishTime = -1;
 	fPublishPeriod = -1;
+	fCountFalseInputs = false;
+	fCountFalseOutputs = false;
 	bool loadCDBObject = true;
 	
 	for (int i = 0; i < argc; ++i)
@@ -185,6 +189,18 @@ Int_t AliHLTTriggerCounterComponent::DoInit(int argc, const char** argv)
 			continue;
 		}
 		
+		if (strcmp(argv[i], "-countfalseinputs") == 0)
+		{
+			fCountFalseInputs = true;
+			continue;
+		}
+		
+		if (strcmp(argv[i], "-countfalseoutputs") == 0)
+		{
+			fCountFalseOutputs = true;
+			continue;
+		}
+		
 		HLTError("Unknown option '%s'.", argv[i]);
 		return -EINVAL;
 	} // for loop
@@ -229,33 +245,38 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 	const TObject* obj = GetFirstInputObject(kAliHLTDataTypeGlobalTrigger, "AliHLTGlobalTriggerDecision");
 	while (obj != NULL)
 	{
+		HLTDebug("Received trigger decision object of type AliHLTGlobalTriggerDecision.");
 		const AliHLTGlobalTriggerDecision* decision = dynamic_cast<const AliHLTGlobalTriggerDecision*>(obj);
 		if (decision != NULL)
 		{
-			HLTDebug("Received trigger decision object of type AliHLTGlobalTriggerDecision.");
-			// Tokenise the global trigger description string which contains a
-			// list of the triggers that were fired and increment the corresponding
-			// counters.
-			TString names = decision->Description();
-			Ssiz_t from = 0;
-			TString token;
-			while (names.Tokenize(token, from, ","))
+			if ((not fCountFalseOutputs and decision->Result()) or fCountFalseOutputs)
 			{
-				TObject* cntobj = fOutputCounters.FindObject(token.Data());
-				if (cntobj != NULL)
+				// Tokenise the global trigger description string which contains a
+				// list of the triggers that were fired and increment the corresponding
+				// counters.
+				TString names = decision->Description();
+				Ssiz_t from = 0;
+				TString token;
+				while (names.Tokenize(token, from, ","))
 				{
-					AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
-					counter->Increment();
-					UpdateCounterRate(
-							counter,
-							static_cast<AliRingBuffer*>( fOutputTimes.FindObject(token.Data()) ),
-							outputTime
-						);
-				}
-				else
-				{
-					fOutputCounters.Add(token.Data(), "New trigger output counter found during the run.", 1, 1);
-					fOutputTimes.Add(new AliRingBuffer(token.Data(), outputTime));
+					TObject* cntobj = fOutputCounters.FindObject(token.Data());
+					if (cntobj != NULL)
+					{
+						HLTDebug("Updating existing output counter \"%s\".", cntobj->GetName());
+						AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
+						counter->Increment();
+						UpdateCounterRate(
+								counter,
+								static_cast<AliRingBuffer*>( fOutputTimes.FindObject(token.Data()) ),
+								outputTime
+							);
+					}
+					else
+					{
+						HLTDebug("Adding new output counter \"%s\".", cntobj->GetName());
+						fOutputCounters.Add(token.Data(), "New trigger output counter found during the run.", 1, 1);
+						fOutputTimes.Add(new AliRingBuffer(token.Data(), outputTime));
+					}
 				}
 			}
 			
@@ -272,6 +293,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 					TObject* cntobj = fInputCounters.FindObject(ctpName);
 					if (cntobj != NULL)
 					{
+						HLTDebug("Updating existing CTP counter \"%s\".", cntobj->GetName());
 						AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
 						counter->Counter(counters[i]);
 						UpdateCounterRate(
@@ -282,6 +304,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 					}
 					else
 					{
+						HLTDebug("Adding new CTP counter \"%s\".", cntobj->GetName());
 						fInputCounters.Add(
 								ctpName,
 								"New CTP trigger input counter found during the run.",
@@ -297,10 +320,12 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 			for (Int_t i = 0; i < decision->NumberOfTriggerInputs(); ++i)
 			{
 				const AliHLTTriggerDecision* input = decision->TriggerInput(i);
-				if (input == NULL or not input->Result()) continue;
+				if (input == NULL) continue;
+				if (not fCountFalseInputs and not input->Result()) continue;
 				TObject* cntobj = fInputCounters.FindObject(input->Name());
 				if (cntobj != NULL)
 				{
+					HLTDebug("Updating existing input counter \"%s\".", cntobj->GetName());
 					AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
 					counter->Increment();
 					counter->SetBit(BIT(14), true);  // mark counter as updated
@@ -312,6 +337,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 				}
 				else
 				{
+					HLTDebug("Adding new input counter \"%s\".", cntobj->GetName());
 					fInputCounters.Add(input->Name(), "New trigger input counter found during the run.", 1, 1);
 					fInputCounters.GetCounterN(fInputCounters.NumberOfCounters()-1).SetBit(BIT(14), true); // mark counter as updated
 					fInputTimes.Add(new AliRingBuffer(input->Name(), inputTime));
@@ -325,13 +351,14 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 	obj = GetFirstInputObject(kAliHLTDataTypeTriggerDecision, "AliHLTTriggerDecision");
 	while (obj != NULL)
 	{
+		HLTDebug("Received trigger decision object of type AliHLTTriggerDecision.");
 		const AliHLTTriggerDecision* decision = dynamic_cast<const AliHLTTriggerDecision*>(obj);
-		if (decision != NULL and decision->Result())
+		if (decision != NULL and ((not fCountFalseInputs and  decision->Result()) or fCountFalseInputs))
 		{
-			HLTDebug("Received trigger decision object of type AliHLTTriggerDecision.");
 			TObject* cntobj = fInputCounters.FindObject(decision->Name());
 			if (cntobj != NULL)
 			{
+				HLTDebug("Updating existing input counter \"%s\".", cntobj->GetName());
 				AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
 				if (not counter->TestBit(BIT(14)))  // Only update if marked as not updated.
 				{
@@ -345,6 +372,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 			}
 			else
 			{
+				HLTDebug("Adding new input counter \"%s\".", cntobj->GetName());
 				fInputCounters.Add(decision->Name(), "New trigger input counter found during the run.", 1, 1);
 				fInputTimes.Add(new AliRingBuffer(decision->Name(), inputTime));
 			}
@@ -361,6 +389,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 	if (fLastPublishTime == -1) fLastPublishTime = now;
 	if (now - fLastPublishTime > fPublishPeriod)
 	{
+		HLTDebug("Pushing back counter objects.");
 		fLastPublishTime = now;
 		bool inputCountersNotPushed = PushBack(&fInputCounters, kAliHLTDataTypeInputTriggerCounters) != 0;
 		bool outputCountersNotPushed = PushBack(&fOutputCounters, kAliHLTDataTypeOutputTriggerCounters) != 0;
