@@ -20,16 +20,26 @@ class TBrowser;
  * should of course also do proper book-keeping of the accepted event.
  *
  * @code 
- *   TH2D*              sum        = 0;                   // Summed hist
- *   TTree*             tree       = GetAODTree();        // AOD tree
- *   AliAODForwardMult* mult       = 0;                   // AOD object
- *   Int_t              nTriggered = 0;                   // # of triggered ev.
- *   Int_t              nAccepted  = 0;                   // # of ev. w/vertex
- *   Int_t              nAvailable = tree->GetEntries();  // How many entries
- *   Float_t            vzLow      = -10;                 // Lower ip cut
- *   Float_t            vzHigh     =  10;                 // Upper ip cut
- *   Int_t              mask       = AliAODForward::kINEL;// Trigger mask
- *   tree->SetBranchAddress("forward", &forward);         // Set the address
+ * TTree* GetAODTree()
+ * { 
+ *    TFile* file = TFile::Open("AliAODs.root","READ");
+ *    TTree* tree = static_cast<TTree*>(file->Get("aodTree"));
+ *    return tree;
+ * }
+ * 
+ * void Analyse()
+ * { 
+ *   TH2D*              sum        = 0;                  // Summed hist
+ *   TTree*             tree       = GetAODTree();       // AOD tree
+ *   AliAODForwardMult* mult       = 0;                  // AOD object
+ *   Int_t              nTriggered = 0;                  // # of triggered ev.
+ *   Int_t              nWithVertex= 0;                  // # of ev. w/vertex
+ *   Int_t              nAccepted  = 0;                  // # of ev. used
+ *   Int_t              nAvailable = tree->GetEntries(); // How many entries
+ *   Float_t            vzLow      = -10;                // Lower ip cut
+ *   Float_t            vzHigh     =  10;                // Upper ip cut
+ *   Int_t              mask       = AliAODForwardMult::kInel;// Trigger mask
+ *   tree->SetBranchAddress("forward", &forward);        // Set the address
  * 
  *   for (int i = 0; i < nAvailable; i++) { 
  *     // Create sum histogram on first event - to match binning to input
@@ -40,6 +50,10 @@ class TBrowser;
  *     // Other trigger/event requirements could be defined 
  *     if (!mult->IsTriggerBits(mask)) continue; 
  *     nTriggered++;
+ *
+ *     // Check if we have vertex 
+ *     if (!mult->HasIpZ()) continue;
+ *     nWithVertex++;
  * 
  *     // Select vertex range (in centimeters) 
  *     if (!mult->InRange(vzLow, vzHigh) continue; 
@@ -56,9 +70,10 @@ class TBrowser;
  *   // Normalize to the acceptance 
  *   dndeta->Divide(norm);
  *   // Scale by the vertex efficiency 
- *   dndeta->Scale(Double_t(nAccepted)/nTriggered, "width");
+ *   dndeta->Scale(Double_t(nWithVertex)/nTriggered, "width");
  *   // And draw the result
  *   dndeta->Draw();
+ * }
  * @endcode   
  *     
  * The above code will draw the final @f$ dN_{ch}/d\eta@f$ for the
