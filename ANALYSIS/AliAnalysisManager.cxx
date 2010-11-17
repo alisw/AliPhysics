@@ -17,7 +17,7 @@
 // Author: Andrei Gheata, 31/05/2006
 
 //==============================================================================
-//   AliAnalysysManager - Manager analysis class. Allows creation of several
+//   AliAnalysisManager - Manager analysis class. Allows creation of several
 // analysis tasks and data containers storing their input/output. Allows
 // connecting/chaining tasks via shared data containers. Serializes the current
 // event for all tasks depending only on initial input data.
@@ -755,8 +755,8 @@ void AliAnalysisManager::ImportWrappers(TList *source)
          // Try to fetch first an object having the container name.
          obj = gDirectory->Get(cont->GetName());
          if (!obj) {
-            Warning("ImportWrappers", "Could not import object for container %s in file %s:%s.\n Object will not be available in Terminate()", 
-                    cont->GetName(), filename, cont->GetFolderName());
+            Warning("ImportWrappers", "Could not import object of type:%s for container %s in file %s:%s.\n Object will not be available in Terminate(). Try if possible to name the output object as the container (%s) or to embed it in a TList", 
+                    cont->GetType()->GetName(), cont->GetName(), filename, cont->GetFolderName(), cont->GetName());
             continue;
          }  
          wrap = new AliAnalysisDataWrapper(obj);
