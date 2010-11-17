@@ -311,8 +311,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
    {
  	  for (Int_t i = 0; i < 32; i++)
  	  {
- 		  v0M[0] += esdV0->GetAdcV0C(i);
- 		  v0M[1] += esdV0->GetAdcV0A(i);
+ 		  v0M[0] += (Int_t)esdV0->GetAdcV0C(i);
+ 		  v0M[1] += (Int_t)esdV0->GetAdcV0A(i);
  	  }
    }
    else
@@ -373,7 +373,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
  			  while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)NextPatch())
  			  {
  				  TVector2 pos; p->Position(pos);
- 				  trgESD->SetTriggerBits(pos.X(), pos.Y(), i, j);
+ 				  trgESD->SetTriggerBits((Int_t) pos.X(), (Int_t) pos.Y(), i, j);
  			  }
  		  }
  	  }
