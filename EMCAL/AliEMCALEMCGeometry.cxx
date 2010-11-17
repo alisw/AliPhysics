@@ -38,13 +38,14 @@
 //   EMCAL_FIRSTYEAR - geometry for December 2009 to December 2010 run period
 //                     with four Super Modules
 //  
-//   EMCAL_FIRSTYEARV1 - geometry for December 2009 to December 2010 run period; 
+//   Adding V1 (EMCAL_FIRSTYEARV1, EMCAL_COMPLETEV1) - geometry from December 2009 ; 
 //                1. Fixed bug for positions of modules inside SM
 //                   (first module has tilt 0.75 degree);
 //                2. Added Al front plate (width 1 cm) and 2 paper sheets per sampling
 //                   layer (additional 0.2 mm) 
 //                   The sizes have updated with last information from production
 //                   drawing (end of October 2010). 
+//                3. COMPLETEV1 contains now only 10 SM for runs from 2011
 //
 //   EMCAL_WSUC (Wayne State test stand)
 //      = no definite equivalent in old notation, was only used by
@@ -76,7 +77,7 @@ ClassImp(AliEMCALEMCGeometry)
 
 // these initialisations are needed for a singleton
 Bool_t    AliEMCALEMCGeometry::fgInit      = kFALSE;
-const Char_t*   AliEMCALEMCGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETE";
+const Char_t*   AliEMCALEMCGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETEV1";
 
 
 AliEMCALEMCGeometry::AliEMCALEMCGeometry() 
@@ -260,13 +261,14 @@ void AliEMCALEMCGeometry::Init(void){
 
   //check that we have a valid geometry name
   if(!(fGeoName.Contains("EMCAL_PDC06") || fGeoName.Contains("EMCAL_COMPLETE") || fGeoName.Contains("EMCAL_WSUC") 
-       || fGeoName.Contains("EMCAL_FIRSTYEAR") || fGeoName.Contains("EMCAL_FIRSTYEARV1"))) {
+       || fGeoName.Contains("EMCAL_FIRSTYEAR") || fGeoName.Contains("EMCAL_FIRSTYEARV1") || fGeoName.Contains("EMCAL_COMPLETEV1"))) {
     Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
   }
 
   // Option to know whether we have the "half" supermodule(s) or not
   fKey110DEG = 0;
   if(fGeoName.Contains("COMPLETE") || fGeoName.Contains("PDC06")) fKey110DEG = 1; // for GetAbsCellId
+  if(fGeoName.Contains("COMPLETEV1"))  fKey110DEG = 0; 
   fShishKebabTrd1Modules = 0;
 
   // JLK 13-Apr-2008
@@ -325,24 +327,32 @@ void AliEMCALEMCGeometry::Init(void){
   if(fGeoName.Contains("FIRSTYEAR")){	
     fNumberOfSuperModules = 4;	
     fArm1PhiMax           = 120.0; 
-    if(fGeoName.Contains("FIRSTYEARV1")){
-      // Oct 26,2010 : First module has tilt = 0.75 degree : 
-      // look to AliEMCALShishKebabTrd1Module::DefineFirstModule(key)
-      // New sizes from production drawing, added Al front plate.
-      // The thickness of sampling is change due to existing two sheets of paper.
-
-      // Will replace fFrontSteelStrip
-      fTrd1AlFrontThick   = 1.0;  // one cm
-      // Bond paper - two sheets around Sc tile
-      fTrd1BondPaperThick = 0.01; // 0.01cm = 0.1 mm
-
-      fPhiModuleSize = 12.0;
-      fEtaModuleSize = fPhiModuleSize;
-      fLateralSteelStrip = 0.015; // 0.015cm  = 0.15mm
-    }
     CheckAdditionalOptions();	
   }	
-	
+  
+  if(fGeoName.Contains("FIRSTYEARV1") || fGeoName.Contains("COMPLETEV1") ){
+    // Oct 26,2010 : First module has tilt = 0.75 degree : 
+    // look to AliEMCALShishKebabTrd1Module::DefineFirstModule(key)
+    // New sizes from production drawing, added Al front plate.
+    // The thickness of sampling is change due to existing two sheets of paper.
+    
+    // Will replace fFrontSteelStrip
+    fTrd1AlFrontThick   = 1.0;  // one cm
+    // Bond paper - two sheets around Sc tile
+    fTrd1BondPaperThick = 0.01; // 0.01cm = 0.1 mm
+    
+    fPhiModuleSize = 12.0;
+    fEtaModuleSize = fPhiModuleSize;
+    fLateralSteelStrip = 0.015; // 0.015cm  = 0.15mm
+    
+    if(fGeoName.Contains("COMPLETEV1")){
+      fNumberOfSuperModules = 10;	
+      fArm1PhiMax           = 180.0; 
+    }
+    
+    CheckAdditionalOptions();	
+  }
+
   // constant for transition absid <--> indexes
   fNCellsInModule = fNPHIdiv*fNETAdiv;
   fNCellsInSupMod = fNCellsInModule*fNPhi*fNZ;
@@ -356,7 +366,7 @@ void AliEMCALEMCGeometry::Init(void){
   fEtaTileSize = fEtaModuleSize/double(fNETAdiv) - fLateralSteelStrip; // 13-may-05 
 
   fLongModuleSize = fNECLayers*(fECScintThick + fECPbRadThickness);  
-  if(fGeoName.Contains("FIRSTYEARV1")){
+  if(fGeoName.Contains("V1")){
     Double_t ws = fECScintThick + fECPbRadThickness + 2.*fTrd1BondPaperThick; // sampling width
     // Number of Pb tiles = Number of Sc tiles - 1
     fLongModuleSize = fTrd1AlFrontThick + (ws*fNECLayers - fECPbRadThickness);
@@ -533,7 +543,9 @@ void AliEMCALEMCGeometry::DefineSamplingFraction()
   } else if(fNECLayers == 61) { // 20% layer reduction
     fSampling = 12.80;
   } else if(fNECLayers == 77) {
-    if       (fECScintThick>0.159 && fECScintThick<0.161) { // original sampling fraction, equal layers
+    if(fGeoName.Contains("V1")){
+      fSampling = 12.82; //Adding paper sheets and cover plate
+    } else if   (fECScintThick>0.159 && fECScintThick<0.161) { // original sampling fraction, equal layers
       fSampling = 12.327; // fECScintThick = fECPbRadThickness = 0.160;
     } else if (fECScintThick>0.175 && fECScintThick<0.177) { // 10% Pb thicknes reduction
       fSampling = 10.5; // fECScintThick = 0.176, fECPbRadThickness=0.144;

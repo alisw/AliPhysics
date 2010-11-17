@@ -132,7 +132,7 @@ class AliEMCALRecPoint : public AliCluster {
   virtual void    Paint(Option_t * option="");
   virtual void    Print(Option_t * option="") const ; 
   
-  static Double_t TmaxInCm(const Double_t e=0.0, const Int_t key=0);
+  Double_t TmaxInCm(const Double_t e=0.0, const Int_t key=0);
 
   Float_t     GetDistanceToBadTower() const {return fDistToBadTower;}
   void        EvalDistanceToBadChannels(AliCaloCalibPedestal* caloped);

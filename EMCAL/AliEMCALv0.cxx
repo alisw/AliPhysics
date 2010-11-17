@@ -96,7 +96,7 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title)
   fShishKebabModules = g->GetShishKebabTrd1Modules(); 
   fGeometry = g;
   fSampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
-  if(gn.Contains("FIRSTYEARV1")) fSampleWidth += 2.*g->GetTrd1BondPaperThick();
+  if(gn.Contains("V1")) fSampleWidth += 2.*g->GetTrd1BondPaperThick();
   printf("<I> AliEMCALv0::AliEMCALv : fGeometry %p : gMC %p : fSampleWidth %5.4f\n", 
 	 fGeometry, gMC, fSampleWidth);
 }
@@ -222,7 +222,7 @@ void AliEMCALv0::CreateShishKebabGeometry()
   // Sensitive SC  (2x2 tiles)
   double parSCM0[5]={0,0,0,0}, *dummy = 0, parTRAP[11];
 
-  if(!gn.Contains("FIRSTYEARV1")) {
+  if(!gn.Contains("V1")) {
     double wallThickness = g->GetPhiModuleSize()/g->GetNPHIdiv() -  g->GetPhiTileSize();
     for(int i=0; i<3; i++) parSCM0[i] = fParEMOD[i] - wallThickness;
     parSCM0[3] = fParEMOD[3];
@@ -277,7 +277,7 @@ void AliEMCALv0::CreateShishKebabGeometry()
     int nr=0; 
     ypos = 0.0; 
     double xCenterSCMX =  (parTRAP[4] +  parTRAP[8])/2.;
-    if(!gn.Contains("FIRSTYEARV1")) {
+    if(!gn.Contains("V1")) {
       par[1] = parSCM0[2]/2;            // y 
       par[2] = g->GetECPbRadThick()/2.; // z
       gMC->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);

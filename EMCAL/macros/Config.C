@@ -79,7 +79,7 @@ void Config()
 	return;
       }
     rl->SetCompressionLevel(2);
-    rl->SetNumberOfEventsPerFile(3);
+    rl->SetNumberOfEventsPerFile(100);
     gAlice->SetRunLoader(rl);
 
     // Set the trigger configuration
@@ -308,7 +308,7 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1");
         //AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE pbTh=0.144 scTh=0.176");
     }
 

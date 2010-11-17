@@ -63,6 +63,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
   TString snam(g->GetName());
   Int_t key=0;
   if(snam.Contains("FIRSTYEARv1",TString::kIgnoreCase)) key=1;
+  if(snam.Contains("COMPLETEv1",TString::kIgnoreCase)) key=1;
   if(GetParameters()) {
     DefineFirstModule(key);
   }

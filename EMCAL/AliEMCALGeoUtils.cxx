@@ -26,7 +26,7 @@
 //        You have to use just the correct name of geometry. If name is empty string the
 //        default name of geometry will be used.
 //         
-//  AliEMCALGeoUtils* geom = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
+//  AliEMCALGeoUtils* geom = new AliEMCALGeoUtils("EMCAL_COMPLETEV1","EMCAL");
 //  TGeoManager::Import("geometry.root");
 //
 //  MC:   If you work with MC data you have to get geometry the next way: 

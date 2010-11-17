@@ -34,12 +34,13 @@
 //   EMCAL_COMPLETE (geometry for expected complete detector)
 //      = equivalent to SHISH_77_TRD1_2X2_FINAL_110DEG scTh=0.176 pbTh=0.144
 //          in old notation
-//   EMCAL_4SMs - geometry for December 2009 to December 2010 run period; 
+//   EMCAL_FIRSTYEARV1 - geometry for December 2009 to December 2010 run period; 
 //                fixed bug for positions of modules inside SM
 //                (first module has tilt 0.75 degree);
 //                the sizes updated with last information from production
 //                drawing (end of October 2010). 
-//                
+//      
+//   EMCAL_COMPLETEV1: Same fixes as FIRSTYEAR and 10 SM instead of 10+2 half SM
 //
 //   EMCAL_WSUC (Wayne State test stand)
 //      = no definite equivalent in old notation, was only used by
@@ -71,7 +72,7 @@ ClassImp(AliEMCALGeometry)
 
 // these initialisations are needed for a singleton
 AliEMCALGeometry  *AliEMCALGeometry::fgGeom      = 0;
-const Char_t*      AliEMCALGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETE";
+const Char_t*      AliEMCALGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETEV1";
 //
 // Usage: 
 //        You can create the AliEMCALGeometry object independently from anything.

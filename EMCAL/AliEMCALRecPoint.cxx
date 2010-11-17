@@ -1458,8 +1458,11 @@ Double_t AliEMCALRecPoint::TmaxInCm(const Double_t e , const Int_t key)
   // key  =  0(gamma, default)
   //     !=  0(electron)
   const Double_t ca   = 4.82;  // shower max parameter - first guess; ca=TMath::Log(1000./8.07)
-  const Double_t x0   = 1.23;  // radiation lenght (cm)
   Double_t tmax = 0.;    // position of electromagnetic shower max in cm
+
+  Double_t x0   = 1.31;  // radiation lenght (cm)
+  //If old geometry in use
+  if(!((fGeomPtr->GetEMCGeometry()->GetGeoName()).Contains("V1"))) x0 = 1.28;
 
   if(e>0.1) {
     tmax = TMath::Log(e) + ca;
