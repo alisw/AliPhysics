@@ -10,8 +10,8 @@ AliEMCALUnfolding.cxx \
 AliEMCALTracker.cxx \
 AliEMCALPID.cxx \
 AliEMCALQADataMakerRec.cxx \
-AliEMCALAodCluster.cxx
-
+AliEMCALAodCluster.cxx \
+AliEMCALAfterBurnerUF.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
