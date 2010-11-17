@@ -283,12 +283,12 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
   Float_t gridSizeZ   =  fgkTPCZ0/(columns-1);                  // unit in [cm]
 
   // temporary matrices needed for the calculation // for rotational symmetric RZ table, phislices is 1
+  
+  TMatrixD *arrayofErA[kNPhiSlices], *arrayofdEzA[kNPhiSlices]; 
+  TMatrixD *arrayofErC[kNPhiSlices], *arrayofdEzC[kNPhiSlices]; 
 
-  TMatrixD *arrayofErA[phiSlices], *arrayofdEzA[phiSlices]; 
-  TMatrixD *arrayofErC[phiSlices], *arrayofdEzC[phiSlices]; 
-
-  TMatrixD *arrayofEroverEzA[phiSlices], *arrayofDeltaEzA[phiSlices];
-  TMatrixD *arrayofEroverEzC[phiSlices], *arrayofDeltaEzC[phiSlices];
+  TMatrixD *arrayofEroverEzA[kNPhiSlices], *arrayofDeltaEzA[kNPhiSlices];
+  TMatrixD *arrayofEroverEzC[kNPhiSlices], *arrayofDeltaEzC[kNPhiSlices];
 
  
   for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
@@ -308,7 +308,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
   }
  
   // list of points as used during sum up
-  Double_t  rlist1[rows], zedlist1[columns];// , philist1[phiSlices];
+  Double_t  rlist1[kNRows], zedlist1[kNColumns];// , philist1[phiSlices];
   for ( Int_t i = 0 ; i < rows ; i++ )    {
     rlist1[i] = fgkIFCRadius + i*gridSizeR ;
     for ( Int_t j = 0 ; j < columns ; j++ ) { 
@@ -358,8 +358,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	  if (TMath::Abs((coord1(0,ip)*100-rlist1[i]))>1 || 
 	      TMath::Abs((coord1(2,ip)*100-zedlist1[j])>1)) { 
 	    AliError("internal error: coordinate system was screwed during the sum-up");
-	    printf("sum-up: (r,z)=(%lf,%lf)\n",rlist1[i],zedlist1[j]);
-	    printf("lookup: (r,z)=(%lf,%lf)\n",coord1(0,ip)*100,coord1(2,ip)*100);
+	    printf("sum-up: (r,z)=(%f,%f)\n",rlist1[i],zedlist1[j]);
+	    printf("lookup: (r,z)=(%f,%f)\n",coord1(0,ip)*100,coord1(2,ip)*100);
 	    AliError("Don't trust the results of the space charge calculation!");
 	  }
 	  
@@ -549,7 +549,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
   gridSizeZ   =  fgkTPCZ0/(columns-1);                  // unit in [cm]
  
   // list of points as used during sum up
-  Double_t  rlist2[rows], philist2[phiSlices], zedlist2[columns]; 
+  Double_t  rlist2[kNRows], philist2[kNPhiSlices], zedlist2[kNColumns]; 
   for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
     philist2[k] =  gridSizePhi * k;
     for ( Int_t i = 0 ; i < rows ; i++ )    {
@@ -562,11 +562,11 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
  
   // temporary matrices needed for the calculation 
 
-  TMatrixD *arrayofErA2[phiSlices], *arrayofEphiA2[phiSlices], *arrayofdEzA2[phiSlices];
-  TMatrixD *arrayofErC2[phiSlices], *arrayofEphiC2[phiSlices], *arrayofdEzC2[phiSlices]; 
+  TMatrixD *arrayofErA2[kNPhiSlices], *arrayofEphiA2[kNPhiSlices], *arrayofdEzA2[kNPhiSlices];
+  TMatrixD *arrayofErC2[kNPhiSlices], *arrayofEphiC2[kNPhiSlices], *arrayofdEzC2[kNPhiSlices]; 
 
-  TMatrixD *arrayofEroverEzA2[phiSlices], *arrayofEphioverEzA2[phiSlices], *arrayofDeltaEzA2[phiSlices]; 
-  TMatrixD *arrayofEroverEzC2[phiSlices], *arrayofEphioverEzC2[phiSlices], *arrayofDeltaEzC2[phiSlices]; 
+  TMatrixD *arrayofEroverEzA2[kNPhiSlices], *arrayofEphioverEzA2[kNPhiSlices], *arrayofDeltaEzA2[kNPhiSlices]; 
+  TMatrixD *arrayofEroverEzC2[kNPhiSlices], *arrayofEphioverEzC2[kNPhiSlices], *arrayofDeltaEzC2[kNPhiSlices]; 
 
  
   for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
@@ -620,7 +620,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
     Double_t weightA = GetSpaceChargeDensity(r0*100,phi0, 0.499, 2);  // partial load in r,phi
     Double_t weightC = GetSpaceChargeDensity(r0*100,phi0,-0.499, 2);  // partial load in r,phi
   
-    //    printf("-----\n%lf %lf : %e %e\n",r0,phi0,weightA,weightC);
+    //    printf("-----\n%f %f : %e %e\n",r0,phi0,weightA,weightC);
 
     // Summing up the vector components according to their weight
 
@@ -634,8 +634,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 	      TMath::Abs((coord2(1,ip)-philist2[k]))>1 || 
 	      TMath::Abs((coord2(2,ip)*100-zedlist2[j]))>1) { 
 	    AliError("internal error: coordinate system was screwed during the sum-up");
-	    printf("lookup: (r,phi,z)=(%lf,%lf,%lf)\n",coord2(0,ip)*100,coord2(1,ip),coord2(2,ip)*100);
-	    printf("sum-up: (r,phi,z)=(%lf,%lf,%lf)\n",rlist2[i],philist2[k],zedlist2[j]);
+	    printf("lookup: (r,phi,z)=(%f,%f,%f)\n",coord2(0,ip)*100,coord2(1,ip),coord2(2,ip)*100);
+	    printf("sum-up: (r,phi,z)=(%f,%f,%f)\n",rlist2[i],philist2[k],zedlist2[j]);
 	    AliError("Don't trust the results of the space charge calculation!");
 	  }
 	  
@@ -684,7 +684,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
       weightA = GetSpaceChargeDensity(r0*100,phi0R, 0.499, 2);  // partial load in r,phi
       weightC = GetSpaceChargeDensity(r0*100,phi0R,-0.499, 2);  // partial load in r,phi
     
-      // printf("%lf %lf : %e %e\n",r0,phi0R,weightA,weightC);
+      // printf("%f %f : %e %e\n",r0,phi0R,weightA,weightC);
          
       // Summing up the vector components according to their weight
       ip = 0;
@@ -733,7 +733,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 
     ipC++; // POC configuration counter
 
-    //   printf("POC: (r,phi,z) = (%lf %lf %lf) | weight(A,C): %03.1lf %03.1lf\n",r0,phi0,z0, weightA, weightC);
+    //   printf("POC: (r,phi,z) = (%f %f %f) | weight(A,C): %03.1lf %03.1lf\n",r0,phi0,z0, weightA, weightC);
     
   }
 
@@ -945,11 +945,11 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortionCourse() {
   const Float_t gridSizeZ   =  fgkTPCZ0/(columns-1);                  // unit in [cm]
  
   // temporary matrices needed for the calculation
-  TMatrixD *arrayofErA[phiSlices], *arrayofEphiA[phiSlices], *arrayofdEzA[phiSlices];
-  TMatrixD *arrayofErC[phiSlices], *arrayofEphiC[phiSlices], *arrayofdEzC[phiSlices];
+  TMatrixD *arrayofErA[kNPhiSlices], *arrayofEphiA[kNPhiSlices], *arrayofdEzA[kNPhiSlices];
+  TMatrixD *arrayofErC[kNPhiSlices], *arrayofEphiC[kNPhiSlices], *arrayofdEzC[kNPhiSlices];
 
-  TMatrixD *arrayofEroverEzA[phiSlices], *arrayofEphioverEzA[phiSlices], *arrayofDeltaEzA[phiSlices];
-  TMatrixD *arrayofEroverEzC[phiSlices], *arrayofEphioverEzC[phiSlices], *arrayofDeltaEzC[phiSlices];
+  TMatrixD *arrayofEroverEzA[kNPhiSlices], *arrayofEphioverEzA[kNPhiSlices], *arrayofDeltaEzA[kNPhiSlices];
+  TMatrixD *arrayofEroverEzC[kNPhiSlices], *arrayofEphioverEzC[kNPhiSlices], *arrayofDeltaEzC[kNPhiSlices];
 
  
   for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
@@ -974,7 +974,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortionCourse() {
   }
  
   // list of points as used in the interpolation (during sum up)
-  Double_t  rlist[rows], zedlist[columns] , philist[phiSlices];
+  Double_t  rlist[kNRows], zedlist[kNColumns] , philist[kNPhiSlices];
   for ( Int_t k = 0 ; k < phiSlices ; k++ ) {
     philist[k] =  gridSizePhi * k;
     for ( Int_t i = 0 ; i < rows ; i++ )    {
@@ -1029,8 +1029,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortionCourse() {
 	      TMath::Abs((coord(1,ip)-philist[k]))>1 || 
 	      TMath::Abs((coord(2,ip)*100-zedlist[j]))>1) { 
 	    AliError("internal error: coordinate system was screwed during the sum-up");
-	    printf("lookup: (r,phi,z)=(%lf,%lf,%lf)\n",coord(0,ip)*100,coord(1,ip),coord(2,ip)*100);
-	    printf("sum-up: (r,phi,z)=(%lf,%lf,%lf)\n",rlist[i],philist[k],zedlist[j]);
+	    printf("lookup: (r,phi,z)=(%f,%f,%f)\n",coord(0,ip)*100,coord(1,ip),coord(2,ip)*100);
+	    printf("sum-up: (r,phi,z)=(%f,%f,%f)\n",rlist[i],philist[k],zedlist[j]);
 	    AliError("Don't trust the results of the space charge calculation!");
 	  }
 	  
@@ -1084,7 +1084,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortionCourse() {
       weightA = GetSpaceChargeDensity(r0*100,phi0, z0*100); 
       weightC = GetSpaceChargeDensity(r0*100,phi0,-z0*100);
       
-      //     printf("%lf %lf %lf: %e %e\n",r0,phi0,z0,weightA,weightC);
+      //     printf("%f %f %f: %e %e\n",r0,phi0,z0,weightA,weightC);
        
       // Summing up the vector components according to their weight
       ip = 0;
@@ -1134,7 +1134,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortionCourse() {
     } // end phi-POC summation (phiiC)
    
 
-    // printf("POC: (r,phi,z) = (%lf %lf %lf) | weight(A,C): %03.1lf %03.1lf\n",r0,phi0,z0, weightA, weightC);
+    // printf("POC: (r,phi,z) = (%f %f %f) | weight(A,C): %03.1lf %03.1lf\n",r0,phi0,z0, weightA, weightC);
     
   }
 
@@ -1420,7 +1420,7 @@ Float_t  AliTPCSpaceCharge3D::GetSpaceChargeDensity(Float_t r, Float_t phi, Floa
     sc = 0;
   }
   
-  //  printf("%lf %lf %lf: %lf\n",r,phi,z,sc);
+  //  printf("%f %f %f: %f\n",r,phi,z,sc);
   
   return sc;
 }

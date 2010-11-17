@@ -107,9 +107,9 @@ AliTPCAltroEmulator::AliTPCAltroEmulator(Int_t timebins, short* Channel) :
   fReader(0),           // for Altro Emulation on Raw Reader
   fDecoder(0),
   fRunNumber(0), 
-  fDDLFolderName("/tmp/"),
-  fOutputDateFileName("/tmp/tmp.date"),
-  fOutputRootFileName("/tmp/tmp.root"),
+  fDDLFolderName("./"),
+  fOutputDateFileName("./tmpRaw.date"),
+  fOutputRootFileName("./tmpRaw.root"),
   fIsRandom(kTRUE),
   fChannels(0),
   fCDHs(0),

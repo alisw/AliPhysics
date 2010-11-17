@@ -1877,7 +1877,7 @@ void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTrac
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
   Double_t bz = magF->SolenoidField(); //field in kGauss
-  printf("bz: %lf\n",bz);
+  printf("bz: %f\n",bz);
   AliVertexerTracks *vertexer = new AliVertexerTracks(bz); // bz in kGauss
 
   TObjArray   aTrk;              // Original Track array of Aside

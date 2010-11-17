@@ -55,6 +55,11 @@ protected:
 
 private:
 
+  // maximum sizes of lookup tables
+  enum {kNRows= 90 };       // the maximum on row-slices so far ~ 2cm slicing    
+  enum {kNPhiSlices= 144 }; // the maximum of phi-slices so far = (8 per sector) 
+  enum {kNColumns= 130 };   // the maximum on column-slices so  ~ 2cm slicing    
+
   AliTPCSpaceCharge3D(const AliTPCSpaceCharge3D &);               // not implemented
   AliTPCSpaceCharge3D &operator=(const AliTPCSpaceCharge3D &);    // not implemented
 
