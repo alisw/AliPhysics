@@ -14,8 +14,8 @@
  **************************************************************************/
 // After-burner for the EMCAL cluster unfolding algorithm
 //
-// Input: TObjArray  *clusArray -- array of AliAODCaloClusters;
-//        AliAODCaloCells  *cellsEMCAL -- EMCAL cells.
+// Input: TObjArray  *clusArray -- array of AliVClusters;
+//        AliVCaloCells  *cellsEMCAL -- EMCAL cells.
 //
 // Output is appended to clusArray, the original (unfolded or not) clusters
 // are deleted or moved to another position in clusArray.
@@ -69,7 +69,7 @@
 #include <AliEMCALGeometry.h>
 #include <AliEMCALUnfolding.h>
 #include <AliAODCaloCluster.h>
-#include <AliAODCaloCells.h>
+#include <AliVCaloCells.h>
 #include <AliEMCALRecPoint.h>
 #include <AliEMCALDigit.h>
 
@@ -196,7 +196,7 @@ void AliEMCALAfterBurnerUF::RecPoints2Clusters(TObjArray *clusArray)
 
     // create a new cluster
     AliAODCaloCluster *clus = new AliAODCaloCluster();
-    clus->SetType(AliAODCaloCluster::kEMCALClusterv1);
+    clus->SetType(AliVCluster::kEMCALClusterv1);
     clus->SetE(recPoint->GetEnergy());
     clus->SetPosition(g);
     clus->SetNCells(ncells_true);
@@ -231,7 +231,7 @@ void AliEMCALAfterBurnerUF::UnfoldClusters(TObjArray *clusArray, AliVCaloCells *
 
     // new recPoint
     AliEMCALRecPoint *recPoint = new AliEMCALRecPoint("");
-    recPoint->SetClusterType(AliAODCaloCluster::kEMCALClusterv1);
+    recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
     fRecPoints->Add(recPoint);
 
     // fill digits
