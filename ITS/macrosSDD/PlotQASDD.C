@@ -94,8 +94,12 @@ void PlotQASDD(Char_t fileName[100]="File.QA.111333.2010.LHC09b.pass2.root",Char
   // -------------This part is to read the number of chunks that were merged
   Float_t fChnknmbr=0.;
   FILE * pChunkNumber = fopen ("ChunkNumber.txt","r");
-  fscanf(pChunkNumber, "%f", &fChnknmbr);
+  if(pChunkNumber){
+  Int_t rv=fscanf(pChunkNumber, "%f", &fChnknmbr);
   fclose (pChunkNumber);
+  }
+  else fChnknmbr=1.;
+
   gStyle->SetPalette(1);
   float fCNinv=1./fChnknmbr;
   //   printf("\n====================>%f\n\n", fCNinv);
@@ -607,6 +611,7 @@ void PlotQASDD(Char_t fileName[100]="File.QA.111333.2010.LHC09b.pass2.root",Char
 	    printf("...Found\n");
 	    historaw2->GetYaxis()->SetRangeUser(0,fmaxmargin);
 	    historaw2->SetTitle("Charge");
+	    historaw2->SetFillColor(0);
 	    if (irrpp==4) {historaw2->SetStats(0);historaw2->SetLineColor(2);historaw2->DrawCopy();}
 	    if (irrpp!=4) {historaw2->SetStats(0);historaw2->SetLineColor(4);historaw2->DrawCopy("same");}
 	    legend->AddEntry(historaw2,layer,"l");
@@ -656,6 +661,7 @@ void PlotQASDD(Char_t fileName[100]="File.QA.111333.2010.LHC09b.pass2.root",Char
 	    printf("...Found\n");
 	    historaw2->GetYaxis()->SetRangeUser(0,fmaxmargin);
 	    historaw2->SetTitle("Drift Time");
+	    historaw2->SetFillColor(0);
 	    if (irrpp==6) {historaw2->SetStats(0); historaw2->SetLineColor(2);historaw2->DrawCopy();}
 	    if (irrpp!=6) {historaw2->SetStats(0); historaw2->SetLineColor(4);historaw2->DrawCopy("same");}
 	    legend->AddEntry(historaw2,layer,"l");

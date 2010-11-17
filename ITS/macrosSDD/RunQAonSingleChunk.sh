@@ -8,6 +8,8 @@ TMPPLACE='/tmp'
 TMPFOLDER='1'
 EXECFOLDER='$HOME/macroQAshifter'
 MAXFILES='300'
+FILENAME='10000137137031.300.root'
+FULLNAME='$PWD/$FILENAME'
 echo "Run Number   :[${RUN}]"
 read
 if [ "$REPLY" != "" ]; then
@@ -32,38 +34,29 @@ if [ "$REPLY" != "" ]; then
 YEAR=$REPLY
 echo "Year    $YEAR"
 fi
+echo "FileName (if it is a LOCAL file, please insert the full path)      :  [${FILENAME}]"
+read
+if [ "$REPLY" != "" ]; then
+FILENAME=$REPLY
+fi
+echo "FileName    ${FILENAME}"
 echo "folder with macros     :[${EXECFOLDER}]"
 read
 if [ "$REPLY" != "" ]; then
 EXECFOLDER=$REPLY
 echo "Folder:    $EXECFOLDER"
 fi
-echo "local or lxplus (1=local 2=lxplus)   :[${TMPFOLDER}]"
+echo "local file or alienfile (1=local 2=alien)   :[${TMPFOLDER}]"
 read
 if [ "$REPLY" != "" ]; then
 TMPFOLDER=$REPLY
 fi
 if [ "$TMPFOLDER" == "1" ]; then
-TMPPLACE='/tmp'
+FULLNAME=$FILENAME
 else
-TMPPLACE='/tmp/$USERNAME'
+FULLNAME=alien:///alice/data/${YEAR}/${PERIOD}/000${RUN}/raw/${FILENAME}
 fi
-GOOD=130
-echo "Max number of files (Insert a number >0)   :[${MAXFILES}]"
-read
-#case $REPLY in
-#	*[a-zA-Z]*|*[!0-9]*|*[-]*)
-#	                            echo "Wrong: it is not a number > 0";;   
-#			  *[0-9]*)
-#				   MAXFILES=$REPLY
-#				   echo "Max number of files:    $MAXFILES" 
-# 				   export GOOD=0
-#			;;
-#esac	
-if [ "$REPLY" != "" ]; then
-MAXFILES=$REPLY
-echo "Max number of files:    $MAXFILES"
-fi
+echo "FullName   ${FULLNAME}"
 if [ ls -l "run$RUN" >/dev/null 2>&1 ]; then
 echo "directory run$RUN exists "
 else
@@ -76,16 +69,16 @@ else
 mkdir $PASS
 cd $PASS
 fi
-time aliroot -l <<EOI|tee merge$RUN.log
+time aliroot -l <<EOI|tee execQA$RUN.log
 EOF
-.x $EXECFOLDER/ReadQASDD.C($RUN,$YEAR,"${PERIOD}","${PASS}",$MAXFILES); 
+.L $EXECFOLDER/ITSQArecoparam.C++
+ ITSQArecoparam("${FULLNAME}",2,30); 
 .q
 EOI
 time aliroot -l <<EOI|tee plot$RUN.log
-.x $EXECFOLDER/PlotQASDD.C("File.QA.${YEAR}.${PERIOD}.${PASS}.Run.${RUN}.root");
+.x $EXECFOLDER/PlotQASDD.C("ITS.QA.${RUN}.root");
 .q
 EOI
-rm File.QA.${YEAR}.${PERIOD}.${PASS}.Run.${RUN}.root
 if [ls -l "images" >/dev/null 2>&1 ]; then
 echo "directory images exists"
 else

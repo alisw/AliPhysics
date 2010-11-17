@@ -10,7 +10,7 @@
 #include <TObjArray.h>
 #include <TClass.h>
 #endif
-void ReadQASDD(Int_t runNb = 101498,Int_t year=2009,Char_t period[10]="LHC09c",Char_t pass[8]="pass1",Char_t filetosearch[50]="Merged.QA.Data.root",Char_t initfileout[50]="File.QA")
+void ReadQASDD(Int_t runNb = 101498,Int_t year=2009,Char_t period[10]="LHC09c",Char_t pass[8]="pass1",Int_t maxfiles=300,Char_t filetosearch[50]="Merged.QA.Data.root",Char_t initfileout[50]="File.QA")
 {
 
   //****************** Connection to alien *****************************************
@@ -44,8 +44,8 @@ void ReadQASDD(Int_t runNb = 101498,Int_t year=2009,Char_t period[10]="LHC09c",C
 
   Int_t mergedFiles = 0;
   Int_t nFiles = gr->GetEntries();
-  if(nFiles>600) nFiles=600; 
-  for (Int_t i = 0; i <nFiles ; i++) { 
+  if(nFiles>maxfiles) nFiles=maxfiles; 
+  for (Int_t i = 3; i <nFiles ; i++) { 
     printf("File %i/%i\n",i+1,nFiles); 
     sprintf(directory,"%s",gr->GetKey(i,"turl"));
     printf("%s\n\n", directory);
