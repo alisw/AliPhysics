@@ -115,7 +115,8 @@ void AliEMCALAfterBurnerUF::Init()
   //       for this to work, the OCDB geometry must be imported instead
 
   if (!gGeoManager)
-    TGeoManager::Import("geometry.root");
+    Warning("AliEMCALAfterBurnerUF::Init","GeoManager not found, please import the geometry.root file or pass to the geometry the misalignment matrices");
+//    TGeoManager::Import("geometry.root");
 
   // required for global cluster position recalculation
   if (!gGeoManager)
@@ -123,8 +124,8 @@ void AliEMCALAfterBurnerUF::Init()
 
   // initialize geometry, if not yet initialized
   if (!AliEMCALGeometry::GetInstance()) {
-    Warning("AliEMCALAfterBurnerUF::Init", "AliEMCALGeometry is not yet initialized. Initializing with EMCAL_COMPLETE");
-    AliEMCALGeometry::GetInstance("EMCAL_COMPLETE");
+    Warning("AliEMCALAfterBurnerUF::Init", "AliEMCALGeometry is not yet initialized. Initializing with EMCAL_FIRSTYEARV1");
+    AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
   }
 
   // AliEMCALRecPoint is using exactly this call
@@ -146,7 +147,10 @@ AliEMCALAfterBurnerUF::~AliEMCALAfterBurnerUF()
   if (fClusterUnfolding) delete fClusterUnfolding;
 
   if (fRecPoints) delete fRecPoints;
-  if (fDigitsArr) delete fDigitsArr;
+  if (fDigitsArr) {
+    fDigitsArr->Clear("C");
+    delete fDigitsArr;
+  }
 }
 
 //------------------------------------------------------------------------
@@ -268,8 +272,8 @@ void AliEMCALAfterBurnerUF::UnfoldClusters(TObjArray *clusArray, AliAODCaloCells
   RecPoints2Clusters(clusArray);
 
   // clean up
-  fRecPoints->Delete();
-  fDigitsArr->Delete();
+  fRecPoints->Clear();
+  fDigitsArr->Clear("C");
 
   clusArray->Compress();
 
