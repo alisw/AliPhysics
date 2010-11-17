@@ -172,9 +172,10 @@ public:
    */
   Bool_t Process(Double_t vzMin, Double_t vzMax, Int_t mask) 
   {
-    Int_t nTriggered = 0;                    // # of triggered ev.
-    Int_t nAccepted  = 0;                    // # of ev. w/vertex
-    Int_t nAvailable = fTree->GetEntries();  // How many entries
+    Int_t nTriggered  = 0;                    // # of triggered ev.
+    Int_t nWithVertex = 0;                    // # of ev. w/vertex
+    Int_t nAccepted   = 0;                    // # of ev. used
+    Int_t nAvailable  = fTree->GetEntries();  // How many entries
  
     for (int i = 0; i < nAvailable; i++) { 
       fTree->GetEntry(i);
@@ -195,7 +196,11 @@ public:
       // Other trigger/event requirements could be defined 
       if (!fAOD->IsTriggerBits(mask)) continue; 
       nTriggered++;
- 
+
+      // Check if there's a vertex 
+      if (!fAOD->HasIpZ()) continue; 
+      nWithVertex++;
+
       // Select vertex range (in centimeters) 
       if (!fAOD->InRange(vzMin, vzMax)) continue; 
       nAccepted++;
@@ -203,10 +208,13 @@ public:
       // Add contribution from this event
       fSum->Add(&(fAOD->GetHistogram()));
     }
-    fVtxEff = Double_t(nAccepted)/nTriggered;
+    fVtxEff = Double_t(nWithVertex)/nTriggered;
 
-    Info("Process", "Got %6d triggers, accepted %6d out of %6d events", 
-	 nTriggered, nAccepted, nAvailable);
+    Info("Process", "Total of %9d events\n"
+	 "               %9d has a trigger\n" 
+	 "               %9d has a vertex\n" 
+	 "               %9d was used\n",
+	 nAvailable, nTriggered, nWithVertex, nAccepted);
 
     return kTRUE;
   }
@@ -291,6 +299,21 @@ public:
       ratios->Add(Ratio(hhd,    o));
       ratios->Add(Ratio(hhdsym, o));
     }
+    if (hhd && hhdsym) { 
+      TH1F* t1 = static_cast<TH1F*>(dndeta->Clone(Form("%s_%s", 
+						       dndeta->GetName(), 
+						       hhd->GetName())));
+      t1->SetTitle(Form("%s / %s", dndeta->GetTitle(), hhd->GetTitle()));
+      TH1F* t2 = static_cast<TH1F*>(sym->Clone(Form("%s_%s", 
+						    sym->GetName(), 
+						    hhdsym->GetName())));
+      t2->SetTitle(Form("%s / %s", sym->GetTitle(), hhdsym->GetTitle()));
+      t1->Divide(hhd);
+      t2->Divide(hhdsym);
+      ratios->Add(t1);
+      ratios->Add(t2);
+    }
+
     // Make a legend
     TString trigs(AliAODForwardMult::GetTriggerString(mask));
     TLegend* l = p1->BuildLegend(.3,p1->GetBottomMargin()+.01,.7,.4,
