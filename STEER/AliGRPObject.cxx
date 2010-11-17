@@ -30,6 +30,9 @@
 #include "AliLog.h"
 
 ClassImp(AliGRPObject)
+
+const Double_t kCavernCut = 1.0;           // tolerable difference between cavern pressure sensors
+const Double_t kSurfaceDifference = 4.5;   //  offset between surface and cavern pressure sensors
 	
 const Float_t AliGRPObject::fgkInvalidFloat = 1E-33; // value to identify invalid data - float
 const TString AliGRPObject::fgkInvalidString = "";  // value to identify invalid data - string
@@ -456,3 +459,100 @@ Float_t AliGRPObject::GetBeamEnergy() const {
 	}
 	return IsBeamEnergyIsSqrtSHalfGeV() ? energy : energy/2;
 }
+
+//-------------------------------------------------------------------------------
+
+Double_t AliGRPObject::EvalCavernPressure(const TTimeStamp& time, Bool_t& inside) const { 
+//
+//  Return current pressure value from 'best' cavern sensor
+//    (default sensor 2. If sensor 1 and sensor 2 are sufficiently different,
+//     use sensor most compatible with surface sensor
+
+  return EvalCavernPressure(fCavernAtmosPressure,fCavernAtmosPressure2,
+             fSurfaceAtmosPressure,time,inside);
+	     			
+}
+
+//-------------------------------------------------------------------------------
+
+Double_t AliGRPObject::EvalCavernPressure(AliDCSSensor* cavern1, 
+	              AliDCSSensor* cavern2, AliDCSSensor* surface, 
+		      const TTimeStamp& time, Bool_t& inside)  {
+//
+//  Return current pressure value from 'best' cavern sensor
+//    (default sensor 2. If sensor 1 and sensor 2 are sufficiently different,
+//     use sensor most compatible with surface sensor
+
+     
+    Double_t valueSensor2 = cavern2->Eval(time,inside);
+    Double_t valueSensor1 = cavern1->Eval(time,inside);
+    if (TMath::Abs(valueSensor2-valueSensor1)<kCavernCut) {
+        return valueSensor2;
+    } else { 
+        Double_t valueSurface = surface->Eval(time,inside);
+        Double_t diff1 = TMath::Abs(valueSensor1-valueSurface-kSurfaceDifference);
+        Double_t diff2 = TMath::Abs(valueSensor2-valueSurface-kSurfaceDifference);
+	if (TMath::Abs(diff1)<TMath::Abs(diff2) ) {
+	    return valueSensor1;
+	} else {
+	    return valueSensor2;
+	}
+     }
+}
+
+//-------------------------------------------------------------------------------
+
+AliDCSSensor* AliGRPObject::GetBestCavernAtmosPressure(AliDCSSensor* cavern1, 
+	     AliDCSSensor* cavern2, AliDCSSensor* surface, const TTimeStamp& time) {
+
+//
+//  Return pointer to 'best' cavern sensor
+//    (default sensor 2. If sensor 1 and sensor 2 are sufficiently different,
+//     use sensor most compatible with surface sensor
+//    Pressure measuread at time specified by TTimestamp
+
+
+    Bool_t inside; 
+    Double_t valueSensor2 = cavern2->Eval(time,inside);
+    Double_t valueSensor1 = cavern1->Eval(time,inside);
+    if (TMath::Abs(valueSensor2-valueSensor1)<kCavernCut) {
+        return cavern2;
+    } else { 
+        Double_t valueSurface = surface->Eval(time,inside);
+        Double_t diff1 = TMath::Abs(valueSensor1-valueSurface-kSurfaceDifference);
+        Double_t diff2 = TMath::Abs(valueSensor2-valueSurface-kSurfaceDifference);
+	if (TMath::Abs(diff1)<TMath::Abs(diff2) ) {
+	    return cavern1;
+	} else {
+	    return cavern2;
+	}
+     }
+}
+
+//-------------------------------------------------------------------------------
+
+AliDCSSensor*   AliGRPObject::GetBestCavernAtmosPressure(const TTimeStamp& time) const {
+//
+//  Return pointer to 'best' cavern sensor
+//    (default sensor 2. If sensor 1 and sensor 2 are sufficiently different,
+//     use sensor most compatible with surface sensor
+//    Pressure measuread at time specified by TTimestamp
+
+
+   return GetBestCavernAtmosPressure(fCavernAtmosPressure,
+        fCavernAtmosPressure2, fSurfaceAtmosPressure, time);
+
+}
+    
+//-------------------------------------------------------------------------------
+
+AliDCSSensor*   AliGRPObject::GetBestCavernAtmosPressure() const {
+//
+//  Return pointer to 'best' cavern sensor
+//    (default sensor 2. If sensor 1 and sensor 2 are sufficiently different,
+//     use sensor most compatible with surface sensor
+//    Pressure measuread at start-of-run
+
+   return GetBestCavernAtmosPressure(TTimeStamp(fTimeStart));
+}
+

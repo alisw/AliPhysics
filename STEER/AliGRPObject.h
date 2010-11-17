@@ -14,6 +14,7 @@
 
 #include <time.h>
 #include <TString.h>
+#include <TTimeStamp.h>
 
 class TMap;
 
@@ -73,6 +74,11 @@ class AliGRPObject : public TObject {
 	AliDCSSensor*   GetCavernAtmosPressure() const {return fCavernAtmosPressure;}
 	AliDCSSensor*   GetCavernAtmosPressure2() const {return fCavernAtmosPressure2;}
 	AliDCSSensor*   GetSurfaceAtmosPressure() const {return fSurfaceAtmosPressure;}
+	AliDCSSensor*   GetBestCavernAtmosPressure() const ;
+	AliDCSSensor*   GetBestCavernAtmosPressure(const TTimeStamp& time) const;
+	static AliDCSSensor* GetBestCavernAtmosPressure(AliDCSSensor* cavern1, 
+	                   AliDCSSensor* cavern2, AliDCSSensor* surface, const TTimeStamp& time);
+
 
 	Float_t*  GetHallProbesArray(DP_HallProbes hp) const;
 	Float_t   GetHallProbes(Int_t hp) const {return fHallProbes[hp];}
@@ -135,6 +141,11 @@ class AliGRPObject : public TObject {
 	static Char_t GetInvalidChar() {return fgkInvalidChar;}
 	static Int_t GetNumberOfHP() {return fgknDCSDPHallProbes;}
 	static const char* GetHPDP(Int_t indexHP) {return fgkDCSDataPointsHallProbes[indexHP];}
+
+        Double_t EvalCavernPressure(const TTimeStamp& time, Bool_t& inside) const;
+	static Double_t EvalCavernPressure(AliDCSSensor* cavern1, 
+	              AliDCSSensor* cavern2, AliDCSSensor* surface, 
+		      const TTimeStamp& time, Bool_t& inside);
 
 	// to read old GRP object in TMap format
 
