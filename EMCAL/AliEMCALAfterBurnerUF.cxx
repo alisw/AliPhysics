@@ -36,12 +36,12 @@
 //   TObjArray *clusArray = new TObjArray(100);
 //
 //
-//   AliAODEvent *event = (AliAODEvent*) InputEvent();
-//   AliAODCaloCells *cellsEMCAL = event->GetEMCALCells();
+//   AliVEvent *event = InputEvent();
+//   AliVCaloCells *cellsEMCAL = event->GetEMCALCells();
 //
 //   for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++)
 //   {
-//     AliAODCaloCluster *clus = event->GetCaloCluster(i);
+//     AliVCluster *clus = event->GetCaloCluster(i);
 //
 //     clusArray->Add(clus->Clone());   // NOTE _CLONE_ in this line
 //   }
@@ -211,7 +211,7 @@ void AliEMCALAfterBurnerUF::RecPoints2Clusters(TObjArray *clusArray)
 }
 
 //------------------------------------------------------------------------
-void AliEMCALAfterBurnerUF::UnfoldClusters(TObjArray *clusArray, AliAODCaloCells *cellsEMCAL)
+void AliEMCALAfterBurnerUF::UnfoldClusters(TObjArray *clusArray, AliVCaloCells *cellsEMCAL)
 {
   // Unfolds clusters.
   //
@@ -226,7 +226,7 @@ void AliEMCALAfterBurnerUF::UnfoldClusters(TObjArray *clusArray, AliAODCaloCells
   */
   for (Int_t i = 0; i < nclus; i++)
   {
-    AliAODCaloCluster *clus = (AliAODCaloCluster*) clusArray->At(i);
+    AliVCluster *clus = (AliVCluster*) clusArray->At(i);
     if (!clus->IsEMCAL()) continue;
 
     // new recPoint

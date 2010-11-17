@@ -20,7 +20,7 @@ class TClonesArray;
 // --- AliRoot header files ---
 class AliEMCALGeometry;
 class AliEMCALUnfolding;
-class AliAODCaloCells;
+class AliVCaloCells;
 
 class AliEMCALAfterBurnerUF {
 
@@ -36,7 +36,7 @@ class AliEMCALAfterBurnerUF {
   public:
     virtual void Init();
     virtual void RecPoints2Clusters(TObjArray *clusArray);
-    virtual void UnfoldClusters(TObjArray *clusArray, AliAODCaloCells *cellsEMCAL);  // does the job
+    virtual void UnfoldClusters(TObjArray *clusArray, AliVCaloCells *cellsEMCAL);  // does the job
 
     // getters and setters
     virtual AliEMCALUnfolding *GetClusterUnfoldingInstance() { return fClusterUnfolding; }
