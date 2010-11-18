@@ -335,7 +335,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     if(IsDataMC()){
       //Play with the MC stack if available		
       Int_t mompdg = -1;
-      Int_t label  = tr->GetLabel();
+      Int_t label  = TMath::Abs(tr->GetLabel());
       if(GetReader()->ReadStack()){
         TParticle * mom = GetMCStack()->Particle(label);
         mompdg =TMath::Abs(mom->GetPdgCode());
@@ -346,6 +346,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
         aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(tr->GetInputFileIndex()))->At(label);
         mompdg =TMath::Abs(aodmom->GetPdgCode());
       }
+      
       
       if(mompdg==211){
         fhPtPion->Fill(tr->Pt());
@@ -374,6 +375,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
         fhEtaUnknown->Fill(tr->Pt(), tr->Eta());
       }
     }//Work with stack also
+    
   }// aod branch loop
   
 }
