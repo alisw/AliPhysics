@@ -252,76 +252,80 @@ public:
     dndeta->SetMarkerStyle(20);
     dndeta->SetMarkerSize(1);
     dndeta->SetFillStyle(0);
-
-    TH1* sym = Symmetrice(dndeta);
-    
     Rebin(dndeta, rebin);
-    Rebin(sym, rebin);
+    DrawIt(dndeta, mask, energy);
+
+    return kTRUE;
+  }
+  //__________________________________________________________________
+  /** 
+   */
+  void DrawIt(TH1* dndeta, Int_t mask, Int_t energy)
+  {
+    // --- 1st part - prepare data -----------------------------------
+    TH1* sym = Symmetrice(dndeta);
+    // Rebin(sym, rebin);
 
     THStack* stack = new THStack("results", "Results");
     stack->Add(dndeta);
     stack->Add(sym);
 
+    // Get the data from HHD's analysis - if available 
     TString hhdName(fOut->GetName());
     hhdName.ReplaceAll("dndeta", "hhd");    
     TH1* hhd    = GetHHD(hhdName.Data(), mask & AliAODForwardMult::kNSD);
     TH1* hhdsym = 0;
     if (hhd) { 
+      // Symmetrice and add to stack 
       hhdsym = Symmetrice(hhd);
       stack->Add(hhd);
       stack->Add(hhdsym);
     }
 
-    TMultiGraph* mg     = GetData(energy, mask);
+    // Get graph of 'other' data - e.g., UA5, CMS, ... - and check if
+    // there's any graphs.  Set the pad division based on that.
+    TMultiGraph* other    = GetData(energy, mask);
+    THStack*     ratios   = MakeRatios(dndeta, sym, hhd, hhdsym, other);
 
+    // Check if we have ratios 
+
+    // --- 2nd part - Draw in canvas ---------------------------------
+    // Make a canvas 
     gStyle->SetOptTitle(0);
-    Double_t yd = (mg->GetListOfGraphs()->GetEntries() ? 0.3 : 0);
     TCanvas* c = new TCanvas("c", "C", 900, 800);
     c->SetFillColor(0);
     c->SetBorderMode(0);
     c->SetBorderSize(0);
     c->cd();
 
+    Double_t yd = (ratios ? 0.3 : 0);
+
+    // Make a sub-pad for the result itself
     TPad* p1 = new TPad("p1", "p1", 0, yd, 1.0, 1.0, 0, 0);
     p1->SetTopMargin(0.05);
-    p1->SetBottomMargin(0.001);
+    p1->SetBottomMargin(ratios ? 0.001 : 0.1);
     p1->SetRightMargin(0.05);
     p1->SetGridx();
     p1->SetTicks(1,1);
     p1->Draw();
     p1->cd();
-    stack->SetMinimum(-0.1);
+
+    // Fix the apperance of the stack and redraw. 
+    stack->SetMinimum(ratios ? -0.1 : 0);
     FixAxis(stack, 1/(1-yd)/1.5, "#frac{1}{N} #frac{dN_{ch}}{#eta}");
     p1->Clear();
     stack->DrawClone("nostack e1");
 
-
-    THStack* ratios = new THStack("ratios", "Ratios");
-    TGraphAsymmErrors* o = 0;
-    TIter nextG(mg->GetListOfGraphs());
-    while ((o = static_cast<TGraphAsymmErrors*>(nextG()))) {
-      o->Draw("same p");
-      ratios->Add(Ratio(dndeta, o));
-      ratios->Add(Ratio(sym,    o));
-      ratios->Add(Ratio(hhd,    o));
-      ratios->Add(Ratio(hhdsym, o));
-    }
-    if (hhd && hhdsym) { 
-      TH1F* t1 = static_cast<TH1F*>(dndeta->Clone(Form("%s_%s", 
-						       dndeta->GetName(), 
-						       hhd->GetName())));
-      t1->SetTitle(Form("%s / %s", dndeta->GetTitle(), hhd->GetTitle()));
-      TH1F* t2 = static_cast<TH1F*>(sym->Clone(Form("%s_%s", 
-						    sym->GetName(), 
-						    hhdsym->GetName())));
-      t2->SetTitle(Form("%s / %s", sym->GetTitle(), hhdsym->GetTitle()));
-      t1->Divide(hhd);
-      t2->Divide(hhdsym);
-      ratios->Add(t1);
-      ratios->Add(t2);
+    // Draw other data 
+    if (other) {
+      TGraphAsymmErrors* o      = 0;
+      TIter              nextG(other->GetListOfGraphs());
+      while ((o = static_cast<TGraphAsymmErrors*>(nextG()))) 
+	o->Draw("same p");
     }
 
-    // Make a legend
+
+    // Make a legend in the main result pad 
     TString trigs(AliAODForwardMult::GetTriggerString(mask));
     TLegend* l = p1->BuildLegend(.15,p1->GetBottomMargin()+.01,.90,.35);
     l->SetNColumns(2);
@@ -330,6 +334,13 @@ public:
     l->SetBorderSize(0);
     p1->cd();
 
+    // Put a title on top 
+    TLatex* tit = new TLatex(0.10, 0.95, fTitle.Data());
+    tit->SetNDC();
+    tit->SetTextSize(0.05);
+    tit->Draw();
+
+    // Put a nice label in the plot 
     TLatex* tt = new TLatex(.5, .50, 
 			    Form("#sqrt{s}=%dGeV, %s", energy,
 				 AliAODForwardMult::GetTriggerString(mask)));
@@ -337,6 +348,7 @@ public:
     tt->SetTextAlign(22);
     tt->Draw();
 
+    // Mark the plot as preliminary 
     TLatex* pt = new TLatex(.5, .42, "Preliminary");
     pt->SetNDC();
     pt->SetTextSize(0.07);
@@ -345,16 +357,16 @@ public:
     pt->Draw();
     c->cd();
 
-    if (!ratios->GetHists() || ratios->GetHists()->GetEntries() <= 0) {
-      p1->SetPad(0, 0, 1, 1);
-      p1->SetBottomMargin(0.1);
-      l->SetY1(0.11);
-      stack->SetMinimum(0);
-      FixAxis(stack, (1-yd)/1,  "#frac{1}{N} #frac{dN_{ch}}{#eta}",10,false);
-      p1->cd();
+    // If we do not have the ratios, fix up the display 
+    // p1->SetPad(0, 0, 1, 1);
+    // p1->SetBottomMargin(0.1);
+    // l->SetY1(0.11);
+    // stack->SetMinimum(0);
+    // FixAxis(stack, (1-yd)/1,  "#frac{1}{N} #frac{dN_{ch}}{#eta}",10,false);
+    if (ratios) {
+      // If we do have the ratios, then make a new pad and draw the 
+      // ratios there 
       c->cd();
-    }
-    else {
       TPad* p2 = new TPad("p2", "p2", 0, 0.0, 1.0, yd, 0, 0);
       p2->SetTopMargin(0.001);
       p2->SetRightMargin(0.05);
@@ -363,19 +375,24 @@ public:
       p2->SetTicks(1,1);
       p2->Draw();
       p2->cd();
+
+      // Fix up axis 
       FixAxis(ratios, 1/yd/1.5, "Ratios", 5);
+
+      // Fix up y range and redraw 
       ratios->SetMinimum(.58);
       ratios->SetMaximum(1.22);
       p2->Clear();
       ratios->DrawClone("nostack e1");
       
+      // Make a legend 
       TLegend* l2 = p2->BuildLegend(.15,p2->GetBottomMargin()+.01,.9,.6);
       l2->SetNColumns(2);
       l2->SetFillColor(0);
       l2->SetFillStyle(0);
       l2->SetBorderSize(0);
       
-      p2->cd();
+      // Make a nice band from 0.9 to 1.1 
       TGraphErrors* band = new TGraphErrors(2);
       band->SetPoint(0, sym->GetXaxis()->GetXmin(), 1);
       band->SetPoint(1, dndeta->GetXaxis()->GetXmax(), 1);
@@ -384,27 +401,24 @@ public:
       band->SetFillColor(kYellow+2);
       band->SetFillStyle(3002);
       band->Draw("3 same");
+
+      // Replot the ratios on top 
       ratios->DrawClone("nostack e1 same");
 
       c->cd();
     }
-    p1->cd();
-    TLatex* tit = new TLatex(0.10, 0.95, fTitle.Data());
-    tit->SetNDC();
-    tit->SetTextSize(0.05);
-    tit->Draw();
     
+    // Plot to disk
     TString imgName(fOut->GetName());
     imgName.ReplaceAll(".root", ".png");
     c->SaveAs(imgName.Data());
 
     stack->Write();
-    mg->Write();
-    ratios->Write();
+    if (other)  other->Write();
+    if (ratios) ratios->Write();
 
+    // Close our file 
     fOut->Close();
-
-    return kTRUE;
   }
   //__________________________________________________________________
   /** 
@@ -432,7 +446,6 @@ public:
     if (!h) { 
       Warning("GetHHD", "Couldn't find HHD histogram %s in %s", 
 	      hist.Data(), fn);
-      file->ls();
       file->Close();
       savdir->cd();
       return 0;
@@ -449,6 +462,58 @@ public:
     savdir->cd();
     return r;
   }
+  //__________________________________________________________________
+  /** 
+   */ 
+  THStack* MakeRatios(const TH1* dndeta, const TH1* sym, 
+		      const TH1* hhd,    const TH1* hhdsym, 
+		      TMultiGraph* other) const 
+  {
+    // If we have 'other' data, then do the ratio of the results to that
+    Bool_t hasOther = (other && other->GetListOfGraphs() && 
+		       other->GetListOfGraphs()->GetEntries() > 0);
+    Bool_t hasHhd   = (hhd && hhdsym);
+    if (!hasOther || !hasHhd) return 0;
+
+    THStack* ratios = new THStack("ratios", "Ratios");
+    if (hasOther) {
+      TGraphAsymmErrors* o      = 0;
+      TIter              nextG(other->GetListOfGraphs());
+      while ((o = static_cast<TGraphAsymmErrors*>(nextG()))) {
+	ratios->Add(Ratio(dndeta, o));
+	ratios->Add(Ratio(sym,    o));
+	ratios->Add(Ratio(hhd,    o));
+	ratios->Add(Ratio(hhdsym, o));
+      }
+    }
+
+    // If we have data from HHD's analysis, then do the ratio of 
+    // our result to that data. 
+    if (hasHhd) { 
+      TH1F* t1 = static_cast<TH1F*>(dndeta->Clone(Form("%s_%s", 
+						       dndeta->GetName(), 
+						       hhd->GetName())));
+      t1->SetTitle(Form("%s / %s", dndeta->GetTitle(), hhd->GetTitle()));
+      TH1F* t2 = static_cast<TH1F*>(sym->Clone(Form("%s_%s", 
+						    sym->GetName(), 
+						    hhdsym->GetName())));
+      t2->SetTitle(Form("%s / %s", sym->GetTitle(), hhdsym->GetTitle()));
+      t1->Divide(hhd);
+      t2->Divide(hhdsym);
+      ratios->Add(t1);
+      ratios->Add(t2);
+    }
+
+    // Check if we have ratios 
+    Bool_t   hasRatios = (ratios->GetHists() && 
+			  (ratios->GetHists()->GetEntries() > 0));
+    Info("MakeRatios", "Got a total of %d ratios", !hasRatios ? 0 :
+	 ratios->GetHists()->GetEntries());
+
+    if (!hasRatios) { delete ratios; ratios = 0; }
+    return ratios;
+  }
+
   //__________________________________________________________________
   /** 
    * Fix the apperance of the axis in a stack 

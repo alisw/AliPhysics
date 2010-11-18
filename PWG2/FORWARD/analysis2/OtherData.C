@@ -622,7 +622,10 @@ GetData(Int_t energy, Int_t type)
   }
   mp->SetTitle(Form("1/N dN_{ch}/d#eta, pp(p#bar{p}), %s, %s", 
 		    en.Data(), tn.Data()));
-  
+  if (!mp->GetListOfGraphs() || mp->GetListOfGraphs()->GetEntries() <= 0) {
+    delete mp;
+    mp = 0;
+  }
   return mp;
 }
 
@@ -639,6 +642,9 @@ GetData(Int_t energy, Int_t type)
 void
 OtherData(Int_t energy=900, Int_t type=0x1)
 {
+  TMultiGraph* mp = GetData(energy, type);
+  if (!mp) return;
+
   gStyle->SetTitleX(0.1);
   gStyle->SetTitleY(1.0);
   gStyle->SetTitleW(0.85);
@@ -658,7 +664,7 @@ OtherData(Int_t energy=900, Int_t type=0x1)
   c->SetRightMargin(0.05);
   c->SetTopMargin(0.05);
   
-  TMultiGraph* mp = GetData(energy, type);
+
   mp->SetMinimum(0);
   mp->Draw("ap");
   if (mp->GetXaxis())
