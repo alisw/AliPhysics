@@ -532,3 +532,39 @@ Bool_t AliRDHFCuts::CompareCuts(const AliRDHFCuts *obj) const {
 
   return areEqual;
 }
+//---------------------------------------------------------------------------
+void AliRDHFCuts::MakeTable() const {
+  //
+  // print cuts values in table format
+  // 
+
+	TString ptString = "pT range";
+	if(fVarNames && fPtBinLimits && fCutsRD){
+		TString firstLine(Form("*       %-15s",ptString.Data()));
+		for (Int_t ivar=0; ivar<fnVars; ivar++){
+			firstLine+=Form("*    %-15s  ",fVarNames[ivar].Data());
+			if (ivar == fnVars){
+				firstLine+="*\n";
+			}
+		}
+		Printf("%s",firstLine.Data());
+		
+		for (Int_t ipt=0; ipt<fnPtBins; ipt++){
+			TString line;
+			if (ipt==fnPtBins-1){
+				line=Form("*  %5.1f < pt < inf    ",fPtBinLimits[ipt]);
+			}
+			else{
+				line=Form("*  %5.1f < pt < %4.1f   ",fPtBinLimits[ipt],fPtBinLimits[ipt+1]);
+			}
+			for (Int_t ivar=0; ivar<fnVars; ivar++){
+				line+=Form("*     %-15f ",fCutsRD[GetGlobalIndex(ivar,ipt)]);
+			}
+			Printf("%s",line.Data());
+		}
+
+	}
+
+
+  return;
+}

@@ -97,6 +97,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t GetWhyRejection() const {return fWhyRejection;}
 
   Bool_t CompareCuts(const AliRDHFCuts *obj) const;
+  void MakeTable()const;
 
   enum{kAll,kTracks,kPID,kCandidate};
   enum{kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
