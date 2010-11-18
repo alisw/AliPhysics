@@ -663,12 +663,11 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse tpcResp) const{
 
   if(fOnePad){
    
-    alephParameters[0] = 1.63246/50.;
-    alephParameters[1] = 2.20028e+01;
-    alephParameters[2] = TMath::Exp(-2.48879e+01);
-    alephParameters[3] = 2.39804e+00;
-    alephParameters[4] = 5.12090e+00;
-
+   alephParameters[0] =1.34490e+00/50; 
+   alephParameters[1] = 2.69455e+01; 
+   alephParameters[2] = TMath::Exp(-2.97552+01); 
+   alephParameters[3] = 2.35339e+00; 
+   alephParameters[4] = 5.98079e+00;
   }else{
 
     alephParameters[0] = 0.0283086/0.97;
