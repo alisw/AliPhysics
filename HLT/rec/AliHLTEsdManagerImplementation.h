@@ -137,6 +137,11 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
     void SetDirectory(const char* directory);
 
     /**
+     * Set the tree name
+     */
+    void SetTreeName(const char* treename) {fTreeName=treename;}
+
+    /**
      * Get name of the ESD file.
      */
     const char* GetFileName() const;
@@ -170,6 +175,8 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
     AliESDEvent* fpEsd; //!transient
     /** Prefix for generated ESD objects in the master ESD */
     TString fPrefix; //!transient
+    /** name of the tree to be created */
+    TString fTreeName; //!transient
   };
 
   typedef vector<AliHLTEsdListEntry*> AliHLTEsdPList;
@@ -184,10 +191,12 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
 
   /** target directory */
   TString fDirectory; //!transient
+  /** target directory */
+  TString fTreeName; //!transient
   /** write local files */
   bool fWriteLocal; //!transient
 
-  ClassDef(AliHLTEsdManagerImplementation, 2)
+  ClassDef(AliHLTEsdManagerImplementation, 3)
 };
 
 #endif

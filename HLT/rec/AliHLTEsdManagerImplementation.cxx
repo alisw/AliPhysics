@@ -52,6 +52,7 @@ AliHLTEsdManagerImplementation::AliHLTEsdManagerImplementation()
   :
   fESDs()
   , fDirectory()
+  , fTreeName()
   , fWriteLocal(false)
 {
   // see header file for class documentation
@@ -91,6 +92,9 @@ int AliHLTEsdManagerImplementation::SetOption(const char* option)
 	} else if (data.Contains("-directory=")) {
 	  data.ReplaceAll("-directory=", "");
 	  SetDirectory(data.Data());
+	} else if (data.Contains("-treename=")) {
+	  data.ReplaceAll("-treename=", "");
+	  fTreeName=data;
 	} else {
 	  HLTError("unknown argument %s", data.Data());
 	  iResult=-EINVAL;
@@ -154,6 +158,9 @@ int AliHLTEsdManagerImplementation::WriteESD(const AliHLTUInt8_t* pBuffer, AliHL
 	  if ((entry=new AliHLTEsdListEntry(dt))!=NULL) {
 	    if (!fDirectory.IsNull()) {
 	      entry->SetDirectory(fDirectory);
+	    }
+	    if (!fTreeName.IsNull()) {
+	      entry->SetTreeName(fTreeName);
 	    }
 	    fESDs.push_back(entry);
 	  }
@@ -258,7 +265,8 @@ AliHLTEsdManagerImplementation::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTCom
   fpFile(NULL),
   fpTree(NULL),
   fpEsd(NULL),
-  fPrefix()
+  fPrefix(),
+  fTreeName("esdTree")
 {
   // see header file for class documentation
 }
@@ -311,7 +319,7 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
     }
 
     fpFile=new TFile(fName, "RECREATE");
-    fpTree=new TTree("esdTree", "Tree with HLT ESD objects");
+    fpTree=new TTree(fTreeName, "Tree with HLT ESD objects");
     fpTree->SetDirectory(0);
     fpEsd=new AliESDEvent;
     if (fpEsd) {
@@ -344,7 +352,7 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
 	// the branch layout has been created earlier.
 	// Create new tree with the additional branches, copy the entries
 	// of the current tree into the new tree, and continue.
-	TTree* pNewTree=new TTree("esdTree", "Tree with HLT ESD objects");
+	TTree* pNewTree=new TTree(fTreeName, "Tree with HLT ESD objects");
 	pNewTree->SetDirectory(0);
 	AliESDEvent* readESD=new AliESDEvent;
 	readESD->CreateStdContent();
