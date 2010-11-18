@@ -10,7 +10,7 @@
 \newcommand{\INEL}{\AbbrName{inel}}
 \newcommand{\INELONE}{$\AbbrName{inel}>0$}
 \newcommand{\NSD}{\AbbrName{nsd}}
-\newcommand{\FMD}[1][]{\AbbrName{nsd\ifx|#1|\else#1\fi}}
+\newcommand{\FMD}[1][]{\AbbrName{fmd\ifx|#1|\else#1\fi}}
 \newcommand{\dndetadphi}[1][]{{\ensuremath% 
     \ifx|#1|\else\left.\fi%
     \frac{d^2N_{ch}}{d\eta\,d\varphi}%
@@ -23,6 +23,7 @@
     \frac{1}{N}\frac{dN_{ch}}{d\eta}%
     \ifx|#1|\else\right|_{#1}\fi%
 }}
+\newcommand{\Nsel}{{\ensuremath N_{v,\text{trigger,vertex}}}}
 \setlength{\parskip}{1ex}
 \setlength{\parindent}{0em}
 
@@ -374,6 +375,7 @@ The final $(\eta,\varphi)$ content of the 5 output vertex dependent,
 per--ring histograms of the inclusive charged particle density is then
 given by
 \begin{align}
+  \label{eq:density}
   \dndetadphi[incl,r,v,i(\eta,\varphi)] &= \sum_t^{t\in(\eta,\varphi)}
   N_{ch,t}\,a_t\,d_t
 \end{align}
@@ -388,27 +390,143 @@ three corrections
 \begin{description}
 \item[Secondary correction:] This is a 2 dimensional histogram
   generated from simulations of the ratio of primary particles to the
-  total number of particles that fall within an $(\eta,\varphi)$ bin 
-  $$
-  s(\eta,\varphi) =
-  \frac{N_{ch,\text{primary}}(\eta,\varphi)}{N_{ch}(\eta,\varphi)}\quad.
-  $$
-  The $\eta$ and $\varphi$ of $N_{ch,primary}(\eta,\varphi)$ is given
-  by summing over the charged particles labelled as primaries \emph{at
-    the time of the collision} as defined in the simulation code.
-  That is, it is the number of primaries within the bin at the
-  collision point --- not at the \FMD{}.  $N_{ch}(\eta,\varphi)$ is
-  evaluated as the sum of all charged particle that hit the FMD in the
-  given $(\eta,\varphi)$ bin.
-\item[Event selection efficiency:]
+  total number of particles that fall within an $(\eta,\varphi)$ bin
+  for a given vertex bin
+
+  \begin{align}
+    s_v(\eta,\varphi) &=
+    \frac{\sum_i^{N_{v}}N_{ch,\text{primary},i}(\eta,\varphi)}{
+      \sum_i^{N_{v}}N_{ch,\text{\FMD{}},i}(\eta,\varphi)}\quad,
+  \end{align}
+  where $N_{v}$ is the number of events with a vertex bin $v$, and
+  $N_{ch,\FMD{},i}$ is the total number of charged particles that hit
+  the \FMD{} in event $i$ in the specified $(\eta,\varphi)$ bin and
+  $N_{ch,\text{primary},i}$ is number of primary charged particles in
+  event $i$ within the specified $(\eta,\varphi)$ bin.
+
+  $N_{ch,primary}(\eta,\varphi)$ is given by summing over the charged
+  particles labelled as primaries \emph{at the time of the collision}
+  as defined in the simulation code.  That is, it is the number of
+  primaries within the bin at the collision point --- not at the
+  \FMD{}.  
+\item[Event selection efficiency:] 
+%% AliFMDAnalysisTaskGenerateCorrection
+%% 
+%% Analysed_FMD<r>_vtx<v> 2D histogram (eta,phi)
+%% EventsSelected[<v>]    bin content 
+%% Inel_FMD<r>_vtx<v>     2D histogram (eta,phi) 
+%% EventsAll[<v>]         bin content 
+%%
+%% correction is 
+%%
+%%      Analysed_FMD<d><r>_vtx<v> / EventsSelected[<v>]
+%%    ---------------------------------------------------
+%%      Inel_FMD<r>_vtx<v> / EventsAll[<v>] 
+%% 
+%% Inel_FMD<r>_vtx<v>        is d^2N_incl,ch/d\eta d\varphi for all
+%%                           events  
+%% Analysed_FMD<d><r>_vtx<v> is d^2N_{incl,ch}/d\eta d\varphi for
+%%                           events with trigger _and_ vertex
+%% EventsSelected            is dN/dv_z for events with trigger _and_
+%%                           vertex
+%% EventsAll                 is dN/dv_z for all events 
+  This correction is made from simulations.  It is a 2--dimensional
+  histogram of the ratio of average number of charged particles in
+  events that are triggered as interactions \emph{and} have vertex, to
+  the average number of charged particles in all events in
+  $(\eta,\varphi)$ bins
+  \begin{align}
+    \label{eq:event_sel_eff}
+    e_{v}(\eta,\varphi) &= 
+    \frac{\frac{1}{\Nsel{}}
+      \sum_{i}^{\Nsel{}} N_{ch,i}(\eta,\varphi)}{
+      \frac{1}{N_{v}}
+      \sum_{i}^{N_{v}} N_{ch,i}(\eta,\varphi)}\quad,
+  \end{align}
+  where $N_{v}$ is the total number of events in vertex bin $v$, and
+  $\Nsel{}$ is the number of events with a collision trigger and
+  vertex within the predefined range, for vertex bin $v$.  $N_{ch,i}$
+  is the number of charged 'MC truth' particles within the specified
+  $(\eta,\varphi)$ range for event $i$.
+
 \item[Sharing correction efficiency:] 
+%% hits_NoCuts_FMD<d><r>_vtxbin<v>_proj 
+%% hMCHits_nocuts_FMD<d><r>_vtxbin<v>
+%% 
+%% - hits_NoCuts_FMD<d><r>_vtxbin<v>_proj 
+%%   A projection of hits_FMD<d><r>_vtxbin<v> onto the eta axis and
+%%   possibly scaled to EventSel1D. 
+%% - EventSel1D - the 1D event selection efficiency (per vertex) 
+%%   This is the ratio of hEventAll divided hEventsSelected, with
+%%   errors calculated as 
+%% 
+%%      da = sqrt(e_sel^2 + e_all^2)
+%%      a  = c_all - c_sel 
+%%      e  = sqrt(da^2 + a^2 / (c_ell*c_sel)^2)
+%%         = sqrt(e_sel^2 + e_all^2 + (c_all-c_sel)^2 /
+%%         (c_ell*c_sel)^2)
+%%
+%%   where hEventsAll[<v>] is the total number of events in the v bin,
+%%   and hEventsSelected[<v>] is the notoal number of events with
+%%   trigger and vertex in the v bin. Both for MC
+%% - hits_FMD<d><r>_vtxbin<v>
+%%   from AliFMDAnalysisTaskBackgroundCorrection - the uncorrected
+%%   multiplicity in each ring - i.e.,
+%%   \dndetadphi[incl,r,v,i(\eta,\varphi)] 
+%% - hits_MC_FMD<d><r>_vtxbin<v> - from AliFMDAnalysisTaskSharing - a 1D
+%%   histogram in eta - sum of eta of track-refs. 
+%% - hEvents[<v>] - bin content of dN/dv_{z} 
+%% - nMCEventsNoCuts -  hPrimEvents[<v>] - bin content of dN/dv_{z}
+%%   for MC events - from AliFMDAnalysisTaskSharing - number of not
+%%   empty mc events per vertex bin 
+%% 
+  This is a one dimension histogram in $\eta$, generated from running
+  the full analysis on simulated data.   
+  \begin{align}
+    \label{eq:sharing_corr}
+    m_v(\eta) &= \frac{
+      \frac{1}{e_{v}}\frac1{\Nsel{}}\left.\frac{dN_{ch}}{d\eta}\right|_{incl,r,v(\eta)}}{
+      \frac1{\Nsel}\sum_i^{\Nsel{}}N_{ch,\text{MC},i(\eta)}}
+    \nonumber\\
+    &=
+    \frac{\frac1{N_v}\left.\frac{dN_{ch}}{d\eta}\right|_{incl,r,v(\eta)}}{
+      \frac1{\Nsel}\sum_i^{\Nsel{}}N_{ch,\text{MC},i(\eta)}}\nonumber\\
+    &= 
+    \frac{\Nsel{}}{N_v}
+    \frac{\left.\frac{dN_{ch}}{d\eta}\right|_{incl,r,v(\eta)}}{
+      \sum_i^{\Nsel{}}N_{ch,\text{MC},i(\eta)}}
+  \end{align}
+  since
+  \begin{align}
+    e_{v} &= \frac{N_{v}}{\Nsel{}}\quad,
+%% \pm 
+%%    \sqrt{\sqrt{\Nsel{}}^2 + \sqrt{N_v^2} +
+%%      \frac{(N_v-\Nsel{})^2}{(\Nsel{}N_v)^2}}\nonumber \\
+%%    &= \frac{N_{v}}{\Nsel{}} \pm 
+%%    \sqrt{\Nsel{} + N_v + \frac1{\Nsel{}^2} + \frac1{N_v^2} -
+%%      \frac1{\Nsel{}N_v}}\quad, 
+  \end{align}
+  and $N_v$ is the total number of simulated events with vertex in bin
+  $v$, $\Nsel{}$ is the number of simulated events with a collision
+  trigger and a reconstructed vertex, $N_{ch,\text{MC},i}(\eta)$ is
+  the total number of 'MC truth' charged particles in the given eta
+  bin in event $i$, and 
+  \begin{align}
+    \left.\frac{dN_{ch}}{d\eta}\right|_{incl,r,v(\eta)} &= 
+    \int_0^{2\pi}d\varphi\dndetadphi[incl,r,v(\eta,\varphi)]
+    \nonumber\\
+    &=  \int_0^{2\pi}d\varphi\sum_i^{\Nsel{}}\dndetadphi[incl,i,r,v(\eta,\varphi)]\quad,
+  \end{align}
+  where the integrand is \eqref{eq:density} for simulated data i.e.,
+  this is the inclusive total charge particle density in a given $v$
+  bin for ring $r$ in event $i$. 
 \end{description}
 
 The 5 output vertex dependent, per--ring histograms of the primary
 charged particle density is then given by
 \begin{align}
-  \dndetadphi[r,v,i(\eta,\varphi)] &= 
-  s(\eta,\varphi)\,e(\eta,\varphi)\,m(\eta)\dndetadphi[incl,r,v,i(\eta,\varphi)]
+  \dndetadphi[r,v,i(\eta,\varphi)] &=
+  s_v(\eta,\varphi)\,e_v(\eta,\varphi)\,m_v(\eta)\dndetadphi[incl,r,v,i(\eta,\varphi)]
 \end{align}
 
 \subsection*{Histogram collector}
@@ -420,14 +538,17 @@ of the charged particle density $\dndetadphi[v,i]$.
 
 To do this, it first calculates, for each vertex bin, the $\eta$ bin
 range to use for each ring.  It investigates the secondary correction
-maps $s(\eta,\varphi)$ to find the edges of the map, and then applies
-a safety margin of a few bins, to ensure that the data selected does
-not have too large corrections associated with it.  
+maps $s_v(\eta,\varphi)$ to find the edges of the map.  The edges are
+given by the $\eta$ range where $s_v(\eta,\varphi)$ is larger than
+some threshold\footnote{Typically $t_s\approx 0.1$.}  $t_s$. The code
+applies safety margin of a $N_{cut}$ bins\footnote{Typically
+  $N_{cut}=1$.}, to ensure that the data selected does not have too
+large corrections associated with it.
 
 It then loops over the bins in the defined $\eta$ range and sums the
-contributions from each of the 5 histograms.   If the $\eta$ ranges of
-two rings overlap, then the collector calculates the average and adds
-the errors in quadrature. 
+contributions from each of the 5 histograms.  In the $\eta$ ranges
+where two rings overlap, the collector calculates the average and adds
+the errors in quadrature.
 
 The output vertex dependent histogram of the primary
 charged particle density is then given by
