@@ -311,7 +311,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
 
   TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{t} [GeV/c]; Relative Error",20,0,20,100,-1,+1);
   hFrame->SetAxisRange(2.,11.9,"X");
-  hFrame->SetAxisRange(-0.5,0.5,"Y");
+  hFrame->SetAxisRange(-0.6,0.6,"Y");
   hFrame->Draw();
 
   TLegend *leg=new TLegend(0.5,0.5,0.9,0.9);
@@ -353,9 +353,9 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     }
 
   }
-  gTotErr->SetLineColor(kYellow);
-  gTotErr->SetFillColor(kYellow-10);
-  gTotErr->SetFillStyle(1001);
+  gTotErr->SetLineColor(kBlack);
+  gTotErr->SetFillColor(kRed);
+  gTotErr->SetFillStyle(3002);
   gTotErr->Draw("2");
   leg->AddEntry(gTotErr,"Total (excl. norm.)","f");
 //   hTotErr->SetLineColor(1);
@@ -368,6 +368,8 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     fNorm->SetFillColor(1);
     fNorm->SetFillStyle(3002);
     fNorm->Draw("same");
+    TH1F *hNormRefl = ReflectHisto(fNorm);
+    hNormRefl->Draw("same");
     leg->AddEntry(fNorm,"Normalization","f");
   }
   if(grErrFeeddown) {
@@ -380,6 +382,8 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     fTrackingEff->SetFillColor(4);
     fTrackingEff->SetFillStyle(3006);
     fTrackingEff->Draw("same");
+    TH1F *hTrackingEffRefl = ReflectHisto(fTrackingEff);
+    hTrackingEffRefl->Draw("same");
     leg->AddEntry(fTrackingEff,"Tracking efficiency","f");
   }
   if(fBR) {
@@ -387,6 +391,8 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     fBR->SetFillStyle(3005);
     //fBR->SetFillStyle(3020);
     fBR->Draw("same");
+    TH1F *hBRRefl = ReflectHisto(fBR);
+    hBRRefl->Draw("same");
     leg->AddEntry(fBR,"Branching ratio","f");
   }
   if(fRawYield) {
@@ -396,18 +402,24 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     //    fRawYield->SetLineColor(3);
     fRawYield->SetLineWidth(3);
     fRawYield->Draw("same");
+    TH1F *hRawYieldRefl = ReflectHisto(fRawYield);
+    hRawYieldRefl->Draw("same");
     leg->AddEntry(fRawYield,"Inv. mass analysis","l");
   }
   if(fCutsEff) {
     fCutsEff->SetLineColor(4);
     fCutsEff->SetLineWidth(3);
     fCutsEff->Draw("same");
+    TH1F *hCutsEffRefl = ReflectHisto(fCutsEff);
+    hCutsEffRefl->Draw("same");
     leg->AddEntry(fCutsEff,"Cuts efficiency","l");
   }
   if(fPIDEff) {
     fPIDEff->SetLineColor(7);
     fPIDEff->SetLineWidth(3);
     fPIDEff->Draw("same");
+    TH1F *hPIDEffRefl = ReflectHisto(fPIDEff);
+    hPIDEffRefl->Draw("same");
     leg->AddEntry(fPIDEff,"PID efficiency","l");
   }
   if(fMCPtShape) {
@@ -416,6 +428,8 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     //    fMCPtShape->SetLineColor(8);
     fMCPtShape->SetLineWidth(3);
     fMCPtShape->Draw("same");
+    TH1F *hMCPtShapeRefl = ReflectHisto(fMCPtShape);
+    hMCPtShapeRefl->Draw("same");
     leg->AddEntry(fMCPtShape,"MC p_{t} shape","l");
   }
   if(fPartAntipart) {
@@ -424,6 +438,8 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     //    fPartAntipart->SetLineColor(9);
     fPartAntipart->SetLineWidth(3);
     fPartAntipart->Draw("same");
+    TH1F *hPartAntipartRefl = ReflectHisto(fPartAntipart);
+    hPartAntipartRefl->Draw("same");
     leg->AddEntry(fPartAntipart,"D = #bar{D}","l");
   }
 
@@ -433,4 +449,14 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   cSystErr->SaveAs("RelativeSystematics.eps");
 
   return;
+}
+//-------------------------------------------------------------------------
+TH1F* AliHFSystErr::ReflectHisto(TH1F *hin) const {
+  //
+  // Clones and reflects histogram 
+  // 
+  TH1F *hout=(TH1F*)hin->Clone("hout");
+  hout->Scale(-1.);
+
+  return hout;
 }

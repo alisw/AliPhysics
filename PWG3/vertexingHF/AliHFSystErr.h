@@ -47,6 +47,8 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi();
   void InitDstartoD0pi();
 
+  TH1F* ReflectHisto(TH1F *hin) const;
+
   TH1F *fNorm;            // normalization
   TH1F *fRawYield;        // raw yield 
   TH1F *fTrackingEff;     // tracking efficiency
