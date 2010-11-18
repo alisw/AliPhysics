@@ -727,10 +727,13 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
 
   //Counter for Normalization
-  fCounter = new AliNormalizationCounter("NormalizationCounter");//new line
+  TString normName="NormalizationCounter";
+  AliAnalysisDataContainer *cont = GetOutputSlot(3)->GetContainer();
+  if(cont)normName=(TString)cont->GetName();
+  fCounter = new AliNormalizationCounter(normName.Data());
 
   if(fFillNtuple){
-    OpenFile(2); // 2 is the slot number of the ntuple
+    OpenFile(4); // 4 is the slot number of the ntuple
    
     fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:PtTrue:VxTrue:VyTrue:VzTrue:Ptpi:PtK:Ptpi2:PtRec:PointingAngle:DecLeng:VxRec:VyRec:VzRec:InvMass:sigvert:d0Pi:d0K:d0Pi2:dca:d0square");  
     
