@@ -87,23 +87,23 @@ void makeInputAliAnalysisTaskSEDplus(){
       anacutsval[ic][ipt]=0.2;
     }
     
-    Int_t ic=3;
+    ic=3;
     for(Int_t ipt=0;ipt<nptbins;ipt++){
       anacutsval[ic][ipt]=0.;
     }
-    Int_t ic=4;
+    ic=4;
     for(Int_t ipt=0;ipt<nptbins;ipt++){
       anacutsval[ic][ipt]=0.;
     }
-    Int_t ic=5;
+    ic=5;
     for(Int_t ipt=0;ipt<nptbins;ipt++){
       anacutsval[ic][ipt]=0.01;
     }
-    //Int_t ic=6;
+    //ic=6;
     //for(Int_t ipt=0;ipt<nptbins;ipt++){
     // anacutsval[ic][ipt]=0.06;
     
-    Int_t ic=11;
+    ic=11;
     for(Int_t ipt=0;ipt<nptbins;ipt++){
       anacutsval[ic][ipt]=10000000000.;
     }
@@ -118,11 +118,11 @@ void makeInputAliAnalysisTaskSEDplus(){
     anacutsval[2][2]=0.4;
     
     
-    Int_t ic=1;
+    ic=1;
     for(Int_t ipt=3;ipt<nptbins;ipt++){
       anacutsval[ic][ipt]=0.4;
     }
-    Int_t ic=2;
+    ic=2;
     for(Int_t ipt=3;ipt<nptbins;ipt++){
       anacutsval[ic][ipt]=0.4;
     }
@@ -138,9 +138,7 @@ void makeInputAliAnalysisTaskSEDplus(){
     anacutsval[6][7]=0.023333;
     anacutsval[6][8]=0.023333;
     anacutsval[6][9]=0.023333;
-    anacutsval[6][10]=0.023333;
-    
-    
+     
     anacutsval[7][0]=0.08;
     anacutsval[7][1]=0.08;
     anacutsval[7][2]=0.09;  
@@ -151,9 +149,7 @@ void makeInputAliAnalysisTaskSEDplus(){
     anacutsval[7][7]=0.115;
     anacutsval[7][8]=0.115;
     anacutsval[7][9]=0.115;
-    anacutsval[7][10]=0.115;
-    
-    
+     
     anacutsval[8][0]=0.5;
     anacutsval[8][1]=0.5;
     anacutsval[8][2]=1.0;
@@ -164,9 +160,7 @@ void makeInputAliAnalysisTaskSEDplus(){
     anacutsval[8][7]=0.5;
     anacutsval[8][8]=0.5;
     anacutsval[8][9]=0.5;
-    anacutsval[8][10]=0.5;
-    
-    
+     
     anacutsval[9][0]=0.95;
     anacutsval[9][1]=0.95;
     anacutsval[9][2]=0.95; 
@@ -177,8 +171,7 @@ void makeInputAliAnalysisTaskSEDplus(){
     anacutsval[9][7]=0.92;
     anacutsval[9][8]=0.92;
     anacutsval[9][9]=0.92;
-    anacutsval[9][10]=0.92;
-    
+ 
     anacutsval[10][0]=0.0055;
     anacutsval[10][1]=0.0055;
     anacutsval[10][2]= 0.0028;
@@ -189,7 +182,6 @@ void makeInputAliAnalysisTaskSEDplus(){
     anacutsval[10][7]=0.000883;
     anacutsval[10][8]=0.000883;
     anacutsval[10][9]=0.000883;
-    anacutsval[10][10]=0.000883;
     
     
     AliRDHFCutsDplustoKpipi *prodcuts = new AliRDHFCutsDplustoKpipi();
