@@ -34,6 +34,7 @@ class TList;
 class AliESDtrackCuts;
 class AliESDEvent;
 class AliMCEvent;
+class AliStack;
 class AliGenPythiaEventHeader;
 
 class AliPWG4HighPtSpectra : public AliAnalysisTask {
@@ -62,6 +63,8 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   virtual void   Terminate(Option_t *);
   virtual Bool_t Notify(); //Copied from AliAnalysisTaskJetSpectrum2
 
+  Bool_t SelectEvent();    //decides if event is used for analysis
+
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
   void     SetCFManagerPos(const AliCFManager* io1) {fCFManagerPos = io1;}   // global correction manager 
   const AliCFManager * GetCFManagerPos() const {return fCFManagerPos;}           // get corr manager 
@@ -84,7 +87,10 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   const AliCFManager  *fCFManagerPos    ;  // pointer to the CF manager for positive charged particles
   const AliCFManager  *fCFManagerNeg    ;  // pointer to the CF manager for negative charged particles
  
-  AliESDEvent *fESD;                     //! ESD object
+  AliESDEvent *fESD;      //! ESD object
+  AliMCEvent  *fMC;       //! MC event object
+  AliStack    *fStack;    //! stack object
+
   //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPTSpectra.C. They correspond with different steps in container.
   AliESDtrackCuts *fTrackCuts;           // trackCuts applied to global tracks
   AliESDtrackCuts *fTrackCutsTPConly;    // trackCuts applied to TPConly tracks
