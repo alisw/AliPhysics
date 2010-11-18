@@ -28,42 +28,8 @@
 using namespace std;
 
 ClassImp(AliAnalysisHadEt);
-//These are from the PDG database but by making them static the code is a bit more efficient and has no problems running with the plugin
-Float_t AliAnalysisHadEt::fgPionMass = 0.13957;
-Float_t AliAnalysisHadEt::fgKaonMass = 0.493677;
-Float_t AliAnalysisHadEt::fgProtonMass = 0.938272;
-Float_t AliAnalysisHadEt::fgElectronMass = 0.000510999;
-Int_t AliAnalysisHadEt::fgPiPlusCode = 211;
-Int_t AliAnalysisHadEt::fgPiMinusCode = -211;
-Int_t AliAnalysisHadEt::fgKPlusCode = 321;
-Int_t AliAnalysisHadEt::fgKMinusCode = -321;
-Int_t AliAnalysisHadEt::fgProtonCode = 2212;
-Int_t AliAnalysisHadEt::fgAntiProtonCode = -2212;
-Int_t AliAnalysisHadEt::fgLambdaCode = 3122;
-Int_t AliAnalysisHadEt::fgAntiLambdaCode = -3122;
-Int_t AliAnalysisHadEt::fgK0SCode = 310;
-Int_t AliAnalysisHadEt::fgOmegaCode = 3334;
-Int_t AliAnalysisHadEt::fgAntiOmegaCode = -3334;
-Int_t AliAnalysisHadEt::fgXi0Code = 3322;
-Int_t AliAnalysisHadEt::fgAntiXi0Code = -3322;
-Int_t AliAnalysisHadEt::fgXiCode = 3312;
-Int_t AliAnalysisHadEt::fgAntiXiCode = -3312;
-Int_t AliAnalysisHadEt::fgSigmaCode = 3112;
-Int_t AliAnalysisHadEt::fgAntiSigmaCode = -3112;
-Int_t AliAnalysisHadEt::fgK0LCode = 130;
-Int_t AliAnalysisHadEt::fgNeutronCode = 2112;
-Int_t AliAnalysisHadEt::fgAntiNeutronCode = -2112;
-Int_t AliAnalysisHadEt::fgEPlusCode = -11;
-Int_t AliAnalysisHadEt::fgEMinusCode = 11;
-Int_t AliAnalysisHadEt::fgGammaCode = 22;
-Int_t AliAnalysisHadEt::fgPi0Code = 111;
-Int_t AliAnalysisHadEt::fgEtaCode = 221;
-Int_t AliAnalysisHadEt::fgOmega0Code = 223;
 
 
-// Int_t AliAnalysisHadEt::fgnumOfEtaBins = 46;
-// Float_t AliAnalysisHadEt::fgEtaAxis[47]={-0.78, -0.74, -0.7, -0.66, -0.62, -0.58, -0.54, -0.5, -0.46, -0.42, -0.38, -0.34, -0.3, -0.26, -0.22, -0.18, -0.14, -0.12, -0.1, -0.08, -0.06, -0.04, -0.02, -0.0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.18, 0.22, 0.26, 0.3, 0.34, 0.38, 0.42, 0.46, 0.5, 0.54, 0.58, 0.62, 0.66, 0.7, 0.74, 0.78};
-//reduction in the number of bins
 Int_t AliAnalysisHadEt::fgnumOfEtaBins = 16;
 Float_t AliAnalysisHadEt::fgEtaAxis[17]={-0.78, -0.7, -0.58, -0.46, -0.34, -0.22, -0.12, -0.06, -0.0, 0.06, 0.12, 0.22, 0.34, 0.46, 0.58, 0.7, 0.78};
 Int_t AliAnalysisHadEt::fgNumOfPtBins = 111;
@@ -77,34 +43,27 @@ Float_t AliAnalysisHadEt::fgPtAxis[117]=
    5.0, 5.5, 6.0, 6.5, 7.0, 7.50, 8.00, 8.5, 9.0, 9.5, 10.0,12.0,14.0,16.0,18.0,
   20.0,25.0,30.0,35.0,40.0, 45.0, 50.0}; 
 
-Float_t AliAnalysisHadEt::fgPtTPCCutOff = 0.15;
-Float_t AliAnalysisHadEt::fgPtITSCutOff = 0.10;
 
-AliAnalysisHadEt::AliAnalysisHadEt() :
-        fHistogramNameSuffix("")
-	,fCuts(0)
-	,fSumEt(0)
-	,fSumEtAcc(0)
-	,fTotEt(0)
-	,fTotEtAcc(0)
-	,fTotNeutralEt(0)
-	,fTotNeutralEtAcc(0)
-	,fTotChargedEt(0)
-	,fTotChargedEtAcc(0)
-	,fMultiplicity(0)
-	,fChargedMultiplicity(0)
-	,fNeutralMultiplicity(0)
-        ,fEsdtrackCutsITSTPC(0)
-        ,fEsdtrackCutsTPC(0)
-	,fEsdtrackCutsITS(0)
-        ,fhistoList(0)
+AliAnalysisHadEt::AliAnalysisHadEt() : AliAnalysisEtCommon()
+				     ,fHistogramNameSuffix("")
+				     ,fSumEt(0)
+				     ,fSumEtAcc(0)
+				     ,fTotEt(0)
+				     ,fTotEtAcc(0)
+				     ,fTotNeutralEt(0)
+				     ,fTotNeutralEtAcc(0)
+				     ,fTotChargedEt(0)
+				     ,fTotChargedEtAcc(0)
+				     ,fMultiplicity(0)
+				     ,fChargedMultiplicity(0)
+				     ,fNeutralMultiplicity(0)
+				     ,fhistoList(0)
 {//default constructor
 
 }
 
 AliAnalysisHadEt::~AliAnalysisHadEt()
 {//destructor
-  delete fCuts;
   delete fEsdtrackCutsITSTPC;
   delete fEsdtrackCutsITS;
   delete fEsdtrackCutsTPC;
@@ -112,30 +71,20 @@ AliAnalysisHadEt::~AliAnalysisHadEt()
 
 Int_t AliAnalysisHadEt::AnalyseEvent(AliVEvent *event)
 { //this line is basically here to eliminate a compiler warning that event is not used.  Making it a virtual function did not work with the plugin.
-  cout << "This event has " << event->GetNumberOfTracks() << " tracks" << endl;
+  AliAnalysisEtCommon::AnalyseEvent(event);
   ResetEventValues();
   return 0;
 }
 
-void AliAnalysisHadEt::FillOutputList()
-{//fill the output histogram list with histograms in all AliAnalysisHadEt's
-}
 
 void AliAnalysisHadEt::Init()
 {// clear variables, set up cuts and PDG info
-
-}
-
-void AliAnalysisHadEt::CreateHistograms()
-{//creates histograms included in all AliAnalysisHadEt's
-}
-
-void AliAnalysisHadEt::FillHistograms()
-{//Fills histograms filled for all AliAnalysisHadEt's
+  AliAnalysisEtCommon::Init();
 }
 
 void AliAnalysisHadEt::ResetEventValues()
 {//Resets event values of et to zero
+  AliAnalysisEtCommon::ResetEventValues();
   fTotEt = 0;
   fTotEtAcc = 0;
   fTotNeutralEt = 0;
@@ -146,19 +95,7 @@ void AliAnalysisHadEt::ResetEventValues()
   fChargedMultiplicity = 0;
   fNeutralMultiplicity = 0;
   
-  if (!fCuts) { // some Init's needed
-    cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
-    if (!fCuts) {
-      cout << " setting up Cuts " << endl;
-      fCuts = new AliAnalysisEtCuts();
-    }
-  }
 }
-
-void AliAnalysisHadEt::SetParticleCodes()
-{  //the codes are defined in $ROOTSYS/etc/pdg_table.txt
-}
-
 void AliAnalysisHadEt::CreateEtaPtHisto2D(TString name, TString title)
 {     //creates a 2-d histogram in eta and phi and adds it to the list of histograms to be saved
   TString *histoname   = new TString();
@@ -300,23 +237,24 @@ Float_t AliAnalysisHadEt::Et(TParticle *part, float mass){//function to calculat
   return 0.0;
 }
 Float_t AliAnalysisHadEt::Et(Float_t p, Float_t theta, Int_t pid, Short_t charge) const {//function to calculate et in the same way as it would be calculated in a calorimeter
-  if(pid==fgPiPlusCode || pid==fgPiMinusCode){//Nothing special for pions
+  if(pid==AliAnalysisEtCommon::fgPiPlusCode || pid==AliAnalysisEtCommon::fgPiMinusCode){//Nothing special for pions
     return TMath::Sqrt(p*p + fgPionMass*fgPionMass) * TMath::Sin(theta);
   }
-  if(pid==fgKPlusCode || pid==fgKMinusCode){//Nothing special for kaons
-    return TMath::Sqrt(p*p + fgKaonMass*fgKaonMass) * TMath::Sin(theta);
+  if(pid==AliAnalysisEtCommon::fgKPlusCode || pid==AliAnalysisEtCommon::fgKMinusCode){//Nothing special for kaons
+    return TMath::Sqrt(p*p + AliAnalysisEtCommon::fgKaonMass*AliAnalysisEtCommon::fgKaonMass) * TMath::Sin(theta);
   }
-  if(pid==fgEPlusCode || pid==fgEMinusCode){//Nothing special for electrons
-    return TMath::Sqrt(p*p + fgElectronMass*fgElectronMass) * TMath::Sin(theta);
+  if(pid==AliAnalysisEtCommon::fgEPlusCode || pid==AliAnalysisEtCommon::fgEMinusCode){//Nothing special for electrons
+    return TMath::Sqrt(p*p + AliAnalysisEtCommon::fgElectronMass*AliAnalysisEtCommon::fgElectronMass) * TMath::Sin(theta);
   }
-  if(pid==fgProtonCode || pid==fgAntiProtonCode){//But for protons we must be careful...
+  if(pid==AliAnalysisEtCommon::fgProtonCode || pid==AliAnalysisEtCommon::fgAntiProtonCode){//But for protons we must be careful...
     if(charge<0.0){//antiprotns: kinetic energy plus twice the rest mass
-      return (TMath::Sqrt(p*p + fgProtonMass*fgProtonMass) + fgProtonMass) * TMath::Sin(theta);
+      return (TMath::Sqrt(p*p + AliAnalysisEtCommon::fgProtonMass*AliAnalysisEtCommon::fgProtonMass) + AliAnalysisEtCommon::fgProtonMass) * TMath::Sin(theta);
     }
     if(charge>0.0){//antiprotns: kinetic energy only
-      return (TMath::Sqrt(p*p + fgProtonMass*fgProtonMass) - fgProtonMass) * TMath::Sin(theta);
+      return (TMath::Sqrt(p*p + AliAnalysisEtCommon::fgProtonMass*AliAnalysisEtCommon::fgProtonMass) - AliAnalysisEtCommon::fgProtonMass) * TMath::Sin(theta);
     }
   }
   cerr<<"Uh-oh!  Et not set properly!"<<endl;
   return 0.0;
 }
+

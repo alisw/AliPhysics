@@ -33,6 +33,8 @@ public:
     AliESDtrackCuts* GetITSTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsITS");}
 
 private:
+    TString       fHadMCConfigFile;        // the name of the ConfigFile
+    TString       fHadRecoConfigFile;        // the name of the ConfigFile
 
   //Declare it private to avoid compilation warning
     AliAnalysisTaskHadEt & operator = (const AliAnalysisTaskHadEt & g) ;//cpy assignment

@@ -4,7 +4,7 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false) {
+void runHadEt(bool submit = false, bool data = false) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -22,6 +22,7 @@ void runHadEt(bool submit = false) {
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
    gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
+   gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEt.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEtMonteCarlo.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEtReconstructed.cxx+g");
@@ -36,7 +37,8 @@ void runHadEt(bool submit = false) {
     gSystem->Load("libRAliEn.so"); 
     TGrid::Connect("alien://") ;
   }
-  chain->Add("/data/LHC10d15/1821/AliESDs.root");
+  chain->Add("/data/LHC10d15/1821/AliESDs.root");//simulation
+  //chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
 
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TotEtManager");
@@ -50,8 +52,10 @@ void runHadEt(bool submit = false) {
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);
   AliMCEventHandler* handler = new AliMCEventHandler;
-  handler->SetReadTR(kFALSE);
-  mgr->SetMCtruthEventHandler(handler);
+  if(!data){
+    handler->SetReadTR(kFALSE);
+    mgr->SetMCtruthEventHandler(handler);
+  }
   AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt");
   mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
