@@ -1,6 +1,7 @@
 #-*- Mode: Makefile -*-
 
-SRCS=  EBYE/AliAnalysisTaskBF.cxx \
+SRCS=  EBYE/AliAnalysisTaskChargeFluctuations.cxx \
+       EBYE/AliAnalysisTaskBF.cxx \
        EBYE/AliBalance.cxx \
        EBYE/LRC/AliAnalysisTaskLRC.cxx \
        EBYE/LRC/AliLRCAnalysis.cxx \
