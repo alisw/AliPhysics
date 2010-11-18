@@ -43,6 +43,10 @@ public:
   
   // Get the overall statistics for the given selection (result is integrated over not specified rubrics)
   Double_t GetSum(TString selections = "");
+  // Get counters of the rubric "rubric1" for the given "selection"
+  TH1D* Get(TString rubric1, TString selections);
+  // Get counters of the "rubric1" vs "rubric2" for the given "selection"
+  TH2D* Get(TString rubric1, TString rubric2, TString selections);
   
   // Print every individual counters if opt=="", else call "Print(TString rubrics=opt, TString selections="")"
   virtual void Print(const Option_t* opt = "") const;

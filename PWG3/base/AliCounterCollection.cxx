@@ -976,9 +976,9 @@ Int_t AliCounterCollection::GetMaxLabelSize(THashList* labels) const
 }
 
 //-----------------------------------------------------------------------
-TH1D* AliCounterCollection::Draw(TString rubric, TString selections)
+TH1D* AliCounterCollection::Get(TString rubric, TString selections)
 {
-  /// Draw counters of the rubric "rubric" for the given "selection".
+  /// Get counters of the rubric "rubric" for the given "selection".
   /// Format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
   /// Results are integrated over rubrics not specified neither in "rubric1" nor in "selections".
   /// It is the responsability of the user to delete the returned histogram.
@@ -999,14 +999,13 @@ TH1D* AliCounterCollection::Draw(TString rubric, TString selections)
   // project counters in the rubrics to print according to the selections
   TH1D* hist = static_cast<TH1D*>(Projection(rubricsToPrint, selections));
   
-  // draw counters
+  // make it ready to display
   if (hist) {
     
-    // draw histogram
-    hist->Draw("htext");
+    // remove statistic box
     hist->SetStats(kFALSE);
     
-    // draw X axis
+    // prepare X axis
     TAxis* axis = hist->GetXaxis();
     THashList* labels = axis->GetLabels();
     Int_t nLabels = (labels) ? labels->GetSize() : 1;
@@ -1014,7 +1013,7 @@ TH1D* AliCounterCollection::Draw(TString rubric, TString selections)
     axis->SetNdivisions(1,kFALSE);
     axis->SetTitle(rubric.Data());
     
-    // draw Y axis
+    // prepare Y axis
     hist->GetYaxis()->SetTitle("Counts");
   }
   
@@ -1022,9 +1021,9 @@ TH1D* AliCounterCollection::Draw(TString rubric, TString selections)
 }
 
 //-----------------------------------------------------------------------
-TH2D* AliCounterCollection::Draw(TString rubric1, TString rubric2, TString selections)
+TH2D* AliCounterCollection::Get(TString rubric1, TString rubric2, TString selections)
 {
-  /// Draw counters of the "rubric1" vs "rubric2" for the given "selection".
+  /// Get counters of the "rubric1" vs "rubric2" for the given "selection".
   /// Format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
   /// Results are integrated over rubrics not specified neither in "rubric1", "rubric2" nor in "selections".
   /// It is the responsability of the user to delete the returned histogram.
@@ -1050,11 +1049,10 @@ TH2D* AliCounterCollection::Draw(TString rubric1, TString rubric2, TString selec
   // draw counters
   if (hist) {
     
-    // draw histogram
-    hist->Draw("text");
+    // remove statistic box
     hist->SetStats(kFALSE);
     
-    // draw X axis
+    // prepare X axis
     TAxis* axisX = hist->GetXaxis();
     THashList* labelsX = axisX->GetLabels();
     Int_t nLabelsX = (labelsX) ? labelsX->GetSize() : 1;
@@ -1062,7 +1060,7 @@ TH2D* AliCounterCollection::Draw(TString rubric1, TString rubric2, TString selec
     axisX->SetNdivisions(1,kFALSE);
     axisX->SetTitle(rubric2.Data());
     
-    // draw Y axis
+    // prepare Y axis
     TAxis* axisY = hist->GetYaxis();
     THashList* labelsY = axisY->GetLabels();
     Int_t nLabelsY = (labelsY) ? labelsY->GetSize() : 1;
@@ -1071,6 +1069,30 @@ TH2D* AliCounterCollection::Draw(TString rubric1, TString rubric2, TString selec
     axisY->SetTitle(rubric1.Data());
   }
   
+  return hist;
+}
+
+//-----------------------------------------------------------------------
+TH1D* AliCounterCollection::Draw(TString rubric, TString selections)
+{
+  /// Draw counters of the rubric "rubric" for the given "selection".
+  /// Format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
+  /// Results are integrated over rubrics not specified neither in "rubric1" nor in "selections".
+  /// It is the responsability of the user to delete the returned histogram.
+  TH1D* hist = Get(rubric, selections);
+  if (hist) hist->Draw("htext");
+  return hist;
+}
+
+//-----------------------------------------------------------------------
+TH2D* AliCounterCollection::Draw(TString rubric1, TString rubric2, TString selections)
+{
+  /// Draw counters of the "rubric1" vs "rubric2" for the given "selection".
+  /// Format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
+  /// Results are integrated over rubrics not specified neither in "rubric1", "rubric2" nor in "selections".
+  /// It is the responsability of the user to delete the returned histogram.
+  TH2D* hist = Get(rubric1, rubric2, selections);
+  if (hist) hist->Draw("text");
   return hist;
 }
 
