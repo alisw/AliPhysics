@@ -51,7 +51,7 @@ void extract_ESD(const char* input, const char *cdbURI, int nofEvents=-1){
   arg.Form("-typeid ALIESDV0");
   AliHLTConfiguration publisher("hltout-publisher", "AliHLTOUTPublisher" , NULL, arg.Data());
 
-  arg.Form("");
+  arg.Form("-treename HLTesdTree");
   AliHLTConfiguration collector("sink1","EsdCollector","hltout-publisher", arg.Data());
 
   // the reconstructor setup
@@ -74,6 +74,10 @@ void extract_ESD(const char* input, const char *cdbURI, int nofEvents=-1){
     hltRec.Reconstruct(pRawReader, NULL);
     event++;
   }
+}
+
+void extract_ESD(const char* input, int nofEvents=-1){
+  extract_ESD(input, "raw://", nofEvents);
 }
 
 void extract_ESD(){
