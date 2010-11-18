@@ -59,6 +59,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
 : AliAnalysisTask("AliPWG4HighPtQAMC", ""), 
   fESD(0), 
   fMC(0),
+  fStack(0),
   fTrackCuts(0), 
   fTrackCutsITS(0),
   fTrackType(0),
@@ -105,6 +106,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   AliAnalysisTask(name,""), 
   fESD(0),
   fMC(0),
+  fStack(0),
   fTrackCuts(),
   fTrackCutsITS(),
   fTrackType(0),
@@ -175,10 +177,10 @@ void AliPWG4HighPtQAMC::ConnectInputData(Option_t *)
   } else
     fESD = esdH->GetEvent();
   
- AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
- if (!eventHandler) {
-   AliDebug(2,Form( "ERROR: Could not retrieve MC event handler \n"));
- }
+  AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if (!eventHandler) {
+    AliDebug(2,Form( "ERROR: Could not retrieve MC event handler \n"));
+  }
   else
     fMC = eventHandler->MCEvent();
 
@@ -354,6 +356,90 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   TH1::AddDirectory(oldStatus); 
 
 }
+
+//________________________________________________________________________
+Bool_t AliPWG4HighPtQAMC::SelectEvent() {
+  //
+  // Decide if event should be selected for analysis
+  //
+
+  // Checks following requirements:
+  // - fESD available
+  // - trigger info from AliPhysicsSelection
+  // - MCevent available
+  // - number of reconstructed tracks > 1
+  // - primary vertex reconstructed
+  // - z-vertex < 10 cm
+
+  Bool_t selectEvent = kTRUE;
+
+  //fESD object available?
+  if (!fESD) {
+    AliDebug(2,Form("ERROR: fInputEvent not available\n"));
+    fNEventReject->Fill("noESD",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+
+  //Trigger
+  UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if(!(isSelected&AliVEvent::kMB)) { //Select collison candidates
+    AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
+    fNEventReject->Fill("Trigger",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+
+  //MCEvent available?
+  //if yes: get stack
+  if(fMC) {
+    AliDebug(2,Form("MC particles: %d", fMC->GetNumberOfTracks()));
+    fStack = fMC->Stack();                //Particles Stack
+    AliDebug(2,Form("MC particles stack: %d", fStack->GetNtrack()));
+  } else {
+    AliDebug(2,Form("ERROR: Could not retrieve MC eventHandler"));
+    fNEventReject->Fill("noMCEvent",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+
+  //Check if number of reconstructed tracks is larger than 1
+  if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2)  {
+    fNEventReject->Fill("NTracks<2",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+
+  //Check if vertex is reconstructed
+  const AliESDVertex *vtx = fESD->GetPrimaryVertex();
+  // Need vertex cut
+  TString vtxName(vtx->GetName());
+  if(vtx->GetNContributors() < 2 || (vtxName.Contains("TPCVertex")) ) {
+    // SPD vertex
+    vtx = fESD->GetPrimaryVertexSPD();
+    if(vtx->GetNContributors()<2) {
+      vtx = 0x0;
+      fNEventReject->Fill("noVTX",1);
+      selectEvent = kFALSE;
+      return selectEvent;
+    }
+  }
+
+  //Check if z-vertex < 10 cm
+  double primVtx[3];
+  vtx->GetXYZ(primVtx);
+  if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
+    fNEventReject->Fill("ZVTX>10",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+  
+  AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
+
+  return selectEvent;
+
+}
+
 //________________________________________________________________________
 void AliPWG4HighPtQAMC::Exec(Option_t *) {  
   // Main loop
@@ -362,40 +448,15 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   // All events without selection
   fNEventAll->Fill(0.);
 
-  if (!fESD) {
-    AliDebug(2,Form("ERROR: fInputEvent not available\n"));
-    fNEventReject->Fill("noESD",1);
-    PostData(0, fHistList);
-    PostData(1, fHistListITS);
-    return;
-  }
-
-  UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(!(isSelected&AliVEvent::kMB)) { //Select collison candidates
-    AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
-    fNEventReject->Fill("Trigger",1);
+  if(!SelectEvent()) {
     // Post output data
-    PostData(0, fHistList);
-    PostData(1, fHistListITS);
-    return;
-  }
-  
-  AliStack* stack = 0x0;
-  
-  if(fMC) {
-    AliDebug(2,Form("MC particles: %d", fMC->GetNumberOfTracks()));
-    stack = fMC->Stack();                //Particles Stack
-    AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
-  } else {
-    AliDebug(2,Form("ERROR: Could not retrieve MC eventHandler"));
-    fNEventReject->Fill("noMCEvent",1);
+    fNEventReject->Fill("NTracks<2",1);
     PostData(0, fHistList);
     PostData(1, fHistListITS);
     return;
   }
 
-  //___ get MC information __________________________________________________________________
-
+  // ---- Get MC Header information (for MC productions in pThard bins) ----
   Double_t ptHard = 0.;
   Double_t nTrials = 1; // trials for MC trigger weight for real data
   
@@ -412,48 +473,13 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
      }
   }
 
-  const AliESDVertex *vtx = fESD->GetPrimaryVertex();
-  // Need vertex cut
-  TString vtxName(vtx->GetName());
-  if(vtx->GetNContributors() < 2 || (vtxName.Contains("TPCVertex")) ) {
-    // SPD vertex
-    vtx = fESD->GetPrimaryVertexSPD();
-    if(vtx->GetNContributors()<2) {
-      vtx = 0x0;
-      fNEventReject->Fill("noVTX",1);
-      // Post output data
-      PostData(0, fHistList);
-      PostData(1, fHistListITS);
-      return;
-    }
-  }
-
-  double primVtx[3];
-  vtx->GetXYZ(primVtx);
-  if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
-    fNEventReject->Fill("ZVTX>10",1);
-    // Post output data
-    PostData(0, fHistList);
-    PostData(1, fHistListITS);
-    return;
-  }
-  
-  AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
-
-  if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2)  {
-    fNEventReject->Fill("NTracks<2",1);
-    PostData(0, fHistList);
-    PostData(1, fHistListITS);
-    return;
-  }
-
   //Need to keep track of selected events
   fNEventSel->Fill(0.);
 
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks ESD%d", nTracks));
 
-  int nMCtracks = stack->GetNtrack();
+  int nMCtracks = fStack->GetNtrack();
 
   Float_t pt      = 0.;
   Float_t ptMC    = 0.;
@@ -482,7 +508,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
     Int_t label = TMath::Abs(track->GetLabel());
     if(label>=nMCtracks)continue;
-    TParticle *particle = stack->Particle(label) ;
+    TParticle *particle = fStack->Particle(label) ;
     if(!particle) continue;
 
     ptMC = particle->Pt();

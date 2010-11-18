@@ -31,6 +31,7 @@ class TList;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliMCEvent;
+class AliStack;
 class AliGenPythiaEventHeader;
 //class AliAnalysisHelperJetTasks;
 
@@ -46,6 +47,8 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
   virtual Bool_t Notify(); //Copied from AliAnalysisTaskJetSpectrum2
+
+  Bool_t SelectEvent();    //decides if event is used for analysis
 
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
@@ -65,7 +68,8 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
 
   AliESDEvent *fESD;              //! ESD object
   AliMCEvent  *fMC;               //! MC event object
- 
+  AliStack    *fStack;            //! stack object
+
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global reconstructed vs MC comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
 
