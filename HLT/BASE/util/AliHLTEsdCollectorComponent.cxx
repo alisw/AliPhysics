@@ -31,9 +31,9 @@
 ClassImp(AliHLTEsdCollectorComponent)
 
 AliHLTEsdCollectorComponent::AliHLTEsdCollectorComponent()
-  :
-  AliHLTFileWriter(),
-  fpManager(NULL)
+  : AliHLTFileWriter()
+  , fpManager(NULL)
+  , fTreeName()
 {
   // see header file for class documentation
   // or
@@ -64,6 +64,10 @@ int AliHLTEsdCollectorComponent::InitWriter()
     if (!GetDirectory().IsNull()) {
       option+=" -directory=";
       option+=GetDirectory();
+    }
+    if (!fTreeName.IsNull()) {
+      option+=" -treename=";
+      option+=fTreeName;
     }
     iResult=fpManager->SetOption(option.Data());
   } else {
@@ -105,10 +109,23 @@ int AliHLTEsdCollectorComponent::DumpEvent( const AliHLTComponentEventData& /*ev
   return iResult;
 }
 
-int AliHLTEsdCollectorComponent::ScanArgument(int /*argc*/, const char** /*argv*/)
+int AliHLTEsdCollectorComponent::ScanArgument(int argc, const char** argv)
 {
   // see header file for class documentation
-  // no other arguments known
+  if (argc<=0) return 0;
   int iResult=-EINVAL;
+  int iArg=0;
+  TString argument=argv[iArg];
+
+  // -treename
+  if (argument.CompareTo("-treename")==0) {
+    if (++iArg==argc) {
+      HLTError("expecting parameter for argument '-treename'");
+      iResult=-EPROTO;
+    } else {
+      fTreeName=argv[iArg];
+      iResult=++iArg;
+    }
+  }
   return iResult;
 }

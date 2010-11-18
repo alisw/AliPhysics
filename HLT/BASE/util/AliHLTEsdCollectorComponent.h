@@ -14,6 +14,7 @@
 */
 
 #include "AliHLTFileWriter.h"
+#include "TString.h"
 
 class AliHLTEsdManager;
 
@@ -101,6 +102,8 @@ private:
 
   /** the ESD manager instance writes the ESDs */
   AliHLTEsdManager* fpManager; //! transient
+  /** name of the tree for ESD storage */
+  TString fTreeName; //! transient
 
   ClassDef(AliHLTEsdCollectorComponent, 0)
 };
