@@ -61,15 +61,15 @@ void AliPHOSEsdCluster::Recalibrate(AliPHOSCalibData * calibData,AliESDCaloCells
   //NOTE that after recalibration fCellsAmpFraction contains not FRACTION but FULL energy 
   
   if(fRecalibrated)
-   return ;
+    return ;
   
   if(!calibData)
     return ;
-
+  
   AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
   if(!phosgeom)
     AliFatal("AliPHOSGeometry was not contructed\n") ;
-
+  
   for(Int_t i=0; i<fNCells; i++){
     Int_t relId[4];
     phosgeom->AbsToRelNumbering(fCellsAbsId[i],relId) ;
@@ -77,12 +77,9 @@ void AliPHOSEsdCluster::Recalibrate(AliPHOSCalibData * calibData,AliESDCaloCells
     Int_t   column = relId[3];
     Int_t   row    = relId[2];
     Double_t energy = phsCells->GetCellAmplitude(fCellsAbsId[i]) ;
-Double_t fr = fCellsAmpFraction[i] ;
     fCellsAmpFraction[i]*=energy*calibData->GetADCchannelEmc(module,column,row);
-    printf("      mod=%d, col=%d, row=%d \n",module,column,row);
-    printf("  cell=%d, Amp=%f, E(i)=%f, Fr=%f, ci=%f \n",i,energy,fCellsAmpFraction[i],fr,calibData->GetADCchannelEmc(module,column,row)) ;
   }
-printf("----\n") ;
+  
   fRecalibrated=kTRUE; 
 }
 //____________________________________________________________________________
@@ -104,15 +101,7 @@ void AliPHOSEsdCluster::EvalEnergy(){
   for(Int_t iDigit=0; iDigit<fNCells; iDigit++) {
     fEnergy+=fCellsAmpFraction[iDigit] ;
   }
-  //Correct for nonlinearity later
-  if(fEnergy==0.){
-    printf("fEnergy=0 \n") ;
-    printf("n Digits = %d \n",fNCells) ;
-    for(Int_t iDigit=0; iDigit<fNCells; iDigit++) {
-      printf("E(%d)=%f \n",iDigit,fCellsAmpFraction[iDigit]);
-    }
-  }
-   
+  //Correct for nonlinearity later   
 }
 //____________________________________________________________________________
 void AliPHOSEsdCluster::EnergyCorrection(){
