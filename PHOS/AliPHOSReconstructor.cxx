@@ -507,6 +507,11 @@ void AliPHOSReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
 //==================================================================================
 Float_t AliPHOSReconstructor::CorrectNonlinearity(Float_t en){
 
+  //For backward compatibility, if no RecoParameters found
+  if(!GetRecoParam()){
+    return 0.0241+1.0504*en+0.000249*en*en ;
+  }
+
   if(strcmp(GetRecoParam()->GetNonlinearityCorrectionVersion(),"NoCorrection")==0){
     return en ;
   }
