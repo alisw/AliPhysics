@@ -14,6 +14,7 @@
 class AliVParticle;
 
 class TList;
+class TSeqCollection;
 class TH1F;
 class TH2F;
 class TH3F;
@@ -21,10 +22,11 @@ class TH3F;
 class AliUEHistograms : public TObject
 {
  public:
-  AliUEHistograms();
+  AliUEHistograms(const char* histograms = "123");
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
+  void FillCorrelations(Int_t eventType, Int_t centrality, AliUEHist::CFStep step, TSeqCollection* particles);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
   void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType);
@@ -47,6 +49,7 @@ class AliUEHistograms : public TObject
   TH2F* GetEventCount()     { return fEventCount; }
   TH3F* GetEventCountDifferential() { return fEventCountDifferential; }
   TH1F* GetVertexContributors() { return fVertexContributors; }
+  TH1F* GetCentralityDistribution() { return fCentralityDistribution; }
   
   void Correct(AliUEHistograms* corrections);
   
@@ -66,6 +69,8 @@ class AliUEHistograms : public TObject
 protected:
   void FillRegion(AliUEHist::Region region, AliUEHist::CFStep step, AliVParticle* leading, TList* list, Int_t multiplicity);
   Int_t CountParticles(TList* list, Float_t ptMin);
+  
+  static const Int_t fgkUEHists; // number of histograms
 
   AliUEHist* fNumberDensitypT;   // d^2N/dphideta vs pT,lead
   AliUEHist* fSumpT;             // d^2 sum(pT)/dphideta vs pT,lead
@@ -82,8 +87,9 @@ protected:
   TH3F* fEventCountDifferential;// event count as function of leading pT, step, event type
   
   TH1F* fVertexContributors;    // number of contributors to the vertex
+  TH1F* fCentralityDistribution; // distribution of the variable used for centrality selection
   
-  ClassDef(AliUEHistograms, 1)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 2)  // underlying event histogram container
 };
 
 #endif
