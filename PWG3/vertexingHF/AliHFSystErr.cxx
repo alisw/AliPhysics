@@ -309,14 +309,60 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   TCanvas *cSystErr = new TCanvas("cSystErr","Systematic Errors",0,0,500,500);
   cSystErr->SetFillColor(0);
 
-  TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{t} [GeV/c]; Relative Error",20,0,20,100,0,+1);
+  TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{t} [GeV/c]; Relative Error",20,0,20,100,-1,+1);
   hFrame->SetAxisRange(2.,11.9,"X");
-  hFrame->SetAxisRange(0.,0.5,"Y");
+  hFrame->SetAxisRange(-0.5,0.5,"Y");
   hFrame->Draw();
 
   TLegend *leg=new TLegend(0.5,0.5,0.9,0.9);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
+  
+  TH1F *hTotErr=new TH1F("hTotErr","",20,0,20);
+  Int_t nbins = fNorm->GetNbinsX();
+  TGraphAsymmErrors *gTotErr = new TGraphAsymmErrors(nbins);
+  for(Int_t i=1;i<=20;i++) {
+    Double_t pt = hTotErr->GetBinCenter(i);
+    Double_t ptwidth = hTotErr->GetBinWidth(i);
+
+    if(grErrFeeddown) {
+      Double_t x=0., y=0., errxl=0., errxh=0., erryl=0., erryh=0.;
+      Double_t toterryl=0., toterryh=0.;
+      for(Int_t j=0; j<grErrFeeddown->GetN(); j++) {
+	grErrFeeddown->GetPoint(j,x,y);
+	errxh = grErrFeeddown->GetErrorXhigh(j);
+	errxl = grErrFeeddown->GetErrorXlow(j);
+	if ( ( (x-errxl) >= pt) && ( (x+errxl) <= pt) ) {
+	  erryh = grErrFeeddown->GetErrorYhigh(j);
+	  erryl = grErrFeeddown->GetErrorYlow(j);
+	}
+      }
+      if (erryl>=1e-3) toterryl = GetTotalSystErr(pt,erryl);
+      else toterryl = GetTotalSystErr(pt);
+      if (erryh>=1e-3) toterryh = GetTotalSystErr(pt,erryh);
+      else toterryh = GetTotalSystErr(pt);
+
+      hTotErr->SetBinContent(i,toterryh);
+      gTotErr->SetPoint(i,pt,0.);
+      gTotErr->SetPointError(i,ptwidth/2.,ptwidth/2.,toterryl,toterryh); // i, exl, exh, eyl, eyh
+    }
+    else {
+      hTotErr->SetBinContent(i,GetTotalSystErr(pt));
+      gTotErr->SetPoint(i,pt,0.);
+      gTotErr->SetPointError(i,ptwidth/2.,ptwidth/2.,GetTotalSystErr(pt),GetTotalSystErr(pt)); // i, exl, exh, eyl, eyh
+    }
+
+  }
+  gTotErr->SetLineColor(kYellow);
+  gTotErr->SetFillColor(kYellow-10);
+  gTotErr->SetFillStyle(1001);
+  gTotErr->Draw("2");
+  leg->AddEntry(gTotErr,"Total (excl. norm.)","f");
+//   hTotErr->SetLineColor(1);
+//   hTotErr->SetLineWidth(3);
+//   hTotErr->Draw("same");
+//   leg->AddEntry(hTotErr,"Total (excl. norm.)","l");
+  
 
   if(fNorm) {
     fNorm->SetFillColor(1);
@@ -381,26 +427,6 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     leg->AddEntry(fPartAntipart,"D = #bar{D}","l");
   }
 
-  
-  TH1F *hTotErr=new TH1F("hTotErr","",20,0,20);
-  for(Int_t i=1;i<=20;i++) {
-    Double_t pt=hTotErr->GetBinCenter(i);
-    if(grErrFeeddown) {
-      Double_t x=0., y=0., erryh = 0.;
-      for(Int_t j=0; j<grErrFeeddown->GetN(); j++) {
-	grErrFeeddown->GetPoint(j,x,y);
-	if ( TMath::Abs(x - pt) < 0.5) erryh = grErrFeeddown->GetErrorYhigh(j);   
-      }
-      hTotErr->SetBinContent(i,GetTotalSystErr(pt,erryh));
-    } else { 
-      hTotErr->SetBinContent(i,GetTotalSystErr(pt));
-    }
-  }
-  hTotErr->SetLineColor(1);
-  hTotErr->SetLineWidth(3);
-  hTotErr->Draw("same");
-  leg->AddEntry(hTotErr,"Total (excl. norm.)","l");
-  
 
   leg->Draw();
 

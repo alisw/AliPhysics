@@ -245,6 +245,16 @@ TH1D * AliHFPtSpectrum::RebinTheoreticalSpectra(TH1D *hTheory, const char *name)
   }
   limits[nbins] = xlow + binwidth;
 
+  // Check that the reconstructed spectra binning 
+  // is larger than the theoretical one
+  Double_t thbinwidth = hTheory->GetBinWidth(1);
+  for (Int_t i=1; i<=nbins; i++) {
+    binwidth = fhRECpt->GetBinWidth(i);
+    if ( thbinwidth > binwidth ) {
+      AliInfo(" Beware it seems that the reconstructed spectra has a smaller binning than the theoretical predictions !! ");
+    }
+  }
+
   //
   // Define a new histogram with the real-data reconstructed spectrum binning 
   TH1D * hTheoryRebin = new TH1D(name," theoretical rebinned prediction",nbins,limits);
@@ -290,24 +300,12 @@ void AliHFPtSpectrum::SetMCptSpectra(TH1D *hDirect, TH1D *hFeedDown){
   }
 
   //
-  // If the predictions shape do not have the same
-  //  bin width (check via number of bins) as the reconstructed spectra, change them 
-  if (hDirect->GetBinWidth(1) == fhRECpt->GetBinWidth(1)) {
-
-    fhDirectMCpt = (TH1D*)hDirect->Clone();
-    fhDirectMCpt->SetNameTitle("fhDirectMCpt"," direct theoretical prediction");
-    fhFeedDownMCpt = (TH1D*)hFeedDown->Clone();
-    fhFeedDownMCpt->SetNameTitle("fhFeedDownMCpt"," feed-down theoretical prediction");
-
-  }
-  else {
-
-    fhDirectMCpt = RebinTheoreticalSpectra(hDirect,"fhDirectMCpt");
-    fhDirectMCpt->SetNameTitle("fhDirectMCpt"," direct theoretical prediction");
-    fhFeedDownMCpt = RebinTheoreticalSpectra(hFeedDown,"fhFeedDownMCpt");
-    fhFeedDownMCpt->SetNameTitle("fhFeedDownMCpt"," feed-down theoretical prediction");
-
-  }
+  // Rebin the theoretical predictions to the reconstructed spectra binning 
+  //
+  fhDirectMCpt = RebinTheoreticalSpectra(hDirect,"fhDirectMCpt");
+  fhDirectMCpt->SetNameTitle("fhDirectMCpt"," direct theoretical prediction");
+  fhFeedDownMCpt = RebinTheoreticalSpectra(hFeedDown,"fhFeedDownMCpt");
+  fhFeedDownMCpt->SetNameTitle("fhFeedDownMCpt"," feed-down theoretical prediction");
 
 }
 
@@ -324,20 +322,10 @@ void AliHFPtSpectrum::SetFeedDownMCptSpectra(TH1D *hFeedDown){
   }
 
   //
-  // If the predictions shape do not have the same
-  //  bin width (check via number of bins) as the reconstructed spectra, change them 
-  if (hFeedDown->GetBinWidth(1) == fhRECpt->GetBinWidth(1)) {
-
-    fhFeedDownMCpt = (TH1D*)hFeedDown->Clone();
-    fhFeedDownMCpt->SetNameTitle("fhFeedDownMCpt"," feed-down theoretical prediction");
-
-  } 
-  else {
-
-    fhFeedDownMCpt = RebinTheoreticalSpectra(hFeedDown,"fhFeedDownMCpt");
-    fhFeedDownMCpt->SetNameTitle("fhFeedDownMCpt"," feed-down theoretical prediction");
-
-  }
+  // Rebin the theoretical predictions to the reconstructed spectra binning 
+  //
+  fhFeedDownMCpt = RebinTheoreticalSpectra(hFeedDown,"fhFeedDownMCpt");
+  fhFeedDownMCpt->SetNameTitle("fhFeedDownMCpt"," feed-down theoretical prediction");
 
 }
 
@@ -365,32 +353,16 @@ void AliHFPtSpectrum::SetMCptDistributionsBounds(TH1D *hDirectMax, TH1D *hDirect
 
 
   //
-  // If the predictions shape do not have the same
-  //  bin width (check via number of bins) as the reconstructed spectra, change them 
-  if (hFeedDownMax->GetBinWidth(1) == fhRECpt->GetBinWidth(1)) {
-    
-    fhDirectMCptMax = (TH1D*)hDirectMax->Clone();
-    fhDirectMCptMin = (TH1D*)hDirectMin->Clone();
-    fhFeedDownMCptMax = (TH1D*)hFeedDownMax->Clone();
-    fhFeedDownMCptMin = (TH1D*)hFeedDownMin->Clone(); 
-    fhDirectMCptMax->SetNameTitle("fhDirectMCptMax"," maximum direct theoretical prediction");
-    fhDirectMCptMin->SetNameTitle("fhDirectMCptMin"," minimum direct theoretical prediction");
-    fhFeedDownMCptMax->SetNameTitle("fhFeedDownMCptMax"," maximum feed-down theoretical prediction");
-    fhFeedDownMCptMin->SetNameTitle("fhFeedDownMCptMin"," minimum feed-down theoretical prediction");
-
-  } 
-  else {
-
-    fhDirectMCptMax = RebinTheoreticalSpectra(hDirectMax,"fhDirectMCptMax");
-    fhDirectMCptMax->SetNameTitle("fhDirectMCptMax"," maximum direct theoretical prediction");
-    fhDirectMCptMin = RebinTheoreticalSpectra(hDirectMin,"fhDirectMCptMin");
-    fhDirectMCptMin->SetNameTitle("fhDirectMCptMin"," minimum direct theoretical prediction");
-    fhFeedDownMCptMax = RebinTheoreticalSpectra(hFeedDownMax,"fhFeedDownMCptMax");
-    fhFeedDownMCptMax->SetNameTitle("fhFeedDownMCptMax"," maximum feed-down theoretical prediction");
-    fhFeedDownMCptMin = RebinTheoreticalSpectra(hFeedDownMin,"fhFeedDownMCptMin");
-    fhFeedDownMCptMin->SetNameTitle("fhFeedDownMCptMin"," minimum feed-down theoretical prediction");
-
-  }
+  // Rebin the theoretical predictions to the reconstructed spectra binning 
+  //
+  fhDirectMCptMax = RebinTheoreticalSpectra(hDirectMax,"fhDirectMCptMax");
+  fhDirectMCptMax->SetNameTitle("fhDirectMCptMax"," maximum direct theoretical prediction");
+  fhDirectMCptMin = RebinTheoreticalSpectra(hDirectMin,"fhDirectMCptMin");
+  fhDirectMCptMin->SetNameTitle("fhDirectMCptMin"," minimum direct theoretical prediction");
+  fhFeedDownMCptMax = RebinTheoreticalSpectra(hFeedDownMax,"fhFeedDownMCptMax");
+  fhFeedDownMCptMax->SetNameTitle("fhFeedDownMCptMax"," maximum feed-down theoretical prediction");
+  fhFeedDownMCptMin = RebinTheoreticalSpectra(hFeedDownMin,"fhFeedDownMCptMin");
+  fhFeedDownMCptMin->SetNameTitle("fhFeedDownMCptMin"," minimum feed-down theoretical prediction");
 
 }
 
@@ -416,24 +388,12 @@ void AliHFPtSpectrum::SetFeedDownMCptDistributionsBounds(TH1D *hFeedDownMax, TH1
 
 
   //
-  // If the predictions shape do not have the same
-  //  bin width (check via number of bins) as the reconstructed spectra, change them 
-  if (hFeedDownMax->GetBinWidth(1) == fhRECpt->GetBinWidth(1)) {
-    
-    fhFeedDownMCptMax = (TH1D*)hFeedDownMax->Clone();
-    fhFeedDownMCptMin = (TH1D*)hFeedDownMin->Clone(); 
-    fhFeedDownMCptMax->SetNameTitle("fhFeedDownMCptMax"," maximum feed-down theoretical prediction");
-    fhFeedDownMCptMin->SetNameTitle("fhFeedDownMCptMin"," minimum feed-down theoretical prediction");
-
-  } 
-  else {
-
-    fhFeedDownMCptMax = RebinTheoreticalSpectra(hFeedDownMax,"fhFeedDownMCptMax");
-    fhFeedDownMCptMax->SetNameTitle("fhFeedDownMCptMax"," maximum feed-down theoretical prediction");
-    fhFeedDownMCptMin = RebinTheoreticalSpectra(hFeedDownMin,"fhFeedDownMCptMin");
-    fhFeedDownMCptMin->SetNameTitle("fhFeedDownMCptMin"," minimum feed-down theoretical prediction");
-
-  }
+  // Rebin the theoretical predictions to the reconstructed spectra binning 
+  //
+  fhFeedDownMCptMax = RebinTheoreticalSpectra(hFeedDownMax,"fhFeedDownMCptMax");
+  fhFeedDownMCptMax->SetNameTitle("fhFeedDownMCptMax"," maximum feed-down theoretical prediction");
+  fhFeedDownMCptMin = RebinTheoreticalSpectra(hFeedDownMin,"fhFeedDownMCptMin");
+  fhFeedDownMCptMin->SetNameTitle("fhFeedDownMCptMin"," minimum feed-down theoretical prediction");
 
 }
 
@@ -624,12 +584,12 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
       errvalueMax = value * TMath::Sqrt( (fgYieldCorr->GetErrorYhigh(ibin)/fhYieldCorr->GetBinContent(ibin))*(fgYieldCorr->GetErrorYhigh(ibin)/fhYieldCorr->GetBinContent(ibin)) + 
 					 (fLuminosity[1]/fLuminosity[0])*(fLuminosity[1]/fLuminosity[0]) + 
 					 (fTrigEfficiency[1]/fTrigEfficiency[0])*(fTrigEfficiency[1]/fTrigEfficiency[0])  +
-					 (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) +
+					 //					 (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) +
 					 fGlobalEfficiencyUncertainties[0]*fGlobalEfficiencyUncertainties[0] );
       errvalueMin = value * TMath::Sqrt( (fgYieldCorr->GetErrorYlow(ibin)/fhYieldCorr->GetBinContent(ibin))*(fgYieldCorr->GetErrorYlow(ibin)/fhYieldCorr->GetBinContent(ibin)) + 
 					 (fLuminosity[1]/fLuminosity[0])*(fLuminosity[1]/fLuminosity[0]) + 
 					 (fTrigEfficiency[1]/fTrigEfficiency[0])*(fTrigEfficiency[1]/fTrigEfficiency[0])  +
-					 (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))  +
+					 //					 (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))  +
 					 fGlobalEfficiencyUncertainties[0]*fGlobalEfficiencyUncertainties[0] );
 
       // Uncertainties from feed-down
@@ -648,7 +608,7 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
       errvalueMax = (value!=0.) ?
 	value * TMath::Sqrt( (fLuminosity[1]/fLuminosity[0])*(fLuminosity[1]/fLuminosity[0]) + 
 			     (fTrigEfficiency[1]/fTrigEfficiency[0])*(fTrigEfficiency[1]/fTrigEfficiency[0])  +
-			     (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))  +
+			     //			     (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))  +
 			     fGlobalEfficiencyUncertainties[0]*fGlobalEfficiencyUncertainties[0] )
 	: 0. ;
       errvalueMin = errvalueMax;
@@ -971,6 +931,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
     correctionConservativeA = ( 1. / ( 1 + ( effRatio * theoryRatioConservativeA ) ) );
     correctionConservativeB = ( 1. / ( 1 + ( effRatio * theoryRatioConservativeB ) ) );
 
+
     // fc uncertainty from (eff_b/eff_c) = fc^2 * (N_b/N_c) * delta(eff_b/eff_c)
     //  delta(eff_b/eff_c) is a percentage = fGlobalEfficiencyUncertainties[1]*effRatio
     correctionUnc = correction*correction * theoryRatio * fGlobalEfficiencyUncertainties[1]*effRatio;
@@ -996,8 +957,6 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
       fhFcMin->SetBinContent(ibin,correction-uncExtremeMin);
       Double_t consval[4] = { correctionConservativeA - correctionConservativeAUnc, correctionConservativeA + correctionConservativeAUnc,
 			      correctionConservativeB - correctionConservativeBUnc, correctionConservativeB + correctionConservativeBUnc};
-//       Double_t uncConservativeMin = correction - (correctionConservativeA - correctionConservativeAUnc);
-//       Double_t uncConservativeMax = (correctionConservativeB + correctionConservativeBUnc) - correction;
       Double_t uncConservativeMin = correction - TMath::MinElement(4,consval);
       Double_t uncConservativeMax =  TMath::MaxElement(4,consval) - correction;
       fgFcConservative->SetPoint(ibin,x,correction); // i,x,y
@@ -1172,6 +1131,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     //                                                   + (k*delta_Nb/Nb)^2 + (k*delta_eff/eff)^2 + (k*global_eff_ratio)^2 ) / bin-width
     //                    where k = lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th
     kfactor = deltaY*branchingRatioBintoFinalDecay*fLuminosity[0]*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) ;
+
     //
     if (fAsymUncertainties) {
       Double_t Nb =  fhFeedDownMCpt->GetBinContent(ibin);
@@ -1190,26 +1150,27 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       errvalueExtremeMin = TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
 					( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
 					( (kfactor*NbDmax/Nb)*(kfactor*NbDmax/Nb) )  +
-					( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
+					//					( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
 					( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) ) 
 					) / fhRECpt->GetBinWidth(ibin);
       // max value with the minimum Nb
       errvalueExtremeMax =  TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
 					 ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
 					 ( (kfactor*NbDmin/Nb)*(kfactor*NbDmin/Nb) )  +
-					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	) +
+					 //					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	) +
 					 ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
 					 ) / fhRECpt->GetBinWidth(ibin);
     }
     else{ // Don't consider Nb uncertainty in this case [ to be tested!!! ]
       errvalueExtremeMax =  TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
 					 ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) )  +
-					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	)  +
+					 //					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	)  +
 					 ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
 					 ) / fhRECpt->GetBinWidth(ibin);
       errvalueExtremeMin =  errvalueExtremeMax ;
     }
     
+
     // fill in histograms
     fhYieldCorr->SetBinContent(ibin,value);
     fhYieldCorr->SetBinError(ibin,errvalue);
