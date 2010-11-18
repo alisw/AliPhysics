@@ -35,7 +35,9 @@
 
 ClassImp(AliUEHistograms)
 
-AliUEHistograms::AliUEHistograms() : 
+const Int_t AliUEHistograms::fgkUEHists = 3;
+
+AliUEHistograms::AliUEHistograms(const char* histograms) : 
   TObject(),
   fNumberDensitypT(0),
   fSumpT(0),
@@ -48,13 +50,28 @@ AliUEHistograms::AliUEHistograms() :
   fCorrelationMultiplicity(0),
   fEventCount(0),
   fEventCountDifferential(0),
-  fVertexContributors(0)
+  fVertexContributors(0),
+  fCentralityDistribution(0)
 {
   // Constructor
+  //
+  // the string histograms defines which histograms are created:
+  //    1 = NumberDensitypT
+  //    2 = SumpT
+  //    3 = NumberDensityPhi
+  //    4 = NumberDensityPhiCentrality (other multiplicity for Pb)
   
-  fNumberDensitypT = new AliUEHist("NumberDensitypT");
-  fSumpT = new AliUEHist("SumpT");
-  fNumberDensityPhi = new AliUEHist("NumberDensityPhi");
+  TString histogramsStr(histograms);
+  
+  if (histogramsStr.Contains("1"))
+    fNumberDensitypT = new AliUEHist("NumberDensitypT");
+  if (histogramsStr.Contains("2"))
+    fSumpT = new AliUEHist("SumpT");
+  
+  if (histogramsStr.Contains("3"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhi");
+  else if (histogramsStr.Contains("4"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentrality");
   
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -79,6 +96,8 @@ AliUEHistograms::AliUEHistograms() :
   
   fVertexContributors = new TH1F("fVertexContributors", ";contributors;count", 100, -0.5, 99.5);
   
+  fCentralityDistribution = new TH1F("fCentralityDistribution", ";;count", fNumberDensityPhi->GetEventHist()->GetNBins(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetBinLowEdge(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetBinUpEdge(fNumberDensityPhi->GetEventHist()->GetNBins(1)));
+  
   TH1::AddDirectory(oldStatus);
 }
 
@@ -96,7 +115,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCorrelationMultiplicity(0),
   fEventCount(0),
   fEventCountDifferential(0),
-  fVertexContributors(0)
+  fVertexContributors(0),
+  fCentralityDistribution(0)
 {
   //
   // AliUEHistograms copy constructor
@@ -181,6 +201,12 @@ AliUEHistograms::~AliUEHistograms()
     delete fVertexContributors;
     fVertexContributors = 0;
   }
+  
+  if (fCentralityDistribution)
+  {
+    delete fCentralityDistribution;
+    fCentralityDistribution = 0;
+  }
 }
 
 AliUEHist* AliUEHistograms::GetUEHist(Int_t id)
@@ -241,9 +267,9 @@ void AliUEHistograms::Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle
     Double_t vars[2];
     vars[0] = leading->Pt();
     vars[1] = multiplicity;
-    fNumberDensitypT->GetEventHist()->Fill(vars, step);
-    fSumpT->GetEventHist()->Fill(vars, step);
-    fNumberDensityPhi->GetEventHist()->Fill(vars, step);
+    for (Int_t i=0; i<fgkUEHists; i++)
+      if (GetUEHist(i))
+        GetUEHist(i)->GetEventHist()->Fill(vars, step);
   
     fEventCountDifferential->Fill(leading->Pt(), step, eventType);
   }
@@ -273,11 +299,15 @@ void AliUEHistograms::FillRegion(AliUEHist::Region region, AliUEHist::CFStep ste
     if (vars[4] < -0.5 * TMath::Pi())
       vars[4] += TMath::TwoPi();
 
-    fNumberDensitypT->GetTrackHist(region)->Fill(vars, step);
-    fSumpT->GetTrackHist(region)->Fill(vars, step, particle->Pt());
+    if (fNumberDensitypT)
+      fNumberDensitypT->GetTrackHist(region)->Fill(vars, step);
+      
+    if (fSumpT)
+      fSumpT->GetTrackHist(region)->Fill(vars, step, particle->Pt());
     
     // fill all in toward region (is anyway as function of delta phi!)
-    fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step);
+    if (fNumberDensityPhi)
+      fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step);
   }
 }
 
@@ -316,6 +346,55 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
     }
   }
 }
+
+//____________________________________________________________________
+void AliUEHistograms::FillCorrelations(Int_t eventType, Int_t centrality, AliUEHist::CFStep step, TSeqCollection* particles)
+{
+  // fills the fNumberDensityPhi histogram
+  //
+  // this function need a list of AliVParticles which contain the particles/tracks to be filled
+  
+  // if particles is not set, just fill event statistics
+  if (particles)
+  {
+    for (Int_t i=0; i<particles->GetEntries(); i++)
+    {
+      AliVParticle* triggerParticle = (AliVParticle*) particles->At(i);
+      for (Int_t j=0; j<particles->GetEntries(); j++)
+      {
+        if (i == j)
+          continue;
+      
+        AliVParticle* particle = (AliVParticle*) particles->At(j);
+        
+        Double_t vars[5];
+        vars[0] = particle->Eta();
+        vars[1] = particle->Pt();
+        vars[2] = triggerParticle->Pt();
+        vars[3] = centrality;
+        vars[4] = triggerParticle->Phi() - particle->Phi();
+        if (vars[4] > 1.5 * TMath::Pi()) 
+          vars[4] -= TMath::TwoPi();
+        if (vars[4] < -0.5 * TMath::Pi())
+          vars[4] += TMath::TwoPi();
+    
+        // fill all in toward region and no not use the other regions
+        fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step);
+      }    
+ 
+      // once per trigger particle
+      Double_t vars[2];
+      vars[0] = triggerParticle->Pt();
+      vars[1] = centrality;
+      fNumberDensityPhi->GetEventHist()->Fill(vars, step);
+    
+      fEventCountDifferential->Fill(triggerParticle->Pt(), step, eventType);
+    }
+  }
+  
+  fCentralityDistribution->Fill(centrality);
+  FillEvent(eventType, step);
+}
   
 //____________________________________________________________________
 void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType)
@@ -343,9 +422,9 @@ void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim,
       vars[1] = particle->Pt();
       vars[2] = particleType;
       
-      fNumberDensitypT->GetTrackHistEfficiency()->Fill(vars, step);
-      fSumpT->GetTrackHistEfficiency()->Fill(vars, step);
-      fNumberDensityPhi->GetTrackHistEfficiency()->Fill(vars, step);
+      for (Int_t j=0; j<fgkUEHists; j++)
+        if (GetUEHist(j))
+          GetUEHist(j)->GetTrackHistEfficiency()->Fill(vars, step);
     }
   }
 }
@@ -365,9 +444,9 @@ void AliUEHistograms::SetEtaRange(Float_t etaMin, Float_t etaMax)
 {
   // sets eta min and max for all contained AliUEHist classes
   
-  fNumberDensitypT->SetEtaRange(etaMin, etaMax);
-  fSumpT->SetEtaRange(etaMin, etaMax);
-  fNumberDensityPhi->SetEtaRange(etaMin, etaMax);
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->SetEtaRange(etaMin, etaMax);
 }
 
 //____________________________________________________________________
@@ -375,9 +454,9 @@ void AliUEHistograms::SetPtRange(Float_t ptMin, Float_t ptMax)
 {
   // sets pT min and max for all contained AliUEHist classes
   
-  fNumberDensitypT->SetPtRange(ptMin, ptMax);
-  fSumpT->SetPtRange(ptMin, ptMax);
-  fNumberDensityPhi->SetPtRange(ptMin, ptMax);
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->SetPtRange(ptMin, ptMax);
 }
 
 //____________________________________________________________________
@@ -385,9 +464,9 @@ void AliUEHistograms::SetContaminationEnhancement(TH1F* hist)
 {
   // sets the contamination enhancement histogram in all contained AliUEHist classes
   
-  fNumberDensitypT->SetContaminationEnhancement(hist);
-  fSumpT->SetContaminationEnhancement(hist);
-  fNumberDensityPhi->SetContaminationEnhancement(hist);
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->SetContaminationEnhancement(hist);
 }  
 
 //____________________________________________________________________
@@ -395,9 +474,9 @@ void AliUEHistograms::SetCombineMinMax(Bool_t flag)
 {
   // sets pT min and max for all contained AliUEHist classes
   
-  fNumberDensitypT->SetCombineMinMax(flag);
-  fSumpT->SetCombineMinMax(flag);
-  fNumberDensityPhi->SetCombineMinMax(flag);
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->SetCombineMinMax(flag);
 }
 
 //____________________________________________________________________
@@ -405,9 +484,9 @@ void AliUEHistograms::Correct(AliUEHistograms* corrections)
 {
   // corrects the contained histograms by calling AliUEHist::Correct
   
-  fNumberDensitypT->Correct(corrections->fNumberDensitypT);
-  fSumpT->Correct(corrections->fSumpT);
-  fNumberDensityPhi->Correct(corrections->fNumberDensityPhi);
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->Correct(corrections->GetUEHist(i));
 }
 
 //____________________________________________________________________
@@ -463,6 +542,9 @@ void AliUEHistograms::Copy(TObject& c) const
     
   if (fVertexContributors)
     target.fVertexContributors = dynamic_cast<TH1F*> (fVertexContributors->Clone());
+
+  if (fCentralityDistribution)
+    target.fCentralityDistribution = dynamic_cast<TH1F*> (fCentralityDistribution->Clone());
 }
 
 //____________________________________________________________________
@@ -482,7 +564,7 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   TObject* obj;
 
   // collections of objects
-  const Int_t kMaxLists = 12;
+  const Int_t kMaxLists = 13;
   TList* lists[kMaxLists];
   
   for (Int_t i=0; i<kMaxLists; i++)
@@ -495,9 +577,12 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     if (entry == 0) 
       continue;
 
-    lists[0]->Add(entry->fNumberDensitypT);
-    lists[1]->Add(entry->fSumpT);
-    lists[2]->Add(entry->fNumberDensityPhi);
+    if (entry->fNumberDensitypT)
+      lists[0]->Add(entry->fNumberDensitypT);
+    if (entry->fSumpT)
+      lists[1]->Add(entry->fSumpT);
+    if (entry->fNumberDensityPhi)
+      lists[2]->Add(entry->fNumberDensityPhi);
     lists[3]->Add(entry->fCorrelationpT);
     lists[4]->Add(entry->fCorrelationEta);
     lists[5]->Add(entry->fCorrelationPhi);
@@ -507,13 +592,17 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     lists[9]->Add(entry->fEventCount);
     lists[10]->Add(entry->fEventCountDifferential);
     lists[11]->Add(entry->fVertexContributors);
+    lists[12]->Add(entry->fCentralityDistribution);
 
     count++;
   }
     
-  fNumberDensitypT->Merge(lists[0]);
-  fSumpT->Merge(lists[1]);
-  fNumberDensityPhi->Merge(lists[2]);
+  if (fNumberDensitypT)
+    fNumberDensitypT->Merge(lists[0]);
+  if (fSumpT)
+    fSumpT->Merge(lists[1]);
+  if (fNumberDensityPhi)
+    fNumberDensityPhi->Merge(lists[2]);
   fCorrelationpT->Merge(lists[3]);
   fCorrelationEta->Merge(lists[4]);
   fCorrelationPhi->Merge(lists[5]);
@@ -523,6 +612,7 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   fEventCount->Merge(lists[9]);
   fEventCountDifferential->Merge(lists[10]);
   fVertexContributors->Merge(lists[11]);
+  fCentralityDistribution->Merge(lists[12]);
   
   for (Int_t i=0; i<kMaxLists; i++)
     delete lists[i];
@@ -534,16 +624,17 @@ void AliUEHistograms::CopyReconstructedData(AliUEHistograms* from)
 {
   // copies those histograms extracted from ESD to this object
   
-  fNumberDensitypT->CopyReconstructedData(from->fNumberDensitypT);
-  fSumpT->CopyReconstructedData(from->fSumpT);
-  fNumberDensityPhi->CopyReconstructedData(from->fNumberDensityPhi);
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->CopyReconstructedData(from->GetUEHist(i));
 }
 
 void AliUEHistograms::ExtendTrackingEfficiency()
 {
   // delegates to AliUEHists
 
-  for (Int_t i=0; i<3; i++)
-    GetUEHist(i)->ExtendTrackingEfficiency();
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->ExtendTrackingEfficiency();
 }
 

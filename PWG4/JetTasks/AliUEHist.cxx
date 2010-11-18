@@ -107,7 +107,13 @@ AliUEHist::AliUEHist(const char* reqHist) :
   for (Int_t i=0; i<=kNMultiplicityBins; i++)
     multiplicityBins[i] = -0.5 + i;
   multiplicityBins[kNMultiplicityBins] = 200;
-
+  
+  // centrality
+  const Int_t kNCentralityBins = 15;
+  Double_t centralityBins[kNCentralityBins+1];
+  for (Int_t i=0; i<=kNCentralityBins; i++)
+    centralityBins[i] = -0.5 + i * 500;
+  
   // particle species
   const Int_t kNSpeciesBins = 4; // pi, K, p, rest
   Double_t speciesBins[] = { -0.5, 0.5, 1.5, 2.5, 3.5 };
@@ -126,6 +132,11 @@ AliUEHist::AliUEHist(const char* reqHist) :
   else if (strcmp(reqHist, "NumberDensityPhi") == 0)
   {
     axis = 1;
+    title = "d^{2}N_{ch}/d#phid#eta";
+  }
+  else if (strcmp(reqHist, "NumberDensityPhiCentrality") == 0)
+  {
+    axis = 2;
     title = "d^{2}N_{ch}/d#phid#eta";
   }
   else if (strcmp(reqHist, "SumpT") == 0)
@@ -156,7 +167,24 @@ AliUEHist::AliUEHist(const char* reqHist) :
     
     iTrackBin[4] = kNLeadingPhiBins;
     trackBins[4] = leadingPhiBins;
-    trackAxisTitle[4] = "#phi w.r.t leading track";
+    trackAxisTitle[4] = "#Delta #phi w.r.t. leading track";
+  }
+  else if (axis == 2)
+  {
+    nTrackVars = 5;
+    initRegions = 1;
+  
+    iTrackBin[2] = kNLeadingpTBins2;
+    trackBins[2] = leadingpTBins2;
+    trackAxisTitle[2] = "leading p_{T} (GeV/c)";
+    
+    trackBins[3] = centralityBins;
+    iTrackBin[3] = kNCentralityBins;
+    trackAxisTitle[3] = "centrality";
+  
+    iTrackBin[4] = kNLeadingPhiBins;
+    trackBins[4] = leadingPhiBins;
+    trackAxisTitle[4] = "#Delta #phi w.r.t. trigger particle";
   }
     
   for (Int_t i=0; i<initRegions; i++)
@@ -439,7 +467,7 @@ void AliUEHist::CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_
 }  
 
 //____________________________________________________________________
-TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax)
+TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd)
 {
   // Extracts the UE histogram at the given step and in the given region by projection and dividing tracks by events
   //
@@ -486,8 +514,13 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
     // the efficiency to have find an event depends on leading pT and this is not corrected for because anyway per bin we calculate tracks over events
     // therefore the number density must be calculated here per leading pT bin and then summed
   
+    fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(3)->SetRange(multBinBegin, multBinEnd);
+    fEventHist->GetGrid(step)->GetGrid()->GetAxis(1)->SetRange(multBinBegin, multBinEnd);
+    
     Int_t firstBin = fTrackHist[region]->GetAxis(2, step)->FindBin(ptLeadMin);
     Int_t lastBin = fTrackHist[region]->GetAxis(2, step)->FindBin(ptLeadMax);
+    
+    TH1D* events = fEventHist->ShowProjection(0, step);
     
     for (Int_t bin=firstBin; bin<=lastBin; bin++)
     {
@@ -502,7 +535,6 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
       //Printf("Normalization: %f", normalization);
       tracksTmp->Scale(1.0 / normalization);
       
-      TH1D* events = fEventHist->ShowProjection(0, step);
       Int_t nEvents = (Int_t) events->GetBinContent(bin);
       if (nEvents > 0)
         tracksTmp->Scale(1.0 / nEvents);
@@ -516,9 +548,12 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
         delete tracksTmp;
       }
     }
+    
+    delete events;
   }
 
   ResetBinLimits(fTrackHist[region]->GetGrid(step));
+  ResetBinLimits(fEventHist->GetGrid(step));
 
   return tracks;
 }
