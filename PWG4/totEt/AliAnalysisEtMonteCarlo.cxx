@@ -14,7 +14,6 @@
 #include "AliMCEvent.h"
 #include "TH2F.h"
 #include "TParticle.h"
-#include "TDatabasePDG.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 
@@ -44,7 +43,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     // Get us an mc event
     AliMCEvent *event = dynamic_cast<AliMCEvent*>(ev);
 
-    Double_t protonMass = fPdgDB->GetParticle("proton")->Mass(); // should maybe use average of proton and neutron, but they are pretty close
+    Double_t protonMass =fgProtonMass;
 
     // Hijing header
     AliGenEventHeader* genHeader = event->GenEventHeader();
@@ -108,12 +107,12 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
         {
 
             if (
-                TMath::Abs(pdg->PdgCode()) == fProtonCode ||
-                TMath::Abs(pdg->PdgCode()) == fNeutronCode ||
-                TMath::Abs(pdg->PdgCode()) == fLambdaCode ||
-                TMath::Abs(pdg->PdgCode()) == fXiCode ||
-                TMath::Abs(pdg->PdgCode()) == fXi0Code ||
-                TMath::Abs(pdg->PdgCode()) == fOmegaCode
+                TMath::Abs(pdg->PdgCode()) == fgProtonCode ||
+                TMath::Abs(pdg->PdgCode()) == fgNeutronCode ||
+                TMath::Abs(pdg->PdgCode()) == fgLambdaCode ||
+                TMath::Abs(pdg->PdgCode()) == fgXiCode ||
+                TMath::Abs(pdg->PdgCode()) == fgXi0Code ||
+                TMath::Abs(pdg->PdgCode()) == fgOmegaCode
 	       )
             {
 	      if (pdg->PdgCode() > 0) { particleMassPart = - protonMass;}
@@ -121,37 +120,37 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    Double_t et = part->Energy() * TMath::Sin(part->Theta()) + particleMassPart;
 	    	      
-	    if (pdg->PdgCode() == fProtonCode || pdg->PdgCode() == fAntiProtonCode)
+	    if (pdg->PdgCode() == fgProtonCode || pdg->PdgCode() == fgAntiProtonCode)
 	      {
 		fProtonEt += et;
 	      }
-	    if (pdg->PdgCode() == fPiPlusCode || pdg->PdgCode() == fPiMinusCode)
+	    if (pdg->PdgCode() == fgPiPlusCode || pdg->PdgCode() == fgPiMinusCode)
 	      {
 		fPionEt += et;
 	      }
-	    if (pdg->PdgCode() == fKPlusCode || pdg->PdgCode() == fKMinusCode)
+	    if (pdg->PdgCode() == fgKPlusCode || pdg->PdgCode() == fgKMinusCode)
 	      {
 		fChargedKaonEt += et;
 	      }
-	    if (pdg->PdgCode() == fMuPlusCode || pdg->PdgCode() == fMuMinusCode)
+	    if (pdg->PdgCode() == fgMuPlusCode || pdg->PdgCode() == fgMuMinusCode)
 	      {
 		fMuonEt += et;
 	      }
-	    if (pdg->PdgCode() == fEPlusCode || pdg->PdgCode() == fEMinusCode)
+	    if (pdg->PdgCode() == fgEPlusCode || pdg->PdgCode() == fgEMinusCode)
 	      {
 		fElectronEt += et;
 	      }
 
 	    // some neutrals also
-	    if(pdg->PdgCode() == fNeutronCode)
+	    if(pdg->PdgCode() == fgNeutronCode)
 	    {
 	      fNeutronEt += et;
 	    }
-            if(pdg->PdgCode() == fAntiNeutronCode)
+            if(pdg->PdgCode() == fgAntiNeutronCode)
 	    {
 	      fAntiNeutronEt += et;
 	    }
-	    if(pdg->PdgCode() == fGammaCode)
+	    if(pdg->PdgCode() == fgGammaCode)
 	    {
 	      fGammaEt += et;
 	    }
@@ -177,23 +176,23 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		  fTotEtAcc += et;
 
 
-		    if (pdg->PdgCode() == fProtonCode || pdg->PdgCode() == fAntiProtonCode)
+		    if (pdg->PdgCode() == fgProtonCode || pdg->PdgCode() == fgAntiProtonCode)
 		      {
 			fProtonEtAcc += et;
 		      }
-		    if (pdg->PdgCode() == fPiPlusCode || pdg->PdgCode() == fPiMinusCode)
+		    if (pdg->PdgCode() == fgPiPlusCode || pdg->PdgCode() == fgPiMinusCode)
 		      {
 			fPionEtAcc += et;
 		      }
-		    if (pdg->PdgCode() == fKPlusCode || pdg->PdgCode() == fKMinusCode)
+		    if (pdg->PdgCode() == fgKPlusCode || pdg->PdgCode() == fgKMinusCode)
 		      {
 			fChargedKaonEtAcc += et;
 		      }
-		    if (pdg->PdgCode() == fMuPlusCode || pdg->PdgCode() == fMuMinusCode)
+		    if (pdg->PdgCode() == fgMuPlusCode || pdg->PdgCode() == fgMuMinusCode)
 		      {
 			fMuonEtAcc += et;
 		      }
-		    if (pdg->PdgCode() == fEPlusCode || pdg->PdgCode() == fEMinusCode)
+		    if (pdg->PdgCode() == fgEPlusCode || pdg->PdgCode() == fgEMinusCode)
 		      {
 			fElectronEtAcc += et;
 		      }

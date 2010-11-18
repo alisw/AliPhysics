@@ -24,6 +24,7 @@
 #include "AliAnalysisEtCuts.h"
 #include <iostream>
 #include "TRandom.h"
+#include "AliAnalysisEtCommon.h"
 
 using namespace std;
 
@@ -37,14 +38,16 @@ AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 							,fSimPiKPEt(0)
 							,fSimHadEt(0)
 							,fSimTotEt(0) 
+							,fInvestigateSmearing(0)
+							,fInvestigateFull(0)
+							,fInvestigateEMCal(0)
+							,fInvestigatePHOS(0)
+							,fInvestigatePiKP(0)
+							,fRequireITSHits(0)
 							,fPtSmearer(0)
 {
-//   for(int i=0;i<fgNumSmearWidths;i++){
-//     //fSimPiKPEtSmeared[i] = 0.0;
-//   }
 }
 AliAnalysisHadEtMonteCarlo::~AliAnalysisHadEtMonteCarlo(){//destructor
-  //if(fSimPiKPEtSmeared) delete [] fSimPiKPEtSmeared;
   if(fPtSmearer) delete fPtSmearer;
 }
 
@@ -65,25 +68,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
   //for PID
   AliESDpid *pID = new AliESDpid();
-  //pID->MakePID(realEvent);
 
-  //This code taken from https://twiki.cern.ch/twiki/bin/view/ALICE/SelectionOfPrimaryTracksForPp2009DataAnalysis
-  //Gets good tracks
-  //=============================================
-  // Primary vertex
-  const AliESDVertex *vertex = realEvent->GetPrimaryVertexTracks();
-  if(vertex->GetNContributors()<1) {
-    // SPD vertex
-    vertex = realEvent->GetPrimaryVertexSPD();
-    if(vertex->GetNContributors()<1) {
-      // NO GOOD VERTEX, SKIP EVENT 
-    }
-  }
-  // apply a cut |zVertex| < CUT, if needed
-
-  
-
-  //fEsdtrackCutsITSTPC->SetEtaRange(-0.8,0.8); // normally, |eta|<0.8
   //=============================================
 
   //Roughly following $ALICE_ROOT/PWG0/dNdEta/AlidNdEtaCorrectionTask
@@ -92,7 +77,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
   TString *strTPCITS = new TString("TPCITS");
-  for(Int_t cutset=0;cutset<2;cutset++){
+  Int_t lastcutset = 1;
+  if(fRequireITSHits) lastcutset = 2;
+  for(Int_t cutset=0;cutset<=lastcutset;cutset++){
     TString *cutName;
     TObjArray* list;
     switch(cutset){
@@ -123,8 +110,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  }
 	else{
 	  Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
-	    pID->MakeTPCPID(track);
-	    pID->MakeITSPID(track);
+	  pID->MakeTPCPID(track);
+	  pID->MakeITSPID(track);
 	  if(cutset!=1){
 	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
 	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
@@ -142,13 +129,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
 	  bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
 
-	  //bool IsElectron = false;
 	  bool unidentified = (!isProton && !isKaon && !isElectron);
 	  Float_t dEdx = track->GetTPCsignal();
 	  if(cutset==1) dEdx = track->GetITSsignal();
 
 	  FillHisto2D(Form("dEdxAll%s",cutName->Data()),track->P(),dEdx,1.0);
-	  //if(cutset==1) cout<<"filling "<<track->P()<<" "<<dEdx<<endl;
 
 	  UInt_t label = (UInt_t)TMath::Abs(track->GetLabel());
 	  TParticle  *simPart  = stack->Particle(label);
@@ -159,11 +144,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  else{//analysis
 	    if(stack->IsPhysicalPrimary(label)){
 	      if (TMath::Abs(simPart->Eta()) < fCuts->GetCommonEtaCut()){
-	      //if (TMath::Abs(simPart->Eta()) < 0.7)	    {
-
 		Int_t pdgCode =  simPart->GetPDG(0)->PdgCode();
 		Int_t mypid = 0;
-		if(pdgCode==fgPiPlusCode) mypid = 1;
+		if(pdgCode==AliAnalysisHadEt::fgPiPlusCode) mypid = 1;
 		if(pdgCode==fgProtonCode) mypid = 2;
 		if(pdgCode==fgKPlusCode) mypid = 3;
 		if(pdgCode==fgEPlusCode) mypid = 4;
@@ -171,8 +154,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		if(pdgCode==fgAntiProtonCode) mypid = 2;
 		if(pdgCode==fgKMinusCode) mypid = 3;
 		if(pdgCode==fgEMinusCode) mypid = 4;
-		//cout<<pdgCode->PdgCode()<<" ";
-		//fPdgDB->GetSimParticle("pi+")->PdgCode();
 		bool filled = false;      
 		//============Charged hadrons===================================
 		//identified...
@@ -189,7 +170,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		if(isProton){
 		  if(pdgCode!=fgProtonCode && pdgCode!=fgAntiProtonCode){
 		    FillHisto2D(Form("MisidentifiedPIDs%s",cutName->Data()),2,mypid,1);
-		    // if(mypid==0)cerr<<"I was misidentified!  I'm not a proton! I am a "<<simPart->GetName()<<endl;
 		  }
 		  float myEt = Et(simPart);
 		  if(track->Charge()>0){ FillHisto2D(Form("EtReconstructed%sIdentifiedProton",cutName->Data()),track->Pt(),track->Eta(),myEt);}
@@ -199,7 +179,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		if(isKaon){
 		  if(pdgCode!=fgKMinusCode && pdgCode!=fgKPlusCode){
 		    FillHisto2D(Form("MisidentifiedPIDs%s",cutName->Data()),3,mypid,1);
-		    //if(mypid==0)cerr<<"I was misidentified!  I'm not a kaon! I am a "<<simPart->GetName()<<" p "<<track->P()<<" nSigmaProton "<<nSigmaProton<<" nSigmaPion "<<nSigmaPion<<" nSigmaKaon "<<nSigmaKaon<<endl;
 		  }
 		  float myEt = Et(simPart);
 		  if(track->Charge()>0){ FillHisto2D(Form("EtReconstructed%sIdentifiedKPlus",cutName->Data()),track->Pt(),track->Eta(),myEt);}
@@ -209,7 +188,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		if(isElectron){
 		  if(pdgCode!=fgEMinusCode && pdgCode!=fgEPlusCode){
 		    FillHisto2D(Form("MisidentifiedPIDs%s",cutName->Data()),4,mypid,1);
-		    //cerr<<"I was misidentified!  I'm not an electron! I am a "<<simPart->GetName()<<endl;
 		  }
 		  float myEt = Et(simPart);
 		  if(track->Charge()>0){ FillHisto2D(Form("EtReconstructed%sIdentifiedEPlus",cutName->Data()),track->Pt(),track->Eta(),myEt);}
@@ -225,14 +203,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtNReconstructed%sUnidentified",cutName->Data()),track->Pt(),track->Eta(),1.0);
 		  }
 		  FillHisto2D(Form("dEdxUnidentified%s",cutName->Data()),track->P(),dEdx,1.0);
-		  //cout<<"I was not identified.  I am a "<<simPart->GetName()<<" PID "<<pdgCode<<endl;
-		  //track what was not identified successfully
 		  FillHisto1D(Form("UnidentifiedPIDs%s",cutName->Data()),mypid,1);
 		}
 		//...simulated
-		if(pdgCode == fgPiPlusCode){
-		  //cout<<"I'm a real primary "<<simPart->GetName()<<"! "<<"my label is "<<simPart->GetFirstMother()<<" track no "<<iTrack<<"/"<<realEvent->GetNumberOfTracks()<<endl;//<<" "<<label<<" "<<pdgCode<<endl;
-		
+		if(pdgCode == fgPiPlusCode){		
 		  float myEt = Et(simPart);
 		  FillHisto2D(Form("EtReconstructed%sPiPlus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
@@ -312,17 +286,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sEMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		    filled = true;
 		}
-		//if(!filled){
-		  //TParticlePDG *pc = simPart->GetPDG(0);
-		  //if( strcmp(pc->ParticleClass(),"Baryon")==0 || strcmp(pc->ParticleClass(),"Meson")==0 ){
-		  //cout<<"Did not find a place for "<<simPart->GetName()<<" "<<pdgCode<<" which is a "<<pc->ParticleClass()<<endl;
-		  //}
-		  //}
 	      }
 	      
 	    }
 	    else{//not a primary - we're after V0 daughters!
-	      //cout<<"I'm a secondary "<<simPart->GetName()<<"!";//<<endl;
 	      if (TMath::Abs(simPart->Eta()) < fCuts->GetCommonEtaCut()){
 		TParticle *mom = stack->Particle(simPart->GetFirstMother());
 		if(mom){
@@ -363,7 +330,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      if(grandma){
 			Int_t pdgCodeMom =  mom->GetPDG(0)->PdgCode();
 			if(pdgCodeMom==fgPiPlusCode || pdgCodeMom==fgPiMinusCode || pdgCodeMom==fgProtonCode ||pdgCodeMom==fgAntiProtonCode || pdgCodeMom==fgKPlusCode || pdgCode==fgKMinusCode){
-			  //cout<<" my grandmother is "<<grandma->GetName()<<" "<<endl;
 			  Int_t pdgCodeGrandma =  grandma->GetPDG(0)->PdgCode();
 		      
 			  if(pdgCodeGrandma == fgXiCode){
@@ -442,42 +408,41 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	  if (TMath::Abs(part->Eta()) < fCuts->GetCommonEtaCut())	    {
 
 	    Int_t pdgCode =  part->GetPDG(0)->PdgCode();
-	    //cout<<pdgCode->PdgCode()<<" ";
-	    //fPdgDB->GetParticle("pi+")->PdgCode();
 	    bool filled = false;
 	    //Investigating smearing...
 	    //Numbers are realistic correction factors from previous studies
-	    if(pdgCode==fgPiPlusCode ||pdgCode==fgPiMinusCode ||pdgCode==fgKPlusCode ||pdgCode==fgKMinusCode ||pdgCode==fgProtonCode ||pdgCode==fgAntiProtonCode){
-	      //To investigate Smearing...
-	      Float_t myet = Et(part);
-	      fSimPiKPEt += myet;
-	      Float_t theta = part->Theta();
-	      Short_t charge = 1;
-	      Float_t momentum = part->P();
-	      //pt smearing
-	      Float_t pSmeared = momentum *  fPtSmearer->Gaus(1,0.005);//Gaussian centered around 1
-	      fSimPiKPEtPtSmeared += Et(pSmeared,theta,pdgCode,charge);
-	      //Efficiency smearing
-	      float efficiency = 2.26545*TMath::Exp(-TMath::Power(9.99977e-01/part->Pt(),7.85488e-02));//simple rough efficiency from fitting curve
-	      if(fPtSmearer->Binomial(1,efficiency) ==1){
-		fSimPiKPEtEfficiencySmeared += (1.0/efficiency)*myet;
-	      }
-	      //pT cut smeared
-	      if(part->Pt()>0.10){fSimPiKPEtPtCutSmearedITS +=1.00645645*myet;}
-	      if(part->Pt()>0.15){fSimPiKPEtPtCutSmearedTPC +=1.02000723*myet;}
-	      //PID smearing
-	      fSimPiKPEtPIDSmearedNoID += 1.02679314*Et(momentum,theta,fgPiPlusCode,charge);
-	      if(part->P()<1.0){//then the particle would have been ID'd
-		fSimPiKPEtPIDSmeared += 1.0085942*myet;
-	      }
-	      else{//Then it would have been assumed to be a pion
-		fSimPiKPEtPIDSmeared += 1.0085942*Et(momentum,theta,fgPiPlusCode,charge);
+	    if(fInvestigateSmearing){
+	      if(pdgCode==fgPiPlusCode ||pdgCode==fgPiMinusCode ||pdgCode==fgKPlusCode ||pdgCode==fgKMinusCode ||pdgCode==fgProtonCode ||pdgCode==fgAntiProtonCode){
+		//To investigate Smearing...
+		Float_t myet = Et(part);
+		fSimPiKPEt += myet;
+		Float_t theta = part->Theta();
+		Short_t charge = 1;
+		Float_t momentum = part->P();
+		//pt smearing
+		Float_t pSmeared = momentum *  fPtSmearer->Gaus(1,0.005);//Gaussian centered around 1
+		fSimPiKPEtPtSmeared += Et(pSmeared,theta,pdgCode,charge);
+		//Efficiency smearing
+		float efficiency = 2.26545*TMath::Exp(-TMath::Power(9.99977e-01/part->Pt(),7.85488e-02));//simple rough efficiency from fitting curve
+		if(fPtSmearer->Binomial(1,efficiency) ==1){
+		  fSimPiKPEtEfficiencySmeared += (1.0/efficiency)*myet;
+		}
+		//pT cut smeared
+		if(part->Pt()>0.10){fSimPiKPEtPtCutSmearedITS +=1.00645645*myet;}
+		if(part->Pt()>0.15){fSimPiKPEtPtCutSmearedTPC +=1.02000723*myet;}
+		//PID smearing
+		fSimPiKPEtPIDSmearedNoID += 1.02679314*Et(momentum,theta,fgPiPlusCode,charge);
+		if(part->P()<1.0){//then the particle would have been ID'd
+		  fSimPiKPEtPIDSmeared += 1.0085942*myet;
+		}
+		else{//Then it would have been assumed to be a pion
+		  fSimPiKPEtPIDSmeared += 1.0085942*Et(momentum,theta,fgPiPlusCode,charge);
+		}
 	      }
 	    }
 
 	    //============Charged hadrons===================================
 	    if(pdgCode == fgPiPlusCode){
-	      //cout<<"I'm a simulated primary "<<part->GetName()<<"! "<<"my label is "<<part->GetFirstMother()<<" pt "<<part->Pt()<<endl;
 	      float myEt = Et(part);
 
 	      fSimHadEt += myEt;
@@ -930,22 +895,21 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     if(fSimHadEt>0.0)FillHisto1D("SimHadEt",fSimHadEt,1.0);
     if(fSimPiKPEt>0.0)FillHisto1D("SimPiKPEt",fSimPiKPEt,1.0);
 
-    //Smearing histograms
-    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPtSmeared",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPtSmeared)/fSimPiKPEt,1.0);
-    FillHisto1D("SimPiKPEtPtSmeared",fSimPiKPEtPtSmeared,1.0);
-    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimEfficiencySmeared",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtEfficiencySmeared)/fSimPiKPEt,1.0);
-    FillHisto1D("SimPiKPEtEfficiencySmeared",fSimPiKPEtEfficiencySmeared,1.0);
-    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPtCutSmearedTPC",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPtCutSmearedTPC)/fSimPiKPEt,1.0);
-    FillHisto1D("SimPiKPEtPtCutSmearedTPC",fSimPiKPEtPtCutSmearedTPC,1.0);
-    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPtCutSmearedITS",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPtCutSmearedITS)/fSimPiKPEt,1.0);
-    FillHisto1D("SimPiKPEtPtCutSmearedITS",fSimPiKPEtPtCutSmearedTPC,1.0);
-    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPIDSmeared",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPIDSmeared)/fSimPiKPEt,1.0);
-    //if(fSimPiKPEt>0.0)cout<<"Filling SimPiKPEtMinusSimPIDSmeared with "<<fSimPiKPEt<<","<<(fSimPiKPEt-fSimPiKPEtPIDSmeared)/fSimPiKPEt<<endl;
-    FillHisto1D("SimPiKPEtPIDSmeared",fSimPiKPEtPIDSmeared,1.0);
-    if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPIDSmearedNoID",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPIDSmearedNoID)/fSimPiKPEt,1.0);
-    //if(fSimPiKPEt>0.0)cout<<"Filling SimPiKPEtMinusSimPIDSmearedNoID with "<<fSimPiKPEt<<","<<(fSimPiKPEt-fSimPiKPEtPIDSmearedNoID)/fSimPiKPEt<<endl;
-    FillHisto1D("SimPiKPEtPIDSmearedNoID",fSimPiKPEtPIDSmearedNoID,1.0);
-
+    if(fInvestigateSmearing){
+      //Smearing histograms
+      if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPtSmeared",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPtSmeared)/fSimPiKPEt,1.0);
+      FillHisto1D("SimPiKPEtPtSmeared",fSimPiKPEtPtSmeared,1.0);
+      if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimEfficiencySmeared",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtEfficiencySmeared)/fSimPiKPEt,1.0);
+      FillHisto1D("SimPiKPEtEfficiencySmeared",fSimPiKPEtEfficiencySmeared,1.0);
+      if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPtCutSmearedTPC",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPtCutSmearedTPC)/fSimPiKPEt,1.0);
+      FillHisto1D("SimPiKPEtPtCutSmearedTPC",fSimPiKPEtPtCutSmearedTPC,1.0);
+      if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPtCutSmearedITS",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPtCutSmearedITS)/fSimPiKPEt,1.0);
+      FillHisto1D("SimPiKPEtPtCutSmearedITS",fSimPiKPEtPtCutSmearedTPC,1.0);
+      if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPIDSmeared",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPIDSmeared)/fSimPiKPEt,1.0);
+      FillHisto1D("SimPiKPEtPIDSmeared",fSimPiKPEtPIDSmeared,1.0);
+      if(fSimPiKPEt>0.0) FillHisto2D("SimPiKPEtMinusSimPIDSmearedNoID",fSimPiKPEt,(fSimPiKPEt-fSimPiKPEtPIDSmearedNoID)/fSimPiKPEt,1.0);
+      FillHisto1D("SimPiKPEtPIDSmearedNoID",fSimPiKPEtPIDSmearedNoID,1.0);
+    }
     return 1;
     
 }
@@ -1018,7 +982,9 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
   TString *strTPCITS = new TString("TPCITS");
-  for(Int_t i=0;i<2;i++){
+  Int_t lastcutset = 1;
+  if(fRequireITSHits) lastcutset = 2;
+  for(Int_t i=0;i<=lastcutset;i++){
     TString *cutName;
     Float_t maxPtdEdx = 10;
     Float_t mindEdx = 35;
@@ -1123,8 +1089,8 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   TString *sEMCAL = new TString("EMCAL");
   TString *sPHOS = new TString("PHOS");
   float etDiff = 1.5;
-  
-  for(int tpc = 0;tpc<2;tpc++){
+
+  for(int tpc = 0;tpc<lastcutset;tpc++){
     TString *detector;
     TString *ptstring;
     if(tpc==1) {detector = sTPC; ptstring = sTPCpt;}
@@ -1134,142 +1100,135 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
       TString *etstring;
       if(hadet==1) {et = sHadEt; etstring = sHadEtString;}
       else{et = sTotEt; etstring = sTotEtString;}
-      for(int type = 0;type<1;type++){
+      for(int type = 0;type<3;type++){
+	if(type==0 && !fInvestigateFull) continue;
+	if(type==1 && !fInvestigateEMCal) continue;
+	if(type==2 && !fInvestigatePHOS) continue;
 	TString *acceptance;
 	switch(type){
 	case 0:
 	  acceptance = sFull;
+	  etDiff = 1.5;
 	  break;
 	case 1:
 	  acceptance = sEMCAL;
+	  etDiff = 5;
 	  break;
 	case 2:
 	  acceptance = sPHOS;
+	  etDiff = 5;
 	  break;
 	default:
 	  acceptance = sFull;
 	}
-	sprintf(histoname,"Sim%sMinusRawEt%sAcceptance%s",et->Data(),acceptance->Data(),detector->Data());
-	sprintf(histotitle,"(Simulated %s - raw reconstructed)/(Simulated %s) with %s acceptance for p_{T}>%s GeV/c",etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data());
-	sprintf(ytitle,"(Simulated %s - raw reconstructed)/(Simulated %s)",etstring->Data(),etstring->Data());
-	sprintf(xtitle,"Simulated %s",etstring->Data());
-	CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-
 	for(int pid = 0;pid<2;pid++){
 	  TString *partid;
 	  TString *partidstring;
 	  if(pid==1){partid = sPID; partidstring = sPID;}
 	  else{partid = sNoPID; partidstring = sNoPIDString;}
-
-	  sprintf(histoname,"Sim%sVsReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
-	  sprintf(histotitle,"Simulated %s vs reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
-	  sprintf(xtitle,"Simulated %s",etstring->Data());
-	  sprintf(ytitle,"Reconstructed %s (%s acc., p_{T}>%s GeV/c,%s)",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
-	  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,minEt,maxEt);
-
 	  sprintf(histoname,"Sim%sMinusReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
 	  sprintf(histotitle,"(Simulated %s - reconstructed %s)/(Simulated %s) with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
 	  sprintf(ytitle,"(Simulated %s - reconstructed %s)/(Simulated %s)",etstring->Data(),etstring->Data(),etstring->Data());
 	  sprintf(xtitle,"Simulated %s",etstring->Data());
 	  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-
-	  if(hadet==0){//we only want to do this once...  not the most elegant way of coding but hey...
+	  if(hadet==0 && type==0 && fInvestigatePiKP){//we only want to do this once...  not the most elegant way of coding but hey...
 	    sprintf(histoname,"SimPiKPMinusRecoPiKP%sAcceptance%s%s",acceptance->Data(),detector->Data(),partid->Data());
 	    sprintf(histotitle,"(Sim PiKP - reco PiKP)/(Sim PiKP) with %s acceptance for p_{T}>%s GeV/c%s",acceptance->Data(),ptstring->Data(),partidstring->Data());
 	    sprintf(ytitle,"(Sim PiKP - reco PiKP)/(Sim PiKP)");
 	    sprintf(xtitle,"Simulated E_{T}^{#pi,K,p}");
 	    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-	    //cout<<"Creating "<<histoname<<endl;
 	  }
 	}
       }
     }
   }
-   CreateHisto1D("SimPiKPEt","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt,minEt,maxEt);
+  CreateHisto1D("SimPiKPEt","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt,minEt,maxEt);
   CreateHisto1D("SimTotEt","Simulated Total E_{T}","Simulated Total E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
 
   etDiff = 0.15;
 
-  //======================================================================
+  if(fInvestigateSmearing){
 
-  sprintf(histoname,"SimPiKPEtMinusSimPtSmeared");
-  sprintf(histotitle,"Simulated (true-smeared)/true for 0.5 percent momentum smearing");
-  sprintf(ytitle,"(true-smeared)/true");
-  sprintf(xtitle,"true p, K, p E_{T}");
-  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff/10.0,etDiff/10.0);
-  sprintf(histoname,"SimPiKPEtPtSmeared");
-  sprintf(histotitle,"Simulated E_{T} for 0.5 percent momentum smearing");
-  sprintf(ytitle,"Number of events");
-  sprintf(xtitle,"p, K, p E_{T}");
-  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+    //======================================================================
 
-  //======================================================================
+    sprintf(histoname,"SimPiKPEtMinusSimPtSmeared");
+    sprintf(histotitle,"Simulated (true-smeared)/true for 0.5 percent momentum smearing");
+    sprintf(ytitle,"(true-smeared)/true");
+    sprintf(xtitle,"true p, K, p E_{T}");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff/10.0,etDiff/10.0);
+    sprintf(histoname,"SimPiKPEtPtSmeared");
+    sprintf(histotitle,"Simulated E_{T} for 0.5 percent momentum smearing");
+    sprintf(ytitle,"Number of events");
+    sprintf(xtitle,"p, K, p E_{T}");
+    CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
-  sprintf(histoname,"SimPiKPEtMinusSimEfficiencySmeared");
-  sprintf(histotitle,"Simulated (true-smeared)/true for efficiency smearing");
-  sprintf(ytitle,"(true-smeared)/true");
-  sprintf(xtitle,"true p, K, p E_{T}");
-  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,etDiff*5);
-  sprintf(histoname,"SimPiKPEtEfficiencySmeared");
-  sprintf(histotitle,"Simulated E_{T} for efficiency smearing");
-  sprintf(ytitle,"Number of events");
-  sprintf(xtitle,"p, K, p E_{T}");
-  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+    //======================================================================
 
-  //======================================================================
+    sprintf(histoname,"SimPiKPEtMinusSimEfficiencySmeared");
+    sprintf(histotitle,"Simulated (true-smeared)/true for efficiency smearing");
+    sprintf(ytitle,"(true-smeared)/true");
+    sprintf(xtitle,"true p, K, p E_{T}");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,etDiff*5);
+    sprintf(histoname,"SimPiKPEtEfficiencySmeared");
+    sprintf(histotitle,"Simulated E_{T} for efficiency smearing");
+    sprintf(ytitle,"Number of events");
+    sprintf(xtitle,"p, K, p E_{T}");
+    CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
-  sprintf(histoname,"SimPiKPEtMinusSimPtCutSmearedTPC");
-  sprintf(histotitle,"Simulated (true-smeared)/true for p_{T}>0.15 GeV/c smearing");
-  sprintf(ytitle,"(true-smeared)/true");
-  sprintf(xtitle,"true p, K, p E_{T}");
-  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-  sprintf(histoname,"SimPiKPEtPtCutSmearedTPC");
-  sprintf(histotitle,"Simulated E_{T} for p_{T}>0.15 GeV/c smearing");
-  sprintf(ytitle,"Number of events");
-  sprintf(xtitle,"p, K, p E_{T}");
-  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+    //======================================================================
+
+    sprintf(histoname,"SimPiKPEtMinusSimPtCutSmearedTPC");
+    sprintf(histotitle,"Simulated (true-smeared)/true for p_{T}>0.15 GeV/c smearing");
+    sprintf(ytitle,"(true-smeared)/true");
+    sprintf(xtitle,"true p, K, p E_{T}");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+    sprintf(histoname,"SimPiKPEtPtCutSmearedTPC");
+    sprintf(histotitle,"Simulated E_{T} for p_{T}>0.15 GeV/c smearing");
+    sprintf(ytitle,"Number of events");
+    sprintf(xtitle,"p, K, p E_{T}");
+    CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
 
-  //======================================================================
+    //======================================================================
 
-  sprintf(histoname,"SimPiKPEtMinusSimPtCutSmearedITS");
-  sprintf(histotitle,"Simulated (true-smeared)/true for p_{T}>0.10 GeV/c smearing");
-  sprintf(ytitle,"(true-smeared)/true");
-  sprintf(xtitle,"true p, K, p E_{T}");
-  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-  sprintf(histoname,"SimPiKPEtPtCutSmearedITS");
-  sprintf(histotitle,"Simulated E_{T} for p_{T}>0.10 GeV/c smearing");
-  sprintf(ytitle,"Number of events");
-  sprintf(xtitle,"p, K, p E_{T}");
-  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+    sprintf(histoname,"SimPiKPEtMinusSimPtCutSmearedITS");
+    sprintf(histotitle,"Simulated (true-smeared)/true for p_{T}>0.10 GeV/c smearing");
+    sprintf(ytitle,"(true-smeared)/true");
+    sprintf(xtitle,"true p, K, p E_{T}");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+    sprintf(histoname,"SimPiKPEtPtCutSmearedITS");
+    sprintf(histotitle,"Simulated E_{T} for p_{T}>0.10 GeV/c smearing");
+    sprintf(ytitle,"Number of events");
+    sprintf(xtitle,"p, K, p E_{T}");
+    CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
-  //======================================================================
+    //======================================================================
 
-  sprintf(histoname,"SimPiKPEtMinusSimPIDSmeared");
-  sprintf(histotitle,"Simulated (true-smeared)/true for PID smearing");
-  sprintf(ytitle,"(true-smeared)/true");
-  sprintf(xtitle,"true p, K, p E_{T}");
-  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-  sprintf(histoname,"SimPiKPEtPIDSmeared");
-  sprintf(histotitle,"Simulated E_{T} for PID smearing");
-  sprintf(ytitle,"Number of events");
-  sprintf(xtitle,"p, K, p E_{T}");
-  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+    sprintf(histoname,"SimPiKPEtMinusSimPIDSmeared");
+    sprintf(histotitle,"Simulated (true-smeared)/true for PID smearing");
+    sprintf(ytitle,"(true-smeared)/true");
+    sprintf(xtitle,"true p, K, p E_{T}");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+    sprintf(histoname,"SimPiKPEtPIDSmeared");
+    sprintf(histotitle,"Simulated E_{T} for PID smearing");
+    sprintf(ytitle,"Number of events");
+    sprintf(xtitle,"p, K, p E_{T}");
+    CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
-  //======================================================================
+    //======================================================================
 
-  sprintf(histoname,"SimPiKPEtMinusSimPIDSmearedNoID");
-  sprintf(histotitle,"Simulated (true-smeared)/true for PID smearing No ID");
-  sprintf(ytitle,"(true-smeared)/true");
-  sprintf(xtitle,"true p, K, p E_{T}");
-  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-  sprintf(histoname,"SimPiKPEtPIDSmearedNoID");
-  sprintf(histotitle,"Simulated E_{T} for PID smearing No ID");
-  sprintf(ytitle,"Number of events");
-  sprintf(xtitle,"p, K, p E_{T}");
-  CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
-
+    sprintf(histoname,"SimPiKPEtMinusSimPIDSmearedNoID");
+    sprintf(histotitle,"Simulated (true-smeared)/true for PID smearing No ID");
+    sprintf(ytitle,"(true-smeared)/true");
+    sprintf(xtitle,"true p, K, p E_{T}");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+    sprintf(histoname,"SimPiKPEtPIDSmearedNoID");
+    sprintf(histotitle,"Simulated E_{T} for PID smearing No ID");
+    sprintf(ytitle,"Number of events");
+    sprintf(xtitle,"p, K, p E_{T}");
+    CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
+  }
   delete sTPC;
   delete sITS;
   delete sTPCpt;

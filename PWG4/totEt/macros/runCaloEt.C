@@ -37,6 +37,7 @@ void runCaloEt(bool submit = false, // true or false
   }
    
   gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEt.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtMonteCarlo.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtMonteCarloPhos.cxx+g");

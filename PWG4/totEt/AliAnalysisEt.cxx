@@ -17,119 +17,87 @@
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrackCuts.h"
 #include "AliVEvent.h"
-#include "TDatabasePDG.h"
 #include "Rtypes.h"
 
 using namespace std;
 ClassImp(AliAnalysisEt);
 
 
-AliAnalysisEt::AliAnalysisEt() :
-        fHistogramNameSuffix("")
-        ,fCuts(0)
-        ,fPdgDB(0)
-        ,fPiPlusCode(0)
-        ,fPiMinusCode(0)
-        ,fKPlusCode(0)
-        ,fKMinusCode(0)
-        ,fProtonCode(0)
-        ,fAntiProtonCode(0)
-        ,fLambdaCode(0)
-        ,fAntiLambdaCode(0)
-        ,fK0SCode(0)
-        ,fOmegaCode(0)
-        ,fAntiOmegaCode(0)
-        ,fXi0Code(0)
-        ,fAntiXi0Code(0)
-        ,fXiCode(0)
-        ,fAntiXiCode(0)
-        ,fSigmaCode(0)
-        ,fAntiSigmaCode(0)
-        ,fK0LCode(0)
-        ,fNeutronCode(0)
-        ,fAntiNeutronCode(0)
-        ,fEPlusCode(0)
-        ,fEMinusCode(0)
-        ,fMuPlusCode(0)
-        ,fMuMinusCode(0)
-        ,fGammaCode(0)
-        ,fPionMass(0)
-        ,fTotEt(0)
-        ,fTotEtAcc(0)
-        ,fTotNeutralEt(0)
-        ,fTotNeutralEtAcc(0)
-        ,fTotChargedEt(0)
-        ,fTotChargedEtAcc(0)
-        ,fMultiplicity(0)
-        ,fChargedMultiplicity(0)
-        ,fNeutralMultiplicity(0)
-        ,fBaryonEt(0)
-        ,fAntiBaryonEt(0)
-        ,fMesonEt(0)
-        ,fProtonEt(0)
-        ,fPionEt(0)
-        ,fChargedKaonEt(0)
-        ,fMuonEt(0)
-        ,fElectronEt(0)
-        ,fNeutronEt(0)
-        ,fAntiNeutronEt(0)
-        ,fGammaEt(0)
-        ,fProtonEtAcc(0)
-        ,fPionEtAcc(0)
-        ,fChargedKaonEtAcc(0)
-        ,fMuonEtAcc(0)
-        ,fElectronEtAcc(0)
-        ,fEnergyDeposited(0)
-        ,fEnergyTPC(0)
-        ,fCharge(0)
-        ,fParticlePid(0)
-        ,fPidProb(0)
-        ,fTrackPassedCut(kFALSE)
-        ,fEtaCut(0)
-	,fEtaCutAcc(0)
-	,fPhiCutAccMin(0)
-	,fPhiCutAccMax(0)
-	,fDetectorRadius(0)
-	,fClusterEnergyCut(0) 
-	,fSingleCellEnergyCut(0)
-        ,fHistEt(0)
-        ,fHistChargedEt(0)
-        ,fHistNeutralEt(0)
-        ,fHistEtAcc(0)
-        ,fHistChargedEtAcc(0)
-        ,fHistNeutralEtAcc(0)
-        ,fHistMult(0)
-        ,fHistChargedMult(0)
-        ,fHistNeutralMult(0)
-        ,fHistPhivsPtPos(0)
-        ,fHistPhivsPtNeg(0)
-        ,fHistBaryonEt(0)
-        ,fHistAntiBaryonEt(0)
-        ,fHistMesonEt(0)
-        ,fHistProtonEt(0)
-        ,fHistPionEt(0)
-        ,fHistChargedKaonEt(0)
-        ,fHistMuonEt(0)
-        ,fHistElectronEt(0)
-        ,fHistNeutronEt(0)
-        ,fHistAntiNeutronEt(0)
-        ,fHistGammaEt(0)
-        ,fHistProtonEtAcc(0)
-        ,fHistPionEtAcc(0)
-        ,fHistChargedKaonEtAcc(0)
-        ,fHistMuonEtAcc(0)
-        ,fHistElectronEtAcc(0)
-        ,fHistTMDeltaR(0)
-        ,fTree(0)
-        ,fTreeDeposit(0)
-        ,fEsdtrackCutsTPC(0)
+AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
+			       ,fHistogramNameSuffix("")
+			       ,fTotEt(0)
+			       ,fTotEtAcc(0)
+			       ,fTotNeutralEt(0)
+			       ,fTotNeutralEtAcc(0)
+			       ,fTotChargedEt(0)
+			       ,fTotChargedEtAcc(0)
+			       ,fMultiplicity(0)
+			       ,fChargedMultiplicity(0)
+			       ,fNeutralMultiplicity(0)
+			       ,fBaryonEt(0)
+			       ,fAntiBaryonEt(0)
+			       ,fMesonEt(0)
+			       ,fProtonEt(0)
+			       ,fPionEt(0)
+			       ,fChargedKaonEt(0)
+			       ,fMuonEt(0)
+			       ,fElectronEt(0)
+			       ,fNeutronEt(0)
+			       ,fAntiNeutronEt(0)
+			       ,fGammaEt(0)
+			       ,fProtonEtAcc(0)
+			       ,fPionEtAcc(0)
+			       ,fChargedKaonEtAcc(0)
+			       ,fMuonEtAcc(0)
+			       ,fElectronEtAcc(0)
+			       ,fEnergyDeposited(0)
+			       ,fEnergyTPC(0)
+			       ,fCharge(0)
+			       ,fParticlePid(0)
+			       ,fPidProb(0)
+			       ,fTrackPassedCut(kFALSE)
+			       ,fEtaCut(0)
+			       ,fEtaCutAcc(0)
+			       ,fPhiCutAccMin(0)
+			       ,fPhiCutAccMax(0)
+			       ,fDetectorRadius(0)
+			       ,fClusterEnergyCut(0) 
+			       ,fSingleCellEnergyCut(0)
+			       ,fHistEt(0)
+			       ,fHistChargedEt(0)
+			       ,fHistNeutralEt(0)
+			       ,fHistEtAcc(0)
+			       ,fHistChargedEtAcc(0)
+			       ,fHistNeutralEtAcc(0)
+			       ,fHistMult(0)
+			       ,fHistChargedMult(0)
+			       ,fHistNeutralMult(0)
+			       ,fHistPhivsPtPos(0)
+			       ,fHistPhivsPtNeg(0)
+			       ,fHistBaryonEt(0)
+			       ,fHistAntiBaryonEt(0)
+			       ,fHistMesonEt(0)
+			       ,fHistProtonEt(0)
+			       ,fHistPionEt(0)
+			       ,fHistChargedKaonEt(0)
+			       ,fHistMuonEt(0)
+			       ,fHistElectronEt(0)
+			       ,fHistNeutronEt(0)
+			       ,fHistAntiNeutronEt(0)
+			       ,fHistGammaEt(0)
+			       ,fHistProtonEtAcc(0)
+			       ,fHistPionEtAcc(0)
+			       ,fHistChargedKaonEtAcc(0)
+			       ,fHistMuonEtAcc(0)
+			       ,fHistElectronEtAcc(0)
+			       ,fHistTMDeltaR(0)
+			       ,fTree(0)
+			       ,fTreeDeposit(0)
 {
 }
 
 AliAnalysisEt::~AliAnalysisEt()
 {//Destructor
-  delete fCuts;
-  delete fPdgDB;
   if(fTreeDeposit){
     fTreeDeposit->Clear();
     delete fTreeDeposit; // optional TTree
@@ -138,8 +106,34 @@ AliAnalysisEt::~AliAnalysisEt()
     fTree->Clear();
     delete fTree; // optional TTree
   }
-  delete fEsdtrackCutsTPC;
-
+  delete fHistEt; //Et spectrum
+  delete fHistChargedEt; //Charged Et spectrum 
+  delete fHistNeutralEt; //Neutral Et spectrum
+  delete fHistEtAcc; //Et in acceptance
+  delete fHistChargedEtAcc; //Charged Et in acceptance
+  delete fHistNeutralEtAcc; //Et in acceptance
+  delete fHistMult; //Multiplicity
+  delete fHistChargedMult; //Charged multiplicity
+  delete fHistNeutralMult; //Neutral multiplicity
+  delete fHistPhivsPtPos; //phi vs pT plot for positive tracks
+  delete fHistPhivsPtNeg; //phi vs pT plot for negative tracks
+  delete fHistBaryonEt; /** Et of identified baryons */    
+  delete fHistAntiBaryonEt; /** Et of identified anti-baryons */
+  delete fHistMesonEt; /** Et of identified mesons */
+  delete fHistProtonEt; /** Et of identified protons */
+  delete fHistPionEt; /** Et of identified protons */
+  delete fHistChargedKaonEt; /** Et of identified charged kaons */
+  delete fHistMuonEt; /** Et of identified muons */
+  delete fHistElectronEt; /** Et of identified electrons */
+  delete fHistNeutronEt; /** Et of neutrons (MC only for now) */
+  delete fHistAntiNeutronEt; /** Et of anti-neutrons (MC only for now) */
+  delete fHistGammaEt; /** Et of gammas (MC only for now) */
+  delete fHistProtonEtAcc; /** Et of identified protons in calorimeter acceptance */    
+  delete fHistPionEtAcc; /** Et of identified protons in calorimeter acceptance */    
+  delete fHistChargedKaonEtAcc; /** Et of identified charged kaons in calorimeter acceptance */    
+  delete fHistMuonEtAcc; /** Et of identified muons in calorimeter acceptance */
+  delete fHistElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
+  delete fHistTMDeltaR; /* Track matching plots; Rec only for now */
 }
 
 void AliAnalysisEt::FillOutputList(TList *list)
@@ -192,6 +186,7 @@ void AliAnalysisEt::FillOutputList(TList *list)
 
 void AliAnalysisEt::Init()
 {// clear variables, set up cuts and PDG info
+  AliAnalysisEtCommon::Init();
   ResetEventValues();
 }
 
@@ -420,13 +415,14 @@ void AliAnalysisEt::FillHistograms()
 
 Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)
 { //this line is basically here to eliminate a compiler warning that event is not used.  Making it a virtual function did not work with the plugin.
-  cout << "This event has " << event->GetNumberOfTracks() << " tracks" << endl;
+  AliAnalysisEtCommon::AnalyseEvent(event);
   ResetEventValues();
   return 0;
 }
 
 void AliAnalysisEt::ResetEventValues()
 { // clear
+  AliAnalysisEtCommon::ResetEventValues();
   fTotEt = 0;
   fTotEtAcc = 0;
   fTotNeutralEt = 0;
@@ -452,57 +448,6 @@ void AliAnalysisEt::ResetEventValues()
   fChargedKaonEtAcc = 0;
   fMuonEtAcc = 0;
   fElectronEtAcc = 0;
-  
-  if (!fCuts || !fPdgDB || fPiPlusCode==0) { // some Init's needed
-    cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
-    if (!fCuts) {
-      cout << " setting up Cuts " << endl;
-      fCuts = new AliAnalysisEtCuts();
-    }
-    if(!fPdgDB) {
-      cout << " setting up PdgDB " << endl;
-      fPdgDB = new TDatabasePDG();
-    }
-    if (fPiPlusCode==0) {
-      SetParticleCodes();
-    }
-  }
   return;
-}
-
-
-void AliAnalysisEt::SetParticleCodes()
-{ // set PDG info    
-  fPionMass = fPdgDB->GetParticle("pi+")->Mass();
-  fPiPlusCode = fPdgDB->GetParticle("pi+")->PdgCode();
-  fPiMinusCode = fPdgDB->GetParticle("pi-")->PdgCode();
-  fKPlusCode = fPdgDB->GetParticle("K+")->PdgCode();
-  fKMinusCode = fPdgDB->GetParticle("K-")->PdgCode();
-  fProtonCode = fPdgDB->GetParticle("proton")->PdgCode();
-  fAntiProtonCode = fPdgDB->GetParticle("antiproton")->PdgCode();
-  fLambdaCode = fPdgDB->GetParticle("Lambda0")->PdgCode();
-  fAntiLambdaCode = fPdgDB->GetParticle("Lambda0_bar")->PdgCode();
-  fK0SCode = fPdgDB->GetParticle("K_S0")->PdgCode();
-  fOmegaCode = fPdgDB->GetParticle("Omega-")->PdgCode();
-  fAntiOmegaCode = fPdgDB->GetParticle("Omega+")->PdgCode();
-  fXi0Code = fPdgDB->GetParticle("Xi0")->PdgCode();
-  fAntiXi0Code = fPdgDB->GetParticle("Xi0_bar")->PdgCode();
-  fXiCode = fPdgDB->GetParticle("Xi-")->PdgCode();
-  fAntiXiCode = fPdgDB->GetParticle("Xi-_bar")->PdgCode();
-  fSigmaCode = fPdgDB->GetParticle("Sigma-")->PdgCode();
-  fAntiSigmaCode = fPdgDB->GetParticle("Sigma+")->PdgCode();
-  fK0LCode = fPdgDB->GetParticle("K_L0")->PdgCode();
-  fNeutronCode = fPdgDB->GetParticle("neutron")->PdgCode();
-  fAntiNeutronCode = fPdgDB->GetParticle("antineutron")->PdgCode();
-  fEPlusCode = fPdgDB->GetParticle("e+")->PdgCode();
-  fEMinusCode = fPdgDB->GetParticle("e-")->PdgCode();
-  fMuPlusCode = fPdgDB->GetParticle("mu+")->PdgCode();
-  fMuMinusCode = fPdgDB->GetParticle("mu-")->PdgCode();
-  fGammaCode = fPdgDB->GetParticle("gamma")->PdgCode();
-  
-  cout << "Resetting Codes: Pion " << fPiPlusCode
-       << "," << fPiMinusCode 
-       << " Kaon " << fKPlusCode 
-       << "," << fKMinusCode << endl;
 }
 

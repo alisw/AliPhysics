@@ -53,7 +53,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     ResetEventValues();
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(ev);
 
-    Double_t protonMass = fPdgDB->GetParticle("proton")->Mass();
+    Double_t protonMass = fgProtonMass;
 
     //for PID
     AliESDpid pID;
