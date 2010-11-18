@@ -164,7 +164,7 @@ void compare_HLT_offline_grid(TString runNumber,
      if(fUseHLTTrigger==kTRUE) printf("\n\nOnly HLT triggered events will be used to fill the distributions for task %s.\n\n", taskGLOBAL->GetName());
      //taskGLOBAL->SelectCollisionCandidates();
      mgr->AddTask(taskGLOBAL);
-     if(fUseHLTTrigger==kTRUE)
+     if(fUseHLTTrigger==kFALSE)
        AliAnalysisDataContainer *coutputGLOBAL =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
      else
        AliAnalysisDataContainer *coutputGLOBAL =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison_triggered.root");  
