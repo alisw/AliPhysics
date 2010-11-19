@@ -13,6 +13,10 @@
 
 class TFile;
 class TH2F;
+class TList;
+class TObjString;
+
+class AliESDEvent;
 
 class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
@@ -38,14 +42,24 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void ReadCentralityHistos();
   void ReadCentralityHistos2();
 
+  void AddPercentileFileToList(TString filename) { fFileList->Add(new TObjString(filename)); }
+  void AddPercentileFile2ToList(TString filename) { fFileList2->Add(new TObjString(filename)); }
+
  private:
+
+  Int_t SetupRun(AliESDEvent* esd);
+
   Int_t    fDebug;	   	// Debug flag
   TString  fAnalysisInput; 	// "ESD", "AOD"
   Bool_t   fIsMCInput;          // true when input is MC
   TFile   *fFile;               // file that holds the centrality vs multiplicity 1d
-  TFile   *fFile2;               // file that holds the centrality vs multiplicity 2d
+  TFile   *fFile2;              // file that holds the centrality vs multiplicity 2d
   TString  fCentfilename;       // name of this file 1d
-  TString  fCentfilename2;       // name of this file 2d
+  TString  fCentfilename2;      // name of this file 2d
+  
+  TList*   fFileList;           // list of input files names
+  TList*   fFileList2;          // list of input files 2 names
+  Int_t    fCurrentRun;         // current run number
 
   Float_t  fCentV0M;            // percentile centrality from V0
   Float_t  fCentFMD;            // percentile centrality from FMD

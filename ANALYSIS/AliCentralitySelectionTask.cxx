@@ -25,6 +25,7 @@
 #include <TH2F.h>
 #include <TProfile.h>
 #include <TFile.h>
+#include <TObjString.h>
 #include <TString.h>
 #include <TCanvas.h>
 #include <iostream>
@@ -71,6 +72,9 @@ AliAnalysisTaskSE(),
   fFile2(0),
   fCentfilename(0),
   fCentfilename2(0),
+  fFileList(new TList),
+  fFileList2(new TList),
+  fCurrentRun(-1),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -91,6 +95,10 @@ AliAnalysisTaskSE(),
   fHtempZEMvsZDC(0)
 {   
   // Default constructor
+  fFileList->SetOwner();
+  fFileList2->SetOwner();
+
+  AliInfo("Centrality Selection enabled.");
 }   
 
 //________________________________________________________________________
@@ -103,6 +111,9 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fFile2(0),
   fCentfilename(0),
   fCentfilename2(0),
+  fFileList(new TList),
+  fFileList2(new TList),
+  fCurrentRun(-1),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -123,6 +134,10 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHtempZEMvsZDC(0)
 {
   // Default constructor
+  fFileList->SetOwner();
+  fFileList2->SetOwner();
+
+  AliInfo("Centrality Selection enabled.");
 }
 
 //________________________________________________________________________
@@ -145,6 +160,9 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fFile2(ana.fFile2),
   fCentfilename(ana.fCentfilename),
   fCentfilename2(ana.fCentfilename2),
+  fFileList(ana.fFileList),
+  fFileList2(ana.fFileList2),
+  fCurrentRun(ana.fCurrentRun),
   fCentV0M(ana.fCentV0M),
   fCentFMD(ana.fCentFMD),
   fCentTRK(ana.fCentTRK),
@@ -168,16 +186,34 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
 }
  
 //________________________________________________________________________
- AliCentralitySelectionTask::~AliCentralitySelectionTask()
- {
-   // Destructor
- }  
+AliCentralitySelectionTask::~AliCentralitySelectionTask()
+{
+  // Destructor
+  
+  if (fFileList) {
+    fFileList->Clear();
+    delete fFileList;
+  }
+  fFileList = NULL;
+
+  if (fFileList2) {
+    fFileList2->Clear();
+    delete fFileList2;
+  }
+  fFileList2 = NULL;
+}  
 
 //________________________________________________________________________
 void AliCentralitySelectionTask::UserCreateOutputObjects()
 {  
   // Create the output containers
   if(fDebug>1) printf("AnalysisCentralitySelectionTask::UserCreateOutputObjects() \n");
+
+  if (fFileList->GetEntries() < 1) {
+    AliError("No Inputfiles Added");
+  }
+
+  AliLog::SetClassDebugLevel("AliCentralitySelectionTask", AliLog::kInfo);
 }
 
 //________________________________________________________________________
@@ -209,6 +245,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
     AliVEvent* event = InputEvent();
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+
+    if (SetupRun(esd))   
+      return;
 
     esdCent = esd->GetCentrality();
 
@@ -286,25 +325,25 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   // ***** Centrality Selection
   if(fHtempV0M)  fCentV0M = fHtempV0M->GetBinContent(fHtempV0M->FindBin((multV0A+multV0C)));
-  else     printf("  Centrality by V0 not available!!!\n\n");
+  ///  else     printf("  Centrality by V0 not available!!!\n\n");
   if(fHtempFMD) fCentFMD = fHtempFMD->GetBinContent(fHtempFMD->FindBin((multFMDA+multFMDC)));
-  else     printf("  Centrality by FMD not available!!!\n\n");
+  //  else     printf("  Centrality by FMD not available!!!\n\n");
   if(fHtempTRK) fCentTRK = fHtempTRK->GetBinContent(fHtempTRK->FindBin(nTracks));
-  else     printf("  Centrality by TRK not available!!!\n\n");
+  //  else     printf("  Centrality by TRK not available!!!\n\n");
   if(fHtempTKL) fCentTKL = fHtempTKL->GetBinContent(fHtempTKL->FindBin(nTracklets));
-  else     printf("  Centrality by TKL not available!!!\n\n");
+  //  else     printf("  Centrality by TKL not available!!!\n\n");
   if(fHtempCL0) fCentCL0 = fHtempCL0->GetBinContent(fHtempCL0->FindBin(nClusters[0]));
-  else     printf("  Centrality by CL0 not available!!!\n\n");
+  //  else     printf("  Centrality by CL0 not available!!!\n\n");
   if(fHtempCL1) fCentCL1 = fHtempCL1->GetBinContent(fHtempCL1->FindBin(nClusters[1]));
-  else     printf("  Centrality by CL1 not available!!!\n\n");
+  ///  else     printf("  Centrality by CL1 not available!!!\n\n");
   
   if(fHtempV0MvsFMD) fCentV0MvsFMD = fHtempV0MvsFMD->GetBinContent(fHtempV0MvsFMD->FindBin((multV0A+multV0C)));
-  else     printf("  Centrality by V0 vs FMD not available!!!\n\n");
+  //  else     printf("  Centrality by V0 vs FMD not available!!!\n\n");
   if(fHtempTKLvsV0M) fCentTKLvsV0M = fHtempTKLvsV0M->GetBinContent(fHtempTKLvsV0M->FindBin(nTracklets));
-  else     printf("  Centrality by V0 vs TKL not available!!!\n\n");
+  //  else     printf("  Centrality by V0 vs TKL not available!!!\n\n");
   if(fHtempZEMvsZDC) fCentZEMvsZDC = fHtempZEMvsZDC->GetBinContent(fHtempZEMvsZDC->FindBin((zem1Energy+zem2Energy)/1000.));
-  else     printf("  Centrality by ZEM vs ZDC not available!!!\n\n");
-  
+  //  else     printf("  Centrality by ZEM vs ZDC not available!!!\n\n");
+
   esdCent->SetCentralityV0M(fCentV0M);
   esdCent->SetCentralityFMD(fCentFMD);
   esdCent->SetCentralityTRK(fCentTRK);
@@ -319,7 +358,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 void AliCentralitySelectionTask::ReadCentralityHistos() 
 {
-  fFile  = new TFile(fCentfilename);
+  fFile = TFile::Open(fCentfilename,"READ");
   fHtempV0M  = (TH1D*) (fFile->Get("hmultV0_percentile")); 
   fHtempFMD  = (TH1D*) (fFile->Get("hmultFMD_percentile")); 
   fHtempTRK  = (TH1D*) (fFile->Get("hNtracks_percentile")); 
@@ -327,21 +366,24 @@ void AliCentralitySelectionTask::ReadCentralityHistos()
   fHtempCL0  = (TH1D*) (fFile->Get("hNclusters0_percentile")); 
   fHtempCL1  = (TH1D*) (fFile->Get("hNclusters1_percentile")); 
 }  
-  
+
+//________________________________________________________________________
 void AliCentralitySelectionTask::ReadCentralityHistos2() 
 {
-  fFile2  = new TFile(fCentfilename2);
+  fFile2 = TFile::Open(fCentfilename2);
   fHtempV0MvsFMD  = (TH1D*) (fFile2->Get("hmultV0vsmultFMD_all_percentile")); 
   fHtempTKLvsV0M  = (TH1D*) (fFile2->Get("hNtrackletsvsmultV0_all_percentile")); 
   fHtempZEMvsZDC  = (TH1D*) (fFile2->Get("hEzemvsEzdc_all_percentile"));  
 }
 
+//________________________________________________________________________
 void AliCentralitySelectionTask::SetPercentileFile(TString filename) 
 {
   fCentfilename = filename;
   ReadCentralityHistos();
 }
 
+//________________________________________________________________________
 void AliCentralitySelectionTask::SetPercentileFile2(TString filename) 
 {
   fCentfilename2 = filename;
@@ -352,8 +394,62 @@ void AliCentralitySelectionTask::SetPercentileFile2(TString filename)
 void AliCentralitySelectionTask::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
-  fFile->Close();  
-  fFile2->Close();  
+  if (fFile && fFile->IsOpen())
+    fFile->Close();  
+  if (fFile2 && fFile2->IsOpen())
+    fFile2->Close();  
 }
 //________________________________________________________________________
+Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* esd)
+{
+  // Setup files for run
 
+  if (!esd)
+    return -1;
+
+  // check if something to be done
+  if (fCurrentRun == esd->GetRunNumber())
+    return 0;
+  else
+    fCurrentRun = esd->GetRunNumber();
+  
+  AliInfo(Form("Setup Centrality Selection for run %d\n",fCurrentRun));
+
+  Int_t runNo = fCurrentRun;
+
+  // CHANGE HERE FOR RUN RANGES
+  if ( runNo == 137162 ) runNo = 137161;
+  else if ( runNo == 137365 ) runNo = 137366;
+  // CHANGE HERE FOR RUN RANGES
+
+  TString runName(Form("%d", runNo));
+  TString fileName("");
+  Bool_t isRunKnown = kFALSE;
+
+  // Check if run is in fileList
+  // if not, take the last name in the list
+  for ( Int_t idx=0 ; idx < fFileList->GetEntries(); ++idx ) {
+
+    TString str((dynamic_cast<TObjString*>(fFileList->At(idx)))->GetString());
+    if (str.Contains(runName)) {
+      fileName += str;
+      isRunKnown = kTRUE;
+      break;
+    }
+  }
+
+  if (!isRunKnown) {
+    if (fFileList->Last()) {
+      fileName += (dynamic_cast<TObjString*>(fFileList->Last()))->GetString();
+      AliError(Form("Run %d not known to centrality selection!", fCurrentRun));
+    }
+  }
+
+  if (fileName.Contains(".root")) {
+    AliInfo(Form("Centrality Selection for run %d is initialized with %s", fCurrentRun, fileName.Data()));
+    SetPercentileFile(fileName.Data());
+    return 0;
+  }
+  
+  return -1;
+}
