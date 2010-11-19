@@ -19,14 +19,14 @@ TString     kTrainName         = "hmpidAnalysis"; // (no blancs or special chara
 TString     kJobTag            = "HMPID Tasks analysis train configured"; //
 Bool_t      kUsePAR            = kFALSE;  // use par files for extra libs
 Bool_t      kUseCPAR           = kFALSE;  // use par files for common libs
-Bool_t      kFillAOD           = kTRUE;  // switch of AOD filling for on the fly analysis
+Bool_t      kFillAOD           = kFALSE;  // switch of AOD filling for on the fly analysis
 
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 0;      // ESD to AOD filter (barrel + muon tracks)
 Int_t       iPhysicsSelection  = 1;      // Physics selection task
 Bool_t      kUseKinefilter     = kFALSE; // use Kinematics filter
 Bool_t      kUseMuonfilter     = kFALSE; // use muon filter
-TString     kCommonOutputFileName = "HMPIDTaskOutput.root";
+TString     kCommonOutputFileName = "HmpidOutput.root";
 
 
 //== general process variables
@@ -55,9 +55,9 @@ Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Fil
 //== proof setup variables
 TString     kProofCluster      = "alice-caf.cern.ch";
 Bool_t      kProofUseAFPAR     = kTRUE;  // use AF special par file
-TString     kProofAFversion    = "VO_ALICE@AliRoot::v4-19-20-AN";
+TString     kProofAFversion    = "VO_ALICE@AliRoot::v4-20-08-AN";
 //== proof input and output variables
-TString     kProofDataSet      = "/alice/sim/LHC10c9_117118";
+TString     kProofDataSet      = "/alice/sim/LHC10d2_117220";
 //== proof process variables
 Bool_t      kProofClearPackages = kFALSE;
 Int_t       kProofEvents = 10000;
@@ -69,9 +69,9 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-27-05";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-20-07-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
-Bool_t      kPluginMergeViaJDL       = kFALSE;  // merge via JDL
+TString     kPluginRootVersion       = "v5-27-06b";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-21-05-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption    = kFALSE;  // use xrootd flags to reduce timeouts
 Bool_t      kPluginOverwriteMode     = kTRUE;  // overwrite existing collections
 Int_t       kPluginOutputToRunNumber = 1;     // write the output to subdirs named after run number
@@ -83,7 +83,7 @@ TString     kGridLocalRunList = "";
 TString     kGridWorkDir      = "HmpidAnalysis/LHC10d4a";   // Alien working directory
 TString     kGridOutdir       = ""; // AliEn output directory. If blank will become output_<kTrainName>
 TString     kGridDataSet      = ""; // sub working directory not to confuse different run xmls 
-Int_t       kGridRunRange[2]       = {119841, 119844}; // Set the run range
+Int_t       kGridRunRange[2]       = {120820, 120820}; // Set the run range
 TString     kGridRunPattern        = "%03d"; // important for leading zeroes!!
 TString     kGridPassPattern       = "";
 TString     kGridExtraFiles        = ""; // files that will be added to the input list in the JDL...
@@ -790,7 +790,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetRunMode(plugin_mode);
    if (kPluginUseProductionMode) plugin->SetProductionMode();
    plugin->SetJobTag(kJobTag);
-   plugin->SetNtestFiles(2);
+   plugin->SetNtestFiles(1);
 //   plugin->SetPreferedSE("ALICE::NIHAM::File");
 // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
@@ -802,7 +802,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Define production directory LFN
    plugin->SetGridDataDir(kGridDatadir.Data());
 // Set data search pattern
-   plugin->SetDataPattern(Form(" %s/*/*ESD.tag.root",kGridPassPattern.Data()));
+   plugin->SetDataPattern(Form(" %s/*/*ESDs.root",kGridPassPattern.Data()));
 // ...then add run numbers to be considered
    plugin->SetRunRange(kGridRunRange[0], kGridRunRange[1]);
 
@@ -866,9 +866,10 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
 
    if (ana_sources.Length()) plugin->SetAnalysisSource(ana_sources);
-   plugin->SetExecutableCommand(kPluginExecutableCommand.Data());  
+   plugin->SetExecutableCommand(kPluginExecutableCommand.Data());
    // Declare the output file names separated by blancs.
    // (can be like: file.root or file.root@ALICE::Niham::File)
+   plugin->SetUseSubmitPolicy(kFALSE);
    plugin->SetMergeExcludes(kGridMergeExclude);
    plugin->SetMaxMergeFiles(kGridMaxMergeFiles);
    plugin->SetNrunsPerMaster(kGridRunsPerMaster);
@@ -876,7 +877,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    // Use fastread option
    plugin->SetFastReadOption(kPluginFastReadOption);
    // UseOverwrite mode
-   plugin->SetOverwriteMode(kPluginOverwriteMode); 
+   plugin->SetOverwriteMode(kPluginOverwriteMode);
    // Optionally define the files to be archived.
    //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:AliAOD.root,AOD.tag.root@ALICE::NIHAM::File");
    plugin->SetOutputToRunNo(kPluginOutputToRunNumber);     // write the output to subdirs named after run number
@@ -918,15 +919,15 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    if (!listhists.Length() && !listaods.Length()) {
       ::Fatal("AnalysisTrainHMPID", "No task output !");
    }
-   
+
    if (listaods.Length()) {
       outputArchive += " ";
       outputArchive += listaods;
-   }   
+   }
    if (listhists.Length()) {
       outputArchive += " ";
       outputArchive += listhists;
-   }   
+   }
 //   plugin->SetOutputArchive(outputArchive);
 
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
