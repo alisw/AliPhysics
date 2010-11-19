@@ -37,6 +37,7 @@
 #include "AliCaloTrackReader.h"
 #include "AliPDG.h"
 #include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 
 ClassImp(AliAnalysisTaskParticleCorrelation)
 
@@ -208,5 +209,19 @@ void AliAnalysisTaskParticleCorrelation::Terminate(Option_t */*option*/)
   // Propagate histagrams to maker
   fAna->Terminate((TList*)GetOutputData(1));
 	
+}
+
+//_____________________________________________________
+void AliAnalysisTaskParticleCorrelation::FinishTaskOutput(){
+  // Put in the output some event summary histograms
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputH = dynamic_cast<AliInputEventHandler*>(am->GetInputEventHandler());
+  if (!inputH) return; 
+  TH2F *histStat = dynamic_cast<TH2F*>(inputH->GetStatistics()); 
+  TH2F *histBin0 = dynamic_cast<TH2F*>(inputH->GetStatistics("BIN0"));
+  
+  if(histStat)fOutputContainer->Add(histStat); else printf("Stat histogram not available\n");
+  if(histBin0)fOutputContainer->Add(histBin0); else printf("Bin0 histogram not available\n");
+  
 }
 

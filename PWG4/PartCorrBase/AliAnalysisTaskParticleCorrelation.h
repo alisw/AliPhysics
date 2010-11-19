@@ -34,6 +34,7 @@ class AliAnalysisTaskParticleCorrelation : public AliAnalysisTaskSE
   virtual void LocalInit() ;
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+  virtual void FinishTaskOutput();
   
   void SetConfigFileName(TString name ) {fConfigName = name ; }
   TString GetConfigFileName() const {return fConfigName ; }
