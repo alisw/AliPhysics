@@ -19,6 +19,9 @@ class AliESDRun;
 
 class AliTRDeventInfo : public TObject{
 public:
+  enum{
+    kCentralityClasses = 5
+  };
   AliTRDeventInfo();
   AliTRDeventInfo(AliESDHeader *header, AliESDRun *run);
   AliTRDeventInfo(const AliTRDeventInfo &info);
@@ -28,9 +31,11 @@ public:
 
   AliESDHeader *GetEventHeader() const { return fHeader; }
   AliESDRun *GetRunInfo() const { return fRun; }
+  Int_t GetCentrality() const { return fCentrality; }
   Bool_t IsOwner() const { return TestBit(kOwner); }
   void SetEventHeader(AliESDHeader *evHeader){ fHeader = evHeader; }
   void SetRunInfo(AliESDRun *evRun) { fRun = evRun; }
+  void SetCentrality(Int_t centrality) { fCentrality = centrality; }
   void SetOwner();
 
 private:
@@ -39,6 +44,7 @@ private:
   };
   AliESDHeader *fHeader;		//! The ESD Header
   AliESDRun *fRun;		      //! The ESD Run Info
+  Int_t fCentrality;        //! Centrality class
 
   ClassDef(AliTRDeventInfo, 1)
 };

@@ -30,6 +30,7 @@
 #include "AliLog.h"
 #include "AliAnalysisTask.h"
 
+#include "info/AliTRDeventInfo.h"
 #include "AliTRDrecoTask.h"
 
 ClassImp(AliTRDrecoTask)
@@ -41,11 +42,13 @@ AliTRDrecoTask::AliTRDrecoTask()
   : AliAnalysisTaskSE()
   ,fNRefFigures(0)
   ,fContainer(NULL)
+  ,fEvent(NULL)
   ,fTracks(NULL)
   ,fkTrack(NULL)
   ,fkMC(NULL)
   ,fkESD(NULL)
   ,fPlotFuncList(NULL)
+  ,fRunTerminate(kFALSE)
 {
 // Default constructor
   snprintf(fNameId, 10, "no name");
@@ -56,11 +59,13 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   : AliAnalysisTaskSE(name)
   ,fNRefFigures(0)
   ,fContainer(NULL)
+  ,fEvent(NULL)
   ,fTracks(NULL)
   ,fkTrack(NULL)
   ,fkMC(NULL)
   ,fkESD(NULL)
   ,fPlotFuncList(NULL)
+  ,fRunTerminate(kFALSE)
 {
 // Constructor for all derived performance tasks
 
@@ -124,6 +129,7 @@ void AliTRDrecoTask::UserExec(Option_t *)
 // Loop over Plot functors published by particular tasks
 
   fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
+  fEvent = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
   if(!fPlotFuncList){
     AliWarning("No functor list defined for the reference plots");
     return;
@@ -273,7 +279,7 @@ void AliTRDrecoTask::Terminate(Option_t *)
     fgDebugStream = NULL;
   }
   fContainer = dynamic_cast<TObjArray *>(GetOutputData(1));
-  if(fContainer){
+  if(fContainer && fRunTerminate){
     PostProcess();
     MakeSummary();
   }

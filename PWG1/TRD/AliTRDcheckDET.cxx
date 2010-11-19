@@ -128,8 +128,7 @@ void AliTRDcheckDET::UserExec(Option_t *opt){
   // Execution function
   // Filling TRD quality histos
   //
-  fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
-  AliDebug(2, Form("EventInfo[%p] Header[%p]", (void*)fEventInfo, (void*)(fEventInfo?fEventInfo->GetEventHeader():NULL)));
+  AliDebug(2, Form("EventInfo[%p] Header[%p]", (void*)fEventInfo, (void*)(fEvent?fEvent->GetEventHeader():NULL)));
 
   AliTRDrecoTask::UserExec(opt);  
 
@@ -143,7 +142,7 @@ void AliTRDcheckDET::UserExec(Option_t *opt){
   if(nTracks)
     if((histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtracksEvent)))) histo->Fill(nTracks);
 
-  if(!fEventInfo->GetEventHeader()) return; // For trigger statistics event header is essential
+  if(!fEvent->GetEventHeader()) return; // For trigger statistics event header is essential
   Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();
   TString triggername =  fEventInfo->GetRunInfo()->GetFiredTriggerClasses(triggermask);
   AliDebug(6, Form("Trigger cluster: %d, Trigger class: %s\n", triggermask, triggername.Data()));
@@ -393,10 +392,12 @@ TObjArray *AliTRDcheckDET::Histos(){
   // Register Histograms
   TH1 * h = NULL;
   TAxis *ax = NULL;
-  if(!(h = (TH1F *)gROOT->FindObject("hNcls"))){
-    h = new TH1F("hNcls", "N_{clusters} / track", 181, -0.5, 180.5);
+  if(!(h = (TH2F *)gROOT->FindObject("hNcls"))){
+    h = new TH2F("hNcls", "N_{clusters} / track", 181, -0.5, 180.5, AliTRDeventInfo::kCentralityClasses + 1, -1.5, AliTRDeventInfo::kCentralityClasses - 0.5);
+    /*h = new TH2F("hNcls", "N_{clusters} / track", 181, -0.5, 180.5);
     h->GetXaxis()->SetTitle("N_{clusters}");
-    h->GetYaxis()->SetTitle("Entries");
+    h->GetYaxis()->SetTitle("Centrality");
+    h->GetZaxis()->SetTitle("Entries");*/
   } else h->Reset();
   fContainer->AddAt(h, kNclustersTrack);
 
