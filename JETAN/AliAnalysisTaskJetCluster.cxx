@@ -950,18 +950,17 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Double_t sigma2=0.;
      Double_t meanarea2=0.;
 
-     //     float areaRandomCone = rRandomCone2 *TMath::Pi();         
      clustSeq.get_median_rho_and_sigma(sortedJets, range, false, bkg1, sigma1, meanarea1, true);
      evBkg->SetBackground(0,bkg1,sigma1,meanarea1);
-     /*
-     fh1BiARandomCones[0]->Fill(omCone-(bkg1*areaRandomCone));    
-     fh1BiARandomConesRan[0]->Fill(ptRandomConeRan-(bkg1*areaRandomCone));    
+
+     //     fh1BiARandomCones[0]->Fill(omCone-(bkg1*areaRandomCone));    
+     //  fh1BiARandomConesRan[0]->Fill(ptRandomConeRan-(bkg1*areaRandomCone));    
      
      clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, true);
      evBkg->SetBackground(1,bkg2,sigma2,meanarea2);
-     fh1BiARandomCones[1]->Fill(ptRandomCone-(bkg2*areaRandomCone));    
-     fh1BiARandomConesRan[1]->Fill(ptRandomConeRan-(bkg2*areaRandomCone));    
-     */
+     //  fh1BiARandomCones[1]->Fill(ptRandomCone-(bkg2*areaRandomCone));    
+     //   fh1BiARandomConesRan[1]->Fill(ptRandomConeRan-(bkg2*areaRandomCone));    
+
    }
   }
    
