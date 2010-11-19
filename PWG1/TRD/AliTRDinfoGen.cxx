@@ -57,10 +57,12 @@
 #include "AliESDfriend.h"
 #include "AliESDfriendTrack.h"
 #include "AliESDHeader.h"
+#include "AliESDRun.h"
 #include "AliESDtrack.h"
 #include "AliESDv0.h"
 #include "AliESDtrackCuts.h"
 #include "AliMCParticle.h"
+#include "AliMultiplicity.h"
 #include "AliPID.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
@@ -397,7 +399,22 @@ void AliTRDinfoGen::UserExec(Option_t *){
   }
 
   new(fEventInfo)AliTRDeventInfo(fESDev->GetHeader(), const_cast<AliESDRun *>(fESDev->GetESDRun()));
-  
+  // Determine centrality
+  // Author: Ionut Arsene <I.C.Arsene@gsi.de>
+  Int_t centralityBin = -1;
+  if(TString(fESDev->GetESDRun()->GetBeamType()).Contains("A-")){
+    const AliMultiplicity *mult = fESDev->GetMultiplicity();
+    Double_t zdcNeutronEnergy = fESDev->GetZDCN1Energy()+fESDev->GetZDCN2Energy();
+    Double_t itsNTracklets = mult->GetNumberOfTracklets();
+    Double_t centralitySlopes[6] = {0.0, 4.0, 8.0, 20.0, 50.0, 1000000.};
+    for(Int_t iCent=1; iCent<=5; ++iCent) {
+      if(zdcNeutronEnergy>centralitySlopes[iCent-1]*itsNTracklets &&
+zdcNeutronEnergy<centralitySlopes[iCent]*itsNTracklets)
+        centralityBin=iCent;
+    }
+  }
+  fEventInfo->SetCentrality(centralityBin);
+
   Bool_t *trackMap(NULL);
   AliStack * mStack(NULL);
   Int_t nTracksMC = HasMCdata() ? fMCev->GetNumberOfTracks() : 0, nTracksESD = fESDev->GetNumberOfTracks();

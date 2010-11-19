@@ -18,6 +18,7 @@ AliTRDeventInfo::AliTRDeventInfo():
   TObject()
   ,fHeader(0x0)
   ,fRun(0x0)
+  ,fCentrality(-1.)
 {
   //
   // Default Constructor
@@ -29,6 +30,7 @@ AliTRDeventInfo::AliTRDeventInfo(AliESDHeader *header, AliESDRun *run):
   TObject()
   ,fHeader(header)
   ,fRun(run)
+  ,fCentrality(-1.)
 {
   //
   // Constructor with Arguments
@@ -40,6 +42,7 @@ AliTRDeventInfo::AliTRDeventInfo(const AliTRDeventInfo &info):
   TObject()
   ,fHeader(info.fHeader)
   ,fRun(info.fRun)
+  ,fCentrality(info.fCentrality)
 {
   //
   // Copy Constructor
@@ -55,6 +58,7 @@ AliTRDeventInfo& AliTRDeventInfo::operator=(const AliTRDeventInfo& info){
   //
   this->fHeader = info.fHeader;
   this->fRun = info.fRun;
+  fCentrality = info.fCentrality;
   SetBit(kOwner, 0);
   return *this;
 }
