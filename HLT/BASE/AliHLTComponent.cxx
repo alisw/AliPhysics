@@ -2708,7 +2708,7 @@ int AliHLTComponent::ExtractTriggerData(
   }
   if (cdh != NULL)
   {
-    const AliRawDataHeader* cdhptr = reinterpret_cast<const AliRawDataHeader*>(&evtData->fCommonHeader);
+    const AliRawDataHeader* cdhptr = reinterpret_cast<const AliRawDataHeader*>(&evtData->fCommonHeader[0]);
     *cdh = cdhptr;
   }
   if (readoutlist != NULL)
