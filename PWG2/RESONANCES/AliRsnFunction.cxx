@@ -36,15 +36,15 @@ ClassImp(AliRsnFunction)
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction(Bool_t useTH1) :
-    TObject(),
-    fPairDef(0x0),
-    fAxisList("AliRsnValue", 0),
-    fPair(0x0),
-    fEvent(0x0),
-    fUseTH1(useTH1),
-    fSize(0),
-    fH1(0x0),
-    fHSparse(0x0)
+  TObject(),
+  fPairDef(0x0),
+  fAxisList("AliRsnValue", 0),
+  fPair(0x0),
+  fEvent(0x0),
+  fUseTH1(useTH1),
+  fSize(0),
+  fH1(0x0),
+  fHSparse(0x0)
 {
 //
 // Constructor.
@@ -53,15 +53,15 @@ AliRsnFunction::AliRsnFunction(Bool_t useTH1) :
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
-    TObject(copy),
-    fPairDef(copy.fPairDef),
-    fAxisList(copy.fAxisList),
-    fPair(copy.fPair),
-    fEvent(copy.fEvent),
-    fUseTH1(copy.fUseTH1),
-    fSize(copy.fSize),
-    fH1(0x0),
-    fHSparse(0x0)
+  TObject(copy),
+  fPairDef(copy.fPairDef),
+  fAxisList(copy.fAxisList),
+  fPair(copy.fPair),
+  fEvent(copy.fEvent),
+  fUseTH1(copy.fUseTH1),
+  fSize(copy.fSize),
+  fH1(0x0),
+  fHSparse(0x0)
 {
 //
 // Copy constructor.
@@ -74,9 +74,6 @@ const AliRsnFunction& AliRsnFunction::operator=(const AliRsnFunction& copy)
 //
 // Assignment operator.
 //
-
-  //SetName(copy.GetName());
-  //SetTitle(copy.GetTitle());
 
   fPairDef = copy.fPairDef;
   fPair = copy.fPair;
@@ -106,7 +103,8 @@ const char* AliRsnFunction::GetName() const
   TObjArrayIter next(&fAxisList);
   AliRsnValue *axis = 0;
 
-  while ((axis = (AliRsnValue*)next())) {
+  while ((axis = (AliRsnValue*)next())) 
+  {
     if (name.Length() > 1) name += '_';
     name += axis->GetName();
   }
@@ -115,18 +113,35 @@ const char* AliRsnFunction::GetName() const
 }
 
 //________________________________________________________________________________________
-void AliRsnFunction::AddAxis(AliRsnValue *const axis)
+Bool_t AliRsnFunction::AddAxis(AliRsnValue *const axis)
 {
-  AliDebug(AliLog::kDebug+2,"<-");
+//
+// Try to add a new axis to this function.
+// The operation succeeds only if the related value object
+// has a target amon those allowed here (AliRsnMother, AliRsnEvent),
+// otherwise the axis is not added.
+//
+// If more than 3 axes are added, switch to THnSparseF output.
+// NOTE: this can cause large files and high memory occupancy.
+//
+
+  RSNTARGET target = axis->GetTargetType();
+  if (target != AliRsnTarget::kMother && target != AliRsnTarget::kEvent)
+  {
+    AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", axis->GetName(), axis->GetTargetTypeName()));
+    return kFALSE;
+  }
+
   Int_t size = fAxisList.GetEntries();
-  new(fAxisList[size]) AliRsnValue(*axis);
-  AliDebug(AliLog::kDebug+2,"->");
+  new (fAxisList[size]) AliRsnValue(*axis);
   
   if (fAxisList.GetEntries() > 3)
   {
-    AliWarning("A TH1-type output cannot add more than 3 axes: switching to THnSparse -- THIS COULD CAUSE VERY LARGE FILES!!!");
+    AliWarning("Adding more than 3 axes will produce a THnSparseD output.");
     fUseTH1 = kFALSE;
   }
+  
+  return kTRUE;
 }
 
 //________________________________________________________________________________________
@@ -143,13 +158,14 @@ TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTit
 //
 
   fSize = fAxisList.GetEntries();
-  if (!fSize) {
+  if (!fSize) 
+  {
     AliError("No axes defined");
     return 0x0;
   }
-  else if (fSize < 1 || fSize > 3)
+  else if (fSize > 3)
   {
-    AliError("Too few or too many axes defined");
+    AliError("Too many axes defined for a TH1 object");
     return 0x0;
   }
 
@@ -205,7 +221,8 @@ THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
 //
 
   fSize = fAxisList.GetEntries();
-  if (!fSize) {
+  if (!fSize) 
+  {
     AliError("No axes defined");
     return 0x0;
   }
@@ -260,23 +277,36 @@ Bool_t AliRsnFunction::Fill()
 
   Int_t  i;
   Double_t *values = new Double_t[fSize];
+  Bool_t    computeOK = kFALSE;
 
   AliRsnValue *fcnAxis = 0;
-  for (i = 0; i < fSize; i++) {
+  for (i = 0; i < fSize; i++) 
+  {
+    values[i] = 0.0;
     fcnAxis = (AliRsnValue*)fAxisList.At(i);
-    if (!fcnAxis) 
+    if (!fcnAxis) continue;
+    switch (fcnAxis->GetTargetType())
     {
-      values[i] = 0.0;
-      continue;
+      case AliRsnTarget::kMother:
+        fcnAxis->SetSupportObject(fPairDef);
+        computeOK = fcnAxis->Eval(fPair);
+        break;
+      case AliRsnTarget::kEvent:
+        computeOK = fcnAxis->Eval(fEvent);
+        break;
+      default:
+        AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", fcnAxis->GetName(), fcnAxis->GetTargetTypeName()));
+        computeOK = kFALSE;
     }
-    if (fcnAxis->Eval(fPair, fPairDef, fEvent)) values[i] = (Double_t)((Float_t)fcnAxis->GetValue());
+    if (computeOK) values[i] = ((Float_t)fcnAxis->GetComputedValue());
   }
   
   // fill histogram
   if (fUseTH1)
   {
     // check presence of output histogram
-    if (!fH1) {
+    if (!fH1) 
+    {
       AliError("Required a TH1 which is not initialized");
       delete [] values;
       return kFALSE;
@@ -312,7 +342,8 @@ Bool_t AliRsnFunction::Fill()
   else
   {
     // check presence of output histogram
-    if (!fHSparse) {
+    if (!fHSparse) 
+    {
       AliError("Required a THnSparseF which is not initialized");
       delete [] values;
       return kFALSE;

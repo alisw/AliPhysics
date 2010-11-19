@@ -8,6 +8,7 @@
 //
 
 #include <Riostream.h>
+#include "AliESDtrackCuts.h"
 #include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
@@ -19,93 +20,119 @@ ClassImp(AliRsnValue)
 
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue() :
-  TNamed(),
-  fValue(0.0),
-  fType(kValueTypes),
-  fArray(0),
-  fESDCuts()
+  AliRsnTarget(),
+  fComputedValue(0),
+  fValueType(kValueTypes),
+  fBinArray(0),
+  fSupportObject(0x0)
 {
 //
-// Main constructor (version 1)
-// This can also be created without any argument.
+// Default constructor without arguments.
+// Initialize data members to meaningless values.
+// This method is provided for ROOT streaming, 
+// but should never be used directly by a user.
 //
+
+  AssignTarget();
 }
 
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue
 (const char *name, EValueType type, Int_t nbins, Double_t min, Double_t max) :
-  TNamed(name, ""),
-  fValue(0.0),
-  fType(type),
-  fArray(0),
-  fESDCuts()
+  AliRsnTarget(name, AliRsnTarget::kTargetTypes),
+  fComputedValue(0.0),
+  fValueType(type),
+  fBinArray(0),
+  fSupportObject(0x0)
 {
 //
-// Main constructor (version 1)
-// This can also be created without any argument.
+// Main constructor (version 1).
+// This constructor defines in meaningful way all data members,
+// and defined a fixed binnings, subdividing the specified interval
+// into that many bins as specified in the integer argument.
+// ---
+// This method is also the entry point for all instances
+// of this class which don't need to do binning (e.g.: TNtuple inputs),
+// since arguments 3 to 5 have default values which don't create any
+// binning array, in order not to allocate memory when this is useless.
 //
 
+  AssignTarget();
   SetBins(nbins, min, max);
 }
 
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue
 (const char *name, EValueType type, Double_t min, Double_t max, Double_t step) :
-  TNamed(name, ""),
-  fValue(0.0),
-  fType(type),
-  fArray(0),
-  fESDCuts()
+  AliRsnTarget(name, AliRsnTarget::kTargetTypes),
+  fComputedValue(0.0),
+  fValueType(type),
+  fBinArray(0),
+  fSupportObject(0x0)
 {
 //
-// Main constructor (version 2)
+// Main constructor (version 2).
+// This constructor defines in meaningful way all data members
+// and creates enough equal bins of the specified size to cover
+// the required interval.
 //
 
+  AssignTarget();
   SetBins(min, max, step);
 }
 
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue
 (const char *name, EValueType type, Int_t nbins, Double_t *array) :
-  TNamed(name, ""),
-  fValue(0.0),
-  fType(type),
-  fArray(0),
-  fESDCuts()
+  AliRsnTarget(name, AliRsnTarget::kTargetTypes),
+  fComputedValue(0.0),
+  fValueType(type),
+  fBinArray(0),
+  fSupportObject(0x0)
 {
 //
-// Main constructor (version 2)
+// Main constructor (version 3).
+// This constructor defines in meaningful way all data members
+// and creates a set of variable bins delimited by the passed array.
 //
 
+  AssignTarget();
   SetBins(nbins, array);
 }
 
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue(const AliRsnValue& copy) : 
-  TNamed(copy),
-  fValue(copy.fValue),
-  fType(copy.fType),
-  fArray(copy.fArray),
-  fESDCuts(copy.fESDCuts)
+  AliRsnTarget(copy),
+  fComputedValue(copy.fComputedValue),
+  fValueType(copy.fValueType),
+  fBinArray(copy.fBinArray),
+  fSupportObject(copy.fSupportObject)
 {
 //
-// Copy constructor
+// Copy constructor.
+// Duplicates the binning array and copies all settings.
+// Calls also the function that assigns properly the 
+// expected target, depending on the computation type.
 //
+
+  AssignTarget();
 }
 
 //_____________________________________________________________________________
 AliRsnValue& AliRsnValue::operator=(const AliRsnValue& copy)
 {
 //
-// Assignment operator
+// Assignment operator.
+// Works like copy constructor.
 //
 
-  SetName(copy.GetName());
+  AliRsnTarget::operator=(copy);
   
-  fType = copy.fType;
-  fValue = copy.fValue;
-  fArray = copy.fArray;
-  fESDCuts = copy.fESDCuts;
+  fComputedValue = copy.fComputedValue;
+  fBinArray = copy.fBinArray;
+  fSupportObject = copy.fSupportObject;
+  
+  AssignTarget();
   
   return (*this);
 }
@@ -118,7 +145,13 @@ void AliRsnValue::SetBins(Int_t nbins, Double_t min, Double_t max)
 // where the number of bins, minimum and maximum are given.
 //
 
-  fArray.Set(nbins + 1);
+  if (!nbins)
+  {
+    fBinArray.Set(0);
+    return;
+  }
+
+  fBinArray.Set(nbins + 1);
   
   Double_t mymax = TMath::Max(min, max);
   Double_t mymin = TMath::Min(min, max);
@@ -126,9 +159,8 @@ void AliRsnValue::SetBins(Int_t nbins, Double_t min, Double_t max)
   Int_t    k = 0;
   Double_t binSize = (mymax - mymin) / ((Double_t)nbins);
   
-  fArray[0] = mymin;
-  for (k = 1; k <= nbins; k++) fArray[k] = fArray[k-1] + binSize;
-  for (k = 0; k < fArray.GetSize() - 1; k++) AliDebug(AliLog::kDebug + 3, Form("Bin #%d: %f - %f", k, fArray[k], fArray[k+1]));
+  fBinArray[0] = mymin;
+  for (k = 1; k <= nbins; k++) fBinArray[k] = fBinArray[k-1] + binSize;
 }
 
 //_____________________________________________________________________________
@@ -153,157 +185,321 @@ void AliRsnValue::SetBins(Int_t nbins, Double_t *array)
 // using the same way it is done in TAxis
 //
 
-  fArray.Adopt(nbins, array);
-  for (Int_t k = 0; k < fArray.GetSize() - 1; k++) AliDebug(AliLog::kDebug + 3, Form("Bin #%d: %f - %f", k, fArray[k], fArray[k+1]));
+  if (!nbins)
+  {
+    fBinArray.Set(0);
+    return;
+  }
+  
+  fBinArray.Adopt(nbins, array);
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnValue::Eval(AliRsnMother *mother, AliRsnPairDef *pairDef, AliRsnEvent *event)
+const char* AliRsnValue::GetValueTypeName() const
+{
+//
+// This method returns a string to give a name to each possible
+// computation value.
+//
+  
+  switch (fValueType)
+  {
+    case kTrackP:             return "SingleTrackPtot";
+    case kTrackPt:            return "SingleTrackPt";
+    case kTrackEta:           return "SingleTrackEta";
+    case kPairP1:             return "PairPtotDaughter1";
+    case kPairP2:             return "PairPtotDaughter2";
+    case kPairP1t:            return "PairPtDaughter1";
+    case kPairP2t:            return "PairPtDaughter2";
+    case kPairP1z:            return "PairPzDaughter1";
+    case kPairP2z:            return "PairPzDaughter2";
+    case kPairInvMass:        return "PairInvMass";
+    case kPairInvMassMC:      return "PairInvMassMC";
+    case kPairInvMassRes:     return "PairInvMassResolution";
+    case kPairPt:             return "PairPt";
+    case kPairPz:             return "PairPz";
+    case kPairEta:            return "PairEta";
+    case kPairMt:             return "PairMt";
+    case kPairY:              return "PairY";
+    case kPairPhi:            return "PairPhi";
+    case kPairPhiMC:          return "PairPhiMC";
+    case kPairPtRatio:        return "PairPtRatio";
+    case kPairDipAngle:       return "PairDipAngle";
+    case kPairCosThetaStar:   return "PairCosThetaStar";
+    case kPairQInv:           return "PairQInv";
+    case kPairAngleToLeading: return "PairAngleToLeading";
+    case kEventLeadingPt:     return "EventLeadingPt";
+    case kEventMult:          return "EventMult";
+    case kEventMultESDCuts:   return "EventMultESDCuts";
+    default:                  return "Undefined";
+  }
+}
+
+//_____________________________________________________________________________
+void AliRsnValue::AssignTarget()
+{
+//
+// This method assigns the target to be expected by this object
+// in the computation, depending on its type chosen in the enum.
+//
+  
+  switch (fValueType)
+  {
+    // track related values
+    case kTrackP:
+    case kTrackPt:
+    case kTrackEta:
+      SetTargetType(AliRsnTarget::kDaughter); // end of track-related values
+      break;
+    // pair related values
+    case kPairP1:
+    case kPairP2:
+    case kPairP1t:
+    case kPairP2t:
+    case kPairP1z:
+    case kPairP2z:
+    case kPairInvMass:
+    case kPairInvMassMC:
+    case kPairInvMassRes:
+    case kPairPt:
+    case kPairPz:
+    case kPairEta:
+    case kPairMt:
+    case kPairY:
+    case kPairPhi:
+    case kPairPhiMC:
+    case kPairPtRatio:
+    case kPairDipAngle:
+    case kPairCosThetaStar:
+    case kPairQInv:
+    case kPairAngleToLeading:
+      SetTargetType(AliRsnTarget::kMother); // end of pair-related values
+      break;
+    // event related values
+    case kEventLeadingPt:
+    case kEventMult:
+    case kEventMultESDCuts:
+      SetTargetType(AliRsnTarget::kEvent); // end of event-related values
+      break;
+    // undefined value
+    default:
+      SetTargetType(AliRsnTarget::kTargetTypes); // undefined targets
+  }
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
 {
 //
 // Evaluation of the required value.
 // Checks that the passed object is of the right type
-// and if this check is successful, returns the required value.
-// The output of the function tells if it was successful,
+// and if this check is successful, computes the required value.
+// The output of the function tells if computing was successful,
 // and the values must be taken with GetValue().
 //
 
-  // avoid segfaults
-  if (!mother) return kFALSE;
-  if (!pairDef) return kFALSE;
-
-  Double_t mass = pairDef->GetMotherMass();
-
-  switch (fType)
+  // cast the input to the allowed types
+  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
+  AliRsnMother   *mother   = dynamic_cast<AliRsnMother*>(object);
+  AliRsnEvent    *event    = dynamic_cast<AliRsnEvent*>(object);
+  
+  // check that the input object is the correct class type
+  switch (fTargetType)
   {
-    case kTrack1P:
-      fValue = mother->GetDaughter(0)->P().Mag();
+    case AliRsnTarget::kDaughter:
+      if (!daughter)
+      {
+        AliError(Form("[%s] expected: AliRsnDaughter, passed: [%s]", GetName(), object->ClassName()));
+        return kFALSE;
+      }
       break;
-    case kTrack2P:
-      fValue = mother->GetDaughter(1)->P().Mag();
+    case AliRsnTarget::kMother:
+      if (!mother)
+      {
+        AliError(Form("[%s] expected: AliRsnMother, passed: [%s]", GetName(), object->ClassName()));
+        return kFALSE;
+      }
       break;
-    case kTrack1Pt:
-      fValue = mother->GetDaughter(0)->P().Perp();
+    case AliRsnTarget::kEvent:
+      if (!event)
+      {
+        AliError(Form("[%s] expected: AliRsnEvent, passed: [%s]", GetName(), object->ClassName()));
+        return kFALSE;
+      }
       break;
-    case kTrack2Pt:
-      fValue = mother->GetDaughter(1)->P().Perp();
+    default:
+      AliError(Form("[%s] Wrong type", GetName()));
+      return kFALSE;
+  }
+
+  // cast the support object to the types which could be needed
+  AliESDtrackCuts *esdCuts = dynamic_cast<AliESDtrackCuts*>(fSupportObject);
+  AliRsnPairDef   *pairDef = dynamic_cast<AliRsnPairDef*>(fSupportObject);
+
+  // common variables
+  TLorentzVector pRec;   // 4-momentum for single track or pair sum (reco)
+  TLorentzVector pSim;   // 4-momentum for single track or pair sum (MC)
+  TLorentzVector pRec0;  // 4-momentum of first daughter (reco)
+  TLorentzVector pSim0;  // 4-momentum of first daughter (MC)
+  TLorentzVector pRec1;  // 4-momentum of second daughter (reco)
+  TLorentzVector pSim1;  // 4-momentum of second daughter (MC)
+  if (daughter)
+  {
+    pRec = daughter->Psim();
+    pSim = daughter->Prec();
+  }
+  if (mother)
+  {
+    pRec  = mother->Sum();
+    pSim  = mother->SumMC();
+    pRec0 = mother->GetDaughter(0)->Prec();
+    pRec1 = mother->GetDaughter(1)->Prec();
+    pSim0 = mother->GetDaughter(0)->Psim();
+    pSim1 = mother->GetDaughter(1)->Psim();
+  }
+    
+  // compute value depending on type
+  switch (fValueType)
+  {
+    case kTrackP:
+      fComputedValue = useMC ? pSim.Mag() : pRec.Mag();
       break;
-    case kTrack1Px:
-      fValue = mother->GetDaughter(0)->P().X();
+    case kTrackPt:
+      fComputedValue = useMC ? pSim.Perp() : pRec.Perp();
       break;
-    case kTrack1Py:
-      fValue = mother->GetDaughter(0)->P().Y();
+    case kTrackEta:
+      fComputedValue = useMC ? pSim.Eta() : pRec.Eta();
       break;
-    case kTrack1Pz:
-      fValue = mother->GetDaughter(0)->P().Z();
+    case kPairP1:
+      fComputedValue = useMC ? pSim0.Mag() : pRec0.Mag();
       break;
-    case kTrack2Px:
-      fValue = mother->GetDaughter(1)->P().X();
+    case kPairP2:
+      fComputedValue = useMC ? pSim1.Mag() : pRec1.Mag();
       break;
-    case kTrack2Py:
-      fValue = mother->GetDaughter(1)->P().Y();
+    case kPairP1t:
+      fComputedValue = useMC ? pSim0.Perp() : pRec0.Perp();
       break;
-    case kTrack2Pz:
-      fValue = mother->GetDaughter(1)->P().Z();
+    case kPairP2t:
+      fComputedValue = useMC ? pSim1.Perp() : pRec1.Perp();
+      break;
+    case kPairP1z:
+      fComputedValue = useMC ? pSim0.Z() : pRec0.Z();
+      break;
+    case kPairP2z:
+      fComputedValue = useMC ? pSim1.Z() : pRec1.Z();
       break;
     case kPairInvMass:
-      fValue = mother->Sum().M();
-      break;
-    case kPairInvMassMC:
-      fValue = mother->SumMC().M();
+      fComputedValue = useMC ? pSim.M() : pRec.M();
       break;
     case kPairInvMassRes:
-      fValue = (mother->SumMC().M() - mother->Sum().M()) / mother->SumMC().M();
+      fComputedValue = (pSim.M() - pRec.M()) / pSim.M();
       break;
     case kPairPt:
-      fValue = mother->Sum().Perp();
+      fComputedValue = useMC ? pSim.Perp() : pRec.Perp();
       break;
     case kPairEta:
-      fValue = mother->Sum().Eta();
+      fComputedValue = useMC ? pSim.Eta() : pRec.Eta();
       break;
     case kPairMt:
-      if (TMath::Abs(mass) < 1E-5) AliWarning(Form("Suspicious mass value specified: %f", mass));
-      fValue = (TMath::Sqrt(mother->Sum().Perp2() + mass*mass) - mass);
+      // for this computation, replace the computed mass with the default mass
+      // for doing this, an initialized pairDef is required to get the mass
+      if (!pairDef)
+      {
+        AliError(Form("[%s] Required a correctly initialized PairDef to compute this value", GetName()));
+        fComputedValue = 1E+10;
+        return kFALSE;
+      }
+      else
+      {
+        pRec.SetXYZM(pRec.X(), pRec.Y(), pRec.Z(), pairDef->GetMotherMass());
+        pSim.SetXYZM(pSim.X(), pSim.Y(), pSim.Z(), pairDef->GetMotherMass());
+        fComputedValue = useMC ? pSim.Mt() : pRec.Mt();
+      }
       break;
     case kPairY:
-      if (TMath::Abs(mass) < 1E-5) AliWarning(Form("Suspicious mass value specified: %f", mass));
-      mother->SetDefaultMass(mass);
-      fValue = mother->Ref().Rapidity();
+      // for this computation, replace the computed mass with the default mass
+      // for doing this, an initialized pairDef is required to get the mass
+      if (!pairDef)
+      {
+        AliError(Form("[%s] Required a correctly initialized PairDef to compute this value", GetName()));
+        fComputedValue = 1E+10;
+        return kFALSE;
+      }
+      else
+      {
+        pRec.SetXYZM(pRec.X(), pRec.Y(), pRec.Z(), pairDef->GetMotherMass());
+        pSim.SetXYZM(pSim.X(), pSim.Y(), pSim.Z(), pairDef->GetMotherMass());
+        fComputedValue = useMC ? pSim.Rapidity() : pRec.Rapidity();
+      }
       break;
     case kPairPhi:
-      fValue = mother->Sum().Phi();
-      break;
-    case kPairPhiMC:
-      fValue = mother->SumMC().Phi();
+      fComputedValue = useMC ? pSim.Phi() : pRec.Phi();
       break;
     case kPairPtRatio:
-      fValue  = TMath::Abs(mother->GetDaughter(0)->P().Perp() - mother->GetDaughter(1)->P().Perp());
-      fValue /= TMath::Abs(mother->GetDaughter(0)->P().Perp() + mother->GetDaughter(1)->P().Perp());
+      if (useMC)
+      {
+        fComputedValue  = TMath::Abs(pSim0.Perp() - pSim1.Perp());
+        fComputedValue /= TMath::Abs(pSim0.Perp() + pSim1.Perp());
+      }
+      else
+      {
+        fComputedValue  = TMath::Abs(pRec0.Perp() - pRec1.Perp());
+        fComputedValue /= TMath::Abs(pRec0.Perp() + pRec1.Perp());
+      }
       break;
     case kPairDipAngle:
-      fValue = mother->GetDaughter(0)->P().Angle(mother->GetDaughter(1)->P().Vect());
-      fValue = TMath::Abs(TMath::ACos(fValue));
+      fComputedValue = useMC ? pSim0.Angle(pSim1.Vect()) : pRec0.Angle(pRec1.Vect());
+      fComputedValue = TMath::Abs(TMath::ACos(fComputedValue));
       break;
     case kPairCosThetaStar:
-      fValue = mother->CosThetaStar();
+      fComputedValue = mother->CosThetaStar(useMC);
       break;
-    case kAngleToLeading:
+    case kPairQInv:
+      pSim0 -= pSim1;
+      pRec0 -= pRec1;
+      fComputedValue = useMC ? pSim0.M() : pRec0.M();
+      break;
+    case kPairAngleToLeading:
       {
     	  int ID1 = (mother->GetDaughter(0))->GetID();
     	  int ID2 = (mother->GetDaughter(1))->GetID();
     	  int leadingID = event->SelectLeadingParticle(0);
-    	  if(leadingID == ID1 || leadingID == ID2) return kFALSE;
+    	  if (leadingID == ID1 || leadingID == ID2) return kFALSE;
     	  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
     	  AliVParticle  *ref = leadingPart.GetRef();
-
-    	  fValue = ref->Phi() - mother->Sum().Phi();
+    	  fComputedValue = ref->Phi() - mother->Sum().Phi();
     	  //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
-    	  while(fValue >= TMath::Pi()) fValue -= 2*TMath::Pi();
-    	  while(fValue < -0.5*TMath::Pi()) fValue += 2*TMath::Pi();
-    	  //Printf("%g", fValue);
+    	  while(fComputedValue >= TMath::Pi()) fComputedValue -= 2*TMath::Pi();
+    	  while(fComputedValue < -0.5*TMath::Pi()) fComputedValue += 2*TMath::Pi();
+    	  //Printf("%g", fComputedValue);
       }
       break;
     case kEventMult:
-      if (!event) 
-      {
-        fValue = 0.0;
-        return kFALSE;
-      }
-      else fValue = (Double_t)event->GetMultiplicity(0x0);
+      fComputedValue = (Double_t)event->GetMultiplicity(0x0);
       break;
     case kEventMultESDCuts:
-      if (!event) 
+      // this value requires an initialized ESDtrackCuts
+      if (!esdCuts)
       {
-        fValue = 0.0;
+        AliError(Form("[%s] Required a correctly initialized ESDtrackCuts to compute this value", GetName()));
+        fComputedValue = 1E+10;
         return kFALSE;
       }
-      else fValue = (Double_t)event->GetMultiplicity(&fESDCuts);
+      fComputedValue = (Double_t)event->GetMultiplicity(esdCuts);
       break;
-    case kLeadingPt:
-      if (!event) 
-      {
-        fValue = 0.0;
-        return kFALSE;
-      }
-      else
+    case kEventLeadingPt:
       {
     	  int leadingID = event->SelectLeadingParticle(0);
     	  if(leadingID >= 0) {
     		  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
     		  AliVParticle *ref = leadingPart.GetRef();
-    		  fValue = ref->Pt();
+    		  fComputedValue = ref->Pt();
     	  }
-    	  else fValue = 0;
-      }
-      break;
-    case kQInv:
-      {
-        TLorentzVector diff = mother->GetDaughter(0)->P() - mother->GetDaughter(1)->P();
-        fValue = diff.M();
+    	  else fComputedValue = 0;
       }
       break;
     default:
-      AliWarning("Invalid value type");
+      AliError(Form("[%s] Invalid value type for this computation", GetName()));
       return kFALSE;
   }
   
@@ -311,74 +507,21 @@ Bool_t AliRsnValue::Eval(AliRsnMother *mother, AliRsnPairDef *pairDef, AliRsnEve
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnValue::Eval(AliRsnDaughter * const daughter, AliRsnEvent * const event)
+void AliRsnValue::Print(Option_t * /*option */) const
 {
 //
-// Evaluation of the required value.
-// Checks that the passed object is of the right type
-// and if this check is successful, returns the required value.
-// The output of the function tells if it was successful,
-// and the values must be taken with GetValue().
+// Print informations about this object
 //
 
-  // avoid segfaults
-  if (!daughter) return kFALSE;
-
-  switch (fType)
+  AliInfo("=== VALUE INFO =================================================");
+  AliInfo(Form(" Name                  : %s", GetName()));
+  AliInfo(Form(" Type                  : %s", GetValueTypeName()));
+  AliInfo(Form(" Current computed value: %f", fComputedValue));
+  Int_t i;
+  for (i = 0; i < fBinArray.GetSize(); i++)
   {
-    case kEventMult:
-      if (!event) 
-      {
-        fValue = 0.0;
-        return kFALSE;
-      }
-      else fValue = (Double_t)event->GetMultiplicity();
-      break;
-    case kEventMultESDCuts:
-      if (!event) 
-      {
-        fValue = 0.0;
-        return kFALSE;
-      }
-      else fValue = (Double_t)event->GetMultiplicity(&fESDCuts);
-      break;
-    case kLeadingPt:
-      if (!event) 
-      {
-        fValue = 0.0;
-        return kFALSE;
-      }
-      else
-      {
-    	  int leadingID = event->SelectLeadingParticle(0);
-    	  if(leadingID >= 0) {
-    		  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
-    		  AliVParticle *ref = leadingPart.GetRef();
-    		  fValue = ref->Pt();
-    	  }
-    	  else fValue = 0;
-      }
-      break;
-    default:
-      AliWarning("Invalid value type");
-      return kFALSE;
+    AliInfo(Form(" Bin limit #%d         = %f", i, fBinArray[i]));
   }
-  
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-void AliRsnValue::Print(Option_t *) const
-{
-//
-// Print all bins
-//
-
-  Int_t   i, n = fArray.GetSize();
-  TString msg("Array values: ");
-  
-  for (i = 0; i < n; i++) msg += Form("%f, ", fArray[i]);
-  
-  AliInfo(Form("Axis name: %s", GetName()));
-  AliInfo(msg.Data());
+  AliInfo(Form(" Support object        : %s", (fSupportObject ? fSupportObject->ClassName() : " NO SUPPORT")));
+  AliInfo("=== END VALUE INFO =============================================");
 }

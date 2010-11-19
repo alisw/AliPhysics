@@ -22,11 +22,8 @@ ClassImp(AliRsnMother)
 //_____________________________________________________________________________
 AliRsnMother::AliRsnMother() : 
   fUseMC(kFALSE),
-  fDefaultMass(0.0),
   fSum(),
-  fSumMC(),
-  fRef(),
-  fRefMC()
+  fSumMC()
 {
 //
 // Constructor.
@@ -41,11 +38,8 @@ AliRsnMother::AliRsnMother() :
 AliRsnMother::AliRsnMother(const AliRsnMother &obj) : 
   TObject(obj), 
   fUseMC(obj.fUseMC),
-  fDefaultMass(obj.fDefaultMass),
   fSum(obj.fSum),
-  fSumMC(obj.fSumMC),
-  fRef(obj.fRef),
-  fRefMC(obj.fRefMC)
+  fSumMC(obj.fSumMC)
 {
 //
 // Copy constructor.
@@ -68,11 +62,8 @@ AliRsnMother& AliRsnMother::operator=(const AliRsnMother &obj)
 
   Int_t i;
   
-  fDefaultMass = obj.fDefaultMass;
   fSum = obj.fSum;
-  fRef = obj.fRef;
   fSumMC = obj.fSumMC;
-  fRefMC = obj.fRefMC;
   
   for (i = 0; i < 2; i++) fDaughter[i] = obj.fDaughter[i];
 
@@ -152,9 +143,6 @@ void AliRsnMother::SetDaughters
   
   fSum   = fDaughter[0]->P(kFALSE) + fDaughter[1]->P(kFALSE);
   fSumMC = fDaughter[0]->P(kTRUE)  + fDaughter[1]->P(kTRUE);
-  
-  fRef  .SetXYZM(fSum  .X(), fSum  .Y(), fSum  .Z(), fDefaultMass);
-  fRefMC.SetXYZM(fSumMC.X(), fSumMC.Y(), fSumMC.Z(), fDefaultMass);
 }
 
 //_____________________________________________________________________________
@@ -168,9 +156,7 @@ void AliRsnMother::ResetPair()
   for (i = 0; i < 2; i++) fDaughter[i] = 0x0;
   
   fSum  .SetXYZM(0.0, 0.0, 0.0, 0.0);
-  fRef  .SetXYZM(0.0, 0.0, 0.0, 0.0);
   fSumMC.SetXYZM(0.0, 0.0, 0.0, 0.0);
-  fRefMC.SetXYZM(0.0, 0.0, 0.0, 0.0);
 }
 
 //_____________________________________________________________________________
@@ -180,12 +166,9 @@ Double_t AliRsnMother::CosThetaStar(Bool_t first, Bool_t useMC)
   TLorentzVector daughter0 = (first ? fDaughter[0]->P() : fDaughter[1]->P());
   TLorentzVector daughter1 = (first ? fDaughter[1]->P() : fDaughter[0]->P());
   TVector3 momentumM          (mother.Vect());
-  //cout << mother.Vect().X() << ' ' << mother.Vect().Y() << ' ' << mother.Vect().Z() << endl;
   TVector3 normal             (mother.Y()/momentumM.Mag(), -mother.X()/momentumM.Mag(), 0.0);
-  //cout << momentumM.Mag() << ' ' << normal.X() << ' ' << normal.Y() << ' ' << normal.Z() << endl;
 
-// Computes first the invariant mass of the mother
-
+  // Computes first the invariant mass of the mother
   Double_t mass0            = fDaughter[0]->P().M();
   Double_t mass1            = fDaughter[1]->P().M();
   Double_t p0               = daughter0.Vect().Mag();
@@ -195,23 +178,19 @@ Double_t AliRsnMother::CosThetaStar(Bool_t first, Bool_t useMC)
   Double_t MotherMass       = TMath::Sqrt((E0+E1)*(E0+E1)-(p0*p0+2.0*daughter0.Vect().Dot(daughter1.Vect())+p1*p1));
   MotherMass = fSum.M();
 
-// Computes components of beta
+  // Computes components of beta
+  Double_t betaX = -mother.X()/mother.E();
+  Double_t betaY = -mother.Y()/mother.E();
+  Double_t betaZ = -mother.Z()/mother.E();
 
-  Double_t betaX = -mother.X()/mother.E(); //TMath::Sqrt(momentumM.Mag()*momentumM.Mag()+MotherMass*MotherMass);
-  Double_t betaY = -mother.Y()/mother.E(); //TMath::Sqrt(momentumM.Mag()*momentumM.Mag()+MotherMass*MotherMass);
-  Double_t betaZ = -mother.Z()/mother.E(); //TMath::Sqrt(momentumM.Mag()*momentumM.Mag()+MotherMass*MotherMass);
-
-// Computes Lorentz transformation of the momentum of the first daughter
-// into the rest frame of the mother and theta*
-  //cout << "Beta = " << betaX << ' ' << betaY << ' ' << betaZ << endl;
-
+  // Computes Lorentz transformation of the momentum of the first daughter
+  // into the rest frame of the mother and theta*
   daughter0.Boost(betaX,betaY,betaZ);
   TVector3 momentumD = daughter0.Vect();
 
   Double_t cosThetaStar = normal.Dot(momentumD)/momentumD.Mag();
 
   return cosThetaStar;
-
 }
 
 //_____________________________________________________________________________

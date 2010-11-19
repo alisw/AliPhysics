@@ -16,9 +16,8 @@
 ClassImp(AliRsnCutSet)
 
 //_____________________________________________________________________________
-AliRsnCutSet::AliRsnCutSet(AliRsnCut::ETarget target) :
-  TNamed(),
-  fTarget(target),
+AliRsnCutSet::AliRsnCutSet() :
+  AliRsnTarget(),
   fCuts(0),
   fNumOfCuts(0),
   fCutScheme(""),
@@ -36,9 +35,8 @@ AliRsnCutSet::AliRsnCutSet(AliRsnCut::ETarget target) :
 }
 
 //_____________________________________________________________________________
-AliRsnCutSet::AliRsnCutSet(TString name, AliRsnCut::ETarget target) :
-  TNamed(name, name),
-  fTarget(target),
+AliRsnCutSet::AliRsnCutSet(const char *name, RSNTARGET target) :
+  AliRsnTarget(name, target),
   fCuts(0),
   fNumOfCuts(0),
   fCutScheme(""),
@@ -58,8 +56,7 @@ AliRsnCutSet::AliRsnCutSet(TString name, AliRsnCut::ETarget target) :
 
 //_____________________________________________________________________________
 AliRsnCutSet::AliRsnCutSet(const AliRsnCutSet & copy) :
-  TNamed((TNamed) copy),
-  fTarget(copy.fTarget),
+  AliRsnTarget(copy),
   fCuts(copy.fCuts),
   fNumOfCuts(copy.fNumOfCuts),
   fCutScheme(copy.fCutScheme),
@@ -72,7 +69,44 @@ AliRsnCutSet::AliRsnCutSet(const AliRsnCutSet & copy) :
 // Copy constructor
 //
 
+  Int_t i;
+  fBoolValues = new Bool_t[fNumOfCuts];
+  for (i = 0; i < fNumOfCuts; ++i) 
+  {
+    fBoolValues[i] = copy.fBoolValues[i];
+  }
+  
   AliRsnExpression::fgCutSet = this;
+}
+
+//_____________________________________________________________________________
+AliRsnCutSet& AliRsnCutSet::operator=(const AliRsnCutSet & copy)
+{
+//
+// Assignment operator.
+//
+  
+  AliRsnTarget::operator=(copy);
+  
+  fCuts = copy.fCuts;
+  fNumOfCuts = copy.fNumOfCuts;
+  fCutScheme = copy.fCutScheme;
+  fCutSchemeIndexed = copy.fCutSchemeIndexed;
+  fIsScheme = copy.fIsScheme;
+  fExpression = copy.fExpression;
+  
+  if (fBoolValues) delete [] fBoolValues;
+
+  Int_t i;
+  fBoolValues = new Bool_t[fNumOfCuts];
+  for (i = 0; i < fNumOfCuts; ++i) 
+  {
+    fBoolValues[i] = copy.fBoolValues[i];
+  }
+
+  AliRsnExpression::fgCutSet = this;
+  
+  return (*this);
 }
 
 //_____________________________________________________________________________
@@ -96,9 +130,9 @@ void AliRsnCutSet::AddCut(AliRsnCut *cut)
 // the cut is not added.
 //
 
-  if (!cut->IsTarget(fTarget))
+  if (!cut->IsTarget(GetTargetType()))
   {
-    AliError("Cut target does not match the cut-set target. Not added.");
+    AliError(Form("Cannot add this cut (cut set name,target = [%s],[%s] --- cut name,target = [%s],[%s]", GetName(), GetTargetTypeName(), cut->GetName(), cut->GetTargetTypeName()));
     return;
   }
 
@@ -136,7 +170,7 @@ void AliRsnCutSet::ShowCuts() const
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnCutSet::IsSelected(TObject *obj1, TObject *obj2)
+Bool_t AliRsnCutSet::IsSelected(TObject *object)
 {
 //
 // Checks an object according to the cut expression defined here.
@@ -150,7 +184,7 @@ Bool_t AliRsnCutSet::IsSelected(TObject *obj1, TObject *obj2)
   AliRsnCut *cut;
   for (i = 0; i < fNumOfCuts; i++) {
     cut = (AliRsnCut*)fCuts.At(i);
-    fBoolValues[i] = cut->IsSelected(obj1, obj2);
+    fBoolValues[i] = cut->IsSelected(object);
   }
 
   if (fIsScheme) boolReturn = Passed();
@@ -213,12 +247,17 @@ Bool_t AliRsnCutSet::Passed()
 // and gives a global response to the cut check
 //
 
+  AliInfo(Form("Name: %s", GetName()));
+
   AliRsnExpression::fgCutSet = this;
-  if (!fExpression) {
+  if (!fExpression) 
+  {
     fExpression = new AliRsnExpression(fCutSchemeIndexed);
     AliDebug(AliLog::kDebug,"fExpression was created.");
   }
 
+  if (fCuts.IsEmpty()) return kTRUE;
+  
   return fExpression->Value(*GetCuts());
 }
 

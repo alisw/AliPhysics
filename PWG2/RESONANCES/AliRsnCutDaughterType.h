@@ -30,7 +30,7 @@ class AliRsnCutDaughterType : public AliRsnCut
     AliRsnCutDaughterType(const char *name, EType type);
     virtual ~AliRsnCutDaughterType() {;};
 
-    virtual Bool_t   IsSelected(TObject *obj1, TObject *obj2 = 0x0);
+    virtual Bool_t IsSelected(TObject *object);
 
   protected:
   

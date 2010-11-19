@@ -20,7 +20,6 @@
 #include "AliRsnEvent.h"
 #include "AliRsnFunction.h"
 #include "AliRsnCutSet.h"
-#include "AliRsnCutStd.h"
 #include "AliRsnValue.h"
 
 #include "AliRsnPairFunctions.h"

@@ -26,7 +26,7 @@ class AliRsnCutAOD2010 : public AliRsnCut
     AliRsnCutAOD2010(const AliRsnCutAOD2010& copy);
     virtual ~AliRsnCutAOD2010() {;};
 
-    virtual Bool_t   IsSelected(TObject *obj1, TObject *obj2 = 0x0);
+    virtual Bool_t   IsSelected(TObject *object);
     
     void             SetMC       (Bool_t yn = kTRUE);
     void             SetCheckITS (Bool_t yn = kTRUE) {fCheckITS = yn;}

@@ -21,7 +21,6 @@
 #include "AliRsnEvent.h"
 #include "AliRsnFunction.h"
 #include "AliRsnCutSet.h"
-#include "AliRsnCutStd.h"
 #include "AliRsnValue.h"
 
 #include "AliRsnPairNtuple.h"
@@ -99,11 +98,25 @@ void AliRsnPairNtuple::Compute()
   Int_t        i, n = fValues.GetEntries();
   TArrayF      values(n);
   AliRsnValue *value = 0x0;
+  Bool_t       computeOK = kFALSE;
   for (i = 0; i < n; i++)
   {
     values[i] = -1E10;
     value = (AliRsnValue*)fValues[i];
-    if (value->Eval(&fMother, fPairDef, fEvent)) values[i] = (Float_t)value->GetValue();
+    switch (value->GetTargetType())
+    {
+      case AliRsnTarget::kMother:
+        value->SetSupportObject(fPairDef);
+        computeOK = value->Eval(&fMother);
+        break;
+      case AliRsnTarget::kEvent:
+        computeOK = value->Eval(fEvent);
+        break;
+      default:
+        AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", value->GetName(), value->GetTargetTypeName()));
+        computeOK = kFALSE;
+    }
+    if (computeOK) values[i] = ((Float_t)value->GetComputedValue());
   }
   
   fNtuple->Fill(values.GetArray());
@@ -143,14 +156,21 @@ void AliRsnPairNtuple::Init(const char *prefix, TList *list)
 }
 
 //_____________________________________________________________________________
-void AliRsnPairNtuple::AddValue(AliRsnValue *const val)
+Bool_t AliRsnPairNtuple::AddValue(AliRsnValue *const val)
 {
 //
-// Adds a new computing function
+// Adds a new computing function.
 //
 
-  AliDebug(AliLog::kDebug+2,"<-");
+  RSNTARGET target = val->GetTargetType();
+  if (target != AliRsnTarget::kMother && target != AliRsnTarget::kEvent)
+  {
+    AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", val->GetName(), val->GetTargetTypeName()));
+    return kFALSE;
+  }
+  
   Int_t size = fValues.GetEntries();
-  new(fValues[size]) AliRsnValue(*val);
-  AliDebug(AliLog::kDebug+2,"->");
+  new (fValues[size]) AliRsnValue(*val);
+  
+  return kTRUE;
 }

@@ -48,6 +48,7 @@ class AliRsnPair : public TNamed
     AliRsnMother*     GetMother() {return &fMother;}
     AliRsnPairDef*    GetPairDef() {return fPairDef;}
     Bool_t            Fill(AliRsnDaughter *d0, AliRsnDaughter *d1, AliRsnEvent *ev1, AliRsnEvent *ev2);
+    
     virtual void      Compute();
     virtual void      Init(const char *prefix, TList *list);
 

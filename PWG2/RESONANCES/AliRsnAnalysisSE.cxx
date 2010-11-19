@@ -49,21 +49,25 @@ AliRsnAnalysisSE::AliRsnAnalysisSE(const AliRsnAnalysisSE& copy) :
 //
 // Copy constructor.
 //
-
-  AliDebug(AliLog::kDebug+2,"<-");
-  AliDebug(AliLog::kDebug+2,"->");
 }
 
-// //_____________________________________________________________________________
-// AliRsnAnalysisSE::~AliRsnAnalysisSE()
-// {
-// //
-// // Destructor
-// //
-// 
-//   fOutList->Clear();
-//   
-// }
+//_____________________________________________________________________________
+AliRsnAnalysisSE& AliRsnAnalysisSE::operator=(const AliRsnAnalysisSE& copy)
+{
+//
+// Copy constructor.
+//
+
+  AliRsnVAnalysisTaskSE::operator=(copy);
+  
+  fRsnAnalysisManager = copy.fRsnAnalysisManager;
+  fEventCuts = copy.fEventCuts;
+  if (fOutList) fOutList->Clear();
+  fZeroEventPercentWarning = copy.fZeroEventPercentWarning;
+  fUseZeroEventWarning = copy.fUseZeroEventWarning;
+  
+  return (*this);
+}
 
 //_____________________________________________________________________________
 void AliRsnAnalysisSE::RsnUserCreateOutputObjects()
@@ -77,6 +81,7 @@ void AliRsnAnalysisSE::RsnUserCreateOutputObjects()
 
   AliDebug(AliLog::kDebug+2,"<-");
 
+  if (fOutList) fOutList->Clear();
   fOutList = new TList;
   fRsnAnalysisManager.InitAllPairs(fOutList);
 

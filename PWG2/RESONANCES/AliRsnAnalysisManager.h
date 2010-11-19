@@ -19,7 +19,9 @@
 #ifndef ALIRSNANALYSISMANAGER_H
 #define ALIRSNANALYSISMANAGER_H
 
-class TROOT;
+#include <TObjArray.h>
+
+#include "AliRsnCutSet.h"
 
 class AliRsnEvent;
 class AliRsnPair;
@@ -29,7 +31,7 @@ class AliRsnAnalysisManager : public TNamed
   public:
 
     AliRsnAnalysisManager(const char*name = "defaultAnalysisMgr");
-    virtual ~AliRsnAnalysisManager() {;};
+    virtual ~AliRsnAnalysisManager() { }
 
     virtual void   Add(AliRsnPair *pair);
     virtual void   PrintArray() const;
@@ -38,10 +40,12 @@ class AliRsnAnalysisManager : public TNamed
     void           InitAllPairs(TList*list);
     void           ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1);
     void           ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1);
+    AliRsnCutSet*  GetGlobalTrackCuts() {return &fGlobalTrackCuts;}
 
   private:
   
-    TObjArray   fPairs;
+    TObjArray     fPairs;            // collection of pair objects for the different outputs
+    AliRsnCutSet  fGlobalTrackCuts;  // a set of cuts which are applied to all tracks for all analysis, in order to put only once
 
     ClassDef(AliRsnAnalysisManager, 1)
 };

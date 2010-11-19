@@ -94,10 +94,10 @@ Bool_t RsnConfig
   cuts2010_esd->SetMC(isSim);
   cuts2010_aod->SetMC(isSim);
   // ----> include or not the ITS standalone (TPC is always in)
-  cuts2010_esd->SetUseGlobal(kTRUE);
+  cuts2010_esd->SetUseITSTPC(kTRUE);
   cuts2010_esd->SetUseITSSA (addITSSA);
-  cuts2010_aod->SetUseGlobal(kTRUE);
-  cuts2010_aod->SetUseITSSA (addITSSA);
+  //cuts2010_aod->SetUseITSTPC(kTRUE);
+  //cuts2010_aod->SetUseITSSA (addITSSA);
   // ----> require to check PID or not, depending on the label
   if (realPID)
   {
@@ -130,21 +130,28 @@ Bool_t RsnConfig
   
   // pair cut ----------------------
   // --> dip angle between daughters
-  AliRsnCutStd *cutDip = new AliRsnCutStd("cutDip", AliRsnCut::kMother, AliRsnCutStd::kDipAngle, 0.02, 1.1);
+  AliRsnCutValue *cutDip = new AliRsnCutValue("cutDip", AliRsnValue::kPairDipAngle, 0.03, 1.01);
 
   // cut set for tracks------------------------
   // --> only common cuts for tracks are needed
   // --> standard 2010 cuts are applied always
-  TString       cutSchemeTrack;
-  AliRsnCutSet *cutSetDaughterCommon = new AliRsnCutSet("commonDaughterCuts", AliRsnCut::kDaughter);
+  TString cutSchemeTrack;
   if (isESD)
   {
-    cutSetDaughterCommon->AddCut(cuts2010_esd);
+    pairPM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_esd);
+    truePM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_esd);
+    pairPP->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_esd);
+    pairMM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_esd);
+    
     cutSchemeTrack += cuts2010_esd->GetName();
   }
   else if (isAOD)
   {
-    cutSetDaughterCommon->AddCut(cuts2010_aod);
+    pairPM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_aod);
+    truePM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_aod);
+    pairPP->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_aod);
+    pairMM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_aod);
+    
     cutSchemeTrack += cuts2010_aod->GetName();
   }
   else
@@ -154,30 +161,34 @@ Bool_t RsnConfig
   }
   if (perfPID)
   {
-    cutSetDaughterCommon->AddCut(cutPID);
+    pairPM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cutPID);
+    truePM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cutPID);
+    pairPP->GetCutManager()->GetCommonDaughterCuts()->AddCut(cutPID);
+    pairMM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cutPID);
+    
     cutSchemeTrack += "&cutPID";
   }
-  cutSetDaughterCommon->SetCutScheme(cutSchemeTrack.Data());
+  pairPM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cutSchemeTrack.Data());
+  truePM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cutSchemeTrack.Data());
+  pairPP->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cutSchemeTrack.Data());
+  pairMM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cutSchemeTrack.Data());
   
   // cut set for pairs---------------------------------------
   // --> add dip angle cut (but then include only if required)
   AliRsnCutSet *cutSetPair = new AliRsnCutSet("cutsPair", AliRsnCut::kMother);
   cutSetPair->AddCut(cutDip);
   cutSetPair->SetCutScheme(cutDip->GetName());
-  
-  // configure cut managers -------------------
-  // --> track cuts are always defined, so add them by default
-  pairPM->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  truePM->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  pairPP->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  pairMM->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  // --> pair cut is added only when dip angle cut is required
   if (dipAngleCut)
   {
-    pairPM->GetCutManager()->SetMotherCuts(cutSetPair);
-    truePM->GetCutManager()->SetMotherCuts(cutSetPair);
-    pairPP->GetCutManager()->SetMotherCuts(cutSetPair);
-    pairMM->GetCutManager()->SetMotherCuts(cutSetPair);
+    pairPM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
+    truePM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
+    pairPP->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
+    pairMM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
+    
+    pairPM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutDip->GetName());
+    truePM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutDip->GetName());
+    pairPP->GetCutManager()->GetMotherCuts()->SetCutScheme(cutDip->GetName());
+    pairMM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutDip->GetName());
   }
   
   // set additional option for true pairs when needed
@@ -188,25 +199,29 @@ Bool_t RsnConfig
   // -- Setup functions -----------------------------------------------------------------------------
   //
 
-  // function axes
-  Double_t pt  [] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 9.0, 10.0};
-  Double_t y   [] = {-0.8, -0.7, -0.6, 0.6, 0.7, 0.8};
-  Double_t mult[] = {0.0, 5.0, 9.0, 14.0, 22.0, 1000.0};
-  Int_t    npt    = sizeof(pt  ) / sizeof(pt  [0]);
-  Int_t    ny     = sizeof(y   ) / sizeof(y   [0]);
+  // axis definition
+  // 0) invariant mass
+  // 1) transverse momentum
+  // 2) rapidity
+  // 3) multiplicity
+  Double_t mult[] = {0., 6., 10., 15., 23., 1E6};
   Int_t    nmult  = sizeof(mult) / sizeof(mult[0]);
-  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 500 , 0.9,  1.4);
-  AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , npt  , pt);
-  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           , ny   , y);
+  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 0.9,  1.4, 0.001);
+  AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 0.0, 10.0, 0.100);
+  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           ,-1.2,  1.2, 0.100);
   AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDCuts, nmult, mult);
-  ConfigESDCutsTPC(axisMult->GetCuts());
+  
+  // add the support cut to the value which computes the multiplicity
+  AliESDtrackCuts *cuts = new AliESDtrackCuts;
+  ConfigESDCutsTPC(cuts);
+  axisMult->SetSupportObject(cuts);
 
   // create function and add axes
   AliRsnFunction *fcnImPtY = new AliRsnFunction;
-  fcnImPtY->AddAxis(axisIM);
-  fcnImPtY->AddAxis(axisPt);
-  fcnImPtY->AddAxis(axisY);
-  fcnImPtY->AddAxis(axisMult);
+  if ( !fcnImPtY->AddAxis(axisIM  ) ) return kFALSE;
+  if ( !fcnImPtY->AddAxis(axisPt  ) ) return kFALSE;
+  if ( !fcnImPtY->AddAxis(axisY   ) ) return kFALSE;
+  if ( !fcnImPtY->AddAxis(axisMult) ) return kFALSE;
 
   // add functions to pairs
   pairPM->AddFunction(fcnImPtY);
@@ -222,7 +237,7 @@ Bool_t RsnConfig
   task->GetAnalysisManager()->Add(pairPM);
   task->GetAnalysisManager()->Add(pairPP);
   task->GetAnalysisManager()->Add(pairMM);
-  //if (isSim) task->GetAnalysisManager()->Add(truePM);
+  if (isSim) task->GetAnalysisManager()->Add(truePM);
 
   return kTRUE;
 }

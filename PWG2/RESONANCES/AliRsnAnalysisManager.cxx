@@ -16,7 +16,6 @@
 // revised by : A. Pulvirenti [alberto.pulvirenti@ct.infn.it]
 //
 
-#include <Riostream.h>
 #include <TROOT.h>
 
 #include "AliLog.h"
@@ -24,7 +23,8 @@
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "AliRsnEvent.h"
-#include "AliRsnPair.h"
+#include "AliRsnPairFunctions.h"
+#include "AliRsnPairNtuple.h"
 #include "AliRsnAnalysisManager.h"
 
 
@@ -33,14 +33,12 @@ ClassImp(AliRsnAnalysisManager)
 //_____________________________________________________________________________
 AliRsnAnalysisManager::AliRsnAnalysisManager(const char*name) :
   TNamed(name, ""),
-  fPairs(0)
+  fPairs(0),
+  fGlobalTrackCuts()
 {
 //
 // Default constructor
 //
-
-  AliDebug(AliLog::kDebug+2, "<-");
-  AliDebug(AliLog::kDebug+2, "->");
 }
 
 //_____________________________________________________________________________
@@ -52,13 +50,14 @@ void AliRsnAnalysisManager::Add(AliRsnPair *pair)
 
   AliDebug(AliLog::kDebug+2,"<-");
 
-  if (!pair) {
+  if (!pair) 
+  {
     AliWarning(Form("AliRsnPairManager is %p. Skipping ...", pair));
     return;
   }
 
   AliDebug(AliLog::kDebug+1, Form("Adding %s [%d]...", pair->GetName(), fPairs.GetEntries()));
-  fPairs.Add((AliRsnPair*)pair);
+  fPairs.Add(pair);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -128,27 +127,28 @@ void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
   
   if (!ev1) ev1 = ev0;
   
-  Int_t nTracks[2], nV0[2], nTot[2];
-  nTracks[0] = ev0->GetRef()->GetNumberOfTracks();
-  nV0[0]     = ev0->GetRef()->GetNumberOfV0s();
-  nTracks[1] = ev1->GetRef()->GetNumberOfTracks();
-  nV0[1]     = ev1->GetRef()->GetNumberOfV0s();
-  nTot[0]    = nTracks[0] + nV0[0];
-  nTot[1]    = nTracks[1] + nV0[1];
+  Int_t nTot[2];
+  nTot[0] = ev0->GetAbsoluteSum();
+  nTot[1] = ev1->GetAbsoluteSum();;
   
   // external loop
   // joins the loop on tracks and v0s, by looping the indexes from 0
   // to the sum of them, and checking what to take depending of its value
-  Int_t          i0, i1, i;
+  // in this step, the global cuts are checked
+  Int_t          i0, i1, i, realIndex;
   AliRsnDaughter daughter0, daughter1;
   AliRsnPair    *pair = 0x0;
   TObjArrayIter  next(&fPairs);
+  AliRsnDaughter::ERefType type;
   
   for (i0 = 0; i0 < nTot[0]; i0++)
   {
     // assign first track
-    if (i0 < nTracks[0]) ev0->SetDaughter(daughter0, i0, AliRsnDaughter::kTrack);
-    else ev0->SetDaughter(daughter0, i0 - nTracks[0], AliRsnDaughter::kV0);
+    if (!ev0->ConvertAbsoluteIndex(i0, realIndex, type)) continue;
+    ev0->SetDaughter(daughter0, realIndex, type);
+    
+    // check global cuts
+    if (!fGlobalTrackCuts.IsSelected(&daughter0)) continue;
         
     // internal loop (same criterion)
     for (i1 = 0; i1 < nTot[1]; i1++)
@@ -157,8 +157,11 @@ void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
       if (ev0 == ev1 && i0 == i1) continue;
       
       // assign second track
-      if (i1 < nTracks[1]) ev1->SetDaughter(daughter1, i1, AliRsnDaughter::kTrack);
-      else ev1->SetDaughter(daughter1, i1 - nTracks[1], AliRsnDaughter::kV0);
+      if (!ev1->ConvertAbsoluteIndex(i1, realIndex, type)) continue;
+      ev1->SetDaughter(daughter1, realIndex, type);
+      
+      // check global cuts
+      if (!fGlobalTrackCuts.IsSelected(&daughter1)) continue;
       
       // loop over all pairs and make computations
       next.Reset();

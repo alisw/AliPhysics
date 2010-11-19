@@ -30,6 +30,8 @@
 
 ClassImp(AliRsnCutESD2010)
 
+Int_t AliRsnCutESD2010::fgLastRun = -1;
+
 //_________________________________________________________________________________________________
 AliRsnCutESD2010::AliRsnCutESD2010
 (const char *name, Bool_t isMC) :
@@ -38,17 +40,17 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fCheckITS(kTRUE),
   fCheckTPC(kTRUE),
   fCheckTOF(kTRUE),
-  fUseGlobal(kTRUE),
+  fUseITSTPC(kTRUE),
   fUseITSSA(kTRUE),
   fPID(AliPID::kKaon),
-  fMaxEta(1E6),
+  fMaxITSPIDmom(0.0),
   fMaxITSband(3.0),
   fTPCpLimit(0.35),
   fMinTPCband(3.0),
   fMaxTPCband(5.0),
+  fESDpid(0x0),
   fESDtrackCutsTPC(),
   fESDtrackCutsITS(),
-  fESDpid(0x0),
   fTOFmaker(0x0),
   fTOFcalib(0x0),
   fTOFcalibrateESD(!isMC),
@@ -57,40 +59,13 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fTOFtuneMC(isMC),
   fTOFresolution(100.0),
   fMinTOF(-2.5),
-  fMaxTOF( 3.5),
-  fLastRun(-1)
+  fMaxTOF( 3.5)
 {
 //
 // Main constructor.
 //
 
   SetMC(isMC);
-  
-  // set default quality cuts for TPC+ITS tracks
-  // TPC  
-  fESDtrackCutsTPC.SetRequireTPCStandAlone(kTRUE); // to get chi2 and ncls of kTPCin
-  fESDtrackCutsTPC.SetMinNClustersTPC(70);
-  fESDtrackCutsTPC.SetMaxChi2PerClusterTPC(4);
-  fESDtrackCutsTPC.SetAcceptKinkDaughters(kFALSE);
-  fESDtrackCutsTPC.SetRequireTPCRefit(kTRUE);
-  // ITS
-  fESDtrackCutsTPC.SetRequireITSRefit(kTRUE);
-  fESDtrackCutsTPC.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  fESDtrackCutsTPC.SetMaxDCAToVertexXYPtDep("0.0350+0.0490/pt^1.0");
-  fESDtrackCutsTPC.SetMaxDCAToVertexZ(1.e6);
-  fESDtrackCutsTPC.SetDCAToVertex2D(kFALSE);
-  fESDtrackCutsTPC.SetRequireSigmaToVertex(kFALSE);
-  fESDtrackCutsTPC.SetEtaRange(-fMaxEta, fMaxEta);
-  
-  // set default quality cuts for ITS standalone tracks
-  fESDtrackCutsITS.SetRequireITSStandAlone(kTRUE);
-  fESDtrackCutsITS.SetRequireITSPureStandAlone(kFALSE);
-  fESDtrackCutsITS.SetRequireITSRefit(kTRUE); 
-  fESDtrackCutsITS.SetMinNClustersITS(4);
-  fESDtrackCutsITS.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  fESDtrackCutsITS.SetMaxChi2PerClusterITS(2.5);
-  fESDtrackCutsITS.SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55");
-  fESDtrackCutsITS.SetEtaRange(-fMaxEta, fMaxEta);
 }
 
 //_________________________________________________________________________________________________
@@ -101,17 +76,17 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fCheckITS(copy.fCheckITS),
   fCheckTPC(copy.fCheckTPC),
   fCheckTOF(copy.fCheckTOF),
-  fUseGlobal(copy.fUseGlobal),
+  fUseITSTPC(copy.fUseITSTPC),
   fUseITSSA(copy.fUseITSSA),
   fPID(copy.fPID),
-  fMaxEta(copy.fMaxEta),
+  fMaxITSPIDmom(copy.fMaxITSPIDmom),
   fMaxITSband(copy.fMaxITSband),
   fTPCpLimit(copy.fTPCpLimit),
   fMinTPCband(copy.fMinTPCband),
   fMaxTPCband(copy.fMaxTPCband),
+  fESDpid(0x0),
   fESDtrackCutsTPC(copy.fESDtrackCutsTPC),
   fESDtrackCutsITS(copy.fESDtrackCutsITS),
-  fESDpid(0x0),
   fTOFmaker(0x0),
   fTOFcalib(0x0),
   fTOFcalibrateESD(copy.fTOFcalibrateESD),
@@ -120,8 +95,7 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fTOFtuneMC(copy.fTOFtuneMC),
   fTOFresolution(copy.fTOFresolution),
   fMinTOF(copy.fMinTOF),
-  fMaxTOF(copy.fMaxTOF),
-  fLastRun(-1)
+  fMaxTOF(copy.fMaxTOF)
 {
 //
 // Copy constructor.
@@ -129,9 +103,6 @@ AliRsnCutESD2010::AliRsnCutESD2010
 
   Int_t i = 0;
   for (i = 0; i < 5; i++) fTPCpar[i] = copy.fTPCpar[i];
-  
-  copy.GetCutsTPC()->Copy(fESDtrackCutsTPC);
-  copy.GetCutsITS()->Copy(fESDtrackCutsITS);
 }
 
 //_________________________________________________________________________________________________
@@ -147,10 +118,10 @@ AliRsnCutESD2010& AliRsnCutESD2010::operator=(const AliRsnCutESD2010& copy)
   fCheckITS = copy.fCheckITS;
   fCheckTPC = copy.fCheckTPC;
   fCheckTOF = copy.fCheckTOF;
-  fUseGlobal = copy.fUseGlobal;
+  fUseITSTPC = copy.fUseITSTPC;
   fUseITSSA = copy.fUseITSSA;
   fPID = copy.fPID;
-  fMaxEta = copy.fMaxEta;
+  fMaxITSPIDmom = copy.fMaxITSPIDmom;
   fMaxITSband = copy.fMaxITSband;
   fTPCpLimit = copy.fTPCpLimit;
   fMinTPCband = copy.fMinTPCband;
@@ -162,10 +133,12 @@ AliRsnCutESD2010& AliRsnCutESD2010::operator=(const AliRsnCutESD2010& copy)
   fTOFresolution = copy.fTOFresolution;
   fMinTOF = copy.fMinTOF;
   fMaxTOF = copy.fMaxTOF;
-  fLastRun = copy.fLastRun;
   
   Int_t i = 0;
   for (i = 0; i < 5; i++) fTPCpar[i] = copy.fTPCpar[i];
+  
+  delete fESDpid;
+  fESDpid = 0x0;
   
   copy.GetCutsTPC()->Copy(fESDtrackCutsTPC);
   copy.GetCutsITS()->Copy(fESDtrackCutsITS);
@@ -213,36 +186,40 @@ void AliRsnCutESD2010::SetEvent(AliRsnEvent *event)
   {
     fEvent = event;
   }
-
-  // if absent, initialize ESD pid responst
-  if (!fESDpid)
-  {
-    fESDpid = new AliESDpid;
-    fESDpid->GetTPCResponse().SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
-  }
-
-  // initialize DB to current run
+  
+  // if the run number has changed,
+  // reset the CDB in order to point to the correct one
   Int_t run = esd->GetRunNumber();
-  if (run != fLastRun)
+  if (run != fgLastRun)
   {
-    cout << "Run = " << run << " -- LAST = " << fLastRun << endl;
-    fLastRun = run;
-
-    // setup TOF maker & calibration
-    if (!fTOFcalib) fTOFcalib = new AliTOFcalib;
-    fTOFcalib->SetCorrectTExp(fTOFcorrectTExp);
-    if (!fTOFmaker) fTOFmaker = new AliTOFT0maker(fESDpid, fTOFcalib);
-    fTOFmaker->SetTimeResolution(fTOFresolution);
+    AliInfo("============================================================================================");
+    AliInfo(Form("*** CHANGING RUN NUMBER: PREVIOUS = %d --> CURRENT = %d ***", fgLastRun, run));
+    AliInfo("============================================================================================");
+    fgLastRun = run;
 
     AliCDBManager *cdb = AliCDBManager::Instance();
     cdb->ClearCache(); // suggestion by Annalisa
     cdb->Clear();      // suggestion by Annalisa
     cdb->SetDefaultStorage("raw://");
     cdb->SetRun(run);
-
-    fTOFcalib->SetCorrectTExp(fTOFcorrectTExp);
-    fTOFcalib->Init();
   }
+  
+  // if absent, initialize ESD pid response
+  if (!fESDpid)
+  {
+    AliITSPIDResponse itsresponse(fIsMC);
+    
+    fESDpid = new AliESDpid;
+    fESDpid->GetTPCResponse().SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
+    fESDpid->GetITSResponse() = itsresponse;
+  }
+  
+  // if absent, initialize TOF objects for calibration
+  if (!fTOFcalib) fTOFcalib = new AliTOFcalib;
+  fTOFcalib->SetCorrectTExp(fTOFcorrectTExp);
+  fTOFcalib->Init();
+  if (!fTOFmaker) fTOFmaker = new AliTOFT0maker(fESDpid, fTOFcalib);
+  fTOFmaker->SetTimeResolution(fTOFresolution);
 
   // if required, calibrate the TOF t0 maker with current event
   if (fTOFcalibrateESD) fTOFcalib->CalibrateESD(esd);
@@ -256,14 +233,14 @@ void AliRsnCutESD2010::SetEvent(AliRsnEvent *event)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
+Bool_t AliRsnCutESD2010::IsSelected(TObject *object)
 {
 //
 // Cut checker.
 //
 
   // coherence check: require an ESD track
-  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(obj1);
+  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
   if (!daughter) return kFALSE;
   AliESDtrack *track = daughter->GetRefESDtrack();
   if (!track) return kFALSE;
@@ -271,144 +248,188 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   // if no reference event, skip
   if (!fEvent) return kFALSE;
 
-  // ITS: create the response function
-  AliITSPIDResponse itsrsp(fIsMC);
-
-  // TOF: define fixed function for compatibility range
-  //Double_t a1 = 0.01, a2 = -0.03;
-  //Double_t b1 = 0.25, b2 =  0.25;
-  //Double_t c1 = 0.05, c2 = -0.03;
-  //Double_t ymax, ymin;
-
-  ULong_t  status;
-  Int_t    k, nITS;
-  Double_t times[10], tpcNSigma, tpcMaxNSigma, itsSignal, itsNSigma, mom, tofTime, tofSigma, tofRef, tofRel;
-  Bool_t   okQuality, okTOF, okTPC, okITS, isTPC, isITSSA, isTOF;
-  UChar_t  itsCluMap;
-
-  // get commonly used variables
-  status  = (ULong_t)track->GetStatus();
-  mom     = track->P();
-  isTPC   = ((status & AliESDtrack::kTPCin) != 0);
-  isITSSA = (((status & AliESDtrack::kTPCin)  == 0) && ((status & AliESDtrack::kITSrefit) != 0) && ((status & AliESDtrack::kITSpureSA) == 0) && ((status & AliESDtrack::kITSpid) != 0));
-  isTOF   = (((status & AliESDtrack::kTOFout) != 0) && ((status & AliESDtrack::kTIME) != 0) /* && mom > TMath::Max(b1, b2)*/);
-  
-  // check if the track type matches what is required
-  if (!isTPC && !isITSSA) 
+  // check quality and track type and reject tracks not passing this step
+  if (!OkQuality(track))
   {
-    AliDebug(AliLog::kDebug + 2, "Track is not either a TPC track or a ITS standalone. Rejected");
-    return kFALSE;
-  }
-  else if (isTPC && !fUseGlobal)
-  {
-    AliDebug(AliLog::kDebug + 2, "Global tracks not used. Rejected");
-    return kFALSE;
-  }
-  else if (isITSSA && !fUseITSSA)
-  {
-    AliDebug(AliLog::kDebug + 2, "ITS standalone not used. Rejected");
+    AliDebug(AliLog::kDebug+2, "Failed quality cut");
     return kFALSE;
   }
   
-  // does a preliminary check on TOF values, if necessary
-  // then, if the reference time or TOF signal are meaningless
-  // even if the 'isTOF' flag is true, switch it to false
-  if (isTOF)
+  // ITS PID can be checked always
+  // if PID is not required, the flag is sed as
+  // if the cut was alsways passed 
+  Bool_t okITSpid = OkITSPID(track);
+  if (!fCheckITS) okITSpid = kTRUE;
+  
+  // TPC PID can be checked only for TPC+ITS tracks
+  // if PID is not required, the flag is sed as
+  // if the cut was alsways passed
+  Bool_t okTPCpid = kFALSE;
+  if (IsITSTPC(track)) okTPCpid = OkTPCPID(track);
+  if (!fCheckTPC) okTPCpid = kTRUE;
+  
+  // TOF PID can be checked only if TOF is matched
+  // if PID is not required, the flag is sed as
+  // if the cut was alsways passed
+  Bool_t okTOFpid = kFALSE;
+  if (IsITSTPC(track) && MatchTOF(track)) okTOFpid = OkTOFPID(track);
+  if (!fCheckTOF) okTOFpid = kTRUE;
+  
+  // now combine all outcomes according to the different possibilities:
+  // -- ITS standalone:
+  //    --> only ITS PID, always
+  // -- ITS + TPC:
+  //    --> ITS PID, only for momenta lower than 'fMaxITSPIDmom' and when the ITSpid flag is active
+  //    --> TPC PID, always --> MASTER (first to be checked, if fails, track is rejected)
+  //    --> TOF PID, only if matched
+  if (IsITSSA(track))
   {
-    track->GetIntegratedTimes(times);
-    tofTime  = (Double_t)track->GetTOFsignal();
-    tofSigma = fTOFmaker->GetExpectedSigma(mom, times[(Int_t)fPID], AliPID::ParticleMass((Int_t)fPID));
-    tofRef   = times[(Int_t)fPID];
-    if (tofRef <= 0.0 && tofSigma <= 0.0) isTOF = kFALSE;
+    if (!okITSpid)
+    {
+      AliDebug(AliLog::kDebug+2, "ITS standalone track --> ITS PID failed");
+      return kFALSE;
+    }
+  }
+  else // checking IsITSTPC() is redundant due to OkQuality() cut check
+  {
+    if (!okTPCpid)
+    {
+      AliDebug(AliLog::kDebug+2, "ITS+TPC track --> TPC PID failed");
+      return kFALSE;
+    }
+    else if (MatchTOF(track) && !okTOFpid)
+    {
+      AliDebug(AliLog::kDebug+2, "ITS+TPC track --> TOF matched but TOF PID failed");
+      return kFALSE;
+    }
+    else if (track->IsOn(AliESDtrack::kITSpid) && track->P() <= fMaxITSPIDmom && !okITSpid)
+    {
+      AliDebug(AliLog::kDebug+2, Form("ITS+TPC track --> Momentum lower than limit (%.2f) and ITS PID failed", fMaxITSPIDmom));
+      return kFALSE;
+    }
   }
   
-  // check quality (eta range must be adapted)
-  AliESDtrackCuts *cuts = 0x0;
-  if (isTPC)   cuts = &fESDtrackCutsTPC;
-  if (isITSSA) cuts = &fESDtrackCutsITS;
-  if (!cuts)   return kFALSE;
-  cuts->SetEtaRange(-fMaxEta, fMaxEta);
-  okQuality = cuts->IsSelected(track);
-  AliDebug(AliLog::kDebug + 2, Form("Global quality cut = %s", (okQuality ? "GOOD" : "BAD")));
-  if (!okQuality) return kFALSE;
+  // arriving here, the track has survived all checks
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliRsnCutESD2010::OkQuality(AliESDtrack *track)
+{
+//
+// Check track quality parameters.
+// Rejects all tracks which are not either TPC+ITS nor ITS standalone.
+// If tracks of any type are not flagged to be used, they are rejected anyway.
+//
+
+  if (IsITSTPC(track)) return (fUseITSTPC && fESDtrackCutsTPC.IsSelected(track));
+  if (IsITSSA (track)) return (fUseITSSA  && fESDtrackCutsITS.IsSelected(track));
+
+  return kFALSE;
+}
+
+//______________________________________________________________________________
+Bool_t AliRsnCutESD2010::OkITSPID (AliESDtrack *track)
+{
+//
+// Check ITS particle identification with 3sigma cut
+//
+
+  // count PID layers and reject if they are too few
+  Int_t   k, nITSpidLayers = 0;
+  UChar_t itsCluMap = track->GetITSClusterMap();
+  for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITSpidLayers;
+  if (nITSpidLayers < 3)
+  {
+    AliDebug(AliLog::kDebug+2, "Rejecting track with too few ITS pid layers");
+    return kFALSE;
+  }
   
-  if (isTPC) // this branch is entered by all global tracks
-  {
-    // check TPC dE/dx:
-    if (fCheckTPC)
-    {
-      tpcNSigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, fPID));
-      if (track->GetInnerParam()->P() > fTPCpLimit) tpcMaxNSigma = fMinTPCband; else tpcMaxNSigma = fMaxTPCband;
-      okTPC = (tpcNSigma <= tpcMaxNSigma);
-      AliDebug(AliLog::kDebug + 2, Form("TPC nsigma = %f -- max = %f -- cut %s", tpcNSigma, tpcMaxNSigma, (okTPC ? "passed" : "failed")));
-    }
-    else
-    {
-      // if TPC is not checked, it is as if all tracks do pass the cut
-      okTPC = kTRUE;
-      AliDebug(AliLog::kDebug + 2, "TPC not checked, track accepted");
-    }
-
-    // check TOF (only if flags are OK)
-    if (fCheckTOF)
-    {
-      if (isTOF)
-      {
-        // TOF can be checked only when track is matched there
-        track->GetIntegratedTimes(times);
-        tofTime  = (Double_t)track->GetTOFsignal();
-        tofSigma = fTOFmaker->GetExpectedSigma(mom, times[(Int_t)fPID], AliPID::ParticleMass((Int_t)fPID));
-        tofRef   = times[(Int_t)fPID];
-        /*
-        tofRel   = (tofTime - tofRef) / tofRef;
-        ymax     = a1 / (mom - b1) + c1;
-        ymin     = a2 / (mom - b2) + c2;
-        okTOF    = (tofRel >= ymin && tofRel <= ymax);
-        */
-        tofRel   = (tofTime - tofRef) / tofSigma;
-        okTOF    = (tofRel >= fMinTOF && tofRel <= fMaxTOF);
-        AliDebug(AliLog::kDebug + 2, Form("TOF nsigma = %f -- range = %f %f -- cut %s", tofRel, fMinTOF, fMaxTOF, (okTOF ? "passed" : "failed")));
-      }
-      else
-      {
-        // if TOF is not matched, the answer depends on TPC:
-        // - if TPC is required, track is checked only there and TOF simply ignored
-        // - if TPC is not required, track is rejected when TOF does not match it, if TOF check is required
-        if (fCheckTPC) okTOF = kTRUE; else okTOF = kFALSE;
-      }
-    }
-    else
-    {
-      okTOF = kTRUE;
-    }
-    
-    // properly combine the outcome of TPC and TOF cuts
-    return okTPC && okTOF;
-  }
-  else if (isITSSA) // this branch is entered by all ITS standalone tracks
-  {
-    // check dE/dx only if this is required, otherwise ITS standalone are just added but not checked for PID
-    if (fCheckITS)
-    {
-      itsSignal = track->GetITSsignal();
-      itsCluMap = track->GetITSClusterMap();
-      nITS      = 0;
-      for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITS;
-      if (nITS < 3) return kFALSE;
-      itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, fPID, nITS, kTRUE);
-      okITS = (TMath::Abs(itsNSigma) <= fMaxITSband);
-      AliDebug(AliLog::kDebug + 2, Form("ITS nsigma = %f -- max = %f -- cut %s", itsNSigma, fMaxITSband, (okITS ? "passed" : "failed")));
-    }
-    else
-    {
-      okITS = kTRUE;
-    }
-
-    return okITS;
-  }
+  // check the track type (ITS+TPC or ITS standalone)
+  // and reject it if it is of none of the allowed types
+  Bool_t isSA = kFALSE;
+  if (IsITSTPC(track)) isSA = kFALSE;
+  else if (IsITSSA(track)) isSA = kTRUE;
   else
   {
-    // if we are here, the track is surely bad
+    AliWarning("Track is neither ITS+TPC nor ITS standalone");
     return kFALSE;
   }
+  
+  // create the PID response object and compute nsigma
+  AliITSPIDResponse &itsrsp = fESDpid->GetITSResponse();
+  Double_t mom    = track->P();
+  Double_t nSigma = itsrsp.GetNumberOfSigmas(mom, track->GetITSsignal(), fPID, nITSpidLayers, isSA);
+  
+  // evaluate the cut
+  Bool_t ok = (TMath::Abs(nSigma) <= fMaxITSband);
+  
+  // debug message
+  AliDebug(AliLog::kDebug + 2, Form("ITS nsigma = %f -- max = %f -- cut %s", nSigma, fMaxITSband, (ok ? "passed" : "failed")));
+  
+  // outcome
+  return ok;
+}
+
+//______________________________________________________________________________
+Bool_t AliRsnCutESD2010::OkTPCPID (AliESDtrack *track)
+{
+//
+// Check TPC particle identification with {3|5}sigmacut,
+// depending on the track total momentum.
+//
+
+  // setup TPC PID response
+  AliTPCPIDResponse &tpcrsp = fESDpid->GetTPCResponse();
+  tpcrsp.SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
+  
+  // get momentum and number of sigmas and choose the reference band
+  Double_t mom       = track->GetInnerParam()->P();
+  Double_t nSigma    = tpcrsp.GetNumberOfSigmas(mom, track->GetTPCsignal(), track->GetTPCsignalN(), fPID);
+  Double_t maxNSigma = fMaxTPCband;
+  if (mom < fTPCpLimit) maxNSigma = fMinTPCband;
+  
+  // evaluate the cut
+  Bool_t ok = (TMath::Abs(nSigma) <= maxNSigma);
+  
+  // debug message
+  AliDebug(AliLog::kDebug + 2, Form("TPC nsigma = %f -- max = %f -- cut %s", nSigma, maxNSigma, (ok ? "passed" : "failed")));
+  
+  // outcome
+  return ok;
+}
+
+//______________________________________________________________________________
+Bool_t AliRsnCutESD2010::OkTOFPID (AliESDtrack *track)
+{
+//
+// Check TOF particle identification if matched there.
+//
+
+  // check integrated length
+  if (track->GetIntegratedLength() < 350.) return kFALSE;
+  
+  // setup TOF PID response
+  AliTOFPIDResponse &tofrsp = fESDpid->GetTOFResponse();
+  
+  // get info for computation
+  Double_t momentum = track->P();
+  Double_t time     = track->GetTOFsignal();
+  Double_t timeint[AliPID::kSPECIES];
+  tofrsp.GetStartTime(momentum);
+  track->GetIntegratedTimes(timeint);
+
+  // check the cut
+  Double_t timeDiff = time - timeint[(Int_t)fPID];
+  Double_t sigmaRef = tofrsp.GetExpectedSigma(momentum, timeint[(Int_t)fPID], AliPID::ParticleMass(fPID));
+  Double_t nSigma   = timeDiff / sigmaRef;
+  
+  // evaluate the cut
+  Bool_t ok = (nSigma >= fMinTOF && nSigma <= fMaxTOF);
+  
+  // debug message
+  AliDebug(AliLog::kDebug + 2, Form("TOF nsigma = %f -- range = %f - %f -- cut %s", nSigma, fMinTOF, fMaxTOF, (ok ? "passed" : "failed")));
+  
+  // outcome
+  return ok;
 }

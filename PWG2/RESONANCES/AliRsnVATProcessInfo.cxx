@@ -1,8 +1,10 @@
 //
 // *** Class AliRsnVATProcessInfo ***
 //
-//  TODO
-//  TODO
+// Virtual class which makes computations at the event level,
+// in order to return a list of histograms useful to have a look
+// of the characteristics of used events.
+// If can be inherited and customized for the needs of the analysis.
 //
 // authors: A. Pulvirenti (email: alberto.pulvirenti@ct.infn.it)
 //          M. Vala (email: martin.vala@cern.ch)
@@ -17,83 +19,113 @@
 
 ClassImp(AliRsnVATProcessInfo)
 
-//_____________________________________________________________________________
+//______________________________________________________________________________
 AliRsnVATProcessInfo::AliRsnVATProcessInfo(const char *name) :
-    TNamed(name,name),
-    fHistUsedEvents(0x0),
-    fEventUsed(kFALSE),
-    fPrintInfoNumber(1000)
+  TNamed(name,name),
+  fHistUsedEvents(0x0),
+  fEventUsed(kFALSE),
+  fPrintInfoNumber(1000)
 {
 //
 // Constructor.
+// Does nothing more than initialization of data members.
 //
 
-  AliDebug(AliLog::kDebug+2,"<-");
-  AliDebug(AliLog::kDebug+2,"->");
+  AliDebug(AliLog::kDebug+2, "Entering");
+  AliDebug(AliLog::kDebug+2, "Exiting");
 }
 
-//_____________________________________________________________________________
+//______________________________________________________________________________
 AliRsnVATProcessInfo::AliRsnVATProcessInfo(const AliRsnVATProcessInfo& copy) :
-    TNamed(copy),
-    fHistUsedEvents(copy.fHistUsedEvents),
-    fEventUsed(copy.fEventUsed),
-    fPrintInfoNumber(copy.fPrintInfoNumber)
+  TNamed(copy),
+  fHistUsedEvents(0x0),
+  fEventUsed(copy.fEventUsed),
+  fPrintInfoNumber(copy.fPrintInfoNumber)
 {
 //
 // Copy constructor.
+// Clones the histogram and copies the values of other data members
 //
 
-  AliDebug(AliLog::kDebug+2,"<-");
-  AliDebug(AliLog::kDebug+2,"->");
+  AliDebug(AliLog::kDebug+2, "Entering");
+  
+  fHistUsedEvents  = (TH1I*)copy.fHistUsedEvents->Clone();
+  
+  AliDebug(AliLog::kDebug+2, "Exiting");
 }
 
-//_____________________________________________________________________________
+//______________________________________________________________________________
+AliRsnVATProcessInfo& AliRsnVATProcessInfo::operator= 
+(const AliRsnVATProcessInfo& copy)
+{
+//
+// Assignment operator.
+// Clones the histogram and copies the values of other data members.
+//
+
+  AliDebug(AliLog::kDebug+2, "Entering");
+
+  fHistUsedEvents  = (TH1I*)copy.fHistUsedEvents->Clone();
+  fEventUsed       = copy.fEventUsed;
+  fPrintInfoNumber = copy.fPrintInfoNumber;
+  
+  AliDebug(AliLog::kDebug+2, "Exiting");
+  
+  return (*this);
+}
+
+//______________________________________________________________________________
 AliRsnVATProcessInfo::~AliRsnVATProcessInfo()
 {
 //
 // Destructor.
+// Does nothing, since the histogram it creates is usually owned
+// by another object (TList output of AnalysisTask's), but sets
+// the data member pointers to NULL.
 //
 
-  AliDebug(AliLog::kDebug+2,"<-");
-  AliDebug(AliLog::kDebug+2,"->");
+  AliDebug(AliLog::kDebug+2, "Entering");
+  
+  fHistUsedEvents  = 0x0;
+  fEventUsed       = 0;
+  fPrintInfoNumber = 0;
+  
+  AliDebug(AliLog::kDebug+2, "Exiting");
 }
 
-//_____________________________________________________________________________
+//______________________________________________________________________________
 void AliRsnVATProcessInfo::GenerateInfoList(TList *list)
 {
 //
-// Creates a TList containing all objects created in this class.
-// This list will be passe to the AnalysisTask object and will generate
-// a separate directory in the output file, with these informations.
-// This TList will have the same name of this object and will own its content.
+// Allocate in memory the histograms created in this class and store them
+// inside the TList object passed as argument, which usually belongs to 
+// an AnalysisTask object, and represents one of its outputs.
+// If the histogram was already initialized, it is deleted and recreated.
 //
 
-  AliDebug(AliLog::kDebug+2,"<-");
+  AliDebug(AliLog::kDebug+2, "Entering");
 
-  // create list
-  AliDebug(AliLog::kWarning,"Doing new TList(), so make sure you delete this list ... ");
-//   TList* list = new TList();
-//   list->SetName(GetName());
-//   list->SetOwner();
-
-  // initialize contained objects
+  // delete existing allocation of stored objects
+  if (fHistUsedEvents) delete fHistUsedEvents;
+  
+  // create stored objects
   fHistUsedEvents = new TH1I(GetEventHistogramName(), "Skipped/used events", 2, 0, 2);
 
   // ad objects to list
   list->Add(fHistUsedEvents);
 
-  AliDebug(AliLog::kDebug+2,"->");
+  AliDebug(AliLog::kDebug+2, "Exiting");
 }
 
-//_____________________________________________________________________________
+//______________________________________________________________________________
 void AliRsnVATProcessInfo::FillInfo()
 {
 //
 // This method defines how the information histograms must be filled.
-// The structure of this class is auto-consistend, but in case of inheritance
+// The structure of this class is auto-consistent, but in case of inheritance
 // this method must be modified accordingly.
 // Current implementation uses the 'fEventUsed' flag to choose if the event
-// has been used or not, and increments the corrisponding bin in the related
+// has been used or not, and increments the corresponding bin in the related
 // histogram (bin '0' = skipped, bin '1' = used).
 //
 
@@ -103,7 +135,7 @@ void AliRsnVATProcessInfo::FillInfo()
     fHistUsedEvents->Fill(0);
 }
 
-//_____________________________________________________________________________
+//______________________________________________________________________________
 void AliRsnVATProcessInfo::PrintInfo(const Long64_t &num)
 {
 //
@@ -111,17 +143,16 @@ void AliRsnVATProcessInfo::PrintInfo(const Long64_t &num)
 // to inform about number of events processed
 //
 
-  if ((num+1) % fPrintInfoNumber == 0) AliInfo(Form("Events processed %lld",num+1));
+  if ((num+1) % fPrintInfoNumber == 0) AliInfo(Form("Events processed %lld", num+1));
 }
 
-
+//______________________________________________________________________________
 Long64_t AliRsnVATProcessInfo::GetNumerOfEventsProcessed()
 {
 //
 // returns number of events from histogram
 //
-  if (fHistUsedEvents)
-    return fHistUsedEvents->Integral();
+
+  if (fHistUsedEvents) return fHistUsedEvents->Integral();
   return 0;
 }
-

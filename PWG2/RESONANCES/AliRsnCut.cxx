@@ -1,21 +1,17 @@
 //
-// Class AliRsnCut
+// *** Class AliRsnCut ***
 //
-// General implementation of a single cut strategy, which can be:
-// - a value contained in a given interval  [--> IsBetween()   ]
-// - a value equal to a given reference     [--> MatchesValue()]
+// Cut base class: all other cuts inherit from it.
+// The 'core' of the class is the method "IsSelected()" which
+// must be overloaded by any specific cut implementation.
 //
-// In all cases, the reference value(s) is (are) given as data members
-// and each kind of cut requires a given value type (Int, UInt, Double),
-// but the cut check procedure is then automatized and chosen thanks to
-// an enumeration of the implemented cut types.
-// At the end, the user (or any other point which uses this object) has
-// to use the method IsSelected() to check if this cut has been passed.
+// This class provides some default instruments to check values
+// agains a reference or an allowed range, in order to permit
+// a unique way to execute such kind of checks.
 //
-// authors: Martin Vala (martin.vala@cern.ch)
-//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+// authors: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//          Martin Vala (martin.vala@cern.ch)
 //
-#include "AliLog.h"
 
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
@@ -25,15 +21,13 @@
 
 ClassImp(AliRsnCut)
 
-//_________________________________________________________________________________________________
-AliRsnCut::AliRsnCut(ETarget target) :
-  TNamed(),
-  fVarType(kInt),
-  fTarget(target),
+//______________________________________________________________________________
+AliRsnCut::AliRsnCut(const char *name, RSNTARGET target) :
+  AliRsnTarget(name, target),
   fMinI(0),
   fMaxI(0),
-  fMinD(0.0),
-  fMaxD(0.0),
+  fMinD(0.),
+  fMaxD(0.),
   fCutValueI(0),
   fCutValueD(0.0),
   fCutResult(kTRUE),
@@ -44,11 +38,47 @@ AliRsnCut::AliRsnCut(ETarget target) :
 //
 }
 
-//_________________________________________________________________________________________________
+//______________________________________________________________________________
+AliRsnCut::AliRsnCut
+(const char *name, RSNTARGET target, Int_t imin, Int_t imax, Double_t dmin, Double_t dmax) :
+  AliRsnTarget(name, target),
+  fMinI(imin),
+  fMaxI(imax),
+  fMinD(dmin),
+  fMaxD(dmax),
+  fCutValueI(0),
+  fCutValueD(0.0),
+  fCutResult(kTRUE),
+  fEvent(0x0)
+{
+//
+// Constructor with arguments.
+// This is provided to allow a quick setting of all data members.
+//
+}
+
+//______________________________________________________________________________
+AliRsnCut::AliRsnCut
+(const char *name, RSNTARGET target, Double_t dmin, Double_t dmax, Int_t imin, Int_t imax) :
+  AliRsnTarget(name, target),
+  fMinI(imin),
+  fMaxI(imax),
+  fMinD(dmin),
+  fMaxD(dmax),
+  fCutValueI(0),
+  fCutValueD(0.0),
+  fCutResult(kTRUE),
+  fEvent(0x0)
+{
+//
+// Constructor with arguments.
+// This is provided to allow a quick setting of all data members.
+//
+}
+
+//______________________________________________________________________________
 AliRsnCut::AliRsnCut(const AliRsnCut& copy) :
-  TNamed(copy),
-  fVarType(copy.fVarType),
-  fTarget(copy.fTarget),
+  AliRsnTarget(copy),
   fMinI(copy.fMinI),
   fMaxI(copy.fMaxI),
   fMinD(copy.fMinD),
@@ -60,67 +90,20 @@ AliRsnCut::AliRsnCut(const AliRsnCut& copy) :
 {
 //
 // Copy constructor.
+// Don't duplicate memory occupancy for pointer
 //
 }
 
-//_________________________________________________________________________________________________
-AliRsnCut::AliRsnCut
-(const char *name, ETarget target, Int_t min, Int_t max) :
-  TNamed(name, ""),
-  fVarType(kInt),
-  fTarget(target),
-  fMinI(min),
-  fMaxI(max),
-  fMinD(0.0),
-  fMaxD(0.0),
-  fCutValueI(0),
-  fCutValueD(0.0),
-  fCutResult(kTRUE),
-  fEvent(0x0)
-{
-//
-// Constructor with integer values.
-// If the cut must check values inside a range,
-// both 'value' arguments must be used, and they are, in the order,
-// the minimum and maximum of the allowed range.
-// If the cut must check a value, the second 'value' argument will never be used.
-//
-}
-
-//_________________________________________________________________________________________________
-AliRsnCut::AliRsnCut
-(const char *name, ETarget target, Double_t min, Double_t max) :
-  TNamed(name, ""),
-  fVarType(kDouble),
-  fTarget(target),
-  fMinI(0),
-  fMaxI(0),
-  fMinD(min),
-  fMaxD(max),
-  fCutValueI(0),
-  fCutValueD(0.0),
-  fCutResult(kTRUE),
-  fEvent(0x0)
-{
-//
-// Constructor with double values.
-// If the cut must check values inside a range,
-// both 'value' arguments must be used, and they are, in the order,
-// the minimum and maximum of the allowed range.
-// If the cut must check a value, the second 'value' argument will never be used.
-//
-}
-
-//_________________________________________________________________________________________________
+//______________________________________________________________________________
 AliRsnCut& AliRsnCut::operator=(const AliRsnCut& copy)
 {
 //
-// Assignment operator
-// don't duplicate memory occupancy for pointer
+// Assignment operator.
+// Don't duplicate memory occupancy for pointer
 //
 
-  fVarType   = copy.fVarType;
-  fTarget    = copy.fTarget;
+  AliRsnTarget::operator=(copy);
+  
   fMinI      = copy.fMinI;
   fMaxI      = copy.fMaxI;
   fMinD      = copy.fMinD;
@@ -133,130 +116,21 @@ AliRsnCut& AliRsnCut::operator=(const AliRsnCut& copy)
   return (*this);
 }
 
-//_________________________________________________________________________________________________
-Bool_t AliRsnCut::TargetOK(TObject *obj1, TObject *obj2)
+//______________________________________________________________________________
+Bool_t AliRsnCut::IsSelected(TObject* /*object*/)
 {
 //
-// This method checks if the expected target and the passed object match.
+// Virtual cut-checking method.
+// In this implementation, it does nothing, and all classes
+// inheriting from this, should provide a proper implementation
+// which must return kTRUE if the cut is passed, and kFALSE otherwise.
 //
 
-  if (!obj1)
-  {
-    AliError("Cannot cut on a NULL object!");
-    return kFALSE;
-  }
-
-  switch (fTarget)
-  {
-    case kDaughter:
-      if (dynamic_cast<AliRsnDaughter*>(obj1) == 0x0)
-      {
-        AliError(Form("[%s] Target mismatch (obj #1): expected  'AliRsnDaughter', passed '%s'", GetName(), obj1->ClassName()));
-        Print();
-        return kFALSE;
-      }
-      break;
-    case kMother:
-      if (dynamic_cast<AliRsnMother*>(obj1) == 0x0)
-      {
-        AliError(Form("[%s] Target mismatch (obj #1): expected  'AliRsnMother', passed '%s'", GetName(), obj1->ClassName()));
-        Print();
-        return kFALSE;
-      }
-      break;
-    case kEvent:
-      if (dynamic_cast<AliRsnEvent*>(obj1) == 0x0)
-      {
-        AliError(Form("[%s] Target mismatch (obj #1): expected  'AliRsnEvent', passed '%s'", GetName(), obj1->ClassName()));
-        Print();
-        return kFALSE;
-      }
-      break;
-    case kMixEvent:
-      if (dynamic_cast<AliRsnEvent*>(obj1) == 0x0)
-      {
-        AliError(Form("[%s] Target mismatch (obj #1): expected  'AliRsnEvent', passed '%s' an", GetName(), obj1->ClassName()));
-        Print();
-        return kFALSE;
-      }
-      if (obj2)
-      {
-        if (dynamic_cast<AliRsnEvent*>(obj2) == 0x0)
-        {
-          AliError(Form("[%s] Target mismatch (obj #2): expected  'AliRsnEvent', passed '%s' an", GetName(), obj2->ClassName()));
-          Print();
-          return kFALSE;
-        }
-      }
-      else
-      {
-        AliError("Mix-event cuts require 2 not NULL objects");
-        Print();
-        return kFALSE;
-      }
-      break;
-    default:
-      return kTRUE;
-  }
-  
+  AliWarning("This virtual function must be implemented properly");
   return kTRUE;
 }
 
-//_________________________________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(TObject* /*obj1*/, TObject* /*obj2*/)
-{
-//
-// Virtual cut-checking method for event mixing.
-// This method checks only that the target is the oner for mixing.
-//
-
-  AliWarning("Single-object cuts are not implemented here.");
-  return kTRUE;
-}
-
-//_________________________________________________________________________________________________
-Bool_t AliRsnCut::OkValue()
-{
-//
-// This method is used when the cut consists in comparing the cut value
-// with a reference value to which it must be equal (in case of doubles, 'almost' equal).
-// Then, the cut result is kTRUE if the cut value is equal to this reference value.
-//
-
-  switch (fVarType) 
-  {
-    case kInt:
-      return OkValueI();
-    case kDouble:
-      return OkValueD();
-    default:
-      AliError(Form("fVarType = %d --> not allowed", fVarType));
-      return kFALSE;
-  }
-}
-
-//_________________________________________________________________________________________________
-Bool_t AliRsnCut::OkRange()
-{
-//
-// This method is used when the cut consists in an allowed range
-// where the cut value must be included to pass the cut.
-// Then, the cut result is kTRUE if the cut value is inside this range.
-//
-
-  switch (fVarType) 
-  {
-    case kInt:
-      return OkRangeI();
-    case kDouble:
-      return OkRangeD();
-    default:
-      AliError(Form("fVarType = %d --> not allowed", fVarType));
-      return kFALSE;
-  }
-}
-
-//_________________________________________________________________________________________________
+//______________________________________________________________________________
 Bool_t AliRsnCut::OkValueI()
 {
 //
@@ -278,7 +152,7 @@ Bool_t AliRsnCut::OkValueI()
   return fCutResult;
 }
 
-//_________________________________________________________________________________________________
+//______________________________________________________________________________
 Bool_t AliRsnCut::OkValueD()
 {
 //
@@ -300,7 +174,7 @@ Bool_t AliRsnCut::OkValueD()
   return fCutResult;
 }
 
-//_________________________________________________________________________________________________
+//______________________________________________________________________________
 Bool_t AliRsnCut::OkRangeI()
 {
 //
@@ -310,7 +184,7 @@ Bool_t AliRsnCut::OkRangeI()
 //
 
   // eval result
-  fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
+  fCutResult = ((fCutValueI >= fMinI) && (fCutValueI < fMaxI));
   
   // print debug message
   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ====================================");
@@ -323,7 +197,7 @@ Bool_t AliRsnCut::OkRangeI()
   return fCutResult;
 }
 
-//_________________________________________________________________________________________________
+//______________________________________________________________________________
 Bool_t AliRsnCut::OkRangeD()
 {
 //
@@ -333,7 +207,7 @@ Bool_t AliRsnCut::OkRangeD()
 //
 
   // eval result
-  fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
+  fCutResult = ((fCutValueD >= fMinD) && (fCutValueD < fMaxD));
    
   // print debug message
   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ====================================");
@@ -346,36 +220,30 @@ Bool_t AliRsnCut::OkRangeD()
   return fCutResult;
 }
 
-//_________________________________________________________________________________________________
+//______________________________________________________________________________
 void AliRsnCut::Print(Option_t*) const
 {
 //
-// Override TObject::Print() method
+// Override TObject::Print() method,
+// and print some useful info about the cut general parameters.
 //
-
-  Char_t target[100];
-  switch (fTarget)
-  {
-    case kDaughter: snprintf(target, strlen("DAUGHTER") , "DAUGHTER") ; break;
-    case kMother  : snprintf(target, strlen("MOTHER")   , "MOTHER")   ; break;
-    case kEvent   : snprintf(target, strlen("EVENT")    , "EVENT")    ; break;
-    case kMixEvent: snprintf(target, strlen("MIX EVENT"), "MIX EVENT"); break;
-    default       : snprintf(target, strlen("UNDEFINED"), "UNDEFINED"); break;
-  }
 
   AliInfo("=== CUT DETAILS ====================================");
   AliInfo(Form("Cut name     : [%s]", GetName()));
-  AliInfo(Form("Cut target   : [%s]", target));
+  AliInfo(Form("Cut target   : [%s]", GetTargetTypeName()));
   AliInfo(Form("Cut edges [D]: [%f - %f]", fMinD, fMaxD));
   AliInfo(Form("Cut edges [I]: [%d - %d]", fMinI, fMaxI));
   AliInfo("====================================================");
 }
 
-//_________________________________________________________________________________________________
+//______________________________________________________________________________
 void AliRsnCut::SetEvent(AliRsnEvent *event)
 {
 //
-// Sets the reference event
+// Sets the reference event.
+// When this requires some additional operation, this function
+// should be overloaded by the specific cut implementation.
+// For an example, see AliRsnCutESD2010 class.
 //
 
   fEvent = event;

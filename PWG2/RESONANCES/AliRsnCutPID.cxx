@@ -26,7 +26,7 @@ ClassImp(AliRsnCutPID)
 
 //_________________________________________________________________________________________________
 AliRsnCutPID::AliRsnCutPID() :
-  AliRsnCut(AliRsnCut::kDaughter),
+  AliRsnCut(),
   fPerfect(kFALSE),
   fUseDefault(kTRUE)
 {
@@ -51,6 +51,8 @@ AliRsnCutPID::AliRsnCutPID() :
     fWeight[i] = 0.0;
     fPrior[i] = 1.0;
   }
+  
+  SetTargetType(AliRsnTarget::kDaughter);
 }
 
 //_________________________________________________________________________________________________
@@ -83,6 +85,8 @@ AliRsnCutPID::AliRsnCutPID(const char *name, AliPID::EParticleType pid, Double_t
   
   fMinD = probMin;
   fMaxD = 1.000001;
+  
+  SetTargetType(AliRsnTarget::kDaughter);
 }
 
 //_____________________________________________________________________________
@@ -251,19 +255,22 @@ Int_t AliRsnCutPID::PerfectPID(AliRsnDaughter * const daughter)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPID::IsSelected(TObject *obj1, TObject* /*obj2*/)
+Bool_t AliRsnCutPID::IsSelected(TObject *object)
 {
 //
 // Cut checker.
 //
   
   // convert the object into the unique correct type
-  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(obj1);
-  if (!daughter)
+  
+  if (!TargetOK(object))
   {
     AliError(Form("[%s]: this cut works only with AliRsnDaughter objects", GetName()));
     return kTRUE;
   }
+  
+  // if target is OK, do a dynamic cast
+  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
   
   // depending on the PID type, recalls the appropriate method:
   // in case of perfect PID, checks only if the PID type is 

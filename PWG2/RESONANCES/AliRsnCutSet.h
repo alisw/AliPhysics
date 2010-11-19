@@ -15,6 +15,7 @@
 #include <TNamed.h>
 #include <TObjArray.h>
 
+#include "AliRsnTarget.h"
 #include "AliRsnCut.h"
 
 class AliRsnDaughter;
@@ -22,14 +23,14 @@ class AliRsnExpression;
 class AliRsnPairParticle;
 class AliRsnEvent;
 
-class AliRsnCutSet : public TNamed
+class AliRsnCutSet : public AliRsnTarget
 {
   public:
 
-    AliRsnCutSet(AliRsnCut::ETarget target = AliRsnCut::kLastCutTarget);
-    AliRsnCutSet(TString name, AliRsnCut::ETarget target);
+    AliRsnCutSet();
+    AliRsnCutSet(const char *name, RSNTARGET target);
     AliRsnCutSet(const AliRsnCutSet &copy);
-    AliRsnCutSet& operator=(const AliRsnCutSet& /*copy*/) {return (*this);}
+    AliRsnCutSet& operator=(const AliRsnCutSet& copy);
     ~AliRsnCutSet();
 
     void      AddCut(AliRsnCut* cut);
@@ -42,7 +43,7 @@ class AliRsnCutSet : public TNamed
     Int_t     TestExpression(TString opt="short");
     void      PrintSetInfo();
 
-    Bool_t    IsSelected(TObject *obj1, TObject *obj2 = 0x0);
+    Bool_t    IsSelected(TObject *object);
 
     void SetBoolValue(Bool_t theValue,Int_t index) { fBoolValues[index] = theValue; }
     Bool_t GetBoolValue(Int_t index) const { return fBoolValues[index]; }
@@ -59,7 +60,6 @@ class AliRsnCutSet : public TNamed
 
   private:
 
-    AliRsnCut::ETarget fTarget;  // cut target
     TObjArray     fCuts;                  // array of cuts
     Int_t         fNumOfCuts;             // number of cuts
     TString       fCutScheme;             // cut scheme

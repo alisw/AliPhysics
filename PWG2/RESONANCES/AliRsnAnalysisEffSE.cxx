@@ -555,8 +555,9 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
 // Fill the containers
 //
 
-  Int_t iaxis, nAxes  = fAxisList.GetEntries();
-  Int_t istep, nSteps = stepList->GetEntries();
+  Int_t  iaxis, nAxes  = fAxisList.GetEntries();
+  Int_t  istep, nSteps = stepList->GetEntries();
+  Bool_t computeOK;
   
   // set daughters to pair
   fPair.SetDaughters(&fDaughter[0], pd->GetMass(0), &fDaughter[1], pd->GetMass(1));
@@ -566,7 +567,20 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
   {
     AliRsnValue *fcnAxis = (AliRsnValue*)fAxisList.At(iaxis);
     fVar[iaxis] = -1E10;
-    if (fcnAxis->Eval(&fPair, pd, &fRsnEvent)) fVar[iaxis] = (Float_t)fcnAxis->GetValue();
+    switch (fcnAxis->GetTargetType())
+    {
+      case AliRsnTarget::kMother:
+        fcnAxis->SetSupportObject(pd);
+        computeOK = fcnAxis->Eval(&fPair);
+        break;
+      case AliRsnTarget::kEvent:
+        computeOK = fcnAxis->Eval(&fRsnEvent);
+        break;
+      default:
+        AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", fcnAxis->GetName(), fcnAxis->GetTargetTypeName()));
+        computeOK = kFALSE;
+    }
+    if (computeOK) fVar[iaxis] = ((Float_t)fcnAxis->GetComputedValue());
   }
 
   // fill all steps

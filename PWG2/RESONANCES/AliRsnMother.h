@@ -29,12 +29,8 @@ class AliRsnMother : public TObject
     AliRsnMother& operator=(const AliRsnMother &obj);
     virtual ~AliRsnMother();
     
-    void              SetDefaultMass(Double_t mass) {fDefaultMass = mass; fRef.SetXYZM(fSum.X(),fSum.Y(),fSum.Z(),mass); fRefMC.SetXYZM(fSumMC.X(),fSumMC.Y(),fSumMC.Z(),mass);}
     TLorentzVector&   Sum()   {return fSum;}
-    TLorentzVector&   Ref()   {return fRef;}
     TLorentzVector&   SumMC() {return fSumMC;}
-    TLorentzVector&   RefMC() {return fRefMC;}
-    Double_t          OpeningAngle(Bool_t mc = kFALSE) const {if (fDaughter[0] && fDaughter[1]) return fDaughter[0]->P(mc).Angle(fDaughter[1]->P(mc).Vect()); return 1E6;}
     Double_t          AngleTo(AliRsnDaughter track, Bool_t mc = kFALSE) const {return fSum.Angle(track.P(mc).Vect());}
     Double_t          CosThetaStar(Bool_t first = kTRUE, Bool_t useMC = kFALSE);
 
@@ -55,12 +51,9 @@ class AliRsnMother : public TObject
   private:
 
     Bool_t           fUseMC;            // choose if momenta are taken from ESD/AOD or MC
-    Double_t         fDefaultMass;      // nominal resonance mass
     AliRsnDaughter  *fDaughter[2];      // elements of the pair
     TLorentzVector   fSum;              // sum computed from the two daughters
     TLorentzVector   fSumMC;            // sum computed from the two daughters
-    TLorentzVector   fRef;              // a 4-vector with same momentum as the sum but the nominal mass of mother
-    TLorentzVector   fRefMC;            // a 4-vector with same momentum as the sum but the nominal mass of mother
 
     ClassDef(AliRsnMother,1)
 };

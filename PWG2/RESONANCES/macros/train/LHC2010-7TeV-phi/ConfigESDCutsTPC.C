@@ -6,11 +6,11 @@
 void ConfigESDCutsTPC(AliESDtrackCuts * &cuts)
 {
   // general acceptance/pt cuts
-  cuts->SetPtRange(0.15, 10.0);
-  cuts->SetEtaRange(-0.8, 0.8);
+  cuts->SetPtRange ( 0.15, 1.0e+10);
+  cuts->SetEtaRange(-0.8 , 0.8);
   
   // DCA cuts
-  cuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0224/pt^1.78");
+  cuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
   cuts->SetMaxDCAToVertexZ(2.0);
   cuts->SetDCAToVertex2D(kFALSE);
   cuts->SetRequireSigmaToVertex(kFALSE);
@@ -25,4 +25,3 @@ void ConfigESDCutsTPC(AliESDtrackCuts * &cuts)
   cuts->SetRequireITSRefit(kTRUE);
   cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 }
-  

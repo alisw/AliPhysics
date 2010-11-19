@@ -1,12 +1,20 @@
 //
-// Class AliRsnCutManager
+// *** Class AliRsnCutManager ***
 //
-// The cut manager: contains a complete set of cut definitions
-// to be applied to all possible targets (one for each target),
-// in order to ease the set-up procedure of cuts and allow to
-// pass them at once to each object which must use them
+// This class is used both in normal analysis and efficiency computation
+// as a collection of all cuts which could be needed in a single job.
+// It allocates an AliRsnCutSet for each possible target:
+//  - one with all cuts common to all tracks
+//  - one with all cuts for first candidate daughter (definition #1 in pairDef)
+//  - one with all cuts for second candidate daughter (definition #2 in pairDef)
+//  - one with all cuts on the pair
+// -----
+// This object is used to define a step in efficiency CORRFW container
+// and also is contained in all AliRsnPair objects to decide if two candidates
+// can be accepted or not.
 //
-// author: Martin Vala (martin.vala@cern.ch)
+// authors: Martin Vala (martin.vala@cern.ch)
+//          Alberto Pulvirenti (alberto.pulvirenti@cern.ch)
 //
 
 #ifndef ALIRSNCUTMANAGER_H
@@ -14,10 +22,11 @@
 
 #include <TNamed.h>
 
-#include "AliRsnCut.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
 #include "AliRsnCutSet.h"
+
+class AliRsnCut;
 
 class AliRsnCutManager : public TNamed
 {
@@ -29,30 +38,26 @@ class AliRsnCutManager : public TNamed
     AliRsnCutManager& operator=(const AliRsnCutManager& cut);
     ~AliRsnCutManager();
     
-    AliRsnCutSet*    GetCommonDaughterCuts() {return fDaughterCutsCommon;}
-    AliRsnCutSet*    GetDaughter1Cuts() {return fDaughterCuts1;}
-    AliRsnCutSet*    GetDaughter2Cuts() {return fDaughterCuts2;}
-    AliRsnCutSet*    GetMotherCuts() {return fMotherCuts;}
-
-    void    SetCommonDaughterCuts(AliRsnCutSet *cuts) {fDaughterCutsCommon = cuts;}
-    void    SetDaughter1Cuts(AliRsnCutSet *cuts) {fDaughterCuts1 = cuts;}
-    void    SetDaughter2Cuts(AliRsnCutSet *cuts) {fDaughterCuts2 = cuts;}
-    void    SetMotherCuts(AliRsnCutSet *cuts) {fMotherCuts = cuts;}
-    void    SetEvent(AliRsnEvent *event);
+    void           SetEvent(AliRsnEvent *event);
     
-    Bool_t  PassCommonDaughterCuts(AliRsnDaughter *daughter) const {if (fDaughterCutsCommon) return fDaughterCutsCommon->IsSelected(daughter); return kTRUE;}
-    Bool_t  PassDaughter1Cuts(AliRsnDaughter *daughter) const {if (fDaughterCuts1) return fDaughterCuts2->IsSelected(daughter); return kTRUE;}
-    Bool_t  PassDaughter2Cuts(AliRsnDaughter *daughter) const {if (fDaughterCuts2) return fDaughterCuts2->IsSelected(daughter); return kTRUE;}
-    Bool_t  PassMotherCuts(AliRsnMother *mother) {if (fMotherCuts) return fMotherCuts->IsSelected(mother); return kTRUE;}
+    AliRsnCutSet*  GetCommonDaughterCuts() {return &fDaughterCutsCommon;}
+    AliRsnCutSet*  GetDaughter1Cuts()      {return &fDaughterCuts1;}
+    AliRsnCutSet*  GetDaughter2Cuts()      {return &fDaughterCuts2;}
+    AliRsnCutSet*  GetMotherCuts()         {return &fMotherCuts;}
+    
+    Bool_t         PassCommonDaughterCuts(AliRsnDaughter *daughter) {return fDaughterCutsCommon.IsSelected(daughter);}
+    Bool_t         PassDaughter1Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts2.IsSelected(daughter);}
+    Bool_t         PassDaughter2Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts2.IsSelected(daughter);}
+    Bool_t         PassMotherCuts(AliRsnMother *mother)             {return fMotherCuts.IsSelected(mother);}
 
   private:
 
-    AliRsnCutSet  *fDaughterCutsCommon; //  single-track cuts common to both daughters
-    AliRsnCutSet  *fDaughterCuts1;      //  single-track cuts for only first daughter
-    AliRsnCutSet  *fDaughterCuts2;      //  single-track cuts for only second daughter
-    AliRsnCutSet  *fMotherCuts;         //  mother cuts (on relations between daughters)
+    AliRsnCutSet  fDaughterCutsCommon; // single-track cuts common to both daughters
+    AliRsnCutSet  fDaughterCuts1;      // single-track cuts for only first daughter
+    AliRsnCutSet  fDaughterCuts2;      // single-track cuts for only second daughter
+    AliRsnCutSet  fMotherCuts;         // mother cuts (on relations between daughters)
 
-    ClassDef(AliRsnCutManager, 1)  // dictionary
+    ClassDef(AliRsnCutManager, 2)      // dictionary
 };
 
 #endif
