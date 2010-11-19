@@ -276,7 +276,7 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   if(fGenTrackNDEventMatrix) delete fGenTrackNDEventMatrix; fGenTrackNDEventMatrix=0;
   if(fGenTrackNSDEventMatrix) delete fGenTrackNSDEventMatrix; fGenTrackNSDEventMatrix=0;
 
-  if(fTriggerEventMatrix) delete fTriggerEventMatrix; fTriggerEventMatrix=0;
+  if(fTriggerTrackEventMatrix) delete fTriggerTrackEventMatrix; fTriggerTrackEventMatrix=0;
   if(fTriggerTrackSDEventMatrix) delete fTriggerTrackSDEventMatrix; fTriggerTrackSDEventMatrix=0;
   if(fTriggerTrackDDEventMatrix) delete fTriggerTrackDDEventMatrix; fTriggerTrackDDEventMatrix=0;
   if(fTriggerTrackNDEventMatrix) delete fTriggerTrackNDEventMatrix; fTriggerTrackNDEventMatrix=0;
@@ -935,11 +935,10 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     //
     trigSel = GetPhysicsTriggerSelection();
     if(!trigSel) {
-      printf("cannot get trigSel \n");
+      AliDebug(AliLog::kError, "cannot get trigSel");
       return;
     }
-
-    //
+    
     if(IsUseMCInfo()) 
     { 
       trigSel->SetAnalyzeMC();
@@ -972,7 +971,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
         trigAna = trigSel->GetTriggerAnalysis();
         if(!trigAna) 
-         return;
+          return;
 
         //trigAna->SetV0HwPars(0, 0, 125);
         //trigAna->SetV0AdcThr(0);
@@ -1008,15 +1007,12 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       if( GetAnalysisMode() == AlidNdPtHelper::kTPCITS || 
           GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || 
 	  GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
-          GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx  || 
-	  GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt ||
-          GetAnalysisMode() == AlidNdPtHelper::kITSStandAloneTrackSPDvtx || 
-	  GetAnalysisMode() == AlidNdPtHelper::kITSStandAloneTPCTrackSPDvtx
-	) 
+          GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || 
+	  GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt ) 
       {
-        trigSel->SetBin0CallbackViaPointer(&IsBinZeroTrackSPDvtx);
+        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroTrackSPDvtx);
       } else {
-        trigSel->SetBin0CallbackViaPointer(&IsBinZeroSPDvtx);
+        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroSPDvtx);
       }
 
       if(GetParticleMode() == AlidNdPtHelper::kVZEROCase1)
@@ -1055,6 +1051,10 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       }
     }
   }
+
+
+
+
 
   // use MC information
   AliHeader* header = 0;
@@ -2228,12 +2228,11 @@ void AlidNdPtAnalysis::Analyse()
   hs = AlidNdPtHelper::GenerateCorrMatrix(fGenEventMatrix,fTriggerEventMatrix,"zv_mult_trig_MBtoInel_corr_matrix");
   aFolderObj->Add(hs);
 
-  h = AlidNdPtHelper::GenerateCorrMatrix(fGenEventMatrix->Projection(0),fTriggerEventMatrix->Projection(0),"zv_trig_MBtoInel_corr_matrix");
-  aFolderObj->Add(h);
-
   h2D = AlidNdPtHelper::GenerateCorrMatrix(fGenEventMatrix->Projection(0,1),fTriggerEventMatrix->Projection(0,1),"zv_mult_trig_MBtoInel_corr_matrix_2D");
   aFolderObj->Add(h2D);
 
+  h = AlidNdPtHelper::GenerateCorrMatrix(fGenEventMatrix->Projection(0),fTriggerEventMatrix->Projection(0),"zv_trig_MBtoInel_corr_matrix");
+  aFolderObj->Add(h);
 
   h = AlidNdPtHelper::GenerateCorrMatrix(fGenEventMatrix->Projection(1),fTriggerEventMatrix->Projection(1),"mult_trig_MBtoInel_corr_matrix");
   aFolderObj->Add(h);
