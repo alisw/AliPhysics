@@ -13,7 +13,7 @@
 Bool_t AddRsnAnalysisMult
 (
   const char *options,
-  const char *configs = "RsnConfigNoSA.C RsnConfigSA.C",
+  const char *configs = "RsnConfigNoSA.C RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C",
   const char *path    = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi"
 )
 {

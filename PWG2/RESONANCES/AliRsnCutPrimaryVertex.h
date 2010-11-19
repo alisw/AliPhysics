@@ -30,11 +30,10 @@ class AliRsnCutPrimaryVertex : public AliRsnCut
 {
   public:
 
-    AliRsnCutPrimaryVertex();
-    AliRsnCutPrimaryVertex(const char *name, Double_t maxVz, Int_t minContributors = 1, Bool_t acceptTPC = kFALSE);
+    AliRsnCutPrimaryVertex(const char *name = "cutPrimVert", Double_t maxVz = 10.0, Int_t minContributors = 1, Bool_t acceptTPC = kFALSE);
     virtual ~AliRsnCutPrimaryVertex() {;};
 
-    virtual Bool_t IsSelected(TObject *obj1, TObject *obj2 = 0x0);
+    virtual Bool_t IsSelected(TObject *object);
 
   protected:
 

@@ -31,24 +31,22 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
   // 1) transverse momentum
   // 2) rapidity
   // 3) multiplicity
-  Double_t pt  [] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 9.0, 10.0};
-  Double_t y   [] = {-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
-  Double_t mult[] = {0.0, 5.0, 9.0, 14.0, 22.0, 100000.0};
-  Int_t    npt    = sizeof(pt  ) / sizeof(pt  [0]);
-  Int_t    ny     = sizeof(y   ) / sizeof(y   [0]);
+  Double_t mult[] = {0., 6., 10., 15., 23., 1E6};
   Int_t    nmult  = sizeof(mult) / sizeof(mult[0]);
-  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 500  , 0.9,  1.4);
-  //AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , npt  , pt);
-  //AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           , ny   , y);
-  //AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDcuts, nmult, mult);
-  AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 100,  0.0, 10.0);
-  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           ,  20, -1.0,  1.0);
-  ConfigESDCutsTPC(axisMult->GetCuts());
+  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 0.9,  1.4, 0.001);
+  AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 0.0, 10.0, 0.100);
+  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           ,-1.2,  1.2, 0.100);
+  AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDCuts, nmult, mult);
+  
+  // add the support cut to the value which computes the multiplicity
+  AliESDtrackCuts *cuts = new AliESDtrackCuts;
+  ConfigESDCutsTPC(cuts);
+  axisMult->SetSupportObject(cuts);
   
   // define cuts for event selection:
   // this will determine the filling of bins in the "info" histograms
   // and should be computed as additional correction factor in efficiency
-  AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+  AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 1, kFALSE);
   
   // define standard 2010 track quality/PID cuts:
   // - first  index: [0] = no PID, [1] = PID
@@ -68,7 +66,7 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
       cuts2010[ipid][iits]->SetMC(kTRUE);
       
       // all use global tracks
-      cuts2010[ipid][iits]->SetUseGlobal(kTRUE);
+      cuts2010[ipid][iits]->SetUseITSTPC(kTRUE);
       
       // other flags, depend on indexes
       cuts2010[ipid][iits]->SetUseITSSA((Bool_t)iits);
@@ -83,7 +81,7 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
   }
 
   // define cut on dip angle:
-  AliRsnCutStd *cutDip = new AliRsnCutStd("cutDip", AliRsnCut::kMother, AliRsnCutStd::kDipAngle, 0.0, 0.04);
+  AliRsnCutValue *cutDip = new AliRsnCutValue("cutDip", AliRsnValue::kPairDipAngle, 0.02, 1.01);
   
   // define a common path for the output file
   Char_t commonPath[500];
@@ -104,7 +102,7 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
     
     // add the cut only when working on ESD, not on MC only
     task[itask]->GetEventCuts()->AddCut(cutVertex);
-    task[itask]->GetEventCuts()->SetCutScheme("cutVertex");
+    task[itask]->GetEventCuts()->SetCutScheme(cutVertex->GetName());
 
     //
     // *** STEP 0 - All resonances which decay in the specified pair
@@ -122,42 +120,44 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
     // its requirement is automatically checked during execution,
     // but to avoid segfaults, it is better to initialize a cut manager.
     //
-    AliRsnCutManager *mgr_step1 = new AliRsnCutManager("reco_step0", "");
+    AliRsnCutManager *mgr_step1 = new AliRsnCutManager("esd_step0", "");
 
     //
     // *** STEP 2 - Reconstruction & track quality
     //
-      
-    AliRsnCutSet     *set_step2 = new AliRsnCutSet("cuts_step2", AliRsnCut::kDaughter);
+    // Define a cut on track quality, disabling the PID cuts (first index = [0])
+    //
     AliRsnCutManager *mgr_step2 = new AliRsnCutManager("esd_step2", "");
+    AliRsnCutSet     *set_step2 = mgr_step2->GetCommonDaughterCuts();
     
     set_step2->AddCut(cuts2010[0][itask]);
     set_step2->SetCutScheme(cuts2010[0][itask]->GetName());
-    mgr_step2->SetCommonDaughterCuts(set_step2);
     
     //
     // *** STEP 3 - PID
     //
-    
-    AliRsnCutSet     *set_step3 = new AliRsnCutSet("cuts_step3", AliRsnCut::kDaughter);
+    // Define a cut on track quality, enabling the PID cuts (first index = [1])
+    //
     AliRsnCutManager *mgr_step3 = new AliRsnCutManager("esd_step3", "");
+    AliRsnCutSet     *set_step3 = mgr_step3->GetCommonDaughterCuts();
     
     set_step3->AddCut(cuts2010[1][itask]);
     set_step3->SetCutScheme(cuts2010[1][itask]->GetName());
-    mgr_step3->SetCommonDaughterCuts(set_step3);
 
     //
     // *** STEP 4 - Dip angle
     //
-    
-    AliRsnCutSet     *set_step4 = new AliRsnCutSet("cuts_step4", AliRsnCut::kMother);
+    // Add a cut on the pair dip angle
+    //
     AliRsnCutManager *mgr_step4 = new AliRsnCutManager("esd_step4", "");
+    AliRsnCutSet     *set_step4 = mgr_step4->GetMotherCuts();
     
     set_step4->AddCut(cutDip);
-    set_step4->SetCutScheme(Form("!%s", cutDip->GetName()));
-    mgr_step4->SetMotherCuts(set_step4);
+    set_step4->SetCutScheme(Form("%s", cutDip->GetName()));
     
-    // add all steps to the task
+    // add all steps to the task:
+    // - first step computed on MC
+    // - all other steps computed on reconstruction
     task[itask]->AddStepMC (mgr_step0);
     task[itask]->AddStepESD(mgr_step1);
     task[itask]->AddStepESD(mgr_step2);

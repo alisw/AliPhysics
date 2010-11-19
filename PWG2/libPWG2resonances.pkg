@@ -2,25 +2,24 @@
 
 SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnMother.cxx \
+      RESONANCES/AliRsnPairDef.cxx \
       RESONANCES/AliRsnEvent.cxx \
+      RESONANCES/AliRsnTarget.cxx \
       RESONANCES/AliRsnValue.cxx \
-      RESONANCES/AliRsnFunction.cxx \
-      RESONANCES/AliRsnExpression.cxx \
-      RESONANCES/AliRsnVariableExpression.cxx \
       RESONANCES/AliRsnCut.cxx \
-      RESONANCES/AliRsnCutStd.cxx \
+      RESONANCES/AliRsnCutValue.cxx \
       RESONANCES/AliRsnCutPID.cxx \
       RESONANCES/AliRsnCutBetheBloch.cxx \
       RESONANCES/AliRsnCutPrimaryVertex.cxx \
       RESONANCES/AliRsnCutESDPrimary.cxx \
-      RESONANCES/AliRsnCutESDCutMultiplicity.cxx \
       RESONANCES/AliRsnCutDaughterType.cxx \
       RESONANCES/AliRsnCutESD2010.cxx \
       RESONANCES/AliRsnCutAOD2010.cxx \
       RESONANCES/AliRsnCutSet.cxx \
-      RESONANCES/AliRsnCutValue.cxx \
+      RESONANCES/AliRsnExpression.cxx \
+      RESONANCES/AliRsnVariableExpression.cxx \
       RESONANCES/AliRsnCutManager.cxx \
-      RESONANCES/AliRsnPairDef.cxx \
+      RESONANCES/AliRsnFunction.cxx \
       RESONANCES/AliRsnPair.cxx \
       RESONANCES/AliRsnPairFunctions.cxx \
       RESONANCES/AliRsnPairNtuple.cxx \
@@ -37,8 +36,6 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnAnalysisPhi7TeVNoPID.cxx \
       RESONANCES/AliRsnMonitorTrack.cxx \
       RESONANCES/AliRsnAnalysisMonitorTask.cxx \
-      RESONANCES/AliRsnAnalysisMonitorPairTask.cxx \
-#      RESONANCES/AliRsnFitResult.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 

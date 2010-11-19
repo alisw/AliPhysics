@@ -1,30 +1,24 @@
 //
-// Class AliRsnCutValue
+// *** Class AliRsnCutValue ***
 //
-// General implementation of a single cut strategy, which can be:
-// - a value contained in a given interval  [--> IsBetween()   ]
-// - a value equal to a given reference     [--> MatchesValue()]
+// This cut implementation can be used to cut generically on 
+// any value which can be computed from AliRsnValue class.
+// Since that value is implemented always as a Double_t one,
+// then this cut operates only with the Double_t data members
+// of the AliRsnCut base class.
+// It allows to cusomize the reference AliRsnValue object by
+// means of a getter that returns a pointer to it.
+// This cut can apply to any kind of object, but the type of
+// target must be one of those for which the chosen value type
+// makes sense to be computed
 //
-// In all cases, the reference value(s) is (are) given as data members
-// and each kind of cut requires a given value type (Int, UInt, Double),
-// but the cut check procedure is then automatized and chosen thanks to
-// an enumeration of the implemented cut types.
-// At the end, the user (or any other point which uses this object) has
-// to use the method IsSelected() to check if this cut has been passed.
-//
-// authors: Martin Vala (martin.vala@cern.ch)
-//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+// author: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
-#include <TMath.h>
-#include <TLorentzVector.h>
-
-#include "AliStack.h"
-#include "AliMCEvent.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
 #include "AliRsnEvent.h"
-#include "AliRsnValue.h"
+#include "AliRsnPairDef.h"
 
 #include "AliRsnCutValue.h"
 
@@ -39,18 +33,24 @@ AliRsnCutValue::AliRsnCutValue() :
 //
 // Default constructor.
 //
+
+  SetTargetType(fValue.GetTargetType());
 }
 
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue
-(const char *name, ETarget target, Double_t min, Double_t max, AliRsnPairDef *pd) :
-  AliRsnCut(name, target, min, max),
-  fValue(Form("val_%s", name), AliRsnValue::kValueTypes),
+(const char *name, AliRsnValue::EValueType type, Double_t min, Double_t max, AliRsnPairDef *pd) :
+  AliRsnCut(name, AliRsnTarget::kTargetTypes, min, max),
+  fValue(Form("val_%s", name), type),
   fPairDef(pd)
 {
 //
 // Main constructor.
+// Recalls the setter for the value type of the AliRsnValue data member,
+// which determines also the type of target to be expected
 //
+
+  SetTargetType(fValue.GetTargetType());
 }
 
 //_________________________________________________________________________________________________
@@ -60,47 +60,60 @@ AliRsnCutValue::AliRsnCutValue(const AliRsnCutValue& copy) :
   fPairDef(copy.fPairDef)
 {
 //
-// Copy constructor
+// Copy constructor.
+// Does not duplicate memory allocation.
 //
+
+  SetTargetType(fValue.GetTargetType());
 }
 
 //_________________________________________________________________________________________________
 AliRsnCutValue& AliRsnCutValue::operator=(const AliRsnCutValue& copy)
 {
 //
-// Assignment operator
+// Assignment operator.
+// Does not duplicate memory allocation.
 //
 
-  (*this)  = copy;
+  AliRsnCut::operator=(copy);
+  
   fValue   = copy.fValue;
   fPairDef = copy.fPairDef;
+  SetTargetType(fValue.GetTargetType());
   
   return (*this);
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutValue::IsSelected(TObject *obj1, TObject * /*obj2*/)
+Bool_t AliRsnCutValue::IsSelected(TObject *object)
 {
 //
 // Checks the cut.
-// Calls the appropriate AliRsnValue::Eval() method
-// depending on the type of passed object.
-// It is up to the user to be sure that the association is meaningful
+// Calls the AliRsnValue::Eval() method and then checks its output.
 //
 
-  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(obj1);
-  AliRsnMother   *mother   = dynamic_cast<AliRsnMother*>(obj1);
-  
-  if (daughter)
+  // make sure that target of this object matches that
+  // of the inserted value object
+  SetTargetType(fValue.GetTargetType());
+
+  // check target coherence
+  if (!TargetOK(object))
   {
-    if (!fValue.Eval(daughter, fEvent)) return kFALSE;
-    fCutValueD = fValue.GetValue();
-  }
-  else if (mother)
-  {
-    if (!fValue.Eval(mother, fPairDef, fEvent)) return kFALSE;
-    fCutValueD = fValue.GetValue();
+    AliWarning("Returning kFALSE");
+    return kFALSE;
   }
   
+  // try to compute values
+  Bool_t success = fValue.Eval(object);
+  
+  // check success
+  if (!success)
+  {
+    AliWarning(Form("[%s] Failed to compute value", GetName()));
+    return kFALSE;
+  }
+  
+  // check in range
+  fCutValueD = fValue.GetComputedValue();
   return OkRangeD();
 }

@@ -20,31 +20,16 @@ Bool_t AddRsnAnalysis
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  // interpret config string
-  TString strDataLabel(options);
-  Bool_t isSim = strDataLabel.Contains("sim");
-  Bool_t isMC  = strDataLabel.Contains("MC");
-
   // initialize task with all available slots, even if not all of them will be used:
   AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis");
   task->SetZeroEventPercentWarning(100.0);
   task->SelectCollisionCandidates();
-  if (isMC) task->SetMCOnly(kTRUE);
 
-  // if not MC kinematics, set cuts for events : primary vertex range and type
-  if (!isMC)
-  {
-    gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/ConfigESDCutsTPC.C");
-    AliRsnCutPrimaryVertex      *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-    AliRsnCutESDCutMultiplicity *cutMult   = new AliRsnCutESDCutMultiplicity("cutMult", 0, 10);
-    
-    ConfigESDCutsTPC(cutMult->GetCuts());
-    
-    task->GetEventCuts()->AddCut(cutVertex);
-    //task->GetEventCuts()->AddCut(cutMult);
-    //task->GetEventCuts()->SetCutScheme("cutVertex&cutMult");
-    task->GetEventCuts()->SetCutScheme("cutVertex");
-  }
+  // set cuts for events : primary vertex range and type
+  gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/ConfigESDCutsTPC.C");
+  AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+  task->GetEventCuts()->AddCut(cutVertex);
+  task->GetEventCuts()->SetCutScheme(cutVertex->GetName());
 
   // add the task to manager
   mgr->AddTask(task);

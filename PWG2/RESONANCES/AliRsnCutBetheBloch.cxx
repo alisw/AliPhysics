@@ -26,7 +26,7 @@ ClassImp(AliRsnCutBetheBloch)
 
 //_________________________________________________________________________________________________
 AliRsnCutBetheBloch::AliRsnCutBetheBloch() :
-  AliRsnCut(AliRsnCut::kDaughter),
+  AliRsnCut("dummyBBCut", AliRsnTarget::kDaughter),
   fCorrect(kTRUE),
   fMIP(50.0),
   fType(AliPID::kUnknown)
@@ -110,22 +110,18 @@ Double_t AliRsnCutBetheBloch::RelDiff(AliRsnDaughter *track)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutBetheBloch::IsSelected(TObject *obj1, TObject* /*obj2*/)
+Bool_t AliRsnCutBetheBloch::IsSelected(TObject *object)
 {
 //
 // Cut checker.
 //
 
   // dynamic cast the object into AliRsnDaughter
-  AliRsnDaughter *track = dynamic_cast<AliRsnDaughter*>(obj1);
-  if (!track)
-  {
-    AliError(Form("[%s]: this cut works only with AliRsnDaughter objects", GetName()));
-    return kTRUE;
-  }
+  if (!TargetOK(object)) return kFALSE;
 
   // retrieve the TPC signal
-  AliESDtrack *esd = track->GetRefESDtrack();
+  AliRsnDaughter *track = dynamic_cast<AliRsnDaughter*>(object);
+  AliESDtrack    *esd   = track->GetRefESDtrack();
   if (!esd) {
     AliError("ESD information unavailable");
     return kTRUE;
@@ -143,5 +139,5 @@ Bool_t AliRsnCutBetheBloch::IsSelected(TObject *obj1, TObject* /*obj2*/)
   fCutValueD = RelDiff(track);
 
   // then, this cut is checked inside the range
-  return OkRange();
+  return OkRangeD();
 }

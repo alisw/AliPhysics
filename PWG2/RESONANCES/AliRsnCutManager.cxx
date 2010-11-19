@@ -1,16 +1,25 @@
 //
-// Class AliRsnCutManager
+// *** Class AliRsnCutManager ***
 //
-// The cut manager: contains a complete set of cut definitions
-// to be applied to all possible targets (one for each target),
-// in order to ease the set-up procedure of cuts and allow to
-// pass them at once to each object which must use them
+// This class is used both in normal analysis and efficiency computation
+// as a collection of all cuts which could be needed in a single job.
+// It allocates an AliRsnCutSet for each possible target:
+//  - one with all cuts common to all tracks
+//  - one with all cuts for first candidate daughter (definition #1 in pairDef)
+//  - one with all cuts for second candidate daughter (definition #2 in pairDef)
+//  - one with all cuts on the pair
+// -----
+// This object is used to define a step in efficiency CORRFW container
+// and also is contained in all AliRsnPair objects to decide if two candidates
+// can be accepted or not.
 //
-// author: Martin Vala (martin.vala@cern.ch)
+// authors: Martin Vala (martin.vala@cern.ch)
+//          Alberto Pulvirenti (alberto.pulvirenti@cern.ch)
 //
 
 #include "AliLog.h"
 
+#include "AliRsnCut.h"
 #include "AliRsnCutManager.h"
 
 ClassImp(AliRsnCutManager)
@@ -18,10 +27,10 @@ ClassImp(AliRsnCutManager)
 //_____________________________________________________________________________
 AliRsnCutManager::AliRsnCutManager() :
   TNamed("defaultName", "defaultTitle"),
-  fDaughterCutsCommon(0x0),
-  fDaughterCuts1(0x0),
-  fDaughterCuts2(0x0),
-  fMotherCuts(0x0)
+  fDaughterCutsCommon("defaultCommon", AliRsnTarget::kDaughter),
+  fDaughterCuts1("defaultD1", AliRsnTarget::kDaughter),
+  fDaughterCuts2("defaultD2", AliRsnTarget::kDaughter),
+  fMotherCuts("defaultPair", AliRsnTarget::kMother)
 {
 //
 // Constructor without arguments.
@@ -31,10 +40,10 @@ AliRsnCutManager::AliRsnCutManager() :
 //_____________________________________________________________________________
 AliRsnCutManager::AliRsnCutManager(const char *name, const char *title) :
   TNamed(name, title),
-  fDaughterCutsCommon(0x0),
-  fDaughterCuts1(0x0),
-  fDaughterCuts2(0x0),
-  fMotherCuts(0x0)
+  fDaughterCutsCommon(Form("common_%s", name), AliRsnTarget::kDaughter),
+  fDaughterCuts1(Form("d1_%s", name), AliRsnTarget::kDaughter),
+  fDaughterCuts2(Form("d2_%s", name), AliRsnTarget::kDaughter),
+  fMotherCuts(Form("pair_%s", name), AliRsnTarget::kMother)
 {
 //
 // Constructor with name and title.
@@ -54,6 +63,7 @@ AliRsnCutManager::AliRsnCutManager(const AliRsnCutManager &cut) :
 //
 }
 
+//_____________________________________________________________________________
 AliRsnCutManager& AliRsnCutManager::operator=(const AliRsnCutManager &cut)
 {
 //
@@ -63,10 +73,10 @@ AliRsnCutManager& AliRsnCutManager::operator=(const AliRsnCutManager &cut)
   SetName(cut.GetName());
   SetTitle(cut.GetTitle());
   
-  fDaughterCuts2      = cut.fDaughterCuts2;
-  fDaughterCuts1      = cut.fDaughterCuts1;
+  fDaughterCuts2 = cut.fDaughterCuts2;
+  fDaughterCuts1 = cut.fDaughterCuts1;
   fDaughterCutsCommon = cut.fDaughterCutsCommon;
-  fMotherCuts         = cut.fMotherCuts;
+  fMotherCuts = cut.fMotherCuts;
   
   return (*this);
 }
@@ -76,13 +86,8 @@ AliRsnCutManager::~AliRsnCutManager()
 {
 //
 // Destructor.
-// Deletes all cut definitions.
+// Does nothing.
 //
-
-  delete fDaughterCuts2;
-  delete fDaughterCuts1;
-  delete fDaughterCutsCommon;
-  delete fMotherCuts;
 }
 
 //_____________________________________________________________________________
@@ -92,8 +97,8 @@ void AliRsnCutManager::SetEvent(AliRsnEvent *event)
 // Sets reference event in all cut sets
 //
 
-  if (fDaughterCuts2     ) fDaughterCuts2      ->SetEvent(event);
-  if (fDaughterCuts1     ) fDaughterCuts1      ->SetEvent(event);
-  if (fDaughterCutsCommon) fDaughterCutsCommon ->SetEvent(event);
-  if (fMotherCuts        ) fMotherCuts         ->SetEvent(event);
+  fDaughterCuts2.SetEvent(event);
+  fDaughterCuts1.SetEvent(event);
+  fDaughterCutsCommon.SetEvent(event);
+  fMotherCuts.SetEvent(event);
 }

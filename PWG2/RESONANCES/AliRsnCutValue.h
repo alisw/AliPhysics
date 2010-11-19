@@ -1,37 +1,44 @@
 //
-// Class AliRsnCutRange
+// *** Class AliRsnCutValue ***
 //
-// General implementation of cuts which check a value inside a range.
-// This range can be defined by two integers or two doubles.
-// A user-friendly enumeration allows to define what is checked.
+// This cut implementation can be used to cut generically on 
+// any value which can be computed from AliRsnValue class.
+// Since that value is implemented always as a Double_t one,
+// then this cut operates only with the Double_t data members
+// of the AliRsnCut base class.
+// It allows to cusomize the reference AliRsnValue object by
+// means of a getter that returns a pointer to it.
+// This cut can apply to any kind of object, but the type of
+// target must be one of those for which the chosen value type
+// makes sense to be computed
 //
-// authors: Martin Vala (martin.vala@cern.ch)
-//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+// author: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
 #ifndef ALIRSNCUTVALUE_H
 #define ALIRSNCUTVALUE_H
 
 #include "AliRsnCut.h"
+#include "AliRsnValue.h"
 
-class AliRsnDaughter;
-class AliRsnMother;
-class AliRsnEvent;
+class AliRsnPairDef;
 
 class AliRsnCutValue : public AliRsnCut
 {
   public:
 
     AliRsnCutValue();
-    AliRsnCutValue(const char *name, ETarget target, Double_t min, Double_t max, AliRsnPairDef *pd = 0x0);
+    AliRsnCutValue(const char *name, AliRsnValue::EValueType type, Double_t min, Double_t max, AliRsnPairDef *pd = 0x0);
     AliRsnCutValue(const AliRsnCutValue& copy);
     AliRsnCutValue& operator=(const AliRsnCutValue& copy);
     virtual ~AliRsnCutValue() { }
 
     void           SetPairDef(AliRsnPairDef *pd) {fPairDef = pd;}
-    AliRsnValue*   GetRsnValue() {return &fValue;}
-    Double_t       GetCutValue() {return fValue.GetValue();}
-    virtual Bool_t IsSelected(TObject *obj1, TObject *obj2 = 0x0);
+    AliRsnPairDef* GetPairDef()  {return fPairDef;}
+    Double_t       GetValue()    {return fValue.GetComputedValue();}
+    AliRsnValue*   GetValueObj() {return &fValue;}
+    
+    virtual Bool_t IsSelected(TObject *object);
 
   protected:
   

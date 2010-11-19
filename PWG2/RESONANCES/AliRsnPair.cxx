@@ -12,7 +12,6 @@
 //          M. Vala (email: martin.vala@cern.ch)
 //
 
-#include <Riostream.h>
 #include <TList.h>
 
 #include "AliLog.h"
@@ -21,7 +20,6 @@
 #include "AliRsnEvent.h"
 #include "AliRsnFunction.h"
 #include "AliRsnCutSet.h"
-#include "AliRsnCutStd.h"
 #include "AliRsnValue.h"
 #include "AliRsnCutManager.h"
 
@@ -43,9 +41,6 @@ AliRsnPair::AliRsnPair(const char *name, AliRsnPairDef *def) :
 //
 // Default constructor
 //
-
-  AliDebug(AliLog::kDebug+2,"<-");
-  AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
@@ -62,9 +57,6 @@ AliRsnPair::AliRsnPair(const AliRsnPair& copy) :
 //
 // Default constructor
 //
-
-  AliDebug(AliLog::kDebug+2,"<-");
-  AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
@@ -87,9 +79,6 @@ AliRsnPair::~AliRsnPair()
 //
 // Destructor
 //
-
-  AliDebug(AliLog::kDebug+2,"<-");
-  AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
@@ -99,11 +88,8 @@ void AliRsnPair::Print(Option_t* /*option*/) const
 // Prints info about pair
 //
 
-  AliDebug(AliLog::kDebug+2,"<-");
-  AliInfo(Form("PDG %d %d", AliPID::ParticleCode(fPairDef->GetPID(0)), AliPID::ParticleCode(fPairDef->GetPID(1))));
+  AliInfo(Form("PDG    %d %d", AliPID::ParticleCode(fPairDef->GetPID(0)), AliPID::ParticleCode(fPairDef->GetPID(1))));
   AliInfo(Form("Masses %f %f", fPairDef->GetMass(0), fPairDef->GetMass(1)));
-
-  AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
@@ -176,28 +162,44 @@ Bool_t AliRsnPair::Fill
     if (!fMother.CommonMother(m0, m1)) return kFALSE;
     if (m0 < 0 || m1 < 0) return kFALSE;
     
-    //cout << "Checking a true pair..." << endl;
+    AliDebug(AliLog::kDebug+2, "Checking a true pair...");
     
     // if they do, is this mother the correct type?
     Int_t mpdg0 = TMath::Abs(daughter0->GetMotherPDG());
     Int_t mpdg1 = TMath::Abs(daughter1->GetMotherPDG());
     Int_t mpdg  = TMath::Abs(fPairDef->GetMotherPDG());
-    if (mpdg0 != mpdg) return kFALSE; //{cout << "Mother of d0 is " << mpdg0 << " instead of " << mpdg << endl; return kFALSE;}
-    if (mpdg1 != mpdg) return kFALSE; //{cout << "Mother of d1 is " << mpdg1 << " instead of " << mpdg << endl; return kFALSE;}
+    if (mpdg0 != mpdg) 
+    {
+      AliDebug(AliLog::kDebug+2, Form("Mother of d0 is %d instead of %d", mpdg0, mpdg)); 
+      return kFALSE;
+    }
+    if (mpdg1 != mpdg) 
+    {
+      AliDebug(AliLog::kDebug+2, Form("Mother of d1 is %d instead of %d", mpdg1, mpdg));
+      return kFALSE;
+    }
     
     // do they match the expected decay channel (that is, are they the expected types)?
     if (fCheckDecay)
     {
-      //cout << "Checking decay tree..." << endl;
+      AliDebug(AliLog::kDebug, "Checking decay tree...");
       Int_t pdg0 = TMath::Abs(daughter0->GetPDG());
       Int_t pdg1 = TMath::Abs(daughter1->GetPDG());
-      if (AliPID::ParticleCode(fPairDef->GetPID(0)) != pdg0) return kFALSE; // {cout << "PDG0 is " << pdg0 << " instead of " << fPairDef->GetPID(0) << endl; return kFALSE;};
-      if (AliPID::ParticleCode(fPairDef->GetPID(1)) != pdg1) return kFALSE; // {cout << "PDG1 is " << pdg1 << " instead of " << fPairDef->GetPID(1) << endl; return kFALSE;};
-      //cout << "Decay tree accepted!" << endl;
+      if (AliPID::ParticleCode(fPairDef->GetPID(0)) != pdg0) 
+      {
+        AliDebug(AliLog::kDebug+2, Form("PDG0 is %d instead of %d", pdg0, fPairDef->GetPID(0))); 
+        return kFALSE;
+      }
+      if (AliPID::ParticleCode(fPairDef->GetPID(1)) != pdg1) 
+      {
+        AliDebug(AliLog::kDebug+2, Form("PDG1 is %d instead of %d", pdg1, fPairDef->GetPID(1)));
+        return kFALSE;
+      }
+      AliDebug(AliLog::kDebug, "Decay tree accepted");
     }
     
     // ok... if we arrive here that must really be a true pair! :-)
-    //cout << "Pair accepted!" << endl;
+    AliDebug(AliLog::kDebug+2, "Pair accepted");
   }
 
   AliDebug(AliLog::kDebug+2,"->");

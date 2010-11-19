@@ -23,12 +23,14 @@ ClassImp(AliRsnCutDaughterType)
 
 //_________________________________________________________________________________________________
 AliRsnCutDaughterType::AliRsnCutDaughterType() :
-  AliRsnCut(AliRsnCut::kDaughter),
+  AliRsnCut(),
   fRefType(kTypes)
 {
 //
 // Default constructor.
 //
+
+  SetTargetType(AliRsnTarget::kDaughter);
 }
 
 //_________________________________________________________________________________________________
@@ -43,18 +45,18 @@ AliRsnCutDaughterType::AliRsnCutDaughterType
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutDaughterType::IsSelected(TObject *obj1, TObject* /*obj2*/)
+Bool_t AliRsnCutDaughterType::IsSelected(TObject *object)
 {
 //
 // Cut checker.
 //
 
   // coherence check
-  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(obj1);
-  if (!daughter) return kFALSE;
+  if (!TargetOK(object)) return kFALSE;
   
   // check the daughter according to the selected type
   // in some cases this means to retrieve the track status
+  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
   AliVTrack   *track  = dynamic_cast<AliVTrack*>(daughter->GetRef());
   AliESDtrack *esdT   = dynamic_cast<AliESDtrack*>(daughter->GetRef());
   ULong_t      status = 0x0;

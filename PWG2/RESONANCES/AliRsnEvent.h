@@ -33,17 +33,18 @@ class AliRsnEvent : public TObject
     virtual ~AliRsnEvent() { /*nothing*/ }
     
     // basic setters/getters
-    void       SetRef(AliVEvent *ref) {fRef = ref;}
-    void       SetRefMC(AliVEvent *refmc) {fRefMC = refmc;}
-    void       SetLeadingIndex(Int_t i) {fLeading = i;}
-    AliVEvent* GetRef() {return fRef;}
-    AliVEvent* GetRefMC() {return fRefMC;}
-    Int_t      GetLeadingIndex() const {return fLeading;}
+    void       SetRef  (AliVEvent *ref)     {fRef = ref;}
+    void       SetRefMC(AliVEvent *refmc)   {fRefMC = refmc;}
+    void       SetLeadingIndex(Int_t i)     {fLeading = i;}
+    AliVEvent* GetRef()                     {return fRef;}
+    AliVEvent* GetRefMC()                   {return fRefMC;}
+    Int_t      GetLeadingIndex() const      {return fLeading;}
+    Int_t      GetLeadingParticleID() const {return fLeading;}
     
     // getters which convert into allowed input types
     AliESDEvent* GetRefESD()   {return dynamic_cast<AliESDEvent*>(fRef);}
     AliAODEvent* GetRefAOD()   {return dynamic_cast<AliAODEvent*>(fRef);}
-    AliMCEvent*  GetRefMCESD() {return dynamic_cast<AliMCEvent*>(fRefMC);}
+    AliMCEvent*  GetRefMCESD() {return dynamic_cast<AliMCEvent*> (fRefMC);}
     AliAODEvent* GetRefMCAOD() {return dynamic_cast<AliAODEvent*>(fRefMC);}
     Bool_t       IsESD()       {return (GetRefESD() != 0x0);}
     Bool_t       IsAOD()       {return (GetRefAOD() != 0x0);}
@@ -53,24 +54,29 @@ class AliRsnEvent : public TObject
     Int_t            GetMultiplicity(AliESDtrackCuts *cuts = 0x0);
     
     // setters for a daughter
-    Bool_t           SetDaughter(AliRsnDaughter &daughter, Int_t index, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
+    Bool_t           SetDaughter  (AliRsnDaughter &daughter, Int_t index, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
     Bool_t           SetDaughterMC(AliRsnDaughter &daughter, Int_t index);
-    AliRsnDaughter   GetDaughter(Int_t i, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
+    AliRsnDaughter   GetDaughter  (Int_t i, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
     AliRsnDaughter   GetDaughterMC(Int_t i);
+    Int_t            GetAbsoluteSum();
+    Bool_t           ConvertAbsoluteIndex(Int_t index, Int_t &realIndex, AliRsnDaughter::ERefType &type);
     
     // leading particle stuff
-    Int_t            SelectLeadingParticle(Double_t ptMin = 0.0, AliRsnCutPID *cutPID = 0x0);
-    Int_t            GetLeadingParticleID() {return fLeading;}
     void             SetLeadingParticle(AliRsnDaughter &leading) {if (fLeading >= 0) SetDaughter(leading, fLeading);}
+    Int_t            SelectLeadingParticle(Double_t ptMin = 0.0, AliRsnCutPID *cutPID = 0x0);
     Double_t         GetAverageMomentum(Int_t &count, AliRsnCutPID *cutPID = 0x0);
     Bool_t           GetAngleDistr(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter reference);
 
   private:
   
-    Int_t SetDaughterESDtrack(AliRsnDaughter &target, Int_t index);
-    Int_t SetDaughterAODtrack(AliRsnDaughter &target, Int_t index);
-    Int_t SetDaughterESDv0   (AliRsnDaughter &target, Int_t index);
-    Int_t SetDaughterAODv0   (AliRsnDaughter &target, Int_t index);
+    Bool_t SetDaughterESDtrack  (AliRsnDaughter &target, Int_t index);
+    Bool_t SetDaughterAODtrack  (AliRsnDaughter &target, Int_t index);
+    Bool_t SetDaughterESDv0     (AliRsnDaughter &target, Int_t index);
+    Bool_t SetDaughterAODv0     (AliRsnDaughter &target, Int_t index);
+    Bool_t SetDaughterESDcascade(AliRsnDaughter &target, Int_t index);
+    Bool_t SetDaughterAODcascade(AliRsnDaughter &target, Int_t index);
+    Bool_t SetMCInfoESD         (AliRsnDaughter &target);
+    Bool_t SetMCInfoAOD         (AliRsnDaughter &target);
 
     AliVEvent       *fRef;      // pointer to input event
     AliVEvent       *fRefMC;    // pointer to reference MC event (if any)

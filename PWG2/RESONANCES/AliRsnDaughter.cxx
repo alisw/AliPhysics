@@ -171,3 +171,29 @@ Bool_t AliRsnDaughter::SetMass(Double_t mass)
   
   return kTRUE;
 }
+
+//_____________________________________________________________________________
+Bool_t AliRsnDaughter::IsKinkDaughter()
+{
+//
+// Checks if this track is a kink daughter.
+// this information is important for some cuts, in some cases
+// and it is retrieved differently from ESDs and AODs, so
+// this is done here in order to have a unique outcome.
+//
+
+  AliESDtrack *etrack = GetRefESDtrack();
+  AliAODTrack *atrack = GetRefAODtrack();
+  
+  if (etrack)
+  {
+    return (etrack->GetKinkIndex(0) > 0);
+  }
+  else if (atrack)
+  {
+    AliAODVertex *vertex = atrack->GetProdVertex();
+    if (vertex) if (vertex->GetType() == AliAODVertex::kKink) return kTRUE;
+  }
+  
+  return kFALSE;
+}

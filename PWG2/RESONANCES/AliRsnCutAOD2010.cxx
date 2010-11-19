@@ -149,14 +149,14 @@ void AliRsnCutAOD2010::SetMC(Bool_t yn)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutAOD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
+Bool_t AliRsnCutAOD2010::IsSelected(TObject *object)
 {
 //
 // Cut checker.
 //
 
   // coherence check: require an AOD track
-  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(obj1);
+  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
   if (!daughter) return kFALSE;
   AliAODTrack *track = daughter->GetRefAODtrack();
   if (!track) return kFALSE;

@@ -24,7 +24,7 @@ class AliRsnCutESDCutMultiplicity : public AliRsnCut
     virtual ~AliRsnCutESDCutMultiplicity() {;};
 
     const AliESDtrackCuts* GetCuts() const {return &fCuts;}
-    virtual Bool_t IsSelected(TObject *obj1, TObject *obj2 = 0x0);
+    virtual Bool_t IsSelected(TObject *object);
 
   protected:
 

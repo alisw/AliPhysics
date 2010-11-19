@@ -57,7 +57,7 @@ class AliRsnFunction : public TObject
     Bool_t               IsUsingTH1() {return fUseTH1;}
     void                 UseTH1() {fUseTH1 = kTRUE;}
     void                 UseSparse() {fUseTH1 = kFALSE;}
-    void                 AddAxis(AliRsnValue* const axis);
+    Bool_t               AddAxis(AliRsnValue* const axis);
     Int_t                GetNumberOfAxes() {return fAxisList.GetEntries();}
     TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
     THnSparseF*          CreateHistogramSparse(const char *histoName, const char *histoTitle);

@@ -47,7 +47,7 @@ class AliRsnCutPID : public AliRsnCut
     Int_t          PerfectPID(AliRsnDaughter * const daughter);
     Double_t       GetWeight(Int_t i) {if (i>=0&&i<AliPID::kSPECIES) return fWeight[i]; return 0.0;}
 
-    virtual Bool_t IsSelected(TObject *obj1, TObject *obj2 = 0x0);
+    virtual Bool_t IsSelected(TObject *object);
 
   protected:
   

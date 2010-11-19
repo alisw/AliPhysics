@@ -13,19 +13,9 @@
 ClassImp(AliRsnCutPrimaryVertex)
 
 //_________________________________________________________________________________________________
-AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex() :
-  AliRsnCut(AliRsnCut::kEvent),
-  fAcceptTPC(kFALSE)
-{
-//
-// Default constructor.
-//
-}
-
-//_________________________________________________________________________________________________
 AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 (const char *name, Double_t maxVz, Int_t nContributors, Bool_t acceptTPC) :
-  AliRsnCut(name, AliRsnCut::kEvent, 0, nContributors - 1),
+  AliRsnCut(name, AliRsnCut::kEvent, 0, nContributors - 1, 0.0, maxVz),
   fAcceptTPC(acceptTPC)
 {
 //
@@ -48,7 +38,7 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
+Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
 {
 //
 // Cut checker
@@ -58,7 +48,7 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
   evNum++;
   
   // retrieve ESD event
-  AliRsnEvent *rsn = dynamic_cast<AliRsnEvent*>(obj1);
+  AliRsnEvent *rsn = dynamic_cast<AliRsnEvent*>(object);
   if (!rsn) return kFALSE;
   AliESDEvent *esd = rsn->GetRefESD();
   AliAODEvent *aod = rsn->GetRefAOD();
@@ -115,7 +105,7 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
     AliAODVertex *prim = (AliAODVertex*)aod->GetPrimaryVertex();
     if (!prim) return kFALSE;
 
-    //fCutValueI = prim->GetNContributors();
+    fCutValueI = prim->GetNContributors();
     fCutValueD = prim->GetZ();
   }
   else
@@ -125,4 +115,3 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
   Bool_t result = ((!OkRangeI()) && OkRangeD());
   return result;
 }
-

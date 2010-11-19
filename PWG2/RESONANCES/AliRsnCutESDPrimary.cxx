@@ -23,12 +23,14 @@ ClassImp(AliRsnCutESDPrimary)
 
 //_________________________________________________________________________________________________
 AliRsnCutESDPrimary::AliRsnCutESDPrimary() :
-  AliRsnCut(AliRsnCut::kDaughter),
+  AliRsnCut(),
   fCuts()
 {
 //
 // Default constructor.
 //
+
+  SetTargetType(AliRsnTarget::kDaughter);
 }
 
 //_________________________________________________________________________________________________
@@ -43,17 +45,17 @@ AliRsnCutESDPrimary::AliRsnCutESDPrimary
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutESDPrimary::IsSelected(TObject *obj1, TObject* /*obj2*/)
+Bool_t AliRsnCutESDPrimary::IsSelected(TObject *object)
 {
 //
 // Cut checker.
 //
 
   // coherence check
-  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(obj1);
-  if (!daughter) return kFALSE;
+  if (!TargetOK(object)) return kFALSE;
   
   // retrieve the TPC signal
+  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
   AliESDtrack *esdTrack = daughter->GetRefESDtrack();
   if (!esdTrack) 
   {
