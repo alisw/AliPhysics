@@ -62,11 +62,13 @@ AliAODDiJet::AliAODDiJet(TLorentzVector & p):
 AliAODDiJet::~AliAODDiJet() 
 {
   // destructor
+    if (fJetR) fJetR->Delete();
 }
 
 void AliAODDiJet::SetJetRefs(AliAODJet* jet1, AliAODJet* jet2) 
 {
 // Set references to the two jets
+    if (fJetR) fJetR->Delete();
     fJetR = new TRefArray(TProcessID::GetProcessWithUID( jet1 ));
     fJetR->Add(jet1);
     fJetR->Add(jet2);
