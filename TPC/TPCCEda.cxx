@@ -79,7 +79,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 
 
 //functios, implementation below
-void SendToAmoreDB(AliTPCCalibCE &calibCE, unsigned long32 runNb);
+void SendToAmoreDB(AliTPCCalibCE *calibCE, unsigned long32 runNb);
 //for threaded processing
 
 
@@ -137,6 +137,7 @@ int main(int argc, char **argv) {
   TString laserTriggerName("C0LSR-ABCE-NOPF-CENT");
   TString monitoringType("YES");
   Int_t   forceTriggerId=-1;
+  Int_t   saveOption=2; // how to store the object. See AliTPCCalibCE::DumpToFile
   
   if ( config.GetConfigurationMap()->GetValue("LaserTriggerName") ) {
     laserTriggerName=config.GetConfigurationMap()->GetValue("LaserTriggerName")->GetName();
@@ -153,6 +154,10 @@ int main(int argc, char **argv) {
     printf("TPCCEda: Only processing triggers with Id: %d.\n",forceTriggerId);
   }
   
+  if ( config.GetConfigurationMap()->GetValue("SaveOption") ) {
+    saveOption=TMath::Nint(config.GetValue("SaveOption"));
+    printf("TPCCEda: Saving option set to: %d.\n",saveOption);
+  }
   
   //subsribe to laser triggers only in physics partition
   //if the trigger class is not available the return value is -1
@@ -217,8 +222,8 @@ int main(int argc, char **argv) {
   
     
   //create calibration object
-  AliTPCCalibCE calibCE(config.GetConfigurationMap());   // central electrode calibration
-  calibCE.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
+  AliTPCCalibCE *calibCE=new AliTPCCalibCE(config.GetConfigurationMap());   // central electrode calibration
+  calibCE->SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
 
   //amore update interval
   Double_t updateInterval=300; //seconds
@@ -268,7 +273,7 @@ int main(int argc, char **argv) {
         //use time in between bursts to
         // send the data to AMOREdb
         if (stopWatch.RealTime()>updateInterval){
-          calibCE.Analyse();
+          calibCE->Analyse();
           SendToAmoreDB(calibCE,runNb);
           stopWatch.Start();
         } else {
@@ -276,7 +281,7 @@ int main(int argc, char **argv) {
         }
         //debug output
         if (nevents>neventsOld){
-          printf ("TPCCEda: %d events processed, %d used\n",nevents,calibCE.GetNeventsProcessed());
+          printf ("TPCCEda: %d events processed, %d used\n",nevents,calibCE->GetNeventsProcessed());
           neventsOld=nevents;
         }
         
@@ -294,7 +299,7 @@ int main(int argc, char **argv) {
       runNb = event->eventRunNb;
       
       // CE calibration
-      calibCE.ProcessEvent(event);
+      calibCE->ProcessEvent(event);
       
       /* free resources */
       free(event);
@@ -305,12 +310,13 @@ int main(int argc, char **argv) {
   //
   // Analyse CE data and write them to rootfile
   //
-  calibCE.Analyse();
-  printf ("TPCCEda: %d events processed, %d used\n",nevents,calibCE.GetNeventsProcessed());
+//   calibCE->Analyse();
+  printf ("TPCCEda: %d events processed, %d used\n",nevents,calibCE->GetNeventsProcessed());
   
-  TFile * fileTPC = new TFile (RESULT_FILE,"recreate");
-  calibCE.Write("tpcCalibCE");
-  delete fileTPC;
+//   TFile * fileTPC = new TFile (RESULT_FILE,"recreate");
+//   calibCE->Write("tpcCalibCE");
+//   delete fileTPC;
+  calibCE->DumpToFile(RESULT_FILE,Form("name=tpcCalibCE,type=%d",saveOption));
   printf("TPCCEda: Wrote %s\n",RESULT_FILE);
   
   /* store the result file on FES */
@@ -321,12 +327,13 @@ int main(int argc, char **argv) {
   }
   
   SendToAmoreDB(calibCE,runNb);
-  
+
+  delete calibCE;
   return status;
 }
 
 
-void SendToAmoreDB(AliTPCCalibCE &calibCE, unsigned long32 runNb)
+void SendToAmoreDB(AliTPCCalibCE *calibCE, unsigned long32 runNb)
 {
   //AMORE
 //   printf ("AMORE part\n");
@@ -341,15 +348,15 @@ void SendToAmoreDB(AliTPCCalibCE &calibCE, unsigned long32 runNb)
   gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%s",FILE_ID));
   //
   // end cheet
-  TGraph *grA=calibCE.MakeGraphTimeCE(-1,0,2);
-  TGraph *grC=calibCE.MakeGraphTimeCE(-2,0,2);
+  TGraph *grA=calibCE->MakeGraphTimeCE(-1,0,2);
+  TGraph *grC=calibCE->MakeGraphTimeCE(-2,0,2);
   TDatime time;
   TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
   amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
   Int_t statusDA=0;
-  statusDA+=amoreDA.Send("CET0",calibCE.GetCalPadT0());
-  statusDA+=amoreDA.Send("CEQ",calibCE.GetCalPadQ());
-  statusDA+=amoreDA.Send("CERMS",calibCE.GetCalPadRMS());
+  statusDA+=amoreDA.Send("CET0",calibCE->GetCalPadT0());
+  statusDA+=amoreDA.Send("CEQ",calibCE->GetCalPadQ());
+  statusDA+=amoreDA.Send("CERMS",calibCE->GetCalPadRMS());
   statusDA+=amoreDA.Send("DriftA",grA);
   statusDA+=amoreDA.Send("DriftC",grC);
   statusDA+=amoreDA.Send("Info",&info);
