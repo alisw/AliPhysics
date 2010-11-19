@@ -37,6 +37,7 @@
 #include "AliAnalysisFilter.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
+#include "AliESDCentrality.h"
 #include "AliESDv0.h"
 #include "AliESDkink.h"
 #include "AliESDcascade.h"
@@ -179,9 +180,16 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	header->SetOrbitNumber(esd->GetOrbitNumber());
 	header->SetPeriodNumber(esd->GetPeriodNumber());
 	header->SetEventType(esd->GetEventType());
-	header->SetCentrality(-999.);
+
 	header->SetEventNumberESDFile(esd->GetHeader()->GetEventNumberInFile());
+	if(esd->GetCentrality()){
+	  header->SetCentrality(esd->GetCentrality()->GetCentralityPercentile("V0M"));
+	}
+	else{
+	  header->SetCentrality(-999.);
+	}
     }
+    
     // Trigger
     header->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
     header->SetTriggerMask(esd->GetTriggerMask()); 
