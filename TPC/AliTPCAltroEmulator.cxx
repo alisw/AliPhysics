@@ -475,13 +475,14 @@ void AliTPCAltroEmulator::BaselineCorrection1(Int_t mode, Int_t ValuePeDestal, I
   // take first and last bins to calculate a mean pedestal value
   Int_t window = 3;
   Int_t meanPeDestal = 0;
-  for(Int_t i = 0; i < window; i++) {
-    meanPeDestal += fChannelShort[i];
-    meanPeDestal += fChannelShort[ftimebins-1-i];
+  if (mode == kDINxMPD && ftimebins>=6) {
+    for(Int_t i = 0; i < window; i++) {
+      meanPeDestal += fChannelShort[i];
+      meanPeDestal += fChannelShort[ftimebins-1-i];
+    }
+    meanPeDestal /= (window*2);
   }
-  meanPeDestal /= (window*2);
-  
-
+    
   if(polarity ==1){
     for(Int_t i = 0; i < ftimebins; i++){
       fChannelShort[i]  = 1023 - fChannelShort[i];
