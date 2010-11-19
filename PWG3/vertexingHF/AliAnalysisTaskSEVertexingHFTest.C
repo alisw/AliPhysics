@@ -5,10 +5,10 @@ void AliAnalysisTaskSEVertexingHFTest()
   // A.Dainese, andrea.dainese@lnl.infn.it
   //
 
-  Bool_t inputAOD=kTRUE; // otherwise, ESD
-  Bool_t createAOD=kFALSE; // kTRUE: create AOD and use it as input to vertexing
+  Bool_t inputAOD=kFALSE; // otherwise, ESD
+  Bool_t createAOD=kTRUE; // kTRUE: create AOD and use it as input to vertexing
                           // kFALSE: use ESD as input to vertexing
-  Bool_t writeKineToAOD = kTRUE;
+  Bool_t writeKineToAOD = kFALSE;
   TString mode="local"; // otherwise, "grid" 
   Bool_t useParFiles=kFALSE;
 
