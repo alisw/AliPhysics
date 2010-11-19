@@ -16,6 +16,7 @@
 // revised by : A. Pulvirenti [alberto.pulvirenti@ct.infn.it]
 //
 
+#include <TH1.h>
 #include <TROOT.h>
 
 #include "AliLog.h"
@@ -33,12 +34,41 @@ ClassImp(AliRsnAnalysisManager)
 //_____________________________________________________________________________
 AliRsnAnalysisManager::AliRsnAnalysisManager(const char*name) :
   TNamed(name, ""),
+  fList(0x0),
   fPairs(0),
   fGlobalTrackCuts()
 {
 //
 // Default constructor
 //
+}
+
+//_____________________________________________________________________________
+AliRsnAnalysisManager::AliRsnAnalysisManager(const AliRsnAnalysisManager& copy) : 
+  TNamed(copy),
+  fList(copy.fList),
+  fPairs(copy.fPairs),
+  fGlobalTrackCuts(copy.fGlobalTrackCuts)
+{
+//
+// Copy constructor
+//
+}
+
+//_____________________________________________________________________________
+AliRsnAnalysisManager& AliRsnAnalysisManager::operator=(const AliRsnAnalysisManager& copy)
+{
+//
+// Assignment operator
+//
+  
+  TNamed::operator=(copy);
+  
+  fList = copy.fList;
+  fPairs = copy.fPairs;
+  fGlobalTrackCuts = copy.fGlobalTrackCuts;
+  
+  return (*this);
 }
 
 //_____________________________________________________________________________
@@ -111,9 +141,15 @@ void AliRsnAnalysisManager::InitAllPairs(TList *list)
     if (!pair) continue;
     AliDebug(AliLog::kDebug+1, Form("InitAllPairs of the PairManager(%s) [%d] ...", pair->GetName(), i++));
     pair->Init("", list);
+    
+    // add a counter for used/unused events for each pair
+    TH1I *hPairUsed = new TH1I(Form("_%s_USED", pair->GetName()), "Used events for pair", 2, 0, 2);
+    list->Add(hPairUsed);
   }
   AliDebug(AliLog::kDebug+2, "->");
 //   return list;
+
+  fList = list;
 }
 
 //_____________________________________________________________________________
@@ -129,7 +165,7 @@ void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
   
   Int_t nTot[2];
   nTot[0] = ev0->GetAbsoluteSum();
-  nTot[1] = ev1->GetAbsoluteSum();;
+  nTot[1] = ev1->GetAbsoluteSum();
   
   // external loop
   // joins the loop on tracks and v0s, by looping the indexes from 0
@@ -140,6 +176,12 @@ void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
   AliRsnPair    *pair = 0x0;
   TObjArrayIter  next(&fPairs);
   AliRsnDaughter::ERefType type;
+  
+  // reset all counters
+  while ((pair = (AliRsnPair*)next())) 
+  {
+    pair->ResetCount();
+  }
   
   for (i0 = 0; i0 < nTot[0]; i0++)
   {
@@ -181,6 +223,16 @@ void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
       }
     }
   }
+  
+  // update all count histograms counters
+  next.Reset();
+  if (!fList) return;
+  while ((pair = (AliRsnPair*)next())) 
+  {
+    TH1I *hist = (TH1I*)fList->FindObject(Form("_%s_USED", pair->GetName()));
+    if (!hist) continue;
+    if (pair->GetCount() > 0) hist->Fill(1); else hist->Fill(0);
+  }
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -208,6 +260,12 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
   AliRsnDaughter daughter0, daughter1;
   AliRsnPair    *pair = 0x0;
   TObjArrayIter  next(&fPairs);
+  
+  // reset all counters
+  while ((pair = (AliRsnPair*)next())) 
+  {
+    pair->ResetCount();
+  }
   
   for (i0 = 0; i0 < nTracks[0]; i0++)
   {
@@ -247,6 +305,16 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
         pair->Compute();
       }
     }
+  }
+  
+  // update all count histograms counters
+  next.Reset();
+  if (!fList) return;
+  while ((pair = (AliRsnPair*)next())) 
+  {
+    TH1I *hist = (TH1I*)fList->FindObject(Form("_%s_USED", pair->GetName()));
+    if (!hist) continue;
+    if (pair->GetCount() > 0) hist->Fill(1); else hist->Fill(0);
   }
 
   AliDebug(AliLog::kDebug+2,"->");

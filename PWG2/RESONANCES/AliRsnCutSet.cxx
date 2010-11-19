@@ -247,8 +247,6 @@ Bool_t AliRsnCutSet::Passed()
 // and gives a global response to the cut check
 //
 
-  AliInfo(Form("Name: %s", GetName()));
-
   AliRsnExpression::fgCutSet = this;
   if (!fExpression) 
   {

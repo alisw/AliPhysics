@@ -31,6 +31,8 @@ class AliRsnAnalysisManager : public TNamed
   public:
 
     AliRsnAnalysisManager(const char*name = "defaultAnalysisMgr");
+    AliRsnAnalysisManager(const AliRsnAnalysisManager& copy);
+    AliRsnAnalysisManager& operator=(const AliRsnAnalysisManager& copy);
     virtual ~AliRsnAnalysisManager() { }
 
     virtual void   Add(AliRsnPair *pair);
@@ -44,6 +46,7 @@ class AliRsnAnalysisManager : public TNamed
 
   private:
   
+    TList        *fList;             // container for output histograms (external object)
     TObjArray     fPairs;            // collection of pair objects for the different outputs
     AliRsnCutSet  fGlobalTrackCuts;  // a set of cuts which are applied to all tracks for all analysis, in order to put only once
 

@@ -33,8 +33,9 @@ AliRsnPair::AliRsnPair(const char *name, AliRsnPairDef *def) :
   fOnlyTrue(kFALSE),
   fCheckDecay(kFALSE),
   fIsMixed(kFALSE),
+  fCount(0),
   fPairDef(def),
-  fCutManager(),
+  fCutManager(Form("cutMgr_%s", name)),
   fMother(),
   fEvent(0x0)
 {
@@ -49,6 +50,7 @@ AliRsnPair::AliRsnPair(const AliRsnPair& copy) :
   fOnlyTrue(copy.fOnlyTrue),
   fCheckDecay(copy.fCheckDecay),
   fIsMixed(copy.fIsMixed),
+  fCount(copy.fCount),
   fPairDef(copy.fPairDef),
   fCutManager(copy.fCutManager),
   fMother(copy.fMother),
@@ -65,6 +67,7 @@ AliRsnPair& AliRsnPair::operator=(const AliRsnPair& copy)
   fOnlyTrue = copy.fOnlyTrue;
   fCheckDecay = copy.fCheckDecay;
   fIsMixed = copy.fIsMixed;
+  fCount = copy.fCount;
   fPairDef = copy.fPairDef;
   fMother = copy.fMother;
   fCutManager = copy.fCutManager;
@@ -203,6 +206,9 @@ Bool_t AliRsnPair::Fill
   }
 
   AliDebug(AliLog::kDebug+2,"->");
+  
+  // if pair is accepted, increment counter
+  ++fCount;
   
   return kTRUE;
 }
