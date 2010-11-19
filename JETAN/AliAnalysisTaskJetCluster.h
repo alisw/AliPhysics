@@ -31,6 +31,7 @@ class TH2F;
 class TH1F;
 class TH3F;
 class TProfile;
+class TRandom3;
 class TRefArray;
 
 
@@ -60,6 +61,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
     
     virtual void SetNSkipLeadingRan(Int_t x){fNSkipLeadingRan = x;}
+    virtual void SetNRandomCones(Int_t x){fNRandomCones = x;}
 
     virtual void SetJetOutputBranch(const char *c){fNonStdBranch = c;}
     virtual void SetJetOutputFile(const char *c){fNonStdFile = c;}
@@ -114,6 +116,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
     Int_t         fNSkipLeadingRan;        // number of leading tracks to be skipped in the randomized event
+    Int_t         fNRandomCones;          // number of generated random cones
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
@@ -134,6 +137,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Double_t fGhostArea;
     Int_t fActiveAreaRepeats;
     Double_t fGhostEtamax;
+    TRandom3*     fRandom;   //! random number generator
     TProfile*     fh1Xsec;   //! pythia cross section and trials
     TH1F*         fh1Trials; //! trials are added
     TH1F*         fh1PtHard;  //! Pt har of the event...       
@@ -191,10 +195,10 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH2F*         fh2TracksLeadingJetPhiPtRan; //! track correlation with leading Jet
     TH2F*         fh2TracksLeadingJetPhiPtWRan; //! track correlation with leading Jet
 
-    TList *fHistList; // Output list
+    TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 7) 
+    ClassDef(AliAnalysisTaskJetCluster, 8) 
 };
  
 #endif
