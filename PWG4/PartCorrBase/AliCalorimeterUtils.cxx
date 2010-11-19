@@ -28,7 +28,7 @@
 
 //---- ANALYSIS system ----
 #include "AliCalorimeterUtils.h"
-#include "AliVEvent.h"
+#include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliAODPWG4Particle.h"
@@ -569,7 +569,7 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, Ali
 void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEvent) 
 {
   //Set the calorimeters transformation matrices
-	
+
   //Get the EMCAL transformation geometry matrices from ESD 
   if(!fEMCALGeoMatrixSet && fEMCALGeo){
     if(fLoadEMCALMatrices){
@@ -585,13 +585,14 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
       
     }//Load matrices
     else if (!gGeoManager) { 
+
       if(fDebug > 1) 
         printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load EMCAL misalignment matrices. \n");
       if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
         for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
-          if(inputEvent->GetEMCALMatrix(mod)) {
-            //printf("EMCAL: mod %d, matrix %p\n",mod, ((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod));
-            fEMCALGeo->SetMisalMatrix(inputEvent->GetEMCALMatrix(mod),mod) ;
+          //printf("Load matrix %d, %p\n",mod,((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod));
+          if(((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod)) {
+            fEMCALGeo->SetMisalMatrix(((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod),mod) ;
           }
         }// loop over super modules	
         fEMCALGeoMatrixSet = kTRUE;//At least one, so good
@@ -622,9 +623,9 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
         printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load PHOS misalignment matrices. \n");
 			if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
 				for(Int_t mod=0; mod < 5; mod++){ 
-					if(inputEvent->GetPHOSMatrix(mod)) {
+					if( ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod)) {
 						//printf("PHOS: mod %d, matrix %p\n",mod, ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod));
-						fPHOSGeo->SetMisalMatrix(inputEvent->GetPHOSMatrix(mod),mod) ;
+						fPHOSGeo->SetMisalMatrix( ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod),mod) ;
 					}
 				}// loop over modules
         fPHOSGeoMatrixSet  = kTRUE; //At least one so good

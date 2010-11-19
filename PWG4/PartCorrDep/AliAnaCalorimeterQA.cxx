@@ -1726,12 +1726,13 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
     }//nmodules
     
     //Get Eta-Phi position of Cell
-    //if(fFillAllPosHisto)
+    if(fFillAllPosHisto)
     {
       if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
         Float_t celleta = 0.;
         Float_t cellphi = 0.;
         GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
+
         fhEtaPhiAmp->Fill(celleta,cellphi,amp);
         Double_t cellpos[] = {0, 0, 0};
         GetEMCALGeometry()->GetGlobal(id, cellpos);
@@ -1819,7 +1820,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
   fhNCellsPerClusterMIP->Fill(e, nCaloCellsPerCluster,eta);
   
   //Position
-  //if(fFillAllPosHisto)
+  if(fFillAllPosHisto)
   {
     fhXE     ->Fill(pos[0],e);
     fhYE     ->Fill(pos[1],e);
@@ -3180,7 +3181,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
   Int_t rbX = 1;
   Int_t rbY = 1;
   Int_t rbZ = 1;
-  //if(fFillAllPosHisto)
+  if(fFillAllPosHisto)
   {
     snprintf(cname,buffersize,"%s_QA_ClusterXY",fCalorimeter.Data());
     TCanvas  * cxyz = new TCanvas(cname, "Cluster XY distributions", 1200, 400) ;
