@@ -45,6 +45,7 @@ class AliFlowAnalysisWithQCumulants{
   virtual void InitializeArraysForIntFlow();
   virtual void InitializeArraysForDiffFlow();
   virtual void InitializeArraysForDistributions();
+  virtual void InitializeArraysForVarious();
   virtual void InitializeArraysForNestedLoops();
   // 1.) method Init() and methods called within Init():
   virtual void Init();
@@ -55,7 +56,8 @@ class AliFlowAnalysisWithQCumulants{
     virtual void BookAndFillWeightsHistograms();
     virtual void BookEverythingForIntegratedFlow();
     virtual void BookEverythingForDifferentialFlow();
-    virtual void BookEverythingForDistributions();  
+    virtual void BookEverythingForDistributions(); 
+    virtual void BookEverythingForVarious();
     virtual void BookEverythingForNestedLoops();   
     virtual void StoreIntFlowFlags();
     virtual void StoreDiffFlowFlags();
@@ -104,6 +106,8 @@ class AliFlowAnalysisWithQCumulants{
     virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
     // 2d.) distributions of correlations:
     virtual void StoreDistributionsOfCorrelations();
+    // 2e.) store phi distibution for one event to vizualize flow:
+    virtual void StorePhiDistributionForOneEvent(AliFlowEventSimple* const anEvent);    
   // 3.) method Finish() and methods called within Finish():
   virtual void Finish();
     virtual void CheckPointersUsedInFinish();     
@@ -226,7 +230,12 @@ class AliFlowAnalysisWithQCumulants{
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
   Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};  
   void SetForgetAboutCovariances(Bool_t const fac) {this->fForgetAboutCovariances = fac;};
-  Bool_t GetForgetAboutCovariances() const {return this->fForgetAboutCovariances;};  
+  Bool_t GetForgetAboutCovariances() const {return this->fForgetAboutCovariances;};
+  void SetStorePhiDistributionForOneEvent(Bool_t const spdfoe) {this->fStorePhiDistributionForOneEvent = spdfoe;};
+  Bool_t GetStorePhiDistributionForOneEvent() const {return this->fStorePhiDistributionForOneEvent;};
+  void SetPhiDistributionForOneEventSettings(Double_t const pdfoes, Int_t const i) {this->fPhiDistributionForOneEventSettings[i] = pdfoes;};
+  Double_t GetPhiDistributionForOneEventSettings(Int_t const i) const {return this->fPhiDistributionForOneEventSettings[i];};
+
   // Reference flow profiles:
   void SetAvMultiplicity(TProfile* const avMultiplicity) {this->fAvMultiplicity = avMultiplicity;};
   TProfile* GetAvMultiplicity() const {return this->fAvMultiplicity;};
@@ -437,6 +446,8 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t fCalculateCumulantsVsM; // calculate cumulants versus multiplicity  
   Bool_t fMinimumBiasReferenceFlow; // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)   
   Bool_t fForgetAboutCovariances; // when propagating error forget about the covariances  
+  Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
+  Double_t fPhiDistributionForOneEventSettings[4]; // [v_min,v_max,refMult_min,refMult_max]
   //  3c.) event-by-event quantities:
   TMatrixD *fReQ; // fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
@@ -446,6 +457,7 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fIntFlowCorrelationsAllEBE; // to be improved (add comment)
   TH1D *fIntFlowCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance
   TH1D *fIntFlowEventWeightForCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance 
+  Double_t fReferenceMultiplicityEBE; // reference multiplicity 
   //  3d.) profiles:
   TProfile *fAvMultiplicity; // profile to hold average multiplicities and number of events for events with nRP>=0, nRP>=1, ... , and nRP>=8
   TProfile *fIntFlowCorrelationsPro; // average correlations <<2>>, <<4>>, <<6>> and <<8>> (with wrong errors!) 
@@ -547,6 +559,10 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fDistributions[4]; // [0=distribution of <2>,1=distribution of <4>,2=distribution of <6>,3=distribution of <8>]
   Double_t fMinValueOfCorrelation[4]; // min values of <2>, <4>, <6> and <8>
   Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
+  
+  // 6.) various:
+  TList *fVariousList; // list to hold various unclassified objects
+  TH1D *fPhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
     
   // x.) debugging and cross-checking:
   TList *fNestedLoopsList; // list to hold all profiles filled with nested loops

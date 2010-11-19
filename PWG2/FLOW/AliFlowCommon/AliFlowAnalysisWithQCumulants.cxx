@@ -118,13 +118,15 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fPropagateErrorAlsoFromNIT(kFALSE), 
  fCalculateCumulantsVsM(kTRUE), 
  fMinimumBiasReferenceFlow(kTRUE), 
- fForgetAboutCovariances(kTRUE), 
+ fForgetAboutCovariances(kFALSE), 
+ fStorePhiDistributionForOneEvent(kFALSE),
  fReQ(NULL),
  fImQ(NULL),
  fSMpk(NULL),
  fIntFlowCorrelationsEBE(NULL),
  fIntFlowEventWeightsForCorrelationsEBE(NULL),
  fIntFlowCorrelationsAllEBE(NULL),
+ fReferenceMultiplicityEBE(0.),  
  fAvMultiplicity(NULL),
  fIntFlowCorrelationsPro(NULL),
  fIntFlowCorrelationsAllPro(NULL),
@@ -153,6 +155,9 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fDistributionsList(NULL),
  fDistributionsFlags(NULL),
  fStoreDistributions(kFALSE),
+ // 6.) various:
+ fVariousList(NULL),
+ fPhiDistributionForOneEvent(NULL),
  // x.) debugging and cross-checking:
  fNestedLoopsList(NULL),
  fEvaluateIntFlowNestedLoops(kFALSE),
@@ -185,6 +190,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
   this->InitializeArraysForIntFlow();
   this->InitializeArraysForDiffFlow();
   this->InitializeArraysForDistributions();
+  this->InitializeArraysForVarious();
   this->InitializeArraysForNestedLoops();
   
  } // end of constructor
@@ -231,6 +237,7 @@ void AliFlowAnalysisWithQCumulants::Init()
  this->BookEverythingForIntegratedFlow(); 
  this->BookEverythingForDifferentialFlow(); 
  this->BookEverythingForDistributions();
+ this->BookEverythingForVarious();
  this->BookEverythingForNestedLoops();
  // d) Store flags for integrated and differential flow:
  this->StoreIntFlowFlags();
@@ -258,8 +265,9 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  // e) Call all the methods which calculate correlations for reference flow;
  // f) Call all the methods which calculate correlations for differential flow;
  // g) Distributions of correlations;
- // h) Debugging and cross-checking (evaluate nested loops);
- // i) Reset all event-by-event quantities. 
+ // h) Store phi distribution for one event to illustrate flow;
+ // i) Debugging and cross-checking (evaluate nested loops);
+ // j) Reset all event-by-event quantities. 
  
  // a) Check all pointers used in this method:
  this->CheckPointersUsedInMake();
@@ -272,6 +280,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t wPt  = 1.; // pt weight
  Double_t wEta = 1.; // eta weight
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of particles used to determine the reaction plane)
+ fReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
   
  // c) Fill the common control histograms and call the method to fill fAvMultiplicity:
  this->FillCommonControlHistograms(anEvent);                                                               
@@ -594,11 +603,11 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   } // end of if(fCalculate2DFlow)
   */
   
- // g) Distributions of correlations;
- if(fStoreDistributions)
- {
-  this->StoreDistributionsOfCorrelations();
- }
+ // g) Distributions of correlations:
+ if(fStoreDistributions){this->StoreDistributionsOfCorrelations();}
+ 
+ // h) Store phi distribution for one event to illustrate flow: 
+ if(fStorePhiDistributionForOneEvent){this->StorePhiDistributionForOneEvent(anEvent);}
   
  // h) Debugging and cross-checking (evaluate nested loops):
  //  h1) cross-checking results for integrated flow:
@@ -753,7 +762,8 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fPropagateErrorAlsoFromNIT = (Bool_t)fIntFlowFlags->GetBinContent(9);  
  fCalculateCumulantsVsM = (Bool_t)fIntFlowFlags->GetBinContent(10); 
  fMinimumBiasReferenceFlow = (Bool_t)fIntFlowFlags->GetBinContent(11); 
- fForgetAboutCovariances = (Bool_t)fIntFlowFlags->GetBinContent(12); 
+ fForgetAboutCovariances = (Bool_t)fIntFlowFlags->GetBinContent(12);
+ fStorePhiDistributionForOneEvent = (Bool_t)fIntFlowFlags->GetBinContent(13);
  fEvaluateIntFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(1);
  fEvaluateDiffFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(2); 
  fCrossCheckInPtBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(3);
@@ -1474,9 +1484,9 @@ void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
 void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
 {
  // Book all objects for integrated flow:
- //  a) Book profile to hold all flags for integrated flow.
- //  b) Book event-by-event quantities.
- //  c) Book profiles. // to be improved (comment)
+ //  a) Book profile to hold all flags for integrated flow;
+ //  b) Book event-by-event quantities;
+ //  c) Book profiles; // to be improved (comment)
  //  d) Book histograms holding the final results.
  
  TString sinCosFlag[2] = {"sin","cos"}; // to be improved (should I promote this to data members?)
@@ -1485,7 +1495,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // a) Book profile to hold all flags for integrated flow:
  TString intFlowFlagsName = "fIntFlowFlags";
  intFlowFlagsName += fAnalysisLabel->Data();
- fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",12,0,12);
+ fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",13,0,13);
  fIntFlowFlags->SetTickLength(-0.01,"Y");
  fIntFlowFlags->SetMarkerStyle(25);
  fIntFlowFlags->SetLabelSize(0.05);
@@ -1502,6 +1512,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowFlags->GetXaxis()->SetBinLabel(10,"Calculate cumulants vs M");
  fIntFlowFlags->GetXaxis()->SetBinLabel(11,"fMinimumBiasReferenceFlow");
  fIntFlowFlags->GetXaxis()->SetBinLabel(12,"fForgetAboutCovariances");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(13,"fStorePhiDistributionForOneEvent");
  fIntFlowList->Add(fIntFlowFlags);
 
  // b) Book event-by-event quantities:
@@ -2909,9 +2920,39 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
 
-
 //================================================================================================================================
 
+void AliFlowAnalysisWithQCumulants::StorePhiDistributionForOneEvent(AliFlowEventSimple *anEvent)
+{
+ // Store phi distribution for one event to illustrate flow.
+ 
+ if(fPhiDistributionForOneEvent->GetEntries()>0){return;} // store only phi distribution for one event
+ 
+ Double_t vMin = fPhiDistributionForOneEventSettings[0]; 
+ Double_t vMax = fPhiDistributionForOneEventSettings[1]; 
+ Double_t refMultMin = fPhiDistributionForOneEventSettings[2]; 
+ Double_t refMultMax = fPhiDistributionForOneEventSettings[3]; 
+ 
+ Double_t vEBE = 0.;
+ Double_t cumulant4thEBE = fIntFlowCorrelationsEBE->GetBinContent(2)-2.*pow(fIntFlowCorrelationsEBE->GetBinContent(1),2.);
+ if(cumulant4thEBE<0.)
+ {
+  vEBE = pow(-1.*cumulant4thEBE,0.25);
+  if((vEBE>vMin && vEBE<vMax) && (fReferenceMultiplicityEBE>refMultMin && fReferenceMultiplicityEBE<refMultMax))
+  {
+   for(Int_t p=0;p<anEvent->NumberOfTracks();p++)
+   {
+    if(anEvent->GetTrack(p)->InRPSelection())
+    {
+     fPhiDistributionForOneEvent->Fill(anEvent->GetTrack(p)->Phi());
+    }
+   } // end of for(Int_t p=0;p<anEvent->NumberOfTracks();p++)
+  }
+ } // end of if(cumulant4thEBE<0.)
+ 
+} // end of void AliFlowAnalysisWithQCumulants::StorePhiDistributionForOneEvent(AliFlowEventSimple *anEvent)
+
+//================================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
 {
@@ -4770,7 +4811,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForIntFlow()
   fIntFlowCovariancesVsM[pi] = NULL;
   fIntFlowSumOfProductOfEventWeightsVsM[pi] = NULL;
  } 
-  
+ 
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForIntFlow()
 
 //================================================================================================================================
@@ -5728,9 +5769,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
            
 } // end of AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFlow(TString type)
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 {
@@ -5758,9 +5797,20 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
  
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 
-
 //================================================================================================================================
 
+void AliFlowAnalysisWithQCumulants::InitializeArraysForVarious()
+{
+ // Initialize all arrays used for various unclassified objects.
+ 
+ for(Int_t p=0;p<4;p++) // [v_min,v_max,refMult_min,refMult_max]
+ {
+  fPhiDistributionForOneEventSettings[p] = 0.;
+ } 
+   
+} //  end of void AliFlowAnalysisWithQCumulants::InitializeArraysForVarious()
+
+//================================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
 {
@@ -5803,9 +5853,24 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
  
 } // end of void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
 
-
 //================================================================================================================================
 
+void AliFlowAnalysisWithQCumulants::BookEverythingForVarious()
+{
+ // Book all objects for various unclassified quantities.
+ 
+ if(!fStorePhiDistributionForOneEvent){return;}
+ 
+ // a) Book histogram holding phi distribution for single event to illustrate flow.
+ 
+ // a) Book histogram holding phi distribution for single event to illustrate flow:
+ fPhiDistributionForOneEvent = new TH1D("fPhiDistributionForOneEvent","",360,0.,TMath::TwoPi());
+ fPhiDistributionForOneEvent->GetXaxis()->SetTitle("#phi");
+ fVariousList->Add(fPhiDistributionForOneEvent);
+ 
+} // end of void AliFlowAnalysisWithQCumulants::BookEverythingForVarious()
+
+//================================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::StoreFlagsForDistributions()
 {
@@ -5857,9 +5922,7 @@ void AliFlowAnalysisWithQCumulants::StoreDistributionsOfCorrelations()
 
 } // end of void AliFlowAnalysisWithQCumulants::StoreDistributionsOfCorrelations()
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
 {
@@ -5868,7 +5931,8 @@ void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
  //  b) Book and nest lists for differential flow;
  //  c) Book and nest list for particle weights;
  //  d) Book and nest list for distributions;
- //  e) Book and nest list for nested loops;
+ //  e) Book and nest list for various unclassified objects; 
+ //  f) Book and nest list for nested loops.
  
  // a) Book and nest all lists for integrated flow:
  // base list for integrated flow:
@@ -5977,7 +6041,16 @@ void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
  fDistributionsList->SetOwner(kTRUE);
  fHistList->Add(fDistributionsList);
  
- // e) Book and nest list for nested loops:
+ // e) Book and nest list for various unclassified objects:
+ if(fStorePhiDistributionForOneEvent)
+ {
+  fVariousList = new TList();
+  fVariousList->SetName("Various");
+  fVariousList->SetOwner(kTRUE);
+  fHistList->Add(fVariousList);
+ }
+  
+ // f) Book and nest list for nested loops:
  fNestedLoopsList = new TList();
  fNestedLoopsList->SetName("Nested Loops");
  fNestedLoopsList->SetOwner(kTRUE);
@@ -7367,7 +7440,7 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  fIntFlowFlags->Fill(9.5,(Int_t)fCalculateCumulantsVsM);
  fIntFlowFlags->Fill(10.5,(Int_t)fMinimumBiasReferenceFlow);
  fIntFlowFlags->Fill(11.5,(Int_t)fForgetAboutCovariances);
- 
+ fIntFlowFlags->Fill(12.5,(Int_t)fStorePhiDistributionForOneEvent); 
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
 //================================================================================================================================

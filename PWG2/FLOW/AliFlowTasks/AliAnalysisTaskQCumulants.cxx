@@ -50,7 +50,8 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kTRUE), 
  fMinimumBiasReferenceFlow(kTRUE), 
- fForgetAboutCovariances(kTRUE),  
+ fForgetAboutCovariances(kFALSE),  
+ fStorePhiDistributionForOneEvent(kFALSE),
  fnBinsMult(10000),
  fMinMult(0.),  
  fMaxMult(10000.), 
@@ -78,6 +79,13 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  
  // Event weights:
  fMultiplicityWeight = new TString("combinations");
+ 
+ // Store phi distribution for one event to illustrate flow:
+ for(Int_t p=0;p<4;p++) // [v_min,v_max,refMult_min,refMult_max]
+ {
+  fPhiDistributionForOneEventSettings[p] = 0.;
+ } 
+  
 }
 
 AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(): 
@@ -94,6 +102,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fCalculateCumulantsVsM(kFALSE),  
  fMinimumBiasReferenceFlow(kFALSE), 
  fForgetAboutCovariances(kFALSE), 
+ fStorePhiDistributionForOneEvent(kFALSE), 
  fnBinsMult(0),
  fMinMult(0.),  
  fMaxMult(0.), 
@@ -106,6 +115,13 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
 {
  // Dummy constructor
  cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants()"<<endl;
+ 
+ // Store phi distribution for one event to illustrate flow:
+ for(Int_t p=0;p<4;p++) // [v_min,v_max,refMult_min,refMult_max]
+ {
+  fPhiDistributionForOneEventSettings[p] = 0.;
+ } 
+ 
 }
 
 //================================================================================================================
@@ -153,6 +169,13 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
   fQC->SetMultiplicityWeight(fMultiplicityWeight->Data());
  }
 
+ // Store phi distribution for one event to illustrate flow:
+ fQC->SetStorePhiDistributionForOneEvent(fStorePhiDistributionForOneEvent);
+ for(Int_t i=0;i<4;i++)
+ {
+  fQC->SetPhiDistributionForOneEventSettings(fPhiDistributionForOneEventSettings[i],i);
+ }
+  
  fQC->Init();
  
  if(fQC->GetHistList()) 
