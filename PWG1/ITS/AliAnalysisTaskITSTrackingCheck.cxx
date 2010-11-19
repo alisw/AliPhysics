@@ -2494,11 +2494,14 @@ Bool_t AliAnalysisTaskITSTrackingCheck::IsSelectedCentrality() const
 
   const AliMultiplicity *alimult = fESD->GetMultiplicity();
   Int_t ntrklets=1;
+  Int_t nclsSPDouter=0;
   if(alimult) {
     ntrklets = alimult->GetNumberOfTracklets();
+    nclsSPDouter = alimult->GetNumberOfITSClusters(1);
   }
 
-  if(ntrklets<fMinMult || ntrklets>fMaxMult) return kFALSE;
+  if(nclsSPDouter<fMinMult || nclsSPDouter>fMaxMult) return kFALSE;
+
 
   return kTRUE;
 }
