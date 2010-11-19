@@ -31,8 +31,8 @@ class AliRsnVATProcessInfo : public TNamed
 
     const char*   GetEventHistogramName() { return Form("hEventsUsed_%s",GetName()); };
     Long64_t      GetNumerOfEventsProcessed();
-    void          SetEventUsed(Bool_t isUsed = kTRUE) { fEventUsed = isUsed; }
-    Bool_t        IsEventUsed() const { return fEventUsed; };
+    void          SetEventUsed(Int_t flag) { fEventUsed = flag; }
+    Int_t         IsEventUsed() const { return fEventUsed; };
 
     void          SetPrintInfoNumber(const Long64_t &num=1) { fPrintInfoNumber = num; }
 

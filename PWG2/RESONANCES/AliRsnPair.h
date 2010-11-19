@@ -48,6 +48,8 @@ class AliRsnPair : public TNamed
     AliRsnMother*     GetMother() {return &fMother;}
     AliRsnPairDef*    GetPairDef() {return fPairDef;}
     Bool_t            Fill(AliRsnDaughter *d0, AliRsnDaughter *d1, AliRsnEvent *ev1, AliRsnEvent *ev2);
+    Int_t             GetCount() const {return fCount;}
+    void              ResetCount() {fCount = 0;}
     
     virtual void      Compute();
     virtual void      Init(const char *prefix, TList *list);
@@ -57,6 +59,7 @@ class AliRsnPair : public TNamed
     Bool_t            fOnlyTrue;        //  select true pairs only?
     Bool_t            fCheckDecay;      //  is the decay channel correct in a true pair?
     Bool_t            fIsMixed;         //  is this an event-mixing?
+    Int_t             fCount;           //  counter incremented for each added pair
 
     AliRsnPairDef    *fPairDef;         //  pair definition (particles, charges)
     AliRsnCutManager  fCutManager;      //  collection of all cuts

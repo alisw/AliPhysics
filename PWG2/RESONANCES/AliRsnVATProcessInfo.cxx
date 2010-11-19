@@ -109,7 +109,7 @@ void AliRsnVATProcessInfo::GenerateInfoList(TList *list)
   if (fHistUsedEvents) delete fHistUsedEvents;
   
   // create stored objects
-  fHistUsedEvents = new TH1I(GetEventHistogramName(), "Skipped/used events", 2, 0, 2);
+  fHistUsedEvents = new TH1I(GetEventHistogramName(), "Skipped/used events", 3, 0, 3);
 
   // ad objects to list
   list->Add(fHistUsedEvents);
@@ -129,10 +129,7 @@ void AliRsnVATProcessInfo::FillInfo()
 // histogram (bin '0' = skipped, bin '1' = used).
 //
 
-  if (fEventUsed)
-    fHistUsedEvents->Fill(1);
-  else
-    fHistUsedEvents->Fill(0);
+  fHistUsedEvents->Fill(fEventUsed);
 }
 
 //______________________________________________________________________________
