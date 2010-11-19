@@ -30,8 +30,10 @@ extern "C" {
 #include <TH1.h>
 #include <TH2.h>
 #include <TSystem.h>
+#include <TGeoGlobalMagField.h>
 
 #include "AliLog.h"
+#include "AliMagF.h"
 #include "AliRawReaderDate.h"
 #include "AliCDBManager.h"
 #include "AliITSMeanVertexer.h"
@@ -148,6 +150,10 @@ int main(int argc, char **argv) {
   }
 
   // Global initializations
+
+  // The B filed is required in AliITSClusterFinderV2SPD
+  // for the Lorentz angle correction. B set to 0.      
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 0., 0., AliMagF::k5kGUniform));  
   AliLog::SetGlobalLogLevel(AliLog::kError);
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://localOCDB");
