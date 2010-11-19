@@ -12,9 +12,9 @@
 #include "AliAnalysisTaskSE.h"
 
 class TFile;
-class TH2F;
+class TH1F;
 class TList;
-class TObjString;
+class TString;
 
 class AliESDEvent;
 
@@ -57,8 +57,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TString  fCentfilename;       // name of this file 1d
   TString  fCentfilename2;      // name of this file 2d
   
-  TList*   fFileList;           // list of input files names
-  TList*   fFileList2;          // list of input files 2 names
+  TList*   fFileList;           //! list of input files names
+  TList*   fFileList2;          //! list of input files 2 names
   Int_t    fCurrentRun;         // current run number
 
   Float_t  fCentV0M;            // percentile centrality from V0
@@ -71,15 +71,15 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t  fCentTKLvsV0M;       // percentile centrality from tracklets vs V0
   Float_t  fCentZEMvsZDC;       // percentile centrality from ZEM vs ZDC
 
-  TH1D    *fHtempV0M;           // histogram with centrality vs multiplicity using V0
-  TH1D    *fHtempFMD;           // histogram with centrality vs multiplicity using FMD
-  TH1D    *fHtempTRK;           // histogram with centrality vs multiplicity using tracks
-  TH1D    *fHtempTKL;           // histogram with centrality vs multiplicity using tracklets
-  TH1D    *fHtempCL0;           // histogram with centrality vs multiplicity using clusters in layer 0
-  TH1D    *fHtempCL1;           // histogram with centrality vs multiplicity using clusters in layer 0
-  TH1D    *fHtempV0MvsFMD;           // histogram with centrality vs multiplicity using V0 vs FMD   
-  TH1D    *fHtempTKLvsV0M;           // histogram with centrality vs multiplicity using tracklets vs V0
-  TH1D    *fHtempZEMvsZDC;           // histogram with centrality vs multiplicity using ZEM vs ZDC 
+  TH1F    *fHtempV0M;           // histogram with centrality vs multiplicity using V0
+  TH1F    *fHtempFMD;           // histogram with centrality vs multiplicity using FMD
+  TH1F    *fHtempTRK;           // histogram with centrality vs multiplicity using tracks
+  TH1F    *fHtempTKL;           // histogram with centrality vs multiplicity using tracklets
+  TH1F    *fHtempCL0;           // histogram with centrality vs multiplicity using clusters in layer 0
+  TH1F    *fHtempCL1;           // histogram with centrality vs multiplicity using clusters in layer 0
+  TH1F    *fHtempV0MvsFMD;           // histogram with centrality vs multiplicity using V0 vs FMD   
+  TH1F    *fHtempTKLvsV0M;           // histogram with centrality vs multiplicity using tracklets vs V0
+  TH1F    *fHtempZEMvsZDC;           // histogram with centrality vs multiplicity using ZEM vs ZDC 
 
   ClassDef(AliCentralitySelectionTask,1); 
 

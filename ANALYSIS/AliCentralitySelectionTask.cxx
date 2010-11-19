@@ -28,6 +28,8 @@
 #include <TObjString.h>
 #include <TString.h>
 #include <TCanvas.h>
+#include <TROOT.h>
+#include <TDirectory.h>
 #include <iostream>
 
 #include "AliAnalysisManager.h"
@@ -70,8 +72,8 @@ AliAnalysisTaskSE(),
   fIsMCInput(kFALSE),
   fFile(0),
   fFile2(0),
-  fCentfilename(0),
-  fCentfilename2(0),
+  fCentfilename(""),
+  fCentfilename2(""),
   fFileList(new TList),
   fFileList2(new TList),
   fCurrentRun(-1),
@@ -109,8 +111,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fIsMCInput(kFALSE),
   fFile(0),
   fFile2(0),
-  fCentfilename(0),
-  fCentfilename2(0),
+  fCentfilename(""),
+  fCentfilename2(""),
   fFileList(new TList),
   fFileList2(new TList),
   fCurrentRun(-1),
@@ -358,27 +360,34 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 void AliCentralitySelectionTask::ReadCentralityHistos() 
 {
-  fFile = TFile::Open(fCentfilename,"READ");
-  fHtempV0M  = (TH1D*) (fFile->Get("hmultV0_percentile")); 
-  fHtempFMD  = (TH1D*) (fFile->Get("hmultFMD_percentile")); 
-  fHtempTRK  = (TH1D*) (fFile->Get("hNtracks_percentile")); 
-  fHtempTKL  = (TH1D*) (fFile->Get("hNtracklets_percentile")); 
-  fHtempCL0  = (TH1D*) (fFile->Get("hNclusters0_percentile")); 
-  fHtempCL1  = (TH1D*) (fFile->Get("hNclusters1_percentile")); 
+//  Read centrality histograms
+    TDirectory *owd = gDirectory;
+    fFile  = TFile::Open(fCentfilename);
+    owd->cd();
+    fHtempV0M  = (TH1F*) (fFile->Get("hmultV0_percentile"));
+    fHtempFMD  = (TH1F*) (fFile->Get("hmultFMD_percentile"));
+    fHtempTRK  = (TH1F*) (fFile->Get("hNtracks_percentile"));
+    fHtempTKL  = (TH1F*) (fFile->Get("hNtracklets_percentile"));
+    fHtempCL0  = (TH1F*) (fFile->Get("hNclusters0_percentile"));
+    fHtempCL1  = (TH1F*) (fFile->Get("hNclusters1_percentile"));
 }  
 
 //________________________________________________________________________
 void AliCentralitySelectionTask::ReadCentralityHistos2() 
 {
-  fFile2 = TFile::Open(fCentfilename2);
-  fHtempV0MvsFMD  = (TH1D*) (fFile2->Get("hmultV0vsmultFMD_all_percentile")); 
-  fHtempTKLvsV0M  = (TH1D*) (fFile2->Get("hNtrackletsvsmultV0_all_percentile")); 
-  fHtempZEMvsZDC  = (TH1D*) (fFile2->Get("hEzemvsEzdc_all_percentile"));  
+//  Read centrality histograms
+    TDirectory *owd = gDirectory;
+    fFile2  = TFile::Open(fCentfilename2);
+    owd->cd();
+    fHtempV0MvsFMD =  (TH1F*) (fFile2->Get("hmultV0vsmultFMD_all_percentile"));
+    fHtempTKLvsV0M  = (TH1F*) (fFile2->Get("hNtrackletsvsmultV0_all_percentile"));
+    fHtempZEMvsZDC  = (TH1F*) (fFile2->Get("hEzemvsEzdc_all_percentile"));
 }
 
 //________________________________________________________________________
 void AliCentralitySelectionTask::SetPercentileFile(TString filename) 
 {
+// Set the percentile file name
   fCentfilename = filename;
   ReadCentralityHistos();
 }
@@ -386,6 +395,7 @@ void AliCentralitySelectionTask::SetPercentileFile(TString filename)
 //________________________________________________________________________
 void AliCentralitySelectionTask::SetPercentileFile2(TString filename) 
 {
+// Set the percentile file name
   fCentfilename2 = filename;
   ReadCentralityHistos2();
 }
