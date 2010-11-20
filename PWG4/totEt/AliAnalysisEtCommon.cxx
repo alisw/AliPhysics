@@ -14,6 +14,7 @@
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TF1.h"
 #include <iostream>
 #include "AliAnalysisEtCuts.h"
 #include "AliMCEvent.h"
@@ -72,9 +73,16 @@ Float_t AliAnalysisEtCommon::fgPtITSCutOff = 0.10;
 AliAnalysisEtCommon::AliAnalysisEtCommon() :
   fHistogramNameSuffix("")
   ,fCuts(0)
+  ,fDataSet(2010)
   ,fEsdtrackCutsITSTPC(0)
   ,fEsdtrackCutsTPC(0)
   ,fEsdtrackCutsITS(0)
+  ,fK0PythiaD6T(0)
+  ,fLambdaPythiaD6T(0)
+  ,fAntiLambdaPythiaD6T(0)
+  ,fK0Data(0)
+  ,fLambdaData(0)
+  ,fAntiLambdaData(0)
 {//default constructor
 
 }
@@ -85,6 +93,12 @@ AliAnalysisEtCommon::~AliAnalysisEtCommon()
   delete fEsdtrackCutsITSTPC;
   delete fEsdtrackCutsITS;
   delete fEsdtrackCutsTPC;
+  delete fK0PythiaD6T;
+  delete fLambdaPythiaD6T;
+  delete fAntiLambdaPythiaD6T;
+  delete fK0Data;
+  delete fLambdaData;
+  delete fAntiLambdaData;
 }
 
 Int_t AliAnalysisEtCommon::AnalyseEvent(AliVEvent *event)
@@ -97,7 +111,63 @@ Int_t AliAnalysisEtCommon::AnalyseEvent(AliVEvent *event)
 
 void AliAnalysisEtCommon::Init()
 {// clear variables, set up cuts and PDG info
-
+  //MyFunction * fptr = new MyFunction(....);  // create the user function class
+  //TF1 * f = new TF1("f",fptr,&MyFunction::Evaluate,0,1,npar,"MyFunction","Evaluate");   // create TF1 class.
+  AliAnalysisLevyPt *function = new AliAnalysisLevyPt();
+  //parameter 0 = dNdy
+  //parameter 1 = temp
+  //parameter 2 = power
+  fK0PythiaD6T = new TF1("K0PythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
+  fLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
+  fAntiLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
+  fK0Data = new TF1("K0Data",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
+  fLambdaData = new TF1("LambdaData",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
+  fAntiLambdaData = new TF1("LambdaData",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
+  if(fDataSet==2009){
+    //These data are from the ALICE 900 GeV p+p paper
+    fK0PythiaD6T->SetParameter(0,0.1437);
+    fK0PythiaD6T->SetParameter(1,0.1497);
+    fK0PythiaD6T->SetParameter(2,6.94);
+    fLambdaPythiaD6T->SetParameter(0,0.0213);
+    fLambdaPythiaD6T->SetParameter(1,0.1315);
+    fLambdaPythiaD6T->SetParameter(2,4.60);
+    fAntiLambdaPythiaD6T->SetParameter(0,0.0213);
+    fAntiLambdaPythiaD6T->SetParameter(1,0.1315);
+    fAntiLambdaPythiaD6T->SetParameter(2,4.60);
+    fK0Data->SetParameter(0,0.184);
+    fK0Data->SetParameter(1,0.168);
+    fK0Data->SetParameter(2,6.6);
+    fLambdaData->SetParameter(0,0.048);
+    fLambdaData->SetParameter(1,0.229);
+    fLambdaData->SetParameter(2,10.8);
+    fAntiLambdaData->SetParameter(0,0.047);
+    fAntiLambdaData->SetParameter(1,0.210);
+    fAntiLambdaData->SetParameter(2,9.2);
+  }
+  if(fDataSet==2010){
+    //These data are from the CMS analysis note on 7 TeV spectra
+    //http://cdsweb.cern.ch/record/1279344/files/QCD-10-007-pas.pdf
+    //Note the CMS parameterization of the Levy function differs from the ALICE parameterization by a constant.
+    //CMS does not list the overall constant in their fit, the ratios of the dN/dy(y=0) is used.
+    fK0PythiaD6T->SetParameter(0,0.72);
+    fK0PythiaD6T->SetParameter(1,0.183);
+    fK0PythiaD6T->SetParameter(2,7.41);
+    fLambdaPythiaD6T->SetParameter(0,0.54);
+    fLambdaPythiaD6T->SetParameter(1,0.216);
+    fLambdaPythiaD6T->SetParameter(2,5.71);
+    fAntiLambdaPythiaD6T->SetParameter(0,0.54);
+    fAntiLambdaPythiaD6T->SetParameter(1,0.216);
+    fAntiLambdaPythiaD6T->SetParameter(2,5.71);
+    fK0Data->SetParameter(0,1.0);
+    fK0Data->SetParameter(1,0.215);
+    fK0Data->SetParameter(2,6.79);
+    fLambdaData->SetParameter(0,1.0);
+    fLambdaData->SetParameter(1,0.290);
+    fLambdaData->SetParameter(2,9.28);
+    fAntiLambdaData->SetParameter(0,1.0);
+    fAntiLambdaData->SetParameter(1,0.290);
+    fAntiLambdaData->SetParameter(2,9.28);
+  }
 }
 
 void AliAnalysisEtCommon::ResetEventValues()
@@ -155,3 +225,20 @@ Float_t AliAnalysisEtCommon::Et(Float_t p, Float_t theta, Int_t pid, Short_t cha
   cerr<<"Uh-oh!  Et not set properly!"<<endl;
   return 0.0;
 }
+
+Float_t AliAnalysisEtCommon::K0Weight(Float_t pt){
+  Float_t data = fK0Data->Eval(pt);
+  Float_t mc = fK0PythiaD6T->Eval(pt);
+  return data/mc;
+}
+Float_t AliAnalysisEtCommon::LambdaWeight(Float_t pt){
+  Float_t data = fLambdaData->Eval(pt);
+  Float_t mc = fLambdaPythiaD6T->Eval(pt);
+  return data/mc;
+}
+Float_t AliAnalysisEtCommon::AntiLambdaWeight(Float_t pt){
+  Float_t data = fAntiLambdaData->Eval(pt);
+  Float_t mc = fAntiLambdaPythiaD6T->Eval(pt);
+  return data/mc;
+}
+

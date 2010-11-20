@@ -14,9 +14,9 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   plugin->SetRunMode(pluginRunMode);  // VERY IMPORTANT - DECRIBED BELOW
 
   // Set versions of used packages
-  plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-27-05-build1");
-  plugin->SetAliROOTVersion("v4-20-09-AN-build1");
+   plugin->SetAPIVersion("V1.1x");
+   plugin->SetROOTVersion("v5-27-06-1");
+   plugin->SetAliROOTVersion("v4-20-12-AN");
   // Declare input data to be processed.
 
   // Method 1: Create automatically XML collections using alien 'find' command.
@@ -45,10 +45,10 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime IN THE SAME ORDER THEY ARE LISTED
   // using ACLiC on the worker nodes.
-  plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisEtCommon.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx");
+  plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx");
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisEt.h AliAnalysisEtMonteCarlo.h AliAnalysisEtMonteCarloPhos.h AliAnalysisEtMonteCarloEmcal.h AliAnalysisEtReconstructed.h AliAnalysisEtReconstructedPhos.h AliAnalysisEtReconstructedEmcal.h AliAnalysisTaskTotEt.h AliAnalysisEtCuts.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx  AliAnalysisEtCommon.cxx  AliAnalysisEtCommon.h");
+  plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisEt.h AliAnalysisEtMonteCarlo.h AliAnalysisEtMonteCarloPhos.h AliAnalysisEtMonteCarloEmcal.h AliAnalysisEtReconstructed.h AliAnalysisEtReconstructedPhos.h AliAnalysisEtReconstructedEmcal.h AliAnalysisTaskTotEt.h AliAnalysisEtCuts.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx  AliAnalysisEtCommon.cxx  AliAnalysisEtCommon.h AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx ConfigEtMonteCarlo.C ConfigEtReconstructed.C");
   plugin->SetExecutableCommand("aliroot -b -q");
   // add extra include files/path
   plugin->AddIncludePath("-I. -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS");

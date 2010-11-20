@@ -29,7 +29,12 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
     
+
+  TString       fMCConfigFile;        // the name of the ConfigFile
+  TString       fRecoConfigFile;        // the name of the ConfigFile
+  AliESDtrackCuts* GetTPCITSTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCuts");}
   AliESDtrackCuts* GetTPCOnlyTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsTPCOnly");}
+  AliESDtrackCuts* GetITSTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsITS");}
 
 private:
   
@@ -44,7 +49,9 @@ private:
   
   TH2F *fHistEtRecvsEtMC; // Rec vs MC histo
 
+  AliESDtrackCuts* fEsdtrackCutsITSTPC; // track cuts ITS&TPC
   AliESDtrackCuts* fEsdtrackCutsTPC; // track cuts TPC
+  AliESDtrackCuts* fEsdtrackCutsITS; // track cuts ITS
   
   ClassDef(AliAnalysisTaskTotEt, 1); // example of analysis
 };

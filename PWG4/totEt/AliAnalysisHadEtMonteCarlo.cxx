@@ -400,7 +400,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
             continue;
 	  }
 
-        TParticlePDG *pc = part->GetPDG(0);
+        //TParticlePDG *pc = part->GetPDG(0);
 
         // Check if it is a primary particle
 	if (stack->IsPhysicalPrimary(iPart)){//primaries
@@ -591,6 +591,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      //cout<<"I am a simulated lambda! pt "<<part->Pt()<<" eta "<<part->Eta()<<endl;
 	      FillHisto2D("EtSimulatedLambda",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Float_t weight = LambdaWeight(part->Pt());
+	      FillHisto2D("EtSimulatedLambdaReweighted",part->Pt(),part->Eta(),myEt*weight);
 	      Int_t ndaughters = part->GetNDaughters();
 	      for(Int_t idaughter = 0;idaughter<ndaughters;idaughter++){
 		Int_t daughterindex = part->GetDaughter(idaughter);
@@ -602,6 +604,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		    if(daughtercode==fgPiMinusCode || daughtercode==fgProtonCode){
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedLambdaDaughters",daughter->Pt(),daughter->Eta(),myEt);
+		      FillHisto2D("EtSimulatedLambdaDaughtersReweighted",daughter->Pt(),daughter->Eta(),myEt*weight);
 		      //cout<<"Lambda daughter is a "<<daughter->GetName()<<endl;
 		    }
 		  }
@@ -618,6 +621,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedAntiLambda",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Float_t weight = AntiLambdaWeight(part->Pt());
+	      FillHisto2D("EtSimulatedAntiLambdaReweighted",part->Pt(),part->Eta(),myEt*weight);
 	      Int_t ndaughters = part->GetNDaughters();
 	      for(Int_t idaughter = 0;idaughter<ndaughters;idaughter++){
 		Int_t daughterindex = part->GetDaughter(idaughter);
@@ -629,6 +634,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		    if(daughtercode==fgPiPlusCode || daughtercode==fgAntiProtonCode){
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedAntiLambdaDaughters",daughter->Pt(),daughter->Eta(),myEt);
+		      FillHisto2D("EtSimulatedAntiLambdaDaughtersReweighted",daughter->Pt(),daughter->Eta(),myEt*weight);
 		      //cout<<"AntiLambda daughter is a "<<daughter->GetName()<<endl;
 		    }
 		  }
@@ -645,6 +651,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedK0S",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Float_t weight = K0Weight(part->Pt());
+	      FillHisto2D("EtSimulatedK0SReweighted",part->Pt(),part->Eta(),myEt*weight);
 	      Int_t ndaughters = part->GetNDaughters();
 	      for(Int_t idaughter = 0;idaughter<ndaughters;idaughter++){
 		Int_t daughterindex = part->GetDaughter(idaughter);
@@ -657,6 +665,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		    if(daughtercode==fgPiMinusCode || daughtercode==fgPiPlusCode){
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedK0SDaughters",daughter->Pt(),daughter->Eta(),myEt);
+		      FillHisto2D("EtSimulatedK0SDaughtersReweighted",daughter->Pt(),daughter->Eta(),myEt*weight);
 		      //cout<<"K0S daughter is a "<<daughter->GetName()<<endl;
 		    }
 		  }
@@ -673,6 +682,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedK0L",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      Float_t weight = K0Weight(part->Pt());
+	      FillHisto2D("EtSimulatedK0LReweighted",part->Pt(),part->Eta(),myEt*weight);
 	      filled = true;
 	    }
 	    if(pdgCode == fgOmegaCode){
@@ -884,7 +895,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(!filled){
 	      //if( strcmp(pc->ParticleClass(),"Baryon")==0 || strcmp(pc->ParticleClass(),"Meson")==0 ){
-		cout<<"Did not find a place for "<<part->GetName()<<" "<<pdgCode<<" which is a "<<pc->ParticleClass()<<endl;
+	      //cout<<"Did not find a place for "<<part->GetName()<<" "<<pdgCode<<" which is a "<<pc->ParticleClass()<<endl;
 		//}
 	    }
 	  }
@@ -919,7 +930,6 @@ void AliAnalysisHadEtMonteCarlo::Init()
     AliAnalysisHadEt::Init();
     if(!fPtSmearer) fPtSmearer = new TRandom();
 }
-
 void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   //for simulated Et only (no reconstruction)
   CreateEtaPtHisto2D(TString("EtSimulatedPiPlus"),TString("Simulated E_{T} from #pi^{+}"));
@@ -950,6 +960,10 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D("EtSimulatedAntiLambda","Simulated E_{T} from #bar{#Lambda}");
   CreateEtaPtHisto2D("EtSimulatedK0S","Simulated E_{T} from K^{0}_{S}");
   CreateEtaPtHisto2D("EtSimulatedK0L","Simulated E_{T} from K^{0}_{L}");
+  CreateEtaPtHisto2D("EtSimulatedLambdaReweighted","Simulated E_{T} from #Lambda");
+  CreateEtaPtHisto2D("EtSimulatedAntiLambdaReweighted","Simulated E_{T} from #bar{#Lambda}");
+  CreateEtaPtHisto2D("EtSimulatedK0SReweighted","Simulated E_{T} from K^{0}_{S}");
+  CreateEtaPtHisto2D("EtSimulatedK0LReweighted","Simulated E_{T} from K^{0}_{L}");
   CreateEtaPtHisto2D("EtSimulatedNeutron","Simulated E_{T} from neutrons");
   CreateEtaPtHisto2D("EtSimulatedAntiNeutron","Simulated E_{T} from #bar{n}");
   CreateEtaPtHisto2D("EtSimulatedEPlus","Simulated E_{T} from e^{+}");
@@ -968,6 +982,9 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D("EtSimulatedLambdaDaughters","Simulated E_{T} from #Lambda Daughters");
   CreateEtaPtHisto2D("EtSimulatedAntiLambdaDaughters","Simulated E_{T} from #bar{#Lambda} Daughters");
   CreateEtaPtHisto2D("EtSimulatedK0SDaughters","Simulated E_{T} from K^{0}_{S} Daughters");
+  CreateEtaPtHisto2D("EtSimulatedLambdaDaughtersReweighted","Simulated E_{T} from #Lambda Daughters");
+  CreateEtaPtHisto2D("EtSimulatedAntiLambdaDaughtersReweighted","Simulated E_{T} from #bar{#Lambda} Daughters");
+  CreateEtaPtHisto2D("EtSimulatedK0SDaughtersReweighted","Simulated E_{T} from K^{0}_{S} Daughters");
   CreateEtaPtHisto2D("EtSimulatedOmegaDaughters","Simulated E_{T} from #Omega^{-} Daughters");
   CreateEtaPtHisto2D("EtSimulatedAntiOmegaDaughters","Simulated E_{T} from #Omega^{+} Daughters");
   CreateEtaPtHisto2D("EtSimulatedXiDaughters","Simulated E_{T} from #Xi^{-} Daughters");

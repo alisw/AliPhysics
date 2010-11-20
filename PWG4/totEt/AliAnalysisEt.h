@@ -74,8 +74,6 @@ public:
     void SetTPCOnlyTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsTPC = (AliESDtrackCuts *) cuts;}
 
 protected:
-       
-    TString fHistogramNameSuffix; /** The suffix for the histogram names */
 
     //AliAnalysisEtCuts *fCuts; // keeper of basic cuts
 

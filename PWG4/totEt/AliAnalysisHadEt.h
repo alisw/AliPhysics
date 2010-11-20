@@ -74,9 +74,6 @@ public:
 
 protected:   
     
-    TString fHistogramNameSuffix; /** The suffix for the histogram names */
-
-    
     Double_t fSumEt;/** Sum of the total Et for all events */
     Double_t fSumEtAcc;/** Sum of the total Et within our acceptance for all events */
     Double_t fTotEt;/** Total Et in the event (without acceptance cuts) */

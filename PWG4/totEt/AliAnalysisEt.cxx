@@ -24,7 +24,6 @@ ClassImp(AliAnalysisEt);
 
 
 AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
-			       ,fHistogramNameSuffix("")
 			       ,fTotEt(0)
 			       ,fTotEtAcc(0)
 			       ,fTotNeutralEt(0)

@@ -45,7 +45,6 @@ Float_t AliAnalysisHadEt::fgPtAxis[117]=
 
 
 AliAnalysisHadEt::AliAnalysisHadEt() : AliAnalysisEtCommon()
-				     ,fHistogramNameSuffix("")
 				     ,fSumEt(0)
 				     ,fSumEtAcc(0)
 				     ,fTotEt(0)
