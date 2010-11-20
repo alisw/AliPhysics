@@ -998,7 +998,7 @@ void PlotAll(const char* correctedFile, const char* mcFile)
     Float_t range[] = { 3, 10 };
   }
   
-  for (Int_t id=2; id<3; id++)
+  for (Int_t id=0; id<3; id++)
   {
     if (id < 2)
       gForceRange = range[id];
