@@ -42,9 +42,9 @@ public:
   TList  *GetShishKebabTrd1Modules() const {return fShishKebabTrd1Modules;}
   AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta) const;
 
-  void PrintGeometry(); 
+  void PrintGeometryGeoUtils();   // *MENU*  
   void PrintCellIndexes(Int_t absId=0, int pri=0, const char *tit="") const ;  //*MENU*
-  void PrintLocalTrd1(Int_t pri=0) const;  //*MENU*
+  void PrintLocalTrd1(Int_t pri=0) const;  // *MENU*
   virtual void Browse(TBrowser* b);
   virtual Bool_t  IsFolder() const;
 

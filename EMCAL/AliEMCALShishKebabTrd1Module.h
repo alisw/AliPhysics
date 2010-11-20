@@ -48,13 +48,16 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   //  Additional offline staff 
   //  ieta=0 or 1 - Jun 02, 2006
   TVector2& GetCenterOfCellInLocalCoordinateofSM(Int_t ieta)
-  { if(ieta<=0) return fOK2;
-    else        return fOK1;}
-  void GetCenterOfCellInLocalCoordinateofSM(Int_t ieta, Double_t &xr, Double_t &zr) const
+  { 
+    if(ieta<=0) return fOK2;
+    else        return fOK1;
+  }
+  void GetCenterOfCellInLocalCoordinateofSM(Int_t ieta, Double_t &xr, Double_t &zr, Int_t pri=0) const
   { 
     if(ieta<=0) {xr = fOK2.Y(); zr = fOK2.X();
     } else      {xr = fOK1.Y(); zr = fOK1.X();
     }
+    if(pri>0) printf(" %s ieta %2.2i xr %8.4f  zr %8.4f \n", GetName(), ieta, xr, zr);  
   }
   void GetCenterOfCellInLocalCoordinateofSM3X3(Int_t ieta, Double_t &xr, Double_t &zr) const
   { // 3X3 case - Nov 9,2006

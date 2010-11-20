@@ -174,7 +174,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const Text_t* name, const Text_t* title)
 	
   if (AliDebugLevel()>=2) {
     fEMCGeometry->Print();
-    PrintGeometry();
+    PrintGeometryGeoUtils();
   }
 
   for (Int_t ix = 0; ix < 48; ix++)
@@ -797,7 +797,7 @@ AliEMCALShishKebabTrd1Module* AliEMCALGeoUtils::GetShishKebabModule(Int_t neta) 
 }
 
 //___________________________________________________________________
-void AliEMCALGeoUtils::PrintGeometry()
+void AliEMCALGeoUtils::PrintGeometryGeoUtils()
 {
   //Print information from geometry
   fEMCGeometry->PrintGeometry();

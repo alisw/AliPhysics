@@ -152,7 +152,7 @@ void AliEMCALShishKebabTrd1Module::Init(Double_t A, Double_t B)
 }
 
 void AliEMCALShishKebabTrd1Module::DefineAllStaff()
-{
+{ 
   //Define some parameters	
   DefineName(fTheta);
   // Centers of cells - 2X2 case
