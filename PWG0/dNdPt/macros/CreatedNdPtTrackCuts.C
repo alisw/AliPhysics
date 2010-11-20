@@ -1181,6 +1181,39 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "TPC+ITS combine tracking + DCAr(pt) + DCAz(pt)";
   }
 
+  // TPC+ITS combine tracking + DCAr(pt) (2010)
+  if (cutMode == 72) 
+  {
+    Int_t    minclsTPC=70;
+    Double_t maxchi2perTPCcl=4.;
+    Double_t maxdcazITSTPC=2.0;
+
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCuts->SetMinNClustersTPC(minclsTPC);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+    //
+    // ITS
+    //
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    //
+    // primary selection
+    //
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
+
+    // DCArphi parametrization (LHC10c pass2)
+    // 7*(0.0026+0.0050/pt^1.01)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+
+    TString tag = "TPC+ITS combine tracking + DCAr(pt) (2010)";
+  }
+
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) 4-sigma
   if (cutMode == 75) 
   {
@@ -1525,6 +1558,45 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
     TString tag = "Adam Kisiel track selection";
   }
+
+  // TPC+ITS refit
+  // for cut studies
+  if (cutMode == 151) 
+  {
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    //
+    // ITS
+    //
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    //
+
+    TString tag = "TPC+ITS refit required - for cut studies";
+  }
+
+  // TPC+ITS
+  // for cut studies
+  if (cutMode == 152) 
+  {
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    //
+    // ITS
+    //
+    //esdTrackCuts->SetRequireITSRefit(kTRUE);
+    //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    //
+    
+    TString tag = "TPC refit required - for cut studies";
+  }
+
 
 
 
