@@ -721,20 +721,20 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
   // get reconstructed vertex  
   const AliESDVertex* vtxESD = 0; 
-  Bool_t isRecVertex = kTRUE;
   if(evtCuts->IsRecVertexRequired()) 
   {
-//    Bool_t bRedoTPCVertex = evtCuts->IsRedoTPCVertex();
-    //Bool_t bUseConstraints = evtCuts->IsUseBeamSpotConstraint();
-    //vtxESD = AlidNdPtHelper::GetVertex(esdEvent,evtCuts,accCuts,esdTrackCuts,GetAnalysisMode(),kFALSE,bRedoTPCVertex,bUseConstraints); 
-    //isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, esdEvent->GetPrimaryVertexSPD(), GetAnalysisMode(), kFALSE);
     if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
       vtxESD = esdEvent->GetPrimaryVertexTPC();
-      //isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, esdEvent->GetPrimaryVertexSPD(), GetAnalysisMode(), kFALSE);
+    }
+    else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
+      vtxESD = esdEvent->GetPrimaryVertexTracks();
+    }
+    else {
+    	return;
     }
   }
 
-  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex; 
+  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
@@ -742,11 +742,15 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
   Int_t multMBTracks = 0; 
   if(GetAnalysisMode() == AlidNdPtHelper::kTPC) 
   {
-     if(vtxESD->GetStatus() && isRecVertex) {
-         //multMBTracks = AlidNdPtHelper::GetTPCMBTrackMult(esdEvent,evtCuts,accCuts,esdTrackCuts);
+     if(vtxESD->GetStatus()) {
          multMBTracks = vtxESD->GetNContributors();
      }
   } 
+  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
+     if(vtxESD->GetStatus()) {
+         multMBTracks = vtxESD->GetNContributors();
+     }
+  }
   else {
     AliDebug(AliLog::kError, Form("Found analysis type %d", GetAnalysisMode()));
     return; 

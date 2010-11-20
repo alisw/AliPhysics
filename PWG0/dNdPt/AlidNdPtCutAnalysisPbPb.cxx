@@ -149,8 +149,10 @@ void AlidNdPtCutAnalysisPbPb::Init(){
   //
   //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge
   Int_t binsRecMCTrackHist[12]={160,20,40,100,100,30,90,ptNbins, 2, 2, 2, 3};
-  Double_t minRecMCTrackHist[12]={0., 0., 0., -10.,-10.,-1.5, 0., ptMin, 0., 0., 0., -1.};
-  Double_t maxRecMCTrackHist[12]={160.,10.,1.2, 10.,10.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2., 2.};
+  //Double_t minRecMCTrackHist[12]={0., 0., 0., -10.,-10.,-1.5, 0., ptMin, 0., 0., 0., -1.};
+  //Double_t maxRecMCTrackHist[12]={160.,10.,1.2, 10.,10.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2., 2.};
+  Double_t minRecMCTrackHist[12]={0., 0., 0., -1.,-1.,-1.5, 0., ptMin, 0., 0., 0., -1.};
+  Double_t maxRecMCTrackHist[12]={160.,10.,1.2, 1.,1.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2., 2.};
 
   fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge",12,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
   fRecMCTrackHist->SetBinEdges(7,binsPt);
@@ -274,14 +276,19 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
 
   // get reconstructed vertex  
   const AliESDVertex* vtxESD = 0; 
-  Bool_t isRecVertex = kTRUE;
   if(evtCuts->IsRecVertexRequired()) 
   {
      if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
         vtxESD = esdEvent->GetPrimaryVertexTPC();
     }
+    else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
+      vtxESD = esdEvent->GetPrimaryVertexTracks();
+    }
+    else {
+    	return;
+    }
   }
-  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex; 
+  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
@@ -311,7 +318,7 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
       AliESDtrack *track = (AliESDtrack*)allChargedTracks->At(i);
       if(!track) continue;
 
-      //if(!esdTrackCuts->AcceptTrack(track)) continue;
+      if(!esdTrackCuts->AcceptTrack(track)) continue;
       FillHistograms(track, stack);
       multAll++;
     }
