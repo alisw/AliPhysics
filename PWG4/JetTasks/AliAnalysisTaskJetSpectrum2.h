@@ -45,6 +45,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual Bool_t Notify();
 
     virtual void SetUseGlobalSelection(Bool_t b){fUseGlobalSelection = b;}
+    virtual void SetEventClass(Int_t i){fEventClass = i;}
     virtual void SetExternalWeight(Float_t f){fExternalWeight = f;}
     virtual void SetUseExternalWeightOnly(Bool_t b){fUseExternalWeightOnly = b;}
     virtual void SetAODJetInput(Bool_t b){fUseAODJetInput = b;}
@@ -122,6 +123,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Int_t         fAnalysisType;          // Analysis type 
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
+    Int_t         fEventClass;            // event class to be looked at for this instance of the task
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
@@ -210,10 +212,10 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2Errorvspthardest1;//! relative error vs hardest subtracted jet pt (Bkg1)
     TH2F*         fh2Errorvspthardest2;//! relative error vs hardest subtracted jet pt (Bkg2)
     TH2F*         fh2Errorvspthardest3;//! relative error vs hardest subtracted jet pt (Bkg3)    
-    TList *fHistList; // Output list
+    TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 10) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 11) // Analysis task for standard jet analysis
 };
  
 #endif

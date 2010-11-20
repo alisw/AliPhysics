@@ -1,4 +1,4 @@
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE);
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE,char* deltaFile = "");
 
 
 AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", UInt_t iFlag){
@@ -26,10 +26,10 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
 }
 
 
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD)
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,char *deltaFile)
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
-
+  TString outputFile(deltaFile);
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -114,7 +114,6 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
      break;
    case "KT":
      pwg4spec->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh
-     if(TMath::Abs(radius - 0.6)<0.05)pwg4spec->SetBackgroundCalc(kTRUE);
      break;
    default:
      ::Error("AddTaskJetCluster", "Wrong jet finder selected\n");
@@ -123,6 +122,7 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
 
    
    if(kWriteAOD){
+     if(outputFile.Length())pwg4spec->SetJetOutputFile(outputFile);
      pwg4spec->SetJetOutputBranch(Form("clusters%s_%s%s",bRec,jf,cRadius));
      pwg4spec->SetJetOutputMinPt(0); // store only jets / clusters above a certain threshold
    }

@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskJetChem(){
+AliAnalysisTask *AddTaskJetChem(UInt_t filterMask){
 
 
 
@@ -61,7 +61,7 @@ AliAnalysisTask *AddTaskJetChem(){
   task->SetCutnSigdEdx(2); 
  
   task->ReadDeltaAOD(); // uncomment for DeltaAODs
-  task->SelectDeltaAODBranch("jetsAOD_FASTJET04"); 
+  task->SelectDeltaAODBranch(Form("jetsAOD_FASTJET04_Filter%05d",filterMask)); 
   //task->SelectAODBranch("jetsAOD_FASTKT04");
   //task->SelectAODBranch("jetsAOD_UA107");
   //task->SelectAODBranch("jets");

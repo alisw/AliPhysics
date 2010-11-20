@@ -129,6 +129,10 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    Printf("Jet Type %s", typeJets.Data());
    Printf("Track Type %s", typeTracks.Data());
    
+   // attach the filter maska
+   if(branchRecJets.Contains("AOD")&&branchRecJets.Contains("jets")&&!branchRecJets.Contains("MC"))branchRecJets += Form("_Filter%05d",filterMask); 
+   if(branchGenJets.Contains("AOD")&&branchRecJets.Contains("jets")&&!branchGenJets.Contains("MC"))branchGenJets += Form("_Filter%05d",filterMask);
+
    if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
    if(!branchGenJets.Contains("noGenJets")) task->SetBranchGenJets(branchGenJets);
 
