@@ -45,12 +45,33 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
   // setting runtype
   shuttle->SetInputRunType(runtype);
 
+  Int_t detectorMask = 1074200319;
+  TString detectorMask_Str(Form("%d",detectorMask));
+  shuttle->AddInputRunParameter("detectorMask", detectorMask_Str.Data());
+
+  TString* ltu = new TString[3];
+  ltu[0] = "2000";
+  ltu[1] = "6000";
+  ltu[2] = "8000";
+  for (Int_t i = 0; i<AliDAQ::kNDetectors-2; i++){
+	  if ((detectorMask >> i) & 0x1) {
+		  TString detOnlineName = AliDAQ::DetectorName(i);
+		  if (detOnlineName == "VZERO"){
+			  ltu[0] = "3000";
+			  ltu[1] = "7000";
+			  ltu[2] = "9000";
+		  }
+		  shuttle->SetLTUConfig(ltu,detOnlineName.Data());
+	  }
+  }
+
   // simulating DCS DPs
   TMap* dcsAliasMap = CreateDCSAliasMap(errorLevel);
   shuttle->SetDCSInput(dcsAliasMap);
 
   // simulating input from DAQ FXS
   if (errorLevel != 2){
+	  
 	  //$ALICE_ROOT to be expanded manually by the user for this test macro 
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
@@ -58,15 +79,16 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SPD", "VertexDiamond", "gdc-GLOBAL-01", "$ALICE_ROOT/GRP/ShuttleInput/run000104892_SPD_mon-DA-SPD-0_VertexDiamond");
 	  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "LHCData", "", "$ALICE_ROOT/GRP/ShuttleInput/testRun_GRP_run_number_testRun_data.txt");
-          /*
+          
 	  // for example:
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SPD", "VertexDiamond", "gdc-GLOBAL-01", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/run000104892_SPD_mon-DA-SPD-0_VertexDiamond");
-	  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "LHCData", "", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk_OCDB/GRP/ShuttleInput/testRun_GRP_run_number_testRun_data.txt");
-	  */
+	  /*
+	    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SPD", "VertexDiamond", "gdc-GLOBAL-01", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000104892_SPD_mon-DA-SPD-0_VertexDiamond");
+	  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "LHCData", "", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/testRun_GRP_run_number_testRun_data.txt");
+	  */	  
   }
 
   // simulating input from DCS FXS
@@ -120,13 +142,12 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 	shuttle->AddInputRunParameter("DAQ_time_start", "1020");
   }
   if (errorLevel != 6){
-	shuttle->AddInputRunParameter("beamEnergy", "1400.");
+	shuttle->AddInputRunParameter("beamEnergy", "123");
   }
 
   shuttle->AddInputRunParameter("DAQ_time_end",   "1980");
-  shuttle->AddInputRunParameter("beamType",    beamType);
+  shuttle->AddInputRunParameter("beamType", beamType);
   shuttle->AddInputRunParameter("numberOfDetectors", "5");
-  shuttle->AddInputRunParameter("detectorMask", "34555");
   shuttle->AddInputRunParameter("LHCperiod",    "LHC08b");
   shuttle->AddInputRunParameter("partition",partition);
   shuttle->AddInputRunParameter("detector",detector);

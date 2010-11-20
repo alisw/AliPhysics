@@ -43,12 +43,15 @@
 
 #include "AliTriggerConfiguration.h"
 #include "AliTriggerRunScalers.h"
+#include "AliTriggerInput.h"
 
 #include "AliCDBMetaData.h"
 #include "AliESDVertex.h"
 #include "AliLHCReader.h"
 #include "AliLHCData.h"
 #include "AliDCSArray.h"
+#include "AliDAQ.h"
+#include "AliLTUConfig.h"
 
 class AliLog;
 class AliDCSValue;
@@ -197,7 +200,8 @@ ClassImp(AliGRPPreprocessor)
 		   "(SPD Mean Vertex ERROR)",
 		   "(DCS FXS Error for LHC Data)",
 		   "(LHC Data Error)",
-		   "(LHC Clock Phase Error (from LHC Data))"
+		   "(LHC Clock Phase Error (from LHC Data))",
+		   "(LTU Configuration Error)"
   };
 
 //_______________________________________________________________
@@ -518,6 +522,89 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		error |= 32;
 	}
 
+        //===========================//
+	// LTU Configuration         //
+        //===========================//
+
+	Log("*************** Processing LTU Configuration");
+	
+	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
+		Log("STANDALONE partition for current run, not retrieving LTU configuration");
+		/*
+		Log("STANDALONE partition for current run, using LTU configuration dummy value");
+		AliCDBEntry *cdbEntry = GetFromOCDB("CTP","DummyLTUConfig");
+		if (!cdbEntry) {
+			Log(Form("No dummy LTU Config entry found, going into error..."));
+			error |= 2048;
+		}
+		else{
+			TObjArray *ltuConfig = (TObjArray*)cdbEntry->GetObject();
+			if (!ltuConfig){
+				Log(Form("dummy LTU Config not found in OCDB entry, going into error..."));
+				error |= 2048;
+			}
+			else {
+				AliCDBMetaData metadata;
+				metadata.SetResponsible("Roman Lietava");
+				metadata.SetComment("LTU Config from dummy entry in OCDB");
+				if (!Store("CTP","LTUConfig", ltuConfig, &metadata, 0, 0)) {
+					Log("Unable to store the dummy LTU Config object to OCDB!");
+					error |= 2048;
+				}
+			}
+		}
+		*/
+	}
+
+	else if (!partition.IsNull() && detector.IsNull()){ // global partition
+	
+		Log("GLOBAL partition for current run, getting LTU Config from DAQ Logbook (logbook_detectors table)");
+		UInt_t  detectorMask = (UInt_t)(((TString)GetRunParameter("detectorMask")).Atoi());
+		Printf ("detectormask = %d",detectorMask);
+		TObjArray * ltuarray = new TObjArray();
+		ltuarray->SetOwner(1);
+		Bool_t isLTUok = kTRUE;
+		for(Int_t i = 0; i<AliDAQ::kNDetectors-2; i++){
+			if ((detectorMask >> i) & 0x1) {
+				TString det = AliDAQ::OfflineModuleName(i);
+				TString detCTPName = AliTriggerInput::fgkCTPDetectorName[i];
+				if (detCTPName == "CTP") detCTPName="TRG"; // converting according to what is found in DAQ logbook_detectors
+				Printf("Processing detector %s (CTP Detector name %s)",det.Data(),detCTPName.Data());
+				TString* ltu = GetLTUConfig(detCTPName.Data());
+				if (!ltu){
+					Log(Form("No LTU Configuration from DAQ logbook for detector %s (BUT it was expected)! The corresponding CDB entry will not be filled!",detCTPName.Data()));
+					error |= 2048;
+					isLTUok = kFALSE;
+					break;
+				}
+				else{
+					Float_t ltuFineDelay1 = ltu[0].Atof();
+					Float_t ltuFineDelay2 = ltu[1].Atof();
+					Float_t ltuBCDelayAdd = ltu[2].Atof();
+					const char* name = AliDAQ::DetectorName(i);
+					AliLTUConfig* ltuConfig = new AliLTUConfig((UChar_t)AliDAQ::DetectorID(name),ltuFineDelay1,ltuFineDelay2,ltuBCDelayAdd);
+					ltuarray->AddAtAndExpand(ltuConfig,i);
+				}				
+			}
+		}
+		if (isLTUok){
+			AliCDBMetaData metadata;
+			metadata.SetBeamPeriod(0);
+			metadata.SetResponsible("Roman Lietava");
+			metadata.SetComment("LTU Configuration for current run");
+			if (!Store("CTP","LTUConfig", ltuarray, &metadata, 0, 0)) {
+				Log("Unable to store the LTU Config object to OCDB!");
+				error |= 2048;
+			}		
+		}
+		if (ltuarray) delete ltuarray;
+	}
+
+	else {
+		Log(Form("Incorrect field in DAQ logbook for partition = %s and detector = %s, going into error without trigger timing parameters...",partition.Data(),detector.Data()));
+		error |= 32;
+	}
+
 
 	//=================//
 	// LHC Data        //
@@ -582,7 +669,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log("GRP Preprocessor Success");
 		return 0;
 	} else {
-		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s%s%s%s",
+		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s%s%s%s%s",
 			  kppError[(error&1)?1:0],
 			  kppError[(error&2)?2:0],
 			  kppError[(error&4)?3:0],
@@ -593,7 +680,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 			  kppError[(error&128)?8:0],
 			  kppError[(error&256)?9:0],
 			  kppError[(error&512)?10:0],
-			  kppError[(error&1024)?11:0]
+			  kppError[(error&1024)?11:0],
+			  kppError[(error&2048)?12:0]
 			  ));
 		return error;
 	}

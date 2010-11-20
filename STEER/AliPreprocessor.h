@@ -65,6 +65,7 @@ class AliPreprocessor : public TNamed
     void AddRunType(const char* runType);
 
     void SendToML(const char*);
+    TString* GetLTUConfig(const char* det);
 
     Int_t fRun;         // current run
     UInt_t fStartTime;  // starttime of current run

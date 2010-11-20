@@ -37,6 +37,7 @@ class AliTestShuttle : public AliShuttleInterface
     void SetTimeCreated(UInt_t timeCreated) { fTimeCreated = timeCreated;}
     void SetDCSQueryOffset(UInt_t dcsQueryOffset) { fDCSQueryOffset = dcsQueryOffset;}
     void Process();
+    void SetLTUConfig(TString* ltuConfig, const char* det); 
 
     // AliShuttleInterface functions
     virtual Bool_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
@@ -70,6 +71,7 @@ class AliTestShuttle : public AliShuttleInterface
     static void SetShuttleLogDir (const char* logDir);
 
     virtual void SendMLFromDet(const char* value);
+    virtual TString* GetLTUConfig(const char* det);
 
   protected:
 
@@ -88,7 +90,8 @@ class AliTestShuttle : public AliShuttleInterface
     TString fTriggerConfiguration;  // trigger configuration for testing
     TString fTriggerDetectorMask;   // trigger detector mask for testing
     TString fCTPtiming;         // CTP time paramters for testing 
-
+    TObjArray *fltuConfig;      // LTU config TObjArray
+ 
   private:
     Bool_t CopyFileLocally(TString& targetDir, const char* localFile, const char* gridFileName);
     const char* GetRefFilePrefix(const char* base, const char* detector);

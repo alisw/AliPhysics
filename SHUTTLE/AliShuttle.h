@@ -92,6 +92,7 @@ public:
 	static void SetShuttleLogDir (const char* logDir);
 
 	virtual void SendMLFromDet(const char* value);
+	virtual TString* GetLTUConfig(const char* det);
 
 private:
 	AliShuttle(const AliShuttle& other);

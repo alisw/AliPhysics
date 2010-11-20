@@ -120,12 +120,16 @@ some docs added
 #include "AliCDBPath.h"
 #include "AliCDBId.h"
 #include "AliPreprocessor.h"
+#include "AliLTUConfig.h"
+#include "AliDAQ.h"
+#include "AliTriggerInput.h"
 
 #include <TMap.h>
 #include <TList.h>
 #include <TObjString.h>
 #include <TSystem.h>
 #include <TTimeStamp.h>
+#include <TObjArray.h>
 
 ClassImp(AliTestShuttle)
 
@@ -143,7 +147,8 @@ AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
   fDcsAliasMap(0),
   fTriggerConfiguration(""),
   fTriggerDetectorMask(""),
-  fCTPtiming("")
+  fCTPtiming(""),
+  fltuConfig(0x0)
 {
   // constructor
 
@@ -154,6 +159,9 @@ AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
   fInputFiles->SetOwner(1);
   fRunParameters->SetOwner(1);
   fPreprocessors->SetOwner(1);
+
+  fltuConfig = new TObjArray();
+  fltuConfig->SetOwner(1);
 }
 
 //______________________________________________________________________________________________
@@ -172,6 +180,9 @@ AliTestShuttle::~AliTestShuttle()
 
   delete fDcsAliasMap;
   fDcsAliasMap = 0;
+
+  delete fltuConfig;
+  fltuConfig = 0;
 }
 
 //______________________________________________________________________________________________
@@ -711,4 +722,59 @@ void AliTestShuttle::SendMLFromDet(const char* value)
 	Printf("%s will be sent to monalisa in the $currentdetector_RunCondition tag",value); 
 	return;
 }
+//______________________________________________________________________________________________
+void AliTestShuttle::SetLTUConfig(TString* ltuConfig, const char* det){
+
+	// 
+	// Setting LTU configuration for detector det
+	//
+
+	AliInfo(Form("LTU Config will be added for detector %s",det));
+	AliInfo(Form("First element of the array of strings will correspond to LTUFineDelay1 --> %s",ltuConfig[0].Data()));
+	AliInfo(Form("Second element of the array of strings will correspond to LTUFineDelay2 --> %s",ltuConfig[1].Data()));
+	AliInfo(Form("Third element of the array of strings will correspond to LTUBCDelayAdd --> %s",ltuConfig[2].Data()));
+	Float_t ltuFineDelay1 = ltuConfig[0].Atof();
+	Float_t ltuFineDelay2 = ltuConfig[1].Atof();
+	Float_t ltuBCDelayAdd = ltuConfig[2].Atof();
+	AliLTUConfig* ltu = new AliLTUConfig((UChar_t)AliDAQ::DetectorID(det),ltuFineDelay1,ltuFineDelay2,ltuBCDelayAdd);
+	Int_t idet = AliDAQ::DetectorID(det);
+	fltuConfig->AddAtAndExpand(ltu,idet);
+	return;
+}
+//______________________________________________________________________________________________
+TString* AliTestShuttle::GetLTUConfig(const char* det){
+
+	// 
+	// Getting LTU configuration for detector det
+	//
+
+	TString* ltuConfigString = new TString[3];
+	Int_t idet = -1;
+	for (Int_t index = 0; index < AliDAQ::kNDetectors; index++){
+		AliDebug(3,Form("index = %d, det = %s, CTP name = %s",index,det,AliTriggerInput::fgkCTPDetectorName[index]));
+		if (strcmp(det,AliTriggerInput::fgkCTPDetectorName[index]) == 0){
+			AliInfo(Form("Getting LTU configuration for detector %s",AliTriggerInput::fgkCTPDetectorName[index]));
+			idet = index;
+			break;
+		}
+	}
+	if (idet != -1){
+		AliLTUConfig* ltu = (AliLTUConfig*)fltuConfig->At(idet);
+		if (!ltu){
+			AliInfo(Form("ltu for detector %s not added in the simulated run, returning a null pointer",det));
+			return 0x0;
+		}
+		else{
+			ltuConfigString[0]=Form("%f",ltu->GetFineDelay1());
+			ltuConfigString[1]=Form("%f",ltu->GetFineDelay2());
+			ltuConfigString[0]=Form("%f",ltu->GetBCDelayAdd());
+		}
+	}
+	else{
+		AliError(Form("Detector %s not found in the list of CTP detector names",det));
+	}
+	return ltuConfigString;
+
+}
+
 

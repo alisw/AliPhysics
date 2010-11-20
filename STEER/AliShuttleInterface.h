@@ -67,6 +67,7 @@ class AliShuttleInterface : public TObject
     static const char* GetShuttleTempDir() {return fgkShuttleTempDir.Data();}
 
     virtual void SendMLFromDet(const char* value) = 0;
+    virtual TString* GetLTUConfig(const char* det) =0;
 
   protected:
 

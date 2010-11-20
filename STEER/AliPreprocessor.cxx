@@ -518,3 +518,12 @@ void AliPreprocessor::SendToML(const char* value)
 
 	return fShuttle->SendMLFromDet(value);
 }
+//______________________________________________________________________________________________
+TString* AliPreprocessor::GetLTUConfig(const char* det)
+{
+  // LTU config from logbook_detector table from DAQ logbook for detector det
+  //
+  // The call is delegated to AliShuttleInterface
+
+  return fShuttle->GetLTUConfig(det);
+}

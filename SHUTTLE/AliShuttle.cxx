@@ -3753,4 +3753,46 @@ void AliShuttle::SendMLFromDet(const char* value)
 
 	return;
 }
+//______________________________________________________________________________________________
+TString* AliShuttle::GetLTUConfig(const char* det)
+{
+	// 
+	// Getting ltuFineDelay1, ltuFineDelay2, ltuBCDelay for detector det from logbook_detectors table in logbook
+	//
+	
+	if (!Connect(3)) 
+		return 0;
 
+	TString sqlQuery;
+	sqlQuery.Form("select LTUFineDelay1, LTUFineDelay2, LTUBCDelayAdd from logbook_detectors WHERE run_number = %d and detector = \"%s\";", GetCurrentRun(),det);
+
+	TSQLResult* result = fServer[3]->Query(sqlQuery);
+	if (!result){
+		Log("SHUTTLE","ERROR: No result found for the LTU configuration query");
+		return 0x0;
+	}
+	if (result->GetRowCount() == 0){
+		Log("SHUTTLE",Form("ERROR: LTU configuration not found in logbook_detectors for detector %s, returning null pointer",det));
+		delete result;
+		return 0x0;
+	}
+	if (result->GetFieldCount() != 3){
+		Log("SHUTTLE",Form("ERROR: not all the required fields are there for the LTU configuration for detector %s (only %d found), returning a null pointer",det, result->GetFieldCount()));
+		delete result;
+		return 0x0;
+	}
+	TSQLRow* row = result->Next();
+	if (!row){
+		Printf("ERROR: Could not receive logbook_detectors data, returning null pointer");
+		delete result;
+		return 0x0;
+	}
+	TString* ltuConfigString = new TString[3];
+
+	ltuConfigString[0] = row->GetField(0);
+	ltuConfigString[1] = row->GetField(1);
+	ltuConfigString[2] = row->GetField(2);
+
+	return ltuConfigString;
+
+}
