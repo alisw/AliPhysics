@@ -14,7 +14,8 @@ SRCS = dNdPt/AlidNdPtHelper.cxx \
       dNdPt/AlidNdPtCutAnalysis.cxx \
       dNdPt/AlidNdPtTask.cxx \
       dNdPt/AlidNdPtBackgroundCuts.cxx \
-      dNdPt/AlidNdPtCutAnalysisPbPb.cxx
+      dNdPt/AlidNdPtCutAnalysisPbPb.cxx \
+      dNdPt/AlidNdPtEfficiency.cxx
 
 HDRS = $(SRCS:.cxx=.h)
 
