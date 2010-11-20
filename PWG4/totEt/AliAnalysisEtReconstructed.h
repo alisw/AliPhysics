@@ -12,6 +12,7 @@
 
 class AliVParticle;
 class AliESDEvent;
+class AliAnalysisHadEtCorrections;
 
 class AliAnalysisEtReconstructed : public AliAnalysisEt
 {
@@ -27,6 +28,7 @@ public:
 
     /** Fill the objects you want to output, classes which add new histograms should overload this. */
     virtual void FillOutputList(TList *list);
+    void SetCorrections(AliAnalysisHadEtCorrections *corr){fCorrections = corr;}
 
     /** Create the histograms, must be overloaded if you want to add your own */
     virtual void CreateHistograms();
@@ -35,6 +37,8 @@ protected:
 
     bool CheckGoodVertex(AliVParticle *track);
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
+
+    AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
 
     Double_t fTrackDistanceCut; // cut on track distance    
     Double_t fPidCut; // cut on the pid probability

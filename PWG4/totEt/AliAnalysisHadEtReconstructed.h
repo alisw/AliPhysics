@@ -24,7 +24,6 @@ public:
     AliAnalysisHadEtReconstructed();
     virtual ~AliAnalysisHadEtReconstructed();
    
-    virtual void SetConfigFile(const char *c) {fConfigFile = c;}
     virtual Int_t AnalyseEvent(AliVEvent* event);
 
     //the "Corrected" variables are only corrected for the track-by-track fCorrections
@@ -68,6 +67,7 @@ public:
     Float_t GetCorrectedPiKPEtFullAcceptanceITS() const {return fCorrectedHadEtFullAcceptanceITS+fCorrectedHadEtFullAcceptanceTPC;}
     Float_t GetCorrectedPiKPEtFullAcceptanceTPCNoPID() const {return fCorrectedHadEtFullAcceptanceTPCNoPID;}
     Float_t GetCorrectedPiKPEtFullAcceptanceITSNoPID() const {return fCorrectedHadEtFullAcceptanceITSNoPID+fCorrectedHadEtFullAcceptanceTPCNoPID;}
+    void SetCorrections(AliAnalysisHadEtCorrections *corr){fCorrections = corr;}
 
     void CreateHistograms();
      virtual void Init();

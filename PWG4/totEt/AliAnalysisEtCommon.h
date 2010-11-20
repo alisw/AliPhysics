@@ -9,9 +9,11 @@
 #define ALIANALYSISETCOMMON_H
 
 #include "TString.h"
+#include "TMath.h"
 
 class TH2F;
 class TH1F;
+class TF1;
 class AliVEvent;
 class TList;
 class AliESDtrackCuts;
@@ -19,6 +21,29 @@ class Rtypes;
 class TParticle;
 class TDatabasePDG;
 class AliAnalysisEtCuts;
+
+#ifndef ALIANALYSISLEVYPT_H
+#define ALIANALYSISLEVYPT_H
+class AliAnalysisLevyPt{
+ public:
+  virtual ~AliAnalysisLevyPt(){};
+  Double_t Evaluate(const Double_t *pt, const Double_t *par) const
+  {
+    Double_t lMass  = 0.497;
+    Double_t ldNdy  = par[0];
+    Double_t l2pi   = 2*TMath::Pi();
+    Double_t lTemp = par[1];
+    Double_t lPower = par[2];
+
+    Double_t lBigCoef = ((lPower-1)*(lPower-2)) / (l2pi*lPower*lTemp*(lPower*lTemp+lMass*(lPower-2)));
+    Double_t lInPower = 1 + (TMath::Sqrt(pt[0]*pt[0]+lMass*lMass)-lMass) / (lPower*lTemp);
+
+    return ldNdy * pt[0] * lBigCoef * TMath::Power(lInPower,(-1)*lPower);
+  };
+  ClassDef(AliAnalysisLevyPt, 1);
+};
+
+#endif // ALIANALYSISLEVYPT_H
 
 class AliAnalysisEtCommon
 {
@@ -47,13 +72,18 @@ public:
     void SetTPCITSTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsITSTPC = (AliESDtrackCuts *) cuts;}
     void SetTPCOnlyTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsTPC = (AliESDtrackCuts *) cuts;}
     void SetITSTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsITS = (AliESDtrackCuts *) cuts;}
-
+    void SetDataSet(Int_t val){fDataSet = val;}
+    Int_t DataSet()const {return fDataSet;}
 
 protected:   
     
     TString fHistogramNameSuffix; /** The suffix for the histogram names */
 
     AliAnalysisEtCuts *fCuts; // keeper of basic cuts
+
+    Int_t fDataSet;//Integer corresponding to data set.  Used as a switch to set appropriate track cuts.  By default set to 2010 p+p
+    //2009 = 900 GeV p+p data from 2009
+    //2010 = 7 TeV p+p data from 2010
 
     /** PDG Database */
     //TDatabasePDG *fPdgDB;//data base used for looking up pdg codes
@@ -102,7 +132,16 @@ protected:
     static Float_t fgPtTPCCutOff;//cut off for tracks in TPC
     static Float_t fgPtITSCutOff;//cut off for tracks in ITS
     
-
+    //Set by default to the D6T scales
+    Float_t K0Weight(Float_t pt);//Function which gives the factor to reweigh a K0 so it roughly matches the data
+    Float_t LambdaWeight(Float_t pt);//Function which gives the factor to reweigh a Lambda so it roughly matches the data
+    Float_t AntiLambdaWeight(Float_t pt);//Function which gives the factor to reweigh a Lambda so it roughly matches the data
+    TF1 *fK0PythiaD6T;//function with Levy fit parameters for K0S in PYTHIA D6T
+    TF1 *fLambdaPythiaD6T;//function with Levy fit parameters for Lambda in PYTHIA D6T
+    TF1 *fAntiLambdaPythiaD6T;//function with Levy fit parameters for AntiLambda in PYTHIA D6T
+    TF1 *fK0Data;//function with Levy fit parameters for K0S in data
+    TF1 *fLambdaData;//function with Levy fit parameters for Lambda in data
+    TF1 *fAntiLambdaData;//function with Levy fit parameters for AntiLambda in data
 
  private:
     //Declare it private to avoid compilation warning

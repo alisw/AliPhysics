@@ -89,8 +89,13 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
   fMCAnalysis->CreateHistograms();
   fRecAnalysis->CreateHistograms();
 
+  if(fRecAnalysis->DataSet() != fMCAnalysis->DataSet()){
+    cout<<"Warning: Reconstruction data set and Monte Carlo data set are not the same!  Setting data set to "<<fRecAnalysis->DataSet()<<endl;
+  }
 
-    Bool_t selectPrimaries=kTRUE;
+  Bool_t selectPrimaries=kTRUE;
+  if(fRecAnalysis->DataSet()==2009){
+    cout<<"Setting track cuts for the 2009 p+p collisions at 900 GeV"<<endl;
     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
     fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
     fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -98,22 +103,34 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+  }
+  if(fRecAnalysis->DataSet()==2010){
+    //cout<<"Setting track cuts for the 2010 p+p collisions at 7 GeV"<<endl;
+    cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
+    fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+    fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
+    //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
+    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+    fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+  }
 
-    fOutputList->Add(fEsdtrackCutsITSTPC);
-    fOutputList->Add(fEsdtrackCutsTPC);
-    fOutputList->Add(fEsdtrackCutsITS);
-    if(fEsdtrackCutsITSTPC && fEsdtrackCutsTPC){
-      fRecAnalysis->SetITSTrackCuts( GetITSTrackCuts());
-      fMCAnalysis->SetITSTrackCuts( GetITSTrackCuts());
-      fRecAnalysis->SetTPCITSTrackCuts( GetTPCITSTrackCuts());
-      fMCAnalysis->SetTPCITSTrackCuts( GetTPCITSTrackCuts());
-      fRecAnalysis->SetTPCOnlyTrackCuts( GetTPCOnlyTrackCuts());
-      fMCAnalysis->SetTPCOnlyTrackCuts( GetTPCOnlyTrackCuts());
-      //add ITS stuff!
-    }
-    else{
-      Printf("Error: no track cuts!");
-    }
+  fOutputList->Add(fEsdtrackCutsITSTPC);
+  fOutputList->Add(fEsdtrackCutsTPC);
+  fOutputList->Add(fEsdtrackCutsITS);
+  if(fEsdtrackCutsITSTPC && fEsdtrackCutsTPC){
+    fRecAnalysis->SetITSTrackCuts( GetITSTrackCuts());
+    fMCAnalysis->SetITSTrackCuts( GetITSTrackCuts());
+    fRecAnalysis->SetTPCITSTrackCuts( GetTPCITSTrackCuts());
+    fMCAnalysis->SetTPCITSTrackCuts( GetTPCITSTrackCuts());
+    fRecAnalysis->SetTPCOnlyTrackCuts( GetTPCOnlyTrackCuts());
+    fMCAnalysis->SetTPCOnlyTrackCuts( GetTPCOnlyTrackCuts());
+    //add ITS stuff!
+  }
+  else{
+    Printf("Error: no track cuts!");
+  }
 }
 
 //________________________________________________________________________

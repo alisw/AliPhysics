@@ -24,6 +24,7 @@
 #include "AliESDpid.h"
 #include <iostream>
 #include "TH2F.h"
+#include "AliAnalysisHadEtCorrections.h"
 
 using namespace std;
 
@@ -32,6 +33,7 @@ ClassImp(AliAnalysisEtReconstructed);
 
 AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         AliAnalysisEt()
+	,fCorrections(0)
         ,fTrackDistanceCut(0)
         ,fPidCut(0)
         ,fClusterType(0)
@@ -46,6 +48,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 
 AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed() 
 {
+  delete fCorrections;
 }
 
 Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)

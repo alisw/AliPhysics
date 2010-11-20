@@ -127,6 +127,7 @@ public:
     Bool_t fInvestigatePiKP;//Turns on and off functions and histos for looking pi/k/p Et event-by-event
     Bool_t fRequireITSHits;
 
+
     void ResetEventValues();
 
     //Float_t fSimPiKPEtSmeared[4];//simulated Et for pi,k,p smeared for each event by different momentum resolutions

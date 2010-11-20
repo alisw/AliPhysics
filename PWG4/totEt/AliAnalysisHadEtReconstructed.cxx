@@ -36,44 +36,43 @@ AliAnalysisHadEtReconstructed::AliAnalysisHadEtReconstructed() :
         AliAnalysisHadEt()
 	,fCorrections(0)
 	,fConfigFile("ConfigHadEtAnalysis.C")
-    ,fCorrTotEtFullAcceptanceTPC(0)
-    ,fCorrTotEtFullAcceptanceITS(0)
-    ,fCorrHadEtFullAcceptanceTPC(0)
-    ,fCorrHadEtFullAcceptanceITS(0)
-    ,fCorrTotEtEMCALAcceptanceTPC(0)
-    ,fCorrTotEtEMCALAcceptanceITS(0)
-    ,fCorrHadEtEMCALAcceptanceTPC(0)
-    ,fCorrHadEtEMCALAcceptanceITS(0)
-    ,fCorrTotEtPHOSAcceptanceTPC(0)
-    ,fCorrTotEtPHOSAcceptanceITS(0)
-    ,fCorrHadEtPHOSAcceptanceTPC(0)
-    ,fCorrHadEtPHOSAcceptanceITS(0)
-    ,fCorrectedHadEtFullAcceptanceTPCNoPID(0)
-    ,fCorrectedHadEtFullAcceptanceITSNoPID(0)
-    ,fCorrectedHadEtEMCALAcceptanceTPCNoPID(0)
-    ,fCorrectedHadEtEMCALAcceptanceITSNoPID(0)
-    ,fCorrectedHadEtPHOSAcceptanceTPCNoPID(0)
-    ,fCorrectedHadEtPHOSAcceptanceITSNoPID(0)
-    ,fCorrectedHadEtFullAcceptanceTPC(0)
-    ,fCorrectedHadEtFullAcceptanceITS(0)
-    ,fCorrectedHadEtEMCALAcceptanceTPC(0)
-    ,fCorrectedHadEtEMCALAcceptanceITS(0)
-    ,fCorrectedHadEtPHOSAcceptanceTPC(0)
-    ,fCorrectedHadEtPHOSAcceptanceITS(0)
-    ,fRawEtFullAcceptanceTPC(0)
-    ,fRawEtFullAcceptanceITS(0)
-    ,fRawEtEMCALAcceptanceTPC(0)
-    ,fRawEtEMCALAcceptanceITS(0)
-    ,fRawEtPHOSAcceptanceTPC(0)
-    ,fRawEtPHOSAcceptanceITS(0)
-    ,fRawEtFullAcceptanceTPCNoPID(0)
-    ,fRawEtFullAcceptanceITSNoPID(0)
-    ,fRawEtEMCALAcceptanceTPCNoPID(0)
-    ,fRawEtEMCALAcceptanceITSNoPID(0)
-    ,fRawEtPHOSAcceptanceTPCNoPID(0)
-    ,fRawEtPHOSAcceptanceITSNoPID(0)
+	,fCorrTotEtFullAcceptanceTPC(0)
+	,fCorrTotEtFullAcceptanceITS(0)
+	,fCorrHadEtFullAcceptanceTPC(0)
+	,fCorrHadEtFullAcceptanceITS(0)
+	,fCorrTotEtEMCALAcceptanceTPC(0)
+	,fCorrTotEtEMCALAcceptanceITS(0)
+	,fCorrHadEtEMCALAcceptanceTPC(0)
+	,fCorrHadEtEMCALAcceptanceITS(0)
+	,fCorrTotEtPHOSAcceptanceTPC(0)
+	,fCorrTotEtPHOSAcceptanceITS(0)
+	,fCorrHadEtPHOSAcceptanceTPC(0)
+	,fCorrHadEtPHOSAcceptanceITS(0)
+	,fCorrectedHadEtFullAcceptanceTPCNoPID(0)
+	,fCorrectedHadEtFullAcceptanceITSNoPID(0)
+	,fCorrectedHadEtEMCALAcceptanceTPCNoPID(0)
+	,fCorrectedHadEtEMCALAcceptanceITSNoPID(0)
+	,fCorrectedHadEtPHOSAcceptanceTPCNoPID(0)
+	,fCorrectedHadEtPHOSAcceptanceITSNoPID(0)
+	,fCorrectedHadEtFullAcceptanceTPC(0)
+	,fCorrectedHadEtFullAcceptanceITS(0)
+	,fCorrectedHadEtEMCALAcceptanceTPC(0)
+	,fCorrectedHadEtEMCALAcceptanceITS(0)
+	,fCorrectedHadEtPHOSAcceptanceTPC(0)
+	,fCorrectedHadEtPHOSAcceptanceITS(0)
+	,fRawEtFullAcceptanceTPC(0)
+	,fRawEtFullAcceptanceITS(0)
+	,fRawEtEMCALAcceptanceTPC(0)
+	,fRawEtEMCALAcceptanceITS(0)
+	,fRawEtPHOSAcceptanceTPC(0)
+	,fRawEtPHOSAcceptanceITS(0)
+	,fRawEtFullAcceptanceTPCNoPID(0)
+	,fRawEtFullAcceptanceITSNoPID(0)
+	,fRawEtEMCALAcceptanceTPCNoPID(0)
+	,fRawEtEMCALAcceptanceITSNoPID(0)
+	,fRawEtPHOSAcceptanceTPCNoPID(0)
+	,fRawEtPHOSAcceptanceITSNoPID(0)
 {
-  //cout<<"test "<<fgChristineTestjunk<<endl;
 }
 
 AliAnalysisHadEtReconstructed::~AliAnalysisHadEtReconstructed() 
@@ -115,7 +114,6 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	return -1;
       }
       Int_t nGoodTracks = list->GetEntries();
-      //cout<<nGoodTracks<<" "<<cutName->Data()<<" tracks"<<endl;
       for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++)
 	{
 
@@ -127,7 +125,6 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      continue;
 	    }
 	  else{
-	    //if(!isTPC) cout<<"I should add an ITS track..."<<endl;
 	    if(TMath::Abs(track->Eta())>fCorrections->GetEtaCut()) continue;
 	    Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
 	    if(cutset!=1){
@@ -147,16 +144,13 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
 	    bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
 
-	    //bool IsElectron = false;
 	    bool unidentified = (!isProton && !isKaon && !isElectron && !isPion);
 	    Float_t dEdx = track->GetTPCsignal();
 	    if(cutset==1) dEdx = track->GetITSsignal();
 	    FillHisto2D(Form("dEdxDataAll%s",cutName->Data()),track->P(),dEdx,1.0);
-	    //cout<<"Filling "<< Form("dEdxDataAll%s",cutName->Data()) <<endl;
 
 	    bool inPHOS = IsInPHOS(track);
 	    bool inEMCAL = IsInEMCAL(track);
-	    //if(!(fCorrections->GetEfficiencyPionTPC())) cerr<<"Uh-oh!  No histogram!"<<endl;
 
 	    Float_t corrBkgd=0.0;
 	    Float_t corrNotID=0.0;
@@ -243,59 +237,11 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(!isTPC){
 	      etpartialcorrected = etpartialcorrectedNoID;//Not using PID for ITS
-	      //cout<<"I should add an ITS track..."<<endl;
 	    }
 	    AddEt(et,etNoID,etpartialcorrected,etpartialcorrectedNoID,track->Pt(),isTPC,inPHOS,inEMCAL);
-	    // cout<<"Pt "<<track->Pt()<<" et corrected no id "<<etpartialcorrectedNoID<<"="<<corrNoID<<"*"<<corrBkgd<<"*"<<corrEffNoID<<"*"<<etNoID<<endl;
-// 	    if(isTPC){
-// 	      //if(!unidentified){
-// 	      //cout<<"Pt "<<track->Pt()<<" et corrected   pid "<<etpartialcorrected<<"="<<corrBkgd<<"*"<<corrEff<<"*"<<et;
-// 	      cout<<"Pt "<<track->Pt()<<" et corrected  pid "<<etpartialcorrected<<"="<<corrNotID<<"*"<<corrBkgd<<"*"<<corrEff<<"*"<<et;
-// 	      if(isPion)cout<<" pion";
-// 	      if(isProton)cout<<" proton";
-// 	      if(isKaon)cout<<" kaon";
-// 	      if(isElectron)cout<<" electron";
-// 	      if(unidentified)cout<<" unidentified";
-// 	      cout<<endl;
-// 		//}
-// 	      //else{cout<<"Pt "<<track->Pt()<<" et corrected  !pid "<<etpartialcorrected<<"="<<corrBkgd<<"*"<<corrEff<<"*"<<corrNotID<<"*"<<et<<" Not identified"<<endl;}
-// 	    }
-	    //if(inEMCAL) cout<<"I should add a track"<<endl;
 	  }
 	}
     }
-//   cout<<"Finishing with Raw/Corrected Et in full, PHOS, EMCAL acceptance of "
-//       << GetRawEtFullAcceptanceITS() <<"/"
-//       << GetCorrectedHadEtFullAcceptanceITS() <<", "
-//       << GetRawEtPHOSAcceptanceITS() <<"/"
-//       << GetCorrectedHadEtPHOSAcceptanceITS() <<", "
-//       << GetRawEtEMCALAcceptanceITS() <<"/"
-//       << GetCorrectedHadEtEMCALAcceptanceITS() <<endl;
-//   cout<<"Finishing with Raw/Corrected Et w/o PID in full, PHOS, EMCAL acceptance of "
-//       << GetRawEtFullAcceptanceITSNoPID() <<"/"
-//       << GetCorrectedHadEtFullAcceptanceITSNoPID() <<", "
-//       << GetRawEtPHOSAcceptanceITSNoPID() <<"/"
-//       << GetCorrectedHadEtPHOSAcceptanceITSNoPID() <<", "
-//       << GetRawEtEMCALAcceptanceITSNoPID() <<"/"
-//       << GetCorrectedHadEtEMCALAcceptanceITSNoPID() <<endl;
-//   cout<<"Finishing with Raw/Corrected Et in full, PHOS, EMCAL acceptance of "
-//       << GetRawEtFullAcceptanceTPC() <<"/"
-//       << GetCorrectedHadEtFullAcceptanceTPC() <<", "
-//       << GetRawEtPHOSAcceptanceTPC() <<"/"
-//       << GetCorrectedHadEtPHOSAcceptanceTPC() <<", "
-//       << GetRawEtEMCALAcceptanceTPC() <<"/"
-//       << GetCorrectedHadEtEMCALAcceptanceTPC() <<endl;
-//   cout<<"Finishing with Raw/Corrected Et w/o PID in full, PHOS, EMCAL acceptance of "
-//       << GetRawEtFullAcceptanceTPCNoPID() <<"/"
-//       << GetCorrectedHadEtFullAcceptanceTPCNoPID() <<", "
-//       << GetRawEtPHOSAcceptanceTPCNoPID() <<"/"
-//       << GetCorrectedHadEtPHOSAcceptanceTPCNoPID() <<", "
-//       << GetRawEtEMCALAcceptanceTPCNoPID() <<"/"
-//       << GetCorrectedHadEtEMCALAcceptanceTPCNoPID() <<endl;
-//   cout<<"Correction factors "
-//       <<fCorrTotEtFullAcceptanceTPC<<", "<<fCorrTotEtFullAcceptanceITS<<", "<<fCorrHadEtFullAcceptanceTPC<<", "<<fCorrHadEtFullAcceptanceITS<<","
-//       <<fCorrTotEtEMCALAcceptanceTPC<<", "<<fCorrTotEtEMCALAcceptanceITS<<", "<<fCorrHadEtEMCALAcceptanceTPC<<", "<<fCorrHadEtEMCALAcceptanceITS<<","
-//       <<fCorrTotEtPHOSAcceptanceTPC<<", "<<fCorrTotEtPHOSAcceptanceITS<<", "<<fCorrHadEtPHOSAcceptanceTPC<<", "<<fCorrHadEtPHOSAcceptanceITS<<endl;
     if(GetCorrectedHadEtFullAcceptanceTPC()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPC",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
     if(GetCorrectedTotEtFullAcceptanceTPC()>0.0)FillHisto1D("RecoTotEtFullAcceptanceTPC",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
     if(GetCorrectedHadEtEMCALAcceptanceTPC()>0.0)FillHisto1D("RecoHadEtEMCALAcceptanceTPC",GetCorrectedHadEtEMCALAcceptanceTPC(),1.0);
@@ -342,8 +288,6 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL) {//Adding Et to each of the variables that tracks et event by event
   if(pt>=AliAnalysisHadEt::fgPtTPCCutOff && IsTPC){//TPC tracks
     //adding to the raw Et
-    //if(InEMCAL)
-    //cout<<"Adding "<<rawEt<<" to the raw TPC Et"<<endl;
     fRawEtFullAcceptanceTPC += rawEt;
     if(InPHOS)fRawEtPHOSAcceptanceTPC += rawEt;
     if(InEMCAL)fRawEtEMCALAcceptanceTPC += rawEt;
@@ -351,14 +295,12 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     if(InPHOS)fRawEtPHOSAcceptanceTPCNoPID += rawEtNoPID;
     if(InEMCAL)fRawEtEMCALAcceptanceTPCNoPID += rawEtNoPID;
     //adding to the corrected Et
-    //if(InPHOS) cout<<"Adding "<<corrEt<<" to the corrected Et"<<endl;
     fCorrectedHadEtFullAcceptanceTPC += corrEt;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceTPC += corrEt;
     if(InEMCAL)fCorrectedHadEtEMCALAcceptanceTPC += corrEt;
     fCorrectedHadEtFullAcceptanceTPCNoPID += corrEtNoPID;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceTPCNoPID += corrEtNoPID;
     if(InEMCAL)fCorrectedHadEtEMCALAcceptanceTPCNoPID += corrEtNoPID;
-    //cout<<"Adding "<<corrEt<<" to the corrected Et, TPC pT "<<pt<<endl;
   }
   if(pt<AliAnalysisHadEt::fgPtTPCCutOff &&pt>=AliAnalysisHadEt::fgPtITSCutOff && !IsTPC){//ITS tracks
     //adding to the raw Et
@@ -368,7 +310,6 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     fRawEtFullAcceptanceITSNoPID += rawEtNoPID;
     if(InPHOS)fRawEtPHOSAcceptanceITSNoPID += rawEtNoPID;
     if(InEMCAL)fRawEtEMCALAcceptanceITSNoPID += rawEtNoPID;
-    //cout<<"Adding "<<rawEt<<" to the raw ITS Et"<<endl;
     //adding to the corrected Et
     fCorrectedHadEtFullAcceptanceITS += corrEt;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceITS += corrEt;
@@ -376,7 +317,6 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     fCorrectedHadEtFullAcceptanceITSNoPID += corrEtNoPID;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceITSNoPID += corrEtNoPID;
     if(InEMCAL)fCorrectedHadEtEMCALAcceptanceITSNoPID += corrEtNoPID;
-    //cout<<"Adding "<<corrEt<<" to the corrected Et, ITS pT "<<pt<<endl;
   }
 }
 
@@ -386,7 +326,6 @@ Bool_t AliAnalysisHadEtReconstructed::IsInPHOS(AliESDtrack *track){//This functi
     && track->Phi()*180.0/TMath::Pi() < fCuts->GetGeometryPhosPhiAccMaxCut();//less than the maximum phi
 }
 Bool_t AliAnalysisHadEtReconstructed::IsInEMCAL(AliESDtrack *track){//This function will need to be elaborated on later to include EMCAL dead channels
-  //cout<<"Eta: |"<<track->Eta()<<"|<"<< fCuts->GetGeometryEmcalEtaAccCut() <<"; phi: "<<fCuts->GetGeometryEmcalPhiAccMinCut()<<"<"<<track->Phi()*180.0/TMath::Pi()<<"<"<<fCuts->GetGeometryEmcalPhiAccMaxCut()<<endl;
   return   TMath::Abs(track->Eta()) < fCuts->GetGeometryEmcalEtaAccCut()//in eta acceptance
     && track->Phi()*180.0/TMath::Pi() > fCuts->GetGeometryEmcalPhiAccMinCut()//greater than the minimum phi
     && track->Phi()*180.0/TMath::Pi() < fCuts->GetGeometryEmcalPhiAccMaxCut();//less than the maximum phi
@@ -410,9 +349,7 @@ Bool_t AliAnalysisHadEtReconstructed::CheckGoodVertex(AliVParticle* track)
 void AliAnalysisHadEtReconstructed::Init()
 { // Init
   AliAnalysisHadEt::Init();
-  if (fConfigFile.Length() && !fCorrections) {
-    gROOT->LoadMacro(fConfigFile);
-    fCorrections = (AliAnalysisHadEtCorrections *) gInterpreter->ProcessLine("ConfigHadEtAnalysis()");
+  if(fCorrections){
     fCorrTotEtFullAcceptanceTPC = fCorrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"Full");
     fCorrTotEtFullAcceptanceITS = fCorrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"Full");
     fCorrHadEtFullAcceptanceTPC = fCorrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"Full");
@@ -425,7 +362,9 @@ void AliAnalysisHadEtReconstructed::Init()
     fCorrTotEtPHOSAcceptanceITS = fCorrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"PHOS");
     fCorrHadEtPHOSAcceptanceTPC = fCorrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"PHOS");
     fCorrHadEtPHOSAcceptanceITS = fCorrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"PHOS");
-
+  }
+  else{
+    cout<<"Warning!  You have not set corrections.  Your code will crash.  You have to set the corrections."<<endl;
   }
 }
 
@@ -458,7 +397,7 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
 
      if(TMath::Abs(fCorrTotEtFullAcceptanceTPC)<1e-3){
        if (fConfigFile.Length()) {
-	 cout<<"Rereading fCorrections file..."<<endl;
+	 cout<<"Warning: Rereading fCorrections file..."<<endl;
 	 gROOT->LoadMacro(fConfigFile);
 	 fCorrections = (AliAnalysisHadEtCorrections *) gInterpreter->ProcessLine("ConfigHadEtAnalysis()");
 	 fCorrTotEtFullAcceptanceTPC = fCorrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"Full");
