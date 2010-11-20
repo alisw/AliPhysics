@@ -86,6 +86,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
 							    fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
+  fEventClass(0),
   fAvgTrials(1),
   fExternalWeight(1),    
 							    fRecEtaWindow(0.5),
@@ -195,6 +196,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
+  fEventClass(0),
   fAvgTrials(1),
   fExternalWeight(1),    
   fRecEtaWindow(0.5),
@@ -513,7 +515,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh1PtHardNoW);
     fHistList->Add(fh1PtHardTrials);
     fHistList->Add(fh1ZVtx);
-    if(fBranchGen.Length()>0){
+    if(fBranchGen.Length()>0||fBkgSubtraction){
       fHistList->Add(fh1NGenJets);
       fHistList->Add(fh1PtTracksGenIn);
     }
@@ -535,7 +537,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     for(int ij = 0;ij<kMaxJets;++ij){
       fHistList->Add( fh1PtRecIn[ij]);
 
-      if(fBranchGen.Length()>0){	
+      if(fBranchGen.Length()>0||fBkgSubtraction){	
 	fHistList->Add(fh1PtGenIn[ij]);
 	fHistList->Add(fh2FragGen[ij]);
 	fHistList->Add(fh2FragLnGen[ij]);
@@ -625,9 +627,13 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     selected = AliAnalysisHelperJetTasks::TestSelectInfo(fEventSelectionMask);
   }
 
+  if(fEventClass>0){
+    selected = selected&&(AliAnalysisHelperJetTasks::EventClass()==fEventClass);
+  }
+
   if(!selected){
     // no selection by the service task, we continue
-    if (fDebug > 1)Printf("Not selected %s:%d",(char*)__FILE__,__LINE__);
+    if (fDebug > 1)Printf("Not selected %s:%d SelectInfo %d  Class %d",(char*)__FILE__,__LINE__, AliAnalysisHelperJetTasks::Selected(),AliAnalysisHelperJetTasks::EventClass());
     PostData(1, fHistList);
     return;
   }
@@ -750,20 +756,20 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
            fh2Errorvspthardest3->Fill(ptsub3,err3/ptsub3);
 	 }
 
-              Float_t ptsub=0.;
-              if(fFillCorrBkg==1) ptsub=ptsub1;
-              if(fFillCorrBkg==2) ptsub=ptsub2;
-              if(fFillCorrBkg==3) ptsub=ptsub3;
-              Float_t subphi=jet->Phi();
-              Float_t subtheta=jet->Theta();
-              Float_t subpz = ptsub/TMath::Tan(subtheta);
-              Float_t subpx=ptsub*TMath::Cos(subphi);
-              Float_t subpy=ptsub * TMath::Sin(subphi);
-              Float_t subp  = TMath::Sqrt(ptsub*ptsub+subpz*subpz);
-	      if(k<kMaxJets){
-		genJets[k].SetPxPyPzE(subpx,subpy,subpz,subp);
-		nGenJets = k+1;
-	      }
+	 Float_t ptsub=0.;
+	 if(fFillCorrBkg==1) ptsub=ptsub1;
+	 if(fFillCorrBkg==2) ptsub=ptsub2;
+	 if(fFillCorrBkg==3) ptsub=ptsub3;
+	 Float_t subphi=jet->Phi();
+	 Float_t subtheta=jet->Theta();
+	 Float_t subpz = ptsub/TMath::Tan(subtheta);
+	 Float_t subpx=ptsub*TMath::Cos(subphi);
+	 Float_t subpy=ptsub * TMath::Sin(subphi);
+	 Float_t subp  = TMath::Sqrt(ptsub*ptsub+subpz*subpz);
+	 if(k<kMaxJets){
+	   genJets[k].SetPxPyPzE(subpx,subpy,subpz,subp);
+	   nGenJets = k+1;
+	 }
        }
        fh2Rhovspthardest1->Fill(pthardest,bkg1);
        fh2Rhovspthardest2->Fill(pthardest,bkg2);
@@ -825,12 +831,14 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	  if(fMinJetPt>0&&pythiaGenJets[iCount].Pt()<fMinJetPt)continue;
 	  // if we have MC particles and we do not read from the aod branch
 	  // use the pythia jets
-	  genJets[iCount].SetPxPyPzE(p[0],p[1],p[2],p[3]);
-	  iCount++;
+	  if(!fBkgSubtraction){
+	    genJets[iCount].SetPxPyPzE(p[0],p[1],p[2],p[3]);
+	    iCount++;
+	  }
 	}
       }
     }
-    if(fBranchGen.Length()==0)nGenJets = iCount;    
+    if(fBranchGen.Length()==0&&!fBkgSubtraction)nGenJets = iCount;    
   }// (fAnalysisType&kMCESD)==kMCESD)
 
 
@@ -856,7 +864,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
 
   // If we set a second branch for the input jets fetch this 
-  if(fBranchGen.Length()>0){
+  if(fBranchGen.Length()>0&&!fBkgSubtraction){
     TClonesArray *aodGenJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchGen.Data()));
     if(aodGenJets){
       Int_t iCount = 0;

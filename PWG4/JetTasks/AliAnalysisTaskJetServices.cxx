@@ -38,6 +38,7 @@
 #include "TDatabasePDG.h"
 
 #include "AliAnalysisTaskJetServices.h"
+#include "AliESDCentrality.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisManager.h"
@@ -66,10 +67,13 @@
 
 ClassImp(AliAnalysisTaskJetServices)
 
+AliAODHeader*  AliAnalysisTaskJetServices::fgAODHeader = NULL;
+
 AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fUseAODInput(kFALSE),
   fUsePhysicsSelection(kFALSE),
   fMC(kFALSE),
+  fFilterAODCollisions(kFALSE),
   fPhysicsSelectionFlag(AliVEvent::kMB),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
@@ -82,6 +86,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fPtMinCosmic(5.),
   fRIsolMinCosmic(3.),
   fMaxCosmicAngle(0.01),
+  fNonStdFile(""),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -106,6 +111,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fUseAODInput(kFALSE),
   fUsePhysicsSelection(kFALSE),
   fMC(kFALSE),
+  fFilterAODCollisions(kFALSE),
   fPhysicsSelectionFlag(AliVEvent::kMB),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
@@ -118,6 +124,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fPtMinCosmic(5.),
   fRIsolMinCosmic(3.),
   fMaxCosmicAngle(0.01),
+  fNonStdFile(""),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -233,7 +240,7 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   // 3 decisions, 0 trigger X, X + SPD vertex, X + SPD vertex in range  
   // 3 triggers BB BE/EB EE
 
-  fh2ESDTriggerRun = new TH2F("fh2ESDTriggerRun","Trigger vs run number:run;trigger",(Int_t)(1+fRunRange[1]-fRunRange[0]),fRunRange[0]-0.5,fRunRange[1]+0.5,10,-0.5,9.5);
+  fh2ESDTriggerRun = new TH2F("fh2ESDTriggerRun","Eventclass vs run number:run;trigger",(Int_t)(1+fRunRange[1]-fRunRange[0]),fRunRange[0]-0.5,fRunRange[1]+0.5,10,-0.5,9.5);
   fHistList->Add(fh2ESDTriggerRun);
 
   fh2VtxXY = new TH2F("fh2VtxXY","Beam Spot all INT triggered events;x (cm);y (cm)",160,-10,10,160,-10,10);
@@ -254,6 +261,13 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
 
 
   TH1::AddDirectory(oldStatus);
+
+  // Add an AOD branch for replication
+  if(fNonStdFile.Length()){
+     if (fDebug > 1) AliInfo("Replicating header");
+     fgAODHeader = new AliAODHeader;
+     AddAODBranch("AliAODHeader",&fgAODHeader,fNonStdFile.Data());
+  }
 }
 
 void AliAnalysisTaskJetServices::Init()
@@ -274,11 +288,18 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
  
   AliAODEvent *aod = 0;
   AliESDEvent *esd = 0;
+
+
   
   AliAnalysisHelperJetTasks::Selected(kTRUE,kFALSE); // set slection to false
+  AliAnalysisHelperJetTasks::EventClass(kTRUE,0);
   fSelectionInfoESD = 0; // reset
   fEventCutInfoESD = 0; // reset
   AliAnalysisHelperJetTasks::SelectInfo(kTRUE,fSelectionInfoESD); // set slection to false
+
+
+  static AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+   
 
 
   if(fUseAODInput){    
@@ -324,68 +345,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     if(v0C)fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kV0C;
     if(!(v0ABG||v0CBG))fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kNoV0BG;
     if(spdFO)fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kSPDFO;
-
-    Float_t run = (Float_t)esd->GetRunNumber();
-    const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
-    esdVtxValid = 
-    esdVtxIn = IsVertexIn(vtxESD);
-    Float_t zvtx = -999;
-    Float_t xvtx = -999;
-    Float_t yvtx = -999;
-
-    if(esdVtxValid){
-      zvtx = vtxESD->GetZ();
-      yvtx = vtxESD->GetY();
-      xvtx = vtxESD->GetX();
-    }
-
-    // CKB this can be cleaned up a bit...
-    
-    Int_t iTrig = -1;
-    if(esd->GetFiredTriggerClasses().Contains("CINT1B")
-       ||esd->GetFiredTriggerClasses().Contains("CSMBB")
-       ||esd->GetFiredTriggerClasses().Contains("MB1")
-       ||esd->GetFiredTriggerClasses().Contains("CINT6B")){
-      iTrig = 0;
-      fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kBunchBunch;
-    }
-    else if(esd->GetFiredTriggerClasses().Contains("CINT1A")
-	    ||esd->GetFiredTriggerClasses().Contains("CSMBA")
-	    ||esd->GetFiredTriggerClasses().Contains("CINT6A")
-	    ||esd->GetFiredTriggerClasses().Contains("CINT1C")
-	    ||esd->GetFiredTriggerClasses().Contains("CSMBC")
-	    ||esd->GetFiredTriggerClasses().Contains("CINT6C")){
-      // empty bunch or bunch empty
-      iTrig = 1;
-      fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kBunchEmpty;
-    }
-    else if(esd->GetFiredTriggerClasses().Contains("CINT1-E")
-       ||esd->GetFiredTriggerClasses().Contains("CINT6-E")){
-      iTrig = 2;
-      fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kEmptyEmpty;
-    }
-
-    
-    if(iTrig>=0){
-      iTrig *= 3;
-      fh2ESDTriggerRun->Fill(run,iTrig+1);
-      if(vtxESD->GetNContributors()>2){
-	fh2ESDTriggerRun->Fill(run,iTrig+2);
-	fh2VtxXY->Fill(xvtx,yvtx);
-      }
-      xvtx -= fVtxXMean; 
-      yvtx -= fVtxYMean; 
-      zvtx -= fVtxZMean; 
-      Float_t r2 = xvtx *xvtx + yvtx *yvtx; 
-      if(TMath::Abs(zvtx)<fVtxZCut&&r2<(fVtxRCut*fVtxRCut))fh2ESDTriggerRun->Fill(run,iTrig+3);
-    }
-    else{
-      fh2ESDTriggerRun->Fill(run,0);
-    }
-    // BKC
   }
-  
-
+ 
   // Apply additional constraints
   Bool_t esdEventSelected = IsEventSelected(esd);
   Bool_t esdEventPileUp = IsEventPileUp(esd);
@@ -394,6 +355,11 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   Bool_t aodEventSelected = IsEventSelected(aod);
 
   Bool_t physicsSelection = ((fInputHandler->IsEventSelected())&fPhysicsSelectionFlag);
+  if(aodH&&physicsSelection&&fFilterAODCollisions){
+    aodH->SetFillAOD(kTRUE);
+  }
+
+
   fEventCutInfoESD |= kPhysicsSelectionCut; // other alreay set via IsEventSelected
   fh1EventCutInfoESD->Fill(fEventCutInfoESD);
 
@@ -425,40 +391,44 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   if(esd){
     const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
-    //      Printf(">> ESDvtx %s %s",vtxESD->GetName(),vtxESD->GetTitle());vtxESD->Print();
-    TString vtxName(vtxESD->GetName());
+    esdVtxValid = IsVertexValid(vtxESD);
+    esdVtxIn = IsVertexIn(vtxESD);
     Float_t zvtx = vtxESD->GetZ();
-    for(int it = AliAnalysisHelperJetTasks::kAcceptAll;it < AliAnalysisHelperJetTasks::kTrigger;it++){
-      Bool_t esdTrig = kFALSE;
-      esdTrig = AliAnalysisHelperJetTasks::IsTriggerFired(esd,(AliAnalysisHelperJetTasks::Trigger)it);
-      if(esdTrig)fh2ESDTriggerCount->Fill(it,kAllTriggered);
-      Bool_t cand = physicsSelection;
+    Int_t  iCl = GetEventClass(esd);
+    AliAnalysisHelperJetTasks::EventClass(kTRUE,iCl);
+    Bool_t cand = physicsSelection;
+
+    Printf("%s:%d %d %d %d Icl %d",(char*)__FILE__,__LINE__,esdVtxValid,esdVtxIn,cand,iCl);
+
+    if(cand){
+      fh2ESDTriggerCount->Fill(0.,kSelectedALICE); 
+      fh2ESDTriggerCount->Fill(iCl,kSelectedALICE); 
+      fh2ESDTriggerVtx->Fill(kSelectedALICE*(iCl+1),zvtx);
+    }
+    //    if(!fUsePhysicsSelection)cand =  AliAnalysisHelperJetTasks::IsTriggerFired(esd,AliAnalysisHelperJetTasks::kMB1);
+    if(esdVtxValid){
+      fh2ESDTriggerCount->Fill(0.,kTriggeredVertex);
+      fh2ESDTriggerCount->Fill(iCl,kTriggeredVertex);
+      fh2ESDTriggerVtx->Fill(iCl,zvtx);
+      if(esdVtxIn){
+	fh2ESDTriggerCount->Fill(0.,kTriggeredVertexIn);
+	fh2ESDTriggerCount->Fill(iCl,kTriggeredVertexIn);
+	fh2ESDTriggerVtx->Fill(kTriggeredVertexIn*(iCl+1),zvtx);
+      }
       if(cand){
-	fh2ESDTriggerCount->Fill(it,kSelectedALICE); 
-	fh2ESDTriggerVtx->Fill(kSelectedALICE*(it+1),zvtx);
+	fh2ESDTriggerCount->Fill(0.,kSelectedALICEVertexValid);
+	fh2ESDTriggerCount->Fill(iCl,kSelectedALICEVertexValid);
+	fh2ESDTriggerVtx->Fill(kSelectedALICEVertexValid*(iCl+1),zvtx);
       }
-      if(!fUsePhysicsSelection)cand =  AliAnalysisHelperJetTasks::IsTriggerFired(esd,AliAnalysisHelperJetTasks::kMB1);
-      if(vtxESD->GetNContributors()>2&&!vtxName.Contains("TPCVertex")){
-	if(esdTrig){
-	  fh2ESDTriggerCount->Fill(it,kTriggeredVertex);
-	  fh2ESDTriggerVtx->Fill(kTriggeredVertex*(it+1),zvtx);
-	}
-	if(esdEventSelected&&esdTrig){
-	  fh2ESDTriggerCount->Fill(it,kTriggeredVertexIn);
-	  fh2ESDTriggerVtx->Fill(kTriggeredVertexIn*(it+1),zvtx);
-	}
-	if(cand){
-	  fh2ESDTriggerCount->Fill(it,kSelectedALICEVertexValid);
-	  fh2ESDTriggerVtx->Fill(kSelectedALICEVertexValid*(it+1),zvtx);
-	}
-      }
-      if(cand&&esdEventSelected){
-	fh2ESDTriggerCount->Fill(it,kSelectedALICEVertexIn);
-	fh2ESDTriggerVtx->Fill(kSelectedALICEVertexIn*(it+1),zvtx);
-	fh2ESDTriggerVtx->Fill(kSelected*(it+1),zvtx);
-	fh2ESDTriggerCount->Fill(it,kSelected);
-	AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
-      }
+    }
+    if(cand&&esdVtxIn){
+      fh2ESDTriggerCount->Fill(0.,kSelectedALICEVertexIn);
+      fh2ESDTriggerCount->Fill(iCl,kSelectedALICEVertexIn);
+      fh2ESDTriggerVtx->Fill(kSelectedALICEVertexIn*(iCl+1),zvtx);
+      fh2ESDTriggerVtx->Fill(kSelected*(iCl+1),zvtx);
+      fh2ESDTriggerCount->Fill(iCl,kSelected);
+      fh2ESDTriggerCount->Fill(0.,kSelected);
+      AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
     }
   }
 
@@ -528,9 +498,15 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   // trigger selection
   
-
+  // replication of 
+  if(fNonStdFile.Length()&&aod){
+    if (fgAODHeader){
+      *fgAODHeader =  *(dynamic_cast<AliAODHeader*>(aod->GetHeader()));
+    }
+  }
+  
   PostData(1, fHistList);
-}
+  }
 
 Bool_t AliAnalysisTaskJetServices::IsEventSelected(const AliESDEvent* esd){
   if(!esd)return kFALSE;
@@ -718,10 +694,22 @@ Bool_t AliAnalysisTaskJetServices::IsEventCosmic(const AliESDEvent* esd) const {
 }
 
 
+Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
 
+  Float_t cent = 999;
+  if(esd->GetCentrality()){
+    cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
+  }
+  if(cent>50)return 4;
+  if(cent>30)return 3;
+  if(cent>10)return 2;
+  return 1;
+
+}
 
 void AliAnalysisTaskJetServices::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
   //
 }
+

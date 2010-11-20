@@ -1,13 +1,11 @@
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* bBkg="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iEventSelectionMask = 0,Bool_t kBackground=kTRUE,Int_t iFillCorrBkg = 0);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* bBkg="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iEventSelectionMask = 0,Bool_t kBackground=kTRUE,Int_t iFillCorrBkg = 0,Int_t iCl = 0);
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,Bool_t kBackground = kTRUE){
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,Bool_t kBackground = kTRUE,char* back = ""){
 
+  TString cBack = back;
 
   AliAnalysisTaskJetSpectrum2 *js = 0;
-
-  TString cBack = ""; // 
-
   if(kUseAODMC){
     if(iFlag&(1<<0)){ // UA104
       js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
@@ -31,75 +29,49 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Boo
   }
   else { // only the data ... no MC
     if(iFlag&(1<<0)){ // UA104
-      js = AddTaskJetSpectrum2("jets","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
+      js = AddTaskJetSpectrum2("jets","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground,1);
     }
     if(iFlag&(1<<1)){ // ANTIKT 04
-      js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground,1);
     }
     if(iFlag&(1<<2)){ // KT 04
-      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",cBack.Data(),filterMask,iPhysicsSelectionFlag,iEventSelectionMask,kBackground);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",cBack.Data(),filterMask,iPhysicsSelectionFlag,iEventSelectionMask,kBackground,1);
     }
     if(iFlag&(1<<3)){ // SISCONE 04
-      js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
+      js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground,1);
     }
   }
-    
-  
-  /*
-  if(iFlag&(1<<7))js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-  if(iFlag&(1<<8))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-  if(iFlag&(1<<9))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-  if(iFlag&(1<<10))js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-  
-  
-  if(iFlag&(1<<11)){
-    js = AddTaskJetSpectrum2("jetsAOD_UA107","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-    js->SetRecEtaWindow(0.2);
-  }
-  if(iFlag&(1<<12)){
-    js = AddTaskJetSpectrum2("jetsAOD_FASTJET07","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-    js->SetRecEtaWindow(0.2);
-  }
-  if(iFlag&(1<<13)){
-    js = AddTaskJetSpectrum2("jetsAOD_FASTKT07","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-    js->SetRecEtaWindow(0.2);
-  }
-  if(iFlag&(1<<14)){
-    js = AddTaskJetSpectrum2("jetsAOD_SISCONE07","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-    js->SetRecEtaWindow(0.2);
-  }
-  */
-
   return js;
 }
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,const char* bBkg,UInt_t filterMask,Int_t iPhysicsSelectionFlag,UInt_t iEventSelectionMask,Bool_t kBackground,Int_t iFillCorrBkg)
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,const char* bBkg,UInt_t filterMask,Int_t iPhysicsSelectionFlag,UInt_t iEventSelectionMask,Bool_t kBackground,Int_t iFillCorrBkg,Int_t iCl)
 {
-// Creates a jet fider task, configures it and adds it to the analysis manager.
-   // Get the pointer to the existing analysis manager via the static access method.
-   //==============================================================================
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr) {
-      ::Error("AddTaskJetSpectrum2", "No analysis manager to connect to.");
-      return NULL;
+  // Creates a jet fider task, configures it and adds it to the analysis manager.
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+     ::Error("AddTaskJetSpectrum2", "No analysis manager to connect to.");
+    return NULL;
    }  
-   
-   // Check the analysis type using the event handlers connected to the analysis manager.
-   //==============================================================================
-   if (!mgr->GetInputEventHandler()) {
-     ::Error("AddTaskJetSpectrum2", "This task requires an input event handler");
-      return NULL;
-   }
-
-   TString type = mgr->GetInputEventHandler()->GetDataType();
-   TString typeRec(bRec);
-   TString typeGen(bGen);
-   typeGen.ToUpper();
-   typeRec.ToUpper();
-
+  
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskJetSpectrum2", "This task requires an input event handler");
+    return NULL;
+  }
+  
+  TString type = mgr->GetInputEventHandler()->GetDataType();
+  TString typeRec(bRec);
+  TString typeGen(bGen);
+  typeGen.ToUpper();
+  typeRec.ToUpper();
+  
    TString bBkgName = bBkg;
    if(kBackground&&bBkgName.Length()==0){
+     // default
      if(typeRec.Contains("AODMC2"))bBkgName = "jeteventbackground_clustersAODMC2_KT06";
      else bBkgName = "jeteventbackground_clustersAOD_KT06";
    }
@@ -108,14 +80,9 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    //===========================================================================
 
    if(iFillCorrBkg)bGen = Form("SubBkg%d",iFillCorrBkg);   
-   AliAnalysisTaskJetSpectrum2* pwg4spec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s-%s_%010d",bRec,bGen,iEventSelectionMask));
+   AliAnalysisTaskJetSpectrum2* pwg4spec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s-%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl));
    pwg4spec->SetFillCorrBkg(iFillCorrBkg);
-   // or a config file
-   // pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum2::kAnaMC);
-   // if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
-   // pwg4spec->SetDebugLevel(11); 
-
-
+   if(iCl)pwg4spec->SetEventClass(iCl);
 
    // add the filter mask for non default jets branches
    TString cAdd("");
@@ -124,7 +91,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    if(iFillCorrBkg)pwg4spec->SetBranchGen("");  
    else {
      pwg4spec->SetBranchGen(bGen); 
-     if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))     pwg4spec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
+     if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))pwg4spec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
    }
    pwg4spec->SetBranchRec(bRec); 
    if(typeRec.Contains("JETSAOD")&&!typeRec.Contains("MC"))     pwg4spec->SetBranchRec(Form("%s%s",bRec,cAdd.Data())); 
@@ -186,7 +153,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwg4spec2_%s_%s_%010d",bRec,bGen,iEventSelectionMask),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_spec2_%s_%s_%010d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask));
+   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwg4spec2_%s_%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_spec2_%s_%s_%010d_Class%02d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl));
 
    mgr->ConnectInput  (pwg4spec, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (pwg4spec, 0, mgr->GetCommonOutputContainer());

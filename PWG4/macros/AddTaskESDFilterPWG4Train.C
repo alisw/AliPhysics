@@ -85,9 +85,12 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
    esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
    esdTrackCutsH->SetDCAToVertex2D(kTRUE);
+   esdTrackCutsH->SetDCAToVertex2D(kTRUE);
+   esdTrackCutsH->SetPtRange(0.15,1E10);
 
    // standard cuts with tight DCA cut
    AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+   esdTrackCutsH2->SetPtRange(0.15,1E10);
 
    // standard cuts with tight DCA but with requiring the first SDD cluster instead of an SPD cluster
    // tracks selected by this cut are exclusive to those selected by the previous cut

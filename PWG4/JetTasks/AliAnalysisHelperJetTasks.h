@@ -42,9 +42,6 @@ class AliAnalysisHelperJetTasks : public TObject {
   // same as in PWG0Helper
   enum MCProcessType { kInvalidProcess = -1, kND = 0x1, kDD = 0x2, kSD = 0x4, kOnePart = 0x8 };
 
-
-
-  
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
   static void PrintStack(AliMCEvent *mcEvent,Int_t iFirst = 0,Int_t iLast = 0,Int_t iMaxPrint = 10);
   static void GetClosestJets(AliAODJet *genJets,
@@ -71,8 +68,10 @@ class AliAnalysisHelperJetTasks : public TObject {
   static Bool_t IsPileUp(); // Wrapper for SelectInfo with PileUp
   static Bool_t IsCosmic(); // Wrapper for SelectInfo with cosmic
   static Bool_t TestSelectInfo(UInt_t iMask); // Wrapper for testing the SelectInfo bitmask
+  static Bool_t TestEventClass(Int_t iClass); // Wrapper for testing the SelectInfo bitmask
 
   static UInt_t SelectInfo(Bool_t bSet = kFALSE,UInt_t iNew = 0); // static function to store the state bitmask of the selection from service task
+  static Int_t  EventClass(Bool_t bSet = kFALSE,Int_t iNew = 0); // static function to store the event class of the selection from service task
   
   // these methods have been essentially copied from PWG0/AliTriggerAnalysis and expanded to use with AOD
   static Bool_t IsTriggerFired(const AliVEvent* aEsd, Trigger trigger);
@@ -81,7 +80,7 @@ class AliAnalysisHelperJetTasks : public TObject {
   
   static Int_t fgLastProcessType;    // stores the raw value of the last process type extracted
  
-  ClassDef(AliAnalysisHelperJetTasks, 3) 
+  ClassDef(AliAnalysisHelperJetTasks, 4) 
 };
 
 #endif // ALIANALYSISHELPERJETTASKS_H

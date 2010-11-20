@@ -55,6 +55,9 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void SetMCData(Bool_t b){fMC = b;}
     virtual void SetUsePhysicsSelection(Bool_t b){fUsePhysicsSelection = b;}
     virtual void SetPhysicsSelectionFlag(Int_t i){fPhysicsSelectionFlag = i;}
+    virtual void SetFilterAODCollisions(Bool_t b){fFilterAODCollisions = b;}
+
+    virtual void SetNonStdFile(char *c){fNonStdFile = c;}
     Bool_t IsEventSelected(const AliESDEvent* esd);
     Bool_t IsEventSelected(const AliAODEvent* aod) const;
 
@@ -67,6 +70,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 
     Bool_t IsVertexIn(const AliESDVertex *vtx);
     Bool_t IsVertexIn(const AliAODVertex *vtx) const;
+    Int_t GetEventClass(AliESDEvent *esd);
 
     enum { kAllTriggered = 0,kTriggeredVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexValid,kSelectedALICEVertexIn,kSelected,kConstraints};
 
@@ -91,6 +95,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Bool_t        fUseAODInput;        // take jet from input AOD not from ouptu AOD
     Bool_t        fUsePhysicsSelection;// decide wether we take into account physicsselction task
     Bool_t        fMC;                 // true for MC data to allow correct trigger slection
+    Bool_t        fFilterAODCollisions; // filter out collision canditates to the AOD
     UInt_t        fPhysicsSelectionFlag; // defines the glag for acceptance of events from physics selection
     UInt_t        fSelectionInfoESD;   // slection info bit mask
     UInt_t        fEventCutInfoESD;   // event selection info of what is cutted after physics selection
@@ -104,6 +109,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Float_t       fRIsolMinCosmic;     // Minimum R = sqrt{deltaPhi^2 + deltaEta^2} to be considered as cosmic candidate
     Float_t       fMaxCosmicAngle;     // Max deviation from pi (angle between two tracks) in case of cosmic candidate
     Float_t       fRunRange[2];        // only important for real data for 
+    TString       fNonStdFile;         // outputName for replication
     TProfile*     fh1Xsec;             //! pythia cross section and trials
     TH1F*         fh1Trials;           //! trials are added
     TH1F*         fh1PtHard;           //! Pt har of the event...       
@@ -118,10 +124,12 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH2F*         fh2VtxXY;            //! XY position of VTX were available
     TH1F*         fh1NCosmicsPerEvent;  //! Number of coscmic candidates found in event
     AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis to get the background rates etc.
+    TList *fHistList; //! Output list
 
-    TList *fHistList; // Output list
-   
-    ClassDef(AliAnalysisTaskJetServices,9)
+        // Provisions for replication
+    static AliAODHeader*    fgAODHeader;        //! Header for replication
+
+    ClassDef(AliAnalysisTaskJetServices,11)
 };
  
 #endif

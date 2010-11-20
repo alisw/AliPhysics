@@ -557,6 +557,12 @@ Bool_t  AliAnalysisHelperJetTasks::TestSelectInfo(UInt_t iMask){
 }
 
 
+Bool_t  AliAnalysisHelperJetTasks::TestEventClass(Int_t iMask){
+  if(iMask==0)return kTRUE;
+  return (EventClass()==iMask);
+}
+
+
 UInt_t  AliAnalysisHelperJetTasks::SelectInfo(Bool_t bSet,UInt_t iNew){
   static UInt_t iSelectInfo = 0; //
   if(bSet){
@@ -564,6 +570,17 @@ UInt_t  AliAnalysisHelperJetTasks::SelectInfo(Bool_t bSet,UInt_t iNew){
   }
   return iSelectInfo;
 }
+
+
+Int_t  AliAnalysisHelperJetTasks::EventClass(Bool_t bSet,Int_t iNew){
+  static Int_t iEventClass = 0; //
+  if(bSet){
+    iEventClass = iNew;
+  }
+  return iEventClass;
+}
+
+
 
 
 //___________________________________________________________________________________________________________

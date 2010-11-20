@@ -172,7 +172,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    jetana->SetConfigFile("");
    jetana->SetDebugLevel(2);
    if(TMath::Abs((radius-0.4))< 0.02&&c_jf.Contains("fastjet")){
-     jetana->SetFilterPt(100.);
+     jetana->SetFilterPt(0.1);
    }
 
 
