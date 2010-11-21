@@ -281,17 +281,16 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    AliAnalysisAlien *plugin = new AliAnalysisAlien();
    // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(pluginmode.Data());
-   plugin->SetUser("dainesea");
-   plugin->SetNtestFiles(3);
+   plugin->SetUser();
    // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-27-06a-1");
-   plugin->SetAliROOTVersion("v4-21-02-AN");
+   plugin->SetROOTVersion();
+   plugin->SetAliROOTVersion();
+
    // Declare input data to be processed.
    //************************************************
    // Set data search pattern for DATA
-   //************************************************
-   
+   //************************************************   
    plugin->SetGridDataDir("/alice/data/2010/LHC10d"); // specify LHC period
    plugin->SetDataPattern("pass2/AOD018/*AliAOD.root"); // specify reco pass and AOD set
    plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
@@ -321,7 +320,6 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    plugin->SetNrunsPerMaster(totruns);
    */
    //
-   // plugin->SetMaxMergeFiles(100);
    // Define alien work directory where all files will be copied. Relative to alien $HOME.
    plugin->SetGridWorkingDir("myHFanalysis");
    // Declare alien output directory. Relative to working directory.
@@ -345,32 +343,13 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
      plugin->EnablePackage("PWG3muon.par");
    }
    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/base -I$ALICE_ROOT/PWG3/vertexingHF -g");
-   // Declare the output file names separated by blancs.
-   // (can be like: file.root or file.root@ALICE::Niham::File)
+
    plugin->SetDefaultOutputs(kTRUE);
-   //plugin->SetOutputFiles("output.root CmpHF.root CmpHFnt.root D0InvMass.root InvMassDplus.root InvMassDplus_nt1.root InvMassDplus_nt2.root");
-   // Optionally define the files to be archived.
-   //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:*.root@ALICE::NIHAM::File");
-   //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
    // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro("AnalysisHF.C");
    // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(10);
-   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
-   //plugin->SetMaxInitFailed(5);
-   // Optionally resubmit threshold.
-   //plugin->SetMasterResubmitThreshold(90);
-   // Optionally set time to live (default 30000 sec)
-   //plugin->SetTTL(20000);
-   // Optionally set input format (default xml-single)
-   plugin->SetInputFormat("xml-single");
    // Optionally modify the name of the generated JDL (default analysis.jdl)
    plugin->SetJDLName("TaskHF.jdl");
-   // Optionally modify job price (default 1)
-   //plugin->SetPrice(1);      
-   // Optionally modify split mode (default 'se')    
-   plugin->SetSplitMode("se");
-
 
    return plugin;
 }
