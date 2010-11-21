@@ -67,81 +67,84 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
 	
   void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
 	
-  Int_t GetNPID()   const   {return fNPID ; }
-  void  SetNPID(Int_t n)    {fNPID = n ; }
-	
   void SwitchOnAngleSelection()    {fUseAngleCut = kTRUE ; }
   void SwitchOffAngleSelection()   {fUseAngleCut = kFALSE ; }
   
   virtual Int_t GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  ;
 
-  void SwitchOnOwnMix()    {fDoOwnMix = kTRUE ; }
+  void SwitchOnOwnMix()    {fDoOwnMix = kTRUE  ; }
   void SwitchOffOwnMix()   {fDoOwnMix = kFALSE ; }
 
+  void SwitchOnSameSM()    {fSameSM = kTRUE  ; }
+  void SwitchOffSameSM()   {fSameSM = kFALSE ; }
+  
   //Cuts for multiple analysis
   void SwitchOnMultipleCutAnalysis()   {fMultiCutAna = kTRUE;}
   void SwitchOffMultipleCutAnalysis()  {fMultiCutAna = kFALSE;}
 
-  void SetNPtCuts   (Int_t size)  {if(size <= 5)fNPtCuts    = size; }
-  void SetNAsymCuts (Int_t size)  {if(size <= 5)fNAsymCuts  = size; }
-  void SetNNCellCuts(Int_t size)  {if(size <= 5)fNCellNCuts = size; }
-  void SetNPIDBits  (Int_t size)  {if(size <= 5)fNPIDBits   = size; }
-
-  void SetPtCutsAt   (Int_t pos,Float_t val)  {if(pos < 5)fPtCuts[pos]    = val;}
-  void SetAsymCutsAt (Int_t pos,Float_t val)  {if(pos < 5)fAsymCuts[pos]  = val;}
-  void SetNCellCutsAt(Int_t pos,Int_t val)    {if(pos < 5)fCellNCuts[pos] = val;}
-  void SetPIDBitsAt  (Int_t pos,Int_t val)    {if(pos < 5)fPIDBits[pos]   = val;}
+  void SetNPtCuts   (Int_t size)  {if(size <= 10)fNPtCuts    = size; }
+  void SetNAsymCuts (Int_t size)  {if(size <= 10)fNAsymCuts  = size; }
+  void SetNNCellCuts(Int_t size)  {if(size <= 10)fNCellNCuts = size; }
+  void SetNPIDBits  (Int_t size)  {if(size <= 10)fNPIDBits   = size; }
   
+  void SetPtCutsAt   (Int_t pos,Float_t val)  {if(pos < 10)fPtCuts[pos]    = val;}
+  void SetAsymCutsAt (Int_t pos,Float_t val)  {if(pos < 10)fAsymCuts[pos]  = val;}
+  void SetNCellCutsAt(Int_t pos,Int_t val)    {if(pos < 10)fCellNCuts[pos] = val;}
+  void SetPIDBitsAt  (Int_t pos,Int_t val)    {if(pos < 10)fPIDBits[pos]   = val;}
   
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
   
   private:
-  Bool_t   fDoOwnMix;     // Do combinatorial background not the one provided by the frame
-  Int_t    fNCentrBin ;	  // Number of bins in event container for centrality
+  Bool_t   fDoOwnMix;      // Do combinatorial background not the one provided by the frame
+  Int_t    fNCentrBin ;	   // Number of bins in event container for centrality
   // Int_t    fNZvertBin ;	// Number of bins in event container for vertex position
   // Int_t    fNrpBin ;	    // Number of bins in event container for reaction plain
-  Int_t    fNPID ;		    // Number of possible PID combinations
-  Int_t    fNmaxMixEv ;	  // Maximal number of events stored in buffer for mixing
-  //  Float_t  fZvtxCut ;	    // Cut on vertex position
-  TString  fCalorimeter ; // Select Calorimeter for IM
-  Int_t    fNModules ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
-  Bool_t   fUseAngleCut ; // Select pairs depending on their opening angle
-  TList ** fEventsList ;  //! Containers for photons in stored events
-  Bool_t   fMultiCutAna;  // Do analysis with several or fixed cut
-  Int_t    fNPtCuts;      // number of pt cuts
-  Float_t  fPtCuts[5];    // array with different pt cuts
-  Int_t    fNAsymCuts;    // number of assymmetry cuts
-  Float_t  fAsymCuts[5];  // array with different assymetry cuts
-  Int_t    fNCellNCuts;   // number of cuts with number of cells in cluster
-  Int_t    fCellNCuts[5]; // array with different cell number cluster cuts
-  Int_t    fNPIDBits;     // number of PID bits to check in multi cuts option
-  Int_t    fPIDBits[5];   // array with different pid bits
+  Int_t    fNmaxMixEv ;	   // Maximal number of events stored in buffer for mixing
+  //  Float_t  fZvtxCut ;	   // Cut on vertex position
+  TString  fCalorimeter ;  // Select Calorimeter for IM
+  Int_t    fNModules ;     // Number of EMCAL/PHOS modules, set as many histogras as modules 
+  Bool_t   fUseAngleCut ;  // Select pairs depending on their opening angle
+  TList ** fEventsList ;   //! Containers for photons in stored events
+  Bool_t   fMultiCutAna;   // Do analysis with several or fixed cut
+  Int_t    fNPtCuts;       // number of pt cuts
+  Float_t  fPtCuts[10];    // array with different pt cuts
+  Int_t    fNAsymCuts;     // number of assymmetry cuts
+  Float_t  fAsymCuts[10];  // array with different assymetry cuts
+  Int_t    fNCellNCuts;    // number of cuts with number of cells in cluster
+  Int_t    fCellNCuts[10]; // array with different cell number cluster cuts
+  Int_t    fNPIDBits ;		 // number of possible PID bit combinations
+  Int_t    fPIDBits[10];   // array with different PID bits
 
-  //Histograms
-  TH3D ** fhReMod ;     //!REAL two-photon invariant mass distribution for different calorimeter modules.
-  TH3D ** fhReDiffMod ; //!REAL two-photon invariant mass distribution for different clusters in different calorimeter modules.
-
-  TH3D ** fhRe1 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID 
-  TH3D ** fhMi1 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
-  TH3D ** fhRe2 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID 
-  TH3D ** fhMi2 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
-  TH3D ** fhRe3 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID 
-  TH3D ** fhMi3 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
+  Bool_t   fSameSM;        // select only pairs in same SM;
   
-  TH3D ** fhReInvPt1 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID, inverse pT
-  TH3D ** fhMiInvPt1 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID, inverse pT
-  TH3D ** fhReInvPt2 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID, inverse pT 
-  TH3D ** fhMiInvPt2 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID, inverse pT
-  TH3D ** fhReInvPt3 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID, inverse pT
-  TH3D ** fhMiInvPt3 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID, inverse pT
+  //Histograms
+  TH2D ** fhReMod ;     //!REAL two-photon invariant mass distribution for different calorimeter modules.
+  TH2D ** fhReDiffMod ; //!REAL two-photon invariant mass distribution for different clusters in different calorimeter modules.
+
+  TH2D ** fhRe1 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2D ** fhMi1 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2D ** fhRe2 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2D ** fhMi2 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2D ** fhRe3 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2D ** fhMi3 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  
+  TH2D ** fhReInvPt1 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhMiInvPt1 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhReInvPt2 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT 
+  TH2D ** fhMiInvPt2 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhReInvPt3 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhMiInvPt3 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
   
   //Multiple cuts
   TH2D ** fhRePtNCellAsymCuts ; //!REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry
   TH2D ** fhRePIDBits ;         //!REAL two-photon invariant mass distribution for different PID bits
-  TH3D *  fhRePtMult ;          //!REAL two-photon invariant mass distribution for different track multiplicity
-  TH3D *  fhRePtMultAsy07 ;     //!REAL two-photon invariant mass distribution for different track multiplicity, asymetry < 0.7
+  TH3D ** fhRePtMult ;          //!REAL two-photon invariant mass distribution for different track multiplicity and assymetry cuts
   
+  TH2D *  fhRePtAsym    ;       //!REAL two-photon pt vs asymmetry
+  TH2D *  fhRePtAsymPi0 ;       //!REAL two-photon pt vs asymmetry, close to pi0 mass
+  TH2D *  fhRePtAsymEta ;       //!REAL two-photon pt vs asymmetry, close to eta mass
+
   TH3D * fhEvents; //!Number of events per centrality, RP, zbin
 
   TH2D * fhRealOpeningAngle ;    //! Opening angle of pair versus pair energy
@@ -157,7 +160,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D * fhPrimOpeningAngle ;    //! Opening angle of pair versus pair energy, primaries
   TH2D * fhPrimCosOpeningAngle ; //! Cosinus of opening angle of pair version pair energy, primaries
 	
-  ClassDef(AliAnaPi0,10)
+  ClassDef(AliAnaPi0,11)
 } ;
 
 

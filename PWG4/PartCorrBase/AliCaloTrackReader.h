@@ -216,11 +216,14 @@ public:
   void SwitchOffWriteDeltaAOD() {fWriteOutputDeltaAOD = kFALSE ; }
   Bool_t WriteDeltaAODToFile() const {return fWriteOutputDeltaAOD ; } 
   
-  
   virtual void FillInputVZERO(){;}
   Int_t GetV0Signal(Int_t i) const { return fV0ADC[i];}
   Int_t GetV0Multiplicity(Int_t i)   const { return fV0Mul[i];}
 
+  void SwitchOnCaloFilterPatch()  {fCaloFilterPatch = kTRUE ; fFillCTS = kFALSE; }
+  void SwitchOffCaloFilterPatch() {fCaloFilterPatch = kFALSE ; }
+  Bool_t IsCaloFilterPatchOn()    {if(fDataType == kAOD) { return fCaloFilterPatch ; } 
+                                   else                  { return kFALSE ; } }
   //MC reader methods:
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/)  { ; }  
@@ -237,6 +240,7 @@ public:
   virtual void SetEMCALOverlapAngle(Float_t /*angle*/)  { ; }
   virtual void SetPHOSOverlapAngle(Float_t /*angle*/)   { ; }
   
+
   
  protected:
   Int_t	           fEventNumber;    // Event number
@@ -305,8 +309,9 @@ public:
   Int_t            fV0ADC[2]    ;       // Integrated V0 signal
   Int_t            fV0Mul[2]    ;       // Integrated V0 Multiplicity
 
+  Bool_t           fCaloFilterPatch;    // CaloFilter patch
   
-  ClassDef(AliCaloTrackReader,20)
+  ClassDef(AliCaloTrackReader,21)
 } ;
 
 

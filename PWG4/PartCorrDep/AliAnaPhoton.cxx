@@ -130,7 +130,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Float_t etamin = GetHistoEtaMin();	
   
   //Histograms of highest Photon identified in Event
-  fhVertex  = new TH3D ("Vertex","vertex position", 100,-50.,50., 100,-50.,50., 100,-50.,50.); 
+  fhVertex  = new TH3D ("Vertex","vertex position", 20,-10.,10., 20,-10.,10., 80,-40.,40.); 
   fhVertex->SetXTitle("X");
   fhVertex->SetYTitle("Y");
   fhVertex->SetZTitle("Z");
@@ -476,7 +476,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if     (distBad > fMinDist3) aodph.SetDistToBad(2) ;
     else if(distBad > fMinDist2) aodph.SetDistToBad(1) ; 
     else                         aodph.SetDistToBad(0) ;
-    
+    //printf("DistBad %f Bit %d\n",distBad, aodph.DistToBad());
+
     //Skip matched clusters with tracks
     if(fRejectTrackMatch && IsTrackMatched(calo)) continue ;
     if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - TrackMatching cut passed \n");

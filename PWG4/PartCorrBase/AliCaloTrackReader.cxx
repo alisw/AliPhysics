@@ -68,7 +68,8 @@ ClassImp(AliCaloTrackReader)
     fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
     fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
     fMixedEvent(NULL), fNMixedEvent(1), fVertex(NULL), 
-    fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE){
+    fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),fCaloFilterPatch(kFALSE)
+{
   //Ctor
   
   //Initialize parameters
@@ -445,6 +446,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
     //Accept events with at least one track
     if(fTrackMult == 0) return kFALSE;
   }
+  
+  //In case of data produced with calo filter, some information stored in non usual places
+  if(IsCaloFilterPatchOn()){
+    fTrackMult = ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
+    //printf("Track multiplicity %d \n",fTrackMult);
+    if(fTrackMult == 0) return kFALSE;
+  }
+  
   if(fFillEMCAL) 
     FillInputEMCAL();
   if(fFillPHOS)  
@@ -542,8 +551,8 @@ void AliCaloTrackReader::FillVertexArray() {
   }          
   
   if (!fMixedEvent) { //Single event analysis
-    
-    if(fDataType!=kMC)fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]); 
+    if(!fInputEvent->GetPrimaryVertex()) printf("AliCaloTrackReader::FillVertexArray() - NULL primary vertex\n");
+    if(fDataType!=kMC && fInputEvent->GetPrimaryVertex())fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]); 
     else { 
       fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
     }

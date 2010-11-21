@@ -212,7 +212,8 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
   for(Int_t i=0;i<fNVtxZBin;i++){
     for(Int_t j=0;j<fNCentBin;j++){
       for(Int_t k=0;k<fNRpBin;k++){
-        fEventsList[i*fNCentBin*fNRpBin+j*fNRpBin+k]=new TList();
+        fEventsList[i*fNCentBin*fNRpBin+j*fNRpBin+k] = new TList();
+        fEventsList[i*fNCentBin*fNRpBin+j*fNRpBin+k]->SetOwner(kFALSE); 
       }
     }
   }
