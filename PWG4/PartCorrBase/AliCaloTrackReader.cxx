@@ -449,7 +449,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
   
   //In case of data produced with calo filter, some information stored in non usual places
   if(IsCaloFilterPatchOn()){
-    fTrackMult = ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
+    fTrackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
     //printf("Track multiplicity %d \n",fTrackMult);
     if(fTrackMult == 0) return kFALSE;
   }
