@@ -1958,9 +1958,10 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
 	  //  delete omegaCandidatePipPinPi0;
 	}
       }
+
+      if (posPiKF) delete posPiKF; posPiKF=NULL;     if (negPiKF) delete negPiKF; negPiKF=NULL;
+
     } // checking ig gammajet because in that case the chargedparticle list is created
-
-
 
   }
 
