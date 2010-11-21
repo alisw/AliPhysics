@@ -31,7 +31,7 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
   // 1) transverse momentum
   // 2) rapidity
   // 3) multiplicity
-  Double_t mult[] = {0., 6., 10., 15., 23., 1E6};
+  Double_t mult[] = {0., 6., 10., 15., 23., 10000};
   Int_t    nmult  = sizeof(mult) / sizeof(mult[0]);
   AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 0.9,  1.4, 0.001);
   AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 0.0, 10.0, 0.100);

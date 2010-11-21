@@ -26,8 +26,9 @@ Bool_t AddRsnAnalysis
   task->SelectCollisionCandidates();
 
   // set cuts for events : primary vertex range and type
-  gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/ConfigESDCutsTPC.C");
+  gROOT->LoadMacro(Form("%s/ConfigESDCutsTPC.C", path);
   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+  cutVertex->SetCheckPileUp(kTRUE);
   task->GetEventCuts()->AddCut(cutVertex);
   task->GetEventCuts()->SetCutScheme(cutVertex->GetName());
 
