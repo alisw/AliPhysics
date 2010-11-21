@@ -399,7 +399,7 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fMultiBin = 1;
   fNZvertBin = 1;
   fNrpBin    = 1;
-  fZvtxCut   = 40;
+  fZvtxCut   = 10;
   fMaxMulti   = 1000;
   fMinMulti   = 0;
   fUseSelectEvent = kFALSE ;
@@ -444,7 +444,7 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fHistoV0MMin   = 0 ;
 	
   fHistoTrMBins  = 100 ;
-  fHistoTrMMax   = 10000 ;
+  fHistoTrMMax   = 2000 ;
   fHistoTrMMin   = 0 ;
   	
 }

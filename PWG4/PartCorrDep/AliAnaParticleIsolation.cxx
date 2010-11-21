@@ -625,12 +625,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* aod =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
-    Bool_t isolation   = aod->IsIsolated();              
+    Bool_t  isolation  = aod->IsIsolated();              
     Float_t ptcluster  = aod->Pt();
     Float_t phicluster = aod->Phi();
     Float_t etacluster = aod->Eta();
    // Float_t phiForward = aod->Phi()+TMath::PiOver2() ;
-    Float_t conesize       = GetIsolationCut()->GetConeSize();
+    Float_t conesize   = GetIsolationCut()->GetConeSize();
     
     //Recover reference arrays with clusters and tracks
     TObjArray * refclusters = aod->GetObjArray(GetAODObjArrayName()+"Clusters");
@@ -638,7 +638,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     //If too small or too large pt, skip
     if(aod->Pt() < GetMinPt() || aod->Pt() > GetMaxPt() ) continue ; 
     
-
     if(fMakeSeveralIC) {
       //Analysis of multiple IC at same time
       MakeSeveralICAnalysis(aod);
@@ -654,17 +653,26 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     //Fill pt distribution of particles in cone
     //Tracks
-    coneptsum=0;
+    coneptsum = 0;
     Double_t sumptFR = 0. ;
     TObjArray * trackList   = GetAODCTS() ;
     for(Int_t itrack=0; itrack < trackList->GetEntriesFast(); itrack++){
       AliAODTrack* track = (AliAODTrack *) trackList->At(itrack);
       //fill the histograms at forward range
-      if(TMath::Sqrt((phicluster+TMath::PiOver2()-track->Phi())*(phicluster+TMath::PiOver2()-track->Phi())+(etacluster-track->Eta())*(etacluster-track->Eta())) < conesize){
+      if(!track){
+        printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Track not available?");
+        continue;
+      }
+      Double_t dPhi = phicluster - track->Phi() + TMath::PiOver2();
+      Double_t dEta = etacluster - track->Eta();
+      Double_t arg  = dPhi*dPhi + dEta*dEta;
+      if(TMath::Sqrt(arg) < conesize){
         fhPtInFRCone->Fill(ptcluster,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
         sumptFR+=track->Pt();
       }    
-      if(TMath::Sqrt((phicluster-TMath::PiOver2()-track->Phi())*(phicluster-TMath::PiOver2()-track->Phi())+(etacluster-track->Eta())*(etacluster-track->Eta())) < conesize){
+      dPhi = phicluster - track->Phi() - TMath::PiOver2();
+      arg  = dPhi*dPhi + dEta*dEta;
+      if(TMath::Sqrt(arg) < conesize){
         fhPtInFRCone->Fill(ptcluster,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
         sumptFR+=track->Pt();
       }      

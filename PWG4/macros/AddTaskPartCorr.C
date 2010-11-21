@@ -129,6 +129,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
     anaphoton->SetMinPt(0.1); // no effect minium EMCAL cut.
     if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
     anaphoton->SetMinDistanceToBadChannel(6, 12, 18);
+    //anaphoton->SetMinDistanceToBadChannel(1, 2, 3);//For new releases.
   }
   anaphoton->SetCalorimeter(calorimeter);
   if(kUseKinematics) anaphoton->SwitchOnDataMC() ;//Access MC stack and fill more histograms
@@ -175,23 +176,25 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
     fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
     fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
   }  	
-  anapi0->SetNPID(1); //Available from tag AliRoot::v4-18-15-AN
+
   //settings for pp collision
   anapi0->SwitchOnOwnMix();
   anapi0->SwitchOnEventSelection() ;
   anapi0->SetNCentrBin(1);
   anapi0->SetZvertexCut(10.);
-  anapi0->SetMultiplicity(80, 120);
+  //anapi0->SetMultiplicity(80, 120);
   anapi0->SetMultiBin(1);  
   if(kUseKinematics)anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else anapi0->SwitchOffDataMC() ;
   if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
   else  anapi0->SetNumberOfModules(4); //EMCAL first year
-  anapi0->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  anapi0->SetHistoPtRangeAndNBins(0, 20, 200) ;
   //anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   //anapi0->SetHistoEtaRangeAndNBins(-0.8, 0.8, 200) ;
-  anapi0->SetHistoMassRangeAndNBins(0., 0.6, 200) ;
-  anapi0->SetHistoAsymmetryRangeAndNBins(0., 1. , 10) ;
+  anapi0->SetHistoMassRangeAndNBins(0., 0.9, 300) ;
+  anapi0->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
+  anapi0->SetHistoTrackMultiplicityRangeAndNBins(0, 200, 20); 
+
   if(kPrintSettings) anapi0->Print("");
 	
   //---------------------------  
@@ -546,12 +549,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   maker->AddAnalysis(anaisol,n++);
   maker->AddAnalysis(anaisolpi0,n++);
   // Correlation analysis
-  maker->AddAnalysis(anacorrjet,n++);
-  maker->AddAnalysis(anacorrhadron,n++);
-  maker->AddAnalysis(anacorrhadronpi0,n++);
-  maker->AddAnalysis(anacorrisohadron,n++);
-  maker->AddAnalysis(anacorrhadronisopi0,n);
-  maker->SetAnaDebug(-1)  ;
+  //maker->AddAnalysis(anacorrjet,n++);
+  //maker->AddAnalysis(anacorrhadron,n++);
+  //maker->AddAnalysis(anacorrhadronpi0,n++);
+  //maker->AddAnalysis(anacorrisohadron,n++);
+  //maker->AddAnalysis(anacorrhadronisopi0,n);
+  maker->SetAnaDebug(0)  ;
   maker->SwitchOnHistogramsMaker()  ;
   if(inputDataType.Contains("delta")) maker->SwitchOffAODsMaker()  ;
   else                       maker->SwitchOnAODsMaker()  ;
@@ -567,7 +570,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (Form("PartCorr%s",calorimeter.Data()));
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
-  task->SelectCollisionCandidates();
   task->SetAnalysisMaker(maker);
   if(inputDataType=="ESD" && !kSimulation) task->SelectCollisionCandidates(); //AliPhysicsSelection has to be attached before.
   mgr->AddTask(task);
