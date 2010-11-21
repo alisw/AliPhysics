@@ -5,8 +5,8 @@
 // - ITS: not included
 // - dip: not included
 //
-Bool_t RsnConfigNoSA(const char *taskName, const char *options)
+Bool_t RsnConfigNoSA(const char *taskName, const char *options, const char *path)
 {
   gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/RsnConfig.C");
-  return RsnConfig(taskName, options, "realistic");
+  return RsnConfig(taskName, options, "realistic", path);
 }

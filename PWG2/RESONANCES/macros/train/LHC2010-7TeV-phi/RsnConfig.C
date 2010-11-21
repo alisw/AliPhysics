@@ -17,12 +17,13 @@ Bool_t RsnConfig
 (
   const char *taskName, 
   const char *options,
-  const char *config
+  const char *config,
+  const char *path
 )
 {
   // load useful macros
-  gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/ConfigESDCutsITS.C");
-  gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/ConfigESDCutsTPC.C");
+  gROOT->LoadMacro(Form("%s/ConfigESDCutsITS.C", path));
+  gROOT->LoadMacro(Form("%s/ConfigESDCutsTPC.C", path));
   
   // interpret the useful information from second argument
   TString opt(options);
@@ -130,7 +131,7 @@ Bool_t RsnConfig
   
   // pair cut ----------------------
   // --> dip angle between daughters
-  AliRsnCutValue *cutDip = new AliRsnCutValue("cutDip", AliRsnValue::kPairDipAngle, 0.03, 1.01);
+  AliRsnCutValue *cutDip = new AliRsnCutValue("cutDip", AliRsnValue::kPairDipAngle, 0.02, 1.01);
 
   // cut set for tracks------------------------
   // --> only common cuts for tracks are needed
@@ -204,7 +205,7 @@ Bool_t RsnConfig
   // 1) transverse momentum
   // 2) rapidity
   // 3) multiplicity
-  Double_t mult[] = {0., 6., 10., 15., 23., 1E6};
+  Double_t mult[] = {0., 6., 10., 15., 23., 10000};
   Int_t    nmult  = sizeof(mult) / sizeof(mult[0]);
   AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 0.9,  1.4, 0.001);
   AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 0.0, 10.0, 0.100);
