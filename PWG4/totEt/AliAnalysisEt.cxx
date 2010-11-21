@@ -18,6 +18,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliVEvent.h"
 #include "Rtypes.h"
+#include "TString.h"
 
 using namespace std;
 ClassImp(AliAnalysisEt);

@@ -8,9 +8,9 @@
 //*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
 //_________________________________________________________________________
 
-#include "TString.h"
 #include "AliAnalysisEtCommon.h"
 
+class TString;
 class TTree;
 class TH2F;
 class TH1F;

@@ -106,10 +106,10 @@ public:
     void InvestigatePHOS(Bool_t val){fInvestigatePHOS=val;}
     void InvestigatePiKP(Bool_t val){fInvestigatePiKP=val;}
     void RequireITSHits(Bool_t val){fRequireITSHits=val;}
-    Bool_t Full(){return fInvestigateFull;}
-    Bool_t EMCAL(){return fInvestigateEMCal;}
-    Bool_t PHOS(){return fInvestigatePHOS;}
-    Bool_t PiKP(){return fInvestigatePiKP;}
+    Bool_t Full() const {return fInvestigateFull;}
+    Bool_t EMCAL() const {return fInvestigateEMCal;}
+    Bool_t PHOS()const {return fInvestigatePHOS;}
+    Bool_t PiKP() const {return fInvestigatePiKP;}
 
  private:
     //Declare it private to avoid compilation warning
@@ -125,15 +125,15 @@ public:
     Bool_t fInvestigateEMCal;//Turns on and off functions and histos for investigating event-by-event et for the full acceptance
     Bool_t fInvestigatePHOS;//Turns on and off functions and histos for investigating event-by-event et for the full acceptance
     Bool_t fInvestigatePiKP;//Turns on and off functions and histos for looking pi/k/p Et event-by-event
-    Bool_t fRequireITSHits;
+    Bool_t fRequireITSHits;//Also investigates Et for track cuts with ITS+TPC hits
 
 
     void ResetEventValues();
 
     //Float_t fSimPiKPEtSmeared[4];//simulated Et for pi,k,p smeared for each event by different momentum resolutions
-    static Float_t fgSmearWidths[4];
-    static Int_t fgNumSmearWidths;
-    TRandom *fPtSmearer;
+    static Float_t fgSmearWidths[4];//array with widths for smearing with different momentum resultions
+    static Int_t fgNumSmearWidths;//number of entries in the array above
+    TRandom *fPtSmearer;//a TRandom used for investigating momentum smearing
 
     ClassDef(AliAnalysisHadEtMonteCarlo, 1);
 };

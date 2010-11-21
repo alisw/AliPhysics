@@ -30,8 +30,6 @@ public:
   virtual void   Terminate(Option_t *);
     
 
-  TString       fMCConfigFile;        // the name of the ConfigFile
-  TString       fRecoConfigFile;        // the name of the ConfigFile
   AliESDtrackCuts* GetTPCITSTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCuts");}
   AliESDtrackCuts* GetTPCOnlyTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsTPCOnly");}
   AliESDtrackCuts* GetITSTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsITS");}
@@ -41,6 +39,9 @@ private:
   //Declare private to avoid compilation warning
   AliAnalysisTaskTotEt & operator = (const AliAnalysisTaskTotEt & g) ;//copy assignment
   AliAnalysisTaskTotEt(const AliAnalysisTaskTotEt & g) ; // copy ctor
+
+  TString       fMCConfigFile;        // the name of the ConfigFile
+  TString       fRecoConfigFile;        // the name of the ConfigFile
 
   TList *fOutputList; //output list
   
