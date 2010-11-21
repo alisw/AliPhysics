@@ -33,11 +33,13 @@ class AliRsnCutPrimaryVertex : public AliRsnCut
     AliRsnCutPrimaryVertex(const char *name = "cutPrimVert", Double_t maxVz = 10.0, Int_t minContributors = 1, Bool_t acceptTPC = kFALSE);
     virtual ~AliRsnCutPrimaryVertex() {;};
 
+    void           SetCheckPileUp(Bool_t doit = kTRUE) {fCheckPileUp = doit;}
     virtual Bool_t IsSelected(TObject *object);
 
   protected:
 
-    Bool_t fAcceptTPC;  // if kTRUE, the TPC primary vertexes are accepted
+    Bool_t fAcceptTPC;   // if kTRUE, the TPC primary vertexes are accepted
+    Bool_t fCheckPileUp; // check and reject pileupped events (pp)
 
     ClassDef(AliRsnCutPrimaryVertex, 1)
 };

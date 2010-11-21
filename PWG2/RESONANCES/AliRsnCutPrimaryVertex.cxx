@@ -16,7 +16,8 @@ ClassImp(AliRsnCutPrimaryVertex)
 AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 (const char *name, Double_t maxVz, Int_t nContributors, Bool_t acceptTPC) :
   AliRsnCut(name, AliRsnCut::kEvent, 0, nContributors - 1, 0.0, maxVz),
-  fAcceptTPC(acceptTPC)
+  fAcceptTPC(acceptTPC),
+  fCheckPileUp(kFALSE)
 {
 //
 // Main constructor.
@@ -55,6 +56,12 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
   
   if (esd)
   {
+    // pile-up check
+    if (fCheckPileUp)
+    {
+      if (esd->IsPileupFromSPD()) return kFALSE;
+    }
+    
     // get the best primary vertex:
     // first try the one with tracks
     const AliESDVertex *vTrk  = esd->GetPrimaryVertexTracks();
@@ -95,6 +102,8 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
   }
   else if (aod)
   {
+    // pile-up check is not yet available for AODs
+    
     // lines suggested by Andrea to reject TPC-only events
     if(!fAcceptTPC)
     {
