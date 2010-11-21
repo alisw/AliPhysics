@@ -118,11 +118,11 @@ void AliAnaPi0::InitParameters()
 
   fNCellNCuts = 3;
   fCellNCuts[0] = 0; fCellNCuts[1] = 1;   fCellNCuts[2] = 2;   
-  for(Int_t i = fNCellNCuts; i < 10; i++)fCellNCuts[i] = 0.;
+  for(Int_t i = fNCellNCuts; i < 10; i++)fCellNCuts[i]  = 0;
 
   fNPIDBits = 2;
   fPIDBits[0] = 0;   fPIDBits[1] = 2; //  fPIDBits[2] = 4; fPIDBits[3] = 6;// check, no cut,  dispersion, neutral, dispersion&&neutral
-  for(Int_t i = fNPIDBits; i < 10; i++)fPIDBits[i] = 0.;
+  for(Int_t i = fNPIDBits; i < 10; i++)fPIDBits[i] = 0;
 
 }
 
@@ -325,7 +325,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           
           //Inverse pT
           //Distance to bad module 1
-          snprintf(key, buffersize,"hMiInvPt_pidbit%d_asy%d_dist1",ic,ipid,iasym) ;
+          snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist1",ic,ipid,iasym) ;
           snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 1",
                    ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
           fhMiInvPt1[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -334,7 +334,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           outputContainer->Add(fhMiInvPt1[index]) ;
           
           //Distance to bad module 2
-          snprintf(key, buffersize,"hMiInvPt_pidbit%d_asy%d_dist2",ic,ipid,iasym) ;
+          snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist2",ic,ipid,iasym) ;
           snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 2",
                    ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
           fhMiInvPt2[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -343,7 +343,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           outputContainer->Add(fhMiInvPt2[index]) ;
           
           //Distance to bad module 3
-          snprintf(key, buffersize,"hMiInvPt_pidbit%d_asy%d_dist3",ic,ipid,iasym) ;
+          snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist3",ic,ipid,iasym) ;
           snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f,dist bad 3",
                    ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
           fhMiInvPt3[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
