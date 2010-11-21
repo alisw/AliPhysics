@@ -41,6 +41,7 @@
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalDCS.h"
+#include "Cal/AliTRDCalDCSv2.h"
 #include "Cal/AliTRDCalPID.h"
 #include "Cal/AliTRDCalMonitoring.h"
 #include "Cal/AliTRDCalChamberStatus.h"
@@ -248,7 +249,10 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
       return CacheCDBEntry(kIDFEE               ,"TRD/Calib/FEE"); 
       break;
     case kIDDCS :
-      return CacheCDBEntry(kIDDCS               ,"TRD/Calib/DCS");
+      if (GetCDBEntry("TRD/Calib/DCSv2"))
+	return CacheCDBEntry(kIDDCS             ,"TRD/Calib/DCSv2");
+      else
+	return CacheCDBEntry(kIDDCS             ,"TRD/Calib/DCS");
       break;
     case kIDPIDNN : 
       return CacheCDBEntry(kIDPIDNN             ,"TRD/Calib/PIDNN");
@@ -756,23 +760,45 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
     return nUndef;
   }
 
-  const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0));
-  const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1));
+  if (GetCDBEntry("TRD/Calib/DCSv2")) {
+    // if there is a DCSv2 object
+    const AliTRDCalDCSv2 *calDCSsorv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(0));
+    const AliTRDCalDCSv2 *calDCSeorv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(1));
 
-  if (!calDCSsor) {
-    // the SOR file is mandatory
-    AliError("NO SOR AliTRDCalDCS object found in CDB file!");
-    return nUndef;
+    if (!calDCSsorv2) {
+      // the SOR file is mandatory
+      AliError("NO SOR AliTRDCalDCSv2 object found in CDB file!");
+      return nUndef;
     }
 
-  if (!calDCSeor) {
-    // this can happen if the run is shorter than a couple of seconds.
-    AliWarning("NO EOR AliTRDCalDCS object found in CDB file.");
+    if (!calDCSeorv2) {
+      // this can happen if the run is shorter than a couple of seconds.
+      AliWarning("NO EOR AliTRDCalDCSv2 object found in CDB file.");
     }
 
-  // get the numbers
-  nTbSor = calDCSsor->GetGlobalNumberOfTimeBins();
-  if (calDCSeor) nTbEor = calDCSeor->GetGlobalNumberOfTimeBins();
+    // get the numbers
+    nTbSor = calDCSsorv2->GetGlobalNumberOfTimeBins();
+    if (calDCSeorv2) nTbEor = calDCSeorv2->GetGlobalNumberOfTimeBins();
+  } else {
+    // if there is a DCS object
+    const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0));
+    const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1));
+
+    if (!calDCSsor) {
+      // the SOR file is mandatory
+      AliError("NO SOR AliTRDCalDCS object found in CDB file!");
+      return nUndef;
+    }
+
+    if (!calDCSeor) {
+      // this can happen if the run is shorter than a couple of seconds.
+      AliWarning("NO EOR AliTRDCalDCS object found in CDB file.");
+    }
+
+    // get the numbers
+    nTbSor = calDCSsor->GetGlobalNumberOfTimeBins();
+    if (calDCSeor) nTbEor = calDCSeor->GetGlobalNumberOfTimeBins();
+  }
 
   // if they're the same return the value
   // -2 means mixed, -1: no data, >= 0: good number of time bins
@@ -804,13 +830,23 @@ void AliTRDcalibDB::GetFilterType(TString &filterType)
     filterType = "";
     return;
   }
-  const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1)); // Take EOR
-  
-  if(!calDCS){
-    filterType = "";
-    return;
-  } 
-  filterType = calDCS->GetGlobalFilterType();
+  if (GetCDBEntry("TRD/Calib/DCSv2")) {
+    const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(0)); // Take SOR
+
+    if(!calDCSv2){
+      filterType = "";
+      return;
+    } 
+    filterType = calDCSv2->GetGlobalFilterType();
+  } else {
+    const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0)); // Take SOR
+
+    if(!calDCS){
+      filterType = "";
+      return;
+    } 
+    filterType = calDCS->GetGlobalFilterType();
+  }
 }
 
 //_____________________________________________________________________________
@@ -823,13 +859,24 @@ void AliTRDcalibDB::GetGlobalConfiguration(TString &config){
     config = "";
     return;
   }
-  const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1)); // Take EOR
-  
-  if(!calDCS){
-    config = "";
-    return;
-  } 
-  config = calDCS->GetGlobalConfigName();
+
+  if (GetCDBEntry("TRD/Calib/DCSv2")) {
+    const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(0)); // Take SOR
+
+    if(!calDCSv2){
+      config = "";
+      return;
+    } 
+    config = calDCSv2->GetGlobalConfigName();
+  } else {
+    const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0)); // Take SOR
+
+    if(!calDCS){
+      config = "";
+      return;
+    } 
+    config = calDCS->GetGlobalConfigName();
+  }
 }
 
 //_____________________________________________________________________________
