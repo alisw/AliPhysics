@@ -334,7 +334,9 @@ void AliAnalysisEtReconstructed::Init()
     AliAnalysisEt::Init();
     fPidCut = fCuts->GetReconstructedPidCut();
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
-
+    if(!fCorrections){
+      cout<<"Warning!  You have not set corrections.  Your code will crash.  You have to set the corrections."<<endl;
+    }
 }
 
 bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)

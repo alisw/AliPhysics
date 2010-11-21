@@ -102,12 +102,12 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	isTPC = true;
 	break;
       case 1:
-	cutName = strITS;
-	list = fEsdtrackCutsITS->GetAcceptedTracks(realEvent);
-	break;
-      case 2:
 	cutName = strTPCITS;
 	list = fEsdtrackCutsITSTPC->GetAcceptedTracks(realEvent);
+	break;
+      case 2:
+	cutName = strITS;
+	list = fEsdtrackCutsITS->GetAcceptedTracks(realEvent);
 	break;
       default:
 	cerr<<"Error:  cannot fill histograms!"<<endl;
@@ -431,12 +431,14 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
       cutName = strTPC;
       break;
     case 1:
-      cutName = strITS;
+      cutName = strTPCITS;
       maxPtdEdx = 5;
       maxdEdx = 500.0;
       break;
     case 2:
-      cutName = strTPCITS;
+      cutName = strITS;
+      maxPtdEdx = 5;
+      maxdEdx = 500.0;
       break;
     default:
       cerr<<"Error:  cannot make histograms!"<<endl;

@@ -299,14 +299,20 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    if(pdgCode == fgLambdaCode){
 		      float myEt = Et(simPart);
 		      FillHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      Float_t weight = LambdaWeight(mom->Pt());
+		      FillHisto2D(Form("EtReconstructed%sLambdaDaughtersReweighted",cutName->Data()),track->Pt(),track->Eta(),myEt*weight);
 		    }
 		    if(pdgCode == fgAntiLambdaCode){
 		      float myEt = Et(simPart);
 		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      Float_t weight = AntiLambdaWeight(mom->Pt());
+		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughtersReweighted",cutName->Data()),track->Pt(),track->Eta(),myEt*weight);
 		    }
 		    if(pdgCode == fgK0SCode){
 		      float myEt = Et(simPart);
 		      FillHisto2D(Form("EtReconstructed%sK0SDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      Float_t weight = K0Weight(mom->Pt());
+		      FillHisto2D(Form("EtReconstructed%sK0SDaughtersReweighted",cutName->Data()),track->Pt(),track->Eta(),myEt*weight);
 		    }
 		    if(pdgCode == fgXiCode){
 		      float myEt = Et(simPart);
@@ -1066,6 +1072,9 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateEtaPtHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),"Reconstructed E_{T} from #Lambda Daughters");
   CreateEtaPtHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),"Reconstructed E_{T} from #bar{#Lambda} Daughters");
   CreateEtaPtHisto2D(Form("EtReconstructed%sK0SDaughters",cutName->Data()),"Reconstructed E_{T} from K^{0}_{S} Daughters");
+    CreateEtaPtHisto2D(Form("EtReconstructed%sLambdaDaughtersReweighted",cutName->Data()),"Reconstructed E_{T} from #Lambda Daughters");
+  CreateEtaPtHisto2D(Form("EtReconstructed%sAntiLambdaDaughtersReweighted",cutName->Data()),"Reconstructed E_{T} from #bar{#Lambda} Daughters");
+  CreateEtaPtHisto2D(Form("EtReconstructed%sK0SDaughtersReweighted",cutName->Data()),"Reconstructed E_{T} from K^{0}_{S} Daughters");
   CreateEtaPtHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),"Reconstructed E_{T} from #Omega^{-} Daughters");
   CreateEtaPtHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),"Reconstructed E_{T} from #Omega^{+} Daughters");
   CreateEtaPtHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),"Reconstructed E_{T} from #Xi^{-} Daughters");
