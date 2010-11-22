@@ -218,7 +218,7 @@ void AliEMCAL::CreateMaterials()
   //    Component H  A=1.      Z=1.    W=10./21.
   //    Component O  A=16.     Z=8.    W=5./21.
   Float_t apaper[3] = { 12.01, 1.0, 16.0};
-  Float_t zpaper[3] = { 26.0,  1.0,  8.0};
+  Float_t zpaper[3] = {  6.0,  1.0,  8.0};
   Float_t wpaper[3] = {6./21., 10./21., 5./21.};
   AliMixture(5, "BondPaper$", apaper, zpaper, 0.75, 3, wpaper);
  
