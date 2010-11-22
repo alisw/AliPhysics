@@ -1080,7 +1080,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
          // Output archive for the merging jdl
          TString outputArchive;
          if (TestBit(AliAnalysisGrid::kDefaultOutputs)) {
-            outputArchive = "log_archive.zip:std*@disk=1 ";
+            outputArchive = "log_archive.zip:std*,*.stat@disk=1 ";
             // Add normal output files, extra files + terminate files
             TString files = GetListOfFiles("outextter");
             // Do not register merge excludes
@@ -1094,7 +1094,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
                delete arr;
             }
             files.ReplaceAll(".root", "*.root");
-            outputArchive += Form("root_archive.zip:%s,*.stat@disk=%d",files.Data(),fNreplicas);
+            outputArchive += Form("root_archive.zip:%s@disk=%d",files.Data(),fNreplicas);
          } else {
             TString files = fOutputArchive;
             files.ReplaceAll(".root", "*.root"); // nreplicas etc should be already atttached by use
@@ -1745,7 +1745,7 @@ void AliAnalysisAlien::SetDefaults()
    fDataPattern                = "*AliESDs.root";  // Can be like: *AliESDs.root, */pass1/*AliESDs.root, ...
    fFriendChainName            = "";
    fGridOutputDir              = "output";
-   fOutputArchive              = "log_archive.zip:std*@disk=1 root_archive.zip:*.root@disk=2";
+   fOutputArchive              = "log_archive.zip:std*,*.stat@disk=1 root_archive.zip:*.root@disk=2";
    fOutputFiles                = "";  // Like "AliAODs.root histos.root"
    fInputFormat                = "xml-single";
    fJDLName                    = "analysis.jdl";
@@ -2482,7 +2482,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          fOutputFiles += extra;
       }
       // Compose the output archive.
-      fOutputArchive = "log_archive.zip:std*@disk=1 ";
+      fOutputArchive = "log_archive.zip:std*,*.stat@disk=1 ";
       fOutputArchive += Form("root_archive.zip:%s@disk=%d",fOutputFiles.Data(),fNreplicas);
    }
 //   if (!fCloseSE.Length()) fCloseSE = gSystem->Getenv("alien_CLOSE_SE");

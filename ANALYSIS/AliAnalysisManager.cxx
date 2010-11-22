@@ -86,7 +86,8 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fTable(),
                     fRunFromPath(0),
                     fNcalls(0),
-                    fStatisticsMsg()
+                    fStatisticsMsg(),
+                    fRequestedBranches()
 {
 // Default constructor.
    fgAnalysisManager = this;
@@ -133,7 +134,8 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fTable(),
                     fRunFromPath(0),
                     fNcalls(other.fNcalls),
-                    fStatisticsMsg(other.fStatisticsMsg)
+                    fStatisticsMsg(other.fStatisticsMsg),
+                    fRequestedBranches(other.fRequestedBranches)
 {
 // Copy constructor.
    fTasks      = new TObjArray(*other.fTasks);
@@ -184,6 +186,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fRunFromPath = other.fRunFromPath;
       fNcalls     = other. fNcalls;
       fStatisticsMsg = other.fStatisticsMsg;
+      fRequestedBranches = other.fRequestedBranches;
    }
    return *this;
 }
@@ -320,6 +323,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
       return kFALSE;
    }
    top->SetData(tree);
+   CheckBranches(kFALSE);
    if (fDebug > 1) {
       printf("<-AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
@@ -1348,10 +1352,72 @@ Bool_t AliAnalysisManager::InitAnalysis()
          Error("InitAnalysis", "Wrong container %s : a file name MUST be provided for special outputs", cont->GetName());
          return kFALSE;
       }
-   }      
+   }
+   // Initialize requested branch list if needed
+   if (!fAutoBranchHandling) {
+      next.Reset();
+      while ((task=(AliAnalysisTask*)next())) {
+         if (!task->HasBranches()) {
+            Error("InitAnalysis", "Manual branch loading requested but task %s of type %s does not define branches.\nUse: fBranchNames = \"ESD:br1,br2,...,brN AOD:bra1,bra2,...,braM\"",
+                  task->GetName(), task->ClassName());
+            return kFALSE;
+         }
+         if (!fInputEventHandler || !strlen(fInputEventHandler->GetDataType())) {
+            Error("InitAnalysis", "Manual branch loading requested but no input handler defined or handler does not define data type.");
+            return kFALSE;
+         }
+         TString taskbranches;
+         task->GetBranches(fInputEventHandler->GetDataType(), taskbranches);
+         if (taskbranches.IsNull()) {
+            Error("InitAnalysis", "Manual branch loading requested but task %s of type %s does not define branches of type %s:",
+                  task->GetName(), task->ClassName(), fInputEventHandler->GetDataType());
+            return kFALSE;      
+         }
+         AddBranches(taskbranches);
+      }         
+   }
    fInitOK = kTRUE;
    return kTRUE;
 }   
+
+//______________________________________________________________________________
+void AliAnalysisManager::AddBranches(const char *branches)
+{
+// Add branches to the existing fRequestedBranches.
+   TString br(branches);
+   TObjArray *arr = br.Tokenize(",");
+   TIter next(arr);
+   TObject *obj;
+   while ((obj=next())) {
+      if (!fRequestedBranches.Contains(obj->GetName())) {
+         if (!fRequestedBranches.IsNull()) fRequestedBranches += ",";
+         fRequestedBranches += obj->GetName();
+      }
+   }
+   if (arr) delete arr;
+}   
+
+//______________________________________________________________________________
+void AliAnalysisManager::CheckBranches(Bool_t load)
+{
+// The method checks the input branches to be loaded during the analysis.
+   if (fAutoBranchHandling || fRequestedBranches.IsNull() || !fTree) return;   
+   TObjArray *arr = fRequestedBranches.Tokenize(",");
+   TIter next(arr);
+   TObject *obj;
+   while ((obj=next())) {
+      TBranch *br = dynamic_cast<TBranch*>(fTable.FindObject(obj->GetName()));
+      if (!br) {
+         br = fTree->GetBranch(obj->GetName());
+         if (!br) {
+            Error("CheckBranches", "Could not find branch %s",obj->GetName());
+            continue;
+         }
+      }   
+      fTable.Add(br);
+      if (load && br->GetReadEntry()!=GetCurrentEntry()) br->GetEntry(GetCurrentEntry());
+   }
+}
 
 //______________________________________________________________________________
 void AliAnalysisManager::PrintStatus(Option_t *option) const
@@ -1368,6 +1434,8 @@ void AliAnalysisManager::PrintStatus(Option_t *option) const
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)next()))
       task->PrintTask(option);
+   if (!fAutoBranchHandling && !fRequestedBranches.IsNull()) 
+      printf("Requested input branches:\n%s\n", fRequestedBranches.Data());
 }
 
 //______________________________________________________________________________
@@ -2161,7 +2229,7 @@ void AliAnalysisManager::DoLoadBranch(const char *name)
 {
   // Get tree and load branch if needed.
 
-  if (!fTree)
+  if (fAutoBranchHandling || !fTree)
     return;
 
   TBranch *br = dynamic_cast<TBranch*>(fTable.FindObject(name));
@@ -2173,8 +2241,7 @@ void AliAnalysisManager::DoLoadBranch(const char *name)
     }
     fTable.Add(br);
   }
-  if (br->GetReadEntry()==GetCurrentEntry())
-    return;
+  if (br->GetReadEntry()==GetCurrentEntry()) return;
   br->GetEntry(GetCurrentEntry());
 }
 

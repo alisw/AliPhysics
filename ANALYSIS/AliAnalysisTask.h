@@ -43,6 +43,7 @@ class AliAnalysisTask : public TTask {
   TObject                  *fPublishedData; //! published data
   TObjArray                *fInputs;        // Array of input slots
   TObjArray                *fOutputs;       // Array of output slots
+  TString                   fBranchNames;   // List of input branches that need to be loaded for this task
 
   // Define the input/output slots (called by user in the ctor of the derived class)
   //=== CALL IN THE CONSTRUCTOR OF DERIVED CLASS TO DEFINE INPUTS/OUTPUTS ===
@@ -105,6 +106,7 @@ public:
   // Check if there are illegal circular dependencies
   Bool_t                    CheckCircularDeps();
   // Getters
+  void                      GetBranches(const char *type, TString &result) const;
   Int_t                     GetNinputs() const  {return fNinputs;}
   Int_t                     GetNoutputs() const {return fNoutputs;}
   TObject                  *GetPublishedData() const {return fPublishedData;}
@@ -122,8 +124,10 @@ public:
   Bool_t                    IsReady() const  {return fReady;}
   Bool_t                    IsUsed() const   {return TObject::TestBit(kTaskUsed);}
   Bool_t                    IsZombie() const {return TObject::TestBit(kTaskZombie);}
+  Bool_t                    HasBranches() const {return !fBranchNames.IsNull();}
   void                      PrintTask(Option_t *option="all", Int_t indent=0) const;
   void                      PrintContainers(Option_t *option="all", Int_t indent=0) const;
+  void                      SetBranches(const char *names) {fBranchNames = names;}
   void                      SetChecked(Bool_t flag=kTRUE) {TObject::SetBit(kTaskChecked,flag);}
   void                      SetPostEventLoop(Bool_t flag=kTRUE);
   void                      SetUsed(Bool_t flag=kTRUE);
@@ -138,6 +142,6 @@ public:
   virtual void              Terminate(Option_t *option="");
   //=====================================================================
     
-  ClassDef(AliAnalysisTask,1)  // Class describing an analysis task
+  ClassDef(AliAnalysisTask,2)  // Class describing an analysis task
 };
 #endif

@@ -285,7 +285,19 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   // checks if the given event is a collision candidate
   //
   // returns a bit word describing the fired offline triggers (see AliVEvent::EOfflineTriggerTypes)
-  
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    AliError("Cannot get the analysis manager");
+    return 0;
+  } 
+  mgr->LoadBranch("AliESDHeader.");
+  mgr->LoadBranch("AliESDRun.");
+  mgr->LoadBranch("AliMultiplicity.");
+  mgr->LoadBranch("AliESDFMD.");
+  mgr->LoadBranch("AliESDVZERO.");
+  mgr->LoadBranch("AliESDZDC.");
+  mgr->LoadBranch("SPDVertex.");
+  mgr->LoadBranch("PrimaryVertex.");
   if (fCurrentRun != aEsd->GetRunNumber()) {
     if (!Initialize(aEsd))
       AliFatal(Form("Could not initialize for run %d", aEsd->GetRunNumber()));
@@ -336,13 +348,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   
       Bool_t isBin0 = kFALSE;
       if (fBin0CallBack != "") {
-	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-	if (!mgr) {
-	  AliError("Cannot get the analysis manager");
-	}  
-	else {
 	  isBin0 = ((AliAnalysisTaskSE*)mgr->GetTask(fBin0CallBack.Data()))->IsEventInBinZero();
-	}
       } else if (fBin0CallBackPointer) {
 	  isBin0 = (*fBin0CallBackPointer)(aEsd);
       }

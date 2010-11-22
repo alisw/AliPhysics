@@ -119,7 +119,8 @@ AliAnalysisTask::AliAnalysisTask()
                  fOutputReady(NULL),
                  fPublishedData(NULL),
                  fInputs(NULL),
-                 fOutputs(NULL)
+                 fOutputs(NULL),
+                 fBranchNames()
 {
 // Default constructor.
 }
@@ -134,7 +135,8 @@ AliAnalysisTask::AliAnalysisTask(const char *name, const char *title)
                  fOutputReady(NULL),
                  fPublishedData(NULL),
                  fInputs(NULL),
-                 fOutputs(NULL)                 
+                 fOutputs(NULL),
+                 fBranchNames()                 
 {
 // Constructor.
    fInputs      = new TObjArray(2);
@@ -151,7 +153,8 @@ AliAnalysisTask::AliAnalysisTask(const AliAnalysisTask &task)
                  fOutputReady(NULL),
                  fPublishedData(NULL),
                  fInputs(NULL),
-                 fOutputs(NULL)                 
+                 fOutputs(NULL),
+                 fBranchNames(task.fBranchNames)
 {
 // Copy ctor.
    fInputs      = new TObjArray((fNinputs)?fNinputs:2);
@@ -195,6 +198,7 @@ AliAnalysisTask& AliAnalysisTask::operator=(const AliAnalysisTask& task)
       fOutputReady[i] = IsOutputReady(i);
       fOutputs->AddAt(new AliAnalysisDataSlot(*task.GetOutputSlot(i)),i);
    }         
+   fBranchNames = task.fBranchNames;
    return *this;
 }
 
@@ -559,6 +563,7 @@ void AliAnalysisTask::PrintTask(Option_t *option, Int_t indent) const
    AliAnalysisDataContainer *cont;
    for (Int_t i=0; i<indent; i++) ind += " ";
    if (!dep || (dep && IsChecked())) {
+      printf("______________________________________________________________________________\n");
       printf("%s\n", Form("%stask: %s  ACTIVE=%i POST_LOOP=%i", ind.Data(), GetName(),IsActive(),IsPostEventLoop()));
       if (dep) thistask->SetChecked(kFALSE);
       else {
@@ -577,6 +582,7 @@ void AliAnalysisTask::PrintTask(Option_t *option, Int_t indent) const
       }
    }
    PrintContainers(option, indent+3);
+   if (!fBranchNames.IsNull()) printf("Requested branches:   %s\n", fBranchNames.Data());
 }      
 
 //______________________________________________________________________________
@@ -607,3 +613,18 @@ void AliAnalysisTask::SetPostEventLoop(Bool_t flag)
    }   
 }
    
+//______________________________________________________________________________
+void AliAnalysisTask::GetBranches(const char *type, TString &result) const
+{
+// Get the list of branches for a given type (ESD, AOD). The list of branches
+// requested by a task has to ve declared in the form:
+//   SetBranches("ESD:branch1,branch2,...,branchN AOD:branch1,branch2,...,branchM")
+   result = "";
+   if (fBranchNames.IsNull()) return;
+   Int_t index1 = fBranchNames.Index(type);
+   if (index1<0) return;
+   index1 += 1+strlen(type);
+   Int_t index2 = fBranchNames.Index(" ", index1);
+   if (index2<0) index2 = fBranchNames.Length();
+   result = fBranchNames(index1, index2-index1);
+}

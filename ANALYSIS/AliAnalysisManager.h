@@ -109,6 +109,7 @@ enum EAliAnalysisFlags {
    TObjArray          *GetOutputs() const         {return fOutputs;}
    TObjArray          *GetParamOutputs() const    {return fParamCont;}
    Int_t               GetRunFromPath() const     {return fRunFromPath;}
+   const char         *GetRequestedBranches() const {return fRequestedBranches.Data();}
    TObjArray          *GetTasks() const           {return fTasks;}
    TObjArray          *GetTopTasks() const        {return fTopTasks;}
    TTree              *GetTree() const            {return fTree;}
@@ -156,6 +157,8 @@ enum EAliAnalysisFlags {
    void                 CleanContainers();
    
    // Analysis initialization and execution, status
+   void                 AddBranches(const char *branches);
+   void                 CheckBranches(Bool_t load=kFALSE);
    Bool_t               InitAnalysis();
    Bool_t               IsInitialized() const {return fInitOK;}
    Bool_t               IsExternalLoop() const {return TObject::TestBit(kExternalLoop);}
@@ -208,8 +211,9 @@ private:
    Int_t                   fRunFromPath;         // Run number retrieved from path to input data
    Int_t                   fNcalls;              // Total number of calls (events) of ExecAnalysis
    TString                 fStatisticsMsg;       // Statistics user message
+   TString                 fRequestedBranches;   // Requested branch names
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,10)  // Analysis manager class
+   ClassDef(AliAnalysisManager,11)  // Analysis manager class
 };   
 #endif
