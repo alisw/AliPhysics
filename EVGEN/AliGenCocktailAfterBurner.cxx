@@ -216,6 +216,7 @@ void AliGenCocktailAfterBurner::Generate()
 	   Vertex();
 	   for (Int_t j = 0; j < 3; j++) eventVertex[3 * i +  j] = fVertex[j];
 	   fHeaders[i] = new AliGenCocktailEventHeader();
+	   fCollisionGeometries[i] = 0;
        }
 /*********************************************************************/ 
       TIter next(fEntries);

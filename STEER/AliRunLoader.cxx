@@ -128,11 +128,11 @@ AliRunLoader::AliRunLoader(const char* eventfoldername):
 AliRunLoader::~AliRunLoader()
 {
 //dtor
-  if (fgRunLoader == this) fgRunLoader = 0x0;
+
   
   UnloadHeader();
   UnloadgAlice();
-  
+  if (fgRunLoader == this) fgRunLoader = 0x0;  
   if(fLoaders) {
     fLoaders->SetOwner();
     delete fLoaders;
