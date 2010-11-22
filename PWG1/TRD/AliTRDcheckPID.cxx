@@ -95,7 +95,7 @@ AliTRDcheckPID::AliTRDcheckPID(char* name )
   LocalInit();
   InitFunctorList();
 
-  DefineInput(2, TObjArray::Class());  // v0 list
+  DefineInput(3, TObjArray::Class());  // v0 list
   DefineOutput(2, TObjArray::Class()); // pid info list
 }
 
@@ -144,7 +144,7 @@ void AliTRDcheckPID::UserExec(Option_t *opt)
   // Execution part
   //
 
-  fV0s = dynamic_cast<TObjArray *>(GetInputData(2));
+  fV0s = dynamic_cast<TObjArray *>(GetInputData(3));
   fPID->Delete();
 
   AliTRDrecoTask::UserExec(opt);

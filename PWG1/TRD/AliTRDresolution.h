@@ -51,6 +51,7 @@ public:
     ,kVisual     = BIT(19) // show partial results during processing
     ,kTrackRefit = BIT(20) // steer track refit
     ,kTrackSelect= BIT(21) // steer track selection
+    ,kLoadCorr   = BIT(23) // steer load corrections
   };
   enum ETRDresolutionOutSlots {
      kClToTrk    = 2
@@ -67,17 +68,20 @@ public:
   static Bool_t  FitTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
   static Bool_t  FitTracklet(const Int_t ly, const Int_t np, const AliTrackPoint *points, const Float_t trackPars[10], Float_t trackletPars[3]);
   void    UserCreateOutputObjects();
+  Float_t GetCorrectionX(Int_t det, Int_t tb) const {return fXcorr[det][tb];}
   Float_t GetDyRange() const {return fDyRange;}
   Float_t GetPtThreshold() const {return fPtThreshold;}
   Float_t GetSegmentationLevel() const {return fSegmentLevel;}
   Bool_t  GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
   Bool_t  Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir="TRD_Performance");
+  Bool_t  LoadCorrection(const Char_t *file=NULL);
   void    MakeSummary();
 
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
   void    UserExec(Option_t * opt);
   void    InitExchangeContainers();
+  Bool_t  HasLoadCorrection() const {return TestBit(kLoadCorr);}
   Bool_t  HasTrackRefit() const {return TestBit(kTrackRefit);}
   Bool_t  HasTrackSelection() const {return TestBit(kTrackSelect);}
   Bool_t  IsVerbose() const {return TestBit(kVerbose);}
@@ -95,6 +99,7 @@ public:
   void    SetDyRange(Float_t dy) {fDyRange = dy;}
   void    SetSegmentationLevel(Int_t l=0);
   void    SetPtThreshold(Float_t pt) {fPtThreshold = pt;}
+  void    SetLoadCorrection(Bool_t v = kTRUE) {SetBit(kLoadCorr, v);}
   void    SetVerbose(Bool_t v = kTRUE) {SetBit(kVerbose, v);}
   void    SetVisual(Bool_t v = kTRUE) {SetBit(kVisual, v);}
   void    SetTrackRefit(Bool_t v = kTRUE) {SetBit(kTrackRefit, v);}
@@ -104,7 +109,6 @@ public:
   Bool_t  GetGraph(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1, Bool_t kLEG=kTRUE, const Char_t *explain=NULL);
   Bool_t  GetGraphArray(Float_t *bb, ETRDresolutionPlot ip, Int_t idx, Bool_t kLEG=kTRUE, Int_t n=0, Int_t *sel=NULL, const Char_t *explain=NULL);
   static Bool_t  UseTrack(const Int_t np, const AliTrackPoint *points, Float_t params[10]);
-    
 private:
   AliTRDresolution(const AliTRDresolution&);
   AliTRDresolution& operator=(const AliTRDresolution&);
@@ -133,6 +137,7 @@ private:
   Char_t              *fAxTitle[kNprojs][4]; //! Title for all ref histos
   Float_t             fPtThreshold;     // pt threshold for some performance plots
   Float_t             fDyRange;         // min/max dy
+  Float_t             fXcorr[540][30];  // min/max dy
   static Char_t const *fgPerformanceName[kNviews]; //! name of performance plot
   static Char_t const *fgParticle[11];    //! latex name of particles/sign 
   static UChar_t const fgNproj[kNviews]; //! number of projections per task

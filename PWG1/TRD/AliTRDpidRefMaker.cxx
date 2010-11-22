@@ -15,6 +15,7 @@
 #include "AliTRDseedV1.h"
 #include "AliTRDpidRefMaker.h"
 #include "AliTRDinfoGen.h"
+#include "info/AliTRDeventInfo.h"
 #include "info/AliTRDv0Info.h"
 #include "info/AliTRDpidInfo.h"
 
@@ -73,8 +74,8 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
   memset(fdEdx, 0, AliTRDpidUtil::kNNslices*sizeof(Float_t));
   memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
 
-  DefineInput(2, TObjArray::Class()); // v0 list
-  DefineInput(3, TObjArray::Class()); // pid info list 
+  DefineInput(3, TObjArray::Class()); // v0 list
+  DefineInput(4, TObjArray::Class()); // pid info list
   DefineOutput(2, TTree::Class());
 }
 
@@ -134,14 +135,18 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
   // Called for each event
   Int_t ev((Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry());
   if(!(fTracks = dynamic_cast<TObjArray*>(GetInputData(1)))){
-    AliDebug(3, Form("Missing tracks container in ev %d", ev)); 
+    AliDebug(3, Form("Missing tracks container in ev %d", ev));
     return;
   }
-  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))){ 
+  if(!(fEvent = dynamic_cast<AliTRDeventInfo*>(GetInputData(2)))){
+    AliDebug(3, Form("Missing Event Info container in ev %d", ev));
+    return;
+  }
+  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(3)))){
     AliDebug(3, Form("Missing v0 container in ev %d", ev)); 
     return;
   }
-  if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))){ 
+  if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(4)))){
     AliDebug(3, Form("Missing pid info container in ev %d", ev)); 
     return;
   }
@@ -186,13 +191,14 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
       // fill P & dE/dx information
       switch(fRefP){
       case kMC:
-	if(!(ref = track->GetTrackRef(ily))) continue;
-	fP = ref->P();
-	break;
+        if(!(ref = track->GetTrackRef(ily))) continue;
+        fP = ref->P();
+        break;
       case kRec:
-	fP = p[ily];
-	break;
-      default: continue;
+        fP = p[ily];
+        break;
+      default:
+        continue;
       }
       Double32_t *it = &infoPID[ily*AliTRDCalPID::kNSlicesNN];
       for(Int_t is=AliTRDCalPID::kNSlicesNN; is--; it++) fdEdx[is] = (*it);

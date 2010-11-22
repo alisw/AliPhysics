@@ -402,16 +402,19 @@ void AliTRDinfoGen::UserExec(Option_t *){
   // Determine centrality
   // Author: Ionut Arsene <I.C.Arsene@gsi.de>
   Int_t centralityBin = -1;
-  if(TString(fESDev->GetESDRun()->GetBeamType()).Contains("A-")){
+  AliDebug(2, Form("Beam Type: %s", fESDev->GetESDRun()->GetBeamType()));
+  if(TString(fESDev->GetESDRun()->GetBeamType()).Contains("Pb-Pb")){
+    centralityBin = 4;
     const AliMultiplicity *mult = fESDev->GetMultiplicity();
     Double_t zdcNeutronEnergy = fESDev->GetZDCN1Energy()+fESDev->GetZDCN2Energy();
     Double_t itsNTracklets = mult->GetNumberOfTracklets();
     Double_t centralitySlopes[6] = {0.0, 4.0, 8.0, 20.0, 50.0, 1000000.};
+    AliDebug(1, Form("zdcNeutronEnergy: %f, itsNTracklets: %f\n", zdcNeutronEnergy, itsNTracklets));
     for(Int_t iCent=1; iCent<=5; ++iCent) {
-      if(zdcNeutronEnergy>centralitySlopes[iCent-1]*itsNTracklets &&
-zdcNeutronEnergy<centralitySlopes[iCent]*itsNTracklets)
-        centralityBin=iCent;
+      if(zdcNeutronEnergy>centralitySlopes[iCent-1]*itsNTracklets && zdcNeutronEnergy<centralitySlopes[iCent]*itsNTracklets)
+        centralityBin=iCent - 1;
     }
+    AliDebug(1, Form("Centrality Class: %d", centralityBin));
   }
   fEventInfo->SetCentrality(centralityBin);
 

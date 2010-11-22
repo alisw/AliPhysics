@@ -11,6 +11,7 @@
 void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
   Info("AddTRDcheckDET", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName()));
+  AliAnalysisDataContainer *evInfoContainer = ci[3];
 
   //AliLog::SetClassDebugLevel("AliTRDcheckDET", 5);
   AliTRDcheckDET *task(NULL);
@@ -20,9 +21,12 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer
   task->SetMCdata(mgr->GetMCtruthEventHandler());
   
   // Create containers for input/output
-  mgr->ConnectInput ( task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput ( task, 1, ci[1]);
-  mgr->ConnectInput ( task, 2, ci[0]);
+  Int_t trackStatus = 0; // barrel tracks
+//                    = 1; // kink tracks
+//                    = 2; // SA tracks
+  mgr->ConnectInput ( task, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container
+  mgr->ConnectInput ( task, 1, ci[trackStatus]);                // conect track info container
+  mgr->ConnectInput ( task, 2, evInfoContainer);                // conect event info container
   mgr->ConnectOutput( task, 1, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
   
 
@@ -46,6 +50,6 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer
 
   // Create containers for input/output
   mgr->ConnectInput(ctask,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput(ctask,  1, ci[1]);
+  mgr->ConnectInput(ctask,  1, ci[0]);
   mgr->ConnectOutput(ctask, 1, mgr->CreateContainer(ctask->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration", mgr->GetCommonFileName())));
 }

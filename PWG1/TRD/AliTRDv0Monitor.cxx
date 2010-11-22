@@ -32,6 +32,7 @@
 #include "AliPID.h"
 #include "AliTRDv0Monitor.h"
 #include "info/AliTRDv0Info.h"
+#include "info/AliTRDeventInfo.h"
 
 
 ClassImp(AliTRDv0Monitor)
@@ -63,8 +64,8 @@ AliTRDv0Monitor::AliTRDv0Monitor(const char *name)
   //
   // Default constructor
   //
-  DefineInput(2, TObjArray::Class()); // v0 list
-  DefineInput(3, TObjArray::Class()); // pid info list 
+  DefineInput(3, TObjArray::Class()); // v0 list
+  DefineInput(4, TObjArray::Class()); // pid info list
 }
 
 
@@ -180,8 +181,9 @@ void AliTRDv0Monitor::UserExec(Option_t *)
   // Main loop
   // Called for each event
   if(!(fTracks = dynamic_cast<TObjArray*>(GetInputData(1)))) return;
-  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))) return;
-  if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))) return;
+  if(!(fEvent  = dynamic_cast<AliTRDeventInfo*>(GetInputData(2)))) return;
+  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(3)))) return;
+  if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(4)))) return;
   
   
   AliTRDtrackInfo     *track = NULL;
