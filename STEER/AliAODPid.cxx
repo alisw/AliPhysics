@@ -69,7 +69,11 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
     fTRDslices = new Double32_t[fTRDnSlices];
     for(Int_t i=0; i< fTRDnSlices; i++) fTRDslices[i]=pid.fTRDslices[i];
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
-    for(Int_t i=0; i<3; i++) fEMCALPosition[i]=pid.fEMCALPosition[i];
+    for(Int_t i=0; i<3; i++) {
+      fEMCALPosition[i]=pid.fEMCALPosition[i];
+      fEMCALMomentum[i]=pid.fEMCALMomentum[i];
+    }
+    for(Int_t i=0; i<6; i++) fTRDmomentum[i]=pid.fTRDmomentum[i];
 }
 
 //______________________________________________________________________________
@@ -93,7 +97,11 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
     fTOFesdsignal=pid.fTOFesdsignal;
     fHMPIDsignal=pid.fHMPIDsignal;
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
-    for(Int_t i=0; i<3; i++) fEMCALPosition[i]=pid.fEMCALPosition[i];
+    for(Int_t i=0; i<6; i++) fTRDmomentum[i]=pid.fTRDmomentum[i];
+    for(Int_t i=0; i<3; i++) {
+      fEMCALPosition[i]=pid.fEMCALPosition[i];
+      fEMCALMomentum[i]=pid.fEMCALMomentum[i];
+    }
   }
 
   return *this;
