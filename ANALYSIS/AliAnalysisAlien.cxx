@@ -3571,6 +3571,8 @@ void AliAnalysisAlien::WriteExecutable()
          return;
       }
       out << "#!/bin/bash" << endl;
+      // Make sure we can properly compile par files
+      out << "export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH" << endl;
       out << "echo \"=========================================\"" << endl; 
       out << "echo \"############## PATH : ##############\"" << endl;
       out << "echo $PATH" << endl;
@@ -3589,8 +3591,6 @@ void AliAnalysisAlien::WriteExecutable()
       out << "echo \"############## memory : ##############\"" << endl;
       out << "free -m" << endl;
       out << "echo \"=========================================\"" << endl << endl;
-      // Make sure we can properly compile par files
-      if (TObject::TestBit(AliAnalysisGrid::kUsePars)) out << "export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH" << endl;
       out << fExecutableCommand << " "; 
       out << fAnalysisMacro.Data() << " " << fExecutableArgs.Data() << endl << endl;
       out << "echo \"======== " << fAnalysisMacro.Data() << " finished with exit code: $? ========\"" << endl;
@@ -3627,6 +3627,8 @@ void AliAnalysisAlien::WriteMergeExecutable()
          return;
       }
       out << "#!/bin/bash" << endl;
+      // Make sure we can properly compile par files
+      out << "export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH" << endl;
       out << "echo \"=========================================\"" << endl; 
       out << "echo \"############## PATH : ##############\"" << endl;
       out << "echo $PATH" << endl;
@@ -3645,8 +3647,6 @@ void AliAnalysisAlien::WriteMergeExecutable()
       out << "echo \"############## memory : ##############\"" << endl;
       out << "free -m" << endl;
       out << "echo \"=========================================\"" << endl << endl;
-      // Make sure we can properly compile par files
-      if (TObject::TestBit(AliAnalysisGrid::kUsePars)) out << "export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH" << endl;
       TString mergeMacro = fExecutable;
       mergeMacro.ReplaceAll(".sh", "_merge.C");
       if (IsOneStageMerging())
