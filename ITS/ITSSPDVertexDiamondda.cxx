@@ -148,12 +148,18 @@ int main(int argc, char **argv) {
     printf("Failed to get spd trigger file (TRIGGER/SPD/PITConditions) from DAQdetDB, status=%d\n", status);
     return -1;
   }
+ 
+ status = daqDA_DB_getFile("mfchebKGI_sym.root","localOCDB/mfchebKGI_sym.root");
+  if (status) {
+    printf("Failed to get spd file (mfchebKGI_sym.root) from DAQdetDB, status=%d\n", status);
+    return -1;
+  }
 
   // Global initializations
 
   // The B filed is required in AliITSClusterFinderV2SPD
   // for the Lorentz angle correction. B set to 0.      
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 0., 0., AliMagF::k5kGUniform));  
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 0., 0., AliMagF::k5kGUniform,AliMagF::kBeamTypeAA,-1,2,15,"localOCDB/mfchebKGI_sym.root"));  
   AliLog::SetGlobalLogLevel(AliLog::kError);
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://localOCDB");
