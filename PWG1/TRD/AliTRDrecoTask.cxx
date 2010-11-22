@@ -72,6 +72,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   SetTitle(title);
   snprintf(fNameId, 10, "no name");
   DefineInput (1, TObjArray::Class()); // track list
+  DefineInput (2, AliTRDeventInfo::Class()); // event info object
   DefineOutput(1, TObjArray::Class()); // histogram list
 }
 
@@ -129,7 +130,8 @@ void AliTRDrecoTask::UserExec(Option_t *)
 // Loop over Plot functors published by particular tasks
 
   fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
-  fEvent = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
+  fEvent  = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
+
   if(!fPlotFuncList){
     AliWarning("No functor list defined for the reference plots");
     return;

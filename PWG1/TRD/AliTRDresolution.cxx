@@ -144,6 +144,7 @@ AliTRDresolution::AliTRDresolution()
   //
   SetNameTitle("TRDresolution", "TRD spatial and momentum resolution");
   SetSegmentationLevel();
+  memset(fXcorr, 0, AliTRDgeometry::kNdet*30*sizeof(Float_t));
 }
 
 //________________________________________________________
@@ -168,6 +169,7 @@ AliTRDresolution::AliTRDresolution(char* name)
 
   InitFunctorList();
   SetSegmentationLevel();
+  memset(fXcorr, 0, AliTRDgeometry::kNdet*30*sizeof(Float_t));
 
   DefineOutput(kClToTrk, TObjArray::Class()); // cluster2track
   DefineOutput(kClToMC, TObjArray::Class()); // cluster2mc
@@ -228,6 +230,7 @@ void AliTRDresolution::UserExec(Option_t *opt)
 
   fCl->Delete();
   fMCcl->Delete();
+  if(!HasLoadCorrection()) LoadCorrection("correction.lst");
   AliTRDrecoTask::UserExec(opt);
 }
 
@@ -340,7 +343,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       AliTRDcluster *c = NULL;
       fTracklet->ResetClusterIter(kFALSE);
       while((c = fTracklet->PrevCluster())){
-        Float_t xyz[3] = {c->GetX(), c->GetY(), c->GetZ()};
+        Float_t xyz[3] = {c->GetX()+fXcorr[c->GetDetector()][c->GetLocalTimeBin()], c->GetY(), c->GetZ()};
         clusters[np].SetCharge(tilt);
         clusters[np].SetClusterType(0);
         clusters[np].SetVolumeID(ily);
@@ -416,7 +419,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     AliTRDcluster *c = NULL;
     fTracklet->ResetClusterIter(kFALSE);
     while((c = fTracklet->PrevCluster())){
-      Float_t xc = c->GetX();
+      Float_t xc = c->GetX()+fXcorr[c->GetDetector()][c->GetLocalTimeBin()];
       Float_t yc = c->GetY();
       Float_t zc = c->GetZ();
       Float_t dx = x0 - xc; 
@@ -444,7 +447,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       Int_t istk = geo->GetStack(c->GetDetector());
       AliTRDpadPlane *pp = geo->GetPadPlane(ily, istk);
       Float_t row0 = pp->GetRow0();
-      Float_t d  =  row0 - zt + pp->GetAnodeWireOffset();
+      Float_t d  = row0 - zt + pp->GetAnodeWireOffset();
       d -= ((Int_t)(2 * d)) / 2.0;
       if (d > 0.25) d  = 0.5 - d;
 
@@ -1106,7 +1109,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     tt.ResetClusterIter(kFALSE);
     while((c = tt.PrevCluster())){
       Float_t  q = TMath::Abs(c->GetQ());
-      x = c->GetX(); y = c->GetY();z = c->GetZ();
+      x = c->GetX()+fXcorr[c->GetDetector()][c->GetLocalTimeBin()]; y = c->GetY();z = c->GetZ();
       dx = x0 - x; 
       ymc= y0 - dx*dydx0;
       zmc= z0 - dx*dzdx0;
@@ -3332,4 +3335,53 @@ void AliTRDresolution::SetSegmentationLevel(Int_t l)
   ,{"MC P resolution", "p [GeV/c]", "(p^{REC}-p^{MC})/p^{MC} [%]", "#sigma(#Deltap/p^{MC}) [%]"}
   };
   memcpy(fAxTitle, lAxTitle, 4*kNprojs*sizeof(Char_t*));
+}
+
+#include "TFile.h"
+//________________________________________________________
+Bool_t AliTRDresolution::LoadCorrection(const Char_t *file)
+{
+  if(!file){
+    AliWarning("Use cluster position as in reconstruction.");
+    SetLoadCorrection();
+    return kTRUE;
+  }
+  TDirectory *cwd(gDirectory);
+  TString fileList;
+  FILE *filePtr = fopen(file, "rt");
+  if(!filePtr){
+    AliError(Form("Couldn't open correction list \"%s\". Use cluster position as in reconstruction.", file));
+    SetLoadCorrection();
+    return kFALSE;
+  }
+  TH2 *h2 = new TH2F("h2", ";time [time bins];detector;dx [#mum]", 30, -0.5, 29.5, AliTRDgeometry::kNdet, -0.5, AliTRDgeometry::kNdet-0.5);
+  while(fileList.Gets(filePtr)){
+    if(!TFile::Open(fileList.Data())) {
+      AliWarning(Form("Couldn't open \"%s\"", fileList.Data()));
+      continue;
+    } else AliInfo(Form("\"%s\"", fileList.Data()));
+
+    TTree *tSys = (TTree*)gFile->Get("tSys");
+    h2->SetDirectory(gDirectory); h2->Reset("ICE");
+    tSys->Draw("det:t>>h2", "dx", "goff");
+    for(Int_t idet(0); idet<AliTRDgeometry::kNdet; idet++){
+      for(Int_t it(0); it<30; it++) fXcorr[idet][it]+=(1.e-4*h2->GetBinContent(it+1, idet+1));
+    }
+    h2->SetDirectory(cwd);
+    gFile->Close();
+  }
+  cwd->cd();
+
+  if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>=2){
+    for(Int_t il(0); il<184; il++) printf("-"); printf("\n");
+    printf("DET|");for(Int_t it(0); it<30; it++) printf(" tb%02d|", it); printf("\n");
+    for(Int_t il(0); il<184; il++) printf("-"); printf("\n");
+    for(Int_t idet(0); idet<AliTRDgeometry::kNdet; idet++){
+      printf("%03d|", idet);
+      for(Int_t it(0); it<30; it++) printf("%+5.0f|", 1.e4*fXcorr[idet][it]);
+      printf("\n");
+    }
+  }
+  SetLoadCorrection();
+  return kTRUE;
 }

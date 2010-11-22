@@ -99,8 +99,6 @@ AliTRDcheckDET::AliTRDcheckDET(char* name):
   //
   // Default constructor
   //
-  DefineInput(2, AliTRDeventInfo::Class());
-
   InitFunctorList();
 }
 
@@ -128,7 +126,7 @@ void AliTRDcheckDET::UserExec(Option_t *opt){
   // Execution function
   // Filling TRD quality histos
   //
-  AliDebug(2, Form("EventInfo[%p] Header[%p]", (void*)fEventInfo, (void*)(fEvent?fEvent->GetEventHeader():NULL)));
+  //AliDebug(2, Form("EventInfo[%p] Header[%p]", (void*)fEventInfo, (void*)(fEvent?fEvent->GetEventHeader():NULL)));
 
   AliTRDrecoTask::UserExec(opt);  
 
