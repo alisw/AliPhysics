@@ -362,27 +362,27 @@ $(@PACKAGE@SML) : $(MODDIRZ)/%.smell : $(MODDIRZ)/%_cxx.ml $(MODDIRZ)/%_h.ml
 .SECONDARY: $(@PACKAGE@SML:.smell=_cxx.ml) $(@PACKAGE@SML:.smell=_h.ml)
 
 # targets to create .par archives (jgrosseo)
-@PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) $(FSRCS) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
+@PACKAGE@.par: $(patsubst %,par-build/@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) $(FSRCS) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
 	@echo "Creating archive" $@ ...
-	@cd @MODULE@; (tar --exclude=.svn -czhf ../$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in" $(PWD)/$@) || (tar --exclude=.svn -czhf /tmp/$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in /tmp/"$@)
-	@rm -rf @MODULE@/@PACKAGE@
+	@cd par-build/@MODULE@; (tar --exclude=.svn -czhf ../../$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in" $(PWD)/$@) || (tar --exclude=.svn -czhf /tmp/$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in /tmp/"$@)
+	@rm -rf par-build/@MODULE@/@PACKAGE@
 
-@MODULE@/@PACKAGE@/Makefile: @MODULE@/Makefile
+par-build/@MODULE@/@PACKAGE@/Makefile: @MODULE@/Makefile
 	@echo Copying $< to $@ with transformations
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@sed 's/include \$$(ROOTSYS)\/test\/Makefile.arch/include Makefile.arch/; s/PACKAGE = .*/PACKAGE = @PACKAGE@/' < $^ > $@
 
-@MODULE@/@PACKAGE@/Makefile.arch: $(ROOTSYS)/test/Makefile.arch
+par-build/@MODULE@/@PACKAGE@/Makefile.arch: $(ROOTSYS)/test/Makefile.arch
 	@echo Copying $< to $@
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@cp -pR $^ $@
 
-@MODULE@/@PACKAGE@/PROOF-INF: @MODULE@/PROOF-INF.@PACKAGE@
+par-build/@MODULE@/@PACKAGE@/PROOF-INF: @MODULE@/PROOF-INF.@PACKAGE@
 	@echo Copying $< to $@
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@cp -pR $^ $@
 
-@MODULE@/@PACKAGE@/%: @MODULE@/%
+par-build/@MODULE@/@PACKAGE@/%: @MODULE@/%
 	@echo Copying $< to $@
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@cp -pR $< $@

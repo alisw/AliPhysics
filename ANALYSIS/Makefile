@@ -24,6 +24,10 @@ ifneq ($(ANALYSIS_INCLUDE),)
    ALICEINC += -I../$(ANALYSIS_INCLUDE)
 endif
 
+ifneq ($(ANALYSISalice_INCLUDE),)
+   ALICEINC += -I../$(ANALYSISalice_INCLUDE)
+endif
+
 # only if no par file was loaded before
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
