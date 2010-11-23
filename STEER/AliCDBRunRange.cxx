@@ -65,10 +65,8 @@ Bool_t AliCDBRunRange::Overlaps(const AliCDBRunRange& other) const {
 		return kFALSE;
 	}
 	
-	return ((fFirstRun <= other.fFirstRun && other.fFirstRun <= fLastRun)
-		|| (fFirstRun <= other.fLastRun && other.fLastRun <= fLastRun))
-	  || ((other.fFirstRun <= fFirstRun && fFirstRun <= other.fLastRun)
-	      || (other.fFirstRun <= fLastRun && fLastRun <= other.fLastRun));
+	return ((fFirstRun < other.fFirstRun && other.fFirstRun <= fLastRun)
+	    || (other.fFirstRun <= fFirstRun && fFirstRun <= other.fLastRun));
 }
 
 //___________________________________________________________________________
