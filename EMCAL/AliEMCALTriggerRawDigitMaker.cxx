@@ -364,7 +364,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			
 			if (AliDebugLevel()) printf("| STU => Found L0 patch id: %2d in TRU# %2d\n", x, iTRU);
 			
-			const Int_t sizePatchL0 = fDCSConfig->GetTRUSegmentation(i) * fDCSConfig->GetTRUSegmentation(i);
+			const Int_t sizePatchL0 = fDCSConfig->GetTRUSegmentation(iTRU) * fDCSConfig->GetTRUSegmentation(iTRU);
 			
 			Int_t* idFastOR = new Int_t[sizePatchL0]; 
 			
