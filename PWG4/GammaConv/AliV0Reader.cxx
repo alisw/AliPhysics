@@ -139,7 +139,8 @@ AliV0Reader::AliV0Reader() :
   fNumberOfESDTracks(0),
   nEventsForBGCalculation(20),
   fUseChargedTrackMultiplicityForBG(kTRUE),
-  fNumberOfGoodV0s(0)
+  fNumberOfGoodV0s(0),
+  fIsHeavyIon(0)
 {
   //fESDpid = new AliESDpid;	
 }
@@ -235,7 +236,8 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fNumberOfESDTracks(original.fNumberOfESDTracks),
   nEventsForBGCalculation(original.nEventsForBGCalculation),
   fUseChargedTrackMultiplicityForBG(original.fUseChargedTrackMultiplicityForBG),
-  fNumberOfGoodV0s(original.fNumberOfGoodV0s)
+  fNumberOfGoodV0s(original.fNumberOfGoodV0s),
+  fIsHeavyIon(original.fIsHeavyIon)
 {
 	
 }
@@ -367,7 +369,14 @@ void AliV0Reader::Initialize(){
 	multiplicityBinLimitsArray[3] = 27.5;
 	multiplicityBinLimitsArray[4] = 41.5;
 	multiplicityBinLimitsArray[5] = 100.;
-
+	if(fIsHeavyIon){
+	  multiplicityBinLimitsArray[0] = 0;
+	  multiplicityBinLimitsArray[1] = 200.;
+	  multiplicityBinLimitsArray[2] = 500.;
+	  multiplicityBinLimitsArray[3] = 1000.;
+	  multiplicityBinLimitsArray[4] = 1500.;
+	  multiplicityBinLimitsArray[5] = 3000.;
+	}
 	fBGEventHandler = new AliGammaConversionBGHandler(9,6,nEventsForBGCalculation);
       }
       else{
@@ -376,6 +385,13 @@ void AliV0Reader::Initialize(){
 	multiplicityBinLimitsArray[2] = 4;
 	multiplicityBinLimitsArray[3] = 5;
 	multiplicityBinLimitsArray[4] = 9999;
+	if(fIsHeavyIon){
+	  multiplicityBinLimitsArray[0] = 2;
+	  multiplicityBinLimitsArray[1] = 10;
+	  multiplicityBinLimitsArray[2] = 30;
+	  multiplicityBinLimitsArray[3] = 50;
+	  multiplicityBinLimitsArray[4] = 9999;
+	}
 
 	fBGEventHandler = new AliGammaConversionBGHandler(9,5,nEventsForBGCalculation);
       }

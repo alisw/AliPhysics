@@ -160,6 +160,12 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetUseMultiplicity(Int_t useMultiplicity) {fUseMultiplicity=useMultiplicity;}
   void SetUseMultiplicityBin(Int_t useMultiplicityBin) {fUseMultiplicityBin=useMultiplicityBin;}
   Int_t CalculateMultiplicityBin();
+  void SetUseCentrality(Int_t useCentrality) {fUseCentrality=useCentrality;}
+  void SetUseCentralityBin(Int_t useCentralityBin) {fUseCentralityBin=useCentralityBin;}
+
+
+
+
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -300,7 +306,9 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Int_t fMultiplicity;
   Int_t fUseMultiplicity;
   Int_t fUseMultiplicityBin;
-  ClassDef(AliAnalysisTaskGammaConversion, 15); // Analysis task for gamma conversions
+  Int_t fUseCentrality;
+  Int_t fUseCentralityBin;
+  ClassDef(AliAnalysisTaskGammaConversion, 16); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

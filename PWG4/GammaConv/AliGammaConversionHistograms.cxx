@@ -719,6 +719,14 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     //    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
     AddHistogram(nameMCFMDPhiInZ, titleMCFMDPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);
 		
+    //Mapping Phi in Z for ITSTPC
+    TString nameMCITSTPCPhiInZ="";
+    nameMCITSTPCPhiInZ.Form("MC_Conversion_Mapping_ITSTPC_Phi_in_Z_%02d",z);
+    TString titleMCITSTPCPhiInZ="";
+    titleMCITSTPCPhiInZ.Form("MC Mapping ITSTPC of Phi in Z%02d",z);
+    //    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
+    AddHistogram(nameMCITSTPCPhiInZ, titleMCITSTPCPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);
+
 
     //Mapping R in Z
     TString nameMCRInZ="";
@@ -773,6 +781,14 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     titleESDFMDPhiInZ.Form("ESD Mapping FMD of Phi in Z%02d",z);
     //    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
     AddHistogram(nameESDFMDPhiInZ, titleESDFMDPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);    
+
+    //Mapping Phi in Z for ITSTPC
+    TString nameESDITSTPCPhiInZ="";
+    nameESDITSTPCPhiInZ.Form("ESD_Conversion_Mapping_ITSTPC_Phi_in_Z_%02d",z);
+    TString titleESDITSTPCPhiInZ="";
+    titleESDITSTPCPhiInZ.Form("ESD Mapping ITSTPC of Phi in Z%02d",z);
+    //    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
+    AddHistogram(nameESDITSTPCPhiInZ, titleESDITSTPCPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);    
 
 
    //Mapping R in Z

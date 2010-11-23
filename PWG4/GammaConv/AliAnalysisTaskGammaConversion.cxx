@@ -42,6 +42,7 @@
 #include <AliMCEventHandler.h>
 #include "TRandom3.h"
 #include "AliTriggerAnalysis.h"
+#include "AliESDCentrality.h"
 
 class AliESDTrackCuts;
 class AliCFContainer;
@@ -140,7 +141,9 @@ AliAnalysisTaskSE(),
   fTriggerAnalysis(NULL),
   fMultiplicity(0),
   fUseMultiplicity(0), 
-  fUseMultiplicityBin(0)
+  fUseMultiplicityBin(0),
+  fUseCentrality(0), 
+  fUseCentralityBin(0)
 {
   // Default constructor
 
@@ -234,7 +237,9 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fTriggerAnalysis(NULL),
   fMultiplicity(0),
   fUseMultiplicity(0), 
-  fUseMultiplicityBin(0)
+  fUseMultiplicityBin(0),
+  fUseCentrality(0), 
+  fUseCentralityBin(0)
 {
   // Common I/O in slot 0
   DefineInput (0, TChain::Class());
@@ -350,6 +355,7 @@ void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
 // Using standard function  for setting Cuts
   Bool_t selectPrimaries=kTRUE;
   fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+  fEsdTrackCuts->SetMaxDCAToVertexZ(2);
   fEsdTrackCuts->SetEtaRange(-0.8, 0.8);
   fEsdTrackCuts->SetPtRange(0.15);
   
@@ -560,6 +566,30 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     return;
   }
 
+  if(fV0Reader->GetIsHeavyIon()){
+    if(fUseCentrality>0){
+      AliESDCentrality *esdCentrality = fV0Reader->GetESDEvent()->GetCentrality();
+      Int_t centralityC = -1;
+
+      if(fUseCentrality==1){
+	centralityC = esdCentrality->GetCentralityClass10("V0M");
+	if( centralityC != fUseCentralityBin ){
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+      }
+
+      if(fUseCentrality==2){
+	centralityC = esdCentrality->GetCentralityClass10("CL1");
+	if( centralityC != fUseCentralityBin ){
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+      }
+    }
+  }
   eventQuality=3;
   fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
 
@@ -967,6 +997,8 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       Int_t zBin    = fHistograms->GetZBin(ePos->Vz());
       Int_t phiBin  = fHistograms->GetPhiBin(particle->Phi());
       Double_t rFMD=30;
+      Double_t rITSTPCMin=50;
+      Double_t rITSTPCMax=80;
 
       TVector3 vtxPos(ePos->Vx(),ePos->Vy(),ePos->Vz());	
       
@@ -1004,6 +1036,12 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	TString nameMCMappingFMDPhiInZ="";
 	nameMCMappingFMDPhiInZ.Form("MC_Conversion_Mapping_FMD_Phi_in_Z_%02d",zBin);
 	fHistograms->FillHistogram(nameMCMappingFMDPhiInZ, vtxPos.Phi());
+      }
+
+      if(ePos->R()>rITSTPCMin  && ePos->R()<rITSTPCMax){
+	TString nameMCMappingITSTPCPhiInZ="";
+	nameMCMappingITSTPCPhiInZ.Form("MC_Conversion_Mapping_ITSTPC_Phi_in_Z_%02d",zBin);
+	fHistograms->FillHistogram(nameMCMappingITSTPCPhiInZ, vtxPos.Phi());
       }
 
       TString nameMCMappingRInZ="";
@@ -1553,7 +1591,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     Int_t zBin    = fHistograms->GetZBin(fV0Reader->GetZ());
     Int_t phiBin  = fHistograms->GetPhiBin(fV0Reader->GetNegativeTrackPhi());
     Double_t rFMD=30;
-
+    Double_t rITSTPCMin=50;
+    Double_t rITSTPCMax=80;
 
 
     //    Double_t motherCandidateEta= fV0Reader->GetMotherCandidateEta();
@@ -1590,6 +1629,11 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
       fHistograms->FillHistogram(nameESDMappingFMDPhiInZ, vtxConv.Phi());
     }
 
+    if(fV0Reader->GetXYRadius()>rITSTPCMin && fV0Reader->GetXYRadius()<rITSTPCMax){
+      TString nameESDMappingITSTPCPhiInZ="";
+      nameESDMappingITSTPCPhiInZ.Form("ESD_Conversion_Mapping_ITSTPC_Phi_in_Z_%02d",zBin);
+      fHistograms->FillHistogram(nameESDMappingITSTPCPhiInZ, vtxConv.Phi());
+    }
 
     TString nameESDMappingRInZ="";
     nameESDMappingRInZ.Form("ESD_Conversion_Mapping_R_in_Z_%02d",zBin);
@@ -1631,12 +1675,19 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 		
     //----------------------------------- checking for "real" conversions (MC match) --------------------------------------
     if(fDoMCTruth){
-			
-      if(fV0Reader->HasSameMCMother() == kFALSE){
-	continue;
-      }
       TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
       TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
+			
+      if(fV0Reader->HasSameMCMother() == kFALSE){
+	fHistograms->FillHistogram("ESD_TrueConvCombinatorial_R", fV0Reader->GetXYRadius());
+	if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){
+	  fHistograms->FillHistogram("ESD_TrueConvCombinatorialElec_R", fV0Reader->GetXYRadius());
+	}
+	continue;
+      }
+      // Moved up to check true electron background
+      //      TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
+      //      TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
 
       if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
 	continue;
@@ -1649,7 +1700,12 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	  (negativeMC->GetUniqueID() == 0 && positiveMC->GetUniqueID() ==0) ){// fill r distribution for Dalitz decays 
 	if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 111){ //pi0
 	  fHistograms->FillHistogram("ESD_TrueDalitzContamination_R", fV0Reader->GetXYRadius());
+	  fHistograms->FillHistogram("ESD_TrueConvDalitzPi0_R", fV0Reader->GetXYRadius());
 	}
+	if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 221){ //eta
+	  fHistograms->FillHistogram("ESD_TrueConvDalitzEta_R", fV0Reader->GetXYRadius());
+	}
+
       }
 
       if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){// check if the daughters come from a conversion
