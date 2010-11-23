@@ -204,8 +204,48 @@ void AliHFSystErr::InitDplustoKpipi() {
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstartoD0pi() {
   // 
-  // D*+->D0pi syst errors. Responsible: tbd
+  // D*+->D0pi syst errors. Responsible: A. Grelli, Y. Wang
   //
+
+ // Normalization
+  fNorm = new TH1F("fNorm","fNorm",20,0,20);
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+
+  // Branching ratio 
+  fBR = new TH1F("fBR","fBR",20,0,20);
+  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.07); // 7% PDG2010
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
+  fTrackingEff->SetBinContent(1,0.12);
+  fTrackingEff->SetBinContent(2,0.08);
+  fTrackingEff->SetBinContent(3,0.032);
+  for(Int_t i=4;i<=20;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
+
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
+  fRawYield->SetBinContent(1,0.19);
+  fRawYield->SetBinContent(2,0.10);
+  fRawYield->SetBinContent(3,0.10);
+  fRawYield->SetBinContent(4,0.13);
+  fRawYield->SetBinContent(5,0.09);
+  for(Int_t i=5;i<=20;i++) fRawYield->SetBinContent(i,0.08);  //8%
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
+  for(Int_t i=1;i<=20;i++) fCutsEff->SetBinContent(i,0.10); // 10%
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
+  for(Int_t i=1;i<=20;i++) fPIDEff->SetBinContent(i,0.03); // 3%
+  fPIDEff->SetBinContent(4,0.10); // 10%
+  fPIDEff->SetBinContent(5,0.06); // 6%
+ 
+
+  // MC dN/dpt  (copied from D0 : will update later)
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
 
   return;
 }
