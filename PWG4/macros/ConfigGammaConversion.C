@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 23;
+const int c_array_size = 26;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -48,7 +48,7 @@ Bool_t kGCdoBGProbability=kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="90035620401003321022000"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="90035620401003321022000000"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=20;
 
@@ -106,6 +106,12 @@ Bool_t kGCRemovePileUp = kFALSE;
 Bool_t kGCSelectV0AND = kFALSE;
 Bool_t kGCUseMultiplicity = kFALSE;
 Int_t  kGCUseMultiplicityBin=0;
+
+Int_t kGCIsHeavyIon = 0;
+Int_t kGCUseCentrality = 0;
+Int_t  kGCUseCentralityBin = 0;
+
+
 
 /** ---------------------------------- define pi0 dalitz cuts here ------------------------------------*/
 
@@ -340,6 +346,11 @@ Bool_t kGCplotESDConvGammaEtavsChi2 = kTRUE;
 
 
 Bool_t kGCplotESDTrueDalitzContaminationR    = kTRUE;
+Bool_t kGCplotESDTruePi0DalitzContaminationR = kTRUE;
+Bool_t kGCplotESDTrueEtaDalitzContaminationR = kTRUE;
+Bool_t kGCplotESDTrueCombinatorialContaminationR = kTRUE;
+Bool_t kGCplotESDTrueCombinatorialElecContaminationR = kTRUE;
+
 Bool_t kGCplotESDTrueConvGammaEnergy         = kFALSE;
 Bool_t kGCplotESDTrueConvGammaPt             = kTRUE;
 Bool_t kGCplotESDTrueConvGammaEta            = kTRUE;
@@ -539,9 +550,9 @@ Double_t kGClastXBinESDtrk = 9999.5;
 
 
 //EventQuality-plot
-Int_t kGCnXBinsEvtQ= 8;
+Int_t kGCnXBinsEvtQ= 9;
 Double_t kGCfirstXBinEvtQ=-1.5;
-Double_t kGClastXBinEvtQ=6.5;
+Double_t kGClastXBinEvtQ=7.5;
 
 //R-plots
 Int_t kGCnXBinsR = 400;
@@ -1550,6 +1561,15 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetUseMultiplicity(kGCUseMultiplicity);
   gammaconversion->SetUseMultiplicityBin(kGCUseMultiplicityBin);
 
+  v0Reader->SetIsHeavyIon(kGCIsHeavyIon);
+  gammaconversion->SetUseCentrality(kGCUseCentrality);
+  if(kGCUseCentrality){
+    gammaconversion->SetUseCentralityBin(kGCUseCentralityBin);
+  }
+
+
+
+
   // for CF
   gammaconversion->SetCFManager(man);
   gammaconversion->SetDoCF(kGCrunCF);
@@ -1895,7 +1915,11 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 
 		
     if(kGCplotESDTrueDalitzContaminationR == kTRUE){ histograms->AddHistogram("ESD_TrueDalitzContamination_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");}
-		
+    if(kGCplotESDTruePi0DalitzContaminationR == kTRUE){ histograms->AddHistogram("ESD_TrueConvDalitzPi0_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");}
+    if(kGCplotESDTrueEtaDalitzContaminationR == kTRUE){ histograms->AddHistogram("ESD_TrueConvDalitzEta_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");}
+    if(kGCplotESDTrueCombinatorialContaminationR == kTRUE){ histograms->AddHistogram("ESD_TrueConvCombinatorial_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");}
+    if(kGCplotESDTrueCombinatorialElecContaminationR == kTRUE){ histograms->AddHistogram("ESD_TrueConvCombinatorialElec_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");}
+
     if(kGCplotESDTrueConvGammaEnergy == kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
     if(kGCplotESDTrueConvGammaPt == kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
     if(kGCplotESDTrueConvGammaEta == kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}
@@ -2461,7 +2485,13 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t removePileUp=array[20];
   Int_t selectV0AND=array[21];
   Int_t multiplicityBin=array[22];
+  Int_t isHeavyIon=array[23];
+  Int_t useCentrality=array[24];
+  Int_t centralityBin=array[25];
 
+  cout<<"CentralityBin::"<< centralityBin <<endl;
+  cout<<"Use Centrality::"<< useCentrality <<endl;
+  cout<<"Heavy Ion::"<< isHeavyIon<<endl;
   cout<<"Multiplicity Bin::"<< multiplicityBin<<endl;
   cout<<"Select V0AND::"<< selectV0AND<<endl;
   cout<<"Remove PileUp::"<< removePileUp<<endl;
@@ -2912,6 +2942,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 3:
     kGCnumberOfRotationEventsForBG = 20;
     break;
+  case 4:
+    kGCnumberOfRotationEventsForBG = 2;
+    break;
 
   default:
     return iResult;
@@ -2967,6 +3000,66 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   default:
     return iResult;
   }
+
+  switch(isHeavyIon){
+  case 0:
+    kGCIsHeavyIon=0;
+    break;
+  case 1:
+    kGCIsHeavyIon=1;
+    break;
+   default:
+    return iResult;
+  }
+
+  switch(useCentrality){
+  case 0:
+    kGCUseCentrality=0;
+    break;
+  case 1:
+    kGCUseCentrality=1;//    GetCentralityClass10("V0M")
+    break;
+  case 2:
+    kGCUseCentrality=2; //    GetCentralityClass10("CL1")
+    break;
+   default:
+    return iResult;
+  }
+
+  switch(centralityBin){
+  case 0:
+    kGCUseCentralityBin=0;
+    break;
+  case 1:
+    kGCUseCentralityBin=1;
+    break;
+  case 2:
+    kGCUseCentralityBin=2;
+    break;
+  case 3:
+    kGCUseCentralityBin=3;
+    break;
+  case 4:
+    kGCUseCentralityBin=4;
+    break;
+  case 5:
+    kGCUseCentralityBin=5;
+    break;
+  case 6:
+    kGCUseCentralityBin=6;
+    break;
+  case 7:
+    kGCUseCentralityBin=7;
+    break;
+  case 8:
+    kGCUseCentralityBin=8;
+    break;
+  case 9:
+    kGCUseCentralityBin=9;
+    break;
+   default:
+    return iResult;
+  }
   iResult=1;
   return iResult;
 
@@ -3001,6 +3094,9 @@ void string2array(const std::string& number, int a[c_array_size])
         ASSIGNARRAY(20);
         ASSIGNARRAY(21);
         ASSIGNARRAY(22);
+        ASSIGNARRAY(23);
+        ASSIGNARRAY(24);
+        ASSIGNARRAY(25);
   }
 }
 

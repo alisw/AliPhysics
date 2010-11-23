@@ -832,7 +832,9 @@ class AliV0Reader : public TObject {
   static AliESDpid* GetESDpid() {return fgESDpid;}
 
   void SetUseChargedTracksMultiplicityForBG(Bool_t flag){fUseChargedTrackMultiplicityForBG = flag;}
-  
+  void SetIsHeavyIon(Int_t isHeavyIon) {fIsHeavyIon=isHeavyIon;}
+  Int_t GetIsHeavyIon() const { return fIsHeavyIon;}
+ 
   Int_t GetPindex(Int_t i) {return fV0Pindex.at(i);}
   Int_t GetNindex(Int_t i) {return fV0Nindex.at(i);}
 
@@ -963,8 +965,9 @@ class AliV0Reader : public TObject {
   
   Bool_t fUseChargedTrackMultiplicityForBG;
   Int_t fNumberOfGoodV0s;
+  Int_t fIsHeavyIon;
 
-  ClassDef(AliV0Reader,16)
+  ClassDef(AliV0Reader,17)
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)
