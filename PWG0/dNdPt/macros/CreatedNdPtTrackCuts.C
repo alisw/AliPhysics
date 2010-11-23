@@ -1597,6 +1597,28 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "TPC refit required - for cut studies";
   }
 
+  // TPC
+  // for cut studies
+  if (cutMode == 153) 
+  {
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kFALSE);
+    esdTrackCuts->SetRequireITSRefit(kFALSE);
+    esdTrackCuts->SetRequireTPCStandAlone(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    //
+    // ITS
+    //
+    //esdTrackCuts->SetRequireITSRefit(kTRUE);
+    //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    //
+    
+    TString tag = "TPC stand alone - for cut studies";
+  }
+
+
 
 
 
