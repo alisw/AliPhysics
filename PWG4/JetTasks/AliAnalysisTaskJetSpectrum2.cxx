@@ -1165,7 +1165,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       Float_t minv = 2.*(recJets[0].P()*recJets[1].P()-
 			 recJets[0].Px()*recJets[1].Px()- 
 			 recJets[0].Py()*recJets[1].Py()- 
-			 recJets[0].Pz()*recJets[1].Py());
+			 recJets[0].Pz()*recJets[1].Pz());
+      if(minv<0)minv=0; // prevent numerical instabilities
       minv = TMath::Sqrt(minv);
       // with mass == 0;
       
