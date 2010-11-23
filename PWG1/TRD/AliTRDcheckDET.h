@@ -22,7 +22,6 @@ class AliExternalTrackParam;
 class AliTRDcluster;
 class AliTRDseedV1;
 class AliTRDgeometry;
-class AliTRDeventInfo;
 class AliTRDcheckDET : public AliTRDrecoTask{
 public:
   // The Histogram number
@@ -113,7 +112,7 @@ private:
   Bool_t MakeBarPlot(TH1 *histo, Int_t Color);
   void GetEtaPhiAt(const AliExternalTrackParam *track, Double_t x, Double_t &eta, Double_t &phi);
 
-  AliTRDeventInfo *fEventInfo;         //! ESD Header
+  Int_t fCentralityClass;              // Centrality Class
   TMap *fTriggerNames;                 //! Containing trigger class names
   UChar_t fFlags;                      // Flags for setting
     
