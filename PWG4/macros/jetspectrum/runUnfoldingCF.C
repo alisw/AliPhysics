@@ -4,7 +4,7 @@ TObject* GetMeasuredSpectrum(TList *fContainer);
 TObject* GetGeneratedSpectrum(TList *fContainer);
 TObject* GetEfficiency(TList *fContainer,Int_t iCase = 44);
 THnSparse* GetResponseMatrix(TList *fContainer);
-THnSparse* CreateResponseMatrix();
+THnSparse* CreateEmptyResponseMatrix();
 Float_t GetNTrials(TList *fContainer);
 THnSparse* CreateGuessed(const THnSparse* h);
 void PrintErrors(THnSparse *h);
@@ -809,7 +809,7 @@ TObject* GetEfficiency(TList *fContainer,Int_t iCase) {
   return he;
 }
 
-THnSparse* CreateResponseMatrix(){
+THnSparse* CreateEmptyResponseMatrix(){
   // Creates an empty response matrix as in the Spectrum2 Task
 
   const Int_t kNvar   = 3 ; //number of variables on the grid:pt,eta, phi
