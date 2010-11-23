@@ -349,8 +349,9 @@ void AliLatexTable::PrintTable(Option_t * opt){
   // "" -> LaTeX
   // "ASCII" -> plain ASCII
   // "HTML"  -> HTML, to be improved
+  // "CSV"   -> skips hline, usefult for importing in excell 
 
-  if(TString(opt) == "ASCII" || TString(opt)=="HTML") {
+  if(TString(opt) == "ASCII" || TString(opt)=="HTML" ||  TString(opt)=="CSV") {
     
     Int_t nrow = fRows->GetEntriesFast();
 
@@ -362,9 +363,11 @@ void AliLatexTable::PrintTable(Option_t * opt){
 
     for(Int_t irow = 0; irow < nrow; irow++){
       TString row = ((TObjString*) fRows->At(irow))->String();
-      if (row.Contains("\\hline") ){
-	for(Int_t il = 0; il < total_lenght; il++) printf("-");
-	printf("\n");	  
+      if (row.Contains("\\hline")){	
+	if (TString(opt)!="CSV") {
+	  for(Int_t il = 0; il < total_lenght; il++) printf("-");
+	  printf("\n");	  
+	}
 	continue;
       }
       StripLatex(row, opt);
@@ -372,8 +375,13 @@ void AliLatexTable::PrintTable(Option_t * opt){
       for(Int_t icol = 0; icol < fNcol; icol++){
 	const char * colstr = ((TObjString *) cols->At(icol))->String().Data();
 	char format [200];
-	sprintf(format, "%%%ds", col_widths[icol] + 2);	
+	if (TString(opt)!="CSV") {
+	  sprintf(format, "%%%ds", col_widths[icol] + 2);	
+	} else {
+	  sprintf(format, "%%s");	
+	}
 	printf(format, colstr);
+	if (TString(opt)=="CSV") printf(", ");
 
       }
       printf ("\n");
