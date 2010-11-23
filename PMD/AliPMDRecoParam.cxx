@@ -115,3 +115,27 @@ void AliPMDRecoParam::PrintParameters() const
   AliInfo(Form(" Clustering parameter : %d", fPmdClusteringParam));
 
 }
+
+//_____________________________________________________________________________
+AliPMDRecoParam *AliPMDRecoParam::GetHighFluxParam(){
+  //
+  // set default reconstruction parameters for PbPb.
+  //
+  AliPMDRecoParam *param = new AliPMDRecoParam();
+
+  param->fPmdClusteringParam = 2;
+
+  return param;
+}
+
+//_____________________________________________________________________________
+AliPMDRecoParam *AliPMDRecoParam::GetLowFluxParam(){
+  //
+  // set default reconstruction parameters for PP.
+  //
+  AliPMDRecoParam *param = new AliPMDRecoParam();
+
+  param->fPmdClusteringParam = 1;
+
+  return param;
+}

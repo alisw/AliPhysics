@@ -270,7 +270,25 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
       // Int_t cluspar = fRecoParam->GetPbPbParam()->GetClusteringParam();
       Int_t cluspar = fRecoParam->GetPPParam()->GetClusteringParam();
       // Int_t cluspar = fRecoParam->GetCosmicParam()->GetClusteringParam();
+      
+      //_______________________________________________________// 
+      //Added to switch Refine and crude Clustering - satya//
+      // temporary solution - will be sorted out later
+      cluspar = 1;
+      static AliPMDRecoParam *reconp = NULL;
+      reconp = (AliPMDRecoParam*)AliPMDReconstructor::GetRecoParam();
+      if(!reconp) {
+	cluspar = 1;
+      } 
+      else { 
 
+      if( reconp->GetClusteringParam() == 1) 
+	cluspar = 1;
+      if( reconp->GetClusteringParam() == 2) 
+	cluspar = 2;
+      }
+      //_______________________________________________________// 
+      
       pmdclust->SetClusteringParam(cluspar);
 
       Float_t encut = 4.;
@@ -574,6 +592,24 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  // Int_t cluspar = fRecoParam->GetPbPbParam()->GetClusteringParam();
 	  Int_t cluspar = fRecoParam->GetPPParam()->GetClusteringParam();
 	  // Int_t cluspar = fRecoParam->GetCosmicParam()->GetClusteringParam();
+
+	  //_______________________________________________________// 
+	  //Added to switch Refine and crude Clustering - satya//
+	  // temporary solution - will be sorted out later
+	  cluspar = 1;
+	  static AliPMDRecoParam *reconp = NULL;
+	  reconp = (AliPMDRecoParam*)AliPMDReconstructor::GetRecoParam();
+	  if(!reconp) {
+	    cluspar = 1;
+	  } 
+	  else { 
+	    if( reconp->GetClusteringParam() == 1) 
+	      cluspar = 1;
+	    if( reconp->GetClusteringParam() == 2) 
+	      cluspar = 2;
+	  }
+	  //_______________________________________________________// 
+
 	  pmdclust->SetClusteringParam(cluspar);
 	  Float_t encut = fNoiseCut->GetNoiseCut(imod);
 
