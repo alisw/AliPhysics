@@ -584,12 +584,12 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
       errvalueMax = value * TMath::Sqrt( (fgYieldCorr->GetErrorYhigh(ibin)/fhYieldCorr->GetBinContent(ibin))*(fgYieldCorr->GetErrorYhigh(ibin)/fhYieldCorr->GetBinContent(ibin)) + 
 					 (fLuminosity[1]/fLuminosity[0])*(fLuminosity[1]/fLuminosity[0]) + 
 					 (fTrigEfficiency[1]/fTrigEfficiency[0])*(fTrigEfficiency[1]/fTrigEfficiency[0])  +
-					 //					 (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) +
+					 (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) +
 					 fGlobalEfficiencyUncertainties[0]*fGlobalEfficiencyUncertainties[0] );
       errvalueMin = value * TMath::Sqrt( (fgYieldCorr->GetErrorYlow(ibin)/fhYieldCorr->GetBinContent(ibin))*(fgYieldCorr->GetErrorYlow(ibin)/fhYieldCorr->GetBinContent(ibin)) + 
 					 (fLuminosity[1]/fLuminosity[0])*(fLuminosity[1]/fLuminosity[0]) + 
 					 (fTrigEfficiency[1]/fTrigEfficiency[0])*(fTrigEfficiency[1]/fTrigEfficiency[0])  +
-					 //					 (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))  +
+					 (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))  +
 					 fGlobalEfficiencyUncertainties[0]*fGlobalEfficiencyUncertainties[0] );
 
       // Uncertainties from feed-down
@@ -608,7 +608,7 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
       errvalueMax = (value!=0.) ?
 	value * TMath::Sqrt( (fLuminosity[1]/fLuminosity[0])*(fLuminosity[1]/fLuminosity[0]) + 
 			     (fTrigEfficiency[1]/fTrigEfficiency[0])*(fTrigEfficiency[1]/fTrigEfficiency[0])  +
-			     //			     (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))  +
+			     (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))  +
 			     fGlobalEfficiencyUncertainties[0]*fGlobalEfficiencyUncertainties[0] )
 	: 0. ;
       errvalueMin = errvalueMax;
@@ -934,11 +934,36 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
 
     // fc uncertainty from (eff_b/eff_c) = fc^2 * (N_b/N_c) * delta(eff_b/eff_c)
     //  delta(eff_b/eff_c) is a percentage = fGlobalEfficiencyUncertainties[1]*effRatio
-    correctionUnc = correction*correction * theoryRatio * fGlobalEfficiencyUncertainties[1]*effRatio;
-    correctionExtremeAUnc = correctionExtremeA*correctionExtremeA * theoryRatioExtremeA  * fGlobalEfficiencyUncertainties[1]*effRatio;
-    correctionExtremeBUnc = correctionExtremeB*correctionExtremeB * theoryRatioExtremeB  * fGlobalEfficiencyUncertainties[1]*effRatio;
-    correctionConservativeAUnc = correctionConservativeA*correctionConservativeA * theoryRatioConservativeA  * fGlobalEfficiencyUncertainties[1]*effRatio;
-    correctionConservativeBUnc = correctionConservativeB*correctionConservativeB * theoryRatioConservativeB  * fGlobalEfficiencyUncertainties[1]*effRatio;
+    //    correctionUnc = correction*correction * theoryRatio * fGlobalEfficiencyUncertainties[1]*effRatio;
+    //     correctionExtremeAUnc = correctionExtremeA*correctionExtremeA * theoryRatioExtremeA  * fGlobalEfficiencyUncertainties[1]*effRatio;
+    //     correctionExtremeBUnc = correctionExtremeB*correctionExtremeB * theoryRatioExtremeB  * fGlobalEfficiencyUncertainties[1]*effRatio;
+    //     correctionConservativeAUnc = correctionConservativeA*correctionConservativeA * theoryRatioConservativeA  * fGlobalEfficiencyUncertainties[1]*effRatio;
+    //     correctionConservativeBUnc = correctionConservativeB*correctionConservativeB * theoryRatioConservativeB  * fGlobalEfficiencyUncertainties[1]*effRatio;
+    correctionUnc = correction*correction * theoryRatio * effRatio *
+      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
+		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
+		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
+		   );
+    correctionExtremeAUnc = correctionExtremeA*correctionExtremeA * theoryRatioExtremeA  * effRatio *
+      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
+		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
+		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
+		   );
+    correctionExtremeBUnc = correctionExtremeB*correctionExtremeB * theoryRatioExtremeB  * effRatio *
+      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
+		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
+		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
+		   );
+    correctionConservativeAUnc = correctionConservativeA*correctionConservativeA * theoryRatioConservativeA  *effRatio *
+      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
+		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
+		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
+		   );
+    correctionConservativeBUnc = correctionConservativeB*correctionConservativeB * theoryRatioConservativeB  *effRatio *
+      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
+		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
+		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
+		   );
 
 
     // Fill in the histograms
@@ -1150,21 +1175,21 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       errvalueExtremeMin = TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
 					( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
 					( (kfactor*NbDmax/Nb)*(kfactor*NbDmax/Nb) )  +
-					//					( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
+					( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
 					( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) ) 
 					) / fhRECpt->GetBinWidth(ibin);
       // max value with the minimum Nb
       errvalueExtremeMax =  TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
 					 ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
 					 ( (kfactor*NbDmin/Nb)*(kfactor*NbDmin/Nb) )  +
-					 //					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	) +
+					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	) +
 					 ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
 					 ) / fhRECpt->GetBinWidth(ibin);
     }
     else{ // Don't consider Nb uncertainty in this case [ to be tested!!! ]
       errvalueExtremeMax =  TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
 					 ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) )  +
-					 //					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	)  +
+					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	)  +
 					 ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
 					 ) / fhRECpt->GetBinWidth(ibin);
       errvalueExtremeMin =  errvalueExtremeMax ;
