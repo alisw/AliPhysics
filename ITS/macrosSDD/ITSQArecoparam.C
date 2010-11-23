@@ -14,6 +14,8 @@
 #include <TClass.h>
 #include <iostream>
 #include <stdio.h>
+#include <TGeoGlobalMagField.h>
+#include <TMap.h>
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
@@ -25,6 +27,7 @@
 #include "AliReconstructor.h"
 #include "AliCDBManager.h"
 #include "AliQAv1.h"
+#include "AliMagF.h"
 #include "AliGeomManager.h"
 #include "AliITSInitGeometry.h"
 #include "AliITSgeom.h"
@@ -36,6 +39,8 @@
 #include "AliITSReconstructor.h"
 #include "AliITSRecPointContainer.h"
 #include "AliLog.h"
+#include "AliGRPObject.h"
+#include "AliRunInfo.h"
 #endif
 void ITSQArecoparam(char *iFile,Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=1000000)
 {
@@ -69,6 +74,125 @@ void ITSQArecoparam(char *iFile,Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=100
     AliQAv1::SetQARefStorage("local://$ALICE_ROOT/QARef") ;
   }
 
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+
+  AliGRPObject *fGRPData=NULL;
+  
+  TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
+
+    if (m) {
+       printf("Found a TMap in GRP/GRP/Data, converting it into an AliGRPObject");
+       m->Print();
+       fGRPData = new AliGRPObject();
+       fGRPData->ReadValuesFromMap(m);
+    }
+
+    else {
+       printf("Found an AliGRPObject in GRP/GRP/Data, reading it");
+       fGRPData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+       entry->SetOwner(0);
+    }
+
+
+ if (!fGRPData) {
+     printf("Error   No GRP entry found in OCDB!");
+     return;
+  }
+
+
+  TString lhcState = fGRPData->GetLHCState();
+  if (lhcState==AliGRPObject::GetInvalidString()) {
+    printf("Error  GRP/GRP/Data entry:  missing value for the LHC state ! Using UNKNOWN");
+    lhcState = "UNKNOWN";
+  }
+
+  TString beamType = fGRPData->GetBeamType();
+  if (beamType==AliGRPObject::GetInvalidString()) {
+    printf("Error   GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
+    beamType = "UNKNOWN";
+  }
+
+  Float_t beamEnergy = fGRPData->GetBeamEnergy();
+  if (beamEnergy==AliGRPObject::GetInvalidFloat()) {
+    printf("Error   GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
+    beamEnergy = 0;
+  }
+
+  TString runType = fGRPData->GetRunType();
+  if (runType==AliGRPObject::GetInvalidString()) {
+    printf("Error  GRP/GRP/Data entry:  missing value for the run type ! Using UNKNOWN");
+    runType = "UNKNOWN";
+  }
+
+  Int_t activeDetectors = fGRPData->GetDetectorMask();
+  if (activeDetectors==AliGRPObject::GetInvalidUInt()) {
+    printf("Error  GRP/GRP/Data entry:  missing value for the detector mask ! Using 1074790399");
+    activeDetectors = 1074790399;
+  }
+
+  AliRunInfo *fRunInfo = new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
+  fRunInfo->Dump();
+
+ if ( TGeoGlobalMagField::Instance()->IsLocked() ) {
+    if (TGeoGlobalMagField::Instance()->GetField()->TestBit(AliMagF::kOverrideGRP)) {
+      printf("ExpertMode!!! GRP information will be ignored !");
+      printf("ExpertMode!!! Running with the externally locked B field !");
+    }
+    else {
+      printf("Destroying existing B field instance!");
+      delete TGeoGlobalMagField::Instance();
+    }    
+  }
+  if ( !TGeoGlobalMagField::Instance()->IsLocked() ) {
+    // Construct the field map out of the information retrieved from GRP.
+    Bool_t ok = kTRUE;
+    // L3
+    Float_t l3Current = fGRPData->GetL3Current((AliGRPObject::Stats)0);
+    if (l3Current == AliGRPObject::GetInvalidFloat()) {
+      printf("Error :  GRP/GRP/Data entry:  missing value for the L3 current !");
+      ok = kFALSE;
+    }
+    
+    Char_t l3Polarity = fGRPData->GetL3Polarity();
+    if (l3Polarity == AliGRPObject::GetInvalidChar()) {
+      printf("Error:   GRP/GRP/Data entry:  missing value for the L3 polarity !");
+      ok = kFALSE;
+    }
+
+   // Dipole
+    Float_t diCurrent = fGRPData->GetDipoleCurrent((AliGRPObject::Stats)0);
+    if (diCurrent == AliGRPObject::GetInvalidFloat()) {
+      printf("Error  GRP/GRP/Data entry:  missing value for the dipole current !");
+      ok = kFALSE;
+    }
+
+    Char_t diPolarity = fGRPData->GetDipolePolarity();
+    if (diPolarity == AliGRPObject::GetInvalidChar()) {
+      printf("Error GRP/GRP/Data entry:  missing value for the dipole polarity !");
+      ok = kFALSE;
+    }
+
+
+   Int_t  polConvention = fGRPData->IsPolarityConventionLHC() ? AliMagF::kConvLHC : AliMagF::kConvDCS2008;
+   Bool_t uniformB = fGRPData->IsUniformBMap();
+   
+   if (ok) { 
+     AliMagF* fld = AliMagF::CreateFieldMap(TMath::Abs(l3Current) * (l3Polarity ? -1:1), 
+					    TMath::Abs(diCurrent) * (diPolarity ? -1:1), 
+					    polConvention,uniformB,beamEnergy, beamType.Data());
+     if (fld) {
+       TGeoGlobalMagField::Instance()->SetField( fld );
+       TGeoGlobalMagField::Instance()->Lock();
+       printf("Running with the B field constructed out of GRP !");
+     }
+     else printf("Fatal Failed to create a B field map !");
+   }
+   else printf("Fatal  B field is neither set nor constructed from GRP ! Exitig...");
+  }
+  
+
+
+
   AliITSQADataMakerRec *itsQAdm = new AliITSQADataMakerRec(kTRUE,idet,0); //online kTRUE
   itsQAdm->SetWriteExpert() ;
   itsQAdm->SetRunNumber(runNumber);  
@@ -89,11 +213,11 @@ void ITSQArecoparam(char *iFile,Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=100
   printf("Loading reconstruction parameter objects for detector ITS\n");
   AliRecoParam fRecoParam; 
   AliCDBPath path("ITS","Calib","RecoParam");
-  AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+  AliCDBEntry *entry2=AliCDBManager::Instance()->Get(path.GetPath());
   Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
-  if(!entry){printf("Couldn't find RecoParam entry in OCDB for detector ITS");entry=NULL;}
+  if(!entry2){printf("Couldn't find RecoParam entry in OCDB for detector ITS");entry2=NULL;}
   else {
-    TObject *recoParamObj = entry->GetObject();
+    TObject *recoParamObj = entry2->GetObject();
     if (dynamic_cast<TObjArray*>(recoParamObj)) {
       printf("RecoParam TObjArray\n");
       fRecoParam.AddDetRecoParamArray(0,dynamic_cast<TObjArray*>(recoParamObj));
@@ -105,10 +229,10 @@ void ITSQArecoparam(char *iFile,Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=100
       fRecoParam.AddDetRecoParam(0,(dynamic_cast<AliDetectorRecoParam*>(recoParamObj)));
     }
     else {printf("Error: No valid RecoParam object found in the OCDB for detector ITS");}
-    entry->SetOwner(0);
+    entry2->SetOwner(0);
   }
-  if(!cacheStatus)entry->SetObject(NULL);
-  if(!cacheStatus){ delete entry;}
+  if(!cacheStatus)entry2->SetObject(NULL);
+  if(!cacheStatus){ delete entry2;}
   
   // load the reconstructor object
  pluginManager = gROOT->GetPluginManager();
