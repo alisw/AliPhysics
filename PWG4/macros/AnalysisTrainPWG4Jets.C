@@ -1726,7 +1726,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    // if we do not fill the aod we do not need to store it
    //   kGridMergeExclude = listaods;
    
-   if(kSaveAOD!=0){
+   if(kSaveAOD>=0){
      TString outputFiles =  "";
      outputFiles += mgr->GetExtraFiles();
      if (listhists.Length()) outputFiles += " ";
@@ -1754,6 +1754,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
      }
      
      // 
+     plugin->SetDefaultOutputs(kFALSE);
      Printf("%s:%d Saving the files %s",(char*)__FILE__,__LINE__,outputFiles.Data());
      plugin->SetOutputFiles(outputFiles.Data());
    }
