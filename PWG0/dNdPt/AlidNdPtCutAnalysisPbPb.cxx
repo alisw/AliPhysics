@@ -348,15 +348,23 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
   Float_t pt = esdTrack->Pt();
   Float_t eta = esdTrack->Eta();
   Float_t phi = esdTrack->Phi();
-  //Int_t nClust = esdTrack->GetTPCclusters(0);
-  Int_t nClust = esdTrack->GetTPCNclsIter1();
-  Int_t nFindableClust = esdTrack->GetTPCNclsF();
+
+  Int_t nClust = 0;
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) { 
+    nClust = esdTrack->GetTPCNclsIter1();
+  } else {
+    nClust = esdTrack->GetTPCclusters(0);
+  }
 
   Float_t chi2PerCluster = 0.;
-  //if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2()/Float_t(nClust);
-  if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2Iter1()/Float_t(nClust);
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) { 
+    if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2Iter1()/Float_t(nClust);
+  } else {
+    chi2PerCluster = esdTrack->GetTPCchi2()/Float_t(nClust);
+  }
 
   Float_t clustPerFindClust = 0.;
+  Int_t nFindableClust = esdTrack->GetTPCNclsF();
   if(nFindableClust>0.) clustPerFindClust = Float_t(nClust)/nFindableClust;
 
   Float_t b[2], bCov[3];
