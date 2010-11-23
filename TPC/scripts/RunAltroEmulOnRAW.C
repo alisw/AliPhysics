@@ -6,13 +6,19 @@ void RunAltroEmulOnRAW(Int_t mode, const char *uri,
                            const char *outputRootFileName ="rawdata.root"){
 
   // modes
+
+  // 0: MAF off / TCF off - ONLY ZS
+
   // 1: MAF on / TCF off
   // 2: MAF on / TCF on - params from Rehak (baseline)
   // 3: MAF on / TCF on - params from Rehak (baseline & pulse shortening)
   // 4: MAF on / TCF on - params from Rehak (baseline, used in P2)
+  // 5: MAF on - presample 1, postsample 1
+  // 6: MAF on - presample 1, postsample 3
+  // 7: MAF on - presample 1, postsample 5
  
 
-  if (mode<0 || mode>4) {
+  if (mode<0 || mode>7) {
     printf(" ERROR: chosen mode not avalailable ...\n");
     return;
   }
@@ -61,18 +67,39 @@ void RunAltroEmulOnRAW(Int_t mode, const char *uri,
   AliTPCAltroEmulator *a1 = new AliTPCAltroEmulator();
 
   a1->ConfigBaselineCorrection1(4, baseline, 0, 0);
-  a1->ConfigBaselineCorrection2(3,3,0,0,0);
   a1->ConfigZerosuppression(3,2,0,0);
    
-  if (mode ==1)
-    a1->ConfigAltro(1,0,1,1,1,0); // MAF
-  else if (mode==0)
-    a1->ConfigAltro(1,0,0,1,1,0); // MAF
-  else {
-    a1->ConfigTailCancellationFilterForRAWfiles(K0,K1,K2,L0,L1,L2);
-    a1->ConfigAltro(1,1,1,1,1,0); // MAF and TCF
-  }
+  if (mode ==0) { // do nothing, just ZS
+ 
+    a1->ConfigAltro(1,0,0,1,1,0); 
 
+  } else if (mode==1) {  // MAF
+
+    a1->ConfigBaselineCorrection2(3,3,0,0,0);
+    a1->ConfigAltro(1,0,1,1,1,0);
+    
+  } else if (mode==2 || mode ==3 || mode==4) { // MAF and different TCF  
+
+    a1->ConfigTailCancellationFilterForRAWfiles(K0,K1,K2,L0,L1,L2);
+    a1->ConfigBaselineCorrection2(3,3,0,0,0);
+    a1->ConfigAltro(1,1,1,1,1,0); 
+
+  } else if (mode == 5) { // different MAF
+    
+    a1->ConfigBaselineCorrection2(3,3,0,1,1);  // 1 presample, 1 postsamples
+    a1->ConfigAltro(1,0,1,1,1,0);
+
+  } else if (mode == 6) { // different MAF
+    
+    a1->ConfigBaselineCorrection2(3,3,0,1,3);  // 1 presample, 3 postsamples
+    a1->ConfigAltro(1,0,1,1,1,0);
+    
+  } else if (mode == 7) { // different MAF
+    
+    a1->ConfigBaselineCorrection2(3,3,0,1,5);  // 1 presample, 5 postsamples
+    a1->ConfigAltro(1,0,1,1,1,0);
+
+  } 
 
 
   a1->SetOutputRootFileName(outputRootFileName);
