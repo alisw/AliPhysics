@@ -1355,9 +1355,10 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
   //           misalignment shifts to global position in case of need.
   // Federico.Ronchetti@cern.ch
   
+    
   // To use in a print later
-  //Int_t iphi = drow;
-  //Int_t ieta = dcol;
+  Int_t droworg = drow;
+  Int_t dcolorg = dcol;
   
   if(gGeoManager){
     //Recover some stuff
@@ -1383,7 +1384,6 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
       drow = 23. - drow;
     }
     
-    Int_t i      = 0; // one always needs "i"
     Int_t istrip = 0;
     Float_t z0   = 0;
     Float_t zb   = 0;
@@ -1403,20 +1403,21 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     //Float_t L = 26.04; // active tower length for hadron (lead+scint+paper)
     // we use the geant numbers 13.87*2=27.74
     Float_t teta1 = 0.;
-    
-    i = sm;
-    
+      
+    //Do some basic checks
     if (dcol >= 47.5 || dcol<-0.5) {
-      exit(0);
+      AliError(Form("Bad tower coordinate dcol=%d, where dcol >= 47.5 || dcol<-0.5; org: %d", dcol, dcolorg));
+      return;
     }
-    
     if (drow >= 23.5 || drow<-0.5) {
-      exit(0);
+      AliError(Form("Bad tower coordinate drow=%d, where drow >= 23.5 || drow<-0.5; org: %d", drow, droworg));
+      return;
     }
-    if (sm > 13 || sm <0) {
-      exit(0);
-    }
-        
+    if (sm > 11 || sm <0) {
+      AliError(Form("Bad SM number sm=%d, where sm > 11 || sm<0", sm));
+      return;
+    }    
+    
     istrip = int ((dcol+0.5)/2);
     
     // tapering angle
@@ -1446,14 +1447,14 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     // moving the origin from terry's RF
     // to the GEANT one
     
-    double xx =  y - geoBox[i]->GetDX();
-    double yy = -x + geoBox[i]->GetDY(); 
-    double zz =  z - geoBox[i]->GetDZ(); 
+    double xx =  y - geoBox[sm]->GetDX();
+    double yy = -x + geoBox[sm]->GetDY(); 
+    double zz =  z - geoBox[sm]->GetDZ(); 
     const double localIn[3] = {xx, yy, zz};
     double dglobal[3];
-    //geoSMMatrix[i]->Print();
-    //printf("TFF Local    (row = %d, col = %d, x = %3.2f,  y = %3.2f, z = %3.2f)\n", iphi, ieta, localIn[0], localIn[1], localIn[2]);
-    geoSMMatrix[i]->LocalToMaster(localIn, dglobal);
+    //geoSMMatrix[sm]->Print();
+    //printf("TFF Local    (row = %d, col = %d, x = %3.2f,  y = %3.2f, z = %3.2f)\n", iroworg, icolorg, localIn[0], localIn[1], localIn[2]);
+    geoSMMatrix[sm]->LocalToMaster(localIn, dglobal);
     //printf("TFF Global   (row = %2.0f, col = %2.0f, x = %3.2f,  y = %3.2f, z = %3.2f)\n", drow, dcol, dglobal[0], dglobal[1], dglobal[2]);
     
     //apply global shifts
