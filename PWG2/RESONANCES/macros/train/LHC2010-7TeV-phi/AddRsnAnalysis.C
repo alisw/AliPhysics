@@ -26,7 +26,7 @@ Bool_t AddRsnAnalysis
   task->SelectCollisionCandidates();
 
   // set cuts for events : primary vertex range and type
-  gROOT->LoadMacro(Form("%s/ConfigESDCutsTPC.C", path);
+  gROOT->LoadMacro(Form("%s/ConfigESDCutsTPC.C", path));
   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
   cutVertex->SetCheckPileUp(kTRUE);
   task->GetEventCuts()->AddCut(cutVertex);
@@ -44,7 +44,7 @@ Bool_t AddRsnAnalysis
   {
     TObjString *ostr = (TObjString*)list->At(iConfig);
     cout << "***** Processing config macro '" << ostr->GetString().Data() << endl;
-    gROOT->ProcessLine(Form(".x %s/%s(\"%s\",\"%s\")", path, ostr->GetString().Data(), task->GetName(), options));
+    gROOT->ProcessLine(Form(".x %s/%s(\"%s\",\"%s\",\"%s\")", path, ostr->GetString().Data(), task->GetName(), options, path));
   }
 
   // connect input container according to source choice
