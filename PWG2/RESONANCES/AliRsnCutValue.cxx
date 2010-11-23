@@ -117,3 +117,15 @@ Bool_t AliRsnCutValue::IsSelected(TObject *object)
   fCutValueD = fValue.GetComputedValue();
   return OkRangeD();
 }
+
+//_________________________________________________________________________________________________
+void AliRsnCutValue::Print(const Option_t *) const
+{
+//
+// Print information on this cut
+//
+
+  AliInfo(Form("Cut name   : %s", GetName()));
+  AliInfo(Form("Cut value  : %s", fValue.GetValueTypeName()));
+  AliInfo(Form("Cut range  : %f - %f", fMinD, fMaxD));
+}

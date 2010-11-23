@@ -433,3 +433,27 @@ Bool_t AliRsnCutESD2010::OkTOFPID (AliESDtrack *track)
   // outcome
   return ok;
 }
+
+//_________________________________________________________________________________________________
+void AliRsnCutESD2010::Print(const Option_t *) const
+{
+//
+// Print information on this cut
+//
+
+  AliInfo(Form("Cut name               : %s", GetName()));
+  AliInfo(Form("Using MC settings      : %s", (fIsMC ? "YES" : "NO")));
+  AliInfo(Form("Using TPC+ITS tracks   : %s", (fUseITSTPC ? "YES" : "NO")));
+  AliInfo(Form("Using ITS SA  tracks   : %s", (fUseITSSA ? "YES" : "NO")));
+  AliInfo(Form("Check ITS PID          : %s", (fCheckITS ? "YES" : "NO")));
+  AliInfo(Form("Check TPC PID          : %s", (fCheckTPC ? "YES" : "NO")));
+  AliInfo(Form("Check TOF PID          : %s", (fCheckTOF ? "YES" : "NO")));
+  AliInfo(Form("Reference particle     : %s", AliPID::ParticleName(fPID)));
+  AliInfo(Form("ITS PID range  (sigmas): %f", fMaxITSband));
+  AliInfo(Form("ITS PID range  (pt)    : %f", fMaxITSPIDmom));
+  AliInfo(Form("TPC PID ranges (sigmas): %f %f", fMinTPCband, fMaxTPCband));
+  AliInfo(Form("TPC PID limit  (p)     : %f", fTPCpLimit));
+  AliInfo(Form("TOF resolution         : %f", fTOFresolution));
+  AliInfo(Form("TOF range (sigmas)     : %f - %f", fMinTOF, fMaxTOF));  
+  AliInfo(Form("TOF PID tuning from MC : %s", (fTOFtuneMC ? "YES" : "NO")));
+}

@@ -34,6 +34,7 @@ class AliRsnCutESD2010 : public AliRsnCut
     const AliESDtrackCuts* GetCutsTPC() const {return &fESDtrackCutsTPC;}
     const AliESDtrackCuts* GetCutsITS() const {return &fESDtrackCutsITS;}
     virtual Bool_t         IsSelected(TObject *object);
+    virtual void           Print(const Option_t *option = "") const;
     
     void             SetMC       (Bool_t yn = kTRUE);
     void             SetCheckITS (Bool_t yn = kTRUE) {fCheckITS = yn;}

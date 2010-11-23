@@ -124,3 +124,16 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
   Bool_t result = ((!OkRangeI()) && OkRangeD());
   return result;
 }
+
+//_________________________________________________________________________________________________
+void AliRsnCutPrimaryVertex::Print(const Option_t *) const
+{
+//
+// Print information on this cut
+//
+
+  AliInfo(Form("Cut name                     : %s", GetName()));
+  AliInfo(Form("Accepting TPC primary vertex : %s", (fAcceptTPC ? "YES" : "NO")));
+  AliInfo(Form("Contributors range (outside) : %d - %d", fMinI, fMaxI));
+  AliInfo(Form("Z-vertex     range (inside)  : %f - %f", fMinD, fMaxD));
+}

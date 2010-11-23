@@ -35,6 +35,7 @@ class AliRsnCutPrimaryVertex : public AliRsnCut
 
     void           SetCheckPileUp(Bool_t doit = kTRUE) {fCheckPileUp = doit;}
     virtual Bool_t IsSelected(TObject *object);
+    virtual void   Print(const Option_t *option = "") const;
 
   protected:
 

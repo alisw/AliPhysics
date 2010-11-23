@@ -39,6 +39,7 @@ class AliRsnCutValue : public AliRsnCut
     AliRsnValue*   GetValueObj() {return &fValue;}
     
     virtual Bool_t IsSelected(TObject *object);
+    virtual void   Print(const Option_t *option = "") const;
 
   protected:
   
