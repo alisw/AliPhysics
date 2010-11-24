@@ -103,6 +103,8 @@ AliAnalysisTaskPileup::AliAnalysisTaskPileup(const char *name) :
 {
   /// Constructor
 
+  fTriggerClassIndex->Reset(-1);
+
   DefineOutput(1,AliCounterCollection::Class());
   DefineOutput(2,TObjArray::Class());
 }
@@ -111,7 +113,12 @@ AliAnalysisTaskPileup::AliAnalysisTaskPileup(const char *name) :
 AliAnalysisTaskPileup::~AliAnalysisTaskPileup()
 {
   /// Destructor
-  delete fEventCounters;
+
+  // For proof: do not delete output containers
+  if ( ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+    delete fEventCounters;
+  }
+
   delete fHistoEventsList;
   delete fTriggerClasses;
   delete fTriggerClassIndex;
@@ -157,7 +164,7 @@ void AliAnalysisTaskPileup::NotifyRun()
 
 	// Store the CBEAMB class at the first position
 	TString trigName = trclass->GetName();
-	if ( trigName.Contains("CBEAMB") && ! trigName.Contains("WU") )
+	if ( ( trigName.Contains("CBEAMB") ||  trigName.Contains("CTRUE") ) && ! trigName.Contains("WU") )
 	  currPos = 0;
 	else if ( ! fTriggerClasses->At(0) )
 	  currPos++;
@@ -197,7 +204,8 @@ void AliAnalysisTaskPileup::UserCreateOutputObjects()
   fEventCounters = new AliCounterCollection(containerName.Data());
   fEventCounters->AddRubric("event", "any/correctedL0");
   fEventCounters->AddRubric("trigger", 1000000);
-  fEventCounters->AddRubric("selection", "any/hasVtxContrib/nonPileupSPD");
+  fEventCounters->AddRubric("vtxSelection", "any/hasVtxContrib/nonPileupSPD");
+  fEventCounters->AddRubric("selected", "yes/no");
   fEventCounters->Init(kTRUE);
 
   // Post data at least once per task to ensure data synchronisation (required for merging)
@@ -222,7 +230,8 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
   }
  
   // check physics selection
-  //Bool_t isPhysicsSelected = (fInputHandler && fInputHandler->IsEventSelected());
+  Bool_t isPhysicsSelected = (fInputHandler && fInputHandler->IsEventSelected());
+  TString selected = ( isPhysicsSelected ) ? "yes" : "no";
 
 #if defined(READOCDB)
 
@@ -234,28 +243,33 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
 
   Int_t nPoints = fTriggerRunScalers->GetScalersRecordsESD()->GetEntriesFast();
 
-  AliTimeStamp timeStamp(InputEvent()->GetOrbitNumber(), InputEvent()->GetPeriodNumber(), InputEvent()->GetBunchCrossNumber());
-  Int_t position = fTriggerRunScalers->FindNearestScalersRecord(&timeStamp);
-  if ( position < 0 ) {
-    AliWarning("Position out of range: put to 1");
-    position = 1;
-  } 
-  if ( position == 0 ) position++; // Don't trust the first one
-  else if ( position + 1 >= nPoints ) position--;
-  AliDebug(2, Form("position %i\n", position));
-  AliTriggerScalersRecordESD* trigScalerRecords1 = (AliTriggerScalersRecordESD*)fTriggerRunScalers->GetScalersRecordsESD()->At(position);
+  // Add protection for MC (no scalers there!)
+  AliTriggerScalersRecordESD* trigScalerRecords1 = 0x0;
   AliTriggerScalersRecordESD* trigScalerRecords2 = 0x0;
+  if ( nPoints > 1 ) {
 
-  // Sometimes scalers are filled very close to each others
-  // in this case skip to the next entry
-  for ( Int_t ipos=position+1; ipos<nPoints; ipos++ ) {
-    trigScalerRecords2 = (AliTriggerScalersRecordESD*)fTriggerRunScalers->GetScalersRecordsESD()->At(ipos);
-    Double_t deltaTime = (Double_t)( trigScalerRecords2->GetTimeStamp()->GetSeconds() - trigScalerRecords1->GetTimeStamp()->GetSeconds() );
-    AliDebug(2, Form("Pos %i  TimeStamp %u - %u = %.0f\n", ipos, trigScalerRecords2->GetTimeStamp()->GetSeconds(), trigScalerRecords1->GetTimeStamp()->GetSeconds(), deltaTime));
+    AliTimeStamp timeStamp(InputEvent()->GetOrbitNumber(), InputEvent()->GetPeriodNumber(), InputEvent()->GetBunchCrossNumber());
+    Int_t position = fTriggerRunScalers->FindNearestScalersRecord(&timeStamp);
+    if ( position < 0 ) {
+      AliWarning("Position out of range: put to 1");
+      position = 1;
+    } 
+    if ( position == 0 ) position++; // Don't trust the first one
+    else if ( position + 1 >= nPoints ) position--;
+    AliDebug(2, Form("position %i\n", position));
+    trigScalerRecords1 = (AliTriggerScalersRecordESD*)fTriggerRunScalers->GetScalersRecordsESD()->At(position);
 
-    if ( deltaTime > 1 )
-      break;
-  }
+    // Sometimes scalers are filled very close to each others
+    // in this case skip to the next entry
+    for ( Int_t ipos=position+1; ipos<nPoints; ipos++ ) {
+      trigScalerRecords2 = (AliTriggerScalersRecordESD*)fTriggerRunScalers->GetScalersRecordsESD()->At(ipos);
+      Double_t deltaTime = (Double_t)( trigScalerRecords2->GetTimeStamp()->GetSeconds() - trigScalerRecords1->GetTimeStamp()->GetSeconds() );
+      AliDebug(2, Form("Pos %i  TimeStamp %u - %u = %.0f\n", ipos, trigScalerRecords2->GetTimeStamp()->GetSeconds(), trigScalerRecords1->GetTimeStamp()->GetSeconds(), deltaTime));
+
+      if ( deltaTime > 1 )
+	break;
+    } // loop on position
+  } // nPoins > 0
 
 #endif
 
@@ -265,7 +279,7 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
   Int_t nVtxContrib = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetNContributors() : aodEvent->GetPrimaryVertex()->GetNContributors();
   Bool_t isPileupSPD = ( esdEvent ) ? esdEvent->IsPileupFromSPD(3,0.8) : aodEvent->IsPileupFromSPD(3,0.8);
 
-  TString selKey[3] = {"any","hasVtxContrib","nonPileupSPD"};
+  TString vtxSelKey[3] = {"any","hasVtxContrib","nonPileupSPD"};
   Bool_t fillSel[3] = {kTRUE, ( nVtxContrib > 0 ), ( ( nVtxContrib > 0 ) && ( ! isPileupSPD ) )};
 
   //const AliTriggerScalersRecordESD* trigScalerRecords = esdEvent->GetHeader()->GetTriggerScalersRecord(); // REMEMBER TO CUT
@@ -286,17 +300,19 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
     if ( itrig < nTriggerClasses ) {
 
       // Check if current mask contains trigger
-      trigName = ((TObjString*)fTriggerClasses->At(itrig))->GetString();
       classIndex = (*fTriggerClassIndex)[itrig];
+      if ( classIndex < 0 ) continue; // Protection for MC (where BEAMB not present
+      trigName = ((TObjString*)fTriggerClasses->At(itrig))->GetString();
       trigMask = ( 1ull << classIndex );
       isClassFired = ( trigMask & InputEvent()->GetTriggerMask() );
 
-      if ( isClassFired || itrig == 0 ) {
+#if defined(READOCDB)
+      if ( trigScalerRecords2 && ( isClassFired || itrig == 0 ) ) {
 	// Get scalers
 	const AliTriggerScalersESD* scaler1 = trigScalerRecords1->GetTriggerScalersForClass(classIndex+1);
 	const AliTriggerScalersESD* scaler2 = trigScalerRecords2->GetTriggerScalersForClass(classIndex+1);
 	deltaScalers = scaler2->GetLOCB() - scaler1->GetLOCB();
-	
+ 
 	if ( itrig == 0 )
 	  deltaScalersBeam = deltaScalers;
 	else if ( isClassFired ) {
@@ -304,10 +320,11 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
 	  AliDebug(2, Form("Scalers: %s %.0f  %s %.0f -> CF %f\n", fTriggerClasses->At(itrig)->GetName(), deltaScalers, fTriggerClasses->At(0)->GetName(), deltaScalersBeam, correctFactorL0));
 	}
       }
-    }
+#endif
+    } // if ( itrig < nTriggerClasses )
     else {
-      trigName = "any";
       classIndex = -1;
+      trigName = "any";
       isClassFired = isFiredOnce;
     }
 
@@ -334,7 +351,7 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
 
       for ( Int_t isel=0; isel<3; isel++ ) {
 	if ( ! fillSel[isel] ) continue;
-	fEventCounters->Count(Form("event:%s/trigger:%s/selection:%s",eventType.Data(),trigName.Data(), selKey[isel].Data()),correctFactor);
+	fEventCounters->Count(Form("event:%s/trigger:%s/vtxSelection:%s/selected:%s",eventType.Data(),trigName.Data(), vtxSelKey[isel].Data(), selected.Data()),correctFactor);
       } // loop on vertex selection
     } // loop on event type
   } // loop on trigger classes
@@ -352,39 +369,56 @@ void AliAnalysisTaskPileup::Terminate(Option_t *)
   /// and draw result to the screen
   //
 
-  fEventCounters = dynamic_cast<AliCounterCollection*>(GetOutputData(1));
-  if ( ! fEventCounters ) return;
-
-  if ( ! fHistoEventsList ) fHistoEventsList = new TObjArray(2);
-  fHistoEventsList->SetOwner();
-
-  TH2D* histo = 0x0;
-  histo = fEventCounters->Draw("trigger","selection","event:any");
-  if ( histo ) {
-    histo->SetName("hEvents");
-    histo->SetTitle("Events per trigger");
-    fHistoEventsList->AddAtAndExpand(histo, kHevents);
-  }
-
-  histo = fEventCounters->Draw("trigger","selection","event:correctedL0");
-  if ( histo ) {
-    histo->SetName("hEventsCorrectL0");
-    histo->SetTitle("L0 corrected events");
-    fHistoEventsList->AddAtAndExpand(histo, kHeventsCorrectL0);
-  }
-
-  PostData(2, fHistoEventsList);
-
+  // Fill the container only at the very last step
+  // i.e. in local, when done interactively
   if ( gROOT->IsBatch() )
     return;
 
-  TH2D* histoPileupL0 = (TH2D*)fHistoEventsList->At(kHeventsCorrectL0)->Clone("hPileupL0");
-  histoPileupL0->Divide((TH2D*)fHistoEventsList->At(kHevents));
-  
-  TCanvas *can = new TCanvas("can1_Pileup","Pileup",10,10,310,310);
-  can->SetFillColor(10); can->SetHighLightColor(10);
-  can->SetLeftMargin(0.15); can->SetBottomMargin(0.15);
-  histoPileupL0->DrawCopy("text");
+  fEventCounters = dynamic_cast<AliCounterCollection*>(GetOutputData(1));
+  if ( ! fEventCounters ) return;
+
+  if ( ! fHistoEventsList ) fHistoEventsList = new TObjArray(0);
+  fHistoEventsList->SetOwner();
+
+  TH2D* histo = 0x0;
+  const Int_t kNevtTypes = 2;
+  TString evtSel[kNevtTypes] = {"event:any", "event:correctedL0"};
+  TString evtName[kNevtTypes] = {"", "CorrectL0"};
+  TString evtTitle[kNevtTypes] = {"Events", "L0 corrected events"};
+  const Int_t kNphysSel = 2;
+  TString physSel[kNphysSel] = {"selected:any","selected:yes"};
+  TString physName[kNphysSel] = {"", "PhysSel"};
+  TString physTitle[kNphysSel] = {"", "w/ physics selection"};
+
+  Int_t currHisto = -1;
+  TString currName = "";
+  for ( Int_t isel=0; isel<kNphysSel; isel++ ) {
+    for ( Int_t iev=0; iev<kNevtTypes; iev++ ) {
+      currName = Form("%s/%s", evtSel[iev].Data(), physSel[isel].Data());
+      histo = fEventCounters->Get("trigger","vtxSelection",currName.Data());
+      if ( ! histo ) continue;
+      currHisto++;
+      currName = Form("hEvents%s%s", evtName[iev].Data(), physName[isel].Data());
+      histo->SetName(currName.Data());
+      currName = Form("%s %s", evtTitle[iev].Data(), physTitle[isel].Data());
+      histo->SetTitle(currName.Data());
+      fHistoEventsList->AddAtAndExpand(histo, currHisto);
+    } // loop on event type
+    TH2D* num = (TH2D*)fHistoEventsList->At(currHisto);
+    TH2D* den = (TH2D*)fHistoEventsList->At(currHisto-1);
+    if ( ! num || ! den ) continue;
+    currName = Form("hPileupL0%s_%s", physName[isel].Data(), GetName());
+    TH2D* histoPileupL0 = (TH2D*)num->Clone(currName.Data());
+    histoPileupL0->Divide(den);
+    currName = Form("c%i_%s", isel, GetName());
+    TCanvas *can = new TCanvas(currName.Data(),"Pileup",10,10,310,310);
+    can->SetFillColor(10); can->SetHighLightColor(10);
+    can->SetLeftMargin(0.15); can->SetBottomMargin(0.15);
+    histoPileupL0->DrawCopy("text");
+    delete histoPileupL0;
+  } // loop on physics selection
+
+  PostData(2, fHistoEventsList);
 }
 
 
