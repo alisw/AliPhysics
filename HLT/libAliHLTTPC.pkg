@@ -85,6 +85,9 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
                 tracking-ca/AliHLTTPCCAInputDataCompressorComponent.h \
                 tracking-ca/AliHLTTPCCAGPUTracker.h \
                 tracking-ca/AliHLTTPCCATrackerOutputConverter.h \
+                merger-ca/AliHLTTPCGMTrackParam.h \
+                merger-ca/AliHLTTPCGMSliceTrack.h \
+                merger-ca/AliHLTTPCGMMerger.h \
 		comp/AliHLTTPCCompDataCompressorHelper.h \
 		comp/AliHLTTPCCompDumpComponent.h \
 		comp/AliHLTTPCCompModelAnalysis.h \
@@ -148,6 +151,7 @@ EINCLUDE 	:= HLT/TPCLib \
 		   HLT/TPCLib/tracking \
 		   HLT/TPCLib/comp \
 		   HLT/TPCLib/tracking-ca \
+		   HLT/TPCLib/merger-ca \
 		   HLT/TPCLib/offline \
 		   HLT/BASE \
 		   HLT/BASE/util \
