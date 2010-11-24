@@ -275,10 +275,10 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 		       180, 0., 2*TMath::Pi());
   fNumber   = new TH1F("fNumber", 
 		       "number of tracks per event",
-		       300, -0.5, 299.5);
+		       500, -5, 4995);
   fNumberAfterCut   = new TH1F("fNumberAfterCut", 
 			       "number of tracks per event after cuts",
-			       300, -0.5, 299.5);
+			       500, -5, 4995);
   fVx   = new TH1F("fVx", 
 		   "X of first track point",
 		   100, -1., 1.);
