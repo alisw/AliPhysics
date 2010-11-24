@@ -1,3 +1,17 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TString.h"
+#include "TObjArray.h"
+
+#include "AliLog.h"
+#include "AliVEventHandler.h"
+
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+
+#include "AliCounterCollection.h"
+#include "AliAnalysisTaskPileup.h"
+#endif
+
 AliAnalysisTaskPileup* AddTaskPileup(TString ocdbPath="alien://folder=/alice/data/2010/OCDB"){
 
    // Get the pointer to the existing analysis manager via the static access method.
