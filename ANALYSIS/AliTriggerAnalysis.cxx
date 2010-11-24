@@ -923,22 +923,42 @@ Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side
   
   AliESDZDC *esdZDC = aEsd->GetESDZDC();
 
-  Bool_t tdc[32] = {kFALSE};
-  for(Int_t itdc=0; itdc<32; itdc++){
-    for(Int_t i=0; i<4; i++){
-      if (0.025*esdZDC->GetZDCTDCData(itdc, i) != 0){
-	tdc[itdc] = kTRUE;
-      }
-    }
-    if(fillHists && tdc[itdc]) {
-      fHistTDCZDC->Fill(itdc);
-    }    
-  }
-  Bool_t zdcNA = tdc[12];
-  Bool_t zdcNC = tdc[10];
-  Bool_t zdcPA = tdc[13];
-  Bool_t zdcPC = tdc[11];
+  Bool_t zdcNA = kFALSE;
+  Bool_t zdcNC = kFALSE;
+  Bool_t zdcPA = kFALSE;
+  Bool_t zdcPC = kFALSE;
 
+  if (fMC) {
+        // If it's MC, we use the energy
+    Double_t minEnergy = 0;
+    Double_t  zNCEnergy = esdZDC->GetZDCN1Energy();
+    Double_t  zPCEnergy = esdZDC->GetZDCP1Energy();
+    Double_t  zNAEnergy = esdZDC->GetZDCN2Energy();
+    Double_t  zPAEnergy = esdZDC->GetZDCP2Energy();
+    zdcNA = (zNAEnergy>minEnergy);
+    zdcNC = (zNCEnergy>minEnergy);
+    zdcPA = (zPAEnergy>minEnergy);
+    zdcPC = (zPCEnergy>minEnergy);
+
+  }
+  else {
+
+    Bool_t tdc[32] = {kFALSE};
+    for(Int_t itdc=0; itdc<32; itdc++){
+      for(Int_t i=0; i<4; i++){
+	if (0.025*esdZDC->GetZDCTDCData(itdc, i) != 0){
+	  tdc[itdc] = kTRUE;
+	}
+      }
+      if(fillHists && tdc[itdc]) {
+	fHistTDCZDC->Fill(itdc);
+      }    
+    }
+    zdcNA = tdc[12];
+    zdcNC = tdc[10];
+    zdcPA = tdc[13];
+    zdcPC = tdc[11];
+  }
 
   if (side == kASide) return ((useZP&&zdcPA) || (useZN&&zdcNA)); 
   if (side == kCSide) return ((useZP&&zdcPC) || (useZN&&zdcNC)); 
