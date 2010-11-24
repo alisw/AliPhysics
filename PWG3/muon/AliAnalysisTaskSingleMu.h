@@ -3,6 +3,10 @@
 /// \brief Analysis task for single muons in the spectrometer
 ///
 //  Author Diego Stocco
+#ifndef ALIANALYSISTASKSINGLEMU_H
+#define ALIANALYSISTASKSINGLEMU_H
+
+#include "AliAnalysisTaskSE.h"
 
 class TList;
 class AliMCParticle;
@@ -23,16 +27,16 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
   virtual void   NotifyRun();
   virtual void   FinishTaskOutput();
 
-  // Please put the CINT1B class as first!
   void SetTriggerClasses(TString triggerClasses = 
-			 "CINT1B-ABCE-NOPF-ALL CINT1A-ABCE-NOPF-ALL CINT1C-ABCE-NOPF-ALL CINT1-E-NOPF-ALL CMUS1B-ABCE-NOPF-MUON CMUS1A-ABCE-NOPF-MUON CMUS1C-ABCE-NOPF-MUON CMUS1-E-NOPF-MUON");
+			 "CINT1-B-NOPF CINT1-AC-NOPF CINT1-E-NOPF CMUS1-B-NOPF CMUS1-AC-NOPF CMUS1-E-NOPF CINT1B-ABCE-NOPF CINT1A-ABCE-NOPF CINT1C-ABCE-NOPF CMUS1B-ABCE-NOPF CMUS1A-ABCE-NOPF CMUS1C-ABCE-NOPF CINT5-B-NOPF CINT5-AC-NOPF CINT5-E-NOPF CMUS5-B-NOPF CMUS5-AC-NOPF CMUS5-E-NOPF CINT5B-ABCE-NOPF CINT5A-ABCE-NOPF CINT5C-ABCE-NOPF CMUS5B-ABCE-NOPF CMUS5A-ABCE-NOPF CMUS5C-ABCE-NOPF");
 
   /// Get CORRFW manager
   AliCFManager * GetCFManager() const { return fCFManager; }
 
   enum {
     kHvarPt,         ///< Pt at vertex
-    kHvarY,          ///< Rapidity
+    //    kHvarY,          ///< Rapidity
+    kHvarEta,        ///< Pseudo-Rapidity
     kHvarPhi,        ///< Phi
     kHvarDCA,        ///< DCA
     kHvarVz,         ///< Z vertex position
@@ -42,14 +46,15 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kHvarTrigClass,  ///< Trigger classes
     kHvarIsGoodVtx,  ///< IP vertex correctly reconstructed
     kHvarMotherType, ///< Mother type (MC only)
+    kHvarP,          ///< Total momentum
     kNvars           ///< THnSparse dimensions
   };  
 
   enum {
     kStepReconstructed,  ///< Reconstructed tracks
-    kStepAcceptance,     ///< Track in acceptance
+    //kStepAcceptance,     ///< Track in acceptance
     kStepGeneratedMC,    ///< Generated tracks (MC)
-    kStepAcceptanceMC,   ///< Track in acceptance (MC)
+    //kStepAcceptanceMC,   ///< Track in acceptance (MC)
     kNsteps              ///< Number of steps
   };
   
@@ -63,7 +68,6 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kHistoNeventsPerTrig,    ///< Number of events per trigger
     kHistoMuonMultiplicity,  ///< Number of muons per event
     kHistoEventVz,           ///< Vertex z distribution for all events
-    kHistoEventVzNorm,       ///< Vertex z distribution normalized to the muon events
     kHistoNeventsPerRun,     ///< Number of triggers per run (for check)
     kHistoNmuonsPerRun,      ///< Number of muons per run (for check)
     kNsummaryHistos          ///< Number of summary histograms
@@ -195,12 +199,12 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
   Int_t fFillTreeScaleDown; ///< Ntuple must be filled each fFillTreeScaleDown events
   Bool_t fKeepAll; ///< Flag indicating to keep all info in tree
   Int_t  fkNvtxContribCut; ///< Number of cuts in vertex contributors
+  TObjArray* fTriggerClasses; ///< full trigger class name
   AliCFManager* fCFManager; //!< Pointer to the CF manager
   TList* fHistoList;   //!< List of histograms for data
   TList* fHistoListMC; //!< List of histograms for MC
   TList* fHistoListQA; //!< List of QA histos
   TTree* fTreeSingleMu; //!< Optional output Tree
-  TTree* fTreeSingleMuMC; //!< Optional output Tree for MC
   Float_t* fVarFloat; //!< Reconstructed parameters float
   Int_t* fVarInt; //!< Reconstructed parameters int
   Char_t** fVarChar; //!< Reconstructed parameters string
@@ -208,8 +212,8 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
   Float_t* fVarFloatMC; //!< MC parameters float
   Int_t* fVarIntMC; //!< MC parameters int
   TMap* fAuxObjects; //!< Map of vertex distribution per run
-  TObjArray* fTriggerClasses; //!< full trigger class name
 
   ClassDef(AliAnalysisTaskSingleMu, 2); // Single muon analysis
 };
 
+#endif
