@@ -21,6 +21,8 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
   AliRsnAnalysisEffSE *task[2];
   task[0] = new AliRsnAnalysisEffSE("RsnTaskEffNoSA");
   task[1] = new AliRsnAnalysisEffSE("RsnTaskEffSA");
+  task[0]->SelectCollisionCandidates();
+  task[1]->SelectCollisionCandidates();
 
   // pair definition: 
   // phi --> K+ K-

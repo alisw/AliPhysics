@@ -222,7 +222,7 @@ Bool_t RsnConfig
   if ( !fcnImPtY->AddAxis(axisIM  ) ) return kFALSE;
   if ( !fcnImPtY->AddAxis(axisPt  ) ) return kFALSE;
   if ( !fcnImPtY->AddAxis(axisY   ) ) return kFALSE;
-  if ( !fcnImPtY->AddAxis(axisMult) ) return kFALSE;
+  //if ( !fcnImPtY->AddAxis(axisMult) ) return kFALSE;
 
   // add functions to pairs
   pairPM->AddFunction(fcnImPtY);
