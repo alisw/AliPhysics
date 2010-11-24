@@ -23,6 +23,8 @@
 #include "TFile.h"
 #include "AliLog.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDVZERO.h"
+#include "TH2F.h"
 
 using namespace std;
 
@@ -93,6 +95,8 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
 {
   // User code
 
+  // FIXME: make sure you have the right cuts here
+
   /* PostData(0) is taken care of by AliAnalysisTaskSE */
   PostData(1,fHistoList);
 
@@ -101,10 +105,60 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
     AliFatal("Not processing ESDs");
   }
 
-  
   // get the multiplicity object
   const AliMultiplicity* mult = fESD->GetMultiplicity();
   Int_t ntracklets = mult->GetNumberOfTracklets();
+  // Get Number of tracks
+  Int_t ntracks    = AliESDtrackCuts::GetReferenceMultiplicity(fESD,kTRUE); // tpc only
+  
+  // Get V0 Multiplicity
+  AliESDVZERO* esdV0 = fESD->GetVZEROData();
+  Float_t multV0A=esdV0->GetMTotV0A();
+  Float_t multV0C=esdV0->GetMTotV0C();
+  Float_t multV0 = multV0A+multV0C;
+
+  // Get number of clusters in layer 1
+  Float_t outerLayerSPD = mult->GetNumberOfITSClusters(1);  
+  Float_t innerLayerSPD = mult->GetNumberOfITSClusters(0);  
+  Float_t totalClusSPD = outerLayerSPD+innerLayerSPD;
+
+  GetHistoSPD1  ("All", "All events before any selection")->Fill(outerLayerSPD);
+
+
+  // Physics selection
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  if(!isSelected) return;
+  // FIXME trigger classes
+  // if ( !(fESD->IsTriggerClassFired("CMBS2A-B-NOPF-ALL")|| fESD->IsTriggerClassFired("CMBS2C-B-NOPF-ALL") || fESD->IsTriggerClassFired("CMBAC-B-NOPF-ALL")) ) return;
+
+  GetHistoSPD1  ("AllPSNoPrino", "All events after physsel, before Francesco")->Fill(outerLayerSPD);
+
+
+  // Francesco's cuts
+  const AliESDVertex * vtxESDTPC= fESD->GetPrimaryVertexTPC(); 
+  if(vtxESDTPC->GetNContributors()<1) return;
+  if (vtxESDTPC->GetNContributors()<(-10.+0.25*fESD->GetMultiplicity()->GetNumberOfITSClusters(0)))     return;
+  const AliESDVertex * vtxESDSPD= fESD->GetPrimaryVertexSPD(); 
+  Float_t tpcContr=vtxESDTPC->GetNContributors();
+
+  
+
+  // GetT0 Stuff
+  const Double32_t *meanT0   = fESD->GetT0TOF();
+  const Double32_t  meanT0A  = 0.001* meanT0[1];
+  const Double32_t  meanT0C  = 0.001* meanT0[2];
+  const Double32_t  meanT0AC = 0.001* meanT0[0];
+  Double32_t  T0Vertex = fESD->GetT0zVertex();
+  //  Double32_t  *ampT0 =Esdevent ->GetT0amplitude();
+
+//   cut1yesF = ( (meanC < 95. && meanA < 95.) && (meanC < -2.) ) && francescoscut
+// cut1notF = ( (meanC < 95. && meanA < 95.) && (meanC < -2.) ) && ! francescoscut
+// cut2 = ( (meanC < 95. && meanA < 95.) && ( (meanC-meanA) <=-0.7) && meanC > -2) )
+// cut3 = ( (meanC < 95. && meanA < 95.) && ( (meanC-meanA) < 0.7 && (meanC-meanA) > -0.7 ) )
+//   cut4 = ( (meanC < 95. && meanA < 95.) && (meanA < -2.)
+
+  Bool_t cut1T0 =  ( (meanT0C < 95. && meanT0A < 95.) && (meanT0C < -2.) );
+  Bool_t cut2T0 = ( (meanT0C < 95. && meanT0A < 95.) && ( (meanT0C-meanT0A) <=-0.7) && meanT0C > -2) ;
 
   if(ntracklets > fNTrackletsCut) return;
 
@@ -139,9 +193,27 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t c0OM3 = h->IsTriggerInputFired("0OM3"); // thr >= 3 (input 20)
 
   // ZDC triggers
-  Bool_t zdcA   = fTriggerAnalysis->ZDCTrigger(fESD, AliTriggerAnalysis::kASide) ;
-  Bool_t zdcC   = fTriggerAnalysis->ZDCTrigger(fESD, AliTriggerAnalysis::kCSide) ;
-  Bool_t zdcBar = fTriggerAnalysis->ZDCTrigger(fESD, AliTriggerAnalysis::kCentralBarrel) ;
+  Bool_t zdcA   = kFALSE;
+  Bool_t zdcC   = kFALSE;
+  Bool_t zdcBar = kFALSE;
+
+  if (!fIsMC) {
+    // If it's data, we use the TDCs
+    zdcA   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kASide, kTRUE, kFALSE) ; 
+    zdcC   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kCSide, kTRUE, kFALSE) ;			
+    zdcBar = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kCentralBarrel) ;				
+  } else {
+    // If it's MC, we use the energy
+    Double_t minEnergy = 0;
+    AliESDZDC *esdZDC = fESD->GetESDZDC();    
+    Double_t  zNCEnergy = esdZDC->GetZDCN1Energy();
+    Double_t  zPCEnergy = esdZDC->GetZDCP1Energy();
+    Double_t  zNAEnergy = esdZDC->GetZDCN2Energy();
+    Double_t  zPAEnergy = esdZDC->GetZDCP2Energy();
+    zdcA = (zNAEnergy>minEnergy || zPAEnergy>minEnergy);
+    zdcC = (zNCEnergy>minEnergy || zPCEnergy>minEnergy);
+  }
+
 
   // Some macros for the online triggers
   Bool_t cMBS2A = c0sm2 && c0v0A;
@@ -155,6 +227,72 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   vdArray[kVDC0VBA]  = c0v0A;
   vdArray[kVDC0VBC]  = c0v0C;
   //vdArray[kVDC0OM2]  = c0OM2;
+
+  // Plots requested by Jurgen on 18/11/2010
+  // FIXME: will skip everything else
+
+  GetHistoSPD1  ("PhysSel", "All events after physics selection and Francesco's cut")->Fill(outerLayerSPD);
+  GetHistoTracks("PhysSel", "All events after physics selection and Francesco's cut")->Fill(ntracks);
+  GetHistoV0M   ("PhysSel", "All events after physics selection and Francesco's cut")->Fill(multV0);
+  if(c0v0A && c0v0C) {
+    GetHistoSPD1  ("V0AND", "V0A & V0C")->Fill(outerLayerSPD);
+    GetHistoTracks("V0AND", "V0A & V0C")->Fill(ntracks);
+    GetHistoV0M   ("V0AND", "V0A & V0C")->Fill(multV0);
+  }
+  if(zdcA && zdcC) {
+    GetHistoSPD1  ("ZDCAND", "ZDCA & ZDCC")->Fill(outerLayerSPD);
+    GetHistoTracks("ZDCAND", "ZDCA & ZDCC")->Fill(ntracks);
+    GetHistoV0M   ("ZDCAND", "ZDCA & ZDCC")->Fill(multV0);
+  }
+  if((c0v0A && c0v0C) && !(zdcA && zdcC)) {
+    GetHistoSPD1  ("V0ANDNOTZDCAND", "(V0A & V0C) & !(ZDCA & ZDCC)")->Fill(outerLayerSPD);
+    GetHistoTracks("V0ANDNOTZDCAND", "(V0A & V0C) & !(ZDCA & ZDCC)")->Fill(ntracks);
+    GetHistoV0M   ("V0ANDNOTZDCAND", "(V0A & V0C) & !(ZDCA & ZDCC)")->Fill(multV0);
+  }
+  if((c0v0A && c0v0C) && !zdcA && !zdcC) {
+    GetHistoSPD1  ("V0ANDNOTZDC", "(V0A & V0C) & !ZDCA & !ZDCC)")->Fill(outerLayerSPD);
+    GetHistoTracks("V0ANDNOTZDC", "(V0A & V0C) & !ZDCA & !ZDCC)")->Fill(ntracks);
+    GetHistoV0M   ("V0ANDNOTZDC", "(V0A & V0C) & !ZDCA & !ZDCC)")->Fill(multV0);
+}
+  if((c0v0A && c0v0C) && ((!zdcA && zdcC) || (zdcA && !zdcC))) {
+    GetHistoSPD1  ("V0ANDONEZDC", "(V0A & V0C) &  ((!ZDCA && ZDCC) || (ZDCA && !ZDCC)))")->Fill(outerLayerSPD);
+    GetHistoTracks("V0ANDONEZDC", "(V0A & V0C) &  ((!ZDCA && ZDCC) || (ZDCA && !ZDCC)))")->Fill(ntracks);
+    GetHistoV0M   ("V0ANDONEZDC", "(V0A & V0C) &  ((!ZDCA && ZDCC) || (ZDCA && !ZDCC)))")->Fill(multV0);
+  }
+
+  if(((c0v0A && !c0v0C) || (!c0v0A && c0v0C)) && (zdcA && zdcC)) {
+    GetHistoSPD1  ("V0ONEZDCBOTH", "((V0A && !V0C) || (!V0A && V0C)) && (ZDCA && ZDCC)")->Fill(outerLayerSPD);
+    GetHistoTracks("V0ONEZDCBOTH", "((V0A && !V0C) || (!V0A && V0C)) && (ZDCA && ZDCC)")->Fill(ntracks);
+    GetHistoV0M   ("V0ONEZDCBOTH", "((V0A && !V0C) || (!V0A && V0C)) && (ZDCA && ZDCC)")->Fill(multV0);
+  }
+
+  if((c0v0A && c0v0C) && (zdcA && zdcC)) {
+    GetHistoSPD1  ("V0ANDZDCAND", "(V0A & V0C) & (ZDCA & ZDCC)")->Fill(outerLayerSPD);
+    GetHistoTracks("V0ANDZDCAND", "(V0A & V0C) & (ZDCA & ZDCC)")->Fill(ntracks);
+    GetHistoV0M   ("V0ANDZDCAND", "(V0A & V0C) & (ZDCA & ZDCC)")->Fill(multV0);
+  }
+
+  if((c0v0A && zdcA && !zdcC && !c0v0C) || (c0v0C && zdcC && !zdcA && !c0v0A)) {
+    GetHistoSPD1  ("OneSided", "(V0A & ZDCA & !ZDCC & !V0C) || (V0C & ZDCC & !ZDCA & !V0A)")->Fill(outerLayerSPD);
+    GetHistoTracks("OneSided", "(V0A & ZDCA & !ZDCC & !V0C) || (V0C & ZDCC & !ZDCA & !V0A)")->Fill(ntracks);
+    GetHistoV0M   ("OneSided", "(V0A & ZDCA & !ZDCC & !V0C) || (V0C & ZDCC & !ZDCA & !V0A)")->Fill(multV0);
+  }
+
+  // GetHistoCorrelationSPDTPCVz("All", "After physics selection and Francesco's cut")->Fill(vtxESDSPD->GetZ(),vtxESDTPC->GetZ());
+  // if(cut1T0)   GetHistoCorrelationSPDTPCVz("Cut1T0", "T0 Cut 1")->Fill(vtxESDSPD->GetZ(),vtxESDTPC->GetZ());
+  // if(cut2T0)   GetHistoCorrelationSPDTPCVz("Cut2T0", "T0 Cut 2")->Fill(vtxESDSPD->GetZ(),vtxESDTPC->GetZ());
+
+  // GetHistoCorrelationContrTPCSPDCls("All", "After physics selection and Francesco's cut")->Fill(totalClusSPD,tpcContr);
+  // if(cut1T0)   GetHistoCorrelationContrTPCSPDCls("Cut1T0", "T0 Cut 1")->Fill(totalClusSPD,tpcContr);
+  // if(cut2T0)   GetHistoCorrelationContrTPCSPDCls("Cut2T0", "T0 Cut 2")->Fill(totalClusSPD,tpcContr);
+
+  // GetHistoCorrelationTrackletsSPDCls("All", "After physics selection and Francesco's cut")->Fill(totalClusSPD,ntracklets);
+  // if(cut1T0)   GetHistoCorrelationTrackletsSPDCls("Cut1T0", "T0 Cut 1")->Fill(totalClusSPD,ntracklets);
+  // if(cut2T0)   GetHistoCorrelationTrackletsSPDCls("Cut2T0", "T0 Cut 2")->Fill(totalClusSPD,ntracklets);
+
+
+  return; // FIXME
+
 
   // Reject background
   if (v0BG && fRejectBGWithV0) {
@@ -355,6 +493,89 @@ TH1 *   AliAnalysisTaskTriggerStudy::GetHistoTracklets(const char * name, const 
   return h;
 }
 
+
+TH1 *   AliAnalysisTaskTriggerStudy::GetHistoSPD1(const char * name, const char * title){
+  // Book histo of events vs ntracklets, if needed
+
+  TString hname = "hSPD1_";
+  hname+=name;  
+  hname+=fHistoSuffix;
+  TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
+  
+  // const Int_t nbin = 118;
+  // Float_t bins[nbin] = {0};
+  // bins[0] = 0;
+  // for(Int_t ibin = 1; ibin <= nbin; ibin++){
+  //   if (ibin < 100) 
+  //     bins[ibin] = bins [ibin-1]+1; 
+  //   else if (ibin < 1000) 
+  //     bins[ibin] = bins [ibin-1]+100; 
+  //   else if (ibin < 10000) 
+  //     bins[ibin] = bins [ibin-1]+1000; 
+  // }
+  
+
+  if(!h) {
+    AliInfo(Form("Booking histo %s",hname.Data()));
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    //    h = new TH1F (hname.Data(), title, nbin, bins);
+    //h = new TH1F (hname.Data(), title, 100, -0.5, 100-0.5);
+    h = new TH1F (hname.Data(), title, 10000, -0.5, 10000-0.5);
+    h->Sumw2();
+    h->SetXTitle("SPD1");
+    fHistoList->GetList()->Add(h);
+    TH1::AddDirectory(oldStatus);
+  }
+  return h;
+}
+
+TH1 *   AliAnalysisTaskTriggerStudy::GetHistoV0M(const char * name, const char * title){
+  // Book histo of events vs ntracklets, if needed
+
+  TString hname = "hV0M_";
+  hname+=name;  
+  hname+=fHistoSuffix;
+  TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
+  
+  if(!h) {
+    AliInfo(Form("Booking histo %s",hname.Data()));
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    // h = new TH1F (hname.Data(), title, 1000, -0.5, 10000-0.5);
+    h = new TH1F (hname.Data(), title, 300, -0.5, 300-0.5);
+    h->Sumw2();
+    h->SetXTitle("V0M");
+    fHistoList->GetList()->Add(h);
+    TH1::AddDirectory(oldStatus);
+  }
+  return h;
+}
+
+
+TH1 *   AliAnalysisTaskTriggerStudy::GetHistoTracks(const char * name, const char * title){
+  // Book histo of events vs ntracklets, if needed
+
+  TString hname = "hTPCTracks_";
+  hname+=name;  
+  hname+=fHistoSuffix;
+  TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
+  
+  if(!h) {
+    AliInfo(Form("Booking histo %s",hname.Data()));
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    // h = new TH1F (hname.Data(), title, 1000, -0.5, 10000-0.5);
+    h = new TH1F (hname.Data(), title, 50, -0.5, 50-0.5);
+    h->Sumw2();
+    h->SetXTitle("ntracks");
+    fHistoList->GetList()->Add(h);
+    TH1::AddDirectory(oldStatus);
+  }
+  return h;
+}
+
+
 TH1 *   AliAnalysisTaskTriggerStudy::GetHistoEta(const char * name, const char * title){
   // Book histo of events vs ntracklets, if needed
 
@@ -398,6 +619,75 @@ TH1 *   AliAnalysisTaskTriggerStudy::GetHistoPt(const char * name, const char * 
   }
   return h;
 }
+
+TH1 *   AliAnalysisTaskTriggerStudy::GetHistoCorrelationSPDTPCVz(const char * name, const char * title){
+  // Book histo of events vs ntracklets, if needed
+
+  TString hname = "hTPCvsSPD_";
+  hname+=name;  
+  hname+=fHistoSuffix;
+  TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
+  
+  if(!h) {
+    AliInfo(Form("Booking histo %s",hname.Data()));
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    // h = new TH1F (hname.Data(), title, 1000, -0.5, 10000-0.5);
+    h = new TH2F (hname.Data(), title, 80, -20, 20,  80, -20, 20);
+    h->Sumw2();
+    h->SetXTitle("SPD Vz");
+    h->SetYTitle("TPC Vz");
+    fHistoList->GetList()->Add(h);
+    TH1::AddDirectory(oldStatus);
+  }
+  return h;
+}
+
+TH1 *   AliAnalysisTaskTriggerStudy::GetHistoCorrelationContrTPCSPDCls(const char * name, const char * title){
+  // Book histo of events vs ntracklets, if needed
+
+  TString hname = "hContrTPCvsSPDCls_";
+  hname+=name;  
+  hname+=fHistoSuffix;
+  TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
+  
+  if(!h) {
+    AliInfo(Form("Booking histo %s",hname.Data()));
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    // h = new TH1F (hname.Data(), title, 1000, -0.5, 10000-0.5);
+    h = new TH2F (hname.Data(), title, 1000, 0, 9000,  1000, 0, 5000);
+    h->Sumw2();
+    h->SetXTitle("SPD Clusters");
+    h->SetYTitle("TPC V Contributors");
+    fHistoList->GetList()->Add(h);
+    TH1::AddDirectory(oldStatus);
+  }
+  return h;
+}
+TH1 *   AliAnalysisTaskTriggerStudy::GetHistoCorrelationTrackletsSPDCls(const char * name, const char * title){
+  // Book histo of events vs ntracklets, if needed
+
+  TString hname = "hTrackletsvsSPDCls_";
+  hname+=name;  
+  hname+=fHistoSuffix;
+  TH1 * h = (TH1*) fHistoList->GetList()->FindObject(hname.Data());
+  
+  if(!h) {
+    AliInfo(Form("Booking histo %s",hname.Data()));
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    // h = new TH1F (hname.Data(), title, 1000, -0.5, 10000-0.5);
+    h = new TH2F (hname.Data(), title, 1000, 0, 9000,  1000, 0, 5000);
+    h->Sumw2();
+    h->SetXTitle("SPD Clusters");
+    h->SetYTitle("N tracklets");
+    fHistoList->GetList()->Add(h);
+    TH1::AddDirectory(oldStatus);
+  }
+  return h;
+}
+
 
 void AliAnalysisTaskTriggerStudy::FillTriggerOverlaps (const char * name, const char * title, Bool_t * vdArray){
   //Fills a histo with the different trigger statistics in a venn like diagramm. Books it if needed.

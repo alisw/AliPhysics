@@ -20,7 +20,7 @@ AliAnalysisMultPbTrackHistoManager * hManCorr = 0;
 TH2D * hEvStatData = 0;
 TH2D * hEvStatCorr = 0;
 
-const Int_t kHistoFitCompoments = 3;
+const Int_t kHistoFitCompoments = 2;
 TH1D * gHistoCompoments[kHistoFitCompoments];
 
 void LoadLibs(  Bool_t debug=0);
@@ -69,7 +69,7 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   CheckSanity();
 
   Double_t fractionWeak = 1, fractionMaterial=1; 
-  //  CheckSecondaries(fractionWeak, fractionMaterial);
+  CheckSecondaries(fractionWeak, fractionMaterial);
   cout << "Rescaling secondaries correction, weak: " << fractionWeak << ", material: " << fractionMaterial <<endl;
   if(scaleWeakByHand >= 0) {
     fractionWeak = scaleWeakByHand;
@@ -210,8 +210,8 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   hCorrected->SetMarkerColor(kBlack);
   hCorrected->Draw("same");
   hMCPtGen->DrawClone("same");
-  TF1 * f = GetLevy();
-  //TF1 * f = GetHagedorn();
+  //  TF1 * f = GetLevy();
+  TF1 * f = GetHagedorn();
   hCorrected->Fit(f,"", "same");
   hCorrected->Fit(f,"IME", "same",0,2);
   cout << "dN/deta (function)  = " << f->Integral(0,100) << " +- " << f->IntegralError(0,100) << endl;
@@ -225,8 +225,8 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   Double_t errorData = 0;
   Float_t dNdeta  =  (f->Integral(0,0.1) + hCorrected->IntegralAndError(1,-1,errorData, "width")) / (etaMax-etaMin);
   Float_t dNdetaE = TMath::Sqrt(f->IntegralError(0,0.1)*f->IntegralError(0,0.1) + errorData*errorData) / (etaMax-etaMin);
-  cout << "dN/deta          " << dNdeta << " +- " << dNdetaE << endl;
-  cout << "(dN/deta)/Npart  " << dNdeta/npart << " +- " << dNdetaE/npart << endl;
+  cout << "dN/deta              " << dNdeta << " +- " << dNdetaE << endl;
+  cout << "(dN/deta)/0.5 Npart  " << dNdeta/npart*2 << " +- " << dNdetaE/npart*2 << endl;
   
   TH1D * hDataGen  = hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        etaMin,etaMax,zmin,zmax);
   cout << "Generated dN/deta (data) =       " << hDataGen->Integral("width") << endl;
@@ -235,7 +235,7 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   l->AddEntry(hDataPt, "Raw data");
   l->AddEntry(hCorrected, "Corrected data");
   l->AddEntry(hMCPtGen, "Monte Carlo (generated)");
-  l->AddEntry(f, "Levy Fit");
+  l->AddEntry(f, "Hagedorn Fit");
   l->Draw();
 }
 
@@ -243,24 +243,25 @@ void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {
   // Returns the fraction you need to rescale the secondaries from weak decays for.
 
   // Some shorthands
-  TH1D * hDataDCA   = hManData->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
+  TH2D * hDataDCAPt   = hManData->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
   //  TH1D * hMCDCAGen  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoGen       );
-  TH1D * hMCDCARec  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
-  TH1D * hMCDCAPri  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim   );
-  TH1D * hMCDCASW  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak    );
-  TH1D * hMCDCASM  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat    );
-  TH1D * hMCDCAFak  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecFake   );
+  TH2D * hMCDCARecPt  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
+  TH2D * hMCDCAPriPt  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim   );
+  TH2D * hMCDCASWPt   = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak    );
+  TH2D * hMCDCASMPt   = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat    );
+  TH2D * hMCDCAFakPt  = hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecFake   );
  
 
   TCanvas * cCumulative = new TCanvas("cDCAculumative","DCA cumulative distributions");
   cCumulative->cd();
-  GetCumulativeHisto(hMCDCAPri )->Draw();
-  GetRatioIntegratedFractions(hMCDCASW, hMCDCARec  )->Draw("same");
-  GetRatioIntegratedFractions(hMCDCASM, hMCDCARec  )->Draw("same");
-  GetRatioIntegratedFractions(hMCDCAPri,hMCDCARec  )->Draw("same");
+  GetCumulativeHisto(hMCDCAPriPt )->Draw();
+  GetRatioIntegratedFractions(hMCDCASWPt, hMCDCARecPt  )->Draw("same");
+  GetRatioIntegratedFractions(hMCDCASMPt, hMCDCARecPt  )->Draw("same");
+  GetRatioIntegratedFractions(hMCDCAPriPt,hMCDCARecPt  )->Draw("same");
 
 
   TCanvas * c1 = new TCanvas("cDCAFit", "Fit to the DCA distributions");  
+  c1->Divide(4,2);
   c1->SetLogy();
   // Draw all
   //  hDataDCA->Draw();
@@ -272,34 +273,62 @@ void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {
   // return;
   
   // Fit the DCA distribution. Uses a TF1 made by summing histograms
-  TH1D * hMCPrimSMFak = (TH1D*) hMCDCAPri->Clone("hMCPrimSMFak");
-  //  hMCPrimSMFak->Add(hMCDCASM);
-  hMCPrimSMFak->Add(hMCDCAFak);
+  TH2D * hMCPrimSMFakPt = (TH2D*) hMCDCAPriPt->Clone("hMCPrimSMFak");
+  hMCPrimSMFakPt->Add(hMCDCASMPt);
+  hMCPrimSMFakPt->Add(hMCDCAFakPt);
 
   // Set the components which are used in HistoSum, the static
   // function for GetFunctionHistoSum
-  gHistoCompoments[0] = (TH1D*) hMCPrimSMFak->Clone();
-  gHistoCompoments[1] = (TH1D*) hMCDCASW->Clone();
-  gHistoCompoments[2] = (TH1D*) hMCDCASM->Clone();
-  TF1 * fHistos = GetFunctionHistoSum();
-  fHistos->SetParameters(1,1,1);
-  //fHistos->FixParameter(2,1);
-  fHistos->SetLineColor(kRed);
-  hDataDCA->Draw();
-  // Fit!
-  //  hDataDCA->Fit(fHistos,"","",0,200);
-  // Rescale the components and draw to see how it looks like
-  hMCPrimSMFak->Scale(fHistos->GetParameter(0));
-  hMCDCASW    ->Scale(fHistos->GetParameter(1));
-  hMCDCASM    ->Scale(fHistos->GetParameter(2));
-  hMCPrimSMFak->Draw("same");
-  hMCDCASW    ->Draw("same");
-  hMCDCASM    ->Draw("same");
-  fHistos->Draw("same");
-  // compute scaling factors
-  fracWeak     = fHistos->GetParameter(1)/fHistos->GetParameter(0);
-  fracMaterial = fHistos->GetParameter(2)/fHistos->GetParameter(0);
-
+  // Project onti DCA axis
+  const Int_t ptBinsFit[] = {3,5,7,9,11,15,19,23,31,-1};
+  Int_t ibinPt = -1;
+  while(ptBinsFit[(++ibinPt)+1]!=-1){
+    c1->cd(ibinPt+1);
+    gPad->SetLogy();
+    Int_t minPtBin=ptBinsFit[ibinPt];
+    Int_t maxPtBin=ptBinsFit[ibinPt+1]-1;
+  
+    TH1D * hDataDCA     = (TH1D*) hDataDCAPt    ->ProjectionX(TString(hDataDCAPt    ->GetName())+long(ibinPt)+"_px",minPtBin,maxPtBin,"E")->Clone();
+    TH1D * hMCPrimSMFak = (TH1D*) hMCPrimSMFakPt->ProjectionX(TString(hMCPrimSMFakPt->GetName())+long(ibinPt)+"_px",minPtBin,maxPtBin,"E")->Clone();
+    TH1D * hMCDCASW     = (TH1D*) hMCDCASWPt    ->ProjectionX(TString(hMCDCASWPt    ->GetName())+long(ibinPt)+"_px",minPtBin,maxPtBin,"E")->Clone();
+    TH1D * hMCDCASM     = (TH1D*) hMCDCASMPt    ->ProjectionX(TString(hMCDCASMPt    ->GetName())+long(ibinPt)+"_px",minPtBin,maxPtBin,"E")->Clone();
+    gHistoCompoments[0] = (TH1D*) hMCPrimSMFakPt->ProjectionX(TString(hMCPrimSMFakPt->GetName())+long(ibinPt)+"_px",minPtBin,maxPtBin,"E")->Clone();
+    gHistoCompoments[1] = (TH1D*) hMCDCASWPt    ->ProjectionX(TString(hMCDCASWPt    ->GetName())+long(ibinPt)+"_px",minPtBin,maxPtBin,"E")->Clone();
+    //  gHistoCompoments[2] = (TH1D*) hMCDCASMPt    ->ProjectionX("_px",minPtBin,maxPtBin,"E")->Clone();
+    TF1 * fHistos = GetFunctionHistoSum();
+    fHistos->SetParameters(1,1);
+    //  fHistos->FixParameter(2,1);
+    fHistos->SetLineColor(kRed);
+    hDataDCA= (TH1D*) hDataDCAPt->ProjectionX(TString(hDataDCAPt->GetName())+long(ibinPt)+"_px",minPtBin,maxPtBin,"E")->Clone();
+    hDataDCA->Draw();
+    // Fit!
+    hDataDCA->Fit(fHistos,"0Q","",-2,2);
+    // Rescale the components and draw to see how it looks like
+    hMCPrimSMFak->Scale(fHistos->GetParameter(0));
+    hMCDCASW    ->Scale(fHistos->GetParameter(1));
+    hMCDCASM    ->Scale(fHistos->GetParameter(2));
+    hMCPrimSMFak->Draw("same");
+    hMCDCASW    ->Draw("same");
+    hMCDCASM    ->Draw("same");
+    TH1D* hMCSum = (TH1D*) hMCPrimSMFak->Clone();
+    hMCSum->Add(hMCDCASW);
+    //    hMCSum->Add(hMCDCASM);
+    hMCSum->SetLineColor(kRed);
+    hMCSum->SetMarkerStyle(1);
+    hMCSum->Draw("lhist,same");
+    //    fHistos->Draw("same");
+    // compute scaling factors
+    //  fracWeak     = fHistos->GetParameter(1)/(fHistos->GetParameter(0)+fHistos->GetParameter(1));
+    cout << hDataDCAPt->GetYaxis()->GetBinLowEdge(minPtBin) << " - ";
+    cout << hDataDCAPt->GetYaxis()->GetBinLowEdge(maxPtBin+1) << " = ";
+    cout << 2*fHistos->GetParameter(1)/(fHistos->GetParameter(0)+fHistos->GetParameter(1));
+    cout << " ("<< fHistos->GetChisquare() <<")";
+    cout << " " << fHistos->GetParameter(0) << "," << fHistos->GetParameter(1) << endl;
+    
+    
+   fracWeak     = 2*fHistos->GetParameter(1)/(fHistos->GetParameter(0)+fHistos->GetParameter(1));
+     //  fracMaterial = fHistos->GetParameter(2)/(fHistos->GetParameter(0);
+  }
 
 }
 
@@ -379,7 +408,7 @@ void CheckSanity() {
 
 void CheckCorrections() {
 
-  TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec, etaMin,etaMax,zmin,zmax)->Clone("hDataPt");
+  //  TH1D * hDataPt   = (TH1D*) hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec, etaMin,etaMax,zmin,zmax)->Clone("hDataPt");
   TH1D * hMCPtGen  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,         etaMin,etaMax,zmin,zmax);
   TH1D * hMCPtRec  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRec,         etaMin,etaMax,zmin,zmax);
   TH1D * hMCPtPri  = hManCorr->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim,     etaMin,etaMax,zmin,zmax);
@@ -456,8 +485,8 @@ void SetStyle() {
   hManCorr->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetMarkerColor(kRed  );
   hManCorr->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim)->SetMarkerColor(kGreen);
   hManCorr->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat) ->SetMarkerColor(kBlue );
-  hManCorr->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetMarkerColor(kBlue );
-  hManCorr->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRecFake)->SetMarkerColor(kCyan );
+  hManCorr->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetMarkerColor(kCyan );
+  hManCorr->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRecFake)->SetMarkerColor(kYellow );
 
   hManData->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetMarkerStyle(kFullCircle);    
   hManCorr->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoGen)    ->SetMarkerStyle(kFullSquare);
@@ -472,16 +501,16 @@ void SetStyle() {
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetLineColor(kRed  );
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim)->SetLineColor(kGreen);
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat) ->SetLineColor(kBlue );
-  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetLineColor(kBlue-7 );
-  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecFake)->SetLineColor(kCyan );
+  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetLineColor(kCyan);
+  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecFake)->SetLineColor(kYellow );
 
   hManData->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetMarkerColor(kBlack);    
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoGen)    ->SetMarkerColor(kRed  );
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetMarkerColor(kRed  );
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim)->SetMarkerColor(kGreen);
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat) ->SetMarkerColor(kBlue );
-  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetMarkerColor(kBlue-7 );
-  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecFake)->SetMarkerColor(kCyan );
+  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak) ->SetMarkerColor(kCyan );
+  hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRecFake)->SetMarkerColor(kYellow );
 
   hManData->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoRec)    ->SetMarkerStyle(kFullCircle);    
   hManCorr->GetHistoDCA(AliAnalysisMultPbTrackHistoManager::kHistoGen)    ->SetMarkerStyle(kFullSquare);
@@ -659,7 +688,7 @@ void ShowAcceptanceInVzSlices() {
 
 TF1 * GetFunctionHistoSum() {
 
-  TF1 * f = new TF1 ("fHistoSum",HistoSum,0,50,kHistoFitCompoments);
+  TF1 * f = new TF1 ("fHistoSum",HistoSum,-1,1,kHistoFitCompoments);
   f->SetParNames("Primaries+Fakes", "Sec. Weak decays","Sec. Material");
   f->SetNpx(1000);
   return f;

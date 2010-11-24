@@ -39,6 +39,12 @@ public:
   TH1 * GetHistoTracklets   (const char * name, const char * title);
   TH1 * GetHistoPt(const char * name, const char * title);
   TH1 * GetHistoEta(const char * name, const char * title);
+  TH1 * GetHistoV0M(const char * name, const char * title);
+  TH1 * GetHistoSPD1(const char * name, const char * title);
+  TH1 * GetHistoTracks(const char * name, const char * title);
+  TH1 * GetHistoCorrelationSPDTPCVz(const char * name, const char * title);
+  TH1 * GetHistoCorrelationContrTPCSPDCls  (const char * name, const char * title);
+  TH1 * GetHistoCorrelationTrackletsSPDCls (const char * name, const char * title);
   void  FillTriggerOverlaps (const char * name, const char * title, Bool_t * vdArray) ;
 
   void SetNTrackletsCut(Int_t cut){ fNTrackletsCut = cut;}

@@ -9,6 +9,10 @@ class TH1D;
 class TH1I;
 class AliMCParticle;
 
+//#define WEIGHTED_DCA
+#define TRANSVERSE_DCA
+
+
 //-------------------------------------------------------------------------
 //                      AliAnalysisMultPbTrackHistoManager
 // 
@@ -44,7 +48,7 @@ public:
   TH2D * GetHistoPtVz (Histo_t id, Float_t minEta = -22222, Float_t maxEta = -22222, Bool_t scaleWidth = kFALSE);
 
   TH1I * GetHistoStats();
-  TH1D * GetHistoDCA(Histo_t id);
+  TH2D * GetHistoDCA(Histo_t id);
   TH1D * GetHistoMult(Histo_t id);
 
   TH1D * GetHistoSpecies(Histo_t id);
@@ -60,7 +64,7 @@ public:
 
   // Histo bookers
   TH3D * BookHistoPtEtaVz(const char * name, const char * title);
-  TH1D * BookHistoDCA(const char * name, const char * title);
+  TH2D * BookHistoDCA(const char * name, const char * title);
   TH1I * BookHistoStats();
   TH1D * BookHistoMult(const char * name, const char * title);
 
