@@ -162,11 +162,12 @@ void AliEMCALv0::CreateGeometry()
   AliDebug(2,Form("Shish-Kebab geometry : %s", GetTitle())); 
   CreateShishKebabGeometry();
 
+  if(gn.Contains("WSUC")==0) { // Nov 24,2010 for TB
   //Space Frame
-  AliDebug(2,"Creating EMCAL Space Frame");
-  fCalFrame = new AliEMCALSpaceFrame();
-  fCalFrame->CreateGeometry();
-
+    AliDebug(2,"Creating EMCAL Space Frame");
+    fCalFrame = new AliEMCALSpaceFrame();
+    fCalFrame->CreateGeometry();
+  }
 }
 
 //______________________________________________________________________

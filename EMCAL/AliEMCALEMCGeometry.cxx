@@ -314,12 +314,16 @@ void AliEMCALEMCGeometry::Init(void){
 
   //modifications to the above for WSUC geometry
   if(fGeoName.Contains("WSUC")){ // 18-may-05 - about common structure
-    fPhiModuleSize = 12.5;     // 20-may-05 - rectangular shape
-    fEtaModuleSize = 11.9;
-    fECScintThick  = fECPbRadThickness = 0.16;// (13-may-05 from V.Petrov)
-    fNumberOfSuperModules = 1; // 27-may-05
-    fShellThickness = 30.;       // should be change 
+    fNumberOfSuperModules = 2;  // 27-may-05; Nov 24,2010 for TB
     fNPhi = fNZ = 4; 
+    fTrd1AlFrontThick   = 1.0;  // one cm
+    // Bond paper - two sheets around Sc tile
+    fTrd1BondPaperThick = 0.01; // 0.01cm = 0.1 mm
+    
+    fPhiModuleSize = 12.0;
+    fEtaModuleSize = fPhiModuleSize;
+    fLateralSteelStrip = 0.015; // 0.015cm  = 0.15mm
+
     CheckAdditionalOptions();
   }
 
