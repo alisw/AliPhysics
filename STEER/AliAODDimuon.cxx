@@ -530,7 +530,7 @@ Int_t AliAODDimuon::AnyPt(){
   // Test if the two muons match two trigger tracks
   if(this->CheckPointers())return 0;
   return (((AliAODTrack*)fMu[0].GetObject())->MatchTrigger())&&
-         (((AliAODTrack*)fMu[0].GetObject())->MatchTrigger());
+         (((AliAODTrack*)fMu[1].GetObject())->MatchTrigger());
 }
 
 //______________________________________________________________________________
@@ -538,7 +538,7 @@ Int_t AliAODDimuon::LowPt(){
   // Test if the two muons match two trigger tracks with a "Low Pt" cut
   if(this->CheckPointers())return 0;
   return (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerLowPt())&&
-         (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerLowPt());
+         (((AliAODTrack*)fMu[1].GetObject())->MatchTriggerLowPt());
 }
 
 //______________________________________________________________________________
@@ -546,7 +546,7 @@ Int_t AliAODDimuon::HighPt(){
   // Test if the two muons match two trigger tracks with a "High Pt" cut
   if(this->CheckPointers())return 0;
   return (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerHighPt())&&
-         (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerHighPt());
+         (((AliAODTrack*)fMu[1].GetObject())->MatchTriggerHighPt());
 }
 
 //______________________________________________________________________________
@@ -554,5 +554,5 @@ Double_t AliAODDimuon::MaxChi2Match(){
   // Maximum matching Chi2 between track and trigger track
   if(this->CheckPointers())return -999999999;
   return TMath::Max((((AliAODTrack*)fMu[0].GetObject())->GetChi2MatchTrigger()),
-                    (((AliAODTrack*)fMu[0].GetObject())->GetChi2MatchTrigger()));
+                    (((AliAODTrack*)fMu[1].GetObject())->GetChi2MatchTrigger()));
 }
