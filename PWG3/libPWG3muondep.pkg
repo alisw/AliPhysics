@@ -6,7 +6,8 @@ SRCS:=	 muondep/AliAnalysisTaskMuonTrackingEff.cxx \
          muondep/AliAnalysisTaskESDMCLabelAddition.cxx \
          muondep/AliAnalysisTaskMuonResolution.cxx \
 	 muondep/AliAnalysisTaskPileup.cxx \
-	 muondep/AliAnalysisTaskMuonFakes.cxx
+	 muondep/AliAnalysisTaskMuonFakes.cxx \
+	 muondep/AliAnalysisTaskMuonRefit.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
