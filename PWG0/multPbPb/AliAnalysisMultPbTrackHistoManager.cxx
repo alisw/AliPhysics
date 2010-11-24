@@ -57,10 +57,10 @@ TH3D * AliAnalysisMultPbTrackHistoManager::GetHistoPtEtaVz(Histo_t id, Int_t par
 
 }
 
-TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoDCA(Histo_t id) {
+TH2D * AliAnalysisMultPbTrackHistoManager::GetHistoDCA(Histo_t id) {
   // Returns a 3D histo of Pt/eta/vtx. It it does not exist, books it.
 
-  TH1D * h = (TH1D*) GetHisto(kHistoDCANames[id]);
+  TH2D * h = (TH2D*) GetHisto(kHistoDCANames[id]);
   if (!h) {
     h = BookHistoDCA(kHistoDCANames[id], Form("Pt Eta Vz distribution (%s)",kHistoDCANames[id]));
   }
@@ -97,14 +97,14 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoPt (Histo_t id,
   // Get range in terms of bin numners.  If the float range is
   // less than -11111 take the range from the first to the last bin (i.e. no
   // under/over-flows)
-  // FIXME: UNDERFLOWS
+
   Int_t min1 = minEta  < -11111 ? -1 : h3D ->GetYaxis()->FindBin(minEta);
   Int_t min2  = minVz  < -11111 ? -1 : h3D ->GetZaxis()->FindBin(minVz) ;
 
-  // Int_t max1 = maxEta  < -11111 ? h3D->GetNbinsY() : h3D ->GetYaxis()->FindBin(maxEta-0.00001);
-  // Int_t max2  = maxVz  < -11111 ? h3D->GetNbinsZ() : h3D ->GetZaxis()->FindBin(maxVz -0.00001);
-  Int_t max1 = maxEta  < -11111 ? -1 : h3D ->GetYaxis()->FindBin(maxEta-0.00001);
-  Int_t max2  = maxVz  < -11111 ? -1 : h3D ->GetZaxis()->FindBin(maxVz -0.00001);
+  Int_t max1 = maxEta  < -11111 ? h3D->GetNbinsY() : h3D ->GetYaxis()->FindBin(maxEta-0.00001);
+  Int_t max2  = maxVz  < -11111 ? h3D->GetNbinsZ() : h3D ->GetZaxis()->FindBin(maxVz -0.00001);
+  // Int_t max1 = maxEta  < -11111 ? -1 : h3D ->GetYaxis()->FindBin(maxEta-0.00001);
+  // Int_t max2  = maxVz  < -11111 ? -1 : h3D ->GetZaxis()->FindBin(maxVz -0.00001);
 
 
   TString hname = h3D->GetName();
@@ -412,8 +412,24 @@ TH3D * AliAnalysisMultPbTrackHistoManager::BookHistoPtEtaVz(const char * name, c
   return h;
 }
 
-TH1D * AliAnalysisMultPbTrackHistoManager::BookHistoDCA(const char * name, const char * title) {
+TH2D * AliAnalysisMultPbTrackHistoManager::BookHistoDCA(const char * name, const char * title) {
   // Books a DCA histo 
+
+  const Int_t nptbins = 68;
+  const Double_t binsPt[] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
+  const Int_t ndcabins=100;
+  Double_t binsDca[ndcabins+1];
+  Float_t minDca = -3;
+  Float_t maxDca =  3;
+  //  const Double_t binsDCA[] = {-3,-2.8,-2.6,-2.4,-2.2,-2.0,-1.9,};
+  Float_t dcaStep = (maxDca-minDca)/ndcabins;
+  for(Int_t ibin = 0; ibin < ndcabins; ibin++){    
+    binsDca[ibin]   = minDca + ibin*dcaStep;
+    binsDca[ibin+1] = minDca + ibin*dcaStep + dcaStep;
+  }
+ 
+
+
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -424,9 +440,14 @@ TH1D * AliAnalysisMultPbTrackHistoManager::BookHistoDCA(const char * name, const
   AliInfo(Form("Booking %s",hname.Data()));
   
 
+#if defined WEIGHTED_DCA
   TH1D * h = new TH1D (hname,title, 200,0,200);
-
   h->SetXTitle("#Delta DCA");
+#elif defined TRANSVERSE_DCA
+  TH2D * h = new TH2D (hname,title, ndcabins,binsDca,nptbins,binsPt);
+  h->SetYTitle("p_{T} (GeV)");
+  h->SetXTitle("d_{0} r#phi (cm)");
+#endif
   h->Sumw2();
   
   fList->Add(h);

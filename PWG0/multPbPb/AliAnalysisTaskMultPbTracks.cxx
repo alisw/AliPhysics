@@ -13,6 +13,7 @@
 #include "AliStack.h"
 #include "TH1I.h"
 #include "TH3D.h"
+#include "TH2D.h"
 #include "AliMCParticle.h"
 #include "AliGenEventHeader.h"
 #include "AliESDCentrality.h"
@@ -108,7 +109,7 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 
   // Cache histogram pointers
   static TH3D * hTracks  [AliAnalysisMultPbTrackHistoManager::kNHistos];
-  static TH1D * hDCA     [AliAnalysisMultPbTrackHistoManager::kNHistos];
+  static TH2D * hDCA     [AliAnalysisMultPbTrackHistoManager::kNHistos];
   static TH1D * hNTracks [AliAnalysisMultPbTrackHistoManager::kNHistos];
   hTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]        = fHistoManager->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoGen       );
   hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]        = fHistoManager->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRec       );
@@ -132,7 +133,6 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     AliFatal("Not processing ESDs");
   }
   
-  // FIXME: use physics selection here to keep track of events lost?
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatAll);
 
 
@@ -171,7 +171,9 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
       
       //loop on the MC event, only over primaries, which are always
       //      the first in stack.
-      Int_t nMCTracks = fMCEvent->GetNumberOfPrimaries();
+      // WRONG: D&B decays are produced in the transport... Need To Loop over all particles
+      //      Int_t nMCTracks = fMCEvent->GetNumberOfPrimaries();
+      Int_t nMCTracks = fMCEvent->GetNumberOfTracks();
       Int_t nPhysicalPrimaries = 0;
       for (Int_t ipart=0; ipart<nMCTracks; ipart++) { 
 	
@@ -182,7 +184,13 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 
 	//check if current particle is a physical primary
 	if(!IsPhysicalPrimaryAndTransportBit(ipart)) continue;
- 
+	if(TMath::Abs(mcPart->Zv()-zvGen)>1e-6) {
+	  // This cures a bug in Hijing
+	  // A little hack here: I put those in the underflow bin of the process type to keep track of them
+	  fHistoManager->GetHistoProcess(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Fill(-1);
+	  continue;
+	}
+
 	nPhysicalPrimaries++;
 	// Fill species histo and particle species
 	fHistoManager->GetHistoProcess(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Fill(mcPart->Particle()->GetUniqueID());
@@ -192,10 +200,18 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	// Fill generated histo
 	hTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]->Fill(mcPart->Pt(),mcPart->Eta(),zvGen);
 	Int_t partCode = fHistoManager->GetLocalParticleID(mcPart);
+	cout << "Part " << partCode << endl;
 	if (partCode == AliAnalysisMultPbTrackHistoManager::kPartPiPlus  || 
-	    partCode == AliAnalysisMultPbTrackHistoManager::kPartPiMinus)
+	    partCode == AliAnalysisMultPbTrackHistoManager::kPartPiMinus ||
+	    partCode == AliAnalysisMultPbTrackHistoManager::kPartKPlus   || 
+	    partCode == AliAnalysisMultPbTrackHistoManager::kPartKMinus  ||
+	    partCode == AliAnalysisMultPbTrackHistoManager::kPartP       || 
+	    partCode == AliAnalysisMultPbTrackHistoManager::kPartPBar  
+	    ){
+	  cout << "Found " << partCode << endl;
+	  
 	  fHistoManager->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoGen, partCode);
-	
+	}
       }
       hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]->Fill(nPhysicalPrimaries);
       fHistoManager->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoGen)->Fill(zvGen);
@@ -205,21 +221,10 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   }
   
 
-  // FIXME: shall I take the primary vertex?
   const AliESDVertex* vtxESD = fESD->GetPrimaryVertex();
   if(!vtxESD) return;
-  // FIXME: leave the cuts here or find a better place?)
- 
-  // FIXME: implement these latest cuts, 
-// const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
-// if (vtxESD->GetNContributors()<1) return;
-// if (vtxESD->GetDispersion()>0.04) return;
-// if (vtxESD->GetZRes()>0.25) return;
-// const AliMultiplicity* multESD = esd->GetMultiplicity();
-// const AliESDVertex* vtxESDTPC = esd->GetPrimaryVertexTPC();
-// if(vtxESDTPC->GetNContributors()<1) return;
-// if(vtxESDTPC->GetNContributors()<(-10.+0.25*multESD->GetNumberOfITSClusters(0))) 
- // Quality cut on vertexer Z, as suggested by Francesco Prino
+  // TODO: leave the cuts here or find a better place?)
+  // Quality cut on vertexer Z, as suggested by Francesco Prino
   if(vtxESD->IsFromVertexerZ()) {
     if (vtxESD->GetNContributors() <= 0) return;
     if (vtxESD->GetDispersion() >= 0.04) return;
@@ -227,7 +232,10 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   }
   // "Beam gas" vertex cut
   const AliESDVertex * vtxESDTPC= fESD->GetPrimaryVertexTPC(); 
+  if(vtxESDTPC->GetNContributors()<1) return;
   if (vtxESDTPC->GetNContributors()<(-10.+0.25*fESD->GetMultiplicity()->GetNumberOfITSClusters(0)))     return;
+
+  // Fill vertex and statistics
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatVtx);
   fHistoManager->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(vtxESD->GetZ());
 
@@ -247,13 +255,13 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 
     // Compute weighted offset
     // TODO: other choiches for the DCA?
-    Double_t b = fESD->GetMagneticField();
-    Double_t dca[2];
-    Double_t cov[3];
     Double_t weightedDCA = 10;
     
 
-
+#if defined WEIGHTED_DCA
+    Double_t b = fESD->GetMagneticField();
+    Double_t dca[2];
+    Double_t cov[3];
     if (esdTrack->PropagateToDCA(vtxESD, b,3., dca, cov)) {
       Double_t det = cov[0]*cov[2]-cov[1]*cov[1]; 
       if (det<=0) {
@@ -266,7 +274,11 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
       //      printf("dR:%e dZ%e  sigR2:%e sigRZ:%e sigZ2:%e\n",dca[0],dca[1],cov[0],cov[1],cov[2]);
     }
     
-
+#elif defined TRANSVERSE_DCA
+    Float_t xz[2]; 
+    esdTrack->GetDZ(vtxESD->GetX(),vtxESD->GetY(),vtxESD->GetZ(), fESD->GetMagneticField(), xz); 
+    weightedDCA = xz[0];
+#endif
     
 
     // Alternative: p*DCA
@@ -274,11 +286,23 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     // esdTrack->GetDZ(vtxESD->GetX(),vtxESD->GetY(),vtxESD->GetZ(), fESD->GetMagneticField(), xz); 
     // Float_t dca = xz[0]*esdTrack->P();
 
-    // for each track
-    if(accepted) 
-      hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
-    if(acceptedNoDCA)
-      hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRec]->Fill(weightedDCA);
+  // This cures a bug in Hijing (displaced primaries)
+  if (fIsMC) {
+    Int_t label = TMath::Abs(esdTrack->GetLabel()); // no fakes!!!    
+    if (IsPhysicalPrimaryAndTransportBit(label)) {
+      AliMCParticle *mcPart  =  (AliMCParticle*)fMCEvent->GetTrack(label);
+      if(!mcPart) AliFatal("No particle");
+      TArrayF   vertex;
+      fMCEvent->GenEventHeader()->PrimaryVertex(vertex);
+      Float_t zvGen = vertex[2];    
+      if(TMath::Abs(mcPart->Zv()-zvGen)>1e-6) continue;    
+    }
+  }
+  // for each track
+  if(accepted) 
+    hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
+  if(acceptedNoDCA)
+    hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRec]->Fill(weightedDCA,esdTrack->Pt());
 
     // Fill separately primaries and secondaries
     // FIXME: fakes? Is this the correct way to account for them?
@@ -291,7 +315,7 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	if(accepted)
 	  hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRecFake]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
 	if(acceptedNoDCA)
-	  hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecFake]->Fill(weightedDCA);
+	  hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecFake]->Fill(weightedDCA,esdTrack->Pt());
       }
       else {
 	if(IsPhysicalPrimaryAndTransportBit(label)) {
@@ -301,11 +325,16 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	    hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRecPrim]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
 	    Int_t partCode = fHistoManager->GetLocalParticleID(mcPart);
 	    if (partCode == AliAnalysisMultPbTrackHistoManager::kPartPiPlus  || 
-		partCode == AliAnalysisMultPbTrackHistoManager::kPartPiMinus)
+		partCode == AliAnalysisMultPbTrackHistoManager::kPartPiMinus ||
+		partCode == AliAnalysisMultPbTrackHistoManager::kPartKPlus   || 
+		partCode == AliAnalysisMultPbTrackHistoManager::kPartKMinus  ||
+		partCode == AliAnalysisMultPbTrackHistoManager::kPartP       || 
+		partCode == AliAnalysisMultPbTrackHistoManager::kPartPBar  
+		)
 	      fHistoManager->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim, partCode);
 	  }
 	  if(acceptedNoDCA)
-	    hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecPrim]->Fill(weightedDCA);
+	    hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecPrim]->Fill(weightedDCA,esdTrack->Pt());
 	} 
 	else {
 	  Int_t mfl=0;
@@ -320,13 +349,13 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	    if(accepted)
 	      hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
 	    if(acceptedNoDCA)
-	      hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak]->Fill(weightedDCA);	  
+	      hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecSecWeak]->Fill(weightedDCA,esdTrack->Pt());	  
 	  }else{ // material
 	    fHistoManager->GetHistoProcess(AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat)->Fill(mcPart->Particle()->GetUniqueID());
 	    if(accepted)
 	      hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
 	    if(acceptedNoDCA)
-	      hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat]->Fill(weightedDCA);	  
+	      hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRecSecMat]->Fill(weightedDCA,esdTrack->Pt());	  
 
 	  }
 
@@ -353,7 +382,7 @@ void   AliAnalysisTaskMultPbTracks::Terminate(Option_t *){
 
 
 Bool_t AliAnalysisTaskMultPbTracks::IsPhysicalPrimaryAndTransportBit(Int_t ipart) {
-
+  // Check if it is a primary and if it was transported
   Bool_t physprim=fMCEvent->IsPhysicalPrimary(ipart);
   if (!physprim) return kFALSE;
   Bool_t transported = ((AliMCParticle*)fMCEvent->GetTrack(ipart))->Particle()->TestBit(kTransportBit);

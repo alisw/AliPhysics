@@ -109,38 +109,35 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     doSave = kTRUE;
   }
 
-  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE); //FIXME
-  //  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
-  TString pathsuffix = "";
-  // cuts->SetPtRange(0.15,0.2);// FIXME pt cut
-  // const char * pathsuffix = "_pt_015_020_nofakes";
+  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);  TString pathsuffix = "";
 
   if (optionStr.Contains("DCA")) {
     delete cuts;
     cuts = AliESDtrackCuts::GetStandardITSPureSATrackCuts2009();
     cout << ">>>> USING DCA cut" << endl;
     cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
-    pathsuffix="DCAcut";
+    pathsuffix+="_DCAcut";
   }
 
   if (optionStr.Contains("ITSsa")) {
     delete cuts;
     cuts = AliESDtrackCuts::GetStandardITSPureSATrackCuts2009();
     cout << ">>>> USING ITS sa tracks" << endl;
-    pathsuffix="ITSsa";
+    pathsuffix+="_ITSsa";
   }
 
   if (optionStr.Contains("TPC")) {
     delete cuts;
     cuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     cout << ">>>> USING TPC only tracks" << endl;
-    pathsuffix="TPC";
+    pathsuffix+="_TPC";
   }
 
   Bool_t useMCKinematics = isMC;
   if (optionStr.Contains("NOMCKIN")) {
     cout << ">>>> Ignoring MC kinematics" << endl;
     useMCKinematics=kFALSE;
+    pathsuffix+="_NOMCKIN";
   }
   
   
