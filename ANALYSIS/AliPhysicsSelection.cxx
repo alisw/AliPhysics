@@ -190,8 +190,8 @@ AliPhysicsSelection::~AliPhysicsSelection()
 UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const
 {
   // checks if the given trigger class(es) are found for the current event
-  // format of trigger: +TRIGGER1 -TRIGGER2 [#XXX] [&YY] [*ZZ]
-  //   requires TRIGGER1 and rejects TRIGGER2
+  // format of trigger: +TRIGGER1,TRIGGER1b,TRIGGER1c -TRIGGER2 [#XXX] [&YY] [*ZZ]
+  //   requires one out of TRIGGER1,TRIGGER1b,TRIGGER1c and rejects TRIGGER2
   //   in bunch crossing XXX
   //   if successful, YY is returned (for association between entry in fCollTrigClasses and AliVEvent::EOfflineTriggerTypes)
   //   triggerLogic is filled with ZZ, defaults to kCINT1
@@ -215,15 +215,29 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
       
       str2.Remove(0, 1);
       
-      if (flag && !aEsd->IsTriggerClassFired(str2))
+      TObjArray* tokens2 = str2.Tokenize(",");
+      
+      Bool_t foundTriggerClass = kFALSE;
+      for (Int_t j=0; j < tokens2->GetEntries(); j++)
       {
-        AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is not present", str2.Data()));
-        delete tokens;
-        return kFALSE;
+        TString str3(((TObjString*) tokens2->At(j))->String());
+        
+        if (flag && aEsd->IsTriggerClassFired(str3))
+          foundTriggerClass = kTRUE;
+        if (!flag && aEsd->IsTriggerClassFired(str3))
+        {
+          AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is present", str3.Data()));
+          delete tokens2;
+          delete tokens;
+          return kFALSE;
+        }
       }
-      if (!flag && aEsd->IsTriggerClassFired(str2))
+      
+      delete tokens2;
+      
+      if (!foundTriggerClass)
       {
-        AliDebug(AliLog::kDebug, Form("Rejecting event because trigger class %s is present", str2.Data()));
+        AliDebug(AliLog::kDebug, Form("Rejecting event because (none of the) trigger class(es) %s is present", str2.Data()));
         delete tokens;
         return kFALSE;
       }
@@ -407,6 +421,8 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
         case kCMBS2A: hwTrig = fastORHWL1 > 1 && v0AHW; break;
         case kCMBS2C: hwTrig = fastORHWL1 > 1 && v0CHW; break;
         case kCMBAC:  hwTrig = v0AHW && v0CHW; break;
+        case kCMBACS2: hwTrig = fastORHWL1 > 1 && v0AHW && v0CHW; break;
+        case kHighMultL1: hwTrig = fastORHWL1 > 100; break;
         default: AliFatal(Form("Undefined trigger logic %d", triggerLogic)); break;
       }
 
@@ -490,6 +506,8 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
           case kCMBS2A: offlineAccepted = fastOROfflineL1 > 1 && v0A; break;
           case kCMBS2C: offlineAccepted = fastOROfflineL1 > 1 && v0C; break;
           case kCMBAC:  offlineAccepted = v0A && v0C; break;
+          case kCMBACS2: offlineAccepted = fastOROfflineL1 > 1 && v0A && v0C; break;
+          case kHighMultL1: offlineAccepted = fastOROfflineL1 > 100; break;
           default: AliFatal(Form("Undefined trigger logic %d", triggerLogic)); break;
         }
 
@@ -546,6 +564,9 @@ Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t runNumber) const
     case 105057:
       return 2;
   }
+  
+  if (runNumber >= 136849 && runNumber < 138125) // HI old scheme
+    return 2;
   
   // defaults
   return 1;
@@ -857,9 +878,24 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber, Bool_t pp)
           fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2C)));
           fCollTrigClasses.Add(new TObjString(Form("&%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
           break;
-        
+          
         case 1:
-          // Data Heavy-ion
+          // Data Heavy-ion (three out of three)
+          
+          fCollTrigClasses.Add(new TObjString(Form("+CMBACS2-B-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBACS2)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBACS2-A-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBACS2)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBACS2-C-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBACS2)));
+          fBGTrigClasses.Add  (new TObjString(Form("+CMBACS2-E-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBACS2)));
+          
+          fCollTrigClasses.Add(new TObjString(Form("+C0SMH-B-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kHighMult, (Int_t) kHighMultL1)));
+          fBGTrigClasses.Add  (new TObjString(Form("+C0SMH-A-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kHighMult, (Int_t) kHighMultL1)));
+          fBGTrigClasses.Add  (new TObjString(Form("+C0SMH-C-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kHighMult, (Int_t) kHighMultL1)));
+          fBGTrigClasses.Add  (new TObjString(Form("+C0SMH-E-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kHighMult, (Int_t) kHighMultL1)));
+          
+          break;
+        
+        case 2:
+          // Data Heavy-ion (early scheme: two out of three)
           
           fCollTrigClasses.Add(new TObjString(Form("+CMBS2A-B-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
           fBGTrigClasses.Add  (new TObjString(Form("+CMBS2A-A-NOPF-ALL &%u *%d", (UInt_t) AliVEvent::kMB, (Int_t) kCMBS2A)));
@@ -875,6 +911,11 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber, Bool_t pp)
           fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-A-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
           fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-C-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
           fBGTrigClasses.Add  (new TObjString(Form("+CMBAC-E-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kMB, (Int_t) kCMBAC)));
+          
+          fCollTrigClasses.Add(new TObjString(Form("+C0SMH-B-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kHighMult, (Int_t) kHighMultL1)));
+          fBGTrigClasses.Add  (new TObjString(Form("+C0SMH-A-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kHighMult, (Int_t) kHighMultL1)));
+          fBGTrigClasses.Add  (new TObjString(Form("+C0SMH-C-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kHighMult, (Int_t) kHighMultL1)));
+          fBGTrigClasses.Add  (new TObjString(Form("+C0SMH-E-NOPF-ALL &%u *%d",  (UInt_t) AliVEvent::kHighMult, (Int_t) kHighMultL1)));
           
           break;
         

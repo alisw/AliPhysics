@@ -45,7 +45,7 @@ public:
 #endif
 
   enum {kStatIdxAll=0,kStatIdxBin0=1};
-  enum ETriggerLogic { kCINT1 = 0, kCMBS2A, kCMBS2C, kCMBAC };
+  enum ETriggerLogic { kCINT1 = 0, kCMBS2A, kCMBS2C, kCMBAC, kCMBACS2, kHighMultL1 };
 
   typedef Bool_t (*Bin0Callback_t)(const AliESDEvent *);
 
