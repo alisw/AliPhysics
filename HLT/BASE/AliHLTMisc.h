@@ -55,9 +55,16 @@ class AliHLTMisc : public TObject {
 
   virtual int InitMagneticField() const;
 
+  /// extract the triggermask from the rawreader
+  /// NOTE: not to be used in the online system
   virtual AliHLTUInt64_t GetTriggerMask(AliRawReader* rawReader) const;
 
+  /// extract the timestamp from the rawreader
+  /// NOTE: not to be used in the online system, use AliHLTComponent::GetTimeStamp()
   virtual AliHLTUInt32_t GetTimeStamp(AliRawReader* rawReader) const;
+
+  /// extract the event type from the rawreader
+  /// NOTE: not to be used in the online system
   virtual AliHLTUInt32_t GetEventType(AliRawReader* rawReader) const;
 
   virtual Double_t GetBz();
