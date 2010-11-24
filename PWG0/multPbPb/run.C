@@ -11,7 +11,7 @@ TChain * GetAnalysisChain(const char * incollection);
 
 void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, 
 	 Int_t centrBin = 0, const char * centrEstimator = "VOM", Int_t useOtherCentralityCut = 0, Int_t trackMin=0, Int_t trackMax=10000, 
-	 const char* option = "",TString customSuffix = "", Int_t workers = -1)
+	 const char* option = "",TString customSuffix = "", Int_t workers = -1, Bool_t useSingleBin=kTRUE)
 {
   // runMode:
   //
@@ -76,6 +76,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   AliAnalysisMultPbCentralitySelector * centrSelector = new AliAnalysisMultPbCentralitySelector();
   centrSelector->SetCentrTaskFiles(file1,file2); // for bookkeping only
   centrSelector->SetCentralityBin(centrBin);
+  if (!useSingleBin) centrSelector->SetCentralityBin(0); // FIXME: ok?
   centrSelector->SetCentralityEstimator(centrEstimator);
 
   
@@ -104,12 +105,15 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   Bool_t doSave = kFALSE;
   TString optionStr(option);
   if (optionStr.Contains("SAVE"))
-  {
-    optionStr = optionStr(0,optionStr.Index("SAVE")) + optionStr(optionStr.Index("SAVE")+4, optionStr.Length());
-    doSave = kTRUE;
-  }
+    {
+      optionStr = optionStr(0,optionStr.Index("SAVE")) + optionStr(optionStr.Index("SAVE")+4, optionStr.Length());
+      doSave = kTRUE;
+    }
 
-  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);  TString pathsuffix = "";
+  AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);  
+  TString pathsuffix = "";
+
+  if(!useSingleBin) pathsuffix += "_AllCentr";
 
   if (optionStr.Contains("DCA")) {
     delete cuts;
@@ -142,24 +146,45 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   
   
   // load my task
-  gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
-  AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts, centrSelector); 
-  task->SetIsMC(useMCKinematics);
-  task->SetOfflineTrigger(AliVEvent::kMB);
-  if(optionStr.Contains("TPC")) task->SetTPCOnly();
-  // if (isMC) {
-  //   task->SetOfflineTrigger(AliVEvent::kMB);
-  // } else {
-  //   task->SetOfflineTrigger(AliVEvent::kUserDefined);
-  // }
-  if(useMCKinematics) task->GetHistoManager()->SetSuffix("MC");
-  if(customSuffix!=""){
-    cout << "Setting custom suffix: " << customSuffix << endl;    
-    task->GetHistoManager()->SetSuffix(customSuffix);
+  if (useSingleBin) {
+    gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
+    AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts, centrSelector); 
+    task->SetIsMC(useMCKinematics);
+    task->SetOfflineTrigger(AliVEvent::kMB);
+    if(optionStr.Contains("TPC")) task->SetTPCOnly();
+    if(useMCKinematics) task->GetHistoManager()->SetSuffix("MC");
+    if(customSuffix!=""){
+      cout << "Setting custom suffix: " << customSuffix << endl;    
+      task->GetHistoManager()->SetSuffix(customSuffix);
+    }
+  } else {
+    gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracksAllCentrality.C");
+    centrSelector->SetUseV0Range(kTRUE);
+    Int_t ncentr = 11;
+    const Float_t minCentr[] = {0, 79, 247,577, 1185,2155,3565,5527,8203, 12167,15073};
+    const Float_t maxCentr[] = {79,247,577,1185,2155,3565,5527,8203,12167,15073,21000};
+    AliAnalysisTaskMultPbTracks ** tasks = AddTaskMultPbPbTracksAllCentrality("multPbPbtracks.root", cuts, centrSelector, ncentr,minCentr,maxCentr); 
+    for(Int_t icentr = 0; icentr < ncentr; icentr++){
+      cout << "1 " << tasks[icentr] << endl;
+      tasks[icentr]->Print();
+      tasks[icentr]->SetIsMC(useMCKinematics);
+      cout << "2" << endl;
+      tasks[icentr]->SetOfflineTrigger(AliVEvent::kMB);
+      cout << "3" << endl;
+      if(optionStr.Contains("TPC")) tasks[icentr]->SetTPCOnly();
+      cout << "4" << endl;
+      if(useMCKinematics) tasks[icentr]->GetHistoManager()->SetSuffix("MC");
+      cout << "5" << endl;
+      if(customSuffix!=""){
+	cout << "Setting custom suffix: " << customSuffix+long(icentr) << tasks[icentr] << endl;    
+	tasks[icentr]->GetHistoManager()->SetSuffix(customSuffix+long(icentr));
+	cout << "ok" << endl;
+      }	
+    }    
   }
-  //  task->SelectCollisionCandidates(AliVEvent::kUserDefined);
+  // Init and run the analy
   if (!mgr->InitAnalysis()) return;
-  
+
   mgr->PrintStatus();
   
   if (runMode == kMyRunModeLocal ) {
@@ -201,6 +226,12 @@ void MoveOutput(const char * data, const char * suffix = ""){
   TString fileName = "multPbPbtracks.root";
   gSystem->mkdir(path, kTRUE);
   gSystem->Rename(fileName, path + "/" + fileName);
+  for(Int_t ibin = 0; ibin < 20; ibin++){
+    TString fileBin = fileName;
+    fileBin.ReplaceAll(".root",Form("_%2.2d.root",ibin));
+    gSystem->Rename(fileBin, path + "/" + fileBin);    
+  }
+  
   gSystem->Rename("event_stat.root", path + "/event_stat.root");      
   Printf(">>>>> Moved files to %s", path.Data());
 }  
@@ -250,58 +281,59 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
 
 
   if (runMode == kMyRunModeCAF)
-  {
-    cout << "Init in CAF mode" << endl;
+    {
+      cout << "Init in CAF mode" << endl;
     
-    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-    TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
-    //TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");
-    
-    // Enable the needed package
-    gProof->UploadPackage("$ALICE_ROOT/STEERBase");
-    gProof->EnablePackage("$ALICE_ROOT/STEERBase");
-    gProof->UploadPackage("$ALICE_ROOT/ESD");
-    gProof->EnablePackage("$ALICE_ROOT/ESD");
-    gProof->UploadPackage("$ALICE_ROOT/AOD");
-    gProof->EnablePackage("$ALICE_ROOT/AOD");
-    gProof->UploadPackage("$ALICE_ROOT/ANALYSIS");
-    gProof->EnablePackage("$ALICE_ROOT/ANALYSIS");
-    gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
-    gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
-    gProof->UploadPackage("$ALICE_ROOT/PWG0base");
-    gProof->EnablePackage("$ALICE_ROOT/PWG0base");
-    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
-    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
-  }
-  else
-  {
-    cout << "Init in Local or Grid mode" << endl;
-    gSystem->Load("libCore.so");  
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");   
-  // Use AliRoot includes to compile our task
-    gROOT->ProcessLine(".include $ALICE_ROOT/include");
+      gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+      TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
+      //    TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
+      p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
 
-    // gSystem->Load("libVMC");
-    // gSystem->Load("libTree");
-    // gSystem->Load("libSTEERBase");
-    // gSystem->Load("libESD");
-    // gSystem->Load("libAOD");
-    // gSystem->Load("libANALYSIS");
-    // gSystem->Load("libANALYSISalice");
-    // gSystem->Load("libPWG0base");
+      // Enable the needed package
+      gProof->UploadPackage("$ALICE_ROOT/STEERBase");
+      gProof->EnablePackage("$ALICE_ROOT/STEERBase");
+      gProof->UploadPackage("$ALICE_ROOT/ESD");
+      gProof->EnablePackage("$ALICE_ROOT/ESD");
+      gProof->UploadPackage("$ALICE_ROOT/AOD");
+      gProof->EnablePackage("$ALICE_ROOT/AOD");
+      gProof->UploadPackage("$ALICE_ROOT/ANALYSIS");
+      gProof->EnablePackage("$ALICE_ROOT/ANALYSIS");
+      gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
+      gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
+      gProof->UploadPackage("$ALICE_ROOT/PWG0base");
+      gProof->EnablePackage("$ALICE_ROOT/PWG0base");
+      gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
+      gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
+    }
+  else
+    {
+      cout << "Init in Local or Grid mode" << endl;
+      gSystem->Load("libCore.so");  
+      gSystem->Load("libTree.so");
+      gSystem->Load("libGeom.so");
+      gSystem->Load("libVMC.so");
+      gSystem->Load("libPhysics.so");
+      gSystem->Load("libSTEERBase");
+      gSystem->Load("libESD");
+      gSystem->Load("libAOD");
+      gSystem->Load("libANALYSIS");
+      gSystem->Load("libANALYSISalice");   
+      // Use AliRoot includes to compile our task
+      gROOT->ProcessLine(".include $ALICE_ROOT/include");
+
+      // gSystem->Load("libVMC");
+      // gSystem->Load("libTree");
+      // gSystem->Load("libSTEERBase");
+      // gSystem->Load("libESD");
+      // gSystem->Load("libAOD");
+      // gSystem->Load("libANALYSIS");
+      // gSystem->Load("libANALYSISalice");
+      // gSystem->Load("libPWG0base");
     
-    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
-    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
-    //    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background/"));
-  }
+      gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
+      gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
+      //    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background/"));
+    }
   // Load helper classes
   TIterator * iter = listToLoad->MakeIterator();
   TObjString * name = 0;

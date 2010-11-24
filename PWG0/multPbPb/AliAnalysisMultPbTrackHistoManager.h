@@ -28,7 +28,7 @@ class AliAnalysisMultPbTrackHistoManager : public AliHistoListWrapper {
 public:
 
   typedef enum {kHistoGen, kHistoRec, kHistoRecPrim, kHistoRecSecWeak, kHistoRecSecMat, kHistoRecFake, kNHistos} Histo_t;
-  typedef enum {kStatAll,  kStatCentr, kStatPhysSel, kStatVtx, kNStatBins} Stat_t;
+  typedef enum {kStatAll,  kStatCentr, kStatPhysSel, kStatVtx, kStatZDCCut, kNStatBins} Stat_t;
   typedef enum {kPartPiPlus, kPartKPlus, kPartP, kPartLPlus, kPartPiMinus, kPartKMinus, kPartPBar, kPartLMinus, kPartOther, kNPart} Part_t;
 
 
@@ -50,6 +50,8 @@ public:
   TH1I * GetHistoStats();
   TH2D * GetHistoDCA(Histo_t id);
   TH1D * GetHistoMult(Histo_t id);
+  TH2D * GetHistoV0vsNtracks(Histo_t id);
+
 
   TH1D * GetHistoSpecies(Histo_t id);
   TH1D * GetHistoProcess(Histo_t id);

@@ -14,7 +14,7 @@ using namespace std;
 
 ClassImp(AliAnalysisMultPbTrackHistoManager)
 
-const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After centrality selection",  "After physics Selection", "With Vertex" };
+const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After centrality selection",  "After physics Selection", "After ZDC cut", "With Vertex" };
 const char * AliAnalysisMultPbTrackHistoManager::kHistoPtEtaVzNames[] = { "hGenPtEtaVz", "hRecPtEtaVz", "hRecPtEtaVzPrim", 
 									  "hRecPtEtaVzSecWeak", "hRecPtEtaVzSecMaterial", "hRecPtEtaVzFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoDCANames[]     = { "hGenDCA", "hRecDCA", "hRecDCAPrim", "hRecDCASecWeak","hRecDCASecMaterial", "hRecDCAFake"};
@@ -62,12 +62,39 @@ TH2D * AliAnalysisMultPbTrackHistoManager::GetHistoDCA(Histo_t id) {
 
   TH2D * h = (TH2D*) GetHisto(kHistoDCANames[id]);
   if (!h) {
-    h = BookHistoDCA(kHistoDCANames[id], Form("Pt Eta Vz distribution (%s)",kHistoDCANames[id]));
+    h = BookHistoDCA(kHistoDCANames[id], Form("DCA vs pt distribution (%s)",kHistoDCANames[id]));
   }
 
   return h;
 
 }
+
+TH2D * AliAnalysisMultPbTrackHistoManager::GetHistoV0vsNtracks(Histo_t id) {
+  // Returns a histo of V0 vs ntracks
+  
+
+  TString name = TString(kHistoPrefix[id])+"_V0vsNtracks";
+
+  TH2D * h =  (TH2D*) GetHisto(name);
+  if (!h) {
+    name+=fHNameSuffix;
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+
+    AliInfo(Form("Booking histo %s",name.Data()));
+
+    h = new TH2D (name.Data(), Form("V0 vs Ntracks (%s)",kHistoPrefix[id]), 300,0,3000, 300, 0, 20000);			 
+
+    TH1::AddDirectory(oldStatus);
+    fList->Add(h);
+
+
+  }
+  return h;
+  
+
+}
+
 
 TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoMult(Histo_t id) {
   // Returns a 3D histo of Pt/eta/vtx. It it does not exist, books it.

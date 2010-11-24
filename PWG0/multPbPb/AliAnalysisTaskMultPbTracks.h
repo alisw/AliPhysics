@@ -18,7 +18,7 @@ class AliESDEvent;
 class AliESDtrackCuts;
 class AliAnalysisMultPbCentralitySelector;
 class AliAnalysisMultPbTrackHistoManager;
-
+class AliTriggerAnalysis;
 
 
 class AliAnalysisTaskMultPbTracks : public AliAnalysisTaskSE {
@@ -60,6 +60,8 @@ private:
   UInt_t fOfflineTrigger ; // offline trigger mask
   Bool_t fIsMC; // true if processing montecarlo
   Bool_t fIsTPCOnly; // if you only want to use TPC tracks
+  AliTriggerAnalysis * fTriggerAnalysis; // for offline triggers
+
 
   AliAnalysisTaskMultPbTracks& operator=(const AliAnalysisTaskMultPbTracks& task);
   
