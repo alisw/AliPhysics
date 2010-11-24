@@ -30,7 +30,7 @@ class AliAnalysisMultPbCentralitySelector : public AliAnalysisCuts
 {
 public:
 
-  AliAnalysisMultPbCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fFile1(""), fFile2(""), fUseMultRange(kFALSE), fUseV0CutRange(kFALSE) {;}
+  AliAnalysisMultPbCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fFile1(""), fFile2(""), fUseMultRange(kFALSE), fUseV0CutRange(kFALSE), fUseCorrV0(kTRUE), fUseSPDOuterRange(kFALSE) {;}
   virtual ~AliAnalysisMultPbCentralitySelector(){}
     
   // AliAnalysisCuts interface
@@ -44,10 +44,14 @@ public:
   void SetMultRange(Int_t multMin = 0, Int_t multMax=10000) { fMultMin = multMin; fMultMax = multMax; }
   void SetUseMultRange(Bool_t flag = kTRUE) {fUseMultRange = flag;}
   void SetUseV0Range(Bool_t flag = kTRUE) {fUseV0CutRange = flag;}
+  void SetUseCorrV0(Bool_t flag) { fUseCorrV0 = flag;}
   void SetUseSPDOuterRange(Bool_t flag = kTRUE) {fUseSPDOuterRange = flag;}
   void SetCentralityEstimator(const char * estimator) { fCentrEstimator = estimator; }
   void SetCentralityBin(Int_t bin) { fCentrBin = bin; }
   void SetCentrTaskFiles(const char * file1, const char * file2) { fFile1 = file1; fFile2 = file2; }
+
+
+  Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc) const ;
   virtual void Print(Option_t* option = "") const ;
   virtual Long64_t Merge(TCollection* list){list->GetEntries();return 0;}
   
@@ -61,6 +65,7 @@ protected:
   TString fFile2; // file used by centrality task. Set here for bookkeeping
   Bool_t fUseMultRange; // if true, use track bins rather than multiplicity estimator
   Bool_t fUseV0CutRange; // if true, use v0 range rather than multiplicity estimator
+  Bool_t fUseCorrV0; // linearized V0
   Bool_t fUseSPDOuterRange; // if true, use SPD outer cluster range rather than multiplicity estimator
 
   ClassDef(AliAnalysisMultPbCentralitySelector, 3)

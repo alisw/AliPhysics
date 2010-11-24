@@ -156,8 +156,8 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     cout << "Init in CAF mode" << endl;
     
     gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-    //    TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
-    TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");
+    TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
+    //    TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");
     
     // Enable the needed package
     gProof->UploadPackage("$ALICE_ROOT/STEERBase");

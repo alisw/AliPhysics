@@ -20,6 +20,7 @@
 #include "AliMultiplicity.h"
 #include <iostream>
 #include "AliAnalysisMultPbCentralitySelector.h"
+#include "AliTriggerAnalysis.h"
 
 using namespace std;
 
@@ -27,7 +28,7 @@ ClassImp(AliAnalysisTaskMultPbTracks)
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 : AliAnalysisTaskSE("TaskMultPbTracks"),
-  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0)
+  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
 {
   // constructor
 
@@ -41,7 +42,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 }
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0)
+    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
 {
   //
   // Standard constructur which should be used
@@ -57,7 +58,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
 }
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMultPbTracks& obj) : 
-  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0)
+  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
 {
   //copy ctor
   fESD = obj.fESD ;
@@ -67,6 +68,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMu
   fCentrSelector = obj.fCentrSelector;
   fIsMC = obj.fIsMC;
   fIsTPCOnly = obj.fIsTPCOnly;
+  fTriggerAnalysis = obj.fTriggerAnalysis;
 
 }
 
@@ -77,6 +79,8 @@ AliAnalysisTaskMultPbTracks::~AliAnalysisTaskMultPbTracks(){
     if(fHistoManager) {
       delete fHistoManager;
       fHistoManager = 0;
+      delete fTriggerAnalysis;
+      fTriggerAnalysis=0;
     }
   }
   // Histo list should not be destroyed: fListWrapper is owner!
@@ -94,6 +98,8 @@ void AliAnalysisTaskMultPbTracks::UserCreateOutputObjects()
   fTrackCutsNoDCA->SetMaxDCAToVertexZ ();
   fTrackCutsNoDCA->SetMaxDCAToVertexXYPtDep();
   fTrackCutsNoDCA->SetMaxDCAToVertexZPtDep();
+
+  fTriggerAnalysis = new AliTriggerAnalysis();
 
 }
 
@@ -227,16 +233,27 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   // Quality cut on vertexer Z, as suggested by Francesco Prino
   if(vtxESD->IsFromVertexerZ()) {
     if (vtxESD->GetNContributors() <= 0) return;
-    if (vtxESD->GetDispersion() >= 0.04) return;
-    if (vtxESD->GetZRes() >= 0.25) return;
+    if (vtxESD->GetDispersion() > 0.04) return;
+    if (vtxESD->GetZRes() > 0.25) return;
   }
   // "Beam gas" vertex cut
   const AliESDVertex * vtxESDTPC= fESD->GetPrimaryVertexTPC(); 
   if(vtxESDTPC->GetNContributors()<1) return;
-  if (vtxESDTPC->GetNContributors()<(-10.+0.25*fESD->GetMultiplicity()->GetNumberOfITSClusters(0)))     return;
+  if (vtxESDTPC->GetNContributors()<(-10.+0.25*fESD->GetMultiplicity()->GetNumberOfITSClusters(0)))     return;  
 
-  // Fill vertex and statistics
+  // Fill  statistics
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatVtx);
+  
+  // ZDC cut, only ZNs
+   Bool_t zdcA   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kASide, kTRUE, kFALSE) ; 
+   Bool_t zdcC   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kCSide, kTRUE, kFALSE) ;			
+
+   if (!(zdcA && zdcC)) return;
+  fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatZDCCut);
+
+  
+  // Fill Vertex
+
   fHistoManager->GetHistoVzEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(vtxESD->GetZ());
 
   // loop on tracks
@@ -369,6 +386,8 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   //  cout << acceptedTracks << endl;
   
   hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]  ->Fill(acceptedTracks);
+  Float_t v0;
+  fHistoManager->GetHistoV0vsNtracks(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(acceptedTracks, fCentrSelector->GetCorrV0(fESD,v0));
   // FIXME
   //  hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]  ->Fill(fESD->GetMultiplicity()->GetNumberOfTracklets());
 

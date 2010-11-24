@@ -210,8 +210,10 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
     Double_t  zPCEnergy = esdZDC->GetZDCP1Energy();
     Double_t  zNAEnergy = esdZDC->GetZDCN2Energy();
     Double_t  zPAEnergy = esdZDC->GetZDCP2Energy();
-    zdcA = (zNAEnergy>minEnergy || zPAEnergy>minEnergy);
-    zdcC = (zNCEnergy>minEnergy || zPCEnergy>minEnergy);
+    // zdcA = (zNAEnergy>minEnergy || zPAEnergy>minEnergy);
+    // zdcC = (zNCEnergy>minEnergy || zPCEnergy>minEnergy);
+    zdcA = (zNAEnergy>minEnergy);
+    zdcC = (zNCEnergy>minEnergy);
   }
 
 

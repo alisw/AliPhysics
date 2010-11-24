@@ -30,6 +30,7 @@ etaMin=-0.5
 etaMax=0.5
 npart=381.188
 weakFactor=-1
+useSingleBin=kTRUE
 
 give_help() {
 
@@ -55,7 +56,22 @@ Available options:
                                   grid or a text file with a ESD per line
                                 - caf mode: a dataset
                                 - grid mode: a directory on alien
+  -h                           This help
  Options specific to the multiplicity analysis
+  -l                           Run over all centrality bins
+  -o <option>                  Misc option [default=$option]
+                               Available options: 
+                                - SAVE:     Move results to a different output folder*
+                                - DCA:      Use DCA cut with global tracks
+                                - ITSsa:    Use ITSsa tracks
+                                - TPC:      Use TPC only tracks
+                                - NOMCKINE: Skip MC kinematics (runs way faster)
+                                * == can be used in trigger studies task
+  -t <option>                  Command line option for root [defaul=$ropt]
+  -m                           Use this to run on Monte Carlo
+  -x  <suffix>                 Set a custom suffix in the histo manager        
+  -g                           Debug mode
+  == The following options are only valid if running on a single bin ==
   -b <bin>                     Set centrality bin [default=$centrBin]
   -e <estimator>               Set centrality estimator [default=$centrEstimator]
                                Available choiches:
@@ -73,19 +89,6 @@ Available options:
                                estimator [off by default]
   -2 <min,max>                 Select centrality based on SPD outer layer clusters  rather than on centrality
                                estimator [off by default]
-  -o <option>                  Misc option [default=$option]
-                               Available options: 
-                                - SAVE:     Move results to a different output folder*
-                                - DCA:      Use DCA cut with global tracks
-                                - ITSsa:    Use ITSsa tracks
-                                - TPC:      Use TPC only tracks
-                                - NOMCKINE: Skip MC kinematics (runs way faster)
-                                * == can be used in trigger studies task
-  -t <option>                  Command line option for root [defaul=$ropt]
-  -m                           Use this to run on Monte Carlo
-  -x  <suffix>                 Set a custom suffix in the histo manager        
-  -g                           Debug mode
-  -h                           This help
 
  Options specific to the trigger study task
   -k <ntracklets>              Max number of tracklets to fill eta and pt 
@@ -100,11 +103,14 @@ ENDOFGUIDE
 
 }
 
-while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:" opt; do
+while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:l" opt; do
   case $opt in
     r)
       run=yes
       runmode=$OPTARG
+      ;;      
+    l)
+      useSingleBin=kFALSE
       ;;      
     y)
       useTrackCentralityCut=1
@@ -208,7 +214,7 @@ if [ "$run" = "yes" ]
 	then
 	root $ropt runTriggerStudy.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$ntrackletsTrigger,$rejectBGV0Trigger,\"$option\",$workers\)
     else
-	root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",$useTrackCentralityCut,$trackMin,$trackMax,\"$option\",\"$customSuffix\",$workers\)
+	root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",$useTrackCentralityCut,$trackMin,$trackMax,\"$option\",\"$customSuffix\",$workers,$useSingleBin\)
     fi
 fi
 
