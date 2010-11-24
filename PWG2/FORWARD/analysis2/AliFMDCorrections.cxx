@@ -147,20 +147,20 @@ AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
 
 //____________________________________________________________________
 void
-AliFMDCorrections::ScaleHistograms(Int_t nEvents)
+AliFMDCorrections::ScaleHistograms(TList* dir, Int_t nEvents)
 {
   if (nEvents <= 0) return;
+  TList* d = static_cast<TList*>(dir->FindObject(GetName()));
+  if (!d) return;
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
-  while ((o = static_cast<RingHistos*>(next()))) {
-    o->fDensity->Scale(1. / nEvents);
-  }
+  while ((o = static_cast<RingHistos*>(next())))
+    o->ScaleHistograms(d, nEvents);
 }
-
 //____________________________________________________________________
 void
-AliFMDCorrections::Output(TList* dir)
+AliFMDCorrections::DefineOutput(TList* dir)
 {
   TList* d = new TList;
   d->SetName(GetName());
@@ -174,15 +174,13 @@ AliFMDCorrections::Output(TList* dir)
 
 //====================================================================
 AliFMDCorrections::RingHistos::RingHistos()
-  : fDet(0),
-    fRing('\0'),
+  : AliForwardUtil::RingHistos(), 
     fDensity(0)
 {}
 
 //____________________________________________________________________
 AliFMDCorrections::RingHistos::RingHistos(UShort_t d, Char_t r)
-  : fDet(d), 
-    fRing(r),
+  : AliForwardUtil::RingHistos(d,r), 
     fDensity(0)
 {
   fDensity = new TH2D(Form("FMD%d%c_Primary_Density", d, r), 
@@ -196,9 +194,7 @@ AliFMDCorrections::RingHistos::RingHistos(UShort_t d, Char_t r)
 }
 //____________________________________________________________________
 AliFMDCorrections::RingHistos::RingHistos(const RingHistos& o)
-  : TObject(o), 
-    fDet(o.fDet), 
-    fRing(o.fRing),
+  : AliForwardUtil::RingHistos(o), 
     fDensity(o.fDensity)
 {}
 
@@ -206,8 +202,7 @@ AliFMDCorrections::RingHistos::RingHistos(const RingHistos& o)
 AliFMDCorrections::RingHistos&
 AliFMDCorrections::RingHistos::operator=(const RingHistos& o)
 {
-  fDet  = o.fDet;
-  fRing = o.fRing;
+  AliForwardUtil::RingHistos::operator=(o);
   
   if (fDensity) delete fDensity;
   
@@ -225,10 +220,19 @@ AliFMDCorrections::RingHistos::~RingHistos()
 void
 AliFMDCorrections::RingHistos::Output(TList* dir)
 {
-  TList* d = new TList;
-  d->SetName(Form("FMD%d%c", fDet, fRing)); 
+  TList* d = DefineOutputList(dir);
   d->Add(fDensity);
-  dir->Add(d);
+}
+
+//____________________________________________________________________
+void
+AliFMDCorrections::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
+{ 
+  TList* l = GetOutputList(dir);
+  if (!l) return; 
+
+  TH1* density = GetOutputHist(l,Form("%s_Primary_Density", fName.Data()));
+  if (density) density->Scale(1./nEvents);
 }
 
 //____________________________________________________________________

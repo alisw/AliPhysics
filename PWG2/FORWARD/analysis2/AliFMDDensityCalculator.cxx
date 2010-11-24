@@ -217,20 +217,21 @@ AliFMDDensityCalculator::AcceptanceCorrection(Char_t r, UShort_t t) const
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::ScaleHistograms(Int_t nEvents)
+AliFMDDensityCalculator::ScaleHistograms(TList* dir, Int_t nEvents)
 {
   if (nEvents <= 0) return;
+  TList* d = static_cast<TList*>(dir->FindObject(GetName()));
+  if (!d) return;
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
-  while ((o = static_cast<RingHistos*>(next()))) {
-    o->fDensity->Scale(1. / nEvents);
-  }
+  while ((o = static_cast<RingHistos*>(next())))
+    o->ScaleHistograms(d, nEvents);
 }
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::Output(TList* dir)
+AliFMDDensityCalculator::DefineOutput(TList* dir)
 {
   TList* d = new TList;
   d->SetName(GetName());
@@ -244,8 +245,7 @@ AliFMDDensityCalculator::Output(TList* dir)
 
 //====================================================================
 AliFMDDensityCalculator::RingHistos::RingHistos()
-  : fDet(0),
-    fRing('\0'),
+  : AliForwardUtil::RingHistos(),
     fEvsN(0), 
     fEvsM(0), 
     fDensity(0)
@@ -253,19 +253,18 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
 
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
-  : fDet(d), 
-    fRing(r),
+  : AliForwardUtil::RingHistos(d,r),
     fEvsN(0), 
     fEvsM(0),
     fDensity(0)
 {
-  fEvsN = new TH2D(Form("FMD%d%c_Eloss_N_nocorr", d, r), 
+  fEvsN = new TH2D(Form("%s_Eloss_N_nocorr", fName.Data()), 
 		   Form("Energy loss vs uncorrected inclusive "
-			"N_{ch} in FMD%d%c", d, r), 
+			"N_{ch} in %s", fName.Data()), 
 		   100, -.5, 24.5, 100, -.5, 24.5);
-  fEvsM = new TH2D(Form("FMD%d%c_Eloss_N_corr", d, r), 
-		   Form("Energy loss vs corrected inclusive N_{ch} in FMD%d%c",
-			d, r), 100, -.5, 24.5, 100, -.5, 24.5);
+  fEvsM = new TH2D(Form("%s_Eloss_N_corr", fName.Data()), 
+		   Form("Energy loss vs corrected inclusive N_{ch} in %s",
+			fName.Data()), 100, -.5, 24.5, 100, -.5, 24.5);
   fEvsN->SetXTitle("#Delta E/#Delta E_{mip}");
   fEvsN->SetYTitle("Inclusive N_{ch} (uncorrected)");
   fEvsN->Sumw2();
@@ -275,8 +274,8 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fEvsM->Sumw2();
   fEvsM->SetDirectory(0);
 
-  fDensity = new TH2D(Form("FMD%d%c_Incl_Density", d, r), 
-		      Form("in FMD%d%c", d, r), 
+  fDensity = new TH2D(Form("%s_Incl_Density", fName.Data()), 
+		      Form("Inclusive N_{ch} densitu in %s", fName.Data()), 
 		      200, -4, 6, (r == 'I' || r == 'i' ? 20 : 40), 
 		      0, 2*TMath::Pi());
   fDensity->SetDirectory(0);
@@ -286,9 +285,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
 }
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
-  : TObject(o), 
-    fDet(o.fDet), 
-    fRing(o.fRing), 
+  : AliForwardUtil::RingHistos(o), 
     fEvsN(o.fEvsN), 
     fEvsM(o.fEvsM),
     fDensity(o.fDensity)
@@ -298,8 +295,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
 AliFMDDensityCalculator::RingHistos&
 AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
 {
-  fDet  = o.fDet;
-  fRing = o.fRing;
+  AliForwardUtil::RingHistos::operator=(o);
   
   if (fEvsN)    delete  fEvsN;
   if (fEvsM)    delete  fEvsM;
@@ -323,12 +319,21 @@ AliFMDDensityCalculator::RingHistos::~RingHistos()
 void
 AliFMDDensityCalculator::RingHistos::Output(TList* dir)
 {
-  TList* d = new TList;
-  d->SetName(Form("FMD%d%c", fDet, fRing)); 
+  TList* d = DefineOutputList(dir);
   d->Add(fEvsN);
   d->Add(fEvsM);
   d->Add(fDensity);
-  dir->Add(d);
+}
+
+//____________________________________________________________________
+void
+AliFMDDensityCalculator::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
+{
+  TList* l = GetOutputList(dir);
+  if (!l) return; 
+
+  TH1* density = GetOutputHist(l,Form("%s_Incl_Density", fName.Data()));
+  if (density) density->Scale(1./nEvents);
 }
 
 //____________________________________________________________________

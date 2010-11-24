@@ -73,13 +73,13 @@ public:
    * 
    * @param nEvents Number of events 
    */
-  void ScaleHistograms(Int_t nEvents);
+  void ScaleHistograms(TList* dir, Int_t nEvents);
   /** 
    * Output diagnostic histograms to directory 
    * 
    * @param dir List to write in
    */  
-  void Output(TList* dir);
+  void DefineOutput(TList* dir);
 protected:
   /** 
    * Get the number of particles corresponding to the signal mult
@@ -130,7 +130,7 @@ protected:
   /** 
    * Internal data structure to keep track of the histograms
    */
-  struct RingHistos : public TObject 
+  struct RingHistos : public AliForwardUtil::RingHistos
   { 
     /** 
      * Default CTOR
@@ -162,11 +162,16 @@ protected:
      */
     ~RingHistos();
     void Output(TList* dir);
-    UShort_t  fDet;          // Detector
-    Char_t    fRing;         // Ring
+    /** 
+     * Scale the histograms to the total number of events 
+     * 
+     * @param nEvents Number of events 
+     */
+    void ScaleHistograms(TList* dir, Int_t nEvents);
     TH2D*     fEvsN;         // Correlation of Eloss vs uncorrected Nch
     TH2D*     fEvsM;         // Correlation of Eloss vs corrected Nch
     TH2D*     fDensity;      // Distribution inclusive Nch
+    ClassDef(RingHistos,1);
   };
   /** 
    * Get the ring histogram container 

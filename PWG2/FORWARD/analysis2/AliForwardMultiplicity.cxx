@@ -111,7 +111,7 @@ AliForwardMultiplicity::InitializeSubs()
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   pars->Init(kTRUE);
 
-  fHEventsTr = new TH1I("nEvents", "Number of events w/trigger", 
+  fHEventsTr = new TH1I("nEventsTr", "Number of events w/trigger", 
 		      pars->GetNvtxBins(), 
 		      -pars->GetVtxCutZ(), 
 		      pars->GetVtxCutZ());
@@ -120,6 +120,7 @@ AliForwardMultiplicity::InitializeSubs()
   fHEventsTr->SetFillColor(kRed+1);
   fHEventsTr->SetFillStyle(3001);
   fHEventsTr->SetDirectory(0);
+  fList->Add(fHEventsTr);
   // fHEventsTr->Sumw2();
 
   fHEventsTrVtx = new TH1I("nEventsTrVtx", 
@@ -132,6 +133,7 @@ AliForwardMultiplicity::InitializeSubs()
   fHEventsTrVtx->SetFillColor(kBlue+1);
   fHEventsTrVtx->SetFillStyle(3001);
   fHEventsTrVtx->SetDirectory(0);
+  fList->Add(fHEventsTrVtx);
   // fHEventsTrVtx->Sumw2();
 
       
@@ -148,6 +150,7 @@ AliForwardMultiplicity::InitializeSubs()
   fHTriggers->GetXaxis()->SetBinLabel(6,"B");
   fHTriggers->GetXaxis()->SetBinLabel(7,"C");
   fHTriggers->GetXaxis()->SetBinLabel(8,"E");
+  fList->Add(fHTriggers);
 
   TAxis e(pars->GetNetaBins(), pars->GetEtaMin(), pars->GetEtaMax());
   fHistos.Init(e);
@@ -156,7 +159,8 @@ AliForwardMultiplicity::InitializeSubs()
   fHData = static_cast<TH2D*>(fAODFMD.GetHistogram().Clone("d2Ndetadphi"));
   fHData->SetStats(0);
   fHData->SetDirectory(0);
-  fSharingFilter.Init();
+  fList->Add(fHData);
+
   fHistCollector.Init(*(fHEventsTr->GetXaxis()));
 }
 
@@ -175,6 +179,10 @@ AliForwardMultiplicity::UserCreateOutputObjects()
     
   TObject* obj = &fAODFMD;
   ah->AddBranch("AliAODForwardMult", &obj);
+
+  fSharingFilter.DefineOutput(fList);
+  fDensityCalculator.DefineOutput(fList);
+  fCorrections.DefineOutput(fList);
 
   // fTree = new TTree("T", "T");
   // fTree->Branch("forward", &fAODFMD);
@@ -214,12 +222,14 @@ AliForwardMultiplicity::UserExec(Option_t*)
   fAODFMD.Clear();
 
   // Read trigger information from the ESD and store in AOD object
-  if (!ReadTriggers(esd)) { 
+  UInt_t triggers = 0;
+  if (!AliForwardUtil::ReadTriggers(esd, triggers, fHTriggers)) { 
 #ifdef VERBOSE
     AliWarning("Failed to read triggers from ESD");
 #endif
     return;
   }
+  fAODFMD.SetTriggerBits(triggers);
 
   // Mark this event for storage 
   MarkEventForStore();
@@ -245,7 +255,7 @@ AliForwardMultiplicity::UserExec(Option_t*)
 
   // Get the vertex information 
   Double_t vz   = 0;
-  Bool_t   vzOk = ReadVertex(esd, vz);
+  Bool_t   vzOk = AliForwardUtil::ReadVertex(esd, vz);
 
   fHEventsTr->Fill(vz);
   if (!vzOk) { 
@@ -306,41 +316,27 @@ AliForwardMultiplicity::Terminate(Option_t*)
     AliError("No output list defined");
     return;
   }
+  
+  // Get our histograms from the container 
+  TH1I* hEventsTr    = static_cast<TH1I*>(list->FindObject("nEventsTr"));
+  TH1I* hEventsTrVtx = static_cast<TH1I*>(list->FindObject("nEventsTrVtx"));
+  TH2D* hData        = static_cast<TH2D*>(list->FindObject("d2Ndetadphi"));
+  
+  
   // TH1D* dNdeta = fHData->ProjectionX("dNdeta", 0, -1, "e");
-  TH1D* dNdeta = fHData->ProjectionX("dNdeta", 1, -1, "e");
-  TH1D* norm   = fHData->ProjectionX("dNdeta", 0, 1,  "");
+  TH1D* dNdeta = hData->ProjectionX("dNdeta", 1, -1, "e");
+  TH1D* norm   = hData->ProjectionX("dNdeta", 0, 1,  "");
   dNdeta->SetTitle("dN_{ch}/d#eta in the forward regions");
   dNdeta->SetYTitle("#frac{1}{N}#frac{dN_{ch}}{d#eta}");
   dNdeta->Divide(norm);
   dNdeta->SetStats(0);
-  dNdeta->Scale(Double_t(fHEventsTrVtx->GetEntries())/fHEventsTr->GetEntries(),
+  dNdeta->Scale(Double_t(hEventsTrVtx->GetEntries())/hEventsTr->GetEntries(),
 		"width");
-
-  list->Add(fHEventsTr);
-  list->Add(fHEventsTrVtx);
-  list->Add(fHTriggers);
-  list->Add(fHData);
   list->Add(dNdeta);
   
-  TList* last = new TList;
-  last->SetName("LastEvent");
-  list->Add(last);
-  last->Add(&fAODFMD.GetHistogram());
-  last->Add(fHistos.fFMD1i);
-  last->Add(fHistos.fFMD2i);
-  last->Add(fHistos.fFMD2o);
-  last->Add(fHistos.fFMD3i);
-  last->Add(fHistos.fFMD3o);
-
-
-  fSharingFilter.ScaleHistograms(fHEventsTr->Integral());
-  fSharingFilter.Output(list);
-
-  fDensityCalculator.ScaleHistograms(fHEventsTrVtx->Integral());
-  fDensityCalculator.Output(list);
-
-  fCorrections.ScaleHistograms(fHEventsTrVtx->Integral());
-  fCorrections.Output(list);
+  fSharingFilter.ScaleHistograms(list,hEventsTr->Integral());
+  fDensityCalculator.ScaleHistograms(list,hEventsTrVtx->Integral());
+  fCorrections.ScaleHistograms(list,hEventsTrVtx->Integral());
 }
 
 //____________________________________________________________________
@@ -355,133 +351,6 @@ AliForwardMultiplicity::MarkEventForStore() const
     AliFatal("No AOD output handler set in analysis manager");
 
   ah->SetFillAOD(kTRUE);
-}
-//____________________________________________________________________
-Bool_t
-AliForwardMultiplicity::ReadTriggers(AliESDEvent* esd)
-{
-  // Get the analysis manager - should always be there 
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  if (!am) { 
-    AliWarning("No analysis manager defined!");
-    return kFALSE;
-  }
-
-  // Get the input handler - should always be there 
-  AliInputEventHandler* ih = 
-    static_cast<AliInputEventHandler*>(am->GetInputEventHandler());
-  if (!ih) { 
-    AliWarning("No input handler");
-    return kFALSE;
-  }
-  
-  // Get the physics selection - add that by using the macro 
-  // AddTaskPhysicsSelection.C 
-  AliPhysicsSelection* ps = 
-    static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
-  if (!ps) { 
-    AliWarning("No physics selection");
-    return kFALSE;
-  }
-  
-  // Check if this is a collision candidate (INEL)
-  Bool_t inel = ps->IsCollisionCandidate(esd);
-  if (inel) { 
-    fAODFMD.SetTriggerBits(AliAODForwardMult::kInel);
-    fHTriggers->Fill(.5);
-  }
-  
-
-  // IF this is inel, see if we have a tracklet 
-  if (inel) { 
-    const AliMultiplicity* spdmult = esd->GetMultiplicity();
-    if (!spdmult) {
-      AliWarning("No SPD multiplicity");
-    }
-    else { 
-      Int_t n = spdmult->GetNumberOfTracklets();
-      for (Int_t j = 0; j < n; j++) { 
-	if(TMath::Abs(spdmult->GetEta(j)) < 1) { 
-	  fAODFMD.SetTriggerBits(AliAODForwardMult::kInelGt0);
-	  fHTriggers->Fill(1.5);
-	  break;
-	}
-      }
-    }
-  }
-
-  // Analyse some trigger stuff 
-  AliTriggerAnalysis ta;
-  if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kNSD1)) {
-    fAODFMD.SetTriggerBits(AliAODForwardMult::kNSD);
-    fHTriggers->Fill(2.5);
-  }
-
-  // Get trigger stuff 
-  TString triggers = esd->GetFiredTriggerClasses();
-  if (triggers.Contains("CBEAMB-ABCE-NOPF-ALL")) {
-    fAODFMD.SetTriggerBits(AliAODForwardMult::kEmpty);
-    fHTriggers->Fill(3.5);
-  }
-
-  if (triggers.Contains("CINT1A-ABCE-NOPF-ALL")) {
-    fAODFMD.SetTriggerBits(AliAODForwardMult::kA);
-    fHTriggers->Fill(4.5);
-  }
-
-  if (triggers.Contains("CINT1B-ABCE-NOPF-ALL")) {
-    fAODFMD.SetTriggerBits(AliAODForwardMult::kB);
-    fHTriggers->Fill(5.5);
-  }
-
-
-  if (triggers.Contains("CINT1C-ABCE-NOPF-ALL")) {
-    fAODFMD.SetTriggerBits(AliAODForwardMult::kC);
-    fHTriggers->Fill(6.5);
-  }
-
-  if (triggers.Contains("CINT1-E-NOPF-ALL")) {
-    fAODFMD.SetTriggerBits(AliAODForwardMult::kE);
-    fHTriggers->Fill(7.5);
-  }
-
-  return kTRUE;
-}
-//____________________________________________________________________
-Bool_t
-AliForwardMultiplicity::ReadVertex(AliESDEvent* esd, Double_t& vz)
-{
-  // Get the vertex 
-  const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
-  if (!vertex) { 
-#ifdef VERBOSE
-    AliWarning("No SPD vertex found in ESD");
-#endif
-    return kFALSE;
-  }
-
-  // Check that enough tracklets contributed 
-  if(vertex->GetNContributors() <= 0) {
-#ifdef VERBOSE
-    AliWarning(Form("Number of contributors to vertex is %d<=0",
-		    vertex->GetNContributors()));
-#endif
-    return kFALSE;
-  }
-
-  // Check that the uncertainty isn't too large 
-  if (vertex->GetZRes() > 0.1) { 
-#ifdef VERBOSE
-    AliWarning(Form("Uncertaintity in Z of vertex is too large %f > 0.1", 
-		    vertex->GetZRes()));
-#endif
-    return kFALSE;
-  }
-
-  // Get the z coordiante 
-  vz = vertex->GetZ();
-	       
-  return kTRUE;
 }
 
 //____________________________________________________________________

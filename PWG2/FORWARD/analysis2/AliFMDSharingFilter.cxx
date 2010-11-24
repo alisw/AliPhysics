@@ -324,21 +324,21 @@ AliFMDSharingFilter::DeAngleCorrect(Double_t mult, Double_t eta) const
 
 //____________________________________________________________________
 void
-AliFMDSharingFilter::ScaleHistograms(Int_t nEvents)
+AliFMDSharingFilter::ScaleHistograms(TList* dir, Int_t nEvents)
 {
   if (nEvents <= 0) return;
+  TList* d = static_cast<TList*>(dir->FindObject(GetName()));
+  if (!d) return;
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
-  while ((o = static_cast<RingHistos*>(next()))) {
-    o->fBefore->Scale(1. / nEvents);
-    o->fAfter->Scale(1. / nEvents);
-  }
+  while ((o = static_cast<RingHistos*>(next())))
+    o->ScaleHistograms(d, nEvents);
 }
 
 //____________________________________________________________________
 void
-AliFMDSharingFilter::Output(TList* dir)
+AliFMDSharingFilter::DefineOutput(TList* dir)
 {
   TList* d = new TList;
   d->SetName(GetName());
@@ -353,8 +353,7 @@ AliFMDSharingFilter::Output(TList* dir)
   
 //====================================================================
 AliFMDSharingFilter::RingHistos::RingHistos()
-  : fDet(0),
-    fRing('\0'),
+  : AliForwardUtil::RingHistos(), 
     fBefore(0), 
     fAfter(0), 
     fHits(0),
@@ -363,19 +362,18 @@ AliFMDSharingFilter::RingHistos::RingHistos()
 
 //____________________________________________________________________
 AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
-  : fDet(d), 
-    fRing(r),
+  : AliForwardUtil::RingHistos(d,r), 
     fBefore(0), 
     fAfter(0),
     fHits(0),
     fNHits(0)
 {
-  fBefore = new TH1D(Form("FMD%d%c_ESD_Eloss", d, r), 
-		     Form("Energy loss in FMD%d%c (reconstruction)", d, r), 
+  fBefore = new TH1D(Form("%s_ESD_Eloss", fName.Data()), 
+		     Form("Energy loss in %s (reconstruction)", fName.Data()), 
 		     1000, 0, 25);
-  fAfter  = new TH1D(Form("FMD%d%c_Ana_Eloss", d, r), 
-		     Form("Energy loss in FMD%d%c (sharing corrected)", d, r), 
-		     1000, 0, 25);
+  fAfter  = new TH1D(Form("%s_Ana_Eloss", fName.Data()), 
+		     Form("Energy loss in %s (sharing corrected)",
+			  fName.Data()), 1000, 0, 25);
   fBefore->SetXTitle("#Delta E/#Delta E_{mip}");
   fBefore->SetYTitle("P(#Delta E/#Delta E_{mip})");
   fBefore->SetFillColor(kRed+1);
@@ -389,8 +387,8 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   // fAfter->Sumw2();
   fAfter->SetDirectory(0);
 
-  fHits = new TH1D(Form("FMD%d%c_Hits", d, r), 
-		   Form("Number of hits in FMD%d%c", d, r), 
+  fHits = new TH1D(Form("%s_Hits", fName.Data()), 
+		   Form("Number of hits in %s", fName.Data()), 
 		   200, 0, 200000);
   fHits->SetDirectory(0);
   fHits->SetXTitle("# of hits");
@@ -398,9 +396,7 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
 }
 //____________________________________________________________________
 AliFMDSharingFilter::RingHistos::RingHistos(const RingHistos& o)
-  : TObject(o), 
-    fDet(o.fDet), 
-    fRing(o.fRing), 
+  : AliForwardUtil::RingHistos(o), 
     fBefore(o.fBefore), 
     fAfter(o.fAfter),
     fHits(o.fHits),
@@ -411,6 +407,7 @@ AliFMDSharingFilter::RingHistos::RingHistos(const RingHistos& o)
 AliFMDSharingFilter::RingHistos&
 AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
 {
+  AliForwardUtil::RingHistos::operator=(o);
   fDet = o.fDet;
   fRing = o.fRing;
   
@@ -440,10 +437,24 @@ AliFMDSharingFilter::RingHistos::Finish()
 
 //____________________________________________________________________
 void
+AliFMDSharingFilter::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
+{
+  TList* l = GetOutputList(dir);
+  if (!l) return; 
+
+  TH1D* before = static_cast<TH1D*>(l->FindObject(Form("%s_ESD_ELoss",
+						       fName.Data())));
+  TH1D* after  = static_cast<TH1D*>(l->FindObject(Form("%s_Ana_ELoss",
+						       fName.Data())));
+  if (before) before->Scale(1./nEvents);
+  if (after)  after->Scale(1./nEvents);
+}
+
+//____________________________________________________________________
+void
 AliFMDSharingFilter::RingHistos::Output(TList* dir)
 {
-  TList* d = new TList;
-  d->SetName(Form("FMD%d%c", fDet, fRing)); 
+  TList* d = DefineOutputList(dir);
   d->Add(fBefore);
   d->Add(fAfter);
   d->Add(fHits);

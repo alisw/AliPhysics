@@ -3,6 +3,7 @@
 #include <TNamed.h>
 #include <TH2.h>
 #include <TList.h>
+#include "AliForwardUtil.h"
 class AliESDFMD;
 class TAxis;
 class TList;
@@ -65,11 +66,6 @@ public:
   AliFMDSharingFilter& operator=(const AliFMDSharingFilter& o);
 
   /** 
-   * Initialise the filter 
-   * 
-   */
-  void   Init() {}
-  /** 
    * Set the low cut used for sharing 
    * 
    * @param lowCut Low cut
@@ -103,14 +99,21 @@ public:
    * 
    * @param nEvents Number of events 
    */
-  void ScaleHistograms(Int_t nEvents);
+  void ScaleHistograms(TList* dir, Int_t nEvents);
   
-  void Output(TList* dir);
+  /** 
+   * Define the output histograms.  These are put in a sub list of the
+   * passed list.   The histograms are merged before the parent task calls 
+   * AliAnalysisTaskSE::Terminate 
+   * 
+   * @param dir Directory to add to 
+   */
+  void DefineOutput(TList* dir);
 protected:
   /** 
    * Internal data structure to keep track of the histograms
    */
-  struct RingHistos : public TObject 
+  struct RingHistos : public AliForwardUtil::RingHistos
   { 
     /** 
      * Default CTOR
@@ -144,17 +147,21 @@ protected:
     /** 
      * Initialise this object 
      */
-    void Init() {} 
     void Clear(const Option_t* ="") { fNHits = 0; } 
     void Incr() { fNHits++; } 
     void Finish(); 
     void Output(TList* dir);
-    UShort_t  fDet;          // Detector
-    Char_t    fRing;         // Ring
+    /** 
+     * Scale the histograms to the total number of events 
+     * 
+     * @param nEvents Number of events 
+     */
+    void ScaleHistograms(TList* dir, Int_t nEvents);
     TH1D*     fBefore;       // Distribution of signals before filter
     TH1D*     fAfter;        // Distribution of signals after filter
     TH1D*     fHits;         // Distribution of hit strips. 
     Int_t     fNHits;        // Number of hit strips per event
+    ClassDef(RingHistos,1);
   };
   /** 
    * Get the ring histogram container 
