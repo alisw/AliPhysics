@@ -23,6 +23,7 @@
 //  - libMUONbase.so
 //  - libMUONrec.so
 //  - libCORRFW.so
+//  - libPWG3base.so
 //  - libPWG3muondep.so
 //
 // It also needs to load magnetic field, mapping, geometry (+alignment), and reconstruction parameters from the OCDB
@@ -59,7 +60,7 @@ void RunMuonResolution(TString smode = "local", TString inputFileName = "AliESDs
   /// - nevents = maximum number of processed events
   
   // Load libraries locally
-  TString extraLibs = "RAWDatabase:CDB:STEER:MUONcore:MUONmapping:MUONcalib:MUONgeometry:MUONtrigger:MUONraw:MUONbase:MUONrec:CORRFW:PWG3muondep";
+  TString extraLibs = "RAWDatabase:CDB:STEER:MUONcore:MUONmapping:MUONcalib:MUONgeometry:MUONtrigger:MUONraw:MUONbase:MUONrec:CORRFW:PWG3base:PWG3muondep";
   LoadAlirootLocally(extraLibs);
   
   // compile analysis macro locally
@@ -97,12 +98,11 @@ void LoadAlirootLocally(TString& extraLibs)
   // Load lib for final mchview display
   gSystem->Load("libMUONgraphics");
   
-  // Use AliRoot includes and compile our task
+  // Add AliRoot includes to compile the macro
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   gROOT->ProcessLine(".include $ALICE_ROOT/MUON");
   gROOT->ProcessLine(".include $ALICE_ROOT/MUON/mapping");
   gROOT->ProcessLine(".include $ALICE_ROOT/ANALYSIS/macros");
-  gROOT->ProcessLine(".include $ALICE_ROOT/PWG3/muondep");
   
 }
 

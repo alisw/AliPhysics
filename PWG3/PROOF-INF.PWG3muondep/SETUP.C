@@ -31,6 +31,7 @@ void SETUP()
     CheckLoadLibrary("libMUONbase");
     CheckLoadLibrary("libMUONrec");
 
+    CheckLoadLibrary("libPWG3base");
     CheckLoadLibrary("libPWG3muondep");
 
    // Set the include paths
