@@ -1,8 +1,12 @@
 #ifndef ALIROOT_PWG2_FORWARD_ALIFORWARDUTIL_H
 #define ALIROOT_PWG2_FORWARD_ALIFORWARDUTIL_H
 #include <TObject.h>
+#include <TString.h>
 class TH2D;
+class TH1I;
+class TH1;
 class TAxis;
+class AliESDEvent;
 
 /** 
  * Utilities used in the forward multiplcity analysis 
@@ -11,7 +15,29 @@ class TAxis;
  */
 class AliForwardUtil : public TObject
 {
- public:
+public:
+  /** 
+   * Read the trigger information from the ESD event 
+   * 
+   * @param esd        ESD event 
+   * @param triggers   On return, contains the trigger bits 
+   * @param hTriggers  Histogram to fill 
+   * 
+   * @return @c true on success, @c false otherwise 
+   */
+  static Bool_t ReadTriggers(AliESDEvent* esd, UInt_t& triggers, 
+			     TH1I* hTriggers);
+  /** 
+   * Read the vertex information from the ESD event 
+   * 
+   * @param esd  ESD event 
+   * @param vz   On return, the vertex Z position 
+   * 
+   * @return @c true on success, @c false otherwise 
+   */
+  static Bool_t ReadVertex(AliESDEvent* esd, Double_t& vz,
+			   Double_t maxErr=0.1);
+  //__________________________________________________________________
   /** 
    * Structure to hold histograms 
    *
@@ -85,8 +111,39 @@ class AliForwardUtil : public TObject
     TH2D* fFMD2o; // Histogram for FMD2o
     TH2D* fFMD3i; // Histogram for FMD3i
     TH2D* fFMD3o; // Histogram for FMD3o
+
+    ClassDef(Histos,1) 
   };
 
+  //__________________________________________________________________
+  struct RingHistos : public TObject
+  {
+    RingHistos() : fDet(0), fRing('\0'), fName("") {}
+    RingHistos(UShort_t d, Char_t r) 
+      : fDet(d), fRing(r), fName(TString::Format("FMD%d%c", d, r)) 
+    {}
+    RingHistos(const RingHistos& o) 
+      : TObject(o), fDet(o.fDet), fRing(o.fRing), fName(o.fName)
+    {}
+    virtual ~RingHistos() {}
+    RingHistos& operator=(const RingHistos& o) 
+    {
+      TObject::operator=(o);
+      fDet  = o.fDet;
+      fRing = o.fRing;
+      fName = o.fName;
+      return *this;
+    }
+    TList* DefineOutputList(TList* d) const;
+    TList* GetOutputList(TList* d) const;
+    TH1* GetOutputHist(TList* d, const char* name) const;
+    UShort_t fDet; 
+    Char_t   fRing;
+    TString  fName;
+
+    ClassDef(RingHistos,1) 
+  };
+    
 };
 
 #endif

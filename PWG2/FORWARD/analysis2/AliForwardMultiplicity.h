@@ -1,5 +1,5 @@
-#ifndef ALIROOT_PWG2_FORWARD_ALIFORWARDMULTIPLICTY_H
-#define ALIROOT_PWG2_FORWARD_ALIFORWARDMULTIPLICTY_H
+#ifndef ALIROOT_PWG2_FORWARD_ALIFORWARDMULTIPLICITY_H
+#define ALIROOT_PWG2_FORWARD_ALIFORWARDMULTIPLICITY_H
 #include <AliAnalysisTaskSE.h>
 #include "AliForwardUtil.h"
 #include "AliFMDSharingFilter.h"
@@ -135,23 +135,6 @@ protected:
    * 
    */
   virtual void MarkEventForStore() const;
-  /** 
-   * Read the trigger information and store in output
-   * 
-   * @param esd ESD event object 
-   * 
-   * @return true in case of success 
-   */
-  virtual Bool_t ReadTriggers(AliESDEvent* esd); 
-  /** 
-   * Read the vertex information, and return the z coordinate 
-   * 
-   * @param esd ESD event object
-   * @param vz  On return, the z coordinate of the primary vertex
-   * 
-   * @return true on success 
-   */
-  virtual Bool_t ReadVertex(AliESDEvent* esd, Double_t& vz);
 
   TH1I*                  fHEventsTr;    // Histogram of events w/trigger
   TH1I*                  fHEventsTrVtx; // Events w/trigger and vertex 

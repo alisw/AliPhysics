@@ -10,7 +10,8 @@
  * @ingroup pwg2_forward_analysis_scripts
  */
 void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
-		Int_t nCutBins=1, Float_t correctionCut=0.1)
+		Int_t nCutBins=1, Float_t correctionCut=0.1, 
+		const char* mode="local")
 {
   gSystem->Load("libVMC");
   gSystem->Load("libTree");
@@ -70,14 +71,26 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
   // Run the analysis
     
   TStopwatch t;
-  if (mgr->InitAnalysis()) {
-    mgr->PrintStatus();
-    mgr->SetUseProgressBar(kTRUE);
-    t.Start();
-    mgr->StartAnalysis("local", chain, nEvents);
-    t.Stop();
-    t.Print();
-  }  
+  if (!mgr->InitAnalysis()) {
+    Error("RunManager", "Failed to initialize analysis train!");
+    return;
+  }
+  // Some informative output 
+  mgr->PrintStatus();
+  mgr->SetUseProgressBar(kTRUE);
+
+  // Write train to file - a test 
+  TDirectory* savDir = gDirectory;
+  TFile* file = TFile::Open("analysisTrain.root", "RECREATE");
+  mgr->Write();
+  file->Close();
+  savDir->cd();
+  
+  // Run the train 
+  t.Start();
+  mgr->StartAnalysis(mode, chain, nEvents);
+  t.Stop();
+  t.Print();
 }
 //
 // EOF
