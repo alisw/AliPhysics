@@ -119,7 +119,7 @@ void AliTOFPIDResponse::SetMomBoundary(){
   fPCutMin[10] = 3;  
 }
 //_________________________________________________________________________
-Float_t AliTOFPIDResponse::GetStartTime(Float_t mom) {
+Float_t AliTOFPIDResponse::GetStartTime(Float_t mom) const {
   //
   // Returns event_time value as estimated by TOF combinatorial algorithm
   //
@@ -129,7 +129,7 @@ Float_t AliTOFPIDResponse::GetStartTime(Float_t mom) {
 
 }
 //_________________________________________________________________________
-Float_t AliTOFPIDResponse::GetStartTimeRes(Float_t mom) {
+Float_t AliTOFPIDResponse::GetStartTimeRes(Float_t mom) const {
   //
   // Returns event_time resolution as estimated by TOF combinatorial algorithm
   //

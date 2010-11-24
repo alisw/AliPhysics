@@ -237,7 +237,7 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
   track->SetTOFpid(p);
 
   if (heavy) track->ResetStatus(AliESDtrack::kTOFpid);    
-  if (!CheckTOFMatching(track)) track->SetStatus(AliESDtrack::kTOFmismatch);    
+  if (!CheckTOFMatching(track)) track->SetStatus(AliESDtrack::kTOFmismatch);
   
 }
 //_________________________________________________________________________
@@ -307,10 +307,10 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
     Double_t exptimes[5];
     track->GetIntegratedTimes(exptimes);
     
-    Float_t dedx = track->GetTPCsignal();
-    Float_t time = track->GetTOFsignal();
-    
     Float_t p = track->P();
+    
+    Float_t dedx = track->GetTPCsignal();
+    Float_t time = track->GetTOFsignal() - fTOFResponse.GetStartTime(p);
     
     Double_t ptpc[3];
     track->GetInnerPxPyPz(ptpc);
@@ -324,7 +324,7 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
 	    Float_t dedxExp = fTPCResponse.GetExpectedSignal(momtpc,type);
 	    Float_t resolutionTPC = fTPCResponse.GetExpectedSigma(momtpc,track->GetTPCsignalN(),type);
 	    
-	    if(TMath::Abs(dedx - dedxExp) < fRange * resolutionTPC){
+	    if(TMath::Abs(dedx - dedxExp) < fRangeTOFMismatch * resolutionTPC){
 		status = kTRUE;
 	    }
 	}

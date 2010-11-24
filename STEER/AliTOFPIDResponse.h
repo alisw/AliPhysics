@@ -45,8 +45,8 @@ public:
   Float_t  GetT0binRes(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fT0resolution[ibin]; else return 0.0;};
 
   // Get Start Time for a track
-  Float_t  GetStartTime(Float_t mom);
-  Float_t  GetStartTimeRes(Float_t mom);
+  Float_t  GetStartTime(Float_t mom) const;
+  Float_t  GetStartTimeRes(Float_t mom) const;
 
  private:
   Double_t fSigma;        // intrinsic TOF resolution
