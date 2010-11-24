@@ -518,6 +518,24 @@ void AliESDMuonTrack::LorentzPUncorrected(TLorentzVector& vP) const
 }
 
 //_____________________________________________________________________________
+Int_t AliESDMuonTrack::GetNDF() const
+{
+  /// return the number of degrees of freedom
+  
+  Int_t ndf = 2 * static_cast<Int_t>(fNHit) - 5;
+  return (ndf > 0) ? ndf : 0;
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::GetNormalizedChi2() const
+{
+  /// return the chi2 value divided by the number of degrees of freedom
+  
+  Int_t ndf = GetNDF();
+  return (ndf > 0) ? fChi2 / static_cast<Double_t>(ndf) : 0.;
+}
+
+//_____________________________________________________________________________
 Int_t AliESDMuonTrack::GetMatchTrigger() const
 {
   ///  backward compatibility after replacing fMatchTrigger by fLocalTrigger

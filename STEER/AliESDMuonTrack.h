@@ -98,6 +98,8 @@ public:
   void     SetChi2(Double_t Chi2) {fChi2 = Chi2;}
   UChar_t  GetNHit(void) const {return fNHit;}
   void     SetNHit(UInt_t NHit) {fNHit = NHit;}
+  Int_t    GetNDF() const;
+  Double_t GetNormalizedChi2() const;
   
   // Get and Set methods for trigger matching
   Int_t    GetMatchTrigger() const;
