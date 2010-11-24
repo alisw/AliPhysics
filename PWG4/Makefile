@@ -30,6 +30,10 @@ ifneq ($(ANALYSISalice_INCLUDE),)
   ALICEINC += -I../$(ANALYSISalice_INCLUDE)
 endif
 
+ifneq ($(EventMixing_INCLUDE),)
+  ALICEINC += -I../$(EventMixing_INCLUDE)
+endif
+
 ifneq ($(JETAN_INCLUDE),)
   ALICEINC += -I../$(JETAN_INCLUDE)
 endif
