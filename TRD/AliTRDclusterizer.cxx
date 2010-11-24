@@ -855,7 +855,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   SetBit(kGAUS, recoParam->UseGAUS());
 
   // Apply the gain and the tail cancelation via digital filter
-  if(recoParam->UseTailCancelation()) TailCancelation(recoParam);
+  // Use the configuration from the DCS to find out whether online 
+  // tail cancellation was applied
+  if(!calibration->HasOnlineTailCancellation()) TailCancelation(recoParam);
 
   MaxStruct curr, last;
   Int_t nMaximas = 0, nCorrupted = 0;
