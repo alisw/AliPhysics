@@ -10,7 +10,8 @@ void ConfigESDCutsITS(AliESDtrackCuts * &cuts)
   cuts->SetEtaRange(-0.80,  0.80);
   
   // DCA cuts
-  cuts->SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55");
+  // old cuts->SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.3");
+  cuts->SetMaxDCAToVertexXYPtDep("0.02289+0.03136/pt^1.3");
   cuts->SetMaxDCAToVertexZ(2.0);
   cuts->SetDCAToVertex2D(kFALSE);
   cuts->SetRequireSigmaToVertex(kFALSE);

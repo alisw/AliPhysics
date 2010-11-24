@@ -23,31 +23,32 @@ Bool_t AddRsnAnalysisMult
   // interpret config string
   TString strDataLabel(options);
   Bool_t isSim = strDataLabel.Contains("sim");
-  Bool_t isMC  = strDataLabel.Contains("MC");
   
   // initialize cuts:
   // always the same on primary vertex
   // different on multiplicity
-  gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/ConfigESDCutsTPC.C");
-  Int_t                        mult[6] = {0, 5, 9, 14, 22, 1000000};
-  AliRsnCutPrimaryVertex      *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-  AliRsnCutESDCutMultiplicity *cutMult[5];
-  for (Int_t i = 0; i < 5; i++)
+  gROOT->LoadMacro(Form("%s/ConfigESDCutsTPC.C", path));
+  Double_t                  multMin[6] = {0    , 0,  6, 10, 15, 23   };
+  Double_t                  multMax[6] = {1E+10, 6, 10, 15, 23, 1E+10};
+  AliRsnCutPrimaryVertex   *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+  AliRsnCutValue           *cutMult[6] = {0, 0, 0, 0, 0, 0};
+  for (Int_t i = 0; i < 6; i++)
   {
-    cutMult[i] = new AliRsnCutESDCutMultiplicity(Form("cutMult_%d", i), mult[i] + 1, mult[i+1]);
+    cutMult[i] = new AliRsnCutValue(Form("cutMult_%d", i), AliRsnValue::kEventMultESDCuts, multMin[i], multMax[i]);
+    
+    // add the support cut to the value which computes the multiplicity
+    AliESDtrackCuts *cuts = new AliESDtrackCuts;
+    ConfigESDCutsTPC(cuts);
+    cutMult[i]->GetValueObj()->SetSupportObject(cuts);
   }
 
   // initialize tasks with all available slots, even if not all of them will be used:
   // loop on all multiplicity bins
-  for (Int_t i = 0; i < 5; i++)
+  for (Int_t i = 0; i < 6; i++)
   {
     AliRsnAnalysisSE *task = new AliRsnAnalysisSE(Form("RsnAnalysis_%d", i));
     task->SetZeroEventPercentWarning(100.0);
     task->SelectCollisionCandidates();
-    if (isMC) task->SetMCOnly(kTRUE);
-
-    // if not MC kinematics, set cuts for events : primary vertex range and type
-    ConfigESDCutsTPC(cutMult[i]->GetCuts());
     
     task->GetEventCuts()->AddCut(cutVertex);
     task->GetEventCuts()->AddCut(cutMult[i]);
@@ -65,7 +66,7 @@ Bool_t AddRsnAnalysisMult
     {
       TObjString *ostr = (TObjString*)list->At(iConfig);
       cout << "***** Processing config macro '" << ostr->GetString().Data() << endl;
-      gROOT->ProcessLine(Form(".x %s/%s(\"%s\",\"%s\")", path, ostr->GetString().Data(), task->GetName(), options));
+      gROOT->ProcessLine(Form(".x %s/%s(\"%s\",\"%s\",\"%s\")", path, ostr->GetString().Data(), task->GetName(), options, path));
     }
 
     // connect input container according to source choice
