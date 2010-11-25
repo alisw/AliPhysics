@@ -63,6 +63,7 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fHistV0C(0),
   fHistZDC(0),    
   fHistTDCZDC(0),    
+  fHistTimeZDC(0),    
   fHistFMDA(0),    
   fHistFMDC(0),   
   fHistFMDSingle(0),
@@ -109,8 +110,13 @@ AliTriggerAnalysis::~AliTriggerAnalysis()
   }
   if (fHistTDCZDC)
   {
-    delete fHistZDC;
-    fHistZDC = 0;
+    delete fHistTDCZDC;
+    fHistTDCZDC = 0;
+  }
+  if (fHistTimeZDC)
+  {
+    delete fHistTimeZDC;
+    fHistTimeZDC = 0;
   }
 
   if (fHistFMDA)
@@ -164,6 +170,7 @@ void AliTriggerAnalysis::EnableHistograms()
   fHistV0C = new TH1F("fHistV0C", "V0C;leading time (ns);events", 400, -100, 100);
   fHistZDC = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
   fHistTDCZDC = new TH1F("fHistTDCZDC", "ZDC;TDC bits;events", 32, -0.5, 32-0.5);
+  fHistTimeZDC = new TH2F("fHistTimeZDC", "ZDC;TDC timing A+C vs C-A; events", 120,-30,30,120,-600,-540);
   
   // TODO check limits
   fHistFMDA = new TH1F("fHistFMDA", "FMDA;combinations above threshold;events", 102, -1.5, 100.5);
@@ -585,7 +592,7 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd)
   V0Trigger(aEsd, kASide, kFALSE, kTRUE);
   V0Trigger(aEsd, kCSide, kFALSE, kTRUE);
   ZDCTDCTrigger(aEsd,kASide,kFALSE,kFALSE,kTRUE);
-
+  ZDCTimeTrigger(aEsd,kTRUE);
 
   AliESDZDC* zdcData = aEsd->GetESDZDC();
   if (zdcData)
@@ -946,7 +953,7 @@ Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side
     Bool_t tdc[32] = {kFALSE};
     for(Int_t itdc=0; itdc<32; itdc++){
       for(Int_t i=0; i<4; i++){
-	if (0.025*esdZDC->GetZDCTDCData(itdc, i) != 0){
+	if (esdZDC->GetZDCTDCData(itdc, i) != 0){
 	  tdc[itdc] = kTRUE;
 	}
       }
@@ -963,6 +970,38 @@ Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side
   if (side == kASide) return ((useZP&&zdcPA) || (useZN&&zdcNA)); 
   if (side == kCSide) return ((useZP&&zdcPC) || (useZN&&zdcNC)); 
   return kFALSE;
+}
+
+Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHists) const
+{
+  // This method implements a selection
+  // based on the timing in both sides of zdcN
+  // It can be used in order to eliminate
+  // parasitic collisions
+  Bool_t zdcAccept = kFALSE;
+
+  AliESDZDC *esdZDC = aEsd->GetESDZDC();
+
+  const Float_t refSum = -568.5;
+  const Float_t refDelta = -2.1;
+  const Float_t sigmaSum = 3.25;
+  const Float_t sigmaDelta = 2.25;
+  for(Int_t i = 0; i < 4; ++i) {
+    if (esdZDC->GetZDCTDCData(10,i) != 0) {
+      Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(10,i)-esdZDC->GetZDCTDCData(14,i)); 
+      for(Int_t j = 0; j < 4; ++j) {
+	if (esdZDC->GetZDCTDCData(12,j) != 0) {
+	  Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(12,j)-esdZDC->GetZDCTDCData(14,j));
+	  if(fillHists) fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
+	  if (((tdcC-tdcA-refDelta)*(tdcC-tdcA-refDelta)/(sigmaDelta*sigmaDelta) +
+	       (tdcC+tdcA-refSum)*(tdcC+tdcA-refSum)/(sigmaSum*sigmaSum))< 1.0)
+	    zdcAccept = kTRUE;
+	}
+      }
+    }
+  }
+
+  return zdcAccept;
 }
 
 Bool_t AliTriggerAnalysis::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const
@@ -1097,6 +1136,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
     collections[n++].Add(entry->fHistV0C);
     collections[n++].Add(entry->fHistZDC);
     collections[n++].Add(entry->fHistTDCZDC);
+    collections[n++].Add(entry->fHistTimeZDC);
     collections[n++].Add(entry->fHistFMDA);
     collections[n++].Add(entry->fHistFMDC);
     collections[n++].Add(entry->fHistFMDSingle);
@@ -1133,6 +1173,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   fHistV0C->Merge(&collections[n++]);
   fHistZDC->Merge(&collections[n++]);
   fHistTDCZDC->Merge(&collections[n++]);
+  fHistTimeZDC->Merge(&collections[n++]);
   fHistFMDA->Merge(&collections[n++]);
   fHistFMDC->Merge(&collections[n++]);
   fHistFMDSingle->Merge(&collections[n++]);
@@ -1160,6 +1201,7 @@ void AliTriggerAnalysis::SaveHistograms() const
   fHistV0C->Write();
   fHistZDC->Write();
   fHistTDCZDC->Write();
+  fHistTimeZDC->Write();
   fHistFMDA->Write();
   fHistFMDC->Write();
   fHistFMDSingle->Write();

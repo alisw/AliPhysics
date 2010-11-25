@@ -54,6 +54,7 @@ class AliTriggerAnalysis : public TObject
     V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
     Bool_t ZDCTrigger   (const AliESDEvent* aEsd, AliceSide side) const;
   Bool_t ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t useZN=kTRUE, Bool_t useZP=kFALSE, Bool_t fillHists=kFALSE) const;
+  Bool_t ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHists=kFALSE) const;
     Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side);
     Int_t SSDClusters(const AliESDEvent* aEsd);
     static const char* GetTriggerName(Trigger trigger);
@@ -112,6 +113,7 @@ class AliTriggerAnalysis : public TObject
     TH1F* fHistV0C;            // histograms that histogram the criterion the cut is applied on: bb triggers
     TH1F* fHistZDC;            //histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
     TH1F* fHistTDCZDC;         // histograms that histogram the criterion the cut is applied on: TDC bits (32 bins)
+    TH2F* fHistTimeZDC;        // histograms that histogram the criterion the cut is applied on: ZDC TDC timing
     TH1F* fHistFMDA;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
     TH1F* fHistFMDC;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
     TH1F* fHistFMDSingle;      // histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
@@ -122,7 +124,7 @@ class AliTriggerAnalysis : public TObject
     Bool_t fMC;              // flag if MC is analyzed
     AliESDtrackCuts* fEsdTrackCuts;  //Track Cuts to select ESD tracks
 
-    ClassDef(AliTriggerAnalysis, 11)
+    ClassDef(AliTriggerAnalysis, 12)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
