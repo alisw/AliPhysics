@@ -27,9 +27,16 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ nestedclasses;
+
+#pragma link C++ class AliForwardUtil::Histos+;
+#pragma link C++ class AliForwardUtil::RingHistos+;
 #pragma link C++ class AliFMDSharingFilter+;
+#pragma link C++ class AliFMDSharingFilter::RingHistos+;
 #pragma link C++ class AliFMDDensityCalculator+;
+#pragma link C++ class AliFMDDensityCalculator::RingHistos+;
 #pragma link C++ class AliFMDCorrections+;
+#pragma link C++ class AliFMDCorrections::RingHistos+;
 #pragma link C++ class AliFMDHistCollector+;
 #pragma link C++ class AliAODForwardMult+;
 #pragma link C++ class AliForwardMultiplicity+;
