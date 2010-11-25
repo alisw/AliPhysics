@@ -5,6 +5,7 @@
 #include "AliForwardUtil.h"
 class AliESDFMD;
 class TH2D;
+class TH1D;
 
 /** 
  * This class calculates the inclusive charged particle density
@@ -185,6 +186,9 @@ protected:
 
   TList    fRingHistos;    // List of histogram containers
   Double_t fMultCut;       // Low cut on scaled energy loss
+  TH1D*    fSumOfWeights;
+  TH1D*    fWeightedSum;
+  TH1D*    fCorrections;
 
   ClassDef(AliFMDDensityCalculator,1); // Calculate Nch density 
 };

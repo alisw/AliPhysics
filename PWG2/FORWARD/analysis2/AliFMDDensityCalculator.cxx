@@ -16,14 +16,20 @@ ClassImp(AliFMDDensityCalculator)
 AliFMDDensityCalculator::AliFMDDensityCalculator()
   : TNamed(), 
     fRingHistos(),
-    fMultCut(0.3)
+    fMultCut(0.3),
+    fSumOfWeights(0),
+    fWeightedSum(0),
+    fCorrections(0)
 {}
 
 //____________________________________________________________________
 AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   : TNamed("fmdDensityCalculator", title), 
     fRingHistos(), 
-    fMultCut(0.3)
+    fMultCut(0.3),
+    fSumOfWeights(0),
+    fWeightedSum(0),
+    fCorrections(0)
 {
   fRingHistos.SetName(GetName());
   fRingHistos.Add(new RingHistos(1, 'I'));
@@ -31,6 +37,13 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   fRingHistos.Add(new RingHistos(2, 'O'));
   fRingHistos.Add(new RingHistos(3, 'I'));
   fRingHistos.Add(new RingHistos(3, 'O'));
+  fSumOfWeights = new TH1D("sumOfWeights", "Sum of Landau weights",
+			   200, 0, 20);
+  fWeightedSum  = new TH1D("weightedSum", "Weighted sum of Landau propability",
+			   200, 0, 20);
+  fCorrections  = new TH1D("corrections", "Distribution of corrections", 
+			   100, 0, 10);
+
 }
 
 //____________________________________________________________________
@@ -38,7 +51,10 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
 						 AliFMDDensityCalculator& o)
   : TNamed(o), 
     fRingHistos(), 
-    fMultCut(o.fMultCut)
+    fMultCut(o.fMultCut),
+    fSumOfWeights(o.fSumOfWeights),
+    fWeightedSum(o.fWeightedSum),
+    fCorrections(o.fCorrections)
 {
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
@@ -112,6 +128,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  rh->fEvsN->Fill(mult,n);
 
 	  Float_t c = Correction(d,r,s,t,vtxbin,eta,lowFlux);
+	  fCorrections->Fill(c);
 	  if (c > 0) n /= c;
 	  rh->fEvsM->Fill(mult,n);
 
@@ -155,6 +172,8 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
 		  2*w2 * TMath::Landau(mult,mpv2,2*w,kTRUE) + 
 		  3*w3 * TMath::Landau(mult,mpv3,3*w,kTRUE));
   
+  fWeightedSum->Fill(wsum);
+  fSumOfWeights->Fill(sum);
   return (sum > 0) ? wsum / sum : 1;
 }
 
@@ -236,6 +255,9 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   TList* d = new TList;
   d->SetName(GetName());
   dir->Add(d);
+  d->Add(fWeightedSum);
+  d->Add(fSumOfWeights);
+  d->Add(fCorrections);
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
