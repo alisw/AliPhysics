@@ -100,6 +100,13 @@ public:
    */
   void         Print(Option_t* option="") const;
 
+  /** 
+   * Set the number of SPD tracklets for which we consider the event a
+   * low-flux event or not .
+   * 
+   * @param c Cut (default 1000)
+   */
+  void SetLowFluxCut(Int_t c) { fLowFluxCut = c; }
   /**
    * Get reference to the SharingFilter algorithm 
    * 

@@ -30,13 +30,7 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
   gSystem->Load("libPWG2forward2");
 
   if (proof) { 
-    gEnv->SetValue("Proof.GlobalPackageDirs", 
-		   Form("%s:%s", 
-			gEnv->GetValue("Proof.GlobalPackageDirs", "."), 
-			gSystem->Getenv("ALICE_ROOT")));
-    Info("RunManager", "PAR path=%s", 
-	 gEnv->GetValue("Proof.GlobalPackageDirs", "."));
-    TProof::Open("workers=1");
+    TProof::Open("workers=2");
     const char* pkgs[] = { "STEERBase", "ESD", "AOD", "ANALYSIS", 
 			   "ANALYSISalice", "PWG2forward", "PWG2forward2", 0};
     const char** pkg = pkgs;
@@ -45,7 +39,6 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
       gProof->EnablePackage(*pkg);    
       pkg++;
     }
-    gProof->ShowPackages();
   }
   
   //You can expand this chain if you have more data :-)
@@ -55,6 +48,8 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
   //Creating the manager and handlers
   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", 
 						    "FMD analysis train");
+  mgr->SetDebugLevel(3);
+
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
   esdHandler->SetInactiveBranches("AliESDACORDE "
 				  "AliRawDataErrorLogs "
@@ -79,7 +74,7 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
   // AOD output handler
   AliAODHandler* aodHandler   = new AliAODHandler();
   mgr->SetOutputEventHandler(aodHandler);
-  aodHandler->SetOutputFileName("foo.root");
+  aodHandler->SetOutputFileName("AliAODs.root");
     
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
@@ -98,7 +93,7 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
   }
   // Some informative output 
   mgr->PrintStatus();
-  mgr->SetUseProgressBar(kTRUE);
+  // mgr->SetUseProgressBar(kTRUE);
 
   // Write train to file - a test 
 #if 0
