@@ -320,7 +320,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
       unsetvtx=kTRUE;
     }
-    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate))nDplusLS++;
+    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod))nDplusLS++;
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
@@ -338,7 +338,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
       unsetvtx=kTRUE;
     }
  
-    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate)){
+    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod)){
 
       //set tight cuts values
       Int_t iPtBin=-1;
@@ -351,7 +351,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
 	return;
       }
 
-      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate);
+      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
 
       Int_t sign= d->GetCharge();
       Float_t wei=1;
@@ -700,7 +700,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents = new TH1F("fHistNEvents", "number of events ",6,-0.5,5.5);
    fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents with good vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"no. of  pileup events");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"no. of Rejected pileup events");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"no. of candidate");
   fHistNEvents->GetXaxis()->SetBinLabel(5,"no. of D+ after loose cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"no. of D+ after tight cuts");
@@ -840,7 +840,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       unsetvtx=kTRUE;
     }
 
-    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate)) {
+    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod)) {
 
       
 
@@ -851,7 +851,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(ptCand<fArrayBinLimits[ibin+1])iPtBin=ibin;
       }
       
-      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate);
+      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
      
      
       Int_t labDp=-1;
