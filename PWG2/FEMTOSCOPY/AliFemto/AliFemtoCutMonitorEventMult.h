@@ -48,6 +48,18 @@ class AliFemtoCutMonitorEventMult : public AliFemtoCutMonitor{
   TH1D *fNormEvMult; // Normalized event multiplicity distribution
   TH1D *fSPDMult;    // SPD tracklet multiplicity
   TH2D *fMultSumPt;  // Event total pT vs. multiplicity
+  
+  TH1D *fEstimateITSTPC;     // Multiplicity estimate ITS+TPC
+  TH1D *fEstimateTracklets;  // Multiplicity estimate Tracklets
+  TH1D *fEstimateITSPure;    // Multiplicity estimate ITS Pure
+
+  TH2D *fEst1Est2;           // ITS+TPC vs Tracklets
+  TH2D *fEst1Est3;           // ITS+TPC vs ITS Pure
+  TH2D *fEst2Est3;           // Tracklets vs ITS Pure
+  TH2D *fEst1Norm;           // ITS+TPC vs Normalized
+  TH2D *fEst2Norm;           // Tracklets vs Normalized
+  TH2D *fEst3Norm;           // ITS Pure vs Normalized
+
 };
 
 #endif

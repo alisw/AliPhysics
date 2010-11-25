@@ -19,7 +19,8 @@ AliFemtoBasicEventCut::AliFemtoBasicEventCut() :
   fAcceptBadVertex(false), 
   fNEventsPassed(0), 
   fNEventsFailed(0),
-  fAcceptOnlyPhysics(true)
+  fAcceptOnlyPhysics(true),
+  fSelectTrigger(0)
 {
   // Default constructor
   fEventMult[0] = 0;
@@ -47,7 +48,8 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
      (vertexZPos > fVertZPos[0]) &&
      (vertexZPos < fVertZPos[1]) &&
      ((!fAcceptBadVertex) || (event->ZDCParticipants() > 1.0)) &&
-     ((!fAcceptOnlyPhysics) || (event->IsCollisionCandidate())));
+     ((!fAcceptOnlyPhysics) || (event->IsCollisionCandidate())) &&
+     ((!fSelectTrigger) || (event->TriggerCluster() == fSelectTrigger)));
   goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
 //   cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
 //     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
