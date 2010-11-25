@@ -167,6 +167,9 @@ AliFemtoString AliFemtoShareQualityCorrFctn::Report(){
 //____________________________
 void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
+  if (fPairCut)
+    if (!fPairCut->Pass(pair)) return;
+
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   Int_t nh = 0;
   Int_t an = 0;
@@ -291,6 +294,9 @@ void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoShareQualityCorrFctn::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
+  if (fPairCut)
+    if (!fPairCut->Pass(pair)) return;
+
   double weight = 1.0;
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   Int_t nh = 0;
