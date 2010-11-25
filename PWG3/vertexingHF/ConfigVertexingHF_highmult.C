@@ -5,15 +5,15 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
  
   //--- switch-off candidates finding (default: all on)
   //vHF->SetD0toKpiOff();
-  //vHF->SetJPSItoEleOff();
-  vHF->Set3ProngOff();
-  vHF->SetLikeSignOn(); // like-sign pairs and triplets
+  vHF->SetJPSItoEleOff();
+  //vHF->Set3ProngOff();
+  //vHF->SetLikeSignOn(); // like-sign pairs and triplets
   vHF->Set4ProngOff();
-  //vHF->SetDstarOff();
+  vHF->SetDstarOff();
   vHF->SetFindVertexForDstar(kFALSE);
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
-    vHF->SetCascadesOff();
+  vHF->SetCascadesOff();
   vHF->SetFindVertexForCascades(kFALSE);
 
   //--- set cuts for single-track selection  
@@ -22,25 +22,25 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4);
+  //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
-  esdTrackCuts->SetMinDCAToVertexXY(0.);
-  esdTrackCuts->SetPtRange(0.3,1.e10);
+  esdTrackCuts->SetMinDCAToVertexXY(0.0100);
+  esdTrackCuts->SetPtRange(0.8,1.e10);
   esdTrackCuts->SetEtaRange(-0.8,+0.8);
   AliAnalysisFilter *trkFilter = new AliAnalysisFilter("trackFilter");
   trkFilter->AddCuts(esdTrackCuts);
   vHF->SetTrackFilter(trkFilter);
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
-  esdTrackCutsSoftPi->SetMinNClustersITS(4);
+  esdTrackCutsSoftPi->SetMinNClustersITS(2);
   esdTrackCutsSoftPi->SetEtaRange(-0.8,+0.8);
   AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
   vHF->SetTrackFilterSoftPi(trkFilterSoftPi);
   //--- set cuts for candidates selection
   AliRDHFCutsD0toKpi *cutsD0toKpi = new AliRDHFCutsD0toKpi("CutsD0toKpi");
-  Float_t cutsArrayD0toKpi[9]={0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.};
+  Float_t cutsArrayD0toKpi[9]={0.2,999999.,1.1,0.,0.,999999.,999999.,0.,0.5};
   cutsD0toKpi->SetCuts(9,cutsArrayD0toKpi);
   cutsD0toKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsD0toKpi(cutsD0toKpi);
@@ -50,17 +50,18 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsJpsitoee->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsJpsitoee(cutsJpsitoee);
   AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = new AliRDHFCutsDplustoKpipi("CutsDplustoKpipi");
-  Float_t cutsArrayDplustoKpipi[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
+  Float_t cutsArrayDplustoKpipi[12]={0.2,0.8,0.8,0.,0.,0.01,0.06,0.03,0.,0.85,0.,10000000000.};
   cutsDplustoKpipi->SetCuts(12,cutsArrayDplustoKpipi);
   cutsDplustoKpipi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsDplustoKpipi(cutsDplustoKpipi);
   AliRDHFCutsDstoKKpi *cutsDstoKKpi = new AliRDHFCutsDstoKKpi("CutsDstoKKpi");
-  Float_t cutsArrayDstoKKpi[14]={0.2,0.4,0.4,0.,0.,0.005,0.06,0.,0.,0.85,0.,1000,0.1,0.1};
+  Float_t cutsArrayDstoKKpi[14]={0.,999.,999.,0.,0.,0.005,0.06,0.,0.,0.7,0.,1000.,0.1,0.1};
   cutsDstoKKpi->SetCuts(14,cutsArrayDstoKKpi);
   cutsDstoKKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsDstoKKpi(cutsDstoKKpi);
   AliRDHFCutsLctopKpi *cutsLctopKpi = new AliRDHFCutsLctopKpi("CutsLctopKpi");
-  Float_t cutsArrayLctopKpi[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
+  //Float_t cutsArrayLctopKpi[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
+  Float_t cutsArrayLctopKpi[12]={0.,999.,999.,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05};
   cutsLctopKpi->SetCuts(12,cutsArrayLctopKpi);
   cutsLctopKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsLctopKpi(cutsLctopKpi);
@@ -69,27 +70,18 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsD0toKpipipi->SetCuts(9,cutsArrayD0toKpipipi);
   cutsD0toKpipipi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsD0toKpipipi(cutsD0toKpipipi);
-  AliRDHFCutsD0toKpi *cutsD0fromDstar = new AliRDHFCutsD0toKpi("CutsD0fromDstar");
-  Float_t cutsArrayD0fromDstar[9]={0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.};
-  cutsD0fromDstar->SetCuts(9,cutsArrayD0fromDstar);
-  cutsD0fromDstar->AddTrackCuts(esdTrackCuts);
-  vHF->SetCutsD0fromDstar(cutsD0fromDstar);
+  AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
+  Float_t cutsArrayDStartoKpipi[14]={0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.,0.3, 0.1, 0.05, 100000000000.0, 0.5}; // first 9 for D0 from D*, last 5 for D*
+  cutsDStartoKpipi->SetCuts(14,cutsArrayDStartoKpipi);
+  cutsDStartoKpipi->AddTrackCuts(esdTrackCuts);
+  cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
+  vHF->SetCutsDStartoKpipi(cutsDStartoKpipi);
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
   Float_t cutsArrayLctoV0[9]={4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000.,1000.};
   cutsLctoV0->SetCuts(9,cutsArrayLctoV0);
   cutsLctoV0->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsLctoV0(cutsLctoV0);
   // 
-  // to be removed:
-  vHF->SetD0toKpiCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
-  vHF->SetBtoJPSICuts(0.350,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
-  vHF->SetDplusCuts(0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0,1e6);
-  vHF->SetDsCuts(0.2,0.4,0.4,0.,0.,0.005,0.06,0.,0.,0.85,0.,0.1,0.1,0.1);
-  vHF->SetLcCuts(0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0,1e6);
-  vHF->SetD0to4ProngsCuts(0.2,0.04,0.00,0.01,0.02,0.8,0.,0.1,0.);
-  vHF->SetDstarCuts(0.3, 0.1, 0.05, 100000000000.0, 0.5);
-  vHF->SetD0fromDstarCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
-  vHF->SetLctoV0Cuts(4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000,1000);
   //--- set this if you want to reconstruct primary vertex candidate by
   //    candidate using other tracks in the event (for pp, broad 
   //    interaction region)
