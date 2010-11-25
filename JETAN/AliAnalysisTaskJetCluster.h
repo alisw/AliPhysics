@@ -59,7 +59,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetTrackPtCut(Float_t x){fTrackPtCut = x;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
-    
+    virtual void SetJetTriggerPtCut(Float_t x){fJetTriggerPtCut = x;}    
+    virtual void SetBackgroundBranch(const char* c){fBackgroundBranch = c;}    
+
     virtual void SetNSkipLeadingRan(Int_t x){fNSkipLeadingRan = x;}
     virtual void SetNRandomCones(Int_t x){fNRandomCones = x;}
 
@@ -122,9 +124,10 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
     Float_t       fTrackPtCut;            // minimum track pt to be accepted
     Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out
-
+    Float_t       fJetTriggerPtCut;       // minimum jwt pT for AOD to be written
     // output configurartion
     TString       fNonStdBranch;      // the name of the non-std branch name, if empty no branch is filled
+    TString       fBackgroundBranch;  // name of the branch used for background subtraction
     TString       fNonStdFile;        // The optional name of the output file the non-std brnach is written to
     
 
@@ -165,7 +168,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH1F*         fh1Nch;            //! charged particle mult
     TH1F*         fh1BiARandomCones[3]; //! Residual distribtion from reandom cones on real event
     TH1F*         fh1BiARandomConesRan[3]; //! Residual distribtion from reandom cones on random event
-
+    TH1F*         fh1Centrality;          // centrality of anaylsed events 
+    TH1F*         fh1CentralitySelect;          // centrality of selected events 
 
     TH2F*         fh2NRecJetsPt;            //! Number of found jets above threshold
     TH2F*         fh2NRecTracksPt;          //! Number of found tracks above threshold
@@ -198,7 +202,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 8) 
+    ClassDef(AliAnalysisTaskJetCluster, 9) 
 };
  
 #endif

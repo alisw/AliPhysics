@@ -90,7 +90,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(1),
+  fJetTriggerPtCut(0),
   fNonStdBranch(""),
+  fBackgroundBranch(""),
   fNonStdFile(""),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
@@ -122,6 +124,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fh1PtJetsRecInRan(0x0),
   fh1PtTracksGenIn(0x0),
   fh1Nch(0x0),
+  fh1Centrality(0x0), 
+  fh1CentralitySelect(0x0),
   fh2NRecJetsPt(0x0),
   fh2NRecTracksPt(0x0),
   fh2NConstPt(0x0),
@@ -176,7 +180,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(1),
+  fJetTriggerPtCut(0),
   fNonStdBranch(""),
+  fBackgroundBranch(""),
   fNonStdFile(""),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
@@ -208,6 +214,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh1PtJetsRecInRan(0x0),
   fh1PtTracksGenIn(0x0),
   fh1Nch(0x0),
+  fh1Centrality(0x0), 
+  fh1CentralitySelect(0x0),
   fh2NRecJetsPt(0x0),
   fh2NRecTracksPt(0x0),
   fh2NConstPt(0x0),
@@ -337,7 +345,6 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     }
 
 
-  OpenFile(1);
   if(!fHistList)fHistList = new TList();
   fHistList->SetOwner();
 
@@ -414,6 +421,9 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   fh1PtTracksLeadingRecIn  = new TH1F("fh1PtTracksLeadingRecIn","Rec tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1PtTracksGenIn  = new TH1F("fh1PtTracksGenIn","gen tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1Nch = new TH1F("fh1Nch","charged multiplicity; N_{ch}",nChMax,-0.5,nChMax-0.5);
+
+  fh1Centrality = new TH1F("fh1Centrality",";cent (%)",111,-0.5,110.5);
+  fh1CentralitySelect = new TH1F("fh1CentralitySelect",";cent (%)",111,-0.5,110.5);
 
   fh2NRecJetsPt = new TH2F("fh2NRecJetsPt","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NRecJetsPtRan = new TH2F("fh2NRecJetsPtRan","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
@@ -501,6 +511,8 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     fHistList->Add(fh1NConstLeadingRecRan);
     fHistList->Add(fh1PtJetsRecInRan);
     fHistList->Add(fh1Nch);
+    fHistList->Add(fh1Centrality);
+    fHistList->Add(fh1CentralitySelect);
     if(fUseBackgroundCalc){
       for(int i = 0;i<3;i++){
 	fHistList->Add(fh1BiARandomCones[i]);
@@ -569,6 +581,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     return;
   }
 
+
+
   // handle and reset the output jet branch 
   // only need this once
   TClonesArray* jarray = 0;  
@@ -601,7 +615,10 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     }
   }
 
- 
+  static AliAODJetEventBackground* externalBackground = 0;
+  if(!externalBackground&&fBackgroundBranch.Length()){
+    externalBackground =  (AliAODJetEventBackground*)(AODEvent()->FindListObject(fBackgroundBranch.Data()));
+  }
   //
   // Execute analysis for current event
   //
@@ -638,7 +655,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	Float_t yvtx = vtxAOD->GetY();
 	Float_t xvtx = vtxAOD->GetX();
 	Float_t r2   = yvtx*yvtx+xvtx*xvtx;  
-	if(TMath::Abs(zvtx)<8.&&r2<1.){
+	if(TMath::Abs(zvtx)<20.&&r2<1.){ // apply vertex cut later on
 	  if(physicsSelection)selectEvent = true;
 	}
     }
@@ -757,6 +774,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     }
   }// recparticles
   if(fUseBackgroundCalc){
+    Float_t jetArea = fRparam*fRparam*TMath::Pi();
     for(int ir = 0;ir < fNRandomCones;ir++){
       // rescale the momntum vectors for the random cones
       if(!rConeArray)continue;
@@ -774,6 +792,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	Double_t p  = TMath::Sqrt(pT*pT+pZ*pZ); 
 	rC->SetPxPyPzE(pX,pY,pZ, p); 
 	rC->SetBgEnergy(0,0);
+	rC->SetEffArea(jetArea,0);
       }
       rC = (AliAODJet*)rConeArrayRan->At(ir);
       // same wit random
@@ -790,6 +809,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	Double_t p  = TMath::Sqrt(pT*pT+pZ*pZ); 
 	rC->SetPxPyPzE(pX,pY,pZ, p); 
 	rC->SetBgEnergy(0,0);
+	rC->SetEffArea(jetArea,0);
       }
     }
   }
@@ -840,6 +860,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   Int_t nRec     = inclusiveJets.size();
   if(inclusiveJets.size()>0){
     AliAODJet leadingJet (sortedJets[0].px(), sortedJets[0].py(), sortedJets[0].pz(), sortedJets[0].E());
+    Double_t area=clustSeq.area(sortedJets[0]);
+    leadingJet.SetEffArea(area,0);
     Float_t pt = leadingJet.Pt();
     Int_t nAodOutJets = 0;
     Int_t nAodOutTracks = 0;
@@ -861,8 +883,13 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     Float_t phi = leadingJet.Phi();
     if(phi<0)phi+=TMath::Pi()*2.;    
     Float_t eta = leadingJet.Eta();
-    pt = leadingJet.Pt();
-    
+    Float_t pTback = 0;
+    if(externalBackground){
+      // carefull has to be filled in a task before
+      // todo, ReArrange to the botom
+      pTback = externalBackground->GetBackground(2)*leadingJet.EffectiveAreaCharged();
+    }
+    pt = leadingJet.Pt() - pTback;
     // correlation of leading jet with tracks
     TIterator *recIter = recParticles.MakeIterator();
     recIter->Reset();
@@ -918,6 +945,15 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Float_t tmpEta =  tmpRec.Eta();
      if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
      
+     Float_t tmpPtBack = 0;
+     if(externalBackground){
+       // carefull has to be filled in a task before
+       // todo, ReArrange to the botom
+       tmpPtBack = externalBackground->GetBackground(2)*tmpRec.EffectiveAreaCharged();
+     }
+     tmpPt = tmpPt - tmpPtBack;
+     if(tmpPt<0)tmpPt = 0; // avoid negative weights...
+
      if(j==0){
        fh1PtJetsLeadingRecIn->Fill(tmpPt);
        fh2LeadingJetPhiEta->Fill(tmpPhi,tmpEta);
@@ -1136,7 +1172,41 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
 
  }
- 
+
+
+ // do the event selection if activated
+ if(fJetTriggerPtCut>0){
+   bool select = false;
+   Float_t cent = 100;
+   if(fAOD)cent = fAOD->GetHeader()->GetCentrality();
+   Float_t minPt = 9999999;
+   // hard coded for now ...
+   // 54.50 44.5 29.5 18.5 for anti-kt rejection 10E-3
+   if(cent<10)minPt = 50;
+   else if(cent<20)minPt = 42;
+   else if(cent<50)minPt = 28;
+   else if(cent<80)minPt = 18;
+   fh1Centrality->Fill(cent);
+   
+   float rho = 0;
+   if(externalBackground)rho = externalBackground->GetBackground(2);
+   if(jarray&&cent<80){
+     for(int i = 0;i < jarray->GetEntriesFast();i++){
+       AliAODJet *jet = (AliAODJet*)jarray->At(i);
+       Float_t ptSub = jet->Pt() - rho *jet->EffectiveAreaCharged();
+       if(ptSub>=minPt){
+	 select = true;
+	 break;
+       }
+     }
+   }   
+
+   if(select){
+     static AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+     fh1CentralitySelect->Fill(cent);
+     aodH->SetFillAOD(kTRUE);
+   }
+ }
 
  if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
  PostData(1, fHistList);
@@ -1166,7 +1236,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
-      //      if(tr->Pt()<0.3)continue;
+      if(tr->Pt()<fTrackPtCut)continue;
       list->Add(tr);
       iCount++;
     }
@@ -1179,11 +1249,13 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       if(!mcEvent->IsPhysicalPrimary(it))continue;
       AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(it);
       if(type == kTrackKineAll){
+	if(part->Pt()<fTrackPtCut)continue;
 	list->Add(part);
 	iCount++;
       }
       else if(type == kTrackKineCharged){
 	if(part->Particle()->GetPDG()->Charge()==0)continue;
+	if(part->Pt()<fTrackPtCut)continue;
 	list->Add(part);
 	iCount++;
       }
@@ -1200,11 +1272,13 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       AliAODMCParticle *part = (AliAODMCParticle*)(tca->At(it));
       if(!part->IsPhysicalPrimary())continue;
       if(type == kTrackAODMCAll){
+	if(part->Pt()<fTrackPtCut)continue;
 	list->Add(part);
 	iCount++;
       }
       else if (type == kTrackAODMCCharged || type == kTrackAODMCChargedAcceptance ){
 	if(part->Charge()==0)continue;
+	if(part->Pt()<fTrackPtCut)continue;
 	if(kTrackAODMCCharged){
 	  list->Add(part);
 	}
@@ -1218,7 +1292,6 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
   }// AODMCparticle
   list->Sort();
   return iCount;
-
 }
 
 /*
