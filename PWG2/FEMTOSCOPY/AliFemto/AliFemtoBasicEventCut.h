@@ -31,6 +31,7 @@ public:
   int NEventsFailed() const;
   bool GetAcceptBadVertex();
   bool GetAcceptOnlyPhysics();
+  void SetTriggerSelection(int trig);
 
   virtual AliFemtoString Report();
   virtual bool Pass(const AliFemtoEvent* event);
@@ -45,6 +46,7 @@ private:   // here are the quantities I want to cut on...
   long fNEventsPassed;    // Number of events checked by this cut that passed
   long fNEventsFailed;    // Number of events checked by this cut that failed
   bool fAcceptOnlyPhysics;// Accept only physics events
+  int  fSelectTrigger;    // If set, only given trigger will be selected
 
 #ifdef __ROOT__
   ClassDef(AliFemtoBasicEventCut, 1)
@@ -56,6 +58,7 @@ inline void AliFemtoBasicEventCut::SetEventMult(const int& lo, const int& hi){fE
 inline void AliFemtoBasicEventCut::SetVertZPos(const float& lo, const float& hi){fVertZPos[0]=lo; fVertZPos[1]=hi;}
 inline int  AliFemtoBasicEventCut::NEventsPassed() const {return fNEventsPassed;}
 inline int  AliFemtoBasicEventCut::NEventsFailed() const {return fNEventsFailed;}
+inline void AliFemtoBasicEventCut::SetTriggerSelection(int trig) { fSelectTrigger = trig; }
 inline AliFemtoBasicEventCut* AliFemtoBasicEventCut::Clone() { AliFemtoBasicEventCut* c = new AliFemtoBasicEventCut(*this); return c;}
 inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c) : AliFemtoEventCut(c), fAcceptBadVertex(false), fNEventsPassed(0), fNEventsFailed(0), fAcceptOnlyPhysics(false) {
   fEventMult[0] = c.fEventMult[0];

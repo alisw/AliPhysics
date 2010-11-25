@@ -42,7 +42,8 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fEvent(0x0),
   fUsePhysicsSel(kFALSE),
   fSelect(0x0),
-  fTrackType(kGlobal)
+  fTrackType(kGlobal),
+  fEstEventMult(kITSTPC)
 {
   //constructor with 0 parameters , look at default settings 
 //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -68,7 +69,8 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fEvent(0x0),
   fUsePhysicsSel(kFALSE),
   fSelect(0x0),
-  fTrackType(kGlobal)
+  fTrackType(kGlobal),
+  fEstEventMult(kITSTPC)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -83,6 +85,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   if (aReader.fUsePhysicsSel)
     fSelect = new AliPhysicsSelection();
   fTrackType = aReader.fTrackType;
+  fEstEventMult = aReader.fEstEventMult;
 //   fEventFriend = aReader.fEventFriend;
 //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
 //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
@@ -136,6 +139,7 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
   if (fEvent) delete fEvent;
   fEvent = new AliESDEvent();
   fTrackType = aReader.fTrackType;
+  fEstEventMult = aReader.fEstEventMult;
 
   fUsePhysicsSel = aReader.fUsePhysicsSel;
   if (aReader.fUsePhysicsSel)
@@ -225,6 +229,11 @@ void AliFemtoEventReaderESDChain::SetUsePhysicsSelection(const bool usephysics)
   if (!fSelect) fSelect = new AliPhysicsSelection();
 }
 
+void AliFemtoEventReaderESDChain::SetUseMultiplicity(EstEventMult aType)
+{
+  fEstEventMult = aType;
+}
+
 AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 {
   // Get the event, read all the relevant information
@@ -260,7 +269,15 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   hbtEvent->SetZDCEMEnergy(fEvent->GetZDCEMEnergy());
   hbtEvent->SetZDCParticipants(fEvent->GetZDCParticipants());
   hbtEvent->SetTriggerMask(fEvent->GetTriggerMask());
-  hbtEvent->SetTriggerCluster(fEvent->GetTriggerCluster());
+  //  hbtEvent->SetTriggerCluster(fEvent->GetTriggerCluster());
+
+  if ((fEvent->IsTriggerClassFired("CINT1WU-B-NOPF-ALL")) ||
+      (fEvent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")))
+    hbtEvent->SetTriggerCluster(1);
+  else if (fEvent->IsTriggerClassFired("CSH1WU-B-NOPF-ALL"))
+    hbtEvent->SetTriggerCluster(2);
+  else 
+    hbtEvent->SetTriggerCluster(0);
 	
   //Vertex
   double fV1[3];
@@ -335,9 +352,16 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   Float_t b[2];
   Float_t bCov[3];
 
+  Int_t tTracklet=0, tITSTPC=0, tITSPure=0;
+  
+  fEvent->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 1.2);
+  
+  hbtEvent->SetMultiplicityEstimateITSTPC(tITSTPC);
+  hbtEvent->SetMultiplicityEstimateTracklets(tTracklet);
+  //  hbtEvent->SetMultiplicityEstimateITSPure(tITSPure);
+  hbtEvent->SetMultiplicityEstimateITSPure(fEvent->GetMultiplicity()->GetNumberOfITSClusters(1));
+  
   for (int i=0;i<nofTracks;i++)
-
-
     {
       bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
 
@@ -348,7 +372,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	  (esdtrack->GetStatus() & AliESDtrack::kITSrefit)) {
 	if (esdtrack->GetTPCNcls() > 70) 
 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 4.0) {
-	    if (TMath::Abs(esdtrack->Eta()) < 0.8) {
+	    if (TMath::Abs(esdtrack->Eta()) < 1.2) {
 	      esdtrack->GetImpactParameters(b,bCov);
 	      if ((b[0]<0.2) && (b[1] < 0.25)) {
 		tNormMult++;
@@ -360,7 +384,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       else if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit) {
 	if (esdtrack->GetTPCNcls() > 100) 
 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 4.0) {
-	    if (TMath::Abs(esdtrack->Eta()) < 0.8) {
+	    if (TMath::Abs(esdtrack->Eta()) < 1.2) {
 	      esdtrack->GetImpactParameters(b,bCov);
 	      if ((b[0]<2.4) && (b[1] < 3.2)) {
 		tNormMult++;
@@ -404,7 +428,8 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
       //we use only 5 first
       double esdpid[5];
-      esdtrack->GetESDpid(esdpid);
+//       esdtrack->GetESDpid(esdpid);
+      esdtrack->GetTPCpid(esdpid);
       trackCopy->SetPidProbElectron(esdpid[0]);
       trackCopy->SetPidProbMuon(esdpid[1]);
       trackCopy->SetPidProbPion(esdpid[2]);
@@ -470,7 +495,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	  if (esdtrack->GetTPCInnerParam()) {
 	    AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
 	    param->GetXYZ(rxyz);
-	    param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
+	    //	    param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
 	    param->GetPxPyPz(pxyz);//reading noconstarined momentum
 	    delete param;
 	    
@@ -484,11 +509,26 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	    trackCopy->SetHiddenInfo(tInfo);
 	  }
 	}
-	if (fConstrained==true)		    
-	  tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
-	else
-	  tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
-	
+
+	if (fTrackType == kGlobal) {
+	  if (fConstrained==true)		    
+	    tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	  else
+	    tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+	}
+	else if (fTrackType == kTPCOnly) {
+	  if (esdtrack->GetTPCInnerParam())
+	    esdtrack->GetTPCInnerParam()->GetPxPyPz(pxyz);
+	  else continue;
+	}
+	else if (fTrackType == kITSOnly) {
+	  if (fConstrained==true)		    
+	    tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	  else
+	    tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+	}
+
+
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
 	if (v.Mag() < 0.0001) {
 	  //	cout << "Found 0 momentum ???? " <<endl;
@@ -506,7 +546,12 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	//some stuff which could be useful 
 	float imp[2];
 	float cim[3];
-	esdtrack->GetImpactParameters(imp,cim);
+	// if (fTrackType == kTPCOnly) {
+	//   esdtrack->GetTPCInnerParam()->GetImpactParameters(imp,cim);
+	// }
+	// else {
+	  esdtrack->GetImpactParameters(imp,cim);
+	// }
 
 	impact[0] = imp[0];
 	impact[1] = imp[1];
@@ -569,7 +614,17 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     }
 
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
-  hbtEvent->SetNormalizedMult(tNormMult);
+  if (fEstEventMult == kGlobal) 
+    hbtEvent->SetNormalizedMult(tNormMult);
+  else if (fEstEventMult == kTracklet)
+    hbtEvent->SetNormalizedMult(tTracklet);
+  else if (fEstEventMult == kITSTPC)
+    hbtEvent->SetNormalizedMult(tITSTPC);
+  else if (fEstEventMult == kITSPure)
+    hbtEvent->SetNormalizedMult(tITSPure);
+  else if (fEstEventMult == kSPDLayer1)
+    hbtEvent->SetNormalizedMult(fEvent->GetMultiplicity()->GetNumberOfITSClusters(1));
+
   if (tNormMultPos > tNormMultNeg)
     hbtEvent->SetZDCParticipants(tNormMultPos);
   else
@@ -577,6 +632,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 
   fCurEvent++;	
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
+
   return hbtEvent; 
 }
 //___________________

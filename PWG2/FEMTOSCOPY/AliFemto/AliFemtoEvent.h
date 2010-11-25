@@ -64,7 +64,7 @@ public:
   float ZDCP2Energy() const;      
   float ZDCEMEnergy() const;    
   unsigned int ZDCParticipants() const; 
-  
+
   unsigned long int     TriggerMask() const;     
   unsigned char      TriggerCluster() const;  
 
@@ -74,6 +74,9 @@ public:
   void SetRunNumber(const int& i);
   void SetNumberOfTracks(const unsigned short& s);
   void SetNormalizedMult(const int& i);
+  void SetMultiplicityEstimateITSTPC(const unsigned short &s);
+  void SetMultiplicityEstimateTracklets(const unsigned short &s);
+  void SetMultiplicityEstimateITSPure(const unsigned short &s);
   void SetSPDMult(const int& i);
   void SetPrimVertPos(const AliFemtoThreeVector& v);
   void SetPrimVertCov(const double* v);
@@ -97,12 +100,19 @@ public:
   double UncorrectedNumberOfPrimaries() const;
   double SPDMultiplicity() const;
 
+  unsigned short MultiplicityEstimateITSTPC() const;
+  unsigned short MultiplicityEstimateTracklets() const;
+  unsigned short MultiplicityEstimateITSPure() const;
+
 private:
   unsigned short fEventNumber;           // Event number in file
   unsigned short fRunNumber;             // run number the event belong to
   unsigned short fNumberOfTracks;        // total number of TPC tracks
   int   fNormalizedMult;                 // normalized multiplicity
   int   fSPDMult;                        // Multiplicity of SPD tracklets
+  unsigned short fEstimateITSTPC;        // Official multiplicity estimate ITS+TPC
+  unsigned short fEstimateTracklets;     // Official multiplicity estimate Tracklets
+  unsigned short fEstimateITSPure;       // Official multiplicity estimate ITS SA
   double fMagneticField;                 // magnetic field in Z direction
   bool fIsCollisionCandidate;            // is collision candidate
   

@@ -30,6 +30,9 @@ AliFemtoEvent::AliFemtoEvent():
   fNumberOfTracks(0),
   fNormalizedMult(-1),
   fSPDMult(0),
+  fEstimateITSTPC(0),
+  fEstimateTracklets(0),
+  fEstimateITSPure(0),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -71,6 +74,9 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fNumberOfTracks(0),
   fNormalizedMult(-1),
   fSPDMult(0),
+  fEstimateITSTPC(0),
+  fEstimateTracklets(0),
+  fEstimateITSPure(0),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -103,6 +109,9 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fZDCParticipants=ev.fZDCParticipants;
   fNumberOfTracks = ev.fNumberOfTracks;
   fNormalizedMult = ev.fNormalizedMult;
+  fEstimateITSTPC = ev.fEstimateITSTPC;
+  fEstimateTracklets = ev.fEstimateTracklets;
+  fEstimateITSPure = ev.fEstimateITSPure;
   fMagneticField= ev.fMagneticField;
   fIsCollisionCandidate = ev.fIsCollisionCandidate;
 
@@ -152,6 +161,9 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fNumberOfTracks(0),
   fNormalizedMult(-1),
   fSPDMult(0),
+  fEstimateITSTPC(0),
+  fEstimateTracklets(0),
+  fEstimateITSPure(0),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -183,6 +195,9 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fZDCEMEnergy=ev.fZDCEMEnergy;
   fZDCParticipants=ev.fZDCParticipants;
   fNumberOfTracks = ev.fNumberOfTracks;
+  fEstimateITSTPC = ev.fEstimateITSTPC;
+  fEstimateTracklets = ev.fEstimateTracklets;
+  fEstimateITSPure = ev.fEstimateITSPure;
   fMagneticField= ev.fMagneticField;
   fIsCollisionCandidate = ev.fIsCollisionCandidate;
   fTriggerMask=ev.fTriggerMask;     // Trigger Type (mask)
@@ -232,7 +247,13 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   fZDCEMEnergy=aEvent.fZDCEMEnergy;
   fZDCParticipants=aEvent.fZDCParticipants;
   fNumberOfTracks = aEvent.fNumberOfTracks;
+  fEstimateITSTPC = aEvent.fEstimateITSTPC;
+  fEstimateTracklets = aEvent.fEstimateTracklets;
+  fEstimateITSPure = aEvent.fEstimateITSPure;
   fNormalizedMult = aEvent.fNormalizedMult;
+  fEstimateITSTPC = aEvent.fEstimateITSTPC;
+  fEstimateTracklets = aEvent.fEstimateTracklets;
+  fEstimateITSPure = aEvent.fEstimateITSPure;
   fMagneticField= aEvent.fMagneticField;
   fIsCollisionCandidate = aEvent.fIsCollisionCandidate;
 
@@ -396,3 +417,32 @@ double AliFemtoEvent::UncorrectedNumberOfPrimaries() const
   //  return NumberOfTracks();
 }
 
+unsigned short AliFemtoEvent::MultiplicityEstimateITSTPC() const
+{
+  return fEstimateITSTPC;
+}
+
+unsigned short AliFemtoEvent::MultiplicityEstimateTracklets() const
+{
+  return fEstimateTracklets;
+}
+
+unsigned short AliFemtoEvent::MultiplicityEstimateITSPure() const
+{
+  return fEstimateITSPure;
+}
+
+void AliFemtoEvent::SetMultiplicityEstimateITSTPC(const unsigned short &s)
+{
+  fEstimateITSTPC = s;
+}
+
+void AliFemtoEvent::SetMultiplicityEstimateTracklets(const unsigned short &s)
+{
+  fEstimateTracklets = s;
+}
+
+void AliFemtoEvent::SetMultiplicityEstimateITSPure(const unsigned short &s)
+{
+  fEstimateITSPure = s;
+}
