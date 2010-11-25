@@ -241,6 +241,11 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
     GetHistoTracks("V0AND", "V0A & V0C")->Fill(ntracks);
     GetHistoV0M   ("V0AND", "V0A & V0C")->Fill(multV0);
   }
+  if((c0v0A && !c0v0C) || (!c0v0A && c0v0C)) {
+    GetHistoSPD1  ("V0ONLYONE", "(V0A & !V0C) || (!V0A & V0C)")->Fill(outerLayerSPD);
+    GetHistoTracks("V0ONLYONE", "(V0A & !V0C) || (!V0A & V0C)")->Fill(ntracks);
+    GetHistoV0M   ("V0ONLYONE", "(V0A & !V0C) || (!V0A & V0C)")->Fill(multV0);
+  }
   if(zdcA && zdcC) {
     GetHistoSPD1  ("ZDCAND", "ZDCA & ZDCC")->Fill(outerLayerSPD);
     GetHistoTracks("ZDCAND", "ZDCA & ZDCC")->Fill(ntracks);

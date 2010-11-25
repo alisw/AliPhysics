@@ -13,7 +13,7 @@ ropt="-l"
 option="SAVE"
 workers=26
 analysismode=9; #SPD + field on
-centrBin=0
+centrBin=-1
 centrEstimator="V0M"
 runTriggerStudy=no
 customSuffix=""
@@ -99,6 +99,10 @@ Available options:
   -a <etamin,etamax>           Change eta range [default = $etaMin,$etaMax]
   -p <npart>                   Number of participants, used only for dNdeta/npart [default=$npart]
   -k <weakFrac>                Scale ration secondaries from strangeness/all rec by this factor [default=$weakFactor]
+  -b <bin>                     Set centrality bin to be corrected. Only valid if you processed multiple 
+                               bins at one (it changes the suffix of the multPbPbtracks.root file). It it's -1,
+                               a file without suffix is searched for. This options applyies both to the data and to the 
+                               MC file. [default=$centrBin]
 ENDOFGUIDE
 
 }
@@ -220,5 +224,5 @@ fi
 
 if [ "$correct" = "yes" ]
     then
-    root $ropt correct.C+\(\"$dataDir\",\"$mcDir\",$vzMin,$vzMax,$etaMin,$etaMax,$npart,$weakFactor\);
+    root $ropt correct.C+\(\"$dataDir\",\"$mcDir\",$vzMin,$vzMax,$etaMin,$etaMax,$npart,$weakFactor,$centrBin\);
 fi

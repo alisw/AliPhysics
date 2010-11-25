@@ -74,6 +74,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   // Create my own centrality selector
   AliAnalysisMultPbCentralitySelector * centrSelector = new AliAnalysisMultPbCentralitySelector();
+  centrSelector->SetIsMC(isMC);
   centrSelector->SetCentrTaskFiles(file1,file2); // for bookkeping only
   centrSelector->SetCentralityBin(centrBin);
   if (!useSingleBin) centrSelector->SetCentralityBin(0); // FIXME: ok?
@@ -165,20 +166,14 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     const Float_t maxCentr[] = {79,247,577,1185,2155,3565,5527,8203,12167,15073,21000};
     AliAnalysisTaskMultPbTracks ** tasks = AddTaskMultPbPbTracksAllCentrality("multPbPbtracks.root", cuts, centrSelector, ncentr,minCentr,maxCentr); 
     for(Int_t icentr = 0; icentr < ncentr; icentr++){
-      cout << "1 " << tasks[icentr] << endl;
       tasks[icentr]->Print();
       tasks[icentr]->SetIsMC(useMCKinematics);
-      cout << "2" << endl;
       tasks[icentr]->SetOfflineTrigger(AliVEvent::kMB);
-      cout << "3" << endl;
       if(optionStr.Contains("TPC")) tasks[icentr]->SetTPCOnly();
-      cout << "4" << endl;
       if(useMCKinematics) tasks[icentr]->GetHistoManager()->SetSuffix("MC");
-      cout << "5" << endl;
       if(customSuffix!=""){
 	cout << "Setting custom suffix: " << customSuffix+long(icentr) << tasks[icentr] << endl;    
 	tasks[icentr]->GetHistoManager()->SetSuffix(customSuffix+long(icentr));
-	cout << "ok" << endl;
       }	
     }    
   }
