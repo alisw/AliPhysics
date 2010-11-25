@@ -68,6 +68,7 @@
 ClassImp(AliAnalysisTaskJetServices)
 
 AliAODHeader*  AliAnalysisTaskJetServices::fgAODHeader = NULL;
+TClonesArray*   AliAnalysisTaskJetServices::fgAODVertices = NULL;
 
 AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fUseAODInput(kFALSE),
@@ -267,6 +268,12 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
      if (fDebug > 1) AliInfo("Replicating header");
      fgAODHeader = new AliAODHeader;
      AddAODBranch("AliAODHeader",&fgAODHeader,fNonStdFile.Data());
+     /*
+     if (fDebug > 1) AliInfo("Replicating vertices");
+     fgAODVertices = new TClonesArray("AliAODVertex",2);
+     fgAODVertices->SetName("vertices");
+     AddAODBranch("AliAODHeader",&fgAODVertices,fNonStdFile.Data());
+     */
   }
 }
 
@@ -355,8 +362,10 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   Bool_t aodEventSelected = IsEventSelected(aod);
 
   Bool_t physicsSelection = ((fInputHandler->IsEventSelected())&fPhysicsSelectionFlag);
-  if(aodH&&physicsSelection&&fFilterAODCollisions){
-    aodH->SetFillAOD(kTRUE);
+  if(aodH&&physicsSelection&&fFilterAODCollisions&&fgAODHeader){
+    if(fgAODHeader->GetCentrality()<=80){
+      aodH->SetFillAOD(kTRUE);
+    }
   }
 
 
@@ -503,15 +512,33 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     if (fgAODHeader){
       *fgAODHeader =  *(dynamic_cast<AliAODHeader*>(aod->GetHeader()));
     }
+    if(fgAODVertices){
+      Printf("%p",fgAODVertices);
+      Printf("%p",fgAODVertices->At(0));
+      fgAODVertices->Delete();
+      TClonesArray &vertices = *fgAODVertices;
+
+      const AliAODVertex *vtxAOD = aod->GetPrimaryVertex();
+      AliAODVertex *primary = new (&vertices[0]) AliAODVertex();
+      primary->SetName(vtxAOD->GetName());
+      primary->SetTitle(vtxAOD->GetTitle());
+    }
   }
   
   PostData(1, fHistList);
-  }
+}
 
 Bool_t AliAnalysisTaskJetServices::IsEventSelected(const AliESDEvent* esd){
   if(!esd)return kFALSE;
   const AliESDVertex *vtx = esd->GetPrimaryVertex();
   return IsVertexIn(vtx); // vertex in calls vertex valid
+}
+
+AliAnalysisTaskJetServices::~AliAnalysisTaskJetServices(){
+  if(fgAODVertices){
+    fgAODVertices->Delete();
+    delete fgAODVertices;
+  }
 }
 
 

@@ -708,6 +708,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
      
      
      Float_t pthardest=0.;
+     
      if(nJets!=0){
   
        Float_t bkg1=evBkg->GetBackground(0);
@@ -729,7 +730,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
        fh1Area2->Fill(area2);
        fh1Area3->Fill(area3);
        
-       
+       Int_t iSubJetCounter = 0;
        for(Int_t k=0;k<nJets;k++){
 	 AliAODJet *jet = dynamic_cast<AliAODJet*>(aodRecJets->At(k));
 	 fh1Ptjet->Fill(jet->Pt());
@@ -760,17 +761,20 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	 if(fFillCorrBkg==1) ptsub=ptsub1;
 	 if(fFillCorrBkg==2) ptsub=ptsub2;
 	 if(fFillCorrBkg==3) ptsub=ptsub3;
-	 Float_t subphi=jet->Phi();
-	 Float_t subtheta=jet->Theta();
-	 Float_t subpz = ptsub/TMath::Tan(subtheta);
-	 Float_t subpx=ptsub*TMath::Cos(subphi);
-	 Float_t subpy=ptsub * TMath::Sin(subphi);
-	 Float_t subp  = TMath::Sqrt(ptsub*ptsub+subpz*subpz);
-	 if(k<kMaxJets){
-	   genJets[k].SetPxPyPzE(subpx,subpy,subpz,subp);
-	   nGenJets = k+1;
+	 if(ptsub>0){// avoid unphysical jets pT
+	   Float_t subphi=jet->Phi();
+	   Float_t subtheta=jet->Theta();
+	   Float_t subpz = ptsub/TMath::Tan(subtheta);
+	   Float_t subpx=ptsub*TMath::Cos(subphi);
+	   Float_t subpy=ptsub * TMath::Sin(subphi);
+	   Float_t subp  = TMath::Sqrt(ptsub*ptsub+subpz*subpz);
+	   if(k<kMaxJets){// only store the jets which are assoicated to anohter one
+	     genJets[iSubJetCounter].SetPxPyPzE(subpx,subpy,subpz,subp);
+	     iSubJetCounter++;
+	   }
 	 }
        }
+       nGenJets = iSubJetCounter;
        fh2Rhovspthardest1->Fill(pthardest,bkg1);
        fh2Rhovspthardest2->Fill(pthardest,bkg2);
        fh2Rhovspthardest3->Fill(pthardest,bkg3); 
@@ -1091,8 +1095,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       for(int it = 0;it<genParticles.GetEntries();++it){
 	AliVParticle *part = (AliVParticle*)genParticles.At(it);
 	Float_t deltaR = genJets[ig].DeltaR(part);
-	fh1TmpRho->Fill(deltaR,part->Pt()/ptGen);
-	if(deltaR<radiusGen){
+	if(ptGen>0)fh1TmpRho->Fill(deltaR,part->Pt()/ptGen);
+	if(deltaR<radiusGen&&ptGen>0){
 	  Float_t z = part->Pt()/ptGen;
 	  Float_t lnz =  -1.*TMath::Log(z);
 	  fh2FragGen[ig]->Fill(z,ptGen,eventW);
@@ -1157,7 +1161,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       if(deltaPhi<(-1.*TMath::Pi()))deltaPhi = deltaPhi + 2.*TMath::Pi();      
       deltaPhi = TMath::Abs(deltaPhi);
       fh2DijetDeltaPhiPt->Fill(deltaPhi,ptRec1);      
-      Float_t asym = (ptRec1-ptRec)/(ptRec1+ptRec);
+      Float_t asym = 9999;
+      if((ptRec1+ptRec)>0)asym = (ptRec1-ptRec)/(ptRec1+ptRec);
       fh2DijetAsymPt->Fill(asym,ptRec1);
       fh2DijetDeltaPhiDeltaEta->Fill(deltaPhi,etaRec1-etaRec);
       fh2DijetPt2vsPt1->Fill(ptRec1,ptRec);        
@@ -1233,10 +1238,10 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	}
 
 	Float_t deltaR = recJets[ir].DeltaR(part);
-	fh1TmpRho->Fill(deltaR,part->Pt()/ptRec);
+	if(ptRec>0)fh1TmpRho->Fill(deltaR,part->Pt()/ptRec);
 
 
-	if(deltaR<radiusRec){
+	if(deltaR<radiusRec&&ptRec>0){
 	  Float_t z = part->Pt()/ptRec;
 	  if(z>zLeading)zLeading=z;
 	  Float_t lnz =  -1.*TMath::Log(z);
