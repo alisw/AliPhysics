@@ -172,7 +172,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    jetana->SetConfigFile("");
    jetana->SetDebugLevel(2);
    if(TMath::Abs((radius-0.4))< 0.02&&c_jf.Contains("fastjet")){
-     jetana->SetFilterPt(20.);
+     //     jetana->SetFilterPt(20.);
    }
 
 
@@ -259,7 +259,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetMinJetPt(5);                      // Ptmin of jets (GeV)
 
     //do you want to subtract BG (0 = no, 1 = yes)
-    jh->SetBGMode(0);
+    jh->SetBGMode(0); // if 1 set also the radius for the background determination..
 
     //for background
     jh->SetRapRange( -0.9, 0.9);              // rapidity range for subtracting background must be < ghostmaxrap-0.95*R

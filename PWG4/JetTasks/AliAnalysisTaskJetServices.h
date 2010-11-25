@@ -24,6 +24,7 @@ class AliCFManager;
 class AliTriggerAnalysis;
 
 class TList;
+class TClonesArray;
 class TChain;
 class TH1F;
 class TH2F;
@@ -37,7 +38,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
  public:
     AliAnalysisTaskJetServices();
     AliAnalysisTaskJetServices(const char* name);
-    virtual ~AliAnalysisTaskJetServices() {;}
+    virtual ~AliAnalysisTaskJetServices();
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void Init();
@@ -128,8 +129,8 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 
         // Provisions for replication
     static AliAODHeader*    fgAODHeader;        //! Header for replication
-
-    ClassDef(AliAnalysisTaskJetServices,11)
+    static TClonesArray*  fgAODVertices;        //! primary vertex for replication
+    ClassDef(AliAnalysisTaskJetServices,12)
 };
  
 #endif
