@@ -35,7 +35,7 @@ public:
 
   void SetSpecificPairCut(AliFemtoPairCut* aCut);
 
-private:
+ private:
   
   TH3D* fNumerator;         // numerator
   TH3D* fDenominator;       // denominator

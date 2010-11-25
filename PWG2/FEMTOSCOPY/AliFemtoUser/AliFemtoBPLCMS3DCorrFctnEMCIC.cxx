@@ -53,62 +53,76 @@ ClassImp(AliFemtoBPLCMS3DCorrFctnEMCIC)
 //____________________________
 AliFemtoBPLCMS3DCorrFctnEMCIC::AliFemtoBPLCMS3DCorrFctnEMCIC(char* title, const int& nbins, const float& QLo, const float& QHi)
 :
-AliFemtoBPLCMS3DCorrFctn(title,nbins, QLo, QHi),
+AliFemtoCorrFctn(),
 //fEnergyTotalReal(0),  
 // fEnergyMultReal(0),        
 //fPzMultReal(0),      
-//fPtMultReal(0),            
+//fPtMultReal(0), 
+  fNumerator(0),
+  fDenominator(0),
   fEnergyTotalMix(0),      
   fEnergyMultMix(0),      
   fPzMultMix(0),            
-  fPtMultMix(0) 
+  fPtMultMix(0),
+  fUseRPSelection(0)
 {
   
+  // set up numerator
+  char tTitNum[100] = "Num";
+  strcat(tTitNum,title);
+  fNumerator = new TH3D(tTitNum,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  // set up denominator
+  char tTitDen[100] = "Den";
+  strcat(tTitDen,title);
+  fDenominator = new TH3D(tTitDen,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+
   //Setup EnergyTotalReal
   /*char tTitNum1[100] = "ESumReal";
   strcat(tTitNum1,title);
-  fEnergyTotalReal = new TH3D(tTitNum1,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  fEnergyTotalReal = new TH3D(tTitNum1,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup EnergyMultReal
   char tTitNum2[100] = "EMultReal";
   strcat(tTitNum2,title);
-  fEnergyMultReal = new TH3D(tTitNum2,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  fEnergyMultReal = new TH3D(tTitNum2,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pz MultReal
   char tTitNum3[100] = "PzMultReal";
   strcat(tTitNum3,title);
-  fPzMultReal = new TH3D(tTitNum3,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  fPzMultReal = new TH3D(tTitNum3,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pt MultReal
   char tTitNum4[100] = "PtMultReal";
   strcat(tTitNum4,title);
-  fPtMultReal = new TH3D(tTitNum4,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);  */
+  fPtMultReal = new TH3D(tTitNum4,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);  */
   
   //Setup EnergyTotalMix
   char tTitNum5[100] = "ESumMix";
   strcat(tTitNum5,title);
-  fEnergyTotalMix = new TH3D(tTitNum5,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  fEnergyTotalMix = new TH3D(tTitNum5,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup EnergyMultMix
   char tTitNum6[100] = "EMultMix";
   strcat(tTitNum6,title);
-  fEnergyMultMix = new TH3D(tTitNum6,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  fEnergyMultMix = new TH3D(tTitNum6,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pz MultMix
   char tTitNum7[100] = "PzMultMix";
   strcat(tTitNum7,title);
-  fPzMultMix = new TH3D(tTitNum7,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  fPzMultMix = new TH3D(tTitNum7,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pt MultMix
   char tTitNum8[100] = "PtMultMix";
   strcat(tTitNum8,title);
-  fPtMultMix = new TH3D(tTitNum8,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  fPtMultMix = new TH3D(tTitNum8,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // To enable error bar calculation
   
   /*fEnergyTotalReal->Sumw2();
   fEnergyMultReal->Sumw2();
   fPzMultReal->Sumw2();
   fPtMultReal->Sumw2();  */
+  fNumerator->Sumw2();
+  fDenominator->Sumw2();
   fEnergyTotalMix->Sumw2();
   fEnergyMultMix->Sumw2();
   fPzMultMix->Sumw2();
@@ -116,19 +130,105 @@ AliFemtoBPLCMS3DCorrFctn(title,nbins, QLo, QHi),
   
 }
 
+
+// Variable bin size constructor :
+//qBins array of low-edges for each bin. This is an array of size nbins+1
+AliFemtoBPLCMS3DCorrFctnEMCIC::AliFemtoBPLCMS3DCorrFctnEMCIC(char* title, const int& nbins, const float* qBins):
+AliFemtoCorrFctn(),
+  fNumerator(0),
+  fDenominator(0),
+  fEnergyTotalMix(0),      
+  fEnergyMultMix(0),      
+  fPzMultMix(0),            
+  fPtMultMix(0),
+  fUseRPSelection(0)
+{
+  
+  // set up numerator
+  char tTitNum[100] = "Num";
+  strcat(tTitNum,title);
+  fNumerator = new TH3D(tTitNum,title,nbins,qBins,nbins,qBins,nbins,qBins);
+  // set up denominator
+  char tTitDen[100] = "Den";
+  strcat(tTitDen,title);
+  fDenominator = new TH3D(tTitDen,title,nbins,qBins,nbins,qBins,nbins,qBins);
+
+  //Setup EnergyTotalReal
+  /*char tTitNum1[100] = "ESumReal";
+  strcat(tTitNum1,title);
+  fEnergyTotalReal = new TH3D(tTitNum1,title,nbins,qBins,nbins,qBins,nbins,qBins);
+  
+  //Setup EnergyMultReal
+  char tTitNum2[100] = "EMultReal";
+  strcat(tTitNum2,title);
+  fEnergyMultReal = new TH3D(tTitNum2,title,nbins,qBins,nbins,qBins,nbins,qBins);
+  
+  //Setup Pz MultReal
+  char tTitNum3[100] = "PzMultReal";
+  strcat(tTitNum3,title);
+  fPzMultReal = new TH3D(tTitNum3,title,nbins,qBins,nbins,qBins,nbins,qBins);
+  
+  //Setup Pt MultReal
+  char tTitNum4[100] = "PtMultReal";
+  strcat(tTitNum4,title);
+  fPtMultReal = new TH3D(tTitNum4,title,nbins,qBins,nbins,qBins,nbins,qBins);  */
+  
+  //Setup EnergyTotalMix
+  char tTitNum5[100] = "ESumMix";
+  strcat(tTitNum5,title);
+  fEnergyTotalMix = new TH3D(tTitNum5,title,nbins,qBins,nbins,qBins,nbins,qBins);
+  
+  //Setup EnergyMultMix
+  char tTitNum6[100] = "EMultMix";
+  strcat(tTitNum6,title);
+  fEnergyMultMix = new TH3D(tTitNum6,title,nbins,qBins,nbins,qBins,nbins,qBins);
+  
+  //Setup Pz MultMix
+  char tTitNum7[100] = "PzMultMix";
+  strcat(tTitNum7,title);
+  fPzMultMix = new TH3D(tTitNum7,title,nbins,qBins,nbins,qBins,nbins,qBins);
+  
+  //Setup Pt MultMix
+  char tTitNum8[100] = "PtMultMix";
+  strcat(tTitNum8,title);
+  fPtMultMix = new TH3D(tTitNum8,title,nbins,qBins,nbins,qBins,nbins,qBins);
+  // To enable error bar calculation
+  
+  /*fEnergyTotalReal->Sumw2();
+  fEnergyMultReal->Sumw2();
+  fPzMultReal->Sumw2();
+  fPtMultReal->Sumw2();  */
+  fNumerator->Sumw2();
+  fDenominator->Sumw2();
+  fEnergyTotalMix->Sumw2();
+  fEnergyMultMix->Sumw2();
+  fPzMultMix->Sumw2();
+  fPtMultMix->Sumw2();
+}
+  
+
+
+
+
+
+
 AliFemtoBPLCMS3DCorrFctnEMCIC::AliFemtoBPLCMS3DCorrFctnEMCIC(const AliFemtoBPLCMS3DCorrFctnEMCIC& aCorrFctn) :
-  AliFemtoBPLCMS3DCorrFctn(aCorrFctn),
+  AliFemtoCorrFctn(aCorrFctn),
   /*fEnergyTotalReal(0),  
   fEnergyMultReal(0),        
   fPzMultReal(0),      
-  fPtMultReal(0),*/            
+  fPtMultReal(0),*/     
+  fNumerator(0),
+  fDenominator(0),
   fEnergyTotalMix (0),      
   fEnergyMultMix (0),  
   fPzMultMix(0),          
-  fPtMultMix(0) 
+  fPtMultMix(0),
+  fUseRPSelection(0)
 {
   // Copy constructor
-  
+  fNumerator = new TH3D(*aCorrFctn.fNumerator);
+  fDenominator = new TH3D(*aCorrFctn.fDenominator);
   /*  fEnergyTotalReal = new TH3D(*aCorrFctn.fEnergyTotalReal);
   fEnergyMultReal = new TH3D(*aCorrFctn.fEnergyMultReal);
   fPzMultReal = new TH3D(*aCorrFctn.fPzMultReal);
@@ -145,6 +245,8 @@ AliFemtoBPLCMS3DCorrFctnEMCIC::~AliFemtoBPLCMS3DCorrFctnEMCIC(){
   delete fEnergyMultReal;        
   delete fPzMultReal;     
   delete fPtMultReal;  */
+  delete fNumerator;
+  delete fDenominator;
   delete fEnergyTotalMix;      
   delete fEnergyMultMix; 
   delete fPzMultMix;   
@@ -156,7 +258,10 @@ AliFemtoBPLCMS3DCorrFctnEMCIC& AliFemtoBPLCMS3DCorrFctnEMCIC::operator=(const Al
   // assignment operator
   if (this == &aCorrFctn)
     return *this;
-  
+  if (fNumerator) delete fNumerator;
+  fNumerator = new TH3D(*aCorrFctn.fNumerator);
+  if (fDenominator) delete fDenominator;
+  fDenominator = new TH3D(*aCorrFctn.fDenominator);
   //Emcics
   /*  if (fEnergyTotalReal) delete fEnergyTotalReal;
   fEnergyTotalReal = new TH3D(*aCorrFctn.fEnergyTotalReal);
@@ -175,15 +280,16 @@ AliFemtoBPLCMS3DCorrFctnEMCIC& AliFemtoBPLCMS3DCorrFctnEMCIC::operator=(const Al
   if (fPtMultMix) delete fPtMultMix;
   fPtMultMix = new TH3D(*aCorrFctn.fPtMultMix);
   
+  fUseRPSelection = aCorrFctn.fUseRPSelection;
+
   return *this;
 }
 
 //_________________________
 void AliFemtoBPLCMS3DCorrFctnEMCIC::WriteOutHistos(){
-  TH3D* Num3D = Numerator();
-  TH3D* Den3D = Denominator();
-  Num3D->Write();
-  Den3D->Write();
+  
+  fNumerator->Write();
+  fDenominator->Write();
   //fEnergyTotalReal->Write();
   //fEnergyMultReal->Write();        
   //fPzMultReal->Write();      
@@ -192,7 +298,7 @@ void AliFemtoBPLCMS3DCorrFctnEMCIC::WriteOutHistos(){
   fEnergyMultMix->Write();      
   fPzMultMix->Write();            
   fPtMultMix->Write(); 
-  cout << "write histos emcics" << endl;
+  //cout << "write histos emcics" << endl;
 }
 //______________________________
 TList* AliFemtoBPLCMS3DCorrFctnEMCIC::GetOutputList()
@@ -200,8 +306,8 @@ TList* AliFemtoBPLCMS3DCorrFctnEMCIC::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
   cout << "Getting list from CFemcic" << endl;
-  tOutputList->Add(Numerator());
-  tOutputList->Add(Denominator());
+  tOutputList->Add(fNumerator);
+  tOutputList->Add(fDenominator);
   /*tOutputList->Add(fEnergyTotalReal);
   tOutputList->Add(fEnergyMultReal);        
   tOutputList->Add(fPzMultReal);      
@@ -219,10 +325,7 @@ TList* AliFemtoBPLCMS3DCorrFctnEMCIC::GetOutputList()
 void AliFemtoBPLCMS3DCorrFctnEMCIC::AddRealPair( AliFemtoPair* pair){
   // perform operations on real pairs
   
-  //WILL WE NEED THIS PART HERE>?????????? I think so. 
-  //  cout << "ADDing real Pair to 3D emcics!" << endl; 
-
- if (fPairCut){
+  if (fPairCut){
     if (fUseRPSelection) {
       AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
       if (!ktc) { 
@@ -240,15 +343,14 @@ void AliFemtoBPLCMS3DCorrFctnEMCIC::AddRealPair( AliFemtoPair* pair){
     }
     else
       if (!(fPairCut->Pass(pair))) return;
-      }
-
+  }
   
- double qOut = pair->QOutCMS();  //Removed fabs() to bin in negative Qosl
-  double qSide = pair->QSideCMS();
-  double qLong = pair->QLongCMS();
+  double qOut  = fabs(pair->QOutCMS());  
+  double qSide = fabs( pair->QSideCMS());
+  double qLong = fabs(pair->QLongCMS());
 
-  AliFemtoBPLCMS3DCorrFctn::Numerator()->Fill(qOut,qSide,qLong);
-
+  fNumerator->Fill(qOut,qSide,qLong);
+  
   /*AliFemtoLorentzVector tMom1 = pair->Track1()->FourMomentum();
   AliFemtoLorentzVector tMom2 = pair->Track2()->FourMomentum();
   double tE1 = tMom1.e();
@@ -268,6 +370,8 @@ void AliFemtoBPLCMS3DCorrFctnEMCIC::AddRealPair( AliFemtoPair* pair){
   fPzMultReal->Fill(qOut,qSide,qLong,tPz1*tPz2);
   fPtMultReal->Fill(qOut,qSide,qLong,tPt1DotPt2); */
 }
+
+
 //____________________________
 void AliFemtoBPLCMS3DCorrFctnEMCIC::AddMixedPair( AliFemtoPair* pair){
   // perform operations on mixed pairs
@@ -295,11 +399,11 @@ void AliFemtoBPLCMS3DCorrFctnEMCIC::AddMixedPair( AliFemtoPair* pair){
   }
 
   
-  double qOut = pair->QOutCMS();
-  double qSide = pair->QSideCMS();
-  double qLong = pair->QLongCMS();
+  double qOut = fabs(pair->QOutCMS());
+  double qSide = fabs(pair->QSideCMS());
+  double qLong = fabs(pair->QLongCMS());
 
-  AliFemtoBPLCMS3DCorrFctn::Denominator()->Fill(qOut,qSide,qLong);
+  fDenominator->Fill(qOut,qSide,qLong);
 
   AliFemtoLorentzVector tMom1 = pair->Track1()->FourMomentum();
   AliFemtoLorentzVector tMom2 = pair->Track2()->FourMomentum();
@@ -320,3 +424,8 @@ void AliFemtoBPLCMS3DCorrFctnEMCIC::AddMixedPair( AliFemtoPair* pair){
   
 }
 
+
+void AliFemtoBPLCMS3DCorrFctnEMCIC::SetUseRPSelection(unsigned short aRPSel)
+{
+  fUseRPSelection = aRPSel;
+}
