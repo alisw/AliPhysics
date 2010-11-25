@@ -251,7 +251,8 @@ void AliSISConeJetFinder::FindJets()
     fastjet::JetAlgorithm algorithm = fastjet::kt_algorithm;
     if (algo == 0) algorithm = fastjet::kt_algorithm;
     if (algo == 1) algorithm = fastjet::cambridge_algorithm;
-    fastjet::JetDefinition jetDefForRho(algorithm, 0.5);
+    Double_t RRho = header->GetRForRho();
+    fastjet::JetDefinition jetDefForRho(algorithm, RRho);
     fastjet::ClusterSequenceArea csForRho(inputParticles, jetDefForRho, areaDef);
     Double_t rho = csForRho.median_pt_per_unit_area_4vector(range);
     cout<<"rho = "<<rho<<endl;
@@ -272,16 +273,10 @@ void AliSISConeJetFinder::FindJets()
       if(debug){
 	cout<<"********************************** Reconstructed jet(s) (non corrected)"<<endl;
 	cout<<"Jet number "<<j+1<<" : "<<"Rapidity : "<<jets[j].rap()<<" Phi : "<<jets[j].phi()<<" pT : "<<jets[j].perp()<<" area : "<<clustSeq.area(jets[j])<<endl;
-	//     cout<<"px = "<<jets[j].px()<<endl;
-	//     cout<<"py = "<<jets[j].py()<<endl;
-	//     cout<<"pz = "<<jets[j].pz()<<endl;
 	cout<<"e = "<<jets[j].E()<<endl;
 	
 	cout<<"********************************** Corrected jet(s)"<<endl;
 	cout<<"Jet number "<<j+1<<" : "<<"Rapidity : "<<corrJets[j].rap()<<" Phi : "<<corrJets[j].phi()<<" pT : "<<corrJets[j].perp()<<endl;
-	//     cout<<"px = "<<corrJets[j].px()<<endl;
-	//     cout<<"py = "<<corrJets[j].py()<<endl;
-	//     cout<<"pz = "<<corrJets[j].pz()<<endl;
 	cout<<"e = "<<corrJets[j].E()<<endl;
       }
       // Go to write AOD info
@@ -297,26 +292,27 @@ void AliSISConeJetFinder::FindJets()
   if (bgMode == 0)// No BG subtraction
   {
     //******************************** JETS FINDING AND EXTRACTION
-    fastjet::ClusterSequence clustSeq(inputParticles, plugin);
+    fastjet::ClusterSequenceArea clustSeq(inputParticles, plugin, areaDef);
     // Here we extract inclusive jets with pt > ptmin, sorted by pt 
     Double_t ptMin = header->GetMinJetPt(); 
     vector<fastjet::PseudoJet> inclusiveJets = clustSeq.inclusive_jets(ptMin);
     vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusiveJets);
-  
+
     //***************************** JETS DISPLAY
 
     for (size_t k = 0; k < jets.size(); k++)
     {
-      if(debug){
+      if(debug)
+      {
 	cout<<"********************************** Reconstructed jet(s) (non corrected)"<<endl;
 	cout<<"Jet number "<<k+1<<" : "<<"Rapidity : "<<jets[k].rap()<<" Phi : "<<jets[k].phi()<<" pT : "<<jets[k].perp()<<endl;
-	//     cout<<"px = "<<jets[k].px()<<endl;
-	//     cout<<"py = "<<jets[k].py()<<endl;
-	//     cout<<"pz = "<<jets[k].pz()<<endl;
 	cout<<"e = "<<jets[k].E()<<endl;
       }
+
       // Go to write AOD info
+      Double_t area = clustSeq.area(jets[k]);
       AliAODJet aodjet (jets[k].px(), jets[k].py(), jets[k].pz(), jets[k].E());
+      aodjet.SetEffArea(area,0);
       if(debug) aodjet.Print("");
       AddJet(aodjet);
     }

@@ -42,6 +42,7 @@ class AliSISConeJetHeader : public AliJetHeader
   Double_t                     GetConeRadius()                 const {return fConeRadius;}
   Double_t                     GetOverlapThreshold()           const {return fOverlapThreshold;}
   Double_t                     GetPtProtojetMin()              const {return fPtProtoJetMin;}
+  Double_t                     GetRForRho()                    const {return fRRho;}
   Double_t                     GetCaching()                    const {return fCaching;}
   Double_t                     GetSplitMergeStoppingScale()    const {return fSplitMergeStoppingScale;}
   Double_t                     GetMinJetPt()                   const {return fMinJetPt;}  
@@ -67,6 +68,7 @@ class AliSISConeJetHeader : public AliJetHeader
   void SetPhiRange(Double_t fmin, Double_t fmax)       {fPhiMin = fmin; fPhiMax = fmax;}
   void SetPtProtojetMin(Double_t value)                {fPtProtoJetMin = value;}
   void SetRapRange(Double_t fmin, Double_t fmax)       {fRapMin = fmin; fRapMax = fmax;}
+  void SetRForRho(Double_t value)                      {fRRho = value;}
   void SetSplitMergeScale(Int_t value)                 {fSplitMergeScaleNumber = value;}
   void SetSplitMergeStoppingScale(Double_t value)      {fSplitMergeStoppingScale = value;}	  
   void SetGridScatter(Double_t value)                  {fGridScatter = value;}
@@ -97,10 +99,11 @@ class AliSISConeJetHeader : public AliJetHeader
   Double_t fPhiMax, fPhiMin;          // Phi range
   Double_t fPtProtoJetMin;            // pT min of protojets
   Double_t fRapMax, fRapMin;          // Eta range
+  Double_t fRRho;                     // Radius to determine rho
   Int_t    fSplitMergeScaleNumber;    // Kind of recombination in split/merge procedure, there's only one
   Double_t fSplitMergeStoppingScale;  // Stopping scale for split/merge procedure in case of area calculus
 
-  ClassDef(AliSISConeJetHeader,2)
+  ClassDef(AliSISConeJetHeader,3)
 };
  
 #endif

@@ -55,6 +55,7 @@ AliSISConeJetHeader::AliSISConeJetHeader():
     fPtProtoJetMin(2),
     fRapMax(0.9),
     fRapMin(-0.9),
+    fRRho(0.5),
     fSplitMergeScaleNumber(0),
     fSplitMergeStoppingScale(0)    
 {
