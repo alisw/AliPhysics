@@ -41,6 +41,7 @@ public:
   AliFemtoPairCut* Clone();
   void SetKTRange(double ktmin, double ktmax);
   void SetPhiRange(double phimin, double phimax);
+  void SetPTMin(double ptmin, double ptmax=1000.0);
   virtual bool Pass(const AliFemtoPair* pair);
   virtual bool Pass(const AliFemtoPair* pair, double aRPAngle);
 
@@ -49,6 +50,8 @@ public:
   Double_t fKTMax;          // Maximum allowed pair transverse momentum 
   Double_t fPhiMin;         // Minimum angle vs. reaction plane 
   Double_t fPhiMax;         // Maximum angle vs. reaction plane
+  Double_t fPtMin;          // Minimum per-particle pT
+  Double_t fPtMax;          // Maximum per-particle pT
 
 #ifdef __ROOT__
   ClassDef(AliFemtoKTPairCut, 0)
