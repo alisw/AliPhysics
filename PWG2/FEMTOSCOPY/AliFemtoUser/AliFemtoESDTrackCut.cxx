@@ -98,6 +98,9 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fMostProbable(0), 
     fMaxImpactXY(1000.0),
     fMaxImpactZ(1000.0),
+    fMaxImpactXYPtOff(1000.0),
+    fMaxImpactXYPtNrm(1000.0),
+    fMaxImpactXYPtPow(1000.0),
     fMinPforTOFpid(0.0),
     fMaxPforTOFpid(10000.0),
     fMinPforTPCpid(0.0),
@@ -164,7 +167,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       //cout<<" No go because ITS Number of Cls"<<fminITScls<< " "<<track->ITSncls()<<endl;
       return false;
     }
-	
+
   if (fMaxImpactXY < TMath::Abs(track->ImpactD()))
     return false;
 
@@ -238,6 +241,14 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
   float tRapidity = 0.5*::log((tEnergy+track->P().z())/(tEnergy-track->P().z()));
   float tPt = ::sqrt((track->P().x())*(track->P().x())+(track->P().y())*(track->P().y()));
   float tEta = track->P().PseudoRapidity();
+  
+  if (fMaxImpactXYPtOff < 999.0) {
+    if ((fMaxImpactXYPtOff + fMaxImpactXYPtNrm*TMath::Power(tPt, fMaxImpactXYPtPow)) < TMath::Abs(track->ImpactD())) {
+      fNTracksFailed++;
+      return false;
+    }
+  }
+
   if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1]))
     {
       fNTracksFailed++;
@@ -306,15 +317,15 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 
   if (fMostProbable) {
     int imost=0;
-    if (fMostProbable == 2) {
-      if (IsPionTPCdEdx(track->P().Mag(), track->TPCsignal()))
-	imost = 2;
-    }
-    else if (fMostProbable == 3) {
-      if (IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal()))
-	imost = 3;
-    }
-    else {
+//     if (fMostProbable == 2) {
+//       if (IsPionTPCdEdx(track->P().Mag(), track->TPCsignal()))
+// 	imost = 2;
+//     }
+//     else if (fMostProbable == 3) {
+//       if (IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal()))
+// 	imost = 3;
+//     }
+//     else {
       tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
       tMost[1] = 0.0;
       tMost[2] = track->PidProbPion()*PidFractionPion(track->P().Mag());
@@ -323,7 +334,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       float ipidmax = 0.0;
       for (int ip=0; ip<5; ip++)
 	if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
-    }
+//     }
     if (imost != fMostProbable) return false;
   }
   
@@ -445,8 +456,23 @@ void AliFemtoESDTrackCut::SetRemoveKinks(const bool& flag)
 float AliFemtoESDTrackCut::PidFractionElectron(float mom) const
 {
   // Provide a parameterized fraction of electrons dependent on momentum
-  if (mom<0.13) return 0.0;
-  if (mom>1.8) return 0.0;
+  if (mom<0.13) 
+    return (7.594129e-02 
+	    -5.535827e-01*0.13	   
+	    +1.728591e+00*0.13*0.13    
+	    -2.827893e+00*0.13*0.13*0.13 
+	    +2.503553e+00*0.13*0.13*0.13*0.13	   
+	    -1.125965e+00*0.13*0.13*0.13*0.13*0.13      
+	    +2.009036e-01*0.13*0.13*0.13*0.13*0.13*0.13);   
+
+  if (mom>1.8)
+    return (7.594129e-02 
+	    -5.535827e-01*1.8	   
+	    +1.728591e+00*1.8*1.8    
+	    -2.827893e+00*1.8*1.8*1.8 
+	    +2.503553e+00*1.8*1.8*1.8*1.8	   
+	    -1.125965e+00*1.8*1.8*1.8*1.8*1.8      
+	    +2.009036e-01*1.8*1.8*1.8*1.8*1.8*1.8);   
   return (7.594129e-02 
 	  -5.535827e-01*mom	   
 	  +1.728591e+00*mom*mom    
@@ -464,8 +490,14 @@ float AliFemtoESDTrackCut::PidFractionElectron(float mom) const
 float AliFemtoESDTrackCut::PidFractionPion(float mom) const
 {
   // Provide a parameterized fraction of pions dependent on momentum
-  if (mom<0.13) return 0.0;
-  if (mom>2.0) return 0.0;
+  if (mom<0.13) 
+    return ( 1.063457e+00
+	     -4.222208e-01*0.13
+	     +1.042004e-01*0.0169);
+  if (mom>2.0) 
+    return ( 1.063457e+00
+	     -4.222208e-01*2.0
+	     +1.042004e-01*4.0);
   return ( 1.063457e+00
 	   -4.222208e-01*mom
 	   +1.042004e-01*mom*mom);
@@ -480,8 +512,16 @@ float AliFemtoESDTrackCut::PidFractionPion(float mom) const
 float AliFemtoESDTrackCut::PidFractionKaon(float mom) const
 {
   // Provide a parameterized fraction of kaons dependent on momentum
-  if (mom<0.18) return 0.0;
-  if (mom>2.0) return 0.0;
+  if (mom<0.18) 
+    return (-7.289406e-02
+	    +4.415666e-01*0.18	   
+	    -2.996790e-01*0.18*0.18    
+	    +6.704652e-02*0.18*0.18*0.18);
+  if (mom>2.0) 
+    return (-7.289406e-02
+	    +4.415666e-01*2.0	   
+	    -2.996790e-01*2.0*2.0    
+	    +6.704652e-02*2.0*2.0*2.0);
   return (-7.289406e-02
 	  +4.415666e-01*mom	   
 	  -2.996790e-01*mom*mom    
@@ -498,7 +538,11 @@ float AliFemtoESDTrackCut::PidFractionProton(float mom) const
 {
   // Provide a parameterized fraction of protons dependent on momentum
   if (mom<0.26) return  0.0;
-  if (mom>2.0) return 0.0;
+  if (mom>2.0) 
+    return (-3.730200e-02  
+	    +1.163684e-01*2.0	      
+	    +8.354116e-02*2.0*2.0       
+	    -4.608098e-02*2.0*2.0*2.0);
   return (-3.730200e-02  
 	  +1.163684e-01*mom	      
 	  +8.354116e-02*mom*mom       
