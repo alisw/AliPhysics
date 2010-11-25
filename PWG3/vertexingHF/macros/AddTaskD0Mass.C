@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Mass *AddTaskD0Mass(TString finname="D0toKpiCuts.root",Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t cutOnDistr=kFALSE,Int_t flagD0D0bar=0)
+AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,TString finname="D0toKpiCuts.root",Bool_t cutOnDistr=kFALSE,Int_t flagD0D0bar=0)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
