@@ -15,6 +15,7 @@ AddTaskFMD(Int_t nCutBins=1, Float_t correctionCut=0.1)
   AliForwardMultiplicity* task = new AliForwardMultiplicity("FMD");
   task->GetHistCollector().SetNCutBins(nCutBins);
   task->GetHistCollector().SetCorrectionCut(correctionCut);
+  task->SetLowFluxCut(1000);
   mgr->AddTask(task);
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
