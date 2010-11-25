@@ -94,24 +94,24 @@ AliCaloTrackReader::~AliCaloTrackReader() {
   }
   
   if(fAODEMCAL){
-    if(fDataType!=kMC)fAODEMCAL->Clear() ; 
+    if(fDataType!=kMC)fAODEMCAL->Clear("C") ; 
     else              fAODEMCAL->Delete() ; 
     delete fAODEMCAL ;
   }
   
   if(fAODPHOS){
-    if(fDataType!=kMC)fAODPHOS->Clear() ; 
+    if(fDataType!=kMC)fAODPHOS->Clear("C") ; 
     else              fAODPHOS->Delete() ; 
     delete fAODPHOS ;
   }
   
   if(fEMCALCells){
-    fEMCALCells->Clear() ; 
+    fEMCALCells->Clear("") ; 
     delete fEMCALCells ;
   }
   
   if(fPHOSCells){
-    fPHOSCells->Clear() ; 
+    fPHOSCells->Clear("") ; 
     delete fPHOSCells ;
   }
 
@@ -469,10 +469,10 @@ void AliCaloTrackReader::ResetLists() {
   //  Reset lists, called by the analysis maker 
 
   if(fAODCTS)     fAODCTS     -> Clear();
-  if(fAODEMCAL)   fAODEMCAL   -> Clear();
-  if(fAODPHOS)    fAODPHOS    -> Clear();
-  if(fEMCALCells) fEMCALCells -> Clear();
-  if(fPHOSCells)  fPHOSCells  -> Clear();
+  if(fAODEMCAL)   fAODEMCAL   -> Clear("C");
+  if(fAODPHOS)    fAODPHOS    -> Clear("C");
+  if(fEMCALCells) fEMCALCells -> Clear("");
+  if(fPHOSCells)  fPHOSCells  -> Clear("");
 
   fV0ADC[0] = 0;   fV0ADC[1] = 0; 
   fV0Mul[0] = 0;   fV0Mul[1] = 0; 
