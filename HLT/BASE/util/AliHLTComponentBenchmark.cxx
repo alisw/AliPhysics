@@ -110,7 +110,8 @@ const char *AliHLTComponentBenchmark::GetStatistics()
 		     fComponentName.Data(), fNEvents, fTotalInput/fNEvents/1024, fTotalOutput/fNEvents/1024, ratio);
   
   if( fNTimers<=0 ) return fStatistics.Data();
-  fStatistics+=Form("; Time %.1fms/%.1fHz (real/cpu = ",fTotalRealTime[0]/fNEvents*1.e3,fNEvents/fTotalRealTime[0]);
+  float hz = ( fTotalRealTime[0] > 0 ) ?fNEvents/fTotalRealTime[0] : 0;
+  fStatistics+=Form("; Time %.1fms/%.1fHz (real/cpu = ",fTotalRealTime[0]/fNEvents*1.e3,hz);
   
   for( int i=0; i<fNTimers; i++ ){
     if( i>0 ) fStatistics+=", ";
