@@ -32,21 +32,21 @@ public:
   void WriteOutHistos();
   virtual TList* GetOutputList();
 
-  void SetSpecificPairCut(AliFemtoPairCut* aCut);
+  //  void SetSpecificPairCut(AliFemtoPairCut* aCut);
 
 private:
   // here are a whole bunch of histos that get filled if we do resolution correction
   TH3D* fNumerator;         // numerator
   TH3D* fDenominator;       // denominator
 
-  AliFemtoPairCut* fPairCut;    //! this is a PairCut specific to THIS CorrFctn, not the Analysis
+  //  AliFemtoPairCut* fPairCut;    //! this is a PairCut specific to THIS CorrFctn, not the Analysis
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctn3DSpherical, 1)
 #endif
 };
 
-inline  void AliFemtoCorrFctn3DSpherical::SetSpecificPairCut(AliFemtoPairCut* pc){fPairCut=pc;}
+//inline  void AliFemtoCorrFctn3DSpherical::SetSpecificPairCut(AliFemtoPairCut* pc){fPairCut=pc;}
 
 #endif
 
