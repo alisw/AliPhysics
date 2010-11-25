@@ -44,7 +44,7 @@ class AliAODCaloCluster : public AliAODCluster {
   virtual ~AliAODCaloCluster();
   AliAODCaloCluster(const AliAODCaloCluster& clus); 
   AliAODCaloCluster& operator=(const AliAODCaloCluster& clus);
-
+  void Clear(const Option_t*);
   
   // getters
   Double_t GetDistanceToBadChannel() const { return fDistToBadChannel; }

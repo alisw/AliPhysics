@@ -26,6 +26,7 @@ class AliVCaloCells : public TNamed
   AliVCaloCells(const char* name, const char* title) : TNamed(name, title) {;}
   AliVCaloCells(const AliVCaloCells& cells) : TNamed(cells.GetName(), cells.GetTitle()) {;}
   virtual ~AliVCaloCells(){;}
+  void Clear(const Option_t*) {;}
   
   virtual Bool_t IsEMCAL() const         = 0;
   virtual Bool_t IsPHOS()  const         = 0;

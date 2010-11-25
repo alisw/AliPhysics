@@ -211,6 +211,18 @@ AliESDCaloCluster::~AliESDCaloCluster(){
 }
 
 //_______________________________________________________________________
+void AliESDCaloCluster::Clear(const Option_t*){ 
+  //
+  // This is destructor according Coding Conventions 
+  //
+  if(fTracksMatched)delete fTracksMatched;fTracksMatched = 0;
+  if(fLabels) delete fLabels; fLabels = 0;
+  if(fCellsAmpFraction){ delete[] fCellsAmpFraction; fCellsAmpFraction=0;}
+  if(fCellsAbsId){ delete[] fCellsAbsId;  fCellsAbsId = 0;}
+}
+
+
+//_______________________________________________________________________
 void AliESDCaloCluster::SetPID(const Float_t *p) {
   // Sets the probability of each particle type
   // Copied from AliESDtrack SetPIDValues

@@ -66,6 +66,7 @@ public:
     AliMCEvent* MCEvent() const {return fMCEvent;} 
     TTree*      TreeTR()  const {return fTreeTR;}
     TTree*      TreeK()   const {return fTreeK;}
+    virtual TTree*      GetTree() const {return fTreeE;}
     Int_t       GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     void        DrawCheck(Int_t i, Int_t search=0);
     Bool_t      InitOk() {return fInitOk;}

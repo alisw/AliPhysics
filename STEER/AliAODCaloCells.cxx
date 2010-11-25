@@ -74,6 +74,12 @@ AliAODCaloCells::~AliAODCaloCells()
   DeleteContainer();
 }
 
+void AliAODCaloCells::Clear(const Option_t*)
+{
+  // clear
+  
+  DeleteContainer();
+}
 
 void AliAODCaloCells::Copy(TObject &obj) const {
   

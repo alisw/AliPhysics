@@ -99,6 +99,14 @@ AliAODCluster::~AliAODCluster()
   RemoveLabel();
 }
 
+//______________________________________________________________________________
+void AliAODCluster::Clear(const Option_t*) 
+{
+  // Clear
+  
+  RemoveLabel();
+}
+
 
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster(const AliAODCluster& clus) :

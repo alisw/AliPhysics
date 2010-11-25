@@ -24,6 +24,7 @@ class AliVCluster : public TObject
   virtual ~AliVCluster() { ; }
   AliVCluster(const AliVCluster& clus);
   AliVCluster & operator=(const AliVCluster& source);
+  void Clear(const Option_t*) {;}
   
   enum VClu_t {kUndef = -2, 
 	       kPHOSNeutral, 

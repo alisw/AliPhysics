@@ -33,7 +33,8 @@ class AliESDCaloCluster : public AliVCluster
   AliESDCaloCluster & operator=(const AliESDCaloCluster& source);
   virtual ~AliESDCaloCluster();
   virtual void Copy(TObject &) const;
-  
+  void Clear(const Option_t*);
+
   void  SetID(Int_t id) {fID = id;}
   Int_t GetID() const {return fID;}
   

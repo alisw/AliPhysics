@@ -101,9 +101,17 @@ AliAODCaloCluster::~AliAODCaloCluster()
 {
   // destructor
   if(fCellsAmpFraction) delete[] fCellsAmpFraction; fCellsAmpFraction=0;
-  if(fCellsAbsId) delete[] fCellsAbsId;  fCellsAbsId = 0;
+  if(fCellsAbsId)       delete[] fCellsAbsId;       fCellsAbsId = 0;
 }
 
+//______________________________________________________________________________
+void AliAODCaloCluster::Clear(const Option_t*) 
+{
+  // clear
+  RemoveLabel();
+  if(fCellsAmpFraction) delete[] fCellsAmpFraction; fCellsAmpFraction=0;
+  if(fCellsAbsId)       delete[] fCellsAbsId;       fCellsAbsId = 0;
+}
 
 //______________________________________________________________________________
 AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :

@@ -38,7 +38,8 @@ class AliAODCluster : public AliVCluster {
   virtual ~AliAODCluster();
   AliAODCluster(const AliAODCluster& clus); 
   AliAODCluster& operator=(const AliAODCluster& clus);
-
+  void Clear(const Option_t*);
+  
   Double_t Chi2() const { return fChi2; }
   
   Double_t E() const { return fEnergy; }

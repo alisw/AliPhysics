@@ -25,7 +25,8 @@ class AliAODCaloCells : public AliVCaloCells
   virtual AliVCaloCells* CopyCaloCells(Bool_t all) const;
 
   virtual ~AliAODCaloCells();
-  
+  void Clear(const Option_t*);
+
   void CreateContainer(Short_t nCells);
   void DeleteContainer();
   void Sort();

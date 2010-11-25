@@ -129,6 +129,15 @@ AliESDCaloCells::~AliESDCaloCells()
 }
 
 //_______________________________________________________________________
+void AliESDCaloCells::Clear(const Option_t*)
+{
+  // clear
+  
+  DeleteContainer();
+}
+
+
+//_______________________________________________________________________
 void AliESDCaloCells::CreateContainer(Short_t nCells)
 {
   // function that creates container to store calorimeter cell data

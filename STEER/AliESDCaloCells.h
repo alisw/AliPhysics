@@ -27,7 +27,7 @@ class AliESDCaloCells : public AliVCaloCells
   virtual ~AliESDCaloCells();
   virtual void Copy(TObject &obj) const;
   virtual AliVCaloCells * CopyCaloCells(Bool_t all) const;
-
+  void Clear(const Option_t*);
   
   Bool_t IsEMCAL()  const { return (fType == kEMCALCell);}
   Bool_t IsPHOS()   const { return (fType == kPHOSCell) ;}
