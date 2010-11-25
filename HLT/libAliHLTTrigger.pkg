@@ -17,6 +17,7 @@ CLASS_HDRS:= \
 		AliHLTTriggerBarrelMultiplicity.h           \
 		AliHLTD0Trigger.h                           \
 		AliHLTD0toKpi.h                             \
+                AliHLTD0Candidate.h                         \
 		AliHLTTriggerITSMultiplicity.h              \
                 AliHLTTriggerAgent.h                        \
                 AliHLTEventSummary.h                        \
