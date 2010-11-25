@@ -1,5 +1,6 @@
-AliAnalysisTaskSEDplus *AddTaskDplus(TString filename="./DplustoKpipiCuts.root",Bool_t storeNtuple=kFALSE,
-				     Bool_t readMC=kFALSE)
+AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
+				     Bool_t readMC=kFALSE,
+				     TString filename="./DplustoKpipiCuts.root")
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for D+ candidates 
