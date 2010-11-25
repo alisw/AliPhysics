@@ -183,17 +183,13 @@ AliForwardMultiplicity::UserCreateOutputObjects()
   fSharingFilter.DefineOutput(fList);
   fDensityCalculator.DefineOutput(fList);
   fCorrections.DefineOutput(fList);
-
-  // fTree = new TTree("T", "T");
-  // fTree->Branch("forward", &fAODFMD);
-
-  // PostData(1, fList);
-  // PostData(2, fTree);
 }
 //____________________________________________________________________
 void
 AliForwardMultiplicity::UserExec(Option_t*)
 {
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+
   // Get the input data 
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) { 
@@ -224,9 +220,8 @@ AliForwardMultiplicity::UserExec(Option_t*)
   // Read trigger information from the ESD and store in AOD object
   UInt_t triggers = 0;
   if (!AliForwardUtil::ReadTriggers(esd, triggers, fHTriggers)) { 
-#ifdef VERBOSE
-    AliWarning("Failed to read triggers from ESD");
-#endif
+    if (am->GetDebugLevel() > 1) 
+      AliWarning("Failed to read triggers from ESD");
     return;
   }
   fAODFMD.SetTriggerBits(triggers);
@@ -236,20 +231,21 @@ AliForwardMultiplicity::UserExec(Option_t*)
 
   // Check if this is a high-flux event 
   const AliMultiplicity* testmult = esd->GetMultiplicity();
-  if (!testmult) { 
-#ifdef VERBOSE
-    AliWarning("No central multiplicity object found");
-#endif
+  if (!testmult) {
+    if (am->GetDebugLevel() > 1) 
+      AliWarning("No central multiplicity object found");
     return;
   }
   Bool_t lowFlux = testmult->GetNumberOfTracklets() < fLowFluxCut;
+  if (am->GetDebugLevel() > 1) 
+    AliInfo(Form("Event has %d SPD tracklets, cut is %d, this is a %s event",
+		 testmult, fLowFluxCut, (lowFlux ? "low" : "high")));
 
   // Get the FMD ESD data 
   AliESDFMD* esdFMD = esd->GetFMDData();
   if (!esdFMD) { 
-#ifdef VERBOSE
-    AliWarning("No FMD data found in ESD");
-#endif
+    if (am->GetDebugLevel() > 1) 
+      AliWarning("No FMD data found in ESD");
     return;
   }
 
@@ -259,9 +255,8 @@ AliForwardMultiplicity::UserExec(Option_t*)
 
   fHEventsTr->Fill(vz);
   if (!vzOk) { 
-#ifdef VERBOSE
-    AliWarning("Failed to read vertex from ESD");
-#endif
+    if (am->GetDebugLevel() > 1) 
+      AliWarning("Failed to read vertex from ESD");
     return;
   }
   fHEventsTrVtx->Fill(vz);
@@ -270,19 +265,19 @@ AliForwardMultiplicity::UserExec(Option_t*)
   Int_t ivz = fHEventsTr->GetXaxis()->FindBin(vz)-1;
   fAODFMD.SetIpZ(vz);
   if (ivz < 0 || ivz >= fHEventsTr->GetXaxis()->GetNbins()) { 
-#if 0
-    AliWarning(Form("Vertex @ %f outside of range [%f,%f]", 
-		    vz, fHEventsTr->GetXaxis()->GetXmin(), 
-		    fHEventsTr->GetXaxis()->GetXmax()));
-#endif
+    if (am->GetDebugLevel() > 1) 
+      AliWarning(Form("Vertex @ %f outside of range [%f,%f]", 
+		      vz, fHEventsTr->GetXaxis()->GetXmin(), 
+		      fHEventsTr->GetXaxis()->GetXmax()));
     return;
   }
+  if (am->GetDebugLevel() > 2) 
+    AliInfo(Form("Events vertex @ %f (bin %d), in range", vz, ivz));
+  
 
   // Apply the sharing filter (or hit merging or clustering if you like)
   if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, vz)) { 
-#ifdef VERBOSE
     AliWarning("Sharing filter failed!");
-#endif
     return;
   }
 
