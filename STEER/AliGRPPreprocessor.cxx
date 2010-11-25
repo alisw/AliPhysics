@@ -568,7 +568,11 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 			if ((detectorMask >> i) & 0x1) {
 				TString det = AliDAQ::OfflineModuleName(i);
 				TString detCTPName = AliTriggerInput::fgkCTPDetectorName[i];
-				if (detCTPName == "CTP") detCTPName="TRG"; // converting according to what is found in DAQ logbook_detectors
+				if (detCTPName == "CTP") {
+					detCTPName="TRG"; // converting according to what is found in DAQ logbook_detectors					
+					Printf("Processing CTP (CTP Detector name %s) --> SKIPPING, CTP does not have any LTU!!!!!!",detCTPName.Data());
+					continue;
+				}				
 				Printf("Processing detector %s (CTP Detector name %s)",det.Data(),detCTPName.Data());
 				TString* ltu = GetLTUConfig(detCTPName.Data());
 				if (!ltu){
