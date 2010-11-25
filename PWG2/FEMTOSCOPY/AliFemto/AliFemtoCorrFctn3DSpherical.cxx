@@ -19,8 +19,8 @@ ClassImp(AliFemtoCorrFctn3DSpherical)
 //____________________________
   AliFemtoCorrFctn3DSpherical::AliFemtoCorrFctn3DSpherical(char* title, const int& nqbins, const float& QLo, const float& QHi, const int& nphibins, const int& ncthetabins):
   fNumerator(0),
-  fDenominator(0),
-  fPairCut(0x0)
+  fDenominator(0) //,
+							  //  fPairCut(0x0)
 {
   // set up numerator
   char tTitNum[100] = "Num";
@@ -37,15 +37,15 @@ ClassImp(AliFemtoCorrFctn3DSpherical)
 }
 
 AliFemtoCorrFctn3DSpherical::AliFemtoCorrFctn3DSpherical(const AliFemtoCorrFctn3DSpherical& aCorrFctn) :
-  AliFemtoCorrFctn(),
+  AliFemtoCorrFctn(aCorrFctn),
   fNumerator(0),
-  fDenominator(0),
-  fPairCut(0x0)
+  fDenominator(0) //,
+							//  fPairCut(0x0)
 {
   // Copy constructor
   fNumerator = new TH3D(*aCorrFctn.fNumerator);
   fDenominator = new TH3D(*aCorrFctn.fDenominator);
-  fPairCut = aCorrFctn.fPairCut;
+  //  fPairCut = aCorrFctn.fPairCut;
 }
 //____________________________
 AliFemtoCorrFctn3DSpherical::~AliFemtoCorrFctn3DSpherical(){
@@ -65,7 +65,7 @@ AliFemtoCorrFctn3DSpherical& AliFemtoCorrFctn3DSpherical::operator=(const AliFem
   if (fDenominator) delete fDenominator;
   fDenominator = new TH3D(*aCorrFctn.fDenominator);
   
-  fPairCut = aCorrFctn.fPairCut;
+  //  fPairCut = aCorrFctn.fPairCut;
   
   return *this;
 }
