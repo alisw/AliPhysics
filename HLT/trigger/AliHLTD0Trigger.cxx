@@ -70,7 +70,6 @@ AliHLTD0Trigger::AliHLTD0Trigger()
   , fTotalD0(0)
   , fTotalD0Onetrue(0)
   , fTotalD0true(0)
-  , fField(0)
   , fEvent(NULL)
   , fuseKF(false)
 {
@@ -133,16 +132,16 @@ int AliHLTD0Trigger::DoTrigger()
     else{
        AliESDEvent *event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
        event->GetStdContent();
-       fField = event->GetMagneticField();
+       Double_t field = event->GetMagneticField();
        Vertex = event->GetPrimaryVertexTracks();
        if(!Vertex || Vertex->GetNContributors()<2){
 	 HLTDebug("Contributors in ESD vertex to low or not been set");
 	 continue;
        }
        for(Int_t it=0;it<event->GetNumberOfTracks();it++){
-	 SingleTrackSelect(event->GetTrack(it),Vertex);
+	 SingleTrackSelect(event->GetTrack(it),Vertex,field);
        }
-       RecD0(nD0,nD0Onetrue,nD0true,Vertex);       
+       RecD0(nD0,nD0Onetrue,nD0true,Vertex,field);       
     }
   }
 
@@ -160,12 +159,12 @@ int AliHLTD0Trigger::DoTrigger()
     vector<AliHLTGlobalBarrelTrack> tracksVector;
     AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(iter->fPtr), iter->fSize, tracksVector);
     
-    fField = GetBz();
+    Double_t field = GetBz();
     if (Vertex){
       for(UInt_t i=0;i<tracksVector.size();i++){
-	SingleTrackSelect(&tracksVector[i],Vertex);
+	SingleTrackSelect(&tracksVector[i],Vertex,field);
       }
-      RecD0(nD0,nD0Onetrue,nD0true,Vertex);
+      RecD0(nD0,nD0Onetrue,nD0true,Vertex,field);
     }    
   }
   
@@ -338,7 +337,7 @@ int AliHLTD0Trigger::ScanConfigurationArgument(int argc, const char** argv)
   return -EINVAL;
 }
 
-void AliHLTD0Trigger::SingleTrackSelect(AliExternalTrackParam* t, const AliESDVertex* pv){
+void AliHLTD0Trigger::SingleTrackSelect(AliExternalTrackParam* t, const AliESDVertex* pv,Double_t field){
   // Offline uses || on the cuts of decay products
   if (!pv) return;
 
@@ -346,7 +345,7 @@ void AliHLTD0Trigger::SingleTrackSelect(AliExternalTrackParam* t, const AliESDVe
   pv->GetXYZ(pvpos);
 
   if(t->Pt()<fPtMin){return;}
-  if(TMath::Abs(t->GetD(pvpos[0],pvpos[1],fField)) > fd0){return;}
+  if(TMath::Abs(t->GetD(pvpos[0],pvpos[1],field)) > fd0){return;}
 
   if(t->Charge()>0){
     fPos.push_back(t);
@@ -356,7 +355,7 @@ void AliHLTD0Trigger::SingleTrackSelect(AliExternalTrackParam* t, const AliESDVe
   }
 }
 
-void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const AliESDVertex* pv){
+void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const AliESDVertex* pv,Double_t field){
   // Default way of reconstructing D0's. Both from ESD and Barreltracks
   Double_t D0,D0bar,xdummy,ydummy; 
   Double_t d0[2];
@@ -374,15 +373,15 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const A
     for(UInt_t in=0;in<fNeg.size();in++){
       AliExternalTrackParam *tN=fNeg[in];
           
-      tP->PropagateToDCA(pv,fField,kVeryBig);  //do I need this??????
-      tN->PropagateToDCA(pv,fField,kVeryBig);
+      tP->PropagateToDCA(pv,field,kVeryBig);  //do I need this??????
+      tN->PropagateToDCA(pv,field,kVeryBig);
       
-      Double_t dcatPtN = tP->GetDCA(tN,fField,xdummy,ydummy);
+      Double_t dcatPtN = tP->GetDCA(tN,field,xdummy,ydummy);
       if(dcatPtN>fdca) { continue; }
       
       ftwoTrackArray->AddAt(tP,0);
       ftwoTrackArray->AddAt(tN,1);
-      AliAODVertex *vertexp1n1 = fd0calc->ReconstructSecondaryVertex(ftwoTrackArray,fField,pv,fuseKF);
+      AliAODVertex *vertexp1n1 = fd0calc->ReconstructSecondaryVertex(ftwoTrackArray,field,pv,fuseKF);
       if(!vertexp1n1) { 
 	ftwoTrackArray->Clear();
 	continue; 
@@ -390,8 +389,8 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const A
       
       vertexp1n1->GetXYZ(svpos);
       
-      tP->PropagateToDCA(vertexp1n1,fField,kVeryBig); 
-      tN->PropagateToDCA(vertexp1n1,fField,kVeryBig);
+      tP->PropagateToDCA(vertexp1n1,field,kVeryBig); 
+      tN->PropagateToDCA(vertexp1n1,field,kVeryBig);
       
       /*
       Double_t px[2],py[2],pz[2];
@@ -420,8 +419,8 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const A
       if((TMath::Abs(fd0calc->InvMass(tN,tP)-fD0PDG)) > finvMass && TMath::Abs((fd0calc->InvMass(tP,tN))-fD0PDG) > finvMass){continue;}
       fd0calc->cosThetaStar(tN,tP,D0,D0bar);
       if(TMath::Abs(D0) > fcosThetaStar && TMath::Abs(D0bar) > fcosThetaStar){continue;}
-      d0[0] = tP->GetD(pvpos[0],pvpos[1],fField);
-      d0[1] = tN->GetD(pvpos[0],pvpos[1],fField);
+      d0[0] = tP->GetD(pvpos[0],pvpos[1],field);
+      d0[1] = tN->GetD(pvpos[0],pvpos[1],field);
       if((d0[0]*d0[1]) > fd0d0){continue;}
       if(fd0calc->pointingAngle(tN,tP,pvpos,svpos) < fcosPoint){continue;}
       

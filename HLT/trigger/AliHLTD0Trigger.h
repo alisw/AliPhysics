@@ -108,11 +108,11 @@ class AliHLTD0Trigger : public AliHLTTrigger
   virtual int DoTrigger();
   
   /// Adding single track cut on input tracks, and split in pos. and neg.
-  void SingleTrackSelect(AliExternalTrackParam*,const AliESDVertex*);
+  void SingleTrackSelect(AliExternalTrackParam*,const AliESDVertex*,Double_t field);
   /// Useing the V0's in the ESD found by the V0 finder
   Int_t RecV0(const TObject* iter);
   /// Reconstructing the D0 from K and pi
-  void RecD0(Int_t&,Int_t&,Int_t&,const AliESDVertex*);
+  void RecD0(Int_t&,Int_t&,Int_t&,const AliESDVertex*,Double_t field);
   /// Checking if the decay prodicts came from a D0
   int CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackParam* pn);
 
@@ -158,9 +158,6 @@ class AliHLTD0Trigger : public AliHLTTrigger
   Int_t fTotalD0;                                          //! transient
   Int_t fTotalD0Onetrue;                                   //! transient
   Int_t fTotalD0true;                                      //! transient
-  
-  /// Magnetic field
-  Double_t fField;                                         //!transient
   
   /// Object with information about the Monte Carlo
   AliHLTMCEvent* fEvent;                                   //!transient
