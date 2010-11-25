@@ -9,6 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoCorrFctnDEtaDPhi.h"
+#include "AliFemtoModelHiddenInfo.h"
 //#include "AliFemtoHisto.hh"
 #include <cstdio>
 #include <TMath.h>
@@ -173,6 +174,7 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
     fDCosPtDenominator = new TH2D(*aCorrFctn.fDCosPtDenominator);
   else
     fDCosPtDenominator = 0;
+
 }
 //____________________________
 AliFemtoCorrFctnDEtaDPhi::~AliFemtoCorrFctnDEtaDPhi(){
@@ -281,6 +283,9 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhi::Report(){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
+  if (fPairCut)
+    if (!fPairCut->Pass(pair)) return;
+
   double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
   double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
@@ -326,6 +331,9 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
+  if (fPairCut)
+    if (!fPairCut->Pass(pair)) return;
+
   double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
   double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
@@ -366,6 +374,7 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
 
   fDPhiPtDenominator->Fill(dphi, ptmin);
   fDCosPtDenominator->Fill(cosphi, ptmin);
+
 }
 
 
