@@ -3,7 +3,7 @@
  * 
  * @ingroup pwg2_forward_analysis_scripts
  */
-AliForwardMultiplicity* 
+AliAnalysisTask*
 AddTaskFMD(Int_t nCutBins=1, Float_t correctionCut=0.1)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
