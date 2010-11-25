@@ -100,7 +100,7 @@ void AliAnalysisTaskMultPbTracks::UserCreateOutputObjects()
   fTrackCutsNoDCA->SetMaxDCAToVertexZPtDep();
 
   fTriggerAnalysis = new AliTriggerAnalysis();
-
+  fTriggerAnalysis->SetAnalyzeMC(fIsMC);
 }
 
 
@@ -245,10 +245,11 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatVtx);
   
   // ZDC cut, only ZNs
-   Bool_t zdcA   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kASide, kTRUE, kFALSE) ; 
-   Bool_t zdcC   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kCSide, kTRUE, kFALSE) ;			
+  Bool_t zdcA   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kASide, kTRUE, kFALSE) ; 
+  Bool_t zdcC   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kCSide, kTRUE, kFALSE) ;			
 
-   if (!(zdcA && zdcC)) return;
+  fIsMC = kTRUE;// FIXME
+  if (!(zdcA && zdcC) && (!fIsMC)) return;
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatZDCCut);
 
   

@@ -14,7 +14,7 @@ using namespace std;
 
 ClassImp(AliAnalysisMultPbTrackHistoManager)
 
-const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After centrality selection",  "After physics Selection", "After ZDC cut", "With Vertex" };
+const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After centrality selection",  "After physics Selection", "With Vertex", "After ZDC cut" };
 const char * AliAnalysisMultPbTrackHistoManager::kHistoPtEtaVzNames[] = { "hGenPtEtaVz", "hRecPtEtaVz", "hRecPtEtaVzPrim", 
 									  "hRecPtEtaVzSecWeak", "hRecPtEtaVzSecMaterial", "hRecPtEtaVzFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoDCANames[]     = { "hGenDCA", "hRecDCA", "hRecDCAPrim", "hRecDCASecWeak","hRecDCASecMaterial", "hRecDCAFake"};
@@ -84,7 +84,8 @@ TH2D * AliAnalysisMultPbTrackHistoManager::GetHistoV0vsNtracks(Histo_t id) {
     AliInfo(Form("Booking histo %s",name.Data()));
 
     h = new TH2D (name.Data(), Form("V0 vs Ntracks (%s)",kHistoPrefix[id]), 300,0,3000, 300, 0, 20000);			 
-
+    h->SetXTitle("N_{Tracks}");
+    h->SetYTitle("V0 Amplitude");
     TH1::AddDirectory(oldStatus);
     fList->Add(h);
 

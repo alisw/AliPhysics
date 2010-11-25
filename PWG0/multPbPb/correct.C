@@ -45,17 +45,19 @@ Float_t zmin = -10;
 Float_t zmax = 10;
 Float_t etaMin = -0.5;
 Float_t etaMax = 0.5;
+Int_t gCentralityBin = -1;
 
 #define CORRECT_2D
 
 void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TString correctionFolder = "./output/LHC10g2a_130844_V0M_bin_10/", 
-	     Float_t zminl=-10, Float_t zmaxl=10, Float_t etaMinl = -0.5, Float_t etaMaxl=0.5, Float_t npart=381.3, Float_t scaleWeakByHand = -1) {
+	     Float_t zminl=-10, Float_t zmaxl=10, Float_t etaMinl = -0.5, Float_t etaMaxl=0.5, Float_t npart=381.3, Float_t scaleWeakByHand = -1, Int_t centrBin = -1) {
 
-  // Set vertex 
+  // Set globals 
   zmin = zminl;
   zmax = zmaxl;
   etaMin = etaMinl;
   etaMax = etaMaxl;
+  gCentralityBin = centrBin;
 
   // Load stuff and set some styles
   LoadLibs();
@@ -261,7 +263,7 @@ void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {
 
 
   TCanvas * c1 = new TCanvas("cDCAFit", "Fit to the DCA distributions");  
-  c1->Divide(4,2);
+  //  c1->Divide(4,2);
   c1->SetLogy();
   // Draw all
   //  hDataDCA->Draw();
@@ -280,7 +282,8 @@ void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {
   // Set the components which are used in HistoSum, the static
   // function for GetFunctionHistoSum
   // Project onti DCA axis
-  const Int_t ptBinsFit[] = {3,5,7,9,11,15,19,23,31,-1};
+  //  const Int_t ptBinsFit[] = {3,5,7,9,11,15,19,23,31,-1};
+  const Int_t ptBinsFit[] = {3,20,-1};
   Int_t ibinPt = -1;
   while(ptBinsFit[(++ibinPt)+1]!=-1){
     c1->cd(ibinPt+1);
@@ -525,9 +528,11 @@ void SetStyle() {
 
 void LoadData(TString dataFolder, TString correctionFolder){
 
+  TString file = "/multPbPbtracks.root";
+  if (gCentralityBin != -1 ) file.ReplaceAll(".root", Form("_%2.2d.root", gCentralityBin));
   // Get histo manager for data and MC + stat histos
-  TFile * fData = new TFile(dataFolder+"/multPbPbtracks.root");
-  TFile * fCorr = new TFile(correctionFolder+"/multPbPbtracks.root");
+  TFile * fData = new TFile(dataFolder+file);
+  TFile * fCorr = new TFile(correctionFolder+file);
   TFile * fStatData = new TFile(dataFolder+"/event_stat.root");
   TFile * fStatCorr = new TFile(correctionFolder+"/event_stat.root");
 
