@@ -752,8 +752,9 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   // Charged Hadron Correlation Analysis
   if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Make trigger particle - charged hadron correlation \n");
   
-  Int_t evtIndex11 = 0 ; 
-  Int_t evtIndex12 = 0 ;
+  Int_t evtIndex11 = -1 ; //cluster trigger or pi0 trigger 
+  Int_t evtIndex12 = -1 ; // pi0 trigger
+  Int_t evtIndex13 = -1 ; // charged trigger
   Int_t indexPhoton1 = -1 ;
   Int_t indexPhoton2 = -1 ;  
   Double_t v[3] = {0,0,0}; //vertex ;
@@ -765,6 +766,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   if (GetMixedEvent()) {
     evtIndex11 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(0)) ;
     evtIndex12 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(1)) ;    
+    evtIndex13 = GetMixedEvent()->EventIndex(aodParticle->GetTrackLabel(0)) ;
   }
   
   Double_t ptTrig  = aodParticle->Pt();
@@ -845,7 +847,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     Int_t evtIndex2 = 0 ; 
     if (GetMixedEvent()) {
       evtIndex2 = GetMixedEvent()->EventIndex(track->GetID()) ;
-      if (evtIndex11 == evtIndex2 || evtIndex12 == evtIndex2) // photon and track from different events
+      if (evtIndex11 == evtIndex2 || evtIndex12 == evtIndex2 || evtIndex13 == evtIndex2 ) // photon and track from different events
         continue ; 
       //vertex cut
       if (TMath::Abs(GetVertex(evtIndex2)[2]) > GetZvertexCut()) 

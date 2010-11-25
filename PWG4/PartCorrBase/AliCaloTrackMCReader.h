@@ -83,6 +83,8 @@ public:
   void SetEMCALOverlapAngle(Float_t angle)  {fEMCALOverlapAngle = angle;}
   void SetPHOSOverlapAngle(Float_t angle) {fPHOSOverlapAngle = angle;}
 
+  AliESDCentrality* GetCentrality() const {return 0x0;}
+  
  private:
   
   void CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg);

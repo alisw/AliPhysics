@@ -33,6 +33,7 @@ class AliGenEventHeader ;
 class AliEMCALGeoUtils;
 class AliPHOSGeoUtils;
 #include "AliMixedEvent.h" 
+#include "AliESDCentrality.h"
 
 class AliAnaPartCorrBaseClass : public TObject {
 	
@@ -85,6 +86,8 @@ public:
   Int_t GetModuleNumber(AliVCluster * cluster) const {
 	  return fCaloUtils->GetModuleNumber(cluster);}
  	
+  AliESDCentrality* GetCentrality() const {return fReader->GetCentrality();}
+  
   virtual void Terminate(TList * /*outputList*/) {;}
 	
   //analysis AOD branch
