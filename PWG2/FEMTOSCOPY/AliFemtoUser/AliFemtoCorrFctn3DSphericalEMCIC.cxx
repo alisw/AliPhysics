@@ -28,6 +28,7 @@
  **************************************************************************/
 
 #include "AliFemtoCorrFctn3DSphericalEMCIC.h"
+#include "AliFemtoKTPairCut.h"
 #include <TMath.h>
 #include <TVector2.h>
 #include <cstdio>
@@ -272,7 +273,12 @@ AliFemtoString AliFemtoCorrFctn3DSphericalEMCIC::Report(){
 void AliFemtoCorrFctn3DSphericalEMCIC::AddRealPair( AliFemtoPair* pair){
   // perform operations on real pairs
   if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+    AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+    if (!ktc){
+      if (!(fPairCut->Pass(pair))) return;
+    }
+    else
+      if (!(ktc->Pass(pair))) return;
   }
 
   //                          
@@ -313,8 +319,16 @@ void AliFemtoCorrFctn3DSphericalEMCIC::AddRealPair( AliFemtoPair* pair){
 void AliFemtoCorrFctn3DSphericalEMCIC::AddMixedPair( AliFemtoPair* pair){
   // perform operations on mixed pairs
   if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+    AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+    if (!ktc){
+      if (!(fPairCut->Pass(pair))) return;
+    }
+    else
+      if (!(ktc->Pass(pair))) return;
   }
+  
+
+
  //                          //Changed K to Q to be in LCMS, N. Bock
   double tQO = pair->QOutCMS();  
   double tQS = pair->QSideCMS();   
@@ -348,3 +362,4 @@ void AliFemtoCorrFctn3DSphericalEMCIC::AddMixedPair( AliFemtoPair* pair){
   fPtMultMix->Fill(tQR,tQP,tQC,tPt1DotPt2);
   
 }
+
