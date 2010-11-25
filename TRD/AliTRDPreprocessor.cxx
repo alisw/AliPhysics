@@ -55,7 +55,7 @@
 #include "AliTRDCalibChamberStatus.h"
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalPadStatus.h"
-#include "Cal/AliTRDCalDCSv2.h"
+#include "Cal/AliTRDCalDCS.h"
 #include "Cal/AliTRDCalSingleChamberStatus.h"
 #include "Cal/AliTRDCalChamberStatus.h"
 #include "Cal/AliTRDCalROC.h"
@@ -377,7 +377,7 @@ Bool_t AliTRDPreprocessor::ExtractHalfChamberStatusDAQ()
   if(calPed) {
     //calPed->AnalyseHisto();   // check number of events, create calHalfChamberStatus (done on DAQ)
     if(fCalDCSObjEOR) {
-      calPed->CheckEORStatus((AliTRDCalDCSv2 *)fCalDCSObjEOR);
+      calPed->CheckEORStatus((AliTRDCalDCS *)fCalDCSObjEOR);
     }
     calHalfChamberStatus=(AliTRDCalChamberStatus *)calPed->GetCalChamberStatus();
   }
@@ -1177,7 +1177,7 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   // get the calibration object storing the data from the handler
   if (fileExistS) {
     if(fCalDCSObjSOR) delete fCalDCSObjSOR;
-    fCalDCSObjSOR = (AliTRDCalDCSv2 *) saxHandlerS.GetCalDCSObj()->Clone();
+    fCalDCSObjSOR = (AliTRDCalDCS *) saxHandlerS.GetCalDCSObj()->Clone();
     fCalDCSObjSOR->EvaluateGlobalParameters();
     fCalDCSObjSOR->SetRunType(GetRunType());
     fCalDCSObjSOR->SetStartTime(GetStartTimeDCSQuery());
@@ -1188,7 +1188,7 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
 
   if (fileExistE) {
     if(fCalDCSObjEOR) delete fCalDCSObjEOR;
-    fCalDCSObjEOR = (AliTRDCalDCSv2 *) saxHandlerE.GetCalDCSObj()->Clone();
+    fCalDCSObjEOR = (AliTRDCalDCS *) saxHandlerE.GetCalDCSObj()->Clone();
     fCalDCSObjEOR->EvaluateGlobalParameters();
     fCalDCSObjEOR->SetRunType(GetRunType());
     fCalDCSObjEOR->SetStartTime(GetStartTimeDCSQuery());
@@ -1204,8 +1204,8 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   AliCDBMetaData metaData1;
   metaData1.SetBeamPeriod(0);
   metaData1.SetResponsible("Frederick Kramer");
-  metaData1.SetComment("DCS configuration data in two AliTRDCalDCSv2 objects in one TObjArray (0:SOR, 1:EOR).");
-  if (!Store("Calib", "DCSv2", calObjArray, &metaData1, 0, kTRUE)) {
+  metaData1.SetComment("DCS configuration data in two AliTRDCalDCS objects in one TObjArray (0:SOR, 1:EOR).");
+  if (!Store("Calib", "DCS", calObjArray, &metaData1, 0, kTRUE)) {
     Log("problems while storing DCS config data object");
     return 16;
   } else {

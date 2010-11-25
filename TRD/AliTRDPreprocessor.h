@@ -15,7 +15,7 @@
 #include "AliPreprocessor.h"
 
 class TMap;
-class AliTRDCalDCSv2;
+class AliTRDCalDCS;
 class AliTRDCalROC;
 class AliTRDCalSingleChamberStatus;
 
@@ -44,8 +44,8 @@ class AliTRDPreprocessor : public AliPreprocessor
 
  private:
 	  
-	  AliTRDCalDCSv2* fCalDCSObjSOR;    // 
-	  AliTRDCalDCSv2* fCalDCSObjEOR;    // 
+	  AliTRDCalDCS* fCalDCSObjSOR;    // 
+	  AliTRDCalDCS* fCalDCSObjEOR;    // 
 
 	  Bool_t  fVdriftHLT;             // HLT Vdrift
 	  UInt_t  ProcessDCSConfigData(); // process DCS configuration
@@ -56,7 +56,7 @@ class AliTRDPreprocessor : public AliPreprocessor
 	  void   SetDefaultNoise(AliTRDCalROC &calROCNoise, Bool_t second);
 	  void   SetNoise(AliTRDCalROC &calROCNoise, AliTRDCalROC *calROCNoisePrevious, Bool_t second);
 
-	  ClassDef(AliTRDPreprocessor,2)          // The SHUTTLE preprocessor for TRD
+	  ClassDef(AliTRDPreprocessor,1)          // The SHUTTLE preprocessor for TRD
 
 };
 #endif
