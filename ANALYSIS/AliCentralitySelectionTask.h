@@ -45,6 +45,9 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void AddPercentileFileToList(TString filename) { fFileList->Add(new TObjString(filename)); }
   void AddPercentileFile2ToList(TString filename) { fFileList2->Add(new TObjString(filename)); }
 
+  Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc, int run);
+  Float_t GetCorrSPD2(Float_t spd2raw,Float_t zv);
+
  private:
 
   Int_t SetupRun(AliESDEvent* esd);
@@ -60,6 +63,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TList*   fFileList;           //! list of input files names
   TList*   fFileList2;          //! list of input files 2 names
   Int_t    fCurrentRun;         // current run number
+  Int_t    fRunNo;              // reference run number
 
   Float_t  fCentV0M;            // percentile centrality from V0
   Float_t  fCentFMD;            // percentile centrality from FMD
