@@ -28,6 +28,9 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   enum TrackType {kGlobal=0, kTPCOnly=1, kITSOnly=2, kSPDTracklet=3};
   typedef enum TrackType ReadTrackType;
 
+  enum EventMult {kTracklet=0, kITSTPC=1, kITSPure=2, kGlobal=3, kSPDLayer1=4 };
+  typedef enum EventMult EstEventMult;
+
   AliFemtoEventReaderESDChain();
   AliFemtoEventReaderESDChain(const AliFemtoEventReaderESDChain& aReader);
   ~AliFemtoEventReaderESDChain();
@@ -39,7 +42,9 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   void SetConstrained(const bool constrained);
   void SetReadTPCInner(const bool readinner);
   void SetUseTPCOnly(const bool usetpconly);
+
   void SetUsePhysicsSelection(const bool usephysics);
+  void SetUseMultiplicity(EstEventMult aType);
 
   bool GetConstrained() const;
   bool GetReadTPCInner() const;
@@ -67,6 +72,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   bool           fUsePhysicsSel; //if true the physics selection class will be used
   AliPhysicsSelection *fSelect;  //Class to select only physics events
   ReadTrackType  fTrackType;     // Type of track read
+  EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
 
 /*   list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared */
 /*   list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow */
