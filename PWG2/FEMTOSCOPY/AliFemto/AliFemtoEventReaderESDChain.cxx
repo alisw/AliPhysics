@@ -614,7 +614,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     }
 
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
-  if (fEstEventMult == kGlobal) 
+  if (fEstEventMult == kGlobalCount) 
     hbtEvent->SetNormalizedMult(tNormMult);
   else if (fEstEventMult == kTracklet)
     hbtEvent->SetNormalizedMult(tTracklet);
