@@ -187,7 +187,7 @@ AliForwardMultiplicity::UserCreateOutputObjects()
   // fTree = new TTree("T", "T");
   // fTree->Branch("forward", &fAODFMD);
 
-  PostData(1, fList);
+  // PostData(1, fList);
   // PostData(2, fTree);
 }
 //____________________________________________________________________
@@ -305,6 +305,8 @@ AliForwardMultiplicity::UserExec(Option_t*)
 
   if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel))
     fHData->Add(&(fAODFMD.GetHistogram()));
+
+  PostData(1, fList);
 }
 
 //____________________________________________________________________
@@ -313,7 +315,8 @@ AliForwardMultiplicity::Terminate(Option_t*)
 {
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {
-    AliError("No output list defined");
+    AliError(Form("No output list defined (%p)", GetOutputData(1)));
+    if (GetOutputData(1)) GetOutputData(1)->Print();
     return;
   }
   
@@ -321,7 +324,13 @@ AliForwardMultiplicity::Terminate(Option_t*)
   TH1I* hEventsTr    = static_cast<TH1I*>(list->FindObject("nEventsTr"));
   TH1I* hEventsTrVtx = static_cast<TH1I*>(list->FindObject("nEventsTrVtx"));
   TH2D* hData        = static_cast<TH2D*>(list->FindObject("d2Ndetadphi"));
-  
+  if (!hData || !hEventsTr || !hEventsTrVtx) { 
+    AliError(Form("one or more histograms could not be found in output "
+		  "list %s (hEventsTr=%p,hEventsTrVtx=%p,d2Ndetadphi=%p)", 
+		  list->GetName(), hEventsTr, hEventsTrVtx, hData));
+    list->ls();
+    return;
+  }
   
   // TH1D* dNdeta = fHData->ProjectionX("dNdeta", 0, -1, "e");
   TH1D* dNdeta = hData->ProjectionX("dNdeta", 1, -1, "e");
