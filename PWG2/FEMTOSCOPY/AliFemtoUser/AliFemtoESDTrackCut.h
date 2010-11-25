@@ -50,6 +50,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMaxSigmaToVertex(const float& maxsig);
   void SetMaxImpactXY(const float& maximpxy);
   void SetMaxImpactZ(const float& maximpz);
+  void SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow);
   void SetMostProbablePion();
   void SetMostProbableKaon();
   void SetMostProbableProton();
@@ -86,6 +87,10 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
 
   float             fMaxImpactXY;        // Max XY impact parameter
   float             fMaxImpactZ;         // Max Z impact parameter
+
+  float             fMaxImpactXYPtOff;   // Max XY DCA Pt dependent offset
+  float             fMaxImpactXYPtNrm;   // Max XY DCA Pt dependent normalization
+  float             fMaxImpactXYPtPow;   // Max XY DCA Pt dependent power
 
   float             fMinPforTOFpid;  // momentum from which TOF PID is requested
   float             fMaxPforTOFpid;  // momentum till which TOF PID is requested
@@ -130,6 +135,7 @@ inline void AliFemtoESDTrackCut::SetMaxITSChiNdof(const float& maxchi) { fMaxITS
 inline void AliFemtoESDTrackCut::SetMaxTPCChiNdof(const float& maxchi) { fMaxTPCchiNdof = maxchi; }
 inline void AliFemtoESDTrackCut::SetMaxSigmaToVertex(const float& maxsig) { fMaxSigmaToVertex = maxsig; }
 inline void AliFemtoESDTrackCut::SetMaxImpactXY(const float& maximpxy) { fMaxImpactXY = maximpxy; }
+inline void AliFemtoESDTrackCut::SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactXYPtOff = maxoff; fMaxImpactXYPtNrm = maxnrm; fMaxImpactXYPtPow = maxpow; }
 inline void AliFemtoESDTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpactZ = maximpz; }
 
 #endif
