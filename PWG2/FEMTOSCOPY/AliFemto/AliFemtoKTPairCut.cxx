@@ -33,7 +33,9 @@ AliFemtoKTPairCut::AliFemtoKTPairCut():
   fKTMin(0),
   fKTMax(1.0e6),
   fPhiMin(0),
-  fPhiMax(360.0)
+  fPhiMax(360.0),
+  fPtMin(0.0),
+  fPtMax(1000.0)
 {
   fKTMin = 0;
    fKTMax = 1.0e6;
@@ -44,7 +46,9 @@ AliFemtoKTPairCut::AliFemtoKTPairCut(double lo, double hi) :
   fKTMin(lo),
   fKTMax(hi),
   fPhiMin(0),
-  fPhiMax(360)
+  fPhiMax(360),
+  fPtMin(0.0),
+  fPtMax(1000.0)
 {
 }
 //__________________
@@ -53,12 +57,16 @@ AliFemtoKTPairCut::AliFemtoKTPairCut(const AliFemtoKTPairCut& c) :
   fKTMin(0),
   fKTMax(1.0e6),
   fPhiMin(0),
-  fPhiMax(360)
+  fPhiMax(360),
+  fPtMin(0.0),
+  fPtMax(1000.0)
 { 
   fKTMin = c.fKTMin;
   fKTMax = c.fKTMax;
   fPhiMin = c.fPhiMin;
   fPhiMax = c.fPhiMax;
+  fPtMin = c.fPtMin;
+  fPtMax = c.fPtMax;
 }
 
 //__________________
@@ -101,6 +109,10 @@ TList *AliFemtoKTPairCut::ListSettings()
   tListSetttings->AddLast(new TObjString(buf));
   snprintf(buf, 200, "AliFemtoKTPairCut.phimin=%f", fPhiMin);
   tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoKTPairCut.ptmin=%f", fPtMin);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoKTPairCut.ptmax=%f", fPtMax);
+  tListSetttings->AddLast(new TObjString(buf));
 
   return tListSetttings;
 }
@@ -117,6 +129,12 @@ void AliFemtoKTPairCut::SetPhiRange(double phimin, double phimax)
   fPhiMax = phimax;
 }
 
+void AliFemtoKTPairCut::SetPTMin(double ptmin, double ptmax)
+{
+  fPtMin = ptmin;
+  fPtMax = ptmax;
+}
+
 //______________________________________________________
 bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair)
 {
@@ -128,6 +146,22 @@ bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair)
 
   if (pair->KT() > fKTMax)
     temp = false;
+
+  if (!temp) return temp;
+
+  if ((fPtMin > 0.0) && (fPtMax<1000.0)) {
+    double px1 = pair->Track1()->Track()->P().x();
+    double py1 = pair->Track1()->Track()->P().y();
+
+    double px2 = pair->Track2()->Track()->P().x();
+    double py2 = pair->Track2()->Track()->P().y();
+    
+    double pt1 = TMath::Hypot(px1, py1);
+    double pt2 = TMath::Hypot(px2, py2);
+    
+    if ((pt1<fPtMin) || (pt1>fPtMax)) return false;
+    if ((pt2<fPtMin) || (pt2>fPtMax)) return false;
+  }
 
 //Taking care of the Phi cut
   double rpangle = (pair->GetPairAngleEP())*180/TMath::Pi();
