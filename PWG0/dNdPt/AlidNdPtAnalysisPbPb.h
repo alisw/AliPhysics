@@ -25,6 +25,7 @@ class AliESD;
 class AliESDfriend;
 class AliESDfriendTrack;
 class AlidNdPtHelper;
+class AliTriggerAnalysis;
 
 #include "AlidNdPt.h"
 
@@ -180,6 +181,8 @@ private:
   THnSparseF *fMCMultRecTrackHist1; //-> mcPt:mcEta:pid
   // track control histograms
   THnSparseF *fRecTrackHist3;  //-> nclust:chi2:Pt:Eta:Phi
+
+  AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis object;
 
   AlidNdPtAnalysisPbPb(const AlidNdPtAnalysisPbPb&); // not implemented
   AlidNdPtAnalysisPbPb& operator=(const AlidNdPtAnalysisPbPb&); // not implemented
