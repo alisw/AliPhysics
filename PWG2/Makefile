@@ -61,6 +61,10 @@ ifneq ($(PWG2kink_INCLUDE),)
   ALICEINC += -I../$(PWG2kink_INCLUDE)
 endif
 
+ifneq ($(PWG2forward_INCLUDE),)
+  ALICEINC += -I../$(PWG2forward_INCLUDE)
+endif
+
 # only if no par file was loaded before
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
@@ -73,12 +77,17 @@ endif
 #  ALICEINC += -I../$(PWG0base_INCLUDE)
 #endif
 
-CXXFLAGS     += $(ALICEINC) -g
-F77FLAGS     += $(ALICEINC) -g -fPIC
-
 #ALICEINC += -IFEMTOSCOPY/AliFemto -IANALYSIS -IFEMTOSCOPY/AliFemtoUser
 
 include lib$(PACKAGE).pkg
+
+ifneq ($(EINCLUDE),)
+  ALICEINC += $(EINCLUDE:%=-I$(ALICE_ROOT)/%)
+endif
+
+CXXFLAGS     += $(ALICEINC) -g
+F77FLAGS     += $(ALICEINC) -g -fPIC
+
 
 DHDR_PWG2 := $(DHDR)
 HDRS_PWG2 := $(HDRS)
