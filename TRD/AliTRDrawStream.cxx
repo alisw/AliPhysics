@@ -280,7 +280,7 @@ Bool_t AliTRDrawStream::ReadEvent(TTree *trackletTree)
       AliDebug(2, Form("Stack %i, Link mask: 0x%02x", fCurrSlot, fCurrLinkMask[fCurrSlot]));
       for (Int_t iLink = 0; iLink < 12; iLink++) {
 	fCurrLink = iLink;
-	fCurrHC   = fCurrSm * 60 + fCurrSlot * 12 + iLink;
+	fCurrHC   = (fCurrEquipmentId - 1024) * 60 + fCurrSlot * 12 + iLink;
 	if ((fCurrLinkMask[fCurrSlot] & (1 << fCurrLink)) == 0)
 	  continue;
 	
@@ -380,10 +380,19 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
     return -1;
   }
 
-  if (fCurrSlot < 0 || fCurrSlot >= 5) {
+  while (fCurrSlot < 0 || fCurrSlot >= 5) {
     if (!NextDDL()) {
       fCurrSlot = -1;
       return -1;
+    }
+    while ((fCurrSlot < 5) &&
+	   (((fCurrStackMask & (1 << fCurrSlot)) == 0) ||
+	    ((fCurrLinkMask[fCurrSlot] & (1 << fCurrLink))) == 0)) {
+      fCurrLink++;
+      if (fCurrLink > 11) {
+	fCurrLink = 0;
+	fCurrSlot++;
+      }
     }
   }
 
@@ -663,7 +672,7 @@ Int_t AliTRDrawStream::ReadTracklets()
 
   if (fTrackletArray->GetEntriesFast() > 0) {
     AliDebug(1, Form("Found %i tracklets in %i %i %i (ev. %i)", fTrackletArray->GetEntriesFast(), 
-		     fCurrSm, fCurrSlot, fCurrLink, fRawReader->GetEventIndex()));
+		     (fCurrEquipmentId-1024), fCurrSlot, fCurrLink, fRawReader->GetEventIndex()));
     if (fCurrSm > -1 && fCurrSm < 18) {
       fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNTracklets += fTrackletArray->GetEntriesFast();
       fStats.fStatsSector[fCurrSm].fNTracklets                      += fTrackletArray->GetEntriesFast();
