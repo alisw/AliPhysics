@@ -153,18 +153,24 @@ AliTOFT0v1::~AliTOFT0v1()
 {
   // dtor
   fEvent=NULL;
+  
+  if (fTracks) {
+    fTracks->Clear();
+    delete fTracks;
+    fTracks=0x0;
+  }
 
-  fTracks->Delete();
-  delete fTracks;
-  fTracks=0x0;
+  if (fGTracks) {
+    fGTracks->Clear();
+    delete fGTracks;
+    fGTracks=0x0;
+  }
 
-  fGTracks->Delete();
-  delete fGTracks;
-  fGTracks=0x0;
-
-  fTracksT0->Delete();
-  delete fTracksT0;
-  fTracksT0=0x0;
+  if (fTracksT0) {
+    fTracksT0->Clear();
+    delete fTracksT0;
+    fTracksT0=0x0;
+  }
 
 }
 //____________________________________________________________________________ 
