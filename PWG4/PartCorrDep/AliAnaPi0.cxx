@@ -679,7 +679,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       curZvertBin = (Int_t)(0.5*GetNZvertBin()*(vert[2]+GetZvertexCut())/GetZvertexCut()) ;
       fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
       currentEvtIndex = evtIndex1 ; 
-      //if(GetDebug() > 1) 
+      if(GetDebug() > 1) 
         printf("AliAnaPi0::MakeAnalysisFillHistograms() - Centrality %d, Vertex Bin %d, RP bin %d\n",curCentrBin,curRPBin,curZvertBin);
     }
     
