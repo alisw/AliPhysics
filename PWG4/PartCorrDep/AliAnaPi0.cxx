@@ -112,8 +112,8 @@ void AliAnaPi0::InitParameters()
   fPtCuts[0] = 0.; fPtCuts[1] = 0.3;   fPtCuts[2] = 0.5;
   for(Int_t i = fNPtCuts; i < 10; i++)fPtCuts[i] = 0.;
   
-  fNAsymCuts = 3;
-  fAsymCuts[0] = 1.;  fAsymCuts[1] = 0.6;   fAsymCuts[2] = 0.1;    
+  fNAsymCuts = 4;
+  fAsymCuts[0] = 1.;  fAsymCuts[1] = 0.8; fAsymCuts[2] = 0.6;   fAsymCuts[3] = 0.1;    
   for(Int_t i = fNAsymCuts; i < 10; i++)fAsymCuts[i] = 0.;
 
   fNCellNCuts = 3;
@@ -355,17 +355,17 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  fhRePtAsym = new TH2D("hRePtAsym","Assymmetry vs pt, for pairs",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+  fhRePtAsym = new TH2D("hRePtAsym","Asymmetry vs pt, for pairs",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
   fhRePtAsym->SetXTitle("p_{T} (GeV/c)");
   fhRePtAsym->SetYTitle("Asymmetry");
   outputContainer->Add(fhRePtAsym);
   
-  fhRePtAsymPi0 = new TH2D("hRePtAsymPi0","Assymmetry vs pt, for pairs close to #pi^{0} mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+  fhRePtAsymPi0 = new TH2D("hRePtAsymPi0","Asymmetry vs pt, for pairs close to #pi^{0} mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
   fhRePtAsymPi0->SetXTitle("p_{T} (GeV/c)");
   fhRePtAsymPi0->SetYTitle("Asymmetry");
   outputContainer->Add(fhRePtAsymPi0);
 
-  fhRePtAsymEta = new TH2D("hRePtAsymEta","Assymmetry vs pt, for pairs close to #eta mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+  fhRePtAsymEta = new TH2D("hRePtAsymEta","Asymmetry vs pt, for pairs close to #eta mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
   fhRePtAsymEta->SetXTitle("p_{T} (GeV/c)");
   fhRePtAsymEta->SetYTitle("Asymmetry");
   outputContainer->Add(fhRePtAsymEta);
