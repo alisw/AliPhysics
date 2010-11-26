@@ -86,8 +86,14 @@ public:
   Int_t GetModuleNumber(AliVCluster * cluster) const {
 	  return fCaloUtils->GetModuleNumber(cluster);}
  	
-  AliESDCentrality* GetCentrality() const {return fReader->GetCentrality();}
-  
+  //Centrality
+  AliESDCentrality* GetCentrality() const  { return fReader->GetCentrality() ;}
+  void SetCentralityClass(TString name)    { fCentralityClass   = name       ;}
+  void SetCentralityOpt(Int_t opt)         { fCentralityOpt     = opt        ;}
+  TString GetCentralityClass()     const   { return fCentralityClass         ;}
+  Int_t   GetCentralityPercent()   const   { return fCentralityOpt           ;}
+  Int_t   GetEventCentrality()     const ;
+ 
   virtual void Terminate(TList * /*outputList*/) {;}
 	
   //analysis AOD branch
@@ -316,8 +322,11 @@ private:
   Bool_t        fNewAOD ;            //  Flag, new aod branch added to the analysis or not.
   TString       fOutputAODName ;     //  Name of output AOD branch;
   TString       fOutputAODClassName; //  Type of aod objects to be stored in the TClonesArray (AliAODPWG4Particle, AliAODPWG4ParticleCorrelation ...)	
-  TString       fAODObjArrayName ;   // Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track references.
-  TString       fAddToHistogramsName;// Add this string to histograms name
+  TString       fAODObjArrayName ;   //  Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track references.
+  TString       fAddToHistogramsName;//  Add this string to histograms name
+  
+  TString       fCentralityClass;    // Name of selected centrality class     
+  Int_t         fCentralityOpt;      // Option for the returned value of the centrality, possible options 5, 10, 100
   
   //Analysis helper classes access pointers
   AliCaloPID               * fCaloPID; //! PID calculation
@@ -353,7 +362,7 @@ private:
   Int_t   fHistoTrMMax   ;  // Maximum value of track multiplicity histogram range
   Int_t   fHistoTrMMin   ;  // Minimum value of track multiplicity histogram range
   
-  ClassDef(AliAnaPartCorrBaseClass,13)
+  ClassDef(AliAnaPartCorrBaseClass,14)
 } ;
 
 
