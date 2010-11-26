@@ -168,20 +168,7 @@ void AlidNdPtTask::UserExec(Option_t *)
     }
   }
 
-  // track cuts from Jochen
-  const AliESDVertex* vtxESDTPC = fESD->GetPrimaryVertexTPC();
-  if( vtxESDTPC->GetNContributors() < 1 ) {   
-    return;
-  }
-
-  const AliMultiplicity* multESD = fESD->GetMultiplicity();
-  if( vtxESDTPC->GetNContributors() < (-10.+0.25*multESD->GetNumberOfITSClusters(0)) ) {
-    return;
-  } 
-  
-  
   // Process analysis
-  
   Bool_t process = kTRUE;
 
   // Check fo centrality
