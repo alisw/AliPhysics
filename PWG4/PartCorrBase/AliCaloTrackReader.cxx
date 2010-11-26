@@ -105,15 +105,13 @@ AliCaloTrackReader::~AliCaloTrackReader() {
     delete fAODPHOS ;
   }
   
-  if(fEMCALCells){
-    fEMCALCells->Clear("") ; 
-    delete fEMCALCells ;
-  }
-  
-  if(fPHOSCells){
-    fPHOSCells->Clear("") ; 
-    delete fPHOSCells ;
-  }
+//  if(fEMCALCells){
+//    delete fEMCALCells ;
+//  }
+//  
+//  if(fPHOSCells){
+//    delete fPHOSCells ;
+//  }
 
   if(fVertex){
     for (Int_t i = 0; i < fNMixedEvent; i++) {
@@ -471,8 +469,8 @@ void AliCaloTrackReader::ResetLists() {
   if(fAODCTS)     fAODCTS     -> Clear();
   if(fAODEMCAL)   fAODEMCAL   -> Clear("C");
   if(fAODPHOS)    fAODPHOS    -> Clear("C");
-  if(fEMCALCells) fEMCALCells -> Clear("");
-  if(fPHOSCells)  fPHOSCells  -> Clear("");
+//  if(fEMCALCells) fEMCALCells -> Clear("");
+//  if(fPHOSCells)  fPHOSCells  -> Clear("");
 
   fV0ADC[0] = 0;   fV0ADC[1] = 0; 
   fV0Mul[0] = 0;   fV0Mul[1] = 0; 
