@@ -111,15 +111,15 @@ void AliHFSystErr::InitD0toKpi() {
   
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=4;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=4;i<=20;i++) fBR->SetBinContent(i,0.012); // 1.2% PDG2010
+  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.012); // 1.2% PDG2010
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=4;i<=20;i++) fTrackingEff->SetBinContent(i,0.02); // 2% (1% per track)
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.02); // 2% (1% per track)
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
@@ -135,7 +135,7 @@ void AliHFSystErr::InitD0toKpi() {
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
   for(Int_t i=1;i<=20;i++) fPIDEff->SetBinContent(i,0.03); // 3%
-  fPIDEff->SetBinContent(4,0.15); // 15%
+  fPIDEff->SetBinContent(4,0.10); // 10%
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
@@ -145,8 +145,7 @@ void AliHFSystErr::InitD0toKpi() {
   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
   fPartAntipart->SetBinContent(1,1);
   fPartAntipart->SetBinContent(2,1);
-  fPartAntipart->SetBinContent(3,0.20);
-  for(Int_t i=4;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);
+  for(Int_t i=3;i<=6;i++) fPartAntipart->SetBinContent(i,0.08);
   
   return;
 }
@@ -158,15 +157,15 @@ void AliHFSystErr::InitDplustoKpipi() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=4;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=4;i<=20;i++) fBR->SetBinContent(i,0.04); // 4% PDG2010
+  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.04); // 4% PDG2010
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=4;i<=20;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
 
 
   // Raw yield extraction
@@ -407,10 +406,10 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   if(fNorm) {
     fNorm->SetFillColor(1);
     fNorm->SetFillStyle(3002);
-    fNorm->Draw("same");
-    TH1F *hNormRefl = ReflectHisto(fNorm);
-    hNormRefl->Draw("same");
-    leg->AddEntry(fNorm,"Normalization","f");
+    //fNorm->Draw("same");
+    //TH1F *hNormRefl = ReflectHisto(fNorm);
+    //hNormRefl->Draw("same");
+    leg->AddEntry(fNorm,"Normalization (10%)","");
   }
   if(grErrFeeddown) {
     grErrFeeddown->SetFillColor(kTeal-8);
@@ -444,7 +443,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     fRawYield->Draw("same");
     TH1F *hRawYieldRefl = ReflectHisto(fRawYield);
     hRawYieldRefl->Draw("same");
-    leg->AddEntry(fRawYield,"Inv. mass analysis","l");
+    leg->AddEntry(fRawYield,"Yield extraction","l");
   }
   if(fCutsEff) {
     fCutsEff->SetLineColor(4);
