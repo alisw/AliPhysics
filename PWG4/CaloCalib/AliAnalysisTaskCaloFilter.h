@@ -45,8 +45,16 @@ public:
   void SetCaloFilter(Int_t calo) {fCaloFilter = calo;}
   TString GetCaloFilter() const  {return fCaloFilter;}
 
-  void SetGeometryName(TString name) { fEMCALGeoName = name ; }
-  TString GeometryName() const       { return fEMCALGeoName ; }
+  void SetEMCALGeometryName(TString name) { fEMCALGeoName = name ; }
+  TString EMCALGeometryName() const       { return fEMCALGeoName ; }
+  
+  void SwitchOnLoadOwnEMCALGeometryMatrices()              { fLoadEMCALMatrices = kTRUE  ; }
+  void SwitchOffLoadOwnEMCALGeometryMatrices()             { fLoadEMCALMatrices = kFALSE ; }
+  void SetEMCALGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fEMCALMatrix[i]    = m      ; }
+  
+  //void SwitchOnLoadOwnPHOSGeometryMatrices()               { fLoadPHOSMatrices = kTRUE  ; }
+  //void SwitchOffLoadOwnPHOSGeometryMatrices()              { fLoadPHOSMatrices = kFALSE ; }
+  //void SetPHOSGeometryMatrixInSM(TGeoHMatrix* m, Int_t i)  { fPHOSMatrix[i]    = m      ; }
   
   void SetEMCALRecoUtils(AliEMCALRecoUtils * ru) {fEMCALRecoUtils = ru;}
   AliEMCALRecoUtils* GetEMCALRecoUtils() const   {return fEMCALRecoUtils;}
@@ -58,7 +66,6 @@ public:
   void    SetTrackCuts(AliESDtrackCuts * cuts)    { fESDtrackCuts = cuts    ; }		  
   Float_t GetTrackMultiplicityEtaCut()     const  { return fTrackMultEtaCut ; }
   void    SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta  ; }		
-  
   
   void PrintInfo();
   
@@ -75,8 +82,13 @@ private:
   AliESDtrackCuts *fESDtrackCuts       ; // Track cut  
   Float_t          fTrackMultEtaCut    ; // Track multiplicity eta cut
   
+  Bool_t        fLoadEMCALMatrices; // Matrices set from configuration, not get from geometry.root or from ESDs/AODs
+  TGeoHMatrix * fEMCALMatrix[10];   // Geometry matrices with alignments
+  //Bool_t        fLoadPHOSMatrices;  // Matrices set from configuration, not get from geometry.root or from ESDs/AODs
+  //TGeoHMatrix * fPHOSMatrix[5];     // Geometry matrices with alignments
+  Bool_t        fGeoMatrixSet;      // Set geometry matrices only once, for the first event.         
   
-  ClassDef(AliAnalysisTaskCaloFilter, 3); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskCaloFilter, 4); // Analysis task for standard ESD filtering
 };
 
 #endif

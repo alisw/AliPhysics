@@ -41,6 +41,7 @@
 #include "AliMixedEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliAnalysisDataSlot.h"
 
 ClassImp(AliAnalysisTaskParticleCorrelationM)
 
@@ -213,12 +214,14 @@ void AliAnalysisTaskParticleCorrelationM::UserExec(Option_t */*option*/)
   fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
   //printf("AliAnalysisTaskParticleCorrelationM::Current Event %d; Current File Name : %s\n",(Int_t) Entry(), CurrentFileName());
   if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelationM::UserExec() - End\n");
-	
+    
   PostData(1, fOutputContainer);
 	
+  AliAnalysisDataSlot *out0 = GetOutputSlot(0);
+  if (out0 && out0->IsConnected()) PostData(0, fTreeA);  
+  
   //gObjectTable->Print();
 
-  
 }
 
 //_____________________________________________________

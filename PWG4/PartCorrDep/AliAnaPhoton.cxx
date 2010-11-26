@@ -495,7 +495,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     else{
       //Set PID bits for later selection (AliAnaPi0 for example)
       //GetPDG already called in SetPIDBits.
-      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph);
+      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph, GetCaloUtils());
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PID Bits set \n");		
     }
     

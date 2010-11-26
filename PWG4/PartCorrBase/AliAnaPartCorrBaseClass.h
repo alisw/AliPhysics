@@ -244,7 +244,7 @@ public:
   virtual void      GetVertex(Double_t vertex[3],const Int_t evtIndex) const { GetReader()->GetVertex(vertex,evtIndex) ; } 
   virtual Double_t* GetVertex(const Int_t evtIndex) const { return GetReader()->GetVertex(evtIndex) ; } 
 
-	virtual Bool_t IsTrackMatched(const AliVCluster * cluster) const { return fCaloPID->IsTrackMatched(cluster); } 
+	virtual Bool_t IsTrackMatched(const AliVCluster * cluster) const { return fCaloPID->IsTrackMatched(cluster, fCaloUtils); } 
   
 private:    
   

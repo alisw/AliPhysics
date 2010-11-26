@@ -60,9 +60,12 @@ public:
   void SwitchOnOldAODs()   {fOldAOD = kTRUE  ; }
   void SwitchOffOldAODs()  {fOldAOD = kFALSE ; }  
   
-  void SetGeometryName(TString name) { fEMCALGeoName = name ; }
-  TString GeometryName() const       { return fEMCALGeoName ; }
- 		  
+  void SetGeometryName(TString name)                  { fEMCALGeoName = name   ; }
+  TString GeometryName() const                        { return fEMCALGeoName   ; }
+  void SwitchOnLoadOwnGeometryMatrices()              { fLoadMatrices = kTRUE  ; }
+  void SwitchOffLoadOwnGeometryMatrices()             { fLoadMatrices = kFALSE ; }
+  void SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fMatrix[i]    = m      ; }
+
   void SetEMCALRecoUtils(AliEMCALRecoUtils * ru) {fRecoUtils = ru;}
   AliEMCALRecoUtils* GetEMCALRecoUtils() const   {return fRecoUtils;}
   
@@ -74,6 +77,7 @@ public:
   void UseFilteredEventAsInput() {fFilteredInput = kTRUE;}
   void UseNormalEventAsInput()   {fFilteredInput = kFALSE;}
 
+  
   void PrintInfo();
   
 private:
@@ -127,10 +131,12 @@ private:
   TH2F*   fhTowerDecayPhotonEnergy[4] ;    //! Cells ordered in column/row for different module, accumulated energy in the tower by decay photons.
   TH2F*   fhTowerDecayPhotonAsymmetry[4] ; //! Cells ordered in column/row for different module, accumulated asymmetry in the tower by decay photons.
 
-  TH1I*   fhNEvents;        //! Number of events counter histogram
-  TList * fCuts ;           //! List with analysis cuts
-
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,10);
+  TH1I*   fhNEvents;           //! Number of events counter histogram
+  TList * fCuts ;              //! List with analysis cuts
+  Bool_t        fLoadMatrices; // Matrices set from configuration, not get from geometry.root or from ESDs/AODs
+  TGeoHMatrix * fMatrix[4];    // Geometry matrices with alignments
+  
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,11);
 
 };
 

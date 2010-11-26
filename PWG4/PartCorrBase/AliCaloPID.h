@@ -38,6 +38,7 @@ class TTask;
 class AliVCluster;
 class AliAODPWG4Particle;
 class AliEMCALPIDUtils;
+class AliCalorimeterUtils;
 
 class AliCaloPID : public TObject {
 	
@@ -76,7 +77,7 @@ public:
   
   TString	GetPIDParametersList();
   
-  void SetPIDBits(const TString calo,  const AliVCluster * cluster, AliAODPWG4Particle *aodph);
+  void SetPIDBits(const TString calo,  const AliVCluster * cluster, AliAODPWG4Particle *aodph, const AliCalorimeterUtils* cu);
   
   void Print(const Option_t * opt)const;
   
@@ -114,7 +115,7 @@ public:
   
   //PID bits setters and getters
   
-  Bool_t IsTrackMatched(const AliVCluster * cluster) const ;  
+  Bool_t IsTrackMatched(const AliVCluster * cluster, const AliCalorimeterUtils* cu) const ;  
   
   void SetDispersionCut(Float_t dcut ) {fDispCut = dcut; }
   Float_t GetDispersionCut() const {return fDispCut ;}   
@@ -131,7 +132,7 @@ public:
   void SetLowParticleFlux()  {fParticleFlux = kLow;}
   void SetHighParticleFlux() {fParticleFlux = kHigh;}
 
- private:
+private:
   
   Float_t      fEMCALPhotonWeight; //Bayesian PID weight for photons in EMCAL 
   Float_t      fEMCALPi0Weight;  //Bayesian PID weight for pi0 in EMCAL 
@@ -153,10 +154,9 @@ public:
   
   Int_t	 fDebug; //Debug level
 	
-  Bool_t fRecalculateBayesian; // Recalculate PID bayesian or use simple PID?
-  Int_t  fParticleFlux;        // Particle flux for setting PID parameters
-  AliEMCALPIDUtils * fEMCALPIDUtils; //Pointer to EMCALPID to redo the PID Bayesian calculation
-	
+  Bool_t fRecalculateBayesian;        // Recalculate PID bayesian or use simple PID?
+  Int_t  fParticleFlux;               // Particle flux for setting PID parameters
+  AliEMCALPIDUtils * fEMCALPIDUtils;  // Pointer to EMCALPID to redo the PID Bayesian calculation
 	
   ClassDef(AliCaloPID,4)
 } ;

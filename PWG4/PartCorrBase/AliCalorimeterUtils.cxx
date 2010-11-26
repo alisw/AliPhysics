@@ -42,19 +42,24 @@ ClassImp(AliCalorimeterUtils)
 //____________________________________________________________________________
   AliCalorimeterUtils::AliCalorimeterUtils() : 
     TObject(), fDebug(0), 
-    fEMCALGeoName("EMCAL_FIRSTYEAR"),fPHOSGeoName("PHOSgeo"), 
+    fEMCALGeoName("EMCAL_FIRSTYEARV1"),fPHOSGeoName("PHOSgeo"), 
     fEMCALGeo(0x0), fPHOSGeo(0x0), 
     fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE), 
+    fLoadEMCALMatrices(kFALSE), fLoadPHOSMatrices(kFALSE),
     fRemoveBadChannels(kFALSE),fPHOSBadChannelMap(0x0), 
     fNCellsFromPHOSBorder(0), fRecalibration(kFALSE),
     fPHOSRecalibrationFactors(),
     fEMCALRecoUtils(new AliEMCALRecoUtils),
-    fRecalculatePosition(kFALSE),fCorrectELinearity(kFALSE)
+    fRecalculatePosition(kFALSE),fCorrectELinearity(kFALSE),
+    fRecalculateMatching(kFALSE),fCutR(20), fCutZ(20)
 {
   //Ctor
   
   //Initialize parameters
   InitParameters();
+  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
+
 }
 
 //_________________________________
@@ -403,7 +408,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 void AliCalorimeterUtils::InitParameters()
 {
   //Initialize the parameters of the analysis.
-  fEMCALGeoName = "EMCAL_FIRSTYEAR";
+  fEMCALGeoName = "EMCAL_FIRSTYEARV1";
   fPHOSGeoName  = "PHOSgeo";
 	
   if(gGeoManager) {// geoManager was set
@@ -510,6 +515,7 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
   printf("Recalibrate Clusters? %d\n",fRecalibration);
   printf("Recalculate Clusters Position? %d\n",fRecalculatePosition);
   printf("Recalculate Clusters Energy? %d\n",fCorrectELinearity);
+  printf("Matching criteria: dR < %2.2f[cm], dZ < %2.2f[cm]\n",fCutR,fCutZ);
 
   printf("    \n") ;
 } 
@@ -565,43 +571,71 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
   //Set the calorimeters transformation matrices
 	
   //Get the EMCAL transformation geometry matrices from ESD 
-  if (!gGeoManager && fEMCALGeo && !fEMCALGeoMatrixSet) { 
-	  if(fDebug > 1) 
-		  printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load EMCAL misalignment matrices. \n");
-	  if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
-			for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
-				if(inputEvent->GetEMCALMatrix(mod)) {
-					//printf("EMCAL: mod %d, matrix %p\n",mod, ((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod));
-					fEMCALGeo->SetMisalMatrix(inputEvent->GetEMCALMatrix(mod),mod) ;
-					fEMCALGeoMatrixSet = kTRUE;//At least one, so good
-				}
-			}// loop over super modules	
-		}//ESD as input
-		else {
-			if(fDebug > 1)
-				printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
-				}//AOD as input
+  if(!fEMCALGeoMatrixSet && fEMCALGeo){
+    if(fLoadEMCALMatrices){
+      printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load user defined geometry matrices\n");
+      for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+        if(fEMCALMatrix[mod]){
+          if(fDebug > 1) 
+            fEMCALMatrix[mod]->Print();
+          fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod) ;  
+        }
+      }//SM loop
+      fEMCALGeoMatrixSet = kTRUE;//At least one, so good
+      
+    }//Load matrices
+    else if (!gGeoManager) { 
+      if(fDebug > 1) 
+        printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load EMCAL misalignment matrices. \n");
+      if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
+        for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
+          if(inputEvent->GetEMCALMatrix(mod)) {
+            //printf("EMCAL: mod %d, matrix %p\n",mod, ((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod));
+            fEMCALGeo->SetMisalMatrix(inputEvent->GetEMCALMatrix(mod),mod) ;
+          }
+        }// loop over super modules	
+        fEMCALGeoMatrixSet = kTRUE;//At least one, so good
+        
+      }//ESD as input
+      else {
+        if(fDebug > 1)
+          printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
+      }//AOD as input
+    }//Get matrix from data
   }//EMCAL geo && no geoManager
 	
 	//Get the PHOS transformation geometry matrices from ESD 
-	if (!gGeoManager && fPHOSGeo && !fPHOSGeoMatrixSet) {
-		if(fDebug > 1) 
-			printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load PHOS misalignment matrices. \n");
+  if(!fPHOSGeoMatrixSet && fPHOSGeo){
+    if(fLoadPHOSMatrices){
+      printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load user defined geometry matrices\n");
+      for(Int_t mod=0; mod < 5; mod++){
+        if(fPHOSMatrix[mod]){
+          if(fDebug > 1) 
+            fPHOSMatrix[mod]->Print();
+          fPHOSGeo->SetMisalMatrix(fPHOSMatrix[mod],mod) ;  
+        }
+      }//SM loop
+      fPHOSGeoMatrixSet = kTRUE;//At least one, so good
+    }//Load matrices
+    else if (!gGeoManager) { 
+      if(fDebug > 1) 
+        printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load PHOS misalignment matrices. \n");
 			if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
 				for(Int_t mod=0; mod < 5; mod++){ 
 					if(inputEvent->GetPHOSMatrix(mod)) {
 						//printf("PHOS: mod %d, matrix %p\n",mod, ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod));
 						fPHOSGeo->SetMisalMatrix(inputEvent->GetPHOSMatrix(mod),mod) ;
-						fPHOSGeoMatrixSet  = kTRUE; //At least one so good
 					}
-				}// loop over modules	
+				}// loop over modules
+        fPHOSGeoMatrixSet  = kTRUE; //At least one so good
 			}//ESD as input
 			else {
 				if(fDebug > 1) 
 					printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
-					}//AOD as input
+      }//AOD as input
+    }// get matrix from data
 	}//PHOS geo	and  geoManager was not set
-
+  
 }
 
 //________________________________________________________________

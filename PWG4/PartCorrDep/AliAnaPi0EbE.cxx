@@ -612,7 +612,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     else{
       //Set PID bits for later selection (AliAnaPi0 for example)
       //GetPDG already called in SetPIDBits.
-      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodpi0);
+      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodpi0, GetCaloUtils());
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PID Bits set \n");		
     }
     
