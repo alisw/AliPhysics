@@ -53,6 +53,7 @@ ClassImp(AliAnaPartCorrBaseClass)
     fOutputAODBranch(0x0), fNewAOD(kFALSE),
     fOutputAODName(""), fOutputAODClassName(""),
     fAODObjArrayName(""), fAddToHistogramsName(""),
+    fCentralityClass("V0M"),fCentralityOpt(10),
     fCaloPID(0x0), fFidCut(0x0), fIC(0x0),fMCUtils(0x0), fNMS(0x0),
     fCaloUtils(0x0),
     fHistoPtBins(0),   fHistoPtMax(0.),   fHistoPtMin(0.),
@@ -361,6 +362,24 @@ Int_t AliAnaPartCorrBaseClass::GetEventNumber() const {
 	
 	return fReader->GetEventNumber() ; 
 }
+
+//__________________________________________________
+Int_t AliAnaPartCorrBaseClass::GetEventCentrality() const {
+  //Return current event centrality
+  
+  if(GetCentrality()){
+    if(fCentralityOpt==100)     return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass);
+    else if(fCentralityOpt==10) return GetCentrality()->GetCentralityClass10(fCentralityClass); 
+    else if(fCentralityOpt==5)  return GetCentrality()->GetCentralityClass5(fCentralityClass);
+    else {
+      printf("AliAnaPartCorrBaseClass::Unknown centrality option %d, use 5, 10 or 100\n",fCentralityOpt);
+      return 0;
+    } 
+  }
+  else return 0;
+  
+}
+
 	
 //__________________________________________________
 AliStack *  AliAnaPartCorrBaseClass::GetMCStack() const {

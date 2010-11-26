@@ -674,13 +674,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       continue ; 
     if(TMath::Abs(vert[2]) > GetZvertexCut()) continue ;   //vertex cut
     if (evtIndex1 != currentEvtIndex) {
-      //Get Reaction Plan position and calculate RP bin
-      //does not exist in ESD yet????
-      curCentrBin = 0 ; 
+      curCentrBin = GetEventCentrality();
       curRPBin    = 0 ;
       curZvertBin = (Int_t)(0.5*GetNZvertBin()*(vert[2]+GetZvertexCut())/GetZvertexCut()) ;
       fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
       currentEvtIndex = evtIndex1 ; 
+      //if(GetDebug() > 1) 
+        printf("AliAnaPi0::MakeAnalysisFillHistograms() - Centrality %d, Vertex Bin %d, RP bin %d\n",curCentrBin,curRPBin,curZvertBin);
     }
     
     //printf("AliAnaPi0::MakeAnalysisFillHistograms(): Photon 1 Evt %d  Vertex : %f,%f,%f\n",evtIndex1, GetVertex(evtIndex1)[0] ,GetVertex(evtIndex1)[1],GetVertex(evtIndex1)[2]);
