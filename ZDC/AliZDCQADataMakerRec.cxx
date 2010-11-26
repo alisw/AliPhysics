@@ -230,6 +230,9 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hZNCrawCentr, 24, expert, !image);
   TH2F *hZNArawCentr  = new TH2F("hZNArawCentr", "Centroid in ZNA;X (cm);Y(cm)", 100, -5.,5.,100,-5.,5.);
   Add2RawsList(hZNArawCentr, 25, expert, !image);
+  
+  TH2F *hTimeZDC = new TH2F("fHistTimeZDC", "ZDC;TDC timing A+C vs C-A; events", 120,-30,30,120,-600,-540);
+  Add2RawsList(hTimeZDC, !expert, image);
 }
 
 //____________________________________________________________________________
@@ -465,11 +468,18 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     Bool_t isZNCFired=kFALSE, isZPCFired=kFALSE, isZNAFired=kFALSE, isZPAFired=kFALSE;
     Int_t  indZNC=0, indZNA=0, indZPC=0, indZPA=0;
     Float_t zncTDC[10], zpcTDC[10], zem1TDC[10], zem2TDC[10], znaTDC[10], zpaTDC[10];
+    Float_t zncSumTDC[10], znaSumTDC[10];
     for(Int_t i=0; i<10; i++){
-       zncTDC[i]=zpcTDC[i]=zem1TDC[i]=zem2TDC[i]=znaTDC[i]=zpaTDC[i]=-999.;
+       zncTDC[i]=zpcTDC[i]=zem1TDC[i]=zem2TDC[i]=znaTDC[i]=zpaTDC[i]=zncSumTDC[i]=znaSumTDC[i]=-999.;
     }
     Float_t tdcGate=-999.;
     Int_t iMultZNCTDC=0, iMultZPCTDC=0, iMultZEM1TDC=0, iMultZEM2TDC=0, iMultZNATDC=0, iMultZPATDC=0;
+    Int_t iMultTDCC=0, iMultTDCA=0;
+    //
+    const Float_t refSum = -568.5;
+    const Float_t refDelta = -2.1;
+    const Float_t sigmaSum = 3.25;
+    const Float_t sigmaDelta = 2.25;
     
     const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
     const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
@@ -678,6 +688,14 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	    zem2TDC[iMultZEM2TDC] = (0.025*(stream.GetZDCTDCDatum()));
 	    iMultZEM2TDC++;
 	 }
+	 else if(stream.GetChannel()==10){
+	    zncSumTDC[iMultZEM2TDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    iMultTDCC++;
+	 }
+	 else if(stream.GetChannel()==12){
+	    znaSumTDC[iMultZEM2TDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    iMultTDCA++;
+	 }
 	 else if(stream.GetChannel()==14) tdcGate = (0.025*(stream.GetZDCTDCDatum()));
 	 
 	 if(stream.GetChannel()==16 && tdcGate!=-999.){
@@ -710,11 +728,21 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	        GetRawsData(21)->Fill(6, zem2TDC[iHit]-tdcGate);
 	        //GetRawsData(23)->SetBinContent(6,  GetRawsData(21)->GetBinContent(9));
               }
+	      if(zncSumTDC[iHit]!=-999.){
+	         Float_t tdcC = zncSumTDC[iHit]-tdcGate;
+		 if(znaSumTDC[iHit]!=-999.){
+		    Float_t tdcA = znaSumTDC[iHit]-tdcGate;
+	            if (((tdcC-tdcA-refDelta)*(tdcC-tdcA-refDelta)/(sigmaDelta*sigmaDelta) +
+	                (tdcC+tdcA-refSum)*(tdcC+tdcA-refSum)/(sigmaSum*sigmaSum))< 1.0)
+			GetRawsData(26)->Fill(tdcC-tdcA,tdcC+tdcA);
+		    
+		 }
+              }
 	   }
 	   //
 	   tdcGate = -999.;
            for(Int_t i=0; i<10; i++){
-              zpcTDC[i] = zem1TDC[i] = -999.;
+              zpcTDC[i] = zem1TDC[i] = zncSumTDC[i] = znaSumTDC[i] = -999.;
            } 
 	 }
       }
