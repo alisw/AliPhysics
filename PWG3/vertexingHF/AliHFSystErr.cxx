@@ -172,7 +172,7 @@ void AliHFSystErr::InitDplustoKpipi() {
   fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
   fRawYield->SetBinContent(1,1);
   fRawYield->SetBinContent(2,1);
-  fRawYield->SetBinContent(3,0.10);
+  fRawYield->SetBinContent(3,0.20);
   for(Int_t i=4;i<=20;i++) fRawYield->SetBinContent(i,0.055);  //5 to 10%
 
   // Cuts efficiency (from cuts variation)
