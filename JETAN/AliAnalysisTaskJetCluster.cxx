@@ -91,6 +91,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fTrackPtCut(0.),							
   fJetOutputMinPt(1),
   fJetTriggerPtCut(0),
+  fCentCutUp(0),
+  fCentCutLo(0),
   fNonStdBranch(""),
   fBackgroundBranch(""),
   fNonStdFile(""),
@@ -124,6 +126,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fh1PtJetsRecInRan(0x0),
   fh1PtTracksGenIn(0x0),
   fh1Nch(0x0),
+  fh1CentralityPhySel(0x0), 
   fh1Centrality(0x0), 
   fh1CentralitySelect(0x0),
   fh2NRecJetsPt(0x0),
@@ -159,6 +162,12 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
     fh1BiARandomCones[i] = 0;
     fh1BiARandomConesRan[i] = 0;
   }
+  for(int i = 0;i<kMaxCent;i++){
+    fh2JetsLeadingPhiPtC[i] = 0;     
+    fh2JetsLeadingPhiPtWC[i] = 0;      //! jet correlation with leading jet
+    fh2TracksLeadingJetPhiPtC[i] = 0;
+    fh2TracksLeadingJetPhiPtWC[i] = 0;
+  }
 }
 
 AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
@@ -181,6 +190,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fTrackPtCut(0.),							
   fJetOutputMinPt(1),
   fJetTriggerPtCut(0),
+  fCentCutUp(0),
+  fCentCutLo(0),
   fNonStdBranch(""),
   fBackgroundBranch(""),
   fNonStdFile(""),
@@ -214,6 +225,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh1PtJetsRecInRan(0x0),
   fh1PtTracksGenIn(0x0),
   fh1Nch(0x0),
+  fh1CentralityPhySel(0x0), 
   fh1Centrality(0x0), 
   fh1CentralitySelect(0x0),
   fh2NRecJetsPt(0x0),
@@ -248,6 +260,12 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   for(int i = 0;i<3;i++){
     fh1BiARandomCones[i] = 0;
     fh1BiARandomConesRan[i] = 0;
+  }
+  for(int i = 0;i<kMaxCent;i++){
+    fh2JetsLeadingPhiPtC[i] = 0;     
+    fh2JetsLeadingPhiPtWC[i] = 0;      //! jet correlation with leading jet
+    fh2TracksLeadingJetPhiPtC[i] = 0;
+    fh2TracksLeadingJetPhiPtWC[i] = 0;
   }
  DefineOutput(1, TList::Class());  
 }
@@ -424,6 +442,7 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 
   fh1Centrality = new TH1F("fh1Centrality",";cent (%)",111,-0.5,110.5);
   fh1CentralitySelect = new TH1F("fh1CentralitySelect",";cent (%)",111,-0.5,110.5);
+  fh1CentralityPhySel = new TH1F("fh1CentralityPhySel",";cent (%)",111,-0.5,110.5);
 
   fh2NRecJetsPt = new TH2F("fh2NRecJetsPt","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NRecJetsPtRan = new TH2F("fh2NRecJetsPtRan","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
@@ -490,6 +509,12 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       fh1BiARandomConesRan[i] =  new TH1F(Form("fh1BiARandomConesRan%d",i),";B_{i}^{A} (GeV/c)",200,-100,100);
     }
   }
+  for(int i = 0;i < kMaxCent;i++){
+    fh2JetsLeadingPhiPtC[i] = (TH2F*)fh2JetsLeadingPhiPt->Clone(Form("%s_C%02d",fh2JetsLeadingPhiPt->GetName(),i+1));
+    fh2JetsLeadingPhiPtWC[i]= (TH2F*)fh2JetsLeadingPhiPtW->Clone(Form("%s_C%02d",fh2JetsLeadingPhiPtW->GetName(),i+1));
+    fh2TracksLeadingJetPhiPtC[i] = (TH2F*)fh2TracksLeadingJetPhiPt->Clone(Form("%s_C%02d",fh2TracksLeadingJetPhiPt->GetName(),i+1));
+    fh2TracksLeadingJetPhiPtWC[i] = (TH2F*)fh2TracksLeadingJetPhiPtW->Clone(Form("%s_C%02d",fh2TracksLeadingJetPhiPtW->GetName(),i+1));
+  }
 
   const Int_t saveLevel = 3; // large save level more histos
   if(saveLevel>0){
@@ -513,12 +538,20 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     fHistList->Add(fh1Nch);
     fHistList->Add(fh1Centrality);
     fHistList->Add(fh1CentralitySelect);
+    fHistList->Add(fh1CentralityPhySel);
     if(fUseBackgroundCalc){
       for(int i = 0;i<3;i++){
 	fHistList->Add(fh1BiARandomCones[i]);
 	fHistList->Add(fh1BiARandomConesRan[i]);
       }
     }
+  for(int i = 0;i < kMaxCent;i++){
+    fHistList->Add(fh2JetsLeadingPhiPtC[i]);
+    fHistList->Add(fh2JetsLeadingPhiPtWC[i]);
+    fHistList->Add(fh2TracksLeadingJetPhiPtC[i]);
+    fHistList->Add(fh2TracksLeadingJetPhiPtWC[i]);
+  }
+
     fHistList->Add(fh2NRecJetsPt);
     fHistList->Add(fh2NRecTracksPt);
     fHistList->Add(fh2NConstPt);
@@ -646,9 +679,17 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   Bool_t selectEvent =  false;
   Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
 
+  Float_t cent = 0;
+  Int_t cenClass = -1;
   if(fAOD){
     const AliAODVertex *vtxAOD = fAOD->GetPrimaryVertex();
     TString vtxTitle(vtxAOD->GetTitle());
+    cent = fAOD->GetHeader()->GetCentrality();
+    if(cent<10)cenClass = 0;
+    else if(cent<30)cenClass = 1;
+    else if(cent<50)cenClass = 2;
+    else if(cent<80)cenClass = 3;
+    if(physicsSelection)fh1CentralityPhySel->Fill(cent);
 
     if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
 	Float_t zvtx = vtxAOD->GetZ();
@@ -659,12 +700,18 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	  if(physicsSelection)selectEvent = true;
 	}
     }
+    if(fCentCutUp>0){
+      if(cent<fCentCutLo||cent>fCentCutUp){
+	selectEvent = false;
+      }
+    }
+
   }
   if(!selectEvent){
     PostData(1, fHistList);
     return;
   }
-  
+  fh1Centrality->Fill(cent);  
   fh1Trials->Fill("#sum{ntrials}",1);
   
 
@@ -860,7 +907,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   Int_t nRec     = inclusiveJets.size();
   if(inclusiveJets.size()>0){
     AliAODJet leadingJet (sortedJets[0].px(), sortedJets[0].py(), sortedJets[0].pz(), sortedJets[0].E());
-    Double_t area=clustSeq.area(sortedJets[0]);
+    Double_t area = clustSeq.area(sortedJets[0]);
     leadingJet.SetEffArea(area,0);
     Float_t pt = leadingJet.Pt();
     Int_t nAodOutJets = 0;
@@ -904,6 +951,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
       fh2TracksLeadingJetPhiPt->Fill(dPhi,pt);
       fh2TracksLeadingJetPhiPtW->Fill(dPhi,pt,tmpPt);
+      if(cenClass>=0){
+	fh2TracksLeadingJetPhiPtC[cenClass]->Fill(dPhi,pt);
+	fh2TracksLeadingJetPhiPtWC[cenClass]->Fill(dPhi,pt,tmpPt);
+      }
+
     }  
     
    
@@ -926,8 +978,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      
      if(tmpPt>fJetOutputMinPt&&jarray){
        aodOutJet =  new ((*jarray)[nAodOutJets++]) AliAODJet(tmpRec);
-       Double_t area=clustSeq.area(sortedJets[j]);
-       aodOutJet->SetEffArea(area,0);
+       Double_t area1 = clustSeq.area(sortedJets[j]);
+       aodOutJet->SetEffArea(area1,0);
      }
 
      
@@ -970,6 +1022,10 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Float_t dEta = eta - tmpRec.Eta();
      fh2JetsLeadingPhiEta->Fill(dPhi,dEta);
      fh2JetsLeadingPhiPt->Fill(dPhi,pt);
+     if(cenClass>=0){
+       fh2JetsLeadingPhiPtC[cenClass]->Fill(dPhi,pt);
+       fh2JetsLeadingPhiPtWC[cenClass]->Fill(dPhi,pt,tmpPt);
+     }
      fh2JetsLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
    }
    delete recIter;
@@ -1177,16 +1233,13 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
  // do the event selection if activated
  if(fJetTriggerPtCut>0){
    bool select = false;
-   Float_t cent = 100;
-   if(fAOD)cent = fAOD->GetHeader()->GetCentrality();
    Float_t minPt = 9999999;
    // hard coded for now ...
    // 54.50 44.5 29.5 18.5 for anti-kt rejection 10E-3
    if(cent<10)minPt = 50;
-   else if(cent<20)minPt = 42;
+   else if(cent<30)minPt = 42;
    else if(cent<50)minPt = 28;
    else if(cent<80)minPt = 18;
-   fh1Centrality->Fill(cent);
    
    float rho = 0;
    if(externalBackground)rho = externalBackground->GetBackground(2);

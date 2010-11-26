@@ -58,6 +58,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetTrackPtCut(Float_t x){fTrackPtCut = x;}
+    virtual void SetCentralityCut(Float_t xLo,Float_t xUp){fCentCutLo = xLo; fCentCutUp = xUp;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
     virtual void SetJetTriggerPtCut(Float_t x){fJetTriggerPtCut = x;}    
     virtual void SetBackgroundBranch(const char* c){fBackgroundBranch = c;}    
@@ -98,6 +99,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     enum {kMaxJets = 4};
     enum {kMaxCorrelation =  3};
     enum {kMaxRadius =       5};
+    enum {kMaxCent =         4};
     
 
  private:
@@ -125,6 +127,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Float_t       fTrackPtCut;            // minimum track pt to be accepted
     Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out
     Float_t       fJetTriggerPtCut;       // minimum jwt pT for AOD to be written
+    Float_t       fCentCutUp;             // upper limit on centrality
+    Float_t       fCentCutLo;             // lower limit on centrality
     // output configurartion
     TString       fNonStdBranch;      // the name of the non-std branch name, if empty no branch is filled
     TString       fBackgroundBranch;  // name of the branch used for background subtraction
@@ -168,8 +172,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH1F*         fh1Nch;            //! charged particle mult
     TH1F*         fh1BiARandomCones[3]; //! Residual distribtion from reandom cones on real event
     TH1F*         fh1BiARandomConesRan[3]; //! Residual distribtion from reandom cones on random event
-    TH1F*         fh1Centrality;          // centrality of anaylsed events 
-    TH1F*         fh1CentralitySelect;          // centrality of selected events 
+    TH1F*         fh1CentralityPhySel;          // ! centrality of anaylsed events 
+    TH1F*         fh1Centrality;          // ! centrality of anaylsed events 
+    TH1F*         fh1CentralitySelect;          // ! centrality of selected events 
 
     TH2F*         fh2NRecJetsPt;            //! Number of found jets above threshold
     TH2F*         fh2NRecTracksPt;          //! Number of found tracks above threshold
@@ -199,10 +204,16 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH2F*         fh2TracksLeadingJetPhiPtRan; //! track correlation with leading Jet
     TH2F*         fh2TracksLeadingJetPhiPtWRan; //! track correlation with leading Jet
 
+
+    TH2F*         fh2JetsLeadingPhiPtC[kMaxCent]; //! jet correlation with leading jet    
+    TH2F*         fh2JetsLeadingPhiPtWC[kMaxCent];      //! jet correlation with leading jet
+    TH2F*         fh2TracksLeadingJetPhiPtC[kMaxCent]; //! track correlation with leading Jet
+    TH2F*         fh2TracksLeadingJetPhiPtWC[kMaxCent]; //! track correlation with leading Jet
+
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 9) 
+    ClassDef(AliAnalysisTaskJetCluster, 10) 
 };
  
 #endif
