@@ -104,7 +104,9 @@ ClassImp(AlidNdPtAnalysisPbPb)
   fMCMultRecTrackHist1(0), 
 
   // rec. track control histograms
-  fRecTrackHist3(0)
+  fRecTrackHist3(0),
+  
+  fTriggerAnalysis(0)
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -170,7 +172,9 @@ AlidNdPtAnalysisPbPb::AlidNdPtAnalysisPbPb(Char_t* name, Char_t* title): AlidNdP
   fMCMultRecTrackHist1(0), 
 
   // rec. track control histograms
-  fRecTrackHist3(0)
+  fRecTrackHist3(0),
+  
+  fTriggerAnalysis(0)
 {
   //
   // constructor
@@ -237,6 +241,8 @@ AlidNdPtAnalysisPbPb::~AlidNdPtAnalysisPbPb() {
   if(fRecTrackHist3) delete fRecTrackHist3; fRecTrackHist3=0; 
   //
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+  
+  if (fTriggerAnalysis) delete fTriggerAnalysis;  fTriggerAnalysis = 0;
 }
 
 //_____________________________________________________________________________
@@ -616,6 +622,9 @@ void AlidNdPtAnalysisPbPb::Init(){
 
   // init folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
+  
+  // init trigger analysis (for zdc cut)
+  fTriggerAnalysis = new AliTriggerAnalysis;
 }
 
 //_____________________________________________________________________________
@@ -628,7 +637,23 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
     AliDebug(AliLog::kError, "esdEvent not available");
     return;
   }
+  
+   // zdc cut
+   if (!fTriggerAnalysis->ZDCTimeTrigger(esdEvent)) {
+     return; 
+   }
 
+  // track cuts from Jochen
+  const AliESDVertex* vtxESDTPC = esdEvent->GetPrimaryVertexTPC();
+  if( vtxESDTPC->GetNContributors() < 1 ) {
+    return;
+  }
+
+   // francesco prino cut
+  const AliMultiplicity* multESD = esdEvent->GetMultiplicity();
+  if( vtxESDTPC->GetNContributors() < (-10.+0.25*multESD->GetNumberOfITSClusters(0)) ) {
+    return;
+  } 
 
   // get selection cuts
   AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
