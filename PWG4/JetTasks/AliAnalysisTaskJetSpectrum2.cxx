@@ -1189,7 +1189,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     container[2] = phiRec;
     containerPhiZ[0] = ptRec;
     containerPhiZ[1] = phiRec;
-    if(ptRec>30.&&fDebug>0){
+    if(ptRec>30.&&fDebug>2){
       // need to cast to int, otherwise the printf overwrites
       Printf("Jet found in Event %d with p_T, %E",(int)Entry(),ptRec);
       Printf("%s read event, %d",fInputHandler->GetTree()->GetCurrentFile()->GetName(),(int)fInputHandler->GetTree()->GetTree()->GetReadEntry());

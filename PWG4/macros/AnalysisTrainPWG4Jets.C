@@ -301,8 +301,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    // AOD input handler
       AliAODInputHandler *aodH = new AliAODInputHandler();
       mgr->SetInputEventHandler(aodH);
-      if (iPWG4JetTasks) aodH->AddFriend(Form("deltas/%s",kDeltaAODJetName.Data()));
-      if (iPWG4PartCorr) aodH->AddFriend(Form("deltas/%s"kDeltaAODJetName.Data()));
+      //      if (iPWG4JetTasks) aodH->AddFriend(Form("deltas/%s",kDeltaAODJetName.Data()));
+      //      if (iPWG4PartCorr) aodH->AddFriend(Form("deltas/%s"kDeltaAODJetName.Data()));
    } else {   
    // ESD input handler
       AliESDInputHandler *esdHandler = new AliESDInputHandler();
@@ -442,14 +442,22 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if(iPWG4Cluster){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCluster.C");
      AliAnalysisTaskJetCluster *taskCl = 0;
+     Float_t fCenUp = 0;
+     Float_t fCenLo = 0;
+     if(kIsPbPb){
+       fCenLo = 0;
+       fCenUp = 80;
+     }
      if(iPWG4Cluster&1){
 
        if(kIsPbPb){
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.2,0,1, kDeltaAODJetName.Data()); // this one is for the background random jets
 	 taskCl->SetBackgroundCalc(kTRUE);	 
 	 taskCl->SetGhostEtamax(0.9);
+	 taskCl->SetCentralityCut(fCenLo,fCenUp);
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data()); // this one is for the background random jets
 	 taskCl->SetBackgroundCalc(kTRUE);
+	 taskCl->SetCentralityCut(fCenLo,fCenUp);
 	 taskCl->SetGhostEtamax(0.9);
        }
        else{
@@ -458,9 +466,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data()); 
+       taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data());
+       taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl->SetJetTriggerPtCut(999);// hard coded values in tha task, only flag 
        taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04");
+
        if(kUseAODMC){
 	 taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data()); // this one is for the background jets
 	 taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data()); // this one is for the background jets
@@ -574,6 +585,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(kIsPbPb){
        taskjetServ->SetFilterAODCollisions(kTRUE);
      }
+     if(iAODanalysis){
+       taskjetServ->SetAODInput(kTRUE);
+     }
    }
 
    if(iPWG4JetSpectrum){
@@ -591,7 +605,15 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(iPWG4JetSpectrum&1){
        // add the dfault jet finders with R = 0.4 
        UInt_t iSelection = 0xfffff; 
-       taskJetSpectrum = AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelectionFlag,iSelection,0,kTRUE,cBack.Data());  // bug fixed 10.11.10
+       
+       //  taskJetSpectrum = AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelectionFlag,iSelection,0,kTRUE,cBack.Data());  // bug fixed 10.11.10
+       taskJetSpectrum = AddTaskJetSpectrum2("clustersAOD_ANTIKT04","",cBack.Data(),kHighPtFilterMask,iPhysicsSelectionFlag,0,kTRUE,1);
+       if(iAODanalysis){
+	 taskJetSpectrum->SetDebugLevel(1);
+	 taskJetSpectrum->SetAODJetInput(kTRUE);
+	 taskJetSpectrum->SetAODTrackInput(kTRUE);
+	 taskJetSpectrum->SetUseGlobalSelection(kFALSE);
+       }
      }
      if(iPWG4JetSpectrum&2){
        if(kIsMC){
@@ -1618,10 +1640,16 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 
      // just use run numbers, negatives will be excluded
      while(in1>>iRun){
-       if(iRun>= kGridOffsetRunFromList&&(nRun<kGridMaxRunsFromList)){
+       if(iRun>=0){
+	 if(iRun>=0&&nRun>=kGridOffsetRunFromList&&(nRun<kGridMaxRunsFromList)){
 	   Printf("AnalysisTrainPWG4Jets Adding run number from File %s", Form(kGridRunPattern.Data(),iRun));
 	   plugin->AddRunNumber(Form(kGridRunPattern.Data(),iRun));
-	   nRun++;
+
+	 }
+	 else{
+	   Printf("AnalysisTrainPWG4Jets Skipping run number from File %d", iRun);
+	 }
+	 nRun++; 
        }
        else{
 	 Printf("AnalysisTrainPWG4Jets Skipping run number from File %d", iRun);
