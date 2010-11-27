@@ -72,6 +72,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Bool_t IsVertexIn(const AliESDVertex *vtx);
     Bool_t IsVertexIn(const AliAODVertex *vtx) const;
     Int_t GetEventClass(AliESDEvent *esd);
+    Int_t GetEventClass(AliAODEvent *aod);
 
     enum { kAllTriggered = 0,kTriggeredVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexValid,kSelectedALICEVertexIn,kSelected,kConstraints};
 

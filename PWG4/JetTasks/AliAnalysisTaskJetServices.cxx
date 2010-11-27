@@ -326,7 +326,12 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     }
     esd = dynamic_cast<AliESDEvent*>(InputEvent());
   }
-  
+  if(aod&&fDebug>2){
+    aod->Print();
+    Printf("Vertices %d",aod->GetNumberOfVertices());
+    Printf("tracks %d",aod->GetNumberOfTracks());
+    Printf("jets %d",aod->GetNJets());
+  }
   fSelectionInfoESD |= kNoEventCut;
   fEventCutInfoESD |= kNoEventCut;
 
@@ -407,7 +412,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     AliAnalysisHelperJetTasks::EventClass(kTRUE,iCl);
     Bool_t cand = physicsSelection;
 
-    Printf("%s:%d %d %d %d Icl %d",(char*)__FILE__,__LINE__,esdVtxValid,esdVtxIn,cand,iCl);
+    if(fDebug)Printf("%s:%d %d %d %d Icl %d",(char*)__FILE__,__LINE__,esdVtxValid,esdVtxIn,cand,iCl);
 
     if(cand){
       fh2ESDTriggerCount->Fill(0.,kSelectedALICE); 
@@ -441,38 +446,45 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     }
   }
 
+
+
   if(aod){
     const AliAODVertex *vtxAOD = aod->GetPrimaryVertex();
     aodVtxValid = IsVertexValid(vtxAOD);
     aodVtxIn = IsVertexIn(vtxAOD);
-
-    for(int it = AliAnalysisHelperJetTasks::kAcceptAll;it < AliAnalysisHelperJetTasks::kTrigger;it++){
-      Bool_t aodTrig = kFALSE;
-      aodTrig = AliAnalysisHelperJetTasks::IsTriggerFired(aod,(AliAnalysisHelperJetTasks::Trigger)it);
-      Bool_t cand = aod->GetHeader()->GetOfflineTrigger()&AliVEvent::kMB;
-      if(aodTrig)fh2TriggerCount->Fill(it,kAllTriggered);
-      if(aodVtxValid){
-	Float_t zvtx = vtxAOD->GetZ();
-	if(aodTrig){
-	  fh2TriggerCount->Fill(it,kTriggeredVertex);
-	  fh2TriggerVtx->Fill(kTriggeredVertex*(it+1),zvtx);
-	}
-	if(cand&&aodEventSelected){
-	  fh2TriggerCount->Fill(it,kSelected);
-	}
-	if(aodTrig&&aodEventSelected){
-	  fh2TriggerVtx->Fill(kTriggeredVertexIn*(it+1),zvtx);
-	  fh2TriggerCount->Fill(it,kTriggeredVertexIn);
-	}
-	if(cand){
-	  fh2TriggerCount->Fill(it,kSelectedALICEVertexValid);
-	  fh2TriggerVtx->Fill(kSelectedALICEVertexValid*(it+1),zvtx);
-	  if(aodEventSelected){
-	    fh2TriggerCount->Fill(it,kSelectedALICEVertexIn);
-	    fh2TriggerVtx->Fill(kSelectedALICEVertexIn*(it+1),zvtx);
-	  }
-	}
+    Float_t zvtx = vtxAOD->GetZ();
+    Int_t  iCl = GetEventClass(aod);
+    AliAnalysisHelperJetTasks::EventClass(kTRUE,iCl);
+    Bool_t cand = aod->GetHeader()->GetOfflineTrigger()&fPhysicsSelectionFlag;
+    if(fDebug)Printf("%s:%d AOD selection %d %d",(char*)__FILE__,__LINE__,cand,aod->GetHeader()->GetOfflineTrigger());
+    if(cand){
+      fh2TriggerCount->Fill(0.,kSelectedALICE); 
+      fh2TriggerCount->Fill(iCl,kSelectedALICE); 
+      fh2TriggerVtx->Fill(kSelectedALICE*(iCl+1),zvtx);
+    }
+    if(aodVtxValid){
+      fh2TriggerCount->Fill(0.,kTriggeredVertex);
+      fh2TriggerCount->Fill(iCl,kTriggeredVertex);
+      fh2TriggerVtx->Fill(iCl,zvtx);
+      if(aodVtxIn){
+	fh2TriggerCount->Fill(0.,kTriggeredVertexIn);
+	fh2TriggerCount->Fill(iCl,kTriggeredVertexIn);
+	fh2TriggerVtx->Fill(kTriggeredVertexIn*(iCl+1),zvtx);
       }
+      if(cand){
+	fh2TriggerCount->Fill(0.,kSelectedALICEVertexValid);
+	fh2TriggerCount->Fill(iCl,kSelectedALICEVertexValid);
+	fh2TriggerVtx->Fill(kSelectedALICEVertexValid*(iCl+1),zvtx);
+      }
+    }
+    if(cand&&aodVtxIn){
+      fh2TriggerCount->Fill(0.,kSelectedALICEVertexIn);
+      fh2TriggerCount->Fill(iCl,kSelectedALICEVertexIn);
+      fh2TriggerVtx->Fill(kSelectedALICEVertexIn*(iCl+1),zvtx);
+      fh2TriggerVtx->Fill(kSelected*(iCl+1),zvtx);
+      fh2TriggerCount->Fill(iCl,kSelected);
+      fh2TriggerCount->Fill(0.,kSelected);
+      if(fUseAODInput)AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
     }
   }
 
@@ -733,6 +745,19 @@ Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
   return 1;
 
 }
+
+
+Int_t AliAnalysisTaskJetServices::GetEventClass(AliAODEvent *aod){
+
+  Float_t cent = aod->GetHeader()->GetCentrality();
+
+  if(cent>50)return 4;
+  if(cent>30)return 3;
+  if(cent>10)return 2;
+  return 1;
+
+}
+
 
 void AliAnalysisTaskJetServices::Terminate(Option_t */*option*/)
 {
