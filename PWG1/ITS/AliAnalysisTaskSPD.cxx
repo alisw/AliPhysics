@@ -106,8 +106,10 @@ AliAnalysisTaskSPD::~AliAnalysisTaskSPD() {
   //
   //destructor
   //
+ 
   Info("~AliAnalysisTaskSPD","Calling Destructor");
-  if (fSegSPD) delete fSegSPD ;
+ if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return; 
+ if (fSegSPD) delete fSegSPD ;
    if (fOutput) {
     delete fOutput;
     fOutput = 0;
@@ -128,12 +130,12 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
   //
   // Booking rec points related histograms
   //0
-  TH2D *hLocalMapL1 = new TH2D("hLocalMapL1"," Local coordinates  - Layer 1",660,-16.5,16.5,410,-0.5,40.5); // safe limits for local coordinates in a module : z = -4,4, x = -1,1;
+  TH2D *hLocalMapL1 = new TH2D("hLocalMapL1"," Local coordinates  - Layer 1",330,-16.5,16.5,205,-0.5,40.5); // safe limits for local coordinates in a module : z = -4,4, x = -1,1;
   hLocalMapL1->SetXTitle("direction Z [cm]");
   hLocalMapL1->SetYTitle("direction X [cm]");
   fOutput->AddLast(hLocalMapL1);
   //1
-  TH2D *hLocalMapL2 = new TH2D("hLocalMapL2"," Local coordinates  - Layer 2",660,-16.5,16.5,810,-0.5,80.5);
+  TH2D *hLocalMapL2 = new TH2D("hLocalMapL2"," Local coordinates  - Layer 2",330,-16.5,16.5,405,-0.5,80.5);
   hLocalMapL2->SetXTitle("direction Z [cm]");
   hLocalMapL2->SetYTitle("direction X [cm]");
   fOutput->AddLast(hLocalMapL2);
@@ -179,7 +181,7 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
   //
 
   // 11
-  TH1I *hTracklets = new TH1I("hNtracklets","Tracklet distribution",80,0,80);
+  TH1I *hTracklets = new TH1I("hNtracklets","Tracklet distribution",300,0,12000);
   hTracklets->SetXTitle("# Tracklets");
   fOutput->AddLast(hTracklets);
   //12
@@ -200,8 +202,20 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
   hVertexZ->SetXTitle("Z Vertex [cm]");
   fOutput->AddLast(hVertexZ); 
   //16
+  TH2F *hTracklVsClu1 = new TH2F("hTrackVsClu1","Tracklet Vs Clusters Layer 1",100,0,8000,300,0,12000);
+  hTracklVsClu1->SetXTitle("clusters SPD Layer 1");
+  hTracklVsClu1->SetYTitle("tracklets");
+  fOutput->AddLast(hTracklVsClu1);
+  //17
+  TH2F *hTracklVsClu2 = new TH2F("hTrackVsClu2","Tracklet Vs Clusters Layer 2",100,0,8000,300,0,12000);
+  hTracklVsClu2->SetXTitle("clusters SPD Layer 2");
+  hTracklVsClu2->SetYTitle("tracklets");
+  fOutput->AddLast(hTracklVsClu2);
+  //18
   TH1I *hEventsProcessed = new TH1I("hEventsProcessed","Number of processed events",1,0,1) ;
   fOutput->AddLast(hEventsProcessed);
+
+  PostData(1,fOutput);
 }
 //_________________________________________________
 void AliAnalysisTaskSPD::UserExec(Option_t *)
@@ -240,7 +254,7 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
    if(!vertex->GetStatus()) return;
    if(vertex->GetNContributors() < 1) return;
 
-  ((TH1I*)fOutput->At(16))->Fill(0);
+  ((TH1I*)fOutput->At(18))->Fill(0);
    
   ((TH1I*)fOutput->At(11))->Fill(mult->GetNumberOfTracklets());
   UInt_t bc = (UInt_t)ESD->GetBunchCrossNumber();
@@ -264,6 +278,9 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
     vertex->GetXYZ(vtxPos);
  
     ((TH1F*)fOutput->At(15))->Fill(vtxPos[2]);
+
+    ((TH2F*)fOutput->At(16))->Fill(mult->GetNumberOfITSClusters(0),mult->GetNumberOfTracklets());
+    ((TH2F*)fOutput->At(17))->Fill(mult->GetNumberOfITSClusters(1),mult->GetNumberOfTracklets());
  
     for(Int_t iTracklet =0; iTracklet < mult->GetNumberOfTracklets(); iTracklet++){
 
