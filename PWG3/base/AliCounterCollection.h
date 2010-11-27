@@ -48,14 +48,14 @@ public:
   // Get counters of the "rubric1" vs "rubric2" for the given "selection"
   TH2D* Get(TString rubric1, TString rubric2, TString selections);
   
-  // Print every individual counters if opt=="", else call "Print(TString rubrics=opt, TString selections="")"
+  // Print every individual counters if opt=="" or call "Print(opt, "")".
   virtual void Print(const Option_t* opt = "") const;
   // Print the full list of key words
   void PrintKeyWords() const;
   // Print value of selected counter
   void PrintValue(TString selections);
   // Print desired rubrics for the given selection
-  void Print(TString rubrics, TString selections);
+  void Print(TString rubrics, TString selections, Bool_t removeEmpty = kFALSE);
   // Print the overall statistics for the given selection (result is integrated over not specified rubrics)
   void PrintSum(TString selections = "");
   
@@ -108,11 +108,11 @@ private:
   void CountAsDouble(TString externalKey, Double_t value);
   
   // Print the content of 1D histogram as a list
-  void PrintList(const TH1D* hist) const;
+  void PrintList(const TH1D* hist, Bool_t removeEmpty = kFALSE) const;
   // Print the content of 2D histogram as an array
-  void PrintArray(const TH2D* hist) const;
+  void PrintArray(const TH2D* hist, Bool_t removeEmpty = kFALSE) const;
   // Print the content of nD histogram as a list of arrays
-  void PrintListOfArrays(const THnSparse* hist) const;
+  void PrintListOfArrays(const THnSparse* hist, Bool_t removeEmpty = kFALSE) const;
   
   // Return the number of characters of the longest label
   Int_t GetMaxLabelSize(THashList* labels) const;

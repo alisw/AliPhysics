@@ -524,7 +524,7 @@ void AliCounterCollection::CountAsDouble(TString externalKey, Double_t value)
 //-----------------------------------------------------------------------
 void AliCounterCollection::Print(const Option_t* opt) const
 {
-  /// Print every individual counters if opt=="", else call "Print(TString rubrics=opt, TString selections="")".
+  /// Print every individual counters if opt=="" or call "Print(opt, "")".
   
   if (strcmp(opt,"")) {
     const_cast<AliCounterCollection*>(this)->Print(opt, "");
@@ -704,7 +704,7 @@ void AliCounterCollection::PrintValue(TString selections)
 }
 
 //-----------------------------------------------------------------------
-void AliCounterCollection::Print(TString rubrics, TString selections)
+void AliCounterCollection::Print(TString rubrics, TString selections, Bool_t removeEmpty)
 {
   /// Print desired rubrics for the given selection:
   /// - format of "rubrics" is rubric1/rubric2/.. (order matters only for output).
@@ -743,11 +743,11 @@ void AliCounterCollection::Print(TString rubrics, TString selections)
   // print counters
   Int_t nRubricsToPrint = rubricsToPrint->GetEntriesFast();
   if (nRubricsToPrint == 1 && (static_cast<TH1D*>(hist))->GetEntries() > 0)
-    PrintList(static_cast<TH1D*>(hist));
+    PrintList(static_cast<TH1D*>(hist), removeEmpty);
   else if (nRubricsToPrint == 2 && (static_cast<TH2D*>(hist))->GetEntries() > 0)
-    PrintArray(static_cast<TH2D*>(hist));
+    PrintArray(static_cast<TH2D*>(hist), removeEmpty);
   else if (nRubricsToPrint > 2 && (static_cast<THnSparse*>(hist))->GetEntries() > 0)
-    PrintListOfArrays(static_cast<THnSparse*>(hist));
+    PrintListOfArrays(static_cast<THnSparse*>(hist), removeEmpty);
   else
     printf("\nselected counters are empty\n\n");
   
@@ -767,7 +767,7 @@ void AliCounterCollection::PrintSum(TString selections)
 }
 
 //-----------------------------------------------------------------------
-void AliCounterCollection::PrintList(const TH1D* hist) const
+void AliCounterCollection::PrintList(const TH1D* hist, Bool_t removeEmpty) const
 {
   /// Print the content of 1D histogram as a list.
   
@@ -782,14 +782,16 @@ void AliCounterCollection::PrintList(const TH1D* hist) const
   TIter nextLabel(labels);
   while ((label = static_cast<TObjString*>(nextLabel()))) {
     Int_t bin = (Int_t) label->GetUniqueID();
-    if (fWeightedCounters) printf(format.Data(), label->String().Data(), hist->GetBinContent(bin));
-    else printf(format.Data(), label->String().Data(), (Int_t) hist->GetBinContent(bin));
+    Double_t value = hist->GetBinContent(bin);
+    if (removeEmpty && value == 0.) continue;
+    if (fWeightedCounters) printf(format.Data(), label->String().Data(), value);
+    else printf(format.Data(), label->String().Data(), (Int_t) value);
   }
   printf("\n\n");
 }
 
 //-----------------------------------------------------------------------
-void AliCounterCollection::PrintArray(const TH2D* hist) const
+void AliCounterCollection::PrintArray(const TH2D* hist, Bool_t removeEmpty) const
 {
   /// Print the content of 2D histogram as an array.
   
@@ -804,18 +806,58 @@ void AliCounterCollection::PrintArray(const TH2D* hist) const
   TString formatYd(Form("%%%dd ",maxLabelSizeY));
   TString formatYg(Form("%%%dg ",maxLabelSizeY));
   
+  // if required, set the list of labels for which all counters are not empty
+  Bool_t *useLabelX = 0x0, *useLabelY = 0x0;
+  TObjString *labelX = 0x0, *labelY = 0x0;
+  TIter nextLabelX(labelsX);
+  TIter nextLabelY(labelsY);
+  if (removeEmpty) {
+    
+    // create label flags and set them as unused
+    useLabelX = new Bool_t[labelsX->GetSize()+1];
+    memset(useLabelX, kFALSE, sizeof(Bool_t) * (labelsX->GetSize()+1));
+    useLabelY = new Bool_t[labelsY->GetSize()+1];
+    memset(useLabelY, kFALSE, sizeof(Bool_t) * (labelsY->GetSize()+1));
+    
+    // loop over labels in X direction
+    while ((labelX = static_cast<TObjString*>(nextLabelX()))) {
+      Int_t binX = (Int_t) labelX->GetUniqueID();
+      
+      // loop over labels in Y direction
+      nextLabelY.Reset();
+      while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
+	Int_t binY = (Int_t) labelY->GetUniqueID();
+	
+	// both labels already set as used
+	if (useLabelX[binX] && useLabelY[binY]) continue;
+	
+	// skip empty bins
+	if (hist->GetBinContent(binX, binY) == 0.) continue;
+	
+	// set label as used
+	useLabelX[binX] = kTRUE;
+	useLabelY[binY] = kTRUE;
+	
+      }
+      
+    }
+    
+  }
+  
   // print labels in Y axis
   printf(formatX.Data()," ");
-  TObjString* labelY = 0x0;
-  TIter nextLabelY(labelsY);
-  while ((labelY = static_cast<TObjString*>(nextLabelY())))
+  nextLabelY.Reset();
+  while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
+    if (removeEmpty && !useLabelY[labelY->GetUniqueID()]) continue;
     printf(formatYs.Data(), labelY->String().Data());
+  }
   
   // fill array for each label in X axis
-  TObjString* labelX = 0x0;
-  TIter nextLabelX(labelsX);
+  nextLabelX.Reset();
   while ((labelX = static_cast<TObjString*>(nextLabelX()))) {
     Int_t binX = (Int_t) labelX->GetUniqueID();
+    
+    if (removeEmpty && !useLabelX[binX]) continue;
     
     // print label X
     printf(formatX.Data(), labelX->String().Data());
@@ -824,15 +866,22 @@ void AliCounterCollection::PrintArray(const TH2D* hist) const
     nextLabelY.Reset();
     while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
       Int_t binY = (Int_t) labelY->GetUniqueID();
+      if (removeEmpty && !useLabelY[binY]) continue;
       if (fWeightedCounters) printf(formatYg.Data(), hist->GetBinContent(binX, binY));
       else printf(formatYd.Data(), (Int_t) hist->GetBinContent(binX, binY));
     }
   }
   printf("\n\n");
+  
+  // clean memory
+  if (removeEmpty) {
+    delete[] useLabelX;
+    delete[] useLabelY;
+  }
 }
 
 //-----------------------------------------------------------------------
-void AliCounterCollection::PrintListOfArrays(const THnSparse* hist) const
+void AliCounterCollection::PrintListOfArrays(const THnSparse* hist, Bool_t removeEmpty) const
 {
   /// Print the content of nD histogram as a list of arrays.
   
@@ -898,6 +947,13 @@ void AliCounterCollection::PrintListOfArrays(const THnSparse* hist) const
   // create bin coordinates to access individual counters
   Int_t* bins = new Int_t[nDim];
   
+  // create label flags
+  Bool_t *useLabelX = 0x0, *useLabelY = 0x0;
+  if (removeEmpty) {
+    useLabelX = new Bool_t[labelsX->GetSize()+1];
+    useLabelY = new Bool_t[labelsY->GetSize()+1];
+  }
+  
   // loop over each combination of labels
   TObjArray* combi = 0x0;
   TIter nextCombi(&listOfCombis);
@@ -911,24 +967,46 @@ void AliCounterCollection::PrintListOfArrays(const THnSparse* hist) const
       bins[i] = (Int_t)label->GetUniqueID();
     }
     
-    // skip empty array
+    // reset the list of labels for which all counters are not empty
+    if (removeEmpty) {
+      memset(useLabelX, kFALSE, sizeof(Bool_t) * (labelsX->GetSize()+1));
+      memset(useLabelY, kFALSE, sizeof(Bool_t) * (labelsY->GetSize()+1));
+    }
+    
     Bool_t empty = kTRUE;
     TObjString* labelX = 0x0;
     TObjString* labelY = 0x0;
     TIter nextLabelX(labelsX);
     TIter nextLabelY(labelsY);
+    // loop over labels in X direction
     while ((labelX = static_cast<TObjString*>(nextLabelX()))) {
       bins[0] = (Int_t) labelX->GetUniqueID();
+      
+      // loop over labels in Y direction
       nextLabelY.Reset();
       while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
 	bins[1] = (Int_t) labelY->GetUniqueID();
-	if (((Int_t) hist->GetBinContent(bins)) > 0) {
-	  empty = kFALSE;
-	  break;
-	}
+	
+	// both labels already set as used
+	if (removeEmpty && useLabelX[bins[0]] && useLabelY[bins[1]]) continue;
+	
+	// skip empty bins
+	if (hist->GetBinContent(bins) == 0.) continue;
+	
+	// set label as used and array as not empty
+	empty = kFALSE;
+	if (removeEmpty) {
+	  useLabelX[bins[0]] = kTRUE;
+	  useLabelY[bins[1]] = kTRUE;
+	} else break;
+	
       }
-      if (!empty) break;
+      
+      if (!removeEmpty && !empty) break;
+      
     }
+    
+    // skip empty arrays
     if (empty) continue;
     
     // print the name of the combination of labels refering the incoming array
@@ -937,13 +1015,17 @@ void AliCounterCollection::PrintListOfArrays(const THnSparse* hist) const
     // print labels in Y axis
     printf(formatX.Data()," ");
     nextLabelY.Reset();
-    while ((labelY = static_cast<TObjString*>(nextLabelY())))
+    while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
+      if (removeEmpty && !useLabelY[labelY->GetUniqueID()]) continue;
       printf(formatYs.Data(), labelY->String().Data());
+    }
     
     // fill array for each label in X axis
     nextLabelX.Reset();
     while ((labelX = static_cast<TObjString*>(nextLabelX()))) {
       bins[0] = (Int_t) labelX->GetUniqueID();
+      
+      if (removeEmpty && !useLabelX[bins[0]]) continue;
       
       // print label X
       printf(formatX.Data(), labelX->String().Data());
@@ -952,6 +1034,7 @@ void AliCounterCollection::PrintListOfArrays(const THnSparse* hist) const
       nextLabelY.Reset();
       while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
 	bins[1] = (Int_t) labelY->GetUniqueID();
+	if (removeEmpty && !useLabelY[bins[1]]) continue;
 	if (fWeightedCounters) printf(formatYg.Data(), hist->GetBinContent(bins));
 	else printf(formatYd.Data(), (Int_t) hist->GetBinContent(bins));
       }
@@ -961,6 +1044,10 @@ void AliCounterCollection::PrintListOfArrays(const THnSparse* hist) const
   
   // clean memory
   delete[] bins;
+  if (removeEmpty) {
+    delete[] useLabelX;
+    delete[] useLabelY;
+  }
 }
 
 //-----------------------------------------------------------------------
