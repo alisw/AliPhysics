@@ -278,9 +278,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
         fEMCALRecoUtils->RecalculateClusterShowerShapeParameters(fEMCALGeo, event->GetEMCALCells(),cluster);
         fEMCALRecoUtils->RecalculateClusterPID(cluster);
       }
-      
-      cluster->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(cluster));
-      
+            
       fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, event->GetEMCALCells(),cluster);
       
       if(DebugLevel() > 2)
@@ -290,6 +288,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
         cluster->GetPosition(position);
         printf("Filter, after   : i %d, x %f, y %f, z %f\n",cluster->GetID(), position[0], position[1], position[2]);
       }    
+      
+      cluster->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(cluster));
       
     }
     //Recalculate track-matching
