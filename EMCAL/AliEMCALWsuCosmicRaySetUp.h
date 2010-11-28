@@ -22,6 +22,11 @@ public:
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 0;}
   void  DrawWSUC(float cxy=0.025) const; // *MENU*
+  // GetMethod
+  Float_t* GetMasterVolume() {return fMasterVolume;}
+
+  protected:
+  Float_t fMasterVolume[3]; // size of MASTER volume
 
   ClassDef(AliEMCALWsuCosmicRaySetUp,1)  // Class manager for the Wsu Cosmic Ray SetUp
 };

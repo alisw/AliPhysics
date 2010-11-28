@@ -223,6 +223,9 @@ void AliEMCAL::CreateMaterials()
   AliMixture(5, "BondPaper$", apaper, zpaper, 0.75, 3, wpaper);
  
   // DEFINITION OF THE TRACKING MEDIA
+  // Look to the $ALICE_ROOT/data/galice.cuts for particular values
+  // of cuts.
+  // Don't forget to add a new tracking medium with non-default cuts
 
   // for EMCAL: idtmed[1599->1698] equivalent to fIdtmed[0->100]
   Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ() ;
@@ -250,10 +253,10 @@ void AliEMCAL::CreateMaterials()
   AliMedium(4, "S steel$", 4, 0, 
              isxfld, sxmgmx, 10.0, 0.01, 0.1, 0.001, 0.001, 0, 0) ;
 
-  // Oct 26,2010                                                                   -> idtmed[1604]
-  Float_t stemax = 0.001;
+  // Oct 26,2010; Nov 24,2010                                                      -> idtmed[1604]
+  deemax = 0.01;
   AliMedium(5, "Paper$", 5, 0, 
-             isxfld, sxmgmx, 10.0, stemax, 0.1, 0.001, 0.001, 0, 0) ;
+             isxfld, sxmgmx, 10.0, deemax, 0.1, 0.001, 0.001, 0, 0) ;
 
 
   //set constants for Birk's Law implentation

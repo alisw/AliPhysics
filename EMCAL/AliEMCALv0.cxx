@@ -126,15 +126,16 @@ void AliEMCALv0::CreateGeometry()
   
   Float_t envelopA[10];
   if(gn.Contains("WSUC") ) { // TRD1 for WSUC facility
-    // 17-may-05 - just BOX
-    envelopA[0] = 26;
-    envelopA[1] = 15;
-    envelopA[2] = 30;
+    // Nov 25,2010
+    envelopA[0] = 30.;
+    envelopA[1] = 30;
+    envelopA[2] = 20;
     gMC->Gsvolu("XEN1", "BOX", fIdTmedArr[kIdSC], envelopA, 3) ;
     fEnvelop1.Set(3);
     for(int i=0; i<3; i++) fEnvelop1[i] = envelopA[i]; // 23-may-05  
-    // Position the EMCAL Mother Volume (XEN1) in WSUC  
-    gMC->Gspos("XEN1", 1, "WSUC", 0.0, 0.0, 0.0, fIdRotm, "ONLY") ;
+    // Position the EMCAL Mother Volume (XEN1) in WSUC.
+    // Look to AliEMCALWsuCosmicRaySetUp.  
+    gMC->Gspos("XEN1", 1, "WSUC", 0.0, 0.0, + 265., fIdRotm, "ONLY") ;
   } else { 
     envelopA[0] = geom->GetArm1PhiMin();                         // minimum phi angle
     envelopA[1] = geom->GetArm1PhiMax() - geom->GetArm1PhiMin(); // angular range in phi

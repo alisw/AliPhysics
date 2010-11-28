@@ -77,15 +77,28 @@ void AliEMCALWsuCosmicRaySetUp::CreateGeometry()
   */
   //End_Html
 
-  Float_t dASUC[3];
+  // Master Volume
+  fMasterVolume[0] = fMasterVolume[1] = 25.0;
+  fMasterVolume[2] = 300.;
+
   Int_t *idtmed = fIdtmed->GetArray()+1;
-  int idSC = idtmed[0];
+  int idAir = idtmed[0];
+  gMC->Gsvolu(GetName(),"BOX",idAir, fMasterVolume,3); // Master volume
   //
-  dASUC[0]=50;
-  dASUC[1]=50;
-  dASUC[2]=50;
-  //  TString tmp(GetTitle());
-  gMC->Gsvolu(GetName(),"BOX",idSC, dASUC,3); // WSUC - Wsu Cosmic Ray SetUp
+  // Sc counters
+  //
+  Float_t sc[3]; // tube
+  sc[0] = 0.0;
+  sc[1] = 5.0;
+  sc[2] = 0.5;
+  Float_t zsc[3]={10.,110., 310.};
+  int idSC = idtmed[1];
+  gMC->Gsvolu("SCOU","TUBE",idSC, sc,3); // Master volume
+  Int_t idRot=0; // no rotation
+  for(Int_t i=0; i<3; i++) {
+    Float_t zpos = zsc[i] - fMasterVolume[2];
+    gMC->Gspos("SCOU", i+1, "WSUC", 0.0, 0.0, zpos, idRot, "ONLY"); 
+  }
 }
  
 //_____________________________________________________________________________
@@ -93,18 +106,26 @@ void AliEMCALWsuCosmicRaySetUp::CreateMaterials()
 {
 // Create materials and media
   Int_t   isxfld = 0;
-  Float_t sxmgmx = 0.;
-  
+  Float_t sxmgmx = 0., deemax = 0.1;  
   // AIR
   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
   Float_t zAir[4]={6.,7.,8.,18.};
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   Float_t dAir = 1.20479E-3;
-  //  Float_t dAir1 = 1.20479E-10;
-  //
   AliMixture(1,"Air     $",aAir,zAir,dAir,4,wAir);
+
+  // --- The polysterene scintillator (CH) ---
+  Float_t aP[2] = {12.011, 1.00794} ;
+  Float_t zP[2] = {6.0, 1.0} ;
+  Float_t wP[2] = {1.0, 1.0} ;
+  Float_t dP = 1.032 ;
+  AliMixture(2, "Polystyrene$", aP, zP, dP, -2, wP) ;
+
   //
   AliMedium(1,"Air     $",1,0,isxfld,sxmgmx,10,-1,-0.1,0.1 ,-10);
+  AliMedium(2, "Scintillator$", 2, 1,
+            isxfld, sxmgmx, 10.0, 0.001, deemax, 0.001, 0.001, 0, 0) ;
+  
 }
  
 //_____________________________________________________________________________
