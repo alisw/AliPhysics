@@ -542,13 +542,14 @@ void AliEMCALEMCGeometry::DefineSamplingFraction()
   // Look http://rhic.physics.wayne.edu/~pavlinov/ALICE/SHISHKEBAB/RES/linearityAndResolutionForTRD1.html
   // Keep for compatibilty
   //
+  fSampling = 10.87; // Default value - Nov 25,2010
   if(fNECLayers == 69) {        // 10% layer reduction
     fSampling = 12.55;
   } else if(fNECLayers == 61) { // 20% layer reduction
     fSampling = 12.80;
   } else if(fNECLayers == 77) {
     if(fGeoName.Contains("V1")){
-      fSampling = 12.82; //Adding paper sheets and cover plate
+      fSampling = 10.87; //Adding paper sheets and cover plate; Nov 25,2010
     } else if   (fECScintThick>0.159 && fECScintThick<0.161) { // original sampling fraction, equal layers
       fSampling = 12.327; // fECScintThick = fECPbRadThickness = 0.160;
     } else if (fECScintThick>0.175 && fECScintThick<0.177) { // 10% Pb thicknes reduction
@@ -556,7 +557,6 @@ void AliEMCALEMCGeometry::DefineSamplingFraction()
     } else if(fECScintThick>0.191 && fECScintThick<0.193) { // 20% Pb thicknes reduction
       fSampling = 8.93; // fECScintThick = 0.192, fECPbRadThickness=0.128;
     }
-
   }
 }
 
