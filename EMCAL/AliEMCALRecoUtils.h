@@ -38,7 +38,7 @@ public:
   AliEMCALRecoUtils& operator=(const AliEMCALRecoUtils&); 
   virtual ~AliEMCALRecoUtils() ;
   
-  enum NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3};
+  enum NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4};
   enum PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
   

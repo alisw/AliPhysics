@@ -324,35 +324,51 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
   switch (fNonLinearityFunction) {
       
     case kPi0MC:
+    {
       //Non-Linearity correction (from MC with function ([0]*exp(-[1]/E))+(([2]/([3]*2.*TMath::Pi())*exp(-(E-[4])^2/(2.*[3]^2)))))
-      //Double_t par0 = 1.001;
-      //Double_t par1 = -0.01264;
-      //Double_t par2 = -0.03632;
-      //Double_t par3 = 0.1798;
-      //Double_t par4 = -0.522;
+      //Double_t fNonLinearityParams[0] = 1.001;
+      //Double_t fNonLinearityParams[1] = -0.01264;
+      //Double_t fNonLinearityParams[2] = -0.03632;
+      //Double_t fNonLinearityParams[3] = 0.1798;
+      //Double_t fNonLinearityParams[4] = -0.522;
        energy /= (fNonLinearityParams[0]*exp(-fNonLinearityParams[1]/energy))+
                   ((fNonLinearityParams[2]/(fNonLinearityParams[3]*2.*TMath::Pi())*
                     exp(-(energy-fNonLinearityParams[4])*(energy-fNonLinearityParams[4])/(2.*fNonLinearityParams[3]*fNonLinearityParams[3]))));
       break;
+    }
       
     case kPi0GammaGamma:
-
+    {
       //Non-Linearity correction (from Olga Data with function p0+p1*exp(-p2*E))
-      //Double_t par0 = 0.1457;
-      //Double_t par1 = -0.02024;
-      //Double_t par2 = 1.046;
+      //Double_t fNonLinearityParams[0] = 0.1457;
+      //Double_t fNonLinearityParams[1] = -0.02024;
+      //Double_t fNonLinearityParams[2] = 1.046;
       energy /= (fNonLinearityParams[0]+fNonLinearityParams[1]*exp(-fNonLinearityParams[2]*energy)); //Olga function
       break;
+    }
       
     case kPi0GammaConversion:
-      
+    {
       //Non-Linearity correction (Nicolas from Dimitri Data with function C*[1-a*exp(-b*E)])
-      //Double_t C = 0.139393/0.1349766;
-      //Double_t a = 0.0566186;
-      //Double_t b = 0.982133;
+      //fNonLinearityParams[0] = 0.139393/0.1349766;
+      //fNonLinearityParams[1] = 0.0566186;
+      //fNonLinearityParams[2] = 0.982133;
       energy /= fNonLinearityParams[0]*(1-fNonLinearityParams[1]*exp(-fNonLinearityParams[2]*energy));
       
       break;
+    }
+      
+    case kBeamTest:
+    {
+      //From beam test, Alexei's results, for different ZS thresholds
+      //                        th=30 MeV; th = 45 MeV; th = 75 MeV
+      //fNonLinearityParams[0] = 0.107;      1.003;      1.002 
+      //fNonLinearityParams[1] = 0.894;      0.719;      0.797 
+      //fNonLinearityParams[2] = 0.246;      0.334;      0.358 
+      energy /= fNonLinearityParams[0]/(1+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]));
+      
+      break;
+    }
       
     case kNoCorrection:
       AliDebug(2,"No correction on the energy\n");
