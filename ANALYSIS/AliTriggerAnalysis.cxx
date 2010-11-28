@@ -1121,7 +1121,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  const Int_t nHists = 10;
+  const Int_t nHists = 11;
   TList collections[nHists];
 
   Int_t count = 0;
@@ -1193,22 +1193,34 @@ void AliTriggerAnalysis::SaveHistograms() const
   if (!fHistBitsSPD)
     return;
     
-  fHistBitsSPD->Write();
-  fHistBitsSPD->ProjectionX();
-  fHistBitsSPD->ProjectionY();
-  fHistFiredBitsSPD->Write();
-  fHistV0A->Write();
-  fHistV0C->Write();
-  fHistZDC->Write();
-  fHistTDCZDC->Write();
-  fHistTimeZDC->Write();
-  fHistFMDA->Write();
-  fHistFMDC->Write();
-  fHistFMDSingle->Write();
-  fHistFMDSum->Write();
-  
-  if (fSPDGFOEfficiency)
-    fSPDGFOEfficiency->Write("fSPDGFOEfficiency");
+  if (fHistBitsSPD) {
+    fHistBitsSPD->Write();
+    fHistBitsSPD->ProjectionX();
+    fHistBitsSPD->ProjectionY();
+  }
+  else Printf("Cannot save fHistBitsSPD");
+  if (fHistFiredBitsSPD) fHistFiredBitsSPD->Write();
+  else Printf("Cannot save fHistFiredBitsSPD");
+  if (fHistV0A) fHistV0A->Write();
+  else Printf("Cannot save fHistV0A");
+  if (fHistV0C) fHistV0C->Write();
+  else Printf("Cannot save fHistV0C");
+  if (fHistZDC) fHistZDC->Write();
+  else Printf("Cannot save fHistZDC");
+  if (fHistTDCZDC) fHistTDCZDC->Write();
+  else Printf("Cannot save fHistTDCZDC");
+  if (fHistTimeZDC) fHistTimeZDC->Write();
+  else Printf("Cannot save fHistTimeZDC");
+  if (fHistFMDA) fHistFMDA->Write();
+  else Printf("Cannot save fHistFMDA");
+  if (fHistFMDC) fHistFMDC->Write();
+  else Printf("Cannot save fHistFMDC");
+  if (fHistFMDSingle) fHistFMDSingle->Write();
+  else Printf("Cannot save fHistFMDSingle");
+  if (fHistFMDSum) fHistFMDSum->Write();
+  else Printf("Cannot save fHistFMDSum");
+  if (fSPDGFOEfficiency) fSPDGFOEfficiency->Write("fSPDGFOEfficiency");
+  else Printf("Cannot save fSPDGFOEfficiency");
   
   fTriggerClasses->Write("fTriggerClasses", TObject::kSingleKey);
 }
