@@ -63,7 +63,7 @@ public :
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
 
   // Fill histograms
-  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj);
+  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj);
   void FillHistograms(AliStack *const stack, Int_t label, AlidNdPtHelper::TrackObject trackObj);
   void FillHistograms(TObjArray *const allChargedTracks,Int_t *const labelsAll,Int_t multAll,Int_t *const labelsAcc,Int_t multAcc,Int_t *const labelsRec,Int_t multRec);
 
@@ -140,6 +140,13 @@ public :
   THnSparseF *GetMCMultRecTrackHist1() const {return fMCMultRecTrackHist1;}
 
   THnSparseF *GetRecTrackHist2() const {return fRecTrackHist2;}
+
+
+  //
+  // Generic histograms to be corrected
+  //
+  THnSparseF *GetRecEventHist() const {return fRecEventHist;} 
+  THnSparseF *GetRecTrackHist() const {return fRecTrackHist;} 
 
 private:
 
@@ -252,6 +259,12 @@ private:
 
   // track control histograms
   THnSparseF *fRecTrackHist2;  //-> nclust:chi2:Pt:Eta:Phi
+
+  //
+  // Generic histograms to be corrected
+  //
+  THnSparseF *fRecEventHist; //-> Zv:multMB
+  THnSparseF *fRecTrackHist; //-> Zv:pT:eta
 
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented

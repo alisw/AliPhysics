@@ -133,7 +133,12 @@ ClassImp(AlidNdPtAnalysis)
   fMCMultRecTrackHist1(0), 
 
   // rec. track control histograms
-  fRecTrackHist2(0)
+  fRecTrackHist2(0),
+
+  // Generic histograms to be corrected
+  fRecEventHist(0),
+  fRecTrackHist(0)
+
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -225,7 +230,11 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fMCMultRecTrackHist1(0), 
 
   // rec. track control histograms
-  fRecTrackHist2(0)
+  fRecTrackHist2(0),
+
+  // Generic histograms to be corrected
+  fRecEventHist(0),
+  fRecTrackHist(0)
 {
   //
   // constructor
@@ -318,6 +327,11 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   if(fRecMCTrackHist1) delete fRecMCTrackHist1; fRecMCTrackHist1=0;
   if(fMCMultRecTrackHist1) delete fMCMultRecTrackHist1; fMCMultRecTrackHist1=0; 
   if(fRecTrackHist2) delete fRecTrackHist2; fRecTrackHist2=0; 
+
+  //
+  if(fRecEventHist) delete fRecEventHist; fRecEventHist=0; 
+  if(fRecTrackHist) delete fRecTrackHist; fRecTrackHist=0; 
+
   //
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
@@ -349,6 +363,32 @@ void AlidNdPtAnalysis::Init(){
 
   //Int_t binsTrackMatrix[3]={zvNbins,ptNbins,etaNbins};
   Int_t binsTrackEventCorrMatrix[3]={zvNbins,ptNbinsTrackEventCorr,etaNbins};
+
+
+  //
+  // Generic histograms to be corrected
+  //
+  Int_t binsEventHist[2]={100,150};
+  Double_t minEventHist[2]={-25.,-0.5}; 
+  Double_t maxEventHist[2]={25.,149.5}; 
+
+  fRecEventHist = new THnSparseF("fRecEventHist","Zv:multMB",2,binsEventHist,minEventHist,maxEventHist);
+  fRecEventHist->GetAxis(0)->SetTitle("Zv (cm)");
+  fRecEventHist->GetAxis(1)->SetTitle("multiplicity MB");
+  fRecEventHist->Sumw2();
+
+  //
+  Int_t binsTrackHist[3]={100,ptNbins,etaNbins};
+  Double_t minTrackHist[3]={-25.,0.,-1.5}; 
+  Double_t maxTrackHist[3]={25.,50.,1.5}; 
+
+  fRecTrackHist = new THnSparseF("fRecTrackHist","Zv:pT:eta",3,binsTrackHist,minTrackHist,maxTrackHist);
+  fRecTrackHist->SetBinEdges(1,binsPt);
+  fRecTrackHist->SetBinEdges(2,binsEta);
+  fRecTrackHist->GetAxis(0)->SetTitle("Zv (cm)");
+  fRecTrackHist->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
+  fRecTrackHist->GetAxis(2)->SetTitle("#eta");
+  fRecTrackHist->Sumw2();
 
   //
   // rec. vs MC correlation matrices
@@ -925,6 +965,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     return;
   }
 
+
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   AliPhysicsSelection *trigSel = NULL;
@@ -1051,9 +1092,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       }
     }
   }
-
-
-
 
 
   // use MC information
@@ -1275,7 +1313,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
         if(tpcTrack) delete tpcTrack; 
       } 
 
-      FillHistograms(track,stack,AlidNdPtHelper::kAllTracks); 
+      FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kAllTracks); 
       labelsAll[multAll] = TMath::Abs(track->GetLabel());
       multAll++;
 
@@ -1324,7 +1362,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	     track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
 
              if(accCuts->AcceptTrack(track)) {
-               FillHistograms(track,stack,AlidNdPtHelper::kRecTracks); 
+               FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kRecTracks); 
 	       labelsRec[multRec] = TMath::Abs(track->GetLabel());
 	       multRec++;
 	     }  
@@ -1332,7 +1370,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
           else {
              if(accCuts->AcceptTrack(track)) 
 	     {
-               FillHistograms(track,stack,AlidNdPtHelper::kRecTracks); 
+               FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kRecTracks); 
 	       labelsRec[multRec] = TMath::Abs(track->GetLabel());
 	       multRec++;
 	     }
@@ -1355,6 +1393,11 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
      Double_t vRecEventHist2[3] = {vtxESD->GetZv(),multMBTracks,multRec};
      fRecEventHist2->Fill(vRecEventHist2);
+
+     // 
+     Double_t vRecEventHist[2] = {vtxESD->GetZv(),multMBTracks};
+     fRecEventHist->Fill(vRecEventHist);
+
    } 
 
    if(IsUseMCInfo())  
@@ -1645,7 +1688,7 @@ void AlidNdPtAnalysis::FillHistograms(TObjArray *const allChargedTracks,Int_t *c
 }
 
 //_____________________________________________________________________________
-void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj)
+void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj)
 {
   //
   // Fill ESD track and MC histograms 
@@ -1669,15 +1712,20 @@ void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *con
 
 
   // fill histograms
-  Double_t values[3] = {pt,eta,phi};	  
-  fRecTrackHist1[trackObj]->Fill(values);
+  Double_t values1[3] = {pt,eta,phi};	  
+  fRecTrackHist1[trackObj]->Fill(values1);
+
+  Double_t values[3] = {zv, pt,eta};	  
+  if(trackObj == AlidNdPtHelper::kRecTracks) {
+    fRecTrackHist->Fill(values);
+  }
 
   /*
-  Double_t values1[5] = {nClust,chi2PerCluster,pt,eta,phi};	  
+  Double_t values2[5] = {nClust,chi2PerCluster,pt,eta,phi};	  
   if(trackObj == AlidNdPtHelper::kRecTracks)  
   {
     if(fHistogramsOn)
-      fRecTrackHist2->Fill(values1);
+      fRecTrackHist2->Fill(values2);
   }
   */
  
@@ -1811,6 +1859,10 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* const list)
     //printf("entry->GetPhysicsTriggerSelection() %p \n", entry->GetPhysicsTriggerSelection());
     collPhysSelection->Add(entry->GetPhysicsTriggerSelection());
     
+    //
+    fRecEventHist->Add(entry->fRecEventHist);
+    fRecTrackHist->Add(entry->fRecTrackHist);
+
     //
     fEventMultCorrelationMatrix->Add(entry->fEventMultCorrelationMatrix);
     fTrackPtCorrelationMatrix->Add(entry->fTrackPtCorrelationMatrix);
