@@ -155,37 +155,7 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
 
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
-  AliPhysicsSelection *trigSel = NULL;
-  AliTriggerAnalysis *trigAna = NULL; // needed for andV0
-
-  if(evtCuts->IsTriggerRequired())  
-  {
-    //
-    trigSel = GetPhysicsTriggerSelection();
-    if(!trigSel) {
-      printf("cannot get trigSel \n");
-      return;
-    }
-
-    //
-    if(IsUseMCInfo()) 
-    { 
-      trigSel->SetAnalyzeMC();
-
-      
-        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-	
-        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
-	{
-          trigAna = trigSel->GetTriggerAnalysis();
-          if(!trigAna) 
-            return;
-
-          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-        }//if(GetTrigger() == AliTriggerAnalysis::kV0AND)
-     }//if(IsUseMCInfo())
-  }//if(evtCuts->IsTriggerRequired())
-
+   
   // use MC information
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
