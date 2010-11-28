@@ -456,13 +456,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       if(DebugLevel() > 2) 
         printf("Energy: after recalibration %f; ",c1->E());
       
-      // Correct Non-Linearity
-      c1->SetE(fRecoUtils->CorrectClusterEnergyLinearity(c1));
-
-      if(DebugLevel() > 2) 
-        printf("after linearity correction %f\n",c1->E());
       // Recalculate cluster position
       fRecoUtils->RecalculateClusterPosition(fEMCALGeo, emCells,c1);
+      
+      // Correct Non-Linearity
+      c1->SetE(fRecoUtils->CorrectClusterEnergyLinearity(c1));
+      if(DebugLevel() > 2) 
+        printf("after linearity correction %f\n",c1->E());
+      
       if(DebugLevel() > 2)
       { 
         printf("Cor  : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",c1->GetID(),c1->E(),c1->GetDispersion(),c1->GetM02(),c1->GetM20());

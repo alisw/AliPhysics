@@ -713,19 +713,19 @@ void AliCaloTrackReader::FillInputEMCAL() {
 
           //Recalculate distance to bad channels, if new list of bad channels provided
           GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
-          
-          //Correct non linearity
-          if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn()){
-            GetCaloUtils()->CorrectClusterEnergy(clus) ;
-            //printf("Linearity Corrected Energy %f\n",clus->E());  
-          }
-          
+                    
           //Recalculate cluster position
           if(GetCaloUtils()->IsRecalculationOfClusterPositionOn()){
             GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus); 
             //clus->GetPosition(pos);
             //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
           }
+          
+          //Correct non linearity
+          if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn()){
+            GetCaloUtils()->CorrectClusterEnergy(clus) ;
+            //printf("Linearity Corrected Energy %f\n",clus->E());  
+          }          
           
           if (fMixedEvent) {
             clus->SetID(iclus) ; 
