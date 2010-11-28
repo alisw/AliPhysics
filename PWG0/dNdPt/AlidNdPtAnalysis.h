@@ -269,7 +269,7 @@ private:
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented
 
-  ClassDef(AlidNdPtAnalysis,2);
+  ClassDef(AlidNdPtAnalysis,3);
 };
 
 #endif
