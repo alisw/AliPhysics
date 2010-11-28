@@ -221,7 +221,8 @@ Int_t AlidNdPtTask::CalculateCentralityBin(){
     centralityF = esdCentrality->GetCentralityPercentile("V0M");
   else if ( fUseCentrality == 2 )
     centralityF = esdCentrality->GetCentralityPercentile("CL1");
-  
+  else if ( fUseCentrality == 3 )
+    centralityF = esdCentrality->GetCentralityPercentile("TRK"); 
   if (centralityF == 0.)
     centralityF = 100.;
 

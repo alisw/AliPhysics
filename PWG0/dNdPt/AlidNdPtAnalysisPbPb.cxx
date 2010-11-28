@@ -638,9 +638,11 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
     return;
   }
   
-   // zdc cut
-   if (!fTriggerAnalysis->ZDCTimeTrigger(esdEvent)) {
-     return; 
+   // zdc cut not for MC
+   if(!IsUseMCInfo()) {
+     if (!fTriggerAnalysis->ZDCTimeTrigger(esdEvent)) {
+       return; 
+     }
    }
 
   // track cuts from Jochen
