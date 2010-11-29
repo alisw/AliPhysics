@@ -19,7 +19,9 @@ Pass2(const char* file="AliAODs.root",
       Double_t    vzMin=-10, 
       Double_t    vzMax=10, 
       Int_t       rebin=5, 
-      const char* title="")
+      const char* title="",
+      bool        hhd=false,
+      bool        comp=true)
 {
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/Compile.C"); 
   Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/DrawRes.C","g"); 
@@ -51,13 +53,16 @@ Pass2(const char* file="AliAODs.root",
 	 "  Trigger mask: 0x%02x (%s)\n"
 	 "  Energy:       %dGeV\n"
 	 "  Title:        %s\n"
+	 "  HHD comp.:    %s\n"
+	 "  Other comp.:  %s\n"
          "--------------------------------------\n",
-	 file, vzMin, vzMax, rebin, trgMask, trgs.Data(), energy, title);
+	 file, vzMin, vzMax, rebin, trgMask, trgs.Data(), energy, title,
+	 hhd ? "yes" : "no", comp ? "yes" : "no");
   
   DrawRes dr;
   TStopwatch t;
   t.Start();
-  dr.Run(file, vzMin, vzMax, rebin, trgMask, energy, title);
+  dr.Run(file, vzMin, vzMax, rebin, trgMask, energy, title, hhd, comp);
   t.Stop();
   t.Print();  
 }

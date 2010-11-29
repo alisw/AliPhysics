@@ -50,6 +50,8 @@ public:
   Double_t           fVtxEff;
   /** Title to put on the plot */
   TString            fTitle;
+  /** Do HHD comparison */
+  Bool_t             fDoHHD;
 
   //__________________________________________________________________
   /** 
@@ -62,7 +64,8 @@ public:
       fOut(0), 
       fSum(0),
       fVtxEff(0),
-      fTitle("")
+      fTitle(""),
+      fDoHHD(kTRUE)
   {}
   //__________________________________________________________________
   /** 
@@ -103,7 +106,7 @@ public:
   Bool_t Run(const char* file="AliAODs.root", 
 	     Double_t vzMin=-10, Double_t vzMax=10, Int_t rebin=1,
 	     Int_t mask=AliAODForwardMult::kInel, Int_t energy=900,
-	     const char* title="")
+	     const char* title="", Bool_t doHHD=false, Bool_t doComp=false)
   {
     TString trgName;
     if    (mask & AliAODForwardMult::kInel)    trgName.Append("inel-");
@@ -120,7 +123,7 @@ public:
     fTitle = title;
     if (!Open(file, outName)) return kFALSE;
     if (!Process(vzMin,vzMax,mask)) return kFALSE;
-    if (!Finish(rebin, mask, energy)) return kFALSE;
+    if (!Finish(rebin, mask, energy,doHHD,doComp)) return kFALSE;
 
     return kTRUE;
   }
@@ -235,7 +238,8 @@ public:
    * 
    * @return true on success, false otherwise 
    */
-  Bool_t Finish(Int_t rebin, Int_t mask, Int_t energy)
+  Bool_t Finish(Int_t rebin, Int_t mask, Int_t energy, 
+		Bool_t doHHD, Bool_t doComp)
   {
     fOut->cd();
 
@@ -253,14 +257,15 @@ public:
     dndeta->SetMarkerSize(1);
     dndeta->SetFillStyle(0);
     Rebin(dndeta, rebin);
-    DrawIt(dndeta, mask, energy);
+    DrawIt(dndeta, mask, energy, doHHD, doComp);
 
     return kTRUE;
   }
   //__________________________________________________________________
   /** 
    */
-  void DrawIt(TH1* dndeta, Int_t mask, Int_t energy)
+  void DrawIt(TH1* dndeta, Int_t mask, Int_t energy, 
+	      Bool_t doHHD, Bool_t doComp)
   {
     // --- 1st part - prepare data -----------------------------------
     TH1* sym = Symmetrice(dndeta);
@@ -271,20 +276,28 @@ public:
     stack->Add(sym);
 
     // Get the data from HHD's analysis - if available 
-    TString hhdName(fOut->GetName());
-    hhdName.ReplaceAll("dndeta", "hhd");    
-    TH1* hhd    = GetHHD(hhdName.Data(), mask & AliAODForwardMult::kNSD);
+    TH1* hhd    = 0;
     TH1* hhdsym = 0;
-    if (hhd) { 
-      // Symmetrice and add to stack 
-      hhdsym = Symmetrice(hhd);
-      stack->Add(hhd);
-      stack->Add(hhdsym);
+    Info("DrawIt", "Will %sdraw HHD results", (doHHD ? "" : "not "));
+    if (doHHD) {
+      TString hhdName(fOut->GetName());
+      hhdName.ReplaceAll("dndeta", "hhd");    
+      hhd    = GetHHD(hhdName.Data(), mask & AliAODForwardMult::kNSD);
+      hhdsym = 0;
+      if (hhd) { 
+	// Symmetrice and add to stack 
+	hhdsym = Symmetrice(hhd);
+	stack->Add(hhd);
+	stack->Add(hhdsym);
+      }
+      else 
+	Warning("DrawIt", "No HHD data found");
     }
 
     // Get graph of 'other' data - e.g., UA5, CMS, ... - and check if
     // there's any graphs.  Set the pad division based on that.
-    TMultiGraph* other    = GetData(energy, mask);
+    Info("DrawIt", "Will %sdraw other results", (doComp ? "" : "not "));
+    TMultiGraph* other    = (doComp ? GetData(energy, mask) : 0);
     THStack*     ratios   = MakeRatios(dndeta, sym, hhd, hhdsym, other);
 
     // Check if we have ratios 
@@ -292,6 +305,8 @@ public:
     // --- 2nd part - Draw in canvas ---------------------------------
     // Make a canvas 
     gStyle->SetOptTitle(0);
+    gStyle->SetTitleFont(132, "xyz");
+    gStyle->SetLabelFont(132, "xyz");
     TCanvas* c = new TCanvas("c", "C", 900, 800);
     c->SetFillColor(0);
     c->SetBorderMode(0);
@@ -332,28 +347,32 @@ public:
     l->SetFillColor(0);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
+    l->SetTextFont(132);
     p1->cd();
 
     // Put a title on top 
     TLatex* tit = new TLatex(0.10, 0.95, fTitle.Data());
     tit->SetNDC();
+    tit->SetTextFont(132);
     tit->SetTextSize(0.05);
     tit->Draw();
 
     // Put a nice label in the plot 
-    TLatex* tt = new TLatex(.5, .50, 
+    TLatex* tt = new TLatex(.93, .93, 
 			    Form("#sqrt{s}=%dGeV, %s", energy,
 				 AliAODForwardMult::GetTriggerString(mask)));
     tt->SetNDC();
-    tt->SetTextAlign(22);
+    tt->SetTextFont(132);
+    tt->SetTextAlign(33);
     tt->Draw();
 
     // Mark the plot as preliminary 
-    TLatex* pt = new TLatex(.5, .42, "Preliminary");
+    TLatex* pt = new TLatex(.93, .88, "Preliminary");
     pt->SetNDC();
+    pt->SetTextFont(22);
     pt->SetTextSize(0.07);
     pt->SetTextColor(kRed+1);
-    pt->SetTextAlign(22);
+    pt->SetTextAlign(33);
     pt->Draw();
     c->cd();
 
@@ -391,7 +410,8 @@ public:
       l2->SetFillColor(0);
       l2->SetFillStyle(0);
       l2->SetBorderSize(0);
-      
+      l2->SetTextFont(132);
+
       // Make a nice band from 0.9 to 1.1 
       TGraphErrors* band = new TGraphErrors(2);
       band->SetPoint(0, sym->GetXaxis()->GetXmin(), 1);
@@ -411,6 +431,8 @@ public:
     // Plot to disk
     TString imgName(fOut->GetName());
     imgName.ReplaceAll(".root", ".png");
+    c->SaveAs(imgName.Data());
+    imgName.ReplaceAll(".png", ".C");
     c->SaveAs(imgName.Data());
 
     stack->Write();
