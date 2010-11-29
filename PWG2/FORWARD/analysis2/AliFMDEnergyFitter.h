@@ -59,13 +59,47 @@ public:
    */
   AliFMDEnergyFitter& operator=(const AliFMDEnergyFitter& o);
 
+  /** 
+   * Initialise the task
+   * 
+   * @param etaAxis The eta axis to use.  Note, that if the eta axis
+   * has already been set (using SetEtaAxis), then this parameter will be 
+   * ignored
+   */
   void Init(const TAxis& etaAxis);
+  /** 
+   * Set the eta axis to use.  This will force the code to use this
+   * eta axis definition - irrespective of whatever axis is passed to
+   * the Init member function.  Therefore, this member function can be
+   * used to force another eta axis than one found in the correction
+   * objects. 
+   * 
+   * @param nBins  Number of bins 
+   * @param etaMin Minimum of the eta axis 
+   * @param etaMax Maximum of the eta axis 
+   */
+  void SetEtaAxis(Int_t nBins, Double_t etaMin, Double_t etaMax);
+  /** 
+   * Set the eta axis to use.  This will force the code to use this
+   * eta axis definition - irrespective of whatever axis is passed to
+   * the Init member function.  Therefore, this member function can be
+   * used to force another eta axis than one found in the correction
+   * objects. 
+   * 
+   * @param etaAxis Eta axis to use 
+   */
+  void SetEtaAxis(const TAxis& etaAxis);
   /** 
    * Set the low cut used for energy 
    * 
    * @param lowCut Low cut
    */
   void SetLowCut(Double_t lowCut=0.3) { fLowCut = lowCut; }
+  /** 
+   * Set the number of bins to subtract 
+   * 
+   * @param n 
+   */
   void SetBinsToSubtract(UShort_t n=4) { fBinsToSubtract = n; }
   /** 
    * Whether or not to enable fitting of the final merged result.  
@@ -91,6 +125,24 @@ public:
    * @param doFit Whether to do the fits or not 
    */
   void SetMinEntries(UShort_t n) { fMinEntries = (n < 1 ? 1 : n); }
+  /**
+   * Set maximum energy loss to consider 
+   *
+   * @param x Maximum energy loss to consider 
+   */
+  void SetMaxE(Double_t x) { fMaxE = x; }
+  /**
+   * Set number of energy loss bins 
+   *
+   * @param x Number of energy loss bins 
+   */
+  void SetNEbins(Int_t x) { fNEbins = x; }
+  /**
+   * Set wheter to use increasing bin sizes 
+   *
+   * @param x Wheter to use increasing bin sizes 
+   */
+  void SetUseIncreasingBins(Bool_t x) { fUseIncreasingBins = x; }
   /** 
    * Fitter the input AliESDFMD object
    * 
@@ -169,9 +221,9 @@ protected:
      * @param eAxis 
      */
     void Init(const TAxis& eAxis, 
-	      Double_t maxDE=10, 
-	      Int_t nDEbins=300, 
-	      Bool_t useIncrBin=true);
+	      Double_t     maxDE=10, 
+	      Int_t        nDEbins=300, 
+	      Bool_t       useIncrBin=true);
     /** 
      * Fill histogram 
      * 
@@ -188,10 +240,12 @@ protected:
      * @param lowCut  Lower cut 
      * @param nLandau Max number of convolved landaus to fit
      */
-    TObjArray* Fit(TList* dir, const TAxis& eta,
-		   Double_t lowCut, UShort_t nLandau,
-		   UShort_t minEntries,
-		   UShort_t minusBins) const;
+    TObjArray* Fit(TList* dir, 
+		   const TAxis& eta,
+		   Double_t     lowCut, 
+		   UShort_t     nLandau,
+		   UShort_t     minEntries,
+		   UShort_t     minusBins) const;
     /** 
      * Fit a signal histogram 
      * 
@@ -201,52 +255,32 @@ protected:
      * 
      * @return The best fit function 
      */
-    TF1* FitHist(TH1* dist,Double_t lowCut, UShort_t nLandau,
-		 UShort_t minEntries, UShort_t minusBins) const;
+    TF1* FitHist(TH1*     dist,
+		 Double_t lowCut, 
+		 UShort_t nLandau,
+		 UShort_t minusBins) const;
     /** 
-     * Fit more Landau 
-     * 
-     * @param dist     Histogram to fit 
-     * @param nLandau  Number of landaus 
-     * @param r        Result from 1st Landau fit
-     * @param landau1  Function of 1st Landau fit
-     * @param minE     Least signal for range 
-     * 
-     * @return The result 
-     */
-    TF1* FitMore(TH1*        dist,
-		 UShort_t    nLandau,
-		 TFitResult& r, 
-		 TF1*        landau1,
-		 Double_t    minE,
-		 Double_t    maxRange) const;
-    /** 
-     * Fit more Landau 
-     * 
-     * @param dist     Histogram to fit 
-     * @param nLandau  Number of landaus 
-     * @param r        Result from 1st Landau fit
-     * @param landau1  Function of 1st Landau fit
-     * @param minE     Least signal for range 
-     * 
-     * @return The result 
-     */
-    TF1* FitMore2(TH1*        dist,
-		  UShort_t    nLandau,
-		  TFitResult& r, 
-		  TF1*        landau1,
-		  Double_t    minE,
-		  Double_t    maxRange) const;
-    /** 
-     * Check the result of the fit. Returns true if the reduced 
-     * @f$ \chi^2/\nu@f$ is less than 5, and that the relative error 
-     * @f$ \Delta p_i/p_i@f$ on each parameter is less than 20 percent. 
+     * Check the result of the fit. Returns true if 
+     * - the reduced  @f$ \chi^2/\nu@f$ is less than 5
+     * - and that the relative error @f$ \Delta p_i/p_i@f$ on each
+     *   parameter is less than 20 percent.
+     * - If this is a fit to N particles if the N particle weight is 
+     *   larger than @$f 10^{-7}@f$ 
      * 
      * @param r Result to check
      * 
      * @return true if fit is good. 
      */
-    Bool_t CheckResult(TFitResult& r) const;
+    Bool_t CheckResult(TFitResult* r) const;
+    /** 
+     * Make an axis with increasing bins 
+     * 
+     * @param n    Number of bins 
+     * @param min  Minimum 
+     * @param max  Maximum
+     * 
+     * @return An axis with quadratically increasing bin size 
+     */
     TArrayD MakeIncreasingAxis(Int_t n, Double_t min, Double_t max) const;
     /** 
      * Make E/E_mip histogram 
@@ -267,6 +301,19 @@ protected:
      * @return 
      */
     TH1D* MakePar(const char* name, const char* title, const TAxis& eta) const;
+    /** 
+     * Make a histogram that contains the results of the fit over the full ring 
+     * 
+     * @param name  Name 
+     * @param title Title
+     * @param eta   Eta axis 
+     * @param low   Least bin
+     * @param high  Largest bin
+     * @param val   Value of parameter 
+     * @param err   Error on parameter 
+     * 
+     * @return The newly allocated histogram 
+     */
     TH1D* MakeTotal(const char* name, 
 		    const char* title, 
 		    const TAxis& eta, 
@@ -298,6 +345,9 @@ protected:
   UShort_t fBinsToSubtract;// Number of bins to subtract from found max
   Bool_t   fDoFits;        // Wheter to actually do the fits 
   TAxis    fEtaAxis;       // Eta axis 
+  Double_t fMaxE;          // Maximum energy loss to consider 
+  Int_t    fNEbins;        // Number of energy loss bins 
+  Bool_t   fUseIncreasingBins; // Wheter to use increasing bin sizes 
   Int_t    fDebug;         // Debug level 
 
   ClassDef(AliFMDEnergyFitter,1); //

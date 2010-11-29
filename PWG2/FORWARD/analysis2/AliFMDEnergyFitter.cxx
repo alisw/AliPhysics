@@ -121,6 +121,9 @@ AliFMDEnergyFitter::AliFMDEnergyFitter()
     fBinsToSubtract(4),
     fDoFits(false),
     fEtaAxis(),
+    fMaxE(10),
+    fNEbins(300), 
+    fUseIncreasingBins(true),
     fDebug(0)
 {}
 
@@ -133,7 +136,10 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
     fMinEntries(100),
     fBinsToSubtract(4),
     fDoFits(false),
-    fEtaAxis(100,-4,6),
+    fEtaAxis(0,0,0),
+    fMaxE(10),
+    fNEbins(300), 
+    fUseIncreasingBins(true),
     fDebug(3)
 {
   fEtaAxis.SetName("etaAxis");
@@ -155,6 +161,9 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const AliFMDEnergyFitter& o)
     fBinsToSubtract(o.fBinsToSubtract),
     fDoFits(o.fDoFits),
     fEtaAxis(o.fEtaAxis),
+    fMaxE(o.fMaxE),
+    fNEbins(o.fNEbins), 
+    fUseIncreasingBins(o.fUseIncreasingBins),
     fDebug(o.fDebug)
 {
   TIter    next(&o.fRingHistos);
@@ -209,12 +218,27 @@ AliFMDEnergyFitter::GetRingHistos(UShort_t d, Char_t r) const
 void
 AliFMDEnergyFitter::Init(const TAxis& eAxis)
 {
-  fEtaAxis.Set(eAxis.GetNbins(),eAxis.GetXmin(),eAxis.GetXmax());
+  if (fEtaAxis.GetNbins() == 0 || 
+      fEtaAxis.GetXmin() == fEtaAxis.GetXmax()) 
+    SetEtaAxis(eAxis);
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next())))
-    o->Init(eAxis);
+    o->Init(fEtaAxis, fMaxE, fNEbins, fUseIncreasingBins);
 }  
+//____________________________________________________________________
+void
+AliFMDEnergyFitter::SetEtaAxis(const TAxis& eAxis)
+{
+  SetEtaAxis(eAxis.GetNbins(),eAxis.GetXmin(),eAxis.GetXmax());
+}
+//____________________________________________________________________
+void
+AliFMDEnergyFitter::SetEtaAxis(Int_t nBins, Double_t etaMin, Double_t etaMax)
+{
+  fEtaAxis.Set(nBins,etaMin,etaMax);
+}
+
 //____________________________________________________________________
 Bool_t
 AliFMDEnergyFitter::Accumulate(const AliESDFMD& input, 
@@ -575,10 +599,10 @@ AliFMDEnergyFitter::RingHistos::Fit(TList* dir, const TAxis& eta,
   Int_t high   = 0;
   for (Int_t i = 0; i < nDists; i++) { 
     TH1D* dist = static_cast<TH1D*>(dists->At(i));
+    if (!dist || dist->GetEntries() <= minEntries) continue;
 
-    if (!dist) continue;
 
-    TF1* res = FitHist(dist,lowCut,nLandau,minEntries,minusBins);
+    TF1* res = FitHist(dist,lowCut,nLandau,minusBins);
     if (!res) continue;
     
     low   = TMath::Min(low,i+1);
@@ -604,8 +628,8 @@ AliFMDEnergyFitter::RingHistos::Fit(TList* dir, const TAxis& eta,
   }
 
   TH1* total = GetOutputHist(l, Form("%s_edist", fName.Data()));
-  if (total) { 
-    TF1* res = FitHist(total,lowCut,nLandau,minEntries,minusBins);
+  if (total && total->GetEntries() >= minEntries) { 
+    TF1* res = FitHist(total,lowCut,nLandau,minusBins);
     if (res) { 
       Double_t chi2 = res->GetChisquare();
       Int_t    ndf  = res->GetNDF();
@@ -644,239 +668,80 @@ AliFMDEnergyFitter::RingHistos::Fit(TList* dir, const TAxis& eta,
 
 //____________________________________________________________________
 TF1*
-AliFMDEnergyFitter::RingHistos::FitHist(TH1* dist,Double_t lowCut, 
+AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
+					Double_t lowCut, 
 					UShort_t nLandau, 
-					UShort_t minEntries,
 					UShort_t minusBins) const
 {
   Double_t maxRange = 10;
 
-  if (dist->GetEntries() <= minEntries) return 0;
-
-  // Find the fit range 
-  dist->GetXaxis()->SetRangeUser(lowCut, maxRange);
+  AliForwardUtil::ELossFitter f(lowCut, maxRange, minusBins); 
+  f.Clear();
   
-  // Normalize peak to 1 
-  Double_t max = dist->GetMaximum(); 
-  dist->Scale(1/max);
-  
-  // Get the bin with maximum 
-  Int_t    maxBin = dist->GetMaximumBin();
-  Double_t maxE   = dist->GetBinLowEdge(maxBin);
-  
-  // Get the low edge 
-  dist->GetXaxis()->SetRangeUser(lowCut, maxE);
-  Int_t    minBin = maxBin - minusBins; // dist->GetMinimumBin();
-  Double_t minE   = TMath::Max(dist->GetBinCenter(minBin),lowCut);
-  Double_t maxEE  = dist->GetBinCenter(maxBin+2*minusBins);
+  // If we are only asked to fit a single particle, return this fit, 
+  // no matter what. 
+  if (nLandau == 1) {
+    TF1* r = f.Fit1Particle(dist, 0);
+    if (!r) return 0;
+    return new TF1(*r);
+  }
 
-  // Restore the range 
-  dist->GetXaxis()->SetRangeUser(0, maxRange);
-  
-  // First do a single landau fit 
-  TF1*          landau1 = new TF1("landau1", "landau", minE, maxEE);
-  // landau1->SetParameters(1,1,1,1);
-  landau1->SetParNames("C","#Delta_{p}","#xi");
-  landau1->SetParLimits(1,minE,maxRange);
-  landau1->SetParLimits(2,0,maxRange);
-  landau1->SetLineColor(Color());
-  // Tight fit around peak - make sure we get that right. 
-  TFitResultPtr r = dist->Fit(landau1, "RQNS", "", minE, maxEE);
+  // Fit from 2 upto n particles  
+  for (Int_t i = 2; i <= nLandau; i++) f.FitNParticle(dist, i, 0);
 
-  return FitMore2(dist, nLandau, *r, landau1, minE, maxRange);
-}
 
-//____________________________________________________________________
-TF1*
-AliFMDEnergyFitter::RingHistos::FitMore(TH1*        dist,
-					UShort_t    nLandau,
-					TFitResult& r, 
-					TF1*        landau1,
-					Double_t    minE,
-					Double_t    maxRange) const
-{
-  static TClonesArray res("TFitResult");
-  static TObjArray funcs;
-  res.Clear();
-  funcs.SetOwner();
-  funcs.Clear();
-  Int_t nRes = 0;
-
-  //r->Print();
-  new(res[nRes++]) TFitResult(r);
-  funcs.AddAtAndExpand(landau1, 0);
-
-  // Now try to fit 
-  for (UShort_t n = 2; n <= nLandau; n++) { 
-    TFitResult* rr = static_cast<TFitResult*>(res.At(nRes-1));
-    if (!rr) { 
-      AliError(Form("No previous result (%p, %d) for n=%d", rr, nRes, n));
-      return 0;
-    }
-    // Create the function object 
-    Double_t mpvi  = rr->Parameter(1);
-    Double_t wi    = rr->Parameter(2);
-    Double_t maxEi = n*(mpvi+wi*TMath::Log(n))+2*n*wi;
-    TF1* landaui = new TF1(Form("landau%d", n), &NLandau, minE, maxEi,3+n);
-    landaui->SetLineStyle((n % 10)+1);
-    landaui->SetLineWidth(2);
-    landaui->SetLineColor(Color());
-    landaui->SetParameter(0, rr->Parameter(0));
-    landaui->SetParameter(1, rr->Parameter(1));
-    landaui->SetParameter(2, rr->Parameter(2));
-    landaui->SetParLimits(1, minE, maxRange);
-    landaui->SetParLimits(2,0,maxRange);
-    landaui->FixParameter(3, n);
-    landaui->SetParNames("C","#Delta_{p}","#xi", "N");
-    for (UShort_t i = 2; i < n; i++) {// Take parameters from last fit 
-      landaui->SetParameter(N_A(i), rr->Parameter(N_A(i)));
-      landaui->SetParLimits(N_A(i), 0,1);
-      landaui->SetParName(i, Form("a_{%d}", i));
-    }
-    landaui->SetParameter(N_A(n), (n == 2 ? 0.05 : rr->Parameter(N_A(n-1))/5));
-    landaui->SetParLimits(N_A(n), 0, 1);
-    landaui->SetParName(N_A(n), Form("a_{%d}", n));
-    // landaui->Print();
-
-    TFitResultPtr tr = dist->Fit(landaui, "RNSQ", "", minE, maxEi);
-    // tr->Print();
-    if (CheckResult(*tr)) { 
-      new(res[nRes++]) TFitResult(*tr);
-      funcs.AddAtAndExpand(landaui,n-1);
-      continue;
-    }
-    // Stop on bad fit 
+  // Now, we need to select the best fit 
+  Int_t nFits = f.fFitResults.GetEntriesFast();
+  TF1*  good[nFits];
+  for (Int_t i = nFits-1; i >= 0; i--) { 
+    if (CheckResult(static_cast<TFitResult*>(f.fFitResults.At(i))))
+      good[i] = static_cast<TF1*>(f.fFunctions.At(i));
+  }
+  // If all else fails, use the 1 particle fit 
+  TF1* ret = static_cast<TF1*>(f.fFunctions.At(0));
+  for (Int_t i = nFits-1; i > 0; i--) {
+    if (!good[i]) continue;
+    ret = good[i];
     break;
   }
-  TF1* ret = 0;
-  if (funcs.At(nRes-1)) ret = static_cast<TF1*>(funcs.At(nRes-1)->Clone());
-  dist->GetListOfFunctions()->Add(ret);
-
-  res.Clear();
-  funcs.Clear();
-
-  return ret;
-}
-
-//____________________________________________________________________
-TF1*
-AliFMDEnergyFitter::RingHistos::FitMore2(TH1*        dist,
-					 UShort_t    nLandau,
-					 TFitResult& r, 
-					 TF1*        landau1,
-					 Double_t    minE,
-					 Double_t    maxRange) const
-{
-  static TClonesArray res("TFitResult");
-  static TObjArray funcs;
-  res.Clear();
-  funcs.SetOwner();
-  funcs.Clear();
-  Int_t nRes = 0;
-
-  //r->Print();
-  new(res[nRes++]) TFitResult(r);
-  funcs.AddAtAndExpand(landau1, 0);
-
-  // Now try to fit 
-  for (UShort_t n = 2; n <= nLandau; n++) { 
-    TFitResult* rr = static_cast<TFitResult*>(res.At(nRes-1));
-    if (!rr) { 
-      AliError(Form("No previous result (%p, %d) for n=%d", rr, nRes, n));
-      return 0;
-    }
-    // Create the function object 
-    Double_t mpvi  = rr->Parameter(1);
-    Double_t wi    = rr->Parameter(2);
-    Double_t maxEi = n*(mpvi+wi*TMath::Log(n))+2*n*wi;
-    TF1* landaui = new TF1(Form("landau%d", n), &NLandau, minE, maxEi,
-			   n*3+1);
-    landaui->SetLineStyle((n % 10)+1);
-    landaui->SetLineWidth(2);
-    landaui->SetLineColor(Color());
-    landaui->SetParameter(0, rr->Parameter(0));
-    landaui->SetParameter(1, rr->Parameter(1));
-    landaui->SetParameter(2, rr->Parameter(2));
-    landaui->SetParLimits(1, minE, maxRange);
-    landaui->SetParLimits(2,0,maxRange);
-    landaui->FixParameter(3, n);
-    landaui->SetParNames("C","#Delta_{p}","#xi", "N");
-    for (UShort_t i = 2; i < n; i++) {// Take parameters from last fit 
-      landaui->SetParameter(N2_A(i), rr->Parameter(N2_A(i)));
-      landaui->SetParameter(N2_D(i), rr->Parameter(N2_D(i)));
-      landaui->SetParameter(N2_X(i), rr->Parameter(N2_X(i)));
-      landaui->SetParLimits(N2_A(i), 0,1);
-      landaui->SetParLimits(N2_D(i), minE,maxEi);
-      landaui->SetParLimits(N2_X(i), 0,maxRange);
-      landaui->SetParName(N2_A(i), Form("a_{%d}", i));
-      landaui->SetParName(N2_D(i), Form("#Delta_{p,%d}", i));
-      landaui->SetParName(N2_X(i), Form("#xi_{%d}", i));
-    }
-    landaui->SetParameter(N2_A(n), n == 2 ? 0.05 : rr->Parameter(N2_A(n-1))/5);
-    landaui->SetParameter(N2_D(n), mpvi);
-    landaui->SetParameter(N2_X(n), wi);
-    landaui->SetParLimits(N2_A(n), 0,1);
-    landaui->SetParLimits(N2_D(n), minE,maxEi);
-    landaui->SetParLimits(N2_X(n), 0,maxRange);
-    landaui->SetParName(N2_A(n), Form("a_{%d}", n));
-    landaui->SetParName(N2_D(n), Form("#Delta_{p,%d}", n));
-    landaui->SetParName(N2_X(n), Form("#xi_{%d}", n));
-    if (fDebug > 2) landaui->Print();
-
-    TFitResultPtr tr = dist->Fit(landaui, "RNSQ", "", minE, maxEi);
-    if (fDebug > 2)  tr->Print();
-    if (CheckResult(*tr)) { 
-      new(res[nRes++]) TFitResult(*tr);
-      funcs.AddAtAndExpand(landaui,n-1);
-      continue;
-    }
-    // Stop on bad fit 
-    break;
-  }
-  TF1* ret = 0;
-  if (funcs.At(nRes-1)) ret = static_cast<TF1*>(funcs.At(nRes-1)->Clone());
-  dist->GetListOfFunctions()->Add(ret);
-
-  res.Clear();
-  funcs.Clear();
-
-  return ret;
+  return new TF1(*ret);
 }
 
 //____________________________________________________________________
 Bool_t
-AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult& r) const
+AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult* r) const
 {
-  Double_t chi2 = r.Chi2();
-  Int_t    ndf  = r.Ndf();
+  Double_t chi2 = r->Chi2();
+  Int_t    ndf  = r->Ndf();
   // Double_t prob = r.Prob();
   if (ndf <= 0 || chi2 / ndf > 5) { 
     if (fDebug > 2)
       AliWarning(Form("Fit %s has chi^2/ndf=%f/%d=%f", 
-		      r.GetName(), chi2, ndf, (ndf<0 ? 0 : chi2/ndf)));
+		      r->GetName(), chi2, ndf, (ndf<0 ? 0 : chi2/ndf)));
     return kFALSE;
   }
     
-  UShort_t nPar = r.NPar();
+  UShort_t nPar = r->NPar();
   for (UShort_t i = 0; i < nPar; i++) { 
     if (i == 3) continue; 
     
-    Double_t v = r.Parameter(i);
-    Double_t e = r.ParError(i);
+    Double_t v = r->Parameter(i);
+    Double_t e = r->ParError(i);
     if (v == 0) continue;
     if (v == 0 || e / v > 0.2) { 
       if (fDebug > 2)
 	AliWarning(Form("Fit %s has Delta %s/%s=%f/%f=%f%%",
-			r.GetName(), r.ParName(i).c_str(), 
-			r.ParName(i).c_str(), e, v, 100*(v == 0 ? 0 : e/v)));
+			r->GetName(), r->ParName(i).c_str(), 
+			r->ParName(i).c_str(), e, v, 100*(v == 0 ? 0 : e/v)));
       return kFALSE;
     }
   }
-  if (nPar > 4) { 
-    if (r.Parameter(nPar-1) <= 1e-10) { 
+  if (nPar > 5) { 
+    Double_t lastScale = r->Parameter(nPar-1);
+    if (lastScale <= 1e-7) { 
       if (fDebug)
-	AliWarning(Form("Last scale %s is too small %f<1e-10", 
-			r.ParName(nPar-1).c_str(), r.Parameter(nPar-1)));
+	AliWarning(Form("Last scale %s is too small %f<1e-7", 
+			r->ParName(nPar-1).c_str(), lastScale));
       return kFALSE;
     }
   }
