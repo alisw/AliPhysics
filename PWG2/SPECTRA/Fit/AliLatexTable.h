@@ -28,9 +28,9 @@ public:
   void SetNextCol(Int_t val); 
   void SetNextCol(Int_t val, Int_t err); 
 
-  void SetNextCol(Double_t val, Int_t scientificNotation = -1); // if different from -1 gives significant digits
-  void SetNextCol(Double_t val, Double_t err, Int_t scientificNotation = -1); 
-  void SetNextCol(Double_t val, Double_t err, Double_t errSyst, Int_t scientificNotation = -1); 
+  void SetNextCol(Double_t val, Int_t scientificNotation = -1, Bool_t rounding = kTRUE); // if different from -1 gives significant digits
+  void SetNextCol(Double_t val, Double_t err, Int_t scientificNotation = -1, Bool_t rounding = kTRUE); 
+  void SetNextCol(Double_t val, Double_t err, Double_t errSyst, Int_t scientificNotation = -1, Bool_t rounding = kTRUE); 
 
   void SetNextCol(TString val); 
 //   // allows to use printf syntax

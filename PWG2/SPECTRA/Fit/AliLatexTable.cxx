@@ -89,88 +89,90 @@ void AliLatexTable::SetNextCol(Int_t val, Int_t err){
 
 } 
 
-void AliLatexTable::SetNextCol(Double_t val, Int_t scientificNotation){
+void AliLatexTable::SetNextCol(Double_t val, Int_t scientificNotation, Bool_t rounding){
 
   // Set next column in current row - double, specify resolution
 
   char col[200];
-  if(scientificNotation >= 0) {
-    char format[100];
+  if(rounding) {
+    if(scientificNotation >= 0) {
+      char format[100];
 
-    //    cout << format << endl;    
-    Double_t mantissa, exp;
-    GetMantissaAndExpBase10(val, mantissa, exp);
+      //    cout << format << endl;    
+      Double_t mantissa, exp;
+      GetMantissaAndExpBase10(val, mantissa, exp);
     
-    if (exp == 0) {
-      sprintf(format, " $%%%d.%df $", scientificNotation, scientificNotation);
-      sprintf(col, format, mantissa);      
-    }
-    else  {
-      sprintf(format, " $%%%d.%df \\cdot 10^{%%0.0f} $", scientificNotation, scientificNotation);
-      sprintf(col, format, mantissa, exp);
-    }
+      if (exp == 0) {
+	sprintf(format, " $%%%d.%df $", scientificNotation, scientificNotation);
+	sprintf(col, format, mantissa);      
+      }
+      else  {
+	sprintf(format, " $%%%d.%df \\cdot 10^{%%0.0f} $", scientificNotation, scientificNotation);
+	sprintf(col, format, mantissa, exp);
+      }
 
 
     
 
-    SetNextCol(col);
+      SetNextCol(col);
 
-  } else if (scientificNotation < -1) {
-    char format[100];
-    sprintf(format, " $%%%d.%df $", -scientificNotation,-scientificNotation);    
-    sprintf(col, format , val);
-    SetNextCol(col);
-  } else {
+    } else {
+      char format[100];
+      sprintf(format, " $%%%d.%df $", -scientificNotation,-scientificNotation);    
+      sprintf(col, format , val);
+      SetNextCol(col);
+    } 
+  }else {
     sprintf(col, " %f ", val);
     SetNextCol(col);
   }
 
 } 
-void AliLatexTable::SetNextCol(Double_t val, Double_t err, Int_t scientificNotation){
+void AliLatexTable::SetNextCol(Double_t val, Double_t err, Int_t scientificNotation, Bool_t rounding){
 
   // Set next column in current row - double +- double, specify resolution
 
-  // if scientific notation is != -1 is used to determine number of
+  // scientific notation is used to determine number of
   // digits in error 
 
   //if it is > 0 exp notation is used 
 
-  //if it is < -1 number is truncated to the number of digits after
-  //point dictated by scientificNotation,
 
   char col[200];
-  if(scientificNotation >=0 ) {
+  if(rounding) {
+    if(scientificNotation >=0 ) {
+      
+      Double_t mantissa, exp;
+      GetMantissaAndExpBase10(val, mantissa, exp);
+      
+      Double_t mantissa_err, exp_err;
+      GetMantissaAndExpBase10(err, mantissa_err, exp_err);
 
-    Double_t mantissa, exp;
-    GetMantissaAndExpBase10(val, mantissa, exp);
-
-    Double_t mantissa_err, exp_err;
-    GetMantissaAndExpBase10(err, mantissa_err, exp_err);
-
-    Int_t nSigDigits =TMath::Nint(exp - exp_err);
-    if(scientificNotation != 0) nSigDigits =  nSigDigits + scientificNotation - 1;
-
-
-    char format[100];
-    if (exp == 0) {
-      sprintf(format, " $%%%d.%df \\pm %%%d.%df $", nSigDigits, nSigDigits, nSigDigits, nSigDigits);
-      sprintf(col, format, mantissa, mantissa_err/TMath::Power(10,exp - exp_err));
-    }
-    else  {
-      sprintf(format, " $%%%d.%df \\pm %%%d.%df \\cdot 10^{%%0.0f}$", nSigDigits, nSigDigits, nSigDigits, nSigDigits);
-      sprintf(col, format, mantissa, mantissa_err/TMath::Power(10,exp - exp_err), exp);
-    }
+      Int_t nSigDigits =TMath::Nint(exp - exp_err);
+      if(scientificNotation != 0) nSigDigits =  nSigDigits + scientificNotation - 1;
 
 
- //cout << format << endl;
+      char format[100];
+      if (exp == 0) {
+	sprintf(format, " $%%%d.%df \\pm %%%d.%df $", nSigDigits, nSigDigits, nSigDigits, nSigDigits);
+	sprintf(col, format, mantissa, mantissa_err/TMath::Power(10,exp - exp_err));
+      }
+      else  {
+	sprintf(format, " $%%%d.%df \\pm %%%d.%df \\cdot 10^{%%0.0f}$", nSigDigits, nSigDigits, nSigDigits, nSigDigits);
+	sprintf(col, format, mantissa, mantissa_err/TMath::Power(10,exp - exp_err), exp);
+      }
+
+
+      //cout << format << endl;
     
-    SetNextCol(col);
+      SetNextCol(col);
 
-  } else if (scientificNotation < -1) {
-    char format[100];
-    sprintf(format, " $%%%d.%df \\pm %%%d.%df $", -scientificNotation,-scientificNotation,-scientificNotation,-scientificNotation);    
-    sprintf(col, format , val, err);
-    SetNextCol(col);
+    } else  {
+      char format[100];
+      sprintf(format, " $%%%d.%df \\pm %%%d.%df $", -scientificNotation,-scientificNotation,-scientificNotation,-scientificNotation);    
+      sprintf(col, format , val, err);
+      SetNextCol(col);
+    }
   }
   else {
     sprintf(col, " $%f \\pm %f$ ", val, err);
@@ -178,7 +180,7 @@ void AliLatexTable::SetNextCol(Double_t val, Double_t err, Int_t scientificNotat
   }
 } 
 
-void AliLatexTable::SetNextCol(Double_t val, Double_t err, Double_t errSyst, Int_t scientificNotation){
+void AliLatexTable::SetNextCol(Double_t val, Double_t err, Double_t errSyst, Int_t scientificNotation, Bool_t rounding){
 
   // Set next column in current row - double +- double +- double, specify resolution
 
@@ -191,49 +193,51 @@ void AliLatexTable::SetNextCol(Double_t val, Double_t err, Double_t errSyst, Int
   //point dictated by scientificNotation,
 
   char col[200];
-  if(scientificNotation >=0 ) {
+  if (rounding) {
+    if(scientificNotation >=0 ) {
 
-    Double_t mantissa, exp;
-    GetMantissaAndExpBase10(val, mantissa, exp);
+      Double_t mantissa, exp;
+      GetMantissaAndExpBase10(val, mantissa, exp);
 
-    Double_t mantissa_err, exp_err;
-    GetMantissaAndExpBase10(err, mantissa_err, exp_err);
+      Double_t mantissa_err, exp_err;
+      GetMantissaAndExpBase10(err, mantissa_err, exp_err);
 
-    Double_t mantissa_errsyst, exp_errsyst;
-    GetMantissaAndExpBase10(errSyst, mantissa_errsyst, exp_errsyst);
+      Double_t mantissa_errsyst, exp_errsyst;
+      GetMantissaAndExpBase10(errSyst, mantissa_errsyst, exp_errsyst);
 
-    Int_t nSigDigits =TMath::Nint(exp - exp_err);
-    if(scientificNotation != 0) nSigDigits =  nSigDigits + scientificNotation - 1;
-
-
-    char format[100];
-    if (exp == 0) {
-      sprintf(format, " $%%%d.%df \\pm %%%d.%df \\pm %%%d.%df $", 
-	      nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits);
-      sprintf(col, format, mantissa, 
-	      mantissa_err/TMath::Power(10,exp - exp_err), 
-	      mantissa_errsyst/TMath::Power(10,exp - exp_errsyst));
-    }
-    else  {
-      sprintf(format, " $%%%d.%df \\pm %%%d.%df  \\pm %%%d.%df \\cdot 10^{%%0.0f}$", 
-	      nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits);
-      sprintf(col, format, mantissa, 
-	      mantissa_err/TMath::Power(10,exp - exp_err), 
-	      mantissa_errsyst/TMath::Power(10,exp - exp_errsyst),
-	      exp);
-    }
+      Int_t nSigDigits =TMath::Nint(exp - exp_err);
+      if(scientificNotation != 0) nSigDigits =  nSigDigits + scientificNotation - 1;
 
 
- //cout << format << endl;
+      char format[100];
+      if (exp == 0) {
+	sprintf(format, " $%%%d.%df \\pm %%%d.%df \\pm %%%d.%df $", 
+		nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits);
+	sprintf(col, format, mantissa, 
+		mantissa_err/TMath::Power(10,exp - exp_err), 
+		mantissa_errsyst/TMath::Power(10,exp - exp_errsyst));
+      }
+      else  {
+	sprintf(format, " $%%%d.%df \\pm %%%d.%df  \\pm %%%d.%df \\cdot 10^{%%0.0f}$", 
+		nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits);
+	sprintf(col, format, mantissa, 
+		mantissa_err/TMath::Power(10,exp - exp_err), 
+		mantissa_errsyst/TMath::Power(10,exp - exp_errsyst),
+		exp);
+      }
+
+
+      //cout << format << endl;
     
-    SetNextCol(col);
+      SetNextCol(col);
 
-  } else if (scientificNotation < -1) {
-    char format[100];
-    sprintf(format, " $%%%d.%df \\pm %%%d.%df \\pm %%%d.%df $", -scientificNotation,-scientificNotation,-scientificNotation,-scientificNotation, -scientificNotation,-scientificNotation);    
-    sprintf(col, format , val, err);
-    SetNextCol(col);
-  } 
+    } else  {
+      char format[100];
+      sprintf(format, " $%%%d.%df \\pm %%%d.%df \\pm %%%d.%df $", -scientificNotation,-scientificNotation,-scientificNotation,-scientificNotation, -scientificNotation,-scientificNotation);    
+      sprintf(col, format , val, err);
+      SetNextCol(col);
+    } 
+  }
   else {
     sprintf(col, " $%f \\pm %f  \\pm %f$ ", val, err, errSyst);
     SetNextCol(col);
