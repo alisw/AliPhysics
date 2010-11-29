@@ -9,10 +9,11 @@
  *
  * @ingroup pwg2_forward_analysis_scripts
  */
-void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
+void RunManager(const char* esddir, Bool_t mc=kFALSE, Int_t nEvents=1000,
 		Int_t nCutBins=1, Float_t correctionCut=0.1, 
 		Bool_t proof=false)
 {
+  // --- Libraries to load -------------------------------------------
   gSystem->Load("libVMC");
   gSystem->Load("libTree");
   
@@ -29,6 +30,7 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
   gSystem->Load("libPWG2forward");
   gSystem->Load("libPWG2forward2");
 
+  // --- Check for proof mode, and possibly upload pars --------------
   if (proof) { 
     TProof::Open("workers=2");
     const char* pkgs[] = { "STEERBase", "ESD", "AOD", "ANALYSIS", 
@@ -41,14 +43,33 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
     }
   }
   
-  //You can expand this chain if you have more data :-)
+  // --- Our data chain ----------------------------------------------
   TChain* chain = new TChain("esdTree");
-  chain->Add(esd);
-  
-  //Creating the manager and handlers
+
+  // --- Get list of ESDs --------------------------------------------
+  // Open source directory, and make sure we go back to were we were 
+  TString oldDir(gSystem->WorkingDirectory());
+  TSystemDirectory d(esddir, esddir);
+  TList* files = d.GetListOfFiles();
+  gSystem->ChangeDirectory(oldDir);
+
+  // Sort list of files and check if we should add it 
+  files->Sort();
+  TIter next(files);
+  TSystemFile* file = 0;
+  while ((file = static_cast<TSystemFile*>(next()))) {
+    if (file->IsDirectory()) continue;
+    TString name(file->GetName());
+    if (!name.EndsWith(".root")) continue;
+    if (!name.Contains("AliESDs")) continue;
+    TString esd(Form("%s/%s", file->GetTitle(), name.Data()));
+    Info("RunManager", "Adding %s to chain", esd.Data());
+    chain->Add(esd);
+  }  
+
+  // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", 
 						    "FMD analysis train");
-  mgr->SetDebugLevel(3);
 
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
   esdHandler->SetInactiveBranches("AliESDACORDE "
@@ -65,7 +86,6 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
 				  "HLTGlobalTrigger");
   mgr->SetInputEventHandler(esdHandler);      
        
-       
   // Monte Carlo handler
   // AliMCEventHandler* mcHandler = new AliMCEventHandler();
   // mgr->SetMCtruthEventHandler(mcHandler);
@@ -75,7 +95,8 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
   AliAODHandler* aodHandler   = new AliAODHandler();
   mgr->SetOutputEventHandler(aodHandler);
   aodHandler->SetOutputFileName("AliAODs.root");
-    
+
+  // --- Add tasks ---------------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AliAnalysisTask* task = AddTaskFMD(nCutBins, correctionCut);
@@ -84,8 +105,7 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
   task = AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
   mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
   
-  // Run the analysis
-    
+  // --- Run the analysis --------------------------------------------
   TStopwatch t;
   if (!mgr->InitAnalysis()) {
     Error("RunManager", "Failed to initialize analysis train!");
@@ -93,16 +113,9 @@ void RunManager(const char* esd, Bool_t mc=kFALSE, Int_t nEvents=1000,
   }
   // Some informative output 
   mgr->PrintStatus();
-  // mgr->SetUseProgressBar(kTRUE);
-
-  // Write train to file - a test 
-#if 0
-  TDirectory* savDir = gDirectory;
-  TFile* file = TFile::Open("analysisTrain.root", "RECREATE");
-  mgr->Write();
-  file->Close();
-  savDir->cd();
-#endif
+  // mgr->SetDebugLevel(3);
+  if (mgr->GetDebugLevel() < 1 && !proof) 
+    mgr->SetUseProgressBar(kTRUE);
 
   // Run the train 
   t.Start();
