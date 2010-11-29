@@ -9,7 +9,7 @@
  * @ingroup pwg2_forward_analysis_scripts
  */
 void
-Pass1(const char* file="AliESDs.root", 
+Pass1(const char* esddir=".", 
       Int_t       nEvents=1000, 
       Int_t       nCutBins=1, 
       Int_t       correctionCut=0.1,
@@ -17,7 +17,7 @@ Pass1(const char* file="AliESDs.root",
 {
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/RunManager.C"); 
 
-  RunManager(file, kFALSE, nEvents, nCutBins, correctionCut, proof);
+  RunManager(esddir, kFALSE, nEvents, nCutBins, correctionCut, proof);
 }
 //
 // EOF
