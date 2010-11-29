@@ -134,6 +134,7 @@ void GenerateInputData()
 void RunTriggerCounter(bool debug = false, int numOfEvents = 9)
 {
 	AliHLTSystem sys;
+	sys.ScanOptions("ECS=CTP_TRIGGER_CLASS=00:CINTA:17,01:CINTB:00-01-02-03-04-05-06-07-08-09-10-11-12-13-14-15-16-17,02:CMUB:00-10-11-17");
 	sys.LoadComponentLibraries("libAliHLTUtil.so");
 	sys.LoadComponentLibraries("libAliHLTTRD.so");
 	sys.LoadComponentLibraries("libAliHLTMUON.so");
@@ -161,7 +162,17 @@ void RunTriggerCounter(bool debug = false, int numOfEvents = 9)
 	AliHLTConfiguration proc("proc", "HLTTriggerCounter", "pub1 pub2", "-skipcdb -config InitialCounterConfig.C");
 	AliHLTConfiguration sink("sink", "ROOTFileWriter", "proc", "-datafile testOutputFileTriggerCounter.root -concatenate-events");
 	sys.BuildTaskList("sink");
-	sys.Run(numOfEvents);
+	AliHLTUInt64_t trigMask[9] = {0x1, 0x2, 0x4, 0x1, 0x2, 0x4, 0x1, 0x2, 0x4};
+	for (int i = 0; i < 9 && i < numOfEvents; i++)
+	{
+		sys.Run(
+			1,  // number of events
+			(i == 8 ? 1 : 0),  // Stop chain at end of run.
+			trigMask[i], // Active CTP trigger mask.
+			0,   // Time stamp.
+			0    // Event type.
+		);
+	}
 }
 
 /**
@@ -265,6 +276,8 @@ bool CheckTriggerCounterOutput()
 	
 	// Start-of-run event (should contain no values)
 	expectedInputCounters[0].Add("CINTA", "", 0, 0);
+	expectedInputCounters[0].Add("CINTB", "", 0, 0);
+	expectedInputCounters[0].Add("CMUB", "", 0, 0);
 	expectedOutputCounters[0].Add("TRIGGER-A", "", 0, 0);
 	
 	// Data events

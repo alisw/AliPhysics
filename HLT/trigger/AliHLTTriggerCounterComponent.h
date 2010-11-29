@@ -48,6 +48,8 @@
  *      Indicates that input triggers which have false decision results should also be counted.
  * \li -countfalseoutputs  <br>
  *      Indicates that output triggers which have false decision results should also be counted.
+ * \li -integrationtime <i>period</i> <br>
+ *      Sets the default maximum integration time in seconds to use for measuring the counter rates.
  *
  * <h2>Configuration:</h2>
  * Can only be configured with the command line arguments.
@@ -124,18 +126,28 @@ private:
 		};
 		
 		/// Constructor initialises the buffer
-		AliRingBuffer(const char* counterName, Double_t startTime) : TObject(), fCounterName(counterName), fPos(0)
+		AliRingBuffer(const char* counterName, Double_t startTime, Double_t maxIntegTime = 1.) :
+			TObject(), fCounterName(counterName), fMaxIntegrationTime(maxIntegTime), fPos(0)
 		{
 			for (size_t i = 0; i < kTimeStampEntries; ++i) {
 				fCounterBuffer[i] = 0; fTimeBuffer[i] = startTime;
 			}
 		}
 		
+		/// Overloaded new operator to catch and log memory allocation failures.
+		void* operator new (std::size_t size) throw (std::bad_alloc);
+		
+		/// Symmetric delete operator for overloaded new.
+		void operator delete (void* mem) throw ();
+		
 		/// Inherited form TObject. Returns the counter name this buffer is associated to.
 		virtual const char* GetName() const { return fCounterName.Data(); }
 		
 		/// Inherited from TObject. Returns a hash value calculated from the counter name.
 		virtual ULong_t Hash() const { return fCounterName.Hash(); }
+		
+		/// Returns the maximum integration time for this counter to compute the rate.
+		Double_t MaxIntegrationTime() const { return fMaxIntegrationTime; }
 		
 		/// Returns the oldest counter value.
 		ULong64_t OldestCounter() const { return fCounterBuffer[fPos]; }
@@ -147,19 +159,23 @@ private:
 		 * Increments the buffer. The new time and counter values are put into the
 		 * current location to replace the existing values, then the current position
 		 * is incremented (and wrapped around if necessary).
+		 * \note All values that are older than the fMaxIntegrationTime are also replaced.
 		 * \param newCounter  The new counter value to put into the buffer.
 		 * \param newTime  The new time value to put into the buffer.
 		 */
-		void Increment(ULong64_t newCounter, Double_t newTime)
-		{
-			fCounterBuffer[fPos] = newCounter;
-			fTimeBuffer[fPos] = newTime;
-			fPos = (fPos+1) % kTimeStampEntries;
-		}
+		void Increment(ULong64_t newCounter, Double_t newTime);
+		
+		/**
+		 * Replaces all values that are older than the fMaxIntegrationTime.
+		 * \param currentCounter  The current counter's value.
+		 * \param newTime  The new time value to put into the buffer.
+		 */
+		void Update(ULong64_t currentCounter, Double_t newTime);
 		
 	private:
 		
 		TString fCounterName;  // The name of the counter.
+		Double_t fMaxIntegrationTime;  // The maximum integration time in seconds to calculate the rate.
 		UInt_t fPos;  // Current position in the buffers.
 		ULong64_t fCounterBuffer[kTimeStampEntries];  // The counter elements of the buffer.
 		Double_t fTimeBuffer[kTimeStampEntries];  // The time elements of the buffer.
@@ -171,6 +187,9 @@ private:
 	
 	/// Updates the counter rate value.
 	void UpdateCounterRate(AliHLTTriggerCounters::AliCounter* counter, AliRingBuffer* timeBuf, Double_t newTime);
+	
+	/// Updates the counter rate value when the counter was not incremented.
+	void UpdateCounterRate2(AliHLTTriggerCounters::AliCounter* counter, AliRingBuffer* timeBuf, Double_t newTime);
 	
 	/// Loads the initial configuration of counters from the given CDB path.
 	int LoadConfigFromCDB(const char* cdbPath);
@@ -194,6 +213,7 @@ private:
 	THashTable fOutputTimes;  //! Cyclic buffer storing the time stamps when the output counters were received.
 	Double_t fLastPublishTime;  //! The last time the counters were pushed back to the output.
 	Double_t fPublishPeriod;  //! The time between calls to push back the counters to output.
+	Double_t fDefaultMaxIntegrationTime; //! The maximum integration time to use for calculating the rates.
 	bool fCountFalseInputs; //! Indicates if the false input trigger decisions should also be counted.
 	bool fCountFalseOutputs; //! Indicates if the false output trigger decisions should also be counted.
 	

@@ -52,6 +52,7 @@ AliHLTTriggerCounterComponent::AliHLTTriggerCounterComponent() :
 	fOutputTimes(TCollection::kInitHashTableCapacity, 2),
 	fLastPublishTime(-1),
 	fPublishPeriod(-1),
+	fDefaultMaxIntegrationTime(1.),
 	fCountFalseInputs(false),
 	fCountFalseOutputs(false)
 {
@@ -128,6 +129,7 @@ Int_t AliHLTTriggerCounterComponent::DoInit(int argc, const char** argv)
 	fOutputTimes.Clear();
 	fLastPublishTime = -1;
 	fPublishPeriod = -1;
+	fDefaultMaxIntegrationTime = -1;
 	fCountFalseInputs = false;
 	fCountFalseOutputs = false;
 	bool loadCDBObject = true;
@@ -171,12 +173,12 @@ Int_t AliHLTTriggerCounterComponent::DoInit(int argc, const char** argv)
 			if (err == NULL or *err != '\0')
 			{
 				HLTError("Cannot convert '%s' to a floating point value.", argv[i+1]);
-				return false;
+				return -EINVAL;
 			}
 			if (errno == ERANGE)
 			{
 				HLTError("The specified value '%s' is out of range.", argv[i+1]);
-				return false;
+				return -EINVAL;
 			}
 			fPublishPeriod = (tmpnum < 0 ? -1 : tmpnum);
 			i++;
@@ -201,10 +203,47 @@ Int_t AliHLTTriggerCounterComponent::DoInit(int argc, const char** argv)
 			continue;
 		}
 		
+		if (strcmp(argv[i], "-integrationtime") == 0)
+		{
+			if (fDefaultMaxIntegrationTime != -1)
+			{
+				HLTWarning("The maximum integration time was already specified."
+					" Will replace previous value given by -integrationtime."
+				);
+			}
+			if (argc <= i+1)
+			{
+				HLTError("A value for the maximum integration time was not specified for -integrationtime.");
+				return -EINVAL;
+			}
+			char* err = NULL;
+			errno = 0;
+			double tmpnum = strtod(argv[i+1], &err);
+			if (err == NULL or *err != '\0')
+			{
+				HLTError("Cannot convert '%s' to a floating point value.", argv[i+1]);
+				return -EINVAL;
+			}
+			if (errno == ERANGE)
+			{
+				HLTError("The specified value '%s' is out of range.", argv[i+1]);
+				return -EINVAL;
+			}
+			if (tmpnum < 0)
+			{
+				HLTError("The specified value '%s' for the integration time must be positive.", argv[i+1]);
+				return -EINVAL;
+			}
+			fDefaultMaxIntegrationTime = tmpnum;
+			i++;
+			continue;
+		}
+		
 		HLTError("Unknown option '%s'.", argv[i]);
 		return -EINVAL;
 	} // for loop
 	
+	if (fDefaultMaxIntegrationTime == -1) fDefaultMaxIntegrationTime = 1.;
 	if (configFileName != NULL)
 	{
 		int result = LoadConfigFromFile(configFileName);
@@ -215,6 +254,8 @@ Int_t AliHLTTriggerCounterComponent::DoInit(int argc, const char** argv)
 		int result = LoadConfigFromCDB(fgkConfigCDBPath);
 		if (result != 0) return result;
 	}
+	
+	SetupCTPData();  // Setup the CTP accounting in AliHLTComponent.
 	
 	return 0;
 }
@@ -242,6 +283,45 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 	Double_t inputTime = fInputCounters.TimeStamp().AsDouble();
 	Double_t outputTime = fOutputCounters.TimeStamp().AsDouble();
 	
+	// Add the CTP input triggers if available.
+	const AliHLTCTPData* ctp = CTPData();
+	if (ctp != NULL)
+	{
+		const TArrayL64& counters = ctp->Counters();
+		for (Int_t i = 0; i < counters.GetSize(); ++i)
+		{
+			const char* ctpName = ctp->Name(i);
+			// Check if CTP counter is initialised and skip if not.
+			if (strcmp(ctpName, "AliHLTReadoutList") == 0 and counters[i] == 0) continue;
+			TObject* cntobj = fInputCounters.FindObject(ctpName);
+			if (cntobj != NULL)
+			{
+				HLTDebug("Updating existing CTP counter \"%s\".", cntobj->GetName());
+				AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
+				counter->Counter(counters[i]);
+				counter->SetBit(BIT(14), true);  // mark counter as incremented
+				UpdateCounterRate(
+						counter,
+						static_cast<AliRingBuffer*>( fInputTimes.FindObject(ctpName) ),
+						inputTime
+					);
+			}
+			else
+			{
+				HLTDebug("Adding new CTP counter \"%s\".", cntobj->GetName());
+				fInputCounters.Add(
+						ctpName,
+						"New CTP trigger input counter found during the run.",
+						Double_t(counters[i]),
+						counters[i]
+					);
+				fInputCounters.GetCounterN(fInputCounters.NumberOfCounters()-1).SetBit(BIT(14), true); // mark counter as incremented
+				fInputTimes.Add(new AliRingBuffer(ctpName, inputTime));
+				
+			}
+		}
+	}
+	
 	const TObject* obj = GetFirstInputObject(kAliHLTDataTypeGlobalTrigger, "AliHLTGlobalTriggerDecision");
 	while (obj != NULL)
 	{
@@ -265,6 +345,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 						HLTDebug("Updating existing output counter \"%s\".", cntobj->GetName());
 						AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
 						counter->Increment();
+						counter->SetBit(BIT(14), true);  // mark counter as incremented
 						UpdateCounterRate(
 								counter,
 								static_cast<AliRingBuffer*>( fOutputTimes.FindObject(token.Data()) ),
@@ -275,43 +356,8 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 					{
 						HLTDebug("Adding new output counter \"%s\".", cntobj->GetName());
 						fOutputCounters.Add(token.Data(), "New trigger output counter found during the run.", 1, 1);
+						fOutputCounters.GetCounterN(fOutputCounters.NumberOfCounters()-1).SetBit(BIT(14), true); // mark counter as incremented
 						fOutputTimes.Add(new AliRingBuffer(token.Data(), outputTime));
-					}
-				}
-			}
-			
-			// Now add the CTP triggers.
-			const AliHLTCTPData* ctp = dynamic_cast<const AliHLTCTPData*>( decision->InputObjects().FindObject("AliHLTCTPData") );
-			if (ctp != NULL)
-			{
-				const TArrayL64& counters = ctp->Counters();
-				for (Int_t i = 0; i < counters.GetSize(); ++i)
-				{
-					const char* ctpName = ctp->Name(i);
-					// Check if CTP counter is initialised and skip if not.
-					if (strcmp(ctpName, "AliHLTReadoutList") == 0 and counters[i] == 0) continue;
-					TObject* cntobj = fInputCounters.FindObject(ctpName);
-					if (cntobj != NULL)
-					{
-						HLTDebug("Updating existing CTP counter \"%s\".", cntobj->GetName());
-						AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
-						counter->Counter(counters[i]);
-						UpdateCounterRate(
-								counter,
-								static_cast<AliRingBuffer*>( fInputTimes.FindObject(ctpName) ),
-								inputTime
-							);
-					}
-					else
-					{
-						HLTDebug("Adding new CTP counter \"%s\".", cntobj->GetName());
-						fInputCounters.Add(
-								ctpName,
-								"New CTP trigger input counter found during the run.",
-								Double_t(counters[i]),
-								counters[i]
-							);
-						fInputTimes.Add(new AliRingBuffer(ctpName, inputTime));
 					}
 				}
 			}
@@ -328,7 +374,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 					HLTDebug("Updating existing input counter \"%s\".", cntobj->GetName());
 					AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
 					counter->Increment();
-					counter->SetBit(BIT(14), true);  // mark counter as updated
+					counter->SetBit(BIT(14), true);  // mark counter as incremented
 					UpdateCounterRate(
 							counter,
 							static_cast<AliRingBuffer*>( fInputTimes.FindObject(input->Name()) ),
@@ -339,7 +385,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 				{
 					HLTDebug("Adding new input counter \"%s\".", cntobj->GetName());
 					fInputCounters.Add(input->Name(), "New trigger input counter found during the run.", 1, 1);
-					fInputCounters.GetCounterN(fInputCounters.NumberOfCounters()-1).SetBit(BIT(14), true); // mark counter as updated
+					fInputCounters.GetCounterN(fInputCounters.NumberOfCounters()-1).SetBit(BIT(14), true); // mark counter as incremented
 					fInputTimes.Add(new AliRingBuffer(input->Name(), inputTime));
 				}
 			}
@@ -363,6 +409,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 				if (not counter->TestBit(BIT(14)))  // Only update if marked as not updated.
 				{
 					counter->Increment();
+					counter->SetBit(BIT(14), true);  // mark counter as incremented
 					UpdateCounterRate(
 							counter,
 							static_cast<AliRingBuffer*>( fInputTimes.FindObject(decision->Name()) ),
@@ -374,15 +421,40 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 			{
 				HLTDebug("Adding new input counter \"%s\".", cntobj->GetName());
 				fInputCounters.Add(decision->Name(), "New trigger input counter found during the run.", 1, 1);
+				fInputCounters.GetCounterN(fInputCounters.NumberOfCounters()-1).SetBit(BIT(14), true); // mark counter as incremented
 				fInputTimes.Add(new AliRingBuffer(decision->Name(), inputTime));
 			}
 		}
 		obj = GetNextInputObject();
 	}
-	// Reset bit 14 which is used temporarily to mark updated counters.
+	
+	// Reset bit 14 which is used temporarily to mark incremented counters.
+	// Any counter which was not marked should have its rate updated.
 	for (UInt_t i = 0; i < fInputCounters.NumberOfCounters(); ++i)
 	{
-		fInputCounters.GetCounterN(i).SetBit(BIT(14), false);
+		AliHLTTriggerCounters::AliCounter* counter = &fInputCounters.GetCounterN(i);
+		if (not counter->TestBit(BIT(14)))
+		{
+			UpdateCounterRate2(
+					counter,
+					static_cast<AliRingBuffer*>( fInputTimes.FindObject(counter->Name()) ),
+					inputTime
+				);
+		}
+		counter->SetBit(BIT(14), false);
+	}
+	for (UInt_t i = 0; i < fOutputCounters.NumberOfCounters(); ++i)
+	{
+		AliHLTTriggerCounters::AliCounter* counter = &fOutputCounters.GetCounterN(i);
+		if (not counter->TestBit(BIT(14)))
+		{
+			UpdateCounterRate2(
+					counter,
+					static_cast<AliRingBuffer*>( fOutputTimes.FindObject(counter->Name()) ),
+					outputTime
+				);
+		}
+		counter->SetBit(BIT(14), false);
 	}
 	
 	Double_t now = TTimeStamp();
@@ -414,6 +486,20 @@ void AliHLTTriggerCounterComponent::UpdateCounterRate(
 	Double_t rate = (dt != 0 ? (counter->Counter() - timeBuf->OldestCounter()) / dt : 0.);
 	counter->Rate(rate);
 	timeBuf->Increment(counter->Counter(), newTime);
+}
+
+
+void AliHLTTriggerCounterComponent::UpdateCounterRate2(
+		AliHLTTriggerCounters::AliCounter* counter, AliRingBuffer* timeBuf, Double_t newTime
+	)
+{
+	// Updates the counter's rate value when counter is not incremented.
+	
+	assert(timeBuf != NULL);
+	Double_t dt = newTime - timeBuf->OldestTime();
+	Double_t rate = (dt != 0 ? (counter->Counter() - timeBuf->OldestCounter()) / dt : 0.);
+	counter->Rate(rate);
+	timeBuf->Update(counter->Counter(), newTime);
 }
 
 
@@ -489,15 +575,78 @@ void AliHLTTriggerCounterComponent::SetInitialCounters(const TMap* counters)
 	{
 		TObject* value = counters->GetValue(key);
 		if (value == NULL) continue;
+		Double_t maxIntegTime = fDefaultMaxIntegrationTime;
+		if (key->GetUniqueID() > 0) maxIntegTime = key->GetUniqueID() * 1e-6;
 		if (key->TestBit(BIT(14)))
 		{
 			fOutputCounters.Add(key->GetName(), value->GetName());
-			fOutputTimes.Add(new AliRingBuffer(key->GetName(), now));
+			fOutputTimes.Add(new AliRingBuffer(key->GetName(), now, maxIntegTime));
 		}
 		else
 		{
 			fInputCounters.Add(key->GetName(), value->GetName());
-			fInputTimes.Add(new AliRingBuffer(key->GetName(), now));
+			fInputTimes.Add(new AliRingBuffer(key->GetName(), now, maxIntegTime));
 		}
 	}
 }
+
+
+void* AliHLTTriggerCounterComponent::AliRingBuffer::operator new (std::size_t size) throw (std::bad_alloc)
+{
+	// New operator used to catch and log exceptions.
+	
+	void* mem = malloc(size);
+	if (mem == NULL)
+	{
+		AliHLTLogging log;
+		log.LoggingVarargs(kHLTLogFatal, Class_Name(), FUNCTIONNAME(), __FILE__, __LINE__,
+		                   "Could not allocate more space of %d bytes for the ring buffer.", size);
+		throw std::bad_alloc();
+	}
+	return mem;
+}
+
+
+void AliHLTTriggerCounterComponent::AliRingBuffer::operator delete (void* mem) throw ()
+{
+	// Symmetric delete operator to release memory.
+	
+	free(mem);
+}
+
+
+void AliHLTTriggerCounterComponent::AliRingBuffer::Increment(ULong64_t newCounter, Double_t newTime)
+{
+	// Inrements the buffer.
+	
+	assert(fMaxIntegrationTime >= 0);
+	
+	fCounterBuffer[fPos] = newCounter;
+	fTimeBuffer[fPos] = newTime;
+	fPos = (fPos+1) % kTimeStampEntries;
+	
+	// We now need to replace all old values.
+	for (int i = 1; i < kTimeStampEntries; ++i)
+	{
+		if (newTime - fTimeBuffer[fPos] < fMaxIntegrationTime) break;
+		fCounterBuffer[fPos] = newCounter;
+		fTimeBuffer[fPos] = newTime;
+		fPos = (fPos+1) % kTimeStampEntries;
+	}
+}
+
+
+void AliHLTTriggerCounterComponent::AliRingBuffer::Update(ULong64_t currentCounter, Double_t newTime)
+{
+	// Removes all old counter measurements.
+	
+	assert(fMaxIntegrationTime >= 0);
+	for (int i = 0; i < kTimeStampEntries; ++i)
+	{
+		if (newTime - fTimeBuffer[fPos] < fMaxIntegrationTime) break;
+		fCounterBuffer[fPos] = currentCounter;
+		fTimeBuffer[fPos] = newTime;
+		fPos = (fPos+1) % kTimeStampEntries;
+	}
+}
+
