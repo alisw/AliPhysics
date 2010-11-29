@@ -300,22 +300,31 @@ void AliFMDAnaParameters::SetMagField(Float_t bkG)
 //____________________________________________________________________
 void AliFMDAnaParameters::SetCollisionSystem(const TString& sys) 
 {
-  if      (sys.Contains("p-p"))   fSpecies = kPP; 
-  else if (sys.Contains("Pb-Pb")) fSpecies = kPbPb;
-  else if (sys.Contains("A-A"))   fSpecies = kPbPb;
+  TString s(sys);
+  s.ToLower();
+  if      (s.Contains("p-p")   || s.Contains("pp"))   fSpecies = kPP; 
+  else if (s.Contains("pb-pb") || s.Contains("pbpb")) fSpecies = kPbPb;
+  else if (s.Contains("a-a")   || s.Contains("aa"))   fSpecies = kPbPb;
 }
   
 //____________________________________________________________________
 void AliFMDAnaParameters::SetParametersFromESD(AliESDEvent* esd) 
 {
 
-  Float_t magfield = esd->GetCurrentL3(); 
-  
+
   SetCollisionSystem(esd->GetBeamType());
-  SetEnergy(2*esd->GetBeamEnergy()); 
-  if (TMath::Abs(magfield - 30000.) < 10 ) fMagField = k5G;
-  if (TMath::Abs(magfield + 30000.) < 10 ) fMagField = k5Gnegative;
-  if (TMath::Abs(magfield) < 10 )          fMagField = k0G;
+
+  Float_t energy   = esd->GetBeamEnergy();
+  // Correct to center of mass per nucleon (cmsNN) - LHC gives it as 
+  // cmsNN * Z / 2 
+  if (fSpecies == kPbPb) energy = energy / 208 * 82;
+  SetEnergy(2*energy); 
+  SetMagField(esd->GetMagneticField());
+
+  // Float_t magfield = esd->GetCurrentL3(); 
+  // if (TMath::Abs(magfield - 30000.) < 10 ) fMagField = k5G;
+  // if (TMath::Abs(magfield + 30000.) < 10 ) fMagField = k5Gnegative;
+  // if (TMath::Abs(magfield) < 10 )          fMagField = k0G;
   
   
   
@@ -363,7 +372,7 @@ void AliFMDAnaParameters::PrintStatus(Bool_t showpaths) const
   TString magstring;
   switch(fMagField) {
   case k5G:
-    magstring.Form("5 kGaus");   break;
+    magstring.Form("+5 kGaus");   break;
   case k0G:
     magstring.Form("0 kGaus");   break;
   case k5Gnegative:
@@ -374,9 +383,9 @@ void AliFMDAnaParameters::PrintStatus(Bool_t showpaths) const
   TString collsystemstring;
   switch(fSpecies) {
   case kPP:
-    collsystemstring.Form("p+p");   break;
+    collsystemstring.Form("p-p");   break;
   case kPbPb:
-    collsystemstring.Form("Pb+Pb");   break;
+    collsystemstring.Form("Pb-Pb");   break;
   default:
     collsystemstring.Form("invalid collision system");   break;
   }
