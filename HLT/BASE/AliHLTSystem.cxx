@@ -183,7 +183,8 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
       }
       // task for this configuration exists, terminate
       pTask=NULL;
-    } else if (pConf->SourcesResolved(1)!=1) {
+    // check first if the configuration has all sources resolved, try to extract otherwise
+    } else if (pConf->SourcesResolved()!=1 && pConf->ExtractSources()!=1) {
 	HLTError("configuration \"%s\" has unresolved sources, aborting ...", pConf->GetName());
 	iResult=-ENOLINK;
     } else {

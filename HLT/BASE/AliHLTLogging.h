@@ -131,6 +131,8 @@ public:
 
   /**
    * Set a temporary keyword
+   * Keywords need to be static const strings, the class handles only
+   * pointers and assumes the strings to be persistent.
    * returns the old key value
    */
   const char* SetKeyword(const char* keyword) 
@@ -355,7 +357,8 @@ private:
 /* the class AliHLTKeyword is a simple helper class used by the HLTLogKeyword macro
  * HLTLogKeyword("a keyword") creates an object of AliHLTKeyword which sets the keyword for the logging class
  * the object is destroyed automatically when the current scope is left and so the keyword is set
- * to the original value
+ * to the original value. Please note that all keywords need to be static strings, only pointyers
+ * are handled and the strings required to ber persistent.
  */
 class AliHLTKeyword {
  public:
@@ -366,28 +369,16 @@ class AliHLTKeyword {
     {
     }
 
-  AliHLTKeyword(AliHLTLogging* parent, const char* keyword)
+  AliHLTKeyword(const AliHLTLogging* parent, const char* keyword)
     :
-    fpParent(parent),
+    fpParent(const_cast<AliHLTLogging*>(parent)),
     fpOriginal(NULL)
     {
-      if (parent) {
+      // the const cast is on purpose in order to be allowed to use
+      // HLTLogKeyword from const member functions
+      if (fpParent) {
 	fpOriginal=fpParent->SetKeyword(keyword);
       }
-    }
-
-  AliHLTKeyword(const AliHLTKeyword& kw)
-    :
-    fpParent(kw.fpParent),
-    fpOriginal(kw.fpOriginal)
-    {
-    }
-
-  AliHLTKeyword& operator=(const AliHLTKeyword& kw)
-    { 
-      fpParent=kw.fpParent;
-      fpOriginal=kw.fpOriginal;
-      return *this;
     }
 
   ~AliHLTKeyword()
@@ -398,6 +389,11 @@ class AliHLTKeyword {
     }
 
  private:
+  /// copy constructor prohibited
+  AliHLTKeyword(const AliHLTKeyword& kw);
+  /// assignment operator prohibited
+  AliHLTKeyword& operator=(const AliHLTKeyword& kw);
+
   AliHLTLogging* fpParent;                                         //! transient
   const char* fpOriginal;                                          //! transient
 };

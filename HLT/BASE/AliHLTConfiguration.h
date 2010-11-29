@@ -7,17 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-//  @file   AliHLTConfiguration.h
-//  @author Matthias Richter
-//  @date   
-//  @brief  HLT configuration description for a single component.
-//  @note   The class is used in Offline (AliRoot) context
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+/// @file   AliHLTConfiguration.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  HLT configuration description for a single component.
+/// @note   The class is used in Offline (AliRoot) context
 
 #include <vector>
 #include <TObject.h>
@@ -56,8 +50,8 @@ class AliHLTConfigurationHandler;
  * The registration mechanism requires the HLT system to be available. The
  * global instance of AliHLTSystem is created and retrieved by
  * <pre>
- * // setup the HLT system
- * AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
+ *   // setup the HLT system
+ *   AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
  * </pre>
  *
  * A configuration is transformed into a list of AliHLTTask objects by the
@@ -142,7 +136,14 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    * Print status info.
    * Short summary on id, component, sources and unresolved sources.
    */
-  void PrintStatus();
+  void PrintStatus() const;
+
+  /**
+   * overloaded from TObject
+   * options:
+   *   status  - print status including the resolved sources
+   */
+  virtual void Print(const char* option="") const;
 
   /**
    * Get a certain source.
@@ -170,22 +171,28 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
 
   /**
    * Check resolving status.
-   * @param bAuto resolve if ==1 
-   * @return 1 if all sources resolved
+   * @return 1 if all sources resolved, 0 if not yet extracted or not resolved
    */
-  int SourcesResolved(int bAuto=0);
+  int SourcesResolved() const;
+
+  /**
+   * extract the source configurations from the sources string
+   * builds up the internal list of source configurations
+   * @result 1 if sources resolved, 0 if not
+   */
+  int ExtractSources();
 
   /**
    * Start iteration and get the first source.
    * @result pointer to the first configuration descriptor
    */
-  AliHLTConfiguration* GetFirstSource();
+  AliHLTConfiguration* GetFirstSource() const;
 
   /**
    * Continue iteration and get the next source.
    * @result pointer to the next configuration descriptor in the list
    */
-  AliHLTConfiguration* GetNextSource();
+  AliHLTConfiguration* GetNextSource() const;
 
   /**
    * Invalidate a dependency and mark the configuration to be re-evaluted. 
@@ -234,10 +241,6 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   
 
  private:
-  /* extract the source configurations from the sources string
-   */
-  int ExtractSources();
-
   /* extract arguments from the argument string
    */
   int ExtractArguments();
@@ -255,11 +258,11 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   /** the <i>sources</i> string as passed to the constructor */
   TString fStringSources;                                          // see above
   /** number of resolved sources, -1 indicates re-evaluation */
-  int fNofSources;                                                 // see above
+  int fNofSources;                                                 //! transient
   /** list of sources */
-  vector<AliHLTConfiguration*> fListSources;                       // see above
-  /** iterator for the above list */
-  vector<AliHLTConfiguration*>::iterator fListSrcElement;          // see above
+  vector<AliHLTConfiguration*> fListSources;                       //! transient
+  /** index of the current element in the list of sources */
+  int fListSrcElementIdx;                                          //! transient
 
   /**
    * The argument string as passed to the constructor.
@@ -269,9 +272,9 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    */
   TString fArguments;                                              // see above
   /** number of arguments */
-  int fArgc;                                                       // see above
+  int fArgc;                                                       //! transient
   /** argument array */
-  char** fArgv;                                                    // see above
+  char** fArgv;                                                    //! transient
 
   /** size of the output buffer */
   int fBufferSize;                                                 // see above
@@ -279,7 +282,7 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   /** the instance of the global configuration handler */
   static AliHLTConfigurationHandler* fgConfigurationHandler;       //! transient
 
-  ClassDef(AliHLTConfiguration, 0);
+  ClassDef(AliHLTConfiguration, 1);
 };
 
 #endif

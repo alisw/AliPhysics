@@ -52,7 +52,7 @@ AliHLTConfiguration::AliHLTConfiguration()
   fStringSources(""),
   fNofSources(-1),
   fListSources(),
-  fListSrcElement(),
+  fListSrcElementIdx(-1),
   fArguments(""),
   fArgc(-1),
   fArgv(NULL),
@@ -63,8 +63,6 @@ AliHLTConfiguration::AliHLTConfiguration()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-  fListSrcElement=fListSources.begin();
 }
 
 AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, const char* sources,
@@ -75,7 +73,7 @@ AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, 
   fStringSources(sources),
   fNofSources(-1),
   fListSources(),
-  fListSrcElement(),
+  fListSrcElementIdx(-1),
   fArguments(arguments),
   fArgc(-1),
   fArgv(NULL),
@@ -83,12 +81,11 @@ AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, 
 {
   // see header file for function documentation
   if (bufsize) fBufferSize=ConvertSizeString(bufsize);
-  fListSrcElement=fListSources.begin();
   if (id && component) {
     if (fgConfigurationHandler) {
       fgConfigurationHandler->RegisterConfiguration(this);
     } else {
-      HLTError("no configuration handler set, abort registration");
+      HLTWarning("no configuration handler set, skip registration");
     }
   }
 }
@@ -102,19 +99,20 @@ AliHLTConfiguration::AliHLTConfiguration(const AliHLTConfiguration& src)
   fStringSources(src.fStringSources),
   fNofSources(-1),
   fListSources(),
-  fListSrcElement(),
+  fListSrcElementIdx(-1),
   fArguments(src.fArguments),
   fArgc(-1),
   fArgv(NULL),
   fBufferSize(src.fBufferSize)
 { 
   // see header file for function documentation
-  fListSrcElement=fListSources.begin();
 }
 
 AliHLTConfiguration& AliHLTConfiguration::operator=(const AliHLTConfiguration& src)
 { 
   // see header file for function documentation
+  if (this==&src) return *this;
+
   fID=src.fID;
   fComponent=src.fComponent;
   fStringSources=src.fStringSources;
@@ -194,8 +192,9 @@ AliHLTConfiguration* AliHLTConfiguration::GetSource(const char* id)
   AliHLTConfiguration* pSrc=NULL;
   if (id) {
     // first check the current element
-    if (fListSrcElement!=fListSources.end() && strcmp(id, (*fListSrcElement)->GetName())==0) {
-      pSrc=*fListSrcElement;
+    if (fListSrcElementIdx>=0 && fListSrcElementIdx<(int)fListSources.size() &&
+	strcmp(id, (fListSources[fListSrcElementIdx])->GetName())==0) {
+      pSrc=fListSources[fListSrcElementIdx];
       } else {
       // check the list
 
@@ -210,35 +209,35 @@ AliHLTConfiguration* AliHLTConfiguration::GetSource(const char* id)
   return pSrc;
 }
 
-AliHLTConfiguration* AliHLTConfiguration::GetFirstSource()
-{
-  // see header file for function documentation
-  AliHLTConfiguration* pSrc=NULL;
-  if (fNofSources>=0 || ExtractSources()>=0) {
-    fListSrcElement=fListSources.begin();
-    if (fListSrcElement!=fListSources.end()) pSrc=*fListSrcElement;
-  } 
-  return pSrc;
-}
-
-AliHLTConfiguration* AliHLTConfiguration::GetNextSource()
+AliHLTConfiguration* AliHLTConfiguration::GetFirstSource() const
 {
   // see header file for function documentation
   AliHLTConfiguration* pSrc=NULL;
   if (fNofSources>0) {
-    if (fListSrcElement!=fListSources.end() && (++fListSrcElement)!=fListSources.end()) 
-      pSrc=*fListSrcElement;
+    const_cast<AliHLTConfiguration*>(this)->fListSrcElementIdx=-1;
+    pSrc=GetNextSource();
   } 
   return pSrc;
 }
 
-int AliHLTConfiguration::SourcesResolved(int bAuto) 
+AliHLTConfiguration* AliHLTConfiguration::GetNextSource() const
+{
+  // see header file for function documentation
+  AliHLTConfiguration* pSrc=NULL;
+  if (fNofSources>0) {
+    if (fListSrcElementIdx+1<(int)fListSources.size()) {
+      const_cast<AliHLTConfiguration*>(this)->fListSrcElementIdx++;
+      pSrc=fListSources[fListSrcElementIdx];
+    }
+  } 
+  return pSrc;
+}
+
+int AliHLTConfiguration::SourcesResolved() const
 {
   // see header file for function documentation
   int iResult=0;
-  if (fNofSources>=0 || (bAuto && (iResult=ExtractSources()))>=0) {
-    //HLTDebug("fNofSources=%d", fNofSources);
-    //HLTDebug("list size = %d", fListSources.size());
+  if (fNofSources>=0) {
     iResult=fNofSources==(int)fListSources.size();
   }
   return iResult;
@@ -253,7 +252,7 @@ int AliHLTConfiguration::InvalidateSource(AliHLTConfiguration* pConf)
     while (element!=fListSources.end()) {
       if (*element==pConf) {
 	fListSources.erase(element);
-	fListSrcElement=fListSources.end();
+	fListSrcElementIdx=fListSources.size();
 	// there is no need to re-evaluate until there was a new configuration registered
 	// -> postpone the invalidation, its done in AliHLTConfigurationHandler::RegisterConfiguration
 	//InvalidateSources();
@@ -267,7 +266,7 @@ int AliHLTConfiguration::InvalidateSource(AliHLTConfiguration* pConf)
   return iResult;
 }
 
-void AliHLTConfiguration::PrintStatus()
+void AliHLTConfiguration::PrintStatus() const
 {
   // see header file for function documentation
   HLTLogKeyword("configuration status");
@@ -276,13 +275,29 @@ void AliHLTConfiguration::PrintStatus()
   else HLTMessage("  - component string invalid");
   if (!fStringSources.IsNull()) HLTMessage("  - sources: \"%s\"", fStringSources.Data());
   else HLTMessage("  - no sources");
-  if (SourcesResolved(1)<=0)
+  if (SourcesResolved()!=1)
     HLTMessage("    there are unresolved sources");
   AliHLTConfiguration* pSrc=GetFirstSource();
   while (pSrc) {
     HLTMessage("    source \"%s\" (%p) resolved", pSrc->GetName(), pSrc);
     pSrc=GetNextSource();
   }
+}
+
+void AliHLTConfiguration::Print(const char* option) const
+{
+  // print information
+  if (option && strcmp(option, "status")==0) {
+    PrintStatus();
+    return;
+  }
+  HLTLogKeyword("configuration");
+  HLTMessage("configuration %s: component %s, sources %s, arguments %s",
+	     GetName(),
+	     GetComponentID(),
+	     GetSourceSettings(),
+	     GetArgumentSettings()
+	     );
 }
 
 int AliHLTConfiguration::GetArguments(const char*** pArgv) const
@@ -312,15 +327,18 @@ int AliHLTConfiguration::ExtractSources()
 {
   // see header file for function documentation
   int iResult=0;
-  fNofSources=0;
+  fNofSources=0; // indicates that the function was called, there are either n or 0 sources
+  fListSources.clear();
+  if (!fgConfigurationHandler) {
+    HLTError("global configuration handler not initialized, can not resolve sources");
+    return -EFAULT;
+  }
   if (!fStringSources.IsNull()) {
     vector<char*> tgtList;
-    fListSources.clear();
     if ((iResult=InterpreteString(fStringSources.Data(), tgtList))>=0) {
       fNofSources=tgtList.size();
       vector<char*>::iterator element=tgtList.begin();
       while ((element=tgtList.begin())!=tgtList.end()) {
-	if (fgConfigurationHandler) {
 	  AliHLTConfiguration* pConf=fgConfigurationHandler->FindConfiguration(*element);
 	  if (pConf) {
 	    //HLTDebug("configuration %s (%p): source \"%s\" (%p) inserted", GetName(), this, pConf->GetName(), pConf);
@@ -329,17 +347,13 @@ int AliHLTConfiguration::ExtractSources()
 	    HLTError("can not find source \"%s\"", (*element));
 	    iResult=-ENOENT;
 	  }
-	} else if (iResult>=0) {
-	  iResult=-EFAULT;
-	  HLTFatal("global configuration handler not initialized, can not resolve sources");
-	}
 	delete[] (*element);
 	tgtList.erase(element);
       }
-      fListSrcElement=fListSources.begin();
     }
   }
-  return iResult;
+  fListSrcElementIdx=-1;
+  return iResult<0?iResult:SourcesResolved();
 }
 
 int AliHLTConfiguration::ExtractArguments()
