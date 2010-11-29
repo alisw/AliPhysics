@@ -2,11 +2,14 @@
 #define ALIROOT_PWG2_FORWARD_ALIFORWARDMULTIPLICITY_H
 #include <AliAnalysisTaskSE.h>
 #include "AliForwardUtil.h"
+#include "AliFMDEventInspector.h"
+#include "AliFMDEnergyFitter.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDCorrections.h"
 #include "AliFMDHistCollector.h"
 #include "AliAODForwardMult.h"
+#include "AliFMDEnergyFitter.h"
 #include <AliESDFMD.h>
 #include <TH1I.h>
 class AliFMDAnaParameters;
@@ -98,15 +101,24 @@ public:
   /** 
    * @} 
    */
-  void         Print(Option_t* option="") const;
+  void Print(Option_t* option="") const;
 
   /** 
-   * Set the number of SPD tracklets for which we consider the event a
-   * low-flux event or not .
-   * 
-   * @param c Cut (default 1000)
+   * @{ 
+   * @name Access to sub-algorithms 
    */
-  void SetLowFluxCut(Int_t c) { fLowFluxCut = c; }
+  /**
+   * Get reference to the EventInspector algorithm 
+   * 
+   * @return Reference to AliFMDEventInspector object 
+   */
+  AliFMDEventInspector& GetEventInspector() { return fEventInspector; }
+  /**
+   * Get reference to the EnergyFitter algorithm 
+   * 
+   * @return Reference to AliFMDEnergyFitter object 
+   */
+  AliFMDEnergyFitter& GetEnergyFitter() { return fEnergyFitter; }
   /**
    * Get reference to the SharingFilter algorithm 
    * 
@@ -131,6 +143,10 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   AliFMDHistCollector& GetHistCollector() { return fHistCollector; }
+  /** 
+   * @} 
+   */
+  void SetDebug(Int_t dbg);
 protected: 
   /** 
    * Initialise the sub objects and stuff.  Called on first event 
@@ -143,23 +159,20 @@ protected:
    */
   virtual void MarkEventForStore() const;
 
-  TH1I*                  fHEventsTr;    // Histogram of events w/trigger
-  TH1I*                  fHEventsTrVtx; // Events w/trigger and vertex 
-  TH1I*                  fHTriggers;    // Triggers
   TH2D*                  fHData;        // Summed 1/Nd^2N_{ch}/dphideta
   Bool_t                 fFirstEvent;   // Whether the event is the first seen 
-  Int_t                  fLowFluxCut;   // Low flux cut
   AliESDFMD              fESDFMD;       // Sharing corrected ESD object
   AliForwardUtil::Histos fHistos;       // Cache histograms 
   AliAODForwardMult      fAODFMD;       // Output object
 
+  AliFMDEventInspector    fEventInspector;    // Algorithm
+  AliFMDEnergyFitter      fEnergyFitter;      // Algorithm
   AliFMDSharingFilter     fSharingFilter;     // Algorithm
   AliFMDDensityCalculator fDensityCalculator; // Algorithm
   AliFMDCorrections       fCorrections;       // Algorithm
   AliFMDHistCollector     fHistCollector;     // Algorithm
 
   TList* fList; // Output list 
-  TTree* fTree; // Output tree 
 
   ClassDef(AliForwardMultiplicity,1) // Forward multiplicity class
 };
