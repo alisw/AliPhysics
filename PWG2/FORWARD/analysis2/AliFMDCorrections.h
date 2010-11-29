@@ -76,6 +76,12 @@ public:
    * @param dir List to write in
    */  
   void DefineOutput(TList* dir);
+  /** 
+   * Set the debug level.  The higher the value the more output 
+   * 
+   * @param dbg Debug level 
+   */
+  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
 protected:
   /** 
    * Internal data structure to keep track of the histograms
@@ -133,6 +139,7 @@ protected:
 
   TList    fRingHistos;    // List of histogram containers
   Double_t fMultCut;       // Low cut on scaled energy loss
+  Int_t    fDebug;         //  Debug level 
 
   ClassDef(AliFMDCorrections,1); // Calculate Nch density 
 };
