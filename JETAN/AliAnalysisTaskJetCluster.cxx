@@ -965,6 +965,15 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      aodOutJet = 0;
      nAodOutTracks = 0;
      Float_t tmpPt = tmpRec.Pt();  
+     Float_t tmpPtBack = 0;
+     if(externalBackground){
+       // carefull has to be filled in a task before
+       // todo, ReArrange to the botom
+       tmpPtBack = externalBackground->GetBackground(2)*tmpRec.EffectiveAreaCharged();
+     }
+     tmpPt = tmpPt - tmpPtBack;
+     if(tmpPt<0)tmpPt = 0; // avoid negative weights...
+
      fh1PtJetsRecIn->Fill(tmpPt);
      // Fill Spectra with constituents
      vector<fastjet::PseudoJet> constituents = clustSeq.constituents(sortedJets[j]);
@@ -997,14 +1006,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Float_t tmpEta =  tmpRec.Eta();
      if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
      
-     Float_t tmpPtBack = 0;
-     if(externalBackground){
-       // carefull has to be filled in a task before
-       // todo, ReArrange to the botom
-       tmpPtBack = externalBackground->GetBackground(2)*tmpRec.EffectiveAreaCharged();
-     }
-     tmpPt = tmpPt - tmpPtBack;
-     if(tmpPt<0)tmpPt = 0; // avoid negative weights...
+
 
      if(j==0){
        fh1PtJetsLeadingRecIn->Fill(tmpPt);
@@ -1233,17 +1235,18 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
  // do the event selection if activated
  if(fJetTriggerPtCut>0){
    bool select = false;
-   Float_t minPt = 9999999;
+   Float_t minPt = fJetTriggerPtCut;
+   /*
    // hard coded for now ...
-   // 54.50 44.5 29.5 18.5 for anti-kt rejection 10E-3
+   // 54.50 44.5 29.5 18.5 for anti-kt rejection 1E-3
    if(cent<10)minPt = 50;
    else if(cent<30)minPt = 42;
    else if(cent<50)minPt = 28;
    else if(cent<80)minPt = 18;
-   
+   */
    float rho = 0;
    if(externalBackground)rho = externalBackground->GetBackground(2);
-   if(jarray&&cent<80){
+   if(jarray){
      for(int i = 0;i < jarray->GetEntriesFast();i++){
        AliAODJet *jet = (AliAODJet*)jarray->At(i);
        Float_t ptSub = jet->Pt() - rho *jet->EffectiveAreaCharged();
