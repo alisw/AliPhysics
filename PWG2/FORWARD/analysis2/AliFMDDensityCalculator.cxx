@@ -19,7 +19,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fMultCut(0.3),
     fSumOfWeights(0),
     fWeightedSum(0),
-    fCorrections(0)
+    fCorrections(0),
+    fDebug(0)
 {}
 
 //____________________________________________________________________
@@ -29,7 +30,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fMultCut(0.3),
     fSumOfWeights(0),
     fWeightedSum(0),
-    fCorrections(0)
+    fCorrections(0),
+    fDebug(0)
 {
   fRingHistos.SetName(GetName());
   fRingHistos.Add(new RingHistos(1, 'I'));
@@ -54,7 +56,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fMultCut(o.fMultCut),
     fSumOfWeights(o.fSumOfWeights),
     fWeightedSum(o.fWeightedSum),
-    fCorrections(o.fCorrections)
+    fCorrections(o.fCorrections),
+    fDebug(o.fDebug)
 {
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
@@ -71,10 +74,10 @@ AliFMDDensityCalculator::~AliFMDDensityCalculator()
 AliFMDDensityCalculator&
 AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
 {
-  SetName(o.GetName());
-  SetTitle(o.GetTitle());
+  TNamed::operator=(o);
 
   fMultCut = o.fMultCut;
+  fDebug   = o.fDebug;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);

@@ -21,8 +21,8 @@ AliFMDSharingFilter::AliFMDSharingFilter()
   : TNamed(), 
     fRingHistos(),
     fLowCut(0.3),
-    fCorrectAngles(kFALSE),
-    fEtaCorr(0)
+    fCorrectAngles(kFALSE), 
+    fDebug(0)
 {}
 
 //____________________________________________________________________
@@ -30,18 +30,14 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   : TNamed("fmdSharingFilter", title), 
     fRingHistos(), 
     fLowCut(0.3),
-    fCorrectAngles(kFALSE),
-    fEtaCorr(0)
+    fCorrectAngles(kFALSE), 
+    fDebug(0)
 {
   fRingHistos.Add(new RingHistos(1, 'I'));
   fRingHistos.Add(new RingHistos(2, 'I'));
   fRingHistos.Add(new RingHistos(2, 'O'));
   fRingHistos.Add(new RingHistos(3, 'I'));
   fRingHistos.Add(new RingHistos(3, 'O'));
-  fEtaCorr = new TH2F("etaCorr", "Correction of #eta", 
-		      200, -4, 6,  200, -4, 6);
-  fEtaCorr->SetXTitle("#eta from ESD");
-  fEtaCorr->SetYTitle("#eta from AnaParameters");
 }
 
 //____________________________________________________________________
@@ -49,8 +45,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
   : TNamed(o), 
     fRingHistos(), 
     fLowCut(o.fLowCut),
-    fCorrectAngles(o.fCorrectAngles),
-    fEtaCorr(o.fEtaCorr)
+    fCorrectAngles(o.fCorrectAngles), 
+    fDebug(o.fDebug)
 {
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
@@ -67,11 +63,11 @@ AliFMDSharingFilter::~AliFMDSharingFilter()
 AliFMDSharingFilter&
 AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
 {
-  SetName(o.GetName());
-  SetTitle(o.GetTitle());
+  TNamed::operator=(o);
 
   fLowCut        = o.fLowCut;
   fCorrectAngles = o.fCorrectAngles;
+  fDebug         = o.fDebug;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -100,8 +96,7 @@ AliFMDSharingFilter::GetRingHistos(UShort_t d, Char_t r) const
 Bool_t
 AliFMDSharingFilter::Filter(const AliESDFMD& input, 
 			    Bool_t           lowFlux,
-			    AliESDFMD&       output,
-			    Double_t         vz)
+			    AliESDFMD&       output)
 {
   output.Clear();
   TIter    next(&fRingHistos);
@@ -109,7 +104,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
   while ((o = static_cast<RingHistos*>(next())))
     o->Clear();
 
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
 
   for(UShort_t d = 1; d <= 3; d++) {
     Int_t nRings = (d == 1 ? 1 : 2);
@@ -136,10 +131,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  if (mult == AliESDFMD::kInvalidMult || mult == 0) continue;
 
 	  // Get the pseudo-rapidity 
-	  Double_t eta1 = input.Eta(d,r,s,t);
-	  Double_t eta2 = pars->GetEtaFromStrip(d,r,s,t,vz);
-	  fEtaCorr->Fill(eta1, eta2);
-	  Double_t eta = eta2;
+	  Double_t eta = input.Eta(d,r,s,t);
 	  
 	  // Fill the diagnostics histogram 
 	  histos->fBefore->Fill(mult);
@@ -343,7 +335,6 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   TList* d = new TList;
   d->SetName(GetName());
   dir->Add(d);
-  d->Add(fEtaCorr);
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {

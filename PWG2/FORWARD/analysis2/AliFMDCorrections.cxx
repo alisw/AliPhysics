@@ -16,14 +16,16 @@ ClassImp(AliFMDCorrections)
 AliFMDCorrections::AliFMDCorrections()
   : TNamed(), 
     fRingHistos(),
-    fMultCut(0.3)
+    fMultCut(0.3),
+    fDebug(0)
 {}
 
 //____________________________________________________________________
 AliFMDCorrections::AliFMDCorrections(const char* title)
   : TNamed("fmdCorrections", title), 
     fRingHistos(), 
-    fMultCut(0.3)
+    fMultCut(0.3),
+    fDebug(0)
 {
   fRingHistos.SetName(GetName());
   fRingHistos.Add(new RingHistos(1, 'I'));
@@ -37,7 +39,8 @@ AliFMDCorrections::AliFMDCorrections(const char* title)
 AliFMDCorrections::AliFMDCorrections(const AliFMDCorrections& o)
   : TNamed(o), 
     fRingHistos(), 
-    fMultCut(o.fMultCut)
+    fMultCut(o.fMultCut),
+    fDebug(o.fDebug)
 {
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
@@ -54,11 +57,10 @@ AliFMDCorrections::~AliFMDCorrections()
 AliFMDCorrections&
 AliFMDCorrections::operator=(const AliFMDCorrections& o)
 {
-  SetName(o.GetName());
-  SetTitle(o.GetTitle());
+  TNamed::operator=(o);
 
   fMultCut = o.fMultCut;
-
+  fDebug   = o.fDebug;
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;

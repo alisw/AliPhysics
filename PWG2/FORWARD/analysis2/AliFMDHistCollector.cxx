@@ -22,14 +22,14 @@ ClassImp(AliFMDHistCollector)
 AliFMDHistCollector&
 AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
 {
-  SetName(o.GetName());
-  SetTitle(o.GetTitle());
+  TNamed::operator=(o);
 
   fNCutBins       = o.fNCutBins;
   fCorrectionCut  = o.fCorrectionCut;
   fFirstBins      = o.fFirstBins;
   fLastBins       = o.fLastBins;
-  
+  fDebug          = o.fDebug;
+
   return *this;
 }
 
