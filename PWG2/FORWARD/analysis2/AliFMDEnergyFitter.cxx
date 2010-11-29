@@ -410,8 +410,8 @@ AliFMDEnergyFitter::RingHistos::Fill(Bool_t empty, Int_t ieta, Double_t mult)
 
 //__________________________________________________________________
 TArrayD
-AliFMDEnergyFitter::RingHistos::::MakeIncreasingAxis(Int_t n, Double_t min, 
-						     Double_t max) 
+AliFMDEnergyFitter::RingHistos::MakeIncreasingAxis(Int_t n, Double_t min, 
+						   Double_t max) const
 {
   // Service function to define a logarithmic axis. 
   // Parameters: 
@@ -424,7 +424,7 @@ AliFMDEnergyFitter::RingHistos::::MakeIncreasingAxis(Int_t n, Double_t min,
   Int_t    i  = 1;
   for (i = 1; i < n+1; i++) {
     Double_t dI   = float(i)/n;
-    Double_t next = bins[i-1] + dX1 + dI * dI * dX1;
+    Double_t next = bins[i-1] + dx + dI * dI * dx;
     bins[i]       = next;
     if (next > max) break;
   }
@@ -557,7 +557,7 @@ AliFMDEnergyFitter::RingHistos::Fit(TList* dir, const TAxis& eta,
   TH1* hC    = 0;
   TH1* hMpv  = 0;
   TH1* hW    = 0;
-  TH1* nS    = 0;
+  TH1* hS    = 0;
   TH1* hN    = 0;
   TH1* hA[nLandau-1];
   pars->Add(hChi2 = MakePar("chi2", "#chi^{2}/#nu", eta));
