@@ -168,7 +168,10 @@ protected:
      * 
      * @param eAxis 
      */
-    void Init(const TAxis& eAxis);
+    void Init(const TAxis& eAxis, 
+	      Double_t maxDE=10, 
+	      Int_t nDEbins=300, 
+	      Bool_t useIncrBin=true);
     /** 
      * Fill histogram 
      * 
@@ -244,8 +247,7 @@ protected:
      * @return true if fit is good. 
      */
     Bool_t CheckResult(TFitResult& r) const;
-
-    TArrayD MakeLogAxis(Int_t n, Double_t min, Double_t max) const
+    TArrayD MakeIncreasingAxis(Int_t n, Double_t min, Double_t max) const;
     /** 
      * Make E/E_mip histogram 
      * 
@@ -253,7 +255,8 @@ protected:
      * @param eMin   Least signal
      * @param eMax   Largest signal 
      */
-    void Make(Int_t ieta, Double_t eMin, Double_t eMax);
+    void Make(Int_t ieta, Double_t eMin, Double_t eMax, 
+	      Double_t deMax=12, Int_t nDeBins=300, Bool_t incr=true);
     /** 
      * Make a parameter histogram
      * 
