@@ -1,0 +1,192 @@
+#ifndef ALIROOT_PWG2_FORWARD_ANALYSIS2_ALIFMDEVENTINSPECTOR_H
+#define ALIROOT_PWG2_FORWARD_ANALYSIS2_ALIFMDEVENTINSPECTOR_H
+#include <TNamed.h>
+class AliESDEvent;
+class TH2D;
+class TH1D;
+class TH1I;
+class TAxis;
+class TList;
+
+/** 
+ * This class inspects the event 
+ *
+ * @par Input:
+ *   - AliESDFMD object possibly corrected for sharing
+ *
+ * @par Output:
+ *   - A histogram of v_z of events with triggers. 
+ *   - A histogram of v_z of events with vertex and triggers 
+ *   - A histogram of trigger counters 
+ * 
+ * Note, that these are added to the master output list 
+ *
+ * @par Corrections used: 
+ *   - None
+ *
+ * @ingroup pwg2_forward_analysis 
+ */
+class AliFMDEventInspector : public TNamed
+{
+public:
+  /** 
+   * Return codes 
+   */
+  enum ECodes {
+    /** all ok */
+    kOk = 0,
+    /** No ESD event */
+    kNoEvent = 0x1, 
+    /** No triggers found */
+    kNoTriggers = 0x2, 
+    /** No SPD data */ 
+    kNoSPD = 0x4, 
+    /** No FMD data */
+    kNoFMD = 0x8, 
+    /** No vertex found */
+    kNoVertex = 0x10, 
+    /** Vertex out of range */
+    kBadVertex = 0x20
+  };
+  /** 
+   * Trigger bins 
+   */
+  enum ETrgBins { 
+    kInel, 
+    kInelGt0, 
+    kNSD, 
+    kEmpty, 
+    kA, 
+    kB, 
+    kC, 
+    kE
+  };
+  /** 
+   * Constructor 
+   */
+  AliFMDEventInspector();
+  /** 
+   * Constructor 
+   * 
+   * @param name Name of object
+   */
+  AliFMDEventInspector(const char* name);
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  AliFMDEventInspector(const AliFMDEventInspector& o);
+  /** 
+   * Destructor 
+   */
+  virtual ~AliFMDEventInspector();
+  /** 
+   * Assignement operator
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object
+   */
+  AliFMDEventInspector& operator=(const AliFMDEventInspector&);
+
+  /** 
+   * Initialize the object 
+   * 
+   * @param vtxAxis Vertex axis in use 
+   */
+  void Init(const TAxis& vtxAxis);
+  /** 
+   * Process the event 
+   * 
+   * @param event     Input event 
+   * @param triggers  On return, the triggers fired 
+   * @param lowFlux   On return, true if the event is considered a low-flux 
+   *                  event (according to the setting of fLowFluxCut) 
+   * @param ivz       On return, the found vertex bin (zero-based)
+   * 
+   * @return 0 (or kOk) on success, otherwise a bit mask of error codes 
+   */
+  UInt_t Process(const AliESDEvent* event, 
+		 UInt_t&            triggers,
+		 Bool_t&            lowFlux,
+		 Int_t&             ivz, 
+		 Double_t&          vz);
+  /** 
+   * Define the output histograms.  These are put in a sub list of the
+   * passed list.   The histograms are merged before the parent task calls 
+   * AliAnalysisTaskSE::Terminate 
+   * 
+   * @param dir Directory to add to 
+   */
+  void DefineOutput(TList* dir);
+  /** 
+   * Set the number of SPD tracklets for which we consider the event a
+   * low-flux event or not .
+   * 
+   * @param c Cut (default 1000)
+   */
+  void SetLowFluxCut(Int_t c) { fLowFluxCut = c; }
+  /** 
+   * Set the maximum error on @f$ v_z@f$
+   * 
+   * @param c Maximum error (in centimeters)
+   */
+  void SetMaxVzErr(Double_t c=0.1) { fMaxVzErr = c; }
+  /** 
+   * Set the debug level.  The higher the value the more output 
+   * 
+   * @param dbg Debug level 
+   */
+  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  /** 
+   * Fetch our histograms from the passed list 
+   * 
+   * @param d             Input
+   * @param hEventsTr     On return, pointer to histogram, or null
+   * @param hEventsTrVtx  On return, pointer to histogram, or null
+   * @param hTriggers     On return, pointer to histogram, or null
+   * 
+   * @return true on success, false otherwise 
+   */
+  Bool_t FetchHistograms(TList* d, 
+			 TH1I*& hEventsTr, 
+			 TH1I*& hEventsTrVtx, 
+			 TH1I*& hTriggers) const;
+protected:
+  /** 
+   * Read the trigger information from the ESD event 
+   * 
+   * @param esd        ESD event 
+   * @param triggers   On return, contains the trigger bits 
+   * 
+   * @return @c true on success, @c false otherwise 
+   */
+  Bool_t ReadTriggers(const AliESDEvent* esd, UInt_t& triggers);
+  /** 
+   * Read the vertex information from the ESD event 
+   * 
+   * @param esd  ESD event 
+   * @param vz   On return, the vertex Z position 
+   * 
+   * @return @c true on success, @c false otherwise 
+   */
+  Bool_t ReadVertex(const AliESDEvent* esd, Double_t& vz);
+
+  TH1I*    fHEventsTr;    //! Histogram of events w/trigger
+  TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 
+  TH1I*    fHTriggers;    //! Triggers
+  Int_t    fLowFluxCut;   //  Low flux cut
+  Double_t fMaxVzErr;     //  Maximum error on v_z
+  TList*   fList;         //! Histogram container 
+  Int_t    fDebug;        //  Debug level 
+  ClassDef(AliFMDEventInspector,1); // Inspect the event 
+};
+
+#endif
+// Local Variables:
+//   mode: C++
+// End:
+
+
+
