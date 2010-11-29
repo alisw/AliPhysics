@@ -31,8 +31,11 @@
 
 #pragma link C++ class AliForwardUtil::Histos+;
 #pragma link C++ class AliForwardUtil::RingHistos+;
+#pragma link C++ class AliFMDEventInspector+;
 #pragma link C++ class AliFMDSharingFilter+;
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;
+#pragma link C++ class AliFMDEnergyFitter+;
+#pragma link C++ class AliFMDEnergyFitter::RingHistos+;
 #pragma link C++ class AliFMDDensityCalculator+;
 #pragma link C++ class AliFMDDensityCalculator::RingHistos+;
 #pragma link C++ class AliFMDCorrections+;
