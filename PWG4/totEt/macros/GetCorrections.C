@@ -10,30 +10,30 @@
 // #include <TSystem.h>
 // #include "TStopwatch.h"
 
-Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool TPC, char *infilename, bool hadronic = false, float etacut = 0.7);
-TH1D *GetHistoCorrNeutral(float cut, char *name, int mycase, bool eta, int color, int marker, char *infilename, bool hadronic = false);
+Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool ispp = true, bool forSim = true, bool TPC, char *infilename, bool hadronic = false, float etacut = 0.7);
+TH1D *GetHistoCorrNeutral(float cut, char *name, bool ispp, bool forSim, int mycase, bool eta, int color, int marker, char *infilename, bool hadronic = false);
 
-Float_t CorrPtCut(float ptcut, char *prodname = "Enter Production Name", char *shortprodname = "EnterProductionName", char *filename="Et.ESD.new.sim.merged.root");
-TH1D *GetHistoCorrPtCut(float ptcut = 0.15, char *name, char *filename);
+Float_t CorrPtCut(float ptcut, char *prodname = "Enter Production Name", char *shortprodname = "EnterProductionName", char *filename="Et.ESD.new.sim.merged.root", bool ispp = true, bool forSim = true);
+TH1D *GetHistoCorrPtCut(float ptcut = 0.15, char *name, char *filename, bool ispp = true, bool forSim = true);
 
-TH1D *GetHistoCorrNotID(float etacut,char *name, bool TPC, char *infilename, bool eta);
-TH1D *CorrNotID(float etacut,char *name, char *prodname, char *shortprodname, bool TPC, char *infilename);
-Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, char *shortprodname, bool TPC, char *infilename);
+TH1D *GetHistoCorrNotID(float etacut,char *name, bool TPC, char *infilename, bool eta, bool ispp = true, bool forSim = true);
+TH1D *CorrNotID(float etacut,char *name, char *prodname, char *shortprodname, bool TPC, char *infilename, bool ispp = true, bool forSim = true);
+Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, char *shortprodname, bool TPC, char *infilename, bool ispp, bool forSim);
 
-TH1D *GetHistoNoID(float etacut, char *name, char *infilename, bool eta, bool TPC);
-TH1D *CorrNoID(float etacut,char *name, char *prodname, char *shortprodname, char *infilename);
-Float_t CorrNoIDConst(float etacut, float ptcut,char *name, char *prodname, char *shortprodname, char *infilename);
+TH1D *GetHistoNoID(float etacut, char *name, char *infilename, bool eta, bool TPC, bool ispp, bool forSim);
+TH1D *CorrNoID(float etacut,char *name, char *prodname, char *shortprodname, char *infilename, bool ispp, bool forSim);
+Float_t CorrNoIDConst(float etacut, float ptcut,char *name, char *prodname, char *shortprodname, char *infilename, bool ispp, bool forSim);
 
 TH1D* bayneseffdiv(TH1D* numerator, TH1D* denominator,Char_t* name);
-TH1D *GetHistoEfficiency(float cut, char *name, int mycase, int color, int marker,bool TPC, char *infilename);
+TH1D *GetHistoEfficiency(float cut, char *name, int mycase, int color, int marker,bool TPC, bool ITS, char *infilename);
 void CorrEfficiencyPlots(bool TPC, char *prodname, char *shortprodname, char *infilename);
 
-TH1D *GetHistoCorrBkgd(float etacut,char *name, bool TPC, char *infilename);
-void CorrBkgdPlots(char *prodname, char *shortprodname, bool TPC, char *infilename);
+TH1D *GetHistoCorrBkgd(float etacut,char *name, bool TPC, char *infilename,bool ispp,bool forSim);
+void CorrBkgdPlots(char *prodname, char *shortprodname, bool TPC, char *infilename,bool ispp,bool forSim);
 
 //===========================================================================================
 
-void GetCorrections(char *prodname = "Enter Production Name", char *shortprodname = "EnterProductionName", bool TPC = true, char *infilename="Et.ESD.new.sim.merged.root"){
+void GetCorrections(char *prodname = "Enter Production Name", char *shortprodname = "EnterProductionName", bool ispp = true, bool forSim = true, bool TPC = true, char *infilename="Et.ESD.new.sim.merged.root"){
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -53,7 +53,11 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
 
    char outfilename[200];
-   sprintf(outfilename,"corrections.%s.root",shortprodname);
+   char *sim = "ForData";
+   if(forSim) sim = "ForSimulations";
+   char *system = "PbPb";
+   if(ispp) system = "pp";
+   sprintf(outfilename,"corrections.%s.%s.%s.root",shortprodname,system,sim);
    TFile *outfile = new TFile(outfilename,"RECREATE");
    AliAnalysisHadEtCorrections *hadCorrectionEMCAL = new AliAnalysisHadEtCorrections();
    hadCorrectionEMCAL->SetName("hadCorrectionEMCAL");
@@ -68,22 +72,22 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetAcceptanceCorrectionEMCAL(360.0/60.0);
 
    float ptcut = 0.1;
-   float neutralCorr = CorrNeutral(ptcut,prodname,shortprodname,TPC,infilename,false,etacut);
+   float neutralCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,infilename,false,etacut);
    hadCorrectionEMCAL->SetNeutralCorrection(neutralCorr);
    cout<<"Warning:  Setting neutral correction error bars to STAR value of +/-2%.  Use for development purposes only!"<<endl;
    hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*0.98);
    hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*1.02);
 
 
-   float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,TPC,infilename,true,etacut);
+   float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,infilename,true,etacut);
    hadCorrectionEMCAL->SetNotHadronicCorrection(hadronicCorr);
    cout<<"Warning:  Setting hadronic correction error bars to value of +/-2%.  Use for development purposes only!"<<endl;
    hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(neutralCorr*0.98);
    hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(neutralCorr*1.02);
 
-   float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,infilename);
+   float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,infilename,ispp,forSim);
    hadCorrectionEMCAL->SetpTCutCorrectionITS(ptcutITS);
-   float ptcutTPC = CorrPtCut(0.15,prodname,shortprodname,infilename);
+   float ptcutTPC = CorrPtCut(0.15,prodname,shortprodname,infilename,ispp,forSim);
    hadCorrectionEMCAL->SetpTCutCorrectionTPC(ptcutTPC);
    cout<<"Setting ITS pt cut corr to "<<ptcutITS<<endl;
    cout<<"Setting TPC pt cut corr to "<<ptcutTPC<<endl;
@@ -93,13 +97,13 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetpTCutCorrectionITSHighBound(ptcutITS*1.03);
    hadCorrectionEMCAL->SetpTCutCorrectionTPCHighBound(ptcutTPC*1.03);
 
-   TH1D *NotIDTPC = CorrNotID(etacut,"CorrNotIDEMCALTPC",prodname,shortprodname,true,infilename);
-   TH1D *NotIDITS = CorrNotID(etacut,"CorrNotIDEMCALITS",prodname,shortprodname,false,infilename);
+   TH1D *NotIDTPC = CorrNotID(etacut,"CorrNotIDEMCALTPC",prodname,shortprodname,true,infilename,ispp,forSim);
+   TH1D *NotIDITS = CorrNotID(etacut,"CorrNotIDEMCALITS",prodname,shortprodname,false,infilename,ispp,forSim);
    hadCorrectionEMCAL->SetNotIDCorrectionTPC(NotIDTPC);
    hadCorrectionEMCAL->SetNotIDCorrectionITS(NotIDITS);
 
-   Float_t NotIDConstTPC = CorrNotIDConst(0.15,etacut,"CorrNotIDEMCALTPC2",prodname,shortprodname,true,infilename);
-   Float_t NotIDConstITS = CorrNotIDConst(0.10,etacut,"CorrNotIDEMCALTPC2",prodname,shortprodname,true,infilename);
+   Float_t NotIDConstTPC = CorrNotIDConst(0.15,etacut,"CorrNotIDEMCALTPC2",prodname,shortprodname,true,infilename,ispp,forSim);
+   Float_t NotIDConstITS = CorrNotIDConst(0.10,etacut,"CorrNotIDEMCALTPC2",prodname,shortprodname,true,infilename,ispp,forSim);
    hadCorrectionEMCAL->SetNotIDConstCorrectionTPC(1.0/NotIDConstTPC);
    hadCorrectionEMCAL->SetNotIDConstCorrectionITS(1.0/NotIDConstITS);
    cout<<"Setting constant PID corrections to "<<NotIDConstTPC<<" and "<<NotIDConstITS<<endl;
@@ -110,11 +114,11 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*1.01);
 
 
-   TH1D *NoID = CorrNoID(etacut,"CorrNoIDEMCAL",prodname,shortprodname,infilename);
+   TH1D *NoID = CorrNoID(etacut,"CorrNoIDEMCAL",prodname,shortprodname,infilename,ispp,forSim);
    hadCorrectionEMCAL->SetNotIDCorrectionNoPID(NoID);
 
-   Float_t NoIDTPC = CorrNoIDConst(etacut,0.15,"CorrNoIDEMCAL2",prodname,shortprodname,infilename);
-   Float_t NoIDITS = CorrNoIDConst(etacut,0.1,"CorrNoIDEMCAL2",prodname,shortprodname,infilename);
+   Float_t NoIDTPC = CorrNoIDConst(etacut,0.15,"CorrNoIDEMCAL2",prodname,shortprodname,infilename,ispp,forSim);
+   Float_t NoIDITS = CorrNoIDConst(etacut,0.1,"CorrNoIDEMCAL2",prodname,shortprodname,infilename,ispp,forSim);
    cout<<"Setting constant PID corrections with no PID to "<<NoIDTPC<<" and "<<NoIDITS<<endl;
    hadCorrectionEMCAL->SetNotIDConstCorrectionTPCNoID(1./NoIDTPC);
    hadCorrectionEMCAL->SetNotIDConstCorrectionITSNoID(1./NoIDITS);
@@ -124,7 +128,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetNotIDConstCorrectionTPCNoIDHighBound(1./NoIDTPC*1.01);
    hadCorrectionEMCAL->SetNotIDConstCorrectionITSNoIDHighBound(1./NoIDITS*1.01);
 
-   TH1D *efficiencyPionTPC = GetHistoEfficiency(etacut,"hEfficiencyPionTPC",1,1,20,true,infilename);
+   TH1D *efficiencyPionTPC = GetHistoEfficiency(etacut,"hEfficiencyPionTPC",1,1,20,true,true,infilename);
    hadCorrectionEMCAL->SetEfficiencyPionTPC(efficiencyPionTPC);
    if(!efficiencyPionTPC){cerr<<"NOOOOOOOOOOOOOOOOOO!!  We have failed you, Christine!"<<endl;}
 //    else{
@@ -133,32 +137,32 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
 //      return;
 //    }
 
-   TH1D *efficiencyKaonTPC = GetHistoEfficiency(etacut,"hEfficiencyKaonTPC",2,1,20,true,infilename);
+   TH1D *efficiencyKaonTPC = GetHistoEfficiency(etacut,"hEfficiencyKaonTPC",2,1,20,true,true,infilename);
    if(!efficiencyKaonTPC){cerr<<"NOOOOOOOOOOOOOOOOOO!!  We have failed you, Christine!"<<endl;}
    hadCorrectionEMCAL->SetEfficiencyKaonTPC(efficiencyKaonTPC);
-   TH1D *efficiencyProtonTPC = GetHistoEfficiency(etacut,"hEfficiencyProtonTPC",3,1,20,true,infilename);
+   TH1D *efficiencyProtonTPC = GetHistoEfficiency(etacut,"hEfficiencyProtonTPC",3,1,20,true,true,infilename);
    hadCorrectionEMCAL->SetEfficiencyProtonTPC(efficiencyProtonTPC);
-   TH1D *efficiencyHadronTPC = GetHistoEfficiency(etacut,"hEfficiencyHadronTPC",0,1,20,true,infilename);
+   TH1D *efficiencyHadronTPC = GetHistoEfficiency(etacut,"hEfficiencyHadronTPC",0,1,20,true,true,infilename);
    hadCorrectionEMCAL->SetEfficiencyHadronTPC(efficiencyHadronTPC);
-   TH1D *efficiencyPionITS = GetHistoEfficiency(etacut,"hEfficiencyPionITS",1,1,20,false,infilename);
+   TH1D *efficiencyPionITS = GetHistoEfficiency(etacut,"hEfficiencyPionITS",1,1,20,false,true,infilename);
    hadCorrectionEMCAL->SetEfficiencyPionITS(efficiencyPionITS);
-   TH1D *efficiencyKaonITS = GetHistoEfficiency(etacut,"hEfficiencyKaonITS",2,1,20,false,infilename);
+   TH1D *efficiencyKaonITS = GetHistoEfficiency(etacut,"hEfficiencyKaonITS",2,1,20,false,true,infilename);
    hadCorrectionEMCAL->SetEfficiencyKaonITS(efficiencyKaonITS);
-   TH1D *efficiencyProtonITS = GetHistoEfficiency(etacut,"hEfficiencyProtonITS",3,1,20,false,infilename);
+   TH1D *efficiencyProtonITS = GetHistoEfficiency(etacut,"hEfficiencyProtonITS",3,1,20,false,true,infilename);
    hadCorrectionEMCAL->SetEfficiencyProtonITS(efficiencyProtonITS);
-   TH1D *efficiencyHadronITS = GetHistoEfficiency(etacut,"hEfficiencyHadronITS",0,1,20,false,infilename);
+   TH1D *efficiencyHadronITS = GetHistoEfficiency(etacut,"hEfficiencyHadronITS",0,1,20,false,true,infilename);
    hadCorrectionEMCAL->SetEfficiencyHadronITS(efficiencyHadronITS);
 
    //CorrEfficiencyPlots(true,prodname,shortprodname,infilename);
    //CorrEfficiencyPlots(false,prodname,shortprodname,infilename);
 
    hadCorrectionEMCAL->GetEfficiencyHadronTPC()->Draw();
-   TH1D *backgroundTPC = GetHistoCorrBkgd(etacut,"hBackgroundTPC",true,infilename);
-   TH1D *backgroundITS = GetHistoCorrBkgd(etacut,"hBackgroundITS",false,infilename);
+   TH1D *backgroundTPC = GetHistoCorrBkgd(etacut,"hBackgroundTPC",true,infilename,ispp,forSim);
+   TH1D *backgroundITS = GetHistoCorrBkgd(etacut,"hBackgroundITS",false,infilename,ispp,forSim);
    hadCorrectionEMCAL->SetBackgroundCorrectionTPC(backgroundTPC);
    hadCorrectionEMCAL->SetBackgroundCorrectionITS(backgroundITS);
-   CorrBkgdPlots(prodname,shortprodname,true,infilename);
-   CorrBkgdPlots(prodname,shortprodname,false,infilename);
+   CorrBkgdPlots(prodname,shortprodname,true,infilename,ispp,forSim);
+   CorrBkgdPlots(prodname,shortprodname,false,infilename,ispp,forSim);
 
    outfile->cd();
    hadCorrectionEMCAL->Write();
@@ -178,23 +182,23 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetAcceptanceCorrectionEMCAL(360.0/60.0);
 
    float ptcut = 0.1;
-   float neutralCorr = CorrNeutral(ptcut,prodname,shortprodname,TPC,infilename,false,etacut);
+   float neutralCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,infilename,false,etacut);
    hadCorrectionPHOS->SetNeutralCorrection(neutralCorr);
    cout<<"Warning:  Setting neutral correction error bars to STAR value of +/-2%.  Use for development purposes only!"<<endl;
    hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*0.98);
    hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*1.02);
 
 
-   float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,TPC,infilename,true,etacut);
+   float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,infilename,true,etacut);
    hadCorrectionPHOS->SetNotHadronicCorrection(hadronicCorr);
    cout<<"Warning:  Setting hadronic correction error bars to value of +/-2%.  Use for development purposes only!"<<endl;
    hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*0.98);
    hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*1.02);
    
 
-   float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,infilename);
+   float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,infilename,ispp,forSim);
    hadCorrectionPHOS->SetpTCutCorrectionITS(ptcutITS);
-   float ptcutTPC = CorrPtCut(0.15,prodname,shortprodname,infilename);
+   float ptcutTPC = CorrPtCut(0.15,prodname,shortprodname,infilename,ispp,forSim);
    hadCorrectionPHOS->SetpTCutCorrectionTPC(ptcutTPC);
    cout<<"Warning:  Setting pt cut correction error bars to STAR value of +/-3%.  Use for development purposes only!"<<endl;
    hadCorrectionPHOS->SetpTCutCorrectionITSLowBound(ptcutITS*0.97);
@@ -202,13 +206,13 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetpTCutCorrectionITSHighBound(ptcutITS*1.03);
    hadCorrectionPHOS->SetpTCutCorrectionTPCHighBound(ptcutTPC*1.03);
 
-   TH1D *NotIDTPC = CorrNotID(etacut,"CorrNotIDPHOSTPC",prodname,shortprodname,true,infilename);
-   TH1D *NotIDITS = CorrNotID(etacut,"CorrNotIDPHOSITS",prodname,shortprodname,false,infilename);
+   TH1D *NotIDTPC = CorrNotID(etacut,"CorrNotIDPHOSTPC",prodname,shortprodname,true,infilename,ispp,forSim);
+   TH1D *NotIDITS = CorrNotID(etacut,"CorrNotIDPHOSITS",prodname,shortprodname,false,infilename,ispp,forSim);
    hadCorrectionPHOS->SetNotIDCorrectionTPC(NotIDTPC);
    hadCorrectionPHOS->SetNotIDCorrectionITS(NotIDITS);
 
-   Float_t NotIDConstTPC = CorrNotIDConst(0.15,etacut,"CorrNotIDPHOSTPC2",prodname,shortprodname,true,infilename);
-   Float_t NotIDConstITS = CorrNotIDConst(0.10,etacut,"CorrNotIDPHOSTPC2",prodname,shortprodname,true,infilename);
+   Float_t NotIDConstTPC = CorrNotIDConst(0.15,etacut,"CorrNotIDPHOSTPC2",prodname,shortprodname,true,infilename,ispp,forSim);
+   Float_t NotIDConstITS = CorrNotIDConst(0.10,etacut,"CorrNotIDPHOSTPC2",prodname,shortprodname,true,infilename,ispp,forSim);
    hadCorrectionPHOS->SetNotIDConstCorrectionTPC(1./NotIDConstTPC);
    hadCorrectionPHOS->SetNotIDConstCorrectionITS(1./NotIDConstITS);
    cout<<"Warning:  Setting systematic errors on constant correction from unidentified particles at 1%!  For testing and development purposes only!"<<endl;
@@ -218,12 +222,12 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*1.01);
 
 
-   TH1D *NoID = CorrNoID(etacut,"CorrNoIDPHOS",prodname,shortprodname,infilename);
+   TH1D *NoID = CorrNoID(etacut,"CorrNoIDPHOS",prodname,shortprodname,infilename,ispp,forSim);
    hadCorrectionPHOS->SetNotIDCorrectionNoPID(NoID);
 
 
-   Float_t NoIDTPC = CorrNoIDConst(etacut,0.15,"CorrNoIDPHOS2",prodname,shortprodname,infilename);
-   Float_t NoIDITS = CorrNoIDConst(etacut,0.1,"CorrNoIDPHOS2",prodname,shortprodname,infilename);
+   Float_t NoIDTPC = CorrNoIDConst(etacut,0.15,"CorrNoIDPHOS2",prodname,shortprodname,infilename,ispp,forSim);
+   Float_t NoIDITS = CorrNoIDConst(etacut,0.1,"CorrNoIDPHOS2",prodname,shortprodname,infilename,ispp,forSim);
    cout<<"Setting constant PID corrections with no PID to "<<NoIDTPC<<" and "<<NoIDITS<<endl;
    hadCorrectionPHOS->SetNotIDConstCorrectionTPCNoID(1./NoIDTPC);
    hadCorrectionPHOS->SetNotIDConstCorrectionITSNoID(1./NoIDITS);
@@ -233,14 +237,14 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetNotIDConstCorrectionTPCNoIDHighBound(1./NoIDTPC*1.01);
    hadCorrectionPHOS->SetNotIDConstCorrectionITSNoIDHighBound(1./NoIDITS*1.01);
 
-   TH1D *efficiencyPionTPC = GetHistoEfficiency(etacut,"hEfficiencyPionTPC",1,1,20,true,infilename);
-   TH1D *efficiencyKaonTPC = GetHistoEfficiency(etacut,"hEfficiencyKaonTPC",2,1,20,true,infilename);
-   TH1D *efficiencyProtonTPC = GetHistoEfficiency(etacut,"hEfficiencyProtonTPC",3,1,20,true,infilename);
-   TH1D *efficiencyHadronTPC = GetHistoEfficiency(etacut,"hEfficiencyHadronTPC",0,1,20,true,infilename);
-   TH1D *efficiencyPionITS = GetHistoEfficiency(etacut,"hEfficiencyPionITS",1,1,20,false,infilename);
-   TH1D *efficiencyKaonITS = GetHistoEfficiency(etacut,"hEfficiencyKaonITS",2,1,20,false,infilename);
-   TH1D *efficiencyProtonITS = GetHistoEfficiency(etacut,"hEfficiencyProtonITS",3,1,20,false,infilename);
-   TH1D *efficiencyHadronITS = GetHistoEfficiency(etacut,"hEfficiencyHadronITS",0,1,20,false,infilename);
+   TH1D *efficiencyPionTPC = GetHistoEfficiency(etacut,"hEfficiencyPionTPC",1,1,20,true,true,infilename);
+   TH1D *efficiencyKaonTPC = GetHistoEfficiency(etacut,"hEfficiencyKaonTPC",2,1,20,true,true,infilename);
+   TH1D *efficiencyProtonTPC = GetHistoEfficiency(etacut,"hEfficiencyProtonTPC",3,1,20,true,true,infilename);
+   TH1D *efficiencyHadronTPC = GetHistoEfficiency(etacut,"hEfficiencyHadronTPC",0,1,20,true,true,infilename);
+   TH1D *efficiencyPionITS = GetHistoEfficiency(etacut,"hEfficiencyPionITS",1,1,20,false,true,infilename);
+   TH1D *efficiencyKaonITS = GetHistoEfficiency(etacut,"hEfficiencyKaonITS",2,1,20,false,true,infilename);
+   TH1D *efficiencyProtonITS = GetHistoEfficiency(etacut,"hEfficiencyProtonITS",3,1,20,false,true,infilename);
+   TH1D *efficiencyHadronITS = GetHistoEfficiency(etacut,"hEfficiencyHadronITS",0,1,20,false,true,infilename);
    //CorrEfficiencyPlots(true,prodname,shortprodname,infilename);
    //CorrEfficiencyPlots(false,prodname,shortprodname,infilename);
    hadCorrectionPHOS->SetEfficiencyPionTPC(efficiencyPionTPC);
@@ -252,12 +256,12 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetEfficiencyProtonITS(efficiencyProtonITS);
    hadCorrectionPHOS->SetEfficiencyHadronITS(efficiencyHadronITS);
 
-   TH1D *backgroundTPC = GetHistoCorrBkgd(etacut,"hBackgroundTPC",true,infilename);
-   TH1D *backgroundITS = GetHistoCorrBkgd(etacut,"hBackgroundITS",false,infilename);
+   TH1D *backgroundTPC = GetHistoCorrBkgd(etacut,"hBackgroundTPC",true,infilename,ispp,forSim);
+   TH1D *backgroundITS = GetHistoCorrBkgd(etacut,"hBackgroundITS",false,infilename,ispp,forSim);
    hadCorrectionPHOS->SetBackgroundCorrectionTPC(backgroundTPC);
    hadCorrectionPHOS->SetBackgroundCorrectionITS(backgroundITS);
-   CorrBkgdPlots(prodname,shortprodname,true,infilename);
-   CorrBkgdPlots(prodname,shortprodname,false,infilename);
+   CorrBkgdPlots(prodname,shortprodname,true,infilename,ispp,forSim);
+   CorrBkgdPlots(prodname,shortprodname,false,infilename,ispp,forSim);
 
    //Write the output
    outfile->cd();
@@ -265,12 +269,17 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    outfile->Write();
    outfile->Close();
 
+   TFile *junk = new TFile("junk.root","RECREATE");
+   efficiencyPionTPC->Write();
+   junk->Write();
+   junk->Close();
+
   timer.Stop();
   timer.Print();
 }
 
 //==================================CorrNeutral==============================================
-Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool TPC, char *infilename, bool hadronic, float etacut){
+Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool ispp, bool forSim, bool TPC, char *infilename, bool hadronic, float etacut){
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -305,22 +314,22 @@ Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool TPC, 
   int colortotal = 1;
   int casetotal = 4;
   if(hadronic) casetotal = 8;
-  TH1D *total = GetHistoCorrNeutral(ptcut,histoname,casetotal,false,colortotal,phosmarker,infilename,hadronic);
+  TH1D *total = GetHistoCorrNeutral(ptcut,histoname,ispp,forSim,casetotal,false,colortotal,phosmarker,infilename,hadronic);
 
   int colorallneutral = 2;
-  TH1D *allneutral = GetHistoCorrNeutral(ptcut,"allneutral",3,false,colorallneutral,phosmarker,infilename,hadronic);
+  TH1D *allneutral = GetHistoCorrNeutral(ptcut,"allneutral",ispp,forSim,3,false,colorallneutral,phosmarker,infilename,hadronic);
 
   int colorchargedsecondary = TColor::kViolet-3;
-  TH1D *chargedsecondary = GetHistoCorrNeutral(ptcut,"chargedsecondary",2,false,colorchargedsecondary,phosmarker,infilename,hadronic);
+  TH1D *chargedsecondary = GetHistoCorrNeutral(ptcut,"chargedsecondary",ispp,forSim,2,false,colorchargedsecondary,phosmarker,infilename,hadronic);
 
   int colorneutralUndet = 4;
-  TH1D *neutralUndet = GetHistoCorrNeutral(ptcut,"neutralUndet",1,false,colorneutralUndet,phosmarker,infilename,hadronic);
+  TH1D *neutralUndet = GetHistoCorrNeutral(ptcut,"neutralUndet",ispp,forSim,1,false,colorneutralUndet,phosmarker,infilename,hadronic);
 
   int colorv0 = TColor::kGreen+2;
-  TH1D *v0 = GetHistoCorrNeutral(ptcut,"v0",0,false,colorv0,phosmarker,infilename,hadronic);
+  TH1D *v0 = GetHistoCorrNeutral(ptcut,"v0",ispp,forSim,0,false,colorv0,phosmarker,infilename,hadronic);
 
   int colorem = TColor::kCyan;
-  TH1D *em = GetHistoCorrNeutral(ptcut,"em",9,false,colorem,phosmarker,infilename,hadronic);
+  TH1D *em = GetHistoCorrNeutral(ptcut,"em",ispp,forSim,9,false,colorem,phosmarker,infilename,hadronic);
 
   TF1 *func = new TF1("func","[0]",-.7,.7);
   func->SetParameter(0,0.2);
@@ -387,18 +396,20 @@ Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool TPC, 
   return 1.0/(1.0-corr);
 
 }
-TH1D *GetHistoCorrNeutral(float cut, char *name, int mycase, bool eta, int color, int marker, char *infilename, bool hadronic){
+TH1D *GetHistoCorrNeutral(float cut, char *name, bool ispp, bool forSim, int mycase, bool eta, int color, int marker, char *infilename, bool hadronic){
   TFile *file = new TFile(infilename);
   TList *list = file->FindObject("out2");
+  char *reweightname = "";
+  if(!forSim) reweightname = "Reweighted";
   TH2F *numeratorParent; 
   switch(mycase){
   case 0:
-    numeratorParent= (TH2F*)((TH2F*) out2->FindObject("EtSimulatedLambda"))->Clone("v0");
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiLambda"));
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedK0S"));
+    numeratorParent= (TH2F*)((TH2F*) out2->FindObject(Form("EtSimulatedLambda%s",reweightname)))->Clone("v0");
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedAntiLambda%s",reweightname)));
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedK0S%s",reweightname)));
     break;
   case 1:
-    numeratorParent = (TH2F*)((TH2F*) out2->FindObject("EtSimulatedK0L"))->Clone("Knnbar");
+    numeratorParent = (TH2F*)((TH2F*) out2->FindObject(Form("EtSimulatedK0L%s",reweightname)))->Clone("Knnbar");
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedNeutron"));
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiNeutron"));
     break;
@@ -411,18 +422,18 @@ TH1D *GetHistoCorrNeutral(float cut, char *name, int mycase, bool eta, int color
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiXi0"));
     break;
   case 3:
-    numeratorParent= (TH2F*)((TH2F*) out2->FindObject("EtSimulatedLambda"))->Clone("allneutral");
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiLambda"));
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedK0S"));
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedK0L"));
+    numeratorParent= (TH2F*)((TH2F*) out2->FindObject(Form("EtSimulatedLambda%s",reweightname)))->Clone("allneutral");
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedAntiLambda%s",reweightname)));
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedK0S%s",reweightname)));
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedK0L%s",reweightname)));
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedNeutron"));
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiNeutron"));
     break;
   case 4:
-    numeratorParent= (TH2F*)((TH2F*) out2->FindObject("EtSimulatedLambda"))->Clone("allneutral");
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiLambda"));
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedK0S"));
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedK0L"));
+    numeratorParent= (TH2F*)((TH2F*) out2->FindObject(Form("EtSimulatedLambda%s",reweightname)))->Clone("allneutral");
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedAntiLambda%s",reweightname)));
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedK0S%s",reweightname)));
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedK0L%s",reweightname)));
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedNeutron"));
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiNeutron"));
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedOmega"));
@@ -447,10 +458,10 @@ TH1D *GetHistoCorrNeutral(float cut, char *name, int mycase, bool eta, int color
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiSigma"));
     break;
   case 8:
-    numeratorParent= (TH2F*)((TH2F*) out2->FindObject("EtSimulatedLambda"))->Clone("allneutral");
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiLambda"));
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedK0S"));
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedK0L"));
+    numeratorParent= (TH2F*)((TH2F*) out2->FindObject(Form("EtSimulatedLambda%s",reweightname)))->Clone("allneutral");
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedAntiLambda%s",reweightname)));
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedK0S%s",reweightname)));
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedK0L%s",reweightname)));
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedNeutron"));
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiNeutron"));
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedOmega"));
@@ -477,7 +488,30 @@ TH1D *GetHistoCorrNeutral(float cut, char *name, int mycase, bool eta, int color
   }
 
   TH2F *allhad;
-  allhad=(TH2F*) ((TH2F*) out2->FindObject("EtSimulatedAllHadron"))->Clone("id");
+  //allhad=(TH2F*) ((TH2F*) out2->FindObject("EtSimulatedAllHadron"))->Clone("id");
+  allhad=(TH2F*) ((TH2F*) out2->FindObject("EtSimulatedPiPlus"))->Clone("id");
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedPiMinus"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedKMinus"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedKPlus"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedProton"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedAntiProton"));
+  allhad->Add((TH2F*) out2->FindObject(Form("EtSimulatedLambda%s",reweightname)));
+  allhad->Add((TH2F*) out2->FindObject(Form("EtSimulatedAntiLambda%s",reweightname)));
+  allhad->Add((TH2F*) out2->FindObject(Form("EtSimulatedK0S%s",reweightname)));
+  allhad->Add((TH2F*) out2->FindObject(Form("EtSimulatedK0L%s",reweightname)));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedNeutron"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedAntiNeutron"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedEPlus"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedEMinus"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedOmega"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedAntiOmega"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedXi"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedAntiXi"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedSigma"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedAntiSigma"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedXi0"));
+  allhad->Add((TH2F*) out2->FindObject("EtSimulatedAntiXi0"));
+
   if(hadronic){//if we are getting the correction for the hadronic only case...    
     allhad->Add((TH2F*) out2->FindObject("EtSimulatedGamma"));
     allhad->Add((TH2F*) out2->FindObject("EtSimulatedEta"));
@@ -487,8 +521,6 @@ TH1D *GetHistoCorrNeutral(float cut, char *name, int mycase, bool eta, int color
     allhad->Add((TH2F*) out2->FindObject("EtSimulatedEMinus"));
   }
 
-  //numeratorParent->Sumw2();
-  //allhad->Sumw2();
   TH1D *denominator;
   TH1D *numerator;
   if(eta){
@@ -522,7 +554,7 @@ TH1D *GetHistoCorrNeutral(float cut, char *name, int mycase, bool eta, int color
 }
 
 //===============================CorrPtCut=========================================
-TH1D *GetHistoCorrPtCut(float ptcut, char *name, char *filename){
+TH1D *GetHistoCorrPtCut(float ptcut, char *name, char *filename, bool ispp, bool forSim){
   TFile *file = new TFile(filename);
   TList *list = file->FindObject("out2");
   TH2F *allhad = ((TH2F*) out2->FindObject("EtSimulatedAllHadron"))->Clone("allhad");
@@ -555,7 +587,7 @@ TH1D *GetHistoCorrPtCut(float ptcut, char *name, char *filename){
 
 }
 
-Float_t CorrPtCut(float ptcut, char *prodname, char *shortprodname, char *filename){
+Float_t CorrPtCut(float ptcut, char *prodname, char *shortprodname, char *filename, bool ispp, bool forSim){
 
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -638,7 +670,7 @@ Float_t CorrPtCut(float ptcut, char *prodname, char *shortprodname, char *filena
 
 
 //==================================CorrNotID=================================================
-TH1D *GetHistoCorrNotID(float etacut,char *name, bool TPC, char *infilename, bool eta){
+TH1D *GetHistoCorrNotID(float etacut,char *name, bool TPC, char *infilename, bool eta, bool ispp, bool forSim){
   TFile *file = new TFile(infilename);
   TList *list = file->FindObject("out2");
   char *myname = "ITS";
@@ -730,7 +762,7 @@ TH1D *GetHistoCorrNotID(float etacut,char *name, bool TPC, char *infilename, boo
 
 }
 
-TH1D *CorrNotID(float etacut,char *name, char *prodname, char *shortprodname, bool TPC, char *infilename){
+TH1D *CorrNotID(float etacut,char *name, char *prodname, char *shortprodname, bool TPC, char *infilename, bool ispp, bool forSim){
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -744,7 +776,7 @@ TH1D *CorrNotID(float etacut,char *name, char *prodname, char *shortprodname, bo
   c->SetFrameFillColor(0);
   c->SetFrameBorderMode(0);
 
-  TH1D *PHOS = GetHistoCorrNotID(etacut,name,TPC,infilename,true);
+  TH1D *PHOS = GetHistoCorrNotID(etacut,name,TPC,infilename,true,ispp,forSim);
   PHOS->SetMarkerColor(2);
   PHOS->SetLineColor(2);
   PHOS->SetAxisRange(0.0,4);
@@ -779,7 +811,7 @@ TH1D *CorrNotID(float etacut,char *name, char *prodname, char *shortprodname, bo
   return PHOS;
 }
 
-Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, char *shortprodname, bool TPC, char *infilename){
+Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, char *shortprodname, bool TPC, char *infilename, bool ispp, bool forSim){
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -793,7 +825,7 @@ Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, cha
   c->SetFrameFillColor(0);
   c->SetFrameBorderMode(0);
 
-  TH1D *PHOS = GetHistoCorrNotID(ptcut,name,TPC,infilename,false);
+  TH1D *PHOS = GetHistoCorrNotID(ptcut,name,TPC,infilename,false,ispp,forSim);
   PHOS->SetMarkerColor(2);
   PHOS->SetLineColor(2);
   PHOS->SetMaximum(1.01);
@@ -825,7 +857,7 @@ Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, cha
 }
 
 //==================================CorrNoID=================================================
-TH1D *GetHistoNoID(float etacut, char *name, char *infilename, bool eta, bool TPC){
+TH1D *GetHistoNoID(float etacut, char *name, char *infilename, bool eta, bool TPC, bool ispp, bool forSim){
   TFile *file = new TFile(infilename);
   char *myname = "ITS";
   if(TPC) myname = "TPC";
@@ -888,7 +920,7 @@ TH1D *GetHistoNoID(float etacut, char *name, char *infilename, bool eta, bool TP
 
 }
 
-TH1D *CorrNoID(float etacut,char *name, char *prodname, char *shortprodname, char *infilename){
+TH1D *CorrNoID(float etacut,char *name, char *prodname, char *shortprodname, char *infilename, bool ispp, bool forSim){
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -902,7 +934,7 @@ TH1D *CorrNoID(float etacut,char *name, char *prodname, char *shortprodname, cha
   c->SetFrameFillColor(0);
   c->SetFrameBorderMode(0);
 
-  TH1D *PHOS = GetHistoNoID(etacut,name,infilename,true,true);
+  TH1D *PHOS = GetHistoNoID(etacut,name,infilename,true,true,ispp,forSim);
   PHOS->SetMarkerColor(2);
   PHOS->SetLineColor(2);
   PHOS->SetAxisRange(0.0,4);
@@ -929,7 +961,7 @@ TH1D *CorrNoID(float etacut,char *name, char *prodname, char *shortprodname, cha
 
 }
 
-Float_t CorrNoIDConst(float etacut, float ptcut,char *name, char *prodname, char *shortprodname, char *infilename){
+Float_t CorrNoIDConst(float etacut, float ptcut,char *name, char *prodname, char *shortprodname, char *infilename, bool ispp, bool forSim){
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -945,7 +977,7 @@ Float_t CorrNoIDConst(float etacut, float ptcut,char *name, char *prodname, char
 
   bool TPC = true;
   if(ptcut<.15) TPC = false;
-  TH1D *PHOS = GetHistoNoID(ptcut,name,infilename,false,TPC);
+  TH1D *PHOS = GetHistoNoID(ptcut,name,infilename,false,TPC,ispp,forSim);
   TF1 *func = new TF1("func","[0]",-etacut,etacut);
   PHOS->Fit(func,"","",-etacut,etacut);
   PHOS->SetMarkerColor(2);
@@ -1027,12 +1059,14 @@ TH1D* bayneseffdiv(TH1D* numerator, TH1D* denominator,Char_t* name)
 
 
 
-TH1D *GetHistoEfficiency(float cut, char *name, int mycase, int color, int marker,bool TPC, char *infilename){
+TH1D *GetHistoEfficiency(float cut, char *name, int mycase, int color, int marker,bool TPC,bool ITS, char *infilename){
   bool eta = true;
   TFile *file = new TFile(infilename);
   TList *list = file->FindObject("out2");
   char *myname = "ITS";
-  if(TPC) myname = "TPC";
+  if(TPC&&!ITS) myname = "TPC";
+  if(TPC&&ITS) myname = "TPCITS";
+  cout<<"Using tracks from "<<myname<<" for efficiency"<<endl;
   TH2F *numeratorParent; 
   switch(mycase){
   case 0:
@@ -1124,7 +1158,7 @@ TH1D *GetHistoEfficiency(float cut, char *name, int mycase, int color, int marke
 }
 
 void CorrEfficiencyPlots(bool TPC, char *prodname, char *shortprodname, char *infilename){
-
+  bool ITS = true;
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -1147,10 +1181,10 @@ void CorrEfficiencyPlots(bool TPC, char *prodname, char *shortprodname, char *in
   int emcalmarker = 24;
   float ptcut1 = 0.05;
   float ptcut2 = 0.1;
-  TH1D *PHOStotal = GetHistoEfficiency(0.12,"PHOStotal",0,colortotal,phosmarker,TPC,infilename);
-  TH1D *PHOSpi = GetHistoEfficiency(0.12,"PHOSpi",1,colorpi,phosmarker,TPC,infilename);
-  TH1D *PHOSp = GetHistoEfficiency(0.12,"PHOSp",2,colork,phosmarker,TPC,infilename);
-  TH1D *PHOSk = GetHistoEfficiency(0.12,"PHOSk",3,colorp,phosmarker,TPC,infilename);
+  TH1D *PHOStotal = GetHistoEfficiency(0.12,"PHOStotal",0,colortotal,phosmarker,TPC,ITS,infilename);
+  TH1D *PHOSpi = GetHistoEfficiency(0.12,"PHOSpi",1,colorpi,phosmarker,TPC,ITS,infilename);
+  TH1D *PHOSp = GetHistoEfficiency(0.12,"PHOSp",2,colork,phosmarker,TPC,ITS,infilename);
+  TH1D *PHOSk = GetHistoEfficiency(0.12,"PHOSk",3,colorp,phosmarker,TPC,ITS,infilename);
   if(!TPC){PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.05),PHOStotal->GetXaxis()->FindBin(1.0));}
   else{PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.15),PHOStotal->GetXaxis()->FindBin(3.0));}
   PHOStotal->SetMinimum(0.0);
@@ -1159,10 +1193,10 @@ void CorrEfficiencyPlots(bool TPC, char *prodname, char *shortprodname, char *in
   PHOSpi->Draw("same");
   PHOSp->Draw("same");
   PHOSk->Draw("same");
-  TH1D *EMCALtotal = GetHistoEfficiency(0.7,"EMCALtotal",0,colortotal,emcalmarker,TPC,infilename);
-  TH1D *EMCALpi = GetHistoEfficiency(0.7,"EMCALpi",1,colorpi,emcalmarker,TPC,infilename);
-  TH1D *EMCALp = GetHistoEfficiency(0.7,"EMCALp",2,colork,emcalmarker,TPC,infilename);
-  TH1D *EMCALk = GetHistoEfficiency(0.7,"EMCALk",3,colorp,emcalmarker,TPC,infilename);
+  TH1D *EMCALtotal = GetHistoEfficiency(0.7,"EMCALtotal",0,colortotal,emcalmarker,TPC,ITS,infilename);
+  TH1D *EMCALpi = GetHistoEfficiency(0.7,"EMCALpi",1,colorpi,emcalmarker,TPC,ITS,infilename);
+  TH1D *EMCALp = GetHistoEfficiency(0.7,"EMCALp",2,colork,emcalmarker,TPC,ITS,infilename);
+  TH1D *EMCALk = GetHistoEfficiency(0.7,"EMCALk",3,colorp,emcalmarker,TPC,ITS,infilename);
   EMCALtotal->Draw("same");
   EMCALpi->Draw("same");
   EMCALp->Draw("same");
@@ -1200,8 +1234,14 @@ void CorrEfficiencyPlots(bool TPC, char *prodname, char *shortprodname, char *in
   char epsname[100];
   char pngname[100];
   if(TPC){
-    sprintf(epsname,"pics/%s/CorrEfficiencyTPC.eps",shortprodname);
-    sprintf(pngname,"pics/%s/CorrEfficiencyTPC.png",shortprodname);
+    if(ITS){
+      sprintf(epsname,"pics/%s/CorrEfficiencyITSTPC.eps",shortprodname);
+      sprintf(pngname,"pics/%s/CorrEfficiencyITSTPC.png",shortprodname);
+    }
+    else{
+      sprintf(epsname,"pics/%s/CorrEfficiencyTPC.eps",shortprodname);
+      sprintf(pngname,"pics/%s/CorrEfficiencyTPC.png",shortprodname);
+    }
   }
   else{
     sprintf(epsname,"pics/%s/CorrEfficiencyITS.eps",shortprodname);
@@ -1222,9 +1262,11 @@ void CorrEfficiencyPlots(bool TPC, char *prodname, char *shortprodname, char *in
 }
 
 //==================================CorrBkgd=================================================
-TH1D *GetHistoCorrBkgd(float etacut,char *name, bool TPC, char *infilename){
+TH1D *GetHistoCorrBkgd(float etacut,char *name, bool TPC, char *infilename,bool ispp,bool forSim){
   TFile *file = new TFile(infilename);
   TList *list = file->FindObject("out2");
+  char *reweightname = "";
+  if(!forSim) reweightname = "Reweighted";
   char *myname = "ITS";
   if(TPC) myname = "TPC";
   TH2F *signal = ((TH2F*) out2->FindObject(Form("EtReconstructed%sIdentifiedPiPlus",myname)))->Clone("signal");
@@ -1237,9 +1279,9 @@ TH1D *GetHistoCorrBkgd(float etacut,char *name, bool TPC, char *infilename){
 
   //Et of all unidentified hadrons (plus hadrons identified as pions) calculated assuming their true mass
   TH2F *bkgd = ((TH2F*) out2->FindObject(Form("EtReconstructed%sMisidentifiedElectrons",myname)))->Clone("bkgd");
-  bkgd->Add((TH2F*) out2->FindObject(Form("EtReconstructed%sLambdaDaughters",myname)));
-  bkgd->Add((TH2F*) out2->FindObject(Form("EtReconstructed%sAntiLambdaDaughters",myname)));
-  bkgd->Add((TH2F*) out2->FindObject(Form("EtReconstructed%sK0SDaughters",myname)));
+  bkgd->Add((TH2F*) out2->FindObject(Form("EtReconstructed%sLambdaDaughters%s",myname,reweightname)));
+  bkgd->Add((TH2F*) out2->FindObject(Form("EtReconstructed%sAntiLambdaDaughters%s",myname,reweightname)));
+  bkgd->Add((TH2F*) out2->FindObject(Form("EtReconstructed%sK0SDaughters%s",myname,reweightname)));
   bkgd->Add((TH2F*) out2->FindObject(Form("EtReconstructed%sXiDaughters",myname)));
   bkgd->Add((TH2F*) out2->FindObject(Form("EtReconstructed%sAntiXiDaughters",myname)));
   bkgd->Add((TH2F*) out2->FindObject(Form("EtReconstructed%sOmegaDaughters",myname)));
@@ -1261,7 +1303,7 @@ TH1D *GetHistoCorrBkgd(float etacut,char *name, bool TPC, char *infilename){
 
 }
 
-void CorrBkgdPlots(char *prodname, char *shortprodname, bool TPC, char *infilename){
+void CorrBkgdPlots(char *prodname, char *shortprodname, bool TPC, char *infilename,bool ispp,bool forSim){
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -1275,8 +1317,8 @@ void CorrBkgdPlots(char *prodname, char *shortprodname, bool TPC, char *infilena
   c->SetFrameFillColor(0);
   c->SetFrameBorderMode(0);
 
-  TH1D *PHOS = GetHistoCorrBkgd(0.12,"PHOS2",TPC,infilename);
-  TH1D *EMCAL = GetHistoCorrBkgd(0.7,"EMCAL2",TPC,infilename);
+  TH1D *PHOS = GetHistoCorrBkgd(0.12,"PHOS2",TPC,infilename,ispp,forSim);
+  TH1D *EMCAL = GetHistoCorrBkgd(0.7,"EMCAL2",TPC,infilename,ispp,forSim);
   PHOS->SetMarkerColor(2);
   EMCAL->SetMarkerColor(4);
   PHOS->SetLineColor(2);

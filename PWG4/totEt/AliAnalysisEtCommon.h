@@ -26,7 +26,7 @@ class AliAnalysisEtCuts;
 #define ALIANALYSISLEVYPT_H
 class AliAnalysisLevyPt{
  public:
-  virtual ~AliAnalysisLevyPt(){};
+  virtual ~AliAnalysisLevyPt(){;};
   Double_t Evaluate(const Double_t *pt, const Double_t *par) const
   {
     Double_t lMass  = 0.497;
@@ -84,6 +84,7 @@ protected:
     Int_t fDataSet;//Integer corresponding to data set.  Used as a switch to set appropriate track cuts.  By default set to 2010 p+p
     //2009 = 900 GeV p+p data from 2009
     //2010 = 7 TeV p+p data from 2010
+    //20100 = 2.76 TeV Pb+Pb data from 2010
 
     /** PDG Database */
     //TDatabasePDG *fPdgDB;//data base used for looking up pdg codes
@@ -142,6 +143,12 @@ protected:
     TF1 *fK0Data;//function with Levy fit parameters for K0S in data
     TF1 *fLambdaData;//function with Levy fit parameters for Lambda in data
     TF1 *fAntiLambdaData;//function with Levy fit parameters for AntiLambda in data
+
+    TF1 *fLambdaEnhancement;
+    TF1 *fProtonEnhancement;
+    Float_t LambdaBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
+    Float_t ProtonBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
+
 
  private:
     //Declare it private to avoid compilation warning

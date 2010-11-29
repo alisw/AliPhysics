@@ -106,10 +106,12 @@ public:
     void InvestigatePHOS(Bool_t val){fInvestigatePHOS=val;}
     void InvestigatePiKP(Bool_t val){fInvestigatePiKP=val;}
     void RequireITSHits(Bool_t val){fRequireITSHits=val;}
+    void EnhanceBaryons(Bool_t val){fBaryonEnhancement=val;}
     Bool_t Full() const {return fInvestigateFull;}
     Bool_t EMCAL() const {return fInvestigateEMCal;}
     Bool_t PHOS()const {return fInvestigatePHOS;}
     Bool_t PiKP() const {return fInvestigatePiKP;}
+    Bool_t BaryonEnhancement() const {return fBaryonEnhancement;}
 
  private:
     //Declare it private to avoid compilation warning
@@ -126,7 +128,7 @@ public:
     Bool_t fInvestigatePHOS;//Turns on and off functions and histos for investigating event-by-event et for the full acceptance
     Bool_t fInvestigatePiKP;//Turns on and off functions and histos for looking pi/k/p Et event-by-event
     Bool_t fRequireITSHits;//Also investigates Et for track cuts with ITS+TPC hits
-
+    Bool_t fBaryonEnhancement;//Turns on and off baryon enhancement
 
     void ResetEventValues();
 

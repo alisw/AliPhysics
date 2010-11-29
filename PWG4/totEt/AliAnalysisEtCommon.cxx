@@ -83,6 +83,8 @@ AliAnalysisEtCommon::AliAnalysisEtCommon() :
   ,fK0Data(0)
   ,fLambdaData(0)
   ,fAntiLambdaData(0)
+  ,fLambdaEnhancement(0)
+  ,fProtonEnhancement(0)
 {//default constructor
 
 }
@@ -99,6 +101,8 @@ AliAnalysisEtCommon::~AliAnalysisEtCommon()
   delete fK0Data;
   delete fLambdaData;
   delete fAntiLambdaData;
+  delete fLambdaEnhancement;
+  delete fProtonEnhancement;
 }
 
 Int_t AliAnalysisEtCommon::AnalyseEvent(AliVEvent *event)
@@ -144,7 +148,7 @@ void AliAnalysisEtCommon::Init()
     fAntiLambdaData->SetParameter(1,0.210);
     fAntiLambdaData->SetParameter(2,9.2);
   }
-  if(fDataSet==2010){
+  if(fDataSet==2010 ||fDataSet==20100 ){
     //These data are from the CMS analysis note on 7 TeV spectra
     //http://cdsweb.cern.ch/record/1279344/files/QCD-10-007-pas.pdf
     //Note the CMS parameterization of the Levy function differs from the ALICE parameterization by a constant.
@@ -168,6 +172,22 @@ void AliAnalysisEtCommon::Init()
     fAntiLambdaData->SetParameter(1,0.290);
     fAntiLambdaData->SetParameter(2,9.28);
   }
+  fLambdaEnhancement = new TF1("fLambdaEnhancement","([0]*pow(x,[1])*exp(-pow(x/[2],[3])))/([4]*exp(-pow([5]/x,[6]))+[7]*x)",0,50);
+   fLambdaEnhancement->SetParameter(0,0.5630487);
+   fLambdaEnhancement->SetParameter(1,1.388818);
+   fLambdaEnhancement->SetParameter(2,3.954147);
+   fLambdaEnhancement->SetParameter(3,3.443772);
+   fLambdaEnhancement->SetParameter(4,2.844288);
+   fLambdaEnhancement->SetParameter(5,2);
+   fLambdaEnhancement->SetParameter(6,0.4747893);
+   fLambdaEnhancement->SetParameter(7,-0.2250856);
+   fProtonEnhancement = new TF1("fProtonEnhancement","[0]*pow(x,[1])*exp(-pow(x/[2],[3]))/([4]+[5]*x)",0,50);
+   fProtonEnhancement->SetParameter(0,0.5630487*1.6);
+   fProtonEnhancement->SetParameter(1,1.388818);
+   fProtonEnhancement->SetParameter(2,3.954147/1.5);
+   fProtonEnhancement->SetParameter(3,3.443772/2.5);
+   fProtonEnhancement->SetParameter(4,0.5);
+   fProtonEnhancement->SetParameter(5,-.03);
 }
 
 void AliAnalysisEtCommon::ResetEventValues()
@@ -242,3 +262,11 @@ Float_t AliAnalysisEtCommon::AntiLambdaWeight(Float_t pt){
   return data/mc;
 }
 
+Float_t AliAnalysisEtCommon::LambdaBaryonEnhancement(Float_t pt){
+  if(pt<0.8) return 1.0;
+  return fLambdaEnhancement->Eval(pt);
+};//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
+Float_t AliAnalysisEtCommon::ProtonBaryonEnhancement(Float_t pt){
+  if(pt<0.8) return 1.0;
+  return fProtonEnhancement->Eval(pt);
+}//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
