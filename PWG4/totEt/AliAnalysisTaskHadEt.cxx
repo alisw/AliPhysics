@@ -104,7 +104,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
-  if(fRecAnalysis->DataSet()==2010){
+  if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20100){
     //cout<<"Setting track cuts for the 2010 p+p collisions at 7 GeV"<<endl;
     cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);

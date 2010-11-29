@@ -44,6 +44,7 @@ AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 							,fInvestigatePHOS(0)
 							,fInvestigatePiKP(0)
 							,fRequireITSHits(0)
+							,fBaryonEnhancement(0)
 							,fPtSmearer(0)
 {
 }
@@ -174,6 +175,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  float myEt = Et(simPart);
 		  if(track->Charge()>0){ FillHisto2D(Form("EtReconstructed%sIdentifiedProton",cutName->Data()),track->Pt(),track->Eta(),myEt);}
 		  else{ FillHisto2D(Form("EtReconstructed%sIdentifiedAntiProton",cutName->Data()),track->Pt(),track->Eta(),myEt);}
+		  if(fBaryonEnhancement){
+		    myEt = myEt*ProtonBaryonEnhancement(track->Pt());
+		    if(track->Charge()>0){ FillHisto2D(Form("EtReconstructed%sIdentifiedProtonEnhanced",cutName->Data()),track->Pt(),track->Eta(),myEt);}
+		    else{ FillHisto2D(Form("EtReconstructed%sIdentifiedAntiProtonEnhanced",cutName->Data()),track->Pt(),track->Eta(),myEt);}
+		  }
 		  FillHisto2D(Form("dEdxProton%s",cutName->Data()),track->P(),dEdx,1.0);
 		}
 		if(isKaon){
@@ -201,6 +207,23 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sUnidentifiedAssumingPion",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
 		    FillHisto2D(Form("EtReconstructed%sUnidentified",cutName->Data()),track->Pt(),track->Eta(),myEt);
 		    FillHisto2D(Form("EtNReconstructed%sUnidentified",cutName->Data()),track->Pt(),track->Eta(),1.0);
+		    if(pdgCode == fgPiPlusCode||pdgCode == fgPiMinusCode){
+		      FillHisto2D(Form("EtReconstructed%sUnidentifiedPionAssumingPion",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
+		      FillHisto2D(Form("EtNReconstructed%sUnidentifiedPion",cutName->Data()),track->Pt(),track->Eta(),1.0);
+		    }
+		    if(pdgCode == fgKPlusCode||pdgCode == fgKMinusCode){
+		      FillHisto2D(Form("EtReconstructed%sUnidentifiedKaonAssumingPion",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
+		      FillHisto2D(Form("EtNReconstructed%sUnidentifiedKaon",cutName->Data()),track->Pt(),track->Eta(),1.0);
+		    }
+		    if(pdgCode == fgProtonCode||pdgCode == fgAntiProtonCode){
+		      FillHisto2D(Form("EtReconstructed%sUnidentifiedProtonAssumingPion",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
+		      FillHisto2D(Form("EtNReconstructed%sUnidentifiedProton",cutName->Data()),track->Pt(),track->Eta(),1.0);
+		      if(fBaryonEnhancement){
+			myEt = myEt*ProtonBaryonEnhancement(track->Pt());
+			FillHisto2D(Form("EtReconstructed%sUnidentifiedProtonAssumingPionEnhanced",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
+			FillHisto2D(Form("EtNReconstructed%sUnidentifiedProtonEnhanced",cutName->Data()),track->Pt(),track->Eta(),1.0);
+		      }
+		    }
 		  }
 		  FillHisto2D(Form("dEdxUnidentified%s",cutName->Data()),track->P(),dEdx,1.0);
 		  FillHisto1D(Form("UnidentifiedPIDs%s",cutName->Data()),mypid,1);
@@ -256,6 +279,14 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sProtonAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  filled = true;
+
+		      if(fBaryonEnhancement){
+			float enhancement = ProtonBaryonEnhancement(track->Pt());
+			FillHisto2D(Form("EtReconstructed%sProtonEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt*enhancement);
+			FillHisto2D(Form("EtNReconstructed%sProtonEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt*enhancement);
+			FillHisto2D(Form("EtReconstructed%sProtonAssumingPionEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi*enhancement);
+		      }
+
 		}
 		if(pdgCode == fgAntiProtonCode){
 		  float myEt = Et(simPart);
@@ -267,6 +298,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  filled = true;
+		  if(fBaryonEnhancement){
+			float enhancement = ProtonBaryonEnhancement(track->Pt());
+			FillHisto2D(Form("EtReconstructed%sAntiProtonEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt*enhancement);
+		    FillHisto2D(Form("EtNReconstructed%sAntiProtonEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt*enhancement);
+		    FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingPionEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi*enhancement);
+		  }
 		}
 		if(pdgCode == fgEPlusCode){
 		  float myEt = Et(simPart);
@@ -300,12 +337,20 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      float myEt = Et(simPart);
 		      FillHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
 		      Float_t weight = LambdaWeight(mom->Pt());
+		      if(fBaryonEnhancement){
+			float enhancement = ProtonBaryonEnhancement(track->Pt());
+			weight = weight*enhancement;
+		      }
 		      FillHisto2D(Form("EtReconstructed%sLambdaDaughtersReweighted",cutName->Data()),track->Pt(),track->Eta(),myEt*weight);
 		    }
 		    if(pdgCode == fgAntiLambdaCode){
 		      float myEt = Et(simPart);
 		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
 		      Float_t weight = AntiLambdaWeight(mom->Pt());
+		      if(fBaryonEnhancement){
+			float enhancement = ProtonBaryonEnhancement(track->Pt());
+			weight = weight*enhancement;
+		      }
 		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughtersReweighted",cutName->Data()),track->Pt(),track->Eta(),myEt*weight);
 		    }
 		    if(pdgCode == fgK0SCode){
@@ -550,6 +595,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut",part->Pt(),part->Eta(),myEtTPC);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPtITSCut",part->Pt(),part->Eta(),myEtITS);
 	      filled = true;
+	      if(fBaryonEnhancement){
+		float enhancement = ProtonBaryonEnhancement(part->Pt());
+		FillHisto2D("EtSimulatedProtonEnhanced",part->Pt(),part->Eta(),myEt*enhancement);
+		FillHisto2D("EtNSimulatedProtonEnhanced",part->Pt(),part->Eta(),1.0*enhancement);
+		FillHisto2D("EtSimulatedProtonAssumingPionEnhanced",part->Pt(),part->Eta(),myEtPi*enhancement);
+	      }
 	    }
 	    if(pdgCode == fgAntiProtonCode){
 	      float myEt = Et(part);
@@ -571,6 +622,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut",part->Pt(),part->Eta(),myEtTPC);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPtITSCut",part->Pt(),part->Eta(),myEtITS);
 	      filled = true;
+	      if(fBaryonEnhancement){
+		float enhancement = ProtonBaryonEnhancement(part->Pt());
+		FillHisto2D("EtSimulatedAntiProtonEnhanced",part->Pt(),part->Eta(),myEt*enhancement);
+		FillHisto2D("EtNSimulatedAntiProtonEnhanced",part->Pt(),part->Eta(),1.0*enhancement);
+		FillHisto2D("EtSimulatedAntiProtonAssumingPionEnhanced",part->Pt(),part->Eta(),myEtPi*enhancement);
+	      }
 	    }
 	    //============Other hadrons===================================
 
@@ -598,6 +655,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtSimulatedLambda",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      Float_t weight = LambdaWeight(part->Pt());
+	      if(fBaryonEnhancement){
+		float enhancement = ProtonBaryonEnhancement(part->Pt());
+		weight = weight*enhancement;
+	      }
 	      FillHisto2D("EtSimulatedLambdaReweighted",part->Pt(),part->Eta(),myEt*weight);
 	      Int_t ndaughters = part->GetNDaughters();
 	      for(Int_t idaughter = 0;idaughter<ndaughters;idaughter++){
@@ -628,6 +689,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtSimulatedAntiLambda",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      Float_t weight = AntiLambdaWeight(part->Pt());
+	      if(fBaryonEnhancement){
+		float enhancement = ProtonBaryonEnhancement(part->Pt());
+		weight = weight*enhancement;
+	      }
 	      FillHisto2D("EtSimulatedAntiLambdaReweighted",part->Pt(),part->Eta(),myEt*weight);
 	      Int_t ndaughters = part->GetNDaughters();
 	      for(Int_t idaughter = 0;idaughter<ndaughters;idaughter++){
@@ -943,7 +1008,11 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D("EtSimulatedKPlus","Simulated E_{T} from K^{+}");
   CreateEtaPtHisto2D("EtSimulatedKMinus","Simulated E_{T} from K^{-}");
   CreateEtaPtHisto2D("EtSimulatedProton","Simulated E_{T} from p");
-  CreateEtaPtHisto2D("EtSimulatedAntiProton","Simulated E_{T} from #bar{p}");
+  CreateEtaPtHisto2D("EtSimulatedAntiProton","Simulated E_{T} from #bar{p}");//Both baryon enhancement and strangeness rescaling
+  if(fBaryonEnhancement){
+    CreateEtaPtHisto2D("EtSimulatedProtonEnhanced","Simulated E_{T} from p");
+    CreateEtaPtHisto2D("EtSimulatedAntiProtonEnhanced","Simulated E_{T} from #bar{p}");
+  }
   CreateEtaPtHisto2D("EtSimulatedChargedHadron","Simulated E_{T} from charged hadrons");
   CreateEtaPtHisto2D(TString("EtNSimulatedPiPlus"),TString("Number of Simulated #pi^{+}"));
   CreateEtaPtHisto2D("EtNSimulatedPiMinus","Number of simulated #pi^{-}");
@@ -951,6 +1020,10 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D("EtNSimulatedKMinus","Number of simulated K^{-}");
   CreateEtaPtHisto2D("EtNSimulatedProton","Number of simulated p");
   CreateEtaPtHisto2D("EtNSimulatedAntiProton","Number of simulated #bar{p}");
+  if(fBaryonEnhancement){
+    CreateEtaPtHisto2D("EtNSimulatedProtonEnhanced","Number of simulated p");
+    CreateEtaPtHisto2D("EtNSimulatedAntiProtonEnhanced","Number of simulated #bar{p}");
+  }
   CreateEtaPtHisto2D("EtNSimulatedChargedHadron","Number of simulated charged hadrons");
   CreateEtaPtHisto2D("EtSimulatedChargedHadronAssumingNoPt","Simulated E_{T} from charged hadrons assuming p_{T}=0");
   CreateEtaPtHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut","Simulated E_{T} from charged hadrons assuming p_{T}=0.15");
@@ -961,12 +1034,16 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D("EtSimulatedKMinusAssumingPion","Simulated E_{T} from K^{-} assuming #pi mass");
   CreateEtaPtHisto2D("EtSimulatedProtonAssumingPion","Simulated E_{T} from p assuming #pi mass");
   CreateEtaPtHisto2D("EtSimulatedAntiProtonAssumingPion","Simulated E_{T} from #bar{p} assuming #pi mass");
+  if(fBaryonEnhancement){
+    CreateEtaPtHisto2D("EtSimulatedProtonAssumingPionEnhanced","Simulated E_{T} from p assuming #pi mass");
+    CreateEtaPtHisto2D("EtSimulatedAntiProtonAssumingPionEnhanced","Simulated E_{T} from #bar{p} assuming #pi mass");
+  }
 
   CreateEtaPtHisto2D("EtSimulatedLambda","Simulated E_{T} from #Lambda");
   CreateEtaPtHisto2D("EtSimulatedAntiLambda","Simulated E_{T} from #bar{#Lambda}");
   CreateEtaPtHisto2D("EtSimulatedK0S","Simulated E_{T} from K^{0}_{S}");
   CreateEtaPtHisto2D("EtSimulatedK0L","Simulated E_{T} from K^{0}_{L}");
-  CreateEtaPtHisto2D("EtSimulatedLambdaReweighted","Simulated E_{T} from #Lambda");
+  CreateEtaPtHisto2D("EtSimulatedLambdaReweighted","Simulated E_{T} from #Lambda");//These will also be used for baryon enhancement
   CreateEtaPtHisto2D("EtSimulatedAntiLambdaReweighted","Simulated E_{T} from #bar{#Lambda}");
   CreateEtaPtHisto2D("EtSimulatedK0SReweighted","Simulated E_{T} from K^{0}_{S}");
   CreateEtaPtHisto2D("EtSimulatedK0LReweighted","Simulated E_{T} from K^{0}_{L}");
@@ -1037,8 +1114,24 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateEtaPtHisto2D(Form("EtReconstructed%sIdentifiedKMinus",cutName->Data()),"Reconstructed E_{T} from identified K^{-}");
     CreateEtaPtHisto2D(Form("EtReconstructed%sIdentifiedProton",cutName->Data()),"Reconstructed E_{T} from identified p");
     CreateEtaPtHisto2D(Form("EtReconstructed%sIdentifiedAntiProton",cutName->Data()),"Reconstructed E_{T} from identified #bar{p}");
+    if(fBaryonEnhancement){
+      CreateEtaPtHisto2D(Form("EtReconstructed%sIdentifiedProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from identified p");
+      CreateEtaPtHisto2D(Form("EtReconstructed%sIdentifiedAntiProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from identified #bar{p}");
+    }
     CreateEtaPtHisto2D(Form("EtNReconstructed%sUnidentified",cutName->Data()),"Number of Reconstructed unidentified particles");
     CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedAssumingPion",cutName->Data()),"Reconstructed E_{T} from unidentified particles assuming pion mass");
+
+    CreateEtaPtHisto2D(Form("EtNReconstructed%sUnidentifiedKaon",cutName->Data()),"Number of Reconstructed unidentified kaons particles");
+    CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedKaonAssumingPion",cutName->Data()),"Reconstructed E_{T} from unidentified kaons particles assuming pion mass");
+    CreateEtaPtHisto2D(Form("EtNReconstructed%sUnidentifiedProton",cutName->Data()),"Number of Reconstructed unidentified proton particles");
+    CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedProtonAssumingPion",cutName->Data()),"Reconstructed E_{T} from unidentified proton particles assuming pion mass");
+    if(fBaryonEnhancement){
+      CreateEtaPtHisto2D(Form("EtNReconstructed%sUnidentifiedProtonEnhanced",cutName->Data()),"Number of Reconstructed unidentified proton particles");
+      CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedProtonAssumingPionEnhanced",cutName->Data()),"Reconstructed E_{T} from unidentified proton particles assuming pion mass");
+    }
+    CreateEtaPtHisto2D(Form("EtNReconstructed%sUnidentifiedPion",cutName->Data()),"Number of Reconstructed unidentified pions particles");
+    CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedPionAssumingPion",cutName->Data()),"Reconstructed E_{T} from unidentified pions particles assuming pion mass");
+
     CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentified",cutName->Data()),"Reconstructed E_{T} from unidentified particles using real mass");
     CreateEtaPtHisto2D(Form("EtReconstructed%sMisidentifiedElectrons",cutName->Data()),"Reconstructed E_{T} from misidentified electrons");
 
@@ -1049,6 +1142,10 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateEtaPtHisto2D(Form("EtReconstructed%sKMinus",cutName->Data()),"Reconstructed E_{T} from K^{-}");
     CreateEtaPtHisto2D(Form("EtReconstructed%sProton",cutName->Data()),"Reconstructed E_{T} from p");
     CreateEtaPtHisto2D(Form("EtReconstructed%sAntiProton",cutName->Data()),"Reconstructed E_{T} from #bar{p}");
+    if(fBaryonEnhancement){
+      CreateEtaPtHisto2D(Form("EtReconstructed%sProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from p");
+      CreateEtaPtHisto2D(Form("EtReconstructed%sAntiProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from #bar{p}");
+    }
     CreateEtaPtHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),"Reconstructed E_{T} from charged hadrons");
     CreateEtaPtHisto2D(Form("EtNReconstructed%sPiPlus",cutName->Data()),"Reconstructed E_{T} from #pi^{+}");
     CreateEtaPtHisto2D(Form("EtNReconstructed%sPiMinus",cutName->Data()),"Reconstructed E_{T} from #pi^{-}");
@@ -1056,6 +1153,10 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateEtaPtHisto2D(Form("EtNReconstructed%sKMinus",cutName->Data()),"Reconstructed E_{T} from K^{-}");
     CreateEtaPtHisto2D(Form("EtNReconstructed%sProton",cutName->Data()),"Reconstructed E_{T} from p");
     CreateEtaPtHisto2D(Form("EtNReconstructed%sAntiProton",cutName->Data()),"Reconstructed E_{T} from #bar{p}");
+    if(fBaryonEnhancement){
+      CreateEtaPtHisto2D(Form("EtNReconstructed%sProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from p");
+      CreateEtaPtHisto2D(Form("EtNReconstructed%sAntiProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from #bar{p}");
+    }
     CreateEtaPtHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),"Reconstructed E_{T} from charged hadrons");
 
     CreateEtaPtHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),"Reconstructed E_{T} from charged hadrons assuming they are all pions");
@@ -1063,6 +1164,10 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateEtaPtHisto2D(Form("EtReconstructed%sKMinusAssumingPion",cutName->Data()),"Reconstructed E_{T} from K^{-} assuming #pi mass");
     CreateEtaPtHisto2D(Form("EtReconstructed%sProtonAssumingPion",cutName->Data()),"Reconstructed E_{T} from p assuming #pi mass");
     CreateEtaPtHisto2D(Form("EtReconstructed%sAntiProtonAssumingPion",cutName->Data()),"Reconstructed E_{T} from #bar{p} assuming #pi mass");
+    if(fBaryonEnhancement){
+      CreateEtaPtHisto2D(Form("EtReconstructed%sProtonAssumingPionEnhanced",cutName->Data()),"Reconstructed E_{T} from p assuming #pi mass");
+      CreateEtaPtHisto2D(Form("EtReconstructed%sAntiProtonAssumingPionEnhanced",cutName->Data()),"Reconstructed E_{T} from #bar{p} assuming #pi mass");
+    }
 
     CreateEtaPtHisto2D(Form("EtReconstructed%sEPlus",cutName->Data()),"Reconstructed E_{T} from e^{+}");
     CreateEtaPtHisto2D(Form("EtReconstructed%sEMinus",cutName->Data()),"Reconstructed E_{T} from e^{-}");
@@ -1095,6 +1200,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 
   Float_t minEt = 0.0;
   Float_t maxEt = 100.0;
+  if(fDataSet==20100) maxEt=5000.0;
   Int_t nbinsEt = 100;
   char histoname[200];
   char histotitle[200];
