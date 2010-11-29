@@ -30,7 +30,7 @@ public:
    * Constructor 
    */
   AliFMDHistCollector() 
-    : fNCutBins(0), fCorrectionCut(0), fFirstBins(), fLastBins()
+    : fNCutBins(0), fCorrectionCut(0), fFirstBins(), fLastBins(), fDebug(0)
   {}
   /** 
    * Constructor 
@@ -39,7 +39,8 @@ public:
    */
   AliFMDHistCollector(const char* title)
     : TNamed("fmdHistCollector", title), 
-      fNCutBins(1), fCorrectionCut(0.5), fFirstBins(1), fLastBins(1)
+      fNCutBins(1), fCorrectionCut(0.5), 
+      fFirstBins(1), fLastBins(1), fDebug(0)
   {}
   /** 
    * Copy constructor 
@@ -49,7 +50,7 @@ public:
   AliFMDHistCollector(const AliFMDHistCollector& o)
     : TNamed(o), 
       fNCutBins(o.fNCutBins), fCorrectionCut(o.fCorrectionCut),
-      fFirstBins(o.fFirstBins), fLastBins(o.fLastBins) 
+      fFirstBins(o.fFirstBins), fLastBins(o.fLastBins), fDebug(o.fDebug) 
   {}
 
   /** 
@@ -94,6 +95,12 @@ public:
    * @param cut Cut-off 
    */
   void SetCorrectionCut(Float_t cut=0.5) { fCorrectionCut = cut; }
+  /** 
+   * Set the debug level.  The higher the value the more output 
+   * 
+   * @param dbg Debug level 
+   */
+  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
 protected:
   /** 
    * Get the first and last eta bin to use for a given ring and vertex 
@@ -223,6 +230,7 @@ protected:
   Float_t     fCorrectionCut;   // Cut-off on secondary corrections 
   TArrayI     fFirstBins;       // Array of first eta bins 
   TArrayI     fLastBins;        // Array of last eta bins 
+  Int_t       fDebug;           // Debug level 
 
   ClassDef(AliFMDHistCollector,1); // Calculate Nch density 
 };

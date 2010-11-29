@@ -81,6 +81,12 @@ public:
    * @param dir List to write in
    */  
   void DefineOutput(TList* dir);
+  /** 
+   * Set the debug level.  The higher the value the more output 
+   * 
+   * @param dbg Debug level 
+   */
+  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
 protected:
   /** 
    * Get the number of particles corresponding to the signal mult
@@ -184,11 +190,12 @@ protected:
    */
   RingHistos* GetRingHistos(UShort_t d, Char_t r) const;
 
-  TList    fRingHistos;    // List of histogram containers
-  Double_t fMultCut;       // Low cut on scaled energy loss
-  TH1D*    fSumOfWeights;
-  TH1D*    fWeightedSum;
-  TH1D*    fCorrections;
+  TList    fRingHistos;    //  List of histogram containers
+  Double_t fMultCut;       //  Low cut on scaled energy loss
+  TH1D*    fSumOfWeights;  //! Histogram
+  TH1D*    fWeightedSum;   //! Histogram
+  TH1D*    fCorrections;   //! Histogram
+  Int_t    fDebug;         //  Debug level 
 
   ClassDef(AliFMDDensityCalculator,1); // Calculate Nch density 
 };

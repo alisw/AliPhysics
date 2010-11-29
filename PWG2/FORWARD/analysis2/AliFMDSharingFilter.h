@@ -71,6 +71,12 @@ public:
    * @param lowCut Low cut
    */
   void SetLowCut(Double_t lowCut=0.3) { fLowCut = lowCut; }
+  /** 
+   * Set the debug level.  The higher the value the more output 
+   * 
+   * @param dbg Debug level 
+   */
+  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
 
   /** 
    * Enable use of angle corrected signals in the algorithm 
@@ -92,8 +98,7 @@ public:
    */
   Bool_t Filter(const AliESDFMD& input, 
 		Bool_t           lowFlux, 
-		AliESDFMD&       output,
-		Double_t         vz);
+		AliESDFMD&       output);
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -244,7 +249,7 @@ protected:
   TList    fRingHistos;    // List of histogram containers
   Double_t fLowCut;        // Low cut on sharing
   Bool_t   fCorrectAngles; // Whether to work on angle corrected signals
-  TH2*     fEtaCorr;
+  Int_t    fDebug;         // Debug level 
 
   ClassDef(AliFMDSharingFilter,1); //
 };
