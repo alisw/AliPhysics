@@ -30,7 +30,10 @@ ClassImp(AliZDCRecoParam)
 //_____________________________________________________________________________
 AliZDCRecoParam::AliZDCRecoParam() :
   AliDetectorRecoParam(),
-  fBeamEnergy(0)
+  fBeamEnergy(0),
+  fhNpartDist(0x0),
+  fhbDist(0x0),
+  fClkCenter(0)
 {
   //
   //Default constructor
@@ -40,6 +43,8 @@ AliZDCRecoParam::AliZDCRecoParam() :
 AliZDCRecoParam::~AliZDCRecoParam()
 {
   // destructor
+  if(fhNpartDist) delete fhNpartDist;
+  if(fhbDist)     delete fhbDist;
 
 }
 
