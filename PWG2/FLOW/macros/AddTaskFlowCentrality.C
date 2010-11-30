@@ -33,6 +33,7 @@ Bool_t  UsePhysicsSelection = kTRUE;
 
 // generate the control ntuple
 Bool_t FillQAntuple=kFALSE;
+Bool_t DoQAcorrelations=kFALSE;
 
 // RUN SETTINGS
 // Flow analysis method can be:(set to kTRUE or kFALSE)
@@ -136,6 +137,11 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
   //cutsPOI->SetRequireSigmaToVertex(kFALSE);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
+  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFpid);
+  //cutsPOI->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
+  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCTOFpid);
+  //cutsPOI->SetTPCTOFpidCrossOverPt(0.4);
+
   
   // common constants:
   Int_t nBinsMult = 10000;  
@@ -321,7 +327,8 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   // Pass cuts for RPs and POIs to the task:
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
- 
+  taskFE->SetTOFresolution(80);
+
   // Pass common constants:
   taskFE->SetNbinsMult(nBinsMult);
   taskFE->SetNbinsPt(nBinsPt);
@@ -430,6 +437,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   taskQAflow->SetEventCuts(cutsEvent);
   taskQAflow->SetTrackCuts(cutsRP);
   taskQAflow->SetFillNTuple(FillQAntuple);
+  taskQAflow->SetDoCorrelations(DoQAcorrelations);
   mgr->AddTask(taskQAflow);
   
   // Create the output container for the data produced by the task
@@ -629,7 +637,7 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   mgr->ConnectInput(taskQAflow,0,mgr->GetCommonInputContainer());
   mgr->ConnectInput(taskQAflow,1,coutputFE);
   mgr->ConnectOutput(taskQAflow,1,coutputQAtask);
-  mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
+  if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
 }
 
 

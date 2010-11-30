@@ -36,6 +36,7 @@
 
 #include <limits.h>
 #include <float.h>
+#include <TMatrix.h>
 #include "TParticle.h"
 #include "TObjArray.h"
 #include "AliStack.h"
@@ -49,6 +50,7 @@
 #include "AliFlowTrack.h"
 #include "AliFlowTrackCuts.h"
 #include "AliLog.h"
+#include "AliESDpid.h"
 
 ClassImp(AliFlowTrackCuts)
 
@@ -76,6 +78,9 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutChi2PerClusterTPC(kFALSE),
   fMaxChi2PerClusterTPC(FLT_MAX),
   fMinChi2PerClusterTPC(-FLT_MAX),
+  fCutNClustersTPC(kFALSE),
+  fNClustersTPCMax(INT_MAX),
+  fNClustersTPCMin(INT_MIN),  
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -86,7 +91,13 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMCevent(NULL),
   fMCparticle(NULL),
   fEvent(NULL),
-  fTPCtrack()
+  fTPCtrack(),
+  fESDpid(NULL),
+  fPIDsource(kTPCTOFpid),
+  fTPCpidCuts(NULL),
+  fTOFpidCuts(NULL),
+  fTPCTOFpidCrossOverPt(0.4),
+  fAliPID(AliPID::kPion)
 {
   //constructor 
 }
@@ -115,6 +126,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutChi2PerClusterTPC(that.fCutChi2PerClusterTPC),
   fMaxChi2PerClusterTPC(that.fMaxChi2PerClusterTPC),
   fMinChi2PerClusterTPC(that.fMinChi2PerClusterTPC),
+  fCutNClustersTPC(that.fCutNClustersTPC),
+  fNClustersTPCMax(that.fNClustersTPCMax),
+  fNClustersTPCMin(that.fNClustersTPCMin),
   fParamType(that.fParamType),
   fParamMix(that.fParamMix),
   fTrack(NULL),
@@ -125,9 +139,17 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMCevent(NULL),
   fMCparticle(NULL),
   fEvent(NULL),
-  fTPCtrack()
+  fTPCtrack(),
+  fESDpid(that.fESDpid),
+  fPIDsource(that.fPIDsource),
+  fTPCpidCuts(NULL),
+  fTOFpidCuts(NULL),
+  fTPCTOFpidCrossOverPt(that.fTPCTOFpidCrossOverPt),
+  fAliPID(that.fAliPID)
 {
   //copy constructor
+  if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
+  if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
 }
 
 //-----------------------------------------------------------------------
@@ -156,6 +178,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutChi2PerClusterTPC=that.fCutChi2PerClusterTPC;
   fMaxChi2PerClusterTPC=that.fMaxChi2PerClusterTPC;
   fMinChi2PerClusterTPC=that.fMinChi2PerClusterTPC;
+  fCutNClustersTPC=that.fCutNClustersTPC;
+  fNClustersTPCMax=that.fNClustersTPCMax;
+  fNClustersTPCMin=that.fNClustersTPCMin;  
   fParamType=that.fParamType;
   fParamMix=that.fParamMix;
 
@@ -168,6 +193,15 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMCparticle=NULL;
   fEvent=NULL;
 
+  fESDpid = that.fESDpid;
+  fPIDsource = that.fPIDsource;
+
+  if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
+  if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
+  fTPCTOFpidCrossOverPt=that.fTPCTOFpidCrossOverPt;
+
+  fAliPID=that.fAliPID;
+
   return *this;
 }
 
@@ -176,6 +210,8 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
 {
   //dtor
   delete fAliESDtrackCuts;
+  delete fTPCpidCuts;
+  delete fTOFpidCuts;
 }
 
 //-----------------------------------------------------------------------
@@ -326,8 +362,9 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   
   Bool_t pass=kTRUE;
   //check the common cuts for the current particle fTrack (MC,AOD,ESD)
+  Double_t pt = fTrack->Pt();
   if (!fFakesAreOK) {if (fTrackLabel<0) pass=kFALSE;}
-  if (fCutPt) {if (fTrack->Pt() < fPtMin || fTrack->Pt() >= fPtMax ) pass=kFALSE;}
+  if (fCutPt) {if (pt < fPtMin || pt >= fPtMax ) pass=kFALSE;}
   if (fCutEta) {if (fTrack->Eta() < fEtaMin || fTrack->Eta() >= fEtaMax ) pass=kFALSE;}
   if (fCutPhi) {if (fTrack->Phi() < fPhiMin || fTrack->Phi() >= fPhiMax ) pass=kFALSE;}
   if (fRequireCharge) {if (fTrack->Charge() == 0) pass=kFALSE;}
@@ -336,7 +373,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   { 
     //in case of an MC particle the charge is stored in units of 1/3|e| 
     Int_t charge = TMath::Nint(fTrack->Charge()/3.0); //mc particles have charge in units of 1/3e
-    return (charge==fCharge);
+    if (charge!=fCharge) pass=kFALSE;
   }
   //if(fCutPID) {if (fTrack->PID() != fPID) pass=kFALSE;}
 
@@ -359,16 +396,51 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
         if (zout < fIgnoreTPCzRangeMin || zout > fIgnoreTPCzRangeMax) pass=kFALSE;
       }
     }
+ 
     if (!fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack))) pass=kFALSE;
+ 
+    Int_t ntpccls = ( fParamType==kESD_TPConly )?
+                      esdTrack->GetTPCNclsIter1():esdTrack->GetTPCNcls();    
     if (fCutChi2PerClusterTPC)
     {
       Float_t tpcchi2 = (fParamType==kESD_TPConly)?
                          esdTrack->GetTPCchi2Iter1():esdTrack->GetTPCchi2();
-      Int_t ntpccls = esdTrack->GetTPCNcls();
       tpcchi2 = (ntpccls>0)?tpcchi2/ntpccls:-FLT_MAX;
       if (tpcchi2<fMinChi2PerClusterTPC || tpcchi2 >=fMaxChi2PerClusterTPC)
         pass=kFALSE;
     }
+
+    if (fCutNClustersTPC)
+    {
+      if (ntpccls < fNClustersTPCMin || ntpccls > fNClustersTPCMax) pass=kFALSE;
+    }
+
+    if (fCutPID)
+    {
+      switch (fPIDsource)    
+      {
+        case kTPCpid:
+          if (!PassesTPCpidCut(esdTrack)) pass=kFALSE;
+          break;
+        case kTOFpid:
+          if (!PassesTOFpidCut(esdTrack)) pass=kFALSE;
+          break;
+        case kTPCTOFpid:
+          if (pt< fTPCTOFpidCrossOverPt)
+          {
+            if (!PassesTPCpidCut(esdTrack)) pass=kFALSE;
+          }
+          else //if (pt>=fTPCTOFpidCrossOverPt)
+          {
+            if (!PassesTOFpidCut(esdTrack)) pass=kFALSE;
+          }
+          break;
+        default:
+          printf("AliFlowTrackCuts::PassesCuts() this should never be called!\n");
+          pass=kFALSE;
+          break;
+      }
+    }    
   }
 
   return pass; //true by default, if we didn't set any cuts
@@ -382,6 +454,7 @@ void AliFlowTrackCuts::HandleVParticle(AliVParticle* track)
   {
     default:
       fTrack = track;
+      break;
   }
 }
 
@@ -410,6 +483,7 @@ void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
       break;
     default:
       fTrack = track;
+      break;
   }
 }
 
@@ -477,10 +551,12 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
         tmpTParticle = fMCparticle->Particle();
         tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
         flowtrack->SetPt(tmpAliMCParticle->Pt());
+        break;
       default:
         flowtrack = new AliFlowTrack();
         flowtrack->SetPhi(fTrackPhi);
         flowtrack->SetEta(fTrackEta);
+        break;
     }
     flowtrack->SetSource(AliFlowTrack::kFromTracklet);
   }
@@ -503,14 +579,17 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
         if (!fMCparticle) return NULL;
         flowtrack = new AliFlowTrack(fTrack);
         flowtrack->SetPt(fMCparticle->Pt());
+        break;
       case kTrackWithPtFromFirstMother:
         if (!fMCparticle) return NULL;
         flowtrack = new AliFlowTrack(fTrack);
         tmpTParticle = fMCparticle->Particle();
         tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
         flowtrack->SetPt(tmpAliMCParticle->Pt());
+        break;
       default:
         flowtrack = new AliFlowTrack(fTrack);
+        break;
     }
     if (fParamType==kMC) flowtrack->SetSource(AliFlowTrack::kFromMC);
     else if (dynamic_cast<AliESDtrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromESD);
@@ -622,4 +701,242 @@ void AliFlowTrackCuts::Clear(Option_t*)
   fTrackWeight=0.0;
   fTrackEta=0.0;
   fTrackPhi=0.0;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTOFpidCut(AliESDtrack* t )
+{
+  //check if passes PID cut using timing in TOF
+  if (!fESDpid) return kFALSE;
+  if (!(t && (t->GetStatus() & AliESDtrack::kTOFout) && (t->GetStatus() & AliESDtrack::kTIME)
+       && (t->GetTOFsignal() > 12000) && (t->GetTOFsignal() < 100000) && (t->GetIntegratedLength() > 365)))
+       return kFALSE;
+  Float_t pt = t->Pt();
+  Float_t p = t->GetP();
+  Float_t trackT0 = fESDpid->GetTOFResponse().GetStartTime(p);
+  Float_t timeTOF = t->GetTOFsignal()- trackT0; 
+  //2=pion 3=kaon 4=protons
+  Double_t inttimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
+  t->GetIntegratedTimes(inttimes);
+  //construct the pid index because it's screwed up in TOF
+  Int_t pid = 0;
+  switch (fAliPID)
+  {
+    case AliPID::kPion:
+      pid=2;
+      break;
+    case AliPID::kKaon:
+      pid=3;
+      break;
+    case AliPID::kProton:
+      pid=4;
+      break;
+    default:
+      return kFALSE;
+  }
+  Float_t s = timeTOF-inttimes[pid];
+
+  Float_t* arr = fTOFpidCuts->GetMatrixArray();
+  Int_t col = TMath::BinarySearch(fTOFpidCuts->GetNcols(),arr,static_cast<Float_t>(pt));
+  if (col<0) return kFALSE;
+  Float_t min = (*fTOFpidCuts)(1,col);
+  Float_t max = (*fTOFpidCuts)(2,col);
+
+  //printf("TOF pid cut %s\n",(s>min && s<max)?"PASS":"FAIL");
+  return (s>min && s<max);
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCpidCut(AliESDtrack* track)
+{
+  //check if passes PID cut using dedx signal in the TPC
+  if (!fESDpid) 
+  {
+    return kFALSE;
+  }
+  if (!fTPCpidCuts)
+  {
+    printf("no TPCpidCuts\n");
+    return kFALSE;
+  }
+
+  const AliExternalTrackParam* tpcparam = track->GetInnerParam();
+  if (!tpcparam) return kFALSE;
+  Float_t sigExp = fESDpid->GetTPCResponse().GetExpectedSignal(tpcparam->GetP(), fAliPID);
+  Float_t sigTPC = track->GetTPCsignal();
+  Float_t s = (sigTPC-sigExp)/sigExp;
+  Double_t pt = track->Pt();
+
+  Float_t* arr = fTPCpidCuts->GetMatrixArray();
+  Int_t col = TMath::BinarySearch(fTPCpidCuts->GetNcols(),arr,static_cast<Float_t>(pt));
+  if (col<0) return kFALSE;
+  Float_t min = (*fTPCpidCuts)(1,col);
+  Float_t max = (*fTPCpidCuts)(2,col);
+
+  //printf("------------TPC pid cut %s\n",(s>min && s<max)?"PASS":"FAIL");
+  return (s>min && s<max);
+}
+
+//-----------------------------------------------------------------------
+void AliFlowTrackCuts::InitPIDcuts()
+{
+  //init matrices with PID cuts
+  TMatrixF* t = NULL;
+  if (!fTPCpidCuts)
+  {
+    if (fAliPID==AliPID::kPion)
+    {
+      t = new TMatrixF(3,10);
+      (*t)(0,0)  = 0.20;  (*t)(1,0)  = -0.4;  (*t)(2,0)  =   0.2;
+      (*t)(0,1)  = 0.25;  (*t)(1,1)  = -0.4;  (*t)(2,1)  =   0.2;
+      (*t)(0,2)  = 0.30;  (*t)(1,2)  = -0.4;  (*t)(2,2)  =  0.25;
+      (*t)(0,3)  = 0.35;  (*t)(1,3)  = -0.4;  (*t)(2,3)  =  0.25;
+      (*t)(0,4)  = 0.40;  (*t)(1,4)  = -0.4;  (*t)(2,4)  =   0.3;
+      (*t)(0,5)  = 0.45;  (*t)(1,5)  = -0.4;  (*t)(2,5)  =   0.3;
+      (*t)(0,6)  = 0.50;  (*t)(1,6)  = -0.4;  (*t)(2,6)  =  0.25;
+      (*t)(0,7)  = 0.55;  (*t)(1,7)  = -0.4;  (*t)(2,7)  =  0.15;
+      (*t)(0,8)  = 0.60;  (*t)(1,8)  = -0.4;  (*t)(2,8)  =   0.1;
+      (*t)(0,9)  = 0.65;  (*t)(1,9)  =    0;  (*t)(2,9)  =     0;
+    }
+    else
+    if (fAliPID==AliPID::kProton)
+    {
+      t = new TMatrixF(3,16);
+      (*t)(0,0)  = 0.20;  (*t)(1,0)  =     0;  (*t)(2,0)  =  0.3; 
+      (*t)(0,1)  = 0.25;  (*t)(1,1)  =  -0.2;  (*t)(2,1)  =  0.6; 
+      (*t)(0,2)  = 0.30;  (*t)(1,2)  =  -0.2;  (*t)(2,2)  =  0.6; 
+      (*t)(0,3)  = 0.35;  (*t)(1,3)  =  -0.2;  (*t)(2,3)  =  0.6; 
+      (*t)(0,4)  = 0.40;  (*t)(1,4)  =  -0.2;  (*t)(2,4)  =  0.6; 
+      (*t)(0,5)  = 0.45;  (*t)(1,5)  = -0.15;  (*t)(2,5)  =  0.6; 
+      (*t)(0,6)  = 0.50;  (*t)(1,6)  =  -0.1;  (*t)(2,6)  =  0.6; 
+      (*t)(0,7)  = 0.55;  (*t)(1,7)  = -0.05;  (*t)(2,7)  = 0.45; 
+      (*t)(0,8)  = 0.60;  (*t)(1,8)  = -0.05;  (*t)(2,8)  = 0.45; 
+      (*t)(0,9)  = 0.65;  (*t)(1,9)  = -0.05;  (*t)(2,9)  = 0.45; 
+      (*t)(0,10) = 0.70;  (*t)(1,10) = -0.05;  (*t)(2,10) = 0.45; 
+      (*t)(0,11) = 0.75;  (*t)(1,11) = -0.05;  (*t)(2,11) = 0.45; 
+      (*t)(0,12) = 0.80;  (*t)(1,12) =     0;  (*t)(2,12) = 0.45; 
+      (*t)(0,13) = 0.85;  (*t)(1,13) =     0;  (*t)(2,13) = 0.45; 
+      (*t)(0,14) = 0.90;  (*t)(1,14) =     0;  (*t)(2,14) = 0.45;
+      (*t)(0,15) = 0.95;  (*t)(1,15) =     0;  (*t)(2,15) =    0;
+    }
+    else
+    if (fAliPID==AliPID::kKaon)
+    {
+      t = new TMatrixF(3,7);
+      (*t)(0,0)  = 0.20;  (*t)(1,0)  = -0.2;  (*t)(2,0)  = 0.4; 
+      (*t)(0,1)  = 0.25;  (*t)(1,1)  =-0.15;  (*t)(2,1)  = 0.4;
+      (*t)(0,2)  = 0.30;  (*t)(1,2)  = -0.1;  (*t)(2,2)  = 0.4;
+      (*t)(0,3)  = 0.35;  (*t)(1,3)  = -0.1;  (*t)(2,3)  = 0.4;
+      (*t)(0,4)  = 0.40;  (*t)(1,4)  = -0.1;  (*t)(2,4)  = 0.6;
+      (*t)(0,5)  = 0.45;  (*t)(1,5)  = -0.1;  (*t)(2,5)  = 0.6;
+      (*t)(0,6)  = 0.50;  (*t)(1,6)  =    0;  (*t)(2,6)  =0;
+    }
+    fTPCpidCuts=t;
+  }
+  if (!fTOFpidCuts)
+  {
+    if (fAliPID==AliPID::kPion)
+    {
+      t = new TMatrixF(3,26);
+      (*t)(0,0)  = 0.3;   (*t)(1,0)  = -700;  (*t)(2,0)  = 700;
+      (*t)(0,1)  = 0.35;  (*t)(1,1)  = -800;  (*t)(2,1)  = 800;
+      (*t)(0,2)  = 0.40;  (*t)(1,2)  = -600;  (*t)(2,2)  = 800;
+      (*t)(0,3)  = 0.45;  (*t)(1,3)  = -500;  (*t)(2,3)  = 700;
+      (*t)(0,4)  = 0.50;  (*t)(1,4)  = -400;  (*t)(2,4)  = 700;
+      (*t)(0,5)  = 0.55;  (*t)(1,5)  = -400;  (*t)(2,5)  = 700;
+      (*t)(0,6)  = 0.60;  (*t)(1,6)  = -400;  (*t)(2,6)  = 700;
+      (*t)(0,7)  = 0.65;  (*t)(1,7)  = -400;  (*t)(2,7)  = 700;
+      (*t)(0,8)  = 0.70;  (*t)(1,8)  = -400;  (*t)(2,8)  = 700;
+      (*t)(0,9)  = 0.75;  (*t)(1,9)  = -400;  (*t)(2,9)  = 700;
+      (*t)(0,10) = 0.80;  (*t)(1,10) = -400;  (*t)(2,10) = 600;
+      (*t)(0,11) = 0.85;  (*t)(1,11) = -400;  (*t)(2,11) = 600;
+      (*t)(0,12) = 0.90;  (*t)(1,12) = -400;  (*t)(2,12) = 600;
+      (*t)(0,13) = 0.95;  (*t)(1,13) = -400;  (*t)(2,13) = 600;
+      (*t)(0,14) = 1.00;  (*t)(1,14) = -400;  (*t)(2,14) = 550;
+      (*t)(0,15) = 1.10;  (*t)(1,15) = -400;  (*t)(2,15) = 450;
+      (*t)(0,16) = 1.20;  (*t)(1,16) = -400;  (*t)(2,16) = 400;
+      (*t)(0,17) = 1.30;  (*t)(1,17) = -400;  (*t)(2,17) = 300;
+      (*t)(0,18) = 1.40;  (*t)(1,18) = -400;  (*t)(2,18) = 300;
+      (*t)(0,19) = 1.50;  (*t)(1,19) = -400;  (*t)(2,19) = 250;
+      (*t)(0,20) = 1.60;  (*t)(1,20) = -400;  (*t)(2,20) = 200;
+      (*t)(0,21) = 1.70;  (*t)(1,21) = -400;  (*t)(2,21) = 150;
+      (*t)(0,22) = 1.80;  (*t)(1,22) = -400;  (*t)(2,22) = 100;
+      (*t)(0,23) = 1.90;  (*t)(1,23) = -400;  (*t)(2,23) =  70;
+      (*t)(0,24) = 2.00;  (*t)(1,24) = -400;  (*t)(2,24) =  50;
+      (*t)(0,25) = 2.10;  (*t)(1,25) =    0;  (*t)(2,25) =   0;
+    }
+    else
+    if (fAliPID==AliPID::kProton)
+    {
+      t = new TMatrixF(3,39);
+      (*t)(0,0)  = 0.3;  (*t)(1,0)   = 0; (*t)(2,0) = 0;
+      (*t)(0,1)  = 0.35;  (*t)(1,1)  = 0; (*t)(2,1) = 0;
+      (*t)(0,2)  = 0.40;  (*t)(1,2)  = 0; (*t)(2,2) = 0;
+      (*t)(0,3)  = 0.45;  (*t)(1,3)  = 0; (*t)(2,3) = 0;
+      (*t)(0,4)  = 0.50;  (*t)(1,4)  = 0; (*t)(2,4) = 0;
+      (*t)(0,5)  = 0.55;  (*t)(1,5)  = -900;  (*t)(2,5)  = 600;
+      (*t)(0,6)  = 0.60;  (*t)(1,6)  = -800;  (*t)(2,6)  = 600;
+      (*t)(0,7)  = 0.65;  (*t)(1,7)  = -800;  (*t)(2,7)  = 600;
+      (*t)(0,8)  = 0.70;  (*t)(1,8)  = -800;  (*t)(2,8)  = 600;
+      (*t)(0,9)  = 0.75;  (*t)(1,9)  = -700;  (*t)(2,9)  = 500;
+      (*t)(0,10) = 0.80;  (*t)(1,10) = -700;  (*t)(2,10) = 500;
+      (*t)(0,11) = 0.85;  (*t)(1,11) = -700;  (*t)(2,11) = 500;
+      (*t)(0,12) = 0.90;  (*t)(1,12) = -600;  (*t)(2,12) = 500;
+      (*t)(0,13) = 0.95;  (*t)(1,13) = -600;  (*t)(2,13) = 500;
+      (*t)(0,14) = 1.00;  (*t)(1,14) = -600;  (*t)(2,14) = 500;
+      (*t)(0,15) = 1.10;  (*t)(1,15) = -600;  (*t)(2,15) = 500;
+      (*t)(0,16) = 1.20;  (*t)(1,16) = -500;  (*t)(2,16) = 500;
+      (*t)(0,17) = 1.30;  (*t)(1,17) = -500;  (*t)(2,17) = 500;
+      (*t)(0,18) = 1.40;  (*t)(1,18) = -500;  (*t)(2,18) = 500;
+      (*t)(0,19) = 1.50;  (*t)(1,19) = -500;  (*t)(2,19) = 500;
+      (*t)(0,20) = 1.60;  (*t)(1,20) = -400;  (*t)(2,20) = 500;
+      (*t)(0,21) = 1.70;  (*t)(1,21) = -400;  (*t)(2,21) = 500;
+      (*t)(0,22) = 1.80;  (*t)(1,22) = -400;  (*t)(2,22) = 500;
+      (*t)(0,23) = 1.90;  (*t)(1,23) = -400;  (*t)(2,23) = 500;
+      (*t)(0,24) = 2.00;  (*t)(1,24) = -400;  (*t)(2,24) = 500;
+      (*t)(0,25) = 2.10;  (*t)(1,25) = -350;  (*t)(2,25) = 500;
+      (*t)(0,26) = 2.20;  (*t)(1,26) = -350;  (*t)(2,26) = 500;
+      (*t)(0,27) = 2.30;  (*t)(1,27) = -300;  (*t)(2,27) = 500;
+      (*t)(0,28) = 2.40;  (*t)(1,28) = -300;  (*t)(2,28) = 500;
+      (*t)(0,29) = 3.30;  (*t)(1,29) = -300;  (*t)(2,29) = 500;
+      (*t)(0,30) = 3.30;  (*t)(1,30) = -250;  (*t)(2,30) = 500;
+      (*t)(0,31) = 3.30;  (*t)(1,31) = -200;  (*t)(2,31) = 500;
+      (*t)(0,32) = 3.30;  (*t)(1,32) = -150;  (*t)(2,32) = 500;
+      (*t)(0,33) = 3.30;  (*t)(1,33) = -150;  (*t)(2,33) = 500;
+      (*t)(0,34) = 3.30;  (*t)(1,34) = -100;  (*t)(2,34) = 400;
+      (*t)(0,35) = 3.30;  (*t)(1,35) = -100;  (*t)(2,35) = 400;
+      (*t)(0,36) = 3.30;  (*t)(1,36) =    0;  (*t)(2,36) = 0;
+      (*t)(0,37) = 3.30;  (*t)(1,37) =    0;  (*t)(2,37) = 0;
+      (*t)(0,38) = 3.30;  (*t)(1,38) =    0;  (*t)(2,38) = 0;
+    }
+    else
+    if (fAliPID==AliPID::kKaon)
+    {
+      t = new TMatrixF(3,23);
+      (*t)(0,0)  = 0.3;   (*t)(1,0)  =    0;  (*t)(2,0)  =    0;
+      (*t)(0,1)  = 0.35;  (*t)(1,1)  =    0;  (*t)(2,1)  =    0;
+      (*t)(0,2)  = 0.40;  (*t)(1,2)  = -800;  (*t)(2,2)  =  600;
+      (*t)(0,3)  = 0.45;  (*t)(1,3)  = -800;  (*t)(2,3)  =  600;
+      (*t)(0,4)  = 0.50;  (*t)(1,4)  = -800;  (*t)(2,4)  =  600;
+      (*t)(0,5)  = 0.55;  (*t)(1,5)  = -800;  (*t)(2,5)  =  600;
+      (*t)(0,6)  = 0.60;  (*t)(1,6)  = -800;  (*t)(2,6)  =  600;
+      (*t)(0,7)  = 0.65;  (*t)(1,7)  = -700;  (*t)(2,7)  =  600;
+      (*t)(0,8)  = 0.70;  (*t)(1,8)  = -600;  (*t)(2,8)  =  600;
+      (*t)(0,9)  = 0.75;  (*t)(1,9)  = -600;  (*t)(2,9)  =  500;
+      (*t)(0,10) = 0.80;  (*t)(1,10) = -500;  (*t)(2,10) =  500;
+      (*t)(0,11) = 0.85;  (*t)(1,11) = -500;  (*t)(2,11) =  500;
+      (*t)(0,12) = 0.90;  (*t)(1,12) = -400;  (*t)(2,12) =  500;
+      (*t)(0,13) = 0.95;  (*t)(1,13) = -400;  (*t)(2,13) =  500;
+      (*t)(0,14) = 1.00;  (*t)(1,14) = -400;  (*t)(2,14) =  500;
+      (*t)(0,15) = 1.10;  (*t)(1,15) = -350;  (*t)(2,15) =  450;
+      (*t)(0,16) = 1.20;  (*t)(1,16) = -300;  (*t)(2,16) =  400;
+      (*t)(0,17) = 1.30;  (*t)(1,17) = -300;  (*t)(2,17) =  400;
+      (*t)(0,18) = 1.40;  (*t)(1,18) = -250;  (*t)(2,18) =  400;
+      (*t)(0,19) = 1.50;  (*t)(1,19) = -200;  (*t)(2,19) =  400;
+      (*t)(0,20) = 1.60;  (*t)(1,20) = -150;  (*t)(2,20) =  400;
+      (*t)(0,21) = 1.70;  (*t)(1,21) = -100;  (*t)(2,21) =  400;
+      (*t)(0,22) = 1.80;  (*t)(1,22) =    0;  (*t)(2,22) =    0;
+    }
+    fTOFpidCuts=t;
+  }
 }
