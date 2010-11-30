@@ -298,6 +298,7 @@ int AliHLTTriggerCounterComponent::DoEvent(const AliHLTComponentEventData& /*evt
 			{
 				HLTDebug("Updating existing CTP counter \"%s\".", cntobj->GetName());
 				AliHLTTriggerCounters::AliCounter* counter = static_cast<AliHLTTriggerCounters::AliCounter*>(cntobj);
+				if (counter->Counter() == counters[i]) continue;
 				counter->Counter(counters[i]);
 				counter->SetBit(BIT(14), true);  // mark counter as incremented
 				UpdateCounterRate(
