@@ -13,6 +13,7 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
+#include "AliRsnEvent.h"
 
 ClassImp(AliRsnVAnalysisTaskSE)
 
@@ -299,7 +300,7 @@ void AliRsnVAnalysisTaskSE::FillInfo()
 
   AliDebug(AliLog::kDebug+2, "<-");
 
-  fTaskInfo.FillInfo();
+  fTaskInfo.FillInfo(&fRsnEvent);
 
   AliDebug(AliLog::kDebug+2,"->");
 }

@@ -14,8 +14,11 @@
 #define ALIRSNVATPROCESSINFO_H
 
 #include <TNamed.h>
+#include <TClonesArray.h>
 
 class TH1I;
+class AliRsnFunction;
+class AliRsnEvent;
 
 class AliRsnVATProcessInfo : public TNamed
 {
@@ -26,13 +29,14 @@ class AliRsnVATProcessInfo : public TNamed
     ~AliRsnVATProcessInfo();
 
     void          GenerateInfoList(TList* list);
-    virtual void  FillInfo();
+    virtual void  FillInfo(AliRsnEvent *event = 0x0);
     virtual void  PrintInfo(const Long64_t &num);
 
     const char*   GetEventHistogramName() { return Form("hEventsUsed_%s",GetName()); };
     Long64_t      GetNumerOfEventsProcessed();
     void          SetEventUsed(Int_t flag) { fEventUsed = flag; }
     Int_t         IsEventUsed() const { return fEventUsed; };
+    void          AddEventFunction(AliRsnFunction *fcn);
 
     void          SetPrintInfoNumber(const Long64_t &num=1) { fPrintInfoNumber = num; }
 
@@ -40,6 +44,7 @@ class AliRsnVATProcessInfo : public TNamed
 
     TH1I         *fHistUsedEvents;      // hist of used events
     Int_t         fEventUsed;           // number of used events
+    TClonesArray  fEventFunctions;      // collection of functions computed on event
 
     Long64_t      fPrintInfoNumber;     // print info number 
 
