@@ -2940,6 +2940,7 @@ void AliFlowAnalysisWithQCumulants::StorePhiDistributionForOneEvent(AliFlowEvent
   vEBE = pow(-1.*cumulant4thEBE,0.25);
   if((vEBE>vMin && vEBE<vMax) && (fReferenceMultiplicityEBE>refMultMin && fReferenceMultiplicityEBE<refMultMax))
   {
+   fPhiDistributionForOneEvent->SetTitle(Form("v_{%i} = %f",fHarmonic,vEBE));
    for(Int_t p=0;p<anEvent->NumberOfTracks();p++)
    {
     if(anEvent->GetTrack(p)->InRPSelection())
@@ -2947,7 +2948,11 @@ void AliFlowAnalysisWithQCumulants::StorePhiDistributionForOneEvent(AliFlowEvent
      fPhiDistributionForOneEvent->Fill(anEvent->GetTrack(p)->Phi());
     }
    } // end of for(Int_t p=0;p<anEvent->NumberOfTracks();p++)
-  }
+  } else
+    {
+     fPhiDistributionForOneEvent->SetTitle(Form("v_{%i} = %f, out of specified boundaries",fHarmonic,vEBE));  
+    } 
+   
  } // end of if(cumulant4thEBE<0.)
  
 } // end of void AliFlowAnalysisWithQCumulants::StorePhiDistributionForOneEvent(AliFlowEventSimple *anEvent)

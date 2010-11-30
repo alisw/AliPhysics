@@ -136,8 +136,24 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
   //cutsPOI->SetRequireSigmaToVertex(kFALSE);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
-
-
+  
+  // common constants:
+  Int_t nBinsMult = 10000;  
+  Int_t nBinsPt = 100;  
+  Int_t nBinsPhi = 360;  
+  Int_t nBinsEta = 100;  
+  Int_t nBinsQ = 500;
+  Double_t dMultMin = 0.;            
+  Double_t dMultMax = 10000.;
+  Double_t dPtMin = 0.;	     
+  Double_t dPtMax = 10.;
+  Double_t dPhiMin(0.);	    
+  Double_t dPhiMax(TMath::TwoPi());
+  Double_t dEtaMin(-5.);	     
+  Double_t dEtaMax(5.);	     
+  Double_t dQMin(0.);	     
+  Double_t dQMax(3.);  
+  
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
   if (useWeights) cout<<"Weights are used"<<endl;
   else cout<<"Weights are not used"<<endl;
@@ -306,8 +322,23 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
  
-
-
+  // Pass common constants:
+  taskFE->SetNbinsMult(nBinsMult);
+  taskFE->SetNbinsPt(nBinsPt);
+  taskFE->SetNbinsPhi(nBinsPhi); 
+  taskFE->SetNbinsEta(nBinsEta);
+  taskFE->SetNbinsQ(nBinsQ);
+  taskFE->SetMultMin(dMultMin);
+  taskFE->SetMultMax(dMultMax);
+  taskFE->SetPtMin(dPtMin);
+  taskFE->SetPtMax(dPtMax);
+  taskFE->SetPhiMin(dPhiMin);
+  taskFE->SetPhiMax(dPhiMax);
+  taskFE->SetEtaMin(dEtaMin);
+  taskFE->SetEtaMax(dEtaMax);
+  taskFE->SetQMin(dQMin);
+  taskFE->SetQMax(dQMax);
+ 
   // Create the analysis tasks, add them to the manager.
   //===========================================================================
   if (SP){
