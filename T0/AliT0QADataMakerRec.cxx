@@ -325,7 +325,7 @@ void AliT0QADataMakerRec::InitRaws()
 			       Int_t((high[206]-low[206])/4),low[206],high[206]);
   Add2RawsList( fhMultCCcal,206+251, expert, !image, !saveCorr);
   
-  TH1F* fhMultC = new TH1F("hMultC","full mulltiplicity C side;Multiplicity;Entries", high[204]-low[204],low[204],high[204]);
+  TH1F* fhMultC = new TH1F("hMultC","full mulltiplicity C side;Multiplicity;Entries", Int_t(high[204]-low[204]/4) ,low[204],high[204]);
   Add2RawsList( fhMultC,204, expert, image, !saveCorr );
   TH1F* fhMultCS = new TH1F("hMultCSemi","full multiplicity with semi-central trigger C side;Multiplicity;Entries",
 			    Int_t((high[205]-low[205])/4),low[205],high[205] );
@@ -503,6 +503,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       UInt_t type =rawReader->GetType();
       if (type == 8){ shift=251; fnEventCal++;} 
       if (type == 7){ shift=0;   fnEventPhys++;}
+      //    if (type == 7){ shift=1;   fnEventPhys++;}
       Int_t allData[110][5];
       for (Int_t i0=0; i0<110; i0++)
 	{
@@ -542,7 +543,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  for (Int_t iHt=0; iHt<5; iHt++){
 	    //cfd
 	    if(allData[ik+sideshift][iHt]>0) {
-	      GetRawsData(shift+ik) -> Fill(allData[ik+sideshift][iHt]);
+	      GetRawsData(shift+ik+1) -> Fill(allData[ik+sideshift][iHt]);
 	      GetRawsData(210+shift)->Fill(ik+1, allData[ik+sideshift][iHt]);
 	      if(type == 8 ) feffC[ik]++;
 	      
@@ -554,7 +555,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    }
 	    //led
 	    if(allData[ik+12+sideshift][iHt] > 0) { 
-	      GetRawsData(shift+ik+24)->  Fill(allData[ik+12+sideshift][iHt]);
+	      GetRawsData(shift+ik+24+1)->  Fill(allData[ik+12+sideshift][iHt]);
 	      GetRawsData(211+shift)->Fill(ik+1, allData[ik+12+sideshift][iHt]);
 	      if(type == 8  ) {
 		feffA[ik]++;
@@ -563,20 +564,20 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    //led -cfd
 	    
 	    if(allData[ik+12+sideshift][iHt] > 0 && allData[ik+sideshift][iHt] >0 )
-	      GetRawsData(shift+ik+48)->
+	      GetRawsData(shift+ik+48+1)->
 		Fill(allData[ik+12+sideshift][iHt]-allData[ik+sideshift][iHt]);
 	    
 	    //qtc
 	    if(allData[2*ik+sideshiftqtc+24][iHt] > 0 &&
 	       allData[2*ik+sideshiftqtc+25][iHt] > 0) {
-	      GetRawsData(shift+ik+72)->
+	      GetRawsData(shift+ik+72+1)->
 		Fill(allData[2*ik+sideshiftqtc+24][iHt]-allData[2*ik+sideshiftqtc+25][iHt]);
 	      GetRawsData(212+shift)->Fill(ik+1, allData[2*ik+sideshiftqtc+24][iHt]-allData[2*ik+sideshiftqtc+25][iHt]);
 	      if(type == 8) feffqtc[ik]++;
 	      
 	    }
-	    if(allData[2*ik+sideshiftqtc+24][iHt] > 0) GetRawsData(shift+ik+96)->Fill(allData[2*ik+sideshiftqtc+24][iHt]);
-	      if(allData[2*ik+sideshiftqtc+25][iHt] > 0)  GetRawsData(shift+ik+120)->Fill(allData[2*ik+sideshiftqtc+25][iHt]);
+	    if(allData[2*ik+sideshiftqtc+24][iHt] > 0) GetRawsData(shift+ik+96+1)->Fill(allData[2*ik+sideshiftqtc+24][iHt]);
+	      if(allData[2*ik+sideshiftqtc+25][iHt] > 0)  GetRawsData(shift+ik+120+1)->Fill(allData[2*ik+sideshiftqtc+25][iHt]);
 	  }
 	
 	  if(type == 7  ) {
