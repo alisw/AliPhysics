@@ -1001,6 +1001,7 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
     }// if TProfile2D
     
     // prf
+    /*
     TProfile2D *histoprf = (TProfile2D *) filehlt->Get("PRF2d");
     if (histoprf) {
       histoprf->SetDirectory(0);    
@@ -1031,6 +1032,7 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
       }
       calibra->ResetVectorFit();
     }// if PRF
+    */
   }// if fileNameEntry
   
   delete listhlt;

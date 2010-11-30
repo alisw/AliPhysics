@@ -338,19 +338,26 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
 	TVectorD  *par  = new TVectorD(2);
 	TVectorD   pare = TVectorD(2);
 	TVectorD  *parE = new TVectorD(3);
-	linearfitter.Eval();
-	linearfitter.GetParameters(*par);
-	linearfitter.GetErrors(pare);
-	Float_t  ppointError =  TMath::Sqrt(TMath::Abs(linearfitter.GetChisquare())/arrayI[cb]);
-	(*parE)[0] = pare[0]*ppointError;
-	(*parE)[1] = pare[1]*ppointError;
-	(*parE)[2] = (Double_t) arrayI[cb];
-	fLinearFitterPArray.AddAt(par,cb);
-	fLinearFitterEArray.AddAt(parE,cb);
-	//par->Print();
-	//parE->Print();
+	if((linearfitter.EvalRobust(0.8)==0)) {
+	//if((linearfitter.Eval()==0)) {
+	  
+	  linearfitter.GetParameters(*par);
+	  //linearfitter.GetErrors(pare);
+	  //Float_t  ppointError =  TMath::Sqrt(TMath::Abs(linearfitter.GetChisquare())/arrayI[cb]);
+	  //(*parE)[0] = pare[0]*ppointError;
+	  //(*parE)[1] = pare[1]*ppointError;
+	  
+	  (*parE)[0] = 0.0;
+	  (*parE)[1] = 0.0;
+	  (*parE)[2] = (Double_t) arrayI[cb];
+	  fLinearFitterPArray.AddAt(par,cb);
+	  fLinearFitterEArray.AddAt(parE,cb);
+	  
+	  //par->Print();
+	  //parE->Print();
+	}
       }
-
+      
       //delete linearfitterhisto;
       
     }// if something
@@ -360,3 +367,5 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
   delete [] arrayI;
    
 }
+
+

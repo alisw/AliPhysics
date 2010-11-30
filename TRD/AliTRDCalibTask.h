@@ -63,7 +63,10 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetUseTPCVertex()                                               {fVtxTPC=kTRUE ; fVtxSPD=kFALSE;} 
   void SetUseSPDVertex()                                               {fVtxTPC=kFALSE; fVtxSPD=kTRUE ;} 
   void SetMinNbOfContributors(Int_t minNbOfContributors)               {fMinNbContributors = minNbOfContributors;};  
-  void SetRangePrimaryVertexZ(Double_t rangePrimaryVertexZ)            {fRangePrimaryVertexZ = TMath::Abs(rangePrimaryVertexZ);};  
+  void SetRangePrimaryVertexZ(Double_t rangePrimaryVertexZ)            {fRangePrimaryVertexZ = TMath::Abs(rangePrimaryVertexZ);}; 
+  void SetMinNbTracks(Int_t minNbTracks)                               {fMinNbTracks = minNbTracks;};
+  void SetMaxNbTracks(Int_t maxNbTracks)                               {fMaxNbTracks = maxNbTracks;};
+ 
   void SetVersionGainUsed(Int_t versionGainUsed)                       { fVersionGainUsed = versionGainUsed;   }
   void SetSubVersionGainUsed(Int_t subVersionGainUsed)                 { fSubVersionGainUsed = subVersionGainUsed;   }
   void SetVersionGainLocalUsed(Int_t versionGainLocalUsed)             { fVersionGainLocalUsed = versionGainLocalUsed;   }
@@ -87,6 +90,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
 
  private:
   Bool_t SetVersionSubversion();
+  Bool_t ParticleGood(int i) const;
 
   AliESDEvent  *fESD;                            //! ESD object
   AliESDfriend *fESDfriend;                      //! ESD friend
@@ -106,6 +110,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   TH1F        *fNbTRDTrackOffline;               //! nb ESD tracks with TRD clusters
   TH1F        *fNbTRDTrackStandalone;            //! nb ESD tracks with TRD clusters
   TH2F        *fNbTPCTRDtrack;                   //! nb TPC and TRD tracks when problems
+  TH2F        *fNbGoodTracks;                    //! nb of good tracks
    
   TH1F        *fNbTimeBin;                       //! nb Time Bin
   TH1F        *fNbTimeBinOffline;                //! nb Time Bin offline
@@ -141,6 +146,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Bool_t      fVtxSPD;                           // Flag for use of SPD vertex
   Int_t       fMinNbContributors;                // Min number of contributors
   Double_t    fRangePrimaryVertexZ;              // Were the primary vertex is
+  Int_t       fMinNbTracks;                      // Min Nb Tracks
+  Int_t       fMaxNbTracks;                      // Max Nb Tracks
   
   Int_t       fLow;                              // lower limit of nb of TRD clusters per tracklet
   Int_t       fHigh;                             // higher limit of nb of TRD clusters per tracklet
@@ -172,4 +179,5 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
 };
 
 #endif
+
 

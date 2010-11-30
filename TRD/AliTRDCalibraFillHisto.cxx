@@ -978,7 +978,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(const AliTRDtrack *t, Int_t
   if(npoints < fNumberClusters) return kFALSE;
   if(npoints > fNumberClustersf) return kFALSE;
   if(pointError >= 0.1) return kFALSE;
-  if(crossrow == 1) return kFALSE;
+  if(crossrow == 1) return kTRUE;
 
   ////////////////////////////
   // fill
@@ -1132,11 +1132,11 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   /////////////////////////
   // Cuts quality
   ////////////////////////
-
+  
   if(nbclusters < fNumberClusters) return kFALSE;
   if(nbclusters > fNumberClustersf) return kFALSE;
   if(pointError >= 0.3) return kFALSE;
-  if(crossrow == 1) return kFALSE;
+  if(crossrow == 1) return kTRUE;
   
   ///////////////////////
   // Fill
@@ -3499,15 +3499,20 @@ void AliTRDCalibraFillHisto::AnalyseLinearFitter()
       TVectorD  *par  = new TVectorD(2);
       TVectorD   pare = TVectorD(2);
       TVectorD  *parE = new TVectorD(3);
-      linearfitter->Eval();
-      linearfitter->GetParameters(*par);
-      linearfitter->GetErrors(pare);
-      Float_t  ppointError =  TMath::Sqrt(TMath::Abs(linearfitter->GetChisquare())/fEntriesLinearFitter[k]);
-      (*parE)[0] = pare[0]*ppointError;
-      (*parE)[1] = pare[1]*ppointError;
-      (*parE)[2] = (Double_t) fEntriesLinearFitter[k];
-      ((TObjArray *)fLinearVdriftFit->GetPArray())->AddAt(par,k);
-      ((TObjArray *)fLinearVdriftFit->GetEArray())->AddAt(parE,k);
+      if((linearfitter->EvalRobust(0.8)==0)) {
+	//linearfitter->Eval();
+	linearfitter->GetParameters(*par);
+	//linearfitter->GetErrors(pare);
+	//Float_t  ppointError =  TMath::Sqrt(TMath::Abs(linearfitter->GetChisquare())/fEntriesLinearFitter[k]);
+	//(*parE)[0] = pare[0]*ppointError;
+	//(*parE)[1] = pare[1]*ppointError;
+
+	(*parE)[0] = 0.0;
+	(*parE)[1] = 0.0;
+	(*parE)[2] = (Double_t) fEntriesLinearFitter[k];
+	((TObjArray *)fLinearVdriftFit->GetPArray())->AddAt(par,k);
+	((TObjArray *)fLinearVdriftFit->GetEArray())->AddAt(parE,k);
+      }
     }
   }
 }

@@ -49,9 +49,11 @@ using namespace std;
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
+#include "AliExternalTrackParam.h"
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
+#include "AliESDCentrality.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
 #include "AliESDfriendTrack.h"
@@ -93,6 +95,7 @@ ClassImp(AliTRDCalibTask)
       fNbTRDTrackOffline(0),
       fNbTRDTrackStandalone(0),
       fNbTPCTRDtrack(0),
+      fNbGoodTracks(0),
       fNbTimeBin(0),
       fNbTimeBinOffline(0),
       fNbTimeBinStandalone(0),
@@ -119,6 +122,8 @@ ClassImp(AliTRDCalibTask)
       fVtxSPD(kFALSE),
       fMinNbContributors(0),
       fRangePrimaryVertexZ(9999999.0),
+      fMinNbTracks(9),
+      fMaxNbTracks(500),
       fLow(0),
       fHigh(30),
       fFillZero(kFALSE),
@@ -173,6 +178,7 @@ AliTRDCalibTask::~AliTRDCalibTask()
   if(fNbTRDTrackOffline) delete fNbTRDTrackOffline;
   if(fNbTRDTrackStandalone) delete fNbTRDTrackStandalone;
   if(fNbTPCTRDtrack) delete fNbTPCTRDtrack;
+  if(fNbGoodTracks) delete fNbGoodTracks;
   if(fNbTimeBin) delete fNbTimeBin;
   if(fNbTimeBinOffline) delete fNbTimeBinOffline;
   if(fNbTimeBinStandalone) delete fNbTimeBinStandalone;
@@ -198,40 +204,6 @@ AliTRDCalibTask::~AliTRDCalibTask()
   }
   
 }
-
-/*
-//________________________________________________________________________
-void AliTRDCalibTask::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once per event
-  
-  cout << "AliTRDCalibTask::ConnectInputData() IN" << endl;
-
-
-  //  TTree* tree = dynamic_cast<TTree*> (GetInputData(0)); //pointer wird "umgecastet" auf anderen Variablentyp
-  //  if (!tree) {
-    //Printf("ERROR: Could not read chain from input slot 0");
-  //  } else {
-    
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  
-  if (!esdH) {
-    //Printf("ERROR: Could not get ESDInputHandler");
-  } else {
-    fESD = esdH->GetEvent();
-    //    esdH->SetActiveBranches("ESDfriend*");
-    if ((esdH->GetTree())->GetBranch("ESDfriend.")) fESDfriend = esdH->GetESDfriend();
-    //else printf("No friend ESD\n");
-    //Printf("*** CONNECTED NEW EVENT ****");
-  }
-    
-
-    //  }
-  //cout << "AliTRDCalibTask::ConnectInputData() OUT" << endl;
-
-}
-*/
 
 //________________________________________________________________________
 void AliTRDCalibTask::UserCreateOutputObjects() 
@@ -359,12 +331,19 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fCH2dSum->SetZTitle("counts");
     fCH2dSum->SetStats(0);
     fCH2dSum->Sumw2();
+    //
+    fNbGoodTracks = new TH2F("NbGoodTracks","NbGoodTracks",500,0.0,2500.0,200,0.0,100.0);
+    fNbGoodTracks->SetXTitle("Nb of good tracks");
+    fNbGoodTracks->SetYTitle("Centrality");
+    fNbGoodTracks->SetStats(0);
+
     
     // Add them
     fListHist->Add(fPH2dSM);
     fListHist->Add(fCH2dSM);
     fListHist->Add(fPH2dSum);
     fListHist->Add(fCH2dSum);
+    fListHist->Add(fNbGoodTracks);
   }
 
   /////////////////////////////////////////
@@ -463,13 +442,19 @@ void AliTRDCalibTask::UserExec(Option_t *)
     PostData(1, fListHist);
     return;
   }
+
+  const char* type = fESD->GetBeamType();
+  
   
   //printf("Counter %d\n",fCounter);
   
   fCounter++;
   //cout << "maxEvent = " << fMaxEvent << endl;
   //if(fCounter%100==0) cout << "fCounter = " << fCounter << endl;
-  if((fMaxEvent != 0) && (fMaxEvent < fCounter)) return;
+  if((fMaxEvent != 0) && (fMaxEvent < fCounter)) {
+    PostData(1, fListHist);
+    return;
+  }
   //if(fCounter%100==0) cout << "fCounter1 = " << fCounter << endl;
   //cout << "event = " << fCounter << endl;
   
@@ -479,32 +464,40 @@ void AliTRDCalibTask::UserExec(Option_t *)
   // Check trigger
   ///////////////////
   Bool_t pass = kTRUE;
-  Int_t numberOfTriggerSelected = fSelectedTrigger->GetEntriesFast();
-  //printf("numberofTriggerSelected %d\n",numberOfTriggerSelected);
-  if(fRejected) {
-    pass = kTRUE;
-    for(Int_t k = 0; k < numberOfTriggerSelected; k++){
-      const TObjString *const obString=(TObjString*)fSelectedTrigger->At(k);
-      const TString tString=obString->GetString();
-      if(fESD->IsTriggerClassFired((const char*)tString)) {
-	pass = kFALSE;
+
+  if (strstr(type,"p-p")) {
+   
+    //printf("Will check the triggers\n");
+
+    Int_t numberOfTriggerSelected = fSelectedTrigger->GetEntriesFast();
+    //printf("numberofTriggerSelected %d\n",numberOfTriggerSelected);
+    if(fRejected) {
+      pass = kTRUE;
+      for(Int_t k = 0; k < numberOfTriggerSelected; k++){
+	const TObjString *const obString=(TObjString*)fSelectedTrigger->At(k);
+	const TString tString=obString->GetString();
+	if(fESD->IsTriggerClassFired((const char*)tString)) {
+	  pass = kFALSE;
+	}
       }
     }
-  }
-  else {
-    pass = kFALSE;
-    for(Int_t k = 0; k < numberOfTriggerSelected; k++){
-      const TObjString *const obString=(TObjString*)fSelectedTrigger->At(k);
-      const TString tString=obString->GetString();
-      if(fESD->IsTriggerClassFired((const char*)tString)) {
-	pass = kTRUE;
+    else {
+      pass = kFALSE;
+      for(Int_t k = 0; k < numberOfTriggerSelected; k++){
+	const TObjString *const obString=(TObjString*)fSelectedTrigger->At(k);
+	const TString tString=obString->GetString();
+	if(fESD->IsTriggerClassFired((const char*)tString)) {
+	  pass = kTRUE;
+	}
       }
     }
+    if(!pass) {
+      PostData(1, fListHist);
+      return;
+    }   
+
   }
-  if(!pass) {
-    PostData(1, fListHist);
-    return;
-  }   
+    
   //printf("Class Fired %s\n",(const char*)fESD->GetFiredTriggerClasses());
   //printf("Trigger passed\n");
   
@@ -535,6 +528,31 @@ void AliTRDCalibTask::UserExec(Option_t *)
   
   //printf("Primary vertex passed\n");
   
+  //////////////////////////////////////
+  // Requirement on number of good tracks
+  //////////////////////////////////////
+  Int_t nGoodParticles = 0;
+  Double_t nbTracks = fESD->GetNumberOfTracks();
+  for(Int_t itrack = 0; itrack < nbTracks; itrack++) {
+    if(ParticleGood(itrack)) nGoodParticles++;  
+  }
+  if(fDebug > 0)  {
+    // Centrality
+    AliESDCentrality *esdCentrality = fESD->GetCentrality();
+    Float_t centrality = esdCentrality->GetCentralityPercentile("V0M");
+    //Float_t centralityb = esdCentrality->GetCentralityPercentile("CL1");
+    fNbGoodTracks->Fill(nGoodParticles,centrality);
+    //printf("centrality %f, centralityb %f\n",centrality,centralityb);
+  }
+  
+  if (strstr(type,"Pb-Pb")) {
+    //printf("Will check the number of good tracks\n");
+    if((nGoodParticles < fMinNbTracks) || (nGoodParticles > fMaxNbTracks)) {
+      PostData(1, fListHist);
+      return;
+    }
+  }
+  
   fNEvents->Fill(1);
   
   // In total
@@ -546,8 +564,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
   // TPC
   Int_t nbtrackTPC = 0;
   
-  Double_t nbTracks = fESD->GetNumberOfTracks();
-  //printf("Number of tracks %f\n",nbTracks);  
+
   
   if (nbTracks <= 0.0) {
     
@@ -1428,5 +1445,27 @@ Bool_t AliTRDCalibTask::SetVersionSubversion(){
   else return kTRUE;
 
 }
+//_________________________________________________________________________________________________________________________
+Bool_t AliTRDCalibTask::ParticleGood(int i) const {
+
+  //
+  // Definition of good tracks
+  //
+
+  
+  AliESDtrack *track = fESD->GetTrack(i);
+  if (!track->IsOn(AliESDtrack::kTPCrefit)) return 0;        // TPC refit
+  if (track->GetTPCNcls() < 90) return 0;                    // number of TPC clusters
+  if (fabs(track->Eta())>0.8) return 0;                         // fiducial pseudorapidity
+  Float_t r,z;
+  track->GetImpactParametersTPC(r,z);
+  if (fabs(z)>2.0) return 0;                          // impact parameter in z
+  if (fabs(r)>2.0) return 0;                          // impact parameter in xy
+  if (r==0) return 0;
+  return 1;   
+
+
+}
+
 
 
