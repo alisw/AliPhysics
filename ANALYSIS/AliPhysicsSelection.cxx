@@ -92,6 +92,8 @@
 // to be present:
 //   AddBGTriggerClass("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL");
 //
+// The class also supports the triggers used in heavy ion runs
+//
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN 
 //           Michele Floris, CERN
 //-------------------------------------------------------------------------
@@ -138,7 +140,8 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fUseMuonTriggers(0),
   fFillingScheme(""),
   fBin0CallBack(""),
-  fBin0CallBackPointer(0)
+  fBin0CallBackPointer(0),
+  fIsPP(kFALSE)
 {
   // constructor
   
@@ -393,9 +396,9 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       // ZDC
       // Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCA);
       // Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCC);
-      Bool_t zdcA = triggerAnalysis->ZDCTDCTrigger(aEsd, AliTriggerAnalysis::kASide);
-      Bool_t zdcC = triggerAnalysis->ZDCTDCTrigger(aEsd, AliTriggerAnalysis::kCSide);
-      
+      Bool_t zdcA    = triggerAnalysis->ZDCTDCTrigger (aEsd, AliTriggerAnalysis::kASide);
+      Bool_t zdcC    = triggerAnalysis->ZDCTDCTrigger (aEsd, AliTriggerAnalysis::kCSide);
+      Bool_t zdcTime = triggerAnalysis->ZDCTimeTrigger(aEsd);
 
       // Some "macros"
       Bool_t mb1 = (fastOROffline > 0 || v0A || v0C) && (!v0BG);
@@ -488,14 +491,18 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	  fHistStatistics[iHistStat]->Fill(kStatZDCC, i);
 	if (zdcA && zdcC)
 	  fHistStatistics[iHistStat]->Fill(kStatZDCAC, i);
-        
+	// We reject the event if the ZDC timing cut is not respected
+	if (zdcTime)
+	  fHistStatistics[iHistStat]->Fill(kStatZDCTime, i);
+        else if (!fIsPP) 
+	  continue;
 	//       if (fastOROffline > 1 && !v0BG)
 	//         fHistStatistics[iHistStat]->Fill(kStatFO2NoBG, i);
             
 	//if (fastOROffline > 0 && (v0A || v0C) && !v0BG)
 	//  fHistStatistics[iHistStat]->Fill(kStatFO1AndV0, i);
   
-	if (v0A && v0C && !v0BG && !bgID)
+	if (v0A && v0C && !v0BG && (!bgID && fIsPP))
 	  fHistStatistics[iHistStat]->Fill(kStatV0, i);
 
         Bool_t offlineAccepted = kFALSE;
@@ -517,7 +524,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	      {
 		if (!v0BG) fHistStatistics[iHistStat]->Fill(kStatOffline, i);
       
-		if (fBackgroundIdentification && bgID)
+		if (fBackgroundIdentification && bgID && fIsPP)
 		  {
 		    AliDebug(AliLog::kDebug, "Rejecting event because of background identification");
 		    fHistStatistics[iHistStat]->Fill(kStatBG, i);
@@ -763,11 +770,11 @@ Bool_t AliPhysicsSelection::Initialize(const AliESDEvent* aEsd)
   // initializes the object for the given ESD
   
   AliInfo(Form("Initializing for beam type: %s", aEsd->GetESDRun()->GetBeamType()));
-  Bool_t pp = kTRUE;
+  fIsPP = kTRUE;
   if (strcmp(aEsd->GetESDRun()->GetBeamType(), "Pb-Pb") == 0)
-    pp = kFALSE;
-  
-  return Initialize(aEsd->GetRunNumber(), pp);
+    fIsPP = kFALSE;
+
+  return Initialize(aEsd->GetRunNumber(), fIsPP);
 }
 
 Bool_t AliPhysicsSelection::Initialize(Int_t runNumber, Bool_t pp)
@@ -1039,6 +1046,7 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   h->GetXaxis()->SetBinLabel(kStatZDCA,          "ZDCA");
   h->GetXaxis()->SetBinLabel(kStatZDCC,          "ZDCC");
   h->GetXaxis()->SetBinLabel(kStatZDCAC,         "ZDCA & ZDCC");
+  h->GetXaxis()->SetBinLabel(kStatZDCTime,       "ZDC Time Cut");
   h->GetXaxis()->SetBinLabel(kStatMB1,	         "(FO >= 1 | V0A | V0C) & !V0 BG");
   h->GetXaxis()->SetBinLabel(kStatMB1Prime,      "(FO >= 2 | (FO >= 1 & (V0A | V0C)) | (V0A &v0C) ) & !V0 BG");
   //h->GetXaxis()->SetBinLabel(kStatFO1AndV0,	 "FO >= 1 & (V0A | V0C) & !V0 BG");

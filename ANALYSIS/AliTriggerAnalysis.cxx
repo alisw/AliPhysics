@@ -979,28 +979,44 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
   // It can be used in order to eliminate
   // parasitic collisions
   Bool_t zdcAccept = kFALSE;
-
   AliESDZDC *esdZDC = aEsd->GetESDZDC();
 
-  const Float_t refSum = -568.5;
-  const Float_t refDelta = -2.1;
-  const Float_t sigmaSum = 3.25;
-  const Float_t sigmaDelta = 2.25;
-  for(Int_t i = 0; i < 4; ++i) {
-    if (esdZDC->GetZDCTDCData(10,i) != 0) {
-      Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(10,i)-esdZDC->GetZDCTDCData(14,i)); 
-      for(Int_t j = 0; j < 4; ++j) {
-	if (esdZDC->GetZDCTDCData(12,j) != 0) {
-	  Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(12,j)-esdZDC->GetZDCTDCData(14,j));
-	  if(fillHists) fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
-	  if (((tdcC-tdcA-refDelta)*(tdcC-tdcA-refDelta)/(sigmaDelta*sigmaDelta) +
-	       (tdcC+tdcA-refSum)*(tdcC+tdcA-refSum)/(sigmaSum*sigmaSum))< 1.0)
-	    zdcAccept = kTRUE;
+  if(fMC) {
+     UInt_t esdFlag =  esdZDC->GetESDQuality();
+
+     Bool_t znaFired=kFALSE, zpaFired=kFALSE;
+     Bool_t zem1Fired=kFALSE, zem2Fired=kFALSE;
+     Bool_t zncFired=kFALSE, zpcFired=kFALSE;
+     //
+     // **** Trigger patterns
+     if((esdFlag & 0x00000001) == 0x00000001) znaFired=kTRUE;
+     if((esdFlag & 0x00000002) == 0x00000002) zpaFired=kTRUE;
+     if((esdFlag & 0x00000004) == 0x00000004) zem1Fired=kTRUE;
+     if((esdFlag & 0x00000008) == 0x00000008) zem2Fired=kTRUE;
+     if((esdFlag & 0x00000010) == 0x00000010) zncFired=kTRUE;
+     if((esdFlag & 0x00000020) == 0x00000020) zpcFired=kTRUE;
+     zdcAccept = (znaFired | zncFired);
+  }
+  else {
+    const Float_t refSum = -568.5;
+    const Float_t refDelta = -2.1;
+    const Float_t sigmaSum = 3.25;
+    const Float_t sigmaDelta = 2.25;
+    for(Int_t i = 0; i < 4; ++i) {
+      if (esdZDC->GetZDCTDCData(10,i) != 0) {
+	Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(10,i)-esdZDC->GetZDCTDCData(14,i)); 
+	for(Int_t j = 0; j < 4; ++j) {
+	  if (esdZDC->GetZDCTDCData(12,j) != 0) {
+	    Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(12,j)-esdZDC->GetZDCTDCData(14,j));
+	    if(fillHists) fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
+	    if (((tdcC-tdcA-refDelta)*(tdcC-tdcA-refDelta)/(sigmaDelta*sigmaDelta) +
+		 (tdcC+tdcA-refSum)*(tdcC+tdcA-refSum)/(sigmaSum*sigmaSum))< 1.0)
+	      zdcAccept = kTRUE;
+	  }
 	}
       }
     }
   }
-
   return zdcAccept;
 }
 

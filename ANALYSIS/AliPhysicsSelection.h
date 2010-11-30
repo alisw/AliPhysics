@@ -36,7 +36,7 @@ class AliPhysicsSelection : public AliAnalysisCuts
 public:
 
 public:
-  enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatFMD,kStatFO1,kStatFO2,kStatFO2L1,kStatV0A,kStatV0C,kStatZDCA,kStatZDCC,kStatZDCAC,kStatV0,kStatOffline,kStatBG,kStatAccepted};
+  enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatFMD,kStatFO1,kStatFO2,kStatFO2L1,kStatV0A,kStatV0C,kStatZDCA,kStatZDCC,kStatZDCAC,kStatZDCTime,kStatV0,kStatOffline,kStatBG,kStatAccepted};
 
 #ifdef VERBOSE_STAT
   enum {kStatRowBG=0,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowErrGood,kStatRowGood}; // offset wrt fBGStatOffset
@@ -131,7 +131,9 @@ protected:
   TString fBin0CallBack; // callback used to determine if an event is in the bin0 (name of the task where the callback is implemented);
   Bin0Callback_t fBin0CallBackPointer; //! don't stream this. TO BE REMOVED SOON
 
-  ClassDef(AliPhysicsSelection, 10)
+  Bool_t fIsPP; // True if processing pp run, false if heavy ion
+
+  ClassDef(AliPhysicsSelection, 11)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);
