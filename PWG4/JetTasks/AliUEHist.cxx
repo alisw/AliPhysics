@@ -79,6 +79,12 @@ AliUEHist::AliUEHist(const char* reqHist) :
   trackBins[0] = etaBins;
   trackAxisTitle[0] = "#eta";
   
+  // delta eta
+  const Int_t kNDeltaEtaBins = 20;
+  Double_t deltaEtaBins[kNDeltaEtaBins+1];
+  for (Int_t i=0; i<=kNDeltaEtaBins; i++)
+    deltaEtaBins[i] = -2.0 + 0.2 * i;
+  
   // pT
   iTrackBin[1] = 39;
   Double_t pTBins[] = {0.0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 100.0};
@@ -174,6 +180,10 @@ AliUEHist::AliUEHist(const char* reqHist) :
     nTrackVars = 5;
     initRegions = 1;
   
+    iTrackBin[0] = kNDeltaEtaBins;
+    trackBins[0] = deltaEtaBins;
+    trackAxisTitle[0] = "#Delta#eta";
+  
     iTrackBin[2] = kNLeadingpTBins2;
     trackBins[2] = leadingpTBins2;
     trackAxisTitle[2] = "leading p_{T} (GeV/c)";
@@ -184,7 +194,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
     iTrackBin[4] = kNLeadingPhiBins;
     trackBins[4] = leadingPhiBins;
-    trackAxisTitle[4] = "#Delta #phi w.r.t. trigger particle";
+    trackAxisTitle[4] = "#Delta#phi";
   }
     
   for (Int_t i=0; i<initRegions; i++)
@@ -467,7 +477,7 @@ void AliUEHist::CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_
 }  
 
 //____________________________________________________________________
-TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd)
+TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t twoD)
 {
   // Extracts the UE histogram at the given step and in the given region by projection and dividing tracks by events
   //
@@ -514,6 +524,8 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
     // the efficiency to have find an event depends on leading pT and this is not corrected for because anyway per bin we calculate tracks over events
     // therefore the number density must be calculated here per leading pT bin and then summed
   
+    if (multBinEnd > multBinBegin)
+      Printf("Using multiplicity range %d --> %d", multBinBegin, multBinEnd);
     fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(3)->SetRange(multBinBegin, multBinEnd);
     fEventHist->GetGrid(step)->GetGrid()->GetAxis(1)->SetRange(multBinBegin, multBinEnd);
     
@@ -525,7 +537,11 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
     for (Int_t bin=firstBin; bin<=lastBin; bin++)
     {
       fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(2)->SetRange(bin, bin);
-      TH1D* tracksTmp = (TH1D*) fTrackHist[region]->GetGrid(step)->Project(4);
+      TH1D* tracksTmp = 0;
+      if (twoD)
+        tracksTmp = (TH1D*) fTrackHist[region]->GetGrid(step)->Project(4, 0);
+      else
+        tracksTmp = (TH1D*) fTrackHist[region]->GetGrid(step)->Project(4);
       Printf("Calculated histogram in bin %d --> %f tracks", bin, tracksTmp->Integral());
       fTrackHist[region]->GetGrid(step)->SetRangeUser(2, 0, -1);
       

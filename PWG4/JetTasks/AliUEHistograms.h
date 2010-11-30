@@ -8,7 +8,7 @@
 
 // encapsulates several AliUEHist objects for a full UE analysis plus additional control histograms
 
-#include "TObject.h"
+#include "TNamed.h"
 #include "AliUEHist.h"
 
 class AliVParticle;
@@ -19,14 +19,14 @@ class TH1F;
 class TH2F;
 class TH3F;
 
-class AliUEHistograms : public TObject
+class AliUEHistograms : public TNamed
 {
  public:
-  AliUEHistograms(const char* histograms = "123");
+  AliUEHistograms(const char* name = "AliUEHistograms", const char* histograms = "123");
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
-  void FillCorrelations(Int_t eventType, Int_t centrality, AliUEHist::CFStep step, TSeqCollection* particles);
+  void FillCorrelations(Int_t eventType, Int_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed = 0);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
   void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType);
@@ -89,7 +89,7 @@ protected:
   TH1F* fVertexContributors;    // number of contributors to the vertex
   TH1F* fCentralityDistribution; // distribution of the variable used for centrality selection
   
-  ClassDef(AliUEHistograms, 2)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 3)  // underlying event histogram container
 };
 
 #endif

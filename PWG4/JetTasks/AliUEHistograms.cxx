@@ -37,8 +37,8 @@ ClassImp(AliUEHistograms)
 
 const Int_t AliUEHistograms::fgkUEHists = 3;
 
-AliUEHistograms::AliUEHistograms(const char* histograms) : 
-  TObject(),
+AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) : 
+  TNamed(name, name),
   fNumberDensitypT(0),
   fSumpT(0),
   fNumberDensityPhi(0),
@@ -103,7 +103,7 @@ AliUEHistograms::AliUEHistograms(const char* histograms) :
 
 //_____________________________________________________________________________
 AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
-  TObject(),
+  TNamed(fName, fTitle),
   fNumberDensitypT(0),
   fSumpT(0),
   fNumberDensityPhi(0),
@@ -348,11 +348,13 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Int_t eventType, Int_t centrality, AliUEHist::CFStep step, TSeqCollection* particles)
+void AliUEHistograms::FillCorrelations(Int_t eventType, Int_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed)
 {
   // fills the fNumberDensityPhi histogram
   //
   // this function need a list of AliVParticles which contain the particles/tracks to be filled
+  //
+  // if mixed is non-0, mixed events are filled, the trigger particle is from particles, the associated from mixed
   
   // if particles is not set, just fill event statistics
   if (particles)
@@ -360,15 +362,23 @@ void AliUEHistograms::FillCorrelations(Int_t eventType, Int_t centrality, AliUEH
     for (Int_t i=0; i<particles->GetEntries(); i++)
     {
       AliVParticle* triggerParticle = (AliVParticle*) particles->At(i);
-      for (Int_t j=0; j<particles->GetEntries(); j++)
+      Int_t jMax = particles->GetEntries();
+      if (mixed)
+        jMax = mixed->GetEntries();
+        
+      for (Int_t j=0; j<jMax; j++)
       {
-        if (i == j)
+        if (!mixed && i == j)
           continue;
       
-        AliVParticle* particle = (AliVParticle*) particles->At(j);
+        AliVParticle* particle = 0;
+        if (!mixed)
+          particle = (AliVParticle*) particles->At(j);
+        else
+          particle = (AliVParticle*) mixed->At(j);
         
         Double_t vars[5];
-        vars[0] = particle->Eta();
+        vars[0] = triggerParticle->Eta() - particle->Eta();
         vars[1] = particle->Pt();
         vars[2] = triggerParticle->Pt();
         vars[3] = centrality;

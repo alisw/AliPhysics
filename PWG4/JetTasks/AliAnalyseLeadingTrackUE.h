@@ -40,9 +40,10 @@ class AliAnalyseLeadingTrackUE : public TObject {
   virtual ~AliAnalyseLeadingTrackUE();                                          //virtual destructor
 
   // Setters
-  void  SetParticleSelectionCriteria(Int_t filterbit, Bool_t onlyhadrons, Double_t etacut) { fFilterBit   = filterbit;
+  void  SetParticleSelectionCriteria(Int_t filterbit, Bool_t onlyhadrons, Double_t etacut, Double_t ptMin = 0) { fFilterBit   = filterbit;
   											     fOnlyHadrons = onlyhadrons;
-										             fTrackEtaCut = etacut;     }
+										             fTrackEtaCut = etacut;     
+										             fTrackPtMin = ptMin;}
   void  SetDebug(Int_t debug) { fDebug = debug; } 
   Bool_t         ApplyCuts(TObject* track);                       // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
   void           DefineESDCuts(Int_t filterbit);                                 // Emulate filterbit
@@ -52,7 +53,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   AliVParticle*  ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1);                     // Returns track or MC particle at position "ipart" if passes selection criteria
   void  	 QSortTracks(TObjArray &a, Int_t first, Int_t last);               // Sort by pT an array of AliVParticles 
   TObjArray*     SortRegions(const AliVParticle* leading, TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE); // Assign particles to towards, away or transverse regions
-  TObjArray*     GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1); 
+  TObjArray*     GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1, Bool_t useEtaPtCuts = kFALSE); 
   Bool_t         TriggerSelection(const TObject* obj);                                   // Select good triggers with AliPhysicsSelection class
   Bool_t         VertexSelection(const TObject* obj, Int_t ntracks, Double_t zed);       // Vertex selection: see implementation
 
@@ -61,6 +62,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   Int_t          fFilterBit;         // track selection cuts
   Bool_t         fOnlyHadrons;       // consider only charged Pions, Protons and Kaons 
   Double_t       fTrackEtaCut;       // pseudo-rapidity limit of transverse regions     
+  Double_t       fTrackPtMin;        // pt limit for selecting particles
   AliESDtrackCuts *fEsdTrackCuts;    // set of cuts when reading ESD
   AliESDtrackCuts *fEsdTrackCutsSPD;    // set of cuts when reading ESD
   AliESDtrackCuts *fEsdTrackCutsSDD;    // set of cuts when reading ESD

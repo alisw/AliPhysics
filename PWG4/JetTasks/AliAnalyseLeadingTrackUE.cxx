@@ -70,6 +70,7 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fFilterBit(16),
   fOnlyHadrons(kFALSE),
   fTrackEtaCut(0.8),
+  fTrackPtMin(0),
   fEsdTrackCuts(0x0), 
   fEsdTrackCutsSPD(0x0), 
   fEsdTrackCutsSDD(0x0) 
@@ -159,7 +160,7 @@ TObjArray*  AliAnalyseLeadingTrackUE::FindLeadingObjects(TObject *obj)
 
 
 //-------------------------------------------------------------------
-TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies)
+TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts)
 {
   // Returns an array of particles that pass the cuts, if arrayMC is given each reconstructed particle is replaced by its corresponding MC particles, depending on the parameter onlyprimaries only for primaries 
   // particleSpecies: -1 all particles are returned
@@ -172,6 +173,10 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
   for (Int_t ipart=0; ipart<nTracks; ++ipart) {
     AliVParticle* part = ParticleWithCuts( obj, ipart, onlyprimaries, particleSpecies );
     if (!part) continue;
+    
+    if (useEtaPtCuts)
+      if (TMath::Abs(part->Eta()) > fTrackEtaCut || part->Pt() < fTrackPtMin)
+        continue;
     
     if (arrayMC && arrayMC->InheritsFrom("TClonesArray") && obj->InheritsFrom("AliAODEvent")) {
       Int_t label = ((AliAODTrack*)part)->GetLabel();
@@ -347,7 +352,9 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
         part = esdEvent->GetTrack(ipart);
 	if (!part)return 0;
 	// track selection cuts
-	if (!( ApplyCuts(part)) )return 0; 
+	
+	if (!( ApplyCuts(part)) )
+	 return 0; 
 	
 	// only primary candidates (does not exist for ESD tracks??????)
 	//if ( ((AliAODTrack*)part)->IsPrimaryCandidate() )return 0;
