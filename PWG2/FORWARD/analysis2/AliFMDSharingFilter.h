@@ -92,7 +92,6 @@ public:
    * @param input     Input 
    * @param lowFlux   If this is a low-flux event 
    * @param output    Output AliESDFMD object 
-   * @param vz        Current vertex position 
    * 
    * @return True on success, false otherwise 
    */
@@ -102,6 +101,7 @@ public:
   /** 
    * Scale the histograms to the total number of events 
    * 
+   * @param dir     Where the output is 
    * @param nEvents Number of events 
    */
   void ScaleHistograms(TList* dir, Int_t nEvents);
@@ -150,16 +150,30 @@ protected:
      */
     ~RingHistos();
     /** 
-     * Initialise this object 
+     * Clear this object
      */
     void Clear(const Option_t* ="") { fNHits = 0; } 
+    /** 
+     * Increase number of hits 
+     * 
+     */
     void Incr() { fNHits++; } 
+    /** 
+     * Finish off 
+     * 
+     */
     void Finish(); 
+    /** 
+     * Make output 
+     * 
+     * @param dir where to store 
+     */
     void Output(TList* dir);
     /** 
      * Scale the histograms to the total number of events 
      * 
      * @param nEvents Number of events 
+     * @param dir     Where the output is 
      */
     void ScaleHistograms(TList* dir, Int_t nEvents);
     TH1D*     fBefore;       // Distribution of signals before filter

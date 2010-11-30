@@ -67,6 +67,7 @@ public:
   /** 
    * Scale the histograms to the total number of events 
    * 
+   * @param dir     Where the output is stored
    * @param nEvents Number of events 
    */
   void ScaleHistograms(TList* dir, Int_t nEvents);
@@ -117,10 +118,16 @@ protected:
      * Destructor 
      */
     ~RingHistos();
+    /** 
+     * Make output 
+     * 
+     * @param dir Where to put it 
+     */
     void Output(TList* dir);
     /** 
      * Scale the histograms to the total number of events 
      * 
+     * @param dir     where the output is stored
      * @param nEvents Number of events 
      */
     void ScaleHistograms(TList* dir, Int_t nEvents);

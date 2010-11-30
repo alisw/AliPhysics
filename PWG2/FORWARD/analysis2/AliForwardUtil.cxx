@@ -33,11 +33,11 @@ namespace {
   Double_t landauGaus1(Double_t* xp, Double_t* pp) 
   {
     Double_t x        = xp[0];
-    Double_t constant = pp[0];
-    Double_t delta    = pp[1];
-    Double_t xi       = pp[2];
-    Double_t sigma    = pp[3];
-    Double_t sigma_n  = pp[4];
+    Double_t constant = pp[AliForwardUtil::ELossFitter::kC];
+    Double_t delta    = pp[AliForwardUtil::ELossFitter::kDelta];
+    Double_t xi       = pp[AliForwardUtil::ELossFitter::kXi];
+    Double_t sigma    = pp[AliForwardUtil::ELossFitter::kSigma];
+    Double_t sigma_n  = pp[AliForwardUtil::ELossFitter::kSigmaN];
 
     return constant * AliForwardUtil::LandauGaus(x, delta, xi, sigma, sigma_n);
   }
@@ -48,13 +48,13 @@ namespace {
   Double_t landauGausN(Double_t* xp, Double_t* pp) 
   {
     Double_t  x        = xp[0];
-    Double_t  constant = pp[0];
-    Double_t  delta    = pp[1];
-    Double_t  xi       = pp[2];
-    Double_t  sigma    = pp[3];
-    Double_t  sigma_n  = pp[4];
-    Int_t     n        = Int_t(pp[5]);
-    Double_t* a        = &(pp[6]);
+    Double_t constant  = pp[AliForwardUtil::ELossFitter::kC];
+    Double_t delta     = pp[AliForwardUtil::ELossFitter::kDelta];
+    Double_t xi        = pp[AliForwardUtil::ELossFitter::kXi];
+    Double_t sigma     = pp[AliForwardUtil::ELossFitter::kSigma];
+    Double_t sigma_n   = pp[AliForwardUtil::ELossFitter::kSigmaN];
+    Int_t     n        = Int_t(pp[AliForwardUtil::ELossFitter::kN]);
+    Double_t* a        = &(pp[AliForwardUtil::ELossFitter::kA]);
 
     return constant * AliForwardUtil::NLandauGaus(x, delta, xi, sigma, sigma_n,
 						  n, a);
@@ -75,15 +75,15 @@ AliForwardUtil::LandauGaus(Double_t x, Double_t delta, Double_t xi,
 {
   Double_t deltap = delta - xi * mpshift;
   Double_t sigma2 = sigma_n*sigma_n + sigma*sigma;
-  Double_t sigma1 = TMath::Sqrt(sigma2);
+  Double_t sigma1 = sigma_n == 0 ? sigma : TMath::Sqrt(sigma2);
   Double_t xlow   = x - fgConvolutionNSigma * sigma1;
-  Double_t xhigh  = x - fgConvolutionNSigma * sigma1;
+  Double_t xhigh  = x + fgConvolutionNSigma * sigma1;
   Double_t step   = (xhigh - xlow) / fgConvolutionSteps;
   Double_t sum    = 0;
   
   for (Int_t i = 0; i <= fgConvolutionSteps/2; i++) { 
-    Double_t x1 = xlow + (i - .5) * step;
-    Double_t x2 = xlow - (i - .5) * step;
+    Double_t x1 = xlow  + (i - .5) * step;
+    Double_t x2 = xhigh - (i - .5) * step;
     
     sum += TMath::Landau(x1, deltap, xi, kTRUE) * TMath::Gaus(x, x1, sigma1);
     sum += TMath::Landau(x2, deltap, xi, kTRUE) * TMath::Gaus(x, x2, sigma1);
@@ -101,8 +101,8 @@ AliForwardUtil::NLandauGaus(Double_t x, Double_t delta, Double_t xi,
   for (Int_t i = 2; i <= n; i++) { 
     Double_t delta_i =  i * (delta + xi * TMath::Log(i));
     Double_t xi_i    =  i * xi;
-    Double_t sigma_i =  TMath::Sqrt(Double_t(n)*sigma);
-    Double_t a_i     =  a[i];
+    Double_t sigma_i =  TMath::Sqrt(Double_t(n))*sigma;
+    Double_t a_i     =  a[i-2];
     result           += a_i * AliForwardUtil::LandauGaus(x, delta_i, xi_i, 
 							 sigma_i, sigma_n);
   }
@@ -142,10 +142,6 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   // Find the fit range 
   dist->GetXaxis()->SetRangeUser(fLowCut, fMaxRange);
   
-  // Normalize peak to 1 
-  Double_t max = dist->GetMaximum(); 
-  dist->Scale(1/max);
-  
   // Get the bin with maximum 
   Int_t    maxBin = dist->GetMaximumBin();
   Double_t maxE   = dist->GetBinLowEdge(maxBin);
@@ -160,20 +156,21 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   dist->GetXaxis()->SetRangeUser(0, fMaxRange);
   
   // Define the function to fit 
-  TF1*          landau1 = new TF1("landau1", landauGaus1, minE, maxEE, 5);
+  TF1*          landau1 = new TF1("landau1", landauGaus1, minE,maxEE,kSigmaN+1);
 
   // Set initial guesses, parameter names, and limits  
-  landau1->SetParameters(5,.5,.07,1,sigman);
+  landau1->SetParameters(1,0.5,0.07,0.1,sigman);
   landau1->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}");
-  landau1->SetParLimits(1, minE, fMaxRange);
-  landau1->SetParLimits(2, 0.00, fMaxRange);
-  landau1->SetParLimits(3, 0.01, fMaxRange);
-  if (sigman <= 0)  landau1->FixParameter(4, 0);
-  else              landau1->SetParLimits(4, 0, fMaxRange);
+  landau1->SetNpx(500);
+  landau1->SetParLimits(kDelta, minE, fMaxRange);
+  landau1->SetParLimits(kXi,    0.00, fMaxRange);
+  landau1->SetParLimits(kSigma, 0.01, 0.1);
+  if (sigman <= 0)  landau1->FixParameter(kSigmaN, 0);
+  else              landau1->SetParLimits(kSigmaN, 0, fMaxRange);
 
   // Do the fit, getting the result object 
   TFitResultPtr r = dist->Fit(landau1, "RNQS", "", minE, maxEE);
-
+  landau1->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*r), 0);
   fFunctions.AddAtAndExpand(landau1, 0);
 
@@ -197,40 +194,45 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
   }
 
   // Get some parameters from seed fit 
-  Double_t delta1  = r->Parameter(1);
-  Double_t xi1     = r->Parameter(2);
+  Double_t delta1  = r->Parameter(kDelta);
+  Double_t xi1     = r->Parameter(kXi);
   Double_t maxEi   = n * (delta1 + xi1 * TMath::Log(n)) + 2 * n * xi1;
   Double_t minE    = f->GetXmin();
 
   // Make the fit function 
-  TF1* landaun     = new TF1(Form("landau%d", n), &landauGausN,minE,maxEi,5+n);
-  landaun->SetLineStyle((n % 10)+1);
-  landaun->SetLineWidth(2);
+  TF1* landaun     = new TF1(Form("landau%d", n), &landauGausN,minE,maxEi,kN+n);
+  landaun->SetLineStyle(((n-2) % 10)+2); // start at dashed
+  landaun->SetLineColor(((n-2) % 10)+2); // start at red
+  landaun->SetLineWidth(1);
+  landaun->SetNpx(500);
   landaun->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}", "N");
 
   // Set the initial parameters from the seed fit 
-  landaun->SetParameter(0, r->Parameter(0)); // Constant
-  landaun->SetParameter(1, r->Parameter(1)); // Delta 
-  landaun->SetParameter(2, r->Parameter(2)); // xi
-  landaun->SetParameter(3, r->Parameter(3)); // sigma
-  landaun->SetParameter(4, r->Parameter(4)); // sigma_n
-  landaun->SetParLimits(1, minE, fMaxRange); // Delta
-  landaun->SetParLimits(2, 0.00, fMaxRange); // xi
-  landaun->SetParLimits(3, 0.01, fMaxRange); // sigma
-  landaun->SetParLimits(4, 0.00, fMaxRange); // sigma_n
+  landaun->SetParameter(kC,      r->Parameter(kC));      // Constant
+  landaun->SetParameter(kDelta,  r->Parameter(kDelta));  // Delta 
+  landaun->SetParameter(kXi,     r->Parameter(kXi));     // xi
+  landaun->SetParameter(kSigma,  r->Parameter(kSigma));  // sigma
+  landaun->SetParameter(kSigmaN, r->Parameter(kSigmaN)); // sigma_n
+  landaun->SetParLimits(kDelta,  minE, fMaxRange);       // Delta
+  landaun->SetParLimits(kXi,     0.00, fMaxRange);       // xi
+  landaun->SetParLimits(kSigma,  0.01, 1);            // sigma
+  // Check if we're using the noise sigma 
+  if (sigman <= 0)  landaun->FixParameter(kSigmaN, 0);
+  else              landaun->SetParLimits(kSigmaN, 0, fMaxRange);
   // Fix the number parameter 
-  landaun->FixParameter(5, n);               // N
+  landaun->FixParameter(kN, n);               // N
 
   // Set the range and name of the scale parameters 
   for (UShort_t i = 2; i <= n; i++) {// Take parameters from last fit 
-    landaun->SetParameter(5+i-2, n == 2 ? 0.05 : 0);
-    landaun->SetParLimits(5+i-2, 0,1);
-    landaun->SetParName(5+i-2, Form("a_{%d}", i));
+    landaun->SetParameter(kA+i-2, n == 2 ? 0.05 : 0.000001);
+    landaun->SetParLimits(kA+i-2, 0,1);
+    landaun->SetParName(kA+i-2, Form("a_{%d}", i));
   }
 
   // Do the fit 
   TFitResultPtr tr = dist->Fit(landaun, "RSQN", "", minE, maxEi);
   
+  landaun->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*tr), n-1);
   fFunctions.AddAtAndExpand(landaun, n-1);
   

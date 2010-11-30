@@ -104,6 +104,7 @@ public:
    * @param lowFlux   On return, true if the event is considered a low-flux 
    *                  event (according to the setting of fLowFluxCut) 
    * @param ivz       On return, the found vertex bin (zero-based)
+   * @param vz        On return, the z position of the interaction
    * 
    * @return 0 (or kOk) on success, otherwise a bit mask of error codes 
    */

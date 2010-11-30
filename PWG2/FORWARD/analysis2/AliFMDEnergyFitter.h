@@ -30,6 +30,16 @@ class TArrayD;
 class AliFMDEnergyFitter : public TNamed
 {
 public: 
+    enum { 
+      kC	= AliForwardUtil::ELossFitter::kC,
+      kDelta	= AliForwardUtil::ELossFitter::kDelta, 
+      kXi	= AliForwardUtil::ELossFitter::kXi, 
+      kSigma	= AliForwardUtil::ELossFitter::kSigma, 
+      kSigmaN	= AliForwardUtil::ELossFitter::kSigmaN,
+      kN	= AliForwardUtil::ELossFitter::kN, 
+      kA	= AliForwardUtil::ELossFitter::kA
+    };
+
   /** 
    * Destructor
    */
@@ -100,7 +110,7 @@ public:
    * 
    * @param n 
    */
-  void SetBinsToSubtract(UShort_t n=4) { fBinsToSubtract = n; }
+  void SetFitRangeBinWidth(UShort_t n=4) { fFitRangeBinWidth = n; }
   /** 
    * Whether or not to enable fitting of the final merged result.  
    * Note, fitting takes quite a while and one should be careful not to do 
@@ -108,21 +118,18 @@ public:
    * 
    * @param doFit Whether to do the fits or not 
    */
-  void DoFits(Bool_t doFit=kTRUE) { fDoFits = doFit; }
+  void SetDoFits(Bool_t doFit=kTRUE) { fDoFits = doFit; }
   /** 
-   * Whether or not to enable fitting of the final merged result.  
-   * Note, fitting takes quite a while and one should be careful not to do 
-   * this needlessly 
+   * Set how many particles we will try to fit at most to the data
    * 
-   * @param doFit Whether to do the fits or not 
+   * @param n Max number of particle to try to fit 
    */
-  void SetNLandau(UShort_t n) { fNLandau = (n < 1 ? 1 : (n > 5 ? 5 : n)); }
+  void SetNParticles(UShort_t n) { fNParticles = (n < 1 ? 1 : (n > 5 ? 5 : n)); }
   /** 
-   * Whether or not to enable fitting of the final merged result.  
-   * Note, fitting takes quite a while and one should be careful not to do 
-   * this needlessly 
+   * Set the minimum number of entries each histogram must have 
+   * before we try to fit our response function to it
    * 
-   * @param doFit Whether to do the fits or not 
+   * @param n Minimum number of entries
    */
   void SetMinEntries(UShort_t n) { fMinEntries = (n < 1 ? 1 : n); }
   /**
@@ -137,6 +144,8 @@ public:
    * @param x Number of energy loss bins 
    */
   void SetNEbins(Int_t x) { fNEbins = x; }
+  void SetMaxRelativeParameterError(Double_t e) { fMaxRelParError = e; }
+  void SetMaxChi2PerNDF(Double_t c) { fMaxChi2PerNDF = c; }
   /**
    * Set wheter to use increasing bin sizes 
    *
@@ -156,7 +165,7 @@ public:
   /** 
    * Scale the histograms to the total number of events 
    * 
-   * @param nEvents Number of events 
+   * @param dir Where the histograms are  
    */
   void Fit(TList* dir);
   
@@ -218,7 +227,10 @@ protected:
     /** 
      * Initialise object 
      * 
-     * @param eAxis 
+     * @param eAxis      Eta axis
+     * @param maxDE      Max energy loss to consider 
+     * @param nDEbins    Number of bins 
+     * @param useIncrBin Whether to use an increasing bin size 
      */
     void Init(const TAxis& eAxis, 
 	      Double_t     maxDE=10, 
@@ -233,45 +245,77 @@ protected:
      */
     void Fill(Bool_t empty, Int_t ieta, Double_t mult);
     /** 
-     * Scale the histograms to the total number of events 
+     * Fit each histogram to up to @a nParticles particle responses.
      * 
-     * @param dir     Output list 
-     * @param eta     Eta axis 
-     * @param lowCut  Lower cut 
-     * @param nLandau Max number of convolved landaus to fit
+     * @param dir         Output list 
+     * @param eta         Eta axis 
+     * @param lowCut      Lower cut 
+     * @param nParticles  Max number of convolved landaus to fit
+     * @param minEntries  Minimum number of entries 
+     * @param minusBins   Number of bins from peak to subtract to 
+     *                    get the fit range 
+     * @param relErrorCut Cut applied to relative error of parameter. 
+     *                    Note, for multi-particle weights, the cut 
+     *                    is loosend by a factor of 2 
+     * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
+     *                    the reduced @f$\chi^2@f$ 
      */
     TObjArray* Fit(TList* dir, 
 		   const TAxis& eta,
 		   Double_t     lowCut, 
-		   UShort_t     nLandau,
+		   UShort_t     nParticles,
 		   UShort_t     minEntries,
-		   UShort_t     minusBins) const;
+		   UShort_t     minusBins,
+		   Double_t     relErrorCut, 
+		   Double_t     chi2nuCut) const;
     /** 
-     * Fit a signal histogram 
+     * Fit a signal histogram.  First, the bin @f% b_{min}@f$ with
+     * maximum bin content in the range @f$ [E_{min},\infty]@f$ is
+     * found.  Then the fit range is set to the bin range 
+     * @f$ [b_{min}-\Delta b,b_{min}+2\Delta b]@f$, and a 1 
+     * particle signal is fitted to that.  The parameters of that fit 
+     * is then used as seeds for a fit of the @f$ N@f$ particle response 
+     * to the data in the range 
+     * @f$ [b_{min}-\Delta b,N(\Delta_1+\xi_1\log(N))+2N\xi@f$
      * 
-     * @param dist     Historgam to fit 
-     * @param lowCut   Lower cut on signal 
-     * @param nLandau  Max number of convolved landaus to fit
+     * @param dist        Histogram to fit 
+     * @param lowCut      Lower cut @f$ E_{min}@f$ on signal 
+     * @param nParticles  Max number @f$ N@f$ of convolved landaus to fit
+     * @param minusBins   Number of bins @f$ \Delta b@f$ from peak to 
+     *                    subtract to get the fit range 
+     * @param relErrorCut Cut applied to relative error of parameter. 
+     *                    Note, for multi-particle weights, the cut 
+     *                    is loosend by a factor of 2 
+     * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
+     *                    the reduced @f$\chi^2@f$ 
      * 
      * @return The best fit function 
      */
     TF1* FitHist(TH1*     dist,
 		 Double_t lowCut, 
-		 UShort_t nLandau,
-		 UShort_t minusBins) const;
+		 UShort_t nParticles,
+		 UShort_t minusBins,
+		 Double_t relErrorCut, 
+		 Double_t chi2nuCut) const;
     /** 
      * Check the result of the fit. Returns true if 
-     * - the reduced  @f$ \chi^2/\nu@f$ is less than 5
-     * - and that the relative error @f$ \Delta p_i/p_i@f$ on each
-     *   parameter is less than 20 percent.
-     * - If this is a fit to N particles if the N particle weight is 
-     *   larger than @$f 10^{-7}@f$ 
+     * - @f$ \chi^2/\nu < \max{\chi^2/\nu}@f$
+     * - @f$ \Delta p_i/p_i < \delta_e@f$ for all parameters.  Note, 
+     *   for multi-particle fits, this requirement is relaxed by a 
+     *   factor of 2
+     * - @f$ a_{n} > 10^{-7}@f$ when fitting to an @f$ n@f$ 
+     *   particle response 
      * 
-     * @param r Result to check
+     * @param r           Result to check
+     * @param relErrorCut Cut @f$ \delta_e@f$ applied to relative error 
+     *                    of parameter.  
+     * @param chi2nuCut   Cut @f$ \max{\chi^2/\nu}@f$ 
      * 
      * @return true if fit is good. 
      */
-    Bool_t CheckResult(TFitResult* r) const;
+    Bool_t CheckResult(TFitResult* r,
+		       Double_t    relErrorCut, 
+		       Double_t    chi2nuCut) const;
     /** 
      * Make an axis with increasing bins 
      * 
@@ -340,14 +384,16 @@ protected:
 
   TList    fRingHistos;    // List of histogram containers
   Double_t fLowCut;        // Low cut on energy
-  UShort_t fNLandau;       // Number of landaus to try to fit 
+  UShort_t fNParticles;    // Number of landaus to try to fit 
   UShort_t fMinEntries;    // Minimum number of entries
-  UShort_t fBinsToSubtract;// Number of bins to subtract from found max
+  UShort_t fFitRangeBinWidth;// Number of bins to subtract from found max
   Bool_t   fDoFits;        // Wheter to actually do the fits 
   TAxis    fEtaAxis;       // Eta axis 
   Double_t fMaxE;          // Maximum energy loss to consider 
   Int_t    fNEbins;        // Number of energy loss bins 
   Bool_t   fUseIncreasingBins; // Wheter to use increasing bin sizes 
+  Double_t fMaxRelParError;// Relative error cut
+  Double_t fMaxChi2PerNDF; // chi^2/nu cit
   Int_t    fDebug;         // Debug level 
 
   ClassDef(AliFMDEnergyFitter,1); //

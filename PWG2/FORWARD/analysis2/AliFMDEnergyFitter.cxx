@@ -19,111 +19,22 @@ ClassImp(AliFMDEnergyFitter)
 ; // This is for Emacs
 #endif 
 
-#define N_A(N)  (4+N-2)
-#define N2_A(N) (4+(N-2)*3)
-#define N2_D(N) (4+(N-2)*3+1)
-#define N2_X(N) (4+(N-2)*3+2)
-
-//____________________________________________________________________
-namespace {
-  Double_t 
-  NLandau(Double_t* xp, Double_t* pp) 
-  {
-    Double_t  e        = xp[0];
-    Double_t  constant = pp[0];
-    Double_t  mpv      = pp[1];
-    Double_t  fwhm     = pp[2];
-    Int_t     n        = Int_t(pp[3]);
-    Double_t  result   = 0;
-    for (Int_t i = 1; i <= n; i++) {
-      Double_t mpvi  =  i*(mpv+fwhm*TMath::Log(i));
-      Double_t fwhmi =  i*fwhm;
-      Double_t ai    =  (i == 1 ? 1 : pp[N_A(i)]);
-      result         += ai * TMath::Landau(e,mpvi,fwhmi,kTRUE);
-    }
-    result *= constant;
-    return result;
-  }
-
-  Double_t 
-  NLandau2(Double_t* xp, Double_t* pp) 
-  {
-    Double_t  e        = xp[0];
-    Double_t  constant = pp[0];
-    Double_t  mpv      = pp[1];
-    Double_t  fwhm     = pp[2];
-    Int_t     n        = Int_t(pp[3]);
-    Double_t  result   = TMath::Landau(e,mpv,fwhm,kTRUE);
-    for (Int_t i = 2; i <= n; i++) {
-      Double_t ai    =  pp[N2_A(i)];
-      Double_t mpvi  =  pp[N2_D(i)];
-      Double_t fwhmi =  pp[N2_X(i)];
-      result         += ai * TMath::Landau(e,mpvi,fwhmi,kTRUE);
-    }
-    result *= constant;
-    return result;
-  }
-
-  Double_t 
-  TripleLandau(Double_t *x, Double_t *par) 
-  {
-    Double_t energy   = x[0];
-    Double_t constant = par[0];
-    Double_t mpv      = par[1];
-    Double_t fwhm     = par[2];
-    Double_t alpha    = par[3];
-    Double_t beta     = par[4];
-    Double_t mpv2     = 2*mpv+2*fwhm*TMath::Log(2);
-    Double_t mpv3     = 3*mpv+3*fwhm*TMath::Log(3);
-
-    Double_t f = constant * (TMath::Landau(energy,mpv,fwhm,kTRUE)+
-			     alpha * TMath::Landau(energy,mpv2,2*fwhm,kTRUE)+
-			     beta  * TMath::Landau(energy,mpv3,3*fwhm,kTRUE));
-  
-    return f;
-  }
-  Double_t 
-  DoubleLandau(Double_t *x, Double_t *par) 
-  {
-    Double_t energy   = x[0];
-    Double_t constant = par[0];
-    Double_t mpv      = par[1];
-    Double_t fwhm     = par[2];
-    Double_t alpha    = par[3];
-    Double_t mpv2     = 2*mpv+2*fwhm*TMath::Log(2);
-    
-    Double_t f = constant * (TMath::Landau(energy,mpv,fwhm,kTRUE)+
-			     alpha * TMath::Landau(energy,mpv2,2*fwhm,kTRUE));
-  
-    return f;
-  }
-  Double_t 
-  SingleLandau(Double_t *x, Double_t *par) 
-  {
-    Double_t energy   = x[0];
-    Double_t constant = par[0];
-    Double_t mpv      = par[1];
-    Double_t fwhm     = par[2];
-    
-    Double_t f = constant * TMath::Landau(energy,mpv,fwhm,kTRUE);
-  
-    return f;
-  }
-}
 
 //____________________________________________________________________
 AliFMDEnergyFitter::AliFMDEnergyFitter()
   : TNamed(), 
     fRingHistos(),
     fLowCut(0.3),
-    fNLandau(3),
+    fNParticles(3),
     fMinEntries(100),
-    fBinsToSubtract(4),
+    fFitRangeBinWidth(4),
     fDoFits(false),
     fEtaAxis(),
     fMaxE(10),
     fNEbins(300), 
     fUseIncreasingBins(true),
+    fMaxRelParError(.25),
+    fMaxChi2PerNDF(20), 
     fDebug(0)
 {}
 
@@ -132,14 +43,16 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
   : TNamed("fmdEnergyFitter", title), 
     fRingHistos(), 
     fLowCut(0.3),
-    fNLandau(3),
+    fNParticles(3),
     fMinEntries(100),
-    fBinsToSubtract(4),
+    fFitRangeBinWidth(4),
     fDoFits(false),
     fEtaAxis(0,0,0),
     fMaxE(10),
     fNEbins(300), 
     fUseIncreasingBins(true),
+    fMaxRelParError(.25),
+    fMaxChi2PerNDF(20), 
     fDebug(3)
 {
   fEtaAxis.SetName("etaAxis");
@@ -156,14 +69,16 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const AliFMDEnergyFitter& o)
   : TNamed(o), 
     fRingHistos(), 
     fLowCut(o.fLowCut),
-    fNLandau(o.fNLandau),
+    fNParticles(o.fNParticles),
     fMinEntries(o.fMinEntries),
-    fBinsToSubtract(o.fBinsToSubtract),
+    fFitRangeBinWidth(o.fFitRangeBinWidth),
     fDoFits(o.fDoFits),
     fEtaAxis(o.fEtaAxis),
     fMaxE(o.fMaxE),
     fNEbins(o.fNEbins), 
     fUseIncreasingBins(o.fUseIncreasingBins),
+    fMaxRelParError(o.fMaxRelParError),
+    fMaxChi2PerNDF(o.fMaxChi2PerNDF), 
     fDebug(o.fDebug)
 {
   TIter    next(&o.fRingHistos);
@@ -184,9 +99,9 @@ AliFMDEnergyFitter::operator=(const AliFMDEnergyFitter& o)
   TNamed::operator=(o);
 
   fLowCut        = o.fLowCut;
-  fNLandau       = o.fNLandau;
+  fNParticles       = o.fNParticles;
   fMinEntries    = o.fMinEntries;
-  fBinsToSubtract= o.fBinsToSubtract;
+  fFitRangeBinWidth= o.fFitRangeBinWidth;
   fDoFits        = o.fDoFits;
   fEtaAxis.Set(o.fEtaAxis.GetNbins(),o.fEtaAxis.GetXmin(),o.fEtaAxis.GetXmax());
   fDebug         = o.fDebug;
@@ -288,25 +203,27 @@ AliFMDEnergyFitter::Fit(TList* dir)
   // +1          for chi^2
   // +3          for 1 landau 
   // +1          for N 
-  // +fNLandau-1 for weights 
-  Int_t nStack = 1+3+1+fNLandau-1;
+  // +fNParticles-1 for weights 
+  Int_t nStack = kN+fNParticles;
   THStack* stack[nStack]; 
-  stack[0] = new THStack("chi2", "#chi^{2}/#nu");
-  stack[1] = new THStack("c",    "constant");
-  stack[2] = new THStack("mpv",  "#Delta_{p}");
-  stack[3] = new THStack("w",    "w");
-  stack[4] = new THStack("n",    "# of Landaus");
-  for (Int_t i = 2; i <= fNLandau; i++) 
-    stack[i-1+4] = new THStack(Form("a%d", i), 
-			       Form("Weight of %d signal", i));
+  stack[0]         = new THStack("chi2",   "#chi^{2}/#nu");
+  stack[kC     +1] = new THStack("c",      "Constant");
+  stack[kDelta +1] = new THStack("delta",  "#Delta_{p}");
+  stack[kXi    +1] = new THStack("xi",     "#xi");
+  stack[kSigma +1] = new THStack("sigma",  "#sigma");
+  stack[kSigmaN+1] = new THStack("sigman", "#sigma_{n}");
+  stack[kN     +1] = new THStack("n",      "# Particles");
+  for (Int_t i = 2; i <= fNParticles; i++) 
+    stack[kN+i] = new THStack(Form("a%d", i), Form("a_{%d}", i));
   for (Int_t i = 0; i < nStack; i++) 
     d->Add(stack[i]);
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
-    TObjArray* l = o->Fit(d, fEtaAxis, fLowCut, fNLandau,
-			  fMinEntries, fBinsToSubtract);
+    TObjArray* l = o->Fit(d, fEtaAxis, fLowCut, fNParticles,
+			  fMinEntries, fFitRangeBinWidth,
+			  fMaxRelParError, fMaxChi2PerNDF);
     if (!l) continue;
     for (Int_t i = 0; i < l->GetEntriesFast(); i++) { 
       stack[i % nStack]->Add(static_cast<TH1*>(l->At(i))); 
@@ -458,9 +375,12 @@ AliFMDEnergyFitter::RingHistos::MakeIncreasingAxis(Int_t n, Double_t min,
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitter::RingHistos::Make(Int_t ieta, Double_t emin, Double_t emax,
-				     Double_t deMax, Int_t nDeBins, 
-				     Bool_t incr)
+AliFMDEnergyFitter::RingHistos::Make(Int_t    ieta, 
+				     Double_t emin, 
+				     Double_t emax,
+				     Double_t deMax, 
+				     Int_t    nDeBins, 
+				     Bool_t   incr)
 {
   TH1D* h = 0;
   TString name  = Form("%s_etabin%03d", fName.Data(), ieta);
@@ -484,10 +404,9 @@ AliFMDEnergyFitter::RingHistos::Make(Int_t ieta, Double_t emin, Double_t emax,
   fEtaEDists.AddAt(h, ieta-1);
 }
 //____________________________________________________________________
-TH1D*
-AliFMDEnergyFitter::RingHistos::MakePar(const char* name, 
-					const char* title, 
-					const TAxis& eta) const
+TH1D* AliFMDEnergyFitter::RingHistos::MakePar(const char* name, 
+					      const char* title, 
+					      const TAxis& eta) const
 {
   TH1D* h = new TH1D(Form("%s_%s", fName.Data(), name), 
 		     Form("%s for %s", title, fName.Data()), 
@@ -558,13 +477,18 @@ AliFMDEnergyFitter::RingHistos::Init(const TAxis& eAxis,
 //____________________________________________________________________
 TObjArray*
 AliFMDEnergyFitter::RingHistos::Fit(TList* dir, const TAxis& eta,
-				    Double_t lowCut, UShort_t nLandau,
+				    Double_t lowCut, 
+				    UShort_t nParticles,
 				    UShort_t minEntries,
-				    UShort_t minusBins) const
+				    UShort_t minusBins, 
+				    Double_t relErrorCut, 
+				    Double_t chi2nuCut) const
 {
+  // Get our ring list from the output container 
   TList* l = GetOutputList(dir);
   if (!l) return 0; 
 
+  // Get the energy distributions from the output container 
   TList* dists = static_cast<TList*>(l->FindObject("EDists"));
   if (!dists) { 
     AliWarning(Form("Didn't find %s_EtaEDists in %s", 
@@ -573,24 +497,28 @@ AliFMDEnergyFitter::RingHistos::Fit(TList* dir, const TAxis& eta,
     return 0;
   }
 
-  TObjArray* pars  = new TObjArray(3+nLandau+1);
+  // Container of the fit results histograms 
+  TObjArray* pars  = new TObjArray(3+nParticles+1);
   pars->SetName("FitResults");
   l->Add(pars);
 
-  TH1* hChi2 = 0;
-  TH1* hC    = 0;
-  TH1* hMpv  = 0;
-  TH1* hW    = 0;
-  TH1* hS    = 0;
-  TH1* hN    = 0;
-  TH1* hA[nLandau-1];
-  pars->Add(hChi2 = MakePar("chi2", "#chi^{2}/#nu", eta));
-  pars->Add(hC    = MakePar("c",    "Constant", eta));
-  pars->Add(hMpv  = MakePar("mpv",  "#Delta_{p}", eta));
-  pars->Add(hW    = MakePar("w",    "#xi", eta));
-  pars->Add(hS    = MakePar("s",    "#sigma", eta));
-  pars->Add(hN    = MakePar("n",    "N", eta));
-  for (UShort_t i = 1; i < nLandau; i++) 
+  // Result objects stored in separate list on the output 
+  TH1* hChi2   = 0;
+  TH1* hC      = 0;
+  TH1* hDelta  = 0;
+  TH1* hXi     = 0;
+  TH1* hSigma  = 0;
+  TH1* hSigmaN = 0;
+  TH1* hN      = 0;
+  TH1* hA[nParticles-1];
+  pars->Add(hChi2   = MakePar("chi2",   "#chi^{2}/#nu", eta));
+  pars->Add(hC      = MakePar("c",      "Constant",     eta));
+  pars->Add(hDelta  = MakePar("delta",  "#Delta_{p}",   eta));
+  pars->Add(hXi     = MakePar("xi",     "#xi",          eta));
+  pars->Add(hSigma  = MakePar("sigma",  "#sigma",       eta));
+  pars->Add(hSigmaN = MakePar("sigman", "#sigma_{n}",   eta));
+  pars->Add(hN      = MakePar("n",      "N", eta));
+  for (UShort_t i = 1; i < nParticles; i++) 
     pars->Add(hA[i-1] = MakePar(Form("a%d",i+1), Form("a_{%d}",i+1), eta));
 
   
@@ -599,57 +527,97 @@ AliFMDEnergyFitter::RingHistos::Fit(TList* dir, const TAxis& eta,
   Int_t high   = 0;
   for (Int_t i = 0; i < nDists; i++) { 
     TH1D* dist = static_cast<TH1D*>(dists->At(i));
-    if (!dist || dist->GetEntries() <= minEntries) continue;
+    // Ignore empty histograms altoghether 
+    if (!dist || dist->GetEntries() <= 0) continue; 
 
-
-    TF1* res = FitHist(dist,lowCut,nLandau,minusBins);
-    if (!res) continue;
+    // Scale to the bin-width
+    dist->Scale(1., "width");
     
+    // Normalize peak to 1 
+    Double_t max = dist->GetMaximum(); 
+    dist->Scale(1/max);
+    
+    // Check that we have enough entries 
+    if (dist->GetEntries() <= minEntries) continue;
+
+    // Now fit 
+    TF1* res = FitHist(dist,lowCut,nParticles,minusBins,
+		       relErrorCut,chi2nuCut);
+    if (!res) continue;
+    // dist->GetListOfFunctions()->Add(res);
+    
+    // Store eta limits 
     low   = TMath::Min(low,i+1);
     high  = TMath::Max(high,i+1);
 
+    // Get the reduced chi square
     Double_t chi2 = res->GetChisquare();
     Int_t    ndf  = res->GetNDF();
-    hChi2->SetBinContent(i+1, ndf > 0 ? chi2 / ndf : 0);
-    hC  ->SetBinContent(i+1, res->GetParameter(0));   
-    hMpv->SetBinContent(i+1, res->GetParameter(1)); 
-    hW  ->SetBinContent(i+1, res->GetParameter(2));   
-    hN  ->SetBinContent(i+1, res->GetParameter(3));   
+    
+    // Store results of best fit in output histograms 
+    res->SetLineWidth(4);
+    hChi2   ->SetBinContent(i+1, ndf > 0 ? chi2 / ndf : 0);
+    hC      ->SetBinContent(i+1, res->GetParameter(kC));   
+    hDelta  ->SetBinContent(i+1, res->GetParameter(kDelta)); 
+    hXi     ->SetBinContent(i+1, res->GetParameter(kXi));   
+    hSigma  ->SetBinContent(i+1, res->GetParameter(kSigma));   
+    hSigmaN ->SetBinContent(i+1, res->GetParameter(kSigmaN));   
+    hN      ->SetBinContent(i+1, res->GetParameter(kN));   
 
-    hC  ->SetBinError(i+1, res->GetParError(1));
-    hMpv->SetBinError(i+1, res->GetParError(2));
-    hW  ->SetBinError(i+1, res->GetParError(2));
-    // hN  ->SetBinError(i, res->GetParError(3));
+    hC     ->SetBinError(i+1, res->GetParError(kC));
+    hDelta ->SetBinError(i+1, res->GetParError(kDelta));
+    hXi    ->SetBinError(i+1, res->GetParError(kXi));
+    hSigma ->SetBinError(i+1, res->GetParError(kSigma));
+    hSigmaN->SetBinError(i+1, res->GetParError(kSigmaN));
+    hN     ->SetBinError(i+1, res->GetParError(kN));
 
-    for (UShort_t j = 0; j < nLandau-1; j++) {
-      hA[j]->SetBinContent(i+1, res->GetParameter(4+j));
-      hA[j]->SetBinError(i+1, res->GetParError(4+j));
+    for (UShort_t j = 0; j < nParticles-1; j++) {
+      hA[j]->SetBinContent(i+1, res->GetParameter(kA+j));
+      hA[j]->SetBinError(i+1, res->GetParError(kA+j));
     }
   }
 
+  // Fit the full-ring histogram 
   TH1* total = GetOutputHist(l, Form("%s_edist", fName.Data()));
   if (total && total->GetEntries() >= minEntries) { 
-    TF1* res = FitHist(total,lowCut,nLandau,minusBins);
+    TF1* res = FitHist(total,lowCut,nParticles,minusBins,
+		       relErrorCut,chi2nuCut);
     if (res) { 
+      // Make histograms for the result of this fit 
       Double_t chi2 = res->GetChisquare();
       Int_t    ndf  = res->GetNDF();
-      pars->Add(MakeTotal("t_chi2", "#chi^{2}/#nu", eta, low, high,
+      pars->Add(MakeTotal("t_chi2",   "#chi^{2}/#nu", eta, low, high,
 			  ndf > 0 ? chi2/ndf : 0, 0));
-      pars->Add(MakeTotal("t_c",    "Constant",     eta, low, high,
-			  res->GetParameter(0),res->GetParError(0)));
-      pars->Add(MakeTotal("t_mpv",  "#Delta_{p}",   eta, low, high,
-			  res->GetParameter(1),res->GetParError(1)));
-      pars->Add(MakeTotal("t_w",    "#xi",          eta, low, high,
-			  res->GetParameter(2),res->GetParError(2)));
-      pars->Add(MakeTotal("t_n",    "N",            eta, low, high,
-			  res->GetParameter(3),0));
-      for (UShort_t j = 1; j < nLandau; j++) 
-	pars->Add(MakeTotal(Form("a%d_t",j+1), 
-			    Form("a_{%d}",j+1), eta, low, high,
-			    res->GetParameter(3+j), res->GetParError(3+j)));
+      pars->Add(MakeTotal("t_c",      "Constant",     eta, low, high,
+			  res->GetParameter(kC),
+			  res->GetParError(kC)));
+      pars->Add(MakeTotal("t_delta",  "#Delta_{p}",   eta, low, high,
+			  res->GetParameter(kDelta),
+			  res->GetParError(kDelta)));
+      pars->Add(MakeTotal("t_xi",     "#xi",          eta, low, high,
+			  res->GetParameter(kXi),
+			  res->GetParError(kXi)));
+      pars->Add(MakeTotal("t_sigma",  "#sigma",       eta, low, high,
+			  res->GetParameter(kSigma),
+			  res->GetParError(kSigma)));
+      pars->Add(MakeTotal("t_sigman", "#sigma_{n}",   eta, low, high,
+			  res->GetParameter(kSigmaN),
+			  res->GetParError(kSigmaN)));
+      pars->Add(MakeTotal("t_n",    "N",              eta, low, high,
+			  res->GetParameter(kN),0));
+      for (UShort_t j = 0; j < nParticles-1; j++) 
+	pars->Add(MakeTotal(Form("t_a%d",j+2), 
+			    Form("a_{%d}",j+2), eta, low, high,
+			    res->GetParameter(kA+j), 
+			    res->GetParError(kA+j)));
     }
   }
     
+  // Clean up list of histogram.  Histograms with no entries or 
+  // no functions are deleted.  We have to do this using the TObjLink 
+  // objects stored in the list since ROOT cannot guaranty the validity 
+  // of iterators when removing from a list - tsck.  Should just implement
+  // TIter::Remove(). 
   TObjLink* lnk = dists->FirstLink();
   while (lnk) {
     TH1* h = static_cast<TH1*>(lnk->GetObject());
@@ -670,82 +638,128 @@ AliFMDEnergyFitter::RingHistos::Fit(TList* dir, const TAxis& eta,
 TF1*
 AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
 					Double_t lowCut, 
-					UShort_t nLandau, 
-					UShort_t minusBins) const
+					UShort_t nParticles, 
+					UShort_t minusBins, 
+					Double_t relErrorCut, 
+					Double_t chi2nuCut) const
 {
   Double_t maxRange = 10;
 
+  // Create a fitter object 
   AliForwardUtil::ELossFitter f(lowCut, maxRange, minusBins); 
   f.Clear();
   
+  
   // If we are only asked to fit a single particle, return this fit, 
   // no matter what. 
-  if (nLandau == 1) {
+  if (nParticles == 1) {
     TF1* r = f.Fit1Particle(dist, 0);
     if (!r) return 0;
     return new TF1(*r);
   }
 
   // Fit from 2 upto n particles  
-  for (Int_t i = 2; i <= nLandau; i++) f.FitNParticle(dist, i, 0);
+  for (Int_t i = 2; i <= nParticles; i++) f.FitNParticle(dist, i, 0);
 
 
   // Now, we need to select the best fit 
   Int_t nFits = f.fFitResults.GetEntriesFast();
   TF1*  good[nFits];
   for (Int_t i = nFits-1; i >= 0; i--) { 
-    if (CheckResult(static_cast<TFitResult*>(f.fFitResults.At(i))))
-      good[i] = static_cast<TF1*>(f.fFunctions.At(i));
+    good[i] = 0;
+    TF1* ff = static_cast<TF1*>(f.fFunctions.At(i));
+    // ff->SetLineColor(Color());
+    ff->SetRange(0, maxRange);
+    dist->GetListOfFunctions()->Add(new TF1(*ff));
+    if (CheckResult(static_cast<TFitResult*>(f.fFitResults.At(i)),
+		    relErrorCut, chi2nuCut)) {
+      good[i] = ff;
+      ff->SetLineWidth(2);
+      // f.fFitResults.At(i)->Print("V");
+    }
   }
   // If all else fails, use the 1 particle fit 
   TF1* ret = static_cast<TF1*>(f.fFunctions.At(0));
+
+  // Find the fit with the most valid particles 
   for (Int_t i = nFits-1; i > 0; i--) {
     if (!good[i]) continue;
+    if (fDebug > 1) {
+      AliInfo(Form("Choosing fit with n=%d", i+1));
+      f.fFitResults.At(i)->Print();
+    }
     ret = good[i];
     break;
   }
-  return new TF1(*ret);
+  // Give a warning if we're using fall-back 
+  if (ret == f.fFunctions.At(0))
+    AliWarning("Choosing fall-back 1 particle fit");
+
+  // Copy our result and return (the functions are owned by the fitter)
+  TF1* fret = new TF1(*ret);
+  return fret;
 }
 
 //____________________________________________________________________
 Bool_t
-AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult* r) const
+AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult* r,
+					    Double_t relErrorCut, 
+					    Double_t chi2nuCut) const
 {
+  if (fDebug > 10) r->Print();
+  TString  n    = r->GetName();
+  n.ReplaceAll("TFitResult-", "");
   Double_t chi2 = r->Chi2();
   Int_t    ndf  = r->Ndf();
   // Double_t prob = r.Prob();
-  if (ndf <= 0 || chi2 / ndf > 5) { 
+  Bool_t ret = kTRUE;
+  
+  // Check that the reduced chi square isn't larger than 5
+  if (ndf <= 0 || chi2 / ndf > chi2nuCut) { 
     if (fDebug > 2)
-      AliWarning(Form("Fit %s has chi^2/ndf=%f/%d=%f", 
-		      r->GetName(), chi2, ndf, (ndf<0 ? 0 : chi2/ndf)));
-    return kFALSE;
+      AliWarning(Form("%s: chi^2/ndf=%12.5f/%3d=%12.5f>%12.5f", 
+		      n.Data(), chi2, ndf, (ndf<0 ? 0 : chi2/ndf),
+		      chi2nuCut));
+    ret = kFALSE;
   }
     
+  // Check each parameter 
   UShort_t nPar = r->NPar();
   for (UShort_t i = 0; i < nPar; i++) { 
-    if (i == 3) continue; 
+    if (i == kN) continue;  // Skip the number parameter 
     
-    Double_t v = r->Parameter(i);
-    Double_t e = r->ParError(i);
+    // Get value and error and check value 
+    Double_t v  = r->Parameter(i);
+    Double_t e  = r->ParError(i);
     if (v == 0) continue;
-    if (v == 0 || e / v > 0.2) { 
+
+    // Calculate the relative error and check it 
+    Double_t re  = e / v;
+    Double_t cut = relErrorCut * (i < kN ? 1 : 2);
+    if (re > cut) { 
       if (fDebug > 2)
-	AliWarning(Form("Fit %s has Delta %s/%s=%f/%f=%f%%",
-			r->GetName(), r->ParName(i).c_str(), 
-			r->ParName(i).c_str(), e, v, 100*(v == 0 ? 0 : e/v)));
-      return kFALSE;
+	AliWarning(Form("%s: Delta %s/%s=%9.5f/%9.5f=%5.1f%%>%5.1f%%",
+			n.Data(), r->ParName(i).c_str(), 
+			r->ParName(i).c_str(), e, v, 
+			100*(v == 0 ? 0 : e/v),
+			100*(cut)));
+      ret = kFALSE;
     }
   }
-  if (nPar > 5) { 
+
+  // Check if we have scale parameters 
+  if (nPar > kN) { 
+    
+    // Check that the last particle has a significant contribution 
     Double_t lastScale = r->Parameter(nPar-1);
     if (lastScale <= 1e-7) { 
       if (fDebug)
-	AliWarning(Form("Last scale %s is too small %f<1e-7", 
-			r->ParName(nPar-1).c_str(), lastScale));
-      return kFALSE;
+	AliWarning(Form("%s: %s=%9.6f<1e-7", 
+			n.Data(), r->ParName(nPar-1).c_str(), lastScale));
+      ret = kFALSE;
     }
   }
-  return kTRUE;
+  return ret;
 }
 
 
