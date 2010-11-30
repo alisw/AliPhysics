@@ -449,7 +449,7 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       break;
     case kPairDipAngle:
       fComputedValue = useMC ? pSim0.Angle(pSim1.Vect()) : pRec0.Angle(pRec1.Vect());
-      fComputedValue = TMath::Abs(TMath::ACos(fComputedValue));
+      fComputedValue = TMath::Abs(TMath::Cos(fComputedValue));
       break;
     case kPairCosThetaStar:
       fComputedValue = mother->CosThetaStar(useMC);
