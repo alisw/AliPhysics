@@ -37,6 +37,7 @@
 #include "AliESDInputHandler.h"
 
 #include "AliESDInputHandlerRP.h"
+#include "AliESDVZERO.h"
 #include "../ITS/AliITSRecPoint.h"
 #include "AliCDBPath.h"
 #include "AliCDBManager.h"
@@ -50,6 +51,7 @@
 #include "AliTrackReference.h"
 
 #include "AliGenHijingEventHeader.h" 
+#include "AliGenDPMjetEventHeader.h"
 
 #include "AliLog.h"
 
@@ -76,8 +78,12 @@ AliAnalysisTaskSPDdNdEta::AliAnalysisTaskSPDdNdEta(const char *name)
   fMCCentralityBin(AliAnalysisTaskSPDdNdEta::kall),
   fCentrLowLim(0),
   fCentrUpLim(0),
-  fCentrEst(""),
+  fCentrEst(kFALSE),
   fMinClMultLay2(0),
+  fMaxClMultLay2(0),
+  fMinMultV0(0),
+  fVtxLim(0),
+  fPartSpecies(0),
 
   fPhiWindow(0),
   fThetaWindow(0),
@@ -90,6 +96,7 @@ AliAnalysisTaskSPDdNdEta::AliAnalysisTaskSPDdNdEta(const char *name)
 
   fMultReco(0), 
 
+  fV0Ampl(0),
   fHistSPDRAWMultvsZ(0),
   fHistSPDRAWMultvsZTriggCentrEvts(0),
   fHistSPDRAWMultvsZCentrEvts(0),
@@ -117,12 +124,22 @@ AliAnalysisTaskSPDdNdEta::AliAnalysisTaskSPDdNdEta(const char *name)
   fHistSPDphicl2(0),
 
   fHistBkgCorrDen(0),
+  fHistReconstructedProtons(0),
+  fHistReconstructedKaons(0),
+  fHistReconstructedPions(0),
+  fHistReconstructedOthers(0), 
+  fHistReconstructedSec(0),
   fHistBkgCorrDenPrimGen(0),
+  fHistBkgCombLabels(0),
   fHistBkgCorrNum(0),
   fHistAlgEffNum(0),
   fHistNonDetectableCorrDen(0),
 
   fHistNonDetectableCorrNum(0),
+  fHistProtons(0),
+  fHistKaons(0),
+  fHistPions(0),
+  fHistOthers(0),
   fHistAllPrimaries(0),
   fHistTrackCentrEvts(0),
   fHistTrackTrigCentrEvts(0),
@@ -144,9 +161,9 @@ AliAnalysisTaskSPDdNdEta::AliAnalysisTaskSPDdNdEta(const char *name)
   fHistRecvsGenImpactPar(0),
   fHistMCNpart(0), 
 
-  fHistdPhiPP(0),
-  fHistdPhiSS(0),
-  fHistdPhiComb(0),
+  fHistdPhidThetaPP(0),
+  fHistdPhidThetaSS(0),
+  fHistdPhidThetaComb(0),
 
   fHistDeVtx(0)
 
@@ -185,7 +202,7 @@ void AliAnalysisTaskSPDdNdEta::UserCreateOutputObjects()
     man->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB");
     if (fUseMC) man->SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Residual");
     else man->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB");
-    man->SetRun(137045); 
+    man->SetRun(137161); 
     AliCDBEntry* obj = man->Get(AliCDBPath("GRP", "Geometry", "Data"));
     AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
     AliGeomManager::GetNalignable("ITS");
@@ -198,7 +215,7 @@ void AliAnalysisTaskSPDdNdEta::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner(); 
 
-  Int_t nBinVtx = 20;
+  Int_t nBinVtx = 40;
   Double_t MaxVtx = 20.;
 
   Int_t nBinMultCorr = 200;
@@ -220,6 +237,10 @@ void AliAnalysisTaskSPDdNdEta::UserCreateOutputObjects()
 
   // Data to be corrected
   // ...event level    
+  
+  fV0Ampl = new TH1F("fV0Ampl","",500,0.,30000);
+  fOutput->Add(fV0Ampl);
+
   fHistSPDRAWMultvsZ = new TH2F("fHistSPDRAWMultvsZ", "",nBinMultCorr,binLimMultCorr,nBinVtx,-MaxVtx,MaxVtx);
   fHistSPDRAWMultvsZ->GetXaxis()->SetTitle("Tracklet multiplicity");
   fHistSPDRAWMultvsZ->GetYaxis()->SetTitle("z_{SPDvtx} [cm]");
@@ -332,9 +353,21 @@ void AliAnalysisTaskSPDdNdEta::UserCreateOutputObjects()
     // Track level correction histograms 
     fHistBkgCorrDen = new TH2F("fHistBkgCorrDen","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
     fOutput->Add(fHistBkgCorrDen);
-    
+   
+    fHistReconstructedProtons = new TH2F("fHistReconstructedProtons","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistReconstructedProtons);
+    fHistReconstructedKaons = new TH2F("fHistReconstructedKaons","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistReconstructedKaons);
+    fHistReconstructedPions = new TH2F("fHistReconstructedPions","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistReconstructedPions);
+    fHistReconstructedOthers = new TH2F("fHistReconstructedOthers","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistReconstructedOthers);
+ 
     fHistBkgCorrDenPrimGen = new TH2F("fHistBkgCorrDenPrimGen","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
     fOutput->Add(fHistBkgCorrDenPrimGen);
+
+    fHistBkgCombLabels = new TH2F("fHistBkgCombLabels","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistBkgCombLabels);
 
     if (fTR) {
       fHistBkgCorrNum = new TH2F("fHistBkgCorrNum","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
@@ -350,7 +383,19 @@ void AliAnalysisTaskSPDdNdEta::UserCreateOutputObjects()
 
     fHistNonDetectableCorrNum = new TH2F("fHistNonDetectableCorrNum","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
     fOutput->Add(fHistNonDetectableCorrNum);
-    
+
+    fHistProtons = new TH2F("fHistProtons","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistProtons);
+    fHistKaons = new TH2F("fHistKaons","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistKaons);
+    fHistPions = new TH2F("fHistPions","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistPions);
+    fHistOthers = new TH2F("fHistOthers","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistOthers);
+    fHistReconstructedSec = new TH2F("fHistReconstructedSec","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
+    fOutput->Add(fHistReconstructedSec); 
+
+ 
     fHistAllPrimaries = new TH2F("fHistAllPrimaries","",nBinEtaCorr,binLimEtaCorr,nBinVtx,-MaxVtx,MaxVtx);
     fOutput->Add(fHistAllPrimaries);
 
@@ -414,12 +459,12 @@ void AliAnalysisTaskSPDdNdEta::UserCreateOutputObjects()
     fHistMCNpart->GetYaxis()->SetTitle("Entries"); 
     fOutput->Add(fHistMCNpart);
  
-    fHistdPhiPP = new TH1F("fHistdPhiPP","",400,-0.1,.1);
-    fOutput->Add(fHistdPhiPP);
-    fHistdPhiSS = new TH1F("fHistdPhiSS","",400,-0.1,.1);
-    fOutput->Add(fHistdPhiSS);
-    fHistdPhiComb = new TH1F("fHistdPhiComb","",400,-0.1,.1);
-    fOutput->Add(fHistdPhiComb);
+    fHistdPhidThetaPP = new TH2F("fHistdPhidThetaPP","",2000,-1.,1.,1000,-0.25,.25);
+    fOutput->Add(fHistdPhidThetaPP);
+    fHistdPhidThetaSS = new TH2F("fHistdPhidThetaSS","",2000,-1.,1.,1000,-0.25,.25);
+    fOutput->Add(fHistdPhidThetaSS);
+    fHistdPhidThetaComb = new TH2F("fHistdPhidThetaComb","",2000,-1.,1.,1000,-0.25,.25);
+    fOutput->Add(fHistdPhidThetaComb);
 
     fHistDeVtx = new TH2F("fHistDeVtx","",80,-20.,20.,5000,-0.5,0.5);
     fHistDeVtx->GetXaxis()->SetTitle("z_{MCvtx} [cm]");
@@ -451,6 +496,7 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
   AliMagF* field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!field && !fmyESD->InitMagneticField()) {Printf("Failed to initialize the B field\n");return;}
 
+
   // Trigger selection
   Bool_t eventTriggered = kTRUE;
   static AliTriggerAnalysis* triggerAnalysis = 0; 
@@ -462,8 +508,7 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
 
   // Centrality selection 
   Bool_t eventInCentralityBin = kFALSE;
-  // Centrality selection
-  AliESDCentrality *centrality = fmyESD->GetCentrality();
+/*  AliESDCentrality *centrality = fmyESD->GetCentrality();
   if (fCentrEst=="") eventInCentralityBin = kTRUE;
   else {
     if(!centrality) {
@@ -472,22 +517,38 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
       if (centrality->IsEventInCentralityClass(fCentrLowLim,fCentrUpLim,fCentrEst.Data())) eventInCentralityBin = kTRUE;
     }
   }
+*/
+  if (fCentrEst) {
+    AliESDVZERO* esdV0 = fmyESD->GetVZEROData();
+    Float_t multV0A=esdV0->GetMTotV0A();
+    Float_t multV0C=esdV0->GetMTotV0C();
+    fV0Ampl->Fill(multV0A+multV0C);
+    if (multV0A+multV0C>=fMinMultV0) eventInCentralityBin = kTRUE; 
+  } else if (!fCentrEst) {
+    eventInCentralityBin = kTRUE;
+  }
 
+  const AliMultiplicity* multESD = fmyESD->GetMultiplicity();
 
   // ESD vertex
   Bool_t eventWithVertex = kFALSE;
   const AliESDVertex* vtxESD = fmyESD->GetVertex();
+  const AliESDVertex* vtxTPC = fmyESD->GetPrimaryVertexTPC();
   Double_t esdvtx[3];
   vtxESD->GetXYZ(esdvtx);
   Int_t nContrib = vtxESD->GetNContributors();
-  if (nContrib>0) {
-//    if (strcmp(vtxESD->GetTitle(),"vertexer: 3D") == 0) 
-      fHistSPDvtx->Fill(esdvtx[2]);
-      eventWithVertex = kTRUE;   
+  Int_t nContribTPC = vtxTPC->GetNContributors(); 
+  if (nContrib>0&&nContribTPC>0) {
+    if (vtxESD->GetDispersion()<0.04) 
+      if (vtxESD->GetZRes()<0.25) 
+        if (nContribTPC>(-10.+0.25*multESD->GetNumberOfITSClusters(0))) {
+          fHistSPDvtx->Fill(esdvtx[2]);
+          if (TMath::Abs(esdvtx[2])<fVtxLim)  
+            eventWithVertex = kTRUE;   
+        }
   } 
 
   // Reconstructing or loading tracklets...
-  const AliMultiplicity* multESD = fmyESD->GetMultiplicity();
   Int_t multSPD = multESD->GetNumberOfTracklets();
   Int_t nSingleCl1 = multESD->GetNumberOfSingleClusters();
   Int_t multSPDcl1 = nSingleCl1 + multSPD;  
@@ -499,9 +560,10 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
   Float_t trackletCoord[multSPDcl1][5];
   Float_t trackletLab[multSPDcl1][2];
 
-
+  Bool_t eventSelected = kFALSE;
   // Event selection: in centrality bin, triggered with vertex
-  if (eventTriggered&&eventWithVertex&&eventInCentralityBin&&multSPDcl2>fMinClMultLay2) {
+  if (eventTriggered&&eventWithVertex&&eventInCentralityBin&&multSPDcl2>fMinClMultLay2&&multSPDcl2<fMaxClMultLay2) {
+    eventSelected = kTRUE; 
     fHistSPDmultcl1->Fill(multSPDcl1);
     fHistSPDmultcl2->Fill(multSPDcl2);
     fHistSPDmultcl1vscl2->Fill(multSPDcl1,multSPDcl2);
@@ -610,12 +672,15 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
       return;
     }
 
+    Float_t impactParameter = 0.;
+    Int_t npart = 0;
+
     AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(fMCEvent->Header()->GenEventHeader());
-    if (!hijingHeader) {
-      Printf("Unknown header type. \n");
-      return ;
-    }
-    Float_t impactParameter = hijingHeader->ImpactParameter();
+    AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(fMCEvent->Header()->GenEventHeader());
+
+    if (hijingHeader) impactParameter = hijingHeader->ImpactParameter();
+    else if (dpmHeader) impactParameter = dpmHeader->ImpactParameter();
+
     Bool_t IsEventInMCCentralityBin = kFALSE;
     switch (fMCCentralityBin) {
 
@@ -643,8 +708,11 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
       fHistMCvtxx->Fill(vtxMC[0]);   
       fHistMCvtxy->Fill(vtxMC[1]);
       fHistMCvtxz->Fill(vtxMC[2]);
+
 //      Printf("Impact parameter gen: %f", impactParameter);
-      Int_t npart = hijingHeader->TargetParticipants()+hijingHeader->ProjectileParticipants();
+       if (hijingHeader) npart = hijingHeader->TargetParticipants()+hijingHeader->ProjectileParticipants();
+       else if (dpmHeader)npart = dpmHeader->TargetParticipants()+dpmHeader->ProjectileParticipants();
+
       //Rec centrality vs gen centrality
       AliESDZDC *zdcRec = fmyESD->GetESDZDC();
       Double_t impactParameterZDC = zdcRec->GetImpactParameter();
@@ -656,14 +724,14 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
       // Tracks from MC
       Int_t  multMCCharged = 0;
       Int_t  multMCChargedEtacut = 0;
-      Int_t  nMCPart = stack->GetNprimary();
+//      Int_t  nMCPart = stack->GetNprimary();
+      Int_t  nMCPart = stack->GetNtrack();  // decay products of D and B mesons are also primaries and produced in HIJING during transport
       Float_t* etagen = new Float_t[nMCPart];  
       Int_t* stackIndexOfPrimaryParts = new Int_t[nMCPart];
       Bool_t* reconstructedPrimaryPart = new Bool_t[nMCPart];
       Bool_t* detectedPrimaryPartLay1 = new Bool_t[nMCPart];
       Bool_t* detectedPrimaryPartLay2 = new Bool_t[nMCPart];
       Bool_t* detectablePrimaryPart = new Bool_t[nMCPart];
-      Bool_t* primCounted = new Bool_t[nMCPart];
 
       TTree* tRefTree;  
       if (fTR) {
@@ -674,8 +742,9 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
       // Loop over MC particles
       for (Int_t imc=0; imc<nMCPart; imc++) {
         AliMCParticle *mcpart  = (AliMCParticle*)fMCEvent->GetTrack(imc);
+
         Bool_t isPrimary = stack->IsPhysicalPrimary(imc);
-        if (!isPrimary)                        continue;
+        if (!isPrimary)            continue;
         if (mcpart->Charge() == 0) continue;
         Float_t theta = mcpart->Theta();
         if (theta==0 || theta==TMath::Pi())    continue;
@@ -688,7 +757,6 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
         detectedPrimaryPartLay1[multMCCharged]=kFALSE;
         detectedPrimaryPartLay2[multMCCharged]=kFALSE;
         detectablePrimaryPart[multMCCharged]=kFALSE;
-        primCounted[multMCCharged]=kFALSE;
 
         if (fTR) {
           Int_t nref = mcpart->GetNumberOfTrackReferences();
@@ -704,6 +772,12 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
             }
           }  
         }
+        if (eventSelected&&fPartSpecies) {
+          if (TMath::Abs(mcpart->PdgCode())==2212) fHistProtons->Fill(etagen[multMCCharged],vtxMC[2]);
+          else if (TMath::Abs(mcpart->PdgCode())==321) fHistKaons->Fill(etagen[multMCCharged],vtxMC[2]);
+          else if (TMath::Abs(mcpart->PdgCode())==211) fHistPions->Fill(etagen[multMCCharged],vtxMC[2]);
+          else fHistOthers->Fill(etagen[multMCCharged],vtxMC[2]);  //includes leptons pdg->11,13
+        }
         multMCCharged++;
         if (TMath::Abs(eta)<1.4) multMCChargedEtacut++;
       } // end of MC particle loop
@@ -711,39 +785,61 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
       fHistMCmultEtacut->Fill(multMCChargedEtacut);
 
       // Event selection: in centrality bin, triggered with vertex 
-      if (eventTriggered&&eventWithVertex&&eventInCentralityBin&&multSPDcl2>fMinClMultLay2) { 
+      if (eventTriggered&&eventWithVertex&&eventInCentralityBin&&multSPDcl2>fMinClMultLay2&&multSPDcl2<fMaxClMultLay2) {
     
         fHistDeVtx->Fill(vtxMC[2],vtxMC[2]-esdvtx[2]);      
 
         for (Int_t itracklet=0; itracklet<multSPD; ++itracklet) {
-          if (TMath::Abs(trackletCoord[itracklet][0])<fPhiWindowAna) {
+          if (TMath::Abs(trackletCoord[itracklet][0])<fPhiWindowAna) 
             fHistBkgCorrDen->Fill(trackletCoord[itracklet][4],esdvtx[2]);
 
-            if (trackletLab[itracklet][0]==trackletLab[itracklet][1]) {
-              Bool_t trakletByPrim = kFALSE; 
-              for (Int_t imc=0; imc<multMCCharged; imc++) {
-                if (trackletLab[itracklet][0]==stackIndexOfPrimaryParts[imc]) {
-                  if (!primCounted[imc]) {
-                    primCounted[imc] = kTRUE;
-                  }
-                  fHistdPhiPP->Fill(trackletCoord[itracklet][0]);
+          if (trackletLab[itracklet][0]==trackletLab[itracklet][1]) {
+            Bool_t trakletByPrim = kFALSE; 
+            for (Int_t imc=0; imc<multMCCharged; imc++) {
+              if (trackletLab[itracklet][0]==stackIndexOfPrimaryParts[imc]) {
+                fHistdPhidThetaPP->Fill(trackletCoord[itracklet][0],trackletCoord[itracklet][1]);
+                if (TMath::Abs(trackletCoord[itracklet][0])<fPhiWindowAna) {
                   fHistBkgCorrDenPrimGen->Fill(etagen[imc],vtxMC[2]);
-                  trakletByPrim = kTRUE; 
-                  if (detectedPrimaryPartLay1[imc]&&detectedPrimaryPartLay2[imc]) {
-                    reconstructedPrimaryPart[imc]=kTRUE; // tracklet by prim and tr (=rp) on both layers 
-                  }
-                  break;
-                }  
-              }
-              if (!trakletByPrim) {
-                fHistdPhiSS->Fill(trackletCoord[itracklet][0]);
-                fHistBkgCorrDenPrimGen->Fill(trackletCoord[itracklet][4],esdvtx[2]);
-              }
-            } else {
-              fHistdPhiComb->Fill(trackletCoord[itracklet][0]);
-              fHistBkgCorrDenPrimGen->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                  if (fPartSpecies) {
+                    if (TMath::Abs(((AliMCParticle*)fMCEvent->GetTrack(stackIndexOfPrimaryParts[imc]))->PdgCode())==2212) 
+                      fHistReconstructedProtons->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                    else if (TMath::Abs(((AliMCParticle*)fMCEvent->GetTrack(stackIndexOfPrimaryParts[imc]))->PdgCode())==321) 
+                      fHistReconstructedKaons->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                    else if (TMath::Abs(((AliMCParticle*)fMCEvent->GetTrack(stackIndexOfPrimaryParts[imc]))->PdgCode())==211) 
+                      fHistReconstructedPions->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                    else fHistReconstructedOthers->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                  }     
+                }
+                trakletByPrim = kTRUE; 
+                if (detectedPrimaryPartLay1[imc]&&detectedPrimaryPartLay2[imc]) {
+                  reconstructedPrimaryPart[imc]=kTRUE; // tracklet by prim and tr (=rp) on both layers 
+                }
+                break;
+              }  
             }
-          }   // cut dphi
+            if (!trakletByPrim) {
+              fHistdPhidThetaSS->Fill(trackletCoord[itracklet][0],trackletCoord[itracklet][1]);
+              if (TMath::Abs(trackletCoord[itracklet][0])<fPhiWindowAna) {
+
+                fHistBkgCorrDenPrimGen->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                if (fPartSpecies) {
+                  Int_t motherlab = ((AliMCParticle*)fMCEvent->GetTrack((Int_t)trackletLab[itracklet][0]))->GetMother(); 
+                  if (motherlab>-1) { 
+                    if (TMath::Abs(fMCEvent->GetTrack(motherlab)->PdgCode())==2212) fHistReconstructedProtons->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                    else if (TMath::Abs(fMCEvent->GetTrack(motherlab)->PdgCode())==321) fHistReconstructedKaons->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                    else if (TMath::Abs(fMCEvent->GetTrack(motherlab)->PdgCode())==211) fHistReconstructedPions->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                    else fHistReconstructedOthers->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                  } else fHistReconstructedSec->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+                }
+              }
+            }
+          } else {
+            fHistdPhidThetaComb->Fill(trackletCoord[itracklet][0],trackletCoord[itracklet][1]);
+            if (TMath::Abs(trackletCoord[itracklet][0])<fPhiWindowAna) {
+              fHistBkgCorrDenPrimGen->Fill(trackletCoord[itracklet][4],esdvtx[2]);
+              fHistBkgCombLabels->Fill(trackletCoord[itracklet][4],esdvtx[2]); 
+            }
+          }
         } // end loop tracklets
 
         for (Int_t imc=0; imc<multMCCharged; imc++) {

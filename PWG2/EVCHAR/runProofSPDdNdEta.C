@@ -1,33 +1,35 @@
-void runProofSPDdNdEta(TString  proofCluster  = "delia@alice-caf.cern.ch",//skaf.saske.sk", 
-                       TString  alirootVer    = "VO_ALICE@AliRoot::v4-21-02-AN", 
-                       TString  rootVer       = "VO_ALICE@ROOT::v5-27-06a-1", 
-//                       TString  dataset       = "/alice/data/LHC10h_000137161_p1_plusplus",
-                       TString  dataset       = "/alice/data/LHC10h_000137161_p1_plus",
-//                       TString  dataset       = "/alice/data/LHC10h_000137045_p1_plus",
-//                       TString  dataset       = "/alice/sim/LHC10h3_000137161",
-//                       TString  dataset       = "/alice/sim/LHC10h2_000137161",
-//                       TString  dataset       = "/alice/sim/LHC10h1_000137045",
+void runProofSPDdNdEta_CorrRef4(
+                       TString  proofCluster  = "mnicassi@alice-caf.cern.ch", //skaf.saske.sk",
+                       TString  alirootVer    = "VO_ALICE@AliRoot::v4-21-04-AN", 
+                       TString  rootVer       = "VO_ALICE@ROOT::v5-27-06a-1",
+//                     TString  dataset       = "/alice/data/LHC10h_000137161_p1_plusplusplus", 
+                       TString  dataset       = "/alice/sim/LHC10h8_000137161",
                        TString  outFileCorr   = "SPDdNdEtaCorr.root",
+//                       TString  outFileCorr   = "SPDdNdEtaCorrRot.root",
                        TString  outFileData   = "SPDdNdEtaData.root",
                        TString  percentFile   = "./AliCentralityBy1D_LHC10g2a_100.root",
                        TString  percentFile2  = "./AliCentralityByFunction_LHC10g2a_100.root",
-//                       Bool_t   useMC         = kTRUE, 
-                       Bool_t   useMC         = kFALSE, 
+                       Bool_t   useMC         = kTRUE, 
                        Bool_t   readtr        = kFALSE, 
                        Bool_t   recotracklets = kTRUE, 
                        Bool_t   dataonalien   = kFALSE,
                        Float_t  centrlowlim   = 0., 
                        Float_t  centruplim    = 5., 
-                       TString  centrest      = "",
-                       Int_t    minClMultLay2 = 4500, 
+                       Bool_t   centrest      = kFALSE,
+                       Int_t    minClMultLay2 = 4300, 
+//                       Int_t    minClMultLay2 = -1,  
+                       Int_t    maxClMultLay2 = 1.0*1e5, 
+                       Int_t    minV0Mult     = 14674.5,
+                       Float_t vtxlim         = 7.,
+                       Bool_t partsp          = kTRUE, 
                        Float_t  phiWindow     = 0.8,
                        Float_t  thetaWindow   = 0.025,
                        Float_t  phiShift      = 0.0045,
                        Float_t  removeClFOvl  = kFALSE,
                        Float_t  phiOvlCut     = 0.005,
                        Float_t  zetaOvlCut    = 0.05,
-//                       Float_t  phiRotAngle   = 0., 
-                       Float_t  phiRotAngle   = TMath::Pi(),
+                       Float_t  phiRotAngle   = 0.,  
+//                       Float_t  phiRotAngle   = TMath::Pi(),
                        Float_t  phiWindowAna  = 0.08,
                        Int_t    nEvents       = 1.0*1e7, 
                        Int_t    nEventsSkip   = 0) { //1.0*1e7
@@ -64,7 +66,7 @@ void runProofSPDdNdEta(TString  proofCluster  = "delia@alice-caf.cern.ch",//skaf
 //  gROOT->LoadMacro("AnalysisMacroa.C");
   Analysis(dataset.Data(), outFileCorr, outFileData, percentFile, percentFile2, 
            useMC, readtr, recotracklets, 
-           nEvents, nEventsSkip, centrlowlim, centruplim, centrest, minClMultLay2,
+           nEvents, nEventsSkip, centrlowlim, centruplim, centrest, minClMultLay2, maxClMultLay2, minV0Mult, vtxlim, partsp,
            phiWindow, thetaWindow, phiShift, removeClFOvl, phiOvlCut, zetaOvlCut, phiRotAngle,phiWindowAna);
 
 }
@@ -73,7 +75,7 @@ void runProofSPDdNdEta(TString  proofCluster  = "delia@alice-caf.cern.ch",//skaf
 void Analysis(TString dataset, TString outFileCorr, TString outFileData, TString percentFile, TString percentFile2, 
               Bool_t useMC, Bool_t readtr, Bool_t recotracklets, 
               Int_t nEvents, Int_t nEventsSkip, 
-              Float_t centrlowlim, Float_t centruplim, TString centrest, Int_t minClMultLay2,
+              Float_t centrlowlim, Float_t centruplim, Bool_t centrest, Int_t minClMultLay2, Int_t maxClMultLay2, Int_t minV0Mult, Float_t vtxlim, Bool_t partsp,
               Float_t phiWindow, Float_t thetaWindow, Float_t phiShift, Bool_t removeClFOvl, 
               Float_t phiOvlCut, Float_t zetaOvlCut, Float_t phiRotAngle, Float_t phiWindowAna) {
 
@@ -109,6 +111,10 @@ void Analysis(TString dataset, TString outFileCorr, TString outFileData, TString
   task->SetCentralityUpLim(centruplim);
   task->SetCentralityEst(centrest);
   task->SetMinClusterMultLay2(minClMultLay2);
+  task->SetMaxClusterMultLay2(maxClMultLay2);
+  task->SetMinV0Mult(minV0Mult); 
+  task->SetVertexRange(vtxlim);
+  task->SetPartSpecies(partsp);
 
   task->SetPhiWindow(phiWindow);
   task->SetThetaWindow(thetaWindow); 
@@ -125,16 +131,16 @@ void Analysis(TString dataset, TString outFileCorr, TString outFileData, TString
   if (!useMC) {
     AliPhysicsSelection * physSel = physSelTask->GetPhysicsSelection();
   
-    if (dataset=="/alice/data/LHC10h_000137045_p1_plus") {
+/*    if (dataset=="/alice/data/LHC10h_000137045_p1_plus") {
       physSel->AddCollisionTriggerClass("+CMBS1A-B-NOPF-ALL");
       physSel->AddCollisionTriggerClass("+CMBS1C-B-NOPF-ALL");
       physSel->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
 
-    } else {
+    } else {*/
       physSel->AddCollisionTriggerClass("+CMBS2A-B-NOPF-ALL");
       physSel->AddCollisionTriggerClass("+CMBS2C-B-NOPF-ALL");
       physSel->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
-    }
+//    }
 
     task->SelectCollisionCandidates(AliVEvent::kUserDefined);
   } else {
