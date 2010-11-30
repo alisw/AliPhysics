@@ -1357,8 +1357,8 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
   
     
   // To use in a print later
-  Int_t droworg = drow;
-  Int_t dcolorg = dcol;
+  Float_t droworg = drow;
+  Float_t dcolorg = dcol;
   
   if(gGeoManager){
     //Recover some stuff
@@ -1406,11 +1406,11 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
       
     //Do some basic checks
     if (dcol >= 47.5 || dcol<-0.5) {
-      AliError(Form("Bad tower coordinate dcol=%d, where dcol >= 47.5 || dcol<-0.5; org: %d", dcol, dcolorg));
+      AliError(Form("Bad tower coordinate dcol=%f, where dcol >= 47.5 || dcol<-0.5; org: %f", dcol, dcolorg));
       return;
     }
     if (drow >= 23.5 || drow<-0.5) {
-      AliError(Form("Bad tower coordinate drow=%d, where drow >= 23.5 || drow<-0.5; org: %d", drow, droworg));
+      AliError(Form("Bad tower coordinate drow=%f, where drow >= 23.5 || drow<-0.5; org: %f", drow, droworg));
       return;
     }
     if (sm > 11 || sm <0) {
