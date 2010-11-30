@@ -23,12 +23,6 @@
 #include "AliCaloFitSubarray.h"
 #include "AliCaloConstants.h"
 
-//using namespace CaloConstants::ReturnCodes;
-// using CaloConstants::FitAlgorithm;
-
-// Container class to hold results from fitting 
-// as well as other methods for
-// raw data signals extraction
 class  AliCaloFitResults
 {
  public:
@@ -45,7 +39,8 @@ class  AliCaloFitResults
 			      const Float_t  amp, 
 			      const Float_t time,
 			      const Int_t maxTimebin,
-			      const Float_t chi, 
+			      //   const Float_t chi, 
+			      const Float_t chi,  
 			      const Int_t ndf, 
 			      const Int_t minSig, 
 			      const AliCaloFitSubarray fitSubarray  ); 
@@ -56,6 +51,7 @@ class  AliCaloFitResults
 			      const Float_t  amp, 
 			      const Float_t time,
 			      const Int_t maxTimebin,
+			      //   const Float_t chi, 
 			      const Float_t chi, 
 			      const Int_t ndf, 
 			      const Int_t minSig = Ret::kDummy);  
@@ -74,29 +70,30 @@ class  AliCaloFitResults
 
   AliCaloFitResults();
   virtual  ~AliCaloFitResults();
-  Int_t  GetMaxSig() const  { return fMaxSig;};
+  UShort_t  GetMaxSig() const  { return fMaxSig;};
   Float_t   GetPed() const { return fPed;};
-  Int_t  GetMinSig() const { return fMinSig;};
+  UShort_t  GetMinSig() const { return fMinSig;};
   Int_t  GetStatus() const  { return fStatus;};
   Float_t   GetAmp() const {  return fAmpSig; };
   Float_t   GetTof() const {  return fTime; }; 
   Float_t   GetTime() const {  return fTime; };
   Int_t   GetMaxTimebin() const {  return fMaxTimebin; };
   Float_t   GetChi2() const { return fChi2Sig;};
-  Int_t  GetNdf() const { return fNdfSig; };
+  UShort_t  GetNdf() const { return fNdfSig; };
   AliCaloFitSubarray  GetFitSubarray() const { return fFitSubarray; };
+  
   
  private:
   // AliCaloFitResults();
-  Int_t   fMaxSig;      //Maximum sample value ( 0 - 1023 )
+  UShort_t   fMaxSig;      //Maximum sample value ( 0 - 1023 )
   Float_t    fPed;      //Pedestal 
   Int_t   fStatus;      //Sucess or failure of fitting pocedure
   Float_t    fAmpSig;   //Amplitude in entities of ADC counts
   Float_t    fTime;     //peak/max time of signal in entities of sample intervals 
   Int_t    fMaxTimebin; //timebin with maximum ADC value
   Float_t    fChi2Sig;  //Chi Square of fit 
-  Int_t   fNdfSig;      //Number of degrees of freedom of fit
-  Int_t   fMinSig;      //Pedestal 
+  UShort_t   fNdfSig;      //Number of degrees of freedom of fit
+  UShort_t   fMinSig;      //Pedestal 
   AliCaloFitSubarray fFitSubarray; // info on time-bin array used for the fitting
 };
 

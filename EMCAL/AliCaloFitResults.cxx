@@ -45,10 +45,15 @@ AliCaloFitResults::AliCaloFitResults() : fMaxSig(-1),
 // The signal was fitted sucessfully. fStatus might have a different meaning If other 
 // procedures than  A different meaning Fitting is applied 
 
-AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Float_t ped, 
-				     const Short_t fitstatus, const Float_t  amp,  
-				     const Float_t time,  const Int_t maxTimebin, const Float_t chi,  
-				     const Int_t ndf, Int_t minSig,
+AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, 
+				     const Float_t ped, 
+				     const Short_t fitstatus, 
+				     const Float_t  amp,  
+				     const Float_t time,  
+				     const Int_t maxTimebin, 
+				     const Float_t chi,  
+				     const Int_t ndf, 
+				     Int_t minSig,
 				     const AliCaloFitSubarray fitSubarray ) : 
   fMaxSig(maxSig),
   fPed(ped), 
