@@ -28,7 +28,7 @@ ClassImp(AliAnalysisTaskMultPbTracks)
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 : AliAnalysisTaskSE("TaskMultPbTracks"),
-  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
+  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0), fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
 {
   // constructor
 
@@ -42,7 +42,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 }
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
+    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
 {
   //
   // Standard constructur which should be used
@@ -58,7 +58,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
 }
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMultPbTracks& obj) : 
-  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
+  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
 {
   //copy ctor
   fESD = obj.fESD ;
@@ -66,6 +66,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMu
   fTrackCuts  = obj.fTrackCuts;
   fTrackCutsNoDCA  = obj.fTrackCutsNoDCA;
   fCentrSelector = obj.fCentrSelector;
+  fOfflineTrigger = obj.fOfflineTrigger;
   fIsMC = obj.fIsMC;
   fIsTPCOnly = obj.fIsTPCOnly;
   fTriggerAnalysis = obj.fTriggerAnalysis;
@@ -107,6 +108,7 @@ void AliAnalysisTaskMultPbTracks::UserCreateOutputObjects()
 void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 {
   // User code
+
 
   /* PostData(0) is taken care of by AliAnalysisTaskSE */
   PostData(1,fHistoManager);
@@ -248,7 +250,6 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   Bool_t zdcA   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kASide, kTRUE, kFALSE) ; 
   Bool_t zdcC   = fTriggerAnalysis->ZDCTDCTrigger(fESD, AliTriggerAnalysis::kCSide, kTRUE, kFALSE) ;			
 
-  fIsMC = kTRUE;// FIXME
   if (!(zdcA && zdcC) && (!fIsMC)) return;
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatZDCCut);
 

@@ -55,7 +55,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   // physics selection
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  physicsSelectionTask = AddTaskPhysicsSelection(isMC,0);//FIXME
+  physicsSelectionTask = AddTaskPhysicsSelection(isMC);
 
   // Centrality
   AliCentralitySelectionTask *taskCentr = new AliCentralitySelectionTask("CentralitySelection");
@@ -167,12 +167,14 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     AliAnalysisTaskMultPbTracks ** tasks = AddTaskMultPbPbTracksAllCentrality("multPbPbtracks.root", cuts, centrSelector, ncentr,minCentr,maxCentr); 
     for(Int_t icentr = 0; icentr < ncentr; icentr++){
       tasks[icentr]->Print();
+      cout << "MC KINEMATICS:" << useMCKinematics << endl;
+      
       tasks[icentr]->SetIsMC(useMCKinematics);
       tasks[icentr]->SetOfflineTrigger(AliVEvent::kMB);
       if(optionStr.Contains("TPC")) tasks[icentr]->SetTPCOnly();
       if(useMCKinematics) tasks[icentr]->GetHistoManager()->SetSuffix("MC");
       if(customSuffix!=""){
-	cout << "Setting custom suffix: " << customSuffix+long(icentr) << tasks[icentr] << endl;    
+	cout << "Setting custom suffix: " << customSuffix+long(icentr) << endl;    
 	tasks[icentr]->GetHistoManager()->SetSuffix(customSuffix+long(icentr));
       }	
     }    
@@ -281,7 +283,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     
       gEnv->SetValue("XSec.GSI.DelegProxy", "2");
       TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
-      //    TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
+      //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
       p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
 
       // Enable the needed package
