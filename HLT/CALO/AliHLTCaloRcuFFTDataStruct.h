@@ -12,8 +12,8 @@
 // using AliHLTCaloConstants::TEST1;
 // using AliHLTCaloConstants::TEST2;
 
-using CALO::NGAINS;
-using CALO::ALTROMAXSAMPLES;
+using ALTRO::NGAINS;
+using ALTRO::ALTROMAXSAMPLES;
 
 struct AliHLTCaloRcuFFTDataStruct
 {
