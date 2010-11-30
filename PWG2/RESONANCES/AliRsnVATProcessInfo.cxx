@@ -15,6 +15,7 @@
 
 #include "AliLog.h"
 
+#include "AliRsnFunction.h"
 #include "AliRsnVATProcessInfo.h"
 
 ClassImp(AliRsnVATProcessInfo)
@@ -24,6 +25,7 @@ AliRsnVATProcessInfo::AliRsnVATProcessInfo(const char *name) :
   TNamed(name,name),
   fHistUsedEvents(0x0),
   fEventUsed(kFALSE),
+  fEventFunctions("AliRsnFunction", 0),
   fPrintInfoNumber(1000)
 {
 //
@@ -40,6 +42,7 @@ AliRsnVATProcessInfo::AliRsnVATProcessInfo(const AliRsnVATProcessInfo& copy) :
   TNamed(copy),
   fHistUsedEvents(0x0),
   fEventUsed(copy.fEventUsed),
+  fEventFunctions(copy.fEventFunctions),
   fPrintInfoNumber(copy.fPrintInfoNumber)
 {
 //
@@ -68,6 +71,7 @@ AliRsnVATProcessInfo& AliRsnVATProcessInfo::operator=
   fHistUsedEvents  = (TH1I*)copy.fHistUsedEvents->Clone();
   fEventUsed       = copy.fEventUsed;
   fPrintInfoNumber = copy.fPrintInfoNumber;
+  fEventFunctions  = copy.fEventFunctions;
   
   AliDebug(AliLog::kDebug+2, "Exiting");
   
@@ -113,12 +117,26 @@ void AliRsnVATProcessInfo::GenerateInfoList(TList *list)
 
   // ad objects to list
   list->Add(fHistUsedEvents);
+  
+  // add all other functions
+  Int_t  i;
+  TString hName("");
+  AliRsnFunction *fcn = 0;
+  for (i = 0; i < fEventFunctions.GetEntries(); i++)
+  {
+    fcn = (AliRsnFunction*)fEventFunctions.At(i);
+    hName += GetName();
+    hName += '_';
+    hName += fcn->GetName();
+    if (fcn->IsUsingTH1()) list->Add(fcn->CreateHistogram(hName.Data(), ""));
+    else list->Add(fcn->CreateHistogramSparse(hName.Data(), ""));
+  }
 
   AliDebug(AliLog::kDebug+2, "Exiting");
 }
 
 //______________________________________________________________________________
-void AliRsnVATProcessInfo::FillInfo()
+void AliRsnVATProcessInfo::FillInfo(AliRsnEvent *event)
 {
 //
 // This method defines how the information histograms must be filled.
@@ -130,6 +148,15 @@ void AliRsnVATProcessInfo::FillInfo()
 //
 
   fHistUsedEvents->Fill(fEventUsed);
+  
+  Int_t i;
+  AliRsnFunction *fcn = 0;
+  for (i = 0; i < fEventFunctions.GetEntries(); i++)
+  {
+    fcn = (AliRsnFunction*)fEventFunctions.At(i);
+    fcn->SetEvent(event);
+    fcn->Fill();
+  }
 }
 
 //______________________________________________________________________________
@@ -152,4 +179,20 @@ Long64_t AliRsnVATProcessInfo::GetNumerOfEventsProcessed()
 
   if (fHistUsedEvents) return fHistUsedEvents->Integral();
   return 0;
+}
+
+//_____________________________________________________________________________
+void AliRsnVATProcessInfo::AddEventFunction(AliRsnFunction * fcn)
+{
+//
+// Adds a new computing function
+//
+
+  AliDebug(AliLog::kDebug+2,"<-");
+  
+  fEventFunctions.Print();
+  Int_t size = fEventFunctions.GetEntries();
+  new(fEventFunctions[size]) AliRsnFunction(*fcn);
+  
+  AliDebug(AliLog::kDebug+2,"->");
 }

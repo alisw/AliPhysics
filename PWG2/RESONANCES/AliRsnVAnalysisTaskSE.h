@@ -51,7 +51,8 @@ class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE
     virtual void    FillInfo();
 
     // Prior probs
-    AliRsnEvent*    GetRsnEvent() {return &fRsnEvent;}
+    AliRsnEvent*           GetRsnEvent() {return &fRsnEvent;}
+    AliRsnVATProcessInfo*  GetInfo()     {return &fTaskInfo;}
 
     void SetMCOnly(Bool_t mcOnly = kTRUE) {fMCOnly = mcOnly;}
     void SetLogType(AliLog::EType_t type, TString allClasses = "");
