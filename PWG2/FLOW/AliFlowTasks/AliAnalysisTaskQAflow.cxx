@@ -43,6 +43,7 @@ AliAnalysisTaskQAflow::AliAnalysisTaskQAflow()
   : AliAnalysisTaskSE(),
     fOutput(NULL),
     fFillNtuple(kFALSE),
+    fDoCorrelations(kFALSE),
     fNtuple(NULL),
     fEventCuts(NULL),
     fTrackCuts(NULL)
@@ -55,6 +56,7 @@ AliAnalysisTaskQAflow::AliAnalysisTaskQAflow(const char* name)
   : AliAnalysisTaskSE(name),
     fOutput(NULL),
     fFillNtuple(kFALSE),
+    fDoCorrelations(kFALSE),
     fNtuple(NULL),
     fEventCuts(NULL),
     fTrackCuts(NULL)
@@ -119,7 +121,7 @@ void AliAnalysisTaskQAflow::UserCreateOutputObjects()
   before->Add(hist); after->Add(hist->Clone()); //17
   hist = new TH1D("charges", "charge distribution", 5,-2.5,2.5);
   before->Add(hist); after->Add(hist->Clone()); //18
-  hist = new TH1D("dphivsdeta", "#Delta#phi separation", 10000,-0.1,0.1);
+  hist = new TH1D("dphivsdeta", "#Delta#phi separation", 10000,-TMath::PiOver2(),TMath::Pi()+TMath::PiOver2());
   before->Add(hist); after->Add(hist->Clone()); //19
   hist = new TH1I("standardTPC_multiplicity", "standard TPC track multiplicity",10000,0,10000);
   before->Add(hist); after->Add(hist->Clone()); //20
@@ -203,6 +205,9 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   TH1* hstdspdtrmultB = dynamic_cast<TH1*>(before->At(23));
   TH1* hstdspdtrmultA = dynamic_cast<TH1*>(after->At(23));
 
+  Bool_t passevent = fEventCuts->IsSelected(event);
+  Bool_t isSelectedEventSelection = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+
   AliMultiplicity* tracklets = const_cast<AliMultiplicity*>(event->GetMultiplicity());
   Int_t ntracklets=0;
   Int_t nspdclusters=0;
@@ -224,8 +229,6 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     }
   }
 
-  AliFlowEventCuts newcuts;
-  newcuts.SetRefMultCuts(fTrackCuts);
   AliFlowEventCuts stdtpcrefmultcuts;
   stdtpcrefmultcuts.SetRefMultMethod(AliFlowEventCuts::kTPConly);
   AliFlowEventCuts stdv0refmultcuts;
@@ -235,17 +238,20 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   AliFlowEventCuts stdspdrefmult;
   stdspdrefmult.SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
 
-  Int_t trackmult = newcuts.RefMult(event);
+  AliFlowEventSimple* flowevent=NULL;
+  AliFlowEventSimple* floweventin = dynamic_cast<AliFlowEventSimple*>(GetInputData(1));
+  if (!floweventin) flowevent = new AliFlowEvent(fTrackCuts,fTrackCuts);
+  else flowevent = new AliFlowEventSimple(*floweventin);
+
+  Int_t rpmult = flowevent->GetReferenceMultiplicity();
   Int_t refmult = fEventCuts->RefMult(event);
   Int_t refmultv0 = stdv0refmultcuts.RefMult(event);
   Int_t refmulttpc = stdtpcrefmultcuts.RefMult(event);
   Int_t refmultspdtr = stdspdrefmult.RefMult(event);
   Int_t refmultspdcls = stdspd1refmult.RefMult(event);
 
-  Bool_t passevent = fEventCuts->IsSelected(event);
-
   htrackletmultB->Fill(ntracklets); if (passevent) htrackletmultA->Fill(ntracklets); 
-  htrackmultB->Fill(trackmult); if (passevent) htrackmultA->Fill( trackmult); 
+  htrackmultB->Fill(rpmult); if (passevent) htrackmultA->Fill(rpmult); 
   hrefmultB->Fill(refmult); if (passevent) hrefmultA->Fill( refmult); 
   hstdv0multB->Fill(refmultv0); if (passevent) hstdv0multA->Fill( refmultv0);
   hstdtpcmultB->Fill(refmulttpc); if (passevent) hstdtpcmultA->Fill( refmulttpc);
@@ -342,24 +348,28 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
       if (charge>0) {hptyieldplusB->Fill(pt); if (pass) hptyieldplusA->Fill(pt);}
       if (charge<0) {hptyieldnegB->Fill(pt); if (pass) hptyieldnegA->Fill(pt);}
       hchargesB->Fill(charge); if (pass) hchargesA->Fill(charge);
-      for (Int_t j=i+1; j<ntracks; j++)
+      /////////////////////////////////////////////////////////////////////////////
+      ////  correlation part   ///////////////////////
+      /////////////////////////////////////////
+      if (fDoCorrelations)
       {
-        TObject* obj2 = fTrackCuts->GetInputObject(j);
-        if (!obj2) continue;
-        Bool_t pass2 = fTrackCuts->IsSelected(obj2,j);
-        AliESDtrack* track2 = dynamic_cast<AliESDtrack*>(fTrackCuts->GetTrack());
-        if (track2)
+        for (Int_t j=i+1; j<ntracks; j++)
         {
-          Double_t dphi = phi-track2->Phi();
-          hphisepB->Fill(dphi); if (pass&&pass2) hphisepA->Fill(dphi);
+          TObject* obj2 = fTrackCuts->GetInputObject(j);
+          if (!obj2) continue;
+          Bool_t pass2 = fTrackCuts->IsSelected(obj2,j);
+          AliESDtrack* track2 = dynamic_cast<AliESDtrack*>(fTrackCuts->GetTrack());
+          if (track2)
+          {
+            Double_t dphi = phi-track2->Phi();
+            hphisepB->Fill(dphi); if (pass&&pass2) hphisepA->Fill(dphi);
+          }
         }
-      }
+      }//correlations
     }
   }
-  if (ntracks!=0) meanpt = meanpt/nselected;
+  if (nselected!=0) meanpt = meanpt/nselected;
   if (ntracks!=0) rawmeanpt = rawmeanpt/ntracks;
-  
-  Bool_t isSelectedEventSelection = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
   
   ///////////////////////////////////////////////////////////////////////
   if (fFillNtuple)
@@ -379,50 +389,33 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     Double_t qxb = 0.0;
     Double_t qyb = 0.0;
     Double_t qmb = 0.0;
-    AliFlowVector qvec;
-    AliFlowEventSimple* flowevent = dynamic_cast<AliFlowEventSimple*>(GetInputData(1));
-    if (!flowevent) flowevent = new AliFlowEvent(fTrackCuts,fTrackCuts);
 
-    AliFlowTrackCuts cutspos(*fTrackCuts);
-    cutspos.SetEvent(event);
-    cutspos.SetCharge(1);
-    AliFlowTrackCuts cutsneg(*fTrackCuts);
-    cutsneg.SetEvent(event);
-    cutsneg.SetCharge(-1);
-    AliFlowTrackCuts cutssuba(*fTrackCuts);
-    cutssuba.SetEvent(event);
-    cutssuba.SetEtaRange(-0.8,-0.1);
-    AliFlowTrackCuts cutssubb(*fTrackCuts);
-    cutssubb.SetEvent(event);
-    cutssubb.SetEtaRange(0.1,0.8);
-    AliFlowEvent evpos(&cutspos,&cutspos);
-    AliFlowEvent evneg(&cutsneg,&cutsneg);
-    AliFlowEvent evsuba(&cutssuba,&cutssuba);
-    AliFlowEvent evsubb(&cutssubb, &cutssubb);
+    AliFlowVector qvec[2];
 
-    qvec = flowevent->GetQ(2);
-    qx = qvec.X();
-    qy = qvec.Y();
-    qm = qvec.GetMult();
-    qvec = evpos.GetQ(2);
-    qxp = qvec.X();
-    qyp = qvec.Y();
-    qmp = qvec.GetMult();
-    qvec = evneg.GetQ(2);
-    qxn = qvec.X();
-    qyn = qvec.Y();
-    qmn = qvec.GetMult();
-    qvec = evsuba.GetQ(2);
-    qxa = qvec.X();
-    qya = qvec.Y();
-    qma = qvec.GetMult();
-    qvec = evsubb.GetQ(2);
-    qxb = qvec.X();
-    qyb = qvec.Y();
-    qmb = qvec.GetMult();
+    qvec[0] = flowevent->GetQ(2);
+    qx = qvec[0].X();
+    qy = qvec[0].Y();
+    qm = qvec[0].GetMult();
+    flowevent->TagSubeventsByCharge();
+    flowevent->Get2Qsub(qvec,2);
+    qxp = qvec[0].X();
+    qyp = qvec[0].Y();
+    qmp = qvec[0].GetMult();
+    qxn = qvec[1].X();
+    qyn = qvec[1].Y();
+    qmn = qvec[1].GetMult();
+    flowevent->TagSubeventsInEta(-0.8,-0.1,0.1,0.8);
+    flowevent->Get2Qsub(qvec,2);
+    qxa = qvec[0].X();
+    qya = qvec[0].Y();
+    qma = qvec[0].GetMult();
+    qxb = qvec[1].X();
+    qyb = qvec[1].Y();
+    qmb = qvec[1].GetMult();
+
 
     Float_t x[45];
-    x[0]=meanpt; x[1]=qx; x[2]=qy; x[3]=trackmult; x[4]=refmult; x[5]=(isSelectedEventSelection)?1:0;
+    x[0]=meanpt; x[1]=qx; x[2]=qy; x[3]=rpmult; x[4]=refmult; x[5]=(isSelectedEventSelection)?1:0;
     x[6]=vtxTPCx; x[7]=vtxTPCy; x[8]=vtxTPCz; x[9]=ntrackletsA; x[10]=ntrackletsC;
     x[11]=mv0a; x[12]=mv0c; x[13]=zdcp1; x[14]=zdcn1; x[15]=zdcp2; x[16]=zdcn2;
     x[17]=zdcpart1; x[18]=zdcpart2;
@@ -454,6 +447,8 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
     x[44]=qmb;
     fNtuple->Fill(x);
   }//if flowevent
+
+  delete flowevent;
 }
 
 //________________________________________________________________________

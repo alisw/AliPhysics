@@ -22,7 +22,9 @@ TString commonOutputFileName = "outputCentrality"; // e.g.: result for centralit
 //Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
 
 void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
-				Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_plusplusplus", Int_t offset=0) 
+		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_plusplusplus", Int_t offset=0) 
+//void runFlowTaskCentralityTrain(Int_t mode = mLocal, Int_t nRuns = 50000000, 
+//				Bool_t DATA = kTRUE, const Char_t* dataDir="./data/", Int_t offset=0) 
 //void runFlowTaskCentralityTrain(Int_t mode = mGridPAR, Bool_t DATA = kTRUE)
 {
   // Time:
@@ -61,10 +63,12 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
     mgr->SetMCtruthEventHandler(mc); 
   }
 
-  // Load the analysis task:
-  gROOT->LoadMacro("AddTaskFlowCentrality.C");
+  // Task to check the offline trigger:
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+  AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(!DATA,0);
   
   // Setup analysis per centrality bin:
+  gROOT->LoadMacro("AddTaskFlowCentrality.C");
   for (Int_t i=binfirst; i<binlast+1; i++)
   {
     Int_t lowCentralityBinEdge = centralityArray[i];
@@ -76,16 +80,6 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
                            i ); 
   } // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
 
-  // Task to check the offline trigger:
-  if(mode == mLocal || mode == mGrid || mode == mGridPAR) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
-  } else if(mode == mPROOF || mode == mLocalPAR) {
-    gROOT->LoadMacro("AddTaskPhysicsSelection.C"); 
-  }
-
-
-  AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(!DATA,0);
-  
   // Enable debug printouts:
   mgr->SetDebugLevel(2);
   // Run the analysis:
@@ -124,67 +118,39 @@ void LoadLibraries(const anaModes mode)
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
 
+  gSystem->Load("libCore");  
+  gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
+  gSystem->Load("libXMLParser");
+  gSystem->Load("libProof");
   
-  //----------------------------------------------------------
-  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
-  //----------------------------------------------------------
-  if (mode==mLocal || mode==mGrid || mode == mGridPAR) {
-    //--------------------------------------------------------
-    // If you want to use already compiled libraries 
-    // in the aliroot distribution
-    //--------------------------------------------------------
+  if (mode==mLocal || mode==mGrid || mode == mGridPAR || mode == mLocalPAR )
+  {
     gSystem->Load("libSTEERBase");
+    gSystem->Load("libCDB");
+    gSystem->Load("libRAWDatabase");
+    gSystem->Load("libRAWDatarec");
     gSystem->Load("libESD");
     gSystem->Load("libAOD");
+    gSystem->Load("libSTEER");
     gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gSystem->Load("libCORRFW");
-    gSystem->Load("libPWG2forward");
-    if(mode==mLocal || mode==mGrid) 
+    gSystem->Load("libANALYSISalice");   
+    gSystem->Load("libTOFbase"); 
+    gSystem->Load("libTOFrec"); 
+
+    if (mode == mLocal || mode == mGrid)
     {
-     gSystem->Load("libPWG2flowCommon");
-     cerr<<"libPWG2flowCommon loaded..."<<endl;
-     gSystem->Load("libPWG2flowTasks");
-     cerr<<"libPWG2flowTasks loaded..."<<endl;
+      gSystem->Load("libPWG2flowCommon"); 
+      gSystem->Load("libPWG2flowTasks"); 
     }
-    if(mode==mGridPAR) 
+    if (mode == mLocalPAR || mode == mGridPAR )
     {
-     AliAnalysisAlien::SetupPar("STEERBase");
-     cerr<<"STEERBase.par loaded..."<<endl;
-     AliAnalysisAlien::SetupPar("ESD");
-     cerr<<"ESD.par loaded..."<<endl;
-     AliAnalysisAlien::SetupPar("AOD");
-     cerr<<"AOD.par loaded..."<<endl;
-     AliAnalysisAlien::SetupPar("ANALYSIS");
-     cerr<<"ANALYSIS.par loaded..."<<endl;
-     AliAnalysisAlien::SetupPar("ANALYSISalice");
-     cerr<<"ANALYSISalice.par loaded..."<<endl;
-     AliAnalysisAlien::SetupPar("CORRFW");
-     AliAnalysisAlien::SetupPar("PWG2flowCommon");
-     cerr<<"PWG2flowCommon.par loaded..."<<endl;
-     AliAnalysisAlien::SetupPar("PWG2flowTasks");
-     cerr<<"PWG2flowTasks.par loaded..."<<endl;
+      AliAnalysisAlien::SetupPar("PWG2flowCommon");
+      AliAnalysisAlien::SetupPar("PWG2flowTasks");
     }
-  }
-  
-  else if (mode == mLocalPAR) {
-    //--------------------------------------------------------
-    //If you want to use root and par files from aliroot
-    //--------------------------------------------------------  
-    AliAnalysisAlien::SetupPar("STEERBase");
-    AliAnalysisAlien::SetupPar("ESD");
-    AliAnalysisAlien::SetupPar("AOD");
-    AliAnalysisAlien::SetupPar("ANALYSIS");
-    AliAnalysisAlien::SetupPar("ANALYSISalice");
-    AliAnalysisAlien::SetupPar("CORRFW");
-    AliAnalysisAlien::SetupPar("PWG2flowCommon");
-    cerr<<"PWG2flowCommon.par loaded..."<<endl;
-    AliAnalysisAlien::SetupPar("PWG2flowTasks");
-    cerr<<"PWG2flowTasks.par loaded..."<<endl;
   }
   
   //---------------------------------------------------------
@@ -198,8 +164,8 @@ void LoadLibraries(const anaModes mode)
     // Connect to proof
     printf("*** Connect to PROOF ***\n");
     gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    TProof::Open("alice-caf.cern.ch");
-    //TProof::Open("skaf.saske.sk");
+    TProof::Open("mkrzewic@alice-caf.cern.ch");
+    //TProof::Open("mkrzewic@skaf.saske.sk");
      // list the data available
     //gProof->ShowDataSets("/*/*"); 
     //gProof->ShowDataSets("/alice/sim/"); //for MC Data
@@ -213,7 +179,7 @@ void LoadLibraries(const anaModes mode)
     */
     //gProof->ClearPackage("ANALYSIS.par");
     //gProof->ClearPackage("ANALYSISalice.par");
-    gProof->ClearPackage("CORRFW.par");
+    //gProof->ClearPackage("CORRFW.par");
     
     gProof->ClearPackage("PWG2flowCommon");
     gProof->ClearPackage("PWG2flowTasks");
@@ -228,21 +194,17 @@ void LoadLibraries(const anaModes mode)
     gProof->UploadPackage("CORRFW.par");
     gProof->UploadPackage("PWG2flowCommon.par");
     gProof->UploadPackage("PWG2flowTasks.par");
+    gProof->UploadPackage("ALIRECO.par");
 
     // Enable the Packages 
     // The global package
-    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-05-AN");
-    //gProof->EnablePackage("aliroot_v4-19-05-AN",kTRUE);
-    // Or separate
-    
-    //gProof->EnablePackage("STEERBase");
-    //gProof->EnablePackage("ESD");
-    //gProof->EnablePackage("AOD");
-    
-    // Always needed
+    TList* list = new TList();
+    list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES","RAW:OCDB:STEER:TOF"));
+    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-07-AN",list);
+    gProof->EnablePackage("ALIRECO");
     //gProof->EnablePackage("ANALYSIS");
     //gProof->EnablePackage("ANALYSISalice");
-    gProof->EnablePackage("CORRFW");
+    //gProof->EnablePackage("CORRFW");
     gProof->EnablePackage("PWG2flowCommon");
     gProof->EnablePackage("PWG2flowTasks");
 

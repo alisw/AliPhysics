@@ -9,10 +9,12 @@
 #ifndef ALIFLOWTRACKCUTS_H
 #define ALIFLOWTRACKCUTS_H
 
+#include <TMatrix.h>
 #include "AliFlowTrackSimpleCuts.h"
 #include "AliESDtrackCuts.h"
 #include "TMCProcess.h"
 #include "AliESDtrack.h"
+#include "AliPID.h"
 
 class TObjArray;
 class AliVParticle;
@@ -21,6 +23,7 @@ class AliFlowTrack;
 class AliMCEvent;
 class AliVEvent;
 class AliMultiplicity; 
+class AliESDpid;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -35,6 +38,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   enum trackParameterType { kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet };
   enum trackParameterMix  { kPure, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt, kTrackWithPtFromFirstMother };
+  enum PIDsource {kTPCpid, kTOFpid, kTPCTOFpid};
 
   //setters (interface to AliESDtrackCuts)
   void SetMinNClustersTPC( Int_t a ) {fAliESDtrackCuts->SetMinNClustersTPC(a);}
@@ -124,15 +128,25 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TObject* GetInputObject(Int_t i);
   void Clear(Option_t* option="");
 
+  //PID
+  void SetPID(AliPID::EParticleType pid, PIDsource s=kTPCTOFpid) {fAliPID=pid; fPIDsource=s; fCutPID=kTRUE; InitPIDcuts();}
+  void SetESDpid(AliESDpid* o) {fESDpid=o;}
+  void SetTPCTOFpidCrossOverPt(Double_t pt) {fTPCTOFpidCrossOverPt=pt;}
+  void SetTPCpidCuts(TMatrixF* mat) {fTPCpidCuts=new TMatrixF(*mat);}
+  void SetTOFpidCuts(TMatrixF* mat) {fTOFpidCuts=new TMatrixF(*mat);}
+
  protected:
   Bool_t PassesCuts(AliVParticle* track);
   Bool_t PassesCuts(AliFlowTrackSimple* track);
   Bool_t PassesCuts(AliMultiplicity* track, Int_t id);
   Bool_t PassesMCcuts();
   Bool_t PassesMCcuts(AliMCEvent* mcevent, Int_t label);
+  Bool_t PassesTPCpidCut(AliESDtrack* track);
+  Bool_t PassesTOFpidCut(AliESDtrack* track);  
   void HandleESDtrack(AliESDtrack* track);
   void HandleVParticle(AliVParticle* track);
   void DefineHistograms();
+  void InitPIDcuts();
 
   //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
@@ -156,6 +170,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutChi2PerClusterTPC; //cut on tpc chi2
   Float_t fMaxChi2PerClusterTPC; //max chi2 tpc/cluster
   Float_t fMinChi2PerClusterTPC; //min chi2 tpc/cluster
+  Bool_t fCutNClustersTPC;       //cut on clusters?
+  Int_t fNClustersTPCMax;        //max tpc ncls
+  Int_t fNClustersTPCMin;        //min tpc clusters  
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
@@ -168,6 +185,14 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliMCParticle* fMCparticle;        //!mc particle
   AliVEvent* fEvent;                 //!placeholder for current event
   AliESDtrack fTPCtrack;             //!placeholder for TPC only track to avoid new/delete on every track
+
+  //PID
+  AliESDpid* fESDpid; //pid obj
+  PIDsource fPIDsource; //pid source
+  TMatrixF* fTPCpidCuts; //tpc pid cuts
+  TMatrixF* fTOFpidCuts; //tof pid cuts
+  Double_t fTPCTOFpidCrossOverPt; //pt cross over for pid, below TPC is taken, above TOF
+  AliPID::EParticleType fAliPID; //alipid
 
   ClassDef(AliFlowTrackCuts,4)
 };

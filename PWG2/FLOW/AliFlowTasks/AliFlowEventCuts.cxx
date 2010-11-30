@@ -270,33 +270,33 @@ Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
   const AliESDEvent* esdevent = dynamic_cast<const AliESDEvent*>(event);
   const AliMultiplicity* mult = esdevent->GetMultiplicity();
   Int_t refmult=0;
-  if (!fRefMultCuts)
+
+  switch (fRefMultMethod)
   {
-    switch (fRefMultMethod)
-    {
-      case kTPConly:
-        fRefMultCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
-        fRefMultCuts->SetEtaRange(-0.8,0.8);
-        fRefMultCuts->SetPtMin(0.15);
-        break;
-      case kSPDtracklets:
-        fRefMultCuts = new AliFlowTrackCuts();
-        fRefMultCuts->SetParamType(AliFlowTrackCuts::kESD_SPDtracklet);
-        fRefMultCuts->SetEtaRange(-0.8,0.8);
-        break;
-      case kV0:
-        if (!esdevent) return 0;
-        vzero=esdevent->GetVZEROData();
-        if (!vzero) return 0;
-        refmult = TMath::Nint(vzero->GetMTotV0A()+vzero->GetMTotV0C());
-        return refmult;
-      case kSPD1clusters:
-        if (!mult) return 0;
-        refmult = mult->GetNumberOfITSClusters(1);
-        return refmult;
-      default:
-        return 0;
-    }
+    case kTPConly:
+      if (fRefMultCuts) break;
+      fRefMultCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
+      fRefMultCuts->SetEtaRange(-0.8,0.8);
+      fRefMultCuts->SetPtMin(0.15);
+      break;
+    case kSPDtracklets:
+      if (fRefMultCuts) break;
+      fRefMultCuts = new AliFlowTrackCuts();
+      fRefMultCuts->SetParamType(AliFlowTrackCuts::kESD_SPDtracklet);
+      fRefMultCuts->SetEtaRange(-0.8,0.8);
+      break;
+    case kV0:
+      if (!esdevent) return 0;
+      vzero=esdevent->GetVZEROData();
+      if (!vzero) return 0;
+      refmult = TMath::Nint(vzero->GetMTotV0A()+vzero->GetMTotV0C());
+      return refmult;
+    case kSPD1clusters:
+      if (!mult) return 0;
+      refmult = mult->GetNumberOfITSClusters(1);
+      return refmult;
+    default:
+      return 0;
   }
 
   fRefMultCuts->SetEvent(const_cast<AliVEvent*>(event));

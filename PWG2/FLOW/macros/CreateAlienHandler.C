@@ -6,7 +6,7 @@ AliAnalysisGrid* CreateAlienHandler() {
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   
   // Set if you want to use par files on Grid:
-  Bool_t bUseParFiles = kFALSE;
+  Bool_t bUseParFiles = kTRUE;
   
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
   //plugin->SetRunMode("test");
@@ -14,12 +14,12 @@ AliAnalysisGrid* CreateAlienHandler() {
   //plugin->SetRunMode("submit");
   plugin->SetRunMode("full");
   //plugin->SetRunMode("terminate");
-  plugin->SetNtestFiles(1); // Relevant only for run mode "test" 
+  plugin->SetNtestFiles(3); // Relevant only for run mode "test" 
 
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
   plugin->SetROOTVersion("v5-27-06b");
-  plugin->SetAliROOTVersion("v4-21-04-AN");  
+  plugin->SetAliROOTVersion("v4-21-07-AN");  
   
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
@@ -32,9 +32,9 @@ AliAnalysisGrid* CreateAlienHandler() {
   // ============================================================================
   //  Example 2: Real data (set in macro runFlowTask.C: DATA = kTRUE, MCEP = kFALSE)
   plugin->SetGridDataDir("/alice/data/2010/LHC10h");
-  plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
+  plugin->SetDataPattern("*ESDs/pass1_5plus/*ESDs.root");
   plugin->SetRunPrefix("000"); // IMPORTANT!
-  plugin->AddRunNumber(137042); 
+  plugin->AddRunNumber(137161); 
   // plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
   plugin->SetOutputToRunNo();  
   // ============================================================================
@@ -48,21 +48,24 @@ AliAnalysisGrid* CreateAlienHandler() {
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
   plugin->SetGridWorkingDir("data");
   // Declare alien output directory. Relative to working directory.
-  plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
+  plugin->SetGridOutputDir("output1_5plus"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime
   // using ACLiC on the worker nodes:
   // ... (if this is needed see in official tutorial example how to do it!)
 
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
+  //plugin->SetAdditionalLibs("libCORRFW.so libTOFbase.so libTOFrec.so");
   if(!bUseParFiles)
   {
-   plugin->SetAdditionalLibs("libPWG2flowCommon.so libPWG2flowTasks.so");
-  } else // load libs via par files
-    { 
-     plugin->EnablePackage("PWG2flowCommon.par");
-     plugin->EnablePackage("PWG2flowTasks.par");
-    }
+    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTOFbase.so libTOFrec.so libPWG2flowCommon.so libPWG2flowTasks.so");
+  } 
+  else // load libs via par files
+  { 
+    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTOFbase.so libTOFrec.so");
+    plugin->EnablePackage("PWG2flowCommon.par");
+    plugin->EnablePackage("PWG2flowTasks.par");
+  }
   // Do not specify your outputs by hand anymore:
   plugin->SetDefaultOutputs(kTRUE);
   // To specify your outputs by hand set plugin->SetDefaultOutputs(kFALSE); and comment in line plugin->SetOutputFiles("..."); 

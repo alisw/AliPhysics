@@ -23,11 +23,13 @@ class AliAnalysisTaskQAflow: public AliAnalysisTaskSE
 
     void SetTrackCuts(AliFlowTrackCuts* trackcuts) {fTrackCuts=trackcuts;}
     void SetEventCuts(AliFlowEventCuts* eventcuts) {fEventCuts=eventcuts;}
-    void SetFillNTuple(Bool_t b) {fFillNtuple=b;}
+    void SetFillNTuple(Bool_t b=kTRUE) {fFillNtuple=b;}
+    void SetDoCorrelations(Bool_t b=kTRUE) {fDoCorrelations=b;}
   
   private:
     TObjArray* fOutput; //output histograms
     Bool_t fFillNtuple;  //fil; the ntuple
+    Bool_t fDoCorrelations; //do the slow loopinloop correlations
     TNtuple* fNtuple; //output ntuple
     AliFlowEventCuts* fEventCuts; //AliAnalysisCuts - applied before analysis - for comparing different event classes
     AliFlowTrackCuts* fTrackCuts; //AliFlowTrackCuts go in here
