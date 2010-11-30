@@ -44,7 +44,7 @@ class AliUEHist : public TObject
   
   void CopyReconstructedData(AliUEHist* from);
   
-  TH1D* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1);
+  TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Bool_t twoD = kFALSE);
   
   TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Int_t source = 1);
   TH1* GetEventEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1);
