@@ -45,7 +45,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void AddPercentileFileToList(TString filename) { fFileList->Add(new TObjString(filename)); }
   void AddPercentileFile2ToList(TString filename) { fFileList2->Add(new TObjString(filename)); }
 
-  Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc, int run);
+  Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc);
   Float_t GetCorrSPD2(Float_t spd2raw,Float_t zv);
 
  private:

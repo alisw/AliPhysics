@@ -269,7 +269,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     multV0C=esdV0->GetMTotV0C();
 
     float v0CorrR;
-    v0Corr = (Short_t) (GetCorrV0(esd,v0CorrR,fRunNo));
+    v0Corr = (Short_t) (GetCorrV0(esd,v0CorrR));
     v0CorrResc = (Short_t)v0CorrR;
 
     // ***** Vertex Info
@@ -484,7 +484,7 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* esd)
   return -1;
 }
 //________________________________________________________________________
-Float_t AliCentralitySelectionTask::GetCorrV0(const AliESDEvent* esd, float &v0CorrResc, int run) 
+Float_t AliCentralitySelectionTask::GetCorrV0(const AliESDEvent* esd, float &v0CorrResc) 
 {
   // correct V0 non-linearity, prepare a version rescaled to SPD2 corr
   Double_t *par0;
@@ -556,7 +556,7 @@ Float_t AliCentralitySelectionTask::GetCorrV0(const AliESDEvent* esd, float &v0C
 			       3.92e-09 , 1.18e-09 , 2.26e-09 , 1.57e-09 , 2.02e-09 , 2.71e-09 , 2.99e-09 , 3.04e-09 }; 
   
   
-  if (run==137161) {
+  if (esd->GetRunNumber() <= 137165) {
     par0=par0_137161;
     par1=par1_137161;
     par2=par2_137161;
@@ -573,14 +573,7 @@ Float_t AliCentralitySelectionTask::GetCorrV0(const AliESDEvent* esd, float &v0C
   for(Int_t i = 0; i < 64; ++i) {
     Double_t b = (esdV0->GetMultiplicity(i)*par1[i]-par0[i]);
     Double_t s = (b*b-4.*par2[i]*esdV0->GetMultiplicity(i)*esdV0->GetMultiplicity(i));
-    Double_t n;
-    if (s<0) {
-      printf("FPE %d %.2f %.2f %.2e\n",i,esdV0->GetMultiplicity(i),b,(b*b-4.*par2[i]*esdV0->GetMultiplicity(i)*esdV0->GetMultiplicity(i)));
-      n = -b;
-    }
-    else {
-      n = (-b + TMath::Sqrt(s));
-    }
+    Double_t n = (s<0) ? -b : (-b + TMath::Sqrt(s));
     multChCorr[i] = 2.*esdV0->GetMultiplicity(i)/n*par0[i];
     multCorr += multChCorr[i];
     multCorr2 += (multChCorr[i]/par0[i]/64.);
