@@ -444,7 +444,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskJetCluster *taskCl = 0;
      Float_t fCenUp = 0;
      Float_t fCenLo = 0;
-     if(kIsPbPb){
+     if(kIsPbPb&&!kIsMC){
        fCenLo = 0;
        fCenUp = 80;
      }
@@ -467,16 +467,49 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data()); 
        taskCl->SetCentralityCut(fCenLo,fCenUp);
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data());
-       taskCl->SetCentralityCut(fCenLo,fCenUp);
-       taskCl->SetJetTriggerPtCut(999);// hard coded values in tha task, only flag 
        taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04");
 
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data());
+       taskCl->SetCentralityCut(fCenLo,fCenUp);
+       taskCl->SetJetTriggerPtCut(40.);//
+       taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04");
+
+
+
        if(kUseAODMC){
-	 taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data()); // this one is for the background jets
-	 taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data()); // this one is for the background jets
-	 taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1,kDeltaAODJetName.Data()); // this one is for the background random jets
-	 taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1,kDeltaAODJetName.Data()); // this one is for the background random jets
+	 if(kIsPbPb){
+	   // calcluate the backgrounds first, but only R = 0.4
+	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1,kDeltaAODJetName.Data()); // this one is for the background random jets
+	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1,kDeltaAODJetName.Data()); // this one is for the background random jets
+	   
+	   
+	   
+	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data());
+	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC_KT04");
+	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data());
+	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC_KT04");
+	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data());
+	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC2_KT04");
+	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data());
+	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC2_KT04");
+	 }
+	 else{
+	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data()); // this one is for the background jets
+	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data()); // this one is for the background jets
+
+	   
+	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data());
+	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC_KT06");
+	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data());
+	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC_KT06");
+	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data());
+	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC2_KT06");
+	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data());
+	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC2_KT06");
+
+
+
+	 }
        }
 
        if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
@@ -982,7 +1015,8 @@ void CheckModuleFlags(const char *mode) {
    }
 
    // Decide if we have PbPb
-   if(kGridDataSet.CompareTo("LHC10h")==0) {
+   if(kGridDataSet.CompareTo("LHC10h")==0||kGridDataSet.Contains("LHC10h")) {
+     Printf("Using settings for Pb+Pb");
      kIsPbPb = true;
    }
 
@@ -1587,7 +1621,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetRunMode(plugin_mode);
    if (kPluginUseProductionMode) plugin->SetProductionMode();
    plugin->SetJobTag(kJobTag);
-   plugin->SetNtestFiles(1);
+   plugin->SetNtestFiles(2);
 //   plugin->SetPreferedSE("ALICE::NIHAM::File");
 // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");

@@ -99,23 +99,14 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
  
 
-
-   // these are needed for older MC 
-   /*
-   AliESDtrackCuts* esdTrackCutsH1 = new AliESDtrackCuts("OldStandardTrackCuts+ITSRefit", "High pT ESD Track Cuts");
-   esdTrackCutsH1->SetMinNClustersTPC(50);
-   esdTrackCutsH1->SetMaxChi2PerClusterTPC(3.5);
-   esdTrackCutsH1->SetRequireTPCRefit(kTRUE);
-   esdTrackCutsH1->SetMaxDCAToVertexXY(2.4);
-   esdTrackCutsH1->SetMaxDCAToVertexZ(3.2);
-   esdTrackCutsH1->SetDCAToVertex2D(kTRUE);
-   esdTrackCutsH1->SetRequireSigmaToVertex(kFALSE);
-   esdTrackCutsH1->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCutsH1->SetRequireITSRefit(kTRUE); // additional cut 
-   */
-   AliESDtrackCuts* esdTrackCutsH1 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-   esdTrackCutsH1->SetName("StandardFromAliESDTrackCutsMaxRelPt");
-   esdTrackCutsH1->SetMaxRel1PtUncertainty(0.4); // new 
+   AliESDtrackCuts* esdTrackCutsH4 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
+   esdTrackCutsH4->SetMaxDCAToVertexXY(2.4);
+   esdTrackCutsH4->SetMaxDCAToVertexZ(3.2);
+   esdTrackCutsH4->SetDCAToVertex2D(kTRUE);
+   esdTrackCutsH4->SetDCAToVertex2D(kTRUE);
+   esdTrackCutsH4->SetPtRange(0.15,1E10);
+   esdTrackCutsH4->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+   esdTrackCutsH4->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
 
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
@@ -136,7 +127,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // 64 1<<6
    trackFilter->AddCuts(esdTrackCutsH3);
    // 128 1<<7
-   trackFilter->AddCuts(esdTrackCutsH1);
+   trackFilter->AddCuts(esdTrackCutsH4);
  
    // Filter with cuts on V0s
    AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
