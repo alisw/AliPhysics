@@ -9,6 +9,8 @@
  * @param vzMax    Maximum interaction point z coordinate
  * @param rebin    How many bins to group
  * @param title    Title to put on the plot 
+ * @param hhd      Whether to do HHD comparison
+ * @param comp     Whether to do comparisons 
  *
  * @ingroup pwg2_forward_analysis_scripts
  */

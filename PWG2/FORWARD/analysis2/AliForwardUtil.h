@@ -44,7 +44,7 @@ public:
    * @param delta  Most probable value 
    * @param xi     The 'width' of the distribution 
    *
-   * @return @f$ f'_{L}(x;\Delta,\xi) 
+   * @return @f$ f'_{L}(x;\Delta,\xi) @f$
    */
   static Double_t Landau(Double_t x, Double_t delta, Double_t xi);
   
@@ -53,14 +53,14 @@ public:
    * Calculate the value of a Landau convolved with a Gaussian 
    * 
    * @f[ 
-   *  f(x;\Delta,\xi,\sigma') = \frac{1}{\sigma' \sqrt{2 \pi}}
+   * f(x;\Delta,\xi,\sigma') = \frac{1}{\sigma' \sqrt{2 \pi}}
    *    \int_{-\infty}^{+\infty} d\Delta' f'_{L}(x;\Delta',\xi)
-   *                       \exp{-\frac{(\Delta-\Delta')^2}{2\sigma'^2}}
+   *    \exp{-\frac{(\Delta-\Delta')^2}{2\sigma'^2}}
    * @f]
    * 
-   * where @f$ f'_{L}@ is the Landau distribution, @f$ \Delta@f$ the
-   * energy loss, @f$ \xi@f the width of the Landau, and @f$
-   * \sigma'^2=\sigma^2-\sigma_n^2 @f$.  Here, @f$\sigma@f$ is the
+   * where @f$ f'_{L}@f$ is the Landau distribution, @f$ \Delta@f$ the
+   * energy loss, @f$ \xi@f$ the width of the Landau, and 
+   * @f$ \sigma'^2=\sigma^2-\sigma_n^2 @f$.  Here, @f$\sigma@f$ is the
    * variance of the Gaussian, and @f$\sigma_n@f$ is a parameter modelling 
    * noise in the detector.  
    *
@@ -75,8 +75,8 @@ public:
    * @param x         where to evaluate @f$ f@f$
    * @param delta     @f$ \Delta@f$ of @f$ f(x;\Delta,\xi,\sigma')@f$
    * @param xi        @f$ \xi@f$ of @f$ f(x;\Delta,\xi,\sigma')@f$
-   * @param sigma     @f$ \sigma@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f
-   * @param sigma_n   @f$ \sigma_n@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f
+   * @param sigma     @f$ \sigma@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f$
+   * @param sigma_n   @f$ \sigma_n@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f$
    * 
    * @return @f$ f@f$ evaluated at @f$ x@f$.  
    */
@@ -86,14 +86,14 @@ public:
   //------------------------------------------------------------------
   /** 
    * Evaluate 
-   * @f$ 
-   *     f_N(x;\Delta,\xi,\sigma') = \sum_{i=1}^N a_i f(x;\Delta_i,\xi_i,\sigma'_i)
-   * @f$ 
+   * @f[ 
+      f_N(x;\Delta,\xi,\sigma') = \sum_{i=1}^N a_i f(x;\Delta_i,\xi_i,\sigma'_i)
+     @f] 
    * 
    * where @f$ f(x;\Delta,\xi,\sigma')@f$ is the convolution of a
    * Landau with a Gaussian (see LandauGaus).  Note that 
-   * @f$ a_1 = 1@f$, @\Delta_i = i(\Delta_1 + \xi\log(i))@f$, 
-   * @f$\xi_i=i\xi_1@f, and @f$\sigma_i'^2 = \sigma_n^2 + i\sigma_1^2@f$. 
+   * @f$ a_1 = 1@f$, @f$\Delta_i = i(\Delta_1 + \xi\log(i))@f$, 
+   * @f$\xi_i=i\xi_1@f$, and @f$\sigma_i'^2 = \sigma_n^2 + i\sigma_1^2@f$. 
    *  
    * References: 
    *  - <a href="http://dx.doi.org/10.1016/0168-583X(84)90472-5">Nucl.Instrum.Meth.B1:16</a>
@@ -121,6 +121,15 @@ public:
    */
   struct ELossFitter 
   {
+    enum { 
+      kC     = 0,
+      kDelta, 
+      kXi, 
+      kSigma, 
+      kSigmaN, 
+      kN, 
+      kA
+    };
     /** 
      * Constructor 
      * 
@@ -154,7 +163,7 @@ public:
      * If there's no 1-particle fit present, it does that first 
      *
      * @param dist   Data to fit the function to 
-     * @param N      Number of particle signals to fit 
+     * @param n      Number of particle signals to fit 
      * @param sigman If larger than zero, the initial guess of the
      *               detector induced noise. If zero or less, then this 
      *               parameter is ignored in the fit (fixed at 0)

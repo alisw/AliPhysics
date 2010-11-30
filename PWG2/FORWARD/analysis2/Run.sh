@@ -6,8 +6,6 @@ nodraw=0
 rebin=1
 vzmin=-10
 vzmax=10
-ncutbins=1
-correctioncut=0.1
 batch=0
 gdb=0
 proof=0
@@ -15,6 +13,9 @@ type=
 cms=900
 hhd=1
 comp=1
+anal=0
+term=0
+tit=
 
 usage()
 {
@@ -26,17 +27,18 @@ Do Pass1 and Pass2 on ESD files in current directory.
 Options:
 	-h,--help		This help                  
 	-n,--events N		Number of events           ($nev)
-	-N,--no-analysis	Do not analyse, just draw  ($noanal)
-	-D,--no-draw		Do not draw, just analysis ($nodraw)
+	-1,--pass1 		Run only pass 1, no draw   ($nodraw)
+	-2,--pass2		Run only pass 2, just draw ($noanal)
 	-r,--rebin N		Rebin by N                 ($rebin)
-	-c,--n-cut-bins N       Number of cut bins         ($ncutbins)
-	-C,--correction-cut V   Cut on secondary corr,     ($correctioncut)
 	-v,--vz-min CM          Minimum value of vz        ($vzmin)
 	-V,--vz-max CM          Maximum value of vz        ($vzmax)
 	-t,--trigger TYPE       Select trigger TYPE        ($type)
 	-e,--energy CMS         Center of mass energy      ($cms)
 	-b,--batch              Do batch processing        ($batch)
-	-p,--proof		Run in PROOF(Lite) mode    ($proof)
+	-P,--proof		Run in PROOF(Lite) mode    ($proof)
+	-A,--analyse-only       Run only analysis          ($anal)
+	-T,--terminate-only     Run only terminate         ($term)
+	-S,--title STRING       Set the title string       ($tit)
 	-g,--gdb		Run in GDB mode    	   ($gdb)
 	-H,--hhd		Do comparison to HHD	   ($hhd)
 	-O,--other		Do comparison to other	   ($comp)
@@ -60,10 +62,12 @@ while test $# -gt 0 ; do
     case $1 in 
 	-h|--help)           usage            ; exit 0;; 
 	-n|--events)         nev=$2           ; shift ;; 
-	-N|--no-analysis)    noanal=`toggle $noanal`   ;; 
-	-D|--no-draw)        nodraw=`toggle $nodraw`   ;; 
+	-2|--pass2)          noanal=`toggle $noanal`   ;; 
+	-1|--pass1)          nodraw=`toggle $nodraw`   ;; 
 	-b|--batch)          batch=`toggle $batch`   ;; 
-	-p|--proof)          proof=`toggle $proof`   ;; 
+	-P|--proof)          proof=`toggle $proof`   ;; 
+	-A|--analyse-only)   anal=`toggle $anal`   ;; 
+	-T|--terminate-only) term=`toggle $term`   ;; 
 	-g|--gdb)            gdb=`toggle $gdb`   ;; 
 	-H|--hhd)            hhd=`toggle $hhd`   ;; 
 	-O|--other)          other=`toggle $other`   ;; 
@@ -71,8 +75,7 @@ while test $# -gt 0 ; do
 	-v|--vz-min)         vzmin=$2         ; shift ;; 
 	-V|--vz-max)         vzmax=$2         ; shift ;; 
 	-e|--energy)         cms=$2           ; shift ;;
-	-c|--n-cut-bins)     ncutbins=$2      ; shift ;; 
-	-C|--correction-cut) correctioncut=$2 ; shift ;;
+	-S|--title)          tit="$2"         ; shift ;;
 	-t|--type)           
 	    if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
 	    shift ;;
@@ -91,11 +94,26 @@ fi
 if test $noanal -lt 1 ; then 
     rm -f AnalysisResult.root AliAODs.root
     rm -f fmdana.png
+    
+    # Setup analysis flags
+    af=0
+    if test $proof -gt 0 ; then 
+	af=2 
+    else 
+	if test $anal -gt 0 ; then 
+	    af=8
+	elif test $term -gt 0 ; then 
+	    af=16
+	else 
+	    af=4
+	fi
+    fi
 
     if test $gdb -gt 0 ; then 
 	export PROOF_WRAPPERCMD="gdb -batch -x $ALICE_ROOT/PWG2/FORWARD/analysis2/gdb_cmds --args"
     fi
-    aliroot $opts $ALICE_ROOT/PWG2/FORWARD/analysis2/Pass1.C\(\".\",$nev,$ncutbins,$correctioncut,$proof\) $redir 
+    aliroot $opts $ALICE_ROOT/PWG2/FORWARD/analysis2/Pass1.C\(\".\",$nev,$af\) \
+	$redir 
     rm -f event_stat.root EventStat_temp.root outputs_valid
     if test ! -f AnalysisResults.root || test ! -f AliAODs.root ; then 
 	echo "Analysis failed" 
@@ -106,7 +124,12 @@ fi
 
 if test $nodraw -lt 1 ; then
     rm -f result.root 
-    aliroot ${opts} $ALICE_ROOT/PWG2/FORWARD/analysis2/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,\"Run\ 118506,\ $nev\ Events,\ v_{z}#in[$vzmin,$vzmax],\ $type\",$hhd,$comp\)
+    if test "x$tit" = "x" ; then 
+	tit="$nev\ events,\ v_{z}#in[$vzmin,$vzmax],\ $type"
+    else 
+	tit=`echo $tit | tr ' ' '\ '` 
+    fi
+    aliroot ${opts} $ALICE_ROOT/PWG2/FORWARD/analysis2/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,\"$tit\",$hhd,$comp\)
 fi
 
 

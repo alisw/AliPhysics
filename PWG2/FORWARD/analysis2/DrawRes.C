@@ -100,6 +100,8 @@ public:
    * @param mask   Trigger mask 
    * @param energy Collision energy @f$ \sqrt{s}@f$ or @f$\sqrt{s_{NN}}@f$ 
    * @param title  Title to put on the plot
+   * @param doHHD  Whether to do HHD comparison
+   * @param doComp Whether to do comparisons 
    * 
    * @return True on success, false otherwise 
    */
@@ -235,6 +237,8 @@ public:
    * @param rebin  How many times to rebin
    * @param energy Collision energy 
    * @param mask   Trigger mask 
+   * @param doHHD  Whether to do HHD comparison
+   * @param doComp Whether to do comparisons 
    * 
    * @return true on success, false otherwise 
    */
@@ -446,7 +450,8 @@ public:
   /** 
    * Get the result from previous analysis code 
    * 
-   * @param fn File to open 
+   * @param fn  File to open 
+   * @param nsd Whether this is NSD
    * 
    * @return null or result of previous analysis code 
    */
@@ -544,6 +549,7 @@ public:
    * @param s      Scaling factor 
    * @param ytitle Y axis title 
    * @param force  Whether to draw the stack first or not 
+   * @param ynDiv  Divisions on Y axis 
    */
   void FixAxis(THStack* stack, Double_t s, const char* ytitle, 
 	       Int_t ynDiv=10, Bool_t force=true) 

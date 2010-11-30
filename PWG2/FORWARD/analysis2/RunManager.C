@@ -1,17 +1,52 @@
 /** 
- * Script to set-up a train 
- * 
- * @param esd           ESD file 
- * @param mc            Whether to do MC or not
- * @param nEvents       Number of events
- * @param nCutBins      Bins to cut away 
- * @param correctionCut 
+ * Flags for the analysis
  *
  * @ingroup pwg2_forward_analysis_scripts
  */
-void RunManager(const char* esddir, Bool_t mc=kFALSE, Int_t nEvents=1000,
-		Int_t nCutBins=1, Float_t correctionCut=0.1, 
-		Bool_t proof=false)
+enum {
+  kMC        = 0x01, // MC input 
+  kProof     = 0x02, // Run in proof mode 
+  kFull      = 0x04, // Do full analysis - including terminate 
+  kAnalyse   = 0x08, // Run the analysis 
+  kTerminate = 0x10  // Run only terminate 
+};
+
+/** 
+ * Run first pass of the analysis - that is read in ESD and produce AOD
+ * 
+ * @param esddir    ESD input directory. Any file matching the pattern 
+ *                  *AliESDs*.root are added to the chain 
+ * @param nEvents   Number of events to process.  If 0 or less, then 
+ *                  all events are analysed
+ * @param flags     Job flags. A bit mask of 
+ *  - 0x01 (MC)        Monte-Carlo truth handler installed 
+ *  - 0x02 (PROOF)     Proof mode 
+ *  - 0x04 (FULL)      Run full analysis - including terminate 
+ *  - 0x08 (ANALYSE)   Run only analysis - not terminate 
+ *  - 0x10 (TERMINATE) Run no analysis - just terminate.  
+ * 
+ * of these, PROOF, FULL, ANALYSE, and TERMINATE are mutually exclusive. 
+ *
+ * If PROOF mode is selected, then Terminate will be run on the master node 
+ * in any case. 
+ * 
+ * If FULL is selected, then the full analysis is done.  Note that
+ * this can be combined with PROOF but with no effect.
+ *
+ * ANALYSE cannot be combined with FULL, PROOF, or TERMINATE.  In a
+ * local job, the output AnalysisResults.root will still be made, but
+ * terminate is not called.
+ *
+ * In TERMINATE, the file AnalysisResults.root is opened and all
+ * containers found are connected to the tasks.  The terminate member
+ * function is then called
+ * 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
+void RunManager(const char* esddir, 
+		Int_t       nEvents=1000, 
+		UShort_t    flags=kFull)
 {
   // --- Libraries to load -------------------------------------------
   gSystem->Load("libVMC");
@@ -31,7 +66,7 @@ void RunManager(const char* esddir, Bool_t mc=kFALSE, Int_t nEvents=1000,
   gSystem->Load("libPWG2forward2");
 
   // --- Check for proof mode, and possibly upload pars --------------
-  if (proof) { 
+  if (flags & kProof) { 
     TProof::Open("workers=2");
     const char* pkgs[] = { "STEERBase", "ESD", "AOD", "ANALYSIS", 
 			   "ANALYSISalice", "PWG2forward", "PWG2forward2", 0};
@@ -66,6 +101,9 @@ void RunManager(const char* esddir, Bool_t mc=kFALSE, Int_t nEvents=1000,
     Info("RunManager", "Adding %s to chain", esd.Data());
     chain->Add(esd);
   }  
+  // If 0 or less events is select, choose all 
+  if (nEvents <= 0) nEvents = chain->GetEntries();
+    
 
   // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", 
@@ -87,9 +125,11 @@ void RunManager(const char* esddir, Bool_t mc=kFALSE, Int_t nEvents=1000,
   mgr->SetInputEventHandler(esdHandler);      
        
   // Monte Carlo handler
-  // AliMCEventHandler* mcHandler = new AliMCEventHandler();
-  // mgr->SetMCtruthEventHandler(mcHandler);
-  // mcHandler->SetReadTR(readTR);    
+  if (flags & kMC) { 
+    AliMCEventHandler* mcHandler = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mcHandler);
+    mcHandler->SetReadTR(readTR);    
+  }
   
   // AOD output handler
   AliAODHandler* aodHandler   = new AliAODHandler();
@@ -99,10 +139,10 @@ void RunManager(const char* esddir, Bool_t mc=kFALSE, Int_t nEvents=1000,
   // --- Add tasks ---------------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliAnalysisTask* task = AddTaskFMD(nCutBins, correctionCut);
+  AliAnalysisTask* task = AddTaskFMD();
   mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
 
-  task = AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
+  task = AddTaskPhysicsSelection((flags & kMC), kTRUE, kTRUE);
   mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
   
   // --- Run the analysis --------------------------------------------
@@ -111,15 +151,24 @@ void RunManager(const char* esddir, Bool_t mc=kFALSE, Int_t nEvents=1000,
     Error("RunManager", "Failed to initialize analysis train!");
     return;
   }
+  // Skip terminate if we're so requested and not in Proof or full mode
+  mgr->SetSkipTerminate(!(flags & kProof) &&
+			!(flags & kFull)  && 
+			(flags & kAnalyse));
   // Some informative output 
   mgr->PrintStatus();
   // mgr->SetDebugLevel(3);
-  if (mgr->GetDebugLevel() < 1 && !proof) 
+  if (mgr->GetDebugLevel() < 1 && !(flags & kProof)) 
     mgr->SetUseProgressBar(kTRUE);
 
   // Run the train 
   t.Start();
-  mgr->StartAnalysis(proof ? "proof" : "local", chain, nEvents);
+  if (!(flags & kTerminate))
+    mgr->StartAnalysis((flags & kProof) ? "proof" : "local", chain, nEvents);
+  else {
+    mgr->ImportWrappers();
+    mgr->Terminate();
+  }
   t.Stop();
   t.Print();
 }
