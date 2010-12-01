@@ -2,7 +2,6 @@ AliAnalysisGrid* CreateAlienHandler() {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init 
   // then source /tmp/gclient_env_$UID in the current shell.
-  if (!AliAnalysisGrid::CreateToken()) return NULL;
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   
   // Set if you want to use par files on Grid:

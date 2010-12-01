@@ -327,15 +327,15 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     }
   }
 
-  //check event cuts
-  if (fCutsEvent) 
-  {
-    if (!fCutsEvent->IsSelected(InputEvent())) return;
-  }
-
   //use the new and temporarily inclomplete way of doing things
   if (fAnalysisType == "AUTOMATIC")
   {
+    //check event cuts
+    if (fCutsEvent) 
+    {
+      if (!fCutsEvent->IsSelected(InputEvent())) return;
+    }
+
     //PID
     recalibTOF(dynamic_cast<AliESDEvent*>(InputEvent()));
 

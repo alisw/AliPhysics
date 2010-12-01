@@ -27,9 +27,9 @@ class AliFlowEventCuts : public TNamed {
   AliFlowEventCuts& operator=(const AliFlowEventCuts& someCuts);
   virtual  ~AliFlowEventCuts();
   
-  virtual Bool_t IsSelected(const TObject* obj);
+  virtual Bool_t IsSelected(TObject* obj);
 
-  Bool_t PassesCuts(const AliVEvent* event);
+  Bool_t PassesCuts(AliVEvent* event);
   
   static AliFlowEventCuts* StandardCuts();
   
@@ -60,9 +60,14 @@ class AliFlowEventCuts : public TNamed {
   void SetMeanPtCuts( AliFlowTrackCuts* cuts ) {fMeanPtCuts=static_cast<AliFlowTrackCuts*>(cuts->Clone());}
   AliFlowTrackCuts* GetRefMultCuts() const {return fRefMultCuts;}
 
-  Int_t RefMult(const AliVEvent* event);
+  Int_t RefMult(AliVEvent* event);
   //Int_t GetRefMult() {return fRefMult;}
-  Int_t GetReferenceMultiplicity(const AliVEvent* event) {return RefMult(event);}
+  Int_t GetReferenceMultiplicity(AliVEvent* event) {return RefMult(event);}
+  const char* CentrMethName(refMultMethod) const;
+  void SetCentralityPercentileRange(Float_t min, Float_t max){ fCentralityPercentileMin=min;
+                                                               fCentralityPercentileMax=max;
+                                                               fCutCentralityPercentile=kTRUE; }
+  void SetCentralityPercentileMethod( refMultMethod m) {fRefMultMethod=m;}
 
  private:
   Bool_t fCutNumberOfTracks;//cut on # of tracks
@@ -90,6 +95,11 @@ class AliFlowEventCuts : public TNamed {
   Double_t fMeanPtMax; //max mean pt
   Double_t fMeanPtMin; //min mean pt
   Bool_t fCutSPDvertexerAnomaly; //cut on the spd vertexer anomaly
+  Bool_t fCutCentralityPercentile; //cut on centrality perc. from AliESDCentrality
+  refMultMethod fCentralityPercentileMethod; //where to get the percentile from
+  Float_t fCentralityPercentileMax; // max centr. perc
+  Float_t fCentralityPercentileMin; // min centr. perc
+
 
 
   ClassDef(AliFlowEventCuts,2)

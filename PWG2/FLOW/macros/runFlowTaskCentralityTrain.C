@@ -11,17 +11,18 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
 //Int_t binfirst = 4;  //where do we start numbering bins
 //Int_t binlast = 6;  //where do we stop numbering bins
 //const Int_t numberOfCentralityBins = 9;
-//Int_t centralityArray[numberOfCentralityBins+1] = {41,80,146,245,384,576,835,1203,1471,10000}; // in terms of reference multiplicity
 Int_t binfirst = 0;  //where do we start numbering bins
-Int_t binlast = 0;  //where do we stop numbering bins
-const Int_t numberOfCentralityBins = 1;
-Int_t centralityArray[numberOfCentralityBins+1] = {41,10000}; // in terms of reference multiplicity
+Int_t binlast = 8;  //where do we stop numbering bins
+const Int_t numberOfCentralityBins = 9;
+Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
+
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
+
 
 //void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nRuns = 10, 
 //Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
 
-void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
+void runFlowTaskCentralityTrain(Int_t mode = mGridPAR, Int_t nRuns = 50000000, 
 		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_plusplusplus", Int_t offset=0) 
 //void runFlowTaskCentralityTrain(Int_t mode = mLocal, Int_t nRuns = 50000000, 
 //				Bool_t DATA = kTRUE, const Char_t* dataDir="./data/", Int_t offset=0) 
@@ -65,14 +66,21 @@ void runFlowTaskCentralityTrain(Int_t mode = mPROOF, Int_t nRuns = 50000000,
 
   // Task to check the offline trigger:
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
-  AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(!DATA,0);
+  AddTaskPhysicsSelection(!DATA);
+
+  //Add also the centrality determination task
+  AliCentralitySelectionTask* centralityTask = new AliCentralitySelectionTask("CentralitySelection");
+  centralityTask->SetPercentileFile("$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161_v5.root");
+  centralityTask->SetPercentileFile2("$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137366_v4.root");
+  mgr->AddTask(centralityTask);
+  mgr->ConnectInput(centralityTask,0,mgr->GetCommonInputContainer());
   
   // Setup analysis per centrality bin:
   gROOT->LoadMacro("AddTaskFlowCentrality.C");
   for (Int_t i=binfirst; i<binlast+1; i++)
   {
-    Int_t lowCentralityBinEdge = centralityArray[i];
-    Int_t highCentralityBinEdge = centralityArray[i+1];
+    Float_t lowCentralityBinEdge = centralityArray[i];
+    Float_t highCentralityBinEdge = centralityArray[i+1];
     Printf("\nWagon for centrality bin %i:",i);
     AddTaskFlowCentrality( lowCentralityBinEdge,
                            highCentralityBinEdge,
