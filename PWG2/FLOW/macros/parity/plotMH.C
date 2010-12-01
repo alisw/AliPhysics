@@ -1,5 +1,15 @@
+//=====================================================//
+//Macro that reads the output of the flow analysis and 
+//retrieves the QC and the MH containers.
+//The macro produces an output called outputMH.root 
+//that contains the four histograms related to the 
+//3 particle correlator and the two integrated v2{2,QC} 
+//and v2{4,QC}
+//Author: Panos.Christakoglou@cern.ch
+
 void plotMH(const char* filename = "AnalysisResults.root",
-	    const char* analysisType = "ESD") {
+	    const char* analysisType = "TPC only",
+	    Int_t centrality = 0) {
   gStyle->SetPalette(1,0);
 
   //----------------------------------------------------------
@@ -18,18 +28,138 @@ void plotMH(const char* filename = "AnalysisResults.root",
   //----------------------------------------------------------
   // >>>>>>>>>>> Open file - Get objects <<<<<<<<<<<<<< 
   //----------------------------------------------------------
-  TFile *f = TFile::Open(filename);
-  if(!f) {
+  TFile *fInput = TFile::Open(filename);
+  if(!fInput) {
     Printf("File not found!!!");
     break;
   }
   //f->ls();
 
+  //Get the TList of the MH
+  TList *listMH = GetMHResults(fInput,analysisType,centrality);
+
+  //Get the TList of the QC
+  TList *listQC = GetQCResults(fInput,analysisType,centrality);
+
+  TFile *fOutput = TFile::Open("outputMH.root","recreate");
+  listMH->Write();
+  listQC->Write();
+  fOutput->Close();
+}
+
+//____________________________________________________________//
+TList *GetQCResults(TFile *fInput,
+		    const char* analysisType = 0x0,
+		    Int_t centrality = -1) {
+  //Function that reads the TDirectoryFile of the MH
+  //and returns a TList with the relevant plots.
+  TList *listOutput = new TList();
+  listOutput->SetName("listQC");
+
+  //______________________________________________________________//
+  //Global variables
+  const Int_t nQCMethods = 4;
+  AliFlowCommonHistResults *commonHistRes[nQCMethods];
+  TString methodIntegratedFlowQC[nQCMethods] = {"2ndOrderQC",
+						"4thOrderQC",
+						"6thOrderQC",
+						"8thOrderQC"};
+  TString gAliFlowCommonHistName[nQCMethods];
+
   //______________________________________________________________//
   //Get the TDirectoryFile
-  TString directoryName = "outputMHanalysis"; 
-  directoryName += analysisType;
-  TDirectoryFile *outputMHanalysis = dynamic_cast<TDirectoryFile *>(f->Get(directoryName.Data()));
+  TString directoryNameQC = 0;
+  directoryNameQC = "outputQCanalysis"; 
+  if(analysisType) directoryNameQC += analysisType;
+  TDirectoryFile *outputQCanalysis = dynamic_cast<TDirectoryFile *>(fInput->Get(directoryNameQC.Data()));
+  if(!outputQCanalysis) {
+    Printf("QC directory not found!!!");
+    break;
+  }
+  //outputQCanalysis->ls();
+
+  //______________________________________________________________//
+  //Get the TList
+  TString listNameQC = 0;
+  if(centrality > -1) {
+    listNameQC = "cobjQC_outputCentrality"; 
+    listNameQC += centrality; listNameQC += ".root";
+  }
+  else listNameQC = "cobjQC";
+  TList *cobjQC = dynamic_cast<TList *>(outputQCanalysis->Get(listNameQC.Data()));
+  if(!cobjQC) {
+    Printf("QC object list not found!!!");
+    break;
+  }
+ 
+  //2nd order QC
+  gAliFlowCommonHistName[0] = "AliFlowCommonHistResults";
+  gAliFlowCommonHistName[0] += methodIntegratedFlowQC[0].Data();
+  commonHistRes[0] = dynamic_cast<AliFlowCommonHistResults *>(cobjQC->FindObject(gAliFlowCommonHistName[0].Data()));
+  //Printf("AliFlowCommonHist name %s",gAliFlowCommonHistName[0].Data());
+  TH1D *histQC_2 = commonHistRes[0]->GetHistIntFlowRP();
+  histQC_2->SetName("fHistIntegratedFlowRPQC_2");
+
+  //4th order QC
+  gAliFlowCommonHistName[1] = "AliFlowCommonHistResults";
+  gAliFlowCommonHistName[1] += methodIntegratedFlowQC[1].Data();
+  commonHistRes[1] = dynamic_cast<AliFlowCommonHistResults *>(cobjQC->FindObject(gAliFlowCommonHistName[1].Data()));
+  //Printf("AliFlowCommonHist name %s",gAliFlowCommonHistName[1].Data());
+  TH1D *histQC_4 = commonHistRes[1]->GetHistIntFlowRP();
+  histQC_4->SetName("fHistIntegratedFlowRPQC_4");
+
+  //6th order QC
+  gAliFlowCommonHistName[2] = "AliFlowCommonHistResults";
+  gAliFlowCommonHistName[2] += methodIntegratedFlowQC[2].Data();
+  commonHistRes[2] = dynamic_cast<AliFlowCommonHistResults *>(cobjQC->FindObject(gAliFlowCommonHistName[2].Data()));
+  //Printf("AliFlowCommonHist name %s",gAliFlowCommonHistName[2].Data());
+  TH1D *histQC_6 = commonHistRes[2]->GetHistIntFlowRP();
+  histQC_6->SetName("fHistIntegratedFlowRPQC_6");
+
+  //8th order QC
+  gAliFlowCommonHistName[3] = "AliFlowCommonHistResults";
+  gAliFlowCommonHistName[3] += methodIntegratedFlowQC[3].Data();
+  commonHistRes[3] = dynamic_cast<AliFlowCommonHistResults *>(cobjQC->FindObject(gAliFlowCommonHistName[3].Data()));
+  //Printf("AliFlowCommonHist name %s",gAliFlowCommonHistName[3].Data());
+  TH1D *histQC_8 = commonHistRes[3]->GetHistIntFlowRP();
+  histQC_8->SetName("fHistIntegratedFlowRPQC_8");
+
+  //______________________________________________________________//
+  //Print the results
+  Printf("\n============================================================");
+  Printf("v2(2,QC): %lf +- %lf",histQC_2->GetBinContent(1),
+	 histQC_2->GetBinError(1));
+  Printf("v2(4,QC): %lf +- %lf",histQC_4->GetBinContent(1),
+	 histQC_4->GetBinError(1));
+  Printf("v2(6,QC): %lf +- %lf",histQC_6->GetBinContent(1),
+	 histQC_6->GetBinError(1));
+  Printf("v2(8,QC): %lf +- %lf",histQC_8->GetBinContent(1),
+	 histQC_8->GetBinError(1));
+  Printf("============================================================");
+
+  listOutput->Add(histQC_2);
+  listOutput->Add(histQC_4);
+  listOutput->Add(histQC_6);
+  listOutput->Add(histQC_8);
+
+  return listOutput;
+}
+
+//____________________________________________________________//
+TList *GetMHResults(TFile *fInput,
+		    const char* analysisType = 0x0,
+		    Int_t centrality = -1) {
+  //Function that reads the TDirectoryFile of the MH
+  //and returns a TList with the relevant plots.
+  TList *listOutput = new TList();
+  listOutput->SetName("listMH");
+
+  //______________________________________________________________//
+  //Get the TDirectoryFile
+  TString directoryNameMH = 0;
+  directoryNameMH = "outputMHanalysis"; 
+  if(analysisType) directoryNameMH += analysisType;
+  TDirectoryFile *outputMHanalysis = dynamic_cast<TDirectoryFile *>(fInput->Get(directoryNameMH.Data()));
   if(!outputMHanalysis) {
     Printf("MH directory not found!!!");
     break;
@@ -38,9 +168,15 @@ void plotMH(const char* filename = "AnalysisResults.root",
 
   //______________________________________________________________//
   //Get the TList
-  TList *cobjMH = dynamic_cast<TList *>(outputMHanalysis->Get("cobjMH"));
+  TString listNameMH = 0;
+  if(centrality > -1) {
+    listNameMH = "cobjMH_outputCentrality"; 
+    listNameMH += centrality; listNameMH += ".root";
+  }
+  else listNameMH = "cobjMH";
+  TList *cobjMH = dynamic_cast<TList *>(outputMHanalysis->Get(listNameMH.Data()));
   if(!cobjMH) {
-    Printf("MH output list not found!!!");
+    Printf("MH object list not found!!!");
     break;
   }
   //cobjMH->ls();
@@ -125,8 +261,8 @@ void plotMH(const char* filename = "AnalysisResults.root",
   f3pCorrelatorVsPtDiffPro->Draw("E");
 
   Double_t g3pCorrelatorValue = 0., g3pCorrelatorError = 0.;
-  //  GetCorrelatorAndError(f3pCorrelatorVsPtSumPro,
-  GetCorrelatorAndError(f3pCorrelatorVsPtDiffPro,
+  GetCorrelatorAndError(f3pCorrelatorVsPtSumPro,
+			//GetCorrelatorAndError(f3pCorrelatorVsPtDiffPro,
 			g3pCorrelatorValue,
 			g3pCorrelatorError,1,20);
 			
@@ -143,12 +279,12 @@ void plotMH(const char* filename = "AnalysisResults.root",
     f3pCorrelatorHist->GetBinError(1)<<endl;
   Printf("============================================================");
 
-  TFile *fOutput = TFile::Open("outputMH.root","recreate");
-  f3pCorrelatorHist->Write();
-  f3pCorrelatorVsMHist->Write();
-  f3pCorrelatorVsPtSumPro->Write();
-  f3pCorrelatorVsPtDiffPro->Write();
-  fOutput->Close();
+  listOutput->Add(f3pCorrelatorHist);
+  listOutput->Add(f3pCorrelatorVsMHist);
+  listOutput->Add(f3pCorrelatorVsPtSumPro);
+  listOutput->Add(f3pCorrelatorVsPtDiffPro);
+
+  return listOutput;
 }
 
 //____________________________________________________________//
@@ -186,5 +322,7 @@ void GetCorrelatorAndError(TProfile *f3pCorrelatorVsPt,
     g3pCorrelatorValue = gSumBinContentTimesWeight/(gSumWeight*iBinCounter);
     g3pCorrelatorError = TMath::Sqrt(gSumBinContentTimesWeightSquared/TMath::Power(gSumWeight,2))/iBinCounter;
   }
-    
+
+  return;
 }
+
