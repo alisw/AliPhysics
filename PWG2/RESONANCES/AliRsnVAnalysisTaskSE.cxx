@@ -8,6 +8,8 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
+#include <Riostream.h>
+
 #include "AliRsnVAnalysisTaskSE.h"
 
 #include "AliESDEvent.h"
@@ -208,10 +210,12 @@ void AliRsnVAnalysisTaskSE::UserExec(Option_t* opt)
     return;
   }
 
+  EventProcess();
+  //AliRsnEvent::SetCurrentEvent(&fRsnEvent);
+
   RsnUserExec(opt);
 
   FillInfo();
-  EventProcess();
 
   fTaskInfo.PrintInfo(fTaskInfo.GetNumerOfEventsProcessed());
 
