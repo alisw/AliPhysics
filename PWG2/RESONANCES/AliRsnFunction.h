@@ -47,7 +47,7 @@ class AliRsnFunction : public TObject
 
     void                 SetPairDef(AliRsnPairDef * const def) {fPairDef = def;}
     void                 SetPair(AliRsnMother * const pair) {fPair = pair;}
-    void                 SetEvent(AliRsnEvent *const event) {fEvent = event;}
+    void                 SetEvent(AliRsnEvent *const event);
 
     AliRsnPairDef*       GetPairDef() const {return fPairDef;}
     AliRsnMother*        GetPair() const {return fPair;}

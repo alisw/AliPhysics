@@ -174,3 +174,21 @@ Bool_t AliRsnPairNtuple::AddValue(AliRsnValue *const val)
   
   return kTRUE;
 }
+
+//_____________________________________________________________________________
+void AliRsnPairNtuple::SetEvent(AliRsnEvent *event)
+{
+//
+// Set current event
+//
+
+  fEvent = event;
+  
+  Int_t        i, n = fValues.GetEntries();
+  AliRsnValue *val = 0;
+  for (i = 0; i < n; i++)
+  {
+    val = (AliRsnValue*)fValues.At(i);
+    val->SetEvent(event);
+  }
+}

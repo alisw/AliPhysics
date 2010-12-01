@@ -357,3 +357,23 @@ Bool_t AliRsnFunction::Fill()
   AliDebug(AliLog::kDebug +2,"->");
   return kTRUE;
 }
+
+//__________________________________________________________________________________________________
+void AliRsnFunction::SetEvent(AliRsnEvent *const event)
+{
+//
+// Set current event
+//
+
+  Int_t i;
+  fEvent = event;
+  
+  // set also to all values
+  AliRsnValue *fcnAxis = 0;
+  for (i = 0; i < fSize; i++) 
+  {
+    fcnAxis = (AliRsnValue*)fAxisList.At(i);
+    if (!fcnAxis) continue;
+    fcnAxis->SetEvent(event);
+  }
+}

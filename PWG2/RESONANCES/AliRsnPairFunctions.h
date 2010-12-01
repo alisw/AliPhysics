@@ -35,6 +35,7 @@ class AliRsnPairFunctions : public AliRsnPair
     TList*       GenerateHistograms(const char *prefix = "", TList *list = 0);
     virtual void Compute();
     virtual void Init(const char *prefix, TList *list);
+    virtual void SetEvent(AliRsnEvent *event);
 
   protected:
 

@@ -301,7 +301,6 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
   // cast the input to the allowed types
   AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
   AliRsnMother   *mother   = dynamic_cast<AliRsnMother*>(object);
-  AliRsnEvent    *event    = dynamic_cast<AliRsnEvent*>(object);
   
   // check that the input object is the correct class type
   switch (fTargetType)
@@ -321,7 +320,7 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       }
       break;
     case AliRsnTarget::kEvent:
-      if (!event)
+      if (!fEvent)
       {
         AliError(Form("[%s] expected: AliRsnEvent, passed: [%s]", GetName(), object->ClassName()));
         return kFALSE;
@@ -463,9 +462,10 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       {
     	  int ID1 = (mother->GetDaughter(0))->GetID();
     	  int ID2 = (mother->GetDaughter(1))->GetID();
-    	  int leadingID = event->SelectLeadingParticle(0);
+    	  //int leadingID = fEvent->SelectLeadingParticle(0);
+        Int_t leadingID = fEvent->GetLeadingParticleID();
     	  if (leadingID == ID1 || leadingID == ID2) return kFALSE;
-    	  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
+    	  AliRsnDaughter leadingPart = fEvent->GetDaughter(leadingID);
     	  AliVParticle  *ref = leadingPart.GetRef();
     	  fComputedValue = ref->Phi() - mother->Sum().Phi();
     	  //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
@@ -475,7 +475,7 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       }
       break;
     case kEventMult:
-      fComputedValue = (Double_t)event->GetMultiplicity(0x0);
+      fComputedValue = (Double_t)fEvent->GetMultiplicity(0x0);
       break;
     case kEventMultESDCuts:
       // this value requires an initialized ESDtrackCuts
@@ -485,13 +485,13 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
         fComputedValue = 1E+10;
         return kFALSE;
       }
-      fComputedValue = (Double_t)event->GetMultiplicity(esdCuts);
+      fComputedValue = (Double_t)fEvent->GetMultiplicity(esdCuts);
       break;
     case kEventLeadingPt:
       {
-    	  int leadingID = event->SelectLeadingParticle(0);
+    	  int leadingID = fEvent->GetLeadingParticleID(); //fEvent->SelectLeadingParticle(0);
     	  if(leadingID >= 0) {
-    		  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
+    		  AliRsnDaughter leadingPart = fEvent->GetDaughter(leadingID);
     		  AliVParticle *ref = leadingPart.GetRef();
     		  fComputedValue = ref->Pt();
     	  }

@@ -49,6 +49,7 @@ class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE
     virtual void    RsnTerminate(Option_t*);
 
     virtual void    FillInfo();
+    virtual void    EventProcess();
 
     // Prior probs
     AliRsnEvent*           GetRsnEvent() {return &fRsnEvent;}
