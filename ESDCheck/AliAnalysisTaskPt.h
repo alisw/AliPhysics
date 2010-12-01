@@ -17,7 +17,7 @@ class TH1 ;
 class AliAnalysisTaskPt : public AliAnalysisTask {
 
 public:
-  AliAnalysisTaskPt(const char *name);
+  AliAnalysisTaskPt(const char *name = "AliAnalysisTaskPt");
   virtual ~AliAnalysisTaskPt() {}
   
   virtual void   ConnectInputData(Option_t *);
