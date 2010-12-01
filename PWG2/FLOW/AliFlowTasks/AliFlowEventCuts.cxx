@@ -27,6 +27,7 @@
 #include "AliVVertex.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
+#include "AliESDCentrality.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 #include "AliMCEvent.h"
@@ -62,7 +63,11 @@ AliFlowEventCuts::AliFlowEventCuts():
   fCutMeanPt(kFALSE),
   fMeanPtMax(-DBL_MAX),
   fMeanPtMin(DBL_MAX),
-  fCutSPDvertexerAnomaly(kTRUE)
+  fCutSPDvertexerAnomaly(kTRUE),
+  fCutCentralityPercentile(kFALSE),
+  fCentralityPercentileMethod(kTPConly),
+  fCentralityPercentileMax(100.),
+  fCentralityPercentileMin(0.)
 {
   //constructor 
 }
@@ -94,7 +99,11 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fCutMeanPt(kFALSE),
   fMeanPtMax(-DBL_MAX),
   fMeanPtMin(DBL_MAX),
-  fCutSPDvertexerAnomaly(kTRUE)
+  fCutSPDvertexerAnomaly(kTRUE),
+  fCutCentralityPercentile(kFALSE),
+  fCentralityPercentileMethod(kTPConly),
+  fCentralityPercentileMax(100.),
+  fCentralityPercentileMin(0.)
 {
   //constructor 
 }
@@ -126,7 +135,11 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fCutMeanPt(that.fCutMeanPt),
   fMeanPtMax(that.fMeanPtMax),
   fMeanPtMin(that.fMeanPtMin),
-  fCutSPDvertexerAnomaly(that.fCutSPDvertexerAnomaly)
+  fCutSPDvertexerAnomaly(that.fCutSPDvertexerAnomaly),
+  fCutCentralityPercentile(that.fCutCentralityPercentile),
+  fCentralityPercentileMethod(that.fCentralityPercentileMethod),
+  fCentralityPercentileMax(that.fCentralityPercentileMax),
+  fCentralityPercentileMin(that.fCentralityPercentileMin)
 {
   //copy constructor 
   if (that.fRefMultCuts)
@@ -170,22 +183,47 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fMeanPtMax=that.fMeanPtMax;
   fMeanPtMin=that.fMeanPtMin;
   fCutSPDvertexerAnomaly=that.fCutSPDvertexerAnomaly;
+  fCutCentralityPercentile=that.fCutCentralityPercentile;
+  fCentralityPercentileMethod=that.fCentralityPercentileMethod;
+  fCentralityPercentileMax=that.fCentralityPercentileMax;
+  fCentralityPercentileMin=that.fCentralityPercentileMin;
   return *this;
 }
 
 //----------------------------------------------------------------------- 
-Bool_t AliFlowEventCuts::IsSelected(const TObject* obj)
+Bool_t AliFlowEventCuts::IsSelected(TObject* obj)
 {
   //check cuts
-  const AliVEvent* vevent = dynamic_cast<const AliVEvent*>(obj);
+  AliVEvent* vevent = dynamic_cast<AliVEvent*>(obj);
   if (vevent) return PassesCuts(vevent);
   return kFALSE;  //when passed wrong type of object
 }
 //----------------------------------------------------------------------- 
-Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
+Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
 {
   ///check if event passes cuts
-  if(fCutNumberOfTracks) {if (event->GetNumberOfTracks() < fNumberOfTracksMin || event->GetNumberOfTracks() >= fNumberOfTracksMax ) return kFALSE;}
+  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
+  if (fCutCentralityPercentile)
+  {
+    AliESDCentrality* centr = esdevent->GetCentrality();
+    return centr->IsEventInCentralityClass( fCentralityPercentileMin,
+                                            fCentralityPercentileMax,
+                                            CentrMethName(fCentralityPercentileMethod) );
+  }
+  if (fCutSPDvertexerAnomaly&&esdevent)
+  {
+    const AliESDVertex* sdpvertex = esdevent->GetPrimaryVertexSPD();
+    if (sdpvertex->GetNContributors()<1) return kFALSE;
+    if (sdpvertex->GetDispersion()>0.04) return kFALSE;
+    if (sdpvertex->GetZRes()>0.25) return kFALSE;
+    const AliESDVertex* tpcvertex = esdevent->GetPrimaryVertexTPC();
+    if (tpcvertex->GetNContributors()<1) return kFALSE;
+    const AliMultiplicity* tracklets = esdevent->GetMultiplicity();
+    if (tpcvertex->GetNContributors()<(-10.0+0.25*tracklets->GetNumberOfITSClusters(0)))
+      return kFALSE;
+  }
+  if(fCutNumberOfTracks) {if ( event->GetNumberOfTracks() < fNumberOfTracksMin ||
+                               event->GetNumberOfTracks() >= fNumberOfTracksMax ) return kFALSE;}
   if(fCutRefMult)
   {
     //reference multiplicity still to be defined
@@ -238,22 +276,28 @@ Bool_t AliFlowEventCuts::PassesCuts(const AliVEvent *event)
     meanpt=meanpt/nselected;
     if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) return kFALSE;
   }
-  const AliESDEvent* esdevent = dynamic_cast<const AliESDEvent*>(event);
-  if (fCutSPDvertexerAnomaly&&esdevent)
-  {
-    const AliESDVertex* sdpvertex = esdevent->GetPrimaryVertexSPD();
-    if (sdpvertex->GetNContributors()<1) return kFALSE;
-    if (sdpvertex->GetDispersion()>0.04) return kFALSE;
-    if (sdpvertex->GetZRes()>0.25) return kFALSE;
-    const AliESDVertex* tpcvertex = esdevent->GetPrimaryVertexTPC();
-    if (tpcvertex->GetNContributors()<1) return kFALSE;
-    const AliMultiplicity* tracklets = esdevent->GetMultiplicity();
-    if (tpcvertex->GetNContributors()<(-10.0+0.25*tracklets->GetNumberOfITSClusters(0)))
-      return kFALSE;
-  }
   return kTRUE;
 }
 
+//----------------------------------------------------------------------- 
+const char* AliFlowEventCuts::CentrMethName(refMultMethod method) const
+{
+  //get the string for refmultmethod, for use with AliESDCentrality in
+  //the cut on centrality percentile
+  switch (method)
+  {
+    case kSPDtracklets:
+      return "TKL";
+    case kSPD1clusters:
+      return "CL1";
+    case kTPConly:
+      return "TRK";
+    case kV0:
+      return "V0M";
+    default:
+      return "";
+  }
+}
 //----------------------------------------------------------------------- 
 AliFlowEventCuts* AliFlowEventCuts::StandardCuts()
 {
@@ -263,11 +307,11 @@ AliFlowEventCuts* AliFlowEventCuts::StandardCuts()
 }
 
 //----------------------------------------------------------------------- 
-Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
+Int_t AliFlowEventCuts::RefMult(AliVEvent* event)
 {
   //calculate the reference multiplicity, if all fails return 0
   AliESDVZERO* vzero = NULL;
-  const AliESDEvent* esdevent = dynamic_cast<const AliESDEvent*>(event);
+  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
   const AliMultiplicity* mult = esdevent->GetMultiplicity();
   Int_t refmult=0;
 
@@ -299,7 +343,7 @@ Int_t AliFlowEventCuts::RefMult(const AliVEvent* event)
       return 0;
   }
 
-  fRefMultCuts->SetEvent(const_cast<AliVEvent*>(event));
+  fRefMultCuts->SetEvent(event);
   for (Int_t i=0; i<fRefMultCuts->GetNumberOfInputObjects(); i++)
   {
     if (fRefMultCuts->IsSelected(fRefMultCuts->GetInputObject(i),i))

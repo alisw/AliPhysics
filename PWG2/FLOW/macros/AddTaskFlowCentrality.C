@@ -71,8 +71,8 @@ AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
 const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype);
 const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype);
 
-void AddTaskFlowCentrality( Int_t refMultMin=0,
-                            Int_t refMultMax=1e10,
+void AddTaskFlowCentrality( Float_t centrMin=0.,
+                            Float_t centrMax=100.,
                             TString fileNameBase="AnalysisResults",
                             Int_t binnumber=0 )
 {
@@ -85,12 +85,13 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   cout << "Used for POI: "<< poitypestr << endl;  
   // EVENTS CUTS:
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts();
-  cutsEvent->SetRefMultRange(refMultMin,refMultMax);
-  //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
-  //cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
-  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
+  cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
+  //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
+  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+  //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPDtracklets);
   cutsEvent->SetNContributorsRange(2);
   cutsEvent->SetPrimaryVertexZrange(-10.,10.);
+  cutsEvent->SetCutSPDvertexerAnomaly(kTRUE); //"Francesco's cut"
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts();
@@ -142,24 +143,6 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCTOFpid);
   //cutsPOI->SetTPCTOFpidCrossOverPt(0.4);
 
-  
-  // common constants:
-  Int_t nBinsMult = 10000;  
-  Int_t nBinsPt = 100;  
-  Int_t nBinsPhi = 360;  
-  Int_t nBinsEta = 100;  
-  Int_t nBinsQ = 500;
-  Double_t dMultMin = 0.;            
-  Double_t dMultMax = 10000.;
-  Double_t dPtMin = 0.;	     
-  Double_t dPtMax = 10.;
-  Double_t dPhiMin(0.);	    
-  Double_t dPhiMax(TMath::TwoPi());
-  Double_t dEtaMin(-5.);	     
-  Double_t dEtaMax(5.);	     
-  Double_t dQMin(0.);	     
-  Double_t dQMax(3.);  
-  
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
   if (useWeights) cout<<"Weights are used"<<endl;
   else cout<<"Weights are not used"<<endl;
@@ -328,24 +311,9 @@ void AddTaskFlowCentrality( Int_t refMultMin=0,
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
   taskFE->SetTOFresolution(80);
-
-  // Pass common constants:
-  taskFE->SetNbinsMult(nBinsMult);
-  taskFE->SetNbinsPt(nBinsPt);
-  taskFE->SetNbinsPhi(nBinsPhi); 
-  taskFE->SetNbinsEta(nBinsEta);
-  taskFE->SetNbinsQ(nBinsQ);
-  taskFE->SetMultMin(dMultMin);
-  taskFE->SetMultMax(dMultMax);
-  taskFE->SetPtMin(dPtMin);
-  taskFE->SetPtMax(dPtMax);
-  taskFE->SetPhiMin(dPhiMin);
-  taskFE->SetPhiMax(dPhiMax);
-  taskFE->SetEtaMin(dEtaMin);
-  taskFE->SetEtaMax(dEtaMax);
-  taskFE->SetQMin(dQMin);
-  taskFE->SetQMax(dQMax);
  
+
+
   // Create the analysis tasks, add them to the manager.
   //===========================================================================
   if (SP){

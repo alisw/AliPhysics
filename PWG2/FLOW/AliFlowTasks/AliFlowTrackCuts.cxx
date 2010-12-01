@@ -833,6 +833,7 @@ void AliFlowTrackCuts::InitPIDcuts()
     }
     fTPCpidCuts=t;
   }
+  t = NULL;
   if (!fTOFpidCuts)
   {
     if (fAliPID==AliPID::kPion)
