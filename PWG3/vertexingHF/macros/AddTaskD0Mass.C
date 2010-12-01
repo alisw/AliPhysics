@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,TString finname="D0toKpiCuts.root",Bool_t cutOnDistr=kFALSE,Int_t flagD0D0bar=0)
+AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t cutOnDistr=kFALSE,Int_t flagD0D0bar=0,TString finname="D0toKpiCuts.root")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -39,22 +39,17 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     if(cutOnDistr) out3name+="C"; 
     if(flagD0D0bar==1)out3name+="D0";
     if(flagD0D0bar==2)out3name+="D0bar";
-    //list checks
-    out4name="checksD0";
+   //cuts object
+    out4name="cutsD0";
     if(cutOnDistr) out4name+="C"; 
     if(flagD0D0bar==1)out4name+="D0";
     if(flagD0D0bar==2)out4name+="D0bar";
-   //cuts object
-    out5name="cutsD0";
+
+    //AliNormalizationCounter
+    out5name="normalizationCounter";
     if(cutOnDistr) out5name+="C"; 
     if(flagD0D0bar==1)out5name+="D0";
     if(flagD0D0bar==2)out5name+="D0bar";
-
-    //AliNormalizationCounter
-    out6name="normalizationCounter";
-    if(cutOnDistr) out6name+="C"; 
-    if(flagD0D0bar==1)out6name+="D0";
-    if(flagD0D0bar==2)out6name+="D0bar";
 
     inname="cinputmassD0_0";
     if(cutOnDistr) inname+="C"; 
@@ -81,16 +76,11 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     if(cutOnDistr) out3name+="C"; 
     if(flagD0D0bar==1)out3name+="D0";
     if(flagD0D0bar==2)out3name+="D0bar";
-    //list checks
-    out4name="checksLS";
+   //cuts object
+    out4name="cutsLS";
     if(cutOnDistr) out4name+="C"; 
     if(flagD0D0bar==1)out4name+="D0";
     if(flagD0D0bar==2)out4name+="D0bar";
-   //cuts object
-    out5name="cutsLS";
-    if(cutOnDistr) out5name+="C"; 
-    if(flagD0D0bar==1)out5name+="D0";
-    if(flagD0D0bar==2)out5name+="D0bar";
 
     inname="cinputmassD0_1";
     if(cutOnDistr) inname+="C"; 
@@ -111,15 +101,16 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
     //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
 
-
+  Bool_t stdcuts=kFALSE;
   TFile* filecuts=new TFile(finname.Data());
   if(!filecuts->IsOpen()){
-    cout<<"Input file not found: exit"<<endl;
-    return;
+    cout<<"Input file not found: using std cut object"<<endl;
+    stdcuts=kTRUE;
   }
 
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
-  RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiCuts");
+  if(stdcuts) RDHFD0toKpi->SetStandardCutsPP2010();
+  else   RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiCuts");
   RDHFD0toKpi->SetName(Form("D0toKpiCuts%d",flag));
 
   if(!RDHFD0toKpi){
@@ -149,9 +140,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   AliAnalysisDataContainer *coutputmassD01 = mgr->CreateContainer(out1name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass
   AliAnalysisDataContainer *coutputmassD02 = mgr->CreateContainer(out2name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //distr
   AliAnalysisDataContainer *coutputmassD03 = mgr->CreateContainer(out3name,TH1F::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //nev
-  AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer(out4name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //check
-  AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
-  AliAnalysisDataContainer *coutputmassD06 = mgr->CreateContainer(out6name,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
+  AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer(out4name,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
+  AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //counter
   
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
 
@@ -160,7 +150,6 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   mgr->ConnectOutput(massD0Task,3,coutputmassD03);
   mgr->ConnectOutput(massD0Task,4,coutputmassD04);
   mgr->ConnectOutput(massD0Task,5,coutputmassD05);
-  mgr->ConnectOutput(massD0Task,6,coutputmassD06);
 
 
   return massD0Task;
