@@ -582,6 +582,8 @@ void AliFlowEventSimple::TagSubeventsInEta( Double_t etaMinA,
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (!track) continue;
+    track->ResetSubEventTags();
     Double_t eta=track->Eta();
     if (eta >= etaMinA && eta <= etaMaxA) track->SetForSubevent(0);
     if (eta >= etaMinB && eta <= etaMaxB) track->SetForSubevent(1);
@@ -595,6 +597,8 @@ void AliFlowEventSimple::TagSubeventsByCharge()
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (!track) continue;
+    track->ResetSubEventTags();
     Int_t charge=track->Charge();
     if (charge<0) track->SetForSubevent(0);
     if (charge>0) track->SetForSubevent(1);
