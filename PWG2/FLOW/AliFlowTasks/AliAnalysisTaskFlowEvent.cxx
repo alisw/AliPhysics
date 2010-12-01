@@ -260,11 +260,6 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     AliError("cuts not set");
     return;
   }
-  if (fCutsEvent) 
-  {
-    if (!fCutsEvent->IsSelected(InputEvent())) return;
-  }
-
   //PID
   if (fCutsRP->GetParamType()==AliFlowTrackCuts::kMC)
   {
@@ -331,7 +326,13 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       exit(2);
     }
   }
-  
+
+  //check event cuts
+  if (fCutsEvent) 
+  {
+    if (!fCutsEvent->IsSelected(InputEvent())) return;
+  }
+
   //use the new and temporarily inclomplete way of doing things
   if (fAnalysisType == "AUTOMATIC")
   {
