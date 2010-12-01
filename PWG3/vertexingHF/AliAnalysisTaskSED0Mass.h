@@ -63,20 +63,17 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TList    *fOutputMass;          //! list send on output slot 1
   TList    *fDistr;               //! list send on output slot 2
   TH1F     *fNentries;            //! histogram with number of events on output slot 3
-  TList    *fChecks;              //! list send on output slot 4
-  AliRDHFCutsD0toKpi *fCuts;      //  Cuts - sent to output slot 5
+  AliRDHFCutsD0toKpi *fCuts;      //  Cuts - sent to output slot 4
   Int_t     fArray;               //  can be D0 or Like Sign candidates
   Bool_t    fReadMC;              //  flag for MC array: kTRUE = read it, kFALSE = do not read it
   Bool_t    fCutOnDistr;          //  flag to decide if apply cut also on distributions: 0 no cuts, 1 looser cuts, 2 tighter cuts 
   Bool_t    fUsePid4Distr;        //  flag to use the particle identification to fill the signal histograms of distributions. It has effect only with fReadMC=kFALSE
   AliNormalizationCounter *fCounter;//!AliNormalizationCounter on output slot 6
   Int_t     fNPtBins;             //  number of pt bins
-  Int_t*    fTotPosPairs;         //[fNPtBins]
-  Int_t*    fTotNegPairs;         //[fNPtBins] 
   Double_t  fLsNormalization;     //  normalization
   Int_t     fFillOnlyD0D0bar;     // flag to fill mass histogram with D0/D0bar only (0 = fill with both, 1 = fill with D0 only, 2 = fill with D0bar only)
 
-  ClassDef(AliAnalysisTaskSED0Mass,10); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,11); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
