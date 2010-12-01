@@ -9,6 +9,8 @@
 // that the object being processed corresponds to what is expected.
 //
 
+#include "AliLog.h"
+
 #include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
@@ -97,4 +99,15 @@ const char* AliRsnTarget::GetTargetTypeName() const
     case kEvent: return "Event";
     default: return "Undefined";
   }
+}
+
+//______________________________________________________________________________
+void AliRsnTarget::SetEvent(AliRsnEvent *event)
+{
+//
+//
+// 
+  
+  AliDebug(AliLog::kDebug + 3, "Using implementation of mother class");
+  fEvent = event;
 }

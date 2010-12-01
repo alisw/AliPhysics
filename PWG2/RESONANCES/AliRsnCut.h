@@ -29,7 +29,7 @@ class AliRsnCut : public AliRsnTarget
     AliRsnCut(const char *name, RSNTARGET target, Double_t dmin, Double_t dmax=0., Int_t    imin=0 , Int_t    imax=0 );
     AliRsnCut(const AliRsnCut& copy);
     AliRsnCut& operator=(const AliRsnCut& copy);
-    virtual ~AliRsnCut() { fEvent = 0x0; };
+    virtual ~AliRsnCut() { };
     
     Int_t            GetMinI()                  {return fMinI;}
     Int_t            GetMaxI()                  {return fMaxI;}

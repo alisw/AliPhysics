@@ -42,7 +42,7 @@ class AliRsnTarget : public TNamed
     Bool_t         TargetOK(TObject *object);
     
     AliRsnEvent*   GetEvent() {return fEvent;}
-    void           SetEvent(AliRsnEvent *event) {fEvent = event;}
+    virtual void   SetEvent(AliRsnEvent *event);
 
   protected:
   
