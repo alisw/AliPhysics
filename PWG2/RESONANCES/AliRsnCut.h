@@ -49,9 +49,6 @@ class AliRsnCut : public AliRsnTarget
     Bool_t           OkRangeI();
     Bool_t           OkValueD();
     Bool_t           OkRangeD();
-
-    virtual void     SetEvent(AliRsnEvent *event);
-    AliRsnEvent*     GetEvent() {return fEvent;}
     
     virtual Bool_t   IsSelected(TObject *object);
     virtual void     Print(Option_t *opt = "") const;
@@ -67,8 +64,6 @@ class AliRsnCut : public AliRsnTarget
     Double_t     fCutValueD;  //  cut value DOUBLE
     
     Bool_t       fCutResult;  //  tells if the cut is passed or not
-
-    AliRsnEvent *fEvent;      //! pointer to current event (can be needed sometimes, but never streamed)
 
     ClassDef(AliRsnCut, 1)
 };

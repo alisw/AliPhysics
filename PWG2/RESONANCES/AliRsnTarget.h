@@ -14,6 +14,8 @@
 
 #include "TNamed.h"
 
+#include "AliRsnEvent.h"
+
 class AliRsnTarget : public TNamed
 {
   public:
@@ -26,10 +28,10 @@ class AliRsnTarget : public TNamed
       kTargetTypes
     };
 
-    AliRsnTarget() : fTargetType(kTargetTypes) { /*nothing*/ }
-    AliRsnTarget(const char *name, ETargetType type) : TNamed(name, ""), fTargetType(type) { /*nothing*/ }
-    AliRsnTarget(const AliRsnTarget& copy) : TNamed(copy), fTargetType(copy.fTargetType) { /*nothing*/ }
-    AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; return (*this); }
+    AliRsnTarget() : fTargetType(kTargetTypes), fEvent(0x0) { /*nothing*/ }
+    AliRsnTarget(const char *name, ETargetType type) : TNamed(name, ""), fTargetType(type), fEvent(0x0) { /*nothing*/ }
+    AliRsnTarget(const AliRsnTarget& copy) : TNamed(copy), fTargetType(copy.fTargetType), fEvent(copy.fEvent) { /*nothing*/ }
+    AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; fEvent = copy.fEvent; return (*this); }
     virtual ~AliRsnTarget() { /*nothing*/ }
     
     Bool_t         IsTarget(ETargetType targetType)  {return (fTargetType == targetType);}
@@ -38,10 +40,14 @@ class AliRsnTarget : public TNamed
     const char*    GetTargetTypeName() const;
     void           SetTargetType(ETargetType type)   {fTargetType = type;}
     Bool_t         TargetOK(TObject *object);
+    
+    AliRsnEvent*   GetEvent() {return fEvent;}
+    void           SetEvent(AliRsnEvent *event) {fEvent = event;}
 
   protected:
   
-    ETargetType fTargetType;  // target type selected for this object
+    ETargetType  fTargetType;  //  target type selected for this object
+    AliRsnEvent *fEvent;       //! pointer to current event (useful in many cases)
     
     // ROOT dictionary
     ClassDef(AliRsnTarget, 1)

@@ -219,6 +219,7 @@ void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
                 
         // process the two tracks
         if (!pair->Fill(&daughter0, &daughter1, ev0, ev1)) continue;
+        pair->SetEvent(ev0);
         pair->Compute();
       }
     }

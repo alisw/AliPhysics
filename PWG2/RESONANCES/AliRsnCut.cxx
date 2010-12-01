@@ -30,8 +30,7 @@ AliRsnCut::AliRsnCut(const char *name, RSNTARGET target) :
   fMaxD(0.),
   fCutValueI(0),
   fCutValueD(0.0),
-  fCutResult(kTRUE),
-  fEvent(0x0)
+  fCutResult(kTRUE)
 {
 //
 // Default constructor.
@@ -48,8 +47,7 @@ AliRsnCut::AliRsnCut
   fMaxD(dmax),
   fCutValueI(0),
   fCutValueD(0.0),
-  fCutResult(kTRUE),
-  fEvent(0x0)
+  fCutResult(kTRUE)
 {
 //
 // Constructor with arguments.
@@ -67,8 +65,7 @@ AliRsnCut::AliRsnCut
   fMaxD(dmax),
   fCutValueI(0),
   fCutValueD(0.0),
-  fCutResult(kTRUE),
-  fEvent(0x0)
+  fCutResult(kTRUE)
 {
 //
 // Constructor with arguments.
@@ -85,8 +82,7 @@ AliRsnCut::AliRsnCut(const AliRsnCut& copy) :
   fMaxD(copy.fMaxD),
   fCutValueI(copy.fCutValueI),
   fCutValueD(copy.fCutValueD),
-  fCutResult(copy.fCutResult),
-  fEvent(copy.fEvent)
+  fCutResult(copy.fCutResult)
 {
 //
 // Copy constructor.
@@ -110,8 +106,6 @@ AliRsnCut& AliRsnCut::operator=(const AliRsnCut& copy)
   fMaxD      = copy.fMaxD;
   fCutValueI = copy.fCutValueI;
   fCutValueD = copy.fCutValueD;
-  fCutResult = copy.fCutResult;
-  fEvent     = copy.fEvent;
 
   return (*this);
 }
@@ -234,17 +228,4 @@ void AliRsnCut::Print(Option_t*) const
   AliInfo(Form("Cut edges [D]: [%f - %f]", fMinD, fMaxD));
   AliInfo(Form("Cut edges [I]: [%d - %d]", fMinI, fMaxI));
   AliInfo("====================================================");
-}
-
-//______________________________________________________________________________
-void AliRsnCut::SetEvent(AliRsnEvent *event)
-{
-//
-// Sets the reference event.
-// When this requires some additional operation, this function
-// should be overloaded by the specific cut implementation.
-// For an example, see AliRsnCutESD2010 class.
-//
-
-  fEvent = event;
 }

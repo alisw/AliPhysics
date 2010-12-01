@@ -17,13 +17,13 @@
 #include "AliRsnPairDef.h"
 #include "AliRsnMother.h"
 #include "AliRsnCutManager.h"
+#include "AliRsnEvent.h"
 
 class TH1;
 class TH2;
 class TList;
 class TArrayI;
 
-class AliRsnEvent;
 class AliRsnCutSet;
 class AliRsnFunction;
 class AliRsnValue;
@@ -53,6 +53,7 @@ class AliRsnPair : public TNamed
     
     virtual void      Compute();
     virtual void      Init(const char *prefix, TList *list);
+    virtual void      SetEvent(AliRsnEvent *event);
 
   protected:
 

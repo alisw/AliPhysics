@@ -149,3 +149,20 @@ void AliRsnPairFunctions::AddFunction(AliRsnFunction *const fcn)
   
   AliDebug(AliLog::kDebug+2,"->");
 }
+
+//_____________________________________________________________________________
+void AliRsnPairFunctions::SetEvent(AliRsnEvent *event)
+{
+//
+// Set current event
+//
+
+  Int_t i;
+  fEvent = event;
+  
+  for (i = 0; i < fFunctions.GetEntries(); i++)
+  {
+    AliRsnFunction *fcn = (AliRsnFunction*)fFunctions.At(i);
+    fcn->SetEvent(event);
+  }
+}

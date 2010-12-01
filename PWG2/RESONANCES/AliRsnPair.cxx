@@ -232,3 +232,13 @@ void AliRsnPair::Init(const char* /*prefix*/, TList* /*list*/)
 
   AliWarning("Implement this method in derived classes");
 }
+
+//_____________________________________________________________________________
+void AliRsnPair::SetEvent(AliRsnEvent *event)
+{
+//
+// Set current event
+//
+
+  fEvent = event;
+}

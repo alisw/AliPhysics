@@ -211,6 +211,7 @@ void AliRsnVAnalysisTaskSE::UserExec(Option_t* opt)
   RsnUserExec(opt);
 
   FillInfo();
+  EventProcess();
 
   fTaskInfo.PrintInfo(fTaskInfo.GetNumerOfEventsProcessed());
 
@@ -303,6 +304,16 @@ void AliRsnVAnalysisTaskSE::FillInfo()
   fTaskInfo.FillInfo(&fRsnEvent);
 
   AliDebug(AliLog::kDebug+2,"->");
+}
+
+//_____________________________________________________________________________
+void AliRsnVAnalysisTaskSE::EventProcess()
+{
+//
+// Performs some pre-processing of current event
+//
+  
+  fRsnEvent.SelectLeadingParticle(0);
 }
 
 //_____________________________________________________________________________
