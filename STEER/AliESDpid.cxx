@@ -331,9 +331,8 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
     }
     
     // for nuclei
-    Float_t dedxExpPr = fTPCResponse.GetExpectedSignal(momtpc,AliPID::kProton);
-    Float_t resolutionTPCpr =  fTPCResponse.GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kProton);
-    if(!status && (exptimes[4] < time && dedx > dedxExpPr + resolutionTPCpr*fRange)) status = kTRUE;
+    Float_t resolutionTOFpr = fTOFResponse.GetExpectedSigma(p, exptimes[4], AliPID::ParticleMass(4));
+    if(!status && (exptimes[4] + fRange*resolutionTOFpr < time)) status = kTRUE;
     
     
     return status;
