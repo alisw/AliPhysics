@@ -17,6 +17,7 @@
 // 5 --> DCS DPs error
 // 6 --> Missing beamEnergy
 // 7 --> null buffer for Trigger Config
+// 8 --> Missing LTU configuration
 
 // Need to include dummy files in TestShuttle/TestCDB for CTP Configuration and Scalers 
 // (see macro $ALICE_ROOT/GRP/MakeCTPDummyEntries.C)
@@ -61,7 +62,9 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 			  ltu[1] = "7000";
 			  ltu[2] = "9000";
 		  }
-		  shuttle->SetLTUConfig(ltu,detOnlineName.Data());
+		  if (errorLevel != 8 && !partition.IsNull() && detector.IsNull()){
+			  shuttle->SetLTUConfig(ltu,detOnlineName.Data());
+		  }
 	  }
   }
 
@@ -80,15 +83,16 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SPD", "VertexDiamond", "gdc-GLOBAL-01", "$ALICE_ROOT/GRP/ShuttleInput/run000104892_SPD_mon-DA-SPD-0_VertexDiamond");
 	  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "LHCData", "", "$ALICE_ROOT/GRP/ShuttleInput/testRun_GRP_run_number_testRun_data.txt");
           
-	  // for example:
 	  /*
-	    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
+	  // for example:
+	  
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SPD", "VertexDiamond", "gdc-GLOBAL-01", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000104892_SPD_mon-DA-SPD-0_VertexDiamond");
 	  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "LHCData", "", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/testRun_GRP_run_number_testRun_data.txt");
-	  */	  
+	  */  
   }
 
   // simulating input from DCS FXS

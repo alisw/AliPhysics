@@ -529,8 +529,6 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	Log("*************** Processing LTU Configuration");
 	
 	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
-		Log("STANDALONE partition for current run, not retrieving LTU configuration");
-		/*
 		Log("STANDALONE partition for current run, using LTU configuration dummy value");
 		AliCDBEntry *cdbEntry = GetFromOCDB("CTP","DummyLTUConfig");
 		if (!cdbEntry) {
@@ -553,7 +551,6 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 				}
 			}
 		}
-		*/
 	}
 
 	else if (!partition.IsNull() && detector.IsNull()){ // global partition
