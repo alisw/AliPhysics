@@ -434,38 +434,38 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
     //histograms of invariant mass distributions
 
-    TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.765,1.965);
+    TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.5648,2.1648);
     TH1F *tmpMl=(TH1F*)tmpMt->Clone();
     tmpMt->Sumw2();
     tmpMl->Sumw2();
 
     //to compare with AliAnalysisTaskCharmFraction
-    TH1F* tmpS27t = new TH1F(nameSgn27.Data(),"D^{0} invariant mass in M(D^{0}) +/- 27 MeV - MC; M [GeV]; Entries",200,1.765,1.965);
+    TH1F* tmpS27t = new TH1F(nameSgn27.Data(),"D^{0} invariant mass in M(D^{0}) +/- 27 MeV - MC; M [GeV]; Entries",200,1.5648,2.1648);
     TH1F *tmpS27l=(TH1F*)tmpS27t->Clone();
     tmpS27t->Sumw2();
     tmpS27l->Sumw2();
  
     //distribution w/o cuts
     //   TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",300,0.7,3.);
-    TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",300,1.56484,2.16484); //range (MD0-300MeV, mD0 + 300MeV)
+    TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",300,1.5648,2.1648); //range (MD0-300MeV, mD0 + 300MeV)
     TH1F *tmpMB=(TH1F*)tmpMS->Clone();
     tmpMB->SetName(nameMassNocutsB.Data());
     tmpMS->Sumw2();
     tmpMB->Sumw2();
 
     //MC signal and background
-    TH1F* tmpSt = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
+    TH1F* tmpSt = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",200,1.5648,2.1648);
     TH1F *tmpSl=(TH1F*)tmpSt->Clone();
     tmpSt->Sumw2();
     tmpSl->Sumw2();
 
-    TH1F* tmpBt = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
+    TH1F* tmpBt = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",200,1.5648,2.1648);
     TH1F *tmpBl=(TH1F*)tmpBt->Clone();
     tmpBt->Sumw2();
     tmpBl->Sumw2();
 
     //Reflection: histo filled with D0Mass which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
-    TH1F* tmpRt = new TH1F(nameRfl.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
+    TH1F* tmpRt = new TH1F(nameRfl.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries",200,1.5648,2.1648);
     TH1F *tmpRl=(TH1F*)tmpRt->Clone();
     tmpRt->Sumw2();
     tmpRl->Sumw2();
