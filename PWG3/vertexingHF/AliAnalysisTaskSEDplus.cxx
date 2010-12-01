@@ -777,7 +777,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     printf("AliAnalysisTaskSEDplus::UserExec: Charm3Prong branch not found!\n");
     return;
   }
-  if(!arrayLikeSign) {
+  if(!arrayLikeSign && fDoLS) {
     printf("AliAnalysisTaskSEDplus::UserExec: LikeSign3Prong branch not found!\n");
     return;
   }
