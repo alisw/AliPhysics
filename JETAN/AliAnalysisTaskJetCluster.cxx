@@ -129,6 +129,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fh1CentralityPhySel(0x0), 
   fh1Centrality(0x0), 
   fh1CentralitySelect(0x0),
+  fh1ZPhySel(0x0), 
+  fh1Z(0x0), 
+  fh1ZSelect(0x0),
   fh2NRecJetsPt(0x0),
   fh2NRecTracksPt(0x0),
   fh2NConstPt(0x0),
@@ -228,6 +231,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh1CentralityPhySel(0x0), 
   fh1Centrality(0x0), 
   fh1CentralitySelect(0x0),
+  fh1ZPhySel(0x0), 
+  fh1Z(0x0), 
+  fh1ZSelect(0x0),
   fh2NRecJetsPt(0x0),
   fh2NRecTracksPt(0x0),
   fh2NConstPt(0x0),
@@ -444,6 +450,10 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   fh1CentralitySelect = new TH1F("fh1CentralitySelect",";cent (%)",111,-0.5,110.5);
   fh1CentralityPhySel = new TH1F("fh1CentralityPhySel",";cent (%)",111,-0.5,110.5);
 
+  fh1Z = new TH1F("fh1Z",";zvtx",100,-25,25);
+  fh1ZSelect = new TH1F("fh1ZSelect",";zvtx",100,-25,25);
+  fh1ZPhySel = new TH1F("fh1ZPhySel",";zvtx",100,-25,25);
+
   fh2NRecJetsPt = new TH2F("fh2NRecJetsPt","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NRecJetsPtRan = new TH2F("fh2NRecJetsPtRan","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NRecTracksPt = new TH2F("fh2NRecTracksPt","Number of tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",nBinPt,binLimitsPt,50,-0.5,49.5);
@@ -539,6 +549,9 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     fHistList->Add(fh1Centrality);
     fHistList->Add(fh1CentralitySelect);
     fHistList->Add(fh1CentralityPhySel);
+    fHistList->Add(fh1Z);
+    fHistList->Add(fh1ZSelect);
+    fHistList->Add(fh1ZPhySel);
     if(fUseBackgroundCalc){
       for(int i = 0;i<3;i++){
 	fHistList->Add(fh1BiARandomCones[i]);
@@ -680,24 +693,32 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
 
   Float_t cent = 0;
+  Float_t zVtx  = 0;
   Int_t cenClass = -1;
   if(fAOD){
     const AliAODVertex *vtxAOD = fAOD->GetPrimaryVertex();
     TString vtxTitle(vtxAOD->GetTitle());
+    zVtx = vtxAOD->GetZ();
+
     cent = fAOD->GetHeader()->GetCentrality();
     if(cent<10)cenClass = 0;
     else if(cent<30)cenClass = 1;
     else if(cent<50)cenClass = 2;
     else if(cent<80)cenClass = 3;
-    if(physicsSelection)fh1CentralityPhySel->Fill(cent);
+    if(physicsSelection){
+      fh1CentralityPhySel->Fill(cent);
+      fh1ZPhySel->Fill(zVtx);
+    }
+
 
     if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
-	Float_t zvtx = vtxAOD->GetZ();
 	Float_t yvtx = vtxAOD->GetY();
 	Float_t xvtx = vtxAOD->GetX();
 	Float_t r2   = yvtx*yvtx+xvtx*xvtx;  
-	if(TMath::Abs(zvtx)<20.&&r2<1.){ // apply vertex cut later on
-	  if(physicsSelection)selectEvent = true;
+	if(TMath::Abs(zVtx)<20.&&r2<1.){ // apply vertex cut later on
+	  if(physicsSelection){
+	    selectEvent = true;
+	  }
 	}
     }
     if(fCentCutUp>0){
@@ -712,6 +733,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     return;
   }
   fh1Centrality->Fill(cent);  
+  fh1Z->Fill(zVtx);
   fh1Trials->Fill("#sum{ntrials}",1);
   
 
@@ -1260,6 +1282,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
    if(select){
      static AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
      fh1CentralitySelect->Fill(cent);
+     fh1ZSelect->Fill(zVtx);
      aodH->SetFillAOD(kTRUE);
    }
  }

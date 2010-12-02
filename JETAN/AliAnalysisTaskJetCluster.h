@@ -173,8 +173,12 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH1F*         fh1BiARandomCones[3]; //! Residual distribtion from reandom cones on real event
     TH1F*         fh1BiARandomConesRan[3]; //! Residual distribtion from reandom cones on random event
     TH1F*         fh1CentralityPhySel;          // ! centrality of anaylsed events 
-    TH1F*         fh1Centrality;          // ! centrality of anaylsed events 
+    TH1F*         fh1Centrality;                // ! centrality of anaylsed events 
     TH1F*         fh1CentralitySelect;          // ! centrality of selected events 
+    TH1F*         fh1ZPhySel;          // ! centrality of anaylsed events 
+    TH1F*         fh1Z;                // ! centrality of anaylsed events 
+    TH1F*         fh1ZSelect;          // ! centrality of selected events 
+
 
     TH2F*         fh2NRecJetsPt;            //! Number of found jets above threshold
     TH2F*         fh2NRecTracksPt;          //! Number of found tracks above threshold
@@ -213,7 +217,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 10) 
+    ClassDef(AliAnalysisTaskJetCluster, 11) 
 };
  
 #endif
