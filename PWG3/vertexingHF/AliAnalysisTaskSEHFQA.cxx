@@ -197,10 +197,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
   //count events
 
-  fNEntries=new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Counts the number of events", 3,-0.5,3.5);
+  fNEntries=new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Counts the number of events", 5,-0.5,4.5);
   fNEntries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNEntries->GetXaxis()->SetBinLabel(2,"Pile-up Rej");
   fNEntries->GetXaxis()->SetBinLabel(3,"No VertexingHF");
+  fNEntries->GetXaxis()->SetBinLabel(4,"nCandidates(AnCuts)");
+  fNEntries->GetXaxis()->SetBinLabel(5,"EventsWithGoodVtx");
   fNEntries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   //PID
@@ -299,6 +301,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   TH1F* hdistrGoodTr=new TH1F(hname.Data(),"Distribution of number of 'good' tracks per event;no.good-tracks/ev;Entries",4000,-0.5,3999.5);
   hdistrGoodTr->SetTitleOffset(1.3,"Y");
 
+  hname="hNtracklets";
+  TH1F* hNtracklets=new TH1F(hname.Data(),"Number of tracklets;ntracklets;Entries",5000,-0.5,4999.5);
+
+  hname="hMult";
+  TH1F* hMult=new TH1F(hname.Data(),"Multiplicity;multiplicity;Entries",10000,-0.5,9999.5);
+
   hname="hd0";
   TH1F* hd0=new TH1F(hname.Data(),"Impact parameter distribution of 'good' tracks;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
@@ -307,6 +315,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   fOutputTrack->Add(hnClsSPD);
   fOutputTrack->Add(hptGoodTr);
   fOutputTrack->Add(hdistrGoodTr);
+  fOutputTrack->Add(hNtracklets);
+  fOutputTrack->Add(hMult);
   fOutputTrack->Add(hd0);
   
   // Post the data
@@ -405,7 +415,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only trak related histograms\n");
     isSimpleMode=kTRUE;
-    fNEntries->Fill(3);
+    fNEntries->Fill(2);
   }
   
   // fix for temporary bug in ESDfilter 
@@ -414,6 +424,14 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
   // count event
   fNEntries->Fill(0); 
+
+  //count events with good vertex
+  // AOD primary vertex
+  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  TString primTitle = vtx1->GetTitle();
+  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fNEntries->Fill(4);
+
+
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     // rejected for pileup
@@ -425,6 +443,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t isGoodTrack=0;
 
   if(aod) ntracks=aod->GetNTracks();
+
+
+  ((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
+  ((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+
 
   //loop on tracks in the event
   for (Int_t k=0;k<ntracks;k++){
@@ -491,7 +514,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     ((TH1F*)fOutputTrack->FindObject("hnClsITS"))->Fill(nclsTot);
     ((TH1F*)fOutputTrack->FindObject("hnClsSPD"))->Fill(nclsSPD);
 
-    if(!track->GetStatus()&AliESDtrack::kTPCin && track->GetStatus()&AliESDtrack::kITSrefit && !track->GetStatus()&AliESDtrack::kITSpureSA){//tracks retrieved in the ITS and not reconstructed in the TPC
+    if(!(track->GetStatus()&AliESDtrack::kTPCin) && track->GetStatus()&AliESDtrack::kITSrefit && !(track->GetStatus()&AliESDtrack::kITSpureSA)){//tracks retrieved in the ITS and not reconstructed in the TPC
       ((TH1F*)fOutputTrack->FindObject("hnClsITS-SA"))->Fill(nclsTot);
     }
 
@@ -547,6 +570,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pid->GetIntegratedTimes(times);
 	  if(pidHF && pidHF->CheckStatus(track,"TOF")) ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptimeAC"))->Fill(track->P(),pid->GetTOFsignal()-times[AliPID::kKaon]);
 	  if(pidHF && pidHF->CheckStatus(track,"TPC")) ((TH2F*)fOutputPID->FindObject("hTPCsigvspAC"))->Fill(pid->GetTPCmomentum(),pid->GetTPCsignal());
+
+	  fNEntries->Fill(3);
 	} //end analysis cuts
       } //end acceptance and track cuts
     } //end loop on tracks in the candidate
