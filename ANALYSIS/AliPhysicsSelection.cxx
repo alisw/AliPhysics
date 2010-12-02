@@ -425,7 +425,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
         case kCMBS2C: hwTrig = fastORHWL1 > 1 && v0CHW; break;
         case kCMBAC:  hwTrig = v0AHW && v0CHW; break;
         case kCMBACS2: hwTrig = fastORHWL1 > 1 && v0AHW && v0CHW; break;
-        case kHighMultL1: hwTrig = fastORHWL1 > 100; break;
+        case kHighMultL1: hwTrig = fastORHW > 100; break;
         default: AliFatal(Form("Undefined trigger logic %d", triggerLogic)); break;
       }
 
@@ -514,7 +514,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
           case kCMBS2C: offlineAccepted = fastOROfflineL1 > 1 && v0C; break;
           case kCMBAC:  offlineAccepted = v0A && v0C; break;
           case kCMBACS2: offlineAccepted = fastOROfflineL1 > 1 && v0A && v0C; break;
-          case kHighMultL1: offlineAccepted = fastOROfflineL1 > 100; break;
+          case kHighMultL1: offlineAccepted = fastOROffline > 100; break;
           default: AliFatal(Form("Undefined trigger logic %d", triggerLogic)); break;
         }
 
