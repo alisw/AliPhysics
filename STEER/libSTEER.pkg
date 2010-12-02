@@ -59,6 +59,7 @@ AliQAChecker.cxx \
 AliCorrQAChecker.cxx \
 AliGlobalQAChecker.cxx \
 AliQACheckerBase.cxx \
+AliQAThresholds.cxx \
 AliMillepede.cxx \
 AliPlaneEff.cxx \
 AliTriggerRunScalers.cxx AliGRPPreprocessor.cxx \

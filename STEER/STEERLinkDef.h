@@ -129,6 +129,7 @@
 #pragma link C++ class AliCorrQAChecker+;
 #pragma link C++ class AliGlobalQAChecker+;
 #pragma link C++ class AliQACheckerBase+;
+#pragma link C++ class AliQAThresholds+;
 #pragma link C++ class AliMillepede+;
 
 #pragma link C++ class AliPlaneEff+;
