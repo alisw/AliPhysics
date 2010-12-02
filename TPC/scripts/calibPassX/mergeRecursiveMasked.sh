@@ -2,9 +2,10 @@
 # recursive merging
 # 
 maxMerge=$1
-queue="$2 -m batch_dgrid2 -E /u/miranov/preexec.sh"
+queue="$2"
 mask=$3
 output=$4
+reject=$5
 #
 counter=0;
 counter2=0;
@@ -17,9 +18,9 @@ for a in `cat ../calib.list`; do
    echo $counter $counter2
    echo $a >>calib.list
    if [ $counter -gt $maxMerge ] ; then
-     echo    bsub -q $queue  -oo outMerge.log $ALICE_ROOT/ANALYSIS/CalibMacros/MergeCalibration/mergeCustom.C\(\"$output\",\"$mask\",\"riend\"\);
+     echo    bsub -q $queue  -oo outMerge.log $ALICE_ROOT/ANALYSIS/CalibMacros/MergeCalibration/mergeCustom.C\(\"$output\",\"$mask\",\"$5\"\);
      cat calib.list
-     bsub -q $queue  -oo outMerge.log aliroot -b -q  $ALICE_ROOT/ANALYSIS/CalibMacros/MergeCalibration/mergeCustom.C\(\"calib.list\",\"$output\",\"$mask\",\"riend\"\)
+     bsub -q $queue  -oo outMerge.log aliroot -b -q  $ALICE_ROOT/ANALYSIS/CalibMacros/MergeCalibration/mergeCustom.C\(\"calib.list\",\"$output\",\"$mask\",\"$5\"\)
      let counter2=counter2+1;
      let counter=0;
      cd $wdir
@@ -30,6 +31,6 @@ for a in `cat ../calib.list`; do
      fi;
    fi;  
 done;
-#echo bsub -q $queue  -oo outMerge.log aliroot -b -q  $ALICE_ROOT/ANALYSIS/CalibMacros/MergeCalibration/mergeCustom.C\(\"calib.list\",\"$output\","\$mask\",\"riend\"\)
-bsub -q $queue  -oo outMerge.log aliroot -b -q  $ALICE_ROOT/ANALYSIS/CalibMacros/MergeCalibration/mergeCustom.C\(\"calib.list\",\"$output\",\"$mask\",\"riend\"\)
+
+bsub -q $queue  -oo outMerge.log aliroot -b -q  $ALICE_ROOT/ANALYSIS/CalibMacros/MergeCalibration/mergeCustom.C\(\"calib.list\",\"$output\",\"$mask\",\"$5\"\)
 
