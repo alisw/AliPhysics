@@ -31,6 +31,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   AliRDHFCuts& operator=(const AliRDHFCuts& source); 
 
   virtual void SetStandardCutsPP2010() {return;}  
+  virtual void SetStandardCutsPbPb2010() {return;}  
 
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
   void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}  
