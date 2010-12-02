@@ -81,14 +81,14 @@ private:
 	 const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	 const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	 Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	 Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
+	 Float_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	 const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const;
   void   ReconstructEventPbPb(TTree *clustersTree, 
 	 const Float_t* const corrADCZN1, const Float_t* const corrADCZP1, 
 	 const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	 const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	 Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	 Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
+	 Float_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	 const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const;
 
   static AliZDCRecoParam *fgRecoParam; // reconstruction parameters
@@ -98,16 +98,17 @@ private:
   AliZDCEnCalib    *fEnCalibData;   	  //! energy calibration data
   AliZDCTowerCalib *fTowCalibData;  	  //! equalization calibration data
   
-  Int_t   fRecoMode;	    // =1->p-p, =2->A-A
-  Float_t fBeamEnergy;	    // beam energy
-  Int_t	  fNRun;	    // Run Number (from raw data)
-  Bool_t  fIsCalibrationMB; // true if run type = "CALIBRATION_MB"
-  Int_t   fPedSubMode;	    // =0->mean values, =1->from correlations
-  Float_t fSignalThreshold; // Threshold value for "triggering" in p-p
+  Int_t    fRecoMode;	    // =1->p-p, =2->A-A
+  Float_t  fBeamEnergy;	    // beam energy
+  Int_t	   fNRun;	    // Run Number (from raw data)
+  Bool_t   fIsCalibrationMB; // true if run type = "CALIBRATION_MB"
+  Int_t    fPedSubMode;	    // =0->mean values, =1->from correlations
+  Float_t  fSignalThreshold; // Threshold value for "triggering" in p-p
+  Double_t fMeanPhase;      // LHC clock phase
   
   AliESDZDC* fESDZDC;       // ESD output object  
 
-  ClassDef(AliZDCReconstructor, 11)   // class for the ZDC reconstruction
+  ClassDef(AliZDCReconstructor, 12)   // class for the ZDC reconstruction
 };
 
 #endif

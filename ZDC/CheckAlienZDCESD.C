@@ -250,7 +250,7 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
 */
       Float_t tdcData[32][4];
       for(Int_t isc=0; isc<32; isc++){
-	for(Int_t i=0; i<4; i++) tdcData[isc][i] = 0.025*esdZDC->GetZDCTDCData(isc, i);
+	for(Int_t i=0; i<4; i++) tdcData[isc][i] = esdZDC->GetZDCTDCData(isc, i);
       }
       for(Int_t itdc=0; itdc<32; itdc++){
          for(Int_t j=0; j<4; j++){

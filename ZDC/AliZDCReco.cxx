@@ -63,7 +63,7 @@ AliZDCReco::AliZDCReco() :
   
   for(Int_t i=0; i<32; i++){
     fZDCScaler[i] = 0;
-    for(Int_t ij=0; ij<4; ij++) fZDCTDCData[i][ij] = 0;
+    for(Int_t ij=0; ij<4; ij++) fZDCTDCData[i][ij] = 0.;
   }
 }
   
@@ -78,7 +78,7 @@ AliZDCReco::AliZDCReco(
      Int_t trsp, Int_t trspSideA,Int_t trspSideC,
      Int_t npart, Int_t npartSideA, Int_t npartSideC, 
      Float_t b, Float_t bSideA, Float_t bSideC,
-     UInt_t recoFlag, Bool_t scalerOn, UInt_t* scaler, Int_t tdcData[32][4]) :
+     UInt_t recoFlag, Bool_t scalerOn, UInt_t* scaler, Float_t tdcData[32][4]) :
 	
   TObject(),
   //

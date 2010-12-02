@@ -55,7 +55,11 @@ AliESDZDC::AliESDZDC() :
   }
   for(Int_t i=0; i<32; i++){
     fVMEScaler[i]=0;
-    for(Int_t y=0; y<4; y++) fZDCTDCData[i][y]=0;
+    for(Int_t y=0; y<4; y++){
+      fZDCTDCData[i][y]=0.;
+      fZNCTime[y]=0.;
+      fZNATime[y]=0.;
+    }
   }
 }
 
@@ -93,7 +97,11 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   }
   for(Int_t i=0; i<32; i++){
     fVMEScaler[i] = zdc.fVMEScaler[i];
-    for(Int_t y=0; y<4; y++) fZDCTDCData[i][y] = zdc.fZDCTDCData[i][y];
+    for(Int_t y=0; y<4; y++){
+       fZDCTDCData[i][y] = zdc.fZDCTDCData[i][y];
+       fZNCTime[y] = zdc.fZNCTime[y];
+       fZNATime[y] = zdc.fZNATime[y];
+    }
   }
 }
 
@@ -135,7 +143,11 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
     fESDQuality = zdc.fESDQuality;
     for(Int_t i=0; i<32; i++){
       fVMEScaler[i] = zdc.fVMEScaler[i];
-      for(Int_t y=0; y<4; y++) fZDCTDCData[i][y] = zdc.fZDCTDCData[i][y];
+      for(Int_t y=0; y<4; y++){ 
+         fZDCTDCData[i][y] = zdc.fZDCTDCData[i][y];
+         fZNCTime[y] = zdc.fZNCTime[y];
+         fZNATime[y] = zdc.fZNATime[y];
+      }
     }
   } 
   return *this;
@@ -184,7 +196,11 @@ void AliESDZDC::Reset()
   fESDQuality=0;
   for(Int_t i=0; i<32; i++){
      fVMEScaler[i] = 0;
-     for(Int_t y=0; y<4; y++) fZDCTDCData[i][y] = 0;
+     for(Int_t y=0; y<4; y++){
+        fZDCTDCData[i][y] = 0.;
+        fZNCTime[y] = 0.;
+        fZNATime[y] = 0.;
+     }
   }
 }
 
@@ -250,7 +266,7 @@ Bool_t AliESDZDC::GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Dou
     fZNCCentrCoord[0] = fZNCCentrCoord[1] = 999.;
   }
   if(denZNA!=0){
-    Float_t nSpecnA = fZDCN1Energy/beamEne;
+    Float_t nSpecnA = fZDCN2Energy/beamEne;
     cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
     fZNACentrCoord[0] = cZNA*numXZNA/denZNA;
     fZNACentrCoord[1] = cZNA*numYZNA/denZNA;

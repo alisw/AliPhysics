@@ -665,38 +665,38 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
       } //IsADCDataWord && signal ADCs
       else if(stream.IsZDCTDCDatum()){
 	 if(stream.GetChannel()==1){
-	    zncTDC[iMultZNCTDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    zncTDC[iMultZNCTDC] = (stream.GetZDCTDCDatum());
 	    iMultZNCTDC++;
 	 }
 	 else if(stream.GetChannel()==3){
-	    zpcTDC[iMultZPCTDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    zpcTDC[iMultZPCTDC] = (stream.GetZDCTDCDatum());
 	    iMultZPCTDC++;
 	 }
 	 else if(stream.GetChannel()==5){
-	    znaTDC[iMultZNATDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    znaTDC[iMultZNATDC] = (stream.GetZDCTDCDatum());
 	    iMultZNATDC++;
 	 }
 	 else if(stream.GetChannel()==7){
-	    zpaTDC[iMultZPATDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    zpaTDC[iMultZPATDC] = (stream.GetZDCTDCDatum());
 	    iMultZPATDC++;
 	 }
 	 else if(stream.GetChannel()==8){
-	    zem1TDC[iMultZEM1TDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    zem1TDC[iMultZEM1TDC] = (stream.GetZDCTDCDatum());
 	    iMultZEM1TDC++;
 	 }
 	 else if(stream.GetChannel()==9){
-	    zem2TDC[iMultZEM2TDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    zem2TDC[iMultZEM2TDC] = (stream.GetZDCTDCDatum());
 	    iMultZEM2TDC++;
 	 }
 	 else if(stream.GetChannel()==10){
-	    zncSumTDC[iMultZEM2TDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    zncSumTDC[iMultZEM2TDC] = (stream.GetZDCTDCDatum());
 	    iMultTDCC++;
 	 }
 	 else if(stream.GetChannel()==12){
-	    znaSumTDC[iMultZEM2TDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    znaSumTDC[iMultZEM2TDC] = (stream.GetZDCTDCDatum());
 	    iMultTDCA++;
 	 }
-	 else if(stream.GetChannel()==14) tdcGate = (0.025*(stream.GetZDCTDCDatum()));
+	 else if(stream.GetChannel()==14) tdcGate = (stream.GetZDCTDCDatum());
 	 
 	 if(stream.GetChannel()==16 && tdcGate!=-999.){
 	   for(Int_t iHit=0; iHit<10; iHit++){

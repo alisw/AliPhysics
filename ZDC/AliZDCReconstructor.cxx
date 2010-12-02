@@ -47,6 +47,7 @@
 #include "AliZDCRecoParampp.h"
 #include "AliZDCRecoParamPbPb.h"
 #include "AliRunInfo.h"
+#include "AliLHCClockPhase.h"
 
 
 ClassImp(AliZDCReconstructor)
@@ -64,6 +65,7 @@ AliZDCReconstructor:: AliZDCReconstructor() :
   fIsCalibrationMB(kFALSE),
   fPedSubMode(0),
   fSignalThreshold(7),
+  fMeanPhase(0),
   fESDZDC(NULL)
 {
   // **** Default constructor
@@ -85,9 +87,8 @@ AliZDCReconstructor::~AliZDCReconstructor()
 //____________________________________________________________________________
 void AliZDCReconstructor::Init()
 {
-  // Setting reconstruction mode
-  // Getting beam type and beam energy from GRP calibration object
-  
+  // Setting reconstruction parameters
+    
   TString runType = GetRunInfo()->GetRunType();
   if((runType.CompareTo("CALIBRATION_MB")) == 0){
     fIsCalibrationMB = kTRUE;
@@ -103,6 +104,9 @@ void AliZDCReconstructor::Init()
     AliError("\t UNKNOWN beam type\n");
     return;
   }*/
+    
+  fBeamEnergy = GetRunInfo()->GetBeamEnergy();
+  if(fBeamEnergy<0.01) AliWarning(" Beam energy value missing -> E_beam = 0");
 
   if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
      ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
@@ -110,10 +114,16 @@ void AliZDCReconstructor::Init()
   }
   else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
     fRecoMode=2;
+    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
+    if(fgRecoParam){
+      fgRecoParam->SetGlauberMCDist(fBeamEnergy);	
+    } 
   }
-    
-  fBeamEnergy = GetRunInfo()->GetBeamEnergy();
-  if(fBeamEnergy<0.01) AliWarning(" Beam energy value missing -> E_beam = 0");
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
+  if (!entry) AliFatal("LHC clock-phase shift is not found in OCDB !");
+  AliLHCClockPhase *phaseLHC = (AliLHCClockPhase*)entry->GetObject();
+  fMeanPhase = phaseLHC->GetMeanPhase();
     
   if(fIsCalibrationMB==kFALSE)  
     printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
@@ -123,6 +133,7 @@ void AliZDCReconstructor::Init()
   // pp-like reconstruction must be performed (E cailb. coeff. = 1)
   if((runType.CompareTo("CALIBRATION_EMD")) == 0){
     fRecoMode=1; 
+    fBeamEnergy = 1380.;
   }
   
   fESDZDC = new AliESDZDC();
@@ -149,6 +160,11 @@ void AliZDCReconstructor::Init(TString beamType, Float_t beamEnergy)
     if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
     if( fgRecoParam ) fgRecoParam->SetGlauberMCDist(fBeamEnergy);	
   }    
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
+  if (!entry) AliFatal("LHC clock-phase shift is not found in OCDB !");
+  AliLHCClockPhase *phaseLHC = (AliLHCClockPhase*)entry->GetObject();
+  fMeanPhase = phaseLHC->GetMeanPhase();
   
   fESDZDC = new AliESDZDC();
   
@@ -295,10 +311,10 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   }//digits loop
  
   UInt_t counts[32];
-  Int_t  tdc[32][4];
+  Float_t  tdc[32][4];
   for(Int_t jj=0; jj<32; jj++){
     counts[jj]=0;
-    for(Int_t ii=0; ii<4; ii++) tdc[jj][ii]=0;
+    for(Int_t ii=0; ii<4; ii++) tdc[jj][ii]=0.;
   }
   
   Int_t  evQualityBlock[4] = {1,0,0,0};
@@ -364,11 +380,12 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   Bool_t isScalerOn=kFALSE;
   Int_t jsc=0, itdc=0, iprevtdc=-1, ihittdc=0;
   UInt_t scalerData[32];
-  Int_t tdcData[32][4];	
+  Float_t tdcData[32][4];	
   for(Int_t k=0; k<32; k++){
     scalerData[k]=0;
-    for(Int_t i=0; i<4; i++) tdcData[k][i]=0;
+    for(Int_t i=0; i<4; i++) tdcData[k][i]=0.;
   }
+  
   
   Int_t  evQualityBlock[4] = {1,0,0,0};
   Int_t  triggerBlock[4] = {0,0,0,0};
@@ -544,7 +561,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        iprevtdc=itdc;
        tdcData[itdc][ihittdc] = rawData.GetZDCTDCDatum();
        // Ch. debug
-       printf("   Reconstructed TDC[%d, %d] %d  ",itdc, ihittdc, tdcData[itdc][ihittdc]);
+       //printf("   Reconstructed TDC[%d, %d] %d  ",itdc, ihittdc, tdcData[itdc][ihittdc]);
    }// ZDC TDC DATA
    // ***************************** Reading PU
    else if(rawData.GetADCModule()==kPUGeo){
@@ -635,7 +652,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
 	const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
+	Float_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
@@ -831,7 +848,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 	const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
+	Float_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
@@ -1020,23 +1037,26 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   
   if(fIsCalibrationMB == kFALSE){
     // ******	Reconstruction parameters ------------------ 
-    if(!fgMBCalibData) fgMBCalibData = const_cast<AliZDCMBCalib*>(GetMBCalibData()); 
-    if(!fgRecoParam){
-      fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
-      if(!fgRecoParam) return;
-      fgRecoParam->SetGlauberMCDist(fBeamEnergy);     
+    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
+    if(!fgRecoParam){  
+      AliError("  RecoParam object not retrieved correctly: not reconstructing event!!!");
+      return;
+    }
+    TH1D* hNpartDist = fgRecoParam->GethNpartDist();
+    TH1D*   hbDist = fgRecoParam->GethbDist();    
+    Float_t  fClkCenter = fgRecoParam->GetClkCenter();
+    if(!hNpartDist || !hbDist){  
+       AliError("Something wrong in Glauber MC histos got from AliZDCREcoParamPbPb: NO EVENT RECO FOR ZDC DATA!!!\n\n");
+       return;
     }
      
+    if(!fgMBCalibData) fgMBCalibData = const_cast<AliZDCMBCalib*>(GetMBCalibData()); 
     TH2F *hZDCvsZEM  = fgMBCalibData->GethZDCvsZEM();
     TH2F *hZDCCvsZEM = fgMBCalibData->GethZDCCvsZEM();
     TH2F *hZDCAvsZEM = fgMBCalibData->GethZDCAvsZEM();
     //
-    TH1D *hNpartDist = fgRecoParam->GethNpartDist();
-    TH1D *hbDist = fgRecoParam->GethbDist();    
-    Float_t clkCenter = fgRecoParam->GetClkCenter();
-    //
     Double_t xHighEdge = hZDCvsZEM->GetXaxis()->GetXmax();
-    Double_t origin = xHighEdge*clkCenter;
+    Double_t origin = xHighEdge*fClkCenter;
     // Ch. debug
     //printf("\n\n  xHighEdge %1.2f, origin %1.4f \n", xHighEdge, origin);
     //
@@ -1310,14 +1330,29 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
     UInt_t counts[32];
     for(Int_t jk=0; jk<32; jk++) counts[jk] = reco.GetZDCScaler(jk);
     fESDZDC->SetZDCScaler(counts);
-  }
+  }    
   
   // Writing TDC data into ZDC ESDs
-  Int_t tdcValues[32][4];
+  Float_t tdcValues[32][4];
+  Float_t zncTime[4]={0.,0.,0.,0.}, znaTime[4]={0.,0.,0.,0.};
   for(Int_t jk=0; jk<32; jk++){
-    for(Int_t lk=0; lk<4; lk++) tdcValues[jk][lk] = reco.GetZDCTDCData(jk, lk);
+    Int_t indc=0, inda=0;
+    for(Int_t lk=0; lk<4; lk++){
+      tdcValues[jk][lk] = 0.025*reco.GetZDCTDCData(jk, lk);
+      if((jk==10) && (tdcValues[jk][lk]!=0)){
+         zncTime[indc] = tdcValues[jk][lk]-tdcValues[14][0]+fMeanPhase;
+         indc++;
+      }
+      else if((jk==12) && (tdcValues[jk][lk]!=0)){
+         znaTime[inda] = tdcValues[jk][lk]-tdcValues[14][0]+fMeanPhase;
+	 inda++;
+      }
+    }
   }
   fESDZDC->SetZDCTDC(tdcValues);
+  
+  fESDZDC->SetZNCTime(zncTime);
+  fESDZDC->SetZNATime(znaTime);
   
   if(esd) esd->SetZDCData(fESDZDC);
 }

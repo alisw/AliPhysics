@@ -84,14 +84,17 @@ public:
   UInt_t GetZDCScaler(Int_t i)  const {return fVMEScaler[i];}
   const UInt_t* GetZDCScaler()  const {return fVMEScaler;}
 
-  Int_t GetZDCTDCData(Int_t i, Int_t j) const {return fZDCTDCData[i][j];}
+  Float_t GetZDCTDCData(Int_t i, Int_t j) const {return fZDCTDCData[i][j];}
   
   void SetZDCScaler(const UInt_t count[32]) 
        {for(Int_t k=0; k<32; k++) fVMEScaler[k] = count[k];}
   
-  void SetZDCTDC(const Int_t values[32][4]) 
+  void SetZDCTDC(const Float_t values[32][4]) 
        {for(Int_t k=0; k<32; k++)
        	   for(Int_t j=0; j<4; j++) fZDCTDCData[k][j] = values[k][j];}
+
+  void SetZNCTime(const Float_t val[4]) {for(int k=0; k<4; k++) fZNCTime[k] = val[k];}
+  void SetZNATime(const Float_t val[4]) {for(int k=0; k<4; k++) fZNATime[k] = val[k];}
 
   void    Reset();
   void    Print(const Option_t *opt=0) const;
@@ -121,10 +124,12 @@ private:
   Double32_t   fZNACentrCoord[2]; // Coordinates of the centroid over ZNC
   Double32_t   fZNCCentrCoord[2]; // Coordinates of the centroid over ZNA
   UInt_t       fESDQuality;	  // flags from reconstruction
-  UInt_t fVMEScaler[32]; 	  // counts from VME scaler
-  Int_t  fZDCTDCData[32][4]; 	  // ZDC TDC data
+  UInt_t       fVMEScaler[32]; 	  // counts from VME scaler
+  Float_t      fZDCTDCData[32][4];// ZDC TDC data
+  Float_t      fZNCTime[4];	  // ZNC corrected TDC data
+  Float_t      fZNATime[4];	  // ZNA corrected TDC data
 
-  ClassDef(AliESDZDC,14)
+  ClassDef(AliESDZDC,15)
 };
 
 #endif

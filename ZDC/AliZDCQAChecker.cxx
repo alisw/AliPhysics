@@ -675,7 +675,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             }
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
 	    if(irecHisto==11){
-	      if(TMath::Abs(meanZNC)>1.e-10){
+	      if((TMath::Abs(meanZNC)>1.e-10) && (pmCZNC>1.e-10)){
             	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
             	  res=1.;
             	else 
@@ -683,7 +683,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             	test[specie] += res;
             	count++;
 	      }
-	      if(TMath::Abs(meanZNA)>1.e-10){
+	      if((TMath::Abs(meanZNA)>1.e-10) && (pmCZNA>1.e-10)){
             	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
             	  res=1.;
             	else 
@@ -691,7 +691,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             	test[specie] += res;
             	count++;
 	      }
-	      if(TMath::Abs(meanZPC)>1.e-10){
+	      if((TMath::Abs(meanZPC)>1.e-10) && (pmCZPC>1.e-10)){
             	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
             	  res=1.;
             	else 
@@ -699,7 +699,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             	test[specie] += res;
             	count++;
 	      }
-	      if(TMath::Abs(meanZPA)>1.e-10){
+	      if((TMath::Abs(meanZPA)>1.e-10) && (pmCZPA>1.e-10)){
             	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
             	  res=1.;
             	else 
