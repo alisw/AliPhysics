@@ -13,6 +13,7 @@
 
 class AliAODEvent;
 class AliAODRecoDecayHF;
+class AliAODRecoDecayHF2Prong;
 
 class AliRDHFCutsD0toKpi : public AliRDHFCuts 
 {
@@ -45,15 +46,20 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Bool_t GetUseSpecialCuts() const {return fUseSpecialCuts;}
   void SetUseDefaultPID(Bool_t defPID){fDefaultPID=defPID;}
   Bool_t GetIsUsedDefPID(){return fDefaultPID;}
+  void SetUseKF(Bool_t useKF);
+  Bool_t GetIsUsedKF() const {return fUseKF;}
   
   
  protected:
-  Bool_t fUseSpecialCuts;           // flag to switch on/off special cuts
+  Int_t IsSelectedKF(AliAODRecoDecayHF2Prong* d,AliAODEvent* aod) const;
+
+  Bool_t fUseSpecialCuts;  // flag to switch on/off special cuts
   Bool_t fLowPt;           // flag to switch on/off different pid for low pt D0
   Bool_t fDefaultPID;      // flag to switch on/off the default pid
-  ClassDef(AliRDHFCutsD0toKpi,4);  // class for cuts on AOD reconstructed D0->Kpi
+  Bool_t fUseKF;           // flag to switch on/off D0 selection via KF 
+
+  ClassDef(AliRDHFCutsD0toKpi,5);  // class for cuts on AOD reconstructed D0->Kpi
 };
 
 #endif
-
 

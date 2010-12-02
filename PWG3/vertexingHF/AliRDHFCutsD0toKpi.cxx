@@ -30,6 +30,8 @@
 #include "AliAODPid.h"
 #include "AliTPCPIDResponse.h"
 #include "AliAODVertex.h"
+#include "AliKFVertex.h"
+#include "AliKFParticle.h"
 
 ClassImp(AliRDHFCutsD0toKpi)
 
@@ -38,7 +40,8 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) :
 AliRDHFCuts(name),
 fUseSpecialCuts(kFALSE),
 fLowPt(kTRUE),
-fDefaultPID(kTRUE)
+fDefaultPID(kTRUE),
+fUseKF(kFALSE)
 {
   //
   // Default Constructor
@@ -83,7 +86,8 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
   AliRDHFCuts(source),   
   fUseSpecialCuts(source.fUseSpecialCuts),
   fLowPt(source.fLowPt),
-  fDefaultPID(source.fDefaultPID)
+  fDefaultPID(source.fDefaultPID),
+  fUseKF(source.fUseKF)
 {
   //
   // Copy constructor
@@ -193,7 +197,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   //
   // Apply selection
   //
-
+  
   if(!fCutsRD){
     cout<<"Cut matrice not inizialized. Exit..."<<endl;
     return 0;
@@ -227,103 +231,110 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
 
 
 
+
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate) {
 
-    //recalculate vertex w/o daughters
-    AliAODVertex *origownvtx=0x0;
-    AliAODVertex *recvtx=0x0;
-  
-    if(fRemoveDaughtersFromPrimary) {
-      if(!aod) {
-	AliError("Can not remove daughters from vertex without AOD event");
-	return 0;
-      }   
-      if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
-      recvtx=d->RemoveDaughtersFromPrimaryVtx(aod);
-      if(!recvtx){
-	AliDebug(2,"Removal of daughter tracks failed");
-	//recvtx=d->GetPrimaryVtx();
+    // go to selection with Kalman vertexing, if requested
+    if(fUseKF) {
+      returnvalueCuts = IsSelectedKF(d,aod);
+    } else {
+
+      //recalculate vertex w/o daughters
+      AliAODVertex *origownvtx=0x0;
+      AliAODVertex *recvtx=0x0;
+      
+      if(fRemoveDaughtersFromPrimary) {
+	if(!aod) {
+	  AliError("Can not remove daughters from vertex without AOD event");
+	  return 0;
+	}   
+	if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+	recvtx=d->RemoveDaughtersFromPrimaryVtx(aod);
+	if(!recvtx){
+	  AliDebug(2,"Removal of daughter tracks failed");
+	  //recvtx=d->GetPrimaryVtx();
+	  if(origownvtx){
+	    delete origownvtx;
+	    origownvtx=NULL;
+	  }
+	  return 0;
+	}
+	//set recalculed primary vertex
+	d->SetOwnPrimaryVtx(recvtx);
+	delete recvtx; recvtx=NULL;
+      }
+      
+      
+      Double_t pt=d->Pt();
+      
+      Int_t okD0=0,okD0bar=0;
+      
+      Int_t ptbin=PtBin(pt);
+      if (ptbin==-1) {
 	if(origownvtx){
+	  d->SetOwnPrimaryVtx(origownvtx);
 	  delete origownvtx;
 	  origownvtx=NULL;
 	}
+	else d->UnsetOwnPrimaryVtx();
 	return 0;
       }
-      //set recalculed primary vertex
-      d->SetOwnPrimaryVtx(recvtx);
-      delete recvtx; recvtx=NULL;
-    }
-
+      Double_t mD0,mD0bar,ctsD0,ctsD0bar;
+      okD0=1; okD0bar=1;
+      
+      Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+      
+      if(d->PtProng(1) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(0) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0 = 0;
+      if(d->PtProng(0) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(1) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0bar = 0;
+      if(!okD0 && !okD0bar) returnvalueCuts=0;
+      
+      
+      if(TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)] || 
+	 TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)]) okD0 = 0;
+      if(TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)] ||
+	 TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)]) okD0bar = 0;
+      if(!okD0 && !okD0bar)  returnvalueCuts=0;
+      
+      if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)])  returnvalueCuts=0;
+      
+      d->InvMassD0(mD0,mD0bar);
+      if(TMath::Abs(mD0-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0 = 0;
+      if(TMath::Abs(mD0bar-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)])  okD0bar = 0;
+      if(!okD0 && !okD0bar)  returnvalueCuts=0;
     
-    Double_t pt=d->Pt();
-   
-    Int_t okD0=0,okD0bar=0;
- 
-    Int_t ptbin=PtBin(pt);
-    if (ptbin==-1) {
-      if(origownvtx){
+      d->CosThetaStarD0(ctsD0,ctsD0bar);
+      if(TMath::Abs(ctsD0) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0 = 0; 
+      if(TMath::Abs(ctsD0bar) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0bar = 0;
+      if(!okD0 && !okD0bar)   returnvalueCuts=0;
+    
+      if(d->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)])  returnvalueCuts=0;
+    
+      if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)])  returnvalueCuts=0;
+      
+      if (returnvalueCuts!=0) {
+	if (okD0) returnvalueCuts=1; //cuts passed as D0
+	if (okD0bar) returnvalueCuts=2; //cuts passed as D0bar
+	if (okD0 && okD0bar) returnvalueCuts=3; //cuts passed as D0 and D0bar
+      }
+
+      // call special cuts
+      Int_t special=1;
+      if(fUseSpecialCuts) special=IsSelectedSpecialCuts(d);
+      if(!special) returnvalueCuts=0;
+
+      // unset recalculated primary vertex when not needed any more
+      if(origownvtx) {
 	d->SetOwnPrimaryVtx(origownvtx);
 	delete origownvtx;
 	origownvtx=NULL;
+      } else if(fRemoveDaughtersFromPrimary) {
+	d->UnsetOwnPrimaryVtx();
+	AliDebug(3,"delete new vertex\n");
       }
-      else d->UnsetOwnPrimaryVtx();
-      return 0;
-    }
-    Double_t mD0,mD0bar,ctsD0,ctsD0bar;
-    okD0=1; okD0bar=1;
 
-    Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-
-    if(d->PtProng(1) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(0) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0 = 0;
-    if(d->PtProng(0) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(1) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0bar = 0;
-    if(!okD0 && !okD0bar) returnvalueCuts=0;
-  
-    
-    if(TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)] || 
-       TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)]) okD0 = 0;
-    if(TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)] ||
-       TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)]) okD0bar = 0;
-    if(!okD0 && !okD0bar)  returnvalueCuts=0;
-    
-    if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)])  returnvalueCuts=0;
-    
-    d->InvMassD0(mD0,mD0bar);
-    if(TMath::Abs(mD0-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0 = 0;
-    if(TMath::Abs(mD0bar-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)])  okD0bar = 0;
-    if(!okD0 && !okD0bar)  returnvalueCuts=0;
-    
-    d->CosThetaStarD0(ctsD0,ctsD0bar);
-    if(TMath::Abs(ctsD0) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0 = 0; 
-    if(TMath::Abs(ctsD0bar) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0bar = 0;
-    if(!okD0 && !okD0bar)   returnvalueCuts=0;
-    
-    if(d->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)])  returnvalueCuts=0;
-    
-    if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)])  returnvalueCuts=0;
-    
-    if (returnvalueCuts!=0) {
-      if (okD0) returnvalueCuts=1; //cuts passed as D0
-      if (okD0bar) returnvalueCuts=2; //cuts passed as D0bar
-      if (okD0 && okD0bar) returnvalueCuts=3; //cuts passed as D0 and D0bar
-    }
-
-    // call special cuts
-    Int_t special=1;
-    if(fUseSpecialCuts) special=IsSelectedSpecialCuts(d);
-    if(!special) returnvalueCuts=0;
-
-    // unset recalculated primary vertex when not needed any more
-    if(origownvtx) {
-      d->SetOwnPrimaryVtx(origownvtx);
-      delete origownvtx;
-      origownvtx=NULL;
-    } else if(fRemoveDaughtersFromPrimary) {
-      d->UnsetOwnPrimaryVtx();
-      AliDebug(3,"delete new vertex\n");
-    }
-
+    } // if(fUseKF)
   }
 
  
@@ -331,7 +342,258 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   //  cout<<"Pid = "<<returnvaluePID<<endl;
   return CombineSelectionLevels(3,returnvalueCuts,returnvaluePID);
 }
+
+//------------------------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpi::IsSelectedKF(AliAODRecoDecayHF2Prong *d,
+				       AliAODEvent* aod) const {
+  //
+  // Apply selection using KF-vertexing
+  //
+	
+  AliAODTrack *track0 = (AliAODTrack*)d->GetDaughter(0);
+  AliAODTrack *track1 = (AliAODTrack*)d->GetDaughter(1); 
+   
+  if(!track0 || !track1) {
+    cout<<"one or two D0 daughters missing!"<<endl;
+    return 0;
+  }
+
+  // returnvalue: 0 not sel, 1 only D0, 2 only D0bar, 3 both
+  Int_t returnvalueCuts=3;
+	 
+  // candidate selection with AliKF
+  AliKFParticle::SetField(aod->GetMagneticField()); // set the magnetic field
+  
+  Int_t okD0=0,okD0bar=0;
+  okD0=1; okD0bar=1;
+  
+  // convert tracks into AliKFParticles
+  
+  AliKFParticle negPiKF(*track1,-211); // neg pion kandidate
+  AliKFParticle negKKF(*track1,-321); // neg kaon kandidate
+  AliKFParticle posPiKF(*track0,211); // pos pion kandidate
+  AliKFParticle posKKF(*track0,321); // pos kaon kandidate
+  
+  // build D0 candidates
+  
+  AliKFParticle d0c(negKKF,posPiKF); // D0 candidate
+  AliKFParticle ad0c(posKKF,negPiKF); // D0bar candidate
+  
+  // create kf primary vertices
+  
+  AliAODVertex *vtx1 = aod->GetPrimaryVertex();
+  AliKFVertex primVtx(*vtx1); 
+  AliKFVertex aprimVtx(*vtx1);
+  
+  if(primVtx.GetNContributors()<=0) okD0 = 0;
+  if(aprimVtx.GetNContributors()<=0) okD0bar = 0;
+  if(!okD0 && !okD0bar) returnvalueCuts=0;
+	
+  // calculate mass
+	
+  Double_t d0mass = d0c.GetMass();
+  Double_t ad0mass = ad0c.GetMass();
+	
+  // calculate P of D0 and D0bar
+  Double_t d0P = d0c.GetP();
+  Double_t d0Px = d0c.GetPx();
+  Double_t d0Py = d0c.GetPy();
+  Double_t d0Pz = d0c.GetPz();
+  Double_t ad0P = ad0c.GetP(); 
+  Double_t ad0Px = ad0c.GetPx();
+  Double_t ad0Py = ad0c.GetPy();
+  Double_t ad0Pz = ad0c.GetPz();
+  
+  //calculate Pt of D0 and D0bar
+	
+  Double_t pt=d0c.GetPt(); 
+  Double_t apt=ad0c.GetPt();
+	
+  // remove D0 daughters from primary vertices (if used in vertex fit) and add D0-candidates
+  
+  if(track0->GetUsedForPrimVtxFit()) {
+    primVtx -= posPiKF; 
+    aprimVtx -= posKKF;
+  }
+  
+  if(track1->GetUsedForPrimVtxFit()) { 
+    primVtx -= negKKF; 
+    aprimVtx -= negPiKF;
+  }
+  
+  primVtx += d0c;
+  aprimVtx += ad0c;
+  
+  if(primVtx.GetNContributors()<=0) okD0 = 0;
+  if(aprimVtx.GetNContributors()<=0) okD0bar = 0;
+  if(!okD0 && !okD0bar) returnvalueCuts=0;
+  
+  //calculate cut variables
+  
+  // calculate impact params of daughters w.r.t recalculated vertices
+  
+  Double_t impactPi = posPiKF.GetDistanceFromVertexXY(primVtx);
+  Double_t aimpactPi = negPiKF.GetDistanceFromVertexXY(aprimVtx);
+  Double_t impactKa = negKKF.GetDistanceFromVertexXY(primVtx);
+  Double_t aimpactKa = posKKF.GetDistanceFromVertexXY(aprimVtx);
+	
+  // calculate Product of Impact Params
+	
+  Double_t prodParam = impactPi*impactKa;
+  Double_t aprodParam = aimpactPi*aimpactKa;
+	
+  // calculate cosine of pointing angles
+	
+  TVector3 mom(d0c.GetPx(),d0c.GetPy(),d0c.GetPz());
+  TVector3 fline(d0c.GetX()-primVtx.GetX(),
+		 d0c.GetY()-primVtx.GetY(),
+		 d0c.GetZ()-primVtx.GetZ());
+  Double_t pta = mom.Angle(fline);
+  Double_t cosP = TMath::Cos(pta); // cosine of pta for D0 candidate
+  
+  TVector3 amom(ad0c.GetPx(),ad0c.GetPy(),ad0c.GetPz());
+  TVector3 afline(ad0c.GetX()-aprimVtx.GetX(),
+		  ad0c.GetY()-aprimVtx.GetY(),
+		  ad0c.GetZ()-aprimVtx.GetZ());
+  Double_t apta = amom.Angle(afline);
+  Double_t acosP = TMath::Cos(apta); // cosine of pta for D0bar candidate
+  
+  // calculate P of Pions at Decay Position of D0 and D0bar candidates
+  negKKF.TransportToParticle(d0c);
+  posPiKF.TransportToParticle(d0c);
+  posKKF.TransportToParticle(ad0c);
+  negPiKF.TransportToParticle(ad0c);
+  
+  Double_t pxPi =  posPiKF.GetPx();
+  Double_t pyPi =  posPiKF.GetPy();
+  Double_t pzPi =  posPiKF.GetPz();
+  Double_t ptPi =  posPiKF.GetPt();
+  
+  Double_t apxPi =  negPiKF.GetPx();
+  Double_t apyPi =  negPiKF.GetPy();
+  Double_t apzPi =  negPiKF.GetPz();
+  Double_t aptPi =  negPiKF.GetPt();
+  
+  // calculate Pt of Kaons at Decay Position of D0 and D0bar candidates
+  
+  Double_t ptK =  negKKF.GetPt();
+  Double_t aptK =  posKKF.GetPt();
+	
+  //calculate cos(thetastar)
+  Double_t massvtx = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  Double_t massp[2];
+  massp[0] = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  massp[1] = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  Double_t pStar = TMath::Sqrt(TMath::Power(massvtx*massvtx-massp[0]*massp[0]-massp[1]*massp[1],2.)
+			       -4.*massp[0]*massp[0]*massp[1]*massp[1])/(2.*massvtx);
+  
+  // cos(thetastar) for D0 and Pion
+  
+  Double_t d0E = TMath::Sqrt(massvtx*massvtx + d0P*d0P);
+  Double_t beta = d0P/d0E;
+  Double_t gamma = d0E/massvtx;
+  TVector3 momPi(pxPi,pyPi,pzPi);
+  TVector3 momTot(d0Px,d0Py,d0Pz);
+  Double_t q1 = momPi.Dot(momTot)/momTot.Mag();
+  Double_t cts = (q1/gamma-beta*TMath::Sqrt(pStar*pStar+massp[1]*massp[1]))/pStar;	
+    	
+  // cos(thetastar) for D0bar and Pion	
+  
+  Double_t ad0E = TMath::Sqrt(massvtx*massvtx + ad0P*ad0P);
+  Double_t abeta = ad0P/ad0E;
+  Double_t agamma = ad0E/massvtx;
+  TVector3 amomPi(apxPi,apyPi,apzPi);
+  TVector3 amomTot(ad0Px,ad0Py,ad0Pz);
+  Double_t aq1 = amomPi.Dot(amomTot)/amomTot.Mag();
+  Double_t acts = (aq1/agamma-abeta*TMath::Sqrt(pStar*pStar+massp[1]*massp[1]))/pStar;	
+  
+  // calculate reduced Chi2 for the full D0 fit
+  d0c.SetProductionVertex(primVtx);
+  ad0c.SetProductionVertex(aprimVtx);
+  negKKF.SetProductionVertex(d0c);
+  posPiKF.SetProductionVertex(d0c);
+  posKKF.SetProductionVertex(ad0c);
+  negPiKF.SetProductionVertex(ad0c);
+  d0c.TransportToProductionVertex();
+  ad0c.TransportToProductionVertex();
+	
+  // calculate the decay length
+  Double_t decayLengthD0 = d0c.GetDecayLength();
+  Double_t adecayLengthD0 = ad0c.GetDecayLength();
+  
+  Double_t chi2D0 = 50.;
+  if(d0c.GetNDF() > 0 && d0c.GetChi2() >= 0) {
+    chi2D0 = d0c.GetChi2()/d0c.GetNDF();
+  }
+  
+  Double_t achi2D0 = 50.;
+  if(ad0c.GetNDF() > 0 && ad0c.GetChi2() >= 0) {
+    achi2D0 = ad0c.GetChi2()/ad0c.GetNDF();
+  }
+	
+  // Get the Pt-bins
+  Int_t ptbin=PtBin(pt);
+  Int_t aptbin=PtBin(apt);
+
+  if(ptbin < 0) okD0 = 0;
+  if(aptbin < 0) okD0bar = 0;
+  if(!okD0 && !okD0bar) returnvalueCuts=0;
+  
+  if(ptK < fCutsRD[GetGlobalIndex(3,ptbin)] || ptPi < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0 = 0;
+  if(aptK < fCutsRD[GetGlobalIndex(3,aptbin)] || aptPi < fCutsRD[GetGlobalIndex(4,aptbin)]) okD0bar = 0;
+  if(!okD0 && !okD0bar) returnvalueCuts=0;
+  
+  
+  if(TMath::Abs(impactKa) > fCutsRD[GetGlobalIndex(5,ptbin)] || 
+     TMath::Abs(impactPi) > fCutsRD[GetGlobalIndex(6,ptbin)]) okD0 = 0;
+  
+  if(TMath::Abs(aimpactKa) > fCutsRD[GetGlobalIndex(5,aptbin)] ||
+     TMath::Abs(aimpactPi) > fCutsRD[GetGlobalIndex(6,aptbin)]) okD0bar = 0;
+  
+  if(!okD0 && !okD0bar)  returnvalueCuts=0;
+  
+  // for the moment via the standard method due to bug in AliKF
+  if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)]) okD0 = 0;
+  if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,aptbin)]) okD0bar = 0;
+  if(!okD0 && !okD0bar) returnvalueCuts=0;
+    
+    
+  if(TMath::Abs(d0mass-massvtx) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0 = 0;
+  if(TMath::Abs(ad0mass-massvtx) > fCutsRD[GetGlobalIndex(0,aptbin)])  okD0bar = 0;
+  if(!okD0 && !okD0bar)  returnvalueCuts=0;
+  
+  
+  if(TMath::Abs(cts) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0 = 0; 
+  if(TMath::Abs(acts) > fCutsRD[GetGlobalIndex(2,aptbin)]) okD0bar = 0;
+  if(!okD0 && !okD0bar)   returnvalueCuts=0;
+  
+  if(prodParam  > fCutsRD[GetGlobalIndex(7,ptbin)]) okD0 = 0;
+  if(aprodParam > fCutsRD[GetGlobalIndex(7,aptbin)]) okD0bar = 0;
+  if(!okD0 && !okD0bar)  returnvalueCuts=0;
+    
+  if(cosP  < fCutsRD[GetGlobalIndex(8,ptbin)]) okD0 = 0; 
+  if(acosP < fCutsRD[GetGlobalIndex(8,aptbin)]) okD0bar = 0;
+  if(!okD0 && !okD0bar)  returnvalueCuts=0;
+	
+  if(chi2D0  > fCutsRD[GetGlobalIndex(10,ptbin)]) okD0 = 0; 
+  if(achi2D0 > fCutsRD[GetGlobalIndex(10,aptbin)]) okD0bar = 0;
+  if(!okD0 && !okD0bar)  returnvalueCuts=0;
+	
+  if(decayLengthD0  < fCutsRD[GetGlobalIndex(9,ptbin)]) okD0 = 0; 
+  if(adecayLengthD0 < fCutsRD[GetGlobalIndex(9,aptbin)]) okD0bar = 0;
+  if(!okD0 && !okD0bar)  returnvalueCuts=0;
+    
+  if(returnvalueCuts!=0) {
+    if(okD0) returnvalueCuts=1; //cuts passed as D0
+    if(okD0bar) returnvalueCuts=2; //cuts passed as D0bar
+    if(okD0 && okD0bar) returnvalueCuts=3; //cuts passed as D0 and D0bar
+  }
+
+  return returnvalueCuts;  
+}
+
 //---------------------------------------------------------------------------
+
 Bool_t AliRDHFCutsD0toKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) const
 {
   //
@@ -781,3 +1043,52 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const
   return returnvalue;
 }
 
+//----------------------------------------------
+
+void AliRDHFCutsD0toKpi::SetUseKF(Bool_t useKF)
+{
+  //switch on candidate selection via AliKFparticle
+  if(!useKF) return;
+  if(useKF){
+    fUseKF=useKF;
+    Int_t nvarsKF=11;
+    SetNVars(nvarsKF);
+    TString varNamesKF[11]={"inv. mass [GeV]",   
+		            "dca [cm]",
+		            "cosThetaStar", 
+		            "pTK [GeV/c]",
+		            "pTPi [GeV/c]",
+		            "d0K [cm]",
+		            "d0Pi [cm]",
+		            "d0d0 [cm^2]",
+		            "cosThetaPoint"
+		            "DecayLength[cm]",
+		            "RedChi2"};
+    Bool_t isUpperCutKF[11]={kTRUE,
+			     kTRUE,
+			     kTRUE,
+			     kFALSE,
+			     kFALSE,
+			     kTRUE,
+			     kTRUE,
+			     kTRUE,
+			     kFALSE,
+			     kFALSE,
+			     kTRUE};
+    SetVarNames(nvarsKF,varNamesKF,isUpperCutKF);
+    SetGlobalIndex();
+    Bool_t forOpt[11]={kFALSE,
+		    kTRUE,
+		    kTRUE,
+		    kFALSE,
+		    kFALSE,
+		    kFALSE,
+		    kFALSE,
+		    kTRUE,
+		    kTRUE,
+                    kFALSE,
+                    kFALSE};
+    SetVarsForOpt(4,forOpt);
+  }
+  return;
+}
