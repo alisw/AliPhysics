@@ -33,6 +33,7 @@
 #include "AliMCEvent.h"
 #include "AliFlowEventCuts.h"
 #include "AliFlowTrackCuts.h"
+#include "AliTriggerAnalysis.h"
 
 ClassImp(AliFlowEventCuts)
 
@@ -67,7 +68,9 @@ AliFlowEventCuts::AliFlowEventCuts():
   fCutCentralityPercentile(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCentralityPercentileMax(100.),
-  fCentralityPercentileMin(0.)
+  fCentralityPercentileMin(0.),
+  fCutZDCtiming(kTRUE),
+  fTrigAna()
 {
   //constructor 
 }
@@ -103,7 +106,9 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fCutCentralityPercentile(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCentralityPercentileMax(100.),
-  fCentralityPercentileMin(0.)
+  fCentralityPercentileMin(0.),
+  fCutZDCtiming(kTRUE),
+  fTrigAna()
 {
   //constructor 
 }
@@ -139,7 +144,9 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fCutCentralityPercentile(that.fCutCentralityPercentile),
   fCentralityPercentileMethod(that.fCentralityPercentileMethod),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
-  fCentralityPercentileMin(that.fCentralityPercentileMin)
+  fCentralityPercentileMin(that.fCentralityPercentileMin),
+  fCutZDCtiming(that.fCutZDCtiming),
+  fTrigAna()
 {
   //copy constructor 
   if (that.fRefMultCuts)
@@ -206,9 +213,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   if (fCutCentralityPercentile)
   {
     AliESDCentrality* centr = esdevent->GetCentrality();
-    return centr->IsEventInCentralityClass( fCentralityPercentileMin,
-                                            fCentralityPercentileMax,
-                                            CentrMethName(fCentralityPercentileMethod) );
+    if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
+                                          fCentralityPercentileMax,
+                                          CentrMethName(fCentralityPercentileMethod) ))
+      return kFALSE;
   }
   if (fCutSPDvertexerAnomaly&&esdevent)
   {
@@ -221,6 +229,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
     const AliMultiplicity* tracklets = esdevent->GetMultiplicity();
     if (tpcvertex->GetNContributors()<(-10.0+0.25*tracklets->GetNumberOfITSClusters(0)))
       return kFALSE;
+  }
+  if (fCutZDCtiming)
+  {
+    if (!fTrigAna.ZDCTimeTrigger(esdevent)) return kFALSE;
   }
   if(fCutNumberOfTracks) {if ( event->GetNumberOfTracks() < fNumberOfTracksMin ||
                                event->GetNumberOfTracks() >= fNumberOfTracksMax ) return kFALSE;}
