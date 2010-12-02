@@ -33,7 +33,8 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetTrackFilter(trkFilter);
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
-  esdTrackCutsSoftPi->SetMinNClustersITS(2);
+  esdTrackCutsSoftPi->SetMinNClustersITS(4);
+  esdTrackCuts->SetPtRange(0.2,1.e10);
   esdTrackCutsSoftPi->SetEtaRange(-0.8,+0.8);
   AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
@@ -71,7 +72,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsD0toKpipipi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsD0toKpipipi(cutsD0toKpipipi);
   AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
-  Float_t cutsArrayDStartoKpipi[14]={0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.,0.3, 0.1, 0.05, 100000000000.0, 0.5}; // first 9 for D0 from D*, last 5 for D*
+  Float_t cutsArrayDStartoKpipi[14]={0.15,0.07.,0.85,0.8,0.8,0.06.,0.06.,0.001,0.6,0.15, 0.03, 0.2, 5, 0.5}; // first 9 for D0 from D*, last 5 for D*
   cutsDStartoKpipi->SetCuts(14,cutsArrayDStartoKpipi);
   cutsDStartoKpipi->AddTrackCuts(esdTrackCuts);
   cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
