@@ -9,7 +9,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //vHF->Set3ProngOff();
   //vHF->SetLikeSignOn(); // like-sign pairs and triplets
   vHF->Set4ProngOff();
-  vHF->SetDstarOff();
+  //vHF->SetDstarOff();
   vHF->SetFindVertexForDstar(kFALSE);
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
