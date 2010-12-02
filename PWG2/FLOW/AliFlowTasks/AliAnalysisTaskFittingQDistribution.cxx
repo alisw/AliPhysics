@@ -46,6 +46,7 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const c
  fUseWeights(useWeights),
  fUsePhiWeights(kFALSE),
  fListWeights(NULL),
+ fHarmonic(2), 
  fqMin(0.),
  fqMax(1000.),
  fqNbins(10000)
@@ -75,6 +76,7 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution():
  fUseWeights(kFALSE),
  fUsePhiWeights(kFALSE),
  fListWeights(NULL),
+ fHarmonic(0), 
  fqMin(0.),
  fqMax(0.),
  fqNbins(0)
@@ -106,6 +108,7 @@ void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()
    // Pass the list with weights to class:
    if(fListWeights) fFQD->SetWeightsList(fListWeights);
   }
+  fFQD->SetHarmonic(fHarmonic);
   // Settings for q-distribution:
   fFQD->SetqMin(fqMin);
   fFQD->SetqMax(fqMax);

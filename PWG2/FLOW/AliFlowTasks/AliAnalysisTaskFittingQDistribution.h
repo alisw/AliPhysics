@@ -40,6 +40,8 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
+  void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
+  Int_t GetHarmonic() const {return this->fHarmonic;};  
   // q-distribution:
   void SetqMin(Double_t const qmin) {this->fqMin = qmin;};
   Double_t GetqMin() const {return this->fqMin;};
@@ -59,6 +61,7 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   Bool_t fUseWeights;    // use any weights
   Bool_t fUsePhiWeights; // phi weights
   TList* fListWeights;   // list with weights  
+  Int_t fHarmonic;       // harmonic   
   Double_t fqMin;        // lower boundary of TH1D *fqDistribution
   Double_t fqMax;        // upper boundary of TH1D *fqDistribution
   Int_t fqNbins;         // number of bins of TH1D *fqDistribution                                             
