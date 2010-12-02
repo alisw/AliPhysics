@@ -14,6 +14,7 @@
 #include "TNamed.h"
 
 class AliVEvent;
+#include "AliTriggerAnalysis.h"
 #include "AliFlowTrackCuts.h"
 
 class AliFlowEventCuts : public TNamed {
@@ -49,6 +50,7 @@ class AliFlowEventCuts : public TNamed {
        {fCutNContributors=kTRUE; fNContributorsMin=min; fNContributorsMax=max;}
   void SetMeanPtRange(Double_t min, Double_t max) {fCutMeanPt=kTRUE; fMeanPtMax=max; fMeanPtMin=min;}
   void SetCutSPDvertexerAnomaly(Bool_t b) {fCutSPDvertexerAnomaly=b;}
+  void SetCutZDCtiming(Bool_t c=kTRUE) {fCutZDCtiming=c;}
 
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
   Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
@@ -99,8 +101,8 @@ class AliFlowEventCuts : public TNamed {
   refMultMethod fCentralityPercentileMethod; //where to get the percentile from
   Float_t fCentralityPercentileMax; // max centr. perc
   Float_t fCentralityPercentileMin; // min centr. perc
-
-
+  Bool_t fCutZDCtiming;   //cut on ZDC timing
+  AliTriggerAnalysis fTrigAna; //trigger analysis object
 
   ClassDef(AliFlowEventCuts,2)
 };
