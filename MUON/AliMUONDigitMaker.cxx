@@ -173,8 +173,9 @@ AliMUONDigitMaker::Print(Option_t*) const
 //____________________________________________________________________
 Int_t
 AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader, 
-                                        AliMUONVDigitStore* digitStore,
-                                        AliMUONVTriggerStore* triggerStore)
+                              AliMUONVDigitStore* digitStore,
+                              AliMUONVTriggerStore* triggerStore,
+                              Bool_t sdigit)
 {
   /// Main method to creates digit
   /// for tracker 
@@ -198,7 +199,7 @@ AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader,
   if ( fDigitStore ) 
   {
     fDigitStore->Clear(); // insure we start with an empty container
-    tracker = ReadTrackerDDL(rawReader);
+    tracker = ReadTrackerDDL(rawReader,sdigit);
   }
   
   if ( fTriggerStore || fMakeTriggerDigits ) 
@@ -219,7 +220,7 @@ AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader,
 
 //____________________________________________________________________
 Int_t
-AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
+AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader, Bool_t sdigit)
 {
   /// Reading tracker DDL
   /// filling the fDigitStore container, which must not be null
@@ -289,8 +290,14 @@ AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
     
     digit->SetPadXY(pad.GetIx(),pad.GetIy());
     
-    digit->SetADC(charge);
-
+    if ( sdigit ) 
+    {
+      digit->SetCharge(charge);
+    }
+    else
+    {
+      digit->SetADC(charge);
+    }
   }
   
   if ( fRawStreamTracker->IsErrorMessage() ) 

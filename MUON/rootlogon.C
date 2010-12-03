@@ -27,6 +27,10 @@
   includePath        += "-I${ALICE_ROOT}/MUON ";
   includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
-  includePath        += "-I${ALICE_ROOT}/include";
+  includePath        += "-I${ALICE_ROOT}/include ";
+  includePath        += "-I${ALICE_ROOT}/STRUCT ";
+  includePath        += "-I${GEANT3}/TGeant3 ";
+  includePath        += "-I${ALICE_ROOT}/THijing ";
+
   gSystem->SetIncludePath(includePath.Data());
 }

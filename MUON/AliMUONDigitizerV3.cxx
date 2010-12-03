@@ -104,7 +104,7 @@ fLogger(new AliMUONLogger(1000)),
 fTriggerStore(new AliMUONTriggerStoreV1),
 fDigitStore(0x0),
 fOutputDigitStore(0x0),
-fInputDigitStore(0x0)
+fInputDigitStores(0x0)
 {
   /// Ctor.
 
@@ -125,7 +125,7 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
   delete fTriggerStore;
   delete fDigitStore;
   delete fOutputDigitStore;
-  delete fInputDigitStore;
+  delete fInputDigitStores;
   
   AliInfo("Summary of messages");
   fLogger->Print();
@@ -338,12 +338,19 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
 
 //_____________________________________________________________________________
 void
-AliMUONDigitizerV3::CreateInputDigitStore()
+AliMUONDigitizerV3::CreateInputDigitStores()
 {
-  /// Create an input digit store, and check that all input files
-  /// actually contains the same type of AliMUONVDigitStore
+  /// Create input digit stores
+  /// 
   
-  fInputDigitStore = 0x0;
+  if (fInputDigitStores)
+  {
+    AliFatal("Should be called only once !");
+  }
+  
+  fInputDigitStores = new TObjArray;
+  
+  fInputDigitStores->SetOwner(kTRUE);
   
   for ( Int_t iFile = 0; iFile < fManager->GetNinputs(); ++iFile )
   {    
@@ -357,19 +364,7 @@ AliMUONDigitizerV3::CreateInputDigitStore()
       AliFatal(Form("Could not get access to input file #%d",iFile));
     }
     
-    AliMUONVDigitStore* inputStore = AliMUONVDigitStore::Create(*iTreeS);
-    
-    if (!fInputDigitStore)
-    {
-      fInputDigitStore = inputStore;
-    }
-    else
-    {
-      if ( inputStore->IsA() != fInputDigitStore->IsA() )
-      {
-        AliFatal("Got different types of AliMUONVDigitStore here. Please implement me.");
-      }
-    }
+    fInputDigitStores->AddAt(AliMUONVDigitStore::Create(*iTreeS),iFile);
   }
 }
 
@@ -384,8 +379,6 @@ AliMUONDigitizerV3::Exec(Option_t*)
   /// And we finally generate the trigger outputs.
     
   AliCodeTimerAuto("",0)
-  
-  AliDebug(1, "Running digitizer.");
   
   if ( fManager->GetNinputs() == 0 )
   {
@@ -427,19 +420,22 @@ AliMUONDigitizerV3::Exec(Option_t*)
       AliFatal(Form("Could not get access to input file #%d",iFile));
     }
 
-    if (!fInputDigitStore)
+    if (!fInputDigitStores)
     {
-      CreateInputDigitStore();
+      CreateInputDigitStores();      
     }
-    fInputDigitStore->Connect(*iTreeS);
+    
+    AliMUONVDigitStore* dstore = static_cast<AliMUONVDigitStore*>(fInputDigitStores->At(iFile));
+    
+    dstore->Connect(*iTreeS);
     
     iTreeS->GetEvent(0);
-    
-    MergeWithSDigits(fDigitStore,*fInputDigitStore,fManager->GetMask(iFile));
+
+    MergeWithSDigits(fDigitStore,*dstore,fManager->GetMask(iFile));
 
     inputLoader->UnloadSDigits();
     
-    fInputDigitStore->Clear();
+    dstore->Clear();
   }
   
   // At this point, we do have digit arrays (one per chamber) which contains 

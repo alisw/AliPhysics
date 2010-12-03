@@ -22,13 +22,61 @@
 /// Remember to define the directory and event generator option:
 ///
 /// gAlice->SetConfigFunction("Config('$HOME','box');");
+///
+/// Can be compiled by :
+/// .L Config.C+
+/// (depends on the correct rootlogon.C though...)
 
-void Config(char directory[100]="", char option[6]="param", const char* digitstore="AliMUONDigitStoreV2S")
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliABSOv3.h"
+#include "AliBODY.h"
+#include "AliConfig.h"
+#include "AliDIPOv3.h"
+#include "AliDecayerPythia.h"
+#include "AliFRAMEv2.h"
+#include "AliGenBox.h"
+#include "AliGenFixed.h"
+#include "AliGenHijing.h"
+#include "AliGenMUONCocktail.h"
+#include "AliGenMUONlib.h"
+#include "AliGenParam.h"
+#include "AliGenScan.h"
+#include "AliHALLv3.h"
+#include "AliITSv11Hybrid.h"
+#include "AliMAG.h"
+#include "AliMagF.h"
+#include "AliMUONv1.h"
+#include "AliPIPEv3.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliSHILv3.h"
+#include <Riostream.h>
+#include <TDatime.h>
+#include <TGeant3TGeo.h>
+#include <TGeoGlobalMagField.h>
+#include <TPDGCode.h>
+#include <TRandom.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+
+//#include "AliZDCv3.h"
+//#include "AliFMDv1.h"
+//#include "AliPMDv1.h"
+//#include "AliVZEROv7.h"
+
+#endif
+
+void Config(const char* directory="", 
+            const char* option="param", 
+            const char* digitstore="AliMUONDigitStoreV2S",
+            bool forEmbedding=kFALSE)
 {
   //=====================================================================
   // Config file for MUON test
   //=====================================================================
   //  Libraries required by geant321
+  
   gSystem->Load("liblhapdf.so");      // Parton density functions
   gSystem->Load("libpythia6.so");     // Pythia
   gSystem->Load("libgeant321.so");
@@ -190,17 +238,17 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));
   //============================================================= 
   //=================== Alice BODY parameters =============================
-  AliBODY *BODY = new AliBODY("BODY","Alice envelop");
+  new AliBODY("BODY","Alice envelop");
   //=================== ABSO parameters ============================
-  AliABSO *ABSO = new AliABSOv3("ABSO", "Muon Absorber");
+  new AliABSOv3("ABSO", "Muon Absorber");
   //=================== DIPO parameters ============================
-  AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 2");
+  new AliDIPOv3("DIPO", "Dipole version 2");
   //================== HALL parameters ============================
-  AliHALL *HALL = new AliHALLv3("HALL", "Alice Hall");
+  new AliHALLv3("HALL", "Alice Hall");
   //=================== PIPE parameters ============================
-  AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
+  new AliPIPEv3("PIPE", "Beam Pipe");
   //=================== SHIL parameters ============================
-  AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 2");
+  new AliSHILv3("SHIL", "Shielding Version 2");
 
   //=================== MUON Subsystem ===========================
   AliMUON *MUON = new AliMUONv1("MUON", "default");
@@ -219,12 +267,17 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
 
   // Use SetDigitStoreClassName() to change the digitStore implementation used by (s)digitizer
   MUON->SetDigitStoreClassName(digitstore);
-  
-  cout << "MUON DigitStore is " << MUON->DigitStoreClassName().Data() << endl;
-  
-  // Noise-only digits in tracker/trigger (0=no noise, 1=default (noise in tracker), 2=noise in tracker and trigger):
-  //MUON->SetDigitizerWithNoise(kFALSE);
 
+  if ( forEmbedding ) 
+  {
+    // Noise-only digits in tracker/trigger (0=no noise, 1=default (noise in tracker), 2=noise in tracker and trigger):
+    cout << "****** DISABLING NOISE GENERATION AS WE DO EMBEDDING ******" << endl;
+    MUON->SetDigitizerWithNoise(0);
+    
+    new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+    
+  }
+  
   // Use non-high performance raw data decoder 
   //MUON->SetFastTrackerDecoder(kFALSE);  
   //MUON->SetFastTriggerDecoder(kFALSE);  

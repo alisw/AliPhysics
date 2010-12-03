@@ -239,6 +239,15 @@ AliMUONDigit::IsCalibrated() const
   return (fFlags & fgkCalibratedMask );
 }
 
+//_____________________________________________________________________________
+Bool_t
+AliMUONDigit::IsConverted() const
+{
+  /// Whether this digit is converted or not
+  
+  return (fFlags & fgkConverted);
+}
+
 
 //_____________________________________________________________________________
 Bool_t
@@ -383,6 +392,22 @@ AliMUONDigit::Saturated(Bool_t value)
   else
   {
     fFlags &= ~fgkSaturatedMask;
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDigit::Converted(Bool_t value)
+{
+  /// Set the convertion status of this digit.
+  
+  if ( value )
+  {
+    fFlags |= fgkConverted;
+  }
+  else
+  {
+    fFlags &= ~fgkConverted;
   }
 }
 

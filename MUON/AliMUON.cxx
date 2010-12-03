@@ -508,21 +508,23 @@ void AliMUON::Digits2Raw()
 //_____________________________________________________________________
 Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
 {
-/// Convert  raw data to SDigit
-
+  /// Convert  raw data to SDigit
+  
   if (!fLoader->TreeS()) fLoader->MakeSDigitsContainer();
-
+  
   TTree* treeS = fLoader->TreeS();
   
-  AliMUONVDigitStore* sDigitStore = new AliMUONDigitStoreV1;
+  AliMUONVDigitStore* sDigitStore = AliMUONVDigitStore::Create(DigitStoreClassName());
+  
   sDigitStore->Connect(*treeS);
   
-  fDigitMaker->Raw2Digits(rawReader,sDigitStore,0x0);
+  if (!fDigitMaker) fDigitMaker = new AliMUONDigitMaker;
+  fDigitMaker->Raw2Digits(rawReader,sDigitStore,0x0,kTRUE);
   treeS->Fill();
   fLoader->WriteSDigits("OVERWRITE");
-
+  
   fLoader->UnloadSDigits();
-
+  
   delete sDigitStore;
   
   return kTRUE;

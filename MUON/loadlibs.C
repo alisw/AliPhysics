@@ -66,4 +66,14 @@ void loadlibs ()
   gSystem->Load("libMUONcalign");
   
   gSystem->Load("libMUONgraphics");
+
+  gSystem->Load("libEVGEN");
+  gSystem->Load("libgeant321");
+  gSystem->Load("libhijing");
+  gSystem->Load("libFASTSIM");
+  gSystem->Load("libThijing");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libPythia6");
+  gSystem->Load("libAliPythia6");
+  
 }

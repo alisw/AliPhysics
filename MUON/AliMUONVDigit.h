@@ -69,6 +69,9 @@ public:
   /// Set the calibrated status
   virtual void Calibrated(Bool_t value)=0;
   
+  /// Whether or not this digit was obtained from a conversion (e.g. real to simulated)
+  virtual Bool_t IsConverted() const { return kFALSE; }
+
   /// Whether this digit is used somewhere (typically in a cluster)
   virtual Bool_t IsUsed() const = 0;
   /// Set the used status

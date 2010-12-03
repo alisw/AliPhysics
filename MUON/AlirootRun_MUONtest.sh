@@ -15,7 +15,7 @@ RECOPTIONS="SAVEDIGITS" # default reconstruction options
 MC=""    # G3 Simulation with old Config.C 
 #MC="g3"  # G3 Simulation (with new config macros)
 #MC="g4"  # G4 Simulation (with new config macros)
-SIMCONFIG="$ALICE_ROOT/MUON/"$MC"Config.C"   # default simulation configuration file
+
 OUTDIR=""
 CURDIR=`pwd`
 
@@ -24,12 +24,15 @@ SEED=1234567 # random number generator seed
 SIMDIR="generated" # sub-directory where to move simulated files prior to reco
 DUMPEVENT=5 # event to be dump on files
 
+SIMCONFIG="$ALICE_ROOT/MUON/"$MC"Config.C"
+EMBEDWITH="" # no embedding by default
+
 # next try to see if there are options of this script that want to change the
 # defaults
  
 EXIT=0
 
-while getopts "SRZX:srxzn:tg:p:d:c:" option
+while getopts "SRZX:srxzn:tg:p:d:c:e:" option
 do
   case $option in
     R ) RECONSTRUCTION=1;;
@@ -49,6 +52,7 @@ do
     n ) NEVENTS=$OPTARG;;
     g ) SEED=$OPTARG;;
     p ) RECOPTIONS=$OPTARG;; 
+    e ) EMBEDWITH=$OPTARG;;
     *     ) echo "Unimplemented option chosen."
     EXIT=1
     ;;
@@ -79,13 +83,18 @@ if [ $# -gt 0 ] || [ "$EXIT" -eq 1 ]; then
   echo "       -p recoptions (quotified string) reconstruction options to use (default \"$RECOPTIONS\")"
   echo "       -d full path to output directory (default $OUTDIR)"
   echo "       -c full path to configuration file for simulation (default $SIMCONFIG)"
+  echo "       -e full path to a galice.root file relating to SDigits to be merged (embedding)"
   exit 4;
 fi
+
 
 # printout the options
 echo "sim $SIMULATION rec $RECONSTRUCTION check $CHECKS"
 if [ "$SIMULATION" -eq 1 ]; then
   echo "$NEVENTS events will be simulated, using the config found at $SIMCONFIG"
+fi
+if [ -n "$EMBEDWITH" ]; then
+  echo "Will embed simulation with $EMBEDWITH"
 fi
 if [ "$RECONSTRUCTION" -eq 1 ]; then
 echo "Reconstruction options to be used : $RECOPTIONS"
@@ -142,7 +151,7 @@ if [ ! -f $ALICE_ROOT/OCDB/GRP/CTP/Config/Run0_999999999_v0_s1.root ]; then
   echo "Updating GRP CTP config  ..."
 
   aliroot -b > $OUTDIR/updateCDBCTPConfig.out 2>&1 << EOF
-  .L UpdateCDBCTPConfig.C+
+  .L UpdateCDBCTPConfig.C++g
   UpdateCDBCTPConfig();
   .q
 EOF
@@ -160,7 +169,7 @@ if [ "$SIMULATION" -eq 1 ]; then
 
   echo "Running simulation  ..."
 
-  aliroot -l -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\"\) > $OUTDIR/testSim.out 2>&1
+  aliroot -l -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\"\,\""$EMBEDWITH"\"\) > $OUTDIR/testSim.out 2>&1
 
   mkdir $OUTDIR/$SIMDIR
 
@@ -205,13 +214,19 @@ if [ "$RECONSTRUCTION" -eq 1 ]; then
 
   cd $OUTDIR
   
+  BOOLEMBED=kFALSE
+  
+  if [ -n "$EMBEDWITH" ]; then
+    BOOLEMBED=kTRUE
+  fi
+  
   if [ "$RAW" -eq 1 ]; then
   
-    aliroot -l -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\"\) > $OUTDIR/testReco.out 2>&1
+    aliroot -l -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\",$BOOLEMBED\) > $OUTDIR/testReco.out 2>&1
 
   else
 
-    aliroot -l -b -q runReconstruction\.C\($SEED,\"""\",\""$RECOPTIONS"\"\) > $OUTDIR/testReco.out  2>&1
+    aliroot -l -b -q runReconstruction\.C\($SEED,\"""\",\""$RECOPTIONS"\",$BOOLEMBED\) > $OUTDIR/testReco.out  2>&1
   
   fi
   
@@ -230,7 +245,7 @@ if [ "$CHECKS" -eq 1 ]; then
     echo "Running efficiency  ..."
 
     aliroot -b > $OUTDIR/testResults.out 2>&1 << EOF
-    .L MUONefficiency.C+
+    .L MUONefficiency.C++g
     // no argument assumes Upsilon but MUONefficiency(443) works on Jpsi
     MUONefficiency("$OUTDIR/$SIMDIR/galice.root");
     .q
@@ -240,7 +255,7 @@ EOF
 
       echo "Running Trigger efficiency  ..."
       aliroot -b > $OUTDIR/testTriggerResults.out 2>&1 << EOF
-      .L MUONTriggerEfficiency.C+
+      .L MUONTriggerEfficiency.C++g
       MUONTriggerEfficiency("$OUTDIR/$SIMDIR/galice.root", "$OUTDIR/galice.root", 1);
       .q
 EOF
@@ -250,7 +265,7 @@ EOF
         echo "Running check ..."
         aliroot -b > $OUTDIR/testCheck.out 2>&1 << EOF
         gSystem->Load("libMUONevaluation");
-        .L MUONCheck.C+
+        .L MUONCheck.C++g
         MUONCheck(0, $NEVENTS-1, "$OUTDIR/$SIMDIR/galice.root", "$OUTDIR/galice.root", "$OUTDIR/AliESDs.root"); 
         .q
 EOF
@@ -262,7 +277,7 @@ EOF
 
   if [ -f "$OUTDIR/$SIMDIR/galice.root" ]; then
     aliroot -l -b  << EOF
-    AliCDBManager* man = AliCDBManager::Instance();
+    AliCDBManager* man = AliCDBManager::Instance();    
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliMUONMCDataInterface mcdSim("$OUTDIR/$SIMDIR/galice.root");
     mcdSim.DumpKine($DUMPEVENT);       > $OUTDIR/dump.$DUMPEVENT.kine

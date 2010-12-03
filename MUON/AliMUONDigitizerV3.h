@@ -79,7 +79,7 @@ private:
   
   static TF1* NoiseFunction();
   
-  void CreateInputDigitStore();
+  void CreateInputDigitStores();
 
 private:
   Bool_t fIsInitialized; ///< are we initialized ?
@@ -93,9 +93,9 @@ private:
   AliMUONVTriggerStore* fTriggerStore; //!< trigger objects
   AliMUONVDigitStore* fDigitStore; //!< temporary digits
   AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
-  AliMUONVDigitStore* fInputDigitStore; //!< input digit store
+  TObjArray* fInputDigitStores; //!< input digit stores (one per input file
   
-  ClassDef(AliMUONDigitizerV3,9) // MUON Digitizer V3-9
+  ClassDef(AliMUONDigitizerV3,10) // MUON Digitizer V3-9
 };
 
 #endif

@@ -52,12 +52,14 @@ class AliMUONDigit : public AliMUONVDigit
     virtual Bool_t IsSaturated() const;
     virtual Bool_t IsNoiseOnly() const;
     virtual Bool_t IsEfficiencyApplied() const;
+    virtual Bool_t IsConverted() const;
     virtual UInt_t StatusMap() const { return fStatusMap; }    ///< Return Neighbouring pad status
     
     virtual void NoiseOnly(Bool_t value=kTRUE);
     virtual void Saturated(Bool_t saturated=kTRUE);
     virtual void EfficiencyApplied(Bool_t value=kTRUE);
-    
+    virtual void Converted(Bool_t value=kTRUE);
+  
     virtual void SetADC(Int_t adc)         {fADC=adc; }        ///< Set ADC value
     virtual void SetPadXY(Int_t padx, Int_t pady)        {fPadX = padx; fPadY=pady; }      ///< Set pad number along x
     virtual void SetCharge(Float_t q)        {fSignal = q;}    ///< Set charge
@@ -116,8 +118,9 @@ private:
     static const UInt_t fgkCalibratedMask = 0x100; ///< whether this digits has been calibrated
     static const UInt_t fgkNoiseOnlyMask = 0x1000; ///< indicate a simulated digit due to noise only
     static const UInt_t fgkEfficiencyMask = 0x2000; ///< indicate chamber efficiency has been applied to a simulated digit
-    
-    ClassDef(AliMUONDigit,10)  //Digits for MUON
+    static const UInt_t fgkConverted       = 0x4000; ///< has been converted from a real digit
+  
+    ClassDef(AliMUONDigit,11)  //Digits for MUON
 };
 
 #endif

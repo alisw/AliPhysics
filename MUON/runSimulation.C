@@ -29,7 +29,10 @@
 #include <TRandom.h>
 #endif
 
-void runSimulation(int seed, int nevents, const char* config)
+void runSimulation(int seed, 
+                   int nevents, 
+                   const char* config,
+                   const char* embedwith)
 { 
 // Uncoment following lines to run simulation with local residual mis-alignment
 // (generated via MUONGenerateGeometryData.C macro)
@@ -38,6 +41,47 @@ void runSimulation(int seed, int nevents, const char* config)
 // man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/OCDB/MUON/ResMisAlignCDB");
 
   AliSimulation MuonSim(config);
+  
+  if ( strlen(embedwith) > 0 )
+  {
+    // setups specific to embedding
+    
+    gAlice->SetConfigFunction("Config(\"\", \"param\", \"AliMUONDigitStoreV2S\",kTRUE);");
+    
+    // get the run number from real data
+    
+    AliRunLoader* runLoader = AliRunLoader::Open(embedwith,"titi");
+    if (runLoader == 0x0) 
+    {
+      AliError(Form("Cannot open file %s",filename));    
+      return;
+    }
+    
+    runLoader->LoadHeader();
+    
+    if ( ! runLoader->GetHeader() ) {
+      AliError("Cannot load header.");    
+      return;
+    }
+    else {
+      Int_t runNumber = runLoader->GetHeader()->GetRun();
+      MuonSim.SetRunNumber(runNumber);
+      cout << Form("***** RUN NUMBER SET TO %09d ACCORDING TO %s ",runNumber,embedwith) << endl;
+    }  
+    runLoader->UnloadHeader(); 
+    delete runLoader;
+    
+    cout << "***** EMBEDDING MODE : USING RAW OCDB" << endl;
+    AliCDBManager::Instance()->SetDefaultStorage("raw://");
+    AliCDBManager::Instance()->SetSpecificStorage("local://$ALICE_ROOT/OCDB","MUON/Calib/Gains");
+    AliCDBManager::Instance()->SetSpecificStorage("local://$ALICE_ROOT/OCDB","MUON/Align/Data");
+    
+  }
+  else
+  {
+    gAlice->SetConfigFunction("Config(\"\", \"param\", \"AliMUONDigitStoreV2S\",kFALSE);");    
+  }
+  
   MuonSim.SetSeed(seed);
   MuonSim.SetTriggerConfig("MUON");
   MuonSim.SetWriteRawData("MUON HLT","raw.root",kTRUE);
@@ -49,6 +93,11 @@ void runSimulation(int seed, int nevents, const char* config)
   MuonSim.SetRunHLT("libAliHLTMUON.so chains=dHLT-sim");
 
   MuonSim.SetRunQA("MUON:ALL");
+  
+  if ( strlen(embedwith) > 0 ) 
+  {
+    MuonSim.MergeWith(embedwith);
+  }
   
   MuonSim.Run(nevents);
   //gObjectTable->Print();

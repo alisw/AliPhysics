@@ -34,27 +34,39 @@
 //#include <TObjectTable.h>
 #endif
 
-void runReconstruction(int seed, const char* input, const char* recoptions)
+void runReconstruction(int seed, const char* input, const char* recoptions, bool embedding)
 { 
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  man->SetSpecificStorage("GRP/GRP/Data",
-			  Form("local://%s",gSystem->pwd()));
+  
+  if ( embedding ) 
+  {
+    cout << "**** WILL USE RAW OCDB AS WE'RE RECONSTRUCTING EMBEDDED DATA" << endl;
+    man->SetDefaultStorage("raw://");
+  }
+  else
+  {
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+
+    man->SetSpecificStorage("GRP/GRP/Data",
+                            Form("local://%s",gSystem->pwd()));
+  }
   
   gRandom->SetSeed(seed);
   
   AliReconstruction* MuonRec = new AliReconstruction("galice.root");
-  MuonRec->SetInput(input);
-  MuonRec->SetRunVertexFinder(kFALSE);
-  MuonRec->SetRunLocalReconstruction("MUON");
-  MuonRec->SetRunTracking("MUON");
+  MuonRec->SetInput(gSystem->ExpandPathName(input));
+  MuonRec->SetRunReconstruction("MUON");
   MuonRec->SetFillESD("HLT");
   MuonRec->SetOption("HLT", "libAliHLTMUON.so");
-  MuonRec->SetLoadAlignData("MUON");
   MuonRec->SetNumberOfEventsPerFile(1000);
   MuonRec->SetOption("MUON",recoptions);
   MuonRec->SetRunQA("MUON:ALL");
   MuonRec->SetQAWriteExpert(AliQAv1::kMUON);
+  MuonRec->SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
+  MuonRec->SetWriteESDfriend(kFALSE);
+  MuonRec->SetCleanESD(kFALSE);  
+  MuonRec->SetStopOnError(kFALSE);
+  
   // uncomment the following lines if you want to set custom RecoParam
   // instead of getting them from the OCDB
   //  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();

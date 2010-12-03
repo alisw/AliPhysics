@@ -53,12 +53,18 @@ AliMUONDigitStoreV2S::AddConcreteDigit(TClonesArray& a,
                                        const AliMUONVDigit& digit,
                                        Int_t index)
 {
-  /// add a digit to this store
-  const AliMUONDigit* d = dynamic_cast<const AliMUONDigit*>(&digit);
+  /// add a digit to this store  
   
-  if ( !d ) return 0x0;
-  
-  return new(a[index]) AliMUONDigit(*d);
+  if ( digit.IsA() != AliMUONDigit::Class() ) 
+  {
+    AliMUONDigit d(digit.DetElemId(),digit.ManuId(),digit.ManuChannel(),digit.Cathode());
+    d.SetCharge(digit.Charge());
+    d.SetADC(digit.ADC());
+    d.Converted();
+    return new(a[index]) AliMUONDigit(d);
+  }
+
+  return new(a[index]) AliMUONDigit(static_cast<const AliMUONDigit&>(digit));
 }
 
 //_____________________________________________________________________________
