@@ -206,6 +206,8 @@ class AliAODTrack : public AliVTrack {
   
   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & fFilterMap) != 0);}
   Bool_t  TestFilterMask(UInt_t filterMask) const {return (Bool_t) ((filterMask & fFilterMap) == filterMask);}
+  void    SetFilterMap(UInt_t i){fFilterMap = i;}
+  UInt_t  GetFilterMap(){return fFilterMap;}
 
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
@@ -311,7 +313,7 @@ class AliAODTrack : public AliVTrack {
   AliAODPid    *fDetPid;            // more detailed or detector specific pid information
   TRef          fProdVertex;        // vertex of origin
 
-  ClassDef(AliAODTrack, 10);
+  ClassDef(AliAODTrack, 11);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

@@ -23,7 +23,7 @@ class AliAODVertex : public AliVVertex {
 
  public :
 
-  enum AODVtx_t {kUndef=-1, kPrimary, kKink, kV0, kCascade, kMulti, kMainSPD, kPileupSPD, kPileupTracks};
+  enum AODVtx_t {kUndef=-1, kPrimary, kKink, kV0, kCascade, kMulti, kMainSPD, kPileupSPD, kPileupTracks,kMainTPC};
 
   AliAODVertex();
   AliAODVertex(const Double_t *position, 
@@ -141,7 +141,7 @@ class AliAODVertex : public AliVVertex {
   TRefArray       fDaughters;     // references to the daughter particles
   TRef            *fProngs;       //[fNprong] alternative daughters for n-prong vertex
   
-  ClassDef(AliAODVertex, 6);
+  ClassDef(AliAODVertex, 7);
 };
 
 inline  Int_t AliAODVertex::GetNDaughters() const
