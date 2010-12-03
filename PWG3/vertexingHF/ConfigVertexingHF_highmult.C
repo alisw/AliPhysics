@@ -34,7 +34,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCutsSoftPi->SetMinNClustersITS(4);
-  esdTrackCuts->SetPtRange(0.2,1.e10);
+  esdTrackCutsSoftPi->SetPtRange(0.2,1.e10);
   esdTrackCutsSoftPi->SetEtaRange(-0.8,+0.8);
   AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
