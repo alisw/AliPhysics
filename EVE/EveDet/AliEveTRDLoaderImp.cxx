@@ -22,7 +22,7 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliTRDrawData.h"
-#include "AliTRDrawStreamBase.h"
+#include "AliTRDrawStream.h"
 #include "AliTRDdigitsManager.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
@@ -224,14 +224,12 @@ Bool_t AliEveTRDLoaderRaw::LoadEvent()
   fRawRootReader->SelectEquipment(0, 1024, 1041);
   fRawRootReader->Select("TRD");
   
-  AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDdefaultStream);
 //   AliTRDrawStream::AllowCorruptedData();
 //   AliTRDrawStream::DisableStackNumberChecker();
 //   AliTRDrawStream::DisableStackLinkNumberChecker();
 
-  AliTRDrawStreamBase *pinput = 
-  AliTRDrawStreamBase::GetRawStream(fRawRootReader);
-  AliTRDrawStreamBase &input = *pinput;
+  AliTRDrawStream *pinput = new AliTRDrawStream(fRawRootReader);
+  AliTRDrawStream &input = *pinput;
 
  // AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
 
