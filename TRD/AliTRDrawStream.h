@@ -15,8 +15,6 @@
 #include "TClonesArray.h"
 #include "TTree.h"
 
-#include "AliTRDrawStreamBase.h"
-
 class TObjArray;
 class TString;
 class TBranch;
@@ -28,11 +26,18 @@ class AliTRDarrayADC;
 class AliTRDSignalIndex;
 class AliTRDtrackletContainer;
 
-class AliTRDrawStream : public AliTRDrawStreamBase
+#define TRDMAXTBINS 63
+#define TRDMAXADC   21
+#define TRDMAXMCM   4 * 16
+#define MAXTRACKLETSPERHC 256
+
+class AliTRDrawStream : public TObject
 {
  public:
   AliTRDrawStream(AliRawReader *rawReader = 0x0);
   ~AliTRDrawStream();
+
+  enum { kDDLOffset = 0x400 };                                // Offset for DDL numbers
 
   Bool_t SetReader(AliRawReader *rawReader) { fRawReader = rawReader; return kTRUE; }
   void SetDigitsManager(AliTRDdigitsManager *digMgr) { fDigitsManager = digMgr; }
@@ -51,7 +56,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
 
   Bool_t NextDDL();
   Int_t NextChamber(AliTRDdigitsManager *digMgr, 
-		    UInt_t ** /* trackletContainer */, UShort_t ** /* errorContainer */);
+		    UInt_t ** /* trackletContainer */=NULL, UShort_t ** /* errorContainer */=NULL);
 
   Bool_t ConnectTracklets(TTree *trklTree);
 
