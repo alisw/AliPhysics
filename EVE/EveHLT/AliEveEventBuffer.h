@@ -1,9 +1,4 @@
-//-*- Mode: C++ -*-
-
 // $Id$
-
-#ifndef ALIEVEEVENTBUFFER_H
-#define ALIEVEEVENTBUFFER_H
 
 /* This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -13,16 +8,23 @@
 /** @file   AliEveEventBuffer.h
     @author Svein Lindal
     @date
-    @brief  Manager for HOMER in aliroot
+    @brief  Event buffer for HOMER
 */
 
 
+#ifndef ALIEVEEVENTBUFFER_H
+#define ALIEVEEVENTBUFFER_H
+
+
+
+#include "TObject.h"
+#include "TMutex.h"
+
 class TObjArray;
-class TObject;
 class TTimer;
 class TThread;
-#include "TMutex.h"
-#include "TTimer.h"
+class TTimer;
+
 
 class AliEveEventBuffer : public TObject{
 
@@ -35,12 +37,7 @@ public:
   virtual ~AliEveEventBuffer();
 
   void SetBufferSize(Int_t bs) { fBufferSize = bs;}
-  void SetBusy(Bool_t busy) { fBusy = busy;}
-  Bool_t GetBusy() { return fBusy;}
-  
-  //Navigate the event buffer
-  // TObject *  NavigateFwd();
-  // TObject *  NavigateBack();
+    
   TObject * NextEvent();
   TObject * Back();
   TObject * Fwd();
@@ -74,18 +71,12 @@ protected:
   };
 
   
-  Int_t fBufferSize;
-  Int_t fPreBuffer;
-  Bool_t fBusy;
+  Int_t fBufferSize;//Size of event buffer
+  Int_t fPreBuffer;//How many events should be prefetched
+  TObjArray * fEventBuffer;   //TClonesArray containing the stored events
+  TObject * fCurrentEvent;   //Pointer to current event
+  Int_t fBIndex[kSize];   //Event buffer indexes
 
-  //TClonesArray containing the stored events
-  TObjArray * fEventBuffer;
-
-  //Pointer to current event
-  TObject * fCurrentEvent;
-
-  //Event buffer indexes
-  Int_t fBIndex[kSize];
   
   
   //Add event to buffer
@@ -98,9 +89,9 @@ protected:
   
 
   //Calculate buffer index stuff
-  Int_t CalculateDifference(Int_t top, Int_t low);
-  Int_t CalculatePrevious(Int_t current);
-  Int_t CalculateNext(Int_t current);
+  Int_t CalculateDifference(Int_t top, Int_t low) const;
+  Int_t CalculatePrevious(Int_t current) const;
+  Int_t CalculateNext(Int_t current) const;
 
   
   void SetBufferMonStarted(Bool_t started) {fBufferMonStarted = started;}
@@ -121,15 +112,15 @@ private:
   void PrintIndeces();
   void PrintBuffer();
 
-  TTimer * fTimer;
+  TTimer * fTimer;//Timer to loop over buffer monitor
 
   //Current event id
-  ULong64_t * fEventId;
+  ULong64_t * fEventId;//Event id
   
-  Bool_t fBufferMonStarted;
+  Bool_t fBufferMonStarted;//Has buffer monitor loop started?
 
-  TThread * fThread;
- TMutex * fMutex;
+  TThread * fThread; //Thread pointer
+  TMutex * fMutex;//Mutex
 
   ClassDef(AliEveEventBuffer, 0); // Manage connections to HLT data-sources.
 };

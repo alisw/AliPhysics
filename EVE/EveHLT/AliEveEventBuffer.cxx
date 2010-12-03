@@ -18,7 +18,6 @@ ClassImp(AliEveEventBuffer)
 AliEveEventBuffer::AliEveEventBuffer() :
   fBufferSize(10),
   fPreBuffer(4),
-  fBusy(kFALSE),
   fEventBuffer(NULL),
   fCurrentEvent(NULL),
   fBIndex(),
@@ -70,7 +69,7 @@ AliEveEventBuffer::~AliEveEventBuffer() {
 
 ///___________________________________________________________________________
 void AliEveEventBuffer::CreateBufferThread() {
-  
+    // see header file for class documentation
   
   cout << "Threadexists: " << fThread->Exists() << endl;
   if( fMutex->TryLock() ) {
@@ -78,7 +77,6 @@ void AliEveEventBuffer::CreateBufferThread() {
     return;
   } else {
     if ( (CalculateDifference(fBIndex[kTop],fBIndex[kLast]) < fPreBuffer) ) {
-      SetBusy(kTRUE);
       cout << "StartBufferThread()"<<endl;
       fThread->Run();
       cout << "Started BufferThread"<<endl;
@@ -91,6 +89,7 @@ void AliEveEventBuffer::CreateBufferThread() {
 
 ///___________________________________________________________________________
 void * AliEveEventBuffer::BufferThread(void * buffer) {
+  // see header file for class documentation
   cout <<"BufferThread : " <<endl;
   if(buffer) {
       reinterpret_cast<AliEveEventBuffer*>(buffer)->MonitorBuffer();
@@ -102,6 +101,7 @@ void * AliEveEventBuffer::BufferThread(void * buffer) {
 
 ///_____________________________________________________________________________
 void AliEveEventBuffer::MonitorBuffer() {
+  // see header file for class documentation
   cout << "Monitorbuffer() ";
   FetchEvent();
   fMutex->UnLock();
@@ -120,6 +120,7 @@ TObject * AliEveEventBuffer::NextEvent() {
 
 ///______________________________________________________________________________
 TObject * AliEveEventBuffer::Back() {
+  // see header file for class documentation
   cout << "go back"<<endl;
   PrintIndeces();
   Int_t prevId = CalculatePrevious(fBIndex[kCurrent]);
@@ -138,6 +139,7 @@ TObject * AliEveEventBuffer::Back() {
 
 ///______________________________________________________________________________
 TObject * AliEveEventBuffer::Fwd() {
+  // see header file for class documentation
   PrintIndeces();
   if (fBIndex[kCurrent] == fBIndex[kLast]) {
     cout<<  "returning NULL"<<endl;
@@ -168,12 +170,14 @@ TObject * AliEveEventBuffer::GetNextUnSeen() {
 }
 ///_________________________________________________________________________________
 void AliEveEventBuffer::PrintIndeces() {
+  // see header file for class documentation
   for(Int_t i = 0; i < kSize; i++) {
     cout << i << ": " << fBIndex[i] << endl;
   }
 }
 ///_________________________________________________________________________________
 void AliEveEventBuffer::PrintBuffer() {
+  // see header file for class documentation
   for(Int_t i = 0; i < 10; i++) {
     AliESDEvent * event = dynamic_cast<AliESDEvent*>(fEventBuffer->At(i));
     if(event) {
@@ -184,6 +188,7 @@ void AliEveEventBuffer::PrintBuffer() {
 
 ///____________________________________________________________________________________
 void AliEveEventBuffer::FetchEvent() {
+  // see header file for class documentation
   cout << "FetchEvent " << endl;
   TObject * event = GetEventFromSource();
   ULong64_t eventId = GetEventIdFromSource();
@@ -199,6 +204,7 @@ void AliEveEventBuffer::FetchEvent() {
 
 ///_________________________________________________________________________________
 void AliEveEventBuffer::AddToBuffer(TObject * event) {
+  // see header file for class documentation
   cout << "Add to buffer"<<endl;
   if(!event) return;
 
@@ -212,7 +218,7 @@ void AliEveEventBuffer::AddToBuffer(TObject * event) {
 }
 
 ///_____________________________________________________________________________________
-Int_t AliEveEventBuffer::CalculateNext(Int_t current) {
+Int_t AliEveEventBuffer::CalculateNext(Int_t current) const {
   //See header file for documentation
   current++;
   if(current == fBufferSize) current = 0;
@@ -221,7 +227,7 @@ Int_t AliEveEventBuffer::CalculateNext(Int_t current) {
 
 
 ///_____________________________________________________________________________________
-Int_t AliEveEventBuffer::CalculatePrevious(Int_t current) {
+Int_t AliEveEventBuffer::CalculatePrevious(Int_t current) const {
   //See header file for documentation
   cout << "CalculatePrev:  " << current; 
   current--;
@@ -231,7 +237,7 @@ Int_t AliEveEventBuffer::CalculatePrevious(Int_t current) {
 }
 
 ///__________________________________________________________________________________
-Int_t AliEveEventBuffer::CalculateDifference(Int_t top, Int_t low) {
+Int_t AliEveEventBuffer::CalculateDifference(Int_t top, Int_t low) const {
   //See header file for documentation
   if (top > low) {
     //    cout << "top > low"<<endl;
@@ -261,6 +267,7 @@ void AliEveEventBuffer::StartBufferMonitor() {
 }
 ///___________________________________________________________________________________
 void AliEveEventBuffer::StopBufferMonitor() {
+  // see header file for class documentation
   cout << "Stopping buffer mon"<<endl;
   SetBufferMonStarted(kFALSE);
   fTimer->Stop();
