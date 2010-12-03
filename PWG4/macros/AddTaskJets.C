@@ -1,9 +1,13 @@
 AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask); // Common config
 AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius = -1);
 
-AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf,Float_t radius = -1,UInt_t filterMask = 0); // for the new AF
+AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf,Float_t radius = -1,UInt_t filterMask = 0,Float_t ptTrackMin = 0.15,Int_t iBack = 0); // for the new AF
 Int_t AddTaskJetsDelta(char *nonStdFile = "",UInt_t filterMask = 0,Bool_t kUseAODMC = kTRUE,UInt_t runFlag = 1|4|32|128|256);     
 AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask = 0);
+
+Float_t kPtTrackMin = 0.15;
+Int_t kBackgroundMode = 0;
+
 
 AliAnalysisTaskJets *AddTaskJets(UInt_t filterMask ){
   // fills the standard "jets" branch in the AOD
@@ -92,79 +96,85 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC,UInt_
 
 
 
-AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t filterMask)
+AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t filterMask,float ptTrackMin,int iBack)
 {
   // Creates a jet finder task, configures it and adds it to the analysis manager.
 
-   // Get the pointer to the existing analysis manager via the static access method.
-   //==============================================================================
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr) {
-      ::Error("AddTaskJets", "No analysis manager to connect to.");
-      return NULL;
-   }  
-   
-   // Check the analysis type using the event handlers connected to the analysis manager.
-   //==============================================================================
-   if (!mgr->GetInputEventHandler()) {
-      ::Error("AddTaskJets", "This task requires an input event handler");
-      return NULL;
+  kPtTrackMin = ptTrackMin;
+  kBackgroundMode = iBack;
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskJets", "No analysis manager to connect to.");
+    return NULL;
+  }  
+  
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskJets", "This task requires an input event handler");
+    return NULL;
    }
-
+  
   AliAODHandler *aodh = (AliAODHandler*)mgr->GetOutputEventHandler();
   if (!aodh) {
     ::Error("AddTaskJets", "This task needs an output event handler");
     return NULL;
   }   
+  
 
-
-   // Create the task and configure it.
-   //===========================================================================
-   AliAnalysisTaskJets *jetana;
+  // Create the task and configure it.
+  //===========================================================================
+  AliAnalysisTaskJets *jetana;
    AliJetReader *er = CreateJetReader(jr,filterMask);
-    // Define jet header and jet finder
+   // Define jet header and jet finder
    AliJetFinder *jetFinder = CreateJetFinder(jf,radius);
 
    if (jetFinder){
        if (er) jetFinder->SetJetReader(er);
    }
 
-   char *cRadius = "";
-   if(radius>0)cRadius = Form("%02d",(int)((radius+0.01)*10.));
 
-   jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cRadius));
 
    TString cAdd = "";
+   cAdd += Form("%02d",(int)((radius+0.01)*10.));
+   cAdd += Form("_B%d",(int)((kBackgroundMode)));
    cAdd += Form("_Filter%05d",filterMask);
+   cAdd += Form("_Cut%05d",(int)((1000.*kPtTrackMin)));
+   Printf("%s",cAdd.Data());
+   jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cAdd.Data()));
+
 
    TString c_jr(jr);
    c_jr.ToLower();
    TString c_jf(jf);
    c_jf.ToLower();
 
+   /*
    if(c_jf.CompareTo("ua1")==0 && TMath::Abs(radius-0.4) < 0.01 && c_jr.CompareTo("aod") == 0){
      // do nothing, this is the standard jet finder R = 0.4, UA1 on AOD
    }
    else{
-     TString bName =  Form("jets%s_%s%s%s",jr,jf,cRadius,cAdd.Data());
-     jetana->SetNonStdBranch(bName.Data());
-     Printf("Set jet branchname \"%s\"",bName.Data());
+
      
  }
+   */
+   TString bName =  Form("jets%s_%s%s",jr,jf,cAdd.Data());
+   jetana->SetNonStdBranch(bName.Data());
+   Printf("Set jet branchname \"%s\"",bName.Data());
 
 
    AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(
-							     Form("jethist_%s_%s%s%s",
+							     Form("jethist_%s_%s%s",
 								  c_jr.Data(),
 								  c_jf.Data(),
-								  cRadius,
 								  cAdd.Data()), 
 							     TList::Class(),
 							     AliAnalysisManager::kOutputContainer, 
 							     Form("%s:PWG4_jethist_%s_%s%s",AliAnalysisManager::GetCommonFileName(),
 								  c_jr.Data(),
 								  c_jf.Data(),
-								  cRadius,
 								  cAdd.Data()));
 
    // Connect jet finder to task.
@@ -281,7 +291,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->BackgMode(0);
     jh->SetRadius(0.4);
     if(radius>0)jh->SetRadius(radius);
-    jh->SetEtSeed(2.);
+    jh->SetEtSeed(4.);
     jh->SetNAcceptJets(6);
     jh->SetLegoNbinPhi(432);
     jh->SetLegoNbinEta(274);
@@ -290,6 +300,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetMinJetEt(5.);
     jh->SetJetEtaMax(1.5);
     jh->SetJetEtaMin(-1.5);
+    jh->BackgMode(kBackgroundMode);
 
     jetFinder = new AliUA1JetFinderV1();
     if (jh) jetFinder->SetJetHeader(jh);
@@ -309,6 +320,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetMinJetEt(1.);
     jh->SetJetEtaMax(1.5);
     jh->SetJetEtaMin(-1.5);
+    jh->BackgMode(kBackgroundMode);
 
     jetFinder = new AliUA1JetFinderV1();
     if (jh) jetFinder->SetJetHeader(jh);
@@ -331,6 +343,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetMinJetEt(5.);
     jh->SetJetEtaMax(1.5);
     jh->SetJetEtaMin(-1.5);
+    jh->BackgMode(kBackgroundMode);
     jetFinder = new AliUA1JetFinderV1();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
@@ -345,7 +358,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
 
 AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
   AliJetReader *er = 0;
-  const Float_t ptCut  = 0.15 ; // cut on track p_T
+  Float_t ptCut  = kPtTrackMin ; // cut on track p_T
   switch (jr) {
   case "MC":
     AliJetKineReaderHeader *jrh = new AliJetKineReaderHeader();
@@ -385,7 +398,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
   case "AOD":
     AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
     jrh->SetComment("AOD Reader");
-    jrh->SetPtCut(0.15); // set low p_T cut of to 150 MeV
+    jrh->SetPtCut(ptCut); // set low p_T cut of to 150 MeV
     jrh->SetTestFilterMask(32); // Change this one for a different set of cuts
     if(filterMask>0)jrh->SetTestFilterMask(filterMask); 
     // Define reader and set its header

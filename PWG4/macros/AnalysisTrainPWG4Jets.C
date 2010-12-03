@@ -387,8 +387,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
      // has to run before AOD filter
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCentralitySelection.C");
-     const char* file1="$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161_v4.root";
-     const char* file2="$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161_v4.root";
+     const char* file1="$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161_v5.root";
+     const char* file2="$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137366_v3.root";
      AliCentralitySelectionTask *taskC = AddTaskCentralitySelection(file1,file2);
       if (!taskC) ::Warning("AnalysisTrainPWG4Jets", "AliCentralitySelectionTask cannot run for this train conditions - EXCLUDED");
    }
@@ -421,10 +421,25 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (iJETAN) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJets.C");
       AliAnalysisTaskJets *taskjets = 0;
-      if(iJETAN&1)taskjets = AddTaskJets(kHighPtFilterMask); 
+      if(iJETAN&1){
+	/*
+	taskjets = AddTaskJets(kHighPtFilterMask); 
+	taskjets->SetName("StandardJets");
+	taskjets->SetNonStdBranch("");
+	*/
+      }
       if(iJETAN&2){
-	UInt_t selection = 0;
-	if(!kFillAOD){
+	// Set only few jet finders  backgroudn subtraction w an wo 
+	
+	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,0.15,0); // low p_T no background subtraction
+	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,0.15,1); // low p_T background subtraction
+	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,1,0);     // high p_T no abackground subtraction
+	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,1,1);     // high p_T abackground subtraction
+
+
+	/*
+	  UInt_t selection = 0;
+	  if(!kFillAOD){
 	  selection = 0xffffff&~(1<<13)&~(1<<5)&~(1<<6); // switch OFF DA and all R = 0.7 to save processing time
 	  selection &= ~(1<<1)&~(1<<2)&~(1<<4)&~(1<<6)&~(1<<8)&~(1<<10)&~(1<<12);
 	}
@@ -434,6 +449,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	}
 	AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC,selection); 
 	AddTaskJets("AOD","FASTKT",0.2,kHighPtFilterMask); 
+	*/
       }
       if (!taskjets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
        if(kDeltaAODJetName.Length()>0)mgr->RegisterExtraFile(kDeltaAODJetName.Data()); 
@@ -451,28 +467,67 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(iPWG4Cluster&1){
 
        if(kIsPbPb){
-	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.2,0,1, kDeltaAODJetName.Data()); // this one is for the background random jets
+
+	 /*
+	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.2,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
 	 taskCl->SetBackgroundCalc(kTRUE);	 
 	 taskCl->SetGhostEtamax(0.9);
 	 taskCl->SetCentralityCut(fCenLo,fCenUp);
-	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data()); // this one is for the background random jets
+	 */
+
+	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
 	 taskCl->SetBackgroundCalc(kTRUE);
 	 taskCl->SetCentralityCut(fCenLo,fCenUp);
 	 taskCl->SetGhostEtamax(0.9);
+
+	 taskCl = AddTaskJetCluster("AOD","",256,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
+	 taskCl->SetBackgroundCalc(kTRUE);
+	 taskCl->SetCentralityCut(fCenLo,fCenUp);
+	 taskCl->SetGhostEtamax(0.9);
+
+
+	 /*
+	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.2,0,1, kDeltaAODJetName.Data()); // this one is for the background and random jets
+	 taskCl->SetBackgroundCalc(kTRUE);	 
+	 taskCl->SetGhostEtamax(0.9);
+	 taskCl->SetCentralityCut(fCenLo,fCenUp);
+	 */
+
+	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),1.); // this one is for the background and random jets
+	 taskCl->SetBackgroundCalc(kTRUE);
+	 taskCl->SetCentralityCut(fCenLo,fCenUp);
+	 taskCl->SetGhostEtamax(0.9);
+
+
        }
        else{
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data()); // this one is for the background jets
 	 taskCl->SetBackgroundCalc(kTRUE);
        }
 
+       /*
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data()); 
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04");
+       */
 
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data());
+
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl->SetJetTriggerPtCut(40.);//
-       taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04");
+       taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04_B1_Filter00144_Cut0150_Skip00");
+
+
+       taskCl = AddTaskJetCluster("AOD","",256,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15);
+       taskCl->SetCentralityCut(fCenLo,fCenUp);
+       taskCl->SetJetTriggerPtCut(40.);//
+       taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04_B1_Filter00256_Cut0150_Skip00");
+
+
+
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),1);
+       taskCl->SetCentralityCut(fCenLo,fCenUp);
+       taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04_B1_Filter00144_Cut01000_Skip00");
 
 
 
@@ -1224,6 +1279,7 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("AOD", mode, kTRUE);
             success &= LoadLibrary("ANALYSIS", mode, kTRUE);
             success &= LoadLibrary("ANALYSISalice", mode, kTRUE);
+            success &= LoadLibrary("EventMixing", mode,kTRUE);
             success &= LoadLibrary("CORRFW", mode, kTRUE);
          } else {   
             success &= LoadLibrary("libSTEERBase.so", mode);
@@ -1231,6 +1287,7 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("libAOD.so", mode);
             success &= LoadLibrary("libANALYSIS.so", mode);
             success &= LoadLibrary("libANALYSISalice.so", mode);
+            success &= LoadLibrary("libEventMixing.so", mode);
             success &= LoadLibrary("libCORRFW.so", mode);
             gROOT->ProcessLine(".include $ALICE_ROOT/include");
          }   
@@ -1244,6 +1301,7 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("AOD", mode);
             success &= LoadLibrary("ANALYSIS", mode);
             success &= LoadLibrary("ANALYSISalice", mode);
+            success &= LoadLibrary("EventMixing", mode);
             success &= LoadLibrary("CORRFW", mode);
          } else { 
             ires = gProof->EnablePackage(kProofAFversion);

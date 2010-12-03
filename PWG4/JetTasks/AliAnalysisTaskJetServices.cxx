@@ -268,12 +268,12 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
      if (fDebug > 1) AliInfo("Replicating header");
      fgAODHeader = new AliAODHeader;
      AddAODBranch("AliAODHeader",&fgAODHeader,fNonStdFile.Data());
-     /*
-     if (fDebug > 1) AliInfo("Replicating vertices");
-     fgAODVertices = new TClonesArray("AliAODVertex",2);
+     if (fDebug > 1) AliInfo("Replicating primary vertices");
+
+     fgAODVertices = new TClonesArray("AliAODVertex",3);
      fgAODVertices->SetName("vertices");
-     AddAODBranch("AliAODHeader",&fgAODVertices,fNonStdFile.Data());
-     */
+     AddAODBranch("TClonesArray",&fgAODVertices,fNonStdFile.Data());
+
   }
 }
 
@@ -529,11 +529,46 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       Printf("%p",fgAODVertices->At(0));
       fgAODVertices->Delete();
       TClonesArray &vertices = *fgAODVertices;
-
       const AliAODVertex *vtxAOD = aod->GetPrimaryVertex();
-      AliAODVertex *primary = new (&vertices[0]) AliAODVertex();
-      primary->SetName(vtxAOD->GetName());
-      primary->SetTitle(vtxAOD->GetTitle());
+      // we only use some basic information, 
+      
+
+      Double_t pos[3];
+      Double_t covVtx[6];
+
+      vtxAOD->GetXYZ(pos); // position                                                                
+      vtxAOD->GetCovMatrix(covVtx); //covariance matrix                                                      
+      Int_t jVertices = 0;
+      AliAODVertex * vtx = new(vertices[jVertices++])
+        AliAODVertex(pos, covVtx, vtxAOD->GetChi2perNDF(), NULL, -1, AliAODVertex::kPrimary);
+      vtx->SetName(vtxAOD->GetName());
+      vtx->SetTitle(vtxAOD->GetTitle());
+
+      TString vtitle = vtxAOD->GetTitle();
+      if (!vtitle.Contains("VertexerTracks"))
+	vtx->SetNContributors(vtxAOD->GetNContributors());
+
+      // Add SPD "main" vertex                                                                    
+      const AliAODVertex *vtxS = aod->GetPrimaryVertexSPD();
+      vtxS->GetXYZ(pos); // position
+      vtxS->GetCovMatrix(covVtx); //covariance matrix                                                      
+      AliAODVertex * mVSPD = new(vertices[jVertices++])
+	AliAODVertex(pos, covVtx, vtxS->GetChi2perNDF(), NULL, -1, AliAODVertex::kMainSPD);
+      mVSPD->SetName(vtxS->GetName());
+      mVSPD->SetTitle(vtxS->GetTitle());
+      mVSPD->SetNContributors(vtxS->GetNContributors());
+      
+      // Add tpc only vertex
+      if(esd){
+	const AliESDVertex *vtxT =  esd->GetPrimaryVertexTPC();
+	vtxT->GetXYZ(pos); // position                                                    
+	vtxT->GetCovMatrix(covVtx); //covariance matrix                                               
+	AliAODVertex * mVTPC = new(vertices[jVertices++])
+	  AliAODVertex(pos, covVtx, vtxT->GetChi2toNDF(), NULL, -1, AliAODVertex::kMainTPC);
+	mVTPC->SetName(vtxT->GetName());
+	mVTPC->SetTitle(vtxT->GetTitle());
+	mVTPC->SetNContributors(vtxT->GetNContributors());
+      }
     }
   }
   
@@ -551,6 +586,7 @@ AliAnalysisTaskJetServices::~AliAnalysisTaskJetServices(){
     fgAODVertices->Delete();
     delete fgAODVertices;
   }
+  if(fgAODHeader)delete fgAODHeader;
 }
 
 
