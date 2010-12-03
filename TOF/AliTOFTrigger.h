@@ -36,8 +36,10 @@ class AliTOFTrigger : public AliTriggerDetector
   Int_t  GetstripWindow() const {return fstripWindow;}
 
   void LoadActiveMask(); // Load active channel trigger mask
+  void GetMapMatrix(Bool_t map[][24]) const;
   void GetMap(Bool_t **map) const;
   //void PrintMap(); // to be checked because of warning problems
+  void GetTRDmapMatrix(Bool_t map[][8]) const;
   void GetTRDmap(Bool_t **map) const;
   Bool_t GetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,Int_t iTDC, Int_t iCH);
   Bool_t GetBit(Int_t *detind);
