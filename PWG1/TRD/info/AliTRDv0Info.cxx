@@ -489,7 +489,7 @@ Double_t AliTRDv0Info::KFChi2ndf(Int_t part1, Int_t part2,Int_t decay){
 //________________________________________________________________
 AliKFParticle *AliTRDv0Info::CreateMotherParticle(const AliESDtrack *pdaughter, const AliESDtrack *ndaughter, Int_t pspec, Int_t nspec){
   //
-  // Creates a mother particle
+  // Creates a mother particle on the HEAP !! User code is responsible for its deletion
   //
   AliKFParticle pkfdaughter(*pdaughter, pspec);
   AliKFParticle nkfdaughter(*ndaughter, nspec);

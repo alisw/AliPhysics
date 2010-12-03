@@ -237,17 +237,19 @@ AliTRDtrackInfo& AliTRDtrackInfo::operator=(const AliTRDtrackInfo &trdInfo)
   fESD = trdInfo.fESD;
 
   if(trdInfo.fMC){
-    if(!fMC)
-      fMC = new AliMCinfo(*trdInfo.fMC);
-    else
+    if(!fMC) fMC = new AliMCinfo(*trdInfo.fMC);
+    else{
+      fMC->~AliMCinfo();
       new(fMC) AliMCinfo(*trdInfo.fMC);
+    }
   }
 
   if(trdInfo.fTRDtrack){
-    if(!fTRDtrack)
-      fTRDtrack = new AliTRDtrackV1(*trdInfo.fTRDtrack);
-    else
+    if(!fTRDtrack) fTRDtrack = new AliTRDtrackV1(*trdInfo.fTRDtrack);
+    else{
+      fTRDtrack->~AliTRDtrackV1();
       new(fTRDtrack) AliTRDtrackV1(*trdInfo.fTRDtrack);
+    }
     if(trdInfo.fTRDtrack->IsOwner()) fTRDtrack->SetOwner();
   }
 
@@ -270,7 +272,10 @@ AliTRDtrackInfo::AliMCinfo& AliTRDtrackInfo::AliMCinfo::operator=(const AliMCinf
   for(Int_t ien = 0; ien < 12; ien++, itr++, jtr++){
     if((*jtr)){
       if(!(*itr)) (*itr) = new AliTrackReference(*(*jtr));
-      else new(&(*itr)) AliTrackReference(*(*jtr));
+      else{
+        (*itr)->~AliTrackReference();
+        new(&(*itr)) AliTrackReference(*(*jtr));
+      }
     } else (*itr) = NULL;
   }
   return *this;
@@ -296,8 +301,10 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
     memcpy(fTRDslices, esd.fTRDslices, fTRDnSlices*sizeof(Double32_t));
   }
   if(esd.fOP){
-    if(fOP) new(fOP) AliExternalTrackParam(esd.fOP);
-    else fOP = new AliExternalTrackParam(esd.fOP);
+    if(fOP){
+      fOP->~AliExternalTrackParam();
+      new(fOP) AliExternalTrackParam(esd.fOP);
+    } else fOP = new AliExternalTrackParam(esd.fOP);
   } else fOP = NULL;
 
   return *this;
@@ -310,6 +317,7 @@ void AliTRDtrackInfo::Delete(const Option_t *)
   // Delete
   //
 
+  AliDebug(2, Form("track[%p] mc[%p]", (void*)fTRDtrack, (void*)fMC));
   fNClusters  = 0;
   if(fMC) delete fMC; fMC = NULL;
   fESD.Delete(NULL);
@@ -323,10 +331,11 @@ void AliTRDtrackInfo::SetTrack(const AliTRDtrackV1 *track)
   // Set the TRD track
   //
 
-  if(!fTRDtrack)
-    fTRDtrack = new AliTRDtrackV1(*track);	
-  else
-    new(fTRDtrack)AliTRDtrackV1(*track);
+  if(!fTRDtrack) fTRDtrack = new AliTRDtrackV1(*track);
+  else{
+    fTRDtrack->~AliTRDtrackV1();
+    new(fTRDtrack) AliTRDtrackV1(*track);
+  }
   fTRDtrack->SetOwner();
   // Make a copy for the object in order to avoid ownership problems
 }
@@ -399,8 +408,10 @@ void  AliTRDtrackInfo::SetOuterParam(const AliExternalTrackParam *op)
   //
 
   if(!op) return;
-  if(fESD.fOP) new(fESD.fOP) AliExternalTrackParam(*op);
-  else fESD.fOP = new AliExternalTrackParam(*op);
+  if(fESD.fOP){
+    fESD.fOP->~AliExternalTrackParam();
+    new(fESD.fOP) AliExternalTrackParam(*op);
+  } else fESD.fOP = new AliExternalTrackParam(*op);
 }
 
 //___________________________________________________
