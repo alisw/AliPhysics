@@ -137,7 +137,7 @@ void RunAnalysisAODVertexingHF()
   TString dataset; // for proof
 
   if(!useAlienPlugin) {
-    TString makeAODInputChain="MakeAODInputChain.C"; makeAODInputChain.Prepend(loadMacroPath.Data());
+    TString makeAODInputChain="../MakeAODInputChain.C"; makeAODInputChain.Prepend(loadMacroPath.Data());
     if(inputMode=="list") {
       // Local files
       gROOT->LoadMacro(makeAODInputChain.Data());
@@ -178,7 +178,7 @@ void RunAnalysisAODVertexingHF()
   TString taskName;
   
   ////// ADD THE FULL D2H TRAIN
-  /*taskName="AddD2HTrain.C"; taskName.Prepend(loadMacroPath.Data());
+  /*taskName="../AddD2HTrain.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   Bool_t readMC=kFALSE;
   AddD2HTrain(readMC);//,1,0,0,0,0,0,0,0,0,0,0);*/
@@ -228,8 +228,10 @@ void RunAnalysisAODVertexingHF()
     taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     Int_t switchMC[5]={0,0,0,0,0};
+    Int_t ppPbPb=1;// 0 for pp, 1 for PbPb, used to siwtch on/off the removal of daughters from the primary vertex
+    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskSECharmFraction("standard",switchMC,readMC,kTRUE,kFALSE,"D0toKpiCharmFractCuts.root","c",ppPbPb);
     // arguments: filename,switchMC,readmc,usepid,likesign,cutfilename,containerprefix
-    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskSECharmFraction("standard",switchMC);
+
     
     // attach a private task (not committed)
     // (the files MyTask.h MyTask.cxx AddMyTask.C have to be declared in plugin

@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c")
+AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0)
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -44,8 +44,21 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
     cutLoose->PrintAll();
     hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction",cutTight,cutLoose);
   }
-  else hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction");
+  else {
+    hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction");
+  }
   
+  if(ppPbPb==1){// Switch Off recalctulation of primary vertex w/o candidate's daughters
+    Printf("AddTaskSECharmFraction: Switch Off recalctulation of primary vertex w/o candidate's daughters (PbPb analysis) \n");
+    AliRDHFCutsD0toKpi *cloose=hfTask->GetLooseCut();
+    AliRDHFCutsD0toKpi *ctight=hfTask->GetTightCut();
+    cloose->SetRemoveDaughtersFromPrim(kFALSE);
+    ctight->SetRemoveDaughtersFromPrim(kFALSE);
+    // Activate Default PID for proton rejection (TEMPORARY)
+    cloose->SetUseDefaultPID(kTRUE);
+    ctight->SetUseDefaultPID(kTRUE);
+  }
+
   hfTask->SetReadMC(readmc);
   hfTask->SetNMaxTrForVtx(2);
   hfTask->SetAnalyzeLikeSign(likesign);

@@ -39,6 +39,8 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);  
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
+  void SetSplitMassD0D0bar(Bool_t splitD0D0bar=kTRUE){fsplitMassD0D0bar=splitD0D0bar;}
+  Bool_t GetIsSplitMassD0D0bar(){return fsplitMassD0D0bar;}
   void SetUsePID(Bool_t pid){fusePID=pid;}
   void SetAnalyzeLikeSign(Bool_t likesign=kFALSE){fLikeSign=likesign;}
   void SetNMaxTrForVtx(const Int_t ntrMaxforVtx){fNtrMaxforVtx=ntrMaxforVtx;}
@@ -99,6 +101,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliRDHFCutsD0toKpi *fCutsLoose;        // Loose cuts object
   AliRDHFCutsD0toKpi *fCutsTight;      // Vertexer heavy flavour
   Bool_t  fReadMC;                          // Flag To switch on/off access to MC 
+  Bool_t  fsplitMassD0D0bar;                // Flag to use two shistos for D0 and D0bar invariant masses
   Bool_t  fLikeSign;                        // Flag to analyse Like Sign array
   Bool_t  fusePID;                          // Flag to use PID
   Double_t    fmD0PDG;                      //  MC D0 mass
