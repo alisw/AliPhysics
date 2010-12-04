@@ -37,7 +37,8 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
   Int_t CombineSelectionLevels(Int_t selectionvalTrack,Int_t selectionvalCand,Int_t selectionvalPID)const;
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
-
+  virtual void SetStandardCutsPP2010();
+  virtual void SetStandardCutsPbPb2010();  
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
   Int_t IsSelectedPIDdefault(AliAODRecoDecayHF *rd);
   Int_t IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const;
