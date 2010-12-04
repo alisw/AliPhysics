@@ -84,7 +84,8 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
     taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     Int_t switchMC[5]={0,0,0,0,0};
-    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskSECharmFraction("standard",switchMC,readMC);
+    Int_t ppPbPb=1;// 0 for pp, 1 for PbPb, used to siwtch on/off the removal of daughters from the primary vertex
+    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskSECharmFraction("standard",switchMC,readMC,kTRUE,kFALSE,"D0toKpiCharmFractCuts.root","c",ppPbPb);
     // arguments: filename,switchMC,readmc,usepid,likesign,cutfilename,containerprefix
     ntasks++;
   }

@@ -64,6 +64,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
       fCutsLoose(0),
       fCutsTight(0),
       fReadMC(kFALSE),
+      fsplitMassD0D0bar(kTRUE),
       fLikeSign(kFALSE),
       fusePID(kTRUE),
       fmD0PDG(),
@@ -109,6 +110,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
       fCutsLoose(0x0),
       fCutsTight(0x0),
       fReadMC(kFALSE),
+      fsplitMassD0D0bar(kTRUE),
       fLikeSign(kFALSE),
       fusePID(kTRUE),
       fmD0PDG(),
@@ -175,6 +177,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fCutsLoose(0),
     fCutsTight(0),
     fReadMC(kFALSE),
+    fsplitMassD0D0bar(kTRUE),
     fLikeSign(kFALSE),
     fusePID(kTRUE),
     fmD0PDG(),
@@ -643,7 +646,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistNoCutsSignal->Add(hpD0vspcquarkNCsign);
 
   TH1F *hd0zD0ptNCsign;
-  TH1F *hInvMassNCsign;
+  TH1F *hInvMassD0NCsign,*hInvMassD0barNCsign;
   TH2F *hInvMassPtNCsign=new TH2F("hInvMassPtNCsign","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   flistNoCutsSignal->Add(hInvMassPtNCsign);
   TH1F *hetaNCsign;
@@ -671,14 +674,25 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptNCsign->SetYTitle("Entries");
     flistNoCutsSignal->Add(hd0zD0ptNCsign);
 
-    namehist="hInvMassNCsign_pt";
+    namehist="hInvMassD0NCsign_pt";
     namehist+=i;
-    titlehist="Invariant Mass No Cuts Signal ptbin=";
+    titlehist="Invariant Mass D0 No Cuts Signal ptbin=";
     titlehist+=i;
-    hInvMassNCsign=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassNCsign->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassNCsign->SetYTitle("Entries");
-    flistNoCutsSignal->Add(hInvMassNCsign);
+    hInvMassD0NCsign=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0NCsign->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0NCsign->SetYTitle("Entries");
+    flistNoCutsSignal->Add(hInvMassD0NCsign);
+
+
+    namehist="hInvMassD0barNCsign_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts Signal ptbin=";
+    titlehist+=i;
+    hInvMassD0barNCsign=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barNCsign->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barNCsign->SetYTitle("Entries");
+    flistNoCutsSignal->Add(hInvMassD0barNCsign);
+
 
     namehist="hetaNCsign_pt";
     namehist+=i;
@@ -926,7 +940,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistNoCutsBack->Add(hpD0vspcquarkNCback);
  
   TH1F *hd0zD0ptNCback;
-  TH1F *hInvMassNCback;
+  TH1F *hInvMassD0NCback,*hInvMassD0barNCback;
   TH2F *hInvMassPtNCback=new TH2F("hInvMassPtNCback","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaNCback;
   TH1F *hCosPDPBNCback;
@@ -951,14 +965,25 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptNCback->SetYTitle("Entries");
     flistNoCutsBack->Add(hd0zD0ptNCback);
 
-    namehist="hInvMassNCback_pt";
+    namehist="hInvMassD0NCback_pt";
     namehist+=i;
     titlehist="Invariant Mass No Cuts Backgr ptbin=";
     titlehist+=i;
-    hInvMassNCback=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassNCback->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassNCback->SetYTitle("Entries");
-    flistNoCutsBack->Add(hInvMassNCback);
+    hInvMassD0NCback=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0NCback->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0NCback->SetYTitle("Entries");
+    flistNoCutsBack->Add(hInvMassD0NCback);
+
+    
+    namehist="hInvMassD0barNCback_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts Back ptbin=";
+    titlehist+=i;
+    hInvMassD0barNCback=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barNCback->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barNCback->SetYTitle("Entries");
+    flistNoCutsBack->Add(hInvMassD0barNCback);
+
 
     namehist="hetaNCback_pt";
     namehist+=i;
@@ -1210,7 +1235,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistNoCutsFromB->Add(hpD0vspcquarkNCfromB);
  
   TH1F *hd0zD0ptNCfromB;
-  TH1F *hInvMassNCfromB;
+  TH1F *hInvMassD0NCfromB,*hInvMassD0barNCfromB;
   TH2F *hInvMassPtNCfromB=new TH2F("hInvMassPtNCfromB","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaNCfromB;
   TH1F *hCosPDPBNCfromB;
@@ -1236,14 +1261,26 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptNCfromB->SetYTitle("Entries");
     flistNoCutsFromB->Add(hd0zD0ptNCfromB);
 
-    namehist="hInvMassNCfromB_pt";
+    namehist="hInvMassD0NCfromB_pt";
     namehist+=i;
     titlehist="Invariant Mass No Cuts FromB ptbin=";
     titlehist+=i;
-    hInvMassNCfromB=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassNCfromB->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassNCfromB->SetYTitle("Entries");
-    flistNoCutsFromB->Add(hInvMassNCfromB);
+    hInvMassD0NCfromB=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0NCfromB->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0NCfromB->SetYTitle("Entries");
+    flistNoCutsFromB->Add(hInvMassD0NCfromB);
+
+
+    namehist="hInvMassD0barNCfromB_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts FromB ptbin=";
+    titlehist+=i;
+    hInvMassD0barNCfromB=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barNCfromB->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barNCfromB->SetYTitle("Entries");
+    flistNoCutsFromB->Add(hInvMassD0barNCfromB);
+
+
 
     namehist="hetaNCfromB_pt";
     namehist+=i;
@@ -1491,7 +1528,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistNoCutsFromDstar->Add(hpD0vspcquarkNCfromDstar);
  
   TH1F *hd0zD0ptNCfromDstar;
-  TH1F *hInvMassNCfromDstar;
+  TH1F *hInvMassD0NCfromDstar,*hInvMassD0barNCfromDstar;
   TH2F *hInvMassPtNCfromDstar=new TH2F("hInvMassPtNCfromDstar","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaNCfromDstar;
   TH1F *hCosPDPBNCfromDstar;
@@ -1516,14 +1553,26 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptNCfromDstar->SetYTitle("Entries");
     flistNoCutsFromDstar->Add(hd0zD0ptNCfromDstar);
 
-    namehist="hInvMassNCfromDstar_pt";
+    namehist="hInvMassD0NCfromDstar_pt";
     namehist+=i;
     titlehist="Invariant Mass No Cuts FromDstar ptbin=";
     titlehist+=i;
-    hInvMassNCfromDstar=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassNCfromDstar->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassNCfromDstar->SetYTitle("Entries");
-    flistNoCutsFromDstar->Add(hInvMassNCfromDstar);
+    hInvMassD0NCfromDstar=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0NCfromDstar->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0NCfromDstar->SetYTitle("Entries");
+    flistNoCutsFromDstar->Add(hInvMassD0NCfromDstar);
+
+
+   namehist="hInvMassD0barNCfromDstar_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts FromDstar ptbin=";
+    titlehist+=i;
+    hInvMassD0barNCfromDstar=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barNCfromDstar->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barNCfromDstar->SetYTitle("Entries");
+    flistNoCutsFromDstar->Add(hInvMassD0barNCfromDstar);
+
+
 
     namehist="hetaNCfromDstar_pt";
     namehist+=i;
@@ -1767,7 +1816,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistNoCutsOther->Add(hpD0vspcquarkNCother);
 
   TH1F *hd0zD0ptNCother;
-  TH1F *hInvMassNCother;
+  TH1F *hInvMassD0NCother,*hInvMassD0barNCother;
   TH2F *hInvMassPtNCother=new TH2F("hInvMassPtNCother","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaNCother;
   TH1F *hCosPDPBNCother;
@@ -1792,14 +1841,25 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptNCother->SetYTitle("Entries");
     flistNoCutsOther->Add(hd0zD0ptNCother);
 
-    namehist="hInvMassNCother_pt";
+    namehist="hInvMassD0NCother_pt";
     namehist+=i;
     titlehist="Invariant Mass No Cuts Other ptbin=";
     titlehist+=i;
-    hInvMassNCother=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassNCother->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassNCother->SetYTitle("Entries");
-    flistNoCutsOther->Add(hInvMassNCother);
+    hInvMassD0NCother=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0NCother->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0NCother->SetYTitle("Entries");
+    flistNoCutsOther->Add(hInvMassD0NCother);
+
+
+   namehist="hInvMassD0barNCother_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts Other ptbin=";
+    titlehist+=i;
+    hInvMassD0barNCother=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barNCother->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barNCother->SetYTitle("Entries");
+    flistNoCutsOther->Add(hInvMassD0barNCother);
+
 
     namehist="hetaNCother_pt";
     namehist+=i;
@@ -2051,7 +2111,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistLsCutsSignal->Add(hpD0vspcquarkLSCsign);
  
   TH1F *hd0zD0ptLSCsign;
-  TH1F *hInvMassLSCsign;
+  TH1F *hInvMassD0LSCsign,*hInvMassD0barLSCsign;
   TH2F *hInvMassPtLSCsign=new TH2F("hInvMassPtLSCsign","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaLSCsign;
   TH1F *hCosPDPBLSCsign;
@@ -2077,14 +2137,24 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptLSCsign->SetYTitle("Entries");
     flistLsCutsSignal->Add(hd0zD0ptLSCsign);
 
-    namehist="hInvMassLSCsign_pt";
+    namehist="hInvMassD0LSCsign_pt";
     namehist+=i;
     titlehist="Invariant Mass Loose Cuts Sign ptbin=";
     titlehist+=i;
-    hInvMassLSCsign=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassLSCsign->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassLSCsign->SetYTitle("Entries");
-    flistLsCutsSignal->Add(hInvMassLSCsign);
+    hInvMassD0LSCsign=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0LSCsign->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0LSCsign->SetYTitle("Entries");
+    flistLsCutsSignal->Add(hInvMassD0LSCsign);
+
+
+    namehist="hInvMassD0barLSCsign_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts Signal ptbin=";
+    titlehist+=i;
+    hInvMassD0barLSCsign=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barLSCsign->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barLSCsign->SetYTitle("Entries");
+    flistLsCutsSignal->Add(hInvMassD0barLSCsign);
 
     namehist="hetaLSCsign_pt";
     namehist+=i;
@@ -2334,7 +2404,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistLsCutsBack->Add(hpD0vspcquarkLSCback);
  
   TH1F *hd0zD0ptLSCback;
-  TH1F *hInvMassLSCback;
+  TH1F *hInvMassD0LSCback,*hInvMassD0barLSCback;
   TH2F *hInvMassPtLSCback=new TH2F("hInvMassPtLSCback","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaLSCback;
   TH1F *hCosPDPBLSCback;
@@ -2359,14 +2429,24 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptLSCback->SetYTitle("Entries");
     flistLsCutsBack->Add(hd0zD0ptLSCback);
 
-    namehist="hInvMassLSCback_pt";
+    namehist="hInvMassD0LSCback_pt";
     namehist+=i;
     titlehist="Invariant Mass Loose Cuts Backgr ptbin=";
     titlehist+=i;
-    hInvMassLSCback=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassLSCback->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassLSCback->SetYTitle("Entries");
-    flistLsCutsBack->Add(hInvMassLSCback);
+    hInvMassD0LSCback=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0LSCback->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0LSCback->SetYTitle("Entries");
+    flistLsCutsBack->Add(hInvMassD0LSCback);
+    
+    namehist="hInvMassD0barLSCback_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts Back ptbin=";
+    titlehist+=i;
+    hInvMassD0barLSCback=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barLSCback->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barLSCback->SetYTitle("Entries");
+    flistLsCutsBack->Add(hInvMassD0barLSCback);
+
 
     namehist="hetaLSCback_pt";
     namehist+=i;
@@ -2618,7 +2698,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistLsCutsFromB->Add(hpD0vspcquarkLSCfromB);
  
   TH1F *hd0zD0ptLSCfromB;
-  TH1F *hInvMassLSCfromB;
+  TH1F *hInvMassD0LSCfromB,*hInvMassD0barLSCfromB;
   TH2F *hInvMassPtLSCfromB=new TH2F("hInvMassPtLSCfromB","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaLSCfromB;
   TH1F *hCosPDPBLSCfromB;
@@ -2644,14 +2724,23 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptLSCfromB->SetYTitle("Entries");
     flistLsCutsFromB->Add(hd0zD0ptLSCfromB);
 
-    namehist="hInvMassLSCfromB_pt";
+    namehist="hInvMassD0LSCfromB_pt";
     namehist+=i;
     titlehist="Invariant Mass Loose Cuts FromB ptbin=";
     titlehist+=i;
-    hInvMassLSCfromB=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassLSCfromB->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassLSCfromB->SetYTitle("Entries");
-    flistLsCutsFromB->Add(hInvMassLSCfromB);
+    hInvMassD0LSCfromB=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0LSCfromB->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0LSCfromB->SetYTitle("Entries");
+    flistLsCutsFromB->Add(hInvMassD0LSCfromB);
+
+    namehist="hInvMassD0barLSCfromB_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts FromB ptbin=";
+    titlehist+=i;
+    hInvMassD0barLSCfromB=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barLSCfromB->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barLSCfromB->SetYTitle("Entries");
+    flistLsCutsFromB->Add(hInvMassD0barLSCfromB);
 
     namehist="hetaLSCfromB_pt";
     namehist+=i;
@@ -2902,7 +2991,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistLsCutsFromDstar->Add(hpD0vspcquarkLSCfromDstar);
  
   TH1F *hd0zD0ptLSCfromDstar;
-  TH1F *hInvMassLSCfromDstar;
+  TH1F *hInvMassD0LSCfromDstar,*hInvMassD0barLSCfromDstar;
   TH2F *hInvMassPtLSCfromDstar=new TH2F("hInvMassPtLSCfromDstar","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaLSCfromDstar;
   TH1F *hCosPDPBLSCfromDstar;
@@ -2927,14 +3016,23 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptLSCfromDstar->SetYTitle("Entries");
     flistLsCutsFromDstar->Add(hd0zD0ptLSCfromDstar);
 
-    namehist="hInvMassLSCfromDstar_pt";
+    namehist="hInvMassD0LSCfromDstar_pt";
     namehist+=i;
     titlehist="Invariant Mass Loose Cuts FromDstar ptbin=";
     titlehist+=i;
-    hInvMassLSCfromDstar=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassLSCfromDstar->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassLSCfromDstar->SetYTitle("Entries");
-    flistLsCutsFromDstar->Add(hInvMassLSCfromDstar);
+    hInvMassD0LSCfromDstar=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0LSCfromDstar->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0LSCfromDstar->SetYTitle("Entries");
+    flistLsCutsFromDstar->Add(hInvMassD0LSCfromDstar);
+
+    namehist="hInvMassD0barLSCfromDstar_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts FromDstar ptbin=";
+    titlehist+=i;
+    hInvMassD0barLSCfromDstar=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barLSCfromDstar->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barLSCfromDstar->SetYTitle("Entries");
+    flistLsCutsFromDstar->Add(hInvMassD0barLSCfromDstar);
 
     namehist="hetaLSCfromDstar_pt";
     namehist+=i;
@@ -3184,7 +3282,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistLsCutsOther->Add(hpD0vspcquarkLSCother);
 
   TH1F *hd0zD0ptLSCother;
-  TH1F *hInvMassLSCother;
+  TH1F *hInvMassD0LSCother,*hInvMassD0barLSCother;
   TH2F *hInvMassPtLSCother=new TH2F("hInvMassPtLSCother","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaLSCother;
   TH1F *hCosPDPBLSCother;
@@ -3209,14 +3307,23 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptLSCother->SetYTitle("Entries");
     flistLsCutsOther->Add(hd0zD0ptLSCother);
 
-    namehist="hInvMassLSCother_pt";
+    namehist="hInvMassD0LSCother_pt";
     namehist+=i;
     titlehist="Invariant Mass Loose Cuts Other ptbin=";
     titlehist+=i;
-    hInvMassLSCother=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassLSCother->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassLSCother->SetYTitle("Entries");
-    flistLsCutsOther->Add(hInvMassLSCother);
+    hInvMassD0LSCother=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0LSCother->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0LSCother->SetYTitle("Entries");
+    flistLsCutsOther->Add(hInvMassD0LSCother);
+
+    namehist="hInvMassD0barLSCother_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts Other ptbin=";
+    titlehist+=i;
+    hInvMassD0barLSCother=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barLSCother->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barLSCother->SetYTitle("Entries");
+    flistLsCutsOther->Add(hInvMassD0barLSCother);
 
     namehist="hetaLSCother_pt";
     namehist+=i;
@@ -3473,7 +3580,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistTghCutsSignal->Add(hpD0vspcquarkTGHCsign);
  
   TH1F *hd0zD0ptTGHCsign;
-  TH1F *hInvMassTGHCsign;
+  TH1F *hInvMassD0TGHCsign,*hInvMassD0barTGHCsign;
   TH2F *hInvMassPtTGHCsign=new TH2F("hInvMassPtTGHCsign","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaTGHCsign;
   TH1F *hCosPDPBTGHCsign;
@@ -3499,14 +3606,24 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptTGHCsign->SetYTitle("Entries");
     flistTghCutsSignal->Add(hd0zD0ptTGHCsign);
 
-    namehist="hInvMassTGHCsign_pt";
+    namehist="hInvMassD0TGHCsign_pt";
     namehist+=i;
     titlehist="Invariant Mass Tight Cuts Signal ptbin=";
     titlehist+=i;
-    hInvMassTGHCsign=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassTGHCsign->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassTGHCsign->SetYTitle("Entries");
-    flistTghCutsSignal->Add(hInvMassTGHCsign);
+    hInvMassD0TGHCsign=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0TGHCsign->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0TGHCsign->SetYTitle("Entries");
+    flistTghCutsSignal->Add(hInvMassD0TGHCsign);
+
+    namehist="hInvMassD0barTGHCsign_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts Signal ptbin=";
+    titlehist+=i;
+    hInvMassD0barTGHCsign=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barTGHCsign->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barTGHCsign->SetYTitle("Entries");
+    flistTghCutsSignal->Add(hInvMassD0barTGHCsign);
+
 
     namehist="hetaTGHCsign_pt";
     namehist+=i;
@@ -3759,7 +3876,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistTghCutsBack->Add(hpD0vspcquarkTGHCback);
  
   TH1F *hd0zD0ptTGHCback;
-  TH1F *hInvMassTGHCback;
+  TH1F *hInvMassD0TGHCback,*hInvMassD0barTGHCback;
   TH2F *hInvMassPtTGHCback=new TH2F("hInvMassPtTGHCback","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaTGHCback;
   TH1F *hCosPDPBTGHCback;
@@ -3785,14 +3902,23 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptTGHCback->SetYTitle("Entries");
     flistTghCutsBack->Add(hd0zD0ptTGHCback);
 
-    namehist="hInvMassTGHCback_pt";
+    namehist="hInvMassD0TGHCback_pt";
     namehist+=i;
     titlehist="Invariant Mass Tight Cuts Backgr ptbin=";
     titlehist+=i;
-    hInvMassTGHCback=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassTGHCback->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassTGHCback->SetYTitle("Entries");
-    flistTghCutsBack->Add(hInvMassTGHCback);
+    hInvMassD0TGHCback=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0TGHCback->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0TGHCback->SetYTitle("Entries");
+    flistTghCutsBack->Add(hInvMassD0TGHCback);
+
+    namehist="hInvMassD0barTGHCback_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts Back ptbin=";
+    titlehist+=i;
+    hInvMassD0barTGHCback=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barTGHCback->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barTGHCback->SetYTitle("Entries");
+    flistTghCutsBack->Add(hInvMassD0barTGHCback);
 
     namehist="hetaTGHCback_pt";
     namehist+=i;
@@ -4041,7 +4167,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistTghCutsFromB->Add(hpD0vspcquarkTGHCfromB);
  
   TH1F *hd0zD0ptTGHCfromB;
-  TH1F *hInvMassTGHCfromB;
+  TH1F *hInvMassD0TGHCfromB,*hInvMassD0barTGHCfromB;
   TH2F *hInvMassPtTGHCfromB=new TH2F("hInvMassPtTGHCfromB","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaTGHCfromB;
   TH1F *hCosPDPBTGHCfromB;
@@ -4067,14 +4193,23 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptTGHCfromB->SetYTitle("Entries");
     flistTghCutsFromB->Add(hd0zD0ptTGHCfromB);
 
-    namehist="hInvMassTGHCfromB_pt";
+    namehist="hInvMassD0TGHCfromB_pt";
     namehist+=i;
     titlehist="Invariant Mass Tight Cuts FromB ptbin=";
     titlehist+=i;
-    hInvMassTGHCfromB=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassTGHCfromB->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassTGHCfromB->SetYTitle("Entries");
-    flistTghCutsFromB->Add(hInvMassTGHCfromB);
+    hInvMassD0TGHCfromB=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0TGHCfromB->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0TGHCfromB->SetYTitle("Entries");
+    flistTghCutsFromB->Add(hInvMassD0TGHCfromB);
+
+    namehist="hInvMassD0barTGHCfromB_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts FromB ptbin=";
+    titlehist+=i;
+    hInvMassD0barTGHCfromB=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barTGHCfromB->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barTGHCfromB->SetYTitle("Entries");
+    flistTghCutsFromB->Add(hInvMassD0barTGHCfromB);
 
     namehist="hetaTGHCfromB_pt";
     namehist+=i;
@@ -4323,7 +4458,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistTghCutsFromDstar->Add(hpD0vspcquarkTGHCfromDstar);
  
   TH1F *hd0zD0ptTGHCfromDstar;
-  TH1F *hInvMassTGHCfromDstar;
+  TH1F *hInvMassD0TGHCfromDstar,*hInvMassD0barTGHCfromDstar;
   TH1F *hetaTGHCfromDstar;
   TH2F *hInvMassPtTGHCfromDstar=new TH2F("hInvMassPtTGHCfromDstar","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hCosPDPBTGHCfromDstar;
@@ -4348,14 +4483,23 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptTGHCfromDstar->SetYTitle("Entries");
     flistTghCutsFromDstar->Add(hd0zD0ptTGHCfromDstar);
 
-    namehist="hInvMassTGHCfromDstar_pt";
+    namehist="hInvMassD0TGHCfromDstar_pt";
     namehist+=i;
     titlehist="Invariant Mass Tight Cuts FromDstar ptbin=";
     titlehist+=i;
-    hInvMassTGHCfromDstar=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassTGHCfromDstar->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassTGHCfromDstar->SetYTitle("Entries");
-    flistTghCutsFromDstar->Add(hInvMassTGHCfromDstar);
+    hInvMassD0TGHCfromDstar=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0TGHCfromDstar->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0TGHCfromDstar->SetYTitle("Entries");
+    flistTghCutsFromDstar->Add(hInvMassD0TGHCfromDstar);
+
+    namehist="hInvMassD0barTGHCfromDstar_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts FromDstar ptbin=";
+    titlehist+=i;
+    hInvMassD0barTGHCfromDstar=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barTGHCfromDstar->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barTGHCfromDstar->SetYTitle("Entries");
+    flistTghCutsFromDstar->Add(hInvMassD0barTGHCfromDstar);
 
     namehist="hetaTGHCfromDstar_pt";
     namehist+=i;
@@ -4601,7 +4745,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistTghCutsOther->Add(hpD0vspcquarkTGHCother);
 
   TH1F *hd0zD0ptTGHCother;
-  TH1F *hInvMassTGHCother;
+  TH1F *hInvMassD0TGHCother,*hInvMassD0barTGHCother;
   TH2F *hInvMassPtTGHCother=new TH2F("hInvMassPtTGHCother","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   TH1F *hetaTGHCother;
   TH1F *hCosPDPBTGHCother;
@@ -4626,14 +4770,23 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     hd0zD0ptTGHCother->SetYTitle("Entries");
     flistTghCutsOther->Add(hd0zD0ptTGHCother);
 
-    namehist="hInvMassTGHCother_pt";
+    namehist="hInvMassD0TGHCother_pt";
     namehist+=i;
     titlehist="Invariant Mass Tight Cuts Other ptbin=";
     titlehist+=i;
-    hInvMassTGHCother=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
-    hInvMassTGHCother->SetXTitle("Invariant Mass    [GeV]");
-    hInvMassTGHCother->SetYTitle("Entries");
-    flistTghCutsOther->Add(hInvMassTGHCother);
+    hInvMassD0TGHCother=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0TGHCother->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0TGHCother->SetYTitle("Entries");
+    flistTghCutsOther->Add(hInvMassD0TGHCother);
+
+    namehist="hInvMassD0barTGHCother_pt";
+    namehist+=i;
+    titlehist="Invariant Mass D0bar No Cuts Other ptbin=";
+    titlehist+=i;
+    hInvMassD0barTGHCother=new TH1F(namehist.Data(),titlehist.Data(),600,1.600,2.200);
+    hInvMassD0barTGHCother->SetXTitle("Invariant Mass    [GeV]");
+    hInvMassD0barTGHCother->SetYTitle("Entries");
+    flistTghCutsOther->Add(hInvMassD0barTGHCother);
 
     namehist="hetaTGHCother_pt";
     namehist+=i;
@@ -4911,6 +5064,8 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   //histogram filled with 1 for every AOD
   fNentries->Fill(1);
   PostData(1,fNentries);
+  if(!fCutsTight->IsEventSelected(aod))return;
+  if(!fCutsLoose->IsEventSelected(aod))return;
 
 
   //Printf("There are %d tracks in this event", aod->GetNumberOfTracks());
@@ -5306,18 +5461,28 @@ printf("PrimVtx NContributors: %d \n Prongs Rel Angle: %f \n \n",ncont,relangle)
 
   return;
 }
-//_________________________________________
-Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(Float_t *&ptbinlimits){// SET CUTS USED BEFORE UP TO JULY 2010; (THEY CHANGED LATER)   
-  // DOES NOT SET NPTBINS AND PT BIN LIMITS IN *this object:
-  // it returns nptbins and set bin limits in ptbinlimits pointer
 
+
+
+//_________________________________________
+Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(Float_t *&ptbinlimits){
+  //
+  // creating cuts for D0 -> Kpi
+  //
+  //  const Double_t ptmin = 0.1;
+  const Double_t ptmax = 9999.;
+  const Int_t nptbins =13;
+  const Int_t nvars=9;
+  Int_t varycuts=-1;
+  
   if(fCutsTight){
     delete fCutsTight;fCutsTight=NULL;
   }
   if(fCutsLoose){
     delete fCutsLoose;fCutsLoose=NULL;
   }
-  
+
+
   fCutsTight = new AliRDHFCutsD0toKpi();
   fCutsTight->SetName("D0toKpiCutsStandard");
   fCutsTight->SetTitle("Standard Cuts for D0 analysis");
@@ -5327,112 +5492,187 @@ Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(Float_t *&ptbinlimits){//
   fCutsLoose->SetTitle("Loose Cuts for D0 analysis");
   
   // EVENT CUTS
-  fCutsTight->SetMinVtxContr(4);
-  fCutsLoose->SetMinVtxContr(4);
-
+  fCutsTight->SetMinVtxContr(1);
+  fCutsLoose->SetMinVtxContr(1);
+  
   // TRACKS ON SINGLE TRACKS
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4);
+  //  esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetPtRange(0.3,1.e10);
   
+
   fCutsTight->AddTrackCuts(esdTrackCuts);
+  fCutsLoose->AddTrackCuts(esdTrackCuts);
   
   
-  //  const Double_t ptmin = 0.1;
-  const Double_t ptmax = 9999.;
-  const Int_t nptbins = 7;
-  const Int_t nvars=9;
-  Float_t *ptbins=new Float_t[nptbins+1];
-  ptbins[0]=0.;	
-  ptbins[1]=1.;
-  ptbins[2]=2.;
-  ptbins[3]=3.;
-  ptbins[4]=5.;
-  ptbins[5]=8.;
-  ptbins[6]=12.;
-  ptbins[7]=ptmax;
-  
+
+  Float_t ptbins[nptbins+1];
+  ptbins[0]=0.;
+  ptbins[1]=0.5;	
+  ptbins[2]=1.;
+  ptbins[3]=2.;
+  ptbins[4]=3.;
+  ptbins[5]=4.;
+  ptbins[6]=5.;
+  ptbins[7]=6.;
+  ptbins[8]=8.;
+  ptbins[9]=12.;
+  ptbins[10]=16.;
+  ptbins[11]=20.;
+  ptbins[12]=24.;
+  ptbins[13]=ptmax;
+
+  fCutsTight->SetGlobalIndex(nvars,nptbins);
+  fCutsLoose->SetGlobalIndex(nvars,nptbins);
   fCutsTight->SetPtBins(nptbins+1,ptbins);
   fCutsLoose->SetPtBins(nptbins+1,ptbins);
   
-	/*	Float_t cutsArrayD0toKpiStand_1[9]={0.200,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.7};   // pt<1 
-	  Float_t cutsArrayD0toKpiStand_2[9]={0.200,200.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.8}; // 1<=pt<2 
-	  Float_t cutsArrayD0toKpiStand_3[9]={0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-26000.*1E-8,0.94};   // 2<=pt<3 
-	  Float_t cutsArrayD0toKpiStand_4[9]={0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.88};   // 3<=pt<5 
-	  Float_t cutsArrayD0toKpiStand_5[9]={0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9};   // 5<=pt<8
-	  Float_t cutsArrayD0toKpiStand_6[9]={0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9};   // 8<pt<12
-	  Float_t cutsArrayD0toKpiStand_7[9]={0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9}; // pt>12
+  /*	Float_t cutsArrayD0toKpiStand_1[9]={0.200,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.7};   // pt<1 
+		Float_t cutsArrayD0toKpiStand_2[9]={0.200,200.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.8}; // 1<=pt<2 
+		Float_t cutsArrayD0toKpiStand_3[9]={0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-26000.*1E-8,0.94};   // 2<=pt<3 
+		Float_t cutsArrayD0toKpiStand_4[9]={0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.88};   // 3<=pt<5 
+		Float_t cutsArrayD0toKpiStand_5[9]={0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9};   // 5<=pt<8
+		Float_t cutsArrayD0toKpiStand_6[9]={0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9};   // 8<pt<12
+		Float_t cutsArrayD0toKpiStand_7[9]={0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9}; // pt>12
 	*/
-  
-  
-  
-  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.200,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-40000.*1E-8,0.7},/* pt<1*/
-						  {0.200,200.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-32000.*1E-8,0.8},/* 1<pt<2 */
-						  {0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-26000.*1E-8,0.94},/* 2<pt<3 */
-						  {0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.88},/* 3<pt<5 */
-						  {0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9},/* 5<pt<8 */
-						  {0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9},/* 8<pt<12 */
-						  {0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9}
-  };/* pt>12 */
+
+	const Int_t nvary=3;
+	Float_t varyd0xd0[nptbins][nvary]={{-35000.*1E-8,-40000.*1E-8,-50000.*1E-8},/* pt<0.5*/
+					   {-35000.*1E-8,-40000.*1E-8,-50000.*1E-8},/* 0.5<pt<1*/
+					   {-25000.*1E-8,-32000.*1E-8,-38000.*1E-8},/* 1<pt<2 */
+					   {-22000.*1E-8,-26000.*1E-8,-30000.*1E-8},/* 2<pt<3 */
+					   {-12000.*1E-8,-15000.*1E-8,-20000.*1E-8},/* 3<pt<4 */
+					   {-12000.*1E-8,-15000.*1E-8,-20000.*1E-8},/* 4<pt<5 */
+					   {-5000.*1E-8,-10000.*1E-8,-15000.*1E-8},/* 5<pt<6 */
+					   {-5000.*1E-8,-10000.*1E-8,-15000.*1E-8},/* 6<pt<8 */
+					   {-0.*1E-8,-10000.*1E-8,-12000.*1E-8},/* 8<pt<12 */
+					   {5000.*1E-8,-5000.*1E-8,-10000.*1E-8},/* 12<pt<16 */
+					   {5000.*1E-8,-5000.*1E-8,-10000.*1E-8},/* 16<pt<20 */
+					   {5000.*1E-8,-5000.*1E-8,-10000.*1E-8},/* 20<pt<24 */
+					   {5000.*1E-8,-5000.*1E-8,-10000.*1E-8}};/* pt>24 */
+       
+
+	Float_t varyCosPoint[nptbins][nvary]={{0.75,0.80,0.85},/* 0<pt<0.5 */
+					      {0.75,0.80,0.85},/* 0.5<pt<1*/
+					      {0.75,0.80,0.85},/* 1<pt<2 */
+					      {0.92,0.94,0.95},/* 2<pt<3 */
+					      {0.85,0.88,0.91},/* 3<pt<4 */
+					      {0.85,0.88,0.91},/* 4<pt<5 */
+					      {0.88,0.90,0.92},/* 5<pt<6 */
+					      {0.88,0.90,0.92},/* 6<pt<8 */
+					      {0.85,0.90,0.92},/* 8<pt<12 */
+					      {0.85,0.90,0.92},/* 12<pt<16 */
+					      {0.8,0.85,0.9},/* 16<pt<20 */
+					      {0.8,0.85,0.9},/* 20<pt<24 */
+					      {0.75,0.82,0.9}};/* pt>24 */
 	
-  Float_t cutsMatrixD0toKpiLoose[nptbins][nvars]={{0.200,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.75},/* pt<1*/
-						  {0.200,200.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-28000.*1E-8,0.75},/* 1<pt<2 */
-						  {0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.9},/* 2<pt<3 */
-						  {0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-12000.*1E-8,0.86},/* 3<pt<5 */
-						  {0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9},/* 5<pt<8 */
-						  {0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.88},/* 8<pt<12 */
-						  {0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.*1E-8,0.85}
-  };/* pt>12 */
-  
-  /*  for (Int_t ibin=0;ibin<=nptbins;ibin++){
-      for (Int_t ivar = 0; ivar<nvars; ivar++){
-      printf("cutsMatrixD0toKpi[%d][%d] = %f\n",ivar, ibin,cutsMatrixD0toKpiStand[ivar][ibin]);
-      }
-      }*/
-  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
-  Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
-  for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
-  Float_t **cutsMatrixTransposeLoose=new Float_t*[nvars];
-  for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeLoose[iv]=new Float_t[nptbins];
-  
-  for (Int_t ibin=0;ibin<nptbins;ibin++){
-    for (Int_t ivar = 0; ivar<nvars; ivar++){
-      cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];
-      cutsMatrixTransposeLoose[ivar][ibin]=cutsMatrixD0toKpiLoose[ibin][ivar];
-      //printf("cutsMatrixD0toKpi[%d][%d] = %f\n",ibin, ivar,cutsMatrixD0toKpiStand[ibin][ivar]);
-    }
-  }
-  
 
-  
-  
-  fCutsTight->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
-  fCutsLoose->SetCuts(nvars,nptbins,cutsMatrixTransposeLoose);
-  fCutsTight->SetUseSpecialCuts(kTRUE);
-  fCutsLoose->SetUseSpecialCuts(kTRUE);
-  fCutsTight->SetRemoveDaughtersFromPrim(kTRUE);
-  fCutsLoose->SetRemoveDaughtersFromPrim(kTRUE);
-  fCutsTight->SetUsePID(kTRUE);
-  fCutsLoose->SetUsePID(kTRUE);
+	
+	if(varycuts==-1){//DEFAULT CUTS
+	  varycuts=11;
+	  varyd0xd0[9][1]=-10000.*1E-8;
+	  varyd0xd0[10][1]=-10000.*1E-8;
+	  varyd0xd0[11][1]=-10000.*1E-8;	  
+	  varyd0xd0[12][1]=-10000.*1E-8;
+	}
+	Int_t vcd0xd0=varycuts/10;
+	Int_t vccospoint=varycuts%10;
+	// ######################## STAND VARY CUTS  ###########################################	
+	Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,varyd0xd0[0][vcd0xd0],varyCosPoint[0][vccospoint]},/* 0<pt<0.5*/
+							{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,varyd0xd0[1][vcd0xd0],varyCosPoint[1][vccospoint]},/* 0.5<pt<1*/
+							{0.400,300.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,varyd0xd0[2][vcd0xd0],varyCosPoint[2][vccospoint]},/* 1<pt<2 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[3][vcd0xd0],varyCosPoint[3][vccospoint]},/* 2<pt<3 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[4][vcd0xd0],varyCosPoint[4][vccospoint]},/* 3<pt<4 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[5][vcd0xd0],varyCosPoint[5][vccospoint]},/* 4<pt<5*/     
+							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[6][vcd0xd0],varyCosPoint[6][vccospoint]},/* 5<pt<6 */
+							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[7][vcd0xd0],varyCosPoint[7][vccospoint]},/* 6<pt<8 */
+							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[8][vcd0xd0],varyCosPoint[8][vccospoint]},/* 8<pt<12 */
+							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[9][vcd0xd0],varyCosPoint[9][vccospoint]},/*12< pt <16*/
+							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[10][vcd0xd0],varyCosPoint[10][vccospoint]}, /*16< pt <20*/
+							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[11][vcd0xd0],varyCosPoint[11][vccospoint]}, /*20< pt <24*/
+							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[12][vcd0xd0],varyCosPoint[12][vccospoint]}
+	};/* pt > 24*/
+	
+	Float_t cutsMatrixD0toKpiLoose[nptbins][nvars]={{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.73},/* pt<0.5*/
+							{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.73},/* 0.5<pt<1*/
+							{0.400,300.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-25000.*1E-8,0.75},/* 1<pt<2 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.8},/* 2<pt<3 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 3<pt<4 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 4<pt<5 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 5<pt<6 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 6<pt<8 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85},/* 8<pt<12 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.*1E-8,0.85},/* 12<pt<16 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85},/* 16<pt<20 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85},/* 20<pt<24 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85}};/* pt>24 */
+	
+	
+	//CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+	Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
+	for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
+	Float_t **cutsMatrixTransposeLoose=new Float_t*[nvars];
+	for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeLoose[iv]=new Float_t[nptbins];
 
-  Printf("STANDARD CUTS OBJECT : \n");
-  fCutsTight->PrintAll();
-  Printf("SECOND CUTS OBJECT : \n");
-  fCutsLoose->PrintAll();
-  
-  ptbinlimits=ptbins;//new Float_t[nptbins+1]; //ptbins;
-  /*    new Float[nptbins];
-	for(Int_t ib=0;ib<nptbins;ib++)ptbinlimits[ib]=ptbins[ib];*/
+	for (Int_t ibin=0;ibin<nptbins;ibin++){
+	  for (Int_t ivar = 0; ivar<nvars; ivar++){
+	    cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];
+	    cutsMatrixTransposeLoose[ivar][ibin]=cutsMatrixD0toKpiLoose[ibin][ivar];
+	    //printf("cutsMatrixD0toKpi[%d][%d] = %f\n",ibin, ivar,cutsMatrixD0toKpiStand[ibin][ivar]);
+	  }
+	}
 
-  return nptbins;
 
+
+	fCutsTight->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+	fCutsLoose->SetCuts(nvars,nptbins,cutsMatrixTransposeLoose);
+
+	fCutsTight->SetUseSpecialCuts(kTRUE);
+	fCutsLoose->SetUseSpecialCuts(kTRUE);
+	fCutsTight->SetRemoveDaughtersFromPrim(kTRUE);
+	fCutsLoose->SetRemoveDaughtersFromPrim(kTRUE);
+	// PID SETTINGS
+	AliAODPidHF* pidObj=new AliAODPidHF();
+	//pidObj->SetName("pid4D0");
+	Int_t mode=1;
+	const Int_t nlims=2;
+	Double_t plims[nlims]={0.6,0.8}; //TPC limits in momentum [GeV/c]
+	Bool_t compat=kTRUE; //effective only for this mode
+	Bool_t asym=kTRUE;
+	Double_t sigmas[5]={2.,1.,0.,3.,0.}; //to be checked and to be modified with new implementation of setters by Rossella
+	pidObj->SetAsym(asym);// if you want to use the asymmetric bands in TPC
+	pidObj->SetMatch(mode);
+	pidObj->SetPLimit(plims,nlims);
+	pidObj->SetSigma(sigmas);
+	pidObj->SetCompat(compat);
+	pidObj->SetTPC(kTRUE);
+	pidObj->SetTOF(kTRUE);
+
+	fCutsTight->SetPidHF(pidObj);
+	fCutsLoose->SetPidHF(pidObj);
+	fCutsTight->SetUsePID(kTRUE);
+	fCutsLoose->SetUsePID(kTRUE);
+
+	fCutsTight->SetUseDefaultPID(kFALSE);
+	fCutsLoose->SetUseDefaultPID(kFALSE);
+
+	// PILE UP REJECTION
+	fCutsTight->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+	fCutsLoose->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+
+	ptbinlimits=ptbins;
+	fCutsTight->PrintAll();
+
+	return nptbins;
+ 
 }
+
 
 //_________________________________________
 Int_t AliAnalysisTaskSECharmFraction::SetStandardCuts(Double_t pt,Double_t invMassCut){
@@ -5930,7 +6170,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
   
   // DONE
   //hd0zD0ptLSCsign_pt
-  //hInvMassLSCsign_pt
+  //hInvMassD0LSCsign_pt
   //hetaLSCsign_pt
   //
   // %%% TO BE DONE %% 
@@ -6079,13 +6319,20 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     if(isPeakD0&&okD0)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
     if(isPeakD0bar&&okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
   }
-  // The Following is a NEW HISTO
-  str="hInvMass";
+  // The Following is a NEW HISTO  
+  str="hInvMassD0";
   str.Append(namehist.Data());
   str.Append("_pt");
   str+=ptbin;
   if(okD0)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
-  if(okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
+  if((!fsplitMassD0D0bar)&&okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
+  str="hInvMassD0bar";
+  str.Append(namehist.Data());
+  str.Append("_pt");
+  str+=ptbin;
+  if(fsplitMassD0D0bar&&okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
+  
+  
   
 
   str="hInvMassPt";
@@ -6100,7 +6347,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     if(isPeakD0&&okD0)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
     if(isPeakD0bar&&okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
     // The Following is a NEW HISTO
-    str="hInvMass";
+    str="hInvMassD0";
     str.Append(namehist.Data());
     str.Append("_pt");
     str+=ptbin;
