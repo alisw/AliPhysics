@@ -345,15 +345,18 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   //
   gStyle->SetOptStat(0);
 
-  TCanvas *cSystErr = new TCanvas("cSystErr","Systematic Errors",0,0,500,500);
+  TCanvas *cSystErr = new TCanvas("cSystErr","Systematic Errors",300,80,640,500);
+  cSystErr->Range(0.20,-0.5,18.4,0.34);
+  cSystErr->SetRightMargin(0.318);
   cSystErr->SetFillColor(0);
 
   TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{t} [GeV/c]; Relative Error",20,0,20,100,-1,+1);
   hFrame->SetAxisRange(2.,11.9,"X");
-  hFrame->SetAxisRange(-0.6,0.6,"Y");
+  hFrame->SetAxisRange(-0.5,0.5,"Y");
   hFrame->Draw();
 
-  TLegend *leg=new TLegend(0.5,0.5,0.9,0.9);
+  TLegend *leg = new TLegend(0.69,0.44,0.98,0.86,NULL,"brNDC");
+  leg->SetTextSize(0.03601695);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
   
@@ -371,7 +374,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
 	grErrFeeddown->GetPoint(j,x,y);
 	errxh = grErrFeeddown->GetErrorXhigh(j);
 	errxl = grErrFeeddown->GetErrorXlow(j);
-	if ( ( (x-errxl) >= pt) && ( (x+errxl) <= pt) ) {
+	if ( ( (x-errxl) <= pt) && ( (x+errxl) >= pt) ) {
 	  erryh = grErrFeeddown->GetErrorYhigh(j);
 	  erryl = grErrFeeddown->GetErrorYlow(j);
 	}
