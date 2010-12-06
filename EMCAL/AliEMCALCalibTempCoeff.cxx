@@ -127,6 +127,8 @@ void AliEMCALCalibTempCoeff::WriteTextCalibTempCoeffInfo(const TString &txtFileN
   for (Int_t i = 0; i < fNSuperModule; i++) {
     AliEMCALSuperModuleCalibTempCoeff * t = (AliEMCALSuperModuleCalibTempCoeff*) fSuperModuleData[i];
 
+    outputFile << t->GetSuperModuleNum() << endl;
+
     // info for each tower
     for (Int_t j=0; j<nAPDPerSM; j++) {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
