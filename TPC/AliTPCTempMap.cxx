@@ -21,6 +21,8 @@
 //                                                                           //
 //  Authors: Stefan Rossegger, Haavard Helstrup                              //
 //                                                                           //
+//  Note: Obvioulsy some changes by Marian, but when ???                     //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCSensorTempArray.h"
@@ -448,7 +450,7 @@ Double_t AliTPCTempMap::GetTemperature(Double_t x, Double_t y, Double_t z, UInt_
 
 Bool_t  AliTPCTempMap::IsOK(Float_t value){
   //
-  //
+  // checks if value is within a certain range
   //
   const Float_t kMinT=15;
   const Float_t kMaxT=25;

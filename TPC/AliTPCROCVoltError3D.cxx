@@ -466,8 +466,8 @@ TH2F * AliTPCROCVoltError3D::CreateHistoOfZAlignment(Int_t side, Int_t nx, Int_t
   // (z positions of the Read-out chambers, linearly interpolated)
 
   char hname[100];
-  if (side==0) sprintf(hname,"survey_dz_Aside");
-  if (side==1) sprintf(hname,"survey_dz_Cside");
+  if (side==0) snprintf(hname,100,"survey_dz_Aside");
+  if (side==1) snprintf(hname,100,"survey_dz_Cside");
 
   TH2F *h = new TH2F(hname,hname,nx,-250.,250.,ny,-250.,250.);
 

@@ -151,13 +151,13 @@ class AliTPCAltroEmulator : public TNamed {
   void BaselineCorrection2RTL(Int_t HighThreshold, Int_t LowThreshold, Int_t Offset, Int_t Presamples, Int_t Postsamples);
   void Clipping();
   void Zerosuppression(Int_t Threshold, Int_t MinSamplesaboveThreshold, Int_t Presamples, Int_t Postsamples);
-  const void DataFormater();
+  void DataFormater();
 
-  const Short_t GetElement(short* Array,Int_t index);
+  Short_t GetElement(short* Array,Int_t index);
   void SetElement(short* Array,Int_t index,Short_t value);
 
-  const Int_t InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold, Int_t HighThreshold);
-  const Int_t InRange(Int_t parameter,Int_t Low,Int_t High,const char *Module,const char *ParameterName);
+  Int_t InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold, Int_t HighThreshold);
+  Int_t InRange(Int_t parameter,Int_t Low,Int_t High,const char *Module,const char *ParameterName);
   Short_t GetShortChannel(Int_t i);
   Short_t GetKeepChannel(Int_t i);
   Int_t Multiply36(Int_t P, Int_t N);
@@ -183,7 +183,7 @@ class AliTPCAltroEmulator : public TNamed {
   TString fOutputDateFileName; // filename for date output
   TString fOutputRootFileName; // filename for root output
 
-  Float_t  fP[2047] ; // Interaction probabilities for times (T-1023,...T,...T+1023)
+  //  Float_t  fP[2047] ; // Interaction probabilities for times (T-1023,...T,...T+1023)
   Bool_t   fIsRandom; // Indicates if fP are treated as probabilities (in terms of Possionian statistics), or fixed numbers
   Bool_t  *fChannels; //! field of active channels
   UInt_t  *fCDHs    ; //! CDHs

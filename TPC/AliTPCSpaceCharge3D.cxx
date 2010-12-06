@@ -1384,11 +1384,6 @@ Float_t  AliTPCSpaceCharge3D::GetSpaceChargeDensity(Float_t r, Float_t phi, Floa
   // Note: input in [cm], output in [C/m^3/e0] !!
   //
 
-  if (!fSCdensityDistribution || !fSCdensityInRZ || !fSCdensityInRPhiA || !fSCdensityInRPhiC ) {
-    printf("Irgend a schaaas is nuul - argg\n");
-    return 0.;
-  }
-
   while (phi<0) phi += TMath::TwoPi();
   while (phi>TMath::TwoPi()) phi -= TMath::TwoPi();
 

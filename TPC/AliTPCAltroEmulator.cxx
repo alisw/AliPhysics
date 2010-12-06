@@ -122,6 +122,13 @@ AliTPCAltroEmulator::AliTPCAltroEmulator(Int_t timebins, short* Channel) :
 
   fADCkeep = new Short_t[1024]; 
 
+  fTCFK1IntROC[0]=0; fTCFK1IntROC[1]=0; // dummy defaults
+  fTCFK2IntROC[0]=0; fTCFK2IntROC[1]=0; // dummy defaults
+  fTCFK3IntROC[0]=0; fTCFK3IntROC[1]=0; // dummy defaults
+  fTCFL1IntROC[0]=0; fTCFL1IntROC[1]=0; // dummy defaults
+  fTCFL2IntROC[0]=0; fTCFL2IntROC[1]=0; // dummy defaults
+  fTCFL3IntROC[0]=0; fTCFL3IntROC[1]=0; // dummy defaults
+
 }
 
 
@@ -885,7 +892,7 @@ void AliTPCAltroEmulator::Zerosuppression(Int_t Threshold, Int_t MinSamplesabove
  *
  */
 
-const void AliTPCAltroEmulator::DataFormater(){
+void AliTPCAltroEmulator::DataFormater(){
   //
   // formats the data like the ALTRO. Result is a 64 bit array
   //
@@ -929,7 +936,7 @@ Float_t AliTPCAltroEmulator::CalculateCompression() {
   return retval;
 }
 
-const Short_t AliTPCAltroEmulator::GetElement(short* Array,Int_t index){
+Short_t AliTPCAltroEmulator::GetElement(short* Array,Int_t index){
   //
   // GetElement of array
   //
@@ -953,7 +960,7 @@ void AliTPCAltroEmulator::SetElement(short* Array,Int_t index,Short_t value){
     Array[index] = value;
 }
 
-const Int_t AliTPCAltroEmulator::InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold, Int_t HighThreshold){
+Int_t AliTPCAltroEmulator::InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold, Int_t HighThreshold){
   //
   // check if it's within the band of search
   //
@@ -965,7 +972,7 @@ const Int_t AliTPCAltroEmulator::InBand(Int_t ADC,Int_t bsl, Int_t LowThreshold,
     return 0;
 }
 
-const Int_t AliTPCAltroEmulator::InRange(Int_t parameter,Int_t Low,Int_t High,const char *Module,const char *ParameterName){
+Int_t AliTPCAltroEmulator::InRange(Int_t parameter,Int_t Low,Int_t High,const char *Module,const char *ParameterName){
   //
   // checks it it's within the range
   //
@@ -973,11 +980,11 @@ const Int_t AliTPCAltroEmulator::InRange(Int_t parameter,Int_t Low,Int_t High,co
   char out[255];
   Int_t retval;
   if(parameter > High){
-    sprintf(out,"Error | %s | Parameter %s is to big, has to be %d <= %s <= %d, is %d, now set to %d",Module,ParameterName,Low,ParameterName,High,parameter,High);
+    snprintf(out,255,"Error | %s | Parameter %s is to big, has to be %d <= %s <= %d, is %d, now set to %d",Module,ParameterName,Low,ParameterName,High,parameter,High);
     cout << out << endl;
     retval = High;
   }else if(parameter < Low){
-    sprintf(out,"Error | %s | Parameter %s is to small, has to be %d <= %s <= %d, is %d, now set to %d",Module,ParameterName,Low,ParameterName,High,parameter,Low);
+    snprintf(out,255,"Error | %s | Parameter %s is to small, has to be %d <= %s <= %d, is %d, now set to %d",Module,ParameterName,Low,ParameterName,High,parameter,Low);
     cout << out << endl;
     retval = Low;
   }else{
@@ -1014,79 +1021,82 @@ Bool_t AliTPCAltroEmulator::WriteEvent(Int_t ievent) {
     FILE *file=fopen(Form("%s/raw%d/TPC_%03d.ddl",
 			  fDDLFolderName.Data(),ievent,768+ddlID),
 		     "wb");
-    if (!file) return kFALSE;
-    Int_t i32;
-    // write CDH (first word to be altered later)
-    for (i32=0;i32<8;++i32)
-      fRawData[i32]=cdhDDL[i32];
-
-    // process payload
-    for (Int_t hwaddr=0;hwaddr<4096;++hwaddr) if (channelsDDL[hwaddr]) {
-      Short_t *adcsChannel=adcsDDL+hwaddr*1024;
-      // merge custers
-      // TODO: acqusition window
-      for (Int_t it=0;it<1024-3;++it) {
-	if (adcsChannel[it]>=0&&adcsChannel[it+3]>=0) {
-	  if (adcsChannel[it+1]<0) {
-	    //	    printf("merge");
-	    adcsChannel[it+1]=0;
-	  }
-	  if (adcsChannel[it+2]<0) {
-	    //	    printf("merge");
-	    adcsChannel[it+2]=0;
+    if (!file) {
+      return kFALSE;
+    } else { 
+      Int_t i32;
+      // write CDH (first word to be altered later)
+      for (i32=0;i32<8;++i32)
+	fRawData[i32]=cdhDDL[i32];
+      
+      // process payload
+      for (Int_t hwaddr=0;hwaddr<4096;++hwaddr) if (channelsDDL[hwaddr]) {
+	Short_t *adcsChannel=adcsDDL+hwaddr*1024;
+	// merge custers
+	// TODO: acqusition window
+	for (Int_t it=0;it<1024-3;++it) {
+	  if (adcsChannel[it]>=0&&adcsChannel[it+3]>=0) {
+	    if (adcsChannel[it+1]<0) {
+	      //	    printf("merge");
+	      adcsChannel[it+1]=0;
+	    }
+	    if (adcsChannel[it+2]<0) {
+	      //	    printf("merge");
+	      adcsChannel[it+2]=0;
+	    }
 	  }
 	}
+	Int_t i10=3;
+	Int_t icw=0;
+	Int_t its=1;
+	Int_t cw =0;
+	Int_t ts =0;
+	for (Int_t it=1023;it>=0;--it) {
+	  Short_t w10=adcsChannel[it];
+	  if (w10>=0) {
+	    if (cw<0) {
+	      icw=i10++;
+	      its=i10++;
+	      cw =0    ;
+	      ts=it    ;
+	    }
+	    fRawData[i32+i10/3]|=w10<<(10*(2-i10%3));
+	    ++i10;
+	    ++cw;
+	  }
+	  else {
+	    if (cw>=0) {
+	      cw+=2;
+	      fRawData[i32+icw/3]|=cw <<(10*(2-icw%3));
+	      fRawData[i32+its/3]|=ts <<(10*(2-its%3));
+	      cw=-1;
+	    }
+	  }
+	}
+	fRawData[i32]=0x1<<30|(i10-3)<<16|hwaddr;
+	i32+=(i10+2)/3;
+	
+	// clean up
+	for (Int_t i=0;i<1024;++i) adcsChannel[i]=-1;
+	channelsDDL[hwaddr]=kFALSE;
       }
-      Int_t i10=3;
-      Int_t icw=0;
-      Int_t its=1;
-      Int_t cw =0;
-      Int_t ts =0;
-      for (Int_t it=1023;it>=0;--it) {
-	Short_t w10=adcsChannel[it];
-	if (w10>=0) {
-	  if (cw<0) {
-	    icw=i10++;
-	    its=i10++;
-	    cw =0    ;
-	    ts=it    ;
-	  }
-	  fRawData[i32+i10/3]|=w10<<(10*(2-i10%3));
-	  ++i10;
-	  ++cw;
-	}
-	else {
-	  if (cw>=0) {
-	    cw+=2;
-	    fRawData[i32+icw/3]|=cw <<(10*(2-icw%3));
-	    fRawData[i32+its/3]|=ts <<(10*(2-its%3));
-	    cw=-1;
-	  }
-	}
-      }
-      fRawData[i32]=0x1<<30|(i10-3)<<16|hwaddr;
-      i32+=(i10+2)/3;
-
+      
+      // write RCU trailer
+      fRawData[i32]=0x2<<30|(i32-8);i32++;
+      for (Int_t i=0;i<8;++i)
+	fRawData[i32++]=trailerDDL[i];
+      
+      // write first word of CDH
+      fRawData[0]=i32*4;
+      
+      Int_t nwritten=fwrite(fRawData,sizeof(UInt_t),i32,file);
+      if (nwritten!=i32) return kFALSE;
+      
       // clean up
-      for (Int_t i=0;i<1024;++i) adcsChannel[i]=-1;
-      channelsDDL[hwaddr]=kFALSE;
+      do {fRawData[--i32]=0;} while (i32>0);
+      
+      fclose(file);
     }
-
-    // write RCU trailer
-    fRawData[i32]=0x2<<30|(i32-8);i32++;
-    for (Int_t i=0;i<8;++i)
-      fRawData[i32++]=trailerDDL[i];
-
-    // write first word of CDH
-    fRawData[0]=i32*4;
-    
-    Int_t nwritten=fwrite(fRawData,sizeof(UInt_t),i32,file);
-    if (nwritten!=i32) return kFALSE;
-
-    // clean up
-    do {fRawData[--i32]=0;} while (i32>0);
-
-    fclose(file);
   }
   return kTRUE;
 }
@@ -1371,8 +1381,10 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
 	  hisO.SetStats(0); hisO.SetLineColor(2);
 	  hisO.DrawCopy("same");
 	    
-	  c1->SaveAs(Form("/tmp/sig_sec%02d_row%02d_pad%03d_%d%d%d%d%d.png",
-			  sector,row,pad,fOnBSL1,fOnTCF,fOnBSL2,fOnClip,fOnZSU));
+	  c1->SaveAs(Form("%s/sig_sec%02d_row%02d_pad%03d_%s_%d%d%d%d%d.png",
+			  fDDLFolderName.Data(),sector,row,pad,
+			  fOutputRootFileName.Data(),
+			  fOnBSL1,fOnTCF,fOnBSL2,fOnClip,fOnZSU));
 	    
 	  his.Reset();
 	  hisO.Reset();
