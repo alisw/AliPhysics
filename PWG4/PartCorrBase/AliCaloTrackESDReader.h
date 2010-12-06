@@ -34,7 +34,8 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
 	
   TString GetFiredTriggerClasses() {return ((AliESDEvent*)GetInputEvent())->GetFiredTriggerClasses();}
   
-  AliESDCentrality* GetCentrality() const {return dynamic_cast<AliESDEvent*> (fInputEvent)->GetCentrality();}
+  AliESDCentrality* GetCentrality() const {AliESDEvent* event = dynamic_cast<AliESDEvent*> (fInputEvent); 
+                                           if(event) return event->GetCentrality(); else return 0x0;}
   
   void FillInputVZERO();
 
