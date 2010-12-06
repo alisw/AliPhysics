@@ -82,7 +82,6 @@
 //header file
 #include "AliLog.h"
 #include "AliTRDCalibPadStatus.h"
-#include "AliTRDrawStreamBase.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
 #include "./Cal/AliTRDCalROC.h"
@@ -211,41 +210,6 @@ void AliTRDCalibPadStatus::Destroy()
 }
 //_____________________________________________________________________
 Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
-					const Int_t icRow,
-					const Int_t icCol,
-					const Int_t csignal,
-					const Int_t crowMax,
-					const Int_t ccold,
-					const Int_t icMcm)
-{
-  //
-  // Signal filling methode 
-  //
-  Int_t nbchannel = icRow+icCol*crowMax;
-
-  // now the case of double read channel
-  if(ccold > 0){
-    nbchannel = (((ccold-1)*8+ icMcm)*crowMax+icRow)+144*crowMax;
-    //printf("nbchannel %d, ccold %d, icMcm %d, crowMax %d, icRow %d\n",nbchannel,ccold,icMcm,crowMax,icRow);
-  }
-  
-  // fast filling methode.
-  // Attention: the entry counter of the histogram is not increased
-  //            this means that e.g. the colz draw option gives an empty plot
-  
-  Int_t bin = 0;
-  
-  if ( !(((Int_t)csignal>=fAdcMax ) || ((Int_t)csignal<fAdcMin)) )
-    bin = (nbchannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
-  
-  //GetHisto(icdet,kTRUE)->Fill(csignal,nbchannel);
-  
-  GetHisto(icdet,kTRUE)->GetArray()[bin]++;
-  
-  return 0;
-}
-//_____________________________________________________________________
-Int_t AliTRDCalibPadStatus::UpdateHisto2(const Int_t icdet, /*FOLD00*/
 					 const Int_t icRow,
 					 const Int_t icCol,
 					 const Int_t csignal,
@@ -284,169 +248,7 @@ Int_t AliTRDCalibPadStatus::UpdateHisto2(const Int_t icdet, /*FOLD00*/
   return 0;
 }
 //_____________________________________________________________________
-Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t nocheck)
-{
-  //
-  // Event Processing loop - AliTRDRawStreamCosmic
-  // 0 time bin problem or zero suppression
-  // 1 no input
-  // 2 input
-  // 
-
-  //
-  // Raw version number: 
-  // [3,31] non zero suppressed
-  // 2,4 and [32,63] zero suppressed 
-  //
-
-  Int_t withInput = 1;
-
-  rawStream->SetSharedPadReadout(kTRUE);
-
-  if(!nocheck) {
-
-    // Check the raw version and if all have the same number of timebins. 
-
-    while (rawStream->Next()) {
-
-      Int_t rawversion = rawStream->GetRawVersion();                     //  current raw version
-      //printf("Raw version is %d\n",rawversion);
-
-      // Could eventually change, have to check with time    
-      if((rawversion < 3) || (rawversion > 31)) {
-	AliInfo(Form("this is not no-zero-suppressed data, the version is %d",rawversion));
-	return 0;
-      }
-      Int_t idetector  = rawStream->GetDet();                            //  current detector
-      Int_t iRow       = rawStream->GetRow();                            //  current row
-      Int_t iRowMax    = rawStream->GetMaxRow();                         //  current rowmax
-      Int_t iCol       = rawStream->GetCol();                            //  current col
-      Int_t iADC       = 21-rawStream->GetADC();                         //  current ADC
-      
-      // It goes in the opposite direction
-      Int_t col        = 0;
-      if(iADC == 1) col = 1;
-      else {
-	col = TMath::Max(0,(Int_t)(iADC-19));
-	if(col > 0) col++;
-      }
-      Int_t mcm        = (Int_t)(iCol/18);                               //  current group of 18 col pads
-      if(col > 1) mcm -= 1;      
-      if(col ==1) mcm += 1;
-
-      // printf to check
-      //Bool_t shared = rawStream->IsCurrentPadShared();                  
-      //printf("ADC %d, iCol %d, col %d, mcm %d, shared %d\n",iADC,iCol,col,mcm,(Int_t)shared);
-
-      // Take the signal
-      Int_t *signal    = rawStream->GetSignals();                        //  current ADC signal
-      Int_t nbtimebin  = rawStream->GetNumberOfTimeBins();               //  number of time bins read from data
-
-      if((fDetector != -1) && (nbtimebin != fNumberOfTimeBins)) {
-	AliInfo(Form("the number of time bins is %d, is different from the previous one %d",nbtimebin,fNumberOfTimeBins));
-      	return 0;
-      }
-      fNumberOfTimeBins = nbtimebin;
-      fDetector         = idetector;      
-
-      for(Int_t k = 0; k < fNumberOfTimeBins; k++){
-	if(signal[k]>0 && iCol != -1) UpdateHisto(idetector,iRow,iCol,signal[k],iRowMax,col,mcm);
-      }
-      
-      withInput = 2;
-    }
-  }
-  else {
-
-    while (rawStream->Next()) {
-    
-      Int_t idetector  = rawStream->GetDet();                            //  current detector
-      Int_t iRow       = rawStream->GetRow();                            //  current row
-      Int_t iRowMax    = rawStream->GetMaxRow();                         //  current rowmax
-      Int_t iCol       = rawStream->GetCol();                            //  current col
-      Int_t iADC       = 21-rawStream->GetADC();                            //  current ADC
-
-      // It goes in the opposite direction      
-      Int_t col        = 0;
-      if(iADC == 1) col = 1;
-      else {
-	col = TMath::Max(0,(Int_t)(iADC-19));
-	if(col > 0) col++;
-      }
-      Int_t mcm        = (Int_t)(iCol/18);                               //  current group of 18 col pads
-      if(col > 1) mcm -= 1;      
-      if(col ==1) mcm += 1;
-
-      // Take the signal
-      Int_t *signal    = rawStream->GetSignals();                        //  current ADC signal
-      Int_t nbtimebin = rawStream->GetNumberOfTimeBins();               //  number of time bins read from data
-      
-      
-      //printf("det %d, row %d, signal[0] %d, signal[1] %d, signal [2] %d\n", idetector, iRow, signal[0], signal[1], signal[2]);
- 
-      for(Int_t k = 0; k < nbtimebin; k++){
-	if(signal[k]>0 && iCol != -1) {
-	  UpdateHisto(idetector,iRow,iCol,signal[k],iRowMax,col,mcm);
-	  //printf("Update with det %d, row %d, col %d, signal %d, rowmax %d, col %d, mcm %d\n",idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
-	}
-      }
-      
-      withInput = 2;
-    }
-  }
-  
-  return withInput;
-}
-//_____________________________________________________________________
-Int_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader, Bool_t nocheck)
-{
-  //
-  //  Event processing loop - AliRawReader
-  //
-
-  Int_t result;
-  
-  rawReader->Select("TRD");
-  
-  AliTRDrawStreamBase *pstream = AliTRDrawStreamBase::GetRawStream(rawReader);
- 
-  result = ProcessEvent(pstream, nocheck);
-
-  delete pstream;
-
-  return result;
-}
-
-//_________________________________________________________________________
-Int_t AliTRDCalibPadStatus::ProcessEvent(
-#ifdef ALI_DATE
-					  const eventHeaderStruct *event,
-					  Bool_t nocheck
-#else
-					  const eventHeaderStruct* /*event*/,
-					  Bool_t /*nocheck*/
-	    
-#endif 
-					  )
-{
-  //
-  //  process date event
-  //
-#ifdef ALI_DATE
-    AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-    Bool_t result=ProcessEvent(rawReader, nocheck);
-    delete rawReader;
-    return result;
-#else
-    Fatal("AliTRDCalibPadStatus", "this class was compiled without DATE");
-    return 0;
-#endif
-
-}
-
-//_____________________________________________________________________
-
-Int_t AliTRDCalibPadStatus::ProcessEvent2(AliRawReader *rawReader)
+Int_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader)
 {
   //
   // RawReader = AliTRDrawStream (Jochen Klein) 
@@ -517,7 +319,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent2(AliRawReader *rawReader)
 	    signal = digits->GetData(iRow,iCol,k);
 
 	    if(signal>0) {
-	      UpdateHisto2(idetector,iRow,iCol,signal,iRowMax,col,mcm,rob);
+	      UpdateHisto(idetector,iRow,iCol,signal,iRowMax,col,mcm,rob);
 	    }
 	  }
 	  
@@ -553,7 +355,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent2(AliRawReader *rawReader)
 	      signal = digits->GetDataByAdcCol(iRow,extCol,k);
 	      
 	      if(signal>0) {
-		UpdateHisto2(idetector,iRow,iCol,signal,iRowMax,col,mcm,rob);
+		UpdateHisto(idetector,iRow,iCol,signal,iRowMax,col,mcm,rob);
 	      }
 	    }
 	  } //shared pads end
@@ -570,34 +372,6 @@ Int_t AliTRDCalibPadStatus::ProcessEvent2(AliRawReader *rawReader)
   delete rawStream;
   return withInput;
   
-}
-
-
-//_____________________________________________________________________
-Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent, Int_t sm, Int_t ch) /*FOLD00*/
-{
-  //
-  //  Test event loop
-  // fill one oroc and one iroc with random gaus
-  //
-
-  gRandom->SetSeed(0);
-
-    for (Int_t ism=sm; ism<sm+1; ism++){
-       	for (Int_t ich=ch; ich < ch+1; ich++){
-	    for (Int_t ipl=0; ipl < 6; ipl++){
-	      for(Int_t irow = 0; irow < fGeo->GetRowMax(ipl,ich,ism); irow++){
-		for(Int_t icol = 0; icol < fGeo->GetColMax(ipl); icol++){
-		  for (Int_t iTimeBin=0; iTimeBin<(30*nevent); iTimeBin++){
-		    Int_t signal=TMath::Nint(gRandom->Gaus(10,1.5));
-		    if ( signal>0 )UpdateHisto((ipl+ich*6+ism*6*5),irow,icol,signal,fGeo->GetRowMax(ipl,ich,ism),0,0);
-		  }
-		}
-	      }
-	    }
-	}
-    }
-    return kTRUE;
 }
 
 //_____________________________________________________________________

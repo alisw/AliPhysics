@@ -11,7 +11,7 @@
 #ifndef ALITRDRAWSTREAM_H
 #define ALITRDRAWSTREAM_H
 
-#include "AliTRDrawStreamBase.h"
+#include "TObject.h"
 #include "TClonesArray.h"
 #include "TTree.h"
 
@@ -31,7 +31,7 @@ class AliTRDtrackletContainer;
 #define TRDMAXMCM   4 * 16
 #define MAXTRACKLETSPERHC 256
 
-class AliTRDrawStream : public AliTRDrawStreamBase
+class AliTRDrawStream : public TObject
 {
  public:
   AliTRDrawStream(AliRawReader *rawReader = 0x0);

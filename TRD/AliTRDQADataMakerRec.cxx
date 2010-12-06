@@ -42,7 +42,7 @@
 #include "AliTRDcluster.h"
 #include "AliTRDQADataMakerRec.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDrawStreamBase.h"
+#include "AliTRDrawStream.h"
 
 #include "AliTRDdigitsManager.h"
 #include "AliTRDSignalIndex.h"
@@ -732,8 +732,7 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   rawReader->SelectEquipment(0, 1024, 1041);
   rawReader->Select("TRD");
 
-  AliTRDrawStreamBase::SetRawStreamVersion("FAST");
-  AliTRDrawStreamBase *data = AliTRDrawStreamBase::GetRawStream(rawReader);
+  AliTRDrawStream *data = new AliTRDrawStream(rawReader);
   data->SetSharedPadReadout(kFALSE);
 
   // build data manager  

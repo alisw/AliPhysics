@@ -35,6 +35,7 @@
 #include "TStyle.h"
 #include "TGraph.h"
 
+#include "AliLog.h"
 #include "AliRawReader.h"
 
 #include "AliTRDrawStreamOld.h"

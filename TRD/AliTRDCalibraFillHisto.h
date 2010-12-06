@@ -34,7 +34,6 @@ class AliRawReader;
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
-class AliTRDrawStreamBase;
 class AliTRDcluster;
 class AliTRDtrackV1;
 class AliTRDtrack;
@@ -70,10 +69,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  Bool_t  UpdateHistogramsV1(const AliTRDtrackV1 *t);
  
   // Process events DAQ
-	  Int_t   ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
-	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
-	  Int_t   ProcessEventDAQ(const eventHeaderStruct *event, Bool_t nocheck = kFALSE);
-	  Int_t   ProcessEventDAQ2(AliRawReader *rawReader);
+	  Int_t   ProcessEventDAQ(AliRawReader *rawReader);
 
   // Is Pad on
           Bool_t   IsPadOn(Int_t detector, Int_t row, Int_t col) const;

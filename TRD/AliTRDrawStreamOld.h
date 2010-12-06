@@ -12,7 +12,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDrawStreamBase.h"
+#include "TObject.h"
 
 class AliTRDgeometry;
 class AliRawReader;
@@ -20,8 +20,12 @@ class AliTRDdigitsManager;
 class TTreeSRedirector;
 class AliTRDfeeParam;
 
+#define TRDMAXTBINS       63
+#define TRDMAXADC         21
+#define TRDMAXMCM         4 * 16
+#define MAXTRACKLETSPERHC 256
 
-class AliTRDrawStreamOld : public AliTRDrawStreamBase
+class AliTRDrawStreamOld : public TObject
 { // class def begin
 
  public:

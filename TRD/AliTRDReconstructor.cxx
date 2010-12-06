@@ -34,7 +34,7 @@
 #include "AliTRDReconstructor.h"
 #include "AliTRDclusterizer.h"
 #include "AliTRDrawData.h"
-#include "AliTRDrawStreamBase.h"
+#include "AliTRDrawStream.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDtrackerV1.h"
 
@@ -166,7 +166,6 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   AliTRDrawData rawData;
   rawReader->Reset();
   rawReader->Select("TRD");
-  AliTRDrawStreamBase::SetRawStreamVersion(GetRecoParam()->GetRawStreamVersion()->Data());
   AliTRDdigitsManager *manager = rawData.Raw2Digits(rawReader);
   manager->MakeBranch(digitsTree);
   manager->WriteDigits();
@@ -187,7 +186,6 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
 
   rawReader->Reset();
   rawReader->Select("TRD");
-  AliTRDrawStreamBase::SetRawStreamVersion(GetRecoParam()->GetRawStreamVersion()->Data());
 
   if(!fClusterizer){
     AliFatal("Clusterizer not available!");

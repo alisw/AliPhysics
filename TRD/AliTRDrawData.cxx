@@ -37,7 +37,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDarrayADC.h"
-#include "AliTRDrawStreamBase.h"
+#include "AliTRDrawStream.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDfeeParam.h"
@@ -192,7 +192,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
   for (Int_t sect = 0; sect < fGeo->Nsector(); sect++) { 
 
     char name[1024];
-    snprintf(name,1024,"TRD_%d.ddl",sect + AliTRDrawStreamBase::kDDLOffset);
+    snprintf(name,1024,"TRD_%d.ddl",sect + AliTRDrawStream::kDDLOffset);
 
     AliFstream* of = new AliFstream(name);
 
@@ -551,8 +551,8 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
     memset(fTrackletContainer[1], 0, kTrackletChmb*sizeof(UInt_t)); //jkl
   }
 
-  AliTRDrawStreamBase *pinput = AliTRDrawStreamBase::GetRawStream(rawReader);
-  AliTRDrawStreamBase &input = *pinput;
+  AliTRDrawStream *pinput = new AliTRDrawStream(rawReader);
+  AliTRDrawStream &input  = *pinput;
   input.SetRawVersion( fFee->GetRAWversion() ); //<= ADDED by MinJung
 
   AliInfo(Form("Stream version: %s", input.IsA()->GetName()));

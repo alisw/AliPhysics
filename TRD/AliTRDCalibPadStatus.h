@@ -20,7 +20,6 @@ class AliTRDCalDet;
 class AliTRDCalPad;
 class AliTRDCalROC;
 class AliTRDCalPadStatus;
-class AliTRDrawStreamBase;
 class AliTRDgeometry;
 
 class AliTRDdigitsManager;
@@ -38,16 +37,10 @@ public:
 
   AliTRDCalibPadStatus& operator = (const  AliTRDCalibPadStatus &source);
 
-  Int_t ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
-  Int_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
-  Int_t ProcessEvent(const eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
-  Int_t ProcessEvent2(AliRawReader    *rawReader);
+  Int_t ProcessEvent(AliRawReader    *rawReader);
  
   void  Destroy();
   Int_t UpdateHisto(const Int_t idet, const Int_t iRow, const Int_t iCol,
-		    const Int_t signal, const Int_t crowMax, const Int_t ccold, const Int_t icMcm);
-
-  Int_t UpdateHisto2(const Int_t idet, const Int_t iRow, const Int_t iCol,
 		     const Int_t signal, const Int_t crowMax, const Int_t ccold, const Int_t icMcm, const Int_t icRob);
 
   void AnalyseHisto();
@@ -77,8 +70,6 @@ public:
 
   void    SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range 
 
-
-  Bool_t TestEventHisto(Int_t nevent, Int_t sm, Int_t ch);  //test the fast approach to fill histograms  
 
  private:
 

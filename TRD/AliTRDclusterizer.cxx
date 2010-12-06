@@ -41,7 +41,6 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDtransform.h"
 #include "AliTRDSignalIndex.h"
-#include "AliTRDrawStreamBase.h"
 #include "AliTRDrawStream.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDtrackletWord.h"
@@ -637,7 +636,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   }
 
   if(!fRawStream)
-    fRawStream = AliTRDrawStreamBase::GetRawStream(rawReader);
+    fRawStream = new AliTRDrawStream(rawReader);
   else
     fRawStream->SetReader(rawReader);
 

@@ -31,7 +31,7 @@ class AliTRDtransform;
 class AliTRDCalROC;
 class AliTRDReconstructor;
 class AliTRDCalSingleChamberStatus;
-class AliTRDrawStreamBase;
+class AliTRDrawStream;
 class AliTRDrecoParam;
 
 class AliTRDclusterizer : public TNamed 
@@ -166,7 +166,7 @@ protected:
   Int_t                firstClusterROC;       // The number of cluster in a given ROC
   Int_t                fNoOfClusters;         // Number of Clusters already processed and still owned by the clusterizer
   Int_t                fBaseline;             // Baseline of the ADC values
-  AliTRDrawStreamBase *fRawStream;            // Currently used RawStream
+  AliTRDrawStream     *fRawStream;            // Raw data streamer
 
   ClassDef(AliTRDclusterizer,6)               //  TRD clusterfinder
 

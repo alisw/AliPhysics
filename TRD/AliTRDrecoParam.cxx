@@ -25,8 +25,9 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliLog.h"
+
 #include "AliTRDrecoParam.h"
-#include "AliTRDrawStreamBase.h"
 
 ClassImp(AliTRDrecoParam)
 

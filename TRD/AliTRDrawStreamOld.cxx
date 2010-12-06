@@ -42,7 +42,7 @@
 #include "AliTRDSignalIndex.h"
 #include "AliTRDdigitsParam.h"
 
-//#include "AliLog.h"
+#include "AliLog.h"
 #include "AliRawReader.h"
 
 #define END_OF_TRACKLET_MARKEROLD 0xaaaaaaaa
@@ -142,7 +142,7 @@ Bool_t  AliTRDrawStreamOld::fgDumpingEnable = kFALSE;
 
 
 AliTRDrawStreamOld::AliTRDrawStreamOld()
-  : AliTRDrawStreamBase()
+  : TObject()
   , fSM()
   , fStack(0)
   , fHC(0)
@@ -184,7 +184,7 @@ AliTRDrawStreamOld::AliTRDrawStreamOld()
 
 //--------------------------------------------------------
 AliTRDrawStreamOld::AliTRDrawStreamOld(AliRawReader *rawReader)
-  : AliTRDrawStreamBase(rawReader)
+  : TObject()
   , fSM()
   , fStack(0)
   , fHC(0)
@@ -232,7 +232,7 @@ AliTRDrawStreamOld::AliTRDrawStreamOld(AliRawReader *rawReader)
 //------------------------------------------------------------
 
 AliTRDrawStreamOld::AliTRDrawStreamOld(const AliTRDrawStreamOld& /*st*/)
-  : AliTRDrawStreamBase()
+  : TObject()
   , fSM()
   , fStack(0)
   , fHC(0)
