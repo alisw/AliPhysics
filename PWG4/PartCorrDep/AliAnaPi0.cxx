@@ -675,6 +675,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     if(TMath::Abs(vert[2]) > GetZvertexCut()) continue ;   //vertex cut
     if (evtIndex1 != currentEvtIndex) {
       curCentrBin = GetEventCentrality();
+      //In case too few centrality bins defined with respect the selected centrality class, put in the last bin the higher centrality classes
+      if(curCentrBin >= fNCentrBin) curCentrBin=fNCentrBin-1;
       curRPBin    = 0 ;
       curZvertBin = (Int_t)(0.5*GetNZvertBin()*(vert[2]+GetZvertexCut())/GetZvertexCut()) ;
       fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
