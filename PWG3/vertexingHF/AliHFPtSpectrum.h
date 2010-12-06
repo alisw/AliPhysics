@@ -20,9 +20,11 @@
 //***********************************************************************
 
 #include "TNamed.h"
-#include "TH1.h"
 #include "TMath.h"
-#include "TGraphAsymmErrors.h"
+
+class TH1;
+class TGraphAsymmErrors;
+
 
 class AliHFPtSpectrum: public TNamed
 {
@@ -90,46 +92,46 @@ class AliHFPtSpectrum: public TNamed
   // Getters
   //
   // Return the theoretical predictions used for the calculation (rebinned if needed)
-  TH1D * GetDirectTheoreticalSpectrum() { return (fhDirectMCpt ? (TH1D*)fhDirectMCpt : NULL); }
-  TH1D * GetDirectTheoreticalUpperLimitSpectrum() { return (fhDirectMCptMax ? (TH1D*)fhDirectMCptMax : NULL); }
-  TH1D * GetDirectTheoreticalLowerLimitSpectrum() { return (fhDirectMCptMin ? (TH1D*)fhDirectMCptMin : NULL); }
-  TH1D * GetFeedDownTheoreticalSpectrum() { return (fhFeedDownMCpt ? (TH1D*)fhFeedDownMCpt : NULL); }
-  TH1D * GetFeedDownTheoreticalUpperLimitSpectrum() { return (fhFeedDownMCptMax ? (TH1D*)fhFeedDownMCptMax : NULL); }
-  TH1D * GetFeedDownTheoreticalLowerLimitSpectrum() { return (fhFeedDownMCptMin ? (TH1D*)fhFeedDownMCptMin : NULL); }
+  TH1D * GetDirectTheoreticalSpectrum() const { return (fhDirectMCpt ? (TH1D*)fhDirectMCpt : NULL); }
+  TH1D * GetDirectTheoreticalUpperLimitSpectrum() const { return (fhDirectMCptMax ? (TH1D*)fhDirectMCptMax : NULL); }
+  TH1D * GetDirectTheoreticalLowerLimitSpectrum() const { return (fhDirectMCptMin ? (TH1D*)fhDirectMCptMin : NULL); }
+  TH1D * GetFeedDownTheoreticalSpectrum() const { return (fhFeedDownMCpt ? (TH1D*)fhFeedDownMCpt : NULL); }
+  TH1D * GetFeedDownTheoreticalUpperLimitSpectrum() const { return (fhFeedDownMCptMax ? (TH1D*)fhFeedDownMCptMax : NULL); }
+  TH1D * GetFeedDownTheoreticalLowerLimitSpectrum() const { return (fhFeedDownMCptMin ? (TH1D*)fhFeedDownMCptMin : NULL); }
   // Return the acceptance and efficiency corrections (rebinned if needed)
-  TH1D * GetDirectAccEffCorrection() { return (fhDirectEffpt ? (TH1D*)fhDirectEffpt : NULL); }
-  TH1D * GetFeedDownAccEffCorrection() { return (fhFeedDownEffpt ? (TH1D*)fhFeedDownEffpt : NULL); }
+  TH1D * GetDirectAccEffCorrection() const { return (fhDirectEffpt ? (TH1D*)fhDirectEffpt : NULL); }
+  TH1D * GetFeedDownAccEffCorrection() const { return (fhFeedDownEffpt ? (TH1D*)fhFeedDownEffpt : NULL); }
   // Return the TGraphAsymmErrors of the feed-down correction (extreme systematics)
-  TGraphAsymmErrors * GetFeedDownCorrectionFcExtreme() { return (fgFcExtreme ?  fgFcExtreme : NULL); }
+  TGraphAsymmErrors * GetFeedDownCorrectionFcExtreme() const { return (fgFcExtreme ?  fgFcExtreme : NULL); }
   // Return the TGraphAsymmErrors of the feed-down correction (conservative systematics)
-  TGraphAsymmErrors * GetFeedDownCorrectionFcConservative() { return (fgFcConservative ?  fgFcConservative : NULL); }
+  TGraphAsymmErrors * GetFeedDownCorrectionFcConservative() const { return (fgFcConservative ?  fgFcConservative : NULL); }
   // Return the histogram of the feed-down correction
-  TH1D * GetHistoFeedDownCorrectionFc() { return (fhFc ?  (TH1D*)fhFc : NULL); }
+  TH1D * GetHistoFeedDownCorrectionFc() const { return (fhFc ?  (TH1D*)fhFc : NULL); }
   // Return the histograms of the feed-down correction bounds
-  TH1D * GetHistoUpperLimitFeedDownCorrectionFc() { return (fhFcMax ? (TH1D*)fhFcMax : NULL); }
-  TH1D * GetHistoLowerLimitFeedDownCorrectionFc() { return (fhFcMin ? (TH1D*)fhFcMin : NULL); }
+  TH1D * GetHistoUpperLimitFeedDownCorrectionFc() const { return (fhFcMax ? (TH1D*)fhFcMax : NULL); }
+  TH1D * GetHistoLowerLimitFeedDownCorrectionFc() const { return (fhFcMin ? (TH1D*)fhFcMin : NULL); }
   // Return the TGraphAsymmErrors of the yield after feed-down correction (systematics but feed-down) 
-  TGraphAsymmErrors * GetFeedDownCorrectedSpectrum() { return (fgYieldCorr ? fgYieldCorr : NULL); }
+  TGraphAsymmErrors * GetFeedDownCorrectedSpectrum() const { return (fgYieldCorr ? fgYieldCorr : NULL); }
   // Return the TGraphAsymmErrors of the yield after feed-down correction (feed-down extreme systematics)
-  TGraphAsymmErrors * GetFeedDownCorrectedSpectrumExtreme() { return (fgYieldCorrExtreme ? fgYieldCorrExtreme : NULL); }
+  TGraphAsymmErrors * GetFeedDownCorrectedSpectrumExtreme() const { return (fgYieldCorrExtreme ? fgYieldCorrExtreme : NULL); }
   // Return the TGraphAsymmErrors of the yield after feed-down correction (feed-down conservative systematics)
-  TGraphAsymmErrors * GetFeedDownCorrectedSpectrumConservative() { return (fgYieldCorrConservative ? fgYieldCorrConservative : NULL); }
+  TGraphAsymmErrors * GetFeedDownCorrectedSpectrumConservative() const { return (fgYieldCorrConservative ? fgYieldCorrConservative : NULL); }
   // Return the histogram of the yield after feed-down correction 
-  TH1D * GetHistoFeedDownCorrectedSpectrum() { return (fhYieldCorr ? (TH1D*)fhYieldCorr : NULL); }
+  TH1D * GetHistoFeedDownCorrectedSpectrum() const { return (fhYieldCorr ? (TH1D*)fhYieldCorr : NULL); }
   // Return the histogram of the yield after feed-down correction bounds
-  TH1D * GetHistoUpperLimitFeedDownCorrectedSpectrum() { return (fhYieldCorrMax ? (TH1D*)fhYieldCorrMax : NULL); }
-  TH1D * GetHistoLowerLimitFeedDownCorrectedSpectrum() { return (fhYieldCorrMin ? (TH1D*)fhYieldCorrMin : NULL); }
+  TH1D * GetHistoUpperLimitFeedDownCorrectedSpectrum() const { return (fhYieldCorrMax ? (TH1D*)fhYieldCorrMax : NULL); }
+  TH1D * GetHistoLowerLimitFeedDownCorrectedSpectrum() const { return (fhYieldCorrMin ? (TH1D*)fhYieldCorrMin : NULL); }
   // Return the equivalent invariant cross-section TGraphAsymmErrors (systematics but feed-down) 
-  TGraphAsymmErrors * GetCrossSectionFromYieldSpectrum() { return (fgSigmaCorr ? fgSigmaCorr : NULL); }
+  TGraphAsymmErrors * GetCrossSectionFromYieldSpectrum() const { return (fgSigmaCorr ? fgSigmaCorr : NULL); }
   // Return the equivalent invariant cross-section TGraphAsymmErrors (feed-down extreme systematics)
-  TGraphAsymmErrors * GetCrossSectionFromYieldSpectrumExtreme() { return (fgSigmaCorrExtreme ? fgSigmaCorrExtreme : NULL); }
+  TGraphAsymmErrors * GetCrossSectionFromYieldSpectrumExtreme() const { return (fgSigmaCorrExtreme ? fgSigmaCorrExtreme : NULL); }
   // Return the equivalent invariant cross-section TGraphAsymmErrors (feed-down conservative systematics)
-  TGraphAsymmErrors * GetCrossSectionFromYieldSpectrumConservative() { return (fgSigmaCorrConservative ? fgSigmaCorrConservative : NULL); }
+  TGraphAsymmErrors * GetCrossSectionFromYieldSpectrumConservative() const { return (fgSigmaCorrConservative ? fgSigmaCorrConservative : NULL); }
   // Return the equivalent invariant cross-section histogram
-  TH1D * GetHistoCrossSectionFromYieldSpectrum() { return (fhSigmaCorr ? (TH1D*)fhSigmaCorr : NULL); }
+  TH1D * GetHistoCrossSectionFromYieldSpectrum() const { return (fhSigmaCorr ? (TH1D*)fhSigmaCorr : NULL); }
   // Return the equivalent invariant cross-section histogram bounds
-  TH1D * GetHistoUpperLimitCrossSectionFromYieldSpectrum() { return (fhSigmaCorrMax ? (TH1D*)fhSigmaCorrMax : NULL); }
-  TH1D * GetHistoLowerLimitCrossSectionFromYieldSpectrum() { return (fhSigmaCorrMin ? (TH1D*)fhSigmaCorrMin : NULL); }
+  TH1D * GetHistoUpperLimitCrossSectionFromYieldSpectrum() const { return (fhSigmaCorrMax ? (TH1D*)fhSigmaCorrMax : NULL); }
+  TH1D * GetHistoLowerLimitCrossSectionFromYieldSpectrum() const { return (fhSigmaCorrMin ? (TH1D*)fhSigmaCorrMin : NULL); }
 
   //
   // Main function:
