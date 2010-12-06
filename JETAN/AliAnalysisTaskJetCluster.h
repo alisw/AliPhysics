@@ -61,13 +61,15 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetCentralityCut(Float_t xLo,Float_t xUp){fCentCutLo = xLo; fCentCutUp = xUp;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
     virtual void SetJetTriggerPtCut(Float_t x){fJetTriggerPtCut = x;}    
-    virtual void SetBackgroundBranch(const char* c){fBackgroundBranch = c;}    
-
+    virtual void SetBackgroundBranch(const char* c){fBackgroundBranch = c;}
+    virtual const char* GetBackgroundBranch(){return fBackgroundBranch.Data();}    
     virtual void SetNSkipLeadingRan(Int_t x){fNSkipLeadingRan = x;}
     virtual void SetNRandomCones(Int_t x){fNRandomCones = x;}
 
     virtual void SetJetOutputBranch(const char *c){fNonStdBranch = c;}
+    virtual const char* GetJetOutputBranch(){return fNonStdBranch.Data();}
     virtual void SetJetOutputFile(const char *c){fNonStdFile = c;}
+    virtual const char* GetJetOutputFile(){return fNonStdFile.Data();}
     virtual void SetJetOutputMinPt(Float_t x){fJetOutputMinPt = x;}
     virtual void SetBackgroundCalc(Bool_t b){fUseBackgroundCalc = b;} 
 
@@ -217,7 +219,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 11) 
+    ClassDef(AliAnalysisTaskJetCluster, 12) 
 };
  
 #endif
