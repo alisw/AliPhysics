@@ -456,7 +456,7 @@ void AliHFPtSpectrum::SetReconstructedSpectrum(TH1D *hRec) {
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetReconstructedSpectrumSystematics(TGraphAsymmErrors *gRec) {
   //
-  // Set the reconstructed spectrum systematic uncertainties
+  // Set the reconstructed spectrum (uncorrected yield) systematic uncertainties
   // 
 
   // Check the compatibility with the reconstructed spectrum
@@ -1159,9 +1159,9 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
 
     //
     if (fAsymUncertainties) {
-      Double_t Nb =  fhFeedDownMCpt->GetBinContent(ibin);
-      Double_t NbDmax = fhFeedDownMCptMax->GetBinContent(ibin) - fhFeedDownMCpt->GetBinContent(ibin);
-      Double_t NbDmin = fhFeedDownMCpt->GetBinContent(ibin) - fhFeedDownMCptMin->GetBinContent(ibin);
+      Double_t nb =  fhFeedDownMCpt->GetBinContent(ibin);
+      Double_t nbDmax = fhFeedDownMCptMax->GetBinContent(ibin) - fhFeedDownMCpt->GetBinContent(ibin);
+      Double_t nbDmin = fhFeedDownMCpt->GetBinContent(ibin) - fhFeedDownMCptMin->GetBinContent(ibin);
 
       // Systematics but feed-down
       if (fgRECSystematics){
@@ -1174,14 +1174,14 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       // min value with the maximum Nb
       errvalueExtremeMin = TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
 					( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
-					( (kfactor*NbDmax/Nb)*(kfactor*NbDmax/Nb) )  +
+					( (kfactor*nbDmax/nb)*(kfactor*nbDmax/nb) )  +
 					( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
 					( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) ) 
 					) / fhRECpt->GetBinWidth(ibin);
       // max value with the minimum Nb
       errvalueExtremeMax =  TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
 					 ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
-					 ( (kfactor*NbDmin/Nb)*(kfactor*NbDmin/Nb) )  +
+					 ( (kfactor*nbDmin/nb)*(kfactor*nbDmin/nb) )  +
 					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	) +
 					 ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
 					 ) / fhRECpt->GetBinWidth(ibin);
@@ -1218,6 +1218,11 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::ComputeSystUncertainties(Int_t decay, Bool_t combineFeedDown) {
+  //
+  // Function that re-calculates the global systematic uncertainties
+  //   by calling the class AliHFSystErr and combining those
+  //   (in quadrature) with the feed-down subtraction uncertainties
+  //
 
   // Call the systematics uncertainty class for a given decay
   AliHFSystErr systematics(decay);
@@ -1261,6 +1266,9 @@ void AliHFPtSpectrum::ComputeSystUncertainties(Int_t decay, Bool_t combineFeedDo
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::DrawSpectrum(TGraphAsymmErrors *gPrediction) {
+  //
+  // Example method to draw the corrected spectrum & the theoretical prediction
+  //
 
   TCanvas *csigma = new TCanvas("csigma","Draw the corrected cross-section & the prediction");
   csigma->SetFillColor(0);
