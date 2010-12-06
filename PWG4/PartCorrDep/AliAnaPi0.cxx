@@ -56,7 +56,7 @@ AliAnaPi0::AliAnaPi0() : AliAnaPartCorrBaseClass(),
 fDoOwnMix(kFALSE),fNCentrBin(0),//fNZvertBin(0),fNrpBin(0),
 fNmaxMixEv(0), fCalorimeter(""),
 fNModules(12), fUseAngleCut(kFALSE), fEventsList(0x0), fMultiCutAna(kFALSE), 
-fNPtCuts(0),fNAsymCuts(0), fNCellNCuts(0),fNPIDBits(0), fSameSM(kFALSE),
+fNPtCuts(0),fNAsymCuts(0), fNCellNCuts(0),fNPIDBits(0), fMakeInvPtPlots(kFALSE), fSameSM(kFALSE),
 fhReMod(0x0),fhReDiffMod(0x0),
 fhRe1(0x0),      fhMi1(0x0),      fhRe2(0x0),      fhMi2(0x0),      fhRe3(0x0),      fhMi3(0x0),
 fhReInvPt1(0x0), fhMiInvPt1(0x0), fhReInvPt2(0x0), fhMiInvPt2(0x0), fhReInvPt3(0x0), fhMiInvPt3(0x0),
@@ -144,7 +144,7 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Depth of event buffer: %d \n",fNmaxMixEv) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Pair in same Module: %d \n",fSameSM) ;
+  snprintf(onePar,buffersize,"Pair in same Module: %d; Make InvPt plots %d \n",fSameSM, fMakeInvPtPlots) ;
   parList+=onePar ;
   snprintf(onePar,buffersize," Asymmetry cuts: n = %d, asymmetry < ",fNAsymCuts) ;
   for(Int_t i = 0; i < fNAsymCuts; i++) snprintf(onePar,buffersize,"%s %2.2f;",onePar,fAsymCuts[i]);
@@ -202,14 +202,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   fhMi1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
   fhMi2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
   fhMi3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-    
-  fhReInvPt1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  fhReInvPt2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  fhReInvPt3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  fhMiInvPt1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  fhMiInvPt2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  fhMiInvPt3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-    
+  if(fMakeInvPtPlots ) {
+    fhReInvPt1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    fhReInvPt2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    fhReInvPt3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    fhMiInvPt1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    fhMiInvPt2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    fhMiInvPt3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+  } 
   const Int_t buffersize = 255;
   char key[buffersize] ;
   char title[buffersize] ;
@@ -267,33 +267,35 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhRe3[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
         outputContainer->Add(fhRe3[index]) ;
         
-        //Inverse pT 
-        //Distance to bad module 1
-        snprintf(key, buffersize,"hReInvPt_cen%d_pidbit%d_asy%d_dist1",ic,ipid,iasym) ;
-        snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 1",
-                 ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
-        fhReInvPt1[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-        fhReInvPt1[index]->SetXTitle("p_{T} (GeV/c)");
-        fhReInvPt1[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-        outputContainer->Add(fhReInvPt1[index]) ;
-        
-        //Distance to bad module 2
-        snprintf(key, buffersize,"hReInvPt_cen%d_pidbit%d_asy%d_dist2",ic,ipid,iasym) ;
-        snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 2",
-                 ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
-        fhReInvPt2[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-        fhReInvPt2[index]->SetXTitle("p_{T} (GeV/c)");
-        fhReInvPt2[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-        outputContainer->Add(fhReInvPt2[index]) ;
-        
-        //Distance to bad module 3
-        snprintf(key, buffersize,"hReInvPt_cen%d_pidbit%d_asy%d_dist3",ic,ipid,iasym) ;
-        snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 3",
-                 ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
-        fhReInvPt3[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-        fhReInvPt3[index]->SetXTitle("p_{T} (GeV/c)");
-        fhReInvPt3[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-        outputContainer->Add(fhReInvPt3[index]) ;
+        if(fMakeInvPtPlots ) {
+          //Inverse pT 
+          //Distance to bad module 1
+          snprintf(key, buffersize,"hReInvPt_cen%d_pidbit%d_asy%d_dist1",ic,ipid,iasym) ;
+          snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 1",
+                   ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
+          fhReInvPt1[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhReInvPt1[index]->SetXTitle("p_{T} (GeV/c)");
+          fhReInvPt1[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+          outputContainer->Add(fhReInvPt1[index]) ;
+          
+          //Distance to bad module 2
+          snprintf(key, buffersize,"hReInvPt_cen%d_pidbit%d_asy%d_dist2",ic,ipid,iasym) ;
+          snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 2",
+                   ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
+          fhReInvPt2[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhReInvPt2[index]->SetXTitle("p_{T} (GeV/c)");
+          fhReInvPt2[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+          outputContainer->Add(fhReInvPt2[index]) ;
+          
+          //Distance to bad module 3
+          snprintf(key, buffersize,"hReInvPt_cen%d_pidbit%d_asy%d_dist3",ic,ipid,iasym) ;
+          snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 3",
+                   ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
+          fhReInvPt3[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhReInvPt3[index]->SetXTitle("p_{T} (GeV/c)");
+          fhReInvPt3[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+          outputContainer->Add(fhReInvPt3[index]) ;
+        }
         
         if(fDoOwnMix){
           //Distance to bad module 1
@@ -322,34 +324,35 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           fhMi3[index]->SetXTitle("p_{T} (GeV/c)");
           fhMi3[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
           outputContainer->Add(fhMi3[index]) ;
-          
-          //Inverse pT
-          //Distance to bad module 1
-          snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist1",ic,ipid,iasym) ;
-          snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 1",
-                   ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
-          fhMiInvPt1[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhMiInvPt1[index]->SetXTitle("p_{T} (GeV/c)");
-          fhMiInvPt1[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-          outputContainer->Add(fhMiInvPt1[index]) ;
-          
-          //Distance to bad module 2
-          snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist2",ic,ipid,iasym) ;
-          snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 2",
-                   ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
-          fhMiInvPt2[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhMiInvPt2[index]->SetXTitle("p_{T} (GeV/c)");
-          fhMiInvPt2[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-          outputContainer->Add(fhMiInvPt2[index]) ;
-          
-          //Distance to bad module 3
-          snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist3",ic,ipid,iasym) ;
-          snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f,dist bad 3",
-                   ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
-          fhMiInvPt3[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhMiInvPt3[index]->SetXTitle("p_{T} (GeV/c)");
-          fhMiInvPt3[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-          outputContainer->Add(fhMiInvPt3[index]) ;
+          if(fMakeInvPtPlots ) {
+            //Inverse pT
+            //Distance to bad module 1
+            snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist1",ic,ipid,iasym) ;
+            snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 1",
+                     ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
+            fhMiInvPt1[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhMiInvPt1[index]->SetXTitle("p_{T} (GeV/c)");
+            fhMiInvPt1[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+            outputContainer->Add(fhMiInvPt1[index]) ;
+            
+            //Distance to bad module 2
+            snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist2",ic,ipid,iasym) ;
+            snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 2",
+                     ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
+            fhMiInvPt2[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhMiInvPt2[index]->SetXTitle("p_{T} (GeV/c)");
+            fhMiInvPt2[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+            outputContainer->Add(fhMiInvPt2[index]) ;
+            
+            //Distance to bad module 3
+            snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist3",ic,ipid,iasym) ;
+            snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f,dist bad 3",
+                     ic,fPIDBits[ipid], fAsymCuts[iasym]) ;
+            fhMiInvPt3[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhMiInvPt3[index]->SetXTitle("p_{T} (GeV/c)");
+            fhMiInvPt3[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+            outputContainer->Add(fhMiInvPt3[index]) ;
+          }
         } 
       }
     }
@@ -748,13 +751,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
                 //printf("cen %d, pid %d, asy %d, Index %d\n",curCentrBin,ipid,iasym,index);
                 fhRe1     [index]->Fill(pt,m);
-                fhReInvPt1[index]->Fill(pt,m,1./pt) ;
+                if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt,m,1./pt) ;
                 if(p1->DistToBad()>0 && p2->DistToBad()>0){
                   fhRe2     [index]->Fill(pt,m) ;
-                  fhReInvPt2[index]->Fill(pt,m,1./pt) ;
+                  if(fMakeInvPtPlots)fhReInvPt2[index]->Fill(pt,m,1./pt) ;
                   if(p1->DistToBad()>1 && p2->DistToBad()>1){
                     fhRe3     [index]->Fill(pt,m) ;
-                    fhReInvPt3[index]->Fill(pt,m,1./pt) ;
+                    if(fMakeInvPtPlots)fhReInvPt3[index]->Fill(pt,m,1./pt) ;
                   }//assymetry cut
                 }// asymmetry cut loop
               }// bad 3
@@ -867,13 +870,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                   if(a < fAsymCuts[iasym]){
                     Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
                     fhMi1     [index]->Fill(pt,m) ;
-                    fhMiInvPt1[index]->Fill(pt,m,1./pt) ;
+                    if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt,m,1./pt) ;
                     if(p1->DistToBad()>0 && p2->DistToBad()>0){
                       fhMi2     [index]->Fill(pt,m) ;
-                      fhMiInvPt2[index]->Fill(pt,m,1./pt) ;
+                      if(fMakeInvPtPlots)fhMiInvPt2[index]->Fill(pt,m,1./pt) ;
                       if(p1->DistToBad()>1 && p2->DistToBad()>1){
                         fhMi3     [index]->Fill(pt,m) ;
-                        fhMiInvPt3[index]->Fill(pt,m,1./pt) ;
+                        if(fMakeInvPtPlots)fhMiInvPt3[index]->Fill(pt,m,1./pt) ;
                       }
                     }
                   }//Asymmetry cut
@@ -921,12 +924,14 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   if(!fhMi1) fhMi1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
   if(!fhMi2) fhMi2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
   if(!fhMi3) fhMi3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;	
-  if(!fhReInvPt1) fhReInvPt1  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhReInvPt2) fhReInvPt2  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhReInvPt3) fhReInvPt3  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhMiInvPt1) fhMiInvPt1  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhMiInvPt2) fhMiInvPt2  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhMiInvPt3) fhMiInvPt3  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;	
+  if(fMakeInvPtPlots){
+    if(!fhReInvPt1) fhReInvPt1  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    if(!fhReInvPt2) fhReInvPt2  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    if(!fhReInvPt3) fhReInvPt3  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    if(!fhMiInvPt1) fhMiInvPt1  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    if(!fhMiInvPt2) fhMiInvPt2  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    if(!fhMiInvPt3) fhMiInvPt3  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;	
+  }
   if(!fhReMod)    fhReMod     = new TH2D*[fNModules]   ;	
   if(!fhReDiffMod)fhReDiffMod = new TH2D*[fNModules+1] ;	
 
@@ -938,19 +943,21 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
         fhRe1[ihisto] = (TH2D*) outputList->At(index++);
         fhRe2[ihisto] = (TH2D*) outputList->At(index++);
         fhRe3[ihisto] = (TH2D*) outputList->At(index++);
-      
-        fhReInvPt1[ihisto] = (TH2D*) outputList->At(index++);
-        fhReInvPt2[ihisto] = (TH2D*) outputList->At(index++);
-        fhReInvPt3[ihisto] = (TH2D*) outputList->At(index++);
+        if(fMakeInvPtPlots){
+          fhReInvPt1[ihisto] = (TH2D*) outputList->At(index++);
+          fhReInvPt2[ihisto] = (TH2D*) outputList->At(index++);
+          fhReInvPt3[ihisto] = (TH2D*) outputList->At(index++);
+        }
       
         if(fDoOwnMix){
           fhMi1[ihisto] = (TH2D*) outputList->At(index++);
           fhMi2[ihisto] = (TH2D*) outputList->At(index++);
           fhMi3[ihisto] = (TH2D*) outputList->At(index++);
-      
-          fhMiInvPt1[ihisto] = (TH2D*) outputList->At(index++);
-          fhMiInvPt2[ihisto] = (TH2D*) outputList->At(index++);
-          fhMiInvPt3[ihisto] = (TH2D*) outputList->At(index++); 
+          if(fMakeInvPtPlots){
+            fhMiInvPt1[ihisto] = (TH2D*) outputList->At(index++);
+            fhMiInvPt2[ihisto] = (TH2D*) outputList->At(index++);
+            fhMiInvPt3[ihisto] = (TH2D*) outputList->At(index++); 
+          }
         }//Own mix
       }//asymmetry loop
     }// pid loop
