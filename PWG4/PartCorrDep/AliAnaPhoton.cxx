@@ -6,7 +6,7 @@
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes hereby granted      *
- * without fee, providGetMixedEvent()ed that the above copyright notice appears in all   *
+ * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
