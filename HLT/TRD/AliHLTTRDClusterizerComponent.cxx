@@ -47,7 +47,7 @@ using namespace std;
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliTRDrecoParam.h"
-#include "AliTRDrawStreamBase.h"
+#include "AliTRDrawStream.h"
 #include "AliTRDcluster.h"
 
 #include "AliRawReaderMemory.h"
@@ -659,30 +659,13 @@ int AliHLTTRDClusterizerComponent::SetParams()
 
   if (fRecoDataType == 0)
     {
-      AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDsimStream);
       HLTDebug("Data type expected is SIMULATION!");
     }
 
   if (fRecoDataType == 1)
     {
-      AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDrealStream);
       HLTDebug("Data type expected is EXPERIMENT!");
     }
-
-#ifndef HAVE_NOT_ALITRD_RAWSTREAM_r39608
-  if(fHLTstreamer){
-    AliTRDrawStreamBase::SetRawStreamVersion("default");
-    HLTDebug("fast rawstreamer used");
-  }else{
-    AliTRDrawStreamBase::SetRawStreamVersion("FAST");
-    HLTDebug("old rawstreamer used");
-  }
-#else
-  if(fHLTstreamer){
-      AliTRDrawStreamBase::SetRawStreamVersion("FAST");
-      HLTDebug("fast rawstreamer used");  
-    }
-#endif
 
   fClusterizer->SetRawVersion(fRawDataVersion);
 
