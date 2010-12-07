@@ -32,6 +32,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     virtual void ConvertESDtoAOD();
     // Setters
     virtual void SetTrackFilter   (AliAnalysisFilter*   trackF) {fTrackFilter    =   trackF;}
+    virtual void SetTPCOnlyFilterMask (UInt_t filterMask)       {fTPCOnlyFilterMask    =  filterMask;}
     virtual void SetKinkFilter    (AliAnalysisFilter*    KinkF) {fKinkFilter     =    KinkF;}
     virtual void SetV0Filter      (AliAnalysisFilter*      V0F) {fV0Filter       =      V0F;}
     virtual void SetCascadeFilter (AliAnalysisFilter* CascadeF) {fCascadeFilter  = CascadeF;}
@@ -53,12 +54,15 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     AliAnalysisFilter* fKinkFilter;       //  Kink    Filter
     AliAnalysisFilter* fV0Filter;         //  V0      Filter
     AliAnalysisFilter* fCascadeFilter;    //  Cascade Filter
+    UInt_t             fTPCOnlyFilterMask;//  Fitler Mask used to select and store refitted TPC only tracks
+
+
     // PID
     Double_t     fHighPthreshold;    //  Pt threshold for detector signal setting
     TF1 *        fPtshape;           //  Pt spectrum distribution
     Bool_t       fEnableFillAOD;     //  value that decides if this task activates AOD filling
 
-    ClassDef(AliAnalysisTaskESDfilter, 4); // Analysis task for standard ESD filtering
+    ClassDef(AliAnalysisTaskESDfilter, 5); // Analysis task for standard ESD filtering
 };
  
 #endif

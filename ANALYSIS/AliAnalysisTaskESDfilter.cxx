@@ -46,6 +46,8 @@
 #include "AliESDCaloCells.h"
 #include "AliMultiplicity.h"
 #include "AliLog.h"
+#include "AliTrackerBase.h"
+#include "AliESDtrackCuts.h"
 
 ClassImp(AliAnalysisTaskESDfilter)
 
@@ -57,6 +59,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fKinkFilter(0x0),
     fV0Filter(0x0),
     fCascadeFilter(0x0),
+    fTPCOnlyFilterMask(0),
     fHighPthreshold(0),
     fPtshape(0x0),
     fEnableFillAOD(kTRUE)
@@ -70,6 +73,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fKinkFilter(0x0),
     fV0Filter(0x0),
     fCascadeFilter(0x0),
+    fTPCOnlyFilterMask(0),
     fHighPthreshold(0),
     fPtshape(0x0),
     fEnableFillAOD(kTRUE)
@@ -1082,8 +1086,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     for (Int_t nTrack = 0; nTrack < nTracks; ++nTrack) {
 	
 	
-	if (usedTrack[nTrack]) continue;
-
+      if (usedTrack[nTrack]){
+	continue;
+      }
 	AliESDtrack *esdTrack = esd->GetTrack(nTrack);
 	UInt_t selectInfo = 0;
 	//
@@ -1135,9 +1140,84 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     header->SetRefMultiplicityNeg(jTracks - nPosTracks);
     if (fDebug > 0) 
       printf("   NAODTRACKS=%d  NPOS=%d  NNEG=%d\n", jTracks, nPosTracks, jTracks - nPosTracks);
+
+
     // Do not shrink the array of tracks - other filters may add to it (M.G)
     //   tracks.Expand(jTracks); // remove 'empty slots' due to unwritten tracks
-  
+    
+    if(fTPCOnlyFilterMask){
+    // Loop over the tracks and extract and mask out all aod tracks that pass the selections for AODt racks
+      for(int it = 0;it < jTracks;++it){
+	AliAODTrack *tr = (AliAODTrack*)tracks.At(it);
+	if(!tr)continue;
+	UInt_t map = tr->GetFilterMap();
+	if(map&fTPCOnlyFilterMask){
+	  // we only reset the track select ionfo, no deletion...
+	  tr->SetFilterMap(map&~fTPCOnlyFilterMask);
+	}
+      }
+      // Loop over the ESD trcks and pick out the tracks passing TPC only cuts
+      
+      
+     const AliESDVertex *vtxSPD = esd->GetPrimaryVertexSPD();
+      for (Int_t nTrack = 0; nTrack < nTracks; ++nTrack) {
+	AliESDtrack* esdTrack = esd->GetTrack(nTrack); //carefull do not modify it othwise  need to work with a copy 
+	
+	UInt_t selectInfo = 0;
+	//
+	// Track selection
+	if (fTrackFilter) {
+	  selectInfo = fTrackFilter->IsSelected(esdTrack);
+	}
+	selectInfo &= fTPCOnlyFilterMask;
+	if (!selectInfo)continue;
+
+	// create a tpc only tracl
+	AliESDtrack *track = AliESDtrackCuts::GetTPCOnlyTrack(esd,esdTrack->GetID());
+	if(!track) continue;
+
+	AliExternalTrackParam exParam;
+	Bool_t relate = false;
+	// take the B-feild from the ESD, no 3D fieldMap available at this point
+	relate = track->RelateToVertex(vtxSPD,esd->GetMagneticField(),kVeryBig,&exParam);
+	if(!relate){
+	  delete track;
+	  continue;
+	}
+	track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+
+
+	track->GetPxPyPz(p);
+	track->GetXYZ(pos);
+	track->GetCovarianceXYZPxPyPz(covTr);
+	track->GetESDpid(pid);
+	if(mcH)mcH->SelectParticle(esdTrack->GetLabel());
+	aodTrack = new(tracks[jTracks++]) AliAODTrack(track->GetID(),
+						      track->GetLabel(),
+						      p,
+						      kTRUE,
+						      pos,
+						      kFALSE,
+						      covTr, 
+						      (Short_t)track->GetSign(),
+						      track->GetITSClusterMap(), 
+						      pid,
+						      primary,
+						      kTRUE, // check if this is right
+						      vtx->UsesTrack(track->GetID()),
+						      AliAODTrack::kPrimary, 
+						      selectInfo);
+	aodTrack->SetTPCClusterMap(track->GetTPCClusterMap());
+	aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
+	aodTrack->SetChi2perNDF(Chi2perNDF(track));
+	
+	aodTrackRefs->AddAt(aodTrack, nTrack);
+	
+	delete track;
+      } // end of loop on tracks
+      
+    }//end if(fTPCOnlyFilterMask
+    
     // Access to the AOD container of PMD clusters
     TClonesArray &pmdClusters = *(AODEvent()->GetPmdClusters());
     Int_t jPmdClusters=0;
