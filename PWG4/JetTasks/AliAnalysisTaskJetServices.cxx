@@ -367,8 +367,10 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   Bool_t aodEventSelected = IsEventSelected(aod);
 
   Bool_t physicsSelection = ((fInputHandler->IsEventSelected())&fPhysicsSelectionFlag);
-  if(aodH&&physicsSelection&&fFilterAODCollisions&&fgAODHeader){
-    if(fgAODHeader->GetCentrality()<=80){
+
+  if(aodH&&physicsSelection&&fFilterAODCollisions&&aod){
+    Float_t cent = aod->GetHeader()->GetCentrality();
+    if(cent<=80){
       aodH->SetFillAOD(kTRUE);
     }
   }
@@ -525,8 +527,6 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       *fgAODHeader =  *(dynamic_cast<AliAODHeader*>(aod->GetHeader()));
     }
     if(fgAODVertices){
-      Printf("%p",fgAODVertices);
-      Printf("%p",fgAODVertices->At(0));
       fgAODVertices->Delete();
       TClonesArray &vertices = *fgAODVertices;
       const AliAODVertex *vtxAOD = aod->GetPrimaryVertex();

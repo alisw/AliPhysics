@@ -432,10 +432,21 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	// Set only few jet finders  backgroudn subtraction w an wo 
 	
 	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,0.15,0); // low p_T no background subtraction
+	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
 	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,0.15,1); // low p_T background subtraction
+	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
 	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,1,0);     // high p_T no abackground subtraction
+	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
 	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,1,1);     // high p_T abackground subtraction
-
+	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	taskjets = AddTaskJets("AOD","UA1",0.2,kHighPtFilterMask,0.15,0); // low p_T no background subtraction
+	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	taskjets = AddTaskJets("AOD","UA1",0.2,kHighPtFilterMask,0.15,1); // low p_T background subtraction
+	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	taskjets = AddTaskJets("AOD","UA1",0.2,kHighPtFilterMask,1,0);     // high p_T no abackground subtraction
+	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	taskjets = AddTaskJets("AOD","UA1",0.2,kHighPtFilterMask,1,1);     // high p_T abackground subtraction
+	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
 
 	/*
 	  UInt_t selection = 0;
@@ -514,20 +525,27 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
-       taskCl->SetJetTriggerPtCut(40.);//
+       if(kDeltaAODJetName.Length()==0)taskCl->SetJetTriggerPtCut(40.);//
        taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04_B1_Filter00144_Cut0150_Skip00");
+
+       //       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
+       //       taskCl->SetCentralityCut(fCenLo,fCenUp);
+       //       taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04_B1_Filter00144_Cut0150_Skip00");
 
 
        taskCl = AddTaskJetCluster("AOD","",256,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
-       taskCl->SetJetTriggerPtCut(40.);//
        taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04_B1_Filter00256_Cut0150_Skip00");
 
 
 
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),1);
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),1.0);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04_B1_Filter00144_Cut01000_Skip00");
+
+       //       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),1.0);
+       //       taskCl->SetCentralityCut(fCenLo,fCenUp);
+       //       taskCl->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04_B1_Filter00144_Cut01000_Skip00");
 
 
 
@@ -539,8 +557,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   
 	   
 	   
-	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data());
-	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC_KT04");
+	   //	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data());
+	   //	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC_KT04");
 	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data());
 	   taskCl->SetBackgroundBranch("jeteventbackground_clustersAODMC_KT04");
 	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data());
@@ -672,6 +690,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      taskjetServ->SetNonStdFile(kDeltaAODJetName.Data());
      if(kIsPbPb){
        taskjetServ->SetFilterAODCollisions(kTRUE);
+       taskjetServ->SetZVertexCut(30.);
      }
      if(iAODanalysis){
        taskjetServ->SetAODInput(kTRUE);
