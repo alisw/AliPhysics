@@ -1,6 +1,7 @@
 #ifndef ALIANALYSISET_H
 #define ALIANALYSISET_H
-//_________________________________________________________________________
+
+class AliESDCentrality;//_________________________________________________________________________
 //  Utility Class for transverse energy studies
 //  Base class for ESD & MC analysis
 //  - reconstruction and MonteCarlo output
@@ -72,6 +73,9 @@ public:
     Double_t GetTotChargedEtAcc() const { return fTotChargedEtAcc; }
 
     void SetTPCOnlyTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsTPC = (AliESDtrackCuts *) cuts;}
+    
+    /** Set the centrality object */
+    void SetCentralityObject(AliESDCentrality *cent) { fCentrality = cent; }
 
 protected:
 
@@ -196,6 +200,8 @@ protected:
     TTree *fTree; // optional TTree
     TTree *fTreeDeposit; // optional TTree for energy deposit measurements
 
+    /** Centrality object */
+    AliESDCentrality *fCentrality; //Centrality object
 
 private:
     //Declare private to avoid compilation warning

@@ -93,6 +93,7 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fHistTMDeltaR(0)
 			       ,fTree(0)
 			       ,fTreeDeposit(0)
+			       ,fCentrality(0)
 {
 }
 
