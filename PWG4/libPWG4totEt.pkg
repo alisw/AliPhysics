@@ -1,6 +1,7 @@
 #-*- Mode: Makefile -*-
 
 SRCS = totEt/AliAnalysisEtCuts.cxx \
+totEt/AliAnalysisEtCommon.cxx \
 totEt/AliAnalysisEt.cxx \
 totEt/AliAnalysisEtMonteCarlo.cxx \
 totEt/AliAnalysisEtMonteCarloEmcal.cxx \
@@ -14,6 +15,10 @@ totEt/AliAnalysisHadEtMonteCarlo.cxx \
 totEt/AliAnalysisHadEtReconstructed.cxx \
 totEt/AliAnalysisTaskHadEt.cxx \
 totEt/AliAnalysisHadEtCorrections.cxx \
+totEt/AliAnalysisTaskTransverseEnergy.cxx \
+totEt/AliAnalysisEtSelectionContainer.cxx \
+totEt/AliAnalysisEtSelectionHandler.cxx
+
 
 HDRS:= $(SRCS:.cxx=.h) 
 
