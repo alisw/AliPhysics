@@ -13,6 +13,7 @@
 
 // Set name of the output file of flow analysis to be accessed:
 TString outputFileName = "AnalysisResults.root";
+//TString outputFileName = "outputCentrality4.root";
 
 // Set here which plots will be shown by default:
 //  Results:
@@ -43,7 +44,10 @@ Bool_t showOnlyPlotsForRPs = kFALSE;
 Bool_t rebinInPt = kTRUE;
 const Int_t nPtIntervals = 3;
 Double_t ptInterval[nPtIntervals+1] = {0.,2.,5.,10.}; // in GeV
-Int_t nMergedBins[nPtIntervals] = {1,5,10}; // for instance in 2nd pt interval (2-5 GeV) 5 pt bins will be merged into 1
+Int_t nMergedBins[nPtIntervals] = {1,2,5}; // for instance in 2nd pt interval (2-5 GeV) 5 pt bins will be merged into 1
+// Set here if you want to use default values for harmonic, pt and eta binning:
+Bool_t useDefaultValues = kTRUE;
+TString methodForSettings = "QC"; // alternatively set here method from whose output files harmonic, pt and eta binning will be accessed
 // Set here if you want to show error mesh:
 Bool_t showErrorMesh = kTRUE;
 Bool_t showErrorMeshDiffFlow = kTRUE;
@@ -485,7 +489,8 @@ void PlotDiffFlowRelativeToMC(Int_t nMethods, TString *method, Int_t *methodMark
   c->cd(1)->SetPad(0.0,0.0,0.75,1.0);
  } 
  // Style histogram:
- Int_t n = 2; // to be improved (accessed from common control histograms)
+ Int_t n = 2; // default harmonic
+ if(!useDefaultValues){n = GetHarmonic(methodForSettings);}
  TH1D *styleHist = StyleHistDiffFlow(ptEta.Data(),rpPoi.Data());
  styleHist->GetYaxis()->SetTitle(Form("(v_{%d}\{MCEP\}-v_{%d}\{method\})/v_{%d}\{MCEP\}",n,n,n));
  styleHist->SetTitle(Form("Differential Flow #font[72]{vs} %s (%s) relative to MCEP",ptEta.Data(),rpPoi.Data())); 
@@ -558,6 +563,7 @@ TGraph* GetErrorMeshDiffFlow(TString methodUsedToMakeErrorMesh, TString rpPoi, T
  }
   
  // Make a mesh: 
+ TGraph *errorMesh = NULL;
  if(hist)
  {
   Int_t nBins = hist->GetNbinsX();
@@ -575,7 +581,7 @@ TGraph* GetErrorMeshDiffFlow(TString methodUsedToMakeErrorMesh, TString rpPoi, T
    }
   } // end of for(Int_t i=1;i<nBins+1;i++)  
   // Error mesh:
-  TGraph *errorMesh = new TGraph(2*nNonEmptyBins+1); 
+  errorMesh = new TGraph(2*nNonEmptyBins+1); 
   Int_t count = 0;
   Double_t binCenter = 0.;
   for(Int_t i=1;i<nBins+1;i++)
@@ -601,6 +607,48 @@ TGraph* GetErrorMeshDiffFlow(TString methodUsedToMakeErrorMesh, TString rpPoi, T
  return errorMesh;
  
 } // end of TGraph* GetErrorMeshDiffFlow(TString methodUsedToMakeErrorMesh, TString ptEta, TString rpPoi)
+
+// ===========================================================================================
+
+Int_t GetHarmonic(TString method)
+{
+ // Get harmonic used in analysis from the output file of specified method.
+ Int_t n = -44; // harmonic
+ 
+ AliFlowCommonHist *commonHist = NULL;
+ for(Int_t l=0;l<nMethods;l++)
+ {
+  TString temp = "";
+  if(list[l]) 
+  {
+   temp = TString(list[l]->GetName());
+  }
+  if(temp.Contains(method.Data()))
+  {
+   commonHist = dynamic_cast<AliFlowCommonHist*> list[l]->FindObject(Form("AliFlowCommonHist%s",method.Data()));
+   if(commonHist && commonHist->GetHarmonic())
+   {
+    n = commonHist->GetHarmonic()->GetBinContent(1);
+   } else
+     {
+      cout<<endl;
+      cout<<" WARNING: commonHist && commonHist->GetHarmonic() is NULL !!!!"<<endl;
+      cout<<endl;
+     }
+  } 
+ } // end of for(Int_t l=0;l<nMethods;l++)
+ 
+ if(n==-44)
+ {
+  cout<<endl;
+  cout<<" WARNING: Couldn't access harmonic from common control histogram of specified method."<<endl;
+  cout<<           "Try with another method in 'TString methodForSettings'."<<endl;
+  cout<<endl;
+ }
+ 
+ return n;
+
+} // end of Int_t GetHarmonic(TString method)
 
 // ===========================================================================================
 
@@ -719,14 +767,48 @@ TH1D* RebinInPt(TH1D *hist)
 TH1D* StyleHistDiffFlow(TString ptEta, TString rpPoi)
 {
  // Style histogram for differential flow.
-
- Int_t n = 2; // to be improved - access from common control histogram
+ 
+ Int_t n = 2; // default harmonic
+ if(!useDefaultValues){n = GetHarmonic(methodForSettings);}
  TH1D *styleHistDiffFlow = NULL;
  if(ptEta == "Pt")
  {
   Int_t iNbinsPt  = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
   Double_t dPtMin = AliFlowCommonConstants::GetMaster()->GetPtMin();
   Double_t dPtMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
+  if(!useDefaultValues)
+  {
+   AliFlowCommonHist *commonHist = NULL;
+   for(Int_t l=0;l<nMethods;l++)
+   {
+    TString temp = "";
+    if(list[l]) 
+    {
+     temp = TString(list[l]->GetName());
+    }
+    if(temp.Contains(methodForSettings.Data()))
+    {
+     commonHist = dynamic_cast<AliFlowCommonHist*> list[l]->FindObject(Form("AliFlowCommonHist%s",methodForSettings.Data()));
+     if(commonHist && commonHist->GetHistPtRP() && rpPoi == "RP")
+     {
+      iNbinsPt = commonHist->GetHistPtRP()->GetNbinsX();
+      dPtMin = commonHist->GetHistPtRP()->GetXaxis()->GetXmin();
+      dPtMax = commonHist->GetHistPtRP()->GetXaxis()->GetXmax();
+     } else if(commonHist && commonHist->GetHistPtPOI() && rpPoi == "POI")
+       {
+        iNbinsPt = commonHist->GetHistPtPOI()->GetNbinsX();
+        dPtMin = commonHist->GetHistPtPOI()->GetXaxis()->GetXmin();
+        dPtMax = commonHist->GetHistPtPOI()->GetXaxis()->GetXmax();      
+       } 
+       else
+       {
+        cout<<endl;
+        cout<<" WARNING: Coudn't access common control histogram for pt yield !!!!"<<endl;
+        cout<<endl;
+       }
+    } 
+   } // end of for(Int_t l=0;l<nMethods;l++)
+  } // end of if(!useDefaultValues)
   styleHistDiffFlow = new TH1D("","styleHistDiffFlow",iNbinsPt,dPtMin,dPtMax);
   styleHistDiffFlow->SetTitle(Form("Differential Flow #font[72]{vs} p_{t} (%s)",rpPoi.Data()));
   styleHistDiffFlow->SetXTitle("p_{t} [GeV]");
@@ -737,6 +819,39 @@ TH1D* StyleHistDiffFlow(TString ptEta, TString rpPoi)
   Int_t iNbinsEta  = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
   Double_t dEtaMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();
   Double_t dEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();
+  if(!useDefaultValues)
+  {
+   AliFlowCommonHist *commonHist = NULL;
+   for(Int_t l=0;l<nMethods;l++)
+   {
+    TString temp = "";
+    if(list[l]) 
+    {
+     temp = TString(list[l]->GetName());
+    }
+    if(temp.Contains(methodForSettings.Data()))
+    {
+     commonHist = dynamic_cast<AliFlowCommonHist*> list[l]->FindObject(Form("AliFlowCommonHist%s",methodForSettings.Data()));
+     if(commonHist && commonHist->GetHistEtaRP() && rpPoi == "RP")
+     {
+      iNbinsEta = commonHist->GetHistEtaRP()->GetNbinsX();
+      dEtaMin = commonHist->GetHistEtaRP()->GetXaxis()->GetXmin();
+      dEtaMax = commonHist->GetHistEtaRP()->GetXaxis()->GetXmax();
+     } else if(commonHist && commonHist->GetHistEtaPOI() && rpPoi == "POI")
+       {
+        iNbinsEta = commonHist->GetHistEtaPOI()->GetNbinsX();
+        dEtaMin = commonHist->GetHistEtaPOI()->GetXaxis()->GetXmin();
+        dEtaMax = commonHist->GetHistEtaPOI()->GetXaxis()->GetXmax();      
+       } 
+       else
+       {
+        cout<<endl;
+        cout<<" WARNING: Coudn't access common control histogram for eta distribution !!!!"<<endl;
+        cout<<endl;
+       }
+    } 
+   } // end of for(Int_t l=0;l<nMethods;l++)
+  } // end of if(!useDefaultValues)
   styleHistDiffFlow = new TH1D("","",iNbinsEta,dEtaMin,dEtaMax);
   styleHistDiffFlow->SetTitle(Form("Differential Flow #font[72]{vs} #eta (%s)",rpPoi.Data()));
   styleHistDiffFlow->SetXTitle("#eta");
@@ -912,7 +1027,8 @@ void PlotRelativeToMC(const Int_t nMethods, TString *method, Int_t *methodMarker
   c->cd(1)->SetPad(0.0,0.0,0.75,1.0);
  } 
  // Style histogram:
- Int_t n = 2; // to be improved (accessed from common control histograms)
+ Int_t n = 2; // default harmonic
+ if(!useDefaultValues){n = GetHarmonic(methodForSettings);}
  TH1D *styleHist = StyleHist(title,nMethods,method,results,errors);
  styleHist->GetYaxis()->SetTitleOffset(1.25);
  styleHist->GetYaxis()->SetTitleSize(0.03);
@@ -1281,7 +1397,8 @@ TH1D* StyleHist(TString title, Int_t nMethods, TString *method, Double_t *result
 {
  // Make style histogram.
  TH1D *styleHist = new TH1D("",title.Data(),nMethods,0,nMethods);
- Int_t n=2; // to be improved (access this from common control histogram)
+ Int_t n = 2; // default harmonic
+ if(!useDefaultValues){n = GetHarmonic(methodForSettings);}
  Double_t styleHistMin = 44.;
  Double_t styleHistMax = -44.;
  for(Int_t b=0;b<nMethods;b++)
