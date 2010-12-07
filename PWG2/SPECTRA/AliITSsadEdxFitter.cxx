@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////
 // Class with the fits algorithms to be used in the identified       //

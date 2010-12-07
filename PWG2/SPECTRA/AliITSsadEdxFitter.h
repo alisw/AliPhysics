@@ -3,7 +3,7 @@
 /* Copyright(c) 2007-2011, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: $ */
+/* $Id$ */
 
 ////////////////////////////////////////////////////
 //class to perform different gaussian fits to the //
