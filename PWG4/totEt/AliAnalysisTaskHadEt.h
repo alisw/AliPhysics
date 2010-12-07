@@ -15,12 +15,12 @@ class AliESDtrackCuts;
 class TH2F;
 class TList;
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskTransverseEnergy.h"
 
 
-class AliAnalysisTaskHadEt : public AliAnalysisTaskSE {
+class AliAnalysisTaskHadEt : public AliAnalysisTaskTransverseEnergy {
 public:
-    AliAnalysisTaskHadEt(const char *name = "AliAnalysisTaskHadEt");
+    AliAnalysisTaskHadEt(const char *name = "AliAnalysisTaskHadEt", Bool_t isMc = false);
     virtual ~AliAnalysisTaskHadEt();
 
     //  virtual void   ConnectInputData(Option_t *);
@@ -28,30 +28,16 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
 
-    AliESDtrackCuts* GetTPCITSTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCuts");}
-    AliESDtrackCuts* GetTPCOnlyTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsTPCOnly");}
-    AliESDtrackCuts* GetITSTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsITS");}
-
 private:
-    TString       fHadMCConfigFile;        // the name of the ConfigFile
-    TString       fHadRecoConfigFile;        // the name of the ConfigFile
 
   //Declare it private to avoid compilation warning
     AliAnalysisTaskHadEt & operator = (const AliAnalysisTaskHadEt & g) ;//cpy assignment
     AliAnalysisTaskHadEt(const AliAnalysisTaskHadEt & g) ; // cpy ctor
 
-    TList *fOutputList; //output list
-
     AliAnalysisHadEtReconstructed *fRecAnalysis; // Rec
     AliAnalysisHadEtMonteCarlo *fMCAnalysis; // MC
 
-    TH2F *fHistEtRecvsEtMC; // Rec vs MC histo 
-    
-    AliESDtrackCuts* fEsdtrackCutsITSTPC; // track cuts ITS&TPC
-    AliESDtrackCuts* fEsdtrackCutsTPC; // track cuts TPC
-    AliESDtrackCuts* fEsdtrackCutsITS; // track cuts ITS
-    
-    ClassDef(AliAnalysisTaskHadEt, 1); // example of analysis
+    ClassDef(AliAnalysisTaskHadEt, 2); // example of analysis
 };
 
 #endif
