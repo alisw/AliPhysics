@@ -28,7 +28,9 @@ AliJetAODReaderHeader::AliJetAODReaderHeader():
   AliJetReaderHeader("AliJetAODReaderHeader"), 
   fNaod(0),
   fTestFilterMask(0),
-  fReadMC(0)
+  fReadMC(0),
+  fNonStdBranch("aodExtraTracks"),
+  fReadBranches(kReadStdBranch)
 {
   // Default constructor  
 }

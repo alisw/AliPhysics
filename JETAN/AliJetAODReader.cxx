@@ -265,40 +265,118 @@ Bool_t AliJetAODReader::FillMomentumArray()
       return kFALSE;
   }
 
-  if(((AliJetAODReaderHeader*)fReaderHeader)->GetReadAODMC()){
-    return FillMomentumArrayMC();
-  }
-   
-  // get number of tracks in event (for the loop)
-  Int_t nt = fAOD->GetNTracks();
-  if(fDebug>0)printf("AOD tracks: %5d \t", nt);
-  
-  // temporary storage of signal and pt cut flag
-  Int_t* sflag  = new Int_t[nt];
-  Int_t* cflag  = new Int_t[nt];
-  
   // get cuts set by user
   Float_t ptMin =  fReaderHeader->GetPtCut();
   Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
   Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
   UInt_t  filterMask =  ((AliJetAODReaderHeader*)fReaderHeader)->GetTestFilterMask();
 
-  //loop over tracks
+  // ----- number of tracks -----
+  Int_t nTracksStd    = 0;
+  Short_t mcReaderFlag = ((AliJetAODReaderHeader*)fReaderHeader)->GetReadAODMC();
+  TClonesArray *mcArray = 0x0;
+  // check if we have to read from MC branch
+  if (((AliJetAODReaderHeader*)fReaderHeader)->GetReadStdBranch()) {
+    if(mcReaderFlag) {
+      mcArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
+      if(!mcArray){
+	Printf("%s:%d No MC particle branch found",(char*)__FILE__,__LINE__);
+      }
+      nTracksStd = mcArray->GetEntriesFast();
+    }
+    else {
+      nTracksStd = fAOD->GetNTracks();
+      //      printf("no. of standard tracks: %i\n", nTracksStd);
+    }
+  }
+  Int_t nTracksNonStd = 0;
+  TClonesArray *nonStdTracks = 0x0;
+  if (((AliJetAODReaderHeader*)fReaderHeader)->GetReadNonStdBranch()) {
+    nonStdTracks =
+      (TClonesArray*) fAOD->FindListObject(((AliJetAODReaderHeader*)fReaderHeader)->GetNonStdBranch());
+    if (nonStdTracks)
+      nTracksNonStd = nonStdTracks->GetEntries();
+    //    printf("no. of non-standard tracks: %i\n", nTracksNonStd);
+  }
+  Int_t nTracks = nTracksStd + nTracksNonStd;
+
+  // temporary storage of signal and pt cut flag
+  Int_t* sflag  = new Int_t[nTracks];
+  Int_t* cflag  = new Int_t[nTracks];
+
+  // loop over tracks
   Int_t aodTrack = 0;
   Float_t pt, eta;
   TVector3 p3;
 
-  for (Int_t it = 0; it < nt; it++) {
-    AliAODTrack *track = fAOD->GetTrack(it);
-    UInt_t status = track->GetStatus();
-    
+  // ----- looping over standard branch -----
+  if (mcArray) {
+    for (Int_t iTrack = 0; iTrack < nTracksStd; iTrack++) {
+      AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(iTrack);
+      if(!track->IsPhysicalPrimary())continue;
+
+      p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+      eta = p3.Eta();
+      if ( (eta > etaMax) || (eta < etaMin)) continue;      // checking eta cut
+      if(!AcceptAODMCParticle(track,mcReaderFlag))continue;
+      pt = p3.Pt();
+
+      if (aodTrack == 0){
+	fRef->Delete(); // make sure to delete before placement new...
+	new(fRef) TRefArray(TProcessID::GetProcessWithUID(track));
+      }
+      new ((*fMomentumArray)[aodTrack]) TLorentzVector(p3,p3.Mag());
+      sflag[aodTrack] = 1;
+      cflag[aodTrack] = ( pt > ptMin ) ? 1: 0;
+      fRef->Add(track);
+      aodTrack++;
+    }
+  }
+  else {
+    for (Int_t iTrack = 0; iTrack < nTracksStd; iTrack++) {
+      AliAODTrack *track = fAOD->GetTrack(iTrack);
+      UInt_t status = track->GetStatus();
+
+      Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
+      p3.SetXYZ(mom[0],mom[1],mom[2]);
+      pt = p3.Pt();
+      eta = p3.Eta();
+      if (status == 0) continue;
+      if((filterMask>0)&&!(track->TestFilterBit(filterMask)))continue;
+      if ( (eta > etaMax) || (eta < etaMin)) continue;      // checking eta cut
+
+      if (aodTrack == 0){
+	fRef->Delete(); // make sure to delete before placement new...
+	new(fRef) TRefArray(TProcessID::GetProcessWithUID(track));
+      }
+      new ((*fMomentumArray)[aodTrack]) TLorentzVector(p3,p3.Mag());
+      sflag[aodTrack] = (TMath::Abs(track->GetLabel()) < 10000) ? 1 : 0;
+      cflag[aodTrack] = ( pt > ptMin ) ? 1: 0;
+      aodTrack++;
+      fRef->Add(track);
+    }
+  }
+
+  // ----- reading of non-standard branch -----
+  for (Int_t iTrack = 0; iTrack < nTracksNonStd; iTrack++) {
+    AliVParticle *track = dynamic_cast<AliVParticle*> ((*nonStdTracks)[iTrack]);
+    if (!track)
+      continue;
+
     Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
     p3.SetXYZ(mom[0],mom[1],mom[2]);
     pt = p3.Pt();
     eta = p3.Eta();
-    if (status == 0) continue;
-    if((filterMask>0)&&!(track->TestFilterBit(filterMask)))continue;
-    if ( (eta > etaMax) || (eta < etaMin)) continue;      // checking eta cut
+
+    // which cuts to apply if not AOD track (e.g. MC) ???
+    AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
+    if (trackAOD) {
+      if (trackAOD->GetStatus() == 0)
+	continue;
+      if ((filterMask > 0) && !(trackAOD->TestFilterBit(filterMask)))
+	continue;
+    }
+    if ((eta > etaMax) || (eta < etaMin)) continue;      // checking eta cut
 
     if (aodTrack == 0){
       fRef->Delete(); // make sure to delete before placement new...
@@ -306,18 +384,19 @@ Bool_t AliJetAODReader::FillMomentumArray()
     }
     new ((*fMomentumArray)[aodTrack]) TLorentzVector(p3,p3.Mag());
     sflag[aodTrack] = (TMath::Abs(track->GetLabel()) < 10000) ? 1 : 0;
-    cflag[aodTrack] = ( pt > ptMin ) ? 1: 0;
+    cflag[aodTrack] = ( pt > ptMin ) ? 1 : 0;
     aodTrack++;
     fRef->Add(track);
+    //    printf("added non-standard track\n");
   }
-  if(fDebug>0)printf("Used AOD tracks: %5d \n", aodTrack);
+
   // set the signal flags
   fSignalFlag.Set(aodTrack,sflag);
   fCutFlag.Set(aodTrack,cflag);
 
   delete [] sflag;
   delete [] cflag;
-  
+
   return kTRUE;
 }
 
