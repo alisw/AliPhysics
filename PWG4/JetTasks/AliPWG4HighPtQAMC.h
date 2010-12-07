@@ -32,6 +32,7 @@ class AliESDEvent;
 class AliESDtrackCuts;
 class AliMCEvent;
 class AliStack;
+class AliESDVertex;
 class AliGenPythiaEventHeader;
 //class AliAnalysisHelperJetTasks;
 
@@ -70,6 +71,8 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   AliMCEvent  *fMC;               //! MC event object
   AliStack    *fStack;            //! stack object
 
+  const AliESDVertex   *fVtx;     //! vertex object
+
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global reconstructed vs MC comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
 
@@ -88,9 +91,15 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   TH1F*         fh1PtHard;                     //! pt hard of the event
   TH1F*         fh1PtHardTrials;               //! pt hard of the event
 
-
   TH1F *fPtAll;                                //! Pt spectrum all charged particles
   TH1F *fPtSel;                                //! Pt spectrum all selected charged particles by fTrackCuts
+  TH1F *fPtSelFakes;                           //! Pt distributions for tracks with negative label (=fake tracks)
+  TH1F *fNPointTPCFakes;                       //! NTPCCluster of fake tracks
+  TH1F *fPtSelLargeLabel;                      //! Filled if label is larger than nMCtracks
+  TH1F *fMultRec;                              //! Bookkeeping of multiple times reconstructed tracks
+  TH1F *fNPointTPCMultRec;                     //! NTPCClusters of multiple reconstructed tracks
+  TH2F *fDeltaPtMultRec;                       //! Delta pT versus pT of first track for multiple reconstructed tracks
+
   TH2F *fPtAllminPtMCvsPtAll;                  //! Momentum resolution (global vs MC)
   TH3F *fPtAllminPtMCvsPtAllNPointTPC;         //! Momentum resolution vs NPointTPC
   TH3F *fPtAllminPtMCvsPtAllDCAR;              //! Momentum resolution vs DCAR

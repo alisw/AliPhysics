@@ -752,9 +752,12 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	   fh1Ptjetsubhardest1->Fill(ptsub1);
 	   fh1Ptjetsubhardest2->Fill(ptsub2);
            fh1Ptjetsubhardest3->Fill(ptsub3);
-	   fh2Errorvspthardest1->Fill(ptsub1,err1/ptsub1);
-	   fh2Errorvspthardest2->Fill(ptsub2,err2/ptsub2);
-           fh2Errorvspthardest3->Fill(ptsub3,err3/ptsub3);
+	   if (ptsub1 > 0)
+	     fh2Errorvspthardest1->Fill(ptsub1,err1/ptsub1);
+	   if (ptsub2 > 0)
+	     fh2Errorvspthardest2->Fill(ptsub2,err2/ptsub2);
+	   if (ptsub3 > 0)
+	     fh2Errorvspthardest3->Fill(ptsub3,err3/ptsub3);
 	 }
 
 	 Float_t ptsub=0.;
