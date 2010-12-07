@@ -130,4 +130,21 @@ START_EVENT_HEADER(3,9)
 
 END_EVENT_HEADER(3,9)
 
+#undef INIT_HEADER_VARS
+#define INIT_HEADER_VARS fType(0), fRunNb(0), fDetectorPattern(0), fLdcId(0), fGdcId(0), fTimestamp(0), fTimestampUsec(0)
+START_EVENT_HEADER(3,11)
+
+   UInt_t fType;          // event type
+   UInt_t fRunNb;     // run number
+   UInt_t fId[2];  // id field
+   UInt_t fTriggerPattern[2];   // trigger pattern
+   UInt_t fDetectorPattern; // detector pattern
+   UInt_t fTypeAttribute[3];  // system (0,1) and user (2) attributes
+   UInt_t fLdcId;         // LDC id
+   UInt_t fGdcId;         // GDC id
+   UInt_t fTimestamp;     // event timestamp
+   UInt_t fTimestampUsec; // event timestamp (microseconds)
+
+END_EVENT_HEADER(3,11)
+
 #endif
