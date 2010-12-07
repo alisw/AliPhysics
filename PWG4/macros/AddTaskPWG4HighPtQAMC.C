@@ -31,9 +31,12 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", int trackT
   AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
   //Standard Cuts
   //Set track cuts for global tracks
-  if(trackType==0) trackCuts = trackCuts->GetStandardITSTPCTrackCuts2010(kTRUE);//Primary Track Selection
+  if(trackType==0) {
+    trackCuts = trackCuts->GetStandardITSTPCTrackCuts2010(kTRUE);//Primary Track Selection
+    trackCuts->SetRequireITSRefit(kTRUE);
+  }
   //Set track cuts for TPConly tracks
-  if(trackType==1) { 
+  if(trackType==1 || trackType==2) { 
     trackCuts = trackCuts->GetStandardTPCOnlyTrackCuts(); 
     trackCuts->SetMinNClustersTPC(70);
   }
@@ -41,8 +44,22 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", int trackT
   trackCuts->SetPtRange(0.15, 1e10);
   
   AliESDtrackCuts *trackCutsITS = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts with ITSrefit");
-  //Standard Cuts
-  trackCutsITS=trackCuts->GetStandardITSTPCTrackCuts2010(kTRUE);//Primary Track Selection
+  //Cuts SPD || SDD
+  // TPC  
+  trackCutsITS->SetMinNClustersTPC(70);
+  trackCutsITS->SetMaxChi2PerClusterTPC(4);
+  trackCutsITS->SetAcceptKinkDaughters(kFALSE);
+  trackCutsITS->SetRequireTPCRefit(kTRUE);
+  // ITS
+  trackCutsITS->SetRequireITSRefit(kTRUE);
+  trackCutsITS->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+  trackCutsITS->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
+
+  trackCutsITS->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+  trackCutsITS->SetMaxDCAToVertexZ(2);
+  trackCutsITS->SetDCAToVertex2D(kFALSE);
+  trackCutsITS->SetRequireSigmaToVertex(kFALSE);
+
   trackCutsITS->SetEtaRange(-0.9,0.9);
   trackCutsITS->SetPtRange(0.15, 1e10);
   trackCutsITS->SetRequireITSRefit(kTRUE);

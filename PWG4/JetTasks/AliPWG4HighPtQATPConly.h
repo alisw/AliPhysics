@@ -34,7 +34,7 @@ class AliESDfriendTrack;
 class AliVEvent;
 class AliESDtrackCuts;
 class AliESDtrack;
-
+class AliESDVertex;
 
 class AliPWG4HighPtQATPConly: public AliAnalysisTask {
 
@@ -48,6 +48,8 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+
+  Bool_t SelectEvent();    //decides if event is used for analysis
 
   void SetCutType(Int_t ctype) {fCutType = ctype;}
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
@@ -65,8 +67,11 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   AliPWG4HighPtQATPConly(const AliPWG4HighPtQATPConly&);
   AliPWG4HighPtQATPConly& operator=(const AliPWG4HighPtQATPConly&);
 
-  AliESDEvent *fESD;              //! ESD object
-  AliESDfriend *fESDfriend;       //! ESD friend object
+  AliESDEvent  *fESD;              //! ESD object
+  AliESDfriend *fESDfriend;        //! ESD friend object
+
+  const AliESDVertex   *fVtx;     //! vertex object
+
   Int_t fCutType;                 // Cut Type set in AddTask*
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global vs TPConly comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
@@ -75,6 +80,8 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   
   TH1F *fNEventAll;                             //! Event counter
   TH1F *fNEventSel;                             //! Event counter: Selected events for analysis
+  TH1F *fNEventReject;                          //! Book keeping of reason of rejecting events
+
   TH1F *fPtAll;                                 //! Pt spectrum all charged particles
   TH1F *fPtSel;                                 //! Pt spectrum all selected charged particles by fTrackCuts
   TH2F *fPtAllminPtTPCvsPtAll;                  //! Momentum resolution (global vs TPConly)
@@ -97,7 +104,7 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
 
   TH2F *fEtaPhiOutliers;                        //! Eta Phi for outliers in momentum resolution
  
-  TH1F *fPtSelITSouter;                         //! Pt at ITS outer wall for all selected charged particles by fTrackCuts
+  TH1F *fPtSelITSouter;                              //! Pt at ITS outer wall for all selected charged particles by fTrackCuts
   TH2F *fPtITSouterminPtTPCvsPtAll;                  //! Momentum resolution (global vs ITSouter-TPCinner)
   TH3F *fPtITSouterminPtTPCvsPtAllEtaPos;            //! Momentum resolution (global vs ITSouter-TPCinner) vs Eta for positive particles
   TH3F *fPtITSouterminPtTPCvsPtAllEtaNeg;            //! Momentum resolution (global vs ITSouter-TPCinner) vs Eta for negative particles
@@ -112,27 +119,27 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusTPC;   //! Momentum resolution vs Chi2PerNClusTPC
   TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITS;   //! Momentum resolution vs Chi2PerNClusITS
  
-  TH2F *fPtITSouterminPtTPCvsPtAllITSLayer0;                  //! Track has at least 1st SPD layer
-  TH2F *fPtITSouterminPtTPCvsPtAllITSLayer1;                  //! Track has at least 2nd SPD layer and not 1st SPD
-  TH2F *fPtITSouterminPtTPCvsPtAllITSLayer2;                  //! Track has at least 1st SDD layer and not SPD layers
-  TH2F *fPtITSouterminPtTPCvsPtAllITSLayer3;                  //! Track has at least 1st SDD layer and not SPD layers and not 1st SDD
-  TH2F *fPtITSouterminPtTPCvsPtAllITSLayer4;                  //! Track has at least 1st SSD layer and not SPD or SDD layers
-  TH2F *fPtITSouterminPtTPCvsPtAllITSLayer5;                  //! Track has at least 1st SSD layer and not SPD or SDD layers or 1st SSD
+  TH2F *fPtAllminPtTPCvsPtAllITSLayer0;              //! Track has at least 1st SPD layer
+  TH2F *fPtAllminPtTPCvsPtAllITSLayer1;              //! Track has at least 2nd SPD layer and not 1st SPD
+  TH2F *fPtAllminPtTPCvsPtAllITSLayer2;              //! Track has at least 1st SDD layer and not SPD layers
+  TH2F *fPtAllminPtTPCvsPtAllITSLayer3;              //! Track has at least 1st SDD layer and not SPD layers and not 1st SDD
+  TH2F *fPtAllminPtTPCvsPtAllITSLayer4;              //! Track has at least 1st SSD layer and not SPD or SDD layers
+  TH2F *fPtAllminPtTPCvsPtAllITSLayer5;              //! Track has at least 1st SSD layer and not SPD or SDD layers or 1st SSD
 
-  TH2F *fPtITSouterminPtTPCvsPtAllNoSPD;                  //! Track has no signal in SPD layers
-  TH2F *fPtITSouterminPtTPCvsPtAllNoSDD;                  //! Track has no signal in SDD layers
-  TH2F *fPtITSouterminPtTPCvsPtAllNoSSD;                  //! Track has no signal in SSD layers
+  TH2F *fPtAllminPtTPCvsPtAllNoSPD;                  //! Track has no signal in SPD layers
+  TH2F *fPtAllminPtTPCvsPtAllNoSDD;                  //! Track has no signal in SDD layers
+  TH2F *fPtAllminPtTPCvsPtAllNoSSD;                  //! Track has no signal in SSD layers
 
-  TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0;                  //! Track has at least 1st SPD layer
-  TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1;                  //! Track has at least 2nd SPD layer and not 1st SPD
-  TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2;                  //! Track has at least 1st SDD layer and not SPD layers
-  TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3;                  //! Track has at least 1st SDD layer and not SPD layers and not 1st SDD
-  TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4;                  //! Track has at least 1st SSD layer and not SPD or SDD layers
-  TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5;                  //! Track has at least 1st SSD layer and not SPD or SDD layers or 1st SSD
+  TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITSLayer0;  //! Track has at least 1st SPD layer
+  TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITSLayer1;  //! Track has at least 2nd SPD layer and not 1st SPD
+  TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITSLayer2;  //! Track has at least 1st SDD layer and not SPD layers
+  TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITSLayer3;  //! Track has at least 1st SDD layer and not SPD layers and not 1st SDD
+  TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITSLayer4;  //! Track has at least 1st SSD layer and not SPD or SDD layers
+  TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITSLayer5;  //! Track has at least 1st SSD layer and not SPD or SDD layers or 1st SSD
 
-  TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD;                  //! Track has no signal in SPD layers
-  TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD;                  //! Track has no signal in SDD layers
-  TH3F *fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD;                  //! Track has no signal in SSD layers
+  TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITSNoSPD;   //! Track has no signal in SPD layers
+  TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITSNoSDD;   //! Track has no signal in SDD layers
+  TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITSNoSSD;   //! Track has no signal in SSD layers
 
   TList *fHistList; //! List of Histograms
   

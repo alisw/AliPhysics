@@ -435,7 +435,54 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
     er = new AliJetAODReader();
     er->SetReaderHeader(jrh);
     break;
-
+  case "AODextra":
+    AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
+    jrh->SetComment("AOD Reader with extra branch");
+    jrh->SetPtCut(ptCut); // set low p_T cut of to 150 MeV
+    jrh->SetTestFilterMask(32); // Change this one for a different set of cuts
+    jrh->SetReadBranches(AliJetAODReaderHeader::kReadStdBranch | AliJetAODReaderHeader::kReadNonStdBranch);
+    jrh->SetNonStdBranch("aodExtraTracks");
+    if(filterMask>0)jrh->SetTestFilterMask(filterMask); 
+    // Define reader and set its header
+    er = new AliJetAODReader();
+    er->SetReaderHeader(jrh);
+    break;
+  case "AODextraonly":
+    AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
+    jrh->SetComment("AOD Reader with extra branch");
+    jrh->SetPtCut(ptCut); // set low p_T cut of to 150 MeV
+    jrh->SetTestFilterMask(32); // Change this one for a different set of cuts
+    jrh->SetReadBranches(AliJetAODReaderHeader::kReadNonStdBranch);
+    jrh->SetNonStdBranch("aodExtraTracks");
+    if(filterMask>0)jrh->SetTestFilterMask(filterMask); 
+    // Define reader and set its header
+    er = new AliJetAODReader();
+    er->SetReaderHeader(jrh);
+    break;
+  case "AODMCextra":
+    AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
+    jrh->SetComment("AOD MC Reader with extra branch");
+    jrh->SetPtCut(ptCut);
+    jrh->SetFiducialEta(-2.1,2.1); // to take all MC particles default is 0.9
+    jrh->SetReadAODMC(1);// 1 all primary MC , 2 all primary charged
+    jrh->SetReadBranches(AliJetAODReaderHeader::kReadStdBranch | AliJetAODReaderHeader::kReadNonStdBranch);
+    jrh->SetNonStdBranch("aodExtraMCparticles");
+    // Define reader and set its header
+    er = new AliJetAODReader();
+    er->SetReaderHeader(jrh);
+    break;
+  case "AODMC2extra":
+    AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
+    jrh->SetComment("AOD MC Reader with extra branch");
+    jrh->SetPtCut(ptCut);
+    jrh->SetFiducialEta(-2.1,2.1); // to take all MC particles default is 0.9
+    jrh->SetReadAODMC(2);// 1 all primary MC , 2 all primary charged
+    jrh->SetReadBranches(AliJetAODReaderHeader::kReadStdBranch | AliJetAODReaderHeader::kReadNonStdBranch);
+    jrh->SetNonStdBranch("aodExtraMCparticles");
+    // Define reader and set its header
+    er = new AliJetAODReader();
+    er->SetReaderHeader(jrh);
+    break;
   default:
     ::Error("AddTaskJets", "Wrong jet reader selected\n");
     return 0;

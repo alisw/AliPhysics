@@ -60,6 +60,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fESD(0), 
   fMC(0),
   fStack(0),
+  fVtx(0x0),
   fTrackCuts(0), 
   fTrackCutsITS(0),
   fTrackType(0),
@@ -74,6 +75,12 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fh1PtHardTrials(0),
   fPtAll(0),  
   fPtSel(0),  
+  fPtSelFakes(0),
+  fNPointTPCFakes(0),
+  fPtSelLargeLabel(0),
+  fMultRec(0),
+  fNPointTPCMultRec(0),
+  fDeltaPtMultRec(0),
   fPtAllminPtMCvsPtAll(0),
   fPtAllminPtMCvsPtAllNPointTPC(0),
   fPtAllminPtMCvsPtAllDCAR(0),
@@ -107,6 +114,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fESD(0),
   fMC(0),
   fStack(0),
+  fVtx(0x0),
   fTrackCuts(),
   fTrackCutsITS(),
   fTrackType(0),
@@ -121,6 +129,12 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fh1PtHardTrials(0),
   fPtAll(0),
   fPtSel(0),
+  fPtSelFakes(0),
+  fNPointTPCFakes(0),
+  fPtSelLargeLabel(0),
+  fMultRec(0),
+  fNPointTPCMultRec(0),
+  fDeltaPtMultRec(0),
   fPtAllminPtMCvsPtAll(0),
   fPtAllminPtMCvsPtAllNPointTPC(0),
   fPtAllminPtMCvsPtAllDCAR(0),
@@ -216,6 +230,15 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fNEventSel = new TH1F("fNEventSel","NEvent Selected for analysis",1,-0.5,0.5);
   fHistList->Add(fNEventSel);
   fNEventReject = new TH1F("fNEventReject","Reason events are rejectected for analysis",20,0,20);
+  //Set labels
+  fNEventReject->Fill("noESD",0);
+  fNEventReject->Fill("Trigger",0);
+  fNEventReject->Fill("noMCEvent",0);
+  fNEventReject->Fill("NTracks<2",0);
+  fNEventReject->Fill("noVTX",0);
+  fNEventReject->Fill("VtxStatus",0);
+  fNEventReject->Fill("NCont<2",0);
+  fNEventReject->Fill("ZVTX>10",0);
   fHistList->Add(fNEventReject);
 
   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
@@ -235,7 +258,25 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fHistList->Add(fPtAll);
   fPtSel = new TH1F("fPtSel","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
   fHistList->Add(fPtSel);
-  
+
+  fPtSelFakes = new TH1F("fPtSelFakes","PtSelFakes",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fHistList->Add(fPtSelFakes);
+
+  fNPointTPCFakes = new TH1F("fNPointTPCFakes","fNPointTPCFakes",160,0.5,160.5);
+  fHistList->Add(fNPointTPCFakes);
+
+  fPtSelLargeLabel = new TH1F("fPtSelLargeLabel","PtSelLargeLabel",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fHistList->Add(fPtSelLargeLabel);
+
+  fMultRec = new TH1F("fMultRec","Multiple reconstruction of tracks",20,0,20);
+  fHistList->Add(fMultRec);
+
+  fNPointTPCMultRec = new TH1F("fNPointTPCMultRec","Multiple reconstruction of tracks",160,0.5,160.5);
+  fHistList->Add(fNPointTPCMultRec);
+
+  fDeltaPtMultRec = new TH2F("fDeltaPtMultRec","Delta pT vs pT for multiple reconstructed tracks",100,0.,50.,100,-20.,20.);
+  fHistList->Add(fDeltaPtMultRec);
+
   fPtAllminPtMCvsPtAll = new TH2F("fPtAllminPtMCvsPtAll","PtAllminPtMCvsPtAll",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
   fPtAllminPtMCvsPtAll->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAll->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
@@ -411,30 +452,39 @@ Bool_t AliPWG4HighPtQAMC::SelectEvent() {
   }
 
   //Check if vertex is reconstructed
-  const AliESDVertex *vtx = fESD->GetPrimaryVertex();
-  // Need vertex cut
-  TString vtxName(vtx->GetName());
-  if(vtx->GetNContributors() < 2 || (vtxName.Contains("TPCVertex")) ) {
-    // SPD vertex
-    vtx = fESD->GetPrimaryVertexSPD();
-    if(vtx->GetNContributors()<2) {
-      vtx = 0x0;
-      fNEventReject->Fill("noVTX",1);
-      selectEvent = kFALSE;
-      return selectEvent;
-    }
-  }
+  if(fTrackType==1) fVtx = fESD->GetPrimaryVertexTPC();
+  else              fVtx = fESD->GetPrimaryVertexSPD();
 
+  if(!fVtx) {
+    fNEventReject->Fill("noVTX",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+   
+  if(!fVtx->GetStatus()) {
+    fNEventReject->Fill("VtxStatus",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+  
+  // Need vertex cut
+  //  TString vtxName(fVtx->GetName());
+  if(fVtx->GetNContributors()<2) {
+    fNEventReject->Fill("NCont<2",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+  
   //Check if z-vertex < 10 cm
   double primVtx[3];
-  vtx->GetXYZ(primVtx);
+  fVtx->GetXYZ(primVtx);
   if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
     fNEventReject->Fill("ZVTX>10",1);
     selectEvent = kFALSE;
     return selectEvent;
   }
-  
-  AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
+
+  AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",fVtx->GetTitle(), fVtx->GetStatus(), fVtx->GetNContributors()));
 
   return selectEvent;
 
@@ -450,7 +500,6 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
   if(!SelectEvent()) {
     // Post output data
-    fNEventReject->Fill("NTracks<2",1);
     PostData(0, fHistList);
     PostData(1, fHistListITS);
     return;
@@ -496,20 +545,42 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     AliESDtrack *track;
     AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
     if(!esdtrack) continue;
-    AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)esdtrack->GetTPCInnerParam();
 
     if(fTrackType==1)
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+    else if(fTrackType==2) {
+      track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+      if(!track) {
+	delete track;
+	continue;
+      }
+      AliExternalTrackParam exParam;
+      Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
+      if( !relate ) {
+	delete track;
+	continue;
+      }
+      track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+    }
     else
       track = esdtrack;
-
     
-    if(!track) continue;
+    if(!track) {
+      if(fTrackType==1 || fTrackType==2) delete track;
+      continue;
+    }
 
     Int_t label = TMath::Abs(track->GetLabel());
-    if(label>=nMCtracks)continue;
+    if(label>=nMCtracks) {
+      if (fTrackCuts->AcceptTrack(track)) { fPtSelLargeLabel->Fill(pt); }
+      if(fTrackType==1 || fTrackType==2) delete track;
+      continue;
+    }
     TParticle *particle = fStack->Particle(label) ;
-    if(!particle) continue;
+    if(!particle) {
+      if(fTrackType==1 || fTrackType==2) delete track;
+      continue;
+    }
 
     ptMC = particle->Pt();
 
@@ -518,9 +589,9 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       phi = track->Phi();
       track->GetImpactParameters(dca2D,dcaZ);
     }
-    else if(fTrackType==1) {  //TPConly
-      pt  = trackTPC->Pt();
-      phi = trackTPC->Phi();
+    else if(fTrackType==1 || fTrackType==2) {  //TPConly
+      pt  = track->Pt();
+      phi = track->Phi();
       track->GetImpactParametersTPC(dca2D,dcaZ);
     }
     else {continue;}
@@ -541,7 +612,10 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     if (fTrackCuts->AcceptTrack(track)) {
 
       fPtSel->Fill(pt);
-      
+      if(track->GetLabel()<0) {
+        fPtSelFakes->Fill(pt);
+        fNPointTPCFakes->Fill(track->GetTPCNcls());
+      }
       fPtSelMC->Fill(ptMC);
       fPtAllminPtMCvsPtAll->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC) );
       fPtAllminPtMCvsPtAllNPointTPC->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),track->GetTPCNcls());
@@ -552,10 +626,54 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       fPtAllminPtMCvsPtAllNSigmaToVertex->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),nSigmaToVertex);
       fPtAllminPtMCvsPtAllChi2C->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),chi2C);
       fPtAllminPtMCvsPtAllRel1PtUncertainty->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),relUncertainty1Pt);
+
+    
+      //Check if track is reconstructed multiple times
+      int multCounter = 1;
+      for (Int_t iTrack2 = iTrack+1; iTrack2 < nTracks; iTrack2++) {
+	//   AliESDtrack *track2 = GetTrackForAnalysis(iTrack2);
+	AliESDtrack *track2;
+	AliESDtrack *esdtrack2 = fESD->GetTrack(iTrack2);
+	if(!esdtrack2) continue;
+      
+	if(fTrackType==1)
+	  track2 = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack2->GetID());
+	else if(fTrackType==2) {
+	  track2 = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack2->GetID());
+	  if(!track2) { 
+	    delete track2;
+	    continue;
+	  }
+	  AliExternalTrackParam exParam2;
+	  Bool_t relate = track2->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam2);
+	  if( !relate ) {
+	    delete track2;
+	    continue;
+	  }
+	  track2->Set(exParam2.GetX(),exParam2.GetAlpha(),exParam2.GetParameter(),exParam2.GetCovariance());
+	}
+	else
+	  track2 = esdtrack2;
+	if(!track2) {
+	  if(fTrackType==1 || fTrackType==2) delete track2;
+	  continue;
+	}
+      
+	if (fTrackCuts->AcceptTrack(track2)) {
+	  Int_t label2 = TMath::Abs(track2->GetLabel());
+	  if(label==label2) {
+	    fNPointTPCMultRec->Fill(track->GetTPCNcls());
+	    fNPointTPCMultRec->Fill(track2->GetTPCNcls());
+	    fDeltaPtMultRec->Fill(track->Pt(),track->Pt()-track2->Pt());
+	    multCounter++;
+	  }
+	}
+	if(fTrackType==1 || fTrackType==2) delete track2;
+      }//track2 loop
+      if(multCounter>1) fMultRec->Fill(multCounter);
+
     }//fTrackCuts selection
-    
-    
-    
+
     //ITSrefit selection
     if (fTrackCutsITS->AcceptTrack(track) && fTrackType==0) {
       
@@ -571,7 +689,9 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       fPtITSminPtMCvsPtITSChi2C->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),chi2C);
       fPtITSminPtMCvsPtITSRel1PtUncertainty->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),relUncertainty1Pt);
     }//fTrackCutsITS loop
-    
+
+    if(fTrackType==1 || fTrackType==2) delete track;    
+
   }//ESD track loop
    
   // Post output data
