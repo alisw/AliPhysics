@@ -1,0 +1,42 @@
+dN/dEta analysis can be done in 2 ways:
+
+1) For single centrality bin:
+Using AliTrackletTaskUni.{h,cxx} steered by the
+runAAF.C and MyAnalysisMacro.C
+
+It will produce a file with 3D (sparse) histos "delta" vs Zv vs eta
+where delta is either "weigted distance" and/or "dphi - bend", which is used
+both the match the tails and to define the signal cut.
+The exact value of cut can be decided at the stage of processing the histos,
+so different signal and tail matching thresholds can be tested 
+
+Note that wide Zv eta range can be processed and then restricted at 
+the correction stage.
+
+One has to run runAAF.C for over the data and MC datasets and then analyse them
+using the CorrectSpectra.C macro (the cuts/variables use... must be set 
+beforehand)
+
+
+2) Mor multiple centrality bins at once:
+AliTrackletTaskMulti.{h,cxx} steered by the 
+runAAFMulti.C and MyAnalysisMacroTrackletMulti.C
+
+It produces for each centrality bin a set of histos, particularly 2D histos for
+Zv vs eta with the signal cut on "distance" already applied (by defaults one for 
+"w.dist" another for "dphi-bend" + 1D histo of "distance" for selected Zv,eta
+range (to be used for the bg matching the tails of data"
+
+Note: Zv, eta ranges must be defined at data processing stage, as well as the 
+signal cut (cutSigNStd in the runAAFMulti) and number of st.dev to keep (nStdDev)
+
+One has to runAAFMulti.C for over the data and MC datasets and then analyse them
+using the CorrectSpectraMulti.C macro 
+
+--------------------------------
+Both methods can use 3 types of generated bg: injection, rotation and mixing.
+Simultaneous eployment of all these methods is also possible, but may create 
+a memory problem.
+
+The corresponding CorrectSpectra... macros must be tuned for the bg.type used.
+
