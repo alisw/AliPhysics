@@ -314,6 +314,10 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 	//Get the EMCAL/PHOS module number that corresponds to this cluster
 	TLorentzVector lv;
 	Double_t v[]={0.,0.,0.}; //not necessary to pass the real vertex.
+  if(!cluster){
+    if(fDebug > 1) printf("AliCalorimeterUtils::GetModuleNumber() - NUL Cluster, please check!!!");
+    return -1;
+  }
 	cluster->GetMomentum(lv,v);
 	Float_t phi = lv.Phi();
 	if(phi < 0) phi+=TMath::TwoPi();	
