@@ -58,7 +58,8 @@ class AliHFEcontainer : public TNamed{
     AliCFContainer *GetCFContainer(const Char_t *name) const;
     THnSparseF *GetCorrelationMatrix(const Char_t *name) const;
     THashList *GetListOfCorrelationMatrices() const { return fCorrelationMatrices; }
-    void FillCFContainer(const Char_t *name, UInt_t step, Double_t *content);
+    void FillCFContainer(const Char_t *name, UInt_t step, Double_t *content, Double_t weight = 1.) const;
+    void FillCFContainerStepname(const Char_t *name, const Char_t *step, Double_t *content, Double_t weight = 1.) const;
     AliCFContainer *MakeMergedCFContainer(const Char_t *name, const Char_t *title, const Char_t *contnames);
 
     Int_t GetNumberOfCFContainers() const;
@@ -67,10 +68,11 @@ class AliHFEcontainer : public TNamed{
     void SetNumberOfVariables(UInt_t nVar);
     inline void SetBinning(UInt_t var, UInt_t nBins, Double_t *content);
     void SetVariableName(UInt_t var, const Char_t *varname);
+    void SetStepTitle(const Char_t *contname, const Char_t *steptitle, UInt_t step);
     void MakeLinearBinning(UInt_t var, UInt_t nBins, Double_t begin, Double_t end);
     void MakeLogarithmicBinning(UInt_t var, UInt_t nBins, Double_t begin, Double_t end);
 
-    virtual void Print(const Option_t * opt = 0x0) const;
+    virtual void Print(const Option_t * opt = NULL) const;
 
     struct AliHFEvarInfo : public TObject{
         AliHFEvarInfo();

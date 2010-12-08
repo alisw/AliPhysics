@@ -176,15 +176,17 @@ AliHFEelecbackground::~AliHFEelecbackground()
   if(fPIDMethodPartner) delete fPIDMethodPartner;
   if(fPIDMethodPartnerITS) delete fPIDMethodPartnerITS;
 
-  if(fList){
-    fList->Clear();
-    delete fList;
-  }
-
   if(fListPostProcess){
-    fListPostProcess->Clear();
+    fListPostProcess->SetOwner(kTRUE);
     delete fListPostProcess;
   }
+
+/*
+  if(fhtmp) delete fhtmp;
+  if(fhtmpf) delete fhtmpf;
+  if(fhtmpp) delete fhtmpp;
+*/
+
 }
 //___________________________________________________________________________________________
 Bool_t AliHFEelecbackground::Load(const Char_t * filename)
@@ -1222,8 +1224,8 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
     if(fPIDPartner) {
       if(!fPIDMethodPartner) return kFALSE;
       AliHFEpidObject hfetrack;
-      hfetrack.fAnalysisType = AliHFEpidObject::kESDanalysis;
-      hfetrack.fRecTrack = trackPart;
+      hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+      hfetrack.SetRecTrack(trackPart);
       //if(HasMCData()) hfetrack.fMCtrack = mctrack;
       if(!fPIDMethodPartner->IsSelected(&hfetrack)) return kFALSE;
       
@@ -1364,7 +1366,8 @@ void AliHFEelecbackground::SetPIDPartner() {
     
     if(!fPIDMethodPartner) {
       fPIDMethodPartner = new AliHFEpid();
-      fPIDMethodPartner->InitializePID("Strategy1");     // 3 sigma cut in TPC
+      fPIDMethodPartner->AddDetector("TPC", 0);
+      fPIDMethodPartner->InitializePID();     // 3 sigma cut in TPC
     }
 
   }

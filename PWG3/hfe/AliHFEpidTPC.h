@@ -33,20 +33,20 @@ class AliAODTrack;
 class AliAODMCParticle;
 class AliESDtrack;
 class AliMCParticle;
-class AliESDpid;
 class AliVParticle;
 class AliHFEcollection;
+class AliHFEpidQAmanager;
 
 class AliHFEpidTPC : public AliHFEpidBase{
   public:
+    AliHFEpidTPC();
     AliHFEpidTPC(const Char_t *name);
     AliHFEpidTPC(const AliHFEpidTPC &ref);
     AliHFEpidTPC &operator=(const AliHFEpidTPC &ref);
     virtual ~AliHFEpidTPC();
     
     virtual Bool_t InitializePID();
-    virtual Int_t IsSelected(AliHFEpidObject *track);
-    virtual Bool_t HasQAhistos() const { return kTRUE; };
+    virtual Int_t IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa);
 
     Int_t GetCrossingType() const {return fLineCrossingType; }
 
@@ -62,15 +62,10 @@ class AliHFEpidTPC : public AliHFEpidBase{
 
   protected:
     void Copy(TObject &o) const;
-    void AddQAhistograms(TList *qaList);
-    void FillTPChistograms(const AliESDtrack *track, const AliMCParticle *mctrack, Bool_t stepSelected = kFALSE);
-    Int_t MakePIDaod(AliAODTrack *aodTrack, AliAODMCParticle *mcTrack);
-    Int_t MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
-    Int_t Reject(AliESDtrack *track);
-    Double_t Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig = 2.);
-    Double_t Suppression(const AliESDtrack *track, Int_t species);
+    Double_t NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t);
+    Int_t Reject(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType);
 
-    Bool_t CutSigmaModel(AliESDtrack *track);
+    Bool_t CutSigmaModel(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType);
 
   private:
     enum{
@@ -88,7 +83,6 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Float_t fRejection[4*AliPID::kSPECIES];                 // All informations for Particle Rejection, order pmin, sigmin, pmax, sigmax
     UChar_t fRejectionEnabled;                              // Bitmap for enabled particle rejection
     AliPID *fPID;                                           //! PID Object
-    AliHFEcollection *fQAList;                              //! QA histograms
 
   ClassDef(AliHFEpidTPC, 1)   // TPC Electron ID class
 };

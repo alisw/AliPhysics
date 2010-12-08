@@ -34,27 +34,13 @@ class AliKFParticle;
 class AliKFVertex;
 class AliVEvent;
 class AliVTrack;
+class AliMCEvent;
 
 class AliHFEV0cuts;
 class AliHFEcollection;
 
 class AliHFEV0pid : public TObject{
   public:
-  enum{ // Reconstructed V0
-    kUndef = 0,
-      kRecoGamma = 1,
-      kRecoK0s = 2,
-      kRecoPhi = 3,
-      kRecoLambda = 4
-      
-    };
-    enum{ // Identified Daughter particles
-      kRecoElectron = 0,
-	kRecoPionK0 = 1,
-	kRecoPionL = 2,
-	kRecoKaon = 3,
-	kRecoProton = 4
-	};
     AliHFEV0pid();
     ~AliHFEV0pid();
 
@@ -76,16 +62,23 @@ class AliHFEV0pid : public TObject{
     void     SetAODanalysis(Bool_t isAOD = kTRUE) { SetBit(kAODanalysis, isAOD); };
     void     SetESDanalysis(Bool_t isESD = kTRUE) { SetBit(kAODanalysis, !isESD); }; 
 
+    void     SetMCEvent(AliMCEvent* const ev) { fMCEvent = ev; };
+    
  protected:
     enum{
       kAODanalysis = BIT(14)
 	};
-    
+
+    Int_t PreselectV0(AliESDv0 * const v0, Int_t idMC);
+
+    void   ArmenterosPlotMC(AliESDv0 * const v0, Int_t idMC);
     Bool_t IsGammaConv(TObject *v0);
     Bool_t IsK0s(TObject *v0);
     Bool_t IsPhi(TObject *v0);
     Bool_t IsLambda(TObject *v0);        
     TList *GetV0pidQA(); 
+
+    Int_t IdentifyV0(TObject *v0, Int_t d[2]);
 
  private:
     class AliHFEV0pidTrackIndex{
@@ -121,6 +114,9 @@ class AliHFEV0pid : public TObject{
     AliHFEV0pid&operator=(const AliHFEV0pid &ref);
     
     AliVEvent   *fInputEvent;        // Input Event
+    Int_t        fNtracks;           // number of tracks in current event
+    AliMCEvent  *fMCEvent;           // MC evnet
+    Bool_t       fMCon;              // availability of MC information
     AliKFVertex *fPrimaryVertex;     // Primary Vertex
     TObjArray   *fElectrons;         // List of Electron tracks coming from Conversions
     TObjArray   *fPionsK0;           // List of Pion tracks coming from K0

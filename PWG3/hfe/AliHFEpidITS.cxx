@@ -34,10 +34,11 @@
 
 #include "AliHFEpidITS.h"
 
+ClassImp(AliHFEpidITS)
+
 //___________________________________________________________________
 AliHFEpidITS::AliHFEpidITS(const Char_t *name):
     AliHFEpidBase(name)
-  , fQAlist(0x0)
 {
   //
   // Default constructor
@@ -47,7 +48,6 @@ AliHFEpidITS::AliHFEpidITS(const Char_t *name):
 //___________________________________________________________________
 AliHFEpidITS::AliHFEpidITS(const AliHFEpidITS &ref):
     AliHFEpidBase("")
-  , fQAlist(0x0)
 {
   //
   // Copy constructor
@@ -69,10 +69,6 @@ AliHFEpidITS::~AliHFEpidITS(){
   //
   // Destructor
   //
-  if(fQAlist){
-    fQAlist->Clear();
-    delete fQAlist;
-  }
 }
 
 //___________________________________________________________________
@@ -81,10 +77,7 @@ void AliHFEpidITS::Copy(TObject &o) const {
   // Copy function
   // Provides a deep copy
   //
-  AliHFEpidITS &target = dynamic_cast<AliHFEpidITS &>(o);
-
-  target.fQAlist = dynamic_cast<TList *>(fQAlist->Clone());
-  AliHFEpidBase::Copy(target);
+  AliHFEpidBase::Copy(o);
 }
 
 //___________________________________________________________________
@@ -97,7 +90,7 @@ Bool_t AliHFEpidITS::InitializePID(){
 
 
 //___________________________________________________________________
-Int_t AliHFEpidITS::IsSelected(AliHFEpidObject* /*track*/){
+Int_t AliHFEpidITS::IsSelected(AliHFEpidObject* /*track*/, AliHFEpidQAmanager* /*pidqa*/){
   //
   // Does PID decision for ITS
   // 
@@ -105,42 +98,11 @@ Int_t AliHFEpidITS::IsSelected(AliHFEpidObject* /*track*/){
 }
 
 //___________________________________________________________________
-void AliHFEpidITS::AddQAhistograms(TList *l){
-  //
-  // Adding QA histograms for ITS PID
-  //
-  // QA histograms are:
-  // - all Particles ITS signal vs. p (both methods)
-  // - single particle ITS signal vs. p (both methods)
-  // 
-  if(!fQAlist) fQAlist = new TList;
-  fQAlist->SetName("fITSqaHistograms");
-
-  // prepare axis
-  const Int_t kMomentumBins = 41;
-  const Double_t kPtMin = 0.1;
-  const Double_t kPtMax = 10.;
-  const Int_t kSigBins = 300;
-  Double_t momentumBins[kMomentumBins];
-  for(Int_t ibin = 0; ibin < kMomentumBins; ibin++)
-    momentumBins[ibin] = static_cast<Double_t>(TMath::Power(10,TMath::Log10(kPtMin) + (TMath::Log10(kPtMax)-TMath::Log10(kPtMin))/(kMomentumBins-1)*static_cast<Double_t>(ibin)));
-
-  TH2 *histo = NULL;
-  fQAlist->AddAt((histo = new TH2F("fITSsigV1all", "ITS signal vs. p (all species, Method1):p / GeV/c:ITS signal / a.u.", kMomentumBins - 1, momentumBins, kSigBins, 0., kSigBins)), kITSsigV1);
-  fQAlist->AddAt((histo = new TH2F("fITSsigV2all", "ITS signal vs. p (all species, Method2):p / GeV/c:ITS signal / a.u.", kMomentumBins - 1, momentumBins, kSigBins, 0., kSigBins)), kITSsigV2);
-  for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
-    fQAlist->AddAt((histo = new TH2F(Form("fITSsigV1%s", AliPID::ParticleName(ispec)), Form("ITS signal vs. p (%s, Method1):p / GeV/c:ITS signal / a.u.", AliPID::ParticleName(ispec)), kMomentumBins - 1, momentumBins, kSigBins, 0., kSigBins)), 2 * ispec + kHistosSigAll);
-    fQAlist->AddAt((histo = new TH2F(Form("fITSsigV2%s", AliPID::ParticleName(ispec)), Form("ITS signal vs. p (%s, Method2):p / GeV/c:ITS signal / a.u.", AliPID::ParticleName(ispec)), kMomentumBins - 1, momentumBins, kSigBins, 0., kSigBins)), 2 * ispec + 1 + kHistosSigAll);
-  }
-  l->Add(fQAlist);
-}
-
-//___________________________________________________________________
-Double_t AliHFEpidITS::GetITSSignalV1(AliVParticle *vtrack, Int_t mcPID){
+Double_t AliHFEpidITS::GetITSSignalV1(AliVParticle *vtrack){
   //
   // Calculate the ITS signal according to the mean charge of the clusters
   //
-  if(!TString(vtrack->IsA()->GetName()).CompareTo("AliAODtrack")){
+  if(!TString(vtrack->IsA()->GetName()).CompareTo("AliAODTrack")){
     AliError("PID for AODs not implemented yet");
     return 0.;
   }
@@ -155,16 +117,15 @@ Double_t AliHFEpidITS::GetITSSignalV1(AliVParticle *vtrack, Int_t mcPID){
 #endif
   Double_t p = track->GetTPCInnerParam() ? track->GetTPCInnerParam()->P() : track->P();
   AliDebug(1, Form("Momentum: %f, ITS Signal: %f", p, signal));
-  if(IsQAon()) FillHistogramsSignalV1(p, signal, mcPID);
   return signal;
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidITS::GetITSSignalV2(AliVParticle *vtrack, Int_t mcPID){
+Double_t AliHFEpidITS::GetITSSignalV2(AliVParticle *vtrack){
   //
   // Calculates the ITS signal. Truncated mean is used.
   //
-  if(!TString(vtrack->IsA()->GetName()).CompareTo("AliAODtrack")){
+  if(!TString(vtrack->IsA()->GetName()).CompareTo("AliAODTrack")){
     AliError("PID for AODs not implemented yet");
     return 0.;
   }
@@ -177,21 +138,6 @@ Double_t AliHFEpidITS::GetITSSignalV2(AliVParticle *vtrack, Int_t mcPID){
   Double_t signal = TMath::Mean(3, dedx); 
   Double_t p = track->GetTPCInnerParam() ? track->GetTPCInnerParam()->P() : track->P();
   AliDebug(1, Form("Momentum: %f, ITS Signal: %f", p, signal));
-  if(IsQAon()) FillHistogramsSignalV2(p, signal, mcPID);
   return signal;
-}
-
-//___________________________________________________________________
-void AliHFEpidITS::FillHistogramsSignalV1(Double_t p, Double_t signal, Int_t species){
-  (dynamic_cast<TH2 *>(fQAlist->At(kITSsigV1)))->Fill(p, signal);
-  if(species >= 0 && species < AliPID::kSPECIES)
-    (dynamic_cast<TH2 *>(fQAlist->At(kHistosSigAll + 2 * species)))->Fill(p, signal);
-}
-
-//___________________________________________________________________
-void AliHFEpidITS::FillHistogramsSignalV2(Double_t p, Double_t signal, Int_t species){
-  (dynamic_cast<TH2 *>(fQAlist->At(kITSsigV2)))->Fill(p, signal);
-  if(species >= 0 && species < AliPID::kSPECIES)
-    (dynamic_cast<TH2 *>(fQAlist->At(kHistosSigAll + 2 * species + 1)))->Fill(p, signal);
 }
 

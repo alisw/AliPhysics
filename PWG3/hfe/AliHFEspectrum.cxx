@@ -42,7 +42,7 @@
 #include <TPad.h>
 #include <TH2D.h>
 
-
+#include "AliPID.h"
 #include "AliCFContainer.h"
 #include "AliCFDataGrid.h"
 #include "AliCFEffGrid.h"
@@ -51,6 +51,8 @@
 #include "AliLog.h"
 
 #include "AliHFEspectrum.h"
+#include "AliHFEcuts.h"
+#include "AliHFEcontainer.h"
 
 ClassImp(AliHFEspectrum)
 
@@ -61,14 +63,18 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   fTemporaryObjects(NULL),
   fCorrelation(NULL),
   fBackground(NULL),
-  fBackgroundSource(kMCbackground),
+  fInclusiveSpectrum(kTRUE),
   fDumpToFile(kFALSE),
+  fNbDimensions(1),
   fNEvents(0),
   fStepMC(-1),
   fStepTrue(-1),
   fStepData(-1),
+  fStepBeforeCutsV0(-1),
+  fStepAfterCutsV0(-1),
   fStepGuessedUnfolding(-1),
-  fNumberOfIterations(5)
+  fNumberOfIterations(5),
+  fDebugLevel(0)
 {
   //
   // Default constructor
@@ -86,143 +92,97 @@ AliHFEspectrum::~AliHFEspectrum(){
     delete fTemporaryObjects;
   }
 }
-
 //____________________________________________________________
-void AliHFEspectrum::Correct(AliCFContainer *datacontainer,AliCFContainer *mccontainer,THnSparseF *mccorrelation, AliCFContainer *contaminationcontainer){
+Bool_t AliHFEspectrum::Init(AliHFEcontainer *datahfecontainer,AliHFEcontainer *mchfecontainer,AliHFEcontainer *v0hfecontainer){
   //
-  // Correct the spectrum for efficiency and unfolding
-  // with both method and compare
+  // Init what we need for the correction:
   //
-  
-  gStyle->SetPalette(1);
-  gStyle->SetOptStat(1111);
-  gStyle->SetPadBorderMode(0);
-  gStyle->SetCanvasColor(10);
-  gStyle->SetPadLeftMargin(0.13);
-  gStyle->SetPadRightMargin(0.13);
-
-  SetMCEffStep(8);
-  SetMCTruthStep(0);
-  SetNumberOfIteration(5);
-  SetStepGuessedUnfolding(16);
-  SetNumberOfIteration(5);
-  SetStepToCorrect(20);
-  
-  //////////////////
-  // Take only pt
-  /////////////////
-  
-  AliCFDataGrid *dataspectrumbeforesubstraction = (AliCFDataGrid *) ((AliCFDataGrid *)GetSpectrum(datacontainer,20))->Clone();
-  dataspectrumbeforesubstraction->SetName("dataspectrumbeforesubstraction");
-
+  // Raw spectrum, hadron contamination
+  // MC efficiency maps, correlation matrix
+  // V0 efficiency if wanted
   //
-  AliCFDataGrid *dataspectrumaftersubstraction = 0x0;
-  SetCorrelation(mccorrelation);
-  SetContainer(datacontainer,AliHFEspectrum::kDataContainer);
-  SetContainer(mccontainer,AliHFEspectrum::kMCContainer);
-  if(contaminationcontainer) {
-    SetContainer(contaminationcontainer,AliHFEspectrum::kBackgroundData);
-    SetBackgroundSource(AliHFEspectrum::kDataBackground);
-    dataspectrumaftersubstraction = SubtractBackground(1,kTRUE);
-  }
-  
-  // Unfold
-  
-  TList *listunfolded = Unfold(1,dataspectrumaftersubstraction);
-  if(!listunfolded){
-    printf("Unfolded failed\n");
-    return;
-  }
-  THnSparse *correctedspectrum = (THnSparse *) listunfolded->At(0);
-  THnSparse *residualspectrum = (THnSparse *) listunfolded->At(1);
-  if(!correctedspectrum){
-    AliError("No corrected spectrum\n");
-    return;
-  }
-  if(!residualspectrum){
-    AliError("No residul spectrum\n");
-    return;
-  }   
-  
-  // Simply correct
-  SetMCEffStep(20);  
-  AliCFDataGrid *alltogetherCorrection = CorrectForEfficiency(1,dataspectrumaftersubstraction);
-  
-  //////////
-  // Plot
-  //////////
-  AliCFDataGrid *dataspectrum = 0x0;
-  TH1D *measuredTH1Daftersubstraction = 0x0;
-  TH1D *measuredTH1Dbeforesubstraction = 0x0;
-  TH1D *measuredTH1background = 0x0;
-  AliCFDataGrid *contaminationspectrum = 0x0;
-  if(dataspectrumaftersubstraction) dataspectrum = dataspectrumaftersubstraction;
-  else dataspectrum = dataspectrumbeforesubstraction;
+  // This for a given dimension.
+  // If no inclusive spectrum, then take only efficiency map for beauty electron
+  // and the appropriate correlation matrix
+  //
 
-  if(dataspectrumaftersubstraction) {
-    
-    TCanvas * cbackgroundsubtraction = new TCanvas("backgroundsubtraction","backgroundsubtraction",1000,700);
-    if(fBackground) cbackgroundsubtraction->Divide(3,1);
-    cbackgroundsubtraction->cd(1);
-    measuredTH1Daftersubstraction = (TH1D*)dataspectrumaftersubstraction->Project(0);
-    measuredTH1Dbeforesubstraction = (TH1D*)dataspectrumbeforesubstraction->Project(0);
-    CorrectFromTheWidth(measuredTH1Daftersubstraction);
-    CorrectFromTheWidth(measuredTH1Dbeforesubstraction);
-    measuredTH1Daftersubstraction->SetStats(0);
-    measuredTH1Daftersubstraction->SetTitle("");
-    measuredTH1Daftersubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-    measuredTH1Daftersubstraction->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    measuredTH1Daftersubstraction->SetMarkerStyle(25);
-    measuredTH1Daftersubstraction->SetMarkerColor(kBlack);
-    measuredTH1Daftersubstraction->SetLineColor(kBlack);
-    measuredTH1Dbeforesubstraction->SetStats(0);
-    measuredTH1Dbeforesubstraction->SetTitle("");
-    measuredTH1Dbeforesubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-    measuredTH1Dbeforesubstraction->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    measuredTH1Dbeforesubstraction->SetMarkerStyle(24);
-    measuredTH1Dbeforesubstraction->SetMarkerColor(kBlue);
-    measuredTH1Dbeforesubstraction->SetLineColor(kBlue);
-    measuredTH1Daftersubstraction->Draw();
-    measuredTH1Dbeforesubstraction->Draw("same");
-    TLegend *legsubstraction = new TLegend(0.4,0.6,0.89,0.89);
-    legsubstraction->AddEntry(measuredTH1Dbeforesubstraction,"before substraction","p");
-    legsubstraction->AddEntry(measuredTH1Daftersubstraction,"after substraction","p");
-    legsubstraction->Draw("same");
-    cbackgroundsubtraction->cd(2);
-    TH1D* ratiomeasuredcontamination = (TH1D*)measuredTH1Dbeforesubstraction->Clone();
-    ratiomeasuredcontamination->SetName("ratiomeasuredcontamination");
-    ratiomeasuredcontamination->SetTitle("");
-    ratiomeasuredcontamination->GetYaxis()->SetTitle("(with contamination - without contamination) / with contamination");
-    ratiomeasuredcontamination->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    ratiomeasuredcontamination->Add(measuredTH1Daftersubstraction,-1.0);
-    ratiomeasuredcontamination->Divide(measuredTH1Dbeforesubstraction);
-    ratiomeasuredcontamination->SetStats(0);
-    ratiomeasuredcontamination->SetMarkerStyle(26);
-    ratiomeasuredcontamination->SetMarkerColor(kBlack);
-    ratiomeasuredcontamination->SetLineColor(kBlack);
-    ratiomeasuredcontamination->Draw();
-    if(fBackground) {
-      cbackgroundsubtraction->cd(3);
-      measuredTH1background = (TH1D*)fBackground->Project(0);
-      CorrectFromTheWidth(measuredTH1background);
-      measuredTH1background->SetStats(0);
-      measuredTH1background->SetTitle("");
-      measuredTH1background->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-      measuredTH1background->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-      measuredTH1background->SetMarkerStyle(26);
-      measuredTH1background->SetMarkerColor(kBlack);
-      measuredTH1background->SetLineColor(kBlack);
-      measuredTH1background->Draw();
-    }
-    
-    contaminationspectrum = (AliCFDataGrid *) ((AliCFDataGrid *)GetSpectrum(contaminationcontainer,1))->Clone();
+  // Get the requested format
+  Int_t dims[3];
+  switch(fNbDimensions){
+  case 1:   dims[0] = 0;
+    break;
+  case 2:   for(Int_t i = 0; i < 2; i++) dims[i] = i;
+    break;
+  case 3:   for(Int_t i = 0; i < 3; i++) dims[i] = i;
+    break;
+  default:
+    AliError("Container with this number of dimensions not foreseen (yet)");
+    return kFALSE;
+  };
+  
+  // Data container: raw spectrum + hadron contamination  
+  AliCFContainer *datacontainer = datahfecontainer->GetCFContainer("recTrackContReco");
+  AliCFContainer *contaminationcontainer = datahfecontainer->GetCFContainer("hadronicBackground");
+  if((!datacontainer) || (!contaminationcontainer)) return kFALSE;
+
+  AliCFContainer *datacontainerD = GetSlicedContainer(datacontainer, fNbDimensions, dims);
+  AliCFContainer *contaminationcontainerD = GetSlicedContainer(contaminationcontainer, fNbDimensions, dims);
+  if((!datacontainerD) || (!contaminationcontainerD)) return kFALSE;
+  SetContainer(datacontainerD,AliHFEspectrum::kDataContainer);
+  SetContainer(contaminationcontainerD,AliHFEspectrum::kBackgroundData);
+
+  // MC container: ESD/MC efficiency maps + MC/MC efficiency maps 
+  AliCFContainer *mccontaineresd = 0x0;
+  AliCFContainer *mccontainermc = 0x0;
+  if(fInclusiveSpectrum) {
+    mccontaineresd = mchfecontainer->MakeMergedCFContainer("sumesd","sumesd","MCTrackCont:recTrackContReco");
+    mccontainermc = mchfecontainer->MakeMergedCFContainer("summc","summc","MCTrackCont:recTrackContMC");
+  }
+  else {
+    mccontaineresd = mchfecontainer->MakeMergedCFContainer("sumesd","sumesd","MCTrackCont:recTrackContReco:recTrackContDEReco");
+    mccontainermc = mchfecontainer->MakeMergedCFContainer("summc","summc","MCTrackCont:recTrackContMC:recTrackContDEMC");
+  }
+  if((!mccontaineresd) || (!mccontainermc)) return kFALSE;  
+
+  Int_t source = -1;
+  if(!fInclusiveSpectrum) source = 1;
+  AliCFContainer *mccontaineresdD = GetSlicedContainer(mccontaineresd, fNbDimensions, dims, source);
+  AliCFContainer *mccontainermcD = GetSlicedContainer(mccontainermc, fNbDimensions, dims, source);
+  if((!mccontaineresdD) || (!mccontainermcD)) return kFALSE;
+  SetContainer(mccontainermcD,AliHFEspectrum::kMCContainerMC);
+  SetContainer(mccontaineresdD,AliHFEspectrum::kMCContainerESD);
+
+  // MC container: correlation matrix
+  THnSparseF *mccorrelation = 0x0;
+  if(fInclusiveSpectrum) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
+  else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterDE");
+  if(!mccorrelation) return kFALSE;
+  THnSparseF *mccorrelationD = GetSlicedCorrelation(mccorrelation, fNbDimensions, dims);
+  if(!mccorrelationD) {
+    printf("No correlation\n");
+    return kFALSE;
+  }
+  SetCorrelation(mccorrelationD);
+
+  // V0 container Electron, pt eta phi
+  if(v0hfecontainer) {
+    AliCFContainer *containerV0 = v0hfecontainer->GetCFContainer("taggedTrackContainerReco");
+    if(!containerV0) return kFALSE;
+    AliCFContainer *containerV0Electron = GetSlicedContainer(containerV0, fNbDimensions, dims, AliPID::kElectron+1);
+    if(!containerV0Electron) return kFALSE;
+    SetContainer(containerV0Electron,AliHFEspectrum::kDataContainerV0);
+  } 
+
+  if(fDebugLevel>0){
+   
+    AliCFDataGrid *contaminationspectrum = (AliCFDataGrid *) ((AliCFDataGrid *)GetSpectrum(contaminationcontainer,1))->Clone();
     contaminationspectrum->SetName("contaminationspectrum");
     TCanvas * ccontaminationspectrum = new TCanvas("contaminationspectrum","contaminationspectrum",1000,700);
     ccontaminationspectrum->Divide(3,1);
     ccontaminationspectrum->cd(1);
-    TH2D * contaminationspectrum2dpteta = (TH2D*)contaminationspectrum->Project(1,0);
-    TH2D * contaminationspectrum2dptphi = (TH2D*)contaminationspectrum->Project(2,0);
-    TH2D * contaminationspectrum2detaphi = (TH2D*)contaminationspectrum->Project(1,2);
+    TH2D * contaminationspectrum2dpteta = contaminationspectrum->Project(1,0);
+    TH2D * contaminationspectrum2dptphi = contaminationspectrum->Project(2,0);
+    TH2D * contaminationspectrum2detaphi = contaminationspectrum->Project(1,2);
     contaminationspectrum2dpteta->SetStats(0);
     contaminationspectrum2dpteta->SetTitle("");
     contaminationspectrum2dpteta->GetXaxis()->SetTitle("#eta");
@@ -242,229 +202,344 @@ void AliHFEspectrum::Correct(AliCFContainer *datacontainer,AliCFContainer *mccon
     contaminationspectrum2detaphi->Draw("colz");
 
   }
-  
-  
-  TCanvas * cresidual = new TCanvas("residual","residual",1000,700);
-  cresidual->Divide(2,1);
-  cresidual->cd(1);
-  gPad->SetLogy();
-  TGraphErrors* residualspectrumD = Normalize(residualspectrum);
-  if(!residualspectrumD) {
-    AliError("Number of Events not set for the normalization");
-    return;
-  }
-  residualspectrumD->SetTitle("");
-  residualspectrumD->GetYaxis()->SetTitleOffset(1.5);
-  residualspectrumD->GetYaxis()->SetRangeUser(0.000000001,1.0);
-  residualspectrumD->SetMarkerStyle(26);
-  residualspectrumD->SetMarkerColor(kBlue);
-  residualspectrumD->SetLineColor(kBlue);
-  residualspectrumD->Draw("AP");
-  TGraphErrors* measuredspectrumD = Normalize(dataspectrum);
-  measuredspectrumD->SetTitle("");  
-  measuredspectrumD->GetYaxis()->SetTitleOffset(1.5);
-  measuredspectrumD->GetYaxis()->SetRangeUser(0.000000001,1.0);
-  measuredspectrumD->SetMarkerStyle(25);
-  measuredspectrumD->SetMarkerColor(kBlack);
-  measuredspectrumD->SetLineColor(kBlack);
-  measuredspectrumD->Draw("P");
-  TLegend *legres = new TLegend(0.4,0.6,0.89,0.89);
-  legres->AddEntry(residualspectrumD,"Residual","p");
-  legres->AddEntry(measuredspectrumD,"Measured","p");
-  legres->Draw("same");
-  cresidual->cd(2);
-  TH1D *residualTH1D = residualspectrum->Projection(0);
-  TH1D *measuredTH1D = (TH1D*)dataspectrum->Project(0);
-  TH1D* ratioresidual = (TH1D*)residualTH1D->Clone();
-  ratioresidual->SetName("ratioresidual");
-  ratioresidual->SetTitle("");
-  ratioresidual->GetYaxis()->SetTitle("Folded/Measured");
-  ratioresidual->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  ratioresidual->Divide(residualTH1D,measuredTH1D,1,1);
-  ratioresidual->SetStats(0);
-  ratioresidual->Draw();
 
+
+  return kTRUE;
+ 
+  
+}
+
+//____________________________________________________________
+Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
   //
-
+  // Correct the spectrum for efficiency and unfolding
+  // with both method and compare
+  //
   
-  TCanvas * ccorrected = new TCanvas("corrected","corrected",1000,700);
-  ccorrected->Divide(2,1);
-  ccorrected->cd(1);
-  gPad->SetLogy();
-  TGraphErrors* correctedspectrumD = Normalize(correctedspectrum);
-  correctedspectrumD->SetTitle("");
-  correctedspectrumD->GetYaxis()->SetTitleOffset(1.5);
-  correctedspectrumD->GetYaxis()->SetRangeUser(0.000000001,1.0);
-  correctedspectrumD->SetMarkerStyle(26);
-  correctedspectrumD->SetMarkerColor(kBlue);
-  correctedspectrumD->SetLineColor(kBlue);
-  correctedspectrumD->Draw("AP");
-  TGraphErrors* alltogetherspectrumD = Normalize(alltogetherCorrection);
-  alltogetherspectrumD->SetTitle("");
-  alltogetherspectrumD->GetYaxis()->SetTitleOffset(1.5);
-  alltogetherspectrumD->GetYaxis()->SetRangeUser(0.000000001,1.0);
-  alltogetherspectrumD->SetMarkerStyle(25);
-  alltogetherspectrumD->SetMarkerColor(kBlack);
-  alltogetherspectrumD->SetLineColor(kBlack);
-  alltogetherspectrumD->Draw("P");
-  TLegend *legcorrected = new TLegend(0.4,0.6,0.89,0.89);
-  legcorrected->AddEntry(correctedspectrumD,"Corrected","p");
-  legcorrected->AddEntry(alltogetherspectrumD,"Alltogether","p");
-  legcorrected->Draw("same");
-  ccorrected->cd(2);
-  TH1D *correctedTH1D = correctedspectrum->Projection(0);
-  TH1D *alltogetherTH1D = (TH1D*)alltogetherCorrection->Project(0);
-  TH1D* ratiocorrected = (TH1D*)correctedTH1D->Clone();
-  ratiocorrected->SetName("ratiocorrected");
-  ratiocorrected->SetTitle("");
-  ratiocorrected->GetYaxis()->SetTitle("Unfolded/DirectCorrected");
-  ratiocorrected->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  ratiocorrected->Divide(correctedTH1D,alltogetherTH1D,1,1);
-  ratiocorrected->SetStats(0);
-  ratiocorrected->Draw();
-  
-  // Efficiency correction
+  gStyle->SetPalette(1);
+  gStyle->SetOptStat(1111);
+  gStyle->SetPadBorderMode(0);
+  gStyle->SetCanvasColor(10);
+  gStyle->SetPadLeftMargin(0.13);
+  gStyle->SetPadRightMargin(0.13);
 
-  AliCFEffGrid  *efficiencymcPID = (AliCFEffGrid*)  GetEfficiency(mccontainer,8,7);
-  AliCFEffGrid  *efficiencymctrackinggeo = (AliCFEffGrid*)  GetEfficiency(mccontainer,7,0);
-  AliCFEffGrid  *efficiencymcall = (AliCFEffGrid*)  GetEfficiency(mccontainer,8,0);
-  
-  AliCFEffGrid  *efficiencyesdall = (AliCFEffGrid*)  GetEfficiency(mccontainer,20,0);
-  
-  TCanvas * cefficiency = new TCanvas("efficiency","efficiency",1000,700);
-  cefficiency->cd(1);
-  TH1D* efficiencymcPIDD = (TH1D*)efficiencymcPID->Project(0);
-  efficiencymcPIDD->SetTitle("");
-  efficiencymcPIDD->SetStats(0);
-  efficiencymcPIDD->SetMarkerStyle(25);
-  efficiencymcPIDD->Draw();
-  TH1D* efficiencymctrackinggeoD = (TH1D*)efficiencymctrackinggeo->Project(0);
-  efficiencymctrackinggeoD->SetTitle("");
-  efficiencymctrackinggeoD->SetStats(0);
-  efficiencymctrackinggeoD->SetMarkerStyle(26);
-  efficiencymctrackinggeoD->Draw("same");
-  TH1D* efficiencymcallD = (TH1D*)efficiencymcall->Project(0);
-  efficiencymcallD->SetTitle("");
-  efficiencymcallD->SetStats(0);
-  efficiencymcallD->SetMarkerStyle(27);
-  efficiencymcallD->Draw("same");
-  TH1D* efficiencyesdallD = (TH1D*)efficiencyesdall->Project(0);
-  efficiencyesdallD->SetTitle("");
-  efficiencyesdallD->SetStats(0);
-  efficiencyesdallD->SetMarkerStyle(24);
-  efficiencyesdallD->Draw("same");
-  TLegend *legeff = new TLegend(0.4,0.6,0.89,0.89);
-  legeff->AddEntry(efficiencymcPIDD,"PID efficiency","p");
-  legeff->AddEntry(efficiencymctrackinggeoD,"Tracking geometry efficiency","p");
-  legeff->AddEntry(efficiencymcallD,"Overall efficiency","p");
-  legeff->AddEntry(efficiencyesdallD,"Overall efficiency ESD","p");
-  legeff->Draw("same");
+  ///////////////////////////
+  // Check initialization
+  ///////////////////////////
 
-  // Dump to file if needed
-
-  if(fDumpToFile) {
-    
-    TFile *out = new TFile("finalSpectrum.root","recreate");
-    out->cd();
-    //
-    residualspectrumD->SetName("UnfoldingResidualSpectrum");
-    residualspectrumD->Write();
-    measuredspectrumD->SetName("MeasuredSpectrum");
-    measuredspectrumD->Write();
-    ratioresidual->SetName("RatioResidualSpectrum");
-    ratioresidual->Write();
-    //
-    correctedspectrumD->SetName("UnfoldingCorrectedSpectrum");
-    correctedspectrumD->Write();
-    alltogetherspectrumD->SetName("AlltogetherSpectrum");
-    alltogetherspectrumD->Write();
-    ratiocorrected->SetName("RatioUnfoldingAlltogetherSpectrum");
-    ratiocorrected->Write();
-    //
-    correctedspectrum->SetName("UnfoldingCorrectedNotNormalizedSpectrum");
-    correctedspectrum->Write();
-    alltogetherCorrection->SetName("AlltogetherCorrectedNotNormalizedSpectrum");
-    alltogetherCorrection->Write();
-    //
-    if(measuredTH1Daftersubstraction && measuredTH1Dbeforesubstraction) {
-      measuredTH1Daftersubstraction->SetName("Rawptspectrummeasuredaftersubtraction");
-      measuredTH1Daftersubstraction->Write();
-      measuredTH1Dbeforesubstraction->SetName("Rawptspectrummeasuredbeforesubtraction");
-      measuredTH1Dbeforesubstraction->Write();
-    }
-    if(measuredTH1background) {
-      measuredTH1background->SetName("Rawptspectrummeasuredbackground");
-      measuredTH1background->Write();
-    }
-    //
-    out->Close(); delete out;
-
-    
+  if((!GetContainer(kDataContainer)) || (!GetContainer(kMCContainerMC)) || (!GetContainer(kMCContainerESD))){
+    AliInfo("You have to init before");
+    return kFALSE;
   }
+  
+  if((fStepTrue == 0) && (fStepMC == 0) && (fStepData == 0)) {
+    AliInfo("You have to set the steps before: SetMCTruthStep, SetMCEffStep, SetStepToCorrect");
+    return kFALSE;
+  }
+ 
+  SetNumberOfIteration(50);
+  SetStepGuessedUnfolding(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack);
+    
+  AliCFDataGrid *dataGridAfterFirstSteps = 0x0;
+  //////////////////////////////////
+  // Subtract hadron background
+  /////////////////////////////////
+  AliCFDataGrid *dataspectrumaftersubstraction = 0x0;
+  if(subtractcontamination) {
+    dataspectrumaftersubstraction = SubtractBackground(kTRUE);
+    dataGridAfterFirstSteps = dataspectrumaftersubstraction;
+  }
+
+  ////////////////////////////////////////////////
+  // Correct for TPC efficiency from V0
+  ///////////////////////////////////////////////
+  AliCFDataGrid *dataspectrumafterV0efficiencycorrection = 0x0;
+  AliCFContainer *dataContainerV0 = GetContainer(kDataContainerV0);
+  if(dataContainerV0){
+    dataspectrumafterV0efficiencycorrection = CorrectV0Efficiency(dataspectrumaftersubstraction);
+    dataGridAfterFirstSteps = dataspectrumafterV0efficiencycorrection;  
+  }
+  
+  ///////////////
+  // Unfold
+  //////////////
+  TList *listunfolded = Unfold(dataGridAfterFirstSteps);
+  if(!listunfolded){
+    printf("Unfolded failed\n");
+    return kFALSE;
+  }
+  THnSparse *correctedspectrum = (THnSparse *) listunfolded->At(0);
+  THnSparse *residualspectrum = (THnSparse *) listunfolded->At(1);
+  if(!correctedspectrum){
+    AliError("No corrected spectrum\n");
+    return kFALSE;
+  }
+  if(!residualspectrum){
+    AliError("No residul spectrum\n");
+    return kFALSE;
+  }   
+  
+  /////////////////////
+  // Simply correct
+  ////////////////////
+  AliCFDataGrid *alltogetherCorrection = CorrectForEfficiency(dataGridAfterFirstSteps);
+  
+
+  //////////
+  // Plot
+  //////////
+  if(fDebugLevel > 0.0) {
+  
+    TCanvas * ccorrected = new TCanvas("corrected","corrected",1000,700);
+    ccorrected->Divide(2,1);
+    ccorrected->cd(1);
+    gPad->SetLogy();
+    TGraphErrors* correctedspectrumD = Normalize(correctedspectrum);
+    correctedspectrumD->SetTitle("");
+    correctedspectrumD->GetYaxis()->SetTitleOffset(1.5);
+    correctedspectrumD->GetYaxis()->SetRangeUser(0.000000001,1.0);
+    correctedspectrumD->SetMarkerStyle(26);
+    correctedspectrumD->SetMarkerColor(kBlue);
+    correctedspectrumD->SetLineColor(kBlue);
+    correctedspectrumD->Draw("AP");
+    TGraphErrors* alltogetherspectrumD = Normalize(alltogetherCorrection);
+    alltogetherspectrumD->SetTitle("");
+    alltogetherspectrumD->GetYaxis()->SetTitleOffset(1.5);
+    alltogetherspectrumD->GetYaxis()->SetRangeUser(0.000000001,1.0);
+    alltogetherspectrumD->SetMarkerStyle(25);
+    alltogetherspectrumD->SetMarkerColor(kBlack);
+    alltogetherspectrumD->SetLineColor(kBlack);
+    alltogetherspectrumD->Draw("P");
+    TLegend *legcorrected = new TLegend(0.4,0.6,0.89,0.89);
+    legcorrected->AddEntry(correctedspectrumD,"Corrected","p");
+    legcorrected->AddEntry(alltogetherspectrumD,"Alltogether","p");
+    legcorrected->Draw("same");
+    ccorrected->cd(2);
+    TH1D *correctedTH1D = correctedspectrum->Projection(0);
+    TH1D *alltogetherTH1D = alltogetherCorrection->Project(0);
+    TH1D* ratiocorrected = (TH1D*)correctedTH1D->Clone();
+    ratiocorrected->SetName("ratiocorrected");
+    ratiocorrected->SetTitle("");
+    ratiocorrected->GetYaxis()->SetTitle("Unfolded/DirectCorrected");
+    ratiocorrected->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    ratiocorrected->Divide(correctedTH1D,alltogetherTH1D,1,1);
+    ratiocorrected->SetStats(0);
+    ratiocorrected->Draw();
+
+
+    // Dump to file if needed
+
+    if(fDumpToFile) {
+      
+      TFile *out = new TFile("finalSpectrum.root","recreate");
+      out->cd();
+      //
+      correctedspectrumD->SetName("UnfoldingCorrectedSpectrum");
+      correctedspectrumD->Write();
+      alltogetherspectrumD->SetName("AlltogetherSpectrum");
+      alltogetherspectrumD->Write();
+      ratiocorrected->SetName("RatioUnfoldingAlltogetherSpectrum");
+      ratiocorrected->Write();
+      //
+      correctedspectrum->SetName("UnfoldingCorrectedNotNormalizedSpectrum");
+      correctedspectrum->Write();
+      alltogetherCorrection->SetName("AlltogetherCorrectedNotNormalizedSpectrum");
+      alltogetherCorrection->Write();
+      //
+      out->Close(); delete out;
+    }
+  
+
+  }
+
+
+  
+
+  return kTRUE;
 }
 //____________________________________________________________
-AliCFDataGrid* AliHFEspectrum::SubtractBackground(Int_t dimensions, Bool_t setBackground){
+AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
   //
   // Apply background subtraction
   //
-
+  
+  // Raw spectrum
   AliCFContainer *dataContainer = GetContainer(kDataContainer);
   if(!dataContainer){
     AliError("Data Container not available");
     return NULL;
   }
+  AliCFDataGrid *spectrumSubtracted = new AliCFDataGrid("spectrumSubtracted", "Data Grid for spectrum after Background subtraction", *dataContainer,fStepData);
+
+  AliCFDataGrid *dataspectrumbeforesubstraction = (AliCFDataGrid *) ((AliCFDataGrid *)GetSpectrum(GetContainer(kDataContainer),fStepData))->Clone();
+  dataspectrumbeforesubstraction->SetName("dataspectrumbeforesubstraction"); 
  
-  // Get the data grid in the requested format
-  Bool_t initContainer = kFALSE;
-  Int_t dims[3];
-  switch(dimensions){
-    case 1:   dims[0] = 0;
-              initContainer = kTRUE;
-              break;
-    case 3:   for(Int_t i = 0; i < 3; i++) dims[i] = i;
-              initContainer = kTRUE;
-              break;
-    default:
-              AliError("Container with this number of dimensions not foreseen (yet)");
-  };
-  if(!initContainer){
-    AliError("Creation of the sliced containers failed. Background estimation not possible");
+  // Background Estimate
+  AliCFContainer *backgroundContainer = GetContainer(kBackgroundData);
+  if(!backgroundContainer){
+    AliError("MC background container not found");
     return NULL;
   }
-  AliCFContainer *spectrumSliced = GetSlicedContainer(dataContainer, dimensions, dims);
+ 
+  Int_t stepbackground = 1;
+  if(!fInclusiveSpectrum) stepbackground = 2;
+  AliCFDataGrid *backgroundGrid = new AliCFDataGrid("ContaminationGrid","ContaminationGrid",*backgroundContainer,stepbackground);
 
-  // Make Background Estimate
-  AliCFDataGrid *backgroundGrid = NULL;
-  if(fBackgroundSource == kDataBackground)
-    backgroundGrid = TakeBackgroundFromData(dimensions);
-  else
-    backgroundGrid = MakeBackgroundEstimateFromMC(dimensions);
-  if(!backgroundGrid){
-    AliError("Background Estimate not created");
-    ClearObject(spectrumSliced);
-    return NULL;
-  }
-
-
-  AliCFDataGrid *spectrumSubtracted = new AliCFDataGrid("spectrumSubtracted", "Data Grid for spectrum after Background subtraction", *spectrumSliced,fStepData);
-  //spectrumSubtracted->ApplyBGCorrection(*backgroundGrid);
+  // Subtract
   spectrumSubtracted->Add(backgroundGrid,-1.0);
   if(setBackground){
     if(fBackground) delete fBackground;
     fBackground = backgroundGrid;
   } else delete backgroundGrid;
 
+
+  if(fDebugLevel > 0) {
+    
+    TCanvas * cbackgroundsubtraction = new TCanvas("backgroundsubtraction","backgroundsubtraction",1000,700);
+    cbackgroundsubtraction->Divide(3,1);
+    cbackgroundsubtraction->cd(1);
+    gPad->SetLogy();
+    TH1D *measuredTH1Daftersubstraction = spectrumSubtracted->Project(0);
+    TH1D *measuredTH1Dbeforesubstraction = dataspectrumbeforesubstraction->Project(0);
+    CorrectFromTheWidth(measuredTH1Daftersubstraction);
+    CorrectFromTheWidth(measuredTH1Dbeforesubstraction);
+    measuredTH1Daftersubstraction->SetStats(0);
+    measuredTH1Daftersubstraction->SetTitle("");
+    measuredTH1Daftersubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+    measuredTH1Daftersubstraction->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    measuredTH1Daftersubstraction->SetMarkerStyle(25);
+    measuredTH1Daftersubstraction->SetMarkerColor(kBlack);
+    measuredTH1Daftersubstraction->SetLineColor(kBlack);
+    measuredTH1Dbeforesubstraction->SetStats(0);
+    measuredTH1Dbeforesubstraction->SetTitle("");
+    measuredTH1Dbeforesubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+    measuredTH1Dbeforesubstraction->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    measuredTH1Dbeforesubstraction->SetMarkerStyle(24);
+    measuredTH1Dbeforesubstraction->SetMarkerColor(kBlue);
+    measuredTH1Dbeforesubstraction->SetLineColor(kBlue);
+    measuredTH1Daftersubstraction->Draw();
+    measuredTH1Dbeforesubstraction->Draw("same");
+    TLegend *legsubstraction = new TLegend(0.4,0.6,0.89,0.89);
+    legsubstraction->AddEntry(measuredTH1Dbeforesubstraction,"With hadron contamination","p");
+    legsubstraction->AddEntry(measuredTH1Daftersubstraction,"Without hadron contamination ","p");
+    legsubstraction->Draw("same");
+    cbackgroundsubtraction->cd(2);
+    gPad->SetLogy();
+    TH1D* ratiomeasuredcontamination = (TH1D*)measuredTH1Dbeforesubstraction->Clone();
+    ratiomeasuredcontamination->SetName("ratiomeasuredcontamination");
+    ratiomeasuredcontamination->SetTitle("");
+    ratiomeasuredcontamination->GetYaxis()->SetTitle("(with contamination - without contamination) / with contamination");
+    ratiomeasuredcontamination->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    ratiomeasuredcontamination->Add(measuredTH1Daftersubstraction,-1.0);
+    ratiomeasuredcontamination->Divide(measuredTH1Dbeforesubstraction);
+    ratiomeasuredcontamination->SetStats(0);
+    ratiomeasuredcontamination->SetMarkerStyle(26);
+    ratiomeasuredcontamination->SetMarkerColor(kBlack);
+    ratiomeasuredcontamination->SetLineColor(kBlack);
+    ratiomeasuredcontamination->Draw();
+    cbackgroundsubtraction->cd(3);
+    TH1D *measuredTH1background = backgroundGrid->Project(0);
+    CorrectFromTheWidth(measuredTH1background);
+    measuredTH1background->SetStats(0);
+    measuredTH1background->SetTitle("");
+    measuredTH1background->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+    measuredTH1background->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    measuredTH1background->SetMarkerStyle(26);
+    measuredTH1background->SetMarkerColor(kBlack);
+    measuredTH1background->SetLineColor(kBlack);
+    measuredTH1background->Draw();
+       
+  }
+  
+
   return spectrumSubtracted;
 }
-
 //____________________________________________________________
-TList *AliHFEspectrum::Unfold(Int_t dimensions,AliCFDataGrid* const bgsubpectrum){
+AliCFDataGrid *AliHFEspectrum::CorrectV0Efficiency(AliCFDataGrid* const bgsubpectrum){
+  
+  //
+  // Apply TPC pid efficiency correction from V0
+  //
+
+  AliCFContainer *v0Container = GetContainer(kDataContainerV0);
+  if(!v0Container){
+    AliError("V0 Container not available");
+    return NULL;
+  }
+
+  // Efficiency
+  AliCFEffGrid* efficiencyD = new AliCFEffGrid("efficiency","",*v0Container);
+  efficiencyD->CalculateEfficiency(fStepAfterCutsV0,fStepBeforeCutsV0);
+
+  // Data in the right format
+  AliCFDataGrid *dataGrid = 0x0;  
+  if(bgsubpectrum) {
+    dataGrid = bgsubpectrum;
+  }
+  else {
+    
+    AliCFContainer *dataContainer = GetContainer(kDataContainer);
+    if(!dataContainer){
+      AliError("Data Container not available");
+      return NULL;
+    }
+
+    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainer, fStepData);
+  } 
+
+  // Correct
+  AliCFDataGrid *result = (AliCFDataGrid *) dataGrid->Clone();
+  result->ApplyEffCorrection(*efficiencyD);
+
+  if(fDebugLevel > 0) {
+    
+    TCanvas * cV0Efficiency = new TCanvas("V0Efficiency","V0Efficiency",1000,700);
+    cV0Efficiency->Divide(2,1);
+    cV0Efficiency->cd(1);
+    TH1D *afterE = result->Project(0);
+    TH1D *beforeE = dataGrid->Project(0);
+    afterE->SetStats(0);
+    afterE->SetTitle("");
+    afterE->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+    afterE->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    afterE->SetMarkerStyle(25);
+    afterE->SetMarkerColor(kBlack);
+    afterE->SetLineColor(kBlack);
+    beforeE->SetStats(0);
+    beforeE->SetTitle("");
+    beforeE->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+    beforeE->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    beforeE->SetMarkerStyle(24);
+    beforeE->SetMarkerColor(kBlue);
+    beforeE->SetLineColor(kBlue);
+    afterE->Draw();
+    beforeE->Draw("same");
+    TLegend *legV0efficiency = new TLegend(0.4,0.6,0.89,0.89);
+    legV0efficiency->AddEntry(beforeE,"Before Efficiency correction","p");
+    legV0efficiency->AddEntry(afterE,"After Efficiency correction","p");
+    legV0efficiency->Draw("same");
+    cV0Efficiency->cd(2);
+    TH1D* efficiencyDproj = efficiencyD->Project(0);
+    efficiencyDproj->SetTitle("");
+    efficiencyDproj->SetStats(0);
+    efficiencyDproj->SetMarkerStyle(25);
+    efficiencyDproj->Draw();
+
+
+  }
+
+  
+  return result;
+
+}
+//____________________________________________________________
+TList *AliHFEspectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
   
   //
   // Unfold and eventually correct for efficiency the bgsubspectrum
   //
 
-  AliCFContainer *mcContainer = GetContainer(kMCContainer);
+  AliCFContainer *mcContainer = GetContainer(kMCContainerMC);
   if(!mcContainer){
     AliError("MC Container not available");
     return NULL;
@@ -475,35 +550,10 @@ TList *AliHFEspectrum::Unfold(Int_t dimensions,AliCFDataGrid* const bgsubpectrum
     return NULL;
   }
 
-  // Get the mc grid in the requested format
-  Bool_t initContainer = kFALSE;
-  Int_t dims[3];
-  switch(dimensions){
-    case 1:   dims[0] = 0;
-              initContainer = kTRUE;
-              break;
-    case 3:   for(Int_t i = 0; i < 3; i++) dims[i] = i;
-              initContainer = kTRUE;
-              break;
-    default:
-              AliError("Container with this number of dimensions not foreseen (yet)");
-  };
-  if(!initContainer){
-    AliError("Creation of the sliced containers failed. Background estimation not possible");
-    return NULL;
-  }
-  AliCFContainer *mcContainerD = GetSlicedContainer(mcContainer, dimensions, dims);
-  THnSparse *correlationD = GetSlicedCorrelation(dimensions, dims);
-
-  // Data in the right format
+  // Data 
   AliCFDataGrid *dataGrid = 0x0;  
   if(bgsubpectrum) {
-    if(bgsubpectrum->GetNVar()!= dimensions) {
-      AliError("Not the expected number of dimensions for the AliCFDataGrid\n");
-      return NULL;
-    }
     dataGrid = bgsubpectrum;
-    
   }
   else {
 
@@ -513,23 +563,20 @@ TList *AliHFEspectrum::Unfold(Int_t dimensions,AliCFDataGrid* const bgsubpectrum
       return NULL;
     }
 
-    AliCFContainer *dataContainerD = GetSlicedContainer(dataContainer, dimensions, dims);
-    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainerD, fStepData);
-    
+    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainer, fStepData);
   } 
   
-  
   // Guessed
-  AliCFDataGrid* guessedGrid = new AliCFDataGrid("guessed","",*mcContainerD, fStepGuessedUnfolding);
+  AliCFDataGrid* guessedGrid = new AliCFDataGrid("guessed","",*mcContainer, fStepGuessedUnfolding);
   THnSparse* guessedTHnSparse = ((AliCFGridSparse*)guessedGrid->GetData())->GetGrid();
 
   // Efficiency
-  AliCFEffGrid* efficiencyD = new AliCFEffGrid("efficiency","",*mcContainerD);
+  AliCFEffGrid* efficiencyD = new AliCFEffGrid("efficiency","",*mcContainer);
   efficiencyD->CalculateEfficiency(fStepMC,fStepTrue);
 
   // Unfold 
   
-  AliCFUnfolding unfolding("unfolding","",dimensions,correlationD,efficiencyD->GetGrid(),dataGrid->GetGrid(),guessedTHnSparse);
+  AliCFUnfolding unfolding("unfolding","",fNbDimensions,fCorrelation,efficiencyD->GetGrid(),dataGrid->GetGrid(),guessedTHnSparse);
   unfolding.SetMaxNumberOfIterations(fNumberOfIterations);
   unfolding.UseSmoothing();
   unfolding.Unfold();
@@ -542,77 +589,135 @@ TList *AliHFEspectrum::Unfold(Int_t dimensions,AliCFDataGrid* const bgsubpectrum
   listofresults->AddAt((THnSparse*)result->Clone(),0);
   listofresults->AddAt((THnSparse*)residual->Clone(),1);
 
+  if(fDebugLevel > 0) {
+    
+    TCanvas * cresidual = new TCanvas("residual","residual",1000,700);
+    cresidual->Divide(2,1);
+    cresidual->cd(1);
+    gPad->SetLogy();
+    TGraphErrors* residualspectrumD = Normalize(residual);
+    if(!residualspectrumD) {
+      AliError("Number of Events not set for the normalization");
+      return kFALSE;
+    }
+    residualspectrumD->SetTitle("");
+    residualspectrumD->GetYaxis()->SetTitleOffset(1.5);
+    residualspectrumD->GetYaxis()->SetRangeUser(0.000000001,1.0);
+    residualspectrumD->SetMarkerStyle(26);
+    residualspectrumD->SetMarkerColor(kBlue);
+    residualspectrumD->SetLineColor(kBlue);
+    residualspectrumD->Draw("AP");
+    AliCFDataGrid *dataGridBis = (AliCFDataGrid *) (dataGrid->Clone());
+    dataGridBis->SetName("dataGridBis"); 
+    TGraphErrors* measuredspectrumD = Normalize(dataGridBis);
+    measuredspectrumD->SetTitle("");  
+    measuredspectrumD->GetYaxis()->SetTitleOffset(1.5);
+    measuredspectrumD->GetYaxis()->SetRangeUser(0.000000001,1.0);
+    measuredspectrumD->SetMarkerStyle(25);
+    measuredspectrumD->SetMarkerColor(kBlack);
+    measuredspectrumD->SetLineColor(kBlack);
+    measuredspectrumD->Draw("P");
+    TLegend *legres = new TLegend(0.4,0.6,0.89,0.89);
+    legres->AddEntry(residualspectrumD,"Residual","p");
+    legres->AddEntry(measuredspectrumD,"Measured","p");
+    legres->Draw("same");
+    cresidual->cd(2);
+    TH1D *residualTH1D = residual->Projection(0);
+    TH1D *measuredTH1D = dataGridBis->Project(0);
+    TH1D* ratioresidual = (TH1D*)residualTH1D->Clone();
+    ratioresidual->SetName("ratioresidual");
+    ratioresidual->SetTitle("");
+    ratioresidual->GetYaxis()->SetTitle("Folded/Measured");
+    ratioresidual->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    ratioresidual->Divide(residualTH1D,measuredTH1D,1,1);
+    ratioresidual->SetStats(0);
+    ratioresidual->Draw();
+    
+  }
+
   return listofresults;
 
 }
 
 //____________________________________________________________
-AliCFDataGrid *AliHFEspectrum::CorrectForEfficiency(Int_t dimensions,AliCFDataGrid* const bgsubpectrum){
+AliCFDataGrid *AliHFEspectrum::CorrectForEfficiency(AliCFDataGrid* const bgsubpectrum){
   
   //
   // Apply unfolding and efficiency correction together to bgsubspectrum
   //
 
-  AliCFContainer *mcContainer = GetContainer(kMCContainer);
+  AliCFContainer *mcContainer = GetContainer(kMCContainerESD);
   if(!mcContainer){
     AliError("MC Container not available");
     return NULL;
   }
 
-  // Get the data grid in the requested format
-  Bool_t initContainer = kFALSE;
-  Int_t dims[3];
-  switch(dimensions){
-    case 1:   dims[0] = 0;
-              initContainer = kTRUE;
-              break;
-    case 3:   for(Int_t i = 0; i < 3; i++) dims[i] = i;
-              initContainer = kTRUE;
-              break;
-    default:
-              AliError("Container with this number of dimensions not foreseen (yet)");
-  };
-  if(!initContainer){
-    AliError("Creation of the sliced containers failed. Background estimation not possible");
-    return NULL;
-  }
-  AliCFContainer *mcContainerD = GetSlicedContainer(mcContainer, dimensions, dims);
-
   // Efficiency
-  AliCFEffGrid* efficiencyD = new AliCFEffGrid("efficiency","",*mcContainerD);
+  AliCFEffGrid* efficiencyD = new AliCFEffGrid("efficiency","",*mcContainer);
   efficiencyD->CalculateEfficiency(fStepMC,fStepTrue);
 
   // Data in the right format
   AliCFDataGrid *dataGrid = 0x0;  
   if(bgsubpectrum) {
-    if(bgsubpectrum->GetNVar()!= dimensions) {
-      AliError("Not the expected number of dimensions for the AliCFDataGrid\n");
-      return NULL;
-    }
     dataGrid = bgsubpectrum;
-    
   }
   else {
-
+    
     AliCFContainer *dataContainer = GetContainer(kDataContainer);
     if(!dataContainer){
       AliError("Data Container not available");
       return NULL;
     }
 
-    AliCFContainer *dataContainerD = GetSlicedContainer(dataContainer, dimensions, dims);
-    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainerD, fStepData);
-    
+    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainer, fStepData);
   } 
 
   // Correct
   AliCFDataGrid *result = (AliCFDataGrid *) dataGrid->Clone();
   result->ApplyEffCorrection(*efficiencyD);
-  
 
+  if(fDebugLevel > 0) {
+    
+    AliCFEffGrid  *efficiencymcPID = (AliCFEffGrid*)  GetEfficiency(GetContainer(kMCContainerMC),fStepMC,AliHFEcuts::kStepHFEcutsTRD + AliHFEcuts::kNcutStepsMCTrack);
+    AliCFEffGrid  *efficiencymctrackinggeo = (AliCFEffGrid*)  GetEfficiency(GetContainer(kMCContainerMC),AliHFEcuts::kStepHFEcutsTRD + AliHFEcuts::kNcutStepsMCTrack,fStepTrue);
+    AliCFEffGrid  *efficiencymcall = (AliCFEffGrid*)  GetEfficiency(GetContainer(kMCContainerMC),fStepMC,fStepTrue);
+    
+    AliCFEffGrid  *efficiencyesdall = (AliCFEffGrid*)  GetEfficiency(GetContainer(kMCContainerESD),fStepMC,fStepTrue);
+    
+    TCanvas * cefficiency = new TCanvas("efficiency","efficiency",1000,700);
+    cefficiency->cd(1);
+    TH1D* efficiencymcPIDD = efficiencymcPID->Project(0);
+    efficiencymcPIDD->SetTitle("");
+    efficiencymcPIDD->SetStats(0);
+    efficiencymcPIDD->SetMarkerStyle(25);
+    efficiencymcPIDD->Draw();
+    TH1D* efficiencymctrackinggeoD = efficiencymctrackinggeo->Project(0);
+    efficiencymctrackinggeoD->SetTitle("");
+    efficiencymctrackinggeoD->SetStats(0);
+    efficiencymctrackinggeoD->SetMarkerStyle(26);
+    efficiencymctrackinggeoD->Draw("same");
+    TH1D* efficiencymcallD = efficiencymcall->Project(0);
+    efficiencymcallD->SetTitle("");
+    efficiencymcallD->SetStats(0);
+    efficiencymcallD->SetMarkerStyle(27);
+    efficiencymcallD->Draw("same");
+    TH1D* efficiencyesdallD = efficiencyesdall->Project(0);
+    efficiencyesdallD->SetTitle("");
+    efficiencyesdallD->SetStats(0);
+    efficiencyesdallD->SetMarkerStyle(24);
+    efficiencyesdallD->Draw("same");
+    TLegend *legeff = new TLegend(0.4,0.6,0.89,0.89);
+    legeff->AddEntry(efficiencymcPIDD,"PID efficiency","p");
+    legeff->AddEntry(efficiencymctrackinggeoD,"Tracking geometry efficiency","p");
+    legeff->AddEntry(efficiencymcallD,"Overall efficiency","p");
+    legeff->AddEntry(efficiencyesdallD,"Overall efficiency ESD","p");
+    legeff->Draw("same");
+  }
+  
   return result;
 
 }
+
 //__________________________________________________________________________________
 TGraphErrors *AliHFEspectrum::Normalize(THnSparse * const spectrum) const {
   //
@@ -641,7 +746,7 @@ TGraphErrors *AliHFEspectrum::Normalize(AliCFDataGrid * const spectrum) const {
   //
   if(fNEvents > 0) {
 
-    TH1D* projection = (TH1D*)spectrum->Project(0);
+    TH1D* projection = spectrum->Project(0);
     CorrectFromTheWidth(projection);
     TGraphErrors *graphError = NormalizeTH1(projection);
     return graphError;
@@ -712,93 +817,10 @@ AliCFContainer *AliHFEspectrum::GetContainer(AliHFEspectrum::CFContainer_t type)
   if(!fCFContainers) return NULL;
   return dynamic_cast<AliCFContainer *>(fCFContainers->At(type));
 }
-
 //____________________________________________________________
-AliCFDataGrid *AliHFEspectrum::TakeBackgroundFromData(Int_t nDim) {
-  // 
-  // Take Background Estimate from Data
+AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, Int_t nDim, Int_t *dimensions,Int_t source) {
   //
- 
-  AliCFContainer *backgroundContainer = GetContainer(kBackgroundData);
-  if(!backgroundContainer){
-    AliError("MC background container not found");
-    return NULL;
-  }
-  AliInfo(Form("Making background Estimate from Data in %d Dimensions", nDim));
-
-  Bool_t initContainer = kFALSE;
-  Int_t dimensions[3];
-  switch(nDim){
-    case 1:   dimensions[0] = 0;
-              initContainer = kTRUE;
-              break;
-    case 3:   for(Int_t i = 0; i < 3; i++) dimensions[i] = i;
-              initContainer = kTRUE;
-              break;
-    default:
-              AliError("Container with this number of dimensions not foreseen (yet)");
-  };
-  if(!initContainer){
-    AliError("Creation of the sliced containers failed. Background estimation not possible");
-    return NULL;
-  }
-  AliCFContainer *slicedBackground = GetSlicedContainer(backgroundContainer, nDim, dimensions);
-  AliCFDataGrid *contaminationspectrum = new AliCFDataGrid("ContaminationGrid","ContaminationGrid",*slicedBackground,1);
-  
-  return contaminationspectrum;
-}
-
-//____________________________________________________________
-AliCFDataGrid *AliHFEspectrum::MakeBackgroundEstimateFromMC(Int_t nDim){
-  //
-  // Make Background Estimate using MC
-  // Calculate ratio of hadronic background from MC and 
-  // apply this on data
-  //
-  AliCFContainer *backgroundContainer = GetContainer(kBackgroundMC);
-  AliCFContainer *dataContainer = GetContainer(kDataContainer);
-  if(!backgroundContainer){
-    AliError("MC background container not found");
-    return NULL;
-  }
-  if(!dataContainer){
-    AliError("Data container not found");
-    return NULL;
-  }
-  AliInfo(Form("Making background Estimate from MC in %d Dimensions", nDim));
-
-  Bool_t initContainer = kFALSE;
-  Int_t dimensions[3];
-  switch(nDim){
-    case 1:   dimensions[0] = 1;
-              initContainer = kTRUE;
-              break;
-    case 3:   for(Int_t i = 0; i < 3; i++) dimensions[i] = i;
-              initContainer = kTRUE;
-              break;
-    default:
-              AliError("Container with this number of dimensions not foreseen (yet)");
-  };
-  if(!initContainer){
-    AliError("Creation of the sliced containers failed. Background estimation not possible");
-    return NULL;
-  }
-  AliCFContainer *slicedBackground = GetSlicedContainer(backgroundContainer, nDim, dimensions);
-  AliCFContainer *slicedData = GetSlicedContainer(dataContainer, nDim, dimensions);
-  
-  // Create Efficiency Grid and data grid
-  AliCFEffGrid backgroundRatio("backgroundRatio", "BackgroundRatio", *slicedBackground);
-  backgroundRatio.CalculateEfficiency(1, 0);
-  AliCFDataGrid *backgroundEstimate = new AliCFDataGrid("backgroundEstimate", "Grid for Background Estimate", *slicedData, fStepData);
-  backgroundEstimate->ApplyEffCorrection(backgroundRatio);
-
-  return backgroundEstimate;
-}
-
-//____________________________________________________________
-AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, Int_t nDim, Int_t *dimensions) {
-  //
-  // Slice Pt bin
+  // Slice bin for a given source of electron
   //
   
   Double_t *varMin = new Double_t[container->GetNVar()],
@@ -809,8 +831,15 @@ AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, In
     
     binLimits = new Double_t[container->GetNBins(ivar)+1];
     container->GetBinLimits(ivar,binLimits);
-    varMin[ivar] = binLimits[0];
-    varMax[ivar] = binLimits[container->GetNBins(ivar)];
+    if((ivar == 4) && ((source>= 0) && (source<container->GetNBins(ivar)))) {
+      varMin[ivar] = binLimits[source];
+      varMax[ivar] = binLimits[source];
+    }
+    else {
+      varMin[ivar] = binLimits[0];
+      varMax[ivar] = binLimits[container->GetNBins(ivar)];
+    }
+
     delete[] binLimits;
   }
   
@@ -823,12 +852,12 @@ AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, In
 }
 
 //_________________________________________________________________________
-THnSparse *AliHFEspectrum::GetSlicedCorrelation(Int_t nDim, Int_t *dimensions) const {
+THnSparseF *AliHFEspectrum::GetSlicedCorrelation(THnSparseF *correlationmatrix, Int_t nDim, Int_t *dimensions) const {
   //
-  // Slice Pt correlation
+  // Slice correlation
   //
 
-  Int_t ndimensions = fCorrelation->GetNdimensions();
+  Int_t ndimensions = correlationmatrix->GetNdimensions();
   printf("Number of dimension %d correlation map\n",ndimensions);
   if(ndimensions < (2*nDim)) {
     AliError("Problem in the dimensions");
@@ -844,7 +873,7 @@ THnSparse *AliHFEspectrum::GetSlicedCorrelation(Int_t nDim, Int_t *dimensions) c
     printf("For iter %d: %d and iter+nDim %d: %d\n",iter,dimensions[iter],iter+nDim,ndimensionsContainer + dimensions[iter]);
   }
     
-  THnSparse *k = fCorrelation->Projection(nDim*2,dim);
+  THnSparseF *k = (THnSparseF *) correlationmatrix->Projection(nDim*2,dim);
 
   delete[] dim; 
   return k;
@@ -900,7 +929,7 @@ TObject* AliHFEspectrum::GetSpectrum(AliCFContainer * const c, Int_t step) {
   return data;
 }
 //_________________________________________________________________________
-TObject* AliHFEspectrum::GetEfficiency(AliCFContainer * const c, Int_t step, Int_t step0) {
+TObject* AliHFEspectrum::GetEfficiency(AliCFContainer * const c, Int_t step, Int_t step0){
   // 
   // Create efficiency grid and calculate efficiency
   // of step to step0

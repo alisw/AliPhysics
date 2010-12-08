@@ -30,52 +30,59 @@ class TObject;
 class TH1;
 class TList;
 class AliCFContainer;
+class AliHFEcontainer;
 class AliCFDataGrid;
 class AliCFEffGrid;
 
 class AliHFEspectrum : public TNamed{
   public:
     enum CFContainer_t{
-      kDataContainer = 0,
-      kMCContainer = 1,
-      kBackgroundData = 2,
-      kBackgroundMC = 3
+      kDataContainer  = 0,
+      kBackgroundData = 1,
+      kMCContainerMC = 2,
+      kMCContainerESD = 3,
+      kDataContainerV0 = 4
     };
-    enum BackgroundSource_t{
-      kMCbackground = 0,
-      kDataBackground = 1
-    };
+   
     AliHFEspectrum(const char* name);
     ~AliHFEspectrum();
+    
 
-    void Correct(AliCFContainer *datacontainer,AliCFContainer *mccontainer,THnSparseF *mccorrelation,AliCFContainer *contaminationcontainer=0x0);
-    AliCFDataGrid *SubtractBackground(Int_t dimensions, Bool_t setBackground = kFALSE);
-    AliCFDataGrid *TakeBackgroundFromData(Int_t nDim);    
-
-    TList *Unfold(Int_t dimensions, AliCFDataGrid* const bgsubpectrum = 0x0);
-    AliCFDataGrid *CorrectForEfficiency(Int_t dimensions, AliCFDataGrid* const bgsubpectrum = 0x0);
- 
+    Bool_t Init(AliHFEcontainer *datahfecontainer,AliHFEcontainer *mchfecontainer,AliHFEcontainer *v0hfecontainer=0x0);
+    Bool_t Correct(Bool_t subtractcontamination=kTRUE);
+   
+    AliCFDataGrid *SubtractBackground(Bool_t setBackground = kFALSE);
+    
+    AliCFDataGrid *CorrectV0Efficiency(AliCFDataGrid* const bgsubpectrum = 0x0);
+   
+    TList *Unfold(AliCFDataGrid* const bgsubpectrum = 0x0);
+    AliCFDataGrid *CorrectForEfficiency(AliCFDataGrid* const bgsubpectrum = 0x0);
+   
     TGraphErrors *Normalize(THnSparse * const spectrum) const;
     TGraphErrors *Normalize(AliCFDataGrid * const spectrum) const;
- 
+    
     void SetCorrelation(THnSparseF * const correlation) {fCorrelation = correlation; };
     void SetContainer(AliCFContainer *cont, AliHFEspectrum::CFContainer_t type);
+    
     void SetNumberOfEvents(Int_t nEvents) { fNEvents = nEvents; }
-    void SetBackgroundSource(BackgroundSource_t source) { fBackgroundSource = source; };
     void SetMCEffStep(Int_t step) { fStepMC = step; };
     void SetMCTruthStep(Int_t step) { fStepTrue = step; };
     void SetStepToCorrect(Int_t step) { fStepData = step; };
+    void SetStepBeforeCutsV0(Int_t step) { fStepBeforeCutsV0 = step; };
+    void SetStepAfterCutsV0(Int_t step) { fStepAfterCutsV0 = step; };
+
     void SetStepGuessedUnfolding(Int_t stepGuessedUnfolding) { fStepGuessedUnfolding = stepGuessedUnfolding; };
     void SetNumberOfIteration(Int_t numberOfIteration) { fNumberOfIterations = numberOfIteration; };
+    
     void SetDumpToFile(Bool_t dumpToFile) { fDumpToFile=dumpToFile; }; 
   
+    void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; };
 
   protected:
-    AliCFDataGrid *MakeBackgroundEstimateFromMC(Int_t nDimensions);
-    
+       
     AliCFContainer *GetContainer(AliHFEspectrum::CFContainer_t contt);
-    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions);
-    THnSparse *GetSlicedCorrelation(Int_t nDim, Int_t *dimensions) const;
+    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1);
+    THnSparseF *GetSlicedCorrelation(THnSparseF *correlationmatrix,Int_t nDim, Int_t *dimensions) const;
     TObject* GetSpectrum(AliCFContainer * const c, Int_t step);
     TObject* GetEfficiency(AliCFContainer * const c, Int_t step, Int_t step0);
  
@@ -95,17 +102,20 @@ class AliHFEspectrum : public TNamed{
     THnSparseF *fCorrelation;     // Correlation Matrices
     AliCFDataGrid *fBackground;   // Background Grid
 
-    BackgroundSource_t fBackgroundSource;   // Source for the background estimate
-
+    Bool_t fInclusiveSpectrum;     // Inclusive Spectrum
     Bool_t fDumpToFile;           // Write Result in a file
 
+    Int_t fNbDimensions;          // Number of dimensions for the correction
     Int_t fNEvents;               // Number of Events
     Int_t fStepMC;                // MC step (for unfolding)
     Int_t fStepTrue;              // MC step of the final spectrum
     Int_t fStepData;              // Data Step (various applications)
+    Int_t fStepBeforeCutsV0;      // Before cuts V0
+    Int_t fStepAfterCutsV0;       // After cuts V0
     Int_t fStepGuessedUnfolding;  // Step for first guessed unfolding
     Int_t fNumberOfIterations;    // Number of iterations
 
+    Int_t fDebugLevel;            // Debug Level
 
     ClassDef(AliHFEspectrum, 1) 
 };

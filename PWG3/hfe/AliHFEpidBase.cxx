@@ -20,8 +20,11 @@
 // Authors: 
 //   Markus Fasel <M.Fasel@gsi.de> 
 // 
+
+#include "AliAODpidUtil.h"
 #include "AliESDpid.h"
 #include "AliHFEpidBase.h"
+#include "AliHFEtools.h"
 
 ClassImp(AliHFEpidBase)
 
@@ -29,7 +32,7 @@ ClassImp(AliHFEpidBase)
 AliHFEpidBase::AliHFEpidBase():
   TNamed(),
   fESDpid(NULL),
-  fDebugLevel(0)
+  fAODpid(NULL)
 {
   //
   // Default constructor
@@ -40,7 +43,7 @@ AliHFEpidBase::AliHFEpidBase():
 AliHFEpidBase::AliHFEpidBase(const Char_t *name):
   TNamed(name, ""),
   fESDpid(NULL),
-  fDebugLevel(0)
+  fAODpid(NULL)
 {
   //
   // Default constructor
@@ -51,7 +54,7 @@ AliHFEpidBase::AliHFEpidBase(const Char_t *name):
 AliHFEpidBase::AliHFEpidBase(const AliHFEpidBase &c):
   TNamed(),
   fESDpid(NULL),
-  fDebugLevel(0)
+  fAODpid(NULL)
 {
   //
   //Copy constructor
@@ -79,8 +82,30 @@ void AliHFEpidBase::Copy(TObject &ref) const {
   AliHFEpidBase &target = dynamic_cast<AliHFEpidBase &>(ref);
 
   target.fESDpid = fESDpid;
-  target.fDebugLevel = fDebugLevel;
+  target.fAODpid = fAODpid;
 
   TNamed::Copy(ref);
+}
+
+//___________________________________________________________________
+AliHFEpidObject &AliHFEpidObject::operator=(const AliHFEpidObject &ref){
+  //
+  // Assignment operator
+  //
+  if(&ref != this){
+    fkRecTrack = ref.fkRecTrack;
+    fAnalysisType = ref.fAnalysisType;
+    fAbInitioPID = ref.fAbInitioPID;
+    fCentrality = ref.fCentrality;
+  }
+  return *this;
+}
+
+//___________________________________________________________________
+void AliHFEpidObject::SetMCTrack(const AliVParticle *mctrack){
+  //
+  // Set the aprioriPID information coming from the MC truth
+  //
+  if(mctrack) fAbInitioPID = AliHFEtools::PDG2AliPID(AliHFEtools::GetPdg(mctrack));
 }
 

@@ -53,7 +53,7 @@ class AliHFEefficiency : public AliAnalysisTaskSE{
     void SetRunTerminate(Bool_t terminate = kTRUE) { SetBit(kTerminate, terminate); }
 
     void CalculatePTsmearing();
-    void DrawPtResolution(TList *l);
+    void DrawPtResolution(const TList * const l);
 
   private:
     enum{

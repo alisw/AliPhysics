@@ -25,6 +25,8 @@
 class TParticle;
 class AliAODMCParticle;
 class AliESDpid;
+class AliAODpidUtil;
+class AliVParticle;
 
 class AliHFEtools : public TObject{
   public:
@@ -34,15 +36,19 @@ class AliHFEtools : public TObject{
     static Double_t *MakeLinearBinning(Int_t nBins, Double_t ymin, Double_t ymax);
     static Double_t *MakeLogarithmicBinning(Int_t nBins, Double_t ymin, Double_t ymax);
     Bool_t    BinLogAxis(TObject *o, Int_t dim);
-    static Float_t GetRapidity(TParticle *part);
-    static Float_t GetRapidity(AliAODMCParticle *part); // return rapidity
+    static Float_t GetRapidity(const TParticle *part);
+    static Float_t GetRapidity(const AliAODMCParticle *part); // return rapidity
+    static Int_t GetPdg(const AliVParticle *track);
+    static Int_t PDG2AliPID(Int_t pdg);
     static AliESDpid *GetDefaultPID(Bool_t isMC = kTRUE);
+    static AliAODpidUtil *GetDefaultAODPID(Bool_t isMC = kTRUE);
     static void DestroyDefaultPID();
     static void SetLogLevel(Int_t loglevel) { fgLogLevel = loglevel ;}
 
   private:
-      static AliESDpid *fgDefaultPID;   // Default PID object
-      static Int_t fgLogLevel;          // Log Level
+      static AliESDpid *fgDefaultPID;           // Default PID object
+      static AliAODpidUtil *fgDefaultPIDaod;    // Default PID object
+      static Int_t fgLogLevel;                  // Log Level
 
     ClassDef(AliHFEtools, 0)
 };

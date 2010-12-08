@@ -195,7 +195,7 @@ void AliHFEpriVtx::FillNtracks()
 }
 
 //_______________________________________________________________________________________________
-Int_t AliHFEpriVtx::GetMCPID(AliESDtrack *track) 
+Int_t AliHFEpriVtx::GetMCPID(AliESDtrack const *track)
 {
         //
         // get MC pid
@@ -340,7 +340,7 @@ Double_t AliHFEpriVtx::GetDistanceFromRecalVertexXY(AliESDtrack * const ESDelect
 
 }
 
-void AliHFEpriVtx::RecalcPrimvtx(Int_t nkftrk, Int_t * const trkid, AliKFParticle * const kftrk)
+void AliHFEpriVtx::RecalcPrimvtx(Int_t nkftrk, const Int_t * const trkid, const AliKFParticle * const kftrk)
 {
         //
         // recalculate primary vertex after removing the input track

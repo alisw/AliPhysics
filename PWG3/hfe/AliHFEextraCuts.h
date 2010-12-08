@@ -26,8 +26,9 @@
 
 class TList;
 
-class AliESDtrack;
-class AliMCParticle;
+class AliVEvent;
+class AliVParticle;
+class AliVTrack;
 
 class AliHFEextraCuts : public AliCFCutBase{
   public:
@@ -45,6 +46,7 @@ class AliHFEextraCuts : public AliCFCutBase{
     
     virtual Bool_t IsSelected(TObject *o);
     virtual Bool_t IsSelected(TList *) { return kTRUE; };
+    virtual void SetRecEventInfo(const TObject *event);
 
     inline void SetClusterRatioTPC(Double_t ratio);
     inline void SetRequireITSpixel(ITSPixel_t pixel);
@@ -52,7 +54,11 @@ class AliHFEextraCuts : public AliCFCutBase{
     inline void SetMaxImpactParamR(Double_t impactParam);
     inline void SetMinImpactParamZ(Double_t impactParam);
     inline void SetMaxImpactParamZ(Double_t impactParam);
+    inline void SetMinHFEImpactParamR();
+    inline void SetMinHFEImpactParamNsigmaR();
     inline void SetMinTrackletsTRD(Int_t minTracklets);
+    inline void SetMinNClustersTPC(Int_t minclusters);
+    void SetTPCIter1(Bool_t tpcIter1) { fTPCiter1 = tpcIter1; }
 
     void SetCheckITSstatus(Bool_t check) { fCheck = check; };
     Bool_t GetCheckITSstatus() const { return fCheck; };
@@ -62,14 +68,23 @@ class AliHFEextraCuts : public AliCFCutBase{
     
   protected:
     virtual void AddQAHistograms(TList *qaList);
-    Bool_t CheckESDCuts(AliESDtrack *track);
-    Bool_t CheckMCCuts(AliMCParticle * /*track*/) const;
+    Bool_t CheckRecCuts(AliVTrack *track);
+    Bool_t CheckMCCuts(AliVParticle * /*track*/) const;
     Bool_t CheckITSstatus(Int_t itsStatus) const;
-    void FillQAhistosESD(AliESDtrack *track, UInt_t when);
+    void FillQAhistosRec(AliVTrack *track, UInt_t when);
 //     void FillQAhistosMC(AliMCParticle *track, UInt_t when);
     void FillCutCorrelation(ULong64_t survivedCut);
     void PrintBitMap(Int_t bitmap);
     
+    // Getter Functions for ESD/AOD compatible mode
+    Int_t GetTRDnTrackletsPID(AliVTrack *track);
+    Int_t GetITSstatus(AliVTrack *track, Int_t layer);
+    Int_t GetTPCfindableClusters(AliVTrack *track, Bool_t iter1 = kFALSE);
+    Int_t GetTPCncls(AliVTrack *track, Bool_t iter1 = kFALSE);
+    void GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z);
+    void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy);
+    void GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut);
+
   private:
     typedef enum{
       kMinImpactParamR = 0,
@@ -79,7 +94,10 @@ class AliHFEextraCuts : public AliCFCutBase{
       kClusterRatioTPC = 4,
       kMinTrackletsTRD = 5,
       kPixelITS = 6,
-      kNcuts = 7
+      kMinHFEImpactParamR = 7,
+      kMinHFEImpactParamNsigmaR = 8,
+      kMinNClustersTPC = 9,
+      kNcuts = 10
     } Cut_t;
     enum{
       //
@@ -88,9 +106,12 @@ class AliHFEextraCuts : public AliCFCutBase{
       kBeforeCuts =0,
       kAfterCuts = 1
     };
+    AliVEvent *fEvent;            //! working event
     ULong64_t fCutCorrelation;		// Cut Correlation
     ULong64_t fRequirements;		// Cut Requirements
+    Bool_t fTPCiter1;           // Tracking iteration from which the number of clusters is taken
     Float_t fImpactParamCut[4];		// Impact Parmameter Cut
+    UInt_t fMinNClustersTPC;      // Minimum TPC clusters cut
     Float_t fClusterRatioTPC;		// Ratio of findable vs. found clusters in TPC
     UChar_t fMinTrackletsTRD;		// Min. Number of Tracklets inside TRD
     UChar_t fPixelITS;			// Cut on ITS Pixels
@@ -139,8 +160,24 @@ void AliHFEextraCuts::SetMaxImpactParamZ(Double_t impactParam){
 }
 
 //__________________________________________________________
+void AliHFEextraCuts::SetMinHFEImpactParamR(){
+  SETBIT(fRequirements, kMinHFEImpactParamR);
+}
+
+//__________________________________________________________
+void AliHFEextraCuts::SetMinHFEImpactParamNsigmaR(){
+  SETBIT(fRequirements, kMinHFEImpactParamNsigmaR);
+}
+
+//__________________________________________________________
 void AliHFEextraCuts::SetMinTrackletsTRD(Int_t minTracklets){
   SETBIT(fRequirements, kMinTrackletsTRD);
   fMinTrackletsTRD = minTracklets;
+}
+
+//__________________________________________________________
+void AliHFEextraCuts::SetMinNClustersTPC(Int_t minClusters){
+  SETBIT(fRequirements, kMinNClustersTPC);
+  fMinNClustersTPC = minClusters;
 }
 #endif

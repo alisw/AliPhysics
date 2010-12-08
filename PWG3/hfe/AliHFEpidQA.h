@@ -90,25 +90,25 @@ class AliHFEpidQA : public TObject{
       kTOF = 3
     };
 
-    TObjArray *MakeTrackList(TObjArray *tracks) const;
-    TObjArray *MakeCleanListElectrons(TObjArray *tracks) const;
+    TObjArray *MakeTrackList(const TObjArray *tracks) const;
+    TObjArray *MakeCleanListElectrons(const TObjArray *tracks) const;
 
-    void MakePurity(TObjArray *tracks, Int_t species);
-    TObjArray *MakeCleanListForTRD(TObjArray * const track, Int_t species);
-    void FillElectronLikelihoods(TObjArray * const particles, Int_t species);
-    void FillPIDresponse(TObjArray * const particles, Int_t species);
-    void FillIllumination(TObjArray *const particles, Int_t species);
+    void MakePurity(const TObjArray *tracks, Int_t species);
+    TObjArray *MakeCleanListForTRD(const TObjArray * const track, Int_t species);
+    void FillElectronLikelihoods(const TObjArray * const particles, Int_t species);
+    void FillPIDresponse(const TObjArray * const particles, Int_t species);
+    void FillIllumination(const TObjArray *const particles, Int_t species);
     void FillTPCinfo(AliESDtrack * const track, Int_t species);
     void RecalculateTRDpid(AliESDtrack *track, Double_t *pidProbs) const;
     void RecalculateTRDpid(AliAODTrack *track, Double_t *pidProbs) const;
-    void CheckTenderV0pid(TObjArray * const particles, Int_t species);
+    void CheckTenderV0pid(const TObjArray * const particles, Int_t species);
     Int_t GetTenderV0pid(AliESDtrack * const track);
     
     Double_t TRDlikeTracklet(Int_t layer, AliESDtrack * const track, Double_t *likelihood);
-    Int_t  TRDmomBin(Double_t p);
+    const Int_t  TRDmomBin(Double_t p);
 
  protected:
-    Int_t GetMaxPID(Double_t *pidProbs) const;
+    Int_t GetMaxPID(const Double_t *pidProbs) const;
     Int_t GetPDG(Int_t index);
     
   private:

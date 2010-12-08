@@ -30,9 +30,12 @@
 
 #include <climits>
 
+class AliAODpidUtil;
 class AliESDpid;
-class AliESDtrack;
+class AliHFEcontainer;
 class AliHFEpidBase;
+class AliHFEpidQAmanager;
+class AliHFEvarManager;
 class AliVParticle;
 class AliMCParticle;
 
@@ -43,7 +46,7 @@ class AliHFEpid : public TNamed{
     enum{
       kUndefined = UINT_MAX 
     };
-    enum DETtype_t {
+    enum EDETtype_t {
       kMCpid = 0,
       kESDpid = 1,
       kITSpid = 2,
@@ -59,46 +62,39 @@ class AliHFEpid : public TNamed{
     void Copy(TObject &o) const;
     ~AliHFEpid();
     
-    Bool_t InitializePID(TString argument);
-    Bool_t IsSelected(AliHFEpidObject *track);
+    Bool_t InitializePID();
+    Bool_t IsSelected(AliHFEpidObject *track, AliHFEcontainer *cont = NULL, const Char_t *contname = "trackContainer", AliHFEpidQAmanager *qa = NULL);
 
-    Bool_t IsQAOn() const { return TestBit(kIsQAOn); };
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
+
+    void AddDetector(TString detector, UInt_t position);
     void SetESDpid(AliESDpid *pid);
-    void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; }
-    void SetQAOn();
+    void SetAODpid(AliAODpidUtil *pid);
+    void SetVarManager(AliHFEvarManager *vm) { fVarManager = vm; }
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData, hasMCdata); };
-    TList *GetQAhistograms() const { return fQAlist; };
-    AliHFEpidBase *GetDetPID(DETtype_t det) const { return det < kNdetectorPID ? fDetectorPID[det] : NULL; }
+
+    UInt_t GetNumberOfPIDdetectors() const { return fNPIDdetectors; }
+    Bool_t HasDetector(EDETtype_t det) const { return IsDetectorOn(det); }
+    AliHFEpidBase *GetDetPID(EDETtype_t det) const { return det < kNdetectorPID ? fDetectorPID[det] : NULL; }
+
     void PrintStatus() const;
+    const Char_t *SortedDetectorName(Int_t det) const {
+      if(det < kNdetectorPID) return fgkDetectorName[fSortedOrder[det]]; 
+      else return fgkDetectorName[kNdetectorPID + 1];
+    }    
+    //-----Configure PID detectors with predefined stettings------
+    void ConfigureTPCasymmetric(Double_t pmin = 0.1, Double_t pmax = 20., Double_t sigmamin = -0.2, Double_t sigmamax = 5.);
+    void ConfigureTPCrejectionSimple();
+    void ConfigureTPCrejection();
+    void ConfigureTPCstrategyParis();
+    //------------------------------------------------------------
 
   protected:
     Bool_t MakePidTpcTof(AliHFEpidObject *track);
-    Bool_t MakePidTpcTrd(AliHFEpidObject *track);
-    void MakePlotsItsTpc(AliHFEpidObject *track);
 
-    // Stratgies
-    void InitStrategy1();
-    void InitStrategy2();
-    void InitStrategy3();
-    void InitStrategy4();
-    void InitStrategy5();
-    void InitStrategy6();
-    void InitStrategy7();
-    void InitStrategy8();
-    Bool_t IdentifyStrategy0(AliHFEpidObject *track);
-    Bool_t IdentifyStrategy1(AliHFEpidObject *track);
-    Bool_t IdentifyStrategy2(AliHFEpidObject *track);
-    Bool_t IdentifyStrategy3(AliHFEpidObject *track);
-    Bool_t IdentifyStrategy4(AliHFEpidObject *track);
-    Bool_t IdentifyStrategy5(AliHFEpidObject *track);
-    Bool_t IdentifyStrategy6(AliHFEpidObject *track);
-    Bool_t IdentifyStrategy7(AliHFEpidObject *track);
-    Bool_t IdentifyStrategy8(AliHFEpidObject *track);
   private:
     enum{
-      kIsQAOn = BIT(14),
-      kHasMCData = BIT(15)
+      kHasMCData = BIT(14)
     };
     enum{
       kCombinedTPCTRD=0
@@ -122,12 +118,14 @@ class AliHFEpid : public TNamed{
     }
     //--------------------------------------------------
 
-    AliHFEpidBase *fDetectorPID[kNdetectorPID];     //! Detector PID classes
-    UInt_t fEnabledDetectors;                       //  Enabled Detectors
-    UInt_t fPIDstrategy;                            //  PID Strategy
-    TList *fQAlist;                                 //! QA histograms
-    Int_t fDebugLevel;                              //  Debug Level
-    TObjArray *fCommonObjects;                       // Garbage Collector
+    static const Char_t *fgkDetectorName[kNdetectorPID + 1]; // PID Detector Names
+    AliHFEpidBase *fDetectorPID[kNdetectorPID];     //   Detector PID classes
+    UInt_t fDetectorOrder[kNdetectorPID];           //   Position requested by the user
+    UInt_t fSortedOrder[kNdetectorPID];             //   Sorted array of detectorIDs
+    UInt_t fEnabledDetectors;                       //   Enabled Detectors
+    UInt_t fNPIDdetectors;                          //   Number of PID detectors
+    AliHFEvarManager *fVarManager;                  //!  HFE Var Manager
+    TObjArray *fCommonObjects;                      //   Garbage Collector
 
   ClassDef(AliHFEpid, 1)      // Steering class for Electron ID
 };

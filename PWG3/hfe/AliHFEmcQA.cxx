@@ -165,20 +165,20 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
     kqTypeLabel[kElse-4]="elsee";
     kqTypeLabel[kMisID-4]="miside";
   }
-/*
-  const Double_t kPtbound[2] = {0.001, 50.};
+
+  const Double_t kPtbound[2] = {0.1, 20.}; //bin taken for considering inclusive e analysis binning
   Int_t iBin[1];
-  iBin[0] = 100; // bins in pt
+  iBin[0] = 44; // bins in pt
   Double_t* binEdges[1];
   binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
-  */
+  
   
   TString hname; 
   if(kquark == kOthers){
     for (Int_t iqType = 0; iqType < 4; iqType++ ){
        hname = hnopt+"Pt_"+kqTypeLabel[iqType];
-       //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
-       fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",500,0,50);
+       fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
+       //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",500,0,50);
        hname = hnopt+"Y_"+kqTypeLabel[iqType];
        fHist[iq][iqType][icut].fY = new TH1F(hname,hname,150,-7.5,7.5);
        hname = hnopt+"Eta_"+kqTypeLabel[iqType];
@@ -193,8 +193,8 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
      hname = hnopt+"PdgCode_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fPdgCode = new TH1F(hname,hname,20001,-10000.5,10000.5);
      hname = hnopt+"Pt_"+kqTypeLabel[iqType];
-     //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
-     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",500,0,50);
+     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
+     //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",500,0,50);
      hname = hnopt+"Y_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fY = new TH1F(hname,hname,150,-7.5,7.5);
      hname = hnopt+"Eta_"+kqTypeLabel[iqType];
@@ -366,8 +366,11 @@ void AliHFEmcQA::EndOfEventAna(const Int_t kquark)
      ancestorLabel[i] = 0;
   }
 
+
   // check history of found heavy quarks
   for (Int_t i = 0; i < fIsHeavy[iq]; i++){
+
+     if(!fHeavyQuark[i]) return;
 
      ancestorLabel[0] = i;
      ancestorPdg[0] = fHeavyQuark[i]->GetPdgCode(); 
@@ -1039,7 +1042,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
 {
   // decay particle's origin 
 
-  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
+  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return kMisID;
 
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;

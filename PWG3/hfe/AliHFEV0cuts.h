@@ -34,6 +34,22 @@ class AliVTrack;
 
 class AliHFEV0cuts : public TObject {
  public:
+  enum{ // Reconstructed V0
+    kUndef = 0,
+      kRecoGamma = 1,
+      kRecoK0 = 2,
+      kRecoPhi = 3,
+      kRecoLambda = 4,
+      kRecoALambda = -4
+      
+      };
+  enum{ // Identified Daughter particles
+    kRecoElectron = 0,
+      kRecoPionK0 = 1,
+      kRecoPionL = 2,
+      kRecoKaon = 3,
+      kRecoProton = 4
+      };
   AliHFEV0cuts();
   ~AliHFEV0cuts();
   AliHFEV0cuts(const AliHFEV0cuts &ref);
@@ -42,12 +58,12 @@ class AliHFEV0cuts : public TObject {
   void Init(const char* name);
   
   void RunQA();
-  void SetMC(Bool_t b)                  { fIsMC = b; };
   void SetMCEvent(AliMCEvent* const mce)      { fMCEvent = mce; };
   void SetInputEvent(AliVEvent* const e)      { fInputEvent = e; };
   void SetPrimaryVertex(AliKFVertex* const v) { fPrimaryVertex = v; };
   
-  TList* GetList() { return fQA->GetList(); };
+  TList* GetList()    { return fQA->GetList(); };
+  TList* GetListMC()  { return fQAmc->GetList(); };
   
   Bool_t   TrackCutsCommon(AliESDtrack* track);
   Bool_t   V0CutsCommon(AliESDv0 *v0);
@@ -65,6 +81,13 @@ class AliHFEV0cuts : public TObject {
   Double_t PsiPair(AliESDv0 *v0);
   
   Bool_t   CheckSigns(AliESDv0* const v0);
+  Bool_t   GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack * const ntrack, Double_t convpos[2]);
+  Bool_t   GetHelixCenter(AliESDtrack * const track, Double_t b,Int_t charge, Double_t center[2]);
+
+
+  // MC stuff
+  void     SetCurrentV0id(Int_t id) { fCurrentV0id = id; };
+  void     SetDaughtersID(Int_t d[2]) {fPdaughterPDG = d[0]; fNdaughterPDG = d[1]; };
   
   AliKFParticle *CreateMotherParticle(AliVTrack* const pdaughter, AliVTrack* const ndaughter, Int_t pspec, Int_t nspec);
 
@@ -74,11 +97,15 @@ class AliHFEV0cuts : public TObject {
  private:
   
   AliHFEcollection     *fQA;            // store QA cut histograms
+  AliHFEcollection     *fQAmc;          // store 
   AliMCEvent           *fMCEvent;       // MC event
   AliVEvent            *fInputEvent;    // Input Event
   AliKFVertex          *fPrimaryVertex; // primary vertex
 
-  Bool_t                      fIsMC; // availability of MC information
+  Int_t                fCurrentV0id;   // MC flagged V0    
+  Int_t                fPdaughterPDG;   // MC id of the positive daugeter
+  Int_t                fNdaughterPDG;   // MC id of the negative daugeter
+
 
   ClassDef(AliHFEV0cuts, 1)
 };

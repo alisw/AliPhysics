@@ -42,6 +42,7 @@ class AliHFEtrackFilter;
 class AliHFEpairs;
 class AliHFEsecVtxs;
 class AliKFParticle;
+class AliHFEmcQA;
 
 //________________________________________________________________
 class AliHFEsecVtx : public TObject {
@@ -68,10 +69,11 @@ class AliHFEsecVtx : public TObject {
     void SetMCEvent(AliMCEvent* const mcEvent){fMCEvent=mcEvent;};  // set stack pointer
     void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
     void SetUseMCPID(Bool_t usemcpid){fUseMCPID=usemcpid;};
+    void SetMCQA(AliHFEmcQA * const mcqa){fMCQA=mcqa;};    // set mcqa pointer
 
 
-    Int_t GetMCPID(AliESDtrack *track); // return MC pid
-		Int_t GetMCPDG(AliVTrack *track);   // return MC pid
+    Int_t GetMCPID(const AliESDtrack *track); // return MC pid
+		Int_t GetMCPDG(const AliVTrack *track);   // return MC pid
     Int_t GetPairOriginESD(AliESDtrack* track1, AliESDtrack* track2); // return pair origin as a pdg code
     Int_t GetPairOriginAOD(AliAODTrack* track1, AliAODTrack* track2); // return pair origin as a pdg code
     Int_t GetPairCode(const AliVTrack* const track1, const AliVTrack* const track2); // return corresponding pair code to pdg code
@@ -79,7 +81,7 @@ class AliHFEsecVtx : public TObject {
     Int_t GetPDG(AliVTrack *track);     // return pdg 
 		void GetESDPID(AliESDtrack *track, Int_t &recpid, Double_t &recprob); //return esd pid likelihood
     void GetPrimaryCondition();
-    void RecalcPrimvtx(Int_t nkftrk, Int_t * const, AliKFParticle * const); //recalculate primary vertex
+    void RecalcPrimvtx(Int_t nkftrk, const Int_t * const, const AliKFParticle * const); //recalculate primary vertex
 
     TClonesArray *HFEpairs();
     TClonesArray *HFEsecvtxs();
@@ -93,11 +95,12 @@ class AliHFEsecVtx : public TObject {
     void DeleteHFEpairs();
     void DeleteHFEsecvtxs();
 
-    Bool_t SingleTrackCut(AliESDtrack* track1) const; // single track cut
     void PairAnalysis(AliVTrack* ESDtrack1, AliVTrack* ESDtrack2, Int_t index2); // do e-h analysis
     void RunSECVTX(AliVTrack *track); // run secondary vertexing algorithm
 
     void MakeContainer(); // make containers
+    void MakeHistos(Int_t step); // make histograms for different steps
+    void FillHistos(Int_t step, const AliESDtrack *track); // fill histograms for different steps
 
   protected:
     void Init();
@@ -121,6 +124,8 @@ class AliHFEsecVtx : public TObject {
     AliESDEvent* fESD1; // ESD pointer             
     AliAODEvent* fAOD1; // AOD pointer             
     AliMCEvent* fMCEvent;   // MCEvent pointer              
+
+    AliHFEmcQA* fMCQA;  // mcqa pointer
 
     Bool_t fUseMCPID;   // if use MC pid 
 

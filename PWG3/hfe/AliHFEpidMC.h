@@ -24,14 +24,16 @@
  #include "AliHFEpidBase.h"
  #endif
 
+class AliHFEpidQAmanager;
+
 class AliHFEpidMC : public AliHFEpidBase{
   public:
+    AliHFEpidMC();
     AliHFEpidMC(const Char_t *name);
     virtual ~AliHFEpidMC(){};
     
     virtual Bool_t InitializePID();
-    virtual Int_t IsSelected(AliHFEpidObject *track);
-    virtual Bool_t HasQAhistos() const { return kFALSE; };
+    virtual Int_t IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa);
 
   private:
 

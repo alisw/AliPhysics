@@ -24,7 +24,7 @@
 #endif
 
 class AliVParticle;
-class TList;
+class AliHFEpidQAmanager;
 
 class AliHFEpidITS : public AliHFEpidBase{
   public:
@@ -34,23 +34,17 @@ class AliHFEpidITS : public AliHFEpidBase{
     virtual ~AliHFEpidITS();
 
     virtual Bool_t InitializePID();
-    virtual Int_t IsSelected(AliHFEpidObject *track);
-    virtual Bool_t HasQAhistos() const { return kTRUE; };
+    virtual Int_t IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa);
 
-    Double_t GetITSSignalV1(AliVParticle *track, Int_t mcPID);
-    Double_t GetITSSignalV2(AliVParticle *track, Int_t mcPID);
+    Double_t GetITSSignalV1(AliVParticle *track);
+    Double_t GetITSSignalV2(AliVParticle *track);
   protected:
-    virtual void AddQAhistograms(TList *l);
     void Copy(TObject &o) const;
-    void FillHistogramsSignalV1(Double_t p, Double_t signal, Int_t species);
-    void FillHistogramsSignalV2(Double_t p, Double_t signal, Int_t species);
   private:
     enum{
       kITSsigV1 = 0,
-      kITSsigV2 = 1,
-      kHistosSigAll = 2
+      kITSsigV2 = 1
     };
-    TList *fQAlist;      // QA histograms for ITS pid
 
     ClassDef(AliHFEpidITS, 0)  // PID class for ITS
 };

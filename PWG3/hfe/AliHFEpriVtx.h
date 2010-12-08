@@ -51,7 +51,7 @@ class AliHFEpriVtx : public TObject {
                 void FillNtracks(); // fill counted number of tracks
                 void CountPriVxtElecContributor(AliESDtrack *ESDelectron, Int_t sourcePart, Int_t recpid, Double_t recprob); 
                 void FillNprimVtxContributor() const;
-                void RecalcPrimvtx(Int_t nkftrk, Int_t * const, AliKFParticle * const); //recalculate primary vertex after removing given tracks
+                void RecalcPrimvtx(Int_t nkftrk, const Int_t * const, const AliKFParticle * const); //recalculate primary vertex after removing given tracks
                 void RecalcPrimvtx(AliESDtrack * const ESDelectron); //recalculate primary vertex after removing given track
                 void GetRecalcPrimvtx(Double_t privtx[3]) const {
                     privtx[0]=fPVxRe; privtx[1]=fPVyRe; privtx[2]=fPVzRe;
@@ -59,7 +59,7 @@ class AliHFEpriVtx : public TObject {
                 void GetNPriVxtContributor();
                 Double_t GetDistanceFromRecalVertexXY(AliESDtrack * const ESDelectron);
 		            Int_t GetNsectrk2prim() const {return fNsectrk2prim;}; 
-                Int_t GetMCPID(AliESDtrack *track); // return mc pid
+                Int_t GetMCPID(AliESDtrack const *track); // return mc pid
 
 
         private:

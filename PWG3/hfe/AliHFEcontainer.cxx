@@ -51,6 +51,7 @@ AliHFEcontainer::AliHFEcontainer():
   // Default constructor
   //
   fContainers = new THashList();
+  fContainers->SetOwner();
 }
 
 //__________________________________________________________________
@@ -66,6 +67,7 @@ AliHFEcontainer::AliHFEcontainer(const Char_t *name):
   // Default constructor
   //
   fContainers = new THashList();
+  fContainers->SetOwner();
 }
 
 //__________________________________________________________________
@@ -82,6 +84,7 @@ AliHFEcontainer::AliHFEcontainer(const Char_t *name, UInt_t nVar):
   // Setting Number of Variables too
   //
   fContainers = new THashList();
+  fContainers->SetOwner();
   SetNumberOfVariables(nVar);
 }
 
@@ -104,6 +107,7 @@ AliHFEcontainer::AliHFEcontainer(const AliHFEcontainer &ref):
       fVariables->AddAt(new AliHFEvarInfo(*dynamic_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar))), ivar);
   }
   fContainers = new THashList;
+  fContainers->SetOwner();
   AliCFContainer *ctmp = NULL;
   for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++){
     ctmp = dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien));
@@ -113,6 +117,7 @@ AliHFEcontainer::AliHFEcontainer(const AliHFEcontainer &ref):
   if(ref.fCorrelationMatrices){
     THnSparseF *htmp = NULL;
     fCorrelationMatrices = new THashList;
+    fCorrelationMatrices->SetOwner();
     for(Int_t ien = 0; ien < ref.fCorrelationMatrices->GetEntries(); ien++){
       htmp = dynamic_cast<THnSparseF *>(ref.fCorrelationMatrices->At(ien));
       CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
@@ -139,7 +144,16 @@ AliHFEcontainer &AliHFEcontainer::operator=(const AliHFEcontainer &ref){
   } else {
     fVariables = NULL;
   }
-
+  // Copy also correlation matrices
+  if(ref.fCorrelationMatrices){
+    THnSparseF *htmp = NULL;
+    fCorrelationMatrices = new THashList;
+    fCorrelationMatrices->SetOwner();
+    for(Int_t ien = 0; ien < ref.fCorrelationMatrices->GetEntries(); ien++){
+      htmp = dynamic_cast<THnSparseF *>(ref.fCorrelationMatrices->At(ien));
+      CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
+    }
+  }
   return *this;
 }
 
@@ -148,8 +162,8 @@ AliHFEcontainer::~AliHFEcontainer(){
   //
   // Destructor
   //
-  fContainers->Delete();
   delete fContainers;
+  if(fCorrelationMatrices) delete fCorrelationMatrices;
   if(fVariables){
     fVariables->Delete();
     delete fVariables;
@@ -236,26 +250,26 @@ void AliHFEcontainer::CreateCorrelationMatrix(const Char_t *name, const Char_t *
   if(!fCorrelationMatrices){
     fCorrelationMatrices = new THashList;
     fCorrelationMatrices->SetName("fCorrelationMatrices");
+    fCorrelationMatrices->SetOwner();
   }
 
   Int_t *nBins = new Int_t[2*fNVars];
-  Double_t *binMin = new Double_t[2*fNVars];
-  Double_t *binMax = new Double_t[2*fNVars];
   AliHFEvarInfo *var = NULL;
   for(UInt_t ivar = 0; ivar < fNVars; ivar++){
     var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
     nBins[ivar] = var->GetNumberOfBins();
-    binMin[ivar] = var->GetBinning()[0];
-    binMax[ivar] = var->GetBinning()[var->GetNumberOfBins()];
+    nBins[ivar+fNVars] = var->GetNumberOfBins();
   }
 
-  THnSparseF * hTmp = new THnSparseF(name, title, 2*fNVars, nBins, binMin, binMax);
+  THnSparseF * hTmp = new THnSparseF(name, title, 2*fNVars, nBins);
   for(UInt_t ivar = 0; ivar < fNVars; ivar++){
     var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
-    hTmp->GetAxis(ivar)->Set(var->GetNumberOfBins(), var->GetBinning());
+    hTmp->SetBinEdges(ivar,var->GetBinning());
+    //hTmp->GetAxis(ivar)->Set(var->GetNumberOfBins(), var->GetBinning());
     hTmp->GetAxis(ivar)->SetTitle(var->GetVarName()->Data());
-    hTmp->GetAxis(ivar + fNVars)->Set(var->GetNumberOfBins(), var->GetBinning());
+    //hTmp->GetAxis(ivar + fNVars)->Set(var->GetNumberOfBins(), var->GetBinning());
     hTmp->GetAxis(ivar + fNVars)->SetTitle(Form("%s_{MC}", var->GetVarName()->Data()));
+    hTmp->SetBinEdges(ivar+fNVars,var->GetBinning());
   }
   hTmp->Sumw2();
   fCorrelationMatrices->AddLast(hTmp);
@@ -278,13 +292,38 @@ THnSparseF *AliHFEcontainer::GetCorrelationMatrix(const Char_t *name) const{
 }
 
 //__________________________________________________________________
-void AliHFEcontainer::FillCFContainer(const Char_t *name, UInt_t step, Double_t *content){
+void AliHFEcontainer::FillCFContainer(const Char_t *name, UInt_t step, Double_t *content, Double_t weight) const {
   //
   // Fill container
   //
   AliCFContainer *cont = GetCFContainer(name);
   if(!cont) return;
-  cont->Fill(content, step);
+  cont->Fill(content, step, weight);
+}
+
+//__________________________________________________________________
+void AliHFEcontainer::FillCFContainerStepname(const Char_t *name, const Char_t *steptitle, Double_t *content, Double_t weight)const{
+  //
+  // Fill container
+  //
+  AliCFContainer *cont = GetCFContainer(name);
+  if(!cont) return;
+  // find the matching step title
+  Int_t mystep = -1;
+  for(Int_t istep = 0; istep < cont->GetNStep(); istep++){
+    TString tstept = cont->GetStepTitle(istep);
+    if(!tstept.CompareTo(steptitle)){
+      mystep = istep;
+      break;
+    }
+  }
+  if(mystep < 0){
+    // step not found
+    AliDebug(1, Form("Step %s not found in container %s", steptitle, name));
+    return;
+  }
+  AliDebug(1, Form("Filling step %s(%d) for container %s", steptitle, mystep, name));
+  cont->Fill(content, mystep, weight);
 }
 
 //__________________________________________________________________
@@ -326,6 +365,18 @@ AliCFContainer *AliHFEcontainer::MakeMergedCFContainer(const Char_t *name, const
   }
   return cmerged;
 }
+
+//__________________________________________________________________
+void AliHFEcontainer::SetStepTitle(const Char_t *contname, const Char_t *steptitle, UInt_t step){
+  //
+  // Set title for given analysis step in container with name contname
+  //
+  AliCFContainer *cont = GetCFContainer(contname);
+  if(!cont) return;
+  if(step >= static_cast<UInt_t>(cont->GetNStep())) return;
+  cont->SetStepTitle(step, steptitle);
+}
+
 //__________________________________________________________________
 void AliHFEcontainer::MakeLinearBinning(UInt_t var, UInt_t nBins, Double_t begin, Double_t end){
   //
