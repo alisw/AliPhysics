@@ -2,18 +2,23 @@
 
 SRCS=hfe/AliHFEtools.cxx \
      hfe/AliHFEcollection.cxx \
+     hfe/AliHFEvarManager.cxx \
      hfe/AliHFEcontainer.cxx \
      hfe/AliHFEmcQA.cxx \
      hfe/AliHFEpairs.cxx \
      hfe/AliHFEsecVtxs.cxx \
      hfe/AliHFEsecVtx.cxx \
      hfe/AliHFEpriVtx.cxx \
-     hfe/AliHFEelecbackground.cxx \
      hfe/AliHFEspectrum.cxx \
      hfe/AliHFEV0info.cxx \
      hfe/AliHFEV0pid.cxx \
      hfe/AliHFEpidQA.cxx \
      hfe/AliHFEtrdPIDqa.cxx \
+     hfe/AliHFEdetPIDqa.cxx \
+     hfe/AliHFEtpcPIDqa.cxx \
+     hfe/AliHFEtofPIDqa.cxx \
+     hfe/AliHFEtrdPIDqaV1.cxx \
+     hfe/AliHFEpidQAmanager.cxx \
      hfe/AliHFEpid.cxx \
      hfe/AliHFEpidBase.cxx \
      hfe/AliHFEpidITS.cxx \
@@ -25,6 +30,9 @@ SRCS=hfe/AliHFEtools.cxx \
      hfe/AliHFEcutStep.cxx \
      hfe/AliHFEtrackFilter.cxx \
      hfe/AliHFEcuts.cxx \
+     hfe/AliHFEsignalCuts.cxx \
+     hfe/AliHFEelecbackground.cxx \
+     hfe/AliHFEtaggedTrackAnalysis.cxx \
      hfe/AliHFEdca.cxx \
      hfe/AliAnalysisTaskDCA.cxx \
      hfe/AliHFEdisplacedElectrons.cxx \
@@ -34,7 +42,10 @@ SRCS=hfe/AliHFEtools.cxx \
      hfe/AliHFEefficiency.cxx \
      hfe/AliAnalysisTaskHFE.cxx \
      hfe/AliHFEV0pidMC.cxx \
-     hfe/AliHFEV0cuts.cxx
+     hfe/AliHFEV0cuts.cxx \
+	hfe/AliAnalysisTaskCheckV0tender.cxx \
+	hfe/AliAnalysisTaskCheckV0tenderII.cxx \
+	hfe/AliESDv0KineCuts.cxx
 HDRS= $(SRCS:.cxx=.h)
 
 DHDR= PWG3hfeLinkDef.h

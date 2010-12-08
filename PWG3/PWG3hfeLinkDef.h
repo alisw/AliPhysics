@@ -8,6 +8,8 @@
 
 #pragma link C++ class  AliHFEtools+;
 #pragma link C++ class  AliHFEcollection+;
+#pragma link C++ class  AliHFEvarManager+;
+#pragma link C++ class  AliHFEvarManager::AliHFEvariable+;
 #pragma link C++ class  AliHFEcontainer+;
 #pragma link C++ class  AliHFEcontainer::AliHFEvarInfo+;
 #pragma link C++ class  AliHFEmcQA+;
@@ -17,6 +19,7 @@
 #pragma link C++ class  AliHFEpriVtx+;
 #pragma link C++ class  AliHFEelecbackground+;
 #pragma link C++ class  AliHFEspectrum+;
+#pragma link C++ class  AliHFEtaggedTrackAnalysis+;
 
 #pragma link C++ class  AliHFEV0info+;
 #pragma link C++ class  AliHFEV0pid+;
@@ -24,6 +27,11 @@
 #pragma link C++ class  AliHFEV0pidMC+;
 #pragma link C++ class  AliHFEpidQA+;
 #pragma link C++ class  AliHFEtrdPIDqa+;
+#pragma link C++ class  AliHFEdetPIDqa+;
+#pragma link C++ class  AliHFEtpcPIDqa+;
+#pragma link C++ class  AliHFEtofPIDqa+;
+#pragma link C++ class  AliHFEtrdPIDqaV1+;
+#pragma link C++ class  AliHFEpidQAmanager+;
 #pragma link C++ class  AliHFEpid+;
 #pragma link C++ class  AliHFEpidBase+;
 #pragma link C++ class  AliHFEpidITS+;
@@ -36,6 +44,7 @@
 #pragma link C++ class  AliHFEcutStep+;
 #pragma link C++ class  AliHFEtrackFilter+;
 #pragma link C++ class  AliHFEextraCuts+;
+#pragma link C++ class  AliHFEsignalCuts+;
 
 #pragma link C++ class  AliHFEdca+;
 #pragma link C++ class  AliAnalysisTaskDCA+;
@@ -48,5 +57,8 @@
 #pragma link C++ class  AliHFEdisplacedElectrons+;
 #pragma link C++ class  AliAnalysisTaskDisplacedElectrons+;
 
+#pragma link C++ class AliAnalysisTaskCheckV0tender+;
+#pragma link C++ class AliAnalysisTaskCheckV0tenderII+;
+#pragma link C++ class AliESDv0KineCuts+;
 
 #endif
