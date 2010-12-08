@@ -169,7 +169,7 @@ TString today = "";
 // Switches
 Bool_t convertToMT = 0;
 Bool_t sumCharge = 0;
-Int_t whatToFit = kStatErrors; 
+Int_t whatToFit = kStatErrors;
 Bool_t scaleKaons =  kFALSE;
 Bool_t drawStar =  kFALSE; // Overlay star when doing fits
 Bool_t correctSecondaries  = 1;
@@ -1266,10 +1266,17 @@ void DrawAllAndKaons() {
    PrintCanvas(c1, printFormats);
 
   // Draw all "stable" hadrons
+   Bool_t divideCanvas=kTRUE; 
   for(Int_t icharge = 0; icharge < kNCharge; icharge++){
-    TCanvas * c1h = new TCanvas(TString("cAll_")+chargeFlag[icharge],TString("cAll_")+chargeFlag[icharge],700,700);
-    c1h->SetLogy();
+    TCanvas * c1h = 0;
+    if(divideCanvas) c1h = new TCanvas(TString("cAll_")+chargeFlag[icharge],TString("cAll_")+chargeFlag[icharge],1200,500);
+    else c1h = new TCanvas(TString("cAll_")+chargeFlag[icharge],TString("cAll_")+chargeFlag[icharge],700,700);
+    //    c1h->SetLogy();
     c1h->SetLeftMargin(0.14);
+    if(divideCanvas) {
+      c1h->Divide(3,1);
+      c1h->cd(1);
+    }
     TH2F * hemptyLoc = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,4, 100, 1e-3,10);
     hemptyLoc->SetXTitle("p_{t} (GeV/c)");
     hemptyLoc->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1}");
@@ -1279,6 +1286,16 @@ void DrawAllAndKaons() {
     leg = new TLegend(0.482759, 0.489583, 0.896552, 0.925595, NULL,"brNDC");
     leg->SetFillColor(0);
     for(Int_t ipart = 0; ipart < kNPart; ipart++) {
+      if(divideCanvas) {
+	cout << "CD!!" << ipart+1 << endl;	
+	c1h->cd(ipart+1);
+	TH2F * hClone = new TH2F(*hemptyLoc);
+	hClone->GetXaxis()->SetRangeUser(0,1);
+	if(ipart == kPion)   hClone->GetYaxis()->SetRangeUser(0,3.5);
+	if(ipart == kKaon)   hClone->GetYaxis()->SetRangeUser(0,0.28);
+	if(ipart == kProton) hClone->GetYaxis()->SetRangeUser(0,0.1);
+	hClone->Draw();
+      }
       for(Int_t idet = 0; idet <= kITSTPC; idet++){
 	//	if (idet == kITS) continue;
 	// 	if (idet == kITSTPC) hSpectra[idet][ipart][icharge]->SetMarkerColor(kGreen);
@@ -1287,7 +1304,8 @@ void DrawAllAndKaons() {
 	leg->AddEntry(hSpectra[idet][ipart][icharge],TString(partLabel[ipart][icharge])+" (" + detFlag[idet]  + ")","lpf");
       }
       //      leg->AddLine();
-    }    
+    } 
+    if(divideCanvas) c1h->cd(1);
     leg->Draw();
     //    ALICEWorkInProgress(c1h,today.Data(),"#splitline{ALICE Preliminary}{Statistical Error Only}");
     PrintCanvas(c1h,printFormats);
@@ -1359,7 +1377,7 @@ void DrawAllAndKaons() {
 	    Float_t numer=hSpectra[kITS][ipart][icharge]->GetBinContent(iBin);
 	    Float_t denom=hSpectra[kTPC][ipart][icharge]->GetBinContent(jBin);
 	    Float_t enumer=hSpectra[kITS][ipart][icharge]->GetBinError(iBin);
-	    Float_t edenom=hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
+	    Float_t edenom=0;//hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
 	    Double_t ratio=0.;
 	    Double_t eratio=0.;
 	    if(numer>0. && denom>0.){
@@ -1415,7 +1433,7 @@ void DrawAllAndKaons() {
 	    Float_t numer=hSpectra[kITSTPC][ipart][icharge]->GetBinContent(iBin);
 	    Float_t denom=hSpectra[kTPC][ipart][icharge]->GetBinContent(jBin);
 	    Float_t enumer=hSpectra[kITSTPC][ipart][icharge]->GetBinError(iBin);
-	    Float_t edenom=hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
+	    Float_t edenom=0;//hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
 	    Double_t ratio=0.;
 	    Double_t eratio=0.;
 	    if(numer>0. && denom>0.){
@@ -1471,7 +1489,7 @@ void DrawAllAndKaons() {
 	    Float_t numer=hSpectra[kTOF][ipart][icharge]->GetBinContent(iBin);
 	    Float_t denom=hSpectra[kTPC][ipart][icharge]->GetBinContent(jBin);
 	    Float_t enumer=hSpectra[kTOF][ipart][icharge]->GetBinError(iBin);
-	    Float_t edenom=hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
+	    Float_t edenom=0;//hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
 	    Double_t ratio=0.;
 	    Double_t eratio=0.;
 	    if(numer>0. && denom>0.){
