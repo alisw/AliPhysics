@@ -255,13 +255,16 @@ void FitCombined() {
   TH1F* hRatiosToFitSyst[kNPart][kNCharge]; // Ratio data/fit, stat + syst
   //  Fit all 
   Int_t chargeLoop = sumCharge ? 1 : 2; 
+  Bool_t divideRatiosCanvas=kTRUE;
   for(Int_t icharge = 0; icharge < chargeLoop; icharge++){
 
     TCanvas * c2 = new TCanvas(TString("cCombined")+chargeFlag[icharge]+"_"+funcName[fitFuncID], TString("cCombined")+chargeFlag[icharge],700,700);
     c2->SetTickx();
     c2->SetTicky();
     c2->SetLeftMargin(0.14);
-    TCanvas * c2r = new TCanvas(TString("cCombinedRatio")+chargeFlag[icharge]+"_"+funcName[fitFuncID], TString("cCombinedRatio")+chargeFlag[icharge],700,700);
+    TCanvas * c2r = 0;
+    if(divideRatiosCanvas) c2r = new TCanvas(TString("cCombinedRatio")+chargeFlag[icharge]+"_"+funcName[fitFuncID], TString("cCombinedRatio")+chargeFlag[icharge],1200,500);
+    else                   c2r = new TCanvas(TString("cCombinedRatio")+chargeFlag[icharge]+"_"+funcName[fitFuncID], TString("cCombinedRatio")+chargeFlag[icharge],700,700);
     c2->cd();
     gPad->SetLogy();
     TH2F * hempty = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,2.9, 100, 0.0005,5);
@@ -271,14 +274,18 @@ void FitCombined() {
     hempty->GetXaxis()->SetTitleOffset(1.1);
     hempty->Draw();
     c2r->cd();
+    if(divideRatiosCanvas) {
+      c2r->Divide(3,1);
+      c2r->cd(1);
+    }
     gPad->SetGridy();
     TH2F * hemptyR = new TH2F(TString("hemptyR")+long(icharge),"hemptyR",100,0.,2.9, 100, 0.5,1.5);
     hemptyR->SetXTitle("p_{t} (GeV/c)");
     hemptyR->SetYTitle("Data/Fit");
     hemptyR->Draw();
-
     
-    TLegend * l = new TLegend(0.176724, 0.153274, 0.475575, 0.434524,chargeLabel[icharge]);
+
+    TLegend * l = new TLegend(0.176724, 0.181548, 0.477011, 0.462798,chargeLabel[icharge]);
     l->SetFillColor(kWhite);
     l->SetTextSize(0.035);
     
@@ -291,6 +298,7 @@ void FitCombined() {
       tf->SetTextFont(12);
       tf->SetTextSize(0.032);
     }
+
     for(Int_t ipart = 0; ipart < kNPart; ipart++){
       printf(" ----- Fit %s %s ------\n",partFlag[ipart],chargeFlag[icharge]);
       Float_t fitmin = 0;
@@ -370,6 +378,11 @@ void FitCombined() {
       if(drawStar)    DrawStar(icharge);
       hRatiosToFit[ipart][icharge]=(TH1F*)hToFit->Clone(Form("hRatio%s%s",chargeFlag[icharge],partFlag[icharge])); // Ratio data/fit
       hRatiosToFitSyst[ipart][icharge]=(TH1F*)hsyststat->Clone(Form("hRatioSyst%s%s",chargeFlag[icharge],partFlag[icharge])); // Ratio data/fit
+      // Syst error on ratio with no fill
+      hRatiosToFitSyst[ipart][icharge]->SetLineColor(hToFit->GetLineColor());
+      hRatiosToFitSyst[ipart][icharge]->SetFillStyle(0);
+      
+
       // Compute ratio data/function integrating the function in the bin width
       for(Int_t iBin=1; iBin<hToFit->GetNbinsX(); iBin++){
 	Double_t lowLim=hToFit->GetBinLowEdge(iBin);
@@ -439,6 +452,12 @@ void FitCombined() {
       //      tempTable.SetNextCol(yieldAbove/yield,-2);
       tempTable.InsertRow();
       c2r->cd();
+      if(divideRatiosCanvas) {
+	c2r->cd(ipart+1);
+	gPad->SetGridy();
+	TH2F * heloc = new TH2F(*hemptyR);
+	heloc->Draw();
+      }
       hRatiosToFitSyst[ipart][icharge]->Draw("e2same");
       hRatiosToFit[ipart][icharge]->Draw("esame");
 
@@ -457,7 +476,8 @@ void FitCombined() {
   }
 
   
-  table.PrintTable("ASCII");
+  //  table.PrintTable("ASCII");
+  table.PrintTable("TWIKI");
   
   cout << "" << endl;
   tempTable.PrintTable("ASCII");
@@ -604,11 +624,17 @@ void LoadSpectra() {
 	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
 	  hSpectra[kITS][ipart][icharge]->SetBinError  (ibin,0);
 	}
-	if(ipart == kProton && ibin==9){
+	if(ipart == kProton && (ibin==9 || ibin==10)){
 	  printf("Kill bin %d (%f - %f GeV/c)for ITS protons\n",ibin,hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin),hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin)+hSpectra[kITS][ipart][icharge]->GetBinWidth(ibin));
 	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
 	  hSpectra[kITS][ipart][icharge]->SetBinError  (ibin,0);
 	}
+	if(ipart == kKaon && ibin==7){
+	  printf("Kill bin %d (%f - %f GeV/c)for ITS kaons\n",ibin,hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin),hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin)+hSpectra[kITS][ipart][icharge]->GetBinWidth(ibin));
+	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
+	  hSpectra[kITS][ipart][icharge]->SetBinError  (ibin,0);
+	}
+	
 // 	if ((ipart == kKaon && ibin >= 12) || (ipart == kProton && ibin >= 20)) {
 // 	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
 // 	  hSpectra[kITS][ipart][icharge]->SetBinError  (ibin,0);
@@ -664,16 +690,16 @@ void LoadSpectra() {
   nbin =  hSpectra[kTPC][kKaon][kPos]->GetNbinsX();
   for(Int_t ibin = 0; ibin < nbin; ibin++){
     Float_t pt =  hSpectra[kTPC][kKaon][kPos]->GetBinCenter(ibin);
-    if (pt > 0.45){  // || pt<0.25) {
+    if (pt > 0.45 || pt<0.25) {
       for(Int_t icharge = 0; icharge < kNCharge; icharge++){
-	hSpectra[kTPC][kKaon][icharge]->SetBinContent(ibin,0);
-	hSpectra[kTPC][kKaon][icharge]->SetBinError  (ibin,0);	
+      	hSpectra[kTPC][kKaon][icharge]->SetBinContent(ibin,0);
+      	hSpectra[kTPC][kKaon][icharge]->SetBinError  (ibin,0);	
       }      
     }
-    if (pt < 0.25) {
-      hSpectra[kTPC][kKaon][kNeg]->SetBinContent(ibin,0);
-      hSpectra[kTPC][kKaon][kNeg]->SetBinError  (ibin,0);	
-    }
+    // if (pt < 0.25) {
+    //   hSpectra[kTPC][kKaon][kNeg]->SetBinContent(ibin,0);
+    //   hSpectra[kTPC][kKaon][kNeg]->SetBinError  (ibin,0);	
+    // }
     if (pt < 0.45) {
       for(Int_t icharge = 0; icharge < kNCharge; icharge++){
 	hSpectra[kTPC][kProton][icharge]->SetBinContent(ibin,0);

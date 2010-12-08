@@ -354,8 +354,9 @@ void AliLatexTable::PrintTable(Option_t * opt){
   // "ASCII" -> plain ASCII
   // "HTML"  -> HTML, to be improved
   // "CSV"   -> skips hline, usefult for importing in excell 
+  // "TWIKI" -> skips hline, usefult for importing in TWIKI
 
-  if(TString(opt) == "ASCII" || TString(opt)=="HTML" ||  TString(opt)=="CSV") {
+  if(TString(opt) == "ASCII" || TString(opt)=="HTML" ||  TString(opt)=="CSV" ||  TString(opt)=="TWIKI") {
     
     Int_t nrow = fRows->GetEntriesFast();
 
@@ -368,7 +369,7 @@ void AliLatexTable::PrintTable(Option_t * opt){
     for(Int_t irow = 0; irow < nrow; irow++){
       TString row = ((TObjString*) fRows->At(irow))->String();
       if (row.Contains("\\hline")){	
-	if (TString(opt)!="CSV") {
+	if (TString(opt)!="CSV" && TString(opt)!="TWIKI") {
 	  for(Int_t il = 0; il < total_lenght; il++) printf("-");
 	  printf("\n");	  
 	}
@@ -376,8 +377,13 @@ void AliLatexTable::PrintTable(Option_t * opt){
       }
       StripLatex(row, opt);
       TObjArray * cols = row.Tokenize("&");
+      if (TString(opt)=="TWIKI") printf(" | ");
       for(Int_t icol = 0; icol < fNcol; icol++){
-	const char * colstr = ((TObjString *) cols->At(icol))->String().Data();
+	TString strTmp = ((TObjString *) cols->At(icol))->String();
+	if(TString(opt)=="TWIKI" || TString(opt)=="HTML"){
+	  strTmp.ReplaceAll("AMPER","&");
+	}
+	const char * colstr = strTmp.Data();
 	char format [200];
 	if (TString(opt)!="CSV") {
 	  sprintf(format, "%%%ds", col_widths[icol] + 2);	
@@ -386,6 +392,7 @@ void AliLatexTable::PrintTable(Option_t * opt){
 	}
 	printf(format, colstr);
 	if (TString(opt)=="CSV") printf(", ");
+	if (TString(opt)=="TWIKI") printf(" | ");
 
       }
       printf ("\n");
@@ -450,18 +457,20 @@ void AliLatexTable::StripLatex(TString &text, TString format) {
   // command with corresponding text/tags
 
   text.ReplaceAll("\\cdot", "x");
-  text.ReplaceAll("\\pm", "+-");
   text.ReplaceAll("$", "");
   if (format == "ASCII") {
     text.ReplaceAll("\\right>", ">");
     text.ReplaceAll("\\left<", "<");
     text.ReplaceAll("\\rangle", ">");
     text.ReplaceAll("\\langle", "<");
-  } else if (format == "HTML") {
-    text.ReplaceAll("\\right>", "&rang;");
-    text.ReplaceAll("\\left<",  "&lang;");
-    text.ReplaceAll("\\rangle", "&rang;");
-    text.ReplaceAll("\\langle", "&lang;");
+    text.ReplaceAll("\\pm", "+-");
+  } else if (format == "HTML" || format == "TWIKI") {
+    // the & is used to tokenize... Have to cheat here
+    text.ReplaceAll("\\right>", "AMPERrang;");
+    text.ReplaceAll("\\left<",  "AMPERlang;");
+    text.ReplaceAll("\\rangle", "AMPERrang;");
+    text.ReplaceAll("\\langle", "AMPERlang;");
+    text.ReplaceAll("\\pm",     "AMPERplusmn;");
   } 
   if(text.Contains("multicolumn")) {
     //    cout << "col " << text.Data() << endl;
