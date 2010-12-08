@@ -62,24 +62,28 @@ void AliHFEV0pidMC::Init(){
   // QA
   fColl->CreateTH1F("h_QA_nParticles", "QA on track processing", 10, -0.5, 9.5);
 
-  // before PID
-  fColl->CreateTH1F("h_Electron", "all electron candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1F("h_PionK0", "all K0 pion candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1F("h_PionL", "all Lambda pion candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1F("h_Kaon", "all Kaon candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1F("h_Proton", "all Lambda proton candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
-  
-  fColl->CreateTH1F("h_mis_Electron", "all NON electron candidates MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1F("h_mis_PionK0", "all NON K0 pion candidates MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1F("h_mis_PionL", "all NON Lambda pion candidates MC tagged ; p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1F("h_mis_Kaon", "all NON Kaon candidates MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1F("h_mis_Proton", "all NON Lambda proton candidates MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);  
+  const Int_t nBins = 20;
+  const Float_t pMin = 0.1;
+  const Float_t pMax = 10.;
 
-  fColl->CreateTH1Fvector1(5, "h_tag_Electron", "electron candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1Fvector1(5, "h_tag_PionK0", "K0 pion candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1Fvector1(5, "h_tag_PionL", "Lambda pion candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1Fvector1(5, "h_tag_Kaon", "kaon candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
-  fColl->CreateTH1Fvector1(5, "h_tag_Proton", "Lambda proton candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
+  // before PID
+  fColl->CreateTH1F("h_Electron", "all electron candidates (no MC); p (GeV/c); counts", nBins, pMin, pMax, 0);
+  fColl->CreateTH1F("h_PionK0", "all K0 pion candidates (no MC); p (GeV/c); counts",  nBins, pMin, pMax, 0);
+  fColl->CreateTH1F("h_PionL", "all Lambda pion candidates (no MC); p (GeV/c); counts", nBins, pMin, pMax, 0);
+  fColl->CreateTH1F("h_Kaon", "all Kaon candidates (no MC); p (GeV/c); counts",  nBins, pMin, pMax, 0);
+  fColl->CreateTH1F("h_Proton", "all Lambda proton candidates (no MC); p (GeV/c); counts",  nBins, pMin, pMax, 0);
+  
+  fColl->CreateTH1F("h_mis_Electron", "all NON electron candidates MC tagged; p (GeV/c); counts",  nBins, pMin, pMax, 0);
+  fColl->CreateTH1F("h_mis_PionK0", "all NON K0 pion candidates MC tagged; p (GeV/c); counts",  nBins, pMin, pMax, 0);
+  fColl->CreateTH1F("h_mis_PionL", "all NON Lambda pion candidates MC tagged ; p (GeV/c); counts", nBins, pMin, pMax, 0);
+  fColl->CreateTH1F("h_mis_Kaon", "all NON Kaon candidates MC tagged; p (GeV/c); counts", nBins, pMin, pMax, 0);
+  fColl->CreateTH1F("h_mis_Proton", "all NON Lambda proton candidates MC tagged; p (GeV/c); counts", nBins, pMin, pMax, 0);  
+
+  fColl->CreateTH1Fvector1(5, "h_tag_Electron", "electron candidate MC tagged; p (GeV/c); counts", nBins, pMin, pMax, 0);
+  fColl->CreateTH1Fvector1(5, "h_tag_PionK0", "K0 pion candidate MC tagged; p (GeV/c); counts", nBins, pMin, pMax, 0);
+  fColl->CreateTH1Fvector1(5, "h_tag_PionL", "Lambda pion candidate MC tagged; p (GeV/c); counts", nBins, pMin, pMax, 0);
+  fColl->CreateTH1Fvector1(5, "h_tag_Kaon", "kaon candidate MC tagged; p (GeV/c); counts", nBins, pMin, pMax, 0);
+  fColl->CreateTH1Fvector1(5, "h_tag_Proton", "Lambda proton candidate MC tagged; p (GeV/c); counts", nBins, pMin, pMax, 0);
 
 }
 //____________________________________________________________

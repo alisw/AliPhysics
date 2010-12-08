@@ -43,7 +43,7 @@ class AliHFEcutStep : public TNamed{
       void SetRecEvent(AliVEvent *mc);
 
     private:
-      TObjArray *fCuts;
+      TObjArray *fCuts; // List of cuts in one cut step
       
       ClassDef(AliHFEcutStep, 1)
 };

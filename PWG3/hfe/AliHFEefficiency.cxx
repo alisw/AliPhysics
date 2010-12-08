@@ -229,6 +229,9 @@ void AliHFEefficiency::FilterMC(){
 }
 
 void AliHFEefficiency::Load(const char* filename){
+  //
+  // Load results for post processing
+  //
   TFile *input = TFile::Open(filename);
   AliHFEcontainer *cin = dynamic_cast<AliHFEcontainer *>(input->Get("Efficiency"));
   fEfficiency = dynamic_cast<AliHFEcontainer *>(cin->Clone());
@@ -363,7 +366,7 @@ void AliHFEefficiency::CalculatePTsmearing(){
   delete grid;
 }
 
-void AliHFEefficiency::DrawPtResolution(TList *l){
+void AliHFEefficiency::DrawPtResolution(const TList * const l){
   //
   // Draw pt resolution
   //

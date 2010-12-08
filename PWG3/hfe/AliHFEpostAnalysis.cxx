@@ -22,6 +22,7 @@
 //
 //  Autor: Markus Fasel
 //
+
 #include <TAxis.h>
 #include <TCanvas.h>
 #include <TFile.h>
@@ -31,6 +32,7 @@
 #include "AliCFContainer.h"
 #include "AliCFEffGrid.h"
 
+#include "AliHFEcontainer.h"
 #include "AliHFEcuts.h"
 #include "AliHFEpostAnalysis.h"
 
@@ -87,18 +89,11 @@ AliHFEpostAnalysis::~AliHFEpostAnalysis(){
 }
 
 //____________________________________________________________
-Int_t AliHFEpostAnalysis::SetResults(TList *input){
+Int_t AliHFEpostAnalysis::SetTaskQA(const TList *input){
   //
   // Publish the results to the post analysis
   //
   Int_t nFound = 0;
-  fEfficiencyContainer = dynamic_cast<AliCFContainer *>(input->FindObject("trackContainer"));
-  if(!fEfficiencyContainer){
-    AliError("Efficiency Correction Framework Container not found in the list of outputs");
-  } else {
-    SETBIT(fAnalysisObjects, kCFC);
-    nFound++;
-  }
   fPIDperformance = dynamic_cast<THnSparseF *>(input->FindObject("PIDperformance"));
   if(!fPIDperformance){
     AliError("Histogram fPIDperformance not found in the List of Outputs");
@@ -233,7 +228,8 @@ void AliHFEpostAnalysis::DrawEfficiency(){
   TCanvas *cEff = new TCanvas("cEff", "Efficiency", 800, 600);
   cEff->Divide(2,2);
   if(!fEfficiencyContainer) return;
-  AliCFEffGrid *effCalc = new AliCFEffGrid("effCalc", "Efficiency Calculation Grid", *fEfficiencyContainer);
+  AliCFContainer *tracks = fEfficiencyContainer->MakeMergedCFContainer("trackContCombined", "MC + Rec(reco) Track Information", "MCTrackCont:recTrackContReco");
+  AliCFEffGrid *effCalc = new AliCFEffGrid("effCalc", "Efficiency Calculation Grid", *tracks);
   effCalc->CalculateEfficiency(AliHFEcuts::kStepMCInAcceptance, AliHFEcuts::kStepMCGenerated);
   TH1 *effReconstructibleP = effCalc->Project(0);
   effReconstructibleP->SetName("effReconstructibleP");
@@ -247,7 +243,7 @@ void AliHFEpostAnalysis::DrawEfficiency(){
   effReconstructibleP->SetStats(kFALSE);
   cEff->cd(1);
   effReconstructibleP->Draw("e");
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepMCsignal, AliHFEcuts::kStepMCGenerated);
+  effCalc->CalculateEfficiency(AliHFEcuts::kStepMCGeneratedZOutNoPileUp, AliHFEcuts::kStepMCGenerated);
   TH1 *effSignal = effCalc->Project(0);
   effSignal->SetName("effSignal");
   effSignal->SetTitle("Efficiency of Signal Electrons");
@@ -260,7 +256,7 @@ void AliHFEpostAnalysis::DrawEfficiency(){
   effSignal->SetStats(kFALSE);
   cEff->cd(2);
   effSignal->Draw("e");
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepPID + 2*AliHFEcuts::kNcutStepsESDtrack, AliHFEcuts::kStepMCGenerated);
+  effCalc->CalculateEfficiency(tracks->GetNStep() - 1, AliHFEcuts::kStepMCGenerated);
   TH1 *effPIDP = effCalc->Project(0);
   effPIDP->SetName("effPIDP");
   effPIDP->SetTitle("Efficiency of selected tracks");
@@ -273,7 +269,7 @@ void AliHFEpostAnalysis::DrawEfficiency(){
   effPIDP->SetStats(kFALSE);
   cEff->cd(3);
   effPIDP->Draw("e");
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepPID + 2*AliHFEcuts::kNcutStepsESDtrack, AliHFEcuts::kStepMCInAcceptance);
+  effCalc->CalculateEfficiency(tracks->GetNStep() - 1, AliHFEcuts::kStepMCInAcceptance);
   TH1 *effPIDAcc = effCalc->Project(0);
   effPIDAcc->SetName("effPIDAcc");
   effPIDAcc->SetTitle("Efficiency of selected tracks in acceptance");
@@ -422,68 +418,72 @@ void AliHFEpostAnalysis::DrawCutEfficiency(Bool_t MC, Int_t source){
   leg->SetBorderSize(0);
   leg->SetFillColor(kWhite);
   leg->SetFillStyle(0);
-  const char* names[AliHFEcuts::kNcutStepsTrack - 1] = {"Acceptance", "No Cuts", "Rec Tracks" "Rec Kine(TPC/ITS)", "Primary", "HFE ITS", "HFE TRD", "PID", };
-  Color_t color[AliHFEcuts::kNcutStepsTrack - 1] = {kRed, kGreen, kMagenta, kBlack, kOrange, kTeal, kViolet, kBlue};
-  Marker_t marker[AliHFEcuts::kNcutStepsTrack - 1] = {24, 25, 26, 27, 28, 29, 30}; 
+
+  AliCFContainer *tracks = fEfficiencyContainer->MakeMergedCFContainer("mergedTracks", "Container for MC and reconstructed Track information", "MCTrackCont:recTrackContReco");
+  Int_t nStepMC = fEfficiencyContainer->GetCFContainer("MCTrackCont")->GetNStep();
+  AliDebug(1, Form("Number of MC Cut Steps: %d", nStepMC));
+  const Int_t markerStart = 24;
+  const Int_t colorStart = 1;
   TH1 *hTemp = NULL;
 
   if(MC){
     if(source > -1 && source < 4){
       AliInfo(Form("Setting source to %d", source))
-      for(Int_t istep = 0; istep < fEfficiencyContainer->GetNStep(); istep++) fEfficiencyContainer->GetAxis(4, istep)->SetRange(source + 1, source + 1);
+      for(Int_t istep = 0; istep < tracks->GetNStep(); istep++) tracks->GetAxis(4, istep)->SetRange(source + 1, source + 1);
     }
   }
-  AliCFEffGrid effcalc("cutEfficiency", "Cut step efficiency calculation", *fEfficiencyContainer);
+  AliCFEffGrid effcalc("cutEfficiency", "Cut step efficiency calculation", *tracks);
   Bool_t first = kTRUE;
   // Calculate efficiency for MC Steps
+  Int_t histcounter = 0;
   if(MC){
     //
     // Draw plots related to MC values
     //
     effcalc.CalculateEfficiency(AliHFEcuts::kStepMCInAcceptance, AliHFEcuts::kStepMCGenerated);
     hTemp = effcalc.Project(0);
-    hTemp->SetName("hEff1");
+    hTemp->SetName(Form("hEff%d", histcounter));
     hTemp->SetTitle("Cut Step Efficiency");
-    hTemp->SetMarkerColor(color[0]);
-    hTemp->SetMarkerStyle(marker[0]);
-    hTemp->GetXaxis()->SetTitle("P / GeV/c");
+    hTemp->SetMarkerColor(colorStart + histcounter);
+    hTemp->SetMarkerStyle(markerStart + histcounter);
+    hTemp->GetXaxis()->SetTitle("p / GeV/c");
     hTemp->GetYaxis()->SetTitle("Efficiency");
     hTemp->GetYaxis()->SetRangeUser(0., 2.);
     hTemp->SetStats(kFALSE);
     hTemp->Draw("ep");
-    leg->AddEntry(hTemp, names[0], "p");
-    effcalc.CalculateEfficiency(AliHFEcuts::kStepRecNoCut + 2*AliHFEcuts::kNcutStepsESDtrack, AliHFEcuts::kStepMCGenerated);
+    leg->AddEntry(hTemp, tracks->GetStepTitle(AliHFEcuts::kStepMCInAcceptance), "p");
+    histcounter++;
+    effcalc.CalculateEfficiency(nStepMC, AliHFEcuts::kStepMCGenerated);
     hTemp = effcalc.Project(0);
     hTemp->SetName("hEff2");
     hTemp->SetTitle("Cut Step Efficiency");
-    hTemp->SetMarkerColor(color[1]);
-    hTemp->SetMarkerStyle(marker[1]);
-    hTemp->GetXaxis()->SetTitle("P / GeV/c");
+    hTemp->SetMarkerColor(colorStart + histcounter);
+    hTemp->SetMarkerStyle(markerStart + histcounter);
+    hTemp->GetXaxis()->SetTitle("p / GeV/c");
     hTemp->GetYaxis()->SetTitle("Efficiency");
     hTemp->GetYaxis()->SetRangeUser(0., 2.);
     hTemp->SetStats(kFALSE);
     hTemp->Draw("epsame");
-    leg->AddEntry(hTemp, names[1], "p");
+    leg->AddEntry(hTemp, tracks->GetStepTitle(nStepMC), "p");
     first = kFALSE;
+    histcounter++;
   }
-  for(Int_t istep = AliHFEcuts::kStepRecKineITSTPC; istep <= AliHFEcuts::kStepPID; istep++){
-    effcalc.CalculateEfficiency(istep + 2*AliHFEcuts::kNcutStepsESDtrack, istep-1 + 2*AliHFEcuts::kNcutStepsESDtrack); 
+  for(Int_t istep = nStepMC+1; istep < tracks->GetNStep(); istep++){
+    effcalc.CalculateEfficiency(istep, istep - 1); 
     hTemp = effcalc.Project(0);
     hTemp->SetName(Form("hEff%d", istep));
     hTemp->SetTitle("Cut Step Efficiency");
-    hTemp->SetMarkerColor(color[istep-2]);
-    hTemp->SetMarkerStyle(marker[istep-2]);
+    hTemp->SetMarkerColor(colorStart + histcounter);
+    hTemp->SetMarkerStyle(markerStart + histcounter);
     hTemp->SetStats(kFALSE);
     hTemp->Draw(first ? "ep" : "epsame");
     hTemp->GetXaxis()->SetTitle("P / GeV/c");
     hTemp->GetYaxis()->SetTitle("Efficiency");
     hTemp->GetYaxis()->SetRangeUser(0., 2.);
-    leg->AddEntry(hTemp, names[istep-2], "p");
+    leg->AddEntry(hTemp, tracks->GetStepTitle(istep), "p");
     first = kFALSE;
+    histcounter++;
   }
   leg->Draw();
-  // undo axis restriction
-  if(MC && source > -1 && source < 4){
-    for(Int_t istep = 0; istep < fEfficiencyContainer->GetNStep(); istep++) fEfficiencyContainer->GetAxis(4, istep)->SetRange(0, 4);
-  }
+  delete tracks;
 }

@@ -13,56 +13,29 @@
 #include "AliHFEpidBase.h"
 #endif
 
-class TList;
-class TH2F;
+class AliVParticle;
+class AliPID;
 
-class AliAODTrack;
-class AliAODMCParticle;
-class AliESDtrack;
-class AliMCParticle;
-class AliESDpid;
-class AliLog;
-
-class AliHFEcollection;
+class AliHFEpidQAmanager;
 
 class AliHFEpidTOF : public AliHFEpidBase{
   public:
+    AliHFEpidTOF();
     AliHFEpidTOF(const Char_t *name);
     virtual ~AliHFEpidTOF();
     AliHFEpidTOF(const AliHFEpidTOF &c);
     AliHFEpidTOF &operator=(const AliHFEpidTOF &c);
   
     virtual Bool_t    InitializePID();
-    virtual Int_t     IsSelected(AliHFEpidObject *track);
-    virtual Bool_t    HasQAhistos() const { return kTRUE; };
+    virtual Int_t     IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *piqa);
   
     void SetTOFnSigma(Short_t nSigma) { fNsigmaTOF = nSigma; };
 
-    Double_t Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig = 2.); 
- 
   protected:
     void Copy(TObject &ref) const;
-    void AddQAhistograms(TList *qaHist);
-    Int_t MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
-    Int_t MakePIDesdV2(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
-    Int_t MakePIDesdV3(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
-    Int_t MakePIDaod(AliAODTrack *aodTrack, AliAODMCParticle *mcTrack);
-  
+    Double_t NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anaType);
   private:
-    typedef enum{
-      kHistTOFpidFlags = 0,
-      kHistTOFpidBetavP = 1,
-      kHistTOFsignal = 2,
-      kHistTOFlength =3,
-      kHistTOFpid0 = 4,
-      kHistTOFpid1 = 5,
-      kHistTOFpid2 = 6,
-      kHistTOFpid3 = 7,
-      kHistTOFpid4 = 8
-    } QAHist_t;
-  
     AliPID        *fPID;           //! PID Object
-    AliHFEcollection *fQAList;     //! QA histograms
 
     Short_t    fNsigmaTOF;         // TOF sigma band
 

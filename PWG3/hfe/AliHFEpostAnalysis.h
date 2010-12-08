@@ -24,9 +24,10 @@
 #include <THnSparse.h>
 #endif
 
-class AliCFContainer;
+class AliHFEcontainer;
 class TH1;
 class TList;
+
 class AliHFEpostAnalysis : public TObject{
   public:
     AliHFEpostAnalysis();
@@ -34,7 +35,8 @@ class AliHFEpostAnalysis : public TObject{
     AliHFEpostAnalysis &operator=(const AliHFEpostAnalysis &ref);
     ~AliHFEpostAnalysis();
 
-    Int_t SetResults(TList *input);
+    Int_t SetTaskResults(AliHFEcontainer *trackContainer) { fEfficiencyContainer = trackContainer; return 1; };
+    Int_t SetTaskQA(const TList *qa);
     void StoreOutput(const char *filename = "HFEresults.root");
 
     void DrawMCSignal2Background();
@@ -52,7 +54,7 @@ class AliHFEpostAnalysis : public TObject{
 
     TList *fResults;                          // Container for output objects
     UChar_t fAnalysisObjects;                       // S
-    AliCFContainer *fEfficiencyContainer;     // Task Results
+    AliHFEcontainer *fEfficiencyContainer;     // Task Results
     THnSparseF *fPIDperformance;              // PID Performance Studies
     THnSparseF *fSignalToBackgroundMC;        // Signal To Background Studies
 

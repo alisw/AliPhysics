@@ -38,26 +38,32 @@ class TList;
 class AliHFEcuts : public TNamed{
   public:
     typedef enum{
+      kStepRecNoCut = 0,
+      kStepRecKineITSTPC = 1,
+      kStepRecPrim = 2,
+      kStepHFEcutsITS = 3,
+      kStepHFEcutsTRD = 4,
+      kNcutStepsRecTrack = 5
+    } RecoCutStep_t;
+    typedef enum{
+      kStepHFEcutsDca = 0, 
+      kNcutStepsDETrack = 1
+    } DECutStep_t;
+    typedef enum{
       kStepMCGenerated = 0,
-      kStepMCsignal = 1,
-      kStepMCInAcceptance = 2,
-      kStepRecNoCut = 3,
-      kStepRecKineITSTPC = 4,
-      kStepRecPrim = 5,
-      kStepHFEcutsITS = 6,
-      kStepHFEcutsTRD = 7,
-      kStepPID = 8
-    } CutStep_t;
+      kStepMCGeneratedZOutNoPileUp = 1,
+      kStepMCGeneratedEventCut = 2,
+      kStepMCInAcceptance = 3,
+      kNcutStepsMCTrack =  4
+    } MCCutStep_t;
     typedef enum{
       kEventStepGenerated = 0,
       kEventStepRecNoCut = 1,
-      kEventStepReconstructed = 2
+      kEventStepRecNoPileUp = 2,
+      kEventStepZRange = 3,
+      kEventStepReconstructed = 4,
+      kNcutStepsEvent = 5
     } EventCutStep_t;
-    enum{
-      kNcutStepsEvent = 3,
-      kNcutStepsTrack = 9,
-      kNcutStepsESDtrack = 6 
-    };    // Additional constants
 
     AliHFEcuts();
     AliHFEcuts(const Char_t *name, const Char_t *title);
@@ -69,7 +75,7 @@ class AliHFEcuts : public TNamed{
     void Initialize(AliCFManager *cfm);
     void Initialize();
 
-    Bool_t CheckParticleCuts(CutStep_t step, TObject *o);
+    Bool_t CheckParticleCuts(UInt_t step, TObject *o);
   
     TList *GetQAhistograms() const { return fHistQA; }
     
@@ -80,7 +86,25 @@ class AliHFEcuts : public TNamed{
     void SetESD() { SetBit(kAOD, kFALSE); }
     Bool_t IsAOD() const { return TestBit(kAOD); }
     Bool_t IsESD() const { return !TestBit(kAOD); }
-    
+
+    // Cut Names
+    static const Char_t *MCCutName(UInt_t step){
+      if(step >= kNcutStepsMCTrack) return fgkUndefined;
+      return fgkMCCutName[step];
+    };
+    static const Char_t *RecoCutName(UInt_t step){
+      if(step >= kNcutStepsRecTrack) return fgkUndefined;
+      return fgkRecoCutName[step];
+    }
+    static const Char_t *DECutName(UInt_t step){
+      if(step >= kNcutStepsDETrack) return fgkUndefined;
+      return fgkDECutName[step];
+    }
+    static const Char_t *EventCutName(UInt_t step){
+      if(step >= kNcutStepsEvent) return fgkUndefined;
+      return fgkEventCutName[step];
+    }
+   
     // Getters
     Bool_t IsRequireITSpixel() const { return TESTBIT(fRequirements, kITSPixel); };
     Bool_t IsRequireMaxImpactParam() const { return TESTBIT(fRequirements, kMaxImpactParam); };
@@ -89,11 +113,13 @@ class AliHFEcuts : public TNamed{
     Bool_t IsRequireSigmaToVertex() const { return TESTBIT(fRequirements, kSigmaToVertex); };
     Bool_t IsRequireDCAToVertex() const {return TESTBIT(fRequirements, kDCAToVertex); };
     Bool_t IsRequireKineMCCuts() const {return TESTBIT(fRequirements, kKineMCCuts); };
+    Double_t GetVertexRange() const {return fVertexRangeZ; };
     
     // Setters
     inline void SetCutITSpixel(UChar_t cut);
     void SetCheckITSLayerStatus(Bool_t checkITSLayerStatus) { fCheckITSLayerStatus = checkITSLayerStatus; }
     void SetMinNClustersTPC(UChar_t minClustersTPC) { fMinClustersTPC = minClustersTPC; }
+    void SetMinNClustersITS(UChar_t minClustersITS) { fMinClustersITS = minClustersITS; }
     void SetMinNTrackletsTRD(UChar_t minNtrackletsTRD) { fMinTrackletsTRD = minNtrackletsTRD; }
     void SetMaxChi2perClusterTPC(Double_t chi2) { fMaxChi2clusterTPC = chi2; };
     inline void SetMaxImpactParam(Double_t radial, Double_t z);
@@ -101,6 +127,8 @@ class AliHFEcuts : public TNamed{
     void SetPtRange(Double_t ptmin, Double_t ptmax){fPtRange[0] = ptmin; fPtRange[1] = ptmax;};
     inline void SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
     inline void SetSigmaToVertex(Double_t sig);
+    void SetTPCiter1(Bool_t iter1) { fTPCiter1 = iter1; }
+    void SetVertexRange(Double_t zrange){fVertexRangeZ = zrange;};    
     
     inline void CreateStandardCuts();
     
@@ -110,6 +138,7 @@ class AliHFEcuts : public TNamed{
     void SetRequireITSPixel() { SETBIT(fRequirements, kITSPixel); }
     void SetRequireProdVertex() { SETBIT(fRequirements, kProductionVertex); };
     void SetRequireSigmaToVertex() { SETBIT(fRequirements, kSigmaToVertex); CLRBIT(fRequirements, kDCAToVertex); };
+    void UnsetVertexRequirement() { CLRBIT(fRequirements, kDCAToVertex); CLRBIT(fRequirements, kSigmaToVertex); }
     void SetRequireKineMCCuts() { SETBIT(fRequirements, kKineMCCuts); };
 
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };
@@ -135,26 +164,37 @@ class AliHFEcuts : public TNamed{
     void SetRecPrimaryCutList();
     void SetHFElectronITSCuts();
     void SetHFElectronTRDCuts();
+    void SetHFElectronDcaCuts();
     void SetEventCutList(Int_t istep);
+
+    static const Char_t* fgkMCCutName[kNcutStepsMCTrack];     // Cut step names for MC single Track cuts
+    static const Char_t* fgkRecoCutName[kNcutStepsRecTrack];  // Cut step names for Rec single Track cuts
+    static const Char_t* fgkDECutName[kNcutStepsDETrack];     // Cut step names for impact parameter cuts
+    static const Char_t* fgkEventCutName[kNcutStepsEvent];    // Cut step names for Event cuts
+    static const Char_t* fgkUndefined;                        // Name for undefined (overflow)
   
     ULong64_t fRequirements;  	  // Bitmap for requirements
+    Bool_t fTPCiter1;             // TPC iter1
     Double_t fDCAtoVtx[2];	      // DCA to Vertex
     Double_t fProdVtx[4];	        // Production Vertex
     Double_t fPtRange[2];	        // pt range
     UChar_t fMinClustersTPC;	    // Min.Number of TPC clusters
+    UChar_t fMinClustersITS;	    // Min.Number of TPC clusters
     UChar_t fMinTrackletsTRD;	    // Min. Number of TRD tracklets
     UChar_t fCutITSPixel;	        // Cut on ITS pixel
     Bool_t  fCheckITSLayerStatus;       // Check ITS layer status
     Double_t fMaxChi2clusterTPC;	// Max Chi2 per TPC cluster
     Double_t fMinClusterRatioTPC;	// Min. Ratio findable / found TPC clusters
     Double_t fSigmaToVtx;	        // Sigma To Vertex
+    Double_t fVertexRangeZ;             // Vertex Range reconstructed
+
     
     TList *fHistQA;		            //! QA Histograms
     TObjArray *fCutList;	        //! List of cut objects(Correction Framework Manager)
 
     Int_t fDebugLevel;            // Debug Level
     
-  ClassDef(AliHFEcuts, 1)         // Container for HFE cuts
+  ClassDef(AliHFEcuts, 2)         // Container for HFE cuts
 };
 
 //__________________________________________________________________
@@ -200,10 +240,11 @@ void AliHFEcuts::CreateStandardCuts(){
   //fDCAtoVtx[0] = 0.5;
   //fDCAtoVtx[1] = 1.5;
   fMinClustersTPC = 80;
+  fMinClustersITS = 4;
   fMinTrackletsTRD = 0;
   SetRequireITSPixel();
   fCutITSPixel = AliHFEextraCuts::kFirst;
-  fMaxChi2clusterTPC = 3.5;
+  fMaxChi2clusterTPC = 4.;
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;
   fPtRange[1] = 20.;

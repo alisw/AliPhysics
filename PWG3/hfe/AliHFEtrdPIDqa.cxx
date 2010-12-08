@@ -252,10 +252,15 @@ void AliHFEtrdPIDqa::CreatedEdxHistogram(){
   AliDebug(1, "Called");
   Int_t nbins[kQuantitiesdEdx]; memcpy(nbins, fgkNBinsCommon, sizeof(Int_t) * kQuantitiesCommon);
   nbins[kdEdx] = 100;
+  nbins[kNclusters] = 261;
+  nbins[kNonZeroSlices] = 9; 
   Double_t binMin[kQuantitiesdEdx]; memcpy(binMin, fgkMinBinCommon, sizeof(Double_t) * kQuantitiesCommon);
-  binMin[kdEdx] = 0.;      
+  binMin[kdEdx] = 0.;     
+  binMin[kNclusters] = 0;
   Double_t binMax[kQuantitiesdEdx]; memcpy(binMax, fgkMaxBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMax[kdEdx] = 100000.;
+  binMax[kNclusters] = 260.;
+  binMax[kNonZeroSlices] = 8.;
 
   fQAdEdx = new THnSparseF("fQAdEdx","TRD summed dEdx", kQuantitiesdEdx, nbins, binMin, binMax);
   Double_t *binLog = AliHFEtools::MakeLogarithmicBinning(nbins[kP], binMin[kP], binMax[kP]);
@@ -393,25 +398,34 @@ void AliHFEtrdPIDqa::FillTRDQAplots(AliESDtrack *track, Int_t species){
   quantitiesQA[kNTracklets] = quantitiesdEdx[kNTracklets] 
                             = quantitiesTruncMean[kNTracklets]
                             = track->GetTRDntrackletsPID();
-  quantitiesQA[kNClusters] = track->GetTRDncls();
+  quantitiesQA[kNClusters] = quantitiesdEdx[kNclusters] = track->GetTRDncls();
+  
 
-  Double_t dEdxSum;
-  Int_t ntrackletsNonZero = 0, nSlices = track->GetNumberOfTRDslices();
+  Double_t dEdxSum = 0., qSlice = 0.;
+  // remove the last slice from the histogram
+  Int_t ntrackletsNonZero = 0, nSlices = track->GetNumberOfTRDslices() - 1, nSlicesNonZero = 0;
   for(Int_t iplane = 0; iplane < AliESDtrack::kTRDnPlanes; iplane++){
     dEdxSum = 0.;
-    for(Int_t islice = 0; islice < nSlices; islice++)
-      dEdxSum += track->GetTRDslice(iplane, islice);
+    for(Int_t islice = 0; islice < nSlices; islice++){
+      qSlice = track->GetTRDslice(iplane, islice);
+      if(qSlice > 1e-1){
+        // cut out 0 slices
+        nSlicesNonZero++;
+        dEdxSum += qSlice;
+      }
+    }
+    quantitiesdEdx[kNonZeroSlices] = nSlicesNonZero;
     quantitiesdEdx[kdEdx] = dEdxSum;
     if(dEdxSum) ntrackletsNonZero++;
     // Fill dEdx histogram
-    fQAdEdx->Fill(quantitiesdEdx);
+    if(dEdxSum > 1e-1) fQAdEdx->Fill(quantitiesdEdx); // Cut out 0 entries
   }
   quantitiesQA[kNonZeroTrackletCharge] = ntrackletsNonZero;
   fQAtrack->Fill(quantitiesQA);
 
   quantitiesTruncMean[kTPCdEdx] = track->GetTPCsignal();
-  quantitiesTruncMean[kTRDdEdxMethod1] = fTRDpid->GetTRDSignalV1(track, -1);
-  quantitiesTruncMean[kTRDdEdxMethod2] = fTRDpid->GetTRDSignalV2(track, -1);
+  quantitiesTruncMean[kTRDdEdxMethod1] = fTRDpid->GetTRDSignalV1(track);
+  quantitiesTruncMean[kTRDdEdxMethod2] = fTRDpid->GetTRDSignalV2(track);
   fTRDtruncMean->Fill(quantitiesTruncMean);
 }
 

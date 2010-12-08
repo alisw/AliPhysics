@@ -49,6 +49,7 @@
 #include "AliHFEV0info.h"
 #include "AliHFEV0pid.h"
 #include "AliHFEV0pidMC.h"
+#include "AliHFEV0cuts.h"
 #include "AliHFEtrdPIDqa.h"
 
 
@@ -155,8 +156,9 @@ void AliHFEpidQA::Init(){
   // Prepare task output
   //
 
+  // load networks
   if(fNNref){
-    for(Int_t mom = 0; mom < 11; mom++){                      // load networks
+    for(Int_t mom = 0; mom < 11; mom++){                      
       fNet[mom] = (TMultiLayerPerceptron*) fNNref->Get(Form("NN_Mom%d", mom));
       if(!fNet[mom]){
 	AliError(Form("No reference network for momentum bin %d!", mom));
@@ -164,7 +166,7 @@ void AliHFEpidQA::Init(){
     }
   }
   
-  fV0pid = new AliHFEV0pid;
+  fV0pid = new AliHFEV0pid();
   if(HasV0pidQA()) fV0pid->InitQA();
   fV0pidMC = new AliHFEV0pidMC();
   fV0pidMC->Init();
@@ -276,6 +278,7 @@ void AliHFEpidQA::Init(){
   }
   // TRD THnSparse - entries per tracklet
   // species, p, tracklet position, number of PID tracklets, number of slices (non 0), number of clusters, electron likelihood, 
+
   {
     Int_t nbins[7] = {5, 20, 6, 7, 9, 45, 100};
     Double_t min[7] = {-0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.};
@@ -307,7 +310,9 @@ void AliHFEpidQA::Process(){
     AliError("AliVEvent not available, returning");
   }
 
+
   if(fMC) fV0pidMC->SetMCEvent(fMC);
+  if(fMC) fV0pid->SetMCEvent(fMC);
 
   fV0pid->Process(fEvent);
   TObjArray *hfeelectrons = fV0pid->GetListOfElectrons();
@@ -323,10 +328,10 @@ void AliHFEpidQA::Process(){
   TObjArray *cleanElectrons = MakeCleanListElectrons(hfeelectrons);
 
   if(fMC){
-    fV0pidMC->Process(electrons, AliHFEV0pid::kRecoElectron);
-    fV0pidMC->Process(pionsK0, AliHFEV0pid::kRecoPionK0);
-    fV0pidMC->Process(pionsL, AliHFEV0pid::kRecoPionL);
-    fV0pidMC->Process(protons, AliHFEV0pid::kRecoProton);
+    fV0pidMC->Process(electrons, AliHFEV0cuts::kRecoElectron);
+    fV0pidMC->Process(pionsK0, AliHFEV0cuts::kRecoPionK0);
+    fV0pidMC->Process(pionsL, AliHFEV0cuts::kRecoPionL);
+    fV0pidMC->Process(protons, AliHFEV0cuts::kRecoProton);
   }
 
   AliDebug(2, Form("Number of Electrons      : %d", electrons->GetEntries()));
@@ -336,20 +341,20 @@ void AliHFEpidQA::Process(){
   if(fMC){
     AliDebug(2, "MC Information available. Doing Purity checks...");
     // Calculate the purity of the clean samples using MC 
-    MakePurity(electrons, AliHFEV0pid::kRecoElectron);
-    MakePurity(pionsK0,  AliHFEV0pid::kRecoPionK0);
-    MakePurity(pionsL,  AliHFEV0pid::kRecoPionL);
-    MakePurity(protons,  AliHFEV0pid::kRecoProton);
+    MakePurity(electrons, AliHFEV0cuts::kRecoElectron);
+    MakePurity(pionsK0,  AliHFEV0cuts::kRecoPionK0);
+    MakePurity(pionsL,  AliHFEV0cuts::kRecoPionL);
+    MakePurity(protons,  AliHFEV0cuts::kRecoProton);
   }
 
   // some event wise checks
   CheckEvent();
 
   // Make Illumination Plot
-  FillIllumination(electrons, AliHFEV0pid::kRecoElectron);
-  FillIllumination(pionsK0, AliHFEV0pid::kRecoPionK0);
-  FillIllumination(pionsL, AliHFEV0pid::kRecoPionL);
-  FillIllumination(protons, AliHFEV0pid::kRecoProton);
+  FillIllumination(electrons, AliHFEV0cuts::kRecoElectron);
+  FillIllumination(pionsK0, AliHFEV0cuts::kRecoPionK0);
+  FillIllumination(pionsL, AliHFEV0cuts::kRecoPionL);
+  FillIllumination(protons, AliHFEV0cuts::kRecoProton);
 
   // Now we can do studies on the PID itself
   // For TRD use the TRD PID QA object
@@ -358,21 +363,21 @@ void AliHFEpidQA::Process(){
   fTRDpidQA->ProcessTracks(pionsL, AliPID::kPion);
   fTRDpidQA->ProcessTracks(protons, AliPID::kProton);
 
-  FillElectronLikelihoods(electrons,  AliHFEV0pid::kRecoElectron); 
-  FillElectronLikelihoods(pionsK0,  AliHFEV0pid::kRecoPionK0); 
-  FillElectronLikelihoods(pionsL,  AliHFEV0pid::kRecoPionL); 
-  FillElectronLikelihoods(protons,  AliHFEV0pid::kRecoProton); 
+  FillElectronLikelihoods(electrons,  AliHFEV0cuts::kRecoElectron); 
+  FillElectronLikelihoods(pionsK0,  AliHFEV0cuts::kRecoPionK0); 
+  FillElectronLikelihoods(pionsL,  AliHFEV0cuts::kRecoPionL); 
+  FillElectronLikelihoods(protons,  AliHFEV0cuts::kRecoProton); 
   
-  FillPIDresponse(electrons, AliHFEV0pid::kRecoElectron);
-  FillPIDresponse(pionsK0, AliHFEV0pid::kRecoPionK0);
-  FillPIDresponse(pionsL, AliHFEV0pid::kRecoPionL);
-  FillPIDresponse(protons, AliHFEV0pid::kRecoProton);
+  FillPIDresponse(electrons, AliHFEV0cuts::kRecoElectron);
+  FillPIDresponse(pionsK0, AliHFEV0cuts::kRecoPionK0);
+  FillPIDresponse(pionsL, AliHFEV0cuts::kRecoPionL);
+  FillPIDresponse(protons, AliHFEV0cuts::kRecoProton);
 
   // check the tender V0s
-  CheckTenderV0pid(electrons, AliHFEV0pid::kRecoElectron);
-  CheckTenderV0pid(pionsK0, AliHFEV0pid::kRecoPionK0);
-  CheckTenderV0pid(pionsL, AliHFEV0pid::kRecoPionL);
-  CheckTenderV0pid(protons, AliHFEV0pid::kRecoProton);
+  CheckTenderV0pid(electrons, AliHFEV0cuts::kRecoElectron);
+  CheckTenderV0pid(pionsK0, AliHFEV0cuts::kRecoPionK0);
+  CheckTenderV0pid(pionsL, AliHFEV0cuts::kRecoPionL);
+  CheckTenderV0pid(protons, AliHFEV0cuts::kRecoProton);
 
   // Analysis done, flush the containers
   fV0pid->Flush();
@@ -385,7 +390,7 @@ void AliHFEpidQA::Process(){
 }
 
 //__________________________________________
-void AliHFEpidQA::FillIllumination(TObjArray * const tracks, Int_t species){
+void AliHFEpidQA::FillIllumination(const TObjArray * const tracks, Int_t species){
   //
   // Fill Illumination Plot
   //
@@ -450,7 +455,7 @@ void AliHFEpidQA::FillTPCinfo(AliESDtrack *const esdtrack, Int_t species){
 }
 
 //__________________________________________
-void AliHFEpidQA::MakePurity(TObjArray *tracks, Int_t species){
+void AliHFEpidQA::MakePurity(const TObjArray *tracks, Int_t species){
   //
   // Fill the QA histos for a given species
   //
@@ -460,16 +465,16 @@ void AliHFEpidQA::MakePurity(TObjArray *tracks, Int_t species){
   Char_t hname[256];
 
   switch(species){
-  case  AliHFEV0pid::kRecoElectron:
+  case  AliHFEV0cuts::kRecoElectron:
     sprintf(hname, "purityElectron");
     break;
-  case  AliHFEV0pid::kRecoPionK0:
+  case  AliHFEV0cuts::kRecoPionK0:
     sprintf(hname, "purityPionK0");
     break;
-  case  AliHFEV0pid::kRecoPionL:
+  case  AliHFEV0cuts::kRecoPionL:
     sprintf(hname, "purityPionL");
     break;
-  case  AliHFEV0pid::kRecoProton:
+  case  AliHFEV0cuts::kRecoProton:
     sprintf(hname, "purityProton");
     break;
   default:  // non investigated species
@@ -510,7 +515,7 @@ void AliHFEpidQA::MakePurity(TObjArray *tracks, Int_t species){
 }
 
 //__________________________________________
-void AliHFEpidQA::FillElectronLikelihoods(TObjArray * const particles, Int_t species){
+void AliHFEpidQA::FillElectronLikelihoods(const TObjArray * const particles, Int_t species){
   //
   // Fill electron Likelihoods for the ITS, TPC and TOF
   // Required for the calculation of the electron efficiency, 
@@ -521,16 +526,16 @@ void AliHFEpidQA::FillElectronLikelihoods(TObjArray * const particles, Int_t spe
   Char_t specname[256];
 
   switch(species){
-  case  AliHFEV0pid::kRecoElectron:
+  case  AliHFEV0cuts::kRecoElectron:
     sprintf(specname, "Electron");
     break;
-  case  AliHFEV0pid::kRecoPionK0:
+  case  AliHFEV0cuts::kRecoPionK0:
     sprintf(specname, "PionK0");
     break;
-  case  AliHFEV0pid::kRecoPionL:
+  case  AliHFEV0cuts::kRecoPionL:
     sprintf(specname, "PionL");
     break;
-  case  AliHFEV0pid::kRecoProton:
+  case  AliHFEV0cuts::kRecoProton:
     sprintf(specname, "Proton");
     break;
   default:
@@ -605,7 +610,7 @@ void AliHFEpidQA::FillElectronLikelihoods(TObjArray * const particles, Int_t spe
   }//.. while tracks 
 }
 //__________________________________________
-void AliHFEpidQA::FillPIDresponse(TObjArray * const particles, Int_t species){
+void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t species){
   //
   // Fill the PID response of different detectors to V0 daughter particles
   //
@@ -950,7 +955,7 @@ Float_t AliHFEpidQA::TOFbeta(AliESDtrack * const track) const {
   return beta;
 }
 //____________________________________________
-Int_t AliHFEpidQA::GetMaxPID(Double_t *pidProbs) const {
+Int_t AliHFEpidQA::GetMaxPID(const Double_t *pidProbs) const {
   //
   // return the index of maximal PID probability
   //
@@ -973,16 +978,16 @@ Int_t AliHFEpidQA::GetPDG(Int_t species){
   Int_t pdg = 0;
 
   switch(species){
-  case  AliHFEV0pid::kRecoElectron:
+  case  AliHFEV0cuts::kRecoElectron:
     pdg = TMath::Abs(kElectron);
     break;
-  case  AliHFEV0pid::kRecoPionK0:
+  case  AliHFEV0cuts::kRecoPionK0:
     pdg = TMath::Abs(kPiPlus);
     break;
-  case  AliHFEV0pid::kRecoPionL:
+  case  AliHFEV0cuts::kRecoPionL:
     pdg = TMath::Abs(kPiPlus);
     break;
-  case  AliHFEV0pid::kRecoProton:
+  case  AliHFEV0cuts::kRecoProton:
     pdg = TMath::Abs(kProton);
     break;
   default:  // non investigated species
@@ -995,7 +1000,7 @@ Int_t AliHFEpidQA::GetPDG(Int_t species){
 }
 
 //_____________________________________________
-TObjArray * AliHFEpidQA::MakeTrackList(TObjArray *tracks) const {
+TObjArray * AliHFEpidQA::MakeTrackList(const TObjArray *tracks) const {
   //
   // convert list of AliHFEV0Info into a list of AliVParticle
   //
@@ -1009,7 +1014,7 @@ TObjArray * AliHFEpidQA::MakeTrackList(TObjArray *tracks) const {
 }
 
 //_____________________________________________
-TObjArray * AliHFEpidQA::MakeCleanListElectrons(TObjArray *electrons) const {
+TObjArray * AliHFEpidQA::MakeCleanListElectrons(const TObjArray *electrons) const {
   //
   // Cleanup electron sample using TPC PID
   // PID requirement will allways be implemented to the pair
@@ -1021,9 +1026,9 @@ TObjArray * AliHFEpidQA::MakeCleanListElectrons(TObjArray *electrons) const {
   AliHFEV0info *hfetrack;
   // const Double_t kSigmaTight = 1.;
   // const Double_t kSigmaLoose = 4.;
-  const Double_t kSigmaTight = 0.5;
-  const Double_t kSigmaLoose = 0.5;
-  const Double_t shift = 1.;
+  const Double_t kSigmaTight = 2.;
+  const Double_t kSigmaLoose = 2.;
+  const Double_t shift = 0.57;
   if((esd = dynamic_cast<AliESDEvent *>(fEvent))){
     AliESDtrack *track = NULL, *partnerTrack = NULL;
     while((hfetrack = dynamic_cast<AliHFEV0info *>(candidates()))){
@@ -1046,7 +1051,7 @@ TObjArray * AliHFEpidQA::MakeCleanListElectrons(TObjArray *electrons) const {
   return tracks;
 }
 //___________________________________________________________
-void AliHFEpidQA::CheckTenderV0pid(TObjArray * const particles, Int_t species){
+void AliHFEpidQA::CheckTenderV0pid(const TObjArray * const particles, Int_t species){
 
   //
   // retrieve the status bits from the TObject used to flag
@@ -1167,7 +1172,7 @@ Double_t AliHFEpidQA::TRDlikeTracklet(Int_t layer, AliESDtrack * const track, Do
   return sum;
 }
 //__________________________________________________________________________
-Int_t  AliHFEpidQA::TRDmomBin(Double_t p){
+const Int_t AliHFEpidQA::TRDmomBin(Double_t p){
   //
   // compute the momentum bin position
   // 

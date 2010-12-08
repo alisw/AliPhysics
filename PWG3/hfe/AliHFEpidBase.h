@@ -24,19 +24,52 @@
  #endif
 
 class TList;
+class AliAODpidUtil;
 class AliESDpid;
 class AliVParticle;
 class AliMCParticle;
+class AliHFEpidQAmanager;
 
-struct AliHFEpidObject{
+class AliHFEpidObject{
+  public:
     typedef enum{ 
       kESDanalysis,
       kAODanalysis
     }AnalysisType_t;
-    AliVParticle *fRecTrack;    // Reconstructed track
-    AliVParticle *fMCtrack;     // Monte Carlo track
+    AliHFEpidObject():
+      fkRecTrack(NULL), 
+      fAnalysisType(kESDanalysis),
+      fAbInitioPID(-1),
+      fCentrality(99.)
+      {
+      }
+    AliHFEpidObject(const AliHFEpidObject &ref):
+      fkRecTrack(ref.fkRecTrack), 
+      fAnalysisType(ref.fAnalysisType),
+      fAbInitioPID(ref.fAbInitioPID),
+      fCentrality(ref.fCentrality)
+      {
+      }
+    AliHFEpidObject &operator=(const AliHFEpidObject &ref);
+    ~AliHFEpidObject(){};
+
+    void SetRecTrack(const AliVParticle * recTrack) {fkRecTrack = recTrack; }
+    void SetMCTrack(const AliVParticle * mcTrack);
+    void SetAnalysisType(AnalysisType_t type) { fAnalysisType = type; }
+    void SetAbInitioPID(Int_t abInitioPID) { fAbInitioPID = abInitioPID; }
+    void SetCentrality(Float_t centrality) { fCentrality = centrality; }
+
+    const AliVParticle *GetRecTrack() const { return fkRecTrack; }
+    Int_t GetAbInitioPID() const { return fAbInitioPID; }
+    Float_t GetCentrality() const { return fCentrality; }
+    Bool_t IsAODanalysis() const { return fAnalysisType == static_cast<UChar_t>(kAODanalysis); }
+    Bool_t IsESDanalysis() const { return fAnalysisType == static_cast<UChar_t>(kESDanalysis); }
+
+  private:
+    const AliVParticle *fkRecTrack;    // Reconstructed track
     UChar_t fAnalysisType;      // Analysis Mode (ESD or AOD)
-    AliHFEpidObject():fRecTrack(NULL), fMCtrack(NULL), fAnalysisType(kESDanalysis){}
+    Int_t fAbInitioPID;         // AbInitio PID
+    Float_t fCentrality;        // Centrality Information
 };
 
 class AliHFEpidBase : public TNamed{
@@ -48,41 +81,24 @@ class AliHFEpidBase : public TNamed{
     virtual ~AliHFEpidBase() {};
     // Framework functions that have to be implemented by the detector PID classes
     virtual Bool_t InitializePID() = 0;
-    virtual Int_t IsSelected(AliHFEpidObject *track) = 0;
-    virtual Bool_t HasQAhistos() const = 0;
+    virtual Int_t IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa = NULL) = 0;
 
-    Int_t GetDebugLevel() const { return fDebugLevel; };
-    Bool_t IsQAon() const { return TestBit(kQAon);};
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
 
     void SetESDpid(AliESDpid * const pid) { fESDpid = pid; }
-    void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; }; 
-    inline void SetQAOn(TList *fQAlist);
+    void SetAODpid(AliAODpidUtil * const pid) { fAODpid = pid; }
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData,hasMCdata); };
 
   protected:
     AliESDpid *fESDpid;                         // ESD PID object
+    AliAODpidUtil *fAODpid;                     // AOD PID object
     void Copy(TObject &ref) const;
-    virtual void AddQAhistograms(TList *){};
+
   private:
     enum{
-      kQAon = BIT(14),
-      kHasMCData = BIT(15)
+      kHasMCData = BIT(14)
     };
 
-    Int_t fDebugLevel;              // Debug Level
-
-    ClassDef(AliHFEpidBase, 1)      // Base class for detector Electron ID
+    ClassDef(AliHFEpidBase, 2)      // Base class for detector Electron ID
 };
-
-//___________________________________________________________________
-void AliHFEpidBase::SetQAOn(TList *qaList){
-  //
-  // Initialize QA for Detector PID class
-  //
-  if(HasQAhistos()){
-    SetBit(kQAon, kTRUE);
-    AddQAhistograms(qaList);
-  }
-}
 #endif

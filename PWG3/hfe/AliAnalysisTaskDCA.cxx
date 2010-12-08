@@ -322,11 +322,8 @@ void AliAnalysisTaskDCA::UserCreateOutputObjects(){
   
   if(fHFEpid && GetPlugin(kHFEpid)) {      
     fHFEpid->SetHasMCData(HasMCData());
-    if(!fPIDdetectors.Length() && ! fPIDstrategy) AddPIDdetector("TPC");
-    if(fPIDstrategy)
-      fHFEpid->InitializePID(Form("Strategy%d", fPIDstrategy));
-    else
-      fHFEpid->InitializePID(fPIDdetectors.Data());     // Only restrictions to TPC allowed 
+    fHFEpid->AddDetector("TPC", 0);
+    fHFEpid->InitializePID();
   }
 
   // dca study----------------------------------
@@ -502,19 +499,19 @@ void AliAnalysisTaskDCA::ProcessDcaAnalysis(){
     if(HasMCData())mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(track->GetLabel())));
 
     // RecPrim: primary cuts
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecPrim, track)) continue;
+    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutStepsMCTrack, track)) continue;
     // RecKine: ITSTPC cuts  
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack, track)) continue;
     // HFEcuts: ITS layers cuts
-    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsMCTrack, track)) continue;
     
     if(track->GetITSclusters(0)<=fNclustersITS) continue;  // require number of ITS clusters
     
     // track accepted, do PID
     AliHFEpidObject hfetrack;
-    hfetrack.fAnalysisType = AliHFEpidObject::kESDanalysis;
-    hfetrack.fRecTrack = track;
-    if(HasMCData()) hfetrack.fMCtrack = mctrack;
+    hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+    hfetrack.SetRecTrack(track);
+    if(HasMCData()) hfetrack.SetMCTrack(mctrack);
 
     if(HasMCData()){
       if(GetPlugin(kPrimVtx))
@@ -691,7 +688,9 @@ void AliAnalysisTaskDCA::MakeParticleContainer(){
   for(Int_t i=0; i<=iBin[2]; i++) binEdges[2][i]=(Double_t)kPhimin  + (kPhimax-kPhimin)/iBin[2]*(Double_t)i;
 
   //one "container" for MC
-  AliCFContainer* container = new AliCFContainer("container","container for tracks", (AliHFEcuts::kNcutStepsTrack + 1 + 2*(AliHFEcuts::kNcutStepsESDtrack + 1)), kNvar, iBin);
+  const Int_t kNcutStepsESDtrack = AliHFEcuts::kNcutStepsRecTrack + 1;
+  const Int_t kNcutStepsTrack = AliHFEcuts::kNcutStepsMCTrack + kNcutStepsESDtrack;
+  AliCFContainer* container = new AliCFContainer("container","container for tracks", (kNcutStepsTrack + 1 + 2*(kNcutStepsESDtrack + 1)), kNvar, iBin);
 
   //setting the bin limits
   for(Int_t ivar = 0; ivar < kNvar; ivar++)

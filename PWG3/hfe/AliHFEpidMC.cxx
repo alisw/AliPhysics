@@ -28,15 +28,25 @@
 //#include "AliVParticle.h"
 
 #include "AliHFEpidMC.h"
+#include "AliHFEtools.h"
 
 ClassImp(AliHFEpidMC)
+
+//___________________________________________________________________
+AliHFEpidMC::AliHFEpidMC():
+  AliHFEpidBase()
+{
+  //
+  // Default constructor
+  //
+}
 
 //___________________________________________________________________
 AliHFEpidMC::AliHFEpidMC(const Char_t *name):
   AliHFEpidBase(name)
 {
   //
-  // Default constructor
+  // Standard constructor
   //
 }
 
@@ -50,20 +60,11 @@ Bool_t AliHFEpidMC::InitializePID(){
 }
 
 //___________________________________________________________________
-Int_t AliHFEpidMC::IsSelected(AliHFEpidObject *track){
+Int_t AliHFEpidMC::IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager * /*pidqa*/){
   //
   // returns MC PDG Code
   // Functionality implemented in the base class
   // (necessary for PID QA)
   //
-  if(track->fAnalysisType == AliHFEpidObject::kESDanalysis){
-    AliMCParticle *mc = dynamic_cast<AliMCParticle *>(track->fMCtrack);
-    if(!mc) return 0;
-    return mc->Particle()->GetPdgCode();
-  }
-  else{
-    AliAODMCParticle *aodmc = dynamic_cast<AliAODMCParticle *>(track->fMCtrack);
-    if(!aodmc) return 0;
-    return aodmc->GetPdgCode();
-  } 
+  return AliHFEtools::GetPdg(track->GetRecTrack());
 }

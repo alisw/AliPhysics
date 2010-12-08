@@ -40,6 +40,8 @@
 #include "AliHFEpairs.h"
 #include "AliHFEsecVtxs.h"
 #include "AliHFEtrackFilter.h"
+#include "AliHFEmcQA.h"
+#include "AliHFEtools.h"
 
 ClassImp(AliHFEsecVtx)
 
@@ -49,6 +51,7 @@ AliHFEsecVtx::AliHFEsecVtx():
   ,fESD1(0x0)
   ,fAOD1(0x0)
   ,fMCEvent(0x0)
+  ,fMCQA(0x0)
   ,fUseMCPID(kFALSE)
   ,fkSourceLabel()
   ,fNparents(0)
@@ -94,6 +97,7 @@ AliHFEsecVtx::AliHFEsecVtx(const AliHFEsecVtx &p):
   ,fESD1(0x0)
   ,fAOD1(0x0)
   ,fMCEvent(0x0)
+  ,fMCQA(0x0)
   ,fUseMCPID(p.fUseMCPID)
   ,fkSourceLabel()
   ,fNparents(p.fNparents)
@@ -205,8 +209,13 @@ void AliHFEsecVtx::Process(AliVTrack *signalTrack){
   //
   // Run Process
   //
-  if(signalTrack->Pt() < 1.0) return;
+  //if(signalTrack->Pt() < 1.0) return;
+  
+
   AliESDtrack *track = dynamic_cast<AliESDtrack *>(signalTrack);
+
+  FillHistos(0,track); // wo any cuts
+
   InitHFEpairs();
   InitHFEsecvtxs();
   AliESDtrack *htrack = 0x0; 
@@ -220,20 +229,29 @@ void AliHFEsecVtx::Process(AliVTrack *signalTrack){
     PairAnalysis(track, htrack, htrack->GetID()); // e-h pairing
   }
   delete trackIter;
-  /*for(int ip=0; ip<fSecVtx->HFEpairs()->GetEntriesFast(); ip++){
-      if(HasMCData()){
-        AliHFEpairs *pair = (AliHFEpairs*) (fSecVtx->HFEpairs()->UncheckedAt(ip));
-        if(!(pair->GetPairCode()>1. && pair->GetPairCode()<4.))  // apply various cuts
-        fSecVtx->HFEpairs()->RemoveAt(ip);
-      }
-    }*/
+  for(int ip=0; ip<HFEpairs()->GetEntriesFast(); ip++){
+    //if(HasMCData()){
+    AliHFEpairs *pair = (AliHFEpairs*) (HFEpairs()->UncheckedAt(ip));
+    //if(!(pair->GetPairCode()>1. && pair->GetPairCode()<4.))  // apply various cuts
+    if(pair->GetKFChi2()>5.) // only apply vertex chi2 cut for the moment
+      HFEpairs()->RemoveAt(ip);
+    //}
+  }
   HFEpairs()->Compress();
-  RunSECVTX(track); // secondary vertexing with e,h1,h2,.. tracks
+  if(HFEpairs()->GetEntriesFast()) FillHistos(1,track); // after paired 
+  if(HFEpairs()->GetEntriesFast()) RunSECVTX(track); // secondary vertexing with e,h1,h2,.. tracks
+  if(HFEsecvtxs()->GetEntriesFast()) FillHistos(2,track); // after secvtxing
   for(int ip=0; ip<HFEsecvtxs()->GetEntriesFast(); ip++){
     AliHFEsecVtxs *secvtx=0x0;
     secvtx = (AliHFEsecVtxs*) (HFEsecvtxs()->UncheckedAt(ip));
-    // here you apply cuts, then if it doesn't pass the cut, remove it from the fSecVtx->HFEsecvtxs() 
+    // here you apply cuts, then if it doesn't pass the cut, remove it from the HFEsecvtxs() 
+    if(!(secvtx->GetInvmass()>2.0 && secvtx->GetInvmass()<5.2) || !(secvtx->GetSignedLxy2()>0.08 && secvtx->GetSignedLxy2()<1.5) || !(secvtx->GetKFIP2()>-0.1 && secvtx->GetKFIP2()<0.1))
+      HFEsecvtxs()->RemoveAt(ip);
   }
+
+  // fill histos for raw spectra
+  if(HFEsecvtxs()->GetEntriesFast()) FillHistos(3,track); //after secvtx cut
+    
   DeleteHFEpairs();
   DeleteHFEsecvtxs();
 }
@@ -251,6 +269,11 @@ void AliHFEsecVtx::CreateHistograms(TList * const qaList)
   fSecVtxList->SetName("SecVtx");
 
   MakeContainer();
+  MakeHistos(0);
+  MakeHistos(1);
+  MakeHistos(2);
+  MakeHistos(3);
+
   /*
   fkSourceLabel[kAll]="all";
   fkSourceLabel[kDirectCharm]="directCharm";
@@ -929,7 +952,10 @@ void AliHFEsecVtx::CalcSECVTXProperty(AliVTrack* track1, AliVTrack* track2, AliV
 }
 
 //_______________________________________________________________________________________________
-void AliHFEsecVtx::RecalcPrimvtx(Int_t nkftrk, Int_t * const trkid, AliKFParticle * const kftrk){
+void AliHFEsecVtx::RecalcPrimvtx(Int_t nkftrk, const Int_t * const trkid, const AliKFParticle * const kftrk){
+  //
+  // reccalculate primary vertex after removing considering track in the calculation
+  //
 
   const AliESDVertex *primvtx = fESD1->GetPrimaryVertex();
 
@@ -959,7 +985,7 @@ void AliHFEsecVtx::RecalcPrimvtx(Int_t nkftrk, Int_t * const trkid, AliKFParticl
 }
 
 //_______________________________________________________________________________________________
-Int_t AliHFEsecVtx::GetMCPID(AliESDtrack *track) 
+Int_t AliHFEsecVtx::GetMCPID(const AliESDtrack *track) 
 {
   //      
   // return mc pid
@@ -1403,7 +1429,7 @@ Int_t AliHFEsecVtx::GetPDG(AliVTrack *track)
 }
 
 //_______________________________________________________________________________________________
-Int_t AliHFEsecVtx::GetMCPDG(AliVTrack *track)
+Int_t AliHFEsecVtx::GetMCPDG(const AliVTrack *track)
 {
   //
   // return mc pdg code
@@ -1552,25 +1578,6 @@ void AliHFEsecVtx::InitHFEsecvtxs()
   fNoOfHFEsecvtxs = 0;
 }
 
-//_______________________________________________________________________________________________
-Bool_t AliHFEsecVtx::SingleTrackCut(AliESDtrack* track) const
-{
-  //if (track->Pt() < 1.0) return kFALSE;
-  //if (TMath::Abs(track->Eta()) > 0.9) return kFALSE;
-  //if (!(track->GetStatus() & AliESDtrack::kITSrefit)) return kFALSE;
-  //if (!(track->GetStatus() & AliESDtrack::kTPCrefit)) return kFALSE;
-  if (!(TESTBIT(track->GetITSClusterMap(),0))) return kFALSE; // ask hit on the first pixel layer
-  //if (!(TESTBIT(track->GetITSClusterMap(),0) | TESTBIT(track->GetITSClusterMap(),1))) return kFALSE;
-
-/*
-  Float_t dcaR=-1;
-  Float_t dcaZ=-1;
-  track->GetImpactParameters(dcaR,dcaZ);
-  if (TMath::Abs(TMath::Sqrt(dcaR*dcaR + dcaZ*dcaZ)) < 0.005) return kFALSE;
-  if (TMath::Abs(TMath::Sqrt(dcaR*dcaR + dcaZ*dcaZ)) > 0.3) return kFALSE;
-*/
-  return kTRUE;
-}
 //____________________________________________________________
 void AliHFEsecVtx::MakeContainer(){
 
@@ -1644,3 +1651,69 @@ void AliHFEsecVtx::MakeContainer(){
   for(Int_t ivar = 0; ivar < nDimSecvtx; ivar++)
     delete binEdgesSecvtx[ivar];
 }
+
+//____________________________________________________________
+void AliHFEsecVtx::MakeHistos(Int_t step){
+
+  //
+  // make container
+  //
+  
+  TString hname=Form("step%d",step);
+  step = step*7;
+
+  const Double_t kPtbound[2] = {0.1, 20.};
+  Int_t iBin[1];
+  iBin[0] = 44; // bins in pt
+  Double_t* binEdges[1];
+  binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
+
+  fSecVtxList->AddAt(new TH1F(hname+"taggedElec", "pT of e", iBin[0],binEdges[0]), step);
+  fSecVtxList->AddAt(new TH1F(hname+"charmElec", "pT of e", iBin[0],binEdges[0]), step+1);
+  fSecVtxList->AddAt(new TH1F(hname+"beautyElec", "pT of e", iBin[0],binEdges[0]), step+2);
+  fSecVtxList->AddAt(new TH1F(hname+"conversionElec", "pT of e", iBin[0],binEdges[0]), step+3);
+  fSecVtxList->AddAt(new TH1F(hname+"ebgElec", "pT of e", iBin[0],binEdges[0]), step+4);
+  fSecVtxList->AddAt(new TH1F(hname+"hcontaminElec", "pT of e", iBin[0],binEdges[0]), step+5);
+  fSecVtxList->AddAt(new TH1F(hname+"elseElec", "pT of e", iBin[0],binEdges[0]), step+6);
+}
+
+//____________________________________________________________
+void AliHFEsecVtx::FillHistos(Int_t step, const AliESDtrack *track){
+
+  //
+  // make container
+  //
+  
+  step = step*7;
+
+  AliMCParticle *mctrack = NULL;
+  TParticle* mcpart = NULL;
+
+  (dynamic_cast<TH1F *>(fSecVtxList->At(step)))->Fill(track->Pt()); // electrons tagged
+
+  if(HasMCData()){
+    if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) return;
+    mcpart = mctrack->Particle();
+
+    Int_t esource=fMCQA->GetElecSource(mcpart);
+    if(esource==1) {
+      (dynamic_cast<TH1F *>(fSecVtxList->At(step+1)))->Fill(mcpart->Pt()); //charm
+    }
+    else if(esource==2 || esource==3) {
+      (dynamic_cast<TH1F *>(fSecVtxList->At(step+2)))->Fill(mcpart->Pt()); //beauty
+    }
+    else if(esource==4) {
+      (dynamic_cast<TH1F *>(fSecVtxList->At(step+3)))->Fill(mcpart->Pt()); //conversion
+    }
+    else if(esource==7) {
+      (dynamic_cast<TH1F *>(fSecVtxList->At(step+5)))->Fill(mcpart->Pt()); //contamination
+    }
+    else if(!(esource<0)) {
+      (dynamic_cast<TH1F *>(fSecVtxList->At(step+4)))->Fill(mcpart->Pt()); //e backgrounds
+    }
+    else {
+      (dynamic_cast<TH1F *>(fSecVtxList->At(step+6)))->Fill(mcpart->Pt()); //something else?
+    }
+  }
+
+} 

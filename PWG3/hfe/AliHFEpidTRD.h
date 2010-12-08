@@ -57,11 +57,10 @@ class AliHFEpidTRD : public AliHFEpidBase{
     virtual ~AliHFEpidTRD();
     
     virtual Bool_t InitializePID();
-    virtual Int_t IsSelected(AliHFEpidObject *track);
-    virtual Bool_t HasQAhistos() const { return kTRUE; };
+    virtual Int_t IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa);
 
-    Double_t GetTRDSignalV1(AliESDtrack *track, Int_t mcPID);
-    Double_t GetTRDSignalV2(AliESDtrack *track, Int_t mcPID);
+    Double_t GetTRDSignalV1(const AliESDtrack *track);
+    Double_t GetTRDSignalV2(const AliESDtrack *track);
 
     Bool_t IsCalculateTRDSignals() const { return TestBit(kTRDsignals); }
     void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
@@ -75,23 +74,18 @@ class AliHFEpidTRD : public AliHFEpidBase{
       kTRDsignals = BIT(16)
     };
     void Copy(TObject &ref) const;
-    Int_t MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
-    Int_t MakePIDaod(AliAODTrack *aofTrack, AliAODMCParticle *aodMC);
-    Int_t GetMCpid(AliESDtrack *track);
+    Double_t GetElectronLikelihood(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType);
+    Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType);
     void InitParameters();
     void InitParameters1DLQ();
-    virtual void AddQAhistograms(TList *l);
     void GetParameters(Double_t electronEff, Double_t *parameters);
 
-    void FillStandardQA(Int_t whenFilled, AliESDtrack *esdTrack);
-    void FillHistogramsTRDSignal(Double_t signal, Double_t p, Int_t species, UInt_t version);
   private:
     static const Double_t fgkVerySmall;                       // Check for 0
     Double_t fMinP;                                         // Minimum momentum above which TRD PID is applied
     Double_t fElectronEfficiency;                           // Cut on electron efficiency
     PIDMethodTRD_t fPIDMethod;                              // PID Method: 2D Likelihood or Neural Network
     Double_t fThreshParams[kThreshParams];                  // Threshold parametrisation
-    AliHFEcollection *fContainer;                                      // QA  Histogram Container
   ClassDef(AliHFEpidTRD, 1)     // TRD electron ID class
 };
 

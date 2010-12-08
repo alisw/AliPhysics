@@ -49,6 +49,7 @@ AliHFEcollection::AliHFEcollection():
   //
 
   fList = new THashList();
+  fList->SetOwner();
   if(!fList){
     AliError("Initialization of the list failed");
   }
@@ -71,6 +72,7 @@ AliHFEcollection::AliHFEcollection(const char* name, const char* title):
   //
  
   fList = new THashList();
+  fList->SetOwner();
   fList->SetName(Form("list_%s", name));
   if(!fList){
     AliError("Initialization of the list failed");
@@ -125,10 +127,8 @@ AliHFEcollection::~AliHFEcollection(){
   //
   // Destructor
   //
-  if(fList)
-    fList->Delete();
   delete fList;
-  AliInfo("DESTRUCTOR");
+  AliDebug(1, "DESTRUCTOR");
 }
 //___________________________________________________________________
 Bool_t AliHFEcollection::CreateTH1F(const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax, Int_t logAxis){

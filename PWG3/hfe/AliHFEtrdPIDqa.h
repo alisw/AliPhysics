@@ -90,8 +90,10 @@ class AliHFEtrdPIDqa : public TNamed{
       kQuantitiesQA = 5
     };
     enum QuantitiesdEdx_t{
-      kdEdx = 3,
-      kQuantitiesdEdx = 4
+      kNclusters = 3,
+      kNonZeroSlices = 4,
+      kdEdx = 5,
+      kQuantitiesdEdx = 6
     };
     enum QuantitiesTruncMean_t{
       kTPCdEdx = 3,
