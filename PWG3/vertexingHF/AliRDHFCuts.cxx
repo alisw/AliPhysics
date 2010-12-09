@@ -185,7 +185,10 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
   // switch to settings for 1-pad cls in TPC
   if(fPidHF) {
-    if(event->GetRunNumber()>121693) fPidHF->SetOnePad(kTRUE);
+    if(event->GetRunNumber()>121693 && event->GetRunNumber()<136851) 
+      fPidHF->SetOnePad(kTRUE);
+    if(event->GetRunNumber()>=136851 && event->GetRunNumber()<=139517) 
+      fPidHF->SetPbPb(kTRUE);
   }
 
   if(fOptPileup==kRejectPileupEvent){
