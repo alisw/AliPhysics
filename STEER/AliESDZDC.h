@@ -17,6 +17,11 @@
 
 class AliESDZDC: public TObject {
 public:
+ 
+  enum {
+    kCorrectedTDCFilled = BIT(14)
+  };
+ 
   AliESDZDC();
   AliESDZDC(const AliESDZDC& zdc);
   AliESDZDC& operator=(const AliESDZDC& zdc);
@@ -48,6 +53,19 @@ public:
   Bool_t GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Double_t centrZNA[2]);
   Bool_t GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2]);
   //
+
+  UInt_t GetZDCScaler(Int_t i)  const {return fVMEScaler[i];}
+  const UInt_t* GetZDCScaler()  const {return fVMEScaler;}
+
+  Int_t GetZDCTDCData(Int_t i, Int_t j) const {return fZDCTDCData[i][j];}
+  Float_t GetZDCTDCCorrected(Int_t i, Int_t j) const {return fZDCTDCCorrected[i][j];}
+  Float_t GetZNTDCSum(Int_t ihit) const 
+          {if(ihit<4) return (Float_t) (fZDCTDCCorrected[10][ihit]+fZDCTDCCorrected[12][ihit]);
+           else return 0.;}
+  Float_t GetZNTDCDiff(Int_t ihit) const 
+          {if(ihit<4) return (Float_t) (fZDCTDCCorrected[12][ihit]-fZDCTDCCorrected[10][ihit]);
+           else return 0.;}
+  
   void  SetZDC(Double_t n1Energy, Double_t p1Energy, 
   	       Double_t emEnergy0, Double_t emEnergy1,
 	       Double_t n2Energy, Double_t p2Energy, 
@@ -80,21 +98,17 @@ public:
   	   {for(Int_t i=0; i<2; i++) fZNACentrCoord[i] = centrCoord[i];}
   void  SetZNCCentroid(const Float_t centrCoord[2])
   	   {for(Int_t i=0; i<2; i++) fZNCCentrCoord[i] = centrCoord[i];}
-
-  UInt_t GetZDCScaler(Int_t i)  const {return fVMEScaler[i];}
-  const UInt_t* GetZDCScaler()  const {return fVMEScaler;}
-
-  Float_t GetZDCTDCData(Int_t i, Int_t j) const {return fZDCTDCData[i][j];}
   
   void SetZDCScaler(const UInt_t count[32]) 
        {for(Int_t k=0; k<32; k++) fVMEScaler[k] = count[k];}
   
-  void SetZDCTDC(const Float_t values[32][4]) 
+  void SetZDCTDCData(const Int_t values[32][4]) 
        {for(Int_t k=0; k<32; k++)
        	   for(Int_t j=0; j<4; j++) fZDCTDCData[k][j] = values[k][j];}
-
-  void SetZNCTime(const Float_t val[4]) {for(int k=0; k<4; k++) fZNCTime[k] = val[k];}
-  void SetZNATime(const Float_t val[4]) {for(int k=0; k<4; k++) fZNATime[k] = val[k];}
+  
+  void SetZDCTDCCorrected(const Float_t values[32][4]) 
+       {for(Int_t k=0; k<32; k++)
+       	   for(Int_t j=0; j<4; j++) fZDCTDCCorrected[k][j] = values[k][j];}
 
   void    Reset();
   void    Print(const Option_t *opt=0) const;
@@ -125,11 +139,10 @@ private:
   Double32_t   fZNCCentrCoord[2]; // Coordinates of the centroid over ZNA
   UInt_t       fESDQuality;	  // flags from reconstruction
   UInt_t       fVMEScaler[32]; 	  // counts from VME scaler
-  Float_t      fZDCTDCData[32][4];// ZDC TDC data
-  Float_t      fZNCTime[4];	  // ZNC corrected TDC data
-  Float_t      fZNATime[4];	  // ZNA corrected TDC data
-
-  ClassDef(AliESDZDC,15)
+  Int_t        fZDCTDCData[32][4];     // ZDC TDC data
+  Float_t      fZDCTDCCorrected[32][4];// ZDC TDC data in ns corrected 4 phase shift
+  
+  ClassDef(AliESDZDC,16)
 };
 
 #endif

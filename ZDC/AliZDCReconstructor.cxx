@@ -311,10 +311,10 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   }//digits loop
  
   UInt_t counts[32];
-  Float_t  tdc[32][4];
+  Int_t  tdc[32][4];
   for(Int_t jj=0; jj<32; jj++){
     counts[jj]=0;
-    for(Int_t ii=0; ii<4; ii++) tdc[jj][ii]=0.;
+    for(Int_t ii=0; ii<4; ii++) tdc[jj][ii]=0;
   }
   
   Int_t  evQualityBlock[4] = {1,0,0,0};
@@ -380,7 +380,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   Bool_t isScalerOn=kFALSE;
   Int_t jsc=0, itdc=0, iprevtdc=-1, ihittdc=0;
   UInt_t scalerData[32];
-  Float_t tdcData[32][4];	
+  Int_t tdcData[32][4];	
   for(Int_t k=0; k<32; k++){
     scalerData[k]=0;
     for(Int_t i=0; i<4; i++) tdcData[k][i]=0.;
@@ -652,7 +652,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
 	const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	Float_t tdcData[32][4], const Int_t* const evQualityBlock, 
+	Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
@@ -848,7 +848,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 	const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	Float_t tdcData[32][4], const Int_t* const evQualityBlock, 
+	Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
@@ -1333,26 +1333,21 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   }    
   
   // Writing TDC data into ZDC ESDs
-  Float_t tdcValues[32][4];
-  Float_t zncTime[4]={0.,0.,0.,0.}, znaTime[4]={0.,0.,0.,0.};
+  Int_t tdcValues[32][4]; 
+  Float_t tdcCorrected[32][4];
   for(Int_t jk=0; jk<32; jk++){
-    Int_t indc=0, inda=0;
     for(Int_t lk=0; lk<4; lk++){
-      tdcValues[jk][lk] = 0.025*reco.GetZDCTDCData(jk, lk);
-      if((jk==10) && (tdcValues[jk][lk]!=0)){
-         zncTime[indc] = tdcValues[jk][lk]-tdcValues[14][0]+fMeanPhase;
-         indc++;
-      }
-      else if((jk==12) && (tdcValues[jk][lk]!=0)){
-         znaTime[inda] = tdcValues[jk][lk]-tdcValues[14][0]+fMeanPhase;
-	 inda++;
-      }
+      tdcValues[jk][lk] = reco.GetZDCTDCData(jk, lk);
     }
   }
-  fESDZDC->SetZDCTDC(tdcValues);
-  
-  fESDZDC->SetZNCTime(zncTime);
-  fESDZDC->SetZNATime(znaTime);
+  for(Int_t jk=0; jk<32; jk++){
+    for(Int_t lk=0; lk<4; lk++){
+      if(tdcValues[jk][lk]!=0.) tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[14][0])+fMeanPhase;
+    }
+  }
+  fESDZDC->SetZDCTDCData(tdcValues);
+  fESDZDC->SetZDCTDCCorrected(tdcCorrected);
+  fESDZDC->AliESDZDC::SetBit(AliESDZDC::kCorrectedTDCFilled, kTRUE);
   
   if(esd) esd->SetZDCData(fESDZDC);
 }

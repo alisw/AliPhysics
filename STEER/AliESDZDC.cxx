@@ -57,8 +57,7 @@ AliESDZDC::AliESDZDC() :
     fVMEScaler[i]=0;
     for(Int_t y=0; y<4; y++){
       fZDCTDCData[i][y]=0.;
-      fZNCTime[y]=0.;
-      fZNATime[y]=0.;
+      fZDCTDCCorrected[i][y]=0.;
     }
   }
 }
@@ -99,8 +98,7 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
     fVMEScaler[i] = zdc.fVMEScaler[i];
     for(Int_t y=0; y<4; y++){
        fZDCTDCData[i][y] = zdc.fZDCTDCData[i][y];
-       fZNCTime[y] = zdc.fZNCTime[y];
-       fZNATime[y] = zdc.fZNATime[y];
+       fZDCTDCCorrected[i][y] = zdc.fZDCTDCCorrected[i][y];
     }
   }
 }
@@ -145,8 +143,7 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
       fVMEScaler[i] = zdc.fVMEScaler[i];
       for(Int_t y=0; y<4; y++){ 
          fZDCTDCData[i][y] = zdc.fZDCTDCData[i][y];
-         fZNCTime[y] = zdc.fZNCTime[y];
-         fZNATime[y] = zdc.fZNATime[y];
+         fZDCTDCCorrected[i][y] = zdc.fZDCTDCCorrected[i][y];
       }
     }
   } 
@@ -198,8 +195,7 @@ void AliESDZDC::Reset()
      fVMEScaler[i] = 0;
      for(Int_t y=0; y<4; y++){
         fZDCTDCData[i][y] = 0.;
-        fZNCTime[y] = 0.;
-        fZNATime[y] = 0.;
+        fZDCTDCCorrected[i][y] = 0.;
      }
   }
 }
@@ -220,7 +216,7 @@ void AliESDZDC::Print(const Option_t *) const
   printf(" ### TDCData (!=0): \n");
   for(Int_t i=0; i<32; i++){
     for(Int_t j=0; j<4; j++)
-      if(fZDCTDCData[i][j]!=0) printf("\t %d \n",fZDCTDCData[i][j]);
+      if(fZDCTDCCorrected[i][j]!=0) printf("\t %1.0f \n",fZDCTDCCorrected[i][j]);
   }
   printf("\n");
 }
