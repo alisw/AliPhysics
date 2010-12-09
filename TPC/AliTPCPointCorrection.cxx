@@ -336,9 +336,9 @@ Double_t  AliTPCPointCorrection::GetEdgeQ0(Int_t sector, Int_t padrow, Float_t y
   Double_t xrow  = AliTPCROC::Instance()->GetPadRowRadii(sector,padrow);
   Double_t ymax  = TMath::Tan(TMath::Pi()/18.)*xrow;
   Double_t dedge = ymax-TMath::Abs(y);
-  if (dedge-params[2]<0)             return 0;
+  if (dedge-params[1]<0)             return 0;
   if (dedge>10.*params[1]) return 1;
-  result = 1.-TMath::Exp(-params[0]*(dedge-params[2]));
+  result = 1.-TMath::Exp(-params[0]*(dedge-params[1]));
   return result;
 }
 
