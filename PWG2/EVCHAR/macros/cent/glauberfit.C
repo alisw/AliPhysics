@@ -23,7 +23,7 @@
 #include <TStyle.h>
 #include <TGraphErrors.h>
 #include <TTimeStamp.h>
-#include <createGlauberTree.C>
+#include <createHijingGlauberTestTree.C>
 #endif
 
 TObjArray *gList = 0;
