@@ -18,6 +18,9 @@
 // Class for cuts on AOD reconstructed DStar->Kpipi
 //
 // Author: A.Grelli, alessandro.grelli@uu.nl
+//
+// PID method implemented by   Y.Wang, yifei@physi.uni-heidelberg.de
+//           
 /////////////////////////////////////////////////////////////
 
 #include <TDatabasePDG.h>
@@ -34,8 +37,6 @@
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
 
-
-
 ClassImp(AliRDHFCutsDStartoKpipi)
 
 //--------------------------------------------------------------------------
@@ -46,7 +47,7 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) :
   //
   // Default Constructor
   //
- 
+  
   Int_t nvars=14;
   SetNVars(nvars);
   TString varNames[14]={
@@ -276,7 +277,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate ||
      selectionLevel==AliRDHFCuts::kPID) {
-    returnvaluePID = IsSelectedPID(dd);
+    returnvaluePID = IsSelectedPID(d);
   }
 
 
@@ -310,8 +311,10 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     if(d->AngleD0dkpPisoft() > fCutsRD[GetGlobalIndex(13,ptbin)]) return 0;
   
   }
-
+  
+  if(returnvaluePID!=3) returnvalue =0;
   return returnvalue;
+
 }
 //_________________________________________________________________________________________________
 Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) const {
@@ -398,8 +401,7 @@ Bool_t AliRDHFCutsDStartoKpipi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
     if (TMath::Abs(y) > 0.8){
       return kFALSE;
     }
-  } else {
-    
+  } else {    
     // appliying smooth cut for pt < 5 GeV
     Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5; 
     Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;		
@@ -408,18 +410,302 @@ Bool_t AliRDHFCutsDStartoKpipi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
       return kFALSE;
     }
   }
-
-
+    
   return kTRUE;
 }
+
 //_______________________________________________________________________________-
-Int_t AliRDHFCutsDStartoKpipi::IsSelectedPID(AliAODRecoDecayHF* dd) 
+Int_t AliRDHFCutsDStartoKpipi::IsSelectedPID(AliAODRecoDecayHF* obj)
+{
+  //
+  // PID method, n signa approach default
+  //
+  
+  if(!fUsePID) return 3;
+  
+  AliAODRecoCascadeHF* dstar = (AliAODRecoCascadeHF*)obj;
+  if(!dstar){
+    cout<<"AliAODRecoCascadeHF null"<<endl;
+    return 0;
+  }  
+  AliAODRecoDecayHF2Prong* d0 = (AliAODRecoDecayHF2Prong*)dstar->Get2Prong();  
+  if(!d0){
+    cout<<"AliAODRecoDecayHF2Prong null"<<endl;
+    return 0;
+  }
+
+  //  here the PID
+  AliAODTrack *pos = (AliAODTrack*)dstar->Get2Prong()->GetDaughter(0);
+  AliAODTrack *neg = (AliAODTrack*)dstar->Get2Prong()->GetDaughter(1);
+
+  if (dstar->Charge()>0){
+    if(!SelectPID(pos,2)) return 0;//pion+
+    if(!SelectPID(neg,3)) return 0;//kaon-
+  }else{
+    if(!SelectPID(pos,3)) return 0;//kaon+
+    if(!SelectPID(neg,2)) return 0;//pion-
+  }
+
+  return 3;
+}
+
+//_______________________________________________________________________________-
+Int_t AliRDHFCutsDStartoKpipi::SelectPID(AliAODTrack *track, Int_t type)
 {
   //
   //  here the PID
+    
+  Bool_t isParticle=kTRUE;
 
-  // Double_t cw = dd->Pt();
+  if(fPidHF->GetMatch()==1){//n-sigma
+    Bool_t TPCon=TMath::Abs(2)>1e-4?kTRUE:kFALSE;
+    Bool_t TOFon=TMath::Abs(3)>1e-4?kTRUE:kFALSE;
+    
+    Bool_t isTPC=kTRUE;
+    Bool_t isTOF=kTRUE;
 
-  if(dd) return 1;
-  return 1;
+    if (TPCon){//TPC
+      if(fPidHF->CheckStatus(track,"TPC")){
+	if(type==2) isTPC=fPidHF->IsPionRaw(track,"TPC");
+	if(type==3) isTPC=fPidHF->IsKaonRaw(track,"TPC");
+      }
+    }
+    if (TOFon){//TOF
+      if(fPidHF->CheckStatus(track,"TOF")){
+	if(type==2) isTOF=fPidHF->IsPionRaw(track,"TOF");
+	if(type==3) isTOF=fPidHF->IsKaonRaw(track,"TOF");
+      }
+    }
+    isParticle = isTPC&&isTOF;
+  }
+  
+  if(fPidHF->GetMatch()==2){//bayesian
+    //Double_t priors[5]={0.01,0.001,0.3,0.3,0.3};
+    Double_t prob[5]={1.,1.,1.,1.,1.};
+    
+    //fPidHF->SetPriors(priors);
+    fPidHF->BayesianProbability(track,prob);
+    
+    Double_t max=0.;
+    Int_t k=-1;
+    for (Int_t i=0; i<5; i++) {
+      if (prob[i]>max) {k=i; max=prob[i];}
+    }
+    isParticle = Bool_t(k==type);
+  }
+  
+  return isParticle;
+  
+}
+//__________________________________________________________________________________-
+void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010() {
+  //
+  //STANDARD CUTS USED FOR 2010 pp analysis 
+  //                                           
+  // Need to be updated for the final cut version
+  //
+
+  SetName("DStartoD0piCutsStandard");
+  SetTitle("Standard Cuts for D* analysis");
+  
+  // PILE UP REJECTION
+  SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+
+  // EVENT CUTS
+  SetMinVtxContr(1);
+  
+  // CUTS ON SINGLE TRACKS
+  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+  
+  // CUTS on SOFT PION
+  AliESDtrackCuts* esdSoftPicuts=new AliESDtrackCuts();
+  esdSoftPicuts->SetRequireSigmaToVertex(kFALSE);
+  esdSoftPicuts->SetRequireTPCRefit(kFALSE);
+  esdSoftPicuts->SetRequireITSRefit(kFALSE);
+  esdSoftPicuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					  AliESDtrackCuts::kAny); 
+  esdSoftPicuts->SetPtRange(0.0,1.e10);
+
+  AddTrackCuts(esdTrackCuts);
+  AddTrackCutsSoftPi(esdSoftPicuts);
+
+  const Int_t nptbins =13;
+  const Double_t ptmax = 9999.;
+  const Int_t nvars=14;
+  Float_t ptbins[nptbins+1];
+  ptbins[0]=0.;
+  ptbins[1]=0.5;	
+  ptbins[2]=1.;
+  ptbins[3]=2.;
+  ptbins[4]=3.;
+  ptbins[5]=4.;
+  ptbins[6]=5.;
+  ptbins[7]=6.;
+  ptbins[8]=8.;
+  ptbins[9]=12.;
+  ptbins[10]=16.;
+  ptbins[11]=20.;
+  ptbins[12]=24.;
+  ptbins[13]=ptmax;
+
+  SetGlobalIndex(nvars,nptbins);
+  SetPtBins(nptbins+1,ptbins);
+  
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.7,220.*1E-4,0.7,0.21,0.21,500.*1E-4,500.*1E-4,-2000.*1E-8,0.85,0.3,0.1,0.05,100,0.5},/* pt<0.5*/
+						  {0.7,220.*1E-4,0.7,0.21,0.21,500.*1E-4,500.*1E-4,-16000.*1E-8,0.85,0.3,0.1,0.05,100,0.5},/* 0.5<pt<1*/
+						  {0.7,400.*1E-4,0.8,0.7,0.7,400.*1E-4,400.*1E-4,-36000.*1E-8,0.82,0.3,0.1,0.05,100,0.5},/* 1<pt<2 */
+						  {0.7,200.*1E-4,0.8,0.7,0.7,800.*1E-4,800.*1E-4,-16000.*1E-8,0.9,0.3,0.1,0.05,100,0.5},/* 2<pt<3 */
+						  {0.7,500.*1E-4,0.8,1.0,1.0,420.*1E-4,560.*1E-4,-6500.*1E-8,0.9,0.3,0.1,0.05,100,0.5},/* 3<pt<4 */
+						  {0.7,800.*1E-4,0.9,1.2,1.2,700.*1E-4,700.*1E-4,1000.*1E-8,0.9,0.3,0.1,0.05,100,0.5},/* 4<pt<5 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,800.*1E-4,800.*1E-4,50000.*1E-8,0.8,0.3,0.1,0.05,100,0.5},/* 5<pt<6 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1000.*1E-4,1000.*1E-4,100000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 6<pt<8 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1000.*1E-4,1000.*1E-4,600000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 8<pt<12 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 12<pt<16 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 16<pt<20 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 20<pt<24 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,0.5}};/* pt>24 */
+  
+  
+  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
+  
+  for (Int_t ibin=0;ibin<nptbins;ibin++){
+    for (Int_t ivar = 0; ivar<nvars; ivar++){
+      cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];      
+    }
+  }
+  
+  SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+  
+  // PID SETTINGS FOR D* analysis
+  AliAODPidHF* pidObj=new AliAODPidHF();
+  //pidObj->SetName("pid4DSatr");
+  Int_t mode=1;
+  Double_t priors[5]={0.01,0.001,0.3,0.3,0.3};
+  pidObj->SetPriors(priors);
+  pidObj->SetMatch(mode);
+  pidObj->SetSigma(0,2); // TPC
+  pidObj->SetSigma(3,3); // TOF
+  pidObj->SetTPC(kTRUE);
+  pidObj->SetTOF(kTRUE);
+  
+  SetPidHF(pidObj);
+  SetUsePID(kTRUE);
+
+  PrintAll();
+
+  return;
+}
+//_____________________________________________________________________________-
+void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2010(){  
+  //
+  // TEMPORARY, WORK IN PROGRESS ... BUT WORKING! 
+  //
+  //  Lead Lead
+  //
+
+  SetName("DStartoD0piCutsStandard");
+  SetTitle("Standard Cuts for D* analysis in PbPb 2010");
+
+  // EVENT CUTS
+  SetMinVtxContr(1);
+  
+  // CUTS ON SINGLE TRACKS
+  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+  
+  // CUTS on SOFT PION
+  AliESDtrackCuts* esdSoftPicuts=new AliESDtrackCuts();
+  esdSoftPicuts->SetRequireSigmaToVertex(kFALSE);
+  esdSoftPicuts->SetRequireTPCRefit(kTRUE);
+  esdSoftPicuts->SetRequireITSRefit(kTRUE);
+  esdSoftPicuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					  AliESDtrackCuts::kAny); //test d0 asimmetry
+  esdSoftPicuts->SetPtRange(0.25,5);
+
+  AddTrackCuts(esdTrackCuts);
+  AddTrackCutsSoftPi(esdSoftPicuts);
+
+  const Int_t nptbins =13;
+  const Double_t ptmax = 9999.;
+  const Int_t nvars=14;
+  Float_t ptbins[nptbins+1];
+  ptbins[0]=0.;
+  ptbins[1]=0.5;	
+  ptbins[2]=1.;
+  ptbins[3]=2.;
+  ptbins[4]=3.;
+  ptbins[5]=4.;
+  ptbins[6]=5.;
+  ptbins[7]=6.;
+  ptbins[8]=8.;
+  ptbins[9]=12.;
+  ptbins[10]=16.;
+  ptbins[11]=20.;
+  ptbins[12]=24.;
+  ptbins[13]=ptmax;
+
+  SetGlobalIndex(nvars,nptbins);
+  SetPtBins(nptbins+1,ptbins);
+  
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.7,220.*1E-4,0.7,0.21,0.21,500.*1E-4,500.*1E-4,-2000.*1E-8,0.85,0.3,0.1,0.05,100,0.5},/* pt<0.5*/
+						  {0.7,220.*1E-4,0.7,0.21,0.21,500.*1E-4,500.*1E-4,-16000.*1E-8,0.85,0.3,0.1,0.05,100,0.5},/* 0.5<pt<1*/
+						  {0.7,400.*1E-4,0.8,0.7,0.7,800.*1E-4,800.*1E-4,-36000.*1E-8,0.82,0.3,0.1,0.05,100,0.5},/* 1<pt<2 */
+						  {0.7,200.*1E-4,0.8,0.7,0.7,800.*1E-4,800.*1E-4,-16000.*1E-8,0.9,0.3,0.1,0.05,100,0.5},/* 2<pt<3 */
+						  {0.7,500.*1E-4,0.8,1.0,1.0,420.*1E-4,560.*1E-4,-6500.*1E-8,0.9,0.3,0.1,0.05,100,0.5},/* 3<pt<4 */
+						  {0.7,800.*1E-4,0.9,1.2,1.2,700.*1E-4,700.*1E-4,1000.*1E-8,0.9,0.3,0.1,0.05,100,0.5},/* 4<pt<5 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,800.*1E-4,800.*1E-4,50000.*1E-8,0.8,0.3,0.1,0.05,100,0.5},/* 5<pt<6 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1000.*1E-4,1000.*1E-4,100000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 6<pt<8 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1000.*1E-4,1000.*1E-4,600000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 8<pt<12 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 12<pt<16 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 16<pt<20 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,0.5},/* 20<pt<24 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,0.5}};/* pt>24 */
+  
+  
+  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
+  
+  for (Int_t ibin=0;ibin<nptbins;ibin++){
+    for (Int_t ivar = 0; ivar<nvars; ivar++){
+      cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];      
+    }
+  }
+  
+  SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+  
+  // PID SETTINGS
+  AliAODPidHF* pidObj=new AliAODPidHF();
+  // pidObj->SetName("pid4DSatr");
+  Int_t mode=1;
+  Double_t priors[5]={0.01,0.001,0.3,0.3,0.3};
+  pidObj->SetPriors(priors);
+  pidObj->SetMatch(mode);
+  pidObj->SetSigma(0,2); // TPC
+  pidObj->SetSigma(3,3); // TOF
+  pidObj->SetTPC(kTRUE);
+  pidObj->SetTOF(kTRUE);
+  
+  SetPidHF(pidObj);
+  SetUsePID(kTRUE);
+
+  PrintAll();
+
+  return;
+
 }
