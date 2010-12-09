@@ -43,6 +43,7 @@ AliNormalizationCounter::AliNormalizationCounter():
 TNamed(),
 fCounters(),
 fESD(kFALSE),
+fRejectPileUp(kFALSE),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
@@ -56,27 +57,28 @@ AliNormalizationCounter::AliNormalizationCounter(const char *name):
 TNamed(name,name),
 fCounters(name),
 fESD(kFALSE),
+fRejectPileUp(kFALSE),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
 fHistTrackAnaSpdMult(0)
 {
   //default constructor
-  fCounters.AddRubric("Event","triggered/V0AND/PileUp/Candles0.2/Candles0.2spd1/Candles0.3/2xCandles0.2/CandleITSsa/Candle35clsTPC/PrimaryVTracks/PrimaryV/PrimaryVSPD/!V0A&Candle02/!V0A&Candle025/!V0A&Candle03/!V0A&PrimaryVTracks/!V0A&PrimaryV/!V0A&2xCandles02/Candid(Filter)/Candid(Analysis)/NCandid(Filter)/NCandid(Analysis)");
+  fCounters.AddRubric("Event","triggered/V0AND/PileUp/PbPbC0SMH-B-NOPF-ALLNOTRD/Candles0.2/Candles0.2spd1/Candles0.3/2xCandles0.2/CandleITSsa/Candle35clsTPC/PrimaryVTracks/PrimaryV/PrimaryVSPD/!V0A&Candle02/!V0A&Candle025/!V0A&Candle03/!V0A&PrimaryVTracks/!V0A&PrimaryV/!V0A&2xCandles02/Candid(Filter)/Candid(Analysis)/NCandid(Filter)/NCandid(Analysis)");
   fCounters.AddRubric("Run", 1000000);
   fCounters.Init();
-  fHistTrackFilterEvMult=new TH2F("FiltCandidvsTracksinEv","FiltCandidvsTracksinEv",100,0,100,10000,0,10000);
-  fHistTrackFilterEvMult->GetXaxis()->SetTitle("NCandidates");
-  fHistTrackFilterEvMult->GetYaxis()->SetTitle("NTracksinEvent");
-  fHistTrackAnaEvMult=new TH2F("AnaCandidvsTracksinEv","AnaCandidvsTracksinEv",100,0,100,10000,0,10000);
-  fHistTrackAnaEvMult->GetXaxis()->SetTitle("NCandidates");
-  fHistTrackAnaEvMult->GetYaxis()->SetTitle("NTracksinEvent");
-  fHistTrackFilterSpdMult=new TH2F("FilterCandidvsSpdMult","FilterCandidvsSpdMult",100,0,100,10000,0,10000);
-fHistTrackFilterSpdMult->GetXaxis()->SetTitle("NCandidates");
-fHistTrackFilterSpdMult->GetYaxis()->SetTitle("NSPDTracklets");
-  fHistTrackAnaSpdMult=new TH2F("AnaCandidvsSpdMult","AnaCandidvsSpdMult",100,0,100,10000,0,10000);
-  fHistTrackAnaSpdMult->GetXaxis()->SetTitle("NCandidates");
-  fHistTrackAnaSpdMult->GetYaxis()->SetTitle("NSPDTracklets");
+  fHistTrackFilterEvMult=new TH2F("FiltCandidvsTracksinEv","FiltCandidvsTracksinEv",10000,-0.5,9999.5,200,-0.5,199.5);
+  fHistTrackFilterEvMult->GetYaxis()->SetTitle("NCandidates");
+  fHistTrackFilterEvMult->GetXaxis()->SetTitle("NTracksinEvent");
+  fHistTrackAnaEvMult=new TH2F("AnaCandidvsTracksinEv","AnaCandidvsTracksinEv",10000,-0.5,9999.5,100,-0.5,99.5);
+  fHistTrackAnaEvMult->GetYaxis()->SetTitle("NCandidates");
+  fHistTrackAnaEvMult->GetXaxis()->SetTitle("NTracksinEvent");
+  fHistTrackFilterSpdMult=new TH2F("FilterCandidvsSpdMult","FilterCandidvsSpdMult",5000,-0.5,4999.5,200,-0.5,199.5);
+  fHistTrackFilterSpdMult->GetYaxis()->SetTitle("NCandidates");
+  fHistTrackFilterSpdMult->GetXaxis()->SetTitle("NSPDTracklets");
+  fHistTrackAnaSpdMult=new TH2F("AnaCandidvsSpdMult","AnaCandidvsSpdMult",5000,-0.5,4999.5,100,-0.5,99.5);
+  fHistTrackAnaSpdMult->GetYaxis()->SetTitle("NCandidates");
+  fHistTrackAnaSpdMult->GetXaxis()->SetTitle("NSPDTracklets");
 }
 //______________________________________________
 AliNormalizationCounter::~AliNormalizationCounter()
@@ -163,9 +165,36 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,Bool_t mc){
   v0A = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0A);
   if(v0A&&v0B){fCounters.Count(Form("Event:V0AND/Run:%d",runNumber));}
   
-  //PileUp
+ //FindPrimary vertex  
   AliAODEvent *eventAOD = (AliAODEvent*)event;
-  if(eventAOD->IsPileupFromSPD())fCounters.Count(Form("Event:PileUp/Run:%d",runNumber));
+  AliVVertex *vtrc =  (AliVVertex*)event->GetPrimaryVertex();
+  if(vtrc && vtrc->GetNContributors()>0){
+    fCounters.Count(Form("Event:PrimaryV/Run:%d",runNumber));
+    flagPV=kTRUE;
+  }
+
+  AliAODVertex *vrtcSPD = (AliAODVertex*)eventAOD->GetPrimaryVertexSPD();
+  if(vrtcSPD){
+    if(vrtcSPD->GetNContributors()>0)fCounters.Count(Form("Event:PrimaryVSPD/Run:%d",runNumber));
+  }
+  
+  if(fESD){
+    const AliESDVertex *vtrc1 =  eventESD->GetPrimaryVertexTracks();
+    if(vtrc1 && vtrc1->GetNContributors()>0){
+      fCounters.Count(Form("Event:PrimaryVTracks/Run:%d",runNumber));
+      flagPVT=kTRUE;
+    }
+  }
+
+  //trigger
+  TString trigclass=eventAOD->GetFiredTriggerClasses();
+  if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL"))fCounters.Count(Form("Event:PbPbC0SMH-B-NOPF-ALLNOTRD/Run:%d",runNumber));
+
+  //PileUp
+  if(eventAOD->IsPileupFromSPD()){
+    fCounters.Count(Form("Event:PileUp/Run:%d",runNumber));
+    if(fRejectPileUp==1)return;
+  }
 
   //Find Candle
   Int_t trkEntries = (Int_t)event->GetNumberOfTracks();
@@ -203,26 +232,6 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,Bool_t mc){
     if((flag02)&&(flag03)&&flag0202>=2&&flag35cls&&flagITSsa) break; 
   }
   
-  //FindPrimary vertex  
-  AliVVertex *vtrc =  (AliVVertex*)event->GetPrimaryVertex();
-  if(vtrc && vtrc->GetNContributors()>0){
-    fCounters.Count(Form("Event:PrimaryV/Run:%d",runNumber));
-    flagPV=kTRUE;
-  }
-
-  AliAODVertex *vrtcSPD = (AliAODVertex*)eventAOD->GetPrimaryVertexSPD();
-  if(vrtcSPD){
-    if(vrtcSPD->GetNContributors()>0)fCounters.Count(Form("Event:PrimaryVSPD/Run:%d",runNumber));
-  }
-  
-  if(fESD){
-    const AliESDVertex *vtrc1 =  eventESD->GetPrimaryVertexTracks();
-    if(vtrc1 && vtrc1->GetNContributors()>0){
-      fCounters.Count(Form("Event:PrimaryVTracks/Run:%d",runNumber));
-      flagPVT=kTRUE;
-    }
-  }
-  
   if(!(v0A&&v0B)&&(flag02))fCounters.Count(Form("Event:!V0A&Candle02/Run:%d",runNumber));
   if(!(v0A&&v0B)&&(flag03))fCounters.Count(Form("Event:!V0A&Candle03/Run:%d",runNumber));
   if(!(v0A&&v0B)&&flagPVT)fCounters.Count(Form("Event:!V0A&PrimaryVTracks/Run:%d",runNumber));
@@ -238,8 +247,8 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,Bool_t mc){
 void AliNormalizationCounter::StoreCandidates(AliVEvent *event,Int_t nCand,Bool_t flagFilter){
   
   Int_t ntracks=event->GetNumberOfTracks();
-  if(flagFilter)fHistTrackFilterEvMult->Fill(nCand,ntracks);
-  else fHistTrackAnaEvMult->Fill(nCand,ntracks);
+  if(flagFilter)fHistTrackFilterEvMult->Fill(ntracks,nCand);
+  else fHistTrackAnaEvMult->Fill(ntracks,nCand);
   Int_t nSPD=0;
   if(fESD){
     AliESDEvent *ESDevent=(AliESDEvent*)event;
@@ -251,8 +260,8 @@ void AliNormalizationCounter::StoreCandidates(AliVEvent *event,Int_t nCand,Bool_
     AliAODTracklets *trklets=aodEvent->GetTracklets();
     nSPD = trklets->GetNumberOfTracklets();
   }
-  if(flagFilter)fHistTrackFilterSpdMult->Fill(nCand,nSPD);
-  else fHistTrackAnaSpdMult->Fill(nCand,nSPD);
+  if(flagFilter)fHistTrackFilterSpdMult->Fill(nSPD,nCand);
+  else fHistTrackAnaSpdMult->Fill(nSPD,nCand);
   
   Int_t runNumber = event->GetRunNumber();
   if(nCand==0)return;
@@ -271,13 +280,8 @@ TH1D* AliNormalizationCounter::DrawAgainstRuns(TString candle,Bool_t drawHist){
   fCounters.SortRubric("Run");
   TString selection;
   selection.Form("event:%s",candle.Data());
-  TH2D* hist = fCounters.Draw("event","run",selection.Data());
-  TH1D* histoneD =(TH1D*)(hist->ProjectionX()->Clone());
-  //still not possible to use AliCounterCollection::Projection()
-  //  TObjArray rubricsToPrint(1);
-  //  rubricsToPrint.SetOwner();
-  //  rubricsToPrint.AddLast(new TObjString("RUN"));
-  //  TH1D* histoneD = static_cast<TH1D*>(fCounters.Projection(rubricsToPrint, selection));
+  TH1D* histoneD = fCounters.Get("run",selection.Data());
+
   histoneD->Sumw2();
   if(drawHist)histoneD->DrawClone();
   return histoneD;
@@ -287,13 +291,16 @@ TH1D* AliNormalizationCounter::DrawRatio(TString candle1,TString candle2){
   //
   fCounters.SortRubric("Run");
   TString name;
+
   name.Form("%s/%s",candle1.Data(),candle2.Data());
-  TH1D* num=(TH1D*)(DrawAgainstRuns(candle1.Data()));
+  TH1D* num=DrawAgainstRuns(candle1.Data(),kFALSE);
   TH1D* den=DrawAgainstRuns(candle2.Data(),kFALSE);
+
   den->SetTitle(candle2.Data());
   den->SetName(candle2.Data());
-  //printf("%f %f",num->GetEntries(),den->GetEntries());
   num->Divide(num,den,1,1,"B");
+  num->SetTitle(name.Data());
+  num->SetName(name.Data());
   num->DrawClone();
   return num;
 }
