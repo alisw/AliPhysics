@@ -197,12 +197,13 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
   //count events
 
-  fNEntries=new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Counts the number of events", 5,-0.5,4.5);
+  fNEntries=new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Counts the number of events", 6,-0.5,5.5);
   fNEntries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNEntries->GetXaxis()->SetBinLabel(2,"Pile-up Rej");
   fNEntries->GetXaxis()->SetBinLabel(3,"No VertexingHF");
   fNEntries->GetXaxis()->SetBinLabel(4,"nCandidates(AnCuts)");
   fNEntries->GetXaxis()->SetBinLabel(5,"EventsWithGoodVtx");
+  fNEntries->GetXaxis()->SetBinLabel(6,"N. of 0SMH");
   fNEntries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   //PID
@@ -430,6 +431,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
   TString primTitle = vtx1->GetTitle();
   if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fNEntries->Fill(4);
+
+  // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
+  TString trigclass=aod->GetFiredTriggerClasses();
+  if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNEntries->Fill(5);
 
 
   //select event
