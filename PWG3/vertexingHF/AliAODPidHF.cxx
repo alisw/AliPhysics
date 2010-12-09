@@ -49,7 +49,8 @@ AliAODPidHF::AliAODPidHF():
   fMatch(0),
   fCompat(kFALSE),
   fMC(kFALSE),
-  fOnePad(kFALSE)
+  fOnePad(kFALSE),
+  fPbPb(kFALSE)
 {
  //
  // Default constructor
@@ -95,7 +96,8 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fMatch(pid.fMatch),
   fCompat(pid.fCompat),
   fMC(pid.fMC),
-  fOnePad(pid.fOnePad)
+  fOnePad(pid.fOnePad),
+  fPbPb(pid.fPbPb)
   {
   
   for(Int_t i=0;i<5;i++){
@@ -661,15 +663,23 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse tpcResp) const{
 
  }else{
 
-  if(fOnePad){
-   
+  if(fOnePad) {
+
    alephParameters[0] =1.34490e+00/50; 
    alephParameters[1] = 2.69455e+01; 
    alephParameters[2] = TMath::Exp(-2.97552+01); 
    alephParameters[3] = 2.35339e+00; 
    alephParameters[4] = 5.98079e+00;
-  }else{
 
+  } else if(fPbPb) {
+
+   alephParameters[0] = 1.25202/50.; 
+   alephParameters[1] = 2.74992e+01; 
+   alephParameters[2] = TMath::Exp(-3.31517e+01); 
+   alephParameters[3] = 2.46246; 
+   alephParameters[4] = 6.78938;
+
+  } else {
     alephParameters[0] = 0.0283086/0.97;
     alephParameters[1] = 2.63394e+01;
     alephParameters[2] = 5.04114e-11;
