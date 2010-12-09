@@ -156,7 +156,16 @@ AliHLTComponentDataType AliHLTITSClusterFinderComponent::GetOutputDataType()
 void AliHLTITSClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
   // see header file for class documentation
   constBase = 0;
-  inputMultiplier = 20;
+  switch(fModeSwitch){
+  case kClusterFinderDigits:
+    inputMultiplier = 40;
+    break;
+  case kClusterFinderSPD:
+  case kClusterFinderSDD: 	 
+  case kClusterFinderSSD:
+  default:
+    inputMultiplier = 20;
+  }
 }
 
 AliHLTComponent* AliHLTITSClusterFinderComponent::Spawn() {
@@ -440,7 +449,7 @@ int AliHLTITSClusterFinderComponent::DoEvent
 
       UInt_t bufferSize = fnClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
       if( size + bufferSize > maxBufferSize ){
-	HLTWarning( "Output buffer size exceed (buffer size %d, current size %d)", maxBufferSize, size+bufferSize);
+	HLTWarning( "Output buffer size exceed (buffer size %d, required size %d)", maxBufferSize, size+bufferSize);
 	ret = -ENOSPC;      
 	break;		
       }
