@@ -300,8 +300,11 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
     }
     // Input are ESDs or AODs, get the PHOS module number like this.
     else{
-      AliVCluster *cluster = inputEvent->GetCaloCluster(particle->GetCaloLabel(0));
-      return GetModuleNumber(cluster);
+      //FIXME
+      //AliVCluster *cluster = inputEvent->GetCaloCluster(particle->GetCaloLabel(0));
+      //return GetModuleNumber(cluster);
+      //MEFIX
+      return -1;
     }
 	}//PHOS
 	
