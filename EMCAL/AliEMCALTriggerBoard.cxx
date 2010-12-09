@@ -113,7 +113,7 @@ void AliEMCALTriggerBoard::ZeroRegion()
 }
 
 //_______________
-void AliEMCALTriggerBoard::SlidingWindow(TriggerType_t /*type*/, Int_t thres, Int_t time)
+void AliEMCALTriggerBoard::SlidingWindow(TriggerType_t type, Int_t thres, Int_t time)
 {
 	//
 	Int_t ipatch = 0;
@@ -134,10 +134,10 @@ void AliEMCALTriggerBoard::SlidingWindow(TriggerType_t /*type*/, Int_t thres, In
 				}
 			}
 
+			if ( type == kL1Jet ) sum /= 4; // truncate patch sum for jet case
+
 			if ( sum > thres ) 
 			{
-				//if ( type == kJet ) sum /= 4; // truncate patch sum for jet case
-				
 				new((*fPatches)[fPatches->GetLast()+1]) 
 						AliEMCALTriggerPatch(int(i/fSubRegionSize->X()), int(j/fSubRegionSize->Y()), int(sum), time);
 			}

@@ -372,29 +372,14 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 			  
  			  rdig->GetMaximum(a, t);
  			  rdig->GetL0Times(times);
-			  			  
- 			  trgESD->Add(px, py, a, t, times, rdig->GetNL0Times(), rdig->GetL1TimeSum());
+			  	  
+ 			  trgESD->Add(px, py, a, t, times, rdig->GetNL0Times(), rdig->GetL1TimeSum(), rdig->GetTriggerBits());
  		  }
  	  }
 	  
  	  trgESD->SetL1Threshold(0, fTriggerData->GetL1GammaThreshold());
 	  
  	  trgESD->SetL1Threshold(1, fTriggerData->GetL1JetThreshold()  );
-
- 	  for (Int_t i = 0; i < kTriggerTypeEnd; i++)
- 	  {	  
- 		  for (Int_t j = 0; j < 2; j++)
- 		  {
- 			  TClonesArray* patches = fTriggerData->GetPatches((TriggerType_t)i, j);
-			  
- 			  TIter NextPatch(patches);
- 			  while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)NextPatch())
- 			  {
- 				  TVector2 pos; p->Position(pos);
- 				  trgESD->SetTriggerBits((Int_t) pos.X(), (Int_t) pos.Y(), i, j);
- 			  }
- 		  }
- 	  }
    }
 
    // Resetting

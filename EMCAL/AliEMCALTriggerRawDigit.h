@@ -10,6 +10,7 @@
 */
 
 #include "AliEMCALRawDigit.h" 
+#include "AliEMCALTriggerTypes.h" 
 
 class AliEMCALTriggerRawDigit : public AliEMCALRawDigit 
 {
@@ -20,10 +21,14 @@ public:
 	
 	virtual ~AliEMCALTriggerRawDigit();
 	
-	void    SetL0Trigger(Int_t v) {fL0Trigger = v;}
+	void    SetTriggerBit(const TriggerType_t type, const Int_t mode) {fTriggerBits = (fTriggerBits | (1 << (type + kTriggerTypeEnd * mode)));}
+	
 	Bool_t  SetL0Time(   Int_t i);
 	
-	Int_t   GetL0Trigger(                       ) const {return  fL0Trigger;}
+	Int_t   GetTriggerBit(const TriggerType_t type, const Int_t mode) const;
+
+	Int_t   GetTriggerBits() const {return fTriggerBits;}
+	
 	Bool_t  GetL0Time(const Int_t i, Int_t& time) const;
 	Bool_t  GetL0Times(Int_t times[]            ) const;
 	Int_t   GetNL0Times(                        ) const {return fNL0Times;}
@@ -40,7 +45,7 @@ private:
 	AliEMCALTriggerRawDigit(const AliEMCALTriggerRawDigit &cd);            // Not implemented
 	AliEMCALTriggerRawDigit &operator=(const AliEMCALTriggerRawDigit &cd); // Not implemented
 
-	Int_t   fL0Trigger;
+	Int_t   fTriggerBits;
 	Int_t   fNL0Times;
 	Int_t   fL0Times[10];
 	

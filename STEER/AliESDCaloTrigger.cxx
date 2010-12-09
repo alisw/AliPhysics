@@ -40,10 +40,10 @@ fAmplitude(0x0),
 fTime(0x0),
 fNL0Times(0x0),
 fL0Times(new TArrayI()),
-fL1TimeSum(0x0)
+fL1TimeSum(0x0),
+fTriggerBits(0x0)
 {
 	//
-	for (Int_t i = 0; i < 48; i++) for (Int_t j = 0; j < 64; j++) fTriggerBits[i][j] = 0;
 }
 
 //_______________
@@ -56,7 +56,8 @@ fAmplitude(0x0),
 fTime(0x0),
 fNL0Times(0x0),
 fL0Times(new TArrayI()),
-fL1TimeSum(0x0)
+fL1TimeSum(0x0),
+fTriggerBits(0x0)
 {
 	//
 	src.Copy(*this);
@@ -75,18 +76,16 @@ AliESDCaloTrigger::~AliESDCaloTrigger()
 void AliESDCaloTrigger::DeAllocate()
 {
 	//
-	delete [] fColumn;    fColumn    = 0x0;
-	delete [] fRow;       fRow       = 0x0;     
-	delete [] fAmplitude; fAmplitude = 0x0;
-	delete [] fTime;      fTime      = 0x0;   
-	delete [] fNL0Times;  fNL0Times  = 0x0;
-	delete [] fL1TimeSum; fL1TimeSum = 0x0;
-//	delete [] fL0Times;   fL0Times   = 0x0;
+	delete [] fColumn;      fColumn    = 0x0;
+	delete [] fRow;         fRow       = 0x0;     
+	delete [] fAmplitude;   fAmplitude = 0x0;
+	delete [] fTime;        fTime      = 0x0;   
+	delete [] fNL0Times;    fNL0Times  = 0x0;
+	delete [] fL1TimeSum;   fL1TimeSum = 0x0;
+	delete [] fTriggerBits; fTriggerBits   = 0x0;
 
 	fNEntries =  0;
 	fCurrent  = -1;
-	
-	for (Int_t i = 0; i < 48; i++) for (Int_t j = 0; j < 64; j++) fTriggerBits[i][j] = 0;
 
 	fL0Times->Reset();
 }
@@ -117,10 +116,8 @@ void AliESDCaloTrigger::Copy(TObject &obj) const
 		Int_t times[10];
 		for (Int_t j = 0; j < 10; j++) times[j] = fL0Times->At(10 * i + j);
 	  
-		dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], fL1TimeSum[i]);
-	}
-	
-	for (Int_t i = 0; i < 48; i++) for (Int_t j = 0; j < 64; j++) dest.fTriggerBits[i][j] = fTriggerBits[i][j];
+		dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], fL1TimeSum[i], fTriggerBits[i]);
+	}	
 }
 
 //_______________
@@ -136,35 +133,37 @@ void AliESDCaloTrigger::Allocate(Int_t size)
 	fAmplitude   = new Float_t[fNEntries];
 	fTime        = new Float_t[fNEntries];
 	fNL0Times    = new   Int_t[fNEntries];
-//	fL0Times     = new   Int_t[fNEntries * 10];
 	fL1TimeSum   = new   Int_t[fNEntries];
+	fTriggerBits = new   Int_t[fNEntries];
 
 	for (Int_t i = 0; i < fNEntries; i++) 
 	{
-	  fColumn[i]    = 0;
-	  fRow[i]       = 0;
-	  fAmplitude[i] = 0;
-	  fTime[i]      = 0;
-	  fNL0Times[i]  = 0;
-	  fL1TimeSum[i] = 0;
+	  fColumn[i]      = 0;
+	  fRow[i]         = 0;
+	  fAmplitude[i]   = 0;
+	  fTime[i]        = 0;
+	  fNL0Times[i]    = 0;
+	  fL1TimeSum[i]   = 0;
+	  fTriggerBits[i] = 0;
 	}
 	
 	fL0Times->Set(fNEntries * 10);
 }
 
 //_______________
-Bool_t AliESDCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, Int_t trgtimes[], Int_t ntrgtimes, Int_t trgts)
+Bool_t AliESDCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, Int_t trgtimes[], Int_t ntrgtimes, Int_t trgts, Int_t trgbits)
 {
 	//
 	fCurrent++;
 	
-	   fColumn[fCurrent] = col;
-	      fRow[fCurrent] = row;
-	fAmplitude[fCurrent] = amp;
-	     fTime[fCurrent] = time;
-	 fNL0Times[fCurrent] = ntrgtimes;
-	fL1TimeSum[fCurrent] = trgts;	
-
+	     fColumn[fCurrent] = col;
+	        fRow[fCurrent] = row;
+	  fAmplitude[fCurrent] = amp;
+	       fTime[fCurrent] = time;
+	   fNL0Times[fCurrent] = ntrgtimes;
+	  fL1TimeSum[fCurrent] = trgts;	
+	fTriggerBits[fCurrent] = trgbits;
+	
 	if (ntrgtimes > 9) 
 	{
 		AliError("Should not have more than 10 L0 times");
@@ -177,6 +176,7 @@ Bool_t AliESDCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, I
 }
 
 //_______________
+/*
 void AliESDCaloTrigger::SetTriggerBits(Int_t col, Int_t row, Int_t i, Int_t j)
 {
 	//
@@ -188,6 +188,7 @@ void AliESDCaloTrigger::SetTriggerBits(Int_t col, Int_t row, Int_t i, Int_t j)
 
 	fTriggerBits[col][row] = (fTriggerBits[col][row] | (1 << (i + 3 * j))); // L0 L1g L1j
 }
+*/
 
 //_______________
 Bool_t AliESDCaloTrigger::Next()
@@ -247,12 +248,12 @@ void AliESDCaloTrigger::GetNL0Times(Int_t& ntimes) const
 }
 
 //_______________
-void AliESDCaloTrigger::GetTriggerBits(Char_t& bits) const
+void AliESDCaloTrigger::GetTriggerBits(Int_t& bits) const
 {
 	//
 	if (fCurrent == -1) return;
 
-	bits = fTriggerBits[fColumn[fCurrent]][fRow[fCurrent]];
+	bits = fTriggerBits[fCurrent];
 }
 
 //_______________
@@ -280,5 +281,5 @@ void AliESDCaloTrigger::Print(const Option_t* /*opt*/) const
 	printf("--L1:\n");
 	printf("\tTIME SUM: %4d\n", fL1TimeSum[fCurrent]);
 	printf("\tTHRESHOLDS (GAMMA: %4d, JET: %4d)\n", fL1Threshold[0], fL1Threshold[1]);
-	printf("--TRIGGER BITS: 0x%x\n", fTriggerBits[fColumn[fCurrent]][fRow[fCurrent]]);
+	printf("--TRIGGER BITS: 0x%x\n", fTriggerBits[fCurrent]);
 }	

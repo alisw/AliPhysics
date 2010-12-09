@@ -24,6 +24,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliEMCALTriggerData.h"
 #include "AliEMCALTriggerPatch.h"
 #include "AliLog.h"
+#include "TIterator.h"
 #include "Riostream.h"
 
 ClassImp(AliEMCALTriggerData)
@@ -214,11 +215,31 @@ void AliEMCALTriggerData::GetL1Region(Int_t i, Int_t arr[][64]) const
 void AliEMCALTriggerData::Scan() const
 {
 	//
+	TIterator* nP;
+
 	printf("L0:\n");
-	printf("\tFound (%2d , %2d) patches\n", fL0Patches[0]->GetEntriesFast(), fL0Patches[1]->GetEntriesFast());
+	printf("\tFound (%2d,%2d) patches\n", fL0Patches[1]->GetEntriesFast(), fL0Patches[0]->GetEntriesFast());
+	printf("\tRAW:\n");
+	nP = fL0Patches[1]->MakeIterator();
+	while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) {printf("\t"); p->Print("");}
+	printf("\tREC:\n");
+	nP = fL0Patches[0]->MakeIterator();
+	while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) {printf("\t"); p->Print("");}
 	printf("L1:\n");
-	printf("\tFound (%4d,%4d) gamma patches\n",fL1GammaPatches[0]->GetEntriesFast(), fL1GammaPatches[1]->GetEntriesFast());
-	printf("\tFound (%4d,%4d) jet patches\n",fL1JetPatches[0]->GetEntriesFast(), fL1JetPatches[1]->GetEntriesFast());
+	printf("\tFound (%4d,%4d) gamma patches\n",fL1GammaPatches[1]->GetEntriesFast(), fL1GammaPatches[0]->GetEntriesFast());
+	printf("\tRAW:\n");
+	nP = fL1GammaPatches[1]->MakeIterator();
+	while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) {printf("\t"); p->Print("");}
+	printf("\tREC:\n");
+	nP = fL1GammaPatches[0]->MakeIterator();
+	while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) {printf("\t"); p->Print("");}
+	printf("\tFound (%4d,%4d) jet patches\n",fL1JetPatches[1]->GetEntriesFast(), fL1JetPatches[0]->GetEntriesFast());
+	printf("\tRAW:\n");
+	nP = fL1JetPatches[1]->MakeIterator();
+	while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) {printf("\t"); p->Print("");}
+	printf("\tREC:\n");
+	nP = fL1JetPatches[0]->MakeIterator();
+	while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) {printf("\t"); p->Print("");}
 }
 
 //_____________

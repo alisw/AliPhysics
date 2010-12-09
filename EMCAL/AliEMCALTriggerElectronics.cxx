@@ -167,23 +167,22 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 					&& 
 					geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) p->SetPosition(px, py);
 				
-				if (!data->GetMode())
+				if (!data->GetMode()) // Simulation
 				{
 					Int_t peaks = p->Peaks();
+					
+					Int_t pos;
+					AliEMCALTriggerRawDigit* dig = 0x0;
 					
 					for (Int_t j = 0; j < sizeX * sizeY; j++)
 					{
 						if (peaks & (1 << j))
 						{
-							
-							Int_t pos = posMap[px + j % sizeX][py + j / sizeX];
-							
-//							cout << "px: " << px << " py: " << py << " j: " << j << " mod: " << j%sizeX << " ratio: " << j / sizeX << " pos: " << pos << endl;
-							
-							AliEMCALTriggerRawDigit* dig = 0x0;
+							pos = posMap[px + j % sizeX][py + j / sizeX];
 							
 							if (pos == -1)
 							{
+								// Add a new digit
 								new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
 								
 								dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
@@ -195,13 +194,27 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 							
 							dig->SetL0Time(p->Time());
 						}
-					}								
+					}
+					
+					pos = posMap[px][py];
+					
+					if (pos == -1)
+					{
+						// Add a new digit
+						new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
+						
+						dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
+					}
+					else
+					{
+						dig = (AliEMCALTriggerRawDigit*)digits->At(pos);
+					}
+					
+					dig->SetTriggerBit(kL0,0);
 				}
 			}
 			
 			data->SetL0Trigger(0, i, 1);
-						
-	        data->SetPatches(kL0, 0, iTRU->Patches());
 		}
 		else
 			data->SetL0Trigger(0, i, 0);
@@ -242,13 +255,66 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 
 		fSTU->L1(kL1Gamma);
 		
-		data->SetPatches(kL1Gamma, 0, fSTU->Patches());
+		Int_t id, px, py;
+		AliEMCALTriggerRawDigit* dig = 0x0;
+		
+		TIterator* nP = 0x0;
+		
+		nP = (fSTU->Patches()).MakeIterator();
+		
+		while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
+		{			
+			p->Position(px, py);
+			
+			if (geom->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
+			{
+				if (posMap[px][py] == -1)
+				{
+					// Add a new digit
+					new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
+					
+					dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
+				} 
+				else
+				{
+					dig = (AliEMCALTriggerRawDigit*)digits->At(posMap[px][py]);								
+				}
+				
+				dig->SetTriggerBit(kL1Gamma,0);
+			}
+		}
 
 		fSTU->Reset();
 
 		fSTU->L1(kL1Jet);
 		
-		data->SetPatches(kL1Jet,   0, fSTU->Patches());
+		nP = (fSTU->Patches()).MakeIterator();
+		
+		while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
+		{			
+			p->Position(px, py);
+
+			px *= (Int_t)((fSTU->SubRegionSize())->X());
+
+			py *= (Int_t)((fSTU->SubRegionSize())->Y());
+			
+			if (geom->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
+			{
+				if (posMap[px][py] == -1)
+				{
+					// Add a new digit
+					new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
+					
+					dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
+				} 
+				else
+				{
+					dig = (AliEMCALTriggerRawDigit*)digits->At(posMap[px][py]);								
+				}
+				
+				dig->SetTriggerBit(kL1Jet,0);
+			}
+		}
 		
 		Int_t** reg = fSTU->Region();
 		
@@ -262,11 +328,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 				{
 					if (reg[i][j])
 					{
-						Int_t id;
 						if (geom->GetAbsFastORIndexFromPositionInEMCAL(i, j, id))
 						{
-							AliEMCALTriggerRawDigit* dig = 0x0;
-
 							if (posMap[i][j] == -1)
 							{
 								// Add a new digit with L1 time sum

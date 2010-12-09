@@ -31,7 +31,7 @@ ClassImp(AliEMCALTriggerRawDigit)
 
 //____________________________________________________________________________
 AliEMCALTriggerRawDigit::AliEMCALTriggerRawDigit() : AliEMCALRawDigit(),
-fL0Trigger(0),
+fTriggerBits(0),
 fNL0Times(0),
 fL0Times(),
 fL1TimeSum(-1)
@@ -42,7 +42,7 @@ fL1TimeSum(-1)
 
 //____________________________________________________________________________
 AliEMCALTriggerRawDigit::AliEMCALTriggerRawDigit(Int_t id, Int_t timeSamples[], Int_t nSamples) : AliEMCALRawDigit(id, timeSamples, nSamples),
-fL0Trigger(0),
+fTriggerBits(0),
 fNL0Times(0),
 fL0Times(),
 fL1TimeSum(-1)
@@ -133,6 +133,16 @@ Int_t AliEMCALTriggerRawDigit::GetL0TimeSum(const Int_t time) const
 }
 
 //____________________________________________________________________________
+Int_t AliEMCALTriggerRawDigit::GetTriggerBit(const TriggerType_t type, const Int_t mode) const
+{
+	//
+	Int_t shift = kTriggerTypeEnd * mode;
+	Int_t mask  = 1 << type;
+	
+	return ((fTriggerBits >> shift) & mask);
+}	
+
+//____________________________________________________________________________
 void AliEMCALTriggerRawDigit::Print(const Option_t* /*opt*/) const
 {
 	//
@@ -144,13 +154,14 @@ void AliEMCALTriggerRawDigit::Print(const Option_t* /*opt*/) const
 		printf("| (%d,%d) ",timeBin,amp);
 	}	
 	printf("\n");
-	printf("| L0: %4d / %d Time(s): \n",fL0Trigger,fNL0Times);
+	printf("| L0: (%d,%d) / %d Time(s): \n",GetTriggerBit(kL0,1),GetTriggerBit(kL0,0),fNL0Times);
 	for (Int_t i = 0; i < fNL0Times; i++) 
 	{
 		Int_t time;
 		if (GetL0Time(i, time)) printf("| %d ",time);
 	}
 	printf("\n");
-	printf("| Time sum: %d\n", fL1TimeSum);
+	printf("| L1: g (%d,%d) j (%d,%d) / Time sum: %d\n",
+		   GetTriggerBit(kL1Gamma,1),GetTriggerBit(kL1Gamma,0),GetTriggerBit(kL1Jet,1),GetTriggerBit(kL1Jet,0),fL1TimeSum);
 }
 

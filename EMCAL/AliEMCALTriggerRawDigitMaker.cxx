@@ -198,7 +198,6 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 							dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
 						}
 						
-						dig->SetL0Trigger(1);
 						dig->SetL0Time(iBin);
 					}
 				}
@@ -324,7 +323,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 				
 				for (Int_t j = 0; j < 96; j++)
 				{
-					if (adc[j] < 5) continue;
+					//if (adc[j] < 5) continue;
 					
 					if (AliDebugLevel()) printf("| STU => TRU# %2d raw data: ADC# %2d: %d\n", iTRU, j, adc[j]);
 					
@@ -334,10 +333,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 					{
 						dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
 						
-						if (!dig->GetNSamples())
-							AliDebug(10,Form("TRG digit of id: %4d found in STU but has 0 sample in F-ALTRO!",idx));
-							
-						dig->SetL1TimeSum(adc[j]);
+						if (!dig->GetNSamples()) AliDebug(10,Form("TRG digit of id: %4d found in STU but has no time sample in F-ALTRO!",idx));
 					}
 					else
 					{
@@ -347,14 +343,14 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 						new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
 						
 						dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
-						dig->SetL1TimeSum(adc[j]);
 					}
+					
+					dig->SetL1TimeSum(adc[j]);
 				}
 			}
 		}
 		
 		// List of patches in EMCal coordinate system
-		TClonesArray* patches = new TClonesArray("AliEMCALTriggerPatch", 96);
 		
 		for (Int_t i = 0; i < fSTURawStream->GetNL0GammaPatch(); i++)
 		{
@@ -372,21 +368,31 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			
 			if (fGeometry->GetFastORIndexFromL0Index(iTRU, x, idFastOR, sizePatchL0))
 			{
+				idx = idFastOR[1];
+				
 				Int_t px, py;
-				if (fGeometry->GetPositionInEMCALFromAbsFastORIndex(idFastOR[1], px, py))
+				if (fGeometry->GetPositionInEMCALFromAbsFastORIndex(idx, px, py))
 				{
-					new((*patches)[patches->GetEntriesFast()]) AliEMCALTriggerPatch(px, py);
-					
 					if (AliDebugLevel()) printf("| STU => Add L0 patch at (%2d , %2d)\n", px, py);
+										
+					if (fRawDigitIndex[idx] >= 0)
+					{
+						dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
 				}
-			}
+					else
+					{
+						fRawDigitIndex[idx] = fRawDigits->GetEntriesFast();
+						new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
 			
-			delete [] idFastOR;
+						dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
 		}
 		
-		fTriggerData->SetPatches(kL0, 1, *patches);			
+					dig->SetTriggerBit(kL0,1);
+				}
+			}
 		
-		patches->Delete();
+			delete [] idFastOR;
+		}
 		
 		for (Int_t i = 0; i < fSTURawStream->GetNL1GammaPatch(); i++)
 		{
@@ -404,16 +410,27 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 				
 				if (vx >= 0) 
 				{
-					new((*patches)[patches->GetEntriesFast()]) AliEMCALTriggerPatch(vx, vy);
-					
+					if (fGeometry->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx))
+					{
 					if (AliDebugLevel()) printf("| STU => Add L1 gamma patch at (%2d , %2d)\n", vx, vy);
+						
+						if (fRawDigitIndex[idx] >= 0)
+						{
+							dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
+				}
+						else
+						{
+							fRawDigitIndex[idx] = fRawDigits->GetEntriesFast();
+							new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
+
+							dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
+						}
+		
+						dig->SetTriggerBit(kL1Gamma,1);
+					}
 				}
 			}
 		}
-
-		fTriggerData->SetPatches(kL1Gamma, 1, *patches);			
-		
-		patches->Delete();
 		
 		for (Int_t i = 0; i < fSTURawStream->GetNL1JetPatch(); i++)
 		{
@@ -429,18 +446,27 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 				
 				if (ix >= 0 && iy >= 0)
 				{	
-					new((*patches)[patches->GetEntriesFast()]) AliEMCALTriggerPatch(ix, iy);
-					
+					if (fGeometry->GetAbsFastORIndexFromPositionInEMCAL(ix, iy, idx))
+					{
 					if (AliDebugLevel()) printf("| STU => Add L1 jet patch at (%2d , %2d)\n", ix, iy);
+		
+						if (fRawDigitIndex[idx] >= 0)
+						{
+							dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
+						}
+						else
+						{
+							fRawDigitIndex[idx] = fRawDigits->GetEntriesFast();
+							new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
+		
+							dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
+						}
+		
+						dig->SetTriggerBit(kL1Jet,1);
+					}
 				}
 			}
-		}
-		
-		fTriggerData->SetPatches(kL1Jet, 1, *patches);			
-		
-		patches->Delete();
-		
-		delete patches;
+		}		
 	}
 }
 
