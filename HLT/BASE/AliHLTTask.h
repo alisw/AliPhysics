@@ -253,6 +253,17 @@ class AliHLTTask : public TObject, public AliHLTLogging {
 	      const AliHLTTask* pConsumerTask);
 
   /**
+   * Cleanup function if the event processing is in error state.
+   * In order to handle in particular forwarded segments in the source
+   * tasks correctly the tasks of the chain have to subscribe to the
+   * parents even if the event is already in error state. This function
+   * is used instead of ProcessTask.
+   * Subscribes to all source tasks and releases them with out any event
+   * processing
+   */
+  int SubscribeSourcesAndSkip();
+
+  /**
    * Print the status of the task with component, dependencies and targets.
    */
   void PrintStatus();

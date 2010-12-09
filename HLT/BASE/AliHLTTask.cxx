@@ -784,6 +784,59 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
   return iResult;
 }
 
+int AliHLTTask::SubscribeSourcesAndSkip()
+{
+  // function carries out the proper cleanup of the source components
+  // by subscribing and releasing
+  int iResult=0;  
+  AliHLTTask* pSrcTask=NULL;
+  AliHLTTaskPList subscribedTaskList;
+
+  // cleanup the data buffer
+  if (fpDataBuffer) fpDataBuffer->Reset();
+
+  // subscribe to all source tasks
+  fBlockDataArray.clear();
+  for (TObjLink* lnk=fListDependencies.FirstLink(); lnk!=NULL; lnk=lnk->Next()) {
+    if (!lnk->GetObject()) continue;
+    pSrcTask=dynamic_cast<AliHLTTask*>(lnk->GetObject());
+    if (!pSrcTask) continue;
+    unsigned iPosition=fBlockDataArray.size();
+    if ((iResult=pSrcTask->Subscribe(this, fBlockDataArray))>0) {
+      AliHLTComponentBlockDataList::iterator block=fBlockDataArray.begin();
+      for (unsigned i=iPosition; i<fBlockDataArray.size(); i++) {
+	subscribedTaskList.push_back(pSrcTask);
+      }
+      HLTDebug("subscribed to %d blocks of task %s (%p)", iResult, pSrcTask->GetName(), pSrcTask, iResult);
+    } else if (iResult<0) {
+      HLTError("failed to subscribe to task %s (%p) with error %d", pSrcTask->GetName(), pSrcTask, iResult);
+    }
+  }
+
+  unsigned iSourceDataBlock=0;
+  AliHLTTaskPList::iterator element;
+  while ((element=subscribedTaskList.begin())!=subscribedTaskList.end()) {
+    assert(iSourceDataBlock<fBlockDataArray.size());
+    pSrcTask=*element;
+    if (pSrcTask && iSourceDataBlock<fBlockDataArray.size()) {
+      if ((iResult=pSrcTask->Release(&fBlockDataArray[iSourceDataBlock], this))>=0) {
+	HLTDebug("successfully released segment of task %s (%p)", pSrcTask->GetName(), pSrcTask);
+      } else if (iSourceDataBlock>=fBlockDataArray.size()) {
+	HLTError("mismatch between list of subscribed tasks and block list in task %s (%p), can not release task %s (%p)", GetName(), this, pSrcTask->GetName(), pSrcTask);
+      } else {
+	HLTError("realease of task %s (%p) failed with error %d", pSrcTask->GetName(), pSrcTask, iResult);
+      }
+    }
+    subscribedTaskList.erase(element);
+    iSourceDataBlock++;
+  }
+  if (iSourceDataBlock<fBlockDataArray.size()) {
+    HLTWarning("not all subscriptions released for task %s (%p)", GetName(), this);
+  }
+
+  return 0;
+}
+
 int AliHLTTask::GetNofMatchingDataBlocks(const AliHLTTask* pConsumerTask) const
 {
   // see header file for function documentation

@@ -592,14 +592,18 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask,
   int iResult=0;
   HLTDebug("processing event no %d", eventNo);
   TObjLink *lnk=fTaskList.FirstLink();
-  while (lnk && iResult>=0) {
+  while (lnk) {
     TObject* obj=lnk->GetObject();
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
+      if (iResult>=0) {
       iResult=pTask->ProcessTask(eventNo, eventtype, trgMask, timestamp, participatingDetectors);
 //       ProcInfo_t ProcInfo;
 //       gSystem->GetProcInfo(&ProcInfo);
 //       HLTInfo("task %s processed (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
+      } else {
+	pTask->SubscribeSourcesAndSkip();
+      }
     } else {
     }
     lnk = lnk->Next();
