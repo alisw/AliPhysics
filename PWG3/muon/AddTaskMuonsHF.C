@@ -26,34 +26,28 @@ AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Bool_t isMC=kFALSE, Bool_
   }
 
   // set cuts for events or muons selection
-  Double_t cutsEvsH[3] ={-999999.0,   // low limit of Ncontrs
+  Double_t cutsEvsH[3] ={      0.5,   // low limit of Ncontrs
                           999999.0,   // up limit of |vz|
                           999999.0};  // up limit of vt
   Double_t cutsMuon[12]={-999999.0,   //   0, min of 3-momentum
                           999999.0,   //   1, max of 3-momnentum
                          -999999.0,   //   2, PtMin
                           999999.0,   //   3, PtMax
-                         -999999.0,   //   4, EtaMin
-                          999999.0,   //   5, EtaMax
+                              -4.0,   //   4, EtaMin
+                              -2.5,   //   5, EtaMax
                          -999999.0,   //   6, DCAmin
                           999999.0,   //   7, DCAmax
-                         -999999.0,   //   8, for trigger
-                          999999.0,   //   9, for trigger
-                         -999999.0,   //  10, ThetaAbsEndMin
-                          999999.0,};  // 11, ThetaAbsEndMax
-  Double_t cutsDimu[12]={-999999.0, 999999.0,  // single muon cuts used for dimuon selection
-                         -999999.0, 999999.0,
-                         -999999.0, 999999.0,
-                         -999999.0, 999999.0,
-                         -999999.0, 999999.0,
-                         -999999.0, 999999.0};
+                               1.5,   //   8, for trigger
+                               3.5,   //   9, for trigger
+                             171.0,   //  10, ThetaAbsEndMin
+                             178.0 };  // 11, ThetaAbsEndMax
   AliAnalysisTaskSEMuonsHF *taskMuonsHF = new AliAnalysisTaskSEMuonsHF("MuonsHF Analysis Task");
   taskMuonsHF->SetAnaMode(mode);
   taskMuonsHF->SetUseMC(isMC);
   taskMuonsHF->SetIsOutputTree(isTree);
   taskMuonsHF->SetEvsHCuts(cutsEvsH);
   taskMuonsHF->SetMuonCuts(cutsMuon);
-  taskMuonsHF->SetDimuCuts(cutsDimu);
+  taskMuonsHF->SetDimuCuts(cutsMuon);
   taskMuonsHF->SelectCollisionCandidates();
   mgr->AddTask(taskMuonsHF);
 
