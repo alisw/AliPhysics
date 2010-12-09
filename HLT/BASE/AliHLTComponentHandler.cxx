@@ -143,11 +143,14 @@ AliHLTComponentHandler* AliHLTComponentHandler::CreateHandler()
 
 int AliHLTComponentHandler::Destroy()
 {
-  // see header file for class documentation
+  // destroy/delete 'this', checks if 'this' pointer is the global instance,
+  // reduce the instance counter and delete if there are no instances left
+  // IMPORTANT: the object must be considered self-destroyed after the function
   int nofInstances=0;
   if (fgpInstance==this) {
-    nofInstances=fgNofInstances--;
+    nofInstances=--fgNofInstances;
   }
+  if (fgNofInstances==0) fgpInstance=NULL;
   if (nofInstances==0) delete this;
   return nofInstances;
 }
