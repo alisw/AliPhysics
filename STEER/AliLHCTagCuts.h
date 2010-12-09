@@ -29,7 +29,7 @@ class AliLHCTagCuts : public TObject {
 
   void SetNBunchesRange(UShort_t nbm, UShort_t nbx) { fNBunchesFlag = kTRUE; fNBunchesRange[0] = nbm; fNBunchesRange[1] = nbx; }
   void SetFillingScheme(TString sch) { fFillingSchemeFlag = kTRUE; fFillingScheme = sch; }
-  void SetFillNoRange(Int_t fmin, Int_t fmax) { fFillNoFlag = kTRUE; fFillNoRange[0] = fmin; fFillNoRange[2] = fmax; }
+  void SetFillNoRange(Int_t fmin, Int_t fmax) { fFillNoFlag = kTRUE; fFillNoRange[0] = fmin; fFillNoRange[1] = fmax; }
   void SetBeamEnergyRange(Float_t bemin, Float_t bemax) { fBeamEnergyFlag = kTRUE; fBeamEnergyRange[0] = bemin; fBeamEnergyRange[1] = bemax; }
   void SetBunchIntensityRange(Float_t bimin, Float_t bimax) { fBunchIntensityFlag = kTRUE; fBunchIntensityRange[0] = bimin; fBunchIntensityRange[1] = bimax; }
 

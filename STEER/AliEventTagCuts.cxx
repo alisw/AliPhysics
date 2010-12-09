@@ -946,7 +946,7 @@ void AliEventTagCuts::SetHBTRadiiRange(Float_t low, Float_t high) {
 
 void AliEventTagCuts::AddRequiredFiredTriggerClass(TString aclass)
 {
-  fFiredTriggerClassFlag += " ";
+  fFiredTriggerClass += " ";
   fFiredTriggerClass += aclass;
   fFiredTriggerClassFlag = kTRUE;
 }
