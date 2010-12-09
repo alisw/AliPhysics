@@ -41,7 +41,7 @@ class AliMuonsHFHeader : public TNamed {
   Double_t Centrality()       const { return fCentrality; }
 
   void SetEvent(AliVVertex *vertex);
-  void SetFiredTriggerClass(TString trigger) { fFiredTriggerClass=trigger; }
+  void SetFiredTriggerClass(TString trigger);
   Bool_t IsSelected();
 
   void CreateHistograms(TList *list);
@@ -56,7 +56,7 @@ class AliMuonsHFHeader : public TNamed {
 
  private :
 
-  void CreateHistosEvnH(TList *list);
+  void CreateHistosEvnH(TList *list, TString sName="");
   void CreateHistosMuon(TList *list, TString sName="");
   void CreateHistosDimu(TList *list, TString sName="");
 
@@ -67,6 +67,8 @@ class AliMuonsHFHeader : public TNamed {
                               // 1, up limit of vz
                               // 2, up limit of vt
 
+  Bool_t fIsMB;  // is min. bias triggered event (for real data)
+  Bool_t fIsMU;  // is MUON triggered event (for real data)
   Double_t fVtx[3];   // position of vtx
   Int_t fVtxContrsN;  // num. of contributors of vtx rec
 
