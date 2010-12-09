@@ -125,5 +125,9 @@
 #pragma link C++ class  AliHistoListWrapper+;
 // CDB connect
 #pragma link C++ class  AliTaskCDBconnect+;
+// Centrality classes
+#pragma link C++ class  AliMultiplicityCorrelations+;
+#pragma link C++ class  AliAnalysisTaskHIMultCorr+;
+
 
 #endif

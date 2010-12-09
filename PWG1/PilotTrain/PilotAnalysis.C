@@ -185,11 +185,7 @@ void AddAnalysisTasks()
   // Centrality (J. Thaeder)
   //
   if (doCentrality) {
-     TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/AliMultiplicityCorrelations.cxx"), "AliMultiplicityCorrelations.cxx");
-     TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/AliAnalysisTaskHIMultCorr.cxx"), "AliAnalysisTaskHIMultCorr.cxx");
-     gROOT->LoadMacro("AliMultiplicityCorrelations.cxx+g");
-     gROOT->LoadMacro("AliAnalysisTaskHIMultCorr.cxx+g");
-     gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskHIMultCorr.C");
+     gROOT->LoadMacro("$ALICE_ROOT/PWG1/Centrality/AddTaskHIMultCorr.C");
      AliAnalysisTaskHIMultCorr *taskHIcentrality = AddTaskHIMultCorr();
   }   
   
@@ -358,7 +354,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetJobTag(job_tag);
    plugin->SetNtestFiles(5);
    plugin->SetCheckCopy(kFALSE);
-   plugin->SetOneStageMerging(kTRUE);
+//   plugin->SetOneStageMerging(kTRUE);
 // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
    plugin->SetROOTVersion(root_version);
@@ -398,13 +394,11 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // using ACLiC on the worker nodes.
 // Declare all libraries (other than the default ones for the framework. These will be
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWG1");
-   plugin->SetAnalysisSource("AliMultiplicityCorrelations.cxx AliAnalysisTaskHIMultCorr.cxx");
+   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD");
    
    plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so libPWG2.so \
                               libPWG2forward.so libEMCALUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
-                              libPWG3base.so libPWG3muon.so libPWG3muondep.so \
-                              AliAnalysisTaskHIMultCorr.cxx AliAnalysisTaskHIMultCorr.h AliMultiplicityCorrelations.cxx AliMultiplicityCorrelations.h");
+                              libPWG3base.so libPWG3muon.so libPWG3muondep.so");
      
 // Declare the output file names separated by blancs.
 // (can be like: file.root or file.root@ALICE::Niham::File)
