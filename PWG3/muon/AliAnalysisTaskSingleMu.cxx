@@ -845,7 +845,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     TCanvas *c1_SingleMu = new TCanvas(currName.Data(),"Vz vs Pt",10,10,310,310);
     c1_SingleMu->SetFillColor(10); c1_SingleMu->SetHighLightColor(10);
     c1_SingleMu->SetLeftMargin(0.15); c1_SingleMu->SetBottomMargin(0.15);
-    TH2* histo = container->Project(kHvarPt,kHvarVz,kStepReconstructed);
+    TH2* histo = dynamic_cast<TH2*>(container->Project(kHvarPt,kHvarVz,kStepReconstructed));
     currName = GetName();
     currName.Prepend("hPtVz_");
     histo->SetName(currName.Data());
