@@ -153,6 +153,7 @@ AliTOFcalib::AliTOFcalib():
   fT0Fill(NULL),
   fRunParams(NULL),
   fResponseParams(NULL),
+  fReadoutEfficiency(NULL),
   fInitFlag(kFALSE),
   fRemoveMeanT0(kTRUE),
   fCalibrateTOFsignal(kTRUE),
@@ -186,6 +187,7 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fT0Fill(NULL),
   fRunParams(NULL),
   fResponseParams(NULL),
+  fReadoutEfficiency(NULL),
   fInitFlag(calib.fInitFlag),
   fRemoveMeanT0(calib.fRemoveMeanT0),
   fCalibrateTOFsignal(calib.fCalibrateTOFsignal),
@@ -222,6 +224,7 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   if (calib.fT0Fill) fT0Fill = new AliTOFT0Fill(*calib.fT0Fill);
   if (calib.fRunParams) fRunParams = new AliTOFRunParams(*calib.fRunParams);
   if (calib.fResponseParams) fResponseParams = new AliTOFResponseParams(*calib.fResponseParams);
+  if (calib.fReadoutEfficiency) fReadoutEfficiency = new TH1F(*calib.fReadoutEfficiency);
 }
 
 //____________________________________________________________________________ 
@@ -279,6 +282,10 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
     if (fResponseParams) *fResponseParams = *calib.fResponseParams;
     else fResponseParams = new AliTOFResponseParams(*calib.fResponseParams);
   }
+  if (calib.fReadoutEfficiency) {
+    if (fReadoutEfficiency) *fReadoutEfficiency = *calib.fReadoutEfficiency;
+    else fReadoutEfficiency = new TH1F(*calib.fReadoutEfficiency);
+  }
   fInitFlag = calib.fInitFlag;
   fRemoveMeanT0 = calib.fRemoveMeanT0;
   fCalibrateTOFsignal = calib.fCalibrateTOFsignal;
@@ -321,6 +328,8 @@ AliTOFcalib::~AliTOFcalib()
     if (fCTPLatency) delete fCTPLatency;
     if (fT0Fill) delete fT0Fill;
     if (fRunParams) delete fRunParams;
+    if (fResponseParams) delete fResponseParams;
+    if (fReadoutEfficiency) delete fReadoutEfficiency;
   }
   if (fTree!=0x0) delete fTree;
   if (fChain!=0x0) delete fChain;
@@ -2003,6 +2012,25 @@ AliTOFcalib::WriteRunParamsOnCDB(const Char_t *sel , Int_t minrun, Int_t maxrun)
 
 //----------------------------------------------------------------------------
 
+void
+AliTOFcalib::WriteReadoutEfficiencyOnCDB(const Char_t *sel , Int_t minrun, Int_t maxrun)
+{
+  /*
+   * write readout efficiency on CDB 
+   */
+  
+  if (!fReadoutEfficiency) return;
+  AliCDBId id(Form("%s/ReadoutEfficiency", sel), minrun, maxrun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Roberto Preghenella");
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->Put(fReadoutEfficiency, id, md);
+  AliDebug(2,Form("ReadoutEfficiency written on CDB with run range [%i, %i] ",minrun ,maxrun));
+  delete md;
+}
+
+//----------------------------------------------------------------------------
+
 Bool_t
 AliTOFcalib::ReadDeltaBCOffsetFromCDB(const Char_t *sel , Int_t nrun)
 {
@@ -2095,6 +2123,29 @@ AliTOFcalib::ReadRunParamsFromCDB(const Char_t *sel , Int_t nrun)
 
 //----------------------------------------------------------------------------
 
+Bool_t
+AliTOFcalib::ReadReadoutEfficiencyFromCDB(const Char_t *sel , Int_t nrun)
+{
+  /*
+   * read readout efficiency from CDB
+   */
+  
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBEntry *entry = man->Get(Form("%s/ReadoutEfficiency", sel),nrun);
+  if (!entry) { 
+    AliFatal("No ReadoutEfficiency entry found in CDB");
+    exit(0);  
+  }
+  fReadoutEfficiency = (TH1F *)entry->GetObject();
+  if(!fReadoutEfficiency){
+    AliFatal("No ReadoutEfficiency object found in CDB entry");
+    exit(0);  
+  }  
+  return kTRUE; 
+}
+
+//----------------------------------------------------------------------------
+
 Bool_t 
 AliTOFcalib::Init(Int_t run)
 {
@@ -2130,6 +2181,11 @@ AliTOFcalib::Init(Int_t run)
   /* get run params obj */
   if (!ReadRunParamsFromCDB("TOF/Calib", run)) {
     AliError("cannot get \"RunParams\" object from OCDB");
+    return kFALSE;
+  }
+  /* get readout efficiency obj */
+  if (!ReadReadoutEfficiencyFromCDB("TOF/Calib", run)) {
+    AliError("cannot get \"ReadoutEfficiency\" object from OCDB");
     return kFALSE;
   }
   /* get response params */
@@ -2259,7 +2315,7 @@ AliTOFcalib::CalibrateESD(AliESDEvent *event)
 //----------------------------------------------------------------------------
 
 Bool_t
-AliTOFcalib::IsChannelEnabled(Int_t index)
+AliTOFcalib::IsChannelEnabled(Int_t index, Bool_t checkEfficiency)
 {
   /*
    * is channel enabled
@@ -2274,8 +2330,29 @@ AliTOFcalib::IsChannelEnabled(Int_t index)
   if (fStatus->GetPulserStatus(index) == AliTOFChannelOnlineStatusArray::kTOFPulserBad) return kFALSE;
   if (fStatus->GetNoiseStatus(index) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad) return kFALSE;
   if (fStatus->GetHWStatus(index) == AliTOFChannelOnlineStatusArray::kTOFHWBad) return kFALSE;
+  if (checkEfficiency && !IsChannelEfficient(index)) return kFALSE;
   
   /* good status */
+  return kTRUE;
+
+}
+
+//----------------------------------------------------------------------------
+
+Bool_t
+AliTOFcalib::IsChannelEfficient(Int_t index)
+{
+  /*
+   * is channel efficient
+   */
+
+  if (!fInitFlag) {
+    AliError("class not yet initialized. Initialize it before.");
+    return kTRUE;
+  }
+
+  /* check efficiency */
+  if (fReadoutEfficiency->GetBinContent(index + 1) < 0.95) return kFALSE;
   return kTRUE;
 
 }

@@ -107,6 +107,7 @@ public:
   void WriteCTPLatencyOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteT0FillOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteRunParamsOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteReadoutEfficiencyOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
 
   // reading
   Bool_t ReadSimHistoFromCDB(const Char_t *sel, Int_t nrun);
@@ -145,6 +146,7 @@ public:
   Bool_t ReadCTPLatencyFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadT0FillFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadRunParamsFromCDB(const Char_t *sel, Int_t nrun);
+  Bool_t ReadReadoutEfficiencyFromCDB(const Char_t *sel, Int_t nrun);
 
   Bool_t Init(Int_t run = -1); // init
   Double_t GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l0l1, UInt_t timestamp); // get time correction
@@ -153,7 +155,8 @@ public:
   void SetRemoveMeanT0(Bool_t value) {fRemoveMeanT0 = value;}; // setter
   void SetCalibrateTOFsignal(Bool_t value) {fCalibrateTOFsignal = value;}; // setter
   void SetCorrectTExp(Bool_t value) {fCorrectTExp = value;}; // setter
-  Bool_t IsChannelEnabled(Int_t index); // is channel enabled
+  Bool_t IsChannelEnabled(Int_t index, Bool_t checkEfficiency = kTRUE); // is channel enabled
+  Bool_t IsChannelEfficient(Int_t index); // is channel efficient
 
 private:
   Int_t fNChannels; // number of TOF channels
@@ -183,6 +186,7 @@ private:
   AliTOFT0Fill *fT0Fill; // T0 fill
   AliTOFRunParams *fRunParams; // run params
   AliTOFResponseParams *fResponseParams; // run params
+  TH1F *fReadoutEfficiency; // readout efficiency
   
   Bool_t fInitFlag; // init flag
   Bool_t fRemoveMeanT0; // remove mean T0
