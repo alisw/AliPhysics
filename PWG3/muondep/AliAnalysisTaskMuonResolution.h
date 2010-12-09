@@ -35,7 +35,7 @@ public:
   
   void SetStartingResolution(Int_t chId, Double_t valNB, Double_t valB);
   void SetStartingResolution(Double_t valNB[10], Double_t valB[10]);
-  void GetStartingResolution(Double_t valNB[10], Double_t valB[10]);
+  void GetStartingResolution(Double_t valNB[10], Double_t valB[10]) const;
   
   /// set the minimum momentum value of the tracks used to compute the resolution
   void SetMinMomentum(Double_t val) { fMinMomentum = val; }
@@ -92,24 +92,24 @@ private:
   void ZoomRight(TH1* h, Double_t fractionCut = 0.02);
   void GetMean(TH1* h, Double_t& mean, Double_t& meanErr, TGraphErrors* g = 0x0, Int_t i = 0, Double_t x = 0, Bool_t zoom = kTRUE, Bool_t enableFit = kTRUE);
   void GetRMS(TH1* h, Double_t& rms, Double_t& rmsErr, TGraphErrors* g = 0x0, Int_t i = 0, Double_t x = 0, Bool_t zoom = kTRUE);
-  void FillSigmaClusterVsP(TH2* hIn, TH2* hOut, TGraphErrors* g, Bool_t zoom = kTRUE);
+  void FillSigmaClusterVsP(const TH2* hIn, const TH2* hOut, TGraphErrors* g, Bool_t zoom = kTRUE);
   void Cov2CovP(const AliMUONTrackParam &param, TMatrixD &covP);
-  UInt_t BuildTriggerWord(TString& FiredTriggerClasses);
+  UInt_t BuildTriggerWord(const TString& FiredTriggerClasses);
   
 private:
   
   enum eResiduals {
-    kResidualPerCh_ClusterIn            = 0,  ///< cluster-track residual-X/Y distribution per chamber (cluster attached to the track)
-    kResidualPerCh_ClusterOut           = 2,  ///< cluster-track residual-X/Y distribution per chamber (cluster not attached to the track)
+    kResidualPerChClusterIn             = 0,  ///< cluster-track residual-X/Y distribution per chamber (cluster attached to the track)
+    kResidualPerChClusterOut            = 2,  ///< cluster-track residual-X/Y distribution per chamber (cluster not attached to the track)
     kTrackResPerCh                      = 4,  ///< track resolution-X/Y per chamber
     kMCSPerCh                           = 6,  ///< MCS X/Y-dispersion of extrapolated track per chamber
     kClusterRes2PerCh                   = 8,  ///< cluster X/Y-resolution per chamber
-    kResidualPerDE_ClusterIn            = 10, ///< cluster-track residual-X/Y distribution per DE (cluster attached to the track)
-    kResidualPerDE_ClusterOut           = 12, ///< cluster-track residual-X/Y distribution per DE (cluster not attached to the track)
+    kResidualPerDEClusterIn             = 10, ///< cluster-track residual-X/Y distribution per DE (cluster attached to the track)
+    kResidualPerDEClusterOut            = 12, ///< cluster-track residual-X/Y distribution per DE (cluster not attached to the track)
     kTrackResPerDE                      = 14, ///< track resolution-X/Y per DE
     kMCSPerDE                           = 16, ///< MCS X/Y-dispersion of extrapolated track per DE
-    kResidualPerHalfCh_ClusterIn        = 18, ///< cluster-track residual-X/Y distribution per half chamber (cluster attached to the track)
-    kResidualPerHalfCh_ClusterOut       = 20, ///< cluster-track residual-X/Y distribution per half chamber (cluster not attached to the track)
+    kResidualPerHalfChClusterIn         = 18, ///< cluster-track residual-X/Y distribution per half chamber (cluster attached to the track)
+    kResidualPerHalfChClusterOut        = 20, ///< cluster-track residual-X/Y distribution per half chamber (cluster not attached to the track)
     kTrackResPerHalfCh                  = 22, ///< track resolution-X/Y per half chamber
     kMCSPerHalfCh                       = 24, ///< MCS X/Y-dispersion of extrapolated track per half chamber
     kLocalChi2PerCh                     = 26, ///< local chi2-X/Y/total distribution per chamber
@@ -117,8 +117,8 @@ private:
   };
   
   enum eResidualsVsP {
-    kResidualInChVsP_ClusterIn          = 0,  ///< cluster-track residual-X/Y distribution in chamber i versus momentum (cluster attached to the track)
-    kResidualInChVsP_ClusterOut         = 20  ///< cluster-track residual-X/Y distribution in chamber i versus momentum (cluster not attached to the track)
+    kResidualInChVsPClusterIn           = 0,  ///< cluster-track residual-X/Y distribution in chamber i versus momentum (cluster attached to the track)
+    kResidualInChVsPClusterOut          = 20  ///< cluster-track residual-X/Y distribution in chamber i versus momentum (cluster not attached to the track)
   };
   
   enum eLocalChi2 {
@@ -127,23 +127,23 @@ private:
   };
   
   enum eChamberRes {
-    kResidualPerChMean_ClusterIn        = 0,  ///< cluster-track residual-X/Y per chamber: mean (cluster in)
-    kResidualPerChMean_ClusterOut       = 2,  ///< cluster-track residual-X/Y per chamber: mean (cluster out)
-    kResidualPerChSigma_ClusterIn       = 4,  ///< cluster-track residual-X/Y per chamber: sigma (cluster in)
-    kResidualPerChSigma_ClusterOut      = 6,  ///< cluster-track residual-X/Y per chamber: sigma (cluster out)
-    kResidualPerChDispersion_ClusterOut = 8,  ///< cluster-track residual-X/Y per chamber: dispersion (cluster out)
+    kResidualPerChMeanClusterIn         = 0,  ///< cluster-track residual-X/Y per chamber: mean (cluster in)
+    kResidualPerChMeanClusterOut        = 2,  ///< cluster-track residual-X/Y per chamber: mean (cluster out)
+    kResidualPerChSigmaClusterIn        = 4,  ///< cluster-track residual-X/Y per chamber: sigma (cluster in)
+    kResidualPerChSigmaClusterOut       = 6,  ///< cluster-track residual-X/Y per chamber: sigma (cluster out)
+    kResidualPerChDispersionClusterOut  = 8,  ///< cluster-track residual-X/Y per chamber: dispersion (cluster out)
     kCombinedResidualPerChSigma         = 10, ///< combined cluster-track residual-X/Y per chamber
     kCombinedResidualSigmaVsP           = 12, ///< cluster X/Y-resolution per chamber versus momentum
     kTrackResPerChMean                  = 14, ///< track X/Y-resolution per chamber
     kMCSPerChMean                       = 16, ///< MCS X/Y-dispersion of extrapolated track per chamber
     kClusterResPerCh                    = 18, ///< cluster X/Y-resolution per chamber
     kCalcClusterResPerCh                = 20, ///< calculated cluster X/Y-resolution per chamber
-    kResidualPerDEMean_ClusterIn        = 22, ///< cluster-track residual-X/Y per DE: mean (cluster in)
-    kResidualPerDEMean_ClusterOut       = 24, ///< cluster-track residual-X/Y per DE: mean (cluster out)
+    kResidualPerDEMeanClusterIn         = 22, ///< cluster-track residual-X/Y per DE: mean (cluster in)
+    kResidualPerDEMeanClusterOut        = 24, ///< cluster-track residual-X/Y per DE: mean (cluster out)
     kCombinedResidualPerDESigma         = 26, ///< combined cluster-track residual-X/Y per DE
     kClusterResPerDE                    = 28, ///< cluster X/Y-resolution per DE
-    kResidualPerHalfChMean_ClusterIn    = 30, ///< cluster-track residual-X/Y per half chamber: mean (cluster in)
-    kResidualPerHalfChMean_ClusterOut   = 32, ///< cluster-track residual-X/Y per half chamber: mean (cluster out)
+    kResidualPerHalfChMeanClusterIn     = 30, ///< cluster-track residual-X/Y per half chamber: mean (cluster in)
+    kResidualPerHalfChMeanClusterOut    = 32, ///< cluster-track residual-X/Y per half chamber: mean (cluster out)
     kCombinedResidualPerHalfChSigma     = 34, ///< combined cluster-track residual-X/Y per half chamber
     kClusterResPerHalfCh                = 36  ///< cluster X/Y-resolution per half chamber
   };
@@ -188,9 +188,7 @@ private:
   Bool_t   fApplyAccCut;           ///< use only tracks passing the acceptance cuts (Rabs, eta)
   Bool_t   fSelectTrigger;         ///< use only tracks passing the trigger selection
   UInt_t   fTriggerMask;           ///< trigger mask to be used when selecting tracks
-  /// extrapolation mode to get the track parameters and covariances at a given cluster:
-  /// 0 = extrapolate from the closest cluster; 1 = extrapolate from the previous cluster except between stations 2-3-4
-  Int_t    fExtrapMode;
+  Int_t    fExtrapMode;            ///< extrapolation mode to get the track parameters and covariances at a given cluster
   Bool_t   fCorrectForSystematics; ///< add or not the systematic shifts of the residuals to the resolution
   Bool_t   fOCDBLoaded;            //!< flag telling if the OCDB has been properly loaded or not
   Int_t    fNDE;                   //!< total number of DE
@@ -227,7 +225,7 @@ inline void AliAnalysisTaskMuonResolution::SetStartingResolution(Double_t valNB[
 }
 
 //________________________________________________________________________
-inline void AliAnalysisTaskMuonResolution::GetStartingResolution(Double_t valNB[10], Double_t valB[10])
+inline void AliAnalysisTaskMuonResolution::GetStartingResolution(Double_t valNB[10], Double_t valB[10]) const
 {
   /// set chambers non-bending and bending resolutions
   for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {

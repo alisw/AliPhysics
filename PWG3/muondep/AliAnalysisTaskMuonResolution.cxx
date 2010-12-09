@@ -210,21 +210,21 @@ void AliAnalysisTaskMuonResolution::UserCreateOutputObjects()
     
     // List of residual histos
     h2 = new TH2F(Form("hResidual%sPerCh_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution per chamber (cluster attached to the track);chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 10, 0.5, 10.5, nBins, -maxRes, maxRes);
-    fResiduals->AddAtAndExpand(h2, kResidualPerCh_ClusterIn+ia);
+    fResiduals->AddAtAndExpand(h2, kResidualPerChClusterIn+ia);
     h2 = new TH2F(Form("hResidual%sPerCh_ClusterOut",axes[ia]), Form("cluster-track residual-%s distribution per chamber (cluster not attached to the track);chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 10, 0.5, 10.5, nBins, -2.*maxRes, 2.*maxRes);
-    fResiduals->AddAtAndExpand(h2, kResidualPerCh_ClusterOut+ia);
+    fResiduals->AddAtAndExpand(h2, kResidualPerChClusterOut+ia);
     
     h2 = new TH2F(Form("hResidual%sPerHalfCh_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution per half chamber (cluster attached to the track);half chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, -maxRes, maxRes);
-    fResiduals->AddAtAndExpand(h2, kResidualPerHalfCh_ClusterIn+ia);
+    fResiduals->AddAtAndExpand(h2, kResidualPerHalfChClusterIn+ia);
     h2 = new TH2F(Form("hResidual%sPerHalfCh_ClusterOut",axes[ia]), Form("cluster-track residual-%s distribution per half chamber (cluster not attached to the track);half chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, -2.*maxRes, 2.*maxRes);
-    fResiduals->AddAtAndExpand(h2, kResidualPerHalfCh_ClusterOut+ia);
+    fResiduals->AddAtAndExpand(h2, kResidualPerHalfChClusterOut+ia);
     
     h2 = new TH2F(Form("hResidual%sPerDE_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution per DE (cluster not attached to the track);DE ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), fNDE, 0.5, fNDE+0.5, nBins, -maxRes, maxRes);
     for (Int_t i = 1; i <= fNDE; i++) h2->GetXaxis()->SetBinLabel(i, Form("%d",fDEIds[i]));
-    fResiduals->AddAtAndExpand(h2, kResidualPerDE_ClusterIn+ia);
+    fResiduals->AddAtAndExpand(h2, kResidualPerDEClusterIn+ia);
     h2 = new TH2F(Form("hResidual%sPerDE_ClusterOut",axes[ia]), Form("cluster-track residual-%s distribution per DE (cluster not attached to the track);DE ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), fNDE, 0.5, fNDE+0.5, nBins, -2.*maxRes, 2.*maxRes);
     for (Int_t i = 1; i <= fNDE; i++) h2->GetXaxis()->SetBinLabel(i, Form("%d",fDEIds[i]));
-    fResiduals->AddAtAndExpand(h2, kResidualPerDE_ClusterOut+ia);
+    fResiduals->AddAtAndExpand(h2, kResidualPerDEClusterOut+ia);
     
     h2 = new TH2F(Form("hTrackRes%sPerCh",axes[ia]), Form("track #sigma_{%s} per Ch;chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), 10, 0.5, 10.5, nBins, 0., maxRes);
     fResiduals->AddAtAndExpand(h2, kTrackResPerCh+ia);
@@ -248,9 +248,9 @@ void AliAnalysisTaskMuonResolution::UserCreateOutputObjects()
     // List of residual vs. p histos
     for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
       h2 = new TH2F(Form("hResidual%sInCh%dVsP_ClusterIn",axes[ia],i+1), Form("cluster-track residual-%s distribution in chamber %d versus momentum (cluster attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]), pNBins, pEdges[0], pEdges[1], nBins, -maxRes, maxRes);
-      fResidualsVsP->AddAtAndExpand(h2, kResidualInChVsP_ClusterIn+10*ia+i);
+      fResidualsVsP->AddAtAndExpand(h2, kResidualInChVsPClusterIn+10*ia+i);
       h2 = new TH2F(Form("hResidual%sInCh%dVsP_ClusterOut",axes[ia],i+1), Form("cluster-track residual-%s distribution in chamber %d versus momentum (cluster not attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]), pNBins, pEdges[0], pEdges[1], nBins, -2.*maxRes, 2.*maxRes);
-      fResidualsVsP->AddAtAndExpand(h2, kResidualInChVsP_ClusterOut+10*ia+i);
+      fResidualsVsP->AddAtAndExpand(h2, kResidualInChVsPClusterOut+10*ia+i);
     }
     
     // local chi2
@@ -308,8 +308,8 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
   if (fSelectPhysics && triggerWord == 0) return;
   
   // skip events that do not pass the trigger selection if required
-  TString FiredTriggerClasses = esd->GetFiredTriggerClasses();
-  if (!fSelectPhysics) triggerWord = BuildTriggerWord(FiredTriggerClasses);
+  TString firedTriggerClasses = esd->GetFiredTriggerClasses();
+  if (!fSelectPhysics) triggerWord = BuildTriggerWord(firedTriggerClasses);
   if (fSelectTrigger && (triggerWord & fTriggerMask) == 0) return;
   
   // get tracker to refit
@@ -445,14 +445,14 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
 	if (tracker->RefitTrack(track, kFALSE)) {
 	  
 	  // fill histograms of residuals with cluster still attached to the track
-	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerCh_ClusterIn))->Fill(chId+1, deltaX);
-	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerCh_ClusterIn+1))->Fill(chId+1, deltaY);
-	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfCh_ClusterIn))->Fill(halfChId+1, deltaX);
-	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfCh_ClusterIn+1))->Fill(halfChId+1, deltaY);
-	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerDE_ClusterIn))->Fill(fDEIndices[deId], deltaX);
-	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerDE_ClusterIn+1))->Fill(fDEIndices[deId], deltaY);
-	  ((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsP_ClusterIn+chId))->Fill(pUncorr, deltaX);
-	  ((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsP_ClusterIn+10+chId))->Fill(pUncorr, deltaY);
+	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterIn))->Fill(chId+1, deltaX);
+	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterIn+1))->Fill(chId+1, deltaY);
+	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterIn))->Fill(halfChId+1, deltaX);
+	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterIn+1))->Fill(halfChId+1, deltaY);
+	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterIn))->Fill(fDEIndices[deId], deltaX);
+	  ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterIn+1))->Fill(fDEIndices[deId], deltaY);
+	  ((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterIn+chId))->Fill(pUncorr, deltaX);
+	  ((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterIn+10+chId))->Fill(pUncorr, deltaY);
 	  
 	  // find the track parameters closest to the current cluster position
 	  Double_t dZWithPrevious = (previousTrackParam) ? TMath::Abs(previousTrackParam->GetClusterPtr()->GetZ() - cluster->GetZ()) : FLT_MAX;
@@ -491,14 +491,14 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
 	    deltaY = cluster->GetY() - currentTrackParam.GetBendingCoor();
 	    
 	    // fill histograms with cluster not attached to the track
-	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerCh_ClusterOut))->Fill(chId+1, deltaX);
-	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerCh_ClusterOut+1))->Fill(chId+1, deltaY);
-	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfCh_ClusterOut))->Fill(halfChId+1, deltaX);
-	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfCh_ClusterOut+1))->Fill(halfChId+1, deltaY);
-	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerDE_ClusterOut))->Fill(fDEIndices[deId], deltaX);
-	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerDE_ClusterOut+1))->Fill(fDEIndices[deId], deltaY);
-	    ((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsP_ClusterOut+chId))->Fill(pUncorr, deltaX);
-	    ((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsP_ClusterOut+10+chId))->Fill(pUncorr, deltaY);
+	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterOut))->Fill(chId+1, deltaX);
+	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterOut+1))->Fill(chId+1, deltaY);
+	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterOut))->Fill(halfChId+1, deltaX);
+	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterOut+1))->Fill(halfChId+1, deltaY);
+	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterOut))->Fill(fDEIndices[deId], deltaX);
+	    ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterOut+1))->Fill(fDEIndices[deId], deltaY);
+	    ((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterOut+chId))->Fill(pUncorr, deltaX);
+	    ((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterOut+10+chId))->Fill(pUncorr, deltaY);
 	    ((TH2F*)fResiduals->UncheckedAt(kTrackResPerCh))->Fill(chId+1, TMath::Sqrt(trackResX2));
 	    ((TH2F*)fResiduals->UncheckedAt(kTrackResPerCh+1))->Fill(chId+1, TMath::Sqrt(trackResY2));
 	    ((TH2F*)fResiduals->UncheckedAt(kTrackResPerHalfCh))->Fill(halfChId+1, TMath::Sqrt(trackResX2));
@@ -652,7 +652,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   
   const char* axes[2] = {"X", "Y"};
   Double_t newClusterRes[2][10], newClusterResErr[2][10];
-  fNDE = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDE_ClusterIn))->GetXaxis()->GetNbins();
+  fNDE = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterIn))->GetXaxis()->GetNbins();
   
   for (Int_t ia = 0; ia < 2; ia++) {
     
@@ -660,51 +660,51 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetName(Form("gResidual%sPerChMean_ClusterIn",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per Ch: mean (cluster in);chamber ID;<#Delta_{%s}> (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
-    fChamberRes->AddAtAndExpand(g, kResidualPerChMean_ClusterIn+ia);
+    fChamberRes->AddAtAndExpand(g, kResidualPerChMeanClusterIn+ia);
     g = new TGraphErrors(AliMUONConstants::NTrackingCh());
     g->SetName(Form("gResidual%sPerChMean_ClusterOut",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per Ch: mean (cluster out);chamber ID;<#Delta_{%s}> (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
-    fChamberRes->AddAtAndExpand(g, kResidualPerChMean_ClusterOut+ia);
+    fChamberRes->AddAtAndExpand(g, kResidualPerChMeanClusterOut+ia);
     
     g = new TGraphErrors(2*AliMUONConstants::NTrackingCh());
     g->SetName(Form("gResidual%sPerHalfChMean_ClusterIn",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per half Ch: mean (cluster in);half chamber ID;<#Delta_{%s}> (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
-    fChamberRes->AddAtAndExpand(g, kResidualPerHalfChMean_ClusterIn+ia);
+    fChamberRes->AddAtAndExpand(g, kResidualPerHalfChMeanClusterIn+ia);
     g = new TGraphErrors(2*AliMUONConstants::NTrackingCh());
     g->SetName(Form("gResidual%sPerHalfChMean_ClusterOut",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per half Ch: mean (cluster out);half chamber ID;<#Delta_{%s}> (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
-    fChamberRes->AddAtAndExpand(g, kResidualPerHalfChMean_ClusterOut+ia);
+    fChamberRes->AddAtAndExpand(g, kResidualPerHalfChMeanClusterOut+ia);
     
     g = new TGraphErrors(fNDE);
     g->SetName(Form("gResidual%sPerDEMean_ClusterIn",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per DE: mean (cluster in);DE ID;<#Delta_{%s}> (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
-    fChamberRes->AddAtAndExpand(g, kResidualPerDEMean_ClusterIn+ia);
+    fChamberRes->AddAtAndExpand(g, kResidualPerDEMeanClusterIn+ia);
     g = new TGraphErrors(fNDE);
     g->SetName(Form("gResidual%sPerDEMean_ClusterOut",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per DE: mean (cluster out);DE ID;<#Delta_{%s}> (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
-    fChamberRes->AddAtAndExpand(g, kResidualPerDEMean_ClusterOut+ia);
+    fChamberRes->AddAtAndExpand(g, kResidualPerDEMeanClusterOut+ia);
     
     g = new TGraphErrors(AliMUONConstants::NTrackingCh());
     g->SetName(Form("gResidual%sPerChSigma_ClusterIn",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per Ch: sigma (cluster in);chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
-    fChamberRes->AddAtAndExpand(g, kResidualPerChSigma_ClusterIn+ia);
+    fChamberRes->AddAtAndExpand(g, kResidualPerChSigmaClusterIn+ia);
     g = new TGraphErrors(AliMUONConstants::NTrackingCh());
     g->SetName(Form("gResidual%sPerChSigma_ClusterOut",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per Ch: sigma (cluster out);chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
-    fChamberRes->AddAtAndExpand(g, kResidualPerChSigma_ClusterOut+ia);
+    fChamberRes->AddAtAndExpand(g, kResidualPerChSigmaClusterOut+ia);
     
     g = new TGraphErrors(AliMUONConstants::NTrackingCh());
     g->SetName(Form("gResidual%sPerChDispersion_ClusterOut",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per Ch: dispersion (cluster out);chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
-    fChamberRes->AddAtAndExpand(g, kResidualPerChDispersion_ClusterOut+ia);
+    fChamberRes->AddAtAndExpand(g, kResidualPerChDispersionClusterOut+ia);
     
     g = new TGraphErrors(AliMUONConstants::NTrackingCh());
     g->SetName(Form("gCombinedResidual%sPerChSigma",axes[ia]));
@@ -726,7 +726,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     
     mg = new TMultiGraph(Form("mgCombinedResidual%sSigmaVsP",axes[ia]),Form("cluster %s-resolution per chamber versus momentum;p (GeV/c^{2});#sigma_{%s} (cm)",axes[ia],axes[ia]));
     for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
-      g = new TGraphErrors(((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsP_ClusterIn+10*ia+i))->GetNbinsX());
+      g = new TGraphErrors(((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterIn+10*ia+i))->GetNbinsX());
       g->SetName(Form("gRes%sVsP_ch%d",axes[ia],i+1));
       g->SetMarkerStyle(kFullDotMedium);
       g->SetMarkerColor(i+1+i/9);
@@ -788,14 +788,14 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
       
       // method 1
-      TH1D *tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerCh_ClusterIn+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, meanIn, meanInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMean_ClusterIn+ia), i, i+1);
-      GetRMS(tmp, sigmaIn, sigmaInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigma_ClusterIn+ia), i, i+1);
+      TH1D *tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterIn+ia))->ProjectionY("tmp",i+1,i+1,"e");
+      GetMean(tmp, meanIn, meanInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMeanClusterIn+ia), i, i+1);
+      GetRMS(tmp, sigmaIn, sigmaInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigmaClusterIn+ia), i, i+1);
       delete tmp;
       
-      tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerCh_ClusterOut+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, meanOut, meanOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMean_ClusterOut+ia), i, i+1);
-      GetRMS(tmp, sigmaOut, sigmaOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigma_ClusterOut+ia), i, i+1);
+      tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterOut+ia))->ProjectionY("tmp",i+1,i+1,"e");
+      GetMean(tmp, meanOut, meanOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMeanClusterOut+ia), i, i+1);
+      GetRMS(tmp, sigmaOut, sigmaOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigmaClusterOut+ia), i, i+1);
       delete tmp;
       
       if (fCorrectForSystematics) {
@@ -806,8 +806,8 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
 	sigmaOutErr = (sigma>0) ? TMath::Sqrt(sigmaOut*sigmaOut*sigmaOutErr*sigmaOutErr + meanOut*meanOut*meanOutErr*meanOutErr) / sigma : 0.;
 	sigmaOut = sigma;
       }
-      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChDispersion_ClusterOut+ia))->SetPoint(i, i+1, sigmaOut);
-      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChDispersion_ClusterOut+ia))->SetPointError(i, 0., sigmaOutErr);
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChDispersionClusterOut+ia))->SetPoint(i, i+1, sigmaOut);
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChDispersionClusterOut+ia))->SetPointError(i, 0., sigmaOutErr);
       
       clusterRes = TMath::Sqrt(sigmaIn*sigmaOut);
       //      clusterResErr = (clusterRes > 0.) ? 0.5 * TMath::Sqrt(sigmaInErr*sigmaInErr*sigmaOut*sigmaOut + sigmaIn*sigmaIn*sigmaOutErr*sigmaOutErr) / clusterRes : 0.;
@@ -851,8 +851,8 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
       delete tmp;
       
       // method 1 versus p
-      FillSigmaClusterVsP((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsP_ClusterIn+10*ia+i),
-			  (TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsP_ClusterOut+10*ia+i),
+      FillSigmaClusterVsP((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterIn+10*ia+i),
+			  (TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterOut+10*ia+i),
 			  (TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsP+ia))->GetListOfGraphs()->FindObject(Form("gRes%sVsP_ch%d",axes[ia],i+1)));
       
       // compute residual mean and dispersion per half chamber
@@ -860,13 +860,13 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
 	Int_t k = 2*i+j;
 	
 	// method 1
-	tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfCh_ClusterIn+ia))->ProjectionY("tmp",k+1,k+1,"e");
-	GetMean(tmp, meanIn, meanInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMean_ClusterIn+ia), k, k+1);
+	tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterIn+ia))->ProjectionY("tmp",k+1,k+1,"e");
+	GetMean(tmp, meanIn, meanInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterIn+ia), k, k+1);
 	GetRMS(tmp, sigmaIn, sigmaInErr);
 	delete tmp;
 	
-	tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfCh_ClusterOut+ia))->ProjectionY("tmp",k+1,k+1,"e");
-	GetMean(tmp, meanOut, meanOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMean_ClusterOut+ia), k, k+1);
+	tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterOut+ia))->ProjectionY("tmp",k+1,k+1,"e");
+	GetMean(tmp, meanOut, meanOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterOut+ia), k, k+1);
 	GetRMS(tmp, sigmaOut, sigmaOutErr);
 	delete tmp;
 	
@@ -919,13 +919,13 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     for (Int_t i = 0; i < fNDE; i++) {
       
       // method 1
-      TH1D *tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDE_ClusterIn+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, meanIn, meanInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMean_ClusterIn+ia), i, i+1);
+      TH1D *tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterIn+ia))->ProjectionY("tmp",i+1,i+1,"e");
+      GetMean(tmp, meanIn, meanInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterIn+ia), i, i+1);
       GetRMS(tmp, sigmaIn, sigmaInErr);
       delete tmp;
       
-      tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDE_ClusterOut+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, meanOut, meanOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMean_ClusterOut+ia), i, i+1);
+      tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterOut+ia))->ProjectionY("tmp",i+1,i+1,"e");
+      GetMean(tmp, meanOut, meanOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterOut+ia), i, i+1);
       GetRMS(tmp, sigmaOut, sigmaOutErr);
       delete tmp;
       
@@ -973,16 +973,16 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     }
     
     // set graph labels
-    TAxis* xAxis = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDE_ClusterOut+ia))->GetXaxis();
-    ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMean_ClusterIn+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
-    ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMean_ClusterOut+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
+    TAxis* xAxis = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterOut+ia))->GetXaxis();
+    ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterIn+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
+    ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterOut+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
     ((TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualPerDESigma+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
     ((TGraphErrors*)fChamberRes->UncheckedAt(kClusterResPerDE+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
     ((TGraphErrors*)fLocalChi2->UncheckedAt(kLocalChi2PerDEMean+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
     for (Int_t i = 1; i <= fNDE; i++) {
       const char* label = xAxis->GetBinLabel(i);
-      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMean_ClusterIn+ia))->GetXaxis()->SetBinLabel(i, label);
-      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMean_ClusterOut+ia))->GetXaxis()->SetBinLabel(i, label);
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterIn+ia))->GetXaxis()->SetBinLabel(i, label);
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterOut+ia))->GetXaxis()->SetBinLabel(i, label);
       ((TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualPerDESigma+ia))->GetXaxis()->SetBinLabel(i, label);
       ((TGraphErrors*)fChamberRes->UncheckedAt(kClusterResPerDE+ia))->GetXaxis()->SetBinLabel(i, label);
       ((TGraphErrors*)fLocalChi2->UncheckedAt(kLocalChi2PerDEMean+ia))->GetXaxis()->SetBinLabel(i, label);
@@ -1038,12 +1038,12 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   cResPerCh->Divide(4,2);
   for (Int_t ia = 0; ia < 2; ia++) {
     cResPerCh->cd(1+4*ia);
-    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMean_ClusterOut+ia);
+    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMeanClusterOut+ia);
     g->Draw("ap");
     g->SetMarkerColor(2);
     g->SetLineColor(2);
     if (ia == 0) lResPerChMean->AddEntry(g,"cluster out","PL");
-    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMean_ClusterIn+ia);
+    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMeanClusterIn+ia);
     g->Draw("p");
     g->SetMarkerColor(4);
     g->SetLineColor(4);
@@ -1051,13 +1051,13 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     if (ia == 0) lResPerChMean->Draw();
     else lResPerChMean->DrawClone();
     cResPerCh->cd(2+4*ia);
-    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigma_ClusterOut+ia);
+    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigmaClusterOut+ia);
     g->Draw("ap");
     g->SetMinimum(0.);
     g->SetMarkerColor(2);
     g->SetLineColor(2);
     if (ia == 0) lResPerChSigma1->AddEntry(g,"cluster out","PL");
-    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigma_ClusterIn+ia);
+    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigmaClusterIn+ia);
     g->Draw("p");
     g->SetMarkerColor(4);
     g->SetLineColor(4);
@@ -1075,7 +1075,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     if (ia == 0) lResPerChSigma1->Draw();
     else lResPerChSigma1->DrawClone();
     cResPerCh->cd(3+4*ia);
-    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChDispersion_ClusterOut+ia);
+    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChDispersionClusterOut+ia);
     g->Draw("ap");
     g->SetMinimum(0.);
     g->SetMarkerColor(2);
@@ -1111,11 +1111,11 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   cResPerHalfCh->Divide(2,2);
   for (Int_t ia = 0; ia < 2; ia++) {
     cResPerHalfCh->cd(1+2*ia);
-    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMean_ClusterOut+ia);
+    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterOut+ia);
     g->Draw("ap");
     g->SetMarkerColor(2);
     g->SetLineColor(2);
-    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMean_ClusterIn+ia);
+    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterIn+ia);
     g->Draw("p");
     g->SetMarkerColor(4);
     g->SetLineColor(4);
@@ -1136,11 +1136,11 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   cResPerDE->Divide(1,4);
   for (Int_t ia = 0; ia < 2; ia++) {
     cResPerDE->cd(1+ia);
-    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMean_ClusterOut+ia);
+    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterOut+ia);
     g->Draw("ap");
     g->SetMarkerColor(2);
     g->SetLineColor(2);
-    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMean_ClusterIn+ia);
+    g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterIn+ia);
     g->Draw("p");
     g->SetMarkerColor(4);
     g->SetLineColor(4);
@@ -1357,7 +1357,7 @@ void AliAnalysisTaskMuonResolution::GetRMS(TH1* h, Double_t& rms, Double_t& rmsE
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMuonResolution::FillSigmaClusterVsP(TH2* hIn, TH2* hOut, TGraphErrors* g, Bool_t zoom)
+void AliAnalysisTaskMuonResolution::FillSigmaClusterVsP(const TH2* hIn, const TH2* hOut, TGraphErrors* g, Bool_t zoom)
 {
   /// Fill graph with cluster resolution from combined residuals with cluster in/out (zooming if required)
   Double_t sigmaIn, sigmaInErr, sigmaOut, sigmaOutErr, clusterRes, clusterResErr;
@@ -1411,7 +1411,7 @@ void AliAnalysisTaskMuonResolution::Cov2CovP(const AliMUONTrackParam &param, TMa
 }
 
 //__________________________________________________________________________
-UInt_t AliAnalysisTaskMuonResolution::BuildTriggerWord(TString& FiredTriggerClasses)
+UInt_t AliAnalysisTaskMuonResolution::BuildTriggerWord(const TString& firedTriggerClasses)
 {
   /// build the trigger word from the fired trigger classes and the list of selectable trigger
   
@@ -1422,7 +1422,7 @@ UInt_t AliAnalysisTaskMuonResolution::BuildTriggerWord(TString& FiredTriggerClas
   while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
     
     TRegexp GenericTriggerClasseName(trigClasseName->String());
-    if (FiredTriggerClasses.Contains(GenericTriggerClasseName)) word |= trigClasseName->GetUniqueID();
+    if (firedTriggerClasses.Contains(GenericTriggerClasseName)) word |= trigClasseName->GetUniqueID();
     
   }
   
