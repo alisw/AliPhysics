@@ -63,6 +63,12 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("libPWG4PartCorrBase.so");
     gSystem->Load("libPWG4PartCorrDep.so");
 
+    // EVE
+    gSystem->Load("libEve.so");
+    gSystem->Load("libEvebase.so");
+    gSystem->Load("libEveDet.so");
+    gSystem->Load("libEveHLT.so");
+
     html.MakeAll(force,"[A-Z]*");
   }
   timer.Stop();
