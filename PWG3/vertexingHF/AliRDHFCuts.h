@@ -80,6 +80,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void    GetVarPtIndex(Int_t iGlob, Int_t& iVar, Int_t& iPtBin) const;
   Bool_t  GetIsUsePID() const {return fUsePID;}
   Bool_t  GetIsPrimaryWithoutDaughters() const {return fRemoveDaughtersFromPrimary;}
+  Bool_t GetOptPileUp() const {return fOptPileup;}
 
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}

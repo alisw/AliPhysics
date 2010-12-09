@@ -697,13 +697,14 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   }
   
   
-  fHistNEvents = new TH1F("fHistNEvents", "number of events ",6,-0.5,5.5);
-   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",7,-0.5,6.5);
+  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents with good vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"no. of Rejected pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"no. of candidate");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"no. of D+ after loose cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"no. of D+ after tight cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"nEvents with PbPb HM trigger");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"no. of Rejected pileup events");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"no. of candidate");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"no. of D+ after loose cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"no. of D+ after tight cuts");
  
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   
@@ -731,6 +732,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   AliAnalysisDataContainer *cont = GetOutputSlot(3)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
+  fCounter->SetRejectPileUp(fRDCutsProduction->GetOptPileUp());
 
   if(fFillNtuple){
     OpenFile(4); // 4 is the slot number of the ntuple
@@ -787,13 +789,16 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
   fCounter->StoreEvent(aod,fReadMC);
-   fHistNEvents->Fill(0); // count event
+  fHistNEvents->Fill(0); // count event
   // Post the data already here
   if(fRDCutsAnalysis->IsEventSelected(aod))fHistNEvents->Fill(1);
+  // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
+  TString trigclass=aod->GetFiredTriggerClasses();
+  if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL")) fHistNEvents->Fill(2);
+  if(fRDCutsAnalysis->GetWhyRejection()==1)fHistNEvents->Fill(3); 
   
-  if(fRDCutsAnalysis->GetWhyRejection()==1)fHistNEvents->Fill(2); 
- PostData(1,fOutput);
- 
+  PostData(1,fOutput);
+  
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
 
@@ -832,7 +837,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   Int_t nSelectedloose=0,nSelectedtight=0;
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
-    fHistNEvents->Fill(3);
+    fHistNEvents->Fill(4);
     
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
@@ -916,7 +921,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	tmp[22]=d->GetDCA();
 	tmp[23]=d->Prodd0d0(); 
 	fNtupleDplus->Fill(tmp);
-	PostData(3,fNtupleDplus);
+	PostData(4,fNtupleDplus);
       }
       Double_t dlen=d->DecayLength();
       Double_t cosp=d->CosPointingAngle();
@@ -931,7 +936,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       
 	index=GetHistoIndex(iPtBin);
 	if(isFidAcc){
-	  fHistNEvents->Fill(4);
+	  fHistNEvents->Fill(5);
 	  nSelectedloose++;
 	  fMassHist[index]->Fill(invMass);
 	  fCosPHist[index]->Fill(cosp);
@@ -941,7 +946,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  fPtMaxHist[index]->Fill(ptmax);
 	  fDCAHist[index]->Fill(dca);
 	  
-	  if(passTightCuts){ fHistNEvents->Fill(5);
+	  if(passTightCuts){ fHistNEvents->Fill(6);
 	    nSelectedtight++;
 	    fMassHistTC[index]->Fill(invMass);
 	    if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);

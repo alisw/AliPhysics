@@ -60,18 +60,22 @@ class AliNormalizationCounter : public TNamed
   TH1D* DrawRatio(TString candle1="candid(filter)",TString candle2="triggered");
   void PrintRubrics();
   Double_t GetSum(TString candle="triggered");
+  Bool_t GetRejectPileUp(){return fRejectPileUp;}
+  void SetRejectPileUp(Int_t reject=kTRUE){fRejectPileUp=reject;}
   TH2F* GetHist(Bool_t filtercuts=kTRUE,Bool_t spdtracklets=kTRUE,Bool_t drawHist=kFALSE);
+
  private:
   AliNormalizationCounter(const AliNormalizationCounter &source);
   AliNormalizationCounter& operator=(const AliNormalizationCounter& source);
   AliCounterCollection fCounters; //internal counter
   Bool_t fESD; //flag for ESD vs AOD
+  Int_t fRejectPileUp; //flag to reject candles in pile up events
   TH2F *fHistTrackFilterEvMult; //hist to store no of filter candidates vs no of tracks in the event 
   TH2F *fHistTrackAnaEvMult;//hist to store no of analysis candidates vs no of tracks in the event 
   TH2F *fHistTrackFilterSpdMult; //hist to store no of filter candidates vs  SPD multiplicity 
   TH2F *fHistTrackAnaSpdMult;//hist to store no of analysis candidates vs SPD multiplicity 
 
-  ClassDef(AliNormalizationCounter,2);
+  ClassDef(AliNormalizationCounter,3);
 
 };
 #endif
