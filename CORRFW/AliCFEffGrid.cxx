@@ -155,125 +155,11 @@ Double_t AliCFEffGrid::GetAverage() const
   AliInfo(Form(" The Average Efficiency = %f ",val)); 
   return val;
 } 
-//_____________________________________________________________________
-// Double_t AliCFEffGrid::GetAverage(const Double_t *varMin, const Double_t* varMax ) const 
-// {
-//   //
-//   // Get ave efficiency in a range
-//   // (may not work properly, should be modified)
-
-//   Double_t val=0;
-//   Int_t *indexMin = new Int_t[GetNVar()];
-//   Int_t *indexMax = new Int_t[GetNVar()];
-//   Int_t *index    = new Int_t[GetNVar()];
-  
-//   //Find out the min and max bins
-  
-//   for(Int_t i=0;i<GetNVar();i++){
-//     Double_t xmin=varMin[i]; // the min values  
-//     Double_t xmax=varMax[i]; // the max values  
-//     Int_t nbins = GetNBins(i)+1;
-// //     Double_t *bins = new Double_t[nbins];
-// //     for (Int_t ibin =0; ibin<nbins; ibin++) {
-// //       bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
-// //     }
-//     bins = GetBinLimits(i);
-//     indexMin[i] = TMath::BinarySearch(nbins,bins,xmin);
-//     indexMax[i] = TMath::BinarySearch(nbins,bins,xmax);
-//     if(xmax>=bins[nbins-1]){
-//       indexMax[i]=indexMax[i]-1;
-//     }  
-//     delete [] bins;
-//   }
-  
-//   Double_t valnum=0;
-//   Double_t valden=0;
-//   for (Int_t i=0; i<fNDim; i++) {
-//     for (Int_t j=0; j<GetNVar(); j++) index[j]=GetBinIndex(j,i);
-//     Bool_t isIn=kTRUE;
-//     for (Int_t j=0;j<GetNVar();j++) {
-//       if(!(index[j]>=indexMin[j] && index[j]<=indexMax[j]))isIn=kFALSE;   
-//     }
-//     if(isIn){
-//       valnum+=GetNum()->GetElement(i);
-//       valden+=GetDen()->GetElement(i);
-//     }
-//   } 
-//   delete [] index;
-//   delete [] indexMin;
-//   delete [] indexMax;
-//   if(valden>0)val=valnum/valden;
-//   AliInfo(Form(" the Average Efficiency = %f ",val)); 
-//   return val;
-// } 
-//____________________________________________________________________
-// void AliCFEffGrid::Copy(TObject& eff) const
-// {
-//   //
-//   // copy function
-//   //
-//   Copy(eff);
-//   AliCFEffGrid& target = (AliCFEffGrid &) eff;
-  
-//   target.fSelNum=fSelNum; 
-//   target.fSelDen=fSelDen; 
-//   if(fContainer)
-//     target.fContainer=fContainer;
-// }
 //___________________________________________________________________
-TH1D *AliCFEffGrid::Project(Int_t ivar) const
+TH1* AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
 {
   //
-  // Make a 1D projection along variable ivar 
-  //
-  
-  if (fSelNum<0 || fSelDen<0) {
-    AliError("You must call CalculateEfficiency() first !");
-    return 0x0;
-  }
-  const Int_t nDim = 1 ;
-  Int_t dim[nDim] = {ivar} ;
-  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
-  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
-  THnSparse* ratio = (THnSparse*)hNum->Clone();
-  ratio->Divide(hNum,hDen,1.,1.,"B");
-  delete hNum; delete hDen;
-  TH1D* h = ratio->Projection(0);
-  h->SetXTitle(GetVarTitle(ivar));
-  h->SetName(Form("%s_proj-%s",GetName(),GetVarTitle(ivar)));
-  h->SetTitle(Form("%s projected on %s",GetTitle(),GetVarTitle(ivar)));
-  return h ;
-} 
-//___________________________________________________________________
-TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
-{
-  //
-  // Make a 2D projection along variable ivar1,ivar2 
-  //
-  
-  if (fSelNum<0 || fSelDen<0) {
-    AliError("You must call CalculateEfficiency() first !");
-    return 0x0;
-  }
-  const Int_t nDim = 2 ;
-  Int_t dim[nDim] = {ivar1,ivar2} ;
-  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
-  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
-  THnSparse* ratio = (THnSparse*)hNum->Clone();
-  ratio->Divide(hNum,hDen,1.,1.,"B");
-  delete hNum; delete hDen;
-  TH2D* h = ratio->Projection(1,0);
-  h->SetXTitle(GetVarTitle(ivar1));
-  h->SetYTitle(GetVarTitle(ivar2));
-  h->SetName(Form("%s_proj-%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
-  h->SetTitle(Form("%s projected on %s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
-  return h;
-} 
-//___________________________________________________________________
-TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
-{
-  //
-  // Make a 3D projection along variable ivar1,ivar2,ivar3 
+  // Make a projection along variable ivar1 (and ivar2 (and ivar3))
   //
 
   if (fSelNum<0 || fSelDen<0) {
@@ -282,30 +168,45 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   }
   const Int_t nDim = 3 ;
   Int_t dim[nDim] = {ivar1,ivar2,ivar3} ;
-  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
-  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
-  THnSparse* ratio = (THnSparse*)hNum->Clone();
-  ratio->Divide(hNum,hDen,1.,1.,"B");
-  delete hNum; delete hDen;
-  TH3D* h = ratio->Projection(0,1,2);
-  h->SetXTitle(GetVarTitle(ivar1));
-  h->SetYTitle(GetVarTitle(ivar2));
-  h->SetZTitle(GetVarTitle(ivar3));
-  h->SetName(Form("%s_proj-%s,%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
-  h->SetTitle(Form("%s projected on %s-%s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
-  return h;
+  
+  THnSparse *hNum, *hDen, *ratio;
+  TH1* h ;
+
+  if (ivar3<0) {
+    if (ivar2<0) {
+      hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim-2,dim);
+      hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim-2,dim);
+      ratio = (THnSparse*)hNum->Clone();
+      ratio->Divide(hNum,hDen,1.,1.,"B");
+      h = ratio->Projection(0);
+    }
+    else{
+      hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim-1,dim);
+      hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim-1,dim);
+      ratio = (THnSparse*)hNum->Clone();
+      ratio->Divide(hNum,hDen,1.,1.,"B");
+      h = ratio->Projection(1,0);
+    }
+  }
+  else {
+    hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
+    hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
+    ratio = (THnSparse*)hNum->Clone();
+    ratio->Divide(hNum,hDen,1.,1.,"B");
+    h = ratio->Projection(0,1,2);
+  }
+
+  delete hNum; delete hDen; delete ratio;
+  return h ;
 } 
 //___________________________________________________________________
-AliCFEffGrid* AliCFEffGrid::MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t numStep, Int_t denStep, Bool_t useBins) const {
+AliCFEffGrid* AliCFEffGrid::MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins) const {
   //
-  // Makes a slice along the "nVars" variables defined in the array "vars[nVars]" for all the container steps.
-  // The ranges of ALL the container variables must be defined in the array varMin[fNVar] and varMax[fNVar].
-  // This function returns the efficiency relative to this new 'sliced' container, between steps defined in numStep and denStep
-  // If useBins=true, varMin and varMax are taken as bin numbers
+  // returns a slice of the efficiency grid (slice is actually done on the container, and efficiency recomputed)
   //
   
   AliCFContainer* cont = fContainer->MakeSlice(nVars,vars,varMin,varMax,useBins);
   AliCFEffGrid  * eff  = new AliCFEffGrid(Form("%s_sliced",GetName()), Form("%s_sliced",GetTitle()), *cont);
-  eff->CalculateEfficiency(numStep,denStep);
+  eff->CalculateEfficiency(fSelNum,fSelDen);
   return eff;
 }

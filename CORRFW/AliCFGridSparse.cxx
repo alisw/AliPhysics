@@ -132,74 +132,7 @@ void AliCFGridSparse::Fill(const Double_t *var, Double_t weight)
 }
 
 //___________________________________________________________________
-TH1D *AliCFGridSparse::Project(Int_t ivar) const
-{
-  //
-  // Make a 1D projection along variable ivar 
-  //
-
-  TH1D *hist=fData->Projection(ivar);
-  hist->SetXTitle(GetVarTitle(ivar));
-  hist->SetName(Form("%s_proj-%s",GetName(),GetVarTitle(ivar)));
-  hist->SetTitle(Form("%s: projection on %s",GetTitle(),GetVarTitle(ivar)));
-  for (Int_t iBin=1; iBin<=GetNBins(ivar); iBin++) {
-    TString binLabel = GetAxis(ivar)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) hist->GetXaxis()->SetBinLabel(iBin,binLabel);
-  }
-  return hist;
-}
-//___________________________________________________________________
-TH2D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2) const
-{
-  //
-  // Make a 2D projection along variables ivar1 & ivar2 
-  //
-
-  TH2D *hist=fData->Projection(ivar2,ivar1); //notice inverted axis (THnSparse uses TH3 2d-projection convention...)
-  hist->SetXTitle(GetVarTitle(ivar1));
-  hist->SetYTitle(GetVarTitle(ivar2));
-  hist->SetName(Form("%s_proj-%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
-  hist->SetTitle(Form("%s: projection on %s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
-  for (Int_t iBin=1; iBin<=GetNBins(ivar1); iBin++) {
-    TString binLabel = GetAxis(ivar1)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) hist->GetXaxis()->SetBinLabel(iBin,binLabel);
-  }
-  for (Int_t iBin=1; iBin<=GetNBins(ivar2); iBin++) {
-    TString binLabel = GetAxis(ivar2)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) hist->GetYaxis()->SetBinLabel(iBin,binLabel);
-  }
-  return hist;
-}
-//___________________________________________________________________
-TH3D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
-{
-  //
-  // Make a 3D projection along variables ivar1 & ivar2 & ivar3 
-  //
-
-  TH3D *hist=fData->Projection(ivar1,ivar2,ivar3); 
-  hist->SetXTitle(GetVarTitle(ivar1));
-  hist->SetYTitle(GetVarTitle(ivar2));
-  hist->SetZTitle(GetVarTitle(ivar3));
-  hist->SetName(Form("%s_proj-%s,%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
-  hist->SetTitle(Form("%s: projection on %s-%s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
-  for (Int_t iBin=1; iBin<=GetNBins(ivar1); iBin++) {
-    TString binLabel = GetAxis(ivar1)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) hist->GetXaxis()->SetBinLabel(iBin,binLabel);
-  }
-  for (Int_t iBin=1; iBin<=GetNBins(ivar2); iBin++) {
-    TString binLabel = GetAxis(ivar2)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) hist->GetYaxis()->SetBinLabel(iBin,binLabel);
-  }
-  for (Int_t iBin=1; iBin<=GetNBins(ivar3); iBin++) {
-    TString binLabel = GetAxis(ivar3)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) hist->GetZaxis()->SetBinLabel(iBin,binLabel);
-  }
-  return hist;
-}
-
-//___________________________________________________________________
-AliCFGridSparse* AliCFGridSparse::Project(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins) const
+AliCFGridSparse* AliCFGridSparse::MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins) const
 {
   //
   // projects the grid on the nVars dimensions defined in vars.
@@ -220,14 +153,14 @@ AliCFGridSparse* AliCFGridSparse::Project(Int_t nVars, const Int_t* vars, const 
   THnSparse* clone = ((THnSparse*)fData->Clone());
   if (varMin && varMax) {
     for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) {
-      if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
-      else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+      SetAxisRange(clone->GetAxis(iAxis),varMin[iAxis],varMax[iAxis],useBins);
     }
   }
   else AliInfo("Keeping same axis ranges");
 
   out->SetGrid(clone->Projection(nVars,vars));
   delete [] bins;
+  delete clone;
   return out;
 }
 
@@ -601,47 +534,6 @@ Long_t AliCFGridSparse::GetEmptyBins() const {
   return (GetNBinsTotal() - GetNFilledBins()) ;
 } 
 
-//_____________________________________________________________________
-// Int_t AliCFGridSparse::GetEmptyBins( Double_t *varMin, Double_t* varMax ) const 
-// {
-//   //
-//   // Get empty bins in a range specified by varMin and varMax
-//   //
-
-//   Int_t *indexMin = new Int_t[GetNVar()];
-//   Int_t *indexMax = new Int_t[GetNVar()];
-
-//   //Find out the min and max bins
-
-//   for (Int_t i=0;i<GetNVar();i++) {
-//     Double_t xmin=varMin[i]; // the min values  
-//     Double_t xmax=varMax[i]; // the min values  
-//     Int_t nbins = fData->GetAxis(i)->GetNbins()+1;
-//     Double_t *bins=new Double_t[nbins];
-//     for(Int_t ibin =0;ibin<nbins;ibin++){
-//      bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
-//     }
-//     indexMin[i] = TMath::BinarySearch(nbins,bins,xmin);
-//     indexMax[i] = TMath::BinarySearch(nbins,bins,xmax);
-//     delete [] bins;
-//   }
-
-//   Int_t val=0;
-//   for(Int_t i=0;i<fNDim;i++){
-//     for (Int_t j=0;j<GetNVar();j++)fIndex[j]=GetBinIndex(j,i);
-//     Bool_t isIn=kTRUE;
-//     for (Int_t j=0;j<GetNVar();j++){
-//       if(!(fIndex[j]>=indexMin[j] && fIndex[j]<=indexMax[j]))isIn=kFALSE;   
-//     }
-//     if(isIn && GetElement(i)<=0)val++;     
-//   }
-//   AliInfo(Form(" the empty bins = %i ",val)); 
-
-//   delete [] indexMin;
-//   delete [] indexMax;
-//   return val;
-// } 
-
 //____________________________________________________________________
 Int_t AliCFGridSparse::CheckStats(Double_t thr) const
 {
@@ -663,91 +555,6 @@ Double_t AliCFGridSparse::GetIntegral() const
   //
   return fData->ComputeIntegral();  
 } 
-
-//_____________________________________________________________________
-// Double_t AliCFGridSparse::GetIntegral(Int_t *binMin, Int_t* binMax ) const 
-// {
-//   //
-//   // Get Integral in a range of bin indeces (extremes included)
-//   //
-
-//   Double_t val=0;
-
-//   for(Int_t i=0;i<GetNVar();i++){
-//     if(binMin[i]<1)binMin[i]=1;
-//     if(binMax[i]>fNVarBins[i])binMax[i]=fNVarBins[i];
-//     if((binMin[i]>binMax[i])){
-//       AliInfo(Form(" Bin indices in variable %i in reverse order, please check!", i));
-//       return val;
-//     }
-//   }
-//   val=GetSum(0,binMin,binMax);
-
-//   return val;
-// } 
-
-//_____________________________________________________________________
-// Double_t AliCFGridSparse::GetIntegral(Double_t *varMin, Double_t* varMax ) const 
-// {
-//   //
-//   // Get Integral in a range (extremes included)
-//   //
-
-//   Int_t *indexMin=new Int_t[GetNVar()];
-//   Int_t *indexMax=new Int_t[GetNVar()];
-
-//   //Find out the min and max bins
-
-//   for(Int_t i=0;i<GetNVar();i++){
-//     Double_t xmin=varMin[i]; // the min values  
-//     Double_t xmax=varMax[i]; // the min values  
-//     Int_t nbins=fNVarBins[i]+1;
-//     Double_t *bins=new Double_t[nbins];
-//     for(Int_t ibin =0;ibin<nbins;ibin++){
-//      bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
-//     }
-//     indexMin[i] = TMath::BinarySearch(nbins,bins,xmin);
-//     indexMax[i] = TMath::BinarySearch(nbins,bins,xmax);
-//     delete [] bins;
-//   }
-
-//   //move to the TH/THnSparse convention in N-dim bin numbering 
-//   for(Int_t i=0;i<GetNVar();i++){
-//     indexMin[i]+=1;
-//     indexMax[i]+=1;
-//   }
-
-//   Double_t val=GetIntegral(indexMin,indexMax);
-
-//   delete [] indexMin;
-//   delete [] indexMax;
-
-//   return val;
-// } 
-
-// //_____________________________________________________________________
-// Double_t AliCFGridSparse::GetSum(Int_t ivar, Int_t *binMin, Int_t* binMax) const 
-// {
-//   //
-//   // recursively add over nested loops.... 
-//   //
-
-//   static Double_t val;
-//   if (ivar==0) val=0.;
-//   for(Int_t ibin=binMin[ivar]-1 ; ibin<=binMax[ivar]-1 ; ibin++){
-//     //-1 is to move from TH/ThnSparse N-dim bin convention to one in AliCFFrame
-//     fIndex[ivar]=ibin;
-//     if(ivar<GetNVar()-1) {
-//       val=GetSum(ivar+1,binMin,binMax);
-//     }
-//     else {
-//       Int_t iel=GetBinIndex(fIndex);
-//       val+=GetElement(iel);
-//     }
-//   }
-  
-//   return val;
-// }
 
 //____________________________________________________________________
 Long64_t AliCFGridSparse::Merge(TCollection* list)
@@ -805,136 +612,113 @@ void AliCFGridSparse::Copy(TObject& c) const
 }
 
 //____________________________________________________________________
-TH1D* AliCFGridSparse::Slice(Int_t iVar, const Double_t *varMin, const Double_t *varMax, Bool_t useBins) const
+TH1* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, const Double_t *varMin, const Double_t *varMax, Bool_t useBins) const
 {
   //
-  // return a slice (1D-projection) on variable iVar while axis ranges are defined with varMin,varMax
+  // return a slice on variables iVar1 (and optionnally iVar2 (and iVar3)) while axis ranges are defined with varMin,varMax
   // arrays varMin and varMax contain the min and max values of each variable.
   // therefore varMin and varMax must have their dimensions equal to GetNVar()
   // If useBins=true, varMin and varMax are taken as bin numbers
+  // if varmin or varmax point to null, all the range is taken, including over- and underflows
+
+  THnSparse* clone = (THnSparse*)fData->Clone();
+  if (varMin != 0x0 && varMax != 0x0) {
+    for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) SetAxisRange(clone->GetAxis(iAxis),varMin[iAxis],varMax[iAxis],useBins);
+  }
+
+  TH1* projection = 0x0 ;
+  TString name,title;
+  GetProjectionName (name ,iVar1,iVar2,iVar3);
+  GetProjectionTitle(title,iVar1,iVar2,iVar3);
+
+  if (iVar3<0) {
+    if (iVar2<0) {
+      if (iVar1 >= GetNVar() || iVar1 < 0 ) {
+	AliError("Non-existent variable, return NULL");
+	return 0x0;
+      }
+      projection = (TH1D*)clone->Projection(iVar1); 
+      projection->SetTitle(Form("%s_proj-%s",GetTitle(),GetVarTitle(iVar1)));
+      for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
+	TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
+	if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
+      }
+    }
+    else {
+      if (iVar1 >= GetNVar() || iVar1 < 0 ||
+	  iVar2 >= GetNVar() || iVar2 < 0 ) {
+	AliError("Non-existent variable, return NULL");
+	return 0x0;
+      }
+      projection = (TH2D*)clone->Projection(iVar2,iVar1); 
+      for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
+	TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
+	if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
+      }
+      for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) {
+	TString binLabel = GetAxis(iVar2)->GetBinLabel(iBin) ;
+	if (binLabel.CompareTo("") != 0) projection->GetYaxis()->SetBinLabel(iBin,binLabel);
+      }
+    }
+  }
+  else {
+    if (iVar1 >= GetNVar() || iVar1 < 0 ||
+	iVar2 >= GetNVar() || iVar2 < 0 ||
+	iVar3 >= GetNVar() || iVar3 < 0 ) {
+      AliError("Non-existent variable, return NULL");
+      return 0x0;
+    }
+    projection = (TH3D*)clone->Projection(iVar1,iVar2,iVar3); 
+    for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
+      TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
+      if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
+    }
+    for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) {
+      TString binLabel = GetAxis(iVar2)->GetBinLabel(iBin) ;
+      if (binLabel.CompareTo("") != 0) projection->GetYaxis()->SetBinLabel(iBin,binLabel);
+    }
+    for (Int_t iBin=1; iBin<=GetNBins(iVar3); iBin++) {
+      TString binLabel = GetAxis(iVar3)->GetBinLabel(iBin) ;
+      if (binLabel.CompareTo("") != 0) projection->GetZaxis()->SetBinLabel(iBin,binLabel);
+    }
+  }
   
-  THnSparse* clone = (THnSparse*)fData->Clone();
-  for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) {
-    if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
-    else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
-  }
+  projection->SetName (name .Data());
+  projection->SetTitle(title.Data());
 
-  TH1D* projection = 0x0 ;
-
-  TObject* objInMem = gROOT->FindObject(Form("%s_proj_%d",clone->GetName(),iVar)) ;
-  if (objInMem) {
-    TString name(objInMem->ClassName());
-    if (name.CompareTo("TH1D")==0) projection = (TH1D*) objInMem ;
-    else projection = clone->Projection(iVar);
-  }
-  else projection = clone->Projection(iVar); 
   delete clone;
-  for (Int_t iBin=1; iBin<=GetNBins(iVar); iBin++) {
-    TString binLabel = GetAxis(iVar)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
-  }
   return projection ;
 }
 
 //____________________________________________________________________
-TH2D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, const Double_t *varMin, const Double_t *varMax, Bool_t useBins) const
-{
+void AliCFGridSparse::SetAxisRange(TAxis* axis, Double_t min, Double_t max, Bool_t useBins) const {
   //
-  // return a slice (2D-projection) on variables iVar1 and iVar2 while axis ranges are defined with varMin,varMax
-  // arrays varMin and varMax contain the min and max values of each variable.
-  // therefore varMin and varMax must have their dimensions equal to GetNVar()
-  // If useBins=true, varMin and varMax are taken as bin numbers
+  // sets axis range, and forces bit TAxis::kAxisRange
+  //
   
-  THnSparse* clone = (THnSparse*)fData->Clone();
-  for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) {
-    if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
-    else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
-  }
-
-  TH2D* projection = 0x0 ;
-
-  TObject* objInMem = gROOT->FindObject(Form("%s_proj_%d_%d",clone->GetName(),iVar2,iVar1)) ;
-  if (objInMem) {
-    TString name(objInMem->ClassName());
-    if (name.CompareTo("TH2D")==0) projection = (TH2D*) objInMem ;
-    else projection = clone->Projection(iVar1,iVar2);
-  }
-  else projection = clone->Projection(iVar1,iVar2); 
-  delete clone;
-  for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
-    TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
-  }
-  for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) {
-    TString binLabel = GetAxis(iVar2)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) projection->GetYaxis()->SetBinLabel(iBin,binLabel);
-  }
-  return projection ;
+  if (useBins) axis->SetRange    ((Int_t)min,(Int_t)max);
+  else         axis->SetRangeUser(       min,       max);
+  //axis->SetBit(TAxis::kAxisRange); // uncomment when ROOT TAxis is fixed
 }
 
 //____________________________________________________________________
-TH3D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, const Double_t *varMin, const Double_t *varMax, Bool_t useBins) const
-{
-  //
-  // return a slice (3D-projection) on variables iVar1, iVar2 and iVar3 while axis ranges are defined with varMin,varMax
-  // arrays varMin and varMax contain the min and max values of each variable.
-  // therefore varMin and varMax must have their dimensions equal to GetNVar()
-  // If useBins=true, varMin and varMax are taken as bin numbers
-
-  THnSparse* clone = (THnSparse*)fData->Clone();
-  for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) {
-    if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
-    else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
-  }
-
-  TH3D* projection = 0x0 ;
-
-  TObject* objInMem = gROOT->FindObject(Form("%s_proj_%d_%d_%d",clone->GetName(),iVar1,iVar2,iVar3)) ;
-  if (objInMem) {
-    TString name(objInMem->ClassName());
-    if (name.CompareTo("TH3D")==0) projection = (TH3D*) objInMem ;
-    else projection = clone->Projection(iVar1,iVar2,iVar3);
-  }
-  else projection = clone->Projection(iVar1,iVar2,iVar3); 
-  delete clone;
-  for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
-    TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
-  }
-  for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) {
-    TString binLabel = GetAxis(iVar2)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) projection->GetYaxis()->SetBinLabel(iBin,binLabel);
-  }
-  for (Int_t iBin=1; iBin<=GetNBins(iVar3); iBin++) {
-    TString binLabel = GetAxis(iVar3)->GetBinLabel(iBin) ;
-    if (binLabel.CompareTo("") != 0) projection->GetZaxis()->SetBinLabel(iBin,binLabel);
-  }
-  return projection ;
-}
-
-//____________________________________________________________________
-void AliCFGridSparse::SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax) {
+void AliCFGridSparse::SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax, Bool_t useBins) const {
   //
   // set range of axis iVar. 
   //
-  fData->GetAxis(iVar)->SetRangeUser(varMin,varMax);
-  AliWarning(Form("THnSparse axis %d range has been modified",iVar));
+  SetAxisRange(fData->GetAxis(iVar),varMin,varMax,useBins);
+  AliInfo(Form("AliCFGridSparse axis %d range has been modified",iVar));
 }
 
 //____________________________________________________________________
-void AliCFGridSparse::SetRangeUser(const Double_t *varMin, const Double_t *varMax) {
+void AliCFGridSparse::SetRangeUser(const Double_t *varMin, const Double_t *varMax, Bool_t useBins) const {
   //
   // set range of every axis. varMin and varMax must be of dimension GetNVar()
   //
   for (Int_t iAxis=0; iAxis<GetNVar() ; iAxis++) { // set new range for every axis
-    SetRangeUser(iAxis,varMin[iAxis],varMax[iAxis]);
+    SetRangeUser(iAxis,varMin[iAxis],varMax[iAxis], useBins);
   }
-  AliWarning("THnSparse axes ranges have been modified");
-}
-
-//____________________________________________________________________
-void AliCFGridSparse::UseAxisRange(Bool_t b) const {
-  for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) fData->GetAxis(iAxis)->SetBit(TAxis::kAxisRange,b);
+  AliInfo("AliCFGridSparse axes ranges have been modified");
 }
 
 //____________________________________________________________________

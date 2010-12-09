@@ -22,7 +22,6 @@ class AliCFContainer : public AliCFFrame
 {
  public:
   AliCFContainer();
-  AliCFContainer(const Char_t* name,const Char_t* title);
   AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelStep, const Int_t nVarIn, const Int_t* nBinIn);
   AliCFContainer(const AliCFContainer& c);
   AliCFContainer& operator=(const AliCFContainer& corr);
@@ -52,14 +51,6 @@ class AliCFContainer : public AliCFFrame
 
   virtual void       Print(const Option_t*) const ;
 
-  //virtual void       GetBinCenters(const Int_t *ibin, const Double_t *binCenter) const {return fGrid[0]->GetBinCenters(ibin,binCenter);}
-  //virtual void       GetBinSizes(const Int_t *ibin, const Double_t *binSizes)    const {return fGrid[0]->GetBinSizes(ibin,binSizes);}
-
-  //probably not needed anymore
-  //virtual Int_t      GetBinIndex(const Int_t *ibin)                  const {return fGrid[0]->GetBinIndex(ibin);}
-  //virtual void       GetBinIndex(Int_t iel, const Int_t *ibin)       const {return fGrid[0]->GetBinIndex(iel,ibin);}
-  //virtual Int_t      GetBinIndex(Int_t ivar, Int_t ind)              const {return fGrid[0]->GetBinIndex(ivar,ind);}
-
   virtual TAxis       * GetAxis(Int_t ivar, Int_t istep) const {return fGrid[istep]->GetAxis(ivar);}
   virtual void          SetVarTitle (Int_t ivar,  const Char_t* title) ;
   virtual void          SetStepTitle(Int_t istep, const Char_t* title) ;
@@ -76,35 +67,31 @@ class AliCFContainer : public AliCFFrame
   virtual Float_t  GetUnderFlows(Int_t var,Int_t istep,Bool_t excl=kFALSE) const ;
   virtual Float_t  GetEntries  (Int_t istep) const ;
   virtual Long_t   GetEmptyBins(Int_t istep) const {return fGrid[istep]->GetEmptyBins();}
-  //virtual Int_t    GetEmptyBins(Int_t istep, Double_t *varMin,Double_t *varMax) const ;
   virtual Double_t GetIntegral (Int_t istep) const ;
-  //virtual Double_t GetIntegral (Int_t istep, Double_t *varMin,Double_t *varMax) const ;
-
 
   //basic operations
   virtual void     Add(const AliCFContainer* aContainerToAdd, Double_t c=1.);
   virtual Long64_t Merge(TCollection* list);
 
-  virtual TH1D* ShowProjection( Int_t ivar, Int_t istep)                           const {return Project(ivar             ,istep);}
-  virtual TH2D* ShowProjection( Int_t ivar1, Int_t ivar2, Int_t istep)             const {return Project(ivar1,ivar2      ,istep);}
-  virtual TH3D* ShowProjection( Int_t ivar1, Int_t ivar2,Int_t ivar3, Int_t istep) const {return Project(ivar1,ivar2,ivar3,istep);}
-  virtual TH1D* Project( Int_t ivar, Int_t istep) const;
-  virtual TH2D* Project( Int_t ivar1, Int_t ivar2, Int_t istep) const;
-  virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3, Int_t istep) const;
-
-  virtual TH1D* ShowSlice(Int_t ivar, const Double_t *varMin, const Double_t *varMax, Int_t istep, Bool_t useBins=0) const ;
-  virtual TH2D* ShowSlice(Int_t ivar1, Int_t ivar2, const Double_t *varMin, const Double_t *varMax, Int_t istep, Bool_t useBins=0) const ;
-  virtual TH3D* ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, const Double_t *varMin, const Double_t *varMax, Int_t istep, Bool_t useBins=0) const ;
-  virtual AliCFContainer* MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins=0) const ;
-  virtual AliCFContainer* MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t nStep, const Int_t* steps, Bool_t useBins=0) const ;
+  virtual TH1* Project (Int_t istep, Int_t ivar1, Int_t ivar2=-1 ,Int_t ivar3=-1) const;
+  virtual AliCFContainer* MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin=0x0, const Double_t* varMax=0x0, Bool_t useBins=0) const ;
+  virtual AliCFContainer* MakeSlice(Int_t nStep, const Int_t* steps, 
+				    Int_t nVars, const Int_t* vars, const Double_t* varMin=0x0, const Double_t* varMax=0x0, 
+				    Bool_t useBins=0) const ;
   virtual void  Smooth(Int_t istep) {GetGrid(istep)->Smooth();}
 
-  virtual void  SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, Int_t istep) ;
-  virtual void  SetRangeUser(Double_t* varMin, Double_t* varMax, Int_t istep) ;
+  virtual void  SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, Bool_t useBins=kFALSE) const ;
+  virtual void  SetRangeUser(const Double_t* varMin, const Double_t* varMax, Bool_t useBins=kFALSE) const ;
+
   virtual void  SetGrid(Int_t step, AliCFGridSparse* grid) {if (fGrid[step]) delete fGrid[step]; fGrid[step]=grid;}
   virtual AliCFGridSparse * GetGrid(Int_t istep) const {return fGrid[istep];};
 
   virtual void  Scale(Double_t factor) const;
+
+  /****   TO BE REMOVED SOON ******/
+  virtual TH1D* ShowProjection( Int_t ivar,  Int_t istep)                          const {return (TH1D*)Project(istep,ivar);}
+  virtual TH2D* ShowProjection( Int_t ivar1, Int_t ivar2, Int_t istep)             const {return (TH2D*)Project(istep,ivar1,ivar2);}
+  virtual TH3D* ShowProjection( Int_t ivar1, Int_t ivar2,Int_t ivar3, Int_t istep) const {return (TH3D*)Project(istep,ivar1,ivar2,ivar3);}
   
  private:
   Int_t    fNStep; //number of selection steps

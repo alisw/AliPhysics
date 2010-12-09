@@ -70,16 +70,14 @@ class AliCFGridSparse : public AliCFFrame
   virtual void    SetElementError(const Int_t *bin, Float_t val) ; 
   virtual void    SetElementError(const Double_t *var, Float_t val); 
 
-  virtual TH1D*            Project( Int_t ivar) const;
-  virtual TH2D*            Project( Int_t ivar1, Int_t ivar2) const;
-  virtual TH3D*            Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
-  virtual AliCFGridSparse* Project(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins=0) const ;
-  virtual TH1D*            Slice(Int_t ivar, const Double_t* varMin, const Double_t* varMax, Bool_t useBins=0) const ; 
-  virtual TH2D*            Slice(Int_t ivar1, Int_t ivar2, const Double_t *varMin, const Double_t *varMax, Bool_t useBins=0) const ;
-  virtual TH3D*            Slice(Int_t ivar1, Int_t ivar2, Int_t ivar3, const Double_t *varMin, const Double_t *varMax, Bool_t useBins=0) const ;
-  virtual void             SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax) ;
-  virtual void             SetRangeUser(const Double_t* varMin, const Double_t* varMax) ;
-  virtual void             UseAxisRange(Bool_t b) const ;
+  virtual TH1*             Project(Int_t ivar1, Int_t ivar2=-1, Int_t ivar3=-1) const {return Slice(ivar1,ivar2,ivar3,0x0,0x0,kFALSE);}
+  virtual TH1*             Slice(Int_t ivar1, Int_t ivar2=-1, Int_t ivar3=-1, 
+				 const Double_t *varMin=0x0, const Double_t *varMax=0x0, Bool_t useBins=0) const ; 
+  virtual AliCFGridSparse* MakeSlice(Int_t nVars, const Int_t* vars,
+				   const Double_t* varMin, const Double_t* varMax, Bool_t useBins=0) const ;
+
+  virtual void             SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax, Bool_t useBins=kFALSE) const ;
+  virtual void             SetRangeUser(const Double_t* varMin, const Double_t* varMax, Bool_t useBins=kFALSE) const ;
   virtual void             Smooth() ;
 
   //basic operations
@@ -108,16 +106,18 @@ class AliCFGridSparse : public AliCFFrame
   virtual Float_t GetUnderFlows(Int_t var, Bool_t excl=kFALSE) const;
   virtual Long_t  GetEmptyBins() const;
 
-  // to be implemented
-  //------------------
-  //virtual Int_t    GetEmptyBins(Double_t *varMin,Double_t *varMax) const;
-  //virtual Double_t GetIntegral(Int_t *binMin,Int_t *binMax) const;
+  /*  FUNCTIONS TO REMOVE   */
+  virtual AliCFGridSparse* Project(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins=0) const 
+  {return MakeSlice(nVars,vars,varMin,varMax,useBins);}
+
 
  protected:
 
   //protected functions
-  //Float_t  GetSum(Int_t ivar, const Int_t *binMin, const Int_t* binMax) const; 
   void     GetScaledValues(const Double_t *fact, const Double_t *in, Double_t *out) const;
+  void     SetAxisRange(TAxis* axis, Double_t min, Double_t max, Bool_t useBins) const;
+  void     GetProjectionName (TString& s,Int_t var0, Int_t var1=-1, Int_t var2=-1) const;
+  void     GetProjectionTitle(TString& s,Int_t var0, Int_t var1=-1, Int_t var2=-1) const;
 
   // data members:
   Bool_t      fSumW2    ; // Flag to check if calculation of squared weights enabled
@@ -192,6 +192,22 @@ inline Int_t AliCFGridSparse::GetVar(const Char_t* title) const {
   }
   AliError("Variable not found");
   return -1;
+}
+
+inline void AliCFGridSparse::GetProjectionName (TString& s, Int_t var0, Int_t var1, Int_t var2) const {
+  s.Form("%s_proj-%s",GetName(),GetVarTitle(var0));
+  if (var1>=0) {
+    s.Append(Form("-%s",GetVarTitle(var1)));
+    if (var2>=0) s.Append(Form("-%s",GetVarTitle(var2)));
+  }
+}
+
+inline void AliCFGridSparse::GetProjectionTitle(TString& s, Int_t var0, Int_t var1, Int_t var2) const {
+  s.Form("%s: projection on %s",GetTitle(),GetVarTitle(var0));
+  if (var1>=0) {
+    s.Append(Form("-%s",GetVarTitle(var1)));
+    if (var2>=0) s.Append(Form("-%s",GetVarTitle(var2)));
+  }
 }
 
 #endif
