@@ -1094,9 +1094,11 @@ void AliRDHFCutsD0toKpi::SetUseKF(Bool_t useKF)
 }
 
 
-void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {//STANDARD CUTS USED FOR 2010 pp analysis 
-                                                  //dca cut will be enlarged soon to 400 micron
-  
+void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
+  //
+  //STANDARD CUTS USED FOR 2010 pp analysis 
+  //dca cut will be enlarged soon to 400 micron
+  //
   
   SetName("D0toKpiCutsStandard");
   SetTitle("Standard Cuts for D0 analysis");
@@ -1201,8 +1203,11 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {//STANDARD CUTS USED FOR 2010 
 }
 
 
-void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {//PRELIMINARY CUTS USED FOR 2010 PbPb analysis
-                                                    //... EVOLVING SOON  
+void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
+  //
+  //PRELIMINARY CUTS USED FOR 2010 PbPb analysis
+  //... EVOLVING SOON 
+  // 
   
   SetName("D0toKpiCutsStandard");
   SetTitle("Standard Cuts for D0 analysis in PbPb2010 run");
