@@ -40,10 +40,10 @@ AliAnalysisTaskMuonFakes* AddTaskMuonFakes(Bool_t useMCLabels = kFALSE)
   
   // Create and connect output containers
   AliAnalysisDataContainer *cout_histo = mgr->CreateContainer("histos", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_track = mgr->CreateContainer("track statistics", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_fakeTrack = mgr->CreateContainer("fake track statistics", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_matchTrack = mgr->CreateContainer("matched track statistics", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_event = mgr->CreateContainer("event statistics", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_track = mgr->CreateContainer("trackCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_fakeTrack = mgr->CreateContainer("fakeTrackCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_matchTrack = mgr->CreateContainer("matchedTrackCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_event = mgr->CreateContainer("eventCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
   mgr->ConnectOutput(task, 1, cout_histo);
   mgr->ConnectOutput(task, 2, cout_track);
   mgr->ConnectOutput(task, 3, cout_fakeTrack);
