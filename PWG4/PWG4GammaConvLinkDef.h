@@ -9,6 +9,7 @@
 #pragma link C++ class AliV0Reader+;
 #pragma link C++ class AliGammaConversionHistograms+;
 #pragma link C++ class AliGammaConversionAODObject+;
+#pragma link C++ class AliAODConversionParticle+;
 #pragma link C++ class AliGammaConversionBGHandler+;
 #pragma link C++ class AliAnalysisTaskGammaJet+;
 #pragma link C++ class AliAnalysisTaskGammaConvDalitz+;

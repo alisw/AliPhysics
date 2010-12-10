@@ -32,7 +32,10 @@
 //#include "AliCFContainer.h"   // for CF
 #include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliAODPWG4Particle.h"
+#include "AliAODPWG4ParticleCorrelation.h"
 #include "AliGammaConversionAODObject.h"
+#include "AliAODConversionParticle.h"
 #include "AliGammaConversionBGHandler.h"
 #include "AliESDCaloCluster.h" // for combining PHOS and GammaConv
 #include "AliKFVertex.h"
@@ -125,6 +128,7 @@ AliAnalysisTaskSE(),
   fAODPi0(NULL),
   fAODOmega(NULL),
   fAODBranchName("GammaConv"),
+  fOutputAODClassName("AliAODConversionParticle"),
   fKFForceAOD(kFALSE),
   fKFDeltaAODFileName(""),
   fDoNeutralMesonV0MCCheck(kFALSE),
@@ -221,6 +225,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fAODPi0(NULL),
   fAODOmega(NULL),
   fAODBranchName("GammaConv"),
+  fOutputAODClassName("AliAODConversionParticle"),
   fKFForceAOD(kFALSE),
   fKFDeltaAODFileName(""),
   fDoNeutralMesonV0MCCheck(kFALSE),
@@ -1915,43 +1920,78 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
   fV0Reader->ResetV0IndexNumber();
 }
 
+void AliAnalysisTaskGammaConversion::AddToAODBranch(TClonesArray * branch, AliAODPWG4Particle & particle) {
+  //See header file for documentation
+
+  Int_t i = branch->GetEntriesFast();
+  if(! (fOutputAODClassName.Contains("Correlation")) ) {
+    new((*branch)[i])  AliAODPWG4Particle(particle);
+  } else {
+    new((*branch)[i])  AliAODPWG4ParticleCorrelation(particle);
+  }
+}
+
+void AliAnalysisTaskGammaConversion::AddToAODBranch(TClonesArray * branch, AliGammaConversionAODObject & particle) {
+  //See header file for documentation
+
+  Int_t i = branch->GetEntriesFast();
+  new((*branch)[i])  AliGammaConversionAODObject(particle);
+}
+
+void AliAnalysisTaskGammaConversion::AddToAODBranch(TClonesArray * branch, AliAODConversionParticle & particle) {
+  //See header file for documentation
+
+  Int_t i = branch->GetEntriesFast();
+  new((*branch)[i])  AliAODConversionParticle(particle);
+}
+
+
 void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
   // Fill AOD with reconstructed Gamma
 	
   for(Int_t gammaIndex=0;gammaIndex<fKFReconstructedGammasTClone->GetEntriesFast();gammaIndex++){
-    //  for(UInt_t gammaIndex=0;gammaIndex<fKFReconstructedGammas.size();gammaIndex++){
-    //Create AOD particle object from AliKFParticle
-    //You could add directly AliKFParticle objects to the AOD, avoiding dependences with PartCorr
-    //but this means that I have to work a little bit more in my side.
-    //AODPWG4Particle objects are simpler and lighter, I think
-    /*
     AliKFParticle * gammakf = dynamic_cast<AliKFParticle*>(fKFReconstructedGammasTClone->At(gammaIndex));
-    AliAODPWG4Particle gamma = AliAODPWG4Particle(gammakf->Px(),gammakf->Py(),gammakf->Pz(), gammakf->E());
-    //gamma.SetLabel(-1);//How to get the MC label of the reconstructed gamma?
-    gamma.SetTrackLabel( fElectronv1[gammaIndex], fElectronv2[gammaIndex] ); //How to get the MC label of the 2 electrons that form the gamma?
-    gamma.SetDetector("CTS"); //tag the gamma as reconstructed in the central barrel
-    gamma.SetPdg(AliPID::kEleCon); //photon id
-    gamma.SetTag(-1); //Here I usually put a flag saying that montecarlo says it is prompt, decay fragmentation photon, or hadrons or whatever
-    gamma.SetChi2(gammakf->Chi2());
-    Int_t i = fAODBranch->GetEntriesFast();
-    new((*fAODBranch)[i])  AliAODPWG4Particle(gamma);
-    */
+    
+    if(fOutputAODClassName.Contains("AliAODPWG4Particle")) {
+      AliAODPWG4Particle gamma = AliAODPWG4Particle(gammakf->Px(),gammakf->Py(),gammakf->Pz(), gammakf->E());
+      //gamma.SetLabel(-1);//How to get the MC label of the reconstructed gamma?
+      gamma.SetTrackLabel( fElectronv1[gammaIndex], fElectronv2[gammaIndex] ); //How to get the MC label of the 2 electrons that form the gamma?
+      gamma.SetDetector("CTS"); //tag the gamma as reconstructed in the central barrel
+      gamma.SetPdg(AliPID::kEleCon); //photon id
+      gamma.SetTag(-1); //Here I usually put a flag saying that montecarlo says it is prompt, decay fragmentation photon, or hadrons or whatever
+      gamma.SetChi2(gammakf->Chi2());
+      
+      AddToAODBranch(fAODGamma, gamma);
+      
+    } else if(fOutputAODClassName.Contains("ConversionParticle")) {
+      TLorentzVector momentum(gammakf->Px(),gammakf->Py(),gammakf->Pz(), gammakf->E());
+      AliAODConversionParticle gamma = AliAODConversionParticle(momentum);
+      //gamma.SetLabel(-1);//How to get the MC label of the reconstructed gamma?
+      gamma.SetTrackLabels( fElectronv1[gammaIndex], fElectronv2[gammaIndex] ); //How to get the MC label of the 2 electrons that form the gamma?
+      //gamma.SetPdg(AliPID::kEleCon); //photon id
+      //gamma.SetTag(-1); //Here I usually put a flag saying that montecarlo says it is prompt, decay fragmentation photon, or hadrons or whatever
+      gamma.SetChi2(gammakf->Chi2());
+      gamma.SetTrackLabels( fElectronv1[gammaIndex], fElectronv2[gammaIndex] );
+      gamma.SetESDEvent(dynamic_cast<AliESDEvent*>(InputEvent()));    
+      AddToAODBranch(fAODGamma, gamma);
+      
+      
 
-    AliKFParticle * gammakf = (AliKFParticle *)fKFReconstructedGammasTClone->At(gammaIndex);
-    AliGammaConversionAODObject aodObject;
-    aodObject.SetPx(gammakf->GetPx());
-    aodObject.SetPy(gammakf->GetPy());
-    aodObject.SetPz(gammakf->GetPz());
-    aodObject.SetLabel1(fElectronv1[gammaIndex]);
-    aodObject.SetLabel2(fElectronv2[gammaIndex]);
-    aodObject.SetChi2(gammakf->Chi2());
-    aodObject.SetE(gammakf->E());
-    Int_t i = fAODGamma->GetEntriesFast();
-    new((*fAODGamma)[i])  AliGammaConversionAODObject(aodObject);
-  }
+    } else {
+      AliGammaConversionAODObject gamma;
+      gamma.SetPx(gammakf->GetPx());
+      gamma.SetPy(gammakf->GetPy());
+      gamma.SetPz(gammakf->GetPz());
+      gamma.SetLabel1(fElectronv1[gammaIndex]);
+      gamma.SetLabel2(fElectronv2[gammaIndex]);
+      gamma.SetChi2(gammakf->Chi2());
+      gamma.SetE(gammakf->E());
+      gamma.SetESDEvent(dynamic_cast<AliESDEvent*>(InputEvent()));
+      AddToAODBranch(fAODGamma, gamma);
+    }
 	
+  }
 }
-
 void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
   // omega meson analysis pi0+gamma decay
   for(Int_t firstPi0Index=0;firstPi0Index<fKFReconstructedPi0sTClone->GetEntriesFast();firstPi0Index++){
@@ -1970,7 +2010,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
       omegaCandidate.GetMass(massOmegaCandidate,widthOmegaCandidate);
 
       if ( massOmegaCandidate > 733 && massOmegaCandidate < 833 ) {
-	AddOmegaToAOD(&omegaCandidate, massOmegaCandidate, firstPi0Index, firstGammaIndex);
+	//AddOmegaToAOD(&omegaCandidate, massOmegaCandidate, firstPi0Index, firstGammaIndex);
       }
       
       fHistograms->FillHistogram("ESD_Omega_InvMass_vs_Pt",massOmegaCandidate ,omegaCandidate.GetPt());
@@ -2005,7 +2045,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
 	  omegaCandidatePipPinPi0.GetMass(massOmegaCandidatePipPinPi0,widthOmegaCandidatePipPinPi0);
 
 	  if ( massOmegaCandidatePipPinPi0 > 733 && massOmegaCandidatePipPinPi0 < 833 ) {
-	    AddOmegaToAOD(&omegaCandidatePipPinPi0, massOmegaCandidatePipPinPi0, -1, -1);
+	    // AddOmegaToAOD(&omegaCandidatePipPinPi0, massOmegaCandidatePipPinPi0, -1, -1);
 	  }
 	  
 	  fHistograms->FillHistogram("ESD_OmegaPipPinPi0_InvMass_vs_Pt",massOmegaCandidatePipPinPi0 ,omegaCandidatePipPinPi0.GetPt());
@@ -2080,9 +2120,9 @@ void AliAnalysisTaskGammaConversion::AddOmegaToAOD(const AliKFParticle * const o
   omega.SetE(omegakf->GetE());
   omega.SetIMass(mass);
   omega.SetLabel1(omegaDaughter);
-  //dynamic_cast<AliGammaConversionAODObject*>(fAODBranch->At(daughter1))->SetTagged(kTRUE);
+  // //dynamic_cast<AliAODPWG4Particle*>(fAODBranch->At(daughter1))->SetTagged(kTRUE);
   omega.SetLabel2(gammaDaughter);
-  new((*fAODOmega)[fAODOmega->GetEntriesFast()])  AliGammaConversionAODObject(omega);
+  AddToAODBranch(fAODOmega, omega);
 }
 
 
@@ -2354,7 +2394,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	      new((*fKFReconstructedPi0sTClone)[fKFReconstructedPi0sTClone->GetEntriesFast()])  AliKFParticle(*twoGammaCandidate);
 	      fGammav1.push_back(firstGammaIndex);
 	      fGammav2.push_back(secondGammaIndex);
-	      AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
+	      //AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
 	    }
 	  }
 
@@ -2375,10 +2415,9 @@ void AliAnalysisTaskGammaConversion::AddPionToAOD(const AliKFParticle * const pi
   pion.SetE(pionkf->GetE());
   pion.SetIMass(mass);
   pion.SetLabel1(daughter1);
-  //dynamic_cast<AliGammaConversionAODObject*>(fAODBranch->At(daughter1))->SetTagged(kTRUE);
+  //dynamic_cast<AliAODPWG4Particle*>(fAODBranch->At(daughter1))->SetTagged(kTRUE);
   pion.SetLabel2(daughter2);
-  new((*fAODPi0)[fAODPi0->GetEntriesFast()])  AliGammaConversionAODObject(pion);
-
+  AddToAODBranch(fAODPi0, pion);
 }
 
 
@@ -3405,15 +3444,15 @@ void AliAnalysisTaskGammaConversion::Terminate(Option_t */*option*/)
 void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
 {
   //AOD
-  if(!fAODGamma) fAODGamma = new TClonesArray("AliGammaConversionAODObject", 0);
+  if(!fAODGamma) fAODGamma = new TClonesArray(fOutputAODClassName.Data(), 0);
   else fAODGamma->Delete();
   fAODGamma->SetName(Form("%s_gamma", fAODBranchName.Data()));
   
-  if(!fAODPi0) fAODPi0 = new TClonesArray("AliGammaConversionAODObject", 0);
+  if(!fAODPi0) fAODPi0 = new TClonesArray(fOutputAODClassName.Data(), 0);
   else fAODPi0->Delete();
   fAODPi0->SetName(Form("%s_Pi0", fAODBranchName.Data()));
 
-  if(!fAODOmega) fAODOmega = new TClonesArray("AliGammaConversionAODObject", 0);
+  if(!fAODOmega) fAODOmega = new TClonesArray(fOutputAODClassName.Data(), 0);
   else fAODOmega->Delete();
   fAODOmega->SetName(Form("%s_Omega", fAODBranchName.Data()));
 
