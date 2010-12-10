@@ -2394,7 +2394,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	      new((*fKFReconstructedPi0sTClone)[fKFReconstructedPi0sTClone->GetEntriesFast()])  AliKFParticle(*twoGammaCandidate);
 	      fGammav1.push_back(firstGammaIndex);
 	      fGammav2.push_back(secondGammaIndex);
-	      //AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
+	      AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
 	    }
 	  }
 
@@ -2405,19 +2405,27 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
   }
 }
 
-void AliAnalysisTaskGammaConversion::AddPionToAOD(const AliKFParticle * const pionkf, Double_t mass, Int_t daughter1, Int_t daughter2) {
+void AliAnalysisTaskGammaConversion::AddPionToAOD(AliKFParticle * pionkf, Double_t mass, Int_t daughter1, Int_t daughter2) {
   //See header file for documentation
-  AliGammaConversionAODObject pion;
-  pion.SetPx(pionkf->GetPx());
-  pion.SetPy(pionkf->GetPy());
-  pion.SetPz(pionkf->GetPz());
-  pion.SetChi2(pionkf->GetChi2());
-  pion.SetE(pionkf->GetE());
-  pion.SetIMass(mass);
-  pion.SetLabel1(daughter1);
-  //dynamic_cast<AliAODPWG4Particle*>(fAODBranch->At(daughter1))->SetTagged(kTRUE);
-  pion.SetLabel2(daughter2);
-  AddToAODBranch(fAODPi0, pion);
+  if(fOutputAODClassName.Contains("AODObject")) {
+    AliGammaConversionAODObject pion;
+    pion.SetPx(pionkf->GetPx());
+    pion.SetPy(pionkf->GetPy());
+    pion.SetPz(pionkf->GetPz());
+    pion.SetChi2(pionkf->GetChi2());
+    pion.SetE(pionkf->GetE());
+    pion.SetIMass(mass);
+    pion.SetLabel1(daughter1);
+    pion.SetLabel2(daughter2);
+    AddToAODBranch(fAODPi0, pion);
+  } else {
+    TLorentzVector momentum(pionkf->Px(),pionkf->Py(),pionkf->Pz(), pionkf->E());
+    AliAODConversionParticle pion = AliAODConversionParticle(momentum);
+    pion.SetTrackLabels( daughter1, daughter2 );
+    pion.SetChi2(pionkf->GetChi2());
+    AddToAODBranch(fAODPi0, pion);
+    
+  }
 }
 
 
