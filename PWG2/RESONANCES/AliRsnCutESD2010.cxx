@@ -30,7 +30,15 @@
 
 ClassImp(AliRsnCutESD2010)
 
-Int_t AliRsnCutESD2010::fgLastRun = -1;
+//Bool_t         AliRsnCutESD2010::fgTOFcalibrateESD = kTRUE;
+Bool_t         AliRsnCutESD2010::fgTOFcorrectTExp  = kTRUE;
+Bool_t         AliRsnCutESD2010::fgTOFuseT0        = kTRUE;
+Bool_t         AliRsnCutESD2010::fgTOFtuneMC       = kFALSE;
+Double_t       AliRsnCutESD2010::fgTOFresolution   = 100.0;
+AliTOFT0maker* AliRsnCutESD2010::fgTOFmaker        = 0x0;
+AliTOFcalib*   AliRsnCutESD2010::fgTOFcalib        = 0x0;
+Int_t          AliRsnCutESD2010::fgLastRun         = -1;
+Int_t          AliRsnCutESD2010::fgLastEventID     = -1;
 
 //_________________________________________________________________________________________________
 AliRsnCutESD2010::AliRsnCutESD2010
@@ -48,18 +56,11 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fTPCpLimit(0.35),
   fMinTPCband(3.0),
   fMaxTPCband(5.0),
-  fESDpid(0x0),
+  fESDpid(),
   fESDtrackCutsTPC(),
   fESDtrackCutsITS(),
-  fTOFmaker(0x0),
-  fTOFcalib(0x0),
-  fTOFcalibrateESD(!isMC),
-  fTOFcorrectTExp(kTRUE),
-  fTOFuseT0(kTRUE),
-  fTOFtuneMC(isMC),
-  fTOFresolution(100.0),
-  fMinTOF(-2.5),
-  fMaxTOF( 3.5)
+  fMinTOF(-3.0),
+  fMaxTOF( 3.0)
 {
 //
 // Main constructor.
@@ -84,22 +85,17 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fTPCpLimit(copy.fTPCpLimit),
   fMinTPCband(copy.fMinTPCband),
   fMaxTPCband(copy.fMaxTPCband),
-  fESDpid(0x0),
+  fESDpid(copy.fESDpid),
   fESDtrackCutsTPC(copy.fESDtrackCutsTPC),
   fESDtrackCutsITS(copy.fESDtrackCutsITS),
-  fTOFmaker(0x0),
-  fTOFcalib(0x0),
-  fTOFcalibrateESD(copy.fTOFcalibrateESD),
-  fTOFcorrectTExp(copy.fTOFcorrectTExp),
-  fTOFuseT0(copy.fTOFuseT0),
-  fTOFtuneMC(copy.fTOFtuneMC),
-  fTOFresolution(copy.fTOFresolution),
   fMinTOF(copy.fMinTOF),
   fMaxTOF(copy.fMaxTOF)
 {
 //
 // Copy constructor.
 //
+
+  SetMC(copy.fIsMC);
 
   Int_t i = 0;
   for (i = 0; i < 5; i++) fTPCpar[i] = copy.fTPCpar[i];
@@ -114,7 +110,8 @@ AliRsnCutESD2010& AliRsnCutESD2010::operator=(const AliRsnCutESD2010& copy)
 
   AliRsnCut::operator=(copy);
 
-  fIsMC = copy.fIsMC;
+  SetMC(copy.fIsMC);
+  
   fCheckITS = copy.fCheckITS;
   fCheckTPC = copy.fCheckTPC;
   fCheckTOF = copy.fCheckTOF;
@@ -126,22 +123,16 @@ AliRsnCutESD2010& AliRsnCutESD2010::operator=(const AliRsnCutESD2010& copy)
   fTPCpLimit = copy.fTPCpLimit;
   fMinTPCband = copy.fMinTPCband;
   fMaxTPCband = copy.fMaxTPCband;
-  fTOFcalibrateESD = copy.fTOFcalibrateESD;
-  fTOFcorrectTExp = copy.fTOFcorrectTExp;
-  fTOFuseT0 = copy.fTOFuseT0;
-  fTOFtuneMC = copy.fTOFtuneMC;
-  fTOFresolution = copy.fTOFresolution;
   fMinTOF = copy.fMinTOF;
   fMaxTOF = copy.fMaxTOF;
+  fESDpid = copy.fESDpid;
   
   Int_t i = 0;
   for (i = 0; i < 5; i++) fTPCpar[i] = copy.fTPCpar[i];
   
-  delete fESDpid;
-  fESDpid = 0x0;
   
-  copy.GetCutsTPC()->Copy(fESDtrackCutsTPC);
-  copy.GetCutsITS()->Copy(fESDtrackCutsITS);
+  fESDtrackCutsTPC = copy.fESDtrackCutsTPC;
+  fESDtrackCutsITS = copy.fESDtrackCutsITS;
   
   return (*this);
 }
@@ -155,80 +146,66 @@ void AliRsnCutESD2010::SetMC(Bool_t isMC)
 
   fIsMC = isMC;
   
+  AliITSPIDResponse itsresponse(fIsMC);
+  fESDpid.GetITSResponse() = itsresponse;
+  
   if (isMC)
   {
-    SetTPCpar(2.15898 / 50.0, 1.75295E1, 3.40030E-9, 1.96178, 3.91720);
-    SetTOFcalibrateESD(kFALSE);
-    SetTOFtuneMC(kTRUE);
+    //fgTOFcalibrateESD = kFALSE;
+    fgTOFtuneMC       = kTRUE;
   }
   else
   {
-    SetTPCpar(1.41543 / 50.0, 2.63394E1, 5.0411E-11, 2.12543, 4.88663);
-    SetTOFcalibrateESD(kTRUE);
-    SetTOFtuneMC(kFALSE);
+    //fgTOFcalibrateESD = kTRUE;
+    fgTOFtuneMC       = kFALSE;
   }
 }
 
 //_________________________________________________________________________________________________
-void AliRsnCutESD2010::SetEvent(AliRsnEvent *event)
+void AliRsnCutESD2010::ProcessEvent(AliESDEvent *esd)
 {
-  // don't do anything if the event is the same as before
-  if (fEvent != 0x0 && fEvent == event) return;
-
-  // retrieve the ESD event
-  AliESDEvent *esd = event->GetRefESD();
-  if (!esd)
-  {
-    fEvent = 0x0;
-    return;
-  }
-  else
-  {
-    fEvent = event;
-  }
-  
-  // if the run number has changed,
-  // reset the CDB in order to point to the correct one
+  // get current run
   Int_t run = esd->GetRunNumber();
+    
+  // if the run number has changed, update it now and give a message
   if (run != fgLastRun)
   {
     AliInfo("============================================================================================");
     AliInfo(Form("*** CHANGING RUN NUMBER: PREVIOUS = %d --> CURRENT = %d ***", fgLastRun, run));
     AliInfo("============================================================================================");
     fgLastRun = run;
-
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->ClearCache(); // suggestion by Annalisa
-    cdb->Clear();      // suggestion by Annalisa
-    cdb->SetDefaultStorage("raw://");
-    cdb->SetRun(run);
-  }
   
-  // if absent, initialize ESD pid response
-  if (!fESDpid)
-  {
-    AliITSPIDResponse itsresponse(fIsMC);
+    AliCDBManager::Instance()->SetDefaultStorage("raw://");
+    AliCDBManager::Instance()->SetRun(fgLastRun);
     
-    fESDpid = new AliESDpid;
-    fESDpid->GetTPCResponse().SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
-    fESDpid->GetITSResponse() = itsresponse;
+    if (fgTOFmaker) delete fgTOFmaker;
+    if (fgTOFcalib) delete fgTOFcalib;
+    
+    fgTOFcalib = new AliTOFcalib();
+    if (fIsMC)
+    {
+      fgTOFcalib->SetRemoveMeanT0(kFALSE);
+      fgTOFcalib->SetCalibrateTOFsignal(kFALSE);
+    }
+    else
+    {
+      fgTOFcalib->SetRemoveMeanT0(kTRUE);
+      fgTOFcalib->SetCalibrateTOFsignal(kTRUE);
+    }
+    if (fgTOFcorrectTExp) fgTOFcalib->SetCorrectTExp(kTRUE);
+    fgTOFcalib->Init();
+    
+    fgTOFmaker = new AliTOFT0maker(&fESDpid, fgTOFcalib);
+    fgTOFmaker->SetTimeResolution(fgTOFresolution);
   }
-  
-  // if absent, initialize TOF objects for calibration
-  if (!fTOFcalib) fTOFcalib = new AliTOFcalib;
-  fTOFcalib->SetCorrectTExp(fTOFcorrectTExp);
-  fTOFcalib->Init();
-  if (!fTOFmaker) fTOFmaker = new AliTOFT0maker(fESDpid, fTOFcalib);
-  fTOFmaker->SetTimeResolution(fTOFresolution);
 
-  // if required, calibrate the TOF t0 maker with current event
-  if (fTOFcalibrateESD) fTOFcalib->CalibrateESD(esd);
-  if (fTOFtuneMC) fTOFmaker->TuneForMC(esd);
-  if (fTOFuseT0)
+  /*if (fgTOFcalibrateESD)*/ fgTOFcalib->CalibrateESD(esd);
+  if (fgTOFtuneMC) fgTOFmaker->TuneForMC(esd);
+  if (fgTOFuseT0)
   {
-    fTOFmaker->ComputeT0TOF(esd);
-    fTOFmaker->ApplyT0TOF(esd);
-    fESDpid->MakePID(esd, kFALSE, 0.);
+    fgTOFmaker->ComputeT0TOF(esd);
+    fgTOFmaker->ApplyT0TOF(esd);
+    fESDpid.MakePID(esd, kFALSE, 0.);
   }
 }
 
@@ -246,7 +223,13 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *object)
   if (!track) return kFALSE;
 
   // if no reference event, skip
-  if (!fEvent) return kFALSE;
+  AliRsnEvent *rsn = AliRsnTarget::GetCurrentEvent();
+  if (!rsn) return kFALSE;
+  if (fgLastEventID != rsn->GetLocalID())
+  {
+    ProcessEvent(rsn->GetRefESD());
+    fgLastEventID = rsn->GetLocalID();
+  }
 
   // check quality and track type and reject tracks not passing this step
   if (!OkQuality(track))
@@ -357,7 +340,7 @@ Bool_t AliRsnCutESD2010::OkITSPID (AliESDtrack *track)
   }
   
   // create the PID response object and compute nsigma
-  AliITSPIDResponse &itsrsp = fESDpid->GetITSResponse();
+  AliITSPIDResponse &itsrsp = fESDpid.GetITSResponse();
   Double_t mom    = track->P();
   Double_t nSigma = itsrsp.GetNumberOfSigmas(mom, track->GetITSsignal(), fPID, nITSpidLayers, isSA);
   
@@ -380,8 +363,8 @@ Bool_t AliRsnCutESD2010::OkTPCPID (AliESDtrack *track)
 //
 
   // setup TPC PID response
-  AliTPCPIDResponse &tpcrsp = fESDpid->GetTPCResponse();
-  tpcrsp.SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
+  AliTPCPIDResponse &tpcrsp = fESDpid.GetTPCResponse();
+  //tpcrsp.SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
   
   // get momentum and number of sigmas and choose the reference band
   Double_t mom       = track->GetInnerParam()->P();
@@ -406,11 +389,11 @@ Bool_t AliRsnCutESD2010::OkTOFPID (AliESDtrack *track)
 // Check TOF particle identification if matched there.
 //
 
-  // check integrated length
-  if (track->GetIntegratedLength() < 350.) return kFALSE;
+  // reject not TOF-matched tracks
+  if (!MatchTOF(track)) return kFALSE;
   
   // setup TOF PID response
-  AliTOFPIDResponse &tofrsp = fESDpid->GetTOFResponse();
+  AliTOFPIDResponse &tofrsp = fESDpid.GetTOFResponse();
   
   // get info for computation
   Double_t momentum = track->P();
@@ -453,7 +436,7 @@ void AliRsnCutESD2010::Print(const Option_t *) const
   AliInfo(Form("ITS PID range  (pt)    : %f", fMaxITSPIDmom));
   AliInfo(Form("TPC PID ranges (sigmas): %f %f", fMinTPCband, fMaxTPCband));
   AliInfo(Form("TPC PID limit  (p)     : %f", fTPCpLimit));
-  AliInfo(Form("TOF resolution         : %f", fTOFresolution));
+  AliInfo(Form("TOF resolution         : %f", fgTOFresolution));
   AliInfo(Form("TOF range (sigmas)     : %f - %f", fMinTOF, fMaxTOF));  
-  AliInfo(Form("TOF PID tuning from MC : %s", (fTOFtuneMC ? "YES" : "NO")));
+  AliInfo(Form("TOF PID tuning from MC : %s", (fgTOFtuneMC ? "YES" : "NO")));
 }

@@ -48,15 +48,13 @@ class AliRsnCutSet : public AliRsnTarget
     void SetBoolValue(Bool_t theValue,Int_t index) { fBoolValues[index] = theValue; }
     Bool_t GetBoolValue(Int_t index) const { return fBoolValues[index]; }
 
-    void SetCutScheme(const TString& theValue);
+    void SetCutScheme(const char *theValue);
     TString GetCutScheme() const { return fCutScheme; }
 
     void SetCutSchemeIndexed(TString theValue);
     TString   GetCutSchemeIndexed();
 
     TObjArray *GetCuts() { return &fCuts; }
-
-    void       SetEvent(AliRsnEvent *event);
 
   private:
 

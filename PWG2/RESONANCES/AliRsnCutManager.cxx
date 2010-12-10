@@ -89,16 +89,3 @@ AliRsnCutManager::~AliRsnCutManager()
 // Does nothing.
 //
 }
-
-//_____________________________________________________________________________
-void AliRsnCutManager::SetEvent(AliRsnEvent *event)
-{
-//
-// Sets reference event in all cut sets
-//
-
-  fDaughterCuts2.SetEvent(event);
-  fDaughterCuts1.SetEvent(event);
-  fDaughterCutsCommon.SetEvent(event);
-  fMotherCuts.SetEvent(event);
-}

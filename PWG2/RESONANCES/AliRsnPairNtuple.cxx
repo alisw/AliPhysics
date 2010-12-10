@@ -110,7 +110,7 @@ void AliRsnPairNtuple::Compute()
         computeOK = value->Eval(&fMother);
         break;
       case AliRsnTarget::kEvent:
-        computeOK = value->Eval(fEvent);
+        computeOK = value->Eval(AliRsnTarget::GetCurrentEvent());
         break;
       default:
         AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", value->GetName(), value->GetTargetTypeName()));
@@ -173,22 +173,4 @@ Bool_t AliRsnPairNtuple::AddValue(AliRsnValue *const val)
   new (fValues[size]) AliRsnValue(*val);
   
   return kTRUE;
-}
-
-//_____________________________________________________________________________
-void AliRsnPairNtuple::SetEvent(AliRsnEvent *event)
-{
-//
-// Set current event
-//
-
-  fEvent = event;
-  
-  Int_t        i, n = fValues.GetEntries();
-  AliRsnValue *val = 0;
-  for (i = 0; i < n; i++)
-  {
-    val = (AliRsnValue*)fValues.At(i);
-    val->SetEvent(event);
-  }
 }

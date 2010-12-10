@@ -44,9 +44,6 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
 //
 // Cut checker
 //
-
-  static Int_t evNum = 0;
-  evNum++;
   
   // retrieve ESD event
   AliRsnEvent *rsn = dynamic_cast<AliRsnEvent*>(object);
@@ -70,9 +67,9 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
     Int_t               ncTrk = -1;
     Int_t               ncSPD = -1;
     Int_t               ncTPC = -1;
-    Double_t            vzTrk = 2.0 * fMaxD;
-    Double_t            vzSPD = 2.0 * fMaxD;
-    Double_t            vzTPC = 2.0 * fMaxD;
+    Double_t            vzTrk = 1000000.0;
+    Double_t            vzSPD = 1000000.0;
+    Double_t            vzTPC = 1000000.0;
     if (vTrk) vzTrk = TMath::Abs(vTrk->GetZv());
     if (vSPD) vzSPD = TMath::Abs(vSPD->GetZv());
     if (vTPC) vzTPC = TMath::Abs(vTPC->GetZv());
@@ -89,16 +86,18 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
       fCutValueI = ncSPD;
       fCutValueD = vzSPD;
     }
-    else if (vTPC && fAcceptTPC && ncTPC > 0)
+    else if (vTPC && ncTPC > 0)
     {
-      fCutValueI = ncTPC;
-      fCutValueD = vzTPC;
+      if (!fAcceptTPC) 
+        return kFALSE;
+      else
+      {
+        fCutValueI = ncTPC;
+        fCutValueD = vzTPC;
+      }
     }
     else
-    {
-      fCutValueI = -1;
-      fCutValueD = 2.0 * fMaxD;
-    }
+      return kFALSE;
   }
   else if (aod)
   {

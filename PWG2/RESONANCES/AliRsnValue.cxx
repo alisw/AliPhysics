@@ -231,6 +231,7 @@ const char* AliRsnValue::GetValueTypeName() const
     case kEventLeadingPt:     return "EventLeadingPt";
     case kEventMult:          return "EventMult";
     case kEventMultESDCuts:   return "EventMultESDCuts";
+    case kEventVz:            return "EventVz";
     default:                  return "Undefined";
   }
 }
@@ -279,6 +280,7 @@ void AliRsnValue::AssignTarget()
     case kEventLeadingPt:
     case kEventMult:
     case kEventMultESDCuts:
+    case kEventVz:
       SetTargetType(AliRsnTarget::kEvent); // end of event-related values
       break;
     // undefined value
@@ -320,7 +322,7 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       }
       break;
     case AliRsnTarget::kEvent:
-      if (!fEvent)
+      if (!AliRsnTarget::GetCurrentEvent())
       {
         AliError(Form("[%s] expected: AliRsnEvent, passed: [%s]", GetName(), object->ClassName()));
         return kFALSE;
@@ -460,12 +462,13 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       break;
     case kPairAngleToLeading:
       {
+        AliRsnEvent *event = AliRsnTarget::GetCurrentEvent();
     	  int ID1 = (mother->GetDaughter(0))->GetID();
     	  int ID2 = (mother->GetDaughter(1))->GetID();
-    	  //int leadingID = fEvent->SelectLeadingParticle(0);
-        Int_t leadingID = fEvent->GetLeadingParticleID();
+    	  //int leadingID = event->SelectLeadingParticle(0);
+        Int_t leadingID = event->GetLeadingParticleID();
     	  if (leadingID == ID1 || leadingID == ID2) return kFALSE;
-    	  AliRsnDaughter leadingPart = fEvent->GetDaughter(leadingID);
+    	  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
     	  AliVParticle  *ref = leadingPart.GetRef();
     	  fComputedValue = ref->Phi() - mother->Sum().Phi();
     	  //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
@@ -475,7 +478,7 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       }
       break;
     case kEventMult:
-      fComputedValue = (Double_t)fEvent->GetMultiplicity(0x0);
+      fComputedValue = (Double_t)AliRsnTarget::GetCurrentEvent()->GetMultiplicity(0x0);
       break;
     case kEventMultESDCuts:
       // this value requires an initialized ESDtrackCuts
@@ -485,18 +488,22 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
         fComputedValue = 1E+10;
         return kFALSE;
       }
-      fComputedValue = (Double_t)fEvent->GetMultiplicity(esdCuts);
+      fComputedValue = (Double_t)AliRsnTarget::GetCurrentEvent()->GetMultiplicity(esdCuts);
       break;
     case kEventLeadingPt:
       {
-    	  int leadingID = fEvent->GetLeadingParticleID(); //fEvent->SelectLeadingParticle(0);
-    	  if(leadingID >= 0) {
-    		  AliRsnDaughter leadingPart = fEvent->GetDaughter(leadingID);
+    	  int leadingID = AliRsnTarget::GetCurrentEvent()->GetLeadingParticleID(); //fEvent->SelectLeadingParticle(0);
+    	  if(leadingID >= 0) 
+        {
+    		  AliRsnDaughter leadingPart = AliRsnTarget::GetCurrentEvent()->GetDaughter(leadingID);
     		  AliVParticle *ref = leadingPart.GetRef();
     		  fComputedValue = ref->Pt();
     	  }
     	  else fComputedValue = 0;
       }
+      break;
+    case kEventVz:
+      fComputedValue = AliRsnTarget::GetCurrentEvent()->GetRef()->GetPrimaryVertex()->GetZ();
       break;
     default:
       AliError(Form("[%s] Invalid value type for this computation", GetName()));

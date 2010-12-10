@@ -29,7 +29,7 @@ class AliRsnVATProcessInfo : public TNamed
     ~AliRsnVATProcessInfo();
 
     void          GenerateInfoList(TList* list);
-    virtual void  FillInfo(AliRsnEvent *event = 0x0);
+    virtual void  FillInfo();
     virtual void  PrintInfo(const Long64_t &num);
 
     const char*   GetEventHistogramName() { return Form("hEventsUsed_%s",GetName()); };

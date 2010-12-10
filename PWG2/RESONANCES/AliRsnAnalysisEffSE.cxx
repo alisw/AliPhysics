@@ -180,82 +180,7 @@ void AliRsnAnalysisEffSE::RsnUserExec(Option_t*)
 // Execution of the analysis task.
 // Recovers the input event and processes it with all included pair objects.
 // In this case, we NEED to have ESD and MC, otherwise we cannod do anything.
-//ULTIMO UNDO
-/*
-  AliRsnDaughter trk;
-  for (Int_t i = 0; i <= AliPID::kSPECIES; i++)
-  {
-    cout << AliPID::ParticleName((AliPID::EParticleType)i) << ": " << endl;
-    for (Int_t m = 0; m < AliRsnDaughter::kMethods; m++)
-    {
-      cout << "-- method: " << AliRsnDaughter::MethodName((AliRsnDaughter::EPIDMethod)m) << endl;
-      Char_t   sign[2] = {'+', '-'};
-      for (Int_t s = 0; s < 2; s++)
-      {
-        TArrayI *a = fRsnPIDIndex.GetTracksArray((AliRsnDaughter::EPIDMethod)m, sign[s], (AliPID::EParticleType)i);
-        Int_t n = a->GetSize();
-        for (Int_t j = 0; j < n; j++)
-        {
-          Int_t k = a->At(j);
-          cout << "-- -- track " << Form("%4d ", k) << ": ";
-          fRsnEvent.SetDaughter(trk, k);
-          cout << "charge = " << (trk.IsPos() ? "+ " : (trk.IsNeg() ? "- " : "0 "));
-          cout << "truePID = " << Form("%10s ", AliPID::ParticleName(trk.PerfectPID()));
-          cout << "realPID = " << Form("%10s ", AliPID::ParticleName(trk.RealisticPID()));
-          cout << endl;
-          cout << "-- -- -- weights (computed): ";
-          for (Int_t q = 0; q < AliPID::kSPECIES; q++)
-            cout << Form("%15.12f", trk.ComputedWeights()[q]) << ' ';
-          cout << endl;
-          cout << "-- -- -- weights (original): ";
-          for (Int_t q = 0; q < AliPID::kSPECIES; q++)
-            cout << Form("%15.12f", trk.GetRef()->PID()[q]) << ' ';
-          cout << endl;
-        }
-      }
-    }
-  } return;
-  */
-
-  AliDebug(AliLog::kDebug+2,"<-");
-  if (fMCOnly && fMCEvent)
-  {
-    fRsnEvent.SetRef  (fMCEvent);
-    fRsnEvent.SetRefMC(fMCEvent);
-  }
-  else if (fESDEvent)
-  {
-    fRsnEvent.SetRef  (fESDEvent);
-    fRsnEvent.SetRefMC(fMCEvent);
-  }
-  else if (fAODEventOut)
-  {
-    fRsnEvent.SetRef  (fAODEventOut);
-    fRsnEvent.SetRefMC(fAODEventOut);
-  }
-  else if (fAODEventIn)
-  {
-    fRsnEvent.SetRef  (fAODEventIn);
-    fRsnEvent.SetRefMC(fAODEventIn);
-  }
-  else {
-    AliError("NO ESD or AOD object!!! Skipping ...");
-    return;
-  }
-
-  // if general event cuts are added to the task (recommended)
-  // they are checked here on the RSN event interface and,
-  // if the event does not pass them, it is skipped and ProcessInfo
-  // is updated accordingly
-  if (!fEventCuts.IsSelected(&fRsnEvent)) 
-  {
-    fTaskInfo.SetEventUsed(kFALSE);
-    return;
-  }
-  
-  // if cuts are passed or not cuts were defined,
-  // update the task info before processing the event
-  fTaskInfo.SetEventUsed(kTRUE);
+//
 
   // process first MC steps and then ESD steps
   AliRsnPairDef *pairDef = 0;
@@ -268,8 +193,6 @@ void AliRsnAnalysisEffSE::RsnUserExec(Option_t*)
 
   // Post the data
   PostData(2, fOutList);
-
-  AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
@@ -587,7 +510,7 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
   for (istep = 0; istep < nSteps; istep++) 
   {
     AliRsnCutManager *cutMgr = (AliRsnCutManager*)stepList->At(istep);
-    cutMgr->SetEvent(&fRsnEvent);
+    AliRsnTarget::SwitchToFirst();
     if (!cutMgr->PassCommonDaughterCuts(&fDaughter[0])) break;
     if (!cutMgr->PassCommonDaughterCuts(&fDaughter[1])) break;
     if (!cutMgr->PassDaughter1Cuts(&fDaughter[0])) break;
@@ -875,3 +798,36 @@ TArrayI AliRsnAnalysisEffSE::FindAODtracks(Int_t label, AliAODEvent *aod)
   return array;
 }
 
+//______________________________________________________________________________
+Bool_t AliRsnAnalysisEffSE::EventProcess()
+{
+//
+// Customized event pre-processing.
+// First checks if the current event passes all cuts,
+// and if it does, updates the informations and then
+// call the operations which are already defined in the
+// omonyme function in mother class
+//
+
+  // initially, an event is expected to be bad
+  fTaskInfo.SetEventUsed(kFALSE);
+
+  // check the event cuts and update the info data accordingly
+  // events not passing the cuts must be rejected
+  if (!fEventCuts.IsSelected(&fRsnEvent))
+  {
+    fTaskInfo.SetEventUsed(kFALSE);
+    return kFALSE;
+  }
+  
+  // if we reach this point, cuts were passed;
+  // then additional operations can be done
+  
+  // find leading particle (without any PID/momentum restriction)
+  fRsnEvent.SelectLeadingParticle(0);
+  
+  // final return value is positive
+  // but call the mother class method which updates info object
+  fTaskInfo.SetEventUsed(kTRUE);
+  return AliRsnVAnalysisTaskSE::EventProcess();
+}

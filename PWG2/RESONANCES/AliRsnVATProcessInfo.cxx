@@ -136,7 +136,7 @@ void AliRsnVATProcessInfo::GenerateInfoList(TList *list)
 }
 
 //______________________________________________________________________________
-void AliRsnVATProcessInfo::FillInfo(AliRsnEvent *event)
+void AliRsnVATProcessInfo::FillInfo()
 {
 //
 // This method defines how the information histograms must be filled.
@@ -149,12 +149,13 @@ void AliRsnVATProcessInfo::FillInfo(AliRsnEvent *event)
 
   fHistUsedEvents->Fill(fEventUsed);
   
+  if (!fEventUsed) return;
+  
   Int_t i;
   AliRsnFunction *fcn = 0;
   for (i = 0; i < fEventFunctions.GetEntries(); i++)
   {
     fcn = (AliRsnFunction*)fEventFunctions.At(i);
-    fcn->SetEvent(event);
     fcn->Fill();
   }
 }

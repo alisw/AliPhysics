@@ -1,3 +1,16 @@
+/*
+#include <TROOT.h>
+#include <TString.h>
+#include <AliAnalysisManager.h>
+#include <AliRsnAnalysisSE.h>
+#include <AliRsnCutESD2010.h>
+#include <AliRsnCutValue.h>
+#include <AliRsnPairFunctions.h>
+#include <AliRsnFunction.h>
+#include "config/QualityCutsITS.C"
+#include "config/QualityCutsTPC.C"
+*/
+
 //
 // This function configures the entire task for all resonances the user is interested in.
 // This is done by creating all configuration objects which are defined in the package.
@@ -22,39 +35,33 @@ Bool_t RsnConfig
 )
 {
   // load useful macros
-  gROOT->LoadMacro(Form("%s/ConfigESDCutsITS.C", path));
-  gROOT->LoadMacro(Form("%s/ConfigESDCutsTPC.C", path));
+  gROOT->LoadMacro(Form("%s/QualityCutsITS.C", path));
+  gROOT->LoadMacro(Form("%s/QualityCutsTPC.C", path));
   
   // interpret the useful information from second argument
   TString opt(options);
   Bool_t isSim  = opt.Contains("sim");
   Bool_t isData = opt.Contains("data");
-  Bool_t isESD  = opt.Contains("ESD");
-  Bool_t isAOD  = opt.Contains("AOD");
+  if (!isSim && !isData)
+  {
+    Error("RsnConfig", "Required to know if working on data or MC");
+    return kFALSE;
+  }
   
   // interpret the specific info from third argument
   // which should be fixed in the various calls to this function
-  TString opt(config);
-  Bool_t realPID     = opt.Contains("realistic");
-  Bool_t perfPID     = opt.Contains("perfect");
-  Bool_t addITSSA    = opt.Contains("its");
-  Bool_t dipAngleCut = opt.Contains("dip");
-  Int_t  typePID     = 0;
-  if (realPID) typePID = 1;
-  else if (perfPID) typePID = 2;
+  TString conf(config);
+  Bool_t addPID    = conf.Contains("pid");
+  Bool_t addITSSA  = conf.Contains("its");
+  Bool_t addDipCut = conf.Contains("dip");
       
-  // info
-  const Char_t *pid[3] = {"nopid", "realistic", "perfect"};
-  Info("RsnConfig2010PhiFcn", "=== Specific configuration: %s ===", config);
-  Info("RsnConfig2010PhiFcn", "--> PID           : %s", pid[typePID]);
-  Info("RsnConfig2010PhiFcn", "--> ITS standalone: %s", (addITSSA ? "INCLUDED" : "EXCLUDED"));
-  Info("RsnConfig2010PhiFcn", "--> dip-angle cut : %s", (dipAngleCut ? "INCLUDED" : "EXCLUDED"));
-  
   // generate a common suffix depending on chosen options
-  TString suffix(pid[typePID]);
-  if (addITSSA) suffix += "_sa"; else suffix += "_nosa";
-  if (dipAngleCut) suffix += "_dip";
-  Info("RsnConfig2010PhiFcn", "--> suffix used   : %s", suffix.Data());
+  TString suffix;
+  if (addPID)    suffix += "_pid";
+  if (addITSSA)  suffix += "_its";
+  if (addDipCut) suffix += "_dip";
+  Info("RsnConfig", "=== Specific configuration: %s ====================================================", config);
+  Info("RsnConfig", "=== suffix used           : %s ====================================================", suffix.Data());
 
   // retrieve analysis manager & task
   AliAnalysisManager *mgr  = AliAnalysisManager::GetAnalysisManager();
@@ -77,10 +84,10 @@ Bool_t RsnConfig
   AliRsnPairDef *pairDefMM = new AliRsnPairDef(AliPID::kKaon, '-', AliPID::kKaon, '-', 333, 1.019455);
 
   // computation objects
-  AliRsnPairFunctions *pairPM = new AliRsnPairFunctions(Form("PairPM_%s", suffix.Data()), pairDefPM);
-  AliRsnPairFunctions *truePM = new AliRsnPairFunctions(Form("TruePM_%s", suffix.Data()), pairDefPM);
-  AliRsnPairFunctions *pairPP = new AliRsnPairFunctions(Form("PairPP_%s", suffix.Data()), pairDefPP);
-  AliRsnPairFunctions *pairMM = new AliRsnPairFunctions(Form("PairMM_%s", suffix.Data()), pairDefMM);
+  AliRsnPairFunctions *pairPM = new AliRsnPairFunctions(Form("PairPM%s", suffix.Data()), pairDefPM);
+  AliRsnPairFunctions *truePM = new AliRsnPairFunctions(Form("TruePM%s", suffix.Data()), pairDefPM);
+  AliRsnPairFunctions *pairPP = new AliRsnPairFunctions(Form("PairPP%s", suffix.Data()), pairDefPP);
+  AliRsnPairFunctions *pairMM = new AliRsnPairFunctions(Form("PairMM%s", suffix.Data()), pairDefMM);
 
   //
   // -- Setup cuts ----------------------------------------------------------------------------------
@@ -89,97 +96,66 @@ Bool_t RsnConfig
   // track cut -----------------------
   // --> global cuts for 2010 analysis
   // --> most options are set to right values by default
-  AliRsnCutESD2010 *cuts2010_esd = new AliRsnCutESD2010(Form("cuts2010_esd_%s", suffix.Data()));
-  AliRsnCutAOD2010 *cuts2010_aod = new AliRsnCutAOD2010(Form("cuts2010_aod_%s", suffix.Data()));
-  // ----> set the flag for sim/data management (which sets some other options)
-  cuts2010_esd->SetMC(isSim);
-  cuts2010_aod->SetMC(isSim);
-  // ----> include or not the ITS standalone (TPC is always in)
-  cuts2010_esd->SetUseITSTPC(kTRUE);
-  cuts2010_esd->SetUseITSSA (addITSSA);
-  //cuts2010_aod->SetUseITSTPC(kTRUE);
-  //cuts2010_aod->SetUseITSSA (addITSSA);
-  // ----> require to check PID or not, depending on the label
-  if (realPID)
+  // --> second argument in constructor tells if we are working in simulation or not
+  AliRsnCutESD2010 *cuts2010 = new AliRsnCutESD2010(Form("cuts2010%s", suffix.Data()), isSim);
+  // --> set the reference particle for PID
+  cuts2010->SetPID(AliPID::kKaon);
+  // --> include or not the ITS standalone (TPC is always in)
+  cuts2010->SetUseITSTPC(kTRUE);
+  cuts2010->SetUseITSSA (addITSSA);
+  // --> set the quality cuts using the general macro and using the 'Copy()' method in AliESDtrackCuts
+  cuts2010->CopyCutsTPC(QualityCutsTPC());
+  cuts2010->CopyCutsITS(QualityCutsITS());
+  // --> set values for PID flags, depending on the choice expressed in the options
+  cuts2010->SetCheckITS (addPID);
+  cuts2010->SetCheckTPC (addPID);
+  cuts2010->SetCheckTOF (addPID);
+  // --> set the ITS PID-related variables
+  cuts2010->SetITSband(3.0);
+  // --> set the TPC PID-related variables
+  Double_t bbPar[5];
+  if (isSim)
   {
-    // if doing realistic PID, it must be activated
-    cuts2010_esd->SetCheckITS (kTRUE);
-    cuts2010_esd->SetCheckTPC (kTRUE);
-    cuts2010_esd->SetCheckTOF (kTRUE);
-    cuts2010_aod->SetCheckITS (kTRUE);
-    cuts2010_aod->SetCheckTPC (kTRUE);
-    cuts2010_aod->SetCheckTOF (kTRUE);
+    bbPar[0] = 2.15898 / 50.0;
+    bbPar[1] = 1.75295E1;
+    bbPar[2] = 3.40030E-9;
+    bbPar[3] = 1.96178;
+    bbPar[4] = 3.91720;
   }
   else
   {
-    // otherwise (both for no pid and perfect PID)
-    // the PID cuts are deactivated
-    cuts2010_esd->SetCheckITS (kFALSE);
-    cuts2010_esd->SetCheckTPC (kFALSE);
-    cuts2010_esd->SetCheckTOF (kFALSE);
-    cuts2010_aod->SetCheckITS (kFALSE);
-    cuts2010_aod->SetCheckTPC (kFALSE);
-    cuts2010_aod->SetCheckTOF (kFALSE);
+    bbPar[0] = 1.41543 / 50.0;
+    bbPar[1] = 2.63394E1;
+    bbPar[2] = 5.0411E-11;
+    bbPar[3] = 2.12543;
+    bbPar[4] = 4.88663;
   }
-  // ----> set all other defaults
-  ConfigESDCutsTPC(cuts2010_esd->GetCutsTPC());
-  ConfigESDCutsITS(cuts2010_esd->GetCutsITS());
+  cuts2010->SetTPCrange(3.0, 5.0);
+  cuts2010->SetTPCpLimit(0.35);
+  cuts2010->GetESDpid()->GetTPCResponse().SetBetheBlochParameters(bbPar[0], bbPar[1], bbPar[2], bbPar[3], bbPar[4]);
+  // --> set the TOF PID-related variables
+  cuts2010->SetTOFrange(-3.0, 3.0);
   
-  // track cut -----------------------------
-  // --> perfect PID for check of PID issues
-  AliRsnCutPID *cutPID = new AliRsnCutPID("cutPID", AliPID::kKaon, 0.0, kTRUE);
-  
-  // pair cut ----------------------
-  // --> dip angle between daughters
+  // pair cut ----------------------------------------
+  // --> dip angle between daughters: (it is a cosine)
   AliRsnCutValue *cutDip = new AliRsnCutValue("cutDip", AliRsnValue::kPairDipAngle, 0.02, 1.01);
 
-  // cut set for tracks------------------------
-  // --> only common cuts for tracks are needed
-  // --> standard 2010 cuts are applied always
-  TString cutSchemeTrack;
-  if (isESD)
-  {
-    pairPM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_esd);
-    truePM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_esd);
-    pairPP->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_esd);
-    pairMM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_esd);
-    
-    cutSchemeTrack += cuts2010_esd->GetName();
-  }
-  else if (isAOD)
-  {
-    pairPM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_aod);
-    truePM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_aod);
-    pairPP->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_aod);
-    pairMM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010_aod);
-    
-    cutSchemeTrack += cuts2010_aod->GetName();
-  }
-  else
-  {
-    Error("Required ESD or AOD");
-    return kFALSE;
-  }
-  if (perfPID)
-  {
-    pairPM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cutPID);
-    truePM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cutPID);
-    pairPP->GetCutManager()->GetCommonDaughterCuts()->AddCut(cutPID);
-    pairMM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cutPID);
-    
-    cutSchemeTrack += "&cutPID";
-  }
-  pairPM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cutSchemeTrack.Data());
-  truePM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cutSchemeTrack.Data());
-  pairPP->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cutSchemeTrack.Data());
-  pairMM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cutSchemeTrack.Data());
+  // setup cut set for tracks------------------------------------------------------------
+  // --> in this case, only common cuts are applied, depending if working with ESD or AOD
+  // --> these cuts are added always
+  pairPM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010);
+  truePM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010);
+  pairPP->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010);
+  pairMM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010);
   
-  // cut set for pairs---------------------------------------
-  // --> add dip angle cut (but then include only if required)
-  AliRsnCutSet *cutSetPair = new AliRsnCutSet("cutsPair", AliRsnCut::kMother);
-  cutSetPair->AddCut(cutDip);
-  cutSetPair->SetCutScheme(cutDip->GetName());
-  if (dipAngleCut)
+  pairPM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cuts2010->GetName());
+  truePM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cuts2010->GetName());
+  pairPP->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cuts2010->GetName());
+  pairMM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cuts2010->GetName());
+  
+  // cut set for pairs---------------------
+  // --> add dip angle cut only if required
+  if (addDipCut)
   {
     pairPM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
     truePM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
@@ -192,7 +168,7 @@ Bool_t RsnConfig
     pairMM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutDip->GetName());
   }
   
-  // set additional option for true pairs when needed
+  // set additional option for true pairs
   truePM->SetOnlyTrue  (kTRUE);
   truePM->SetCheckDecay(kTRUE);
 
@@ -204,31 +180,21 @@ Bool_t RsnConfig
   // 0) invariant mass
   // 1) transverse momentum
   // 2) rapidity
-  // 3) multiplicity
-  Double_t mult[] = {0., 6., 10., 15., 23., 10000};
-  Int_t    nmult  = sizeof(mult) / sizeof(mult[0]);
-  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 0.9,  1.4, 0.001);
-  AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 0.0, 10.0, 0.100);
-  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           ,-1.2,  1.2, 0.100);
-  AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDCuts, nmult, mult);
-  
-  // add the support cut to the value which computes the multiplicity
-  AliESDtrackCuts *cuts = new AliESDtrackCuts;
-  ConfigESDCutsTPC(cuts);
-  axisMult->SetSupportObject(cuts);
+  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass,  0.9,  1.3, 0.001);
+  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt     ,  0.0, 10.0, 0.100);
+  AliRsnValue *axisY  = new AliRsnValue("Y" , AliRsnValue::kPairY      , -1.1,  1.1, 0.100);
 
   // create function and add axes
-  AliRsnFunction *fcnImPtY = new AliRsnFunction;
-  if ( !fcnImPtY->AddAxis(axisIM  ) ) return kFALSE;
-  if ( !fcnImPtY->AddAxis(axisPt  ) ) return kFALSE;
-  if ( !fcnImPtY->AddAxis(axisY   ) ) return kFALSE;
-  //if ( !fcnImPtY->AddAxis(axisMult) ) return kFALSE;
+  AliRsnFunction *fcn = new AliRsnFunction;
+  if ( !fcn->AddAxis(axisIM  ) ) return kFALSE;
+  if ( !fcn->AddAxis(axisPt  ) ) return kFALSE;
+  if ( !fcn->AddAxis(axisY   ) ) return kFALSE;
 
   // add functions to pairs
-  pairPM->AddFunction(fcnImPtY);
-  truePM->AddFunction(fcnImPtY);
-  pairPP->AddFunction(fcnImPtY);
-  pairMM->AddFunction(fcnImPtY);
+  pairPM->AddFunction(fcn);
+  truePM->AddFunction(fcn);
+  pairPP->AddFunction(fcn);
+  pairMM->AddFunction(fcn);
 
   //
   // -- Conclusion ----------------------------------------------------------------------------------
@@ -236,9 +202,9 @@ Bool_t RsnConfig
 
   // add all created AliRsnPair objects to the AliRsnAnalysisManager in the task
   task->GetAnalysisManager()->Add(pairPM);
-  task->GetAnalysisManager()->Add(pairPP);
-  task->GetAnalysisManager()->Add(pairMM);
-  if (isSim) task->GetAnalysisManager()->Add(truePM);
+  //task->GetAnalysisManager()->Add(pairPP);
+  //task->GetAnalysisManager()->Add(pairMM);
+  //if (isSim) task->GetAnalysisManager()->Add(truePM);
 
   return kTRUE;
 }

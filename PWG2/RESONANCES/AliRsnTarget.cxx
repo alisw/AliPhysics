@@ -19,6 +19,8 @@
 
 ClassImp(AliRsnTarget)
 
+AliRsnEvent* AliRsnTarget::fgCurrentEvent = 0x0;
+
 //_____________________________________________________________________________
 Bool_t AliRsnTarget::TargetOK(TObject *object)
 {
@@ -99,15 +101,4 @@ const char* AliRsnTarget::GetTargetTypeName() const
     case kEvent: return "Event";
     default: return "Undefined";
   }
-}
-
-//______________________________________________________________________________
-void AliRsnTarget::SetEvent(AliRsnEvent *event)
-{
-//
-//
-// 
-  
-  AliDebug(AliLog::kDebug + 3, "Using implementation of mother class");
-  fEvent = event;
 }

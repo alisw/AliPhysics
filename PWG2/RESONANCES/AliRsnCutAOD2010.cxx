@@ -252,13 +252,13 @@ Bool_t AliRsnCutAOD2010::IsSelected(TObject *object)
   
   // step #5: DCA cut (transverse)
   Double_t dz[2], cov[3], sigmaDCA = 0.0, nsigma = 0.0;
-  vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
+  vertex = AliRsnTarget::GetCurrentEvent()->GetRefAOD()->GetPrimaryVertex();
   if (!vertex)
   {
     AliDebug(AliLog::kDebug + 2, "NULL vertex");
     return kFALSE;
   }
-  if (!track->PropagateToDCA(vertex, fEvent->GetRefAOD()->GetMagneticField(), kVeryBig, dz, cov))
+  if (!track->PropagateToDCA(vertex, AliRsnTarget::GetCurrentEvent()->GetRefAOD()->GetMagneticField(), kVeryBig, dz, cov))
   {
     AliDebug(AliLog::kDebug + 2, "Failed propagation to vertex");
     return kFALSE;

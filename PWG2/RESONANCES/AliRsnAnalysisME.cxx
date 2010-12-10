@@ -140,8 +140,11 @@ void AliRsnAnalysisME::DoAODMixing(AliAODEvent* aod1, AliAODEvent* aod2)
   fEventMix.SetRef(aod2);
   if (fEvent.GetMultiplicity() < 2) return;
   if (fEventMix.GetMultiplicity() < 2) return;
+  
+  AliRsnEvent::SetCurrentEvent1(&fEvent);
+  AliRsnEvent::SetCurrentEvent2(&fEventMix);
 
-  fRsnAnalysisManager.ProcessAllPairs(&fEvent, &fEventMix);
+  fRsnAnalysisManager.ProcessAllPairs();
   PostData(2, fOutList);
 
   AliDebug(AliLog::kDebug, Form("AOD tracks %d", aod1->GetNumberOfTracks()));

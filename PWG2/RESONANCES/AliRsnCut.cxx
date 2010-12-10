@@ -178,7 +178,7 @@ Bool_t AliRsnCut::OkRangeI()
 //
 
   // eval result
-  fCutResult = ((fCutValueI >= fMinI) && (fCutValueI < fMaxI));
+  fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
   
   // print debug message
   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ====================================");
@@ -201,7 +201,7 @@ Bool_t AliRsnCut::OkRangeD()
 //
 
   // eval result
-  fCutResult = ((fCutValueD >= fMinD) && (fCutValueD < fMaxD));
+  fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
    
   // print debug message
   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ====================================");
