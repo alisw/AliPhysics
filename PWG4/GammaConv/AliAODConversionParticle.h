@@ -29,7 +29,7 @@ class AliAODConversionParticle : public AliAODPhoton {
   AliAODConversionParticle & operator = (const AliAODConversionParticle & g);
 
   //Destructor
-  virtual ~AliAODConversionParticle() {;}
+  virtual ~AliAODConversionParticle();
 
   ///Set the Chi2 of reconstructed conversion gamma
   void SetChi2(Float_t chi2) {fChi2 = chi2;}

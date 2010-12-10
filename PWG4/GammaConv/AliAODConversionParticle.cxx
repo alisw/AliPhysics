@@ -61,6 +61,14 @@ AliAODConversionParticle::AliAODConversionParticle(TLorentzVector & momentum) :
   fLabel[1] = -1;
 }
 
+AliAODConversionParticle::~AliAODConversionParticle() {
+  
+  ///destructor
+  delete[] fLabel;
+
+}
+
+
 AliAODConversionParticle::AliAODConversionParticle(const AliAODConversionParticle & original) :
   AliAODPhoton(original),
   fChi2(original.fChi2),
