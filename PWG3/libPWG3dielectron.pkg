@@ -8,6 +8,7 @@ SRCS= dielectron/AliDielectron.cxx \
       dielectron/AliDielectronMC.cxx \
       dielectron/AliDielectronVarManager.cxx \
       dielectron/AliAnalysisTaskDielectronSE.cxx \
+      dielectron/AliAnalysisTaskDielectronME.cxx \
       dielectron/AliAnalysisTaskDielectronFilter.cxx \
       dielectron/AliAnalysisTaskDielectronEfficiency.cxx \
       dielectron/AliAnalysisTaskMultiDielectron.cxx \
@@ -22,7 +23,8 @@ SRCS= dielectron/AliDielectron.cxx \
       dielectron/AliDielectronTrackRotator.cxx \
       dielectron/AliDielectronPID.cxx \
       dielectron/AliDielectronCutGroup.cxx \
-      dielectron/AliDielectronEventCuts.cxx
+      dielectron/AliDielectronEventCuts.cxx \
+      dielectron/AliDielectronHelper.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 

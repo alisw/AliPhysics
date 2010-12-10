@@ -24,6 +24,7 @@
 
 #include <AliLog.h>
 #include <AliAODHandler.h>
+#include <AliAODInputHandler.h>
 #include <AliAnalysisManager.h>
 #include <AliVEvent.h>
 #include <AliInputEventHandler.h>
@@ -134,7 +135,7 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
       }
     }
     //AOD case
-    if (man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+    if (man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
       if (!AliDielectronVarManager::GetAODpidUtil()){
         if (AliDielectronMC::Instance()->HasMC()) {
           AliDielectronVarManager::InitAODpidUtil();

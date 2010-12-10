@@ -40,7 +40,7 @@ AliAnalysisTask *AddTaskJPSIFilter(){
   //Create task and add it to the analysis manager
   AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/dielectron/macros/ConfigJpsi2eeFilter.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/dielectron/macros/ConfigJpsi2eeFilterPbPb.C");
   AliDielectron *jpsi=ConfigJpsi2eeFilter(isAOD);
   if (!hasMC) task->UsePhysicsSelection();
   task->SetDielectron(jpsi);

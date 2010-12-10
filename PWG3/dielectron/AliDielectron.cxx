@@ -328,22 +328,27 @@ void AliDielectron::FillHistograms(const AliVEvent *ev)
   
 }
 //________________________________________________________________
-void AliDielectron::FillHistogramsPair(AliDielectronPair *pair)
+void AliDielectron::FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFilter/*=kFALSE*/)
 {
   //
   // Fill Histogram information for pairs and the track in the pair
   // NOTE: in this funtion the leg information may be filled multiple
   //       times. This funtion is used in the track rotation pairing
   //       and those legs are not saved!
-  //=fHistos
+  //
   TString  className,className2;
   Double_t values[AliDielectronVarManager::kNMaxValues];
   
   //Fill Pair information, separately for all pair candidate arrays and the legs
   TObjArray arrLegs(100);
   const Int_t type=pair->GetType();
-  className.Form("Pair_%s",fgkPairClassNames[type]);
-  className2.Form("Track_Legs_%s",fgkPairClassNames[type]);
+  if (fromPreFilter) {
+    className.Form("RejPair_%s",fgkPairClassNames[type]);
+    className2.Form("RejTrack_%s",fgkPairClassNames[type]);
+  } else {
+    className.Form("Pair_%s",fgkPairClassNames[type]);
+    className2.Form("Track_Legs_%s",fgkPairClassNames[type]);
+  }
   
   Bool_t pairClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
   Bool_t legClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
@@ -436,6 +441,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
       if (cutMask!=selectedMask) continue;
       if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,&candidate);
       accepted=kTRUE;
+      FillHistogramsPair(&candidate,kTRUE);
       //remove the tracks from the Track arrays
       arrTracks2.AddAt(0x0,itrack2);
       //in case of like sign remove the track from both arrays!
@@ -548,7 +554,7 @@ void AliDielectron::FillPairArrayTR()
   while ( fTrackRotator->NextCombination() ){
     AliDielectronPair candidate;
     candidate.SetTracks(fTrackRotator->GetTrackP(), fPdgLeg1, fTrackRotator->GetTrackN(), fPdgLeg2);
-    candidate.SetType(10);
+    candidate.SetType(kEv1PMRot);
     
     //pair cuts
     UInt_t cutMask=fPairFilter.IsSelected(&candidate);

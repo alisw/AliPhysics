@@ -39,7 +39,7 @@ public:
   void SetRequireVertex(Bool_t req=kTRUE)       { fRequireVtx=req;              }
   void SetRequireV0and(UChar_t type=1)          { fRequireV0and=type;           }
   void SetMinVtxContributors(Int_t min=1)       { fMinVtxContributors=min;      }
-
+  void SetCutOnMultipicityITSTPC(Bool_t mult=kTRUE) { fMultITSTPC=mult;         }
   //
   //Analysis cuts interface
   //
@@ -53,12 +53,13 @@ private:
   Double_t fVtxZmax;                // maximum z vertex position
   Bool_t   fRequireVtx;             // require a vertex
   Int_t    fMinVtxContributors;     // min number of vertex contributors
+  Bool_t   fMultITSTPC;             // if to cut on the ITS TPC multiplicity correlation (Pb-Pb)
   EVtxType fVtxType;                // vertex type
 
   UChar_t fRequireV0and;             // use V0and triggered events only
 
   AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis class
-  const AliESDVertex *fkVertex;            //! current vertex
+  const AliESDVertex *fkVertex;         //! current vertex
 
   AliDielectronEventCuts(const AliDielectronEventCuts &c);
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);

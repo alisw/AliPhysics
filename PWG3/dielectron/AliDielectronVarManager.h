@@ -42,6 +42,7 @@
 
 #include <AliExternalTrackParam.h>
 #include <AliESDpid.h>
+#include <AliESDCentrality.h>
 #include <AliAODpidUtil.h>
 #include <AliPID.h>
 
@@ -124,6 +125,8 @@ public:
     kTOFnSigmaKao,           // number of sigmas to the kaon line in the TOF
     kTOFnSigmaPro,           // number of sigmas to the proton line in the TOF
 
+    kKinkIndex0,             // kink index 0
+      
     kParticleMax,             //
     // TODO: kRNClusters ??
   // AliDielectronPair specific variables
@@ -155,6 +158,7 @@ public:
     kZRes,                   // primary vertex z-resolution
     kNTrk,                   // number of tracks (or tracklets)
     kTracks,                 // ESD tracks
+    kCentrality,             // event centrality fraction
     kNevents,                // event counter
     kNMaxValues              //
     // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
@@ -268,7 +272,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   Double_t tpcNcls=particle->GetTPCNcls();
   values[AliDielectronVarManager::kNclsITS]       = particle->GetNcls(0); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNclsTPC]       = tpcNcls; // TODO: get rid of the plain numbers
-  values[AliDielectronVarManager::kNclsTPC]       = particle->GetTPCNclsIter1(); // TODO: get rid of the plain numbers
+  values[AliDielectronVarManager::kNclsTPCiter1]  = particle->GetTPCNclsIter1(); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNFclsTPC]      = particle->GetTPCNclsF();
   values[AliDielectronVarManager::kTPCsignalN]    = particle->GetTPCsignalN();
   values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2); // TODO: get rid of the plain numbers
@@ -283,6 +287,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   particle->GetTRDpid(pidProbs);
   values[AliDielectronVarManager::kTRDprobEle]    = pidProbs[AliPID::kElectron];
   values[AliDielectronVarManager::kTRDprobPio]    = pidProbs[AliPID::kPion];
+
+  values[AliDielectronVarManager::kKinkIndex0]    = particle->GetKinkIndex(0);
   
   Float_t impactParXY, impactParZ;
   particle->GetImpactParameters(impactParXY, impactParZ);
@@ -602,12 +608,17 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   
   // Fill common AliVEvent interface information
   FillVarVEvent(event, values);
- 
+
+  Double_t centralityF=-1;
+  AliESDCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
+  if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
+  
   // Fill AliESDEvent interface specific information
   const AliESDVertex *primVtx = event->GetPrimaryVertex();
   values[AliDielectronVarManager::kXRes]       = primVtx->GetXRes();
   values[AliDielectronVarManager::kYRes]       = primVtx->GetYRes();
   values[AliDielectronVarManager::kZRes]       = primVtx->GetZRes();
+  values[AliDielectronVarManager::kCentrality] = centralityF;
 }
   
 inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, Double_t * const values)

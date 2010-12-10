@@ -52,7 +52,7 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
   fMethod(kLikeSign),
   fScaleMin(0.),
   fScaleMax(0.),
-  fScaleFactor(0.),
+  fScaleFactor(1.),
   fProcessed(kFALSE)
 {
   //
@@ -78,7 +78,7 @@ AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* t
   fMethod(kLikeSign),
   fScaleMin(0.),
   fScaleMax(0.),
-  fScaleFactor(0.),
+  fScaleFactor(1.),
   fProcessed(kFALSE)
 {
   //
@@ -153,6 +153,15 @@ Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgro
   //
   // scale histBackground to match the integral of histRaw in the interval intMin, intMax
   //
+
+  //protect using over and underflow bins in normalisation calculation
+  if (intMin<histRaw->GetXaxis()->GetXmin()) intMin=histRaw->GetXaxis()->GetXmin();
+  if (intMin<histBackground->GetXaxis()->GetXmin()) intMin=histBackground->GetXaxis()->GetXmin();
+  
+  if (intMax>histRaw->GetXaxis()->GetXmax())
+    intMax=histRaw->GetXaxis()->GetXmax()-histRaw->GetBinWidth(histRaw->GetNbinsX())/2.;
+  if (intMax>histBackground->GetXaxis()->GetXmax())
+    intMax=histBackground->GetXaxis()->GetXmax()-histBackground->GetBinWidth(histBackground->GetNbinsX())/2.;
   
   Double_t intRaw  = histRaw->Integral(histRaw->FindBin(intMin),histRaw->FindBin(intMax));
   Double_t intBack = histBackground->Integral(histBackground->FindBin(intMin),histBackground->FindBin(intMax));

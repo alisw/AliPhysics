@@ -90,6 +90,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "TOF_nSigma_Muons",
   "TOF_nSigma_Kaons",
   "TOF_nSigma_Protons",
+
+  "KinkIndex0",
   //
   "Chi2NDF",
   "DecayLength",
@@ -115,6 +117,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "ZRes",
   "NTrk",
   "Tracks",
+  "Centrality",
   "Nevents"
 };
 

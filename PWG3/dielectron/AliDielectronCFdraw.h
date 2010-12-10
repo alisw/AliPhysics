@@ -61,8 +61,8 @@ public:
   void Draw(Int_t var0, Int_t var1, const char* opt="", const char* slices="");
   void Draw(Int_t var0, Int_t var1, Int_t var2, const char* opt="", const char* slices="");
 
-  TObjArray* CollectHistosProj(Int_t dim, Int_t *vars, const char* slices);
-  TH1* Project(Int_t ndim, Int_t *vars, Int_t slice);
+  TObjArray* CollectHistosProj(const Int_t vars[3], const char* slices);
+  TH1* Project(const Int_t vars[3], Int_t slice);
   TH1* Project(const Option_t* var, Int_t slice);
   
   //Draw efficiencies
@@ -71,8 +71,8 @@ public:
   void DrawEfficiency(Int_t var0, Int_t var1, const char* numerators, Int_t denominator=0, const char* opt="sameleg", Int_t type=0);
   void DrawEfficiency(Int_t var0, Int_t var1, Int_t var2, const char* numerators, Int_t denominator=0, const char* opt="sameleg", Int_t type=0);
   
-  TObjArray* CollectHistosEff(Int_t dim, Int_t *vars, const char* numerators, Int_t denominator, Int_t type=0);
-  TH1* ProjectEff(Int_t ndim, Int_t *vars);
+  TObjArray* CollectHistosEff(const Int_t vars[3], const char* numerators, Int_t denominator, Int_t type=0);
+  TH1* ProjectEff(const Int_t vars[3]);
 
   Double_t GetAverageEfficiency(Int_t numerator, Int_t denominator, Double_t &effErr);
   
