@@ -17,6 +17,7 @@ class TList;
 class TString;
 
 class AliESDEvent;
+class AliESDtrackCuts;
 
 class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
@@ -37,15 +38,10 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void SetInput(const char* input)         {fAnalysisInput = input;}
   void SetMCInput()                        {fIsMCInput = kTRUE;}
   
-  void SetPercentileFile(TString filename);
-  void SetPercentileFile2(TString filename);
-  void ReadCentralityHistos();
-  void ReadCentralityHistos2();
-
-  void AddPercentileFileToList(TString filename) { fFileList->Add(new TObjString(filename)); }
-  void AddPercentileFile2ToList(TString filename) { fFileList2->Add(new TObjString(filename)); }
-
-  Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc);
+  void ReadCentralityHistos(TString filename);
+  void ReadCentralityHistos2(TString filename);
+  
+  Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc, int run);
   Float_t GetCorrSPD2(Float_t spd2raw,Float_t zv);
 
  private:
@@ -56,14 +52,11 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TString  fAnalysisInput; 	// "ESD", "AOD"
   Bool_t   fIsMCInput;          // true when input is MC
   TFile   *fFile;               // file that holds the centrality vs multiplicity 1d
-  TFile   *fFile2;              // file that holds the centrality vs multiplicity 2d
-  TString  fCentfilename;       // name of this file 1d
-  TString  fCentfilename2;      // name of this file 2d
-  
-  TList*   fFileList;           //! list of input files names
-  TList*   fFileList2;          //! list of input files 2 names
+  TFile   *fFile2;              // file that holds the centrality vs multiplicity 2d  
   Int_t    fCurrentRun;         // current run number
   Int_t    fRunNo;              // reference run number
+
+  AliESDtrackCuts* fTrackCuts;             //! optional track cuts
 
   Float_t  fCentV0M;            // percentile centrality from V0
   Float_t  fCentFMD;            // percentile centrality from FMD
@@ -84,6 +77,18 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F    *fHtempV0MvsFMD;           // histogram with centrality vs multiplicity using V0 vs FMD   
   TH1F    *fHtempTKLvsV0M;           // histogram with centrality vs multiplicity using tracklets vs V0
   TH1F    *fHtempZEMvsZDC;           // histogram with centrality vs multiplicity using ZEM vs ZDC 
+
+  TList       *fOutputList; // output list
+  
+  TH1F *fHOutCentV0M     ;    //control histogram for centrality
+  TH1F *fHOutCentFMD     ;    //control histogram for centrality
+  TH1F *fHOutCentTRK     ;    //control histogram for centrality
+  TH1F *fHOutCentTKL     ;    //control histogram for centrality
+  TH1F *fHOutCentCL0     ;    //control histogram for centrality
+  TH1F *fHOutCentCL1     ;    //control histogram for centrality
+  TH1F *fHOutCentV0MvsFMD;    //control histogram for centrality
+  TH1F *fHOutCentTKLvsV0M;    //control histogram for centrality
+  TH1F *fHOutCentZEMvsZDC;    //control histogram for centrality
 
   ClassDef(AliCentralitySelectionTask,1); 
 

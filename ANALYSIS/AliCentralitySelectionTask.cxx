@@ -42,6 +42,7 @@
 #include "AliESDFMD.h"
 #include "AliESDVZERO.h"
 #include "AliESDCentrality.h"
+#include "AliESDtrackCuts.h"
 #include "AliMultiplicity.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
@@ -73,12 +74,9 @@ AliAnalysisTaskSE(),
   fIsMCInput(kFALSE),
   fFile(0),
   fFile2(0),
-  fCentfilename(""),
-  fCentfilename2(""),
-  fFileList(new TList),
-  fFileList2(new TList),
   fCurrentRun(-1),
   fRunNo(-1),
+  fTrackCuts(0),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -96,13 +94,21 @@ AliAnalysisTaskSE(),
   fHtempCL1(0),
   fHtempV0MvsFMD(0),
   fHtempTKLvsV0M(0),
-  fHtempZEMvsZDC(0)
+  fHtempZEMvsZDC(0),
+  fOutputList(0),
+  fHOutCentV0M     (0),
+  fHOutCentFMD     (0),
+  fHOutCentTRK     (0),
+  fHOutCentTKL     (0),
+  fHOutCentCL0     (0),
+  fHOutCentCL1     (0),
+  fHOutCentV0MvsFMD(0),
+  fHOutCentTKLvsV0M(0),
+  fHOutCentZEMvsZDC(0)
 {   
   // Default constructor
-  fFileList->SetOwner();
-  fFileList2->SetOwner();
-
   AliInfo("Centrality Selection enabled.");
+  DefineOutput(1, TList::Class());
 }   
 
 //________________________________________________________________________
@@ -113,12 +119,9 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fIsMCInput(kFALSE),
   fFile(0),
   fFile2(0),
-  fCentfilename(""),
-  fCentfilename2(""),
-  fFileList(new TList),
-  fFileList2(new TList),
   fCurrentRun(-1),
   fRunNo(-1),
+  fTrackCuts(0),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -136,13 +139,21 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHtempCL1(0),
   fHtempV0MvsFMD(0),
   fHtempTKLvsV0M(0),
-  fHtempZEMvsZDC(0)
+  fHtempZEMvsZDC(0),
+  fOutputList(0),
+  fHOutCentV0M     (0),
+  fHOutCentFMD     (0),
+  fHOutCentTRK     (0),
+  fHOutCentTKL     (0),
+  fHOutCentCL0     (0),
+  fHOutCentCL1     (0),
+  fHOutCentV0MvsFMD(0),
+  fHOutCentTKLvsV0M(0),
+  fHOutCentZEMvsZDC(0)
 {
   // Default constructor
-  fFileList->SetOwner();
-  fFileList2->SetOwner();
-
   AliInfo("Centrality Selection enabled.");
+  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -163,12 +174,9 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fIsMCInput(ana.fIsMCInput),
   fFile(ana.fFile),
   fFile2(ana.fFile2),
-  fCentfilename(ana.fCentfilename),
-  fCentfilename2(ana.fCentfilename2),
-  fFileList(ana.fFileList),
-  fFileList2(ana.fFileList2),
   fCurrentRun(ana.fCurrentRun),
   fRunNo(ana.fRunNo),
+  fTrackCuts(ana.fTrackCuts),
   fCentV0M(ana.fCentV0M),
   fCentFMD(ana.fCentFMD),
   fCentTRK(ana.fCentTRK),
@@ -186,7 +194,17 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHtempCL1(ana.fHtempCL1),
   fHtempV0MvsFMD(ana.fHtempV0MvsFMD),
   fHtempTKLvsV0M(ana.fHtempTKLvsV0M),
-  fHtempZEMvsZDC(ana.fHtempZEMvsZDC)
+  fHtempZEMvsZDC(ana.fHtempZEMvsZDC),
+  fOutputList(ana.fOutputList),
+  fHOutCentV0M     (ana.fHOutCentV0M     ),
+  fHOutCentFMD     (ana.fHOutCentFMD     ),
+  fHOutCentTRK     (ana.fHOutCentTRK     ),
+  fHOutCentTKL     (ana.fHOutCentTKL     ),
+  fHOutCentCL0     (ana.fHOutCentCL0     ),
+  fHOutCentCL1     (ana.fHOutCentCL1     ),
+  fHOutCentV0MvsFMD(ana.fHOutCentV0MvsFMD),
+  fHOutCentTKLvsV0M(ana.fHOutCentTKLvsV0M),
+  fHOutCentZEMvsZDC(ana.fHOutCentZEMvsZDC)
 {
   // Copy Constructor	
 }
@@ -194,19 +212,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
 //________________________________________________________________________
 AliCentralitySelectionTask::~AliCentralitySelectionTask()
 {
-  // Destructor
-  
-  if (fFileList) {
-    fFileList->Clear();
-    delete fFileList;
-  }
-  fFileList = NULL;
-
-  if (fFileList2) {
-    fFileList2->Clear();
-    delete fFileList2;
-  }
-  fFileList2 = NULL;
+  // Destructor  
+  if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
 }  
 
 //________________________________________________________________________
@@ -214,12 +221,31 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
 {  
   // Create the output containers
   if(fDebug>1) printf("AnalysisCentralitySelectionTask::UserCreateOutputObjects() \n");
-
-  if (fFileList->GetEntries() < 1) {
-    AliError("No Inputfiles Added");
-  }
-
   AliLog::SetClassDebugLevel("AliCentralitySelectionTask", AliLog::kInfo);
+
+  fOutputList = new TList();
+  fOutputList->SetOwner();
+  fHOutCentV0M     = new TH1F("fHOutCentV0M","fHOutCentV0M; Centrality V0",101,-0.5,100.5);
+  fHOutCentFMD     = new TH1F("fHOutCentFMD","fHOutCentFMD; Centrality FMD",101,-0.5,100.5);
+  fHOutCentTRK     = new TH1F("fHOutCentTRK","fHOutCentTRK; Centrality TPC",101,-0.5,100.5);
+  fHOutCentTKL     = new TH1F("fHOutCentTKL","fHOutCentTKL; Centrality tracklets",101,-0.5,100.5);
+  fHOutCentCL0     = new TH1F("fHOutCentCL0","fHOutCentCL0; Centrality SPD inner",101,-0.5,100.5);
+  fHOutCentCL1     = new TH1F("fHOutCentCL1","fHOutCentCL1; Centrality SPD outer",101,-0.5,100.5);
+  fHOutCentV0MvsFMD= new TH1F("fHOutCentV0MvsFMD","fHOutCentV0MvsFMD; Centrality V0 vs FMD",101,-0.5,100.5);
+  fHOutCentTKLvsV0M= new TH1F("fHOutCentTKLvsV0M","fHOutCentTKLvsV0M; Centrality tracklets vs V0",101,-0.5,100.5);
+  fHOutCentZEMvsZDC= new TH1F("fHOutCentZEMvsZDC","fHOutCentZEMvsZDC; Centrality ZEM vs ZDC",101,-0.5,100.5);
+
+  fOutputList->Add(  fHOutCentV0M     );
+  fOutputList->Add(  fHOutCentFMD     );
+  fOutputList->Add(  fHOutCentTRK     );
+  fOutputList->Add(  fHOutCentTKL     );
+  fOutputList->Add(  fHOutCentCL0     );
+  fOutputList->Add(  fHOutCentCL1     );
+  fOutputList->Add(  fHOutCentV0MvsFMD);
+  fOutputList->Add(  fHOutCentTKLvsV0M);
+  fOutputList->Add(  fHOutCentZEMvsZDC);
+
+  PostData(1, fOutputList); 
 }
 
 //________________________________________________________________________
@@ -257,9 +283,11 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
     AliVEvent* event = InputEvent();
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
-
-    if (SetupRun(esd))   
-      return;
+  
+    if (fRunNo<=0) {
+      if (SetupRun(esd)<0)
+         AliFatal("Centrality File not available for this run");
+    }
 
     esdCent = esd->GetCentrality();
 
@@ -269,7 +297,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     multV0C=esdV0->GetMTotV0C();
 
     float v0CorrR;
-    v0Corr = (Short_t) (GetCorrV0(esd,v0CorrR));
+    v0Corr = GetCorrV0(esd,v0CorrR,fRunNo);
+    v0Corr = (Short_t)v0Corr;
     v0CorrResc = (Short_t)v0CorrR;
 
     // ***** Vertex Info
@@ -277,7 +306,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     zvtx        = vtxESD->GetZ(); 
 
     // ***** CB info (tracklets, clusters, chips)
-    nTracks    = event->GetNumberOfTracks();     
+    //nTracks    = event->GetNumberOfTracks();     
+    fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    nTracks    = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esd,kTRUE):-1;
 
     const AliMultiplicity *mult = esd->GetMultiplicity();
 
@@ -374,49 +405,45 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   esdCent->SetCentralityV0MvsFMD(fCentV0MvsFMD);
   esdCent->SetCentralityTKLvsV0M(fCentTKLvsV0M);
   esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
+
+  fHOutCentV0M->Fill(fCentV0M);
+  fHOutCentFMD->Fill(fCentFMD);
+  fHOutCentTRK->Fill(fCentTRK);
+  fHOutCentTKL->Fill(fCentTKL);
+  fHOutCentCL0->Fill(fCentCL0);
+  fHOutCentCL1->Fill(fCentCL1);
+  fHOutCentV0MvsFMD->Fill(fCentV0MvsFMD);
+  fHOutCentTKLvsV0M->Fill(fCentTKLvsV0M);
+  fHOutCentZEMvsZDC->Fill(fCentZEMvsZDC);
+
+  PostData(1, fOutputList); 
 }
 
 //________________________________________________________________________
-void AliCentralitySelectionTask::ReadCentralityHistos() 
+void AliCentralitySelectionTask::ReadCentralityHistos(TString fCentfilename) 
 {
-//  Read centrality histograms
-    TDirectory *owd = gDirectory;
-    fFile  = TFile::Open(fCentfilename);
-    owd->cd();
-    fHtempV0M  = (TH1F*) (fFile->Get("hmultV0_percentile"));
-    fHtempFMD  = (TH1F*) (fFile->Get("hmultFMD_percentile"));
-    fHtempTRK  = (TH1F*) (fFile->Get("hNtracks_percentile"));
-    fHtempTKL  = (TH1F*) (fFile->Get("hNtracklets_percentile"));
-    fHtempCL0  = (TH1F*) (fFile->Get("hNclusters0_percentile"));
-    fHtempCL1  = (TH1F*) (fFile->Get("hNclusters1_percentile"));
+  //  Read centrality histograms
+  TDirectory *owd = gDirectory;
+  fFile  = TFile::Open(fCentfilename);
+  owd->cd();
+  fHtempV0M  = (TH1F*) (fFile->Get("hmultV0_percentile"));
+  fHtempFMD  = (TH1F*) (fFile->Get("hmultFMD_percentile"));
+  fHtempTRK  = (TH1F*) (fFile->Get("hNtracks_percentile"));
+  fHtempTKL  = (TH1F*) (fFile->Get("hNtracklets_percentile"));
+  fHtempCL0  = (TH1F*) (fFile->Get("hNclusters0_percentile"));
+  fHtempCL1  = (TH1F*) (fFile->Get("hNclusters1_percentile"));
 }  
 
 //________________________________________________________________________
-void AliCentralitySelectionTask::ReadCentralityHistos2() 
+void AliCentralitySelectionTask::ReadCentralityHistos2(TString fCentfilename2) 
 {
-//  Read centrality histograms
-    TDirectory *owd = gDirectory;
-    fFile2  = TFile::Open(fCentfilename2);
-    owd->cd();
-    fHtempV0MvsFMD =  (TH1F*) (fFile2->Get("hmultV0vsmultFMD_all_percentile"));
-    fHtempTKLvsV0M  = (TH1F*) (fFile2->Get("hNtrackletsvsmultV0_all_percentile"));
-    fHtempZEMvsZDC  = (TH1F*) (fFile2->Get("hEzemvsEzdc_all_percentile"));
-}
-
-//________________________________________________________________________
-void AliCentralitySelectionTask::SetPercentileFile(TString filename) 
-{
-// Set the percentile file name
-  fCentfilename = filename;
-  ReadCentralityHistos();
-}
-
-//________________________________________________________________________
-void AliCentralitySelectionTask::SetPercentileFile2(TString filename) 
-{
-// Set the percentile file name
-  fCentfilename2 = filename;
-  ReadCentralityHistos2();
+  //  Read centrality histograms
+  TDirectory *owd = gDirectory;
+  fFile2  = TFile::Open(fCentfilename2);
+  owd->cd();
+  fHtempV0MvsFMD =  (TH1F*) (fFile2->Get("hmultV0vsmultFMD_all_percentile"));
+  fHtempTKLvsV0M  = (TH1F*) (fFile2->Get("hNtrackletsvsmultV0_all_percentile"));
+  fHtempZEMvsZDC  = (TH1F*) (fFile2->Get("hEzemvsEzdc_all_percentile"));
 }
 
 //________________________________________________________________________
@@ -447,44 +474,36 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* esd)
   fRunNo = fCurrentRun;
 
   // CHANGE HERE FOR RUN RANGES
-  if ( fRunNo == 137162 ) fRunNo = 137161;
+  if ( fRunNo <= 137162 ) fRunNo = 137161;
   else if ( fRunNo == 137365 ) fRunNo = 137366;
-  else if ( fRunNo > 137366 ) fRunNo = 137366;
+  else if ( fRunNo >= 137366 ) fRunNo = 137366;
   // CHANGE HERE FOR RUN RANGES
-
-  TString runName(Form("%d", fRunNo));
-  TString fileName("");
+  
+  TString fileName(Form("$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_%d.root", fRunNo));
+  TString fileName2(Form("$ALICE_ROOT/ANALYSIS/macros/AliCentralityByFunction_%d.root", fRunNo));
   Bool_t isRunKnown = kFALSE;
-
-  // Check if run is in fileList
-  // if not, take the last name in the list
-  for ( Int_t idx=0 ; idx < fFileList->GetEntries(); ++idx ) {
-
-    TString str((dynamic_cast<TObjString*>(fFileList->At(idx)))->GetString());
-    if (str.Contains(runName)) {
-      fileName += str;
-      isRunKnown = kTRUE;
-      break;
-    }
+  
+  // Check if run exists
+  fFile  = TFile::Open(fileName);
+  if (fFile) {
+    isRunKnown = kTRUE;
   }
-
+  // if not, take the last one  
   if (!isRunKnown) {
-    if (fFileList->Last()) {
-      fileName += (dynamic_cast<TObjString*>(fFileList->Last()))->GetString();
-      AliError(Form("Run %d not known to centrality selection!", fCurrentRun));
-    }
-  }
-
-  if (fileName.Contains(".root")) {
-    AliInfo(Form("Centrality Selection for run %d is initialized with %s", fCurrentRun, fileName.Data()));
-    SetPercentileFile(fileName.Data());
-    return 0;
+    //     fileName += (dynamic_cast<TObjString*>(fFileList->Last()))->GetString();
+    AliError(Form("Run %d not known to centrality selection!", fCurrentRun));
   }
   
+  if (fileName.Contains(".root")) {
+    AliInfo(Form("Centrality Selection for run %d is initialized with %s", fCurrentRun, fileName.Data()));
+    ReadCentralityHistos(fileName.Data());
+    ReadCentralityHistos2(fileName2.Data());
+    return 0;
+  }
   return -1;
 }
 //________________________________________________________________________
-Float_t AliCentralitySelectionTask::GetCorrV0(const AliESDEvent* esd, float &v0CorrResc) 
+Float_t AliCentralitySelectionTask::GetCorrV0(const AliESDEvent* esd, float &v0CorrResc, int run) 
 {
   // correct V0 non-linearity, prepare a version rescaled to SPD2 corr
   Double_t *par0;
@@ -556,7 +575,7 @@ Float_t AliCentralitySelectionTask::GetCorrV0(const AliESDEvent* esd, float &v0C
 			       3.92e-09 , 1.18e-09 , 2.26e-09 , 1.57e-09 , 2.02e-09 , 2.71e-09 , 2.99e-09 , 3.04e-09 }; 
   
   
-  if (esd->GetRunNumber() <= 137165) {
+  if (run==137161) {
     par0=par0_137161;
     par1=par1_137161;
     par2=par2_137161;
@@ -573,7 +592,14 @@ Float_t AliCentralitySelectionTask::GetCorrV0(const AliESDEvent* esd, float &v0C
   for(Int_t i = 0; i < 64; ++i) {
     Double_t b = (esdV0->GetMultiplicity(i)*par1[i]-par0[i]);
     Double_t s = (b*b-4.*par2[i]*esdV0->GetMultiplicity(i)*esdV0->GetMultiplicity(i));
-    Double_t n = (s<0) ? -b : (-b + TMath::Sqrt(s));
+    Double_t n;
+    if (s<0) {
+      printf("FPE %d %.2f %.2f %.2e\n",i,esdV0->GetMultiplicity(i),b,(b*b-4.*par2[i]*esdV0->GetMultiplicity(i)*esdV0->GetMultiplicity(i)));
+      n = -b;
+    }
+    else {
+      n = (-b + TMath::Sqrt(s));
+    }
     multChCorr[i] = 2.*esdV0->GetMultiplicity(i)/n*par0[i];
     multCorr += multChCorr[i];
     multCorr2 += (multChCorr[i]/par0[i]/64.);
