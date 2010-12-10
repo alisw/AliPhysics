@@ -13,6 +13,7 @@
 
 class TFile;
 class TH1F;
+class TH2F;
 class TList;
 class TString;
 
@@ -78,7 +79,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F    *fHtempTKLvsV0M;           // histogram with centrality vs multiplicity using tracklets vs V0
   TH1F    *fHtempZEMvsZDC;           // histogram with centrality vs multiplicity using ZEM vs ZDC 
 
-  TList       *fOutputList; // output list
+  TList   *fOutputList; // output list
   
   TH1F *fHOutCentV0M     ;    //control histogram for centrality
   TH1F *fHOutCentFMD     ;    //control histogram for centrality
@@ -89,6 +90,16 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutCentV0MvsFMD;    //control histogram for centrality
   TH1F *fHOutCentTKLvsV0M;    //control histogram for centrality
   TH1F *fHOutCentZEMvsZDC;    //control histogram for centrality
+
+  TH1F *fHOutMultV0M ;        //control histogram for multiplicity
+  TH1F *fHOutMultFMD ;        //control histogram for multiplicity
+  TH1F *fHOutMultTRK ;        //control histogram for multiplicity
+  TH1F *fHOutMultTKL ;        //control histogram for multiplicity
+  TH1F *fHOutMultCL0 ;        //control histogram for multiplicity
+  TH1F *fHOutMultCL1 ;        //control histogram for multiplicity
+
+  TH2F *fHOutMultV0MvsZDC;    //control histogram for multiplicity
+  TH2F *fHOutMultZEMvsZDC;    //control histogram for multiplicity
 
   ClassDef(AliCentralitySelectionTask,1); 
 
