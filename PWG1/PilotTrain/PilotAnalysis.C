@@ -6,25 +6,25 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
 Int_t runNumbers[5] = {137844};
 
-Bool_t doCDBconnect   = 0;
+Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
 Bool_t doCentrality   = 1;
-Bool_t doQAsym        = 0;
-Bool_t doVZERO        = 0;   // there is a 2nd file
-Bool_t doVertex       = 0;
-Bool_t doSPD          = 0;   // needs RP   
-Bool_t doTPC          = 0;
-Bool_t doSDD          = 0;   // needs RP
-Bool_t doSSDdEdx      = 0;
+Bool_t doQAsym        = 1;
+Bool_t doVZERO        = 1;   // there is a 2nd file
+Bool_t doVertex       = 1;
+Bool_t doSPD          = 1;   // needs RP   
+Bool_t doTPC          = 1;
+Bool_t doSDD          = 1;   // needs RP
+Bool_t doSSDdEdx      = 1;
 // new 
-Bool_t doTRD          = 0;
-Bool_t doITS          = 0;
-Bool_t doCALO         = 0;
-Bool_t doMUONTrig     = 0;
-Bool_t doImpParRes    = 0;
-Bool_t doMUON         = 0;
-Bool_t doTOF          = 0;
-Bool_t doHMPID        = 0;
+Bool_t doTRD          = 1;
+Bool_t doITS          = 1;
+Bool_t doCALO         = 1;
+Bool_t doMUONTrig     = 1;
+Bool_t doImpParRes    = 1;
+Bool_t doMUON         = 1;
+Bool_t doTOF          = 1;
+Bool_t doHMPID        = 1;
 
 Bool_t doMUONEff      = 0;   // NEEDS geometry
 Bool_t doV0           = 0;   // NEEDS MCtruth 
