@@ -8,11 +8,11 @@
 //  3) subset of (2) whose daughters satisfy primary track cuts (nsigma to vertex, no kink daughters)
 //  4) subset of (3) whose daughters satisty the BB TPC compatibility cut at 3 sigma
 //
-Bool_t AddRsnEfficiency(const char *dataLabel)
+Bool_t AddRsnEfficiency(const char *dataLabel, const char *path)
 {
   // load useful macros
-  gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/ConfigESDCutsITS.C");
-  gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/ConfigESDCutsTPC.C");
+  gROOT->LoadMacro(Form("%s/QualityCutsITS.C", path));
+  gROOT->LoadMacro(Form("%s/QualityCutsTPC.C", path));
   
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -33,22 +33,23 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
   // 1) transverse momentum
   // 2) rapidity
   // 3) multiplicity
-  Double_t mult[] = {0., 6., 10., 15., 23., 10000};
-  Int_t    nmult  = sizeof(mult) / sizeof(mult[0]);
+  Double_t     mult[]   = {0., 6., 10., 15., 23., 100000000.0};
+  Int_t        nmult    = sizeof(mult) / sizeof(mult[0]);
   AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 0.9,  1.4, 0.001);
   AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 0.0, 10.0, 0.100);
   AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           ,-1.2,  1.2, 0.100);
   AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDCuts, nmult, mult);
   
-  // add the support cut to the value which computes the multiplicity
-  AliESDtrackCuts *cuts = new AliESDtrackCuts;
-  ConfigESDCutsTPC(cuts);
+  // initialize the support object: AliESDtrackCuts
+  // configured using the standard values
+  AliESDtrackCuts *cuts = new AliESDtrackCuts(QualityCutsTPC());
   axisMult->SetSupportObject(cuts);
   
   // define cuts for event selection:
   // this will determine the filling of bins in the "info" histograms
   // and should be computed as additional correction factor in efficiency
-  AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 1, kFALSE);
+  AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+  cutVertex->SetCheckPileUp(kTRUE);
   
   // define standard 2010 track quality/PID cuts:
   // - first  index: [0] = no PID, [1] = PID
@@ -58,14 +59,18 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
   cuts2010[0][1] = new AliRsnCutESD2010("cutESD2010nopidSA");
   cuts2010[1][0] = new AliRsnCutESD2010("cutESD2010pidNoSA");
   cuts2010[1][1] = new AliRsnCutESD2010("cutESD2010pidSA");
-  // since both indexes are 0/1, the boolean settings
-  // are done according to them, for clarity
+  // define Bethe-Bloch parameters (only for MC, since this computes efficiency)
+  Double_t bbPar[5] = {2.15898 / 50.0, 1.75295E1, 3.40030E-9, 1.96178, 3.91720};
+  // since both indexes are 0/1, the boolean settings are done according to them, for clarity
   for (Int_t ipid = 0; ipid < 2; ipid++)
   {
     for (Int_t iits = 0; iits < 2; iits++)
     {
       // all work with MC here
       cuts2010[ipid][iits]->SetMC(kTRUE);
+      
+      // PID reference is kaons
+      cuts2010[ipid][iits]->SetPID(AliPID::kKaon);
       
       // all use global tracks
       cuts2010[ipid][iits]->SetUseITSTPC(kTRUE);
@@ -77,8 +82,19 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
       cuts2010[ipid][iits]->SetCheckTOF((Bool_t)ipid);
       
       // basic quality settings
-      ConfigESDCutsITS(cuts2010[ipid][iits]->GetCutsITS());
-      ConfigESDCutsTPC(cuts2010[ipid][iits]->GetCutsTPC());
+      cuts2010[ipid][iits]->CopyCutsTPC(QualityCutsTPC());
+      cuts2010[ipid][iits]->CopyCutsITS(QualityCutsITS());
+      
+      // (unused for No PID) set the ITS PID-related variables
+      cuts2010[ipid][iits]->SetITSband(3.0);
+      
+      // (unused for No PID) set the TPC PID-related variables
+      cuts2010[ipid][iits]->SetTPCrange(3.0, 5.0);
+      cuts2010[ipid][iits]->SetTPCpLimit(0.35);
+      cuts2010[ipid][iits]->GetESDpid()->GetTPCResponse().SetBetheBlochParameters(bbPar[0], bbPar[1], bbPar[2], bbPar[3], bbPar[4]);
+      
+      // (unused for No PID) set the TOF PID-related variables
+      cuts2010[ipid][iits]->SetTOFrange(-3.0, 3.0);
     }
   }
 
@@ -102,7 +118,7 @@ Bool_t AddRsnEfficiency(const char *dataLabel)
     task[itask]->AddAxis(axisY);
     task[itask]->AddAxis(axisMult);
     
-    // add the cut only when working on ESD, not on MC only
+    // add the cut on primary vertex
     task[itask]->GetEventCuts()->AddCut(cutVertex);
     task[itask]->GetEventCuts()->SetCutScheme(cutVertex->GetName());
 

@@ -7,6 +7,8 @@
 #include <AliRsnCutValue.h>
 #include <AliRsnPairFunctions.h>
 #include <AliRsnFunction.h>
+#include <AliRsnCutPrimaryVertex.h>
+
 #include "config/QualityCutsITS.C"
 #include "config/QualityCutsTPC.C"
 */
@@ -31,7 +33,9 @@ Bool_t RsnConfig
   const char *taskName, 
   const char *options,
   const char *config,
-  const char *path
+  const char *path,
+  Int_t       multMin = 0,
+  Int_t       multMax = 0
 )
 {
   // load useful macros
@@ -72,6 +76,37 @@ Bool_t RsnConfig
   {
     Error("RsnConfig2010PhiFcn", "Task not found");
     return kFALSE;
+  }
+  
+  //
+  // -- Setup event cuts (added directly to task) ---------------------------------------------------
+  //
+  
+  // define a common cut on primary vertex, which also checks pile-up
+  AliRsnCutPrimaryVertex *cutVertex  = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+  cutVertex->SetCheckPileUp(kTRUE);
+  task->GetEventCuts()->AddCut(cutVertex);
+  
+  // if at least one of last two arguments is not zero, 
+  // add a multiplicity cut using those arguments as range limits
+  if (multMin > 0 || multMax > 0)
+  {
+    ::Info("RsnConfig.C", "Adding multiplicity cut: %d --> %d", multMin, multMax);
+    AliRsnCutValue *cutMult = new AliRsnCutValue(Form("cutMult_%d-%d", multMin, multMax), AliRsnValue::kEventMultESDCuts, (Double_t)multMin, (Double_t)multMax);
+    
+    // initialize the support object: AliESDtrackCuts
+    // configured using the standard values
+    AliESDtrackCuts *cuts = new AliESDtrackCuts(QualityCutsTPC());
+    cutMult->GetValueObj()->SetSupportObject(cuts);
+    
+    // add the cut and set the cut string
+    task->GetEventCuts()->AddCut(cutMult);
+    task->GetEventCuts()->SetCutScheme(Form("cutVertex&%s", cutMult->GetName()));
+  }
+  else
+  {
+    // if no mult cut is added, only primary vertex cut is used
+    task->GetEventCuts()->SetCutScheme("cutVertex");
   }
 
   //
@@ -202,9 +237,9 @@ Bool_t RsnConfig
 
   // add all created AliRsnPair objects to the AliRsnAnalysisManager in the task
   task->GetAnalysisManager()->Add(pairPM);
-  //task->GetAnalysisManager()->Add(pairPP);
-  //task->GetAnalysisManager()->Add(pairMM);
-  //if (isSim) task->GetAnalysisManager()->Add(truePM);
+  task->GetAnalysisManager()->Add(pairPP);
+  task->GetAnalysisManager()->Add(pairMM);
+  if (isSim) task->GetAnalysisManager()->Add(truePM);
 
   return kTRUE;
 }

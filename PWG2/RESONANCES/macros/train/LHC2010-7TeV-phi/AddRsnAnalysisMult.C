@@ -13,57 +13,27 @@
 Bool_t AddRsnAnalysisMult
 (
   const char *options,
-  //const char *configs = "RsnConfigNoSA.C RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C",
-  const char *configs = "RsnConfigDipSA.C",
+  const char *configs = "RsnConfigNoSA.C RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C",
   const char *path    = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi"
 )
 {
+  cout << "Entering" << endl;
+  
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
-  // define a common cut on primary vertex, 
-  // which also checks pile-up
-  AliRsnCutPrimaryVertex *cutVertex  = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-  cutVertex->SetCheckPileUp(kTRUE);
+  // initialize multiplicity bins
+  Int_t  multMin[6] = {0, 0, 6, 10, 15, 23       };
+  Int_t  multMax[6] = {0, 5, 9, 14, 22, 100000000};
   
-  // initialize multiplicity cuts, and loads a standard macro for 
-  // initializing the required support object
-  gROOT->LoadMacro(Form("%s/QualityCutsTPC.C", path));
-  Double_t         multMin[5] = {0, 6, 10, 15, 23   };
-  Double_t         multMax[5] = {5, 9, 14, 22, 1E+10};
-  AliRsnCutValue  *cutMult[5] = {0, 0,  0,  0, 0    };
-  for (Int_t i = 0; i < 5; i++)
-  {
-    cutMult[i] = new AliRsnCutValue(Form("cutMult_%d", i), AliRsnValue::kEventMultESDCuts, multMin[i], multMax[i]);
-    
-    // initialize the support object: AliESDtrackCuts
-    // configured using the standard values
-    AliESDtrackCuts *cuts = new AliESDtrackCuts(QualityCutsTPC());
-    cutMult[i]->GetValueObj()->SetSupportObject(cuts);
-  }
-
   // initialize several tasks, each one with different multiplicity cut
   // and all with the same primary vertex + pile-up cut
-  for (Int_t i = 0; i < 1; i++)
+  for (Int_t i = 0; i < 6; i++)
   {
-    
     // create the task and connect with physics selection
     AliRsnAnalysisSE *task = new AliRsnAnalysisSE(Form("RsnAnalysis_%d", i));
     task->SetZeroEventPercentWarning(100.0);
     task->SelectCollisionCandidates();
-    
-    // setup the cuts (first loop is for all multiplicities)
-    if (i == 0)
-    {
-      task->GetEventCuts()->AddCut(cutVertex);
-      task->GetEventCuts()->SetCutScheme("cutVertex");
-    }
-    else
-    {
-      task->GetEventCuts()->AddCut(cutVertex);
-      task->GetEventCuts()->AddCut(cutMult[i - 1]);
-      task->GetEventCuts()->SetCutScheme(Form("cutVertex&%s", cutMult[i - 1]->GetName()));
-    }
 
     // add the task to manager
     mgr->AddTask(task);
@@ -84,7 +54,8 @@ Bool_t AddRsnAnalysisMult
       const char *argName   = Form("\"%s\"", task->GetName());
       const char *argOption = Form("\"%s\"", options);
       const char *argPath   = Form("\"%s\"", path);
-      gROOT->ProcessLine(Form(".x %s/%s(%s,%s,%s)", path, macro, argName, argOption, argPath));
+      const char *argMult   = Form("%d, %d", multMin[i], multMax[i]);
+      gROOT->ProcessLine(Form(".x %s/%s(%s,%s,%s, %s)", path, macro, argName, argOption, argPath, argMult));
     }
 
     // connect input container according to source choice
