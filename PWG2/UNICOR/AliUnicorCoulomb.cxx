@@ -135,7 +135,7 @@ TComplex AliUnicorCoulomb::F1(TComplex alpha, TComplex gamma, TComplex z) {
     term *= w;
     sum += term;
     //    printf("%10d %10.3f %10.3f %10.3f %10.3f\n", n, v.Rho(), w.Rho(), term.Rho(), sum.Rho());
-    if (fabs(term/sum) < prec) return sum;
+    if (TComplex::Abs(term/sum) < prec) return sum;
   }
   printf("F1 Maximum number of iterations reached\n");
   return sum;
