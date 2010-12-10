@@ -31,7 +31,8 @@ Double_t excludePhiMax = 0.;
 // use physics selection class
 Bool_t  UsePhysicsSelection = kTRUE;
 
-// generate the control ntuple
+// QA
+Bool_t runQAtask=kFALSE;
 Bool_t FillQAntuple=kFALSE;
 Bool_t DoQAcorrelations=kFALSE;
 
@@ -405,13 +406,6 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     mgr->AddTask(taskNL);
   }
 
-  AliAnalysisTaskQAflow* taskQAflow = new AliAnalysisTaskQAflow("TaskQAflow");
-  taskQAflow->SetEventCuts(cutsEvent);
-  taskQAflow->SetTrackCuts(cutsRP);
-  taskQAflow->SetFillNTuple(FillQAntuple);
-  taskQAflow->SetDoCorrelations(DoQAcorrelations);
-  mgr->AddTask(taskQAflow);
-  
   // Create the output container for the data produced by the task
   // Connect to the input and output containers
   //===========================================================================
@@ -428,7 +422,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   }
   
   AliAnalysisDataContainer *coutputFE = 
-    mgr->CreateContainer(Form("cobjFlowEventSimple_%s",centralityName.Data()),  AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+  mgr->CreateContainer(Form("cobjFlowEventSimple_%s",centralityName.Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
   mgr->ConnectInput(taskFE,0,cinput1); 
   mgr->ConnectOutput(taskFE,1,coutputFE);
   
@@ -595,21 +589,32 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     //} 
   }
 
-  Printf("centralityName %s",centralityName.Data());
-  TString taskQAoutputFileName(fileNameBase);
-  taskQAoutputFileName.Append("_QA.root");
-  AliAnalysisDataContainer* coutputQAtask = mgr->CreateContainer(Form("flowQA_%s",centralityName.Data()),
-                                            TObjArray::Class(),
-                                            AliAnalysisManager::kOutputContainer,
-                                            taskQAoutputFileName);
-  AliAnalysisDataContainer* coutputQAtaskTree = mgr->CreateContainer(Form("flowQAntuple_%s",centralityName.Data()),
-                                            TNtuple::Class(),
-                                            AliAnalysisManager::kOutputContainer,
-                                            taskQAoutputFileName);
-  mgr->ConnectInput(taskQAflow,0,mgr->GetCommonInputContainer());
-  mgr->ConnectInput(taskQAflow,1,coutputFE);
-  mgr->ConnectOutput(taskQAflow,1,coutputQAtask);
-  if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
+  ///////////////////////////////////////////////////////////////////////////////////////////
+  if (runQAtask)
+  {
+    AliAnalysisTaskQAflow* taskQAflow = new AliAnalysisTaskQAflow("TaskQAflow");
+    taskQAflow->SetEventCuts(cutsEvent);
+    taskQAflow->SetTrackCuts(cutsRP);
+    taskQAflow->SetFillNTuple(FillQAntuple);
+    taskQAflow->SetDoCorrelations(DoQAcorrelations);
+    mgr->AddTask(taskQAflow);
+    
+    Printf("centralityName %s",centralityName.Data());
+    TString taskQAoutputFileName(fileNameBase);
+    taskQAoutputFileName.Append("_QA.root");
+    AliAnalysisDataContainer* coutputQAtask = mgr->CreateContainer(Form("flowQA_%s",centralityName.Data()),
+                                              TObjArray::Class(),
+                                              AliAnalysisManager::kOutputContainer,
+                                              taskQAoutputFileName);
+    AliAnalysisDataContainer* coutputQAtaskTree = mgr->CreateContainer(Form("flowQAntuple_%s",centralityName.Data()),
+                                              TNtuple::Class(),
+                                              AliAnalysisManager::kOutputContainer,
+                                              taskQAoutputFileName);
+    mgr->ConnectInput(taskQAflow,0,mgr->GetCommonInputContainer());
+    mgr->ConnectInput(taskQAflow,1,coutputFE);
+    mgr->ConnectOutput(taskQAflow,1,coutputQAtask);
+    if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
+  }
 }
 
 
