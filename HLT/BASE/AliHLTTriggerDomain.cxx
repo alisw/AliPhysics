@@ -877,7 +877,7 @@ bool AliHLTTriggerDomain::operator == (const AliHLTTriggerDomain& domain) const
     // it fails our ordering requirements and the domains cannot match.
     for (Int_t j = entry2index + 1; j < fEntries.GetEntriesFast(); ++j)
     {
-      AliHLTDomainEntry* current = static_cast<const AliHLTDomainEntry*>(const_cast<TObject*>( domain.fEntries.UncheckedAt(j) ));
+      const AliHLTDomainEntry* current = static_cast<const AliHLTDomainEntry*>(const_cast<TObject*>( domain.fEntries.UncheckedAt(j) ));
       if (current->TestBit(BIT(14))) continue;  // skip marked entries.
       if (entry1->SubsetOf(*current)) return false;
     }
