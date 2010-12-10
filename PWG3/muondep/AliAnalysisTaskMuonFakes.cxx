@@ -28,6 +28,8 @@
 #include "AliMCEventHandler.h"
 
 // ANALYSIS includes
+#include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliCDBManager.h"
 
@@ -37,6 +39,7 @@
 #include "AliMUONRecoCheck.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVTrackStore.h"
+#include "AliMUONVTriggerTrackStore.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONESDInterface.h"
@@ -208,7 +211,7 @@ void AliAnalysisTaskMuonFakes::UserCreateOutputObjects()
   // - fake            = number of fake tracks
   // - connected       = number of fake tracks connected to a reconstructible simulated track
   // - additional      = number of additional (fake) tracks compared to the number of reconstructible ones
-  fTrackCounters = new AliCounterCollection("trackCounters");
+  fTrackCounters = new AliCounterCollection(GetOutputSlot(2)->GetContainer()->GetName());
   fTrackCounters->AddRubric("track", "reconstructible/reconstructed/matched/matchedyet/fake/connected/additional");
   fTrackCounters->AddRubric("run", 1000000);
   fTrackCounters->AddRubric("trig", "yes/no/unknown");
@@ -217,7 +220,7 @@ void AliAnalysisTaskMuonFakes::UserCreateOutputObjects()
   fTrackCounters->Init();
   
   // detailled counters of fake tracks:
-  fFakeTrackCounters = new AliCounterCollection("fakeTrackCounters");
+  fFakeTrackCounters = new AliCounterCollection(GetOutputSlot(3)->GetContainer()->GetName());
   fFakeTrackCounters->AddRubric("track", "fake/connected/additional/matchedyet/fake?");
   fFakeTrackCounters->AddRubric("run", 1000000);
   fFakeTrackCounters->AddRubric("file", 1000000);
@@ -228,7 +231,7 @@ void AliAnalysisTaskMuonFakes::UserCreateOutputObjects()
   fFakeTrackCounters->Init();
   
   // counters of tracks matched by position or by using MC labels
-  fMatchedTrackCounters = new AliCounterCollection("matchedTrackCounters");
+  fMatchedTrackCounters = new AliCounterCollection(GetOutputSlot(4)->GetContainer()->GetName());
   fMatchedTrackCounters->AddRubric("position", "match/not match");
   fMatchedTrackCounters->AddRubric("label", "match/not match/match other");
   fMatchedTrackCounters->AddRubric("run", 1000000);
@@ -244,7 +247,7 @@ void AliAnalysisTaskMuonFakes::UserCreateOutputObjects()
   // - additional      = number of events with additional (fake) tracks compared to the number of reconstructible ones
   // - matchedyet      = number of events with reconstructed tracks matched with a simulated one that is not reconstructible
   // if trig = yes: only the tracks matched with the trigger are considered in the above logic
-  fEventCounters = new AliCounterCollection("eventCounters");
+  fEventCounters = new AliCounterCollection(GetOutputSlot(5)->GetContainer()->GetName());
   fEventCounters->AddRubric("event", "any/fake/notconnected/additional/matchedyet");
   fEventCounters->AddRubric("run", 1000000);
   fEventCounters->AddRubric("trig", "any/yes");
@@ -290,14 +293,17 @@ void AliAnalysisTaskMuonFakes::UserExec(Option_t *)
   AliMUONRecoCheck rc(esd,mcH);
   AliMUONVTrackStore* muonTrackStore = rc.ReconstructedTracks(-1, kFALSE);
   AliMUONVTrackStore* trackRefStore = rc.TrackRefs(-1);
+  AliMUONVTriggerTrackStore* triggerTrackRefStore = rc.TriggerableTracks(-1);
   if (!muonTrackStore || !trackRefStore) return;
   
   // count the number of reconstructible tracks
   TIter next(trackRefStore->CreateIterator());
   AliMUONTrack* trackRef;
   while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
-    if (trackRef->IsValid(fRequestedStationMask, fRequest2ChInSameSt45))
-      fTrackCounters->Count(Form("track:reconstructible/run:%d/trig:unknown/%s/acc:unknown", fCurrentRunNumber, selected.Data()));
+    if (trackRef->IsValid(fRequestedStationMask, fRequest2ChInSameSt45)) {
+      TString trig = (triggerTrackRefStore->FindObject(trackRef->GetUniqueID())) ? "trig:yes" : "trig:no";
+      fTrackCounters->Count(Form("track:reconstructible/run:%d/%s/%s/acc:unknown", fCurrentRunNumber, trig.Data(), selected.Data()));
+    }
   }
   
   // loop over ESD tracks
