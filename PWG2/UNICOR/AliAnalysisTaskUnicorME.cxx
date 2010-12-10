@@ -41,7 +41,6 @@ AliAnalysisTaskUnicorME::AliAnalysisTaskUnicorME(const char *name) :
 
   fEv0 = new AliUnicorEventAliceESD();
   fEv1 = new AliUnicorEventAliceESD();
-  fOutputList->SetOwner();
   DefineOutput(1, TList::Class());
 }
 //=============================================================================
@@ -50,6 +49,7 @@ void AliAnalysisTaskUnicorME::UserCreateOutputObjects()
   // executed once on each worker 
 
   fOutputList = new TList();
+  fOutputList->SetOwner();
   fOutputList->Add(new AliUnicorAnalGlobal("dag"));
   fOutputList->Add(new AliUnicorAnalSingle("all",fEv0->Etamin(),fEv0->Etamax(),0));
   fOutputList->Add(new AliUnicorAnalSingle("pim",fEv0->Etamin(),fEv0->Etamax(),-211));
