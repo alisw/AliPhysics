@@ -30,6 +30,7 @@
 #include <TCanvas.h>
 #include <TROOT.h>
 #include <TDirectory.h>
+#include <TSystem.h>
 #include <iostream>
 
 #include "AliAnalysisManager.h"
@@ -108,7 +109,6 @@ AliAnalysisTaskSE(),
 {   
   // Default constructor
   AliInfo("Centrality Selection enabled.");
-  DefineOutput(1, TList::Class());
 }   
 
 //________________________________________________________________________
@@ -214,6 +214,7 @@ AliCentralitySelectionTask::~AliCentralitySelectionTask()
 {
   // Destructor  
   if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
+  if (fTrackCuts) delete fTrackCuts;
 }  
 
 //________________________________________________________________________
@@ -244,6 +245,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList->Add(  fHOutCentV0MvsFMD);
   fOutputList->Add(  fHOutCentTKLvsV0M);
   fOutputList->Add(  fHOutCentZEMvsZDC);
+  fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 
   PostData(1, fOutputList); 
 }
@@ -307,7 +309,6 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
     // ***** CB info (tracklets, clusters, chips)
     //nTracks    = event->GetNumberOfTracks();     
-    fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     nTracks    = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esd,kTRUE):-1;
 
     const AliMultiplicity *mult = esd->GetMultiplicity();
@@ -424,6 +425,12 @@ void AliCentralitySelectionTask::ReadCentralityHistos(TString fCentfilename)
 {
   //  Read centrality histograms
   TDirectory *owd = gDirectory;
+  // Check if the file is present
+  TString path = gSystem->ExpandPathName(fCentfilename.Data());
+  if (gSystem->AccessPathName(path)) {
+     AliError(Form("File %s does not exist", path.Data()));
+     return;
+  }
   fFile  = TFile::Open(fCentfilename);
   owd->cd();
   fHtempV0M  = (TH1F*) (fFile->Get("hmultV0_percentile"));
@@ -432,6 +439,7 @@ void AliCentralitySelectionTask::ReadCentralityHistos(TString fCentfilename)
   fHtempTKL  = (TH1F*) (fFile->Get("hNtracklets_percentile"));
   fHtempCL0  = (TH1F*) (fFile->Get("hNclusters0_percentile"));
   fHtempCL1  = (TH1F*) (fFile->Get("hNclusters1_percentile"));
+  owd->cd();
 }  
 
 //________________________________________________________________________
@@ -439,11 +447,17 @@ void AliCentralitySelectionTask::ReadCentralityHistos2(TString fCentfilename2)
 {
   //  Read centrality histograms
   TDirectory *owd = gDirectory;
+  TString path = gSystem->ExpandPathName(fCentfilename2.Data());
+  if (gSystem->AccessPathName(path)) {
+     AliError(Form("File %s does not exist", path.Data()));
+     return;
+  }   
   fFile2  = TFile::Open(fCentfilename2);
   owd->cd();
   fHtempV0MvsFMD =  (TH1F*) (fFile2->Get("hmultV0vsmultFMD_all_percentile"));
   fHtempTKLvsV0M  = (TH1F*) (fFile2->Get("hNtrackletsvsmultV0_all_percentile"));
   fHtempZEMvsZDC  = (TH1F*) (fFile2->Get("hEzemvsEzdc_all_percentile"));
+  owd->cd();
 }
 
 //________________________________________________________________________
@@ -481,26 +495,15 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* esd)
   
   TString fileName(Form("$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_%d.root", fRunNo));
   TString fileName2(Form("$ALICE_ROOT/ANALYSIS/macros/AliCentralityByFunction_%d.root", fRunNo));
-  Bool_t isRunKnown = kFALSE;
   
-  // Check if run exists
-  fFile  = TFile::Open(fileName);
-  if (fFile) {
-    isRunKnown = kTRUE;
-  }
-  // if not, take the last one  
-  if (!isRunKnown) {
-    //     fileName += (dynamic_cast<TObjString*>(fFileList->Last()))->GetString();
-    AliError(Form("Run %d not known to centrality selection!", fCurrentRun));
-  }
-  
-  if (fileName.Contains(".root")) {
-    AliInfo(Form("Centrality Selection for run %d is initialized with %s", fCurrentRun, fileName.Data()));
-    ReadCentralityHistos(fileName.Data());
-    ReadCentralityHistos2(fileName2.Data());
-    return 0;
-  }
-  return -1;
+  AliInfo(Form("Centrality Selection for run %d is initialized with %s", fCurrentRun, fileName.Data()));
+  ReadCentralityHistos(fileName.Data());
+  ReadCentralityHistos2(fileName2.Data());
+  if (!fFile && !fFile2) {
+     AliFatal(Form("Run %d not known to centrality selection!", fCurrentRun));       
+     return -1;
+  }   
+  return 0;
 }
 //________________________________________________________________________
 Float_t AliCentralitySelectionTask::GetCorrV0(const AliESDEvent* esd, float &v0CorrResc, int run) 
