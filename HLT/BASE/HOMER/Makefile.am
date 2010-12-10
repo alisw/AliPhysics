@@ -34,7 +34,9 @@ NOROOT_SRC			= $(MODULE_SRCS:.cxx=_noRoot.cxx)
 # ##########################################################
 # general settings for both libraries
 #
+if BUILD_DOC
 HOMER_DOC			= HOMERReader.tex
+endif
 
 EXTRA_DIST			= $(HOMER_DOC)
 

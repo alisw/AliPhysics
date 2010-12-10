@@ -1515,7 +1515,7 @@ fi
 
 AC_MSG_RESULT([$enable_doc])
 AM_CONDITIONAL(MONOLITHIC_DOC, test "x$enable_doc" = "xmono")
-AM_CONDITIONAL(HAVE_DOXYGEN, test ! "x$DOXYGEN" = "x")
+AM_CONDITIONAL(BUILD_DOC, test ! "x$DOXYGEN" = "x")
 AC_SUBST([HAVE_DOT])
 AC_SUBST([DOT_PATH])
 
