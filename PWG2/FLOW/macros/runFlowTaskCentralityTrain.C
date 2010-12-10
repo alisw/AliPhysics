@@ -69,13 +69,10 @@ void runFlowTaskCentralityTrain(Int_t mode = mLocal, Int_t nRuns = 50000000,
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
   AddTaskPhysicsSelection(!DATA);
 
-  //Add also the centrality determination task
-  AliCentralitySelectionTask* centralityTask = new AliCentralitySelectionTask("CentralitySelection");
-  centralityTask->SetPercentileFile("$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161_v5.root");
-  centralityTask->SetPercentileFile2("$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137366_v4.root");
-  mgr->AddTask(centralityTask);
-  mgr->ConnectInput(centralityTask,0,mgr->GetCommonInputContainer());
-  
+  //Add the centrality determination task
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  AddTaskCentrality();
+
   // Setup analysis per centrality bin:
   gROOT->LoadMacro("AddTaskFlowCentrality.C");
   for (Int_t i=binfirst; i<binlast+1; i++)
