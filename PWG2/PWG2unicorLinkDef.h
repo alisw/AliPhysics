@@ -15,5 +15,6 @@
 #pragma link C++ class AliUnicorEvent+;
 #pragma link C++ class AliUnicorHN+;
 #pragma link C++ class AliUnicorPair+;
+#pragma link C++ class AliUnicorCoulomb+;
 
 #endif
