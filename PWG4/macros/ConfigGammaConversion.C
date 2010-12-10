@@ -1211,7 +1211,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     cout<<"Number Of files to analyze: "<<kGCnumberOfFilesToAnalyze<<endl;
 		
     build();//build (if necessary) and load the libraries needed
-
+    LoadLibraries();
     gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C"); // load the CreateChain macro
   }
 		
@@ -1582,6 +1582,8 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   // Define Output Event Handler and add
   if(kGCWriteAOD){
     gammaconversion->SetForceAOD(kGCForceAOD);
+    gammaconversion->SetOutputAODClassName("AliAODConversionParticle");
+    //gammaconversion->SetOutputAODClassName("AliGammaConversionAODObject");
 
     if( kGCrunOnTrain ) {
 
@@ -1653,7 +1655,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kGCdoMCTruth,kTRUE);
     gammaconversion->SelectCollisionCandidates(); 
 
-    //    if(kGCrunOnTrain == kFALSE){
+
       TChain* chain= CreateESDChain(kGCdataList,kGCnumberOfFilesToAnalyze);
 			
       mgr->InitAnalysis();
@@ -1664,6 +1666,26 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
       //    }
   }
   return gammaconversion;
+}
+
+void LoadLibraries() {
+
+ TStopwatch timer;
+  timer.Start();
+  gSystem->Load("libTree.so");
+  gSystem->Load("libGeom");
+	
+  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libESD.so");
+  gSystem->Load("libAOD.so");
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libPWG4GammaConv.so");
+  
+  //  gSystem->ChangeDirectory(pwd.Data());
+
 }
 
 void build() {

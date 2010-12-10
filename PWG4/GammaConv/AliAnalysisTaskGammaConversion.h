@@ -18,7 +18,10 @@
 //#include "AliCFManager.h"  // for CF
 //#include "AliCFContainer.h"   // for CF
 
+
+class AliAODPWG4Particle;
 class AliGammaConversionAODObject;
+class AliAODConversionParticle;
 class TNtuple;
 class AliGammaConversionHistograms;
 class AliESDv0;
@@ -72,6 +75,13 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetAODBranchName(TString name)  {fAODBranchName = name ;}	
   void SetForceAOD(Bool_t forceAOD ) { fKFForceAOD = forceAOD; }
   void FillAODWithConversionGammas();
+  void AddToAODBranch(TClonesArray * branch, AliAODPWG4Particle & particle);
+  void AddToAODBranch(TClonesArray * branch, AliGammaConversionAODObject & particle);
+  void AddToAODBranch(TClonesArray * branch, AliAODConversionParticle & particle);
+
+  virtual TString GetOutputAODClassName() const {return fOutputAODClassName;}
+  virtual void SetOutputAODClassName(TString name) {fOutputAODClassName = name; }
+  
   // end AOD
 		
   static Bool_t IsGoodImpPar(const AliESDtrack *const track);
@@ -289,6 +299,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   TClonesArray * fAODPi0; //TTClonesArray for Pi0s to put in AOD
   TClonesArray * fAODOmega; //TTClonesArray for omegas to put in AOD
   TString fAODBranchName; // New AOD branch name
+  TString fOutputAODClassName; //Class to use for the AOD
+  
   Bool_t fKFForceAOD;  //Set the Analysis Manager FillAOD variable to true every event
   TString fKFDeltaAODFileName; //! File name for delta AOD (if any)
   Bool_t fDoNeutralMesonV0MCCheck; //flag
