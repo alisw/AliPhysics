@@ -89,10 +89,10 @@ private:
   static Double_t fgCorr;         //!correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
   
-  Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut) const;
-  Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut) const;
-  Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut) const;
-  Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut) const;
+  Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
+  Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut);
+  Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut);
+  Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut);
 
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);

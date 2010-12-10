@@ -31,9 +31,11 @@ Detailed description
 
 #include <AliVTrack.h>
 #include <AliLog.h>
+#include <AliExternalTrackParam.h>
 #include <AliESDtrack.h>
 #include <AliESDpid.h>
 #include <AliAODpidUtil.h>
+#include <AliAODPid.h>
 
 #include "AliDielectronVarManager.h"
 
@@ -204,9 +206,6 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     // test momentum range. In case pMin==pMax use all momenta
     if ( (TMath::Abs(pMin-pMax)>1e-20) && (mom<=pMin || mom>pMax) ) continue;
 
-    // test if we are supposed to use a function for the cut
-    if (fFunUpperCut[icut]) fNsigmaUp[icut] =fFunUpperCut[icut]->Eval(mom);
-    if (fFunLowerCut[icut]) fNsigmaLow[icut]=fFunLowerCut[icut]->Eval(mom);
 
     switch (fDetType[icut]){
     case kITS:
@@ -229,7 +228,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut) const
+Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut)
 {
   //
   // ITS part of the PID check
@@ -239,6 +238,8 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut) const
   
   if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliESDtrack::kITSpid)) return kFALSE;
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliESDtrack::kITSpid)) return kTRUE;
+
+  Double_t mom=part->P();
   
   if (part->IsA()==AliESDtrack::Class()){
     // ESD case in case the PID bit is not set, don't use this track!
@@ -250,12 +251,17 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut) const
     AliAODTrack *track=static_cast<AliAODTrack*>(part);
     numberOfSigmas=fAODpidUtil->NumberOfSigmasITS(track, fPartType[icut]);
   }
+  
+  // test if we are supposed to use a function for the cut
+  if (fFunUpperCut[icut]) fNsigmaUp[icut] =fFunUpperCut[icut]->Eval(mom);
+  if (fFunLowerCut[icut]) fNsigmaLow[icut]=fFunLowerCut[icut]->Eval(mom);
+  
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
   return selected;
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut) const
+Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut)
 {
   //
   // TPC part of the PID check
@@ -266,25 +272,36 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut) const
   if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliESDtrack::kTPCpid)) return kFALSE;
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliESDtrack::kTPCpid)) return kTRUE;
 
+  Double_t mom=part->P();
+  
   if (part->IsA()==AliESDtrack::Class()){
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
+    const AliExternalTrackParam *in = track->GetInnerParam();
+    if (in) mom = in->GetP();
     numberOfSigmas=fESDpid->NumberOfSigmasTPC(track, fPartType[icut]);
   }else if(part->IsA()==AliAODTrack::Class()){
     // AOD case
     // FIXME: Is there a place to check whether the PID is was set in ESD???
     AliAODTrack *track=static_cast<AliAODTrack*>(part);
+    const AliAODPid *pidObj = track->GetDetPid();
+    if (pidObj) mom = pidObj->GetTPCmomentum();
     numberOfSigmas=fAODpidUtil->NumberOfSigmasTPC(track, fPartType[icut]);
   }
   if (fPartType[icut]==AliPID::kElectron){
     numberOfSigmas-=fgCorr;
   }
+  
+  // test if we are supposed to use a function for the cut
+  if (fFunUpperCut[icut]) fNsigmaUp[icut] =fFunUpperCut[icut]->Eval(mom);
+  if (fFunLowerCut[icut]) fNsigmaLow[icut]=fFunLowerCut[icut]->Eval(mom);
+  
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
   return selected;
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const /*part*/, Int_t /*icut*/) const
+Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const /*part*/, Int_t /*icut*/)
 {
   //   
   // TRD part of the pid check
@@ -293,7 +310,7 @@ Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const /*part*/, Int_t /*icut*
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut) const
+Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut)
 {
   //
   // TOF part of the PID check

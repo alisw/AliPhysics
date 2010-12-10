@@ -17,6 +17,7 @@
 #include <TNamed.h>
 // #include <TCollection.h>
 #include <THashList.h>
+#include <TVectorDfwd.h>
 
 class TH1;
 class TString;
@@ -44,6 +45,20 @@ public:
                      Int_t nbinsZ, Double_t zmin, Double_t zmax,
                      UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0,
                      Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, Bool_t logBinZ=kFALSE);
+  
+  void UserHistogram(const char* histClass,const char *name, const char* title,
+                     const char* binning,
+                     UInt_t valTypeX=kNoAutoFill);
+
+  void UserHistogram(const char* histClass,const char *name, const char* title,
+                     const TVectorD * const binsX,
+                     UInt_t valTypeX=kNoAutoFill);
+  void UserHistogram(const char* histClass,const char *name, const char* title,
+                     const TVectorD * const binsX, const TVectorD * const binsY,
+                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0);
+  void UserHistogram(const char* histClass,const char *name, const char* title,
+                     const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
+                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0);
   
   void UserHistogram(const char* histClass, TH1* hist, UInt_t valTypes=kNoAutoFill);
 
@@ -90,16 +105,13 @@ private:
   TList    *fList;                  //! List of list of histograms
 
   TString *fReservedWords;          //! list of reserved words
-  void UserHistogramReservedWords(const char* histClass, TH1 *hist, UInt_t valTypes);
+  void UserHistogramReservedWords(const char* histClass, const TH1 *hist, UInt_t valTypes);
   void FillClass(THashTable *classTable, Int_t nValues, Double_t *values);
   
   void PrintPDF(Option_t* opt);
   void PrintStructure() const;
 
   Bool_t IsHistogramOk(const char* classTable, const char* name);
-  
-  Double_t* MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax) const;
-  Double_t* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax) const;
   
   enum {kNoAutoFill=1000000000};
 

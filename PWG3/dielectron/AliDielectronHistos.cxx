@@ -39,8 +39,9 @@
 #include <TKey.h>
 #include <TAxis.h>
 #include <TVirtualPS.h>
-// #include <TVectorD.h>
+#include <TVectorD.h>
 
+#include "AliDielectronHelper.h"
 #include "AliDielectronHistos.h"
 
 
@@ -95,25 +96,16 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
   //
   // Default histogram creation 1D case
   //
-  if (!IsHistogramOk(histClass,name)) return;
 
-  Double_t *binLimX=0x0;
+  TVectorD *binLimX=0x0;
   
   if (logBinX) {
-    binLimX=MakeLogBinning(nbinsX, xmin, xmax);
+    binLimX=AliDielectronHelper::MakeLogBinning(nbinsX, xmin, xmax);
   } else {
-    binLimX=MakeLinBinning(nbinsX, xmin, xmax);
+    binLimX=AliDielectronHelper::MakeLinBinning(nbinsX, xmin, xmax);
   }
 
-  TH1* hist=new TH1F(name,title,nbinsX,binLimX);
-
-  delete [] binLimX;
-  
-  Bool_t isReserved=fReservedWords->Contains(histClass);
-  if (isReserved)
-    UserHistogramReservedWords(histClass, hist, valTypeX);
-  else
-    UserHistogram(histClass, hist, valTypeX);
+  UserHistogram(histClass,name,title,binLimX,valTypeX);
 }
 
 //_____________________________________________________________________________
@@ -128,31 +120,21 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
   //
   if (!IsHistogramOk(histClass,name)) return;
 
-  Double_t *binLimX=0x0;
-  Double_t *binLimY=0x0;
+  TVectorD *binLimX=0x0;
+  TVectorD *binLimY=0x0;
   
   if (logBinX) {
-    binLimX=MakeLogBinning(nbinsX, xmin, xmax);
+    binLimX=AliDielectronHelper::MakeLogBinning(nbinsX, xmin, xmax);
   } else {
-    binLimX=MakeLinBinning(nbinsX, xmin, xmax);
+    binLimX=AliDielectronHelper::MakeLinBinning(nbinsX, xmin, xmax);
   }
   if (logBinY) {
-    binLimY=MakeLogBinning(nbinsY, ymin, ymax);
+    binLimY=AliDielectronHelper::MakeLogBinning(nbinsY, ymin, ymax);
   } else {
-    binLimY=MakeLinBinning(nbinsY, ymin, ymax);
+    binLimY=AliDielectronHelper::MakeLinBinning(nbinsY, ymin, ymax);
   }
   
-  TH1* hist=new TH2F(name,title,nbinsX,binLimX,nbinsY,binLimY);
-  
-  delete [] binLimX;
-  delete [] binLimY;
-  
-  
-  Bool_t isReserved=fReservedWords->Contains(histClass);
-  if (isReserved)
-    UserHistogramReservedWords(histClass, hist, valTypeX+100*valTypeY);
-  else
-    UserHistogram(histClass, hist, valTypeX+100*valTypeY);
+  UserHistogram(histClass,name,title,binLimX,binLimY,valTypeX,valTypeY);
 }
 
 
@@ -169,39 +151,135 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
   //
   if (!IsHistogramOk(histClass,name)) return;
 
-  Double_t *binLimX=0x0;
-  Double_t *binLimY=0x0;
-  Double_t *binLimZ=0x0;
+  TVectorD *binLimX=0x0;
+  TVectorD *binLimY=0x0;
+  TVectorD *binLimZ=0x0;
   
   if (logBinX) {
-    binLimX=MakeLogBinning(nbinsX, xmin, xmax);
+    binLimX=AliDielectronHelper::MakeLogBinning(nbinsX, xmin, xmax);
   } else {
-    binLimX=MakeLinBinning(nbinsX, xmin, xmax);
+    binLimX=AliDielectronHelper::MakeLinBinning(nbinsX, xmin, xmax);
   }
   
   if (logBinY) {
-    binLimY=MakeLogBinning(nbinsY, ymin, ymax);
+    binLimY=AliDielectronHelper::MakeLogBinning(nbinsY, ymin, ymax);
   } else {
-    binLimY=MakeLinBinning(nbinsY, ymin, ymax);
+    binLimY=AliDielectronHelper::MakeLinBinning(nbinsY, ymin, ymax);
   }
   
   if (logBinZ) {
-    binLimZ=MakeLogBinning(nbinsZ, zmin, zmax);
+    binLimZ=AliDielectronHelper::MakeLogBinning(nbinsZ, zmin, zmax);
   } else {
-    binLimZ=MakeLinBinning(nbinsZ, zmin, zmax);
+    binLimZ=AliDielectronHelper::MakeLinBinning(nbinsZ, zmin, zmax);
+  }
+
+  UserHistogram(histClass,name,title,binLimX,binLimY,binLimZ,valTypeX,valTypeY,valTypeZ);
+}
+
+//_____________________________________________________________________________
+void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
+                                        const char* binning,
+                                        UInt_t valTypeX)
+{
+  //
+  // Histogram creation 1D case with arbitraty binning
+  //
+
+  TVectorD *binLimX=AliDielectronHelper::MakeArbitraryBinning(binning);
+  UserHistogram(histClass,name,title,binLimX,valTypeX);
+}
+
+//_____________________________________________________________________________
+void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
+                                        const TVectorD * const binsX,
+                                        UInt_t valTypeX/*=kNoAutoFill*/)
+{
+  //
+  // Histogram creation 1D case with arbitraty binning X
+  // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
+  //
+
+  Bool_t isOk=kTRUE;
+  isOk&=IsHistogramOk(histClass,name);
+  isOk&=(binsX!=0x0);
+
+  if (isOk){
+    TH1* hist=new TH1F(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
+  
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, valTypeX);
+    else
+      UserHistogram(histClass, hist, valTypeX);
   }
   
-  TH1* hist=new TH3F(name,title,nbinsX,binLimX,nbinsY,binLimY,nbinsZ,binLimZ);
+  delete binsX;
+}
+
+//_____________________________________________________________________________
+void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
+                                        const TVectorD * const binsX, const TVectorD * const binsY,
+                                        UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/)
+{
+  //
+  // Histogram creation 1D case with arbitraty binning X
+  // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
+  //
+
+  Bool_t isOk=kTRUE;
+  isOk&=IsHistogramOk(histClass,name);
+  isOk&=(binsX!=0x0);
+  isOk&=(binsY!=0x0);
+
+  if (isOk){
+    TH1* hist=new TH2F(name,title,
+                       binsX->GetNrows()-1,binsX->GetMatrixArray(),
+                       binsY->GetNrows()-1,binsY->GetMatrixArray());
   
-  delete [] binLimX;
-  delete [] binLimY;
-  delete [] binLimZ;
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, valTypeX+100*valTypeY);
+    else
+      UserHistogram(histClass, hist, valTypeX+100*valTypeY);
+  }
   
-  Bool_t isReserved=fReservedWords->Contains(histClass);
-  if (isReserved)
-    UserHistogramReservedWords(histClass, hist, valTypeX+100*valTypeY+10000*valTypeZ);
-  else
-    UserHistogram(histClass, hist, valTypeX+100*valTypeY+10000*valTypeZ);
+  delete binsX;
+  delete binsY;
+  
+}
+
+//_____________________________________________________________________________
+void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
+                                        const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
+                                        UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, UInt_t valTypeZ/*=0*/)
+{
+  //
+  // Histogram creation 1D case with arbitraty binning X
+  // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
+  //
+
+  Bool_t isOk=kTRUE;
+  isOk&=IsHistogramOk(histClass,name);
+  isOk&=(binsX!=0x0);
+  isOk&=(binsY!=0x0);
+  isOk&=(binsZ!=0x0);
+  
+  if (isOk){
+    TH1* hist=new TH3F(name,title,
+                       binsX->GetNrows()-1,binsX->GetMatrixArray(),
+                       binsY->GetNrows()-1,binsY->GetMatrixArray(),
+                       binsZ->GetNrows()-1,binsZ->GetMatrixArray());
+  
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, valTypeX+100*valTypeY+10000*valTypeZ);
+    else
+      UserHistogram(histClass, hist, valTypeX+100*valTypeY+10000*valTypeZ);
+  }
+  
+  delete binsX;
+  delete binsY;
+  delete binsZ;
 }
 
 //_____________________________________________________________________________
@@ -348,7 +426,7 @@ void AliDielectronHistos::FillClass(const char* histClass, Int_t nValues, const 
 // }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogramReservedWords(const char* histClass, TH1 *hist, UInt_t valTypes)
+void AliDielectronHistos::UserHistogramReservedWords(const char* histClass, const TH1 *hist, UInt_t valTypes)
 {
   //
   // Creation of histogram for all pair types
@@ -574,6 +652,8 @@ void AliDielectronHistos::SetHistogramList(THashList &list, Bool_t setOwner/*=kT
   if (setOwner){
     list.SetOwner(kFALSE);
     fHistoList.SetOwner(kTRUE);
+  } else {
+    fHistoList.SetOwner(kFALSE);
   }
 }
 
@@ -701,44 +781,3 @@ void AliDielectronHistos::SetReservedWords(const char* words)
   
   (*fReservedWords)=words;
 }
-
-//_____________________________________________________________________________
-Double_t* AliDielectronHistos::MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax) const
-{
-  //
-  // Make logarithmic binning
-  // the user has to delete the array afterwards!!!
-  //
-
-  //check limits
-  if (xmin<1e-20 || xmax<1e-20){
-    Error("MakeLogBinning","For Log binning xmin and xmax must be > 1e-20. Using linear binning instead!");
-    return MakeLinBinning(nbinsX, xmin, xmax);
-  }
-  Double_t *binLim=new Double_t[nbinsX+1];
-  Double_t first=xmin;
-  Double_t last=xmax;
-  Double_t expMax=TMath::Log(last/first);
-  for (Int_t i=0; i<nbinsX+1; ++i){
-    binLim[i]=first*TMath::Exp(expMax/nbinsX*(Double_t)i);
-  }
-  return binLim;
-}
-
-//_____________________________________________________________________________
-Double_t* AliDielectronHistos::MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax) const
-{
-  //
-  // Make logarithmic binning
-  // the user has to delete the array afterwards!!!
-  //
-  Double_t *binLim=new Double_t[nbinsX+1];
-  Double_t first=xmin;
-  Double_t last=xmax;
-  Double_t binWidth=(last-first)/nbinsX;
-  for (Int_t i=0; i<nbinsX+1; ++i){
-    binLim[i]=first+binWidth*(Double_t)i;
-  }
-  return binLim;
-}
-

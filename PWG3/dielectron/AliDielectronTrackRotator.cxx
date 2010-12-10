@@ -145,9 +145,9 @@ Bool_t AliDielectronTrackRotator::RotateTracks()
   // Actual track rotation
   // Find out particle type and perform the rotation
   //
-  
+
   const AliVTrack *trackP=dynamic_cast<AliVTrack*>(fkArrTracksP->UncheckedAt(fCurrentTackP));
-  const AliVTrack *trackN=dynamic_cast<AliVTrack*>(fkArrTracksP->UncheckedAt(fCurrentTackN));
+  const AliVTrack *trackN=dynamic_cast<AliVTrack*>(fkArrTracksN->UncheckedAt(fCurrentTackN));
   if (!trackP||!trackN) return kFALSE;
 
   

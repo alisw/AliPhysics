@@ -28,6 +28,7 @@ Detailed description
 #include <AliTriggerAnalysis.h>
 #include <AliESDVertex.h>
 #include <AliESDEvent.h>
+#include <AliMultiplicity.h>
 
 #include "AliDielectronEventCuts.h"
 
@@ -39,6 +40,7 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fVtxZmax(0.),
   fRequireVtx(kFALSE),
   fMinVtxContributors(0),
+  fMultITSTPC(kFALSE),
   fVtxType(kVtxTracks),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -57,6 +59,7 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fVtxZmax(0.),
   fRequireVtx(kFALSE),
   fMinVtxContributors(0),
+  fMultITSTPC(kFALSE),
   fVtxType(kVtxTracks),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -122,6 +125,13 @@ Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
     }
 
     if (!v0AND) return kFALSE;
+  }
+
+  if (fMultITSTPC){
+    const AliESDVertex *vtxESDTPC=ev->GetPrimaryVertexTPC();
+    const AliMultiplicity *multESD = ev->GetMultiplicity();
+    if ( vtxESDTPC && multESD && vtxESDTPC->GetNContributors() < (-10.+0.25*multESD->GetNumberOfITSClusters(0)) )
+      return kFALSE;
   }
   
   return kTRUE;

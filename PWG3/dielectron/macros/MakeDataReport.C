@@ -343,6 +343,12 @@ Int_t baseColors[5]={kRed, kRed, kRed, kRed, kRed};
   alephParameters[2] = 5.04114e-11;
   alephParameters[3] = 2.12543e+00;
   alephParameters[4] = 4.88663e+00;
+      alephParameters[0] = 1.25202/50.;   //was 1.79571/55.;
+      alephParameters[1] = 2.74992e+01;   //was 22.0028;
+      alephParameters[2] = TMath::Exp(-3.31517e+01);  //was1.55354e-11;
+      alephParameters[3] = 2.46246;       //was 2.39804;
+      alephParameters[4] = 6.78938;       //was 5.1209;
+
   Double_t mip=50;
 
   Color_t color=kRed;
@@ -414,9 +420,9 @@ c->SetAlias("nCls","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
 
 //-- nsigma
 c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
-c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-1 && Leg2_TPC_nSigma_Electrons>-1");
+// c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-1 && Leg2_TPC_nSigma_Electrons>-1");
 c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
-c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3.&&(Leg2_TPC_nSigma_Protons)>3.");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
 c->SetAlias("pidSig","cutE&&cutPi&&cutP");
 
 //-- Pi param
@@ -427,36 +433,43 @@ c->SetAlias("pidParam","eleParam&&cutP");
 
 
 c->SetAlias("LegEta","abs(Leg1_Eta)<0.9&&abs(Leg2_Eta<0.9)");
+c->SetAlias("LegNcl","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
 c->SetAlias("Rap","abs(Y)<0.9");
 c->SetAlias("QA","LegNcl&&LegEta&&Rap");
 c->SetAlias("spdFirst","(Leg1_ITS_clusterMap&1)==1 && (Leg2_ITS_clusterMap&1)==1");
+c->SetAlias("LegNclDiffIter1","abs(Leg1_NclsTPC-Leg1_NclsTPCiter1)<10&&abs(Leg2_NclsTPC-Leg2_NclsTPCiter1)<10")
+c->SetAlias("LegNclPID","(Leg1_NclsTPC-Leg1_TPCsignalN)<20&&(Leg2_NclsTPC-Leg2_TPCsignalN)<20")
 
-
-c->SetAlias("cut","PairType==1&&nCls&&pidSig&&LegEta&&Rap")
+c->SetAlias("cut","PairType==1&&QA&&pidSig")
 
 c->SetMarkerStyle(20);
 c->SetMarkerSize(.8);
 c->SetMarkerColor(kBlack);
 c->SetLineColor(kBlack);
 
-// c->SetAlias("nCls","Leg1_NclsTPC>120&&Leg2_NclsTPC>120");
+// c->SetAlias("nCls","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
 c->Draw("M>>hM(50,2,4)","cut","e");
 
 c->SetMarkerColor(kBlue);
 c->SetLineColor(kBlue);
-c->SetAlias("cut","PairType==1&&nCls&&pidParam&&LegEta&&Rap")
+// c->SetAlias("cut","PairType==1&&nCls&&pidParam&&LegEta&&Rap")
+c->SetAlias("cut","PairType==1&&QA&&pidSig&&LegNclPID")
 // c->SetAlias("nCls","Leg1_NclsTPC>140&&Leg2_NclsTPC>140");
 c->Draw("M>>hM2(50,2,4)","cut","esame");
 
+
 c->SetMarkerColor(kGreen);
 c->SetLineColor(kGreen);
-c->SetAlias("nCls","Leg1_NclsTPC>150&&Leg2_NclsTPC>150");
+c->SetAlias("cut","PairType==1&&QA&&pidSig")
+c->SetAlias("LegNcl","Leg1_NclsTPC>120&&Leg2_NclsTPC>120");
+// c->SetAlias("nCls","Leg1_NclsTPC>150&&Leg2_NclsTPC>150");
 c->Draw("M>>hM3(50,2,4)","cut","esame");
 
 
 
 
-c->SetAlias("cut","PairType==1&&nCls&&LegEta&&Rap")
+c->SetAlias("LegNclDiffIter1","(Leg1_NclsTPC-Leg1_NclsTPCiter1)>-1&&(Leg2_NclsTPC-Leg2_NclsTPCiter1)>-1")
+c->SetAlias("cut","PairType==1&&LegNclDiffIter1")
 // histos
 AliDielectronHistos h("h","h");
 h.AddClass("TPCsignal");
@@ -473,6 +486,9 @@ h.UserHistogram("TPCsignal","nSigK","TPC n #sigma Kaons;P [GeV];TPC n #sigma Kao
 h.GetHistogram("TPCsignal","nSigK")->SetDirectory(gDirectory)
 h.UserHistogram("TPCsignal","nSigP","TPC n #sigma Protons;P [GeV];TPC n #sigma Protons",400,.3,40.,500,-10,10.,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","nSigP")->SetDirectory(gDirectory)
+
+h.UserHistogram("TPCsignal","nSigDiffP","ncls-nclsXX;P [GeV];ncls-nclsXX",400,.3,40.,200,-40,160.,0,0,kTRUE,kFALSE)
+h.GetHistogram("TPCsignal","nSigDiffP")->SetDirectory(gDirectory)
 
 
 c->Draw("Leg1_TPC_signal:Leg1_P_InnerParam>>sigTPC","cut","colz")
@@ -511,6 +527,55 @@ Pair->Scan("EventInFile:File.GetString()","","colsize=1 col=3.d:100.s")
 
 AliDielectronSignalFunc sig;
 sig.SetDefaults(1);
+
+
+//----------
+c->Draw("Leg1_NclsTPC>>hNcls(160,-0.5,159.5)","cut","goff");
+c->Draw("Leg2_NclsTPC>>+hNcls","cut","goff");
+hNclsPID->SetLineColor(kBlack)
+
+c->Draw("Leg1_TPCsignalN>>hNclsPID(160,-0.5,159.5)","cut","goff");
+c->Draw("Leg2_TPCsignalN>>+hNclsPID","cut","goff");
+hNclsPID->SetLineColor(kBlue)
+
+c->Draw("Leg1_NclsTPCiter1>>hNclsIter1(160,-0.5,159.5)","cut","goff");
+c->Draw("Leg2_NclsTPCiter1>>+hNclsIter1","cut","goff");
+hNclsIter1->SetLineColor(kGreen)
+
+hNcls->Draw();
+hNclsPID->Draw("same");
+hNclsIter1->Draw("same");
+//-----------
+
+
+
+c->Draw("Leg1_TPCsignalN:Leg1_NclsTPC>>hNclsPIDNcls(160,-0.5,159.5,160,-0.5,159.5)","cut","colz");
+c->Draw("Leg2_TPCsignalN:Leg2_NclsTPC>>+hNclsPIDNcls","cut","colz");
+
+
+c->Draw("Leg1_NclsTPC-Leg1_TPCsignalN:Leg1_P_InnerParam>>nSigDiffP","cut","colz");
+c->Draw("Leg2_NclsTPC-Leg2_TPCsignalN:Leg1_P_InnerParam>>+nSigDiffP","cut","colz");
+
+
+c->Draw("Leg1_NclsTPC-Leg1_NclsTPCiter1:Leg1_P_InnerParam>>nSigDiffP","cut","colz");
+c->Draw("Leg2_NclsTPC-Leg2_NclsTPCiter1:Leg1_P_InnerParam>>+nSigDiffP","cut","colz");
+
+
+
+
+
+
+
+
+
+c->Draw("Leg1_NclsTPC-Leg1_TPCsignalN:Leg1_TPC_nSigma_Electrons:Leg1_P_InnerParam>>hXX(100,0,10,20,-4,4)","cut","profcolz")
+c->Draw("Leg1_NclsTPC-Leg1_TPCsignalN:Leg2_TPC_nSigma_Electrons:Leg2_P_InnerParam>>+hXX","cut","profcolz")
+
+
+
+
+
+
 
 
 

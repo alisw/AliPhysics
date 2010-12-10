@@ -25,31 +25,26 @@
 #include <AliCFContainer.h>
 #include <AliInputEventHandler.h>
 #include <AliESDInputHandler.h>
-#include <AliAODInputHandler.h>
 #include <AliAnalysisManager.h>
 #include <AliVEvent.h>
-#include <AliTriggerAnalysis.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronHistos.h"
 #include "AliDielectronCF.h"
 #include "AliDielectronMC.h"
-#include "AliAnalysisTaskMultiDielectron.h"
+#include "AliAnalysisTaskDielectronME.h"
 
-ClassImp(AliAnalysisTaskMultiDielectron)
+ClassImp(AliAnalysisTaskDielectronME)
 
 //_________________________________________________________________________________
-AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
-  AliAnalysisTaskSE(),
+AliAnalysisTaskDielectronME::AliAnalysisTaskDielectronME() :
+  AliAnalysisTaskME(),
   fListDielectron(),
   fListHistos(),
   fListCF(),
+  fPoolDepth(2),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
-  fTriggerOnV0AND(kFALSE),
-  fRejectPileup(kFALSE),
-  fTriggerAnalysis(0x0),
-  fEventFilter(0x0),
   fEventStat(0x0)
 {
   //
@@ -58,17 +53,14 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
 }
 
 //_________________________________________________________________________________
-AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name) :
-  AliAnalysisTaskSE(name),
+AliAnalysisTaskDielectronME::AliAnalysisTaskDielectronME(const char *name) :
+  AliAnalysisTaskME(name),
   fListDielectron(),
   fListHistos(),
   fListCF(),
+  fPoolDepth(2),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
-  fTriggerOnV0AND(kFALSE),
-  fRejectPileup(kFALSE),
-  fTriggerAnalysis(0x0),
-  fEventFilter(0x0),
   fEventStat(0x0)
 {
   //
@@ -80,14 +72,11 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   DefineOutput(3, TH1D::Class());
   fListHistos.SetName("Dielectron_Histos_Multi");
   fListCF.SetName("Dielectron_CF_Multi");
-  fListDielectron.SetOwner();
-  fListHistos.SetOwner();
-  fListCF.SetOwner();
 }
 
 
 //_________________________________________________________________________________
-void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
+void AliAnalysisTaskDielectronME::UserCreateOutputObjects()
 {
   //
   // Add all histogram manager histogram lists to the output TList
@@ -95,10 +84,6 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
 
   if (!fListHistos.IsEmpty()||!fListCF.IsEmpty()) return; //already initialised
 
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
-//   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
-  
   TIter nextDie(&fListDielectron);
   AliDielectron *die=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
@@ -108,24 +93,16 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
   }
 
   Int_t cuts=fListDielectron.GetEntries();
-  Int_t nbins=kNbinsEvent+2*cuts;
+  Int_t nbins=2+2*cuts;
   if (!fEventStat){
     fEventStat=new TH1D("hEventStat","Event statistics",nbins,0,nbins);
     fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
     fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
-    if (fTriggerOnV0AND&&isESD) fEventStat->GetXaxis()->SetBinLabel(3,"V0and triggers");
-    if (fEventFilter) fEventStat->GetXaxis()->SetBinLabel(4,"After Event Filter");
-    if (fRejectPileup) fEventStat->GetXaxis()->SetBinLabel(5,"After Pileup rejection");
-    
     for (Int_t i=0; i<cuts; ++i){
-      fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+1)+2*i,Form("#splitline{1 candidate}{%s}",fListDielectron.At(i)->GetName()));
-      fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+2)+2*i,Form("#splitline{With >1 candidate}{%s}",fListDielectron.At(i)->GetName()));
+      fEventStat->GetXaxis()->SetBinLabel(3+2*i,Form("#splitline{1 candidate}{%s}",fListDielectron.At(i)->GetName()));
+      fEventStat->GetXaxis()->SetBinLabel(4+2*i,Form("#splitline{With >1 candidate}{%s}",fListDielectron.At(i)->GetName()));
     }
   }
-
-  if (!fTriggerAnalysis) fTriggerAnalysis=new AliTriggerAnalysis;
-  fTriggerAnalysis->EnableHistograms();
-  fTriggerAnalysis->SetAnalyzeMC(AliDielectronMC::Instance()->HasMC());
   
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
@@ -133,7 +110,7 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
+void AliAnalysisTaskDielectronME::UserExec(Option_t *)
 {
   //
   // Main loop. Called for every event
@@ -143,34 +120,17 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliESDInputHandler *esdHandler=0x0;
-  Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
-  Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
   if ( (esdHandler=dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler())) && esdHandler->GetESDpid() ){
     AliDielectronVarManager::SetESDpid(esdHandler->GetESDpid());
   } else {
     //load esd pid bethe bloch parameters depending on the existance of the MC handler
     // yes: MC parameters
     // no:  data parameters
-
-    //ESD case
-    if (isESD){
-      if (!AliDielectronVarManager::GetESDpid()){
-        
-        if (AliDielectronMC::Instance()->HasMC()) {
-          AliDielectronVarManager::InitESDpid();
-        } else {
-          AliDielectronVarManager::InitESDpid(1);
-        }
-      }
-    }
-    //AOD case
-    if (isAOD){
-      if (!AliDielectronVarManager::GetAODpidUtil()){
-        if (AliDielectronMC::Instance()->HasMC()) {
-          AliDielectronVarManager::InitAODpidUtil();
-        } else {
-          AliDielectronVarManager::InitAODpidUtil(1);
-        }
+    if (!AliDielectronVarManager::GetESDpid()){
+      if (AliDielectronMC::Instance()->HasMC()) {
+        AliDielectronVarManager::InitESDpid();
+      } else {
+        AliDielectronVarManager::InitESDpid(1);
       }
     }
   } 
@@ -183,48 +143,32 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   }
   
   //Before physics selection
-  fEventStat->Fill(kAllEvents);
+  fEventStat->Fill(0.);
   if (isSelected==0) {
     PostData(3,fEventStat);
     return;
   }
   //after physics selection
-  fEventStat->Fill(kSelectedEvents);
-
-  //V0and
-  if (fTriggerOnV0AND&&isESD){
-    if (!fTriggerAnalysis->IsOfflineTriggerFired(static_cast<AliESDEvent*>(InputEvent()), AliTriggerAnalysis::kV0AND)) return;
-  }
-  fEventStat->Fill(kV0andEvents);
-  
-  //event filter
-  if (fEventFilter) {
-    if (!fEventFilter->IsSelected(InputEvent())) return;
-  }
-  fEventStat->Fill(kFilteredEvents);
-  
-  //pileup
-  if (fRejectPileup){
-    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
-  }
-  fEventStat->Fill(kPileupEvents);
+  fEventStat->Fill(1.);
   
   //bz for AliKF
-  Double_t bz = InputEvent()->GetMagneticField();
+  Double_t bz = GetEvent(0)->GetMagneticField();
   AliKFParticle::SetField( bz );
 
-  AliDielectronPID::SetCorrVal((Double_t)InputEvent()->GetRunNumber());
-  
   //Process event in all AliDielectron instances
   TIter nextDie(&fListDielectron);
   AliDielectron *die=0;
   Int_t idie=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
-    die->Process(InputEvent());
-    if (die->HasCandidates()){
-      Int_t ncandidates=die->GetPairArray(1)->GetEntriesFast();
-      if (ncandidates==1) fEventStat->Fill((kNbinsEvent)+2*idie);
-      else if (ncandidates>1) fEventStat->Fill((kNbinsEvent+1)+2*idie);
+    for (Int_t evt1=0; evt1<fPoolDepth-1; evt1++){
+      for (Int_t evt2=evt1+1; evt2<fPoolDepth; evt2++){
+        die->Process((AliESDEvent*)GetEvent(evt1),(AliESDEvent*)GetEvent(evt2));
+        if (die->HasCandidates()){
+          Int_t ncandidates=die->GetPairArray(1)->GetEntriesFast();
+          if (ncandidates==1) fEventStat->Fill(3+2*idie);
+          else if (ncandidates>1) fEventStat->Fill(4+2*idie);
+        }
+      }
     }
     ++idie;
   }
@@ -235,7 +179,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
+void AliAnalysisTaskDielectronME::FinishTaskOutput()
 {
   //
   // Write debug tree

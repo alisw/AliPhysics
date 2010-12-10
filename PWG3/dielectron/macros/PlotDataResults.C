@@ -41,9 +41,18 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   //Set common Ranges
 //   d.SetRangeUser("Leg1_Pt",0.8,1000.);
 //   d.SetRangeUser("Leg2_Pt",0.8,1000.);
-//   d.SetRangeUser("Leg1_NclsTPC",120.,170.);
-//   d.SetRangeUser("Leg2_NclsTPC",120.,170.);
-  d.SetRangeUser("M",1.,5.);
+  d.SetRangeUser("Leg1_NclsTPC",140.,170.);
+  d.SetRangeUser("Leg2_NclsTPC",140.,170.);
+  d.SetRangeUser("Leg1_Pt",1.01,100000);
+  d.SetRangeUser("Leg2_Pt",1.01,100000);
+//   d.SetRangeUser("Leg1_TPC_nSigma_Electrons",-3,3);
+//   d.SetRangeUser("Leg2_TPC_nSigma_Electrons",-3,3);
+//   d.SetRangeUser("Leg1_TPC_nSigma_Pions",3,20);
+//   d.SetRangeUser("Leg2_TPC_nSigma_Pions",3,20);
+//   d.SetRangeUser("Leg1_TPC_nSigma_Protons",3,20);
+//   d.SetRangeUser("Leg2_TPC_nSigma_Protons",3,20);
+  
+  d.SetRangeUser("M",0.5,5.);
   //============================
   //SPD first
   //
@@ -51,7 +60,7 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   //--- Like sign subtraction
   AliDielectronSignalBase *sigFirst=GetSignalLS(d,stepFirst);
   SetStyle(sigFirst,"ITS First - Like Sign subtraction");
-  DrawSpectra(sigFirst,"cFirst",hStats,save);
+//   DrawSpectra(sigFirst,"cFirst",hStats,save);
   //--- Rotation subtraction
   AliDielectronSignalBase *sigFirstRot=GetSignalRot(d,stepFirst);
   SetStyle(sigFirstRot,"ITS First - Track rotation subtraction");
@@ -66,7 +75,7 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   //--- Rotation subtraction
   AliDielectronSignalBase *sigAnyRot=GetSignalRot(d,stepAny);
   SetStyle(sigAnyRot,"ITS First - Track rotation subtraction");
-//   DrawSpectra(sigAnyRot,"cAnyRot",save);
+//   DrawSpectra(sigAnyRot,"cAnyRot",hStats,save);
   
   //=============================
   //TOF up to 1.2, parametrisation in TPC ele
@@ -77,7 +86,7 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   //--- Rotation subtraction
   AliDielectronSignalBase *sigTOFmixRot=GetSignalRot(d,stepTOFmix);
   SetStyle(sigTOFmixRot,"TOF + TPC - Track rotation subtraction");
-//   DrawSpectra(sigTOFmixRot,"cTOFTPCrot",save);
+//   DrawSpectra(sigTOFmixRot,"cTOFTPCrot",hStats,save);
   
   if (hStats) delete hStats;
 }
@@ -127,7 +136,7 @@ AliDielectronSignalBase *GetSignalRot(AliDielectronCFdraw &d, Int_t step)
   arr->AddAt(d.Project("M",step),iType);
   
   AliDielectronSignalExt *sig=new AliDielectronSignalExt;
-  sig->SetScaleRawToBackground(3.2,4.);
+//   sig->SetScaleRawToBackground(3.2,4.);
   sig->SetIntegralRange(2.93,3.15);
   sig->SetMethod(AliDielectronSignalBase::kRotation);
   sig->Process(arr);
@@ -317,22 +326,22 @@ void DrawSpectra(AliDielectronSignalBase *sig, const char* cname, TH1  *hEventSt
   }
   
   if (save){
-    c->SaveAs(Form("%s.eps",cname));
+//     c->SaveAs(Form("%s.eps",cname));
     c->SaveAs(Form("%s.png",cname));
-
+/*
     FILE *out_file;
     if ( (out_file = fopen(Form("sig_%s.txt",cname), "w")) == NULL )
     {   fprintf(stderr, "Cannot open file %s\n", Form("sig_%s.txt",cname)); }
     fprintf(stdout, "Signal file: %s\n", Form("sig_%s.txt",cname));
     fprintf(out_file,"%3d %4.1f  %3.1f %4.2f  %4.1f %4.2f %d\n",(int)sigN,sigEr,sigS2B,sigS2Ber,sigSignif,sigSignifEr,(Int_t)afterPhys);
     fclose(out_file);
-    
+
     TFile outMinv(Form("Minv_%s.root",cname), "RECREATE");
     hUS->Write();
     hBackground->Write();
     hSignal->Write();
-    hMmc->Write();
-    outMinv.Close();
+    if (hMmc) hMmc->Write();
+    outMinv.Close();*/
 
   }
   

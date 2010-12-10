@@ -23,13 +23,13 @@
 #include <AliKFParticle.h>
 
 #include "AliDielectronHistos.h"
-#include "AliDielectronPair.h"
 
 class AliVEvent;
 class THashList;
 class AliDielectronCF;
 class AliDielectronDebugTree;
 class AliDielectronTrackRotator;
+class AliDielectronPair;
 
 //________________________________________________________________
 class AliDielectron : public TNamed {
@@ -145,7 +145,7 @@ private:
   void ProcessMC();
   
   void  FillHistograms(const AliVEvent *ev);
-  void  FillHistogramsPair(AliDielectronPair *pair);
+  void  FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFilter=kFALSE);
   void  FillHistogramsTracks(TObjArray **tracks);
 
   void  FillDebugTree();
