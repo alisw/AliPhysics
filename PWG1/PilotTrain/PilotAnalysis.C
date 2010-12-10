@@ -7,12 +7,13 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 Int_t runNumbers[5] = {137844};
 
 Bool_t doCDBconnect   = 0;
+Bool_t doEventStat    = 1;
+Bool_t doCentrality   = 1;
 Bool_t doQAsym        = 0;
 Bool_t doVZERO        = 0;   // there is a 2nd file
 Bool_t doVertex       = 0;
 Bool_t doSPD          = 0;   // needs RP   
 Bool_t doTPC          = 0;
-Bool_t doEventStat    = 1;
 Bool_t doSDD          = 0;   // needs RP
 Bool_t doSSDdEdx      = 0;
 // new 
@@ -24,7 +25,6 @@ Bool_t doImpParRes    = 0;
 Bool_t doMUON         = 0;
 Bool_t doTOF          = 0;
 Bool_t doHMPID        = 0;
-Bool_t doCentrality   = 1;
 
 Bool_t doMUONEff      = 0;   // NEEDS geometry
 Bool_t doV0           = 0;   // NEEDS MCtruth 
@@ -185,6 +185,8 @@ void AddAnalysisTasks()
   // Centrality (J. Thaeder)
   //
   if (doCentrality) {
+     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+     
      gROOT->LoadMacro("$ALICE_ROOT/PWG1/Centrality/AddTaskHIMultCorr.C");
      AliAnalysisTaskHIMultCorr *taskHIcentrality = AddTaskHIMultCorr();
   }   
