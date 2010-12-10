@@ -53,6 +53,7 @@ class AliRsnValue : public AliRsnTarget
       kEventLeadingPt,     // transverse momentum of the event leading particle
       kEventMult,          // multiplicity computed as the number of tracks
       kEventMultESDCuts,   // multiplicity computed as the number of track passing an ESD quality cut (need this cut defined)
+      kEventVz,            // Z position of event primary vertex
       
       kValueTypes          // last value is used to have a meaningless enum value for initializations
     };

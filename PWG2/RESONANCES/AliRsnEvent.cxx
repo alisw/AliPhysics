@@ -26,11 +26,15 @@
 
 ClassImp(AliRsnEvent)
 
+AliRsnEvent* AliRsnEvent::fgRsnEvent1 = 0;
+AliRsnEvent* AliRsnEvent::fgRsnEvent2 = 0;
+
 //_____________________________________________________________________________
 AliRsnEvent::AliRsnEvent(AliVEvent *ref, AliVEvent *refMC) :
   fRef(ref),
   fRefMC(refMC),
-  fLeading(-1)
+  fLeading(-1),
+  fLocalID(-1)
 {
 //
 // Default constructor.
@@ -42,7 +46,8 @@ AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
   TObject(event),
   fRef(event.fRef),
   fRefMC(event.fRefMC),
-  fLeading(event.fLeading)
+  fLeading(event.fLeading),
+  fLocalID(event.fLocalID)
 {
 //
 // Copy constructor.
@@ -60,8 +65,21 @@ AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent & event)
   fRef             = event.fRef;
   fRefMC           = event.fRefMC;
   fLeading         = event.fLeading;
+  fLocalID         = event.fLocalID;
 
   return (*this);
+}
+
+//_____________________________________________________________________________
+AliRsnEvent::~AliRsnEvent()
+{
+//
+// Destructor.
+// Dereferences global pointer, if needed.
+//
+
+  //if (gRsnCurrentEvent == this) gRsnCurrentEvent = 0;
+  //if (gRsnMixedEvent   == this) gRsnMixedEvent = 0;
 }
 
 //_____________________________________________________________________________
@@ -563,7 +581,7 @@ Bool_t AliRsnEvent::SetDaughterAODv0(AliRsnDaughter &out, Int_t i)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnEvent::SetDaughterESDcascade(AliRsnDaughter &out, Int_t i)
+Bool_t AliRsnEvent::SetDaughterESDcascade(AliRsnDaughter &, Int_t)
 {
 //
 // Setup the first argument to the track identified by the index.
@@ -576,7 +594,7 @@ Bool_t AliRsnEvent::SetDaughterESDcascade(AliRsnDaughter &out, Int_t i)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnEvent::SetDaughterAODcascade(AliRsnDaughter &out, Int_t i)
+Bool_t AliRsnEvent::SetDaughterAODcascade(AliRsnDaughter &, Int_t)
 {
 //
 // Setup the first argument to the track identified by the index.

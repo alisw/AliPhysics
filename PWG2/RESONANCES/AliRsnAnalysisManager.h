@@ -40,15 +40,15 @@ class AliRsnAnalysisManager : public TNamed
     virtual void   Print(Option_t *option = "") const;
 
     void           InitAllPairs(TList*list);
-    void           ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1);
-    void           ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1);
+    void           ProcessAllPairs();
+    void           ProcessAllPairsMC();
     AliRsnCutSet*  GetGlobalTrackCuts() {return &fGlobalTrackCuts;}
 
   private:
   
     TList        *fList;             // container for output histograms (external object)
     TObjArray     fPairs;            // collection of pair objects for the different outputs
-    AliRsnCutSet  fGlobalTrackCuts;  // a set of cuts which are applied to all tracks for all analysis, in order to put only once
+    AliRsnCutSet  fGlobalTrackCuts;  // a set of cuts which are applied to all tracks for all analysis
 
     ClassDef(AliRsnAnalysisManager, 1)
 };

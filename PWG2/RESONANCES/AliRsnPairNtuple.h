@@ -28,7 +28,6 @@ class AliRsnPairNtuple : public AliRsnPair
     void         GenerateNtuple(const char *prefix = "", TList *list = 0);
     virtual void Compute();
     virtual void Init(const char *prefix, TList *list);
-    virtual void SetEvent(AliRsnEvent *event);
 
   private:
 

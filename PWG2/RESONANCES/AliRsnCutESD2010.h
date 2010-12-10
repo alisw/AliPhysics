@@ -16,6 +16,7 @@
 #include "AliPID.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDpid.h"
 #include "AliRsnCut.h"
 
 class AliESDpid;
@@ -31,10 +32,15 @@ class AliRsnCutESD2010 : public AliRsnCut
     AliRsnCutESD2010& operator=(const AliRsnCutESD2010& copy);
     virtual ~AliRsnCutESD2010() {;};
 
-    const AliESDtrackCuts* GetCutsTPC() const {return &fESDtrackCutsTPC;}
-    const AliESDtrackCuts* GetCutsITS() const {return &fESDtrackCutsITS;}
-    virtual Bool_t         IsSelected(TObject *object);
-    virtual void           Print(const Option_t *option = "") const;
+    AliESDpid*       GetESDpid()  {return &fESDpid;}
+    AliESDtrackCuts* GetCutsTPC() {return &fESDtrackCutsTPC;}
+    AliESDtrackCuts* GetCutsITS() {return &fESDtrackCutsITS;}
+    void             CopyCutsTPC(const AliESDtrackCuts *cuts) {fESDtrackCutsTPC = (*cuts);}
+    void             CopyCutsITS(const AliESDtrackCuts *cuts) {fESDtrackCutsITS = (*cuts);}
+    void             CopyCutsTPC(AliESDtrackCuts cuts)        {fESDtrackCutsTPC = cuts;}
+    void             CopyCutsITS(AliESDtrackCuts cuts)        {fESDtrackCutsITS = cuts;}
+    virtual Bool_t   IsSelected(TObject *object);
+    virtual void     Print(const Option_t *option = "") const;
     
     void             SetMC       (Bool_t yn = kTRUE);
     void             SetCheckITS (Bool_t yn = kTRUE) {fCheckITS = yn;}
@@ -52,14 +58,15 @@ class AliRsnCutESD2010 : public AliRsnCut
     void             SetTPCpar(Double_t p0, Double_t p1, Double_t p2, Double_t p3, Double_t p4)
                        {fTPCpar[0]=p0;fTPCpar[1]=p1;fTPCpar[2]=p2;fTPCpar[3]=p3;fTPCpar[4]=p4;}
 
-    void             SetTOFcalibrateESD(Bool_t yn = kTRUE)  {fTOFcalibrateESD = yn;}
-    void             SetTOFcorrectTExp (Bool_t yn = kTRUE)  {fTOFcorrectTExp = yn;}
-    void             SetTOFuseT0       (Bool_t yn = kTRUE)  {fTOFuseT0 = yn;}
-    void             SetTOFtuneMC      (Bool_t yn = kTRUE)  {fTOFtuneMC = yn;}
-    void             SetTOFresolution  (Double_t v = 100.0) {fTOFresolution = v;}
     void             SetTOFrange       (Double_t v1, Double_t v2) {fMinTOF = v1; fMaxTOF = v2;}
     
-    virtual void     SetEvent(AliRsnEvent *event);
+    virtual void     ProcessEvent(AliESDEvent *esd);
+    
+  //static void      SetTOFcalibrateESD(Bool_t yn)  {fgTOFcalibrateESD = yn;}
+    static void      SetTOFcorrectTExp (Bool_t yn)  {fgTOFcorrectTExp  = yn;}
+    static void      SetTOFuseT0       (Bool_t yn)  {fgTOFuseT0        = yn;}
+    static void      SetTOFtuneMC      (Bool_t yn)  {fgTOFtuneMC       = yn;}
+    static void      SetTOFresolution  (Double_t r) {fgTOFresolution   = r;}
 
   protected:
   
@@ -87,20 +94,21 @@ class AliRsnCutESD2010 : public AliRsnCut
     Double_t                fMinTPCband;       //  range for TPC de/dx band - min
     Double_t                fMaxTPCband;       //  range for TPC de/dx band - max
     
-    AliESDpid              *fESDpid;           //  ESD PID object
+    AliESDpid               fESDpid;           //  ESD PID object
     AliESDtrackCuts         fESDtrackCutsTPC;  //  ESD standard defined track cuts for TPC tracks
     AliESDtrackCuts         fESDtrackCutsITS;  //  ESD standard defined track cuts for ITS-SA tracks
-    AliTOFT0maker          *fTOFmaker;         //! TOF time0 computator
-    AliTOFcalib            *fTOFcalib;         //! TOF calibration
-    Bool_t                  fTOFcalibrateESD;  //  TOF settings
-    Bool_t                  fTOFcorrectTExp;   //  TOF settings
-    Bool_t                  fTOFuseT0;         //  TOF settings
-    Bool_t                  fTOFtuneMC;        //  TOF settings
-    Double_t                fTOFresolution;    //  TOF settings
     Double_t                fMinTOF;           //  range for TOF PID (min)
     Double_t                fMaxTOF;           //  range for TOF PID (max)
     
+  //static Bool_t           fgTOFcalibrateESD; //! TOF settings
+    static Bool_t           fgTOFcorrectTExp;  //! TOF settings
+    static Bool_t           fgTOFuseT0;        //! TOF settings
+    static Bool_t           fgTOFtuneMC;       //! TOF settings
+    static Double_t         fgTOFresolution;   //! TOF settings
+    static AliTOFT0maker   *fgTOFmaker;        //! TOF time0 computator
+    static AliTOFcalib     *fgTOFcalib;        //! TOF calibration
     static Int_t            fgLastRun;         //! last run number
+    static Int_t            fgLastEventID;     //! ID of last event processed
 
     ClassDef(AliRsnCutESD2010, 1)
 };
@@ -117,10 +125,7 @@ inline Bool_t AliRsnCutESD2010::IsITSTPC(AliESDtrack *vtrack)
     return kFALSE;
   }
   
-  ULong_t status = (ULong_t)vtrack->GetStatus();
-  ULong_t sTPCin = status & AliESDtrack::kTPCin;
-  
-  if (sTPCin == 0) return kFALSE;
+  return vtrack->IsOn(AliESDtrack::kTPCin);
   
   return kTRUE;
 }
@@ -137,16 +142,12 @@ inline Bool_t AliRsnCutESD2010::IsITSSA(AliESDtrack *vtrack)
     return kFALSE;
   }
   
-  ULong_t status     = (ULong_t)vtrack->GetStatus();
-  ULong_t sTPCin     = status & AliESDtrack::kTPCin;
-  ULong_t sITSrefit  = status & AliESDtrack::kITSrefit;
-  ULong_t sITSpureSA = status & AliESDtrack::kITSpureSA;
-  ULong_t sITSpid    = status & AliESDtrack::kITSpid;
+  Bool_t isTPCin     = vtrack->IsOn(AliESDtrack::kTPCin);
+  Bool_t isITSrefit  = vtrack->IsOn(AliESDtrack::kITSrefit);
+  Bool_t isITSpureSA = vtrack->IsOn(AliESDtrack::kITSpureSA);
+  Bool_t isITSpid    = vtrack->IsOn(AliESDtrack::kITSpid);
   
-  if (sTPCin     != 0) return kFALSE;
-  if (sITSrefit  == 0) return kFALSE;
-  if (sITSpureSA != 0) return kFALSE;
-  if (sITSpid    == 0) return kFALSE;
+  return ( (!isTPCin) && isITSrefit && (!isITSpureSA) && isITSpid );
   
   return kTRUE;
 }
@@ -164,12 +165,13 @@ inline Bool_t AliRsnCutESD2010::MatchTOF(AliESDtrack *vtrack)
     return kFALSE;
   }
   
-  ULong_t status  = (ULong_t)vtrack->GetStatus();
-  ULong_t sTOFout = status & AliESDtrack::kTOFout;
-  ULong_t sTIME   = status & AliESDtrack::kTIME;
+  // require a minimum length to have meaningful match
+  if (vtrack->GetIntegratedLength() < 350.) return kFALSE;
   
-  if (sTOFout == 0) return kFALSE;
-  if (sTIME   == 0) return kFALSE;
+  Bool_t isTOFout = vtrack->IsOn(AliESDtrack::kTOFout);
+  Bool_t isTIME   = vtrack->IsOn(AliESDtrack::kTIME);
+  
+  return ( isTOFout && isTIME );
   
   return kTRUE;
 }

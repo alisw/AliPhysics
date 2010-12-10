@@ -13,60 +13,78 @@
 Bool_t AddRsnAnalysisMult
 (
   const char *options,
-  const char *configs = "RsnConfigNoSA.C RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C",
+  //const char *configs = "RsnConfigNoSA.C RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C",
+  const char *configs = "RsnConfigDipSA.C",
   const char *path    = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi"
 )
 {
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
-  // interpret config string
-  TString strDataLabel(options);
-  Bool_t isSim = strDataLabel.Contains("sim");
   
-  // initialize cuts:
-  // always the same on primary vertex
-  // different on multiplicity
-  gROOT->LoadMacro(Form("%s/ConfigESDCutsTPC.C", path));
-  Double_t                  multMin[6] = {0    , 0,  6, 10, 15, 23   };
-  Double_t                  multMax[6] = {1E+10, 6, 10, 15, 23, 1E+10};
-  AliRsnCutPrimaryVertex   *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-  AliRsnCutValue           *cutMult[6] = {0, 0, 0, 0, 0, 0};
-  for (Int_t i = 0; i < 6; i++)
+  // define a common cut on primary vertex, 
+  // which also checks pile-up
+  AliRsnCutPrimaryVertex *cutVertex  = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+  cutVertex->SetCheckPileUp(kTRUE);
+  
+  // initialize multiplicity cuts, and loads a standard macro for 
+  // initializing the required support object
+  gROOT->LoadMacro(Form("%s/QualityCutsTPC.C", path));
+  Double_t         multMin[5] = {0, 6, 10, 15, 23   };
+  Double_t         multMax[5] = {5, 9, 14, 22, 1E+10};
+  AliRsnCutValue  *cutMult[5] = {0, 0,  0,  0, 0    };
+  for (Int_t i = 0; i < 5; i++)
   {
     cutMult[i] = new AliRsnCutValue(Form("cutMult_%d", i), AliRsnValue::kEventMultESDCuts, multMin[i], multMax[i]);
     
-    // add the support cut to the value which computes the multiplicity
-    AliESDtrackCuts *cuts = new AliESDtrackCuts;
-    ConfigESDCutsTPC(cuts);
+    // initialize the support object: AliESDtrackCuts
+    // configured using the standard values
+    AliESDtrackCuts *cuts = new AliESDtrackCuts(QualityCutsTPC());
     cutMult[i]->GetValueObj()->SetSupportObject(cuts);
   }
 
-  // initialize tasks with all available slots, even if not all of them will be used:
-  // loop on all multiplicity bins
-  for (Int_t i = 0; i < 6; i++)
+  // initialize several tasks, each one with different multiplicity cut
+  // and all with the same primary vertex + pile-up cut
+  for (Int_t i = 0; i < 1; i++)
   {
+    
+    // create the task and connect with physics selection
     AliRsnAnalysisSE *task = new AliRsnAnalysisSE(Form("RsnAnalysis_%d", i));
     task->SetZeroEventPercentWarning(100.0);
     task->SelectCollisionCandidates();
     
-    task->GetEventCuts()->AddCut(cutVertex);
-    task->GetEventCuts()->AddCut(cutMult[i]);
-    task->GetEventCuts()->SetCutScheme(Form("cutVertex&%s", cutMult[i]->GetName()));
+    // setup the cuts (first loop is for all multiplicities)
+    if (i == 0)
+    {
+      task->GetEventCuts()->AddCut(cutVertex);
+      task->GetEventCuts()->SetCutScheme("cutVertex");
+    }
+    else
+    {
+      task->GetEventCuts()->AddCut(cutVertex);
+      task->GetEventCuts()->AddCut(cutMult[i - 1]);
+      task->GetEventCuts()->SetCutScheme(Form("cutVertex&%s", cutMult[i - 1]->GetName()));
+    }
 
     // add the task to manager
     mgr->AddTask(task);
 
-    // load and execute configuration macroes
-    TString    sList(configs);
-    TObjArray *list = sList.Tokenize(" ");
-    Int_t nConfig = list->GetEntries();
-    Int_t iConfig = 0;
+    // load and execute all required configuration macroes in the string (arg #2)
+    TString    sList   = configs;
+    TObjArray *list    = sList.Tokenize(" ");
+    Int_t      nConfig = list->GetEntries();
+    Int_t      iConfig = 0;
     for (iConfig = 0; iConfig < nConfig; iConfig++)
     {
       TObjString *ostr = (TObjString*)list->At(iConfig);
-      cout << "***** Processing config macro '" << ostr->GetString().Data() << endl;
-      gROOT->ProcessLine(Form(".x %s/%s(\"%s\",\"%s\",\"%s\")", path, ostr->GetString().Data(), task->GetName(), options, path));
+      
+      // the config macro is assumed to be stored in the path in argument #3
+      // and to have three arguments: task name, a free string of options and the path where it is stored
+      // --> all of them is a string, and then it must be passed with the quote marks
+      const char *macro     = ostr->GetString().Data();
+      const char *argName   = Form("\"%s\"", task->GetName());
+      const char *argOption = Form("\"%s\"", options);
+      const char *argPath   = Form("\"%s\"", path);
+      gROOT->ProcessLine(Form(".x %s/%s(%s,%s,%s)", path, macro, argName, argOption, argPath));
     }
 
     // connect input container according to source choice
@@ -81,7 +99,8 @@ Bool_t AddRsnAnalysisMult
     AliAnalysisDataContainer *outputHist = mgr->CreateContainer(Form("RsnHist_%d", i), TList::Class(), AliAnalysisManager::kOutputContainer, commonPath);
     mgr->ConnectOutput(task, 1, outputInfo);
     mgr->ConnectOutput(task, 2, outputHist);
-  }
+    
+  } // end loop on tasks
 
   return kTRUE;
 }

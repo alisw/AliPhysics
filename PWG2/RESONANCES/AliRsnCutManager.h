@@ -38,8 +38,6 @@ class AliRsnCutManager : public TNamed
     AliRsnCutManager& operator=(const AliRsnCutManager& cut);
     ~AliRsnCutManager();
     
-    void           SetEvent(AliRsnEvent *event);
-    
     AliRsnCutSet*  GetCommonDaughterCuts() {return &fDaughterCutsCommon;}
     AliRsnCutSet*  GetDaughter1Cuts()      {return &fDaughterCuts1;}
     AliRsnCutSet*  GetDaughter2Cuts()      {return &fDaughterCuts2;}
@@ -49,6 +47,8 @@ class AliRsnCutManager : public TNamed
     Bool_t         PassDaughter1Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts2.IsSelected(daughter);}
     Bool_t         PassDaughter2Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts2.IsSelected(daughter);}
     Bool_t         PassMotherCuts(AliRsnMother *mother)             {return fMotherCuts.IsSelected(mother);}
+    Bool_t         PassSpecificDaughterCuts(Bool_t first, AliRsnDaughter *daughter)
+                     {if (first) return PassDaughter1Cuts(daughter); else return PassDaughter2Cuts(daughter);}
 
   private:
 

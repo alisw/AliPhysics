@@ -194,7 +194,7 @@ Bool_t AliRsnCutSet::IsSelected(TObject *object)
 }
 
 //_____________________________________________________________________________
-void AliRsnCutSet::SetCutScheme(const TString & theValue)
+void AliRsnCutSet::SetCutScheme(const char *theValue)
 {
 //
 // Define the combination of cuts with logical operators
@@ -365,19 +365,4 @@ TString AliRsnCutSet::GetCutSchemeIndexed()
   }
   AliDebug(AliLog::kDebug,"->");
   return str;
-}
-
-//_____________________________________________________________________________
-void AliRsnCutSet::SetEvent(AliRsnEvent *event)
-{
-//
-// Set the reference event to all contained cuts
-//
-
-  Int_t i;
-  AliRsnCut *cut;
-  for (i = 0; i < fCuts.GetEntriesFast(); i++) {
-    cut = (AliRsnCut*) fCuts.At(i);
-    if (cut) cut->SetEvent(event);
-  }
 }

@@ -43,6 +43,7 @@ class AliRsnAnalysisEffSE : public AliRsnVAnalysisTaskSE
     virtual void    RsnUserCreateOutputObjects();
     virtual void    RsnUserExec(Option_t*);
     virtual void    RsnTerminate(Option_t*);
+    virtual Bool_t  EventProcess();
 
     // settings
     AliRsnCutSet*   GetEventCuts() {return &fEventCuts;}

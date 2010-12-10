@@ -47,13 +47,12 @@ class AliRsnPair : public TNamed
     AliRsnCutManager* GetCutManager() {return &fCutManager;}
     AliRsnMother*     GetMother() {return &fMother;}
     AliRsnPairDef*    GetPairDef() {return fPairDef;}
-    Bool_t            Fill(AliRsnDaughter *d0, AliRsnDaughter *d1, AliRsnEvent *ev1, AliRsnEvent *ev2);
+    Bool_t            Fill(AliRsnDaughter *d0, AliRsnDaughter *d1);
     Int_t             GetCount() const {return fCount;}
     void              ResetCount() {fCount = 0;}
     
     virtual void      Compute();
     virtual void      Init(const char *prefix, TList *list);
-    virtual void      SetEvent(AliRsnEvent *event);
 
   protected:
 
@@ -65,7 +64,6 @@ class AliRsnPair : public TNamed
     AliRsnPairDef    *fPairDef;         //  pair definition (particles, charges)
     AliRsnCutManager  fCutManager;      //  collection of all cuts
     AliRsnMother      fMother;          //  mother candidate (to avoid creating it continuously)
-    AliRsnEvent      *fEvent;           //! pointer to current event
     
   private:
 

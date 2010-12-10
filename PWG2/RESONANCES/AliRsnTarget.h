@@ -28,10 +28,10 @@ class AliRsnTarget : public TNamed
       kTargetTypes
     };
 
-    AliRsnTarget() : fTargetType(kTargetTypes), fEvent(0x0) { /*nothing*/ }
-    AliRsnTarget(const char *name, ETargetType type) : TNamed(name, ""), fTargetType(type), fEvent(0x0) { /*nothing*/ }
-    AliRsnTarget(const AliRsnTarget& copy) : TNamed(copy), fTargetType(copy.fTargetType), fEvent(copy.fEvent) { /*nothing*/ }
-    AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; fEvent = copy.fEvent; return (*this); }
+    AliRsnTarget() : fTargetType(kTargetTypes) { /*nothing*/ }
+    AliRsnTarget(const char *name, ETargetType type) : TNamed(name, ""), fTargetType(type) { /*nothing*/ }
+    AliRsnTarget(const AliRsnTarget& copy) : TNamed(copy), fTargetType(copy.fTargetType) { /*nothing*/ }
+    AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; return (*this); }
     virtual ~AliRsnTarget() { /*nothing*/ }
     
     Bool_t         IsTarget(ETargetType targetType)  {return (fTargetType == targetType);}
@@ -41,13 +41,15 @@ class AliRsnTarget : public TNamed
     void           SetTargetType(ETargetType type)   {fTargetType = type;}
     Bool_t         TargetOK(TObject *object);
     
-    AliRsnEvent*   GetEvent() {return fEvent;}
-    virtual void   SetEvent(AliRsnEvent *event);
+    static AliRsnEvent*  GetCurrentEvent()                   {return fgCurrentEvent;}
+    static void          SetCurrentEvent(AliRsnEvent *event) {fgCurrentEvent = event;}
+    static void          SwitchToFirst()                     {fgCurrentEvent = AliRsnEvent::GetCurrentEvent1();}
+    static void          SwitchToSecond()                    {fgCurrentEvent = AliRsnEvent::GetCurrentEvent2();}
 
   protected:
   
-    ETargetType  fTargetType;  //  target type selected for this object
-    AliRsnEvent *fEvent;       //! pointer to current event (useful in many cases)
+    ETargetType         fTargetType;     //  target type selected for this object
+    static AliRsnEvent *fgCurrentEvent;  //! pointer to current event (useful in many cases)
     
     // ROOT dictionary
     ClassDef(AliRsnTarget, 1)

@@ -36,8 +36,7 @@ AliRsnPair::AliRsnPair(const char *name, AliRsnPairDef *def) :
   fCount(0),
   fPairDef(def),
   fCutManager(Form("cutMgr_%s", name)),
-  fMother(),
-  fEvent(0x0)
+  fMother()
 {
 //
 // Default constructor
@@ -53,8 +52,7 @@ AliRsnPair::AliRsnPair(const AliRsnPair& copy) :
   fCount(copy.fCount),
   fPairDef(copy.fPairDef),
   fCutManager(copy.fCutManager),
-  fMother(copy.fMother),
-  fEvent(0x0)
+  fMother(copy.fMother)
 {
 //
 // Default constructor
@@ -71,7 +69,6 @@ AliRsnPair& AliRsnPair::operator=(const AliRsnPair& copy)
   fPairDef = copy.fPairDef;
   fMother = copy.fMother;
   fCutManager = copy.fCutManager;
-  fEvent = 0x0;
 
   return (*this);
 }
@@ -97,7 +94,7 @@ void AliRsnPair::Print(Option_t* /*option*/) const
 
 //_____________________________________________________________________________
 Bool_t AliRsnPair::Fill
-(AliRsnDaughter *daughter0, AliRsnDaughter *daughter1, AliRsnEvent *ev0, AliRsnEvent *ev1)
+(AliRsnDaughter *daughter0, AliRsnDaughter *daughter1)
 {
 //
 // Sets the two passed daughters to the AliRsnMother data member of this object
@@ -125,7 +122,7 @@ Bool_t AliRsnPair::Fill
   if (daughter1->ChargeChar() != fPairDef->GetCharge(1)) return kFALSE;
     
   // cuts on track #1 & common
-  fCutManager.SetEvent(ev0);
+  AliRsnTarget::SwitchToFirst();
   if (!fCutManager.PassDaughter1Cuts(daughter0)) 
   {
     AliDebug(AliLog::kDebug+2, "Specific cuts for track #1 not passed");
@@ -138,7 +135,7 @@ Bool_t AliRsnPair::Fill
   }
   
   // cuts on track #2 & common
-  fCutManager.SetEvent(ev1);
+  AliRsnTarget::SwitchToSecond();
   if (!fCutManager.PassDaughter2Cuts(daughter1))
   {
     AliDebug(AliLog::kDebug+2, "Specific cuts for track #2 not passed");
@@ -150,11 +147,9 @@ Bool_t AliRsnPair::Fill
     return kFALSE;
   }
   
-  // point to first event as reference
-  fEvent = ev0;
-  
-  // define pair & check
-  fCutManager.SetEvent(fEvent);
+  // point again to first event as reference
+  // and for checking the pair cuts
+  AliRsnTarget::SwitchToFirst();
   if (!fCutManager.PassMotherCuts(&fMother)) return kFALSE;
   
   // if required a true pair, check this here and eventually return a fail message
@@ -231,14 +226,4 @@ void AliRsnPair::Init(const char* /*prefix*/, TList* /*list*/)
 //
 
   AliWarning("Implement this method in derived classes");
-}
-
-//_____________________________________________________________________________
-void AliRsnPair::SetEvent(AliRsnEvent *event)
-{
-//
-// Set current event
-//
-
-  fEvent = event;
 }

@@ -129,10 +129,6 @@ void AliRsnAnalysisManager::InitAllPairs(TList *list)
 
   AliDebug(AliLog::kDebug+2,"<-");
 
-//   TList *list = new TList();
-//   list->SetName(GetName());
-//   list->SetOwner();
-
   AliRsnPair   *pair = 0;
   TObjArrayIter next(&fPairs);
   Int_t i = 0;
@@ -146,61 +142,74 @@ void AliRsnAnalysisManager::InitAllPairs(TList *list)
     TH1I *hPairUsed = new TH1I(Form("_%s_USED", pair->GetName()), "Used events for pair", 2, 0, 2);
     list->Add(hPairUsed);
   }
-  AliDebug(AliLog::kDebug+2, "->");
-//   return list;
-
+  
   fList = list;
+  
+  AliDebug(AliLog::kDebug+2, "->");
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
+void AliRsnAnalysisManager::ProcessAllPairs()
 {
 //
 // Process one or two events for all pair managers.
 //
 
+  static Int_t evnum = 0;
+  evnum++;
+
   AliDebug(AliLog::kDebug+2,"<-");
   
-  if (!ev1) ev1 = ev0;
+  // skip if the global event pointers are NULL
+  if (!AliRsnEvent::IsCurrentEvent1()) return;
+  if (!AliRsnEvent::IsCurrentEvent2()) return;
   
+  // for better readability, reference two pointers to the current events
+  AliRsnEvent *ev0 = AliRsnEvent::GetCurrentEvent1();
+  AliRsnEvent *ev1 = AliRsnEvent::GetCurrentEvent2();
+  
+  // count total number of candidates per event
+  // (sum of tracks, V0s and cascades)
   Int_t nTot[2];
-  nTot[0] = ev0->GetAbsoluteSum();
-  nTot[1] = ev1->GetAbsoluteSum();
+  nTot[0] = AliRsnEvent::GetCurrentEvent1()->GetAbsoluteSum();
+  nTot[1] = AliRsnEvent::GetCurrentEvent2()->GetAbsoluteSum();
   
-  // external loop
-  // joins the loop on tracks and v0s, by looping the indexes from 0
-  // to the sum of them, and checking what to take depending of its value
-  // in this step, the global cuts are checked
-  Int_t          i0, i1, i, realIndex;
+  // variables
+  Int_t          i0, i1, i, start, index0, index1;
   AliRsnDaughter daughter0, daughter1;
   AliRsnPair    *pair = 0x0;
   TObjArrayIter  next(&fPairs);
-  AliRsnDaughter::ERefType type;
+  AliRsnDaughter::ERefType type0, type1;
   
-  // reset all counters
+  // reset all counters which tell us
+  // how many entries were added now
   while ((pair = (AliRsnPair*)next())) 
   {
     pair->ResetCount();
   }
   
+  // external loop
   for (i0 = 0; i0 < nTot[0]; i0++)
   {
     // assign first track
-    if (!ev0->ConvertAbsoluteIndex(i0, realIndex, type)) continue;
-    ev0->SetDaughter(daughter0, realIndex, type);
+    if (!ev0->ConvertAbsoluteIndex(i0, index0, type0)) continue;
+    ev0->SetDaughter(daughter0, index0, type0);
     
     // check global cuts
     if (!fGlobalTrackCuts.IsSelected(&daughter0)) continue;
+    
+    // define start depending if we are processing one or two events
+    start = (AliRsnEvent::SameEvent() ? i0 + 1 : 0);
         
     // internal loop (same criterion)
-    for (i1 = 0; i1 < nTot[1]; i1++)
+    for (i1 = start; i1 < nTot[1]; i1++)
     {
       // if looking same event, skip the case when the two indexes are equal
-      if (ev0 == ev1 && i0 == i1) continue;
+      // if (AliRsnEvent::SameEvent() && i0 == i1) continue;
       
       // assign second track
-      if (!ev1->ConvertAbsoluteIndex(i1, realIndex, type)) continue;
-      ev1->SetDaughter(daughter1, realIndex, type);
+      if (!ev1->ConvertAbsoluteIndex(i1, index1, type1)) continue;
+      ev1->SetDaughter(daughter1, index1, type1);
       
       // check global cuts
       if (!fGlobalTrackCuts.IsSelected(&daughter1)) continue;
@@ -215,12 +224,17 @@ void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
         // if the pair is a like-sign, skip the case when i1 < i0,
         // in order not to double count each like-sign pair
         // (equivalent to looping from i0+1 to ntracks)
-        if (pair->GetPairDef()->IsLikeSign() && i1 < i0) continue;
+        // if (AliRsnEvent::SameEvent() && pair->GetPairDef()->IsLikeSign() && i1 < i0) continue;
                 
         // process the two tracks
-        if (!pair->Fill(&daughter0, &daughter1, ev0, ev1)) continue;
-        pair->SetEvent(ev0);
-        pair->Compute();
+        if (pair->Fill(&daughter0, &daughter1))
+        {
+          pair->Compute();
+        }
+        else if (pair->Fill(&daughter1, &daughter0))
+        {
+          pair->Compute();
+        }
       }
     }
   }
@@ -239,7 +253,7 @@ void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1)
+void AliRsnAnalysisManager::ProcessAllPairsMC()
 {
 //
 // Process one or two events for all pair managers.
@@ -247,8 +261,15 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
 
   AliDebug(AliLog::kDebug+2,"<-");
   
-  if (!ev1) ev1 = ev0;
+  // skip if the global event pointers are NULL
+  if (!AliRsnEvent::IsCurrentEvent1()) return;
+  if (!AliRsnEvent::IsCurrentEvent2()) return;
   
+  // for better readability, reference two pointers to the current events
+  AliRsnEvent *ev0 = AliRsnEvent::GetCurrentEvent1();
+  AliRsnEvent *ev1 = AliRsnEvent::GetCurrentEvent2();
+  
+  // this time the number of tracks comes from MC
   Int_t nTracks[2];
   nTracks[0] = ev0->GetRefMC()->GetNumberOfTracks();
   nTracks[1] = ev1->GetRefMC()->GetNumberOfTracks();
@@ -256,7 +277,7 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
   // external loop
   // joins the loop on tracks and v0s, by looping the indexes from 0
   // to the sum of them, and checking what to take depending of its value
-  Int_t          i0, i1, i;
+  Int_t          i0, i1, start, i;
   Bool_t         filled;
   AliRsnDaughter daughter0, daughter1;
   AliRsnPair    *pair = 0x0;
@@ -275,12 +296,15 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
     
     // assign first track
     ev0->SetDaughterMC(daughter0, i0);
+    
+    // define start depending if we are processing one or two events
+    start = (AliRsnEvent::SameEvent() ? i0 + 1 : 0);
         
     // internal loop (same criterion)
-    for (i1 = 0; i1 < nTracks[1]; i1++)
+    for (i1 = start; i1 < nTracks[1]; i1++)
     {
       // if looking same event, skip the case when the two indexes are equal
-      if (ev0 == ev1 && i0 == i1) continue;
+      if (AliRsnEvent::SameEvent() && i0 == i1) continue;
       
       // skip not physical primaries
       if (!ev1->GetRefMCESD()->Stack()->IsPhysicalPrimary(i1)) continue;
@@ -301,7 +325,7 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
         if (pair->GetPairDef()->IsLikeSign() && i1 < i0) continue;
                 
         // process the two tracks
-        filled = pair->Fill(&daughter0, &daughter1, ev0, ev1);
+        filled = pair->Fill(&daughter0, &daughter1);
         if (!filled) continue;
         pair->Compute();
       }
