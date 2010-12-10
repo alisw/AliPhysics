@@ -1011,7 +1011,7 @@ void AliAnalysisManager::Terminate()
                hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");            
                if (hist) {
                   hist->SetTitle(Form("%s: Exec dVM[kB]/event", task->GetName()));
-                  hist->GetYaxis()->SetTitle("deltaVM [kB]");
+                  hist->GetYaxis()->SetTitle("deltaVM [MB]");
                }   
             }
             // Draw the plot of deltaVM for CreateOutputObjects for all tasks
@@ -1024,7 +1024,7 @@ void AliAnalysisManager::Terminate()
             hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");            
             if (hist) {
                hist->SetTitle("Memory in CreateOutputObjects()");
-               hist->GetYaxis()->SetTitle("deltaVM [kB]");
+               hist->GetYaxis()->SetTitle("deltaVM [MB]");
                hist->GetXaxis()->SetTitle("task");
             }   
             // draw the plot of deltaVM for Terminate for all tasks
@@ -1036,7 +1036,7 @@ void AliAnalysisManager::Terminate()
             hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");
             if (hist) {
                hist->SetTitle("Memory in Terminate()");
-               hist->GetYaxis()->SetTitle("deltaVM [kB]");
+               hist->GetYaxis()->SetTitle("deltaVM [MB]");
                hist->GetXaxis()->SetTitle("task");
             }   
             // Full VM profile
@@ -1048,7 +1048,7 @@ void AliAnalysisManager::Terminate()
             hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");
             if (hist) {
                hist->SetTitle("Virtual memory");
-               hist->GetYaxis()->SetTitle("VM [kB]");
+               hist->GetYaxis()->SetTitle("VM [MB]");
             }
             canvas->Modified();   
          }   
@@ -1851,7 +1851,7 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
   TObject *pof = fSelector->GetOutputList()->FindObject(filename);
   if (pof) {
     // Get the actual file
-    line = Form("((TProofOutputFile*)0x%lx)->GetFileName();", (ULong_t)pof);
+    line = Form("((TProofOutputFile*)%p)->GetFileName();", pof);
     filename = (const char*)gROOT->ProcessLine(line);
     if (fDebug>1) {
       printf("File: %s already booked via TProofOutputFile\n", filename.Data());
@@ -1887,7 +1887,7 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
       printf(" == proof file name: %s", f->GetName());
     }   
     // Add to proof output list
-    line = Form("((TList*)0x%lx)->Add(pf);",(ULong_t)fSelector->GetOutputList());
+    line = Form("((TList*)%p)->Add(pf);",fSelector->GetOutputList());
     if (fDebug > 1) printf("=== %s\n", line.Data());
     gROOT->ProcessLine(line);
   }
@@ -2050,13 +2050,14 @@ Bool_t AliAnalysisManager::GetFileFromWrapper(const char *filename, const TList 
 // Copy a file from the location specified ina the wrapper with the same name from the source list.
    char fullPath[512];
    char chUrl[512];
+   char tmp[1024];
    TObject *pof =  source->FindObject(filename);
    if (!pof || !pof->InheritsFrom("TProofOutputFile")) {
       Error("GetFileFromWrapper", "TProofOutputFile object not found in output list for file %s", filename);
       return kFALSE;
    }
-   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", (ULong_t)fullPath, (ULong_t)pof));
-   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", (ULong_t)chUrl));
+   gROOT->ProcessLine(Form("sprintf((char*)%p, \"%%s\", ((TProofOutputFile*)%p)->GetOutputFileName());", fullPath, pof));
+   gROOT->ProcessLine(Form("sprintf((char*)%p, \"%%s\", gProof->GetUrl());",chUrl));
    TString clientUrl(chUrl);
    TString fullPath_str(fullPath);
    if (clientUrl.Contains("localhost")){
@@ -2070,8 +2071,13 @@ Bool_t AliAnalysisManager::GetFileFromWrapper(const char *filename, const TList 
       delete arrayPort;
       delete array;
    }
+   else if (clientUrl.Contains("__lite__")) { 
+     // Special case for ProofLite environement - get file info and copy. 
+     gROOT->ProcessLine(Form("sprintf((char*)%p,\"%%s\",((TProofOutputFile*)%p)->GetDir());", tmp, pof));
+     fullPath_str = Form("%s/%s", tmp, fullPath);
+   }
    if (fDebug > 1) 
-      Info("GetFileFromWrapper","Copying file %s from PROOF scratch space", fullPath_str.Data());
+     Info("GetFileFromWrapper","Copying file %s from PROOF scratch space to %s", fullPath_str.Data(),filename);
    Bool_t gotit = TFile::Cp(fullPath_str.Data(), filename); 
    if (!gotit)
       Error("GetFileFromWrapper", "Could not get file %s from proof scratch space", filename);

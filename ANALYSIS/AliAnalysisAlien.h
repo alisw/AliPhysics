@@ -53,6 +53,7 @@ public:
    virtual void        SetJobTag(const char *tag="")                     {fJobTag = tag;}
    virtual void        SetNrunsPerMaster(Int_t nruns=1)                  {fNrunsPerMaster = nruns;}
    virtual void        SetMaxMergeFiles(Int_t nfiles)                    {fMaxMergeFiles = nfiles;}
+   virtual void        SetMaxMergeStages(Int_t nstages)                  {fMaxMergeStages = nstages;}
    virtual void        SetSplitMode(const char *type="se")               {fSplitMode = type;}
    virtual void        SetSplitMaxInputFileNumber(Int_t nfiles=100)      {fSplitMaxInputFileNumber = nfiles;}
    virtual void        SetAPIVersion(const char *version)                {fAPIVersion = version;}
@@ -97,8 +98,8 @@ public:
    static Bool_t       FileExists(const char *lfn);
    static const char  *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
    const char         *GetListOfFiles(const char *type);
-   static Bool_t       CheckMergedFiles(const char *filename, const char *aliendir, Int_t nperchunk, Bool_t submit=kTRUE, const char *jdl="");
-   static Bool_t       MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge, Int_t stage=0, Int_t ichunk=0);
+   Bool_t              CheckMergedFiles(const char *filename, const char *aliendir, Int_t nperchunk, const char *jdl="");
+   static Bool_t       MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge, Int_t stage=0);
    virtual Bool_t      MergeOutputs();
    virtual void        Print(Option_t *option="") const;
    virtual Bool_t      StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
@@ -152,6 +153,7 @@ private:
    Int_t            fRunRange[2];     // Run range
    Int_t            fNrunsPerMaster;  // Number of runs per masterjob
    Int_t            fMaxMergeFiles;   // Maximum number of files to be merged in one chunk
+   Int_t            fMaxMergeStages;  // Maximum number of merging stages
    Int_t            fNsubmitted;      // Number of jobs submitted
    Int_t            fProductionMode;  // Production mode (0-off, 1-on)
    Int_t            fOutputToRunNo;   // Use run number as output directory
@@ -203,6 +205,6 @@ private:
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 15)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 16)   // Class providing some AliEn utilities
 };
 #endif

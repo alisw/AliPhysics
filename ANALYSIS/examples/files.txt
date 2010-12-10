@@ -1,0 +1,4 @@
+$HOME/analysis/data/001/root_archive.zip#AliESDs.root
+$HOME/analysis/data/002/root_archive.zip#AliESDs.root
+$HOME/analysis/data/003/root_archive.zip#AliESDs.root
+$HOME/analysis/data/004/root_archive.zip#AliESDs.root

@@ -1,0 +1,29 @@
+# This directory contains reviewed analysis examples that can be used as templates
+# for a user analysis task. They are intended to demonstrate the usage of the 
+# framework in all run modes and for different use cases. The code is not compiled
+# in a library but rather compiled runtime as any new analysis task is typically
+# developed.
+#
+# NOTE FOR USERS: When getting inspired from these tasks to develop your own code, 
+# please take the time to personalize the content like: class names, includes, data
+# members, #define, ... and not just copy-paste the examples.
+
+# NOTE FOR DEVELOPERS: When adding a new example please have in mind that this code
+# will be a source for may users to get inspired. Please make sure that:
+# - it runs in all modes (local, proof, grid)
+# - it is free of bugs and/or leaks
+# - code and specific actions are explained in detail
+ 
+ EXAMPLES
+==========
+Ex01: Simple task demonstrating the usage of ESD track cuts to make inclusive
+pt and eta distributions for events selected via the offline physics selection.
+ = Usage: root only
+   .L runEx01.C
+   run(<parameters>); // to select run mode, grid plugin mode, MC usage, dataset,...
+ = Please check the sources which include useful comments.
+ = To run in local mode, one should download locally data files and organize them in a 
+ = directory structure as used by files.txt. Alternatively one can change files.txt
+ = to reflect its own local data.
+ 
+ 

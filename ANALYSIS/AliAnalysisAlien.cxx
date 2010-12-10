@@ -58,6 +58,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fNtestFiles(0),
                   fNrunsPerMaster(0),
                   fMaxMergeFiles(0),
+                  fMaxMergeStages(0),
                   fNsubmitted(0),
                   fProductionMode(0),
                   fOutputToRunNo(0),
@@ -126,6 +127,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fNtestFiles(0),
                   fNrunsPerMaster(0),
                   fMaxMergeFiles(0),
+                  fMaxMergeStages(0),
                   fNsubmitted(0),
                   fProductionMode(0),
                   fOutputToRunNo(0),
@@ -194,6 +196,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fNtestFiles(other.fNtestFiles),
                   fNrunsPerMaster(other.fNrunsPerMaster),
                   fMaxMergeFiles(other.fMaxMergeFiles),
+                  fMaxMergeStages(other.fMaxMergeStages),
                   fNsubmitted(other.fNsubmitted),
                   fProductionMode(other.fProductionMode),
                   fOutputToRunNo(other.fOutputToRunNo),
@@ -292,6 +295,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fNtestFiles              = other.fNtestFiles;
       fNrunsPerMaster          = other.fNrunsPerMaster;
       fMaxMergeFiles           = other.fMaxMergeFiles;
+      fMaxMergeStages          = other.fMaxMergeStages;
       fNsubmitted              = other.fNsubmitted;
       fProductionMode          = other.fProductionMode;
       fOutputToRunNo           = other.fOutputToRunNo;
@@ -992,7 +996,8 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (!fArguments.IsNull())
          fGridJDL->SetArguments(fArguments, "Arguments for the executable command");
       if (IsOneStageMerging()) fMergingJDL->SetArguments(fGridOutputDir);
-      else fMergingJDL->SetArguments("$1 $2 $3"); 
+      else                     fMergingJDL->SetArguments("wn.xml $2 $3");    // xml, stage, laststage(0 or 1)
+
       fGridJDL->SetValue("TTL", Form("\"%d\"",fTTL));
       fGridJDL->SetDescription("TTL", Form("Time after which the job is killed (%d min.)", fTTL/60));
       fMergingJDL->SetValue("TTL", Form("\"%d\"",fTTL));
@@ -1005,11 +1010,17 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (fSplitMaxInputFileNumber > 0) {
          fGridJDL->SetValue("SplitMaxInputFileNumber", Form("\"%d\"", fSplitMaxInputFileNumber));
          fGridJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be processed per subjob");
+      }
+      if (!IsOneStageMerging()) {
+         fMergingJDL->SetValue("SplitMaxInputFileNumber", "\"$3\"");
+         fMergingJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be merged in one go");
       }   
       if (fSplitMode.Length()) {
          fGridJDL->SetValue("Split", Form("\"%s\"", fSplitMode.Data()));
          fGridJDL->SetDescription("Split", "We split per SE or file");
-      }   
+      }
+      fMergingJDL->SetValue("Split", "\"se\""); 
+      fMergingJDL->SetDescription("Split", "We split per SE for merging in stages");
       if (!fAliROOTVersion.IsNull()) {
          fGridJDL->AddToPackages("AliRoot", fAliROOTVersion,"VO_ALICE", "List of requested packages");
          fMergingJDL->AddToPackages("AliRoot", fAliROOTVersion, "VO_ALICE", "List of requested packages");
@@ -1037,6 +1048,8 @@ Bool_t AliAnalysisAlien::CreateJDL()
       }   
       fGridJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
       fGridJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
+      fMergingJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
+      fMergingJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), fAnalysisMacro.Data()), "List of input files to be uploaded to workers");
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
@@ -1107,7 +1120,6 @@ Bool_t AliAnalysisAlien::CreateJDL()
          while ((os=(TObjString*)next2())) {
             if (!first) comment = NULL;
             TString currentfile = os->GetString();
-            if (!IsOneStageMerging()) currentfile.ReplaceAll(".zip", "-Stage$2_$3.zip");
             if (!currentfile.Contains("@") && fCloseSE.Length())
                fMergingJDL->AddToOutputArchive(Form("%s@%s",currentfile.Data(), fCloseSE.Data()), comment);
             else
@@ -1132,7 +1144,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
             fGridJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
          else
             fGridJDL->AddToOutputSandbox(os->GetString(), comment);
-         first = kFALSE;   
+         first = kFALSE;
          if (fMergeExcludes.Contains(sout)) continue;   
          if (!os->GetString().Contains("@") && fCloseSE.Length())
             fMergingJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
@@ -1225,13 +1237,15 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    TString workdir;
    if (!fProductionMode && !fGridWorkingDir.BeginsWith("/alice")) workdir = gGrid->GetHomeDirectory();
    workdir += fGridWorkingDir;
+   fMergingJDL->AddToInputDataCollection("LF:$1/Stage_$2.xml,nodownload", "Collection of files to be merged for stage $2");
+   fMergingJDL->SetOutputDirectory("$1/Stage_$2/#alien_counter_03i#", "Output directory");
    
    if (fProductionMode) {
       TIter next(fInputFiles);
-      while ((os=next()))
+      while ((os=next())) {
          fGridJDL->AddToInputDataCollection(Form("LF:%s,nodownload", os->GetName()), "Input xml collections");
+      }
       fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_04i#", fGridOutputDir.Data()));
-      fMergingJDL->SetOutputDirectory(fGridOutputDir);  
    } else {            
       if (!fRunNumbers.Length() && !fRunRange[0]) {
          // One jdl with no parameters in case input data is specified by name.
@@ -1252,7 +1266,6 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
             else fGridJDL->SetOutputDirectory(Form("%s/$2",fGridOutputDir.Data()), "Output directory");
          } else {   
             fGridJDL->SetOutputDirectory(Form("%s/$2/#alien_counter_03i#", fGridOutputDir.Data()), "Output directory");
-            fMergingJDL->SetOutputDirectory("$1", "Output directory");
          }   
       }
    }
@@ -1260,7 +1273,10 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    // Generate the JDL as a string
    TString sjdl = fGridJDL->Generate();
    TString sjdl1 = fMergingJDL->Generate();
-   Int_t index;
+   fMergingJDL->SetOutputDirectory("$1", "Output directory");
+   fMergingJDL->AddToInputSandbox("LF:$1/$4");
+   TString sjdl2 = fMergingJDL->Generate();
+   Int_t index, index1;
    sjdl.ReplaceAll("\"LF:", "\n   \"LF:");
    sjdl.ReplaceAll("(member", "\n   (member");
    sjdl.ReplaceAll("\",\"VO_", "\",\n   \"VO_");
@@ -1277,21 +1293,68 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    sjdl1.ReplaceAll("{\n   \n", "{\n");
    sjdl1.ReplaceAll("\n\n", "\n");
    sjdl1.ReplaceAll("OutputDirectory", "OutputDir");
+   sjdl2.ReplaceAll("\"LF:", "\n   \"LF:");
+   sjdl2.ReplaceAll("(member", "\n   (member");
+   sjdl2.ReplaceAll("\",\"VO_", "\",\n   \"VO_");
+   sjdl2.ReplaceAll("{", "{\n   ");
+   sjdl2.ReplaceAll("};", "\n};");
+   sjdl2.ReplaceAll("{\n   \n", "{\n");
+   sjdl2.ReplaceAll("\n\n", "\n");
+   sjdl2.ReplaceAll("OutputDirectory", "OutputDir");
    sjdl += "JDLVariables = \n{\n   \"Packages\",\n   \"OutputDir\"\n};\n";
    sjdl.Prepend(Form("Jobtag = {\n   \"comment:%s\"\n};\n", fJobTag.Data()));
    index = sjdl.Index("JDLVariables");
    if (index >= 0) sjdl.Insert(index, "\n# JDL variables\n");
    sjdl += "Workdirectorysize = {\"5000MB\"};";
+   sjdl1 += "Workdirectorysize = {\"5000MB\"};";
    sjdl1 += "JDLVariables = \n{\n   \"Packages\",\n   \"OutputDir\"\n};\n";
    index = fJobTag.Index(":");
    if (index < 0) index = fJobTag.Length();
    TString jobTag = fJobTag;
-   jobTag.Insert(index, "_Merging");
    sjdl1.Prepend(Form("Jobtag = {\n   \"comment:%s_Merging\"\n};\n", jobTag.Data()));
-   sjdl1.Prepend("# Generated merging jdl\n# $1 = full alien path to output directory to be merged\n# $2 = merging stage\n# $3 = merged chunk\n");
+   sjdl1.Prepend("# Generated merging jdl \
+                  \n# $1 = full alien path to output directory to be merged \
+                  \n# $2 = merging stage \
+                  \n# $3 = maximum number of files to merge (must be >= 10000 for the last stage) \
+                  \n# $4 = xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
+   sjdl2.Prepend(Form("Jobtag = {\n   \"comment:%s_FinalMerging\"\n};\n", jobTag.Data()));
+   sjdl2.Prepend("# Generated merging jdl \
+                  \n# $1 = full alien path to output directory to be merged \
+                  \n# $2 = merging stage \
+                  \n# $3 = maximum number of files to merge (must be >= 10000 for the last stage) \
+                  \n# $4 = xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
    index = sjdl1.Index("JDLVariables");
    if (index >= 0) sjdl1.Insert(index, "\n# JDL variables\n");
+   index = sjdl2.Index("JDLVariables");
+   if (index >= 0) sjdl2.Insert(index, "\n# JDL variables\n");
    sjdl1 += "Workdirectorysize = {\"5000MB\"};";
+   sjdl2 += "Workdirectorysize = {\"5000MB\"};";
+   index = sjdl2.Index("Split =");
+   if (index>=0) {
+      index1 = sjdl2.Index("\n", index);
+      sjdl2.Remove(index, index1-index+1);
+   }
+   index = sjdl2.Index("SplitMaxInputFileNumber");
+   if (index>=0) {
+      index1 = sjdl2.Index("\n", index);
+      sjdl2.Remove(index, index1-index+1);
+   }
+   index = sjdl2.Index("InputDataCollection");
+   if (index>=0) {
+      index1 = sjdl2.Index(";", index);
+      sjdl2.Remove(index, index1-index+1);
+   }
+   index = sjdl2.Index("InputDataListFormat");
+   if (index>=0) {
+      index1 = sjdl2.Index("\n", index);
+      sjdl2.Remove(index, index1-index+1);
+   }
+   index = sjdl2.Index("InputDataList");
+   if (index>=0) {
+      index1 = sjdl2.Index("\n", index);
+      sjdl2.Remove(index, index1-index+1);
+   }
+   sjdl2.ReplaceAll("wn.xml", "$4");
    // Write jdl to file
    ofstream out;
    out.open(fJDLName.Data(), ios::out);
@@ -1300,16 +1363,28 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
       return kFALSE;
    }
    out << sjdl << endl;
+   out.close();
    TString mergeJDLName = fExecutable;
    mergeJDLName.ReplaceAll(".sh", "_merge.jdl");
    if (fMergeViaJDL) {
       ofstream out1;
       out1.open(mergeJDLName.Data(), ios::out);
-      if (out.bad()) {
+      if (out1.bad()) {
          Error("WriteJDL", "Bad file name: %s", mergeJDLName.Data());
          return kFALSE;
       }
       out1 << sjdl1 << endl;
+      out1.close();
+      ofstream out2;
+      TString finalJDL = mergeJDLName;
+      finalJDL.ReplaceAll(".jdl", "_final.jdl");
+      out2.open(finalJDL.Data(), ios::out);
+      if (out2.bad()) {
+         Error("WriteJDL", "Bad file name: %s", finalJDL.Data());
+         return kFALSE;
+      }
+      out2 << sjdl2 << endl;
+      out2.close();
    }   
 
    // Copy jdl to grid workspace   
@@ -1318,17 +1393,23 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    } else {
       TString locjdl = Form("%s/%s", fGridOutputDir.Data(),fJDLName.Data());
       TString locjdl1 = Form("%s/%s", fGridOutputDir.Data(),mergeJDLName.Data());
+      TString finalJDL = mergeJDLName;
+      finalJDL.ReplaceAll(".jdl", "_final.jdl");
+      TString locjdl2 = Form("%s/%s", fGridOutputDir.Data(),finalJDL.Data());
       if (fProductionMode) {
          locjdl = Form("%s/%s", workdir.Data(),fJDLName.Data());
          locjdl1 = Form("%s/%s", workdir.Data(),mergeJDLName.Data());
+         locjdl2 = Form("%s/%s", workdir.Data(),finalJDL.Data());
       }   
       if (FileExists(locjdl)) gGrid->Rm(locjdl);
       if (FileExists(locjdl1)) gGrid->Rm(locjdl1);
+      if (FileExists(locjdl2)) gGrid->Rm(locjdl2);
       Info("WriteJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
       TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
       if (fMergeViaJDL) {
-         Info("WriteJDL", "\n#####   Copying merging JDL file <%s> to your AliEn output directory", mergeJDLName.Data());
+         Info("WriteJDL", "\n#####   Copying merging JDL files <%s> to your AliEn output directory", mergeJDLName.Data());
          TFile::Cp(Form("file:%s",mergeJDLName.Data()), Form("alien://%s", locjdl1.Data()));
+         TFile::Cp(Form("file:%s",finalJDL.Data()), Form("alien://%s", locjdl2.Data()));
       }   
    } 
    return kTRUE;
@@ -1759,120 +1840,69 @@ void AliAnalysisAlien::SetDefaults()
 }   
 
 //______________________________________________________________________________
-Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *aliendir, Int_t nperchunk, Bool_t submit, const char *jdl)
+Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *aliendir, Int_t nperchunk, const char *jdl)
 {
-// Static method that checks the status of merging. This can submit merging jobs that did not produced the expected
-// output. If <submit> is false (checking) returns true only when the final merged file was found. If submit is true returns
-// true if the jobs were successfully submitted.
-   Int_t countOrig = 0;
-   Int_t countStage = 0;
+// Checks current merge stage, makes xml for the next stage, counts number of files, submits next stage.
+   // First check if the result is already in the output directory.
+   if (FileExists(Form("%s/%s",aliendir,filename))) {
+      printf("Final merged results found. Not merging again.\n");
+      return kFALSE;
+   }
+   // Now check the last stage done.
    Int_t stage = 0;
-   Int_t i;
-   Bool_t doneFinal = kFALSE;
-   TBits chunksDone;
-   TString saliendir(aliendir);
-   TString sfilename, stmp;
-   saliendir.ReplaceAll("//","/");
-   saliendir = saliendir.Strip(TString::kTrailing, '/');
-   if (!gGrid) {
-      ::Error("GetNregisteredFiles", "You need to be connected to AliEn.");
-      return kFALSE;
+   while (1) {
+      if (!FileExists(Form("%s/Stage_%d.xml",aliendir, stage+1))) break;
+      stage++;
    }
-   sfilename = filename;
-   sfilename.ReplaceAll(".root", "*.root");
-   printf("Checking directory <%s> for merged files <%s> ...\n", aliendir, sfilename.Data());
-   TString command = Form("find %s/ *%s", saliendir.Data(), sfilename.Data());
-   TGridResult *res = gGrid->Command(command);
-   if (!res) {
-      ::Error("GetNregisteredFiles","Error: No result for the find command\n");
+   // Next stage of merging
+   stage++;
+   TString pattern = "*root_archive.zip";
+   if (stage>1) pattern = Form("Stage_%d/*root_archive.zip", stage-1);
+   TGridResult *res = gGrid->Command(Form("find -x Stage_%d %s %s", stage, aliendir, pattern.Data()));
+   if (res) delete res;
+   // Write standard output to file
+   gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", Form("Stage_%d.xml",stage)));
+   // Count the number of files inside
+   ifstream ifile;
+   ifile.open(Form("Stage_%d.xml",stage));
+   if (!ifile.good()) {
+      ::Error("CheckMergedFiles", "Could not redirect result of the find command to file %s", Form("Stage_%d.xml",stage));
       return kFALSE;
-   }     
-   TIter nextmap(res);
-   TMap *map = 0;   
-   while ((map=(TMap*)nextmap())) {
-      TString turl = map->GetValue("turl")->GetName();
-      if (!turl.Length()) {
-         // Nothing found
-         delete res;
-         return kFALSE;
-      }
-      turl.ReplaceAll("alien://", "");
-      turl.ReplaceAll(saliendir, "");
-      sfilename = gSystem->BaseName(turl);
-      turl = turl.Strip(TString::kLeading, '/');
-      // Now check to what the file corresponds to: 
-      //    original output           - aliendir/%03d/filename
-      //    merged file (which stage) - aliendir/filename-Stage%02d_%04d
-      //    final merged file         - aliendir/filename
-      if (sfilename == turl) {
-         if (sfilename == filename) {
-            doneFinal = kTRUE;
-         } else {   
-            // check stage
-            Int_t index = sfilename.Index("Stage");
-            if (index<0) continue;
-            stmp = sfilename(index+5,2);
-            Int_t istage = atoi(stmp);
-            stmp = sfilename(index+8,4);
-            Int_t ijob = atoi(stmp);
-            if (istage<stage) continue; // Ignore lower stages
-            if (istage>stage) {
-               countStage = 0;
-               chunksDone.ResetAllBits();
-               stage = istage;
-            }
-            countStage++;
-            chunksDone.SetBitNumber(ijob);
-         }     
-      } else {
-         countOrig++;
-      }
-      if (doneFinal) {
-         delete res;
-         printf("=> Removing files from previous stages...\n");
-         gGrid->Rm(Form("%s/*Stage*.root", aliendir));
-         for (i=1; i<stage; i++)
-            gGrid->Rm(Form("%s/*Stage%d*.zip", aliendir, i));
-         return kTRUE;
-      }               
-   }
-   delete res;
-   // Compute number of jobs that were submitted for the current stage
-   Int_t ntotstage = countOrig;
-   for (i=1; i<=stage; i++) {
-      if (ntotstage%nperchunk) ntotstage = (ntotstage/nperchunk)+1;
-      else                     ntotstage = (ntotstage/nperchunk);
    }   
-   // Now compare with the number of set bits in the chunksDone array
-   Int_t nmissing = (stage>0)?(ntotstage - countStage):0;
-   // Print the info
-   printf("*** Found %d original files\n", countOrig);
-   if (stage==0) printf("*** No merging completed so far.\n");
-   else          printf("*** Found %d out of %d files merged for stage %d\n", countStage, ntotstage, stage);
-   if (nmissing) printf("*** Number of merged files missing for this stage: %d -> check merging job completion\n", nmissing);
-   if (!submit) return doneFinal;
-   // Sumbit merging jobs for all missing chunks for the current stage.
-   TString query = Form("submit %s %s", jdl, aliendir);
-   Int_t ichunk = -1;
-   chunksDone.SetBitNumber(ntotstage); // expand the array to the maximum number of chunks
-   if (nmissing) {
-      for (i=0; i<nmissing; i++) {
-         ichunk = chunksDone.FirstNullBit(ichunk+1);
-         Int_t jobId = SubmitSingleJob(Form("%s %d %d", query.Data(), stage, ichunk));
-         if (!jobId) return kFALSE;
-      }
-      return kTRUE;
+   TString line;
+   Int_t nfiles = 0;
+   while (!ifile.eof()) {
+      ifile >> line;
+      if (line.Contains("/event")) nfiles++;
    }
-   // Submit next stage of merging
-   if (stage==0) countStage = countOrig;
-   Int_t nchunks = (countStage/nperchunk);
-   if (countStage%nperchunk) nchunks += 1;
-   for (i=0; i<nchunks; i++) {
-      Int_t jobId = SubmitSingleJob(Form("%s %d %d", query.Data(), stage+1, i));
-      if (!jobId) return kFALSE;
-   }        
-   return kTRUE;
-}      
+   ifile.close();
+   if (!nfiles) {
+      ::Error("CheckMergedFiles", "Cannot start Stage_%d merging since Stage_%d did not produced yet output", stage, stage-1);
+      return kFALSE;
+   } else {
+      printf("=== Stage_%d produced %d files\n", stage-1, nfiles);
+   }   
+   // Copy the file in the output directory
+   printf("===> Copying collection %s in the output directory %s\n", Form("Stage_%d.xml",stage), aliendir);
+   TFile::Cp(Form("Stage_%d.xml",stage), Form("alien://%s/Stage_%d.xml",aliendir,stage));
+   // Check if this is the last stage to be done.
+   Bool_t laststage = (nfiles<nperchunk);
+   if (fMaxMergeStages && stage>=fMaxMergeStages) laststage = kTRUE;
+   if (laststage) {
+      printf("### Submiting final merging stage %d\n", stage);
+      TString finalJDL = jdl;
+      finalJDL.ReplaceAll(".jdl", "_final.jdl");
+      TString query = Form("submit %s %s %d 10000 Stage_%d.xml", finalJDL.Data(), aliendir, stage, stage);
+      Int_t jobId = SubmitSingleJob(query);
+      if (!jobId) return kFALSE;      
+   } else {
+      printf("### Submiting merging stage %d\n", stage);
+      TString query = Form("submit %s %s %d %d wn.xml", jdl, aliendir, stage, nperchunk);
+      Int_t jobId = SubmitSingleJob(query);
+      if (!jobId) return kFALSE;           
+   }
+   return kTRUE;   
+}        
 
 //______________________________________________________________________________
 Int_t AliAnalysisAlien::SubmitSingleJob(const char *query)
@@ -1896,39 +1926,99 @@ Int_t AliAnalysisAlien::SubmitSingleJob(const char *query)
 }  
 
 //______________________________________________________________________________
-Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge, Int_t stage, Int_t ichunk)
+Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge, Int_t stage)
 {
-// Merge given output files from basedir. The file merger will merge nmaxmerge
-// files in a group. Merging can be done in stages:
-// stage=0 : will merge all existing files in a single stage
-// stage=1 : does a find command for all files that do NOT contain the string "Stage". 
-//           If their number is bigger that nmaxmerge, only the files from 
-//           ichunk*nmaxmerge to ichunk*(nmaxmerge+1)-1 will get merged as output_stage_<ichunk>
-// stage=n : does a find command for files named <output>Stage<stage-1>_*. If their number is bigger than
-//           nmaxmerge, merge just the chunk ichunk, otherwise write the merged output to the file 
-//           named <output>.
+// Merge given output files from basedir. Basedir can be an alien output directory
+// but also an xml file with root_archive.zip locations. The file merger will merge nmaxmerge
+// files in a group (ignored for xml input). Merging can be done in stages:
+// stage=0 : will merge all existing files in a single stage, supporting resume if run locally
+// stage=1 : works with an xml of all root_archive.zip in the output directory
+// stage>1 : works with an xml of all root_archive.zip in the Stage_<n-1> directory
    TString outputFile = output;
    TString command;
    TString outputChunk;
    TString previousChunk = "";
+   TObjArray *listoffiles = new TObjArray();
+//   listoffiles->SetOwner();
    Int_t countChunk = 0;
    Int_t countZero = nmaxmerge;
    Bool_t merged = kTRUE;
    Int_t index = outputFile.Index("@");
    if (index > 0) outputFile.Remove(index);
    TString inputFile = outputFile;
-   if (stage>1) inputFile.ReplaceAll(".root", Form("-Stage%02d_*.root", stage-1));
-   command = Form("find %s/ *%s", basedir, inputFile.Data());
-   printf("command: %s\n", command.Data());
-   TGridResult *res = gGrid->Command(command);
-   if (!res) {
+   TString sbasedir = basedir;
+   if (sbasedir.Contains(".xml")) {
+      // Merge files pointed by the xml - ignore nmaxmerge and set ichunk to 0
+      nmaxmerge = 9999999;
+      TGridCollection *coll = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\");", basedir));
+      if (!coll) {
+         ::Error("MergeOutput", "Input XML collection empty.");
+         return kFALSE;
+      }
+      // Iterate grid collection
+      while (coll->Next()) {
+         TString fname = gSystem->DirName(coll->GetTURL());
+         fname += "/";
+         fname += inputFile;      
+         listoffiles->Add(new TNamed(fname.Data(),""));
+      }   
+   } else {   
+      command = Form("find %s/ *%s", basedir, inputFile.Data());
+      printf("command: %s\n", command.Data());
+      TGridResult *res = gGrid->Command(command);
+      if (!res) {
+         ::Error("MergeOutput","No result for the find command\n");
+         delete listoffiles;
+         return kFALSE;
+      }     
+      TIter nextmap(res);
+      TMap *map = 0;
+      while ((map=(TMap*)nextmap())) {
+         TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
+         if (!objs || !objs->GetString().Length()) {
+            // Nothing found - skip this output
+            delete res;
+            delete listoffiles;
+            return kFALSE;
+         }
+         listoffiles->Add(new TNamed(objs->GetName(),""));
+      }
+      delete res;
+   }
+   if (!listoffiles->GetEntries()) {
       ::Error("MergeOutput","No result for the find command\n");
+      delete listoffiles;
       return kFALSE;
    }     
 
    TFileMerger *fm = 0;
-   TIter nextmap(res);
-   TMap *map = 0;
+   TIter next0(listoffiles);
+   TObjArray *listoffilestmp = new TObjArray();
+   listoffilestmp->SetOwner();
+   TObject *nextfile;
+   TString snextfile;
+   // Keep only the files at upper level
+   Int_t countChar = 0;
+   while ((nextfile=next0())) {
+      snextfile = nextfile->GetName();
+      Int_t crtCount = snextfile.CountChar('/');
+      if (nextfile == listoffiles->First()) countChar = crtCount;
+      if (crtCount < countChar) countChar = crtCount;
+   }
+   next0.Reset();
+   while ((nextfile=next0())) {
+      snextfile = nextfile->GetName();
+      Int_t crtCount = snextfile.CountChar('/');
+      if (crtCount > countChar) {
+         delete nextfile;
+         continue;
+      }   
+      listoffilestmp->Add(nextfile);
+   }
+   delete listoffiles;
+   listoffiles = listoffilestmp;  // Now contains 'good' files
+   listoffiles->Print();
+   TIter next(listoffiles);   
    // Check if there is a merge operation to resume. Works only for stage 0 or 1.
    outputChunk = outputFile;
    outputChunk.ReplaceAll(".root", "_*.root");
@@ -1936,31 +2026,17 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
    // Check overwrite mode and remove previous partial results if needed
    // Preserve old merging functionality for stage 0.
    if (stage==0) {
-      Int_t countChar = 0;
       if (!gSystem->Exec(Form("ls %s 2>/dev/null", outputChunk.Data()))) {
          while (1) {
             // Skip as many input files as in a chunk
             for (Int_t counter=0; counter<nmaxmerge; counter++) {
-               map = (TMap*)nextmap();
-               if (!map) {
+               nextfile = next();
+               if (!nextfile) {
                   ::Error("MergeOutput", "Mismatch found. Please remove partial merged files from local dir.");
-                  delete res;
+                  delete listoffiles;
                   return kFALSE;
                }   
-               TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
-               // Count the '/' characters in the path to the current file.
-               Int_t crtCount = objs->GetString().CountChar('/');
-               if (!countChar) {
-                  countChar = crtCount;
-                  // Make sure we check if the same file in the parent dir exists
-                  if (FileExists(Form("%s/../%s", basedir, output))) countChar--;
-               }
-               if (crtCount > countChar) counter--;
-            }
-            if (!map) {
-               ::Error("MergeOutput", "Cannot resume merging for <%s>, nentries=%d", outputFile.Data(), res->GetSize());
-               delete res;
-               return kFALSE;
+               snextfile = nextfile->GetName();
             }
             outputChunk = outputFile;
             outputChunk.ReplaceAll(".root", Form("_%04d.root", countChunk));
@@ -1974,23 +2050,8 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
       }   
       countZero = nmaxmerge;
    
-      while ((map=(TMap*)nextmap())) {
-         TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
-         if (!objs || !objs->GetString().Length()) {
-            // Nothing found - skip this output
-            delete res;
-            delete fm;
-            return kFALSE;
-         }          
-         // Make sure this is a good file and not one from a subjob directory in case we merge runs         
-         // Count the '/' characters in the path to the current file.
-         Int_t crtCount = objs->GetString().CountChar('/');
-         if (!countChar) {
-            countChar = crtCount;
-            // Make sure we check if the same file in the parent dir exists
-            if (FileExists(Form("%s/../%s", basedir, output))) countChar--;
-         }
-         if (crtCount > countChar) continue;
+      while ((nextfile=next())) {
+         snextfile = nextfile->GetName();
          // Loop 'find' results and get next LFN
          if (countZero == nmaxmerge) {
             // First file in chunk - create file merger and add previous chunk if any.
@@ -2001,85 +2062,57 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
             outputChunk.ReplaceAll(".root", Form("_%04d.root", countChunk));
          }
          // If last file found, put merged results in the output file
-         if (map == res->Last()) outputChunk = outputFile;
+         if (nextfile == listoffiles->Last()) outputChunk = outputFile;
          // Add file to be merged and decrement chunk counter.
-         fm->AddFile(objs->GetString());
+         fm->AddFile(snextfile);
          countZero--;
-         if (countZero==0 || map == res->Last()) {            
+         if (countZero==0 || nextfile == listoffiles->Last()) {            
             if (!fm->GetMergeList() || !fm->GetMergeList()->GetSize()) {
             // Nothing found - skip this output
                ::Warning("MergeOutput", "No <%s> files found.", inputFile.Data());
-               delete res;
-               delete fm;
-               return kFALSE;
+               merged = kFALSE;
+               break;
             }
             fm->OutputFile(outputChunk);
             // Merge the outputs, then go to next chunk      
             if (!fm->Merge()) {
                ::Error("MergeOutput", "Could not merge all <%s> files", outputFile.Data());
-               delete res;
-               delete fm;
-               return kFALSE;
+               merged = kFALSE;
+               break;
             } else {
                ::Info("MergeOutputs", "\n#####   Merged %d output files to <%s>", fm->GetMergeList()->GetSize(), outputChunk.Data());
                gSystem->Unlink(previousChunk);
             }
-            if (map == res->Last()) {
-               delete res;
-               delete fm;
-               break;
-            }      
+            if (nextfile == listoffiles->Last()) break;
             countChunk++;
             countZero = nmaxmerge;
             previousChunk = outputChunk;
          }
       }
+      delete listoffiles;
+      delete fm;
       return merged;
    }
    // Merging stage different than 0.
    // Move to the begining of the requested chunk.
-   outputChunk = outputFile;
-   if (nmaxmerge < res->GetSize()) {
-      if (ichunk*nmaxmerge >= res->GetSize()) {
-         ::Error("MergeOutput", "Cannot merge merge chunk %d grouping %d files from %d total.", ichunk, nmaxmerge, res->GetSize());
-         delete res;
-         return kFALSE;
-      }   
-      for (Int_t counter=0; counter<ichunk*nmaxmerge; counter++) nextmap();
-      outputChunk.ReplaceAll(".root", Form("-Stage%02d_%04d.root", stage, ichunk));
-   }
-   countZero = nmaxmerge;  
    fm = new TFileMerger(kFALSE);
    fm->SetFastMethod(kTRUE);
-   while ((map=(TMap*)nextmap())) {
-      // Loop 'find' results and get next LFN
-      TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
-      if (!objs || !objs->GetString().Length()) {
-         // Nothing found - skip this output
-         delete res;
-         delete fm;
-         return kFALSE;
-      } 
-      // Add file to be merged and decrement chunk counter.
-      fm->AddFile(objs->GetString());
-      countZero--;
-      if (countZero==0) break;
-   }
-   delete res;
+   while ((nextfile=next())) fm->AddFile(nextfile->GetName());
+   delete listoffiles;
    if (!fm->GetMergeList() || !fm->GetMergeList()->GetSize()) {
       // Nothing found - skip this output
       ::Warning("MergeOutput", "No <%s> files found.", inputFile.Data());
       delete fm;
       return kFALSE;
    }
-   fm->OutputFile(outputChunk);
+   fm->OutputFile(outputFile);
    // Merge the outputs
    if (!fm->Merge()) {
       ::Error("MergeOutput", "Could not merge all <%s> files", outputFile.Data());
       delete fm;
       return kFALSE;
    } else {
-      ::Info("MergeOutput", "\n#####   Merged %d output files to <%s>", fm->GetMergeList()->GetSize(), outputChunk.Data());
+      ::Info("MergeOutput", "\n#####   Merged %d output files to <%s>", fm->GetMergeList()->GetSize(), outputFile.Data());
    }
    delete fm;
    return kTRUE;
@@ -2126,10 +2159,10 @@ Bool_t AliAnalysisAlien::MergeOutputs()
    if (fFastReadOption) {
       Warning("MergeOutputs", "You requested FastRead option. Using xrootd flags to reduce timeouts. This may skip some files that could be accessed ! \
              \n+++ NOTE: To disable this option, use: plugin->SetFastReadOption(kFALSE)");
-      gEnv->SetValue("XNet.ConnectTimeout",10);
-      gEnv->SetValue("XNet.RequestTimeout",10);
+      gEnv->SetValue("XNet.ConnectTimeout",50);
+      gEnv->SetValue("XNet.RequestTimeout",50);
       gEnv->SetValue("XNet.MaxRedirectCount",2);
-      gEnv->SetValue("XNet.ReconnectTimeout",10);
+      gEnv->SetValue("XNet.ReconnectTimeout",50);
       gEnv->SetValue("XNet.FirstConnectMaxCnt",1);
    }   
    // Make sure we change the temporary directory
@@ -2750,7 +2783,7 @@ Bool_t AliAnalysisAlien::SubmitMerging()
          if (!fMergeExcludes.Contains(outputFile)) break;
       }
       delete list;
-      Bool_t done = CheckMergedFiles(outputFile, runOutDir, fMaxMergeFiles, kTRUE, mergeJDLName);
+      Bool_t done = CheckMergedFiles(outputFile, runOutDir, fMaxMergeFiles, mergeJDLName);
       if (!done) return kFALSE;
    }
    if (!ntosubmit) return kTRUE;
@@ -2930,6 +2963,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       // Change temp directory to current one
       out << "// Set temporary merging directory to current one" << endl;
       out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
+      // Reset existing include path
+      out << "// Reset existing include path and add current directory first in the search" << endl;
+      out << "   gSystem->SetIncludePath(\"-I.\");" << endl;
       if (!fExecutableCommand.Contains("aliroot")) {
          out << "// load base root libraries" << endl;
          out << "   gSystem->Load(\"libTree\");" << endl;
@@ -2950,9 +2986,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          }
          if (list) delete list;
       }
-      out << "// include path" << endl;
-      if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
-      out << "   gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");" << endl << endl;
       out << "// Load analysis framework libraries" << endl;
       TString setupPar = "AliAnalysisAlien::SetupPar";
       if (!fPackages) {
@@ -3015,6 +3048,21 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   if (!" << setupPar << "(\"" << obj->GetName() << "\")) return;" << endl;
          }   
       }   
+      out << "// include path" << endl;
+      // Get the include path from the interpreter and remove entries pointing to AliRoot
+      out << "   TString intPath = gInterpreter->GetIncludePath();" << endl;
+      out << "   TObjArray *listpaths = intPath.Tokenize(\" \");" << endl;
+      out << "   TIter nextpath(listpaths);" << endl;
+      out << "   TObjString *pname;" << endl;
+      out << "   while ((pname=(TObjString*)nextpath())) {" << endl;
+      out << "      TString current = pname->GetName();" << endl;
+      out << "      if (current.Contains(\"AliRoot\") || current.Contains(\"ALICE_ROOT\")) continue;" << endl;
+      out << "      gSystem->AddIncludePath(current);" << endl;
+      out << "   }" << endl;
+      out << "   if (listpaths) delete listpaths;" << endl;
+      if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
+      out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl;
+      out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
          TObjArray *list = fAdditionalLibs.Tokenize(" ");
@@ -3040,15 +3088,17 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          if (list) delete list;
       }
       out << endl;
+//      out << "   printf(\"Currently load libraries:\\n\");" << endl;
+//      out << "   printf(\"%s\\n\", gSystem->GetLibraries());" << endl;
       if (fFastReadOption) {
          Warning("WriteAnalysisMacro", "!!! You requested FastRead option. Using xrootd flags to reduce timeouts in the grid jobs. This may skip some files that could be accessed !!! \
                 \n+++ NOTE: To disable this option, use: plugin->SetFastReadOption(kFALSE)");
          out << "// fast xrootd reading enabled" << endl;
          out << "   printf(\"!!! You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !!!\");" << endl;
-         out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",10);" << endl;
-         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",50);" << endl;
+         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",50);" << endl;
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
-         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",50);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }   
       out << "// connect to AliEn and make the chain" << endl;
@@ -3269,11 +3319,14 @@ void AliAnalysisAlien::WriteMergingMacro()
       TString func = mergingMacro;
       TString comment;
       func.ReplaceAll(".C", "");
-      out << "void " << func.Data() << "(const char *dir, Int_t stage=0, Int_t ichunk=0)" << endl;
+      out << "void " << func.Data() << "(const char *dir, Int_t stage=0, Int_t laststage=0)" << endl;
       out << "{" << endl;
       out << "// Automatically generated merging macro executed in grid subjobs" << endl << endl;
       out << "   TStopwatch timer;" << endl;
       out << "   timer.Start();" << endl << endl;
+      // Reset existing include path
+      out << "// Reset existing include path and add current directory first in the search" << endl;
+      out << "   gSystem->SetIncludePath(\"-I.\");" << endl;
       if (!fExecutableCommand.Contains("aliroot")) {
          out << "// load base root libraries" << endl;
          out << "   gSystem->Load(\"libTree\");" << endl;
@@ -3294,9 +3347,6 @@ void AliAnalysisAlien::WriteMergingMacro()
          }
          if (list) delete list;
       }
-      out << "// include path" << endl;
-      if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
-      out << "   gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");" << endl << endl;
       out << "// Load analysis framework libraries" << endl;
       if (!fPackages) {
          if (!fExecutableCommand.Contains("aliroot")) {
@@ -3359,6 +3409,21 @@ void AliAnalysisAlien::WriteMergingMacro()
             out << "   if (!" << setupPar << "(\"" << obj->GetName() << "\")) return;" << endl;
          }   
       }   
+      out << "// include path" << endl;
+      // Get the include path from the interpreter and remove entries pointing to AliRoot
+      out << "   TString intPath = gInterpreter->GetIncludePath();" << endl;
+      out << "   TObjArray *listpaths = intPath.Tokenize(\" \");" << endl;
+      out << "   TIter nextpath(listpaths);" << endl;
+      out << "   TObjString *pname;" << endl;
+      out << "   while ((pname=(TObjString*)nextpath())) {" << endl;
+      out << "      TString current = pname->GetName();" << endl;
+      out << "      if (current.Contains(\"AliRoot\") || current.Contains(\"ALICE_ROOT\")) continue;" << endl;
+      out << "      gSystem->AddIncludePath(current);" << endl;
+      out << "   }" << endl;
+      out << "   if (listpaths) delete listpaths;" << endl;
+      if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
+      out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl;
+      out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
          TObjArray *list = fAdditionalLibs.Tokenize(" ");
@@ -3387,10 +3452,10 @@ void AliAnalysisAlien::WriteMergingMacro()
          Warning("WriteMergingMacro", "!!! You requested FastRead option. Using xrootd flags to reduce timeouts in the grid merging jobs. Note that this may skip some files that could be accessed !!!");
          out << "// fast xrootd reading enabled" << endl;
          out << "   printf(\"!!! You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !!!\");" << endl;
-         out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",10);" << endl;
-         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",50);" << endl;
+         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",50);" << endl;
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
-         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",50);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }
       // Change temp directory to current one
@@ -3398,7 +3463,6 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
       out << "// Connect to AliEn" << endl;
       out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
-      out << "   Bool_t laststage = kFALSE;" << endl;
       out << "   TString outputDir = dir;" << endl;  
       out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
       out << "   TString mergeExcludes = \"" << fMergeExcludes << "\";" << endl;
@@ -3418,13 +3482,11 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "         continue;" << endl;
       out << "      }" << endl;
       out << "      if (mergeExcludes.Contains(outputFile.Data())) continue;" << endl;
-      out << "      merged = AliAnalysisAlien::MergeOutput(outputFile, outputDir, " << fMaxMergeFiles << ", stage, ichunk);" << endl;
+      out << "      merged = AliAnalysisAlien::MergeOutput(outputFile, outputDir, " << fMaxMergeFiles << ", stage);" << endl;
       out << "      if (!merged) {" << endl;
       out << "         printf(\"ERROR: Cannot merge %s\\n\", outputFile.Data());" << endl;
       out << "         return;" << endl;
       out << "      }" << endl;
-      out << "      // Check if this was the last stage. If yes, run terminate for the tasks." << endl;
-      out << "      if (!gSystem->AccessPathName(outputFile)) laststage = kTRUE;" << endl;
       out << "   }" << endl;
       out << "   // all outputs merged, validate" << endl;
       out << "   ofstream out;" << endl;
@@ -3433,7 +3495,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   // read the analysis manager from file" << endl;
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
-      out << "   if (!laststage) return;" << endl;
+      out << "   if (laststage<10000) return;" << endl;
       out << "   TFile *file = TFile::Open(\"" << analysisFile << "\");" << endl;
       out << "   if (!file) return;" << endl;
       out << "   TIter nextkey(file->GetListOfKeys());" << endl;
