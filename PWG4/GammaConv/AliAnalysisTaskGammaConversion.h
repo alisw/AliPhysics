@@ -181,7 +181,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
   
   /// Add reconstructed pions to aod
-  void AddPionToAOD(const AliKFParticle * const pionkf, Double_t mass, Int_t daughter1, Int_t daughter2); 
+  void AddPionToAOD(AliKFParticle * pionkf, Double_t mass, Int_t daughter1, Int_t daughter2); 
   void AddOmegaToAOD(const AliKFParticle * const omegakf, Double_t mass, Int_t daughter1, Int_t daughter2); 
 		
   // for CF
