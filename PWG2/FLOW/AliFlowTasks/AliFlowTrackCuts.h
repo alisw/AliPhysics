@@ -29,6 +29,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
  public:
   AliFlowTrackCuts();
+  AliFlowTrackCuts(const char* name);
   AliFlowTrackCuts(const AliFlowTrackCuts& someCuts);
   AliFlowTrackCuts& operator=(const AliFlowTrackCuts& someCuts);
   virtual ~AliFlowTrackCuts();
@@ -41,25 +42,25 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   enum PIDsource {kTPCpid, kTOFpid, kTPCTOFpid};
 
   //setters (interface to AliESDtrackCuts)
-  void SetMinNClustersTPC( Int_t a ) {fAliESDtrackCuts->SetMinNClustersTPC(a);}
-  void SetMinNClustersITS( Int_t a ) {fAliESDtrackCuts->SetMinNClustersITS(a);}
+  void SetMinNClustersTPC( Int_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMinNClustersTPC(a);}
+  void SetMinNClustersITS( Int_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMinNClustersITS(a);}
   void SetClusterRequirementITS( AliESDtrackCuts::Detector det,
                                  AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff )
-                                 { fAliESDtrackCuts->SetClusterRequirementITS(det,req); } 
+                                 { InitESDcuts(); fAliESDtrackCuts->SetClusterRequirementITS(det,req); } 
   void SetMaxChi2PerClusterTPC( Float_t a ) {fMaxChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
   void SetMinChi2PerClusterTPC( Float_t a ) {fMinChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
-  void SetMaxChi2PerClusterITS( Float_t a ) {fAliESDtrackCuts->SetMaxChi2PerClusterITS(a);}
-  void SetRequireTPCRefit( Bool_t a ) {fAliESDtrackCuts->SetRequireTPCRefit(a);}
-  void SetRequireTPCStandAlone( Bool_t a) {fAliESDtrackCuts->SetRequireTPCStandAlone(a);}
-  void SetRequireITSRefit( Bool_t a ) {fAliESDtrackCuts->SetRequireITSRefit(a);}
-  void SetRequireITSStandAlone( Bool_t a) {fAliESDtrackCuts->SetRequireITSStandAlone(a);}
-  void SetAcceptKinkDaughters( Bool_t a ) {fAliESDtrackCuts->SetAcceptKinkDaughters(a);}
-  void SetMaxDCAToVertexZ( Float_t a ) {fAliESDtrackCuts->SetMaxDCAToVertexZ(a);}
-  void SetMaxDCAToVertexXY( Float_t a ) {fAliESDtrackCuts->SetMaxDCAToVertexXY(a);}
-  void SetMaxDCAToVertexXYPtDep( const char* a ) {fAliESDtrackCuts->SetMaxDCAToVertexXYPtDep(a);}
-  void SetRequireSigmaToVertex(Bool_t a) {fAliESDtrackCuts->SetRequireSigmaToVertex(a);}
-  void SetMaxNsigmaToVertex(Float_t sigma=1e10) { fAliESDtrackCuts->SetMaxNsigmaToVertex(sigma); }
-  void SetDCAToVertex2D( Bool_t a ) {fAliESDtrackCuts->SetDCAToVertex2D(a);}
+  void SetMaxChi2PerClusterITS( Float_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxChi2PerClusterITS(a);}
+  void SetRequireTPCRefit( Bool_t a ) {InitESDcuts(); fAliESDtrackCuts->SetRequireTPCRefit(a);}
+  void SetRequireTPCStandAlone( Bool_t a) {InitESDcuts(); fAliESDtrackCuts->SetRequireTPCStandAlone(a);}
+  void SetRequireITSRefit( Bool_t a ) {InitESDcuts(); fAliESDtrackCuts->SetRequireITSRefit(a);}
+  void SetRequireITSStandAlone( Bool_t a) {InitESDcuts(); fAliESDtrackCuts->SetRequireITSStandAlone(a);}
+  void SetAcceptKinkDaughters( Bool_t a ) {InitESDcuts(); fAliESDtrackCuts->SetAcceptKinkDaughters(a);}
+  void SetMaxDCAToVertexZ( Float_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxDCAToVertexZ(a);}
+  void SetMaxDCAToVertexXY( Float_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxDCAToVertexXY(a);}
+  void SetMaxDCAToVertexXYPtDep( const char* a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxDCAToVertexXYPtDep(a);}
+  void SetRequireSigmaToVertex(Bool_t a) {InitESDcuts(); fAliESDtrackCuts->SetRequireSigmaToVertex(a);}
+  void SetMaxNsigmaToVertex(Float_t sigma=1e10) {InitESDcuts(); fAliESDtrackCuts->SetMaxNsigmaToVertex(sigma); }
+  void SetDCAToVertex2D( Bool_t a ) {InitESDcuts(); fAliESDtrackCuts->SetDCAToVertex2D(a);}
   void SetEtaRange( Float_t r1, Float_t r2 ) { SetEtaMin(r1); SetEtaMax(r2); }
   void SetPtRange( Float_t r1, Float_t r2 ) { SetPtMin(r1); SetPtMax(r2); }
   void SetRequireCharge( Bool_t r ) {fRequireCharge=r;}
@@ -70,23 +71,23 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetIgnoreTPCzRange( Double_t min, Double_t max ) 
                          { fIgnoreTPCzRange=kTRUE; fIgnoreTPCzRangeMin=min; fIgnoreTPCzRangeMax=max; } 
 
-  Int_t GetMinNClustersTPC() const {return fAliESDtrackCuts->GetMinNClusterTPC();}
-  Int_t GetMinNClustersITS() const {return fAliESDtrackCuts->GetMinNClustersITS();}
+  Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
+  Int_t GetMinNClustersITS() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClustersITS();}
   AliESDtrackCuts::ITSClusterRequirement GetClusterRequirementITS( AliESDtrackCuts::Detector det ) const
-                                 { return fAliESDtrackCuts->GetClusterRequirementITS(det); } 
-  Float_t GetMaxChi2PerClusterTPC() const {return fAliESDtrackCuts->GetMaxChi2PerClusterTPC();}
-  Float_t GetMaxChi2PerClusterITS() const {return fAliESDtrackCuts->GetMaxChi2PerClusterITS();}
-  Bool_t GetRequireTPCRefit() const {return fAliESDtrackCuts->GetRequireTPCRefit();}
-  Bool_t GetRequireTPCStandAlone() const {return fAliESDtrackCuts->GetRequireTPCStandAlone();}
-  Bool_t GetRequireITSRefit() const {return fAliESDtrackCuts->GetRequireITSRefit();}
-  Bool_t GetRequireITSStandAlone() const {return fAliESDtrackCuts->GetRequireITSStandAlone();}
-  Bool_t GetAcceptKinkDaughters() const {return fAliESDtrackCuts->GetAcceptKinkDaughters();}
-  Float_t GetMaxDCAToVertexZ() const {return fAliESDtrackCuts->GetMaxDCAToVertexZ();}
-  Float_t GetMaxDCAToVertexXY() const {return fAliESDtrackCuts->GetMaxDCAToVertexXY();}
-  const char* GetMaxDCAToVertexXYPtDep() const {return fAliESDtrackCuts->GetMaxDCAToVertexXYPtDep();}
-  Bool_t GetRequireSigmaToVertex() const {return fAliESDtrackCuts->GetRequireSigmaToVertex();}
-  Float_t GetMaxNsigmaToVertex() const {return fAliESDtrackCuts->GetMaxNsigmaToVertex(); }
-  Bool_t GetDCAToVertex2D() const {return fAliESDtrackCuts->GetDCAToVertex2D();}
+                                 {if (!fAliESDtrackCuts) return AliESDtrackCuts::kOff;  return fAliESDtrackCuts->GetClusterRequirementITS(det); } 
+  Float_t GetMaxChi2PerClusterTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMaxChi2PerClusterTPC();}
+  Float_t GetMaxChi2PerClusterITS() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMaxChi2PerClusterITS();}
+  Bool_t GetRequireTPCRefit() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetRequireTPCRefit();}
+  Bool_t GetRequireTPCStandAlone() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetRequireTPCStandAlone();}
+  Bool_t GetRequireITSRefit() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetRequireITSRefit();}
+  Bool_t GetRequireITSStandAlone() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetRequireITSStandAlone();}
+  Bool_t GetAcceptKinkDaughters() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetAcceptKinkDaughters();}
+  Float_t GetMaxDCAToVertexZ() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMaxDCAToVertexZ();}
+  Float_t GetMaxDCAToVertexXY() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMaxDCAToVertexXY();}
+  const char* GetMaxDCAToVertexXYPtDep() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMaxDCAToVertexXYPtDep();}
+  Bool_t GetRequireSigmaToVertex() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetRequireSigmaToVertex();}
+  Float_t GetMaxNsigmaToVertex() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMaxNsigmaToVertex(); }
+  Bool_t GetDCAToVertex2D() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetDCAToVertex2D();}
   void GetEtaRange( Float_t& r1, Float_t& r2 ) const { r1=GetEtaMin(); r2=GetEtaMax(); }
   void GetPtRange( Float_t& r1, Float_t& r2 ) const { r1=GetPtMin(); r2=GetPtMax(); }
   Bool_t GetRequireCharge() const {return fRequireCharge;}
@@ -118,11 +119,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliMCParticle* GetMCparticle() const {return fMCparticle;}
   AliFlowTrack* MakeFlowTrack() const;
   Bool_t IsPhysicalPrimary() const; 
-  static Bool_t IsPhysicalPrimary(AliMCEvent* p, Int_t label); 
+  static Bool_t IsPhysicalPrimary(AliMCEvent* p, Int_t label, Bool_t requiretransported=kTRUE); 
   
   void SetMCevent(AliMCEvent* mcEvent) {fMCevent=mcEvent;}
   AliMCEvent* GetMCevent() const {return fMCevent;}
-  void SetEvent(AliVEvent* event) {Clear();fEvent=event;}
+  void SetEvent(AliVEvent* event, AliMCEvent* mcEvent=NULL) {Clear();fEvent=event;fMCevent=mcEvent;}
   AliVEvent* GetEvent() const {return fEvent;}
   Int_t GetNumberOfInputObjects() const;
   TObject* GetInputObject(Int_t i);
@@ -147,6 +148,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void HandleVParticle(AliVParticle* track);
   void DefineHistograms();
   void InitPIDcuts();
+  void InitESDcuts() {if (!fAliESDtrackCuts) fAliESDtrackCuts=new AliESDtrackCuts();}
 
   //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
@@ -158,6 +160,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t fMCPID;                      //MC PID
   Bool_t fIgnoreSignInPID;           //when PID cut is set, pass also the antiparticle
   Bool_t fCutMCisPrimary;            //do we cut on primaryness?
+  Bool_t fRequireTransportBitForPrimaries; //require the transport bit to be set for primaries
   Bool_t fMCisPrimary;               //is MC primary
   Bool_t fRequireCharge;          //is charged?
   Bool_t fFakesAreOK;             //are fakes (negative labels) ok?

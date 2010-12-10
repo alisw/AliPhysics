@@ -49,7 +49,7 @@ class AliFlowEventCuts : public TNamed {
   void SetNContributorsRange(Int_t min, Int_t max=INT_MAX) 
        {fCutNContributors=kTRUE; fNContributorsMin=min; fNContributorsMax=max;}
   void SetMeanPtRange(Double_t min, Double_t max) {fCutMeanPt=kTRUE; fMeanPtMax=max; fMeanPtMin=min;}
-  void SetCutSPDvertexerAnomaly(Bool_t b) {fCutSPDvertexerAnomaly=b;}
+  void SetCutSPDvertexerAnomaly(Bool_t b=kTRUE) {fCutSPDvertexerAnomaly=b;}
   void SetCutZDCtiming(Bool_t c=kTRUE) {fCutZDCtiming=c;}
 
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
@@ -65,11 +65,11 @@ class AliFlowEventCuts : public TNamed {
   Int_t RefMult(AliVEvent* event);
   //Int_t GetRefMult() {return fRefMult;}
   Int_t GetReferenceMultiplicity(AliVEvent* event) {return RefMult(event);}
-  const char* CentrMethName(refMultMethod) const;
+  const char* CentrMethName(refMultMethod method) const;
   void SetCentralityPercentileRange(Float_t min, Float_t max){ fCentralityPercentileMin=min;
                                                                fCentralityPercentileMax=max;
                                                                fCutCentralityPercentile=kTRUE; }
-  void SetCentralityPercentileMethod( refMultMethod m) {fRefMultMethod=m;}
+  void SetCentralityPercentileMethod( refMultMethod m) {fCentralityPercentileMethod=m;}
 
  private:
   Bool_t fCutNumberOfTracks;//cut on # of tracks

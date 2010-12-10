@@ -57,6 +57,55 @@ ClassImp(AliFlowTrackCuts)
 //-----------------------------------------------------------------------
 AliFlowTrackCuts::AliFlowTrackCuts():
   AliFlowTrackSimpleCuts(),
+  fAliESDtrackCuts(NULL),
+  fQA(NULL),
+  fCutMC(kFALSE),
+  fCutMCprocessType(kFALSE),
+  fMCprocessType(kPNoProcess),
+  fCutMCPID(kFALSE),
+  fMCPID(0),
+  fIgnoreSignInPID(kFALSE),
+  fCutMCisPrimary(kFALSE),
+  fRequireTransportBitForPrimaries(kTRUE),
+  fMCisPrimary(kFALSE),
+  fRequireCharge(kFALSE),
+  fFakesAreOK(kTRUE),
+  fCutSPDtrackletDeltaPhi(kFALSE),
+  fSPDtrackletDeltaPhiMax(FLT_MAX),
+  fSPDtrackletDeltaPhiMin(-FLT_MAX),
+  fIgnoreTPCzRange(kFALSE),
+  fIgnoreTPCzRangeMax(FLT_MAX),
+  fIgnoreTPCzRangeMin(-FLT_MAX),
+  fCutChi2PerClusterTPC(kFALSE),
+  fMaxChi2PerClusterTPC(FLT_MAX),
+  fMinChi2PerClusterTPC(-FLT_MAX),
+  fCutNClustersTPC(kFALSE),
+  fNClustersTPCMax(INT_MAX),
+  fNClustersTPCMin(INT_MIN),  
+  fParamType(kGlobal),
+  fParamMix(kPure),
+  fTrack(NULL),
+  fTrackPhi(0.),
+  fTrackEta(0.),
+  fTrackWeight(0.),
+  fTrackLabel(INT_MIN),
+  fMCevent(NULL),
+  fMCparticle(NULL),
+  fEvent(NULL),
+  fTPCtrack(),
+  fESDpid(NULL),
+  fPIDsource(kTPCTOFpid),
+  fTPCpidCuts(NULL),
+  fTOFpidCuts(NULL),
+  fTPCTOFpidCrossOverPt(0.4),
+  fAliPID(AliPID::kPion)
+{
+  //io constructor 
+}
+
+//-----------------------------------------------------------------------
+AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
+  AliFlowTrackSimpleCuts(),
   fAliESDtrackCuts(new AliESDtrackCuts()),
   fQA(NULL),
   fCutMC(kFALSE),
@@ -66,6 +115,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMCPID(0),
   fIgnoreSignInPID(kFALSE),
   fCutMCisPrimary(kFALSE),
+  fRequireTransportBitForPrimaries(kTRUE),
   fMCisPrimary(kFALSE),
   fRequireCharge(kFALSE),
   fFakesAreOK(kTRUE),
@@ -100,12 +150,14 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fAliPID(AliPID::kPion)
 {
   //constructor 
+  SetName(name);
+  SetTitle("AliFlowTrackCuts");
 }
 
 //-----------------------------------------------------------------------
 AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   AliFlowTrackSimpleCuts(that),
-  fAliESDtrackCuts(new AliESDtrackCuts(*(that.fAliESDtrackCuts))),
+  fAliESDtrackCuts(NULL),
   fQA(NULL),
   fCutMC(that.fCutMC),
   fCutMCprocessType(that.fCutMCprocessType),
@@ -114,6 +166,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMCPID(that.fMCPID),
   fIgnoreSignInPID(that.fIgnoreSignInPID),
   fCutMCisPrimary(that.fCutMCisPrimary),
+  fRequireTransportBitForPrimaries(that.fRequireTransportBitForPrimaries),
   fMCisPrimary(that.fMCisPrimary),
   fRequireCharge(that.fRequireCharge),
   fFakesAreOK(that.fFakesAreOK),
@@ -150,6 +203,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   //copy constructor
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
   if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
+  if (that.fAliESDtrackCuts) fAliESDtrackCuts = new AliESDtrackCuts(*(that.fAliESDtrackCuts));
 }
 
 //-----------------------------------------------------------------------
@@ -157,7 +211,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
 {
   //assignment
   AliFlowTrackSimpleCuts::operator=(that);
-  *fAliESDtrackCuts=*(that.fAliESDtrackCuts);
+  if (that.fAliESDtrackCuts) *fAliESDtrackCuts=*(that.fAliESDtrackCuts);
   fQA=NULL;
   fCutMC=that.fCutMC;
   fCutMCprocessType=that.fCutMCprocessType;
@@ -166,6 +220,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMCPID=that.fMCPID;
   fIgnoreSignInPID=that.fIgnoreSignInPID,
   fCutMCisPrimary=that.fCutMCisPrimary;
+  fRequireTransportBitForPrimaries=that.fRequireTransportBitForPrimaries;
   fMCisPrimary=that.fMCisPrimary;
   fRequireCharge=that.fRequireCharge;
   fFakesAreOK=that.fFakesAreOK;
@@ -298,7 +353,7 @@ Bool_t AliFlowTrackCuts::PassesMCcuts(AliMCEvent* mcEvent, Int_t label)
 
   if (fCutMCisPrimary)
   {
-    if (IsPhysicalPrimary(mcEvent,label) != fMCisPrimary) return kFALSE;
+    if (IsPhysicalPrimary(mcEvent,label,fRequireTransportBitForPrimaries) != fMCisPrimary) return kFALSE;
   }
   if (fCutMCPID)
   {
@@ -359,6 +414,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   ////////////////////////////////////////////////////////////////
 
   if (!fTrack) return kFALSE;
+  if (esdTrack) esdTrack=static_cast<AliESDtrack*>(fTrack); //because it may be different from global
   
   Bool_t pass=kTRUE;
   //check the common cuts for the current particle fTrack (MC,AOD,ESD)
@@ -397,7 +453,10 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
       }
     }
  
-    if (!fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack))) pass=kFALSE;
+    if (fAliESDtrackCuts)
+    {
+      if (!fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack))) pass=kFALSE;
+    }
  
     Int_t ntpccls = ( fParamType==kESD_TPConly )?
                       esdTrack->GetTPCNclsIter1():esdTrack->GetTPCNcls();    
@@ -491,8 +550,7 @@ void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts()
 {
   //get standard cuts
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts();
-  cuts->SetName("standard TPConly cuts");
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard TPConly cuts");
   delete cuts->fAliESDtrackCuts;
   cuts->fAliESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   cuts->SetParamType(kESD_TPConly);
@@ -503,8 +561,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts()
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries)
 {
   //get standard cuts
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts();
-  cuts->SetName("standard global track cuts 2009");
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard global track cuts 2009");
   delete cuts->fAliESDtrackCuts;
   cuts->fAliESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selPrimaries);
   cuts->SetParamType(kGlobal);
@@ -605,21 +662,21 @@ Bool_t AliFlowTrackCuts::IsPhysicalPrimary() const
   //check if current particle is a physical primary
   if (!fMCevent) return kFALSE;
   if (fTrackLabel<0) return kFALSE;
-  return IsPhysicalPrimary(fMCevent, fTrackLabel);
+  return IsPhysicalPrimary(fMCevent, fTrackLabel, fRequireTransportBitForPrimaries);
 }
 
 //-----------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::IsPhysicalPrimary(AliMCEvent* mcEvent, Int_t label)
+Bool_t AliFlowTrackCuts::IsPhysicalPrimary(AliMCEvent* mcEvent, Int_t label, Bool_t requiretransported)
 {
   //check if current particle is a physical primary
   Bool_t physprim=mcEvent->IsPhysicalPrimary(label);
-  if (!physprim) return kFALSE;
   AliMCParticle* track = static_cast<AliMCParticle*>(mcEvent->GetTrack(label));
   if (!track) return kFALSE;
   TParticle* particle = track->Particle();
   Bool_t transported = particle->TestBit(kTransportBit);
-  //printf("prim: %s, transp: %s\n",(physprim)?"YES":"NO ",(transported)?"YES":"NO ");
-  return (physprim && transported);
+  //printf("label: %i prim: %s, transp: %s, pass: %s\n",label, (physprim)?"YES":"NO ",(transported)?"YES":"NO ",
+        //(physprim && (transported || !requiretransported))?"YES":"NO"  );
+  return (physprim && (transported || !requiretransported));
 }
 
 //-----------------------------------------------------------------------
@@ -838,7 +895,7 @@ void AliFlowTrackCuts::InitPIDcuts()
   {
     if (fAliPID==AliPID::kPion)
     {
-      t = new TMatrixF(3,26);
+      t = new TMatrixF(3,27);
       (*t)(0,0)  = 0.3;   (*t)(1,0)  = -700;  (*t)(2,0)  = 700;
       (*t)(0,1)  = 0.35;  (*t)(1,1)  = -800;  (*t)(2,1)  = 800;
       (*t)(0,2)  = 0.40;  (*t)(1,2)  = -600;  (*t)(2,2)  = 800;
@@ -864,7 +921,8 @@ void AliFlowTrackCuts::InitPIDcuts()
       (*t)(0,22) = 1.80;  (*t)(1,22) = -400;  (*t)(2,22) = 100;
       (*t)(0,23) = 1.90;  (*t)(1,23) = -400;  (*t)(2,23) =  70;
       (*t)(0,24) = 2.00;  (*t)(1,24) = -400;  (*t)(2,24) =  50;
-      (*t)(0,25) = 2.10;  (*t)(1,25) =    0;  (*t)(2,25) =   0;
+      (*t)(0,25) = 2.10;  (*t)(1,25) = -400;  (*t)(2,25) =   0;
+      (*t)(0,26) = 2.20;  (*t)(1,26) =    0;  (*t)(2,26) =   0;
     }
     else
     if (fAliPID==AliPID::kProton)
