@@ -37,8 +37,11 @@ AliAnalysisTaskGammaJet::AliAnalysisTaskGammaJet() : AliAnalysisTaskSE(),
   fHistPtJets(NULL),
   fHistGammaJets(NULL),
   fHistGammaJetsIso(NULL),
-  fMinPt(5.0),
-  fConeSize(0.3),
+  fHistMaxdPhi(NULL),
+  fHistMaxdPhiIso(NULL),
+  fHistMaxdPhiIsoPt(NULL),
+  fMinPt(2.0),
+  fConeSize(0.9),
   fPtThreshold(2.0),
   fDeltaAODFileName(""),
   fPhotons(NULL)
@@ -57,6 +60,9 @@ AliAnalysisTaskGammaJet::AliAnalysisTaskGammaJet(const char *name) :
   fHistPtJets(0),
   fHistGammaJets(NULL),
   fHistGammaJetsIso(NULL),
+  fHistMaxdPhi(NULL),
+  fHistMaxdPhiIso(NULL),
+  fHistMaxdPhiIsoPt(NULL),
   fMinPt(0.0),
   fConeSize(0.0),
   fPtThreshold(0.0),
@@ -103,11 +109,21 @@ void AliAnalysisTaskGammaJet::UserCreateOutputObjects()
   fHistPtJets->SetMarkerStyle(kFullCircle);
   fOutputList->Add(fHistPtJets);
 
-  fHistGammaJets = new TH1F("fHistGammaJets", "fHistGammaJets", 200, -TMath::Pi(), 2*TMath::Pi());
+  fHistGammaJets = new TH1F("fHistGammaJets", "fHistGammaJets", 200, -2*TMath::Pi(), 2*TMath::Pi());
   fOutputList->Add(fHistGammaJets);
   
-  fHistGammaJetsIso = new TH1F("fHistGammaJetsIso", "fHistGammaJetsIso", 200, -TMath::Pi(), 2*TMath::Pi());
+  fHistGammaJetsIso = new TH1F("fHistGammaJetsIso", "fHistGammaJetsIso", 200, -2*TMath::Pi(), 2*TMath::Pi());
   fOutputList->Add(fHistGammaJetsIso);
+
+
+  fHistMaxdPhi = new TH1F("fHistMaxdPhi", "fHistMaxdPhi", 200, -2*TMath::Pi(), 2*TMath::Pi());
+  fOutputList->Add(fHistMaxdPhi);
+  
+  fHistMaxdPhiIso = new TH1F("fHistMaxdPhiIso", "fHistMaxdPhiIso", 200, -2*TMath::Pi(), 2*TMath::Pi());
+  fOutputList->Add(fHistMaxdPhiIso);
+
+  fHistMaxdPhiIsoPt = new TH1F("fHistMaxdPhiIsoPt", "fHistMaxdPhiIsoPt", 200, -2*TMath::Pi(), 2*TMath::Pi());
+  fOutputList->Add(fHistMaxdPhiIsoPt);
   
   //TNtuple * tuple = new TNtuple("fNtuple", "fNtuple", dPhi, 
 
@@ -142,11 +158,12 @@ void AliAnalysisTaskGammaJet::UserExec(Option_t *)
     return;
   }
   
+  
   //FillPWG4PartCorrBranch(convGamma, fPhotons, "ConvGamma");
   //fIsolation->MakeAnalysisFillAOD();
   
   ProcessConvGamma(aodEvent);
-  ProcessCalorimeters(aodEvent);
+  //ProcessCalorimeters(aodEvent);
     
 
   PostData(1, fOutputList);
@@ -232,7 +249,7 @@ void AliAnalysisTaskGammaJet::CleanUp() {
 }
 
 //_________________________________________________________________________
-Bool_t AliAnalysisTaskGammaJet::IsIsolated( AliAODPWG4ParticleCorrelation * particle, TClonesArray * tracks, Float_t coneSize, Float_t ptThreshold ) {
+Bool_t AliAnalysisTaskGammaJet::IsIsolated( AliAODPWG4Particle * particle, TClonesArray * tracks, Float_t coneSize, Float_t ptThreshold ) {
   //See header file for documentation
   for(int it = 0; it < tracks->GetEntriesFast(); it++) {
     if ( (it == particle->GetTrackLabel(0)) || it == particle->GetTrackLabel(1) ) 
@@ -291,7 +308,14 @@ void AliAnalysisTaskGammaJet::ProcessCalorimeters( const AliAODEvent * const aod
 }
 //___________________________________________________________________________________________
 void AliAnalysisTaskGammaJet::ProcessConvGamma( const AliAODEvent * const aodEvent ) {
+  
+  TClonesArray * tracks = aodEvent->GetTracks();
+  if(!tracks) {
+    cout << "No tracks!!!"<<endl;
+    return;
+  }
 
+  Bool_t delP = kFALSE;
   TClonesArray * convGamma = GetConversionGammas(aodEvent);
   if(!convGamma) {
     AliError(Form("No convgamma"));
@@ -299,32 +323,41 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const AliAODEvent * const aodEve
   }
 
   for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
-    AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
-    
-    if (!aodO) {
-      AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
-      continue;
+    AliAODPWG4Particle * photon = dynamic_cast<AliAODPWG4Particle*>(convGamma->At(iPhot));
+
+
+    if(!photon) {
+      AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
+      if (!aodO) {
+	AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
+	continue;
+      }
+      
+      if(aodO->Pt() < GetMinPt()) continue;
+      
+      
+      //Use the AODPWG4PartCorr shit!
+      photon = PWG4PartFromGammaConvAODObject(aodO, "ConvGamma");
+      delP = kTRUE;
+    } 
+  
+    if(photon) {
+      Bool_t isolated = IsIsolated(photon, tracks, GetConeSize(), GetPtThreshold() );
+      
+      
+      // if ( (aodO->Phi()) < 0 )
+      //   cout << aodO->Phi() << endl;
+      
+      CorrelateWithJets(photon, aodEvent->GetJets(), isolated);
+      
+      fHistPt->Fill(photon->Pt());
+      
+      if (delP) delete photon;
     }
-    
-    if(aodO->Pt() < GetMinPt()) continue;
-    
-
-    //Use the AODPWG4PartCorr shit!
-    AliAODPWG4ParticleCorrelation * photon = PWG4PartFromGammaConvAODObject(aodO, "ConvGamma");
-    photon->SetIsolated( IsIsolated(photon, aodEvent->GetTracks(), GetConeSize(), GetPtThreshold()) );
-    
-    
-    // if ( (aodO->Phi()) < 0 )
-    //   cout << aodO->Phi() << endl;
-    
-    CorrelateWithJets(photon, aodEvent->GetJets());
-
-    fHistPt->Fill(photon->Pt());
-    delete photon;
-    
   }
 }
 
+///________________________________________________________________________________________________________________
 void AliAnalysisTaskGammaJet::CorrelateWithJets(AliAODPWG4ParticleCorrelation * photon, const TClonesArray * const jets) {
   //See header file for documentation
   if (jets) {
@@ -340,6 +373,42 @@ void AliAnalysisTaskGammaJet::CorrelateWithJets(AliAODPWG4ParticleCorrelation * 
 	  fHistGammaJets->Fill(dPhi);
 	
       }
+    }
+  }
+}
+
+
+
+///________________________________________________________________________________________________________________
+void AliAnalysisTaskGammaJet::CorrelateWithJets(AliAODPWG4Particle * photon, const TClonesArray * const jets, Bool_t const isolated ) {
+  //See header file for documentation
+  if (jets) {
+ 
+    Float_t maxdPhi = 0.0;
+    Float_t maxdPhiPt = 0.0;
+    for(int ij = 0; ij < jets->GetEntriesFast(); ij++) {
+      AliAODJet * jet = dynamic_cast<AliAODJet*>(jets->At(ij));
+      if(jet) {
+	fHistPtJets->Fill(jet->Pt());
+	 
+	Float_t dPhi = TMath::Abs(photon->Phi() - jet->Phi());
+	if ( TMath::Abs(dPhi - TMath::Pi()) < TMath::Abs(maxdPhi - TMath::Pi()) ){
+	  maxdPhi = dPhi;
+	  maxdPhiPt = jet->Pt();
+	}
+	 
+	if (isolated) {
+	  fHistGammaJetsIso->Fill(dPhi, jet->Pt()/photon->Pt());
+	} else {
+	  fHistGammaJets->Fill(dPhi);
+	}
+      }
+    }
+
+    fHistMaxdPhi->Fill(maxdPhi);
+    if(isolated) {
+      fHistMaxdPhiIso->Fill(maxdPhi);
+      fHistMaxdPhiIsoPt->Fill(maxdPhi, maxdPhiPt/photon->Pt());
     }
   }
 }

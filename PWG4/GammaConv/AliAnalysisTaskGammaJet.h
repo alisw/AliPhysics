@@ -8,6 +8,7 @@ class TH1F;
 class AliESDEvent;
 class AliGammaConversionAODObject;
 class AliAODPWG4ParticleCorrelation;
+class AliAODPWG4Particle;
 class TClonesArray;
 class TString;
 
@@ -54,7 +55,7 @@ class AliAnalysisTaskGammaJet : public AliAnalysisTaskSE {
   void FillPWG4PartCorrBranch( TClonesArray * gcBranch, TClonesArray * partCorrBranch, TString detector);
   
   //Is particle isolated
-  Bool_t IsIsolated( AliAODPWG4ParticleCorrelation * particle, TClonesArray * tracks, Float_t coneSize, Float_t ptThreshold);
+  Bool_t IsIsolated( AliAODPWG4Particle * particle, TClonesArray * tracks, Float_t coneSize, Float_t ptThreshold);
 
   //Process conv gamma
   void ProcessConvGamma( const AliAODEvent * const aodEvent );
@@ -64,6 +65,7 @@ class AliAnalysisTaskGammaJet : public AliAnalysisTaskSE {
   
   //Correlate particle with jets
   void CorrelateWithJets(AliAODPWG4ParticleCorrelation * photon, const TClonesArray * const jets);
+  void CorrelateWithJets(AliAODPWG4Particle * photon, const TClonesArray * const jets, Bool_t const isolated);
 
   //Is eta - phi distance smaller than conesize ?
   inline Bool_t IsInCone(Float_t dEta, Float_t dPhi, Float_t coneSize) {   
@@ -77,6 +79,9 @@ class AliAnalysisTaskGammaJet : public AliAnalysisTaskSE {
   TH1F        *fHistPtJets; //! Pt spectrum
   TH1F        *fHistGammaJets; //!Phi correlations
   TH1F        *fHistGammaJetsIso; //!Phi correlations
+  TH1F        *fHistMaxdPhi; //!Phi correlations
+  TH1F        *fHistMaxdPhiIso; //!Phi correlations
+  TH1F        *fHistMaxdPhiIsoPt; //!Phi correlations
   
   
   Float_t fMinPt; //Minimum pt for correlation
