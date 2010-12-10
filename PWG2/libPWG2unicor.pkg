@@ -10,7 +10,8 @@ SRCS= UNICOR/AliAnalysisTaskUnicor.cxx \
       UNICOR/AliUnicorEventAliceESD.cxx \
       UNICOR/AliUnicorEvent.cxx \
       UNICOR/AliUnicorHN.cxx \
-      UNICOR/AliUnicorPair.cxx 
+      UNICOR/AliUnicorPair.cxx \
+      UNICOR/AliUnicorCoulomb.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 

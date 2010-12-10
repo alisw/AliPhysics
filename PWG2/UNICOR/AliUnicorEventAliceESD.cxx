@@ -20,23 +20,40 @@
 //=============================================================================
 
 #include <cmath>
+#include "TFile.h"
+#include "TH1.h"
+#include "TGraph.h"
+#include "AliESDVZERO.h"
 #include "AliESDEvent.h"
+#include "AliMultiplicity.h"
 #include "AliUnicorEventAliceESD.h"
 
 ClassImp(AliUnicorEventAliceESD)
 
 //=============================================================================
-  AliUnicorEventAliceESD::AliUnicorEventAliceESD(AliESDEvent *esd) : AliUnicorEvent(), fESD(esd)//, fPhysicsSelection(0) 
+AliUnicorEventAliceESD::AliUnicorEventAliceESD(AliESDEvent *esd) : AliUnicorEvent(), fViper(0), fESD(esd)//, fPhysicsSelection(0) 
 {
   // constructor 
 
   //  printf("%s object created\n",ClassName());
   if (!fESD) fESD = new AliESDEvent();
   //  fPhysicsSelection = new AliPhysicsSelection();
+
+  // V0 percentile graph for centrality determination
+
+  //  TFile::Open("/lustre/alice/misko/AliCentralityBy1D_137161_v4.root","read");
+  //  TFile::Open("/lustre/alice/misko/AliCentralityBy1D_137161_v5.root","read"); not checked
+  TFile::Open("/lustre/alice/misko/AliCentralityBy1D_137366_v2.root","read");
+  //TFile::Open("/lustre/alice/misko/AliCentralityBy1D_137366_v4.root","read");
+  const TH1F *hi = (const TH1F*) gFile->Get("hmultV0_percentile");
+  //const TH1D *hi = (const TH1D*) gFile->Get("hNtracks_percentile");
+  //const TH1F *hi = (const TH1F*) gFile->Get("hNclusters1_percentile");
+  fViper = new TGraph((const TH1*) hi);
+  gFile->Close();
 }
 //=============================================================================
-AliUnicorEventAliceESD::~AliUnicorEventAliceESD()
-{
+AliUnicorEventAliceESD::~AliUnicorEventAliceESD() {
+
   // destructor
 
 }
@@ -49,19 +66,36 @@ Bool_t AliUnicorEventAliceESD::Good() const
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
   if (!vtx->GetStatus()) return kFALSE;
   if (fabs(Zver())>1) return kFALSE;
-
-  /*
-  int hard=0;
-  for (int i=0; i<NParticles(); i++) {
-    if (!ParticleGood(i)) continue;
-    if (ParticlePt(i)<1.0) continue;
-    hard = 1;
-    break;
-  }
-  return hard;
-  */
-
+  if (NGoodParticles()<9) return kFALSE;
   return kTRUE;
+}
+//=============================================================================
+Double_t AliUnicorEventAliceESD::Centrality() const {
+
+  // centrality between 0 (central) and 1 (very peripheral)
+
+  // V0 multiplicity, not linearized
+  
+  AliESDVZERO *v0 = fESD->GetVZEROData();
+  float multa = v0->GetMTotV0A();
+  float multc = v0->GetMTotV0C();
+  double cent = fViper->Eval(multa+multc)/100.0;
+
+  // number of tracks
+
+  // double cent = fViper->Eval(((AliVEvent*) fESD)->GetNumberOfTracks())/100.0;  
+
+  // number of clusters in second layer of SPD
+
+  //  double nspd2 = fESD->GetMultiplicity()->GetNumberOfITSClusters(1);
+  //  double zv = fESD->GetPrimaryVertexSPD()->GetZ();
+  //  const double pars[] = {8.10030e-01,-2.80364e-03,-7.19504e-04};
+  //  zv -= pars[0];
+  //  float corr = 1 + zv*(pars[1] + zv*pars[2]);
+  //  nspd2 = corr>0? nspd2/corr : -1;
+  //  double cent = fViper->Eval(nspd2)/100.0;  
+
+  return cent;
 }
 //=============================================================================
 Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const 
@@ -74,7 +108,7 @@ Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
   AliESDtrack *track = fESD->GetTrack(i);
   if (!track->IsOn(AliESDtrack::kTPCrefit)) return 0;        // TPC refit
   if (!track->IsOn(AliESDtrack::kITSrefit)) return 0;        // ITS refit
-  if (track->GetTPCNcls() < 70) return 0;                    // number of TPC clusters
+  if (track->GetTPCNcls() < 90) return 0;                    // number of TPC clusters
   if (track->GetKinkIndex(0) > 0) return 0;                  // no kink daughters
   const AliExternalTrackParam *tp = GetTrackParam(i);
   if (!tp) return 0;                                         // track param
@@ -89,8 +123,9 @@ Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
 
   Float_t r,z;
   track->GetImpactParametersTPC(r,z);
-  if (fabs(z)>3.2) return 0;                          // impact parameter in z
-  if (fabs(r)>2.4) return 0;                          // impact parameter in xy
+  if (fabs(z)>1.0) return 0;                          // impact parameter in z
+  if (fabs(r)>1.0) return 0;                          // impact parameter in xy
+  if (r==0) return 0;
 
   //TBits shared = track->GetTPCSharedMap();
   //if (shared.CountBits()) return 0;                 // no shared clusters; pragmatic but dangerous
@@ -115,16 +150,26 @@ Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
   else return 0;
 }
 //=============================================================================
-Bool_t AliUnicorEventAliceESD::PairGood(Double_t /*p0*/, Double_t /*the0*/, Double_t /*phi0*/, 
-				Double_t /*p1*/, Double_t /*the1*/, Double_t /*phi1*/) const {
+Bool_t AliUnicorEventAliceESD::PairGood(double p0, double the0, double phi0, double z0,  
+				double p1, double the1, double phi1, double z1) const {
 
   // two-track separation cut
 
-  // double dthe = the1-the0;
-  // double dphi = TVector2::Phi_mpi_pi(phi1-phi0);
-  // double dpt = p1*sin(the1) - p0*sin(the0);
-  // return (fabs(dthe)>0.010 || fabs(dphi)>0.060);
-  // return (dpt*dphi<0);
-  return 1;
+  double dthe = the1-the0;
+  if (fabs(dthe)>0.010) return kTRUE;
+  double B = -0.5; // magnetic field in T, needed for helix; should be gotten in the proper way
+  double pt0 = p0*sin(the0);
+  double pt1 = p1*sin(the1);
+  double r = 1.2; // we will calculate the distance between the two tracks at r=1.2 m
+  // for (double r=0.8; r<2.5; r+=0.2) {
+  double si0 = -0.3*B*z0*r/2/pt0;
+  double si1 = -0.3*B*z1*r/2/pt1;
+  if (fabs(si0)>=1.0) return kTRUE; // could be done better
+  if (fabs(si1)>=1.0) return kTRUE;
+  double dphi = phi1 - phi0 + asin(si1) - asin(si0);
+  dphi = TVector2::Phi_mpi_pi(dphi);
+  if (fabs(dphi)<0.020) return kFALSE;
+  // }
+  return kTRUE;
 }
 //=============================================================================

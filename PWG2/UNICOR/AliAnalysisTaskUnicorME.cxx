@@ -41,6 +41,7 @@ AliAnalysisTaskUnicorME::AliAnalysisTaskUnicorME(const char *name) :
 
   fEv0 = new AliUnicorEventAliceESD();
   fEv1 = new AliUnicorEventAliceESD();
+  fOutputList->SetOwner();
   DefineOutput(1, TList::Class());
 }
 //=============================================================================
@@ -53,7 +54,7 @@ void AliAnalysisTaskUnicorME::UserCreateOutputObjects()
   fOutputList->Add(new AliUnicorAnalSingle("all",fEv0->Etamin(),fEv0->Etamax(),0));
   fOutputList->Add(new AliUnicorAnalSingle("pim",fEv0->Etamin(),fEv0->Etamax(),-211));
   fOutputList->Add(new AliUnicorAnalSingle("pip",fEv0->Etamin(),fEv0->Etamax(), 211));
-  int frame = AliUnicorAnalCorrel::kLCMS;
+  AliUnicorAnalCorrel::AnalysisFrame frame = AliUnicorAnalCorrel::kLCMS;
   fOutputList->Add(new AliUnicorAnalCorrel("cnn",fEv0->Etamin(),fEv0->Etamax(),-211,-211, frame));
   fOutputList->Add(new AliUnicorAnalCorrel("cpp",fEv0->Etamin(),fEv0->Etamax(), 211, 211, frame));
   fOutputList->Add(new AliUnicorAnalCorrel("cnp",fEv0->Etamin(),fEv0->Etamax(),-211, 211, frame));

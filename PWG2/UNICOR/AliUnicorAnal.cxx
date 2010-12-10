@@ -26,6 +26,7 @@
 #include <TCollection.h>
 #include <TClass.h>
 #include <TH1.h>
+#include "AliUnicorHN.h"
 #include "AliUnicorAnal.h"
 
 ClassImp(AliUnicorAnal)
@@ -60,8 +61,8 @@ Long64_t AliUnicorAnal::Merge(const TCollection * const list) {
   return 0;
 }
 //=============================================================================
-void AliUnicorAnal::Save(const char *outfil, const char *mode) 
-{
+void AliUnicorAnal::Save(const char *outfil, const char *mode) {
+
   // store histograms on file in a directory named after the object
   // mode should be "update" (default) or "new"
 
@@ -69,7 +70,11 @@ void AliUnicorAnal::Save(const char *outfil, const char *mode)
   TFile * f = TFile::Open(outfil, mode);
   TDirectory *dest = f->mkdir(GetName());
   dest->cd();
-  fHistos.Write();
+  for (int i=0; i<fHistos.GetEntries(); i++) {
+    TObject *obj = fHistos.At(i);
+    if (obj->IsA()->InheritsFrom("AliUnicorHN")) ((AliUnicorHN*) obj)->Save();
+    else obj->Write();
+  }
   gROOT->cd();
   f->Close();
 }
