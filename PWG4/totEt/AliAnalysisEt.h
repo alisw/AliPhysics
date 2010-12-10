@@ -1,7 +1,4 @@
-#ifndef ALIANALYSISET_H
-#define ALIANALYSISET_H
-
-class AliESDCentrality;//_________________________________________________________________________
+//_________________________________________________________________________
 //  Utility Class for transverse energy studies
 //  Base class for ESD & MC analysis
 //  - reconstruction and MonteCarlo output
@@ -9,6 +6,10 @@ class AliESDCentrality;//_______________________________________________________
 //*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
 //_________________________________________________________________________
 
+#ifndef ALIANALYSISET_H
+#define ALIANALYSISET_H
+
+class AliESDCentrality;
 #include "AliAnalysisEtCommon.h"
 
 class TString;

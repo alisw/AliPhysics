@@ -6,6 +6,14 @@
 #include "AliPhysicsSelection.h"
 #include "AliESDCentrality.h"
 #include "AliESDEvent.h"
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for Et tasks
+//  - reconstruction and MonteCarlo output
+//
+//*-- Authors: Oystein Djuvsland (Bergen)
+//_________________________________________________________________________//
+#include "AliESDtrackCuts.h"
 #include "AliLog.h"
 #include <iostream>
 
@@ -25,7 +33,7 @@ AliAnalysisTaskTransverseEnergy::AliAnalysisTaskTransverseEnergy(const char* nam
         ,fCentSelTaskName("centralityTask")
 	,fIsMc(isMc)
 	,fUsingDefaultSelection(true)
-	,fCurrentRunNumber(-1)
+	,fCurrentRunNum(-1)
 	,fSelectionHandler(0)
 {
   // Constructor
@@ -40,7 +48,7 @@ AliAnalysisTaskTransverseEnergy::~AliAnalysisTaskTransverseEnergy()
 Int_t AliAnalysisTaskTransverseEnergy::CheckPhysicsSelection(Int_t runNumber)
 {
   // Check if the physics selection is valid, if not load a new one
-    if (runNumber == fCurrentRunNumber || fIsMc)
+    if (runNumber == fCurrentRunNum || fIsMc)
     {
         return 0;
     }
@@ -78,7 +86,7 @@ Int_t AliAnalysisTaskTransverseEnergy::CheckPhysicsSelection(Int_t runNumber)
         AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
         physSelTask->SetPhysicsSelection(selection);
         handler->SetEventSelection(selection);
-        fCurrentRunNumber = runNumber;
+        fCurrentRunNum = runNumber;
 
     }
 

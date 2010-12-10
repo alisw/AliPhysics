@@ -1,3 +1,10 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Class for determining physics selection
+//  - reconstruction and MonteCarlo output
+//
+//*-- Authors: Oystein Djuvsland (Bergen)
+//_________________________________________________________________________//
 #ifndef ALIANALYSISETSELECTIONCONTAINER_H
 #define ALIANALYSISETSELECTIONCONTAINER_H
 
@@ -5,7 +12,8 @@
 #include <map>
 
 
-class AliPhysicsSelection;
+
+class  AliPhysicsSelection; 
 
 class AliAnalysisEtSelectionContainer : public TNamed
 {
@@ -21,10 +29,10 @@ public:
   virtual ~AliAnalysisEtSelectionContainer();
   
   /** Return the physics selection for the current run */
-  AliPhysicsSelection* GetPhysicsSelection(Int_t runNumber) { return fPhysicsSelectionMap[runNumber]; }
+  AliPhysicsSelection* GetPhysicsSelection(Int_t runNumber){ return fPhysicsSelectionMap[runNumber]; }
   
   /** Return the physics selection for the current run */
-  AliPhysicsSelection* GetDefaultPhysicsSelection() { return fPhysicsSelectionMap[0]; }
+  AliPhysicsSelection* GetDefaultPhysicsSelection(){ return fPhysicsSelectionMap[0]; }
   
   /** Get the map */
   std::map<int, AliPhysicsSelection*> GetPhysicsSelectionMap() const { return fPhysicsSelectionMap; }

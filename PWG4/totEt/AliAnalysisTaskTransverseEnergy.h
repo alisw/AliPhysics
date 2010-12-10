@@ -1,11 +1,20 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for Et tasks
+//  - reconstruction and MonteCarlo output
+//
+//*-- Authors: Oystein Djuvsland (Bergen)
+//_________________________________________________________________________//
 #ifndef ALIANALYSISTASKTRANSVERSEENERGY_H
 #define ALIANALYSISTASKTRANSVERSEENERGY_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliESDtrackCuts.h"
 
 class AliESDCentrality;
 class AliAnalysisEtSelectionHandler;
+class AliESDtrackCuts;
+class AliESDEvent;
+class TH2F;
 
 class AliAnalysisTaskTransverseEnergy : public AliAnalysisTaskSE
 {
@@ -60,7 +69,7 @@ protected:
 
 private:
 
-    Int_t fCurrentRunNumber; // The current run number
+    Int_t fCurrentRunNum; // The current run number
     
     AliAnalysisEtSelectionHandler* fSelectionHandler; //! Taking care of loading the correct selections
     AliAnalysisTaskTransverseEnergy();
