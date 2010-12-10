@@ -41,10 +41,8 @@ AliUnicorEventAliceESD::AliUnicorEventAliceESD(AliESDEvent *esd) : AliUnicorEven
 
   // V0 percentile graph for centrality determination
 
-  //  TFile::Open("/lustre/alice/misko/AliCentralityBy1D_137161_v4.root","read");
-  //  TFile::Open("/lustre/alice/misko/AliCentralityBy1D_137161_v5.root","read"); not checked
-  TFile::Open("/lustre/alice/misko/AliCentralityBy1D_137366_v2.root","read");
-  //TFile::Open("/lustre/alice/misko/AliCentralityBy1D_137366_v4.root","read");
+  //  TFile::Open("$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161_v4.root","read");
+  TFile::Open("$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137366_v2.root","read");
   const TH1F *hi = (const TH1F*) gFile->Get("hmultV0_percentile");
   //const TH1D *hi = (const TH1D*) gFile->Get("hNtracks_percentile");
   //const TH1F *hi = (const TH1F*) gFile->Get("hNclusters1_percentile");
