@@ -1,3 +1,10 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Class for determining physics selection
+//  - reconstruction and MonteCarlo output
+//
+//*-- Authors: Oystein Djuvsland (Bergen)
+//_________________________________________________________________________//
 #include "AliAnalysisEtSelectionContainer.h"
 #include "TNamed.h"
 

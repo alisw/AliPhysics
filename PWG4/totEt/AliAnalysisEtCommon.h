@@ -144,8 +144,8 @@ protected:
     TF1 *fLambdaData;//function with Levy fit parameters for Lambda in data
     TF1 *fAntiLambdaData;//function with Levy fit parameters for AntiLambda in data
 
-    TF1 *fLambdaEnhancement;
-    TF1 *fProtonEnhancement;
+    TF1 *fLambdaEnhancement;//Function for lambda baryon enhancement factor
+    TF1 *fProtonEnhancement;//function for proton baryon enhancement factor
     Float_t LambdaBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
     Float_t ProtonBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
 

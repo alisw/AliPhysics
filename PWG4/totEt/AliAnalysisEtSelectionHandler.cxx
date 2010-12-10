@@ -1,3 +1,10 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  for handling event selection
+//  
+//
+//*-- Authors: Oystein Djuvsland (Bergen)
+//_________________________________________________________________________//
 #include "AliAnalysisEtSelectionHandler.h"
 #include "AliAnalysisEtSelectionContainer.h"
 #include "AliPhysicsSelection.h"
