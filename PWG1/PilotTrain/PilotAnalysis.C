@@ -186,7 +186,7 @@ void AddAnalysisTasks()
   //
   if (doCentrality) {
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-     
+     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
      gROOT->LoadMacro("$ALICE_ROOT/PWG1/Centrality/AddTaskHIMultCorr.C");
      AliAnalysisTaskHIMultCorr *taskHIcentrality = AddTaskHIMultCorr();
   }   
