@@ -429,7 +429,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       Double_t vertex[]={0,0,0};
       calo->GetMomentum(mom,vertex) ;
     }
-    //printf("AliAnaPhoton::MakeAnalysisFillAOD(): Vertex : %f,%f,%f\n",GetVertex(evtIndex)[0] ,GetVertex(evtIndex)[1],GetVertex(evtIndex)[2]);
 
     //    else if(input == 1) 
     //      calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
@@ -546,10 +545,10 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         }        
 
         if(GetReader()->GetDataType() != AliCaloTrackReader::kMC){
-          calo->GetMomentum(mom2,GetVertex(evtIndex2)) ;}//Assume that come from vertex in straight line
+          calo2->GetMomentum(mom2,GetVertex(evtIndex2)) ;}//Assume that come from vertex in straight line
         else{
           Double_t vertex[]={0,0,0};
-          calo->GetMomentum(mom2,vertex) ;
+          calo2->GetMomentum(mom2,vertex) ;
         }
         
         //Check only certain regions
@@ -563,6 +562,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
           bConverted = kTRUE;
           id2 = calo2->GetID();
           indexConverted[jcalo]=kTRUE;
+          if(GetDebug() > 2)
+            printf("AliAnaPhoton::MakeAnalysisFillAOD(): Pair with mass %f < %2.4f; \n    cluster1 id %d, e %2.3f  SM %d, eta %2.3f, phi %2.3f ; \n    cluster2 id %d, e %2.3f, SM %d,eta %2.3f, phi %2.3f\n",
+                   (mom+mom2).M(),fMassCut,
+                   calo->GetID(),calo->E(),GetCaloUtils()->GetModuleNumber(calo), mom.Eta(), mom.Phi(),
+                   id2, calo2->E(), GetCaloUtils()->GetModuleNumber(calo2),mom2.Eta(), mom2.Phi());
           break;
         }
 			  
