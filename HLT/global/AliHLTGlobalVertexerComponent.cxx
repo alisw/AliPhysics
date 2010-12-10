@@ -462,6 +462,9 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex()
   fPrimaryVtx.Initialize();
   //fPrimaryVtx.SetBeamConstraint(fESD->GetDiamondX(),fESD->GetDiamondY(),0,
   //TMath::Sqrt(fESD->GetSigma2DiamondX()),TMath::Sqrt(fESD->GetSigma2DiamondY()),5.3);
+
+  // select rough region (in sigmas) in which the vertex could be found, all tracks outside these limits are rejected
+  // from the primary vertex finding
   fPrimaryVtx.SetBeamConstraint( 0, 0, 0, 3., 3., 5.3 );
 
   const AliKFParticle **vSelected = new const AliKFParticle*[fNTracks]; //* Selected particles for the vertex fit
@@ -493,26 +496,26 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex()
 
     double xv = fPrimaryVtx.GetX();
     double yv = fPrimaryVtx.GetY();
-    double zv = fPrimaryVtx.GetZ();          
+    double zv = fPrimaryVtx.GetZ(); // values from previous iteration of calculations          
     fPrimaryVtx.Initialize();
     fPrimaryVtx.SetBeamConstraint( 0, 0, 0, 3., 3., 5.3 );
     fPrimaryVtx.SetVtxGuess( xv, yv, zv );    
 
-    fPrimaryVtx.Construct( vSelected, nSelected, 0, -1, 1 );
+    fPrimaryVtx.Construct( vSelected, nSelected, 0, -1, 1 ); // refilled for every iteration
     
     for( Int_t it=0; it<nSelected; it++ ){ 
       const AliKFParticle &p = fTrackInfos[dev[it].fI].fParticle;
       if( nSelected <= 20 ){
-	AliKFVertex tmp =  fPrimaryVtx - p;
+	AliKFVertex tmp =  fPrimaryVtx - p; // exclude the current track from the sample and recalculate the vertex
 	dev[it].fD = p.GetDeviationFromVertex( tmp );
       } else {
 	dev[it].fD = p.GetDeviationFromVertex( fPrimaryVtx );	
       }
     }
-    sort(dev,dev+nSelected);
+    sort(dev,dev+nSelected); // sort tracks with increasing chi2 (used for rejection)
        
-    int nRemove = (int) ( 0.3*nSelected );    
-    if( nSelected - nRemove <=20 ) nRemove = 1;    
+    int nRemove = (int) ( 0.3*nSelected );  //remove 30% of the tracks (done for performance, only if there are more than 20 tracks)  
+    if( nSelected - nRemove <=20 ) nRemove = 1;  // removal based on the chi2 of every track   
     int firstRemove = nSelected - nRemove;
     while( firstRemove<nSelected ){
       if( dev[firstRemove].fD >= fConstrainedTrackDeviation ) break;
@@ -526,7 +529,7 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex()
     fTrackInfos[i].fPrimUsedFlag = 0;
   }
 
-  if( nSelected < 3 ){    
+  if( nSelected < 3 ){  // no vertex for fewer than 3 contributors  
     fPrimaryVtx.NDF() = -3;
     fPrimaryVtx.Chi2() = 0;
     nSelected = 0;
