@@ -4,7 +4,7 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = false) {
+void runHadEt(bool submit = false, bool data = false, bool PbPb = false) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -26,6 +26,9 @@ void runHadEt(bool submit = false, bool data = false) {
    gROOT->ProcessLine(".L AliAnalysisHadEt.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEtMonteCarlo.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEtReconstructed.cxx+g");
+   gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
+   gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
+   gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisTaskHadEt.cxx+g");
 
 
@@ -37,14 +40,21 @@ void runHadEt(bool submit = false, bool data = false) {
     gSystem->Load("libRAliEn.so"); 
     TGrid::Connect("alien://") ;
   }
-  chain->Add("/data/LHC10d15/1821/AliESDs.root");//simulation
+  //chain->Add("/data/LHC10h12/999/AliESDs.root");//Hijing Pb+Pb
+  chain->Add("/data/LHC10d15/1821/AliESDs.root");//simulation p+p
   //chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
 
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TotEtManager");
   if(submit){
-    gROOT->LoadMacro("CreateAlienHandlerHadEtSim.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEtSim();  
+    if(PbPb){
+      gROOT->LoadMacro("CreateAlienHandlerHadEtSimPbPb.C");
+      AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEtSimPbPb();  
+    }
+    else{
+      gROOT->LoadMacro("CreateAlienHandlerHadEtSim.C");
+      AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEtSim();  
+    }
     if (!alienHandler) return;
     mgr->SetGridHandler(alienHandler);
   }

@@ -8,29 +8,26 @@
 
 // Overwrite all generated files, datasets and output results from a previous session
    plugin->SetOverwriteMode();
-// Set the run modSoon a picture of Kim Jong-un (sitting far left) flashed around the world, the first known image of him since his school dayse (can be "full", "test", "offline", "submit" or "terminate")
+// Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
+   //plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
    plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
-   //plugin->SetRunMode("test");  // VERY IMPORTANT - DECRIBED BELOW
-   //plugin->SetCheckCopy(kFALSE);
-// Set versions of used packages
+// Set versions of used packages 
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-27-06-1");
-   plugin->SetAliROOTVersion("v4-20-12-AN");
+   plugin->SetROOTVersion("v5-27-05");
+   plugin->SetAliROOTVersion("v4-20-08-AN");
 // Declare input data to be processed.
 
 // Method 1: Create automatically XML collections using alien 'find' command.
 // Define production directory LFN
-//   plugin->SetGridDataDir("/alice/data/2010/LHC10d");
+//   plugin->SetGridDataDir("/alice/sim/LHC10a18");
 // Set data search pattern
 //   plugin->SetDataPattern("*ESDs.root");  // simulated, tags not used
-//   plugin->SetDataPattern("*ESDs/pass2/*ESDs.root"); // real data check reco pass and data base directory
+//   plugin->SetDataPattern("*ESDs/pass4/*ESDs.root"); // real data check reco pass and data base directory
 //   plugin->SetRunPrefix("000");   // real data
 //   plugin->SetDataPattern("*tag.root");  // Use ESD tags (same applies for AOD's)
 // ...then add run numbers to be considered
 //   plugin->AddRunNumber(125020);    // simulated
-//   plugin->AddRunNumber(126403);  // real data
-//   plugin->AddRunNumber(126404);  // real data
-//   plugin->AddRunNumber(126405);  // real data
+//   plugin->AddRunNumber(104065);  // real data
 
 // Method 2: Declare existing data files (raw collections, xml collections, root file)
 // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
@@ -47,10 +44,10 @@
 // using ACLiC on the worker nodes.
    //plugin->SetAnalysisSource("AliAnalysisTaskHadEt.cxx");
    //plugin->SetAnalysisSource("AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisTaskTotEt.cxx");
-   plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx");
+   plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskHadEt.cxx");
 // Declare all libraries (other than the default ones for the framework. These will be
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h corrections.root ConfigHadEtAnalysis.C ConfigHadEtMonteCarlo.C ConfigHadEtReconstructed.C");
+   plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h corrections.root ConfigHadEtAnalysis.C ConfigHadEtMonteCarlo.C ConfigHadEtReconstructed.C physicsSelections.root");
 // No need for output file names. Procedure is automatic. <-- not true
    plugin->SetDefaultOutputs(kFALSE);
    plugin->SetOutputFiles("Et.ESD.new.sim.root");

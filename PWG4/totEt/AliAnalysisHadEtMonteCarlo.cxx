@@ -209,18 +209,22 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtNReconstructed%sUnidentified",cutName->Data()),track->Pt(),track->Eta(),1.0);
 		    if(pdgCode == fgPiPlusCode||pdgCode == fgPiMinusCode){
 		      FillHisto2D(Form("EtReconstructed%sUnidentifiedPionAssumingPion",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
+		      FillHisto2D(Form("EtReconstructed%sUnidentifiedPion",cutName->Data()),track->Pt(),track->Eta(),myEt);
 		      FillHisto2D(Form("EtNReconstructed%sUnidentifiedPion",cutName->Data()),track->Pt(),track->Eta(),1.0);
 		    }
 		    if(pdgCode == fgKPlusCode||pdgCode == fgKMinusCode){
 		      FillHisto2D(Form("EtReconstructed%sUnidentifiedKaonAssumingPion",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
+		      FillHisto2D(Form("EtReconstructed%sUnidentifiedKaon",cutName->Data()),track->Pt(),track->Eta(),myEt);
 		      FillHisto2D(Form("EtNReconstructed%sUnidentifiedKaon",cutName->Data()),track->Pt(),track->Eta(),1.0);
 		    }
 		    if(pdgCode == fgProtonCode||pdgCode == fgAntiProtonCode){
 		      FillHisto2D(Form("EtReconstructed%sUnidentifiedProtonAssumingPion",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
+		      FillHisto2D(Form("EtReconstructed%sUnidentifiedProton",cutName->Data()),track->Pt(),track->Eta(),myEt);
 		      FillHisto2D(Form("EtNReconstructed%sUnidentifiedProton",cutName->Data()),track->Pt(),track->Eta(),1.0);
 		      if(fBaryonEnhancement){
 			myEt = myEt*ProtonBaryonEnhancement(track->Pt());
 			FillHisto2D(Form("EtReconstructed%sUnidentifiedProtonAssumingPionEnhanced",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
+			FillHisto2D(Form("EtReconstructed%sUnidentifiedProtonEnhanced",cutName->Data()),track->Pt(),track->Eta(),myEt);
 			FillHisto2D(Form("EtNReconstructed%sUnidentifiedProtonEnhanced",cutName->Data()),track->Pt(),track->Eta(),1.0);
 		      }
 		    }
@@ -1123,14 +1127,18 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 
     CreateEtaPtHisto2D(Form("EtNReconstructed%sUnidentifiedKaon",cutName->Data()),"Number of Reconstructed unidentified kaons particles");
     CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedKaonAssumingPion",cutName->Data()),"Reconstructed E_{T} from unidentified kaons particles assuming pion mass");
+    CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedKaon",cutName->Data()),"Reconstructed E_{T} from unidentified kaons particles assuming kaon mass");
     CreateEtaPtHisto2D(Form("EtNReconstructed%sUnidentifiedProton",cutName->Data()),"Number of Reconstructed unidentified proton particles");
     CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedProtonAssumingPion",cutName->Data()),"Reconstructed E_{T} from unidentified proton particles assuming pion mass");
+    CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedProton",cutName->Data()),"Reconstructed E_{T} from unidentified proton particles assuming proton mass");
     if(fBaryonEnhancement){
       CreateEtaPtHisto2D(Form("EtNReconstructed%sUnidentifiedProtonEnhanced",cutName->Data()),"Number of Reconstructed unidentified proton particles");
       CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedProtonAssumingPionEnhanced",cutName->Data()),"Reconstructed E_{T} from unidentified proton particles assuming pion mass");
+      CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from unidentified proton particles assuming proton mass");
     }
     CreateEtaPtHisto2D(Form("EtNReconstructed%sUnidentifiedPion",cutName->Data()),"Number of Reconstructed unidentified pions particles");
     CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedPionAssumingPion",cutName->Data()),"Reconstructed E_{T} from unidentified pions particles assuming pion mass");
+    CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentifiedPion",cutName->Data()),"Reconstructed E_{T} from unidentified pions particles assuming pion mass");
 
     CreateEtaPtHisto2D(Form("EtReconstructed%sUnidentified",cutName->Data()),"Reconstructed E_{T} from unidentified particles using real mass");
     CreateEtaPtHisto2D(Form("EtReconstructed%sMisidentifiedElectrons",cutName->Data()),"Reconstructed E_{T} from misidentified electrons");
