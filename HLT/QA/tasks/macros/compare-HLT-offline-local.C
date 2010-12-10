@@ -10,8 +10,8 @@
  *
  * Usage:
  * <pre>
- *   aliroot -b -q -l compare_HLT_offline_local.C'("/home/blabla/AliESDs.root","global","./",kTRUE,10)' 2>&1 | tee task.log
- *   aliroot -b -q -l compare_HLT_offline_local.C'("/home/blabla/AliESDs.root","phos global pwg1",kTRUE,10)' 2>&1 | tee task.log
+ *   aliroot -b -q -l compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","global","./",kTRUE,10)' 2>&1 | tee task.log
+ *   aliroot -b -q -l compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","phos global pwg1",kTRUE,10)' 2>&1 | tee task.log
  *   aliroot -q compare-HLT-offline-local.C'("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root","global")' 2>&1 | tee log
  * </pre>
  * 
@@ -49,7 +49,7 @@ void compare_HLT_offline_local(TString file,
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libHLTbase.so");
  
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWG1/TPC -I.");
+  gSystem->AddIncludePath("-I$(ALICE_ROOT)/HLT/BASE -I$ALICE_ROOT/PWG1/TPC -I.");
   
   gSystem->Load("libTPCcalib.so");
   gSystem->Load("libTRDbase.so");
@@ -114,7 +114,7 @@ void compare_HLT_offline_local(TString file,
     TString strTask2("AliAnalysisTaskHLTPHOS.cxx+");    
     gROOT->LoadMacro(taskFolder+strTask1); 
     gROOT->LoadMacro(taskFolder+strTask2); 
-    cout << "\n========= You are loading the following tasks --> "<< taskFolder+strTask1  << " and " <<  taskFolder+strTask2 << endl;
+    cout << "\n========= You are loading the following tasks --> "<< (taskFolder+strTask1).Chop()  << " and " <<  (taskFolder+strTask2).Chop() << endl;
   }
   
   if(bEMCAL){
@@ -125,18 +125,18 @@ void compare_HLT_offline_local(TString file,
     TString strTask2("AliAnalysisTaskHLTEMCAL.cxx+");
     gROOT->LoadMacro(taskFolder+strTask1); 
     gROOT->LoadMacro(taskFolder+strTask2); 
-    cout << "\n========= You are loading the following tasks --> "<< taskFolder+strTask1  << " and " <<  taskFolder+strTask2 << endl;
+    cout << "\n========= You are loading the following tasks --> "<< (taskFolder+strTask1).Chop()  << " and " <<  (taskFolder+strTask2).Chop() << endl;
   }  
   
   if(bGLOBAL){
      TString strTask("AliAnalysisTaskHLT.cxx+");
      gROOT->LoadMacro(taskFolder+strTask);
-     cout << "\n========= You are loading the following task --> "<< taskFolder+strTask  << endl;
+     cout << "\n========= You are loading the following task --> "<< (taskFolder+strTask).Chop()  << endl;
   }
   if(bD0){
      TString strTask("AliAnalysisTaskD0Trigger.cxx+");
      gROOT->LoadMacro(taskFolder+strTask); 
-     cout << "\n========= You are loading the following task --> "<< taskFolder+strTask  << endl;
+     cout << "\n========= You are loading the following task --> "<< (taskFolder+strTask).Chop()  << endl;
   }
   
   if(bPWG1) gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/AddTaskPerformance.C");
