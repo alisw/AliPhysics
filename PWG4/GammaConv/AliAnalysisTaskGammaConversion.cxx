@@ -1959,7 +1959,7 @@ void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
       gamma.SetDetector("CTS"); //tag the gamma as reconstructed in the central barrel
       gamma.SetPdg(AliPID::kEleCon); //photon id
       gamma.SetTag(-1); //Here I usually put a flag saying that montecarlo says it is prompt, decay fragmentation photon, or hadrons or whatever
-      gamma.SetChi2(gammakf->Chi2());
+      //PH      gamma.SetChi2(gammakf->Chi2());
       
       AddToAODBranch(fAODGamma, gamma);
       
@@ -1970,7 +1970,7 @@ void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
       gamma.SetTrackLabels( fElectronv1[gammaIndex], fElectronv2[gammaIndex] ); //How to get the MC label of the 2 electrons that form the gamma?
       //gamma.SetPdg(AliPID::kEleCon); //photon id
       //gamma.SetTag(-1); //Here I usually put a flag saying that montecarlo says it is prompt, decay fragmentation photon, or hadrons or whatever
-      gamma.SetChi2(gammakf->Chi2());
+      //PH      gamma.SetChi2(gammakf->Chi2());
       gamma.SetTrackLabels( fElectronv1[gammaIndex], fElectronv2[gammaIndex] );
       gamma.SetESDEvent(dynamic_cast<AliESDEvent*>(InputEvent()));    
       AddToAODBranch(fAODGamma, gamma);
