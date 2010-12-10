@@ -60,7 +60,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
  // void SetZvertexCut(Float_t zcut=40.){fZvtxCut=zcut ;} //cut on vertex position
   
   TString GetCalorimeter()   const {return fCalorimeter ; }
-  void SetCalorimeter(TString det)    {fCalorimeter = det ; }
+  void SetCalorimeter(TString & det)    {fCalorimeter = det ; }
   	
   void Terminate(TList* outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
