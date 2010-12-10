@@ -59,7 +59,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   void SetInputAODGammaConvName(TString name)    {fInputAODGammaConvName = name ; }	
   
   //Only for pi0 SS identification case
-  void SetCalorimeter(TString det)    {fCalorimeter = det ; }
+  void SetCalorimeter(TString & det)    {fCalorimeter = det ; }
   
   void SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
     fMinDist = m1;

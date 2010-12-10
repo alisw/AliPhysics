@@ -51,7 +51,7 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   void Print(const Option_t * opt)const;
   
   TString GetCalorimeter()   const {return fCalorimeter ; }
-  void SetCalorimeter(TString det)    {fCalorimeter = det ; }
+  void SetCalorimeter(TString & det)    {fCalorimeter = det ; }
   
   Int_t   GetNCones()              const {return fNCones ; }
   Int_t   GetNPtThresFrac()        const {return fNPtThresFrac ; }

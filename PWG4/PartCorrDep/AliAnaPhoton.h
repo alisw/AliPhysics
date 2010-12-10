@@ -50,7 +50,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   void Print(const Option_t * opt)const;
   
   TString GetCalorimeter()   const {return fCalorimeter ; }
-  void SetCalorimeter(TString det)    {fCalorimeter = det ; }
+  void SetCalorimeter(TString &det)    {fCalorimeter = det ; }
 
   Bool_t IsTrackMatchRejectionOn()   const {return fRejectTrackMatch ; }
   void SwitchOnTrackMatchRejection()  {fRejectTrackMatch = kTRUE ; }

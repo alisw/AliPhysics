@@ -38,7 +38,7 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   void Terminate(TList * outList);
 
   TString GetInputAODPhotonName() const {return fInputAODGammaName;}
-  void SetInputAODPhotonName(TString name) { fInputAODGammaName = name; }
+  void SetInputAODPhotonName(TString & name) { fInputAODGammaName = name; }
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
 
   void SetNEventsMixed(Int_t nevents) { fNmaxMixEv=nevents;} //events to be mixed
