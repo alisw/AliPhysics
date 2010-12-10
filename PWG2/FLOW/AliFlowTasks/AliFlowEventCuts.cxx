@@ -64,12 +64,12 @@ AliFlowEventCuts::AliFlowEventCuts():
   fCutMeanPt(kFALSE),
   fMeanPtMax(-DBL_MAX),
   fMeanPtMin(DBL_MAX),
-  fCutSPDvertexerAnomaly(kTRUE),
+  fCutSPDvertexerAnomaly(kFALSE),
   fCutCentralityPercentile(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCentralityPercentileMax(100.),
   fCentralityPercentileMin(0.),
-  fCutZDCtiming(kTRUE),
+  fCutZDCtiming(kFALSE),
   fTrigAna()
 {
   //constructor 
@@ -107,7 +107,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fCentralityPercentileMethod(kTPConly),
   fCentralityPercentileMax(100.),
   fCentralityPercentileMin(0.),
-  fCutZDCtiming(kTRUE),
+  fCutZDCtiming(kFALSE),
   fTrigAna()
 {
   //constructor 
@@ -210,13 +210,15 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
 {
   ///check if event passes cuts
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
-  if (fCutCentralityPercentile)
+  if (fCutCentralityPercentile&&esdevent)
   {
     AliESDCentrality* centr = esdevent->GetCentrality();
     if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
                                           fCentralityPercentileMax,
                                           CentrMethName(fCentralityPercentileMethod) ))
+    {
       return kFALSE;
+    }
   }
   if (fCutSPDvertexerAnomaly&&esdevent)
   {
@@ -228,20 +230,27 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
     if (tpcvertex->GetNContributors()<1) return kFALSE;
     const AliMultiplicity* tracklets = esdevent->GetMultiplicity();
     if (tpcvertex->GetNContributors()<(-10.0+0.25*tracklets->GetNumberOfITSClusters(0)))
+    {
       return kFALSE;
+    }
   }
-  if (fCutZDCtiming)
+  if (fCutZDCtiming&&esdevent)
   {
-    if (!fTrigAna.ZDCTimeTrigger(esdevent)) return kFALSE;
+    if (!fTrigAna.ZDCTimeTrigger(esdevent))
+    {
+      return kFALSE;
+    }
   }
   if(fCutNumberOfTracks) {if ( event->GetNumberOfTracks() < fNumberOfTracksMin ||
                                event->GetNumberOfTracks() >= fNumberOfTracksMax ) return kFALSE;}
-  if(fCutRefMult)
+  if(fCutRefMult&&esdevent)
   {
     //reference multiplicity still to be defined
     Double_t refMult = RefMult(event);
     if (refMult < fRefMultMin || refMult >= fRefMultMax )
+    {
       return kFALSE;
+    }
   }
   const AliVVertex* pvtx=event->GetPrimaryVertex();
   Double_t pvtxx = pvtx->GetX();
@@ -337,7 +346,7 @@ Int_t AliFlowEventCuts::RefMult(AliVEvent* event)
       break;
     case kSPDtracklets:
       if (fRefMultCuts) break;
-      fRefMultCuts = new AliFlowTrackCuts();
+      fRefMultCuts = new AliFlowTrackCuts("tracklet refmult cuts");
       fRefMultCuts->SetParamType(AliFlowTrackCuts::kESD_SPDtracklet);
       fRefMultCuts->SetEtaRange(-0.8,0.8);
       break;

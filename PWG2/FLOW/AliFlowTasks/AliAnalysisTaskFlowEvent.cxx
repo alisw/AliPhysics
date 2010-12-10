@@ -340,10 +340,8 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     recalibTOF(dynamic_cast<AliESDEvent*>(InputEvent()));
 
     //first attach all possible information to the cuts
-    fCutsRP->SetEvent( InputEvent() );  //attach event
-    fCutsRP->SetMCevent( MCEvent() );   //attach mc truth
-    fCutsPOI->SetEvent( InputEvent() );
-    fCutsPOI->SetMCevent( MCEvent() );
+    fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
+    fCutsPOI->SetEvent( InputEvent(), MCEvent() );
     fCutsRP->SetESDpid(fESDpid);
     fCutsPOI->SetESDpid(fESDpid);
 
