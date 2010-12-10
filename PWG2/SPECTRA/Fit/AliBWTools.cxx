@@ -65,6 +65,41 @@ TH1 * AliBWTools::GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass) {
 
 }
 
+TH1 * AliBWTools::GetdNdptFromdNdmt(const TH1 * hmt, Double_t mass) {
+  // convert the x axis from mt to pt. Assumes you have 1/mt dNdmt in the histo you start with
+
+  Int_t nbins = hmt->GetNbinsX();
+  Float_t * xbins = new Float_t[nbins+1];
+  for(Int_t ibins = 0; ibins <= nbins; ibins++){
+    xbins[ibins] = TMath::Sqrt((hmt->GetBinLowEdge(ibins+1)+mass)*(hmt->GetBinLowEdge(ibins+1)+mass) -
+    			       mass *mass);
+    xbins[ibins] = Float_t(TMath::Nint(xbins[ibins]*100))/100;
+    // // xbins[ibins] = TMath::Sqrt(hmt->GetBinLowEdge(ibins+1)*hmt->GetBinLowEdge(ibins+1) +
+    // // 			       mass *mass);
+    cout << ibins << " "<< xbins[ibins]  << endl;
+
+  }
+
+  TH1D * hptL = new TH1D(TString(hmt->GetName())+"_pt",
+		      TString(hmt->GetName())+"_pt",
+		      nbins, xbins);
+  for(Int_t ibins = 1; ibins <= nbins; ibins++){
+    hptL->SetBinContent(ibins, hmt->GetBinContent(ibins));
+    hptL->SetBinError(ibins,   hmt->GetBinError(ibins));
+
+  }
+
+  hptL->SetXTitle("p_{t} (GeV/c)");
+  hptL->SetYTitle("1/p_{t} dN/dp_{t} (a.u.)");
+  hptL->SetMarkerStyle(hmt->GetMarkerStyle());
+  hptL->SetMarkerColor(hmt->GetMarkerColor());
+  hptL->SetLineColor(hmt->GetLineColor());
+
+  return hptL;
+
+}
+
+
 TH1 * AliBWTools::GetdNdPtFromOneOverPt(const TH1 * h1Pt) {
 
   // convert an histo from 1/pt dNdpt to dNdpt, using the pt at the center of the bin

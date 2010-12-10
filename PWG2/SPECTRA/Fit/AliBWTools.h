@@ -34,6 +34,7 @@ public:
   static TH1 * GetOneOverPtdNdPt(const TH1 * hPt) ;
   static TH1 * GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass);
   static TH1 * GetdNdPtFromOneOverPt(const TH1 * h1Pt) ;
+  static TH1 * GetdNdptFromdNdmt(const TH1 * hmt, Double_t mass) ;
 
   static TGraphErrors * ConcatenateGraphs(const TGraphErrors * g1,const TGraphErrors * g2); 
   static TH1F *         GetHistoFromGraph(const TGraphErrors * g, const TH1F* hTemplate) ;  
