@@ -26,7 +26,7 @@ class AliTOFT0maker : public TObject {
 public:
   
   AliTOFT0maker() ; // default constructor
-  AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib); // overloaded constructor
+  AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib=NULL); // overloaded constructor
   virtual ~AliTOFT0maker() ; // dtor
   
   // return (fCalculated[0]=event time -- fCalculated[1]=sigma event time in ps -- fCalculated[2]=mean event time for each fill -- fCalculated[3]=number of tracks at the TOF level) if you can subtruct the event time; return NULL if there is no event time
@@ -37,7 +37,7 @@ public:
   
   void      SetTimeResolution(Double_t timeresolution){fTimeResolution=timeresolution;};// TOF timeresolution in [ps]
   Double_t  GetTimeResolution() const {return fTimeResolution;} // Get TOF Time Resolution
-  void SetT0FillWidth(Float_t width){fT0width = width;}; // in ps
+  void SetT0FillWidth(Float_t width){if(width > 50) fT0width = width; else fT0width=150;}; // in ps
   
   void LoadChannelMap(char *filename="$ALICE_ROOT/TOF/enableMap.104892.root"); //load the enable channel map
   void ApplyMask(AliESDEvent * const esd); // Apply the channel mask

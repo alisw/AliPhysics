@@ -166,6 +166,16 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
       t0fill = fT0fillExt;
     }
   }
+  else if(esd){
+      Float_t t0spread = esd->GetSigma2DiamondZ(); // vertex pread ^2
+      if(t0spread > 0) t0spread = TMath::Sqrt(t0spread)/0.0299792458;
+
+      if(fT0spreadExt > 0) SetT0FillWidth(fT0spreadExt);
+      else{
+	  SetT0FillWidth(t0spread);
+	  t0fill = fT0fillExt;
+      }
+  }
 
   Float_t thrGood = TMath::Max(Float_t(500.),fT0width*3);
 
@@ -408,12 +418,14 @@ AliTOFT0maker::TuneForMC(AliESDEvent *esd){ // return true T0 event
     if ((t->GetStatus()&AliESDtrack::kTOFout)==0) continue;
     
     /* check if channel is enabled */
-    if (fTOFcalib && !fTOFcalib->IsChannelEnabled(t->GetTOFCalChannel())) {
-      /* reset TOF status */
-      t->ResetStatus(AliESDtrack::kTOFin);
-      t->ResetStatus(AliESDtrack::kTOFout);
-      t->ResetStatus(AliESDtrack::kTOFmismatch);
-      t->ResetStatus(AliESDtrack::kTOFpid);
+    if (fTOFcalib){
+	if(!fTOFcalib->IsChannelEnabled(t->GetTOFCalChannel())) {
+	    /* reset TOF status */
+	    t->ResetStatus(AliESDtrack::kTOFin);
+	    t->ResetStatus(AliESDtrack::kTOFout);
+	    t->ResetStatus(AliESDtrack::kTOFmismatch);
+	    t->ResetStatus(AliESDtrack::kTOFpid);
+	}
     }
 
     Double_t time=t->GetTOFsignal();
