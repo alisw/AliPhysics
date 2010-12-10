@@ -39,8 +39,8 @@ class AliUnicorEvent : public TObject {
   virtual Double_t    ParticleTheta(Int_t i) const = 0;
   virtual Double_t    ParticlePhi(Int_t i) const = 0;
   virtual Double_t    ParticleDedx(Int_t i) const = 0;
-  virtual Bool_t      PairGood(Double_t p0, Double_t the0, Double_t phi0, 
-			       Double_t p1, Double_t the1, Double_t phi1) const = 0;
+  virtual Bool_t      PairGood(double p0, double the0, double phi0, double z0, 
+			       double p1, double the1, double phi1, double z1) const = 0;
 
   // toolkit part
 

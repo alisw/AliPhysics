@@ -27,7 +27,6 @@
 #include "AliUnicorEvent.h"
 #include "AliUnicorAnalGlobal.h"
 
-
 class TH2;
 ClassImp(AliUnicorAnalGlobal)
   
@@ -66,9 +65,10 @@ void AliUnicorAnalGlobal::Process(AliUnicorEvent *ev) const
   TH2D *dire = (TH2D*) fHistos.At(3);
   TH1D *zver = (TH1D*) fHistos.At(4);
 
-  mult->Fill(ev->NGoodParticles(),1.0);
+  double n = ev->NGoodParticles();
+  mult->Fill(n,1.0);
   cent->Fill(ev->Centrality(),1.0);
-  cemu->Fill(ev->Centrality(),ev->NGoodParticles());
+  cemu->Fill(ev->Centrality(),n);
   Double_t qx=0,qy=0;
   ev->RP(qx,qy);
   dire->Fill(qx,qy,1.0);

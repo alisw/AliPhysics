@@ -19,9 +19,11 @@ class TAxis;
 class AliUnicorHN : public TH1D {
 
  public:
-  AliUnicorHN(const char *nam="muhi", Int_t ndim=0, TAxis **ax=0); // constructor from scratch
-  AliUnicorHN(const char *filename, const char *name);             // constructor from file
-  virtual ~AliUnicorHN() {}                                        // destructor
+  AliUnicorHN(const char *nam="muhi", Int_t ndim=0, TAxis **ax=0);     // constructor
+  AliUnicorHN(TRootIOCtor *) : TH1D(), fNdim(0) {}                     // default constructor
+  virtual ~AliUnicorHN() {}                                            // destructor
+  static AliUnicorHN* Retrieve(const char *filnam, const char *nam);   // read from file
+
   Int_t GetNdim() const                     {return fNdim;}
   TAxis *GetAxis(Int_t i) const             {return (TAxis*) &fAxis[i];}
 
@@ -31,20 +33,17 @@ class AliUnicorHN : public TH1D {
   Int_t Fill(Double_t x0, Double_t x1, ...);// 2 or more dim histo fill
   Int_t Fill(const char*, Double_t)         {return -1;} // overload TH1
 
-  Int_t Write() const;                      // save histo and axis on file 
-  Int_t Write()                             {return ((const AliUnicorHN*)this)->Write();}
-  Int_t Write(const char *, Int_t, Int_t)   {return Write();} // overload TObject
-  Int_t Write(const char *, Int_t, Int_t) const {return Write();} 
+  Int_t Save() const;                      // save histo and axis on file 
 
   // project along (integrate over) one axis
   AliUnicorHN  *ProjectAlong(const char *nam, Int_t dim, Int_t first=0, Int_t last=0);
   // project on 1-dim histogram
   TH1D *ProjectOn(const char *nam, Int_t dim, const Int_t * const first=0, const Int_t * const last=0) const;
-  // project on 1-dim histogram
-  TH1D *ProjectOn(const char *nam, Int_t dim, const Double_t * const first, const Double_t * const last);
+  TH1D *ProjectOn(const char *nam, Int_t dim, const Double_t * const first, const Double_t * const last) const;
   // project on 2-dim histogram
   TH2D *ProjectOn(const char *nam, Int_t dim0, Int_t dim1, const Int_t * const first=0, const Int_t * const last=0) const;
-  void  OneToMul(Int_t n, Int_t *k) const;      // calc n-dim indices from 1-dim index
+  TH2D *ProjectOn(const char *nam, Int_t dim0, Int_t dim1, const Double_t * const first, const Double_t * const last) const;
+  void OneToMul(Int_t n, Int_t *k) const;      // calc n-dim indices from 1-dim index
 
  protected:
 
