@@ -786,7 +786,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLoca
     return;
   }
   
-  locTrg.SetUniqueID(locTrg.GetUniqueID());
+  locTrg.SetUniqueID(esdTrack.GetUniqueID());
   locTrg.SetLoCircuit(esdTrack.LoCircuit());
   locTrg.SetLoStripX(esdTrack.LoStripX());
   locTrg.SetLoStripY(esdTrack.LoStripY());
