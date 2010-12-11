@@ -113,7 +113,10 @@ AliAnalysisTaskSE(),
   fHOutMultCL0(0),
   fHOutMultCL1(0),
   fHOutMultV0MvsZDC(0),
-  fHOutMultZEMvsZDC(0)
+  fHOutMultZEMvsZDC(0),
+  fHOutMultV0MvsCL1(0),
+  fHOutMultV0MvsTRK(0),
+  fHOutMultTRKvsCL1(0)
 {   
   // Default constructor
   AliInfo("Centrality Selection enabled.");
@@ -165,7 +168,10 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutMultCL0(0),
   fHOutMultCL1(0),
   fHOutMultV0MvsZDC(0),
-  fHOutMultZEMvsZDC(0)
+  fHOutMultZEMvsZDC(0),
+  fHOutMultV0MvsCL1(0),
+  fHOutMultV0MvsTRK(0),
+  fHOutMultTRKvsCL1(0)
 {
   // Default constructor
   AliInfo("Centrality Selection enabled.");
@@ -228,7 +234,10 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutMultCL0(ana.fHOutMultCL0),
   fHOutMultCL1(ana.fHOutMultCL1),
   fHOutMultV0MvsZDC(ana.fHOutMultV0MvsZDC),
-  fHOutMultZEMvsZDC(ana.fHOutMultZEMvsZDC)
+  fHOutMultZEMvsZDC(ana.fHOutMultZEMvsZDC),
+  fHOutMultV0MvsCL1(ana.fHOutMultV0MvsCL1),
+  fHOutMultV0MvsTRK(ana.fHOutMultV0MvsTRK),
+  fHOutMultTRKvsCL1(ana.fHOutMultTRKvsCL1)
 {
   // Copy Constructor	
 }
@@ -266,8 +275,11 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutMultTKL = new TH1F("fHOutMultTKL","fHOutMultTKL; Multiplicity tracklets",5000,0,5000);
   fHOutMultCL0 = new TH1F("fHOutMultCL0","fHOutMultCL0; Multiplicity SPD inner",7000,0,7000);
   fHOutMultCL1 = new TH1F("fHOutMultCL1","fHOutMultCL1; Multiplicity SPD outer",7000,0,7000);
-  fHOutMultV0MvsZDC = new TH2F("fHOutMultV0MvsZDC","fHOutMultV0MvsZDC; Multiplicity V0; Energy ZDC",500,0,25000,500,0,150);
-  fHOutMultZEMvsZDC = new TH2F("fHOutMultZEMvsZDC","fHOutMultZEMvsZDC; Energy ZEM; Energy ZDC",500,0,5,500,0,150);
+  fHOutMultV0MvsZDC = new TH2F("fHOutMultV0MvsZDC","fHOutMultV0MvsZDC; Multiplicity V0; Energy ZDC",500,0,25000,500,0,6000);
+  fHOutMultZEMvsZDC = new TH2F("fHOutMultZEMvsZDC","fHOutMultZEMvsZDC; Energy ZEM; Energy ZDC",500,0,5,2500,0,6000);
+  fHOutMultV0MvsCL1 = new TH2F("fHOutMultV0MvsCL1","fHOutMultV0MvsCL1; Multiplicity V0; Multiplicity SPD outer",2500,0,25000,700,0,7000);
+  fHOutMultV0MvsTRK = new TH2F("fHOutMultV0MvsTRK","fHOutMultV0MvsTRK; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
+  fHOutMultTRKvsCL1 = new TH2F("fHOutMultTRKvsCL1","fHOutMultTRKvsCL1; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
 
   fOutputList->Add(  fHOutCentV0M     );
   fOutputList->Add(  fHOutCentFMD     );
@@ -286,6 +298,9 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList->Add(  fHOutMultCL1); 
   fOutputList->Add(  fHOutMultV0MvsZDC);
   fOutputList->Add(  fHOutMultZEMvsZDC);
+  fOutputList->Add(  fHOutMultV0MvsCL1);
+  fOutputList->Add(  fHOutMultV0MvsTRK);
+  fOutputList->Add(  fHOutMultTRKvsCL1);
 
 
   fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -467,6 +482,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   fHOutMultCL1->Fill(spdCorr);
   fHOutMultV0MvsZDC->Fill(v0Corr,(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
   fHOutMultZEMvsZDC->Fill((zem1Energy+zem2Energy),(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
+  fHOutMultV0MvsCL1->Fill(v0Corr,spdCorr);
+  fHOutMultV0MvsTRK->Fill(v0Corr,nTracks);
+  fHOutMultTRKvsCL1->Fill(nTracks,spdCorr);
 
   PostData(1, fOutputList); 
 }
