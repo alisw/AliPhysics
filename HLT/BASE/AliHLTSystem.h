@@ -131,7 +131,11 @@ class TStopwatch;
 class AliHLTSystem : public AliHLTLogging {
  public:
   /** default constructor */
-  AliHLTSystem(AliHLTComponentLogSeverity loglevel=kHLTLogDefault, const char* name="");
+  AliHLTSystem(AliHLTComponentLogSeverity loglevel=kHLTLogDefault,
+	       const char* name="",
+	       AliHLTComponentHandler* pCompHandler=NULL,
+	       AliHLTConfigurationHandler* pConfHandler=NULL
+	       );
   /** destructor */
   virtual ~AliHLTSystem();
 
@@ -618,7 +622,10 @@ class AliHLTSystem : public AliHLTLogging {
   /// ECS parameter string
   TString fECSParams;                                              //!transient
 
-  ClassDef(AliHLTSystem, 13);
+  /// indicate the argument 'hltout-type'
+  bool fUseHLTOUTComponentTypeGlobal;                              //!transient
+
+  ClassDef(AliHLTSystem, 14);
 };
 
 #endif
