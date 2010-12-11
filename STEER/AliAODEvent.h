@@ -111,9 +111,9 @@ class AliAODEvent : public AliVEvent {
 
   // -- Tracks
   TClonesArray *GetTracks()              const { return fTracks; }
-  Int_t         GetNTracks()             const { return fTracks->GetEntriesFast(); }
+  Int_t         GetNTracks()             const { return fTracks? fTracks->GetEntriesFast() : 0; }
   Int_t         GetNumberOfTracks()      const { return GetNTracks(); }
-  AliAODTrack  *GetTrack(Int_t nTrack)   const { return (AliAODTrack*)fTracks->UncheckedAt(nTrack); }
+  AliAODTrack  *GetTrack(Int_t nTrack)   const { return fTracks ? (AliAODTrack*)fTracks->UncheckedAt(nTrack):0; }
   Int_t         AddTrack(const AliAODTrack* trk)
     {new((*fTracks)[fTracks->GetEntriesFast()]) AliAODTrack(*trk); return fTracks->GetEntriesFast()-1;}
   Int_t         GetMuonTracks(TRefArray *muonTracks) const;
@@ -121,8 +121,8 @@ class AliAODEvent : public AliVEvent {
 
   // -- Vertex
   TClonesArray *GetVertices()            const { return fVertices; }
-  Int_t         GetNumberOfVertices()    const { return fVertices->GetEntriesFast(); }
-  AliAODVertex *GetVertex(Int_t nVertex) const { return (AliAODVertex*)fVertices->At(nVertex); }
+  Int_t         GetNumberOfVertices()    const { return fVertices?fVertices->GetEntriesFast():0; }
+  AliAODVertex *GetVertex(Int_t nVertex) const { return fVertices?(AliAODVertex*)fVertices->At(nVertex):0; }
   Int_t         AddVertex(const AliAODVertex* vtx)
   {new((*fVertices)[fVertices->GetEntriesFast()]) AliAODVertex(*vtx); return fVertices->GetEntriesFast()-1;}
   
@@ -180,8 +180,8 @@ class AliAODEvent : public AliVEvent {
 
   // -- Jet
   TClonesArray *GetJets()            const { return fJets; }
-  Int_t         GetNJets()           const { return fJets->GetEntriesFast(); }
-  AliAODJet    *GetJet(Int_t nJet) const { return (AliAODJet*)fJets->UncheckedAt(nJet); }
+  Int_t         GetNJets()           const { return fJets?fJets->GetEntriesFast():0; }
+  AliAODJet    *GetJet(Int_t nJet) const { return fJets?(AliAODJet*)fJets->UncheckedAt(nJet):0; }
   Int_t         AddJet(const AliAODJet* vtx)
     {new((*fJets)[fJets->GetEntriesFast()]) AliAODJet(*vtx); return fJets->GetEntriesFast()-1;}
 
