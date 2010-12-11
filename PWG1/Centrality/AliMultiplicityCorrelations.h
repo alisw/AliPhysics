@@ -108,13 +108,12 @@ public:
    */
 
   /** Get List of histograms */
-  TList* GetHistList() const { return fHistList; }
-
-  Int_t GetNTracks() { return fEsdTracksA; }
-  Int_t GetNTracksTPC() { return fTpcTracksA; }
-  Float_t GetVZEROA() { return fVzeroMultA; }
-  Float_t GetVZEROC() { return fVzeroMultC; }
-  Float_t GetVZEROCorr() { return fVzeroMult; }
+  TList*  GetHistList()    const { return fHistList; }
+  Int_t   GetNTracks()     const { return fEsdTracksA; }
+  Int_t   GetNTracksTPC()  const { return fTpcTracksA; }
+  Float_t GetVZEROA()      const { return fVzeroMultA; }
+  Float_t GetVZEROC()      const { return fVzeroMultC; }
+  Float_t GetVZEROCorr()   const { return fVzeroMult; }
 
   /*
    * ---------------------------------------------------------------------------------
@@ -131,7 +130,7 @@ public:
   Float_t GetCorrVZERO(Float_t &v0CorrResc);
 
   /** Corrected SPD amplitude*/
-  Float_t GetCorrSPD2(Float_t spd2raw,Float_t zv);
+  Float_t GetCorrSPD2(Float_t spd2raw,Float_t zv) const;
 
  private:
  
@@ -243,29 +242,29 @@ public:
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 
   /** Binnning VZERO */
-  Int_t   fVzeroBinning;
-  Float_t fVzeroBinningMin;
-  Float_t fVzeroBinningMax;
+  Int_t   fVzeroBinning;                  // VZERO Binning nbin
+  Float_t fVzeroBinningMin;               // VZERO Binning min  
+  Float_t fVzeroBinningMax;               // VZERO Binning max
 
   /** Binnning TPC */
-  Int_t   fTpcBinning;
-  Float_t fTpcBinningMin;
-  Float_t fTpcBinningMax;
+  Int_t   fTpcBinning;                    // TPC Binning nbin
+  Float_t fTpcBinningMin;                 // TPC Binning min
+  Float_t fTpcBinningMax;                 // TPC Binning max
 
   /** Binnning ZDC */
-  Int_t   fZdcBinning;
-  Float_t fZdcBinningMin;
-  Float_t fZdcBinningMax;
+  Int_t   fZdcBinning;                    // ZDC Binning nbin
+  Float_t fZdcBinningMin;                 // ZDC Binning min
+  Float_t fZdcBinningMax;                 // ZDC Binning max
 
   /** Binnning ZEM */
-  Int_t   fZemBinning;
-  Float_t fZemBinningMin;
-  Float_t fZemBinningMax;
+  Int_t   fZemBinning;                    // ZEM Binning nbin
+  Float_t fZemBinningMin;                 // ZEM Binning min
+  Float_t fZemBinningMax;                 // ZEM Binning may
 
   /** Binnning SPD */
-  Int_t   fSpdBinning;
-  Float_t fSpdBinningMin;
-  Float_t fSpdBinningMax;
+  Int_t   fSpdBinning;                    // SPD Binning nbin
+  Float_t fSpdBinningMin;                 // SPD Binning min
+  Float_t fSpdBinningMax;                 // SPD Binning max
   
   ClassDef(AliMultiplicityCorrelations, 3);
 };
