@@ -13,12 +13,6 @@
 //  @brief  The HLTOUT data sink component similar to HLTOUT nodes.
 //  @note   Used in the AliRoot environment only.
 
-// see class description below
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
 #include "AliHLTOfflineDataSink.h"
 
 class AliHLTHOMERLibManager;
@@ -81,8 +75,14 @@ typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
  */
 class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
  public:
-  /** standard constructor */
-  AliHLTOUTComponent();
+  /// type of the HLTOUT component
+  enum EType {
+    kGlobal = 0, // generate according to global flags
+    kDigits = 1, // generate only digits: ID HLTOUTdigits
+    kRaw    = 2  // generate only raw:    ID HLTOUTraw
+  };
+  /// constructor for different component types
+  AliHLTOUTComponent(EType type=kGlobal);
   /** destructor */
   virtual ~AliHLTOUTComponent();
 
@@ -101,6 +101,11 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
    * @param options   bit field
    */
   static void ClearGlobalOption(unsigned int options);
+
+  /**
+   * Test one of the global options
+   */
+  static bool TestGlobalOption(unsigned int option);
 
   enum {
     /** write the raw files of the HLT links */
@@ -228,6 +233,9 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   /** global options for all instances */
   static int fgOptions; //! transient
 
+  /// component options set from component type or global options at DoInit
+  int fOptions; //! transient
+
   /** digit file name */
   TString fDigitFileName; //! transient
 
@@ -245,6 +253,9 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
 
   /** Data size kept in the internal buffer */
   int fReservedData; //!transient
+
+  /// type of the component
+  EType fType; //! type of the component
 
   ClassDef(AliHLTOUTComponent, 4)
 };

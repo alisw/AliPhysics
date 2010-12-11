@@ -84,5 +84,7 @@ int AliHLTAgentSim::RegisterComponents(AliHLTComponentHandler* pHandler) const
   assert(pHandler);
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTOUTComponent);
+  pHandler->AddComponent(new AliHLTOUTComponent(AliHLTOUTComponent::kDigits));
+  pHandler->AddComponent(new AliHLTOUTComponent(AliHLTOUTComponent::kRaw));
   return 0;
 }

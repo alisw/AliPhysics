@@ -32,6 +32,7 @@ using namespace std;
 #include "AliHLTOUT.h"
 #include "AliHLTHOMERLibManager.h"
 #include "AliHLTHOMERWriter.h"
+#include "AliHLTErrorGuard.h"
 #include "AliDAQ.h" // equipment Ids
 #include "AliRawDataHeader.h" // Common Data Header 
 #include <TDatime.h> // seed for TRandom
@@ -39,23 +40,26 @@ using namespace std;
 #include <TFile.h>
 #include <TTree.h>
 #include <TArrayC.h>
+#include <TSystem.h>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUTComponent)
 
-AliHLTOUTComponent::AliHLTOUTComponent()
+AliHLTOUTComponent::AliHLTOUTComponent(EType type)
   : AliHLTOfflineDataSink()
   , fWriters()
   , fNofDDLs(10)
   , fIdFirstDDL(7680) // 0x1e<<8
   , fBuffer()
   , fpLibManager(NULL)
+  , fOptions(0)
   , fDigitFileName("HLT.Digits.root")
   , fpDigitFile(NULL)
   , fpDigitTree(NULL)
   , fppDigitArrays(NULL)
   , fReservedWriter(-1)
   , fReservedData(0)
+  , fType(type)
 {
   // see header file for class documentation
   // or
@@ -71,6 +75,10 @@ AliHLTOUTComponent::AliHLTOUTComponent()
   assert(fIdFirstDDL==AliDAQ::DdlIDOffset("HLT"));
   fIdFirstDDL=AliDAQ::DdlIDOffset("HLT");
   */
+
+  if (fType!=kGlobal && fType!=kDigits && fType!=kRaw) {
+    ALIHLTERRORGUARD(1, "invalid component type %d", fType);
+  }
 }
 
 int AliHLTOUTComponent::fgOptions=kWriteRawFiles|kWriteDigits;
@@ -85,7 +93,14 @@ AliHLTOUTComponent::~AliHLTOUTComponent()
 const char* AliHLTOUTComponent::GetComponentID()
 {
   // see header file for class documentation
-  return "HLTOUT";
+  switch (fType) {
+  case kDigits: return "HLTOUTdigits";
+  case kRaw:    return "HLTOUTraw";
+  case kGlobal:
+  default:
+    return "HLTOUT";
+  }
+  return NULL;
 }
 
 void AliHLTOUTComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
@@ -98,13 +113,28 @@ void AliHLTOUTComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& lis
 AliHLTComponent* AliHLTOUTComponent::Spawn()
 {
   // see header file for class documentation
-  return new AliHLTOUTComponent;
+  return new AliHLTOUTComponent(fType);
 }
 
 int AliHLTOUTComponent::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
   int iResult=0;
+
+  switch (fType) {
+  case kDigits:
+    fOptions|=kWriteDigits; fOptions&=~kWriteRawFiles;
+    HLTInfo("initializing HLTOUT component for digits generation");
+    break;
+  case kRaw:
+    fOptions|=kWriteRawFiles; fOptions&=~kWriteDigits;
+    HLTInfo("initializing HLTOUT component for raw data generation");
+    break;
+  case kGlobal:
+  default:
+    fOptions=fgOptions;
+  }
+
   if ((iResult=ConfigureFromArgumentString(argc, argv))<0) return iResult;
 
   // Make sure there is no library manager before we try and create a new one.
@@ -173,11 +203,11 @@ int AliHLTOUTComponent::ScanConfigurationArgument(int argc, const char** argv)
   if (argument.Contains(key)) {
     argument.ReplaceAll(key, "");
     if (argument.IsNull()) {
-      fgOptions|=kWriteRawFiles;
+      fOptions|=kWriteRawFiles;
     } else if (argument.CompareTo("=off")==0) {
-      fgOptions&=~kWriteRawFiles;
+      fOptions&=~kWriteRawFiles;
     } else if (argument.CompareTo("=on")==0) {
-      fgOptions|=kWriteRawFiles;
+      fOptions|=kWriteRawFiles;
     } else {
       HLTError("invalid parameter for argument %s: possible %s=off/%s=on", key, key, key);
       return -EPROTO;
@@ -191,11 +221,11 @@ int AliHLTOUTComponent::ScanConfigurationArgument(int argc, const char** argv)
   if (argument.Contains(key)) {
     argument.ReplaceAll(key, "");
     if (argument.IsNull()) {
-      fgOptions|=kWriteDigits;
+      fOptions|=kWriteDigits;
     } else if (argument.CompareTo("=off")==0) {
-      fgOptions&=~kWriteDigits;
+      fOptions&=~kWriteDigits;
     } else if (argument.CompareTo("=on")==0) {
-      fgOptions|=kWriteDigits;
+      fOptions|=kWriteDigits;
     } else {
       HLTError("invalid parameter for argument %s: possible %s=off/%s=on", key, key, key);
       return -EPROTO;
@@ -372,8 +402,8 @@ int AliHLTOUTComponent::Write(int eventNo, AliRunLoader* runLoader)
   if (fWriters.size()==0) return 0;
 
   if (fReservedWriter>=0) {
-    if (fgOptions&kWriteDigits) WriteDigitArray(fReservedWriter, &fBuffer[0], fReservedData);
-    if (fgOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, fReservedWriter, &fBuffer[0], fReservedData);
+    if (fOptions&kWriteDigits) WriteDigitArray(fReservedWriter, &fBuffer[0], fReservedData);
+    if (fOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, fReservedWriter, &fBuffer[0], fReservedData);
     fReservedData=0;
   }
 
@@ -399,13 +429,13 @@ int AliHLTOUTComponent::Write(int eventNo, AliRunLoader* runLoader)
     int bufferSize=0;
     
     if ((bufferSize=FillOutputBuffer(eventNo, fWriters[*ddlno], pBuffer))>0) {
-      if (fgOptions&kWriteDigits) WriteDigitArray(*ddlno, pBuffer, bufferSize);
-      if (fgOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
+      if (fOptions&kWriteDigits) WriteDigitArray(*ddlno, pBuffer, bufferSize);
+      if (fOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
     }
     fWriters[*ddlno]->Clear();
     ddlno++;
   }
-  if (fgOptions&kWriteDigits) WriteDigits(eventNo, runLoader);
+  if (fOptions&kWriteDigits) WriteDigits(eventNo, runLoader);
   return iResult;
 }
 
@@ -579,6 +609,10 @@ int AliHLTOUTComponent::WriteRawFile(int eventNo, AliRunLoader* /*runLoader*/, i
   assert(fileName!=NULL);
   TString filePath;
   filePath.Form("raw%d/", eventNo);
+  if (gSystem->AccessPathName(filePath)) {
+    TString command="mkdir "; command+=filePath;
+    gSystem->Exec(command);
+  }
   filePath+=fileName;
   if (fileName) {
     ios::openmode filemode=(ios::openmode)0;
@@ -609,4 +643,10 @@ void AliHLTOUTComponent::ClearGlobalOption(unsigned int options)
 {
   // see header file for class documentation
   fgOptions&=~options;
+}
+
+bool AliHLTOUTComponent::TestGlobalOption(unsigned int option)
+{
+  // see header file for class documentation
+  return (fgOptions&option)!=0;
 }
