@@ -20,7 +20,7 @@ class AliUnicorHN : public TH1D {
 
  public:
   AliUnicorHN(const char *nam="muhi", Int_t ndim=0, TAxis **ax=0);     // constructor
-  AliUnicorHN(TRootIOCtor *) : TH1D(), fNdim(0) {}                     // default constructor
+  AliUnicorHN(TRootIOCtor *) : TH1D(), fNdim(0) {for (int i=0; i<fgkMaxNdim; i++) fNbins[i]=fMbins[i]=0;}  // default constructor
   virtual ~AliUnicorHN() {}                                            // destructor
   static AliUnicorHN* Retrieve(const char *filnam, const char *nam);   // read from file
 
