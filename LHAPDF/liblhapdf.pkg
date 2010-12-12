@@ -59,7 +59,11 @@ else
 ifeq (linuxicc,$(ALICE_TARGET))
 PACKFFLAGS = $(FFLAGS) -nofixed
 else
+ifeq (macosxicc,$(ALICE_TARGET))
+PACKFFLAGS = $(FFLAGS) -free
+else
 PACKFFLAGS = $(FFLAGS) -ffree-form
+endif
 endif
 endif
 PACKCXXFLAGS = $(CXXFLAGS) -DDEFAULTPREFIXPATH=\"NONE\" -DDEFAULTLHAPATH=\"../AliRoot/LHAPDF/PDFsets\"

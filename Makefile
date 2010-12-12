@@ -173,6 +173,9 @@ CXXFLAGSNO += $(GENINC) $(RCFLAGS) -Wno-write-strings
 CFLAGS     += $(GENINC) $(RCFLAGS)
 CINTFLAGS  += $(GENINC) $(RCFLAGS)
 FFLAGS	   += $(RCFLAGS)
+ifeq (macosxicc,$(ALICE_TARGET))
+FFLAGS     := $(patsubst -pthread, -reentrancy threaded, $(FFLAGS))
+endif
 LDFLAGS    += $(RLFLAGS)
 SOFLAGS    += $(RLFLAGS)
 DEPINC     += $(GENINC)
