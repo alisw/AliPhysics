@@ -278,12 +278,13 @@ void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
     }
   }
 
-  fHistNEvents=new TH1F("fHistNEvents","Number of AODs scanned",5,0,5.);
+  fHistNEvents=new TH1F("fHistNEvents","Number of AODs scanned",6,-0.5,5.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvNotSelected");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvSelected (vtx)");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"nCandidatesSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"nTotEntries Mass hists");
   fHistNEvents->GetXaxis()->SetBinLabel(5,"Pile-up Rej");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"N. of 0SMH");
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fOutput->Add(fHistNEvents);
 
@@ -457,13 +458,17 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
   Int_t nProng = arrayProng->GetEntriesFast();
   if(fDebug>1) printf("Number of D2H: %d\n",nProng);
 
-  if(!fRDCuts->IsEventSelected(aod)){
-    fHistNEvents->Fill(1);
+  // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
+  TString trigclass=aod->GetFiredTriggerClasses();
+  if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fHistNEvents->Fill(5);
+
+  if(fRDCuts->IsEventSelected(aod)) fHistNEvents->Fill(1);
+  else{
     if(fRDCuts->GetWhyRejection()==1) // rejected for pileup
       fHistNEvents->Fill(4);
     return;
   }
-
+  
   for (Int_t iProng = 0; iProng < nProng; iProng++) {
     
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iProng);
