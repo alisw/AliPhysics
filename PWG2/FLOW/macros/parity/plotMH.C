@@ -91,7 +91,19 @@ TList *GetQCResults(TFile *fInput,
     Printf("QC object list not found!!!");
     break;
   }
- 
+
+  //Common hist for QC
+  Double_t nAnalyzedEvents = 0.;
+  AliFlowCommonHist *commonHistQC = dynamic_cast<AliFlowCommonHist *>(cobjQC->FindObject("AliFlowCommonHistQC"));
+  if(commonHistQC) {
+    TList *clistQCCommonHist = dynamic_cast<TList *>(commonHistQC->GetHistList());
+    if(clistQCCommonHist) {
+      TH1F *gHistMultRPQC = dynamic_cast<TH1F *>(clistQCCommonHist->FindObject("Control_Flow_MultRP_AliFlowCommonHistQC"));
+      if(gHistMultRPQC)
+	nAnalyzedEvents = gHistMultRPQC->GetEntries();
+    }
+  }
+
   //2nd order QC
   gAliFlowCommonHistName[0] = "AliFlowCommonHistResults";
   gAliFlowCommonHistName[0] += methodIntegratedFlowQC[0].Data();
@@ -124,9 +136,13 @@ TList *GetQCResults(TFile *fInput,
   TH1D *histQC_8 = commonHistRes[3]->GetHistIntFlowRP();
   histQC_8->SetName("fHistIntegratedFlowRPQC_8");
 
+  TH1D *gHistEvents = new TH1D("gHistEvents",";;N_{analyzed events}",
+			       1,0.5,1.5);
+  gHistEvents->SetBinContent(1,nAnalyzedEvents);
   //______________________________________________________________//
   //Print the results
   Printf("\n============================================================");
+  Printf("Analyzed events: %d",(Int_t)nAnalyzedEvents);
   Printf("v2(2,QC): %lf +- %lf",histQC_2->GetBinContent(1),
 	 histQC_2->GetBinError(1));
   Printf("v2(4,QC): %lf +- %lf",histQC_4->GetBinContent(1),
@@ -141,6 +157,7 @@ TList *GetQCResults(TFile *fInput,
   listOutput->Add(histQC_4);
   listOutput->Add(histQC_6);
   listOutput->Add(histQC_8);
+  listOutput->Add(gHistEvents);
 
   return listOutput;
 }
