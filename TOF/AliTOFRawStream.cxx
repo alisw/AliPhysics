@@ -2537,10 +2537,10 @@ void AliTOFRawStream::Raw2SDigits(AliRawReader* rawReader, TClonesArray * const 
 	else ftxt << "   " << digit[3] << endl;
       }
       */
-      AliDebug(2, Form(" Raw data reading %2d -> %2d %1d %2d %1d %2d (%d, %d, %d)",
+      AliDebug(2, Form(" Raw data reading %2d -> %2d %1d %2d %1d %2d (%d, %d)",
 		       last,
 		       detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[4], detectorIndex[3],
-		       digit[0], digit[1], digit[3]));
+		       digit[0], digit[1]));
 
       tofRawDatum = 0;
     } // while loop
