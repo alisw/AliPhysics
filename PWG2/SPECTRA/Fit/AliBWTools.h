@@ -73,9 +73,12 @@ public:
   static void WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr);
 
   static void GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * herror, Bool_t isPercentError) ;  
+  static TH1 * GetRelativeError(TH1 * h);
   static void AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins = kFALSE);
   static void GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) ;
   static TH1F * DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2);
+  static Double_t DoIntegral(TH1* h, Int_t binx1, Int_t binx2, Int_t biny1, Int_t biny2, Int_t binz1, Int_t binz2, Double_t & error ,
+		      Option_t *option, Bool_t doError) ;
 
 
 private:

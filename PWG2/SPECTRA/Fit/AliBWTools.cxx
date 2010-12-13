@@ -870,7 +870,7 @@ void AliBWTools::GetYield(TH1* h,  TF1 * f, Double_t &yield, Double_t &yieldErro
   Float_t bin2Edge = GetHighestNotEmptyBinEdge(h);
 
   Double_t integralFromHistoError ;
-  Double_t integralFromHisto = h->IntegralAndError(bin1,bin2,integralFromHistoError,"width");
+  Double_t integralFromHisto = DoIntegral(h,bin1,bin2,-1,-1,-1,-1,integralFromHistoError,"width",1);
   
   Double_t integralBelow      = min < bin1Edge ? f->Integral(min,bin1Edge) : 0;
   Double_t integralBelowError = min < bin1Edge ? f->IntegralError(min,bin1Edge) : 0;
@@ -1024,6 +1024,20 @@ void AliBWTools::WeightedMean(Int_t npoints, const Double_t *x, const Double_t *
 
   
 }
+
+TH1 * AliBWTools::GetRelativeError(TH1 * h){
+  // Returns an histogram with the same binning as h, filled with the relative error bin by bin
+  TH1 * hrel = (TH1*) h->Clone(TString(h->GetName())+"_rel");
+  hrel->Reset();
+  Int_t nbin = hrel->GetNbinsX();
+  for(Int_t ibin = 1; ibin <= nbin; ibin++){
+    hrel->SetBinContent(ibin,h->GetBinError(ibin)/h->GetBinContent(ibin));
+    hrel->SetBinError(ibin,0);
+  }
+  
+  return hrel;
+}
+
 
 void AliBWTools::GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * herror, Bool_t isPercentError) {
   
@@ -1187,4 +1201,63 @@ TH1F * AliBWTools::DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2) {
     }
   }
   return hRatio;
+}
+
+Double_t AliBWTools::DoIntegral(TH1* h, Int_t binx1, Int_t binx2, Int_t biny1, Int_t biny2, Int_t binz1, Int_t binz2, Double_t & error ,
+				Option_t *option, Bool_t doError) 
+{
+   // function to compute integral and optionally the error  between the limits
+   // specified by the bin number values working for all histograms (1D, 2D and 3D)
+  // copied from TH! to fix a bug still present in 5-27-06b
+   Int_t nbinsx = h->GetNbinsX();
+   if (binx1 < 0) binx1 = 0;
+   if (binx2 > nbinsx+1 || binx2 < binx1) binx2 = nbinsx+1;
+   if (h->GetDimension() > 1) {
+      Int_t nbinsy = h->GetNbinsY();
+      if (biny1 < 0) biny1 = 0;
+      if (biny2 > nbinsy+1 || biny2 < biny1) biny2 = nbinsy+1;
+   } else {
+      biny1 = 0; biny2 = 0;
+   }
+   if (h->GetDimension() > 2) {
+      Int_t nbinsz = h->GetNbinsZ();
+      if (binz1 < 0) binz1 = 0;
+      if (binz2 > nbinsz+1 || binz2 < binz1) binz2 = nbinsz+1;
+   } else {
+      binz1 = 0; binz2 = 0;
+   }
+
+   //   - Loop on bins in specified range
+   TString opt = option;
+   opt.ToLower();
+   Bool_t width   = kFALSE;
+   if (opt.Contains("width")) width = kTRUE;
+
+
+   Double_t dx = 1.;
+   Double_t dy = 1.;
+   Double_t dz = 1.;
+   Double_t integral = 0;
+   Double_t igerr2 = 0;
+   for (Int_t binx = binx1; binx <= binx2; ++binx) {
+     if (width) dx = h->GetXaxis()->GetBinWidth(binx);
+     for (Int_t biny = biny1; biny <= biny2; ++biny) {
+       if (width) dy = h->GetYaxis()->GetBinWidth(biny);
+       for (Int_t binz = binz1; binz <= binz2; ++binz) {
+	 if (width) dz = h->GetZaxis()->GetBinWidth(binz);
+	 Int_t bin  = h->GetBin(binx, biny, binz);
+	 if (width) integral += h->GetBinContent(bin)*dx*dy*dz;
+	 else       integral += h->GetBinContent(bin);
+	 if (doError) {
+	   if (width)  igerr2 += h->GetBinError(bin)*h->GetBinError(bin)*dx*dy*dz*dx*dy*dz;
+	   else        igerr2 += h->GetBinError(bin)*h->GetBinError(bin);
+	 }
+	 //	 cout << h->GetBinContent(bin) << " " <<  h->GetBinError(bin) << " " << dx*dy*dz << " "  << integral << " +- " << igerr2 << endl;
+	 
+       }
+     }
+   }
+   
+   if (doError) error = TMath::Sqrt(igerr2);
+   return integral;
 }
