@@ -578,8 +578,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
   Double32_t multA=frecpoints ->GetMultA();
   Double32_t multC=frecpoints ->GetMultC();
-  pESD->SetT0MultC(multC);        // multiplicity Cside 
-  pESD->SetT0MultA(multA);        // multiplicity Aside 
+  //  pESD->SetT0MultC(multC);        // multiplicity Cside 
+  //  pESD->SetT0MultA(multA);        // multiplicity Aside 
 
   for(Int_t i=0; i<3; i++) 
     pESD->SetT0TOF(i,timeClock[i]);   // interaction time (ns) 
