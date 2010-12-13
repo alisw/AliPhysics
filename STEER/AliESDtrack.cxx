@@ -1693,6 +1693,59 @@ UShort_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
   return fTPCncls;
 }
 
+//_______________________________________________________________________
+Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/) const
+{
+  //
+  // TPC cluster information
+  // type 0: get fraction of found/findable clusters with neighbourhood definition
+  //      1: findable clusters with neighbourhood definition
+  //      2: found clusters
+  //
+  // definition of findable clusters:
+  //            a cluster is defined as findable if there is another cluster
+  //           within +- nNeighbours pad rows. The idea is to overcome threshold
+  //           effects with a very simple algorithm.
+  //
+
+  if (type==2) return fTPCClusterMap.CountBits();
+  
+  Int_t found=0;
+  Int_t findable=0;
+  Int_t last=-nNeighbours;
+  
+  for (Int_t i=0; i<159; ++i){
+    //look to current row
+    if (fTPCClusterMap[i]) {
+      last=i;
+      ++found;
+      ++findable;
+      continue;
+    }
+    //look to nNeighbours before
+    if ((i-last)<=nNeighbours) {
+      ++findable;
+      continue;
+    }
+    //look to nNeighbours after
+    for (Int_t j=i+1; j<i+1+nNeighbours; ++j){
+      if (fTPCClusterMap[j]){
+        ++findable;
+        break;
+      }
+    }
+  }
+
+  Float_t fraction=0;
+  if (type==0){
+    if (findable>0) fraction=(Float_t)found/(Float_t)findable;
+  } else {
+    fraction=findable;
+  }
+  return findable;
+}
+
+//_______________________________________________________________________
 Double_t AliESDtrack::GetTPCdensity(Int_t row0, Int_t row1) const{
   //
   // GetDensity of the clusters on given region between row0 and row1

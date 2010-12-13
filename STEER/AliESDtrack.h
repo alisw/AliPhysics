@@ -237,7 +237,8 @@ public:
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
   void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
-
+  Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0) const;
+  
   void    SetTRDpid(const Double_t *p);
   
 // A.Bercuci
