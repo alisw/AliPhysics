@@ -363,6 +363,14 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
 }
 
 //______________________________________________________________________________
+void AliAnalysisAlien::SetRunPrefix(const char *prefix)
+{
+// Set the run number format. Can be a prefix or a format like "%09d"
+   fRunPrefix = prefix;
+   if (!fRunPrefix.Contains("%")) fRunPrefix += "%d";
+}   
+
+//______________________________________________________________________________
 void AliAnalysisAlien::AddIncludePath(const char *path)
 {
 // Add include path in the remote analysis macro.
@@ -376,7 +384,7 @@ void AliAnalysisAlien::AddRunNumber(Int_t run)
 {
 // Add a run number to the list of runs to be processed.
    if (fRunNumbers.Length()) fRunNumbers += " ";
-   fRunNumbers += Form("%s%d", fRunPrefix.Data(), run);
+   fRunNumbers += Form(fRunPrefix.Data(), run);
 }   
 
 //______________________________________________________________________________
@@ -578,6 +586,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
    // Check validity of run number(s)
    TObjArray *arr;
    TObjString *os;
+   TString format;
    Int_t nruns = 0;
    TString schunk, schunk2;
    TString path;
@@ -623,12 +632,13 @@ Bool_t AliAnalysisAlien::CheckInputData()
    } else {
       Info("CheckDataType", "Using run range [%d, %d]", fRunRange[0], fRunRange[1]);
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
-         path = Form("%s/%s%d ", fGridDataDir.Data(), fRunPrefix.Data(), irun);
+         format = Form("%%s/%s ", fRunPrefix.Data());
+         path = Form(format.Data(), fGridDataDir.Data(), irun);
          if (!DirectoryExists(path)) {
-//            Warning("CheckInputData", "Run number %d not found in path: <%s>", irun, path.Data());
             continue;
          }
-         path = Form("%s/%s%d.xml", workdir.Data(),fRunPrefix.Data(),irun);
+         format = Form("%%s/%s.xml", fRunPrefix.Data());
+         path = Form(format.Data(), workdir.Data(),irun);
          TString msg = "\n#####   file: ";
          msg += path;
          msg += " type: xml_collection;";
@@ -636,13 +646,15 @@ Bool_t AliAnalysisAlien::CheckInputData()
          else          msg += " using_tags: No";
          Info("CheckDataType", "%s", msg.Data());
          if (fNrunsPerMaster<2) {
-            AddDataFile(Form("%s%d.xml",fRunPrefix.Data(),irun));
+            format = Form("%s.xml", fRunPrefix.Data());
+            AddDataFile(Form(format.Data(),irun));
          } else {
             nruns++;
             if (((nruns-1)%fNrunsPerMaster) == 0) {
-               schunk = Form("%s%d", fRunPrefix.Data(),irun);
+               schunk = Form(fRunPrefix.Data(),irun);
             }
-            schunk2 = Form("_%s%d.xml", fRunPrefix.Data(), irun);
+            format = Form("_%s.xml", fRunPrefix.Data());
+            schunk2 = Form(format.Data(), irun);
             if ((nruns%fNrunsPerMaster)!=0 && irun != fRunRange[1]) continue;
             schunk += schunk2;
             AddDataFile(schunk);
@@ -672,6 +684,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    workdir += fGridWorkingDir;
 
    // Compose the 'find' command arguments
+   TString format;
    TString command;
    TString options = "-x collection ";
    if (TestBit(AliAnalysisGrid::kTest)) options += Form("-l %d ", fNtestFiles);
@@ -825,11 +838,13 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    } else {
       // Process a full run range.
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
-         path = Form("%s/%s%d ", fGridDataDir.Data(), fRunPrefix.Data(), irun);
+         format = Form("%%s/%s ", fRunPrefix.Data());
+         path = Form(format.Data(), fGridDataDir.Data(), irun);
          if (!DirectoryExists(path)) continue;
 //         CdWork();
+         format = Form("%s.xml", fRunPrefix.Data());
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
-         else file = Form("%s%d.xml", fRunPrefix.Data(), irun);
+         else file = Form(format.Data(), irun);
          if (FileExists(file) && fNrunsPerMaster<2 && !TestBit(AliAnalysisGrid::kTest)) {         
             if (fOverwriteMode) gGrid->Rm(file);
             else {
@@ -887,14 +902,15 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             }   
             printf("   Merging collection <%s> into %d runs chunk...\n",file.Data(),fNrunsPerMaster);
             if (((nruns-1)%fNrunsPerMaster) == 0) {
-               schunk = Form("%s%d", fRunPrefix.Data(), irun);
+               schunk = Form(fRunPrefix.Data(), irun);
                cbase = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
             } else {
                cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
                cbase->Add(cadd);
                delete cadd;
             }
-            schunk2 = Form("%s_%s%d.xml", schunk.Data(), fRunPrefix.Data(), irun);
+            format = Form("%%s_%s.xml", fRunPrefix.Data());
+            schunk2 = Form(format.Data(), schunk.Data(), irun);
             if ((nruns%fNrunsPerMaster)!=0 && irun!=fRunRange[1] && schunk2 != fInputFiles->Last()->GetName()) {
                continue;
             }   
@@ -1736,7 +1752,7 @@ void AliAnalysisAlien::Print(Option_t *) const
    if (fRunNumbers.Length()) 
    printf("=   Run numbers to be processed: _________________ %s\n", fRunNumbers.Data());
    if (fRunRange[0])
-   printf("=   Run range to be processed: ___________________ %s%d-%s%d\n", fRunPrefix.Data(), fRunRange[0], fRunPrefix.Data(), fRunRange[1]);
+   printf("=   Run range to be processed: ___________________ %d-%d\n", fRunRange[0], fRunRange[1]);
    if (!fRunRange[0] && !fRunNumbers.Length()) {
       TIter next(fInputFiles);
       TObject *obj;

@@ -81,7 +81,7 @@ public:
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
    virtual void        SetPreferedSE(const char *se);
    virtual void        SetProductionMode(Int_t mode=1)                   {fProductionMode = mode;}
-   virtual void        SetRunPrefix(const char *prefix)                  {fRunPrefix = prefix;}
+   virtual void        SetRunPrefix(const char *prefix);
    virtual void        SetOutputSingleFolder(const char *folder)         {fOutputSingle = folder; fSplitMode="file"; fSplitMaxInputFileNumber=1;}
    virtual void        SetFastReadOption(Bool_t on=kTRUE)                {fFastReadOption = on ? 1 : 0;}
    virtual void        SetOverwriteMode(Bool_t on=kTRUE)                 {fOverwriteMode = on ? 1 : 0;}
