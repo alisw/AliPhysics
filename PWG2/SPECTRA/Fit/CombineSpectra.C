@@ -352,11 +352,24 @@ void FitCombined() {
 
       TH1F * hToFit = 0;
       if (whatToFit == kStatErrors) hToFit = hSpectra[iCombInStudy][ipart][icharge]; // Shorthand
-      if (sumCharge) hToFit->Add(hSpectra[iCombInStudy][ipart][1]);
       if (whatToFit == kStatSystErrors) {
 	hToFit = hsyststat;// Shorthand
       }
       if (whatToFit == kSystErrors) hToFit = hsyst;
+      if (sumCharge) {
+	if(whatToFit == kStatErrors)
+	  hToFit->Add(hSpectra[iCombInStudy][ipart][1]);
+	else if (whatToFit == kStatSystErrors) {
+	  TH1F * hsyst2     = new TH1F(*htemplate);
+	  TH1F * hsyststat2 = 0;
+	  hsyst2->SetFillColor(kGray);
+	  AliBWTools::GetValueAndError(hsyst2,hSpectra[iCombInStudy][ipart][1],hSystError[iCombInStudy][ipart][1],kTRUE);
+	  hsyststat2= new TH1F(*hsyst2);
+	  AliBWTools::GetHistoCombinedErrors(hsyststat2,hSpectra[iCombInStudy][ipart][1]); // combine syst and stat
+	  hToFit->Add(hsyststat2);
+	}
+      }
+
       
 
       if(!AliBWTools::Fit(hToFit,func,fitmin,fitmax)) {
@@ -476,8 +489,9 @@ void FitCombined() {
   }
 
   
-  //  table.PrintTable("ASCII");
-  table.PrintTable("TWIKI");
+  table.PrintTable("ASCII");
+  cout << "" << endl;
+  table.PrintTable("");
   
   cout << "" << endl;
   tempTable.PrintTable("ASCII");
@@ -664,7 +678,8 @@ void LoadSpectra() {
 
   // ITS + TPC (Marek)
   //f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons20100720.root");
-  f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons14092010new.root");
+  //  f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons14092010new.root");
+  f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtonsstat29102010.root");
   TList * list = (TList*) gDirectory->Get("output");
   hSpectra[kITSTPC][kPion]  [kPos]= (TH1F*) list->FindObject("Pions");
   hSpectra[kITSTPC][kKaon]  [kPos]= (TH1F*) list->FindObject("Kaons");
@@ -672,6 +687,17 @@ void LoadSpectra() {
   hSpectra[kITSTPC][kPion]  [kNeg]= (TH1F*) list->FindObject("AntiPions");
   hSpectra[kITSTPC][kKaon]  [kNeg]= (TH1F*) list->FindObject("AntiKaons");
   hSpectra[kITSTPC][kProton][kNeg]= (TH1F*) list->FindObject("AntiProtons");
+  // Systematics
+  f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtonssys29102010.root");
+  list = (TList*) gDirectory->Get("output");
+  hSystError[kITSTPC][kPion]  [kPos]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("Pions"));
+  hSystError[kITSTPC][kKaon]  [kPos]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("Kaons"));
+  hSystError[kITSTPC][kProton][kPos]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("Protons"));
+  hSystError[kITSTPC][kPion]  [kNeg]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("AntiPions"));
+  hSystError[kITSTPC][kKaon]  [kNeg]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("AntiKaons"));
+  hSystError[kITSTPC][kProton][kNeg]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("AntiProtons"));
+
+
 
   // TPC
   f = new TFile("./Files/protonSpectra_20100615.root");
@@ -1017,7 +1043,8 @@ void LoadSpectra() {
 	if(hSpectra[idet][ipart][icharge]) {
 	  //	  cout << "Scaling!" << endl;
 	  if(idet != kKinks && idet != kK0){ // Kinks use a different run list, k0s normalized by Helene
-	    hSpectra[idet][ipart][icharge]->Scale(1.*effPhysSel[ipart]/278366.15); // Scale PhysSel efficiency (computed by Alexander)
+	    if(idet!=kITSTPC) hSpectra[idet][ipart][icharge]->Scale(1.*effPhysSel[ipart]/278366.15); // Scale PhysSel efficiency (computed by Alexander)
+	    else hSpectra[idet][ipart][icharge]->Scale(1./278366.15); // Scale PhysSel efficiency (computed by Alexander)
 	  }
 	}
       }
@@ -1292,26 +1319,34 @@ void DrawAllAndKaons() {
    PrintCanvas(c1, printFormats);
 
   // Draw all "stable" hadrons
-   Bool_t divideCanvas=kTRUE; 
+   Bool_t divideCanvas=kFALSE; 
+   TH1F * hSpectraSystError[kNHist][kNPart][kNCharge];// used to store spectra with syst error only
+       
   for(Int_t icharge = 0; icharge < kNCharge; icharge++){
     TCanvas * c1h = 0;
     if(divideCanvas) c1h = new TCanvas(TString("cAll_")+chargeFlag[icharge],TString("cAll_")+chargeFlag[icharge],1200,500);
-    else c1h = new TCanvas(TString("cAll_")+chargeFlag[icharge],TString("cAll_")+chargeFlag[icharge],700,700);
-    //    c1h->SetLogy();
+    else {
+      c1h = new TCanvas(TString("cAll_")+chargeFlag[icharge],TString("cAll_")+chargeFlag[icharge],700,700);
+      c1h->SetLogy();
+    }
     c1h->SetLeftMargin(0.14);
     if(divideCanvas) {
       c1h->Divide(3,1);
       c1h->cd(1);
     }
-    TH2F * hemptyLoc = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,4, 100, 1e-3,10);
+    TH2F * hemptyLoc = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,4, 100, 1e-2,5);
     hemptyLoc->SetXTitle("p_{t} (GeV/c)");
     hemptyLoc->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1}");
     hemptyLoc->GetYaxis()->SetTitleOffset(1.35);
     hemptyLoc->GetXaxis()->SetTitleOffset(1.1);
+    hemptyLoc->GetXaxis()->SetRangeUser(0,1);
     hemptyLoc->Draw();    
-    leg = new TLegend(0.482759, 0.489583, 0.896552, 0.925595, NULL,"brNDC");
-    leg->SetFillColor(0);
-    for(Int_t ipart = 0; ipart < kNPart; ipart++) {
+
+    for(Int_t ipart = 0; ipart < kNPart; ipart++) {                  
+      if(ipart == kPion)         leg = new TLegend(0.558908, 0.78125, 0.889368, 0.924107, NULL,"brNDC");
+      else if (ipart == kKaon)   leg = new TLegend(0.16523, 0.177083, 0.50431, 0.31994, NULL,"brNDC");
+      else if (ipart == kProton) leg = new TLegend(0.51, 0.177083, 0.84, 0.31994, NULL,"brNDC");
+      leg->SetFillColor(0);
       if(divideCanvas) {
 	cout << "CD!!" << ipart+1 << endl;	
 	c1h->cd(ipart+1);
@@ -1326,13 +1361,19 @@ void DrawAllAndKaons() {
 	//	if (idet == kITS) continue;
 	// 	if (idet == kITSTPC) hSpectra[idet][ipart][icharge]->SetMarkerColor(kGreen);
  	hSpectra[idet][ipart][icharge]->SetMarkerStyle(marker[idet]);
-	hSpectra[idet][ipart][icharge]->Draw("same");
+	TH1F * hsyst = new TH1F(*hSpectra[idet][ipart][icharge]);
+	hsyst->Reset();
+	AliBWTools::GetValueAndError(hsyst, hSpectra[idet][ipart][icharge],hSystError[idet][ipart][icharge],kTRUE);
+	//	hSpectra[idet][ipart][icharge]->Draw("same");
+	hsyst->Draw("same");
+	hSpectraSystError[idet][ipart][icharge] = hsyst;
 	leg->AddEntry(hSpectra[idet][ipart][icharge],TString(partLabel[ipart][icharge])+" (" + detFlag[idet]  + ")","lpf");
       }
       //      leg->AddLine();
+      leg->Draw();
     } 
     if(divideCanvas) c1h->cd(1);
-    leg->Draw();
+    //    leg->Draw();
     //    ALICEWorkInProgress(c1h,today.Data(),"#splitline{ALICE Preliminary}{Statistical Error Only}");
     PrintCanvas(c1h,printFormats);
   }
@@ -1386,24 +1427,24 @@ void DrawAllAndKaons() {
     // Loop over particles
     for(Int_t ipart = 0; ipart < kNPart; ipart++) {
       // Clone histo
-      hRatioITSTPC[ipart][icharge]=new TH1F(*hSpectra[kITS][ipart][icharge]);
-      Int_t nBinsITS=hSpectra[kITS][ipart][icharge]->GetNbinsX();
-      Int_t nBinsTPC=hSpectra[kTPC][ipart][icharge]->GetNbinsX();
+      hRatioITSTPC[ipart][icharge]=new TH1F(*hSpectraSystError[kITS][ipart][icharge]);
+      Int_t nBinsITS=hSpectraSystError[kITS][ipart][icharge]->GetNbinsX();
+      Int_t nBinsTPC=hSpectraSystError[kTPC][ipart][icharge]->GetNbinsX();
       // Loop over ITS bins, 
       for(Int_t iBin=1; iBin<=nBinsITS; iBin++){
 	hRatioITSTPC[ipart][icharge]->SetBinContent(iBin,0.);
-	hRatioITSTPC[ipart][icharge]->SetBinContent(iBin,0.);
-	Float_t lowPtITS=hSpectra[kITS][ipart][icharge]->GetBinLowEdge(iBin);
-	Float_t binWidITS=hSpectra[kITS][ipart][icharge]->GetBinWidth(iBin);
+	hRatioITSTPC[ipart][icharge]->SetBinError(iBin,0.);
+	Float_t lowPtITS=hSpectraSystError[kITS][ipart][icharge]->GetBinLowEdge(iBin);
+	Float_t binWidITS=hSpectraSystError[kITS][ipart][icharge]->GetBinWidth(iBin);
 	// Loop over TPC bins and find overlapping bins to ITS
 	for(Int_t jBin=1; jBin<=nBinsTPC; jBin++){
-	  Float_t lowPtTPC=hSpectra[kTPC][ipart][icharge]->GetBinLowEdge(jBin);
-	  Float_t binWidTPC=hSpectra[kTPC][ipart][icharge]->GetBinWidth(jBin);
+	  Float_t lowPtTPC=hSpectraSystError[kTPC][ipart][icharge]->GetBinLowEdge(jBin);
+	  Float_t binWidTPC=hSpectraSystError[kTPC][ipart][icharge]->GetBinWidth(jBin);
 	  if(TMath::Abs(lowPtITS-lowPtTPC)<0.001 && TMath::Abs(binWidTPC-binWidITS)<0.001){
-	    Float_t numer=hSpectra[kITS][ipart][icharge]->GetBinContent(iBin);
-	    Float_t denom=hSpectra[kTPC][ipart][icharge]->GetBinContent(jBin);
-	    Float_t enumer=hSpectra[kITS][ipart][icharge]->GetBinError(iBin);
-	    Float_t edenom=0;//hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
+	    Float_t numer=hSpectraSystError[kITS][ipart][icharge]->GetBinContent(iBin);
+	    Float_t denom=hSpectraSystError[kTPC][ipart][icharge]->GetBinContent(jBin);
+	    Float_t enumer=hSpectraSystError[kITS][ipart][icharge]->GetBinError(iBin);
+	    Float_t edenom=hSpectraSystError[kTPC][ipart][icharge]->GetBinError(jBin);
 	    Double_t ratio=0.;
 	    Double_t eratio=0.;
 	    if(numer>0. && denom>0.){
@@ -1423,7 +1464,9 @@ void DrawAllAndKaons() {
       hRatioITSTPC[ipart][icharge]->SetStats(1);
       hRatioITSTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
       hRatioITSTPC[ipart][icharge]->Draw("");
-      hRatioITSTPC[ipart][icharge]->Fit("pol0","","same");
+      TF1 * f = new TF1("fpol0","[0]");
+      f->SetParameter(0,1);
+      hRatioITSTPC[ipart][icharge]->Fit(f,"","same");
        
     }
     PrintCanvas(c1h,printFormats);
@@ -1442,24 +1485,24 @@ void DrawAllAndKaons() {
     // Loop over particles
     for(Int_t ipart = 0; ipart < kNPart; ipart++) {
       // Clone histo
-      hRatioITSGlobalTPC[ipart][icharge]=new TH1F(*hSpectra[kITSTPC][ipart][icharge]);
-      Int_t nBinsITS=hSpectra[kITSTPC][ipart][icharge]->GetNbinsX();
-      Int_t nBinsTPC=hSpectra[kTPC][ipart][icharge]->GetNbinsX();
+      hRatioITSGlobalTPC[ipart][icharge]=new TH1F(*hSpectraSystError[kITSTPC][ipart][icharge]);
+      Int_t nBinsITS=hSpectraSystError[kITSTPC][ipart][icharge]->GetNbinsX();
+      Int_t nBinsTPC=hSpectraSystError[kTPC][ipart][icharge]->GetNbinsX();
       // Loop over ITS bins, 
       for(Int_t iBin=1; iBin<=nBinsITS; iBin++){
 	hRatioITSGlobalTPC[ipart][icharge]->SetBinContent(iBin,0.);
-	hRatioITSGlobalTPC[ipart][icharge]->SetBinContent(iBin,0.);
-	Float_t lowPtITS=hSpectra[kITSTPC][ipart][icharge]->GetBinLowEdge(iBin);
-	Float_t binWidITS=hSpectra[kITSTPC][ipart][icharge]->GetBinWidth(iBin);
+	hRatioITSGlobalTPC[ipart][icharge]->SetBinError(iBin,0.);
+	Float_t lowPtITS=hSpectraSystError[kITSTPC][ipart][icharge]->GetBinLowEdge(iBin);
+	Float_t binWidITS=hSpectraSystError[kITSTPC][ipart][icharge]->GetBinWidth(iBin);
 	// Loop over TPC bins and find overlapping bins to ITS
 	for(Int_t jBin=1; jBin<=nBinsTPC; jBin++){
-	  Float_t lowPtTPC=hSpectra[kTPC][ipart][icharge]->GetBinLowEdge(jBin);
-	  Float_t binWidTPC=hSpectra[kTPC][ipart][icharge]->GetBinWidth(jBin);
+	  Float_t lowPtTPC=hSpectraSystError[kTPC][ipart][icharge]->GetBinLowEdge(jBin);
+	  Float_t binWidTPC=hSpectraSystError[kTPC][ipart][icharge]->GetBinWidth(jBin);
 	  if(TMath::Abs(lowPtITS-lowPtTPC)<0.001 && TMath::Abs(binWidTPC-binWidITS)<0.001){
-	    Float_t numer=hSpectra[kITSTPC][ipart][icharge]->GetBinContent(iBin);
-	    Float_t denom=hSpectra[kTPC][ipart][icharge]->GetBinContent(jBin);
-	    Float_t enumer=hSpectra[kITSTPC][ipart][icharge]->GetBinError(iBin);
-	    Float_t edenom=0;//hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
+	    Float_t numer=hSpectraSystError[kITSTPC][ipart][icharge]->GetBinContent(iBin);
+	    Float_t denom=hSpectraSystError[kTPC][ipart][icharge]->GetBinContent(jBin);
+	    Float_t enumer=hSpectraSystError[kITSTPC][ipart][icharge]->GetBinError(iBin);
+	    Float_t edenom=hSpectraSystError[kTPC][ipart][icharge]->GetBinError(jBin);
 	    Double_t ratio=0.;
 	    Double_t eratio=0.;
 	    if(numer>0. && denom>0.){
@@ -1479,7 +1522,9 @@ void DrawAllAndKaons() {
       hRatioITSGlobalTPC[ipart][icharge]->SetStats(1);
       hRatioITSGlobalTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
       hRatioITSGlobalTPC[ipart][icharge]->Draw("");
-      hRatioITSGlobalTPC[ipart][icharge]->Fit("pol0","","same");
+      TF1 * f = new TF1("fpol0","[0]");
+      f->SetParameter(0,1);
+      hRatioITSGlobalTPC[ipart][icharge]->Fit(f,"","same");
        
     }
     PrintCanvas(c1h,printFormats);
@@ -1498,24 +1543,24 @@ void DrawAllAndKaons() {
     //    hemptyt->Draw();    
     for(Int_t ipart = 0; ipart < kNPart; ipart++) { // loop over particles
       // Clone histo
-      hRatioTOFTPC[ipart][icharge]=new TH1F(*hSpectra[kTOF][ipart][icharge]);
-      Int_t nBinsTOF=hSpectra[kTOF][ipart][icharge]->GetNbinsX();
-      Int_t nBinsTPC=hSpectra[kTPC][ipart][icharge]->GetNbinsX();
+      hRatioTOFTPC[ipart][icharge]=new TH1F(*hSpectraSystError[kTOF][ipart][icharge]);
+      Int_t nBinsTOF=hSpectraSystError[kTOF][ipart][icharge]->GetNbinsX();
+      Int_t nBinsTPC=hSpectraSystError[kTPC][ipart][icharge]->GetNbinsX();
       // Loop over TOF bins
       for(Int_t iBin=1; iBin<=nBinsTOF; iBin++){
 	hRatioTOFTPC[ipart][icharge]->SetBinContent(iBin,0.);
-	hRatioTOFTPC[ipart][icharge]->SetBinContent(iBin,0.);
-	Float_t lowPtTOF=hSpectra[kTOF][ipart][icharge]->GetBinLowEdge(iBin);
-	Float_t binWidTOF=hSpectra[kTOF][ipart][icharge]->GetBinWidth(iBin);
+	hRatioTOFTPC[ipart][icharge]->SetBinError(iBin,0.);
+	Float_t lowPtTOF=hSpectraSystError[kTOF][ipart][icharge]->GetBinLowEdge(iBin);
+	Float_t binWidTOF=hSpectraSystError[kTOF][ipart][icharge]->GetBinWidth(iBin);
 	// Loop over TPC bins and find overlapping bins to ITS
 	for(Int_t jBin=1; jBin<=nBinsTPC; jBin++){
-	  Float_t lowPtTPC=hSpectra[kTPC][ipart][icharge]->GetBinLowEdge(jBin);
-	  Float_t binWidTPC=hSpectra[kTPC][ipart][icharge]->GetBinWidth(jBin);
+	  Float_t lowPtTPC=hSpectraSystError[kTPC][ipart][icharge]->GetBinLowEdge(jBin);
+	  Float_t binWidTPC=hSpectraSystError[kTPC][ipart][icharge]->GetBinWidth(jBin);
 	  if(TMath::Abs(lowPtTOF-lowPtTPC)<0.001 && TMath::Abs(binWidTPC-binWidTOF)<0.001){
-	    Float_t numer=hSpectra[kTOF][ipart][icharge]->GetBinContent(iBin);
-	    Float_t denom=hSpectra[kTPC][ipart][icharge]->GetBinContent(jBin);
-	    Float_t enumer=hSpectra[kTOF][ipart][icharge]->GetBinError(iBin);
-	    Float_t edenom=0;//hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
+	    Float_t numer=hSpectraSystError[kTOF][ipart][icharge]->GetBinContent(iBin);
+	    Float_t denom=hSpectraSystError[kTPC][ipart][icharge]->GetBinContent(jBin);
+	    Float_t enumer=hSpectraSystError[kTOF][ipart][icharge]->GetBinError(iBin);
+	    Float_t edenom=hSpectraSystError[kTPC][ipart][icharge]->GetBinError(jBin);
 	    Double_t ratio=0.;
 	    Double_t eratio=0.;
 	    if(numer>0. && denom>0.){
@@ -1533,7 +1578,10 @@ void DrawAllAndKaons() {
       hRatioTOFTPC[ipart][icharge]->SetStats(1);
       hRatioTOFTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
       hRatioTOFTPC[ipart][icharge]->Draw("");
-      hRatioTOFTPC[ipart][icharge]->Fit("pol0","","same");
+      hRatioTOFTPC[ipart][icharge]->Print();
+      TF1 * f = new TF1("fpol0","[0]");
+      f->SetParameter(0,1);
+      hRatioTOFTPC[ipart][icharge]->Fit(f,"","same");
     }
     PrintCanvas(c1t,printFormats);
   }
@@ -1963,7 +2011,7 @@ void DrawWithSyst() {
   // Draws detector and combined with syst errors. 
 
   for(Int_t idet = 0; idet < kNHist; idet++){
-    if(idet > kITS && idet != iCombInStudy) continue;
+    if(idet > kITSTPC && idet != iCombInStudy) continue;
     for(Int_t icharge = 0; icharge < kNCharge; icharge++){
       TCanvas * c = new TCanvas(TString("cWithSyst")+detFlag[idet]+chargeFlag[icharge],TString("cWithSyst")+detFlag[idet]+chargeFlag[icharge]);
       TH2F * hempty = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,2.9, 100, 0.0005,5);
@@ -2002,7 +2050,7 @@ void DrawWithSyst() {
 				     
 
       }
-      PrintCanvas(c,"png,eps");
+      PrintCanvas(c,printFormats);
     }
   }
 }
