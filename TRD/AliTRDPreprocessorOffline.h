@@ -11,6 +11,7 @@
 
 
 #include "TNamed.h"
+#include "AliTRDCalChamberStatus.h"
 class TObjArray;
 class AliTRDCalDet;
 class TH2I;
@@ -52,7 +53,7 @@ public:
   void CalibVdriftT0(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage="");
   void CalibGain(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage="");
   void CalibPRF(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage="");
-  
+
   Bool_t ReadGainGlobal(const Char_t* fileName="CalibObjects.root");
   Bool_t ReadVdriftT0Global(const Char_t* fileName="CalibObjects.root");
   Bool_t ReadVdriftLinearFitGlobal(const Char_t* fileName="CalibObjects.root");
@@ -85,15 +86,17 @@ public:
   void     SetMinStatsVdriftLinear(Int_t minStatsVdriftLinear)       { fMinStatsVdriftLinear = minStatsVdriftLinear; }  
   void     SetMinStatsGain(Int_t minStatsGain)                       { fMinStatsGain = minStatsGain; }  
   void     SetMinStatsPRF(Int_t minStatsPRF)                         { fMinStatsPRF = minStatsPRF; }  
+
+  AliTRDCalChamberStatus *ProduceChamberStatus();
   
  private:
-  Bool_t fMethodSecond;                   // Second Method for drift velocity   
-  TString fNameList;                      // Name of the list
-  AliTRDCalDet *fCalDetGainUsed;          // CalDet used and to be corrected for
-  AliTRDCalDet *fCalDetVdriftUsed;        // CalDet used and to be corrected for
-  TH2I *fCH2d;                            // Gain
-  TProfile2D *fPH2d;                      // Drift velocity first method
-  TProfile2D *fPRF2d;                     // PRF
+  Bool_t fMethodSecond;                      // Second Method for drift velocity   
+  TString fNameList;                         // Name of the list
+  AliTRDCalDet *fCalDetGainUsed;             // CalDet used and to be corrected for
+  AliTRDCalDet *fCalDetVdriftUsed;           // CalDet used and to be corrected for
+  TH2I *fCH2d;                               // Gain
+  TProfile2D *fPH2d;                         // Drift velocity first method
+  TProfile2D *fPRF2d;                        // PRF
   AliTRDCalibraVdriftLinearFit *fAliTRDCalibraVdriftLinearFit; // Drift velocity second method
   TH1I *fNEvents;                         // Number of events 
   TH2F *fAbsoluteGain;                    // Absolute Gain calibration

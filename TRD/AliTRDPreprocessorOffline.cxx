@@ -57,6 +57,7 @@
 #include "AliTRDCalibraFit.h"
 #include "AliTRDCalibraVdriftLinearFit.h"
 #include "AliTRDPreprocessorOffline.h"
+#include "AliTRDCalChamberStatus.h"
 
 
 ClassImp(AliTRDPreprocessorOffline)
@@ -857,3 +858,54 @@ Int_t AliTRDPreprocessorOffline::GetSubVersion(TString name) const
 
 }
 
+//_____________________________________________________________________________
+AliTRDCalChamberStatus *AliTRDPreprocessorOffline::ProduceChamberStatus()
+{
+  //
+  // Produce AliTRDCalChamberStatus out of calibration results
+  //
+
+  // set up AliTRDCalChamberStatus
+  AliTRDCalChamberStatus *CalChamberStatus = new AliTRDCalChamberStatus();
+
+  // get calibration objects
+  AliTRDCalDet *calDetGain   = (AliTRDCalDet *) fCalibObjects->At(kGain);
+  AliTRDCalDet *calDetVDrift = (AliTRDCalDet *) fCalibObjects->At(kVdriftLinear);
+  
+  // mask chambers with empty gain entries
+  TH1I *projch = 0x0;
+  Int_t counter = 0;
+  for (Int_t idet = 0; idet < 540; idet++) {
+
+    // ch2d
+    projch->Reset("CE");
+    projch =  (TH1I *) fCH2d->ProjectionX("projch",idet+1,idet+1,(Option_t *)"e");
+    Int_t entries = projch->GetEntries();
+
+    // gain
+    Double_t defaultgain = calDetGain->GetMean();
+    Double_t gain = calDetGain->GetValue(idet);
+
+    // vdrift
+    Double_t defaultvdrift = calDetVDrift->GetMean();
+    Double_t vdrift = calDetVDrift->GetValue(idet);
+
+
+    if(entries<=0 ||
+       TMath::Abs(defaultgain-gain) < 0.5 ||
+       TMath::Abs(defaultvdrift-vdrift) < 0.1) {
+     
+      printf(" chamber det %03d masked \n",idet);
+      CalChamberStatus->SetStatus(idet,2);
+      counter++;
+    }
+    
+    // installed supermodules+1 -> abort
+    if(counter > (7+1)*30) {
+      printf("ERROR: more than one SM to be masked!! \n Abort...\n");
+      return 0x0;
+    }
+
+  }
+  return CalChamberStatus;
+}
