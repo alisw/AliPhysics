@@ -44,6 +44,7 @@ public:
   void InitParameters();
   virtual void PrintParameters() const ;
   virtual void SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t geantTime, Int_t& nActivatedPads, Int_t& nFiredPads, Bool_t* isFired, Int_t* nPlace, Float_t* qInduced, Float_t* tofTime, Float_t& averageTime);
+  virtual void SimulateDetectorResponseOLD(Float_t z0, Float_t x0, Float_t geantTime, Int_t& nActivatedPads, Int_t& nFiredPads, Bool_t* isFired, Int_t* nPlace, Float_t* qInduced, Float_t* tofTime, Float_t& averageTime);
   virtual void Print(Option_t* opt) const ;
   void  SetFirstEvent(Int_t event1)      {fEvent1 = event1;}
   void  SetSecondEvent(Int_t event2)     {fEvent2 = event2;}
