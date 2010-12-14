@@ -106,7 +106,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TString  fCalorimeter ;  // Select Calorimeter for IM
   Int_t    fNModules ;     // Number of EMCAL/PHOS modules, set as many histogras as modules 
   Bool_t   fUseAngleCut ;  // Select pairs depending on their opening angle
-  TList ** fEventsList ;   //! Containers for photons in stored events
+  TList ** fEventsList ;   //[fNCentrBin*GetNZvertBin()*GetNRPBin()]! Containers for photons in stored events
   Bool_t   fMultiCutAna;   // Do analysis with several or fixed cut
   Int_t    fNPtCuts;       // number of pt cuts
   Float_t  fPtCuts[10];    // array with different pt cuts
@@ -121,27 +121,27 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Bool_t   fSameSM;        // select only pairs in same SM;
   
   //Histograms
-  TH2D ** fhReMod ;     //!REAL two-photon invariant mass distribution for different calorimeter modules.
-  TH2D ** fhReDiffMod ; //!REAL two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2D ** fhReMod ;     //[fNModules] REAL two-photon invariant mass distribution for different calorimeter modules.
+  TH2D ** fhReDiffMod ; //[fNModules+1] REAL two-photon invariant mass distribution for different clusters in different calorimeter modules.
 
-  TH2D ** fhRe1 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
-  TH2D ** fhMi1 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry
-  TH2D ** fhRe2 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
-  TH2D ** fhMi2 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry
-  TH2D ** fhRe3 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
-  TH2D ** fhMi3 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2D ** fhRe1 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2D ** fhMi1 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2D ** fhRe2 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2D ** fhMi2 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2D ** fhRe3 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2D ** fhMi3 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
   
-  TH2D ** fhReInvPt1 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
-  TH2D ** fhMiInvPt1 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
-  TH2D ** fhReInvPt2 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT 
-  TH2D ** fhMiInvPt2 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
-  TH2D ** fhReInvPt3 ;  //!REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
-  TH2D ** fhMiInvPt3 ;  //!MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhReInvPt1 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhMiInvPt1 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhReInvPt2 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT 
+  TH2D ** fhMiInvPt2 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhReInvPt3 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhMiInvPt3 ;  //[fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
   
   //Multiple cuts
-  TH2D ** fhRePtNCellAsymCuts ; //!REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry
-  TH2D ** fhRePIDBits ;         //!REAL two-photon invariant mass distribution for different PID bits
-  TH3D ** fhRePtMult ;          //!REAL two-photon invariant mass distribution for different track multiplicity and assymetry cuts
+  TH2D ** fhRePtNCellAsymCuts ; //[fNPtCuts*fNAsymCuts*fNCellNCuts] REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry
+  TH2D ** fhRePIDBits ;         //[fNPIDBits] REAL two-photon invariant mass distribution for different PID bits
+  TH3D ** fhRePtMult ;          //[fNAsymCuts] REAL two-photon invariant mass distribution for different track multiplicity and assymetry cuts
   
   TH2D *  fhRePtAsym    ;       //!REAL two-photon pt vs asymmetry
   TH2D *  fhRePtAsymPi0 ;       //!REAL two-photon pt vs asymmetry, close to pi0 mass
