@@ -807,9 +807,10 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		Double_t p=trackESD->P();
 		Double_t eta=trackESD->Eta();
 		Double_t phi=trackESD->Phi();
-		Float_t dcaxy, dcaz;
+		Float_t dcaxy = 0., dcaz = 0.;
+		trackESD->GetImpactParameters(dcaxy,dcaz);
 		Double_t pz=trackESD->Pz();
-		 UShort_t nTPCclusters=trackESD->GetTPCNcls();
+		UShort_t nTPCclusters=trackESD->GetTPCNcls();
 		fHistPhiPtBeforeCuts->Fill(phi,pt);//phi pt
 		fHistEtaPtBeforeCuts->Fill(eta,pt);
 		fHistDCABeforeCuts->Fill(dcaxy,dcaz);		
@@ -822,7 +823,6 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		Float_t sigKaon     = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kKaon);
 		Float_t sigProton     = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kProton);
 		Double_t tpcSignal =trackESD ->GetTPCsignal();
-		trackESD->GetImpactParameters(dcaxy,dcaz);
 		if(fTPCPIDCUT)
 		{
 			if(fTPCPIDCUT->AcceptTrack(trackESD,fESD)==kFALSE)
