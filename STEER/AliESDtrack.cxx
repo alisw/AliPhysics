@@ -1735,14 +1735,17 @@ Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
       }
     }
   }
-
-  Float_t fraction=0;
+  if (type==1) return findable;
+  
   if (type==0){
-    if (findable>0) fraction=(Float_t)found/(Float_t)findable;
-  } else {
-    fraction=findable;
-  }
-  return findable;
+    Float_t fraction=0;
+    if (findable>0) 
+      fraction=(Float_t)found/(Float_t)findable;
+    else 
+      fraction=0;
+    return fraction;
+  }  
+  return 0;  // undefined type - default value
 }
 
 //_______________________________________________________________________
