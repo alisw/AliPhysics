@@ -176,9 +176,11 @@ void AliDigits::Allocate(Int_t rows, Int_t columns)
 Int_t AliDigits::GetSize()
 {
   //
-  //return size of object
+  //return size of object as represented in the memory
   //
-  Int_t size = sizeof(this);
+  //  Int_t size = sizeof(this);
+  Int_t size = 0;   // COVERITY consider the previous statment as bug 
+                    // 
   if (fIndex!=0) size+= sizeof(fIndex)+fIndex->GetSize()*sizeof(Int_t);
   if (fElements!=0) size+= sizeof(fElements)+fElements->GetSize()*sizeof(Short_t);
   return size;
