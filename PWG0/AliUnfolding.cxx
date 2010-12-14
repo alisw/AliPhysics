@@ -370,7 +370,7 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
   }
 
   // extract minimum value from initial conditions (if we set a value to 0 it will stay 0)
-  Float_t minValue = 1e100;
+  Float_t minValue = 1e35;
   if (fgMinimumInitialValueFix < 0)
   {
     for (Int_t i=0; i<fgMaxParams; ++i)
