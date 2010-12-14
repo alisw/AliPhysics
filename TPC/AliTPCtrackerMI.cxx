@@ -5257,6 +5257,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
 	  shared[kink0->GetIndex(0)]= kTRUE;
 	  shared[kink0->GetIndex(1)]= kTRUE;	  
 	  delete kinks->RemoveAt(indexes[ikink0]);
+	  break;
 	}
 	else{
 	  shared[kink1->GetIndex(0)]= kTRUE;
