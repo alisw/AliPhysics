@@ -107,12 +107,12 @@ class AliTRDCalDCSFEEv2 : public TObject {
   Char_t   fLayer;                      // the number of the layer 0..5
   Char_t   fGainTableFgan[(Int_t)fgkROB][(Int_t)fgkMCM][(Int_t)fgkADC]; // array of gain table fgan values
   Char_t   fGainTableAdcdac[(Int_t)fgkROB][(Int_t)fgkMCM]; // array of gain table adcdac values
-  UChar_t  fRStateGSM[(Int_t)fgkROB][(Int_t)fgkMCM];  // array of the global states of the MCMs
-  UChar_t  fRStateNI[(Int_t)fgkROB][(Int_t)fgkMCM];   // array of the network interface states of the MCMs
+  Char_t   fRStateGSM[(Int_t)fgkROB][(Int_t)fgkMCM];  // array of the global states of the MCMs
+  Char_t   fRStateNI[(Int_t)fgkROB][(Int_t)fgkMCM];   // array of the network interface states of the MCMs
   UChar_t  fGainTableRocSerial;         // the roc serial of the chamber from the gain table
-  UShort_t fDCSID;                      // ID of the DCS-Board
-  UShort_t fNumberOfTimeBins;           // Number of timebins  
-  UShort_t fConfigTag;                  // Configuration tag
+  Short_t  fDCSID;                      // ID of the DCS-Board
+  Short_t  fNumberOfTimeBins;           // Number of timebins  
+  Short_t  fConfigTag;                  // Configuration tag
   Short_t  fSingleHitThres;             // threshold of single hits (arg of readout param)
   Short_t  fThrPdClsThres;              // threshold of 3-pad clusters (arg of readout param)
   Short_t  fSelNoZS;                    // write every fSelNoZS'th event without ZS
@@ -136,6 +136,6 @@ class AliTRDCalDCSFEEv2 : public TObject {
   TString  fGainTableName;              // the name of the gain table
   TString  fGainTableDesc;              // the description of the gain table
 
-  ClassDef(AliTRDCalDCSFEEv2,1)          // TRD calibration class for TRD FEE parameters
+  ClassDef(AliTRDCalDCSFEEv2,2)          // TRD calibration class for TRD FEE parameters
 };
 #endif
