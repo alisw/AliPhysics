@@ -878,7 +878,7 @@ AliTRDCalChamberStatus *AliTRDPreprocessorOffline::ProduceChamberStatus()
   for (Int_t idet = 0; idet < 540; idet++) {
 
     // ch2d
-    projch->Reset("CE");
+    if (projch) projch->Reset("CE");
     projch =  (TH1I *) fCH2d->ProjectionX("projch",idet+1,idet+1,(Option_t *)"e");
     Int_t entries = projch->GetEntries();
 
