@@ -101,7 +101,7 @@ void AliRawEquipment::CloneRawData(const AliRawData *rawData)
   // flush the TRef
 
   fRawDataRef = NULL;
-  if (rawData) rawData = (AliRawData*)rawData->Clone();
+  if (rawData) fRawData = (AliRawData*)rawData->Clone();
 }
 
 //______________________________________________________________________________
