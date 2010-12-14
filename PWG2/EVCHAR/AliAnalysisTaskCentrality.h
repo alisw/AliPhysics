@@ -16,6 +16,7 @@ class TSystem;
 class TList;
 class TFile;
 class TH2F;
+class TProfile;
 
 class AliAnalysisTaskCentrality : public AliAnalysisTaskSE {
 
@@ -44,36 +45,36 @@ class AliAnalysisTaskCentrality : public AliAnalysisTaskSE {
   Bool_t   fIsMCInput;          // true when input is MC
   //
   TList   *fOutput;	   	//! list send on output slot 0
-  TH1F *hEzdc;            //!
-  TH1F *hEzem;            //!
-  TH1F *hNtracks;         //!
-  TH1F *hNtracklets;      //!
-  TH1F *hNclusters0;      //!
-  TH1F *hmultV0;          //!
-  TH1F *hmultFMD;         //!
+  TH1F *fhEzdc;            //!
+  TH1F *fhEzem;            //!
+  TH1F *fhNtracks;         //!
+  TH1F *fhNtracklets;      //!
+  TH1F *fhNclusters0;      //!
+  TH1F *fhmultV0;          //!
+  TH1F *fhmultFMD;         //!
 
-  TProfile *hEzemvsEzdc;            //!
-  TProfile *hNtracksvsEzdc;         //!
-  TProfile *hNtrackletsvsEzdc;      //!
-  TProfile *hNclusters0vsEzdc;      //!
-  TProfile *hmultV0vsEzdc;          //!
-  TProfile *hmultFMDvsEzdc;         //!
-  TProfile *hNtracksvsEzem;         //!
-  TProfile *hNtrackletsvsEzem;      //!
-  TProfile *hNclusters0vsEzem;      //!
-  TProfile *hmultV0vsEzem;          //!
-  TProfile *hmultFMDvsEzem;         //!
-  TProfile *hNtracksvsmultV0;       //!      
-  TProfile *hNtrackletsvsmultV0;    //!    
-  TProfile *hNclusters0vsmultV0;    //!
-  TProfile *hNtracksvsmultFMD;      //!
-  TProfile *hNtrackletsvsmultFMD;   //!
-  TProfile *hNclusters0vsmultFMD;   //!
-  TProfile *hmultV0vsmultFMD;       //!
+  TProfile *fhEzemvsEzdc;            //!
+  TProfile *fhNtracksvsEzdc;         //!
+  TProfile *fhNtrackletsvsEzdc;      //!
+  TProfile *fhNclusters0vsEzdc;      //!
+  TProfile *fhmultV0vsEzdc;          //!
+  TProfile *fhmultFMDvsEzdc;         //!
+  TProfile *fhNtracksvsEzem;         //!
+  TProfile *fhNtrackletsvsEzem;      //!
+  TProfile *fhNclusters0vsEzem;      //!
+  TProfile *fhmultV0vsEzem;          //!
+  TProfile *fhmultFMDvsEzem;         //!
+  TProfile *fhNtracksvsmultV0;       //!      
+  TProfile *fhNtrackletsvsmultV0;    //!    
+  TProfile *fhNclusters0vsmultV0;    //!
+  TProfile *fhNtracksvsmultFMD;      //!
+  TProfile *fhNtrackletsvsmultFMD;   //!
+  TProfile *fhNclusters0vsmultFMD;   //!
+  TProfile *fhmultV0vsmultFMD;       //!
 
   Int_t    fNev;		//  event counter
   Float_t  fBeamEnergy;		//  beam energy
-  Int_t    fNmyTracks_gen;      //  no. generated primary charged tracks 
+  Int_t    fNmyTracksgen;       //  no. generated primary charged tracks 
   char     fTrigClass[100];	//  fired trigger classes
   //
   Double_t fxVertex;		//  X vertex from ITS
@@ -123,8 +124,5 @@ class AliAnalysisTaskCentrality : public AliAnalysisTaskSE {
   Float_t  fMultFMDC;      //  multiplicity from FMD on detector C
 
   ClassDef(AliAnalysisTaskCentrality,1); 
-
 };
-
 #endif
-
