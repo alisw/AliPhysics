@@ -116,7 +116,7 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 	sourceList->Print();    
 
   	TIter iter(sourceList);
-  	TObjString *source = 0;
+  	TObjString *source;
 		
 	while((source=dynamic_cast<TObjString*> (iter.Next()))){
   		fileName = GetFile(kDAQ, sourcesId.Data(), source->GetName());
