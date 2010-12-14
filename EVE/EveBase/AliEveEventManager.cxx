@@ -545,7 +545,9 @@ void AliEveEventManager::Open()
     if (fgAssertRaw)
     {
       throw (kEH + "raw-data not initialized. Its precence was requested.");
-    } else {
+    }
+    else
+    {
       Warning(kEH, "raw-data not initialized.");
     }
   }
@@ -554,11 +556,16 @@ void AliEveEventManager::Open()
   {
     if (fRawReader)
     {
-      fRawReader->NextEvent();
+      if ( ! fRawReader->NextEvent())
+      {
+	throw (kEH + "can not go to first event in raw-reader to determine run-id.");
+      }
       runNo = fRawReader->GetRunNumber();
       Info(kEH, "Determining run-no from raw ... run=%d.", runNo);
       fRawReader->RewindEvents();
-    } else {
+    }
+    else 
+    {
       throw (kEH + "unknown run number.");
     }
   }
