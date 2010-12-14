@@ -31,7 +31,6 @@
 
 class TH1;
 
-
 /**
  * @class AliHLTMultiplicityCorrelations
  *
@@ -84,7 +83,7 @@ public:
   void SetBinningVzero(Int_t i=1, Float_t f1=0., Float_t f2=1.) {
     fVzeroBinning = i; fVzeroBinningMin = f1; fVzeroBinningMax = f2;
   }
-
+  
   /** Set Binning of TPC */
   void SetBinningTpc(Int_t i=1, Float_t f1=0., Float_t f2=1.) {
     fTpcBinning = i; fTpcBinningMin = f1; fTpcBinningMax = f2;
@@ -239,105 +238,105 @@ public:
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 
   /** Process TPC information */
-  Bool_t           fProcessTPC;
+  Bool_t           fProcessTPC;           // see above
 
   /** Process SPD information */
-  Bool_t           fProcessSPD;
+  Bool_t           fProcessSPD;           // see above
 
   /** Process VZERO information */
-  Bool_t           fProcessVZERO;
+  Bool_t           fProcessVZERO;         // see above
 
   /** Process ZDC information */
-  Bool_t           fProcessZDC;
+  Bool_t           fProcessZDC;           // see above
 
   /** Process CALO information */
-  Bool_t           fProcessCALO;
+  Bool_t           fProcessCALO;          // see above
 
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 
   /** N ESD tracks */
-  Int_t fEsdTracks;
+  Int_t fEsdTracks;                       // see above
 
   /** N ESD tracks accepted */
-  Int_t fEsdTracksA;
+  Int_t fEsdTracksA;                      // see above
 
   /** N TPC tracks */
-  Int_t fTpcTracks;
+  Int_t fTpcTracks;                       // see above
 
   /** N TPC tracks accepted */
-  Int_t fTpcTracksA;
+  Int_t fTpcTracksA;                      // see above
 
   /** VZERO mult */
-  Float_t fVzeroMult;
+  Float_t fVzeroMult;                     // see above
 
   /** VZERO mult A */
-  Float_t fVzeroMultA;
+  Float_t fVzeroMultA;                    // see above
 
   /** VZERO mult C */
-  Float_t fVzeroMultC;
+  Float_t fVzeroMultC;                    // see above
 
   /** VZERO flagged mult */
-  Float_t fVzeroMultFlagged;
+  Float_t fVzeroMultFlagged;              // see above
 
   /** VZERO flagged mult A */
-  Float_t fVzeroMultFlaggedA;
+  Float_t fVzeroMultFlaggedA;             // see above
 
   /** VZERO flagged mult C */
-  Float_t fVzeroMultFlaggedC;
+  Float_t fVzeroMultFlaggedC;             // see above
 
   /** Spd N clusters */
-  Int_t   fSpdNClusters;
+  Int_t   fSpdNClusters;                  // see above
 
   /** Spd N clusters inner layer*/
-  Int_t   fSpdNClustersInner;
+  Int_t   fSpdNClustersInner;             // see above
 
   /** Spd N clusters outer layer */
-  Int_t   fSpdNClustersOuter;
+  Int_t   fSpdNClustersOuter;             // see above
 
   // -- -- -- 
 
   /** Binnning VZERO */
-  Int_t   fVzeroBinning;
-  Float_t fVzeroBinningMin;
-  Float_t fVzeroBinningMax;
+  Int_t   fVzeroBinning;                  // see above
+  Float_t fVzeroBinningMin;               // see above
+  Float_t fVzeroBinningMax;               // see above
 
   /** Binnning TPC */
-  Int_t   fTpcBinning;
-  Float_t fTpcBinningMin;
-  Float_t fTpcBinningMax;
+  Int_t   fTpcBinning;                    // see above
+  Float_t fTpcBinningMin;                 // see above
+  Float_t fTpcBinningMax;                 // see above
 
   /** Binnning ZDC */
-  Int_t   fZdcBinning;
-  Float_t fZdcBinningMin;
-  Float_t fZdcBinningMax;
+  Int_t   fZdcBinning;                    // see above
+  Float_t fZdcBinningMin;                 // see above
+  Float_t fZdcBinningMax;                 // see above
 
   /** Binnning ZEM */
-  Int_t   fZemBinning;
-  Float_t fZemBinningMin;
-  Float_t fZemBinningMax;
+  Int_t   fZemBinning;                    // see above
+  Float_t fZemBinningMin;                 // see above
+  Float_t fZemBinningMax;                 // see above
 
   /** Binnning ZNP */
-  Int_t   fZnpBinning;
-  Float_t fZnpBinningMin;
-  Float_t fZnpBinningMax;
+  Int_t   fZnpBinning;                    // see above
+  Float_t fZnpBinningMin;                 // see above
+  Float_t fZnpBinningMax;                 // see above
   
   /** CALO flags */
-  Bool_t fProcessPhos; 
-  Bool_t fProcessEmcal;
+  Bool_t fProcessPhos;                    // see above
+  Bool_t fProcessEmcal;                   // see above
   
   /** CALO variables */
-  Float_t fPhosTotalEt;
-  Float_t fEmcalTotalEt;
+  Float_t fPhosTotalEt;                   // see above
+  Float_t fEmcalTotalEt;                  // see above
   
   /** Binnning CALO */
-  Int_t   fCaloBinning;
-  Float_t fCaloBinningMin;
-  Float_t fCaloBinningMax;
+  Int_t   fCaloBinning;                   // see above
+  Float_t fCaloBinningMin;                // see above
+  Float_t fCaloBinningMax;                // see above
 
   /** Binnning SPD */
-  Int_t   fSpdBinning;
-  Float_t fSpdBinningMin;
-  Float_t fSpdBinningMax;
+  Int_t   fSpdBinning;                    // see above
+  Float_t fSpdBinningMin;                 // see above
+  Float_t fSpdBinningMax;                 // see above
   
   ClassDef(AliHLTMultiplicityCorrelations, 2);
 };
