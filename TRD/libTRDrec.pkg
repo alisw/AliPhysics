@@ -5,9 +5,6 @@ SRCS= AliTRDcluster.cxx \
       AliTRDtransform.cxx \
       AliTRDtrack.cxx \
       AliTRDtracklet.cxx \
-      AliTRDtracker.cxx \
-      AliTRDseed.cxx \
-      AliTRDpropagationLayer.cxx \
       AliTRDpidUtil.cxx \
       AliTRDpidESD.cxx \
       AliTRDReconstructor.cxx \
