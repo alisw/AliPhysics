@@ -763,7 +763,7 @@ UInt_t AliTRDtrapConfig::Peek(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const
     }
   }
 
-  return -1;
+  return 0;
 }
 
 
