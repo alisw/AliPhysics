@@ -778,7 +778,7 @@ AliTrackPointArray * AliTPCkalmanFit::MakePointArrayLinear(Double_t alpha, Doubl
   Int_t npoints=0;
   for (Int_t i=0;i<6;i++) cov[i]=0.001;
   for (Int_t i=0;i<500;i++){    
-    AliTrackPoint point(0, 0, 0, cov, -1,0,0);
+    AliTrackPoint point(0, 0, 0, cov, 0,0,0);
     array.AddPoint(npoints, &point);
     npoints++;
   }
