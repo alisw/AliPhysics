@@ -126,10 +126,10 @@ Bool_t AliCFV0TopoCuts::IsSelected(TObject *obj) {
 
     Float_t tDca[2];
     if (negDaughter) ((AliESDtrack*)negDaughter)->GetImpactParameters(tDca[0],tDca[1]);
-    else { tDca[0]=1.e99;  tDca[1]=1.e99;}
+    else { tDca[0]=1.e+09;  tDca[1]=1.e+09;}
     negDca = TMath::Sqrt(tDca[0]*tDca[0]+tDca[1]*tDca[1]);
     if (posDaughter) ((AliESDtrack*)posDaughter)->GetImpactParameters(tDca[0],tDca[1]);
-    else { tDca[0]=1.e99;  tDca[1]=1.e99;}
+    else { tDca[0]=1.e+09;  tDca[1]=1.e+09;}
     posDca = TMath::Sqrt(tDca[0]*tDca[0]+tDca[1]*tDca[1]);
   }
   else if (aodV0) {
