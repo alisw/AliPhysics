@@ -66,31 +66,66 @@ AliAnalysisTaskCentrality::AliAnalysisTaskCentrality():
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
   fOutput(0x0),
-  hEzdc(0x0),
-  hEzem(0x0),
-  hNtracks(0x0),
-  hNtracklets(0x0),
-  hNclusters0(0x0),
-  hmultV0(0x0),
-  hmultFMD(0x0),
-  hEzemvsEzdc(0x0),
-  hNtracksvsEzdc(0x0),
-  hNtrackletsvsEzdc(0x0),
-  hNclusters0vsEzdc(0x0),
-  hmultV0vsEzdc(0x0),
-  hmultFMDvsEzdc(0x0),
-  hNtracksvsEzem(0x0),
-  hNtrackletsvsEzem(0x0),
-  hNclusters0vsEzem(0x0),
-  hmultV0vsEzem(0x0),
-  hmultFMDvsEzem(0x0),
-  hNtracksvsmultV0(0x0),
-  hNtrackletsvsmultV0(0x0),
-  hNclusters0vsmultV0(0x0),
-  hNtracksvsmultFMD(0x0),
-  hNtrackletsvsmultFMD(0x0),
-  hNclusters0vsmultFMD(0x0),
-  hmultV0vsmultFMD(0x0)
+  fhEzdc(0x0),
+  fhEzem(0x0),
+  fhNtracks(0x0),
+  fhNtracklets(0x0),
+  fhNclusters0(0x0),
+  fhmultV0(0x0),
+  fhmultFMD(0x0),
+  fhEzemvsEzdc(0x0),
+  fhNtracksvsEzdc(0x0),
+  fhNtrackletsvsEzdc(0x0),
+  fhNclusters0vsEzdc(0x0),
+  fhmultV0vsEzdc(0x0),
+  fhmultFMDvsEzdc(0x0),
+  fhNtracksvsEzem(0x0),
+  fhNtrackletsvsEzem(0x0),
+  fhNclusters0vsEzem(0x0),
+  fhmultV0vsEzem(0x0),
+  fhmultFMDvsEzem(0x0),
+  fhNtracksvsmultV0(0x0),
+  fhNtrackletsvsmultV0(0x0),
+  fhNclusters0vsmultV0(0x0),
+  fhNtracksvsmultFMD(0x0),
+  fhNtrackletsvsmultFMD(0x0),
+  fhNclusters0vsmultFMD(0x0),
+  fhmultV0vsmultFMD(0x0),
+  fNev(0),	
+  fBeamEnergy(0),	
+  fNmyTracksgen(0),
+  fxVertex(0),	
+  fyVertex(0),	
+  fzVertex(0),	
+  fVertexer3d(0),	
+  fbMC(0),	
+  fNpartTargMC(0),
+  fNpartProjMC(0),
+  fNNColl(0),     
+  fNNwColl(0),    
+  fNwNColl(0),    
+  fNwNwColl(0),   
+  fNTracklets(0),	
+  fNSingleClusters(0),
+  fbZDC(0),
+  fNpartZDC(0),
+  fbZDCA(0),
+  fNpartZDCA(0),
+  fbZDCC(0),
+  fNpartZDCC(0),
+  fESDFlag(0),
+  fZNCEnergy(0),
+  fZPCEnergy(0),
+  fZNAEnergy(0),
+  fZPAEnergy(0),
+  fZEM1Energy(0),
+  fZEM2Energy(0),
+  fNTracks(0),
+  fNPmdTracks(0),
+  fMultV0A(0),
+  fMultV0C(0),
+  fMultFMDA(0),
+  fMultFMDC(0)
 {   
    // Default constructor
 }   
@@ -102,31 +137,66 @@ AliAnalysisTaskCentrality::AliAnalysisTaskCentrality(const char *name):
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
   fOutput(0x0),
-  hEzdc(0x0),
-  hEzem(0x0),
-  hNtracks(0x0),
-  hNtracklets(0x0),
-  hNclusters0(0x0),
-  hmultV0(0x0),
-  hmultFMD(0x0),
-  hEzemvsEzdc(0x0),
-  hNtracksvsEzdc(0x0),
-  hNtrackletsvsEzdc(0x0),
-  hNclusters0vsEzdc(0x0),
-  hmultV0vsEzdc(0x0),
-  hmultFMDvsEzdc(0x0),
-  hNtracksvsEzem(0x0),
-  hNtrackletsvsEzem(0x0),
-  hNclusters0vsEzem(0x0),
-  hmultV0vsEzem(0x0),
-  hmultFMDvsEzem(0x0),
-  hNtracksvsmultV0(0x0),
-  hNtrackletsvsmultV0(0x0),
-  hNclusters0vsmultV0(0x0),
-  hNtracksvsmultFMD(0x0),
-  hNtrackletsvsmultFMD(0x0),
-  hNclusters0vsmultFMD(0x0),
-  hmultV0vsmultFMD(0x0)
+  fhEzdc(0x0),
+  fhEzem(0x0),
+  fhNtracks(0x0),
+  fhNtracklets(0x0),
+  fhNclusters0(0x0),
+  fhmultV0(0x0),
+  fhmultFMD(0x0),
+  fhEzemvsEzdc(0x0),
+  fhNtracksvsEzdc(0x0),
+  fhNtrackletsvsEzdc(0x0),
+  fhNclusters0vsEzdc(0x0),
+  fhmultV0vsEzdc(0x0),
+  fhmultFMDvsEzdc(0x0),
+  fhNtracksvsEzem(0x0),
+  fhNtrackletsvsEzem(0x0),
+  fhNclusters0vsEzem(0x0),
+  fhmultV0vsEzem(0x0),
+  fhmultFMDvsEzem(0x0),
+  fhNtracksvsmultV0(0x0),
+  fhNtrackletsvsmultV0(0x0),
+  fhNclusters0vsmultV0(0x0),
+  fhNtracksvsmultFMD(0x0),
+  fhNtrackletsvsmultFMD(0x0),
+  fhNclusters0vsmultFMD(0x0),
+  fhmultV0vsmultFMD(0x0),
+  fNev(0),	
+  fBeamEnergy(0),	
+  fNmyTracksgen(0),
+  fxVertex(0),	
+  fyVertex(0),	
+  fzVertex(0),	
+  fVertexer3d(0),	
+  fbMC(0),	
+  fNpartTargMC(0),
+  fNpartProjMC(0),
+  fNNColl(0),     
+  fNNwColl(0),    
+  fNwNColl(0),    
+  fNwNwColl(0),   
+  fNTracklets(0),	
+  fNSingleClusters(0),
+  fbZDC(0),
+  fNpartZDC(0),
+  fbZDCA(0),
+  fNpartZDCA(0),
+  fbZDCC(0),
+  fNpartZDCC(0),
+  fESDFlag(0),
+  fZNCEnergy(0),
+  fZPCEnergy(0),
+  fZNAEnergy(0),
+  fZPAEnergy(0),
+  fZEM1Energy(0),
+  fZEM2Energy(0),
+  fNTracks(0),
+  fNPmdTracks(0),
+  fMultV0A(0),
+  fMultV0C(0),
+  fMultFMDA(0),
+  fMultFMDC(0)
 {
   // Default constructor
   
@@ -154,31 +224,66 @@ AliAnalysisTaskCentrality::AliAnalysisTaskCentrality(const AliAnalysisTaskCentra
   fAnalysisInput(ana.fDebug),
   fIsMCInput(ana.fIsMCInput),
   fOutput(ana.fOutput),
-  hEzdc(ana.hEzdc),
-  hEzem(ana.hEzem),
-  hNtracks(ana.hNtracks),
-  hNtracklets(ana.hNtracklets),
-  hNclusters0(ana.hNclusters0),
-  hmultV0(ana.hmultV0),
-  hmultFMD(ana.hmultFMD),
-  hEzemvsEzdc(ana.hEzemvsEzdc),
-  hNtracksvsEzdc(ana.hNtracksvsEzdc),
-  hNtrackletsvsEzdc(ana.hNtrackletsvsEzdc),
-  hNclusters0vsEzdc(ana.hNclusters0vsEzdc),
-  hmultV0vsEzdc(ana.hmultV0vsEzdc),
-  hmultFMDvsEzdc(ana.hmultFMDvsEzdc),
-  hNtracksvsEzem(ana.hNtracksvsEzem),
-  hNtrackletsvsEzem(ana.hNtrackletsvsEzem),
-  hNclusters0vsEzem(ana.hNclusters0vsEzem),
-  hmultV0vsEzem(ana.hmultV0vsEzem),
-  hmultFMDvsEzem(ana.hmultFMDvsEzem),
-  hNtracksvsmultV0(ana.hNtracksvsmultV0),
-  hNtrackletsvsmultV0(ana.hNtrackletsvsmultV0),
-  hNclusters0vsmultV0(ana.hNclusters0vsmultV0),
-  hNtracksvsmultFMD(ana.hNtracksvsmultFMD),
-  hNtrackletsvsmultFMD(ana.hNtrackletsvsmultFMD),
-  hNclusters0vsmultFMD(ana.hNclusters0vsmultFMD),
-  hmultV0vsmultFMD(ana.hmultV0vsmultFMD)
+  fhEzdc(ana.fhEzdc),
+  fhEzem(ana.fhEzem),
+  fhNtracks(ana.fhNtracks),
+  fhNtracklets(ana.fhNtracklets),
+  fhNclusters0(ana.fhNclusters0),
+  fhmultV0(ana.fhmultV0),
+  fhmultFMD(ana.fhmultFMD),
+  fhEzemvsEzdc(ana.fhEzemvsEzdc),
+  fhNtracksvsEzdc(ana.fhNtracksvsEzdc),
+  fhNtrackletsvsEzdc(ana.fhNtrackletsvsEzdc),
+  fhNclusters0vsEzdc(ana.fhNclusters0vsEzdc),
+  fhmultV0vsEzdc(ana.fhmultV0vsEzdc),
+  fhmultFMDvsEzdc(ana.fhmultFMDvsEzdc),
+  fhNtracksvsEzem(ana.fhNtracksvsEzem),
+  fhNtrackletsvsEzem(ana.fhNtrackletsvsEzem),
+  fhNclusters0vsEzem(ana.fhNclusters0vsEzem),
+  fhmultV0vsEzem(ana.fhmultV0vsEzem),
+  fhmultFMDvsEzem(ana.fhmultFMDvsEzem),
+  fhNtracksvsmultV0(ana.fhNtracksvsmultV0),
+  fhNtrackletsvsmultV0(ana.fhNtrackletsvsmultV0),
+  fhNclusters0vsmultV0(ana.fhNclusters0vsmultV0),
+  fhNtracksvsmultFMD(ana.fhNtracksvsmultFMD),
+  fhNtrackletsvsmultFMD(ana.fhNtrackletsvsmultFMD),
+  fhNclusters0vsmultFMD(ana.fhNclusters0vsmultFMD),
+  fhmultV0vsmultFMD(ana.fhmultV0vsmultFMD),
+  fNev(ana.fNev),	
+  fBeamEnergy(ana.fBeamEnergy),	
+  fNmyTracksgen(ana.fNmyTracksgen),
+  fxVertex(ana.fxVertex),	
+  fyVertex(ana.fyVertex),	
+  fzVertex(ana.fzVertex),	
+  fVertexer3d(ana.fVertexer3d),	
+  fbMC(ana.fbMC),	
+  fNpartTargMC(ana.fNpartTargMC),
+  fNpartProjMC(ana.fNpartProjMC),
+  fNNColl(ana.fNNColl),     
+  fNNwColl(ana.fNNwColl),    
+  fNwNColl(ana.fNwNColl),    
+  fNwNwColl(ana.fNwNwColl),   
+  fNTracklets(ana.fNTracklets),	
+  fNSingleClusters(ana.fNSingleClusters),
+  fbZDC(ana.fbZDC),
+  fNpartZDC(ana.fNpartZDC),
+  fbZDCA(ana.fbZDCA),
+  fNpartZDCA(ana.fNpartZDCA),
+  fbZDCC(ana.fbZDCC),
+  fNpartZDCC(ana.fNpartZDCC),
+  fESDFlag(ana.fESDFlag),
+  fZNCEnergy(ana.fZNCEnergy),
+  fZPCEnergy(ana.fZPCEnergy),
+  fZNAEnergy(ana.fZNAEnergy),
+  fZPAEnergy(ana.fZPAEnergy),
+  fZEM1Energy(ana.fZEM1Energy),
+  fZEM2Energy(ana.fZEM2Energy),
+  fNTracks(ana.fNTracks),
+  fNPmdTracks(ana.fNPmdTracks),
+  fMultV0A(ana.fMultV0A),
+  fMultV0C(ana.fMultV0C),
+  fMultFMDA(ana.fMultFMDA),
+  fMultFMDC(ana.fMultFMDC)
 {
   //
   // Copy Constructor	
@@ -206,108 +311,107 @@ void AliAnalysisTaskCentrality::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  hEzdc         = new TH1F("hEzdc","hEzdc",500,0,150);
-  hEzem         = new TH1F("hEzem","hEzem",500,0,5);
-  hNtracks      = new TH1F("hNtracks","hNtracks",500,0,17000);
-  hNtracklets   = new TH1F("hNtracklets","hNtracklets",500,0,10000);
-  hNclusters0   = new TH1F("hNclusters0","hNclusters0",500,0,15000);
-  hmultV0       = new TH1F("hmultV0","hmultV0",500,0,30000);
-  hmultFMD      = new TH1F("hmultFMD","hmultFMD",500,0,24000);
+  fhEzdc         = new TH1F("hEzdc","hEzdc",500,0,150);
+  fhEzem         = new TH1F("hEzem","hEzem",500,0,5);
+  fhNtracks      = new TH1F("hNtracks","hNtracks",500,0,17000);
+  fhNtracklets   = new TH1F("hNtracklets","hNtracklets",500,0,10000);
+  fhNclusters0   = new TH1F("hNclusters0","hNclusters0",500,0,15000);
+  fhmultV0       = new TH1F("hmultV0","hmultV0",500,0,30000);
+  fhmultFMD      = new TH1F("hmultFMD","hmultFMD",500,0,24000);
 
-  hEzemvsEzdc         = new TProfile("hEzemvsEzdc","hEzemvsEzdc",500,0,5,"");
-  hNtracksvsEzdc      = new TProfile("hNtracksvsEzdc","hNtracksvsEzdc",500,0,17000,"");
-  hNtrackletsvsEzdc   = new TProfile("hNtrackletsvsEzdc","hNtrackletsvsEzdc",500,0,10000,"");
-  hNclusters0vsEzdc   = new TProfile("hNclusters0vsEzdc","hNclusters0vsEzdc",500,0,15000,"");
-  hmultV0vsEzdc       = new TProfile("hmultV0vsEzdc","hmultV0vsEzdc",500,0,30000,"");
-  hmultFMDvsEzdc      = new TProfile("hmultFMDvsEzdc","hmultFMDvsEzdc",500,0,24000,"");
-  hNtracksvsEzem      = new TProfile("hNtracksvsEzem","hNtracksvsEzem",500,0,17000,"");
-  hNtrackletsvsEzem   = new TProfile("hNtrackletsvsEzem","hNtrackletsvsEzem",500,0,10000,"");
-  hNclusters0vsEzem   = new TProfile("hNclusters0vsEzem","hNclusters0vsEzem",500,0,15000,"");
-  hmultV0vsEzem       = new TProfile("hmultV0vsEzem","hmultV0vsEzem",500,0,30000,"");
-  hmultFMDvsEzem      = new TProfile("hmultFMDvsEzem","hmultFMDvsEzem",500,0,24000,"");
-  hNtracksvsmultV0    = new TProfile("hNtracksvsmultV0","hNtracksvsmultV0",500,0,17000,"");      
-  hNtrackletsvsmultV0 = new TProfile("hNtrackletsvsmultV0","hNtrackletsvsmultV0",500,0,10000,"");    
-  hNclusters0vsmultV0 = new TProfile("hNclusters0vsmultV0","hNclusters0vsmultV0",500,0,15000,"");
-  hNtracksvsmultFMD   = new TProfile("hNtracksvsmultFMD","hNtracksvsmultFMD",500,0,17000,"");
-  hNtrackletsvsmultFMD= new TProfile("hNtrackletsvsmultFMD","hNtrackletsvsmultFMD",500,0,10000,"");
-  hNclusters0vsmultFMD= new TProfile("hNclusters0vsmultFMD","hNclusters0vsmultFMD",500,0,15000,"");		   
-  hmultV0vsmultFMD    = new TProfile("hmultV0vsmultFMD","hmultV0vsmultFMD",500,0,30000,"");
+  fhEzemvsEzdc         = new TProfile("hEzemvsEzdc","hEzemvsEzdc",500,0,5,"");
+  fhNtracksvsEzdc      = new TProfile("hNtracksvsEzdc","hNtracksvsEzdc",500,0,17000,"");
+  fhNtrackletsvsEzdc   = new TProfile("hNtrackletsvsEzdc","hNtrackletsvsEzdc",500,0,10000,"");
+  fhNclusters0vsEzdc   = new TProfile("hNclusters0vsEzdc","hNclusters0vsEzdc",500,0,15000,"");
+  fhmultV0vsEzdc       = new TProfile("hmultV0vsEzdc","hmultV0vsEzdc",500,0,30000,"");
+  fhmultFMDvsEzdc      = new TProfile("hmultFMDvsEzdc","hmultFMDvsEzdc",500,0,24000,"");
+  fhNtracksvsEzem      = new TProfile("hNtracksvsEzem","hNtracksvsEzem",500,0,17000,"");
+  fhNtrackletsvsEzem   = new TProfile("hNtrackletsvsEzem","hNtrackletsvsEzem",500,0,10000,"");
+  fhNclusters0vsEzem   = new TProfile("hNclusters0vsEzem","hNclusters0vsEzem",500,0,15000,"");
+  fhmultV0vsEzem       = new TProfile("hmultV0vsEzem","hmultV0vsEzem",500,0,30000,"");
+  fhmultFMDvsEzem      = new TProfile("hmultFMDvsEzem","hmultFMDvsEzem",500,0,24000,"");
+  fhNtracksvsmultV0    = new TProfile("hNtracksvsmultV0","hNtracksvsmultV0",500,0,17000,"");      
+  fhNtrackletsvsmultV0 = new TProfile("hNtrackletsvsmultV0","hNtrackletsvsmultV0",500,0,10000,"");    
+  fhNclusters0vsmultV0 = new TProfile("hNclusters0vsmultV0","hNclusters0vsmultV0",500,0,15000,"");
+  fhNtracksvsmultFMD   = new TProfile("hNtracksvsmultFMD","hNtracksvsmultFMD",500,0,17000,"");
+  fhNtrackletsvsmultFMD= new TProfile("hNtrackletsvsmultFMD","hNtrackletsvsmultFMD",500,0,10000,"");
+  fhNclusters0vsmultFMD= new TProfile("hNclusters0vsmultFMD","hNclusters0vsmultFMD",500,0,15000,"");		   
+  fhmultV0vsmultFMD    = new TProfile("hmultV0vsmultFMD","hmultV0vsmultFMD",500,0,30000,"");
 
-  hEzdc         ->GetXaxis()->SetTitle("E_{ZDC}[TeV]");
-  hEzem         ->GetXaxis()->SetTitle("E_{ZEM}[TeV]");
-  hNtracks      ->GetXaxis()->SetTitle("N_{tracks}");
-  hNtracklets   ->GetXaxis()->SetTitle("N_{tracklets}");
-  hNclusters0   ->GetXaxis()->SetTitle("N_{clusters0}");
-  hmultV0       ->GetXaxis()->SetTitle("V0 mult");
-  hmultFMD      ->GetXaxis()->SetTitle("FMD mult");
+  fhEzdc         ->GetXaxis()->SetTitle("E_{ZDC}[TeV]");
+  fhEzem         ->GetXaxis()->SetTitle("E_{ZEM}[TeV]");
+  fhNtracks      ->GetXaxis()->SetTitle("N_{tracks}");
+  fhNtracklets   ->GetXaxis()->SetTitle("N_{tracklets}");
+  fhNclusters0   ->GetXaxis()->SetTitle("N_{clusters0}");
+  fhmultV0       ->GetXaxis()->SetTitle("V0 mult");
+  fhmultFMD      ->GetXaxis()->SetTitle("FMD mult");
   
-  hEzemvsEzdc         ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
-  hNtracksvsEzdc      ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
-  hNtrackletsvsEzdc   ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
-  hNclusters0vsEzdc   ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
-  hmultV0vsEzdc       ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
-  hmultFMDvsEzdc      ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
-  hNtracksvsEzem      ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
-  hNtrackletsvsEzem   ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
-  hNclusters0vsEzem   ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
-  hmultV0vsEzem       ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
-  hmultFMDvsEzem      ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
-  hNtracksvsmultV0    ->GetYaxis()->SetTitle("V0 mult");    
-  hNtrackletsvsmultV0 ->GetYaxis()->SetTitle("V0 mult");  
-  hNclusters0vsmultV0 ->GetYaxis()->SetTitle("V0 mult");
-  hNtracksvsmultFMD   ->GetYaxis()->SetTitle("FMD mult");
-  hNtrackletsvsmultFMD->GetYaxis()->SetTitle("FMD mult");
-  hNclusters0vsmultFMD->GetYaxis()->SetTitle("FMD mult");
-  hmultV0vsmultFMD    ->GetYaxis()->SetTitle("FMD mult");
+  fhEzemvsEzdc         ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
+  fhNtracksvsEzdc      ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
+  fhNtrackletsvsEzdc   ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
+  fhNclusters0vsEzdc   ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
+  fhmultV0vsEzdc       ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
+  fhmultFMDvsEzdc      ->GetYaxis()->SetTitle("E_{ZDC}[TeV]");
+  fhNtracksvsEzem      ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
+  fhNtrackletsvsEzem   ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
+  fhNclusters0vsEzem   ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
+  fhmultV0vsEzem       ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
+  fhmultFMDvsEzem      ->GetYaxis()->SetTitle("E_{ZEM}[TeV]");
+  fhNtracksvsmultV0    ->GetYaxis()->SetTitle("V0 mult");    
+  fhNtrackletsvsmultV0 ->GetYaxis()->SetTitle("V0 mult");  
+  fhNclusters0vsmultV0 ->GetYaxis()->SetTitle("V0 mult");
+  fhNtracksvsmultFMD   ->GetYaxis()->SetTitle("FMD mult");
+  fhNtrackletsvsmultFMD->GetYaxis()->SetTitle("FMD mult");
+  fhNclusters0vsmultFMD->GetYaxis()->SetTitle("FMD mult");
+  fhmultV0vsmultFMD    ->GetYaxis()->SetTitle("FMD mult");
   
-  hEzemvsEzdc         ->GetXaxis()->SetTitle("E_{ZEM}[TeV]");
-  hNtracksvsEzdc      ->GetXaxis()->SetTitle("N_{tracks}");
-  hNtrackletsvsEzdc   ->GetXaxis()->SetTitle("N_{tracklets}");
-  hNclusters0vsEzdc   ->GetXaxis()->SetTitle("N_{clusters0}");
-  hmultV0vsEzdc       ->GetXaxis()->SetTitle("V0 mult");
-  hmultFMDvsEzdc      ->GetXaxis()->SetTitle("FMD mult");
-  hNtracksvsEzem      ->GetXaxis()->SetTitle("N_{tracks}");
-  hNtrackletsvsEzem   ->GetXaxis()->SetTitle("N_{tracklets}");
-  hNclusters0vsEzem   ->GetXaxis()->SetTitle("N_{clusters0}");
-  hmultV0vsEzem       ->GetXaxis()->SetTitle("V0 mult");
-  hmultFMDvsEzem      ->GetXaxis()->SetTitle("FMD mult");
-  hNtracksvsmultV0    ->GetXaxis()->SetTitle("N_{tracks}");    
-  hNtrackletsvsmultV0 ->GetXaxis()->SetTitle("N_{tracklets}");  
-  hNclusters0vsmultV0 ->GetXaxis()->SetTitle("N_{clusters0}");
-  hNtracksvsmultFMD   ->GetXaxis()->SetTitle("N_{tracks}");
-  hNtrackletsvsmultFMD->GetXaxis()->SetTitle("N_{tracklets}");
-  hNclusters0vsmultFMD->GetXaxis()->SetTitle("N_{clusters}");
-  hmultV0vsmultFMD    ->GetXaxis()->SetTitle("V0 mult");
+  fhEzemvsEzdc         ->GetXaxis()->SetTitle("E_{ZEM}[TeV]");
+  fhNtracksvsEzdc      ->GetXaxis()->SetTitle("N_{tracks}");
+  fhNtrackletsvsEzdc   ->GetXaxis()->SetTitle("N_{tracklets}");
+  fhNclusters0vsEzdc   ->GetXaxis()->SetTitle("N_{clusters0}");
+  fhmultV0vsEzdc       ->GetXaxis()->SetTitle("V0 mult");
+  fhmultFMDvsEzdc      ->GetXaxis()->SetTitle("FMD mult");
+  fhNtracksvsEzem      ->GetXaxis()->SetTitle("N_{tracks}");
+  fhNtrackletsvsEzem   ->GetXaxis()->SetTitle("N_{tracklets}");
+  fhNclusters0vsEzem   ->GetXaxis()->SetTitle("N_{clusters0}");
+  fhmultV0vsEzem       ->GetXaxis()->SetTitle("V0 mult");
+  fhmultFMDvsEzem      ->GetXaxis()->SetTitle("FMD mult");
+  fhNtracksvsmultV0    ->GetXaxis()->SetTitle("N_{tracks}");    
+  fhNtrackletsvsmultV0 ->GetXaxis()->SetTitle("N_{tracklets}");  
+  fhNclusters0vsmultV0 ->GetXaxis()->SetTitle("N_{clusters0}");
+  fhNtracksvsmultFMD   ->GetXaxis()->SetTitle("N_{tracks}");
+  fhNtrackletsvsmultFMD->GetXaxis()->SetTitle("N_{tracklets}");
+  fhNclusters0vsmultFMD->GetXaxis()->SetTitle("N_{clusters}");
+  fhmultV0vsmultFMD    ->GetXaxis()->SetTitle("V0 mult");
   
-  fOutput->Add(hEzdc);
-  fOutput->Add(hEzem);
-  fOutput->Add(hNtracks);
-  fOutput->Add(hNtracklets);
-  fOutput->Add(hNclusters0);
-  fOutput->Add(hmultV0);
-  fOutput->Add(hmultFMD);
+  fOutput->Add(fhEzdc);
+  fOutput->Add(fhEzem);
+  fOutput->Add(fhNtracks);
+  fOutput->Add(fhNtracklets);
+  fOutput->Add(fhNclusters0);
+  fOutput->Add(fhmultV0);
+  fOutput->Add(fhmultFMD);
 
-  fOutput->Add(hEzemvsEzdc);
-  fOutput->Add(hNtracksvsEzdc);
-  fOutput->Add(hNtrackletsvsEzdc);
-  fOutput->Add(hNclusters0vsEzdc);
-  fOutput->Add(hmultV0vsEzdc);
-  fOutput->Add(hmultFMDvsEzdc);
-  fOutput->Add(hNtracksvsEzem);
-  fOutput->Add(hNtrackletsvsEzem);
-  fOutput->Add(hNclusters0vsEzem);
-  fOutput->Add(hmultV0vsEzem);
-  fOutput->Add(hmultFMDvsEzem);
-  fOutput->Add(hNtracksvsmultV0);
-  fOutput->Add(hNtrackletsvsmultV0);
-  fOutput->Add(hNclusters0vsmultV0);
-  fOutput->Add(hNtracksvsmultFMD);
-  fOutput->Add(hNtrackletsvsmultFMD);
-  fOutput->Add(hNclusters0vsmultFMD);
-  fOutput->Add(hmultV0vsmultFMD);
+  fOutput->Add(fhEzemvsEzdc);
+  fOutput->Add(fhNtracksvsEzdc);
+  fOutput->Add(fhNtrackletsvsEzdc);
+  fOutput->Add(fhNclusters0vsEzdc);
+  fOutput->Add(fhmultV0vsEzdc);
+  fOutput->Add(fhmultFMDvsEzdc);
+  fOutput->Add(fhNtracksvsEzem);
+  fOutput->Add(fhNtrackletsvsEzem);
+  fOutput->Add(fhNclusters0vsEzem);
+  fOutput->Add(fhmultV0vsEzem);
+  fOutput->Add(fhmultFMDvsEzem);
+  fOutput->Add(fhNtracksvsmultV0);
+  fOutput->Add(fhNtrackletsvsmultV0);
+  fOutput->Add(fhNclusters0vsmultV0);
+  fOutput->Add(fhNtracksvsmultFMD);
+  fOutput->Add(fhNtrackletsvsmultFMD);
+  fOutput->Add(fhNclusters0vsmultFMD);
+  fOutput->Add(fhmultV0vsmultFMD);
   
   PostData(1, fOutput);
-
 }
 
 //________________________________________________________________________
@@ -338,7 +442,7 @@ void AliAnalysisTaskCentrality::UserExec(Option_t */*option*/)
           return;
         }
 
-	fNmyTracks_gen = 0;
+	fNmyTracksgen = 0;
 	AliStack *stack = 0x0; // needed for MC studies
 	stack = MCEvent()->Stack();
 	for (Int_t iTrack = 0; iTrack < MCEvent()->GetNumberOfTracks(); iTrack++) {
@@ -353,7 +457,7 @@ void AliAnalysisTaskCentrality::UserExec(Option_t */*option*/)
 // 	  if(mcP->Pt()<0.2)continue;
 // 	  if(mcP->Pt()>200)continue;
 
-	  fNmyTracks_gen ++;
+	  fNmyTracksgen ++;
 	} 
 
         AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
@@ -420,12 +524,12 @@ void AliAnalysisTaskCentrality::UserExec(Option_t */*option*/)
 	  for(UShort_t sec =0; sec < nsec;  sec++)  {
   	    for(UShort_t strip = 0; strip < nstr; strip++) {
 
-	      Float_t FMDmult = fmd->Multiplicity(det,ring,sec,strip);
-	      if(FMDmult == 0 || FMDmult == AliESDFMD::kInvalidMult) continue;
+	      Float_t fmdmult = fmd->Multiplicity(det,ring,sec,strip);
+	      if(fmdmult == 0 || fmdmult == AliESDFMD::kInvalidMult) continue;
 
 	      Float_t nParticles=0;
 		
-		if(FMDmult > fFMDLowCut) {
+		if(fmdmult > fFMDLowCut) {
 		  nParticles = 1.;
 		}
 	      
@@ -436,14 +540,11 @@ void AliAnalysisTaskCentrality::UserExec(Option_t */*option*/)
 	  }
 	}
       }
-	fMultFMDA = totalMultA;
-	fMultFMDC = totalMultC;
-	
+      fMultFMDA = totalMultA;
+      fMultFMDC = totalMultC;
 
       AliESDZDC *esdZDC = esd->GetESDZDC();
-      
       fESDFlag =  esdZDC->GetESDQuality();   
-      
       fZNCEnergy = (Float_t) (esdZDC->GetZDCN1Energy());
       fZPCEnergy = (Float_t) (esdZDC->GetZDCP1Energy());
       fZNAEnergy = (Float_t) (esdZDC->GetZDCN2Energy());
@@ -478,34 +579,31 @@ void AliAnalysisTaskCentrality::UserExec(Option_t */*option*/)
       }
 
       // filling histos
-
-      hEzdc         ->Fill((fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
-      hEzem         ->Fill(fZEM1Energy+fZEM2Energy);
-      hNtracks      ->Fill(fNTracks);
-      hNtracklets   ->Fill(fNTracklets);
-      hNclusters0   ->Fill(fNClusters[0]);
-      hmultV0       ->Fill(fMultV0A+fMultV0C);
-      hmultFMD      ->Fill(fMultFMDA+fMultFMDC);
-      
-      hEzemvsEzdc         ->Fill(fZEM1Energy+fZEM2Energy, (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
-      hNtracksvsEzdc      ->Fill(fNTracks, (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
-      hNtrackletsvsEzdc   ->Fill(fNTracklets,  (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
-      hNclusters0vsEzdc   ->Fill(fNClusters[0],  (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
-      hmultV0vsEzdc       ->Fill(fMultV0A+fMultV0C,  (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
-      hmultFMDvsEzdc      ->Fill(fMultFMDA+fMultFMDC,  (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
-      hNtracksvsEzem      ->Fill(fNTracks, fZEM1Energy+fZEM2Energy);
-      hNtrackletsvsEzem   ->Fill(fNTracklets, fZEM1Energy+fZEM2Energy);
-      hNclusters0vsEzem   ->Fill(fNClusters[0], fZEM1Energy+fZEM2Energy);
-      hmultV0vsEzem       ->Fill(fMultV0A+fMultV0C, fZEM1Energy+fZEM2Energy);
-      hmultFMDvsEzem      ->Fill(fMultFMDA+fMultFMDC, fZEM1Energy+fZEM2Energy);
-      hNtracksvsmultV0    ->Fill(fNTracks,fMultV0A+fMultV0C);    
-      hNtrackletsvsmultV0 ->Fill(fNTracklets,fMultV0A+fMultV0C);    
-      hNclusters0vsmultV0 ->Fill(fNClusters[0],fMultV0A+fMultV0C);    
-      hNtracksvsmultFMD   ->Fill(fNTracks,fMultFMDA+fMultFMDC);
-      hNtrackletsvsmultFMD->Fill(fNTracklets,fMultFMDA+fMultFMDC);
-      hNclusters0vsmultFMD->Fill(fNClusters[0],fMultFMDA+fMultFMDC);
-      hmultV0vsmultFMD    ->Fill(fMultV0A+fMultV0C,fMultFMDA+fMultFMDC);
-      
+      fhEzdc         ->Fill((fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
+      fhEzem         ->Fill(fZEM1Energy+fZEM2Energy);
+      fhNtracks      ->Fill(fNTracks);
+      fhNtracklets   ->Fill(fNTracklets);
+      fhNclusters0   ->Fill(fNClusters[0]);
+      fhmultV0       ->Fill(fMultV0A+fMultV0C);
+      fhmultFMD      ->Fill(fMultFMDA+fMultFMDC);
+      fhEzemvsEzdc         ->Fill(fZEM1Energy+fZEM2Energy, (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
+      fhNtracksvsEzdc      ->Fill(fNTracks, (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
+      fhNtrackletsvsEzdc   ->Fill(fNTracklets,  (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
+      fhNclusters0vsEzdc   ->Fill(fNClusters[0],  (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
+      fhmultV0vsEzdc       ->Fill(fMultV0A+fMultV0C,  (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
+      fhmultFMDvsEzdc      ->Fill(fMultFMDA+fMultFMDC,  (fZNCEnergy+fZPCEnergy+fZNAEnergy+fZPAEnergy)/1000.);
+      fhNtracksvsEzem      ->Fill(fNTracks, fZEM1Energy+fZEM2Energy);
+      fhNtrackletsvsEzem   ->Fill(fNTracklets, fZEM1Energy+fZEM2Energy);
+      fhNclusters0vsEzem   ->Fill(fNClusters[0], fZEM1Energy+fZEM2Energy);
+      fhmultV0vsEzem       ->Fill(fMultV0A+fMultV0C, fZEM1Energy+fZEM2Energy);
+      fhmultFMDvsEzem      ->Fill(fMultFMDA+fMultFMDC, fZEM1Energy+fZEM2Energy);
+      fhNtracksvsmultV0    ->Fill(fNTracks,fMultV0A+fMultV0C);    
+      fhNtrackletsvsmultV0 ->Fill(fNTracklets,fMultV0A+fMultV0C);    
+      fhNclusters0vsmultV0 ->Fill(fNClusters[0],fMultV0A+fMultV0C);    
+      fhNtracksvsmultFMD   ->Fill(fNTracks,fMultFMDA+fMultFMDC);
+      fhNtrackletsvsmultFMD->Fill(fNTracklets,fMultFMDA+fMultFMDC);
+      fhNclusters0vsmultFMD->Fill(fNClusters[0],fMultFMDA+fMultFMDC);
+      fhmultV0vsmultFMD    ->Fill(fMultV0A+fMultV0C,fMultFMDA+fMultFMDC);
   }   
   else if(fAnalysisInput.CompareTo("AOD")==0){
     //AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
@@ -516,12 +614,8 @@ void AliAnalysisTaskCentrality::UserExec(Option_t */*option*/)
   PostData(1, fOutput);
 }
 
-
-
 //________________________________________________________________________
 void AliAnalysisTaskCentrality::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
 }
-
-
