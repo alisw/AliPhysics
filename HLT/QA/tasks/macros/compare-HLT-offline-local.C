@@ -10,9 +10,9 @@
  *
  * Usage:
  * <pre>
- *   aliroot -b -q -l compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","global","./",kTRUE,10)' 2>&1 | tee task.log
- *   aliroot -b -q -l compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","phos global pwg1",kTRUE,10)' 2>&1 | tee task.log
- *   aliroot -q compare-HLT-offline-local.C'("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root","global")' 2>&1 | tee log
+ *   aliroot -b -l -q compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","global","./",kTRUE,10)' 2>&1 | tee task.log
+ *   aliroot -b -l -q compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","phos global cb",kTRUE,100)' 2>&1 | tee task.log
+ *   aliroot -b -l -q compare-HLT-offline-local.C'("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root","global")' 2>&1 | tee log
  * </pre>
  * 
  * If alien:// is contained in the name of the file, then the macro connects to the grid to access the file.
@@ -62,7 +62,7 @@ void compare_HLT_offline_local(TString file,
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   
-  Bool_t bPHOS = kFALSE, bGLOBAL = kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE, bD0=kFALSE;
+  Bool_t bPHOS = kFALSE, bGLOBAL = kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE, bD0 = kFALSE, bCB = kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -93,11 +93,16 @@ void compare_HLT_offline_local(TString file,
 	bD0 = kTRUE;
 	continue;
       }
+      if(argument.CompareTo("cb", TString::kIgnoreCase)==0){
+	bCB = kTRUE;
+	continue;
+      } 
       if(argument.CompareTo("all",TString::kIgnoreCase)==0){
 	bPHOS   = kTRUE;
 	bEMCAL  = kTRUE;
 	bGLOBAL = kTRUE; 
-	bD0     = kTRUE;   
+	bD0     = kTRUE;  
+	bCB     = kTRUE; 
 	continue;
       }
       else break;
@@ -137,6 +142,12 @@ void compare_HLT_offline_local(TString file,
      TString strTask("AliAnalysisTaskD0Trigger.cxx+");
      gROOT->LoadMacro(taskFolder+strTask); 
      cout << "\n========= You are loading the following task --> "<< (taskFolder+strTask).Chop()  << endl;
+  }
+ 
+  if(bCB){
+    TString strTask("AliAnalysisTaskHLTCentralBarrel.cxx+");
+    gROOT->LoadMacro(taskFolder+strTask);
+    cout << "\n========= You are loading the following task --> "<< (taskFolder+strTask).Chop()  << endl;
   }
   
   if(bPWG1) gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/AddTaskPerformance.C");
@@ -232,6 +243,13 @@ void compare_HLT_offline_local(TString file,
     AliAnalysisDataContainer *coutputD0 =  mgr->CreateContainer("D0_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-D0-comparison.root");  
     mgr->ConnectInput(taskD0,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskD0,1,coutputD0);
+  }  
+  
+  if(bCB){
+     AliAnalysisTaskHLTCentralBarrel *taskCB = new AliAnalysisTaskHLTCentralBarrel("offhlt_comparison_CB");    
+     AliAnalysisDataContainer *coutputCB =  mgr->CreateContainer("esd_thnsparse", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-CentralBarrel-comparison.root");  
+     mgr->ConnectInput(taskCB,0,mgr->GetCommonInputContainer());
+     mgr->ConnectOutput(taskCB,1,coutputCB);
   }
   
   if (!mgr->InitAnalysis()) return;
@@ -248,7 +266,7 @@ void compare_HLT_offline_local(){
   cout << "    compare-HLT-offline-local.C'(file, taskOption, taskFolder, fUseHLTTrigger, nEvents)' 2>&1 | tee log" << endl;
   cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\")' 2>&1 | tee log" << endl;
   cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\",\"./\",kFALSE,nEvents)' 2>&1 | tee log" << endl;
-  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global phos pwg1 D0\", \"./\", kTRUE, nEvents)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global phos cb D0\", \"./\", kTRUE, nEvents)' 2>&1 | tee log" << endl;
   cout << "    compare-HLT-offline-local.C'(\"files.txt\",\"all\")' 2>&1 | tee log" << endl;
   cout << "    compare-HLT-offline-local.C'(\"alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root\",\"global\")' 2>&1 | tee log" << endl;
   cout << " " << endl;
