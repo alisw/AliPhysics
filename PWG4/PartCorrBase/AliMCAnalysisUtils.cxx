@@ -150,10 +150,11 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
   if(label >= 0 && label < stack->GetNtrack()){
     //MC particle of interest is the "mom" of the entity
     TParticle * mom = stack->Particle(label);
-    Int_t iMom = label;
-    Int_t mPdg = TMath::Abs(mom->GetPdgCode());
-    Int_t mStatus =  mom->GetStatusCode() ;
-    Int_t iParent =  mom->GetFirstMother() ;
+    Int_t iMom     = label;
+    Int_t mPdgSign = mom->GetPdgCode();
+    Int_t mPdg     = TMath::Abs(mPdgSign);
+    Int_t mStatus  = mom->GetStatusCode() ;
+    Int_t iParent  = mom->GetFirstMother() ;
     if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
     
     //GrandParent of the entity
@@ -181,11 +182,12 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
       //Check if the mother is photon or electron with status not stable
       while ((pPdg == 22 || pPdg == 11) && mStatus != 1) {
         //Mother
-        iMom = mom->GetFirstMother();
-        mom = stack->Particle(iMom);
-        mPdg = TMath::Abs(mom->GetPdgCode());
-        mStatus =  mom->GetStatusCode() ;
-        iParent =  mom->GetFirstMother() ;
+        iMom     = mom->GetFirstMother();
+        mom      = stack->Particle(iMom);
+        mPdgSign = mom->GetPdgCode();
+        mPdg     = TMath::Abs(mPdgSign);
+        mStatus  = mom->GetStatusCode() ;
+        iParent  = mom->GetFirstMother() ;
         if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
         
         //GrandParent
@@ -214,9 +216,10 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
       if(pPdg == 2112 ||  pPdg == 211  ||  pPdg == 321 ||
          pPdg == 2212 ||  pPdg == 130  ||  pPdg == 13 ) {
         SetTagBit(tag,kMCConversion);
-        iMom = mom->GetFirstMother();
-        mom  = stack->Particle(iMom);
-        mPdg = TMath::Abs(mom->GetPdgCode());
+        iMom     = mom->GetFirstMother();
+        mom      = stack->Particle(iMom);
+        mPdgSign = mom->GetPdgCode();
+        mPdg     = TMath::Abs(mPdgSign);
         
         if(fDebug > 2 ) {
           printf("AliMCAnalysisUtils::CheckOriginInStack() - Converted hadron: \n");
@@ -237,10 +240,14 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
     // conversion into electrons/photons checked  	  
     
     //first check for typical charged particles
-    if(mPdg == 13) SetTagBit(tag,kMCMuon);
-    else if(mPdg == 211) SetTagBit(tag,kMCPion);
-    else if(mPdg == 321) SetTagBit(tag,kMCKaon);
-    else if(mPdg == 2212) SetTagBit(tag,kMCProton);
+    if     (mPdg     ==    13) SetTagBit(tag,kMCMuon);
+    else if(mPdg     ==   211) SetTagBit(tag,kMCPion);
+    else if(mPdg     ==   321) SetTagBit(tag,kMCKaon);
+    else if(mPdgSign ==  2212) SetTagBit(tag,kMCProton);
+    else if(mPdgSign == -2212) SetTagBit(tag,kMCAntiProton);
+    else if(mPdgSign ==  2112) SetTagBit(tag,kMCNeutron);
+    else if(mPdgSign == -2112) SetTagBit(tag,kMCAntiNeutron);
+
     //check for pi0 and eta (shouldn't happen unless their decays were turned off)
     else if(mPdg == 111)  {
       SetTagBit(tag,kMCPi0Decay);
@@ -418,9 +425,10 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
   if(label >= 0 && label < nprimaries){
     //Mother
     AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
-    Int_t iMom = label;
-    Int_t mPdg = TMath::Abs(mom->GetPdgCode());
-    Int_t iParent =  mom->GetMother() ;
+    Int_t iMom     = label;
+    Int_t mPdgSign = mom->GetPdgCode();
+    Int_t mPdg     = TMath::Abs(mPdgSign);
+    Int_t iParent  = mom->GetMother() ;
     if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
     
     //GrandParent
@@ -445,10 +453,11 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
       //Check if the mother is photon or electron with status not stable
       while ((pPdg == 22 || pPdg == 11) && !mom->IsPhysicalPrimary()) {
         //Mother
-        iMom = mom->GetMother();
-        mom = (AliAODMCParticle *) mcparticles->At(iMom);
-        mPdg = TMath::Abs(mom->GetPdgCode());
-        iParent =  mom->GetMother() ;
+        iMom     = mom->GetMother();
+        mom      = (AliAODMCParticle *) mcparticles->At(iMom);
+        mPdgSign = mom->GetPdgCode();
+        mPdg     = TMath::Abs(mPdgSign);
+        iParent  = mom->GetMother() ;
         if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
         
         //GrandParent
@@ -474,9 +483,10 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
       if(pPdg == 2112 ||  pPdg == 211 ||  pPdg == 321 ||  
          pPdg == 2212 ||  pPdg == 130 ||  pPdg == 13 ) {
         SetTagBit(tag,kMCConversion);
-        iMom = mom->GetMother();
-        mom = (AliAODMCParticle *) mcparticles->At(iMom);
-        mPdg = TMath::Abs(mom->GetPdgCode());
+        iMom     = mom->GetMother();
+        mom      = (AliAODMCParticle *) mcparticles->At(iMom);
+        mPdgSign = mom->GetPdgCode();
+        mPdg     = TMath::Abs(mPdgSign);
         
         if(fDebug > 2 ) {
           printf("AliMCAnalysisUtils::CheckOriginInAOD() - Converted hadron : \n");
@@ -498,10 +508,14 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
     // conversion into electrons/photons checked  
     
     //first check for typical charged particles
-    if(mPdg == 13) SetTagBit(tag,kMCMuon);
-    else if(mPdg == 211) SetTagBit(tag,kMCPion);
-    else if(mPdg == 321) SetTagBit(tag,kMCKaon);
-    else if(mPdg == 2212) SetTagBit(tag,kMCProton);
+    if     (mPdg     ==    13) SetTagBit(tag,kMCMuon);
+    else if(mPdg     ==   211) SetTagBit(tag,kMCPion);
+    else if(mPdg     ==   321) SetTagBit(tag,kMCKaon);
+    else if(mPdgSign ==  2212) SetTagBit(tag,kMCProton);
+    else if(mPdgSign ==  2112) SetTagBit(tag,kMCNeutron);
+    else if(mPdgSign == -2212) SetTagBit(tag,kMCAntiProton);
+    else if(mPdgSign == -2112) SetTagBit(tag,kMCAntiNeutron);
+    
     //check for pi0 and eta (shouldn't happen unless their decays were turned off)
     else if(mPdg == 111)  {
       SetTagBit(tag,kMCPi0Decay);
