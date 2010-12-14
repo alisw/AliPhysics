@@ -137,6 +137,9 @@ static bool DumpEvent(const char *progname, AliRawVEvent *rawEvent)
 
       Int_t ddlID;
       Int_t detID = AliDAQ::DetectorIDFromDdlID(rawEquipHeader->GetId(),ddlID);
+      if (detID < 0) {
+	return false;
+      }
       Int_t idOffset = cdh->GetMiniEventID() - cdh->GetEventID1();
       if (idOffset < 0) idOffset += 3564;
       if (miniEventIDOffset[detID] == 3565) {
