@@ -203,7 +203,7 @@ void AliEMCALWsuCosmicRaySetUp::StepManager(void)
 
   if(pri>=2) printf("<I> AliEMCALWsuCosmicRaySetUp::StepManager %s \n", gMC->CurrentVolName());
   Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber();
-  Int_t parent=0;
+  //  Int_t parent=0;
   TParticle* part=0;
   curVolName = gMC->CurrentVolName();
   if(curVolName.Contains("SEND")) {

@@ -40,8 +40,12 @@ public:
   protected:
   TList *fLHists;           // list of hists
   Float_t fMasterVolume[3]; // size of MASTER volume
+private:
+  // Keep for convention only
+  AliEMCALWsuCosmicRaySetUp(const AliEMCALWsuCosmicRaySetUp &var);
+  AliEMCALWsuCosmicRaySetUp& operator = (const AliEMCALWsuCosmicRaySetUp & /*rvalue*/);
 
-  ClassDef(AliEMCALWsuCosmicRaySetUp,1)  // Class manager for the Wsu Cosmic Ray SetUp
+  ClassDef(AliEMCALWsuCosmicRaySetUp,1)  // Class manager for the Wsu Cosmic Ray or TB CERN SetUp
 };
 
 #endif
