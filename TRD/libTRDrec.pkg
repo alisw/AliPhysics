@@ -3,7 +3,6 @@
 SRCS= AliTRDcluster.cxx \
       AliTRDclusterizer.cxx \
       AliTRDtransform.cxx \
-      AliTRDtrack.cxx \
       AliTRDtracklet.cxx \
       AliTRDpidUtil.cxx \
       AliTRDpidESD.cxx \

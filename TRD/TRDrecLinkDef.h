@@ -12,14 +12,12 @@
 #pragma link C++ class  AliTRDclusterizer+;
 #pragma link C++ class  AliTRDtransform+;
 
-#pragma link C++ class  AliTRDtrack+;
-#pragma link C++ class  AliTRDtracklet+;
-
 #pragma link C++ class  AliTRDpidESD+;
 #pragma link C++ class  AliTRDpidUtil+;
 
 #pragma link C++ class  AliTRDReconstructor+;
 
+#pragma link C++ class  AliTRDtracklet+;
 #pragma link C++ class  AliTRDseedV1+;
 #pragma link C++ class  AliTRDtrackV1+;
 #pragma link C++ class  AliTRDtrackerV1+;
