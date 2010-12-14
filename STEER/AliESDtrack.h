@@ -213,6 +213,7 @@ public:
   UShort_t   GetTPCNclsIter1() const { return fTPCnclsIter1;}
   UShort_t   GetTPCNclsFIter1() const { return fTPCnclsFIter1;}
   UShort_t   GetTPCnclsS(Int_t i0=0,Int_t i1=159) const;
+  UShort_t   GetTPCncls(Int_t row0=0,Int_t row1=159) const;
   Double_t GetTPCPoints(Int_t i) const {return fTPCPoints[i];}
   void    SetKinkIndexes(Int_t points[3]) {
      for (Int_t i=0;i<3;i++) fKinkIndexes[i] = points[i];

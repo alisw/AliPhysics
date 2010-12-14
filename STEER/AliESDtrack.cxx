@@ -2356,7 +2356,14 @@ void AliESDtrack::GetITSdEdxSamples(Double_t *s) const {
 
 UShort_t   AliESDtrack::GetTPCnclsS(Int_t i0,Int_t i1) const{
   //
-  // get number of shared clusters
+  // get number of shared TPC clusters
   //
   return  fTPCSharedMap.CountBits(i0)-fTPCSharedMap.CountBits(i1);
+}
+
+UShort_t   AliESDtrack::GetTPCncls(Int_t i0,Int_t i1) const{
+  //
+  // get number of TPC clusters
+  //
+  return  fTPCClusterMap.CountBits(i0)-fTPCClusterMap.CountBits(i1);
 }
