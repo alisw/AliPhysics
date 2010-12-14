@@ -1353,7 +1353,7 @@ Int_t AliTPCcalibDButil::GetCurrentReferenceRun(const char* type) const {
   if (!fCurrentRefMap) return -2;
   TObjString *str=dynamic_cast<TObjString*>(fCurrentRefMap->GetValue(type));
   if (!str) return -2;
-  return (const Int_t)str->GetString().Atoi();
+  return (Int_t)str->GetString().Atoi();
 }
 //_____________________________________________________________________________________
 Int_t AliTPCcalibDButil::GetReferenceRun(const char* type) const{
@@ -1363,7 +1363,7 @@ Int_t AliTPCcalibDButil::GetReferenceRun(const char* type) const{
   if (!fRefMap) return -1;
   TObjString *str=dynamic_cast<TObjString*>(fRefMap->GetValue(type));
   if (!str) return -1;
-  return (const Int_t)str->GetString().Atoi();
+  return (Int_t)str->GetString().Atoi();
 }
 //_____________________________________________________________________________________
 AliTPCCalPad *AliTPCcalibDButil::CreateCEOutlyerMap( Int_t & noutliersCE, AliTPCCalPad * const ceOut, Float_t minSignal, Float_t cutTrmsMin,  Float_t cutTrmsMax, Float_t cutMaxDistT){
