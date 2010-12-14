@@ -42,14 +42,16 @@ ClassImp(AliCentralityByFunction)
  
 //______________________________________________________________________________
 
-Double_t fitf_pol2(Double_t* x, Double_t* par) {
+Double_t fitf_pol2(Double_t* x, Double_t* par) 
+{
   Double_t  fitValue  = 
     (par[0]+
      par[1]*x[0]+
      par[2]*x[0]*x[0]);
   return fitValue;
 }
-Double_t fitf_pol3(Double_t* x, Double_t* par) {
+Double_t fitf_pol3(Double_t* x, Double_t* par) 
+{
   Double_t  fitValue  = 
     (par[0]+
      par[1]*x[0]+
@@ -57,7 +59,8 @@ Double_t fitf_pol3(Double_t* x, Double_t* par) {
      par[3]*x[0]*x[0]*x[0]);
   return fitValue;
 }
-Double_t fitf_pol4(Double_t* x, Double_t* par) {
+Double_t fitf_pol4(Double_t* x, Double_t* par) 
+{
   Double_t  fitValue  = 
     (par[0]+
      par[1]*x[0]+
@@ -78,7 +81,15 @@ Double_t fitf_pol6(Double_t* x, Double_t* par) {
   return fitValue;
 }
 
-AliCentralityByFunction::AliCentralityByFunction() {
+AliCentralityByFunction::AliCentralityByFunction() :
+  finrootfile(0),
+  foutrootfilename(0),
+  foutrootfile(0),
+  fhistnames(),
+  fpercentXsec(0),
+  fitfunc(),
+  fitter()
+{
   // standard constructor
   fitter["fitf_pol2"] = new TF1("fitf_pol2",fitf_pol2,0,1,3);
   fitter["fitf_pol2"]->SetLineColor(kRed); 
@@ -93,105 +104,96 @@ AliCentralityByFunction::AliCentralityByFunction() {
   fitter["fitf_pol6"]->SetLineColor(kRed); 
 }
 
-AliCentralityByFunction::~AliCentralityByFunction() {
-  // destructor
-}
-
-void AliCentralityByFunction::AddHisto(TString name) {
-  histnames.push_back(name);
-}
-
-void AliCentralityByFunction::SetPercentileFile(TString filename) {
-  outrootfilename = filename;
-}
-
-void AliCentralityByFunction::SetPercentileCrossSection(Float_t xsec) {
-  percentXsec = xsec;
-}
-
-void AliCentralityByFunction::SetFitFunction(TString distribution, TString func, Double_t xmin, Double_t xmax) {
+void AliCentralityByFunction::SetFitFunction(TString distribution, TString func, Double_t xmin, Double_t xmax) 
+{
+  // Set fit function
   fitfunc[distribution] = func;
   fitter[fitfunc[distribution]]->SetRange(xmin,xmax);
 }
 
-void AliCentralityByFunction::MakePercentiles(TString infilename) {
+void AliCentralityByFunction::MakePercentiles(TString infilename) 
+{
+  // Make percentile bins
+
   TH1D *hpercentile;
   
   // open inrootfile, outrootfile
-  inrootfile  = new TFile(infilename);
-  outrootfile = new TFile(outrootfilename,"RECREATE");
+  finrootfile  = new TFile(infilename);
+  foutrootfile = new TFile(foutrootfilename,"RECREATE");
   
   // loop over all distribution names  
-  vector<TString>::const_iterator hni;
-  for(hni=histnames.begin(); hni!=histnames.end(); hni++) {
+  std::vector<TString>::const_iterator hni;
+  for(hni=fhistnames.begin(); hni!=fhistnames.end(); hni++) {
     hpercentile = FitHisto(*hni);
-    outrootfile->cd();
+    foutrootfile->cd();
     hpercentile->Write();
   }
   // close inrootfile, outrootfile
-  inrootfile->Close();
-  outrootfile->Close();
-  
+  finrootfile->Close();
+  foutrootfile->Close();
 }
 
- TH1D *AliCentralityByFunction::FitHisto(TString hdistributionName) {
-  TH2D *hdist  = (TH2D*) (inrootfile->Get(hdistributionName)); 
+TH1D *AliCentralityByFunction::FitHisto(TString hdistributionName) 
+{
+  // Fit histogram
+  TH2D *hdist  = (TH2D*) (finrootfile->Get(hdistributionName)); 
   TProfile *profile =hdist->ProfileX(); 
   //  fitter[fitfunc[hdistributionName]]->SetRange(0,profile->GetBinCenter(profile->GetNbinsX()));
   profile->Fit(fitter[fitfunc[hdistributionName]], "RNM");
 
-  outrootfile->cd();
+  foutrootfile->cd();
   profile->Write();
   fitter[fitfunc[hdistributionName]]->Write(hdistributionName.Append("_fit"));
 
   return MakePercentHisto(hdist);
 }
 
-TH1D * AliCentralityByFunction::MakePercentHisto(TH2D *histo) {
+TH1D * AliCentralityByFunction::MakePercentHisto(TH2D *histo) 
+{
   TH2D *htemp = (TH2D*)histo->Clone("htemp");
   TString hdistributionName = htemp->GetTitle();
 
-  const int NUM_DIVISION=500;
+  const int num_DIVISION=500;
   
-  TH1D *hpercent  = new TH1D("","",NUM_DIVISION,0,htemp->GetXaxis()->GetBinCenter(htemp->GetNbinsX()));
+  TH1D *hpercent  = new TH1D("","",num_DIVISION,0,htemp->GetXaxis()->GetBinCenter(htemp->GetNbinsX()));
   hpercent->Reset();
   
-  double Xpoint, Ypoint, Xcomp, Ycomp, count;
+  double xpoint, ypoint, xcomp, ycomp, count;
   
-  double Xmax = htemp->GetXaxis()->GetBinCenter(htemp->GetNbinsX());
-  double Xmin = 0;
+  double xmax = htemp->GetXaxis()->GetBinCenter(htemp->GetNbinsX());
+  double xmin = 0;
   
-  double delta = (Xmax - Xmin) / NUM_DIVISION;
+  double delta = (xmax - xmin) / num_DIVISION;
   double slopePerp;   // slope of the perpendicular line
   double slopeFunction;
 
-  cout << "Start Percentile Histo for distribution " << hdistributionName << " with fit function " << fitfunc[hdistributionName] << endl;
+  std::cout << "Start Percentile Histo for distribution " << hdistributionName << " with fit function " << fitfunc[hdistributionName] << std::endl;
 
   // move perpendicular line along fitting curve
   // and count number of points on the right
-  for (int i = 0; i <= NUM_DIVISION; i++) {
-    Xcomp = Xmin + i * delta;
-    Ycomp = fitter[fitfunc[hdistributionName]]->Eval(Xcomp);
+  for (int i = 0; i <= num_DIVISION; i++) {
+    xcomp = xmin + i * delta;
+    ycomp = fitter[fitfunc[hdistributionName]]->Eval(xcomp);
     count = 0.0;
-    slopeFunction = fitter[fitfunc[hdistributionName]]->Derivative(Xcomp,NULL,0.0001);
+    slopeFunction = fitter[fitfunc[hdistributionName]]->Derivative(xcomp,NULL,0.0001);
     slopePerp = -1.0 /slopeFunction;
     //
     // equation of perpendicular line
     // (y-Ycomp)/(x-Xcomp) = slopePerp
     //
     for (int ibiny = 1; ibiny < htemp->GetNbinsY(); ibiny++) {
-      Ypoint = htemp->GetYaxis()->GetBinCenter(ibiny);
+      ypoint = htemp->GetYaxis()->GetBinCenter(ibiny);
 
-      double XonLine =(Ypoint - Ycomp)/slopePerp + Xcomp;
+      double xonLine =(ypoint - ycomp)/slopePerp + xcomp;
       //      double YonLine = slopePerp*(XonLine - Xcomp) +Ycomp;
       
       for (int ibinx = 1; ibinx < htemp->GetNbinsX(); ibinx++) {
-	Xpoint = htemp->GetXaxis()->GetBinCenter(ibinx);
+	xpoint = htemp->GetXaxis()->GetBinCenter(ibinx);
 	//
 	// (XonLine,Ypoint) lies on the perpendicular
 	//
-	 if ((Xpoint > XonLine && Xpoint > Xcomp - 0.5)||
-	     (Xpoint > Xcomp + 0.2)) {
+	 if ((xpoint > xonLine && xpoint > xcomp - 0.5)||
+	     (xpoint > xcomp + 0.2)) {
 		  
 	  count  += htemp->GetBinContent(ibinx,ibiny);
 	}
@@ -205,6 +207,3 @@ TH1D * AliCentralityByFunction::MakePercentHisto(TH2D *histo) {
 
   return hpercent;
 }
-
-
-
