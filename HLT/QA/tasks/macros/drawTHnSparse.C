@@ -25,7 +25,7 @@ void drawTHnSparse( TString inputFile,
 	    	    double minDCAr=-80, double maxDCAr=80,
 	    	    double minDCAz=-80, double maxDCAz=80,
 	    	    int minTPCclus=0,   int maxTPCclus=200,
-	    	    int minITSclus=1,   int maxITSclus=6,
+	    	    int minITSclus=0,   int maxITSclus=6,
 		    int vertexStatus=2
             	  )
 {
