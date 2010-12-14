@@ -5204,7 +5204,8 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
     AliKink * kink0 = (AliKink*) kinks->At(indexes[ikink0]);
     if (!kink0) continue;
     //
-    for (Int_t ikink1=0;ikink1<ikink0;ikink1++){
+    for (Int_t ikink1=0;ikink1<ikink0;ikink1++){ 
+      kink0 = (AliKink*) kinks->At(indexes[ikink0]);
       if (!kink0) continue;
       AliKink * kink1 = (AliKink*) kinks->At(indexes[ikink1]);
       if (!kink1) continue;
