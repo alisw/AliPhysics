@@ -36,7 +36,6 @@ class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
 class AliTRDcluster;
 class AliTRDtrackV1;
-class AliTRDtrack;
 class AliTRDseedV1;
 class AliTRDgeometry;
 class AliTRDCalDet;
@@ -65,7 +64,6 @@ class AliTRDCalibraFillHisto : public TObject {
   // Functions for initialising and filling with AliTRDtrackV1
           Bool_t  Init2Dhistos(Int_t nboftimebin = -1);
 	  Bool_t  InitCalDet();
-	  Bool_t  UpdateHistograms(const AliTRDtrack *t);
 	  Bool_t  UpdateHistogramsV1(const AliTRDtrackV1 *t);
  
   // Process events DAQ
@@ -283,9 +281,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // Calibration with AliTRDtrackV1
           void     FillTheInfoOfTheTrackPH();
           void     FillTheInfoOfTheTrackCH(Int_t nbclusters);
-	  Bool_t   FindP1TrackPHtracklet(const AliTRDtrack *t, Int_t index0, Int_t index1);
 	  Bool_t   FindP1TrackPHtrackletV1(const AliTRDseedV1 *tracklet, Int_t nbclusters);
-	  Bool_t   HandlePRFtracklet(const AliTRDtrack *t, Int_t index0, Int_t index1);
 	  Bool_t   HandlePRFtrackletV1(const AliTRDseedV1 *tracklet, Int_t nbclusters);
 	  void     ResetfVariablestracklet();
 	  void     StoreInfoCHPHtrack(const AliTRDcluster *cl,const Double_t dqdl,const Int_t *group,const Int_t row,const Int_t col,const AliTRDcluster *cls=0x0);
