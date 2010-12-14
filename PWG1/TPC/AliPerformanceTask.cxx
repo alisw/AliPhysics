@@ -49,6 +49,7 @@
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
 
+#include "AliESDCentrality.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 
@@ -85,6 +86,7 @@ AliPerformanceTask::AliPerformanceTask()
   , fUseTerminate(kTRUE)
   , fUseCentrality(0)
   , fUseOCDB(kTRUE)
+  , fUseCentralityBin(0)
 {
   // Dummy Constructor
   // should not be used
@@ -106,6 +108,7 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
   , fUseTerminate(kTRUE)
   , fUseCentrality(0)
   , fUseOCDB(kTRUE)
+  , fUseCentralityBin(0)
 {
   // Constructor
 
@@ -202,8 +205,6 @@ void AliPerformanceTask::UserExec(Option_t *)
       fMC = MCEvent();
   }  
 
-  //
-  AliPerformanceObject *pObj=0;
 
   if (!fESD) {
     Printf("ERROR: ESD event not available");
@@ -222,20 +223,23 @@ void AliPerformanceTask::UserExec(Option_t *)
     }
   }
 
-  Int_t centBin = CalculateCentralityBin();
+  // Process analysis
+  Bool_t process = kTRUE;
 
+  // Check fo centrality
+  if (fUseCentrality) {
+    if ( CalculateCentralityBin() != fUseCentralityBin ) {
+      process = kFALSE;
+    }
+  }
 
   // Process comparison
-  fPitList->Reset();
-  while(( pObj = (AliPerformanceObject *)fPitList->Next()) != NULL) {
-    if (!fUseCentrality) {
-      pObj->Exec(fMC,fESD,fESDfriend,fUseMCInfo,fUseESDfriend);
-      continue;
+  if (process) {
+    AliPerformanceObject *pObj=0;
+    fPitList->Reset();
+    while(( pObj = (AliPerformanceObject *)fPitList->Next()) != NULL) {
+          pObj->Exec(fMC,fESD,fESDfriend,fUseMCInfo,fUseESDfriend);
     }
-
-    if (pObj->GetUseCentralityBin() == centBin) {
-      pObj->Exec(fMC,fESD,fESDfriend,fUseMCInfo,fUseESDfriend);
-    } 
   }
 
   // Post output data.
@@ -327,86 +331,38 @@ Bool_t AliPerformanceTask::Notify()
 }
 
 //________________________________________________________________________
-Int_t AliPerformanceTask::CalculateCentralityBin()
-{
+Int_t AliPerformanceTask::CalculateCentralityBin(){
   // Get Centrality bin
 
   Int_t centrality = -1;
+  Float_t centralityF = -1;
 
   if (fUseCentrality == 0)
     return centrality;
 
-  AliESDVZERO* esdV0 = fESD->GetVZEROData();
-  Float_t multV0 = esdV0->GetMTotV0A() + esdV0->GetMTotV0C();
-  
-  Float_t nClusters[6];
+  AliESDCentrality *esdCentrality = fESD->GetCentrality();
+    
+  // New : 2010-11-18 JMT 
+  if ( fUseCentrality == 1 )
+    centralityF = esdCentrality->GetCentralityPercentile("V0M");
+  else if ( fUseCentrality == 2 )
+    centralityF = esdCentrality->GetCentralityPercentile("CL1");
+  else if ( fUseCentrality == 3 )
+    centralityF = esdCentrality->GetCentralityPercentile("TRK"); 
+  if (centralityF == 0.)
+    centralityF = 100.;
 
-  const AliMultiplicity *mult = fESD->GetMultiplicity();
-  for(Int_t ilay = 0; ilay < 6; ilay++){
-    nClusters[ilay] = mult->GetNumberOfITSClusters(ilay);
-  }
-  
-  if ( fUseCentrality == 1 ) {
-    // -- centrality cuts V0
-#if 0 
-    // 2010-11-10 - now old cuts
-    if (      multV0 >=    0.   && multV0 <=   106.75 ) centrality = 90;
-    else if ( multV0 >   106.75 && multV0 <=   277.55 ) centrality = 80;
-    else if ( multV0 >   277.55 && multV0 <=   661.85 ) centrality = 70;
-    else if ( multV0 >   661.85 && multV0 <=  1345.05 ) centrality = 60;
-    else if ( multV0 >  1345.05 && multV0 <=  2412.55 ) centrality = 50;
-    else if ( multV0 >  2412.55 && multV0 <=  3907.05 ) centrality = 40;
-    else if ( multV0 >  3907.05 && multV0 <=  6042.05 ) centrality = 30;
-    else if ( multV0 >  6042.05 && multV0 <=  8902.95 ) centrality = 20;
-    else if ( multV0 >  8902.95 && multV0 <= 12788.6  ) centrality = 10;
-    else if ( multV0 > 12788.6  && multV0 <= 15222.5  ) centrality = 5;
-    else if ( multV0 > 15222.5  && multV0 <= 19449.8  ) centrality = 0;
-#else
-    // 2010-11-14
-    if (      multV0 >=    0.  && multV0 <=   124.5 ) centrality = 90;
-    else if ( multV0 >   124.5 && multV0 <=   274.5 ) centrality = 80;
-    else if ( multV0 >   274.5 && multV0 <=   574.5 ) centrality = 70;
-    else if ( multV0 >   574.5 && multV0 <=  1224.5 ) centrality = 60;
-    else if ( multV0 >  1224.5 && multV0 <=  2174.5 ) centrality = 50;
-    else if ( multV0 >  2174.5 && multV0 <=  3624.5 ) centrality = 40;
-    else if ( multV0 >  3624.5 && multV0 <=  5574.5 ) centrality = 30;
-    else if ( multV0 >  5574.5 && multV0 <=  8274.5 ) centrality = 20;
-    else if ( multV0 >  8274.5 && multV0 <= 12024.5 ) centrality = 10;
-    else if ( multV0 > 12024.5 && multV0 <= 14674.5 ) centrality = 5;
-    else if ( multV0 > 14674.5 && multV0 <= 19449.5 ) centrality = 0;
-#endif
-  }
-  else if ( fUseCentrality == 2 ) {
-#if 0 
-    // 2010-11-10 - now old cuts
-    if (      nClusters[1] >=    0.  && nClusters[1] <=    7.18 )  centrality = 100;
-    else if ( nClusters[1] >    7.18 && nClusters[1] <=   35.9  )  centrality = 90;
-    else if ( nClusters[1] >   35.9  && nClusters[1] <=   93.34 )  centrality = 80;
-    else if ( nClusters[1] >   93.34 && nClusters[1] <=  222.58 )  centrality = 70;
-    else if ( nClusters[1] >  222.58 && nClusters[1] <=  437.98 )  centrality = 60;
-    else if ( nClusters[1] >  437.98 && nClusters[1] <=  768.26 )  centrality = 50;
-    else if ( nClusters[1] >  768.26 && nClusters[1] <= 1242.14 )  centrality = 40;
-    else if ( nClusters[1] > 1242.14 && nClusters[1] <= 1888.34 )  centrality = 30;
-    else if ( nClusters[1] > 1888.34 && nClusters[1] <= 2735.58 )  centrality = 20;
-    else if ( nClusters[1] > 2735.58 && nClusters[1] <= 3884.38 )  centrality = 10;
-    else if ( nClusters[1] > 3884.38 && nClusters[1] <= 4573.66 )  centrality = 5;
-    else if ( nClusters[1] > 4573.66 && nClusters[1] <= 6540.98 )  centrality = 0;
-#else
-    // 2010-11-14
-    if      ( nClusters[1] >     0. && nClusters[1] <=   29.5 )  centrality = 90;
-    else if ( nClusters[1] >   29.5 && nClusters[1] <=   69.5 )  centrality = 80;
-    else if ( nClusters[1] >   69.5 && nClusters[1] <=  149.5 )  centrality = 70;
-    else if ( nClusters[1] >  149.5 && nClusters[1] <=  309.5 )  centrality = 60;
-    else if ( nClusters[1] >  309.5 && nClusters[1] <=  589.5 )  centrality = 50;
-    else if ( nClusters[1] >  589.5 && nClusters[1] <=  989.5 )  centrality = 40;
-    else if ( nClusters[1] >  989.5 && nClusters[1] <= 1569.5 )  centrality = 30;
-    else if ( nClusters[1] > 1569.5 && nClusters[1] <= 2369.5 )  centrality = 20;
-    else if ( nClusters[1] > 2369.5 && nClusters[1] <= 3509.5 )  centrality = 10;
-    else if ( nClusters[1] > 3509.5 && nClusters[1] <= 4349.5 )  centrality = 5;
-    else if ( nClusters[1] > 4349.5 && nClusters[1] <= 6540.5 )  centrality = 0;
-#endif
-  }
+  if      ( centralityF >=  0. && centralityF <   5.) centrality =  0;
+  else if ( centralityF >=  5. && centralityF <  10.) centrality =  5;
+  else if ( centralityF >= 10. && centralityF <  20.) centrality = 10;
+  else if ( centralityF >= 20. && centralityF <  30.) centrality = 20;
+  else if ( centralityF >= 30. && centralityF <  40.) centrality = 30;
+  else if ( centralityF >= 40. && centralityF <  50.) centrality = 40;
+  else if ( centralityF >= 50. && centralityF <  60.) centrality = 50;
+  else if ( centralityF >= 60. && centralityF <  70.) centrality = 60;
+  else if ( centralityF >= 70. && centralityF <  80.) centrality = 70;
+  else if ( centralityF >= 80. && centralityF <  90.) centrality = 80;
+  else if ( centralityF >= 90. && centralityF <=100.) centrality = 90;
   
   return centrality;
 }
-

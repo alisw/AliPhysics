@@ -53,6 +53,10 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   void  SetUseOCDB(Bool_t bOCDB) { fUseOCDB = bOCDB;  }
   Bool_t  GetUseOCDB() { return fUseOCDB; }
 
+  // Centrality bin to be used
+  void  SetUseCentralityBin(Int_t bin) { fUseCentralityBin = bin; }
+  Int_t GetUseCentralityBin()          { return fUseCentralityBin; }
+
  private:
 
   // Calculate centrality
@@ -76,6 +80,8 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   Int_t  fUseCentrality;      // use centrality (0=off(default),1=VZERO,2=SPD)
 
   Bool_t  fUseOCDB;           // use OCDB
+
+  Int_t fUseCentralityBin;  // centrality bin to be used 
 
   AliPerformanceTask(const AliPerformanceTask&); // not implemented
   AliPerformanceTask& operator=(const AliPerformanceTask&); // not implemented
