@@ -83,7 +83,7 @@ void AliAltroBufferV3::WriteTrailer(Int_t wordsNumber, Short_t hwAddress)
   //a given hardware adress
   UInt_t temp = hwAddress & 0xFFF;
   temp |= ((wordsNumber & 0x3FF) << 16);
-  temp |= (0x1 << 30);
+  temp |= (0x1U << 30);
 
   fFile->WriteBuffer((char *)(&temp),sizeof(UInt_t));
 
@@ -135,7 +135,7 @@ UChar_t AliAltroBufferV3::WriteRCUTrailer(Int_t rcuId)
   }
 
   // Now add the the RCU trailer tag
-  size |= (1 << 31);
+  size |= (1U << 31);
   fFile->WriteBuffer((char *)(&size),sizeof(UInt_t));
 
   // Now several well defined fields contained
@@ -143,41 +143,41 @@ UChar_t AliAltroBufferV3::WriteRCUTrailer(Int_t rcuId)
   // For details check the RCU manual
   UInt_t buffer;
 
-  buffer  = (0x1 << 26);
-  buffer |= (0x1 << 31);
+  buffer  = (0x1U << 26);
+  buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
   
-  buffer  = (0x2 << 26);
-  buffer |= (0x1 << 31);
+  buffer  = (0x2U << 26);
+  buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
   
-  buffer  = (0x3 << 26);
-  buffer |= (0x1 << 31);
+  buffer  = (0x3U << 26);
+  buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
 
   buffer  = 0x3FFFFFF;
-  buffer |= (0x4 << 26);
-  buffer |= (0x1 << 31);
+  buffer |= (0x4U << 26);
+  buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
   buffer  = 0x3FFFFFF;
-  buffer |= (0x5 << 26);
-  buffer |= (0x1 << 31);
+  buffer |= (0x5U << 26);
+  buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
 
-  buffer  = (0x6 << 26);
-  buffer |= (0x1 << 31);
+  buffer  = (0x6U << 26);
+  buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
   
-  buffer  = (0x7 << 26);
-  buffer |= (0x1 << 31);
+  buffer  = (0x7U << 26);
+  buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
   
   //  Now the RCU identifier and size of the trailer
   buffer = (9 & 0x7F);
   buffer |= ((rcuId & 0x1FF) << 7);
-  buffer |= (0x2 << 16);
-  buffer |= (0x8 << 26);
-  buffer |= (0x3 << 30);
+  buffer |= (0x2U << 16);
+  buffer |= (0x8U << 26);
+  buffer |= (0x3U << 30);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
 
   return 2;

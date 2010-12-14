@@ -287,7 +287,7 @@ UChar_t AliAltroBuffer::WriteRCUTrailer(Int_t rcuId)
   //  FOr the moment the triler size is 2 32-bit words
   UInt_t buffer = (2 & 0x7F);
   buffer |= ((rcuId & 0x1FF) << 7);
-  buffer |= 0xAAAA << 16;
+  buffer |= 0xAAAAU << 16;
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
 
   return 0;
