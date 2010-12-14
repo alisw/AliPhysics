@@ -447,7 +447,7 @@ Float_t AliCentralityGlauberFit::CalculateChi2(TH1D *hDATA, TH1D *thistGlau, Flo
   int lowchibin =   hDATA->FindBin(fMultmin);
   int highchibin =  hDATA->FindBin(fMultmax);
 
-  float mcintegral = thistGlau->Integral(lowchibin,mcintegral);
+  float mcintegral = thistGlau->Integral(lowchibin,highchibin);
   //  float scale = (hDATA->Integral(lowchibin,highchibin)/mcintegral) * ((float) eff);
   float scale = (hDATA->Integral(lowchibin,highchibin)/mcintegral) * ((float) eff);
   thistGlau->Scale(scale);
@@ -560,7 +560,11 @@ void AliCentralityGlauberFit::MinuitFcnNBD(Int_t &npar, Double_t *gin, Double_t 
   Double_t k     = par[2];
   Double_t eff   = par[3];
   //Double_t eff   = 1;//par[3];
-
+  if (0) { //avoid warning
+    gin=gin;
+    npar=npar;
+    iflag=iflag;
+  }
   AliCentralityGlauberFit * obj = (AliCentralityGlauberFit *) gMinuit->GetObjectFit();
 
   // static TStopwatch sw;
