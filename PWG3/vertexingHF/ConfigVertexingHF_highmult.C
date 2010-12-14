@@ -61,8 +61,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDstoKKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsDstoKKpi(cutsDstoKKpi);
   AliRDHFCutsLctopKpi *cutsLctopKpi = new AliRDHFCutsLctopKpi("CutsLctopKpi");
-  //Float_t cutsArrayLctopKpi[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
-  Float_t cutsArrayLctopKpi[12]={0.,999.,999.,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05};
+  Float_t cutsArrayLctopKpi[12]={0.13,0.5,0.6,0.,0.,0.01,0.04,0.006,0.8,0.3,0.,0.05};
   cutsLctopKpi->SetCuts(12,cutsArrayLctopKpi);
   cutsLctopKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsLctopKpi(cutsLctopKpi);
