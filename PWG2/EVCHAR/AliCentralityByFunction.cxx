@@ -41,46 +41,6 @@
 ClassImp(AliCentralityByFunction)  
  
 //______________________________________________________________________________
-
-Double_t fitf_pol2(Double_t* x, Double_t* par) 
-{
-  Double_t  fitValue  = 
-    (par[0]+
-     par[1]*x[0]+
-     par[2]*x[0]*x[0]);
-  return fitValue;
-}
-Double_t fitf_pol3(Double_t* x, Double_t* par) 
-{
-  Double_t  fitValue  = 
-    (par[0]+
-     par[1]*x[0]+
-     par[2]*x[0]*x[0]+
-     par[3]*x[0]*x[0]*x[0]);
-  return fitValue;
-}
-Double_t fitf_pol4(Double_t* x, Double_t* par) 
-{
-  Double_t  fitValue  = 
-    (par[0]+
-     par[1]*x[0]+
-     par[2]*x[0]*x[0]+
-     par[3]*x[0]*x[0]*x[0]+
-     par[4]*x[0]*x[0]*x[0]*x[0]);
-  return fitValue;
-}
-Double_t fitf_pol6(Double_t* x, Double_t* par) {
-  Double_t  fitValue  = 
-    (par[0]+
-     par[1]*x[0]+
-     par[2]*x[0]*x[0]+
-     par[3]*x[0]*x[0]*x[0]+
-     par[4]*x[0]*x[0]*x[0]*x[0]+
-     par[5]*x[0]*x[0]*x[0]*x[0]*x[0]+
-     par[6]*x[0]*x[0]*x[0]*x[0]*x[0]*x[0]);
-  return fitValue;
-}
-
 AliCentralityByFunction::AliCentralityByFunction() :
   finrootfile(0),
   foutrootfilename(0),
@@ -91,16 +51,16 @@ AliCentralityByFunction::AliCentralityByFunction() :
   fitter()
 {
   // standard constructor
-  fitter["fitf_pol2"] = new TF1("fitf_pol2",fitf_pol2,0,1,3);
+  fitter["fitf_pol2"] = new TF1("pol2",0,1,3);
   fitter["fitf_pol2"]->SetLineColor(kRed); 
 
-  fitter["fitf_pol3"] = new TF1("fitf_pol3",fitf_pol3,0,1,4);
+  fitter["fitf_pol3"] = new TF1("pol3",0,1,4);
   fitter["fitf_pol3"]->SetLineColor(kRed); 
 
-  fitter["fitf_pol4"] = new TF1("fitf_pol4",fitf_pol4,0,1,5);
+  fitter["fitf_pol4"] = new TF1("pol4",0,1,5);
   fitter["fitf_pol4"]->SetLineColor(kRed); 
 
-  fitter["fitf_pol6"] = new TF1("fitf_pol6",fitf_pol6,0,1,6);
+  fitter["fitf_pol6"] = new TF1("pol6",0,1,6);
   fitter["fitf_pol6"]->SetLineColor(kRed); 
 }
 
