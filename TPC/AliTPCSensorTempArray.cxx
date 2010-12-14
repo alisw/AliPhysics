@@ -49,10 +49,11 @@ AliTPCSensorTempArray::AliTPCSensorTempArray(Int_t run) : AliDCSSensorArray()
      
   AliCDBEntry *entry =
             AliCDBManager::Instance()->Get("TPC/Config/Temperature",run); 
-  TTree *tree = (TTree*) entry->GetObject();
-  fSensors = AliTPCSensorTemp::ReadTree(tree);
-  fSensors->BypassStreamer(kFALSE);
-  
+  if (entry) {
+    TTree *tree = (TTree*) entry->GetObject();
+    fSensors = AliTPCSensorTemp::ReadTree(tree);
+    fSensors->BypassStreamer(kFALSE);
+  }
 }
 //_____________________________________________________________________________
 AliTPCSensorTempArray::AliTPCSensorTempArray(UInt_t startTime, UInt_t endTime,
