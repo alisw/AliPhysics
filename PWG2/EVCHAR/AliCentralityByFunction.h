@@ -11,41 +11,43 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TObject.h"
+#include <vector>
+#include <map>
+#include <TString.h>
 
 // forward decl
 class TF1;
+class TH1D;
+class TH2D;
 
 class AliCentralityByFunction : public TObject {
 
  public:
   
   AliCentralityByFunction();
-  virtual ~AliCentralityByFunction();
+  virtual ~AliCentralityByFunction() {}
 
-  void SetPercentileFile(TString outrootfilename);
-  void SetPercentileCrossSection(Float_t percentXsec);
-  //  void SetFitFunction(TString distribution, TString func);
+  void SetPercentileFile(TString filename)            { foutrootfilename = filename; }
+  void SetPercentileCrossSection(Float_t xsec)        { fpercentXsec     = xsec;     }
   void SetFitFunction(TString distribution, TString func, Double_t xmin, Double_t xmax);
-  void AddHisto(TString name);
+  void AddHisto(TString name)                         { fhistnames.push_back(name); }
   void MakePercentiles(TString infilename);
 
  private:
+  AliCentralityByFunction(const AliCentralityByFunction&);
+  AliCentralityByFunction& operator=(const AliCentralityByFunction&);
 
-  TFile *inrootfile;
-  TString outrootfilename;
-  TFile *outrootfile;
-
-  vector<TString> histnames;
-  Float_t percentXsec;
-  map<TString, TString>fitfunc;    // mapping from distribution to fit function name
-  map<TString, TF1 *>fitter;  // mapping from fit function name to corresponding TF1
+  TFile   *finrootfile;               // input root file
+  TString  foutrootfilename;          // output root file name
+  TFile   *foutrootfile;              // output root file
+  std::vector<TString>    fhistnames; // hist names
+  Float_t               fpercentXsec; // percentile cross section
+  std::map<TString, TString> fitfunc; // mapping from distribution to fit function name
+  std::map<TString, TF1 *>   fitter;  // mapping from fit function name to corresponding TF1
     
   TH1D *FitHisto(TString hdistributionName);
-  TH1D * MakePercentHisto(TH2D *hist);
+  TH1D *MakePercentHisto(TH2D *hist);
 
   ClassDef(AliCentralityByFunction, 1)  
 };
 #endif
-
-
