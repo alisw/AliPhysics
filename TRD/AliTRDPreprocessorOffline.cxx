@@ -873,13 +873,11 @@ AliTRDCalChamberStatus *AliTRDPreprocessorOffline::ProduceChamberStatus()
   AliTRDCalDet *calDetVDrift = (AliTRDCalDet *) fCalibObjects->At(kVdriftLinear);
   
   // mask chambers with empty gain entries
-  TH1I *projch = 0x0;
   Int_t counter = 0;
   for (Int_t idet = 0; idet < 540; idet++) {
 
     // ch2d
-    if (projch) projch->Reset("CE");
-    projch =  (TH1I *) fCH2d->ProjectionX("projch",idet+1,idet+1,(Option_t *)"e");
+    TH1I *projch =  (TH1I *) fCH2d->ProjectionX("projch",idet+1,idet+1,(Option_t *)"e");
     Int_t entries = projch->GetEntries();
 
     // gain
@@ -903,8 +901,11 @@ AliTRDCalChamberStatus *AliTRDPreprocessorOffline::ProduceChamberStatus()
     // installed supermodules+1 -> abort
     if(counter > (7+1)*30) {
       printf("ERROR: more than one SM to be masked!! \n Abort...\n");
+      if(projch) delete projch;
       return 0x0;
     }
+
+    if(projch) delete projch;
 
   }
   return CalChamberStatus;
