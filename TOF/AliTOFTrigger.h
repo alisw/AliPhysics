@@ -63,6 +63,7 @@ class AliTOFTrigger : public AliTriggerDetector
 			 else if(i==1) return fSel2;
                          else if(i==2) return fSel3;
                          else if(i==3) return fSel4;
+			 else { AliWarning(Form(" Index out of range: %d not in [0,3]",i)); return kFALSE; }
 			};
 
   Int_t GetNumberOfCrateOn(){return fNCrateOn;}; 
