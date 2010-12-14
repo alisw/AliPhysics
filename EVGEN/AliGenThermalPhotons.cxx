@@ -455,8 +455,8 @@ AliGenThermalPhotons::AliGenThermalPhotons()
     SetCutVertexZ();
     SetPtRange();
     SetYRange();
-    fProjectile = 208;
-    fTarget     = 208;
+    fAProjectile = 208;
+    fATarget     = 208;
     fEnergyCMS  = 5500.;
 }
 
@@ -482,8 +482,8 @@ AliGenThermalPhotons::AliGenThermalPhotons(Int_t npart)
     SetCutVertexZ();
     SetPtRange();
     SetYRange();
-    fProjectile = 208;
-    fTarget     = 208;
+    fAProjectile = 208;
+    fATarget     = 208;
     fEnergyCMS  = 5500.;
 }
 
