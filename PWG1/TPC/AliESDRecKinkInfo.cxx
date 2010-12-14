@@ -43,7 +43,6 @@
 #include "AliESDtrack.h"
 #include "AliTPCseed.h"
 #include "AliITStrackMI.h"
-#include "AliTRDtrack.h"
 #include "AliHelix.h"
 #include "AliESDVertex.h"
 #include "AliExternalTrackParam.h"
