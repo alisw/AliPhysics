@@ -21,7 +21,6 @@
 #include "AliV0.h"
 #include "AliESDfriendTrack.h"
 #include "AliITStrackMI.h"
-#include "AliTRDtrack.h"
 class AliTPCseed;
 class AliTPCParam;
 class AliMCInfo;
