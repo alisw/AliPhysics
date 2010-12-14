@@ -480,7 +480,9 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   metaData.SetResponsible("Haavard Helstrup");
   metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
   metaData.SetComment("Preprocessor AliTPC status.");
-  Store("Calib", "PreprocStatus", resultArray, &metaData, 0, kFALSE);
+  Bool_t storeOK = Store("Calib", "PreprocStatus", resultArray, &metaData, 0,  kFALSE);
+  if (!storeOK) Log ("Unable to store preprocessor status entry");
+ 
   resultArray->Delete();
   delete resultArray;
 
@@ -1037,7 +1039,11 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 	grT=(TGraph*)rocTtime->At(ind+3*nSectors/4);
 	if (grT) cside++;
      }
-     if ( (aside<kMinCESectors) && (cside<kMinCESectors) ) result=10;
+     if ( (aside<kMinCESectors) && (cside<kMinCESectors) ) {
+        Log (Form("ExtractCE: Too few fitted sectors: Aside =%d, Cside=%d\n",
+	     aside, cside)) ;
+	result=10;
+     }
 
     //
     //=== New CE part
