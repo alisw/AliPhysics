@@ -1135,7 +1135,7 @@ Bool_t AliAnalysisTaskSELambdac::VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *p
  //mass constr for Delta
    mass[0]=1.2;mass[1]=0.15;
    ipRes[0]=0;ipRes[1]=2;
-   pdgres[0]=pdgs[0];pdgres[2]=pdgs[2];
+   pdgres[0]=pdgs[0];pdgres[1]=pdgs[2];
    AliKFParticle *Delta=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
   Double_t probDelta=TMath::Prob(Delta->GetChi2(),Delta->GetNDF());
   if(probDelta>fCutsKF[7]) {
