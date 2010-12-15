@@ -79,7 +79,7 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) :
   fFittingAlgorithm(0),
   fRawAnalyzer(0),
   fRawAnalyzerTRU(0),
-  fSuperModules(4), // FIXME!!! number of SuperModules; 4 for 2009; update default to 12 for later runs..
+  fSuperModules(10), // FIXME!!! number of SuperModules; 10 for 2011; update default for later runs 
   fFirstPedestalSample(0),
   fLastPedestalSample(3),
   fFirstPedestalSampleTRU(0),
