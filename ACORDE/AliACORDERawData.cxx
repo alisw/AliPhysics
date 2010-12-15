@@ -117,8 +117,8 @@ void AliACORDERawData::SetACORDERawWords(Bool_t *b,Bool_t multi)
     }
   } // end for
   // set labels
-  fWord10|=(1<<30);
-  fWord12|=(1<<30);
-  fWord11|=(1<<31);
-  fWord12|=(1<<31);
+  fWord10|=(unsigned int)(1<<30);
+  fWord12|=(unsigned int)(1<<30);
+  fWord11|=(unsigned int)(1<<31); 
+  fWord12|=(unsigned int)(1<<31);
 }
