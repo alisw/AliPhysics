@@ -538,7 +538,6 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[6][10]=0.06;
   anacutsval[6][11]=0.06;
   anacutsval[6][12]=0.06;
-  anacutsval[6][13]=0.06;
   
   
   anacutsval[7][0]=0.08;
@@ -554,7 +553,6 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[7][10]=0.02;
   anacutsval[7][11]=0.02;
   anacutsval[7][12]=0.02;
-  anacutsval[7][13]=0.02;
   
   
   anacutsval[8][0]=0.5;
@@ -570,7 +568,6 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[8][10]=0.2;
   anacutsval[8][11]=0.2;
   anacutsval[8][12]=0.2;
-  anacutsval[8][13]=0.2;
     
     
   anacutsval[9][0]=0.95;
@@ -586,7 +583,6 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[9][10]=0.90;
   anacutsval[9][11]=0.90;
   anacutsval[9][12]=0.90;
-  anacutsval[9][13]=0.90;
   
   anacutsval[10][0]=0.0055;
   anacutsval[10][1]=0.0055;
@@ -601,9 +597,8 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[10][10]=0.0;
   anacutsval[10][11]=0.0;
   anacutsval[10][12]=0.0;
-  anacutsval[10][13]=0.0;
   
-  
+  SetGlobalIndex(nvars,nptbins);
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);
   SetUsePID(kTRUE);

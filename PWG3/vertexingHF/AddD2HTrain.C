@@ -2,14 +2,14 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
 		  Int_t addD0Mass=1,
 		  Int_t addD0MassLS=1,
 		  Int_t addDplus=1,
-		  Int_t addLSD0=1,
-		  Int_t addLSJpsi=1,
-		  Int_t addCFD0=1,
+		  Int_t addLSD0=0,
+		  Int_t addLSJpsi=0,
+		  Int_t addCFD0=0,
 		  Int_t addPromptD0=1,
-		  Int_t addDs=1,
+		  Int_t addDs=0,
 		  Int_t addDStar=1,
-		  Int_t addDStarJets=1,
-		  Int_t addCFDStar=1) {
+		  Int_t addDStarJets=0,
+		  Int_t addCFDStar=0) {
   // 
   // Tasks of the D2H subgroup of PWG3 that can run in the Official Train
   //
