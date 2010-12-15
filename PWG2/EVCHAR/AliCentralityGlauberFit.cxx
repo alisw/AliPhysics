@@ -438,46 +438,38 @@ TH1D *AliCentralityGlauberFit::GlauberHisto(Float_t mu, Float_t k, Float_t eff, 
 }
 
 //--------------------------------------------------------------------------------------------------
-
-Float_t AliCentralityGlauberFit::CalculateChi2(TH1D *hDATA, TH1D *thistGlau, Float_t eff) {
+Float_t AliCentralityGlauberFit::CalculateChi2(TH1D *hDATA, TH1D *thistGlau, Float_t eff) 
+{
   // note that for different values of neff the mc distribution is identical, just re-scaled below
   // normalize the two histogram
   // scale MC up but leave data alone - that preserves error bars !!!!
   
-  int lowchibin =   hDATA->FindBin(fMultmin);
-  int highchibin =  hDATA->FindBin(fMultmax);
+  Int_t lowchibin =   hDATA->FindBin(fMultmin);
+  Int_t highchibin =  hDATA->FindBin(fMultmax);
 
-  float mcintegral = thistGlau->Integral(lowchibin,highchibin);
-  //  float scale = (hDATA->Integral(lowchibin,highchibin)/mcintegral) * ((float) eff);
-  float scale = (hDATA->Integral(lowchibin,highchibin)/mcintegral) * ((float) eff);
+  Double_t mcintegral = thistGlau->Integral(lowchibin,highchibin);
+  Double_t scale = (hDATA->Integral(lowchibin,highchibin)/mcintegral) * ((Double_t)eff);
   thistGlau->Scale(scale);
 
   // FIXME: Kolmogorov
   //return hDATA->KolmogorovTest(thistGlau,"M");
 
-  // // calculate the chi2 between MC and real data over some range ????
+  // calculate the chi2 between MC and real data over some range ????
   if (fUseChi2) {
     float chi2 = 0.0;
     for (int i=lowchibin; i<=highchibin; i++) {
       if (hDATA->GetBinContent(i) < 1.0) continue;
       float diff = pow( (thistGlau->GetBinContent(i) - hDATA->GetBinContent(i)) , 2);
-      diff = diff / (pow(hDATA->GetBinError(i) , 2)+pow(thistGlau->GetBinError(i) , 2)); // FIXME squared distance if commented
+      diff = diff / (pow(hDATA->GetBinError(i) , 2)+pow(thistGlau->GetBinError(i) , 2)); 
       chi2 += diff;
     }
     chi2 = chi2 / (highchibin - lowchibin + 1);
     return chi2;
-  }
-  // "-2 log likelihood ratio(mu;n) = 2[(mu - n) + n ln(n/mu)]"
-  else {
+  } else {  // "-2 log likelihood ratio(mu;n) = 2[(mu - n) + n ln(n/mu)]"
     std::cout << "LL" << std::endl;
-    
 
     float ll = 0.0;
     for (int i=lowchibin; i<=highchibin; i++) {
-      //      if (thistGlau->GetBinContent(i) < 1) continue; 
-      //      if (hDATA->GetBinContent(i) < 1) continue; 
-      //    cout << ll << " " << thistGlau->GetBinContent(i) <<" " <<  hDATA->GetBinContent(i) << endl;
- 
       Float_t data = hDATA    ->GetBinContent(i);
       Float_t mc   = thistGlau->GetBinContent(i);
       Int_t idata = TMath::Nint(data);
@@ -491,17 +483,14 @@ Float_t AliCentralityGlauberFit::CalculateChi2(TH1D *hDATA, TH1D *thistGlau, Flo
 	    fobs += TMath::Log(istep);
 	}
       }
-      //      cout << mc << " " << data << " " << fsub << " " << fobs << endl;
       fsub -= fobs;
       ll -=  fsub ;
     }
     return 2*ll;
   }
-
 }
 
 //--------------------------------------------------------------------------------------------------
-
 TH1D * AliCentralityGlauberFit::GetTriggerEfficiencyFunction(TH1D *hist1, TH1D *hist2) 
 {
   // Get efficiency.
