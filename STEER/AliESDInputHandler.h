@@ -15,6 +15,7 @@
 class TChain;
 class TTree;
 class AliRunTag;
+class AliEventTag;
 class TMap;
 class AliESDfriend;
 class AliESDpid;
@@ -44,7 +45,7 @@ class AliESDInputHandler : public AliInputEventHandler {
     // HLT  analysis
     AliESDEvent         *GetHLTEvent()     const {return fHLTEvent;}
     TTree               *GetHLTTree()      const {return fHLTTree;}    
-    void                SetReadHLT()             {fUseHLT = kTRUE;}
+    void                 SetReadHLT()            {fUseHLT = kTRUE;}
     // Friends&Co
     AliESDfriend        *GetESDfriend()    const {return fFriend;}
     AliESDpid           *GetESDpid()       const {return fESDpid;}
@@ -52,8 +53,9 @@ class AliESDInputHandler : public AliInputEventHandler {
     void                 SetReadFriends(Bool_t flag)   {fReadFriends = flag;}
     void                 SetFriendFileName(const char *fname)  {fFriendFileName = fname;}
     // Tag analysis
-    void SetReadTags() {fUseTags = kTRUE;}
-    AliRunTag           *GetRunTag() const {return fRunTag;}
+    void                 SetReadTags()           {fUseTags = kTRUE;}
+    AliRunTag           *GetRunTag() const       {return fRunTag;}
+    const AliEventTag   *GetEventTag() const     {return fEventTag;}
     // Get the statistics object (currently TH2). Option can be BIN0.
     virtual TObject     *GetStatistics(Option_t *option="") const;
  private:
@@ -77,6 +79,7 @@ class AliESDInputHandler : public AliInputEventHandler {
     TChain         *fChainT;        //! File with event tags
     TTree          *fTreeT;         //! Tree of tags
     AliRunTag      *fRunTag;        //! Pointer to the run tag
+    const AliEventTag *fEventTag;      //! Current event tag
     // Friends
     Bool_t          fReadFriends;   //  Flag for friends reading 
     TString         fFriendFileName;//  Name of the file containing the frien tree (branch)

@@ -17,6 +17,7 @@
 class AliVEvent;
 class AliVCuts;
 class AliRunTag;
+class AliEventTag;
 
 
 class AliInputEventHandler : public AliVEventHandler {
@@ -50,6 +51,7 @@ class AliInputEventHandler : public AliVEventHandler {
     void SetActiveBranches  (const char* branches) {fBranchesOn = branches;}
      // Getters
     virtual AliVEvent   *GetEvent()        const                      {return 0;}
+    virtual const AliEventTag   *GetEventTag() const                  {return 0;}
     virtual AliRunTag   *GetRunTag()       const                      {return 0;}
     // Get the statistics object (currently TH2). Option can be BIN0.
     virtual TObject     *GetStatistics(Option_t *option="") const;

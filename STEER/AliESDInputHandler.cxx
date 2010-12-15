@@ -60,6 +60,7 @@ AliESDInputHandler::AliESDInputHandler() :
   fChainT(0),
   fTreeT(0),
   fRunTag(0),
+  fEventTag(0),
   fReadFriends(0),
   fFriendFileName("AliESDfriends.root")
 {
@@ -70,12 +71,13 @@ AliESDInputHandler::AliESDInputHandler() :
 AliESDInputHandler::~AliESDInputHandler() 
 {
   //  destructor
+  if (fRunTag) delete fRunTag;
 }
 
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
     AliInputEventHandler(name, title), fEvent(0x0), fFriend(0x0), fESDpid(0x0), fAnalysisType(0),
-    fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0), fReadFriends(0), fFriendFileName("AliESDfriends.root")
+    fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0), fEventTag(0), fReadFriends(0), fFriendFileName("AliESDfriends.root")
 {
     // Constructor
 }
@@ -112,8 +114,8 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
      AliInfo(Form("The ESD input handler expects that the first task calls AliESDInputHandler::CheckSelectionMask() %s", fEventCuts->ClassName()));
   AliESD* old = ((AliESDEvent*) fEvent)->GetAliESDOld();
   if (old) {
-	((AliESDEvent*)fEvent)->CopyFromOldESD();
-	old->Reset();
+   ((AliESDEvent*)fEvent)->CopyFromOldESD();
+   old->Reset();
   }
 
   if (fHLTTree) {
@@ -132,8 +134,15 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   ((AliESDEvent*)fEvent)->SetESDfriend(fFriend);
   called = kTRUE;
 
-  if (fMixingHandler) fMixingHandler->BeginEvent(entry);  
-      
+  if (fMixingHandler) fMixingHandler->BeginEvent(entry);
+  if (fUseTags && fRunTag) {
+    fEventTag = 0;
+    if (entry >= fRunTag->GetNEvents()) {
+      AliError(Form("Current event %d does not match max range from run tag: 0-%d", (Int_t)entry, fRunTag->GetNEvents()));
+      return kTRUE;
+    }
+    fEventTag = fRunTag->GetEventTag(entry);   
+  }      
   return kTRUE;
 }
 
@@ -157,136 +166,127 @@ Bool_t  AliESDInputHandler::FinishEvent()
 //______________________________________________________________________________
 Bool_t AliESDInputHandler::Notify(const char* path)
 {
-    // Notify a directory change
-    AliInfo(Form("Directory change %s \n", path));
-    //
-    // Handle the friends first
-    //
-    if (!fTree->FindBranch("ESDfriend.") && fReadFriends) {
-      // Try to add ESDfriend. branch as friend
-      TString esdTreeFName, esdFriendTreeFName;    
-      esdTreeFName = (fTree->GetCurrentFile())->GetName();
-      esdFriendTreeFName = esdTreeFName;
-      esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
-      TTree* cTree = fTree->GetTree();
-      if (!cTree) cTree = fTree;      
-      cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
-      cTree->SetBranchStatus("ESDfriend.", 1);
-      fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
-      if (fFriend) cTree->SetBranchAddress("ESDfriend.", &fFriend);
-    } 
-    //
-    //
-    SwitchOffBranches();
-    SwitchOnBranches();
+  // Notify a directory change
+  static Bool_t firsttime = kFALSE;
+  AliInfo(Form("Directory change %s \n", path));
+  //
+  // Handle the friends first
+  //
+  if (!fTree->FindBranch("ESDfriend.") && fReadFriends) {
+    // Try to add ESDfriend. branch as friend
+    TString esdTreeFName, esdFriendTreeFName;    
+    esdTreeFName = (fTree->GetCurrentFile())->GetName();
+    esdFriendTreeFName = esdTreeFName;
+    esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
+    TTree* cTree = fTree->GetTree();
+    if (!cTree) cTree = fTree;      
+    cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
+    cTree->SetBranchStatus("ESDfriend.", 1);
     fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
-    //
-    if (fUseHLT) {
-	// Get HLTesdTree from current file
-	TTree* cTree = fTree;
-	if (fTree->GetTree()) cTree = fTree->GetTree();
-	TFile* cFile = cTree->GetCurrentFile();
-	cFile->GetObject("HLTesdTree", fHLTTree);
+    if (fFriend) cTree->SetBranchAddress("ESDfriend.", &fFriend);
+  } 
+  //
+  //
+  SwitchOffBranches();
+  SwitchOnBranches();
+  fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
+  //
+  if (fUseHLT) {
+    // Get HLTesdTree from current file
+    TTree* cTree = fTree;
+    if (fTree->GetTree()) cTree = fTree->GetTree();
+    TFile* cFile = cTree->GetCurrentFile();
+    cFile->GetObject("HLTesdTree", fHLTTree);
 	
-	if (fHLTTree) {
-	  if (!fHLTEvent) fHLTEvent = new AliESDEvent();
-	  fHLTEvent->ReadFromTree(fHLTTree);
-	}
+    if (fHLTTree) {
+	   if (!fHLTEvent) fHLTEvent = new AliESDEvent();
+	   fHLTEvent->ReadFromTree(fHLTTree);
     }
+  }
 
-    if (!fUseTags) {
-	if (fMixingHandler) fMixingHandler->Notify(path);
-	return (kTRUE);
-    }
-    
-    Bool_t zip = kFALSE;
-    
-    TString fileName(path);
-    if(fileName.Contains("#AliESDs.root")){
-	zip = kTRUE;
-    } 
-    else if (fileName.Contains("AliESDs.root")){
-	fileName.ReplaceAll("AliESDs.root", "");
-    }
-    else if(fileName.Contains("#AliAOD.root")){
-	zip = kTRUE;
-    }
-    else if(fileName.Contains("AliAOD.root")){
-	fileName.ReplaceAll("AliAOD.root", "");
-    }
-    else if(fileName.Contains("#galice.root")){
-	// For running with galice and kinematics alone...
-	zip = kTRUE;
-    }
-    else if(fileName.Contains("galice.root")){
-	// For running with galice and kinematics alone...
-	fileName.ReplaceAll("galice.root", "");
-    }
-
-    
-    TString pathName("./");
-    if (fileName.Length() != 0) {
-	pathName = fileName;
-    }
-    
-    printf("AliESDInputHandler::Notify() Path: %s\n", pathName.Data());
-
-    if (fRunTag) {
-	fRunTag->Clear();
-    } else {
-	fRunTag = new AliRunTag();
-    }
-    
-    delete fTreeT; fTreeT = 0;
-    
-    if (fChainT) {
-	delete fChainT;
-	fChainT = 0;
-    }
-    
-    if (!fChainT) {
-	fChainT = new TChain("T");
-    }
-    
-
-
-    const char* tagPattern = "ESD.tag.root";
-    const char* name = 0x0;
-    TString tagFilename;
-    if (zip) {
-	TFile* file = fTree->GetCurrentFile();
-	TArchiveFile* arch = file->GetArchive();
-	TObjArray* arr = arch->GetMembers();
-	TIter next(arr);
-	
-	while ((file = (TFile*) next())) {
-	    name = file->GetName();
-	    if (strstr(name,tagPattern)) { 
-		tagFilename = pathName.Data();
-		tagFilename += "#";
-		tagFilename += name;
-		fChainT->Add(tagFilename);  
-		AliInfo(Form("Adding %s to tag chain \n", tagFilename.Data()));
-	    }//pattern check
-	} // archive file loop
-    } else {
-	void * dirp = gSystem->OpenDirectory(pathName.Data());
-	while((name = gSystem->GetDirEntry(dirp))) {
-	    if (strstr(name,tagPattern)) { 
-		tagFilename = pathName.Data();
-		tagFilename += "/";
-		tagFilename += name;
-		fChainT->Add(tagFilename);  
-		AliInfo(Form("Adding %s to tag chain \n", tagFilename.Data()));
-	    }//pattern check
-	}//directory loop
-    }
-    fChainT->SetBranchAddress("AliTAG",&fRunTag);
-    fChainT->GetEntry(0);
-
+  if (!fUseTags) {
     if (fMixingHandler) fMixingHandler->Notify(path);
-  
     return kTRUE;
+  }
+    
+  Bool_t zip = kFALSE;
+    
+  // Setup the base path
+  TString pathName(path);
+  Int_t index = pathName.Index("#");
+  if (index>=0) {
+    zip = kTRUE;
+    pathName = pathName(0,index);
+  } else {
+    pathName = gSystem->DirName(pathName);
+  }
+  if (fTree->GetCurrentFile()->GetArchive()) zip = kTRUE;
+  if (pathName.IsNull()) pathName = "./";  
+  printf("AliESDInputHandler::Notify() Path: %s\n", pathName.Data());
+
+  if (fRunTag) {
+    fRunTag->Clear();
+  } else {
+    fRunTag = new AliRunTag();
+  }
+    
+  const char* tagPattern = "ESD.tag.root";
+  TString sname;
+  TString tagFilename;
+  if (zip) {
+    TObjArray* arr = fTree->GetCurrentFile()->GetArchive()->GetMembers();
+    TIter next(arr);
+    TObject *objarchive;
+    while ((objarchive = next())) {
+      sname = objarchive->GetName();
+	   if (sname.Contains(tagPattern)) { 
+        tagFilename = pathName;
+        if (index>=0) tagFilename += "#";
+        else tagFilename += "/";
+        tagFilename += sname;
+        AliInfo(Form("Tag file found: %s\n", tagFilename.Data()));
+        break; // There should be only one such file in the archive
+      }//pattern check
+    } // archive file loop
+  } else {
+    void * dirp = gSystem->OpenDirectory(pathName.Data());
+    while(1) {
+      sname = gSystem->GetDirEntry(dirp);
+      if (sname.IsNull()) break;
+      if (sname.Contains(tagPattern)) { 
+        tagFilename = pathName;
+        tagFilename += "/";
+        tagFilename += sname;
+        AliInfo(Form("Tag file found: %s\n", tagFilename.Data()));
+        break;
+      }//pattern check
+    }//directory loop
+  }
+  if (tagFilename.IsNull()) {
+    if (firsttime) AliWarning(Form("Tag file not found in directory: %s", pathName.Data()));
+    firsttime = kFALSE;
+    delete fRunTag; fRunTag = 0;
+    return kTRUE;
+  }
+  TFile *tagfile = TFile::Open(tagFilename);
+  if (!tagfile) {
+    AliError(Form("Cannot open tag file: %s", tagFilename.Data()));
+    delete fRunTag; fRunTag = 0;
+    return kTRUE;
+  }   
+  fTreeT = (TTree*)tagfile->Get("T"); // file is the owner
+  if (!fTreeT) {
+    AliError(Form("Cannot get tree of tags from file: %s", tagFilename.Data()));
+    delete fRunTag; fRunTag = 0;
+    return kTRUE;
+  }
+    
+  fTreeT->SetBranchAddress("AliTAG",&fRunTag);
+  fTreeT->GetEntry(0);
+  delete tagfile;
+  // Notify the mixing handler after the tags are loaded
+  if (fMixingHandler) fMixingHandler->Notify(path);
+  return kTRUE;
 }
 
 //______________________________________________________________________________

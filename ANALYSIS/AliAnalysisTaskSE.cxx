@@ -545,4 +545,31 @@ Bool_t AliAnalysisTaskSE::Notify()
     return (UserNotify());
 }
 
+const AliEventTag *AliAnalysisTaskSE::EventTag() const
+{
+// Returns tag for the current event, if any. The return value should always be checked by the user.
+   if (!fInputHandler) {
+      Error("EventTag", "Input handler not yet available. Call this in UserExec");
+      return NULL;
+   }
+   return fInputHandler->GetEventTag();
+}
 
+void AliAnalysisTaskSE::LoadBranches() const
+{
+// Load all branches declared in fBranchNames data member of the parent class.
+// Should be called in UserExec.
+  if (!fInputHandler) {
+     Error("LoadBranches", "Input handler not available yet. Call this in UserExec");
+     return;
+  }
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (mgr->GetAutoBranchLoading()) return;
+  TString taskbranches;
+  GetBranches(fInputHandler->GetDataType(), taskbranches);
+  if (taskbranches.IsNull()) return;
+  TObjArray *arr = taskbranches.Tokenize(",");
+  TIter next(arr);
+  TObject *obj;
+  while ((obj=next())) mgr->LoadBranch(obj->GetName());
+}

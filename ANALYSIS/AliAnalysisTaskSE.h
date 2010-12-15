@@ -17,6 +17,7 @@ class AliMCEvent;
 class AliInputEventHandler;
 class AliAnalysisCuts;
 class AliESDfriend;
+class AliEventTag;
 
 class TTree;
 class TList;
@@ -47,6 +48,8 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual void   AddAODBranch(const char* cname, void* addobj, const char *fname="");
     // Event Selection
     virtual void   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
+    // Loading the declared input branches
+    void           LoadBranches() const;
  // Getters
     virtual Int_t         DebugLevel()  {return fDebug;     }
     virtual AliVEvent*    InputEvent()  {return fInputEvent;}
@@ -55,6 +58,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual TTree*        OutputTree()  {return fTreeA;     }
     virtual AliMCEvent*   MCEvent()     {return fMCEvent;   }
     virtual Long64_t      Entry()       {return fEntry;     }
+    virtual const AliEventTag *EventTag() const;
     virtual const char*   CurrentFileName();
     virtual Bool_t        IsStandardAOD() const;
     virtual TList*        GetQAHistos()   const {return fHistosQA;}
