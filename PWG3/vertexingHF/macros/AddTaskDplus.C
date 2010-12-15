@@ -1,6 +1,6 @@
 AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
 				     Bool_t readMC=kFALSE,
-				     TString filename="./DplustoKpipiCuts.root")
+				     TString filename="DplustoKpipiCuts.root")
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for D+ candidates 
@@ -13,24 +13,26 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskDplus", "No analysis manager to connect to.");
-    return NULL;
   }
 
+  Bool_t stdcuts=kFALSE;
   TFile* filecuts=new TFile(filename.Data());
   if(!filecuts->IsOpen()){
-    cout<<"Input file not found: exit"<<endl;
-    return;
+    cout<<"Input file not found: using standard cuts"<<endl;
+    stdcuts=kTRUE;
   }
   
   
   //Analysis Task
 
   
-   AliRDHFCutsDplustoKpipi* analysiscuts=new AliRDHFCutsDplustoKpipi();
-  analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get("AnalysisCuts");
+  AliRDHFCutsDplustoKpipi* analysiscuts=new AliRDHFCutsDplustoKpipi();
+  if(stdcuts) analysiscuts->SetStandardCutsPP2010();
+  else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get("AnalysisCuts");
 
   AliRDHFCutsDplustoKpipi* prodcuts=new AliRDHFCutsDplustoKpipi();
-  prodcuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get("ProdCuts");
+  if(stdcuts) prodcuts->SetStandardCutsPP2010();
+  else prodcuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get("AnalysisCuts");
   
   //AliRDHFCutsDplustoKpipi *prodcuts = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("ProdCuts");
   //AliRDHFCutsDplustoKpipi *analysiscuts = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("AnalysisCuts");
