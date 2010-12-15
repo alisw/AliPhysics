@@ -43,6 +43,8 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliRawVEquipment.h"
 #include "AliRawEquipmentHeader.h"
 
+#include "Riostream.h"
+
 namespace
 {
 	const Int_t kSTUEqId = 4652;
@@ -272,6 +274,7 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 void AliEMCALTriggerRawDigitMaker::PostProcess()
 {	
 	//
+	printf("-----Calling AliEMCALTriggerRawDigitMaker::PostProcess()\n");
 	Int_t idx;
 	
 	AliEMCALTriggerRawDigit* dig = 0x0;
@@ -320,7 +323,16 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 				UInt_t adc[96]; for (Int_t j = 0; j < 96; j++) adc[j] = 0;
 				
 				fSTURawStream->GetADC(i, adc);
+				/*
+				ofstream outfile(Form("data_TRU%d.txt",i),ios_base::trunc);
 				
+				for (Int_t j = 0; j < 96; j++) 
+				{
+					outfile << adc[j] << endl;
+				}
+				
+				outfile.close();
+				*/
 				for (Int_t j = 0; j < 96; j++)
 				{
 					//if (adc[j] < 5) continue;
@@ -362,9 +374,8 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			
 			const Int_t sizePatchL0 = fDCSConfig->GetTRUSegmentation(iTRU) * fDCSConfig->GetTRUSegmentation(iTRU);
 			
-			Int_t* idFastOR = new Int_t[sizePatchL0]; 
-			
-			for (Int_t j = 0; j < sizePatchL0; j++) idFastOR[j] = -1;
+			Int_t idFastOR[4];
+			for (Int_t j = 0; j < 4; j++) idFastOR[j] = -1;
 			
 			if (fGeometry->GetFastORIndexFromL0Index(iTRU, x, idFastOR, sizePatchL0))
 			{
@@ -378,20 +389,18 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 					if (fRawDigitIndex[idx] >= 0)
 					{
 						dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
-				}
+					}
 					else
 					{
 						fRawDigitIndex[idx] = fRawDigits->GetEntriesFast();
 						new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
 			
 						dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
-		}
+					}
 		
 					dig->SetTriggerBit(kL0,1);
 				}
 			}
-		
-			delete [] idFastOR;
 		}
 		
 		for (Int_t i = 0; i < fSTURawStream->GetNL1GammaPatch(); i++)
