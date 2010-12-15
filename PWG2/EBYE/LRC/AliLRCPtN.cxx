@@ -1,5 +1,5 @@
 /**************************************************************************
- * Author: Panos Christakoglou.                                           *
+ * Author: Andrey Ivanov.                                                 *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -15,22 +15,18 @@
 //    This class include into LRC library for Long-Range Correlation analysis
 //    it is the PtN class
 //    calculates PtN correlations for abs and rel var
-//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
+//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch,
+//    Andrey Ivanov (SPbSU-CERN), Igor Altsebeev (SPbSU-CERN) 
 //-------------------------------------------------------------------------
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//         LRC library for Long-Range Correlation analysis
-//
-//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
-//-------------------------------------------------------------------------
 
 #include "AliLRCPtN.h"
 #include "TFile.h"
 #include "TList.h"
 #include "TProfile.h"
-#include "TMath.h"
+#include "math.h"
 
 class TFile;
 class TProfile;
@@ -72,14 +68,14 @@ AliLRCPtN::AliLRCPtN(char *fileHistname, char *histname, char *profname, double 
 	
 }
 //const
-AliLRCPtN::AliLRCPtN(TList *  const LHist, char *histname, char *profname, char *ptdname, char *errhistname):AliLRCAnalysis() {
+AliLRCPtN::AliLRCPtN(const TList *  const LHist, char *histname, char *profname, char *ptdname, char *errhistname):AliLRCAnalysis() {
 //Make PtN form 2d histogram from root file
     SetGraphics();
     TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);
     CreateHist(profname, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"n_{F}", (char*)"<Pt_{B}>_{n_{F}}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<Pt_{B}>_{n_{F}}}{<Pt_{B}>}", sourceHist);
 	TProfile* nbP = (TProfile*) LHist->FindObject(errhistname);
 	TProfile *dPtB = (TProfile*) LHist->FindObject(ptdname);
-	double dptb=dPtB->GetBinError(1)*TMath::Sqrt(dPtB->GetBinEntries(1));
+	double dptb=dPtB->GetBinError(1)*sqrt(dPtB->GetBinEntries(1));
 	SetErrors(sourceHist, profname, dptb, nbP);
 }
 
@@ -114,13 +110,13 @@ void AliLRCPtN::MakeHistogramm(char *fileHistname, char *histname, char *profnam
 	SetErrors(sourceHist, profname, ptd, nbP);
 }
 
-void AliLRCPtN::MakeHistogramm(TList * const LHist, char *histname, char *profname, char *ptdname, char *errhistname) {
+void AliLRCPtN::MakeHistogramm(const TList * const LHist, char *histname, char *profname, char *ptdname, char *errhistname) {
 //Make PtN form 2d histogram from root file
     SetGraphics();
     TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);
     CreateHist(profname, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"n_{F}", (char*)"<Pt_{B}>_{n_{F}}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<Pt_{B}>_{n_{F}}}{<Pt_{B}>}", sourceHist);
 	TProfile* nbP = (TProfile*) LHist->FindObject(errhistname);
 	TProfile *dPtB = (TProfile*) LHist->FindObject(ptdname);
-	double dptb=dPtB->GetBinError(1)*TMath::Sqrt(dPtB->GetBinEntries(1));
+	double dptb=dPtB->GetBinError(1)*sqrt(dPtB->GetBinEntries(1));
 	SetErrors(sourceHist, profname, dptb, nbP);
 }

@@ -3,7 +3,8 @@
 //    This class include into LRC library for Long-Range Correlation analysis
 //    it is the PtPt class
 //    calculates PtPt correlations for abs and rel var
-//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
+//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch,
+//    Andrey Ivanov (SPbSU-CERN), Igor Altsebeev (SPbSU-CERN) 
 //-------------------------------------------------------------------------
 #ifndef ALILRCPTPT_H
 #define ALILRCPTPT_H
@@ -12,11 +13,6 @@
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//         LRC library for Long-Range Correlation analysis
-//
-//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
-//-------------------------------------------------------------------------
 
 #include "AliLRCAnalysis.h"
 
@@ -32,11 +28,11 @@ class AliLRCPtPt:public AliLRCAnalysis
 	AliLRCPtPt(char *name, TH2D* sourceHist, double ptd, TH2D* nb);
 	AliLRCPtPt(char *name, TH2D* sourceHist, double ptd, TProfile* nb);
 	AliLRCPtPt(char *fileHistname, char *histname, char *profname, double ptd, char *errhistname);	
-	AliLRCPtPt(TList *LHist, char *histname, char *profname, char *ptdname, char *errhistname);
+	AliLRCPtPt(const TList * const LHist, char *histname, char *profname, char *ptdname, char *errhistname);
 	void MakeHistogramm(char *name, TH2D* sourceHist, double ptd, TH2D* nb);
 	void MakeHistogramm(char *name, TH2D* sourceHist, double ptd, TProfile* nb);
 	void MakeHistogramm(char *fileHistname, char *histname, char *profname, double ptd, char *errhistname) ;
-	void MakeHistogramm(TList *LHist, char *histname, char *profname, char *ptdname, char *errhistname) ;		
+	void MakeHistogramm(const TList * const LHist, char *histname, char *profname, char *ptdname, char *errhistname) ;		
 	ClassDef(AliLRCPtPt,0)                 // macro for rootcint
 
 };

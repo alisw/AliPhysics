@@ -1,5 +1,5 @@
 /**************************************************************************
- * Author: Panos Christakoglou.                                           *
+ * Author: Andrey Ivanov.                                                 *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -15,7 +15,8 @@
 //    This class include into LRC library for Long-Range Correlation analysis
 //    it is the NN class
 //    calculates NN correlations for abs and rel var
-//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
+//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch,
+//    Andrey Ivanov (SPbSU-CERN), Igor Altsebeev (SPbSU-CERN) 
 //-------------------------------------------------------------------------
 
 /* $Id$ */
@@ -59,7 +60,7 @@ AliLRCNN::AliLRCNN(char *fileHistname, char *histname, char *profname):AliLRCAna
     SetErrors(sourceHist, profname);
 }
 
-AliLRCNN::AliLRCNN(TList *  const LHist, char *histname, char *profname):AliLRCAnalysis() {
+AliLRCNN::AliLRCNN(const TList *  const LHist, char *histname, char *profname):AliLRCAnalysis() {
 //Make NN from 2d histogramm from root file
     SetGraphics();
     TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);
@@ -84,7 +85,7 @@ void AliLRCNN::MakeHistogramm(char *fileHistname, char *histname, char *profname
     SetErrors(sourceHist, profname);
 }
 
-void AliLRCNN::MakeHistogramm(TList * const LHist, char *histname, char *profname) {
+void AliLRCNN::MakeHistogramm(const TList * const LHist, char *histname, char *profname) {
 //Make NN from 2d histogramm from root file
     SetGraphics();
     TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);
