@@ -161,7 +161,7 @@ void AliGenHerwig::Init()
   fHerwig->SetRMASS(4,1.2);
   fHerwig->SetRMASS(5,4.75);
 
-  if ( fProcess < 0 ) strncpy(VVJIN.QQIN,fFileName.Data(),50);
+  if ( fProcess < 0 ) strncpy(VVJIN.QQIN,fFileName.Data(), 49);
 
   //fHerwig->Hwusta("PI0     ");
 
@@ -198,7 +198,7 @@ void AliGenHerwig::InitJimmy()
   fHerwig->SetRMASS(4,1.2);
   fHerwig->SetRMASS(5,4.75);
 
-  if ( fProcess < 0 ) strncpy(VVJIN.QQIN,fFileName.Data(),50);
+  if ( fProcess < 0 ) strncpy(VVJIN.QQIN,fFileName.Data(), 49);
 
   //  fHerwig->Hwusta("PI0     ");
 

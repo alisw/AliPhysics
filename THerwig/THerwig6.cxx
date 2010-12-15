@@ -132,9 +132,9 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
   // value after calling Initialize and before PrepareRun.
 
    char  cbeam[8];
-    strncpy(cbeam,beam,8);
+    strncpy(cbeam,beam, 7);
    char  ctarget[8];
-   strncpy(ctarget,target,8);
+   strncpy(ctarget,target, 7);
    printf("\n Initializing Herwig !! \n");
    if ( (!strncmp(beam, "E+"    ,2)) &&
         (!strncmp(beam, "E-"    ,2)) &&
@@ -649,7 +649,7 @@ void        THerwig6::SetNSTRU    (int i)          { HWPRAM.NSTRU = i; }
 
 // /HWPRCH/
 char*       THerwig6::GetAUTPDF     (int i)         { return HWPRCH.AUTPDF[i-1]; }
-void        THerwig6::SetAUTPDF(int i,const char* s){ strncpy(HWPRCH.AUTPDF[i-1],s,20);}
+void        THerwig6::SetAUTPDF(int i,const char* s){ strncpy(HWPRCH.AUTPDF[i-1], s, 19);}
 char*       THerwig6::GetBDECAY        ()           { return HWPRCH.BDECAY; }
 
 // /HWEVNT/
