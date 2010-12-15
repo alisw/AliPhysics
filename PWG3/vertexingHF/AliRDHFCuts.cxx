@@ -41,6 +41,7 @@ AliAnalysisCuts(name,title),
 fMinVtxType(3),
 fMinVtxContr(1),
 fMaxVtxRedChi2(1e6),
+fMaxVtxZ(1e6),
 fMinSPDMultiplicity(0),
 fTriggerMask(0),
 fTrackCuts(0),
@@ -72,6 +73,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMinVtxType(source.fMinVtxType),
   fMinVtxContr(source.fMinVtxContr),
   fMaxVtxRedChi2(source.fMaxVtxRedChi2),
+  fMaxVtxZ(source.fMaxVtxZ),
   fMinSPDMultiplicity(source.fMinSPDMultiplicity),
   fTriggerMask(source.fTriggerMask),
   fTrackCuts(0),
@@ -119,6 +121,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMinVtxType=source.fMinVtxType;
   fMinVtxContr=source.fMinVtxContr;
   fMaxVtxRedChi2=source.fMaxVtxRedChi2;
+  fMaxVtxZ=source.fMaxVtxZ;
   fMinSPDMultiplicity=source.fMinSPDMultiplicity;
   fTriggerMask=source.fTriggerMask;
   fnPtBins=source.fnPtBins;
@@ -182,6 +185,8 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   if(title.Contains("3D") && fMinVtxType>2) return kFALSE; 
 
   if(vertex->GetNContributors()<fMinVtxContr) return kFALSE; 
+
+  if(TMath::Abs(vertex->GetZ())>fMaxVtxZ) return kFALSE;
 
   // switch to settings for 1-pad cls in TPC
   if(fPidHF) {

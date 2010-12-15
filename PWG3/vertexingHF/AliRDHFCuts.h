@@ -36,6 +36,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
   void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}  
   void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}  
+  void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}  
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
   void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;} 
   void SetVarsForOpt(Int_t nVars,Bool_t *forOpt);
@@ -115,6 +116,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fMinVtxType; // 0: not cut; 1: SPDZ; 2: SPD3D; 3: Tracks
   Int_t fMinVtxContr;   // minimum vertex contributors
   Float_t fMaxVtxRedChi2; // maximum chi2/ndf
+  Float_t fMaxVtxZ; // maximum |z| of primary vertex
   Int_t fMinSPDMultiplicity; // SPD multiplicity
   ULong64_t fTriggerMask; // trigger mask
   // quality cuts on the daughter tracks
