@@ -1288,11 +1288,20 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     // wrt event vertex
     esdtrack->PropagateToDCA(vtxESDRec, esd->GetMagneticField(), beampiperadius, dzRec, covdzRec);
     // wrt event vertex without this track
-    if(!highMult) {
+    if(!highMult && fSkipTrack) {
       esdtrack->PropagateToDCA(vtxESDSkip, esd->GetMagneticField(), beampiperadius, dzRecSkip, covdzRecSkip);
+    } else if(!fSkipTrack) {
+      dzRecSkip[0]=dzRec[0]; 
+      dzRecSkip[1]=dzRec[1];
+      covdzRecSkip[0]=covdzRec[0];
+      covdzRecSkip[1]=covdzRec[1];
+      covdzRecSkip[2]=covdzRec[2];
     } else {
-      dzRecSkip[0]=0.;dzRecSkip[1]=0.;
-      covdzRecSkip[0]=1.;covdzRecSkip[1]=0.;covdzRecSkip[2]=1.;
+      dzRecSkip[0]=0; 
+      dzRecSkip[1]=0;
+      covdzRecSkip[0]=0;
+      covdzRecSkip[1]=0;
+      covdzRecSkip[2]=0;
     }
     delete vtxESDSkip; vtxESDSkip=NULL; // not needed anymore
     // wrt MC vertex
