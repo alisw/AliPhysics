@@ -1,5 +1,5 @@
 /**************************************************************************
- * Author: Panos Christakoglou.                                           *
+ * Author: Andrey Ivanov.                                           *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -15,19 +15,11 @@
 //    This class include into LRC library for Long-Range Correlation analysis
 //    it is base class for NN, PtN, PtPt
 //    implements base methods for thees classes
-//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
-//-------------------------------------------------------------------------
-
-/* $Id$ */
-
-//-------------------------------------------------------------------------
-//         LRC library for Long-Range Correlation analysis
-//
-//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
+//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch ,
+//    Andrey Ivanov (SPbSU-CERN), Igor Altsebeev (SPbSU-CERN) 
 //-------------------------------------------------------------------------
 
 #include "AliLRCAnalysis.h"
-#include "Riostream.h"
 #include "TFile.h"
 #include "AliLRCFit.h"
 #include "TProfile.h"
@@ -35,11 +27,10 @@
 #include "TH2D.h"
 #include "TPaveText.h"
 #include "TF1.h"
-#include "TMath.h"
+#include "math.h"
 #include "TStyle.h"
-
 class gStyle;
-class math;
+
 
 ClassImp(AliLRCAnalysis) 
 
@@ -47,17 +38,18 @@ ClassImp(AliLRCAnalysis)
  * AliLRCAnalysis class
  ******************************************************/
 
-AliLRCAnalysis::AliLRCAnalysis(): fPrAbs(new TH1D()), fPrRel(new TH1D()), fPrf(new TH1D()), fPrb(new TH1D()), fileHist(new TFile()), fdptb(.0), fEntries(0), fSx((char*)" "), fSy((char*)" "), fxFitMin(.0), fxFitMax(.0), farel(.0), fbrel(.0), farelError(0.), fbrelError(0.), fXi2rel(.0), faabs(.0), fbabs(.0), faabsError(0.), fbabsError(0.), fXi2abs(.0){
+AliLRCAnalysis::AliLRCAnalysis():TObject(), fPrAbs(new TH1D()), fPrRel(new TH1D()), fPrf(new TH1D()), fPrb(new TH1D()), fileHist(new TFile()), fdptb(.0), fEntries(0), fSx((char*)" "), fSy((char*)" "), fxFitMin(.0), fxFitMax(.0), fNsigma(2.), farel(.0), fbrel(.0), farelError(.0), fbrelError(.0), fXi2rel(.0), faabs(.0), fbabs(.0), faabsError(.0), fbabsError(.0), fXi2abs(.0),fFitMethod(0){
 //Empty constructor
 }
 
-AliLRCAnalysis::AliLRCAnalysis(const AliLRCAnalysis& a):fPrAbs(a.fPrAbs), fPrRel(a.fPrRel), fPrf(a.fPrf), fPrb(a.fPrb), fileHist(a.fileHist), fdptb(a.fdptb), fEntries(a.fEntries), fSx(a.fSx), fSy(a.fSy), fxFitMin(a.fxFitMin), fxFitMax(a.fxFitMax), farel(a.farel), fbrel(a.fbrel), farelError(a.farelError), fbrelError(a.fbrelError), fXi2rel(a.fXi2rel), faabs(a.faabs), fbabs(a.fbabs),  faabsError(a.faabsError), fbabsError(a.fbabsError), fXi2abs(a.fXi2abs){
+AliLRCAnalysis::AliLRCAnalysis(const AliLRCAnalysis& a):TObject(a),fPrAbs(a.fPrAbs), fPrRel(a.fPrRel), fPrf(a.fPrf), fPrb(a.fPrb), fileHist(a.fileHist), fdptb(a.fdptb), fEntries(a.fEntries), fSx(a.fSx), fSy(a.fSy), fxFitMin(a.fxFitMin), fxFitMax(a.fxFitMax), fNsigma(a.fNsigma), farel(a.farel), fbrel(a.fbrel), farelError(a.farelError), fbrelError(a.fbrelError), fXi2rel(a.fXi2rel), faabs(a.faabs), fbabs(a.fbabs),faabsError(a.faabsError), fbabsError(a.fbabsError), fXi2abs(a.fXi2abs),fFitMethod(a.fFitMethod){
 //Constructor
 }
 
 AliLRCAnalysis& AliLRCAnalysis::operator= (const AliLRCAnalysis& a){
 //Operator =
 	if(this!=&a){
+		TObject::operator= (a);
 		fPrAbs = a.fPrAbs;
 		fPrRel = a.fPrRel;
 		fPrf = a.fPrf;
@@ -69,20 +61,21 @@ AliLRCAnalysis& AliLRCAnalysis::operator= (const AliLRCAnalysis& a){
 		fEntries = a.fEntries;
 		fxFitMin = a.fxFitMin;
 		fxFitMax = a.fxFitMax;
+		fNsigma = a.fNsigma;
  		farel = a.farel;
 		fbrel = a.fbrel;
  		farelError = a.farelError;
- 		fbrelError = a.fbrelError;
+		fbrelError = a.fbrelError;
 		fXi2rel = a.fXi2rel;
 		faabs = a.faabs;
 		fbabs = a.fbabs; 
 		faabsError = a.faabsError;
-		fbabsError = a.fbabsError;
+		fbabsError = a.fbabsError; 
 		fXi2abs = a.fXi2abs;
+		fFitMethod = a.fFitMethod;
 	}
 	return *this;
 }
-
 
 AliLRCAnalysis::~AliLRCAnalysis() {
 //Destructor
@@ -93,49 +86,6 @@ AliLRCAnalysis::~AliLRCAnalysis() {
 	delete fPrb;
 }
 
-double AliLRCAnalysis::HI2(TH1D * const h, double a, double b, double xmin, double xmax) const {
-//hi square calculation of approximation 1d hist with ax+b between xmin and xmax
-    int trueN = 0;
-    double fhi2=0;
-    double num;
-    double fN=h->GetNbinsX();
-    double f = h->GetXaxis()->GetXmin();
-    double fdf = (h->GetXaxis()->GetXmax()-f)/fN;
-    int fNmin = int((xmin-f)/fdf)+1;
-    int fNmax = int((xmax-f)/fdf)+1;
-    for(int i=fNmin; i<=fNmax; i++) {
-        double fw = h->GetBinError(i);
-        if(fw){
-            num = b*(i*fdf-fdf/2+f)+a-h->GetBinContent(i);
-            fhi2 = fhi2 + (num*num) / (fw*fw);
-            trueN++;
-        }
-    }
-	//cout << "trueN " << trueN << endl;
-    return trueN > 2 ? fhi2/(trueN-2.) : -1;
-}
-
-double AliLRCAnalysis::HI2(TH1D * const h, double a, double b) const {
-//hi square calculation of approximation 1d hist with ax+b
-    int trueN = 0;
-    double fhi2=0;
-    double num;
-    int fN=h->GetNbinsX();
-    double f = h->GetXaxis()->GetXmin();
-    double fdf = (h->GetXaxis()->GetXmax()-f)/fN;
-    int fNmin = 1;
-    int fNmax = fN;
-    for(int i=fNmin; i<=fNmax; i++) {
-        double fw = h->GetBinError(i);
-        if(fw){
-            num = b*(i*fdf-fdf/2+f)+a-h->GetBinContent(i);
-            fhi2 = fhi2 + (num*num) / (fw*fw);
-            trueN++;
-        }
-    }
-	//cout << "trueN2 " << trueN << endl;
-    return trueN > 2 ? fhi2/(trueN-2.) : -1;
-}
 
 
 void AliLRCAnalysis::CreateHist(char *name, char *nameAbs, char *nameRel, char *atitleF, char *atitleB, char *rtitleF, char *rtitleB, TH2D* sourceHist) {
@@ -159,8 +109,9 @@ void AliLRCAnalysis::CreateHist(char *name, char *nameAbs, char *nameRel, char *
     fSx = atitleF;
     fSy = atitleB;
     double mnf = fPrf->GetMean();
-    fxFitMin = mnf-2*TMath::Sqrt(mnf);
-    fxFitMax = mnf+2*TMath::Sqrt(mnf);
+    double rms = fPrf->GetRMS();
+    fxFitMin = mnf-fNsigma*rms;//sqrt(rms);
+    fxFitMax = mnf+fNsigma*rms;//sqrt(rms);//mnf+2*sqrt(rms);
     //delete profX;
 
 }
@@ -168,7 +119,7 @@ void AliLRCAnalysis::CreateHist(char *name, char *nameAbs, char *nameRel, char *
 void AliLRCAnalysis::SetBinsRange(int binMin, int binMax){
 //Set the bin range
 	TH1D* h=fPrf;
-    Int_t n=h->GetNbinsX();
+    int n=h->GetNbinsX();
     fxFitMin = h->GetXaxis()->GetXmin();
     fxFitMax = h->GetXaxis()->GetXmax();
     double df = (fxFitMax-fxFitMin)/n;
@@ -193,11 +144,36 @@ bool AliLRCAnalysis::SetFitRange(double xMin, double xMax){
 	this->fxFitMax = xMax;
 	return true;
 }
+bool AliLRCAnalysis::SetFitRangeMin(double xMin){
+//Set the fit range min
+	fxFitMin = xMin;
+	return true;
+}
+
+bool AliLRCAnalysis::SetFitRangeMax(double xMax){
+//Set the fit range min
+	//this->fxFitMax = xMax;
+
+	TH1D* h=fPrf;
+	double maxBorder = 0.;
+
+	for ( int binI = h->GetNbinsX(); binI > 0; binI-- )
+	{
+		if ( h->GetBinContent(binI) != 0 )
+		{
+			maxBorder = h->GetBinLowEdge(binI+1) ;
+			break;
+		}	
+	}
+	fxFitMax = TMath::Max( fxFitMin, TMath::Min( xMax, maxBorder ) );
+
+	return true;
+}
+
 void AliLRCAnalysis::SetFullFitRange(){
 //Set fitting on full range
 	TH1D* h=fPrf;
     fxFitMin = h->GetXaxis()->GetXmin();
-    //fxFitMax = h->GetXaxis()->GetXmax();
 	
 	for ( int binI = h->GetNbinsX(); binI > 0; binI-- )
 	{
@@ -217,7 +193,31 @@ void AliLRCAnalysis::SetXmin(double xMin){
 void AliLRCAnalysis::SetXmax(double xMax){
 	fxFitMax = xMax;
 }
+void AliLRCAnalysis::SetNsigma(double nSigma){
+//Sets fiting range in forward value RMSs
+	fNsigma = nSigma;
+	double mnf = fPrf->GetMean();
+	double rms = fPrf->GetRMS();
+	fxFitMin = mnf-fNsigma*rms;
+	fxFitMax = mnf+fNsigma*rms;
 
+//	cout << "### Fit params: N sigma is " << fNsigma 
+//		<< ", mean = " << mnf << ", rms = " << rms << ", minFitX = " << fxFitMin << ", maxFitX = " << fxFitMax << endl;
+}
+
+void AliLRCAnalysis::SetFitMethod(int id){
+//Choose fit method
+	fFitMethod = id;
+}
+double AliLRCAnalysis::GetFitXmin() const
+{
+	return fxFitMin;
+}
+
+double AliLRCAnalysis::GetFitXmax() const 
+{
+	return fxFitMax;
+}
 double AliLRCAnalysis::GetArel() const {
 	return farel;
 }
@@ -259,70 +259,120 @@ double AliLRCAnalysis::GetXi2abs() const {
 
 void AliLRCAnalysis::Calculate(){
 //Calculate all
-	double mnf;
-	fPrAbs->SetStats(0);
-    	fPrAbs->Fit("pol1", "0", "", fxFitMin, fxFitMax);
-	TF1 *fitt1 = fPrAbs->GetFunction("pol1");
-	faabs = fitt1->GetParameter(0);
-	fbabs = fitt1->GetParameter(1);
-	faabsError = fitt1->GetParError(0);
-	fbabsError = fitt1->GetParError(1);	
-	fXi2abs = HI2(fPrAbs, fitt1->GetParameter(0), fitt1->GetParameter(1), fxFitMin, fxFitMax);
-	
-	mnf = fPrf->GetMean(); 
-	fPrRel->SetStats(0);
-	AliLRCFit *fit1 = new AliLRCFit(fPrRel, fxFitMin/mnf, fxFitMax/mnf);
-	TF1 *f1 = new TF1("f1", "[0] + [1]*x", 0, fPrRel->GetXaxis()->GetXmax());
-	f1->SetParameter(0,fit1->Geta());
-	f1->SetParameter(1,fit1->Getb());
-	fPrRel->Fit("f1", "0", "", fxFitMin/mnf, fxFitMax/mnf);
+	double mnf = fPrf->GetMean(); 
+
+	// new fit for abs
+	AliLRCFit *fit1 = new AliLRCFit(fPrRel, fxFitMin/mnf, fxFitMax/mnf, 1.);
+	AliLRCFit *fit2 = new AliLRCFit(fPrAbs, fxFitMin, fxFitMax, 0.);
 	farel = fit1->Geta();
 	fbrel = fit1->Getb();
-	farelError = fit1->Getda();
-	fbrelError = fit1->Getdb();
+
+	faabs = fit2->Geta();
+	fbabs = fit2->Getb();
+
+	if ( fFitMethod==0 )
+	{
+		faabsError = fit2->Getda();
+		fbabsError = fit2->Getdb();
+
+		farelError = fit1->Getda();
+		fbrelError = fit1->Getdb();
+	}
+	if ( fFitMethod==1 )
+	{
+		faabsError = fit2->Getda1();
+		fbabsError = fit2->Getdb1();
+
+		farelError = fit1->Getda1();
+		fbrelError = fit1->Getdb1();
+	}
+
 	fXi2rel = fit1->Gethi2();
+	fXi2abs = fit2->Gethi2();
 }
 
 void AliLRCAnalysis::DrawAbs() {
 //Draw abs var hist with ALL info
-	int * mas = new int [N_PL_FLAGS];
-	for ( int i = 0; i < N_PL_FLAGS; i++ )
+	int * mas = new int [fgkPlotFlags];
+	for ( int i = 0; i < fgkPlotFlags; i++ )
 		mas[i] = 1;
 	DrawAbsPure( mas, 1 );
 	delete []mas;
 }
 
-void AliLRCAnalysis::DrawAbs( int * mas ) {
+void AliLRCAnalysis::DrawAbs( const int * const mas ) {
 //Draw abs var hist with REQUESTED BY ARRAY info
 	DrawAbsPure( mas, 1 );
 }
 
 void AliLRCAnalysis::DrawAbsPure( const int * const mDrawArray, bool drawPaveLabel ) {
+	Calculate();
 // Draw abs var histrogram
-    //double mnf;
-    double y1, y2, x1, x2;
-    Int_t i, n;
-    char str[50];
+	DrawHist( mDrawArray, drawPaveLabel, faabs, fbabs, faabsError, fbabsError, fPrAbs, 0 );
+}
+
+void AliLRCAnalysis::DrawRel() {
+//Draw rel var hist with ALL info
+	int * mas = new int [fgkPlotFlags];
+	for ( int i = 0; i < fgkPlotFlags; i++ )
+		mas[i] = 1;
+	DrawRelPure( mas, 1 );
+	delete []mas;
+}
+
+void AliLRCAnalysis::DrawRel( const int * const mas ) {
+//Draw rel var hist with REQUESTED BY ARRAY info
+	DrawRelPure( mas, 1 );
+}
+
+void AliLRCAnalysis::DrawRelPure( const int * const mDrawArray, bool drawPaveLabel ) {
+	Calculate();
+// Draw rel var histogram
+	DrawHist( mDrawArray, drawPaveLabel, farel, fbrel, farelError, fbrelError, fPrRel, 1 );
+}
+void AliLRCAnalysis::DrawHist( const int * const mDrawArray, bool drawPaveLabel, double aCoef, double bCoef,
+		double aCoefError, double bCoefError, TH1D* profToDraw, int histType ) {
+// Method called by DrawRelPure or DrawAbsPure to draw corresponding LRC  histo 
+	double mnf = fPrf->GetMean();
+	double y1, y2, x1, x2;
+	Int_t i, n;
+	char str[50];
     //mnf = fPrf->GetMean();
-    fPrAbs->SetStats(0);
-    fPrAbs->Fit("pol1", "", "", fxFitMin, fxFitMax);
-    //fPrAbs->Fit("pol1");
-    TF1 *fit1 = fPrAbs->GetFunction("pol1");
-    y1=fPrAbs->GetBinContent(1)-fPrAbs->GetBinError(1);
-    y2=fPrAbs->GetBinContent(1)+fPrAbs->GetBinError(1);
-    
-    n=fPrAbs->GetNbinsX();
-    for(i=2; i<=n; i++){
-        if(fPrAbs->GetBinContent(i)-fPrAbs->GetBinError(i)<y1)
-            y1=fPrAbs->GetBinContent(i)-fPrAbs->GetBinError(i);
-        if(fPrAbs->GetBinContent(i)+fPrAbs->GetBinError(i)>y2)
-            y2=fPrAbs->GetBinContent(i)+fPrAbs->GetBinError(i);
-    }
- 	fPrAbs->DrawCopy();
+	profToDraw->SetStats(0);
+    //profToDraw->Fit("pol1", "", "", fxFitMin, fxFitMax);
+    //profToDraw->Fit("pol1");
+    //TF1 *fit1 = profToDraw->GetFunction("pol1");
+
+	//draw fit line
+	TF1 *f1 = 0x0;
+	if ( histType == 0 )	{
+		f1 = new TF1( "f1", "[0]+[1]*x", fxFitMin, fxFitMax);
+		f1->SetLineColor(kRed);
+	}
+	else if ( histType == 1 )	{
+		f1 = new TF1( "f1", "[0]+[1]*(x-1)", fxFitMin/mnf, fxFitMax/mnf);
+		f1->SetLineColor(kGreen);
+	}
+	f1->SetParameters(aCoef,bCoef); 
+	//cout << " set draw params: a=" << aCoef << " b=" << bCoef << endl;
+
+	y1=profToDraw->GetBinContent(1)-profToDraw->GetBinError(1);
+	y2=profToDraw->GetBinContent(1)+profToDraw->GetBinError(1);
+	n=profToDraw->GetNbinsX();
+
+	for(i=2; i<=n; i++)
+	{
+        	if(profToDraw->GetBinContent(i)-profToDraw->GetBinError(i)<y1)
+            		y1=profToDraw->GetBinContent(i)-profToDraw->GetBinError(i);
+        	if(profToDraw->GetBinContent(i)+profToDraw->GetBinError(i)>y2)
+            		y2=profToDraw->GetBinContent(i)+profToDraw->GetBinError(i);
+	}
+
+	profToDraw->DrawCopy();
+	f1->DrawCopy("same");
 	
-	x1 = fPrAbs->GetXaxis()->GetXmin();
-    x2 = fPrAbs->GetXaxis()->GetXmax();
-    
+	x1 = profToDraw->GetXaxis()->GetXmin();
+	x2 = profToDraw->GetXaxis()->GetXmax();
 
 	if ( drawPaveLabel )
 	{	
@@ -333,14 +383,13 @@ void AliLRCAnalysis::DrawAbsPure( const int * const mDrawArray, bool drawPaveLab
 		double aYshift = (y2-y1)/20;
 
 		TPaveText *pt1 = new TPaveText(x1+(x2-x1)/2 + aXshift, y1+aYshift, x2-(x2-x1)/6 + aXshift, y1+(y2-y1)/3*2/9*nDatas + aYshift);
-	
-		sprintf(str, "Entries = %i", fEntries);
+		sprintf(str, "Events = %i", fEntries);
 		if ( mDrawArray[0] ) pt1->AddText(str);
-		sprintf(str, "a = %g #pm %g", GetRoundWithError(fit1->GetParameter(0), fit1->GetParError(0)), GetRoundWithPrecision(fit1->GetParError(0), 2)); //fit1->GetParameter(0), fit1->GetParError(0));
+		sprintf(str, "a = %g #pm %g", GetRoundWithError( aCoef, aCoefError ), GetRoundWithPrecision(aCoefError, 2)); //fit1->GetParameter(0), fit1->GetParError(0));
 		if ( mDrawArray[1] ) pt1->AddText(str);
-		sprintf(str, "b = %g #pm %g", GetRoundWithError(fit1->GetParameter(1), fit1->GetParError(1)), GetRoundWithPrecision(fit1->GetParError(1), 2)); //fit1->GetParameter(1), fit1->GetParError(1));
+		sprintf(str, "b = %g #pm %g", GetRoundWithError( bCoef, bCoefError ), GetRoundWithPrecision(bCoefError, 2)); //fit1->GetParameter(1), fit1->GetParError(1));
 		if ( mDrawArray[2] ) pt1->AddText(str);
-		sprintf(str, "#hat{#chi}^{2} = #chi^{2}/(n-2) = %g", GetRoundWithPrecision(HI2(fPrAbs, fit1->GetParameter(0), fit1->GetParameter(1), fxFitMin, fxFitMax), 3));
+		sprintf(str, "#hat{#chi}^{2} = #chi^{2}/(n-2) = %g", GetRoundWithPrecision(fXi2abs, 3));
 		if ( mDrawArray[3] ) pt1->AddText(str);
 		sprintf(str, "<%s> = %g " , fSx, GetRoundWithPrecision(fPrf->GetMean(), 3));
 		if ( mDrawArray[4] ) pt1->AddText(str);
@@ -366,93 +415,6 @@ void AliLRCAnalysis::DrawAbsPure( const int * const mDrawArray, bool drawPaveLab
 		pt1->SetBorderSize(0);
 		
 		pt1->DrawClone("same");
-	}
-}
-
-void AliLRCAnalysis::DrawRel() {
-//Draw rel var hist with ALL info
-	int * mas = new int [N_PL_FLAGS];
-	for ( int i = 0; i < N_PL_FLAGS; i++ )
-		mas[i] = 1;
-	DrawRelPure( mas, 1 );
-	delete []mas;
-}
-
-void AliLRCAnalysis::DrawRel( int * mas ) {
-//Draw rel var hist with REQUESTED BY ARRAY info
-	DrawRelPure( mas, 1 );
-}
-
-void AliLRCAnalysis::DrawRelPure( const int * const mDrawArray, bool drawPaveLabel ) {
-// Draw rel var histogram
-	double mnf;
-	double y1, y2, x1, x2;
-	Int_t i, n;
-	char str[50];
-		
-	mnf = fPrf->GetMean();  
-		
-	fPrRel->SetStats(0);
-	AliLRCFit *fit1 = new AliLRCFit(fPrRel, fxFitMin/mnf, fxFitMax/mnf);
-	TF1 *f1 = new TF1("f1", "[0] + [1]*x", 0, fPrRel->GetXaxis()->GetXmax());
-	f1->SetParameter(0,fit1->Geta());
-	f1->SetParameter(1,fit1->Getb());
-	fPrRel->Fit("f1", "", "", fxFitMin/mnf, fxFitMax/mnf);
-    y1=fPrRel->GetBinContent(1)-fPrRel->GetBinError(1);
-    y2=fPrRel->GetBinContent(1)+fPrRel->GetBinError(1);
-    n=fPrRel->GetNbinsX();
-    for(i=2; i<=n; i++) {
-        if(fPrRel->GetBinContent(i)-fPrRel->GetBinError(i)<y1)
-            y1=fPrRel->GetBinContent(i)-fPrRel->GetBinError(i);
-        if(fPrRel->GetBinContent(i)+fPrRel->GetBinError(i)>y2)
-            y2=fPrRel->GetBinContent(i)+fPrRel->GetBinError(i);
-    }
-	fPrRel->DrawCopy();
-
-    x1 = fPrRel->GetXaxis()->GetXmin();
-    x2 = fPrRel->GetXaxis()->GetXmax();
-	
-	if ( drawPaveLabel )
-	{	
-		int nDatas = 0;
-		for ( int j = 0; j < 9; j++)
-			if ( mDrawArray[j] ) nDatas++;
-		double aXshift = (x2-x1)/7;
-		double aYshift = (y2-y1)/20;
-		
-		TPaveText *pt1 = new TPaveText(x1+(x2-x1)/2 + aXshift, y1+aYshift, x2-(x2-x1)/6 + aXshift, y1+(y2-y1)/3*2/9*nDatas + aYshift);
-		sprintf(str, "Entries = %i", fEntries);
-		if ( mDrawArray[0] ) pt1->AddText(str);
-		sprintf(str, "a = %g #pm %g", GetRoundWithError(fit1->Geta(), fit1->Getda()), GetRoundWithPrecision(fit1->Getda(), 2)); //fit1->GetParameter(0), fit1->GetParError(0));
-		if ( mDrawArray[1] ) pt1->AddText(str);
-		sprintf(str, "b = %g #pm %g", GetRoundWithError(fit1->Getb(), fit1->Getdb()), GetRoundWithPrecision(fit1->Getdb(), 2)); //fit1->GetParameter(1), fit1->GetParError(1));
-		if ( mDrawArray[2] ) pt1->AddText(str);
-		sprintf(str, "#hat{#chi}^{2} = #chi^{2}/(n-2) = %g", GetRoundWithPrecision(fit1->Gethi2(), 3));
-		if ( mDrawArray[3] ) pt1->AddText(str);
-		sprintf(str, "<%s> = %g " , fSx, GetRoundWithPrecision(fPrf->GetMean(), 3));
-		if ( mDrawArray[4] ) pt1->AddText(str);
-		
-		sprintf(str, "<%s> = %g", fSy,  GetRoundWithPrecision(fPrb->GetMean(),3));
-		if ( mDrawArray[5] ) pt1->AddText(str);
-		
-		sprintf(str, "<<%s>> = %g " , fSx, GetRoundWithPrecision(fPrf->GetRMS(), 3));
-		if ( mDrawArray[6] ) pt1->AddText(str);
-		sprintf(str, "<<%s>> = %g", fSy,  GetRoundWithPrecision(fPrb->GetRMS(), 3));
-		if ( mDrawArray[7] ) pt1->AddText(str);
-		
-		if ( fdptb ) {
-			sprintf(str, "d%s = %g", fSy,  GetRoundWithPrecision(fdptb, 3));
-			if ( mDrawArray[8] ) pt1->AddText(str);
-		}
-	
-		pt1->SetTextAlign(12);
-		pt1->SetTextFont(42);
-		pt1->SetFillColor(4000);
-		//pt1->SetFillStyle(4100);
-		pt1->SetShadowColor(4000);
-		pt1->SetBorderSize(0);
-		
-		pt1->DrawClone();//"s(0,0)");
 	}
 }
 
@@ -482,7 +444,7 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name){
 		fPrAbs->SetBinContent(i, profX->GetBinContent(i));
 		if(fPrf->GetBinContent(i)!=0)
 		{
-		   fPrAbs->SetBinError(i,TMath::Sqrt(profX->GetBinContent(i)/fPrf->GetBinContent(i)));
+		   fPrAbs->SetBinError(i,sqrt(profX->GetBinContent(i)/fPrf->GetBinContent(i)));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());
 		fPrRel->SetBinError(i,fPrAbs->GetBinError(i)/fPrb->GetMean());	
@@ -500,7 +462,7 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TH2D*
 		if(fPrf->GetBinContent(i)!=0)
 		{
 			  pt = profX->GetBinContent(i);
-			  fPrAbs->SetBinError(i,ptd*TMath::Sqrt(Integral(nb,i))/fPrf->GetBinContent(i));
+			  fPrAbs->SetBinError(i,ptd*sqrt(Integral(nb,i))/fPrf->GetBinContent(i));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());
 		fPrRel->SetBinError(i,fPrAbs->GetBinError(i)/fPrb->GetMean());	
@@ -508,7 +470,7 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TH2D*
 
 }
 
-void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TProfile* nb){
+void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, const TProfile* nb){
 //Calculate arrors for ptn and ptpt
 	TProfile* profX = (TProfile*) source->ProfileX(name, 1, source->GetNbinsY());
 	fdptb = ptd;
@@ -519,7 +481,7 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TProf
 		if(fPrf->GetBinContent(i)!=0)
 		{
 			  pt = profX->GetBinContent(i);
-			  fPrAbs->SetBinError(i,ptd*TMath::Sqrt(nb->GetBinContent(i)/fPrf->GetBinContent(i)));
+			  fPrAbs->SetBinError(i,ptd*sqrt(nb->GetBinContent(i)/fPrf->GetBinContent(i)));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());
 		fPrRel->SetBinError(i,fPrAbs->GetBinError(i)/fPrb->GetMean());	
@@ -527,15 +489,15 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TProf
 
 }
 
-double AliLRCAnalysis::GetRoundWithError( double value, double error ){
+double AliLRCAnalysis::GetRoundWithError( double value, double error ) const {
 //Rounding error and value with DEFAULT precision
 	return GetRoundValueErrorPrecision( value, error, 2 );
 }
-double AliLRCAnalysis::GetRoundWithError( double value, double error, int pres ){
+double AliLRCAnalysis::GetRoundWithError( double value, double error, int pres ) const {
 //Rounding error and value with REQUESTED precision
 	return GetRoundValueErrorPrecision( value, error, pres );
 }
-double AliLRCAnalysis::GetRoundWithPrecision( double value, int pres ){
+double AliLRCAnalysis::GetRoundWithPrecision( double value, int pres ) const {
 //Rounding error and value with requested precision
 	return GetRoundValueErrorPrecision( value, 0, pres );
 }
@@ -550,14 +512,14 @@ double AliLRCAnalysis::GetRoundValueErrorPrecision( double value, double error, 
 	bool noError = false;
 	pres -= 1;
 	
-	cout << "Before rounding: " << value << " " << error << endl;
+	//cout << "Before rounding: " << value << " " << error << endl;
 
 	if ( !error)
 	{
 		error = value;
 		noError = true;
 	}
-	while ( ((int)error)%10 == 0 || i == 10 )
+	while ( ((int)error)%10 == 0 && i < 6 )
 	{
 		i++;
 		error*=10;
@@ -577,7 +539,7 @@ double AliLRCAnalysis::GetRoundValueErrorPrecision( double value, double error, 
 	
 	if ( noError )
 	{
-		cout << "After rounding: " << error << endl;
+		//cout << "After rounding: " << error << endl;
 		return error;
 	}
 	else
@@ -590,8 +552,31 @@ double AliLRCAnalysis::GetRoundValueErrorPrecision( double value, double error, 
 			adding = 1;
 		value = (double)((int)value + adding)/order;
 		
-		cout << "After rounding: " << value << " " << error << endl;
+		//cout << "After rounding: " << value << " " << error << endl;
 		return value; //taking into account ERROR
 	}
 }
+
+TH1D* AliLRCAnalysis::GetAbsHisto() const
+{
+//Returns final histo in absolute variables
+return fPrAbs;
+}
+TH1D* AliLRCAnalysis::GetRelHisto() const
+{
+//Returns final histo in relative variables
+return fPrRel;
+}
+
+TH1D* AliLRCAnalysis::GetForwardValueDist() const
+{
+//Returns destribution of value used in forward window
+return fPrf;
+}
+TH1D* AliLRCAnalysis::GetBackwardValueDist() const
+{
+//Returns destribution of value used in backward window
+return fPrb;
+}
+
 
