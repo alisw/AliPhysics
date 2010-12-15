@@ -1,0 +1,24 @@
+#-*- Mode: Makefile -*-
+
+SRCS = UPGRADE/AliITSUpgradeClusterFinder.cxx \
+		UPGRADE/AliITSUpgradeClusterList.cxx \
+		UPGRADE/AliITSUpgradeClusterListNode.cxx \
+		UPGRADE/AliITSlayerUpgrade.cxx \
+		UPGRADE/AliITStrackerUpgrade.cxx \
+		UPGRADE/AliITSUpgradeReconstructor.cxx 
+
+HDRS:=  $(SRCS:.cxx=.h)
+
+DHDR=ITSUpgradeRecLinkDef.h
+
+EINCLUDE:=TPC RAW ITS ITS/UPGRADE
+
+#  EXPORT:=AliITStrackV2.h                \
+#        AliITSVertexer.h AliITSRecoParam.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lITSUpgradebase -lSTEER -lESD -lCDB -lSTEERBase \
+                         -lRAWDatarec \
+                         -L$(ROOTLIBDIR) -lEG -lGeom
+endif
