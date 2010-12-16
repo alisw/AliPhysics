@@ -30,7 +30,7 @@
 #include "AliTPCTransform.h"
 #include "AliTPCParam.h"
 #include "AliTPCRecoParam.h"
-
+#include "AliGeomManager.h"
 
 ClassImp(AliHLTTPCClusterTransformation) //ROOT macro for the implementation of ROOT specific class methods
 
@@ -79,6 +79,10 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
   if(!pCalib ) return -1;
 
   pCalib->SetExBField(FieldBz);
+  
+  if(!AliGeomManager::GetGeometry()){
+     AliGeomManager::LoadGeometry();
+  }
 
   if( !pCalib->GetTransform() ) return -2; 
 
