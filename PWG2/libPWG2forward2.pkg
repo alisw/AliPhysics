@@ -3,17 +3,26 @@
 
 SRCS		=  FORWARD/analysis2/AliFMDEventInspector.cxx		\
 	   	   FORWARD/analysis2/AliFMDEnergyFitter.cxx		\
+	   	   FORWARD/analysis2/AliFMDEnergyFitterTask.cxx		\
 		   FORWARD/analysis2/AliFMDSharingFilter.cxx		\
 		   FORWARD/analysis2/AliFMDDensityCalculator.cxx	\
+		   FORWARD/analysis2/AliFMDMCDensityCalculator.cxx	\
 		   FORWARD/analysis2/AliFMDCorrections.cxx		\
 		   FORWARD/analysis2/AliFMDHistCollector.cxx		\
 		   FORWARD/analysis2/AliAODForwardMult.cxx		\
-		   FORWARD/analysis2/AliForwardMultiplicity.cxx		\
-		   FORWARD/analysis2/AliForwardUtil.cxx
+		   FORWARD/analysis2/AliForwardMultiplicityTask.cxx	\
+		   FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx	\
+		   FORWARD/analysis2/AliForwardUtil.cxx			\
+		   FORWARD/analysis2/AliFMDCorrELossFit.cxx		\
+		   FORWARD/analysis2/AliFMDCorrSecondaryMap.cxx		\
+		   FORWARD/analysis2/AliFMDCorrDoubleHit.cxx		\
+		   FORWARD/analysis2/AliFMDCorrVertexBias.cxx		\
+		   FORWARD/analysis2/AliFMDCorrMergingEfficiency.cxx	\
+		   FORWARD/analysis2/AliForwardCorrectionManager.cxx	
 
 
 HDRS		=  $(SRCS:.cxx=.h) 
-EINCLUDE 	:= ANALYSIS FMD PWG2/FORWARD/analysis
+EINCLUDE 	:= ANALYSIS FMD
 DHDR		:= PWG2forward2LinkDef.h
 
 #
