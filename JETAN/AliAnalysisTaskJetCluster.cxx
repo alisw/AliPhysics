@@ -664,6 +664,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   static AliAODJetEventBackground* externalBackground = 0;
   if(!externalBackground&&fBackgroundBranch.Length()){
     externalBackground =  (AliAODJetEventBackground*)(AODEvent()->FindListObject(fBackgroundBranch.Data()));
+    Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
   }
   //
   // Execute analysis for current event
@@ -715,7 +716,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	Float_t yvtx = vtxAOD->GetY();
 	Float_t xvtx = vtxAOD->GetX();
 	Float_t r2   = yvtx*yvtx+xvtx*xvtx;  
-	if(TMath::Abs(zVtx)<20.&&r2<1.){ // apply vertex cut later on
+	if(TMath::Abs(zVtx)<8.&&r2<1.){ // apply vertex cut later on
 	  if(physicsSelection){
 	    selectEvent = true;
 	  }
