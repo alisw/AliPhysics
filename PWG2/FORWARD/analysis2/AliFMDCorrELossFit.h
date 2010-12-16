@@ -7,6 +7,11 @@ class TF1;
 class TBrowser;
 
 /** 
+ * @defgroup pwg2_forward_corr Corrections 
+ * 
+ * @ingroup pwg2_forward
+ */
+/** 
  * Object holding the Energy loss fit 'correction'
  * 
  * These are generated from Monte-Carlo or real ESDs. 
@@ -19,6 +24,7 @@ public:
   /** 
    * POD structure to hold data from fits 
    * 
+   * @ingroup pwg2_forward_corr
    */
   struct ELossFit : public TObject 
   {
@@ -60,23 +66,23 @@ public:
     /** 
      * Constructor with full parameter set
      * 
-     * @param d         Detector number
-     * @param r         Ring identifier 
      * @param quality   Quality flag
      * @param n         @f$ N@f$ - Number of fitted peaks
      * @param chi2      @f$ \chi^2 @f$
      * @param nu        @f$ \nu @f$ - number degrees of freedom
-     * @param c         @f$ C2f$ - scale constant
+     * @param c         @f$ C@f$ - scale constant
      * @param ec        @f$ \delta C@f$ - error on @f$ C@f$ 
-     * @param delta     @f$ \Delta2f$ - scale constant		  
+     * @param delta     @f$ \Delta@f$ - Most probable value		  
      * @param edelta    @f$ \delta\Delta@f$ - error on @f$\Delta@f$ 
-     * @param xi        @f$ \xi2f$ - scale constant		  
+     * @param xi        @f$ \xi@f$ - width  
      * @param exi       @f$ \delta\xi@f$ - error on @f$\xi@f$ 
-     * @param sigma     @f$ \sigma@f$ - scale constant		   
+     * @param sigma     @f$ \sigma@f$ - Width of Gaussian		   
      * @param esigma    @f$ \delta\sigma@f$ - error on @f$\sigma@f$ 
-     * @param sigman    @f$ \sigma_n@f$ - scale constant		  
+     * @param sigman    @f$ \sigma_n@f$ - Noise width		  
      * @param esigman   @f$ \delta\sigma_n@f$ - error on @f$\sigma_n@f$ 
      * @param a         Array of @f$ N-1@f$ weights @f$ a_i@f$ for 
+     *                  @f$ i=2,\ldots@f$ 
+     * @param ea        Array of @f$ N-1@f$ error on the weights @f$ a_i@f$ for 
      *                  @f$ i=2,\ldots@f$ 
      */
     ELossFit(Int_t     quality,UShort_t  n, 
@@ -371,10 +377,10 @@ public:
   /** 
    * Set the fit parameters from a function 
    * 
-   * @param d    Detector
-   * @param r    Ring 
-   * @param eta  Eta (bin number, 1->nBins)
-   * @param f    ELoss fit result - note, the object will take ownership
+   * @param d       Detector
+   * @param r       Ring 
+   * @param etaBin  Eta (bin number, 1->nBins)
+   * @param f       ELoss fit result - note, the object will take ownership
    */  
   Bool_t SetFit(UShort_t d, Char_t r, Int_t etaBin, ELossFit* f);
   /** 
@@ -382,21 +388,24 @@ public:
    * 
    * @param d         Detector number
    * @param r         Ring identifier 
+   * @param eta       Eta value
    * @param quality   Quality flag
    * @param n         @f$ N@f$ - Number of fitted peaks
    * @param chi2      @f$ \chi^2 @f$
    * @param nu        @f$ \nu @f$ - number degrees of freedom
-   * @param c         @f$ C2f$ - scale constant
+   * @param c         @f$ C@f$ - scale constant
    * @param ec        @f$ \delta C@f$ - error on @f$ C@f$ 
-   * @param delta     @f$ \Delta2f$ - scale constant		  
+   * @param delta     @f$ \Delta@f$ - most probable value
    * @param edelta    @f$ \delta\Delta@f$ - error on @f$\Delta@f$ 
-   * @param xi        @f$ \xi2f$ - scale constant		  
+   * @param xi        @f$ \xi@f$ - Landau width		  
    * @param exi       @f$ \delta\xi@f$ - error on @f$\xi@f$ 
-   * @param sigma     @f$ \sigma@f$ - scale constant		   
+   * @param sigma     @f$ \sigma@f$ - Gaussian width
    * @param esigma    @f$ \delta\sigma@f$ - error on @f$\sigma@f$ 
-   * @param sigman    @f$ \sigma_n@f$ - scale constant		  
+   * @param sigman    @f$ \sigma_n@f$ - Noise width		  
    * @param esigman   @f$ \delta\sigma_n@f$ - error on @f$\sigma_n@f$ 
    * @param a         Array of @f$ N-1@f$ weights @f$ a_i@f$ for 
+   *                  @f$ i=2,\ldots@f$ 
+   * @param ea        Array of @f$ N-1@f$ errors on weights @f$ a_i@f$ for 
    *                  @f$ i=2,\ldots@f$ 
    */
   Bool_t SetFit(UShort_t  d,      Char_t    r, Double_t eta, 
@@ -423,7 +432,9 @@ public:
   /** 
    * Set the eta axis to use 
    * 
-   * @param axis Eta axis 
+   * @param nBins Number of bins 
+   * @param min   Minimum @f$ \eta@f$
+   * @param max   maximum @f$ \eta@f$
    */
   void SetEtaAxis(Int_t nBins, Double_t min, Double_t max);
   /** 

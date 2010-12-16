@@ -1,5 +1,5 @@
-#ifndef ALIROOT_PWG2_FORWARD_ALIFMDENERGYFITTER_H
-#define ALIROOT_PWG2_FORWARD_ALIFMDENERGYFITTER_H
+#ifndef ALIFMDENERGYFITTER_H
+#define ALIFMDENERGYFITTER_H
 #include <TNamed.h>
 #include <TH1D.h>
 #include <TAxis.h>
@@ -27,7 +27,7 @@ class TArrayD;
  *    - None
  *
  *
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward 
  */
 class AliFMDEnergyFitter : public TNamed
 {
@@ -153,8 +153,23 @@ public:
    * @param x Number of energy loss bins 
    */
   void SetNEbins(Int_t x) { fNEbins = x; }
+  /** 
+   * Set the maximum relative error 
+   * 
+   * @param e Maximum relative error 
+   */
   void SetMaxRelativeParameterError(Double_t e=0.2) { fMaxRelParError = e; }
+  /** 
+   * Set the maximum @f$ \chi^2/\nu@f$ 
+   * 
+   * @param c Maximum @f$ \chi^2/\nu@f$ 
+   */
   void SetMaxChi2PerNDF(Double_t c=10) { fMaxChi2PerNDF = c; }
+  /** 
+   * Set the least weight
+   * 
+   * @param c Least weight
+   */
   void SetMinWeight(Double_t c=1e-7) { fMinWeight = c; }
   /**
    * Set wheter to use increasing bin sizes 
@@ -177,7 +192,12 @@ public:
    * 
    * @param dir Where the histograms are  
    */
-  void Fit(TList* dir);
+  void Fit(const TList* dir);
+  /** 
+   * Generate the corrections object 
+   * 
+   * @param dir List to analyse 
+   */
   void MakeCorrectionsObject(TList* dir);
   
   /** 
@@ -286,7 +306,7 @@ protected:
 		   Double_t     relErrorCut, 
 		   Double_t     chi2nuCut) const;
     /** 
-     * Fit a signal histogram.  First, the bin @f% b_{min}@f$ with
+     * Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
      * maximum bin content in the range @f$ [E_{min},\infty]@f$ is
      * found.  Then the fit range is set to the bin range 
      * @f$ [b_{min}-\Delta b,b_{min}+2\Delta b]@f$, and a 1 
@@ -382,9 +402,12 @@ protected:
     /** 
      * Make E/E_mip histogram 
      * 
-     * @param ieta   Eta bin
-     * @param eMin   Least signal
-     * @param eMax   Largest signal 
+     * @param ieta    Eta bin
+     * @param eMin    Least signal
+     * @param eMax    Largest signal 
+     * @param deMax   Maximum energy loss 
+     * @param nDeBins Number energy loss bins 
+     * @param incr    Whether to make bins of increasing size
      */
     void Make(Int_t ieta, Double_t eMin, Double_t eMax, 
 	      Double_t deMax=12, Int_t nDeBins=300, Bool_t incr=true);

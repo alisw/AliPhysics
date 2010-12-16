@@ -6,6 +6,7 @@
 #include <AliLog.h>
 #include <iostream>
 #include "TH2F.h"
+#include <TBrowser.h>
 #include "AliFMDAnaParameters.h"
 ClassImp(AliFMDAnaCalibEnergyDistribution)
 #if 0  
@@ -21,7 +22,8 @@ AliFMDAnaCalibEnergyDistribution::AliFMDAnaCalibEnergyDistribution()
   fIsInit(kFALSE),
   fNetaBins(0),
   fEtaMax(0),
-  fEtaMin(0){
+  fEtaMin(0)
+{
   
   
 }
@@ -32,13 +34,18 @@ void AliFMDAnaCalibEnergyDistribution::Init()
     AliFatal("Set Eta bins before doing Init or anything else");
   
   fArray.SetOwner();
+  fArray.SetName("etaBins");
   fEmptyArray.SetOwner();
-  
+  fEmptyArray.SetName("empty");
+  fRingArray.SetName("rings");
+
   for(Int_t i = 0; i<fNetaBins; i++) {
     TObjArray* etaArray = new TObjArray();
+    etaArray->SetName(Form("etabin_%03d", i+1));
     fArray.AddAtAndExpand(etaArray,i);
     for(Int_t det = 1; det<=3;det++) {
       TObjArray* detArray = new TObjArray();
+      detArray->SetName(Form("FMD%d", det));
       etaArray->AddAtAndExpand(detArray,det);
     }
   }
@@ -47,11 +54,13 @@ void AliFMDAnaCalibEnergyDistribution::Init()
   
   for(Int_t det = 1; det<=3;det++) {
     TObjArray* detArray = new TObjArray();
+    detArray->SetName(Form("FMD%d", det));
     fEmptyArray.AddAtAndExpand(detArray,det);
   }
     
   for(Int_t det = 1; det<=3;det++) {
     TObjArray* detArray = new TObjArray();
+    detArray->SetName(Form("FMD%d", det));
     fRingArray.AddAtAndExpand(detArray,det);
   }
     
@@ -160,6 +169,33 @@ void AliFMDAnaCalibEnergyDistribution::SetRingEnergyDistribution(Int_t  det,
   
   detArray->AddAtAndExpand(edist,ringNumber);
 }
+//____________________________________________________________________
+void AliFMDAnaCalibEnergyDistribution::Browse(TBrowser* b)
+{
+  for(Int_t i = 0; i<fNetaBins; i++) {
+    TObjArray* etaArray = static_cast<TObjArray*>(fArray.At(i));
+    etaArray->SetName(Form("etabin_%03d", i+1));
+    for(Int_t det = 1; det<=3;det++) {
+      TObjArray* detArray = static_cast<TObjArray*>(etaArray->At(det));
+      detArray->SetName(Form("FMD%d", det));
+    }
+  }
+  
+  for(Int_t det = 1; det<=3;det++) {
+    TObjArray* detArray = static_cast<TObjArray*>(fEmptyArray.At(det));
+    detArray->SetName(Form("FMD%d", det));
+  }
+    
+  for(Int_t det = 1; det<=3;det++) {
+    TObjArray* detArray = static_cast<TObjArray*>(fRingArray.At(det));
+    detArray->SetName(Form("FMD%d", det));
+  }
+
+  b->Add(&fArray,     "etabins");
+  b->Add(&fEmptyArray,"empty");
+  b->Add(&fRingArray, "rings");
+}
+
 //____________________________________________________________________
 //
 // EOF

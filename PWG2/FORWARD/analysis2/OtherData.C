@@ -1,3 +1,8 @@
+/**
+ * @file 
+ * 
+ * @ingroup pwg2_forward_scripts
+ */
 #include <TGraphAsymmErrors.h>
 #include <TMultiGraph.h>
 #include <TStyle.h>
@@ -7,15 +12,15 @@
 
 //____________________________________________________________________
 /**
- * @defgroup pwg2_forward_analysis_otherdata  External data 
+ * @defgroup pwg2_forward_otherdata  External data 
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 //____________________________________________________________________
 /**
  * Values used 
  * 
- * @ingroup pwg2_forward_analysis_otherdata 
+ * @ingroup pwg2_forward_otherdata 
  */
 enum { 
   /** Color used for UA5 data */
@@ -44,7 +49,7 @@ enum {
  * @param name     Name of graph 
  * @param title    Title of graph 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 void
 SetGraphAttributes(TGraph* g, Int_t marker, Int_t color,
@@ -71,7 +76,7 @@ SetGraphAttributes(TGraph* g, Int_t marker, Int_t color,
  * 
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* UA5Nsd(Bool_t mirrored=false) 
 {
@@ -111,7 +116,7 @@ TGraphAsymmErrors* UA5Nsd(Bool_t mirrored=false)
  * 
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* UA5Inel(Bool_t mirrored=false) 
 {
@@ -150,7 +155,7 @@ TGraphAsymmErrors* UA5Inel(Bool_t mirrored=false)
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* AliceCentralInel900()
 {  
@@ -199,7 +204,7 @@ TGraphAsymmErrors* AliceCentralInel900()
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* AliceCentralInelGt900()
 {  
@@ -245,7 +250,7 @@ TGraphAsymmErrors* AliceCentralInelGt900()
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* AliceCentralInelGt2360()
 {  
@@ -286,7 +291,7 @@ TGraphAsymmErrors* AliceCentralInelGt2360()
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* AliceCentralInelGt7000()
 {  
@@ -328,7 +333,7 @@ TGraphAsymmErrors* AliceCentralInelGt7000()
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* AliceCentralNsd900()
 {
@@ -377,7 +382,7 @@ TGraphAsymmErrors* AliceCentralNsd900()
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* AliceCentralInel2360()
 {  
@@ -426,7 +431,7 @@ TGraphAsymmErrors* AliceCentralInel2360()
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* AliceCentralNsd2360()
 {  
@@ -477,7 +482,7 @@ TGraphAsymmErrors* AliceCentralNsd2360()
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* CMSNsd900()
 {
@@ -506,7 +511,7 @@ TGraphAsymmErrors* CMSNsd900()
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* CMSNsd2360()
 {
@@ -533,7 +538,7 @@ TGraphAsymmErrors* CMSNsd2360()
  *
  * @return graph of data 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TGraphAsymmErrors* CMSNsd7000()
 {
@@ -562,7 +567,7 @@ TGraphAsymmErrors* CMSNsd7000()
  * 
  * @return A multi graph with the selected data. 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 TMultiGraph* 
 GetData(Int_t energy, Int_t type)
@@ -637,7 +642,7 @@ GetData(Int_t energy, Int_t type)
  * @param energy  Energy in GeV
  * @param type    Trigger type bit mask 
  * 
- * @ingroup pwg2_forward_analysis_otherdata
+ * @ingroup pwg2_forward_otherdata
  */
 void
 OtherData(Int_t energy=900, Int_t type=0x1)

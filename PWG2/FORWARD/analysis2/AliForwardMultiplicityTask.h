@@ -23,11 +23,19 @@ class TTree;
  * @mainpage ALICE PWG2 Forward Multiplcity Analysis 
  */
 /** 
- * @defgroup pwg2_forward_analysis PWG2 Forward analysis
+ * @defgroup pwg2_forward PWG2 Forward analysis
  *
  * Code to do the multiplicity analysis in the forward psuedo-rapidity
  * regions
  *
+ */
+/** 
+ * @defgroup pwg2_forward_tasks Tasks
+ *
+ * Code to do the multiplicity analysis in the forward psuedo-rapidity
+ * regions
+ *
+ * @ingroup pwg2_forward 
  */
 /** 
  * Calculate the multiplicity in the forward regions event-by-event 
@@ -42,7 +50,7 @@ class TTree;
  *   
  * @par Corrections used 
  * 
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward_tasks
  * 
  */
 class AliForwardMultiplicityTask : public AliAnalysisTaskSE

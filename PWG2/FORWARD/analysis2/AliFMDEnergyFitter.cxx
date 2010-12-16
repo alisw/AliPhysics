@@ -150,7 +150,7 @@ void
 AliFMDEnergyFitter::Init(const TAxis& eAxis)
 {
   if (fEtaAxis.GetNbins() == 0 || 
-      fEtaAxis.GetXmin() == fEtaAxis.GetXmax()) 
+      TMath::Abs(fEtaAxis.GetXmax() - fEtaAxis.GetXmin()) < 1e-7) 
     SetEtaAxis(eAxis);
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -209,7 +209,7 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitter::Fit(TList* dir)
+AliFMDEnergyFitter::Fit(const TList* dir)
 {
   if (!fDoFits) return;
 

@@ -9,6 +9,11 @@
 #include <TString.h>
 class TFile;
 
+/**
+ * Manager (singleton) of corrections 
+ * 
+ * @ingroup pwg2_forward_corr 
+ */
 class AliForwardCorrectionManager : public TObject
 {
 public:
@@ -39,6 +44,7 @@ public:
    * @param collisionSystem Collision system
    * @param cmsNN           Center of mass energy per nuclean pair [GeV]
    * @param field           Magnetic field setting [kG]
+   * @param mc              Monte-carlo switch
    * @param what            What to read in. 
    * @param force           Force (re-)reading of specified things
    * 

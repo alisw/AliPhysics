@@ -13,7 +13,7 @@ class AliESDEvent;
 /** 
  * Utilities used in the forward multiplcity analysis 
  * 
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward 
  */
 class AliForwardUtil : public TObject
 {
@@ -21,7 +21,7 @@ public:
   //==================================================================
   /** 
    * @{ 
-   * @nane Collision/run parameters 
+   * @name Collision/run parameters 
    */
   /**						
    * Defined collision types 
@@ -69,8 +69,7 @@ public:
   /** 
    * Get a string representation of the center of mass energy per nuclean
    * 
-   * @param sys  Collision system 
-   * @param sNN  Center of mass energy per nucleon
+   * @param cms  Center of mass energy per nucleon
    * 
    * @return String representation of the center of mass energy per nuclean
    */
@@ -170,21 +169,21 @@ public:
    *    f_i(x;\Delta,\xi,\sigma') = f(x;\Delta_i,\xi_i,\sigma_i')
    * @f] 
    * corresponding to @f$ i@f$ particles i.e., with the substitutions 
-   * @f[ 
-   *    \Delta    \rightarrow \Delta_i    = i(\Delta + \xi\log(i))\\
-   *    \xi       \rightarrow \xi_i       = i \xi\\
-   *    \sigma    \rightarrow \sigma_i    = \sqrt{i}\sigma\\
-   *    \sigma'^2 \rightarrow \sigma_i'^2 = \sigma_n^2 + \sigma_i^2
-   * @f] 
+   * @f{eqnarray*}{ 
+   *    \Delta    \rightarrow \Delta_i    &=& i(\Delta + \xi\log(i))\\
+   *    \xi       \rightarrow \xi_i       &=& i \xi\\
+   *    \sigma    \rightarrow \sigma_i    &=& \sqrt{i}\sigma\\
+   *    \sigma'^2 \rightarrow \sigma_i'^2 &=& \sigma_n^2 + \sigma_i^2
+   * @f} 
    * 
    * @param x        Where to evaluate 
    * @param delta    @f$ \Delta@f$ 
    * @param xi       @f$ \xi@f$ 
    * @param sigma    @f$ \sigma@f$ 
    * @param sigma_n  @f$ \sigma_n@f$
-   * @param i        @f$ i@f$
+   * @param i        @f$ i @f$
    * 
-   * @return @f$ f_i@f$ evaluated
+   * @return @f$ f_i @f$ evaluated
    */  
   static Double_t ILandauGaus(Double_t x, Double_t delta, Double_t xi, 
 			      Double_t sigma, Double_t sigma_n, Int_t i);
@@ -215,7 +214,7 @@ public:
    * 
    * @param x        Where to evaluate 
    * @param ipar     Parameter number 
-   * @param dp       @f$ \esilon\delta p_i@f$ for some value of @f$\epsilon@f$
+   * @param dp       @f$ \epsilon\delta p_i@f$ for some value of @f$\epsilon@f$
    * @param delta    @f$ \Delta@f$ 
    * @param xi       @f$ \xi@f$ 
    * @param sigma    @f$ \sigma@f$ 
@@ -376,7 +375,7 @@ public:
   /** 
    * Structure to hold histograms 
    *
-   * @ingroup pwg2_forward_analysis 
+   * @ingroup pwg2_forward 
    */
   struct Histos : public TObject
   {	

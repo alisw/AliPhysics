@@ -1,4 +1,8 @@
-
+// Code to analyse dN/deta from the forward analysis
+// This can plot the results 
+// Also works for MC data 
+//
+// -- Author: Hans Hjersing Dalsgaard <canute@gmail.com>
 #include "AliFMDDndeta.h"
 #include "TFile.h"
 #include "AliLog.h"
@@ -559,50 +563,50 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   
   // INEL
   
-  TGraphAsymmErrors* p7742_d1x1y1 = 0;
-  double p7742_d1x1y1_xval[] = { -1.3, -1.1, -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 
+  TGraphAsymmErrors* p7742D1x1y1 = 0;
+  double p7742D1x1y1xval[] = { -1.3, -1.1, -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 
     0.5, 0.7, 0.9, 1.1, 1.3 };
-  double p7742_d1x1y1_xerrminus[] = { 0.09999999999999987, 0.09999999999999987, 0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.10000000000000003, 0.1, 0.1, 0.09999999999999998, 
+  double p7742D1x1y1xerrminus[] = { 0.09999999999999987, 0.09999999999999987, 0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.10000000000000003, 0.1, 0.1, 0.09999999999999998, 
     0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.10000000000000009, 0.10000000000000009 };
-  double p7742_d1x1y1_xerrplus[] = { 0.10000000000000009, 0.10000000000000009, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.1, 0.1, 0.10000000000000003, 
+  double p7742D1x1y1xerrplus[] = { 0.10000000000000009, 0.10000000000000009, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.1, 0.1, 0.10000000000000003, 
     0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.09999999999999987, 0.09999999999999987 };
-  double p7742_d1x1y1_yval[] = { 3.28, 3.28, 3.22, 3.12, 3.06, 3.02, 2.98, 3.02, 3.02, 
+  double p7742D1x1y1yval[] = { 3.28, 3.28, 3.22, 3.12, 3.06, 3.02, 2.98, 3.02, 3.02, 
     3.05, 3.15, 3.21, 3.26, 3.33 };
-  double p7742_d1x1y1_yerrminus[] = { 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.05385164807134505, 0.05385164807134505, 0.05385164807134505, 0.05385164807134505, 
+  double p7742D1x1y1yerrminus[] = { 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.05385164807134505, 0.05385164807134505, 0.05385164807134505, 0.05385164807134505, 
     0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758 };
-  double p7742_d1x1y1_yerrplus[] = { 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.07280109889280519, 0.08246211251235322, 0.08246211251235322, 
+  double p7742D1x1y1yerrplus[] = { 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.07280109889280519, 0.08246211251235322, 0.08246211251235322, 
     0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322 };
-  int p7742_d1x1y1_numpoints = 14;
-  p7742_d1x1y1 = new TGraphAsymmErrors(p7742_d1x1y1_numpoints, p7742_d1x1y1_xval, p7742_d1x1y1_yval, p7742_d1x1y1_xerrminus, p7742_d1x1y1_xerrplus, p7742_d1x1y1_yerrminus, p7742_d1x1y1_yerrplus);
-  p7742_d1x1y1->SetName("/HepData/7742/d1x1y1");
-  p7742_d1x1y1->SetTitle("/HepData/7742/d1x1y1");
-  p7742_d1x1y1->SetMarkerStyle(21);
-  p7742_d1x1y1->SetMarkerColor(kRed);
-  // p7742_d1x1y1->Draw("Psame");
+  int p7742D1x1y1numpoints = 14;
+  p7742D1x1y1 = new TGraphAsymmErrors(p7742D1x1y1numpoints, p7742D1x1y1xval, p7742D1x1y1yval, p7742D1x1y1xerrminus, p7742D1x1y1xerrplus, p7742D1x1y1yerrminus, p7742D1x1y1yerrplus);
+  p7742D1x1y1->SetName("/HepData/7742/d1x1y1");
+  p7742D1x1y1->SetTitle("/HepData/7742/d1x1y1");
+  p7742D1x1y1->SetMarkerStyle(21);
+  p7742D1x1y1->SetMarkerColor(kRed);
+  // p7742D1x1y1->Draw("Psame");
   
   
   //NSD
-  TGraphAsymmErrors*  p7742_d2x1y1 = 0;
- double p7742_d2x1y1_xval[] = { -1.3, -1.1, -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 
+  TGraphAsymmErrors*  p7742D2x1y1 = 0;
+ double p7742D2x1y1xval[] = { -1.3, -1.1, -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 
     0.5, 0.7, 0.9, 1.1, 1.3 };
-  double p7742_d2x1y1_xerrminus[] = { 0.09999999999999987, 0.09999999999999987, 0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.10000000000000003, 0.1, 0.1, 0.09999999999999998, 
+  double p7742D2x1y1xerrminus[] = { 0.09999999999999987, 0.09999999999999987, 0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.10000000000000003, 0.1, 0.1, 0.09999999999999998, 
     0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.10000000000000009, 0.10000000000000009 };
-  double p7742_d2x1y1_xerrplus[] = { 0.10000000000000009, 0.10000000000000009, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.1, 0.1, 0.10000000000000003, 
+  double p7742D2x1y1xerrplus[] = { 0.10000000000000009, 0.10000000000000009, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.1, 0.1, 0.10000000000000003, 
     0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.09999999999999987, 0.09999999999999987 };
-  double p7742_d2x1y1_yval[] = { 3.9, 3.89, 3.81, 3.7, 3.64, 3.59, 3.53, 3.58, 3.59, 
+  double p7742D2x1y1yval[] = { 3.9, 3.89, 3.81, 3.7, 3.64, 3.59, 3.53, 3.58, 3.59, 
     3.61, 3.74, 3.8, 3.87, 3.95 };
-  double p7742_d2x1y1_yerrminus[] = { 0.13341664064126335, 0.13152946437965907, 0.13152946437965907, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 
+  double p7742D2x1y1yerrminus[] = { 0.13341664064126335, 0.13152946437965907, 0.13152946437965907, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 
     0.1216552506059644, 0.1216552506059644, 0.13152946437965907, 0.13152946437965907, 0.13341664064126335 };
-  double p7742_d2x1y1_yerrplus[] = { 0.13341664064126335, 0.13152946437965907, 0.13152946437965907, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 
+  double p7742D2x1y1yerrplus[] = { 0.13341664064126335, 0.13152946437965907, 0.13152946437965907, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 
     0.1216552506059644, 0.1216552506059644, 0.13152946437965907, 0.13152946437965907, 0.13341664064126335 };
-  int p7742_d2x1y1_numpoints = 14;
+  int p7742D2x1y1numpoints = 14;
 
-  p7742_d2x1y1 = new TGraphAsymmErrors(p7742_d2x1y1_numpoints, p7742_d2x1y1_xval, p7742_d2x1y1_yval, p7742_d2x1y1_xerrminus, p7742_d2x1y1_xerrplus, p7742_d2x1y1_yerrminus, p7742_d2x1y1_yerrplus);
-  p7742_d2x1y1->SetName("/HepData/7742/d2x1y1");
-  p7742_d2x1y1->SetTitle("/HepData/7742/d2x1y1");
-  p7742_d2x1y1->SetMarkerStyle(21);
-  p7742_d2x1y1->SetMarkerColor(kRed);
-  //p7742_d2x1y1.Draw("AP");
+  p7742D2x1y1 = new TGraphAsymmErrors(p7742D2x1y1numpoints, p7742D2x1y1xval, p7742D2x1y1yval, p7742D2x1y1xerrminus, p7742D2x1y1xerrplus, p7742D2x1y1yerrminus, p7742D2x1y1yerrplus);
+  p7742D2x1y1->SetName("/HepData/7742/d2x1y1");
+  p7742D2x1y1->SetTitle("/HepData/7742/d2x1y1");
+  p7742D2x1y1->SetMarkerStyle(21);
+  p7742D2x1y1->SetMarkerColor(kRed);
+  //p7742D2x1y1.Draw("AP");
 
 
 
@@ -613,19 +617,19 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   
   // CMS published NSD data
   
-  TGraphAsymmErrors* p7743_d8x1y1 = 0;
-  double p7743_d8x1y1_xval[] = { -2.25, -1.75, -1.25, -0.75, -0.25, 0.25, 0.75, 1.25, 1.75, 
+  TGraphAsymmErrors* p7743D8x1y1 = 0;
+  double p7743D8x1y1xval[] = { -2.25, -1.75, -1.25, -0.75, -0.25, 0.25, 0.75, 1.25, 1.75, 
     2.25 };
-  double p7743_d8x1y1_xerrminus[] = { 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 };
-  double p7743_d8x1y1_xerrplus[] = { 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 };
-  double p7743_d8x1y1_yval[] = { 3.6, 3.73, 3.62, 3.54, 3.48, 3.48, 3.54, 3.62, 3.73,  3.6 };
-  double p7743_d8x1y1_yerrminus[] = { 0.13, 0.14, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.14,0.13 };
-  double p7743_d8x1y1_yerrplus[] = { 0.13, 0.14, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.14, 0.13 };
-  int p7743_d8x1y1_numpoints = 10;
-  p7743_d8x1y1 = new TGraphAsymmErrors(p7743_d8x1y1_numpoints, p7743_d8x1y1_xval, p7743_d8x1y1_yval, p7743_d8x1y1_xerrminus, p7743_d8x1y1_xerrplus, p7743_d8x1y1_yerrminus, p7743_d8x1y1_yerrplus);
+  double p7743D8x1y1xerrminus[] = { 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 };
+  double p7743D8x1y1xerrplus[] = { 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 };
+  double p7743D8x1y1yval[] = { 3.6, 3.73, 3.62, 3.54, 3.48, 3.48, 3.54, 3.62, 3.73,  3.6 };
+  double p7743D8x1y1yerrminus[] = { 0.13, 0.14, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.14,0.13 };
+  double p7743D8x1y1yerrplus[] = { 0.13, 0.14, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.14, 0.13 };
+  int p7743D8x1y1numpoints = 10;
+  p7743D8x1y1 = new TGraphAsymmErrors(p7743D8x1y1numpoints, p7743D8x1y1xval, p7743D8x1y1yval, p7743D8x1y1xerrminus, p7743D8x1y1xerrplus, p7743D8x1y1yerrminus, p7743D8x1y1yerrplus);
 
-  p7743_d8x1y1->SetMarkerStyle(20);
-  p7743_d8x1y1->SetMarkerColor(kBlack);
+  p7743D8x1y1->SetMarkerStyle(20);
+  p7743D8x1y1->SetMarkerColor(kBlack);
   
   //End CMS
   
@@ -1151,13 +1155,13 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
       if(what != kMultNSD) {
 	graphinel->Draw("PEsame");
 	graphinel2->Draw("PEsame");
-	p7742_d1x1y1->Draw("PEsame");
+	p7742D1x1y1->Draw("PEsame");
       }
       else{
 	graph->Draw("PEsame");
 	graph2->Draw("PEsame");
-	p7742_d2x1y1->Draw("PEsame");
-	p7743_d8x1y1->Draw("PEsame");
+	p7742D2x1y1->Draw("PEsame");
+	p7743D8x1y1->Draw("PEsame");
 
       }
 	
@@ -1208,10 +1212,10 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
     //leg->AddEntry(hPythiaMB,"Pythia MB","l");
   leg->AddEntry(hSPDcombi,"HHD SPD clusters","p");
   if(what == kMult)
-    leg->AddEntry(p7742_d1x1y1,"ALICE INEL published","p");
+    leg->AddEntry(p7742D1x1y1,"ALICE INEL published","p");
   if(what == kMultNSD) {
-    leg->AddEntry(p7742_d2x1y1,"ALICE NSD published","p");
-    leg->AddEntry(p7743_d8x1y1, "CMS NSD published","p");
+    leg->AddEntry(p7742D2x1y1,"ALICE NSD published","p");
+    leg->AddEntry(p7743D8x1y1, "CMS NSD published","p");
   }
   }
   leg->Draw();
@@ -1353,10 +1357,10 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   //hTestdNdeta->DrawCopy("same");
   //hSPDcombi->DrawCopy("same");
   if(what == kMult)
-    p7742_d1x1y1->Draw("PEsame");
+    p7742D1x1y1->Draw("PEsame");
   if(what == kMultNSD) {
-    p7742_d2x1y1->Draw("PEsame");
-    p7743_d8x1y1->Draw("PEsame");
+    p7742D2x1y1->Draw("PEsame");
+    p7743D8x1y1->Draw("PEsame");
   }
 
   TLegend* leg2 = new TLegend(0.3,0.2,0.7,0.45,"");
@@ -1386,10 +1390,10 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
     //leg2->AddEntry(hPythiaMB,"Pythia MB","l");
     //leg2->AddEntry(hSPDcombi,"HHD SPD clusters","p");
   if(what == kMult)
-    leg2->AddEntry(p7742_d1x1y1,"ALICE INEL published","p");
+    leg2->AddEntry(p7742D1x1y1,"ALICE INEL published","p");
   if(what == kMultNSD) {
-    leg2->AddEntry(p7742_d2x1y1,"ALICE NSD published","p");
-    leg2->AddEntry(p7743_d8x1y1,"CMS NSD published","p");
+    leg2->AddEntry(p7742D2x1y1,"ALICE NSD published","p");
+    leg2->AddEntry(p7743D8x1y1,"CMS NSD published","p");
   }
   }
   leg2->Draw();

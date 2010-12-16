@@ -20,7 +20,7 @@ class TH1D;
  * @par Corrections used: 
  *   - None
  *
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward 
  */
 class AliFMDMCDensityCalculator : public AliFMDDensityCalculator
 {
@@ -56,7 +56,7 @@ public:
    * 
    * @return Reference to this object
    */
-  AliFMDMCDensityCalculator& operator=(const AliFMDMCDensityCalculator&);
+  AliFMDMCDensityCalculator& operator=(const AliFMDMCDensityCalculator& o);
   /** 
    * Do the calculations 
    * 

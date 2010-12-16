@@ -4,6 +4,7 @@
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TH1F.h>
+class TBrowser;
 
 /**
  * @ingroup FMD_ana
@@ -28,6 +29,8 @@ class AliFMDAnaCalibEnergyDistribution : public TObject
   TH1F* GetEmptyEnergyDistribution(Int_t det, Char_t ring);
   void  SetRingEnergyDistribution(Int_t det, Char_t ring, TH1F* edist);
   TH1F* GetRingEnergyDistribution(Int_t det, Char_t ring);
+  Bool_t IsFolder() const { return kTRUE; }
+  void Browse(TBrowser* b);
  protected:
   void      Init();
   TObjArray fArray;
