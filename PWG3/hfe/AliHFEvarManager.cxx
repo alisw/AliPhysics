@@ -165,11 +165,26 @@ void AliHFEvarManager::AddVariable(TString name){
   else if(!name.CompareTo("source"))
     fVariables->AddLast(new AliHFEvariable("source", "source", kSource, 4, 0, 4));
   else if(!name.CompareTo("centrality"))
-    fVariables->AddLast(new AliHFEvariable("centrality", "centrality", kCentrality, 20, 0.0, 100.0));
+    fVariables->AddLast(new AliHFEvariable("centrality", "centrality", kCentrality, 11, 0.0, 11.0));
   else if(!name.CompareTo("species"))
     fVariables->AddLast(new AliHFEvariable("species", "species", kSpecies, 6, -1, 5));
 
   // More to come ...
+}
+
+//____________________________________________________________
+Bool_t AliHFEvarManager::IsVariableDefined(TString name){
+  //
+  // Add new variable to the var manager
+  // Value derived via GetValue()
+  //
+   AliDebug(1, Form("Var Name: %s", name.Data()));
+
+   AliHFEvariable *u = (AliHFEvariable *) fVariables->FindObject((const char*)name);
+   if(u) return kTRUE;
+   else return kFALSE;
+  
+   // More to come ...
 }
 
 //____________________________________________________________

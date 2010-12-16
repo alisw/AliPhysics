@@ -32,6 +32,7 @@
 #include "AliHFEcontainer.h"
 #include "AliHFEcuts.h"
 #include "AliHFEpid.h"
+#include "AliHFEpidTPC.h"
 #include "AliHFEpidQAmanager.h"
 #include "AliHFEtaggedTrackAnalysis.h"
 #include "AliHFEvarManager.h"
@@ -47,6 +48,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis():
   , fPIDqa(NULL)
   , fCuts(NULL)
   , fCFM(NULL)
+  , fClean(kFALSE)
 {
   //
   // Default constructor
@@ -71,6 +73,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis(const AliHFEtaggedTrackAnal
   , fPIDqa(ref.fPIDqa)
   , fCuts(ref.fCuts)
   , fCFM(ref.fCFM)
+  , fClean(ref.fClean)
 {
   //
   // Copy constructor
@@ -92,6 +95,7 @@ AliHFEtaggedTrackAnalysis &AliHFEtaggedTrackAnalysis::operator=(const AliHFEtagg
     fPIDqa = ref.fPIDqa;
     fCuts = ref.fCuts;
     fCFM = ref.fCFM;
+    fClean = ref.fClean;
 
     if(ref.fContainer) InitContainer();
    
@@ -175,6 +179,16 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVParticle *track, Int_t abinitio
   }
   if(survived){
     AliDebug(2, "Use track in the PID");
+    // Try a loose cut to reject pion contamination
+    if(fClean) {
+      if(abinitioPID == AliPID::kElectron){
+	AliHFEpidTPC *pidTPC = (AliHFEpidTPC *) fPID->GetDetPID(AliHFEpid::kTPCpid);
+	if(pidTPC) {
+	  Double_t numberOfSigmaTPC = pidTPC->NumberOfSigmas(track,AliPID::kElectron,AliHFEpidObject::kESDanalysis);
+	  if(numberOfSigmaTPC < -5) return;
+	}
+      }
+    }
     // Apply PID
     AliHFEpidObject hfetrack;
     hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);

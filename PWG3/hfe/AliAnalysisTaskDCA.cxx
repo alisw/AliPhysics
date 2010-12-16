@@ -22,6 +22,7 @@
 //  Hongyan Yang <hongyan@physi.uni-heidelberg.de>
 //  Carlo Bombonati <carlo.bombonati@cern.ch>
 //
+#include <Riostream.h>
 #include <TChain.h>
 #include <TFile.h>
 #include <TH1F.h>
@@ -51,6 +52,7 @@
 #include "AliHFEpid.h"
 #include "AliHFEcuts.h"
 #include "AliHFEdca.h"
+#include "AliHFEtools.h"
 
 #include "AliAnalysisTaskDCA.h"
 
@@ -90,8 +92,10 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA():
   DefineOutput(1, TH1I::Class());
   DefineOutput(2, TList::Class());
 
-  fDefaultPID = new AliESDpid;
-  fHFEpid = new AliHFEpid("PIDforDCAanalysis");
+  printf(" ---> Dummy constructor used!\n"); 
+  AliInfo("Dummy constructor used!");
+  fDefaultPID = new AliESDpid();
+  fHFEpid = new AliHFEpid("dummyPID");
 
 }
 
@@ -129,8 +133,25 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA(const char * name):
   DefineInput(0, TChain::Class());
   DefineOutput(1, TH1I::Class());
   DefineOutput(2, TList::Class());
-  
-  fDefaultPID = new AliESDpid;
+
+
+  //-CUTS SETTING-//
+  Int_t nMinTPCcluster = 100;
+  Float_t maxDcaXY = 0.5;
+  Float_t maxDcaZ = 1.0;
+  //--------------//
+  AliHFEcuts *hfecuts = new AliHFEcuts;
+  hfecuts->CreateStandardCuts();
+  hfecuts->SetMinNClustersTPC(nMinTPCcluster);
+  hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+  hfecuts->SetCheckITSLayerStatus(kFALSE);
+  hfecuts->SetMaxImpactParam(maxDcaXY, maxDcaZ);
+  SetHFECuts(hfecuts);
+
+  printf(" ---> Default constructor used!\n");  
+  cout<<" [!] DEFAULT CONSTRUCTOR! [!]"<<endl;
+  AliInfo(" ---> Default constructor used!");  
+  fDefaultPID = new AliESDpid();
   fHFEpid = new AliHFEpid("PIDforDCAanalysis");
 
 }
@@ -166,7 +187,7 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA(const AliAnalysisTaskDCA &ref):
   //
   // Copy Constructor
   //
-
+  AliInfo("Copy Constructor");
   ref.Copy(*this);
 }
 
@@ -285,6 +306,7 @@ void AliAnalysisTaskDCA::UserCreateOutputObjects(){
   // create output objects
   // fNEvents
   // residual and pull
+  printf("\n=====UserCreateOutputObjects=====\n");
   
   // Automatic determination of the analysis mode
   AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -318,11 +340,16 @@ void AliAnalysisTaskDCA::UserCreateOutputObjects(){
   
   fCuts->Initialize(fCFM);
   
-  if(!fHFEpid) printf("hallo, fHFEpid is not available\n");
-  
-  if(fHFEpid && GetPlugin(kHFEpid)) {      
+  if(!fHFEpid) AliWarning("Hello, fHFEpid is not available");
+  cout<<"  Hello this is a cout "<<endl<<endl;
+
+  if(GetPlugin(kHFEpid)) {  
+    AliWarning(" ---> Adding TPC and TOF to the PID");  
     fHFEpid->SetHasMCData(HasMCData());
-    fHFEpid->AddDetector("TPC", 0);
+    fHFEpid->AddDetector("TOF", 0);
+    fHFEpid->AddDetector("TPC", 1);
+    cout<<endl<<" ---> TPC and TOF added to the PID"<<endl;
+    fHFEpid->ConfigureTPCrejection();
     fHFEpid->InitializePID();
   }
 
@@ -357,15 +384,15 @@ void AliAnalysisTaskDCA::UserCreateOutputObjects(){
       fDCA->CreateHistogramsKfDca(fKfDcaList);
       fOutput->AddAt(fDcaList,3);
     }
-    if(GetPlugin(kPrimVtx)){
+    if(GetPlugin(kPrimVtx)){//<---
       fDCA->CreateHistogramsVertex(fMcVertexList);
       fOutput->AddAt(fMcVertexList,4);
     }
-    if(GetPlugin(kCombinedPid)){
+    if(GetPlugin(kCombinedPid)){//<---
       fDCA->CreateHistogramsPid(fMcPidList);
       fOutput->AddAt(fMcPidList, 5);
     }
-    if(GetPlugin(kHFEpid)){
+    if(GetPlugin(kHFEpid)){//<---
       fDCA->CreateHistogramsHfeDca(fHfeDcaList);
       fOutput->AddAt(fHfeDcaList, 6);
     }
@@ -402,6 +429,8 @@ void AliAnalysisTaskDCA::UserExec(Option_t *){
   //
   // Run the analysis
   // 
+  printf("\n=====UserExec=====\n");
+  if(HasMCData()) printf("WITH MC!\n");
 
   AliDebug(3, "Processing ESD events");
 
@@ -448,7 +477,7 @@ void AliAnalysisTaskDCA::UserExec(Option_t *){
       fHFEpid->SetESDpid(workingPID);
     } else {
       AliDebug(1, "Using default ESD PID");
-      fHFEpid->SetESDpid(fDefaultPID);
+      fHFEpid->SetESDpid(AliHFEtools::GetDefaultPID(HasMCData()));
     }
     ProcessDcaAnalysis();
   }
@@ -460,11 +489,14 @@ void AliAnalysisTaskDCA::UserExec(Option_t *){
 //____________________________________________________________
 void AliAnalysisTaskDCA::ProcessDcaAnalysis(){
 
+  printf("\n=====ProcessDcaAnalysis=====\n");
+
   //
   // Loop ESD
   //
   
   AliMCEvent *fMC = 0x0;
+  AliESDVertex *vtxESDSkip = 0x0;
 
   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
   if(!fESD){
@@ -522,9 +554,25 @@ void AliAnalysisTaskDCA::ProcessDcaAnalysis(){
 	fDCA->FillHistogramsKfDca(fESD, track, fMC);
       if(GetPlugin(kCombinedPid)) 
 	fDCA->FillHistogramsPid(track, fMC);
-      if(GetPlugin(kHFEpid)) {
+      if(GetPlugin(kHFEpid)) { // data-like
 	if(fHFEpid->IsSelected(&hfetrack)) 
-	  fDCA->FillHistogramsHfeDca(fESD, track, fMC);
+
+	  //	  printf("Found an electron in p+p collision! from HFE pid \n");
+	  if(!vtxESDSkip){
+	    // method from Andrea D 28.05.2010
+	    AliVertexerTracks *vertexer = new AliVertexerTracks(fESD->GetMagneticField());
+	    vertexer->SetITSMode();
+	    vertexer->SetMinClusters(fNclustersITS);
+	    Int_t skipped[2];
+	    skipped[0] = (Int_t)track->GetID();
+	    vertexer->SetSkipTracks(1,skipped);
+	    vtxESDSkip = (AliESDVertex*)vertexer->FindPrimaryVertex(fESD);
+	    delete vertexer; vertexer = NULL;
+	    if(vtxESDSkip->GetNContributors()<fMinNprimVtxContrbutor) continue;
+	  }
+
+	  fDCA->FillHistogramsHfeDataDca(fESD, track,vtxESDSkip); 
+
       } // plugin for hfepid 
     }  // MC
 
@@ -540,7 +588,7 @@ void AliAnalysisTaskDCA::ProcessDcaAnalysis(){
 	Int_t skipped[2];
 	skipped[0] = (Int_t)track->GetID();
 	vertexer->SetSkipTracks(1,skipped);
-	AliESDVertex *vtxESDSkip = (AliESDVertex*)vertexer->FindPrimaryVertex(fESD);
+	vtxESDSkip = (AliESDVertex*)vertexer->FindPrimaryVertex(fESD);
 	delete vertexer; vertexer = NULL;
 	if(vtxESDSkip->GetNContributors()<fMinNprimVtxContrbutor) continue;
 
@@ -550,7 +598,20 @@ void AliAnalysisTaskDCA::ProcessDcaAnalysis(){
       if(GetPlugin(kHFEpid)) {
 	if(fHFEpid->IsSelected(&hfetrack)) {
 	  //	  printf("Found an electron in p+p collision! from HFE pid \n");
-	  fDCA->FillHistogramsHfeDataDca(fESD, track);    
+	  if(!vtxESDSkip){
+	    // method from Andrea D 28.05.2010
+	    AliVertexerTracks *vertexer = new AliVertexerTracks(fESD->GetMagneticField());
+	    vertexer->SetITSMode();
+	    vertexer->SetMinClusters(fNclustersITS);
+	    Int_t skipped[2];
+	    skipped[0] = (Int_t)track->GetID();
+	    vertexer->SetSkipTracks(1,skipped);
+	    vtxESDSkip = (AliESDVertex*)vertexer->FindPrimaryVertex(fESD);
+	    delete vertexer; vertexer = NULL;
+	    if(vtxESDSkip->GetNContributors()<fMinNprimVtxContrbutor) continue;
+	  }
+
+	  fDCA->FillHistogramsHfeDataDca(fESD, track,vtxESDSkip);    
 	} 
       } // plugin for hfepid
     }  // data case
@@ -565,6 +626,7 @@ void AliAnalysisTaskDCA::Terminate(Option_t *){
   //
   // Terminate not implemented at the moment
   //  
+  printf("\n=====Terminate=====\n");
   
   if(GetPlugin(kPostProcess)){
     fOutput = dynamic_cast<TList *>(GetOutputData(1));
@@ -580,6 +642,9 @@ void AliAnalysisTaskDCA::Terminate(Option_t *){
 
 //____________________________________________________________
 void AliAnalysisTaskDCA::Load(TString filename){
+
+  printf("\n=====Load=====\n");
+
   // no need for postprocessing for the moment
   TFile *input = TFile::Open(filename.Data());
   if(!input || input->IsZombie()){
@@ -599,6 +664,7 @@ void AliAnalysisTaskDCA::PostProcess(){
   // should do fitting here for dca resolution
   // moved to an external macro to do the job
   
+  printf("\n=====PostProcess=====\n");
   Load("HFEdca.root");
   TCanvas *c1 = new TCanvas("c1", "number of analyzed events", 300, 400);
   fNEvents->Draw();
@@ -634,8 +700,10 @@ void AliAnalysisTaskDCA::SwitchOnPlugin(Int_t plug){
   // Switch on Plugin          
   // Available:                                  
   //  - analyze impact parameter
-  //  - Post Processing                                                                      
-  
+  //  - Post Processing  
+
+  AliDebug(2,Form("SwitchOnPlugin %d",plug));  
+
   switch(plug){
   case kPostProcess: 
     SETBIT(fPlugins, plug); 
@@ -663,6 +731,8 @@ void AliAnalysisTaskDCA::SwitchOnPlugin(Int_t plug){
 
 //____________________________________________________________
 void AliAnalysisTaskDCA::MakeParticleContainer(){
+
+  printf("\n=====MakeParticleContainer=====\n");
   //
   // Create the particle container (borrowed from AliAnalysisTaskHFE)
   //
@@ -715,6 +785,7 @@ void AliAnalysisTaskDCA::AddPIDdetector(TString detector){
   //
   // Adding PID detector to the task
   //
+  printf("\n=====AddPIDdetector=====\n");
   
   if(!fPIDdetectors.Length()) 
     fPIDdetectors = detector;

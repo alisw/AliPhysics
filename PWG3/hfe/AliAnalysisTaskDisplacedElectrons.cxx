@@ -231,15 +231,15 @@ void AliAnalysisTaskDisplacedElectrons::UserCreateOutputObjects(){
   fElectronsMcPt = new TH1F("mcElectronPt", "MC: p_{T} distribution of identified electrons (mcpid);p_{T} (GeV/c);Counts;", nBins-1, ptBins); 
   fElectronsEsdPt = new TH1F("esdElectronPt", "ESD: p_{T} distribution of identified electrons (hfepid);p_{T} (GeV/c);Counts;", nBins-1, ptBins); 
   fElectronsDataPt = new TH1F("dataElectronPt", "DATA: p_{T} distribution of identified electrons (hfepid);p_{T} (GeV/c);Counts;", nBins-1, ptBins); 
-  
+
   fDeQA->AddAt(fDeNEvents,0);
   if(HasMCData()){
     fDeQA->AddAt(fElectronsMcPt, 1);
-    fDeQA->AddAt(fElectronsEsdPt, 2);  
+    fDeQA->AddAt(fElectronsEsdPt, 2); 
   }
-  else
+  else{
     fDeQA->AddAt(fElectronsDataPt, 1);  
-  
+  }
   // Initialize correction Framework and Cuts
   fDeCFM = new AliCFManager;
   MakeEventContainer();
@@ -467,7 +467,7 @@ void AliAnalysisTaskDisplacedElectrons::ProcessESD(){
   Double_t nContrib = fESD->GetPrimaryVertex()->GetNContributors();
 
   Bool_t alreadyseen = kFALSE;
-  LabelContainer cont(fESD->GetNumberOfTracks());
+  AliLabelContainer cont(fESD->GetNumberOfTracks());
   
   Int_t nHFEelectrons = 0;  
   AliESDtrack *track = 0x0;    
@@ -567,7 +567,7 @@ void AliAnalysisTaskDisplacedElectrons::ProcessData(){
   memset(dataContainer, 0, sizeof(Double_t) * 4);
   
   Bool_t alreadyseen = kFALSE;
-  LabelContainer cont(fESD->GetNumberOfTracks());
+  AliLabelContainer cont(fESD->GetNumberOfTracks());
 
 
   AliESDtrack *track = 0x0;
@@ -813,7 +813,7 @@ void AliAnalysisTaskDisplacedElectrons::AddPIDdetector(TString detector){
 
 
 //____________________________________________________________
-AliAnalysisTaskDisplacedElectrons::LabelContainer::LabelContainer(Int_t capacity):
+AliAnalysisTaskDisplacedElectrons::AliLabelContainer::AliLabelContainer(Int_t capacity):
   fContainer(NULL),
   fBegin(NULL),
   fEnd(NULL),
@@ -830,7 +830,7 @@ AliAnalysisTaskDisplacedElectrons::LabelContainer::LabelContainer(Int_t capacity
 }
 
 //____________________________________________________________
-Bool_t AliAnalysisTaskDisplacedElectrons::LabelContainer::Append(Int_t label){
+Bool_t AliAnalysisTaskDisplacedElectrons::AliLabelContainer::Append(Int_t label){
   //
   // Add Label to the container
   //
@@ -840,7 +840,7 @@ Bool_t AliAnalysisTaskDisplacedElectrons::LabelContainer::Append(Int_t label){
 }
 
 //____________________________________________________________
-Bool_t AliAnalysisTaskDisplacedElectrons::LabelContainer::Find(Int_t label) const {
+Bool_t AliAnalysisTaskDisplacedElectrons::AliLabelContainer::Find(Int_t label) const {
   //
   // Find track in the list of labels
   //
@@ -850,10 +850,11 @@ Bool_t AliAnalysisTaskDisplacedElectrons::LabelContainer::Find(Int_t label) cons
 }
 
 //____________________________________________________________
-Int_t AliAnalysisTaskDisplacedElectrons::LabelContainer::Next() { 
+Int_t AliAnalysisTaskDisplacedElectrons::AliLabelContainer::Next() { 
   //
   // Mimic iterator
   //
   if(fCurrent > fLast) return -1; 
-  return *fCurrent++;
+  *fCurrent++;
+  return *fCurrent;
 }

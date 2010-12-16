@@ -27,13 +27,16 @@ class AliHFEpidTOF : public AliHFEpidBase{
     AliHFEpidTOF &operator=(const AliHFEpidTOF &c);
   
     virtual Bool_t    InitializePID();
-    virtual Int_t     IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *piqa);
+    virtual Int_t     IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *piqa) const;
   
     void SetTOFnSigma(Short_t nSigma) { fNsigmaTOF = nSigma; };
+    Double_t NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anaType) const;
+    Double_t GetTOFsignal(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype) const;
+    Double_t GetTime0(AliHFEpidObject::AnalysisType_t anatype) const;
+    void GetIntegratedTimes(const AliVParticle *track, Double_t *times, AliHFEpidObject::AnalysisType_t anatype) const;
 
   protected:
     void Copy(TObject &ref) const;
-    Double_t NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anaType);
   private:
     AliPID        *fPID;           //! PID Object
 

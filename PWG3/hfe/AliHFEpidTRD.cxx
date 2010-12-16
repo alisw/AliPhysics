@@ -28,6 +28,7 @@
 #include <TString.h>
 
 #include "AliAODpidUtil.h"
+#include "AliAODPid.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliESDtrack.h"
@@ -128,7 +129,7 @@ Bool_t AliHFEpidTRD::InitializePID(){
 }
 
 //______________________________________________________
-Int_t AliHFEpidTRD::IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa){
+Int_t AliHFEpidTRD::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const {
   //
   // Does PID for TRD alone:
   // PID thresholds based on 90% Electron Efficiency level approximated by a linear 
@@ -160,7 +161,7 @@ Int_t AliHFEpidTRD::IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetTRDthresholds(Double_t electronEff, Double_t p){ 
+Double_t AliHFEpidTRD::GetTRDthresholds(Double_t electronEff, Double_t p) const { 
   //
   // Return momentum dependent and electron efficiency dependent TRD thresholds
   // 
@@ -240,7 +241,7 @@ void AliHFEpidTRD::InitParameters1DLQ(){
 }
 
 //___________________________________________________________________
-void AliHFEpidTRD::GetParameters(Double_t electronEff, Double_t *parameters){
+void AliHFEpidTRD::GetParameters(Double_t electronEff, Double_t *parameters) const {
   //
   // return parameter set for the given efficiency bin
   //
@@ -249,7 +250,7 @@ void AliHFEpidTRD::GetParameters(Double_t electronEff, Double_t *parameters){
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType){
+Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const {
   //
   // Get TRD likelihoods for ESD respectively AOD tracks
   //
@@ -265,7 +266,7 @@ Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVParticle *track, AliHFEpi
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType){
+Double_t AliHFEpidTRD::GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const {
   //
   // Get the Momentum in the TRD
   //
@@ -281,7 +282,25 @@ Double_t AliHFEpidTRD::GetP(const AliVParticle *track, AliHFEpidObject::Analysis
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track){
+Double_t AliHFEpidTRD::GetChargeLayer(const AliVParticle *track, UInt_t layer, AliHFEpidObject::AnalysisType_t anaType) const {
+  //
+  // Get the Charge in a single TRD layer
+  //
+  if(layer >= 6) return 0.;
+  Double_t charge = 0.;
+  if(anaType == AliHFEpidObject::kESDanalysis){
+    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+    for(Int_t islice = 0; islice < esdtrack->GetNumberOfTRDslices(); islice++) charge += esdtrack->GetTRDslice(static_cast<UInt_t>(layer), islice);
+  } else {
+    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
+    AliAODPid *aoddetpid = aodtrack->GetDetPid();
+    for(Int_t islice = 0; islice < aoddetpid->GetTRDnSlices(); islice++) charge += aoddetpid->GetTRDsignal()[layer * aoddetpid->GetTRDnSlices() + islice];
+  }
+  return charge;
+}
+
+//___________________________________________________________________
+Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track) const {
   //
   // Calculation of the TRD Signal via truncated mean
   // Method 1: Take all Slices available
@@ -314,7 +333,7 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track){
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetTRDSignalV2(const AliESDtrack *track){
+Double_t AliHFEpidTRD::GetTRDSignalV2(const AliESDtrack *track) const {
   //
   // Calculation of the TRD Signal via truncated mean
   // Method 2: Take only first 5 slices per chamber

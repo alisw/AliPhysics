@@ -48,7 +48,7 @@ class AliHFEspectrum : public TNamed{
     ~AliHFEspectrum();
     
 
-    Bool_t Init(AliHFEcontainer *datahfecontainer,AliHFEcontainer *mchfecontainer,AliHFEcontainer *v0hfecontainer=0x0);
+    Bool_t Init(const AliHFEcontainer *datahfecontainer, const AliHFEcontainer *mchfecontainer, const AliHFEcontainer *v0hfecontainer=0x0);
     Bool_t Correct(Bool_t subtractcontamination=kTRUE);
    
     AliCFDataGrid *SubtractBackground(Bool_t setBackground = kFALSE);

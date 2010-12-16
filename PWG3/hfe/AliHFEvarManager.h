@@ -59,6 +59,7 @@ public:
   Bool_t IsOwner() const { return TestBit(kOwner); }
 
   void AddVariable(TString name);
+  Bool_t IsVariableDefined(TString name);
   void DefineVariables(AliHFEcontainer *cont);
   void NewTrack(AliVParticle *track, AliVParticle *mcTrack = NULL, Float_t centrality = 99.0, Int_t aprioriPID = -1, Bool_t signal = kTRUE);
   Bool_t IsSignalTrack() const { return fSignalTrack; }

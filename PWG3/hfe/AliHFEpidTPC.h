@@ -46,9 +46,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     virtual ~AliHFEpidTPC();
     
     virtual Bool_t InitializePID();
-    virtual Int_t IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa);
-
-    Int_t GetCrossingType() const {return fLineCrossingType; }
+    virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
 
     void AddTPCdEdxLineCrossing(Int_t species, Double_t sigma);
     Bool_t HasAsymmetricSigmaCut() const { return TestBit(kAsymmetricSigmaCut);}
@@ -60,12 +58,14 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void SetUpperSigmaCut(TF1 * const model) { fUpperSigmaCut = model; }
     void SetLowerSigmaCut(TF1 * const model) { fLowerSigmaCut = model; }
 
+    Double_t NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t) const;
+    Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
+
   protected:
     void Copy(TObject &o) const;
-    Double_t NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t);
-    Int_t Reject(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType);
+    Int_t Reject(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
 
-    Bool_t CutSigmaModel(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType);
+    Bool_t CutSigmaModel(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
 
   private:
     enum{
@@ -73,7 +73,6 @@ class AliHFEpidTPC : public AliHFEpidBase{
       kRejection = BIT(21)
     };
     Double_t fLineCrossingSigma[AliPID::kSPECIES];          // with of the exclusion point
-    Int_t    fLineCrossingType;                             // 0 for no line crossing, otherwise AliPID of the particle crossing the electron dEdx band
     UChar_t fLineCrossingsEnabled;                          // Bitmap showing which line crossing is set
     TF1 *fUpperSigmaCut;                                    // Upper Sigma Cut
     TF1 *fLowerSigmaCut;                                    // Lower Sigma Cut

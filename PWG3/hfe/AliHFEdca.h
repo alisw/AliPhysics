@@ -90,16 +90,16 @@ class AliHFEdca : public TObject{
   void InitAnalysis();  
   void FillHistogramsDca(AliESDEvent *esdEvent,  AliESDtrack *track,  AliMCEvent *mcEvent);
   void FillHistogramsVtx(AliESDEvent *esdEvent,  AliMCEvent *mcEvent);
-  void FillHistogramsPid(AliESDtrack *track,  AliMCEvent *mcEvent);
+  void FillHistogramsPid(AliESDtrack *track, const  AliMCEvent *mcEvent);
 
-  void FillHistogramsKfDca(AliESDEvent *esdEvent,  AliESDtrack *track,  AliMCEvent *mcEvent);
+  void FillHistogramsKfDca(AliESDEvent *esdEvent,  AliESDtrack *track,  const AliMCEvent *mcEvent);
 
   void FillHistogramsDataDca(AliESDEvent *esdEvent,  AliESDtrack *track, AliESDVertex *vtxESDSkip);
   void FillHistogramsDataVtx(AliESDEvent *esdEvent);
   void FillHistogramsDataPid(AliESDtrack *track);
 
   void FillHistogramsHfeDca(AliESDEvent *esdEvent,  AliESDtrack *track,  AliMCEvent *mcEvent);
-  void FillHistogramsHfeDataDca(AliESDEvent *esdEvent,  AliESDtrack *track);
+  void FillHistogramsHfeDataDca(AliESDEvent *esdEvent,AliESDtrack *track,AliESDVertex *vtxESDSkip);
 
 
   void ApplyExtraCuts(AliESDEvent * const esdEvent, Int_t nMinPrimVtxContributor);

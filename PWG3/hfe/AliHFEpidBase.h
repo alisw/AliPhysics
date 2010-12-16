@@ -81,7 +81,7 @@ class AliHFEpidBase : public TNamed{
     virtual ~AliHFEpidBase() {};
     // Framework functions that have to be implemented by the detector PID classes
     virtual Bool_t InitializePID() = 0;
-    virtual Int_t IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa = NULL) = 0;
+    virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa = NULL) const = 0;
 
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
 
@@ -89,9 +89,11 @@ class AliHFEpidBase : public TNamed{
     void SetAODpid(AliAODpidUtil * const pid) { fAODpid = pid; }
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData,hasMCdata); };
 
+    AliESDpid *GetESDpid() const { return fESDpid; }; 
+
   protected:
-    AliESDpid *fESDpid;                         // ESD PID object
-    AliAODpidUtil *fAODpid;                     // AOD PID object
+    AliESDpid *fESDpid;                         //! ESD PID object
+    AliAODpidUtil *fAODpid;                     //! AOD PID object
     void Copy(TObject &ref) const;
 
   private:

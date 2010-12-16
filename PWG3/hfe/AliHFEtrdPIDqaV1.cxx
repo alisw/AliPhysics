@@ -33,14 +33,14 @@
 #include <THnSparse.h>
 #include <TString.h>
 
-#include "AliAODTrack.h"
-#include "AliESDtrack.h"
-#include "AliESDpid.h"
-#include "AliExternalTrackParam.h"
+#include "AliLog.h"
 #include "AliPID.h"
 
 #include "AliHFEcollection.h"
 #include "AliHFEpidBase.h"
+#include "AliHFEpidQAmanager.h"
+#include "AliHFEpidTPC.h"
+#include "AliHFEpidTRD.h"
 #include "AliHFEtrdPIDqaV1.h"
 
 ClassImp(AliHFEtrdPIDqaV1)
@@ -149,51 +149,32 @@ void AliHFEtrdPIDqaV1::Initialize(){
 }
 
 //____________________________________________________________
-void AliHFEtrdPIDqaV1::ProcessTrack(AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step){
+void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step){
   //
   // Process the track, fill the containers 
   //
   AliDebug(1, Form("QA started for TRD PID for step %d", (Int_t)step));
   Int_t species = track->GetAbInitioPID();
-  const AliVParticle *rectrack = track->GetRecTrack();
-  if(species >= AliPID::kSPECIES) species = -1;
-  if(!TString(rectrack->IsA()->GetName()).CompareTo("AliESDtrack")) ProcessESDtrack(dynamic_cast<const AliESDtrack *>(rectrack), step, species);
-  else if(!TString(rectrack->IsA()->GetName()).CompareTo("AliAODTrack")) ProcessAODtrack(dynamic_cast<const AliAODTrack *>(rectrack), step, species);
-  else  AliWarning(Form("Object type %s not supported\n", rectrack->IsA()->GetName()));
-}
+  AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
 
-//____________________________________________________________
-void AliHFEtrdPIDqaV1::ProcessESDtrack(const AliESDtrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species){
-  //
-  // Fill QA histograms
-  //
+  AliHFEpidTRD *trdpid = dynamic_cast<AliHFEpidTRD *>(fQAmanager->GetDetectorPID(AliHFEpid::kTRDpid));
+  AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
+ 
   Double_t container[4];
   container[0] = species;
-  container[1] = track->GetOuterParam() ? track->GetOuterParam()->P() : track->P();
-  container[2] = fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron);
+  container[1] = trdpid->GetP(track->GetRecTrack(), anatype);
+  container[2] = tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype);
   container[3] = step;
   fHistos->Fill("hTPCsigma", container);
 
-  Double_t pid[5];
-  track->GetTRDpid(pid);
-  container[2] = pid[AliPID::kElectron];
+  container[2] = trdpid->GetElectronLikelihood(track->GetRecTrack(), anatype);
   fHistos->Fill("hTRDlikelihood", container);
 
-  Double_t charge = 0.;
-  for(Int_t ily = 0; ily < 6; ily++){
-    charge = 0.;
-    for(Int_t isl = 0; isl < track->GetNumberOfTRDslices(); isl++){
-      charge += track->GetTRDslice(ily, isl);
-    }
+  for(UInt_t ily = 0; ily < 6; ily++){
+    container[2] = trdpid->GetChargeLayer(track->GetRecTrack(), ily, anatype);
     fHistos->Fill("hTRDcharge", container);
   }
-}
-
-//_________________________________________________________
-void AliHFEtrdPIDqaV1::ProcessAODtrack(const AliAODTrack * /*track*/, AliHFEdetPIDqa::EStep_t /*step*/, Int_t /*species*/){
-  //
-  // To be implemented
-  //
+ if(species >= AliPID::kSPECIES) species = -1;
 }
 
 //_________________________________________________________
@@ -211,11 +192,11 @@ TH2 *AliHFEtrdPIDqaV1::MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t
     // cut on species (if available)
     histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
   }
-  histo->GetAxis(3)->SetRangeUser(species + 1, species + 1);
+  histo->GetAxis(3)->SetRange(step + 1, step + 1); 
 
   TH2 *hSpec = histo->Projection(2, 1);
   // construct title and name
-  TString stepname = step ? "before" : "after";
+  TString stepname = step == AliHFEdetPIDqa::kBeforePID ? "before" : "after";
   TString speciesname = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "all Particles";
   TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
   TString histname = Form("hSigmaTPC%s%s", specID.Data(), stepname.Data());
@@ -243,11 +224,11 @@ TH2 *AliHFEtrdPIDqaV1::MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t ste
     // cut on species (if available)
     histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
   }
-  histo->GetAxis(3)->SetRangeUser(species + 1, species + 1);
+  histo->GetAxis(3)->SetRangeUser(step + 1, step + 1);
 
   TH2 *hSpec = histo->Projection(2, 1);
   // construct title and name
-  TString stepname = step ? "before" : "after";
+  TString stepname = step == AliHFEdetPIDqa::kBeforePID ? "before" : "after";
   TString speciesname = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "all Particles";
   TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
   TString histname = Form("hLikeElTRD%s%s", specID.Data(), stepname.Data());
@@ -275,11 +256,11 @@ TH2 *AliHFEtrdPIDqaV1::MakeTRDchargeDistribution(AliHFEdetPIDqa::EStep_t step, I
     // cut on species (if available)
     histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
   }
-  histo->GetAxis(3)->SetRangeUser(species + 1, species + 1);
+  histo->GetAxis(3)->SetRange(step + 1, step + 1);
 
   TH2 *hSpec = histo->Projection(2, 1);
   // construct title and name
-  TString stepname = step ? "before" : "after";
+  TString stepname = step == AliHFEdetPIDqa::kBeforePID ? "before" : "after";
   TString speciesname = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "all Particles";
   TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
   TString histname = Form("hChargeTRD%s%s", specID.Data(), stepname.Data());

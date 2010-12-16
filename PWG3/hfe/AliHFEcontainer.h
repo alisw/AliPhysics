@@ -60,7 +60,7 @@ class AliHFEcontainer : public TNamed{
     THashList *GetListOfCorrelationMatrices() const { return fCorrelationMatrices; }
     void FillCFContainer(const Char_t *name, UInt_t step, Double_t *content, Double_t weight = 1.) const;
     void FillCFContainerStepname(const Char_t *name, const Char_t *step, Double_t *content, Double_t weight = 1.) const;
-    AliCFContainer *MakeMergedCFContainer(const Char_t *name, const Char_t *title, const Char_t *contnames);
+    AliCFContainer *MakeMergedCFContainer(const Char_t *name, const Char_t *title, const Char_t *contnames) const;
 
     Int_t GetNumberOfCFContainers() const;
     Int_t GetNumberOfEvents() const { return fNEvents; };

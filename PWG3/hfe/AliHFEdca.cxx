@@ -257,14 +257,14 @@ AliHFEdca::~AliHFEdca()
 
  if(fStat) delete fStat;
 
- Printf("analysis done\n");
+ //Printf("analysis done\n");
 
 }
 
 //________________________________________________________________________
 void AliHFEdca::InitAnalysis(){
 
- Printf("initialize analysis\n");
+ //Printf("initialize analysis\n");
 
 }
 
@@ -307,7 +307,7 @@ void AliHFEdca::CreateHistogramsResidual(TList *residualList){
 	
 	if(k==0){
 	  fHistDcaXYRes[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, -maxXYBin, maxXYBin);
-	  fHistDcaXYRes[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDcaXYRes[j][i]->SetLineColor((int)fgkColorPart[j]);
 	  if(j<(kNParticles-2)){
 	    fHistEPDcaXYRes[j][i] = new TH1F((const char*)histEPName, (const char*)histTitle, nBins, -maxXYBin, maxXYBin);
 	    fHistEPDcaXYRes[j][i]->SetLineColor((int)fgkColorPart[j]);}
@@ -840,7 +840,6 @@ void AliHFEdca::FillHistogramsDca(AliESDEvent * const esdEvent, AliESDtrack * co
  Double_t covardz[3];
 
  if(!track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz)) return;  // protection
- track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz);
 
  AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel()))); 
  if(!mctrack) return;
@@ -937,8 +936,8 @@ void AliHFEdca::FillHistogramsDca(AliESDEvent * const esdEvent, AliESDtrack * co
 }
 
 //_______________________________________________________________________________________________
-void AliHFEdca::FillHistogramsKfDca(AliESDEvent * const esdEvent, AliESDtrack * const track, AliMCEvent * const mcEvent)
-{
+void AliHFEdca::FillHistogramsKfDca(AliESDEvent * const esdEvent, AliESDtrack * const track, const AliMCEvent * const mcEvent)
+ {
  // the kKfDca plugin
 
 // filling historgams track by track
@@ -958,7 +957,6 @@ void AliHFEdca::FillHistogramsKfDca(AliESDEvent * const esdEvent, AliESDtrack * 
  Double_t dz[2];   // error of dca in cm
  Double_t covardz[3];
  if(!track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz)) return; // protection 
- track->PropagateToDCA(primVtx,magneticField,  beampiperadius, dz, covardz);
 
  AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));  
  if(!mctrack) return;
@@ -1082,7 +1080,7 @@ void AliHFEdca::FillHistogramsVtx(AliESDEvent *const esdEvent, AliMCEvent *const
 }
 
 //_______________________________________________________________________________________________
-void AliHFEdca::FillHistogramsPid(AliESDtrack * const track, AliMCEvent * const mcEvent)
+void AliHFEdca::FillHistogramsPid(AliESDtrack * const track, const AliMCEvent * const mcEvent)
 {
 
 
@@ -1152,7 +1150,7 @@ void AliHFEdca::FillHistogramsDataDca(AliESDEvent * const esdEvent, AliESDtrack 
  Double_t covardz[3];
 
  if(!track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz)) return;  // protection
- track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz);
+
 
  Double_t pull[2] = {0, 0};
  Double_t error[2] ={TMath::Sqrt(covardz[0]), TMath::Sqrt(covardz[2])};
@@ -1165,7 +1163,6 @@ void AliHFEdca::FillHistogramsDataDca(AliESDEvent * const esdEvent, AliESDtrack 
  Double_t dzwo[2], covardzwo[3];
  Double_t pullwo[2] = {0, 0};
  if(!track->PropagateToDCA(vtxESDSkip, magneticField, beampiperadius, dzwo, covardzwo)) return;   // protection
- track->PropagateToDCA(vtxESDSkip, magneticField, beampiperadius, dzwo, covardzwo); 
 
  Double_t errorwo[2] ={TMath::Sqrt(TMath::Abs(covardzwo[0])), TMath::Sqrt(TMath::Abs(covardzwo[2]))};
  for(Int_t i=0; i<2; i++){
@@ -1477,7 +1474,7 @@ void AliHFEdca::CreateHistogramsHfeDataDca(TList *hfeDataDcaList){
    } // 2 particle type
  } // 2 dca var
 
- fHistDataHfePid[2] = 0x0; //!  HFE pid  
+ //fHistDataHfePid[2] = 0x0; //!  HFE pid  
  for(Int_t iPart=0; iPart<2; iPart++){
    TString histTitleHfe((const char*)fgkParticles[iPart*5]);
    histTitleHfe+=Form("_Data_HfePid_esdPt;p_{T} [GeV/c];counts");
@@ -1537,7 +1534,6 @@ void AliHFEdca::FillHistogramsHfeDca(AliESDEvent * const esdEvent, AliESDtrack *
  Double_t dz[2];   // error of dca in cm
  Double_t covardz[3];
  if(!track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz)) return; // protection
- track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz);
 
  AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));  
  if(!mctrack) return;
@@ -1613,7 +1609,7 @@ void AliHFEdca::FillHistogramsHfeDca(AliESDEvent * const esdEvent, AliESDtrack *
 
 
 //_______________________________________________________________________________________________
-void AliHFEdca::FillHistogramsHfeDataDca(AliESDEvent * const esdEvent, AliESDtrack * const track)
+void AliHFEdca::FillHistogramsHfeDataDca(AliESDEvent * const esdEvent, AliESDtrack * const track, AliESDVertex * const vtxESDSkip)
 {
 // filling historgams track by track
 // obtaining reconstructed dca --------------------------------------------------------------
@@ -1624,7 +1620,7 @@ void AliHFEdca::FillHistogramsHfeDataDca(AliESDEvent * const esdEvent, AliESDtra
  Int_t charge = track->Charge();
 
 // obtaining errors of dca ------------------------------------------------------------------
- const AliESDVertex *primVtx = esdEvent->GetPrimaryVertex();      
+ const AliESDVertex *primVtx = esdEvent->GetPrimaryVertex(); // UNUSED!     
  Double_t primV[3];
  primV[0] = primVtx->GetXv();
  primV[1] = primVtx->GetYv();
@@ -1633,15 +1629,16 @@ void AliHFEdca::FillHistogramsHfeDataDca(AliESDEvent * const esdEvent, AliESDtra
  Float_t magneticField = 0;  // initialized as 5kG
  magneticField = esdEvent->GetMagneticField();  // in kG
  Double_t beampiperadius=3.; 
+
  Double_t dz[2];   // error of dca in cm
  Double_t covardz[3];
- if(!track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz)) return; // protection
- track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz);
+
+ if(!track->PropagateToDCA(vtxESDSkip,magneticField, beampiperadius, dz, covardz)) return; // protection
 
  Double_t pull[2] = {0, 0};
  Double_t error[2] ={TMath::Sqrt(covardz[0]), TMath::Sqrt(covardz[2])};
  for(Int_t i=0; i<2; i++){
-   if(error[i]!=0)pull[i] = dz[i]/error[i];   // unitless                                                
+   if(error[i]!=0) pull[i] = dz[i]/error[i];   // unitless    
  }
 
  Int_t iPart = -1;
@@ -1660,8 +1657,7 @@ void AliHFEdca::FillHistogramsHfeDataDca(AliESDEvent * const esdEvent, AliESDtra
      fHistHPDataDcaZPull[iPart][iPtBin]->Fill(pull[1]);		      
 
    }
-   else
-     continue;
+   else continue;
  }
 
  fHistDataHfePid[iPart]->Fill(esdpt);

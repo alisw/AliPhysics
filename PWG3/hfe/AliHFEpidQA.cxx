@@ -1172,7 +1172,7 @@ Double_t AliHFEpidQA::TRDlikeTracklet(Int_t layer, AliESDtrack * const track, Do
   return sum;
 }
 //__________________________________________________________________________
-const Int_t AliHFEpidQA::TRDmomBin(Double_t p){
+Int_t AliHFEpidQA::TRDmomBin(Double_t p) const {
   //
   // compute the momentum bin position
   // 

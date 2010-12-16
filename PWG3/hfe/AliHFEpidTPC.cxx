@@ -29,6 +29,7 @@
 #include <TMath.h>
 
 #include "AliAODpidUtil.h"
+#include "AliAODPid.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliESDtrack.h"
@@ -47,7 +48,6 @@ ClassImp(AliHFEpidTPC)
 AliHFEpidTPC::AliHFEpidTPC() :
   // add a list here
   AliHFEpidBase()
-  , fLineCrossingType(0)
   , fLineCrossingsEnabled(0)
   , fUpperSigmaCut(NULL)
   , fLowerSigmaCut(NULL)
@@ -64,7 +64,6 @@ AliHFEpidTPC::AliHFEpidTPC() :
 AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   // add a list here
   AliHFEpidBase(name)
-  , fLineCrossingType(0)
   , fLineCrossingsEnabled(0)
   , fUpperSigmaCut(NULL)
   , fLowerSigmaCut(NULL)
@@ -84,7 +83,6 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
 //___________________________________________________________________
 AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   AliHFEpidBase("")
-  , fLineCrossingType(0)
   , fLineCrossingsEnabled(0)
   , fUpperSigmaCut(NULL)
   , fLowerSigmaCut(NULL)
@@ -148,7 +146,7 @@ Bool_t AliHFEpidTPC::InitializePID(){
 }
 
 //___________________________________________________________________
-Int_t AliHFEpidTPC::IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa)
+Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const
 {
   //
   // For the TPC pid we use the 2-sigma band around the bethe bloch curve
@@ -167,14 +165,12 @@ Int_t AliHFEpidTPC::IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa
   // exclude crossing points:
   // Determine the bethe values for each particle species
   Bool_t isLineCrossing = kFALSE;
-  fLineCrossingType = 0;  // default value
   for(Int_t ispecies = 0; ispecies < AliPID::kSPECIES; ispecies++){
     if(ispecies == AliPID::kElectron) continue;
     if(!(fLineCrossingsEnabled & 1 << ispecies)) continue;
     if(TMath::Abs(NumberOfSigmas(track->GetRecTrack(), (AliPID::EParticleType)ispecies, anatype)) < fLineCrossingSigma[ispecies] && TMath::Abs(nsigma) < fNsigmaTPC){
       // Point in a line crossing region, no PID possible, but !PID still possible ;-)
       isLineCrossing = kTRUE;      
-      fLineCrossingType = ispecies;
       break;
     }
   }
@@ -205,25 +201,25 @@ Int_t AliHFEpidTPC::IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa
 }
 
 //___________________________________________________________________
-Bool_t AliHFEpidTPC::CutSigmaModel(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType){
+Bool_t AliHFEpidTPC::CutSigmaModel(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const {
   //
   // N SigmaCut using parametrization of the cuts
   //
   Bool_t isSelected = kTRUE;
   Float_t nsigma = NumberOfSigmas(track, AliPID::kElectron, anaType);
-  Double_t p = track->P();
+  Double_t p = GetP(track, anaType);
   if(fUpperSigmaCut && nsigma > fUpperSigmaCut->Eval(p)) isSelected = kFALSE;
   if(fLowerSigmaCut && nsigma < fLowerSigmaCut->Eval(p)) isSelected = kFALSE;
   return isSelected;
 }
 
 //___________________________________________________________________
-Int_t AliHFEpidTPC::Reject(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType){
+Int_t AliHFEpidTPC::Reject(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const{
   //
   // reject particles based on asymmetric sigma cut
   //
   Int_t pdc[AliPID::kSPECIES] = {11,13,211,321,2212};
-  Double_t p = track->P();
+  Double_t p = GetP(track, anaType);
   for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
     if(!TESTBIT(fRejectionEnabled, ispec)) continue;
     // Particle rejection enabled
@@ -249,7 +245,7 @@ void AliHFEpidTPC::AddTPCdEdxLineCrossing(Int_t species, Double_t sigma){
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTPC::NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anaType){
+Double_t AliHFEpidTPC::NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anaType) const {
   //    
   // Get the number of sigmas
   //
@@ -263,4 +259,22 @@ Double_t AliHFEpidTPC::NumberOfSigmas(const AliVParticle *track, AliPID::EPartic
     if(aodtrack && fAODpid) nSigmas = fAODpid->NumberOfSigmasTPC(aodtrack, species);
   }
   return nSigmas;
+}
+
+//___________________________________________________________________
+Double_t AliHFEpidTPC::GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype) const {
+  //
+  // Get the momentum at the inner wall of the TPC
+  //
+  Double_t p = -1;
+  if(anatype == AliHFEpidObject::kESDanalysis){
+    // ESD analysis: Use Inner Params for the momentum estimate
+    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+    p = esdtrack->GetInnerParam() ? esdtrack->GetInnerParam()->GetP() : esdtrack->P();
+  } else { 
+    // AOD analysis: Use TPC momentum stored in the AliAODpid object
+    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
+    p = aodtrack->GetDetPid() ? aodtrack->GetDetPid()->GetTPCmomentum() : aodtrack->P();
+  }
+  return p;
 }

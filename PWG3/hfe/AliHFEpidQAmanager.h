@@ -47,12 +47,10 @@ class AliHFEpidQAmanager : public TObject{
     ~AliHFEpidQAmanager();
 
     void Initialize(AliHFEpid *pid);
-    void ProcessTrack(AliHFEpidObject *track, AliHFEpid::EDETtype_t det, AliHFEdetPIDqa::EStep_t step);
+    void ProcessTrack(const AliHFEpidObject *track, AliHFEpid::EDETtype_t det, AliHFEdetPIDqa::EStep_t step);
     AliHFEdetPIDqa *GetDetectorPIDqa(AliHFEpid::EDETtype_t detector) const { return fDetPIDqa[detector]; }
+    AliHFEpidBase *GetDetectorPID(AliHFEpid::EDETtype_t detector) const { return fDetPID[detector]; }
     TList *MakeList(const Char_t *name);
-
-    void SetESDpid(AliESDpid *esdpid);
-    void SetAODpid(AliAODpidUtil *aodpid);
 
   protected:
     enum{
@@ -64,7 +62,8 @@ class AliHFEpidQAmanager : public TObject{
     void CreateDetPIDqa(AliHFEpid::EDETtype_t detector);
 
   private:
-    AliHFEdetPIDqa *fDetPIDqa[AliHFEpid::kNdetectorPID]; //!
+    AliHFEdetPIDqa *fDetPIDqa[AliHFEpid::kNdetectorPID]; //! Detector PID QA objects
+    AliHFEpidBase *fDetPID[AliHFEpid::kNdetectorPID];    //  Detector PID objects
 
   ClassDef(AliHFEpidQAmanager, 0)
 };

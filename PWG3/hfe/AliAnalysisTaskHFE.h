@@ -88,6 +88,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
 
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
     void SetTaggedTrackCuts(AliHFEcuts * const cuts) { fTaggedTrackCuts = cuts; }
+    void SetCleanTaggedTrack(Bool_t clean) { fCleanTaggedTrack = clean; };
     void SetHFECutsPreselect(AliHFEcuts * const cuts) { fCutspreselect = cuts; };
     void SetHFEElecBackGround(AliHFEelecbackground * const elecBackGround) { fElecBackGround = elecBackGround; };
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
@@ -113,6 +114,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void MakeParticleContainer();
     void MakeEventContainer();
     void InitPIDperformanceQA();
+    void InitContaminationQA();
     void ProcessMC();
     void ProcessESD();
     void ProcessAOD();
@@ -138,6 +140,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFEpid *fPIDpreselect;             // PID oject for pre-selected tracks (without QA)
     AliHFEcuts *fCuts;                    // Cut Collection
     AliHFEcuts *fTaggedTrackCuts;         // Cut Collection for V0 tagged tracks
+    Bool_t fCleanTaggedTrack;             // Loose cleaning of the V0 tagged tracks electron
     AliHFEcuts *fCutspreselect;           // Cut Collection for pre-selected tracks
     AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis
     AliHFEelecbackground *fElecBackGround;//! Background analysis

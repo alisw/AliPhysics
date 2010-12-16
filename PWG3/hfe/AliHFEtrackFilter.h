@@ -37,8 +37,8 @@ class AliMCEvent;
 class AliHFEtrackFilter : public TNamed{
   public:
     AliHFEtrackFilter(const Char_t *name);
-    AliHFEtrackFilter(const AliHFEtrackFilter &);
-    AliHFEtrackFilter &operator=(const AliHFEtrackFilter &);
+    AliHFEtrackFilter(const AliHFEtrackFilter &o);
+    AliHFEtrackFilter &operator=(const AliHFEtrackFilter &o);
     virtual void Copy(TObject &o) const;
     ~AliHFEtrackFilter();
   

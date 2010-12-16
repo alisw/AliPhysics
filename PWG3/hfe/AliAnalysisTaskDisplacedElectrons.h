@@ -108,10 +108,10 @@ class AliAnalysisTaskDisplacedElectrons : public AliAnalysisTaskSE{
   
  private:
   
-  class LabelContainer{
+  class AliLabelContainer{
   public:
-    LabelContainer(Int_t capacity);
-    ~LabelContainer() {delete[] fContainer; };
+    AliLabelContainer(Int_t capacity);
+    ~AliLabelContainer() {delete[] fContainer; };
     
     Bool_t Append(Int_t label);
     Bool_t Find(Int_t Label) const;
@@ -119,8 +119,8 @@ class AliAnalysisTaskDisplacedElectrons : public AliAnalysisTaskSE{
     void ResetIterator(){ fCurrent = fBegin; }
     
   private:
-    LabelContainer(const LabelContainer &);
-    LabelContainer &operator=(const LabelContainer &);
+    AliLabelContainer(const AliLabelContainer &);
+    AliLabelContainer &operator=(const AliLabelContainer &);
     Int_t *fContainer;    // the Container for the labels
     Int_t *fBegin;        // Pointer to the first entry
     Int_t *fEnd;          // Pointer to the end of the container
@@ -144,12 +144,11 @@ class AliAnalysisTaskDisplacedElectrons : public AliAnalysisTaskSE{
   AliHFEpid *fDePID;                      //! PID method
   AliCFManager *fDeCFM;                   //! Correction Framework Manager
   AliHFEdisplacedElectrons *fDisplacedElectrons;        //! HFE displaced Electrons pointer 
-  
-                                               
+                                
   TH1I *fDeNEvents;                       //! counter for the number of Events
   TH1F *fElectronsMcPt;                   //! pt distribution of MC electrons (mcpid)
   TH1F *fElectronsEsdPt;                  //! pt distribution of ESD electrons (hfepid)
-  TH1F *fElectronsDataPt;                  //! pt distribution of DATA electrons (hfepid)
+  TH1F *fElectronsDataPt;                 //! pt distribution of DATA electrons (hfepid)
   TList *fDeCorrection;                   //! Container for correction  Outpu  
   TList *fDeQA;                          //! container for the PID qa 
   TList *fHistDisplacedElectrons;                      //! list of outputs

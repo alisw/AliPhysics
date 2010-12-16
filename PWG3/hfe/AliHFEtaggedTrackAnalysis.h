@@ -45,8 +45,11 @@ class AliHFEtaggedTrackAnalysis : public TObject{
     AliHFEpidQAmanager *GetPIDqa() const { return fPIDqa; }
     TList * GetPIDQA() const;
     TList * GetCutQA() const;
+    Bool_t  GetClean() const { return fClean; }; 
+
     void SetCuts(AliHFEcuts *cuts);
     void SetPID(AliHFEpid *pid);
+    void SetClean(Bool_t clean) { fClean = clean; };
 
   private:
     enum{
@@ -59,6 +62,7 @@ class AliHFEtaggedTrackAnalysis : public TObject{
     AliHFEpidQAmanager  *fPIDqa;        // PID monitoring
     AliHFEcuts          *fCuts;         // Single track cuts
     AliCFManager        *fCFM;          // CF Manager used for the track filtering
+    Bool_t               fClean;        // Clean
     
   ClassDef(AliHFEtaggedTrackAnalysis, 0)
 };

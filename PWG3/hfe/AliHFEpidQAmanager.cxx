@@ -48,6 +48,7 @@ AliHFEpidQAmanager::AliHFEpidQAmanager():
   // Dummy constructor
   //
   memset(fDetPIDqa, 0, sizeof(AliHFEdetPIDqa *) * AliHFEpid::kNdetectorPID);
+  memset(fDetPID, 0, sizeof(AliHFEdetPIDqa *) * AliHFEpid::kNdetectorPID);
   SetOwner(); 
 }
 
@@ -81,6 +82,7 @@ void AliHFEpidQAmanager::Copy(TObject &o) const{
   AliHFEpidQAmanager &target = dynamic_cast<AliHFEpidQAmanager &>(o);
 
   for(Int_t idet = 0; idet < AliHFEpid::kNdetectorPID; idet++){
+    target.fDetPID[idet] = fDetPID[idet]; 
     if(target.fDetPIDqa[idet]) delete target.fDetPIDqa[idet];
     if(fDetPIDqa[idet]) target.CreateDetPIDqa(static_cast<AliHFEpid::EDETtype_t>(idet));
   }
@@ -103,11 +105,15 @@ void AliHFEpidQAmanager::Initialize(AliHFEpid *pid){
   // Initialize PID QA manager according to the detector
   // configuration used in the PID
   //
-  for(Int_t idet = 0; idet < AliHFEpid::kNdetectorPID; idet++)
+  for(Int_t idet = 0; idet < AliHFEpid::kNdetectorPID; idet++){
+    // Initialize Array for detector PID for all detectors
+    fDetPID[idet] = pid->GetDetPID(static_cast<AliHFEpid::EDETtype_t>(idet));
     if(pid->HasDetector(static_cast<AliHFEpid::EDETtype_t>(idet))){
       CreateDetPIDqa(static_cast<AliHFEpid::EDETtype_t>(idet));
       fDetPIDqa[idet]->Initialize();
+      fDetPIDqa[idet]->SetPIDqaManager(this);
     }
+  }
 }
 
 //____________________________________________________________
@@ -131,7 +137,7 @@ void AliHFEpidQAmanager::CreateDetPIDqa(AliHFEpid::EDETtype_t idet){
 }
 
 //____________________________________________________________
-void AliHFEpidQAmanager::ProcessTrack(AliHFEpidObject *track, AliHFEpid::EDETtype_t det, AliHFEdetPIDqa::EStep_t step){
+void AliHFEpidQAmanager::ProcessTrack(const AliHFEpidObject *track, AliHFEpid::EDETtype_t det, AliHFEdetPIDqa::EStep_t step){
   //
   // Process single Track
   //
@@ -156,23 +162,5 @@ TList *AliHFEpidQAmanager::MakeList(const Char_t *name){
   }
   ReleaseOwnerShip();
   return list;
-}
-
-//____________________________________________________________
-void AliHFEpidQAmanager::SetESDpid(AliESDpid *esdpid){
-  //
-  // Publish ESD PID
-  //
-  for(Int_t idet = 0; idet < AliHFEpid::kNdetectorPID; idet++)
-    if(fDetPIDqa[idet]) fDetPIDqa[idet]->SetESDpid(esdpid);
-}
-
-//____________________________________________________________
-void AliHFEpidQAmanager::SetAODpid(AliAODpidUtil *aodpid){
-  //
-  // Publish AOD PID
-  //
-  for(Int_t idet = 0; idet < AliHFEpid::kNdetectorPID; idet++)
-    if(fDetPIDqa[idet]) fDetPIDqa[idet]->SetAODpid(aodpid);
 }
 
