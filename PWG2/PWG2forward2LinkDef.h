@@ -36,13 +36,23 @@
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;
 #pragma link C++ class AliFMDEnergyFitter+;
 #pragma link C++ class AliFMDEnergyFitter::RingHistos+;
+#pragma link C++ class AliFMDEnergyFitterTask+;
 #pragma link C++ class AliFMDDensityCalculator+;
 #pragma link C++ class AliFMDDensityCalculator::RingHistos+;
+#pragma link C++ class AliFMDMCDensityCalculator+;
 #pragma link C++ class AliFMDCorrections+;
 #pragma link C++ class AliFMDCorrections::RingHistos+;
 #pragma link C++ class AliFMDHistCollector+;
+#pragma link C++ class AliFMDCorrELossFit+;
+#pragma link C++ class AliFMDCorrELossFit::ELossFit+;
+#pragma link C++ class AliFMDCorrSecondaryMap+;
+#pragma link C++ class AliFMDCorrDoubleHit+;
+#pragma link C++ class AliFMDCorrVertexBias+;
+#pragma link C++ class AliFMDCorrMergingEfficiency+;
 #pragma link C++ class AliAODForwardMult+;
-#pragma link C++ class AliForwardMultiplicity+;
+#pragma link C++ class AliForwardMultiplicityTask+;
+#pragma link C++ class AliForwardCorrectionManager+;
+#pragma link C++ class AliForwardMCCorrectionsTask+;
 
 #else
 # error Not for compilation 
