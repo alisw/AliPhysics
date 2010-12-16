@@ -42,7 +42,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void ReadCentralityHistos(TString filename);
   void ReadCentralityHistos2(TString filename);
   
-  Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc, int run);
+  static Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc);
   Float_t GetCorrSPD2(Float_t spd2raw,Float_t zv);
 
  private:
