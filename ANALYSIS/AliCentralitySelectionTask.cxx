@@ -107,6 +107,7 @@ AliAnalysisTaskSE(),
   fHOutCentTKLvsV0M(0),
   fHOutCentZEMvsZDC(0),
   fHOutMultV0M(0),
+  fHOutMultV0R(0),
   fHOutMultFMD(0),
   fHOutMultTRK(0),
   fHOutMultTKL(0),
@@ -162,6 +163,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutCentTKLvsV0M(0),
   fHOutCentZEMvsZDC(0),
   fHOutMultV0M(0),
+  fHOutMultV0R(0),
   fHOutMultFMD(0),
   fHOutMultTRK(0),
   fHOutMultTKL(0),
@@ -227,6 +229,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutCentV0MvsFMD(ana.fHOutCentV0MvsFMD),
   fHOutCentTKLvsV0M(ana.fHOutCentTKLvsV0M),
   fHOutCentZEMvsZDC(ana.fHOutCentZEMvsZDC),
+  fHOutMultV0R(ana.fHOutMultV0R),
   fHOutMultV0M(ana.fHOutMultV0M),
   fHOutMultFMD(ana.fHOutMultFMD),
   fHOutMultTRK(ana.fHOutMultTRK),
@@ -270,6 +273,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutCentZEMvsZDC= new TH1F("fHOutCentZEMvsZDC","fHOutCentZEMvsZDC; Centrality ZEM vs ZDC",101,-0.5,100.5);
 
   fHOutMultV0M = new TH1F("fHOutMultV0M","fHOutMultV0M; Multiplicity V0",25000,0,25000);
+  fHOutMultV0R = new TH1F("fHOutMultV0R","fHOutMultV0R; Multiplicity V0",25000,0,25000);
   fHOutMultFMD = new TH1F("fHOutMultFMD","fHOutMultFMD; Multiplicity FMD",24000,0,24000);
   fHOutMultTRK = new TH1F("fHOutMultTRK","fHOutMultTRK; Multiplicity TPC",4000,0,4000);
   fHOutMultTKL = new TH1F("fHOutMultTKL","fHOutMultTKL; Multiplicity tracklets",5000,0,5000);
@@ -291,6 +295,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList->Add(  fHOutCentTKLvsV0M);
   fOutputList->Add(  fHOutCentZEMvsZDC);
   fOutputList->Add(  fHOutMultV0M); 
+  fOutputList->Add(  fHOutMultV0R); 
   fOutputList->Add(  fHOutMultFMD); 
   fOutputList->Add(  fHOutMultTRK); 
   fOutputList->Add(  fHOutMultTKL); 
@@ -474,6 +479,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   fHOutCentTKLvsV0M->Fill(fCentTKLvsV0M);
   fHOutCentZEMvsZDC->Fill(fCentZEMvsZDC);
   fHOutMultV0M->Fill(v0Corr);
+  fHOutMultV0R->Fill(multV0A+multV0C);
   fHOutMultFMD->Fill((multFMDA+multFMDC));
   fHOutMultTRK->Fill(nTracks);
   fHOutMultTKL->Fill(nTracklets);

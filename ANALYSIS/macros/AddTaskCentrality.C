@@ -18,6 +18,7 @@ AliCentralitySelectionTask *AddTaskCentrality()
     return NULL;
   }
   AliCentralitySelectionTask *centralityTask = new AliCentralitySelectionTask("CentralitySelection");
+  centralityTask->SelectCollisionCandidates(AliVEvent::kMB);
 
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("CentralityStat",
