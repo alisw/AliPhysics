@@ -46,4 +46,5 @@
 #pragma	link C++ class AliKMeansClustering+;
 #pragma	link C++ class AliKMeansResult+;
 #pragma	link C++ class AliAnalysisTaskKMeans+;
+#pragma	link C++ class AliAnalysisTaskFastEmbedding+;
 #endif

@@ -28,7 +28,8 @@ SRCS = 	AliJetHeader.cxx \
 	AliAnalysisTaskDiJets.cxx \
 	AliEventShape.cxx \
 	AliKMeansClustering.cxx \
-	AliAnalysisTaskKMeans.cxx
+	AliAnalysisTaskKMeans.cxx \
+	AliAnalysisTaskFastEmbedding.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 DHDR= JETANLinkDef.h
