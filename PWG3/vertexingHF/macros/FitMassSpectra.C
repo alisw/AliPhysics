@@ -12,6 +12,7 @@
 #include <TLegend.h>
 #include <TLegendEntry.h>
 #include <TDatabasePDG.h>
+#include <TGraph.h>
 
 #include "AliAODRecoDecayHF.h"
 #include "AliRDHFCuts.h"
@@ -40,10 +41,11 @@ enum {kGaus=0, kDoubleGaus};
 // Double_t ptlims[nPtBins+1]={2.,3.,4.,5.,6.,8.,12.};
 // Int_t rebin[nPtBins+1]={2,4,4,4,4,4,4};
 
-const Int_t nPtBins=7;
+const Int_t nPtBins=7;//6;
 Double_t ptlims[nPtBins+1]={1.,2.,3.,4.,5.,6.,8.,12.};
-Int_t rebin[nPtBins+1]={10,10,10,10,10,10,10,10};
-Int_t typeb=kLinear;
+//Int_t rebin[nPtBins+1]={8,6,10,10,10,10,10,10}; //for looser cuts
+Int_t rebin[nPtBins+1]={10,10,10,10,10,10,10,10}; //for Chiara's cuts
+Int_t typeb=kExpo;
 Int_t types=kGaus;
 Int_t optPartAntiPart=kBoth;
 Int_t factor4refl=0;
@@ -51,7 +53,13 @@ Float_t massRangeForCounting=0.05; // GeV
 
 //for D0only
 Bool_t cutsappliedondistr=kTRUE;
-
+const Int_t nsamples=2;//3;
+//Int_t nevents[nsamples]={8.5635859e+07 /*LHC10b+cpart*/,8.9700624e+07/*LHC10dpart*/};
+//Int_t nevents[nsamples]={9.0374946e+07 /*LHC10b+c*/,9.7593785e+07/*LHC10d*/};
+//Int_t nevents[nsamples]={1.1777812e+08 /*LHC10dnewTPCpid*/,9.7593785e+07/*LHC10d*/};
+//Int_t nevents[nsamples]={1.1777812e+08 /*LHC10dnewTPCpid*/,9.7593785e+07/*LHC10d*/,9.0374946e+07 /*LHC10b+c*/};
+Int_t nevents[nsamples]={1.18860695e+08 /*LHC10dnewTPCpid*/,9.0374946e+07 /*LHC10b+c*/};
+//Int_t nevents[nsamples]={1. /*LHC10dnewTPCpid*/,1 /*LHC10dnewTPCpidrescale*/};
 // Functions
 
 Bool_t LoadDplusHistos(TObjArray* listFiles, TH1F** hMass);
@@ -79,7 +87,6 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     return;
   }
 
-  
   TH1F** hmass=new TH1F*[nPtBins];
   for(Int_t i=0;i<nPtBins;i++) hmass[i]=0x0;
 
@@ -112,8 +119,8 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   TH1F* hRelErrSig=new TH1F("hRelErrSig","hRelErrSig",nPtBins,ptlims);
   TH1F* hInvSignif=new TH1F("hInvSignif","hInvSignif",nPtBins,ptlims);
   TH1F* hBackground=new TH1F("hBackground","hBackground",nPtBins,ptlims);
+  TH1F* hBackgroundNormSigma=new TH1F("hBackgroundNormSigma","hBackgroundNormSigma",nPtBins,ptlims);
   TH1F* hSignificance=new TH1F("hSignificance","hSignificance",nPtBins,ptlims);
-
 
   Int_t nMassBins=hmass[1]->GetNbinsX();
   Double_t hmin=hmass[1]->GetBinLowEdge(3);
@@ -127,6 +134,7 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   TF1* funBckStore3=0x0;
 
   AliHFMassFitter** fitter=new AliHFMassFitter*[nPtBins];
+  Double_t arrchisquare[nPtBins];
   TCanvas* c1= new TCanvas("c1","MassSpectra",1000,800);
   Int_t nx=3, ny=2;
   if(nPtBins>6){
@@ -148,7 +156,11 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     fitter[iBin]->SetReflectionSigmaFactor(factor4refl);
     fitter[iBin]->SetInitialGaussianMean(massD);
     Bool_t out=fitter[iBin]->MassFitter(0);
-    if(!out) continue;
+    if(!out) {
+      fitter[iBin]->GetHistoClone()->Draw();
+      continue;
+    }
+    arrchisquare[iBin]=fitter[iBin]->GetReducedChiSquare();
     TF1* fB1=fitter[iBin]->GetBackgroundFullRangeFunc();
     TF1* fB2=fitter[iBin]->GetBackgroundRecalcFunc();
     TF1* fM=fitter[iBin]->GetMassFunc();
@@ -183,17 +195,20 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     hRelErrSig->SetBinContent(iBin+1,errs/s);
     hInvSignif->SetBinContent(iBin+1,1/sig);
     hInvSignif->SetBinError(iBin+1,errsig/(sig*sig));
-    hBackground->SetBinContent(iBin+1,b);
+    hBackground->SetBinContent(iBin+1,b); //consider sigma
     hBackground->SetBinError(iBin+1,errb);
+    hBackgroundNormSigma->SetBinContent(iBin+1,b/(3*fitter[iBin]->GetSigma())*(3*0.012)); //consider sigma
+    hBackgroundNormSigma->SetBinError(iBin+1,errb);
     hSignificance->SetBinContent(iBin+1,sig);
     hSignificance->SetBinError(iBin+1,errsig);
     
   }
+  /*
   c1->cd(1); // is some cases the fitting function of 1st bin get lost
   funBckStore1->Draw("same");
   funBckStore2->Draw("same");
   funBckStore3->Draw("same");
-
+  */
   TCanvas* csig=new TCanvas("csig","Results",1200,600);
   csig->Divide(3,1);
   csig->cd(1);
@@ -236,7 +251,7 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   cDiffS->cd(1);
   hRelErrSig->SetMarkerStyle(20); //fullcircle
   hRelErrSig->SetTitleOffset(1.2);  
-  hRelErrSig->SetTitle(";p_{t} (GeV/c);Signal Relative Error");
+  hRelErrSig->SetTitle("Rel Error from Fit;p_{t} (GeV/c);Signal Relative Error");
   hRelErrSig->Draw("P");
   hInvSignif->SetMarkerStyle(21); //fullsquare
   hInvSignif->SetMarkerColor(kMagenta+1);
@@ -254,7 +269,7 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   hNDiffCntSig1->SetMarkerStyle(26);
   hNDiffCntSig1->SetMarkerColor(2);
   hNDiffCntSig1->SetLineColor(2);
-  hNDiffCntSig1->SetTitle(";p_{t} (GeV/c);(S_{fit}-S_{count})/S_{fit}");
+  hNDiffCntSig1->SetTitle("Cmp Fit-Count;p_{t} (GeV/c);(S_{fit}-S_{count})/S_{fit}");
   hNDiffCntSig1->Draw("P");
   hNDiffCntSig2->SetMarkerStyle(29);
   hNDiffCntSig2->SetMarkerColor(kGray+1);
@@ -268,8 +283,34 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   ent1->SetTextColor(hNDiffCntSig2->GetMarkerColor());
   leg1->Draw();
 
+  TGraph* grReducedChiSquare=new TGraph(nPtBins,ptlims,arrchisquare);
+  grReducedChiSquare->SetName("grReducedChiSquare");
+  grReducedChiSquare->SetTitle("Reduced Chi2;p_{t} (GeV/c);#tilde{#chi}^{2}");
+  TCanvas *cChi2=new TCanvas("cChi2","reduced chi square",600,600);
+  cChi2->cd();
+  grReducedChiSquare->SetMarkerStyle(21);
+  grReducedChiSquare->Draw("AP");
 
-  TFile* outf=new TFile("RawYield.root","update");
+  TCanvas* cbkgNormSigma=new TCanvas("cbkgNormSigma","Background normalized to sigma",400,600);
+  cbkgNormSigma->cd();
+  hBackgroundNormSigma->SetMarkerStyle(20);
+  hBackgroundNormSigma->Draw("P");
+  hBackgroundNormSigma->GetXaxis()->SetTitle("Pt (GeV/c)");
+  hBackgroundNormSigma->GetYaxis()->SetTitle("Background #times 3 #times 0.012/ (3 #times #sigma)");
+  hBackgroundNormSigma->Draw();
+
+
+  TString partname="Both";
+  if(optPartAntiPart==kParticleOnly) {
+    if(analysisType==kD0toKpi) partname="D0";
+    if(analysisType==kDplusKpipi) partname="Dplus";
+  }
+  if(optPartAntiPart==kAntiParticleOnly) {
+    if(analysisType==kD0toKpi) partname="D0bar";
+    if(analysisType==kDplusKpipi) partname="Dminus";
+  }
+
+  TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"update");
   outf->cd();
   hCntSig1->Write();
   hCntSig2->Write();
@@ -279,7 +320,9 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   hRelErrSig->Write();
   hInvSignif->Write();
   hBackground->Write();
+  hBackgroundNormSigma->Write();
   hSignificance->Write();
+  grReducedChiSquare->Write();
   outf->Close();
 }
 
@@ -349,8 +392,11 @@ Bool_t LoadDplusHistos(TObjArray* listFiles, TH1F** hMass){
       }
     }
   }
+  TString partname="Both";
+  if(optPartAntiPart==kParticleOnly) partname="Dplus";
+  if(optPartAntiPart==kAntiParticleOnly) partname="Dminus";
 
-  TFile* outf=new TFile("RawYield.root","recreate");
+  TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"recreate");
   outf->cd();
   dcuts[0]->Write();
   outf->Close();
@@ -385,15 +431,15 @@ Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH1F** hMass){
       continue;
     }
     TString listmassname="coutputmassD0Mass";
-    if(optPartAntiPart==kParticleOnly) dirname+="D0";
-    else if(optPartAntiPart==kAntiParticleOnly) dirname+="D0bar";
+    if(optPartAntiPart==kParticleOnly) listmassname+="D0";
+    else if(optPartAntiPart==kAntiParticleOnly) listmassname+="D0bar";
     if(cutsappliedondistr) listmassname+="C";
 
     hlist[nReadFiles]=(TList*)dir->Get(listmassname);
 
     TString cutsobjname="cutsD0";
-    if(optPartAntiPart==kParticleOnly) dirname+="D0";
-    else if(optPartAntiPart==kAntiParticleOnly) dirname+="D0bar";
+    if(optPartAntiPart==kParticleOnly) cutsobjname+="D0";
+    else if(optPartAntiPart==kAntiParticleOnly) cutsobjname+="D0bar";
     if(cutsappliedondistr) cutsobjname+="C";
 
     dcuts[nReadFiles]=(AliRDHFCutsD0toKpi*)dir->Get(cutsobjname);
@@ -435,10 +481,185 @@ Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH1F** hMass){
       }
     }
   }
+  TString partname="Both";
+  if(optPartAntiPart==kParticleOnly) partname="D0";
+  if(optPartAntiPart==kAntiParticleOnly) partname="D0bar";
 
-  TFile* outf=new TFile("RawYield.root","recreate");
+  TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"recreate");
   outf->cd();
   dcuts[0]->Write();
   outf->Close();
   return kTRUE;
+}
+
+void CompareFitTypes(TString* paths, TString* legtext,Int_t ncmp=3,TString* filenameYield=0x0){
+  //read ncmp RawYield.roots and draw them together
+  //set the global variable nevents before running
+  //arguments:
+  // - paths= vector of ncmp dimension with the paths of the file RawYield.root
+  // - legtext= vector of ncmp dimension with the label for the legend
+  // - ncmp= number of files to compare (default is 3)
+  // - filenameYield= optional ncmp-dimensional array with the difference between the names of the files to be compared (useful if the 2 files are in the same directory but have different names)
+
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  gStyle->SetCanvasColor(0);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetTitleFillColor(0);
+  gStyle->SetFrameBorderMode(0);
+
+  if(!filenameYield) filenameYield=new TString[ncmp];
+
+  for(Int_t k=0;k<ncmp;k++){
+    if(!filenameYield) filenameYield[k]="RawYield.root";
+    filenameYield[k].Prepend(paths[k]);
+  }
+  
+  TCanvas* cSig=new TCanvas("cSig","Results",1200,600);
+  cSig->Divide(3,1);
+  TCanvas* cBkgN=new TCanvas("cBkgN","Background normalized to sigma",400,600);
+  TCanvas* cDiffS=new TCanvas("cDiffS","Difference",1200,600);
+  cDiffS->Divide(2,1);
+  TCanvas *cChi2=new TCanvas("cChi2","reduced chi square",600,600);
+
+  TLegend* leg1=new TLegend(0.4,0.7,0.89,0.89);
+  leg1->SetFillColor(0);
+  TLegend* leg2=(TLegend*)leg1->Clone();
+  TLegend* leg3=(TLegend*)leg1->Clone();
+  TLegend* leg4=new TLegend(0.4,0.6,0.8,0.89);
+  leg4->SetFillColor(0);
+
+  for(Int_t iTypes=0;iTypes<ncmp;iTypes++){
+    TFile* fin=new TFile(filenameYield[iTypes]);
+    if(!fin){
+      printf("WARNING: %s not found",filenameYield[iTypes].Data());
+      continue;
+    }
+
+    TH1F* hSignal=(TH1F*)fin->Get("hSignal");
+    TH1F* hBackground=(TH1F*)fin->Get("hBackground");
+    TH1F* hBackgroundNormSigma=(TH1F*)fin->Get("hBackgroundNormSigma");
+    TH1F* hSignificance=(TH1F*)fin->Get("hSignificance");
+    hSignal->SetName(Form("%s%d",hSignal->GetName(),iTypes));
+    hBackground->SetName(Form("%s%d",hBackground->GetName(),iTypes));
+    hBackgroundNormSigma->SetName(Form("%s%d",hBackgroundNormSigma->GetName(),iTypes));
+    hSignificance->SetName(Form("%s%d",hSignificance->GetName(),iTypes));
+
+    hSignal->SetMarkerColor(iTypes+2);
+    hSignal->SetLineColor(iTypes+2);
+    hBackground->SetMarkerColor(iTypes+2);
+    hBackground->SetLineColor(iTypes+2);
+    hBackgroundNormSigma->SetMarkerColor(iTypes+2);
+    hBackgroundNormSigma->SetLineColor(iTypes+2);
+    hSignificance->SetMarkerColor(iTypes+2);
+    hSignificance->SetLineColor(iTypes+2);
+
+    TLegendEntry* ent4=leg4->AddEntry(hSignal,Form("%s",legtext[iTypes].Data()),"PL");
+    ent4->SetTextColor(hSignal->GetMarkerColor());
+
+    if(ncmp==nsamples){
+      printf("Info: Normalizing signal, background and significance to the number of events\n");
+      hSignal->Scale(1./nevents[iTypes]);
+      hBackground->Scale(1./nevents[iTypes]);
+      hBackgroundNormSigma->Scale(1./nevents[iTypes]);
+      hSignificance->Scale(1./TMath::Sqrt(nevents[iTypes]));
+    }
+
+    if(iTypes==0){
+      cSig->cd(1);
+      hSignal->DrawClone("P");
+      cSig->cd(2);
+      hBackground->DrawClone("P");
+      cSig->cd(3);
+      hSignificance->DrawClone("P");
+      cBkgN->cd();
+      hBackgroundNormSigma->DrawClone("P");
+    } else{
+      cSig->cd(1);
+      hSignal->DrawClone("Psames");
+      cSig->cd(2);
+      hBackground->DrawClone("Psames");
+      cSig->cd(3);
+      hSignificance->DrawClone("Psames");
+      cBkgN->cd();
+      hBackgroundNormSigma->DrawClone("Psames");
+    }
+
+    TH1F* hRelErrSig=(TH1F*)fin->Get("hRelErrSig");
+    TH1F* hInvSignif=(TH1F*)fin->Get("hInvSignif");
+    hRelErrSig->SetName(Form("%s%d",hRelErrSig->GetName(),iTypes));
+    hInvSignif->SetName(Form("%s%d",hInvSignif->GetName(),iTypes));
+
+    hRelErrSig->SetMarkerColor(iTypes+2);
+    hRelErrSig->SetLineColor(iTypes+2);
+    hInvSignif->SetMarkerColor(iTypes+2);
+    hInvSignif->SetLineColor(iTypes+2);
+
+    TLegendEntry* ent1=leg1->AddEntry(hRelErrSig,Form("From Fit (%s)",legtext[iTypes].Data()),"P");
+    ent1->SetTextColor(hRelErrSig->GetMarkerColor());
+    ent1=leg1->AddEntry(hInvSignif,Form("1/Significance (%s)",legtext[iTypes].Data()),"PL");
+    ent1->SetTextColor(hInvSignif->GetMarkerColor());
+
+    cDiffS->cd(1);
+    if(iTypes==0){
+      hRelErrSig->DrawClone("P");
+      hInvSignif->DrawClone();
+    } else{
+      hRelErrSig->DrawClone("Psames");
+      hInvSignif->DrawClone("sames");
+    }
+
+    TH1F* hNDiffCntSig1=(TH1F*)fin->Get("hNDiffCntSig1");
+    TH1F* hNDiffCntSig2=(TH1F*)fin->Get("hNDiffCntSig2");
+    hNDiffCntSig1->SetName(Form("%s%d",hNDiffCntSig1->GetName(),iTypes));
+    hNDiffCntSig2->SetName(Form("%s%d",hNDiffCntSig2->GetName(),iTypes));
+
+    hNDiffCntSig1->SetMarkerColor(iTypes+2);
+    hNDiffCntSig1->SetLineColor(iTypes+2);
+    hNDiffCntSig2->SetMarkerColor(iTypes+2);
+    hNDiffCntSig2->SetLineColor(iTypes+2);
+    TLegendEntry* ent2=leg2->AddEntry(hNDiffCntSig1,Form("From Counting1 (%s)",legtext[iTypes].Data()),"PL");
+    ent2->SetTextColor(hNDiffCntSig1->GetMarkerColor());
+    ent2=leg2->AddEntry(hNDiffCntSig2,Form("From Counting2 (%s)",legtext[iTypes].Data()),"PL");
+    ent2->SetTextColor(hNDiffCntSig2->GetMarkerColor());
+
+    cDiffS->cd(2);
+    if(iTypes==0){
+      hNDiffCntSig1->DrawClone();
+      hNDiffCntSig2->DrawClone();
+    }else{
+     hNDiffCntSig1->DrawClone("sames");
+     hNDiffCntSig2->DrawClone("sames");
+    }
+
+    TGraph* grReducedChiSquare=(TGraph*)fin->Get("grReducedChiSquare");
+    grReducedChiSquare->SetName(Form("%s%d",grReducedChiSquare->GetName(),iTypes));
+
+    grReducedChiSquare->SetMarkerColor(iTypes+2);
+    grReducedChiSquare->SetLineColor(iTypes+2);
+    TLegendEntry* ent3=leg3->AddEntry(grReducedChiSquare,Form("%s",legtext[iTypes].Data()),"PL");
+    ent3->SetTextColor(grReducedChiSquare->GetMarkerColor());
+
+    cChi2->cd();
+    if(iTypes==0) grReducedChiSquare->DrawClone("AP");
+    else grReducedChiSquare->DrawClone("P");
+  }
+
+  cSig->cd(1);
+  leg4->Draw();
+
+  cDiffS->cd(1);
+  leg1->Draw();
+
+  cDiffS->cd(2);
+  leg2->Draw();
+
+  cChi2->cd();
+  leg3->Draw();
+
+  TFile* fout=new TFile("ComparisonRawYield.root","RECREATE");
+  fout->cd();
+  cDiffS->Write();
+  cChi2->Write();
+  fout->Close();
 }
