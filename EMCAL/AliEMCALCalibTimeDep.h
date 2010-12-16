@@ -14,8 +14,7 @@
 
 class AliEMCALSensorTempArray;
 class AliCaloCalibSignal;
-class AliEMCALBiasAPD;
-class AliEMCALCalibMapAPD;
+class AliEMCALCalibTempCoeff;
 class AliEMCALCalibReference; 
 class AliEMCALCalibTimeDepCorrection; 
 
@@ -53,15 +52,15 @@ class AliEMCALCalibTimeDep : public TObject {
   Double_t GetRangeOfTempMeasureInDegrees() const; //! 
 
   // basic calibration info
-  Double_t GetTemperature(UInt_t timeStamp) const; // for all sensors, all SuperModules
   Double_t GetTemperatureSM(int imod, UInt_t timeStamp) const; // for all sensors, in a SuperModule
-  Double_t GetTemperatureSMSensor(int imod, int isens, UInt_t timeStamp) const; // for a sensor, in a SuperModule
   // End of Temperature Section
 
   // control parameters
   void SetTemperatureResolution(Double_t d) { fTemperatureResolution = d; } // value for checking at which level we care about temperature differences
+  void SetMaxTemperatureDiff(Double_t d) { fMaxTemperatureDiff = d; } 
   void SetTimeBinsPerHour(Int_t i) { fTimeBinsPerHour = i; } // size of the time-bins we use for corrections
   Double_t GetTemperatureResolution() const { return fTemperatureResolution; } // value for checking at which level we care about temperature differences
+  Double_t GetMaxTemperatureDiff() const { return fMaxTemperatureDiff; }
   Int_t GetTimeBinsPerHour() const { return fTimeBinsPerHour; } // size of the time-bins we use foc corrections
 
   void SetHighLowGainFactor(Double_t value) {fHighLowGainFactor = value;}
@@ -69,8 +68,7 @@ class AliEMCALCalibTimeDep : public TObject {
 
   // access to other pointers
   AliCaloCalibSignal  * GetCalibSignal() const { return fCalibSignal; } //
-  AliEMCALBiasAPD  * GetBiasAPD() const { return fBiasAPD; } //
-  AliEMCALCalibMapAPD  * GetCalibMapAPD() const { return fCalibMapAPD; } //
+  AliEMCALCalibTempCoeff  * GetCalibTempCoeff() const { return fCalibTempCoeff; } //
   AliEMCALCalibReference  * GetCalibReference() const { return fCalibReference; } //
 
   // storage and access of the correction info
@@ -83,8 +81,7 @@ class AliEMCALCalibTimeDep : public TObject {
   // for local debugging: setters of the main input pointers that are normally from OCDB
   void SetTempArray(AliEMCALSensorTempArray  *arr) { fTempArray = arr; } // 
   void SetCalibSignal(AliCaloCalibSignal  *obj) { fCalibSignal = obj; } // 
-  void SetBiasAPD(AliEMCALBiasAPD  *obj) { fBiasAPD = obj; } // 
-  void SetCalibMapAPD(AliEMCALCalibMapAPD  *obj) { fCalibMapAPD = obj; } //
+  void SetCalibTempCoeff(AliEMCALCalibTempCoeff  *obj) { fCalibTempCoeff = obj; } //
   void SetCalibReference(AliEMCALCalibReference  *obj) { fCalibReference = obj; } //
   // basic setters, also for local debugging
   void SetRunNumber(Int_t i) { fRun= i; } // 
@@ -100,8 +97,7 @@ class AliEMCALCalibTimeDep : public TObject {
 
   void GetTemperatureInfo(); // pick up Preprocessor output
   void GetCalibSignalInfo(); // pick up Preprocessor output
-  void GetBiasAPDInfo(); // pick up OCDB info
-  void GetCalibMapAPDInfo(); // pick up OCDB info
+  void GetCalibTempCoeffInfo(); // pick up OCDB info
   void GetCalibReferenceInfo(); // pick up OCDB info
 
   Int_t CalcLEDCorrection(Int_t nSM, Int_t nBins); // based on LED signals, and reference photodiodes
@@ -121,6 +117,7 @@ class AliEMCALCalibTimeDep : public TObject {
   UInt_t fMaxTime; // max time
   //
   Double_t fTemperatureResolution; // value for checking at which level we care about temperature differences
+  Double_t fMaxTemperatureDiff; // value for checking that temperature sensor info seems reasonable 
   Int_t fTimeBinsPerHour; // size of the time-bins we use for corrections
 
   Double_t fHighLowGainFactor;     //gain factor to convert between high and low gain
@@ -128,15 +125,14 @@ class AliEMCALCalibTimeDep : public TObject {
   // pointers to the different used classes
   AliEMCALSensorTempArray  *fTempArray;     // CDB class for temperature sensors
   AliCaloCalibSignal *fCalibSignal; // LED signal info
-  AliEMCALBiasAPD *fBiasAPD; // bias APD info
-  AliEMCALCalibMapAPD *fCalibMapAPD; // calib & map APD info
+  AliEMCALCalibTempCoeff *fCalibTempCoeff; // Temperature Coefficient info
   AliEMCALCalibReference *fCalibReference; // reference info
   AliEMCALCalibTimeDepCorrection *fCalibTimeDepCorrection; // correction values
 
   Int_t fVerbosity; // debug flag
 
   //
-  ClassDef(AliEMCALCalibTimeDep,3)    // EMCAL time-dep Calibration data
+  ClassDef(AliEMCALCalibTimeDep,4)    // EMCAL time-dep Calibration data
 };
 
 #endif
