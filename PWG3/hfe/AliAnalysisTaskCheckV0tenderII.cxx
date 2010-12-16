@@ -16,7 +16,7 @@
 // Task fir checking the performance of the V0 tender
 // 
 // 
-// Authors
+// Authors:
 //   Matus Kalisky <matus.kalisky@cern.ch>
 //
 
@@ -473,7 +473,7 @@ Bool_t AliAnalysisTaskCheckV0tenderII::CheckSigns(AliESDv0 * const v0){
   return correct;
 }
 //__________________________________________________________
-const Int_t  AliAnalysisTaskCheckV0tenderII::PDGtoPIDv0(Int_t pdgV0){
+Int_t  AliAnalysisTaskCheckV0tenderII::PDGtoPIDv0(Int_t pdgV0) const {
   //
   // convert thereconstructed V0 pdg to local pid
   //
@@ -489,7 +489,7 @@ const Int_t  AliAnalysisTaskCheckV0tenderII::PDGtoPIDv0(Int_t pdgV0){
 
 }
 //__________________________________________________________
-const Int_t  AliAnalysisTaskCheckV0tenderII::PDGtoPID(Int_t pdg){
+Int_t  AliAnalysisTaskCheckV0tenderII::PDGtoPID(Int_t pdg) const {
   //
   // convert daughter pdg code to local pid
   //

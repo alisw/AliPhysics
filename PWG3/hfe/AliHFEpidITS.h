@@ -34,7 +34,7 @@ class AliHFEpidITS : public AliHFEpidBase{
     virtual ~AliHFEpidITS();
 
     virtual Bool_t InitializePID();
-    virtual Int_t IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa);
+    virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
 
     Double_t GetITSSignalV1(AliVParticle *track);
     Double_t GetITSSignalV2(AliVParticle *track);

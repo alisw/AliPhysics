@@ -246,6 +246,13 @@ Bool_t AliHFEpid::IsSelected(AliHFEpidObject *track, AliHFEcontainer *cont, cons
         AliDebug(2, Form("MC Information available, Filling container %s", mccontname));
         if(fVarManager->IsSignalTrack())
           fVarManager->FillContainerStepname(cont, mccontname, SortedDetectorName(idet), kTRUE);
+	if(cont->GetCorrelationMatrix("correlationstepafterTOF")){
+	  TString tstept("TOFPID"); 
+	  if(!tstept.CompareTo(SortedDetectorName(idet))) {
+	    fVarManager->FillCorrelationMatrix(cont->GetCorrelationMatrix("correlationstepafterTOF"));
+	    //printf("Step %s\n",(const char*) SortedDetectorName(idet));
+	  }
+	}
       }
       // The PID will NOT fill the double counting information
     }

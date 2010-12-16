@@ -105,7 +105,7 @@ class AliHFEpidQA : public TObject{
     Int_t GetTenderV0pid(AliESDtrack * const track);
     
     Double_t TRDlikeTracklet(Int_t layer, AliESDtrack * const track, Double_t *likelihood);
-    const Int_t  TRDmomBin(Double_t p);
+    Int_t TRDmomBin(Double_t p) const;
 
  protected:
     Int_t GetMaxPID(const Double_t *pidProbs) const;

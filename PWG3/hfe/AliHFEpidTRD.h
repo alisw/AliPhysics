@@ -57,10 +57,10 @@ class AliHFEpidTRD : public AliHFEpidBase{
     virtual ~AliHFEpidTRD();
     
     virtual Bool_t InitializePID();
-    virtual Int_t IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa);
+    virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
 
-    Double_t GetTRDSignalV1(const AliESDtrack *track);
-    Double_t GetTRDSignalV2(const AliESDtrack *track);
+    Double_t GetTRDSignalV1(const AliESDtrack *track) const;
+    Double_t GetTRDSignalV2(const AliESDtrack *track) const;
 
     Bool_t IsCalculateTRDSignals() const { return TestBit(kTRDsignals); }
     void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
@@ -68,17 +68,18 @@ class AliHFEpidTRD : public AliHFEpidBase{
     void SetMinP(Double_t p) { fMinP = p; }
     void CalculateTRDSignals(Bool_t docalc) { SetBit(kTRDsignals, docalc); } 
 
-    Double_t GetTRDthresholds(Double_t electronEff, Double_t p);
+    Double_t GetElectronLikelihood(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
+    Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
+    Double_t GetTRDthresholds(Double_t electronEff, Double_t p) const;
+    Double_t GetChargeLayer(const AliVParticle *track, UInt_t layer, AliHFEpidObject::AnalysisType_t anatype) const;
   protected:
     enum{
       kTRDsignals = BIT(16)
     };
     void Copy(TObject &ref) const;
-    Double_t GetElectronLikelihood(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType);
-    Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType);
     void InitParameters();
     void InitParameters1DLQ();
-    void GetParameters(Double_t electronEff, Double_t *parameters);
+    void GetParameters(Double_t electronEff, Double_t *parameters) const;
 
   private:
     static const Double_t fgkVerySmall;                       // Check for 0

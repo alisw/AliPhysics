@@ -80,7 +80,7 @@ class AliHFEpid : public TNamed{
     void PrintStatus() const;
     const Char_t *SortedDetectorName(Int_t det) const {
       if(det < kNdetectorPID) return fgkDetectorName[fSortedOrder[det]]; 
-      else return fgkDetectorName[kNdetectorPID + 1];
+      else return fgkDetectorName[kNdetectorPID];
     }    
     //-----Configure PID detectors with predefined stettings------
     void ConfigureTPCasymmetric(Double_t pmin = 0.1, Double_t pmax = 20., Double_t sigmamin = -0.2, Double_t sigmamax = 5.);

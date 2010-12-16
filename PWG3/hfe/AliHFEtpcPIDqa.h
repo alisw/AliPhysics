@@ -24,11 +24,13 @@
 #include "AliHFEdetPIDqa.h"
 #endif
 
+#ifndef ALIHFEPIDBASE_H
+#include "AliHFEpidBase.h"
+#endif
+
 class TH2;
 class AliHFEcollection;
-class AliHFEpidObject;
-class AliESDtrack;
-class AliAODTrack;
+class AliVParticle;
 
 class AliHFEtpcPIDqa : public AliHFEdetPIDqa{
   public:
@@ -41,15 +43,15 @@ class AliHFEtpcPIDqa : public AliHFEdetPIDqa{
     virtual Long64_t Merge(TCollection *col);
   
     virtual void Initialize();
-    virtual void ProcessTrack(AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
+    virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
     AliHFEcollection *GetHistograms() const { return fHistos; }
     TH2 *MakeSpectrumdEdx(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
     TH2 *MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
 
   protected:
-    void ProcessESDtrack(const AliESDtrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species, Float_t centrality);
-    void ProcessAODtrack(const AliAODTrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species, Float_t centrality);
+    Double_t GetTPCsignal(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype);
+
   private:
     AliHFEcollection *fHistos;        // Container for Histograms
 

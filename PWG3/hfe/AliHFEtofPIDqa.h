@@ -42,7 +42,7 @@ class AliHFEtofPIDqa : public AliHFEdetPIDqa{
     virtual Long64_t Merge(TCollection *col);
   
     virtual void Initialize();
-    virtual void ProcessTrack(AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
+    virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
     TH2 *MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
     TH1 *GetHistogram(const char *name);

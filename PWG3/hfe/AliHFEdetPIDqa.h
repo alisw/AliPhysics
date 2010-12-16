@@ -25,9 +25,8 @@
 #include <TNamed.h>
 #endif
 
-class AliAODpidUtil;
-class AliESDpid;
 class AliHFEpidObject;
+class AliHFEpidQAmanager;
 
 class AliHFEdetPIDqa : public TNamed{
   public:
@@ -42,16 +41,13 @@ class AliHFEdetPIDqa : public TNamed{
     ~AliHFEdetPIDqa(){}
 
     virtual void Initialize() = 0;
-    virtual void ProcessTrack(AliHFEpidObject *track, EStep_t step)= 0;
+    virtual void ProcessTrack(const AliHFEpidObject *track, EStep_t step)= 0;
 
-    void SetESDpid(AliESDpid *esdpid) { fESDpid = esdpid; }
-    void SetAODpid(AliAODpidUtil *aodpid) { fAODpid = aodpid; }
-    AliESDpid *GetESDpid() const { return fESDpid; }
-    AliAODpidUtil *GetAODpid() const { return fAODpid; }
+    void SetPIDqaManager(AliHFEpidQAmanager *qamgr) { fQAmanager = qamgr; }
+    AliHFEpidQAmanager *GetPIDqaManager() const { return fQAmanager; }
 
   protected:
-    AliESDpid     *fESDpid;       //! ESD PID object
-    AliAODpidUtil *fAODpid;       //! AOD PID object
+    AliHFEpidQAmanager *fQAmanager; // PID QA manager
   
     ClassDef(AliHFEdetPIDqa, 1)     // Base class for detector PID QA
 };

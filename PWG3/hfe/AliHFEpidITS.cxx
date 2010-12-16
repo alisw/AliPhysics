@@ -90,7 +90,7 @@ Bool_t AliHFEpidITS::InitializePID(){
 
 
 //___________________________________________________________________
-Int_t AliHFEpidITS::IsSelected(AliHFEpidObject* /*track*/, AliHFEpidQAmanager* /*pidqa*/){
+Int_t AliHFEpidITS::IsSelected(const AliHFEpidObject* /*track*/, AliHFEpidQAmanager* /*pidqa*/) const {
   //
   // Does PID decision for ITS
   // 

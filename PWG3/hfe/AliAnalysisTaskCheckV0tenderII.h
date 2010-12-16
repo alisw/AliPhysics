@@ -67,8 +67,8 @@ class AliAnalysisTaskCheckV0tenderII : public AliAnalysisTaskSE{
   Float_t MassV0(AliESDv0 * const v0, Int_t id);
   Bool_t  CheckSigns(AliESDv0 * const v0);
 
-  const Int_t   PDGtoPIDv0(Int_t pdgV0);
-  const Int_t   PDGtoPID(Int_t pdg);
+  Int_t   PDGtoPIDv0(Int_t pdgV0) const;
+  Int_t   PDGtoPID(Int_t pdg) const;
   
 
   TList              *fOutput;        //! Container for output histos
@@ -86,5 +86,6 @@ class AliAnalysisTaskCheckV0tenderII : public AliAnalysisTaskSE{
   ClassDef(AliAnalysisTaskCheckV0tenderII, 1)
 
 };
+
 
 #endif

@@ -102,6 +102,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fPIDpreselect(NULL)
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
+  , fCleanTaggedTrack(kFALSE)
   , fCutspreselect(NULL)
   , fSecVtx(NULL)
   , fElecBackGround(NULL)
@@ -141,6 +142,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fPIDpreselect(NULL)
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
+  , fCleanTaggedTrack(kFALSE)
   , fCutspreselect(NULL)
   , fSecVtx(NULL)
   , fElecBackGround(NULL)
@@ -185,6 +187,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fPIDpreselect(NULL)
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
+  , fCleanTaggedTrack(ref.fCleanTaggedTrack)
   , fCutspreselect(NULL)
   , fSecVtx(NULL)
   , fElecBackGround(NULL)
@@ -238,6 +241,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fPIDpreselect = fPIDpreselect;
   target.fCuts = fCuts;
   target.fTaggedTrackCuts = fTaggedTrackCuts;
+  target.fCleanTaggedTrack = fCleanTaggedTrack;
   target.fCutspreselect = fCutspreselect;
   target.fSecVtx = fSecVtx;
   target.fElecBackGround = fElecBackGround;
@@ -320,6 +324,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("mccharge", "MC Charge", 200, -100, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
   InitPIDperformanceQA();
+  InitContaminationQA();
   fQA->Add(fQACollection->GetList());
 
   // Initialize PID
@@ -400,6 +405,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     AliInfo("Analysis on V0-tagged tracks enabled");
     fTaggedTrackAnalysis = new AliHFEtaggedTrackAnalysis;
     fTaggedTrackAnalysis->SetCuts(fTaggedTrackCuts);
+    fTaggedTrackAnalysis->SetClean(fCleanTaggedTrack);
     fTaggedTrackAnalysis->SetPID(fPID);
     fTaggedTrackAnalysis->InitContainer();
     fOutput->Add(fTaggedTrackAnalysis->GetContainer());
@@ -459,8 +465,6 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   if(IsAODanalysis()){
     AliAODpidUtil *aodworkingpid = AliHFEtools::GetDefaultAODPID(HasMCData());
     fPID->SetAODpid(aodworkingpid); 
-    if(fPIDqa) fPIDqa->SetAODpid(aodworkingpid);
-    if(fTaggedTrackAnalysis) fTaggedTrackAnalysis->GetPIDqa()->SetAODpid(aodworkingpid);
     ProcessAOD();
   } else {
     AliESDInputHandler *inH = dynamic_cast<AliESDInputHandler *>(fInputHandler);
@@ -476,8 +480,6 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
       AliDebug(1, "Using ESD PID from the input handler");
     }
     fPID->SetESDpid(workingPID);
-    if(fPIDqa) fPIDqa->SetESDpid(workingPID);
-    if(fTaggedTrackAnalysis) fTaggedTrackAnalysis->GetPIDqa()->SetESDpid(workingPID);
     if(fPIDpreselect) fPIDpreselect->SetESDpid(workingPID);
 
     ProcessESD();
@@ -785,6 +787,12 @@ void AliAnalysisTaskHFE::ProcessESD(){
     // HFEcuts: Nb of tracklets TRD0
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTRD, track)) continue;
 
+    // Fill correlation maps before PID
+    if(signal && fContainer->GetCorrelationMatrix("correlationstepbeforePID")) {
+      //printf("Fill correlation maps before PID\n");
+      fVarManager->FillCorrelationMatrix(fContainer->GetCorrelationMatrix("correlationstepbeforePID"));
+    }
+
     if (HasMCData() && IsQAOn(kMCqa)) {
       // mc qa for after the reconstruction and pid cuts  
       AliDebug(2, "Running MC QA");
@@ -881,6 +889,12 @@ void AliAnalysisTaskHFE::ProcessESD(){
     } // end of electron background analysis
 
     if (GetPlugin(kDEstep)) { 
+      if(HasMCData()){
+        if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
+          fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
+          fQACollection->Fill("hadronsBeforeIPcutMC",mctrack->Pt());
+        }
+      }
       // Fill Containers for impact parameter analysis
       if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsDca + AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack,track)) continue;
       if(signal) {
@@ -889,8 +903,11 @@ void AliAnalysisTaskHFE::ProcessESD(){
         fVarManager->FillCorrelationMatrix(fContainer->GetCorrelationMatrix("correlationstepafterDE"));
       }
       if(HasMCData()){
-        if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11))
+        if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
           fVarManager->FillContainer(fContainer, "hadronicBackground", 2, kFALSE);
+          fQACollection->Fill("hadronsAfterIPcut",track->Pt());
+          fQACollection->Fill("hadronsAfterIPcutMC",mctrack->Pt());
+        }
       }
     }
 
@@ -1129,9 +1146,9 @@ void AliAnalysisTaskHFE::MakeEventContainer(){
   // 3rd bin: Centrality class (for pp defined as 99.)
   //
   const Int_t kNvar = 3;  // number of variables on the grid: 
-  Int_t nBins[kNvar] = {120, 2, 20};
-  Double_t binMin[kNvar] = {-30. , 0., 0.};
-  Double_t binMax[kNvar] = {30., 2., 100};
+  Int_t nBins[kNvar] = {120, 2, 11};
+  Double_t binMin[kNvar] = {-30. , 0., 0.0};
+  Double_t binMax[kNvar] = {30., 2., 11.0};
 
   AliCFContainer *evCont = new AliCFContainer("eventContainer", "Container for events", AliHFEcuts::kNcutStepsEvent, kNvar, nBins);
 
@@ -1164,6 +1181,11 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
   fContainer->CreateContainer("recTrackContDEMC", "Container for displaced electron analysis with MC information", 1);
   fContainer->CreateCorrelationMatrix("correlationstepafterPID","THnSparse with correlations");
   fContainer->CreateCorrelationMatrix("correlationstepafterDE","THnSparse with correlations");
+  if(!fVarManager->IsVariableDefined("centrality")) {
+    //printf("Create the two other correlation maps\n");
+    fContainer->CreateCorrelationMatrix("correlationstepbeforePID","THnSparse with correlations");
+    fContainer->CreateCorrelationMatrix("correlationstepafterTOF","THnSparse with correlations");
+  }
 
   // Define the step names
   for(UInt_t istep = 0; istep < AliHFEcuts::kNcutStepsMCTrack; istep++){
@@ -1201,6 +1223,17 @@ void AliAnalysisTaskHFE::InitPIDperformanceQA(){
   fQACollection->BinLogAxis("SignalToBackgroundMC", 0);
   fQACollection->Sumw2("PIDperformance");
   fQACollection->Sumw2("SignalToBackgroundMC");
+}
+
+//____________________________________________________________
+void AliAnalysisTaskHFE::InitContaminationQA(){
+  const Double_t kPtbound[2] = {0.1, 20.};
+  Int_t iBin[1];
+  iBin[0] = 44; // bins in pt
+  fQACollection->CreateTH1F("hadronsBeforeIPcut", "Hadrons before IP cut", iBin[0], kPtbound[0], kPtbound[1], 1);
+  fQACollection->CreateTH1F("hadronsAfterIPcut", "Hadrons after IP cut", iBin[0], kPtbound[0], kPtbound[1], 1);
+  fQACollection->CreateTH1F("hadronsBeforeIPcutMC", "Hadrons before IP cut: MC p_{t}", iBin[0], kPtbound[0], kPtbound[1], 1);
+  fQACollection->CreateTH1F("hadronsAfterIPcutMC", "Hadrons after IP cut: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
 }
 
 //____________________________________________________________
@@ -1322,8 +1355,20 @@ void AliAnalysisTaskHFE::ReadCentrality() {
        return;
    }
    // Centrality
-  AliESDCentrality *esdCentrality = fESD->GetCentrality();
-  fCentralityF = esdCentrality->GetCentralityPercentile("V0M");
+   AliESDCentrality *esdCentrality = fESD->GetCentrality();
+   Float_t fCentralityF_temp = esdCentrality->GetCentralityPercentile("V0M");
+
+   if( fCentralityF_temp >=  0. && fCentralityF_temp <   5.) fCentralityF =  0;
+   else if ( fCentralityF_temp >=  5. && fCentralityF_temp <  10.) fCentralityF =  1;
+   else if ( fCentralityF_temp >= 10. && fCentralityF_temp <  20.) fCentralityF = 2;
+   else if ( fCentralityF_temp >= 20. && fCentralityF_temp <  30.) fCentralityF = 3;
+   else if ( fCentralityF_temp >= 30. && fCentralityF_temp <  40.) fCentralityF = 4;
+   else if ( fCentralityF_temp >= 40. && fCentralityF_temp <  50.) fCentralityF = 5;
+   else if ( fCentralityF_temp >= 50. && fCentralityF_temp <  60.) fCentralityF = 6;
+   else if ( fCentralityF_temp >= 60. && fCentralityF_temp <  70.) fCentralityF = 7;
+   else if ( fCentralityF_temp >= 70. && fCentralityF_temp <  80.) fCentralityF = 8;
+   else if ( fCentralityF_temp >= 80. && fCentralityF_temp <  90.) fCentralityF = 9;
+   else if ( fCentralityF_temp >= 90. && fCentralityF_temp <=100.) fCentralityF = 10;
 
   //printf("centrality %f\n",fCentralityF);
 

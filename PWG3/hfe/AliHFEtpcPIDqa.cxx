@@ -39,8 +39,12 @@
 
 #include "AliHFEcollection.h"
 #include "AliHFEpidBase.h"
+#include "AliHFEpidQAmanager.h"
+#include "AliHFEpidTPC.h"
 #include "AliHFEtools.h"
 #include "AliHFEtpcPIDqa.h"
+
+ClassImp(AliHFEtpcPIDqa)
 
 //_________________________________________________________
 AliHFEtpcPIDqa::AliHFEtpcPIDqa():
@@ -65,7 +69,6 @@ AliHFEtpcPIDqa::AliHFEtpcPIDqa(const char* name):
 //_________________________________________________________
 AliHFEtpcPIDqa::AliHFEtpcPIDqa(const AliHFEtpcPIDqa &o):
     AliHFEdetPIDqa(o)
-  , fHistos()
 {
   //
   // Copy constructor
@@ -139,22 +142,22 @@ void AliHFEtpcPIDqa::Initialize(){
   // Make common binning
   const Int_t kNdim = 5;
   const Int_t kPIDbins = AliPID::kSPECIES + 1;
-  const Int_t kPbins = 1000;
+  const Int_t kPbins = 100;
   const Int_t kSteps = 2;
-  const Int_t kCentralityBins = 20;
+  const Int_t kCentralityBins = 11;
   const Double_t kMinPID = -1;
   const Double_t kMinP = 0.;
   const Double_t kMaxPID = (Double_t)AliPID::kSPECIES;
   const Double_t kMaxP = 20.;
   
   // 1st histogram: TPC dEdx: (species, p, dEdx, step)
-  const Int_t kDedxbins = 600;
+  const Int_t kDedxbins = 200;
   Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins};
   Double_t mindEdx[kNdim] =  {kMinPID, kMinP, 0., 0., 0.};
-  Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 300, 2., 100.}; 
+  Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 200, 2., 11.}; 
   fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Centrality; Selection Step", kNdim, nBinsdEdx, mindEdx, maxdEdx);
   // 2nd histogram: TPC sigmas: (species, p nsigma, step)
-  const Int_t kSigmaBins = 1400;
+  const Int_t kSigmaBins = 240;
   Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins};
   Double_t minSigma[kNdim] = {kMinPID, kMinP, -12., 0., 0.};
   Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 100.};
@@ -164,49 +167,43 @@ void AliHFEtpcPIDqa::Initialize(){
 }
 
 //_________________________________________________________
-void AliHFEtpcPIDqa::ProcessTrack(AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step){
+void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step){
   //
   // Fill TPC histograms
   //
   AliDebug(1, Form("QA started for TPC PID for step %d", (Int_t)step));
-  Int_t species = track->GetAbInitioPID();
+  AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
   Float_t centrality = track->GetCentrality();
-  const AliVParticle *rectrack = track->GetRecTrack();
+  Int_t species = track->GetAbInitioPID();
   if(species >= AliPID::kSPECIES) species = -1;
-  if(!TString(rectrack->IsA()->GetName()).CompareTo("AliESDtrack")) ProcessESDtrack(dynamic_cast<const AliESDtrack *>(rectrack), step, species, centrality);
-  else if(!TString(rectrack->IsA()->GetName()).CompareTo("AliAODTrack")) ProcessAODtrack(dynamic_cast<const AliAODTrack *>(rectrack), step, species, centrality);
-  else  AliWarning(Form("Object type %s not supported\n", rectrack->IsA()->GetName()));
-}
 
-//_________________________________________________________
-void AliHFEtpcPIDqa::ProcessESDtrack(const AliESDtrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species, Float_t centrality){
-  //
-  // Process track as ESD track
-  //
-  if(!fESDpid){
-    AliError("No ESD PID object available");
-    return;
-  }
-  AliDebug(1, Form("Monitoring particle of type %d for step %d", species, step));
-  
+  AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
   Double_t contentSignal[5];
   contentSignal[0] = species;
-  contentSignal[1] = track->GetInnerParam() ? track->GetInnerParam()->P() : track->P();
-  contentSignal[2] = track->GetTPCsignal();
+  contentSignal[1] = tpcpid->GetP(track->GetRecTrack(), anatype);
+  contentSignal[2] = GetTPCsignal(track->GetRecTrack(), anatype);
   contentSignal[3] = step;
   contentSignal[4] = centrality;
   (dynamic_cast<THnSparseF *>(fHistos->Get("tpcDedx")))->Fill(contentSignal);
 
-  contentSignal[2] = fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron); 
+  contentSignal[2] = tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype); 
   (dynamic_cast<THnSparseF *>(fHistos->Get("tpcnSigma")))->Fill(contentSignal);
 }
 
 //_________________________________________________________
-void AliHFEtpcPIDqa::ProcessAODtrack(const AliAODTrack * /*track*/, AliHFEdetPIDqa::EStep_t /*step*/, Int_t /*species*/, Float_t /*centrality*/){
+Double_t AliHFEtpcPIDqa::GetTPCsignal(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype){
   //
-  // Process track as AOD track
+  // Get TPC signal for ESD and AOD track
   //
-  AliInfo("Method implemented soon!");
+  Double_t tpcSignal = 0.;
+  if(anatype == AliHFEpidObject::kESDanalysis){
+    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+    tpcSignal = esdtrack->GetTPCsignal();
+  } else {
+    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
+    tpcSignal = aodtrack->GetDetPid() ? aodtrack->GetDetPid()->GetTPCsignal() : 0.;
+  }
+  return tpcSignal;
 }
 
 //_________________________________________________________

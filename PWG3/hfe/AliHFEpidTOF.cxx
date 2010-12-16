@@ -111,7 +111,7 @@ Bool_t AliHFEpidTOF::InitializePID(){
 }
 
 //___________________________________________________________________
-Int_t AliHFEpidTOF::IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa)
+Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const
 {
   //
   // TOF PID based on n-Sigma cut
@@ -139,8 +139,15 @@ Int_t AliHFEpidTOF::IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager *pidqa
   return pdg;
 }
 
+/////////////////////////////////////////////////////////
+//
+// Wrappers for functions which are not virtual but
+// only available for ESD and AOD case separately
+//
+/////////////////////////////////////////////////////////
+
 //___________________________________________________________________
-Double_t AliHFEpidTOF::NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anaType){
+Double_t AliHFEpidTOF::NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anaType) const {
   //    
   // Get the number of sigmas
   //
@@ -155,3 +162,51 @@ Double_t AliHFEpidTOF::NumberOfSigmas(const AliVParticle *track, AliPID::EPartic
   }
   return nSigmas;
 }
+
+//___________________________________________________________________
+Double_t AliHFEpidTOF::GetTOFsignal(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype) const{
+  //
+  // Get the TOF signal
+  //
+  Double_t tofSignal = 0.;
+  if(anatype == AliHFEpidObject::kESDanalysis){
+    // ESD analysis
+    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+    tofSignal = esdtrack->GetTOFsignal();
+  } else {
+    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
+    tofSignal = aodtrack->GetDetPid() ? aodtrack->GetDetPid()->GetTOFsignal() : 0.;
+  }
+  return tofSignal;
+}
+
+//___________________________________________________________________
+Double_t AliHFEpidTOF::GetTime0(AliHFEpidObject::AnalysisType_t anatype) const{
+  //
+  // Get Time0
+  //
+  Double_t time0 = 0.;
+  if(anatype == AliHFEpidObject::kESDanalysis){
+    time0 = fESDpid->GetTOFResponse().GetTimeZero();
+  }else {
+    time0 = fAODpid->GetTOFResponse().GetTimeZero();
+  }
+  return time0;
+}
+
+//___________________________________________________________________
+void AliHFEpidTOF::GetIntegratedTimes(const AliVParticle *track, Double_t *times, AliHFEpidObject::AnalysisType_t anatype) const{
+  //
+  // Return integrated times
+  //
+  if(anatype == AliHFEpidObject::kESDanalysis){
+    // ESD analysis
+    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+    esdtrack->GetIntegratedTimes(times);
+  } else {
+    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
+    aodtrack->GetDetPid()->GetIntegratedTimes(times);
+  }
+
+}
+

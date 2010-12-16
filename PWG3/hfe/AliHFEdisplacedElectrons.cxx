@@ -302,7 +302,6 @@ void AliHFEdisplacedElectrons::CreateOutputs(TList* const displacedList){
   fTHnSparseDcaEsdEleInfo->SetBinEdges(8, binLimStat);
   fTHnSparseDcaEsdEleInfo->Sumw2();
   
-  printf(" CCCCCCCCCCCCCCCCCCCCCCCCCC \n");
 
   // for ESD data: HFE pid
   const Int_t nVarData = 6;
@@ -933,7 +932,7 @@ Int_t AliHFEdisplacedElectrons::CheckCharm(AliStack * const stack, Int_t eleLabe
 }
 
 //__________________________________________________________
-Bool_t AliHFEdisplacedElectrons::IsB(Int_t pdg)
+Bool_t AliHFEdisplacedElectrons::IsB(Int_t pdg) const
 {
   // check if the pdg is that of a beauty particle
  
@@ -945,7 +944,7 @@ Bool_t AliHFEdisplacedElectrons::IsB(Int_t pdg)
 } 
 
 //__________________________________________________________
-Bool_t AliHFEdisplacedElectrons::IsC(Int_t pdg)
+Bool_t AliHFEdisplacedElectrons::IsC(Int_t pdg) const
 {
   // check if the pdg is that of a charmed particle
    

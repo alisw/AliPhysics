@@ -257,6 +257,7 @@ void AliHFEtrdPIDqa::CreatedEdxHistogram(){
   Double_t binMin[kQuantitiesdEdx]; memcpy(binMin, fgkMinBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMin[kdEdx] = 0.;     
   binMin[kNclusters] = 0;
+  binMin[kNonZeroSlices] = 0.;
   Double_t binMax[kQuantitiesdEdx]; memcpy(binMax, fgkMaxBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMax[kdEdx] = 100000.;
   binMax[kNclusters] = 260.;

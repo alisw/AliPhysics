@@ -36,8 +36,7 @@ ClassImp(AliHFEdetPIDqa)
 //____________________________________________________________
 AliHFEdetPIDqa::AliHFEdetPIDqa():
     TNamed()
-  , fESDpid(NULL)
-  , fAODpid(NULL)
+  , fQAmanager(NULL)
 {
   //
   // Dummy constructor
@@ -47,8 +46,7 @@ AliHFEdetPIDqa::AliHFEdetPIDqa():
 //____________________________________________________________
 AliHFEdetPIDqa::AliHFEdetPIDqa(const Char_t *name, const Char_t *title):
     TNamed(name, title)
-  , fESDpid(NULL)
-  , fAODpid(NULL)
+  , fQAmanager(NULL)
 {
   //
   // Default constructor
@@ -58,8 +56,7 @@ AliHFEdetPIDqa::AliHFEdetPIDqa(const Char_t *name, const Char_t *title):
 //____________________________________________________________
 AliHFEdetPIDqa::AliHFEdetPIDqa(const AliHFEdetPIDqa &o):
     TNamed(o)
-  , fESDpid(o.fESDpid)
-  , fAODpid(o.fAODpid)
+  , fQAmanager(o.fQAmanager)
 {
   //
   // Copy constructor
@@ -73,9 +70,7 @@ AliHFEdetPIDqa &AliHFEdetPIDqa::operator=(const AliHFEdetPIDqa &o){
   //
   TNamed::operator=(o);
 
-  fESDpid = o.fESDpid;
-  fAODpid = o.fAODpid;
-  
+  fQAmanager = o.fQAmanager;
   return *this;
 }
 

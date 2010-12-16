@@ -60,7 +60,7 @@ Bool_t AliHFEpidMC::InitializePID(){
 }
 
 //___________________________________________________________________
-Int_t AliHFEpidMC::IsSelected(AliHFEpidObject *track, AliHFEpidQAmanager * /*pidqa*/){
+Int_t AliHFEpidMC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager * /*pidqa*/) const {
   //
   // returns MC PDG Code
   // Functionality implemented in the base class

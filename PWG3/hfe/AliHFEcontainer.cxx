@@ -288,7 +288,9 @@ THnSparseF *AliHFEcontainer::GetCorrelationMatrix(const Char_t *name) const{
   //
   // Find Correlation Matrix
   //
-  return dynamic_cast<THnSparseF *>(fCorrelationMatrices->FindObject(name));
+  if(fCorrelationMatrices) return dynamic_cast<THnSparseF *>(fCorrelationMatrices->FindObject(name));
+  else return 0x0;
+
 }
 
 //__________________________________________________________________
@@ -327,7 +329,7 @@ void AliHFEcontainer::FillCFContainerStepname(const Char_t *name, const Char_t *
 }
 
 //__________________________________________________________________
-AliCFContainer *AliHFEcontainer::MakeMergedCFContainer(const Char_t *name, const Char_t *title, const Char_t* contnames){
+AliCFContainer *AliHFEcontainer::MakeMergedCFContainer(const Char_t *name, const Char_t *title, const Char_t* contnames) const {
   //
   // Merge CF Container out of several containers 
   // Container names are separated by :

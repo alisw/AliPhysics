@@ -40,7 +40,7 @@ class AliHFEtrdPIDqaV1 : public AliHFEdetPIDqa{
 
     virtual void Initialize();
     virtual Long64_t Merge(TCollection *coll);
-    virtual void ProcessTrack(AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
+    virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
     TH2 *MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
     TH2 *MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);

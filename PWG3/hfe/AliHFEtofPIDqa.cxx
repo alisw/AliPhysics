@@ -33,17 +33,20 @@
 #include <THnSparse.h>
 #include <TString.h>
 
-#include "AliAODTrack.h"
-#include "AliESDtrack.h"
-#include "AliESDpid.h"
 #include "AliLog.h"
 #include "AliPID.h"
-#include "AliTOFPIDResponse.h"
+#include "AliVParticle.h"
 
 #include "AliHFEcollection.h"
+#include "AliHFEpid.h"
 #include "AliHFEpidBase.h"
+#include "AliHFEpidQAmanager.h"
+#include "AliHFEpidTPC.h"
+#include "AliHFEpidTOF.h"
 #include "AliHFEtools.h"
 #include "AliHFEtofPIDqa.h"
+
+ClassImp(AliHFEpidTOF)
 
 //_________________________________________________________
 AliHFEtofPIDqa::AliHFEtofPIDqa():
@@ -57,7 +60,7 @@ AliHFEtofPIDqa::AliHFEtofPIDqa():
 
 //_________________________________________________________
 AliHFEtofPIDqa::AliHFEtofPIDqa(const char* name):
-    AliHFEdetPIDqa(name, "QA for TPC")
+    AliHFEdetPIDqa(name, "QA for TOF")
   , fHistos(NULL)
 {
   //
@@ -141,7 +144,7 @@ void AliHFEtofPIDqa::Initialize(){
 
   // Make common binning
   const Int_t kPIDbins = AliPID::kSPECIES + 1;
-  const Int_t kPbins = 1000;
+  const Int_t kPbins = 100;
   const Int_t kSteps = 2;
   const Double_t kMinPID = -1;
   const Double_t kMinP = 0.;
@@ -149,7 +152,7 @@ void AliHFEtofPIDqa::Initialize(){
   const Double_t kMaxP = 20.;
   
   // 1st histogram: TOF sigmas: (species, p nsigma, step)
-  const Int_t kSigmaBins = 1400;
+  const Int_t kSigmaBins = 240;
   Int_t nBinsSigma[4] = {kPIDbins, kPbins, kSigmaBins, kSteps};
   Double_t minSigma[4] = {kMinPID, kMinP, -12., 0};
   Double_t maxSigma[4] = {kMaxPID, kMaxP, 12., 2.};
@@ -163,50 +166,33 @@ void AliHFEtofPIDqa::Initialize(){
 }
 
 //_________________________________________________________
-void AliHFEtofPIDqa::ProcessTrack(AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step){
+void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step){
   //
   // Fill TPC histograms
   //
-  const AliVParticle *rectrack = track->GetRecTrack();
+  AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
   Int_t species = track->GetAbInitioPID();
   if(species >= AliPID::kSPECIES) species = -1;
-  if(!TString(rectrack->IsA()->GetName()).CompareTo("AliESDtrack")) ProcessESDtrack(dynamic_cast<const AliESDtrack *>(rectrack), step, species);
-  else if(!TString(rectrack->IsA()->GetName()).CompareTo("AliAODTrack")) ProcessAODtrack(dynamic_cast<const AliAODTrack *>(rectrack), step, species);
-  else  AliWarning(Form("Object type %s not supported\n", rectrack->IsA()->GetName()));
-}
 
-//_________________________________________________________
-void AliHFEtofPIDqa::ProcessESDtrack(const AliESDtrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species){
-  //
-  // Process track as ESD track
-  //
-  if(!fESDpid){
-    AliError("No ESD PID object available");
-    return;
-  }
   AliDebug(1, Form("Monitoring particle of type %d for step %d", species, step));
+  AliHFEpidTOF *tofpid= dynamic_cast<AliHFEpidTOF *>(fQAmanager->GetDetectorPID(AliHFEpid::kTOFpid));
+  AliHFEpidTPC *tpcpid= dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
   
   Double_t contentSignal[4];
   contentSignal[0] = species;
-  contentSignal[1] = track->GetInnerParam() ? track->GetInnerParam()->P() : track->P();
-  contentSignal[2] = fESDpid->NumberOfSigmasTOF(track, AliPID::kElectron, fESDpid->GetTOFResponse().GetTimeZero()); 
+  contentSignal[1] = track->GetRecTrack()->P();
+  contentSignal[2] = tofpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype);
   contentSignal[3] = step;
   (dynamic_cast<THnSparseF *>(fHistos->Get("tofnSigma")))->Fill(contentSignal);
-  Double_t tof = track->GetTOFsignal() - fESDpid->GetTOFResponse().GetTimeZero();
-  Double_t times[AliPID::kSPECIES]; track->GetIntegratedTimes(times);
+  Double_t timeTof = tofpid->GetTOFsignal(track->GetRecTrack(), anatype);
+  Double_t time0 = tofpid->GetTime0(anatype);
+  Double_t tof = timeTof - time0;
+  Double_t times[AliPID::kSPECIES]; tofpid->GetIntegratedTimes(track->GetRecTrack(), times, anatype);
   fHistos->Fill("tofTimeRes",contentSignal[1], tof - times[AliPID::kPion]);
   if(species > -1){
-    contentSignal[2] = fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron);
+    contentSignal[2] = tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype);
     fHistos->Fill("tofMonitorTPC", contentSignal);
   }
-}
-
-//_________________________________________________________
-void AliHFEtofPIDqa::ProcessAODtrack(const AliAODTrack * /*track*/, AliHFEdetPIDqa::EStep_t /*step*/, Int_t /*species*/){
-  //
-  // Process track as AOD track
-  //
-  AliInfo("Method implemented soon!");
 }
 
 //_________________________________________________________
