@@ -24,7 +24,8 @@ Compile(const char* script, Option_t* option="g")
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libPWG2forward2.so");
   TString macroPath(gROOT->GetMacroPath());
-  macroPath.Append(":${ALICE_ROOT}/FMD/scripts");
+  macroPath.Append(":${ALICE_ROOT}/PWG2/FORWARD/analysis2");
+  macroPath.Append(":${ALICE_ROOT}/PWG2/FORWARD/analysis2/scripts");
   gROOT->SetMacroPath(macroPath.Data());
   gSystem->SetIncludePath("-I`root-config --incdir` "
 			  "-I${ALICE_ROOT} " 

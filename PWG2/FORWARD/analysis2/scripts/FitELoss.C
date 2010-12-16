@@ -1,3 +1,8 @@
+/**
+ * Test script to fit the energy loss spectra 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 #ifndef __CINT__
 # include "AliForwardUtil.h"
 # include <TFile.h>
