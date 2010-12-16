@@ -63,7 +63,7 @@ public:
    * 
    * @return true on successs 
    */
-  virtual Bool_t Correct(AliForwardUtil::Histos& hists, Int_t vtxBin);
+  virtual Bool_t Correct(AliForwardUtil::Histos& hists, UShort_t vtxBin);
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -83,6 +83,12 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  /** 
+   * Print information
+   * 
+   * @param option Not used 
+   */
+  void Print(Option_t* option="") const;
 protected:
   /** 
    * Internal data structure to keep track of the histograms
@@ -145,7 +151,6 @@ protected:
   RingHistos* GetRingHistos(UShort_t d, Char_t r) const;
 
   TList    fRingHistos;    // List of histogram containers
-  Double_t fMultCut;       // Low cut on scaled energy loss
   Int_t    fDebug;         //  Debug level 
 
   ClassDef(AliFMDCorrections,1); // Calculate Nch density 

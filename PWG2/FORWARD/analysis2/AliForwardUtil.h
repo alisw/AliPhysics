@@ -18,6 +18,86 @@ class AliESDEvent;
 class AliForwardUtil : public TObject
 {
 public:
+  //==================================================================
+  /** 
+   * @{ 
+   * @nane Collision/run parameters 
+   */
+  /**						
+   * Defined collision types 
+   */
+  enum ECollisionSystem {
+    kUnknown, 
+    kPP, 
+    kPbPb
+  };
+  //__________________________________________________________________
+  /** 
+   * Parse a collision system spec given in a string.   Known values are 
+   * 
+   *  - "pp", "p-p" which returns kPP 
+   *  - "PbPb", "Pb-Pb", "A-A", which returns kPbPb 
+   *  - Everything else gives kUnknown 
+   * 
+   * @param sys Collision system spec 
+   * 
+   * @return Collision system id 
+   */
+  static UShort_t ParseCollisionSystem(const char* sys);
+  /** 
+   * Get a string representation of the collision system 
+   * 
+   * @param sys  Collision system 
+   * - kPP -> "pp"
+   * - kPbPb -> "PbPb" 
+   * - anything else gives "unknown"
+   * 
+   * @return String representation of the collision system 
+   */
+  static const char* CollisionSystemString(UShort_t sys);
+  //__________________________________________________________________
+  /** 
+   * Parse the center of mass energy given as a float and return known 
+   * values as a unsigned integer
+   * 
+   * @param sys  Collision system (needed for AA)
+   * @param cms  Center of mass energy * total charge 
+   * 
+   * @return Center of mass energy per nucleon
+   */
+  static UShort_t ParseCenterOfMassEnergy(UShort_t sys, Float_t cms);
+  /** 
+   * Get a string representation of the center of mass energy per nuclean
+   * 
+   * @param sys  Collision system 
+   * @param sNN  Center of mass energy per nucleon
+   * 
+   * @return String representation of the center of mass energy per nuclean
+   */
+  static const char* CenterOfMassEnergyString(UShort_t cms);
+  //__________________________________________________________________
+  /** 
+   * Parse the magnetic field (in kG) as given by a floating point number
+   * 
+   * @param field  Magnetic field in kG 
+   * 
+   * @return Short integer value of magnetic field in kG 
+   */
+  static Short_t ParseMagneticField(Float_t field);
+  /** 
+   * Get a string representation of the magnetic field
+   * 
+   * @param field Magnetic field in kG
+   * 
+   * @return String representation of the magnetic field
+   */
+  static const char* MagneticFieldString(Short_t field);
+  /* @} */
+
+  /** 
+   * @{ 
+   * @name Energy stragling functions 
+   */
   //__________________________________________________________________
   /**
    * Number of steps to do in the Landau, Gaussiam convolution 
@@ -82,13 +162,78 @@ public:
    */
   static Double_t LandauGaus(Double_t x, Double_t delta, Double_t xi, 
 			     Double_t sigma, Double_t sigma_n);
-  
+
   //------------------------------------------------------------------
   /** 
    * Evaluate 
    * @f[ 
-      f_N(x;\Delta,\xi,\sigma') = \sum_{i=1}^N a_i f(x;\Delta_i,\xi_i,\sigma'_i)
-     @f] 
+   *    f_i(x;\Delta,\xi,\sigma') = f(x;\Delta_i,\xi_i,\sigma_i')
+   * @f] 
+   * corresponding to @f$ i@f$ particles i.e., with the substitutions 
+   * @f[ 
+   *    \Delta    \rightarrow \Delta_i    = i(\Delta + \xi\log(i))\\
+   *    \xi       \rightarrow \xi_i       = i \xi\\
+   *    \sigma    \rightarrow \sigma_i    = \sqrt{i}\sigma\\
+   *    \sigma'^2 \rightarrow \sigma_i'^2 = \sigma_n^2 + \sigma_i^2
+   * @f] 
+   * 
+   * @param x        Where to evaluate 
+   * @param delta    @f$ \Delta@f$ 
+   * @param xi       @f$ \xi@f$ 
+   * @param sigma    @f$ \sigma@f$ 
+   * @param sigma_n  @f$ \sigma_n@f$
+   * @param i        @f$ i@f$
+   * 
+   * @return @f$ f_i@f$ evaluated
+   */  
+  static Double_t ILandauGaus(Double_t x, Double_t delta, Double_t xi, 
+			      Double_t sigma, Double_t sigma_n, Int_t i);
+
+  //------------------------------------------------------------------
+  /** 
+   * Numerically evaluate 
+   * @f[ 
+   *    \left.\frac{\partial f_i}{\partial p_i}\right|_{x}
+   * @f] 
+   * where @f$ p_i@f$ is the @f$ i^{\mbox{th}}@f$ parameter.  The mapping 
+   * of the parameters is given by 
+   *
+   * - 0: @f$\Delta@f$ 
+   * - 1: @f$\xi@f$ 
+   * - 2: @f$\sigma@f$ 
+   * - 3: @f$\sigma_n@f$ 
+   *
+   * This is the partial derivative with respect to the parameter of
+   * the response function corresponding to @f$ i@f$ particles i.e.,
+   * with the substitutions
+   * @f[ 
+   *    \Delta    \rightarrow \Delta_i    = i(\Delta + \xi\log(i))\\
+   *    \xi       \rightarrow \xi_i       = i \xi\\
+   *    \sigma    \rightarrow \sigma_i    = \sqrt{i}\sigma\\
+   *    \sigma'^2 \rightarrow \sigma_i'^2 = \sigma_n^2 + \sigma_i^2
+   * @f] 
+   * 
+   * @param x        Where to evaluate 
+   * @param ipar     Parameter number 
+   * @param dp       @f$ \esilon\delta p_i@f$ for some value of @f$\epsilon@f$
+   * @param delta    @f$ \Delta@f$ 
+   * @param xi       @f$ \xi@f$ 
+   * @param sigma    @f$ \sigma@f$ 
+   * @param sigma_n  @f$ \sigma_n@f$
+   * @param i        @f$ i@f$
+   * 
+   * @return @f$ f_i@f$ evaluated
+   */  
+  static Double_t IdLandauGausdPar(Double_t x, UShort_t ipar, Double_t dp,
+				   Double_t delta, Double_t xi, 
+				   Double_t sigma, Double_t sigma_n, Int_t i);
+
+  //------------------------------------------------------------------
+  /** 
+   * Evaluate 
+   * @f[ 
+   *   f_N(x;\Delta,\xi,\sigma') = \sum_{i=1}^N a_i f_i(x;\Delta,\xi,\sigma'a)
+   * @f] 
    * 
    * where @f$ f(x;\Delta,\xi,\sigma')@f$ is the convolution of a
    * Landau with a Gaussian (see LandauGaus).  Note that 
@@ -114,6 +259,47 @@ public:
   static Double_t NLandauGaus(Double_t x, Double_t delta, Double_t xi, 
 			      Double_t sigma, Double_t sigma_n, Int_t n, 
 			      Double_t* a);
+  /** 
+   * Generate a TF1 object of @f$ f_I@f$ 
+   * 
+   * @param c        Constant
+   * @param delta    @f$ \Delta@f$ 
+   * @param xi       @f$ \xi_1@f$	       
+   * @param sigma    @f$ \sigma_1@f$ 	       
+   * @param sigma_n  @f$ \sigma_n@f$ 	       
+   * @param i 	     @f$ i@f$ - the number of particles
+   * @param xmin     Least value of range
+   * @param xmax     Largest value of range
+   * 
+   * @return Newly allocated TF1 object
+   */
+  static TF1* MakeILandauGaus(Double_t c, 
+			      Double_t delta, Double_t xi, 
+			      Double_t sigma, Double_t sigma_n,
+			      Int_t    i, 
+			      Double_t xmin,  Double_t  xmax);
+  /** 
+   * Generate a TF1 object of @f$ f_N@f$ 
+   * 
+   * @param c         Constant			       
+   * @param delta     @f$ \Delta@f$ 		       
+   * @param xi 	      @f$ \xi_1@f$	       	       
+   * @param sigma     @f$ \sigma_1@f$ 	       	       
+   * @param sigma_n   @f$ \sigma_n@f$ 	       	       
+   * @param n 	      @f$ N@f$ - how many particles to sum to
+   * @param a         Array of size @f$ N-1@f$ of the weights @f$ a_i@f$ for 
+   *                  @f$ i > 1@f$ 
+   * @param xmin      Least value of range  
+   * @param xmax      Largest value of range
+   * 
+   * @return Newly allocated TF1 object
+   */
+  static TF1* MakeNLandauGaus(Double_t c, 
+			      Double_t delta, Double_t  xi, 
+			      Double_t sigma, Double_t  sigma_n,
+			      Int_t    n,     Double_t* a, 
+			      Double_t xmin,  Double_t  xmax);
+			    			    
   //__________________________________________________________________
   /** 
    * Structure to do fits to the energy loss spectrum 
@@ -179,9 +365,14 @@ public:
     TObjArray fFitResults;      // Array of fit results 
     TObjArray fFunctions;       // Array of functions 
   };
+  /* @} */
       
 
-  //__________________________________________________________________
+  //==================================================================
+  /** 
+   * @{
+   * @name Convenience containers 
+   */
   /** 
    * Structure to hold histograms 
    *
@@ -293,6 +484,7 @@ public:
 
     ClassDef(RingHistos,1) 
   };
+  /* @} */
     
 };
 

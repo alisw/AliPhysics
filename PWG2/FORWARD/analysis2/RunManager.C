@@ -49,61 +49,17 @@ void RunManager(const char* esddir,
 		UShort_t    flags=kFull)
 {
   // --- Libraries to load -------------------------------------------
-  gSystem->Load("libVMC");
-  gSystem->Load("libTree");
-  
-  gSystem->Load("libSTEERBase");
-  
-  gSystem->Load("libESD") ;
-  gSystem->Load("libAOD") ;
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  
-  gSystem->Load("libPhysics");
-  gSystem->Load("libPWG0base");
-  gSystem->Load("libPWG0dep");
-  gSystem->Load("libPWG2forward");
-  gSystem->Load("libPWG2forward2");
+  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Check for proof mode, and possibly upload pars --------------
-  if (flags & kProof) { 
-    TProof::Open("workers=2");
-    const char* pkgs[] = { "STEERBase", "ESD", "AOD", "ANALYSIS", 
-			   "ANALYSISalice", "PWG2forward", "PWG2forward2", 0};
-    const char** pkg = pkgs;
-    while (*pkg) { 
-      gProof->UploadPackage(Form("${ALICE_ROOT}/%s.par",*pkg));
-      gProof->EnablePackage(*pkg);    
-      pkg++;
-    }
-  }
+  if (flags & kProof) 
+    gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
   
   // --- Our data chain ----------------------------------------------
-  TChain* chain = new TChain("esdTree");
-
-  // --- Get list of ESDs --------------------------------------------
-  // Open source directory, and make sure we go back to were we were 
-  TString oldDir(gSystem->WorkingDirectory());
-  TSystemDirectory d(esddir, esddir);
-  TList* files = d.GetListOfFiles();
-  gSystem->ChangeDirectory(oldDir);
-
-  // Sort list of files and check if we should add it 
-  files->Sort();
-  TIter next(files);
-  TSystemFile* file = 0;
-  while ((file = static_cast<TSystemFile*>(next()))) {
-    if (file->IsDirectory()) continue;
-    TString name(file->GetName());
-    if (!name.EndsWith(".root")) continue;
-    if (!name.Contains("AliESDs")) continue;
-    TString esd(Form("%s/%s", file->GetTitle(), name.Data()));
-    Info("RunManager", "Adding %s to chain", esd.Data());
-    chain->Add(esd);
-  }  
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeESDChain.C");
+  TChain* chain = MakeESDChain(esddir);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
-    
 
   // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", 
@@ -140,10 +96,10 @@ void RunManager(const char* esddir,
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AliAnalysisTask* task = AddTaskFMD();
-  mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
+  // mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
 
   task = AddTaskPhysicsSelection((flags & kMC), kTRUE, kTRUE);
-  mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
+  // mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
   
   // --- Run the analysis --------------------------------------------
   TStopwatch t;
@@ -163,10 +119,13 @@ void RunManager(const char* esddir,
 
   // Run the train 
   t.Start();
-  if (!(flags & kTerminate))
+  if (!(flags & kTerminate)) {
+    Printf("=== RUNNING ANALYSIS ==================================");
     mgr->StartAnalysis((flags & kProof) ? "proof" : "local", chain, nEvents);
+  }
   else {
-    mgr->ImportWrappers();
+    Printf("=== RUNNING TERMINATE =================================");
+    // mgr->ImportWrappers(0);
     mgr->Terminate();
   }
   t.Stop();

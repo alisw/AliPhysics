@@ -45,7 +45,7 @@ class TTree;
  * @ingroup pwg2_forward_analysis 
  * 
  */
-class AliForwardMultiplicity : public AliAnalysisTaskSE
+class AliForwardMultiplicityTask : public AliAnalysisTaskSE
 {
 public:
   /** 
@@ -53,17 +53,17 @@ public:
    * 
    * @param name Name of task 
    */
-  AliForwardMultiplicity(const char* name);
+  AliForwardMultiplicityTask(const char* name);
   /** 
    * Constructor
    */
-  AliForwardMultiplicity();
+  AliForwardMultiplicityTask();
   /** 
    * Copy constructor 
    * 
    * @param o Object to copy from 
    */
-  AliForwardMultiplicity(const AliForwardMultiplicity& o);
+  AliForwardMultiplicityTask(const AliForwardMultiplicityTask& o);
   /** 
    * Assignment operator 
    * 
@@ -71,7 +71,7 @@ public:
    * 
    * @return Reference to this object 
    */
-  AliForwardMultiplicity& operator=(const AliForwardMultiplicity& o);
+  AliForwardMultiplicityTask& operator=(const AliForwardMultiplicityTask& o);
   /** 
    * @{ 
    * @name Interface methods 
@@ -101,8 +101,18 @@ public:
   /** 
    * @} 
    */
+  /** 
+   * Print information 
+   * 
+   * @param option Not used
+   */
   void Print(Option_t* option="") const;
-
+  /** 
+   * Whether to enable low-flux code 
+   * 
+   * @param use IF true, enable low-flux code 
+   */
+  void SetEnableLowFlux(Bool_t use=true) { fEnableLowFlux = use; }
   /** 
    * @{ 
    * @name Access to sub-algorithms 
@@ -159,6 +169,7 @@ protected:
    */
   virtual void MarkEventForStore() const;
 
+  Bool_t                 fEnableLowFlux;// Whether to use low-flux specific code
   TH2D*                  fHData;        // Summed 1/Nd^2N_{ch}/dphideta
   Bool_t                 fFirstEvent;   // Whether the event is the first seen 
   AliESDFMD              fESDFMD;       // Sharing corrected ESD object
@@ -174,7 +185,7 @@ protected:
 
   TList* fList; // Output list 
 
-  ClassDef(AliForwardMultiplicity,1) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityTask,1) // Forward multiplicity class
 };
 
 #endif

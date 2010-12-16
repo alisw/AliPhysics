@@ -3,9 +3,13 @@
 #include <TAxis.h>
 #include <TList.h>
 #include <TMath.h>
-#include "AliFMDAnaParameters.h"
+#include "AliForwardCorrectionManager.h"
+// #include "AliFMDAnaParameters.h"
 #include "AliLog.h"
 #include <TH2D.h>
+#include <TROOT.h>
+#include <iostream>
+#include <iomanip>
 
 ClassImp(AliFMDCorrections)
 #if 0
@@ -16,7 +20,6 @@ ClassImp(AliFMDCorrections)
 AliFMDCorrections::AliFMDCorrections()
   : TNamed(), 
     fRingHistos(),
-    fMultCut(0.3),
     fDebug(0)
 {}
 
@@ -24,7 +27,6 @@ AliFMDCorrections::AliFMDCorrections()
 AliFMDCorrections::AliFMDCorrections(const char* title)
   : TNamed("fmdCorrections", title), 
     fRingHistos(), 
-    fMultCut(0.3),
     fDebug(0)
 {
   fRingHistos.SetName(GetName());
@@ -39,7 +41,6 @@ AliFMDCorrections::AliFMDCorrections(const char* title)
 AliFMDCorrections::AliFMDCorrections(const AliFMDCorrections& o)
   : TNamed(o), 
     fRingHistos(), 
-    fMultCut(o.fMultCut),
     fDebug(o.fDebug)
 {
   TIter    next(&o.fRingHistos);
@@ -59,7 +60,6 @@ AliFMDCorrections::operator=(const AliFMDCorrections& o)
 {
   TNamed::operator=(o);
 
-  fMultCut = o.fMultCut;
   fDebug   = o.fDebug;
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -87,26 +87,30 @@ AliFMDCorrections::GetRingHistos(UShort_t d, Char_t r) const
 //____________________________________________________________________
 Bool_t
 AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
-			   Int_t                   vtxbin)
+			   UShort_t                vtxbin)
 {
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
+  UShort_t uvb = vtxbin;
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
     for (UShort_t q=0; q<nr; q++) { 
       Char_t      r = (q == 0 ? 'I' : 'O');
       TH2D*       h = hists.Get(d,r);
       RingHistos* rh= GetRingHistos(d,r);
-      TH2F*       bg= pars->GetBackgroundCorrection(d, r, vtxbin);
-      TH2F*       ef= pars->GetEventSelectionEfficiency("INEL",vtxbin,r);
+      //TH2F*       bg= pars->GetBackgroundCorrection(d, r, vtxbin);
+      //TH2F*       ef= pars->GetEventSelectionEfficiency("INEL",vtxbin,r);
+      TH2D* bg = fcm.GetSecondaryMap()->GetCorrection(d,r,uvb);
+      TH2D* ef = fcm.GetVertexBias()->GetCorrection(r, uvb);
       if (!bg) { 
 	AliWarning(Form("No secondary correction for FMDM%d%c in vertex bin %d",
-			d, r, vtxbin));
+			d, r, uvb));
 	continue;
       }
       if (!ef) { 
-	AliWarning(Form("No event %s selection efficiency in vertex bin %d",
-			"INEL", vtxbin));
+	AliWarning(Form("No event vertex bias correction in vertex bin %d",
+			uvb));
 	continue;
       }
 
@@ -116,12 +120,23 @@ AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
       // Divide by the event selection efficiency 
       h->Divide(ef);
 
-      if(!pars->SharingEffPresent()) { 
-	AliWarning("No sharing efficiencies");
+      
+      // if(!pars->SharingEffPresent()) { 
+      //   AliWarning("No sharing efficiencies");
+      //   continue;
+      // }
+      // TH1F* sf = pars->GetSharingEfficiencyTrVtx(d,r,vtxbin); 
+      if (!fcm.GetMergingEfficiency()) { 
+	AliWarning("No merging efficiencies");
+	continue;
+      }
+      TH1D* sf = fcm.GetMergingEfficiency()->GetCorrection(d,r,uvb);
+      if (!fcm.GetMergingEfficiency()->GetCorrection(d,r,uvb)) { 
+	AliWarning(Form("No merging efficiency for FMD%d%c at vertex bin %d",
+			d, r, uvb));
 	continue;
       }
 
-      TH1F* sf = pars->GetSharingEfficiencyTrVtx(d,r,vtxbin); 
       
       for (Int_t ieta = 1; ieta <= h->GetNbinsX(); ieta++) {
 	Float_t c  = sf->GetBinContent(ieta);
@@ -172,6 +187,16 @@ AliFMDCorrections::DefineOutput(TList* dir)
   while ((o = static_cast<RingHistos*>(next()))) {
     o->Output(d);
   }
+}
+
+//____________________________________________________________________
+void
+AliFMDCorrections::Print(Option_t* /* option */) const
+{
+  char ind[gROOT->GetDirLevel()+1];
+  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
+  ind[gROOT->GetDirLevel()] = '\0';
+  std::cout << ind << "AliFMDCorrections: " << GetName() <<  std::endl;
 }
 
 //====================================================================

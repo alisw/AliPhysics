@@ -12,6 +12,7 @@
 class AliFMDAnaParameters;
 class AliESDEvent;
 class TH2D;
+class TH3D;
 class TList;
 class TTree;
 
@@ -32,7 +33,7 @@ class TTree;
  * @ingroup pwg2_forward_analysis 
  * 
  */
-class AliForwardMCCorrections : public AliAnalysisTaskSE
+class AliForwardMCCorrectionsTask : public AliAnalysisTaskSE
 {
 public:
   /** 
@@ -40,17 +41,17 @@ public:
    * 
    * @param name Name of task 
    */
-  AliForwardMCCorrections(const char* name);
+  AliForwardMCCorrectionsTask(const char* name);
   /** 
    * Constructor
    */
-  AliForwardMCCorrections();
+  AliForwardMCCorrectionsTask();
   /** 
    * Copy constructor 
    * 
    * @param o Object to copy from 
    */
-  AliForwardMCCorrections(const AliForwardMCCorrections& o);
+  AliForwardMCCorrectionsTask(const AliForwardMCCorrectionsTask& o);
   /** 
    * Assignment operator 
    * 
@@ -58,7 +59,7 @@ public:
    * 
    * @return Reference to this object 
    */
-  AliForwardMCCorrections& operator=(const AliForwardMCCorrections& o);
+  AliForwardMCCorrectionsTask& operator=(const AliForwardMCCorrectionsTask& o);
   /** 
    * @{ 
    * @name Interface methods 
@@ -96,7 +97,13 @@ public:
   void SetEtaAxis(const TAxis& axis);
 protected: 
   TH2D*  GetVertexProj(Int_t v, TH3D* src) const;
-
+  TH3D* Make3D(const char* name, const char* title, Int_t nPhi) const;
+  TH1D* Make1D(const char* name, const char* title) const;
+  void  FillPrimary(Bool_t gotInel, Bool_t gotVtx, 
+		    Double_t vz, Double_t eta, Double_t phi);
+  void FillStrip(UShort_t d, Char_t r, 
+		 Double_t vz, Double_t eta, Double_t phi,
+		 Bool_t first);
   TH1I*  fHEvents;           // All Events
   TH1I*  fHEventsTr;         // Histogram of events w/trigger
   TH1I*  fHEventsTrVtx;      // Events w/trigger and vertex 
@@ -121,7 +128,7 @@ protected:
 
   TList* fList; // Output list 
 
-  ClassDef(AliForwardMCCorrections,1) // Forward corrections class
+  ClassDef(AliForwardMCCorrectionsTask,1) // Forward corrections class
 };
 
 #endif

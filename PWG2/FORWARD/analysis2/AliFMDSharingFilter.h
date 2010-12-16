@@ -70,7 +70,12 @@ public:
    * 
    * @param lowCut Low cut
    */
-  void SetLowCut(Double_t lowCut=0.3) { fLowCut = lowCut; }
+  void SetLowCut(Double_t lowCut=0) { fLowCut = lowCut; }
+  /** 
+   * Reset the low cut for sharing to use the fit range lower cut 
+   * 
+   */
+  void UnsetLowCut() { fLowCut = 0; }
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -86,6 +91,13 @@ public:
    * signals are always angle corrected. 
    */
   void UseAngleCorrectedSignals(Bool_t use) { fCorrectAngles = use; }
+  /** 
+   * Set the number of landau width to subtract from the most probably
+   * value to get the high cut for the merging algorithm.
+   * 
+   * @param n Number of @f$ \xi@f$ 
+   */
+  void SetNXi(Short_t n) { fNXi = n; }
   /** 
    * Filter the input AliESDFMD object
    * 
@@ -114,6 +126,12 @@ public:
    * @param dir Directory to add to 
    */
   void DefineOutput(TList* dir);
+  /** 
+   * Print information
+   * 
+   * @param option Not used 
+   */
+  void Print(Option_t* option="") const;
 protected:
   /** 
    * Internal data structure to keep track of the histograms
@@ -259,10 +277,18 @@ protected:
    * 2 times the width of the corresponding Landau.
    */
   virtual Double_t GetHighCut(UShort_t d, Char_t r, Double_t eta) const;
+  /**
+   * Get the low cut.  Normally, the low cut is taken to be the lower
+   * value of the fit range used when generating the energy loss fits.
+   * However, if fLowCut is set (using SetLowCit) to a value greater
+   * than 0, then that value is used.
+   */
+  virtual Double_t GetLowCut() const;
 
   TList    fRingHistos;    // List of histogram containers
   Double_t fLowCut;        // Low cut on sharing
   Bool_t   fCorrectAngles; // Whether to work on angle corrected signals
+  Short_t  fNXi;           // Number of xi's from Delta to stop merging
   Int_t    fDebug;         // Debug level 
 
   ClassDef(AliFMDSharingFilter,1); //

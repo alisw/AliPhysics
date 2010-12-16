@@ -13,10 +13,12 @@ AddTaskFMD()
   }   
 
   // --- Make the task and add it to the manager ---------------------
-  AliForwardMultiplicity* task = new AliForwardMultiplicity("FMD");
+  AliForwardMultiplicityTask* task = new AliForwardMultiplicityTask("FMD");
   mgr->AddTask(task);
 
   // --- Set parameters on the algorithms ----------------------------
+  // Whether to enable low flux specific code 
+  task->SetEnableLowFlux(kFALSE);
   // Set the number of SPD tracklets for which we consider the event a
   // low flux event
   task->GetEventInspector().SetLowFluxCut(1000); 
@@ -33,7 +35,9 @@ AddTaskFMD()
   // Set whether to use increasing bin sizes 
   task->GetEnergyFitter().SetUseIncreasingBins(true);
   // Set whether to do fit the energy distributions 
-  task->GetEnergyFitter().SetDoFits(kTRUE);
+  task->GetEnergyFitter().SetDoFits(kFALSE);
+  // Set whether to make the correction object 
+  task->GetEnergyFitter().SetDoMakeObject(kFALSE);
   // Set the low cut used for energy
   task->GetEnergyFitter().SetLowCut(0.4);
   // Set the number of bins to subtract from maximum of distributions
@@ -44,8 +48,14 @@ AddTaskFMD()
   // Set the minimum number of entries in the distribution before
   // trying to fit to the data
   task->GetEnergyFitter().SetMinEntries(1000);
-  // Set the low cut used for sharing 
-  task->GetSharingFilter().SetLowCut(0.3);
+  // Set the low cut used for sharing - overrides settings in eloss fits
+  // task->GetSharingFilter().SetLowCut(0.4);
+  // Set the number of xi's (width of landau peak) to stop at 
+  task->GetSharingFilter().SetNXi(1);
+  // Set the maximum number of particle to try to reconstruct 
+  task->GetDensityCalculator().SetMaxParticles(2);
+  // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
+  // task->GetDensityCalculator().SetMultCut(0.4);
   // Set the number of extra bins (beyond the secondary map border) 
   task->GetHistCollector().SetNCutBins(1);
   // Set the correction cut, that is, when bins in the secondary map 
@@ -54,28 +64,37 @@ AddTaskFMD()
   // Set the overall debug level (1: some output, 3: a lot of output)
   task->SetDebug(0);
   // Set the debug level of a single algorithm 
-  task->GetEnergyFitter().SetDebug(3);
+  // task->GetEventInspector().SetDebug(4);
+  // --- Set limits on fits the energy -------------------------------
+  // Maximum relative error on parameters 
+  AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
+  // Least weight to use 
+  AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
+  // Maximum value of reduced chi^2 
+  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 5;
+
   
-  // --- Set up the parameer manager ---------------------------------
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  // --- Set up the parameter manager ---------------------------------
+  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   AliMCEventHandler* mcHandler = 
     dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
   Info("AddTaskFMD", "MC handler %p", mcHandler);
-  if(mcHandler) {
-    pars->SetRealData(kFALSE);
-    pars->SetProcessPrimary(kTRUE);
-    pars->SetProcessHits(kFALSE);
-  }
-  else {
-    pars->SetRealData(kTRUE);
-    pars->SetProcessPrimary(kFALSE);
-    pars->SetProcessHits(kFALSE);
-  }
-  pars->Init();
+  // if(mcHandler) {
+  //   pars->SetRealData(kFALSE);
+  //   pars->SetProcessPrimary(kTRUE);
+  //   pars->SetProcessHits(kFALSE);
+  // }
+  // else {
+  //   pars->SetRealData(kTRUE);
+  //   pars->SetProcessPrimary(kFALSE);
+  //   pars->SetProcessHits(kFALSE);
+  // }
+  // pars->Init();
   
-  // --- Makek the output container and connect it -------------------
+  // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  outputfile += Form(":%s",pars->GetDndetaAnalysisName());
+  // outputfile += ":PWG2forwardDnDeta"; 
+  // Form(":%s",pars->GetDndetaAnalysisName());
   AliAnalysisDataContainer* histOut = 
     mgr->CreateContainer("Forward", TList::Class(), 
 			 AliAnalysisManager::kOutputContainer,outputfile);

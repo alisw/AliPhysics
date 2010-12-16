@@ -5,6 +5,8 @@
 #include <TAxis.h>
 #include <TList.h>
 #include <TObjArray.h>
+#include <TClonesArray.h>
+#include "AliFMDCorrELossFit.h"
 #include "AliForwardUtil.h"
 class AliESDFMD;
 class TFitResult;
@@ -120,6 +122,13 @@ public:
    */
   void SetDoFits(Bool_t doFit=kTRUE) { fDoFits = doFit; }
   /** 
+   * Set whether to make the corrections object on the output.  Note,
+   * fits should be enable for this to have any effect.
+   * 
+   * @param doMake If true (false is default), do make the corrections object. 
+   */
+  void SetDoMakeObject(Bool_t doMake=kTRUE) { fDoMakeObject = doMake; }
+  /** 
    * Set how many particles we will try to fit at most to the data
    * 
    * @param n Max number of particle to try to fit 
@@ -144,8 +153,9 @@ public:
    * @param x Number of energy loss bins 
    */
   void SetNEbins(Int_t x) { fNEbins = x; }
-  void SetMaxRelativeParameterError(Double_t e) { fMaxRelParError = e; }
-  void SetMaxChi2PerNDF(Double_t c) { fMaxChi2PerNDF = c; }
+  void SetMaxRelativeParameterError(Double_t e=0.2) { fMaxRelParError = e; }
+  void SetMaxChi2PerNDF(Double_t c=10) { fMaxChi2PerNDF = c; }
+  void SetMinWeight(Double_t c=1e-7) { fMinWeight = c; }
   /**
    * Set wheter to use increasing bin sizes 
    *
@@ -168,6 +178,7 @@ public:
    * @param dir Where the histograms are  
    */
   void Fit(TList* dir);
+  void MakeCorrectionsObject(TList* dir);
   
   /** 
    * Define the output histograms.  These are put in a sub list of the
@@ -183,6 +194,12 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1);
+  /** 
+   * Print information
+   * 
+   * @param option Not used 
+   */
+  void Print(Option_t* option="") const;
 protected:
   /** 
    * Internal data structure to keep track of the histograms
@@ -298,6 +315,42 @@ protected:
 		 Double_t relErrorCut, 
 		 Double_t chi2nuCut) const;
     /** 
+     * Find the best fits 
+     * 
+     * @param d              Parent list
+     * @param obj            Object to add fits to
+     * @param eta            Eta axis 
+     * @param relErrorCut    Cut applied to relative error of parameter. 
+     *                       Note, for multi-particle weights, the cut 
+     *                       is loosend by a factor of 2 
+     * @param chi2nuCut      Cut on @f$ \chi^2/\nu@f$ - 
+     *                       the reduced @f$\chi^2@f$ 
+     * @param minWeightCut   Least valid @f$ a_i@f$ 
+     */
+    void FindBestFits(TList*              d, 
+		      AliFMDCorrELossFit& obj,
+		      const TAxis&        eta,     
+		      Double_t            relErrorCut, 
+		      Double_t            chi2nuCut,
+		      Double_t            minWeightCut);
+    /** 
+     * Find the best fit 
+     * 
+     * @param dist           Histogram 
+     * @param relErrorCut    Cut applied to relative error of parameter. 
+     *                       Note, for multi-particle weights, the cut 
+     *                       is loosend by a factor of 2 
+     * @param chi2nuCut      Cut on @f$ \chi^2/\nu@f$ - 
+     *                       the reduced @f$\chi^2@f$ 
+     * @param minWeightCut   Least valid @f$ a_i@f$ 
+     * 
+     * @return Best fit 
+     */
+    AliFMDCorrELossFit::ELossFit* FindBestFit(TH1* dist,
+					      Double_t relErrorCut, 
+					      Double_t chi2nuCut,
+					      Double_t minWeightCut);
+    /** 
      * Check the result of the fit. Returns true if 
      * - @f$ \chi^2/\nu < \max{\chi^2/\nu}@f$
      * - @f$ \Delta p_i/p_i < \delta_e@f$ for all parameters.  Note, 
@@ -365,11 +418,12 @@ protected:
 		    Int_t high, 
 		    Double_t val, 
 		    Double_t err) const;
-    TH1D*     fEDist;        // Ring energy distribution 
-    TH1D*     fEmpty;        // Ring energy distribution for empty events
-    TList     fEtaEDists;    // Energy distributions per eta bin. 
-    TList*    fList;
-    Int_t     fDebug;
+    TH1D*        fEDist;        // Ring energy distribution 
+    TH1D*        fEmpty;        // Ring energy distribution for empty events
+    TList        fEtaEDists;    // Energy distributions per eta bin. 
+    TList*       fList;
+    TClonesArray fFits;
+    Int_t        fDebug;
     ClassDef(RingHistos,1);
   };
   /** 
@@ -387,14 +441,17 @@ protected:
   UShort_t fNParticles;    // Number of landaus to try to fit 
   UShort_t fMinEntries;    // Minimum number of entries
   UShort_t fFitRangeBinWidth;// Number of bins to subtract from found max
-  Bool_t   fDoFits;        // Wheter to actually do the fits 
+  Bool_t   fDoFits;        // Whether to actually do the fits 
+  Bool_t   fDoMakeObject;  // Whether to make corrections object
   TAxis    fEtaAxis;       // Eta axis 
   Double_t fMaxE;          // Maximum energy loss to consider 
   Int_t    fNEbins;        // Number of energy loss bins 
   Bool_t   fUseIncreasingBins; // Wheter to use increasing bin sizes 
   Double_t fMaxRelParError;// Relative error cut
   Double_t fMaxChi2PerNDF; // chi^2/nu cit
+  Double_t fMinWeight;     // Minimum weight value 
   Int_t    fDebug;         // Debug level 
+  
 
   ClassDef(AliFMDEnergyFitter,1); //
 };

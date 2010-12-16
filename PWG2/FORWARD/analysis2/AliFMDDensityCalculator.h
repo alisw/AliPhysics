@@ -6,6 +6,7 @@
 class AliESDFMD;
 class TH2D;
 class TH1D;
+class TProfile;
 
 /** 
  * This class calculates the inclusive charged particle density
@@ -68,7 +69,7 @@ public:
    */
   virtual Bool_t Calculate(const AliESDFMD& fmd, 
 			   AliForwardUtil::Histos& hists, 
-			   Int_t vtxBin, Bool_t lowFlux);
+			   UShort_t vtxBin, Bool_t lowFlux);
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -88,6 +89,33 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  /** 
+   * Maximum particle weight to use 
+   * 
+   * @param m 
+   */
+  void SetMaxParticles(UShort_t m) { fMaxParticles = m; }  
+  /** 
+   * Set the lower multiplicity cut.  This overrides the setting in
+   * the energy loss fits.
+   * 
+   * @param cut Cut to use 
+   */
+  void SetMultCut(Double_t cut) { fMultCut = cut; }
+  /** 
+   * Get the multiplicity cut.  If the user has set fMultCut (via
+   * SetMultCut) then that value is used.  If not, then the lower
+   * value of the fit range for the enery loss fits is returned.
+   * 
+   * @return Lower cut on multiplicity
+   */
+  Double_t GetMultCut() const;
+  /** 
+   * Print information 
+   * 
+   * @param option Not used
+   */
+  void Print(Option_t* option="") const;
 protected:
   /** 
    * Get the number of particles corresponding to the signal mult
@@ -105,7 +133,7 @@ protected:
    */
   virtual Float_t NParticles(Float_t mult, 
 			     UShort_t d, Char_t r, UShort_t s, UShort_t t, 
-			     Int_t v, Float_t eta, Bool_t lowFlux) const;
+			     UShort_t v, Float_t eta, Bool_t lowFlux) const;
   /** 
    * Get the inverse correction factor.  This consist of
    * 
@@ -124,7 +152,7 @@ protected:
    * @return 
    */
   virtual Float_t Correction(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
-			     Int_t v, Float_t eta, Bool_t lowFlux) const;
+			     UShort_t v, Float_t eta, Bool_t lowFlux) const;
   /** 
    * Get the acceptance correction for strip @a t in an ring of type @a r
    * 
@@ -134,7 +162,14 @@ protected:
    * @return Inverse acceptance correction 
    */
   virtual Float_t AcceptanceCorrection(Char_t r, UShort_t t) const;
-
+  /** 
+   * Generate the acceptance corrections 
+   * 
+   * @param r Ring to generate for 
+   * 
+   * @return Newly allocated histogram of acceptance corrections
+   */
+  virtual TH1D*   GenerateAcceptanceCorrection(Char_t r) const;
   /** 
    * Internal data structure to keep track of the histograms
    */
@@ -184,6 +219,9 @@ protected:
     void ScaleHistograms(TList* dir, Int_t nEvents);
     TH2D*     fEvsN;         // Correlation of Eloss vs uncorrected Nch
     TH2D*     fEvsM;         // Correlation of Eloss vs corrected Nch
+    TProfile* fEtaVsN;       // Average uncorrected Nch vs eta
+    TProfile* fEtaVsM;       // Average corrected Nch vs eta
+    TProfile* fCorr;         // Average correction vs eta
     TH2D*     fDensity;      // Distribution inclusive Nch
     ClassDef(RingHistos,1);
   };
@@ -202,6 +240,9 @@ protected:
   TH1D*    fSumOfWeights;  //! Histogram
   TH1D*    fWeightedSum;   //! Histogram
   TH1D*    fCorrections;   //! Histogram
+  UShort_t fMaxParticles;  //  Maximum particle weight to use 
+  TH1D*    fAccI;          //  Acceptance correction for inner rings
+  TH1D*    fAccO;          //  Acceptance correction for outer rings
   Int_t    fDebug;         //  Debug level 
 
   ClassDef(AliFMDDensityCalculator,1); // Calculate Nch density 

@@ -15,6 +15,65 @@
 #include <TError.h>
 
 //====================================================================
+UShort_t
+AliForwardUtil::ParseCollisionSystem(const char* sys)
+{
+  TString s(sys);
+  s.ToLower();
+  if (s.Contains("p-p")   || s.Contains("pp"))   return AliForwardUtil::kPP; 
+  if (s.Contains("pb-pb") || s.Contains("pbpb")) return AliForwardUtil::kPbPb;
+  if (s.Contains("a-a")   || s.Contains("aa"))   return AliForwardUtil::kPbPb;
+  return AliForwardUtil::kUnknown;
+}
+//____________________________________________________________________
+const char*
+AliForwardUtil::CollisionSystemString(UShort_t sys)
+{
+  switch (sys) { 
+  case AliForwardUtil::kPP:   return "pp";
+  case AliForwardUtil::kPbPb: return "PbPb";
+  }
+  return "unknown";
+}
+//____________________________________________________________________
+UShort_t
+AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t v)
+{
+  Float_t energy = v; 
+  if (sys != AliForwardUtil::kPP) energy = energy / 208 * 82;
+  if (TMath::Abs(energy - 900.)   < 10)  return 900;
+  if (TMath::Abs(energy - 2400.)  < 10)  return 2400;
+  if (TMath::Abs(energy - 2750.)  < 10)  return 2750;
+  if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
+  if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
+  if (TMath::Abs(energy - 10000.) < 10)  return 10000;
+  if (TMath::Abs(energy - 14000.) < 10)  return 14000;
+  return 0;
+}
+//____________________________________________________________________
+const char* 
+AliForwardUtil::CenterOfMassEnergyString(UShort_t cms)
+{
+  return Form("%04dGeV", cms);
+}
+//____________________________________________________________________
+Short_t
+AliForwardUtil::ParseMagneticField(Float_t v)
+{
+  if (TMath::Abs(v - 5.) < 1 ) return +5;
+  if (TMath::Abs(v + 5.) < 1 ) return -5;
+  if (TMath::Abs(v) < 1)       return 0;
+  return 999;
+}
+//____________________________________________________________________
+const char* 
+AliForwardUtil::MagneticFieldString(Short_t f)
+{
+  return Form("%01dkG", f);
+}
+
+
+//====================================================================
 Int_t    AliForwardUtil::fgConvolutionSteps  = 100;
 Double_t AliForwardUtil::fgConvolutionNSigma = 5;
 namespace {
@@ -59,6 +118,21 @@ namespace {
     return constant * AliForwardUtil::NLandauGaus(x, delta, xi, sigma, sigma_n,
 						  n, a);
   }
+  /** 
+   * Utility function to use in TF1 defintition 
+   */
+  Double_t landauGausI(Double_t* xp, Double_t* pp) 
+  {
+    Double_t x         = xp[0];
+    Double_t constant  = pp[AliForwardUtil::ELossFitter::kC];
+    Double_t delta     = pp[AliForwardUtil::ELossFitter::kDelta];
+    Double_t xi        = pp[AliForwardUtil::ELossFitter::kXi];
+    Double_t sigma     = pp[AliForwardUtil::ELossFitter::kSigma];
+    Double_t sigma_n   = pp[AliForwardUtil::ELossFitter::kSigmaN];
+    Int_t    i         = Int_t(pp[AliForwardUtil::ELossFitter::kN]);
+
+    return constant * AliForwardUtil::ILandauGaus(x,delta,xi,sigma,sigma_n,i);
+  }
 
 
 }
@@ -93,20 +167,156 @@ AliForwardUtil::LandauGaus(Double_t x, Double_t delta, Double_t xi,
 
 //____________________________________________________________________
 Double_t 
+AliForwardUtil::ILandauGaus(Double_t x, Double_t delta, Double_t xi, 
+			    Double_t sigma, Double_t sigma_n, Int_t i)
+{
+  Double_t delta_i =  (i == 1 ? delta : i * (delta + xi * TMath::Log(i)));
+  Double_t xi_i    =  i * xi;
+  Double_t sigma_i =  (i == 1 ? sigma : TMath::Sqrt(Double_t(i))*sigma);
+  if (sigma_i < 1e-10) { 
+    // Fall back to landau 
+    return AliForwardUtil::Landau(x, delta_i, xi_i);
+  }
+  return AliForwardUtil::LandauGaus(x, delta_i, xi_i, sigma_i, sigma_n);
+}
+
+//____________________________________________________________________
+Double_t 
+AliForwardUtil::IdLandauGausdPar(Double_t x, 
+				 UShort_t par,   Double_t dPar, 
+				 Double_t delta, Double_t xi, 
+				 Double_t sigma, Double_t sigma_n, 
+				 Int_t    i)
+{
+  if (dPar == 0) return 0;
+  Double_t dp      = dPar;
+  Double_t d2      = dPar / 2;
+  Double_t delta_i =  i * (delta + xi * TMath::Log(i));
+  Double_t xi_i    =  i * xi;
+  Double_t si      =  TMath::Sqrt(Double_t(i));
+  Double_t sigma_i =  si*sigma;
+  Double_t y1      = 0;
+  Double_t y2      = 0;
+  Double_t y3      = 0;
+  Double_t y4      = 0;
+  switch (par) {
+  case 0: 
+    y1 = ILandauGaus(x, delta_i+i*dp, xi_i, sigma_i, sigma_n, i);
+    y2 = ILandauGaus(x, delta_i+i*d2, xi_i, sigma_i, sigma_n, i);
+    y3 = ILandauGaus(x, delta_i-i*d2, xi_i, sigma_i, sigma_n, i);
+    y4 = ILandauGaus(x, delta_i-i*dp, xi_i, sigma_i, sigma_n, i);
+    break;
+  case 1: 
+    y1 = ILandauGaus(x, delta_i, xi_i+i*dp, sigma_i, sigma_n, i);
+    y2 = ILandauGaus(x, delta_i, xi_i+i*d2, sigma_i, sigma_n, i);
+    y3 = ILandauGaus(x, delta_i, xi_i-i*d2, sigma_i, sigma_n, i);
+    y4 = ILandauGaus(x, delta_i, xi_i-i*dp, sigma_i, sigma_n, i);
+    break;
+  case 2: 
+    y1 = ILandauGaus(x, delta_i, xi_i, sigma_i+si*dp, sigma_n, i);
+    y2 = ILandauGaus(x, delta_i, xi_i, sigma_i+si*d2, sigma_n, i);
+    y3 = ILandauGaus(x, delta_i, xi_i, sigma_i-si*d2, sigma_n, i);
+    y4 = ILandauGaus(x, delta_i, xi_i, sigma_i-si*dp, sigma_n, i);
+    break;
+  case 3: 
+    y1 = ILandauGaus(x, delta_i, xi_i, sigma_i, sigma_n+dp, i);
+    y2 = ILandauGaus(x, delta_i, xi_i, sigma_i, sigma_n+d2, i);
+    y3 = ILandauGaus(x, delta_i, xi_i, sigma_i, sigma_n-d2, i);
+    y4 = ILandauGaus(x, delta_i, xi_i, sigma_i, sigma_n-dp, i);
+    break;
+  default:
+    return 0;
+  } 
+  
+  Double_t d0  = y1 - y4;
+  Double_t d1  = 2 * (y2 - y3);
+  
+  Double_t g   = 1/(2*dp) * (4*d1 - d0) / 3;
+   
+  return g;
+}
+
+//____________________________________________________________________
+Double_t 
 AliForwardUtil::NLandauGaus(Double_t x, Double_t delta, Double_t xi, 
 			    Double_t sigma, Double_t sigma_n, Int_t n, 
 			    Double_t* a)
 {
-  Double_t result = LandauGaus(x, delta, xi, sigma, sigma_n);
-  for (Int_t i = 2; i <= n; i++) { 
-    Double_t delta_i =  i * (delta + xi * TMath::Log(i));
-    Double_t xi_i    =  i * xi;
-    Double_t sigma_i =  TMath::Sqrt(Double_t(n))*sigma;
-    Double_t a_i     =  a[i-2];
-    result           += a_i * AliForwardUtil::LandauGaus(x, delta_i, xi_i, 
-							 sigma_i, sigma_n);
-  }
+  Double_t result = ILandauGaus(x, delta, xi, sigma, sigma_n, 1);
+  for (Int_t i = 2; i <= n; i++) 
+    result += a[i-2] * AliForwardUtil::ILandauGaus(x,delta,xi,sigma,sigma_n,i);
   return result;
+}
+namespace { 
+  const Int_t kColors[] = { kRed+1, 
+			    kPink+3, 
+			    kMagenta+2, 
+			    kViolet+2, 
+			    kBlue+1, 
+			    kAzure+3, 
+			    kCyan+1, 
+			    kTeal+2, 
+			    kGreen+2, 
+			    kSpring+3, 
+			    kYellow+2, 
+			    kOrange+2 };
+}
+
+//____________________________________________________________________
+TF1*
+AliForwardUtil::MakeNLandauGaus(Double_t  c, 
+				Double_t  delta, Double_t xi, 
+				Double_t  sigma, Double_t sigma_n, Int_t n, 
+				Double_t* a, 
+				Double_t  xmin, Double_t xmax)
+{
+  Int_t npar       = AliForwardUtil::ELossFitter::kN+n;
+  TF1* landaun     = new TF1(Form("nlandau%d", n), &landauGausN,xmin,xmax,npar);
+  // landaun->SetLineStyle(((n-2) % 10)+2); // start at dashed
+  landaun->SetLineColor(kColors[((n-1) % 12)]); // start at red
+  landaun->SetLineWidth(2);
+  landaun->SetNpx(500);
+  landaun->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}", "N");
+
+  // Set the initial parameters from the seed fit 
+  landaun->SetParameter(AliForwardUtil::ELossFitter::kC,      c);       
+  landaun->SetParameter(AliForwardUtil::ELossFitter::kDelta,  delta);   
+  landaun->SetParameter(AliForwardUtil::ELossFitter::kXi,     xi);      
+  landaun->SetParameter(AliForwardUtil::ELossFitter::kSigma,  sigma);   
+  landaun->SetParameter(AliForwardUtil::ELossFitter::kSigmaN, sigma_n); 
+  landaun->FixParameter(AliForwardUtil::ELossFitter::kN,      n);       
+
+  // Set the range and name of the scale parameters 
+  for (UShort_t i = 2; i <= n; i++) {// Take parameters from last fit 
+    landaun->SetParameter(AliForwardUtil::ELossFitter::kA+i-2, a[i-2]);
+    landaun->SetParName(AliForwardUtil::ELossFitter::kA+i-2, Form("a_{%d}", i));
+  }
+  return landaun;
+}
+//____________________________________________________________________
+TF1*
+AliForwardUtil::MakeILandauGaus(Double_t  c, 
+				Double_t  delta, Double_t xi, 
+				Double_t  sigma, Double_t sigma_n, Int_t i, 
+				Double_t  xmin, Double_t xmax)
+{
+  Int_t npar       = AliForwardUtil::ELossFitter::kN+1;
+  TF1* landaui     = new TF1(Form("ilandau%d", i), &landauGausI,xmin,xmax,npar);
+  // landaui->SetLineStyle(((i-2) % 10)+2); // start at dashed
+  landaui->SetLineColor(kColors[((i-1) % 12)]); // start at red
+  landaui->SetLineWidth(1);
+  landaui->SetNpx(500);
+  landaui->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}", "i");
+
+  // Set the initial parameters from the seed fit 
+  landaui->SetParameter(AliForwardUtil::ELossFitter::kC,      c);       
+  landaui->SetParameter(AliForwardUtil::ELossFitter::kDelta,  delta);   
+  landaui->SetParameter(AliForwardUtil::ELossFitter::kXi,     xi);      
+  landaui->SetParameter(AliForwardUtil::ELossFitter::kSigma,  sigma);   
+  landaui->SetParameter(AliForwardUtil::ELossFitter::kSigmaN, sigma_n); 
+  landaui->FixParameter(AliForwardUtil::ELossFitter::kN,      i);       
+
+  return landaui;
 }
 
 //====================================================================
@@ -156,7 +366,7 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   dist->GetXaxis()->SetRangeUser(0, fMaxRange);
   
   // Define the function to fit 
-  TF1*          landau1 = new TF1("landau1", landauGaus1, minE,maxEE,kSigmaN+1);
+  TF1* landau1 = new TF1("landau1", landauGaus1, minE,maxEE,kSigmaN+1);
 
   // Set initial guesses, parameter names, and limits  
   landau1->SetParameters(1,0.5,0.07,0.1,sigman);
@@ -199,34 +409,27 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
   Double_t maxEi   = n * (delta1 + xi1 * TMath::Log(n)) + 2 * n * xi1;
   Double_t minE    = f->GetXmin();
 
+  // Array of weights 
+  TArrayD a(n-1);
+  for (UShort_t i = 2; i <= n; i++) 
+    a.fArray[i-2] = (n == 2 ? 0.05 : 0.000001);
   // Make the fit function 
-  TF1* landaun     = new TF1(Form("landau%d", n), &landauGausN,minE,maxEi,kN+n);
-  landaun->SetLineStyle(((n-2) % 10)+2); // start at dashed
-  landaun->SetLineColor(((n-2) % 10)+2); // start at red
-  landaun->SetLineWidth(1);
-  landaun->SetNpx(500);
-  landaun->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}", "N");
-
-  // Set the initial parameters from the seed fit 
-  landaun->SetParameter(kC,      r->Parameter(kC));      // Constant
-  landaun->SetParameter(kDelta,  r->Parameter(kDelta));  // Delta 
-  landaun->SetParameter(kXi,     r->Parameter(kXi));     // xi
-  landaun->SetParameter(kSigma,  r->Parameter(kSigma));  // sigma
-  landaun->SetParameter(kSigmaN, r->Parameter(kSigmaN)); // sigma_n
+  TF1* landaun     = MakeNLandauGaus(r->Parameter(kC),
+				     r->Parameter(kDelta),
+				     r->Parameter(kXi),
+				     r->Parameter(kSigma),
+				     r->Parameter(kSigmaN),
+				     n,a.fArray,minE,maxEi);
   landaun->SetParLimits(kDelta,  minE, fMaxRange);       // Delta
   landaun->SetParLimits(kXi,     0.00, fMaxRange);       // xi
   landaun->SetParLimits(kSigma,  0.01, 1);            // sigma
   // Check if we're using the noise sigma 
   if (sigman <= 0)  landaun->FixParameter(kSigmaN, 0);
   else              landaun->SetParLimits(kSigmaN, 0, fMaxRange);
-  // Fix the number parameter 
-  landaun->FixParameter(kN, n);               // N
 
   // Set the range and name of the scale parameters 
   for (UShort_t i = 2; i <= n; i++) {// Take parameters from last fit 
-    landaun->SetParameter(kA+i-2, n == 2 ? 0.05 : 0.000001);
     landaun->SetParLimits(kA+i-2, 0,1);
-    landaun->SetParName(kA+i-2, Form("a_{%d}", i));
   }
 
   // Do the fit 

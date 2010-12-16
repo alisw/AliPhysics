@@ -1,16 +1,20 @@
-
+// Calculate the total energy loss 
 #include "AliFMDHistCollector.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
 #include <TMath.h>
-#include "AliFMDAnaParameters.h"
+// #include "AliFMDAnaParameters.h"
+#include "AliForwardCorrectionManager.h"
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TH1I.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TArrayI.h>
+#include <TROOT.h>
+#include <iostream>
+#include <iomanip>
 
 ClassImp(AliFMDHistCollector)
 #if 0
@@ -37,14 +41,15 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
 void
 AliFMDHistCollector::Init(const TAxis& vtxAxis)
 {
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
-  Int_t nVz = vtxAxis.GetNbins();
+  UShort_t nVz = vtxAxis.GetNbins();
   fFirstBins.Set(5*nVz);
   fLastBins.Set(5*nVz);
 
   // Find the eta bin ranges 
-  for (Int_t iVz = 0; iVz < nVz; iVz++) {
+  for (UShort_t iVz = 1; iVz <= nVz; iVz++) {
     // Find the first and last eta bin to use for each ring for 
     // each vertex bin.   This is instead of using the methods 
     // provided by AliFMDAnaParameters 
@@ -54,7 +59,8 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis)
       GetDetRing(iIdx, d, r);
       
       // Get the background object 
-      TH2F* bg    = pars->GetBackgroundCorrection(d,r,iVz);
+      // TH2F* bg    = pars->GetBackgroundCorrection(d,r,iVz);
+      TH2D* bg    = fcm.GetSecondaryMap()->GetCorrection(d,r,iVz);
       Int_t nEta  = bg->GetNbinsX();
       Int_t first = nEta+1;
       Int_t last  = 0;
@@ -79,8 +85,8 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis)
       }
       
       // Store the result for later use 
-      fFirstBins[iVz*5+iIdx] = first;
-      fLastBins[iVz*5+iIdx]  = last;
+      fFirstBins[(iVz-1)*5+iIdx] = first;
+      fLastBins[(iVz-1)*5+iIdx]  = last;
     } // for j 
   }
 }
@@ -114,14 +120,15 @@ AliFMDHistCollector::GetDetRing(Int_t idx, UShort_t& d, Char_t& r) const
 
 //____________________________________________________________________
 void
-AliFMDHistCollector::GetFirstAndLast(Int_t idx, Int_t vtxbin, 
+AliFMDHistCollector::GetFirstAndLast(Int_t idx, UShort_t vtxbin, 
 				     Int_t& first, Int_t& last) const
 {
   first = 0; 
   last  = 0;
   
-  if (idx < 0) return;
-  idx += vtxbin * 5;
+  if (idx    <  0) return;
+  if (vtxbin <= 0) return;
+  idx += (vtxbin-1) * 5;
       
   if (idx < 0 || idx >= fFirstBins.GetSize()) return;
   
@@ -131,7 +138,7 @@ AliFMDHistCollector::GetFirstAndLast(Int_t idx, Int_t vtxbin,
 
 //____________________________________________________________________
 Int_t
-AliFMDHistCollector::GetFirst(Int_t idx, Int_t v) const 
+AliFMDHistCollector::GetFirst(Int_t idx, UShort_t v) const 
 {
   Int_t f, l;
   GetFirstAndLast(idx,v,f,l);
@@ -141,7 +148,7 @@ AliFMDHistCollector::GetFirst(Int_t idx, Int_t v) const
 
 //____________________________________________________________________
 Int_t
-AliFMDHistCollector::GetLast(Int_t idx, Int_t v) const 
+AliFMDHistCollector::GetLast(Int_t idx, UShort_t v) const 
 {
   Int_t f, l;
   GetFirstAndLast(idx,v,f,l);
@@ -151,7 +158,7 @@ AliFMDHistCollector::GetLast(Int_t idx, Int_t v) const
 //____________________________________________________________________
 Int_t 
 AliFMDHistCollector::GetOverlap(UShort_t d, Char_t r, 
-				Int_t bin, Int_t vtxbin) const
+				Int_t bin,  UShort_t vtxbin) const
 {
   // Get the possibly overlapping histogram 
   Int_t other = -1;
@@ -176,7 +183,7 @@ AliFMDHistCollector::GetOverlap(UShort_t d, Char_t r,
 }
 //____________________________________________________________________
 Int_t
-AliFMDHistCollector::GetOverlap(Int_t idx, Int_t bin, Int_t vtxbin) const
+AliFMDHistCollector::GetOverlap(Int_t idx, Int_t bin, UShort_t vtxbin) const
 {
   UShort_t d = 0; 
   Char_t   r = '\0';
@@ -190,7 +197,7 @@ AliFMDHistCollector::GetOverlap(Int_t idx, Int_t bin, Int_t vtxbin) const
 //____________________________________________________________________
 Bool_t
 AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
-			     Int_t                   vtxbin, 
+			     UShort_t                vtxbin, 
 			     TH2D&                   out)
 {
   for (UShort_t d=1; d<=3; d++) { 
@@ -323,6 +330,40 @@ AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
   return kTRUE;
 }
 
+//____________________________________________________________________
+void
+AliFMDHistCollector::Print(Option_t* /* option */) const
+{
+  char ind[gROOT->GetDirLevel()+1];
+  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
+  ind[gROOT->GetDirLevel()] = '\0';
+  std::cout << ind << "AliFMDHistCollector: " << GetName() << '\n'
+	    << ind << " # of cut bins:          " << fNCutBins << '\n'
+	    << ind << " Correction cut:         " << fCorrectionCut << '\n'
+	    << ind << " Bin ranges:\n" << ind << "  v_z bin";
+  Int_t nVz = fFirstBins.fN / 5;
+  for (UShort_t iVz = 1; iVz <= nVz; iVz++) 
+    std::cout << " | " << std::setw(7) << iVz;
+  std::cout << '\n' << ind << "  / ring ";
+  for (UShort_t iVz = 1; iVz <= nVz; iVz++) 
+    std::cout << "-+--------";
+  std::cout << std::endl;
+    
+  for (Int_t iIdx = 0; iIdx < 5; iIdx++) {
+    UShort_t d = 0;
+    Char_t   r = 0;
+    GetDetRing(iIdx, d, r);
+    
+    std::cout << ind << "  FMD" << d << r << "  ";
+    for (UShort_t iVz = 1; iVz <= nVz; iVz++) {
+      Int_t first, last;
+      GetFirstAndLast(iIdx, iVz, first, last);
+      std::cout << " | " << std::setw(3) << first << "-" 
+		<< std::setw(3) << last;
+    }
+    std::cout << std::endl;
+  }
+}
 
 //____________________________________________________________________
 //

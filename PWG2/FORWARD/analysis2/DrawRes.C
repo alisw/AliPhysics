@@ -500,7 +500,7 @@ public:
     Bool_t hasOther = (other && other->GetListOfGraphs() && 
 		       other->GetListOfGraphs()->GetEntries() > 0);
     Bool_t hasHhd   = (hhd && hhdsym);
-    if (!hasOther || !hasHhd) return 0;
+    if (!hasOther && !hasHhd) return 0;
 
     THStack* ratios = new THStack("ratios", "Ratios");
     if (hasOther) {

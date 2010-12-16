@@ -7,8 +7,12 @@
 #include <TList.h>
 #include <TH1.h>
 #include <TMath.h>
-#include "AliFMDAnaParameters.h"
+#include "AliForwardCorrectionManager.h"
+// #include "AliFMDAnaParameters.h"
 #include <AliLog.h>
+#include <TROOT.h>
+#include <iostream>
+#include <iomanip>
 
 ClassImp(AliFMDSharingFilter)
 #if 0
@@ -20,8 +24,9 @@ ClassImp(AliFMDSharingFilter)
 AliFMDSharingFilter::AliFMDSharingFilter()
   : TNamed(), 
     fRingHistos(),
-    fLowCut(0.3),
+    fLowCut(0.),
     fCorrectAngles(kFALSE), 
+    fNXi(1),
     fDebug(0)
 {}
 
@@ -29,8 +34,9 @@ AliFMDSharingFilter::AliFMDSharingFilter()
 AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   : TNamed("fmdSharingFilter", title), 
     fRingHistos(), 
-    fLowCut(0.3),
+    fLowCut(0.),
     fCorrectAngles(kFALSE), 
+    fNXi(1),
     fDebug(0)
 {
   fRingHistos.Add(new RingHistos(1, 'I'));
@@ -46,6 +52,7 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
     fRingHistos(), 
     fLowCut(o.fLowCut),
     fCorrectAngles(o.fCorrectAngles), 
+    fNXi(o.fNXi),
     fDebug(o.fDebug)
 {
   TIter    next(&o.fRingHistos);
@@ -67,6 +74,7 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
 
   fLowCut        = o.fLowCut;
   fCorrectAngles = o.fCorrectAngles;
+  fNXi           = o.fNXi;
   fDebug         = o.fDebug;
 
   fRingHistos.Delete();
@@ -100,7 +108,8 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 {
   output.Clear();
   TIter    next(&fRingHistos);
-  RingHistos* o = 0;
+  RingHistos* o      = 0;
+  Double_t    lowCut = GetLowCut();
   while ((o = static_cast<RingHistos*>(next())))
     o->Clear();
 
@@ -151,7 +160,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  Double_t mergedEnergy = MultiplicityOfStrip(mult,eta,prevE,nextE,
 						      lowFlux,d,r,s,t, 
 						      usedPrev,usedThis);
-	  if (mergedEnergy > fLowCut) histos->Incr();
+	  if (mergedEnergy > lowCut) histos->Incr();
 	  histos->fAfter->Fill(mergedEnergy);
 
 	  output.SetMultiplicity(d,r,s,t,mergedEnergy);
@@ -185,21 +194,41 @@ AliFMDSharingFilter::SignalInStrip(const AliESDFMD& input,
     mult = DeAngleCorrect(mult, input.Eta(d,r,s,t));
   return mult;
 }
+//_____________________________________________________________________
+Double_t 
+AliFMDSharingFilter::GetLowCut() const
+{
+  if (fLowCut > 0) return fLowCut;
+  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
+  AliFMDCorrELossFit* fits = fcm.GetELossFit();
+  return fits->GetLowCut();
+}
 			
 //_____________________________________________________________________
 Double_t 
 AliFMDSharingFilter::GetHighCut(UShort_t d, Char_t r, Double_t eta) const
 {
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
+
  
   // Get the high cut.  The high cut is defined as the 
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
-  Double_t mpv     = pars->GetMPV(d,r,eta);
-  Double_t w       = pars->GetSigma(d,r,eta);
-  if (mpv > 100) 
-    AliWarning(Form("FMD%d%c, eta=%f, MPV=%f, W=%f", d, r, eta, mpv, w));
-  Double_t highCut = (mpv - 2 * w);
+  AliFMDCorrELossFit::ELossFit* fit = fcm.GetELossFit()->FindFit(d,r,eta);
+  Double_t delta = 1024;
+  Double_t xi    = 1024;
+  if (!fit) {
+    AliError(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
+  }
+  else {
+    delta = fit->fDelta;
+    xi    = fit->fXi;
+  }
+
+  if (delta > 100) {
+    AliWarning(Form("FMD%d%c, eta=%f, Delta=%f, xi=%f", d, r, eta, delta, xi));
+  }
+  Double_t highCut = (delta - fNXi * xi);
   return highCut;
 }
 	   
@@ -219,7 +248,8 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t mult,
 {
   // IF the multiplicity is very large, or below the cut, reject it, and 
   // flag it as candidate for sharing 
-  if(mult > 12 || mult < fLowCut) {
+  Double_t    lowCut = GetLowCut();
+  if(mult > 12 || mult < lowCut) {
     usedThis      = kFALSE;
     usedPrev      = kFALSE;
     return 0;
@@ -235,7 +265,7 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t mult,
 
   //analyse and perform sharing on one strip
   
-  // Calculate the total energy loss 
+  // Get the high cut 
   Double_t highCut = GetHighCut(d, r, eta);
 
   // If this signal is smaller than the next, and the next signal is smaller 
@@ -257,7 +287,7 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t mult,
   // If the previous signal was larger than the low cut, and 
   // the previous was smaller than high cut, and the previous signal 
   // isn't marked as used, then add it's energy to this signal 
-  if (prevE > fLowCut && 
+  if (prevE > lowCut && 
       prevE < highCut && 
       !usedPrev) 
     totalE += prevE;
@@ -265,7 +295,7 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t mult,
   // If the next signal is larger than the low cut, and 
   // the next signal is smaller than the low cut, then add the next signal 
   // to this, and marked the next signal as used 
-  if(nextE > fLowCut && nextE < highCut ) {
+  if(nextE > lowCut && nextE < highCut ) {
     totalE      += nextE;
     usedThis =  kTRUE;
   }
@@ -340,6 +370,19 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   while ((o = static_cast<RingHistos*>(next()))) {
     o->Output(d);
   }
+}
+//____________________________________________________________________
+void
+AliFMDSharingFilter::Print(Option_t* /*option*/) const
+{
+  char ind[gROOT->GetDirLevel()+1];
+  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
+  ind[gROOT->GetDirLevel()] = '\0';
+  std::cout << ind << "AliFMDSharingFilter: " << GetName() << '\n'
+	    << ind << " Low cut:                " << fLowCut << '\n'
+	    << ind << " N xi factor:            " << fNXi    << '\n'
+	    << ind << " Use corrected angles:   " 
+	    << (fCorrectAngles ? "yes" : "no") << std::endl;
 }
   
 //====================================================================
