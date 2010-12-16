@@ -149,6 +149,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtGenIn[kMaxJets];  //! Jet pt with corellated generated jet    
 
     TH1F*         fh1PtJetsRecIn;  //! Jet pt for all jets
+    TH1F*         fh1PtJetsGenIn;  //! Jet pt for all jets
     TH1F*         fh1PtJetsLeadingRecIn;  //! Jet pt for all jets
     TH1F*         fh1PtTracksRecIn;  //! track pt for all tracks
     TH1F*         fh1PtTracksLeadingRecIn;  //! track pt for all tracks
