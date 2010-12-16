@@ -27,6 +27,7 @@ AliRectMatrix::AliRectMatrix(Int_t nrow,Int_t ncol)
 AliRectMatrix::AliRectMatrix(const AliRectMatrix &src)
   : TObject(src),fNRows(src.fNRows), fNCols(src.fNCols), fRows(0)
 {
+  fRows = new Double_t*[fNRows];
   for (int i=fNRows;i--;) {
     fRows[i] = new Double_t[fNCols];
     memcpy(fRows[i], src.fRows[i], fNCols*sizeof(Double_t));

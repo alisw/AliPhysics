@@ -38,7 +38,7 @@ AliCheb3D::AliCheb3D() :
   fUsrMacro(0) 
 {
   for (int i=3;i--;) {
-    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = fArgsTmp[i] = 0;
     fNPoints[i] = 0;
     fGridOffs[i] = 0.;
   }

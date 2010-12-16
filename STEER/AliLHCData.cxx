@@ -49,9 +49,9 @@
 ClassImp(AliLHCData)
 
 const Char_t* AliLHCData::fgkDCSNames[] = {
-  "LHC_IntensityBeam%d_totalIntensity",
-  "LHC_BeamIntensityPerBunchBeam%d_averageBeamIntensity",
-  "LHC_BeamIntensityPerBunchBeam%d_Average_BunchIntensities",
+  "LHC_IntensityBeam%1d_totalIntensity",
+  "LHC_BeamIntensityPerBunchBeam%1d_averageBeamIntensity",
+  "LHC_BeamIntensityPerBunchBeam%1d_Average_BunchIntensities",
   //
   "LHC_LumAverageBRANB_4%c2_acqMode",
   "LHC_LumAverageBRANB_4%c2_meanLuminosity",
@@ -63,22 +63,22 @@ const Char_t* AliLHCData::fgkDCSNames[] = {
   "LHC_CirculatingBunchConfig_Beam%d",
   "LHC_FillNumber",
   //
-  "LHC_BunchLengthBeam%d_nBunches",
-  "LHC_BunchLengthBeam%d_bunchesLenghts",
-  "LHC_BunchLengthBeam%d_filledBuckets",
+  "LHC_BunchLengthBeam%1d_nBunches",
+  "LHC_BunchLengthBeam%1d_bunchesLenghts",
+  "LHC_BunchLengthBeam%1d_filledBuckets",
   //
   "LHC_RunControl_ActiveInjectionScheme",
   "LHC_RunControl_BetaStar",
   "LHC_RunControl_IP2_Xing_Murad",
   "LHC_RunControl_IP2_ALICE_Murad",
 
-  "LHC_BeamSizeBeam%d_acqMode",
-  "LHC_BeamSizeBeam%d_sigmaH",
-  "LHC_BeamSizeBeam%d_sigmaV",
-  "LHC_BeamSizeBeam%d_emittanceH",
-  "LHC_BeamSizeBeam%d_emittanceV",
-  "LHC_BeamSizeBeam%d_errorSigmaH",
-  "LHC_BeamSizeBeam%d_errorSigmaV",
+  "LHC_BeamSizeBeam%1d_acqMode",
+  "LHC_BeamSizeBeam%1d_sigmaH",
+  "LHC_BeamSizeBeam%1d_sigmaV",
+  "LHC_BeamSizeBeam%1d_emittanceH",
+  "LHC_BeamSizeBeam%1d_emittanceV",
+  "LHC_BeamSizeBeam%1d_errorSigmaH",
+  "LHC_BeamSizeBeam%1d_errorSigmaV",
   //
   "LHC_CollimatorPos_%s_lvdt_%s"
 };
@@ -146,37 +146,37 @@ Bool_t AliLHCData::FillData(double tmin, double tmax)
   //
   for (int ibm=0;ibm<2;ibm++) {
     //
-    sprintf(buff,fgkDCSNames[kBunchConf],ibm+1);         // ----- declared bunch configuration
+    snprintf(buff,99,fgkDCSNames[kBunchConf],ibm+1);         // ----- declared bunch configuration
     FillBunchConfig(fBunchConfDecl[ibm], buff);
     //
-    sprintf(buff,fgkDCSNames[kBunchLgtFillB],ibm+1);     // ----- measured bunch configuration
+    snprintf(buff,99,fgkDCSNames[kBunchLgtFillB],ibm+1);     // ----- measured bunch configuration
     FillBunchConfig(fBunchConfMeas[ibm], buff);
     //
-    sprintf(buff,fgkDCSNames[kBunchLgt],ibm+1);          // ----- measured bunch lenghts
+    snprintf(buff,99,fgkDCSNames[kBunchLgt],ibm+1);          // ----- measured bunch lenghts
     FillBunchInfo(fBunchLengths[ibm],buff,ibm,kFALSE);  
     //
-    sprintf(buff,fgkDCSNames[kIntBunchAv],ibm+1);        // ----- B-by-B intensities
+    snprintf(buff,99,fgkDCSNames[kIntBunchAv],ibm+1);        // ----- B-by-B intensities
     FillBunchInfo(fIntensPerBunch[ibm],buff,ibm,kTRUE);
     //
     //
-    sprintf(buff,fgkDCSNames[kIntTot],ibm+1);            // ----- total intensities for beam 1 and 2
+    snprintf(buff,99,fgkDCSNames[kIntTot],ibm+1);            // ----- total intensities for beam 1 and 2
     FillScalarRecord(fIntensTotal[ibm], buff);
     //
-    sprintf(buff,fgkDCSNames[kIntTotAv],ibm+1);          // ----- total intensities for beam 1 and 2 from B-by-B average
+    snprintf(buff,99,fgkDCSNames[kIntTotAv],ibm+1);          // ----- total intensities for beam 1 and 2 from B-by-B average
     FillScalarRecord(fIntensTotalAv[ibm], buff);
     //
-    sprintf(buff,fgkDCSNames[kBeamSzEmittH],ibm+1);      // ----- H emittance for beam 1 and 2 
+    snprintf(buff,99,fgkDCSNames[kBeamSzEmittH],ibm+1);      // ----- H emittance for beam 1 and 2 
     FillScalarRecord(fEmittanceH[ibm], buff);
     //
-    sprintf(buff,fgkDCSNames[kBeamSzEmittV],ibm+1);      // ----- V emittance for beam 1 and 2 
+    snprintf(buff,99,fgkDCSNames[kBeamSzEmittV],ibm+1);      // ----- V emittance for beam 1 and 2 
     FillScalarRecord(fEmittanceV[ibm], buff);
     //
-    sprintf(buff ,fgkDCSNames[kBeamSzSigH],   ibm+1);    // ----- H sigmas and errors for beam 1 and 2 
-    sprintf(buff1,fgkDCSNames[kBeamSzSigHErr],ibm+1);
+    snprintf(buff,99 ,fgkDCSNames[kBeamSzSigH],   ibm+1);    // ----- H sigmas and errors for beam 1 and 2 
+    snprintf(buff1,99,fgkDCSNames[kBeamSzSigHErr],ibm+1);
     FillScalarRecord(fBeamSigmaH[ibm], buff, buff1);
     //
-    sprintf(buff ,fgkDCSNames[kBeamSzSigV],   ibm+1);    // ----- V sigmas and errors for beam 1 and 2 
-    sprintf(buff1,fgkDCSNames[kBeamSzSigVErr],ibm+1);
+    snprintf(buff,99 ,fgkDCSNames[kBeamSzSigV],   ibm+1);    // ----- V sigmas and errors for beam 1 and 2 
+    snprintf(buff1,99,fgkDCSNames[kBeamSzSigVErr],ibm+1);
     FillScalarRecord(fBeamSigmaV[ibm], buff, buff1);
     //
   }
@@ -186,26 +186,26 @@ Bool_t AliLHCData::FillData(double tmin, double tmax)
   //
   for (int ilr=0;ilr<2;ilr++) {
     //
-    sprintf(buff ,fgkDCSNames[kLumBunch], ilr ? 'R':'L');       // ---- BC-by-BC luminosity at IP2 and its error
-    sprintf(buff1,fgkDCSNames[kLumBunchErr], ilr ? 'R':'L');
+    snprintf(buff,99 ,fgkDCSNames[kLumBunch], ilr ? 'R':'L');       // ---- BC-by-BC luminosity at IP2 and its error
+    snprintf(buff1,99,fgkDCSNames[kLumBunchErr], ilr ? 'R':'L');
     FillBCLuminosities(fLuminPerBC[ilr], buff, buff1, 0); // BRAN L uses beam2 as a reference, BRAN R - beam1
     //
-    sprintf(buff ,fgkDCSNames[kLumTot]   , ilr ? 'R':'L');       // ---- total luminosity at IP2 and its error
-    sprintf(buff1,fgkDCSNames[kLumTotErr], ilr ? 'R':'L');
+    snprintf(buff,99 ,fgkDCSNames[kLumTot]   , ilr ? 'R':'L');       // ---- total luminosity at IP2 and its error
+    snprintf(buff1,99,fgkDCSNames[kLumTotErr], ilr ? 'R':'L');
     FillScalarRecord(fLuminTotal[ilr], buff, buff1);
     //
-    sprintf(buff ,fgkDCSNames[kLumAcqMode], ilr ? 'R':'L');      // ---- luminosity acquisition mode
+    snprintf(buff,99 ,fgkDCSNames[kLumAcqMode], ilr ? 'R':'L');      // ---- luminosity acquisition mode
     FillAcqMode(fLuminAcqMode[ilr], buff);
     //
-    sprintf(buff, fgkDCSNames[kLumCrossAng]   , ilr ? 'R':'L');  //----- crossing angle at IP2 and its error
-    sprintf(buff1,fgkDCSNames[kLumCrossAngErr], ilr ? 'R':'L');
+    snprintf(buff,99, fgkDCSNames[kLumCrossAng]   , ilr ? 'R':'L');  //----- crossing angle at IP2 and its error
+    snprintf(buff1,99,fgkDCSNames[kLumCrossAngErr], ilr ? 'R':'L');
     FillScalarRecord(fCrossAngle[ilr], buff, buff1);
     //    
   }
   //
   for (int icl=0;icl<kNCollimators;icl++) {             // ----- collimators positions
     for (int jaw=0;jaw<kNJaws;jaw++) {
-      sprintf(buff,fgkDCSNames[kCollPos], fgkDCSColNames[icl],fgkDCSColJaws[jaw]);        
+      snprintf(buff,99,fgkDCSNames[kCollPos], fgkDCSColNames[icl],fgkDCSColJaws[jaw]);        
       FillScalarRecord(fCollimators[icl][jaw], buff);
     } // jaws
   } // collimators
