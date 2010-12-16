@@ -73,6 +73,15 @@ const char * physicsListName[] = {
   "QGSP_BERT_EMV_OPTICAL", "CHIPS_OPTICAL", "QGSP_BERT_CHIPS_OPTICAL"
 };
 
+enum PprTrigConf_t
+{
+    kDefaultPPTrig, kDefaultPbPbTrig
+};
+
+const char * pprTrigConfName[] = {
+    "p-p","Pb-Pb"
+};
+
 //--- Functions ---
 class AliGenPythia;
 AliGenerator *MbPythia();
@@ -85,6 +94,8 @@ static PDC06Proc_t   proc         = kPhojet;
 static Mag_t         mag          = k5kG;
 static Float_t       energy       = 10000; // energy in CMS
 static PhysicsList_t physicslist  = QGSP_BERT_EMV;
+static PprTrigConf_t strig = kDefaultPPTrig; // default pp trigger configuration
+
 //========================//
 // Set Random Number seed //
 //========================//
@@ -143,8 +154,8 @@ void Config()
   // gAlice->SetGeometryFromCDB();
   
   // Set the trigger configuration: proton-proton
-  gAlice->SetTriggerDescriptor("p-p");
-  //  AliSimulation::Instance()->SetTriggerConfig("p-p");
+  AliSimulation::Instance()->SetTriggerConfig(pprTrigConfName[strig]);
+  cout<<"Trigger configuration is set to  "<<pprTrigConfName[strig]<<endl;
 
   printf("\n \n Comment: %s \n \n", comment.Data());
  
