@@ -173,7 +173,7 @@ void AliZDCPedestals:: SetPedCorrCoeff(Float_t* PedCorrCoeff0, Float_t* PedCorrC
   if(PedCorrCoeff0 && PedCorrCoeff1){
     for(int t=0; t<48; t++){
        fPedCorrCoeff[0][t] = PedCorrCoeff0[t];
-       fPedCorrCoeff[0][t] = PedCorrCoeff1[t];
+       fPedCorrCoeff[1][t] = PedCorrCoeff1[t];
     }
   }
   else{
