@@ -72,6 +72,10 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() :
   fMulDigit   = 0 ;  
   fAmp   = 0. ;   
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
+
+  fLambda[0] = 0.;
+  fLambda[1] = 0.;
+
 }
 
 //____________________________________________________________________________
@@ -86,6 +90,9 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) :
   fMulDigit   = 0 ;  
   fAmp   = 0. ;   
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
+  
+  fLambda[0] = 0.;
+  fLambda[1] = 0.;
 }
 
 //____________________________________________________________________________
@@ -101,7 +108,11 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) :
   fAmp        = rp.fAmp ;   
   if (rp.fMulDigit>0) fEnergyList = new Float_t[rp.fMulDigit] ;
   for(Int_t index = 0 ; index < fMulDigit ; index++) 
-    fEnergyList[index] = rp.fEnergyList[index] ; 
+    fEnergyList[index] = rp.fEnergyList[index] ;
+
+  for(Int_t i=0; i<2; i++) {
+    fLambda[i] = rp.fLambda[i];
+  }
 }
 
 //____________________________________________________________________________

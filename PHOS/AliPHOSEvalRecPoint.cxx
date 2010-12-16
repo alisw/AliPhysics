@@ -74,7 +74,9 @@ AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(Bool_t cpv, AliPHOSEvalRecPoint* parent
     Fatal("ctor", "Couldn't find working pool") ; 
   }
 
-  fParent = wPool->IndexOf((TObject*)parent);
+  if(wPool)
+    fParent = wPool->IndexOf((TObject*)parent);
+
   fChi2Dof = parent->Chi2Dof();
 
   if(cpv) {

@@ -37,9 +37,13 @@ AliPHOSDApi0mip::AliPHOSDApi0mip(int module,int iterid,char* fopt) :
   // Constructor
 
   char hname[1024], htitle[1024];
-  sprintf(hname,"AliPHOSDApi0mip_mod%d_iter%d",module,iterid);
+
+  TString shname="AliPHOSDApi0mip_mod%d_iter%d";
+  snprintf(hname,shname.Length(),shname.Data(),module,iterid);
   SetName(hname);
-  sprintf(htitle,"PHOS MIP/pi0 Calibration DA for Module:%d Iteration:%d",module,iterid);
+
+  TString shtitle="PHOS MIP/pi0 Calibration DA for Module:%d Iteration:%d";
+  snprintf(htitle,shtitle.Length(),shtitle.Data(),module,iterid);
   SetTitle(htitle);
 
   fMod = module;
@@ -51,7 +55,9 @@ AliPHOSDApi0mip::AliPHOSDApi0mip(int module,int iterid,char* fopt) :
   fCreateHist = false;
 
   char fname[1024];
-  sprintf(fname,"AliPHOSDApi0mip_mod%d.root",module);
+
+  TString sfname="AliPHOSDApi0mip_mod%d.root";
+  snprintf(fname,sfname.Length(),sfname.Data(),module);
   fTFile = TFile::Open(fname,fopt);
 }
 //----------------------------------------------------------------
@@ -63,7 +69,9 @@ AliPHOSDApi0mip::AliPHOSDApi0mip(const AliPHOSDApi0mip& da):
   // Copy Constructor
 
   char fname[1024], hname[1024], htitle[1024];;
-  sprintf(fname,"%s.root",GetName());
+
+  TString sfname="%s.root";
+  snprintf(fname,sfname.Length(),sfname.Data(),GetName());
   fTFile = TFile::Open(fname,"RECREATE");
   fEvent = 0;
   fEventClustered = false;
@@ -91,8 +99,13 @@ AliPHOSDApi0mip::AliPHOSDApi0mip(const AliPHOSDApi0mip& da):
   if( da.fCreateTree ){
     // Create new ttree instead of copy.
     fCreateTree = true;
-    sprintf(hname,"tevt_mod%d_iter%d",fMod,fIterId);
-    sprintf(htitle,"Calibration for Module:%d Iteration:%d",fMod,fIterId);
+
+    TString shname="tevt_mod%d_iter%d";
+    snprintf(hname,shname.Length(),shname.Data(),fMod,fIterId);
+
+    TString shtitle="Calibration for Module:%d Iteration:%d";
+    snprintf(htitle,shtitle.Length(),shtitle.Data(),fMod,fIterId);
+
     fTTree = new TTree(hname,htitle);
     fTTree->Branch("AliPHOSDATreeEvent","AliPHOSDATreeEvent",&fEvent);
   } else {

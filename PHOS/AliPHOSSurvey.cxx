@@ -104,6 +104,11 @@ AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
   Double_t *zReal = new Double_t[fStrNum * 2];//3
 
   for (Int_t i = 0; i < fStrNum * 2; ++i) {
+    xReal[i] = 0.;
+    zReal[i] = 0.;
+  }
+  
+  for (Int_t i = 0; i < fStrNum * 2; ++i) {
     if (!inputFile) {
       AliError("Error while reading input file.");
       delete [] xReal;

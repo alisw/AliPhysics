@@ -152,7 +152,8 @@ AliPHOSSDigitizer::~AliPHOSSDigitizer() {
   if(rl){
     AliPHOSLoader * phosLoader = 
       dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
-    phosLoader->CleanSDigitizer() ;
+    if(phosLoader)
+      phosLoader->CleanSDigitizer() ;
   }
 }
 

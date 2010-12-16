@@ -51,6 +51,10 @@ AliPHOSSupportGeometry::AliPHOSSupportGeometry() :
   fRailPart3[1] =    5.0;
   fRailPart3[2] = fRailLength;
 
+  fRailPos[0] = 0.;
+  fRailPos[1] = 0.;
+  fRailPos[2] = 0.;
+
   fRailOuterSize[0] = fRailPart1[0];
   fRailOuterSize[1] = fRailPart1[1]*2 + fRailPart2[1] + fRailPart3[1];
   fRailOuterSize[2] = fRailLength;

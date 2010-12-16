@@ -203,7 +203,11 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
 {
   // default ctor (to be used mainly by Streamer)
   
-  fDefaultInit = kTRUE ; 
+  fDefaultInit = kTRUE ;
+  
+  for(Int_t i=0; i<53760; i++){
+    fDigitsUsed[i]=0 ;
+  }
 }
 
 //____________________________________________________________________________
@@ -219,6 +223,10 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(AliPHOSGeometry *geom) :
   fEcoreRadius(0) 
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
+  
+  for(Int_t i=0; i<53760; i++){
+    fDigitsUsed[i]=0 ;
+  }
   
   Init() ;
   fDefaultInit = kFALSE ; 

@@ -14,13 +14,15 @@ AliPHOSDA2::AliPHOSDA2(int module) : TNamed(),
   // Root file name: PHOS_ModuleX_BCM.root, where X - module number.
   
   char name[128];
-  sprintf(name,"PHOS_Module%d_BCM",fMod);
+  TString sname="PHOS_Module%d_BCM";
+  snprintf(name,sname.Length(),sname.Data(),fMod);
   SetName(name);
 
   SetTitle("Detector Algorithm to check for PHOS channels quality");
 
   char rootname[128];
-  sprintf(rootname,"%s.root",GetName());
+  TString srootname="%s.root";
+  snprintf(rootname,srootname.Length(),srootname.Data(),GetName());
 
   fHistoFile =  new TFile(rootname,"recreate"); // new file!
   
@@ -51,18 +53,20 @@ AliPHOSDA2::AliPHOSDA2(Int_t module, TObjArray* oldHistos) : TNamed(),
   // Do not produce an output file!
 
   char name[128];
-  sprintf(name,"PHOS_Module%d_BCM",fMod);
+  TString sname="PHOS_Module%d_BCM";
+  snprintf(name,sname.Length(),sname.Data(),fMod);
   SetName(name);
 
   SetTitle("Detector Algorithm to check for PHOS channels quality");
 
   char hname[128];
   TH1F* hist1=0;
+  TString shname = "%d_%d_%d_%d";
 
   for(Int_t iX=0; iX<64; iX++) {
     for(Int_t iZ=0; iZ<56; iZ++) {
       for(Int_t iGain=0; iGain<2; iGain++) {
-	sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
+	snprintf(hname,shname.Length(),shname.Data(),fMod,iX,iZ,iGain);
 	if(oldHistos) 
 	  hist1 = (TH1F*)oldHistos->FindObject(hname);
 	if(hist1) fHQuality[iX][iZ][iGain] = hist1;
@@ -87,12 +91,13 @@ AliPHOSDA2::AliPHOSDA2(const AliPHOSDA2& da) : TNamed(da),
 
   char hname[128];
   TH1F* hist1=0;
+  TString shname = "%d_%d_%d_%d";
 
   for(Int_t iX=0; iX<64; iX++) {
     for(Int_t iZ=0; iZ<56; iZ++) {
       for(Int_t iGain=0; iGain<2; iGain++) {
 
-	sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
+	snprintf(hname,shname.Length(),shname.Data(),fMod,iX,iZ,iGain);
 	hist1 = (TH1F*)da.fHistoFile->Get(hname);
 	if(hist1) fHQuality[iX][iZ][iGain] = new TH1F(*hist1);
 	else

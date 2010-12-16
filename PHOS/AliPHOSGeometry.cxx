@@ -61,6 +61,11 @@ AliPHOSGeometry::AliPHOSGeometry() :
     // default ctor 
     // must be kept public for root persistency purposes, but should never be called by the outside world
     fgGeom          = 0 ;
+
+    fPHOSParams[0] = 0.;
+    fPHOSParams[1] = 0.;
+    fPHOSParams[2] = 0.;
+    fPHOSParams[3] = 0.;
 }  
 
 //____________________________________________________________________________
@@ -244,18 +249,20 @@ void AliPHOSGeometry::GetGlobalPHOS(const AliPHOSRecPoint* recPoint, TVector3 & 
   char path[100] ; 
   Double_t dy ;
   if(tmpPHOS->IsEmc()){
-    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",tmpPHOS->GetPHOSMod()) ;
+    TString spath="/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1";
+    snprintf(path,spath.Length(),spath.Data(),tmpPHOS->GetPHOSMod()) ;
 //    sprintf(path,"/ALIC_1/PHOS_%d",tmpPHOS->GetPHOSMod()) ;
     dy=fCrystalShift ;
   }
   else{
-    sprintf(path,"/ALIC_1/PHOS_%d/PCPV_1",tmpPHOS->GetPHOSMod()) ;
+    TString spath="/ALIC_1/PHOS_%d/PCPV_1";
+    snprintf(path,spath.Length(),spath.Data(),tmpPHOS->GetPHOSMod()) ;
     dy= GetCPVBoxSize(1)/2. ; //center of CPV module 
   }
   Double_t pos[3]={gpos.X(),gpos.Y()-dy,gpos.Z()} ;
   if(tmpPHOS->IsEmc())
     pos[2]=-pos[2] ; //Opposite z directions in EMC matrix and local frame!!!
-  Double_t posC[3];
+  Double_t posC[3] = {};
   //now apply possible shifts and rotations
   if (!gGeoManager->cd(path)){
     AliFatal("Geo manager can not find path \n");

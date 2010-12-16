@@ -51,6 +51,11 @@ AliPHOSFastRecParticle::AliPHOSFastRecParticle() :
   fType(0)
 {
   // ctor
+
+  for(Int_t i=0; i<AliPID::kSPECIESN; i++) {
+    fPID[i] = -111.;
+  }
+  
 }
 
 //____________________________________________________________________________
@@ -79,7 +84,12 @@ AliPHOSFastRecParticle::AliPHOSFastRecParticle() :
   fVt          = rp.fVt;
   fPolarTheta  = rp.fPolarTheta;
   fPolarPhi    = rp.fPolarPhi;
-  fParticlePDG = rp.fParticlePDG; 
+  fParticlePDG = rp.fParticlePDG;
+
+  for(Int_t i=0; i<AliPID::kSPECIESN; i++) {
+    fPID[i] = rp.fPID[i];
+  }
+ 
 }
 
 //____________________________________________________________________________
@@ -110,7 +120,11 @@ AliPHOSFastRecParticle::AliPHOSFastRecParticle() :
   fPolarTheta  = p.fPolarTheta;
   fPolarPhi    = p.fPolarPhi;
   fParticlePDG = p.fParticlePDG; 
-
+  
+  for(Int_t i=0; i<AliPID::kSPECIESN; i++) {
+    fPID[i] = p.fPID[i];
+  }
+  
 }
 
 //____________________________________________________________________________

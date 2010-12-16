@@ -17,15 +17,23 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu) : TNamed(),
   // Y - RCU number. If no RCU specified (rcu<0), file name is simply
   // PHOS_ModuleX_Calib.root.
   
-  char name[128];
-  if(rcu<0) sprintf(name,"PHOS_Module%d_Calib",fMod);
-  else sprintf(name,"PHOS_Module%d_RCU%d_Calib",fMod,fRCU);
-  SetName(name);
+  char name[128]; TString sname;
 
+  if(rcu<0) { 
+    sname="PHOS_Module%d_Calib";
+    snprintf(name,sname.Length(),sname.Data(),fMod);
+  }
+  else {
+    sname="PHOS_Module%d_RCU%d_Calib";
+    snprintf(name,sname.Length(),sname.Data(),fMod,fRCU);
+  }
+
+  SetName(name);
   SetTitle("Calibration Detector Algorithm");
 
-  char rootname[128];
-  sprintf(rootname,"%s.root",GetName());
+  char rootname[128]; 
+  TString srootname="%s.root";
+  snprintf(rootname,srootname.Length(),srootname.Data(),GetName());
 
   fHistoFile =  new TFile(rootname,"update");
   fHistoArray.SetName("histo_container");
@@ -33,11 +41,14 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu) : TNamed(),
   char hname[128];
   TH1F* hist1=0;
   TH2F* hist2=0;
+  TString shname;
 
   for(Int_t iX=0; iX<64; iX++) {
     for(Int_t iZ=0; iZ<56; iZ++) {
+      
+      shname = "%d_%d_%d";
+      snprintf(hname,shname.Length(),shname.Data(),fMod,iX,iZ);
 
-      sprintf(hname,"%d_%d_%d",fMod,iX,iZ);
       hist1 = (TH1F*)fHistoFile->Get(hname);
       if(hist1) { 
 	fHgLgRatio[iX][iZ] = hist1;
@@ -47,7 +58,10 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu) : TNamed(),
 	fHgLgRatio[iX][iZ] = 0;
 
       for(Int_t iGain=0; iGain<2; iGain++) {
-	sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
+	
+	shname = "%d_%d_%d_%d";
+	snprintf(hname,shname.Length(),shname.Data(),fMod,iX,iZ,iGain);
+	
 	hist2 = (TH2F*)fHistoFile->Get(hname);
 	if(hist2) {
 	  fTimeEnergy[iX][iZ][iGain] = hist2;
@@ -71,22 +85,33 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu, TObjArray* oldTimeEnergy) 
   // oldTimeEnergy is an array of histograms kept from the previous run.
   // By default the final histograms will not be saved to the root file.
 
-  char name[128];
-  if(rcu<0) sprintf(name,"PHOS_Module%d_Calib",fMod);
-  else sprintf(name,"PHOS_Module%d_RCU%d_Calib",fMod,fRCU);
-  SetName(name);
+  char name[128]; TString sname;
+
+  if(rcu<0) {
+    sname="PHOS_Module%d_Calib";
+    snprintf(name,sname.Length(),sname.Data(),fMod);
+  }
+  else {
+    sname="PHOS_Module%d_RCU%d_Calib";
+    snprintf(name,sname.Length(),sname.Data(),fMod,fRCU);
+  }
   
+  SetName(name);
   SetTitle("Calibration Detector Algorithm");
+  
   fHistoArray.SetName("histo_container");
   
   char hname[128];
   TH1F* hist1=0;
   TH2F* hist2=0;
+  TString shname;
 
   for(Int_t iX=0; iX<64; iX++) {
     for(Int_t iZ=0; iZ<56; iZ++) {
       
-      sprintf(hname,"%d_%d_%d",fMod,iX,iZ);
+      shname = "%d_%d_%d";
+      snprintf(hname,shname.Length(),shname.Data(),fMod,iX,iZ);
+      
       if(oldTimeEnergy)
 	hist1 = (TH1F*)oldTimeEnergy->FindObject(hname);
       if(hist1) {
@@ -97,7 +122,10 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu, TObjArray* oldTimeEnergy) 
         fHgLgRatio[iX][iZ] = 0;
       
       for(Int_t iGain=0; iGain<2; iGain++) {
-        sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
+	
+        shname = "%d_%d_%d_%d";
+        snprintf(hname,shname.Length(),shname.Data(),fMod,iX,iZ,iGain);
+	
 	if(oldTimeEnergy)
 	  hist2 = (TH2F*)oldTimeEnergy->FindObject(hname);
         if(hist2) {

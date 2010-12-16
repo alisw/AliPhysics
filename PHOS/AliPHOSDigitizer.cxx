@@ -256,10 +256,12 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
   // dtor
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
   if(rl){                                                                                                                               
-    AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));                                                                 
-    phosLoader->CleanDigitizer() ;
+    AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));    
+    
+    if(phosLoader)
+      phosLoader->CleanDigitizer() ;
   }
-
+  
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
 

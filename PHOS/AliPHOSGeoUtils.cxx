@@ -56,6 +56,19 @@ AliPHOSGeoUtils::AliPHOSGeoUtils():
 {
     // default ctor 
     // must be kept public for root persistency purposes, but should never be called by the outside world
+  
+  fXtlArrSize[0]=0.;   
+  fXtlArrSize[1]=0.;                                                                           
+  fXtlArrSize[2]=0.; 
+  
+  for(Int_t mod=0; mod<5; mod++){
+    fEMCMatrix[mod]=0 ;
+    for(Int_t istrip=0; istrip<224; istrip++)
+      fStripMatrix[mod][istrip]=0 ;
+    fCPVMatrix[mod]=0;
+    fPHOSMatrix[mod]=0 ;
+  }
+
 }  
 
 //____________________________________________________________________________
@@ -580,7 +593,8 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
   if(gGeoManager){ 
     char path[255] ;
     //now apply possible shifts and rotations
-    sprintf(path,"/ALIC_1/PHOS_%d/PCPV_1",mod) ;
+    TString spath = "/ALIC_1/PHOS_%d/PCPV_1";
+    snprintf(path,spath.Length(),spath.Data(),mod) ;
     if (!gGeoManager->cd(path)){
       AliWarning(Form("Geo manager can not find path %s \n",path));
       return 0 ;
@@ -605,8 +619,11 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
 
   //If GeoManager exists, take matrixes from it
   if(gGeoManager){
+
     char path[255] ;
-    sprintf(path,"/ALIC_1/PHOS_%d",mod) ;
+    TString spath = "/ALIC_1/PHOS_%d";
+    snprintf(path,spath.Length(),spath.Data(),mod) ;
+
     if (!gGeoManager->cd(path)){
       AliWarning(Form("Geo manager can not find path %s \n",path));
       return 0 ;

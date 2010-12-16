@@ -37,25 +37,28 @@ AliPHOSCpvDA1::AliPHOSCpvDA1(int module) : TNamed(),
   // Root file name: CPV_ModuleX_Calib.root, where X - module number.
   
   char name[128];
-  sprintf(name,"CPV_Module%d_Calib",fMod);
+  TString sname="CPV_Module%d_Calib";
+  snprintf(name,sname.Length(),sname.Data(),fMod);
   SetName(name);
 
   char title[128];
-  sprintf(title,"Calibration Detector Algorithm for CPV module %d",fMod);
+  TString stitle="Calibration Detector Algorithm for CPV module %d";
+  snprintf(title,stitle.Length(),stitle.Data(),fMod);
   SetTitle(title);
 
   char rootname[128];
-  sprintf(rootname,"%s.root",GetName());
+  TString srootname="%s.root";
+  snprintf(rootname,srootname.Length(),srootname.Data(),GetName());
 
   fHistoFile =  new TFile(rootname,"update");
 
   char hname[128];
   TH1F* hist1=0;
+  TString shname="%d_%d_%d";
 
   for(Int_t iX=0; iX<128; iX++) {
     for(Int_t iZ=0; iZ<56; iZ++) {
-
-      sprintf(hname,"%d_%d_%d",fMod,iX,iZ);
+      snprintf(hname,shname.Length(),shname.Data(),fMod,iX,iZ);
       hist1 = (TH1F*)fHistoFile->Get(hname);
       if(hist1) fCharge[iX][iZ] = hist1;
       else

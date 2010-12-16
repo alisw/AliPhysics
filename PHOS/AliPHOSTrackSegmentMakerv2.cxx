@@ -101,6 +101,8 @@ AliPHOSTrackSegmentMakerv2::AliPHOSTrackSegmentMakerv2() :
   fTrackSegments(NULL)
 {
   // default ctor (to be used mainly by Streamer)
+
+  for(Int_t i=0; i<5; i++)fNtpcTracks[i]=0 ;
   InitParameters() ; 
 }
 
@@ -120,6 +122,8 @@ AliPHOSTrackSegmentMakerv2::AliPHOSTrackSegmentMakerv2(AliPHOSGeometry *geom) :
   fTrackSegments(NULL)
 {
   // ctor
+  for(Int_t i=0; i<5; i++)fNtpcTracks[i]=0 ;
+
   InitParameters() ; 
   Init() ;
   fESD = 0;
