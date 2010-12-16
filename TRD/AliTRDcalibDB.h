@@ -102,7 +102,6 @@ class AliTRDcalibDB : public TObject {
  protected:
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
-  enum { kCDBCacheSize = 20 };   // Number of cached objects
   enum { kIDVdriftPad = 0
        , kIDVdriftChamber
        , kIDT0Pad
@@ -122,7 +121,8 @@ class AliTRDcalibDB : public TObject {
        , kIDMonitoringData
        , kIDChamberStatus
        , kIDPadStatus
-       , kIDDCS };         // IDs of cached objects
+       , kIDDCS
+       , kCDBCacheSize };         // IDs of cached objects
 
   const TObject *GetCachedCDBObject(Int_t id);
   

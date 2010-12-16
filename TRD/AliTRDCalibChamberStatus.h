@@ -21,7 +21,7 @@ class AliRawReader;
 
 class AliTRDCalChamberStatus;
 class AliRawReader;
-class AliTRDCalDCS;
+class AliTRDCalDCSv2;
 
 
 struct eventHeaderStruct;
@@ -40,7 +40,7 @@ public:
     
   void Init();
   void AnalyseHisto();
-  void CheckEORStatus(AliTRDCalDCS *calDCS);
+  void CheckEORStatus(AliTRDCalDCSv2 *calDCS);
 
   void Add(AliTRDCalibChamberStatus *calibChamberStatus);
 
@@ -62,8 +62,8 @@ public:
 
   // Plot
   TH2D *PlotSparseI(Int_t sm, Int_t side);    // Plot fStatus for sm 
-  TH2F *MakeHisto2DSmPlEORStatus(AliTRDCalDCS *calDCS, Int_t sm, Int_t pl);
-  TCanvas *PlotHistos2DSmEORStatus(AliTRDCalDCS *calDCS,Int_t sm, const Char_t *name);
+  TH2F *MakeHisto2DSmPlEORStatus(AliTRDCalDCSv2 *calDCS, Int_t sm, Int_t pl);
+  TCanvas *PlotHistos2DSmEORStatus(AliTRDCalDCSv2 *calDCS,Int_t sm, const Char_t *name);
 
   // Debug
   void     SetDebugLevel(Short_t level)  { fDebugLevel = level;   }

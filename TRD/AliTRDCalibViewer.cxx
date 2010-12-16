@@ -57,8 +57,8 @@
 #include "AliTRDCalChamberStatus.h"
 #include "AliTRDCalSingleChamberStatus.h"
 #include "AliTRDCalPadStatus.h"
-#include "AliTRDCalDCS.h"
-#include "AliTRDCalDCSFEE.h"
+#include "AliTRDCalDCSv2.h"
+#include "AliTRDCalDCSFEEv2.h"
 #include "AliTRDcalibDB.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -926,11 +926,11 @@ Bool_t AliTRDCalibViewer::DumpOCDBtoTreeDetails(const Char_t* runListFilename,
         dcsArray = (TObjArray*)entry->GetObject();
       }
     }
-    AliTRDCalDCS *dcsSOR = 0;
-    AliTRDCalDCS *dcsEOR = 0;
+    AliTRDCalDCSv2 *dcsSOR = 0;
+    AliTRDCalDCSv2 *dcsEOR = 0;
     if(getDCS && dcsArray) {
-      dcsSOR = (AliTRDCalDCS*)dcsArray->At(0);
-      dcsEOR = (AliTRDCalDCS*)dcsArray->At(1);
+      dcsSOR = (AliTRDCalDCSv2*)dcsArray->At(0);
+      dcsEOR = (AliTRDCalDCSv2*)dcsArray->At(1);
     }
 
     // Alignment information
@@ -1042,8 +1042,8 @@ Bool_t AliTRDCalibViewer::DumpOCDBtoTreeDetails(const Char_t* runListFilename,
           }   // end if(getCalibs)
 
 	  // get the dcs information
-	  AliTRDCalDCSFEE *dcsfeeSOR = 0;
-	  AliTRDCalDCSFEE *dcsfeeEOR = 0;
+	  AliTRDCalDCSFEEv2 *dcsfeeSOR = 0;
+	  AliTRDCalDCSFEEv2 *dcsfeeEOR = 0;
           if(getDCS) {
 	    if(dcsSOR) dcsfeeSOR = dcsSOR->GetCalDCSFEEObj(chamberNo);
 	    if(dcsEOR) dcsfeeEOR = dcsEOR->GetCalDCSFEEObj(chamberNo);

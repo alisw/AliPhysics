@@ -15,7 +15,7 @@
 #include "AliPreprocessor.h"
 
 class TMap;
-class AliTRDCalDCS;
+class AliTRDCalDCSv2;
 class AliTRDCalROC;
 class AliTRDCalSingleChamberStatus;
 
@@ -44,8 +44,8 @@ class AliTRDPreprocessor : public AliPreprocessor
 
  private:
 	  
-	  AliTRDCalDCS* fCalDCSObjSOR;    // 
-	  AliTRDCalDCS* fCalDCSObjEOR;    // 
+	  AliTRDCalDCSv2* fCalDCSObjSOR;    // 
+	  AliTRDCalDCSv2* fCalDCSObjEOR;    // 
 
 	  Bool_t  fVdriftHLT;             // HLT Vdrift
 	  UInt_t  ProcessDCSConfigData(); // process DCS configuration

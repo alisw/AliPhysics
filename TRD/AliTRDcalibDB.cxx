@@ -41,6 +41,7 @@
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalDCS.h"
+#include "Cal/AliTRDCalDCSv2.h"
 #include "Cal/AliTRDCalPID.h"
 #include "Cal/AliTRDCalMonitoring.h"
 #include "Cal/AliTRDCalChamberStatus.h"
@@ -288,16 +289,15 @@ const TObject *AliTRDcalibDB::CacheCDBEntry(Int_t id, const char *cdbPath)
   //
   // Caches the entry <id> with cdb path <cdbPath>
   //
-  
+
   if (!fCDBCache[id]) {
     fCDBEntries[id] = GetCDBEntry(cdbPath);
     if (fCDBEntries[id]) {
       fCDBCache[id] = fCDBEntries[id]->GetObject();
     }
-  }
-
+  } 
+  
   return fCDBCache[id];
-
 }
 
 //_____________________________________________________________________________
@@ -748,31 +748,54 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
   Int_t nUndef = -1; // default value - has not been set!
   Int_t nTbSor = nUndef;
   Int_t nTbEor = nUndef;
+  Int_t calver = 0; // Check CalDCS version
 
   const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
-
   if (!dcsArr) {
     AliError("No DCS object found!");
     return nUndef;
   }
 
-  const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0));
-  const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1));
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
 
-  if (!calDCSsor) {
-    // the SOR file is mandatory
-    AliError("NO SOR AliTRDCalDCS object found in CDB file!");
-    return nUndef;
+  if (calver == 1) {
+    // DCS object
+    const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0));
+    const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1));
+    if (!calDCSsor) {
+      // the SOR file is mandatory
+      AliError("NO SOR AliTRDCalDCS object found in CDB file!");
+      return nUndef;
+    }
+    if (!calDCSeor) {
+      // this can happen if the run is shorter than a couple of seconds.
+      AliWarning("NO EOR AliTRDCalDCS object found in CDB file.");
     }
 
-  if (!calDCSeor) {
-    // this can happen if the run is shorter than a couple of seconds.
-    AliWarning("NO EOR AliTRDCalDCS object found in CDB file.");
+    // get the numbers
+    nTbSor = calDCSsor->GetGlobalNumberOfTimeBins();
+    if (calDCSeor) nTbEor = calDCSeor->GetGlobalNumberOfTimeBins();
+
+  } else if (calver == 2) {
+    // DCSv2 object
+    const AliTRDCalDCSv2 *calDCSsorv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(0));
+    const AliTRDCalDCSv2 *calDCSeorv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(1));
+    if (!calDCSsorv2) {
+      // the SOR file is mandatory
+      AliError("NO SOR AliTRDCalDCSv2 object found in CDB file!");
+      return nUndef;
+    }
+    if (!calDCSeorv2) {
+      // this can happen if the run is shorter than a couple of seconds.
+      AliWarning("NO EOR AliTRDCalDCSv2 object found in CDB file.");
     }
 
-  // get the numbers
-  nTbSor = calDCSsor->GetGlobalNumberOfTimeBins();
-  if (calDCSeor) nTbEor = calDCSeor->GetGlobalNumberOfTimeBins();
+    // get the numbers
+    nTbSor = calDCSsorv2->GetGlobalNumberOfTimeBins();
+    if (calDCSeorv2) nTbEor = calDCSeorv2->GetGlobalNumberOfTimeBins();
+
+  } else AliError("NO DCS/DCSv2 OCDB entry found!");
 
   // if they're the same return the value
   // -2 means mixed, -1: no data, >= 0: good number of time bins
@@ -783,7 +806,7 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
     AliWarning("Inconsistent number of time bins found!");
     return nMixed;
   }
-  
+
   // one is undefined, the other ok -> return that one
   if (nTbSor == nUndef) return nTbEor;
   if (nTbEor == nUndef) return nTbSor;
@@ -804,13 +827,30 @@ void AliTRDcalibDB::GetFilterType(TString &filterType)
     filterType = "";
     return;
   }
-  const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1)); // Take EOR
-  
-  if(!calDCS){
-    filterType = "";
-    return;
-  } 
-  filterType = calDCS->GetGlobalFilterType();
+
+  Int_t esor   = 0; // Take SOR
+  Int_t calver = 0; // Check CalDCS version
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
+
+  if (calver == 1) {
+    // DCS object
+    const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(esor));
+    if(!calDCS){
+      filterType = "";
+      return;
+    } 
+    filterType = calDCS->GetGlobalFilterType();
+  } else if (calver == 2) {
+    // DCSv2 object
+    const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(esor));
+    if(!calDCSv2){
+      filterType = "";
+      return;
+    } 
+    filterType = calDCSv2->GetGlobalFilterType();
+  } else AliError("NO DCS/DCSv2 OCDB entry found!"); 
+
 }
 
 //_____________________________________________________________________________
@@ -818,18 +858,36 @@ void AliTRDcalibDB::GetGlobalConfiguration(TString &config){
   //
   // Get Configuration from the DCS
   //
+
   const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
   if(!dcsArr){
     config = "";
     return;
   }
-  const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1)); // Take EOR
-  
-  if(!calDCS){
-    config = "";
-    return;
-  } 
-  config = calDCS->GetGlobalConfigName();
+
+  Int_t esor   = 0; // Take SOR
+  Int_t calver = 0; // Check CalDCS version
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
+
+  if (calver == 1) {
+    // DCS object
+    const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(esor));
+    if(!calDCS){
+      config = "";
+      return;
+    } 
+    config = calDCS->GetGlobalConfigName();
+  } else if (calver == 2) {
+    // DCSv2 object
+    const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(esor));
+    if(!calDCSv2){
+      config = "";
+      return;
+    } 
+    config = calDCSv2->GetGlobalConfigName();
+  } else AliError("NO DCS/DCSv2 OCDB entry found!");
+
 }
 
 //_____________________________________________________________________________

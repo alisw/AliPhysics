@@ -17,7 +17,7 @@
 //                                                                        //
 // AliTRDCalibChamberStatus: to determine which half chambers are off     //
 // Produce a AliTRDCalChamberStatus calibration object                    //
-// Check with the AliTRDCalDCSFEE info                                    //
+// Check with the AliTRDCalDCSFEEv2 info                                  //
 //                                                                        //
 //                                                                        //
 // Authors:                                                               //
@@ -49,8 +49,8 @@
 #include "AliTRDSignalIndex.h"
 #include "AliTRDpadPlane.h"
 #include "./Cal/AliTRDCalChamberStatus.h"
-#include "./Cal/AliTRDCalDCS.h"
-#include "./Cal/AliTRDCalDCSFEE.h"
+#include "./Cal/AliTRDCalDCSv2.h"
+#include "./Cal/AliTRDCalDCSFEEv2.h"
 
 #include "AliTRDrawStream.h"
 
@@ -431,14 +431,14 @@ void AliTRDCalibChamberStatus::AnalyseHisto() /*FOLD00*/
 
 }
 //_____________________________________________________________________
-void AliTRDCalibChamberStatus::CheckEORStatus(AliTRDCalDCS *calDCS) /*FOLD00*/
+void AliTRDCalibChamberStatus::CheckEORStatus(AliTRDCalDCSv2 *calDCS) /*FOLD00*/
 {
   //
-  //  Correct the AliTRDCalChamberStatus according to the AliTRDCalDCS
+  //  Correct the AliTRDCalChamberStatus according to the AliTRDCalDCSv2
   //  Using globale state of the HalfChamberMerger (HCM)
   //
   for(Int_t det = 0; det < 540; det++) {
-    AliTRDCalDCSFEE* calDCSFEEEOR = calDCS->GetCalDCSFEEObj(det);
+    AliTRDCalDCSFEEv2* calDCSFEEEOR = calDCS->GetCalDCSFEEObj(det);
 
     if(!calDCSFEEEOR) continue;
     
@@ -603,7 +603,7 @@ TH2D* AliTRDCalibChamberStatus::PlotSparseI(Int_t sm,Int_t side)
 
 }
 //_____________________________________________________________________
-TH2F *AliTRDCalibChamberStatus::MakeHisto2DSmPlEORStatus(AliTRDCalDCS *calDCS, Int_t sm, Int_t pl) /*FOLD00*/
+TH2F *AliTRDCalibChamberStatus::MakeHisto2DSmPlEORStatus(AliTRDCalDCSv2 *calDCS, Int_t sm, Int_t pl) /*FOLD00*/
 {
   //
   //  Plot globale state of the HalfChamberMerger (HCM)
@@ -629,7 +629,7 @@ TH2F *AliTRDCalibChamberStatus::MakeHisto2DSmPlEORStatus(AliTRDCalDCS *calDCS, I
   for (Int_t k = 0; k < nstack; k++){
     Int_t det = offsetsmpl+k*6;
     Int_t stac = AliTRDgeometry::GetStack(det);
-    AliTRDCalDCSFEE* calDCSFEEEOR = calDCS->GetCalDCSFEEObj(det);
+    AliTRDCalDCSFEEv2* calDCSFEEEOR = calDCS->GetCalDCSFEEObj(det);
     if(!calDCSFEEEOR) { continue;}
     for (Int_t icol=0; icol<ncols; icol++){
       Int_t nrows = 16;
@@ -682,7 +682,7 @@ TH2F *AliTRDCalibChamberStatus::MakeHisto2DSmPlEORStatus(AliTRDCalDCS *calDCS, I
 
 }
 //_____________________________________________________________________________
-TCanvas* AliTRDCalibChamberStatus::PlotHistos2DSmEORStatus(AliTRDCalDCS *calDCS, Int_t sm, const Char_t *name)
+TCanvas* AliTRDCalibChamberStatus::PlotHistos2DSmEORStatus(AliTRDCalDCSv2 *calDCS, Int_t sm, const Char_t *name)
 {
   //
   // Make 2D graph

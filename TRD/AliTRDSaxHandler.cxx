@@ -36,8 +36,8 @@
 #include <TObjArray.h>
 #include "AliTRDSaxHandler.h"
 #include "AliTRDgeometry.h"
-#include "Cal/AliTRDCalDCS.h"
-#include "Cal/AliTRDCalDCSFEE.h"
+#include "Cal/AliTRDCalDCSv2.h"
+#include "Cal/AliTRDCalDCSFEEv2.h"
 #include "Cal/AliTRDCalDCSGTU.h"
 
 ClassImp(AliTRDSaxHandler)
@@ -61,7 +61,7 @@ AliTRDSaxHandler::AliTRDSaxHandler()
   ,fDCSFEEObj(0)
   ,fDCSPTRObj(0)
   ,fDCSGTUObj(0)
-  ,fCalDCSObj(new AliTRDCalDCS())
+  ,fCalDCSObj(new AliTRDCalDCSv2())
   ,fLevel1Tag(-2)
   ,fLevel2Tag(-2)
   ,fInsideBoardInfo(false)
@@ -138,7 +138,7 @@ AliTRDSaxHandler::~AliTRDSaxHandler()
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCS* AliTRDSaxHandler::GetCalDCSObj()
+AliTRDCalDCSv2* AliTRDSaxHandler::GetCalDCSObj()
 {
   // put the arrays in the global calibration object and return this
   fCalDCSObj->SetFEEArr(fFEEArr);
@@ -324,7 +324,7 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
   // if there is a new DCS element put it in the correct array
   if (CompareString(tagName, "DCS")) {
     if (fSystem == kInsideFEE) {
-      fDCSFEEObj = new AliTRDCalDCSFEE(name,dcsTitle);
+      fDCSFEEObj = new AliTRDCalDCSFEEv2();
       fDCSFEEObj->SetDCSid(dcsId);
     }
     if (fSystem == kInsidePTR) {
