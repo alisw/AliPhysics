@@ -105,6 +105,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh1SumPtTrackAreaRec(0x0),  
   fh1TmpRho(0x0),
   fh1PtJetsRecIn(0x0),
+  fh1PtJetsGenIn(0x0),
   fh1PtJetsLeadingRecIn(0x0),
   fh1PtTracksRecIn(0x0),
   fh1PtTracksLeadingRecIn(0x0),
@@ -215,6 +216,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh1SumPtTrackAreaRec(0x0),  
   fh1TmpRho(0x0),
   fh1PtJetsRecIn(0x0),
+  fh1PtJetsGenIn(0x0),
   fh1PtJetsLeadingRecIn(0x0),
   fh1PtTracksRecIn(0x0),
   fh1PtTracksLeadingRecIn(0x0),
@@ -411,6 +413,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1SumPtTrackAreaRec = new TH1F("fh1SumPtTrackAreaRec","Sum Rec track P_T #eta <0.9 / 1.8 * 2 * 0.4*0.4;p_{T,sum} (GeV/c)",nBinPt,binLimitsPt);
   
   fh1PtJetsRecIn  = new TH1F("fh1PtJetsRecIn","Rec jets P_T;p_{T} (GeV/c)",nBinPt,binLimitsPt);
+  fh1PtJetsGenIn  = new TH1F("fh1PtJetsGenIn","Gen jets P_T;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1PtJetsLeadingRecIn = new TH1F("fh1PtJetsLeadingRecIn","Rec jets P_T;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1PtTracksRecIn  = new TH1F("fh1PtTracksRecIn","Rec tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1PtTracksLeadingRecIn  = new TH1F("fh1PtTracksLeadingRecIn","Rec tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
@@ -520,6 +523,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       fHistList->Add(fh1PtTracksGenIn);
     }
     fHistList->Add(fh1PtJetsRecIn);
+    fHistList->Add(fh1PtJetsGenIn);
     fHistList->Add(fh1PtJetsLeadingRecIn);
     fHistList->Add(fh1PtTracksRecIn);
     fHistList->Add(fh1PtTracksLeadingRecIn);
@@ -1082,7 +1086,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     Double_t phiGen = genJets[ig].Phi();
     if(phiGen<0)phiGen+=TMath::Pi()*2.;    
     Double_t etaGen = genJets[ig].Eta();
-    
+    fh1PtJetsGenIn->Fill(ptGen);
+
     container[3] = ptGen;
     container[4] = etaGen;
     container[5] = phiGen;

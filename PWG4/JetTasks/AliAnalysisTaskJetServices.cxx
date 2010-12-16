@@ -368,13 +368,6 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   Bool_t physicsSelection = ((fInputHandler->IsEventSelected())&fPhysicsSelectionFlag);
 
-  if(aodH&&physicsSelection&&fFilterAODCollisions&&aod){
-    Float_t cent = aod->GetHeader()->GetCentrality();
-    if(cent<=80){
-      aodH->SetFillAOD(kTRUE);
-    }
-  }
-
 
   fEventCutInfoESD |= kPhysicsSelectionCut; // other alreay set via IsEventSelected
   fh1EventCutInfoESD->Fill(fEventCutInfoESD);
@@ -409,13 +402,22 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
     esdVtxValid = IsVertexValid(vtxESD);
     esdVtxIn = IsVertexIn(vtxESD);
+    if(aodH&&physicsSelection&&fFilterAODCollisions&&aod){
+      Float_t cent = aod->GetHeader()->GetCentrality();
+      if(cent<=80&&esdVtxIn){
+	aodH->SetFillAOD(kTRUE);
+      }
+    }
+
+
     Float_t zvtx = vtxESD->GetZ();
     Int_t  iCl = GetEventClass(esd);
     AliAnalysisHelperJetTasks::EventClass(kTRUE,iCl);
     Bool_t cand = physicsSelection;
 
     if(fDebug)Printf("%s:%d %d %d %d Icl %d",(char*)__FILE__,__LINE__,esdVtxValid,esdVtxIn,cand,iCl);
-
+    fh2ESDTriggerCount->Fill(0.,kAllTriggered); 
+    fh2ESDTriggerCount->Fill(iCl,kAllTriggered); 
     if(cand){
       fh2ESDTriggerCount->Fill(0.,kSelectedALICE); 
       fh2ESDTriggerCount->Fill(iCl,kSelectedALICE); 
@@ -459,6 +461,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     AliAnalysisHelperJetTasks::EventClass(kTRUE,iCl);
     Bool_t cand = aod->GetHeader()->GetOfflineTrigger()&fPhysicsSelectionFlag;
     if(fDebug)Printf("%s:%d AOD selection %d %d",(char*)__FILE__,__LINE__,cand,aod->GetHeader()->GetOfflineTrigger());
+    fh2TriggerCount->Fill(0.,kAllTriggered); 
+    fh2TriggerCount->Fill(iCl,kAllTriggered); 
     if(cand){
       fh2TriggerCount->Fill(0.,kSelectedALICE); 
       fh2TriggerCount->Fill(iCl,kSelectedALICE); 
@@ -545,8 +549,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       vtx->SetTitle(vtxAOD->GetTitle());
 
       TString vtitle = vtxAOD->GetTitle();
-      if (!vtitle.Contains("VertexerTracks"))
-	vtx->SetNContributors(vtxAOD->GetNContributors());
+      vtx->SetNContributors(vtxAOD->GetNContributors());
 
       // Add SPD "main" vertex                                                                    
       const AliAODVertex *vtxS = aod->GetPrimaryVertexSPD();
@@ -609,7 +612,6 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliESDVertex* vtx) {
   // SPD       SPDVertex             vertexer: Z
   
   Int_t nCont = vtx->GetNContributors();
-
   if(nCont>=1){
     fEventCutInfoESD |= kContributorsCut1;    
     if(nCont>=2){
@@ -650,8 +652,13 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliAODVertex* vtx) con
   // TPC       TPCVertex             VertexerTracksNoConstraint
   // SPD       SPDVertex             vertexer: 3D
   // SPD       SPDVertex             vertexer: Z
+
+  if(fDebug){
+    Printf(" n contrib %d",vtx->GetNContributors());
+    vtx->Print();
+  }
   
-  if(vtx->GetNContributors()<3)return kFALSE;
+  //  if(vtx->GetNContributors()<3)return kFALSE;
   // do not want tpc only primary vertex
   TString vtxName(vtx->GetName());
   if(vtxName.Contains("TPCVertex"))return kFALSE;
@@ -775,6 +782,7 @@ Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
   if(esd->GetCentrality()){
     cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
   }
+  if(cent>80)return 5;
   if(cent>50)return 4;
   if(cent>30)return 3;
   if(cent>10)return 2;
@@ -786,7 +794,7 @@ Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
 Int_t AliAnalysisTaskJetServices::GetEventClass(AliAODEvent *aod){
 
   Float_t cent = aod->GetHeader()->GetCentrality();
-
+  if(cent>80)return 5;
   if(cent>50)return 4;
   if(cent>30)return 3;
   if(cent>10)return 2;

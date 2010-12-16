@@ -161,3 +161,9 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    
    return pwg4spec;
 }
+
+void SetAODInput(AliAnalysisTaskJetSpectrum2 *taskJetSpectrum){
+  taskJetSpectrum->SetAODJetInput(kTRUE);
+  taskJetSpectrum->SetAODTrackInput(kTRUE);
+  // taskJetSpectrum->SetUseGlobalSelection(kFALSE);
+}
