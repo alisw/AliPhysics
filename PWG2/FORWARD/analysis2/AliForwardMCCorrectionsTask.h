@@ -30,7 +30,7 @@ class TTree;
  *   
  * @par Corrections used 
  * 
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward_tasks
  * 
  */
 class AliForwardMCCorrectionsTask : public AliAnalysisTaskSE

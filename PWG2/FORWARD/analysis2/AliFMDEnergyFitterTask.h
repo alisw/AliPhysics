@@ -13,16 +13,6 @@ class TTree;
 
 
 /** 
- * @mainpage ALICE PWG2 Forward Multiplcity Analysis 
- */
-/** 
- * @defgroup pwg2_forward_analysis PWG2 Forward analysis
- *
- * Code to do the multiplicity analysis in the forward psuedo-rapidity
- * regions
- *
- */
-/** 
  * Histogram and fit the energy loss distributions for the FMD
  * 
  * @par Inputs: 
@@ -36,7 +26,7 @@ class TTree;
  * @par Corrections used 
  *   - None
  * 
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward_tasks
  * 
  */
 class AliFMDEnergyFitterTask : public AliAnalysisTaskSE

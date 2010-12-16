@@ -22,7 +22,7 @@ class TH2D;
  *   - AliFMDAnaCalibEventSelectionEfficiency
  *   - AliFMDAnaCalibSharingEfficiency
  *
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward 
  */
 class AliFMDCorrections : public TNamed
 {

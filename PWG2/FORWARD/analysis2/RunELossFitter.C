@@ -1,13 +1,13 @@
-/** 
- * Flags for the analysis
- *
- * @ingroup pwg2_forward_analysis_scripts
+/**
+ * @file 
+ * 
+ * @ingroup pwg2_forward_scripts
  */
 /** 
  * Run a pass on ESD data to produce the energ loss fits 
  * 
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 void RunELossFitter(const char* esddir, 
 		    Int_t       nEvents=1000, 

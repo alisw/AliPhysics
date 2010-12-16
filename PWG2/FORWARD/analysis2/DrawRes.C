@@ -1,3 +1,8 @@
+/**
+ * @file 
+ * 
+ * @ingroup pwg2_forward_scripts
+ */
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TCanvas.h>
@@ -33,7 +38,7 @@
  * 
  * See also the script Pass2.C 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 struct DrawRes 
 {

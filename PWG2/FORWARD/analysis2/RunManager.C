@@ -1,7 +1,12 @@
+/**
+ * @file 
+ * 
+ * @ingroup pwg2_forward_scripts
+ */
 /** 
  * Flags for the analysis
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 enum {
   kMC        = 0x01, // MC input 
@@ -42,7 +47,7 @@ enum {
  * function is then called
  * 
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 void RunManager(const char* esddir, 
 		Int_t       nEvents=1000, 

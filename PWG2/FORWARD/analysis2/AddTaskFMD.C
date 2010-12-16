@@ -1,7 +1,17 @@
+/** 
+ * @defgroup pwg2_forward_scripts Scripts used in the analysis
+ *
+ * @ingroup pwg2_forward
+ */
+/**
+ * @file 
+ * @ingroup pwg2_forward_scripts
+ * 
+ */
 /**
  * This is the macro to include the Forward multiplicity in a train.  
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 AliAnalysisTask*
 AddTaskFMD()

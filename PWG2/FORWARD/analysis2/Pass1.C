@@ -1,3 +1,8 @@
+/**
+ * @file 
+ * 
+ * @ingroup pwg2_forward_scripts
+ */
 /** 
  * Run first pass of the analysis - that is read in ESD and produce AOD
  * 
@@ -29,7 +34,7 @@
  * function is then called
  * 
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 void
 Pass1(const char* esddir=".", 

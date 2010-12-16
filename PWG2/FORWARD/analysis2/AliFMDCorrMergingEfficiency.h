@@ -118,7 +118,9 @@ public:
   /** 
    * Set the vertex axis to use 
    * 
-   * @param axis Vertex axis 
+   * @param nBins   Number of bins
+   * @param min     Minimum
+   * @param max     Maximum
    */
   void SetVertexAxis(Int_t nBins, Double_t min, Double_t max);
   /* @} */
@@ -152,7 +154,7 @@ protected:
    * 
    * @param vertex The interaction points @f$z@f$-coordinate 
    * 
-   * @return Vertex bin in @f$[1,N_{\box{vertex}}]@f$ or negative if 
+   * @return Vertex bin in @f$[1,N_{\mbox{vertex}}]@f$ or negative if 
    * out of range 
    */
   Int_t FindVertexBin(Double_t vertex) const;

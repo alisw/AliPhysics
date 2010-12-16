@@ -1,3 +1,8 @@
+/**
+ * @file 
+ * 
+ * @ingroup pwg2_forward_scripts
+ */
 /** 
  * Read in AOD and generate @f$ dN/d\eta@f$ for the selected 
  * trigger classes and vertex ranges 
@@ -12,7 +17,7 @@
  * @param hhd      Whether to do HHD comparison
  * @param comp     Whether to do comparisons 
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 void
 Pass2(const char* file="AliAODs.root", 

@@ -24,7 +24,7 @@ class TProfile;
  *   - AliFMDDoubleHitCorrection 
  *   - AliFMDDeadCorrection 
  *
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward 
  */
 class AliFMDDensityCalculator : public TNamed
 {
@@ -56,7 +56,7 @@ public:
    * 
    * @return Reference to this object
    */
-  AliFMDDensityCalculator& operator=(const AliFMDDensityCalculator&);
+  AliFMDDensityCalculator& operator=(const AliFMDDensityCalculator& o);
   /** 
    * Do the calculations 
    * 

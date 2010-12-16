@@ -1,10 +1,13 @@
-// -*- mode: C++ -*- 
+// Code to analyse dN/deta from the forward analysis
+// This can plot the results 
+// Also works for MC data 
 #ifndef ALIFMDDNDETA_H
 #define ALIFMDDNDETA_H
 
 #include "TObject.h"
-#include "TList.h"
+// #include "TList.h"
 #include "TString.h"
+class TList;
 class TH1F;
 class TH3F;
 class TProfile3D;
@@ -128,7 +131,7 @@ class AliFMDDndeta : public TObject
    * 
    * @return 
    */
-  TList* GetMultList(Analysis what) {return fMultList[what];}
+  TList* GetMultList(Analysis what) const {return fMultList[what];}
  private:
   void GenerateHits(Analysis what);
   void SetNames(Analysis what);
@@ -159,4 +162,4 @@ class AliFMDDndeta : public TObject
 #endif
 // Local Variables:
 //  mode: C++
-// End Variables;
+// End:

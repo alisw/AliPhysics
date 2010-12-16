@@ -21,7 +21,7 @@ class TH2D;
  * @par HistCollector used: 
  *   - AliFMDAnaCalibBackgroundCorrection
  *
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward 
  */
 class AliFMDHistCollector : public TNamed
 {

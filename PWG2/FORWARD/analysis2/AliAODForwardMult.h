@@ -82,7 +82,7 @@ class TBrowser;
  * The histogram can be used as input for other kinds of analysis too, 
  * like flow, event-plane, centrality, and so on. 
  *
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward 
  */
 class AliAODForwardMult : public TObject
 {

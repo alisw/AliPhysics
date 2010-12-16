@@ -24,7 +24,7 @@ class TList;
  * @par Corrections used: 
  *   - None
  *
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward 
  */
 class AliFMDEventInspector : public TNamed
 {
@@ -108,7 +108,6 @@ public:
    * Process the event 
    * 
    * @param event     Input event 
-   * @param first     True on first event
    * @param triggers  On return, the triggers fired 
    * @param lowFlux   On return, true if the event is considered a low-flux 
    *                  event (according to the setting of fLowFluxCut) 

@@ -31,7 +31,7 @@ class TH2;
  *      hit strips for each vertex bin (if enabled - see Init method)
  * 
  *
- * @ingroup pwg2_forward_analysis 
+ * @ingroup pwg2_forward 
  */
 class AliFMDSharingFilter : public TNamed
 {
