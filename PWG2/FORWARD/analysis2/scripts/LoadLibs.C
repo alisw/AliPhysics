@@ -1,3 +1,8 @@
+/** 
+ * Load the libraries of PWG2/FORWARD/analsysis2
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void
 LoadLibs()
 {
@@ -8,7 +13,8 @@ LoadLibs()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG0base");
-  gSystem->Load("libPWG2forward");
   gSystem->Load("libPWG2forward2");
 }
-
+//
+// EOF
+//

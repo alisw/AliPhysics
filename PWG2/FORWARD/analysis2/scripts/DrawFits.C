@@ -1,3 +1,8 @@
+/**
+ * Script to draw the energy loss fits 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 #include <TFile.h>
 #include <THStack.h>
 #include <TList.h>
@@ -24,8 +29,8 @@ TList* OpenFile(const char* fname)
     return 0;
   }
     
-  TList* forward = 
-    static_cast<TList*>(file->Get("PWG2forwardDnDeta/Forward"));
+  TList* forward = static_cast<TList*>(file->Get("Forward"));
+  // static_cast<TList*>(file->Get("PWG2forwardDnDeta/Forward"));
   if (!forward) { 
     Error("DrawFits", "Couldn't get forward list from %s", fname);
     return 0;
