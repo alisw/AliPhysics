@@ -24,7 +24,6 @@
 #include "AliITSsegmentationUpgrade.h"
 #include "AliLog.h"
 #include <TFile.h>
-#include <iostream.h>
 //////////////////////////////////////////////////////
 // Segmentation class for                           //
 // ITS upgrade                                      //
