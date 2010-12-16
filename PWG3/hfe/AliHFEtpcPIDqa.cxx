@@ -69,6 +69,7 @@ AliHFEtpcPIDqa::AliHFEtpcPIDqa(const char* name):
 //_________________________________________________________
 AliHFEtpcPIDqa::AliHFEtpcPIDqa(const AliHFEtpcPIDqa &o):
     AliHFEdetPIDqa(o)
+  , fHistos(NULL)
 {
   //
   // Copy constructor
