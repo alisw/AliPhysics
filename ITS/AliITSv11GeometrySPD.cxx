@@ -223,7 +223,7 @@ TGeoMedium* AliITSv11GeometrySPD::GetMedium(const char* mediumName,
     //
      Char_t itsMediumName[30];
 
-     sprintf(itsMediumName, "ITS_%s", mediumName);
+     snprintf(itsMediumName, 30, "ITS_%s", mediumName);
      TGeoMedium* medium = mgr->GetMedium(itsMediumName);
      if (!medium) AliError(Form("Medium <%s> not found", mediumName));
 
@@ -1606,16 +1606,16 @@ TGeoCompositeShape* AliITSv11GeometrySPD::CreateGroundingFoilShape
     } // end if itype==1
     switch (itype) {
     case 0:
-        sprintf(type,"Kap");
+        snprintf(type,10,"Kap");
         break;
     case 1:
-        sprintf(type,"Alu");
+        snprintf(type,10, "Alu");
         break;
     case 2:
-        sprintf(type,"Glue1");
+        snprintf(type,10,"Glue1");
         break;
     case 3:
-        sprintf(type,"Glue2");
+        snprintf(type,10,"Glue2");
         break;
     }
     // we divide the shape in several slices along the horizontal
@@ -1649,6 +1649,8 @@ TGeoCompositeShape* AliITSv11GeometrySPD::CreateGroundingFoilShape
     TGeoBBox *shGroundFull = 0;
     shGroundFull = new TGeoBBox(Form("ITSSPDSHgFoil%sFull", type),
                                 0.5*length,0.5*width, 0.5*thickness);
+
+    if(GetDebug(5)) shGroundFull->Print(); // Avoid Coverity warning
 
     // create the polygonal shape to be subtracted to give the correct
     // shape to the borders its vertices are defined in sugh a way that
@@ -1764,7 +1766,7 @@ TGeoCompositeShape* AliITSv11GeometrySPD::CreateGroundingFoilShape
             holeX += holeSepX2;
         } // end if else if's
         //cout << i << " --> X = " << holeX << endl;
-        sprintf(name,"ITSSPDTRgFoil%sHole%d", type, i);
+        snprintf(name,200,"ITSSPDTRgFoil%sHole%d", type, i);
         transHole[i] = new TGeoTranslation(name, holeX, holeY, 0.0);
         transHole[i]->RegisterYourself();
         strComposite.Append(Form("ITSSPD%sGfoilHole:%s", type, name));
@@ -1807,7 +1809,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateGroundingFoil(Bool_t isRight,
     // create a suffix to be used in the names of all shapes
     //
     char suf[5];
-    if (isRight) strcpy(suf, "R"); else strcpy(suf, "L");
+    if (isRight) strncpy(suf, "R", 5); else strncpy(suf, "L", 5);
     // this volume will be created in order to ease its placement in
     // the half-stave; then, it is added here the small distance of
     // the "central" edge of each volume from the Z=0 plane in the stave
@@ -1982,7 +1984,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateMCM(Bool_t isRight,
 
     // to distinguish the "left" and "right" objects, a suffix is created
     char suf[5];
-    if (isRight) strcpy(suf, "R"); else strcpy(suf, "L");
+    if (isRight) strncpy(suf, "R", 5); else strncpy(suf, "L", 5);
 
     // ** MEDIA **
     TGeoMedium *medBase = GetMedium("SPD KAPTON(POLYCH2)$",mgr);// ??? MCM BASE
@@ -2366,12 +2368,12 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
                                    0.5*capWidth, 0.5*capLength);
 
     char extname[12];
-    sprintf(extname,"Extender1l%d",ilayer);
+    snprintf(extname,12,"Extender1l%d",ilayer);
     TGeoVolume *ext1 = mgr->MakeBox(extname, medExt, 0.5*extThickness, 0.5*extWidth, 0.5*ext1Length);
-    sprintf(extname,"Extender2l%d",ilayer);
+    snprintf(extname,12,"Extender2l%d",ilayer);
     TGeoVolume *ext2 = mgr->MakeBox(extname, medExt, 0.5*extHeight - 2.*extThickness, 0.5*extWidth, 0.5*extThickness);
     TGeoVolume *ext3=0;
-    sprintf(extname,"Extender3l%d",ilayer);
+    snprintf(extname,12,"Extender3l%d",ilayer);
     if (ilayer==1) {
       Double_t halflen=(0.5*ext2Length + extThickness);
       Double_t xprof[6],yprof[6];
@@ -2642,7 +2644,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
 				   0.5*cableW2,
 				   0.5*thickness);
     Char_t string[255];
-    sprintf(string, "%s-%s", shOut->GetName(), shIn->GetName());
+    snprintf(string, 255, "%s-%s", shOut->GetName(), shIn->GetName());
     TGeoCompositeShape *shPlate = new TGeoCompositeShape("ITSSPDPlate_shape",
 				 string);
 

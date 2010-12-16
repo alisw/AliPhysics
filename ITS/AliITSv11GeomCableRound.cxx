@@ -758,7 +758,7 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 
   TGeoMedium *skinMedia = fLayMedia[fNlayer-1];
   char name[100];
-  sprintf(name, "%s_%i",GetName(), p);
+  snprintf(name, 100, "%s_%i",GetName(), p);
   TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, skinMedia);
   vCableSeg->SetLineColor(fLayColor[fNlayer-1]);
 
@@ -803,7 +803,7 @@ TGeoVolume *AliITSv11GeomCableRound::CreateTubeSegment( Double_t *coord1,
 
   TGeoMedium *skinMedia = fLayMedia[fNlayer-1];
   char name[100];
-  sprintf(name, "%s_%i",GetName(), p);
+  snprintf(name, 100, "%s_%i",GetName(), p);
   TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, skinMedia);
   vCableSeg->SetLineColor(fLayColor[fNlayer-1]);
 
@@ -841,7 +841,7 @@ TGeoVolume *AliITSv11GeomCableRound::CreateTorus( Double_t &phi,
   TGeoTorus *cableSeg = new TGeoTorus(torusR, 0, fRadius, torusPhi1, torusDPhi);
   TGeoMedium *skinMedia = fLayMedia[fNlayer-1];
   char name[100];
-  sprintf(name, "%s_%i",GetName(),p);
+  snprintf(name, 100, "%s_%i",GetName(),p);
   TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, skinMedia);
   vCableSeg->SetLineColor(fLayColor[fNlayer-1]);
 

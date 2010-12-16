@@ -773,7 +773,7 @@ TGeoMedium* AliITSv11GeometrySDD::GetMedium(const char* mediumName) {
   //
 
   char ch[30];
-  sprintf(ch, "ITS_%s",mediumName);
+  snprintf(ch, 30, "ITS_%s",mediumName);
   TGeoMedium* medium =  gGeoManager->GetMedium(ch);
   if (! medium)
     printf("Error(AliITSv11GeometrySDD)::medium %s not found !\n", mediumName);
@@ -1007,7 +1007,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   //********************************************************************
   char cableName[30];
   for (Int_t i=0; i<fgkLay3Ndet; i++) {
-    sprintf(cableName, "digitCableLay3A_%i",i);
+    snprintf(cableName, 30, "digitCableLay3A_%i",i);
     fDigitCableLay3A[i].SetName(cableName);
     fDigitCableLay3A[i].SetWidth(fgkDigitCablWidth);
     fDigitCableLay3A[i].SetThickness(fgkDigitCablPolyThick+fgkDigitCablAlThick);
@@ -1015,7 +1015,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
     fDigitCableLay3A[i].SetLayer( 0, fgkDigitCablPolyThick, polyhamideSDD,
 				  fColorPolyhamide);
     fDigitCableLay3A[i].SetLayer(1, fgkDigitCablAlThick, alSDD, fColorAl);
-    sprintf(cableName, "digitCableLay3B_%i",i);
+    snprintf(cableName, 30, "digitCableLay3B_%i",i);
     fDigitCableLay3B[i].SetName(cableName);
     fDigitCableLay3B[i].SetWidth(fgkDigitCablWidth);
     fDigitCableLay3B[i].SetThickness(fgkDigitCablPolyThick+fgkDigitCablAlThick);
@@ -1025,7 +1025,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
     fDigitCableLay3B[i].SetLayer(1, fgkDigitCablAlThick, alSDD, fColorAl);
   };
   for (Int_t i=0; i<fgkLay4Ndet; i++) {
-    sprintf(cableName, "digitCableLay4A_%i",i);
+    snprintf(cableName, 30, "digitCableLay4A_%i",i);
     fDigitCableLay4A[i].SetName(cableName);
     fDigitCableLay4A[i].SetWidth(fgkDigitCablWidth);
     fDigitCableLay4A[i].SetThickness(fgkDigitCablPolyThick+fgkDigitCablAlThick);
@@ -1033,7 +1033,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
     fDigitCableLay4A[i].SetLayer( 0, fgkDigitCablPolyThick, polyhamideSDD,
 				  fColorPolyhamide);
     fDigitCableLay4A[i].SetLayer(1, fgkDigitCablAlThick, alSDD, fColorAl);
-    sprintf(cableName, "digitCableLay4B_%i",i);
+    snprintf(cableName, 30, "digitCableLay4B_%i",i);
     fDigitCableLay4B[i].SetName(cableName);
     fDigitCableLay4B[i].SetWidth(fgkDigitCablWidth);
     fDigitCableLay4B[i].SetThickness(fgkDigitCablPolyThick+fgkDigitCablAlThick);
@@ -1282,7 +1282,7 @@ void AliITSv11GeometrySDD::Layer3(TGeoVolume *moth) {
   for (Int_t iLadd = iLaddMin; iLadd < iLaddMax; iLadd++) {
 
     Double_t ladderPhi = -3*dPhi+iLadd*dPhi;
-    sprintf(rotName, "ITSsddLay3Ladd%i",iLadd);
+    snprintf(rotName, 30, "ITSsddLay3Ladd%i",iLadd);
     Double_t minRadiusLadBox = fLay3LaddShortRadius-fLay3LadderUnderSegDH;
     if (iLadd%2 != 0)
       minRadiusLadBox = fLay3LaddLongRadius-fLay3LadderUnderSegDH;
@@ -1302,7 +1302,7 @@ void AliITSv11GeometrySDD::Layer3(TGeoVolume *moth) {
 				0, ladderPhi, kFALSE);
     virtualLayer3->AddNode(lay3Ladder, iLadd, ctLadd);
     ///////////////////////////////////////////////////
-    sprintf(rotName, "ITSsddLay3DetBox%i",iLadd);
+    snprintf(rotName, 30, "ITSsddLay3DetBox%i",iLadd);
     Double_t minRadiusDetBox = fgkLay3DetShortRadius;
     if (iLadd%2 != 0) minRadiusDetBox = fgkLay3DetLongRadius;
     minRadiusDetBox += detectorsThick/2;
@@ -1509,7 +1509,7 @@ void AliITSv11GeometrySDD::ForwardLayer3(TGeoVolume *moth) {
     Double_t dR = 0;
     if (iLadd%2 != 0) dR = fgkLay3DetLongRadius-fgkLay3DetShortRadius;
 
-    sprintf(rotName, "ITSsddLay3EndLadd%i",iLadd);
+    snprintf(rotName, 30, "ITSsddLay3EndLadd%i",iLadd);
 
     TGeoCombiTrans *ctEndLaddPos = CreateCombiTrans(rotName, dR,
 				    fgkLay3Length/2, ladderPhi, kTRUE);
@@ -1568,7 +1568,7 @@ void AliITSv11GeometrySDD::Layer4(TGeoVolume *moth) {
 
   // placing virtual ladder and detectors volumes following ladder 
   // ordering convention
-  char rotName[20];
+  char rotName[30];
   Int_t iLaddMin = 0;
   Int_t iLaddMax = fgkLay4Nladd;
   if ((fAddOnlyLadder4min >= 0)&&(fAddOnlyLadder4max < fgkLay4Nladd)) {
@@ -1578,7 +1578,7 @@ void AliITSv11GeometrySDD::Layer4(TGeoVolume *moth) {
   for (Int_t iLadd = iLaddMin; iLadd < iLaddMax; iLadd++) {
 
     Double_t ladderPhi = -5*dPhi + iLadd*dPhi;
-    sprintf(rotName, "ITSsddLay4Ladd%i",iLadd);
+    snprintf(rotName, 30, "ITSsddLay4Ladd%i",iLadd);
     Double_t minRadiusLadBox = fLay4LaddShortRadius-fLay4LadderUnderSegDH;
     if (iLadd%2 != 0)
       minRadiusLadBox = fLay4LaddLongRadius-fLay4LadderUnderSegDH;
@@ -1587,7 +1587,7 @@ void AliITSv11GeometrySDD::Layer4(TGeoVolume *moth) {
 					      0, ladderPhi, kTRUE);
     virtualLayer4->AddNode(lay4Ladder, iLadd, ctLadd);
     ///////////////////////////////////////////////////
-    sprintf(rotName, "ITSsddLay4DetBox%i",iLadd);
+    snprintf(rotName, 30, "ITSsddLay4DetBox%i",iLadd);
     Double_t minRadiusDetBox = fgkLay4DetShortRadius;
     if (iLadd%2 != 0)
       minRadiusDetBox = fgkLay4DetLongRadius;
@@ -1769,7 +1769,7 @@ void AliITSv11GeometrySDD::ForwardLayer4(TGeoVolume *moth) {
     if (iLadd%2 != 0)
       dR = fgkLay4DetLongRadius-fgkLay4DetShortRadius;
 
-    sprintf(rotName, "ITSsddLay4EndLadd%i",iLadd);
+    snprintf(rotName, 30, "ITSsddLay4EndLadd%i",iLadd);
 
     TGeoCombiTrans *ctEndLaddPos = CreateCombiTrans(rotName, dR,
 				   fgkLay4Length/2, ladderPhi, kTRUE);
@@ -1825,7 +1825,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
 
     //TGeoVolumeAssembly *laddSegment = CreateLadderSegment(iLay, iSegment);
     TGeoVolume *laddSegment = CreateLadderSegment(iLay, iSegment);
-    sprintf(transName, "ITSsddLay%iLaddSeg%i", iLay, iSegment);
+    snprintf(transName, 30, "ITSsddLay%iLaddSeg%i", iLay, iSegment);
     Double_t segmentPos = fgkSegmentLength*(nDetectors/2-1-iSegment) 
                           + fgkSegmentLength/2;
     TGeoTranslation *segTr = new TGeoTranslation(transName, 0,
@@ -1837,7 +1837,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
 
     TGeoVolume *laddSegment = CreateLadderSegment(iLay, iSegment);
     //TGeoVolumeAssembly *laddSegment = CreateLadderSegment(iLay, iSegment);
-    sprintf(transName, "ITSsddLay%iLaddSeg%i", iLay, iSegment);
+    snprintf(transName, 30, "ITSsddLay%iLaddSeg%i", iLay, iSegment);
     Double_t segmentPos = fgkSegmentLength*(nDetectors/2-1-iSegment) 
                           + fgkSegmentLength/2;
     TGeoTranslation *segTr = new TGeoTranslation(transName, 0,
@@ -1897,7 +1897,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
   AliITSv11GeomCableFlat cableHV[fgkLay4Ndet];  // temp !!!
   char cableHVname[30];
   for (Int_t iSegment = 0; iSegment<nDetectors; iSegment++) {
-    sprintf(cableHVname,"ITSsddHVcable%i", iSegment);
+    snprintf(cableHVname,30,"ITSsddHVcable%i", iSegment);
     cableHV[iSegment].SetName(cableHVname);
     cableHV[iSegment].SetThickness(fgkLongHVcablePolyThick+fgkLongHVcableAlThick);
     cableHV[iSegment].SetWidth(fgkTransitHVtailWidth);
@@ -2243,7 +2243,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   Double_t vX[3] = {1,0,0};
   for (Int_t i=0; i<3; i++) {
     char ch[20];
-    sprintf(ch, "lowFLpieceA%i", i+4);
+    snprintf(ch, 20, "lowFLpieceA%i", i+4);
     lowFLpiece.SetName(ch);
     lowFLpiece.SetWidth(zChips[i+1]-zChips[i]-fgkHybFLlowHoleDZ);
 
@@ -2257,7 +2257,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
     lowFLpiece.CreateAndInsertBoxCableSegment(1,90);
     lowFLpiece.ResetPoints();
 
-    sprintf(ch, "lowFLpieceB%i", i+4);
+    snprintf(ch, 20, "lowFLpieceB%i", i+4);
     lowFLpiece.SetName(ch);
     x1[0] = fgkHybridWidth/2 - piece3width;
     x2[0] = x1[0] - fgkHybFLlowHoleAmbDX;
@@ -2284,7 +2284,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   char ch[20];
 
   for (Int_t i=0; i<4; i++) {
-    sprintf(ch, "pascalCC%i", i);
+    snprintf(ch, 20, "pascalCC%i", i);
     chip.SetName(ch);
     x1[0] = fgkHybFLlowPasX - fgkHybridWidth/2 - fgkHybPascalDX/2;
     x2[0] = x1[0] + fgkHybPascalDX;
@@ -2295,7 +2295,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
     chip.CreateAndInsertBoxCableSegment(1,-90);
     chip.ResetPoints();
 
-    sprintf(ch, "ambraCC%i", i);
+    snprintf(ch, 20, "ambraCC%i", i);
     chip.SetName(ch);
     x1[0] = fgkHybFLlowAmbX - fgkHybridWidth/2 - fgkHybAmbraDX/2;
     x2[0] = x1[0] + fgkHybAmbraDX;
@@ -2308,7 +2308,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   //**************************************************** CC outside chips:
   // I don't think there is a second aluminium layer here ...
   for (Int_t i = 0; i<4; i++) {
-    sprintf(ch, "ccLayerA%i", i);
+    snprintf(ch, 20, "ccLayerA%i", i);
 
     AliITSv11GeomCableFlat ccLayer1(ch, 6.6*fgkmm, ccUpLayerTotThick);
     ccLayer1.SetInitialNode(hybrid);
@@ -2328,7 +2328,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
     ccLayer1.AddCheckPoint( hybrid, 1, x2, vX );
     ccLayer1.CreateAndInsertBoxCableSegment(1,-90);
 
-    sprintf(ch, "ccLayerB%i", i);
+    snprintf(ch, 20, "ccLayerB%i", i);
     AliITSv11GeomCableFlat ccLayer2(ch, fgkHybChipsDZ, ccUpLayerTotThick);
     ccLayer2.SetInitialNode(hybrid);
     ccLayer2.SetNLayers(2);
@@ -2342,7 +2342,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
     ccLayer2.AddCheckPoint( hybrid, 1, x2, vX );
     ccLayer2.CreateAndInsertBoxCableSegment(1,-90);
     ccLayer2.ResetPoints();
-    sprintf(ch, "ccLayerC%i", i);
+    snprintf(ch, 20, "ccLayerC%i", i);
     ccLayer2.SetName(ch);
     x1[0] =  -fgkHybridWidth/2 + fgkHybFLlowAmbX + fgkHybAmbraDX/2;
     x2[0] = fgkHybridWidth/2 - fgkHybFLUpperWidth + 3*fgkmm;
@@ -2375,7 +2375,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
     ccToSensPoliSh->DefineSection(0, 0.);
     ccToSensPoliSh->DefineSection(1, ccLayer1.GetThickness());
 
-    sprintf(ch, "ccToSens%i", i);
+    snprintf(ch, 20, "ccToSens%i", i);
     TGeoVolume* ccToSensPoliVol = new TGeoVolume(ch, ccToSensPoliSh, polyhamideSDD);
     ccToSensPoliVol->SetLineColor(fColorPolyhamide);
 
@@ -2384,7 +2384,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
     ccToSensAlSh->DefineSection(0, 0.);
     ccToSensAlSh->DefineSection(1, fgkHybAlCCThick);
 
-    sprintf(ch, "ccToSensAl%i", i);
+    snprintf(ch, 20, "ccToSensAl%i", i);
     TGeoVolume* ccToSensAlVol = new TGeoVolume(ch, ccToSensAlSh, alSDD50p100);
     ccToSensAlVol->SetLineColor(fColorAl);
 
@@ -5447,7 +5447,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssembly(Int_t iLay) {
   };
 
   char name[30];
-  sprintf(name,"ITSsddDetBox%i",iLay);
+  snprintf(name,30,"ITSsddDetBox%i",iLay);
   
   TGeoVolumeAssembly  *virtualDet = new TGeoVolumeAssembly("ITSsddLadd");
 
@@ -5456,7 +5456,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssembly(Int_t iLay) {
     Double_t localY = fgkLadWaferSep/2+fgkWaferThickness/2;
     if (iLay==3) if (i%2!=0) localY = -localY;
     if (iLay==4) if (i%2==0) localY = -localY;
-    sprintf(name, "ITSsddLay%iSensorPos%i",iLay, i);
+    snprintf(name, 30, "ITSsddLay%iSensorPos%i",iLay, i);
  
     if (i >= nDetectors/2) {
       TGeoTranslation *sensorPos = new TGeoTranslation(0,localY,localZ);
@@ -5491,7 +5491,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssemblyLadd2() {
   TGeoVolume *sensorSDD = fSDDsensor3;
 
   char name[30];
-  sprintf(name,"ITSsddDetBoxLadd2");
+  snprintf(name,30,"ITSsddDetBoxLadd2");
   
   TGeoVolumeAssembly  *virtualDet = new TGeoVolumeAssembly("ITSsddLadd");
 
@@ -5499,7 +5499,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssemblyLadd2() {
     Double_t localZ = (-1.)*sensorZPos[nDetectors-1-i];
     Double_t localY = fgkLadWaferSep/2+fgkWaferThickness/2;
     if (i%2==0) localY = -localY;
-    sprintf(name, "ITSsddLayLadd2SensorPos%i", i);
+    snprintf(name, 30, "ITSsddLayLadd2SensorPos%i", i);
  
     if (i >= nDetectors/2) {
       TGeoTranslation *sensorPos = new TGeoTranslation(0,localY,localZ);
@@ -5556,7 +5556,7 @@ Int_t AliITSv11GeometrySDD::ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD
   Int_t firstSDDmod = startMod;
   for (Int_t iLay=0; iLay<kNLay; iLay++) {
     /////////////////////////////////////////
-    sprintf(layerName, "ITSsddLayer%i_1",iLay+3);
+    snprintf(layerName, 30, "ITSsddLayer%i_1",iLay+3);
     TGeoNode *layNode = fMotherVol->GetNode(layerName);
     if (layNode) {
       if (GetDebug(1)) printf("%s\n",layNode->GetName());
@@ -5565,7 +5565,7 @@ Int_t AliITSv11GeometrySDD::ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD
 
       for (Int_t iLadd=0; iLadd<kNLadd[iLay]; iLadd++) {
 	/////////////////////////////////////////
-	sprintf(ladderName, "ITSsddLadd_%i", iLadd);
+	snprintf(ladderName, 30, "ITSsddLadd_%i", iLadd);
 	TGeoNode *laddNode = layVolume->GetNode(ladderName);
 	if (laddNode) {
 	  if (GetDebug(1)) printf("|   %s\n",laddNode->GetName());
@@ -5575,7 +5575,7 @@ Int_t AliITSv11GeometrySDD::ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD
 
 	  for (Int_t iDet=0; iDet<kNDet[iLay]; iDet++) {
 	    /////////////////////////////////////////
-	    sprintf(sensorName, "ITSsddSensor_%i",iDet);
+	    snprintf(sensorName, 30, "ITSsddSensor_%i",iDet);
 	    TGeoNode *detNode = laddVolume->GetNode(sensorName);
 	    if (detNode) {
 	      if (GetDebug(1)) printf("|   |   %s\n",detNode->GetName());
@@ -5589,7 +5589,7 @@ Int_t AliITSv11GeometrySDD::ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD
 		TGeoHMatrix wafMatrix(detMatrix);
 		detMatrix.Multiply(wafNode->GetMatrix());
 		//--------------------------------------------------------
-		sprintf(senstivName, "%s%s", fgSDDsensitiveVolName3,"_1");
+		snprintf(senstivName, 30, "%s%s", fgSDDsensitiveVolName3,"_1");
 		TGeoNode *sensitivNode = wafVolume->GetNode(senstivName);
 	      if (sensitivNode) {
 		TGeoHMatrix sensMatrix(wafMatrix);
@@ -5728,7 +5728,7 @@ Int_t AliITSv11GeometrySDD::CreateAndInsetConeCablePart(TGeoVolume *mother, Doub
   TGeoMedium *opticalFiber = GetMedium("SDD OPTICFIB$");
 
   char titleCable[30];
-  sprintf(titleCable,"cableSDDport%i",(Int_t)angle);
+  snprintf(titleCable,30,"cableSDDport%i",(Int_t)angle);
 
   //---
   Double_t section = (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod)*(nLay3+nLay4);
