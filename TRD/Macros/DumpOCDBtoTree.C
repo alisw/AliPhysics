@@ -65,6 +65,8 @@
   #include "AliTRDCalSingleChamberStatus.h"
   #include "AliTRDCalDCS.h"
   #include "AliTRDCalDCSFEE.h"
+  #include "AliTRDCalDCSv2.h"
+  #include "AliTRDCalDCSFEEv2.h"
   using namespace std;
 
   // global variables
@@ -84,7 +86,7 @@
   void ProcessTRDCalibArray(AliTRDCalDet*, AliTRDCalPad*, TString, Double_t&, Double_t&,
         TVectorD&, TVectorD&, TVectorD&, TVectorD&);
   void ProcessTRDstatus(AliTRDCalChamberStatus*, AliTRDCalPadStatus*, Float_t&, TVectorD&, TVectorD&);
-  void ProcessTRDCalDCSFEE(AliTRDCalDCS*, AliTRDCalDCS*, Int_t&, Int_t&, Int_t&, Int_t&, Int_t&, Int_t&, Bool_t&,
+  void ProcessTRDCalDCSFEE(TObject*, TObject*, Int_t&, Int_t&, Int_t&, Int_t&, Int_t&, Int_t&, Bool_t&,
         TVectorD&, TVectorD&);
   AliCDBEntry* GetCDBentry(const Char_t *path, Bool_t owner=kTRUE);
   //__________________________________________________________________________________________
@@ -439,40 +441,65 @@
     TObjString dcsFeeGlobalAddOptions("");
     if(getDCSInfo) {
       TObjArray *objArrayCDB = 0;
-      AliTRDCalDCS* calDCSsor = 0x0;
-      AliTRDCalDCS* calDCSeor = 0x0;
+      TObject* calDCSsor = 0x0;
+      YObject* calDCSeor = 0x0;
       if((entry = GetCDBentry("TRD/Calib/DCS"))) objArrayCDB = (TObjArray*)entry->GetObject();
       if(objArrayCDB) {
         objArrayCDB->SetOwner(kTRUE);
-        calDCSsor = (AliTRDCalDCS*)objArrayCDB->At(0);
-        calDCSeor = (AliTRDCalDCS*)objArrayCDB->At(1);
+        calDCSsor = objArrayCDB->At(0);
+        calDCSeor = objArrayCDB->At(1);
 
         ProcessTRDCalDCSFEE(calDCSsor, calDCSeor,
           nSB1, nSB2, nSB3, nSB4, nSB5,
           nChanged, sorAndEor, statusArraySOR, statusArrayEOR);
       }
       if(calDCSsor || calDCSeor) {
-        AliTRDCalDCS *caldcs = 0;
+        TObject *caldcs = 0;
         if(calDCSsor) caldcs = calDCSsor;
         else caldcs = calDCSeor;
-        dcsFeeGlobalNTimeBins = caldcs->GetGlobalNumberOfTimeBins();
-        dcsFeeGlobalConfigTag = caldcs->GetGlobalConfigTag();
-        dcsFeeGlobalSingleHitThres = caldcs->GetGlobalSingleHitThres();
-        dcsFeeGlobalThreePadClustThres = caldcs->GetGlobalThreePadClustThres();
-        dcsFeeGlobalSelectiveNoSZ = caldcs->GetGlobalSelectiveNoZS();
-        dcsFeeGlobalTCFilterWeight = caldcs->GetGlobalTCFilterWeight();
-        dcsFeeGlobalTCFilterShortDecPar = caldcs->GetGlobalTCFilterShortDecPar();
-        dcsFeeGlobalTCFilterLongDecPar = caldcs->GetGlobalTCFilterLongDecPar();
-        dcsFeeGlobalModeFastStatNoise = caldcs->GetGlobalModeFastStatNoise();
-        dcsFeeGlobalConfigVersion = caldcs->GetGlobalConfigVersion().Data();
-        dcsFeeGlobalConfigName = caldcs->GetGlobalConfigName().Data();
-        dcsFeeGlobalFilterType = caldcs->GetGlobalFilterType().Data();
-        dcsFeeGlobalReadoutParam = caldcs->GetGlobalReadoutParam().Data();
-        dcsFeeGlobalTestPattern = caldcs->GetGlobalTestPattern().Data();
-        dcsFeeGlobalTrackletMode = caldcs->GetGlobalTrackletMode().Data();
-        dcsFeeGlobalTrackletDef = caldcs->GetGlobalTrackletDef().Data();
-        dcsFeeGlobalTriggerSetup = caldcs->GetGlobalTriggerSetup().Data();
-        dcsFeeGlobalAddOptions = caldcs->GetGlobalAddOptions().Data();
+	Int_t calVer = 0;
+	if (!strcmp(caldcs->ClassName(),"AliTRDCalDCS"))   calVer = 1;
+	if (!strcmp(caldcs->ClassName(),"AliTRDCalDCSv2")) calVer = 2;
+        if (calVer == 1) {
+	  dcsFeeGlobalNTimeBins           = ((AliTRDCalDCS*)caldcs)->GetGlobalNumberOfTimeBins();
+	  dcsFeeGlobalConfigTag           = ((AliTRDCalDCS*)caldcs)->GetGlobalConfigTag();
+	  dcsFeeGlobalSingleHitThres      = ((AliTRDCalDCS*)caldcs)->GetGlobalSingleHitThres();
+	  dcsFeeGlobalThreePadClustThres  = ((AliTRDCalDCS*)caldcs)->GetGlobalThreePadClustThres();
+	  dcsFeeGlobalSelectiveNoSZ       = ((AliTRDCalDCS*)caldcs)->GetGlobalSelectiveNoZS();
+	  dcsFeeGlobalTCFilterWeight      = ((AliTRDCalDCS*)caldcs)->GetGlobalTCFilterWeight();
+	  dcsFeeGlobalTCFilterShortDecPar = ((AliTRDCalDCS*)caldcs)->GetGlobalTCFilterShortDecPar();
+	  dcsFeeGlobalTCFilterLongDecPar  = ((AliTRDCalDCS*)caldcs)->GetGlobalTCFilterLongDecPar();
+	  dcsFeeGlobalModeFastStatNoise   = ((AliTRDCalDCS*)caldcs)->GetGlobalModeFastStatNoise();
+	  dcsFeeGlobalConfigVersion       = ((AliTRDCalDCS*)caldcs)->GetGlobalConfigVersion().Data();
+	  dcsFeeGlobalConfigName          = ((AliTRDCalDCS*)caldcs)->GetGlobalConfigName().Data();
+	  dcsFeeGlobalFilterType          = ((AliTRDCalDCS*)caldcs)->GetGlobalFilterType().Data();
+	  dcsFeeGlobalReadoutParam        = ((AliTRDCalDCS*)caldcs)->GetGlobalReadoutParam().Data();
+	  dcsFeeGlobalTestPattern         = ((AliTRDCalDCS*)caldcs)->GetGlobalTestPattern().Data();
+	  dcsFeeGlobalTrackletMode        = ((AliTRDCalDCS*)caldcs)->GetGlobalTrackletMode().Data();
+	  d csFeeGlobalTrackletDef        = ((AliTRDCalDCS*)caldcs)->GetGlobalTrackletDef().Data();
+	  dcsFeeGlobalTriggerSetup        = ((AliTRDCalDCS*)caldcs)->GetGlobalTriggerSetup().Data();
+	  dcsFeeGlobalAddOptions          = ((AliTRDCalDCS*)caldcs)->GetGlobalAddOptions().Data();
+	}
+        if (calVer == 2) {
+	  dcsFeeGlobalNTimeBins           = ((AliTRDCalDCSv2*)caldcs)->GetGlobalNumberOfTimeBins();
+	  dcsFeeGlobalConfigTag           = ((AliTRDCalDCSv2*)caldcs)->GetGlobalConfigTag();
+	  dcsFeeGlobalSingleHitThres      = ((AliTRDCalDCSv2*)caldcs)->GetGlobalSingleHitThres();
+	  dcsFeeGlobalThreePadClustThres  = ((AliTRDCalDCSv2*)caldcs)->GetGlobalThreePadClustThres();
+	  dcsFeeGlobalSelectiveNoSZ       = ((AliTRDCalDCSv2*)caldcs)->GetGlobalSelectiveNoZS();
+	  dcsFeeGlobalTCFilterWeight      = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTCFilterWeight();
+	  dcsFeeGlobalTCFilterShortDecPar = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTCFilterShortDecPar();
+	  dcsFeeGlobalTCFilterLongDecPar  = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTCFilterLongDecPar();
+	  dcsFeeGlobalModeFastStatNoise   = ((AliTRDCalDCSv2*)caldcs)->GetGlobalModeFastStatNoise();
+	  dcsFeeGlobalConfigVersion       = ((AliTRDCalDCSv2*)caldcs)->GetGlobalConfigVersion().Data();
+	  dcsFeeGlobalConfigName          = ((AliTRDCalDCSv2*)caldcs)->GetGlobalConfigName().Data();
+	  dcsFeeGlobalFilterType          = ((AliTRDCalDCSv2*)caldcs)->GetGlobalFilterType().Data();
+	  dcsFeeGlobalReadoutParam        = ((AliTRDCalDCSv2*)caldcs)->GetGlobalReadoutParam().Data();
+	  dcsFeeGlobalTestPattern         = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTestPattern().Data();
+	  dcsFeeGlobalTrackletMode        = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTrackletMode().Data();
+	  d csFeeGlobalTrackletDef        = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTrackletDef().Data();
+	  dcsFeeGlobalTriggerSetup        = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTriggerSetup().Data();
+	  dcsFeeGlobalAddOptions          = ((AliTRDCalDCSv2*)caldcs)->GetGlobalAddOptions().Data();
+	}
       }
       if(objArrayCDB) objArrayCDB->RemoveAll();
     }   // end if(getDCSInfo)
@@ -909,7 +936,7 @@
   }
 
   //__________________________________________________________________________________________
-  void ProcessTRDCalDCSFEE(AliTRDCalDCS *caldcsSOR, AliTRDCalDCS *caldcsEOR,
+  void ProcessTRDCalDCSFEE(TObject *caldcsSOR, TObject *caldcsEOR,
         Int_t &nsb1, Int_t &nsb2, Int_t &nsb3, Int_t &nsb4, Int_t &nsb5,
         Int_t &nChanged, Bool_t &sorAndEor,
         TVectorD &statusArraySOR, TVectorD &statusArrayEOR) {
@@ -929,12 +956,28 @@
     sorAndEor = kFALSE;
   }
 
+  Int_t calVer = 0;
+  if (!strcmp(caldcsSOR->ClassName(),"AliTRDCalDCS"))   calVer = 1;
+  if (!strcmp(caldcsSOR->ClassName(),"AliTRDCalDCSv2")) calVer = 2;
+  Int_t feeArrSiz = 0;
+  if (calVer == 1) feeArrSiz = ((AliTRDCalDCS*)caldcsSOR)->GetFEEArr()->GetSize();
+  if (calVer == 2) feeArrSiz = ((AliTRDCalDCSv2*)caldcsSOR)->GetFEEArr()->GetSize();
+
   nsb1 = 0; nsb2 = 0; nsb3 = 0; nsb4 = 0; nsb5 = 0; nChanged = 0;
-  for(Int_t iROC=0; iROC<AliTRDcalibDB::kNdet && iROC<caldcsSOR->GetFEEArr()->GetSize(); iROC++) {
-    AliTRDCalDCSFEE *dcsSorFee = caldcsSOR->GetCalDCSFEEObj(iROC);
-    AliTRDCalDCSFEE *dcsEorFee = caldcsEOR->GetCalDCSFEEObj(iROC);
+  for(Int_t iROC=0; iROC<AliTRDcalibDB::kNdet && iROC<feeArrSiz; iROC++) {
+    TObject* dcsSorFee;
+    TObject* dcsEorFee;
+    if (calVer == 1) {
+      dcsSorFee = ((AliTRDCalDCS*)caldcsSOR)->GetCalDCSFEEObj(iROC);
+      dcsEorFee = ((AliTRDCalDCS*)caldcsEOR)->GetCalDCSFEEObj(iROC);
+    } else if (calVer == 2) {
+      dcsSorFee = ((AliTRDCalDCSv2*)caldcsSOR)->GetCalDCSFEEObj(iROC);
+      dcsEorFee = ((AliTRDCalDCSv2*)caldcsEOR)->GetCalDCSFEEObj(iROC);
+    } else continue;
+
     if(dcsSorFee) {
-      statusArraySOR[iROC] = dcsSorFee->GetStatusBit();
+      if (calVer == 1) statusArraySOR[iROC] = ((AliTRDCalDCSFEE*)dcsSorFee)->GetStatusBit();
+      if (calVer == 2) statusArraySOR[iROC] = ((AliTRDCalDCSFEEv2*)dcsSorFee)->GetStatusBit();
       if(statusArraySOR[iROC] == 1) nsb1++;
       if(statusArraySOR[iROC] == 2) nsb2++;
       if(statusArraySOR[iROC] == 3) nsb3++;
@@ -942,7 +985,8 @@
       if(statusArraySOR[iROC] == 5) nsb5++;
     }
     if(dcsEorFee) {
-      statusArrayEOR[iROC] = dcsEorFee->GetStatusBit();
+      if (calVer == 1) statusArrayEOR[iROC] = ((AliTRDCalDCSFEE*)dcsEorFee)->GetStatusBit();
+      if (calVer == 2) statusArrayEOR[iROC] = ((AliTRDCalDCSFEEv2*)dcsEorFee)->GetStatusBit();
     }
     if(sorAndEor) {
       if((statusArraySOR[iROC]-statusArrayEOR[iROC]) != 0) nChanged++;

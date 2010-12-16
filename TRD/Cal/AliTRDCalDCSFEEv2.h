@@ -26,12 +26,12 @@ class AliTRDCalDCSFEEv2 : public TObject {
   AliTRDCalDCSFEEv2 &operator=(const AliTRDCalDCSFEEv2 &c);
 
   void    SetStatusBit(Int_t stbit)                  { fStatusBit           = (Char_t)stbit;        }
-  void    SetDCSid(Int_t dcsid)                      { fDCSID               = (Char_t)dcsid;        }
+  void    SetDCSid(Int_t dcsid)                      { fDCSID               = (Short_t)dcsid;       }
   void    SetSM(Int_t smid)                          { fSM                  = (Char_t)smid;         }
   void    SetStack(Int_t stid)                       { fStack               = (Char_t)stid;         }
   void    SetLayer(Int_t lyid)                       { fLayer               = (Char_t)lyid;         }
-  void    SetNumberOfTimeBins(Int_t value)           { fNumberOfTimeBins    = (UShort_t)value;      }
-  void    SetConfigTag(Int_t cfgt)                   { fConfigTag           = (UShort_t)cfgt;       }
+  void    SetNumberOfTimeBins(Int_t value)           { fNumberOfTimeBins    = (Short_t)value;       }
+  void    SetConfigTag(Int_t cfgt)                   { fConfigTag           = (Short_t)cfgt;        }
   void    SetSingleHitThres(Int_t sht)               { fSingleHitThres      = (Short_t)sht;         }
   void    SetThreePadClustThres(Int_t tpct)          { fThrPdClsThres       = (Short_t)tpct;        }
   void    SetSelectiveNoZS(Int_t snzs)               { fSelNoZS             = (Short_t)snzs;        }
@@ -52,8 +52,8 @@ class AliTRDCalDCSFEEv2 : public TObject {
   void    SetGainTableName(TString gt)               { fGainTableName       = gt;                   }
   void    SetGainTableDesc(TString gd)               { fGainTableDesc       = gd;                   }
   void    SetGainTableRocType(TString gr)            { fGainTableRocType    = gr;                   }
-  void    SetMCMGlobalState(Int_t r,Int_t m,Int_t g) { fRStateGSM[r][m]     = g;                    }
-  void    SetMCMStateNI(Int_t r,Int_t m,Int_t v)     { fRStateNI[r][m]      = v;                    }
+  void    SetMCMGlobalState(Int_t r,Int_t m,Int_t g) { fRStateGSM[r][m]     = (Char_t)g;            }
+  void    SetMCMStateNI(Int_t r,Int_t m,Int_t v)     { fRStateNI[r][m]      = (Char_t)v;            }
   void    SetMCMEventCnt(Int_t r,Int_t m,Int_t v)    { fRStateEV[r][m]      = v;                    }
   void    SetMCMPtCnt(Int_t r,Int_t m,Int_t v)       { fRStatePTRG[r][m]    = v;                    }
   void    SetGainTableAdcdac(Int_t r,Int_t m,Int_t v){ fGainTableAdcdac[r][m]         = (Char_t)v;  }
@@ -87,8 +87,8 @@ class AliTRDCalDCSFEEv2 : public TObject {
   TString GetGainTableName() const                   { return fGainTableName;                       }
   TString GetGainTableDesc() const                   { return fGainTableDesc;                       }
   TString GetGainTableRocType() const                { return fGainTableRocType;                    }
-  Int_t   GetMCMGlobalState(Int_t r,Int_t m) const   { return (UChar_t)fRStateGSM[r][m];            }
-  Int_t   GetMCMStateNI(Int_t r,Int_t m) const       { return (UChar_t)fRStateNI[r][m];             }
+  Int_t   GetMCMGlobalState(Int_t r,Int_t m) const   { return (Char_t)fRStateGSM[r][m];             }
+  Int_t   GetMCMStateNI(Int_t r,Int_t m) const       { return (Char_t)fRStateNI[r][m];              }
   Int_t   GetMCMEventCnt(Int_t r,Int_t m) const      { return fRStateEV[r][m];                      }
   Int_t   GetMCMPtCnt(Int_t r,Int_t m) const         { return fRStatePTRG[r][m];                    }
   Int_t   GetGainTableAdcdac(Int_t r,Int_t m) const  { return (Int_t)fGainTableAdcdac[r][m];        }

@@ -15,10 +15,10 @@
 //
 // So the simplest way to use this macro is if you want to check the output of a given
 // run from the OCDB:
-// .x AliTRDcheckConfig.C(60111)
+// .x AliTRDcheckConfigv2.C(60111)
 //
 // An example for quickly checking a local file:
-// .x AliTRDcheckConfig.C(0, "local quiet", 533, "$ALICE_ROOT/TRD/Calib/DCS/Run0_999999999_v0_s0.root")
+// .x AliTRDcheckConfigv2.C(0, "local quiet", 533, "$ALICE_ROOT/TRD/Calib/DCS/Run0_999999999_v0_s0.root")
 //
 // Please contact Frederick Kramer in case of problems
 //===================================================================================
@@ -36,6 +36,7 @@ const Int_t nMCM = 18;
 const Int_t cArraySize = 1000;
 
 Bool_t errors = false;
+Int_t  calVer = 0;
 
 Int_t AnalyzeArray(Int_t states[cArraySize], Int_t occur[cArraySize]) {
   long long srtIndx[cArraySize] = 0;
@@ -77,7 +78,7 @@ void FillItemInArray(Int_t states[cArraySize], Int_t occur[cArraySize], Int_t it
   }
 }
 
-void GetMajoritys(AliTRDCalDCS* calDCSObj) {
+void GetMajoritys(TObject* calDCSObj) {
   
   Int_t gsmStates[cArraySize] = {0}, gsmOccur[cArraySize] = {0};
   Int_t nimStates[cArraySize] = {0}, nimOccur[cArraySize] = {0};
@@ -91,15 +92,42 @@ void GetMajoritys(AliTRDCalDCS* calDCSObj) {
     nptStates[i] = 0; nptOccur[i]  = 0;  
   }
   
-  for (Int_t i=0; i<nROC && i<calDCSObj->GetFEEArr()->GetSize(); i++) {
-    AliTRDCalDCSFEE *idcsfee = calDCSObj->GetCalDCSFEEObj(i);
-    if ((idcsfee == NULL) || (idcsfee->GetStatusBit() != 0)) continue;
+
+  Int_t feeArrSiz = 0;
+  if (calVer == 1) feeArrSiz = ((AliTRDCalDCS*)calDCSObj)->GetFEEArr()->GetSize();
+  if (calVer == 2) feeArrSiz = ((AliTRDCalDCSv2*)calDCSObj)->GetFEEArr()->GetSize();
+
+  for (Int_t i=0; i<nROC && i<feeArrSiz; i++) {
+    TObject* idcsfee;
+    if (calVer == 1) idcsfee = ((AliTRDCalDCS*)calDCSObj)->GetCalDCSFEEObj(i);
+    if (calVer == 2) idcsfee = ((AliTRDCalDCSv2*)calDCSObj)->GetCalDCSFEEObj(i);
+
+    if (idcsfee == NULL) continue;
+
+    Int_t sbit = 0;
+    if (calVer == 1) ((AliTRDCalDCSFEE*)idcsfee)->GetStatusBit();
+    if (calVer == 2) ((AliTRDCalDCSFEEv2*)idcsfee)->GetStatusBit();
+
+    if (sbit != 0) continue;
+
     for (Int_t j=0; j<nROB; j++) {
       for (Int_t k=0; k<nMCM; k++) {
-	Int_t igsm = idcsfee->GetMCMGlobalState(j,k);
-	Int_t inim = idcsfee->GetMCMStateNI(j,k);
-	Int_t inev = idcsfee->GetMCMEventCnt(j,k);
-	Int_t inpt = idcsfee->GetMCMPtCnt(j,k);
+	Int_t igsm = 0;
+	Int_t inim = 0;
+	Int_t inev = 0;
+	Int_t inpt = 0;
+	if (calVer == 1) {
+	  igsm = ((AliTRDCalDCSFEE*)idcsfee)->GetMCMGlobalState(j,k);
+	  inim = ((AliTRDCalDCSFEE*)idcsfee)->GetMCMStateNI(j,k);
+	  inev = ((AliTRDCalDCSFEE*)idcsfee)->GetMCMEventCnt(j,k);
+	  inpt = ((AliTRDCalDCSFEE*)idcsfee)->GetMCMPtCnt(j,k);
+	}
+	if (calVer == 2) {
+	  igsm = ((AliTRDCalDCSFEEv2*)idcsfee)->GetMCMGlobalState(j,k);
+	  inim = ((AliTRDCalDCSFEEv2*)idcsfee)->GetMCMStateNI(j,k);
+	  inev = ((AliTRDCalDCSFEEv2*)idcsfee)->GetMCMEventCnt(j,k);
+	  inpt = ((AliTRDCalDCSFEEv2*)idcsfee)->GetMCMPtCnt(j,k);
+	}
 	
 	FillItemInArray(gsmStates, gsmOccur, igsm, false); 
 	FillItemInArray(nimStates, nimOccur, inim, false); 
@@ -123,7 +151,7 @@ void GetMajoritys(AliTRDCalDCS* calDCSObj) {
 
 
 
-void GetMajorityDifferences(AliTRDCalDCS* calDCSObj, AliTRDCalDCS* calDCSObj2) {
+void GetMajorityDifferences(TObject* calDCSObj, TObject* calDCSObj2) {
   
   Int_t gsmStates[cArraySize] = {0}, gsmOccur[cArraySize] = {0};
   Int_t nimStates[cArraySize] = {0}, nimOccur[cArraySize] = {0};
@@ -136,26 +164,69 @@ void GetMajorityDifferences(AliTRDCalDCS* calDCSObj, AliTRDCalDCS* calDCSObj2) {
     nevStates[i] = 0; nevOccur[i]  = 0;
     nptStates[i] = 0; nptOccur[i]  = 0;  
   }
-  
-  for (Int_t i=0; i<nROC && i<calDCSObj->GetFEEArr()->GetSize() && i<calDCSObj2->GetFEEArr()->GetSize(); i++) {
-    AliTRDCalDCSFEE *idcsfee = calDCSObj->GetCalDCSFEEObj(i);
-    AliTRDCalDCSFEE *idcsfee2 = calDCSObj2->GetCalDCSFEEObj(i);
-    if ((idcsfee == NULL) || (idcsfee2 == NULL) || 
-      (idcsfee->GetStatusBit() != 0) /*|| (idcsfee2->GetStatusBit() != 0)*/) continue;
+
+  Int_t feeArrSiz1 = 0;
+  Int_t feeArrSiz2 = 0;
+  if (calVer == 1) {
+    feeArrSiz1 = ((AliTRDCalDCS*)calDCSObj)->GetFEEArr()->GetSize();
+    feeArrSiz2 = ((AliTRDCalDCS*)calDCSObj2)->GetFEEArr()->GetSize();
+  }
+  if (calVer == 2) {
+    feeArrSiz1 = ((AliTRDCalDCSv2*)calDCSObj)->GetFEEArr()->GetSize();
+    feeArrSiz2 = ((AliTRDCalDCSv2*)calDCSObj2)->GetFEEArr()->GetSize();
+  }
+
+  for (Int_t i=0; i<nROC && i<feeArrSiz1 && i<feeArrSiz2; i++) {
+    TObject* idcsfee;
+    TObject* idcsfee2;
+    if (calVer == 1) {
+      idcsfee  = ((AliTRDCalDCS*)calDCSObj)->GetCalDCSFEEObj(i);
+      idcsfee2 = ((AliTRDCalDCS*)calDCSObj2)->GetCalDCSFEEObj(i);
+    }
+    if (calVer == 2) {
+      idcsfee  = ((AliTRDCalDCSv2*)calDCSObj)->GetCalDCSFEEObj(i);
+      idcsfee2 = ((AliTRDCalDCSv2*)calDCSObj2)->GetCalDCSFEEObj(i);
+    }
+    Int_t sbit = 0;
+    if (calVer == 1) ((AliTRDCalDCSFEE*)idcsfee)->GetStatusBit();
+    if (calVer == 1) ((AliTRDCalDCSFEEv2*)idcsfee)->GetStatusBit();
+    if ((idcsfee == NULL) || (idcsfee2 == NULL) || (sbit != 0) /*|| (idcsfee2->GetStatusBit() != 0)*/) continue;
     for (Int_t j=0; j<nROB; j++) {
       for (Int_t k=0; k<nMCM; k++) {
-	Int_t igsm = idcsfee->GetMCMGlobalState(j,k) - idcsfee2->GetMCMGlobalState(j,k);
-	Int_t inim = idcsfee->GetMCMStateNI(j,k)     - idcsfee2->GetMCMStateNI(j,k);
-	Int_t inev = idcsfee2->GetMCMEventCnt(j,k)   - idcsfee->GetMCMEventCnt(j,k);
-	Int_t inpt = idcsfee2->GetMCMPtCnt(j,k)      - idcsfee->GetMCMPtCnt(j,k);
+	Int_t igsm, inim, inev, inpt, igsm1, inim1, inev1, inpt1, igsm2, inim2, inev2, inpt2;
+	if (calVer == 1) {
+	  igsm1 = ((AliTRDCalDCSFEE*)idcsfee)->GetMCMGlobalState(j,k);
+	  inim1 = ((AliTRDCalDCSFEE*)idcsfee)->GetMCMStateNI(j,k);
+	  inev1 = ((AliTRDCalDCSFEE*)idcsfee)->GetMCMEventCnt(j,k);
+	  inpt1 = ((AliTRDCalDCSFEE*)idcsfee)->GetMCMPtCnt(j,k);
+	  igsm2 = ((AliTRDCalDCSFEE*)idcsfee2)->GetMCMGlobalState(j,k);
+	  inim2 = ((AliTRDCalDCSFEE*)idcsfee2)->GetMCMStateNI(j,k);
+	  inev2 = ((AliTRDCalDCSFEE*)idcsfee2)->GetMCMEventCnt(j,k);
+	  inpt2 = ((AliTRDCalDCSFEE*)idcsfee2)->GetMCMPtCnt(j,k);
+	}
+	if (calVer == 2) {
+	  igsm1 = ((AliTRDCalDCSFEEv2*)idcsfee)->GetMCMGlobalState(j,k);
+	  inim1 = ((AliTRDCalDCSFEEv2*)idcsfee)->GetMCMStateNI(j,k);
+	  inev1 = ((AliTRDCalDCSFEEv2*)idcsfee)->GetMCMEventCnt(j,k);
+	  inpt1 = ((AliTRDCalDCSFEEv2*)idcsfee)->GetMCMPtCnt(j,k);
+	  igsm2 = ((AliTRDCalDCSFEEv2*)idcsfee2)->GetMCMGlobalState(j,k);
+	  inim2 = ((AliTRDCalDCSFEEv2*)idcsfee2)->GetMCMStateNI(j,k);
+	  inev2 = ((AliTRDCalDCSFEEv2*)idcsfee2)->GetMCMEventCnt(j,k);
+	  inpt2 = ((AliTRDCalDCSFEEv2*)idcsfee2)->GetMCMPtCnt(j,k);
+	}
+
+	igsm = igsm1 - igsm2;
+	inim = inim1 - inim2;
+	inev = inev2 - inev1;
+	inpt = inpt2 - inpt1;
 	
 	// if they were set to -1, it means they were not actauuly set
 	// change -1 to -100 to mean they werent set since the above 
 	// can give negitives
-	if (idcsfee->GetMCMGlobalState(j,k) == -1 && igsm == 0) igsm =-100000;
-	if (idcsfee->GetMCMStateNI(j,k) == -1 && inim == 0)     inim =-100000;
-	if (idcsfee->GetMCMEventCnt(j,k) == -1 && inev == 0)    inev =-100000;
-	if (idcsfee->GetMCMPtCnt(j,k) == -1 && inpt == 0)       inpt =-100000;
+	if (igsm1 == -1 && igsm == 0) igsm =-100000;
+	if (inim1 == -1 && inim == 0) inim =-100000;
+	if (inev1 == -1 && inev == 0) inev =-100000;
+	if (inpt1 == -1 && inpt == 0) inpt =-100000;
 	
 	FillItemInArray(gsmStates, gsmOccur, igsm, true); 
 	FillItemInArray(nimStates, nimOccur, inim, true); 
@@ -200,7 +271,7 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
     entry = man->Get("TRD/Calib/DCS", runNr);
     if (entry == NULL) {
       cout << endl << "ERROR: Unable to get the AliTRDCalDCS object from the OCDB for run number " << runNr << endl << endl;
-      cout << "If the run number is correct, it could be that the year is no longer 2009 and" << endl;
+      cout << "If the run number is correct, it could be that the year is no longer 2010 and" << endl;
       cout << "the path where the objects is stored has changed, check the top of this macro " << endl;
       cout << "to change the path." << endl;
       return;
@@ -222,17 +293,15 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
     TObjArray *objArrayCDB = (TObjArray*)entry->GetObject();
   }
   
-  // the CalDCS object
-  AliTRDCalDCS *caldcs;
-  AliTRDCalDCS *caldcs2;
+  if (!strcmp(objArrayCDB->At(0)->ClassName(),"AliTRDCalDCS"))   calVer = 1;
+  if (!strcmp(objArrayCDB->At(0)->ClassName(),"AliTRDCalDCSv2")) calVer = 2;
 
   Bool_t sorandeor = true;
-
-  caldcs = (AliTRDCalDCS*) objArrayCDB->At(0);
-  caldcs2 = (AliTRDCalDCS*) objArrayCDB->At(1);
+  TObject *caldcs  = objArrayCDB->At(0);
+  TObject *caldcs2 = objArrayCDB->At(1);
 
   if (caldcs == NULL && caldcs2 == NULL) {
-    cout << "E : Niether the start or end of run files were in the root file.";
+    cout << "E : Neither the start or end of run files were in the root file.";
     return;
   } else if (caldcs != NULL && caldcs2 == NULL) {
     cout << "E : The EOR file was not in the root file.";
@@ -257,12 +326,19 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
   TString bitonestr = " ROCs with status bit 1! BAD! This means the chamber(s) didn't respont even though is should have been in a good state.\n    DCS IDs: ";
   Int_t lengthone = bitonestr.Length();
 
+  Int_t feeArrSiz = 0;
+  if (calVer == 1) feeArrSiz = ((AliTRDCalDCS*)caldcs)->GetFEEArr()->GetSize();
+  if (calVer == 2) feeArrSiz = ((AliTRDCalDCSv2*)caldcs)->GetFEEArr()->GetSize();
+
   Int_t nSB1=0, nSB2=0, nSB3=0, nSB4=0, nSB5=0, nTot=0;
-  for (Int_t i=0; i<nROC && i<caldcs->GetFEEArr()->GetSize(); i++) {
-    AliTRDCalDCSFEE *idcsfee;
-    idcsfee = caldcs->GetCalDCSFEEObj(i);
+  for (Int_t i=0; i<nROC && i<feeArrSiz; i++) {
+    TObject* idcsfee;
+    if (calVer == 1) idcsfee = ((AliTRDCalDCS*)caldcs)->GetCalDCSFEEObj(i);
+    if (calVer == 2) idcsfee = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(i);
     if (idcsfee != NULL) {
-      Int_t sb = idcsfee->GetStatusBit();
+      Int_t sb;
+      if (calVer == 1) sb = ((AliTRDCalDCSFEE*)idcsfee)->GetStatusBit();
+      if (calVer == 2) sb = ((AliTRDCalDCSFEEv2*)idcsfee)->GetStatusBit();
       if (sb == 5) { bitfivestr  += i; bitfivestr  += "  "; nSB5++; }
       if (sb == 4) { bitfourstr  += i; bitfourstr  += "  "; nSB4++; errors = true; }
       if (sb == 3) { bitthreestr += i; bitthreestr += "  "; nSB3++; errors = true; }
@@ -281,14 +357,32 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
   cout << "The remaining " << nTot-(nSB1+nSB2+nSB3+nSB4+nSB5) << " ROCs responded correctly in the start of run."<<endl;
 
   Int_t nChanged=0, nTot=0;
-  for (Int_t i=0; i<nROC && i<caldcs->GetFEEArr()->GetSize(); i++) {
-    AliTRDCalDCSFEE *idcsfee;
-    idcsfee = caldcs->GetCalDCSFEEObj(i);
-    idcsfee2 = caldcs2->GetCalDCSFEEObj(i);
+  for (Int_t i=0; i<nROC && i<feeArrSiz; i++) {
+    TObject* idcsfee;
+    TObject* idcsfee2;
+    if (calVer == 1) {
+      idcsfee  = ((AliTRDCalDCS*)caldcs)->GetCalDCSFEEObj(i);
+      idcsfee2 = ((AliTRDCalDCS*)caldcs2)->GetCalDCSFEEObj(i);
+    }
+    if (calVer == 2) {
+      idcsfee  = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(i);
+      idcsfee2 = ((AliTRDCalDCSv2*)caldcs2)->GetCalDCSFEEObj(i);
+    }
     if (idcsfee != NULL && idcsfee2 != NULL) {
-      Int_t sbd = idcsfee->GetStatusBit() - idcsfee2->GetStatusBit();
+      Int_t sbd1 = 0;
+      Int_t sbd2 = 0;
+      if (calVer == 1) {
+	sbd1 = ((AliTRDCalDCSFEE*)idcsfee)->GetStatusBit();
+	sbd2 = ((AliTRDCalDCSFEE*)idcsfee2)->GetStatusBit();
+      }
+      if (calVer == 2) {
+	sbd1 = ((AliTRDCalDCSFEEv2*)idcsfee)->GetStatusBit();
+	sbd2 = ((AliTRDCalDCSFEEv2*)idcsfee2)->GetStatusBit();
+      }
+      Int_t sbd = sbd1 - sbd2;
       if (sbd != 0) { 
-	cout << "ROC " << i << " changed from state " << idcsfee->GetStatusBit() << " at start of the run to "  << idcsfee2->GetStatusBit() << " at the end of the run." << endl;
+	cout << "ROC " << i << " changed from state " << sbd1 << " at start of the run to "  << sbd2 << " at the end of the run." << endl;
+	cout << "ROC " << i << " changed from state " << sbd1 << " at start of the run to "  << sbd2 << " at the end of the run." << endl;
 	nChanged++; 
       }
       nTot += 1;
@@ -311,42 +405,70 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
   cout << endl << "============ Global Configuraton: ============" << endl;
   cout<<"I : Anything not listed is not set, mixed numbers are indicated with a" << endl;
   cout<<"    value of -2 and strings are set to 'mixed' if they're mixed." << endl << endl;
-  if (caldcs->GetGlobalNumberOfTimeBins() != -1)
-    cout<<"Global number of time bins.........................: "<<caldcs->GetGlobalNumberOfTimeBins() << endl;
-  if (caldcs->GetGlobalConfigTag() != -1)
-    cout<<"Global configuration tag...........................: "<<caldcs->GetGlobalConfigTag() << endl;
-  if (caldcs->GetGlobalSingleHitThres() != -1)
-    cout<<"Global single hit threshold........................: "<<caldcs->GetGlobalSingleHitThres() << endl;
-  if (caldcs->GetGlobalThreePadClustThres() != -1)
-    cout<<"Global three pad cluster threshold.................: "<<caldcs->GetGlobalThreePadClustThres()<<endl;
-  if (caldcs->GetGlobalSelectiveNoZS() != -1)
-    cout<<"Global selective ZS (every i'th event).............: "<<caldcs->GetGlobalSelectiveNoZS() << endl;
-  if (caldcs->GetGlobalTCFilterWeight() != -1)
-    cout<<"Global tail cancellation filter weight.............: "<<caldcs->GetGlobalTCFilterWeight() << endl;
-  if (caldcs->GetGlobalTCFilterShortDecPar() != -1)
-    cout<<"Global tail cancellat. filter short decay parameter: "<<caldcs->GetGlobalTCFilterShortDecPar()<<endl;
-  if (caldcs->GetGlobalTCFilterLongDecPar() != -1)
-    cout<<"Global tail cancellation filt. long decay parameter: "<<caldcs->GetGlobalTCFilterLongDecPar()<<endl;
-  if (caldcs->GetGlobalModeFastStatNoise() != -1)
-    cout<<"Global fast statistics mode?.......................: "<<caldcs->GetGlobalModeFastStatNoise() << endl;
-  if (caldcs->GetGlobalConfigVersion() != "")
-    cout<<"Global configuration tag version...................: "<<caldcs->GetGlobalConfigVersion() << endl;
-  if (caldcs->GetGlobalConfigName() != "")
-    cout<<"Global configuration tag name......................: "<<caldcs->GetGlobalConfigName() << endl;
-  if (caldcs->GetGlobalFilterType() != "")
-    cout<<"Global filter type.................................: "<<caldcs->GetGlobalFilterType() << endl;
-  if (caldcs->GetGlobalReadoutParam() != "")
-    cout<<"Global readout parameter...........................: "<<caldcs->GetGlobalReadoutParam() << endl;
-  if (caldcs->GetGlobalTestPattern() != "")
-    cout<<"Global test pattern................................: "<<caldcs->GetGlobalTestPattern() << endl;
-  if (caldcs->GetGlobalTrackletMode() != "")
-    cout<<"Global tracklet mode...............................: "<<caldcs->GetGlobalTrackletMode() << endl;
-  if (caldcs->GetGlobalTrackletDef() != "")
-    cout<<"Global tracklet definition.........................: "<<caldcs->GetGlobalTrackletDef() << endl;
-  if (caldcs->GetGlobalTriggerSetup() != "")
-    cout<<"Global trigger setup...............................: "<<caldcs->GetGlobalTriggerSetup() << endl;
-  if (caldcs->GetGlobalAddOptions() != "")
-    cout<<"Global additional options..........................: "<<caldcs->GetGlobalAddOptions() << endl;
+ 
+  Int_t   gtb, gct, gsh, gtc, gsz, gfw, gfs, gfl, gsn;
+  TString gcv, gcn, gft, grp, gtp, gtm, gtd, gts, gao;
+
+  if (calVer == 1) {
+    gtb = ((AliTRDCalDCS*)caldcs)->GetGlobalNumberOfTimeBins();
+    gct = ((AliTRDCalDCS*)caldcs)->GetGlobalConfigTag();
+    gsh = ((AliTRDCalDCS*)caldcs)->GetGlobalSingleHitThres();
+    gtc = ((AliTRDCalDCS*)caldcs)->GetGlobalThreePadClustThres();
+    gsz = ((AliTRDCalDCS*)caldcs)->GetGlobalSelectiveNoZS();
+    gfw = ((AliTRDCalDCS*)caldcs)->GetGlobalTCFilterWeight();
+    gfs = ((AliTRDCalDCS*)caldcs)->GetGlobalTCFilterShortDecPar();
+    gfl = ((AliTRDCalDCS*)caldcs)->GetGlobalTCFilterLongDecPar();
+    gsn = ((AliTRDCalDCS*)caldcs)->GetGlobalModeFastStatNoise();
+    gcv = ((AliTRDCalDCS*)caldcs)->GetGlobalConfigVersion();
+    gcn = ((AliTRDCalDCS*)caldcs)->GetGlobalConfigName();
+    gft = ((AliTRDCalDCS*)caldcs)->GetGlobalFilterType();
+    grp = ((AliTRDCalDCS*)caldcs)->GetGlobalReadoutParam();
+    gtp = ((AliTRDCalDCS*)caldcs)->GetGlobalTestPattern();
+    gtm = ((AliTRDCalDCS*)caldcs)->GetGlobalTrackletMode();
+    gtd = ((AliTRDCalDCS*)caldcs)->GetGlobalTrackletDef();
+    gts = ((AliTRDCalDCS*)caldcs)->GetGlobalTriggerSetup();
+    gao = ((AliTRDCalDCS*)caldcs)->GetGlobalAddOptions();
+  }
+  if (calVer == 2) {
+    gtb = ((AliTRDCalDCSv2*)caldcs)->GetGlobalNumberOfTimeBins();
+    gct = ((AliTRDCalDCSv2*)caldcs)->GetGlobalConfigTag();
+    gsh = ((AliTRDCalDCSv2*)caldcs)->GetGlobalSingleHitThres();
+    gtc = ((AliTRDCalDCSv2*)caldcs)->GetGlobalThreePadClustThres();
+    gsz = ((AliTRDCalDCSv2*)caldcs)->GetGlobalSelectiveNoZS();
+    gfw = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTCFilterWeight();
+    gfs = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTCFilterShortDecPar();
+    gfl = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTCFilterLongDecPar();
+    gsn = ((AliTRDCalDCSv2*)caldcs)->GetGlobalModeFastStatNoise();
+    gcv = ((AliTRDCalDCSv2*)caldcs)->GetGlobalConfigVersion();
+    gcn = ((AliTRDCalDCSv2*)caldcs)->GetGlobalConfigName();
+    gft = ((AliTRDCalDCSv2*)caldcs)->GetGlobalFilterType();
+    grp = ((AliTRDCalDCSv2*)caldcs)->GetGlobalReadoutParam();
+    gtp = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTestPattern();
+    gtm = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTrackletMode();
+    gtd = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTrackletDef();
+    gts = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTriggerSetup();
+    gao = ((AliTRDCalDCSv2*)caldcs)->GetGlobalAddOptions();
+  }
+
+
+  if (gtb != -1) cout<<"Global number of time bins.........................: "<< gtb << endl;
+  if (gct != -1) cout<<"Global configuration tag...........................: "<< gct << endl;
+  if (gsh != -1) cout<<"Global single hit threshold........................: "<< gsh << endl;
+  if (gtc != -1) cout<<"Global three pad cluster threshold.................: "<< gtc << endl;
+  if (gsz != -1) cout<<"Global selective ZS (every i'th event).............: "<< gsz << endl;
+  if (gfw != -1) cout<<"Global tail cancellation filter weight.............: "<< gfs << endl;
+  if (gfs != -1) cout<<"Global tail cancellat. filter short decay parameter: "<< gfs << endl;
+  if (gfl != -1) cout<<"Global tail cancellation filt. long decay parameter: "<< gsn << endl;
+  if (gsn != -1) cout<<"Global fast statistics mode?.......................: "<< gsn << endl;
+  if (gcv != "") cout<<"Global configuration tag version...................: "<< gcv << endl;
+  if (gcn != "") cout<<"Global configuration tag name......................: "<< gcn << endl;
+  if (gft != "") cout<<"Global filter type.................................: "<< gft << endl;
+  if (grp != "") cout<<"Global readout parameter...........................: "<< grp << endl;
+  if (gtp != "") cout<<"Global test pattern................................: "<< gtp << endl;
+  if (gtm != "") cout<<"Global tracklet mode...............................: "<< gtm << endl;
+  if (gtd != "") cout<<"Global tracklet definition.........................: "<< gtd << endl;
+  if (gts != "") cout<<"Global trigger setup...............................: "<< gts << endl;
+  if (gao != "") cout<<"Global additional options..........................: "<< gao << endl;
   
   cout << endl << "============ Error Summary: ============" << endl;
   if (errors) {
