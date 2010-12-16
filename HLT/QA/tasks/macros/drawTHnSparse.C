@@ -209,7 +209,8 @@ void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D 
       off = hOFF->Projection(i); 
       hlt->SetTitle(hHLT->Projection(i)->GetTitle()); 
       defineYaxisMax(hlt, off);
-      off->SetLineColor(2);
+      //off->SetLineColor(2);
+      off->SetLineStyle(2);
      
       can->cd(i+1);
       hlt->Draw();
