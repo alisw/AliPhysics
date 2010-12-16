@@ -878,6 +878,8 @@ AliTRDCalChamberStatus *AliTRDPreprocessorOffline::ProduceChamberStatus()
 
     // ch2d
     TH1I *projch =  (TH1I *) fCH2d->ProjectionX("projch",idet+1,idet+1,(Option_t *)"e");
+    if (!projch) continue;
+
     Int_t entries = projch->GetEntries();
 
     // gain
@@ -888,24 +890,23 @@ AliTRDCalChamberStatus *AliTRDPreprocessorOffline::ProduceChamberStatus()
     Double_t defaultvdrift = calDetVDrift->GetMean();
     Double_t vdrift = calDetVDrift->GetValue(idet);
 
-
     if(entries<=0 ||
        TMath::Abs(defaultgain-gain) < 0.5 ||
        TMath::Abs(defaultvdrift-vdrift) < 0.1) {
      
-      printf(" chamber det %03d masked \n",idet);
-      CalChamberStatus->SetStatus(idet,2);
-      counter++;
+       printf(" chamber det %03d masked \n",idet);
+       CalChamberStatus->SetStatus(idet,2);
+       counter++;
     }
     
     // installed supermodules+1 -> abort
     if(counter > (7+1)*30) {
       printf("ERROR: more than one SM to be masked!! \n Abort...\n");
-      if(projch) delete projch;
+      delete projch;
       return 0x0;
     }
 
-    if(projch) delete projch;
+    delete projch;
 
   }
   return CalChamberStatus;
