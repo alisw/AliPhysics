@@ -7,9 +7,13 @@
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
 #include "AliAODForwardMult.h"
+#include "AliForwardUtil.h"
 #include <TH1.h>
 #include <TList.h>
 #include <TDirectory.h>
+#include <TROOT.h>
+#include <iostream>
+#include <iomanip>
 
 //====================================================================
 AliFMDEventInspector::AliFMDEventInspector()
@@ -17,9 +21,13 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHEventsTr(0), 
     fHEventsTrVtx(0),
     fHTriggers(0),
+    fHType(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.1),
     fList(0),
+    fEnergy(0),
+    fField(999), 
+    fCollisionSystem(kUnknown),
     fDebug(0)
 {
 }
@@ -30,9 +38,13 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHEventsTr(0), 
     fHEventsTrVtx(0), 
     fHTriggers(0),
+    fHType(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.1),
     fList(0),
+    fEnergy(0),
+    fField(999), 
+    fCollisionSystem(kUnknown),
     fDebug(0)
 {
 }
@@ -43,9 +55,13 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fHEventsTr(o.fHEventsTr), 
     fHEventsTrVtx(o.fHEventsTrVtx), 
     fHTriggers(o.fHTriggers),
+    fHType(o.fHType),
     fLowFluxCut(o.fMaxVzErr),
     fMaxVzErr(o.fMaxVzErr),
     fList(o.fList),
+    fEnergy(o.fEnergy),
+    fField(o.fField), 
+    fCollisionSystem(o.fCollisionSystem),
     fDebug(0)
 {
 }
@@ -56,6 +72,7 @@ AliFMDEventInspector::~AliFMDEventInspector()
   if (fHEventsTr)    delete fHEventsTr;
   if (fHEventsTrVtx) delete fHEventsTrVtx;
   if (fHTriggers)    delete fHTriggers;  
+  if (fHType)        delete fHType;
   if (fList)         delete fList;
 }
 //____________________________________________________________________
@@ -66,15 +83,20 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fHEventsTr         = o.fHEventsTr;
   fHEventsTrVtx      = o.fHEventsTrVtx;
   fHTriggers         = o.fHTriggers;
+  fHType             = o.fHType;
   fLowFluxCut        = o.fLowFluxCut;
   fMaxVzErr          = o.fMaxVzErr;
   fDebug             = o.fDebug;
   fList              = (o.fList ? new TList : 0);
+  fEnergy            = o.fEnergy;
+  fField             = o.fField;
+  fCollisionSystem   = o.fCollisionSystem;
   if (fList) { 
     fList->SetName(GetName());
     if (fHEventsTr)    fList->Add(fHEventsTr);
     if (fHEventsTrVtx) fList->Add(fHEventsTrVtx);
     if (fHTriggers)    fList->Add(fHTriggers);
+    if (fHType)        fList->Add(fHType);
   }
   return *this;
 }
@@ -145,6 +167,17 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHTriggers->GetXaxis()->SetBinLabel(9,         "spare1");
   fHTriggers->GetXaxis()->SetBinLabel(10,        "spare2");
   fList->Add(fHTriggers);
+
+  fHType = new TH1I("type", Form("Event type (cut: SPD mult>%d)", 
+				 fLowFluxCut), 2, -.5, 1.5);
+  fHType->SetFillColor(kRed+1);
+  fHType->SetFillStyle(3001);
+  fHType->SetStats(0);
+  fHType->SetDirectory(0);
+  fHType->GetXaxis()->SetBinLabel(1,"Low-flux");
+  fHType->GetXaxis()->SetBinLabel(2,"High-flux");
+  fList->Add(fHType);
+  
 }
 
 //____________________________________________________________________
@@ -161,7 +194,7 @@ UInt_t
 AliFMDEventInspector::Process(const AliESDEvent* event, 
 			      UInt_t&            triggers,
 			      Bool_t&            lowFlux,
-			      Int_t&             ivz, 
+			      UShort_t&          ivz, 
 			      Double_t&          vz)
 {
   // Check that we have an event 
@@ -172,24 +205,26 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 
   // Read trigger information from the ESD and store in AOD object
   if (!ReadTriggers(event, triggers)) { 
-    if (fDebug > 2) 
-      AliWarning("Failed to read triggers from ESD");
+    if (fDebug > 2) {
+      AliWarning("Failed to read triggers from ESD"); }
     return kNoTriggers;
   }
 
   // Check if this is a high-flux event 
   const AliMultiplicity* testmult = event->GetMultiplicity();
   if (!testmult) {
-    if (fDebug > 3) 
-      AliWarning("No central multiplicity object found");
+    if (fDebug > 3) {
+      AliWarning("No central multiplicity object found"); }
     return kNoSPD;
   }
   lowFlux = testmult->GetNumberOfTracklets() < fLowFluxCut;
+  
+  fHType->Fill(lowFlux ? 0 : 1);
 
   // Check the FMD ESD data 
   if (!event->GetFMDData()) { 
-    if (fDebug > 3) 
-      AliWarning("No FMD data found in ESD");
+    if (fDebug > 3) {
+      AliWarning("No FMD data found in ESD"); }
     return kNoFMD;
   }
 
@@ -199,20 +234,20 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 
   fHEventsTr->Fill(vz);
   if (!vzOk) { 
-    if (fDebug > 3) 
-      AliWarning("Failed to read vertex from ESD");
+    if (fDebug > 3) {
+      AliWarning("Failed to read vertex from ESD"); }
     return kNoVertex;
   }
   fHEventsTrVtx->Fill(vz);
 
   // Get the vertex bin 
-  ivz = fHEventsTr->GetXaxis()->FindBin(vz)-1;
-  if (ivz < 0 || ivz >= fHEventsTr->GetXaxis()->GetNbins()) { 
-    if (fDebug > 3) 
+  ivz = fHEventsTr->GetXaxis()->FindBin(vz);
+  if (ivz <= 0 || ivz > fHEventsTr->GetXaxis()->GetNbins()) { 
+    if (fDebug > 3) {
       AliWarning(Form("Vertex @ %f outside of range [%f,%f]", 
 		      vz, fHEventsTr->GetXaxis()->GetXmin(), 
-		      fHEventsTr->GetXaxis()->GetXmax()));
-    ivz = -1;
+		      fHEventsTr->GetXaxis()->GetXmax())); }
+    ivz = 0;
     return kBadVertex;
   }
   return kOk;
@@ -318,25 +353,25 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
   // Get the vertex 
   const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
   if (!vertex) { 
-    if (fDebug > 2) 
-      AliWarning("No SPD vertex found in ESD");
+    if (fDebug > 2) {
+      AliWarning("No SPD vertex found in ESD"); }
     return kFALSE;
   }
   
   // Check that enough tracklets contributed 
   if(vertex->GetNContributors() <= 0) {
-    if (fDebug > 2)
+    if (fDebug > 2) {
       AliWarning(Form("Number of contributors to vertex is %d<=0",
-		      vertex->GetNContributors()));
+		      vertex->GetNContributors())); }
     vz = 0;
     return kFALSE;
   }
 
   // Check that the uncertainty isn't too large 
   if (vertex->GetZRes() > fMaxVzErr) { 
-    if (fDebug > 2)
+    if (fDebug > 2) {
       AliWarning(Form("Uncertaintity in Z of vertex is too large %f > %f", 
-		      vertex->GetZRes(), fMaxVzErr));
+		      vertex->GetZRes(), fMaxVzErr)); }
     return kFALSE;
   }
 
@@ -344,6 +379,52 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
   vz = vertex->GetZ();
   return kTRUE;
 }
+
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
+{
+  fCollisionSystem = 
+    AliForwardUtil::ParseCollisionSystem(esd->GetBeamType());
+  fEnergy          = 
+    AliForwardUtil::ParseCenterOfMassEnergy(fCollisionSystem,	
+					      2 * esd->GetBeamEnergy());
+  fField           = 
+    AliForwardUtil::ParseMagneticField(esd->GetMagneticField());
+  
+  if (fCollisionSystem   == AliForwardUtil::kUnknown || 
+      fEnergy            <= 0                        || 
+      TMath::Abs(fField) >  10) 
+    return kFALSE;
+
+  return kTRUE;
+}
+
+//____________________________________________________________________
+void
+AliFMDEventInspector::Print(Option_t*) const
+{
+  char ind[gROOT->GetDirLevel()+1];
+  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
+  ind[gROOT->GetDirLevel()] = '\0';
+  TString sNN(AliForwardUtil::CenterOfMassEnergyString(fEnergy));
+  sNN.Strip(TString::kBoth, '0');
+  sNN.ReplaceAll("GeV", " GeV");
+  TString field(AliForwardUtil::MagneticFieldString(fField));
+  field.ReplaceAll("p",  "+");
+  field.ReplaceAll("m",  "-");
+  field.ReplaceAll("kG", " kG");
+  
+  std::cout << ind << "AliFMDEventInspector: " << GetName() << '\n'
+	    << ind << " Low flux cut:           " << fLowFluxCut << '\n'
+	    << ind << " Max(delta v_z):         " << fMaxVzErr << " cm\n"
+	    << ind << " System:                 " 
+	    << AliForwardUtil::CollisionSystemString(fCollisionSystem) << '\n'
+	    << ind << " CMS energy per nucleon: " << sNN << '\n'
+	    << ind << " Field:                  " <<  field << std::endl;
+}
+
+  
 //
 // EOF
 //

@@ -73,12 +73,12 @@ public:
    * Do the calculations 
    * 
    * @param hists    Cache of histograms 
-   * @param vtxBin   Vertex bin 
+   * @param vtxBin   Vertex bin (1 based)
    * @param out      Output histogram
    * 
    * @return true on successs 
    */
-  virtual Bool_t Collect(AliForwardUtil::Histos& hists, Int_t vtxBin, 
+  virtual Bool_t Collect(AliForwardUtil::Histos& hists, UShort_t vtxBin, 
 			 TH2D& out);
   /** 
    * Set the number of extra bins (beyond the secondary map border) 
@@ -101,66 +101,72 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  /** 
+   * Print information 
+   * 
+   * @param option Not used
+   */
+  void Print(Option_t* option="") const;
 protected:
   /** 
    * Get the first and last eta bin to use for a given ring and vertex 
    * 
    * @param d        Detector
    * @param r        Ring 
-   * @param vtxBin   Vertex bin 
+   * @param vtxBin   Vertex bin (1 based)
    * @param first    On return, the first eta bin to use 
    * @param last     On return, the last eta bin to use 
    */
-  virtual void GetFirstAndLast(UShort_t d, Char_t r, Int_t vtxBin, 
+  virtual void GetFirstAndLast(UShort_t d, Char_t r, UShort_t vtxBin, 
 			       Int_t& first, Int_t& last) const;
   /** 
    * Get the first and last eta bin to use for a given ring and vertex 
    * 
    * @param idx      Ring index as given by GetIdx
-   * @param vtxBin   Vertex bin 
+   * @param vtxBin   Vertex bin (1 based) 
    * @param first    On return, the first eta bin to use 
    * @param last     On return, the last eta bin to use 
    */
-  virtual void GetFirstAndLast(Int_t idx, Int_t vtxBin, 
+  virtual void GetFirstAndLast(Int_t idx, UShort_t vtxBin, 
 			       Int_t& first, Int_t& last) const;
   /** 
    * Get the first eta bin to use for a given ring and vertex 
    * 
    * @param d Detector 
    * @param r Ring 
-   * @param v vertex bin
+   * @param v vertex bin (1 based)
    * 
    * @return First eta bin to use, or -1 in case of problems 
    */  
-  Int_t GetFirst(UShort_t d, Char_t r, Int_t v) const; 
+  Int_t GetFirst(UShort_t d, Char_t r, UShort_t v) const; 
   /** 
    * Get the first eta bin to use for a given ring and vertex 
    * 
    * @param idx Ring index as given by GetIdx
-   * @param v vertex bin
+   * @param v vertex bin (1 based)
    * 
    * @return First eta bin to use, or -1 in case of problems 
    */  
-  Int_t GetFirst(Int_t idx, Int_t v) const; 
+  Int_t GetFirst(Int_t idx, UShort_t v) const; 
   /** 
    * Get the last eta bin to use for a given ring and vertex 
    * 
    * @param d Detector 
    * @param r Ring 
-   * @param v vertex bin
+   * @param v vertex bin (1 based)
    * 
    * @return Last eta bin to use, or -1 in case of problems 
    */  
-  Int_t GetLast(UShort_t d, Char_t r, Int_t v) const;
+  Int_t GetLast(UShort_t d, Char_t r, UShort_t v) const;
   /** 
    * Get the last eta bin to use for a given ring and vertex 
    * 
    * @param idx Ring index as given by GetIdx
-   * @param v vertex bin
+   * @param v vertex bin (1 based)
    * 
    * @return Last eta bin to use, or -1 in case of problems 
    */  
-  Int_t GetLast(Int_t idx, Int_t v) const; 
+  Int_t GetLast(Int_t idx, UShort_t v) const; 
   /** 
    * Get the detector and ring from the ring index 
    * 
@@ -185,22 +191,22 @@ protected:
    * @param d Detector
    * @param r Ring 
    * @param e Eta bin
-   * @param v Vertex bin
+   * @param v Vertex bin (1 based)
    *
    * @return Overlapping histogram index or -1
    */
-  Int_t GetOverlap(UShort_t d, Char_t r, Int_t e, Int_t v) const;
+  Int_t GetOverlap(UShort_t d, Char_t r, Int_t e, UShort_t v) const;
   /** 
    * Get the possibly overlapping histogram of eta bin @a e in 
    * detector and ring 
    * 
    * @param i Ring index
    * @param e Eta bin
-   * @param v Vertex bin
+   * @param v Vertex bin (1 based)
    *
    * @return Overlapping histogram index or -1
    */
-  Int_t GetOverlap(Int_t i, Int_t e, Int_t v) const;
+  Int_t GetOverlap(Int_t i, Int_t e, UShort_t v) const;
   /** 
    * Check if there's an overlapping histogram with this eta bin of
    * the detector and ring
@@ -208,11 +214,11 @@ protected:
    * @param d Detector 
    * @param r Ring 
    * @param e eta bin
-   * @param v Vertex bin
+   * @param v Vertex bin (1 based)
    * 
    * @return True if there's an overlapping histogram 
    */
-  Bool_t HasOverlap(UShort_t d, Char_t r, Int_t e, Int_t v) const;
+  Bool_t HasOverlap(UShort_t d, Char_t r, Int_t e, UShort_t v) const;
   /** 
    * Check if there's an overlapping histogram with this eta bin of
    * ring
@@ -223,7 +229,7 @@ protected:
    * 
    * @return True if there's an overlapping histogram 
    */
-  Bool_t HasOverlap(Int_t i, Int_t e, Int_t v) const;
+  Bool_t HasOverlap(Int_t i, Int_t e, UShort_t v) const;
 
 
   Int_t       fNCutBins;        // Number of additional bins to cut away
@@ -237,32 +243,32 @@ protected:
 
 //____________________________________________________________________
 inline void
-AliFMDHistCollector::GetFirstAndLast(UShort_t d, Char_t r, Int_t vtxbin, 
+AliFMDHistCollector::GetFirstAndLast(UShort_t d, Char_t r, UShort_t vtxbin, 
 				     Int_t& first, Int_t& last) const
 {
   GetFirstAndLast(GetIdx(d,r), vtxbin, first, last);
 }
 //____________________________________________________________________
 inline Int_t
-AliFMDHistCollector::GetFirst(UShort_t d, Char_t r, Int_t v) const 
+AliFMDHistCollector::GetFirst(UShort_t d, Char_t r, UShort_t v) const 
 {
   return GetFirst(GetIdx(d,r), v);
 }
 //____________________________________________________________________
 inline Int_t
-AliFMDHistCollector::GetLast(UShort_t d, Char_t r, Int_t v) const 
+AliFMDHistCollector::GetLast(UShort_t d, Char_t r, UShort_t v) const 
 {
   return GetLast(GetIdx(d, r), v);
 }
 //____________________________________________________________________
 inline Bool_t
-AliFMDHistCollector::HasOverlap(UShort_t d, Char_t r, Int_t e, Int_t v) const
+AliFMDHistCollector::HasOverlap(UShort_t d, Char_t r, Int_t e, UShort_t v) const
 {
   return GetOverlap(d,r,e,v) >= 0;
 }
 //____________________________________________________________________
 inline Bool_t
-AliFMDHistCollector::HasOverlap(Int_t i, Int_t e, Int_t v) const
+AliFMDHistCollector::HasOverlap(Int_t i, Int_t e, UShort_t v) const
 {
   return GetOverlap(i,e,v) >= 0;
 }

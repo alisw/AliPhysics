@@ -1,5 +1,6 @@
 #!/bin/bash 
 
+ana=$ALICE_ROOT/PWG2/FORWARD/analysis2
 nev=10000
 noanal=0
 nodraw=0
@@ -90,6 +91,7 @@ redir=
 if test $batch -gt 0 ; then 
     opts="-l -b -q -x" 
     redir="2>&1 | tee ${base}.log"
+    echo "redir=$redir"
 fi 
 if test $noanal -lt 1 ; then 
     rm -f AnalysisResult.root AliAODs.root
@@ -112,9 +114,16 @@ if test $noanal -lt 1 ; then
     if test $gdb -gt 0 ; then 
 	export PROOF_WRAPPERCMD="gdb -batch -x $ALICE_ROOT/PWG2/FORWARD/analysis2/gdb_cmds --args"
     fi
-    aliroot $opts $ALICE_ROOT/PWG2/FORWARD/analysis2/Pass1.C\(\".\",$nev,$af\) \
-	$redir 
-    rm -f event_stat.root EventStat_temp.root outputs_valid
+    echo "Running aliroot ${opts} ${ana}/Pass1.C\(\".\",$nev,$af\) $redir"
+    if test $batch -gt 0 ; then 
+	aliroot $opts ${ana}/Pass1.C\(\".\",$nev,$af\) 2>&1 | tee ${base}.log
+    else 
+	aliroot $opts ${ana}/Pass1.C\(\".\",$nev,$af\)
+    fi
+    rm -f event_stat.root \
+	EventStat_temp.root \
+	outputs_valid \
+	`printf %09d.stat $nev` 
     if test ! -f AnalysisResults.root || test ! -f AliAODs.root ; then 
 	echo "Analysis failed" 
 	exit 1
@@ -125,11 +134,10 @@ fi
 if test $nodraw -lt 1 ; then
     rm -f result.root 
     if test "x$tit" = "x" ; then 
-	tit="$nev\ events,\ v_{z}#in[$vzmin,$vzmax],\ $type"
-    else 
-	tit=`echo $tit | tr ' ' '\ '` 
+	tit="$nev events, v_{z}#in[$vzmin,$vzmax], $type"
     fi
-    aliroot ${opts} $ALICE_ROOT/PWG2/FORWARD/analysis2/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,\"$tit\",$hhd,$comp\)
+    tit=`echo $tit | tr ' ' '@'` 
+    aliroot ${opts} ${ana}/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,\"$tit\",$hhd,$comp\)
 fi
 
 

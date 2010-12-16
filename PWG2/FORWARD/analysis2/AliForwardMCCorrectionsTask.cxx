@@ -1,13 +1,19 @@
-#include "AliForwardMCCorrections.h"
+#include "AliForwardMCCorrectionsTask.h"
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
 #include "AliLog.h"
-#include "AliFMDAnaParameters.h"
+// #include "AliFMDAnaParameters.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
 #include "AliESDEvent.h"
 #include "AliAODHandler.h"
 #include "AliMultiplicity.h"
 #include "AliInputEventHandler.h"
+#include "AliStack.h"
+#include "AliMCEvent.h"
+#include "AliFMDStripIndex.h"
 #include <TH1.h>
+#include <TH3D.h>
 #include <TDirectory.h>
 #include <TTree.h>
 
@@ -15,7 +21,7 @@
 namespace {
   const char* GetEventName(Bool_t tr, Bool_t vtx) 
   {
-    return Form("nEvents%s%s", (tr ? "Tr" : ""), (vtx ? "Vtx", ""));
+    return Form("nEvents%s%s", (tr ? "Tr" : ""), (vtx ? "Vtx" : ""));
   }
   const char* GetHitsName(UShort_t d, Char_t r) 
   {
@@ -34,62 +40,113 @@ namespace {
 }
 
 //====================================================================
-AliForwardMCCorrections::AliForwardMCCorrections()
+AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask()
   : AliAnalysisTaskSE(),
+    fHEvents(0), 
     fHEventsTr(0), 
     fHEventsTrVtx(0),
+    fHEventsVtx(0), 
     fHTriggers(0),
+    fPrimaryInnerAll(0),   
+    fPrimaryOuterAll(0),   
+    fPrimaryInnerTrVtx(0), 
+    fPrimaryOuterTrVtx(0), 
+    fHitsFMD1i(0),         
+    fHitsFMD2i(0),         
+    fHitsFMD2o(0),         
+    fHitsFMD3i(0),         
+    fHitsFMD3o(0),         
+    fStripsFMD1i(0),       
+    fStripsFMD2i(0),       
+    fStripsFMD2o(0),       
+    fStripsFMD3i(0),       
+    fStripsFMD3o(0),       
     fVtxAxis(),
-    fEtaAxis()
+    fEtaAxis(),
+    fList()
 {
 }
 
 //____________________________________________________________________
-AliForwardMCCorrections::AliForwardMCCorrections(const char* name)
+AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const char* name)
   : AliAnalysisTaskSE(name), 
+    fHEvents(0), 
     fHEventsTr(0), 
-    fHEventsTrVtx(0), 
+    fHEventsTrVtx(0),
+    fHEventsVtx(0), 
     fHTriggers(0),
+    fPrimaryInnerAll(0),   
+    fPrimaryOuterAll(0),   
+    fPrimaryInnerTrVtx(0), 
+    fPrimaryOuterTrVtx(0), 
+    fHitsFMD1i(0),         
+    fHitsFMD2i(0),         
+    fHitsFMD2o(0),         
+    fHitsFMD3i(0),         
+    fHitsFMD3o(0),         
+    fStripsFMD1i(0),       
+    fStripsFMD2i(0),       
+    fStripsFMD2o(0),       
+    fStripsFMD3i(0),       
+    fStripsFMD3o(0),       
     fVtxAxis(10,-10,10), 
-    fEtaAxis(200,-4,6)
+    fEtaAxis(200,-4,6),
+    fList()
 {
   DefineOutput(1, TList::Class());
 }
 
 //____________________________________________________________________
-AliForwardMCCorrections::AliForwardMCCorrections(const AliForwardMCCorrections& o)
+AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const AliForwardMCCorrectionsTask& o)
   : AliAnalysisTaskSE(o),
+    fHEvents(o.fHEvents), 
     fHEventsTr(o.fHEventsTr), 
-    fHEventsTrVtx(o.fHEventsTrVtx), 
+    fHEventsTrVtx(o.fHEventsTrVtx),
+    fHEventsVtx(o.fHEventsVtx), 
     fHTriggers(o.fHTriggers),
-    fVtxAxis(o.fVtxAxis),
-    fEtaAxis(o.fEtaAxis)
+    fPrimaryInnerAll(o.fPrimaryInnerAll),   
+    fPrimaryOuterAll(o.fPrimaryOuterAll),   
+    fPrimaryInnerTrVtx(o.fPrimaryInnerTrVtx), 
+    fPrimaryOuterTrVtx(o.fPrimaryOuterTrVtx), 
+    fHitsFMD1i(o.fHitsFMD1i),         
+    fHitsFMD2i(o.fHitsFMD2i),         
+    fHitsFMD2o(o.fHitsFMD2o),         
+    fHitsFMD3i(o.fHitsFMD3i),         
+    fHitsFMD3o(o.fHitsFMD3o),         
+    fStripsFMD1i(o.fStripsFMD1i),       
+    fStripsFMD2i(o.fStripsFMD2i),       
+    fStripsFMD2o(o.fStripsFMD2o),       
+    fStripsFMD3i(o.fStripsFMD3i),       
+    fStripsFMD3o(o.fStripsFMD3o),       
+    fVtxAxis(o.fVtxAxis.GetNbins(), o.fVtxAxis.GetXmin(), o.fVtxAxis.GetXmax()),
+    fEtaAxis(o.fEtaAxis.GetNbins(), o.fEtaAxis.GetXmin(), o.fEtaAxis.GetXmax()),
+    fList(o.fList)
 {
 }
 
 //____________________________________________________________________
-AliForwardMCCorrections&
-AliForwardMCCorrections::operator=(const AliForwardMCCorrections& o)
+AliForwardMCCorrectionsTask&
+AliForwardMCCorrectionsTask::operator=(const AliForwardMCCorrectionsTask& o)
 {
   fHEventsTr         = o.fHEventsTr;
   fHEventsTrVtx      = o.fHEventsTrVtx;
   fHTriggers         = o.fHTriggers;
-  fHData             = o.fHData;
-  fVtxAxis           = o.fVtxAxis;
-  fEtaAxis           = o.fEtaAxis;
+  SetVertexAxis(o.fVtxAxis);
+  SetEtaAxis(o.fEtaAxis);
 
   return *this;
 }
 
 //____________________________________________________________________
 void
-AliForwardMCCorrections::Init()
+AliForwardMCCorrectionsTask::Init()
 {
 }
 
 //____________________________________________________________________
 void
-AliForwardMCCorrections::SetVertexAxis(Int_t nBin, Double_t min, Double_t max)
+AliForwardMCCorrectionsTask::SetVertexAxis(Int_t nBin, Double_t min, 
+					   Double_t max)
 {
   if (max < min) max = -min;
   if (min < max) { 
@@ -105,14 +162,14 @@ AliForwardMCCorrections::SetVertexAxis(Int_t nBin, Double_t min, Double_t max)
 }
 //____________________________________________________________________
 void
-AliForwardMCCorrections::SetVertexAxis(const TAxis& axis)
+AliForwardMCCorrectionsTask::SetVertexAxis(const TAxis& axis)
 {
   SetVertexAxis(axis.GetNbins(),axis.GetXmin(),axis.GetXmax());
 }
 
 //____________________________________________________________________
 void
-AliForwardMCCorrections::SetEtaAxis(Int_t nBin, Double_t min, Double_t max)
+AliForwardMCCorrectionsTask::SetEtaAxis(Int_t nBin, Double_t min, Double_t max)
 {
   if (max < min) max = -min;
   if (min < max) { 
@@ -128,20 +185,14 @@ AliForwardMCCorrections::SetEtaAxis(Int_t nBin, Double_t min, Double_t max)
 }
 //____________________________________________________________________
 void
-AliForwardMCCorrections::SetVertexAxis(const TAxis& axis)
+AliForwardMCCorrectionsTask::SetEtaAxis(const TAxis& axis)
 {
   SetEtaAxis(axis.GetNbins(),axis.GetXmin(),axis.GetXmax());
 }
   
 //____________________________________________________________________
-void
-AliForwardMCCorrections::InitializeSubs()
-{
-}
-
-//____________________________________________________________________
 TH3D*
-AliForwardMCCorrections::Make3D(const char* name, const char* title,
+AliForwardMCCorrectionsTask::Make3D(const char* name, const char* title,
 			       Int_t nPhi) const
 {
   TH3D* ret = new TH3D(name, title,
@@ -163,7 +214,7 @@ AliForwardMCCorrections::Make3D(const char* name, const char* title,
 }
 //____________________________________________________________________
 TH1D*
-AliForwardMCCorrections::Make1D(const char* name, const char* title) const
+AliForwardMCCorrectionsTask::Make1D(const char* name, const char* title) const
 {
   TH1D* ret = new TH1D(name, title,
 		       fEtaAxis.GetNbins(), 
@@ -181,16 +232,16 @@ AliForwardMCCorrections::Make1D(const char* name, const char* title) const
 
 //____________________________________________________________________
 void
-AliForwardMCCorrections::UserCreateOutputObjects()
+AliForwardMCCorrectionsTask::UserCreateOutputObjects()
 {
   fList = new TList;
   fList->SetName(GetName());
 
-  fHEvents = new TH1I(GetEventsName(false,false),
+  fHEvents = new TH1I(GetEventName(false,false),
 		      "Number of all events", 
-		      fAxis.GetNbins(), 
-		      fAxis.GetXmin(), 
-		      fAxis.GetXmax());
+		      fVtxAxis.GetNbins(), 
+		      fVtxAxis.GetXmin(), 
+		      fVtxAxis.GetXmax());
   fHEvents->SetXTitle("v_{z} [cm]");
   fHEvents->SetYTitle("# of events");
   fHEvents->SetFillColor(kBlue+1);
@@ -198,7 +249,8 @@ AliForwardMCCorrections::UserCreateOutputObjects()
   fHEvents->SetDirectory(0);
   fList->Add(fHEvents);
 
-  fHEventsTr = new TH1I(GetEventsName(true, false), 
+  fHEventsTr = new TH1I(GetEventName(true, false), 
+			"Number of triggered events",
 			fVtxAxis.GetNbins(), 
 			fVtxAxis.GetXmin(), 
 			fVtxAxis.GetXmax());
@@ -209,7 +261,7 @@ AliForwardMCCorrections::UserCreateOutputObjects()
   fHEventsTr->SetDirectory(0);
   fList->Add(fHEventsTr);
 
-  fHEventsTrVtx = new TH1I(GetEventsName(true,true),
+  fHEventsTrVtx = new TH1I(GetEventName(true,true),
 			   "Number of events w/trigger and vertex", 
 			   fVtxAxis.GetNbins(), 
 			   fVtxAxis.GetXmin(), 
@@ -220,8 +272,8 @@ AliForwardMCCorrections::UserCreateOutputObjects()
   fHEventsTrVtx->SetFillStyle(3001);
   fHEventsTrVtx->SetDirectory(0);
   fList->Add(fHEventsTrVtx);
-
-  fHEventsVtx = new TH1I(GetEventsName(false,true),
+  
+  fHEventsVtx = new TH1I(GetEventName(false,true),
 			 "Number of events w/vertex", 
 			 fVtxAxis.GetNbins(), 
 			 fVtxAxis.GetXmin(), 
@@ -298,11 +350,11 @@ AliForwardMCCorrections::UserCreateOutputObjects()
 }
 //____________________________________________________________________
 void
-AliForwardMCCorrections::UserExec(Option_t*)
+AliForwardMCCorrectionsTask::UserExec(Option_t*)
 {
   // Get the input data - MC event
   AliMCEvent*  mcEvent = MCEvent();
-  if (mcevent) { 
+  if (mcEvent) { 
     AliWarning("No MC event found");
     return;
   }
@@ -319,23 +371,30 @@ AliForwardMCCorrections::UserExec(Option_t*)
 
   // Get the event generate header 
   AliHeader*          mcHeader  = mcEvent->Header();
-  AliGenEventHeader*  genHeader = mcHeader->GetCenEventHeader();
+  AliGenEventHeader*  genHeader = mcHeader->GenEventHeader();
   
   // Get the generator vertex 
   TArrayF mcVertex;
-  genHeader->PrimaryVertex();
+  genHeader->PrimaryVertex(mcVertex);
   Double_t mcVtxZ = mcVertex.At(2);
 
   // Check the MC vertex is in range 
-  Int_t mcVtxBin = fVtxAxis.FindBin(vZ);
-  if (vZ < 1 || vZ > fVtxAxis.GetNbins()) {
+  Int_t mcVtxBin = fVtxAxis.FindBin(mcVtxZ);
+  if (mcVtxBin < 1 || mcVtxBin > fVtxAxis.GetNbins()) {
 #ifdef VERBOSE 
     AliWarning(Form("MC v_z=%f is out of rante [%,%f]", 
-		    vZ, fVtxAxis.GetXmin(), fVtxAxis.GetXmax()));
+		    mcVtxBin, fVtxAxis.GetXmin(), fVtxAxis.GetXmax()));
 #endif
     return;
   }
 
+  UInt_t   triggers;
+  Bool_t   gotTrigggers;
+  Bool_t   gotInel;
+  Double_t vZ;
+  Bool_t   gotVertex;
+#if 0
+  // Use event inspector instead 
   // Get the triggers 
   UInt_t triggers = 0;
   Bool_t gotTriggers = AliForwardUtil::ReadTriggers(esd,triggers,fHTriggers);
@@ -344,7 +403,8 @@ AliForwardMCCorrections::UserExec(Option_t*)
   // Get the ESD vertex 
   Double_t vZ = -1000000;
   Bool_t gotVertex = AliForwardUtil::ReadVertex(esd,vZ);
-  
+#endif
+
 
   // Fill the event count histograms 
   if (gotInel)              fHEventsTr->Fill(mcVtxZ);
@@ -371,29 +431,29 @@ AliForwardMCCorrections::UserExec(Option_t*)
 
     // Fill (eta,phi) of the particle into histograsm for b
     Double_t eta = particle->Eta();
-    Double_t phi = partcile->Phi();
+    Double_t phi = particle->Phi();
     
     if (isCharged && isPrimary) 
       FillPrimary(gotInel, gotVertex, mcVtxZ, eta, phi);
     
     // For the rest, ignore non-collisions, and events out of vtx range 
-    if (!gotInel || gotVtx) continue;
+    if (!gotInel || gotVertex) continue;
     
     Int_t nTrRef = particle->GetNumberOfTrackReferences();
     for (Int_t iTrRef = 0; iTrRef < nTrRef; iTrRef++) { 
       AliTrackReference* trackRef = particle->GetTrackReference(iTrRef);
       
       // Check existence 
-      if (!ret) continue;
+      if (!trackRef) continue;
 
       // Check that we hit an FMD element 
-      if (ref->DetectorId() != AliTrackReference::kFMD) 
+      if (trackRef->DetectorId() != AliTrackReference::kFMD) 
 	continue;
 
       // Get the detector coordinates 
       UShort_t d, s, t;
       Char_t r;
-      AliFMDStripIndex::Unpack(ref->UserId(), d, r, s, t);
+      AliFMDStripIndex::Unpack(trackRef->UserId(), d, r, s, t);
       
       // Check if mother (?) is charged and that we haven't dealt with it 
       // already
@@ -403,11 +463,11 @@ AliForwardMCCorrections::UserExec(Option_t*)
       // Increase counter of hits per strip 
       hitsByStrip(d,r,s,t) += 1;
 
-      Double_t trRefEta = esd->GetFMDData()->Eta(d,r,s,t);
-      Double_t trRefPhi = esd->GetFMDData()->Phi(d,r,s,t);
+      // Double_t trRefEta = esd->GetFMDData()->Eta(d,r,s,t);
+      // Double_t trRefPhi = esd->GetFMDData()->Phi(d,r,s,t);
 
       // Fill strip information into histograms 
-      FillStrip(mcVtxZ, eta, phi, hitsByStrip(d,r,s,t) == 1);
+      FillStrip(d, r, mcVtxZ, eta, phi, hitsByStrip(d,r,s,t) == 1);
 
       // Set the last processed track number - marking it as done for
       // this strip
@@ -423,7 +483,7 @@ AliForwardMCCorrections::UserExec(Option_t*)
 
 //____________________________________________________________________
 void
-AliForwardMCCorrections::FillPrimary(Bool_t gotInel, Bool_t gotVtx, 
+AliForwardMCCorrectionsTask::FillPrimary(Bool_t gotInel, Bool_t gotVtx, 
 				    Double_t vz, Double_t eta, Double_t phi) 
 {
   if (gotInel && gotVtx) {
@@ -440,16 +500,16 @@ AliForwardMCCorrections::FillPrimary(Bool_t gotInel, Bool_t gotVtx,
 
 //____________________________________________________________________
 void
-AliForwardMCCorrections::FillStrip(UShort_t d, Char_t r, 
+AliForwardMCCorrectionsTask::FillStrip(UShort_t d, Char_t r, 
 				  Double_t vz, Double_t eta, Double_t phi,
 				  Bool_t first) 
 {
   // Number of hit strips per eta bin 
-  TH1D* hits   = 0; 
+  TH1D* strips = 0; 
   // All hits per ring, vertex in eta,phi bins.  This takes the place
   // of hHits_FMD<d><r>_vtx<v> and DoubleHits_FMD<d><r> (the later
   // being just the 2D projection over the X bins)
-  TH3D* strips = 0; 
+  TH3D* hits   = 0; 
   switch (d) { 
   case 1: 
     hits   = fHitsFMD1i; 
@@ -473,7 +533,7 @@ AliForwardMCCorrections::FillStrip(UShort_t d, Char_t r,
 
 //____________________________________________________________________
 TH2D*
-AliForwardMCCorrections::GetVertexProj(Int_t v, TH3D* src) const
+AliForwardMCCorrectionsTask::GetVertexProj(Int_t v, TH3D* src) const
 {
   Int_t nX = src->GetNbinsX();
   if (v > nX || v < 1) return 0;
@@ -492,7 +552,7 @@ AliForwardMCCorrections::GetVertexProj(Int_t v, TH3D* src) const
 
 //____________________________________________________________________
 void
-AliForwardMCCorrections::Terminate(Option_t*)
+AliForwardMCCorrectionsTask::Terminate(Option_t*)
 {
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {
@@ -510,13 +570,13 @@ AliForwardMCCorrections::Terminate(Option_t*)
   }
 
   TH1I* eventsAll = 
-    static_cast<TH1I*>(list->FindObject(GetEventsName(false,false)));
+    static_cast<TH1I*>(list->FindObject(GetEventName(false,false)));
   TH1I* eventsTr = 
-    static_cast<TH1I*>(list->FindObject(GetEventsName(true,false)));
+    static_cast<TH1I*>(list->FindObject(GetEventName(true,false)));
   TH1I* eventsVtx = 
-    static_cast<TH1I*>(list->FindObject(GetEventsName(false,true)));
+    static_cast<TH1I*>(list->FindObject(GetEventName(false,true)));
   TH1I* eventsTrVtx = 
-    static_cast<TH1I*>(list->FindObject(GetEventsName(true,true)));
+    static_cast<TH1I*>(list->FindObject(GetEventName(true,true)));
   if (!eventsAll || !eventsTr || !eventsVtx || !eventsTrVtx) {
     AliError(Form("Could not find all event histograms in %s "
 		  "(a=%p,t=%p,v=%p,tv=%p)", list->GetName(), 
@@ -565,9 +625,9 @@ AliForwardMCCorrections::Terminate(Option_t*)
 
   // Calculate the over-all event selection efficiency 
   TH1D* selEff = new TH1D("selEff", "Event selection efficiency", 
-			  fVtxArray.GetNbins(), 
-			  fVtxArray.GetXmin(),  
-			  fVtxArray.GetXmax());
+			  fVtxAxis.GetNbins(), 
+			  fVtxAxis.GetXmin(),  
+			  fVtxAxis.GetXmax());
   selEff->Sumw2();
   selEff->SetDirectory(0);
   selEff->SetFillColor(kMagenta+1);
@@ -580,14 +640,14 @@ AliForwardMCCorrections::Terminate(Option_t*)
   for (Int_t v = 1; v <= fVtxAxis.GetNbins(); v++) {
     // Make a sub-list in the output 
     TList* vl = new TList;
-    vl->SetName("vtx%02d", v);
+    vl->SetName(Form("vtx%02d", v));
     list->Add(vl);
 
     // Get event counts 
-    Int_t nEventsAll   = eventsAll->GetEntries(v);
-    Int_t nEventsTr    = eventsTr->GetEntries(v);
-    Int_t nEventsVtx   = eventsVtx->GetEntries(v);
-    Int_t nEventsTrVtx = eventsTrVtx->GetEntries(v);
+    Int_t nEventsAll   = eventsAll->GetBinContent(v);
+    Int_t nEventsTr    = eventsTr->GetBinContent(v);
+    Int_t nEventsVtx   = eventsVtx->GetBinContent(v);
+    Int_t nEventsTrVtx = eventsTrVtx->GetBinContent(v);
 
     // Project event histograms, set names, and store  
     TH2D* primIAllV   = GetVertexProj(v, primIAll);
@@ -599,14 +659,16 @@ AliForwardMCCorrections::Terminate(Option_t*)
     vl->Add(primITrVtxV);
     vl->Add(primOTrVtxV);
     
-    primIAllV->Scale(1. / nEventAll);
-    primOAllV->Scale(1. / nEventAll);
-    primITrVtxV->Scale(1. / nEventTr);
-    primOTrVtxV->Scale(1. / nEventTr);
+    primIAllV->Scale(1. / nEventsAll);
+    primOAllV->Scale(1. / nEventsAll);
+    primITrVtxV->Scale(1. / nEventsTr);
+    primOTrVtxV->Scale(1. / nEventsTr);
 
     // Calculate the vertex bias on the d^2N/detadphi 
-    TH2D* selBiasI = static_cast<TH2D*>(primITrVtxV->Clone("selBiasI%02d",v));
-    TH2D* selBiasO = static_cast<TH2D*>(primOTrVtxV->Clone("selBiasO%02d",v));
+    TH2D* selBiasI = 
+      static_cast<TH2D*>(primITrVtxV->Clone(Form("selBiasI%02d",v)));
+    TH2D* selBiasO = 
+      static_cast<TH2D*>(primOTrVtxV->Clone(Form("selBiasO%02d",v)));
     selBiasI->SetTitle(Form("Event selection bias in vertex bin %d", v));
     selBiasO->SetTitle(Form("Event selection bias in vertex bin %d", v));
     selBiasI->Divide(primIAllV);
@@ -637,11 +699,11 @@ AliForwardMCCorrections::Terminate(Option_t*)
 	
 	// Do the double hit correction (only done once per ring in
 	// the vertex loop)
-	TH1D* strips = 0;
+	TH1D* hStrips = 0;
 	switch (d) { 
-	case 1: strips = strips1i; break;
-	case 2: strips = (q == 0 ? strips2i : strips2o); break;
-	case 3: strips = (q == 0 ? strips3i : strips3o); break;
+	case 1: hStrips = strips1i; break;
+	case 2: hStrips = (q == 0 ? strips2i : strips2o); break;
+	case 3: hStrips = (q == 0 ? strips3i : strips3o); break;
 	}
 
 	TH2D* hits2D    = GetVertexProj(v, hits3D);
@@ -651,7 +713,7 @@ AliForwardMCCorrections::Terminate(Option_t*)
 	doubleHit->SetFillColor(kGreen+1);
 	doubleHit->SetFillStyle(3001);
 	doubleHit->Sumw2();
-	doubleHit->Divide(strips);
+	doubleHit->Divide(hStrips);
 	list->Add(doubleHit);
       }
     }
@@ -660,7 +722,7 @@ AliForwardMCCorrections::Terminate(Option_t*)
 
 //____________________________________________________________________
 void
-AliForwardMCCorrections::Print(Option_t*) const
+AliForwardMCCorrectionsTask::Print(Option_t*) const
 {
 }
 

@@ -3,9 +3,14 @@
 #include <TAxis.h>
 #include <TList.h>
 #include <TMath.h>
-#include "AliFMDAnaParameters.h"
+#include "AliForwardCorrectionManager.h"
+// #include "AliFMDAnaParameters.h"
 #include "AliLog.h"
 #include <TH2D.h>
+#include <TProfile.h>
+#include <TROOT.h>
+#include <iostream>
+#include <iomanip>
 
 ClassImp(AliFMDDensityCalculator)
 #if 0
@@ -16,10 +21,13 @@ ClassImp(AliFMDDensityCalculator)
 AliFMDDensityCalculator::AliFMDDensityCalculator()
   : TNamed(), 
     fRingHistos(),
-    fMultCut(0.3),
+    fMultCut(0),
     fSumOfWeights(0),
     fWeightedSum(0),
     fCorrections(0),
+    fMaxParticles(5),
+    fAccI(0),
+    fAccO(0),
     fDebug(0)
 {}
 
@@ -27,10 +35,13 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
 AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   : TNamed("fmdDensityCalculator", title), 
     fRingHistos(), 
-    fMultCut(0.3),
+    fMultCut(0),
     fSumOfWeights(0),
     fWeightedSum(0),
     fCorrections(0),
+    fMaxParticles(5),
+    fAccI(0),
+    fAccO(0),
     fDebug(0)
 {
   fRingHistos.SetName(GetName());
@@ -41,11 +52,19 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   fRingHistos.Add(new RingHistos(3, 'O'));
   fSumOfWeights = new TH1D("sumOfWeights", "Sum of Landau weights",
 			   200, 0, 20);
+  fSumOfWeights->SetFillColor(kRed+1);
+  fSumOfWeights->SetXTitle("#sum_{i} a_{i} f_{i}(#Delta)");
   fWeightedSum  = new TH1D("weightedSum", "Weighted sum of Landau propability",
 			   200, 0, 20);
+  fWeightedSum->SetFillColor(kBlue+1);
+  fWeightedSum->SetXTitle("#sum_{i} i a_{i} f_{i}(#Delta)");
   fCorrections  = new TH1D("corrections", "Distribution of corrections", 
 			   100, 0, 10);
+  fCorrections->SetFillColor(kBlue+1);
+  fCorrections->SetXTitle("correction");
 
+  fAccI = GenerateAcceptanceCorrection('I');
+  fAccO = GenerateAcceptanceCorrection('O');
 }
 
 //____________________________________________________________________
@@ -57,6 +76,9 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fSumOfWeights(o.fSumOfWeights),
     fWeightedSum(o.fWeightedSum),
     fCorrections(o.fCorrections),
+    fMaxParticles(o.fMaxParticles),
+    fAccI(o.fAccI),
+    fAccO(o.fAccO),
     fDebug(o.fDebug)
 {
   TIter    next(&o.fRingHistos);
@@ -76,8 +98,11 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
 {
   TNamed::operator=(o);
 
-  fMultCut = o.fMultCut;
-  fDebug   = o.fDebug;
+  fMultCut      = o.fMultCut;
+  fDebug        = o.fDebug;
+  fMaxParticles = o.fMaxParticles;
+  fAccI         = o.fAccI;
+  fAccO         = o.fAccO;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -103,10 +128,21 @@ AliFMDDensityCalculator::GetRingHistos(UShort_t d, Char_t r) const
 }
     
 //____________________________________________________________________
+Double_t
+AliFMDDensityCalculator::GetMultCut() const
+{
+  if (fMultCut > 0) return fMultCut;
+
+  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
+  AliFMDCorrELossFit* fits = fcm.GetELossFit();
+  return fits->GetLowCut();
+}
+  
+//____________________________________________________________________
 Bool_t
 AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 				   AliForwardUtil::Histos& hists,
-				   Int_t                   vtxbin, 
+				   UShort_t                vtxbin, 
 				   Bool_t                  lowFlux)
 {
   for (UShort_t d=1; d<=3; d++) { 
@@ -129,11 +165,14 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  
 	  Float_t n = NParticles(mult,d,r,s,t,vtxbin,eta,lowFlux);
 	  rh->fEvsN->Fill(mult,n);
+	  rh->fEtaVsN->Fill(eta, n);
 
 	  Float_t c = Correction(d,r,s,t,vtxbin,eta,lowFlux);
 	  fCorrections->Fill(c);
 	  if (c > 0) n /= c;
 	  rh->fEvsM->Fill(mult,n);
+	  rh->fEtaVsM->Fill(eta, n);
+	  rh->fCorr->Fill(eta, c);
 
 	  h->Fill(eta,phi,n);
 	  rh->fDensity->Fill(eta,phi,n);
@@ -152,15 +191,38 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
 				    Char_t   r, 
 				    UShort_t /*s*/, 
 				    UShort_t /*t*/, 
-				    Int_t    /*v*/, 
+				    UShort_t /*v*/, 
 				    Float_t  eta,
 				    Bool_t   lowFlux) const
 {
-  if (mult <= fMultCut) return 0;
+  if (mult <= GetMultCut()) return 0;
   if (lowFlux) return 1;
+  
+  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
+  AliFMDCorrELossFit::ELossFit* fit = fcm.GetELossFit()->FindFit(d,r,eta);
+  if (!fit) { 
+    AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
+    return 0;
+  }
+  
+  Int_t    m   = fit->FindMaxWeight();
+  if (m < 1) { 
+    AliWarning(Form("No good fits for FMD%d%c at eta=%f", d, r, eta));
+    return 0;
+  }
+  UShort_t n   = TMath::Min(fMaxParticles, UShort_t(m));
+  Double_t ret = fit->EvaluateWeighted(mult, n);
 
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  if (fDebug > 10) {
+    AliInfo(Form("FMD%d%c, eta=%7.4f, %8.5f -> %8.5f", d, r, eta, mult, ret));
+  }
 
+  fWeightedSum->Fill(ret);
+  fSumOfWeights->Fill(ret);
+
+  return ret;
+#if 0
   Float_t mpv  = pars->GetMPV(d,r,eta);
   Float_t w    = pars->GetSigma(d,r,eta);
   Float_t w2   = pars->Get2MIPWeight(d,r,eta);
@@ -178,63 +240,178 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
   fWeightedSum->Fill(wsum);
   fSumOfWeights->Fill(sum);
   return (sum > 0) ? wsum / sum : 1;
+#endif
 }
 
 //_____________________________________________________________________
 Float_t 
-AliFMDDensityCalculator::Correction(UShort_t d, Char_t r, UShort_t /*s*/, 
-				    UShort_t t, Int_t v, Float_t eta,
-				    Bool_t lowFlux) const
+AliFMDDensityCalculator::Correction(UShort_t d, 
+				    Char_t   r, 
+				    UShort_t /*s*/, 
+				    UShort_t t, 
+				    UShort_t /*v*/, 
+				    Float_t  eta,
+				    Bool_t   lowFlux) const
 {
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
 
   Float_t correction = AcceptanceCorrection(r,t);
   if (lowFlux) { 
-    TH1F* dblHitCor = pars->GetDoubleHitCorrection(d,r);
+    // TH1F* dblHitCor = pars->GetDoubleHitCorrection(d,r);
+    TH1D* dblHitCor = 0;
+    if (fcm.GetDoubleHit()) 
+      dblHitCor = fcm.GetDoubleHit()->GetCorrection(d,r);
+
     if (dblHitCor) {
-      Float_t dblC = dblHitCor->GetBinContent(dblHitCor->FindBin(eta));
-      if (dblC > 0) 
-	correction *= dblC;
+      Double_t dblC = dblHitCor->GetBinContent(dblHitCor->FindBin(eta));
+      if (dblC > 0) correction *= dblC;
     }
-    else 
+    else {
       AliWarning(Form("Missing double hit correction for FMD%d%c",d,r));
+    }
   }
   
+#if 0
   TH1F* deadCor = pars->GetFMDDeadCorrection(v);
   if (deadCor) { 
     Float_t deadC = deadCor->GetBinContent(deadCor->FindBin(eta));
     if (deadC > 0) 
       correction *= deadC; 
   }
-  
+#endif  
+
   return correction;
 }
 
+//_____________________________________________________________________
+TH1D*
+AliFMDDensityCalculator::GenerateAcceptanceCorrection(Char_t r) const
+{
+  const Double_t ic1[] = { 4.9895, 15.3560 };
+  const Double_t ic2[] = { 1.8007, 17.2000 };
+  const Double_t oc1[] = { 4.2231, 26.6638 };
+  const Double_t oc2[] = { 1.8357, 27.9500 };
+  const Double_t* c1   = (r == 'I' || r == 'i' ? ic1      : oc1);
+  const Double_t* c2   = (r == 'I' || r == 'i' ? ic2      : oc2);
+  Double_t  minR       = (r == 'I' || r == 'i' ?   4.5213 :  15.4);
+  Double_t  maxR       = (r == 'I' || r == 'i' ?  17.2    :  28.0);
+  Int_t     nStrips    = (r == 'I' || r == 'i' ? 512      : 256);
+  Int_t     nSec       = (r == 'I' || r == 'i' ?  20      :  40);
+  Float_t   basearc    = 2 * TMath::Pi() / nSec;
+  Double_t  rad        = maxR - minR;
+  Float_t   segment    = rad / nStrips;
+  Float_t   cr         = TMath::Sqrt(c1[0]*c1[0]+c1[1]*c1[1]);
+
+  // Numbers used to find end-point of strip.
+  // (See http://mathworld.wolfram.com/Circle-LineIntersection.html)
+  Float_t D            = c1[0] * c2[1] - c1[1] * c2[0];
+  Float_t dx           = c2[0] - c1[0];
+  Float_t dy           = c2[1] - c1[1];
+  Float_t dr           = TMath::Sqrt(dx*dx+dy*dy);
+
+  TH1D* ret = new TH1D(Form("acc%c", r), 
+		       Form("Acceptance correction for FMDx%c", r), 
+		       nStrips, -.5, nStrips-.5);
+  ret->SetXTitle("Strip");
+  ret->SetYTitle("#varphi acceptance");
+  ret->SetDirectory(0);
+  ret->SetFillColor(r == 'I' || r == 'i' ? kRed+1 : kBlue+1);
+  ret->SetFillStyle(3001);
+
+  for (Int_t t = 0; t < nStrips; t++) { 
+    Float_t   radius     = minR + t * segment;
+    
+    // If the radius of the strip is smaller than the radius corresponding 
+    // to the first corner we have a full strip length 
+    if (radius <= cr) {
+      ret->SetBinContent(t+1, 1);
+      continue;
+    }
+
+    // Next, we should find the end-point of the strip - that is, 
+    // the coordinates where the line from c1 to c2 intersects a circle 
+    // with radius given by the strip. 
+    // (See http://mathworld.wolfram.com/Circle-LineIntersection.html)
+    // Calculate the determinant 
+    Float_t det = radius * radius * dr * dr - D*D;
+
+    if (det <=  0) { 
+      // <0 means No intersection
+      // =0 means Exactly tangent
+      ret->SetBinContent(t+1, 1);
+      continue;
+    }
+
+    // Calculate end-point and the corresponding opening angle 
+    Float_t x   = (+D * dy + dx * TMath::Sqrt(det)) / dr / dr;
+    Float_t y   = (-D * dx + dy * TMath::Sqrt(det)) / dr / dr;
+    Float_t th  = TMath::ATan2(x, y);
+
+    ret->SetBinContent(t+1, th / basearc);
+  }
+  return ret;
+}
 
 //_____________________________________________________________________
 Float_t 
 AliFMDDensityCalculator::AcceptanceCorrection(Char_t r, UShort_t t) const
 {
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  TH1D* acc = (r == 'I' || r == 'i' ? fAccI : fAccO);
+  return acc->GetBinContent(t+1);
+
+#if 0
+  const Double_t ic1[] = { 4.9895, 15.3560 };
+  const Double_t ic2[] = { 1.8007, 17.2000 };
+  const Double_t oc1[] = { 4.2231, 26.6638 };
+  const Double_t oc2[] = { 1.8357, 27.9500 };
+  const Double_t* c1   = (r == 'I' ? ic1      : oc1);
+  const Double_t* c2   = (r == 'I' ? ic2      : oc2);
+  Double_t  minR       = (r == 'I' ?   4.5213 :  15.4);
+  Double_t  maxR       = (r == 'I' ?  17.2    :  28.0);
+  Int_t     nStrips    = (r == 'I' ? 512      : 256);
+  Int_t     nSec       = (r == 'I' ?  20      :  40);
+  Float_t   basearc    = 2 * TMath::Pi() / nSec;
+  Double_t  rad        = maxR - minR;
+  Float_t   segment    = rad / nStrips;
+  Float_t   radius     = minR + t * segment;
+
+  // Old method - calculate full strip area and take ratio to extended
+  // strip area
+  Float_t   baselen    = basearc * radius;
+  Float_t   slope      = (c1[1] - c2[1]) / (c1[0] - c2[0]);
+  Float_t   constant   = (c2[1] * c1[0] - c2[0] * c1[1]) / (c1[0]-c2[0]);
+  Float_t   d          = (TMath::Power(TMath::Abs(radius*slope),2) + 
+			  TMath::Power(radius,2) - TMath::Power(constant,2));
+
+  // If below corners return 1
+  if (d >= 0) return 1;
+ 
+  Float_t   x         = ((-TMath::Sqrt(d) - slope * constant) / 
+			 (1+TMath::Power(slope, 2)));
+  Float_t   y         = slope*x + constant;
+
+  // If x is larger than corner x or y less than corner y, we have full
+  // length strip
+  if(x >= c1[0] || y <= c1[1]) return 1;
+
+  //One sector since theta is by definition half-hybrid
+  Float_t   theta     = TMath::ATan2(x,y);
+  Float_t   arclen    = radius * theta;
   
-  //AliFMDRing fmdring(ring);
-  //fmdring.Init();
-  Float_t   rad       = pars->GetMaxR(r)-pars->GetMinR(r);
-  Float_t   slen      = pars->GetStripLength(r,t);
-  Float_t   sblen     = pars->GetBaseStripLength(r,t);
-  Float_t   nstrips   = (r == 'I' ? 512 : 256);
-  Float_t   segment   = rad / nstrips;
-  Float_t   radius    = pars->GetMinR(r) + segment*t;
-  
-  Float_t   basearea1 = 0.5*sblen*TMath::Power(radius,2);
-  Float_t   basearea2 = 0.5*sblen*TMath::Power((radius-segment),2);
+  // Calculate the area of a strip with no cut
+  Float_t   basearea1 = 0.5 * baselen * TMath::Power(radius,2);
+  Float_t   basearea2 = 0.5 * baselen * TMath::Power((radius-segment),2);
   Float_t   basearea  = basearea1 - basearea2;
-  
-  Float_t   area1     = 0.5*slen*TMath::Power(radius,2);
-  Float_t   area2     = 0.5*slen*TMath::Power((radius-segment),2);
+
+  // Calculate the area of a strip with cut
+  Float_t   area1     = 0.5 * arclen * TMath::Power(radius,2);
+  Float_t   area2     = 0.5 * arclen * TMath::Power((radius-segment),2);
   Float_t   area      = area1 - area2;
   
+  // Acceptance is ratio 
   return area/basearea;
+#endif
 }
 
 //____________________________________________________________________
@@ -261,11 +438,26 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   d->Add(fWeightedSum);
   d->Add(fSumOfWeights);
   d->Add(fCorrections);
+  d->Add(fAccI);
+  d->Add(fAccO);
+
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
     o->Output(d);
   }
+}
+//____________________________________________________________________
+void
+AliFMDDensityCalculator::Print(Option_t*) const
+{
+  char ind[gROOT->GetDirLevel()+1];
+  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
+  ind[gROOT->GetDirLevel()] = '\0';
+  std::cout << ind << "AliFMDDensityCalculator: " << GetName() << '\n'
+	    << ind << " Multiplicity cut:       " << fMultCut << '\n'
+	    << ind << " Max(particles):         " << fMaxParticles 
+	    << std::endl;
 }
 
 //====================================================================
@@ -273,6 +465,9 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
   : AliForwardUtil::RingHistos(),
     fEvsN(0), 
     fEvsM(0), 
+    fEtaVsN(0),
+    fEtaVsM(0),
+    fCorr(0),
     fDensity(0)
 {}
 
@@ -281,26 +476,57 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   : AliForwardUtil::RingHistos(d,r),
     fEvsN(0), 
     fEvsM(0),
+    fEtaVsN(0),
+    fEtaVsM(0),
+    fCorr(0),
     fDensity(0)
 {
   fEvsN = new TH2D(Form("%s_Eloss_N_nocorr", fName.Data()), 
-		   Form("Energy loss vs uncorrected inclusive "
+		   Form("#Delta E/#Delta E_{mip} vs uncorrected inclusive "
 			"N_{ch} in %s", fName.Data()), 
-		   100, -.5, 24.5, 100, -.5, 24.5);
+		   2500, -.5, 24.5, 2500, -.5, 24.5);
   fEvsM = new TH2D(Form("%s_Eloss_N_corr", fName.Data()), 
-		   Form("Energy loss vs corrected inclusive N_{ch} in %s",
-			fName.Data()), 100, -.5, 24.5, 100, -.5, 24.5);
+		   Form("#Delta E/#Delta E_{mip} vs corrected inclusive "
+			"N_{ch} in %s", fName.Data()), 
+		   2500, -.5, 24.5, 2500, -.5, 24.5);
   fEvsN->SetXTitle("#Delta E/#Delta E_{mip}");
   fEvsN->SetYTitle("Inclusive N_{ch} (uncorrected)");
   fEvsN->Sumw2();
   fEvsN->SetDirectory(0);
-  fEvsN->SetXTitle("#Delta E/#Delta E_{mip}");
-  fEvsN->SetYTitle("Inclusive N_{ch} (corrected)");
+  fEvsM->SetXTitle("#Delta E/#Delta E_{mip}");
+  fEvsM->SetYTitle("Inclusive N_{ch} (corrected)");
   fEvsM->Sumw2();
   fEvsM->SetDirectory(0);
 
+  fEtaVsN = new TProfile(Form("%s_Eta_N_nocorr", fName.Data()),
+			 Form("Average inclusive N_{ch} vs #eta (uncorrected) "
+			      "in %s", fName.Data()), 200, -4, 6);
+  fEtaVsM = new TProfile(Form("%s_Eta_N_corr", fName.Data()),
+			 Form("Average inclusive N_{ch} vs #eta (corrected) "
+			      "in %s", fName.Data()), 200, -4, 6);
+  fEtaVsN->SetXTitle("#eta");
+  fEtaVsN->SetYTitle("#LT N_{ch,incl}#GT (uncorrected)");
+  fEtaVsN->SetDirectory(0);
+  fEtaVsN->SetLineColor(Color());
+  fEtaVsN->SetFillColor(Color());
+  fEtaVsM->SetXTitle("#eta");
+  fEtaVsM->SetYTitle("#LT N_{ch,incl}#GT (corrected)");
+  fEtaVsM->SetDirectory(0);
+  fEtaVsM->SetLineColor(Color());
+  fEtaVsM->SetFillColor(Color());
+
+
+  fCorr = new TProfile(Form("%s_corr", fName.Data()),
+			 Form("Average correction in %s", fName.Data()), 
+		       200, -4, 6);
+  fCorr->SetXTitle("#eta");
+  fCorr->SetYTitle("#LT correction#GT");
+  fCorr->SetDirectory(0);
+  fCorr->SetLineColor(Color());
+  fCorr->SetFillColor(Color());
+
   fDensity = new TH2D(Form("%s_Incl_Density", fName.Data()), 
-		      Form("Inclusive N_{ch} densitu in %s", fName.Data()), 
+		      Form("Inclusive N_{ch} density in %s", fName.Data()), 
 		      200, -4, 6, (r == 'I' || r == 'i' ? 20 : 40), 
 		      0, 2*TMath::Pi());
   fDensity->SetDirectory(0);
@@ -313,6 +539,9 @@ AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
   : AliForwardUtil::RingHistos(o), 
     fEvsN(o.fEvsN), 
     fEvsM(o.fEvsM),
+    fEtaVsN(o.fEtaVsN),
+    fEtaVsM(o.fEtaVsM),
+    fCorr(o.fCorr),
     fDensity(o.fDensity)
 {}
 
@@ -324,10 +553,16 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   
   if (fEvsN)    delete  fEvsN;
   if (fEvsM)    delete  fEvsM;
+  if (fEtaVsN)  delete  fEtaVsN;
+  if (fEtaVsM)  delete  fEtaVsM;
+  if (fCorr)    delete  fCorr;
   if (fDensity) delete fDensity;
   
   fEvsN    = static_cast<TH2D*>(o.fEvsN->Clone());
   fEvsM    = static_cast<TH2D*>(o.fEvsM->Clone());
+  fEtaVsN  = static_cast<TProfile*>(o.fEtaVsN->Clone());
+  fEtaVsM  = static_cast<TProfile*>(o.fEtaVsM->Clone());
+  fCorr    = static_cast<TProfile*>(o.fCorr->Clone());
   fDensity = static_cast<TH2D*>(o.fDensity->Clone());
   
   return *this;
@@ -337,6 +572,9 @@ AliFMDDensityCalculator::RingHistos::~RingHistos()
 {
   if (fEvsN)    delete fEvsN;
   if (fEvsM)    delete fEvsM;
+  if (fEtaVsN)  delete fEtaVsN;
+  if (fEtaVsM)  delete fEtaVsM;
+  if (fCorr)    delete fCorr;
   if (fDensity) delete fDensity;
 }
 
@@ -347,6 +585,9 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
   TList* d = DefineOutputList(dir);
   d->Add(fEvsN);
   d->Add(fEvsM);
+  d->Add(fEtaVsN);
+  d->Add(fEtaVsM);
+  d->Add(fCorr);
   d->Add(fDensity);
 }
 

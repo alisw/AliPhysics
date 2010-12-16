@@ -62,6 +62,14 @@ public:
     kE
   };
   /** 
+   * Collision systems
+   */
+  enum ECollisionSystem { 
+    kUnknown,
+    kPP, 
+    kPbPb
+  };
+  /** 
    * Constructor 
    */
   AliFMDEventInspector();
@@ -100,10 +108,12 @@ public:
    * Process the event 
    * 
    * @param event     Input event 
+   * @param first     True on first event
    * @param triggers  On return, the triggers fired 
    * @param lowFlux   On return, true if the event is considered a low-flux 
    *                  event (according to the setting of fLowFluxCut) 
-   * @param ivz       On return, the found vertex bin (zero-based)
+   * @param ivz       On return, the found vertex bin (1-based).  A zero
+   *                  means outside of the defined vertex range
    * @param vz        On return, the z position of the interaction
    * 
    * @return 0 (or kOk) on success, otherwise a bit mask of error codes 
@@ -111,7 +121,7 @@ public:
   UInt_t Process(const AliESDEvent* event, 
 		 UInt_t&            triggers,
 		 Bool_t&            lowFlux,
-		 Int_t&             ivz, 
+		 UShort_t&          ivz, 
 		 Double_t&          vz);
   /** 
    * Define the output histograms.  These are put in a sub list of the
@@ -154,6 +164,39 @@ public:
 			 TH1I*& hEventsTr, 
 			 TH1I*& hEventsTrVtx, 
 			 TH1I*& hTriggers) const;
+  /** 
+   * Read the collision system, collision energy, and L3 field setting
+   * from the ESD
+   * 
+   * @param esd ESD to get information from 
+   * 
+   * @return true on success, false 
+   */
+  Bool_t ReadRunDetails(const AliESDEvent* esd);
+  /** 
+   * Get the collision system (one of the value in ECollisionSystem)
+   * 
+   * @return Collision system 
+   */
+  UShort_t GetCollisionSystem() const { return fCollisionSystem; }
+  /** 
+   * Get the center of mass energy (per nucleon pair) in GeV 
+   * 
+   * @return center of mass energy (per nucleon pair) in GeV 
+   */
+  UShort_t GetEnergy() const { return fEnergy; }
+  /** 
+   * Get the magnetic field setting of the L3 magnet in kilo Gauss. 
+   * 
+   * @return The magnetic field setting 
+   */
+  Short_t  GetField() const { return fField; }
+  /** 
+   * Print information
+   * 
+   * @param option Not used 
+   */
+  void Print(Option_t* option="") const;
 protected:
   /** 
    * Read the trigger information from the ESD event 
@@ -177,9 +220,13 @@ protected:
   TH1I*    fHEventsTr;    //! Histogram of events w/trigger
   TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 
   TH1I*    fHTriggers;    //! Triggers
+  TH1I*    fHType;        //! Type (low/high flux) of event
   Int_t    fLowFluxCut;   //  Low flux cut
   Double_t fMaxVzErr;     //  Maximum error on v_z
   TList*   fList;         //! Histogram container 
+  UShort_t fEnergy;       // CMS energy (per nucleon pair) [GeV]
+  Short_t  fField;        // L3 magnetic field [kG]
+  UShort_t fCollisionSystem; //  
   Int_t    fDebug;        //  Debug level 
   ClassDef(AliFMDEventInspector,1); // Inspect the event 
 };
