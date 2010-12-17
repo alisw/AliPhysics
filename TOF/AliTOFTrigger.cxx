@@ -600,6 +600,8 @@ void AliTOFTrigger::CreateLTMMatrixFromRaw(AliRawReader *fRawReader) {
     //if (fVerbose==2) ftxt.close();
 
     if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
+    delete tofRawStream;
+    tofRawStream = NULL;
 
   }
 
