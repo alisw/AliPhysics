@@ -196,7 +196,7 @@ ClassImp(AliTRDgeometry)
   const Double_t AliTRDgeometry::fgkXtrdEnd   = 366.33; // mother volume inside space frame !!!
 
   // The outer width of the chambers
-  const Float_t AliTRDgeometry::fgkCwidth[kNlayer] = {90.4, 94.8, 99.3, 103.7, 108.1, 112.6};
+  const Float_t AliTRDgeometry::fgkCwidth[kNlayer] = {  90.4,  94.8,  99.3, 103.7, 108.1, 112.6 };
   
   // The outer lengths of the chambers
   // Includes the spacings between the chambers!
@@ -207,31 +207,19 @@ ClassImp(AliTRDgeometry)
 							      , { 145.0, 145.0, 110.0, 145.0, 145.0 }
 							      , { 147.0, 147.0, 110.0, 147.0, 147.0 } };
 
+        Char_t  AliTRDgeometry::fgSMstatus[kNsector]         = { 1, 1, 1, 1, 1, 1, 1, 1, 1
+				       		               , 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+
   TObjArray* AliTRDgeometry::fgClusterMatrixArray = NULL;
 
   TObjArray* AliTRDgeometry::fgPadPlaneArray = NULL;
 
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry()
-  :AliGeometry()
 {
   //
   // AliTRDgeometry default constructor
   //
-
-  Init();
-
-}
-
-//_____________________________________________________________________________
-AliTRDgeometry::AliTRDgeometry(const AliTRDgeometry &g)
-  :AliGeometry(g)
-{
-  //
-  // AliTRDgeometry copy constructor
-  //
-
-  Init();
 
 }
 
@@ -241,45 +229,6 @@ AliTRDgeometry::~AliTRDgeometry()
   //
   // AliTRDgeometry destructor
   //
-
-}
-
-//_____________________________________________________________________________
-AliTRDgeometry &AliTRDgeometry::operator=(const AliTRDgeometry &g)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &g) {
-    Init();
-  }
-
-  return *this;
-
-}
-
-//_____________________________________________________________________________
-void AliTRDgeometry::Init()
-{
-  //
-  // Initializes the geometry parameter
-  //
-
-  // The rotation matrix elements
-  Float_t phi = 0.0;
-  for (Int_t isector = 0; isector < fgkNsector; isector++) {
-    phi = 2.0 * TMath::Pi() /  (Float_t) fgkNsector * ((Float_t) isector + 0.5);
-    fRotB11[isector] = TMath::Cos(phi);
-    fRotB12[isector] = TMath::Sin(phi);
-    fRotB21[isector] = TMath::Sin(phi);
-    fRotB22[isector] = TMath::Cos(phi);
-  }
- 
-  // SM status
-  for (Int_t i = 0; i < kNsector; i++) {
-    fSMstatus[i] = 1;
-  }
 
 }
 
@@ -2775,10 +2724,11 @@ Bool_t AliTRDgeometry::RotateBack(Int_t det
   // coordinates <loc> into the coordinates of the ALICE restframe <glb>.
   //
 
-  Int_t sector = GetSector(det);
+  Int_t   sector = GetSector(det);
+  Float_t phi = 2.0 * TMath::Pi() /  (Float_t) fgkNsector * ((Float_t) sector + 0.5);
 
-  glb[0] = loc[0] * fRotB11[sector] - loc[1] * fRotB12[sector];
-  glb[1] = loc[0] * fRotB21[sector] + loc[1] * fRotB22[sector];
+  glb[0] = loc[0] * TMath::Cos(phi) - loc[1] * TMath::Sin(phi);
+  glb[1] = loc[0] * TMath::Sin(phi) + loc[1] * TMath::Cos(phi);
   glb[2] = loc[2];
 
   return kTRUE;
