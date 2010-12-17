@@ -108,6 +108,14 @@ AliHLTComponent* AliHLTTPCHWClusterTransformComponent::Spawn() {
 int AliHLTTPCHWClusterTransformComponent::DoInit( int argc, const char** argv ) { 
 // see header file for class documentation
   
+  AliTPCcalibDB *calib=AliTPCcalibDB::Instance();  
+  if(!calib){
+    HLTError("AliTPCcalibDB does not exist");
+    return -ENOENT;
+  }
+  calib->SetRun(GetRunNo());
+  calib->UpdateRunInformations(GetRunNo());
+
   int err = fTransform.Init( GetBz(), GetTimeStamp() );
 
   if( err!=0 ){
