@@ -9,7 +9,7 @@
 // ITS upgrade  base class to reconstruct an event
 //.
 #include "AliITSReconstructor.h"        //base class
-#include "AliITSDigitUpgrade.h"           //Dig2Clu(), UseDig()
+#include "AliITSDigitUpgrade.h"           
 #include "AliITSsegmentationUpgrade.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
@@ -23,7 +23,7 @@
 #include <TObjArray.h>               //SigConv()
 class AliRawReader;                  //Reconstruct() with raw data   
 class AliITSRecPoint;
-class AliITSUpgradeReconstructor: public AliITSReconstructor
+class AliITSUpgradeReconstructor: public AliReconstructor
 { 
  public:
   AliITSUpgradeReconstructor();               
@@ -31,23 +31,20 @@ class AliITSUpgradeReconstructor: public AliITSReconstructor
   virtual void Init();
 
   virtual void SetTreeAddressD(TTree* const treeD); 
-  void SetTreeAddressR(TTree* const treeR);
-  void AddRecPoint(const AliITSRecPoint &p);
-  TBranch*  MakeBranchInTree(TTree* const tree,const char* name, const char *classname,void* address,Int_t size,Int_t splitlevel);
 		
   virtual void ResetDigits(); 
   virtual void ResetDigits(Int_t branch);
-  void MakeBranchRF(TTree *treeR){MakeBranchR(treeR,"Fast");} 
-  void DigitsToRecPoints(TTree *treeD,TTree *treeR);
-  void MakeBranchR(TTree *treeR,Option_t *opt=" ");
-  void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
-  virtual void MakeBranch(TTree *tree,Option_t *opt);
   virtual AliTracker*  CreateTracker() const;
+
+  virtual void  Reconstruct(TTree* digitsTree, TTree* clustersTree) const; 
+  virtual void  Reconstruct(AliRawReader * /*rawdata*/, TTree* /*clustersTree*/) const {AliInfo("Not implemented");} 
+  enum {kNLayers=6};
+
+  static const AliITSRecoParam* GetRecoParam() { return dynamic_cast<const AliITSRecoParam*>(AliReconstructor::GetRecoParam(0)); }
+
  private:
   AliITSUpgradeReconstructor(const AliITSUpgradeReconstructor&);              //Not implemented
   AliITSUpgradeReconstructor &operator=(const AliITSUpgradeReconstructor&);   //Not implemented
-  TClonesArray *fRecPoints;  //! List of reconstructed points
-  Int_t         fNRecPoints; // Number of rec points
   TObjArray    *fDigits;     
 
 

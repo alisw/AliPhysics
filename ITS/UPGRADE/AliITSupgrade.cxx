@@ -49,7 +49,7 @@ ClassImp(AliITSupgrade)
     fHalfLength(0),
     fSdigits(0),
     fDigits(0),
-    fClusters(0),
+    //fClusters(0),
     fSegmentation(0x0)
 {
   //
@@ -71,7 +71,7 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, TArrayD widths,
   fHalfLength(halfLengths),
   fSdigits(0),
   fDigits(0),
-  fClusters(0),
+  //fClusters(0),
   fSegmentation(0x0)
 {
 
@@ -213,9 +213,7 @@ void AliITSupgrade::StepManager()
   TString volname = gMC->CurrentVolName();
   if(volname.Contains("Cu"))return;
   if(volname.Contains("Be"))return; 
-  //AliInfo(Form("volume name %s ",volname.Data()));
   volname.Remove(0,12);          // remove letters to get the layer number
-  //AliInfo(Form("volume name %s ",volname.Data()));
   hit.SetModule(volname.Atoi()); // this will be the layer, not the module
   hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
     
@@ -384,7 +382,6 @@ void AliITSupgrade::Hit2SumDig(TClonesArray *hits,TObjArray *pSDig, Int_t *nSdig
     if(pSdigList[i]->GetEntries()!=0) AliErrorClass("Some of sdigits lists is not empty");         //in principle those lists should be empty 
   }
   
-  AliInfo(Form("Number of hits %i ",hits->GetEntries()));
   for(Int_t iHit=0;iHit<hits->GetEntries();iHit++){         //hits loop
     AliITShit *hit = (AliITShit*)hits->At(iHit);
     Double_t xz[2];
@@ -419,7 +416,7 @@ void AliITSupgrade::MakeBranch(Option_t *option){
   
   const char *cH = strstr(option,"H");
   const char *cD = strstr(option,"D");
-  const char *cR = strstr(option,"R");
+  //const char *cR = strstr(option,"R");
   const char *cS = strstr(option,"S");
 
   if(cH&&fLoader->TreeH()){
@@ -439,12 +436,6 @@ void AliITSupgrade::MakeBranch(Option_t *option){
     DigitsCreate();
     for(Int_t i=0;i<fNlayers;i++) MakeBranchInTree(fLoader->TreeD(),Form("Layer%d",i),&((*fDigits)[i]),kBufSize,0);
   }
-
-  if(cR&&fLoader->TreeR()){
-    ClustersCreate();
-    for(Int_t i=0;i<fNlayers;i++) MakeBranchInTree(fLoader->TreeR(),Form("Layer%d",i),&((*fClusters)[i]),kBufSize,0);
-  }
-
   AliDebug(1,"Stop.");
 }
 //____________________________________________________________________________________________________ 
@@ -457,8 +448,6 @@ void AliITSupgrade::SetTreeAddress()
     fLoader->TreeH()->SetBranchAddress("ITSupgrade",&fHits);
 
   }
-
-
     
   if(fLoader->TreeS() && fLoader->TreeS()->GetBranch("Layer0" )){
     SDigitsCreate();
@@ -466,7 +455,6 @@ void AliITSupgrade::SetTreeAddress()
       fLoader->TreeS()->SetBranchAddress(Form("Layer%d",i),&((*fSdigits)[i]));
     }
   }
-
     
   if(fLoader->TreeD() && fLoader->TreeD()->GetBranch("Layer0")){
     DigitsCreate(); 
@@ -474,16 +462,5 @@ void AliITSupgrade::SetTreeAddress()
       fLoader->TreeD()->SetBranchAddress(Form("Layer%d",i),&((*fDigits)[i]));
     }
   }
-  if(fLoader->TreeR() && fLoader->TreeR()->GetBranch("Layer0")){
-    ClustersCreate(); 
-    for(int i=0;i<fNlayers;i++){
-      fLoader->TreeR()->SetBranchAddress(Form("Layer%d",i),&((*fClusters)[i]));
-    }
-  }
   AliDebug(1,"Stop.");
 }
-
-
-
-
-

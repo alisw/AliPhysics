@@ -69,13 +69,6 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
     for(Int_t i=0;i<fNlayers;i++)fDigits->AddAt(new TClonesArray("AliITSDigitUpgrade"),i);}//create digits list
   void          DigitsReset ()              {if(fDigits)for(int i=0;i<fNlayers;i++)fDigits->At(i)->Clear();                     }//clean digits list
 
-  TObjArray*    ClusterList()           const{return fClusters;}//get clusters list for all layers
-  TClonesArray* ClusterList(Int_t layer)const{return fClusters ? (TClonesArray *)fClusters->At(layer):0;}//get clusters list for chamber
-  void          ClustersCreate()             {if (fClusters) return; //PH do not recreate existing containers
-    fClusters=new TObjArray(fNlayers); 
-    for(Int_t i=0;i<fNlayers;i++)fClusters->AddAt(new TClonesArray("TObject"),i);}//create clusters list
-  void   ClusterReset ()             {if(fClusters)for(int i=0;i<fNlayers;i++)fClusters->At(i)->Clear();                     }//clean clusters list
-
   AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m) const {return new AliITSupgradeDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
            
   void Hit2SumDig(TClonesArray *hits,TObjArray *pSDig, Int_t *nSdigit);
@@ -104,7 +97,6 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
   TArrayD fHalfLength;
   TObjArray            *fSdigits;                 //![fNlayers] list of sdigits
   TObjArray            *fDigits;                     //![fNlayers] list of digits per layer
-  TObjArray            *fClusters;                     //![fNlayers] list of clusters per layer
   AliITSsegmentationUpgrade *fSegmentation;
   
  private:

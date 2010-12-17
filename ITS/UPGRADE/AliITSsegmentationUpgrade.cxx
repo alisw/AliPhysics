@@ -60,10 +60,10 @@ ClassImp(AliITSsegmentationUpgrade)
   f->Close(); 
     
   Int_t i=0;
-  while(gGeoManager->GetVolume(Form("Layer%i",i))){
-    TGeoVolume *vol = gGeoManager->GetVolume(Form("Layer%i",i));
+  while(gGeoManager->GetVolume(Form("LayerSilicon%i",i))){
+    TGeoVolume *vol = gGeoManager->GetVolume(Form("LayerSilicon%i",i));
     if(!vol) {
-      AliInfo(Form("the volume %s has not been found... exiting!",Form("Layer%i",i)));
+      AliInfo(Form("the volume %s has not been found... exiting!",Form("LayerSilicon%i",i)));
       return;
     }
     TGeoTube *shape = (TGeoTube*)vol->GetShape();

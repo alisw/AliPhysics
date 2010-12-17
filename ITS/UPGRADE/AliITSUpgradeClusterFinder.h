@@ -29,6 +29,8 @@
 #include "AliITSUpgradeClusterList.h"
 #include <TObjArray.h>
 
+class TTree;
+
 class AliITSUpgradeClusterFinder :public TObject{
 
  public:
@@ -45,6 +47,10 @@ class AliITSUpgradeClusterFinder :public TObject{
 
   void AddLabelIndex(UInt_t col, UInt_t row);
   void SetLabels(Int_t label[3]);
+  void MakeRecPointBranch(TTree *treeR);
+  void SetRecPointTreeAddress(TTree *treeR);
+
+  void DigitsToRecPoints(TObjArray *digList);
 
   UInt_t  GetClusterCount(Int_t layer);
   Float_t GetClusterMeanCol(Int_t layer, UInt_t index);
@@ -95,6 +101,8 @@ class AliITSUpgradeClusterFinder :public TObject{
   Bool_t   fClusterTypeArea[kMAXCLUSTERTYPESIDEZ][kMAXCLUSTERTYPESIDEY];// same as above comments
   AliITSUpgradeClusterList fClusterList[8];
   TObjArray *fChargeArray;
+
+  TClonesArray *fRecPoints;
 
   AliITSUpgradeClusterFinder(const AliITSUpgradeClusterFinder &source); // copy constructor
   // assignment operator

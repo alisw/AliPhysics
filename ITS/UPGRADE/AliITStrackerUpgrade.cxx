@@ -242,7 +242,7 @@ Int_t AliITStrackerUpgrade::LoadClusters(TTree *clusTree){
     TClonesArray *ITSCluster = &statITSCluster;
     TBranch* itsClusterBranch=clusTree->GetBranch("ITSRecPoints");
     if (!itsClusterBranch){
-      printf("can't get the branch with the ITS clusters ! \n");
+      AliError("can't get the branch with the ITS clusters ! \n");
       return 1;
     }
     itsClusterBranch->SetAddress(&ITSCluster);

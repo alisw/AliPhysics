@@ -128,14 +128,14 @@ void AliITSupgradeDigitizer::Sdigits2Digits(TClonesArray *pSDigitList,TObjArray 
     iCnt[i]=0; if(pLst[i]->GetEntries()!=0) AliErrorClass("Some of digits lists is not empty");  //in principle those lists should be empty 
   }
    
-  AliInfo("starting loop over gli sdigits to create the digits");
+  //AliInfo("starting loop over gli sdigits to create the digits");
   Double_t eloss =0.;
   Double_t nele = 0.;
   ULong_t  pixid = 999;
   Int_t tids[3]={-1,-1,-1};
   
   Float_t elossID[3]={-1.,-1.,-1.};
-  AliInfo("starting layers");
+  //AliInfo("starting layers");
   AliDebug(1,"starting loop over layers");
    
   for(Int_t ilay=0;ilay<fNlayers;ilay++){ 

@@ -48,8 +48,6 @@ AliITSlayerUpgrade::~AliITSlayerUpgrade() {
   //--------------------------------------------------------------------
   // AliITSlayerUpgrade destructor
   //--------------------------------------------------------------------
-//for (Int_t i=0; i<fN; i++) delete fClusters[i];
-cout<< " AliITSlayerUpgrade destructor " << endl;
 ResetClusters();
 
 }
@@ -57,19 +55,9 @@ void AliITSlayerUpgrade::ResetClusters() {
   //--------------------------------------------------------------------
   // This function removes loaded clusters
   //--------------------------------------------------------------------
-/*
-
-   for (Int_t s=0; s<kNsector; s++) {
-       Int_t &n=fN[s];
-       while (n) {
-          n--;
- */
 
 for (Int_t i=0; i<fN; i++) delete fClusters[i];
   fN=0;
-cout<< " AliITSlayerUpgrade::ResetClusters() : ho chiamato  resetCluster " << endl;
-   //    }
- //  }
 return;
 }
 
