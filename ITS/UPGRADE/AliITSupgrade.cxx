@@ -213,7 +213,9 @@ void AliITSupgrade::StepManager()
   TString volname = gMC->CurrentVolName();
   if(volname.Contains("Cu"))return;
   if(volname.Contains("Be"))return; 
-  volname.Remove(0,5);          // remove letters to get the layer number
+  //AliInfo(Form("volume name %s ",volname.Data()));
+  volname.Remove(0,12);          // remove letters to get the layer number
+  //AliInfo(Form("volume name %s ",volname.Data()));
   hit.SetModule(volname.Atoi()); // this will be the layer, not the module
   hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
     
@@ -382,7 +384,7 @@ void AliITSupgrade::Hit2SumDig(TClonesArray *hits,TObjArray *pSDig, Int_t *nSdig
     if(pSdigList[i]->GetEntries()!=0) AliErrorClass("Some of sdigits lists is not empty");         //in principle those lists should be empty 
   }
   
-  
+  AliInfo(Form("Number of hits %i ",hits->GetEntries()));
   for(Int_t iHit=0;iHit<hits->GetEntries();iHit++){         //hits loop
     AliITShit *hit = (AliITShit*)hits->At(iHit);
     Double_t xz[2];
@@ -410,7 +412,6 @@ void AliITSupgrade::Hit2SumDig(TClonesArray *hits,TObjArray *pSDig, Int_t *nSdig
 }
 //_______________________________________________________________________________________________
 void AliITSupgrade::MakeBranch(Option_t *option){
-  
   //Create Tree branches 
   AliDebug(1,Form("Start with option= %s.",option));
   
