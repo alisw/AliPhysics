@@ -101,7 +101,7 @@ UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
   Int_t mask4=0x000000FF;
   while(s.Next()){
     if(s.IsCompletedModule()==kTRUE){
-      word=15<<28;
+      word=UInt_t(15)<<28;
       word+=s.GetCarlosId();
       if(siz+4<fSizeInMemory){
 	*(fPointerToData)=(word&mask4);
@@ -115,7 +115,7 @@ UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
 	siz+=4;
       }
     }else if(s.IsCompletedDDL()==kTRUE){
-      word=8<<28;
+      word=UInt_t(8)<<28;
       word+=s.GetJitter();
       if(siz+4<fSizeInMemory){
 	*(fPointerToData)=(word&mask4);

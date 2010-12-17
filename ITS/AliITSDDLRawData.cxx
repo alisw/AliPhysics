@@ -166,7 +166,7 @@ void AliITSDDLRawData::GetDigitsSDDCompressed(TClonesArray *ITSdigits, Int_t mod
       buf[fIndex]=dataWord;
     }
   }
-  UInt_t finalWord=15<<28;
+  UInt_t finalWord=UInt_t(15)<<28;
   finalWord+=mod;
   fIndex++;
   buf[fIndex]=finalWord;  
