@@ -2367,7 +2367,8 @@ Int_t AliITSAlignMille2::GetRequestedModID(UShort_t voluid) const
   if (k<0) return -1;
   AliITSAlignMille2Module* md = GetMilleModule(k);
   while (md && md->IsNotInConf()) md = md->GetParent();
-  return md ? md->GetUniqueID() : -1; 
+  if (md) return int(md->GetUniqueID());
+  else return -1; 
 }
 
 //________________________________________________________________________________________________________

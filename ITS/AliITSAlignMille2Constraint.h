@@ -44,8 +44,8 @@ class AliITSAlignMille2Constraint : public TNamed
   void         SetPattern(UInt_t pat)                {fPattern = pat;}
   void         SetValue(Double_t val)                {fVal = val;}
   void         SetApplied(Int_t par)                 {fApplied |= par<0 ? 0x0ffff : (0x1<<par);}
-  void         Disable()                             {fApplied |= 0x1<<kDisabledBit;}
-  void         Enable()                              {fApplied &= ~(0x1<<kDisabledBit);}
+  void         Disable()                             {fApplied |= UInt_t(0x1)<<kDisabledBit;}
+  void         Enable()                              {fApplied &= ~(UInt_t(0x1)<<kDisabledBit);}
   Bool_t       IsDisabled()             const        {return (fApplied>>kDisabledBit)&0x1;}
   //
   virtual Bool_t IncludesModule(Int_t id)            const {return fModuleID==id;}
