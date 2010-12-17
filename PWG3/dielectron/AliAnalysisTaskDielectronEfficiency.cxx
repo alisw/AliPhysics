@@ -220,7 +220,7 @@ void AliAnalysisTaskDielectronEfficiency::FillPlots(AliVEvent *event)
   // Fill histograms
   //
   AliESDEvent *esd=dynamic_cast<AliESDEvent*>(event);
-
+  if (!esd) return;
   Int_t ntrack=esd->GetNumberOfTracks();
 
   // Fetch Stack 
@@ -284,10 +284,10 @@ void AliAnalysisTaskDielectronEfficiency::FillPlots(AliVEvent *event)
 
       //MC mother
       Int_t idMotherP=pP->GetFirstMother();
-      TParticle *motherP=0;
+//       TParticle *motherP=0;
       //       Int_t pdgMotherP=0;
       if (idMotherP>-1){
-        motherP=pStack->Particle(idMotherP);
+//         motherP=pStack->Particle(idMotherP);
       //       pdgMotherP=motherP->GetPdgCode();
       }
       //===============

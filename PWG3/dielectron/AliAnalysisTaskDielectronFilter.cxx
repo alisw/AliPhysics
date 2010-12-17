@@ -170,7 +170,8 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   fDielectron->Process(InputEvent());
   
   if(fDielectron->HasCandidates()){
-    AliAODEvent *aod = ((AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()))->GetAOD();
+    AliAODHandler *aodH=(AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    AliAODEvent *aod = aodH->GetAOD();
     
     //replace the references of the legs with the AOD references
     TObjArray *obj = 0x0;
@@ -201,7 +202,7 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
       }
     }
     
-    AliAODExtension *extDielectron = dynamic_cast<AliAODHandler*>       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler())->GetFilteredAOD("AliAOD.Dielectron.root");
+    AliAODExtension *extDielectron = aodH->GetFilteredAOD("AliAOD.Dielectron.root");
     extDielectron->SelectEvent();
     //after candidate selection
     fEventStat->Fill(2.);

@@ -114,8 +114,9 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
   // specify whether to 'exclude' the given band
   //
 
-  if (fNcuts==kNmaxPID){
+  if (fNcuts>=kNmaxPID){
     AliError(Form("only %d pid cut ranges allowed",kNmaxPID));
+    return;
   }
   if (TMath::Abs(nSigmaUp+99999.)<1e-20){
     nSigmaUp=TMath::Abs(nSigmaLow);

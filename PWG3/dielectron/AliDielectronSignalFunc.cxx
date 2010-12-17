@@ -249,17 +249,19 @@ void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
   fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
   fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
   // declare the variables where the like-sign fit results will be stored
-  TFitResult *ppFitResult = 0x0;
-  TFitResult *mmFitResult = 0x0;
+//   TFitResult *ppFitResult = 0x0;
+//   TFitResult *mmFitResult = 0x0;
   // fit the like sign background
   TF1 *funcClonePP = (TF1*)fFuncBackground->Clone("funcClonePP");
   TF1 *funcCloneMM = (TF1*)fFuncBackground->Clone("funcCloneMM");
   fHistDataPP->Fit(funcClonePP, fFitOpt.Data(), "", fFitMin, fFitMax);
-  TFitResultPtr ppFitPtr = fHistDataPP->Fit(funcClonePP, fFitOpt.Data(), "", fFitMin, fFitMax);
-  ppFitResult = ppFitPtr.Get();
+  fHistDataPP->Fit(funcClonePP, fFitOpt.Data(), "", fFitMin, fFitMax);
+//   TFitResultPtr ppFitPtr = fHistDataPP->Fit(funcClonePP, fFitOpt.Data(), "", fFitMin, fFitMax);
+//   ppFitResult = ppFitPtr.Get();
   fHistDataMM->Fit(funcCloneMM, fFitOpt.Data(), "", fFitMin, fFitMax);
-  TFitResultPtr mmFitPtr = fHistDataMM->Fit(funcCloneMM, fFitOpt.Data(), "", fFitMin, fFitMax);
-  mmFitResult = mmFitPtr.Get();
+  fHistDataMM->Fit(funcCloneMM, fFitOpt.Data(), "", fFitMin, fFitMax);
+//   TFitResultPtr mmFitPtr = fHistDataMM->Fit(funcCloneMM, fFitOpt.Data(), "", fFitMin, fFitMax);
+//   mmFitResult = mmFitPtr.Get();
   
   for(Int_t iBin=1; iBin<=fHistDataPM->GetXaxis()->GetNbins(); iBin++) {
     Double_t m = fHistDataPM->GetBinCenter(iBin);

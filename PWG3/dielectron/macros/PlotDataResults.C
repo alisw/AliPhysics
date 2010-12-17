@@ -15,7 +15,8 @@
 #include "AliDielectronCFdraw.h"
 #include "AliDielectron.h"
 
-AliDielectronSignalBase* GetSignalLS(AliDielectronCFdraw &d, Int_t step);
+AliDielectronSignalBase* GetSignalLS(AliDielectronCFdraw &d, Int_t step,
+                                     AliDielectronSignalBase::EBackgroundMethod type=AliDielectronSignalBase::kLikeSign);
 AliDielectronSignalBase* GetSignalRot(AliDielectronCFdraw &d, Int_t step);
 void SetStyle(AliDielectronSignalBase *sig, const char* nameAdd);
 void DrawSpectra(AliDielectronSignalBase *sig, const char* cname, TH1  *hEventStat=0x0, Bool_t save=kFALSE);
@@ -41,8 +42,8 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   //Set common Ranges
 //   d.SetRangeUser("Leg1_Pt",0.8,1000.);
 //   d.SetRangeUser("Leg2_Pt",0.8,1000.);
-  d.SetRangeUser("Leg1_NclsTPC",140.,170.);
-  d.SetRangeUser("Leg2_NclsTPC",140.,170.);
+  d.SetRangeUser("Leg1_NclsTPC",90.,170.);
+  d.SetRangeUser("Leg2_NclsTPC",90.,170.);
   d.SetRangeUser("Leg1_Pt",1.01,100000);
   d.SetRangeUser("Leg2_Pt",1.01,100000);
 //   d.SetRangeUser("Leg1_TPC_nSigma_Electrons",-3,3);
@@ -60,7 +61,11 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   //--- Like sign subtraction
   AliDielectronSignalBase *sigFirst=GetSignalLS(d,stepFirst);
   SetStyle(sigFirst,"ITS First - Like Sign subtraction");
-//   DrawSpectra(sigFirst,"cFirst",hStats,save);
+  DrawSpectra(sigFirst,"cFirst",hStats,save);
+  //--- Like sign subtraction Arithmetic mean
+  AliDielectronSignalBase *sigFirstArith=GetSignalLS(d,stepFirst,AliDielectronSignalBase::kLikeSignArithm);
+  SetStyle(sigFirstArith,"ITS FirstArith - Like Sign subtraction");
+  DrawSpectra(sigFirstArith,"cFirstArith",hStats,save);
   //--- Rotation subtraction
   AliDielectronSignalBase *sigFirstRot=GetSignalRot(d,stepFirst);
   SetStyle(sigFirstRot,"ITS First - Track rotation subtraction");
@@ -70,8 +75,13 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   //SPD any
   //
   AliDielectronSignalBase *sigAny=GetSignalLS(d,stepAny);
-  SetStyle(sigAny,"ITS First - Like Sign subtraction");
+  SetStyle(sigAny,"ITS Any - Like Sign subtraction");
   DrawSpectra(sigAny,"cAny",hStats,save);
+  //--- like sign with arithmetic mean
+  AliDielectronSignalBase *sigAnyArith=GetSignalLS(d,stepAny,AliDielectronSignalBase::kLikeSignArithm);
+  SetStyle(sigAnyArith,"ITS Any - Like Sign subtraction (Arithm. mean)");
+  DrawSpectra(sigAnyArith,"cAnyArith",hStats,save);
+  
   //--- Rotation subtraction
   AliDielectronSignalBase *sigAnyRot=GetSignalRot(d,stepAny);
   SetStyle(sigAnyRot,"ITS First - Track rotation subtraction");
@@ -93,7 +103,7 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
 
 
 //_______________________________________
-AliDielectronSignalBase *GetSignalLS(AliDielectronCFdraw &d, Int_t step)
+AliDielectronSignalBase *GetSignalLS(AliDielectronCFdraw &d, Int_t step, AliDielectronSignalBase::EBackgroundMethod type)
 {
   //
   // Get Extracted signal from likesign method
@@ -108,9 +118,9 @@ AliDielectronSignalBase *GetSignalLS(AliDielectronCFdraw &d, Int_t step)
   }
   
   AliDielectronSignalExt *sig=new AliDielectronSignalExt;
-  sig->SetScaleRawToBackground(3.2,5.);
+  sig->SetScaleRawToBackground(3.2,4.9);
   sig->SetIntegralRange(2.92,3.15);
-  sig->SetMethod(AliDielectronSignalBase::kLikeSign);
+  sig->SetMethod(type);
   sig->Process(arr);
   
   delete arr;
@@ -136,7 +146,7 @@ AliDielectronSignalBase *GetSignalRot(AliDielectronCFdraw &d, Int_t step)
   arr->AddAt(d.Project("M",step),iType);
   
   AliDielectronSignalExt *sig=new AliDielectronSignalExt;
-//   sig->SetScaleRawToBackground(3.2,4.);
+  sig->SetScaleRawToBackground(3.2,4.9);
   sig->SetIntegralRange(2.93,3.15);
   sig->SetMethod(AliDielectronSignalBase::kRotation);
   sig->Process(arr);

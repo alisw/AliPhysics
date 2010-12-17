@@ -47,6 +47,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "NclsTPC",
   "NclsTPCiter1",
   "NFclsTPC",
+  "NFclsTPCrobust",
   "TPCsignalN",
   "TPCchi2PerCluster",
   "TrackStatus",

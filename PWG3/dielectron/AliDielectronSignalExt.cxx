@@ -76,6 +76,7 @@ void AliDielectronSignalExt::Process(TObjArray* const arrhist)
   //
   switch ( fMethod ){
     case kLikeSign :
+    case kLikeSignArithm :
       ProcessLS(arrhist);    // process like-sign subtraction method
       break;
 
@@ -133,6 +134,12 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
 
     Float_t background = 2*TMath::Sqrt(pp*mm);
     Float_t ebackground = TMath::Sqrt(mm+pp);
+    if (fMethod==kLikeSignArithm){
+      //Arithmetic mean instead of geometric
+      background=(pp+mm);
+      ebackground=TMath::Sqrt(pp+mm);
+      if (TMath::Abs(ebackground)<1e-30) ebackground=1;
+    }
 //     Float_t signal = pm - background;
 //     Float_t error = TMath::Sqrt(epm*epm+mm+pp);
 

@@ -417,6 +417,12 @@ c->SetAlias("cut","PairType==1")
 c->SetAlias("nCls","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
 
 //--------PID
+//-Param dEdx
+c->SetAlias("cutPipardEdx","Leg1_TPC_signal>75-20*exp(-.7*Leg1_P_InnerParam)&&Leg2_TPC_signal>75-20*exp(-.7*Leg2_P_InnerParam)")
+  c->SetAlias("TOFe1r","(((Leg1_TrackStatus&32768)==32768)&&abs(Leg1_TOF_nSigma_Electrons)<3)");
+  c->SetAlias("TOFe2r","(((Leg2_TrackStatus&32768)==32768)&&abs(Leg2_TOF_nSigma_Electrons)<3)");
+
+c->SetAlias("cutPspecial","(abs(Leg1_TPC_nSigma_Protons)>3||(abs(Leg1_TPC_nSigma_Protons)<=3&&TOFe1r))&&(abs(Leg2_TPC_nSigma_Protons)>3||(abs(Leg2_TPC_nSigma_Protons)<=3&&TOFe2r))")
 
 //-- nsigma
 c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
@@ -424,23 +430,24 @@ c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electr
 c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
 c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
 c->SetAlias("pidSig","cutE&&cutPi&&cutP");
-
 //-- Pi param
-// c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-2.65*exp(-0.6757*Leg1_P_InnerParam)&&Leg2_TPC_nSigma_Electrons>-8*exp(-0.6*Leg2_P_InnerParam)");
-c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-6*exp(-0.6*Leg1_P_InnerParam)&&Leg2_TPC_nSigma_Electrons>-6*exp(-0.6*Leg2_P_InnerParam)");
+// c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-2.65*exp(-0.9*Leg1_P_InnerParam)&&Leg2_TPC_nSigma_Electrons>-8*exp(-0.6*Leg2_P_InnerParam)");
+c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-3.7*exp(-0.9*Leg1_P_InnerParam)-0.1&&Leg2_TPC_nSigma_Electrons>-3.7*exp(-0.6*Leg2_P_InnerParam)-0.1");
 c->SetAlias("pidParam","eleParam&&cutP");
 
 
 
 c->SetAlias("LegEta","abs(Leg1_Eta)<0.9&&abs(Leg2_Eta<0.9)");
 c->SetAlias("LegNcl","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
+c->SetAlias("LegPt","Leg1_Pt>1&&Leg2_Pt>1");
 c->SetAlias("Rap","abs(Y)<0.9");
 c->SetAlias("QA","LegNcl&&LegEta&&Rap");
 c->SetAlias("spdFirst","(Leg1_ITS_clusterMap&1)==1 && (Leg2_ITS_clusterMap&1)==1");
 c->SetAlias("LegNclDiffIter1","abs(Leg1_NclsTPC-Leg1_NclsTPCiter1)<10&&abs(Leg2_NclsTPC-Leg2_NclsTPCiter1)<10")
 c->SetAlias("LegNclPID","(Leg1_NclsTPC-Leg1_TPCsignalN)<20&&(Leg2_NclsTPC-Leg2_TPCsignalN)<20")
 
-c->SetAlias("cut","PairType==1&&QA&&pidSig")
+c->SetAlias("cut","PairType==1&&QA&&cutPipardEdx&&cutPspecial")
+c->SetAlias("cut","PairType==1&&QA&&pidSig&&LegPt")
 
 c->SetMarkerStyle(20);
 c->SetMarkerSize(.8);
@@ -448,21 +455,23 @@ c->SetMarkerColor(kBlack);
 c->SetLineColor(kBlack);
 
 // c->SetAlias("nCls","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
-c->Draw("M>>hM(50,2,4)","cut","e");
+c->Draw("M>>hM(125,0,5)","cut","e");
 
 c->SetMarkerColor(kBlue);
 c->SetLineColor(kBlue);
 // c->SetAlias("cut","PairType==1&&nCls&&pidParam&&LegEta&&Rap")
-c->SetAlias("cut","PairType==1&&QA&&pidSig&&LegNclPID")
+// c->SetAlias("cut","PairType==1&&QA&&pidSig&&LegNclPID")
 // c->SetAlias("nCls","Leg1_NclsTPC>140&&Leg2_NclsTPC>140");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3.5&&abs(Leg2_TPC_nSigma_Pions)>3.5");
 c->Draw("M>>hM2(50,2,4)","cut","esame");
 
 
 c->SetMarkerColor(kGreen);
 c->SetLineColor(kGreen);
-c->SetAlias("cut","PairType==1&&QA&&pidSig")
-c->SetAlias("LegNcl","Leg1_NclsTPC>120&&Leg2_NclsTPC>120");
+// c->SetAlias("cut","PairType==1&&QA&&pidSig")
+// c->SetAlias("LegNcl","Leg1_NclsTPC>120&&Leg2_NclsTPC>120");
 // c->SetAlias("nCls","Leg1_NclsTPC>150&&Leg2_NclsTPC>150");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3.5&&abs(Leg2_TPC_nSigma_Pions)>3.5");
 c->Draw("M>>hM3(50,2,4)","cut","esame");
 
 

@@ -34,6 +34,7 @@ public:
   enum EBackgroundMethod {
     kFitted = 0,
     kLikeSign,
+    kLikeSignArithm,
     kEventMixing,
     kRotation
   };
