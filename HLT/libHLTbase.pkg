@@ -46,7 +46,6 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTOUTHandlerEquId.h \
 		AliHLTOUTHandlerDetectorDDL.h \
 		AliHLTOUTHandlerChain.h \
-		AliHLTOUTHandlerEsdBranch.h \
 		AliHLTMemoryFile.h \
 		AliHLTMessage.h \
 		AliHLTEventStatistics.h \
