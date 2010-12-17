@@ -782,14 +782,9 @@ TH2S* AliTPCCalibPulser::GetHisto(Int_t sector, TObjArray *arr,
   if ( !force || arr->UncheckedAt(sector) )
     return (TH2S*)arr->UncheckedAt(sector);
   
-    // if we are forced and histogram doesn't yes exist create it
-  Char_t name[255], title[255];
-  
-  sprintf(name,"hCalib%s%.2d",type,sector);
-  sprintf(title,"%s calibration histogram sector %.2d",type,sector);
-  
-    // new histogram with Q calib information. One value for each pad!
-  TH2S* hist = new TH2S(name,title,
+  // if we are forced and histogram doesn't yes exist create it
+  // new histogram with Q calib information. One value for each pad!
+  TH2S* hist = new TH2S(Form("hCalib%s%.2d",type,sector),Form("%s calibration histogram sector %.2d",type,sector),
                         nbinsY, ymin, ymax,
                         fROC->GetNChannels(sector),0,fROC->GetNChannels(sector));
   hist->SetDirectory(0);

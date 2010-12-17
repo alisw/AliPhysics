@@ -1777,7 +1777,6 @@ void AliTPCCalibViewerGUI::DoFit() {
    TMatrixD covMatrix(0,0);
    TString cutStr("");
    TString formulaStr("");
-   TString *returnStr = new TString("");
 
    // specify data to plot:
    TString drawStr(GetDrawString()->Data());
@@ -1815,12 +1814,14 @@ void AliTPCCalibViewerGUI::DoFit() {
    // ********** call AliTPCCalibViewer's fit-function
   ReplacePlaceHolders(drawStr);
   ReplacePlaceHolders(cutStr);
-  returnStr = fViewer->Fit(drawStr.Data(), formulaStr.Data(), cutStr.Data(), chi2, fitParam, covMatrix);
+  TString *returnStr = fViewer->Fit(drawStr.Data(), formulaStr.Data(), cutStr.Data(), chi2, fitParam, covMatrix);
    
    std::cout << std::endl;
    std::cout << "Your fit formula reads as follows:" << std::endl;
    std::cout << returnStr->Data() << std::endl;
    std::cout << "chi2 = " << chi2 << std::endl;
+
+  delete returnStr;
 }
 
 
@@ -1858,6 +1859,7 @@ void AliTPCCalibViewerGUI::DoExportNorm() {
    }
    
    Error("DoExportNorm", "Not yet implemented.");
+/*  
    return;
    
    // specify data to plot:
@@ -1874,6 +1876,7 @@ void AliTPCCalibViewerGUI::DoExportNorm() {
    // finally export calPad to Cint:
    gROOT->ProcessLine(Form("AliTPCCalPad* %s = (AliTPCCalPad*)0x%lx;", calPadName, (ULong_t) calPad));
    Info("ExportCalPad", "Current 2D view has been exported to an AliTPCCalPad* with name '%s'", calPadName);
+  */
 }
 
 
@@ -1888,7 +1891,7 @@ void AliTPCCalibViewerGUI::GetMinMax() {
       ptr = listOfPrimitives->At(i);
       if ( ptr->InheritsFrom("TH1") ) break;
    }
-   if ( ptr != 0 && !ptr->InheritsFrom("TH1") ) return;      // if the loop did not find a TH1
+   if ( !ptr || !ptr->InheritsFrom("TH1") ) return;      // if the loop did not find a TH1
    TH1 *hist = (TH1*)ptr;
 
 //    Double_t histMax = hist->GetMaximum();

@@ -173,7 +173,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
   AliTPCTempMap * tempMap = new AliTPCTempMap(tempArray);
   AliDCSSensorArray* goofieArray = fCalibDB->GetGoofieSensors(irun);
   //
-  Int_t dtime = TMath::Max((endTime-startTime)/20,10*60);
+  Int_t dtime = TMath::Max((endTime-startTime)/20,10);
   //
   //Goofie statistical data
   //
@@ -313,7 +313,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     }
     //
     TVectorD voltagesIROC(36);
-    TVectorD voltagesOROC(36);
+    TVectorD voltagesOROC(36); 
     for(Int_t j=1; j<36; j++) voltagesIROC[j-1] = fCalibDB->GetChamberHighVoltage(irun, j,itime);
     for(Int_t j=36; j<72; j++) voltagesOROC[j-36] = fCalibDB->GetChamberHighVoltage(irun, j,itime);
     Double_t voltIROC = TMath::Median(36, voltagesIROC.GetMatrixArray());
@@ -383,8 +383,9 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     ProcessCTP(irun,itime);
     ProcessAlign(irun,itime);
     ProcessGain(irun,itime);
-    ProcessDriftCERef();
-    ProcessPulserRef();
+    //ProcessDriftCERef();
+    //ProcessPulserRef();
+    ProcessCurrent(irun,itime);
 
 
     (*fPcstream)<<"dcs"<<	
@@ -939,6 +940,135 @@ void AliTPCcalibSummary::ProcessPulserRef(){
     "PulserTChi2.="<<&vecAChi2;  // chi2 (rms in cm)
 }
 
+void AliTPCcalibSummary::ProcessCurrent(Int_t irun, Int_t itime){
+  //
+  // Dump current 
+  //
+  //variables to export
+  //
+  static TObjArray *currentArray=new TObjArray(72);   // current graphs
+  static TObjArray *currentArray2=new TObjArray(72);  // current graphs to export
+  //
+  static TVectorD currentIROC(36);                    // current snapshots
+  static TVectorD currentOROC(36); 
+  static TVectorF sector(72);                         //
+  static Double_t medcurIROC = 0;
+  static Double_t medcurOROC = 0;
+  //
+  static TVectorF minROC(72);                         // current mean +-5 minutes
+  static TVectorF maxROC(72);
+  static TVectorF meanROC(72);
+  static TVectorF medianROC(72);
+  static Double_t meanIIROC=0;
+  static Double_t meanIOROC=0;
+  static Double_t medianIIROC=0;
+  static Double_t medianIOROC=0;
+  //
+  AliDCSSensorArray* voltageArray = AliTPCcalibDB::Instance()->GetVoltageSensors(irun);
+  //
+  for(Int_t j=1; j<36; j++) currentIROC[j-1] = fCalibDB->GetChamberHighVoltage(irun, j,itime,-1,kTRUE);
+  for(Int_t j=36; j<72; j++) currentOROC[j-36] = fCalibDB->GetChamberHighVoltage(irun, j,itime,-1,kTRUE);
+  medcurIROC = TMath::Median(36, currentIROC.GetMatrixArray());
+  medcurOROC = TMath::Median(36, currentOROC.GetMatrixArray());
+
+
+  if (currentArray->At(0)==0){
+    for (Int_t isec=0; isec<72; isec++){
+      TString sensorName="";
+      const char* sideName=(isec%36<18) ? "A":"C";
+      if (isec<36){
+	//IROC
+	sensorName=Form("TPC_ANODE_I_%s%02d_IMEAS",sideName,isec%18);
+      }else{
+	//OROC
+	sensorName=Form("TPC_ANODE_O_%s%02d_0_IMEAS",sideName,isec%18);
+      }      
+    
+      AliDCSSensor *sensor = 0;
+      if (voltageArray) sensor= voltageArray->GetSensor(sensorName);   
+      TGraph *gr=0;
+      if (!sensor) gr=new TGraph(1);
+      else{
+	if (!sensor->GetGraph()) gr=new TGraph(1);
+	else{
+	  gr=sensor->GetGraph();
+	  Double_t startTime=sensor->GetStartTime();
+	  Double_t * time = new Double_t[gr->GetN()];
+	  for (Int_t ip=0; ip<gr->GetN(); ip++){ time[ip]= (gr->GetX()[ip]*3600.)+startTime;}	  
+	  gr=new TGraph(gr->GetN(), time, gr->GetY());	
+	  delete [] time;
+	}      
+      }
+      gr->Sort();
+      currentArray->AddAt(gr, isec);
+      currentArray->AddAt(gr->Clone(), isec);
+    }
+  }
+
+
+  for (Int_t isec=0; isec<72; isec++){
+    sector[isec]=isec;
+    TGraph * gr = (TGraph*)currentArray->At(isec);
+    TGraph * graph2 = (TGraph*)currentArray2->At(isec);    
+    Int_t firstBin= TMath::BinarySearch(gr->GetN(), gr->GetX(), itime-300.)-2;
+    Int_t lastBin= TMath::BinarySearch(gr->GetN(), gr->GetX(), itime+300.)+2;
+    if (firstBin<0) firstBin=0;
+    if (lastBin>=gr->GetN()) lastBin=gr->GetN()-1;
+    //
+    if (firstBin<lastBin){
+      //
+      minROC[isec]=TMath::MinElement(lastBin-firstBin, &(gr->GetY()[firstBin]));
+      maxROC[isec]=TMath::MaxElement(lastBin-firstBin, &(gr->GetY()[firstBin]));
+      meanROC[isec]=TMath::Mean(lastBin-firstBin, &(gr->GetY()[firstBin]));
+      medianROC[isec]=TMath::Median(lastBin-firstBin, &(gr->GetY()[firstBin]));       
+      graph2 = new TGraph(lastBin-firstBin, &(gr->GetX()[firstBin]), &(gr->GetY()[firstBin]));
+      delete currentArray2->At(isec);
+      currentArray2->AddAt(graph2,isec);
+    }
+    (*fPcstream)<<"dcs"<<     // current information
+      Form("current%d.=",isec)<<graph2;
+  }     
+  meanIIROC=TMath::Mean(36, &(meanROC.GetMatrixArray()[0]));
+  meanIOROC=TMath::Mean(36, &(meanROC.GetMatrixArray()[36]));
+  medianIIROC=TMath::Median(36, &(meanROC.GetMatrixArray()[0]));
+  medianIOROC=TMath::Median(36, &(meanROC.GetMatrixArray()[36]));
+  //
+  (*fPcstream)<<"dcs"<<     // current information
+    "isec.="<<&sector<<                       //sector number
+    "IIROC.="<<&currentIROC<<               // current sample at given moment
+    "IOROC.="<<&currentOROC<<               // current sample at given moment
+    "medianIIROC="<<medcurIROC<<            // median at given moment 
+    "medianIOROC="<<medcurOROC<<            // median at given moment
+    //
+    "minIROC.="<<&minROC<<                  // minimum in +-5 min 
+    "maxIROC.="<<&maxROC<<                  // maximum in +-5 min
+    "meanIROC.="<<&meanROC<<                // mean in +-5 min
+    "medianIROC.="<<&medianROC<<              // median in +-5 min
+    "meanIIROC5="<<meanIIROC<<               // mean current in IROC +-5 minutes 
+    "meanIOROC5="<<meanIOROC<<               // mean current in OROC 
+    "medianIIROC5="<<medianIIROC<<           // median current in IROC 
+    "medianIOROC5="<<medianIOROC;           // medianan current in OROC 
+   
+
+  (*fPcstream)<<"current"<<     // current information
+    "time="<<itime<<
+    "isec.="<<&sector<<                       //sector number
+    "IIROC.="<<&currentIROC<<               // current sample at given moment
+    "IOROC.="<<&currentOROC<<               // current sample at given moment
+    "medianIIROC="<<medcurIROC<<            // median at given moment 
+    "medianIOROC="<<medcurOROC<<            // median at given moment
+    //
+    "minIROC.="<<&minROC<<                  // minimum in +-5 min 
+    "maxIROC.="<<&maxROC<<                  // maximum in +-5 min
+    "meanIROC.="<<&meanROC<<                // mean in +-5 min
+    "medianIROC.="<<&medianROC<<              // median in +-5 min
+    "meanIIROC5="<<meanIIROC<<               // mean current in IROC +-5 minutes 
+    "meanIOROC5="<<meanIOROC<<               // mean current in OROC 
+    "medianIIROC5="<<medianIIROC<<           // median current in IROC 
+    "medianIOROC5="<<medianIOROC<< // medianan current in OROC 
+    "\n";
+
+}
 
 
 

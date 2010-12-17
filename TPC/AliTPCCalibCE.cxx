@@ -1376,16 +1376,11 @@ TH2S* AliTPCCalibCE::GetHisto(Int_t sector, TObjArray *arr,
     // if force is true create a new histogram if it doesn't exist allready
     //
     if ( !force || arr->UncheckedAt(sector) )
-	return (TH2S*)arr->UncheckedAt(sector);
+      return (TH2S*)arr->UncheckedAt(sector);
 
     // if we are forced and histogram doesn't exist yet create it
-    Char_t name[255], title[255];
-
-    sprintf(name,"hCalib%s%.2d",type,sector);
-    sprintf(title,"%s calibration histogram sector %.2d",type,sector);
-
     // new histogram with Q calib information. One value for each pad!
-    TH2S* hist = new TH2S(name,title,
+    TH2S* hist = new TH2S(Form("hCalib%s%.2d",type,sector),Form("%s calibration histogram sector %.2d",type,sector),
 			  nbinsY, ymin, ymax,
 			  fROC->GetNChannels(sector),0,fROC->GetNChannels(sector));
     hist->SetDirectory(0);
@@ -1431,16 +1426,11 @@ TH1S* AliTPCCalibCE::GetHisto(Int_t sector, TObjArray *arr,
     // if force is true create a new histogram if it doesn't exist allready
     //
     if ( !force || arr->UncheckedAt(sector) )
-	return (TH1S*)arr->UncheckedAt(sector);
+      return (TH1S*)arr->UncheckedAt(sector);
 
     // if we are forced and histogram doesn't yes exist create it
-    Char_t name[255], title[255];
-
-    sprintf(name,"hCalib%s%.2d",type,sector);
-    sprintf(title,"%s calibration histogram sector %.2d",type,sector);
-
     // new histogram with calib information. One value for each pad!
-    TH1S* hist = new TH1S(name,title,
+    TH1S* hist = new TH1S(Form("hCalib%s%.2d",type,sector),Form("%s calibration histogram sector %.2d",type,sector),
 			  fLastTimeBin-fFirstTimeBin,fFirstTimeBin,fLastTimeBin);
     hist->SetDirectory(0);
     arr->AddAt(hist,sector);
@@ -1879,9 +1869,6 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
   // for an example see class description at the beginning
   //
 
-  Double_t *x = new Double_t[fNevents];
-  Double_t *y = new Double_t[fNevents];
-
   TVectorD *xVar = 0x0;
   TObjArray *aType = 0x0;
   Int_t npoints=0;
@@ -1914,6 +1901,9 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
     for ( Int_t i=0;i<fNevents; ++i) (*xVar)[i]=i;
   }
   
+  Double_t *x = new Double_t[fNevents];
+  Double_t *y = new Double_t[fNevents];
+  
   for (Int_t ievent =0; ievent<fNevents; ++ievent){
     if ( fitType<2 ){
       TObjArray *events = (TObjArray*)(aType->At(sector));
@@ -1937,7 +1927,7 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
   TGraph *gr = new TGraph(npoints);
     //sort xVariable increasing
   Int_t    *sortIndex = new Int_t[npoints];
-  TMath::Sort(npoints,x,sortIndex);
+  TMath::Sort(npoints,x,sortIndex, kFALSE);
   for (Int_t i=0;i<npoints;++i){
     gr->SetPoint(i,x[sortIndex[i]],y[sortIndex[i]]);
   }

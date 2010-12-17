@@ -520,7 +520,7 @@ AliTPCCalibQAChecker* AliTPCCalibQAChecker::NextSubChecker()
   // loop over sub checkers
   // if recursive, recursively return the pointers of non subchecker type sub checkers
   //
-  if (!fArrSubCheckers && !fArrSubCheckers->GetEntries()) return 0;
+  if (!fArrSubCheckers || !fArrSubCheckers->GetEntries()) return 0;
   if (!fIterSubCheckers) fIterSubCheckers=fArrSubCheckers->MakeIterator();
   AliTPCCalibQAChecker *al=(AliTPCCalibQAChecker*)fIterSubCheckers->Next();
   if (!al){

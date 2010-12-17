@@ -428,19 +428,15 @@ TH2F* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr,
     // if force is true create a new histogram if it doesn't exist allready
     //
     if ( !force || arr->UncheckedAt(sector) )
-	return (TH2F*)arr->UncheckedAt(sector);
+      return (TH2F*)arr->UncheckedAt(sector);
 
     // if we are forced and histogram doesn't yes exist create it
-    Char_t name[255], title[255];
-
-    sprintf(name,"hCalib%s%.2d",type,sector);
-    sprintf(title,"%s calibration histogram sector %.2d;ADC channel;Channel (pad)",type,sector);
-
     // new histogram with Q calib information. One value for each pad!
-    TH2F* hist = new TH2F(name,title,
-			  nbinsY, ymin, ymax,
-			  fROC->GetNChannels(sector),0,fROC->GetNChannels(sector)
-			 );
+    TH2F* hist = new TH2F(Form("hCalib%s%.2d",type,sector),
+                          Form("%s calibration histogram sector %.2d;ADC channel;Channel (pad)",type,sector),
+                          nbinsY, ymin, ymax,
+                          fROC->GetNChannels(sector),0,fROC->GetNChannels(sector)
+                         );
     hist->SetDirectory(0);
     arr->AddAt(hist,sector);
     return hist;

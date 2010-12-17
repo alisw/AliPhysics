@@ -33,7 +33,7 @@ class AliTPCdataQA;
 class TGraphErrors;
 class TTreeSRedirector;
 class AliTPCCalROC;
-
+class AliSplineFit;
 
 class AliTPCcalibDButil : public TObject
 {

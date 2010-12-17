@@ -662,8 +662,10 @@ const char* AliTPCCalibViewerGUItime::GetDrawString(){
   id=fListVariables->GetSelectedEntry()->EntryId();
 //   printf("id: %d\n",id);
   TString branchName=selectedVariable;
-  const TObject *key=(*fConfigParser)(id);
-  if (key) branchName=(*fConfigParser)(id)->GetName();
+  if (fConfigParser){
+    const TObject *key=(*fConfigParser)(id);
+    if (key) branchName=(*fConfigParser)(id)->GetName();
+  }
   //treat case of TVector
   if (branchName.EndsWith(".")){
     Int_t par = (Int_t)(fNmbPar->GetNumber());
@@ -880,7 +882,7 @@ void AliTPCCalibViewerGUItime::DoDraw() {
       }
     }
   }
-  UpdateValueArrays(graphOutput, xArr);
+  if (xArr) UpdateValueArrays(graphOutput, xArr);
 //   if (graphOutput){
 //     if (fIsCustomDraw){
 //       if (fDrawString.Contains(":")){
