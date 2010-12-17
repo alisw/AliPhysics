@@ -32,6 +32,7 @@
 
 #include <iostream>
 #include <TGraphSmooth.h>
+#include <TMath.h>
 #include "AliLog.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -311,7 +312,7 @@ Double_t AliEMCALCalibTimeDep::GetTempCoeff(Double_t IDark, Double_t M) const
   // from % numbers to regular ones..:
   dTC *= 0.01;
 
-  return fabs(dTC); // return the absolute value, to avoid any sign confusion
+  return TMath::Abs(dTC); // return the absolute value, to avoid any sign confusion
 }
 
 /* Next come the methods that do the work in picking up all the needed info..*/
@@ -836,8 +837,8 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins, In
 	// i.e. the product temperatureDiff * dTempCoeff increase when the gain goes up
 	// The correction we want to keep is what we should multiply our ADC value with as a function
 	// of time, i.e. the inverse of the gain change..
-	if ( (fabs(temperatureDiff)>fTemperatureResolution)
-	     && (fabs(temperatureDiff)<fMaxTemperatureDiff) ) {
+	if ( (TMath::Abs(temperatureDiff)>fTemperatureResolution)
+	     && (TMath::Abs(temperatureDiff)<fMaxTemperatureDiff) ) {
 	  // significant enough difference that we need to consider it, and also not unreasonably large
 
 	  // loop over all towers; effect of temperature change will depend on gain for this tower
