@@ -30,6 +30,7 @@ public:
   void ProcessCTP(Int_t run, Int_t timeStamp);
   void ProcessAlign(Int_t run, Int_t timeStamp);
   void ProcessGain(Int_t run, Int_t timeStamp);
+  void ProcessCurrent(Int_t irun,Int_t itime);
 
   void ProcessDriftCERef();
   void ProcessPulserRef();
