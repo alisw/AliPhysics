@@ -894,7 +894,12 @@ Int_t AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
 	" - LDC: "<<rawReader->GetLDCId()<<
 	" - Size: "<<rawReader->GetDataSize()<<
 	" - Equipment size: "<<rawReader->GetEquipmentSize()<<endl;*/
-      gSizePerDDL[rawReader->GetDDLID()] = rawReader->GetDataSize();
+      Int_t ddlid = rawReader->GetDDLID();
+      if(ddlid<0){
+	AliError("GetDDLID returns a negative value");
+	continue;
+      }
+      gSizePerDDL[ddlid] = rawReader->GetDataSize();
       //gSizePerLDC[rawReader->GetLDCId()-8] = rawReader->GetDataSize();
       AliITSgeomTGeo::GetModuleId(gSSDStream.GetModuleID(),gLayer,gLadder,gModule);
       gHistPosition = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
@@ -1554,7 +1559,9 @@ Int_t AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
   Int_t npoints = 0;      
   Float_t cluglo[3]={0.,0.,0.}; 
   //printf("*-*-*-*-*-*-*---*-*-*-------*-*-*-*-*-*-***************AliITSQASSDataMakerRec::MakeRecpoints STEP1 \n");
-  Int_t firMod = AliITSgeomTGeo::GetModuleIndex(5,1,1);
+  // AliITSgeomTGeo::GetModuleIndex() issues an error in case the arguments
+  // are illegal and returns -1
+  Int_t firMod = TMath::Max(0,AliITSgeomTGeo::GetModuleIndex(5,1,1));
   Int_t lasMod =  AliITSgeomTGeo::GetNModules();
   for(Int_t module = firMod; module < lasMod; module++){
     recpoints = rpcont->UncheckedGetClusters(module);

@@ -95,10 +95,10 @@ Float_t AliITSsegmentationSPD::ColFromZ(Float_t z) const {
     } // end if outsize of detector
     s = 0.0;
     i = -1;
-    while(z>s){
-	i++;
-	s += fCellSizeZ[i];
-    } // end while
+    do {
+      i++;
+      s += fCellSizeZ[i];
+    } while(z>s);
     s -= fCellSizeZ[i];
     col = (Float_t) i + (z-s)/fCellSizeZ[i];
     return col;

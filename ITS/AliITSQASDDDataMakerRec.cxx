@@ -833,7 +833,9 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 	  fAliITSQADataMakerRec->GetRecPointsData(i+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
 	}
     }
-  Int_t firMod=AliITSgeomTGeo::GetModuleIndex(3,1,1);
+  // AliITSgeomTGeo::GetModuleIndex() issues an error in case the arguments
+  // are illegal and returns -1
+  Int_t firMod=TMath::Max(0,AliITSgeomTGeo::GetModuleIndex(3,1,1));
   Int_t lasMod=AliITSgeomTGeo::GetModuleIndex(5,1,1);
   for(Int_t module=firMod; module<lasMod;module++){
     //AliInfo(Form("Module %d\n",module));

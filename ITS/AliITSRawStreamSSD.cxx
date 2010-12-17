@@ -537,8 +537,12 @@ Bool_t AliITSRawStreamSSD::Next()
   flag=0;
 
 
-
-  fModuleID = fgkDDLModuleMap[fRawReader->GetDDLID()][relModuleID];
+  Int_t ddlid=fRawReader->GetDDLID();
+  if(ddlid<0){
+    AliError("fRawReader->GetDDLID returns a negative value");
+    ddlid=0;
+  }
+  fModuleID = fgkDDLModuleMap[ddlid][relModuleID];
       
   fCoord2 =  (fData >> 12) & 0x000007FF; 
   fCoord1 = (fCoord2 < 768) ? 0 : 1; // strip 0 - 767 are Pside, strip 768 - 1535 are Nside

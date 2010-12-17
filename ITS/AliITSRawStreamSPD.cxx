@@ -176,6 +176,10 @@ Int_t AliITSRawStreamSPD::ReadCalibHeader() {
   if (ddlID==-1) { // we may need to read one word to get the blockAttr
     if (!ReadNextShort()) return -1;
     ddlID = fRawReader->GetDDLID();
+    if(ddlID<0){
+      AliError("fRawReader->GetDDLID() returns a negative value");
+      ddlID=0;
+    }
   }
   // reset flags and counters
   fEqPLBytesRead = 2;

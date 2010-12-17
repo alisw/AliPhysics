@@ -578,6 +578,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	  Int_t ladmod=fLadders[ladder-1]+ladl2;
  	  if(ladmod>AliITSgeomTGeo::GetNLadders(2)) ladmod=ladmod-AliITSgeomTGeo::GetNLadders(2);
 	  Int_t modul2=AliITSgeomTGeo::GetModuleIndex(2,ladmod,k+1);
+	  if(modul2<0)continue;
 	  if(!fUseModule[modul2]) continue;
 	  itsRec=rpcont->UncheckedGetClusters(modul2);
 	  Int_t nrecp2 = itsRec->GetEntries();
