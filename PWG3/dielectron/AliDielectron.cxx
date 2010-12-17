@@ -164,6 +164,12 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   // Process the events
   //
 
+  //at least first event is needed!
+  if (!ev1){
+    AliError("At least first event must be set!");
+    return;
+  }
+    
   AliDielectronVarManager::SetEvent(ev1);
    
   //in case we have MC load the MC event and process the MC particles

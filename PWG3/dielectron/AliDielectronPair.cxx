@@ -223,8 +223,8 @@ Double_t AliDielectronPair::ThetaPhiCM(const Bool_t isHE, const Bool_t isTheta) 
 
   // Laboratory frame 4-vectors:
   // projectile beam & target beam 4-mom
-  AliVParticle *d1 = dynamic_cast<AliVParticle*>(fRefD1.GetObject());
-  AliVParticle *d2 = dynamic_cast<AliVParticle*>(fRefD2.GetObject());
+  AliVParticle *d1 = static_cast<AliVParticle*>(fRefD1.GetObject());
+  AliVParticle *d2 = static_cast<AliVParticle*>(fRefD2.GetObject());
   
   const Double_t kBeamEnergy   = 3500.;
   Double_t px1=d1->Px();
