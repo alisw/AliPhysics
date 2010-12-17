@@ -88,18 +88,13 @@ AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Dou
   
   if(!useKF){
     AliVertexerTracks *vertexer = new AliVertexerTracks(b);
-    AliESDVertex* Vertex =  const_cast<AliESDVertex*>(v);
-    vertexer->SetVtxStart(Vertex);
-    //if(isESD){vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);}
-    UShort_t *id = new UShort_t[2];
-    AliHLTGlobalBarrelTrack *t1 = (AliHLTGlobalBarrelTrack*) trkArray->At(0);
-    AliHLTGlobalBarrelTrack *t2 = (AliHLTGlobalBarrelTrack*) trkArray->At(1);
-    id[0]=(UShort_t) t1->GetID();
-    id[1]=(UShort_t) t2->GetID();
-    vertexESD = (AliESDVertex*)vertexer->VertexForSelectedTracks(trkArray,id);
-    delete [] id;
+    AliESDVertex* vertex = new AliESDVertex(*((AliESDVertex*)v));
+    //AliESDVertex* vertex =  const_cast<AliESDVertex*>(v);
+    vertexer->SetVtxStart(vertex);
+    vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);
     delete vertexer; vertexer=NULL;
-    
+    delete vertex;
+
     if(!vertexESD) return vertexAOD;
     
     if(vertexESD->GetNContributors()!=trkArray->GetEntriesFast()) { 

@@ -41,10 +41,10 @@
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
 #include "AliAODRecoDecay.h"
-#include "AliHLTMCEvent.h"
-#include "AliStack.h"
-#include "TParticle.h"
 #include "TMap.h"
+#include "AliHLTD0Candidate.h"
+#include "TFile.h"
+#include "TClonesArray.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTD0Trigger)
@@ -68,10 +68,11 @@ AliHLTD0Trigger::AliHLTD0Trigger()
   , fd0calc(NULL)                  
   , ftwoTrackArray(NULL)
   , fTotalD0(0)
-  , fTotalD0Onetrue(0)
-  , fTotalD0true(0)
-  , fEvent(NULL)
   , fuseKF(false)
+  , fSendCandidate(false)
+  , fCandidateTree(NULL)
+  , fCandidateArray(NULL)
+  , fWriteFile(false)
 {
   
   // see header file for class documentation
@@ -86,7 +87,7 @@ const char* AliHLTD0Trigger::fgkOCDBEntry="HLT/ConfigHLT/D0Trigger";
 
 AliHLTD0Trigger::~AliHLTD0Trigger()
 {
- 
+  // destructor 
 }
   
 const char* AliHLTD0Trigger::GetTriggerName() const
@@ -111,20 +112,11 @@ int AliHLTD0Trigger::DoTrigger()
   HLTDebug("Used  Cuts: pT: %f , DCA: %f , InvMass: %f , CosThetaStar: %f , d0: %f , d0xd0: %f , CosPointingAngle: %f",fPtMin,fdca,finvMass,fcosThetaStar,fd0,fd0d0,fcosPoint);
 
   Int_t nD0=0;
-  Int_t nD0Onetrue=0;
-  Int_t nD0true=0;
   TString description;
 
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT); iter != NULL; iter = GetNextInputObject() ) {   
-    fEvent = dynamic_cast<AliHLTMCEvent*>(const_cast<TObject*>( iter ) );
-    if ( ! fEvent ) {
-      HLTError( "No MC Event present!" );
-      break;
-    }
-  }
-
   const AliESDVertex *Vertex=NULL;
-
+  if(fCandidateArray){fCandidateArray->Clear();}
+  
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {   
     if(fUseV0){
       nD0=RecV0(iter);
@@ -141,7 +133,7 @@ int AliHLTD0Trigger::DoTrigger()
        for(Int_t it=0;it<event->GetNumberOfTracks();it++){
 	 SingleTrackSelect(event->GetTrack(it),Vertex,field);
        }
-       RecD0(nD0,nD0Onetrue,nD0true,Vertex,field);       
+       RecD0(nD0,Vertex,field);       
     }
   }
 
@@ -164,30 +156,33 @@ int AliHLTD0Trigger::DoTrigger()
       for(UInt_t i=0;i<tracksVector.size();i++){
 	SingleTrackSelect(&tracksVector[i],Vertex,field);
       }
-      RecD0(nD0,nD0Onetrue,nD0true,Vertex,field);
+      RecD0(nD0,Vertex,field);
     }    
   }
   
   fTotalD0+=nD0;
-  fTotalD0Onetrue += nD0Onetrue;
-  fTotalD0true += nD0true;
 
   ftwoTrackArray->Clear();
   fPos.clear();
   fNeg.clear();
      
   HLTDebug("Number of D0 found: %d",nD0);
-  HLTDebug("Number of D0 candidates with one track as D0 decay: %d",nD0Onetrue);
-  HLTDebug("Number of True D0 found: %d",nD0true);
   HLTDebug("Total Number of D0 found: %d",fTotalD0);
-  HLTDebug("Number of D0 candidates with one track as D0 decay: %d",fTotalD0Onetrue);
-  HLTDebug("Total Number of True D0 found: %d",fTotalD0true);
-
+ 
   if(fplothisto){
     PushBack( (TObject*) fD0mass, kAliHLTDataTypeHistogram,0);
     PushBack( (TObject*) fD0pt, kAliHLTDataTypeHistogram,0);
   }
-  
+  if(fSendCandidate){
+    PushBack( (TObject*) fCandidateArray, kAliHLTDataTypeTObjArray,0);
+  }
+  if(fWriteFile && fCandidateTree!=NULL){
+    fCandidateTree->Fill();
+  }
+  if(fCandidateArray){
+    fCandidateArray->Clear(); 
+  }
+
   //if (iResult>=0) {
   if (1) {
    
@@ -222,11 +217,10 @@ int AliHLTD0Trigger::DoTrigger()
 
 int AliHLTD0Trigger::DoInit(int argc, const char** argv)
 {
-  
+  // component initialization
+
   fd0calc = new AliHLTD0toKpi();
   ftwoTrackArray = new TObjArray(2);
-
-  fplothisto=false;
   // see header file for class documentation
   fD0mass = new TH1F("hMass","D^{0} mass plot",100,1.7,2);
   fD0pt = new TH1F("hPt","D^{0} Pt plot",20,0,20);
@@ -237,6 +231,17 @@ int AliHLTD0Trigger::DoInit(int argc, const char** argv)
   // configure from the command line parameters if specified
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
+
+  if (iResult<0) return iResult;
+
+  if(fSendCandidate || fWriteFile){
+    fCandidateArray = new TClonesArray("AliHLTD0Candidate",1000);
+  }
+  if(fWriteFile){
+    fCandidateTree = new TTree("D0Candidates","Tree with D0 Candidates");
+    fCandidateTree->Branch("Candidates","TClonesArray",&fCandidateArray,32000,99);
+  }
+
   return iResult;
 }
 
@@ -247,7 +252,13 @@ int AliHLTD0Trigger::DoDeinit()
   if(fD0mass){delete fD0mass; fD0mass = NULL;}
   if(fD0pt){delete fD0pt; fD0pt=NULL;}
   if(ftwoTrackArray){delete ftwoTrackArray; ftwoTrackArray=NULL;}
-  
+  if(fWriteFile){
+    TFile *mcFile = new TFile("D0_Candidates.root","RECREATE");
+    fCandidateTree->Write();
+    mcFile->Close();
+  }
+  if(fCandidateTree){delete fCandidateTree; fCandidateTree=NULL;}
+  if(fCandidateArray){delete fCandidateArray; fCandidateArray=NULL;}
   return 0;
 }
 
@@ -333,11 +344,20 @@ int AliHLTD0Trigger::ScanConfigurationArgument(int argc, const char** argv)
     fuseKF=true;
     return 1;
   }
+  if (argument.CompareTo("-send-candidates")==0) {
+    fSendCandidate=true;
+    return 1;
+  }
+  if (argument.CompareTo("-write-file")==0) {
+    fWriteFile=true;
+    return 1;
+  }
+ 
   // unknown argument
   return -EINVAL;
 }
 
-void AliHLTD0Trigger::SingleTrackSelect(AliExternalTrackParam* t, const AliESDVertex* pv,Double_t field){
+void AliHLTD0Trigger::SingleTrackSelect(AliExternalTrackParam* t, const AliESDVertex* pv, Double_t field){
   // Offline uses || on the cuts of decay products
   if (!pv) return;
 
@@ -355,7 +375,7 @@ void AliHLTD0Trigger::SingleTrackSelect(AliExternalTrackParam* t, const AliESDVe
   }
 }
 
-void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const AliESDVertex* pv,Double_t field){
+void AliHLTD0Trigger::RecD0(Int_t& nD0,const AliESDVertex* pv, Double_t field){
   // Default way of reconstructing D0's. Both from ESD and Barreltracks
   Double_t D0,D0bar,xdummy,ydummy; 
   Double_t d0[2];
@@ -416,13 +436,36 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const A
       minvbar = rd->InvMass(nprongs,pdg2bar);
       if(TMath::Abs(minv-fD0PDG)>finvMass && TMath::Abs(minv-fD0PDG)>finvMass) {continue; delete vertexp1n1; delete rd;}
       */
-      if((TMath::Abs(fd0calc->InvMass(tN,tP)-fD0PDG)) > finvMass && TMath::Abs((fd0calc->InvMass(tP,tN))-fD0PDG) > finvMass){continue;}
+      if((TMath::Abs(fd0calc->InvMass(tN,tP)-fD0PDG)) > finvMass && TMath::Abs((fd0calc->InvMass(tP,tN))-fD0PDG) > finvMass){
+	vertexp1n1->RemoveCovMatrix();
+	delete vertexp1n1;
+	ftwoTrackArray->Clear();
+	continue;
+      }
+      
       fd0calc->cosThetaStar(tN,tP,D0,D0bar);
-      if(TMath::Abs(D0) > fcosThetaStar && TMath::Abs(D0bar) > fcosThetaStar){continue;}
+      if(TMath::Abs(D0) > fcosThetaStar && TMath::Abs(D0bar) > fcosThetaStar){
+	vertexp1n1->RemoveCovMatrix();
+	delete vertexp1n1;
+	ftwoTrackArray->Clear();
+	continue;
+      }
+      
       d0[0] = tP->GetD(pvpos[0],pvpos[1],field);
       d0[1] = tN->GetD(pvpos[0],pvpos[1],field);
-      if((d0[0]*d0[1]) > fd0d0){continue;}
-      if(fd0calc->pointingAngle(tN,tP,pvpos,svpos) < fcosPoint){continue;}
+      if((d0[0]*d0[1]) > fd0d0){
+	vertexp1n1->RemoveCovMatrix();
+	delete vertexp1n1;
+	ftwoTrackArray->Clear();
+	continue;
+      }
+      
+      if(fd0calc->pointingAngle(tN,tP,pvpos,svpos) < fcosPoint){
+	vertexp1n1->RemoveCovMatrix();
+	delete vertexp1n1;
+	ftwoTrackArray->Clear();	    
+	continue;
+      }
       
       if(fplothisto){
 	//fD0mass->Fill(minv);
@@ -439,19 +482,18 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,Int_t& nD0Onetrue ,Int_t& nD0true,const A
 	  }
 	*/
       }
-      
-      if(CheckTrackMC(tP,tN)==2){
-	nD0true++;
-      }
-      if(CheckTrackMC(tP,tN)==1){
-	nD0Onetrue++;
+
+      if(fSendCandidate && fCandidateArray){
+	new(fCandidateArray->AddrAt(nD0)) AliHLTD0Candidate(fd0calc->InvMass(tN,tP),fd0calc->InvMass(tP,tN),fd0calc->Pt(tP,tN),tP->GetLabel(),tN->GetLabel(),tP->Pt(),tN->Pt());
       }
 
       nD0++;
       vertexp1n1->RemoveCovMatrix();
       delete vertexp1n1;
+      ftwoTrackArray->Clear();
     }
   }
+  ftwoTrackArray->Clear();
 }
 
 Int_t AliHLTD0Trigger::RecV0(const TObject* iter){
@@ -507,31 +549,6 @@ Int_t AliHLTD0Trigger::RecV0(const TObject* iter){
   }
   return nD0;
   
-}
-int AliHLTD0Trigger::CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackParam* pn){
-  // Checks if decay products both came from a D0 or one.
-  if(!fEvent){return 0;}
-
-  int lP = pt->GetLabel();
-  int lN = pn->GetLabel();
-
-  if(lN>=0 && lP>=0){
-    
-    int imP = (fEvent->Particle(lP))->GetFirstMother();
-    int imN = (fEvent->Particle(lN))->GetFirstMother();
-    
-    if(imP>=0 && imN>=0){
-      TParticle * mP = fEvent->Particle(imP);
-      TParticle * mN = fEvent->Particle(imN);
-      if((fabs(mP->GetPdgCode())==421 && fabs(mN->GetPdgCode())==421) && imP == imN){
-	return 2;
-      }
-      if((fabs(mP->GetPdgCode())==421 || fabs(mN->GetPdgCode())==421) && imP == imN){
-	return 1;
-      }
-    }
-  }
-  return 0;
 }
 void AliHLTD0Trigger::GetOCDBObjectDescription( TMap* const targetMap)
 {

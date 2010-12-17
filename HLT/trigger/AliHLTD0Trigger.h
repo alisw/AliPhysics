@@ -19,7 +19,8 @@ class TH1F;
 class TObjArray;
 class AliESDVertex;
 class AliExternalTrackParam;
-class AliHLTMCEvent;
+class TTree;
+class TClonesArray;
 
 /**
  * @class  AliHLTD0Trigger
@@ -51,7 +52,10 @@ class AliHLTMCEvent;
  * \li -d0d0    <i> Product of impact parameter for decay products  </i> <br>
  * \li -cospoint    <i> pointing angle  </i> <br>
  * \li -plothistogram    <i> ploting the inv. mass and pt of D0  </i> <br>
+ * \li -useV0    <i> will use the V0's found by the vertexer and stored in the ESD</i> <br>
  * \li -useKF    <i> will use partilce KF for vertex finding  </i> <br>
+ * \li -send-candidates    <i> will send out an array of candidates for each event</i> <br>
+ * \li -write-file    <i> will store a local file. Only use for small local tests.</i> <br>
  *
  * By default, configuration is loaded from OCDB, can be overridden by
  * component arguments.
@@ -112,9 +116,7 @@ class AliHLTD0Trigger : public AliHLTTrigger
   /// Useing the V0's in the ESD found by the V0 finder
   Int_t RecV0(const TObject* iter);
   /// Reconstructing the D0 from K and pi
-  void RecD0(Int_t&,Int_t&,Int_t&,const AliESDVertex*,Double_t field);
-  /// Checking if the decay prodicts came from a D0
-  int CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackParam* pn);
+  void RecD0(Int_t&,const AliESDVertex*,Double_t field);
 
   /// pt cut for decay, minimum [GeV/c]
   float fPtMin;                                            //! transient
@@ -156,14 +158,18 @@ class AliHLTD0Trigger : public AliHLTTrigger
 
   /// Counters for D0
   Int_t fTotalD0;                                          //! transient
-  Int_t fTotalD0Onetrue;                                   //! transient
-  Int_t fTotalD0true;                                      //! transient
-  
-  /// Object with information about the Monte Carlo
-  AliHLTMCEvent* fEvent;                                   //!transient
 
   /// Option for useing KF particle for vertexing
   bool fuseKF;                                             //!transient
+
+  /// Option for storing MC information
+  bool fSendCandidate;                                     //!transient
+  /// Tree for storing the MC information
+  TTree *fCandidateTree;                                   //!transient
+  /// Array with D0 candidates
+  TClonesArray *fCandidateArray;                           //!transient
+  /// Option for writing MC information to file
+  bool fWriteFile;                                         //!transient
 
   /// the default configuration entry for this component
   static const char* fgkOCDBEntry; //!transient

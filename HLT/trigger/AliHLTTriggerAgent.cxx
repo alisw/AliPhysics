@@ -192,16 +192,8 @@ int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandle
   configurationId = "TRIGGER-D0";
   if(runloader && !rawReader){
     // simulation without simulated raw data
-    // use ESD as input and add in addition the MC information for trigger evaluation
+    // use ESD as input
     triggerInputs="GLOBAL-esd-converter ";
-
-    // 2010-09-13
-    // disable the publishing of MC information. It seems to be way too big for AA
-    // simulation, anyhow the evaluation of the trigger should be done outside the
-    // component    
-    // const char* mcpublisherId="TRIGGER-mc-publisher";
-    // pHandler->CreateConfiguration(mcpublisherId, "ESDMCEventPublisher", NULL, "-entrytype MC -datapath ./");
-    // triggerInputs+=mcpublisherId;
   }
   else{
     // simulation with simulated raw data, or raw data reconstruction
