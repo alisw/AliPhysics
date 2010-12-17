@@ -56,8 +56,8 @@ class AliV0Reader : public TObject {
     kStepLikeSign = 3,
     kStepTPCRefit = 4,
     kStepKinks = 5,
-    kStepdEdx_electronselection = 6,
-    kStepdEdx_pionrejection = 7,
+    kStepdEdxElectronselection = 6,
+    kStepdEdxPionrejection = 7,
     kStepNContributors = 8,
     kStepTPCPID = 9,
     kStepR = 10,
@@ -785,7 +785,7 @@ class AliV0Reader : public TObject {
   /*
    * Gets the vector of previous events v0s (for bacground analysis)
    */
-  AliGammaConversionKFVector* GetBGGoodV0s(Int_t event);
+  AliGammaConversionKFVector* GetBGGoodV0s(Int_t event) const;
   //  vector<AliKFParticle> GetPreviousEventGoodV0s() const{return fPreviousEventGoodV0s;}
 
   void SetUseOwnXYZCalculation(Bool_t flag){fUseOwnXYZCalculation=flag;}
@@ -798,7 +798,7 @@ class AliV0Reader : public TObject {
 	
   Double_t GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b);
 
-  Bool_t GetArmenterosQtAlfa(AliKFParticle * posKFparticle,AliKFParticle * negKFparticle,AliKFParticle * gamKFparticle,Double_t armenterosQtAlfa[2]);
+  Bool_t GetArmenterosQtAlfa(const AliKFParticle * posKFparticle, const AliKFParticle * negKFparticle, const AliKFParticle * gamKFparticle,Double_t armenterosQtAlfa[2]);
 
   void SetDoCF(Bool_t flag){fDoCF = flag;}
 
@@ -818,7 +818,7 @@ class AliV0Reader : public TObject {
 
   void SetESDtrackCuts(AliESDtrackCuts * const trackCuts){fEsdTrackCuts = trackCuts;}
 
-  void SetNEventsForBG(Int_t nev){nEventsForBGCalculation = nev;}
+  void SetNEventsForBG(Int_t nev){fNEventsForBGCalculation = nev;}
 
   Int_t CountESDTracks();
 
@@ -892,7 +892,7 @@ class AliV0Reader : public TObject {
   Bool_t fDoMC;            // flag 
 
   //Event Cuts
-  Double_t fMaxVertexZ;
+  Double_t fMaxVertexZ; // max z vertex cut
   //cuts
   Double_t fMaxR; //r cut
   Double_t fMinR; //r cut
@@ -901,8 +901,8 @@ class AliV0Reader : public TObject {
   Double_t fPtCut; // pt cut
   Double_t fSinglePtCut; // pt cut for electron/positron
   Double_t fMaxZ; //z cut
-  Double_t fMinClsTPC;
-  Double_t fMinClsTPCToF;
+  Double_t fMinClsTPC; // minimum clusters in the TPC
+  Double_t fMinClsTPCToF; // minimum clusters to findable clusters
   Double_t fLineCutZRSlope; //linecut
   Double_t fLineCutZValue; //linecut
   Double_t fChi2CutConversion; //chi2cut
@@ -948,8 +948,8 @@ class AliV0Reader : public TObject {
 	
   TClonesArray* fCurrentEventGoodV0s; //vector of good v0s
  
-  vector<Int_t> fV0Pindex;
-  vector<Int_t> fV0Nindex;  
+  vector<Int_t> fV0Pindex; // index of positive track belonging to a V0
+  vector<Int_t> fV0Nindex; // index of positive track belonging to a V0
   //  vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
 
   Bool_t fCalculateBackground; //flag
@@ -961,11 +961,11 @@ class AliV0Reader : public TObject {
 
   static AliESDpid* fgESDpid;                 // ESD pid object
 
-  Int_t nEventsForBGCalculation;
+  Int_t fNEventsForBGCalculation; // Number of events used for background calculation
   
-  Bool_t fUseChargedTrackMultiplicityForBG;
-  Int_t fNumberOfGoodV0s;
-  Int_t fIsHeavyIon;
+  Bool_t fUseChargedTrackMultiplicityForBG; // flag
+  Int_t fNumberOfGoodV0s; // number of good V0s
+  Int_t fIsHeavyIon; // flag
 
   ClassDef(AliV0Reader,17)
 };

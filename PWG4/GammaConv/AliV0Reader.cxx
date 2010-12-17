@@ -137,7 +137,7 @@ AliV0Reader::AliV0Reader() :
   fBGEventInitialized(kFALSE),
   fEsdTrackCuts(NULL),
   fNumberOfESDTracks(0),
-  nEventsForBGCalculation(20),
+  fNEventsForBGCalculation(20),
   fUseChargedTrackMultiplicityForBG(kTRUE),
   fNumberOfGoodV0s(0),
   fIsHeavyIon(0)
@@ -234,7 +234,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fBGEventInitialized(original.fBGEventInitialized),
   fEsdTrackCuts(original.fEsdTrackCuts),
   fNumberOfESDTracks(original.fNumberOfESDTracks),
-  nEventsForBGCalculation(original.nEventsForBGCalculation),
+  fNEventsForBGCalculation(original.fNEventsForBGCalculation),
   fUseChargedTrackMultiplicityForBG(original.fUseChargedTrackMultiplicityForBG),
   fNumberOfGoodV0s(original.fNumberOfGoodV0s),
   fIsHeavyIon(original.fIsHeavyIon)
@@ -377,7 +377,7 @@ void AliV0Reader::Initialize(){
 	  multiplicityBinLimitsArray[4] = 1500.;
 	  multiplicityBinLimitsArray[5] = 3000.;
 	}
-	fBGEventHandler = new AliGammaConversionBGHandler(9,6,nEventsForBGCalculation);
+	fBGEventHandler = new AliGammaConversionBGHandler(9,6,fNEventsForBGCalculation);
       }
       else{
 	multiplicityBinLimitsArray[0] = 2;
@@ -393,7 +393,7 @@ void AliV0Reader::Initialize(){
 	  multiplicityBinLimitsArray[4] = 9999;
 	}
 
-	fBGEventHandler = new AliGammaConversionBGHandler(9,5,nEventsForBGCalculation);
+	fBGEventHandler = new AliGammaConversionBGHandler(9,5,fNEventsForBGCalculation);
       }
 
 
@@ -422,6 +422,7 @@ AliESDv0* AliV0Reader::GetV0(Int_t index){
 }
 
 Int_t AliV0Reader::GetNumberOfContributorsVtx(){
+  // returns number of contributors to the vertex
   if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors()>0) {
     return fESDEvent->GetPrimaryVertexTracks()->GetNContributors();
   }
@@ -551,7 +552,7 @@ Bool_t AliV0Reader::NextV0(){
     fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
  
    
-    if(fCurrentNegativeESDTrack->GetSign() == fCurrentPositiveESDTrack->GetSign()){             // avoid like sign
+    if(fCurrentNegativeESDTrack->Charge() == fCurrentPositiveESDTrack->Charge()){             // avoid like sign
       //  iResult=kFALSE;
       if(fHistograms != NULL ){
 	fHistograms->FillHistogram("ESD_CutLikeSign_InvMass",GetMotherCandidateMass());
@@ -622,7 +623,7 @@ Bool_t AliV0Reader::NextV0(){
 	continue;
       }
       if(fDoCF){
-	fCFManager->GetParticleContainer()->Fill(containerInput,kStepdEdx_electronselection);               // for CF
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepdEdxElectronselection);               // for CF
       }
 
       if( fCurrentPositiveESDTrack->P()>fPIDMinPnSigmaAbovePionLine && fCurrentPositiveESDTrack->P()<fPIDMaxPnSigmaAbovePionLine ){
@@ -657,7 +658,7 @@ Bool_t AliV0Reader::NextV0(){
 	}
       }
       if(fDoCF){
-	fCFManager->GetParticleContainer()->Fill(containerInput,kStepdEdx_pionrejection);               // for CF
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepdEdxPionrejection);               // for CF
       }
 
     }
@@ -839,17 +840,17 @@ Bool_t AliV0Reader::NextV0(){
     if(fDoCF){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepMinClsTPC);		// for CF	
     }
-    Double_t NegclsToF = 0.;
+    Double_t negclsToF = 0.;
     if(fCurrentNegativeESDTrack->GetTPCNclsF()!=0  ){
-      NegclsToF = (Double_t)fCurrentNegativeESDTrack->GetNcls(1)/(Double_t)fCurrentNegativeESDTrack->GetTPCNclsF();
+      negclsToF = (Double_t)fCurrentNegativeESDTrack->GetNcls(1)/(Double_t)fCurrentNegativeESDTrack->GetTPCNclsF();
     }
 
-    Double_t PosclsToF = 0.;
+    Double_t posclsToF = 0.;
     if(fCurrentPositiveESDTrack->GetTPCNclsF()!=0  ){
-      PosclsToF = (Double_t)fCurrentPositiveESDTrack->GetNcls(1)/(Double_t)fCurrentPositiveESDTrack->GetTPCNclsF();
+      posclsToF = (Double_t)fCurrentPositiveESDTrack->GetNcls(1)/(Double_t)fCurrentPositiveESDTrack->GetTPCNclsF();
     }
 
-    if( NegclsToF < fMinClsTPCToF ||  PosclsToF < fMinClsTPCToF ){
+    if( negclsToF < fMinClsTPCToF ||  posclsToF < fMinClsTPCToF ){
       if(fHistograms != NULL){
 	fHistograms->FillHistogram("ESD_CutMinNClsTPCToF_InvMass",GetMotherCandidateMass());
       }
@@ -1599,7 +1600,7 @@ Double_t AliV0Reader::GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Doubl
    return convposz;
 }
 
-AliGammaConversionKFVector* AliV0Reader::GetBGGoodV0s(Int_t /*event*/){
+AliGammaConversionKFVector* AliV0Reader::GetBGGoodV0s(Int_t /*event*/) const{
   /*
   if(fUseChargedTrackMultiplicityForBG == kTRUE){
     return fBGEventHandler->GetBGGoodV0s(event,fESDEvent->GetPrimaryVertex()->GetZ(),CountESDTracks());
@@ -1649,7 +1650,7 @@ Bool_t AliV0Reader::CheckIfEtaIsMother(Int_t label){
 }
 
 
-Bool_t AliV0Reader::GetArmenterosQtAlfa(AliKFParticle* positiveKFParticle, AliKFParticle * negativeKFParticle, AliKFParticle * gammaKFCandidate, Double_t armenterosQtAlfa[2] ){
+Bool_t AliV0Reader::GetArmenterosQtAlfa(const AliKFParticle* positiveKFParticle, const AliKFParticle * negativeKFParticle, const AliKFParticle * gammaKFCandidate, Double_t armenterosQtAlfa[2] ){
   //see header file for documentation
 
   TVector3 momentumVectorPositiveKF(positiveKFParticle->GetPx(),positiveKFParticle->GetPy(),positiveKFParticle->GetPz());
