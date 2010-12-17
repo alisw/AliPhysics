@@ -91,14 +91,13 @@
 #pragma link C++ class  AliTrackerBase+;
 #pragma link C++ class  AliTOFHeader+;
 
+#pragma link C++ namespace AliESDUtils;
+
+#pragma link C++ function AliESDUtils::GetCorrV0(const AliESDEvent*,Float_t &);
+#pragma link C++ function AliESDUtils::GetCorrSPD2(Float_t,Float_t);
 #pragma link C++ function operator*(const AliFMDMap&,const AliFMDMap&);
 #pragma link C++ function operator/(const AliFMDMap&,const AliFMDMap&);
 #pragma link C++ function operator+(const AliFMDMap&,const AliFMDMap&);
 #pragma link C++ function operator-(const AliFMDMap&,const AliFMDMap&);
   
 #endif
-
-
-
-
-
