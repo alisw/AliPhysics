@@ -6,5 +6,7 @@
 
 #pragma link C++ class AliAnalysisTaskSPDdNdEta+;
 #pragma link C++ class AliTrackletAlg+;
-
+#pragma link C++ class AliAnalysisTaskCentrality+;
+#pragma link C++ class AliCentralityByFunction+;
+#pragma link C++ class AliCentralityGlauberFit+;
 #endif

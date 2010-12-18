@@ -1,7 +1,10 @@
 #-*- Mode: Makefile -*-
 
 SRCS= EVCHAR/AliAnalysisTaskSPDdNdEta.cxx \
-      EVCHAR/AliTrackletAlg.cxx
+      EVCHAR/AliTrackletAlg.cxx \
+      EVCHAR/AliAnalysisTaskCentrality.cxx \
+      EVCHAR/AliCentralityByFunction.cxx \
+      EVCHAR/AliCentralityGlauberFit.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
