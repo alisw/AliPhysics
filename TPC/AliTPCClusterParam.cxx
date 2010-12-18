@@ -271,24 +271,24 @@ void AliTPCClusterParam::FitResol0(TTree * tree, Int_t dim, Int_t type, Float_t 
   // Fit z - angular dependence of resolution 
   //
   // Int_t dim=0, type=0;
-  char varVal[100];
-  sprintf(varVal,"Resol:AngleM:Zm");
-  char varErr[100];
-  sprintf(varErr,"Sigma:AngleS:Zs");
-  char varCut[100];
-  sprintf(varCut,"Dim==%d&&Pad==%d&&QMean<0",dim,type);
+  TString varVal;
+  varVal="Resol:AngleM:Zm";
+  TString varErr;
+  varErr="Sigma:AngleS:Zs";
+  TString varCut;
+  varCut=Form("Dim==%d&&Pad==%d&&QMean<0",dim,type);
   //
-  Int_t entries = tree->Draw(varVal,varCut);
+  Int_t entries = tree->Draw(varVal.Data(),varCut);
   Float_t px[10000], py[10000], pz[10000];
   Float_t ex[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr,varCut);  
+  tree->Draw(varErr.Data(),varCut);  
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
   } 
-  tree->Draw(varVal,varCut);
+  tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
@@ -324,24 +324,24 @@ void AliTPCClusterParam::FitResol0Par(TTree * tree, Int_t dim, Int_t type, Float
   // Fit z - angular dependence of resolution 
   //
   // Int_t dim=0, type=0;
-  char varVal[100];
-  sprintf(varVal,"Resol:AngleM:Zm");
-  char varErr[100];
-  sprintf(varErr,"Sigma:AngleS:Zs");
-  char varCut[100];
-  sprintf(varCut,"Dim==%d&&Pad==%d&&QMean<0",dim,type);
+ TString varVal;
+  varVal="Resol:AngleM:Zm";
+ TString varErr;
+  varErr="Sigma:AngleS:Zs";
+ TString varCut;
+  varCut=Form("Dim==%d&&Pad==%d&&QMean<0",dim,type);
   //
-  Int_t entries = tree->Draw(varVal,varCut);
+  Int_t entries = tree->Draw(varVal.Data(),varCut);
   Float_t px[10000], py[10000], pz[10000];
   Float_t ex[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr,varCut);  
+  tree->Draw(varErr.Data(),varCut);  
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
   } 
-  tree->Draw(varVal,varCut);
+  tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
@@ -389,24 +389,24 @@ void AliTPCClusterParam::FitResol1(TTree * tree, Int_t dim, Float_t *param0, Flo
   // Fit z - angular dependence of resolution - pad length scaling 
   //
   // Int_t dim=0, type=0;
-  char varVal[100];
-  sprintf(varVal,"Resol:AngleM*sqrt(Length):Zm/Length");
-  char varErr[100];
-  sprintf(varErr,"Sigma:AngleS:Zs");
-  char varCut[100];
-  sprintf(varCut,"Dim==%d&&QMean<0",dim);
+ TString varVal;
+  varVal="Resol:AngleM*sqrt(Length):Zm/Length";
+ TString varErr;
+  varErr="Sigma:AngleS:Zs";
+ TString varCut;
+  varCut=Form("Dim==%d&&QMean<0",dim);
   //
-  Int_t entries = tree->Draw(varVal,varCut);
+  Int_t entries = tree->Draw(varVal.Data(),varCut);
   Float_t px[10000], py[10000], pz[10000];
   Float_t ex[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr,varCut);  
+  tree->Draw(varErr.Data(),varCut);  
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
   } 
-  tree->Draw(varVal,varCut);
+  tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
@@ -441,27 +441,27 @@ void AliTPCClusterParam::FitResolQ(TTree * tree, Int_t dim, Int_t type, Float_t 
   // Fit z - angular dependence of resolution - Q scaling 
   //
   // Int_t dim=0, type=0;
-  char varVal[100];
-  sprintf(varVal,"Resol:AngleM/sqrt(QMean):Zm/QMean");
+ TString varVal;
+  varVal="Resol:AngleM/sqrt(QMean):Zm/QMean";
   char varVal0[100];
   sprintf(varVal0,"Resol:AngleM:Zm");
   //
-  char varErr[100];
-  sprintf(varErr,"Sigma:AngleS:Zs");
-  char varCut[100];
-  sprintf(varCut,"Dim==%d&&Pad==%d&&QMean>0",dim,type);
+ TString varErr;
+  varErr="Sigma:AngleS:Zs";
+ TString varCut;
+  varCut=Form("Dim==%d&&Pad==%d&&QMean>0",dim,type);
   //
-  Int_t entries = tree->Draw(varVal,varCut);
+  Int_t entries = tree->Draw(varVal.Data(),varCut);
   Float_t px[20000], py[20000], pz[20000], pu[20000], pt[20000];
   Float_t ex[20000], ey[20000], ez[20000];
   //
-  tree->Draw(varErr,varCut);  
+  tree->Draw(varErr.Data(),varCut);  
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
   } 
-  tree->Draw(varVal,varCut);
+  tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
@@ -508,27 +508,27 @@ void AliTPCClusterParam::FitResolQPar(TTree * tree, Int_t dim, Int_t type, Float
   // Fit z - angular dependence of resolution - Q scaling  - parabolic correction
   //
   // Int_t dim=0, type=0;
-  char varVal[100];
-  sprintf(varVal,"Resol:AngleM/sqrt(QMean):Zm/QMean");
+ TString varVal;
+  varVal="Resol:AngleM/sqrt(QMean):Zm/QMean";
   char varVal0[100];
   sprintf(varVal0,"Resol:AngleM:Zm");
   //
-  char varErr[100];
-  sprintf(varErr,"Sigma:AngleS:Zs");
-  char varCut[100];
-  sprintf(varCut,"Dim==%d&&Pad==%d&&QMean>0",dim,type);
+ TString varErr;
+  varErr="Sigma:AngleS:Zs";
+ TString varCut;
+  varCut=Form("Dim==%d&&Pad==%d&&QMean>0",dim,type);
   //
-  Int_t entries = tree->Draw(varVal,varCut);
+  Int_t entries = tree->Draw(varVal.Data(),varCut);
   Float_t px[20000], py[20000], pz[20000], pu[20000], pt[20000];
   Float_t ex[20000], ey[20000], ez[20000];
   //
-  tree->Draw(varErr,varCut);  
+  tree->Draw(varErr.Data(),varCut);  
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
   } 
-  tree->Draw(varVal,varCut);
+  tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
@@ -588,24 +588,24 @@ void AliTPCClusterParam::FitRMS0(TTree * tree, Int_t dim, Int_t type, Float_t *p
   // Fit z - angular dependence of resolution 
   //
   // Int_t dim=0, type=0;
-  char varVal[100];
-  sprintf(varVal,"RMSm:AngleM:Zm");
-  char varErr[100];
-  sprintf(varErr,"sqrt((1./(100.*sqrt(12.))^2)+RMSe0^2):AngleS:Zs");
-  char varCut[100];
-  sprintf(varCut,"Dim==%d&&Pad==%d&&QMean<0",dim,type);
+ TString varVal;
+  varVal="RMSm:AngleM:Zm";
+ TString varErr;
+  varErr="sqrt((1./(100.*sqrt(12.))^2)+RMSe0^2):AngleS:Zs";
+ TString varCut;
+  varCut=Form("Dim==%d&&Pad==%d&&QMean<0",dim,type);
   //
-  Int_t entries = tree->Draw(varVal,varCut);
+  Int_t entries = tree->Draw(varVal.Data(),varCut);
   Float_t px[10000], py[10000], pz[10000];
   Float_t ex[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr,varCut);  
+  tree->Draw(varErr.Data(),varCut);  
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
   } 
-  tree->Draw(varVal,varCut);
+  tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
@@ -640,24 +640,24 @@ void AliTPCClusterParam::FitRMS1(TTree * tree, Int_t dim, Float_t *param0, Float
   // Fit z - angular dependence of resolution - pad length scaling 
   //
   // Int_t dim=0, type=0;
-  char varVal[100];
-  sprintf(varVal,"RMSm:AngleM*Length:Zm");
-  char varErr[100];
-  sprintf(varErr,"sqrt((1./(100.*sqrt(12.))^2)+RMSe0^2):AngleS:Pad");
-  char varCut[100];
-  sprintf(varCut,"Dim==%d&&QMean<0",dim);
+ TString varVal;
+  varVal="RMSm:AngleM*Length:Zm";
+ TString varErr;
+  varErr="sqrt((1./(100.*sqrt(12.))^2)+RMSe0^2):AngleS:Pad";
+ TString varCut;
+  varCut=Form("Dim==%d&&QMean<0",dim);
   //
-  Int_t entries = tree->Draw(varVal,varCut);
+  Int_t entries = tree->Draw(varVal.Data(),varCut);
   Float_t px[10000], py[10000], pz[10000];
   Float_t type[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr,varCut);  
+  tree->Draw(varErr.Data(),varCut);  
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     type[ipoint] = tree->GetV3()[ipoint];
     ey[ipoint]   = tree->GetV2()[ipoint];
     ez[ipoint]   = tree->GetV1()[ipoint];
   } 
-  tree->Draw(varVal,varCut);
+  tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
@@ -695,27 +695,27 @@ void AliTPCClusterParam::FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *p
   // Fit z - angular dependence of resolution - Q scaling 
   //
   // Int_t dim=0, type=0;
-  char varVal[100];
-  sprintf(varVal,"RMSm:AngleM/sqrt(QMean):Zm/QMean");
+ TString varVal;
+  varVal="RMSm:AngleM/sqrt(QMean):Zm/QMean";
   char varVal0[100];
   sprintf(varVal0,"RMSm:AngleM:Zm");
   //
-  char varErr[100];
-  sprintf(varErr,"sqrt((1./(100.*sqrt(12.))^2)+RMSe0^2):AngleS:Zs");
-  char varCut[100];
-  sprintf(varCut,"Dim==%d&&Pad==%d&&QMean>0",dim,type);
+ TString varErr;
+  varErr="sqrt((1./(100.*sqrt(12.))^2)+RMSe0^2):AngleS:Zs";
+ TString varCut;
+  varCut=Form("Dim==%d&&Pad==%d&&QMean>0",dim,type);
   //
-  Int_t entries = tree->Draw(varVal,varCut);
+  Int_t entries = tree->Draw(varVal.Data(),varCut);
   Float_t px[20000], py[20000], pz[20000], pu[20000], pt[20000];
   Float_t ex[20000], ey[20000], ez[20000];
   //
-  tree->Draw(varErr,varCut);  
+  tree->Draw(varErr.Data(),varCut);  
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
   } 
-  tree->Draw(varVal,varCut);
+  tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
@@ -763,16 +763,16 @@ void AliTPCClusterParam::FitRMSSigma(TTree * tree, Int_t dim, Int_t type, Float_
   // Fit z - angular dependence of resolution - Q scaling 
   //
   // Int_t dim=0, type=0;
-  char varVal[100];
-  sprintf(varVal,"RMSs:RMSm");
+  TString varVal;
+  varVal="RMSs:RMSm";
   //
-  char varCut[100];
-  sprintf(varCut,"Dim==%d&&Pad==%d&&QMean<0",dim,type);
+ TString varCut;
+  varCut=Form("Dim==%d&&Pad==%d&&QMean<0",dim,type);
   //
-  Int_t entries = tree->Draw(varVal,varCut);
+  Int_t entries = tree->Draw(varVal.Data(),varCut);
   Float_t px[20000], py[20000];
   //
-  tree->Draw(varVal,varCut);
+  tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV2()[ipoint];
     py[ipoint]= tree->GetV1()[ipoint];
