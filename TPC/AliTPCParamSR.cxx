@@ -238,7 +238,7 @@ void AliTPCParamSR::CRXYZtoXYZ(Float_t *xyz,
 {  
   //transform relative coordinates to absolute
   Bool_t rel = ( (option&2)!=0);
-  Int_t index[2]={sector,padrow};
+  Int_t index[3]={sector,padrow,0};
   if (rel==kTRUE)      Transform4to3(xyz,index);//if the position is relative to pad row  
   Transform2to1(xyz,index);
 }

@@ -356,7 +356,7 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(AliESDEvent *event) {
   TObjArray sArray(20000);
   
   // get the particles stack
-  nParticles = (Int_t)gAlice->GetEvent(evt);
+  nParticles = (UInt_t)gAlice->GetEvent(evt);
     
   Bool_t   *done     = new Bool_t[nParticles];
   Int_t    *pdgCodes = new Int_t[nParticles];

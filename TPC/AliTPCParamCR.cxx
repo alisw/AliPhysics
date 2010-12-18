@@ -173,7 +173,7 @@ void AliTPCParamCR::CRXYZtoXYZ(Float_t *xyz,
 {  
   //transform relative coordinates to absolute
   Bool_t rel = ( (option&2)!=0);
-  Int_t index[2]={sector,padrow};
+  Int_t index[3]={sector,padrow,0};
   if (rel==kTRUE)      Transform4to3(xyz,index);//if the position is relative to pad row  
   Transform2to1(xyz,index);
 }
@@ -187,7 +187,7 @@ void AliTPCParamCR::XYZtoCRXYZ(Float_t *xyz,
   //if option=2  X           relative to pad row calculate sector
   //if option=3  X           relative            use input sector
   //!!!!!!!!! WE start to calculate rows from row = 0
-  Int_t index[2];
+  Int_t index[3]={0,0,0};
   Bool_t rel = ( (option&2)!=0);  
 
   //option 0 and 2  means that we don't have information about sector
