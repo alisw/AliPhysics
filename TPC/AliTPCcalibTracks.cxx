@@ -356,12 +356,12 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
    fArrayChargeVsDriftlength = new TObjArray(72);
    
    for (Int_t i = 0; i < 36; i++){   
-      sprintf(chname,"Amp_row_Sector%d",i);
+     snprintf(chname,100,"Amp_row_Sector%d",i);
       prof1 = new TProfile(chname,chname,63,0,64);          // valgrind 3   193,536 bytes in 354 blocks are still reachable 
       prof1->SetXTitle("Pad row");
       prof1->SetYTitle("Mean Max amplitude");
       fArrayAmpRow->AddAt(prof1,i);
-      sprintf(chname,"Amp_row_Sector%d",i+36);
+      snprintf(chname,100,"Amp_row_Sector%d",i+36);
       prof1 = new TProfile(chname,chname,96,0,97);       // valgrind 3   3,912 bytes in 6 blocks are possibly lost
       prof1->SetXTitle("Pad row");
       prof1->SetYTitle("Mean Max  amplitude");
@@ -378,12 +378,12 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
       fArrayAmp->AddAt(his1,i+36);
       
       // driftlength
-      sprintf(chname, "driftlengt vs. charge, ROC %i", i);
+      snprintf(chname,100, "driftlengt vs. charge, ROC %i", i);
       prof1 = new TProfile(chname, chname, 25, 0, 250);
       prof1->SetYTitle("Charge");
       prof1->SetXTitle("Driftlength");
       fArrayChargeVsDriftlength->AddAt(prof1,i);
-      sprintf(chname, "driftlengt vs. charge, ROC %i", i+36);
+      snprintf(chname,100, "driftlengt vs. charge, ROC %i", i+36);
       prof1 = new TProfile(chname, chname, 25, 0, 250);
       prof1->SetYTitle("Charge");
       prof1->SetXTitle("Driftlength");
@@ -441,16 +441,16 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
          Int_t   bin   = GetBin(iq, ipad);
          Float_t qmean = GetQ(bin);
          char hname[200];
-         sprintf(hname,"ResolY Pad%d Qmiddle%f",ipad, qmean);
+         snprintf(hname,100,"ResolY Pad%d Qmiddle%f",ipad, qmean);
          his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 100, -1,1);
          fArrayQDY->AddAt(his3D, bin);
-         sprintf(hname,"ResolZ Pad%d Qmiddle%f",ipad, qmean);
+         snprintf(hname,100,"ResolZ Pad%d Qmiddle%f",ipad, qmean);
          his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 100, -1,1);
          fArrayQDZ->AddAt(his3D, bin);
-         sprintf(hname,"RMSY Pad%d Qmiddle%f",ipad, qmean);
+         snprintf(hname,100,"RMSY Pad%d Qmiddle%f",ipad, qmean);
          his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 100, 0,0.6);
          fArrayQRMSY->AddAt(his3D, bin);
-         sprintf(hname,"RMSZ Pad%d Qmiddle%f",ipad, qmean);
+         snprintf(hname,100,"RMSZ Pad%d Qmiddle%f",ipad, qmean);
          his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 100, 0,0.6);
          fArrayQRMSZ->AddAt(his3D, bin);
       }
@@ -494,29 +494,35 @@ AliTPCcalibTracks::~AliTPCcalibTracks() {
    delete fDeltaY;
    delete fDeltaZ;
    
-   if (fResolY) length = fResolY->GetEntriesFast();
-   for (Int_t i = 0; i < length; i++){
-      delete fResolY->At(i);
-      delete fResolZ->At(i);
-      delete fRMSY->At(i);
-      delete fRMSZ->At(i);
-   }
-   delete fResolY;
-   delete fResolZ;
-   delete fRMSY;
-   delete fRMSZ;
-   
-   if (fArrayQDY) length = fArrayQDY->GetEntriesFast();
-   for (Int_t i = 0; i < length; i++){
-      delete fArrayQDY->At(i);
-      delete fArrayQDZ->At(i);
-      delete fArrayQRMSY->At(i);
-      delete fArrayQRMSZ->At(i);
+   if (fResolY) {
+     length = fResolY->GetEntriesFast();
+     for (Int_t i = 0; i < length; i++){
+       delete fResolY->At(i);
+       delete fResolZ->At(i);
+       delete fRMSY->At(i);
+       delete fRMSZ->At(i);
+     }
+     delete fResolY;
+     delete fResolZ;
+     delete fRMSY;
+     delete fRMSZ;
    }
    
-   if (fArrayChargeVsDriftlength) length = fArrayChargeVsDriftlength->GetEntriesFast();
-   for (Int_t i = 0; i < length; i++){
-      delete fArrayChargeVsDriftlength->At(i);
+   if (fArrayQDY) {
+     length = fArrayQDY->GetEntriesFast();
+     for (Int_t i = 0; i < length; i++){
+       delete fArrayQDY->At(i);
+       delete fArrayQDZ->At(i);
+       delete fArrayQRMSY->At(i);
+       delete fArrayQRMSZ->At(i);
+     }
+   }
+   
+   if (fArrayChargeVsDriftlength) {
+     length = fArrayChargeVsDriftlength->GetEntriesFast();
+     for (Int_t i = 0; i < length; i++){
+       delete fArrayChargeVsDriftlength->At(i);
+     }
    }
    
     
@@ -751,8 +757,8 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       }
    }      // for (Int_t irow = 0; irow < 159; irow++)
    // mean chi^2 for all tracklet fits in Y and in Z direction: 
-   csigmaY = TMath::Sqrt(csigmaY / nTrackletsAll);
-   csigmaZ = TMath::Sqrt(csigmaZ / nTrackletsAll);
+   csigmaY = TMath::Sqrt(TMath::Abs(csigmaY) / (nTrackletsAll+0.1));
+   csigmaZ = TMath::Sqrt(TMath::Abs(csigmaZ) / (nTrackletsAll+0.1));
    // ---------------------------------------------------------------------
  
    for (Int_t irow = 0; irow < 159; irow++){
@@ -2011,7 +2017,9 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, const char* pathName
                }
                qMean/=entriesQ;
             }
-      
+	    if (!hres) continue;
+	    if (!hrms) continue;
+
             TAxis *xAxisDriftLength = hres->GetXaxis();   // driftlength / z - axis
             TAxis *yAxisAngle       = hres->GetYaxis();   // angle axis
             TAxis *zAxisDelta       = hres->GetZaxis();   // delta axis
@@ -2227,7 +2235,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
    Int_t counter = 0;
    while ( (calibTracks = dynamic_cast<AliTPCcalibTracks*> (listIterator->Next())) ){
       // loop over all entries in the collectionList and get dataMembers into lists
-      if (!calibTracks) continue;
       
       deltaYList->Add( calibTracks->GetfDeltaY() );
       deltaZList->Add( calibTracks->GetfDeltaZ() );
@@ -2280,7 +2287,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       histList = new TList;
       while (( objarray =  (TObjArray*)objListIterator->Next() )) { 
          // loop over arrayAmpRowList, get TObjArray, get object at position i, cast it into TProfile
-         if (!objarray) continue;
          hist = (TProfile*)(objarray->At(i));
          histList->Add(hist);
       }
@@ -2296,7 +2302,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       histList = new TList;
       while (( objarray =  (TObjArray*)cobjListIterator->Next() )) { 
          // loop over arrayAmpList, get TObjArray, get object at position i, cast it into TH1F
-         if (!objarray) continue;
          hist = (TH1F*)(objarray->At(i));
          histList->Add(hist);
       }
@@ -2312,7 +2317,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       histList = new TList;
       while (( objarray =  (TObjArray*)objListIterator->Next() )) { 
          // loop over arrayQDYList, get TObjArray, get object at position i, cast it into TH3F
-         if (!objarray) continue;
          hist = (TH3F*)(objarray->At(i));
          histList->Add(hist);
       }
@@ -2407,7 +2411,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
          histList = new TList;
          while (( cpr =  (AliTPCCalPadRegion*)objListIterator->Next() )) { 
             // loop over calPadRegionChargeVsDriftlengthList, get AliTPCCalPadRegion, get object 
-            if (!cpr) continue;
             hist = (TProfile*)cpr->GetObject(isec, padSize);
             histList->Add(hist);
          }
