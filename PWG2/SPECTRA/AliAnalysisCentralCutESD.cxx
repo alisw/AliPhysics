@@ -76,6 +76,7 @@ AliAnalysisCentralCutESD::~AliAnalysisCentralCutESD() {
 // Destructor
 // Delete the created priors
 
+	if(fPartPriors) delete [] fPartPriors;
 
 	if(fElectronFunction) delete fElectronFunction;
 	if(fMuonFunction) delete fMuonFunction;
@@ -164,6 +165,7 @@ Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t reqPartType){
 
     if(fPIDtype.Contains("Bayesian")) {
 		partType = TMath::LocMax(AliPID::kSPECIES,w);
+		if(partType<0.) return kFALSE;
     }
 
     else if(fPIDtype.Contains("Custom")){
