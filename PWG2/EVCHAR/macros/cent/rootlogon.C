@@ -34,7 +34,7 @@
     new AliRun("gAlice","The ALICE Off-line Simulation Framework");
   if (1) {
     delete gRandom;
-    gRandom = new TRandom3(0);
+    gRandom = new TRandom(0);
   }
 
   gROOT->LoadMacro("createHijingGlauberTestTree.C+g");

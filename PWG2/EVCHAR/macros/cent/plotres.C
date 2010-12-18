@@ -1,5 +1,3 @@
-// $Id$
-
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TH1D.h>
@@ -51,33 +49,30 @@ Double_t npmean[nclassesan];
 Double_t nprms[nclassesan];
 
 TCanvas *Canvas(const char *name, const char *title=0, Int_t ww=600, Int_t wh=400);
-void Classes(TH1 *h, Double_t *resmin, Double_t *resmax, Double_t *fxs, Int_t pos=1, Int_t verbose=0);
-TObjArray *Draw(const char *expr, const char *sel=0, const char *opt=0, Int_t type=1,
-                const char *scl=0, Double_t *smin=0, Double_t *smax=0, TTree *t=0);
-TCanvas *FitNpartDists(const char *name, TObjArray *arr, Int_t verbose=0);
 TH1 *Hist(const char *hname, const char *name, const char *title, const char *xtitle, 
           const char *ytitle, Bool_t stats=0, Int_t lc=0, Int_t ls=0);
 TH1 *Hist(TH1 *h, const char *name, const char *title, const char *xtitle, 
           const char *ytitle, Bool_t stats=0, Int_t lc=0, Int_t ls=0);
 TH1 *Hist(const char *name, const char *title, const char *xtitle, const char *ytitle, 
           Bool_t stats=0, Int_t lc=1, Int_t ls=1);
-Double_t NBD(Int_t n, Double_t mu, Double_t k);
-TH1F *NBDhist(Double_t mu, Double_t k);
+TObjArray *Draw(const char *expr, const char *sel=0, const char *opt=0, Int_t type=1,
+                const char *scl=0, Double_t *smin=0, Double_t *smax=0, TTree *t=0);
+void Classes(TH1 *h, Double_t *resmin, Double_t *resmax, Double_t *fxs, Int_t pos=1, Int_t verbose=0);
+TCanvas *FitNpartDists(const char *name, TObjArray *arr, Int_t verbose=0);
 void Store(TObject *o, const char *name=0, const char *fname="gres");
 
 // macro starts here
 
-void testHijingGlauber(const char *fname="hj-quenched.root") 
+void glauber() 
 {
-  Bool_t pImDist               = 1;
-  Bool_t pNpDist               = 1;
+  Bool_t pImDist               = 0;
+  Bool_t pNpDist               = 0;
   Bool_t pNpDistSelWithImp     = 1;
-  Bool_t pNpDistSelWithImpFits = 1;
-  Bool_t pMidRecResStudy       = 0;
-  Bool_t pdNdEta               = 1;
+  Bool_t pNpDistSelWithImpFits = 0;
+  Bool_t pMidRecResStudy       = 1;
 
-  Double_t fwdres=0.00;
-  Double_t midres=0.00;
+  Double_t fwdres=0.50;
+  Double_t midres=0.25;
 
   gStyle->SetOptFit(1);
   gROOT->ForceStyle();
@@ -88,7 +83,7 @@ void testHijingGlauber(const char *fname="hj-quenched.root")
   gList = new TObjArray;
   gList->SetOwner(1);
 
-  TFile *f = TFile::Open(fname);
+  TFile *f = TFile::Open("hj-unquenched.root");
   TTree *t = (TTree*)f->Get("glaubertree");
   if (!t) {
     cerr << " not find glaubertree" <<endl;
@@ -127,8 +122,8 @@ void testHijingGlauber(const char *fname="hj-quenched.root")
 
   t->SetAlias("tresp","1+npart*0.");
   //t->SetAlias("tresp","1-exp(-npart/2.)");
-  //t->SetAlias("trig","1+Nmid*0.");
-  t->SetAlias("trig","rndm<tresp&&rndm<tresp&&Etfwdnres>5&&Etfwdpres>5");
+  t->SetAlias("trig","1+Nmid*0.");
+  //t->SetAlias("trig","rndm<tresp&&rndm<tresp&&Etfwdnres>2.5&&Etfwdpres>2.5");
 
   TString name;
   if (1) {
@@ -271,31 +266,6 @@ void testHijingGlauber(const char *fname="hj-quenched.root")
     Store(ge1,Form("gMidrecMean_res%d",resint));
     Store(ge2,Form("gMidrecRms_res%d",resint));
   }
-  if (pdNdEta) {
-    name="dNdEtaPerPartPair";
-    Canvas(name);
-    t->Draw("Nmid","1","");
-    Hist(name,"","Nch in -0.5<#eta<0.5","counts per bin");
-    TObjArray *arr = Draw("Nmid",0,"hist",1);
-    TGraphErrors *ge = new TGraphErrors(nclassesan);
-    ge->SetMarkerSize(1.2);
-    ge->SetMarkerStyle(20);
-    for (Int_t i=1;i<arr->GetEntries();++i) {
-      Int_t N=i-1;//nclassesan-i;
-      TH1F *h = (TH1F*)arr->At(i);
-      Double_t mean  = h->GetMean();
-      Double_t rms = h->GetRMS();
-      ge->SetPoint(N,npmean[N],2*mean/npmean[N]);
-      ge->SetPointError(N,nprms[N],2*rms/npmean[N]);
-      cout << i << " " << mean << " " << rms << " " << npmean[N] << " " << nprms[N] << endl;
-    }
-    TCanvas *c = new TCanvas("dndetaplot");
-    c->Draw();
-    TH2F *h2f = new TH2F("h2f",";Npart;0.5/Npart dN/d#eta",1,0,400,1,0,11);
-    h2f->SetStats(0);
-    h2f->Draw();
-    ge->Draw("P");
-  }
   if (0) {
     name="FwdSumCorr";
     Canvas(name);
@@ -366,47 +336,45 @@ TCanvas *Canvas(const char *name, const char *title, Int_t ww, Int_t wh)
 
 //--------------------------------------------------------------------------------------------------
 
-void Classes(TH1 *h, Double_t *resmin, Double_t *resmax, Double_t *fxs, Int_t pos, Int_t verbose)
+TH1 *Hist(const char *name, const char *title, const char *xtitle, const char *ytitle, 
+          Bool_t stats, Int_t lc, Int_t ls)
 {
-  Int_t bfrom = 0;
-  Int_t cbin  = h->GetNbinsX();
-  if (pos<0) {
-    pos   = -1;
-    bfrom = h->GetNbinsX()+1;
-    cbin  = 1;
-  } else {
-    pos = 1;
-  }
+  TH1 *h=dynamic_cast<TH1*>(gROOT->FindObject("htemp"));
+  return Hist(h,name,title,xtitle,ytitle,stats,lc,ls);
+}
 
-  Double_t totxs=0;
-  for (Int_t i=0,lbin=bfrom,bin=lbin;i<nclassesan;++i) {
-    lbin = bin+pos;
-    Int_t lxs = 0;
-    Double_t norm = h->Integral();
-    while (1) {
-      bin += pos;
-      lxs += h->GetBinContent(bin);
-      Double_t pxs = lxs/norm*100;
-      Double_t tdiff = (lxs+h->GetBinContent(bin+pos))/norm*100;
-      //cout << pos << " " << bin << " " << pxs << " " << tdiff << " " << lbin << endl;
-      if ((pxs>1&&TMath::Abs(pxs-fxsan1[i])<=TMath::Abs(tdiff-fxsan1[i]))||(bin==cbin)) {
-        if (pos>0) {
-          resmin[i] = h->GetBinLowEdge(lbin);
-          resmax[i] = h->GetBinLowEdge(bin+1);
-        } else {
-          resmin[i] = h->GetBinLowEdge(bin);
-          resmax[i] = h->GetBinLowEdge(lbin+1);
-        }
-        fxs[i] = pxs;
-        if (verbose)
-          printf("Class %d: %.1f - %.1f -> %.1f (%s)\n",i+1,resmin[i],resmax[i],pxs,lan[i]);
-        totxs += pxs;
-        break;
-      }
-    }
-  }
-  if (verbose)
-    cout << "Total: " << totxs << endl;
+//--------------------------------------------------------------------------------------------------
+
+TH1 *Hist(const char *hname, const char *name, const char *title, const char *xtitle, 
+          const char *ytitle, Bool_t stats, Int_t lc, Int_t ls)
+{
+  TH1 *h=dynamic_cast<TH1*>(gROOT->FindObject(hname));
+  return Hist(h,name,title,xtitle,ytitle,stats,lc,ls);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+TH1 *Hist(TH1 *h, const char *name, const char *title, const char *xtitle, 
+          const char *ytitle, Bool_t stats, Int_t lc, Int_t ls)
+{
+  if (!h && !name) 
+    return 0;
+  TString hname(Form("h%s",name));
+  h->SetName(hname);
+  if (!title)
+    title = name;
+  h->SetTitle(title);
+  if (xtitle)
+    h->SetXTitle(xtitle);
+  if (ytitle)
+    h->SetYTitle(ytitle);
+  h->GetXaxis()->SetTitleOffset(1.1);
+  h->GetYaxis()->SetTitleOffset(1.2);
+  h->SetStats(stats);
+  h->SetLineColor(lc);
+  h->SetLineStyle(ls);
+  gList->Add(h);
+  return h;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -477,6 +445,51 @@ TObjArray *Draw(const char *expr, const char *sel, const char *opt, Int_t type,
 
 //--------------------------------------------------------------------------------------------------
 
+void Classes(TH1 *h, Double_t *resmin, Double_t *resmax, Double_t *fxs, Int_t pos, Int_t verbose)
+{
+  Int_t bfrom = 0;
+  Int_t cbin  = h->GetNbinsX();
+  if (pos<0) {
+    pos   = -1;
+    bfrom = h->GetNbinsX()+1;
+    cbin  = 1;
+  } else {
+    pos = 1;
+  }
+
+  Double_t totxs=0;
+  for (Int_t i=0,lbin=bfrom,bin=lbin;i<nclassesan;++i) {
+    lbin = bin+pos;
+    Int_t lxs = 0;
+    Double_t norm = h->Integral();
+    while (1) {
+      bin += pos;
+      lxs += h->GetBinContent(bin);
+      Double_t pxs = lxs/norm*100;
+      Double_t tdiff = (lxs+h->GetBinContent(bin+pos))/norm*100;
+      //cout << pos << " " << bin << " " << pxs << " " << tdiff << " " << lbin << endl;
+      if ((pxs>1&&TMath::Abs(pxs-fxsan1[i])<=TMath::Abs(tdiff-fxsan1[i]))||(bin==cbin)) {
+        if (pos>0) {
+          resmin[i] = h->GetBinLowEdge(lbin);
+          resmax[i] = h->GetBinLowEdge(bin+1);
+        } else {
+          resmin[i] = h->GetBinLowEdge(bin);
+          resmax[i] = h->GetBinLowEdge(lbin+1);
+        }
+        fxs[i] = pxs;
+        if (verbose)
+          printf("Class %d: %.1f - %.1f -> %.1f (%s)\n",i+1,resmin[i],resmax[i],pxs,lan[i]);
+        totxs += pxs;
+        break;
+      }
+    }
+  }
+  if (verbose)
+    cout << "Total: " << totxs << endl;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 TCanvas *FitNpartDists(const char *name, TObjArray *arr, Int_t verbose)
 {
   TCanvas *c = Canvas(name,0,1200,900);
@@ -517,49 +530,6 @@ TCanvas *FitNpartDists(const char *name, TObjArray *arr, Int_t verbose)
 
 //--------------------------------------------------------------------------------------------------
 
-TH1 *Hist(const char *name, const char *title, const char *xtitle, const char *ytitle, 
-          Bool_t stats, Int_t lc, Int_t ls)
-{
-  TH1 *h=dynamic_cast<TH1*>(gROOT->FindObject("htemp"));
-  return Hist(h,name,title,xtitle,ytitle,stats,lc,ls);
-}
-
-//--------------------------------------------------------------------------------------------------
-
-TH1 *Hist(const char *hname, const char *name, const char *title, const char *xtitle, 
-          const char *ytitle, Bool_t stats, Int_t lc, Int_t ls)
-{
-  TH1 *h=dynamic_cast<TH1*>(gROOT->FindObject(hname));
-  return Hist(h,name,title,xtitle,ytitle,stats,lc,ls);
-}
-
-//--------------------------------------------------------------------------------------------------
-
-TH1 *Hist(TH1 *h, const char *name, const char *title, const char *xtitle, 
-          const char *ytitle, Bool_t stats, Int_t lc, Int_t ls)
-{
-  if (!h && !name) 
-    return 0;
-  TString hname(Form("h%s",name));
-  h->SetName(hname);
-  if (!title)
-    title = name;
-  h->SetTitle(title);
-  if (xtitle)
-    h->SetXTitle(xtitle);
-  if (ytitle)
-    h->SetYTitle(ytitle);
-  h->GetXaxis()->SetTitleOffset(1.1);
-  h->GetYaxis()->SetTitleOffset(1.2);
-  h->SetStats(stats);
-  h->SetLineColor(lc);
-  h->SetLineStyle(ls);
-  gList->Add(h);
-  return h;
-}
-
-//--------------------------------------------------------------------------------------------------
-
 void Store(TObject *o, const char *name, const char *fname)
 {
   if (!o || !fname)
@@ -579,26 +549,37 @@ void Store(TObject *o, const char *name, const char *fname)
   delete f;
 }
 
-//--------------------------------------------------------------------------------------------------
-
-Double_t NBD(Int_t n, Double_t mu, Double_t k)
+void plotRes(const char *fname)
 {
-  Double_t mudk = mu/k;
-  Double_t ret = TMath::Gamma(n+k) / TMath::Gamma(k) / TMath::Factorial(n) *
-                 TMath::Power(mudk,n) / TMath::Power(1+mudk,n+k);
-  return ret;
-}
+  TFile *f = new TFile(fname);
+  
+  TGraph *gm0 = (TGraph*)f->Get("gMidrecMean_res0");
+  TGraph *gm5 = (TGraph*)f->Get("gMidrecMean_res5");
+  TGraph *gm10 = (TGraph*)f->Get("gMidrecMean_res10");
+  TGraph *gm15 = (TGraph*)f->Get("gMidrecMean_res14");
+  TGraph *gm25 = (TGraph*)f->Get("gMidrecMean_res25");
 
-//--------------------------------------------------------------------------------------------------
+  gm0->SetMarkerColor(1);
+  gm5->SetMarkerColor(2);
+  gm10->SetMarkerColor(3);
+  gm15->SetMarkerColor(4);
+  gm25->SetMarkerColor(5);
 
-TH1F *NBDhist(Double_t mu, Double_t k)
-{
-  TH1F *h = new TH1F("htemp","",100,0,100);
-  h->SetName(Form("nbd_%f_%f",mu,k));
-  h->SetDirectory(0);
-  for (Int_t i=0;i<100;++i) {
-    Double_t val = NBD(i,mu,k);
-    h->Fill(i,val);
-  }
-  return h;
+  TH2F *h2f = new TH2F("h2f",";classes (0=most central);#LTNpart#GT/#LTNpart^{true}#GT-1",1,-0.5,10.5,1,-0.25,0.25);
+  h2f->SetStats(0);
+  h2f->GetXaxis()->SetTitleOffset(1.1);
+  h2f->GetYaxis()->SetTitleOffset(1.2);
+  h2f->Draw();
+  gm0->Draw("P");
+  gm5->Draw("P");
+  gm10->Draw("P");
+  gm15->Draw("P");
+  gm25->Draw("P");
+  TLegend *leg = new TLegend(0.5,0.5,0.9,0.9);
+  leg->AddEntry(gm0,"0% smearing","p");
+  leg->AddEntry(gm5,"5% smearing","p");
+  leg->AddEntry(gm10,"10% smearing","p");
+  leg->AddEntry(gm15,"15% smearing","p");
+  leg->AddEntry(gm25,"25% smearing","p");
+  leg->Draw();
 }

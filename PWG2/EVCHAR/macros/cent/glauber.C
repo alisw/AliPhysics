@@ -1,4 +1,4 @@
-// $Id$
+// $Id:$
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -23,6 +23,7 @@
 #include <TStyle.h>
 #include <TGraphErrors.h>
 #include <TTimeStamp.h>
+#include <createHijingGlauberTestTree.C>
 #endif
 
 TObjArray *gList = 0;
@@ -67,14 +68,15 @@ void Store(TObject *o, const char *name=0, const char *fname="gres");
 
 // macro starts here
 
-void testHijingGlauber(const char *fname="hj-quenched.root") 
+void glauber(const char *filename="/opt/alice/aliroot/trunk/PWG2/EVCHAR/macros/cent/GlauberMC_PbPb_ntuple_sigma64_mind4_r662_a546.root") 
 {
-  Bool_t pImDist               = 1;
-  Bool_t pNpDist               = 1;
+  Bool_t pImDist               = 0;
+  Bool_t pNpDist               = 0;
   Bool_t pNpDistSelWithImp     = 1;
-  Bool_t pNpDistSelWithImpFits = 1;
+  Bool_t pNpDistSelWithImpFits = 0;
+  Bool_t pExtraWithImpact      = 1;
   Bool_t pMidRecResStudy       = 0;
-  Bool_t pdNdEta               = 1;
+  Bool_t pGlaubFitStudy        = 0;
 
   Double_t fwdres=0.00;
   Double_t midres=0.00;
@@ -88,8 +90,13 @@ void testHijingGlauber(const char *fname="hj-quenched.root")
   gList = new TObjArray;
   gList->SetOwner(1);
 
-  TFile *f = TFile::Open(fname);
-  TTree *t = (TTree*)f->Get("glaubertree");
+  TFile *f = TFile::Open(filename);
+  TTree *t = (TTree*)f->Get("nt_Pb_Pb_0");
+  Int_t type = 0;
+  if (!t) {
+    t = (TTree*)f->Get("nt_Pb_Pb");
+    type = 1;
+  }
   if (!t) {
     cerr << " not find glaubertree" <<endl;
     return;
@@ -121,10 +128,15 @@ void testHijingGlauber(const char *fname="hj-quenched.root")
   t->SetAlias("Etfwdnres",Form("Etfwdn*(1+%f*nt.g1)",fwdres));
   t->SetAlias("Etfwdpres",Form("Etfwdp*(1+%f*nt.g2)",fwdres));
   t->SetAlias("Nmidrec",Form("Nmid*(1+%f*nt.g3)",midres));
-  t->SetAlias("npart","header.fNT+header.fNP");
-  t->SetAlias("ncoll","header.fN00+header.fN01+header.fN10+header.fN11");
-  t->SetAlias("bb","header.fBB");
-
+//  t->SetAlias("npart","header.fNT+header.fNP");
+//  t->SetAlias("ncoll","header.fN00+header.fN01+header.fN10+header.fN11");
+//  t->SetAlias("bb","header.fBB");
+  t->SetAlias("npart","Npart");
+  t->SetAlias("ncoll","Ncoll");
+  if (type==1)
+    t->SetAlias("bb","B");
+  else
+    t->SetAlias("bb","B_MC");
   t->SetAlias("tresp","1+npart*0.");
   //t->SetAlias("tresp","1-exp(-npart/2.)");
   //t->SetAlias("trig","1+Nmid*0.");
@@ -221,6 +233,66 @@ void testHijingGlauber(const char *fname="hj-quenched.root")
         Store(c2);
       }
     }
+    if (pExtraWithImpact) {
+      if (1) {
+        name="NcollDistsWithImpact";
+        TCanvas *c1=Canvas(name);
+        c1->SetLogy(1);
+        t->Draw("ncoll>>htemp(2500,0,2500)","1","goff");
+        TH1 *h=Hist(name,"","number collisions","counts per bin");
+        h->SetMinimum(1);
+        h->Draw();
+        TObjArray *arr=Draw("ncoll>>htemp(2500,0,2500)",0,"hist",-1);
+        TGraph *ge1 = new TGraph(nclassesan);
+        TGraph *ge2 = new TGraph(nclassesan);
+        ge1->SetMarkerSize(1.2);
+        ge1->SetMarkerStyle(20);
+        ge2->SetMarkerSize(1.2);
+        ge2->SetMarkerStyle(20);
+        for (Int_t i=1;i<arr->GetEntries();++i) {
+          TH1F *h = (TH1F*)arr->At(i);
+          Int_t N=nclassesan-i;
+          Double_t mean  = h->GetMean();
+          Double_t width = h->GetRMS();
+          npmean[N] = mean;
+          nprms[N]  = width;
+          ge1->SetPoint(N,N,mean);
+          ge2->SetPoint(N,N,width);
+        }
+        Store(c1);
+        Store(ge1,"gNcollMean");
+        Store(ge2,"gNcollRms");
+      }
+      if (1 && type==0) {
+        name="EccPartDistsWithImpact";
+        TCanvas *c1=Canvas(name);
+        c1->SetLogy(1);
+        t->Draw("Ecc_Part>>htemp(2500,0,1)","1","goff");
+        TH1 *h=Hist(name,"","#epsilon_{part}","counts per bin");
+        h->SetMinimum(1);
+        h->Draw();
+        TObjArray *arr=Draw("Ecc_Part>>htemp(250,0,1)",0,"hist",-1);
+        TGraph *ge1 = new TGraph(nclassesan);
+        TGraph *ge2 = new TGraph(nclassesan);
+        ge1->SetMarkerSize(1.2);
+        ge1->SetMarkerStyle(20);
+        ge2->SetMarkerSize(1.2);
+        ge2->SetMarkerStyle(20);
+        for (Int_t i=1;i<arr->GetEntries();++i) {
+          TH1F *h = (TH1F*)arr->At(i);
+          Int_t N=nclassesan-i;
+          Double_t mean  = h->GetMean();
+          Double_t width = h->GetRMS();
+          npmean[N] = mean;
+          nprms[N]  = width;
+          ge1->SetPoint(N,N,mean);
+          ge2->SetPoint(N,N,width);
+        }
+        Store(c1);
+        Store(ge1,"gEccPartMean");
+        Store(ge2,"gEccPartRMS");
+      }
+    }
   }
   if (pMidRecResStudy) {
     Int_t resint = 100*midres;
@@ -271,31 +343,53 @@ void testHijingGlauber(const char *fname="hj-quenched.root")
     Store(ge1,Form("gMidrecMean_res%d",resint));
     Store(ge2,Form("gMidrecRms_res%d",resint));
   }
-  if (pdNdEta) {
-    name="dNdEtaPerPartPair";
-    Canvas(name);
-    t->Draw("Nmid","1","");
-    Hist(name,"","Nch in -0.5<#eta<0.5","counts per bin");
-    TObjArray *arr = Draw("Nmid",0,"hist",1);
-    TGraphErrors *ge = new TGraphErrors(nclassesan);
-    ge->SetMarkerSize(1.2);
-    ge->SetMarkerStyle(20);
-    for (Int_t i=1;i<arr->GetEntries();++i) {
-      Int_t N=i-1;//nclassesan-i;
-      TH1F *h = (TH1F*)arr->At(i);
-      Double_t mean  = h->GetMean();
-      Double_t rms = h->GetRMS();
-      ge->SetPoint(N,npmean[N],2*mean/npmean[N]);
-      ge->SetPointError(N,nprms[N],2*rms/npmean[N]);
-      cout << i << " " << mean << " " << rms << " " << npmean[N] << " " << nprms[N] << endl;
+
+  if (pGlaubFitStudy) {
+    name="DataDistribution";
+    TCanvas *c = Canvas(name);
+    t->Draw("Nmid>>htemp(350,0,3500)","1","groff");
+    TH1 *h = Hist(name,"","Nch in -0.5<#eta<0.5","counts per bin");
+    h->Scale(1./h->Integral());
+    h->Draw();
+    Store(h);
+    //t->Draw("Etfwdnres+Etfwdpres","trig>0");
+    //TH1 *h1=Hist(name,"","sum p_{t} [GeV] in 3<|#eta|<5","counts per bin");
+
+    MyHeader *header = 0;
+    TBranch *hbr = t->GetBranch("header");
+    hbr->SetAddress(&header);
+    Int_t nents = t->GetEntries();
+    Int_t col=1;
+    TLegend *leg = new TLegend(0.5,0.5,0.9,0.9);
+
+    for (Double_t mu=0.5;mu<5;mu+=0.5) {
+      for (Double_t k=0.5;k<5;k+=0.5) {
+        TH1F *hSample = NBDhist(mu,k);
+        TH1F *h1 = new TH1F(Form("fit_%.2f_%2.f",mu,k),"",350,0,3500);
+        h1->SetDirectory(0);
+        for (Int_t i=0;i<nents;++i) {
+          t->GetEntry(i);
+          hbr->GetEntry(i);
+          Int_t np = header->fNT+header->fNP;
+          Double_t alpha=1.1;
+          Int_t n = TMath::Nint(TMath::Power(np,alpha));
+          Int_t ntot=0;
+          for(Int_t j = 0; j<n; ++j)
+            ntot+=hSample->GetRandom();
+          h1->Fill(ntot);
+        }
+        h1->SetLineColor(col++);
+        h1->Scale(1./h1->Integral());
+        leg->AddEntry(h1,Form("mu=%.2f,k=%.2f",mu,k),"l");
+        h1->Draw("same");
+        Store(h1);
+      }
     }
-    TCanvas *c = new TCanvas("dndetaplot");
-    c->Draw();
-    TH2F *h2f = new TH2F("h2f",";Npart;0.5/Npart dN/d#eta",1,0,400,1,0,11);
-    h2f->SetStats(0);
-    h2f->Draw();
-    ge->Draw("P");
+    leg->Draw();
+    Store(c);
   }
+  return;
+
   if (0) {
     name="FwdSumCorr";
     Canvas(name);
@@ -463,6 +557,7 @@ TObjArray *Draw(const char *expr, const char *sel, const char *opt, Int_t type,
       h->SetFillColor(colorcl[i]);
       h->SetFillStyle(1000);
       l->AddEntry(h,Form("%s%%",lan[i]),"f");
+      cout << h->GetName() << " " << h->GetMean() << " " << h->GetRMS() << endl;
       oarr->Add(h);
     } else {
       cerr << "Could not obtain htemp for: " << expr << " " << dosel << " " << doopt << endl;
