@@ -109,7 +109,7 @@ void createGlauberTree(Int_t nEvents,
   genHi->SetReferenceFrame("CMS");
   genHi->SetProjectile("A", 208, 82);
   genHi->SetTarget    ("A", 208, 82);
-  genHi->SetPtHardMin (2);
+  genHi->SetPtHardMin (2.3);
   genHi->SetImpactParameterRange(0.,30);
   genHi->SetJetQuenching(0); // enable jet quenching
   genHi->SetShadowing(1);    // enable shadowing
