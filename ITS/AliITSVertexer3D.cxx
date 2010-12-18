@@ -554,7 +554,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 
   Int_t nolines = 0;
   // Loop on modules of layer 1
-  Int_t firstL1 = AliITSgeomTGeo::GetModuleIndex(1,1,1);
+  Int_t firstL1 = TMath::Max(0,AliITSgeomTGeo::GetModuleIndex(1,1,1));
   Int_t lastL1 = AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;
   for(Int_t modul1= firstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
     if(!fUseModule[modul1]) continue;
