@@ -25,7 +25,7 @@ class AliCentralityGlauberFit : public TObject {
 
  public:
   
-  AliCentralityGlauberFit(const char * filename="../centrality/files/GlauberMC_PbPb_ntuple_sigma64_mind4_r662_a546.root");
+  AliCentralityGlauberFit(const char * filename="/home/alberica/GlauberNtuple/GlauberMC_PbPb_ntuple_sigma64_mind4_r662_a546.root");
   virtual ~AliCentralityGlauberFit() {}
 
   void    SetOutputFile(TString filename)        { foutrootfilename = filename; }
