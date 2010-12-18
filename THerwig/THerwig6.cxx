@@ -184,8 +184,8 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
 
    // initialization:
    // type of beams
-   strncpy(HWBMCH.PART1,beam,8);
-   strncpy(HWBMCH.PART2,target,8);
+   strncpy(HWBMCH.PART1,beam, 7);
+   strncpy(HWBMCH.PART2,target, 7);
    // momentum of beams
    HWPROC.PBEAM1=pbeam1;
    HWPROC.PBEAM2=pbeam2;
