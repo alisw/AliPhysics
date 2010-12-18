@@ -477,7 +477,8 @@ void AliTPCtrackerMI::FillESD(const TObjArray* arr)
   //
   //
   //fill esds using updated tracks
-  if (fEvent){
+  if (!fEvent) return;
+  
     // write tracks to the event
     // store index of the track
     Int_t nseed=arr->GetEntriesFast();
@@ -608,9 +609,9 @@ void AliTPCtrackerMI::FillESD(const TObjArray* arr)
 	kink->SetIndex(it, knkId<0 ? 0:1); // update track index of the kink: mother at 0, daughter at 1
       }
     }
-    // << account for suppressed tracks in the kink indices (RS)
-  }
-  AliInfo(Form("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks()));
+    // << account for suppressed tracks in the kink indices (RS)  
+    AliInfo(Form("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks()));
+  
 }
 
 
@@ -1350,6 +1351,7 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   if (!transform) {
     AliFatal("Tranformations not in calibDB");
+    return;
   }
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
@@ -2148,7 +2150,7 @@ void  AliTPCtrackerMI::SignShared(TObjArray * arr)
   for (Int_t i=0; i<nseed; i++) {
     AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i);    
     if (!pt) continue;
-    for (Int_t j=0;j<=12;j++){
+    for (Int_t j=0;j<12;j++){
       pt->SetOverlapLabel(j,0);
     }
   }
@@ -2239,13 +2241,8 @@ void AliTPCtrackerMI::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t fac
     if (!pt) continue;
     //
     if (quality[trackindex]<0){
-      if (pt) {
 	delete arr->RemoveAt(trackindex);
-      }
-      else{
-	arr->RemoveAt(trackindex);
-      }
-      continue;
+	continue;
     }
     //
     //
@@ -2656,6 +2653,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   // back propagation of ESD tracks
   //
   //return 0;
+  if (!event) return 0;
   const Int_t kMaxFriendTracks=2000;
   fEvent = event;
   ReadSeeds(event,2);
@@ -2709,7 +2707,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
     esd->SetTPCClusterMap(seed->GetClusterMap());
     esd->SetTPCSharedMap(seed->GetSharedMap());
     //
-    if (AliTPCReconstructor::StreamLevel()>1 && seed!=0&&esd!=0) {
+    if (AliTPCReconstructor::StreamLevel()>1 && seed!=0) {
       TTreeSRedirector &cstream = *fDebugStreamer;
       cstream<<"Crefit"<<
 	"Esd.="<<esd<<
@@ -2751,7 +2749,7 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
   //
   // back propagation of ESD tracks
   //
-
+  if (!event) return 0;
   fEvent = event;
   fIteration = 1;
   ReadSeeds(event,1);
@@ -3923,8 +3921,8 @@ AliTPCseed *AliTPCtrackerMI::ReSeed(const AliTPCseed *track, Float_t r0, Float_t
   ipos[2] = TMath::Min(int(r2*nclusters),nclusters-1);   // last point
   //
   //
-  Double_t  xyz[3][3];
-  Int_t     row[3],sec[3]={0,0,0};
+  Double_t  xyz[3][3]={{0}};
+  Int_t     row[3]={0},sec[3]={0,0,0};
   //
   // find track row position at given ratio of the length
   Int_t index=-1;
@@ -4343,6 +4341,8 @@ void  AliTPCtrackerMI::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/
   }    
   delete [] helixes;
   delete [] xm;
+  delete [] dz0;
+  delete [] dz1;
   if (AliTPCReconstructor::StreamLevel()>1) {
     AliInfo("Time for curling tracks removal DEBUGGING MC");
     timer.Print();
@@ -4565,7 +4565,8 @@ void  AliTPCtrackerMI::FindCurling(const TObjArray * array, AliESDEvent */*esd*/
   //
   TStopwatch timer;
   timer.Start();
-  Double_t phase[2][2],radius[2];
+  Double_t phase[2][2]={{0,0},{0,0}},radius[2]={0,0};
+
   //
   // Find tracks
   //
@@ -4777,7 +4778,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
   Int_t ncandidates =0;
   Int_t nall =0;
   Int_t ntracks=0; 
-  Double_t phase[2][2],radius[2];
+  Double_t phase[2][2]={{0,0},{0,0}},radius[2]={0,0};
 
   //
   // Find circling track
@@ -5423,363 +5424,6 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
   timer.Print();
 }
 
-void  AliTPCtrackerMI::FindV0s(const TObjArray * array, AliESDEvent *const esd)
-{
-  //
-  //  find V0s
-  //
-  //
-  TObjArray *tpcv0s      = new TObjArray(100000);
-  Int_t     nentries     = array->GetEntriesFast();
-  AliHelix *helixes      = new AliHelix[nentries];
-  Int_t    *sign         = new Int_t[nentries];
-  Float_t  *alpha        = new Float_t[nentries];
-  Float_t  *z0           = new Float_t[nentries]; 
-  Float_t  *dca          = new Float_t[nentries];
-  Float_t  *sdcar        = new Float_t[nentries];
-  Float_t  *cdcar        = new Float_t[nentries];
-  Float_t  *pulldcar     = new Float_t[nentries];
-  Float_t  *pulldcaz     = new Float_t[nentries];
-  Float_t  *pulldca      = new Float_t[nentries];
-  Bool_t   *isPrim       = new Bool_t[nentries];  
-  const AliESDVertex * primvertex = esd->GetVertex();
-  Double_t             zvertex = primvertex->GetZv(); 
-  //
-  //  nentries = array->GetEntriesFast();
-  //
-  for (Int_t i=0;i<nentries;i++){
-    sign[i]=0;
-    isPrim[i]=0;
-    AliTPCseed* track = (AliTPCseed*)array->At(i);    
-    if (!track) continue;
-    track->GetV0Indexes()[0] = 0;  //rest v0 indexes
-    track->GetV0Indexes()[1] = 0;  //rest v0 indexes
-    track->GetV0Indexes()[2] = 0;  //rest v0 indexes
-    //
-    alpha[i] = track->GetAlpha();
-    new (&helixes[i]) AliHelix(*track);
-    Double_t xyz[3];
-    helixes[i].Evaluate(0,xyz);
-    sign[i] = (track->GetC()>0) ? -1:1;
-    Double_t x,y,z;
-    x=160;
-    z0[i]=1000;
-    if (track->GetProlongation(0,y,z))  z0[i] = z;
-    dca[i] = track->GetD(0,0);
-    // 
-    // dca error parrameterezation + pulls
-    //
-    sdcar[i]      = TMath::Sqrt(0.150*0.150+(100*track->GetC())*(100*track->GetC()));
-    if (TMath::Abs(track->GetTgl())>1) sdcar[i]*=2.5;
-    cdcar[i]      = TMath::Exp((TMath::Abs(track->GetC())-0.0106)*525.3);
-    pulldcar[i]   = (dca[i]-cdcar[i])/sdcar[i];
-    pulldcaz[i]   = (z0[i]-zvertex)/sdcar[i];
-    pulldca[i]    = TMath::Sqrt(pulldcar[i]*pulldcar[i]+pulldcaz[i]*pulldcaz[i]);
-    if (track->TPCrPID(1)+track->TPCrPID(2)+track->TPCrPID(3)>0.5) {
-      if (pulldca[i]<3.) isPrim[i]=kTRUE;  //pion, muon and Kaon  3 sigma cut
-    }
-    if (track->TPCrPID(4)>0.5) {
-      if (pulldca[i]<0.5) isPrim[i]=kTRUE;  //proton 0.5 sigma cut
-    }
-    if (track->TPCrPID(0)>0.4) {
-      isPrim[i]=kFALSE;  //electron no  sigma cut
-    }
-  }
-  //
-  //
-  TStopwatch timer;
-  timer.Start();
-  Int_t ncandidates =0;
-  Int_t nall =0;
-  Int_t ntracks=0; 
-  Double_t phase[2][2],radius[2];
-  //
-  //  Finf V0s loop
-  // 
-  //
-  // //  
-  Float_t fprimvertex[3]={GetX(),GetY(),GetZ()};
-  AliV0 vertex; 
-  Double_t cradius0 = 10*10;
-  Double_t cradius1 = 200*200;
-  Double_t cdist1=3.;
-  Double_t cdist2=4.;
-  Double_t cpointAngle = 0.95;
-  //
-  Double_t delta[2]={10000,10000};
-  for (Int_t i =0;i<nentries;i++){
-    if (sign[i]==0) continue;
-    AliTPCseed * track0 = (AliTPCseed*)array->At(i);
-    if (!track0) continue;
-    if (AliTPCReconstructor::StreamLevel()>1){
-      TTreeSRedirector &cstream = *fDebugStreamer;
-      cstream<<"Tracks"<<
-	"Tr0.="<<track0<<
-	"dca="<<dca[i]<<
-	"z0="<<z0[i]<<
-	"zvertex="<<zvertex<<
-	"sdcar0="<<sdcar[i]<<
-	"cdcar0="<<cdcar[i]<<
-	"pulldcar0="<<pulldcar[i]<<
-	"pulldcaz0="<<pulldcaz[i]<<
-	"pulldca0="<<pulldca[i]<<
-	"isPrim="<<isPrim[i]<<
-	"\n";
-    }
-    //
-    if (track0->GetSigned1Pt()<0) continue;
-    if (track0->GetKinkIndex(0)>0||isPrim[i]) continue;   //daughter kink
-    //
-    if (TMath::Abs(helixes[i].GetHelix(4))<0.000000001) continue;
-    ntracks++;
-    // debug output
-    
-    
-    for (Int_t j =0;j<nentries;j++){
-      AliTPCseed * track1 = (AliTPCseed*)array->At(j);
-      if (!track1) continue;
-      if (track1->GetKinkIndex(0)>0 || isPrim[j]) continue; //daughter kink
-      if (sign[j]*sign[i]>0) continue; 
-      if (TMath::Abs(helixes[j].GetHelix(4))<0.000001) continue;
-      if (track0->GetCircular()+track1->GetCircular()>1) continue;    //circling -returning track
-      nall++;
-      //
-      // DCA to prim vertex cut
-      //
-      //
-      delta[0]=10000;
-      delta[1]=10000;
-
-      Int_t npoints = helixes[i].GetRPHIintersections(helixes[j], phase, radius,cdist2);
-      if (npoints<1) continue;
-      Int_t iclosest=0;
-      // cuts on radius      
-      if (npoints==1){
-	if (radius[0]<cradius0||radius[0]>cradius1) continue;
-	helixes[i].LinearDCA(helixes[j],phase[0][0],phase[0][1],radius[0],delta[0]);
-	if (delta[0]>cdist1) continue;
-      }
-      else{
-	if (TMath::Max(radius[0],radius[1])<cradius0|| TMath::Min(radius[0],radius[1])>cradius1) continue;	
-	helixes[i].LinearDCA(helixes[j],phase[0][0],phase[0][1],radius[0],delta[0]);	
-	helixes[i].LinearDCA(helixes[j],phase[1][0],phase[1][1],radius[1],delta[1]);
-	if (delta[1]<delta[0]) iclosest=1;
-	if (delta[iclosest]>cdist1) continue;
-      }
-      helixes[i].ParabolicDCA(helixes[j],phase[iclosest][0],phase[iclosest][1],radius[iclosest],delta[iclosest]);
-      if (radius[iclosest]<cradius0 || radius[iclosest]>cradius1 || delta[iclosest]>cdist1) continue;
-      //
-      Double_t pointAngle = helixes[i].GetPointAngle(helixes[j],phase[iclosest],fprimvertex);
-      if (pointAngle<cpointAngle) continue;
-      //
-      Bool_t isGamma = kFALSE;
-      vertex.SetParamP(*track0); //track0 - plus
-      vertex.SetParamN(*track1); //track1 - minus
-      vertex.Update(fprimvertex);
-      if (track0->TPCrPID(0)>0.3&&track1->TPCrPID(0)>0.3&&vertex.GetAnglep()[2]<0.15) isGamma=kTRUE;              // gamma conversion candidate
-      Double_t pointAngle2 = vertex.GetV0CosineOfPointingAngle();
-      //continue;
-      if (vertex.GetV0CosineOfPointingAngle()<cpointAngle && (!isGamma)) continue;// point angle cut
-      //Bo:      if (vertex.GetDist2()>2&&(!isGamma)) continue;      // point angle cut
-      if (vertex.GetDcaV0Daughters()>2&&(!isGamma)) continue;//Bo:   // point angle cut
-      Float_t sigmae     = 0.15*0.15;
-      if (vertex.GetRr()<80) 
-	sigmae += (sdcar[i]*sdcar[i]+sdcar[j]*sdcar[j])*(1.-vertex.GetRr()/80.)*(1.-vertex.GetRr()/80.);
-      sigmae+= TMath::Sqrt(sigmae);
-      //Bo:      if (vertex.GetDist2()/sigmae>3.&&(!isGamma)) continue; 
-      if (vertex.GetDcaV0Daughters()/sigmae>3.&&(!isGamma)) continue; 
-      Float_t densb0=0,densb1=0,densa0=0,densa1=0;
-      Int_t row0 = GetRowNumber(vertex.GetRr());
-      if (row0>15){
-	//Bo:	if (vertex.GetDist2()>0.2) continue;             
-	if (vertex.GetDcaV0Daughters()>0.2) continue;             
-	densb0     = track0->Density2(0,row0-5);          
-	densb1     = track1->Density2(0,row0-5);         
-	if (densb0>0.3|| densb1>0.3) continue;            //clusters before vertex
-	densa0     = track0->Density2(row0+5,row0+40);    
-	densa1     = track1->Density2(row0+5,row0+40);    
-	if ((densa0<0.4|| densa1<0.4)&&(!isGamma)) continue;            //missing clusters after vertex
-      }
-      else{
-	densa0     = track0->Density2(0,40);  //cluster density
-	densa1     = track1->Density2(0,40);  //cluster density
-	if ((vertex.GetRr()<80&&densa0+densa1<1.)&&(!isGamma)) continue;
-      }
-//Bo:        vertex.SetLab(0,track0->GetLabel());
-//Bo:        vertex.SetLab(1,track1->GetLabel());
-      vertex.SetChi2After((densa0+densa1)*0.5);
-      vertex.SetChi2Before((densb0+densb1)*0.5);
-      vertex.SetIndex(0,i);
-      vertex.SetIndex(1,j);
-//Bo:      vertex.SetStatus(1); // TPC v0 candidate
-      vertex.SetOnFlyStatus(2);//Bo: // TPC v0 candidate
-//Bo:        vertex.SetRp(track0->TPCrPIDs());
-//Bo:        vertex.SetRm(track1->TPCrPIDs());
-      tpcv0s->AddLast(new AliESDv0(vertex));      
-      ncandidates++;
-      {
-	Int_t eventNr = esd->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number
-	Double_t radiusm= (delta[0]<delta[1])? TMath::Sqrt(radius[0]):TMath::Sqrt(radius[1]);  
-	Double_t deltam= (delta[0]<delta[1])? TMath::Sqrt(delta[0]):TMath::Sqrt(delta[1]);  
-	if (AliTPCReconstructor::StreamLevel()>1) {
-	  Int_t lab0=track0->GetLabel();
-	  Int_t lab1=track1->GetLabel();
-	  Char_t c0=track0->GetCircular();
-	  Char_t c1=track1->GetCircular();
-          TTreeSRedirector &cstream = *fDebugStreamer;
-	  cstream<<"V0"<<
-	  "Event="<<eventNr<<
-	  "vertex.="<<&vertex<<
-	  "Tr0.="<<track0<<
-	  "lab0="<<lab0<<
-	  "Helix0.="<<&helixes[i]<<	
-	  "Tr1.="<<track1<<
-	  "lab1="<<lab1<<
-	  "Helix1.="<<&helixes[j]<<
-	  "pointAngle="<<pointAngle<<
-	  "pointAngle2="<<pointAngle2<<
-	  "dca0="<<dca[i]<<
-	  "dca1="<<dca[j]<<
-	  "z0="<<z0[i]<<
-	  "z1="<<z0[j]<<
-	  "zvertex="<<zvertex<<
-	  "circular0="<<c0<<
-	  "circular1="<<c1<<
-	  "npoints="<<npoints<<
-	  "radius0="<<radius[0]<<
-	  "delta0="<<delta[0]<<
-	  "radius1="<<radius[1]<<
-	  "delta1="<<delta[1]<<
-	  "radiusm="<<radiusm<<
-	  "deltam="<<deltam<<
-	  "sdcar0="<<sdcar[i]<<
-	  "sdcar1="<<sdcar[j]<<
-	  "cdcar0="<<cdcar[i]<<
-	  "cdcar1="<<cdcar[j]<<
-	  "pulldcar0="<<pulldcar[i]<<
-	  "pulldcar1="<<pulldcar[j]<<
-	  "pulldcaz0="<<pulldcaz[i]<<
-	  "pulldcaz1="<<pulldcaz[j]<<
-	  "pulldca0="<<pulldca[i]<<
-	  "pulldca1="<<pulldca[j]<<
-	  "densb0="<<densb0<<
-	  "densb1="<<densb1<<
-	  "densa0="<<densa0<<
-	  "densa1="<<densa1<<
-	  "sigmae="<<sigmae<<
-	    "\n";}
-      }
-    }
-  }    
-  Float_t *quality = new Float_t[ncandidates];
-  Int_t *indexes = new Int_t[ncandidates];
-  Int_t naccepted =0;
-  for (Int_t i=0;i<ncandidates;i++){
-    quality[i]     = 0; 
-    AliESDv0 *v0 = (AliESDv0*)tpcv0s->At(i);
-    quality[i]     = 1./(1.00001-v0->GetV0CosineOfPointingAngle());   //base point angle
-    // quality[i]    /= (0.5+v0->GetDist2());  
-    // quality[i]    *= v0->GetChi2After();               //density factor
-
-    Int_t index0 = v0->GetIndex(0);
-    Int_t index1 = v0->GetIndex(1);
-    //Bo:    Double_t minpulldca = TMath::Min(2.+pulldca[v0->GetIndex(0)],(2.+pulldca[v0->GetIndex(1)]) );     //pull
-    Double_t minpulldca = TMath::Min(2.+pulldca[index0],(2.+pulldca[index1]) );//Bo:
-
-
-
-    AliTPCseed * track0 = (AliTPCseed*)array->At(index0);
-    AliTPCseed * track1 = (AliTPCseed*)array->At(index1);
-    if (track0->TPCrPID(0)>0.3&&track1->TPCrPID(0)>0.3&&v0->GetAnglep()[2]<0.15) quality[i]+=1000000;              // gamma conversion candidate
-    if (track0->TPCrPID(4)>0.9||(track1->TPCrPID(4)>0.9&&minpulldca>4)) quality[i]*=10;    // lambda candidate candidate
-  }
-
-  TMath::Sort(ncandidates,quality,indexes,kTRUE);
-  //
-  //
-  for (Int_t i=0;i<ncandidates;i++){
-    AliESDv0 * v0 = (AliESDv0*)tpcv0s->At(indexes[i]);
-    if (!v0) continue;
-    Int_t index0 = v0->GetIndex(0);
-    Int_t index1 = v0->GetIndex(1);
-    AliTPCseed * track0 = (AliTPCseed*)array->At(index0);
-    AliTPCseed * track1 = (AliTPCseed*)array->At(index1);
-    if (!track0||!track1) {
-      printf("Bug\n");
-      continue;
-    }
-    Bool_t accept =kTRUE;  //default accept
-    Int_t *v0indexes0 = track0->GetV0Indexes();
-    Int_t *v0indexes1 = track1->GetV0Indexes();
-    //
-    Int_t order0 = (v0indexes0[0]!=0) ? 1:0;
-    Int_t order1 = (v0indexes1[0]!=0) ? 1:0;    
-    if (v0indexes0[1]!=0) order0 =2;
-    if (v0indexes1[1]!=0) order1 =2;      
-    //
-    if (v0indexes0[2]!=0) {order0=3; accept=kFALSE;}
-    if (v0indexes0[2]!=0) {order1=3; accept=kFALSE;}
-    //
-    AliESDv0 * v02 = v0;
-    if (accept){
-      //Bo:      v0->SetOrder(0,order0);
-      //Bo:      v0->SetOrder(1,order1);
-      //Bo:      v0->SetOrder(1,order0+order1);     
-      v0->SetOnFlyStatus(kTRUE);
-      Int_t index = esd->AddV0(v0);
-      v02 = esd->GetV0(index);
-      v0indexes0[order0]=index;
-      v0indexes1[order1]=index;
-      naccepted++;
-    }
-    {
-      Int_t eventNr = esd->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number
-      if (AliTPCReconstructor::StreamLevel()>1) {
-	Int_t lab0=track0->GetLabel();
-	Int_t lab1=track1->GetLabel();
-        TTreeSRedirector &cstream = *fDebugStreamer;
-	cstream<<"V02"<<
-	"Event="<<eventNr<<
-	"vertex.="<<v0<<	
-	"vertex2.="<<v02<<
-	"Tr0.="<<track0<<
-	"lab0="<<lab0<<
-	"Tr1.="<<track1<<
-	"lab1="<<lab1<<
-	"dca0="<<dca[index0]<<
-	"dca1="<<dca[index1]<<
-	"order0="<<order0<<
-	"order1="<<order1<<
-	"accept="<<accept<<
-	"quality="<<quality[i]<<
-	"pulldca0="<<pulldca[index0]<<
-	"pulldca1="<<pulldca[index1]<<
-	"index="<<i<<
-	  "\n";}
-    }
-  }    
-
-
-  //
-  //
-  delete []quality;
-  delete []indexes;
-//
-  delete [] isPrim;
-  delete [] pulldca;
-  delete [] pulldcaz;
-  delete [] pulldcar;
-  delete [] cdcar;
-  delete [] sdcar;
-  delete [] dca;
-  //
-  delete[] z0;
-  delete[] alpha;
-  delete[] sign;
-  delete[] helixes;
-  printf("TPC V0 finder : naccepted\t%d\tncandidates\t%d\tntracks\t%d\tnall\t%d\n",naccepted,ncandidates,ntracks,nall);
-  timer.Print();
-}
 
 Int_t AliTPCtrackerMI::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, const AliESDkink &knk)
 {
@@ -6975,7 +6619,7 @@ void AliTPCtrackerMI::CookLabel(AliKalmanTrack *tk, Float_t wrong) const {
      Int_t tail=Int_t(0.10*noc);
      max=0;
      Int_t ind=0;
-     for (i=1; i<=160&&ind<tail; i++) {
+     for (i=1; i<160&&ind<tail; i++) {
        //       AliTPCclusterMI *c=clusters[noc-i];
        AliTPCclusterMI *c=clusters[i];
        if (!c) continue;
@@ -7059,7 +6703,7 @@ Int_t AliTPCtrackerMI::CookLabel(AliTPCseed *const t, Float_t wrong,Int_t first,
      Int_t tail=Int_t(0.10*noc);
      max=0;
      Int_t ind=0;
-     for (i=1; i<=160&&ind<tail; i++) {
+     for (i=1; i<160&&ind<tail; i++) {
        //       AliTPCclusterMI *c=clusters[noc-i];
        AliTPCclusterMI *c=clusters[i];
        if (!c) continue;
