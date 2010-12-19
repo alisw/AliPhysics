@@ -131,7 +131,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Double_t GetMCOpeningAngle(const TParticle* const daughter0,const TParticle* const daughter1) const;
   void CheckV0Efficiency();
   void SetDeltaAODFileName(TString fn) { fKFDeltaAODFileName = fn; };
-		
+  void SetCreateAOD(Bool_t doAod) { fKFCreateAOD = doAod; };
+  TString GetDeltaAODFileName() const { return fKFDeltaAODFileName; };
   //////////////////Chi_c Analysis////////////////////////////
   void GetPID(const AliESDtrack *track, Stat_t &pid, Stat_t &weight);	
   double GetSigmaToVertex(const AliESDtrack* t);
@@ -300,6 +301,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   TClonesArray * fAODOmega; //TTClonesArray for omegas to put in AOD
   TString fAODBranchName; // New AOD branch name
   TString fOutputAODClassName; //Class to use for the AOD
+  Bool_t fKFCreateAOD; //Create the AOD tclones? (regardless if storing or not)
   
   Bool_t fKFForceAOD;  //Set the Analysis Manager FillAOD variable to true every event
   TString fKFDeltaAODFileName; //! File name for delta AOD (if any)
@@ -320,7 +322,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Int_t fUseMultiplicityBin;
   Int_t fUseCentrality;
   Int_t fUseCentralityBin;
-  ClassDef(AliAnalysisTaskGammaConversion, 16); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 17); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

@@ -129,6 +129,7 @@ AliAnalysisTaskSE(),
   fAODOmega(NULL),
   fAODBranchName("GammaConv"),
   fOutputAODClassName("AliAODConversionParticle"),
+  fKFCreateAOD(kTRUE),
   fKFForceAOD(kFALSE),
   fKFDeltaAODFileName(""),
   fDoNeutralMesonV0MCCheck(kFALSE),
@@ -226,6 +227,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fAODOmega(NULL),
   fAODBranchName("GammaConv"),
   fOutputAODClassName("AliAODConversionParticle"),
+  fKFCreateAOD(kTRUE),
   fKFForceAOD(kFALSE),
   fKFDeltaAODFileName(""),
   fDoNeutralMesonV0MCCheck(kFALSE),
@@ -620,8 +622,11 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   
 
   //Fill Gamma AOD
-  FillAODWithConversionGammas() ; 
-	
+  if(fKFCreateAOD) {
+    FillAODWithConversionGammas() ; 
+  }
+
+
   // Process reconstructed gammas
   if(fDoNeutralMeson == kTRUE){
     ProcessGammasForNeutralMesonAnalysis();
@@ -2390,7 +2395,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 
 	    Double_t lowMassPi0=0.1;
 	    Double_t highMassPi0=0.15;
-	    if (massTwoGammaCandidate > lowMassPi0 && massTwoGammaCandidate < highMassPi0 ){
+	    if ( fKFCreateAOD && (massTwoGammaCandidate > lowMassPi0) && (massTwoGammaCandidate < highMassPi0) ){
 	      new((*fKFReconstructedPi0sTClone)[fKFReconstructedPi0sTClone->GetEntriesFast()])  AliKFParticle(*twoGammaCandidate);
 	      fGammav1.push_back(firstGammaIndex);
 	      fGammav2.push_back(secondGammaIndex);
@@ -3451,29 +3456,33 @@ void AliAnalysisTaskGammaConversion::Terminate(Option_t */*option*/)
 
 void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
 {
-  //AOD
-  if(!fAODGamma) fAODGamma = new TClonesArray(fOutputAODClassName.Data(), 0);
-  else fAODGamma->Delete();
-  fAODGamma->SetName(Form("%s_gamma", fAODBranchName.Data()));
   
-  if(!fAODPi0) fAODPi0 = new TClonesArray(fOutputAODClassName.Data(), 0);
-  else fAODPi0->Delete();
-  fAODPi0->SetName(Form("%s_Pi0", fAODBranchName.Data()));
+  if(fKFCreateAOD) {
 
-  if(!fAODOmega) fAODOmega = new TClonesArray(fOutputAODClassName.Data(), 0);
-  else fAODOmega->Delete();
-  fAODOmega->SetName(Form("%s_Omega", fAODBranchName.Data()));
-
-  //If delta AOD file name set, add in separate file. Else add in standard aod file. 
-  if(fKFDeltaAODFileName.Length() > 0) {
-    AddAODBranch("TClonesArray", &fAODGamma, fKFDeltaAODFileName.Data());
-    AddAODBranch("TClonesArray", &fAODPi0, fKFDeltaAODFileName.Data());
-    AddAODBranch("TClonesArray", &fAODOmega, fKFDeltaAODFileName.Data());
-    AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(fKFDeltaAODFileName.Data());
-  } else  {
-    AddAODBranch("TClonesArray", &fAODGamma);
-    AddAODBranch("TClonesArray", &fAODPi0);
-    AddAODBranch("TClonesArray", &fAODOmega);
+    //AOD
+    if(!fAODGamma) fAODGamma = new TClonesArray(fOutputAODClassName.Data(), 0);
+    else fAODGamma->Delete();
+    fAODGamma->SetName(Form("%s_gamma", fAODBranchName.Data()));
+    
+    if(!fAODPi0) fAODPi0 = new TClonesArray(fOutputAODClassName.Data(), 0);
+    else fAODPi0->Delete();
+    fAODPi0->SetName(Form("%s_Pi0", fAODBranchName.Data()));
+    
+    if(!fAODOmega) fAODOmega = new TClonesArray(fOutputAODClassName.Data(), 0);
+    else fAODOmega->Delete();
+    fAODOmega->SetName(Form("%s_Omega", fAODBranchName.Data()));
+    
+    //If delta AOD file name set, add in separate file. Else add in standard aod file. 
+    if(GetDeltaAODFileName().Length() > 0) {
+      AddAODBranch("TClonesArray", &fAODGamma, GetDeltaAODFileName().Data());
+      AddAODBranch("TClonesArray", &fAODPi0, GetDeltaAODFileName().Data());
+      AddAODBranch("TClonesArray", &fAODOmega, GetDeltaAODFileName().Data());
+      AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(GetDeltaAODFileName().Data());
+    } else  {
+      AddAODBranch("TClonesArray", &fAODGamma);
+      AddAODBranch("TClonesArray", &fAODPi0);
+      AddAODBranch("TClonesArray", &fAODOmega);
+    }
   }
 
   // Create the output container
