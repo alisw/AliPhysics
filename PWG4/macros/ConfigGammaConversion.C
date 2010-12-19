@@ -1489,6 +1489,8 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetPIDMinPPionRejectionLowP(kGCPIDMinPPionRejectionLowP);
   v0Reader->SetDoQtGammaSelection(kGCdoQtGammaSelection);
   v0Reader->SetQtMax(kGCQtMax);
+  kGCNEventsForBGCalculation= kGCnumberOfRotationEventsForBG;
+  cout<< "number of Events used for mixing::"<<kGCNEventsForBGCalculation<<endl;
   v0Reader->SetNEventsForBG(kGCNEventsForBGCalculation);
 
   // Create the GammaConversionTask
@@ -1943,6 +1945,15 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDTrueEtaDalitzContaminationR == kTRUE){ histograms->AddHistogram("ESD_TrueConvDalitzEta_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");}
     if(kGCplotESDTrueCombinatorialContaminationR == kTRUE){ histograms->AddHistogram("ESD_TrueConvCombinatorial_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");}
     if(kGCplotESDTrueCombinatorialElecContaminationR == kTRUE){ histograms->AddHistogram("ESD_TrueConvCombinatorialElec_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");}
+    histograms->AddHistogram("ESD_TrueConvDalitzPi0_SinglePos_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
+    histograms->AddHistogram("ESD_TrueConvDalitzPi0_SingleNeg_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
+    histograms->AddHistogram("ESD_TrueConvDalitzPi0_SinglePos_kFirst_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
+    histograms->AddHistogram("ESD_TrueConvDalitzPi0_SingleNeg_kFirst_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
+    histograms->AddHistogram("ESD_TrueConversion_SinglePos_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR,  kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt,"", "");
+    histograms->AddHistogram("ESD_TrueConversion_SingleNeg_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR,  kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+    histograms->AddHistogram("ESD_TrueConversion_SinglePos_kFirst_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+    histograms->AddHistogram("ESD_TrueConversion_SingleNeg_kFirst_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+
 
     if(kGCplotESDTrueConvGammaEnergy == kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
     if(kGCplotESDTrueConvGammaPt == kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
@@ -2231,8 +2242,8 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
       //      if(kGCdoNeutralMesonV0MCCheck == kTRUE){
       histograms->AddHistogram("ESD_TrueBckGG_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
       histograms->AddHistogram("ESD_TrueBckCont_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
-      histograms->AddHistogram("ESD_TruePi0Sec_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
-
+      histograms->AddHistogram("ESD_TruePi0Sec_InvMass_vs_Pt","Invariant mass vs Pt",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Counts");
+      histograms->AddHistogram("ESD_TruePi0DalitzCont_InvMass_vs_Pt","Invariant mass vs Pt",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_1212","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_0912","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
@@ -2969,7 +2980,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 4:
     kGCnumberOfRotationEventsForBG = 2;
     break;
-
+  case 5:
+    kGCnumberOfRotationEventsForBG = 50;
+    break;
   default:
     return iResult;
   }

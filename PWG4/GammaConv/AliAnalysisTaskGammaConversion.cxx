@@ -1706,17 +1706,40 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
       if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
 	continue;
       }
-      if( (negativeMC->GetUniqueID() == 4 && positiveMC->GetUniqueID() ==4) ||
-	  (negativeMC->GetUniqueID() == 0 && positiveMC->GetUniqueID() ==0) ){// fill r distribution for Dalitz decays 
-	if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 111){ //pi0
-	  fHistograms->FillHistogram("ESD_TrueDalitzContamination_R", fV0Reader->GetXYRadius());
-	  fHistograms->FillHistogram("ESD_TrueConvDalitzPi0_R", fV0Reader->GetXYRadius());
+
+      UInt_t statusPos = fV0Reader->GetPositiveESDTrack()->GetStatus(); 
+      UInt_t statusNeg = fV0Reader->GetNegativeESDTrack()->GetStatus(); 
+      UChar_t itsPixelPos = fV0Reader->GetPositiveESDTrack()->GetITSClusterMap();
+      UChar_t itsPixelNeg = fV0Reader->GetNegativeESDTrack()->GetITSClusterMap();
+
+      // Using the UniqueID Phojet does not get the Dalitz right
+      //      if( (negativeMC->GetUniqueID() == 4 && positiveMC->GetUniqueID() ==4) ||
+      //  (negativeMC->GetUniqueID() == 0 && positiveMC->GetUniqueID() ==0) ){// fill r distribution for Dalitz decays 
+      if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 111){ //pi0
+	fHistograms->FillHistogram("ESD_TrueDalitzContamination_R", fV0Reader->GetXYRadius());
+	fHistograms->FillHistogram("ESD_TrueConvDalitzPi0_R", fV0Reader->GetXYRadius());
+	//--------Histos for HFE 
+
+	if(statusPos & AliESDtrack::kTOFpid){
+	  fHistograms->FillHistogram("ESD_TrueConvDalitzPi0_SinglePos_R", fV0Reader->GetXYRadius());
+	  if( TESTBIT(itsPixelPos, 0) ){ 
+	    fHistograms->FillHistogram("ESD_TrueConvDalitzPi0_SinglePos_kFirst_R", fV0Reader->GetXYRadius());
+	  }
 	}
-	if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 221){ //eta
-	  fHistograms->FillHistogram("ESD_TrueConvDalitzEta_R", fV0Reader->GetXYRadius());
+	if(statusNeg & AliESDtrack::kTOFpid){
+	  fHistograms->FillHistogram("ESD_TrueConvDalitzPi0_SingleNeg_R", fV0Reader->GetXYRadius());
+	  if( TESTBIT(itsPixelNeg, 0) ){ 
+	    fHistograms->FillHistogram("ESD_TrueConvDalitzPi0_SingleNeg_kFirst_R", fV0Reader->GetXYRadius());
+	  }
 	}
+	//--------------------------------------------------------
 
       }
+      if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 221){ //eta
+	fHistograms->FillHistogram("ESD_TrueConvDalitzEta_R", fV0Reader->GetXYRadius());
+      }
+
+      //}
 
       if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){// check if the daughters come from a conversion
 	continue;
@@ -1755,6 +1778,22 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	fHistograms->FillHistogram("ESD_TrueConversion_R", fV0Reader->GetXYRadius());
 	fHistograms->FillHistogram("ESD_TrueConversion_ZR", fV0Reader->GetZ(),fV0Reader->GetXYRadius());
 	fHistograms->FillHistogram("ESD_TrueConversion_OpeningAngle", fV0Reader->GetOpeningAngle());
+
+	//----Histos for HFE-------------------------------------- 
+
+	if(statusPos & AliESDtrack::kTOFpid){
+	  fHistograms->FillHistogram("ESD_TrueConversion_SinglePos_R", positiveMC->R(),fV0Reader->GetPositiveMCParticle()->Pt());
+	  if( TESTBIT(itsPixelPos, 0) ){ 
+	    fHistograms->FillHistogram("ESD_TrueConversion_SinglePos_kFirst_R", positiveMC->R(),fV0Reader->GetPositiveMCParticle()->Pt());
+	  }
+	}
+	if(statusNeg & AliESDtrack::kTOFpid){
+	  fHistograms->FillHistogram("ESD_TrueConversion_SingleNeg_R", negativeMC->R(),fV0Reader->GetNegativeMCParticle()->Pt());
+	  if( TESTBIT(itsPixelNeg, 0) ){ 
+	     fHistograms->FillHistogram("ESD_TrueConversion_SingleNeg_kFirst_R", negativeMC->R(),fV0Reader->GetNegativeMCParticle()->Pt());
+	   }
+	}
+	//--------------------------------------------------------
 
 	fHistograms->FillHistogram("ESD_TrueConvGamma_CosPointingAngle", fV0Reader->GetCosPointingAngle());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_DcaDaughters", fV0Reader->GetDcaDaughters());
