@@ -59,7 +59,6 @@ public:
   void FindSplitted(TObjArray * array, AliESDEvent * esd, Int_t iter);       
   void FindMultiMC(const TObjArray * array, AliESDEvent * esd, Int_t iter);     
   //
-  void FindV0s(const TObjArray * array, AliESDEvent *const esd);
   void UpdateKinkQualityM(AliTPCseed * seed);
   void UpdateKinkQualityD(AliTPCseed * seed);
   Int_t CheckKinkPoint(AliTPCseed*seed, AliTPCseed &mother, AliTPCseed &daughter, const AliESDkink &kink);
