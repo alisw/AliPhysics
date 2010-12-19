@@ -15,6 +15,7 @@
 //_________________________________________________________________________//
 #include "AliESDtrackCuts.h"
 #include "AliLog.h"
+#include "TH2F.h"
 #include <iostream>
 
 ClassImp(AliAnalysisTaskTransverseEnergy)
@@ -41,8 +42,13 @@ AliAnalysisTaskTransverseEnergy::AliAnalysisTaskTransverseEnergy(const char* nam
 }
 
 AliAnalysisTaskTransverseEnergy::~AliAnalysisTaskTransverseEnergy()
-{
-    // destructor
+{    // destructor
+  delete fHistEtRecvsEtMC;
+  delete fEsdtrackCutsITSTPC;
+  delete fEsdtrackCutsTPC;
+  delete fEsdtrackCutsITS;
+  delete fOutputList;
+  delete fSelectionHandler;
 }
 
 Int_t AliAnalysisTaskTransverseEnergy::CheckPhysicsSelection(Int_t runNumber)

@@ -93,8 +93,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
     TString *strTPCITS = new TString("TPCITS");
     for(Int_t cutset=0;cutset<2;cutset++){
       bool isTPC = false;
-      TString *cutName;
-      TObjArray* list;
+      TString *cutName = NULL;
+      TObjArray* list = NULL;
       switch(cutset){
       case 0:
 	cutName = strTPCITS;
@@ -241,6 +241,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    AddEt(et,etNoID,etpartialcorrected,etpartialcorrectedNoID,track->Pt(),isTPC,inPHOS,inEMCAL);
 	  }
 	}
+      delete list;
     }
     if(GetCorrectedHadEtFullAcceptanceTPC()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPC",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
     if(GetCorrectedTotEtFullAcceptanceTPC()>0.0)FillHisto1D("RecoTotEtFullAcceptanceTPC",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
@@ -422,7 +423,7 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
   TString *strITS = new TString("ITS");
   TString *strTPCITS = new TString("TPCITS");
   for(Int_t i=0;i<2;i++){
-    TString *cutName;
+    TString *cutName = NULL;
     Float_t maxPtdEdx = 10;
     Float_t mindEdx = 35;
     Float_t maxdEdx = 150.0;
@@ -512,12 +513,12 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
     for(int hadet = 0;hadet<3;hadet++){
       for(int type = 0;type<3;type++){
 	for(int pid = 0;pid<2;pid++){
-	  TString *detector;
-	  TString *partid;
+	  TString *detector = NULL;
+	  TString *partid = NULL;
 	  TString *et = sHadEt;
-	  TString *acceptance;
-	  TString *ptstring;
-	  TString *partidstring;
+	  TString *acceptance = NULL;
+	  TString *ptstring = NULL;
+	  TString *partidstring = NULL;
 	  TString *etstring = sHadEtString;
 	  if(tpc==1) {detector = sTPC; ptstring = sTPCpt;}
 	  else{detector = sITS; ptstring = sITSpt;}

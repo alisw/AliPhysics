@@ -121,6 +121,12 @@ void AliAnalysisEtCommon::Init()
   //parameter 0 = dNdy
   //parameter 1 = temp
   //parameter 2 = power
+  if(fK0PythiaD6T) delete fK0PythiaD6T;
+  if(fLambdaPythiaD6T) delete fLambdaPythiaD6T;
+  if(fAntiLambdaPythiaD6T) delete fAntiLambdaPythiaD6T;
+  if(fK0Data) delete fK0Data;
+  if(fLambdaData) delete fLambdaData;
+  if(fAntiLambdaData) delete fAntiLambdaData;
   fK0PythiaD6T = new TF1("K0PythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
   fLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
   fAntiLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
@@ -172,6 +178,7 @@ void AliAnalysisEtCommon::Init()
     fAntiLambdaData->SetParameter(1,0.290);
     fAntiLambdaData->SetParameter(2,9.28);
   }
+  if(fLambdaEnhancement) delete fLambdaEnhancement;
   fLambdaEnhancement = new TF1("fLambdaEnhancement","([0]*pow(x,[1])*exp(-pow(x/[2],[3])))/([4]*exp(-pow([5]/x,[6]))+[7]*x)",0,50);
    fLambdaEnhancement->SetParameter(0,0.5630487);
    fLambdaEnhancement->SetParameter(1,1.388818);
@@ -181,6 +188,7 @@ void AliAnalysisEtCommon::Init()
    fLambdaEnhancement->SetParameter(5,2);
    fLambdaEnhancement->SetParameter(6,0.4747893);
    fLambdaEnhancement->SetParameter(7,-0.2250856);
+   if(fProtonEnhancement) delete fProtonEnhancement;
    fProtonEnhancement = new TF1("fProtonEnhancement","[0]*pow(x,[1])*exp(-pow(x/[2],[3]))/([4]+[5]*x)",0,50);
    fProtonEnhancement->SetParameter(0,0.5630487*1.6);
    fProtonEnhancement->SetParameter(1,1.388818);

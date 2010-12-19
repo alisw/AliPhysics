@@ -42,6 +42,9 @@ AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name, Bool_t isMc) :
   fMCConfigFile = "ConfigHadEtMonteCarlo.C";
   fRecoConfigFile = "ConfigHadEtReconstructed.C";
   
+  if(fMCAnalysis) delete fMCAnalysis;
+  if(fRecAnalysis) delete fRecAnalysis;
+
   if (fMCConfigFile.Length()) {
     cout<<"Rereading AliAnalysisHadEtMonteCarlo configuration file..."<<endl;
     gROOT->LoadMacro(fMCConfigFile);
@@ -84,6 +87,9 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
   }
 
   Bool_t selectPrimaries=kTRUE;
+  if(fEsdtrackCutsITSTPC) delete fEsdtrackCutsITSTPC;
+  if(fEsdtrackCutsITS) delete fEsdtrackCutsITS;
+  if(fEsdtrackCutsTPC) delete fEsdtrackCutsTPC;
   if(fRecAnalysis->DataSet()==2009){
     cout<<"Setting track cuts for the 2009 p+p collisions at 900 GeV"<<endl;
     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);

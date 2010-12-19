@@ -34,8 +34,8 @@ fSelections(0)
 }
 
 AliAnalysisEtSelectionHandler::~AliAnalysisEtSelectionHandler()
-{
-  // Destructor
+{  // Destructor
+  delete fSelections;
 }
 
 AliAnalysisEtSelectionHandler::AliAnalysisEtSelectionHandler(const AliAnalysisEtSelectionHandler& other): TObject(other)
