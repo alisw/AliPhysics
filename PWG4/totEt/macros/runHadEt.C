@@ -66,10 +66,15 @@ void runHadEt(bool submit = false, bool data = false, bool PbPb = false) {
     handler->SetReadTR(kFALSE);
     mgr->SetMCtruthEventHandler(handler);
   }
+  AliPhysicsSelectionTask *physSelTask = new AliPhysicsSelectionTask("PhysSelTask");
+  mgr->AddTask(physSelTask);
   AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt");
   mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("out1", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
+  mgr->ConnectInput(physSelTask,0,cinput1);
+  mgr->ConnectOutput(physSelTask,1,coutput1);
   mgr->ConnectInput(task2,0,cinput1);
   mgr->ConnectOutput(task2,1,coutput2);
   

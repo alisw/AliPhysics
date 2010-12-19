@@ -8,32 +8,48 @@
 
 // Overwrite all generated files, datasets and output results from a previous session
    plugin->SetOverwriteMode();
-// Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-   //plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
+// Set the run modSoon a picture of Kim Jong-un (sitting far left) flashed around the world, the first known image of him since his school dayse (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
-// Set versions of used packages 
+   //plugin->SetRunMode("test");  // VERY IMPORTANT - DECRIBED BELOW
+   //plugin->SetCheckCopy(kFALSE);
+// Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-27-05");
-   plugin->SetAliROOTVersion("v4-20-08-AN");
+   plugin->SetROOTVersion("v5-27-06b");
+   plugin->SetAliROOTVersion("v4-21-10-AN");
 // Declare input data to be processed.
 
 // Method 1: Create automatically XML collections using alien 'find' command.
 // Define production directory LFN
-//   plugin->SetGridDataDir("/alice/sim/LHC10a18");
+//   plugin->SetGridDataDir("/alice/data/2010/LHC10d");
 // Set data search pattern
 //   plugin->SetDataPattern("*ESDs.root");  // simulated, tags not used
-//   plugin->SetDataPattern("*ESDs/pass4/*ESDs.root"); // real data check reco pass and data base directory
+//   plugin->SetDataPattern("*ESDs/pass2/*ESDs.root"); // real data check reco pass and data base directory
 //   plugin->SetRunPrefix("000");   // real data
 //   plugin->SetDataPattern("*tag.root");  // Use ESD tags (same applies for AOD's)
 // ...then add run numbers to be considered
 //   plugin->AddRunNumber(125020);    // simulated
-//   plugin->AddRunNumber(104065);  // real data
+//   plugin->AddRunNumber(126403);  // real data
+//   plugin->AddRunNumber(126404);  // real data
+//   plugin->AddRunNumber(126405);  // real data
+
+   plugin->SetGridDataDir("/alice/sim/LHC10d4");
+   plugin->SetDataPattern("*ESDs.root");
+   plugin->AddRunNumber(120741);//smallest of the above
+//    plugin->AddRunNumber(120750);
+//    plugin->AddRunNumber(120758);
+//    plugin->AddRunNumber(120820);
+//    plugin->AddRunNumber(120821);
+//    plugin->AddRunNumber(120822);
+//    plugin->AddRunNumber(120823);
+//    plugin->AddRunNumber(120824);
+//    plugin->AddRunNumber(120825);
+//    plugin->AddRunNumber(120829);
 
 // Method 2: Declare existing data files (raw collections, xml collections, root file)
 // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
 // XML collections added via this method can be combined with the first method if
 // the content is compatible (using or not tags)
-   plugin->AddDataFile("tag.xml");
+//   plugin->AddDataFile("tag.xml");
 //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
 
 // Define alien work directory where all files will be copied. Relative to alien $HOME.
@@ -47,10 +63,10 @@
    plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskHadEt.cxx");
 // Declare all libraries (other than the default ones for the framework. These will be
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h corrections.root ConfigHadEtAnalysis.C ConfigHadEtMonteCarlo.C ConfigHadEtReconstructed.C physicsSelections.root");
+   plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h AliAnalysisTaskHadEt.h physicsSelections.root corrections.root ConfigHadEtAnalysis.C ConfigHadEtMonteCarlo.C ConfigHadEtReconstructed.C");
 // No need for output file names. Procedure is automatic. <-- not true
    plugin->SetDefaultOutputs(kFALSE);
-   plugin->SetOutputFiles("Et.ESD.new.sim.root");
+   plugin->SetOutputFiles("Et.ESD.new.sim.root event_stat.root");
 // No need define the files to be archived. Note that this is handled automatically by the plugin.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
 // Set a name for the generated analysis macro (default MyAnalysis.C) Make this unique !

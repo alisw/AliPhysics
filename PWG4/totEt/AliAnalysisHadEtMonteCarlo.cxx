@@ -68,7 +68,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   AliStack *stack = mcEvent->Stack();
 
   //for PID
-  AliESDpid *pID = new AliESDpid();
+  AliESDpid *pID = new AliESDpid();//This is identified as a memory leak in valgrind but I delete this object so I think it may be a problem with AliESDpid.
 
   //=============================================
 
@@ -81,8 +81,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   Int_t lastcutset = 1;
   if(fRequireITSHits) lastcutset = 2;
   for(Int_t cutset=0;cutset<=lastcutset;cutset++){
-    TString *cutName;
-    TObjArray* list;
+    TString *cutName = NULL;
+    TObjArray* list = NULL;
     switch(cutset){
     case 0:
       cutName = strTPC;
@@ -447,7 +447,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     for (Int_t iPart = 0; iPart < nPrim; iPart++)
     {
 
-        TParticle *part = stack->Particle(iPart);
+      TParticle *part = stack->Particle(iPart);//This line is identified as a loss of memory by valgrind, however, the pointer still belongs to the stack, so it's the stack's problem
 
         if (!part)
 	  {
@@ -1089,7 +1089,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   Int_t lastcutset = 1;
   if(fRequireITSHits) lastcutset = 2;
   for(Int_t i=0;i<=lastcutset;i++){
-    TString *cutName;
+    TString *cutName = NULL;
     Float_t maxPtdEdx = 10;
     Float_t mindEdx = 35;
     Float_t maxdEdx = 150.0;
@@ -1231,20 +1231,20 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   float etDiff = 1.5;
 
   for(int tpc = 0;tpc<lastcutset;tpc++){
-    TString *detector;
-    TString *ptstring;
+    TString *detector = NULL;
+    TString *ptstring = NULL;
     if(tpc==1) {detector = sTPC; ptstring = sTPCpt;}
     else{detector = sITS; ptstring = sITSpt;}
     for(int hadet = 0;hadet<2;hadet++){
-      TString *et;
-      TString *etstring;
+      TString *et = NULL;
+      TString *etstring = NULL;
       if(hadet==1) {et = sHadEt; etstring = sHadEtString;}
       else{et = sTotEt; etstring = sTotEtString;}
       for(int type = 0;type<3;type++){
 	if(type==0 && !fInvestigateFull) continue;
 	if(type==1 && !fInvestigateEMCal) continue;
 	if(type==2 && !fInvestigatePHOS) continue;
-	TString *acceptance;
+	TString *acceptance = NULL;
 	switch(type){
 	case 0:
 	  acceptance = sFull;
@@ -1262,8 +1262,8 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 	  acceptance = sFull;
 	}
 	for(int pid = 0;pid<2;pid++){
-	  TString *partid;
-	  TString *partidstring;
+	  TString *partid = NULL;
+	  TString *partidstring = NULL;
 	  if(pid==1){partid = sPID; partidstring = sPID;}
 	  else{partid = sNoPID; partidstring = sNoPIDString;}
 	  sprintf(histoname,"Sim%sMinusReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
