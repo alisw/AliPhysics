@@ -1586,13 +1586,13 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     //gammaconversion->SetOutputAODClassName("AliGammaConversionAODObject");
 
     if( kGCrunOnTrain ) {
-
+      
       AliAODHandler * aodHandler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
       if(!aodHandler) {
 	::Error("This task requires an AOD handler");
-	return -1;
+	return NULL;
       }
-
+      
       gammaconversion->SetDeltaAODFileName(kGCDeltaAODFilename);
       
       if(kGCDeltaAODFilename.Length() > 0) {
@@ -1602,23 +1602,25 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     } else {
       if(kGCDeltaAODFilename.Length() == 0 ) {
 	cout << "Error:: Need a file name for the AOD"<<endl;
-	return;
+	return NULL;
       }
       AliAODHandler* aodHandler = new AliAODHandler();
       aodHandler->SetOutputFileName(kGCDeltaAODFilename);
       aodHandler->SetCreateNonStandardAOD();
       mgr->SetOutputEventHandler(aodHandler);	
     }
+  }  else {
+    gammaconversion->SetCreateAOD(kFALSE);
   }
 
   // Connect I/O to the task
   mgr->ConnectInput (gammaconversion, 0, cinput1);
   if(mgr->GetCommonOutputContainer())
     mgr->ConnectOutput(gammaconversion, 0, mgr->GetCommonOutputContainer());
-
+  
   mgr->ConnectOutput(gammaconversion, 1, coutput2);
   mgr->ConnectOutput(gammaconversion, 2, coutput3);
-
+  
   if(kGCRunGammaJetTask) {
     AliAnalysisTaskGammaJet * gammaJetTask = new AliAnalysisTaskGammaJet("GammaJetTask");
     if(kGCrunOnTrain) {

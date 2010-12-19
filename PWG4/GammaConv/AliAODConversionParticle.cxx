@@ -64,7 +64,6 @@ AliAODConversionParticle::AliAODConversionParticle(TLorentzVector & momentum) :
 AliAODConversionParticle::~AliAODConversionParticle() {
   
   ///destructor
-  delete[] fLabel;
 
 }
 
