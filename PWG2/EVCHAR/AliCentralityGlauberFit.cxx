@@ -490,7 +490,8 @@ void AliCentralityGlauberFit::SaveHisto(TH1D *hist1, TH1D *hist2, TH1D *heffi, T
 Double_t AliCentralityGlauberFit::NBD(Int_t n, Double_t mu, Double_t k)
 {
   // Compute NBD.
-  Double_t ret = exp( lgamma(n+k) - lgamma(k) - lgamma(n+1) ) * TMath::Power(mu/(mu+k),n) * TMath::Power(1-mu/(mu+k),k);
+  Double_t ret = TMath::Exp( TMath::LnGamma(n+k) - TMath::LnGamma(k) - TMath::LnGamma(n+1) ) * 
+                 TMath::Power(mu/(mu+k),n) * TMath::Power(1-mu/(mu+k),k);
   return ret;
 }
 
