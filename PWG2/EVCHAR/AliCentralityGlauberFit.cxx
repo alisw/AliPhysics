@@ -540,6 +540,6 @@ Double_t AliCentralityGlauberFit::NBDFunc(Double_t * x, Double_t *par)
   Double_t mu = par[0];
   Double_t k  = par[1];
   Double_t n  = x[0];
-  Double_t ret = exp( lgamma(n+k) - lgamma(k) - lgamma(n+1) ) * TMath::Power(mu/(mu+k),n) * TMath::Power(1-mu/(mu+k),k);
+  Double_t ret = exp( TMath::LnGamma(n+k) - TMath::LnGamma(k) - TMath::LnGamma(n+1) ) * TMath::Power(mu/(mu+k),n) * TMath::Power(1-mu/(mu+k),k);
   return ret;
 }
