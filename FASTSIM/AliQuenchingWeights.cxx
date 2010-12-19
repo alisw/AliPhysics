@@ -40,6 +40,7 @@
 #include <TGraph.h>
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TString.h>
 #include <TLegend.h>
 #include "AliQuenchingWeights.h"
 
@@ -74,9 +75,7 @@ AliQuenchingWeights::AliQuenchingWeights()
       fTablesLoaded(kFALSE)
 {
   //default constructor 
-  Char_t name[100];
-  sprintf(name,"hhistoqw_%d",fInstanceNumber);
-  fHisto = new TH1F(name,"",fgkBins,0.,fgkMaxBin);
+  fHisto = new TH1F(Form("hhistoqw_%d",fInstanceNumber),"",fgkBins,0.,fgkMaxBin);
   for(Int_t bin=1;bin<=fgkBins;bin++) 
     fHisto->SetBinContent(bin,0.);
 }
