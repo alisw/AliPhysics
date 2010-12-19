@@ -1,7 +1,9 @@
 #-*- Mode: Makefile -*-
 
-SRCS:=  AliTPCFast.cxx \
-        AliTPCtrackerParam.cxx AliTPCkineGrid.cxx
+SRCS:=  AliTPCFast.cxx 
+
+#\
+#        AliTPCtrackerParam.cxx AliTPCkineGrid.cxx
         
 	
 
