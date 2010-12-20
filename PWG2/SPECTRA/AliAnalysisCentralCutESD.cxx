@@ -133,15 +133,15 @@ Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t reqPartType){
 // Determines the type of the particle
     Int_t charge;
 
-	if(reqPartType < 0){
-		charge = -1;
-	}
-	else{
-		charge = 1;
-	}
+    if(reqPartType < 0){
+      charge = -1;
+    }
+    else{
+      charge = 1;
+    }
 
-    Double_t probability[5];
-    Double_t w[5];
+    Double_t probability[5] = {0.0,0.0,0.0,0.0,0.0};
+    Double_t w[5] = {0.0,0.0,0.0,0.0,0.0};
 
     Long64_t partType = 0;
 
