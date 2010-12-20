@@ -9,7 +9,7 @@
 //  For each event:                                                //
 //  1. Call StartEvent()                                           //
 //  2. For each pixel hit:                                         //
-//     Call ProcessHit(..) or ProcessHitOnline(..)                 //
+//     Call ProcessHit(..)                                         //
 //  3. Call FinishEvent()                                          //
 //  4. Access cluster information for this event by methods:       //
 //     GetClusterCount(layer)                                      //
@@ -42,7 +42,6 @@ class AliITSUpgradeClusterFinder :public TObject{
 
   void  StartEvent();
   Int_t ProcessHit(Int_t layer, UInt_t col, UInt_t row, UShort_t charge,Int_t label[3]);
-  Int_t ProcessHitOnline(Int_t layer, UInt_t col, UInt_t row, UShort_t charge, Int_t label[3]);
   void  FinishEvent();
 
   void AddLabelIndex(UInt_t col, UInt_t row);
@@ -50,15 +49,15 @@ class AliITSUpgradeClusterFinder :public TObject{
   void MakeRecPointBranch(TTree *treeR);
   void SetRecPointTreeAddress(TTree *treeR);
 
-  void DigitsToRecPoints(TObjArray *digList);
+  void DigitsToRecPoints(const TObjArray *digList);
 
-  UInt_t  GetClusterCount(Int_t layer);
+  UInt_t  GetClusterCount(Int_t layer) const;
   Float_t GetClusterMeanCol(Int_t layer, UInt_t index);
   Float_t GetClusterMeanRow(Int_t layer, UInt_t index);
   UInt_t  GetClusterSize(Int_t layer, UInt_t index);
-  UInt_t  GetClusterWidthZ(Int_t layer, UInt_t index);
-  UInt_t  GetClusterWidthPhi(Int_t layer, UInt_t index);
-  UInt_t  GetClusterType(Int_t layer, UInt_t index);
+  UInt_t  GetClusterWidthZ(Int_t layer, UInt_t index) ;
+  UInt_t  GetClusterWidthPhi(Int_t layer, UInt_t index) ;
+  UInt_t  GetClusterType(Int_t layer, UInt_t index) ;
   UShort_t GetCharge(Int_t layer, UInt_t index); 
   UInt_t GetPixelCharge(UInt_t col, UInt_t row); 
   Int_t* GetLabels(Int_t layer,UInt_t index) ;
@@ -94,15 +93,14 @@ class AliITSUpgradeClusterFinder :public TObject{
   Int_t    fTmpLabel[3];   // label array to be kept temporarily during the clustering procedure
   Int_t    fLabels[10];    // label array to be attached to the cluster
 
-  UShort_t fClusterWidthMaxCol;
-  UShort_t fClusterWidthMinCol;
-  UShort_t fClusterWidthMaxRow;
-  UShort_t fClusterWidthMinRow;
+  UShort_t fClusterWidthMaxCol; //max column ID of the cluster
+  UShort_t fClusterWidthMinCol; //min column ID of the cluster
+  UShort_t fClusterWidthMaxRow; //max row ID of the cluster
+  UShort_t fClusterWidthMinRow; //min row ID of the cluster
   Bool_t   fClusterTypeArea[kMAXCLUSTERTYPESIDEZ][kMAXCLUSTERTYPESIDEY];// same as above comments
-  AliITSUpgradeClusterList fClusterList[8];
-  TObjArray *fChargeArray;
-
-  TClonesArray *fRecPoints;
+  AliITSUpgradeClusterList fClusterList[8]; // cluster container
+  TObjArray *fChargeArray;  // charge identifier
+  TClonesArray *fRecPoints; // used to fill treeR
 
   AliITSUpgradeClusterFinder(const AliITSUpgradeClusterFinder &source); // copy constructor
   // assignment operator
