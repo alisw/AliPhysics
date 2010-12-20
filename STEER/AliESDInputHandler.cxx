@@ -261,6 +261,7 @@ Bool_t AliESDInputHandler::Notify(const char* path)
         break;
       }//pattern check
     }//directory loop
+    gSystem->FreeDirectory(dirp);
   }
   if (tagFilename.IsNull()) {
     if (firsttime) AliWarning(Form("Tag file not found in directory: %s", pathName.Data()));

@@ -977,6 +977,7 @@ void AliESDTagCreator::SwitchOffBranches() const {
     fChain->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 0);
     AliInfo(Form("Branch %s switched off \n", str.Data()));
   }
+  delete tokens;
 }
 
 //_____________________________________________________________________________

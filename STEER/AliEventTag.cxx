@@ -323,5 +323,7 @@ TString AliEventTag::GetFiredTriggerClasses(TString actclass) const
     }
   }
 
+  delete actrig;
+  
   return tFired;
 }
