@@ -904,6 +904,14 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       aodOutJet = 0;
       nAodOutTracks = 0;
       Float_t tmpPt = tmpRec.Pt();  
+      
+      if(tmpPt>fJetOutputMinPt&&jarray){// cut on the non-background subtracted...
+	aodOutJet =  new ((*jarray)[nAodOutJets++]) AliAODJet(tmpRec);
+	Double_t area1 = clustSeq.area(sortedJets[j]);
+	aodOutJet->SetEffArea(area1,0);
+      }
+
+
       Float_t tmpPtBack = 0;
       if(externalBackground){
 	// carefull has to be filled in a task before
@@ -916,6 +924,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fh1PtJetsRecIn->Fill(tmpPt);
       // Fill Spectra with constituents
       vector<fastjet::PseudoJet> constituents = clustSeq.constituents(sortedJets[j]);
+
       fh1NConstRec->Fill(constituents.size());
       fh2PtNch->Fill(nCh,tmpPt);
       fh2PtNchN->Fill(nCh,tmpPt,constituents.size());
@@ -923,12 +932,6 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       // loop over constiutents and fill spectrum
       
       // Add the jet information and the track references to the output AOD
-      
-      if(tmpPt>fJetOutputMinPt&&jarray){
-	aodOutJet =  new ((*jarray)[nAodOutJets++]) AliAODJet(tmpRec);
-	Double_t area1 = clustSeq.area(sortedJets[j]);
-	aodOutJet->SetEffArea(area1,0);
-      }
             
 
       if(fUseBackgroundCalc){       

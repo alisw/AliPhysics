@@ -11,4 +11,5 @@
 #pragma	link C++ class AliSISConeJetFinder+;
 #pragma	link C++ class AliSISConeJetHeader+;
 #pragma	link C++ class AliAnalysisTaskJetCluster+;
+#pragma	link C++ class AliAnalysisTaskJetBackgroundSubtract+;
 #endif
