@@ -1950,7 +1950,9 @@ void AliTRDresolution::MakeSummary()
   p=cOut->cd(6); 
   p->SetRightMargin(0.06);p->SetTopMargin(0.06);
   xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
-  GetGraphArray(xy, kMCtracklet, 1, 1);
+  if(!GetGraphArray(xy, kMCtracklet, 1, 1)){
+    AliWarning("Failed retrieve tracklet resolution plot.");
+  }
 
   cOut->SaveAs(Form("%s.gif", cOut->GetName()));
   delete cOut;
