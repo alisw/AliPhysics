@@ -232,6 +232,12 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   // Constructor
   //
   fTracksEsdParam.SetOwner(kTRUE);
+  for (Int_t i=0; i<336; i++) {
+    fFitZ[i]=0;
+    fCounter[i]=0;    //! counter of usage
+    fClusterCounter[i]=0; //!couter of clusters in "sensitive are"
+    fClusterSatur[i]=0;   //!couter of saturated clusters in "sensitive are"
+  }
 }
 
 AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool_t full):
@@ -339,6 +345,12 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool
   // Constructor
   //
   fTracksEsdParam.SetOwner(kTRUE);
+  for (Int_t i=0; i<336; i++) {
+    fFitZ[i]=0;
+    fCounter[i]=0;    //! counter of usage
+    fClusterCounter[i]=0; //!couter of clusters in "sensitive are"
+    fClusterSatur[i]=0;   //!couter of saturated clusters in "sensitive are"
+  }
 }
 
 AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
@@ -442,6 +454,12 @@ AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
   //
   // copy constructor
   //
+  for (Int_t i=0; i<336; i++) {
+    fFitZ[i]=0;
+    fCounter[i]=0;    //! counter of usage
+    fClusterCounter[i]=0; //!couter of clusters in "sensitive are"
+    fClusterSatur[i]=0;   //!couter of saturated clusters in "sensitive are"
+  }
 }
 
 
@@ -594,6 +612,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
     AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
     if (!friendTrack) continue;
     AliESDtrack *track=fESD->GetTrack(i);
+    if (!track) continue;
     Double_t binC = hisCE.GetBinContent(hisCE.FindBin(track->GetZ()));
     if (binC>336) continue; //remove CE background
     TObject *calibObject=0;
@@ -929,7 +948,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
 
   // The robust fit is performed in 2 itterations /robust fraction controlled by kFraction/
   // 1. Robust fit is used in the itteration number 0
-  // only fraction of laser uted
+  // only fraction of laser used
   // 2. Only the tracks close to the fit used in the second itteration
   /*
     Formulas:
@@ -1078,7 +1097,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
       ltrp->GetXYZ(lxyz);
       ltrp->GetPxPyPz(lpxyz);
       Float_t sz = (ltrp->GetSide()==0) ? TMath::Sqrt(chi2A): TMath::Sqrt(chi2C);
-      if (npointsAC>0) sz =TMath::Sqrt(chi2AC); 
+      //if (npointsAC>0) sz =TMath::Sqrt(chi2AC); 
       if (iter>0 && TMath::Abs(fFitZ[id])>sz*kDistCut) continue;
       if (iter>0 && TMath::Abs(fFitZ[id])>kDistCutAbs) continue;
 
@@ -1107,6 +1126,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
     if (fdriftA.GetNpoints()>minFraction*0.5*knLaser){
       //
       fdriftA.Eval();
+      //if (iter==0) fdriftA.FixParameter(2,0); //fix global y gradient
       npointsA= fdriftA.GetNpoints();
       chi2A = fdriftA.GetChisquare()/fdriftA.GetNpoints();
       fdriftA.EvalRobust(kFraction[iter]);
@@ -1122,6 +1142,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
     }
     if (fdriftC.GetNpoints()>minFraction*0.5*knLaser){
       fdriftC.Eval();
+      //if (iter==0) fdriftC.FixParameter(2,0); //fix global y gradient
       npointsC= fdriftC.GetNpoints();
       chi2C = fdriftC.GetChisquare()/fdriftC.GetNpoints();
       fdriftC.EvalRobust(kFraction[iter]);
@@ -1138,6 +1159,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
 
     if (fdriftAC.GetNpoints()>minFraction*knLaser &&npointsA>0.5*minFraction*knLaser&&npointsC>0.5*minFraction*knLaser){
       fdriftAC.Eval();
+      //if (iter==0) fdriftAC.FixParameter(2,0); //fix global y gradient
       npointsAC= fdriftAC.GetNpoints();
       chi2AC = fdriftAC.GetChisquare()/fdriftAC.GetNpoints();
       fdriftAC.EvalRobust(kFraction[iter]);
@@ -3029,7 +3051,7 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain, const char * cutUser){
   //
   for (Int_t id=0; id<336; id++){
     // id =205;
-    sprintf(cut,"fId==%d&&%s",id,cutUser);
+    snprintf(cut,1000,"fId==%d&&%s",id,cutUser);
     Int_t entries = chain->Draw("bz",cut,"goff");
     if (entries<3) continue;
     AliTPCLaserTrack *ltrp = 0;
@@ -3440,7 +3462,8 @@ void   AliTPCcalibLaser::MakeFitHistos(){
   for (Int_t id=0; id<336;id++){
     TH2F *profy = (TH2F*)fDeltaYres.UncheckedAt(id);
     TH2F *profz = (TH2F*)fDeltaZres.UncheckedAt(id);
-    TH2F *profy2 = (TH2F*)fDeltaYres2.UncheckedAt(id);
+    //TH2F *profy2 = (TH2F*)fDeltaYres2.UncheckedAt(id);
+    TH2F *profy2 = 0;
     TH2F *profz2 = (TH2F*)fDeltaZres2.UncheckedAt(id);
     TH2F *profyabs = (TH2F*)fDeltaYresAbs.UncheckedAt(id);
     TH2F *profzabs = (TH2F*)fDeltaYresAbs.UncheckedAt(id);
@@ -3485,7 +3508,8 @@ void   AliTPCcalibLaser::MakeFitHistos(){
   //
   for (Int_t id=0; id<336;id++){
     TH1F * hisdz = (TH1F*)fDeltaZ.At(id);
-    TH1F * hisP3 = (TH1F*)fDeltaP3.At(id);
+    //TH1F * hisP3 = (TH1F*)fDeltaP3.At(id);
+    TH1F * hisP3 = 0;
     TH1F * hisP4 = (TH1F*)fDeltaP4.At(id);
     
     TH1F * hisdphi = (TH1F*)fDeltaPhi.At(id);
