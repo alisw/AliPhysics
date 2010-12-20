@@ -69,6 +69,14 @@ class AliAODJet : public AliVParticle {
 
     virtual Double_t   EffectiveAreaCharged()   const { return  fEffectiveArea[0];}
     virtual Double_t   EffectiveAreaNeutral()   const { return  fEffectiveArea[1];}
+    virtual void SetVectorAreaCharged(TLorentzVector *effVACh){
+      if(!fVectorAreaCharged)fVectorAreaCharged= new TLorentzVector(*effVACh);
+      else *fVectorAreaCharged = *effVACh;
+    }
+    virtual TLorentzVector*  VectorAreaCharged()   const {return fVectorAreaCharged;}
+
+
+
     virtual Double_t   ErrorEffectiveAreaCharged()   const { return  fEffectiveAreaError[0];}
     virtual Double_t   ErrorEffectiveAreaNeutral()   const { return  fEffectiveAreaError[1];}
     virtual Double_t   DeltaR(const AliVParticle* part);
@@ -99,9 +107,10 @@ class AliAODJet : public AliVParticle {
     Double32_t      fNeutralFraction;        //[0,1,12] Neutral fraction between 0 and 1 12 bit precision;
     UChar_t         fTrigger;                // Bit mask to flag jets triggered by a certain detector  
     TLorentzVector* fMomentum;               // Jet 4-momentum vector
+    TLorentzVector* fVectorAreaCharged;      // jet area four momentum 
     TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,6);
+    ClassDef(AliAODJet,7);
 
 };
 
