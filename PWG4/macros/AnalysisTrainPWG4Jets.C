@@ -32,6 +32,7 @@ TString     kJobTag            = "PWG4 Jet Tasks analysis train configured"; // 
 Bool_t      kUsePAR             = kFALSE;  // use par files for extra libs
 Bool_t      kUseCPAR            = kFALSE;  // use par files for common libs
 Bool_t      kFillAOD = kFALSE;  // switch of AOD filling for on the fly analysis
+Bool_t      kFilterAOD = kTRUE;
 Int_t       kSaveAOD = 8;        // Bit switch 1 = Full AOD 2 = Jet AOD , 4 = PartCorr, 8 = JCORRAN 
 //== general input and output variables
 
@@ -80,8 +81,11 @@ Bool_t      kIsPbPb             = kFALSE;  // Pb+Pb
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4) // 1 write standard 2 write non-standard jets, 3 wrtie both
+Int_t       iJETSUBTRACT        = 1;      // Jet background subtration
 TString     kDefaultJetBranch     = "";      // is currently set when filled (iJETAN or clusters) or from config macro 
 TString     kDefaultJetBackgroundBranch     = "";      // is currently set when filled (jet clsuters  
+TString     kJetSubtractBranches     = "";      // is currently set when filled (jet clsuters  
+
 TString     kDefaultJetBranchMC     = "";      // is currently set when filled (iJETAN or clusters) or from config macro 
 TString     kDefaultJetBackgroundBranchMC     = "";      // is currently set when filled (jet clsuters  
 TString     kDefaultJetBranchMC2     = "";      // is currently set when filled (iJETAN or clusters) or from config macro 
@@ -243,6 +247,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(printMask,"debugging", (UInt_t)kUseDebug);
    printf(printMask,"PAR files", (UInt_t)kUsePAR);
    printf(printMask,"AliEn plugin", (UInt_t)kPluginUse);
+   printf(printMask,"JETAN subtract", (UInt_t)iJETSUBTRACT);
    printf(printMask,"PWG1 QA sym", iPWG1QASym);
    printf(printMask,"PWG4 Source Sara",iPWG4TmpSourceSara);
    printf(printMask,"PWG4 Fragmentation",iPWG4Fragmentation);
@@ -405,7 +410,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskESDFilterPWG4Train.C");
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter,kUseMuonfilter);
-      taskesdfilter->SetEnableFillAOD(kFALSE);
+      taskesdfilter->SetEnableFillAOD(!kFilterAOD);
 
       if(kIsMC){
 	mgr->RegisterExtraFile("pyxsec_hists.root");
@@ -512,10 +517,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        if(kDeltaAODJetName.Length()==0)taskCl->SetJetTriggerPtCut(40.);
        taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        kDefaultJetBranch = taskCl->GetJetOutputBranch();
+       kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
+  
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
-       
+       kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
+
        if(kUseAODMC){
 	 if(kIsPbPb){
 	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
@@ -546,6 +554,21 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        
        if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
      }
+   }
+
+   if(iJETSUBTRACT){
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetBackgroundSubtract.C");
+      AliAnalysisTaskJetBackgroundSubtract *taskSubtract = 0;
+      if(kJetSubtractBranches.Length()){
+	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,1);
+	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 
+	taskSubtract->SetDebugLevel(3);
+	if(kJetSubtractBranches.Contains(kDefaultJetBranch.Data())){
+	  kDefaultJetBranch.ReplaceAll("B0","B1");
+	}
+
+      }
+      if (!taskSubtract) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetBackgroundSubtrac cannot run for this train conditions - EXCLUDED");     
    }
 
    if (iDIJETAN) {

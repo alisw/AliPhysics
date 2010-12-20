@@ -1,0 +1,50 @@
+AliAnalysisTaskJetBackgroundSubtract *AddTaskJetBackgroundSubtract(TString sJetBranches,Int_t iSubtraction = 1){
+
+
+
+
+  //get the current analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    Error("AddTask_obusch_jets", "No analysis manager found.");
+    return 0;
+  }
+
+
+
+
+  //========= Add task to the ANALYSIS manager =====
+  
+  // TOkenize...
+  TObjArray *objArr = sJetBranches.Tokenize(" ");
+
+
+  TString cAdd;
+  cAdd += Form("B%d",iSubtraction);
+
+  AliAnalysisTaskJetBackgroundSubtract *task = new AliAnalysisTaskJetBackgroundSubtract(Form("JetSubtract_%s",cAdd.Data()));
+  for(int iJB = 0;iJB<objArr->GetEntries();iJB++){
+    TObjString *ostr = (TObjString*)objArr->At(iJB);
+    task->AddJetBranch(ostr->GetString().Data());
+  }
+
+  mgr->AddTask(task);
+
+
+  //================================================
+  //              data containers
+  //================================================
+  //            find input container
+
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();	
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(
+							   Form("PWG4_JetSubtract_%s",cAdd.Data()),
+							   TList::Class(), 
+							   AliAnalysisManager::kOutputContainer,
+							   Form("%s:pwg4JetSubtract_%s",AliAnalysisManager::GetCommonFileName(),cAdd.Data()));
+
+  mgr->ConnectInput(task,0,cinput );
+  mgr->ConnectOutput(task,1,coutput);
+ 
+  return task;
+}
