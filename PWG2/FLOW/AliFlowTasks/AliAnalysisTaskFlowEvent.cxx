@@ -229,9 +229,10 @@ void AliAnalysisTaskFlowEvent::NotifyRun()
 {
   //at the beginning of each new run
 	AliESDEvent* fESD = dynamic_cast<AliESDEvent*> (InputEvent());
-	Int_t run = fESD->GetRunNumber();
+  if (!fESD) return;
 	if(fTOFresolution>0.0)
 	{
+	  Int_t run = fESD->GetRunNumber();
 		AliCDBManager *cdb = AliCDBManager::Instance();
     cdb->SetDefaultStorage("raw://");
     cdb->SetRun(run);
@@ -240,7 +241,6 @@ void AliAnalysisTaskFlowEvent::NotifyRun()
     delete ftofT0maker;
     ftofT0maker= new AliTOFT0maker(fESDpid,fTOFcalib);  
   } 
-   AliInfo(Form("Stariting run #%i",run));
 }
 
 //________________________________________________________________________
@@ -255,11 +255,6 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     exit(1);
   }
 
-  if (!(fCutsRP&&fCutsPOI))
-  {
-    AliError("cuts not set");
-    return;
-  }
   //PID
   if (fCutsRP->GetParamType()==AliFlowTrackCuts::kMC)
   {
@@ -327,14 +322,17 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     }
   }
 
+  if (!(fCutsRP&&fCutsPOI&&fCutsEvent))
+  {
+    AliError("cuts not set");
+    return;
+  }
+
   //use the new and temporarily inclomplete way of doing things
   if (fAnalysisType == "AUTOMATIC")
   {
     //check event cuts
-    if (fCutsEvent) 
-    {
-      if (!fCutsEvent->IsSelected(InputEvent())) return;
-    }
+    if (!fCutsEvent->IsSelected(InputEvent())) return;
 
     //PID
     recalibTOF(dynamic_cast<AliESDEvent*>(InputEvent()));
