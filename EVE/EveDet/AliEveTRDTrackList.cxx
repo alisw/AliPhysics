@@ -453,9 +453,10 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
   }  
 
   // Allocate memory for the histograms
-  if (numHistoMacros > 0)  histos = new TH1*[numHistoMacros];
-  memset(histos, 0, numHistoMacros*sizeof(TH1*));
-
+  if (numHistoMacros > 0){
+    histos = new TH1*[numHistoMacros];
+    memset(histos, 0, numHistoMacros*sizeof(TH1*));
+  }
 
   //////////////////////////////////
   // WALK THROUGH THE LIST OF TRACKS

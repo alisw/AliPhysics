@@ -362,11 +362,8 @@ void AliEveListAnalyserEditor::ApplyMacros()
 
     DrawHistos();
   }
-
-  if (selIterator != 0) delete selIterator;
-  selIterator = 0;  
-  if (procIterator != 0)  delete procIterator;  
-  procIterator = 0;  
+  delete selIterator;
+  delete procIterator;  
   
   if (!success)
   {
@@ -762,17 +759,16 @@ void AliEveListAnalyserEditor::HandleMacroPathSet()
       {
         name = new Char_t[AliEveListAnalyser::fkMaxMacroNameLength];
         memset(name, '\0', sizeof(Char_t) * AliEveListAnalyser::fkMaxMacroNameLength);
-        sprintf(name, "%s", fteField->GetText());
+        snprintf(name, AliEveListAnalyser::fkMaxMacroNameLength, "%s", fteField->GetText());
 
         // Add path to textfield -> Path is "./" -> Use length for the name + 2
         Char_t pathname[AliEveListAnalyser::fkMaxMacroNameLength + 2];
         memset(pathname, '\0', sizeof(Char_t) * (AliEveListAnalyser::fkMaxMacroNameLength + 2));
-        sprintf(pathname, "./%s", fteField->GetText());
+        snprintf(pathname, AliEveListAnalyser::fkMaxMacroNameLength + 2, "./%s", fteField->GetText());
         fteField->SetText(pathname);
 
         AddMacro(name);  
-        if (name != 0)  delete [] name;
-        name = 0;
+        delete [] name;
       }
       // Different path
       else
@@ -783,10 +779,8 @@ void AliEveListAnalyserEditor::HandleMacroPathSet()
         strncpy(path, fteField->GetText(), strlen(fteField->GetText()) - strlen(name));
         
         // Ignore the slash "/" in name
-        AddMacro(name + 1, path);  
-  
-        if (path != 0)  delete [] path;
-        path = 0;
+        AddMacro(name + 1, path);    
+        delete [] path;
       }       
     }
     else
@@ -885,9 +879,7 @@ void AliEveListAnalyserEditor::RemoveMacros()
   fM->fMacroListSelected = 0;
 
   UpdateMacroList();
-
-  if (iterator != 0)  delete iterator;
-  iterator = 0;
+  delete iterator;
 }
 
 //______________________________________________________
@@ -1343,15 +1335,11 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   Bool_t useGivenType2 = kFALSE;
 
   // Remove white-spaces
-  TString* typeStr = new TString();
-
-  typeStr->Append(fTextObjectType->GetText());
+  TString* typeStr = new TString(fTextObjectType->GetText());
   typeStr->ReplaceAll(" ", "");
   fTextObjectType->SetText(typeStr->Data(), kFALSE);
 
-  TString* typeStr2 = new TString();
-
-  typeStr2->Append(fTextObjectType2->GetText());
+  TString* typeStr2 = new TString(fTextObjectType2->GetText());
   typeStr2->ReplaceAll(" ", "");
   fTextObjectType2->SetText(typeStr2->Data(), kFALSE);
 
@@ -1457,11 +1445,10 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   Char_t* line = 0x0; Int_t iline = 0;
   while((line = comment->GetLine(TGLongPosition(0,iline++), 200))) fprintf(fp, "// %s\n", line);
 
-  TString* tempStr = new TString();
+  TString* tempStr = new TString(fTextIncludes->GetText());
 
   // Add include files:
   // Remove white-spaces and replace commas
-  tempStr->Append(fTextIncludes->GetText());  
   tempStr->ReplaceAll(" ", "");
   tempStr->ReplaceAll(",","\n#include ");
   // If there are files, add the first "#include " in front
@@ -1475,12 +1462,12 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   if (!useGivenType)
   {
     typeStr->Clear();
-    typeStr->Append("TObject");
+    (*typeStr)="TObject";
   }
   if (!useGivenType2)
   {
     typeStr2->Clear();
-    typeStr2->Append("TObject");
+    (*typeStr2)="TObject";
   }
 
   switch(type){

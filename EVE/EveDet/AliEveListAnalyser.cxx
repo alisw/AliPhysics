@@ -179,7 +179,7 @@ Int_t AliEveListAnalyser::AddMacro(const Char_t* path, const Char_t* nameC, Bool
 
   // Expand the path and create the pathname
   Char_t* systemPath = gSystem->ExpandPathName(path);
-  sprintf(pathname, "%s/%s", systemPath, nameC);
+  snprintf(pathname, fkMaxMacroPathNameLength, "%s/%s", systemPath, nameC);
   delete systemPath;
   systemPath = 0;
 
@@ -520,7 +520,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
   // A.B. gROOT->Reset();
   
   // Clear old data and re-allocate
-  if (fDataTree == 0x0){ 
+  if (fDataTree == NULL){
     TDirectory *cwd = gDirectory;
     fDataTree = new TTreeSRedirector(Form("/tmp/ListAnalyserMacroData_%s.root", gSystem->Getenv("USER")));
     cwd->cd();
@@ -539,47 +539,27 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
   fDataFromMacroList->TCollection::SetOwner(kTRUE);
 
   fHistoDataSelected = 0;
+  TGeneralMacroData* macro(NULL);
 
+  TString* procCmds                      = new TString[procIterator->GetEntries()];
+  AliEveListAnalyserMacroType* mProcType = new AliEveListAnalyserMacroType[procIterator->GetEntries()];
+  TClass** mProcObjectType               = new TClass*[procIterator->GetEntries()];
+  TClass** mProcObjectType2              = new TClass*[procIterator->GetEntries()];
 
-  TGeneralMacroData* macro = 0;
-
-  TString* procCmds = 0;
-  AliEveListAnalyserMacroType* mProcType = 0;
-  if (procIterator->GetEntries() > 0) {
-    procCmds = new TString[procIterator->GetEntries()];
-    mProcType = new AliEveListAnalyserMacroType[procIterator->GetEntries()];
-  }
-  
-  TClass** mProcObjectType = 0;
-  TClass** mProcObjectType2 = 0;
-  if (procIterator->GetEntries() > 0) {
-    mProcObjectType = new TClass*[procIterator->GetEntries()];
-    mProcObjectType2 = new TClass*[procIterator->GetEntries()];
-  }
-
-  TString* selCmds  = 0;
-  AliEveListAnalyserMacroType* mSelType = 0;
-  if (selIterator->GetEntries() > 0) {
-    selCmds = new TString[selIterator->GetEntries()];
-    mSelType = new AliEveListAnalyserMacroType[selIterator->GetEntries()];
-  }
-
-  TClass** mSelObjectType = 0;
-  TClass** mSelObjectType2 = 0;
-  if (selIterator->GetEntries() > 0) {
-    mSelObjectType = new TClass*[selIterator->GetEntries()];
-    mSelObjectType2 = new TClass*[selIterator->GetEntries()];
-  }
+  TString* selCmds(NULL);
+  AliEveListAnalyserMacroType* mSelType(NULL);
+  TClass** mSelObjectType(NULL);
+  TClass** mSelObjectType2(NULL);
   
   Bool_t selectedByCorrSelMacro = kFALSE;
 
   AliEveListAnalyserMacroType macroType = kUnknown;
   Int_t numHistoMacros = 0;
-  TH1** histos = 0;
+  TH1** histos(NULL);
 
-  TEveElement* object1 = 0;
-  TEveElement* object2 = 0;
-  TH1* returnedHist = 0x0;
+  TEveElement* object1(NULL);
+  TEveElement* object2(NULL);
+  TH1* returnedHist(NULL);
 
   // Collect the commands for each process macro and add them to "data-from-list"
   for (Int_t i = 0; i < procIterator->GetEntries(); i++){
@@ -626,50 +606,57 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
   }  
 
   // Collect the commands for each selection macro and add them to "data-from-list"
-  for (Int_t i = 0; i < selIterator->GetEntries(); i++){
-    macro = (TGeneralMacroData*)fMacroList->GetValue(selIterator->At(i)->GetTitle());
+  if (selIterator->GetEntries() > 0) {
+    selCmds         = new TString[selIterator->GetEntries()];
+    mSelType        = new AliEveListAnalyserMacroType[selIterator->GetEntries()];
+    mSelObjectType  = new TClass*[selIterator->GetEntries()];
+    mSelObjectType2 = new TClass*[selIterator->GetEntries()];
+    for (Int_t i = 0; i < selIterator->GetEntries(); i++){
+      macro = (TGeneralMacroData*)fMacroList->GetValue(selIterator->At(i)->GetTitle());
 
-    if (!macro){
-      Error("Apply process macros", 
-        Form("Macro list is corrupted: Macro \"%s\" is not registered!", 
-        selIterator->At(i)->GetTitle()));
-      continue;
-    }
+      if (!macro){
+        Error("Apply process macros",
+          Form("Macro list is corrupted: Macro \"%s\" is not registered!",
+          selIterator->At(i)->GetTitle()));
+        continue;
+      }
 
 #ifdef AliEveListAnalyser_DEBUG
-    printf("AliEveListAnalyser: Checking selection macro: %s\n", macro->GetName());
+      printf("AliEveListAnalyser: Checking selection macro: %s\n", macro->GetName());
 #endif
 
-    // Find the object types of the macro
-    mSelObjectType[i] = macro->GetObjectType();
-    mSelObjectType2[i] = macro->GetObjectType2();
-       
-    // Find the type of the process macro
-    macroType = macro->GetType();
+      // Find the object types of the macro
+      mSelObjectType[i] = macro->GetObjectType();
+      mSelObjectType2[i] = macro->GetObjectType2();
 
-    // Single Object select macro
-    if (macroType == kSingleObjectSelect) {
-      // Has already been processed by ApplySOSelectionMacros(...)
-      mSelType[i] = macroType;         
+      // Find the type of the process macro
+      macroType = macro->GetType();
+
+      // Single Object select macro
+      if (macroType == kSingleObjectSelect) {
+        // Has already been processed by ApplySOSelectionMacros(...)
+        mSelType[i] = macroType;
+      }
+      // Correlated Objects select macro
+      else if (macroType == kCorrelObjectSelect) {
+        mSelType[i] = macroType;
+
+        // Create the command
+        selCmds[i] = macro->GetCmd();
+      } else {
+        Error("Apply process macros",
+          Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!",
+          macro->GetPath(), macro->GetName()));
+        mSelType[i] = kUnknown;
+      }
     }
-    // Correlated Objects select macro
-    else if (macroType == kCorrelObjectSelect) {
-      mSelType[i] = macroType;  
- 
-      // Create the command
-      selCmds[i] = macro->GetCmd();
-    } else {
-      Error("Apply process macros", 
-        Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!", 
-        macro->GetPath(), macro->GetName()));
-      mSelType[i] = kUnknown;
-    } 
-  }  
+  }
 
   // Allocate memory for the histograms
-  if (numHistoMacros > 0)  histos = new TH1*[numHistoMacros];
-  for (Int_t i = 0; i < numHistoMacros; i++)  histos[i] = 0x0;
-
+  if (numHistoMacros > 0){
+    histos = new TH1*[numHistoMacros];
+    memset(histos, 0, numHistoMacros*sizeof(TH1*));
+  }
   Bool_t secondBeforeFirstObject = kTRUE;
   
 
@@ -702,7 +689,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
       // Single object histo
       if (mProcType[i] == kSingleObjectHisto){
         returnedHist = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
-        if (returnedHist)
+        if (histos && returnedHist)
         {
           if (!histos[histoIndex])  histos[histoIndex] = returnedHist;
           else  
@@ -1091,22 +1078,22 @@ AliEveListAnalyser::AliEveListAnalyserMacroType AliEveListAnalyser::GetMacroType
   TString* mangledArg2Str = new TString();
 
   // We want "const 'OBJECTTYPE'*"
-  mangled1Str->Append("const ").Append(*typeStr).Append("*");
+  mangled1Str->Form("const %s*", typeStr->Data());
 
   // We want "const 'OBJECTTYPE'*, Double_t*&, Int_t&"
-  mangled2Str->Append("const ").Append(*typeStr).Append("*, Double_t*&, Int_t&");
+  mangled2Str->Form("const %s*, Double_t*&, Int_t&", typeStr->Data());
 
   // We want "const 'OBJECTTYPE'*, const 'OBJECTTYPE2'*"
-  mangled3Str->Append("const ").Append(*typeStr).Append("*, const ").Append(*typeStr2).Append("*");
+  mangled3Str->Form("const %s*, const %s*", typeStr->Data(), typeStr2->Data());
 
   // We want "const 'OBJECTTYPE'*, const 'OBJECTTYPE2'*, Double_t*&, Int_t&"
-  mangled4Str->Append("const ").Append(*typeStr).Append("*, const ").Append(*typeStr2).Append("*, Double_t*&, Int_t&");
+  mangled4Str->Form("const %s*, const %s*, Double_t*&, Int_t&", typeStr->Data(), typeStr2->Data());
 
   // We want "oPconstsP'OBJECTTYPE'mUsP"
-  mangledArg1Str->Append("oPconstsP").Append(*typeStr).Append("mUsP");
+  mangledArg1Str->Form("oPconstsP%smUsP", typeStr->Data());
 
   // We want "cOconstsP'OBJECTTYPE2'mUsP"
-  mangledArg2Str->Append("cOconstsP").Append(*typeStr2).Append("mUsP");  
+  mangledArg2Str->Form("cOconstsP%smUsP", typeStr2->Data());
   
   // Re-do the check of the macro type
   if (!UseList){

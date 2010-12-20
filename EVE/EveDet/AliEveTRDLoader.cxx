@@ -299,25 +299,25 @@ Bool_t AliEveTRDLoader::Open(const char *filename, const char *dir)
   }
 
   if(((TObjString*)(*so)[1])->GetString().CompareTo("Hits") == 0){
-    if(count && !fDataType&kTRDHits){ 
+    if(count && !(fDataType&kTRDHits)){ 
       AliWarning("Data type set to HITS according to file name. Previous settings will be overwritten.");
       fDataType = 0; 
     }
     fDataType|=kTRDHits;
   } else   if(((TObjString*)(*so)[1])->GetString().CompareTo("Digits") == 0){
-    if(count && !fDataType&kTRDDigits){ 
+    if(count && !(fDataType&kTRDDigits)){ 
       AliWarning("Data type set to DIGITS according to file name. Previous settings will be overwritten.");
       fDataType = 0; 
     }
     fDataType|=kTRDDigits;
   } else if(((TObjString*)(*so)[1])->GetString().CompareTo("RecPoints") == 0){
-    if(count && !fDataType&kTRDClusters){ 
+    if(count && !(fDataType&kTRDClusters)){ 
       AliWarning("Data type set to CLUSTERS according to file name. Previous settings will be overwritten.");
       fDataType = 0; 
     }
     fDataType|=kTRDClusters;  
   } else if(((TObjString*)(*so)[1])->GetString().CompareTo("Tracklets") == 0){
-    if(count && !fDataType&kTRDTracklets){ 
+    if(count && !(fDataType&kTRDTracklets)){ 
       AliWarning("Data type set to TRACKLETS according to file name. Previous settings will be overwritten.");
       fDataType = 0; 
     }
