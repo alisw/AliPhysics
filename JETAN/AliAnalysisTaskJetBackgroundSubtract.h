@@ -57,7 +57,7 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     virtual void   SetReplacementMask(char* c){fReplaceString2 = c;}  
     const char*   GetReplacementMask(){fReplaceString2.Data();}  
    
-    enum {kNoSubtract = 0,kArea,k4Area};
+    enum {kNoSubtract = 0,kArea,k4Area,kRhoRecalc1};
  
  private:
 

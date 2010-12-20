@@ -22,11 +22,13 @@
  
 #include <TROOT.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <THnSparse.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
 #include <TList.h>
 #include <TLorentzVector.h>
+#include <TRefArray.h>
 #include  "TDatabasePDG.h"
 
 #include "AliAnalysisTaskJetBackgroundSubtract.h"
@@ -165,6 +167,11 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
   if(!fHistList)fHistList = new TList();
   fHistList->SetOwner();
 
+  for(int ij = 0;ij <  fInJetArrayList->GetEntries();ij++){
+    TH2F *hTmp = new TH2F(Form("h2PtInPtOut_%d",ij),Form(";%s p_{T};%s p_{T}",fInJetArrayList->At(ij)->GetName(),fOutJetArrayList->At(ij)->GetName()),200,0,200.,200,0.,200.);
+    fHistList->Add(hTmp);
+  }
+
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -209,19 +216,32 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 
 
   static AliAODJetEventBackground*  evBkg = 0;
-  if(!evBkg&&fAODOut){
+  static TClonesArray*              bkgClusters = 0;
+  static TString bkgClusterName(fBackgroundBranch.Data());
+  if(!evBkg&&!bkgClusters&&fAODOut){
+    bkgClusterName.ReplaceAll("jeteventbackground_","");
     evBkg = (AliAODJetEventBackground*)(fAODOut->FindListObject(fBackgroundBranch.Data()));
+    bkgClusters = (TClonesArray*)(fAODOut->FindListObject(bkgClusterName.Data()));
   }
-  if(!evBkg&&fAODExtension){
+  if(!evBkg&&!bkgClusters&&fAODExtension){
     evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(fBackgroundBranch.Data()));
+    bkgClusters = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(bkgClusterName.Data()));
   }
-  if(!evBkg&&fAODIn){
+  if(!evBkg&&!bkgClusters&&fAODIn){
     evBkg = (AliAODJetEventBackground*)(fAODIn->FindListObject(fBackgroundBranch.Data()));
+    bkgClusters = (TClonesArray*)(fAODOut->FindListObject(bkgClusterName.Data()));
   }
 
   if(!evBkg){
     if(fDebug)Printf("%s:%d Backroundbranch %s not found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
     PostData(1,fHistList);
+    return;
+  }
+
+  if(!bkgClusters){
+    if(fDebug)Printf("%s:%d Backround cluster branch %s not found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
+    PostData(1,fHistList);
+    return;
   }
 
 
@@ -234,7 +254,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
     TClonesArray* jarray = (TClonesArray*)fInJetArrayList->At(iJB);
     TClonesArray* jarrayOut = (TClonesArray*)fOutJetArrayList->At(iJB);
     if(!jarray||!jarrayOut)continue;
-    
+    TH2F* h2PtInOut = (TH2F*)fHistList->FindObject(Form("h2PtInPtOut_%d",iJB));
     // loop over all jets
     Int_t nOut = 0;
     for(int i = 0;i < jarray->GetEntriesFast();i++){
@@ -242,22 +262,35 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
       AliAODJet tmpNewJet(*jet);
       Bool_t bAdd = false;
       if(fSubtraction==kArea){	
-	Float_t ptSub = jet->Pt() -  rho * jet->EffectiveAreaCharged();
+	Double_t background = rho * jet->EffectiveAreaCharged();
+	Float_t ptSub = jet->Pt() - background;	
 	if(fDebug>2){
 	  Printf("%s:%d Jet %d %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub);
 	}
 	if(ptSub<0){
 	  // optionally rescale it and keep??
 	  bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
+	// add background estimates to the new jet object
+	// allows to recover old p_T and rho...
+	tmpNewJet.SetBgEnergy(background,0);
       }// kAREA
+      else if(fSubtraction==kRhoRecalc1){
+	// Put a function call to calculate rho here
+	// * exclude edges
+	// * exclude clusters with small area
+	// * exclude areas around leading jets
+      }
 
       if(bAdd){
-        new ((*jarrayOut)[nOut++]) AliAODJet(tmpNewJet);
-	// optionally add background estimates to the jet object? CKB
+        AliAODJet *newJet = new ((*jarrayOut)[nOut++]) AliAODJet(tmpNewJet);
+	// what about track references, clear for now...
+	newJet->GetRefTracks()->Clear();
       }
 
    }
