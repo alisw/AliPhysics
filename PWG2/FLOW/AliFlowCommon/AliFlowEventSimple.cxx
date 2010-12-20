@@ -672,8 +672,9 @@ void AliFlowEventSimple::AddV2( TF1* ptDepV2 )
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (!track) continue;
     Double_t v2 = ptDepV2->Eval(track->Pt());
-    if (track) track->AddV2(v2, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    track->AddV2(v2, fMCReactionPlaneAngle, fAfterBurnerPrecision);
   }
   SetUserModified();
 }

@@ -602,10 +602,10 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
   //FOR MAKING SURE THEY DONT OVERLAP OR ELSE THE SAME PARTICLE WILL BE
   //TAKEN TWICE
 
+  if (!rpCuts || !poiCuts) return;
   AliFlowTrackCuts::trackParameterType sourceRP = rpCuts->GetParamType();
   AliFlowTrackCuts::trackParameterType sourcePOI = poiCuts->GetParamType();
 
-  if (!rpCuts || !poiCuts) return;
   if (sourceRP==sourcePOI)
   {
     //loop over tracks

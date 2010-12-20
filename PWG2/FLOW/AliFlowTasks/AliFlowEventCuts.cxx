@@ -333,37 +333,35 @@ Int_t AliFlowEventCuts::RefMult(AliVEvent* event)
   //calculate the reference multiplicity, if all fails return 0
   AliESDVZERO* vzero = NULL;
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
-  const AliMultiplicity* mult = esdevent->GetMultiplicity();
-  Int_t refmult=0;
 
-  switch (fRefMultMethod)
+  if (fRefMultMethod==kTPConly && !fRefMultCuts)
   {
-    case kTPConly:
-      if (fRefMultCuts) break;
-      fRefMultCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
-      fRefMultCuts->SetEtaRange(-0.8,0.8);
-      fRefMultCuts->SetPtMin(0.15);
-      break;
-    case kSPDtracklets:
-      if (fRefMultCuts) break;
-      fRefMultCuts = new AliFlowTrackCuts("tracklet refmult cuts");
-      fRefMultCuts->SetParamType(AliFlowTrackCuts::kESD_SPDtracklet);
-      fRefMultCuts->SetEtaRange(-0.8,0.8);
-      break;
-    case kV0:
-      if (!esdevent) return 0;
-      vzero=esdevent->GetVZEROData();
-      if (!vzero) return 0;
-      refmult = TMath::Nint(vzero->GetMTotV0A()+vzero->GetMTotV0C());
-      return refmult;
-    case kSPD1clusters:
-      if (!mult) return 0;
-      refmult = mult->GetNumberOfITSClusters(1);
-      return refmult;
-    default:
-      return 0;
+    fRefMultCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
+    fRefMultCuts->SetEtaRange(-0.8,0.8);
+    fRefMultCuts->SetPtMin(0.15);
+  }
+  else if (fRefMultMethod==kSPDtracklets && !fRefMultCuts)
+  {
+    fRefMultCuts = new AliFlowTrackCuts("tracklet refmult cuts");
+    fRefMultCuts->SetParamType(AliFlowTrackCuts::kESD_SPDtracklet);
+    fRefMultCuts->SetEtaRange(-0.8,0.8);
+  }
+  else if (fRefMultMethod==kV0)
+  {
+    if (!esdevent) return 0;
+    vzero=esdevent->GetVZEROData();
+    if (!vzero) return 0;
+    return TMath::Nint(vzero->GetMTotV0A()+vzero->GetMTotV0C());
+  }
+  else if (fRefMultMethod==kSPD1clusters)
+  {
+    if (!esdevent) return 0;
+    const AliMultiplicity* mult = esdevent->GetMultiplicity();
+    if (!mult) return 0;
+    return mult->GetNumberOfITSClusters(1);
   }
 
+  Int_t refmult=0;
   fRefMultCuts->SetEvent(event);
   for (Int_t i=0; i<fRefMultCuts->GetNumberOfInputObjects(); i++)
   {
