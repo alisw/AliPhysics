@@ -205,13 +205,13 @@ Bool_t AliTRDonlineTrackletFilter::LoadEvent()
 
   // tracklets from simulation
   char treename[30];
-  sprintf(treename, "Event%d/tracklets", fEvent);
+  snprintf(treename, 30, "Event%d/tracklets", fEvent);
 
   fTrackletTreeSim = (TTree*) fTrackletFile->Get(treename);
 
   // tracklets from raw
   char treenameRaw[30];
-  sprintf(treenameRaw, "Event%d/tracklets-raw", fEvent);
+  snprintf(treenameRaw, 30, "Event%d/tracklets-raw", fEvent);
   fTrackletTreeRaw = (TTree*) fTrackletFile->Get(treenameRaw);
 
   return kTRUE;
