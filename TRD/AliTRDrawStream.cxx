@@ -58,7 +58,7 @@ const Int_t  AliTRDrawStream::fgkNstacks = 5;
 const UInt_t AliTRDrawStream::fgkDataEndmarker     = 0x00000000;
 const UInt_t AliTRDrawStream::fgkTrackletEndmarker = 0x10001000;
 
-const char* AliTRDrawStream::fgErrorMessages[] = {
+const char* AliTRDrawStream::fgkErrorMessages[] = {
   "Unknown error",
   "Link monitor active",
   "Pretrigger counter mismatch",
@@ -79,7 +79,7 @@ const char* AliTRDrawStream::fgErrorMessages[] = {
   "Missing MCM headers"
 };
 
-const Int_t AliTRDrawStream::fgErrorDebugLevel[] = {
+Int_t AliTRDrawStream::fgErrorDebugLevel[] = {
   0,
   0,
   2, 
@@ -1185,6 +1185,8 @@ Int_t AliTRDrawStream::ReadNonZSData()
 
 Int_t AliTRDrawStream::SeekNextLink()
 {
+  // proceed in raw data stream till the next link
+
   UInt_t *start = fPayloadCurr;
 
   // read until data endmarkers
@@ -1202,6 +1204,8 @@ Int_t AliTRDrawStream::SeekNextLink()
 
 Bool_t AliTRDrawStream::ConnectTracklets(TTree *trklTree) 
 {
+  // connect the tracklet tree used to store the tracklet output
+
   fTrackletTree = trklTree;
   if (!fTrackletTree) 
     return kTRUE;
@@ -1237,11 +1241,11 @@ void AliTRDrawStream::EquipmentError(ErrorCode_t err, const char *const msg, ...
   if (fgErrorDebugLevel[err] > 10) 
     AliDebug(fgErrorDebugLevel[err],
 	     Form("Event %6i: Eq. %2d - %s : %s", 
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgErrorMessages[err],
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d - %s : %s", 
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgErrorMessages[err],
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
 }										
@@ -1264,11 +1268,11 @@ void AliTRDrawStream::StackError(ErrorCode_t err, const char *const msg, ...)
   if (fgErrorDebugLevel[err] > 0) 
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i - %s : %s", 
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgErrorMessages[err],
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d S %i - %s : %s", 
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgErrorMessages[err],
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
 } 
@@ -1291,11 +1295,11 @@ void AliTRDrawStream::LinkError(ErrorCode_t err, const char *const msg, ...)
   if (fgErrorDebugLevel[err] > 0)
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i l %2i - %s : %s", 
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgErrorMessages[err],
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d S %i l %2i - %s : %s", 
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgErrorMessages[err],
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
 } 
@@ -1318,11 +1322,11 @@ void AliTRDrawStream::ROBError(ErrorCode_t err, const char *const msg, ...)
   if (fgErrorDebugLevel[err] > 0) 
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i l %2i ROB %i - %s : %s", 
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgErrorMessages[err],
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d S %i l %2i ROB %i - %s : %s", 
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgErrorMessages[err], 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgkErrorMessages[err], 
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
 } 
@@ -1345,11 +1349,11 @@ void AliTRDrawStream::MCMError(ErrorCode_t err, const char *const msg, ...)
   if (fgErrorDebugLevel[err] > 0) 
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i l %2i ROB %i MCM %2i - %s : %s",
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgErrorMessages[err], 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgkErrorMessages[err], 
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d S %i l %2i ROB %i MCM %2i - %s : %s",
-		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgErrorMessages[err], 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgkErrorMessages[err], 
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
 }
@@ -1359,7 +1363,7 @@ const char* AliTRDrawStream::GetErrorMessage(ErrorCode_t errCode)
   // return the error message for the given error code
 
   if (errCode > 0 && errCode < kLastErrorCode) 
-    return fgErrorMessages[errCode];
+    return fgkErrorMessages[errCode];
   else 
     return ""; 
 } 
@@ -1422,7 +1426,7 @@ void AliTRDrawStream::SetDumpMCM(Int_t det, Int_t rob, Int_t mcm, Bool_t dump)
   }
 }
 
-Bool_t AliTRDrawStream::DumpingMCM(Int_t det, Int_t rob, Int_t mcm) 
+Bool_t AliTRDrawStream::DumpingMCM(Int_t det, Int_t rob, Int_t mcm)  const
 {
   // check if MCM data should be dumped
 

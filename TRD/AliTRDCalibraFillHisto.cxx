@@ -1871,8 +1871,6 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliRawReader *rawReader)
   //
 
   AliTRDrawStream *rawStream = new AliTRDrawStream(rawReader);
-  rawStream->SetNoErrorWarning();
-  rawStream->SetSharedPadReadout(kFALSE);
 
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager(kTRUE);
   digitsManager->CreateArrays();

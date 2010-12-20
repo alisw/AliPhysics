@@ -733,7 +733,6 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   rawReader->Select("TRD");
 
   AliTRDrawStream *data = new AliTRDrawStream(rawReader);
-  data->SetSharedPadReadout(kFALSE);
 
   // build data manager  
   AliTRDdigitsManager *digitsManager;

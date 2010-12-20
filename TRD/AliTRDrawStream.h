@@ -65,11 +65,6 @@ class AliTRDrawStream : public TObject
   void EnableErrorStorage()  { fStoreError = &AliTRDrawStream::StoreErrorTree; }
   void DisableErrorStorage() { fStoreError = &AliTRDrawStream::ForgetError; }
 
-  // legacy code, to be removed
-  Bool_t SetRawVersion(Int_t) { return kTRUE; }
-  void SetSharedPadReadout(Bool_t) {}
-  void SetNoErrorWarning() {}
-
   // error handling
   enum ErrorCode_t { 
     kUnknown = 0, 
@@ -148,16 +143,16 @@ class AliTRDrawStream : public TObject
   AliTRDrawStats fStats; 	     // event statistics, clearing must be done by the user
 
   AliTRDrawStats* GetStats() { return &fStats; }
-  Int_t GetEventSize(Int_t sector) { return fStats.fStatsSector[sector].fBytes; }
-  Int_t GetNTracklets(Int_t sector) { return fStats.fStatsSector[sector].fNTracklets; }
-  Int_t GetNMCMs(Int_t sector) { return fStats.fStatsSector[sector].fNMCMs; }
-  Int_t GetNChannels(Int_t sector) { return fStats.fStatsSector[sector].fNChannels; }
+  Int_t GetEventSize(Int_t sector)  const { return fStats.fStatsSector[sector].fBytes; }
+  Int_t GetNTracklets(Int_t sector) const { return fStats.fStatsSector[sector].fNTracklets; }
+  Int_t GetNMCMs(Int_t sector)      const { return fStats.fStatsSector[sector].fNMCMs; }
+  Int_t GetNChannels(Int_t sector)  const { return fStats.fStatsSector[sector].fNChannels; }
 
   // raw data dumping
   void SetDumpMCM(Int_t det, Int_t rob, Int_t mcm, Bool_t dump = kTRUE);
 
-  Bool_t IsDumping() { return (fNDumpMCMs > 0); }
-  Bool_t DumpingMCM(Int_t det, Int_t rob, Int_t mcm);
+  Bool_t IsDumping() const { return (fNDumpMCMs > 0); }
+  Bool_t DumpingMCM(Int_t det, Int_t rob, Int_t mcm) const;
 
   void DumpRaw(TString title, UInt_t *start, Int_t length); 
 
@@ -204,8 +199,8 @@ class AliTRDrawStream : public TObject
   void ForgetError() { return; }
   void (AliTRDrawStream::*fStoreError)();       //! function pointer to method used for storing the error
 
-  static const char* fgErrorMessages[kLastErrorCode];     // error messages corresponding to the error codes
-  static const Int_t fgErrorDebugLevel[kLastErrorCode];   // error debug level
+  static const char* fgkErrorMessages[kLastErrorCode];     // error messages corresponding to the error codes
+  static       Int_t fgErrorDebugLevel[kLastErrorCode];   // error debug level
   static       ErrorBehav_t fgErrorBehav[kLastErrorCode]; // bevhaviour in case of error of given type
 
   // I/O

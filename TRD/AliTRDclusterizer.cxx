@@ -641,12 +641,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     fRawStream->SetReader(rawReader);
 
   if(fReconstructor->IsHLT()){
-    if(fRawStream->InheritsFrom(AliTRDrawStream::Class()))
-      ((AliTRDrawStream*)fRawStream)->DisableErrorStorage();
-    else{
-      fRawStream->SetSharedPadReadout(kFALSE);
-      fRawStream->SetNoErrorWarning();
-    }
+    ((AliTRDrawStream*)fRawStream)->DisableErrorStorage();
   }
 
   AliDebug(1,Form("Stream version: %s", fRawStream->IsA()->GetName()));
