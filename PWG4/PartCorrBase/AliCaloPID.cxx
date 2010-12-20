@@ -186,17 +186,17 @@ void AliCaloPID::InitParameters()
 {
   //Initialize the parameters of the PID.
   
-  fEMCALPhotonWeight   = 0.5 ;
-  fEMCALPi0Weight      = 0.5 ;
-  fEMCALElectronWeight = 0.5 ;
-  fEMCALChargeWeight   = 0.5 ;
-  fEMCALNeutralWeight  = 0.5 ;
+  fEMCALPhotonWeight   = 0.6 ;
+  fEMCALPi0Weight      = 0.6 ;
+  fEMCALElectronWeight = 0.6 ;
+  fEMCALChargeWeight   = 0.6 ;
+  fEMCALNeutralWeight  = 0.6 ;
   
-  fPHOSPhotonWeight    = 0.5 ;
-  fPHOSPi0Weight       = 0.5 ;
-  fPHOSElectronWeight  = 0.5 ;
-  fPHOSChargeWeight    = 0.5 ;
-  fPHOSNeutralWeight   = 0.5 ;
+  fPHOSPhotonWeight    = 0.6 ;
+  fPHOSPi0Weight       = 0.6 ;
+  fPHOSElectronWeight  = 0.6 ;
+  fPHOSChargeWeight    = 0.6 ;
+  fPHOSNeutralWeight   = 0.6 ;
   
   //Formula to set the PID weight threshold for photon or pi0
   //fPHOSWeightFormula = kTRUE;
@@ -281,15 +281,14 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
       pdg = kNeutralUnknown ;
   }
   else{//EMCAL
-
-    if(pid[AliVCluster::kPhoton]+pid[AliVCluster::kElectron]  > wPh) pdg = kPhoton ; //temporal sollution until track matching for electrons is considered
-    //if(pid[AliVCluster::kPhoton]  > wPh) pdg = kPhoton ;
-    else if(pid[AliVCluster::kPi0] > wPi0) pdg = kPi0 ; 
-    //else if(pid[AliVCluster::kElectron]  > wE) pdg = kElectron ;
+    
+    if(pid[AliVCluster::kPhoton]  > wPh)                     pdg = kPhoton ;
+    else if(pid[AliVCluster::kElectron]  > wE)               pdg = kElectron ;
+    else if(pid[AliVCluster::kPhoton]+pid[AliVCluster::kElectron]  > wPh) pdg = kPhoton ; //temporal sollution until track matching for electrons is considered
+    else if(pid[AliVCluster::kPi0] > wPi0)                   pdg = kPi0 ; 
     else if(chargedHadronWeight + neutralHadronWeight > wCh) pdg = kChargedHadron ;  
     else if(neutralHadronWeight + chargedHadronWeight > wNe) pdg = kNeutralHadron ; 
-    else pdg =  kNeutralUnknown ;
-    
+    else                                                     pdg = kNeutralUnknown ;
   }
   
   if(fDebug > 0)printf("AliCaloPID::GetPdg:Final Pdg: %d, cluster energy %2.2f \n", pdg,energy);

@@ -19,6 +19,8 @@
 // or other particle identification and correlations
 // Separates generated particles into charged (CTS) 
 // and neutral (PHOS or EMCAL acceptance)
+// Now, it only works with data stored in Kinematics.root and 
+// not in filtered Kinematics branch in AODs
 //
 //*-- Author: Gustavo Conesa (LNF-INFN) 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,7 +52,8 @@ AliCaloTrackMCReader::AliCaloTrackMCReader() :
   AliCaloTrackReader(), fDecayPi0(0), 
   fNeutralParticlesArray(0x0), fChargedParticlesArray(0x0), 
   fStatusArray(0x0), fKeepAllStatus(0), fCheckOverlap(0),  
-  fEMCALOverlapAngle(0),fPHOSOverlapAngle(0), fIndex2ndPhoton(0)
+  fEMCALOverlapAngle(0),fPHOSOverlapAngle(0), fIndex2ndPhoton(0),
+  fOnlyGeneratorParticles(kTRUE)
 {
   //Ctor
   
@@ -63,7 +66,7 @@ AliCaloTrackMCReader::~AliCaloTrackMCReader() {
 
   if(fChargedParticlesArray) delete fChargedParticlesArray ;
   if(fNeutralParticlesArray) delete fNeutralParticlesArray ;
-  if(fStatusArray) delete fStatusArray ;
+  if(fStatusArray)           delete fStatusArray ;
 
 }
 
@@ -95,22 +98,23 @@ void AliCaloTrackMCReader::InitParameters()
   fNeutralParticlesArray->SetAt(12,0); fNeutralParticlesArray->SetAt(14,1); fNeutralParticlesArray->SetAt(16,2); 
   fStatusArray = new TArrayI(1);
   fStatusArray->SetAt(1,0); 
- 
-  fKeepAllStatus = kTRUE;
-
-  fCheckOverlap = kFALSE;
-  fEMCALOverlapAngle = 2.5 * TMath::DegToRad();
-  fPHOSOverlapAngle = 0.5 * TMath::DegToRad();
-  fIndex2ndPhoton = -1;
   
-  fDataType = kMC;  
+  fOnlyGeneratorParticles = kTRUE;
+  fKeepAllStatus          = kTRUE;
+
+  fCheckOverlap       = kFALSE;
+  fEMCALOverlapAngle  = 2.5 * TMath::DegToRad();
+  fPHOSOverlapAngle   = 0.5 * TMath::DegToRad();
+  fIndex2ndPhoton     = -1;
+  
+  fDataType           = kMC;  
   fReadStack          = kTRUE;
-  fReadAODMCParticles = kFALSE;
+  fReadAODMCParticles = kFALSE; //This class only works with Kinematics.root input.
   
   //For this reader we own the objects of the arrays
-  fAODCTS->SetOwner(kTRUE); 
+  fAODCTS  ->SetOwner(kTRUE); 
   fAODEMCAL->SetOwner(kTRUE); 
-  fAODPHOS->SetOwner(kTRUE); 
+  fAODPHOS ->SetOwner(kTRUE); 
   
 }
 
@@ -211,9 +215,9 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
 Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * currentFileName){
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
-  fEventNumber = iEntry;
+  fEventNumber     = iEntry;
   fCurrentFileName = TString(currentFileName);
-  fTrackMult = 0;
+  fTrackMult       = 0;
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
   if(fComparePtHardAndJetPt && GetStack()) {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
@@ -222,10 +226,11 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
   //Fill Vertex array
   FillVertexArray();
   
-  Int_t iParticle = 0 ;
-  Double_t charge = 0.;
-	
-  for (iParticle = 0 ; iParticle <  GetStack()->GetNtrack() ; iParticle++) {
+  Int_t iParticle  = 0 ;
+  Double_t charge  = 0.;
+  Int_t nparticles = GetStack()->GetNtrack() ;
+  if(fOnlyGeneratorParticles) nparticles=GetStack()->GetNprimary();
+  for (iParticle = 0 ; iParticle <  nparticles ; iParticle++) {
     TParticle * particle = GetStack()->Particle(iParticle);
     TLorentzVector momentum;
     Float_t p[3];
