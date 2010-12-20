@@ -1,4 +1,5 @@
 
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -288,7 +289,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 
       low[i0] = Int_t (GetRecoParam()->GetLow(i0));	
       high[i0] = Int_t (GetRecoParam()->GetHigh(i0));
-     }
+      }
    
   Double32_t besttimeA=9999999;
   Double32_t besttimeC=9999999;
@@ -339,7 +340,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		   allData[in+1][iHit] < high[in+1])
 		  {
 		    timeCFD[in] = allData[in+1][iHit] ; 
-		    cout<<" low "<<low[in+1]<<" high "<<high[in+1]<<endl;
 		    break;
 		  }
 	      }
@@ -358,7 +358,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		   allData[in+1+56][iHit] < high[in+1+56])
 		  {
 		    timeCFD[in+12] = allData[in+56+1][iHit] ;
-		    cout<<" low "<<low[in+1+56]<<" high "<<high[in+1+56]<<endl;
 		    break;
 		  }
 	      }
@@ -463,6 +462,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	 frecpoints->SetTimeBestC(besttimeC * channelWidth - 1000.*fLatencyHPTDC +1000.*fLatencyL1C - 1000.*fGRPdelays - fTimeMeanShift[2]);
        AliDebug(5,Form(" pmtA %i besttimeA %f shift A %f ps, pmtC %i besttimeC %f shiftC %f ps",
 		       pmtBestA,besttimeA, fTimeMeanShift[1],
+
 		       pmtBestC,  besttimeC,fTimeMeanShift[2]));
         if(besttimeA <999999 && besttimeC < 999999 ){
 	 timeDiff = ( besttimeA - besttimeC)* 0.001* channelWidth + fLatencyL1A - fLatencyL1C;
@@ -580,6 +580,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Double32_t multC=frecpoints ->GetMultC();
   //  pESD->SetT0MultC(multC);        // multiplicity Cside 
   //  pESD->SetT0MultA(multA);        // multiplicity Aside 
+  pESD->SetT0(multA); // for backward compatubility
+  pESD->SetT0clock(multC); // for backward compatubility
 
   for(Int_t i=0; i<3; i++) 
     pESD->SetT0TOF(i,timeClock[i]);   // interaction time (ns) 
