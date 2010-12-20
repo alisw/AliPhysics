@@ -110,13 +110,10 @@ Double_t AliTPCQAChecker::CheckRAW(Int_t specie, TObjArray* list)
   if(fDebug>2)
     list->Print();
 
-  Char_t specieName[256];
-  sprintf(specieName, AliRecoParam::GetEventSpecieName(specie));
-
   TH1* hRawsOccupancyVsSector = static_cast<TH1*>
-    (list->FindObject(Form("%s_hRawsOccupancyVsSector",specieName)));
+    (list->FindObject(Form("%s_hRawsOccupancyVsSector",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hRawsQmaxVsSector = static_cast<TH1*>
-    (list->FindObject(Form("%s_hRawsQmaxVsSector",specieName)));
+    (list->FindObject(Form("%s_hRawsQmaxVsSector",AliRecoParam::GetEventSpecieName(specie))));
   
   if (!hRawsOccupancyVsSector || !hRawsQmaxVsSector)
     return -0.5; // fatal
@@ -161,21 +158,18 @@ Double_t AliTPCQAChecker::CheckSIM(Int_t specie, TObjArray* list)
   if(fDebug>2)
     list->Print();
 
-  Char_t specieName[256];
-  sprintf(specieName, AliRecoParam::GetEventSpecieName(specie));
-
   TH1* hDigits = static_cast<TH1*>
-    (list->FindObject(Form("%s_hDigitsADC",specieName)));
+    (list->FindObject(Form("%s_hDigitsADC",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hHitsNhits = static_cast<TH1*> 
-    (list->FindObject(Form("%s_hHitsNhits",specieName)));
+    (list->FindObject(Form("%s_hHitsNhits",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hHitsElectrons         = static_cast<TH1*> 
-    (list->FindObject(Form("%s_hHitsElectrons",specieName)));
+    (list->FindObject(Form("%s_hHitsElectrons",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hHitsRadius        = static_cast<TH1*> 
-    (list->FindObject(Form("%s_hHitsRadius",specieName)));
+    (list->FindObject(Form("%s_hHitsRadius",AliRecoParam::GetEventSpecieName(specie))));
   TH1* histHitsPrimPerCm          = static_cast<TH1*> 
-    (list->FindObject(Form("%s_histHitsPrimPerCm",specieName)));
+    (list->FindObject(Form("%s_histHitsPrimPerCm",AliRecoParam::GetEventSpecieName(specie))));
   TH1* histHitsElectronsPerCm          = static_cast<TH1*> 
-    (list->FindObject(Form("%s_histHitsElectronsPerCm",specieName)));
+    (list->FindObject(Form("%s_histHitsElectronsPerCm",AliRecoParam::GetEventSpecieName(specie))));
   
 //   if (!(hDigits) ||                                             // digit hists
 //       !(hHitsNhits && hHitsElectrons && hHitsRadius && histHitsPrimPerCm && histHitsElectronsPerCm)) // hit hists
@@ -224,19 +218,16 @@ Double_t AliTPCQAChecker::CheckREC(Int_t specie, TObjArray* list)
   if(fDebug>2)
     list->Print();
 
-  Char_t specieName[256];
-  sprintf(specieName, AliRecoParam::GetEventSpecieName(specie));
-
   TH1* hDigits = static_cast<TH1*>
-    (list->FindObject(Form("%s_hDigitsADC",specieName)));
+    (list->FindObject(Form("%s_hDigitsADC",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hNclustersVsRow = static_cast<TH1*> 
-    (list->FindObject(Form("%s_hRecPointsRow",specieName)));
+    (list->FindObject(Form("%s_hRecPointsRow",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hQshort         = static_cast<TH1*> 
-    (list->FindObject(Form("%s_hRecPointsQShort",specieName)));
+    (list->FindObject(Form("%s_hRecPointsQShort",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hQmedium        = static_cast<TH1*> 
-    (list->FindObject(Form("%s_hRecPointsQMedium",specieName)));
+    (list->FindObject(Form("%s_hRecPointsQMedium",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hQlong          = static_cast<TH1*> 
-    (list->FindObject(Form("%s_hRecPointsQLong",specieName)));
+    (list->FindObject(Form("%s_hRecPointsQLong",AliRecoParam::GetEventSpecieName(specie))));
   // The Qmax histograms are for now ignored
 
   if (!hDigits &&                                             // digits missing
@@ -275,15 +266,12 @@ Double_t AliTPCQAChecker::CheckESD(Int_t specie, TObjArray* list)
   if(fDebug>2)
     list->Print();
 
-  Char_t specieName[256];
-  sprintf(specieName, AliRecoParam::GetEventSpecieName(specie));
-
   TH1* hESDclusters = static_cast<TH1*>
-    (list->FindObject(Form("%s_hESDclusters",specieName)));
+    (list->FindObject(Form("%s_hESDclusters",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hESDratio = static_cast<TH1*>
-    (list->FindObject(Form("%s_hESDratio",specieName)));
+    (list->FindObject(Form("%s_hESDratio",AliRecoParam::GetEventSpecieName(specie))));
   TH1* hESDpt = static_cast<TH1*>
-    (list->FindObject(Form("%s_hESDpt",specieName)));
+    (list->FindObject(Form("%s_hESDpt",AliRecoParam::GetEventSpecieName(specie))));
   
   if (!hESDclusters || !hESDratio || !hESDpt) 
     return -0.5; // fatal
