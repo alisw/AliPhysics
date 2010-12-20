@@ -351,7 +351,7 @@ void AliITStrackerMI::ReadBadFromDetTypeRec() {
 	if(det.IsBad()) {nBadDetsPerLayer++;}
       } // end loop on detectors
     } // end loop on ladders
-    Info("ReadBadFromDetTypeRec",Form("Layer %d: %d bad out of %d",i-1,nBadDetsPerLayer,ndet*AliITSgeomTGeo::GetNLadders(i)));
+    AliInfo(Form("Layer %d: %d bad out of %d",i-1,nBadDetsPerLayer,ndet*AliITSgeomTGeo::GetNLadders(i)));
   } // end loop on layers
   
   return;
@@ -4455,7 +4455,7 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
 
   // check if the road overlaps with bad chips
   Float_t xloc,zloc;
-  LocalModuleCoord(ilayer,idet,track,xloc,zloc);
+  if(!(LocalModuleCoord(ilayer,idet,track,xloc,zloc)))return 0;
   Float_t zlocmin = zloc-dz;
   Float_t zlocmax = zloc+dz;
   Float_t xlocmin = xloc-dy;

@@ -50,10 +50,10 @@ void AliITSAlignMille2ConstrArray::AddModule(AliITSAlignMille2Module* mod, Bool_
     if (mod->GeomParamsGlobal()) {
       // the constraint is defined in the module's local frame. If the alignment of geom params is
       // done in the global frame, we need to set the real parameter involved
-      patt &= (Short_t) 0xffff & (0xffff<< AliITSAlignMille2Module::kMaxParGeom);     // reset the geometry parameters
+      for (int i=AliITSAlignMille2Module::kMaxParGeom;i--;) patt &= ~BIT(i);  // reset the geometry parameters
       for (int i=0;i<AliITSAlignMille2Module::kMaxParGeom;i++) {
 	if (!IncludesParam(i)) continue;
-	for (int j=0;j<AliITSAlignMille2Module::kMaxParGeom;j++) if (jacobian[i][j]!=0) patt |= (0x1<<j);
+	for (int j=0;j<AliITSAlignMille2Module::kMaxParGeom;j++) if (jacobian[i][j]!=0) patt |= BIT(j);
       }
     }
     fModulePatt[nmd] = patt;

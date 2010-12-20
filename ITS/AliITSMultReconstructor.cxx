@@ -737,7 +737,7 @@ void AliITSMultReconstructor::LoadClusterFiredChips(TTree* itsClusterTree) {
       // find the chip for the current cluster
       Float_t locz = cluster->GetDetLocalZ();
       Int_t iChip = fSPDSeg.GetChipFromLocal(0,locz);
-      nClustersInChip[iChip]++; 
+      if (iChip>=0) nClustersInChip[iChip]++; 
       
     }// end of cluster loop
 
