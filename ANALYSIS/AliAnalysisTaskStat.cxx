@@ -113,11 +113,11 @@ void  AliAnalysisTaskStat::Terminate(Option_t *)
     Error("Terminate", "Statistics object not found in list");
     return;
   }
-  if (fStatistics) {
+  if (stat != fStatistics) {
     fStatistics->AddInput(stat->GetNinput());
     fStatistics->AddProcessed(stat->GetNprocessed());
     fStatistics->AddFailed(stat->GetNfailed());
     fStatistics->AddAccepted(stat->GetNaccepted());
-    fStatistics->Print();
   }
+  fStatistics->Print();
 }  

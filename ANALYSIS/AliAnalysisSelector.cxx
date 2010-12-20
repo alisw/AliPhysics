@@ -146,7 +146,7 @@ Bool_t AliAnalysisSelector::Process(Long64_t entry)
       fAnalysis->CountEvent(1,0,1,0);
    } else {
       fAnalysis->ExecAnalysis();
-      fAnalysis->CountEvent(1,1,0,0);
+      if (returnCode<100000000) fAnalysis->CountEvent(1,1,0,0);
    }   
    TProcessID::SetObjectCount(nobjCount);
    if (fAnalysis->GetDebugLevel() > 1) {

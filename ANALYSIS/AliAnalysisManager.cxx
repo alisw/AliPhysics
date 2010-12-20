@@ -2238,6 +2238,7 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
 void AliAnalysisManager::DoLoadBranch(const char *name) 
 {
   // Get tree and load branch if needed.
+  static Long64_t crtEntry = -100;
 
   if (fAutoBranchHandling || !fTree)
     return;
@@ -2251,10 +2252,19 @@ void AliAnalysisManager::DoLoadBranch(const char *name)
     }
     fTable.Add(br);
   }
-  if (br->GetReadEntry()==GetCurrentEntry()) return;
+  if (br->GetReadEntry()==fCurrentEntry) return;
   Int_t ret = br->GetEntry(GetCurrentEntry());
   if (ret<0) {
     Error("DoLoadBranch", "Could not load entry %lld from branch %s",GetCurrentEntry(), name);
+    if (crtEntry != fCurrentEntry) {
+      CountEvent(1,0,1,0);
+      crtEntry = fCurrentEntry;
+    }  
+  } else {
+    if (crtEntry != fCurrentEntry) {
+      CountEvent(1,1,0,0);
+      crtEntry = fCurrentEntry;
+    }
   }
 }
 
