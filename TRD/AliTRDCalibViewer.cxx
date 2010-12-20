@@ -204,9 +204,9 @@ const char* AliTRDCalibViewer::AddAbbreviations(char* c, Bool_t printDrawCommand
    for (Int_t i = 0; i < nNorm; i++) {
       normLengths[i] = ((TObjString*)listOfNormalizationVariables->At(i))->String().Length();
    }
-   Int_t *varSort = new Int_t[nVariables];
+   Int_t *varSort = new Int_t[nVariables+1];
    TMath::Sort(nVariables, varLengths, varSort, kTRUE);
-   Int_t *normSort = new Int_t[nNorm];
+   Int_t *normSort = new Int_t[nNorm+1];
    TMath::Sort(nNorm, normLengths, normSort, kTRUE);
       
    for (Int_t ivar = 0; ivar < nVariables; ivar++) {
@@ -360,7 +360,25 @@ void AliTRDCalibViewer::GetLayerSectorStack(TString trdString, Int_t& layerNo, I
   // encoded with the following format:
   // Layer%dSector%dStack%d
 
-  sscanf(trdString.Data(), "Layer%1dSector%02dStack%1d", &layerNo, &sectorNo, &stackNo);
+  //sscanf(trdString.Data(), "Layer%1dSector%02dStack%1d", &layerNo, &sectorNo, &stackNo);
+
+  // Coverity compliant solution (bit more cumbersome, but works) CBL
+  TString cName = trdString.Data();
+  Char_t  cLayer[2];
+  Char_t  cSector[3];
+  Char_t  cStack[2];
+
+  cLayer[0]  = cName[5];
+  cLayer[1]  = 0;
+  cSector[0] = cName[12];
+  cSector[1] = cName[13];
+  cSector[2] = 0;
+  cStack[0]  = cName[19];
+  cStack[1]  = 0;
+
+  layerNo    = atoi(cLayer);
+  sectorNo   = atoi(cSector);
+  stackNo    = atoi(cStack);
 
   return;
 }
