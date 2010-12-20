@@ -64,11 +64,11 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
   fMeanXYColl(0),
   fMeanXSystem(0),
   fMeanYSystem(0),
-  fMeanX_A(0),
-  fMeanY_A(0),
-  fMeanX_B(0),
-  fMeanY_B(0),
-  fB_MC(0),
+  fMeanXA(0),
+  fMeanYA(0),
+  fMeanXB(0),
+  fMeanYB(0),
+  fBMC(0),
   fEvents(0),
   fTotalEvents(0),
   fBMin(0.),
@@ -86,6 +86,7 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
   fNpp(8.),
   fDoPartProd(1)
 {
+  //ctor
   fdNdEtaParam[0] = 8.0;
   fdNdEtaParam[1] = 0.13;
   fdNdEtaGBWParam[0] = 0.79;
@@ -135,11 +136,11 @@ AliGlauberMC::AliGlauberMC(const AliGlauberMC& in):
   fMeanXYColl(in.fMeanXYColl),
   fMeanXSystem(in.fMeanXSystem),
   fMeanYSystem(in.fMeanYSystem),
-  fMeanX_A(in.fMeanX_A),
-  fMeanY_A(in.fMeanY_A),
-  fMeanX_B(in.fMeanX_B),
-  fMeanY_B(in.fMeanY_B),
-  fB_MC(in.fB_MC),
+  fMeanXA(in.fMeanXA),
+  fMeanYA(in.fMeanYA),
+  fMeanXB(in.fMeanXB),
+  fMeanYB(in.fMeanYB),
+  fBMC(in.fBMC),
   fEvents(in.fEvents),
   fTotalEvents(in.fTotalEvents),
   fBMin(in.fBMin),
@@ -188,11 +189,11 @@ AliGlauberMC& AliGlauberMC::operator=(const AliGlauberMC& in)
   fMeanXYColl=in.fMeanXYColl;
   fMeanXSystem=in.fMeanXSystem;
   fMeanYSystem=in.fMeanYSystem;
-  fMeanX_A=in.fMeanX_A;  
-  fMeanY_A=in.fMeanY_A;  
-  fMeanX_B=in.fMeanX_B;  
-  fMeanY_B=in.fMeanY_B;  
-  fB_MC=in.fB_MC;     
+  fMeanXA=in.fMeanXA;  
+  fMeanYA=in.fMeanYA;  
+  fMeanXB=in.fMeanXB;  
+  fMeanYB=in.fMeanYB;  
+  fBMC=in.fBMC;     
   fEvents=in.fEvents;   
   fTotalEvents=in.fTotalEvents;
   fBMin=in.fBMin;     
@@ -280,10 +281,10 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
   fMeanXYColl=0;
   fMeanXSystem=0;
   fMeanYSystem=0;
-  fMeanX_A=0;
-  fMeanY_A=0;
-  fMeanX_B=0;
-  fMeanY_B=0;
+  fMeanXA=0;
+  fMeanYA=0;
+  fMeanXB=0;
+  fMeanYB=0;
 
   for (Int_t i = 0; i<fAN; i++)
   {
@@ -292,8 +293,8 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
     Double_t yA=nucleonA->GetY();
     fMeanXSystem  += xA;
     fMeanYSystem  += yA;
-    fMeanX_A  += xA;
-    fMeanY_A  += yA;
+    fMeanXA  += xA;
+    fMeanYA  += yA;
 
     if(nucleonA->IsWounded())
     {
@@ -313,8 +314,8 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
     Double_t yB=nucleonB->GetY();
     fMeanXSystem  += xB;
     fMeanYSystem  += yB;
-    fMeanX_B  += xB;
-    fMeanY_B  += yB;
+    fMeanXB  += xB;
+    fMeanYB  += yB;
 
     if(nucleonB->IsWounded())
     {
@@ -380,24 +381,24 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
   }
   if(fAN>0)
   {
-    fMeanX_A /= fAN;
-    fMeanY_A /= fAN;
+    fMeanXA /= fAN;
+    fMeanYA /= fAN;
   }
   else
   {
-    fMeanX_A = 0;
-    fMeanY_A = 0;
+    fMeanXA = 0;
+    fMeanYA = 0;
   }
 
   if(fBN>0)
   {
-    fMeanX_B /= fBN;
-    fMeanY_B /= fBN;
+    fMeanXB /= fBN;
+    fMeanYB /= fBN;
   }
   else
   {
-    fMeanX_B = 0;
-    fMeanY_B = 0;
+    fMeanXB = 0;
+    fMeanYB = 0;
   }
 
   fSx2=fMeanX2-(fMeanXParts*fMeanXParts);
@@ -408,7 +409,7 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
   fSy2Coll=fMeanY2Coll-(fMeanYColl*fMeanYColl);
   fSxyColl=fMeanXYColl-fMeanXColl*fMeanYColl;
 
-  fB_MC = bgen;
+  fBMC = bgen;
 
   fTotalEvents++;
   if (fNpart>0) fEvents++;
@@ -422,6 +423,7 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
 //______________________________________________________________________________
 void AliGlauberMC::Draw(Option_t* /*option*/)
 {
+  //draw method
   fANucleus.Draw(fXSect, 2);
   fBNucleus.Draw(fXSect, 4);
 
@@ -437,12 +439,14 @@ void AliGlauberMC::Draw(Option_t* /*option*/)
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetTotXSect() const
 {
+  //total xsection
   return (1.*fEvents/fTotalEvents)*TMath::Pi()*fBMax*fBMax/100;
 }
 
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetTotXSectErr() const
 {
+  //total xsection error
   return GetTotXSect()/TMath::Sqrt((Double_t)fEvents) *
          TMath::Sqrt(Double_t(1.-fEvents/fTotalEvents));
 }
@@ -450,6 +454,7 @@ Double_t AliGlauberMC::GetTotXSectErr() const
 //______________________________________________________________________________
 TObjArray *AliGlauberMC::GetNucleons()
 {
+  //get array of nucleons
   if(!fNucleonsA || !fNucleonsB) return 0;
   fNucleonsA->SetOwner(0);
   fNucleonsB->SetOwner(0);
@@ -468,6 +473,7 @@ TObjArray *AliGlauberMC::GetNucleons()
 //______________________________________________________________________________
 Double_t AliGlauberMC::NegativeBinomialDistribution(Int_t x, Int_t k, Double_t nmean)
 {
+  //produce a number distributed acc. neg.bin.dist
   if(k<=0)
   {
     cout << "Error, zero or negative K" << endl;
@@ -478,9 +484,9 @@ Double_t AliGlauberMC::NegativeBinomialDistribution(Int_t x, Int_t k, Double_t n
          *(1/(TMath::Power((1+nmean/Double_t(k)),Double_t(k))));
 }
 //______________________________________________________________________________
-Int_t AliGlauberMC::NegativeBinomialRandom(Int_t k, Double_t nmean)
-//return random integer from a Negative Binomial Distribution
+Int_t AliGlauberMC::NegativeBinomialRandom(Int_t k, Double_t nmean) const
 {
+  //return random integer from a Negative Binomial Distribution
   static const Int_t fMaxPlot = 1000;
   Double_t array[fMaxPlot];
   array[0] = NegativeBinomialDistribution(0,k,nmean);
@@ -496,7 +502,7 @@ Int_t AliGlauberMC::DoubleNegativeBinomialRandom( Int_t k,
                                                   Double_t nmean,
                                                   Int_t k2,
                                                   Double_t nmean2,
-                                                  Double_t alpha )
+                                                  Double_t alpha ) const
 {
   //return random integer from a Double Negative Binomial Distribution
   static const Int_t fMaxPlot = 1000;
@@ -554,7 +560,7 @@ void AliGlauberMC::SetdNdEtaTwoNBDParam( Double_t k1,
 }
 
 //______________________________________________________________________________
-Double_t AliGlauberMC::GetdNdEta(Double_t nnp, Double_t x)
+Double_t AliGlauberMC::GetdNdEta(Double_t nnp, Double_t x) const
 {
   //Get particle density per unit of rapidity
   //using two component model
@@ -565,7 +571,7 @@ Double_t AliGlauberMC::GetdNdEta(Double_t nnp, Double_t x)
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetdNdEtaGBW( Double_t delta,
                                      Double_t lambda,
-                                     Double_t  snn)
+                                     Double_t  snn) const
 {
   //Get particle density per unit of rapidity
   //using the GBW model
@@ -575,7 +581,7 @@ Double_t AliGlauberMC::GetdNdEtaGBW( Double_t delta,
 }
 
 //_______________________________________________________________________________
-Double_t AliGlauberMC::GetdNdEtaNBD ( Int_t k, Double_t nmean, Double_t beta)
+Double_t AliGlauberMC::GetdNdEtaNBD ( Int_t k, Double_t nmean, Double_t beta) const
 {
   //Get particle density per unit of rapidity
   //using a aandomized number from a negative binomial distrubution
@@ -601,7 +607,7 @@ Double_t AliGlauberMC::GetdNdEtaTwoNBD ( Int_t k1,
                                          Int_t k2,
                                          Double_t nmean2,
                                          Double_t alpha,
-                                         Double_t beta )
+                                         Double_t beta ) const
 {
   //Get particle density per unit of rapidity
   //using random numbers from two negative binomial distributions
@@ -677,6 +683,7 @@ Bool_t AliGlauberMC::NextEvent(Double_t bgen)
 //______________________________________________________________________________
 void AliGlauberMC::Run(Int_t nevents)
 {
+  //example run
   cout << "Generating " << nevents << " events..." << endl;
   TString name(Form("nt_%s_%s",fANucleus.GetName(),fBNucleus.GetName()));
   TString title(Form("%s + %s (x-sect = %d mb)",fANucleus.GetName(),fBNucleus.GetName(),(Int_t) fXSect));
@@ -701,7 +708,7 @@ void AliGlauberMC::Run(Int_t nevents)
     Float_t v[27];
     v[0]  = GetNpart();
     v[1]  = GetNcoll();
-    v[2]  = fB_MC;
+    v[2]  = fBMC;
     v[3]  = fMeanXParts;
     v[4]  = fMeanYParts;
     v[5]  = fMeanX2;
@@ -712,10 +719,10 @@ void AliGlauberMC::Run(Int_t nevents)
     v[10] = fSxy;
     v[11] = fMeanXSystem;
     v[12] = fMeanYSystem;
-    v[13] = fMeanX_A;
-    v[14] = fMeanY_A;
-    v[15] = fMeanX_B;
-    v[16] = fMeanY_B;
+    v[13] = fMeanXA;
+    v[14] = fMeanYA;
+    v[15] = fMeanXB;
+    v[16] = fMeanYB;
     v[17] = GetEccentricity();
     v[18] = GetEccentricityColl();
     v[19] = GetEccentricityPart();
@@ -751,15 +758,16 @@ void AliGlauberMC::Run(Int_t nevents)
 }
 
 //---------------------------------------------------------------------------------
-void AliGlauberMC::runAndSaveNtuple( Int_t n,
-                                     Option_t *sysA,
-                                     Option_t *sysB,
+void AliGlauberMC::RunAndSaveNtuple( Int_t n,
+                                     const Option_t *sysA,
+                                     const Option_t *sysB,
                                      Double_t signn,
                                      Double_t mind,
-				     Double_t r,
-				     Double_t a,
+				                             Double_t r,
+		                        		     Double_t a,
                                      const char *fname)
 {
+  //example run
   AliGlauberMC mcg(sysA,sysB,signn);
   mcg.SetMinDistance(mind);
   mcg.Setr(r);
@@ -773,14 +781,15 @@ void AliGlauberMC::runAndSaveNtuple( Int_t n,
 }
 
 //---------------------------------------------------------------------------------
-void AliGlauberMC::runAndSaveNucleons( Int_t n,
-                                       Option_t *sysA,
+void AliGlauberMC::RunAndSaveNucleons( Int_t n,
+                                       const Option_t *sysA,
                                        Option_t *sysB,
-                                       Double_t signn,
+                                       const Double_t signn,
                                        Double_t mind,
                                        Bool_t verbose,
                                        const char *fname)
 {
+  //example run
   AliGlauberMC mcg(sysA,sysB,signn);
   mcg.SetMinDistance(mind);
   TFile *out=0;

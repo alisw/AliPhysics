@@ -22,6 +22,79 @@ class TNtuple;
 class TArray;
 
 class AliGlauberMC : public TNamed {
+public:
+   AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 72);
+   virtual     ~AliGlauberMC();
+   AliGlauberMC(const AliGlauberMC& in);
+   AliGlauberMC& operator=(const AliGlauberMC& in);
+   void         Draw(Option_t* option);
+
+   void         Run(Int_t nevents);
+   Bool_t       NextEvent(Double_t bgen=-1);
+   Bool_t       CalcEvent(Double_t bgen);
+
+   //various ways to calculate multiplicity
+   Double_t     GetdNdEta(    Double_t nnp=8.0,
+                              Double_t x=0.13 ) const;
+   Double_t     GetdNdEtaGBW( Double_t delta=0.79,
+                              Double_t lambda=0.288,
+                              Double_t snn=30.25 ) const;
+   Double_t	GetdNdEtaNBD(     Int_t k=3,
+                              Double_t nmean = 4,
+                              Double_t beta = 0.13 ) const;
+   Double_t	GetdNdEtaTwoNBD(  Int_t k1=3,
+                              Double_t nmean1=4,
+                              Int_t k2=2,
+                              Double_t nmean2=11,
+                              Double_t alpha=0.4,
+                              Double_t beta=0.13 ) const;
+
+   Double_t     GetEccentricity()    const;
+   Double_t     GetEccentricityColl()      const;
+   Double_t     GetEccentricityPart()      const;
+   Double_t     GetEccentricityPartColl()  const;
+   Double_t     GetB()               const {return fBMC;}
+   Double_t     GetBMin()            const {return fBMin;}
+   Double_t     GetBMax()            const {return fBMax;}
+   Int_t        GetNcoll()           const {return fNcoll;}
+   Int_t        GetNpart()           const {return fNpart;}
+   Int_t        GetNpartFound()      const {return fMaxNpartFound;}
+   TNtuple*     GetNtuple()          const {return fnt;}
+   TObjArray   *GetNucleons();
+   Double_t     GetTotXSect()        const;
+   Double_t     GetTotXSectErr()     const;
+   void         Reset();
+   static Double_t	NegativeBinomialDistribution(Int_t x, Int_t k, Double_t nmean);
+   Int_t NegativeBinomialRandom(Int_t k, Double_t nmean) const;
+   Int_t DoubleNegativeBinomialRandom(Int_t k1, Double_t nmean1, Int_t k2, Double_t nmean2, Double_t alpha) const;
+   void   SetBmin(Double_t bmin)      {fBMin = bmin;}
+   void   SetBmax(Double_t bmax)      {fBMax = bmax;}
+   void   SetdNdEtaParam( Double_t nnp = 8., Double_t x = 0.13);
+   void   SetdNdEtaGBWParam( Double_t delta = 0.79, Double_t lambda = 0.288, Double_t snn = 30.25);
+   void   SetdNdEtaNBDParam(Double_t k=3, Double_t nmean=4, Double_t beta=0.13);
+   void   SetdNdEtaTwoNBDParam(Double_t alpha = 0.4, Double_t k1 = 3, Double_t nmean1 = 4., Double_t k2 = 2., Double_t nmean2 = 11., Double_t beta=0.13);
+   void   SetMinDistance(Double_t d)  {fANucleus.SetMinDist(d); fBNucleus.SetMinDist(d);}
+   void   SetDoPartProduction(Bool_t b) { fDoPartProd = b; }
+   void   Setr(Double_t r)  {fANucleus.SetR(r); fBNucleus.SetR(r);}
+   void   Seta(Double_t a)  {fANucleus.SetA(a); fBNucleus.SetA(a);}
+   static void       PrintVersion()         {cout << "AliGlauberMC " << Version() << endl;}
+   static const char *Version()             {return "v1.2";}
+   static void       RunAndSaveNtuple( Int_t n,
+                                       const Option_t *sysA="Pb",
+                                       const Option_t *sysB="Pb",
+                                       Double_t signn=65,
+                                       Double_t mind=0.4,
+				       Double_t r=6.62,
+				       Double_t a=0.546,
+                                       const char *fname="glau_pbpb_ntuple.root");
+   void RunAndSaveNucleons( Int_t n,
+                            const Option_t *sysA,
+                            const Option_t *sysB,
+                            Double_t signn,
+                            Double_t mind,
+                            Bool_t verbose,
+                            const char *fname);
+   
 private:
    AliGlauberNucleus fANucleus;       //Nucleus A
    AliGlauberNucleus fBNucleus;       //Nucleus B
@@ -43,11 +116,11 @@ private:
    Double_t     fMeanXYColl;     //<xy> of binary collisions
    Double_t     fMeanXSystem;    //<x> of all nucleons
    Double_t     fMeanYSystem;    //<x> of all nucleons  
-   Double_t     fMeanX_A;        //<x> of nucleons in nucleus A
-   Double_t     fMeanY_A;        //<x> of nucleons in nucleus A
-   Double_t     fMeanX_B;        //<x> of nucleons in nucleus B
-   Double_t     fMeanY_B;        //<x> of nucleons in nucleus B
-   Double_t     fB_MC;           //Impact parameter (b)
+   Double_t     fMeanXA;        //<x> of nucleons in nucleus A
+   Double_t     fMeanYA;        //<x> of nucleons in nucleus A
+   Double_t     fMeanXB;        //<x> of nucleons in nucleus B
+   Double_t     fMeanYB;        //<x> of nucleons in nucleus B
+   Double_t     fBMC;           //Impact parameter (b)
    Int_t        fEvents;         //Number of events with at least one collision
    Int_t        fTotalEvents;    //All events within selected impact parameter range
    Double_t     fBMin;           //Minimum impact parameter to be generated
@@ -70,79 +143,6 @@ private:
    Bool_t       fDoPartProd;     //=1 then particle production on
    Bool_t       CalcResults(Double_t bgen);
 
-public:
-   AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 72);
-   virtual     ~AliGlauberMC();
-   AliGlauberMC(const AliGlauberMC& in);
-   AliGlauberMC& operator=(const AliGlauberMC& in);
-   void         Draw(Option_t* option);
-
-   void         Run(Int_t nevents);
-   Bool_t       NextEvent(Double_t bgen=-1);
-   Bool_t       CalcEvent(Double_t bgen);
-
-   //various ways to calculate multiplicity
-   Double_t     GetdNdEta(    Double_t nnp=8.0,
-                              Double_t x=0.13 );
-   Double_t     GetdNdEtaGBW( Double_t delta=0.79,
-                              Double_t lambda=0.288,
-                              Double_t snn=30.25 );
-   Double_t	GetdNdEtaNBD(     Int_t k=3,
-                              Double_t nmean = 4,
-                              Double_t beta = 0.13 );
-   Double_t	GetdNdEtaTwoNBD(  Int_t k1=3,
-                              Double_t nmean1=4,
-                              Int_t k2=2,
-                              Double_t nmean2=11,
-                              Double_t alpha=0.4,
-                              Double_t beta=0.13 );  
-
-   Double_t     GetEccentricity()    const;
-   Double_t     GetEccentricityColl()      const;
-   Double_t     GetEccentricityPart()      const;
-   Double_t     GetEccentricityPartColl()  const;
-   Double_t     GetB()               const {return fB_MC;}
-   Double_t     GetBMin()            const {return fBMin;}
-   Double_t     GetBMax()            const {return fBMax;}
-   Int_t        GetNcoll()           const {return fNcoll;}
-   Int_t        GetNpart()           const {return fNpart;}
-   Int_t        GetNpartFound()      const {return fMaxNpartFound;}
-   TNtuple*     GetNtuple()          const {return fnt;}
-   TObjArray   *GetNucleons();
-   Double_t     GetTotXSect()        const;
-   Double_t     GetTotXSectErr()     const;
-   void         Reset();
-   static Double_t	NegativeBinomialDistribution(Int_t x, Int_t k, Double_t nmean);
-   Int_t NegativeBinomialRandom(Int_t k, Double_t nmean);
-   Int_t DoubleNegativeBinomialRandom(Int_t k1, Double_t nmean1, Int_t k2, Double_t nmean2, Double_t alpha);
-   void   SetBmin(Double_t bmin)      {fBMin = bmin;}
-   void   SetBmax(Double_t bmax)      {fBMax = bmax;}
-   void   SetdNdEtaParam( Double_t nnp = 8., Double_t x = 0.13);
-   void   SetdNdEtaGBWParam( Double_t delta = 0.79, Double_t lambda = 0.288, Double_t snn = 30.25);
-   void   SetdNdEtaNBDParam(Double_t k=3, Double_t nmean=4, Double_t beta=0.13);
-   void   SetdNdEtaTwoNBDParam(Double_t alpha = 0.4, Double_t k1 = 3, Double_t nmean1 = 4., Double_t k2 = 2., Double_t nmean2 = 11., Double_t beta=0.13);
-   void   SetMinDistance(Double_t d)  {fANucleus.SetMinDist(d); fBNucleus.SetMinDist(d);}
-   void   SetDoPartProduction(Bool_t b) { fDoPartProd = b; }
-   void   Setr(Double_t r)  {fANucleus.SetR(r); fBNucleus.SetR(r);}
-   void   Seta(Double_t a)  {fANucleus.SetA(a); fBNucleus.SetA(a);}
-   static void       PrintVersion()         {cout << "AliGlauberMC " << Version() << endl;}
-   static const char *Version()             {return "v1.2";}
-   static void       runAndSaveNtuple( Int_t n,
-                                       Option_t *sysA="Pb",
-                                       Option_t *sysB="Pb",
-                                       Double_t signn=65,
-                                       Double_t mind=0.4,
-				       Double_t r=6.62,
-				       Double_t a=0.546,
-                                       const char *fname="glau_pbpb_ntuple.root");
-   void runAndSaveNucleons( Int_t n,
-                            Option_t *sysA,
-                            Option_t *sysB,
-                            Double_t signn,
-                            Double_t mind,
-                            Bool_t verbose,
-                            const char *fname);
-   
    ClassDef(AliGlauberMC,3)
 };
 
