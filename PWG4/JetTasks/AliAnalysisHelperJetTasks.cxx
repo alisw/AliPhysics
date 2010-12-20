@@ -160,8 +160,11 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
     Float_t dist = maxDist;
     if(iDebug>1)Printf("Gen (%d) p_T %3.3f eta %3.3f ph %3.3f ",ig,genJets[ig].Pt(),genJets[ig].Eta(),genJets[ig].Phi());
     for(int ir = 0;ir<nRecJets;++ir){
+      if(iDebug>1){
+	printf("Rec (%d) ",ir);
+	Printf("p_T %3.3f eta %3.3f ph %3.3f ",recJets[ir].Pt(),recJets[ir].Eta(),recJets[ir].Phi());
+      }    
       Double_t dR = genJets[ig].DeltaR(&recJets[ir]);
-      if(iDebug>1)Printf("Rec (%d) p_T %3.3f eta %3.3f ph %3.3f ",ir,recJets[ir].Pt(),recJets[ir].Eta(),recJets[ir].Phi());
       if(iDebug>1)Printf("Distance (%d)--(%d) %3.3f ",ig,ir,dR);
       if(dR<dist){
 	iRecIndex[ig] = ir;
