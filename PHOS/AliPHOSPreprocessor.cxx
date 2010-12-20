@@ -268,7 +268,8 @@ Bool_t AliPHOSPreprocessor::FindBadChannelsEmc()
       continue;
     }
 
-    result[i] *= DoFindBadChannelsEmc(system[i],list,badMap);
+    Bool_t findBadOK = DoFindBadChannelsEmc(system[i],list,badMap);
+    result[i] *= findBadOK;
 
     // Store the bad channels map.
   
@@ -281,7 +282,8 @@ Bool_t AliPHOSPreprocessor::FindBadChannelsEmc()
       path = "HLT";
   
     // Data valid from current run until being updated (validityInfinite=kTRUE)
-    result[i] *= Store(path.Data(), "EmcBadChannels", &badMap, &md, 0, kTRUE);
+    Bool_t storeOK = Store(path.Data(), "EmcBadChannels", &badMap, &md, 0, kTRUE);
+    result[i] *= storeOK;
     
   }
   
