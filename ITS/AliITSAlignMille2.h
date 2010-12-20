@@ -164,7 +164,9 @@ class AliITSAlignMille2: public TObject
   void      ConstrainHelixFitCurv(Int_t q=0,Double_t crv=-1,Double_t crverr=-1);
   void      RemoveHelixFitConstraint();
   void      SetVertexConstraint(const AliESDVertex* vtx);
+  Bool_t    IsVertexSet()                                         const {return fVertexSet;}
   void      RemoveVertexConstraint()                                    {fVertexSet = kFALSE;}
+  void      SetVertexSet(Bool_t v)                                      {fVertexSet = v;}
   Double_t  GetHelixContraintCharge()                             const {return fConstrCharge;}
   Double_t  GetHelixContraintPT()                                 const {return fConstrPT;}
   Double_t  GetHelixContraintPTErr()                              const {return fConstrPTErr;}
