@@ -562,7 +562,7 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
      }
      Log(Form("File %s connected to process pedestal data", pedFileName));
      Float_t pedVal[(3*knZDCch)][2];
-     for(Int_t k=0; k<(2*knZDCch); k++){
+     for(Int_t k=0; k<(3*knZDCch); k++){
         for(Int_t j=0; j<2; j++){
            int aleggi = fscanf(file,"%f",&pedVal[k][j]);
            if(aleggi==0) AliDebug(3," Failing reading data from pedestal file");
