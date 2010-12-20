@@ -11,9 +11,11 @@
 #include "AliLog.h"
 #include <TStopwatch.h>
 #include <TFile.h>
+#include <TChain.h>
 #include <TMath.h>
 #include <TVectorD.h>
 #include <TArrayL.h>
+#include <TSystem.h>
 #include "AliMatrixSq.h"
 #include "AliSymMatrix.h"
 #include "AliRectMatrix.h"
@@ -24,6 +26,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <fstream>
 
 using namespace std;
 
@@ -227,23 +230,48 @@ Bool_t AliMillePede2::InitDataRecStorage(Bool_t read)
 {
   // initialize the buffer for processed measurements records
   //
-  if (fDataRecFile) {AliInfo("Data Records File is already initialized"); return kFALSE;} 
+  if (fTreeData) {AliInfo("Data Records File is already initialized"); return kFALSE;} 
   //
   if (!fRecord) fRecord = new AliMillePedeRecord();
   //
-  fDataRecFile = TFile::Open(GetDataRecFName(),read ? "":"recreate");
-  if (!fDataRecFile) {AliFatal(Form("Failed to initialize data records file %s",GetDataRecFName())); return kFALSE;}
-  //
-  AliInfo(Form("File %s used for derivatives records",GetDataRecFName()));
-  if (read) {
-    fTreeData = (TTree*)fDataRecFile->Get("AliMillePedeRecords_Data");
-    if (!fTreeData) {AliFatal(Form("Did not find data records tree in %s",GetDataRecFName())); return kFALSE;}
-    fTreeData->SetBranchAddress("Record_Data",&fRecord);
-    AliInfo(Form("Found %lld derivatives records",fTreeData->GetEntries()));
-  }
-  else {
+  if (!read) { // write mode: cannot use chain
+    fDataRecFile = TFile::Open(GetDataRecFName(),"recreate");
+    if (!fDataRecFile) {AliFatal(Form("Failed to initialize data records file %s",GetDataRecFName())); return kFALSE;}
+    AliInfo(Form("File %s used for derivatives records",GetDataRecFName()));
     fTreeData = new TTree("AliMillePedeRecords_Data","Data Records for AliMillePede2");
     fTreeData->Branch("Record_Data","AliMillePedeRecord",&fRecord,32000,99);
+  }
+  else { // use chain
+    TChain* ch = new TChain("AliMillePedeRecords_Data");
+    //
+    if (fDataRecFName.EndsWith(".root")) ch->AddFile(fDataRecFName);
+    else { // assume text file with list of filenames
+      //
+      ifstream inpf(fDataRecFName.Data());
+      if (!inpf.good()) {AliInfo(Form("Failed on input records list %s\n",fDataRecFName.Data())); return kFALSE;}
+      //
+      TString recfName;
+      recfName.ReadLine(inpf);
+      while ( !(recfName.ReadLine(inpf)).eof() ) {
+	recfName = recfName.Strip(TString::kBoth,' ');
+	if (recfName.BeginsWith("//") || recfName.BeginsWith("#") || !recfName.EndsWith(".root")) {  // comment
+	  AliInfo(Form("Skip %s\n",recfName.Data()));
+	  continue;
+	}
+	//
+	recfName = recfName.Strip(TString::kBoth,',');
+	recfName = recfName.Strip(TString::kBoth,'"');
+	gSystem->ExpandPathName(recfName);
+	printf("Adding %s\n",recfName.Data());
+	ch->AddFile(recfName.Data());
+      }      
+    }
+    //
+    Long64_t nent = ch->GetEntries();
+    if (nent<1) { AliInfo("Obtained chain is empty"); return kFALSE;}
+    fTreeData = ch;
+    fTreeData->SetBranchAddress("Record_Data",&fRecord);
+    AliInfo(Form("Found %lld derivatives records",nent));
   }
   fCurrRecDataID = -1;
   fRecFileStatus = read ? 1:2;
@@ -285,15 +313,17 @@ Bool_t AliMillePede2::InitConsRecStorage(Bool_t read)
 void AliMillePede2::CloseDataRecStorage()
 {
   if (fTreeData) {
-    if (fDataRecFile->IsWritable()) {
+    if (fDataRecFile && fDataRecFile->IsWritable()) {
       fDataRecFile->cd();
       fTreeData->Write();
     }
     delete fTreeData;  
     fTreeData = 0;
-    fDataRecFile->Close();
-    delete fDataRecFile;
-    fDataRecFile = 0;
+    if (fDataRecFile) {
+      fDataRecFile->Close();
+      delete fDataRecFile;
+      fDataRecFile = 0;
+    }
   }
   fRecFileStatus = 0;
   //
@@ -512,6 +542,11 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   //
   matCLoc.SetSizeUsed(++maxLocUsed);   // data with B=0 may use less than declared nLocals 
   //
+  /* //RRR
+  fRecord->Print("l");
+  printf("\nBefore\nLocalMatrix: "); matCLoc.Print("l");
+  printf("RHSLoc: "); for (int i=0;i<fNLocPar;i++) printf("%+e |",fVecBLoc[i]); printf("\n");
+  */
   // first try to solve by faster Cholesky decomposition, then by Gaussian elimination
   if (!matCLoc.SolveChol(fVecBLoc,kTRUE)) {
     AliInfo("Failed to solve locals by Cholesky, trying Gaussian Elimination");
@@ -523,7 +558,8 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   }
   //
   // If requested, store the track params and errors
-  //  printf("locfit: "); for (int i=0;i<fNLocPar;i++) printf("%+e |",fVecBLoc[i]); printf("\n");
+  //RRR  printf("locfit: "); for (int i=0;i<fNLocPar;i++) printf("%+e |",fVecBLoc[i]); printf("\n");
+  
   if (localParams) for (int i=maxLocUsed; i--;) {
       localParams[2*i]   = fVecBLoc[i];
       localParams[2*i+1] = TMath::Sqrt(TMath::Abs(matCLoc.QueryDiag(i)));
@@ -636,6 +672,13 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     }
   } // end of Update matrices
   //
+  /*//RRR
+  printf("After GLO\n");
+  printf("MatCLoc: "); fMatCLoc->Print("l");
+  printf("MatCGlo: "); fMatCGlo->Print("l");
+  printf("MatCGlLc:"); fMatCGloLoc->Print("l");
+  printf("BGlo: "); for (int i=0; i<fNGloPar; i++) printf("%+e |",fVecBGlo[i]); printf("\n");
+  */
   // calculate fMatCGlo -= fMatCGloLoc * fMatCLoc * fMatCGloLoc^T
   // and       fVecBGlo -= fMatCGloLoc * fVecBLoc
   //
@@ -675,6 +718,11 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   //
   // reset compressed index array
   //
+  /*//RRR
+  printf("After GLOLoc\n");
+  printf("MatCGlo: "); fMatCGlo->Print("");
+  printf("BGlo: "); for (int i=0; i<fNGloPar; i++) printf("%+e |",fVecBGlo[i]); printf("\n");
+  */
   for (int i=nGloInFit;i--;) { 
     fGlo2CGlo[ fCGlo2Glo[i] ] = -1;
     fCGlo2Glo[i] = -1;
@@ -789,7 +837,11 @@ Int_t AliMillePede2::GlobalFitIteration()
   }
   swt.Stop();
   printf("%ld local fits done: ", ndr);
+  /*
+  printf("MatCGlo: "); fMatCGlo->Print("l");
+  printf("BGlo: "); for (int i=0; i<fNGloPar; i++) printf("%+e |",fVecBGlo[i]); printf("\n");
   swt.Print();
+  */
   sw.Start(kFALSE);
   //
   //
@@ -950,6 +1002,12 @@ Int_t AliMillePede2::GlobalFitIteration()
 
   //
   sws.Start();
+
+  /*
+  printf("Solving:\n");
+  matCGlo.Print();
+  for (int i=0;i<fNGloSize;i++) printf("b%2d : %+e\n",i,fVecBGlo[i]);
+  */
   fGloSolveStatus = SolveGlobalMatEq();                     // obtain solution for this step
   sws.Stop();
   printf("Solve %d |",fIter); sws.Print();
@@ -1009,19 +1067,22 @@ Int_t AliMillePede2::SolveGlobalMatEq()
       return gkFailed;
     }
     int slvDump = open(faildump, O_RDWR|O_CREAT, 0666);
-    dup2(slvDump,1);
-    //
-    printf("#Failed to solve using solver %d with PreCond: %d MaxIter: %d Tol: %e NKrylov: %d\n",
-	   fgIterSol,fgMinResCondType,fgMinResMaxIter,fgMinResTol,fgNKrylovV);
-    printf("#Dump of matrix:\n");
-    fMatCGlo->Print("10");
-    printf("#Dump of RHS:\n");
-    for (int i=0;i<fNGloSize;i++) printf("%d %+.10f\n",i,fVecBGlo[i]);
-    //
-    dup2(defout,1);
-    close(slvDump);
-    close(defout);
-    printf("#Dumped failed matrix and RHS to %s\n",faildump);
+    if (slvDump>=0) {
+      dup2(slvDump,1);
+      //
+      printf("#Failed to solve using solver %d with PreCond: %d MaxIter: %d Tol: %e NKrylov: %d\n",
+	     fgIterSol,fgMinResCondType,fgMinResMaxIter,fgMinResTol,fgNKrylovV);
+      printf("#Dump of matrix:\n");
+      fMatCGlo->Print("10");
+      printf("#Dump of RHS:\n");
+      for (int i=0;i<fNGloSize;i++) printf("%d %+.10f\n",i,fVecBGlo[i]);
+      //
+      dup2(defout,1);
+      close(slvDump);
+      close(defout);
+      printf("#Dumped failed matrix and RHS to %s\n",faildump);
+    }
+    else AliInfo("Failed on file open for matrix dumping");
     return gkFailed;
   }
   for (int i=fNGloSize;i--;) fVecBGlo[i] = sol[i];

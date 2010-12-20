@@ -64,6 +64,7 @@ AliCheb3D::AliCheb3D(const AliCheb3D& src) :
     fBOffset[i] = src.fBOffset[i];
     fNPoints[i] = src.fNPoints[i];
     fGridOffs[i] = src.fGridOffs[i];
+    fArgsTmp[i]  = 0;
   }
   for (int i=0;i<fDimOut;i++) {
     AliCheb3DCalc* cbc = src.GetChebCalc(i);
@@ -87,6 +88,7 @@ AliCheb3D::AliCheb3D(const char* inpFile) :
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
     fGridOffs[i] = 0.;
+    fArgsTmp[i]  = 0;
   }
   LoadData(inpFile);
 }
@@ -107,6 +109,7 @@ AliCheb3D::AliCheb3D(FILE* stream) :
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
     fGridOffs[i] = 0.;
+    fArgsTmp[i]  = 0;
   }
   LoadData(stream);
 }
@@ -137,6 +140,7 @@ AliCheb3D::AliCheb3D(const char* funName, int DimOut, Float_t  *bmin,Float_t  *b
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
     fGridOffs[i] = 0.;
+    fArgsTmp[i]  = 0;
   }
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
@@ -173,6 +177,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
     fGridOffs[i] = 0.;
+    fArgsTmp[i]  = 0;
   }
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
@@ -211,6 +216,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
     fGridOffs[i] = 0.;
+    fArgsTmp[i]  = 0;
   }
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
@@ -252,6 +258,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
     fGridOffs[i] = 0.;
+    fArgsTmp[i]  = 0;
   }
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
