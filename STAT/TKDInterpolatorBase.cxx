@@ -240,6 +240,8 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
       Error("TKDInterpolatorBase::Eval()", Form("Interpolation failed and number of interpolation points (%d) Can not be increased further.", npoints));
       result = 0.;
       error = 1.E10;
+      // clean memory
+      delete [] dist; delete [] index;
       return 0.;
     } else npoints = npoints_new;
     if(npoints > GetNTNodes()){

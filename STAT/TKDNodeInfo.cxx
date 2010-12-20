@@ -46,7 +46,7 @@ TKDNodeInfo::TKDNodeInfo(Int_t dim):
 //_________________________________________________________________
 TKDNodeInfo::TKDNodeInfo(const TKDNodeInfo &ref):
   TObject((TObject&) ref)
-  ,fNDim(fNDim)
+  ,fNDim(ref.fNDim)
   ,fData(NULL)
   ,fNpar(0)
   ,fNcov(0)
@@ -56,6 +56,7 @@ TKDNodeInfo::TKDNodeInfo(const TKDNodeInfo &ref):
   // Copy constructor
   Build(fNDim/3);
 
+  fData = new Float_t[fNDim];
   memcpy(fData, ref.fData, fNDim*sizeof(Float_t));
   fVal[0] = ref.fVal[0];
   fVal[1] = ref.fVal[1];
