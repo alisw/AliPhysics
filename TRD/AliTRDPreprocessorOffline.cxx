@@ -880,7 +880,7 @@ AliTRDCalChamberStatus *AliTRDPreprocessorOffline::ProduceChamberStatus()
     TH1I *projch =  (TH1I *) fCH2d->ProjectionX("projch",idet+1,idet+1,(Option_t *)"e");
     if (!projch) continue;
 
-    Int_t entries = projch->GetEntries();
+    Int_t entries = static_cast<Int_t>(projch->GetEntries());
 
     // gain
     Double_t defaultgain = calDetGain->GetMean();
