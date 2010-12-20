@@ -48,6 +48,7 @@
 #include "AliPMDNoiseCut.h"
 #include "AliPMDddlinfoData.h"
 #include "AliPMDRecoParam.h"
+#include "AliRecoParam.h"
 #include "AliPMDReconstructor.h"
 
 #include "AliDAQ.h"
@@ -154,7 +155,7 @@ AliPMDClusterFinder::~AliPMDClusterFinder()
 // ------------------------------------------------------------------------- //
 
 void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
-					   TTree *clustersTree)
+					   TTree *clustersTree, Int_t gRecoMode)
 {
   // Converts digits to recpoints after running clustering
   // algorithm on CPV plane and PREshower plane
@@ -268,25 +269,31 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 
 
       // Int_t cluspar = fRecoParam->GetPbPbParam()->GetClusteringParam();
+
       Int_t cluspar = fRecoParam->GetPPParam()->GetClusteringParam();
+      
+
       // Int_t cluspar = fRecoParam->GetCosmicParam()->GetClusteringParam();
       
       //_______________________________________________________// 
       //Added to switch Refine and crude Clustering - satya//
       // temporary solution - will be sorted out later
-      cluspar = 1;
+      /*cluspar = 1;
       static AliPMDRecoParam *reconp = NULL;
       reconp = (AliPMDRecoParam*)AliPMDReconstructor::GetRecoParam();
       if(!reconp) {
 	cluspar = 1;
       } 
       else { 
-
+	
       if( reconp->GetClusteringParam() == 1) 
 	cluspar = 1;
       if( reconp->GetClusteringParam() == 2) 
 	cluspar = 2;
-      }
+	}
+
+      */
+      cluspar = gRecoMode;
       //_______________________________________________________// 
       
       pmdclust->SetClusteringParam(cluspar);
@@ -344,7 +351,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 // ------------------------------------------------------------------------- //
 
 void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
-					   TTree *clustersTree)
+					   TTree *clustersTree, Int_t gRecoMode)
 {
   // Converts RAW data to recpoints after running clustering
   // algorithm on CPV and PREshower plane
@@ -590,13 +597,13 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  Int_t imod = idet*24 + ismn;
 
 	  // Int_t cluspar = fRecoParam->GetPbPbParam()->GetClusteringParam();
-	  Int_t cluspar = fRecoParam->GetPPParam()->GetClusteringParam();
+	   Int_t cluspar = fRecoParam->GetPPParam()->GetClusteringParam();
 	  // Int_t cluspar = fRecoParam->GetCosmicParam()->GetClusteringParam();
 
 	  //_______________________________________________________// 
 	  //Added to switch Refine and crude Clustering - satya//
 	  // temporary solution - will be sorted out later
-	  cluspar = 1;
+	  /* cluspar = 1;
 	  static AliPMDRecoParam *reconp = NULL;
 	  reconp = (AliPMDRecoParam*)AliPMDReconstructor::GetRecoParam();
 	  if(!reconp) {
@@ -607,7 +614,11 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	      cluspar = 1;
 	    if( reconp->GetClusteringParam() == 2) 
 	      cluspar = 2;
-	  }
+	  }*/
+
+
+	  cluspar = gRecoMode; // permanent solution
+
 	  //_______________________________________________________// 
 
 	  pmdclust->SetClusteringParam(cluspar);

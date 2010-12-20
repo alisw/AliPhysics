@@ -36,8 +36,8 @@ class AliPMDClusterFinder : public TObject
   AliPMDClusterFinder &operator=(const AliPMDClusterFinder &finder); // assignment op
   virtual ~AliPMDClusterFinder();
 
-  void Digits2RecPoints(TTree *digitsTree, TTree *clustersTree);
-  void Digits2RecPoints(AliRawReader *rawReader, TTree *clustersTree);
+  void Digits2RecPoints(TTree *digitsTree, TTree *clustersTree,Int_t gRecoMode);
+  void Digits2RecPoints(AliRawReader *rawReader, TTree *clustersTree,Int_t gRecoMode);
 
   void AddRecPoint(Int_t idet, Int_t ismn, Float_t * clusdata);
   void AddRecHit(Int_t celldataX, Int_t celldataY, Int_t celldataTr,
@@ -86,7 +86,7 @@ class AliPMDClusterFinder : public TObject
   Int_t    fCellTrack[fgkRow][fgkCol]; // Array containing individual cell tr
   Int_t    fCellPid[fgkRow][fgkCol]; // Array containing individual cell pid
 
-  ClassDef(AliPMDClusterFinder,18) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,19) // 19 by satyajit
 };
 #endif
 

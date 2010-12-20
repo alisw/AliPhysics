@@ -28,6 +28,7 @@
 #include "AliESDPmdTrack.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
+#include "AliRunInfo.h"
 
 ClassImp(AliPMDReconstructor)
 
@@ -37,18 +38,51 @@ void AliPMDReconstructor::Reconstruct(AliRawReader *rawReader,
 				      TTree *clustersTree) const
 {
 // reconstruct clusters from Raw Data
+// Event Species Added By satyajit
+  Int_t gRecoMode = 1;
+  TString beamType = GetRunInfo()->GetBeamType();
+  
+  if (((beamType.CompareTo("pp"))==0) || 
+      ((beamType.CompareTo("p-p"))==0)||
+      ((beamType.CompareTo("PP"))==0) || 
+      ((beamType.CompareTo("P-P"))==0)) {
+    gRecoMode=1;
+  }
+  
+  else if ((beamType.CompareTo("A-A")) == 0 || 
+	   (beamType.CompareTo("AA")) == 0) {
+    gRecoMode=2;
+  }
+
     static AliPMDClusterFinder pmdClus;
-    pmdClus.Digits2RecPoints(rawReader, clustersTree);
+    pmdClus.Digits2RecPoints(rawReader, clustersTree, gRecoMode);
 }
 
 // ------------------------------------------------------------------------ //
 void AliPMDReconstructor::Reconstruct(TTree *digitsTree,
 				      TTree *clustersTree) const
 {
-// reconstruct clusters from Raw Data
-
+  // reconstruct clusters from Digits
+  // Setting reconstruction mode
+ 
+  // Added to Have Sepatrate Event Spcies
+  Int_t gRecoMode = 1;
+  TString beamType = GetRunInfo()->GetBeamType();
+ 
+  if (((beamType.CompareTo("pp"))==0) || 
+     ((beamType.CompareTo("p-p"))==0)||
+     ((beamType.CompareTo("PP"))==0) || 
+     ((beamType.CompareTo("P-P"))==0)) {
+    gRecoMode=1;
+  }
+  
+  else if ((beamType.CompareTo("A-A")) == 0 || 
+	   (beamType.CompareTo("AA")) == 0) {
+    gRecoMode=2;
+  }
+  
   static AliPMDClusterFinder pmdClus;
-  pmdClus.Digits2RecPoints(digitsTree, clustersTree);
+  pmdClus.Digits2RecPoints(digitsTree, clustersTree,gRecoMode);
 
 }
 
