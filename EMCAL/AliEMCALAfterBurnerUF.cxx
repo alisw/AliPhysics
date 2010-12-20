@@ -165,7 +165,7 @@ void AliEMCALAfterBurnerUF::RecPoints2Clusters(TObjArray *clusArray)
   {
     AliEMCALRecPoint *recPoint = (AliEMCALRecPoint*) fRecPoints->At(i);
 
-    Int_t ncells = recPoint->GetMultiplicity();
+    const Int_t ncells = recPoint->GetMultiplicity();
     Int_t ncells_true = 0;
 
     // cells and their amplitude fractions
