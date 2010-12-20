@@ -1038,7 +1038,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     AliAODJet *tmp = dynamic_cast<AliAODJet*>(aodRecJets->At(ir));
     if(!tmp)continue;
     if(tmp->Pt()<fMinJetPt)continue;
-    recJets[ir] = *tmp;
+    recJets[iCountRec] = *tmp;
     iCountRec++;
   }
   nRecJets = iCountRec;
