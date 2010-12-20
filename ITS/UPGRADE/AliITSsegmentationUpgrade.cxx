@@ -174,7 +174,7 @@ void AliITSsegmentationUpgrade::GetNpad(Int_t ilayer, Int_t &nx, Int_t &nz){
 
 }
 //________________________________________________________________________________
-const Int_t AliITSsegmentationUpgrade::GetNLayers(){
+Int_t AliITSsegmentationUpgrade::GetNLayers(){
 
   if(!gGeoManager) TGeoManager::Import("geometry.root");
 

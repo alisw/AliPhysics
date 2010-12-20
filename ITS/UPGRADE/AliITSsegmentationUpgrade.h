@@ -54,7 +54,7 @@ class AliITSsegmentationUpgrade : public TObject {
   // layer thickness
   virtual Float_t GetThickness(Int_t ilayer) const {if(ilayer > fMinRadius.GetSize() || ilayer < 0) return -1; else return fMaxRadius.At(ilayer) - fMinRadius.At(ilayer);}
    
-  static const Int_t GetNLayers();  
+  static Int_t GetNLayers();  
  
  protected:
 
