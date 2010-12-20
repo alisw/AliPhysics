@@ -92,7 +92,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     fTree = tree;
     
     if (!fTree) return kFALSE;
-    fTree->GetEntry(0);
+//    fTree->GetEntry(0);
     
 
     if (!fEvent) fEvent = new AliESDEvent();

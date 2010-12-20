@@ -93,7 +93,7 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* opt)
 	
     if (!fTree) return kFALSE;
     fTree->GetEntries();
-    fTree->GetEntry(0);
+//    fTree->GetEntry(0);
     TString aodTreeFName,aodFriendTreeFName;
     TTree *ttree = fTree->GetTree();
     if (!ttree) ttree = fTree;
