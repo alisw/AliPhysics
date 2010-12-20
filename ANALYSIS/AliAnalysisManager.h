@@ -30,6 +30,7 @@ class AliAnalysisTask;
 class AliVEventHandler;
 class AliVEventPool;
 class AliAnalysisGrid;
+class AliAnalysisStatistics;
 
 
 class AliAnalysisManager : public TNamed {
@@ -158,7 +159,9 @@ enum EAliAnalysisFlags {
    
    // Analysis initialization and execution, status
    void                 AddBranches(const char *branches);
+   void                 AddStatisticsTask();
    void                 CheckBranches(Bool_t load=kFALSE);
+   void                 CountEvent(Int_t ninput, Int_t nprocessed, Int_t nfailed, Int_t naccepted);
    Bool_t               InitAnalysis();
    Bool_t               IsInitialized() const {return fInitOK;}
    Bool_t               IsExternalLoop() const {return TObject::TestBit(kExternalLoop);}
@@ -172,6 +175,7 @@ enum EAliAnalysisFlags {
    static void          ProgressBar(const char *opname, Long64_t current, Long64_t size, TStopwatch * const watch=0, Bool_t last=kFALSE, Bool_t refresh=kFALSE);
    void                 AddStatisticsMsg(const char *line);
    const char          *GetStatisticsMsg() const {return fStatisticsMsg.Data();}
+   const AliAnalysisStatistics *GetStatistics() const {return fStatistics;}
    void                 WriteStatisticsMsg(Int_t nevents);
    Int_t                GetNcalls() const {return fNcalls;}
    Bool_t               ValidateOutputFiles() const;
@@ -212,8 +216,9 @@ private:
    Int_t                   fNcalls;              // Total number of calls (events) of ExecAnalysis
    TString                 fStatisticsMsg;       // Statistics user message
    TString                 fRequestedBranches;   // Requested branch names
+   AliAnalysisStatistics  *fStatistics;          // Statistics info about input events
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,11)  // Analysis manager class
+   ClassDef(AliAnalysisManager,12)  // Analysis manager class
 };   
 #endif

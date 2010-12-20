@@ -25,12 +25,12 @@
 //
 //==============================================================================
 
-#include <Riostream.h>
+#include "AliAnalysisManager.h"
 
+#include <Riostream.h>
 #include <TError.h>
 #include <TClass.h>
 #include <TFile.h>
-//#include <TKey.h>
 #include <TMath.h>
 #include <TH1.h>
 #include <TMethodCall.h>
@@ -48,7 +48,8 @@
 #include "AliVEventHandler.h"
 #include "AliVEventPool.h"
 #include "AliSysInfo.h"
-#include "AliAnalysisManager.h"
+#include "AliAnalysisStatistics.h"
+#include "AliAnalysisTaskStat.h"
 
 ClassImp(AliAnalysisManager)
 
@@ -87,7 +88,8 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fRunFromPath(0),
                     fNcalls(0),
                     fStatisticsMsg(),
-                    fRequestedBranches()
+                    fRequestedBranches(),
+                    fStatistics(0)
 {
 // Default constructor.
    fgAnalysisManager = this;
@@ -135,7 +137,8 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fRunFromPath(0),
                     fNcalls(other.fNcalls),
                     fStatisticsMsg(other.fStatisticsMsg),
-                    fRequestedBranches(other.fRequestedBranches)
+                    fRequestedBranches(other.fRequestedBranches),
+                    fStatistics(other.fStatistics)
 {
 // Copy constructor.
    fTasks      = new TObjArray(*other.fTasks);
@@ -187,6 +190,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fNcalls     = other. fNcalls;
       fStatisticsMsg = other.fStatisticsMsg;
       fRequestedBranches = other.fRequestedBranches;
+      fStatistics = other.fStatistics;
    }
    return *this;
 }
@@ -217,8 +221,8 @@ Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 // Read one entry of the tree or a whole branch.
    fCurrentEntry = entry;
    if (!fAutoBranchHandling)
-     return entry;
-   return fTree ? fTree->GetTree()->GetEntry(entry, getall) : 0;
+     return 123456789;
+   return fTree ? fTree->GetTree()->GetEntry(entry, getall) : -1;
 }
 
 //______________________________________________________________________________
@@ -2248,8 +2252,34 @@ void AliAnalysisManager::DoLoadBranch(const char *name)
     fTable.Add(br);
   }
   if (br->GetReadEntry()==GetCurrentEntry()) return;
-  br->GetEntry(GetCurrentEntry());
+  Int_t ret = br->GetEntry(GetCurrentEntry());
+  if (ret<0) {
+    Error("DoLoadBranch", "Could not load entry %lld from branch %s",GetCurrentEntry(), name);
+  }
 }
+
+//______________________________________________________________________________
+void AliAnalysisManager::AddStatisticsTask()
+{
+// Add the statistics task to the manager.
+  if (fStatistics) {
+     Info("AddStatisticsTask", "Already added");
+     return;
+  }   
+  AliAnalysisTaskStat *taskStatistics = AliAnalysisTaskStat::AddToManager();
+  if (taskStatistics) fStatistics = taskStatistics->GetStatistics();
+}  
+
+//______________________________________________________________________________
+void AliAnalysisManager::CountEvent(Int_t ninput, Int_t nprocessed, Int_t nfailed, Int_t naccepted)
+{
+// Bookkeep current event;
+   if (!fStatistics) return;
+   fStatistics->AddInput(ninput);
+   fStatistics->AddProcessed(nprocessed);
+   fStatistics->AddFailed(nfailed);
+   fStatistics->AddAccepted(naccepted);
+}   
 
 //______________________________________________________________________________
 void AliAnalysisManager::AddStatisticsMsg(const char *line)

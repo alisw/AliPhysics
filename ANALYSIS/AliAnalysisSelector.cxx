@@ -141,10 +141,13 @@ Bool_t AliAnalysisSelector::Process(Long64_t entry)
    }
    Int_t nobjCount = TProcessID::GetObjectCount();
    Int_t returnCode = fAnalysis->GetEntry(entry);
-   if (returnCode <= 0)
-      cout << "Error retrieving event. Skipping this event." << endl;
-   else
-     fAnalysis->ExecAnalysis();
+   if (returnCode <= 0) {
+      cout << "Error retrieving event:" << entry << " Skipping ..." << endl;
+      fAnalysis->CountEvent(1,0,1,0);
+   } else {
+      fAnalysis->ExecAnalysis();
+      fAnalysis->CountEvent(1,1,0,0);
+   }   
    TProcessID::SetObjectCount(nobjCount);
    if (fAnalysis->GetDebugLevel() > 1) {
       cout << "<-AliAnalysisSelector::Process()" << endl;

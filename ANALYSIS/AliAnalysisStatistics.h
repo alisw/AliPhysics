@@ -44,7 +44,7 @@ public:
   Long64_t                    GetNaccepted()  const         {return fNaccepted;}
 
   virtual Long64_t            Merge(TCollection* list);
-  virtual void                Print(const Option_t *option) const;
+  virtual void                Print(const Option_t *option="") const;
 
   ClassDef(AliAnalysisStatistics,1)  // Class holding the processed events statistics
 };
