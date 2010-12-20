@@ -494,11 +494,11 @@ class AliTOFRawStream: public TObject {
 		    Int_t iChannel,
 		    Int_t detind0[], Int_t detind1[]) const;
   void VolumeID2LTM(Int_t detind[],
-		    Int_t iDDL = -1,
-		    Int_t iTRM = -1,
-		    Int_t iChain = -1,
-		    Int_t iTDC = -1,
-		    Int_t iChannel = -1) const;
+		    Int_t &iDDL,
+		    Int_t &iTRM,
+		    Int_t &iChain,
+		    Int_t &iTDC,
+		    Int_t &iChannel) const;
 
   enum ETOFRawStreamError {
     kPadXError = 0,
