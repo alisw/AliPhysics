@@ -1444,7 +1444,15 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
 
     //get equipment infos
     currentEquipment = fRawReader->GetEquipmentId();
+
     currentDDL = fRawReader->GetDDLID();
+    if (currentDDL==-1) {
+      fRawReader->AddMajorErrorLog(kDDLdataReading);
+      if (verbose)
+	AliWarning("Error when load DDL. Go to next DDL");
+      continue;
+    }
+
     currentCDH = fRawReader->GetDataHeader();
     const Int_t kDataSize = fRawReader->GetDataSize();
     const Int_t kDataWords = kDataSize / 4;
@@ -1505,7 +1513,7 @@ Bool_t AliTOFRawStream::DecodeV2(Int_t verbose = 0) {
 
   Int_t currentEquipment;
   Int_t currentDDL;
-  const AliRawDataHeader *currentCDH;
+  //const AliRawDataHeader *currentCDH;
 
   //pointers
   UChar_t *data = 0x0;
@@ -1516,7 +1524,7 @@ Bool_t AliTOFRawStream::DecodeV2(Int_t verbose = 0) {
   //get equipment infos
   currentEquipment = fRawReader->GetEquipmentId();
   currentDDL = fRawReader->GetDDLID();
-  currentCDH = fRawReader->GetDataHeader();
+  //currentCDH = fRawReader->GetDataHeader();
   const Int_t kDataSize = fRawReader->GetDataSize();
   const Int_t kDataWords = kDataSize / 4;
   data = new UChar_t[kDataSize];
@@ -2561,11 +2569,11 @@ void AliTOFRawStream::Raw2SDigits(AliRawReader* rawReader, TClonesArray * const 
 }
 
 void AliTOFRawStream::VolumeID2LTM(Int_t detind[],
-				   Int_t iDDL,
-				   Int_t iTRM,
-				   Int_t iChain,
-				   Int_t iTDC,
-				   Int_t iChannel) const {
+				   Int_t &iDDL,
+				   Int_t &iTRM,
+				   Int_t &iChain,
+				   Int_t &iTDC,
+				   Int_t &iChannel) const {
   //
   // To convert the TOF trigger macropad ID (i.e. detind)
   // into TOF OR signals equipment ID (i.e. iDDL, iTRM, iChain, iTDC, iChannel)
