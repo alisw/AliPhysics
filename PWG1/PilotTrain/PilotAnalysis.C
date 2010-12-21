@@ -39,7 +39,7 @@ TString     job_comment        = "PWG1 QA train"; // Can add observations here
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
                // Package versions - Modify as needed
 TString     root_version       = "v5-27-06b";
-TString     aliroot_version    = "v4-21-09-AN";
+TString     aliroot_version    = "v4-21-10-AN";
                // Production directory - change as needed for test mode
 TString     grid_datadir       = "/alice/data/2010/LHC10h";
                // Work directory in GRID (DON'T CHANGE)
@@ -48,6 +48,8 @@ TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/QA/QA$2";
 Int_t       grid_split         = 10;       // Splitting
                // Debug level
 Int_t       debug_level        = 1;        // Debugging
+               // File merging
+Int_t       maxMergeFiles      = 10;       // Max files to merge in a chunk
                // Data pattern - change as needed for test mode
 TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
                // Output directory (DON'T CHANGE)
@@ -55,6 +57,7 @@ TString     alien_outdir       = "$1/QA$2";
                // Input collection (production mode)
 TString     data_collection    = "$1/qa1.xml";
 TString     mergeExcludes      = ""; // Files to be excluded for merging
+TString     mergeDirName       = "QA$2";
 TString     terminateFiles     = "trending.root"; // Files produced during Terminate
 
 Bool_t useProductionMode       = kTRUE;
@@ -356,6 +359,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetJobTag(job_tag);
    plugin->SetNtestFiles(5);
    plugin->SetCheckCopy(kFALSE);
+   plugin->SetMergeDirName(mergeDirName);
 //   plugin->SetOneStageMerging(kTRUE);
 // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
@@ -405,7 +409,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Declare the output file names separated by blancs.
 // (can be like: file.root or file.root@ALICE::Niham::File)
    plugin->SetDefaultOutputs();
-   plugin->SetMaxMergeFiles(20);
+   plugin->SetMaxMergeFiles(maxMergeFiles);
    plugin->SetNrunsPerMaster(1);
    
    // Put default output files to archive
@@ -457,7 +461,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
    plugin->SetProofReset(0);
 // May limit number of workers
-   plugin->SetNproofWorkers(20);   
+   plugin->SetNproofWorkers(1);   
 // May use a specific version of root installed in proof
    plugin->SetRootVersionForProof("current_dbg");
 // May set the aliroot mode. Check http://aaf.cern.ch/node/83 
