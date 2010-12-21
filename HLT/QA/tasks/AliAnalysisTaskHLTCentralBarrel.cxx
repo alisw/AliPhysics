@@ -262,11 +262,11 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
         		      ,esdTrackHLT->Theta()	    
         		      ,esdTrackHLT->Eta()	    
         		      ,esdTrackHLT->Phi()	    
-        		      ,DCAr			    
-        		      ,DCAz			    
-        		      ,esdTrackHLT->Charge()	    
         		      ,dca[0]			    
         		      ,dca[1]			    
+        		      ,esdTrackHLT->Charge()	    
+        		      ,DCAr			    
+        		      ,DCAz			    
 			      ,esdTrackHLT->GetNcls(0)
 			      ,nr_tracksHLT
 			      ,vertHLT->GetStatus() 
