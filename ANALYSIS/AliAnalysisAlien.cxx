@@ -107,6 +107,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fFileForTestMode(),
                   fRootVersionForProof(),
                   fAliRootMode(),
+                  fMergeDirName(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -176,6 +177,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fFileForTestMode(),
                   fRootVersionForProof(),
                   fAliRootMode(),
+                  fMergeDirName(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -245,6 +247,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fFileForTestMode(other.fFileForTestMode),
                   fRootVersionForProof(other.fRootVersionForProof),
                   fAliRootMode(other.fAliRootMode),
+                  fMergeDirName(other.fMergeDirName),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -344,6 +347,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fFileForTestMode         = other.fFileForTestMode;
       fRootVersionForProof     = other.fRootVersionForProof;
       fAliRootMode             = other.fAliRootMode;
+      fMergeDirName            = other.fMergeDirName;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -1012,7 +1016,10 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (!fArguments.IsNull())
          fGridJDL->SetArguments(fArguments, "Arguments for the executable command");
       if (IsOneStageMerging()) fMergingJDL->SetArguments(fGridOutputDir);
-      else                     fMergingJDL->SetArguments("wn.xml $2 $3");    // xml, stage, laststage(0 or 1)
+      else {
+         if (fProductionMode)  fMergingJDL->SetArguments("wn.xml $4");    // xml, stage
+         else                  fMergingJDL->SetArguments("wn.xml $2");    // xml, stage
+     }               
 
       fGridJDL->SetValue("TTL", Form("\"%d\"",fTTL));
       fGridJDL->SetDescription("TTL", Form("Time after which the job is killed (%d min.)", fTTL/60));
@@ -1028,7 +1035,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
          fGridJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be processed per subjob");
       }
       if (!IsOneStageMerging()) {
-         fMergingJDL->SetValue("SplitMaxInputFileNumber", "\"$3\"");
+         fMergingJDL->SetValue("SplitMaxInputFileNumber", Form("\"%d\"",fMaxMergeFiles));
          fMergingJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be merged in one go");
       }   
       if (fSplitMode.Length()) {
@@ -1253,9 +1260,15 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    TString workdir;
    if (!fProductionMode && !fGridWorkingDir.BeginsWith("/alice")) workdir = gGrid->GetHomeDirectory();
    workdir += fGridWorkingDir;
-   fMergingJDL->AddToInputDataCollection("LF:$1/Stage_$2.xml,nodownload", "Collection of files to be merged for stage $2");
-   fMergingJDL->SetOutputDirectory("$1/Stage_$2/#alien_counter_03i#", "Output directory");
-   
+   TString stageName = "$2";
+   if (fProductionMode) stageName = "$4";
+   if (!fMergeDirName.IsNull()) {
+     fMergingJDL->AddToInputDataCollection(Form("LF:$1/%s/Stage_%s.xml,nodownload",fMergeDirName.Data(),stageName.Data()), "Collection of files to be merged for current stage");
+     fMergingJDL->SetOutputDirectory(Form("$1/%s/Stage_%s/#alien_counter_03i#",fMergeDirName.Data(),stageName.Data()), "Output directory");
+   } else {
+     fMergingJDL->AddToInputDataCollection(Form("LF:$1/Stage_%s.xml,nodownload",stageName.Data()), "Collection of files to be merged for current stage");
+     fMergingJDL->SetOutputDirectory(Form("$1/Stage_%s/#alien_counter_03i#",stageName.Data()), "Output directory");
+   }
    if (fProductionMode) {
       TIter next(fInputFiles);
       while ((os=next())) {
@@ -1289,8 +1302,14 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    // Generate the JDL as a string
    TString sjdl = fGridJDL->Generate();
    TString sjdl1 = fMergingJDL->Generate();
-   fMergingJDL->SetOutputDirectory("$1", "Output directory");
-   fMergingJDL->AddToInputSandbox("LF:$1/$4");
+   // Final merge jdl
+   if (!fMergeDirName.IsNull()) {
+     fMergingJDL->SetOutputDirectory(Form("$1/%s",fMergeDirName.Data()), "Output directory");
+     fMergingJDL->AddToInputSandbox(Form("LF:$1/%s/Stage_%s.xml",fMergeDirName.Data(),stageName.Data()));
+   } else {  
+     fMergingJDL->SetOutputDirectory("$1", "Output directory");
+     fMergingJDL->AddToInputSandbox(Form("LF:$1/Stage_%s.xml",stageName.Data()));
+   }  
    TString sjdl2 = fMergingJDL->Generate();
    Int_t index, index1;
    sjdl.ReplaceAll("\"LF:", "\n   \"LF:");
@@ -1327,18 +1346,33 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    index = fJobTag.Index(":");
    if (index < 0) index = fJobTag.Length();
    TString jobTag = fJobTag;
+   if (fProductionMode) jobTag.Insert(index,"_Stage$4");
    sjdl1.Prepend(Form("Jobtag = {\n   \"comment:%s_Merging\"\n};\n", jobTag.Data()));
-   sjdl1.Prepend("# Generated merging jdl \
-                  \n# $1 = full alien path to output directory to be merged \
-                  \n# $2 = merging stage \
-                  \n# $3 = maximum number of files to merge (must be >= 10000 for the last stage) \
-                  \n# $4 = xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
-   sjdl2.Prepend(Form("Jobtag = {\n   \"comment:%s_FinalMerging\"\n};\n", jobTag.Data()));
-   sjdl2.Prepend("# Generated merging jdl \
-                  \n# $1 = full alien path to output directory to be merged \
-                  \n# $2 = merging stage \
-                  \n# $3 = maximum number of files to merge (must be >= 10000 for the last stage) \
-                  \n# $4 = xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
+   if (fProductionMode) {   
+     sjdl1.Prepend("# Generated merging jdl (production mode) \
+                    \n# $1 = full alien path to output directory to be merged \
+                    \n# $2 = train number \
+                    \n# $3 = production (like LHC10b) \
+                    \n# $4 = merging stage \
+                    \n# Stage_<n>.xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
+     sjdl2.Prepend(Form("Jobtag = {\n   \"comment:%s_FinalMerging\"\n};\n", jobTag.Data()));
+     sjdl2.Prepend("# Generated merging jdl \
+                    \n# $1 = full alien path to output directory to be merged \
+                    \n# $2 = train number \
+                    \n# $3 = production (like LHC10b) \
+                    \n# $4 = merging stage \
+                    \n# Stage_<n>.xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
+   } else {
+     sjdl1.Prepend("# Generated merging jdl \
+                    \n# $1 = full alien path to output directory to be merged \
+                    \n# $2 = merging stage \
+                    \n# $3 = xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
+     sjdl2.Prepend(Form("Jobtag = {\n   \"comment:%s_FinalMerging\"\n};\n", jobTag.Data()));
+     sjdl2.Prepend("# Generated merging jdl \
+                    \n# $1 = full alien path to output directory to be merged \
+                    \n# $2 = merging stage \
+                    \n# $3 = xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
+   }
    index = sjdl1.Index("JDLVariables");
    if (index >= 0) sjdl1.Insert(index, "\n# JDL variables\n");
    index = sjdl2.Index("JDLVariables");
@@ -1370,7 +1404,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
       index1 = sjdl2.Index("\n", index);
       sjdl2.Remove(index, index1-index+1);
    }
-   sjdl2.ReplaceAll("wn.xml", "$4");
+   sjdl2.ReplaceAll("wn.xml", Form("Stage_%s.xml",stageName.Data()));
    // Write jdl to file
    ofstream out;
    out.open(fJDLName.Data(), ios::out);
@@ -1908,12 +1942,12 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
       printf("### Submiting final merging stage %d\n", stage);
       TString finalJDL = jdl;
       finalJDL.ReplaceAll(".jdl", "_final.jdl");
-      TString query = Form("submit %s %s %d 10000 Stage_%d.xml", finalJDL.Data(), aliendir, stage, stage);
+      TString query = Form("submit %s %s %d Stage_%d.xml", finalJDL.Data(), aliendir, stage, stage);
       Int_t jobId = SubmitSingleJob(query);
       if (!jobId) return kFALSE;      
    } else {
       printf("### Submiting merging stage %d\n", stage);
-      TString query = Form("submit %s %s %d %d wn.xml", jdl, aliendir, stage, nperchunk);
+      TString query = Form("submit %s %s %d wn.xml", jdl, aliendir, stage);
       Int_t jobId = SubmitSingleJob(query);
       if (!jobId) return kFALSE;           
    }
@@ -3335,7 +3369,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       TString func = mergingMacro;
       TString comment;
       func.ReplaceAll(".C", "");
-      out << "void " << func.Data() << "(const char *dir, Int_t stage=0, Int_t laststage=0)" << endl;
+      out << "void " << func.Data() << "(const char *dir, Int_t stage=0)" << endl;
       out << "{" << endl;
       out << "// Automatically generated merging macro executed in grid subjobs" << endl << endl;
       out << "   TStopwatch timer;" << endl;
@@ -3511,7 +3545,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   // read the analysis manager from file" << endl;
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
-      out << "   if (laststage<10000) return;" << endl;
+      out << "   if (!outputDir.Contains(\"Stage\")) return;" << endl;
       out << "   TFile *file = TFile::Open(\"" << analysisFile << "\");" << endl;
       out << "   if (!file) return;" << endl;
       out << "   TIter nextkey(file->GetListOfKeys());" << endl;
@@ -3730,7 +3764,7 @@ void AliAnalysisAlien::WriteMergeExecutable()
       if (IsOneStageMerging())
          out << "export ARG=\"" << mergeMacro << "(\\\"$1\\\")\"" << endl;
       else
-         out << "export ARG=\"" << mergeMacro << "(\\\"$1\\\",$2,$3)\"" << endl;
+         out << "export ARG=\"" << mergeMacro << "(\\\"$1\\\",$2)\"" << endl;
       out << fExecutableCommand << " " << "$ARG" << endl; 
       out << "echo \"======== " << mergeMacro.Data() << " finished with exit code: $? ========\"" << endl;
       out << "echo \"############## memory after: ##############\"" << endl;

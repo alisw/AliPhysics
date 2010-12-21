@@ -75,6 +75,7 @@ public:
    virtual void        SetTerminateFiles(const char *list)               {fTerminateFiles = list;}
    virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list;};
    virtual void        SetMergeViaJDL(Bool_t on=kTRUE)                   {fMergeViaJDL = on ? 1 : 0;}
+   virtual void        SetMergeDirName(const char *name)                 {fMergeDirName = name;}
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      {fMasterResubmitThreshold = percentage;}
    virtual void        SetNtestFiles(Int_t nfiles)                       {fNtestFiles = nfiles;}
    virtual void        SetNumberOfReplicas(Int_t ncopies)                {fNreplicas = TMath::Min(ncopies,4);}
@@ -202,9 +203,10 @@ private:
    TString          fFileForTestMode; // .txt file for the chain to be used in PROOF test mode
    TString          fRootVersionForProof; // ROOT version to be used in PROOF mode. The default one taken if empty.
    TString          fAliRootMode;     // AliRoot mode among the list supported by the proof cluster
+   TString          fMergeDirName;    // Name of the directory that should be added to the output directory
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 16)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 17)   // Class providing some AliEn utilities
 };
 #endif
