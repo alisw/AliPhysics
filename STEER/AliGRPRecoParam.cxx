@@ -55,7 +55,24 @@ fVertexerTracksTPCmaxtgl(1.5),
 fVertexerTracksTPCfidR(3.),
 fVertexerTracksTPCfidZ(30.),
 fVertexerTracksTPCalgo(1.),
-fVertexerTracksTPCalgoIter0(4.)
+fVertexerTracksTPCalgoIter0(4.),
+fVertexerV0NCuts(7),
+fVertexerV0Chi2max(33.),
+fVertexerV0DNmin(0.05),
+fVertexerV0DPmin(0.05),
+fVertexerV0DCAmax(1.5),
+fVertexerV0CPAmin(0.9),
+fVertexerV0Rmin(0.2),
+fVertexerV0Rmax(200.),
+fVertexerCascadeNCuts(8),
+fVertexerCascadeChi2max(33.),
+fVertexerCascadeDV0min(0.01),
+fVertexerCascadeMassWin(0.008),
+fVertexerCascadeDBachMin(0.01),
+fVertexerCascadeDCAmax(2.0),
+fVertexerCascadeCPAmin(0.98),
+fVertexerCascadeRmin(0.2),
+fVertexerCascadeRmax(100.)
 {
   //
   // constructor
@@ -101,7 +118,24 @@ AliGRPRecoParam::AliGRPRecoParam(const AliGRPRecoParam& par) :
   fVertexerTracksTPCfidR(par.fVertexerTracksTPCfidR),
   fVertexerTracksTPCfidZ(par.fVertexerTracksTPCfidZ),
   fVertexerTracksTPCalgo(par.fVertexerTracksTPCalgo),
-  fVertexerTracksTPCalgoIter0(par.fVertexerTracksTPCalgoIter0)
+  fVertexerTracksTPCalgoIter0(par.fVertexerTracksTPCalgoIter0),
+  fVertexerV0NCuts(par.fVertexerV0NCuts),
+  fVertexerV0Chi2max(par.fVertexerV0Chi2max),
+  fVertexerV0DNmin(par.fVertexerV0DNmin),
+  fVertexerV0DPmin(par.fVertexerV0DPmin),
+  fVertexerV0DCAmax(par.fVertexerV0DCAmax),
+  fVertexerV0CPAmin(par.fVertexerV0CPAmin),
+  fVertexerV0Rmin(par.fVertexerV0Rmin),
+  fVertexerV0Rmax(par.fVertexerV0Rmax),
+  fVertexerCascadeNCuts(par.fVertexerCascadeNCuts),
+  fVertexerCascadeChi2max(par.fVertexerCascadeChi2max),
+  fVertexerCascadeDV0min(par.fVertexerCascadeDV0min),
+  fVertexerCascadeMassWin(par.fVertexerCascadeMassWin),
+  fVertexerCascadeDBachMin(par.fVertexerCascadeDBachMin),
+  fVertexerCascadeDCAmax(par.fVertexerCascadeDCAmax),
+  fVertexerCascadeCPAmin(par.fVertexerCascadeCPAmin),
+  fVertexerCascadeRmin(par.fVertexerCascadeRmin),
+  fVertexerCascadeRmax(par.fVertexerCascadeRmax)
 {
   // copy constructor
 }
@@ -122,13 +156,32 @@ AliGRPRecoParam& AliGRPRecoParam::operator = (const AliGRPRecoParam& par)
 AliGRPRecoParam *AliGRPRecoParam::GetHighFluxParam() 
 {
   //
-  // make default reconstruction  parameters for hig  flux env.
+  // make default reconstruction  parameters for high flux env.
   //
   AliGRPRecoParam *param = new AliGRPRecoParam();
 
   // to speed up the vertexing in PbPb
   param->fVertexerTracksITSalgoIter0 = 1.;
   param->fVertexerTracksTPCalgoIter0 = 1.;
+
+  // tighter selections for V0s
+  param->fVertexerV0Chi2max = 33.;
+  param->fVertexerV0DNmin   = 0.1;
+  param->fVertexerV0DPmin   = 0.1;
+  param->fVertexerV0DCAmax  = 0.05;
+  param->fVertexerV0CPAmin  = 0.99;
+  param->fVertexerV0Rmin    = 0.9;
+  param->fVertexerV0Rmax    = 100.;
+
+  // tighter selections for Cascades
+  param->fVertexerCascadeChi2max  = 33.; 
+  param->fVertexerCascadeDV0min   = 0.05;  
+  param->fVertexerCascadeMassWin  = 0.008; 
+  param->fVertexerCascadeDBachMin = 0.035;
+  param->fVertexerCascadeDCAmax   = 0.1;  
+  param->fVertexerCascadeCPAmin   = 0.9985;  
+  param->fVertexerCascadeRmin     = 0.9;    
+  param->fVertexerCascadeRmax     = 100.;    
 
   return param;
 }
@@ -229,5 +282,71 @@ void AliGRPRecoParam::SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts
     fVertexerTracksITSalgoIter0 = cuts[11];
   }
 
+  return;
+}
+//_____________________________________________________________________________
+void AliGRPRecoParam::GetVertexerV0Cuts(Double_t *cuts) const {
+  //
+  // get cuts for AliV0vertexer
+  //
+  cuts[0] = fVertexerV0Chi2max;
+  cuts[1] = fVertexerV0DNmin;
+  cuts[2] = fVertexerV0DPmin;
+  cuts[3] = fVertexerV0DCAmax;
+  cuts[4] = fVertexerV0CPAmin;
+  cuts[5] = fVertexerV0Rmin;
+  cuts[6] = fVertexerV0Rmax;
+  return;
+}
+//_____________________________________________________________________________
+void AliGRPRecoParam::SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[7]) {
+  //
+  // set cuts for AliV0vertexer
+  //
+  if(ncuts!=fVertexerV0NCuts) {
+    printf("AliGRPRecoParam: Number of AliV0vertexer cuts is %d\n",fVertexerV0NCuts);
+    return;
+  }
+  fVertexerV0Chi2max = cuts[0];
+  fVertexerV0DNmin   = cuts[1];
+  fVertexerV0DPmin   = cuts[2];
+  fVertexerV0DCAmax  = cuts[3];
+  fVertexerV0CPAmin  = cuts[4];
+  fVertexerV0Rmin    = cuts[5];
+  fVertexerV0Rmax    = cuts[6];
+  return;
+}
+//_____________________________________________________________________________
+void AliGRPRecoParam::GetVertexerCascadeCuts(Double_t *cuts) const {
+  //
+  // get cuts for AliCascadevertexer
+  //
+  cuts[0] = fVertexerCascadeChi2max;
+  cuts[1] = fVertexerCascadeDV0min;
+  cuts[2] = fVertexerCascadeMassWin;
+  cuts[3] = fVertexerCascadeDBachMin;
+  cuts[4] = fVertexerCascadeDCAmax;
+  cuts[5] = fVertexerCascadeCPAmin;
+  cuts[6] = fVertexerCascadeRmin;
+  cuts[7] = fVertexerCascadeRmax;
+  return;
+}
+//_____________________________________________________________________________
+void AliGRPRecoParam::SetVertexerCascadeCuts(Int_t ncuts,Double_t cuts[8]) {
+  //
+  // set cuts for AliCascadeVertexer
+  //
+  if(ncuts!=fVertexerCascadeNCuts) {
+    printf("AliGRPRecoParam: Number of AliCascadeVertexer cuts is %d\n",fVertexerCascadeNCuts);
+    return;
+  }
+  fVertexerCascadeChi2max  = cuts[0];
+  fVertexerCascadeDV0min   = cuts[1];
+  fVertexerCascadeMassWin  = cuts[2];
+  fVertexerCascadeDBachMin = cuts[3];
+  fVertexerCascadeDCAmax   = cuts[4];
+  fVertexerCascadeCPAmin   = cuts[5];
+  fVertexerCascadeRmin     = cuts[6];
+  fVertexerCascadeRmax     = cuts[7];
   return;
 }

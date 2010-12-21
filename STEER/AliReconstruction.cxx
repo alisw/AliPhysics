@@ -2038,11 +2038,27 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     if (fRunV0Finder) {
        // V0 finding
        AliV0vertexer vtxer;
+       // get cuts for V0vertexer from AliGRPRecoParam
+       if (grpRecoParam) {
+	 Int_t nCutsV0vertexer = grpRecoParam->GetVertexerV0NCuts();
+	 Double_t *cutsV0vertexer = new Double_t[nCutsV0vertexer];
+	 grpRecoParam->GetVertexerV0Cuts(cutsV0vertexer);
+	 vtxer.SetCuts(cutsV0vertexer);
+	 delete [] cutsV0vertexer; cutsV0vertexer = NULL; 
+       }
        vtxer.Tracks2V0vertices(fesd);
 
        if (fRunCascadeFinder) {
           // Cascade finding
           AliCascadeVertexer cvtxer;
+	  // get cuts for CascadeVertexer from AliGRPRecoParam
+	  if (grpRecoParam) {
+	    Int_t nCutsCascadeVertexer = grpRecoParam->GetVertexerCascadeNCuts();
+	    Double_t *cutsCascadeVertexer = new Double_t[nCutsCascadeVertexer];
+	    grpRecoParam->GetVertexerCascadeCuts(cutsCascadeVertexer);
+	    cvtxer.SetCuts(cutsCascadeVertexer);
+	    delete [] cutsCascadeVertexer; cutsCascadeVertexer = NULL; 
+	  }
           cvtxer.V0sTracks2CascadeVertices(fesd);
        }
     }

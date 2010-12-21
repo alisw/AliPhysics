@@ -35,14 +35,20 @@ class AliGRPRecoParam : public AliDetectorRecoParam
     { SetVertexerTracksCuts(0,ncuts,cuts); return; }
   void  SetVertexerTracksCutsTPC(Int_t ncuts,Double_t cuts[12])
     { SetVertexerTracksCuts(1,ncuts,cuts); return; }
+  void  SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[7]);
+  void  SetVertexerCascadeCuts(Int_t ncuts,Double_t cuts[8]);
   Bool_t GetVertexerTracksConstraintITS() const { return fVertexerTracksConstraintITS; }
   Bool_t GetVertexerTracksConstraintTPC() const { return fVertexerTracksConstraintTPC; }
   Int_t GetVertexerTracksNCuts() const { return fVertexerTracksNCuts; }
+  Int_t GetVertexerV0NCuts() const { return fVertexerV0NCuts; }
+  Int_t GetVertexerCascadeNCuts() const { return fVertexerCascadeNCuts; }
   void  GetVertexerTracksCuts(Int_t mode,Double_t *cuts) const;
   void  GetVertexerTracksCutsITS(Double_t *cuts) const
     { GetVertexerTracksCuts(0,cuts); return; }
   void  GetVertexerTracksCutsTPC(Double_t *cuts) const
     { GetVertexerTracksCuts(1,cuts); return; }
+  void  GetVertexerV0Cuts(Double_t *cuts) const;
+  void  GetVertexerCascadeCuts(Double_t *cuts) const;
 
   AliGRPRecoParam(const AliGRPRecoParam&);
   AliGRPRecoParam& operator=(const AliGRPRecoParam&);
@@ -53,7 +59,8 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fMostProbablePt; // to be used for B=0 tracking
   Bool_t   fVertexerTracksConstraintITS; // diamond constr for AliVertexerTracks
   Bool_t   fVertexerTracksConstraintTPC; // diamond constr for AliVertexerTracks
-  Int_t    fVertexerTracksNCuts; // number of cuts for AliVertexerTracks
+  Int_t    fVertexerTracksNCuts;  // number of cuts for AliVertexerTracks
+
   // cuts for AliVertexerTracks: ITS mode
   Double_t fVertexerTracksITSdcacut; // general dca
   Double_t fVertexerTracksITSdcacutIter0; // dca in iteration 0
@@ -82,7 +89,30 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerTracksTPCalgo; // finder algo
   Double_t fVertexerTracksTPCalgoIter0; // finder algo iteration 0
 
-  ClassDef(AliGRPRecoParam,4) // global reco parameters
+  Int_t    fVertexerV0NCuts;      // number of cuts for AliV0vertexer
+
+  // cuts for AliV0vertexer:
+  Double_t fVertexerV0Chi2max; //max chi2
+  Double_t fVertexerV0DNmin;   //min imp parameter for the 1st daughter
+  Double_t fVertexerV0DPmin;   //min imp parameter for the 2nd daughter
+  Double_t fVertexerV0DCAmax;  //max DCA between the daughter tracks
+  Double_t fVertexerV0CPAmin;  //min cosine of V0's pointing angle
+  Double_t fVertexerV0Rmin;    //min radius of the fiducial volume
+  Double_t fVertexerV0Rmax;    //max radius of the fiducial volume
+
+  Int_t    fVertexerCascadeNCuts; // number of cuts for AliCascadeVertexer
+
+  // cuts for AliCascadeVertexer:
+  Double_t fVertexerCascadeChi2max;  //maximal allowed chi2 
+  Double_t fVertexerCascadeDV0min;   //min V0 impact parameter
+  Double_t fVertexerCascadeMassWin;  //"window" around the Lambda mass
+  Double_t fVertexerCascadeDBachMin; //min bachelor impact parameter
+  Double_t fVertexerCascadeDCAmax;   //max DCA between the V0 and the track 
+  Double_t fVertexerCascadeCPAmin;   //min cosine of the cascade pointing angle
+  Double_t fVertexerCascadeRmin;     //min radius of the fiducial volume
+  Double_t fVertexerCascadeRmax;     //max radius of the fiducial volume
+
+  ClassDef(AliGRPRecoParam,5) // global reco parameters
 };
 
 #endif
