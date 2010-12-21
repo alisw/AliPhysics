@@ -206,6 +206,12 @@ Bool_t AliHMPIDRawStream::Next()
   Bool_t status=kFALSE;
   fRawDataSize=0;        
   fDDLNumber = fRawReader->GetDDLID();
+  
+  if(fDDLNumber<0) {
+    AliWarning(Form("fDDLNumber not a acceptable value %i",fDDLNumber));
+    return kFALSE;
+  }
+    
   if(fRawReader->GetType() == 7 || fRawReader->GetType() == 8 )  {           //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
     fnDDLInStream[fDDLNumber]=1; fnDDLOutStream[fDDLNumber]=0;
     

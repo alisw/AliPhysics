@@ -222,12 +222,14 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
 //              thetaCRec - estimate of ThetaCerenkov
 //              status    - TRUE if a good solution is found, FALSE if not
 
-  Double_t *phiphot = new Double_t[fNClu];  
-  Double_t *dist    = new Double_t[fNClu];  
-  Int_t    *indphi  = new    Int_t[fNClu];  
+  Double_t phiphot[1000];  
+  Double_t    dist[1000];  
+  Int_t     indphi[1000];  
 
   Bool_t status;
     
+  if(fNClu>1000) return kFALSE;  // too many clusters....
+  
 // Sort in phi angle...
   for(Int_t i=0;i<fNClu;i++) {
     if(!fClCk[i]) {
@@ -281,10 +283,6 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
     npeff++;
   }
   
-  delete [] phiphot;
-  delete [] dist;
-  delete [] indphi;
-
   if(npeff<3) {
     AliDebug(1,Form("FindShape failed: no enough photons = %i...",npeff));
     delete [] phiphotP;

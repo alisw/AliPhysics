@@ -88,12 +88,13 @@ void AliHMPIDCluster::CoG()
 //   Returns: none
   Int_t minPadX=999,minPadY=999,maxPadX=-1,maxPadY=-1;      //for box finding  
   if(fDigs==0) return;                                      //no digits in this cluster
-  fXX=fYY=fQRaw=0;                                            //init summable parameters
+  fXX=fYY=fQRaw=0;                                          //init summable parameters
+  fCh = -1;                                                 //init chamber
   Int_t maxQpad=-1,maxQ=-1;                                 //to calculate the pad with the highest charge
   AliHMPIDDigit *pDig=0x0;
   for(Int_t iDig=0;iDig<fDigs->GetEntriesFast();iDig++){    //digits loop
     pDig=(AliHMPIDDigit*)fDigs->At(iDig);                   //get pointer to next digit
-
+    if(!pDig) continue;                                     //protection
     if(pDig->PadPcX() > maxPadX) maxPadX = pDig->PadPcX();  // find the minimum box that contain the cluster  MaxX                            
     if(pDig->PadPcY() > maxPadY) maxPadY = pDig->PadPcY();  //                                                MaxY
     if(pDig->PadPcX() < minPadX) minPadX = pDig->PadPcX();  //                                                MinX   
@@ -103,6 +104,7 @@ void AliHMPIDCluster::CoG()
     fXX += pDig->LorsX()*q;fYY +=pDig->LorsY()*q;             //add digit center weighted by QDC
     fQRaw+=q;                                               //increment total charge 
     if(q>maxQ) {maxQpad = pDig->Pad();maxQ=(Int_t)q;}       // to find pad with highest charge
+    fCh=pDig->Ch();                                         //initialize chamber number
   }//digits loop
   
   fBox=(maxPadX-minPadX+1)*100+maxPadY-minPadY+1;           // dimension of the box: format Xdim*100+Ydim
@@ -112,7 +114,6 @@ void AliHMPIDCluster::CoG()
   if(fDigs->GetEntriesFast()>1&&fgDoCorrSin)CorrSin();       //correct it by sinoid   
   
   fQ  = fQRaw;                                              // Before starting fit procedure, Q and QRaw must be equal
-  fCh=pDig->Ch();                                           //initialize chamber number
   fMaxQpad = maxQpad; fMaxQ=maxQ;                           //store max charge pad to the field
   fChi2=0;                                                  // no Chi2 to find
   fNlocMax=0;                                               // proper status from this method

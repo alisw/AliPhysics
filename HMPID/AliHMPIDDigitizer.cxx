@@ -107,7 +107,10 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
       iNdigPad++; if(iNdigPad<=3) aTids[iNdigPad-1]=pSdig->GetTrack(0);                                        //collect TID 
       continue;
     }
-    if(i!=0 && AliHMPIDParam::IsOverTh(q))  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);   //do not create digit for the very first sdigit 
+    if(i!=0 && AliHMPIDParam::IsOverTh(q) 
+            && iCh>=AliHMPIDParam::kMinCh
+            && iCh<=AliHMPIDParam::kMaxCh)  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);  //do not create digit for the very first sdigit 
+    
     iPad=pSdig->Pad(); iCh=AliHMPIDParam::A2C(iPad);                                                            //new sdigit comes, reset collectors
     iNdigPad=1;
     aTids[0]=pSdig->GetTrack(0);aTids[1]=aTids[2]=-1; 
@@ -116,7 +119,10 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     arrNoise[iCh][pSdig->Pc()][pSdig->PadPcX()][pSdig->PadPcY()]=0;
   }//sdigits loop (sorted)
   
-  if(AliHMPIDParam::IsOverTh(q))  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);           //add the last one, in case of empty sdigits list q=-1
+  if(AliHMPIDParam::IsOverTh(q)
+      && iCh>=AliHMPIDParam::kMinCh
+      && iCh<=AliHMPIDParam::kMaxCh)  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);        //add the last one, in case of empty sdigits list q=-1
+  
 // add noise pad above threshold with no signal merged...if any
   if(!fgDoNoise) return;
   aTids[0]=aTids[1]=aTids[2]=-1;

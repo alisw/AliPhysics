@@ -73,7 +73,7 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
     
     if(sigmaRing==0) {
       for(Int_t jPart=0;jPart<nsp;jPart++) prob[jPart]=1.0/(Float_t)nsp;
-      delete pPid ; pPid=0x0; return;
+      delete pPid ; pPid=0x0; delete [] h; return;
     } 
     
     if(TMath::Abs(thetaCerExp-thetaCerTh)<4*sigmaRing) desert = kFALSE;                                                                //   

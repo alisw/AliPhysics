@@ -128,8 +128,10 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   
   Double_t xP,yP;
 
-  TF1 **pTin  = new TF1*[21];
-  TF1 **pTout = new TF1*[21];
+//  TF1 **pTin  = new TF1*[21];
+//  TF1 **pTout = new TF1*[21];
+  TF1  *pTin[21];
+  TF1 *pTout[21];
 
 // evaluate Environment Pressure
   
