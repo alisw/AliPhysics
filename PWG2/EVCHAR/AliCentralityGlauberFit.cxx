@@ -68,10 +68,17 @@ AliCentralityGlauberFit::AliCentralityGlauberFit(const char *filename) :
   fTempHist(0),   
   fGlauberHist(0), 
   fFastFit(0),      
+  fAncestor(2),      
   fNBD(0),         
   fUseChi2(kTRUE),      
-  finrootfile(0),  
+  fUseAverage(kFALSE),
+  fhAncestor(0),
+  fNevents(100000),
+  fNtrials(100),
+  finrootfilename(0),
+  finntuplename(0),
   foutrootfilename(0),
+  foutntuplename(0),
   fhistnames(), 
   fPercentXsec(0)
 {
@@ -129,21 +136,23 @@ void AliCentralityGlauberFit::SetGlauberParam(
 }
 
 //--------------------------------------------------------------------------------------------------
-void AliCentralityGlauberFit::MakeFits(TString infilename) 
+void AliCentralityGlauberFit::MakeFits() 
 {
   TH1D *hDATA;
   TH1D *thistGlau; 
   FILE* fTxt = fopen ("parameters.txt","w");
+  TFile *inrootfile;
   TFile *outrootfile;
   
   // open inrootfile, outrootfile
-  finrootfile  = new TFile(infilename);
+  std::cout << "input file " << finrootfilename << std::endl;
+  inrootfile  = new TFile(finrootfilename,"OPEN");
   outrootfile = new TFile(foutrootfilename,"RECREATE");
   
   // loop over all distribution names  
   std::vector<TString>::const_iterator hni;
   for(hni=fhistnames.begin(); hni!=fhistnames.end(); hni++) {
-    hDATA  = (TH1D*) (finrootfile->Get(*hni)); 
+    hDATA  = (TH1D*) (inrootfile->Get(*hni)); 
     //TList *list  = (TList*) (inrootfile->Get("coutput1")); 
     //hDATA  = (TH1D*) (list->FindObject(*hni)); 
     hDATA->Rebin(fRebinFactor);
@@ -157,6 +166,9 @@ void AliCentralityGlauberFit::MakeFits(TString infilename)
 
     for (int nalpha=0;nalpha<fNalpha;nalpha++) {
       alpha = fAlphalow   + ((float) nalpha ) * (fAlphahigh  - fAlphalow ) / fNalpha;
+
+      if (fUseAverage) fhAncestor = MakeAncestor(alpha);
+
       mu=0.0;
       for (int nmu=0; nmu<fNmu; nmu++) {
 	mu = (fMulow*(1-nalpha*0.05) )  + ((float) nmu ) * (fMuhigh  - fMulow ) / fNmu;
@@ -168,7 +180,8 @@ void AliCentralityGlauberFit::MakeFits(TString infilename)
 	  for (int neff=0; neff<fNeff; neff++) {
 	    eff = fEfflow + ((float) neff) * (fEffhigh - fEfflow) / fNeff;
 	    
-	    thistGlau = GlauberHisto(mu,k,eff,alpha,hDATA,kFALSE);
+	    if (fUseAverage) thistGlau = GlauberHisto(mu,k,eff,alpha,fhAncestor,hDATA,kFALSE);
+	    else thistGlau = GlauberHisto(mu,k,eff,alpha,hDATA,kFALSE);
 	    chi2 = CalculateChi2(hDATA,thistGlau,eff);
 	    fprintf(fTxt, "%3.3f %3.3f %3.3f %3.3f %3.3f\n",(float) eff, (float) mu, (float) k, (float) alpha, chi2);
 
@@ -184,9 +197,12 @@ void AliCentralityGlauberFit::MakeFits(TString infilename)
       }
     }
 
-    thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,hDATA,kTRUE);
+    if (fUseAverage) {
+      fhAncestor = MakeAncestor(alpha_min);
+      thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,fhAncestor,hDATA,kTRUE);
+    } else thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,hDATA,kTRUE);
+
     hGLAU = (TH1D *) thistGlau->Clone("hGLAU");
-    //hGLAU->SetName( ((TString)hDATA->GetName()).Append(Form("_GLAU_%d_%d_%d_%d",(int)(100*mu_min),(int)(100*k_min),(int)(100*alpha_min),(int)(100*eff_min))));
     hGLAU->SetName( ((TString)hDATA->GetName()).Append(Form("_GLAU")));
     hGLAU->SetTitle( ((TString)hDATA->GetName()).Append(Form("_GLAU_%.3f_%.3f_%.3f_%.3f",mu_min,k_min,alpha_min,eff_min)));
 
@@ -207,29 +223,28 @@ void AliCentralityGlauberFit::MakeFits(TString infilename)
   }
 
   // close inrootfile, outrootfile
-  finrootfile->Close();
+  inrootfile->Close();
   outrootfile->Close();
 }
 
 //--------------------------------------------------------------------------------------------------
-void AliCentralityGlauberFit::MakeFitsMinuitNBD(TString infilename) 
+void AliCentralityGlauberFit::MakeFitsMinuitNBD() 
 {
   // Make fits using Minut.
 
   TH1D *hDATA;
   TH1D *thistGlau; 
+  TFile *inrootfile;
   TFile *outrootfile;
   
   // open inrootfile, outrootfile
-  finrootfile  = new TFile(infilename);
+  inrootfile  = new TFile(finrootfilename,"OPEN");
   outrootfile = new TFile(foutrootfilename,"RECREATE");
   
   // loop over all distribution names  
   std::vector<TString>::const_iterator hni;
   for(hni=fhistnames.begin(); hni!=fhistnames.end(); hni++) {
-    fFastFit=0;
-    fUseChi2 = 1;
-    hDATA  = (TH1D*) (finrootfile->Get(*hni)); 
+    hDATA  = (TH1D*) (inrootfile->Get(*hni)); 
     hDATA->Rebin(fRebinFactor);
     fTempHist=hDATA;
     TH1D *hGLAU = new TH1D("hGLAU","hGLAU",hDATA->GetNbinsX(),0,hDATA->GetNbinsX()*hDATA->GetBinWidth(1));
@@ -253,15 +268,15 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD(TString infilename)
     }
 
     if (!fFastFit) {
-      gMinuit->mnparm(0,"alpha", fAlphalow,  0.1,  0.75,1,   ierflg);
-      gMinuit->mnparm(1,"mu"   , fMulow,     0.2,  1,100,    ierflg);
-      gMinuit->mnparm(2,"k"    , fKlow,      0.1,  0.5,2.5,  ierflg);
-      gMinuit->mnparm(3,"eff"  , fEfflow,    0.1,  0.95,1.0, ierflg);      
+      gMinuit->mnparm(0,"alpha", fAlphalow,  0.1,  0.75, 1  , ierflg);
+      gMinuit->mnparm(1,"mu"   , fMulow,     0.2,  1   , 100, ierflg);
+      gMinuit->mnparm(2,"k"    , fKlow,      0.1,  0.5 , 2.5, ierflg);
+      gMinuit->mnparm(3,"eff"  , fEfflow,    0.1,  0.95, 1.0, ierflg);      
     } else if (fFastFit == 2) {
-      gMinuit->mnparm(0,"alpha", 0.59, 0.1, 0,1, ierflg);
-      gMinuit->mnparm(1,"mu"   , 30.2,  1,     0,0, ierflg);
-      gMinuit->mnparm(2,"k"    , 3.875, 0.1,  0,0, ierflg);
-      gMinuit->mnparm(3,"eff"  , 0.98947, 0.1,  0,0, ierflg);
+      gMinuit->mnparm(0,"alpha", fAlphalow,   0.1, 0.75, 1   , ierflg);
+      gMinuit->mnparm(1,"mu"   , 30.2,        0.2, 1   , 100 , ierflg);
+      gMinuit->mnparm(2,"k"    , 3.875,       0.1, 0   , 0   , ierflg);
+      gMinuit->mnparm(3,"eff"  , fEfflow,     0.1, 0.95, 1.0 , ierflg);
     }
 
     // Call migrad
@@ -309,7 +324,11 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD(TString infilename)
     // Print some infos
     std::cout << "chi2 min is " << chi2min << ", " << alpha_min << ", "<< mu_min<< ", "  << k_min << ", " <<  eff_min << std::endl;
 
-    thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,hDATA,kTRUE);
+    if (fUseAverage) {
+      fhAncestor = MakeAncestor(alpha_min);
+      thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,fhAncestor,hDATA,kTRUE);
+    } else thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,hDATA,kTRUE);
+
     hGLAU = (TH1D *) thistGlau->Clone("hGLAU");
     hGLAU->SetName( ((TString)hDATA->GetName()).Append(Form("_GLAU")));
     hGLAU->SetTitle( ((TString)hDATA->GetName()).Append(Form("_GLAU_%.3f_%.3f_%.3f_%.3f",mu_min,k_min,alpha_min,eff_min)));
@@ -330,7 +349,7 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD(TString infilename)
     fGlauberHist=hGLAU;
   }
   // close inrootfile, outrootfile
-  finrootfile->Close();
+  inrootfile->Close();
   outrootfile->Close();
 }
 
@@ -344,41 +363,33 @@ TH1D *AliCentralityGlauberFit::GlauberHisto(Float_t mu, Float_t k, Float_t eff, 
   static TStopwatch sw;
 
   TH1D *hSample = fFastFit != 2 ? NBDhist(mu,k) : 0;
-  //  fNBD->SetParameters(mu,k);
   static TH1D *h1 = (TH1D*)hDATA->Clone();
   h1->Reset();
-  //  h1->SetName(Form("fit_%.3f_%.3f_%.3f_%.3f",mu,k,eff,alpha));
+
   TFile *outFile = NULL;
   TNtuple *ntuple = NULL;
  
   if (save) {
-    outFile = TFile::Open("pippo.root", "RECREATE");
+    outFile = new TFile(foutntuplename,"RECREATE");
     ntuple = new TNtuple("gnt", "Glauber ntuple", "Npart:Ncoll:B:tAA:ntot");
   } 
 
-  Int_t nents = 100000;//glau_ntuple->GetEntries();
-  //if(fFastFit > 0 && fFastFit < 2) nents = 10000;
-  //  Int_t nents = 100;//glau_ntuple->GetEntries();
-  for (Int_t i=0;i<nents;++i) {
+  for (Int_t i=0;i<fNevents;++i) {
     fGlauntuple->GetEntry(i);
-    //Int_t n = TMath::Nint(TMath::Power(Npart,alpha));
-    //Int_t n = TMath::Nint(TMath::Power(Ncoll,alpha));
-    Int_t n = alpha * fNpart + (1-alpha) * fNcoll;
+    Int_t n=0;
+    if (fAncestor == 1)      n = TMath::Nint(TMath::Power(fNpart,alpha));
+    else if (fAncestor == 2) n = alpha * fNpart + (1-alpha) * fNcoll;
     Int_t ntot=0;
-    //    ntot=n*fNBD->GetRandom();    
     if (fFastFit == 1) {
-      // NBD
-      ntot = n*hSample->GetRandom();
+      ntot = n*hSample->GetRandom(); // NBD
     }
     else if (fFastFit == 2) {
-      // Gaussian
-      Double_t sigma = k*TMath::Sqrt(n*mu);  
-      ntot = gRandom->Gaus(n*mu,sigma);
+      Double_t sigma = k*TMath::Sqrt(n*mu);    
+      ntot = gRandom->Gaus(n*mu,sigma); // Gaussian
     }
     else {
       for(Int_t j = 0; j<n; ++j) 
 	ntot+=hSample->GetRandom();
-	//	ntot+=fNBD->GetRandom();
     }
     h1->Fill(ntot);
     
@@ -398,6 +409,37 @@ TH1D *AliCentralityGlauberFit::GlauberHisto(Float_t mu, Float_t k, Float_t eff, 
 }
 
 //--------------------------------------------------------------------------------------------------
+
+TH1D * AliCentralityGlauberFit::GlauberHisto(Float_t mu, Float_t k, Float_t eff, Float_t alpha, TH1D *hAncestor, TH1D *hDATA, Bool_t /*save*/) {
+    
+  TH1D *hSample = NBDhist(mu,k);
+  TH1D *h1 = (TH1D*)hDATA->Clone();
+  h1->Reset();
+  h1->SetName(Form("fit_%.3f_%.3f_%.3f_%.3f",mu,k,eff,alpha));
+
+  for (int np=0; np<hAncestor->GetNbinsX(); np++) {  
+    int weight_factor = (int) hAncestor->GetBinContent(np+1);
+    if (weight_factor < 1) continue;
+
+    for (int j=0; j<fNtrials; j++) {  // always just do Ntrials MC throws but then re-weight
+      Int_t ntot = 0;
+      Int_t samp = (int)hAncestor->GetBinCenter(np);
+      for (Int_t jj=0;jj<samp;jj++) {
+	float temp = (hSample->GetRandom());
+	int nhit = (int) (temp);
+	ntot = ntot + nhit;
+      }
+      h1->Fill(ntot, (float) weight_factor);
+    }
+  }
+    
+  delete hSample;
+  return h1;
+  
+}
+
+
+//--------------------------------------------------------------------------------------------------
 Float_t AliCentralityGlauberFit::CalculateChi2(TH1D *hDATA, TH1D *thistGlau, Float_t eff) 
 {
   // note that for different values of neff the mc distribution is identical, just re-scaled below
@@ -410,9 +452,6 @@ Float_t AliCentralityGlauberFit::CalculateChi2(TH1D *hDATA, TH1D *thistGlau, Flo
   float mcintegral = thistGlau->Integral(1,thistGlau->GetNbinsX());
   float scale = (hDATA->Integral(1,hDATA->GetNbinsX())/mcintegral) * ((float) eff);
   thistGlau->Scale(scale);
-
-  // FIXME: Kolmogorov
-  //return hDATA->KolmogorovTest(thistGlau,"M");
 
   // // calculate the chi2 between MC and real data over some range ????
   if (fUseChi2) {
@@ -490,6 +529,7 @@ void AliCentralityGlauberFit::SaveHisto(TH1D *hist1, TH1D *hist2, TH1D *heffi, T
 Double_t AliCentralityGlauberFit::NBD(Int_t n, Double_t mu, Double_t k)
 {
   // Compute NBD.
+  // Use exp of log to handle small numbers, otherwise gamma fc breaks
   Double_t ret = TMath::Exp( TMath::LnGamma(n+k) - TMath::LnGamma(k) - TMath::LnGamma(n+1) ) * 
                  TMath::Power(mu/(mu+k),n) * TMath::Power(1-mu/(mu+k),k);
   return ret;
@@ -542,4 +582,18 @@ Double_t AliCentralityGlauberFit::NBDFunc(Double_t * x, Double_t *par)
   Double_t n  = x[0];
   Double_t ret = exp( TMath::LnGamma(n+k) - TMath::LnGamma(k) - TMath::LnGamma(n+1) ) * TMath::Power(mu/(mu+k),n) * TMath::Power(1-mu/(mu+k),k);
   return ret;
+}
+
+//--------------------------------------------------------------------------------------------------
+TH1D *AliCentralityGlauberFit::MakeAncestor(Double_t alpha)
+{
+  fhAncestor = new TH1D("fhAncestor","fhAncestor",3000,0,3000);
+  for (Int_t i=0;i<fNevents;++i) {
+    fGlauntuple->GetEntry(i);
+    Int_t n=0;
+    if (fAncestor == 1)      n = TMath::Nint(TMath::Power(fNpart,alpha));
+    else if (fAncestor == 2) n = alpha * fNpart + (1-alpha) * fNcoll;
+    fhAncestor->Fill(n);
+  }
+  return fhAncestor;
 }
