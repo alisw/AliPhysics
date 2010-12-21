@@ -1366,12 +1366,12 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
      sjdl1.Prepend("# Generated merging jdl \
                     \n# $1 = full alien path to output directory to be merged \
                     \n# $2 = merging stage \
-                    \n# $3 = xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
+                    \n# xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
      sjdl2.Prepend(Form("Jobtag = {\n   \"comment:%s_FinalMerging\"\n};\n", jobTag.Data()));
      sjdl2.Prepend("# Generated merging jdl \
                     \n# $1 = full alien path to output directory to be merged \
                     \n# $2 = merging stage \
-                    \n# $3 = xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
+                    \n# xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip\n");
    }
    index = sjdl1.Index("JDLVariables");
    if (index >= 0) sjdl1.Insert(index, "\n# JDL variables\n");
@@ -1942,12 +1942,12 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
       printf("### Submiting final merging stage %d\n", stage);
       TString finalJDL = jdl;
       finalJDL.ReplaceAll(".jdl", "_final.jdl");
-      TString query = Form("submit %s %s %d Stage_%d.xml", finalJDL.Data(), aliendir, stage, stage);
+      TString query = Form("submit %s %s %d", finalJDL.Data(), aliendir, stage);
       Int_t jobId = SubmitSingleJob(query);
       if (!jobId) return kFALSE;      
    } else {
       printf("### Submiting merging stage %d\n", stage);
-      TString query = Form("submit %s %s %d wn.xml", jdl, aliendir, stage);
+      TString query = Form("submit %s %s %d", jdl, aliendir, stage);
       Int_t jobId = SubmitSingleJob(query);
       if (!jobId) return kFALSE;           
    }
