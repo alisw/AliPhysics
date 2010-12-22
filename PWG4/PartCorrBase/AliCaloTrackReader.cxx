@@ -549,9 +549,17 @@ void AliCaloTrackReader::FillVertexArray() {
   }          
   
   if (!fMixedEvent) { //Single event analysis
-    if(!fInputEvent->GetPrimaryVertex()) printf("AliCaloTrackReader::FillVertexArray() - NULL primary vertex\n");
-    if(fDataType!=kMC && fInputEvent->GetPrimaryVertex())fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]); 
-    else { 
+    if(fDataType!=kMC){
+
+      if(fInputEvent->GetPrimaryVertex()){
+        fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]); 
+      }
+      else {
+        printf("AliCaloTrackReader::FillVertexArray() - NULL primary vertex\n");
+        fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
+      }//Primary vertex pointer do not exist
+      
+    } else {//MC read event 
       fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
     }
       
@@ -573,7 +581,6 @@ void AliCaloTrackReader::FillVertexArray() {
   }
   
 }
-
 
 //____________________________________________________________________________
 void AliCaloTrackReader::FillInputCTS() {
