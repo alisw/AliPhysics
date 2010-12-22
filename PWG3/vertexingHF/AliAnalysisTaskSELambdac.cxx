@@ -44,6 +44,8 @@
 #include "AliAODPidHF.h"
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliRDHFCuts.h"
+#include "AliKFVertex.h"
+#include "AliESDVertex.h"
 
 ClassImp(AliAnalysisTaskSELambdac)
 
@@ -53,6 +55,9 @@ AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac():
 AliAnalysisTaskSE(),
 fOutput(0), 
 fHistNEvents(0),
+fhChi2(0),
+fhMassPtGreater3(0),
+fhMassPtGreater3TC(0),
 fNtupleLambdac(0),
 fUpmasslimit(2.486),
 fLowmasslimit(2.086),
@@ -76,6 +81,9 @@ AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac(const char *name,Bool_t fillN
 AliAnalysisTaskSE(name),
 fOutput(0),
 fHistNEvents(0),
+fhChi2(0),
+fhMassPtGreater3(0),
+fhMassPtGreater3TC(0),
 fNtupleLambdac(0),
 fUpmasslimit(2.486),
 fLowmasslimit(2.086),
@@ -154,7 +162,7 @@ void AliAnalysisTaskSELambdac::SetPtBinLimit(Int_t n, Float_t* lim){
     fArrayBinLimits[0]=0.;
     fArrayBinLimits[1]=2.;
     fArrayBinLimits[2]=3.;
-    fArrayBinLimits[3]=5.;
+    fArrayBinLimits[3]=4.;
     for(Int_t i=4; i<kMaxPtBins+1; i++) fArrayBinLimits[i]=99999999.;
   }else{
     fNPtBins=n-1;
@@ -434,6 +442,17 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
+
+  fhChi2 = new TH1F("fhChi2", "Chi2",100,0.,10.);
+  fhChi2->Sumw2();
+  fOutput->Add(fhChi2);
+
+  fhMassPtGreater3=new TH1F("fhMassPtGreater3","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3->Sumw2();
+  fOutput->Add(fhMassPtGreater3);
+  fhMassPtGreater3TC=new TH1F("fhMassPtGreater3TC","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3TC->Sumw2();
+  fOutput->Add(fhMassPtGreater3TC);
   
   
 
@@ -453,7 +472,11 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
 
-  AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+   //tmp
+ fHistNEvents->Fill(0); // count event
+  // Post the data already here
+  PostData(1,fOutput);
 
   TClonesArray *array3Prong = 0;
   TClonesArray *arrayLikeSign =0;
@@ -485,19 +508,16 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   //  return;
   }
 
-  // fix for temporary bug in ESDfilter 
-  // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
-  
-  fHistNEvents->Fill(0); // count event
-  // Post the data already here
-  PostData(1,fOutput);
-
+ 
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
 
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  if(!vtx1) return;
+  if(vtx1==0x0) return;
+
+  if(!fRDCutsProduction->IsEventSelected(aod)) return;
   
   // load MC particles
   if(fReadMC){
@@ -531,7 +551,11 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       unsetvtx=kTRUE;
     }
 
-    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate)) {
+    Int_t isSelectedTracks = fRDCutsProduction->IsSelected(d,AliRDHFCuts::kTracks);
+    if(!isSelectedTracks) continue;
+    
+    Int_t selection=fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate);
+    if(selection>0) {
       Int_t iPtBin = -1;
       Double_t ptCand = d->Pt();
       
@@ -539,7 +563,6 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 	if(ptCand<fArrayBinLimits[ibin+1])iPtBin=ibin;
       }
 
-      Bool_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate);
       Int_t labDp=-1;
       Float_t deltaPx=0.;
       Float_t deltaPy=0.;
@@ -549,12 +572,17 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       Float_t yDecay=0.;
       Float_t zDecay=0.;
       Float_t pdgCode=-2;
+      Bool_t isSignal=kFALSE;
+      Float_t pdgCode1=-1;
+      Float_t pdgCode2=-1;
       if(fReadMC){
 	labDp = MatchToMCLambdac(d,arrayMC);   
 	//
 	if(labDp>0){
+	isSignal=kTRUE;
 	  AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
 	  AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(0));  
+	  AliAODMCParticle *dg1 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(1));  
 	  deltaPx=partDp->Px()-d->Px();
 	  deltaPy=partDp->Py()-d->Py();
 	  deltaPz=partDp->Pz()-d->Pz();
@@ -563,6 +591,8 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 	  yDecay=dg0->Yv();	  
 	  zDecay=dg0->Zv();
 	  pdgCode=TMath::Abs(partDp->GetPdgCode());
+	  pdgCode1=TMath::Abs(dg0->GetPdgCode());
+	  pdgCode2=TMath::Abs(dg1->GetPdgCode());
 	}else{
 	  pdgCode=-1;
 	}
@@ -575,7 +605,7 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       //apply MC PID
       if(fReadMC && fMCPid){
        
-       if(IspKpiMC(d,arrayMC,pdgs)) {
+       if(IspKpiMC(d,arrayMC)) {
         invMasspKpi=d->InvMassLcpKpi();
 	if(fUseKF){
 	 pdgs[0]=2212;pdgs[1]=321;pdgs[2]=211;
@@ -590,33 +620,37 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 	}
        }
       }
-      // aplly realistic PID
+      // apply realistic PID
       if(fRealPid){
-       if(IspKpiReal(d)) {
+       if(selection==1 || selection==3) {
         invMasspKpi=d->InvMassLcpKpi();
+	pdgs[0]=2212;pdgs[1]=321;pdgs[2]=211;
 	if(fUseKF){
 	 pdgs[0]=2212;pdgs[1]=321;pdgs[2]=211;
 	 if(!VertexingKF(d,pdgs,field)) invMasspKpi=-1.;
 	}
        }
-       if(IspiKpReal(d)) {
+       if(selection>=2) {
         invMasspiKp=d->InvMassLcpiKp();
+	 pdgs[0]=211;pdgs[1]=321;pdgs[2]=2212;
 	if(fUseKF){
 	 pdgs[0]=211;pdgs[1]=321;pdgs[2]=2212;
 	 if(!VertexingKF(d,pdgs,field)) invMasspiKp=-1.;
 	}
+
        }
       }
+
       //apply PID using resonances
       if(fResPid){
-       if(IspKpiResonant(d,field)) {
+       if(IspKpiResonant(d,field) && (selection==3 || selection==1)) {
         invMasspKpi=d->InvMassLcpKpi();
 	if(fUseKF){
 	 pdgs[0]=2212;pdgs[1]=321;pdgs[2]=211;
 	 if(!VertexingKF(d,pdgs,field)) invMasspKpi=-1.;
 	}
        }
-       if(IspiKpResonant(d,field)) {
+       if(IspiKpResonant(d,field) && selection>=2) {
         invMasspiKp=d->InvMassLcpiKp();
 	if(fUseKF){
 	 pdgs[0]=2212;pdgs[1]=321;pdgs[2]=211;
@@ -626,17 +660,19 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       }
       // no PID
       if(!fResPid && !fRealPid && !fMCPid){
-       invMasspiKp=d->InvMassLcpiKp(); 
+       if(selection==2 || selection==3) invMasspiKp=d->InvMassLcpiKp(); 
        if(fUseKF){
          pdgs[0]=211;pdgs[1]=321;pdgs[2]=2212;
          if(!VertexingKF(d,pdgs,field)) invMasspiKp=-1.;
         }
-       invMasspKpi=d->InvMassLcpKpi();
+       if(selection==1 || selection==3) invMasspKpi=d->InvMassLcpKpi();
        if(fUseKF){
         pdgs[0]=2212;pdgs[1]=321;pdgs[2]=211;
         if(!VertexingKF(d,pdgs,field)) invMasspKpi=-1.;
        }
       }
+
+      Bool_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate);
 
       if(invMasspiKp<0. && invMasspKpi<0.) continue;
 
@@ -651,9 +687,10 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 	tmp[5]=xDecay;	  
 	tmp[6]=yDecay;	  
 	tmp[7]=zDecay;	  
-	tmp[8]=d->PtProng(0);
+	if(pdgCode1==2212) {tmp[8]=d->PtProng(0);}else{tmp[8]=0.;}
+	if(pdgCode1==211) {tmp[10]=d->PtProng(0);}else{tmp[10]=0.;}
 	tmp[9]=d->PtProng(1);
-	tmp[10]=d->PtProng(2);
+	if(pdgCode2==211) {tmp[10]=d->PtProng(2);}else{tmp[10]=0.;}
 	tmp[11]=d->Pt();
 	tmp[12]=d->CosPointingAngle();
 	tmp[13]=d->DecayLength();
@@ -679,6 +716,24 @@ Double_t ptmax=0;
       for(Int_t i=0;i<3;i++){
 	if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
       }
+     if(d->Pt()>3.){
+	if(invMasspiKp>0. && invMasspKpi>0.){
+	if(invMasspiKp>0.) fhMassPtGreater3->Fill(invMasspiKp,0.5);
+	if(invMasspKpi>0.) fhMassPtGreater3->Fill(invMasspKpi,0.5);
+	}else{
+         if(invMasspiKp>0.) fhMassPtGreater3->Fill(invMasspiKp);
+         if(invMasspKpi>0.) fhMassPtGreater3->Fill(invMasspKpi);
+        }
+	if(passTightCuts){
+	 if(invMasspiKp>0. && invMasspKpi>0.){
+	 if(invMasspiKp>0.) fhMassPtGreater3TC->Fill(invMasspiKp,0.5);
+	 if(invMasspKpi>0.) fhMassPtGreater3TC->Fill(invMasspKpi,0.5);
+	 }else{
+          if(invMasspiKp>0.) fhMassPtGreater3TC->Fill(invMasspiKp);
+          if(invMasspKpi>0.) fhMassPtGreater3TC->Fill(invMasspKpi);
+         }
+	}
+      }
       if(iPtBin>=0){
       
 	index=GetHistoIndex(iPtBin);
@@ -689,6 +744,7 @@ Double_t ptmax=0;
          if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
          if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
         }
+
 	fCosPHist[index]->Fill(cosp);
 	fDLenHist[index]->Fill(dlen);
 	fSumd02Hist[index]->Fill(sumD02);
@@ -696,12 +752,12 @@ Double_t ptmax=0;
 	fDCAHist[index]->Fill(dca);
 	
 	if(passTightCuts){
-	 if(invMasspiKp>0. && invMasspKpi>0.){
+	 if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
 	  if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp,0.5);
 	  if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi,0.5);
 	 }else{
-          if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp);
-          if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi);
+          if(invMasspiKp>0. && passTightCuts==2) fMassHistTC[index]->Fill(invMasspiKp);
+          if(invMasspKpi>0. && passTightCuts==1) fMassHistTC[index]->Fill(invMasspKpi);
          }
 	}
 	
@@ -721,12 +777,12 @@ Double_t ptmax=0;
 	    fPtMaxHist[index]->Fill(ptmax);
 	    fDCAHist[index]->Fill(dca);
 	    if(passTightCuts){
-	     if(invMasspiKp>0. && invMasspKpi>0.){
+	     if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
 	      if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp,0.5);
 	      if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi,0.5);
              }else{
-              if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp);
-              if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi);
+              if(invMasspiKp>0. && passTightCuts==2) fMassHistTC[index]->Fill(invMasspiKp);
+              if(invMasspKpi>0.&& passTightCuts==1) fMassHistTC[index]->Fill(invMasspKpi);
              }
 	    }
 	    
@@ -744,15 +800,13 @@ Double_t ptmax=0;
 	    fSumd02Hist[index]->Fill(sumD02);
 	    fPtMaxHist[index]->Fill(ptmax);
 	    fDCAHist[index]->Fill(dca);
-	    if(passTightCuts){
-	    if(invMasspiKp>0. && invMasspKpi>0.){
+	    if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
 	       fMassHistTC[index]->Fill(invMasspiKp,0.5);
 	       fMassHistTC[index]->Fill(invMasspKpi,0.5);
 	      }else{
-	       if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp);
-	       if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi);
+	       if(invMasspiKp>0. && passTightCuts==2) fMassHistTC[index]->Fill(invMasspiKp);
+	       if(invMasspKpi>0. && passTightCuts==1) fMassHistTC[index]->Fill(invMasspKpi);
 	      }
-	    }	
 	  }
 	}
       }
@@ -999,9 +1053,9 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
          return kFALSE;
 }
 //-----------------------------
-Bool_t AliAnalysisTaskSELambdac::IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC,Int_t *pdgs) const{
+Bool_t AliAnalysisTaskSELambdac::IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const{
   // Apply MC PID
-   Int_t lab[3]={0,0,0};//,pdgs[3]={0,0,0};
+   Int_t lab[3]={0,0,0},pdgs[3]={0,0,0};
    for(Int_t i=0;i<3;i++){
     AliAODTrack *daugh=(AliAODTrack*)d->GetDaughter(i);
     lab[i]=daugh->GetLabel();
@@ -1034,50 +1088,6 @@ Bool_t AliAnalysisTaskSELambdac::IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArra
    return kFALSE;
 }
 //--------------------------------------
-Bool_t AliAnalysisTaskSELambdac::IspiKpReal(AliAODRecoDecayHF3Prong *d) const{
-
-  // Apply realistic PID
-  AliAODPidHF* pidObj=new AliAODPidHF();
-  Bool_t type[2]={kFALSE,kFALSE};
-  for(Int_t i=0;i<3;i++){
-//   Bool_t pid[3]={kFALSE,kFALSE,kFALSE};
-  AliAODTrack *track=(AliAODTrack*)d->GetDaughter(i);
-   //test asymmetric TPC PID
-     Double_t plim[2]={0.6,2.};
-     Double_t sigmas[5]={2.,1.,2.,3.,0.};
-     pidObj->SetPLimit(plim);
-     pidObj->SetSigma(sigmas);
-     if(i==1) type[i]=pidObj->MatchTPCTOF(track,2,3,kFALSE);
-     if(i==2) type[i]=pidObj->MatchTPCTOF(track,2,4,kFALSE);
-     //pidinfo=pidObj->MatchTPCTOF(track,3,3,kFALSE);
-
-  }
-
-  if(type[0] && type[1]) {delete pidObj;return kTRUE;}
-  delete pidObj;
- return kFALSE;
-}
-//--------------------------------------
-Bool_t AliAnalysisTaskSELambdac::IspKpiReal(AliAODRecoDecayHF3Prong *d) const{
-
-  // Apply realistic PID
-  AliAODPidHF* pidObj=new AliAODPidHF();
-  Bool_t type[2]={kFALSE,kFALSE};
-  for(Int_t i=0;i<2;i++){
-   //Bool_t pid[3]={kFALSE,kFALSE,kFALSE};
-   AliAODTrack *track=(AliAODTrack*)d->GetDaughter(i);
-     Double_t plim[2]={0.6,2.};
-     Double_t sigmas[5]={2.,1.,2.,3.,0.};
-     pidObj->SetPLimit(plim);
-     pidObj->SetSigma(sigmas);
-     if(i==1) type[i]=pidObj->MatchTPCTOF(track,2,3,kFALSE);
-     if(i==0) type[i]=pidObj->MatchTPCTOF(track,2,4,kFALSE);
-  }
-  if(type[0] && type[1]) {delete pidObj;return kTRUE;}
-  delete pidObj;
- return kFALSE;
-}
-//------------------------------------
 Bool_t AliAnalysisTaskSELambdac::VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const{
  // apply vertexing KF 
    Int_t iprongs[3]={0,1,2};
@@ -1085,12 +1095,9 @@ Bool_t AliAnalysisTaskSELambdac::VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *p
  //topological constr
    AliKFParticle *Lambdac=d->ApplyVertexingKF(iprongs,3,pdgs,kTRUE,field,mass);
    if(!Lambdac) return kFALSE;
-  Double_t probTot=TMath::Prob(Lambdac->GetChi2(),Lambdac->GetNDF());
-  if(probTot<fCutsKF[0]) return kFALSE;
-
-  if(d->PtProng(0)<1.5 && d->Getd0Prong(0)>0.02) return kFALSE;
-    if(d->PtProng(1)<1.5 && d->Getd0Prong(1)>0.02) return kFALSE;
-      if(d->PtProng(2)<1.5 && d->Getd0Prong(2)>0.02) return kFALSE;
+//  Double_t probTot=TMath::Prob(Lambdac->GetChi2(),Lambdac->GetNDF());
+//  if(probTot<fCutsKF[0]) return kFALSE;
+  if(Lambdac->GetChi2()>fCutsKF[0]) return kFALSE;
  //mass constr for K*
    Int_t ipRes[2];
    Int_t pdgres[2];
@@ -1135,7 +1142,7 @@ Bool_t AliAnalysisTaskSELambdac::VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *p
  //mass constr for Delta
    mass[0]=1.2;mass[1]=0.15;
    ipRes[0]=0;ipRes[1]=2;
-   pdgres[0]=pdgs[0];pdgres[1]=pdgs[2];
+   pdgres[0]=pdgs[0];pdgres[2]=pdgs[2];
    AliKFParticle *Delta=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
   Double_t probDelta=TMath::Prob(Delta->GetChi2(),Delta->GetNDF());
   if(probDelta>fCutsKF[7]) {
@@ -1157,14 +1164,14 @@ Bool_t AliAnalysisTaskSELambdac::IspiKpResonant(AliAODRecoDecayHF3Prong *d,Doubl
         Int_t pdgres[2]={321,2212};
         AliKFParticle *Lambda1520=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
 	Double_t probLa=TMath::Prob(Lambda1520->GetChi2(),Lambda1520->GetNDF());
-	if(probLa>0.1) return kTRUE;
+	if(probLa>0.9) return kTRUE;
  //K* -> kpi
-//        mass[0]=0.8961;mass[1]=0.03;
-//        ipRes[0]=0;ipRes[1]=1;
-//        pdgres[0]=211;pdgres[1]=321;
-//        AliKFParticle *Kstar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
-//	Double_t probKa=TMath::Prob(Kstar->GetChi2(),Kstar->GetNDF());
-//	if(probKa>0.1) return kTRUE;
+        mass[0]=0.8961;mass[1]=0.03;
+        ipRes[0]=0;ipRes[1]=1;
+        pdgres[0]=211;pdgres[1]=321;
+        AliKFParticle *Kstar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
+	Double_t probKa=TMath::Prob(Kstar->GetChi2(),Kstar->GetNDF());
+       if(probKa>0.9) return kTRUE;
 
  return kFALSE;
 
@@ -1179,15 +1186,16 @@ Bool_t AliAnalysisTaskSELambdac::IspKpiResonant(AliAODRecoDecayHF3Prong *d,Doubl
         Int_t pdgres[2]={2212,321};
         AliKFParticle *Lambda1520=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
 	Double_t probLa=TMath::Prob(Lambda1520->GetChi2(),Lambda1520->GetNDF());
-	if(probLa>0.1) return kTRUE;
+	if(probLa>0.9) return kTRUE;
  //K* -> kpi
-//        mass[0]=0.8961;mass[1]=0.03;
-//        ipRes[0]=1;ipRes[1]=2;
-//        pdgres[1]=211;pdgres[0]=321;
-//        AliKFParticle *Kstar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
-//	Double_t probKa=TMath::Prob(Kstar->GetChi2(),Kstar->GetNDF());
-//	if(probKa>0.1) return kTRUE;
+        mass[0]=0.8961;mass[1]=0.03;
+        ipRes[0]=1;ipRes[1]=2;
+        pdgres[1]=211;pdgres[0]=321;
+        AliKFParticle *Kstar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
+	Double_t probKa=TMath::Prob(Kstar->GetChi2(),Kstar->GetNDF());
+	if(probKa>0.9) return kTRUE;
 
  return kFALSE;
 
 }
+

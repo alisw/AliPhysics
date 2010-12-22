@@ -49,9 +49,7 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Int_t GetNBinsPt() const {return fNPtBins;}
   Double_t GetPtBinLimit(Int_t ibin) const ;
   Bool_t IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
-  Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC,Int_t *pdgs) const ;
-  Bool_t IspiKpReal(AliAODRecoDecayHF3Prong *d) const ;
-  Bool_t IspKpiReal(AliAODRecoDecayHF3Prong *d) const ;
+  Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Bool_t IspiKpResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
   Bool_t IspKpiResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
   Bool_t VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const ;
@@ -73,11 +71,16 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*3+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*3+2;}
   Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*5;}
+
+  Bool_t ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const;
  
   enum {kMaxPtBins=10};
 
   TList   *fOutput; //! list send on output slot 0
   TH1F    *fHistNEvents; //!hist. for No. of events
+  TH1F    *fhChi2; //!hist. for No. of events
+  TH1F    *fhMassPtGreater3; //!hist. for No. of events
+  TH1F    *fhMassPtGreater3TC; //!hist. for No. of events
   TH1F *fMassHist[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH1F*   fCosPHist[3*kMaxPtBins]; //!hist. for PointingAngle (LC)
   TH1F*   fDLenHist[3*kMaxPtBins]; //!hist. for Dec Length (LC)
@@ -97,7 +100,7 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   TNtuple *fNtupleLambdac; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
   Float_t fLowmasslimit; //lower inv mass limit for histos
-  Float_t fCutsKF[10];
+  Float_t fCutsKF[10]; //cuts with KF vertexer
   Int_t fNPtBins; //number of bins in Pt for histograms
   AliRDHFCutsLctopKpi *fRDCutsAnalysis; //Cuts for Analysis
   AliRDHFCutsLctopKpi *fRDCutsProduction; //Production Cuts
@@ -106,12 +109,12 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Bool_t fFillNtuple;   // flag for filling ntuple
   Bool_t fReadMC;    //flag for access to MC
   Bool_t fMCPid;    //flag for access to MC
-  Bool_t fRealPid;    //flag for access to MC
-  Bool_t fResPid;      //flag to do LS analysis
-  Bool_t fUseKF;      //flag to do LS analysis
+  Bool_t fRealPid;    //flag for real PID
+  Bool_t fResPid;      //flag for PID with resonant channels
+  Bool_t fUseKF;      //flag to cut with KF vertexer
   AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
   
-  ClassDef(AliAnalysisTaskSELambdac,2); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdac,3); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif
