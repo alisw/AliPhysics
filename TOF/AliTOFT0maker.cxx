@@ -141,7 +141,6 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
   //
   // Remake TOF PID probabilities
   //
-
   Double_t t0tof[6];
 
   if(fKmask) ApplyMask(esd);
@@ -261,6 +260,8 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
   }
 
   // T0 pt bin
+  Float_t *t0values = new Float_t[fNmomBins];
+  Float_t *t0resolution = new Float_t[fNmomBins];
   if(fCalculated[7] < 100){
     for(Int_t i=0;i<fNmomBins;i++){
       t0maker->DefineT0("all",fPIDesd->GetTOFResponse().GetMinMom(i),fPIDesd->GetTOFResponse().GetMaxMom(i));
@@ -268,7 +269,6 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
       t0tof[1] = t0maker->GetResult(1);
       t0tof[2] = t0maker->GetResult(2);
       t0tof[3] = t0maker->GetResult(3);
- 
 
       Float_t t0bin =-1000*t0tof[0]; // best t0
       Float_t t0binRes =1000*t0tof[1]; // sigma best t0
@@ -293,16 +293,23 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
 	   t0binRes= t0sigma;	  
 	}
       }
-      fPIDesd->GetTOFResponse().SetT0bin(i,t0bin);
-      fPIDesd->GetTOFResponse().SetT0binRes(i,t0binRes);
+      t0values[i] = t0bin;
+      t0resolution[i] = t0binRes;
     }
   }
   else{
     for(Int_t i=0;i<fNmomBins;i++){
-      fPIDesd->GetTOFResponse().SetT0bin(i,lT0Current);
-      fPIDesd->GetTOFResponse().SetT0binRes(i,fT0sigma);
+      t0values[i] = lT0Current;
+      t0resolution[i] = fT0sigma;
     }
   }
+  for(Int_t i=0;i<fNmomBins;i++){
+    fPIDesd->GetTOFResponse().SetT0bin(i,t0values[i]);
+    fPIDesd->GetTOFResponse().SetT0binRes(i,t0resolution[i]);
+  }
+  
+  delete[] t0values;
+  delete[] t0resolution;
 
   return fCalculated;
 }
