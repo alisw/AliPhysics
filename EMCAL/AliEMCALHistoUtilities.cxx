@@ -199,6 +199,16 @@ void AliEMCALHistoUtilities::ResetListOfHists(TList *l)
   }
 }
 
+void AliEMCALHistoUtilities::Titles(TH1 *hid, const char *titx,const char *tity)
+{
+  if(hid) {
+    hid->SetXTitle(titx);
+    hid->SetYTitle(tity);
+  } else {
+    printf("<W> TAliasPAI::titles() -> hid is 0 !\n");
+  }
+}
+
 TLatex *AliEMCALHistoUtilities::Lat(const char *text, Float_t x,Float_t y, Int_t align, Float_t tsize, short tcolor)
 { 
   // Oct 15, 2007

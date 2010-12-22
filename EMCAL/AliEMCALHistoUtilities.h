@@ -47,6 +47,7 @@ class AliEMCALHistoUtilities: public TNamed {
   static void AddToNameAndTitle(TNamed *h=0, const char *name=0, const char *title=0);
   static void AddToNameAndTitleToList(TList *l=0, const char *name=0, const char *title=0);
   static void ResetListOfHists(TList *l);
+  static void Titles(TH1 *hid=0, const char *titx="",const char *tity="");
 
   static TLatex *Lat(const char *text="", Float_t x=0.0,Float_t y=0.0, Int_t align=12, Float_t tsize=0.05, short tcolor = 1); 
   static TGraph *DrawGraph(Int_t n=4, Double_t *x=0, Double_t *y=0, Int_t markerColor=4,  
