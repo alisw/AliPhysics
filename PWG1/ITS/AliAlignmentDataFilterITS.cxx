@@ -1102,7 +1102,7 @@ Int_t AliAlignmentDataFilterITS::WriteTrackPointsInIdealGeom(Char_t *fin,
       UShort_t volid=atp->GetVolumeID()[i];
       Int_t index=AliITSAlignMille2Module::GetIndexFromVolumeID(volid);
       
-      
+      if(index<0 || index>=2200) continue;
       // dealign point
       // get MODIFIED matrix
       TGeoHMatrix *svMatrix = m2[index]->GetSensitiveVolumeMatrix(p.GetVolumeID());
