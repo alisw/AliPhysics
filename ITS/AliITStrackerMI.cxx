@@ -184,7 +184,7 @@ fPlaneEff(0) {
 	
       } // end loop on detectors
     } // end loop on ladders
-    fForceSkippingOfLayer[i] = 0;
+    fForceSkippingOfLayer[i-1] = 0;
   } // end loop on layers
 
 
@@ -365,6 +365,8 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
   TClonesArray *clusters = NULL;
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
   clusters=rpcont->FetchClusters(0,cTree);
+  if(!clusters) return 1;
+
   if(!(rpcont->IsSPDActive() || rpcont->IsSDDActive() || rpcont->IsSSDActive())){
       AliError("ITS is not in a known running configuration: SPD, SDD and SSD are not active");
       return 1;
@@ -402,11 +404,12 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
 	  Int_t lab[4]   = {0,0,0,detector};
 	  Int_t info[3]  = {0,0,i};
 	  Float_t q      = 0.; // this identifies virtual clusters
-	  Float_t hit[5] = {xdead,
+	  Float_t hit[6] = {xdead,
 			    0.,
 			    AliITSReconstructor::GetRecoParam()->GetSigmaXDeadZoneHit2(),
 			    AliITSReconstructor::GetRecoParam()->GetSigmaZDeadZoneHit2(),
-			    q};
+			    q,
+			    0.};
 	  Bool_t local   = kTRUE;
 	  Double_t zwindow = AliITSReconstructor::GetRecoParam()->GetZWindowDeadZone();
 	  hit[1] = fSPDdetzcentre[0]+0.5*AliITSRecoParam::GetSPDdetzlength();
@@ -1333,15 +1336,12 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
     for (Int_t i=0;i<TMath::Min(2,ntracks[2]);i++) {
       AliITStrackMI & track= tracks[2][nindexes[2][i]];
       if (track.GetNumberOfClusters()<3) continue;
-      if (!constrain && track.GetNormChi2(2) >
+      if (track.GetNormChi2(2) >
 	  AliITSReconstructor::GetRecoParam()->GetMaxNormChi2NonCForHypothesis()) continue;
-      if (constrain) track.SetNSkipped(track.GetNSkipped()+2);      
-      if (!constrain){
-	track.SetD(0,track.GetD(GetX(),GetY()));
-	track.SetNSkipped(track.GetNSkipped()+7./(7.+8.*TMath::Abs(track.GetD(0))));
-	if (track.GetNumberOfClusters()+track.GetNDeadZone()+track.GetNSkipped()>6) {
-	  track.SetNSkipped(6-track.GetNumberOfClusters()+track.GetNDeadZone());
-	}
+      track.SetD(0,track.GetD(GetX(),GetY()));
+      track.SetNSkipped(track.GetNSkipped()+7./(7.+8.*TMath::Abs(track.GetD(0))));
+      if (track.GetNumberOfClusters()+track.GetNDeadZone()+track.GetNSkipped()>6) {
+	track.SetNSkipped(6-track.GetNumberOfClusters()+track.GetNDeadZone());
       }
       AddTrackHypothesys(new AliITStrackMI(track), esdindex);
     }
@@ -1380,7 +1380,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       Double_t xrp[3]; vertex->GetXYZ(xrp[0],xrp[1],xrp[2]);  //I.B.
       Int_t nearestold  = GetNearestLayer(xrp);               //I.B.
       Int_t nearest     = nearestold; 
-      for (Int_t ilayer =nearest;ilayer<8;ilayer++){
+      for (Int_t ilayer =nearest;ilayer<7;ilayer++){
 	if (ntracks[nearest]==0){
 	  nearest = ilayer;
 	}
@@ -1457,8 +1457,50 @@ fNMaxSigmaCl(3)
     fClusterTracks[0][i]=-1;
     fClusterTracks[1][i]=-1;
     fClusterTracks[2][i]=-1;    
-    fClusterTracks[3][i]=-1;    
+    fClusterTracks[3][i]=-1;
+    fY[i]=0;    
+    fZ[i]=0;    
   }
+  fYB[0]=0;
+  fYB[1]=0;
+
+  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer5; j++) {
+    for (Int_t j1=0; j1<6; j1++) {
+      fClusters5[j1][j]=0;
+      fClusterIndex5[j1][j]=-1;
+      fY5[j1][j]=0;
+      fZ5[j1][j]=0;
+      fN5[j1]=0;
+      fBy5[j1][0]=0;
+      fBy5[j1][1]=0;
+    }
+  }
+
+  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer10; j++) {
+    for (Int_t j1=0; j1<11; j1++) {
+      fClusters10[j1][j]=0;
+      fClusterIndex10[j1][j]=-1;
+      fY10[j1][j]=0;
+      fZ10[j1][j]=0;
+      fN10[j1]=0;
+      fBy10[j1][0]=0;
+      fBy10[j1][1]=0;
+    }
+  }
+
+  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer20; j++) {
+    for (Int_t j1=0; j1<21; j1++) {
+      fClusters20[j1][j]=0;
+      fClusterIndex20[j1][j]=-1;
+      fY20[j1][j]=0;
+      fZ20[j1][j]=0;
+      fN20[j1]=0;
+      fBy20[j1][0]=0;
+      fBy20[j1][1]=0;
+    }
+  }
+
+
 }
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITSlayer::
@@ -1496,6 +1538,56 @@ fNMaxSigmaCl(3) {
   //--------------------------------------------------------------------
   fDetectors=new AliITSdetector[fNladders*fNdetectors];
   fRoad=2*fR*TMath::Sqrt(TMath::Pi()/1.);//assuming that there's only one cluster
+
+  for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++) {
+    fClusterWeight[i]=0;
+    fClusterTracks[0][i]=-1;
+    fClusterTracks[1][i]=-1;
+    fClusterTracks[2][i]=-1;    
+    fClusterTracks[3][i]=-1;    
+    fY[i]=0;    
+    fZ[i]=0;    
+  }
+
+  fYB[0]=0;
+  fYB[1]=0;
+
+  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer5; j++) {
+    for (Int_t j1=0; j1<6; j1++) {
+      fClusters5[j1][j]=0;
+      fClusterIndex5[j1][j]=-1;
+      fY5[j1][j]=0;
+      fZ5[j1][j]=0;
+      fN5[j1]=0;
+      fBy5[j1][0]=0;
+      fBy5[j1][1]=0;
+    }
+  }
+
+  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer10; j++) {
+    for (Int_t j1=0; j1<11; j1++) {
+      fClusters10[j1][j]=0;
+      fClusterIndex10[j1][j]=-1;
+      fY10[j1][j]=0;
+      fZ10[j1][j]=0;
+      fN10[j1]=0;
+      fBy10[j1][0]=0;
+      fBy10[j1][1]=0;
+    }
+  }
+
+  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer20; j++) {
+    for (Int_t j1=0; j1<21; j1++) {
+      fClusters20[j1][j]=0;
+      fClusterIndex20[j1][j]=-1;
+      fY20[j1][j]=0;
+      fZ20[j1][j]=0;
+      fN20[j1]=0;
+      fBy20[j1][0]=0;
+      fBy20[j1][1]=0;
+    }
+  }
+
 }
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITSlayer::AliITSlayer(const AliITSlayer& layer):
@@ -3476,6 +3568,9 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
   }
   delete backtrack;
   delete forwardtrack;
+
+  if (!besttrack)  return 0;
+
   Int_t accepted=0;
   for (Int_t i=0;i<entries;i++){    
     AliITStrackMI * track = (AliITStrackMI*)array->At(i);
@@ -3654,13 +3749,13 @@ void  AliITStrackerMI::GetBestHypothesysMIP(TObjArray &itsTracks)
       if (besttrack&&fAfterV0) {
 	UpdateESDtrack(besttrack,AliESDtrack::kITSin);
       }
-      if (besttrack&&fConstraint[fPass]) 
-      	UpdateESDtrack(besttrack,AliESDtrack::kITSin);
-      if (besttrack->GetChi2MIP(0)+besttrack->GetNUsed()>1.5 && fConstraint[fPass]) {
-	if ( TMath::Abs(besttrack->GetD(0))>0.1 || 
-	     TMath::Abs(besttrack->GetD(1))>0.1 ) track->SetReconstructed(kFALSE);	
-      }       
-
+      if (besttrack) {
+	if (fConstraint[fPass]) UpdateESDtrack(besttrack,AliESDtrack::kITSin);
+	if (besttrack->GetChi2MIP(0)+besttrack->GetNUsed()>1.5 && fConstraint[fPass]) {
+	  if ( TMath::Abs(besttrack->GetD(0))>0.1 || 
+	       TMath::Abs(besttrack->GetD(1))>0.1 ) track->SetReconstructed(kFALSE);	
+	}       
+      }
     }    
   }
 } 
@@ -4880,3 +4975,4 @@ Float_t AngleModTrack[3]={99999.,99999.,99999.}; // angles (phi, z and "absolute
   }
 return;
 }
+
