@@ -7,6 +7,8 @@
 #include <TFile.h>
 #include <TCanvas.h>
 #include <TH1F.h>
+#include <TH2F.h>
+#include <TH1D.h>
 #include <TF1.h>
 #include <TStyle.h>
 #include <TLegend.h>
@@ -37,19 +39,20 @@ enum {kGaus=0, kDoubleGaus};
 
 
 // Common variables: to be configured by the user
-// const Int_t nPtBins=6;
-// Double_t ptlims[nPtBins+1]={2.,3.,4.,5.,6.,8.,12.};
-// Int_t rebin[nPtBins+1]={2,4,4,4,4,4,4};
+const Int_t nPtBins=6;
+Double_t ptlims[nPtBins+1]={2.,3.,4.,5.,6.,8.,12.};
+Int_t rebin[nPtBins+1]={2,4,4,4,4,4,4};
 
-const Int_t nPtBins=7;//6;
-Double_t ptlims[nPtBins+1]={1.,2.,3.,4.,5.,6.,8.,12.};
+//const Int_t nPtBins=7;//6;
+//Double_t ptlims[nPtBins+1]={1.,2.,3.,4.,5.,6.,8.,12.};
 //Int_t rebin[nPtBins+1]={8,6,10,10,10,10,10,10}; //for looser cuts
-Int_t rebin[nPtBins+1]={10,10,10,10,10,10,10,10}; //for Chiara's cuts
+//Int_t rebin[nPtBins+1]={10,10,10,10,10,10,10,10}; //for Chiara's cuts
 Int_t typeb=kExpo;
 Int_t types=kGaus;
 Int_t optPartAntiPart=kBoth;
 Int_t factor4refl=0;
 Float_t massRangeForCounting=0.05; // GeV
+TH2F* hPtMass=0x0;
 
 //for D0only
 Bool_t cutsappliedondistr=kTRUE;
@@ -111,16 +114,19 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   
 
 
-  TH1F* hCntSig1=new TH1F("hCntSig1","hCntSig1",nPtBins,ptlims);
-  TH1F* hCntSig2=new TH1F("hCntSig2","hCntSig2",nPtBins,ptlims);
-  TH1F* hNDiffCntSig1=new TH1F("hNDiffCntSig1","hNDiffCntSig1",nPtBins,ptlims);
-  TH1F* hNDiffCntSig2=new TH1F("hNDiffCntSig2","hNDiffCntSig2",nPtBins,ptlims);
-  TH1F* hSignal=new TH1F("hSignal","hSignal",nPtBins,ptlims);
-  TH1F* hRelErrSig=new TH1F("hRelErrSig","hRelErrSig",nPtBins,ptlims);
-  TH1F* hInvSignif=new TH1F("hInvSignif","hInvSignif",nPtBins,ptlims);
-  TH1F* hBackground=new TH1F("hBackground","hBackground",nPtBins,ptlims);
-  TH1F* hBackgroundNormSigma=new TH1F("hBackgroundNormSigma","hBackgroundNormSigma",nPtBins,ptlims);
-  TH1F* hSignificance=new TH1F("hSignificance","hSignificance",nPtBins,ptlims);
+  TH1D* hCntSig1=new TH1D("hCntSig1","hCntSig1",nPtBins,ptlims);
+  TH1D* hCntSig2=new TH1D("hCntSig2","hCntSig2",nPtBins,ptlims);
+  TH1D* hNDiffCntSig1=new TH1D("hNDiffCntSig1","hNDiffCntSig1",nPtBins,ptlims);
+  TH1D* hNDiffCntSig2=new TH1D("hNDiffCntSig2","hNDiffCntSig2",nPtBins,ptlims);
+  TH1D* hSignal=new TH1D("hSignal","hSignal",nPtBins,ptlims);
+  TH1D* hRelErrSig=new TH1D("hRelErrSig","hRelErrSig",nPtBins,ptlims);
+  TH1D* hInvSignif=new TH1D("hInvSignif","hInvSignif",nPtBins,ptlims);
+  TH1D* hBackground=new TH1D("hBackground","hBackground",nPtBins,ptlims);
+  TH1D* hBackgroundNormSigma=new TH1D("hBackgroundNormSigma","hBackgroundNormSigma",nPtBins,ptlims);
+  TH1D* hSignificance=new TH1D("hSignificance","hSignificance",nPtBins,ptlims);
+  TH1D* hMass=new TH1D("hMass","hMass",nPtBins,ptlims);
+  TH1D* hSigma=new TH1D("hSigma","hSigma",nPtBins,ptlims);
+
 
   Int_t nMassBins=hmass[1]->GetNbinsX();
   Double_t hmin=hmass[1]->GetBinLowEdge(3);
@@ -160,6 +166,8 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
       fitter[iBin]->GetHistoClone()->Draw();
       continue;
     }
+    Double_t mass=fitter[iBin]->GetMean();
+    Double_t sigma=fitter[iBin]->GetSigma();
     arrchisquare[iBin]=fitter[iBin]->GetReducedChiSquare();
     TF1* fB1=fitter[iBin]->GetBackgroundFullRangeFunc();
     TF1* fB2=fitter[iBin]->GetBackgroundRecalcFunc();
@@ -201,14 +209,33 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     hBackgroundNormSigma->SetBinError(iBin+1,errb);
     hSignificance->SetBinContent(iBin+1,sig);
     hSignificance->SetBinError(iBin+1,errsig);
+    hMass->SetBinContent(iBin+1,mass);
+    hMass->SetBinError(iBin+1,0.0001);
+    hSigma->SetBinContent(iBin+1,sigma);
+    hSigma->SetBinError(iBin+1,0.0001);
     
   }
+
   /*
   c1->cd(1); // is some cases the fitting function of 1st bin get lost
   funBckStore1->Draw("same");
   funBckStore2->Draw("same");
   funBckStore3->Draw("same");
   */
+
+  TCanvas *cpar=new TCanvas("cpar","Fit params",1200,600);
+  cpar->Divide(2,1);
+  cpar->cd(1);
+  hMass->SetMarkerStyle(20);
+  hMass->Draw("PE");
+  hMass->GetXaxis()->SetTitle("Pt (GeV/c)");
+  hMass->GetXaxis()->SetTitle("Mass (GeV/c^{2})");
+  cpar->cd(2);
+  hSigma->SetMarkerStyle(20);
+  hSigma->Draw("PE");
+  hSigma->GetXaxis()->SetTitle("Pt (GeV/c)");
+  hSigma->GetXaxis()->SetTitle("Sigma (GeV/c^{2})");
+
   TCanvas* csig=new TCanvas("csig","Results",1200,600);
   csig->Divide(3,1);
   csig->cd(1);
@@ -312,6 +339,8 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
 
   TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"update");
   outf->cd();
+  hMass->Write();
+  hSigma->Write();
   hCntSig1->Write();
   hCntSig2->Write();
   hNDiffCntSig1->Write();
@@ -323,6 +352,7 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   hBackgroundNormSigma->Write();
   hSignificance->Write();
   grReducedChiSquare->Write();
+  hPtMass->Write();
   outf->Close();
 }
 
@@ -395,6 +425,15 @@ Bool_t LoadDplusHistos(TObjArray* listFiles, TH1F** hMass){
   TString partname="Both";
   if(optPartAntiPart==kParticleOnly) partname="Dplus";
   if(optPartAntiPart==kAntiParticleOnly) partname="Dminus";
+
+  for(Int_t iFile=0; iFile<nReadFiles; iFile++){
+    TH2F* htemp2=(TH2F*)hlist[iFile]->FindObject("hPtVsMassTC");
+    if(iFile==0){
+      hPtMass=new TH2F(*htemp2);
+    }else{
+      hPtMass->Add(htemp2);
+    }
+  }
 
   TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"recreate");
   outf->cd();
