@@ -1495,24 +1495,24 @@ void AliEMCALRecPoint::Print(Option_t *opt) const
   TString message ; 
   message  = "AliEMCALRecPoint:\n" ;
   message +=  " digits # = " ; 
-  Info("Print", message.Data()) ; 
+  AliInfo(message.Data()) ; 
 
   Int_t iDigit;
   for(iDigit=0; iDigit<fMulDigit; iDigit++)
     printf(" %d ", fDigitsList[iDigit] ) ;  
   printf("\n");
 
-  Info("Print", " Energies = ") ;
+  AliInfo(" Energies = ") ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
     printf(" %f ", fEnergyList[iDigit] ) ;
   printf("\n");
 
-  Info("Print", "\n Abs Ids = ") ;
+  AliInfo("\n Abs Ids = ") ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
     printf(" %i ", fAbsIdList[iDigit] ) ;
   printf("\n");
 
-  Info("Print", " Primaries  ") ;
+  AliInfo(" Primaries  ") ;
   for(iDigit = 0;iDigit < fMulTrack; iDigit++)
     printf(" %d ", fTracksList[iDigit]) ;
 
@@ -1525,7 +1525,7 @@ void AliEMCALRecPoint::Print(Option_t *opt) const
   message += "       Core radius     = %f" ; 
   message += "       Number of primaries %d" ; 
   message += "       Stored at position %d" ; 
-  Info("Print", message.Data(), fClusterType, fMulDigit, fAmp, fCoreEnergy, fCoreRadius, fMulTrack, GetIndexInList() ) ;  
+  AliInfo(Form(message.Data(), fClusterType, fMulDigit, fAmp, fCoreEnergy, fCoreRadius, fMulTrack, GetIndexInList()) ) ;  
 }
 
 //___________________________________________________________

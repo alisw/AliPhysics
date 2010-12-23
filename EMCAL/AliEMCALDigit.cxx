@@ -419,13 +419,13 @@ AliEMCALDigit AliEMCALDigit::operator+(const AliEMCALDigit &digit)
   fAmpFloat += digit.fAmpFloat ;
   for (Int_t i=0; i < fNSamples  ; i++) fSamples[i]   += digit.fSamples[i];
   for (Int_t i=0; i < fNSamplesHG; i++) fSamplesHG[i] += digit.fSamplesHG[i];
-
+  
   fAmp    += digit.fAmp ;
   if(fTime > digit.fTime)
     fTime = digit.fTime ;
   if (digit.fTimeR < fTimeR)
     fTimeR = digit.fTimeR ; 
-
+  
   Int_t max1 = fNprimary ; 
   Int_t max2 = fNiparent ;  
   Int_t index ; 
@@ -434,24 +434,24 @@ AliEMCALDigit AliEMCALDigit::operator+(const AliEMCALDigit &digit)
     Int_t old ;
     for ( old = 0 ; (old < max1) && newPrim; old++) { //already have this primary?
       if(fPrimary[old] == digit.fPrimary[index]) {
-	newPrim = kFALSE;
-	fDEPrimary[old] += digit.fDEPrimary[index];
+        newPrim = kFALSE;
+        fDEPrimary[old] += digit.fDEPrimary[index];
       }
     }
     if (newPrim) {
       if(max1<fNMaxPrimary){ 
-	fPrimary[max1] = digit.fPrimary[index] ; 
-	fDEPrimary[max1] = digit.fDEPrimary[index] ; 
-	fNprimary++ ;
-	max1++;
+        fPrimary[max1] = digit.fPrimary[index] ; 
+        fDEPrimary[max1] = digit.fDEPrimary[index] ; 
+        fNprimary++ ;
+        max1++;
       }
       if(fNprimary==fNMaxPrimary) {
-	
-	TString mess = " NMaxPrimary  =  " ; 
-	mess += fNMaxPrimary ; 
-	mess += " is too small" ; 
-	Fatal("AliEMCALDigit::Operator+ -->" , mess.Data()) ; 
-
+        
+        TString mess = " NMaxPrimary  =  " ; 
+        mess += fNMaxPrimary ; 
+        mess += " is too small" ; 
+        AliFatal(mess.Data()) ; 
+        
       }
     }
   }
@@ -461,24 +461,24 @@ AliEMCALDigit AliEMCALDigit::operator+(const AliEMCALDigit &digit)
     Int_t old ;
     for ( old = 0 ; (old < max2) && newParent; old++) { //already have this primary?
       if(fIparent[old] == digit.fIparent[index]) {
-	newParent = kFALSE;
-	fDEParent[old] += digit.fDEParent[index];
+        newParent = kFALSE;
+        fDEParent[old] += digit.fDEParent[index];
       }
     }
     if(newParent){
       if(max2<fNMaxiparent) { 
-	fIparent[max2] = digit.fIparent[index] ; 
-	fDEParent[max2] = digit.fDEParent[index] ; 
-	fNiparent++ ;
-	max2++;
+        fIparent[max2] = digit.fIparent[index] ; 
+        fDEParent[max2] = digit.fDEParent[index] ; 
+        fNiparent++ ;
+        max2++;
       }
       if(fNiparent==fNMaxiparent) {
-	
-	TString mess = " NMaxiparent  =  " ; 
-	mess += fNMaxiparent ; 
-	mess += " is too small" ; 
-	Fatal("AliEMCALDigit::Operator+ -->", mess.Data()) ; 
-
+        
+        TString mess = " NMaxiparent  =  " ; 
+        mess += fNMaxiparent ; 
+        mess += " is too small" ; 
+        AliFatal(mess.Data()) ; 
+        
       }
     }
   }
