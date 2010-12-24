@@ -34,6 +34,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDMuonCluster.h"
 #include "AliESDInputHandler.h"
+#include "AliESDVZERO.h"
 
 // ANALYSIS includes
 #include "AliAnalysisTaskSE.h"
@@ -63,6 +64,7 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
   fSelectTrigger(kFALSE),
   fTriggerMask(0),
   fSelectMatched(kFALSE),
+  fApplyAccCut(kFALSE),
   fTriggerClass(0x0),
   fSelectTriggerClass(0x0)
 {
@@ -82,6 +84,7 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   fSelectTrigger(kFALSE),
   fTriggerMask(0),
   fSelectMatched(kFALSE),
+  fApplyAccCut(kFALSE),
   fTriggerClass(0x0),
   fSelectTriggerClass(0x0)
 {
@@ -103,11 +106,13 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
 AliAnalysisTaskMuonQA::~AliAnalysisTaskMuonQA()
 {
   /// Destructor
-  delete fList;
-  delete fListExpert;
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    delete fList;
+    delete fListExpert;
+    delete fTrackCounters;
+    delete fEventCounters;
+  }
   delete fListNorm;
-  delete fTrackCounters;
-  delete fEventCounters;
   delete fTriggerClass;
   delete fSelectTriggerClass;
 }
@@ -120,38 +125,52 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   // set the list of trigger classes with corresponding short names
   fTriggerClass = new TMap(20);
   fTriggerClass->SetOwnerKeyValue();
-  fTriggerClass->Add(new TObjString(" CBEAMB"), new TObjString("CBEAMB"));
-  fTriggerClass->Add(new TObjString(" CINT1B-ABCE-NOPF-ALL "), new TObjString("CINT1B"));
-  fTriggerClass->Add(new TObjString(" CMUS1B-ABCE-NOPF-MUON "), new TObjString("CMUS1B"));
-  fTriggerClass->Add(new TObjString(" CINT1[AC]-"), new TObjString("CINT1AC"));
-  fTriggerClass->Add(new TObjString(" CMUS1[AC]-"), new TObjString("CMUS1AC"));
-  fTriggerClass->Add(new TObjString(" CINT1-E-"), new TObjString("CINT1E"));
-  fTriggerClass->Add(new TObjString(" CINT5-E-"), new TObjString("CINT1E"));
-  fTriggerClass->Add(new TObjString(" CMUS1-E-"), new TObjString("CMUS1E"));
-  fTriggerClass->Add(new TObjString(" CMUS5-E-"), new TObjString("CMUS1E"));
-  fTriggerClass->Add(new TObjString(" CINT1-B-"), new TObjString("CINT1B"));
-  fTriggerClass->Add(new TObjString(" CINT5-B-"), new TObjString("CINT1B"));
-  fTriggerClass->Add(new TObjString(" CMUS1-B-"), new TObjString("CMUS1B"));
-  fTriggerClass->Add(new TObjString(" CMUS5-B-"), new TObjString("CMUS1B"));
-  fTriggerClass->Add(new TObjString(" CINT1-AC-"), new TObjString("CINT1AC"));
-  fTriggerClass->Add(new TObjString(" CINT5-AC-"), new TObjString("CINT1AC"));
-  fTriggerClass->Add(new TObjString(" CMUS1-AC-"), new TObjString("CMUS1AC"));
-  fTriggerClass->Add(new TObjString(" CMUS5-AC-"), new TObjString("CMUS1AC"));
-  fTriggerClass->Add(new TObjString(" CSH1-B-"), new TObjString("CSH1B"));
-  
-  // set the corresponding list of trigger key words for counters
-  TString triggerKeys = "CBEAMB/CINT1B/CMUS1B/CINT1B+CMUS1B/CINT1AC/CINT1E/CMUS1AC/CMUS1E/CSH1B/other/any";
+  // p-p trigger classes
+  fTriggerClass->Add(new TObjString("CBEAMB"), new TObjString("CBEAMB"));
+  fTriggerClass->Add(new TObjString("CINT1B-ABCE-NOPF-ALL"), new TObjString("CINT1B"));
+  fTriggerClass->Add(new TObjString("CMUS1B-ABCE-NOPF-MUON"), new TObjString("CMUS1B"));
+  fTriggerClass->Add(new TObjString("CINT1[AC]-"), new TObjString("CINT1AC"));
+  fTriggerClass->Add(new TObjString("CMUS1[AC]-"), new TObjString("CMUS1AC"));
+  fTriggerClass->Add(new TObjString("CINT1-E-"), new TObjString("CINT1E"));
+  fTriggerClass->Add(new TObjString("CINT5-E-"), new TObjString("CINT1E"));
+  fTriggerClass->Add(new TObjString("CMUS1-E-"), new TObjString("CMUS1E"));
+  fTriggerClass->Add(new TObjString("CMUS5-E-"), new TObjString("CMUS1E"));
+  fTriggerClass->Add(new TObjString("CINT1-B-"), new TObjString("CINT1B"));
+  fTriggerClass->Add(new TObjString("CINT5-B-"), new TObjString("CINT1B"));
+  fTriggerClass->Add(new TObjString("CMUS1-B-"), new TObjString("CMUS1B"));
+  fTriggerClass->Add(new TObjString("CMUS5-B-"), new TObjString("CMUS1B"));
+  fTriggerClass->Add(new TObjString("CINT1-AC-"), new TObjString("CINT1AC"));
+  fTriggerClass->Add(new TObjString("CINT5-AC-"), new TObjString("CINT1AC"));
+  fTriggerClass->Add(new TObjString("CMUS1-AC-"), new TObjString("CMUS1AC"));
+  fTriggerClass->Add(new TObjString("CMUS5-AC-"), new TObjString("CMUS1AC"));
+  fTriggerClass->Add(new TObjString("CSH1-B-"), new TObjString("CSH1B"));
+  // Pb-Pb trigger classes
+  TString side[4] = {"B", "A", "C", "E"};
+  for (Int_t i = 0; i < 4; i++) {
+    fTriggerClass->Add(new TObjString(Form("CMBACS2-%s-", side[i].Data())), new TObjString(Form("CMBACS2-%s", side[i].Data())));
+    fTriggerClass->Add(new TObjString(Form("CMBS2A-%s-", side[i].Data())), new TObjString(Form("CMBS2A-%s", side[i].Data())));
+    fTriggerClass->Add(new TObjString(Form("CMBS2C-%s-", side[i].Data())), new TObjString(Form("CMBS2C-%s", side[i].Data())));
+    fTriggerClass->Add(new TObjString(Form("CMBAC-%s-", side[i].Data())), new TObjString(Form("CMBAC-%s", side[i].Data())));
+    fTriggerClass->Add(new TObjString(Form("C0SMH-%s-", side[i].Data())), new TObjString(Form("C0SMH-%s", side[i].Data())));
+  }
   
   // set the list of trigger classes that can be selected to fill histograms (in case the physics selection is not used)
   fSelectTriggerClass = new TList();
   fSelectTriggerClass->SetOwner();
-  fSelectTriggerClass->AddLast(new TObjString(" CINT1B-ABCE-NOPF-ALL ")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString(" CMUS1B-ABCE-NOPF-MUON ")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
-  fSelectTriggerClass->AddLast(new TObjString(" CINT1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString(" CINT5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString(" CMUS1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
-  fSelectTriggerClass->AddLast(new TObjString(" CMUS5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
-  fSelectTriggerClass->AddLast(new TObjString(" CSH1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kHighMult);
+  // p-p trigger classes
+  fSelectTriggerClass->AddLast(new TObjString("CINT1B-ABCE-NOPF-ALL")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString("CMUS1B-ABCE-NOPF-MUON")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
+  fSelectTriggerClass->AddLast(new TObjString("CINT1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString("CINT5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString("CMUS1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
+  fSelectTriggerClass->AddLast(new TObjString("CMUS5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
+  fSelectTriggerClass->AddLast(new TObjString("CSH1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kHighMult);
+  // Pb-Pb trigger classes
+  fSelectTriggerClass->AddLast(new TObjString("CMBACS2-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString("CMBS2A-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString("CMBS2C-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString("CMBAC-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString("C0SMH-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kHighMult);
   
   // create histograms
   fList = new TObjArray(2000);
@@ -248,21 +267,24 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   // initialize track counters
   fTrackCounters = new AliCounterCollection("trackCounters");
   fTrackCounters->AddRubric("track", "trackeronly/triggeronly/matched");
-  fTrackCounters->AddRubric("trigger", triggerKeys.Data());
+  fTrackCounters->AddRubric("trigger", 1000000);
   fTrackCounters->AddRubric("run", 1000000);
   fTrackCounters->AddRubric("selected", "yes/no");
   fTrackCounters->AddRubric("triggerRO", "good/bad");
+  fTrackCounters->AddRubric("v0mult", "low/high/any");
   fTrackCounters->AddRubric("charge", "pos/neg/any");
   fTrackCounters->AddRubric("pt", "low/high/any");
+  fTrackCounters->AddRubric("acc", "in/out");
   fTrackCounters->Init();
   
   // initialize event counters
   fEventCounters = new AliCounterCollection("eventCounters");
   fEventCounters->AddRubric("event", "muon/any");
-  fEventCounters->AddRubric("trigger", triggerKeys.Data());
+  fEventCounters->AddRubric("trigger", 1000000);
   fEventCounters->AddRubric("run", 1000000);
   fEventCounters->AddRubric("selected", "yes/no");
   fEventCounters->AddRubric("triggerRO", "good/bad");
+  fEventCounters->AddRubric("v0mult", "low/high/any");
   fEventCounters->Init();
   
   // Post data at least once per task to ensure data synchronisation (required for merging)
@@ -293,6 +315,18 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   if (!fSelectPhysics) triggerWord = BuildTriggerWord(FiredTriggerClasses);
   Bool_t isTriggerSelected = ((triggerWord & fTriggerMask) != 0);
   
+  // get the V0 multiplicity (except for p-p)
+  AliESDVZERO* v0Data = fESD->GetVZEROData();
+  Float_t v0Mult = 0.;
+  if (v0Data && strcmp(fESD->GetBeamType(),"p-p"))
+    for (Int_t i = 0 ; i < 64 ; i++) v0Mult += v0Data->GetMultiplicity(i);
+  TList listV0MultKey;
+  listV0MultKey.SetOwner();
+  listV0MultKey.AddLast(new TObjString("v0mult:any"));
+  if (v0Mult > 559. && v0Mult < 1165.) listV0MultKey.AddLast(new TObjString("v0mult:low")); // 60-80%
+  else if (v0Mult > 12191. && v0Mult < 20633.) listV0MultKey.AddLast(new TObjString("v0mult:high")); // 0-10%
+  TIter nextV0MultKey(&listV0MultKey);
+  
   // first loop over tracks to check for trigger readout problem
   Int_t maxTriggerRO = (!strcmp(fESD->GetBeamType(),"p-p")) ? 10 : 1000;
   Int_t nTracks = (Int_t) fESD->GetNumberOfMuonTracks();
@@ -311,11 +345,18 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   TIter nextTriggerCase(triggerCases);
   while ((triggerKey = static_cast<TObjString*>(nextTriggerCase()))) {
     
-    // any event
-    fEventCounters->Count(Form("event:any/%s/run:%d/%s/%s", triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-    
-    // muon event
-    if (nTracks > 0) fEventCounters->Count(Form("event:muon/%s/run:%d/%s/%s", triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
+    // loop over V0Mult cases
+    TObjString* v0MultKey = 0x0;
+    nextV0MultKey.Reset();
+    while ((v0MultKey = static_cast<TObjString*>(nextV0MultKey()))) {
+      
+      // any event
+      fEventCounters->Count(Form("event:any/%s/run:%d/%s/%s/%s", triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName()));
+      
+      // muon event
+      if (nTracks > 0) fEventCounters->Count(Form("event:muon/%s/run:%d/%s/%s/%s", triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName()));
+      
+    }
       
   }
   
@@ -333,6 +374,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     // define the key words
     TString trackKey = "track:";
     TString chargeKey = "charge:";
+    TString accKey = "acc:";
     Bool_t lowPt = kFALSE;
     Bool_t highPt = kFALSE;
     if (esdTrack->ContainTrackerData()) {
@@ -349,10 +391,15 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
       if (trackPt > 1. && nPVTracks>0 && thetaTrackAbsEnd>2. ) lowPt = kTRUE;
       if (trackPt > 2. && nPVTracks>0 && thetaTrackAbsEnd>2. ) highPt = kTRUE;
       
+      Double_t eta = esdTrack->Eta();
+      if (thetaTrackAbsEnd < 2. || thetaTrackAbsEnd > 9. || eta < -4. || eta > -2.5) accKey += "out";
+      else accKey += "in";
+      
     } else {
       
       trackKey += "triggeronly";
-      chargeKey = "";
+      chargeKey = ""; // ghost have no charge specified
+      accKey += "out"; // ghost are labelled out of the acceptance
       
     }
     
@@ -360,21 +407,28 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     nextTriggerCase.Reset();
     while ((triggerKey = static_cast<TObjString*>(nextTriggerCase()))) {
       
-      // any charge / any pt
-      fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:any", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-      
-      // any charge / specific pt
-      if (lowPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:low", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-      if (highPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:high", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-      
-      if (!chargeKey.IsNull()) {
+      // loop over V0Mult cases
+      TObjString* v0MultKey = 0x0;
+      nextV0MultKey.Reset();
+      while ((v0MultKey = static_cast<TObjString*>(nextV0MultKey()))) {
 	
-	// specific charge / any pt
-	fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:any", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data()));
+	// any charge / any pt
+	fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:any/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName(), accKey.Data()));
 	
-	// specific charge / specific pt
-	if (lowPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:low", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data()));
-	if (highPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:high", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data()));
+	// any charge / specific pt
+	if (lowPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:low/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName(), accKey.Data()));
+	if (highPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:high/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName(), accKey.Data()));
+	
+	if (!chargeKey.IsNull()) {
+	  
+	  // specific charge / any pt
+	  fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:any/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data(), v0MultKey->GetName(), accKey.Data()));
+	  
+	  // specific charge / specific pt
+	  if (lowPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:low/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data(), v0MultKey->GetName(), accKey.Data()));
+	  if (highPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:high/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data(), v0MultKey->GetName(), accKey.Data()));
+	  
+	}
 	
       }
       
@@ -396,6 +450,9 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     
     // select on track matching
     if (fSelectMatched && !esdTrack->ContainTriggerData()) continue;
+    
+    // skip tracks that do not pass the acceptance cuts if required
+    if (fApplyAccCut && accKey.EndsWith("out")) continue;
     
     nSelectedTrackerTracks++;
     if (esdTrack->ContainTriggerData()) nSelectedTrackMatchTrig++;
