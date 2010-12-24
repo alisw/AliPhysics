@@ -368,12 +368,12 @@ void AliAnalysisTaskMuonFakes::UserExec(Option_t *)
     // try to match, by position, the reconstructed track with a simulated one
     Int_t nMatchClustersByPosition = 0;
     AliMUONTrack* matchedTrackRefByPosition = rc.FindCompatibleTrack(*muonTrack, *trackRefStore, nMatchClustersByPosition, kFALSE, fSigmaCut);
-    Int_t MCLabelByPosition = (matchedTrackRefByPosition) ? matchedTrackRefByPosition->GetUniqueID() : -1;
+    Int_t MCLabelByPosition = (matchedTrackRefByPosition) ? static_cast<Int_t>(matchedTrackRefByPosition->GetUniqueID()) : -1;
     
     // try to match, by using MC labels, the reconstructed track with a simulated one
     Int_t nMatchClustersByLabel = 0;
     AliMUONTrack* matchedTrackRefByLabel = rc.FindCompatibleTrack(*muonTrack, *trackRefStore, nMatchClustersByLabel, kTRUE, fSigmaCut);
-    Int_t MCLabelByLabel = (matchedTrackRefByLabel) ? matchedTrackRefByLabel->GetUniqueID() : -1;
+    Int_t MCLabelByLabel = (matchedTrackRefByLabel) ? static_cast<Int_t>(matchedTrackRefByLabel->GetUniqueID()) : -1;
     
     // fill global counters
     TString positionCase = (MCLabelByPosition >= 0) ? "position:match" : "position:not match";
