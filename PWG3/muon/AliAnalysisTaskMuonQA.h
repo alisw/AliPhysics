@@ -38,6 +38,9 @@ public:
   /// Select track matching the trigger to fill histograms
   void SelectMatched(Bool_t flag = kTRUE) {fSelectMatched = flag;}
   
+  /// Use only tracks passing the acceptance cuts (Rabs, eta)
+  void ApplyAccCut(Bool_t flag = kTRUE) { fApplyAccCut = flag; }
+  
 private:
   
   /// Not implemented
@@ -108,6 +111,7 @@ private:
   Bool_t  fSelectTrigger; ///< Fill histograms only with events passing the trigger selection
   UInt_t  fTriggerMask;   ///< Trigger mask to be used when selecting events
   Bool_t  fSelectMatched; ///< Fill histograms only with tracks matching the trigger
+  Bool_t  fApplyAccCut;   ///< use only tracks passing the acceptance cuts (Rabs, eta)
   
   TMap*  fTriggerClass;       //!< map of trigger class name associated to short name
   TList* fSelectTriggerClass; //!< list of trigger class that can be selected to fill histograms
@@ -116,7 +120,7 @@ private:
   static const Int_t nDE;       ///< number of DE
   static const Float_t dMax[5]; ///< maximum diameter of each station
   
-  ClassDef(AliAnalysisTaskMuonQA, 5);
+  ClassDef(AliAnalysisTaskMuonQA, 6);
 };
 
 #endif
