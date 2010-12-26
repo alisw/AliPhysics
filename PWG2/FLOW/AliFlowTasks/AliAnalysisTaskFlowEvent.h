@@ -26,7 +26,7 @@ class AliTOFT0maker;
 class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFlowEvent();
-  AliAnalysisTaskFlowEvent(const char *name, TString RPtype, Bool_t QAon, UInt_t seed=666);
+  AliAnalysisTaskFlowEvent(const char *name, TString RPtype, Bool_t QAon, UInt_t seed=666, Bool_t bCandidates=kFALSE);
   virtual ~AliAnalysisTaskFlowEvent();
   
   virtual void   UserCreateOutputObjects();
@@ -128,6 +128,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t      fMaxB;              // Maximum of eta range for subevent B
 
   Bool_t fQA;                       // flag to set the filling of the QA hostograms
+  Bool_t fLoadCandidates;           // true if reciving candidates collection
 
   // setters for common constants
   //histogram sizes

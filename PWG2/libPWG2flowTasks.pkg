@@ -4,6 +4,7 @@ SRCS= FLOW/AliFlowTasks/AliFlowEventSimpleMaker.cxx \
       FLOW/AliFlowTasks/AliFlowEvent.cxx \
       FLOW/AliFlowTasks/AliFlowEventCuts.cxx \
       FLOW/AliFlowTasks/AliFlowTrack.cxx \
+      FLOW/AliFlowTasks/AliFlowCandidateTrack.cxx \
       FLOW/AliFlowTasks/AliFlowTrackCuts.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskScalarProduct.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskMCEventPlane.cxx \
@@ -13,6 +14,7 @@ SRCS= FLOW/AliFlowTasks/AliFlowEventSimpleMaker.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskLeeYangZeros.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskFittingQDistribution.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskFlowEvent.cxx \
+      FLOW/AliFlowTasks/AliAnalysisTaskFlowK0Candidates.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskFlowEventforRP.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskMixedHarmonics.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskNestedLoops.cxx \

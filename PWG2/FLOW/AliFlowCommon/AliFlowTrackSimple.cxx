@@ -40,7 +40,8 @@ AliFlowTrackSimple::AliFlowTrackSimple():
   fTrackWeight(1.),
   fCharge(0),
   fFlowBits(0),
-  fSubEventBits(0)
+  fSubEventBits(0),
+  fCollIndex(-1)
 {
   //constructor 
 }
@@ -54,7 +55,8 @@ AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, 
   fTrackWeight(weight),
   fCharge(charge),
   fFlowBits(0),
-  fSubEventBits(0)
+  fSubEventBits(0),
+  fCollIndex(-1)
 {
   //constructor 
 }
@@ -68,7 +70,8 @@ AliFlowTrackSimple::AliFlowTrackSimple( TParticle* p ):
   fTrackWeight(1.),
   fCharge(0),
   fFlowBits(0),
-  fSubEventBits(0)
+  fSubEventBits(0),
+  fCollIndex(-1)
 {
   //ctor
   TParticlePDG* ppdg = p->GetPDG();
@@ -84,7 +87,8 @@ AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
   fTrackWeight(aTrack.fTrackWeight),
   fCharge(aTrack.fCharge),
   fFlowBits(aTrack.fFlowBits),
-  fSubEventBits(aTrack.fSubEventBits)
+  fSubEventBits(aTrack.fSubEventBits),
+  fCollIndex(-1)
 {
   //copy constructor 
 }
@@ -106,6 +110,7 @@ AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTra
   fCharge = aTrack.fCharge;
   fFlowBits = aTrack.fFlowBits;
   fSubEventBits = aTrack.fSubEventBits;
+  fCollIndex = aTrack.fCollIndex;
 
   return *this;
 }

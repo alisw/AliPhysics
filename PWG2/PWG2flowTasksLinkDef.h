@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliFlowEvent+;
 #pragma link C++ class AliFlowEventCuts+;
+#pragma link C++ class AliFlowCandidateTrack+;
 #pragma link C++ class AliFlowTrack+;
 #pragma link C++ class AliFlowTrackCuts+;
 #pragma link C++ class AliFlowEventSimpleMaker+;
@@ -19,6 +20,7 @@
 #pragma link C++ class AliAnalysisTaskFittingQDistribution+;
 #pragma link C++ class AliAnalysisTaskFlowEvent+;
 #pragma link C++ class AliAnalysisTaskFlowEventforRP+;
+#pragma link C++ class AliAnalysisTaskFlowK0Candidates+;
 #pragma link C++ class AliAnalysisTaskMixedHarmonics+;
 #pragma link C++ class AliAnalysisTaskNestedLoops+;
 #pragma link C++ class AliAnalysisTaskQAflow+;
