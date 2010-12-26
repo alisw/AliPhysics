@@ -94,12 +94,14 @@ fProfileList(NULL),
 f3pCorrelatorPro(NULL),
 fNonIsotropicTermsPro(NULL),
 f3pCorrelatorVsMPro(NULL),
+f3pPOICorrelatorVsM(NULL),
 fNonIsotropicTermsVsMPro(NULL),
 fResultsList(NULL),
 f3pCorrelatorHist(NULL),
 fDetectorBiasHist(NULL),
 f3pCorrelatorVsMHist(NULL),
-fDetectorBiasVsMHist(NULL)
+fDetectorBiasVsMHist(NULL),
+f2pCorrelatorHist(NULL)
 {
  // Constructor. 
  
@@ -203,6 +205,9 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  Int_t nPrim = anEvent->NumberOfTracks();  // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI
                                            // nRP   = # of particles used to determine the reaction plane ("Reference Particles");
                                            // nPOI  = # of particles of interest for a detailed flow analysis ("Particles of Interest");
+
+ Int_t nRefMult = anEvent->GetReferenceMultiplicity();
+
  // Start loop over data:
  for(Int_t i=0;i<nPrim;i++) 
  { 
@@ -253,6 +258,7 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
     {
      Double_t dPsi1 = aftsTrack->Phi();
      Double_t dPt1 = aftsTrack->Pt();
+     Double_t dEta1 = aftsTrack->Eta();
      Int_t iCharge1 = aftsTrack->Charge();
      Bool_t b1stPOIisAlsoRP = kFALSE;
      if(aftsTrack->InRPSelection()){b1stPOIisAlsoRP = kTRUE;}
@@ -264,24 +270,40 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
       {
        Double_t dPsi2 = aftsTrack->Phi();
        Double_t dPt2 = aftsTrack->Pt(); 
+       Double_t dEta2 = aftsTrack->Eta();
        Int_t iCharge2 = aftsTrack->Charge();
        if(fOppositeChargesPOI && iCharge1 == iCharge2){continue;}
        Bool_t b2ndPOIisAlsoRP = kFALSE;
        if(aftsTrack->InRPSelection()){b2ndPOIisAlsoRP = kTRUE;}
-       // Fill:
+
+       // Fill:Pt
        fRePEBE[0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1+dPsi2)),1.);
        fImPEBE[0]->Fill((dPt1+dPt2)/2.,TMath::Sin(n*(dPsi1+dPsi2)),1.);
        fRePEBE[1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1+dPsi2)),1.);
        fImPEBE[1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi1+dPsi2)),1.);
+
+       // Fill:Eta
+       fReEtaEBE[0]->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi1+dPsi2)),1.);
+       fImEtaEBE[0]->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi1+dPsi2)),1.);
+       fReEtaEBE[1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1+dPsi2)),1.);
+       fImEtaEBE[1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi1+dPsi2)),1.);
+
+       //2particle correlator <cos(n*(psi1 - ps12))>
+       f2pCorrelatorHist->Fill(TMath::Cos(n*(dPsi1-dPsi2)));
+       
        if(b1stPOIisAlsoRP)
        {
         fOverlapEBE[0][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1-dPsi2)),1.);
         fOverlapEBE[0][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1-dPsi2)),1.);
+        fOverlapEBE2[0][0]->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi1-dPsi2)),1.);
+        fOverlapEBE2[0][1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1-dPsi2)),1.);
        }
        if(b2ndPOIisAlsoRP)
        {
         fOverlapEBE[1][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1-dPsi2)),1.);
         fOverlapEBE[1][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1-dPsi2)),1.);
+        fOverlapEBE2[1][0]->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi1-dPsi2)),1.);
+        fOverlapEBE2[1][1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1-dPsi2)),1.);
        }
       } // end of if(aftsTrack->InPOISelection()) // 2nd POI
      } // end of for(Int_t j=i+1;j<nPrim;j++)
@@ -314,7 +336,11 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  // f) Calculate differential 3-p azimuthal correlator cos[n(psi1+psi2-2*phi3)] in terms of Q_{2n} and p_{n}:
  if(fEvaluateDifferential3pCorrelator && anEvent->GetEventNSelTracksRP() >= 1)
  {
-  this->CalculateDifferential3pCorrelator(); // to be improved - add relevant if statements for the min # POIs as well
+   Double_t gIntegrated3pCorrelator = 0.;
+   this->CalculateDifferential3pCorrelator(gIntegrated3pCorrelator); // to be improved - add relevant if statements for the min # POIs as well
+
+  //3particle correlator vs ref. mult
+  f3pPOICorrelatorVsM->Fill(nRefMult,gIntegrated3pCorrelator);
  }
  
  // g) Reset all event-by-event quantities: 
@@ -442,6 +468,12 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
  {
   this->Set3pCorrelatorVsMPro(p3pCorrelatorVsMPro);  
  }
+ TString s3pPOICorrelatorVsMName = "f3pPOICorrelatorVsM";
+ TProfile *p3pPOICorrelatorVsM = dynamic_cast<TProfile*>(profileList->FindObject(s3pPOICorrelatorVsMName.Data()));
+ if(p3pPOICorrelatorVsM)
+ {
+  this->Set3pPOICorrelatorVsM(p3pPOICorrelatorVsM);  
+ }
  TString nonIsotropicTermsProName = "fNonIsotropicTermsPro";
  TProfile *nonIsotropicTermsPro = dynamic_cast<TProfile*>(profileList->FindObject(nonIsotropicTermsProName.Data()));
  if(nonIsotropicTermsPro)
@@ -505,6 +537,12 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
  {
   this->SetDetectorBiasVsMHist(detectorBiasVsMHist);  
  }
+ TString s2pCorrelatorHistName = "f2pCorrelatorHist";
+ TH1D *h2pCorrelatorHist = dynamic_cast<TH1D*>(resultsList->FindObject(s2pCorrelatorHistName.Data()));
+ if(h2pCorrelatorHist)
+ {
+  this->Set2pCorrelatorHist(h2pCorrelatorHist);  
+ }
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
 
@@ -549,13 +587,17 @@ void AliFlowAnalysisWithMixedHarmonics::InitializeArrays()
  {
   fRePEBE[sd] = NULL;
   fImPEBE[sd] = NULL;
+  fReEtaEBE[sd] = NULL;
+  fImEtaEBE[sd] = NULL;
   f3pCorrelatorVsPtSumDiffPro[sd] = NULL;
+  f3pCorrelatorVsEtaSumDiffPro[sd] = NULL;
  }
  for(Int_t fs=0;fs<2;fs++) // 1st/2nd POI which is also RP
  {
   for(Int_t sd=0;sd<2;sd++)
   {
    fOverlapEBE[fs][sd] = NULL;
+   fOverlapEBE2[fs][sd] = NULL;
   }  
  } 
   
@@ -644,17 +686,21 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllEventByEventQuantities()
  // p_n vs [(p1+p2)/2,|p1-p2|]
  if(!fEvaluateDifferential3pCorrelator){return;} 
  TString psdFlag[2] = {"PtSum","PtDiff"};
+ TString p2sdFlag[2] = {"PtSum","PtDiff"};
  TString fsFlag[2] = {"1st","2nd"};
  for(Int_t sd=0;sd<2;sd++)
  {
   fRePEBE[sd] = new TProfile(Form("fRePEBE%s",psdFlag[sd].Data()),"",fnBinsPt,0.,fPtMax);
   fImPEBE[sd] = new TProfile(Form("fImPEBE%s",psdFlag[sd].Data()),"",fnBinsPt,0.,fPtMax);
+  fReEtaEBE[sd] = new TProfile(Form("fReEtaEBE%s",p2sdFlag[sd].Data()),"",fnBinsEta,fEtaMin,fEtaMax);
+  fImEtaEBE[sd] = new TProfile(Form("fImEtaEBE%s",p2sdFlag[sd].Data()),"",fnBinsEta,fEtaMin,fEtaMax);
  }  
  for(Int_t fs=0;fs<2;fs++)
  {
   for(Int_t sd=0;sd<2;sd++)
   {
    fOverlapEBE[fs][sd] = new TProfile(Form("%s POI, %s",fsFlag[sd].Data(),psdFlag[sd].Data()),"",fnBinsPt,0.,fPtMax);
+   fOverlapEBE2[fs][sd] = new TProfile(Form("%s POI 2, %s",fsFlag[sd].Data(),p2sdFlag[sd].Data()),"",fnBinsEta,fEtaMin,fEtaMax);
   }
  }  
 
@@ -763,6 +809,22 @@ void AliFlowAnalysisWithMixedHarmonics::BookDefault()
    }  
  fResultsList->Add(fDetectorBiasHist);
  
+ // d) 2-p correlator <<cos[n(psi1-psi2]>> 
+ TString s2pCorrelatorHistName = "f2pCorrelatorHist";
+ f2pCorrelatorHist = new TH1D(s2pCorrelatorHistName.Data(),"",20000,-1,1);
+ f2pCorrelatorHist->SetStats(kTRUE);
+ f2pCorrelatorHist->GetXaxis()->SetLabelOffset(0.01);
+ f2pCorrelatorHist->GetXaxis()->SetNdivisions(10);
+ f2pCorrelatorHist->GetXaxis()->SetLabelSize(0.05);
+ if(fHarmonic == 1)
+ {
+  f2pCorrelatorHist->GetXaxis()->SetBinLabel(1,"#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT");
+ } else
+   {
+    f2pCorrelatorHist->GetXaxis()->SetBinLabel(1,Form("#LT#LTcos[%i(#psi_{1}+#psi_{2})]#GT#GT",fHarmonic)); 
+   }
+ fResultsList->Add(f2pCorrelatorHist);
+
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookDefault()     
       
 //================================================================================================================
@@ -800,6 +862,30 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsM()
     f3pCorrelatorVsMPro->GetXaxis()->SetTitle("M");
    }
  fProfileList->Add(f3pCorrelatorVsMPro); 
+
+ TString s3pPOICorrelatorVsMName = "f3pPOICorrelatorVsM";
+ f3pPOICorrelatorVsM = new TProfile(s3pPOICorrelatorVsMName.Data(),"",fNoOfMultipicityBins+2,0,fNoOfMultipicityBins+2);
+ f3pPOICorrelatorVsM->SetStats(kFALSE); 
+ if(fHarmonic == 1)
+ {
+  f3pPOICorrelatorVsM->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} M");
+ } else
+   {
+    f3pPOICorrelatorVsM->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} M",fHarmonic)); 
+   }
+ if(fShowBinLabelsVsM)
+ {
+  f3pPOICorrelatorVsM->GetXaxis()->SetBinLabel(1,Form("M < %d",(Int_t)fMinMultiplicity));
+  for(Int_t b=2;b<=fNoOfMultipicityBins+1;b++)
+  {
+   f3pPOICorrelatorVsM->GetXaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-2)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth)));
+  }
+  f3pPOICorrelatorVsM->GetXaxis()->SetBinLabel(fNoOfMultipicityBins+2,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
+ } else
+   {
+    f3pPOICorrelatorVsM->GetXaxis()->SetTitle("M");
+   }
+ fProfileList->Add(f3pPOICorrelatorVsM); 
  
  // b) Non-isotropic terms in the decomposition of <<cos[n(phi1+phi2-2phi3)]>> vs M:
  TString s3pCorrelatorVsMHistName = "f3pCorrelatorVsMHist";
@@ -906,22 +992,30 @@ void AliFlowAnalysisWithMixedHarmonics::BookDifferential()
  
  TString psdFlag[2] = {"PtSum","PtDiff"};
  TString psdTitleFlag[2] = {"(p_{T,1}+ p_{T,2})/2","#left|p_{T,1}- p_{T,2}#right|"};
+ TString psdFlag2[2] = {"EtaSum","EtaDiff"};
+ TString psdTitleFlag2[2] = {"(#eta_{1}+ #eta_{2})/2","#left|#eta_{1}- #eta_{2}#right|"};
  //TString s3pCorrelatorVsPtSumDiffProName = "f3pCorrelatorVsPtSumDiffPro";
  for(Int_t sd=0;sd<2;sd++)
  {
   f3pCorrelatorVsPtSumDiffPro[sd] = new TProfile(Form("f3pCorrelatorVs%sPro",psdFlag[sd].Data()),"",fnBinsPt,0.,fPtMax);
   f3pCorrelatorVsPtSumDiffPro[sd]->SetStats(kFALSE);
+  f3pCorrelatorVsEtaSumDiffPro[sd] = new TProfile(Form("f3pCorrelatorVs%sPro",psdFlag2[sd].Data()),"",fnBinsEta,fEtaMin,fEtaMax);
+  f3pCorrelatorVsEtaSumDiffPro[sd]->SetStats(kFALSE);
   //f3pCorrelatorVsPtSumDiffPro[sd]->SetLabelSize(0.05);
   //f3pCorrelatorVsPtSumDiffPro[sd]->SetMarkerStyle(25);
   if(fHarmonic == 1)
   {
    f3pCorrelatorVsPtSumDiffPro[sd]->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} %s",psdTitleFlag[sd].Data())); 
+   f3pCorrelatorVsEtaSumDiffPro[sd]->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} %s",psdTitleFlag2[sd].Data())); 
   } else
     {
      f3pCorrelatorVsPtSumDiffPro[sd]->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[sd].Data())); 
+     f3pCorrelatorVsEtaSumDiffPro[sd]->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[sd].Data())); 
     }   
   f3pCorrelatorVsPtSumDiffPro[sd]->GetXaxis()->SetTitle(psdTitleFlag[sd].Data());
   fProfileList->Add(f3pCorrelatorVsPtSumDiffPro[sd]);
+  f3pCorrelatorVsEtaSumDiffPro[sd]->GetXaxis()->SetTitle(psdTitleFlag2[sd].Data());
+  fProfileList->Add(f3pCorrelatorVsEtaSumDiffPro[sd]);
  }  
        
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookDifferential()     
@@ -1082,6 +1176,13 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
   cout<<endl;
   exit(0);
  }
+ if(!f3pPOICorrelatorVsM && fCalculateVsM)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): f3pPOICorrelatorVsM is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
  if(!fNonIsotropicTermsVsMPro && fCalculateVsM)
  {                        
   cout<<endl;
@@ -1099,6 +1200,13 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
    cout<<endl;
    exit(0);   
   } 
+  if(!(f3pCorrelatorVsEtaSumDiffPro[sd]))
+  {
+   cout<<endl;
+   cout<<" WARNING (MH): "<<Form("f3pCorrelatorVsEtaSumDiffPro[%d]",sd)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+   cout<<endl;
+   exit(0);   
+  } 
  }
  for(Int_t sd=0;sd<2;sd++)
  {
@@ -1109,12 +1217,26 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
    cout<<endl;
    exit(0);   
   }
-  for(Int_t fs=0;fs<2;fs++)
+  if(!fReEtaEBE[sd]||!fImEtaEBE[sd])
+  {
+   cout<<endl;
+   cout<<" WARNING (MH): "<<Form("!fReEtaEBE[%d]||!fImEtaEBE[%d]",sd,sd)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+   cout<<endl;
+   exit(0);   
+  }
+for(Int_t fs=0;fs<2;fs++)
   {
    if(!fOverlapEBE[fs][sd]||!fOverlapEBE[fs][sd])
    {
     cout<<endl;
     cout<<" WARNING (MH): "<<Form("!fOverlapEBE[%d][%d]||!fOverlapEBE[%d][%d]",fs,sd,fs,sd)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+    cout<<endl;
+    exit(0);   
+   }
+   if(!fOverlapEBE2[fs][sd]||!fOverlapEBE2[fs][sd])
+   {
+    cout<<endl;
+    cout<<" WARNING (MH): "<<Form("!fOverlapEBE2[%d][%d]||!fOverlapEBE2[%d][%d]",fs,sd,fs,sd)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
     cout<<endl;
     exit(0);   
    }
@@ -1150,6 +1272,13 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   cout<<endl;
   exit(0);
  } 
+ if(!f3pPOICorrelatorVsM && fCalculateVsM)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): f3pPOICorrelatorVsM is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
  if(!f3pCorrelatorVsMPro && fCalculateVsM)
  {                        
   cout<<endl;
@@ -1185,6 +1314,13 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   cout<<endl;
   exit(0);
  }   
+ if(!f2pCorrelatorHist)
+ {                        
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorHist is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }   
  /* to be improved - enabled eventually
  if(!fDetectorBiasVsMHist && fCalculateVsM)
  {                        
@@ -1201,6 +1337,13 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   {
    cout<<endl;
    cout<<" WARNING (MH): "<<Form("f3pCorrelatorVsPtSumDiffPro[%d]",sd)<<" is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+   cout<<endl;
+   exit(0);   
+  } 
+  if(!(f3pCorrelatorVsEtaSumDiffPro[sd]))
+  {
+   cout<<endl;
+   cout<<" WARNING (MH): "<<Form("f3pCorrelatorVsEtaSumDiffPro[%d]",sd)<<" is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
    cout<<endl;
    exit(0);   
   } 
@@ -1370,12 +1513,15 @@ void AliFlowAnalysisWithMixedHarmonics::ResetEventByEventQuantities()
  {
   fRePEBE[sd]->Reset();
   fImPEBE[sd]->Reset();
+  fReEtaEBE[sd]->Reset();
+  fImEtaEBE[sd]->Reset();
  }
  for(Int_t fs=0;fs<2;fs++)
  {
   for(Int_t sd=0;sd<2;sd++)
   {
    fOverlapEBE[fs][sd]->Reset();
+   fOverlapEBE2[fs][sd]->Reset();
   } 
  }
  
@@ -1592,7 +1738,7 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateNonIsotropicTerms()
 
 //================================================================================================================
 
-void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator()
+void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator(Double_t &gIntegratedValue)
 {
  // Calculate differential 3-p azimuthal correlator cos[n(psi1+psi2-2phi3)] in terms of Q_{2n}, p_{n}, q1_{n} and q2_{n}.
  
@@ -1602,13 +1748,18 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator()
  // a) Calculate differential 3-p correlator without using particle weights: 
  if(!(fUsePhiWeights || fUsePtWeights || fUseEtaWeights))
  {
+   Int_t iBinCounter = 0;
+   Double_t gSumBinContentTimesWeight = 0., gSumWeight = 0.;
+   Double_t gSumBinContentTimesWeightSquared = 0.;
+
   // Multiplicity (number of RPs):
   Double_t dMult = (*fSpk)(0,0);
   // Real and imaginary parts of non-weighted Q-vectors (Q_{n,0}) evaluated in harmonic 2n: 
   Double_t dReQ2n = (*fReQnk)(1,0);
   Double_t dImQ2n = (*fImQnk)(1,0);
-  for(Int_t sd=0;sd<2;sd++) // [(p1+p2)/2,|p1-p2|]
+  for(Int_t sd=0;sd<2;sd++) 
   {
+    // [(p1+p2)/2,|p1-p2|]
    // looping over all bins and calculating reduced correlations: 
    for(Int_t b=1;b<=fnBinsPt;b++)
    {
@@ -1634,8 +1785,47 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator()
      cosP2nphi1M1npsi2M1npsi2 = (p1nRe*dReQ2n+p1nIm*dImQ2n-overlap1-overlap2)/(weight);
     }
     f3pCorrelatorVsPtSumDiffPro[sd]->Fill(fPtMin+(b-1)*fPtBinWidth,cosP2nphi1M1npsi2M1npsi2,weight);
+    if(sd == 0) {
+      iBinCounter += 1;
+
+      gSumBinContentTimesWeight += f3pCorrelatorVsPtSumDiffPro[sd]->GetBinContent(b)*f3pCorrelatorVsPtSumDiffPro[sd]->GetBinEntries(b);
+      gSumWeight += f3pCorrelatorVsPtSumDiffPro[sd]->GetBinEntries(b);
+      gSumBinContentTimesWeightSquared += TMath::Power(gSumBinContentTimesWeight,2);
+    }
    } // end of for(Int_t b=1;b<=fnBinsPt;b++)
+
+    // [(eta1+eta2)/2,|eta1-eta2|]
+   // looping over all bins and calculating reduced correlations: 
+   for(Int_t k=1;k<=fnBinsEta;k++)
+   {
+    // real and imaginary parts of p_{n}: 
+    Double_t p1nRe = fReEtaEBE[sd]->GetBinContent(k)*fReEtaEBE[sd]->GetBinEntries(k);
+    Double_t p1nIm = fImEtaEBE[sd]->GetBinContent(k)*fImEtaEBE[sd]->GetBinEntries(k);
+    // overlap 1: to be improved (terminology)
+    Double_t overlap1 = fOverlapEBE2[0][sd]->GetBinContent(k)*fOverlapEBE2[0][sd]->GetBinEntries(k);
+    // overlap 2: to be improved (terminology)
+    Double_t overlap2 = fOverlapEBE2[1][sd]->GetBinContent(k)*fOverlapEBE2[1][sd]->GetBinEntries(k);    
+    // number of pairs of POIs in particular (eta1+eta2)/2 or |eta1-eta2| bin:
+    Double_t mp = fReEtaEBE[sd]->GetBinEntries(k);
+    // number of pairs of POI1/RP and POI2 in particular (eta1+eta2)/2 or |eta1-eta2| bin:
+    Double_t mOverlap1 = fOverlapEBE2[0][sd]->GetBinEntries(k);
+    // number of pairs of POI2/RP and POI1 in particular (eta1+eta2)/2 or |eta1-eta2| bin:
+    Double_t mOverlap2 = fOverlapEBE2[1][sd]->GetBinEntries(k);
+    // e-b-e weight for cos[n(psi1+psi2-2phi3)]:
+    Double_t weight = mp*dMult-mOverlap1-mOverlap2;  
+    
+    Double_t cosP2nphi1M1npsi2M1npsi2 = 0; // cos[n(psi1+psi2-2phi3)]
+    if(weight>0.)
+    {
+     cosP2nphi1M1npsi2M1npsi2 = (p1nRe*dReQ2n+p1nIm*dImQ2n-overlap1-overlap2)/(weight);
+    }
+    f3pCorrelatorVsEtaSumDiffPro[sd]->Fill(fEtaMin+(k-1)*fEtaBinWidth,cosP2nphi1M1npsi2M1npsi2,weight);
+   } // end of for(Int_t k=1;k<=fnBinsEta;k++)
   } // end of for(Int_t sd=0;sd<2;sd++)      
+
+  gIntegratedValue = -1000.;
+  if((gSumWeight)&&(iBinCounter)) 
+    gIntegratedValue = gSumBinContentTimesWeight/(gSumWeight*iBinCounter);
  } // end of if(!(fUsePhiWeights || fUsePtWeights || fUseEtaWeights)) 
 
  // b) Calculate differential 3-p correlator by using particle weights: 

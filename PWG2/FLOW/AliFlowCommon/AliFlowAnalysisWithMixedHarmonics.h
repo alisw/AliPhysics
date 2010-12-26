@@ -44,44 +44,51 @@ class AliFlowAnalysisWithMixedHarmonics
   AliFlowAnalysisWithMixedHarmonics();
   virtual ~AliFlowAnalysisWithMixedHarmonics(); 
   // 0.) Methods called in the constructor:
-    virtual void InitializeArrays();
+  virtual void InitializeArrays();
+
   // 1.) Method Init() and methods called within Init():
   virtual void Init();
-    virtual void CrossCheckSettings();
-    virtual void AccessConstants();
-    virtual void BookAndNestAllLists();
-    virtual void BookProfileHoldingSettings();
-    virtual void BookCommonHistograms();
-    virtual void BookAllEventByEventQuantities();
-    virtual void BookAllAllEventQuantities();
-      virtual void BookDefault(); // book histos and profiles without any binning in multiplicity, pt or eta
-      virtual void BookVsM();
-      virtual void BookDifferential();
-    virtual void BookAndFillWeightsHistograms();
-    virtual void StoreHarmonic();    
-    // 2.) Method Make() and methods called within Make():
+  virtual void CrossCheckSettings();
+  virtual void AccessConstants();
+  virtual void BookAndNestAllLists();
+  virtual void BookProfileHoldingSettings();
+  virtual void BookCommonHistograms();
+  virtual void BookAllEventByEventQuantities();
+  virtual void BookAllAllEventQuantities();
+  virtual void BookDefault(); // book histos and profiles without any binning in multiplicity, pt or eta
+  virtual void BookVsM();
+  virtual void BookDifferential();
+  virtual void BookAndFillWeightsHistograms();
+  virtual void StoreHarmonic();    
+  
+  // 2.) Method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
-    virtual void CheckPointersUsedInMake();
-    virtual void Calculate3pCorrelator();
-    virtual void CalculateNonIsotropicTerms();
-    virtual void CalculateDifferential3pCorrelator();
-    virtual void ResetEventByEventQuantities();
+  virtual void CheckPointersUsedInMake();
+  virtual void Calculate3pCorrelator();
+  virtual void CalculateNonIsotropicTerms();
+  virtual void CalculateDifferential3pCorrelator(Double_t &gIntegratedValue);
+						 
+  virtual void ResetEventByEventQuantities();
+  
   // 3.) Method Finish() and methods called within Finish():
   virtual void Finish();  
-    virtual void AccessSettings();       
-    virtual void CheckPointersUsedInFinish(); 
-    virtual void CorrectForDetectorEffects();
-    virtual void CorrectForDetectorEffectsVsM();
-    virtual void PrintOnTheScreen();  
+  virtual void AccessSettings();       
+  virtual void CheckPointersUsedInFinish(); 
+  virtual void CorrectForDetectorEffects();
+  virtual void CorrectForDetectorEffectsVsM();
+  virtual void PrintOnTheScreen();  
+  
   // 4.) Method GetOutputHistograms and method called within it:
   virtual void GetOutputHistograms(TList *outputListHistos);
-    virtual void GetPointersForBaseHistograms();
-    virtual void GetPointersForCommonHistograms();
-    virtual void GetPointersForAllEventProfiles();
-    virtual void GetPointersForResultsHistograms();
+  virtual void GetPointersForBaseHistograms();
+  virtual void GetPointersForCommonHistograms();
+  virtual void GetPointersForAllEventProfiles();
+  virtual void GetPointersForResultsHistograms();
+  
   // 5.) Other methods:   
   virtual void WriteHistograms(TString outputFileName);
   virtual void WriteHistograms(TDirectoryFile *outputFileName);  
+  
   // 6.) Setters and getters:
   void SetHistList(TList* const hl) {this->fHistList = hl;}
   TList* GetHistList() const {return this->fHistList;}  
@@ -137,6 +144,8 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile* GetNonIsotropicTermsPro() const {return this->fNonIsotropicTermsPro;};
   void Set3pCorrelatorVsMPro(TProfile* const s3pVsMPro) {this->f3pCorrelatorVsMPro = s3pVsMPro;};
   TProfile* Get3pCorrelatorVsMPro() const {return this->f3pCorrelatorVsMPro;};
+  void Set3pPOICorrelatorVsM(TProfile* const s3pPOIVsM) {this->f3pPOICorrelatorVsM = s3pPOIVsM;};
+  TProfile* Get3pPOICorrelatorVsM() const {return this->f3pPOICorrelatorVsM;};
   void SetNonIsotropicTermsVsMPro(TProfile2D* const nitVsMPro) {this->fNonIsotropicTermsVsMPro = nitVsMPro;};
   TProfile2D* GetNonIsotropicTermsVsMPro() const {return this->fNonIsotropicTermsVsMPro;};
   void SetResultsList(TList* const rlist) {this->fResultsList = rlist;}
@@ -151,10 +160,16 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1D* GetDetectorBiasVsMHist() const {return this->fDetectorBiasVsMHist;};  
   void Set3pCorrelatorVsPtSumDiffPro(TProfile* const s3pcvpsd, Int_t const sd) {this->f3pCorrelatorVsPtSumDiffPro[sd] = s3pcvpsd;};
   TProfile* Get3pCorrelatorVsPtSumDiffPro(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffPro[sd];};
-    
+  void Set3pCorrelatorVsEtaSumDiffPro(TProfile* const s3pcvpsd, Int_t const sd) {this->f3pCorrelatorVsEtaSumDiffPro[sd] = s3pcvpsd;};
+  TProfile* Get3pCorrelatorVsEtaSumDiffPro(Int_t sd) const {return this->f3pCorrelatorVsEtaSumDiffPro[sd];};
+
+  void Set2pCorrelatorHist(TH1D* const s2pHist) {this->f2pCorrelatorHist = s2pHist;};
+  TH1D* Get2pCorrelatorHist() const {return this->f2pCorrelatorHist;};    
+
  private:
   AliFlowAnalysisWithMixedHarmonics(const AliFlowAnalysisWithMixedHarmonics& afawQc);
   AliFlowAnalysisWithMixedHarmonics& operator=(const AliFlowAnalysisWithMixedHarmonics& afawQc); 
+  
   // 0.) Base:
   TList *fHistList; // base list to hold all output objects
   TString *fHistListName; // name of base list
@@ -170,6 +185,7 @@ class AliFlowAnalysisWithMixedHarmonics
   Bool_t fPrintOnTheScreen; // print or not the final results on the screen
   Bool_t fCalculateVsM; // calculate correlators vs multiplicity
   Bool_t fShowBinLabelsVsM; // in histograms holding results vs multiplicity show bin labels in the format M_lowEdge \leq M < M_upperEdge
+  
   // 1.) Common:
   AliFlowCommonHist *fCommonHists; // common control histograms (filled only with events with 3 or more tracks for 3-p correlators) 
   Int_t fnBinsPhi; // number of phi bins
@@ -184,6 +200,7 @@ class AliFlowAnalysisWithMixedHarmonics
   Double_t fEtaMin; // minimum eta   
   Double_t fEtaMax; // maximum eta
   Double_t fEtaBinWidth; // bin width for eta histograms 
+  
   // 2a.) Particle weights:
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
   Bool_t fUsePhiWeights; // use phi weights
@@ -193,6 +210,7 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1F *fPhiWeights; // histogram holding phi weights
   TH1D *fPtWeights; // histogram holding phi weights
   TH1D *fEtaWeights; // histogram holding phi weights 
+  
   // 3.) Event-by-event quantities:
   TMatrixD *fReQnk; // fReQ[n][k] = Re[Q_{n,k}] = sum_{i=1}^{M} w_{i}^{k} cos(n*phi_{i})
   TMatrixD *fImQnk; // fImQ[n][k] = Im[Q_{n,k}] = sum_{i=1}^{M} w_{i}^{k} sin(n*phi_{i})
@@ -200,19 +218,27 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile *fRePEBE[2]; // real part of p_n vs [(p1+p2)/2,|p1-p2|]
   TProfile *fImPEBE[2]; // imaginary part of p_n vs [(p1+p2)/2,|p1-p2|]
   TProfile *fOverlapEBE[2][2]; // cos[n(psi-phi)] vs [(p1+p2)/2,|p1-p2|], where phi stands for 1st/2nd POI which is also RP 
+  TProfile *fReEtaEBE[2]; // real part of p_n vs [(eta1+eta2)/2,|eta1-eta2|]
+  TProfile *fImEtaEBE[2]; // imaginary part of p_n vs [(eta1+eta2)/2,|eta1-eta2|]
+  TProfile *fOverlapEBE2[2][2]; // cos[n(psi-phi)] vs [(eta1+eta2)/2,|eta1-eta2|], where phi stands for 1st/2nd POI which is also RP 
+  
   // 4.) Profiles:
   TList *fProfileList; // list holding all all-event profiles 
   TProfile *f3pCorrelatorPro; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> (not corrected for detector effects)
   TProfile *fNonIsotropicTermsPro; // non-isotropic terms in the decomposition of 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>
   TProfile *f3pCorrelatorVsMPro; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs multiplicity
+  TProfile *f3pPOICorrelatorVsM; // 3-p correlator <<cos[n(psi1+psi2-2phi3)]>> vs multiplicity
   TProfile2D *fNonIsotropicTermsVsMPro; // non-isotropic terms in the decomposition of <cos[n(phi1+phi2-2phi3))]> vs multiplicity
   TProfile *f3pCorrelatorVsPtSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|]
+  TProfile *f3pCorrelatorVsEtaSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|]
+
   // 5.) Final results:
   TList *fResultsList; // list holding objects with final results 
   TH1D *f3pCorrelatorHist; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects
   TH1D *fDetectorBiasHist; // bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> (in %)
   TH1D *f3pCorrelatorVsMHist; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs multiplicity corrected for detector effects
   TH1D *fDetectorBiasVsMHist; // bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> (in %) versus multiplicity
+  TH1D *f2pCorrelatorHist;//<<cos[(psi1-psi2)]>>
 
   ClassDef(AliFlowAnalysisWithMixedHarmonics, 0);
 
