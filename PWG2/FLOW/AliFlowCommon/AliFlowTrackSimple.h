@@ -82,6 +82,8 @@ public:
     
   const TBits* GetFlowBits() const {return &fFlowBits;}
 
+  void SetIndexOnCollection(int i) {fCollIndex=i;}
+
  private:
   AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight, Int_t charge);
   Double_t fEta;         // eta
@@ -91,6 +93,7 @@ public:
   Int_t fCharge;         //charge
   TBits    fFlowBits;    // bits to set if track is selected
   TBits    fSubEventBits;// bits to set if track is selected for a subevent
+  Int_t    fCollIndex;   // stores the relative position of the track in the original collection
 
   ClassDef(AliFlowTrackSimple,1)                 // macro for rootcint
 

@@ -60,6 +60,10 @@
 #include "AliGenGeVSimEventHeader.h"
 #include "AliGenEposEventHeader.h"
 
+// Interface to Load short life particles
+#include "TObjArray.h"
+#include "AliFlowCandidateTrack.h"
+
 // Interface to make the Flow Event Simple used in the flow analysis methods
 #include "AliFlowEvent.h"
 #include "AliFlowTrackCuts.h"
@@ -96,6 +100,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fMinB(0.01),
   fMaxB(1.0),
   fQA(kFALSE),
+  fLoadCandidates(kFALSE),
   fNbinsMult(10000),
   fNbinsPt(100),   
   fNbinsPhi(100),
@@ -132,7 +137,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
 }
 
 //________________________________________________________________________
-AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPtype, Bool_t on, UInt_t iseed) :
+AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPtype, Bool_t on, UInt_t iseed, Bool_t bCandidates) :
   AliAnalysisTaskSE(name),
   //  fOutputFile(NULL),
   fAnalysisType("AUTOMATIC"),
@@ -151,6 +156,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fMinB(0.01),
   fMaxB(1.0),
   fQA(on),
+  fLoadCandidates(bCandidates),
   fNbinsMult(10000),
   fNbinsPt(100),   
   fNbinsPhi(100),
@@ -187,10 +193,14 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fMyTRandom3 = new TRandom3(iseed);
   gRandom->SetSeed(fMyTRandom3->Integer(65539));
 
+  int availableINslot=1;
   //FMD input slot
   if (strcmp(RPtype,"FMD")==0) {
-    DefineInput(1, TList::Class());
+    DefineInput(availableINslot++, TList::Class());
   }
+  //Candidates input slot
+  if( fLoadCandidates )
+    DefineInput(availableINslot, TObjArray::Class());
 
   //PID
   fESDpid=new AliESDpid();
@@ -204,6 +214,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
     DefineOutput(2, TList::Class());
     DefineOutput(3, TList::Class());
   }
+
   // and for testing open an output file
   //  fOutputFile = new TFile("FlowEvents.root","RECREATE");
 
@@ -309,8 +320,9 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliESDPmdTrack* pmdtracks = NULL;//pmd      
   TH2F* histFMD = NULL;
 
-  if(GetNinputs()==2) {                   
-    TList* FMDdata = dynamic_cast<TList*>(GetInputData(1));
+  int availableINslot=1;
+  if(strcmp(fRPType,"FMD")==0) {
+    TList* FMDdata = dynamic_cast<TList*>(GetInputData(availableINslot++));
     if(!FMDdata) {
       cout<<" No FMDdata "<<endl;
       exit(2);
@@ -485,6 +497,17 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     }
     AliInfo(Form("AOD has %d tracks", myAOD->GetNumberOfTracks()));
     flowEvent = new AliFlowEvent(myAOD);
+  }
+
+  //inject candidates
+  if(fLoadCandidates) {
+    TObjArray* Candidates = dynamic_cast<TObjArray*>(GetInputData(availableINslot++));
+    AliFlowCandidateTrack *cand;
+    for(int iCand=0; iCand!=Candidates->GetEntriesFast(); ++iCand ) {
+      cand = dynamic_cast<AliFlowCandidateTrack*>(Candidates->At(iCand));
+      cand->SetForPOISelection();
+      flowEvent->AddTrack(cand);
+    }
   }
 
   //check final event cuts

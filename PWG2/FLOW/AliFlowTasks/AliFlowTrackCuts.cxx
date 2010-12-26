@@ -569,7 +569,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPri
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
+AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack(int index) const
 {
   //get a flow track constructed from whatever we applied cuts on
   //caller is resposible for deletion
@@ -653,6 +653,9 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
     else if (dynamic_cast<AliAODTrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromAOD);
     else if (dynamic_cast<AliMCParticle*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromMC);
   }
+
+  if(flowtrack)
+    flowtrack->SetIndexOnCollection(index);
   return flowtrack;
 }
 
