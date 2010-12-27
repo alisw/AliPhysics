@@ -81,7 +81,10 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fMultRec(0),
   fNPointTPCMultRec(0),
   fDeltaPtMultRec(0),
+  fPtAllvsPtMC(0),
   fPtAllminPtMCvsPtAll(0),
+  fPtAllvsPtMCvsMult(0),
+  fPtAllminPtMCvsPtAllvsMult(0),
   fPtAllminPtMCvsPtAllNPointTPC(0),
   fPtAllminPtMCvsPtAllDCAR(0),
   fPtAllminPtMCvsPtAllDCAZ(0),
@@ -135,7 +138,10 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fMultRec(0),
   fNPointTPCMultRec(0),
   fDeltaPtMultRec(0),
+  fPtAllvsPtMC(0),
   fPtAllminPtMCvsPtAll(0),
+  fPtAllvsPtMCvsMult(0),
+  fPtAllminPtMCvsPtAllvsMult(0),
   fPtAllminPtMCvsPtAllNPointTPC(0),
   fPtAllminPtMCvsPtAllDCAR(0),
   fPtAllminPtMCvsPtAllDCAZ(0),
@@ -220,10 +226,14 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   Float_t kMinPhi = 0.;
   Float_t kMaxPhi = 2.*TMath::Pi();
   
-  Int_t fgkNPtBins=98;
-  Float_t fgkPtMin=2.;
+  Int_t fgkNPtBins=100;
+  Float_t fgkPtMin=0.;//2.;
   Float_t fgkPtMax=fPtMax;
   Int_t fgkResPtBins=80;
+
+  Int_t fgkNMultBins = 50;
+  Float_t fgkMultMin = 0;
+  Float_t fgkMultMax = 500;
 
   fNEventAll = new TH1F("fNEventAll","NEventAll",1,-0.5,0.5);
   fHistList->Add(fNEventAll);
@@ -277,10 +287,22 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fDeltaPtMultRec = new TH2F("fDeltaPtMultRec","Delta pT vs pT for multiple reconstructed tracks",100,0.,50.,100,-20.,20.);
   fHistList->Add(fDeltaPtMultRec);
 
+  fPtAllvsPtMC = new TH2F("fPtAllvsPtMC","fPtAllvsPtMC;p_{T,MC};p_{T,rec}",fgkNPtBins, fgkPtMin,fgkPtMax,fgkNPtBins, fgkPtMin,fgkPtMax);
+  fHistList->Add(fPtAllvsPtMC);
+
   fPtAllminPtMCvsPtAll = new TH2F("fPtAllminPtMCvsPtAll","PtAllminPtMCvsPtAll",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
   fPtAllminPtMCvsPtAll->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAll->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fHistList->Add(fPtAllminPtMCvsPtAll);
+
+  fPtAllvsPtMCvsMult = new TH3F("fPtAllvsPtMCvsMult","fPtAllvsPtMCvsMult;p_{T,MC};p_{T,rec};N_{tracks}",fgkNPtBins, fgkPtMin,fgkPtMax,fgkNPtBins, fgkPtMin,fgkPtMax,fgkNMultBins,fgkMultMin,fgkMultMax);
+  fHistList->Add(fPtAllvsPtMCvsMult);
+
+  fPtAllminPtMCvsPtAllvsMult = new TH3F("fPtAllminPtMCvsPtAllvsMult","fPtAllminPtMCvsPtAllvsMult",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkNMultBins,fgkMultMin,fgkMultMax);
+  fPtAllminPtMCvsPtAllvsMult->SetXTitle("p_{t}^{MC}");
+  fPtAllminPtMCvsPtAllvsMult->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
+  fPtAllminPtMCvsPtAllvsMult->SetZTitle("N_{tracks}");
+  fHistList->Add(fPtAllminPtMCvsPtAllvsMult);
   
   fPtAllminPtMCvsPtAllNPointTPC = new TH3F("fPtAllminPtMCvsPtAllNPointTPC","PtAllminPtMCvsPtAllNPointTPC",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,160,0.5,160.5);
   fPtAllminPtMCvsPtAllNPointTPC->SetXTitle("p_{t}^{MC}");
@@ -617,6 +639,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
         fNPointTPCFakes->Fill(track->GetTPCNcls());
       }
       fPtSelMC->Fill(ptMC);
+      fPtAllvsPtMC->Fill(ptMC,pt);
       fPtAllminPtMCvsPtAll->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC) );
       fPtAllminPtMCvsPtAllNPointTPC->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),track->GetTPCNcls());
       fPtAllminPtMCvsPtAllDCAR->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),dca2D);
@@ -627,7 +650,10 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       fPtAllminPtMCvsPtAllChi2C->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),chi2C);
       fPtAllminPtMCvsPtAllRel1PtUncertainty->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),relUncertainty1Pt);
 
-    
+      int mult = fTrackCuts->CountAcceptedTracks(fESD);
+      fPtAllvsPtMCvsMult->Fill(ptMC,pt,mult);
+      fPtAllminPtMCvsPtAllvsMult->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC), mult);
+
       //Check if track is reconstructed multiple times
       int multCounter = 1;
       for (Int_t iTrack2 = iTrack+1; iTrack2 < nTracks; iTrack2++) {
