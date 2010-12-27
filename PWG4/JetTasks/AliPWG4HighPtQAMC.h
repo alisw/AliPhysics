@@ -100,7 +100,10 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   TH1F *fNPointTPCMultRec;                     //! NTPCClusters of multiple reconstructed tracks
   TH2F *fDeltaPtMultRec;                       //! Delta pT versus pT of first track for multiple reconstructed tracks
 
+  TH2F *fPtAllvsPtMC;                          //! Reconstructed momentum vs generated momentum
   TH2F *fPtAllminPtMCvsPtAll;                  //! Momentum resolution (global vs MC)
+  TH3F *fPtAllvsPtMCvsMult;                    //! Reconstructed momentum vs generated momentum vs multiplicity
+  TH3F *fPtAllminPtMCvsPtAllvsMult;            //! Momentum resolution (global vs MC) vs multiplicity
   TH3F *fPtAllminPtMCvsPtAllNPointTPC;         //! Momentum resolution vs NPointTPC
   TH3F *fPtAllminPtMCvsPtAllDCAR;              //! Momentum resolution vs DCAR
   TH3F *fPtAllminPtMCvsPtAllDCAZ;              //! Momentum resolution vs DCAZ

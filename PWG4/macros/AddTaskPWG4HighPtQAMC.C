@@ -21,7 +21,7 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", int trackT
     return NULL;
   }  
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  const char *analysisType = "ESD";//"TPC"
+  const char *analysisType = "ESD";
 
   // C. Create the task, add it to manager.
   //===========================================================================
