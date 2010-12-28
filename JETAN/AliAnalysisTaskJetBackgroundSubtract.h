@@ -66,8 +66,9 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     AliAnalysisTaskJetBackgroundSubtract(const AliAnalysisTaskJetBackgroundSubtract&);
     AliAnalysisTaskJetBackgroundSubtract& operator=(const AliAnalysisTaskJetBackgroundSubtract&);
     Bool_t RescaleJetMomentum(AliAODJet *jet,Float_t pT);
+    
     void ResetOutJets();
-
+    void PrintAODContents();
 
     AliAODEvent     *fAODOut;                // ! where we take the jets from and they are modified
     AliAODEvent     *fAODIn;                 // ! where we may take the background from, only in case we do not find it in the output

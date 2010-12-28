@@ -91,6 +91,58 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract(const
 Bool_t AliAnalysisTaskJetBackgroundSubtract::Notify()
 {
   //
+  fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
+
+  ResetOutJets();
+
+  // Now we also have the Input Event Available! Fillvthe pointers in the list
+
+  fInJetArrayList->Clear();
+  fOutJetArrayList->Clear();
+
+  for(int iJB = 0;iJB<fJBArray->GetEntries();iJB++){
+    TObjString *ostr = (TObjString*)fJBArray->At(iJB);
+
+    TClonesArray* jarray = 0;      
+    if(!jarray&&fAODOut){
+      jarray = (TClonesArray*)(fAODOut->FindListObject(ostr->GetString().Data()));
+    }
+    if(!jarray&&fAODExtension){
+      jarray = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(ostr->GetString().Data()));
+    }
+    if(!jarray&&fAODIn){
+      jarray = (TClonesArray*)(fAODIn->FindListObject(ostr->GetString().Data()));
+    }
+
+    if(!jarray){
+      if(fDebug){
+	Printf("%s:%d Input jet branch %s not found",(char*)__FILE__,__LINE__,ostr->GetString().Data());
+      }
+      continue;
+    }
+    
+    TString newName(ostr->GetString().Data());
+    newName.ReplaceAll(fReplaceString1.Data(),Form(fReplaceString2.Data(),fSubtraction));
+    TClonesArray* jarrayOut = 0;      
+    if(!jarrayOut&&fAODOut){
+      jarrayOut = (TClonesArray*)(fAODOut->FindListObject(newName.Data()));
+    }
+    if(!jarrayOut&&fAODExtension){
+      jarrayOut = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(newName.Data()));
+    }
+
+    if(!jarrayOut){
+      if(fDebug){
+	Printf("%s:%d Output jet branch %s not found",(char*)__FILE__,__LINE__,newName.Data());
+	PrintAODContents();
+      }
+      continue;
+    }
+    if(jarrayOut&&jarray){
+      fOutJetArrayList->Add(jarrayOut);
+      fInJetArrayList->Add(jarray);
+    }
+  }
   return kTRUE;
 }
 
@@ -101,7 +153,6 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
   // Create the output container
   //
   // Connect the AOD
-
 
   if (fDebug > 1) printf("AnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects() \n");
   if(fNonStdFile.Length()!=0){
@@ -116,59 +167,48 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
     }
   }
   fAODOut = AODEvent();
-  fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
 
-
-  // collect the jet branches 
+  // usually we do not have the input already here
 
   if(!fInJetArrayList)fInJetArrayList =new TList();
   if(!fOutJetArrayList)fOutJetArrayList =new TList();
 
   for(int iJB = 0;iJB<fJBArray->GetEntries();iJB++){
-    TClonesArray* jarray = 0;      
     TObjString *ostr = (TObjString*)fJBArray->At(iJB);
-    if(!jarray&&fAODOut){
-      jarray = (TClonesArray*)(fAODOut->FindListObject(ostr->GetString().Data()));
-    }
-    if(!jarray&&fAODExtension){
-      jarray = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(ostr->GetString().Data()));
-    }
-    if(!jarray){
-      if(fDebug)Printf("%s:%d jet branch %s not found",(char*)__FILE__,__LINE__,ostr->GetString().Data());
-      continue;
-    }
-
-    TString newName(jarray->GetName());
+    TString newName(ostr->GetString().Data());
     if(!newName.Contains(fReplaceString1.Data())){
       Printf("%s:%d cannot replace string %s in %s",(char*)__FILE__,__LINE__,fReplaceString1.Data(),
-	     jarray->GetName());
+	     newName.Data());
       continue;
     }
-
-    fInJetArrayList->Add(jarray);
 
     // add a new branch to the output for the background subtracted jets take the names from
     // the input jets and replace the background flag names
     TClonesArray *tca = new TClonesArray("AliAODJet", 0);
-
     newName.ReplaceAll(fReplaceString1.Data(),Form(fReplaceString2.Data(),fSubtraction));
     if(fDebug){
       Printf("%s:%d created branch \n %s from \n %s",(char*)__FILE__,__LINE__,newName.Data(),
-	     jarray->GetName());
+	     ostr->GetString().Data());
     }
     tca->SetName(newName.Data());
     AddAODBranch("TClonesArray",&tca,fNonStdFile.Data());
-    fOutJetArrayList->Add(tca);
   }
   
-
-
 
   if(!fHistList)fHistList = new TList();
   fHistList->SetOwner();
 
-  for(int ij = 0;ij <  fInJetArrayList->GetEntries();ij++){
-    TH2F *hTmp = new TH2F(Form("h2PtInPtOut_%d",ij),Form(";%s p_{T};%s p_{T}",fInJetArrayList->At(ij)->GetName(),fOutJetArrayList->At(ij)->GetName()),200,0,200.,200,0.,200.);
+  for(int iJB = 0;iJB<fJBArray->GetEntries();iJB++){
+    TObjString *ostr = (TObjString*)fJBArray->At(iJB);
+    TString oldName(ostr->GetString().Data()); 
+    TString newName(ostr->GetString().Data()); 
+    if(!newName.Contains(fReplaceString1.Data())){
+      Printf("%s:%d cannot replace string %s in %s",(char*)__FILE__,__LINE__,fReplaceString1.Data(),
+	     newName.Data());
+      continue;
+    }
+    newName.ReplaceAll(fReplaceString1.Data(),Form(fReplaceString2.Data(),fSubtraction));
+    TH2F *hTmp = new TH2F(Form("h2PtInPtOut_%d",iJB),Form(";%s p_{T}; %s p_{T}",oldName.Data(),newName.Data()),200,0,200.,200,0.,200.);
     fHistList->Add(hTmp);
   }
 
@@ -208,38 +248,57 @@ void AliAnalysisTaskJetBackgroundSubtract::Init()
 void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 {
 
+  if (fDebug > 1) printf("AnalysisTaskJetBackgroundSubtract::UserExec() \n");
   ResetOutJets();
   if(fBackgroundBranch.Length()==0||fJBArray->GetEntries()==0){
+    if(fDebug)Printf("%s:%d No background subtraction done",(char*)__FILE__,__LINE__);
     PostData(1,fHistList);
   }
-    if (fDebug > 1) printf("AnalysisTaskJetBackgroundSubtract::UserExec() \n");
+  if(fJBArray->GetEntries()!=fInJetArrayList->GetEntries()){
+    if(fDebug)Printf("%s:%d different Array  sizes %d %d %d",(char*)__FILE__,__LINE__,fJBArray->GetEntries(),fInJetArrayList->GetEntries(),fOutJetArrayList->GetEntries());
+    PostData(1,fHistList);
+  }
+
 
 
   static AliAODJetEventBackground*  evBkg = 0;
   static TClonesArray*              bkgClusters = 0;
   static TString bkgClusterName(fBackgroundBranch.Data());
+  bkgClusterName.ReplaceAll(Form("%s_",AliAODJetEventBackground::StdBranchName()),"");
   if(!evBkg&&!bkgClusters&&fAODOut){
-    bkgClusterName.ReplaceAll("jeteventbackground_","");
     evBkg = (AliAODJetEventBackground*)(fAODOut->FindListObject(fBackgroundBranch.Data()));
     bkgClusters = (TClonesArray*)(fAODOut->FindListObject(bkgClusterName.Data()));
+    if(fDebug&&bkgClusters)Printf("%s:%d Background cluster branch %s found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
+    if(fDebug&&evBkg)Printf("%s:%d Backgroundbranch %s found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
   }
   if(!evBkg&&!bkgClusters&&fAODExtension){
     evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(fBackgroundBranch.Data()));
     bkgClusters = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(bkgClusterName.Data()));
+    if(fDebug&&bkgClusters)Printf("%s:%d Background cluster branch %s found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
+    if(fDebug&&evBkg)Printf("%s:%d Backgroundbranch %s found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
   }
+
   if(!evBkg&&!bkgClusters&&fAODIn){
     evBkg = (AliAODJetEventBackground*)(fAODIn->FindListObject(fBackgroundBranch.Data()));
-    bkgClusters = (TClonesArray*)(fAODOut->FindListObject(bkgClusterName.Data()));
+    bkgClusters = (TClonesArray*)(fAODIn->FindListObject(bkgClusterName.Data()));
+    if(fDebug&&bkgClusters)Printf("%s:%d Background cluster branch %s found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
+    if(fDebug&&evBkg)Printf("%s:%d Backgroundbranch %s found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
   }
 
   if(!evBkg){
-    if(fDebug)Printf("%s:%d Backroundbranch %s not found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
+    if(fDebug){
+      Printf("%s:%d Backgroundbranch %s not found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
+      PrintAODContents();
+    }
     PostData(1,fHistList);
     return;
   }
 
   if(!bkgClusters){
-    if(fDebug)Printf("%s:%d Backround cluster branch %s not found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
+    if(fDebug){
+      Printf("%s:%d Background cluster branch %s not found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
+      PrintAODContents();
+    }
     PostData(1,fHistList);
     return;
   }
@@ -250,10 +309,15 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
   Float_t rho = 0;
   if(fSubtraction==kArea)rho =  evBkg->GetBackground(2);
   
+
   for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
     TClonesArray* jarray = (TClonesArray*)fInJetArrayList->At(iJB);
     TClonesArray* jarrayOut = (TClonesArray*)fOutJetArrayList->At(iJB);
-    if(!jarray||!jarrayOut)continue;
+    
+    if(!jarray||!jarrayOut){
+      Printf("%s:%d Array not found %d: %p %p",(char*)__FILE__,__LINE__,iJB,jarray,jarrayOut);
+      continue;
+    }
     TH2F* h2PtInOut = (TH2F*)fHistList->FindObject(Form("h2PtInPtOut_%d",iJB));
     // loop over all jets
     Int_t nOut = 0;
@@ -331,5 +395,21 @@ void AliAnalysisTaskJetBackgroundSubtract::ResetOutJets(){
   for(int iJB = 0;iJB<fOutJetArrayList->GetEntries();iJB++){
     TClonesArray* jarray = (TClonesArray*)fOutJetArrayList->At(iJB);
     if(jarray)jarray->Delete();
+  }
+}
+
+
+void AliAnalysisTaskJetBackgroundSubtract::PrintAODContents(){
+  if(fAODIn){
+    Printf("%s:%d >>>>>> Input",(char*)__FILE__,__LINE__);
+    fAODIn->Print();
+  }
+  if(fAODExtension){
+    Printf("%s:%d >>>>>> Extenstion",(char*)__FILE__,__LINE__);
+    fAODExtension->GetAOD()->Print();
+  }
+  if(fAODOut){
+    Printf("%s:%d >>>>>> Output",(char*)__FILE__,__LINE__);
+    fAODOut->Print();
   }
 }
