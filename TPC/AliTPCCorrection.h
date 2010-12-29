@@ -58,7 +58,9 @@ public:
 
 
   TTree* CreateDistortionTree(Double_t step=5);
-  static void  MakeDistortionMap(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run);
+  static void  MakeDistortionMap(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run,  Float_t refX, Int_t type);
+  static void  MakeDistortionMapCosmic(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run,  Float_t refX, Int_t type);
+  static void  MakeDistortionMapSector(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run, Int_t type);
   // normally called directly in the correction classes which inherit from this class
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
   AliExternalTrackParam * FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream);

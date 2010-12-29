@@ -66,7 +66,8 @@ AliTPCComposedCorrection::AliTPCComposedCorrection()
   : AliTPCCorrection("composed_correction",
 		     "composition of corrections"),
     fCorrections(0),
-    fMode(kParallel)
+    fMode(kParallel),
+    fWeights(0)  // weights of corrections
 {
   //
   // default constructor
@@ -78,7 +79,8 @@ AliTPCComposedCorrection::AliTPCComposedCorrection(TCollection *corrections,
   : AliTPCCorrection("composed_correction",
 		     "composition of corrections"),
     fCorrections(corrections),
-    fMode(mode)
+    fMode(mode),
+    fWeights(0) //weights of correction
 {
   //
   // Constructor that defines the set of corrections, this one is composed of.
@@ -99,6 +101,7 @@ AliTPCComposedCorrection::~AliTPCComposedCorrection() {
     }
     delete i;
   }
+  if (fWeights) delete fWeights;
 }
 
 
@@ -112,15 +115,18 @@ void AliTPCComposedCorrection::GetCorrection(const Float_t x[],const Short_t roc
     AliInfo("No Corrections-models were set: can not calculate distortions");
     return;
   }
-    TIterator *i=fCorrections->MakeIterator();
+  TIterator *i=fCorrections->MakeIterator();
   AliTPCCorrection *c;
+  Int_t weightIndex=0;
   switch (fMode) {
   case kParallel:
     Float_t dxi[3];
     for (int j=0;j<3;++j) dx[j]=0.;
     while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) {
       c->GetCorrection(x,roc,dxi);
-      for (Int_t j=0;j<3;++j) dx[j]+=dxi[j];
+      Double_t w=1;
+      if (fWeights) w=(*fWeights)[weightIndex++];
+      for (Int_t j=0;j<3;++j) dx[j]+=w*dxi[j];
     }
     break;
   case kQueue:
@@ -128,7 +134,9 @@ void AliTPCComposedCorrection::GetCorrection(const Float_t x[],const Short_t roc
     for (Int_t j=0;j<3;++j) xi[j]=x[j];
     while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) {
       c->GetCorrection(xi,roc,dx);
-      for (Int_t j=0;j<3;++j) xi[j]+=dx[j];
+      Double_t w=1;
+      if (fWeights) w=(*fWeights)[weightIndex++];
+      for (Int_t j=0;j<3;++j) xi[j]+=w*dx[j];
     }
     for (Int_t j=0;j<3;++j) dx[j]=xi[j]-x[j];
     break;
@@ -148,13 +156,16 @@ void AliTPCComposedCorrection::GetDistortion(const Float_t x[],const Short_t roc
   }
   TIterator *i=fCorrections->MakeReverseIterator();
   AliTPCCorrection *c;
+  Int_t weightIndex=0;
   switch (fMode) {
   case kParallel:
     Float_t dxi[3];
     for (int j=0;j<3;++j) dx[j]=0.;
     while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) {
       c->GetDistortion(x,roc,dxi);
-      for (Int_t j=0;j<3;++j) dx[j]+=dxi[j];
+      Double_t w=1;
+      if (fWeights) w=(*fWeights)[weightIndex++];
+      for (Int_t j=0;j<3;++j) dx[j]+=w*dxi[j];
     }
     break;
   case kQueue:
@@ -162,7 +173,9 @@ void AliTPCComposedCorrection::GetDistortion(const Float_t x[],const Short_t roc
     for (Int_t j=0;j<3;++j) xi[j]=x[j];
     while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) {
       c->GetDistortion(xi,roc,dx);
-      for (Int_t j=0;j<3;++j) xi[j]+=dx[j];
+      Double_t w=1;
+      if (fWeights) w=(*fWeights)[weightIndex++];
+      for (Int_t j=0;j<3;++j) xi[j]+=w*dx[j];
     }
     for (Int_t j=0;j<3;++j) dx[j]=xi[j]-x[j];
     break;

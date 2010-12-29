@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCCorrection.h"
+#include "TVectorD.h"
 
 class TCollection;
 class TTimeStamp;
@@ -54,16 +55,17 @@ public:
   // initialization and update functions
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);
-
+  void SetWeights(TVectorD * weights){fWeights= (TVectorD*) weights->Clone();}
+  const  TVectorD * GetWeights() const {return fWeights;}
 
 private:
   TCollection *fCorrections; // The corrections this one is composed of.
   CompositionType fMode;     // The way to apply the corrections (see general class documentation)
-
+  TVectorD        *fWeights;  // optional vector with weights - used for fit benchmarking
   AliTPCComposedCorrection & operator = (const AliTPCComposedCorrection);
   AliTPCComposedCorrection(const AliTPCComposedCorrection&); //dummy copy contructor
 
-  ClassDef(AliTPCComposedCorrection,1);
+  ClassDef(AliTPCComposedCorrection,2);
 };
 
 #endif
