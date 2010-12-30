@@ -2650,7 +2650,7 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
     Float_t  lasTanPhiLocIn = -100;
     Float_t  lasTanPhiLocOut = -100;
 
-    if(histAbsY->GetEntries()>0) {
+    if(histAbsY && histAbsY->GetEntries()>0) {
       
       Double_t rotAngOut = 10;
       Double_t rotAngIn = 10;
