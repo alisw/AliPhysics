@@ -199,14 +199,14 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	header->SetPeriodNumber(0);
 	header->SetEventType(0);
 	header->SetMuonMagFieldScale(-999.);
-	header->SetCentrality(-999.);
+	header->SetCentrality(0);
     } else {
 	header->SetBunchCrossNumber(fESD->GetBunchCrossNumber());
 	header->SetOrbitNumber(fESD->GetOrbitNumber());
 	header->SetPeriodNumber(fESD->GetPeriodNumber());
 	header->SetEventType(fESD->GetEventType());
 	header->SetMuonMagFieldScale(-999.);
-	header->SetCentrality(-999.);
+	header->SetCentrality(0);
     }
     
     header->SetTriggerMask(fESD->GetTriggerMask()); 
