@@ -53,7 +53,7 @@ using namespace std;
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
 #include "AliESDfriendTrack.h"
@@ -538,7 +538,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
   }
   if(fDebug > 0)  {
     // Centrality
-    AliESDCentrality *esdCentrality = fESD->GetCentrality();
+    AliCentrality *esdCentrality = fESD->GetCentrality();
     Float_t centrality = esdCentrality->GetCentralityPercentile("V0M");
     //Float_t centralityb = esdCentrality->GetCentralityPercentile("CL1");
     fNbGoodTracks->Fill(nGoodParticles,centrality);
