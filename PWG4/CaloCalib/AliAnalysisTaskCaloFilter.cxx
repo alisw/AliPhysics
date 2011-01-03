@@ -156,7 +156,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   header->SetEventType(event->GetEventType());
   header->SetMuonMagFieldScale(-999.); // FIXME
   //printf("Track Multiplicity for eta < %f: %d \n",fTrackMultEtaCut,trackMult);
-  header->SetCentrality((Double_t)trackMult);        // FIXME
+  header->SetCentrality(0);        // FIXME
   //printf("Centrality %f\n",header->GetCentrality());
   
   header->SetTriggerMask(event->GetTriggerMask()); 
