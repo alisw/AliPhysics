@@ -1,6 +1,6 @@
 //-*- Mode: C++ -*-
-#ifndef ALIESDCentrality_H
-#define ALIESDCentrality_H
+#ifndef ALICentrality_H
+#define ALICentrality_H
 /* This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
@@ -12,14 +12,14 @@
 
 #include "TNamed.h"
 
-class AliESDCentrality : public TNamed
+class AliCentrality : public TNamed
 {
  public:
 
-  AliESDCentrality();  /// constructor
-  ~AliESDCentrality();  /// destructor
-  AliESDCentrality(const AliESDCentrality& cnt); /// copy constructor
-  AliESDCentrality& operator=(const AliESDCentrality& cnt);   /// assignment operator
+  AliCentrality();  /// constructor
+  ~AliCentrality();  /// destructor
+  AliCentrality(const AliCentrality& cnt); /// copy constructor
+  AliCentrality& operator=(const AliCentrality& cnt);   /// assignment operator
 
   /// set centrality result
   void SetCentralityV0M(Float_t cent) {fCentralityV0M = cent;} 
@@ -49,6 +49,6 @@ class AliESDCentrality : public TNamed
   Float_t fCentralityTKLvsV0M;   // Centrality from tracklets vs V0
   Float_t fCentralityZEMvsZDC;   // Centrality from ZEM vs ZDC
 
-  ClassDef(AliESDCentrality, 1)
+  ClassDef(AliCentrality, 1)
 };
-#endif //ALIESDCENTRALITY_H
+#endif //ALICENTRALITY_H

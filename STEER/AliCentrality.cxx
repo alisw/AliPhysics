@@ -17,13 +17,13 @@
 //   Class AliCentralitySelectionTask
 //   author: Alberica Toia
 //*****************************************************
-/// A container for the centrality stored in the ESD.
+/// A container for the centrality stored in AOD in ESD
  
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 
-ClassImp(AliESDCentrality)
+ClassImp(AliCentrality)
 
-AliESDCentrality::AliESDCentrality() : TNamed("ESDCentrality", "Centrality"),
+AliCentrality::AliCentrality() : TNamed("Centrality", "Centrality"),
   fCentralityV0M(0),
   fCentralityFMD(0),
   fCentralityTRK(0),
@@ -37,7 +37,7 @@ AliESDCentrality::AliESDCentrality() : TNamed("ESDCentrality", "Centrality"),
   /// constructor
 }
 
-AliESDCentrality::AliESDCentrality(const AliESDCentrality& cnt) : 
+AliCentrality::AliCentrality(const AliCentrality& cnt) : 
   TNamed(cnt), 
   fCentralityV0M(cnt.fCentralityV0M),
   fCentralityFMD(cnt.fCentralityFMD),
@@ -52,7 +52,7 @@ AliESDCentrality::AliESDCentrality(const AliESDCentrality& cnt) :
   /// Copy constructor
 }
 
-AliESDCentrality& AliESDCentrality::operator=(const AliESDCentrality& c)
+AliCentrality& AliCentrality::operator=(const AliCentrality& c)
 {
   /// Assignment operator
   if (this!=&c) {
@@ -71,12 +71,12 @@ AliESDCentrality& AliESDCentrality::operator=(const AliESDCentrality& c)
   return *this;
 }
 
-AliESDCentrality::~AliESDCentrality()
+AliCentrality::~AliCentrality()
 {
   /// destructor
 }
 
-Float_t AliESDCentrality::GetCentralityPercentile(const char *x)
+Float_t AliCentrality::GetCentralityPercentile(const char *x)
 {
   TString method = x;
   if(method.CompareTo("V0M")==0)      return fCentralityV0M;
@@ -91,7 +91,7 @@ Float_t AliESDCentrality::GetCentralityPercentile(const char *x)
   return -1;
 }
 
-Int_t AliESDCentrality::GetCentralityClass10(const char *x)
+Int_t AliCentrality::GetCentralityClass10(const char *x)
 {
   TString method = x;
   if(method.CompareTo("V0M")==0)      return (Int_t) (fCentralityV0M / 10.0);
@@ -106,7 +106,7 @@ Int_t AliESDCentrality::GetCentralityClass10(const char *x)
   return -1;
 }
 
-Int_t AliESDCentrality::GetCentralityClass5(const char *x)
+Int_t AliCentrality::GetCentralityClass5(const char *x)
 {
  TString method = x;
   if(method.CompareTo("V0M")==0)      return (Int_t) (fCentralityV0M / 5.0);
@@ -121,7 +121,7 @@ Int_t AliESDCentrality::GetCentralityClass5(const char *x)
   return -1;
 }
 
-Bool_t AliESDCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const char *x)
+Bool_t AliCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const char *x)
 {
   TString method = x;
   if ((method.CompareTo("V0M")==0) && (fCentralityV0M >=a && fCentralityV0M < b)) return kTRUE;

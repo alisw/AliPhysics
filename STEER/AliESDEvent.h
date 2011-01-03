@@ -56,7 +56,7 @@ class AliESDTrdTrack;
 class AliESDMuonTrack;
 class AliESD;
 class AliESDcascade;
-class AliESDCentrality;
+class AliCentrality;
 class TRefArray;
 class AliESDACORDE;
 class AliESDHLTDecision;
@@ -186,7 +186,7 @@ public:
   Double_t GetZDCP2Energy() const {return fESDZDC?fESDZDC->GetZDCP2Energy():0;}
   Double_t GetZDCEMEnergy(Int_t i=0) const {return fESDZDC?fESDZDC->GetZDCEMEnergy(i):0;}
   Int_t    GetZDCParticipants() const {return fESDZDC?fESDZDC->GetZDCParticipants():0;}
-  AliESDCentrality* GetCentrality();
+  AliCentrality* GetCentrality();
     
 
   void     SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t em1Energy, Float_t em2Energy,
@@ -469,7 +469,7 @@ protected:
 			     //  combinatorial algorithm.
                              //  It contains also TOF time resolution
                              //  and T0spread as written in OCDB
-  AliESDCentrality *fCentrality; //! Centrality for AA collision
+  AliCentrality *fCentrality; //! Centrality for AA collision
   ClassDef(AliESDEvent,12)  //ESDEvent class 
 };
 #endif 

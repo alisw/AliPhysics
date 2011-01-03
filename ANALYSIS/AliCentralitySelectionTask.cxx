@@ -44,7 +44,7 @@
 #include "AliESDZDC.h"
 #include "AliESDFMD.h"
 #include "AliESDVZERO.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 #include "AliESDtrackCuts.h"
 #include "AliMultiplicity.h"
 #include "AliAODHandler.h"
@@ -344,7 +344,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   Float_t zvtx =0;                  // z-vertex SPD
  
-  AliESDCentrality *esdCent = 0;
+  AliCentrality *esdCent = 0;
 
   if(fAnalysisInput.CompareTo("ESD")==0){
 

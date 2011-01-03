@@ -20,6 +20,7 @@
 #pragma link C++ class AliVEventHandler+;
 #pragma link C++ class AliVEventPool+;
 #pragma link C++ class AliVCuts+;
+#pragma link C++ class AliCentrality+;
 
 
 #pragma link C++ class AliMixedEvent+;
