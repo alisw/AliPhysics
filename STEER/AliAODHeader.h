@@ -13,9 +13,11 @@
 #include "AliVHeader.h"
 #include "AliAODVertex.h"
 #include <TString.h>
+#include "AliCentrality.h"
 
 class TGeoHMatrix;
 class TString;
+
 
 class AliAODHeader : public AliVHeader {
 
@@ -88,6 +90,7 @@ class AliAODHeader : public AliVHeader {
   UInt_t   GetL0TriggerInputs() const {return fL0TriggerInputs;}  
   UInt_t   GetL1TriggerInputs() const {return fL1TriggerInputs;} 
   UShort_t GetL2TriggerInputs() const {return fL2TriggerInputs;} 
+  AliCentrality* GetCentralityP()  const { return fCentralityP; }
 
   
   void SetRunNumber(Int_t nRun)                { fRunNumber = nRun; }
@@ -102,7 +105,8 @@ class AliAODHeader : public AliVHeader {
   void SetMagneticField(Double_t magFld)       { fMagneticField = magFld; }
   void SetMuonMagFieldScale(Double_t magFldScl){ fMuonMagFieldScale = magFldScl; }
   
-  void SetCentrality(Double_t cent)            { fCentrality = cent; }
+  void SetCentrality(AliCentrality* cent)      { fCentralityP = cent; 
+    if (cent) fCentrality = cent->GetCentralityPercentile("V0M");}
   void SetZDCN1Energy(Double_t n1Energy)       { fZDCN1Energy = n1Energy; }
   void SetZDCP1Energy(Double_t p1Energy)       { fZDCP1Energy = p1Energy; }
   void SetZDCN2Energy(Double_t n2Energy)       { fZDCN2Energy = n2Energy; }
@@ -188,7 +192,8 @@ class AliAODHeader : public AliVHeader {
   UInt_t      fL0TriggerInputs;     // L0 Trigger Inputs (mask)
   UInt_t      fL1TriggerInputs;     // L1 Trigger Inputs (mask)
   UShort_t    fL2TriggerInputs;     // L2 Trigger Inputs (mask)
-  ClassDef(AliAODHeader, 13);
+  AliCentrality* fCentralityP;      // Pointer to full centrality information
+  ClassDef(AliAODHeader, 14);
 };
 
 #endif
