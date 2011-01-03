@@ -88,13 +88,14 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    TString cAdd("");
    cAdd += Form("_Filter%05d",filterMask);
 
+   
    if(iFillCorrBkg)pwg4spec->SetBranchGen("");  
    else {
      pwg4spec->SetBranchGen(bGen); 
-     if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))pwg4spec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
+     //  if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))pwg4spec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
    }
    pwg4spec->SetBranchRec(bRec); 
-   if(typeRec.Contains("JETSAOD")&&!typeRec.Contains("MC"))     pwg4spec->SetBranchRec(Form("%s%s",bRec,cAdd.Data())); 
+   // if(typeRec.Contains("JETSAOD")&&!typeRec.Contains("MC"))     pwg4spec->SetBranchRec(Form("%s%s",bRec,cAdd.Data())); 
 
    if(bBkgName.Length()>0)pwg4spec->SetBranchBkg(bBkgName.Data());
 
@@ -102,6 +103,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    pwg4spec->SetFilterMask(filterMask); 
    pwg4spec->SetUseGlobalSelection(kTRUE); 
    pwg4spec->SetMinJetPt(5.);
+   pwg4spec->SetJetEtaWindow(0.4);
    pwg4spec->SetBkgSubtraction(kBackground);
 
 
