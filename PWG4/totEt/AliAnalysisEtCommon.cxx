@@ -127,12 +127,18 @@ void AliAnalysisEtCommon::Init()
   if(fK0Data) delete fK0Data;
   if(fLambdaData) delete fLambdaData;
   if(fAntiLambdaData) delete fAntiLambdaData;
-  fK0PythiaD6T = new TF1("K0PythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
-  fLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
-  fAntiLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
-  fK0Data = new TF1("K0Data",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
-  fLambdaData = new TF1("LambdaData",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
-  fAntiLambdaData = new TF1("LambdaData",function, &AliAnalysisLevyPt::Evaluate,0,50,3,"AliAnalysisLevyPt","Evaluate");
+  fK0PythiaD6T = new TF1("K0PythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
+  fLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
+  fAntiLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
+  fK0Data = new TF1("K0Data",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
+  fLambdaData = new TF1("LambdaData",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
+  fAntiLambdaData = new TF1("LambdaData",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
+  fK0PythiaD6T->FixParameter(3,0.493677);
+  fK0Data->FixParameter(3,0.493677);
+  fLambdaPythiaD6T->FixParameter(3,1.115683);
+  fAntiLambdaPythiaD6T->FixParameter(3,1.115683);
+  fLambdaData->FixParameter(3,1.115683);
+  fAntiLambdaData->FixParameter(3,1.115683);
   if(fDataSet==2009){
     //These data are from the ALICE 900 GeV p+p paper
     fK0PythiaD6T->SetParameter(0,0.1437);
