@@ -50,7 +50,7 @@
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliMCEvent.h"
@@ -1355,7 +1355,7 @@ void AliAnalysisTaskHFE::ReadCentrality() {
        return;
    }
    // Centrality
-   AliESDCentrality *esdCentrality = fESD->GetCentrality();
+   AliCentrality *esdCentrality = fESD->GetCentrality();
    Float_t fCentralityF_temp = esdCentrality->GetCentralityPercentile("V0M");
 
    if( fCentralityF_temp >=  0. && fCentralityF_temp <   5.) fCentralityF =  0;
