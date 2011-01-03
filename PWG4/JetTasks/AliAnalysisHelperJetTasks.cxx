@@ -11,6 +11,9 @@
 #include "TMethodCall.h"
 #include "TFile.h"
 #include "TString.h"
+#include "TArrayI.h"
+#include "TArrayS.h"
+
 #include "AliMCEvent.h"
 #include "AliLog.h"
 #include "AliESDEvent.h"
@@ -171,7 +174,7 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
 	dist = dR;
       }	
     }
-    if(iRecIndex[ig]>=0)iFlag[ig*nGenJets+iRecIndex[ig]]+=1;
+    if(iRecIndex[ig]>=0)iFlag[ig*nRecJets+iRecIndex[ig]]+=1;
     // reset...
     iRecIndex[ig] = -1;
   }
@@ -185,7 +188,7 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
 	dist = dR;
       }	
     }
-    if(iGenIndex[ir]>=0)iFlag[iGenIndex[ir]*nGenJets+ir]+=2;
+    if(iGenIndex[ir]>=0)iFlag[iGenIndex[ir]*nRecJets+ir]+=2;
     // reset...
     iGenIndex[ir] = -1;
   }
@@ -197,21 +200,21 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
   for(int ig = 0;ig<nGenJets;++ig){
     for(int ir = 0;ir<nRecJets;++ir){
       // Print
-      if(iDebug>1)printf("Flag[%d][%d] %d ",ig,ir,iFlag[ig*nGenJets+ir]);
+      if(iDebug>1)printf("Flag[%d][%d] %d ",ig,ir,iFlag[ig*nRecJets+ir]);
 
       if(kMode==3){
 	// we have a uniqie correlation
-	if(iFlag[ig*nGenJets+ir]==3){
+	if(iFlag[ig*nRecJets+ir]==3){
 	  iGenIndex[ir] = ig;
 	  iRecIndex[ig] = ir;
 	}
       }
       else{
 	// we just take the correlation from on side
-	if((iFlag[ig*nGenJets+ir]&2)==2){
+	if((iFlag[ig*nRecJets+ir]&2)==2){
 	  iGenIndex[ir] = ig;
 	}
-	if((iFlag[ig*nGenJets+ir]&1)==1){
+	if((iFlag[ig*nRecJets+ir]&1)==1){
 	  iRecIndex[ig] = ir;
 	}
       }
@@ -219,6 +222,136 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
     if(iDebug>1)printf("\n");
   }
 }
+
+
+
+void AliAnalysisHelperJetTasks::GetClosestJets(TList *genJetsList,const Int_t &kGenJets,
+					       TList *recJetsList,const Int_t &kRecJets,
+					       TArrayI &iGenIndex,TArrayI &iRecIndex,
+					       Int_t iDebug,Float_t maxDist){
+
+  // Size indepnedendentt Implemenation of jet matching
+  // Thepassed TArrayI should be static in the user function an only increased if needed
+
+  //
+  // Relate the two input jet Arrays
+  //
+
+  //
+  // The association has to be unique
+  // So check in two directions
+  // find the closest rec to a gen
+  // and check if there is no other rec which is closer
+  // Caveat: Close low energy/split jets may disturb this correlation
+
+
+  // Idea: search in two directions generated e.g (a--e) and rec (1--3)
+  // Fill a matrix with Flags (1 for closest rec jet, 2 for closest rec jet
+  // in the end we have something like this
+  //    1   2   3
+  // ------------
+  // a| 3   2   0
+  // b| 0   1   0
+  // c| 0   0   3
+  // d| 0   0   1
+  // e| 0   0   1
+  // Topology
+  //   1     2
+  //     a         b        
+  //
+  //  d      c
+  //        3     e
+  // Only entries with "3" match from both sides
+
+  iGenIndex.Reset(-1);
+  iRecIndex.Reset(-1);
+  
+  const int kMode = 3;
+  const Int_t nGenJets = TMath::Min(genJetsList->GetEntries(),kGenJets);
+  const Int_t nRecJets = TMath::Min(recJetsList->GetEntries(),kRecJets);
+  if(nRecJets==0||nGenJets==0)return;
+
+  static TArrayS iFlag(nGenJets*nRecJets);
+  if(iFlag.GetSize()<(nGenJets*nRecJets)){
+    iFlag.Set(nGenJets*nRecJets);
+  }
+  iFlag.Reset(0);
+
+  // find the closest distance to the generated
+  for(int ig = 0;ig<nGenJets;++ig){
+    AliAODJet *genJet = (AliAODJet*)genJetsList->At(ig); 
+    if(!genJet)continue;
+
+    Float_t dist = maxDist;
+    if(iDebug>1)Printf("Gen (%d) p_T %3.3f eta %3.3f ph %3.3f ",ig,genJet->Pt(),genJet->Eta(),genJet->Phi());
+    for(int ir = 0;ir<nRecJets;++ir){
+      AliAODJet *recJet = (AliAODJet*)recJetsList->At(ir); 
+      if(!recJet)continue;
+      if(iDebug>1){
+	printf("Rec (%d) ",ir);
+	Printf("p_T %3.3f eta %3.3f ph %3.3f ",recJet->Pt(),recJet->Eta(),recJet->Phi());
+      }    
+      Double_t dR = genJet->DeltaR(recJet);
+      if(iDebug>1)Printf("Distance (%d)--(%d) %3.3f ",ig,ir,dR);
+      if(dR<dist){
+	iRecIndex[ig] = ir;
+	dist = dR;
+      }	
+    }
+    if(iRecIndex[ig]>=0)iFlag[ig*nRecJets+iRecIndex[ig]]+=1;
+    // reset...
+    iRecIndex[ig] = -1;
+  }
+  // other way around
+
+  for(int ir = 0;ir<nRecJets;++ir){
+      AliAODJet *recJet = (AliAODJet*)recJetsList->At(ir); 
+      if(!recJet)continue;
+      Float_t dist = maxDist;
+      for(int ig = 0;ig<nGenJets;++ig){
+	AliAODJet *genJet = (AliAODJet*)genJetsList->At(ig); 
+	if(!genJet)continue;
+	Double_t dR = genJet->DeltaR(recJet);
+	if(dR<dist){
+	iGenIndex[ir] = ig;
+	dist = dR;
+      }	
+    }
+    if(iGenIndex[ir]>=0)iFlag[iGenIndex[ir]*nRecJets+ir]+=2;
+    // reset...
+    iGenIndex[ir] = -1;
+  }
+
+  // check for "true" correlations
+
+  if(iDebug>1)Printf(">>>>>> Matrix Size %d",iFlag.GetSize());
+
+  for(int ig = 0;ig<nGenJets;++ig){
+    for(int ir = 0;ir<nRecJets;++ir){
+      // Print
+      if(iDebug>1)printf("Flag2[%d][%d] %d ",ig,ir,iFlag[ig*nRecJets+ir]);
+
+      if(kMode==3){
+	// we have a uniqie correlation
+	if(iFlag[ig*nRecJets+ir]==3){
+	  iGenIndex[ir] = ig;
+	  iRecIndex[ig] = ir;
+	}
+      }
+      else{
+	// we just take the correlation from on side
+	if((iFlag[ig*nRecJets+ir]&2)==2){
+	  iGenIndex[ir] = ig;
+	}
+	if((iFlag[ig*nRecJets+ir]&1)==1){
+	  iRecIndex[ig] = ir;
+	}
+      }
+    }
+    if(iDebug>1)printf("\n");
+  }
+}
+
 
 
 void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* cPattern,const char *cOutFile,Bool_t bUpdate){
