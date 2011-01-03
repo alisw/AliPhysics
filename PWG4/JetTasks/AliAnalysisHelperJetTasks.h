@@ -6,6 +6,7 @@ class AliMCEvent;
 class AliAODJet;
 class AliVEvent;
 class TString;
+class TArrayI;
 class AliGenPythiaEventHeader;
 class TVector3;
 class AliGenEventHeader;
@@ -50,7 +51,13 @@ class AliAnalysisHelperJetTasks : public TObject {
 			     const Int_t &kRecJets,
 			     Int_t *iGenIndex,
 			     Int_t *iRecIndex,
-			     Int_t iDebug, Float_t maxDist = 0.5);
+			     Int_t iDebug = 0, Float_t maxDist = 0.3);
+
+  static void GetClosestJets(TList *genJetsList,const Int_t &kGenJets,
+			     TList *recJetsList,const Int_t &kRecJets,
+			     TArrayI &iGenIndex,TArrayI &iRecIndex,
+			     Int_t iDebug = 0,Float_t maxDist = 0.3);
+
 
   static void MergeOutputDirs(const char* cFiles,const char* cPattern,const char *cOutFile,Bool_t bUpdate = false); // merges all directories containing the pattern
 
