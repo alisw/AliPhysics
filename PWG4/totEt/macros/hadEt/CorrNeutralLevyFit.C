@@ -28,7 +28,14 @@ public:
   ClassDef(AliAnalysisLevyPtModified, 1);
 };
 
-void CorrNeutralLevyFit(){
+void CorrNeutralLevyFit(bool hadronic = false){
+
+  float factor = 0.0;
+  float factorerr = 0.0;
+  if(hadronic){
+    factor = 0.548;
+    factorerr = 0.003;
+  }
 
 // particle          & $\frac{dN}{dy}$    & T (GeV)           & n               & $\frac{dE_T}{dy}$& a &\ET \\ \hline
 // $\pi^{+}+\pi^{-}$ & 2.977  $\pm$ 0.15  & 0.126 $\pm$ 0.001 & 7.82 $\pm$ 0.1  &                  &   &     \\
@@ -57,14 +64,12 @@ void CorrNeutralLevyFit(){
   fPion->SetParameter(1,T);//T
   fPion->SetParameter(2,n+nerr);//n
   tmpPion = fPion->Integral(0,50);
-  cout<<"integral "<<tmpPion<<endl;
   myerrorPionn = TMath::Abs(integralPion-tmpPion);
   fPion->SetParameter(2,n-nerr);//n
   tmpPion = fPion->Integral(0,50);
-  cout<<"integral "<<tmpPion<<endl;
   if(TMath::Abs(integralPion-tmpPion)>myerrorPionn) myerrorPionn = TMath::Abs(integralPion-tmpPion);
-  cout<<"Pion Et = "<<integralPion<<"$\\pm$"<<integralErrPion<<"$\\pm$"<<myerrorPionT<<"$\\pm$"<<myerrorPionn<<endl;
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
+  //To get the correct error one would have to fit the spectra data to get the covariance matrix...
   integralErrPion = TMath::Sqrt(TMath::Power(integralErrPion,2)+TMath::Power(myerrorPionT,2)+TMath::Power(myerrorPionn,2));
   cout<<"Pion Et = "<<integralPion<<"$\\pm$"<<integralErrPion<<endl;
 
@@ -94,13 +99,10 @@ void CorrNeutralLevyFit(){
   fKaon->SetParameter(1,T);//T
   fKaon->SetParameter(2,n+nerr);//n
   tmpKaon = fKaon->Integral(0,50);
-  cout<<"integral "<<tmpKaon<<endl;
   myerrorKaonn = TMath::Abs(integralKaon-tmpKaon);
   fKaon->SetParameter(2,n-nerr);//n
   tmpKaon = fKaon->Integral(0,50);
-  cout<<"integral "<<tmpKaon<<endl;
   if(TMath::Abs(integralKaon-tmpKaon)>myerrorKaonn) myerrorKaonn = TMath::Abs(integralKaon-tmpKaon);
-  cout<<"Kaon Et = "<<integralKaon<<"$\\pm$"<<integralErrKaon<<"$\\pm$"<<myerrorKaonT<<"$\\pm$"<<myerrorKaonn<<endl;
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrKaon = TMath::Sqrt(TMath::Power(integralErrKaon,2)+TMath::Power(myerrorKaonT,2)+TMath::Power(myerrorKaonn,2));
   cout<<"Kaon Et = "<<integralKaon<<"$\\pm$"<<integralErrKaon<<endl;
@@ -131,13 +133,10 @@ void CorrNeutralLevyFit(){
   fProton->SetParameter(1,T);//T
   fProton->SetParameter(2,n+nerr);//n
   tmpProton = fProton->Integral(0,50);
-  cout<<"integral "<<tmpProton<<endl;
   myerrorProtonn = TMath::Abs(integralProton-tmpProton);
   fProton->SetParameter(2,n-nerr);//n
   tmpProton = fProton->Integral(0,50);
-  cout<<"integral "<<tmpProton<<endl;
   if(TMath::Abs(integralProton-tmpProton)>myerrorProtonn) myerrorProtonn = TMath::Abs(integralProton-tmpProton);
-  cout<<"Proton Et = "<<integralProton<<"$\\pm$"<<integralErrProton<<"$\\pm$"<<myerrorProtonT<<"$\\pm$"<<myerrorProtonn<<endl;
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrProton = TMath::Sqrt(TMath::Power(integralErrProton,2)+TMath::Power(myerrorProtonT,2)+TMath::Power(myerrorProtonn,2));
   cout<<"Proton Et = "<<integralProton<<"$\\pm$"<<integralErrProton<<endl;
@@ -165,13 +164,10 @@ void CorrNeutralLevyFit(){
   fProton->SetParameter(1,T);//T
   fProton->SetParameter(2,n+nerr);//n
   tmpAntiProton = fProton->Integral(0,50);
-  cout<<"integral "<<tmpAntiProton<<endl;
   myerrorAntiProtonn = TMath::Abs(integralAntiProton-tmpAntiProton);
   fProton->SetParameter(2,n-nerr);//n
   tmpAntiProton = fProton->Integral(0,50);
-  cout<<"integral "<<tmpAntiProton<<endl;
   if(TMath::Abs(integralAntiProton-tmpAntiProton)>myerrorAntiProtonn) myerrorAntiProtonn = TMath::Abs(integralAntiProton-tmpAntiProton);
-  cout<<"AntiProton Et = "<<integralAntiProton<<"$\\pm$"<<integralErrAntiProton<<"$\\pm$"<<myerrorAntiProtonT<<"$\\pm$"<<myerrorAntiProtonn<<endl;
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrAntiProton = TMath::Sqrt(TMath::Power(integralErrAntiProton,2)+TMath::Power(myerrorAntiProtonT,2)+TMath::Power(myerrorAntiProtonn,2));
   cout<<"AntiProton Et = "<<integralAntiProton<<"$\\pm$"<<integralErrAntiProton<<endl;
@@ -203,13 +199,10 @@ void CorrNeutralLevyFit(){
   fK0S->SetParameter(1,T);//T
   fK0S->SetParameter(2,n+nerr);//n
   tmpK0S = fK0S->Integral(0,50);
-  cout<<"integral "<<tmpK0S<<endl;
   myerrorK0Sn = TMath::Abs(integralK0S-tmpK0S);
   fK0S->SetParameter(2,n-nerr);//n
   tmpK0S = fK0S->Integral(0,50);
-  cout<<"integral "<<tmpK0S<<endl;
   if(TMath::Abs(integralK0S-tmpK0S)>myerrorK0Sn) myerrorK0Sn = TMath::Abs(integralK0S-tmpK0S);
-  cout<<"K0S Et = "<<integralK0S<<"$\\pm$"<<integralErrK0S<<"$\\pm$"<<myerrorK0ST<<"$\\pm$"<<myerrorK0Sn<<endl;
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrK0S = TMath::Sqrt(TMath::Power(integralErrK0S,2)+TMath::Power(myerrorK0ST,2)+TMath::Power(myerrorK0Sn,2));
   cout<<"K0S Et = "<<integralK0S<<"$\\pm$"<<integralErrK0S<<endl;
@@ -240,13 +233,10 @@ void CorrNeutralLevyFit(){
   fLambda->SetParameter(1,T);//T
   fLambda->SetParameter(2,n+nerr);//n
   tmpLambda = fLambda->Integral(0,50);
-  cout<<"integral "<<tmpLambda<<endl;
   myerrorLambdan = TMath::Abs(integralLambda-tmpLambda);
   fLambda->SetParameter(2,n-nerr);//n
   tmpLambda = fLambda->Integral(0,50);
-  cout<<"integral "<<tmpLambda<<endl;
   if(TMath::Abs(integralLambda-tmpLambda)>myerrorLambdan) myerrorLambdan = TMath::Abs(integralLambda-tmpLambda);
-  cout<<"Lambda Et = "<<integralLambda<<"$\\pm$"<<integralErrLambda<<"$\\pm$"<<myerrorLambdaT<<"$\\pm$"<<myerrorLambdan<<endl;
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrLambda = TMath::Sqrt(TMath::Power(integralErrLambda,2)+TMath::Power(myerrorLambdaT,2)+TMath::Power(myerrorLambdan,2));
   cout<<"Lambda Et = "<<integralLambda<<"$\\pm$"<<integralErrLambda<<endl;
@@ -278,13 +268,10 @@ void CorrNeutralLevyFit(){
   fAntiLambda->SetParameter(1,T);//T
   fAntiLambda->SetParameter(2,n+nerr);//n
   tmpAntiLambda = fAntiLambda->Integral(0,50);
-  cout<<"integral "<<tmpAntiLambda<<endl;
   myerrorAntiLambdan = TMath::Abs(integralAntiLambda-tmpAntiLambda);
   fAntiLambda->SetParameter(2,n-nerr);//n
   tmpAntiLambda = fAntiLambda->Integral(0,50);
-  cout<<"integral "<<tmpAntiLambda<<endl;
   if(TMath::Abs(integralAntiLambda-tmpAntiLambda)>myerrorAntiLambdan) myerrorAntiLambdan = TMath::Abs(integralAntiLambda-tmpAntiLambda);
-  cout<<"AntiLambda Et = "<<integralAntiLambda<<"$\\pm$"<<integralErrAntiLambda<<"$\\pm$"<<myerrorAntiLambdaT<<"$\\pm$"<<myerrorAntiLambdan<<endl;
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrAntiLambda = TMath::Sqrt(TMath::Power(integralErrAntiLambda,2)+TMath::Power(myerrorAntiLambdaT,2)+TMath::Power(myerrorAntiLambdan,2));
   cout<<"AntiLambda Et = "<<integralAntiLambda<<"$\\pm$"<<integralErrAntiLambda<<endl;
@@ -295,7 +282,7 @@ void CorrNeutralLevyFit(){
   float integralNeutron = integralProton;
   float integralErrNeutron = integralErrProton;
 
-  float totalEt = integralPion+integralKaon+2.0*integralProton+2.0*integralAntiProton+2.0*integralK0S+integralLambda+integralAntiLambda;
+  float totalEt = (1.0+factor)*integralPion+integralKaon+2.0*integralProton+2.0*integralAntiProton+2.0*integralK0S+integralLambda+integralAntiLambda;
   float measuredEt = integralPion+integralKaon+1.0*integralProton+1.0*integralAntiProton;
   float fneutral = measuredEt/totalEt;
   cout<<"fneutral = "<<fneutral<<endl;
@@ -305,6 +292,13 @@ void CorrNeutralLevyFit(){
   //df/da=(xf-yf^2)/(xa+A)
   //x=y=1; xa+A=measuredEt
   float errPion = (fneutral-fneutral*fneutral)/measuredEt*integralErrPion;
+  if(hadronic){
+    //then we have x=1, y = 1+factor
+    //the error on the extra bit of et from pi0s
+    float extraerror = integralPion*factorerr;
+    integralErrPion = TMath::Sqrt(TMath::Power(integralErrPion,2)+TMath::Power(extraerror,2));
+    errPion = (fneutral-(1.0+factor)*fneutral*fneutral)/measuredEt*integralErrPion;
+  }
   float errKaon = (fneutral-fneutral*fneutral)/measuredEt*integralErrKaon;
   //x=1,y=2
   float errProton = (fneutral-2.0*fneutral*fneutral)/measuredEt*integralErrProton;

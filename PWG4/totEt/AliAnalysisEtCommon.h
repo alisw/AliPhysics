@@ -29,7 +29,7 @@ class AliAnalysisLevyPt{
   virtual ~AliAnalysisLevyPt(){;};
   Double_t Evaluate(const Double_t *pt, const Double_t *par) const
   {
-    Double_t lMass  = 0.497;
+    Double_t lMass  = par[3];
     Double_t ldNdy  = par[0];
     Double_t l2pi   = 2*TMath::Pi();
     Double_t lTemp = par[1];
@@ -144,8 +144,8 @@ protected:
     TF1 *fLambdaData;//function with Levy fit parameters for Lambda in data
     TF1 *fAntiLambdaData;//function with Levy fit parameters for AntiLambda in data
 
-    TF1 *fLambdaEnhancement;//Function for lambda baryon enhancement factor
-    TF1 *fProtonEnhancement;//function for proton baryon enhancement factor
+    TF1 *fLambdaEnhancement;
+    TF1 *fProtonEnhancement;
     Float_t LambdaBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
     Float_t ProtonBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
 
