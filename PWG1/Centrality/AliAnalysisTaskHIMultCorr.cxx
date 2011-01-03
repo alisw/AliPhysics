@@ -26,7 +26,7 @@ using namespace std;
 #include "AliMCParticle.h"
 #include "AliESDVZERO.h"
 #include "AliAnalysisTaskHIMultCorr.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 
 #include "AliESDVZERO.h"
 #include "AliTriggerAnalysis.h"
@@ -510,7 +510,7 @@ Int_t AliAnalysisTaskHIMultCorr::GetCentralityBin(){
   if (fUseCentralitySel == 0)
     return fCentralityBin;
   
-  AliESDCentrality *esdCentrality = fESD->GetCentrality();
+  AliCentrality *esdCentrality = fESD->GetCentrality();
   fCentralityVZERO  = esdCentrality->GetCentralityPercentile("V0M");  
   fCentralitySPD    = esdCentrality->GetCentralityPercentile("CL1");
 

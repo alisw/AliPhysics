@@ -49,7 +49,7 @@
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
 
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 
@@ -340,7 +340,7 @@ Int_t AliPerformanceTask::CalculateCentralityBin(){
   if (fUseCentrality == 0)
     return centrality;
 
-  AliESDCentrality *esdCentrality = fESD->GetCentrality();
+  AliCentrality *esdCentrality = fESD->GetCentrality();
     
   // New : 2010-11-18 JMT 
   if ( fUseCentrality == 1 )
