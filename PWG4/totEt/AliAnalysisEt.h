@@ -9,7 +9,7 @@
 #ifndef ALIANALYSISET_H
 #define ALIANALYSISET_H
 
-class AliESDCentrality;
+class AliCentrality;
 #include "AliAnalysisEtCommon.h"
 
 class TString;
@@ -76,7 +76,7 @@ public:
     void SetTPCOnlyTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsTPC = (AliESDtrackCuts *) cuts;}
     
     /** Set the centrality object */
-    void SetCentralityObject(AliESDCentrality *cent) { fCentrality = cent; }
+    void SetCentralityObject(AliCentrality *cent) { fCentrality = cent; }
 
 protected:
 
@@ -202,7 +202,7 @@ protected:
     TTree *fTreeDeposit; // optional TTree for energy deposit measurements
 
     /** Centrality object */
-    AliESDCentrality *fCentrality; //Centrality object
+    AliCentrality *fCentrality; //Centrality object
 
 private:
     //Declare private to avoid compilation warning

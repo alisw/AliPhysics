@@ -45,7 +45,7 @@
 #include <AliMCEventHandler.h>
 #include "TRandom3.h"
 #include "AliTriggerAnalysis.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 
 class AliESDTrackCuts;
 class AliCFContainer;
@@ -575,7 +575,7 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 
   if(fV0Reader->GetIsHeavyIon()){
     if(fUseCentrality>0){
-      AliESDCentrality *esdCentrality = fV0Reader->GetESDEvent()->GetCentrality();
+      AliCentrality *esdCentrality = fV0Reader->GetESDEvent()->GetCentrality();
       Int_t centralityC = -1;
 
       if(fUseCentrality==1){

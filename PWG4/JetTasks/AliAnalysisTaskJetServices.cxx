@@ -38,7 +38,7 @@
 #include "TDatabasePDG.h"
 
 #include "AliAnalysisTaskJetServices.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisManager.h"

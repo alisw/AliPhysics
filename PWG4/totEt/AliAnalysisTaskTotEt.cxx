@@ -151,7 +151,7 @@ void AliAnalysisTaskTotEt::UserExec(Option_t *)
 
     Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber());
 
-    AliESDCentrality *cent = GetCentralityObject();
+    AliCentrality *cent = GetCentralityObject();
 
     if (res == 0 && cent)
     {

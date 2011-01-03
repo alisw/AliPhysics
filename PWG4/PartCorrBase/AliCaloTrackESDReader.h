@@ -18,7 +18,7 @@
 // --- AliRoot system ---
 #include "AliCaloTrackReader.h" 
 #include "AliESDEvent.h"
-//class AliESDCentrality;
+class AliCentrality;
 
 class AliCaloTrackESDReader : public AliCaloTrackReader {
   
@@ -34,7 +34,7 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
 	
   TString GetFiredTriggerClasses() {return ((AliESDEvent*)GetInputEvent())->GetFiredTriggerClasses();}
   
-  AliESDCentrality* GetCentrality() const {AliESDEvent* event = dynamic_cast<AliESDEvent*> (fInputEvent); 
+  AliCentrality* GetCentrality() const {AliESDEvent* event = dynamic_cast<AliESDEvent*> (fInputEvent); 
                                            if(event) return event->GetCentrality(); else return 0x0;}
   
   void FillInputVZERO();

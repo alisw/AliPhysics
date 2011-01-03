@@ -10,7 +10,7 @@
 
 #include "AliAnalysisTaskSE.h"
 
-class AliESDCentrality;
+class AliCentrality;
 class AliAnalysisEtSelectionHandler;
 class AliESDtrackCuts;
 class AliESDEvent;
@@ -44,7 +44,7 @@ protected:
     Bool_t IsPhysicsSelected() const;
     
     /** Get the centrality object */
-    AliESDCentrality* GetCentralityObject();
+    AliCentrality* GetCentralityObject();
     
     /** The ESD event */
     AliESDEvent *fESDEvent; //The ESD event

@@ -37,7 +37,7 @@ public:
 
   TString GetFiredTriggerClasses() {return ((AliAODEvent*)GetInputEvent())->GetFiredTriggerClasses();}	
 
-  AliESDCentrality* GetCentrality() const {return 0x0;}
+  AliCentrality* GetCentrality() const {return 0x0;}
 
   
   ClassDef(AliCaloTrackAODReader,5)
