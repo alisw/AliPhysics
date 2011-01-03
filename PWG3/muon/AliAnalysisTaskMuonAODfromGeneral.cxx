@@ -131,7 +131,7 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   header->SetRefMultiplicityPos(nPosTracks);
   header->SetRefMultiplicityNeg(nTracks - nPosTracks);
   header->SetMuonMagFieldScale(-999.); // FIXME
-  header->SetCentrality(-999.);        // FIXME
+  header->SetCentrality(0);            // FIXME
 
   Int_t nVertices = 0;
   const AliAODVertex *vtx = fOrgAOD->GetPrimaryVertex();

@@ -42,7 +42,7 @@
 
 #include <AliExternalTrackParam.h>
 #include <AliESDpid.h>
-#include <AliESDCentrality.h>
+#include <AliCentrality.h>
 #include <AliAODpidUtil.h>
 #include <AliPID.h>
 
@@ -614,7 +614,7 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   FillVarVEvent(event, values);
 
   Double_t centralityF=-1;
-  AliESDCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
+  AliCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
   if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
   
   // Fill AliESDEvent interface specific information
