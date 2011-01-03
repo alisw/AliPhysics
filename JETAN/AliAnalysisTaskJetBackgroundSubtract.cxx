@@ -59,7 +59,7 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract():
   fNonStdFile(""),
   fReplaceString1("B0"),
   fReplaceString2("B%d"),
-  fSubtraction(kArea),
+  fSubtraction(kRhoRecalc),
   fInJetArrayList(0x0),
   fOutJetArrayList(0x0),
   fHistList(0x0)  
@@ -78,7 +78,7 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract(const
   fNonStdFile(""),
   fReplaceString1("B0"),
   fReplaceString2("B%d"),
-  fSubtraction(kArea),
+  fSubtraction(kRhoRecalc),
   fInJetArrayList(0x0),
   fOutJetArrayList(0x0),
   fHistList(0x0)  
@@ -102,7 +102,8 @@ Bool_t AliAnalysisTaskJetBackgroundSubtract::Notify()
 
   for(int iJB = 0;iJB<fJBArray->GetEntries();iJB++){
     TObjString *ostr = (TObjString*)fJBArray->At(iJB);
-
+ 
+  
     TClonesArray* jarray = 0;      
     if(!jarray&&fAODOut){
       jarray = (TClonesArray*)(fAODOut->FindListObject(ostr->GetString().Data()));
@@ -156,7 +157,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
 
   if (fDebug > 1) printf("AnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects() \n");
   if(fNonStdFile.Length()!=0){
-    // 
+    
     // case that we have an AOD extension we need to fetch the jets from the extended output
     // we identifay the extension aod event by looking for the branchname
     AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
@@ -261,27 +262,39 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 
 
 
-  static AliAODJetEventBackground*  evBkg = 0;
-  static TClonesArray*              bkgClusters = 0;
-  static TString bkgClusterName(fBackgroundBranch.Data());
+  AliAODJetEventBackground*  evBkg = 0;
+  TClonesArray*              bkgClusters = 0;
+  TClonesArray*              bkgClustersRC = 0;
+  TString bkgClusterName(fBackgroundBranch.Data());
   bkgClusterName.ReplaceAll(Form("%s_",AliAODJetEventBackground::StdBranchName()),"");
-  if(!evBkg&&!bkgClusters&&fAODOut){
+  TString bkgClusterRCName(Form("%s%s",bkgClusterName.Data(),"RandomCone")); 
+
+  if(!evBkg&&!bkgClusters&&!bkgClustersRC&&fAODOut){
     evBkg = (AliAODJetEventBackground*)(fAODOut->FindListObject(fBackgroundBranch.Data()));
     bkgClusters = (TClonesArray*)(fAODOut->FindListObject(bkgClusterName.Data()));
+    bkgClustersRC = (TClonesArray*)(fAODOut->FindListObject(bkgClusterRCName.Data()));
+
     if(fDebug&&bkgClusters)Printf("%s:%d Background cluster branch %s found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
+    if(fDebug&&bkgClustersRC)Printf("%s:%d Background cluster RC branch %s found",(char*)__FILE__,__LINE__,bkgClusterRCName.Data());
     if(fDebug&&evBkg)Printf("%s:%d Backgroundbranch %s found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
   }
-  if(!evBkg&&!bkgClusters&&fAODExtension){
+  if(!evBkg&&!bkgClusters&&!bkgClustersRC&&fAODExtension){
     evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(fBackgroundBranch.Data()));
     bkgClusters = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(bkgClusterName.Data()));
+    bkgClustersRC = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(bkgClusterRCName.Data()));
     if(fDebug&&bkgClusters)Printf("%s:%d Background cluster branch %s found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
+    if(fDebug&&bkgClustersRC)Printf("%s:%d Background cluster RC branch %s found",(char*)__FILE__,__LINE__,bkgClusterRCName.Data());
+
     if(fDebug&&evBkg)Printf("%s:%d Backgroundbranch %s found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
   }
 
-  if(!evBkg&&!bkgClusters&&fAODIn){
+  if(!evBkg&&!bkgClusters&&!bkgClustersRC&&fAODIn){
     evBkg = (AliAODJetEventBackground*)(fAODIn->FindListObject(fBackgroundBranch.Data()));
     bkgClusters = (TClonesArray*)(fAODIn->FindListObject(bkgClusterName.Data()));
+    bkgClustersRC = (TClonesArray*)(fAODIn->FindListObject(bkgClusterRCName.Data()));
+
     if(fDebug&&bkgClusters)Printf("%s:%d Background cluster branch %s found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
+    if(fDebug&&bkgClustersRC)Printf("%s:%d Background cluster RC branch %s found",(char*)__FILE__,__LINE__,bkgClusterRCName.Data());
     if(fDebug&&evBkg)Printf("%s:%d Backgroundbranch %s found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
   }
 
@@ -303,28 +316,44 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
     return;
   }
 
-
+  if(!bkgClustersRC){
+    if(fDebug){
+      Printf("%s:%d Background cluster RC branch %s not found",(char*)__FILE__,__LINE__,bkgClusterRCName.Data());
+      PrintAODContents();
+    }
+    PostData(1,fHistList);
+    return;
+  }
   // LOOP over all jet branches and subtract the background
 
-  Float_t rho = 0;
-  if(fSubtraction==kArea)rho =  evBkg->GetBackground(2);
-  
-
+   Float_t rho = 0;
+   Double_t meanarea = 0;
+   if(fSubtraction==kArea)rho =  evBkg->GetBackground(2);
+   if(fSubtraction==kRhoRecalc){
+     meanarea=evBkg->GetMeanarea(2);
+     rho =RecalcRho(bkgClusters,meanarea);
+   }
+   if(fSubtraction==kRhoRC)rho =RhoRC(bkgClustersRC);
+   
   for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
     TClonesArray* jarray = (TClonesArray*)fInJetArrayList->At(iJB);
     TClonesArray* jarrayOut = (TClonesArray*)fOutJetArrayList->At(iJB);
     
     if(!jarray||!jarrayOut){
-      Printf("%s:%d Array not found %d: %p %p",(char*)__FILE__,__LINE__,iJB,jarray,jarrayOut);
-      continue;
-    }
+    Printf("%s:%d Array not found %d: %p %p",(char*)__FILE__,__LINE__,iJB,jarray->GetName(),jarrayOut->GetName());
+    continue;
+      }
     TH2F* h2PtInOut = (TH2F*)fHistList->FindObject(Form("h2PtInPtOut_%d",iJB));
     // loop over all jets
     Int_t nOut = 0;
+      
+
     for(int i = 0;i < jarray->GetEntriesFast();i++){
       AliAODJet *jet = (AliAODJet*)jarray->At(i);
       AliAODJet tmpNewJet(*jet);
       Bool_t bAdd = false;
+
+
       if(fSubtraction==kArea){	
 	Double_t background = rho * jet->EffectiveAreaCharged();
 	Float_t ptSub = jet->Pt() - background;	
@@ -344,12 +373,43 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	// allows to recover old p_T and rho...
 	tmpNewJet.SetBgEnergy(background,0);
       }// kAREA
-      else if(fSubtraction==kRhoRecalc1){
-	// Put a function call to calculate rho here
-	// * exclude edges
-	// * exclude clusters with small area
-	// * exclude areas around leading jets
-      }
+      else if(fSubtraction==kRhoRecalc){
+ 	Double_t background = rho * jet->EffectiveAreaCharged();
+	Float_t ptSub = jet->Pt() - background;	
+        if(fDebug>2){
+	  Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
+	if(ptSub<0){
+	  // optionally rescale it and keep??
+	  bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
+	}
+	else{
+	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
+	}
+	// add background estimates to the new jet object
+	// allows to recover old p_T and rho...
+	tmpNewJet.SetBgEnergy(background,0);
+
+      }//kRhoRecalc
+       else if(fSubtraction==kRhoRC){
+	Double_t background = rho * jet->EffectiveAreaCharged();
+	Float_t ptSub = jet->Pt() - background;	
+	if(fDebug>2){	Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
+	if(ptSub<0){
+	  // optionally rescale it and keep??
+	  bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
+	}
+	else{
+	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
+	}
+	// add background estimates to the new jet object
+	// allows to recover old p_T and rho...
+	tmpNewJet.SetBgEnergy(background,0);
+
+       }//kRhoRC
 
       if(bAdd){
         AliAODJet *newJet = new ((*jarrayOut)[nOut++]) AliAODJet(tmpNewJet);
@@ -357,7 +417,12 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	newJet->GetRefTracks()->Clear();
       }
 
-   }
+
+
+
+
+
+    }
 
 
 
@@ -389,6 +454,75 @@ Bool_t AliAnalysisTaskJetBackgroundSubtract::RescaleJetMomentum(AliAODJet *jet,F
   jet->SetPxPyPzE(scale*jet->Px(),scale*jet->Py(),scale*jet->Pz(),TMath::Sqrt(mass*mass+pNew*pNew));
   return kTRUE;
 }
+
+Double_t AliAnalysisTaskJetBackgroundSubtract::RecalcRho(TClonesArray* bkgClusters,Double_t meanarea){
+  
+       Double_t ptarea=0.;
+       Int_t count=0;
+       Double_t rho=0.; 
+       const Double_t Rlimit2=0.8*0.8;  //2*jet radius.
+       TClonesArray* jarray=0;
+       
+        for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
+        TObjString *ostr = (TObjString*)fInJetArrayList->At(iJB);
+        TString jetref=ostr->GetString().Data();
+        if(jetref.Contains("ANTIKT04")){ 
+	  jarray = (TClonesArray*)fInJetArrayList->At(iJB);}}
+	if(jarray->GetEntries()>=2){ 
+	  AliAODJet *first = (AliAODJet*)(jarray->At(0)); 
+	  AliAODJet *second= (AliAODJet*)(jarray->At(1)); 
+	  for(Int_t k=0;k<bkgClusters->GetEntriesFast();k++){
+	    AliAODJet *clus = (AliAODJet*)(bkgClusters->At(k));
+	    if(TMath::Abs(clus->Eta())>0.5) continue;
+	    if((clus->EffectiveAreaCharged())<0.1*meanarea) continue; 
+	    Double_t distance1=(first->Eta()-clus->Eta())*(first->Eta()-clus->Eta())+
+	      (first->Phi()-clus->Phi())*(first->Phi()-clus->Phi());
+	    Double_t distance2= (second->Eta()-clus->Eta())*(second->Eta()-clus->Eta())+
+	      (second->Phi()-clus->Phi())*(second->Phi()-clus->Phi());
+	    if((distance1<Rlimit2)||(distance2<Rlimit2)) continue;    
+	    ptarea=ptarea+clus->Pt()/clus->EffectiveAreaCharged(); 
+	    count=count+1;}
+	  if(count!=0) rho=ptarea/count; 
+	}        
+	return rho;
+}
+
+   Double_t AliAnalysisTaskJetBackgroundSubtract::RhoRC(TClonesArray* bkgClustersRC){
+  
+       Double_t ptarea=0.;
+       Int_t count=0;
+       Double_t rho=0.; 
+       const Double_t Rlimit2=0.8*0.8;  //2*jet radius.
+       TClonesArray* jarray=0;
+        for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
+        TObjString *ostr = (TObjString*)fInJetArrayList->At(iJB);
+        TString jetref=ostr->GetString().Data();
+        if(jetref.Contains("ANTIKT04")){ 
+	 jarray = (TClonesArray*)fInJetArrayList->At(iJB);}}
+         if(jarray->GetEntries()>=2){ 
+	   AliAODJet *first = (AliAODJet*)(jarray->At(0)); 
+	   AliAODJet *second=(AliAODJet*)(jarray->At(1)); 
+         for(Int_t k=0;k<bkgClustersRC->GetEntriesFast();k++){
+	   AliAODJet *clus = (AliAODJet*)(bkgClustersRC->At(k));
+	   if(TMath::Abs(clus->Eta())>0.5) continue;
+	   Double_t distance1=(first->Eta()-clus->Eta())*(first->Eta()-clus->Eta())+
+	     (first->Phi()-clus->Phi())*(first->Phi()-clus->Phi());
+	   Double_t distance2= (second->Eta()-clus->Eta())*(second->Eta()-clus->Eta())+
+	     (second->Phi()-clus->Phi())*(second->Phi()-clus->Phi());
+	   if((distance1<Rlimit2)||(distance2<Rlimit2)) continue;    
+	   ptarea=ptarea+clus->Pt()/clus->EffectiveAreaCharged(); 
+	   count=count+1;}
+         if(count!=0) rho=ptarea/count;  }
+         return rho;
+}
+
+
+
+
+
+
+
+
 
 void AliAnalysisTaskJetBackgroundSubtract::ResetOutJets(){
   if(!fOutJetArrayList)return;

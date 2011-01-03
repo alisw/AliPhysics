@@ -55,9 +55,9 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     virtual void   SetToReplace(char* c){fReplaceString1 = c;}  
     const char*    GetToReplace(){return fReplaceString1.Data();}  
     virtual void   SetReplacementMask(char* c){fReplaceString2 = c;}  
-    const char*   GetReplacementMask(){fReplaceString2.Data();}  
+    const char*    GetReplacementMask(){return fReplaceString2.Data();}  
    
-    enum {kNoSubtract = 0,kArea,k4Area,kRhoRecalc1};
+    enum {kNoSubtract = 0,kArea,k4Area,kRhoRecalc,kRhoRC};
  
  private:
 
@@ -66,7 +66,8 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     AliAnalysisTaskJetBackgroundSubtract(const AliAnalysisTaskJetBackgroundSubtract&);
     AliAnalysisTaskJetBackgroundSubtract& operator=(const AliAnalysisTaskJetBackgroundSubtract&);
     Bool_t RescaleJetMomentum(AliAODJet *jet,Float_t pT);
-    
+    Double_t RecalcRho(TClonesArray* fbkgclusters,Double_t meanarea);
+    Double_t RhoRC(TClonesArray* fbkgclustersRC);
     void ResetOutJets();
     void PrintAODContents();
 
@@ -84,7 +85,7 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     TList *fOutJetArrayList; //! transient list to make ease the reset of output jets
     TList *fHistList; //! the histograms output list
    
-    ClassDef(AliAnalysisTaskJetBackgroundSubtract, 1) 
+    ClassDef(AliAnalysisTaskJetBackgroundSubtract, 3) 
 };
  
 #endif
