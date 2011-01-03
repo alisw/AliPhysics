@@ -1,3 +1,4 @@
+
 // **************************************
 // Task used for the correction of determiantion of reconstructed jet spectra
 // Compares input (gen) and output (rec) jets   
@@ -64,34 +65,41 @@
 ClassImp(AliAnalysisTaskJetSpectrum2)
 
 AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
-							    fJetHeaderRec(0x0),
-							    fJetHeaderGen(0x0),
-							    fAOD(0x0),
-							    fhnCorrelation(0x0),
+  fJetHeaderRec(0x0),
+  fJetHeaderGen(0x0),
+  fAODIn(0x0),
+  fAODOut(0x0),
+  fAODExtension(0x0),
+  fhnCorrelation(0x0),
   fhnCorrelationPhiZRec(0x0),
   f1PtScale(0x0),
-							    fBranchRec("jets"),
-							    fBranchGen(""),
-                                                            fBranchBkg(""), 
-							    fUseAODJetInput(kFALSE),
-							    fUseAODTrackInput(kFALSE),
-							    fUseAODMCInput(kFALSE),
-							    fUseGlobalSelection(kFALSE),
-							    fUseExternalWeightOnly(kFALSE),
-							    fLimitGenJetEta(kFALSE),
-                                                            fBkgSubtraction(kFALSE),
-                                                            fFillCorrBkg(0),
-							    fFilterMask(0),
+  fBranchRec("jets"),
+  fBranchGen(""),
+  fBranchBkg(""), 
+  fNonStdFile(""),
+  fUseAODJetInput(kFALSE),
+  fUseAODTrackInput(kFALSE),
+  fUseAODMCInput(kFALSE),
+  fUseGlobalSelection(kFALSE),
+  fUseExternalWeightOnly(kFALSE),
+  fLimitGenJetEta(kFALSE),
+  fBkgSubtraction(kFALSE),
+  fUseOldFill(kFALSE),
+  fNMatchJets(5),
+  fFillCorrBkg(0),
+  fFilterMask(0),
   fEventSelectionMask(0),
-							    fAnalysisType(0),
+  fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
   fEventClass(0),
   fAvgTrials(1),
   fExternalWeight(1),    
-							    fRecEtaWindow(0.5),
+  fJetRecEtaWindow(0.5),
+  fTrackRecEtaWindow(0.5),
   fMinJetPt(0),
-							    fDeltaPhiWindow(20./180.*TMath::Pi()),
+  fMinTrackPt(0.15),
+  fDeltaPhiWindow(90./180.*TMath::Pi()),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -112,22 +120,10 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh1PtTracksGenIn(0x0),
   fh2NRecJetsPt(0x0),
   fh2NRecTracksPt(0x0),
-  fh2JetsLeadingPhiEta(0x0),
-  fh2JetsLeadingPhiPt(0x0),
-  fh2TracksLeadingPhiEta(0x0),
-  fh2TracksLeadingPhiPt(0x0),
-  fh2TracksLeadingJetPhiPt(0x0),
-  fh2JetPtJetPhi(0x0),
-  fh2TrackPtTrackPhi(0x0),
+  fh2NGenJetsPt(0x0),
+  fh2NGenTracksPt(0x0),
+  fh2PtFGen(0x0),
   fh2RelPtFGen(0x0),
-  fh2DijetDeltaPhiPt(0x0),      
-  fh2DijetAsymPt(0x0),          
-  fh2DijetAsymPtCut(0x0),       
-  fh2DijetDeltaPhiDeltaEta(0x0),
-  fh2DijetPt2vsPt1(0x0),        
-  fh2DijetDifvsSum(0x0),        
-  fh1DijetMinv(0x0),            
-  fh1DijetMinvCut(0x0),         
   fh1Bkg1(0x0),
   fh1Bkg2(0x0),
   fh1Bkg3(0x0),
@@ -171,19 +167,46 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
     fh2FragLnGen[i] = 0;
   }  
 
+ 
+  for(int ij = 0;ij <kJetTypes;++ij){    
+    fh1NJets[ij] = 0;
+    fh1SumPtTrack[ij] = 0;
+    fh1PtJetsIn[ij] = 0;
+    fh1PtTracksIn[ij] = 0;
+    fh1PtTracksLeadingIn[ij] = 0;
+    fh2NJetsPt[ij]  = 0;
+    fh2NTracksPt[ij]  = 0;
+    fh2LeadingJetPtJetPhi[ij] = 0;
+    fh2LeadingTrackPtTrackPhi[ij] = 0;
+    for(int i = 0;i < kMaxJets;++i){
+      fh1PtIn[ij][i] = 0;
+      fh2RhoPt[ij][i] = 0;
+      fh2PsiPt[ij][i] = 0;
+    }
+
+    fh1DijetMinv[ij] = 0;      
+    fh2DijetDeltaPhiPt[ij] = 0;  
+    fh2DijetAsymPt[ij] = 0; 
+    fh2DijetPt2vsPt1[ij] = 0;
+    fh2DijetDifvsSum[ij] = 0;
+
+  }
 }
 
 AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   AliAnalysisTaskSE(name),
   fJetHeaderRec(0x0),
   fJetHeaderGen(0x0),
-  fAOD(0x0),
+  fAODIn(0x0),
+  fAODOut(0x0),
+  fAODExtension(0x0),
   fhnCorrelation(0x0),
   fhnCorrelationPhiZRec(0x0),
   f1PtScale(0x0),
   fBranchRec("jets"),
   fBranchGen(""),
   fBranchBkg(""),
+  fNonStdFile(""),
   fUseAODJetInput(kFALSE),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
@@ -191,6 +214,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
   fBkgSubtraction(kFALSE),
+  fUseOldFill(kFALSE),
+  fNMatchJets(5),
   fFillCorrBkg(0),
   fFilterMask(0),
   fEventSelectionMask(0),
@@ -200,9 +225,11 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fEventClass(0),
   fAvgTrials(1),
   fExternalWeight(1),    
-  fRecEtaWindow(0.5),
+  fJetRecEtaWindow(0.5),
+  fTrackRecEtaWindow(0.5),
   fMinJetPt(0),
-  fDeltaPhiWindow(20./180.*TMath::Pi()),
+  fMinTrackPt(0.15),
+  fDeltaPhiWindow(90./180.*TMath::Pi()),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -223,22 +250,10 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh1PtTracksGenIn(0x0),
   fh2NRecJetsPt(0x0),
   fh2NRecTracksPt(0x0),
-  fh2JetsLeadingPhiEta(0x0),
-  fh2JetsLeadingPhiPt(0x0),
-  fh2TracksLeadingPhiEta(0x0),
-  fh2TracksLeadingPhiPt(0x0),
-  fh2TracksLeadingJetPhiPt(0x0),
-  fh2JetPtJetPhi(0x0),
-  fh2TrackPtTrackPhi(0x0),
+  fh2NGenJetsPt(0x0),
+  fh2NGenTracksPt(0x0),
+  fh2PtFGen(0x0),
   fh2RelPtFGen(0x0),
-  fh2DijetDeltaPhiPt(0x0),      
-  fh2DijetAsymPt(0x0),          
-  fh2DijetAsymPtCut(0x0),       
-  fh2DijetDeltaPhiDeltaEta(0x0),
-  fh2DijetPt2vsPt1(0x0),        
-  fh2DijetDifvsSum(0x0),        
-  fh1DijetMinv(0x0),            
-  fh1DijetMinvCut(0x0),         
   fh1Bkg1(0x0), 
   fh1Bkg2(0x0),
   fh1Bkg3(0x0),
@@ -282,17 +297,62 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fh2FragGen[i] = 0;
     fh2FragLnGen[i] = 0;
   }
-  DefineOutput(1, TList::Class());  
+
+  for(int ij = 0;ij <kJetTypes;++ij){    
+    fh1NJets[ij] = 0;
+    fh1SumPtTrack[ij] = 0;
+    fh1PtJetsIn[ij] = 0;
+    fh1PtTracksIn[ij] = 0;
+    fh1PtTracksLeadingIn[ij] = 0;
+    fh2NJetsPt[ij]  = 0;
+    fh2NTracksPt[ij]  = 0;
+    fh2LeadingJetPtJetPhi[ij] = 0;
+    fh2LeadingTrackPtTrackPhi[ij] = 0;
+    for(int i = 0;i < kMaxJets;++i){
+      fh1PtIn[ij][i] = 0;
+      fh2RhoPt[ij][i] = 0;
+      fh2PsiPt[ij][i] = 0;
+    }
+
+    fh1DijetMinv[ij] = 0;      
+    fh2DijetDeltaPhiPt[ij] = 0;  
+    fh2DijetAsymPt[ij] = 0; 
+    fh2DijetPt2vsPt1[ij] = 0;
+    fh2DijetDifvsSum[ij] = 0;
+  } 
+
+ DefineOutput(1, TList::Class());  
 }
 
 
 
 Bool_t AliAnalysisTaskJetSpectrum2::Notify()
 {
+
+
+
   //
   // Implemented Notify() to read the cross sections
   // and number of trials from pyxsec.root
   // 
+  
+  // Fetch the aod also from the input in,
+  // have todo it in notify
+  
+  
+  fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
+  //  assume that the AOD is in the general output...
+  fAODOut  = AODEvent();
+  
+  if(fNonStdFile.Length()!=0){
+    // case that we have an AOD extension we need can fetch the jets from the extended output
+    AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+    fAODExtension = aodH->GetExtension(fNonStdFile.Data());    
+    if(!fAODExtension){
+      if(fDebug>1)Printf("AODExtension found for %s",fNonStdFile.Data());
+    }
+  }
+
 
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   Float_t xsection = 0;
@@ -315,21 +375,19 @@ Bool_t AliAnalysisTaskJetSpectrum2::Notify()
     Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
     if(ftrials>=nEntries && nEntries>0.)fAvgTrials = ftrials/nEntries;
   }  
+
+
   return kTRUE;
 }
 
 void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 {
 
-  //
-  // Create the output container
-  //
-
 
   // Connect the AOD
 
 
-  MakeJetContainer();
+ 
 
 
   if (fDebug > 1) printf("AnalysisTaskJetSpectrum2::UserCreateOutputObjects() \n");
@@ -339,6 +397,11 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fHistList->SetOwner(kTRUE);
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
+
+
+  MakeJetContainer();
+  fHistList->Add(fhnCorrelation);
+  fHistList->Add(fhnCorrelationPhiZRec);
 
   //
   //  Histogram
@@ -377,8 +440,6 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     }
   }
 
-
-
   const Int_t nBinEta = 40;
   Double_t binLimitsEta[nBinEta+1];
   for(Int_t iEta = 0;iEta<=nBinEta;iEta++){
@@ -393,21 +454,41 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   const Int_t nBinFrag = 25;
 
 
+
+
   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+   fHistList->Add(fh1Xsec);
 
   fh1Trials = new TH1F("fh1Trials","trials root file",1,0,1);
   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+  fHistList->Add(fh1Trials);
 
   fh1PtHard = new TH1F("fh1PtHard","PYTHIA Pt hard;p_{T,hard}",nBinPt,binLimitsPt);
+  fHistList->Add(fh1PtHard);
+
   fh1PtHardNoW = new TH1F("fh1PtHardNoW","PYTHIA Pt hard no weight;p_{T,hard}",nBinPt,binLimitsPt);
+  fHistList->Add(fh1PtHardNoW);
+  
   fh1PtHardTrials = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",nBinPt,binLimitsPt);
+  fHistList->Add(fh1PtHardTrials);
 
+  
   fh1ZVtx = new TH1F("fh1ZVtx","z vtx;z_{vtx} (cm)",400,-20,20);
+  fHistList->Add(fh1ZVtx);
 
-  fh1NGenJets  = new TH1F("fh1NGenJets","N generated jets",20,-0.5,19.5);
-  fh1NRecJets = new TH1F("fh1NRecJets","N reconstructed jets",20,-0.5,19.5);
+  fh2PtFGen = new TH2F("fh2PtFGen",Form("%s vs. %s;p_{T,gen};p_{T,rec}",fBranchRec.Data(),fBranchGen.Data()),nBinPt,binLimitsPt,nBinPt,binLimitsPt);
+  fHistList->Add(fh2PtFGen);
 
+  fh2RelPtFGen = new TH2F("fh2RelPtFGen",";p_{T,gen};#Delta p_{T}/p_{T,Gen}",nBinPt,binLimitsPt,120,-2.4,2.4);
+  fHistList->Add(fh2RelPtFGen);
+
+
+  if(fUseOldFill){
+
+    fh1NGenJets  = new TH1F("fh1NGenJets","N generated jets",20,-0.5,19.5);
+    fh1NRecJets = new TH1F("fh1NRecJets","N reconstructed jets",20,-0.5,19.5);
+    
   fh1PtTrackRec = new TH1F("fh1PtTrackRec","Rec track P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1SumPtTrackRec = new TH1F("fh1SumPtTrackRec","Sum Rec track P_T #eta <0.9;p_{T,sum} (GeV/c)",nBinPt,binLimitsPt);
   fh1SumPtTrackAreaRec = new TH1F("fh1SumPtTrackAreaRec","Sum Rec track P_T #eta <0.9 / 1.8 * 2 * 0.4*0.4;p_{T,sum} (GeV/c)",nBinPt,binLimitsPt);
@@ -421,22 +502,11 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
   fh2NRecJetsPt = new TH2F("fh2NRecJetsPt","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NRecTracksPt = new TH2F("fh2NRecTracksPt","Number of tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",nBinPt,binLimitsPt,50,-0.5,49.5);
+
+  fh2NGenJetsPt = new TH2F("fh2NGenJetsPt","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
+  fh2NGenTracksPt = new TH2F("fh2NGenTracksPt","Number of tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",nBinPt,binLimitsPt,50,-0.5,49.5);
   // 
 
-  fh2JetsLeadingPhiEta = new TH2F("fh2JetsLeadingPhiEta","delta eta vs delta phi to leading jet;#Delta#phi;#Delta#eta",
-				nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
-  fh2JetsLeadingPhiPt = new TH2F("fh2JetsLeadingPhiPt","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
-				nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
-  fh2TracksLeadingPhiEta = new TH2F("fh2TracksLeadingPhiEta","delta eta vs delta phi to leading track;#Delta#phi;#Delta#eta",
-				    nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
-  fh2TracksLeadingPhiPt = new TH2F("fh2TracksLeadingPhiPt","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
-				 nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
-
-  fh2JetPtJetPhi = new TH2F("fh2JetPtJetPhi","Reconstructed jet phi vs. pt",nBinPt,binLimitsPt,nBinPhi2,binLimitsPhi2);
-  fh2TrackPtTrackPhi = new TH2F("fh2TrackPtTrackPhi","Reconstructed track phi vs. pt",nBinPt,binLimitsPt,nBinPhi2,binLimitsPhi2);
-
-  fh2RelPtFGen = new TH2F("fh2RelPtFGen",";p_{T,gen};#Delta p_{T}/p_{T,Gen}",nBinPt,binLimitsPt,120,-1.2,1.2);
-  
   for(int ij = 0;ij < kMaxJets;++ij){
     fh1PtRecIn[ij] = new TH1F(Form("fh1PtRecIn_j%d",ij),"rec p_T input ;p_{T,rec}",nBinPt,binLimitsPt);
     fh1PtGenIn[ij] = new TH1F(Form("fh1PtGenIn_j%d",ij),"found p_T input ;p_{T,gen}",nBinPt,binLimitsPt);
@@ -458,7 +528,6 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 				40,0.,2.,nBinPt,binLimitsPt);
     if(!fh1TmpRho)fh1TmpRho = new TH1F("fh1TmpRho","tmp histo for jet shape",40,0.,2);
 
-
     fh2FragRec[ij] = new TH2F(Form("fh2FragRec_j%d",ij),"Jet Fragmentation;x=p_{T,i}/p_{T,jet};p_{T,jet};1/N_{jet}dN_{ch}/dx",
 			   nBinFrag,0.,1.,nBinPt,binLimitsPt);
     fh2FragLnRec[ij] = new TH2F(Form("fh2FragLnRec_j%d",ij),"Jet Fragmentation Ln;#xi=ln(p_{T,jet}/p_{T,i});p_{T,jet}(GeV);1/N_{jet}dN_{ch}/d#xi",
@@ -471,15 +540,6 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   }
 
   // Dijet histograms
-
-  fh2DijetDeltaPhiPt       = new TH2F("fh2DijetDeltaPhiPt","Difference in the azimuthal angle;#Delta#phi;p_{T,1};Entries",180,0.,TMath::Pi(),nBinPt,binLimitsPt);
-  fh2DijetAsymPt            = new TH2F("fh2DijetAsym","Pt asymmetry;#Deltap_{T}/(p_{T,1}+p_{T,2});p_{T,1};Entries",50,0.,1.,nBinPt,binLimitsPt);
-  fh2DijetAsymPtCut         = new TH2F("fh2DijetAsymCut","Pt asymmetry after delta phi cut;#Deltap_{T}/(p_{T,1}+p_{T,2});p_{T,1};Entries",50,0.,1.,nBinPt,binLimitsPt);
-  fh2DijetDeltaPhiDeltaEta = new TH2F("fh2DijetDeltaPhiDeltaEta","Difference in the azimuthal angle;#Delta#phi;Entries",180,0.,TMath::Pi(),20,-2.,2.);
-  fh2DijetPt2vsPt1          = new TH2F("fh2DijetPt2vsPt1","Pt2 versus Pt1;p_{T,1} (GeV/c);p_{T,2} (GeV/c)",250,0.,250.,250,0.,250.);
-  fh2DijetDifvsSum          = new TH2F("fh2DijetDifvsSum","Pt difference vs Pt sum;p_{T,1}+p_{T,2} (GeV/c);#Deltap_{T} (GeV/c)",400,0.,400.,150,0.,150.);
-  fh1DijetMinv               = new TH1F("fh1DijetMinv","Dijet invariant mass;m_{JJ}",nBinPt,binLimitsPt);
-  fh1DijetMinvCut           = new TH1F("fh1DijetMinvCut","Dijet invariant mass;m_{JJ}",nBinPt,binLimitsPt);
   //background histograms
   if(fBkgSubtraction){
     fh1Bkg1 = new TH1F("fh1Bkg1","Background estimate 1",100,0.,10.);
@@ -508,19 +568,11 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   }
   
 
-
-
   const Int_t saveLevel = 3; // large save level more histos
   if(saveLevel>0){
-    fHistList->Add(fh1Xsec);
-    fHistList->Add(fh1Trials);
-    fHistList->Add(fh1PtHard);
-    fHistList->Add(fh1PtHardNoW);
-    fHistList->Add(fh1PtHardTrials);
-    fHistList->Add(fh1ZVtx);
-    if(fBranchGen.Length()>0||fBkgSubtraction){
-      fHistList->Add(fh1NGenJets);
-      fHistList->Add(fh1PtTracksGenIn);
+     if(fBranchGen.Length()>0||fBkgSubtraction){
+       fHistList->Add(fh1NGenJets);
+       fHistList->Add(fh1PtTracksGenIn);
     }
     fHistList->Add(fh1PtJetsRecIn);
     fHistList->Add(fh1PtJetsGenIn);
@@ -533,10 +585,8 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh1SumPtTrackAreaRec);
     fHistList->Add(fh2NRecJetsPt);
     fHistList->Add(fh2NRecTracksPt);
-    fHistList->Add(fh2JetsLeadingPhiEta );
-    fHistList->Add(fh2JetsLeadingPhiPt );
-    fHistList->Add(fh2TracksLeadingPhiEta);
-    fHistList->Add(fh2TracksLeadingPhiPt);
+    fHistList->Add(fh2NGenJetsPt);
+    fHistList->Add(fh2NGenTracksPt);
     for(int i = 0;i<kMaxStep*2;++i)fHistList->Add(fhnJetContainer[i]);
     for(int ij = 0;ij<kMaxJets;++ij){
       fHistList->Add( fh1PtRecIn[ij]);
@@ -555,20 +605,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       fHistList->Add( fh2FragRec[ij]);
       fHistList->Add( fh2FragLnRec[ij]);
     }
-    fHistList->Add(fhnCorrelation);
-    fHistList->Add(fhnCorrelationPhiZRec);
-    fHistList->Add(fh2JetPtJetPhi);
-    fHistList->Add(fh2TrackPtTrackPhi);
-    fHistList->Add(fh2RelPtFGen);
-
-    fHistList->Add(fh2DijetDeltaPhiPt);       
-    fHistList->Add(fh2DijetAsymPt);       
-    fHistList->Add(fh2DijetAsymPtCut);               
-    fHistList->Add(fh2DijetDeltaPhiDeltaEta);        
-    fHistList->Add(fh2DijetPt2vsPt1);                
-    fHistList->Add(fh2DijetDifvsSum);                
-    fHistList->Add(fh1DijetMinv);                    
-    fHistList->Add(fh1DijetMinvCut);                 
+    //    fHistList->Add(fh2TrackPtTrackPhi);
     if(fBkgSubtraction){
       fHistList->Add(fh1Bkg1);
       fHistList->Add(fh1Bkg2);
@@ -596,6 +633,85 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     }
   }
 
+
+  }// ue old fill
+  else{
+ 
+    for(int ij = 0;ij <kJetTypes;++ij){    
+      TString cAdd = "";
+      TString cJetBranch = "";
+      if(ij==kJetRec){
+	cAdd = "Rec";
+	cJetBranch = fBranchRec.Data();
+      }
+      else if (ij==kJetGen){
+	cAdd = "Gen";
+	cJetBranch = fBranchGen.Data();
+      }
+
+      fh1NJets[ij] =new TH1F(Form("fh1N%sJets",cAdd.Data()),Form("N %s jets",cAdd.Data()),50,-0.5,49.5);
+      fHistList->Add(fh1NJets[ij]);
+
+      fh1PtJetsIn[ij]  = new TH1F(Form("fh1PtJets%sIn",cAdd.Data()),Form("%s jets p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+      fHistList->Add(fh1PtJetsIn[ij]);
+
+      fh1PtTracksIn[ij] = new TH1F(Form("fh1PtTracks%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+      fHistList->Add(fh1PtTracksIn[ij]);
+
+      fh1PtTracksLeadingIn[ij] = new TH1F(Form("fh1PtTracksLeading%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+      fHistList->Add(fh1PtTracksLeadingIn[ij]);
+
+      fh1SumPtTrack[ij] = new TH1F(Form("fh1SumPtTrack%s",cAdd.Data()),Form("Sum %s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+      fHistList->Add(fh1SumPtTrack[ij]);
+
+      fh2NJetsPt[ij]  = new TH2F(Form("fh2N%sJetsPt",cAdd.Data()),Form("Number of %s jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",cAdd.Data()),nBinPt,binLimitsPt,50,-0.5,49.5);
+      fHistList->Add(fh2NJetsPt[ij]);
+
+      fh2NTracksPt[ij]  = new TH2F(Form("fh2N%sTracksPt",cAdd.Data()),Form("Number of %s tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",cAdd.Data()),nBinPt,binLimitsPt,50,-0.5,49.5);
+      fHistList->Add(fh2NTracksPt[ij]);
+
+      fh2LeadingJetPtJetPhi[ij] = new TH2F(Form("fh2Leading%sJetPtJetPhi",cAdd.Data()),Form("phi of leading %s jet;p_{T};#phi;",cAdd.Data()),
+					   nBinPt,binLimitsPt,nBinPhi,binLimitsPhi);
+      fHistList->Add(fh2LeadingJetPtJetPhi[ij]);
+    
+      fh2LeadingTrackPtTrackPhi[ij] = new TH2F(Form("fh2Leading%sTrackPtTrackPhi",cAdd.Data()),Form("phi of leading %s track;p_{T};#phi;",cAdd.Data()),
+					       nBinPt,binLimitsPt,nBinPhi,binLimitsPhi);
+      fHistList->Add(fh2LeadingTrackPtTrackPhi[ij]);
+      
+      for(int i = 0;i < kMaxJets;++i){
+
+	fh1PtIn[ij][i] = new TH1F(Form("fh1Pt%sIn_j%d",cAdd.Data(),i),Form("%s p_T input ;p_{T}",cAdd.Data()),nBinPt,binLimitsPt);
+	fHistList->Add(fh1PtIn[ij][i]);
+
+	fh2RhoPt[ij][i] = new TH2F(Form("fh2RhoPt%s_j%d",cAdd.Data(),i),Form("jet shape rho for %s jets;r;p_{T};",cAdd.Data()),
+				   40,0.,2.,nBinPt,binLimitsPt);
+	fHistList->Add(fh2RhoPt[ij][i]);
+	if(!fh1TmpRho)fh1TmpRho = new TH1F("fh1TmpRho","tmp histo for jet shape",40,0.,2);
+
+
+	fh2PsiPt[ij][i] = new TH2F(Form("fh2PsiPt%s_j%d",cAdd.Data(),i),Form("jet shape #psi for %s jets;r;p_{T};",cAdd.Data()),
+				     40,0.,2.,nBinPt,binLimitsPt);
+	fHistList->Add(fh2PsiPt[ij][i]);
+      }
+
+
+      fh1DijetMinv[ij]                = new TH1F(Form("fh1Dijet%sMinv",cAdd.Data()),"Dijet invariant mass;m_{JJ}",nBinPt,binLimitsPt);
+      fHistList->Add(fh1DijetMinv[ij]);
+
+      fh2DijetDeltaPhiPt[ij]       = new TH2F(Form("fh2Dijet%sDeltaPhiPt",cAdd.Data()),"Difference in the azimuthal angle;#Delta#phi;p_{T,1};Entries",180,0.,TMath::Pi(),nBinPt,binLimitsPt);
+      fHistList->Add(fh2DijetDeltaPhiPt[ij]);
+
+      fh2DijetAsymPt[ij]            = new TH2F(Form("fh2Dijet%sAsym",cAdd.Data()),"Pt asymmetry;#Deltap_{T}/(p_{T,1}+p_{T,2});p_{T,1};Entries",50,0.,1.,nBinPt,binLimitsPt);
+      fHistList->Add(fh2DijetAsymPt[ij]);
+
+      fh2DijetPt2vsPt1[ij]          = new TH2F(Form("fh2Dijet%sPt2vsPt1",cAdd.Data()),"Pt2 versus Pt1;p_{T,1} (GeV/c);p_{T,2} (GeV/c)",250,0.,250.,250,0.,250.);
+      fHistList->Add(fh2DijetPt2vsPt1[ij]);
+
+      fh2DijetDifvsSum[ij]         = new TH2F(Form("fh2Dijet%sDifvsSum",cAdd.Data()),"Pt difference vs Pt sum;p_{T,1}+p_{T,2} (GeV/c);#Deltap_{T} (GeV/c)",400,0.,400.,150,0.,150.);
+      fHistList->Add( fh2DijetDifvsSum[ij]);
+    }   
+  }// new filling
+
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fHistList->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fHistList->At(i));
@@ -619,10 +735,503 @@ void AliAnalysisTaskJetSpectrum2::Init()
 
 }
 
-void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
-{
+void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
+
 
   Bool_t selected = kTRUE;
+
+  if(fUseGlobalSelection&&fEventSelectionMask==0){
+    selected = AliAnalysisHelperJetTasks::Selected();
+  }
+  else if(fUseGlobalSelection&&fEventSelectionMask>0){
+    selected = AliAnalysisHelperJetTasks::TestSelectInfo(fEventSelectionMask);
+  }
+
+  if(fEventClass>0){
+    selected = selected&&(AliAnalysisHelperJetTasks::EventClass()==fEventClass);
+  }
+
+  if(!selected){
+    // no selection by the service task, we continue
+    if (fDebug > 1)Printf("Not selected %s:%d SelectInfo %d  Class %d",(char*)__FILE__,__LINE__, AliAnalysisHelperJetTasks::Selected(),AliAnalysisHelperJetTasks::EventClass());
+    PostData(1, fHistList);
+    return;
+  }
+
+
+  static AliAODEvent* aod = 0;
+
+  // take all other information from the aod we take the tracks from
+  if(!aod){
+   if(fUseAODTrackInput)aod = fAODIn;
+   else aod = fAODOut;
+  }
+
+
+  //
+  // Execute analysis for current event
+  //
+  if (fDebug > 1)printf("Analysing event # %5d\n", (Int_t) fEntry);  
+  AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+  if(!aodH){
+    Printf("%s:%d no output aodHandler found Jet",(char*)__FILE__,__LINE__);
+    return;
+  }
+
+  if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+  TClonesArray *aodRecJets = 0;
+
+  if(fAODOut&&!aodRecJets){
+    aodRecJets = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fBranchRec.Data()));
+  }
+  if(fAODExtension&&!aodRecJets){
+    aodRecJets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fBranchRec.Data()));
+  }
+  if(fAODIn&&!aodRecJets){
+    aodRecJets = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fBranchRec.Data()));
+  }
+
+
+
+  if(!aodRecJets){
+    Printf("%s:%d no reconstructed Jet array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchRec.Data());
+    return;
+  }
+
+  TClonesArray *aodGenJets = 0;
+  if(fBranchGen.Length()>0){
+    if(fAODOut&&!aodGenJets){
+      aodGenJets = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fBranchGen.Data()));
+    }
+    if(fAODExtension&&!aodGenJets){
+      aodGenJets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fBranchGen.Data()));
+    }
+    if(fAODIn&&!aodGenJets){
+      aodGenJets = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fBranchGen.Data()));
+    }
+
+    if(!aodGenJets){
+      Printf("%s:%d no generated Jet array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchGen.Data());
+      return;
+    }
+  }
+
+
+  if(false){
+    UserExecOld();
+    return;
+  }
+
+ 
+  // new Scheme
+  // first fill all the pure  histograms, i.e. full jets 
+  // in case of the correaltion limit to the n-leading jets
+
+  // reconstructed
+
+  
+  // generated
+
+
+  // second fill the correlation histograms, here we limit to the n-th leading jet in case of the reconstructed
+
+
+  TList genJetsList;         // full acceptance
+  TList genJetsListCut;      // acceptance cut
+  TList recJetsList;         // full acceptance
+  TList recJetsListCut;      // acceptance cut
+
+
+  GetListOfJets(&recJetsList,aodRecJets,0);
+  GetListOfJets(&recJetsListCut,aodRecJets,1);
+
+  if(fBranchGen.Length()>0){
+    GetListOfJets(&genJetsList,aodGenJets,0);
+    GetListOfJets(&genJetsListCut,aodGenJets,1);
+  }
+
+  Double_t eventW = 1;
+  Double_t ptHard = 0; 
+  Double_t nTrials = 1; // Trials for MC trigger 
+  fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+
+  if((fAnalysisType&kAnaMCESD)==kAnaMCESD){
+    // this is the part we only use when we have MC information
+    AliMCEvent* mcEvent = MCEvent();
+    //    AliStack *pStack = 0; 
+    if(!mcEvent){
+      Printf("%s:%d no mcEvent",(char*)__FILE__,__LINE__);
+      return;
+    }
+    AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+    if(pythiaGenHeader){
+      nTrials = pythiaGenHeader->Trials();
+      ptHard  = pythiaGenHeader->GetPtHard();
+      int iProcessType = pythiaGenHeader->ProcessType();
+      // 11 f+f -> f+f
+      // 12 f+barf -> f+barf
+      // 13 f+barf -> g+g
+      // 28 f+g -> f+g
+      // 53 g+g -> f+barf
+      // 68 g+g -> g+g
+      if (fDebug > 10)Printf("%d iProcessType %d",__LINE__, iProcessType);
+      if(fDebug>20)AliAnalysisHelperJetTasks::PrintStack(mcEvent);
+    } 
+  }// (fAnalysisType&kMCESD)==kMCESD)
+
+
+  // we simply fetch the tracks/mc particles as a list of AliVParticles
+
+  TList recParticles;
+  TList genParticles;
+
+  Int_t nT = GetListOfTracks(&recParticles,fTrackTypeRec);
+  if(fDebug>2)Printf("%s:%d Selected Rec tracks: %d %d",(char*)__FILE__,__LINE__,nT,recParticles.GetEntries());
+  nT = GetListOfTracks(&genParticles,fTrackTypeGen);
+  if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nT,genParticles.GetEntries());
+
+  // Event control and counting ...  
+  // MC
+  fh1PtHard->Fill(ptHard,eventW);
+  fh1PtHardNoW->Fill(ptHard,1);
+  fh1PtHardTrials->Fill(ptHard,nTrials);
+
+  // Real
+  fh1ZVtx->Fill(aod->GetPrimaryVertex()->GetZ());
+
+  // the loops for rec and gen should be indentical... pass it to a separate
+  // function ...
+  // Jet Loop
+  // Track Loop
+  // Jet Jet Loop
+  // Jet Track loop
+
+  FillJetHistos(recJetsListCut,recParticles,kJetRec);
+  FillTrackHistos(recParticles,kJetRec);
+
+  FillJetHistos(genJetsListCut,genParticles,kJetGen);
+  FillTrackHistos(genParticles,kJetGen);
+
+  // Here follows the jet matching part
+  // delegate to a separated method?
+
+  FillMatchHistos(recJetsList,genJetsList);
+
+  if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+  PostData(1, fHistList);
+}
+
+void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particlesList,Int_t iType){
+
+  if(iType>=kJetTypes){
+    return;
+  }
+
+  Int_t nJets = jetsList.GetEntries(); 
+  fh1NJets[iType]->Fill(nJets);
+
+  if(nJets<=0)return;
+  
+  Float_t ptOld = 1.E+32;
+  Float_t pT0 = 0;
+  Float_t pT1 = 0;
+  Float_t phi0 = 0;
+  Float_t phi1 = 0;
+  Int_t ij0 = -1;
+  Int_t ij1 = -1;
+
+
+  for(int ij = 0;ij < nJets;ij++){
+    AliAODJet *jet = (AliAODJet*)jetsList.At(ij);
+    Float_t ptJet = jet->Pt();
+    fh1PtJetsIn[iType]->Fill(ptJet);
+    if(ptJet>ptOld){
+      Printf("%s:%d Jets Type %d Not Sorted !! %d:%.3E %d:%.3E",(char*)__FILE__,__LINE__,iType,ij,ptJet,ij-1,ptOld);
+    }
+    ptOld = ptJet;
+    
+    // find the dijets assume soring and acceptance cut...
+    if(ij==0){
+      ij0 = ij;
+      pT0 = ptJet;
+      phi0 = jet->Phi();
+      if(phi0<0)phi0+=TMath::Pi()*2.;
+    }
+    else if(ptJet>pT1){
+      // take only the backward hemisphere??                                                        
+      phi1 = jet->Phi();
+      Float_t dPhi = phi1 - phi0;
+      if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
+      if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();
+      if(TMath::Abs(TMath::Pi()-dPhi)<fDeltaPhiWindow){
+	ij1 = ij;
+	pT1 = ptJet;
+      }
+    }
+    // fill jet histos for kmax jets
+    if(ij<kMaxJets){      
+      Float_t phiJet = jet->Phi();
+      if(phiJet<0)phiJet+=TMath::Pi()*2.;    
+      fh1TmpRho->Reset();
+      fh1PtIn[iType][ij]->Fill(ptJet);
+      // fill leading jets...
+      if(ij==0){
+	fh2LeadingJetPtJetPhi[iType]->Fill(ptJet,ptJet);
+	if(ij==0&&iType==0&&fDebug>1){
+	  Printf("%d %3.3f %p %s",iType,ptJet,jet,fBranchRec.Data());
+	}
+      }
+      if(particlesList.GetSize()){
+
+	// Particles... correlated with jets...
+	for(int it = 0;it<particlesList.GetEntries();++it){
+	  AliVParticle *part = (AliVParticle*)particlesList.At(it);
+	  Float_t deltaR = jet->DeltaR(part);
+	  if(ptJet>0)fh1TmpRho->Fill(deltaR,part->Pt()/ptJet);
+	}
+	// fill the jet shapes
+	Float_t rhoSum = 0;
+	for(int ibx = 1;ibx<=fh2RhoPt[iType][ij]->GetNbinsX();ibx++){
+	  Float_t r = fh2RhoPt[iType][ij]->GetXaxis()->GetBinCenter(ibx);
+	  Float_t rho = fh1TmpRho->GetBinContent(ibx);
+	  rhoSum += rho;
+	  fh2RhoPt[iType][ij]->Fill(r,ptJet,rho);
+	  fh2PsiPt[iType][ij]->Fill(r,ptJet,rhoSum);
+	}
+      }// if we have particles
+    }// ij < kMaxJets
+  }// Jet Loop
+
+
+  // do something with dijets...
+  if(ij0>=0&&ij1>0){
+    AliAODJet *jet0 = (AliAODJet*)jetsList.At(ij0);
+    Double_t ptJet0 = jet0->Pt();
+    Double_t phiJet0 = jet0->Phi();
+    if(phiJet0<0)phiJet0+=TMath::Pi()*2.;    	
+
+    AliAODJet *jet1 = (AliAODJet*)jetsList.At(ij1);
+    Double_t ptJet1 = jet1->Pt();
+    Double_t phiJet1 = jet1->Phi();
+    if(phiJet1<0)phiJet1+=TMath::Pi()*2.;    	
+
+    Float_t deltaPhi = phiJet0 - phiJet1;
+    if(deltaPhi>TMath::Pi())deltaPhi = deltaPhi - 2.*TMath::Pi();
+    if(deltaPhi<(-1.*TMath::Pi()))deltaPhi = deltaPhi + 2.*TMath::Pi();      
+    deltaPhi = TMath::Abs(deltaPhi);
+    fh2DijetDeltaPhiPt[iType]->Fill(deltaPhi,ptJet0);      
+
+    Float_t asym = 9999;
+    if((ptJet0+ptJet1)>0)asym = (ptJet0-ptJet1)/(ptJet0+ptJet1);
+      fh2DijetAsymPt[iType]->Fill(asym,ptJet0);
+      fh2DijetPt2vsPt1[iType]->Fill(ptJet0,ptJet1);        
+      fh2DijetDifvsSum[iType]->Fill(ptJet0+ptJet1,ptJet0-ptJet1);        
+      Float_t minv = 2.*(jet0->P()*jet1->P()-
+			 jet0->Px()*jet1->Px()- 
+			 jet0->Py()*jet1->Py()- 
+			 jet0->Pz()*jet1->Pz());    // assume mass == 0;
+      if(minv<0)minv=0; // prevent numerical instabilities
+      minv = TMath::Sqrt(minv);
+      fh1DijetMinv[iType]->Fill(minv);            
+  }
+  
+
+
+  // count down the jets above thrueshold
+  Int_t nOver = nJets;
+  if(nOver>0){
+    TIterator *jetIter = jetsList.MakeIterator();
+    AliAODJet *tmpJet = (AliAODJet*)(jetIter->Next());  
+    Float_t pt = tmpJet->Pt();
+    if(tmpJet){
+      for(int i = 1;i <= fh2NJetsPt[iType]->GetNbinsX();i++){
+	Float_t ptCut = fh2NJetsPt[iType]->GetXaxis()->GetBinCenter(i);
+	while(pt<ptCut&&tmpJet){
+	  nOver--;
+	  tmpJet = (AliAODJet*)(jetIter->Next()); 
+	  if(tmpJet){
+	    pt = tmpJet->Pt();
+	  }
+	}
+	if(nOver<=0)break;
+	fh2NJetsPt[iType]->Fill(ptCut,nOver);
+      }
+    }
+    delete jetIter;
+  }
+}
+
+void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType){
+
+  Int_t nTrackOver = particlesList.GetSize();
+  // do the same for tracks and jets
+  if(nTrackOver>0){
+    TIterator *trackIter = particlesList.MakeIterator();
+    AliVParticle *tmpTrack = (AliVParticle*)(trackIter->Next());  
+    Float_t pt = tmpTrack->Pt();
+    for(int i = 1;i <= fh2NTracksPt[iType]->GetNbinsX();i++){
+      Float_t ptCut = fh2NTracksPt[iType]->GetXaxis()->GetBinCenter(i);
+      while(pt<ptCut&&tmpTrack){
+	nTrackOver--;
+	tmpTrack = (AliVParticle*)(trackIter->Next()); 
+	if(tmpTrack){
+	  pt = tmpTrack->Pt();
+	}
+      }
+      if(nTrackOver<=0)break;
+      fh2NTracksPt[iType]->Fill(ptCut,nTrackOver);
+    }
+
+    
+    trackIter->Reset();
+    AliVParticle *leading = (AliVParticle*)particlesList.At(0);
+    Float_t sumPt = 0;
+
+    while((tmpTrack = (AliVParticle*)(trackIter->Next()))){
+      Float_t tmpPt = tmpTrack->Pt();
+      fh1PtTracksIn[iType]->Fill(tmpPt);
+      sumPt += tmpPt;
+      Float_t tmpPhi = tmpTrack->Phi();
+      if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
+      if(tmpTrack==leading){
+	fh1PtTracksLeadingIn[iType]->Fill(tmpPt);
+	fh2LeadingTrackPtTrackPhi[iType]->Fill(tmpPt,tmpPhi);
+	continue;
+      }
+    }  
+    fh1SumPtTrack[iType]->Fill(sumPt);
+    delete trackIter;
+  }
+
+}
+
+
+void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJetsList){
+
+
+  // Fill al the matching histos
+  // It is important that the acceptances for the mathing are as large as possible
+  // to avoid false matches on the edge of acceptance
+  // therefore we add some extra matching jets as overhead
+
+  static TArrayI aGenIndex(recJetsList.GetEntries());
+  if(aGenIndex.GetSize()<recJetsList.GetEntries())aGenIndex.Set(recJetsList.GetEntries());
+
+  static TArrayI aRecIndex(genJetsList.GetEntries());
+  if(aRecIndex.GetSize()<genJetsList.GetEntries())aRecIndex.Set(genJetsList.GetEntries());
+
+  if(fDebug){
+    Printf("New Gens List %d rec index Array %d",genJetsList.GetEntries(),aRecIndex.GetSize());
+    Printf("New Rec List %d gen indey Array %d",recJetsList.GetEntries(),aGenIndex.GetSize());
+  }
+  AliAnalysisHelperJetTasks::GetClosestJets(&genJetsList,TMath::Min((Int_t)fNMatchJets,(Int_t)genJetsList.GetEntries()),
+					    &recJetsList,TMath::Min((Int_t)fNMatchJets,(Int_t)recJetsList.GetEntries()),
+					    aGenIndex,aRecIndex,fDebug);
+
+  if(fDebug){
+    for(int i = 0;i< aGenIndex.GetSize();++i){ 
+      if(aGenIndex[i]>=0)Printf("iGenFound: %d -> %d",i,aGenIndex[i]); 
+    }
+    for(int i = 0;i< aRecIndex.GetSize();++i){
+      if(aRecIndex[i]>=0)Printf("iRecFound: %d -> %d",i,aRecIndex[i]); 
+    }
+  }
+
+  Double_t container[6];
+  Double_t containerPhiZ[6];
+
+  // loop over generated jets
+  // consider the 
+  for(int ig = 0;ig < genJetsList.GetEntries();++ig){
+    AliAODJet *genJet = (AliAODJet*)genJetsList.At(ig);
+    Double_t ptGen = genJet->Pt();
+    Double_t phiGen = genJet->Phi();
+    if(phiGen<0)phiGen+=TMath::Pi()*2.;    
+    Double_t etaGen = genJet->Eta();
+    container[3] = ptGen;
+    container[4] = etaGen;
+    container[5] = phiGen;
+    fhnJetContainer[kStep0]->Fill(&container[3]);
+    if(JetSelected(genJet)){
+      fhnJetContainer[kStep1]->Fill(&container[3]);
+      Int_t ir = aRecIndex[ig];
+      if(ir>=0&&ir<recJetsList.GetEntries()){   
+	fhnJetContainer[kStep2]->Fill(&container[3]);
+	AliAODJet* recJet = (AliAODJet*)recJetsList.At(ir); 
+	if(JetSelected(recJet))fhnJetContainer[kStep4]->Fill(&container[3]);
+	if(JetSelected(recJet))fhnJetContainer[kStep3]->Fill(&container[3]);
+      }
+    }
+  }// loop over generated jets used for matching...
+
+
+
+  // loop over reconstructed jets
+  for(int ir = 0;ir < recJetsList.GetEntries();++ir){
+    AliAODJet *recJet = (AliAODJet*)recJetsList.At(ir);
+    Double_t etaRec = recJet->Eta();
+    Double_t ptRec = recJet->Pt();
+    Double_t phiRec = recJet->Phi();
+    if(phiRec<0)phiRec+=TMath::Pi()*2.;    
+    // do something with dijets...
+    
+    container[0] = ptRec;
+    container[1] = etaRec;
+    container[2] = phiRec;
+    containerPhiZ[0] = ptRec;
+    containerPhiZ[1] = phiRec;
+
+    fhnJetContainer[kStep0+kMaxStep]->Fill(container);
+    if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+  
+    if(JetSelected(recJet)){
+      fhnJetContainer[kStep1+kMaxStep]->Fill(container);
+      // Fill Correlation
+      Int_t ig = aGenIndex[ir];
+      if(ig>=0 && ig<genJetsList.GetEntries()){
+	fhnJetContainer[kStep2+kMaxStep]->Fill(container);
+	if (fDebug > 10)Printf("%s:%d ig = %d ir = %d",(char*)__FILE__,__LINE__,ig,ir);
+	AliAODJet *genJet = (AliAODJet*)genJetsList.At(ig);
+	Double_t ptGen  = genJet->Pt();
+	Double_t phiGen = genJet->Phi();
+	if(phiGen<0)phiGen+=TMath::Pi()*2.; 
+	Double_t etaGen = genJet->Eta();
+      
+	container[3] = ptGen;
+	container[4] = etaGen;
+	container[5] = phiGen;
+	containerPhiZ[3] = ptGen;
+	// 
+	// we accept only jets which are detected within a smaller window, to avoid ambigious pair association at the edges of the acceptance
+	// 
+	if(JetSelected(genJet))fhnJetContainer[kStep4+kMaxStep]->Fill(container);
+	fhnJetContainer[kStep3+kMaxStep]->Fill(container);
+	fhnCorrelation->Fill(container);
+	if(ptGen>0){
+	  Float_t delta = (ptRec-ptGen)/ptGen;
+	  fh2RelPtFGen->Fill(ptGen,delta);
+	  fh2PtFGen->Fill(ptGen,ptRec);
+	}
+	if(fhnCorrelationPhiZRec)fhnCorrelationPhiZRec->Fill(containerPhiZ);
+      } 
+      else{
+	containerPhiZ[3] = 0;
+	if(fhnCorrelationPhiZRec)fhnCorrelationPhiZRec->Fill(containerPhiZ);
+      }
+    }// loop over reconstructed jets
+  }
+  if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+}
+
+
+void AliAnalysisTaskJetSpectrum2::UserExecOld(Option_t */*option*/)
+{
+
+
+  Bool_t selected = kTRUE;
+
+
+
 
   if(fUseGlobalSelection&&fEventSelectionMask==0){
     selected = AliAnalysisHelperJetTasks::Selected();
@@ -646,27 +1255,20 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   //
   // Execute analysis for current event
   //
-  AliESDEvent *fESD = 0;
-  if(fUseAODJetInput){    
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD){
-      Printf("%s:%d AODEvent not found in Input Manager %d",(char*)__FILE__,__LINE__,fUseAODJetInput);
-      return;
-    }
-    // fethc the header
-  }
-  else{
-    //  assume that the AOD is in the general output...
-    fAOD  = AODEvent();
-    if(!fAOD){
-      Printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
-      return;
-    }
-    fESD = dynamic_cast<AliESDEvent*> (InputEvent());
-  }
-  
+  static AliESDEvent *fESD = dynamic_cast<AliESDEvent*> (InputEvent());
 
 
+  // take all other information from the aod we take the tracks from
+  static AliAODEvent *aod = 0;
+  if(!aod){
+    if(fUseAODTrackInput)aod = fAODIn;
+    aod = fAODOut;
+  }
+  static AliAODEvent *fAOD = 0;
+  if(!fAOD){
+    if(fUseAODJetInput)fAOD = fAODIn;
+    fAOD = fAODOut;
+  }
 
   if (fDebug > 1)printf("Analysing event # %5d\n", (Int_t) fEntry);
 
@@ -679,7 +1281,17 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   }
 
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
-  TClonesArray *aodRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchRec.Data()));
+  TClonesArray *aodRecJets = 0;
+
+
+
+  if(fAOD&&!aodRecJets){
+    aodRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchRec.Data()));
+  }
+  if(fAODExtension&&!aodRecJets){
+    aodRecJets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fBranchRec.Data()));
+  }
+
   if(!aodRecJets){
     Printf("%s:%d no reconstructed Jet array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchRec.Data());
     return;
@@ -687,24 +1299,53 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
   Int_t nJets = aodRecJets->GetEntriesFast();
 
+  TClonesArray *aodGenJets = 0;
+  if(fBranchGen.Length()>0){
+    if(fAOD&&!aodGenJets){
+      aodGenJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchGen.Data()));
+    }
+    if(fAODExtension&&!aodGenJets){
+      aodGenJets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fBranchGen.Data()));
+    }
+
+    if(!aodGenJets){
+      Printf("%s:%d no generated Jet array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchGen.Data());
+      return;
+    }
+  }
+
+
   // ==== General variables needed
   // We use statice array, not to fragment the memory
   AliAODJet genJets[kMaxJets];
   Int_t nGenJets = 0;
   AliAODJet recJets[kMaxJets];
   Int_t nRecJets = 0;
+ 
+  // These will replace the arrays...
+  TList genJetsList;         // full acceptance
+  TList genJetsListCut;   // acceptance cut
+  TList recJetsList;         // full acceptance
+  TList recJetsListCut;   // acceptance cut
+
+
+  GetListOfJets(&genJetsList,aodGenJets,0);
+  GetListOfJets(&genJetsListCut,aodGenJets,1);
+
+  if(fBranchGen.Length()>0){
+    GetListOfJets(&recJetsList,aodRecJets,0);
+    GetListOfJets(&recJetsListCut,aodRecJets,1);
+  }
   ///////////////////////////
 
-
+  
 
 
   if(fBkgSubtraction){
      AliAODJetEventBackground* evBkg=(AliAODJetEventBackground*)fAOD->FindListObject(fBranchBkg.Data()); 
-
-
      if(!evBkg){
        Printf("%s:%d no reconstructed background array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchBkg.Data());
-       return;
+       return; 
      }
 
 
@@ -838,7 +1479,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	    if(pythiaGenJets[iCount].Eta()>fJetHeaderRec->GetJetEtaMax()||
 	       pythiaGenJets[iCount].Eta()<fJetHeaderRec->GetJetEtaMin())continue;
 	  }
-	  */
+	  */   
 	  if(fMinJetPt>0&&pythiaGenJets[iCount].Pt()<fMinJetPt)continue;
 	  // if we have MC particles and we do not read from the aod branch
 	  // use the pythia jets
@@ -876,7 +1517,6 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
   // If we set a second branch for the input jets fetch this 
   if(fBranchGen.Length()>0&&!fBkgSubtraction){
-    TClonesArray *aodGenJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchGen.Data()));
     if(aodGenJets){
       Int_t iCount = 0;
       for(int ig = 0;ig < aodGenJets->GetEntries();++ig){
@@ -949,7 +1589,6 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     AliAODJet *leading = (AliAODJet*)aodRecJets->At(0);
     Float_t phi = leading->Phi();
     if(phi<0)phi+=TMath::Pi()*2.;    
-    Float_t eta = leading->Eta();
     pt = leading->Pt();
     while((tmpRec = (AliAODJet*)(recIter->Next()))){
       Float_t tmpPt = tmpRec->Pt();
@@ -965,9 +1604,9 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       Float_t dPhi = phi - tmpRec->Phi();
       if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
       if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
-      Float_t dEta = eta - tmpRec->Eta();
-      fh2JetsLeadingPhiEta->Fill(dPhi,dEta);
-      fh2JetsLeadingPhiPt->Fill(dPhi,pt);
+      //  Float_t dEta = eta - tmpRec->Eta();
+      //      fh2JetsLeadingPhiEta->Fill(dPhi,dEta);
+      //      fh2JetsLeadingPhiPt->Fill(dPhi,pt);
     }  
     delete recIter;
   }
@@ -996,7 +1635,6 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     AliVParticle *leading = (AliVParticle*)recParticles.At(0);
     Float_t phi = leading->Phi();
     if(phi<0)phi+=TMath::Pi()*2.;    
-    Float_t eta = leading->Eta();
     pt  = leading->Pt();
     while((tmpRec = (AliVParticle*)(recIter->Next()))){
       Float_t tmpPt = tmpRec->Pt();
@@ -1012,9 +1650,9 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       Float_t dPhi = phi - tmpRec->Phi();
       if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
       if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
-      Float_t dEta = eta - tmpRec->Eta();
-      fh2TracksLeadingPhiEta->Fill(dPhi,dEta);
-      fh2TracksLeadingPhiPt->Fill(dPhi,pt);
+      //      Float_t dEta = eta - tmpRec->Eta();
+      //      fh2TracksLeadingPhiEta->Fill(dPhi,dEta);
+      //      fh2TracksLeadingPhiPt->Fill(dPhi,pt);
     }  
     delete recIter;
   }
@@ -1058,11 +1696,24 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   AliAnalysisHelperJetTasks::GetClosestJets(genJets,nGenJets,recJets,nRecJets,
 					    iGenIndex,iRecIndex,fDebug);
 
+  static TArrayI aGenIndex(recJetsListCut.GetEntries());
+  if(aGenIndex.GetSize()<recJetsListCut.GetEntries())aGenIndex.Set(recJetsListCut.GetEntries());
+
+  static TArrayI aRecIndex(genJetsList.GetEntries());
+  if(aRecIndex.GetSize()<genJetsList.GetEntries())aRecIndex.Set(genJetsList.GetEntries());
+
+  if(fDebug){
+    Printf("New Gens List %d rec index Array %d count %d",genJetsList.GetEntries(),aRecIndex.GetSize(),nGenJets);
+    Printf("New Rec List %d gen indey Array %d count %d",recJetsListCut.GetEntries(),aGenIndex.GetSize(),nRecJets);
+  }
+  AliAnalysisHelperJetTasks::GetClosestJets(&genJetsList,nGenJets,&recJetsListCut,nRecJets,
+					    aGenIndex,aRecIndex,fDebug);
+
 
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
 
   if(fDebug){
-    for(int i = 0;i<kMaxJets;++i){
+    for(int i = 0;i<kMaxJets;++i){ 
       if(iGenIndex[i]>=0)Printf("iGenFound: %d -> %d",i,iGenIndex[i]); 
       if(iRecIndex[i]>=0)Printf("iRecFound: %d -> %d",i,iRecIndex[i]); 
     }
@@ -1094,7 +1745,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     fhnJetContainer[kStep0]->Fill(&container[3],eventW);
     Int_t ir = iRecIndex[ig];
 
-    if(TMath::Abs(etaGen)<fRecEtaWindow){
+    if(TMath::Abs(etaGen)<fJetRecEtaWindow){
       fh1TmpRho->Reset();
 
       fhnJetContainer[kStep1]->Fill(&container[3],eventW);
@@ -1124,8 +1775,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     if(ir>=0&&ir<nRecJets){   
       fhnJetContainer[kStep2]->Fill(&container[3],eventW);
       Double_t etaRec = recJets[ir].Eta();
-      if(TMath::Abs(etaRec)<fRecEtaWindow)fhnJetContainer[kStep4]->Fill(&container[3],eventW);
-      if(TMath::Abs(etaRec)<fRecEtaWindow&&TMath::Abs(etaGen)<fRecEtaWindow)fhnJetContainer[kStep3]->Fill(&container[3],eventW);
+      if(TMath::Abs(etaRec)<fJetRecEtaWindow)fhnJetContainer[kStep4]->Fill(&container[3],eventW);
+      if(TMath::Abs(etaRec)<fJetRecEtaWindow&&TMath::Abs(etaGen)<fJetRecEtaWindow)fhnJetContainer[kStep3]->Fill(&container[3],eventW);
     }
   }// loop over generated jets
   
@@ -1136,7 +1787,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     if(TMath::Abs(part->Eta())<0.9){
       Float_t pt = part->Pt();
       fh1PtTrackRec->Fill(pt,eventW);
-      fh2TrackPtTrackPhi->Fill(pt,part->Phi());
+      //      fh2TrackPtTrackPhi->Fill(pt,part->Phi());
       sumPt += pt;
     }
   }
@@ -1153,44 +1804,6 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
 
   // do something with dijets...
-  if(ir==1){
-    Double_t etaRec1 = recJets[0].Eta();
-    Double_t ptRec1 = recJets[0].Pt();
-    Double_t phiRec1 = recJets[0].Phi();
-    if(phiRec1<0)phiRec1+=TMath::Pi()*2.;    
-    
-  
-    if(TMath::Abs(etaRec1)<fRecEtaWindow
-      &&TMath::Abs(etaRec)<fRecEtaWindow){
-  
-      Float_t deltaPhi = phiRec1 - phiRec;
-      
-      if(deltaPhi>TMath::Pi())deltaPhi = deltaPhi - 2.*TMath::Pi();
-      if(deltaPhi<(-1.*TMath::Pi()))deltaPhi = deltaPhi + 2.*TMath::Pi();      
-      deltaPhi = TMath::Abs(deltaPhi);
-      fh2DijetDeltaPhiPt->Fill(deltaPhi,ptRec1);      
-      Float_t asym = 9999;
-      if((ptRec1+ptRec)>0)asym = (ptRec1-ptRec)/(ptRec1+ptRec);
-      fh2DijetAsymPt->Fill(asym,ptRec1);
-      fh2DijetDeltaPhiDeltaEta->Fill(deltaPhi,etaRec1-etaRec);
-      fh2DijetPt2vsPt1->Fill(ptRec1,ptRec);        
-      fh2DijetDifvsSum->Fill(ptRec1+ptRec,ptRec1-ptRec);        
-      Float_t minv = 2.*(recJets[0].P()*recJets[1].P()-
-			 recJets[0].Px()*recJets[1].Px()- 
-			 recJets[0].Py()*recJets[1].Py()- 
-			 recJets[0].Pz()*recJets[1].Pz());
-      if(minv<0)minv=0; // prevent numerical instabilities
-      minv = TMath::Sqrt(minv);
-      // with mass == 0;
-      
-      fh1DijetMinv->Fill(minv);            
-      if((TMath::Pi()-deltaPhi)<fDeltaPhiWindow){
-	fh1DijetMinvCut->Fill(minv);         
-	fh2DijetAsymPtCut->Fill(asym,ptRec1);      
-      }
-    }
-  }
-
 
     container[0] = ptRec;
     container[1] = etaRec;
@@ -1223,8 +1836,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
   
     Float_t zLeading = -1;
-    if(TMath::Abs(etaRec)<fRecEtaWindow){
-      fh2JetPtJetPhi->Fill(ptRec,phiRec);
+    if(TMath::Abs(etaRec)<fJetRecEtaWindow){
+      //      fh2JetPtJetPhi->Fill(ptRec,phiRec);
       fhnJetContainer[kStep1+kMaxStep]->Fill(container,eventW);
       fh1PtRecIn[ir]->Fill(ptRec,eventW);
       // fill the fragmentation function
@@ -1286,8 +1899,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       // we accept only jets which are detected within a smaller window, to avoid ambigious pair association at the edges of the acceptance
       // 
       
-      if(TMath::Abs(etaGen)<fRecEtaWindow)fhnJetContainer[kStep4+kMaxStep]->Fill(container,eventW);
-      if(TMath::Abs(etaRec)<fRecEtaWindow){
+      if(TMath::Abs(etaGen)<fJetRecEtaWindow)fhnJetContainer[kStep4+kMaxStep]->Fill(container,eventW);
+      if(TMath::Abs(etaRec)<fJetRecEtaWindow){
 	fhnJetContainer[kStep3+kMaxStep]->Fill(container,eventW);
 	fhnCorrelation->Fill(container);
 	if(ptGen>0){
@@ -1427,7 +2040,8 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
       AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
-      if(TMath::Abs(tr->Eta())>0.9)continue;
+      if(TMath::Abs(tr->Eta())>fTrackRecEtaWindow)continue;
+      if(tr->Pt()<fMinTrackPt)continue;
       if(fDebug>0){
 	if(tr->Pt()>20){
 	  Printf("High pT track found in Event %d with p_T, %E",(int)Entry(),tr->Pt());
@@ -1453,6 +2067,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
     for(int it = 0;it < mcEvent->GetNumberOfTracks();++it){
       if(!mcEvent->IsPhysicalPrimary(it))continue;
       AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(it);
+      if(part->Pt()<fMinTrackPt)continue;
       if(type == kTrackKineAll){
 	list->Add(part);
 	iCount++;
@@ -1473,6 +2088,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
     if(!tca)return iCount;
     for(int it = 0;it < tca->GetEntriesFast();++it){
       AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(it));
+      if(part->Pt()<fMinTrackPt)continue;
       if(!part->IsPhysicalPrimary())continue;
       if(type == kTrackAODMCAll){
 	list->Add(part);
@@ -1484,7 +2100,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
 	  list->Add(part);
 	}
 	else {
-	  if(TMath::Abs(part->Eta())>0.9)continue;
+	  if(TMath::Abs(part->Eta())>fTrackRecEtaWindow)continue;
 	  list->Add(part);
 	}
 	iCount++;
@@ -1495,3 +2111,52 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
   return iCount;
 
 }
+
+
+
+Bool_t  AliAnalysisTaskJetSpectrum2::JetSelected(AliAODJet *jet){
+  Bool_t selected = false;
+  
+  if(!jet)return selected;
+
+  if(fabs(jet->Eta())<fJetRecEtaWindow&&jet->Pt()>fMinJetPt){
+    selected = kTRUE;
+  }
+  return selected;
+
+}
+
+Int_t  AliAnalysisTaskJetSpectrum2::GetListOfJets(TList *list,TClonesArray* jarray,Int_t type){
+
+  if(fDebug>2)Printf("%s:%d Selecting jets with cuts %d",(char*)__FILE__,__LINE__,type);
+  Int_t iCount = 0;
+
+  if(!jarray){
+    Printf("%s:%d no Jet array",(char*)__FILE__,__LINE__);
+    return iCount;
+  }
+
+
+  for(int ij=0;ij<jarray->GetEntries();ij++){
+    AliAODJet* jet = (AliAODJet*)jarray->At(ij);
+    if(!jet)continue;
+    if(type==0){
+      // No cut at all, main purpose here is sorting      
+      list->Add(jet);
+      iCount++;
+    }
+    else if(type == 1){
+      // eta cut
+      if(JetSelected(jet)){
+	list->Add(jet);
+	iCount++;
+      }
+    }
+  }
+
+  list->Sort();
+  return iCount;
+
+}
+
+

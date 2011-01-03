@@ -1,4 +1,4 @@
-AliAnalysisTaskJetBackgroundSubtract *AddTaskJetBackgroundSubtract(TString sJetBranches,Int_t iSubtraction = 1){
+AliAnalysisTaskJetBackgroundSubtract *AddTaskJetBackgroundSubtract(TString sJetBranches,Int_t iSubtraction = 1,char* cToReplace = "B0",char* cReplaceMask = "B%d"){
 
 
 
@@ -20,14 +20,16 @@ AliAnalysisTaskJetBackgroundSubtract *AddTaskJetBackgroundSubtract(TString sJetB
 
 
   TString cAdd;
-  cAdd += Form("B%d",iSubtraction);
+  cAdd += Form(cReplaceMask,iSubtraction);
 
   AliAnalysisTaskJetBackgroundSubtract *task = new AliAnalysisTaskJetBackgroundSubtract(Form("JetSubtract_%s",cAdd.Data()));
   for(int iJB = 0;iJB<objArr->GetEntries();iJB++){
     TObjString *ostr = (TObjString*)objArr->At(iJB);
     task->AddJetBranch(ostr->GetString().Data());
   }
-
+  task->SetToReplace(cToReplace); 
+  task->SetReplacementMask(cReplaceMask); 
+  task->SetSubtractionMethod(iSubtraction);
   mgr->AddTask(task);
 
 

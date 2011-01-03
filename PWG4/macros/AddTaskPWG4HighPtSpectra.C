@@ -6,7 +6,6 @@ const Float_t etamax = 0.9;
 
 const Int_t   mintrackrefsTPC = 1;
 const Int_t   mintrackrefsITS = 1;
-const Int_t   charge  = 1;
 
 AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
 {
@@ -53,7 +52,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
   Float_t ptmin =  2.0 ;
   Float_t ptmax =  50.0 ;
   Float_t binWidth3 = 5.;
-  if(!strcmp(prodType, "LHC10e14") || !strcmp(prodType, "PbPb")) { 
+  if(!strcmp(prodType, "LHC10e14")) { 
     ptmin =  0.0 ;
     ptmax =  500.0 ;
 
@@ -67,9 +66,9 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
     ptmax =  50.0 ;
     
     ptBinEdges[0][0] = 10.;
-    ptBinEdges[0][1] = 1.;
-    ptBinEdges[1][0] = 20.;
-    ptBinEdges[1][1] = 2.;
+    ptBinEdges[0][1] = 0.5;
+    ptBinEdges[1][0] = 30.;
+    ptBinEdges[1][1] = 1.;
     binWidth3 = 5.;
   }
     
@@ -78,8 +77,8 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
   const Int_t nbin12 = (int)((ptBinEdges[1][0]-ptBinEdges[0][0])/ptBinEdges[1][1])+nbin11;
   const Int_t nbin13 = (int)((ptmax-ptBinEdges[1][0])/binWidth3)+nbin12;
   const Int_t nbin1  = nbin13; //bins in pt 
-  const Int_t nbin2  =  18;//36; //bins in phi
-  const Int_t nbin3  =  8; //bins in eta
+  const Int_t nbin2  =  18;    //bins in phi
+  const Int_t nbin3  =  2;     //bins in eta
 
   //arrays for the number of bins in each dimension
   Int_t iBin[nvar];

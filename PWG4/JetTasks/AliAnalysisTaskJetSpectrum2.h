@@ -16,6 +16,7 @@
 class AliJetHeader;
 class AliESDEvent;
 class AliAODEvent;
+class AliAODExtension;
 class AliAODJet;
 class AliAODJetEventBackground;
 class AliGenPythiaEventHeader;
@@ -41,6 +42,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void Init();
     virtual void LocalInit() { Init(); }
     virtual void UserExec(Option_t *option);
+    virtual void UserExecOld(const Option_t *option = "");
     virtual void Terminate(Option_t *option);
     virtual Bool_t Notify();
 
@@ -54,8 +56,11 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetLimitGenJetEta(Bool_t b){fLimitGenJetEta = b;}
     virtual void SetBkgSubtraction(Bool_t b){fBkgSubtraction = b;}
     virtual void SetFillCorrBkg(Int_t i){fFillCorrBkg = i;}
-    virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
+    virtual void SetJetEtaWindow(Float_t f){fJetRecEtaWindow = f;}
+    virtual void SetTrackEtaWindow(Float_t f){fTrackRecEtaWindow = f;}
+    virtual void SetNMatchJets(Short_t f){fNMatchJets = f;}
     virtual void SetMinJetPt(Float_t f){fMinJetPt = f;}
+    virtual void SetMinTrackPt(Float_t f){fMinTrackPt = f;}
     virtual void SetDeltaPhiWindow(Float_t f){fDeltaPhiWindow = f;}
     virtual void SetAnalysisType(Int_t i){fAnalysisType = i;}
     virtual void SetBranchGen(const char* c){fBranchGen = c;}
@@ -65,6 +70,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
     virtual void SetEventSelectionMask(UInt_t i){fEventSelectionMask = i;}
+    virtual void SetNonStdFile(char* c){fNonStdFile = c;} 
+    virtual void SetUseOldFill(Bool_t b){fUseOldFill = b;}
     // use for the CF
 
 
@@ -78,6 +85,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
     enum {kAnaMC =  0x1, kAnaMCESD = 0x2};
     enum {kMaxJets = 4};
+    enum {kJetRec = 0, kJetGen, kJetTypes}; //
     enum {kMaxCorrelation =  3};
     
     // 
@@ -94,12 +102,21 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     AliAnalysisTaskJetSpectrum2(const AliAnalysisTaskJetSpectrum2&);
     AliAnalysisTaskJetSpectrum2& operator=(const AliAnalysisTaskJetSpectrum2&);
 
-    void MakeJetContainer();
-    Int_t GetListOfTracks(TList *list,Int_t type);
+    void    MakeJetContainer();
+    Int_t   GetListOfTracks(TList *list,Int_t type);
+    void    FillTrackHistos(TList &particlesList,int iType);
 
+    Int_t   GetListOfJets(TList *list,TClonesArray* jarray,Int_t type);
+    void    FillJetHistos(TList &jetsList,TList &particlesList,Int_t iType);
+
+    void    FillMatchHistos(TList &recJetsList,TList &genJetsList);
+
+    Bool_t  JetSelected(AliAODJet *jet);
     AliJetHeader *fJetHeaderRec;//! The jet header that can be fetched from the userinfo
     AliJetHeader *fJetHeaderGen;//! The jet header that can fetched from the userinfo
-    AliAODEvent  *fAOD; //! where we take the jets from can be input or output AOD
+    AliAODEvent  *fAODIn; //! where we take the jets from 
+    AliAODEvent  *fAODOut; //! where we take the jets from 
+    AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
     THnSparseF   *fhnJetContainer[kMaxStep*2];   //! like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
     THnSparseF   *fhnCorrelation;           //! response matrix for unfolding 
     THnSparseF   *fhnCorrelationPhiZRec;       //! response matrix for unfolding in max Z rec bins
@@ -109,6 +126,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TString       fBranchRec;  // AOD branch name for reconstructed
     TString       fBranchGen;  // AOD brnach for genereated
     TString       fBranchBkg;  //AOD branch for background 
+    TString       fNonStdFile; // name of delta aod file to catch the extension
 
     Bool_t        fUseAODJetInput;        // take jet from input AOD not from ouptu AOD
     Bool_t        fUseAODTrackInput;      // take track from input AOD not from ouptu AOD
@@ -116,8 +134,10 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Bool_t        fUseGlobalSelection;    // Limit the eta of the generated jets
     Bool_t        fUseExternalWeightOnly; // use only external weight
     Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
-    Bool_t        fBkgSubtraction;        //flag for bckg subtraction
-    Int_t         fFillCorrBkg;           //flag for filling bckg response matrix
+    Bool_t        fBkgSubtraction;        // flag for bckg subtraction
+    Bool_t        fUseOldFill;            // flag for using the old filling....
+    Short_t       fNMatchJets;            // number of leading jets considered from the list
+    Int_t         fFillCorrBkg;           // flag for filling bckg response matrix
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fEventSelectionMask;    // Selection information used to filter events
     Int_t         fAnalysisType;          // Analysis type 
@@ -126,8 +146,10 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Int_t         fEventClass;            // event class to be looked at for this instance of the task
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
-    Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
+    Float_t       fJetRecEtaWindow;       // eta window for rec jets
+    Float_t       fTrackRecEtaWindow;     // eta window for rec tracks
     Float_t       fMinJetPt;              // limits the jet p_T in addition to what already is done in the jet finder, this is important for jet matching for JF with lo threshold
+    Float_t       fMinTrackPt;            // limits the track p_T 
     Float_t       fDeltaPhiWindow;        // minium angle between dijets
 
 
@@ -158,16 +180,12 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
 
     TH2F*         fh2NRecJetsPt;            //! Number of found jets above threshold
     TH2F*         fh2NRecTracksPt;          //! Number of found tracks above threshold
-    TH2F*         fh2JetsLeadingPhiEta;     //! jet correlation with leading jet
-    TH2F*         fh2JetsLeadingPhiPt;      //! jet correlation with leading jet
-    TH2F*         fh2TracksLeadingPhiEta;   //! track correlation with leading track
-    TH2F*         fh2TracksLeadingPhiPt;    //! track correlation with leading track
-    TH2F*         fh2TracksLeadingJetPhiPt; //! track correlation with leading track
-    TH2F*         fh2JetPtJetPhi;           //! Phi distribution of accepted jets 
-    TH2F*         fh2TrackPtTrackPhi;       //! phi distribution of accepted tracks
+    TH2F*         fh2NGenJetsPt;            //! Number of found jets above threshold
+    TH2F*         fh2NGenTracksPt;          //! Number of found tracks above threshold
+    TH2F*         fh2PtFGen;                //! found vs generated 
     TH2F*         fh2RelPtFGen;             //! relative difference between generated and found 
-    TH2F*         fh2PhiPt[kMaxJets];    //! delta phi correlation of tracks with the jet      
-    TH2F*         fh2PhiEta[kMaxJets];   //! eta   phi correlation of tracks with the jet      
+    TH2F*         fh2PhiPt[kMaxJets];       //! delta phi correlation of tracks with the jet      
+    TH2F*         fh2PhiEta[kMaxJets];      //! eta   phi correlation of tracks with the jet      
     TH2F*         fh2RhoPtRec[kMaxJets];    //! jet shape variable rho
     TH2F*         fh2PsiPtRec[kMaxJets];    //! jet shape variable psi
     TH2F*         fh2RhoPtGen[kMaxJets];    //! 
@@ -179,15 +197,30 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
 
 
 
-    // Dijet histos
-    TH2F*   fh2DijetDeltaPhiPt;      //! dijet delta phi vs pt
-    TH2F*   fh2DijetAsymPt;          //! dijet asym vs pt
-    TH2F*   fh2DijetAsymPtCut;       //! dijet asym vs pt after delta phi cut
-    TH2F*   fh2DijetDeltaPhiDeltaEta; //! dijet delta phi delta eta
-    TH2F*   fh2DijetPt2vsPt1;          //! dijet pt2 vs pt1
-    TH2F*   fh2DijetDifvsSum;          //! dijet dif vs sum
-    TH1F*   fh1DijetMinv;            //! dijet inv mass
-    TH1F*   fh1DijetMinvCut;         //! dijet inv after delta phi cut
+    // Jet histos second go
+
+    TH1F*         fh1NJets[kJetTypes];      //! nr of gen jets
+    TH1F*         fh1SumPtTrack[kJetTypes]; //! sum over all track pT    
+
+    TH1F*         fh1PtIn[kJetTypes][kMaxJets];  //! Jet pt  
+    TH1F*         fh1PtJetsIn[kJetTypes];  //! Jet pt for all jets
+    TH1F*         fh1PtTracksIn[kJetTypes];  //! track pt for all tracks
+    TH1F*         fh1PtTracksLeadingIn[kJetTypes];  //! track pt for all tracks
+    
+    TH2F*         fh2NJetsPt[kJetTypes];    //! Number of found jets above threshold
+    TH2F*         fh2NTracksPt[kJetTypes];  //! Number of found jets above threshold
+    TH2F*         fh2LeadingJetPtJetPhi[kJetTypes];     //! Phi distribution of accepted leading jets 
+    TH2F*         fh2LeadingTrackPtTrackPhi[kJetTypes]; //! phi distribution of accepted leading tracks
+    TH2F*         fh2RhoPt[kJetTypes][kMaxJets];     //! jet shape variable rho
+    TH2F*         fh2PsiPt[kJetTypes][kMaxJets];     //! jet shape variable psi
+
+
+    TH1F*   fh1DijetMinv[kJetTypes];            //! dijet inv mass
+    TH2F*   fh2DijetDeltaPhiPt[kJetTypes];      //! dijet delta phi vs pt
+    TH2F*   fh2DijetAsymPt[kJetTypes];          //! dijet asym vs pt after delta phi cut
+    TH2F*   fh2DijetPt2vsPt1[kJetTypes];        //! dijet pt2 vs pt1
+    TH2F*   fh2DijetDifvsSum[kJetTypes];        //! dijet dif vs sum
+
     //background histos
 
     TH1F*         fh1Bkg1; //! background estimate, all jets
