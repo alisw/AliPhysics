@@ -21,6 +21,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliAODHeader.h"
+#include "AliCentrality.h"
 #include <TGeoMatrix.h>
 #include <TObjString.h>
 
@@ -58,7 +59,8 @@ AliAODHeader::AliAODHeader() :
   fEventNumberESDFile(-1),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
-  fL2TriggerInputs(0)
+  fL2TriggerInputs(0),
+  fCentralityP(0)
 {
   // default constructor
 
@@ -107,7 +109,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fEventNumberESDFile(-1),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
-  fL2TriggerInputs(0)
+  fL2TriggerInputs(0),
+  fCentralityP(0)
 {
   // constructor
 
@@ -173,7 +176,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fEventNumberESDFile(-1),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
-  fL2TriggerInputs(0)
+  fL2TriggerInputs(0),
+  fCentralityP(0)
 {
   // constructor
 
@@ -191,7 +195,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 AliAODHeader::~AliAODHeader() 
 {
   // destructor
-  
+  delete fCentralityP;
   RemoveQTheta();
 }
 
@@ -227,7 +231,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fEventNumberESDFile(hdr.fEventNumberESDFile),
   fL0TriggerInputs(hdr.fL0TriggerInputs),
   fL1TriggerInputs(hdr.fL1TriggerInputs),
-  fL2TriggerInputs(hdr.fL2TriggerInputs)
+  fL2TriggerInputs(hdr.fL2TriggerInputs),
+  fCentralityP(hdr.fCentralityP)
 {
   // Copy constructor.
   
@@ -291,6 +296,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fL0TriggerInputs    = hdr.fL0TriggerInputs;
     fL1TriggerInputs    = hdr.fL1TriggerInputs;
     fL2TriggerInputs    = hdr.fL2TriggerInputs;
+    fCentralityP        = hdr.fCentralityP;
 
     SetName(hdr.fName);
     SetTitle(hdr.fTitle);
