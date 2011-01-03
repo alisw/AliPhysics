@@ -27,7 +27,7 @@
 #include "AliVVertex.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 #include "AliMCEvent.h"
@@ -212,7 +212,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
   if (fCutCentralityPercentile&&esdevent)
   {
-    AliESDCentrality* centr = esdevent->GetCentrality();
+    AliCentrality* centr = esdevent->GetCentrality();
     if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
                                           fCentralityPercentileMax,
                                           CentrMethName(fCentralityPercentileMethod) ))
@@ -303,7 +303,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
 //----------------------------------------------------------------------- 
 const char* AliFlowEventCuts::CentrMethName(refMultMethod method) const
 {
-  //get the string for refmultmethod, for use with AliESDCentrality in
+  //get the string for refmultmethod, for use with AliCentrality in
   //the cut on centrality percentile
   switch (method)
   {
