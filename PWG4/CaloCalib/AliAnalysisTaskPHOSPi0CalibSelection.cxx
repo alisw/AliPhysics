@@ -38,6 +38,7 @@
 #include "AliESDCaloCells.h"
 #include "AliPHOSAodCluster.h"
 #include "AliPHOSPIDv1.h"
+#include "AliCentrality.h"
 
 ClassImp(AliAnalysisTaskPHOSPi0CalibSelection)
 
@@ -121,8 +122,13 @@ void AliAnalysisTaskPHOSPi0CalibSelection::CreateAODFromAOD()
   header->SetPeriodNumber(headerin->GetPeriodNumber());
   header->SetEventType(headerin->GetEventType());
   header->SetMuonMagFieldScale(headerin->GetMuonMagFieldScale());
-  header->SetCentrality(headerin->GetCentrality()); 
-  
+
+  if(headerin->GetCentrality()){
+    header->SetCentrality(new AliCentrality(*(headerin->GetCentralityP())));
+  } else {
+    header->SetCentrality(0);
+  }
+
   header->SetTriggerMask(headerin->GetTriggerMask()); 
   header->SetTriggerCluster(headerin->GetTriggerCluster());
   header->SetMagneticField(headerin->GetMagneticField());
@@ -245,7 +251,7 @@ void AliAnalysisTaskPHOSPi0CalibSelection::CreateAODFromESD()
   header->SetPeriodNumber(esd->GetPeriodNumber());
   header->SetEventType(esd->GetEventType());
   header->SetMuonMagFieldScale(-999.); // FIXME
-  header->SetCentrality(-999.);        // FIXME
+  header->SetCentrality(0);            // FIXME
   
   
   header->SetTriggerMask(esd->GetTriggerMask()); 

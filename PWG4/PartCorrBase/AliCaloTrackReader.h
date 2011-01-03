@@ -36,7 +36,7 @@ class AliMixedEvent;
 class AliAODMCHeader;
 #include "AliCalorimeterUtils.h"
 class AliESDtrackCuts;
-class AliESDCentrality;
+class AliCentrality;
 
 class AliCaloTrackReader : public TObject {
 
@@ -226,7 +226,7 @@ public:
   Bool_t IsCaloFilterPatchOn()    {if(fDataType == kAOD) { return fCaloFilterPatch ; } 
                                    else                  { return kFALSE ; } }
   
-  virtual AliESDCentrality* GetCentrality() const {return 0x0;}
+  virtual AliCentrality* GetCentrality() const {return 0x0;}
 
   
   //MC reader methods:

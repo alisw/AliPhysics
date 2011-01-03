@@ -33,7 +33,7 @@ class AliGenEventHeader ;
 class AliEMCALGeoUtils;
 class AliPHOSGeoUtils;
 #include "AliMixedEvent.h" 
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 
 class AliAnaPartCorrBaseClass : public TObject {
 	
@@ -87,7 +87,7 @@ public:
 	  return fCaloUtils->GetModuleNumber(cluster);}
  	
   //Centrality
-  AliESDCentrality* GetCentrality() const  { return fReader->GetCentrality() ;}
+  AliCentrality* GetCentrality() const  { return fReader->GetCentrality() ;}
   void SetCentralityClass(TString name)    { fCentralityClass   = name       ;}
   void SetCentralityOpt(Int_t opt)         { fCentralityOpt     = opt        ;}
   TString GetCentralityClass()     const   { return fCentralityClass         ;}

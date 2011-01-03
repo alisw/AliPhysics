@@ -89,7 +89,7 @@ public:
   void SetEMCALOverlapAngle(Float_t angle)  {fEMCALOverlapAngle = angle;}
   void SetPHOSOverlapAngle(Float_t angle) {fPHOSOverlapAngle = angle;}
   
-  AliESDCentrality* GetCentrality() const {return 0x0;}
+  AliCentrality* GetCentrality() const {return 0x0;}
   
  private:
   

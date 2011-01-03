@@ -141,7 +141,7 @@ if (!fESDEvent) {
 
 Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber()); // Check if the physics selection is valid for this run
 
-AliESDCentrality *cent = GetCentralityObject();
+AliCentrality *cent = GetCentralityObject();
 
 if(res == 0 && cent){
   

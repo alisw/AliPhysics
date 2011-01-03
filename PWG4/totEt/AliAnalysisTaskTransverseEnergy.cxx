@@ -4,7 +4,7 @@
 #include "AliInputEventHandler.h"
 #include "AliPhysicsSelectionTask.h"
 #include "AliPhysicsSelection.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 #include "AliESDEvent.h"
 //_________________________________________________________________________
 //  Utility Class for transverse energy studies
@@ -116,7 +116,7 @@ Int_t AliAnalysisTaskTransverseEnergy::LoadPhysicsSelection(TString name)
     return 0;
 }
 
-AliESDCentrality* AliAnalysisTaskTransverseEnergy::GetCentralityObject()
+AliCentrality* AliAnalysisTaskTransverseEnergy::GetCentralityObject()
 {
   // See header file for class documentation
     if (fESDEvent)return fESDEvent->GetCentrality();
