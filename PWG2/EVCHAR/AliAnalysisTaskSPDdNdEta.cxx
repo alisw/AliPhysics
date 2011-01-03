@@ -57,7 +57,6 @@
 
 #include "AliTriggerAnalysis.h" 
 #include "AliPhysicsSelection.h"
-#include "AliESDCentrality.h" 
 #include "AliTrackletAlg.h" 
 #include "AliAnalysisTaskSPDdNdEta.h"
 
