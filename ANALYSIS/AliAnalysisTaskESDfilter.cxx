@@ -1176,16 +1176,20 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	AliESDtrack *track = AliESDtrackCuts::GetTPCOnlyTrack(esd,esdTrack->GetID());
 	if(!track) continue;
 
-	AliExternalTrackParam exParam;
-	Bool_t relate = false;
-	// take the B-feild from the ESD, no 3D fieldMap available at this point
-	relate = track->RelateToVertex(vtxSPD,esd->GetMagneticField(),kVeryBig,&exParam);
-	if(!relate){
-	  delete track;
-	  continue;
-	}
-	track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
 
+
+	if(track->Pt()>0.){
+	  // only constrain tracks above threshold
+	  AliExternalTrackParam exParam;
+	  // take the B-feild from the ESD, no 3D fieldMap available at this point
+	  Bool_t relate = false;
+	  relate = track->RelateToVertex(vtxSPD,esd->GetMagneticField(),kVeryBig,&exParam);
+	  if(!relate){
+	    delete track;
+	    continue;
+	  }
+	  track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+	}
 
 	track->GetPxPyPz(p);
 	track->GetXYZ(pos);
