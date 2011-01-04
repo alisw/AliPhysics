@@ -22,21 +22,28 @@
 //      Dariusz Miskowiec, GSI, D.Miskowiec@gsi.de
 //-----------------------------------------------------------------
 
-#include "AliTPCPIDResponse.h"
+#include <TGraph.h>
+#include <TObjArray.h>
+#include <TSpline.h>
+
 #include "AliExternalTrackParam.h"
+
+#include "AliTPCPIDResponse.h"
 
 ClassImp(AliTPCPIDResponse)
 
 //_________________________________________________________________________
 AliTPCPIDResponse::AliTPCPIDResponse():
-    fMIP(50.),
-    fRes0(0.07),
-    fResN2(0.),
-    fKp1(0.0283086),
-    fKp2(2.63394e+01),
-    fKp3(5.04114e-11),
-    fKp4(2.12543),
-    fKp5(4.88663)
+  fMIP(50.),
+  fRes0(0.07),
+  fResN2(0.),
+  fKp1(0.0283086),
+  fKp2(2.63394e+01),
+  fKp3(5.04114e-11),
+  fKp4(2.12543),
+  fKp5(4.88663),
+  fUseDatabase(kFALSE),
+  fResponseFunctions(AliPID::kUnknown+1)
 {
   //
   //  The default constructor
@@ -44,21 +51,24 @@ AliTPCPIDResponse::AliTPCPIDResponse():
 }
 
 //_________________________________________________________________________
-AliTPCPIDResponse::AliTPCPIDResponse(Double_t *param):
-    fMIP(param[0]),
-    fRes0(param[1]),
-    fResN2(param[2]),
-    fKp1(0.0283086),
-    fKp2(2.63394e+01),
-    fKp3(5.04114e-11),
-    fKp4(2.12543),
-    fKp5(4.88663)
+AliTPCPIDResponse::AliTPCPIDResponse(const Double_t *param):
+  fMIP(param[0]),
+  fRes0(param[1]),
+  fResN2(param[2]),
+  fKp1(0.0283086),
+  fKp2(2.63394e+01),
+  fKp3(5.04114e-11),
+  fKp4(2.12543),
+  fKp5(4.88663),
+  fUseDatabase(kFALSE),
+  fResponseFunctions(AliPID::kUnknown+1)
 {
   //
   //  The main constructor
   //
 }
 
+//_________________________________________________________________________
 Double_t AliTPCPIDResponse::Bethe(Double_t betaGamma) const {
   //
   // This is the Bethe-Bloch function normalised to 1 at the minimum
@@ -71,7 +81,8 @@ Double_t AliTPCPIDResponse::Bethe(Double_t betaGamma) const {
   //           1. for simulation
   //           2. for reconstructed PID
   //
-  //  const Float_t kmeanCorrection =0.1;
+  
+//   const Float_t kmeanCorrection =0.1;
   Double_t bb=
     AliExternalTrackParam::BetheBlochAleph(betaGamma,fKp1,fKp2,fKp3,fKp4,fKp5);
   return bb*fMIP;
@@ -103,7 +114,7 @@ void AliTPCPIDResponse::SetSigma(Float_t res0, Float_t resN2) {
 
 //_________________________________________________________________________
 Double_t AliTPCPIDResponse::GetExpectedSignal(const Float_t mom,
-                                         AliPID::EParticleType n) const {
+					      AliPID::EParticleType n) const {
   //
   // Calculates the expected PID signal as the function of 
   // the information stored in the track, for the specified particle type 
@@ -114,8 +125,13 @@ Double_t AliTPCPIDResponse::GetExpectedSignal(const Float_t mom,
   // assigned clusters and/or the track dip angle, for example.  
   //
   
-  Double_t mass=AliPID::ParticleMass(n); 
-  return Bethe(mom/mass);
+  Double_t mass=AliPID::ParticleMass(n);
+  if (!fUseDatabase||fResponseFunctions.GetEntriesFast()>AliPID::kUnknown) return Bethe(mom/mass);
+  //
+  TSpline3 * responseFunction = (TSpline3 *) fResponseFunctions.UncheckedAt(n);
+  if (!responseFunction) return Bethe(mom/mass);
+  return fMIP*responseFunction->Eval(mom/mass);
+
 }
 
 //_________________________________________________________________________

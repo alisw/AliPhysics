@@ -12,13 +12,14 @@
 //      Dariusz Miskowiec, GSI, D.Miskowiec@gsi.de
 //-------------------------------------------------------
 #include <Rtypes.h>
+#include <TObjArray.h>
 
 #include "AliPID.h"
 
 class AliTPCPIDResponse {
 public:
   AliTPCPIDResponse();
-  AliTPCPIDResponse(Double_t *param);
+  AliTPCPIDResponse(const Double_t *param);
   virtual ~AliTPCPIDResponse() {}
   void SetSigma(Float_t res0, Float_t resN2);
   void SetBetheBlochParameters(Double_t kp1,
@@ -29,8 +30,11 @@ public:
                                );
   void SetMip(Float_t mip) { fMIP = mip; } // Set overall normalisation; mean dE/dx for MIP
   Double_t Bethe(Double_t bg) const;
-
-
+  void SetUseDatabase(Bool_t useDatabase) { fUseDatabase = useDatabase;}
+  
+  void SetResponseFunction(AliPID::EParticleType type, TObject * const o) { fResponseFunctions.AddAt(o,(Int_t)type); }
+  const TObject * const GetResponseFunction(AliPID::EParticleType type) { return fResponseFunctions.At((Int_t)type); }
+  
   Double_t GetExpectedSignal(const Float_t mom,
                      AliPID::EParticleType n=AliPID::kKaon) const;
   Double_t GetExpectedSigma(const Float_t mom, const Int_t nPoints,
@@ -56,7 +60,10 @@ private:
   Double_t fKp4;   // Bethe-Bloch
   Double_t fKp5;   // formula
 
-  ClassDef(AliTPCPIDResponse,2)   // TPC PID class
+  Bool_t fUseDatabase; // flag if fine-tuned database-response or simple ALEPH BB should be used
+  TObjArray fResponseFunctions; //! ObjArray of response functions individually for each particle
+
+  ClassDef(AliTPCPIDResponse,3)   // TPC PID class
 };
 
 #endif
