@@ -163,7 +163,7 @@ void AliFileMerger::IterTXT( const char * fileList,  const char* outputFileName,
   else {
     StoreResults(mergeArray, outputFileName);
   }
-
+  
   delete mergeArray;
 }
 
@@ -202,6 +202,7 @@ void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
   //
   // Merging procedure
   //
+  if (!array) return;
   static Int_t counter=-1;
   counter++;
   TObjArray *carray = new TObjArray;   //array of the objects inside current file
@@ -228,8 +229,8 @@ void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
     return;
   }
   TMethodCall callEnv;
-  
-  for (Int_t i=0; i<carray->GetEntries(); i++){
+  Int_t entries =carray->GetEntriesFast();
+  for (Int_t i=0; i<entries; i++){
     
     TObjArray *templist = new TObjArray(1);
     templist->SetOwner(kFALSE);
@@ -258,6 +259,7 @@ void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
     AliSysInfo::AddStamp(currentObject->GetName(),2,i,counter);  
     delete templist;
   }
+  carray->Delete();
   delete carray;
 }
 
