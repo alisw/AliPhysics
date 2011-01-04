@@ -199,7 +199,7 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
 
 }
 
-void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodname = "LHC10d4", bool hadronic = true, bool reweighted = false, float kaonFactor=1.0, float lambdaFactor = 1.0, float baryonEnhancement = 1.0){
+void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodname = "LHC10d4", bool hadronic = false, bool reweighted = false, float kaonFactor=1.0, float lambdaFactor = 1.0, float baryonEnhancement = 1.0){
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -278,6 +278,8 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   PHOStotal->GetYaxis()->SetLabelSize(0.045);
   PHOStotal->GetXaxis()->SetTitleSize(0.05);
   PHOStotal->GetYaxis()->SetTitleSize(0.06);
+
+  PHOStotal->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   PHOStotal->Draw();
   EMCALtotal->Draw("same");
   PHOSallneutral->Draw("same");
@@ -359,6 +361,7 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   weight = weight/totalwidth;
   weightPhos = weightPhos/totalwidthPhos;
   cout<<"weight = "<<weight<<" weight phos "<<weightPhos<<endl;
+  pt1total->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   pt1total->Draw();
   pt2total->Draw("same");
   pt1allneutral->Draw("same");
@@ -404,9 +407,11 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   char ptnameeps[200];
   char ptnamepng[200];
   char ptnamepdf[200];
+  char ptnameC[200];
   char etanameeps[200];
   char etanamepng[200];
   char etanamepdf[200];
+  char etanameC[200];
   TString *Total = new TString("total");
   TString *Neutral = new TString("neutral");
   TString *Cut = Neutral;
@@ -419,15 +424,19 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   sprintf(ptnameeps,"pics/f%spt%s.eps",Cut->Data(),Factors->Data());
   sprintf(ptnamepng,"pics/f%spt%s.png",Cut->Data(),Factors->Data());
   sprintf(ptnamepdf,"pics/f%spt%s.pdf",Cut->Data(),Factors->Data());
+  sprintf(ptnameC,"pics/f%spt%s.C",Cut->Data(),Factors->Data());
   sprintf(etanameeps,"pics/f%seta%s.eps",Cut->Data(),Factors->Data());
   sprintf(etanamepng,"pics/f%seta%s.png",Cut->Data(),Factors->Data());
   sprintf(etanamepdf,"pics/f%seta%s.pdf",Cut->Data(),Factors->Data());
+  sprintf(etanameC,"pics/f%seta%s.C",Cut->Data(),Factors->Data());
   ptpad->SaveAs(ptnameeps);
   ptpad->SaveAs(ptnamepng);
   ptpad->SaveAs(ptnamepdf);
+  ptpad->SaveAs(ptnameC);
   etapad->SaveAs(etanameeps);
   etapad->SaveAs(etanamepng);
   etapad->SaveAs(etanamepdf);
+  etapad->SaveAs(etanameC);
 
   TCanvas *c2 = new TCanvas("c2","c2",500,400);
   c2->SetTopMargin(0.03);
@@ -465,6 +474,8 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   leg5->SetTextSize(0.0548607);
   leg5->Draw();
   if(!hadronic){return;}
+
+
   TCanvas *empad = new TCanvas("empad","empad",400,400);
   empad->SetTopMargin(0.04);
   empad->SetRightMargin(0.04);
