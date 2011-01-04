@@ -1,3 +1,9 @@
+//Christine Nattrass, University of Tennessee at Knoxville
+//This macro is for calculating the single track efficiency for the hadronic transverse energy measurement
+//Uses the output of AliAnalysisTaskHadEt
+//This is not actually what gets used in the correction class AliAnalysisHadEtCorrections - that is done in the macro GetCorrections.C - but this is useful for making plots and playing around with different options
+
+//this function calculates the efficiency propagating errors properly
 TH1D* bayneseffdiv(TH1D* numerator, TH1D* denominator,Char_t* name) 
 {
     if(!numerator){
@@ -40,7 +46,7 @@ TH1D* bayneseffdiv(TH1D* numerator, TH1D* denominator,Char_t* name)
 }
 
 
-
+//This is a somewhat messy function that gets the efficiency for different particles
 TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, int marker,bool TPC, bool ITS){
   //TFile *file = new TFile("Et.ESD.new.sim.merged.root");
   TFile *file = new TFile("Et.ESD.new.sim.LHC10d4.pp.merged.root");
@@ -118,7 +124,7 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
   else{
     int lowbin = denominatorParent->GetXaxis()->FindBin(cut);//make sure we don't accidentally get the wrong bin
     int highbin = denominatorParent->GetXaxis()->GetNbins();
-    cout<<"Projecting from "<<denominatorParent->GetXaxis()->GetBinLowEdge(lowbin)<<" to "<<denominatorParent->GetXaxis()->GetBinLowEdge(highbin+1)<<endl;
+    cout<<"Here Projecting from "<<denominatorParent->GetXaxis()->GetBinLowEdge(lowbin)<<" to "<<denominatorParent->GetXaxis()->GetBinLowEdge(highbin+1)<<endl;
     numerator = numeratorParent->ProjectionY(name,lowbin,highbin);
     denominator = denominatorParent->ProjectionY(Form("denominator%s",name),lowbin,highbin);
   }
@@ -143,7 +149,9 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
 
 }
 
-void CorrEfficiency(char *prodname= "LHC10d4", char *shortprodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", bool TPC = true,bool ITS = true){
+
+//this is a method that makes pretty plots
+void CorrEfficiency(char *prodname= "LHC10d4", char *shortprodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", bool TPC = true,bool ITS = true, bool eta = false){
 
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -167,12 +175,19 @@ void CorrEfficiency(char *prodname= "LHC10d4", char *shortprodname = "LHC10d4 PY
   int emcalmarker = 24;
   float ptcut1 = 0.05;
   float ptcut2 = 0.1;
-  TH1D *PHOStotal = GetHisto(0.12,"PHOStotal",0,true,colortotal,phosmarker,TPC,ITS);
-  TH1D *PHOSpi = GetHisto(0.12,"PHOSpi",1,true,colorpi,phosmarker,TPC,ITS);
-  TH1D *PHOSp = GetHisto(0.12,"PHOSp",2,true,colork,phosmarker,TPC,ITS);
-  TH1D *PHOSk = GetHisto(0.12,"PHOSk",3,true,colorp,phosmarker,TPC,ITS);
-  if(ITS&&!TPC){PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.05),PHOStotal->GetXaxis()->FindBin(1.0));}
-  else{PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.0),PHOStotal->GetXaxis()->FindBin(3.0));}
+  float phoscut = 0.12;
+  float emcalcut = 0.7;
+  if(!eta){
+    phoscut = 0.1;
+    emcalcut = 0.15;
+  }
+  TH1D *PHOStotal = GetHisto(phoscut,"PHOStotal",0,eta,colortotal,phosmarker,TPC,ITS);
+  TH1D *PHOSpi = GetHisto(phoscut,"PHOSpi",1,eta,colorpi,phosmarker,TPC,ITS);
+  TH1D *PHOSp = GetHisto(phoscut,"PHOSp",2,eta,colork,phosmarker,TPC,ITS);
+  TH1D *PHOSk = GetHisto(phoscut,"PHOSk",3,eta,colorp,phosmarker,TPC,ITS);
+  if(eta) PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.05),PHOStotal->GetXaxis()->FindBin(1.0));
+//if(ITS&&!TPC){PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.05),PHOStotal->GetXaxis()->FindBin(1.0));}
+//else{PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.0),PHOStotal->GetXaxis()->FindBin(3.0));}
   PHOStotal->SetMinimum(0.0);
   PHOStotal->SetMaximum(1.0);
   //parameters[centbin][0]*exp(-pow(parameters[centbin][1]/pt,parameters[centbin][2]))
@@ -186,10 +201,10 @@ void CorrEfficiency(char *prodname= "LHC10d4", char *shortprodname = "LHC10d4 PY
   PHOSpi->Draw("same");
   PHOSp->Draw("same");
   PHOSk->Draw("same");
-  TH1D *EMCALtotal = GetHisto(0.7,"EMCALtotal",0,true,colortotal,emcalmarker,TPC,ITS);
-  TH1D *EMCALpi = GetHisto(0.7,"EMCALpi",1,true,colorpi,emcalmarker,TPC,ITS);
-  TH1D *EMCALp = GetHisto(0.7,"EMCALp",2,true,colork,emcalmarker,TPC,ITS);
-  TH1D *EMCALk = GetHisto(0.7,"EMCALk",3,true,colorp,emcalmarker,TPC,ITS);
+  TH1D *EMCALtotal = GetHisto(emcalcut,"EMCALtotal",0,eta,colortotal,emcalmarker,TPC,ITS);
+  TH1D *EMCALpi = GetHisto(emcalcut,"EMCALpi",1,eta,colorpi,emcalmarker,TPC,ITS);
+  TH1D *EMCALp = GetHisto(emcalcut,"EMCALp",2,eta,colork,emcalmarker,TPC,ITS);
+  TH1D *EMCALk = GetHisto(emcalcut,"EMCALk",3,eta,colorp,emcalmarker,TPC,ITS);
   EMCALtotal->Draw("same");
   EMCALpi->Draw("same");
   EMCALp->Draw("same");
@@ -207,8 +222,8 @@ void CorrEfficiency(char *prodname= "LHC10d4", char *shortprodname = "LHC10d4 PY
   leg->SetTextSize(0.06);
  leg->Draw();
 
-  TLine *line = new TLine(0.2,0.0,0.2,1.0);
-  line->Draw();
+  TLine *line = new TLine(0.150,0.0,0.150,1.0);
+  if(eta)line->Draw();
   line->SetLineWidth(3.0);
   //line->SetLineColor(TColor::kYellow);
   line->SetLineStyle(2);
@@ -221,10 +236,23 @@ void CorrEfficiency(char *prodname= "LHC10d4", char *shortprodname = "LHC10d4 PY
   TLatex *tex4 = new TLatex(1.16186,0.213221,"Open symbols |#eta|<0.70 (EMCal)");
   tex4->SetTextSize(0.0537634);
   tex4->Draw();
-  TLatex *tex2 = new TLatex(0.241937,0.448436,"TPC cut-off 150 MeV/c");
+  TLatex *tex2 = new TLatex(0.164016,0.860826,"TPC cut-off 150 MeV/c");
   tex2->SetTextSize(0.0537634);
-  tex2->Draw();
-  if(TPC){
+  if(eta) tex2->Draw();
+
+
+  TLine *line2 = new TLine(0.10,0.0,0.10,1.0);
+  line2->SetLineWidth(3.0);
+  TLatex *tex5 = new TLatex(0.10817,0.924976,"ITS cut-off 100 MeV/c");
+  tex5->SetTextSize(0.0537634);
+  line2->SetLineStyle(2);
+  tex5->SetTextColor(4);
+  line2->SetLineColor(4);
+  if(!TPC && eta){
+    line2->Draw();
+    tex5->Draw();
+  }
+  if(!TPC){
     c->SaveAs("pics/CorrEfficiency.eps");
     c->SaveAs("pics/CorrEfficiency.png");
   }
