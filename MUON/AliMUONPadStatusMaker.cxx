@@ -73,8 +73,6 @@ AliMUONPadStatusMaker::AliMUONPadStatusMaker(const AliMUONCalibrationData& calib
 fGainA1Limits(0,1E30),
 fGainA2Limits(-1E-30,1E30),
 fGainThresLimits(0,4095),
-fHVSt12Limits(0,5000),
-fHVSt345Limits(0,5000),
 fPedMeanLimits(0,4095),
 fPedSigmaLimits(0,4095),
 fManuOccupancyLimits(0,1.0),
@@ -97,6 +95,8 @@ fTrackerData(0x0)
     /// Only create the fHV internal store if there are some HV values available
     fHV = new TExMap;
   }
+  
+  SetHVLimit(-1,0.0);
 }
 
 //_____________________________________________________________________________
@@ -228,6 +228,8 @@ AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
   hvChannelTooHigh = kFALSE;
   hvChannelON = kTRUE;
 
+  Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+  
   AliMpDCSNamer hvNamer("TRACKER");
   
   TString hvChannel(hvNamer.DCSChannelName(detElemId,sector));
@@ -250,9 +252,8 @@ AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
     }
     else
     {
-      // find out min and max value, and makes a cut
+      // find out min value, and makes a cut
       Float_t hvMin(1E9);
-      Float_t hvMax(0);
       TIter next(values);
       AliDCSValue* val;
       
@@ -260,15 +261,12 @@ AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
       {
         Float_t hv = val->GetFloat();
         hvMin = TMath::Min(hv,hvMin);
-        hvMax = TMath::Max(hv,hvMax);
       }
       
-      float lowThreshold = fHVSt12Limits.X();
-      float highThreshold = fHVSt12Limits.Y();
+      float lowThreshold = fHVLimit[chamberId];
             
       if ( hvMin < lowThreshold ) hvChannelTooLow = kTRUE;
-      if ( hvMax > highThreshold ) hvChannelTooHigh = kTRUE;
-      if ( hvMin < 1 ) hvChannelON = kFALSE;
+      if ( hvMin < hvNamer.TrackerHVOFF() ) hvChannelON = kFALSE;
     }
   }
   
@@ -343,6 +341,8 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
   
   AliMpDCSNamer hvNamer("TRACKER");
   
+  Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+  
   TString hvChannel(hvNamer.DCSChannelName(detElemId));
   
   TMap* hvMap = fkCalibrationData.HV();
@@ -364,9 +364,8 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
     }
     else
     {
-      // find out min and max value, and makes a cut
+      // find out min value, and makes a cut
       Float_t hvMin(1E9);
-      Float_t hvMax(0);
       TIter next(values);
       AliDCSValue* val;
       
@@ -374,15 +373,12 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
       {
         Float_t hv = val->GetFloat();
         hvMin = TMath::Min(hv,hvMin);
-        hvMax = TMath::Max(hv,hvMax);
       }
 
-      float lowThreshold = fHVSt345Limits.X();
-      float highThreshold = fHVSt345Limits.Y();
+      float lowThreshold = fHVLimit[chamberId];
 
       if ( hvMin < lowThreshold ) hvChannelTooLow = kTRUE;
-      else if ( hvMax > highThreshold ) hvChannelTooHigh = kTRUE;
-      if ( hvMin < 1 ) hvChannelON = kFALSE;
+      if ( hvMin < hvNamer.TrackerHVOFF() ) hvChannelON = kFALSE;
     }
   }
   
@@ -664,12 +660,37 @@ AliMUONPadStatusMaker::SetHVStatus(Int_t detElemId, Int_t index, Int_t status) c
 
 //_____________________________________________________________________________
 void
+AliMUONPadStatusMaker::SetHVLimit(Int_t chamberId, Double_t hv) 
+{
+  /// Set hv limit for a given chamber (or all if chamberId==-1)
+  
+  if ( chamberId == -1 ) 
+  {
+    for ( Int_t i = 0; i < 10; ++i ) 
+    {
+      fHVLimit[i] = hv;
+    }
+  }
+  else if ( chamberId >= 0 && chamberId < 10 ) 
+  {
+    fHVLimit[chamberId]=hv;
+  }
+  else
+  {
+    AliError(Form("chamberId=%d is invalid",chamberId));
+  }
+}
+
+//_____________________________________________________________________________
+void
 AliMUONPadStatusMaker::SetLimits(const AliMUONRecoParam& recoParams) 
 {
   /// Set the limits from the recoparam
   
-  SetHVSt12Limits(recoParams.HVSt12LowLimit(),recoParams.HVSt12HighLimit());
-  SetHVSt345Limits(recoParams.HVSt345LowLimit(),recoParams.HVSt345HighLimit());
+  for ( int i = 0; i < 10; ++i )
+  {
+    SetHVLimit(i,recoParams.HVLimit(i));
+  }
   
   SetPedMeanLimits(recoParams.PedMeanLowLimit(),recoParams.PedMeanHighLimit());
   SetPedSigmaLimits(recoParams.PedSigmaLowLimit(),recoParams.PedSigmaHighLimit());

@@ -20,15 +20,18 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
+#include "AliDCSValue.h"
 #include "AliLog.h"
+#include "AliMpDCSNamer.h"
+#include "AliMUONConstants.h"
+#include "AliMUONGlobalCrateConfig.h"
+#include "AliMUONRegionalTriggerConfig.h"
 #include "AliMUONRejectList.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerLut.h"
-#include "AliMUONVStore.h"
-#include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
-#include "AliMUONGlobalCrateConfig.h"
-#include "AliMUONRegionalTriggerConfig.h"
+#include "AliMUONVStore.h"
+#include "AliMUONVStore.h"
 
 #include <Riostream.h>
 #include <TClass.h>
@@ -153,13 +156,168 @@ AliMUONCalibrationData::CreateGlobalTriggerCrateConfig(Int_t runNumber, Int_t* s
 }
 
 
+//______________________________________________________________________________
+void AliMUONCalibrationData::PatchHVValues(TObjArray& values,
+                                           Int_t& nbelowready,
+                                           Int_t& noff,
+                                           Int_t& ntrips,
+                                           Int_t& neor,
+                                           TString* msg)
+{
+  /// We do here a little bit of massaging of the HV values, if needed.
+  ///
+  /// The main point is to "gather" the values near the end of the run (the last XX seconds)
+  /// to avoid the ramp-down before end-of-run syndrom...
+  ///
+  /// The rest is more of a debug/expert tool to have closer look at trends
+  ///
+  
+  Double_t HVBEAMTUNING(1300); 
+  
+  Bool_t eorProblem(kFALSE);
+  
+  UInt_t mergeDelay(300); // in seconds
+  
+  // First start by removing values within the last mergeDelay seconds, keeping only
+  // the last one
+  
+  AliDCSValue* last = static_cast<AliDCSValue*>(values.At(values.GetLast()));
+  
+  Int_t* toberemoved = new Int_t[values.GetLast()+1];
+  
+  memset(toberemoved,0,(values.GetLast()+1)*sizeof(Int_t));
+  
+  Int_t ntoberemoved(0);
+  
+  for ( Int_t i = values.GetLast()-1; i > 0; --i ) 
+  {
+    AliDCSValue* val = static_cast<AliDCSValue*>(values.At(i));
+    
+    if ( last->GetTimeStamp() - val->GetTimeStamp() < mergeDelay )
+    {
+      toberemoved[i]=1;
+      ++ntoberemoved;
+    }
+  }
+  
+  if (ntoberemoved)
+  {
+    // ok, we have some values within the same mergeDelay seconds
+    // we'll "merge" them by taking the last one, except if
+    // the last one is below HVBEAMTUNING, in which case we
+    // remove that one too (meaning the ramp-down was requesting
+    // before the end-of-run)
+    
+    if ( last->GetFloat() < HVBEAMTUNING ) 
+    {
+      eorProblem=kTRUE;
+      if (msg) *msg = "ERROR RAMP-DOWN BEFORE EOR";
+      toberemoved[values.GetLast()]=1;
+    }
+    
+    for ( Int_t i = 0; i <= values.GetLast(); ++i ) 
+    {
+      if ( toberemoved[i] ) values.RemoveAt(i);
+    }
+    
+    values.Compress();
+    
+  }
+  
+  delete[] toberemoved;
+  
+  if (eorProblem)
+  {
+    ++neor;
+    return;
+  }
+  
+  // now for the rest of the diagnosis
+  
+  Int_t ntmpoff(0);
+  Int_t ntmpready(0);
+  
+  for ( Int_t i = 0; i <= values.GetLast(); ++i ) 
+  {
+    AliDCSValue* val = static_cast<AliDCSValue*>(values.At(i));
+    
+    if ( val->GetFloat() < AliMpDCSNamer::TrackerHVOFF() ) 
+    {
+      ++ntmpoff;
+    }
+    else if ( val->GetFloat() < HVBEAMTUNING )
+    {
+      ++ntmpready;
+    }
+  }
+  
+  if ( ntmpoff )
+  {
+    if ( ntmpoff == values.GetLast()+1 ) 
+    {
+      if (msg) *msg = "ERROR HV OFF";
+      ++noff;
+    }
+    else
+    {
+      if (msg) *msg = "ERROR TRIP";
+      ++ntrips;    
+    }
+  }
+  
+  if ( ntmpready == values.GetLast()+1 ) 
+  {
+    if (msg) *msg = "ERROR BELOW READY";    
+  }      
+  
+  if (ntmpready) ++nbelowready;
+}
 
 //_____________________________________________________________________________
 TMap*
-AliMUONCalibrationData::CreateHV(Int_t runNumber, Int_t* startOfValidity)
+AliMUONCalibrationData::CreateHV(Int_t runNumber, Int_t* startOfValidity, Bool_t patched)
 {
   /// Create a new HV map from the OCDB for a given run
-  return dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/HV",startOfValidity));
+  TMap* hvMap = dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/HV",startOfValidity));
+  if (patched)
+  {
+    TIter next(hvMap);
+    TObjString* hvChannelName;
+    
+    while ( ( hvChannelName = static_cast<TObjString*>(next()) ) )
+    {
+      TString name(hvChannelName->String());
+      
+      if ( name.Contains("sw") ) continue; // skip switches
+      
+      TPair* hvPair = static_cast<TPair*>(hvMap->FindObject(name.Data()));
+      TObjArray* values = static_cast<TObjArray*>(hvPair->Value());
+      if (!values)
+      {
+        AliErrorClass(Form("Could not get values for alias %s",name.Data()));
+      }
+      else
+      {
+        int nbelowready(0);
+        int noff(0);
+        int ntrips(0);
+        int neor(0);
+        
+        PatchHVValues(*values,nbelowready,noff,ntrips,neor,0x0);
+        if (neor)
+        {
+          nbelowready=noff=ntrips=neor=0;
+          PatchHVValues(*values,nbelowready,noff,ntrips,neor,0x0);
+          if (neor)
+          {
+            AliErrorClass("neor is not null after PatchHVValue ! This is serious !");
+          }
+        }
+      }
+    }
+    
+  }
+  return hvMap;
 }
 
 //_____________________________________________________________________________
@@ -333,13 +491,13 @@ AliMUONCalibrationData::GlobalTriggerCrateConfig() const
 
 //_____________________________________________________________________________
 TMap*
-AliMUONCalibrationData::HV() const
+AliMUONCalibrationData::HV(Bool_t patched) const
 {
   /// Return the calibration for a given (detElemId, manuId) pair
   
   if (!fHV)
   {
-    fHV = CreateHV(fRunNumber);
+    fHV = CreateHV(fRunNumber,0,patched);
   }
   return fHV;
 }

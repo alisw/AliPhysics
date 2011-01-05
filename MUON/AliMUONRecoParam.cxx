@@ -483,8 +483,11 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   cout << "The pad limits we are using are :" << endl;
   
-  cout << Form("%5.0f <= HVSt12 <= %5.0f Volts",HVSt12LowLimit(),HVSt12HighLimit()) << endl;
-  cout << Form("%5.0f <= HVSt345 <= %5.0f Volts",HVSt345LowLimit(),HVSt345HighLimit()) << endl;
+  for ( int ichamber = 0; ichamber < 10; ++ichamber ) 
+  {
+    cout << Form("HV Ch %d must be >= %5.2f",ichamber,HVLimit(ichamber)) << endl;
+  }
+
   cout << Form("%7.2f <= Pedestal mean <= %7.2f",PedMeanLowLimit(),PedMeanHighLimit()) << endl;
   cout << Form("%7.2f <= Pedestal sigma <= %7.2f",PedSigmaLowLimit(),PedSigmaHighLimit()) << endl;
   cout << Form("%e <= Gain linear term <= %e",GainA1LowLimit(),GainA1HighLimit()) << endl;
@@ -537,16 +540,54 @@ void AliMUONRecoParam::Print(Option_t *option) const
 
 //_____________________________________________________________________________
 void
+AliMUONRecoParam::SetHVLimit(Int_t chamberId, Double_t value)
+{
+  /// Set the HV limit for a given chamber (or all chambers 
+  /// if chamberId==-1
+  
+  if ( chamberId == -1 ) 
+  {
+    for ( Int_t i = 0; i < 10; ++i ) 
+    {
+      fHVLimit[i] = value;
+    }
+  }
+  else if ( chamberId >= 0 && chamberId < 10 ) 
+  {
+    fHVLimit[chamberId]=value;
+  }
+  else
+  {
+    AliError(Form("chamberId = %d is not a valid chamberId",chamberId));
+  }
+}
+
+//_____________________________________________________________________________
+Double_t AliMUONRecoParam::HVLimit(Int_t chamberId) const
+{
+  /// Get the HV limit for a given chamber
+  if ( chamberId >= 0 && chamberId < 10 )
+  {
+    return fHVLimit[chamberId];
+  }
+  AliError(Form("chamberId = %d is not a valid chamberId",chamberId));
+
+  return 0.0;
+}
+
+//_____________________________________________________________________________
+void
 AliMUONRecoParam::SetDefaultLimits()
 {
 	/// Set the default limits and pad goodness policy
 
-	fHVSt12Limits[0]=1500;
-	fHVSt12Limits[1]=2000;
-
-	fHVSt345Limits[0]=1500;
-	fHVSt345Limits[1]=2000;
-
+  fHVSt12Limits[0]=1500; // kept for backward compatibility only
+	fHVSt12Limits[1]=2000; // kept for backward compatibility only
+	fHVSt345Limits[0]=1500; // kept for backward compatibility only
+	fHVSt345Limits[1]=2000; // kept for backward compatibility only
+  
+  SetHVLimit(-1,1600); // this one is the real HV limit used now
+  
 	fPedMeanLimits[0] = 20;
 	fPedMeanLimits[1] = 1024;
 	
@@ -574,7 +615,7 @@ AliMUONRecoParam::SetDefaultLimits()
   fDEOccupancyLimits[1] = 1.0;
 
   fMissingPadFractionLimit = -1; // DEPRECATED
-  fFractionOfBuspatchOutsideOccupancyLimit = 0.10; // 10 % 
+  fFractionOfBuspatchOutsideOccupancyLimit = 0.05; // 5 % 
 
   ChargeSigmaCut(4.0); // pad with charge < 4.0 x sigma will be removed (where sigma is the actual noise of that very pad, i.e. not the average)
   
@@ -648,11 +689,12 @@ AliMUONRecoParam::Create(const char* settings)
     param->SetManuOccupancyLimits(-1.,0.01);
     param->SetBuspatchOccupancyLimits(-1.,0.01);  
     param->SetFractionOfBuspatchOutsideOccupancyLimit(0.05); // 5 %
+    param->SetEventSizeLimits(45., 65.);
     
     // specific parameters for p-p data or realistic p-p simu
     if ( stype == "ppreal" || stype == "pprealnofield" )
     {
-      param->SetPadGoodnessMask(0x400BE80);
+      param->SetPadGoodnessMask(0x400BE9B);
     }
     else
     {
@@ -662,6 +704,37 @@ AliMUONRecoParam::Create(const char* settings)
     if ( stype == "pprealnofield" )
     {
       param->TryRecover(kTRUE);
+    }
+  }
+  else if ( stype == "pbpbreal" || stype == "pbpbrealsim" ) 
+  {      
+    // common parameters for Pb-Pb data and realistic Pb-Pb simu
+    param = AliMUONRecoParam::GetHighFluxParam();
+    defaultParam = AliRecoParam::kHighMult;
+    param->SaveFullClusterInESD(kTRUE, 100.);
+    for (Int_t iCh=0; iCh<10; iCh++) 
+    {
+      param->SetDefaultNonBendingReso(iCh,0.2);
+      param->SetDefaultBendingReso(iCh,0.2);
+    }
+    param->SetSigmaCutForTracking(5.);
+    param->SetStripCutForTrigger(1.5);
+    param->SetSigmaCutForTrigger(4.);
+    param->ImproveTracks(kTRUE, 4.);
+    param->SetPedMeanLimits(20, 700);
+    param->SetManuOccupancyLimits(-1.,0.01);
+    param->SetBuspatchOccupancyLimits(-1.,0.01);  
+    param->SetFractionOfBuspatchOutsideOccupancyLimit(0.05); // 5 %
+    param->SetEventSizeLimits(100., 150.);
+    
+    // specific parameters for Pb-Pb data or realistic Pb-Pb simu
+    if ( stype == "pbpbreal" )
+    {
+      param->SetPadGoodnessMask(0x400BE9B);
+    }
+    else
+    {
+      param->SetPadGoodnessMask(0x8080);      
     }
   }
   else

@@ -56,6 +56,9 @@ public:
   TObjArray* CompactAliases() const;
   void AliasesAsLdif(const char* ldiffile) const;
 
+  // Below this value we consider tracking HV is off
+  static Float_t TrackerHVOFF() { return 30.0; }
+
   enum 
   {
     kDCSHV,    ///< High Voltage

@@ -60,10 +60,8 @@ public:
   /// Return Low and High limits for thres parameter of gain
   TVector2 GainThresLimits() const { return fGainThresLimits; }
   
-  /// Return Low and High threshold for St12 HV
-  TVector2 HVSt12Limits() const { return fHVSt12Limits; }
-  /// Return Low and High threshold for St345 HV
-  TVector2 HVSt345Limits() const { return fHVSt345Limits; }
+  /// Return HV threshold
+  Double_t HVLimit(Int_t chamberId) const;
   
   /// Return Low and High threshold for pedestal mean
   TVector2 PedMeanLimits() const { return fPedMeanLimits; }
@@ -77,10 +75,8 @@ public:
   /// Set Low and High limits for thres parameter of gain
   void GainThresLimits(float low, float high) { fGainThresLimits.Set(low,high); }
   
-  /// Set Low and High threshold for St12 HV
-  void SetHVSt12Limits(float low, float high) { fHVSt12Limits.Set(low,high); }
-  /// Set Low and High threshold for St345 HV
-  void SetHVSt345Limits(float low, float high) { fHVSt345Limits.Set(low,high); }
+  /// Set HV limit
+  void SetHVLimit(Int_t chamberId, Double_t hv);
 
   /// Set Low and High threshold for pedestal mean
   void SetPedMeanLimits(float low, float high) { fPedMeanLimits.Set(low,high); }
@@ -186,7 +182,7 @@ private:
     kHVOK = 0,
     kHVError = (1<<0),
     kHVTooLow = (1<<1),
-    kHVTooHigh = (1<<2),
+    kHVTooHigh = (1<<2), // no longer to be used
     kHVChannelOFF = (1<<3),
     kHVSwitchOFF = (1<<4),
 
@@ -210,8 +206,7 @@ private:
   TVector2 fGainA2Limits; //!< Low and High threshold for gain a1 parameter
   TVector2 fGainThresLimits; //!< Low and High threshold for gain threshold parameter
 
-  TVector2 fHVSt12Limits; //!< Low and High threshold for St12 HV
-  TVector2 fHVSt345Limits; //!< Low and High threshold for St345 HV
+  Double_t fHVLimit[10]; //!< Low thresholds for HV
 
   TVector2 fPedMeanLimits; //!< Low and High threshold for pedestal mean
   TVector2 fPedSigmaLimits; //!< Low and High threshold for pedestal sigma

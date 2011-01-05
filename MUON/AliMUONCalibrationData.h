@@ -50,7 +50,7 @@ public:
   static AliMUONGlobalCrateConfig* CreateGlobalTriggerCrateConfig(Int_t runNumber, Int_t* startOfValidity=0);
   
   /// Create a hv map (which must be deleted) from OCDB for the given run
-  static TMap* CreateHV(Int_t runNumber, Int_t* startOfValidity=0);
+  static TMap* CreateHV(Int_t runNumber, Int_t* startOfValidity=0, Bool_t patched=kTRUE);
 
   /// Create a Trigger HV and current  map (which must be deleted) from OCDB for the given run
   static TMap* CreateTriggerDCS(Int_t runNumber, Int_t* startOfValidity=0);
@@ -90,8 +90,8 @@ public:
   /// Get the Gain calibration object for channels within (detElemId,manuId).
   AliMUONVCalibParam* Gains(Int_t detElemId, Int_t manuId) const;
     
-  /// Get the HV values
-  TMap* HV() const;
+  /// Get the HV values. Use patched=kFALSE to get unprocessed (i.e. "raw") values as they are in the OCDB
+  TMap* HV(Bool_t patched=kTRUE) const;
 
   /// Get the Trigger HV and current values
   TMap* TriggerDCS() const;
@@ -143,6 +143,13 @@ public:
   static void Check(Int_t runNumber);
   
   static void BypassStores(AliMUONVStore* ped, AliMUONVStore* gain);
+  
+  static void PatchHVValues(TObjArray& values,
+                            Int_t& nbelowready,
+                            Int_t& noff,
+                            Int_t& ntrips,
+                            Int_t& neor,
+                            TString* msg);
   
 protected:
   /// Not implemented

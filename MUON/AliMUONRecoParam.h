@@ -200,19 +200,10 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// return kTRUE if we should replace clusters in St 5 by generated clusters from trigger tracks
   Bool_t BypassSt5() const { return BypassSt45() || fBypassSt45==5 ; }
   
-  /// Set Low and High threshold for St12 HV
-  void    SetHVSt12Limits(float low, float high) { fHVSt12Limits[0]=low; fHVSt12Limits[1]=high; }
-  /// Retrieve low limit for St12's HV
-  Float_t HVSt12LowLimit() const { return fHVSt12Limits[0]; }
-  /// Retrieve high limit for St12's HV
-  Float_t HVSt12HighLimit() const { return fHVSt12Limits[1]; }
-  
-  /// Set Low and High threshold for St345 HV
-  void    SetHVSt345Limits(float low, float high) { fHVSt345Limits[0]=low; fHVSt345Limits[1]=high; } 
-  /// Retrieve low limit for St345's HV
-  Float_t HVSt345LowLimit() const { return fHVSt345Limits[0]; }
-  /// Retrieve high limit for St345's HV
-  Float_t HVSt345HighLimit() const { return fHVSt345Limits[1]; }
+  /// Set HV threshold for chambers (chamberId=0..9, use -1 to set all chambers equal)
+  void    SetHVLimit(Int_t chamberId, Double_t ichamber);
+  /// Retrieve HV limit for chamber (chamberId=0..9)
+  Double_t HVLimit(Int_t chamberId) const;
   
   /// Set Low and High threshold for pedestal mean
   void    SetPedMeanLimits(float low, float high) { fPedMeanLimits[0]=low; fPedMeanLimits[1]=high; }
@@ -402,8 +393,8 @@ private:
   Double32_t fGainA1Limits[2]; ///< Low and High threshold for gain a0 parameter
   Double32_t fGainA2Limits[2]; ///< Low and High threshold for gain a1 parameter
   Double32_t fGainThresLimits[2]; ///< Low and High threshold for gain threshold parameter
-  Double32_t fHVSt12Limits[2]; ///< Low and High threshold for St12 HV
-  Double32_t fHVSt345Limits[2]; ///< Low and High threshold for St345 HV
+  Double32_t fHVSt12Limits[2]; ///< DEPRECATED. See fHVLimits
+  Double32_t fHVSt345Limits[2]; ///< DEPRECATED. See fHVLimits
   Double32_t fPedMeanLimits[2]; ///< Low and High threshold for pedestal mean
   Double32_t fPedSigmaLimits[2]; ///< Low and High threshold for pedestal sigma
   
@@ -437,6 +428,8 @@ private:
   Double32_t fTokenLostLimit; ///< limit on the fraction of token lost error per event we allow
   
   Bool_t     fTryRecover; ///< try to recover corrupted raw data
+
+  Double32_t fHVLimit[10]; // HV limit (below which we consider that chamber efficiency is to be considered zero)
   
   // functions
   void SetLowFluxParam();
@@ -444,7 +437,7 @@ private:
   void SetCosmicParam();
   void SetCalibrationParam();
   
-  ClassDef(AliMUONRecoParam,168) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,169) // MUON reco parameters
   // we're at 167 not because we had that many versions, but because at some point (version 15->16)
   // 166 was committed by error, and we did not to go reverse afterwards...
 };
