@@ -10,12 +10,11 @@ vzmax=10
 batch=0
 gdb=0
 proof=0
+mc=0
 type=
 cms=900
 hhd=1
 comp=1
-anal=0
-term=0
 tit=
 
 usage()
@@ -37,8 +36,7 @@ Options:
 	-e,--energy CMS         Center of mass energy      ($cms)
 	-b,--batch              Do batch processing        ($batch)
 	-P,--proof		Run in PROOF(Lite) mode    ($proof)
-	-A,--analyse-only       Run only analysis          ($anal)
-	-T,--terminate-only     Run only terminate         ($term)
+	-M,--mc			Run over MC data           ($mc)
 	-S,--title STRING       Set the title string       ($tit)
 	-g,--gdb		Run in GDB mode    	   ($gdb)
 	-H,--hhd		Do comparison to HHD	   ($hhd)
@@ -67,8 +65,7 @@ while test $# -gt 0 ; do
 	-1|--pass1)          nodraw=`toggle $nodraw`   ;; 
 	-b|--batch)          batch=`toggle $batch`   ;; 
 	-P|--proof)          proof=`toggle $proof`   ;; 
-	-A|--analyse-only)   anal=`toggle $anal`   ;; 
-	-T|--terminate-only) term=`toggle $term`   ;; 
+	-M|--mc)             mc=`toggle $mc`   ;; 
 	-g|--gdb)            gdb=`toggle $gdb`   ;; 
 	-H|--hhd)            hhd=`toggle $hhd`   ;; 
 	-O|--other)          other=`toggle $other`   ;; 
@@ -87,38 +84,28 @@ done
 
 base=`printf dndeta_%07d $nev`
 opts="-l -x"
+opts1=""
 redir=
+if test $nodraw -lt 1 ; then 
+    opts1="-q" 
+fi
 if test $batch -gt 0 ; then 
-    opts="-l -b -q -x" 
+    opts="-b -q $opts"
     redir="2>&1 | tee ${base}.log"
     echo "redir=$redir"
 fi 
 if test $noanal -lt 1 ; then 
     rm -f AnalysisResult.root AliAODs.root
     rm -f fmdana.png
-    
-    # Setup analysis flags
-    af=0
-    if test $proof -gt 0 ; then 
-	af=2 
-    else 
-	if test $anal -gt 0 ; then 
-	    af=8
-	elif test $term -gt 0 ; then 
-	    af=16
-	else 
-	    af=4
-	fi
-    fi
 
     if test $gdb -gt 0 ; then 
 	export PROOF_WRAPPERCMD="gdb -batch -x $ALICE_ROOT/PWG2/FORWARD/analysis2/gdb_cmds --args"
     fi
-    echo "Running aliroot ${opts} ${ana}/Pass1.C\(\".\",$nev,$af\) $redir"
+    echo "Running aliroot ${opts} ${opts1} ${ana}/Pass1.C\(\".\",$nev,$proof,$mc\) $redir"
     if test $batch -gt 0 ; then 
-	aliroot $opts ${ana}/Pass1.C\(\".\",$nev,$af\) 2>&1 | tee ${base}.log
+	aliroot $opts $opts1 ${ana}/Pass1.C\(\".\",$nev,$proof,$mc\) 2>&1 | tee ${base}.log
     else 
-	aliroot $opts ${ana}/Pass1.C\(\".\",$nev,$af\)
+	aliroot $opts $opts1 ${ana}/Pass1.C\(\".\",$nev,$proof,$mc\)
     fi
     rm -f event_stat.root \
 	EventStat_temp.root \
@@ -137,6 +124,7 @@ if test $nodraw -lt 1 ; then
 	tit="$nev events, v_{z}#in[$vzmin,$vzmax], $type"
     fi
     tit=`echo $tit | tr ' ' '@'` 
+    echo "Running aliroot ${opts} ${opts1} ${ana}/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,$hhd,$comp\)"
     aliroot ${opts} ${ana}/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,\"$tit\",$hhd,$comp\)
 fi
 
