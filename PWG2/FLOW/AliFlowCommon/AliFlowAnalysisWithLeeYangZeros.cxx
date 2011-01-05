@@ -60,16 +60,16 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
     fDebug(kFALSE),
     fHistList(NULL),
     fFirstRunList(NULL),
-    fHistProVtheta(NULL),
+    fHistVtheta(NULL),
     fHistProVetaRP(NULL),  
     fHistProVetaPOI(NULL), 
     fHistProVPtRP(NULL),   
     fHistProVPtPOI(NULL),  
-    fHistProR0theta(NULL),
+    fHistR0theta(NULL),
     fHistProReDenom(NULL),
     fHistProImDenom(NULL),
-    fHistProReDtheta(NULL),
-    fHistProImDtheta(NULL),
+    fHistReDtheta(NULL),
+    fHistImDtheta(NULL),
     fHistQsumforChi(NULL),
     fCommonHists(NULL),
     fCommonHistsRes(NULL)
@@ -226,22 +226,22 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
   //for first loop over events 
   if (fFirstRun){
     TString nameR0Hist;
-    if (fUseSum) {nameR0Hist = "First_FlowPro_r0theta_LYZSUM";}
-    else {nameR0Hist = "First_FlowPro_r0theta_LYZPROD";}
-    fHistProR0theta  = new TProfile(nameR0Hist.Data(),nameR0Hist.Data(),iNtheta,-0.5,iNtheta-0.5);
-    fHistProR0theta->SetXTitle("#theta");
-    fHistProR0theta->SetYTitle("r_{0}^{#theta}");
-    fHistList->Add(fHistProR0theta);
+    if (fUseSum) {nameR0Hist = "First_Flow_r0theta_LYZSUM";}
+    else {nameR0Hist = "First_Flow_r0theta_LYZPROD";}
+    fHistR0theta  = new TH1D(nameR0Hist.Data(),nameR0Hist.Data(),iNtheta,-0.5,iNtheta-0.5);
+    fHistR0theta->SetXTitle("#theta");
+    fHistR0theta->SetYTitle("r_{0}^{#theta}");
+    fHistList->Add(fHistR0theta);
 
     TString nameVHist;
-    if (fUseSum) {nameVHist = "First_FlowPro_Vtheta_LYZSUM";}
-    else {nameVHist = "First_FlowPro_Vtheta_LYZPROD";}
-    fHistProVtheta  = new TProfile(nameVHist.Data(),nameVHist.Data(),iNtheta,-0.5,iNtheta-0.5);
-    fHistProVtheta->SetXTitle("#theta");
-    fHistProVtheta->SetYTitle("V_{n}^{#theta}");        
-    fHistList->Add(fHistProVtheta);
+    if (fUseSum) {nameVHist = "First_Flow_Vtheta_LYZSUM";}
+    else {nameVHist = "First_Flow_Vtheta_LYZPROD";}
+    fHistVtheta  = new TH1D(nameVHist.Data(),nameVHist.Data(),iNtheta,-0.5,iNtheta-0.5);
+    fHistVtheta->SetXTitle("#theta");
+    fHistVtheta->SetYTitle("V_{n}^{#theta}");        
+    fHistList->Add(fHistVtheta);
 
-    //class AliFlowLYZHist1 defines the histograms: fHistProGtheta, fHistProReGtheta, fHistProImGtheta, fHistProR0theta
+    //class AliFlowLYZHist1 defines the histograms: fHistProGtheta, fHistProReGtheta, fHistProImGtheta
     for (Int_t theta=0;theta<iNtheta;theta++) {  
       TString nameHist1;
       if (fUseSum) {nameHist1 = "AliFlowLYZHist1_";}
@@ -301,16 +301,17 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
     fHistProVPtPOI->SetXTitle("p_{T}");
     fHistProVPtPOI->SetYTitle("v_{2}(p_{T}) for POI selection");
     fHistList->Add(fHistProVPtPOI);
-    if (fUseSum){
-      fHistProReDtheta = new TProfile("Second_FlowPro_ReDtheta_LYZSUM","Second_FlowPro_ReDtheta_LYZSUM",iNtheta, -0.5, iNtheta-0.5);
-      fHistProReDtheta->SetXTitle("#theta");
-      fHistProReDtheta->SetYTitle("Re(D^{#theta})");
-      fHistList->Add(fHistProReDtheta);
 
-      fHistProImDtheta = new TProfile("Second_FlowPro_ImDtheta_LYZSUM","Second_FlowPro_ImDtheta_LYZSUM",iNtheta, -0.5, iNtheta-0.5);
-      fHistProImDtheta->SetXTitle("#theta");
-      fHistProImDtheta->SetYTitle("Im(D^{#theta})");
-      fHistList->Add(fHistProImDtheta);
+    if (fUseSum){
+      fHistReDtheta = new TH1D("Second_Flow_ReDtheta_LYZSUM","Second_Flow_ReDtheta_LYZSUM",iNtheta, -0.5, (double)iNtheta-0.5);
+      fHistReDtheta->SetXTitle("#theta");
+      fHistReDtheta->SetYTitle("Re(D^{#theta})");
+      fHistList->Add(fHistReDtheta);
+
+      fHistImDtheta = new TH1D("Second_Flow_ImDtheta_LYZSUM","Second_Flow_ImDtheta_LYZSUM",iNtheta, -0.5, (double)iNtheta-0.5);
+      fHistImDtheta->SetXTitle("#theta");
+      fHistImDtheta->SetYTitle("Im(D^{#theta})");
+      fHistList->Add(fHistImDtheta);
     }
 
     //class AliFlowLYZHist2 defines the histograms: 
@@ -326,12 +327,12 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
       fHistList->Add(fHist2POI[theta]);
     }
      
-    //read histogram fHistProR0theta from the first run list
+    //read histogram fHistR0theta from the first run list
     if (fFirstRunList) {
-      if (fUseSum) { fHistProR0theta  = (TProfile*)fFirstRunList->FindObject("First_FlowPro_r0theta_LYZSUM");}
-      else{ fHistProR0theta  = (TProfile*)fFirstRunList->FindObject("First_FlowPro_r0theta_LYZPROD");}
-      if (!fHistProR0theta) {cout<<"fHistProR0theta has a NULL pointer!"<<endl;}
-      fHistList->Add(fHistProR0theta);
+      if (fUseSum) { fHistR0theta  = (TH1D*)fFirstRunList->FindObject("First_Flow_r0theta_LYZSUM");}
+      else{ fHistR0theta  = (TH1D*)fFirstRunList->FindObject("First_Flow_r0theta_LYZPROD");}
+      if (!fHistR0theta) {cout<<"fHistR0theta has a NULL pointer!"<<endl;}
+      fHistList->Add(fHistR0theta);
     } else { cout<<"list is NULL pointer!"<<endl; }
 
   }
@@ -388,8 +389,8 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
     //define histograms for first and second run
     AliFlowCommonHist *pCommonHist = NULL;
     AliFlowCommonHistResults *pCommonHistResults = NULL;
-    TProfile* pHistProR0theta = NULL;
-    TProfile* pHistProVtheta  = NULL;
+    TH1D*     pHistR0theta = NULL;
+    TH1D*     pHistVtheta  = NULL;
     TProfile* pHistProReDenom = NULL;
     TProfile* pHistProImDenom = NULL;
     TProfile* pHistProVetaRP  = NULL;
@@ -424,23 +425,23 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	  pLYZHist1[theta] = dynamic_cast<AliFlowLYZHist1*> 
 	    (outputListHistos->FindObject(name));
 	}
-	pHistProVtheta = dynamic_cast<TProfile*> 
-	  (outputListHistos->FindObject("First_FlowPro_Vtheta_LYZSUM"));
+	pHistVtheta = dynamic_cast<TH1D*> 
+	  (outputListHistos->FindObject("First_Flow_Vtheta_LYZSUM"));
 
-	pHistProR0theta = dynamic_cast<TProfile*> 
-	  (outputListHistos->FindObject("First_FlowPro_r0theta_LYZSUM"));
+	pHistR0theta = dynamic_cast<TH1D*> 
+	  (outputListHistos->FindObject("First_Flow_r0theta_LYZSUM"));
 
 	pHistQsumforChi = dynamic_cast<TH1F*> 
 	  (outputListHistos->FindObject("Flow_QsumforChi_LYZSUM"));
 
 	//Set the histogram pointers and call Finish()
 	if (pCommonHist && pCommonHistResults && pLYZHist1[0] && 
-	    pHistProVtheta && pHistProR0theta && pHistQsumforChi ) {
+	    pHistVtheta && pHistR0theta && pHistQsumforChi ) {
 	  this->SetCommonHists(pCommonHist);
 	  this->SetCommonHistsRes(pCommonHistResults);
 	  this->SetHist1(pLYZHist1);
-	  this->SetHistProVtheta(pHistProVtheta);
-	  this->SetHistProR0theta(pHistProR0theta);
+	  this->SetHistVtheta(pHistVtheta);
+	  this->SetHistR0theta(pHistR0theta);
 	  this->SetHistQsumforChi(pHistQsumforChi);
 	} 
 	else { 
@@ -459,23 +460,23 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	  pLYZHist1[theta] = dynamic_cast<AliFlowLYZHist1*> 
 	    (outputListHistos->FindObject(name));
 	}
-	pHistProVtheta = dynamic_cast<TProfile*> 
-	  (outputListHistos->FindObject("First_FlowPro_Vtheta_LYZPROD"));
+	pHistVtheta = dynamic_cast<TH1D*> 
+	  (outputListHistos->FindObject("First_Flow_Vtheta_LYZPROD"));
 
-	pHistProR0theta = dynamic_cast<TProfile*> 
-	  (outputListHistos->FindObject("First_FlowPro_r0theta_LYZPROD"));
+	pHistR0theta = dynamic_cast<TH1D*> 
+	  (outputListHistos->FindObject("First_Flow_r0theta_LYZPROD"));
 
 	pHistQsumforChi = dynamic_cast<TH1F*> 
 	  (outputListHistos->FindObject("Flow_QsumforChi_LYZPROD"));
 
 	//Set the histogram pointers and call Finish()
 	if (pCommonHist && pCommonHistResults && pLYZHist1[0] && 
-	    pHistProVtheta && pHistProR0theta && pHistQsumforChi ) {
+	    pHistVtheta && pHistR0theta && pHistQsumforChi ) {
 	  this->SetCommonHists(pCommonHist);
 	  this->SetCommonHistsRes(pCommonHistResults);
 	  this->SetHist1(pLYZHist1);
-	  this->SetHistProVtheta(pHistProVtheta);
-	  this->SetHistProR0theta(pHistProR0theta);
+	  this->SetHistVtheta(pHistVtheta);
+	  this->SetHistR0theta(pHistR0theta);
 	  this->SetHistQsumforChi(pHistQsumforChi);
 	} else { 
 	  cout<<"WARNING: Histograms needed to run Finish() firstrun (PROD) are not accessable!"<<endl; 
@@ -490,8 +491,8 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
 	  (outputListHistos->FindObject("AliFlowCommonHistResultsLYZ2SUM"));
 
-	pHistProR0theta = dynamic_cast<TProfile*> 
-	  (outputListHistos->FindObject("First_FlowPro_r0theta_LYZSUM"));
+	pHistR0theta = dynamic_cast<TH1D*> 
+	  (outputListHistos->FindObject("First_Flow_r0theta_LYZSUM"));
 
 	pHistQsumforChi = dynamic_cast<TH1F*> 
 	  (outputListHistos->FindObject("Flow_QsumforChi_LYZSUM"));
@@ -512,10 +513,10 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	pHistProImDenom = dynamic_cast<TProfile*> 
 	  (outputListHistos->FindObject("Second_FlowPro_ImDenom_LYZSUM"));
 	
-	TProfile* pHistProReDtheta = dynamic_cast<TProfile*> 
-	  (outputListHistos->FindObject("Second_FlowPro_ReDtheta_LYZSUM"));
-	TProfile* pHistProImDtheta = dynamic_cast<TProfile*> 
-	  (outputListHistos->FindObject("Second_FlowPro_ImDtheta_LYZSUM"));
+	TH1D* pHistReDtheta = dynamic_cast<TH1D*> 
+	  (outputListHistos->FindObject("Second_Flow_ReDtheta_LYZSUM"));
+	TH1D* pHistImDtheta = dynamic_cast<TH1D*> 
+	  (outputListHistos->FindObject("Second_Flow_ImDtheta_LYZSUM"));
 	
 	pHistProVetaRP = dynamic_cast<TProfile*> 
 	  (outputListHistos->FindObject("Second_FlowPro_VetaRP_LYZSUM"));
@@ -528,19 +529,23 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 
 
 	//Set the histogram pointers and call Finish()
-	if (pCommonHist && pCommonHistResults && pLYZHist2RP[0] && pLYZHist2POI[0] && 
-	    pHistProR0theta && pHistProReDenom && pHistProImDenom && pHistProReDtheta &&
-	    pHistProImDtheta && pHistProVetaRP && pHistProVetaPOI && pHistProVPtRP && 
-	    pHistProVPtPOI && pHistQsumforChi) {
+	if (pCommonHist && pCommonHistResults && 
+	    pLYZHist2RP[0] && pLYZHist2POI[0] && 
+	    pHistR0theta && 
+	    pHistProReDenom && pHistProImDenom && 
+	    pHistReDtheta && pHistImDtheta && 
+	    pHistProVetaRP && pHistProVetaPOI && 
+	    pHistProVPtRP && pHistProVPtPOI && 
+	    pHistQsumforChi) {
 	  this->SetCommonHists(pCommonHist);
 	  this->SetCommonHistsRes(pCommonHistResults);
 	  this->SetHist2RP(pLYZHist2RP);
 	  this->SetHist2POI(pLYZHist2POI);
-	  this->SetHistProR0theta(pHistProR0theta);
+	  this->SetHistR0theta(pHistR0theta);
 	  this->SetHistProReDenom(pHistProReDenom);
 	  this->SetHistProImDenom(pHistProImDenom);
-	  this->SetHistProReDtheta(pHistProReDtheta);
-	  this->SetHistProImDtheta(pHistProImDtheta);
+	  this->SetHistReDtheta(pHistReDtheta);
+	  this->SetHistImDtheta(pHistImDtheta);
 	  this->SetHistProVetaRP(pHistProVetaRP);
 	  this->SetHistProVetaPOI(pHistProVetaPOI);
 	  this->SetHistProVPtRP(pHistProVPtRP);
@@ -558,8 +563,8 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	  (outputListHistos->FindObject("AliFlowCommonHistResultsLYZ2PROD"));
       
 
-	pHistProR0theta = dynamic_cast<TProfile*> 
-	  (outputListHistos->FindObject("First_FlowPro_r0theta_LYZPROD"));
+	pHistR0theta = dynamic_cast<TH1D*> 
+	  (outputListHistos->FindObject("First_Flow_r0theta_LYZPROD"));
 
 	pHistQsumforChi = dynamic_cast<TH1F*> 
 	  (outputListHistos->FindObject("Flow_QsumforChi_LYZPROD"));
@@ -591,13 +596,13 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 
 	//Set the histogram pointers and call Finish()
 	if (pCommonHist && pCommonHistResults && pLYZHist2RP[0] && pLYZHist2POI[0] && 
-	    pHistProR0theta && pHistProReDenom && pHistProImDenom && pHistProVetaRP && 
+	    pHistR0theta && pHistProReDenom && pHistProImDenom && pHistProVetaRP && 
 	    pHistProVetaPOI && pHistProVPtRP && pHistProVPtPOI && pHistQsumforChi) {
 	  this->SetCommonHists(pCommonHist);
 	  this->SetCommonHistsRes(pCommonHistResults);
 	  this->SetHist2RP(pLYZHist2RP);
 	  this->SetHist2POI(pLYZHist2POI);
-	  this->SetHistProR0theta(pHistProR0theta);
+	  this->SetHistR0theta(pHistR0theta);
 	  this->SetHistProReDenom(pHistProReDenom);
 	  this->SetHistProImDenom(pHistProImDenom);
 	  this->SetHistProVetaRP(pHistProVetaRP);
@@ -629,10 +634,10 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   //define variables for both runs
   Double_t  dJ01 = 2.405; 
   Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
+
   //set the event number
   SetEventNumber((int)fCommonHists->GetHistQ()->GetEntries());
-  //cout<<"number of events processed is "<<fEventNumber<<endl; 
-
+  
   //Get multiplicity for RP selection
   Double_t dMultRP = fCommonHists->GetHistMultRP()->GetMean();
   if (fDebug) cout<<"The average multiplicity is "<<dMultRP<<endl;  
@@ -642,10 +647,17 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   SetQ2sum(fHistQsumforChi->GetBinContent(3));  
     
   if (fFirstRun){
+
+    //define variables for the first run
     Double_t  dR0 = 0;
     Double_t  dVtheta = 0; 
     Double_t  dv = 0;
     Double_t  dV = 0; 
+
+    //reset histograms in case of merged output files
+    fHistR0theta->Reset();
+    fHistVtheta->Reset();
+    
     for (Int_t theta=0;theta<iNtheta;theta++)
       {
 	//get the first minimum r0
@@ -682,8 +694,10 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	if (fDebug) cout<<"dv = "<<dv<<" and dvplus = "<<dvplus<< " and dvmin = "<<dvmin<<endl;
 	     
 	//fill the histograms
-	fHistProR0theta->Fill(theta,dR0);
-	fHistProVtheta->Fill(theta,dVtheta); 
+	fHistR0theta->SetBinContent(theta+1,dR0);
+	fHistR0theta->SetBinError(theta+1,0.0);
+	fHistVtheta->SetBinContent(theta+1,dVtheta);
+	fHistVtheta->SetBinError(theta+1,0.0);
 	//get average value of fVtheta = fV
 	dV += dVtheta;
       } //end of loop over theta
@@ -755,29 +769,46 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   }  //firstrun
    
  
-  else {  //second run
+  else {  //second run to calculate differential flow
    
-    //calculate differential flow
-    //declare variables
+    //declare variables for the second run
     TComplex cDenom, cNumerRP, cNumerPOI, cDtheta;
     Int_t m = 1;
     TComplex i = TComplex::I();
     Double_t dBesselRatio[3] = {1., 1.202, 2.69};
     Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
     Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
-
-    Double_t dEtaRP, dPtRP, dReRatioRP, dVetaRP, dVPtRP, dEtaPOI, dPtPOI, dReRatioPOI, dVetaPOI, dVPtPOI;
          
     Double_t dR0 = 0.; 
     Double_t dVtheta = 0.;
     Double_t dV = 0.;
     Double_t dReDenom = 0.;
     Double_t dImDenom = 0.; 
-    for (Int_t theta=0;theta<iNtheta;theta++)  { //loop over theta
-      if (!fHistProR0theta) {
-	cout << "Hist pointer R0theta in file does not exist" <<endl;
-      }	else {
-	dR0 = fHistProR0theta->GetBinContent(theta+1); //histogram starts at bin 1
+
+    //reset histograms in case of merged output files
+    if (fUseSum) { 
+      fHistReDtheta->Reset();
+      fHistImDtheta->Reset();
+    }
+    fHistProVetaRP ->Reset(); 
+    fHistProVetaPOI->Reset(); 
+    fHistProVPtRP  ->Reset(); 
+    fHistProVPtPOI ->Reset(); 
+
+    //scale fHistR0theta by the number of merged files to undo the merging
+    if (!fHistR0theta) { cout<<"Hist pointer R0theta in file does not exist"<<endl; }
+    else {
+      Int_t iEntries = (int)fHistR0theta->GetEntries();
+      if (iEntries > iNtheta){
+	//for each individual file fHistR0theta has iNtheta entries
+	Int_t iFiles = iEntries/iNtheta;
+	cout<<iFiles<<" files were merged!"<<endl;
+	fHistR0theta->Scale(1./iFiles);
+      }
+
+      //loop over theta
+      for (Int_t theta=0;theta<iNtheta;theta++)  { 
+      	dR0 = fHistR0theta->GetBinContent(theta+1); //histogram starts at bin 1
 	if (fDebug) cerr<<"dR0 = "<<dR0<<endl;
 	if (!TMath::AreEqualAbs(dR0, 0., 1e-100)) dVtheta = dJ01/dR0;
 	dV += dVtheta; 
@@ -788,94 +819,90 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	  dReDenom = fHistProReDenom->GetBinContent(theta+1);
 	  dImDenom = fHistProImDenom->GetBinContent(theta+1);
 	  cDenom(dReDenom,dImDenom);
-      
+	  
 	  //for new method and use by others (only with the sum generating function):
 	  if (fUseSum) {
 	    cDtheta = dR0*cDenom/dJ01;
-	    fHistProReDtheta->Fill(theta,cDtheta.Re());
-	    fHistProImDtheta->Fill(theta,cDtheta.Im());
+	    fHistReDtheta->SetBinContent(theta+1,cDtheta.Re()); 
+	    fHistReDtheta->SetBinError(theta+1,0.0);
+	    fHistImDtheta->SetBinContent(theta+1,cDtheta.Im());
+	    fHistImDtheta->SetBinError(theta+1,0.0);
 	  }
 	 
 	  cDenom *= TComplex::Power(i, m-1);
-	  //cerr<<"TComplex::Power(i, m-1) = "<<TComplex::Power(i, m-1).Rho()<<endl; //checked ok
-	 
+	  
 	  //v as a function of eta for RP selection
 	  for (Int_t be=1;be<=iNbinsEta;be++)  {
-	    dEtaRP = fHist2RP[theta]->GetBinCenter(be);
+	    Double_t dReRatioRP = 0.0;
+	    Double_t dEtaRP = fHist2RP[theta]->GetBinCenter(be);
 	    cNumerRP = fHist2RP[theta]->GetNumerEta(be);
 	    if (cNumerRP.Rho()==0) {
 	      if (fDebug) cerr<<"WARNING: modulus of cNumerRP is zero in Finish()"<<endl;
-	      dReRatioRP = 0;
 	    }
 	    else if (TMath::AreEqualAbs(cDenom.Rho(), 0, 1e-100)) {
 	      if (fDebug) cerr<<"WARNING: modulus of cDenom is zero"<<endl;
-	      dReRatioRP = 0;
 	    }
 	    else {
 	      dReRatioRP = (cNumerRP/cDenom).Re();
 	    }
-	    dVetaRP = dBesselRatio[m-1]*dReRatioRP*dVtheta; //BP eq. 12
+	    Double_t dVetaRP = dBesselRatio[m-1]*dReRatioRP*dVtheta; //BP eq. 12
 	    fHistProVetaRP->Fill(dEtaRP,dVetaRP);
 	  } //loop over bins be
 	 
 
 	  //v as a function of eta for POI selection
 	  for (Int_t be=1;be<=iNbinsEta;be++)  {
-	    dEtaPOI = fHist2POI[theta]->GetBinCenter(be);
+	    Double_t dReRatioPOI = 0.0;
+	    Double_t dEtaPOI = fHist2POI[theta]->GetBinCenter(be);
 	    cNumerPOI = fHist2POI[theta]->GetNumerEta(be);
 	    if (cNumerPOI.Rho()==0) {
 	      if (fDebug) cerr<<"WARNING: modulus of cNumerPOI is zero in Finish()"<<endl;
-	      dReRatioPOI = 0;
 	    }
 	    else if (cDenom.Rho()==0) {
 	      if (fDebug) cerr<<"WARNING: modulus of cDenom is zero"<<endl;
-	      dReRatioPOI = 0;
 	    }
 	    else {
 	      dReRatioPOI = (cNumerPOI/cDenom).Re();
 	    }
-	    dVetaPOI = dBesselRatio[m-1]*dReRatioPOI*dVtheta; //BP eq. 12
+	    Double_t dVetaPOI = dBesselRatio[m-1]*dReRatioPOI*dVtheta; //BP eq. 12
 	    fHistProVetaPOI->Fill(dEtaPOI,dVetaPOI);
 	  } //loop over bins be
 
 
 	  //v as a function of Pt for RP selection
 	  for (Int_t bp=1;bp<=iNbinsPt;bp++)  {
-	    dPtRP = fHist2RP[theta]->GetBinCenterPt(bp);
+	    Double_t dReRatioRP = 0.0;
+	    Double_t dPtRP = fHist2RP[theta]->GetBinCenterPt(bp);
 	    cNumerRP = fHist2RP[theta]->GetNumerPt(bp);
 	    if (cNumerRP.Rho()==0) {
 	      if (fDebug) cerr<<"WARNING: modulus of cNumerRP is zero"<<endl;
-	      dReRatioRP = 0;
 	    }
 	    else if (cDenom.Rho()==0) {
 	      if (fDebug) cerr<<"WARNING: modulus of cDenom is zero"<<endl;
-	      dReRatioRP = 0;
 	    }
 	    else {
 	      dReRatioRP = (cNumerRP/cDenom).Re();
 	    }
-	    dVPtRP = dBesselRatio[m-1]*dReRatioRP*dVtheta; //BP eq. 12
+	    Double_t dVPtRP = dBesselRatio[m-1]*dReRatioRP*dVtheta; //BP eq. 12
 	    fHistProVPtRP->Fill(dPtRP,dVPtRP);
 	  } //loop over bins bp
 
 
-
 	  //v as a function of Pt for POI selection
 	  for (Int_t bp=1;bp<=iNbinsPt;bp++)  {
-	    dPtPOI = fHist2POI[theta]->GetBinCenterPt(bp);
+	    Double_t dReRatioPOI = 0.0;
+	    Double_t dPtPOI = fHist2POI[theta]->GetBinCenterPt(bp);
 	    cNumerPOI = fHist2POI[theta]->GetNumerPt(bp);
 	    if (cNumerPOI.Rho()==0) {
 	      if (fDebug) cerr<<"WARNING: modulus of cNumerPOI is zero"<<endl;
-	      dReRatioPOI = 0;
 	    }
 	    else if (cDenom.Rho()==0) {
 	      if (fDebug) cerr<<"WARNING: modulus of cDenom is zero"<<endl;
-	      dReRatioPOI = 0;
 	    }
 	    else {
 	      dReRatioPOI = (cNumerPOI/cDenom).Re();
 	    }
-	    dVPtPOI = dBesselRatio[m-1]*dReRatioPOI*dVtheta; //BP eq. 12
+	    Double_t dVPtPOI = dBesselRatio[m-1]*dReRatioPOI*dVtheta; //BP eq. 12
 	    fHistProVPtPOI->Fill(dPtPOI,dVPtPOI);
 	  } //loop over bins bp
 
@@ -1136,8 +1163,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   TComplex cExpo, cGtheta, cGthetaNew, cZ;
   Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
   Int_t iNbins = AliFlowLYZConstants::GetMaster()->GetNbins();
-   
-
+  
   //calculate flow
   Double_t dOrder = 2.;
       
@@ -1158,40 +1184,31 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   fHistQsumforChi->SetBinContent(2,fQsum->Y());
   fQ2sum += vQ.Mod2();
   fHistQsumforChi->SetBinContent(3,fQ2sum);
-  //cerr<<"fQ2sum = "<<fQ2sum<<endl;
-
-  for (Int_t theta=0;theta<iNtheta;theta++)
-    {
-      Double_t dTheta = ((double)theta/iNtheta)*TMath::Pi()/dOrder; 
+  
+  for (Int_t theta=0;theta<iNtheta;theta++) {
+    Double_t dTheta = ((double)theta/iNtheta)*TMath::Pi()/dOrder; 
 	  
-      //calculate dQtheta = cos(dOrder*(fPhi-dTheta);the projection of the Q vector on the reference direction dTheta
-      Double_t dQtheta = GetQtheta(vQ, dTheta);
+    //calculate dQtheta = cos(dOrder*(fPhi-dTheta);the projection of the Q vector on the reference direction dTheta
+    Double_t dQtheta = GetQtheta(vQ, dTheta);
 	     	   
-      for (Int_t bin=1;bin<=iNbins;bin++)
-	{
-	  Double_t dR = fHist1[theta]->GetBinCenter(bin); //bincentre of bins in histogram  //FIXED???
-	  //if (theta == 0) cerr<<"cerr::dR = "<<dR<<endl;
-	  if (fUseSum)
-	    {
-	      //calculate the sum generating function
-	      cExpo(0.,dR*dQtheta);                       //Re=0 ; Im=dR*dQtheta
-	      cGtheta = TComplex::Exp(cExpo);
-	    }
-	  else
-	    {
-	      //calculate the product generating function
-	      cGtheta = GetGrtheta(anEvent, dR, dTheta);  
-	      if (cGtheta.Rho2() > 100.) break;
-	    }
-
-	  fHist1[theta]->Fill(dR,cGtheta);              //fill real and imaginary part of cGtheta
-
-	} //loop over bins
-    } //loop over theta 
- 
-   
+    for (Int_t bin=1;bin<=iNbins;bin++) {
+      Double_t dR = fHist1[theta]->GetBinCenter(bin); //bincentre of bins in histogram  //FIXED???
+      if (fUseSum) {
+	//calculate the sum generating function
+	cExpo(0.,dR*dQtheta); //Re=0 ; Im=dR*dQtheta
+	cGtheta = TComplex::Exp(cExpo);
+      }
+      else {
+	//calculate the product generating function
+	cGtheta = GetGrtheta(anEvent, dR, dTheta);  
+	if (cGtheta.Rho2() > 100.) break;
+      }
+      //fill real and imaginary part of cGtheta
+      fHist1[theta]->Fill(dR,cGtheta);    
+    } //loop over bins
+  } //loop over theta 
+    
   return kTRUE;
-
           
 }
 
@@ -1209,15 +1226,13 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
    
   //define variables
   TComplex cExpo, cDenom, cNumerRP, cNumerPOI, cCosTermComplex;
-  Double_t dPhi, dEta, dPt;
   Double_t dR0 = 0.;
   Double_t dCosTermRP = 0.;
   Double_t dCosTermPOI = 0.;
   Double_t m = 1.;
   Double_t dOrder = 2.;
   Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
-  
-   
+     
   //get the Q vector 
   AliFlowVector vQ = anEvent->GetQ();
   //weight by the multiplicity
@@ -1242,17 +1257,14 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 
       //calculate dQtheta = cos(dOrder*(dPhi-dTheta);the projection of the Q vector on the reference direction dTheta	  
       Double_t dQtheta = GetQtheta(vQ, dTheta);
-      //cerr<<"dQtheta for fdenom = "<<dQtheta<<endl;
-  	 
+        	 
       //denominator for differential v
-      if (fHistProR0theta) {
-	dR0 = fHistProR0theta->GetBinContent(theta+1);
+      if (fHistR0theta) {
+	dR0 = fHistR0theta->GetBinContent(theta+1);
       }
-      else {
-	cout <<"pointer fHistProR0theta does not exist" << endl;
+      else { cout <<"pointer fHistR0theta does not exist" << endl;
       }
-      //cerr<<"dR0 = "<<dR0 <<endl;
-
+      
       if (fUseSum) //sum generating function
 	{
 	  cExpo(0.,dR0*dQtheta);
@@ -1262,51 +1274,45 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	  for (Int_t i=0;i<iNumberOfTracks;i++)  {
 	    AliFlowTrackSimple*  pTrack = anEvent->GetTrack(i);
 	    if (pTrack) {
-	      dEta = pTrack->Eta();
-	      dPt = pTrack->Pt();
-	      dPhi = pTrack->Phi();
+	      Double_t dEta = pTrack->Eta();
+	      Double_t dPt = pTrack->Pt();
+	      Double_t dPhi = pTrack->Phi();
 	      if (pTrack->InRPSelection()) { // RP selection
 		dCosTermRP = cos(m*dOrder*(dPhi-dTheta));
 		cNumerRP = dCosTermRP*(TComplex::Exp(cExpo));
-		if (cNumerRP.Rho()==0) {cerr<<"WARNING: modulus of cNumerRP is zero in SecondFillFromFlowEvent"<<endl;}
-		if (fDebug) cerr<<"modulus of cNumerRP is "<<cNumerRP.Rho()<<endl;
+		if (cNumerRP.Rho()==0) { cerr<<"WARNING: modulus of cNumerRP is zero in SecondFillFromFlowEvent"<<endl;}
+		if (fDebug) { cerr<<"modulus of cNumerRP is "<<cNumerRP.Rho()<<endl;}
 		if (fHist2RP[theta]) {
-		  fHist2RP[theta]->Fill(dEta,dPt,cNumerRP); }
+		  fHist2RP[theta]->Fill(dEta,dPt,cNumerRP); 
+		}
 	      }
 	      if (pTrack->InPOISelection()) { //POI selection
 		dCosTermPOI = cos(m*dOrder*(dPhi-dTheta));
 		cNumerPOI = dCosTermPOI*(TComplex::Exp(cExpo));
-		if (cNumerPOI.Rho()==0) {cerr<<"WARNING: modulus of cNumerPOI is zero in SecondFillFromFlowEvent"<<endl;}
-		if (fDebug) cerr<<"modulus of cNumerPOI is "<<cNumerPOI.Rho()<<endl;
+		if (cNumerPOI.Rho()==0) { cerr<<"WARNING: modulus of cNumerPOI is zero in SecondFillFromFlowEvent"<<endl;}
+		if (fDebug) { cerr<<"modulus of cNumerPOI is "<<cNumerPOI.Rho()<<endl;}
 		if (fHist2POI[theta]) {
-		  fHist2POI[theta]->Fill(dEta,dPt,cNumerPOI); }
+		  fHist2POI[theta]->Fill(dEta,dPt,cNumerPOI); 
+		}
 	      }
-	      //	      else {
-	      //		cout << "fHist2 pointer mising" <<endl;
-	      //	      }
 	    } //if track
 	    else {cerr << "no particle!!!"<<endl;}
 	  } //loop over tracks
-		  
 	} //sum
-      else        //product generating function
-	{
-	  cDenom = GetDiffFlow(anEvent, dR0, theta); 
-		   
-	}//product
+      else {    //product generating function
+	cDenom = GetDiffFlow(anEvent, dR0, theta); 
+      }//product
+      
       if (fHistProReDenom && fHistProImDenom) {
 	fHistProReDenom->Fill(theta,cDenom.Re());               //fill the real part of fDenom
 	fHistProImDenom->Fill(theta,cDenom.Im());               //fill the imaginary part of fDenom
       }
-      else {
-	cout << "Pointers to cDenom  mising" << endl;
-      }
-     	       
+      else { cout << "Pointers to cDenom  mising" << endl;}
+            
     }//end of loop over theta
   
   return kTRUE;
- 
-  
+    
 }
  //-----------------------------------------------------------------------   
  Double_t AliFlowAnalysisWithLeeYangZeros::GetQtheta(AliFlowVector aQ, Double_t aTheta) 

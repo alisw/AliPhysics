@@ -79,9 +79,9 @@ class AliFlowAnalysisWithLeeYangZeros {
    void               SetHist2POI(AliFlowLYZHist2* const aLYZHist2POI[])  
      {for (Int_t i=0;i<5;i++) {this->fHist2POI[i] = aLYZHist2POI[i];} }
 
-   TProfile*  GetHistProVtheta() const   {return this->fHistProVtheta; } 
-   void       SetHistProVtheta(TProfile* const aHistProVtheta)     
-     { this->fHistProVtheta = aHistProVtheta; }
+   TH1D*      GetHistVtheta() const   {return this->fHistVtheta; } 
+   void       SetHistVtheta(TH1D* const aHistVtheta)     
+   { this->fHistVtheta = aHistVtheta; }
    TProfile*  GetHistProVetaRP() const     {return this->fHistProVetaRP; }  
    void       SetHistProVetaRP(TProfile* const aHistProVetaRP)         
      {this->fHistProVetaRP = aHistProVetaRP; }
@@ -94,21 +94,21 @@ class AliFlowAnalysisWithLeeYangZeros {
    TProfile*  GetHistProVPtPOI() const      {return this->fHistProVPtPOI;}
    void       SetHistProVPtPOI(TProfile* const aHistProVPtPOI)           
      {this->fHistProVPtPOI = aHistProVPtPOI; }
-   TProfile*  GetHistProR0theta() const  {return this->fHistProR0theta; }
-   void       SetHistProR0theta(TProfile* const aHistProR0theta)   
-     {this->fHistProR0theta = aHistProR0theta; }
+   TH1D*      GetHistR0theta() const  {return this->fHistR0theta; }
+   void       SetHistR0theta(TH1D* const aHistR0theta)   
+     {this->fHistR0theta = aHistR0theta; }
    TProfile*  GetHistProReDenom() const  {return this->fHistProReDenom; } 
    void       SetHistProReDenom(TProfile* const aHistProReDenom)   
      {this->fHistProReDenom = aHistProReDenom; }
    TProfile*  GetHistProImDenom() const  {return this->fHistProImDenom; }
    void       SetHistProImDenom(TProfile* const aHistProImDenom)   
      {this->fHistProImDenom = aHistProImDenom; }
-   TProfile*  GetHistProReDtheta() const {return this->fHistProReDtheta; } 
-   void       SetHistProReDtheta(TProfile* const aHistProReDtheta) 
-     {this->fHistProReDtheta = aHistProReDtheta; }
-   TProfile*  GetHistProImDtheta() const {return this->fHistProImDtheta; }
-   void       SetHistProImDtheta(TProfile* const aHistProImDtheta) 
-     {this->fHistProImDtheta = aHistProImDtheta; }
+   TH1D*      GetHistReDtheta() const {return this->fHistReDtheta; } 
+   void       SetHistReDtheta(TH1D* const aHistReDtheta) 
+     {this->fHistReDtheta = aHistReDtheta; }
+   TH1D*      GetHistImDtheta() const {return this->fHistImDtheta; }
+   void       SetHistImDtheta(TH1D* const aHistImDtheta) 
+     {this->fHistImDtheta = aHistImDtheta; } 
    TH1F*      GetHistQsumforChi() const  {return this->fHistQsumforChi; }
    void       SetHistQsumforChi(TH1F* const aHistQsumforChi) 
     {this->fHistQsumforChi = aHistQsumforChi; }
@@ -146,16 +146,16 @@ class AliFlowAnalysisWithLeeYangZeros {
    TList*       fHistList;        //list to hold all output histograms 
    TList*       fFirstRunList;    //list from first run output
         
-   TProfile*    fHistProVtheta;   //hist of V(theta)      
+   TH1D*        fHistVtheta;      //hist of V(theta)      
    TProfile*    fHistProVetaRP;   //hist of v(eta) for RP selection
    TProfile*    fHistProVetaPOI;  //hist of v(eta) for POI selection
    TProfile*    fHistProVPtRP;    //hist of v(pt) for RP selection
    TProfile*    fHistProVPtPOI;   //hist of v(pt) for POI selection
-   TProfile*    fHistProR0theta;  //hist of r0(theta)    
+   TH1D*        fHistR0theta;     //hist of r0(theta)    
    TProfile*    fHistProReDenom;  //hist of the real part of the denominator   
    TProfile*    fHistProImDenom;  //hist of the imaginary part of the denominator 
-   TProfile*    fHistProReDtheta; //hist of the real part of D^theta   
-   TProfile*    fHistProImDtheta; //hist of the imaginary part of D^theta  
+   TH1D*        fHistReDtheta;    //hist of the real part of D^theta   
+   TH1D*        fHistImDtheta;    //hist of the imaginary part of D^theta  
    TH1F*        fHistQsumforChi;  //hist of sum of Q-vectors and the sum of the square of Q-vectors
   
     

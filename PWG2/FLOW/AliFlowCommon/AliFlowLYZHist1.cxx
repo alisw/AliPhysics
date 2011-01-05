@@ -47,7 +47,7 @@ ClassImp(AliFlowLYZHist1)
 
 //-----------------------------------------------------------------------
 
-  AliFlowLYZHist1::AliFlowLYZHist1(Int_t theta, const char *anInput,Bool_t useSum):
+  AliFlowLYZHist1::AliFlowLYZHist1(Int_t theta, const char *anInput, Bool_t useSum):
     TNamed(anInput,anInput),
     fHistGtheta(0),
     fHistProReGtheta(0),
@@ -126,17 +126,20 @@ void AliFlowLYZHist1::Fill(Double_t f, TComplex c)
 
 TH1D* AliFlowLYZHist1::FillGtheta()
 {
-  //fill the fHistGtheta histograms
+  //method called in Finish() of AliFlowAnalysisWithLeeYangZeroes
+  //fills the fHistGtheta histograms
+
   Int_t iNbins = fHistGtheta->GetNbinsX();
   for (Int_t bin=1;bin<=iNbins;bin++)
 	{
 	  //get bincentre of bins in histogram
-	  Double_t dBin = fHistGtheta->GetBinCenter(bin); 
 	  Double_t dRe = fHistProReGtheta->GetBinContent(bin);
 	  Double_t dIm = fHistProImGtheta->GetBinContent(bin);
 	  TComplex cGtheta(dRe,dIm);
 	  //fill fHistGtheta with the modulus squared of cGtheta
-	  fHistGtheta->Fill(dBin,cGtheta.Rho2());
+	  //to avoid errors when using a merged outputfile use SetBinContent() and not Fill()
+	  fHistGtheta->SetBinContent(bin,cGtheta.Rho2());
+	  fHistGtheta->SetBinError(bin,0.0);                                             
 	}
 
   return fHistGtheta;
@@ -165,7 +168,7 @@ Double_t AliFlowLYZHist1::GetR0()
 	  Double_t dXnext = fHistGtheta->GetBinCenter(b+1);
 
 	  dR0 = dX0 - ((dX0-dXlast)*(dX0-dXlast)*(dG0-dGnext) - (dX0-dXnext)*(dX0-dXnext)*(dG0-dGlast))/
-	    (2.*((dX0-dXlast)*(dG0-dGnext) - (dX0-dXnext)*(dG0-dGlast))); //interpolated minimum
+	    (2.*((dX0-dXlast)*(dG0-dGnext) - (dX0-dXnext)*(dG0-dGlast))); //parabolic interpolated minimum
 	  
 	  break; //stop loop if minimum is found
 	} //if
