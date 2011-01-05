@@ -27,7 +27,7 @@ class TArrayD;
  *    - None
  *
  *
- * @ingroup pwg2_forward 
+ * @ingroup pwg2_forward_algo
  */
 class AliFMDEnergyFitter : public TNamed
 {
