@@ -29,8 +29,8 @@
  * 
  * @code 
  *   Root> .L $ALICE_ROOT/PWG2/FORWARD/analysis2/Compile.C
- *   Root> Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/DrawRes.C")
- *   Root> DrawRes dr
+ *   Root> Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AnalyseAOD.C")
+ *   Root> AnalyseAOD dr
  *   Root> dr.Run("AliAODs.root",-10,10,5,AliAODForwardMult::kInel,900)
  * @endcode 
  * 
@@ -40,17 +40,21 @@
  * 
  * @ingroup pwg2_forward_scripts
  */
-struct DrawRes 
+struct AnalyseAOD 
 {
 public: 
   /** AOD tree */
   TTree*             fTree;
   /** AOD object */
   AliAODForwardMult* fAOD;
+  /** AOD object */
+  AliAODForwardMult* fMCAOD;
   /** Output file */
   TFile*             fOut;
   /** Summed histogram */
   TH2D*              fSum;
+  /** Summed histogram */
+  TH2D*              fMCSum;
   /** Vertex efficiency */
   Double_t           fVtxEff;
   /** Title to put on the plot */
@@ -63,11 +67,13 @@ public:
    * Constructor 
    * 
    */
-  DrawRes()
+  AnalyseAOD()
     : fTree(0), 
       fAOD(0),
+      fMCAOD(0),
       fOut(0), 
       fSum(0),
+      fMCSum(0),
       fVtxEff(0),
       fTitle(""),
       fDoHHD(kTRUE)
@@ -87,10 +93,12 @@ public:
       fOut->Close();
       delete fOut;
     }
-    if (fSum) delete fSum;
+    if (fSum)   delete fSum;
+    if (fMCSum) delete fMCSum;
     fTree   = 0;
     fOut    = 0;
     fSum    = 0;
+    fMCSum  = 0;
     fVtxEff = 0;
     
   }
@@ -164,6 +172,9 @@ public:
     // Set the branch pointer 
     fTree->SetBranchAddress("Forward", &fAOD);
 
+    // Set the branch pointer 
+    fTree->SetBranchAddress("ForwardMC", &fMCAOD);
+
     fOut = TFile::Open(outname, "RECREATE");
     if (!fOut) { 
       Error("Open", "Couldn't open %s", outname);
@@ -207,6 +218,17 @@ public:
 	     fSum->GetYaxis()->GetXmin(),
 	     fSum->GetYaxis()->GetXmax());
       }
+      if (!fMCSum && fTree->GetBranch("ForwardMC")) { 
+	fMCSum = 
+	  static_cast<TH2D*>(fMCAOD->GetHistogram().Clone("d2ndetadphiMC"));
+	Info("Process", "Created MC sum histogram (%d,%f,%f)x(%d,%f,%f)", 
+	     fMCSum->GetNbinsX(), 
+	     fMCSum->GetXaxis()->GetXmin(),
+	     fMCSum->GetXaxis()->GetXmax(),
+	     fMCSum->GetNbinsY(), 
+	     fMCSum->GetYaxis()->GetXmin(),
+	     fMCSum->GetYaxis()->GetXmax());
+      }
  
       // fAOD->Print();
       // Other trigger/event requirements could be defined 
@@ -223,6 +245,9 @@ public:
  
       // Add contribution from this event
       fSum->Add(&(fAOD->GetHistogram()));
+
+      // Add contribution from this event
+      if (fMCSum) fMCSum->Add(&(fMCAOD->GetHistogram()));
     }
     printf("\n");
     fVtxEff = Double_t(nWithVertex)/nTriggered;
@@ -256,7 +281,7 @@ public:
     TH1D* norm   = fSum->ProjectionX("norm", 0, 1, "");
     // Project onto eta axis - _ignoring_underflow_bins_!
     TH1D* dndeta = fSum->ProjectionX("dndeta", 1, -1, "e");
-    dndeta->SetTitle("1/N dN_{ch}/d#eta|_{forward}");
+    dndeta->SetTitle("ALICE Forward");
     // Normalize to the acceptance 
     dndeta->Divide(norm);
     // Scale by the vertex efficiency 
@@ -266,23 +291,65 @@ public:
     dndeta->SetMarkerSize(1);
     dndeta->SetFillStyle(0);
     Rebin(dndeta, rebin);
-    DrawIt(dndeta, mask, energy, doHHD, doComp);
+
+    TH1D* dndetaMC = 0;
+    if (fMCSum) { 
+      // Get acceptance normalisation from underflow bins 
+      norm = fMCSum->ProjectionX("norm", 0, 1, "");
+      // Project onto eta axis - _ignoring_underflow_bins_!
+      dndetaMC = fMCSum->ProjectionX("dndetaMC", 1, -1, "e");
+      dndetaMC->SetTitle("ALICE Forward (MC)");
+      // Normalize to the acceptance 
+      dndetaMC->Divide(norm);
+      // Scale by the vertex efficiency 
+      dndetaMC->Scale(fVtxEff, "width");
+      dndetaMC->SetMarkerColor(kRed+3);
+      dndetaMC->SetMarkerStyle(21);
+      dndetaMC->SetMarkerSize(1);
+      dndetaMC->SetFillStyle(0);
+      Rebin(dndetaMC, rebin);
+    }
+
+    DrawIt(dndeta, dndetaMC, mask, energy, doHHD, doComp, rebin);
 
     return kTRUE;
   }
   //__________________________________________________________________
   /** 
    */
-  void DrawIt(TH1* dndeta, Int_t mask, Int_t energy, 
-	      Bool_t doHHD, Bool_t doComp)
+  void DrawIt(TH1* dndeta, TH1* dndetaMC, Int_t mask, Int_t energy, 
+	      Bool_t doHHD, Bool_t doComp, Int_t rebin)
   {
     // --- 1st part - prepare data -----------------------------------
     TH1* sym = Symmetrice(dndeta);
     // Rebin(sym, rebin);
 
+    Double_t max = dndeta->GetMaximum();
+
+    // Make our histogram stack 
     THStack* stack = new THStack("results", "Results");
-    stack->Add(dndeta);
-    stack->Add(sym);
+
+    // If available, plot the MC truth 
+    TH1* mc = 0;
+    TH1* mcsym = 0;
+    if (!gSystem->AccessPathName("AnalysisResults.root")) { 
+      TFile* anares = TFile::Open("AnalysisResults.root", "READ");
+      if (anares) { 
+	TList* list = static_cast<TList*>(anares->Get("Forward"));
+	if (list) { 
+	  mc = static_cast<TH1*>(list->FindObject("mcSumEta"));
+	  Rebin(mc, rebin);
+	  if (mc) {
+	    mcsym = Symmetrice(mc);
+	    stack->Add(mc);
+	    stack->Add(mcsym);
+	    max = TMath::Max(mc->GetMaximum(),max);
+	  }
+	}
+	anares->Close();
+	fOut->cd();
+      }
+    }
 
     // Get the data from HHD's analysis - if available 
     TH1* hhd    = 0;
@@ -298,16 +365,33 @@ public:
 	hhdsym = Symmetrice(hhd);
 	stack->Add(hhd);
 	stack->Add(hhdsym);
+	max = TMath::Max(hhd->GetMaximum(),max);
       }
       else 
 	Warning("DrawIt", "No HHD data found");
+      fOut->cd();
     }
+
+    // If we have MC analysed data, plot it 
+    if (dndetaMC) { 
+      Info("DrawIt", "Maximum of MC dndeta: %f, was %f", 
+	   dndetaMC->GetMaximum(),dndeta->GetMaximum());
+      TH1* mcSym = Symmetrice(dndetaMC);
+      stack->Add(dndetaMC);
+      stack->Add(mcSym);
+      max = TMath::Max(dndetaMC->GetMaximum(),max);
+    }
+
+    // Add the analysis results to the list 
+    stack->Add(dndeta);
+    stack->Add(sym);
 
     // Get graph of 'other' data - e.g., UA5, CMS, ... - and check if
     // there's any graphs.  Set the pad division based on that.
     Info("DrawIt", "Will %sdraw other results", (doComp ? "" : "not "));
     TMultiGraph* other    = (doComp ? GetData(energy, mask) : 0);
-    THStack*     ratios   = MakeRatios(dndeta, sym, hhd, hhdsym, other);
+    THStack*     ratios   = MakeRatios(dndeta, sym, hhd, hhdsym, 
+				       mc, mcsym, other);
 
     // Check if we have ratios 
 
@@ -335,7 +419,19 @@ public:
     p1->cd();
 
     // Fix the apperance of the stack and redraw. 
+    if (other) {
+      TGraphAsymmErrors* o      = 0;
+      TIter              nextG(other->GetListOfGraphs());
+      while ((o = static_cast<TGraphAsymmErrors*>(nextG()))) {
+	Double_t gmax = TMath::MaxElement(o->GetN(), o->GetY());
+	Info("DrawIt", "Maximum of %s is %f, was %f", o->GetName(), gmax, max);
+	max = TMath::Max(max, gmax);
+      }
+    }
+    max *= 1.1;
+    Info("DrawIt", "Setting maximum to %f", max);
     stack->SetMinimum(ratios ? -0.1 : 0);
+    stack->SetMaximum(max);
     FixAxis(stack, 1/(1-yd)/1.5, "#frac{1}{N} #frac{dN_{ch}}{#eta}");
     p1->Clear();
     stack->DrawClone("nostack e1");
@@ -344,10 +440,9 @@ public:
     if (other) {
       TGraphAsymmErrors* o      = 0;
       TIter              nextG(other->GetListOfGraphs());
-      while ((o = static_cast<TGraphAsymmErrors*>(nextG()))) 
+      while ((o = static_cast<TGraphAsymmErrors*>(nextG())))
 	o->Draw("same p");
     }
-
 
     // Make a legend in the main result pad 
     TString trigs(AliAODForwardMult::GetTriggerString(mask));
@@ -443,7 +538,8 @@ public:
     c->SaveAs(imgName.Data());
     imgName.ReplaceAll(".png", ".C");
     c->SaveAs(imgName.Data());
-
+    
+    fOut->cd();
     stack->Write();
     if (other)  other->Write();
     if (ratios) ratios->Write();
@@ -499,13 +595,14 @@ public:
    */ 
   THStack* MakeRatios(const TH1* dndeta, const TH1* sym, 
 		      const TH1* hhd,    const TH1* hhdsym, 
+		      const TH1* mc,     const TH1* mcsym,
 		      TMultiGraph* other) const 
   {
     // If we have 'other' data, then do the ratio of the results to that
     Bool_t hasOther = (other && other->GetListOfGraphs() && 
 		       other->GetListOfGraphs()->GetEntries() > 0);
     Bool_t hasHhd   = (hhd && hhdsym);
-    if (!hasOther && !hasHhd) return 0;
+    if (!hasOther && !hasHhd && !mc && !mcsym) return 0;
 
     THStack* ratios = new THStack("ratios", "Ratios");
     if (hasOther) {
@@ -525,13 +622,33 @@ public:
       TH1F* t1 = static_cast<TH1F*>(dndeta->Clone(Form("%s_%s", 
 						       dndeta->GetName(), 
 						       hhd->GetName())));
-      t1->SetTitle(Form("%s / %s", dndeta->GetTitle(), hhd->GetTitle()));
       TH1F* t2 = static_cast<TH1F*>(sym->Clone(Form("%s_%s", 
 						    sym->GetName(), 
 						    hhdsym->GetName())));
+      t1->SetTitle(Form("%s / %s", dndeta->GetTitle(), hhd->GetTitle()));
       t2->SetTitle(Form("%s / %s", sym->GetTitle(), hhdsym->GetTitle()));
       t1->Divide(hhd);
       t2->Divide(hhdsym);
+      t1->SetMarkerColor(hhd->GetMarkerColor());
+      t2->SetMarkerColor(hhdsym->GetMarkerColor());
+      ratios->Add(t1);
+      ratios->Add(t2);
+    }
+
+    // Do comparison to MC 
+    if (mc) { 
+      TH1D* t1 = static_cast<TH1D*>(dndeta->Clone(Form("%s_%s", 
+						       dndeta->GetName(), 
+						       mc->GetName())));
+      TH1D* t2 = static_cast<TH1D*>(sym->Clone(Form("%s_%s", 
+						    sym->GetName(), 
+						    mcsym->GetName())));
+      t1->SetTitle(Form("%s / %s", dndeta->GetTitle(), mc->GetTitle()));
+      t2->SetTitle(Form("%s / %s", sym->GetTitle(), mcsym->GetTitle()));
+      t1->Divide(mc);
+      t2->Divide(mcsym);
+      t1->SetMarkerColor(mc->GetMarkerColor());
+      t2->SetMarkerColor(mcsym->GetMarkerColor());
       ratios->Add(t1);
       ratios->Add(t2);
     }
@@ -636,6 +753,8 @@ public:
    */
   TH1* Symmetrice(const TH1* h) const
   {
+    fOut->cd();
+
     Int_t nBins = h->GetNbinsX();
     TH1*  s     = new TH1D(Form("%s_mirror", h->GetName()),
 			   Form("%s (mirrored)", h->GetTitle()), 
@@ -647,6 +766,7 @@ public:
     s->SetMarkerStyle(h->GetMarkerStyle()+4);
     s->SetFillColor(h->GetFillColor());
     s->SetFillStyle(h->GetFillStyle());
+    // s->SetDirectory(0);
 
     // Find the first and last bin with data 
     Int_t first = nBins+1;
