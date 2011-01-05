@@ -303,6 +303,7 @@ public:
   /** 
    * Structure to do fits to the energy loss spectrum 
    * 
+   * @ingroup pwg2_forward 
    */
   struct ELossFitter 
   {
@@ -450,16 +451,46 @@ public:
   };
 
   //__________________________________________________________________
+  /**
+   * Base class for structure holding ring specific histograms
+   * 
+   * @ingroup pwg2_forward 
+   */
   struct RingHistos : public TObject
   {
+    /** 
+     * Constructor
+     * 
+     */
     RingHistos() : fDet(0), fRing('\0'), fName("") {}
+    /** 
+     * 
+     * 
+     * @param d Detector
+     * @param r Ring 
+     */
     RingHistos(UShort_t d, Char_t r) 
       : fDet(d), fRing(r), fName(TString::Format("FMD%d%c", d, r)) 
     {}
+    /** 
+     * Copy constructor
+     * 
+     * @param o Object to copy from 
+     */
     RingHistos(const RingHistos& o) 
       : TObject(o), fDet(o.fDet), fRing(o.fRing), fName(o.fName)
     {}
+    /** 
+     * 
+     */
     virtual ~RingHistos() {}
+    /** 
+     * Assignement operator
+     * 
+     * @param o Object to assign from
+     * 
+     * @return Reference to this
+     */
     RingHistos& operator=(const RingHistos& o) 
     {
       TObject::operator=(o);
@@ -468,18 +499,45 @@ public:
       fName = o.fName;
       return *this;
     }
+    /** 
+     * 
+     * 
+     * @param d 
+     * 
+     * @return 
+     */
     TList* DefineOutputList(TList* d) const;
+    /** 
+     * 
+     * 
+     * @param d 
+     * 
+     * @return 
+     */
     TList* GetOutputList(TList* d) const;
+    /** 
+     * 
+     * 
+     * @param d 
+     * @param name 
+     * 
+     * @return 
+     */
     TH1* GetOutputHist(TList* d, const char* name) const;
+    /** 
+     * 
+     * 
+     * 
+     * @return 
+     */
     Color_t Color() const 
     { 
       return ((fDet == 1 ? kRed : (fDet == 2 ? kGreen : kBlue))
 	      + ((fRing == 'I' || fRing == 'i') ? 2 : -2));
     }
-
-    UShort_t fDet; 
-    Char_t   fRing;
-    TString  fName;
+    UShort_t fDet;   // Detector
+    Char_t   fRing;  // Ring
+    TString  fName;  // Name
 
     ClassDef(RingHistos,1) 
   };
