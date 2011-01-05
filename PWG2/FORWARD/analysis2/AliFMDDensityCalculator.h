@@ -24,7 +24,7 @@ class TProfile;
  *   - AliFMDDoubleHitCorrection 
  *   - AliFMDDeadCorrection 
  *
- * @ingroup pwg2_forward 
+ * @ingroup pwg2_forward_algo
  */
 class AliFMDDensityCalculator : public TNamed
 {
@@ -76,13 +76,13 @@ public:
    * @param dir     where to put the output
    * @param nEvents Number of events 
    */
-  void ScaleHistograms(TList* dir, Int_t nEvents);
+  virtual void ScaleHistograms(TList* dir, Int_t nEvents);
   /** 
    * Output diagnostic histograms to directory 
    * 
    * @param dir List to write in
    */  
-  void DefineOutput(TList* dir);
+  virtual void DefineOutput(TList* dir);
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
