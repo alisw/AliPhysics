@@ -12,6 +12,8 @@
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
+#include "AliESDpid.h"
+
 class AliAnalysisFilter;
 class AliStack;
 class AliESDtrack;
@@ -40,8 +42,8 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     virtual void SetPshape        (TF1 *func)                   {fPtshape        =     func;}
     virtual void SetEnableFillAOD (Bool_t b)                    {fEnableFillAOD  =     b;}
 
-    virtual void SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t timezero, Double_t bfield);
-    void SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t timezero, Double_t bfield);
+    virtual void SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t bfield, AliESDpid *esdpid);
+    void SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t bfield, AliESDpid *esdpid);
 
  private:
     AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);

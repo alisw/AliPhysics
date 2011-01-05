@@ -41,6 +41,7 @@ AliAODPid::AliAODPid():
   // default constructor
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=0; 
     for(Int_t i=0; i<3; i++) fEMCALPosition[i] = 0.;
+    for(Int_t i=0; i<5; i++) fTOFpidResolution[i] = 0.;
   
 }
 
@@ -74,6 +75,8 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
       fEMCALMomentum[i]=pid.fEMCALMomentum[i];
     }
     for(Int_t i=0; i<6; i++) fTRDmomentum[i]=pid.fTRDmomentum[i];
+
+    for(Int_t i=0; i<5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
 }
 
 //______________________________________________________________________________
@@ -102,6 +105,7 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
       fEMCALPosition[i]=pid.fEMCALPosition[i];
       fEMCALMomentum[i]=pid.fEMCALMomentum[i];
     }
+    for (Int_t i=0; i<5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
   }
 
   return *this;
@@ -142,3 +146,15 @@ void AliAODPid::SetEMCALMomentum(Double_t emcmom[3])
  // Sets the array with extrapolated track momentum at the EMCAL surface
   for(Int_t i=0; i<3; i++) fEMCALMomentum[i]=emcmom[i];
 }
+//______________________________________________________________________________
+void AliAODPid::SetTOFpidResolution(Double_t tofPIDres[5])
+{
+  for (Int_t i=0; i<5; i++) fTOFpidResolution[i]=tofPIDres[i];
+
+}
+//______________________________________________________________________________
+void AliAODPid::GetTOFpidResolution(Double_t tofRes[5]) const
+{
+  for (Int_t i=0; i<5; i++) tofRes[i]=fTOFpidResolution[i];
+}
+

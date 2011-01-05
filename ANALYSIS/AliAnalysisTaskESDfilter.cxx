@@ -48,7 +48,8 @@
 #include "AliLog.h"
 #include "AliTrackerBase.h"
 #include "AliESDtrackCuts.h"
-
+#include "AliPID.h"
+ 
 ClassImp(AliAnalysisTaskESDfilter)
 
 ////////////////////////////////////////////////////////////////////////
@@ -238,7 +239,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
     AliAODTrack   *aodTrack       = 0x0;
     AliAODPid     *detpid         = 0x0;
-    Double_t      timezero        = 0;   //TO BE FIXED
+    //    Double_t      timezero        = 0;   //not needed anymore 
     AliAODVertex  *vV0FromCascade = 0x0;
     AliAODv0      *aodV0          = 0x0;
     AliAODcascade *aodCascade     = 0x0;
@@ -349,6 +350,26 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
     // Create vertices starting from the most complex objects
     Double_t chi2 = 0.;
+
+
+    //setting best TOF PID
+    AliESDpid *esdPid = new AliESDpid;
+    
+    if(!esd->GetTOFHeader()){
+      Float_t *t0spread= new Float_t[10];
+      Float_t intrinsicTOFres=100; //ps ok for LHC10b,c,d pass2!! 
+      for (Int_t i=0; i<10; i++) t0spread[i] = (TMath::Sqrt(esd->GetSigma2DiamondZ()))/0.03; //0.03 to convert from cm to ps
+      
+      esdPid->GetTOFResponse().SetT0resolution(t0spread);
+      esdPid->GetTOFResponse().SetTimeResolution(intrinsicTOFres);
+      delete[] t0spread;
+      t0spread=0x0;
+    }
+    else{
+      esdPid->SetTOFResponse(esd, AliESDpid::kBest_T0); //TOF_T0 uses the T0 computed with TOF, kBest_T0 uses the best information available 
+    }
+    esdPid->MakePID(esd, kFALSE);
+    
     
     // Cascades (Modified by A.Maire - February 2009)
     for (Int_t nCascade = 0; nCascade < nCascades; ++nCascade) {
@@ -485,7 +506,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    if (esdCascadeBach->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdCascadeBach->GetStatus());
-            SetAODPID(esdCascadeBach,aodTrack,detpid,timezero,esd->GetMagneticField());
+            SetAODPID(esdCascadeBach,aodTrack,detpid,esd->GetMagneticField(), esdPid);
 	}
 	else {
 	    aodTrack = dynamic_cast<AliAODTrack*>( aodTrackRefs->At(idxBachFromCascade) );
@@ -567,7 +588,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 		if (esdCascadePos->GetSign() > 0) nPosTracks++;
 		aodTrack->ConvertAliPIDtoAODPID();
 		aodTrack->SetFlags(esdCascadePos->GetStatus());
-		SetAODPID(esdCascadePos,aodTrack,detpid,timezero,esd->GetMagneticField());
+		SetAODPID(esdCascadePos,aodTrack,detpid,esd->GetMagneticField(), esdPid);
 		}
 		else {
 			aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(idxPosFromV0Dghter));
@@ -612,7 +633,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 		if (esdCascadeNeg->GetSign() > 0) nPosTracks++;
 		aodTrack->ConvertAliPIDtoAODPID();
 		aodTrack->SetFlags(esdCascadeNeg->GetStatus());
-		SetAODPID(esdCascadeNeg,aodTrack,detpid,timezero,esd->GetMagneticField());
+		SetAODPID(esdCascadeNeg,aodTrack,detpid,esd->GetMagneticField(),esdPid);
 		}
 		else {
 			aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(idxNegFromV0Dghter));
@@ -829,7 +850,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    if (esdV0Pos->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdV0Pos->GetStatus());
-            SetAODPID(esdV0Pos,aodTrack,detpid,timezero,esd->GetMagneticField());
+            SetAODPID(esdV0Pos,aodTrack,detpid,esd->GetMagneticField(),esdPid);
 	}
 	else {
 	    aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(posFromV0));
@@ -873,7 +894,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    if (esdV0Neg->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdV0Neg->GetStatus());
-            SetAODPID(esdV0Neg,aodTrack,detpid,timezero,esd->GetMagneticField());
+            SetAODPID(esdV0Neg,aodTrack,detpid,esd->GetMagneticField(),esdPid);
 	}
 	else {
 	    aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(negFromV0));
@@ -1009,7 +1030,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			mother->ConvertAliPIDtoAODPID();
 			primary->AddDaughter(mother);
 			mother->ConvertAliPIDtoAODPID();
-                        SetAODPID(esdTrackM,mother,detpid,timezero,esd->GetMagneticField());
+                        SetAODPID(esdTrackM,mother,detpid,esd->GetMagneticField(),esdPid);
 		    }
 		    else {
 //			cerr << "Error: event " << esd->GetEventNumberInFile() << " kink " << TMath::Abs(ikink)-1
@@ -1067,7 +1088,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			daughter->ConvertAliPIDtoAODPID();
 			vkink->AddDaughter(daughter);
 			daughter->ConvertAliPIDtoAODPID();
-                       SetAODPID(esdTrackD,daughter,detpid,timezero,esd->GetMagneticField());
+			SetAODPID(esdTrackD,daughter,detpid,esd->GetMagneticField(),esdPid);
 		    }
 		    else {
 //			cerr << "Error: event " << esd->GetEventNumberInFile() << " kink " << TMath::Abs(ikink)-1
@@ -1131,7 +1152,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	if (esdTrack->GetSign() > 0) nPosTracks++;
 	aodTrack->SetFlags(esdTrack->GetStatus());
 	aodTrack->ConvertAliPIDtoAODPID();
-	SetAODPID(esdTrack,aodTrack,detpid,timezero,esd->GetMagneticField());
+	SetAODPID(esdTrack,aodTrack,detpid,esd->GetMagneticField(),esdPid);
     } // end of loop on tracks
     
     // Update number of AOD tracks in header at the end of track loop (M.G.)
@@ -1344,12 +1365,12 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     delete    aodV0Refs;
     delete    aodV0VtxRefs;
     delete    aodTrackRefs;
-
+    delete    esdPid;
     return;
 }
 
 
-void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t timezero, Double_t bfield)
+void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t bfield, AliESDpid *esdpid)
 {
   //
   // Setter for the raw PID detector signals
@@ -1380,13 +1401,13 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
     if (pidSave) {
       if(!aodtrack->GetDetPid()){// prevent memory leak when calling SetAODPID twice for the same track
 	detpid = new AliAODPid();
-	SetDetectorRawSignals(detpid,esdtrack,timezero, bfield);
+	SetDetectorRawSignals(detpid,esdtrack, bfield, esdpid);
 	aodtrack->SetDetPID(detpid);
       }
     }
 }
 
-void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t timezero, Double_t bfield)
+void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t bfield, AliESDpid *esdpid)
 {
 //
 //assignment of the detector signals (AliXXXesdPID inspired)
@@ -1422,10 +1443,19 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
  }
 
  aodpid->SetTRDsignal(track->GetNumberOfTRDslices()*6,trdslices);
+
+ //TOF PID  
  Double_t times[AliAODPid::kSPECIES]; track->GetIntegratedTimes(times);
  aodpid->SetIntegratedTimes(times);
+ Float_t tzeroTrack = esdpid->GetTOFResponse().GetStartTime(track->P());
+ aodpid->SetTOFsignal(track->GetTOFsignal()-tzeroTrack);
 
- aodpid->SetTOFsignal(track->GetTOFsignal()-timezero); // to be fixed
+ Double_t tofRes[5];
+ for (Int_t iMass=0; iMass<5; iMass++){
+   tofRes[iMass]=(Double_t)esdpid->GetTOFResponse().GetExpectedSigma(track->P(), times[iMass], AliPID::ParticleMass(iMass));
+ }
+ aodpid->SetTOFpidResolution(tofRes);
+ 
  aodpid->SetHMPIDsignal(track->GetHMPIDsignal());
 
  //Extrapolate track to EMCAL surface for AOD-level track-cluster matching

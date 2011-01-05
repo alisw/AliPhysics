@@ -30,6 +30,7 @@ class AliAODPid : public TObject {
   void      SetTRDsignal(Int_t nslices, Double_t* trdslices)   {fTRDnSlices = nslices; fTRDslices=trdslices;}
   void      SetTRDmomentum(Int_t nplane, Float_t trdMom)       {fTRDmomentum[nplane]=trdMom;}
   void      SetTOFsignal(Double_t tof)                         {fTOFesdsignal=tof;}
+  void      SetTOFpidResolution(Double_t tofPIDres[5]);
   void      SetIntegratedTimes(Double_t timeint[5]);
   void      SetHMPIDsignal(Double_t hmpid)                     {fHMPIDsignal=hmpid;}
   void      SetEMCALPosition(Double_t emcalpos[3]);
@@ -48,6 +49,7 @@ class AliAODPid : public TObject {
   void      GetIntegratedTimes(Double_t timeint[5])  const; 
   void      GetEMCALPosition  (Double_t emcalpos[3]) const;
   void      GetEMCALMomentum  (Double_t emcalmom[3]) const;
+  void      GetTOFpidResolution (Double_t tofRes[5]) const;
 
  private :
   Double32_t  fITSsignal;        //[0.,0.,10] detector raw signal
@@ -58,6 +60,7 @@ class AliAODPid : public TObject {
   Double32_t* fTRDslices;        //[fTRDnSlices]
   Float_t     fTRDmomentum[6];   // momentum at the TRD layers
   Double32_t  fTOFesdsignal;     // TOF signal - t0 (T0 interaction time)
+  Double32_t  fTOFpidResolution[5]; // TOF pid resolution for each mass hypotesys 
   Double32_t  fIntTime[5];       // track time hypothesis
   Double32_t  fHMPIDsignal;      // detector raw signal
   Double32_t  fEMCALPosition[3]; // global position of track
@@ -65,7 +68,7 @@ class AliAODPid : public TObject {
   Double32_t  fEMCALMomentum[3]; // momentum of track
 				 // extrapolated to EMCAL surface
 
-  ClassDef(AliAODPid, 4);
+  ClassDef(AliAODPid, 5);
 };
 
 #endif
