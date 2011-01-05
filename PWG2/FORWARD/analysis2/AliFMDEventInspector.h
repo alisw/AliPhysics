@@ -24,7 +24,7 @@ class TList;
  * @par Corrections used: 
  *   - None
  *
- * @ingroup pwg2_forward 
+ * @ingroup pwg2_forward_algo 
  */
 class AliFMDEventInspector : public TNamed
 {
