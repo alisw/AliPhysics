@@ -1,5 +1,8 @@
-#ifndef ALIROOT_PWG2_FORWARD_ANALYSIS_ALIAODFORWARDMULT_H
-#define ALIROOT_PWG2_FORWARD_ANALYSIS_ALIAODFORWARDMULT_H
+//
+// See implementation or Doxygen comments for more information
+//
+#ifndef ALIAODFORWARDMULT_H
+#define ALIAODFORWARDMULT_H
 #include <TObject.h>
 #include <TH2D.h>
 class TBrowser;
@@ -117,12 +120,13 @@ public:
   /** 
    * Constructor 
    * 
+   * @param isMC Whether this was from MC or not 
    */
-  AliAODForwardMult(Bool_t);
+  AliAODForwardMult(Bool_t isMC);
   /** 
    * Destructor 
    */
-  ~AliAODForwardMult() {}
+  virtual ~AliAODForwardMult() {} // Destructor 
   /** 
    * Initialize 
    * 
@@ -134,31 +138,31 @@ public:
    *
    * @return @f$ d^2N_{ch}/d\eta d\phi@f$ histogram, 
    */  
-  const TH2D& GetHistogram() const { return fHist; }
+  const TH2D& GetHistogram() const { return fHist; } // Get histogram 
   /** 
    * Get the @f$ d^2N_{ch}/d\eta d\phi@f$ histogram, 
    *
    * @return @f$ d^2N_{ch}/d\eta d\phi@f$ histogram, 
    */  
-  TH2D& GetHistogram() { return fHist; }
+  TH2D& GetHistogram() { return fHist; } // Get histogram 
   /** 
    * Get the trigger mask 
    * 
    * @return Trigger mask 
    */
-  UInt_t GetTriggerMask() const { return fTriggers; }
+  UInt_t GetTriggerMask() const { return fTriggers; } // Get triggers
   /** 
    * Set the trigger mask 
    * 
    * @param trg Trigger mask
    */
-  void SetTriggerMask(UInt_t trg) { fTriggers = trg; }
+  void SetTriggerMask(UInt_t trg) { fTriggers = trg; } // Set triggers 
   /** 
    * Set bit(s) in trigger mask 
    * 
    * @param bits bit(s) to set 
    */
-  void SetTriggerBits(UInt_t bits) { fTriggers |= bits; }
+  void SetTriggerBits(UInt_t bits) { fTriggers |= bits; } // Set trigger bits
   /** 
    * Check if bit(s) are set in the trigger mask 
    * 
@@ -170,7 +174,7 @@ public:
   /** 
    * Whether we have any trigger bits 
    */
-  Bool_t HasTrigger() const { return fTriggers != 0; }
+  Bool_t HasTrigger() const { return fTriggers != 0; } // Check for triggers
   /** 
    * Clear all data 
    * 
@@ -188,7 +192,7 @@ public:
    * 
    * @return Always true
    */
-  Bool_t IsFolder() const { return kTRUE; }
+  Bool_t IsFolder() const { return kTRUE; } // Always true 
   /** 
    * Print content 
    * 
@@ -200,13 +204,13 @@ public:
    * 
    * @param ipZ Interaction point z coordinate
    */
-  void SetIpZ(Float_t ipZ) { fIpZ = ipZ; }
+  void SetIpZ(Float_t ipZ) { fIpZ = ipZ; } // Set Ip's Z coordinate
   /** 
    * Set the z coordinate of the interaction point
    * 
    * @return Interaction point z coordinate
    */
-  Float_t GetIpZ() const { return fIpZ; }
+  Float_t GetIpZ() const { return fIpZ; } // Get Ip's Z coordinate 
   /** 
    * Check if we have a valid z coordinate of the interaction point
    *
@@ -229,7 +233,7 @@ public:
    * 
    * @return Name of object 
    */
-  const Char_t* GetName() const { return "Forward"; }
+  const Char_t* GetName() const { return (fIsMC ? "ForwardMC" : "Forward"); }
   /** 
    * Get a string correspondig to the trigger mask
    * 
@@ -239,6 +243,7 @@ public:
    */
   static const Char_t* GetTriggerString(UInt_t mask);
 protected: 
+  Bool_t  fIsMC;     // Whether this is from MC 
   TH2D    fHist;     // Histogram of d^2N_{ch}/(deta dphi) for this event
   UInt_t  fTriggers; // Trigger bit mask 
   Float_t fIpZ;      // Z coordinate of the interaction point
@@ -260,7 +265,6 @@ AliAODForwardMult::IsTriggerBits(UInt_t bits) const
 { 
   return HasTrigger() && ((fTriggers & bits) != 0); 
 }
-  
 
 #endif
 // Local Variables:
