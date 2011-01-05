@@ -1,6 +1,6 @@
-#ifndef ALIROOT_PWG2_FORWARD_ALIFORWARDMULTIPLICITY_H
-#define ALIROOT_PWG2_FORWARD_ALIFORWARDMULTIPLICITY_H
-#include <AliAnalysisTaskSE.h>
+#ifndef ALIFORWARDMULTIPLICITYTASK_H
+#define ALIFORWARDMULTIPLICITYTASK_H
+#include "AliForwardMultiplicityBase.h"
 #include "AliForwardUtil.h"
 #include "AliFMDEventInspector.h"
 #include "AliFMDEnergyFitter.h"
@@ -11,32 +11,10 @@
 #include "AliAODForwardMult.h"
 #include "AliFMDEnergyFitter.h"
 #include <AliESDFMD.h>
-#include <TH1I.h>
-class AliFMDAnaParameters;
 class AliESDEvent;
 class TH2D;
 class TList;
-class TTree;
 
-
-/** 
- * @mainpage ALICE PWG2 Forward Multiplcity Analysis 
- */
-/** 
- * @defgroup pwg2_forward PWG2 Forward analysis
- *
- * Code to do the multiplicity analysis in the forward psuedo-rapidity
- * regions
- *
- */
-/** 
- * @defgroup pwg2_forward_tasks Tasks
- *
- * Code to do the multiplicity analysis in the forward psuedo-rapidity
- * regions
- *
- * @ingroup pwg2_forward 
- */
 /** 
  * Calculate the multiplicity in the forward regions event-by-event 
  * 
@@ -53,7 +31,7 @@ class TTree;
  * @ingroup pwg2_forward_tasks
  * 
  */
-class AliForwardMultiplicityTask : public AliAnalysisTaskSE
+class AliForwardMultiplicityTask : public AliForwardMultiplicityBase
 {
 public:
   /** 
@@ -85,11 +63,6 @@ public:
    * @name Interface methods 
    */
   /** 
-   * Initialize the task 
-   * 
-   */
-  virtual void Init();
-  /** 
    * Create output objects 
    * 
    */
@@ -115,12 +88,6 @@ public:
    * @param option Not used
    */
   void Print(Option_t* option="") const;
-  /** 
-   * Whether to enable low-flux code 
-   * 
-   * @param use IF true, enable low-flux code 
-   */
-  void SetEnableLowFlux(Bool_t use=true) { fEnableLowFlux = use; }
   /** 
    * @{ 
    * @name Access to sub-algorithms 
@@ -171,15 +138,8 @@ protected:
    * 
    */
   virtual void   InitializeSubs();
-  /** 
-   * Mark this event as one to store in the AOD 
-   * 
-   */
-  virtual void MarkEventForStore() const;
 
-  Bool_t                 fEnableLowFlux;// Whether to use low-flux specific code
   TH2D*                  fHData;        // Summed 1/Nd^2N_{ch}/dphideta
-  Bool_t                 fFirstEvent;   // Whether the event is the first seen 
   AliESDFMD              fESDFMD;       // Sharing corrected ESD object
   AliForwardUtil::Histos fHistos;       // Cache histograms 
   AliAODForwardMult      fAODFMD;       // Output object
