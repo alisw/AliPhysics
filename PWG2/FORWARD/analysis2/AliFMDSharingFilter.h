@@ -22,7 +22,7 @@ class TH2;
  *    - AliESDFMD object  - copy of input, but with signals merged 
  *
  * @par Corrections used: 
- *    - AliFMDAnaCalibEnergyDistribution objects 
+ *    - AliFMDCorrELossFit
  *
  * @par Histograms: 
  *    - For each ring (FMD1i, FMD2i, FMD2o, FMD3i, FMD3o) the distribution of 
@@ -31,7 +31,7 @@ class TH2;
  *      hit strips for each vertex bin (if enabled - see Init method)
  * 
  *
- * @ingroup pwg2_forward 
+ * @ingroup pwg2_forward_algo 
  */
 class AliFMDSharingFilter : public TNamed
 {
@@ -116,7 +116,7 @@ public:
    * @param dir     Where the output is 
    * @param nEvents Number of events 
    */
-  void ScaleHistograms(TList* dir, Int_t nEvents);
+  virtual void ScaleHistograms(TList* dir, Int_t nEvents);
   
   /** 
    * Define the output histograms.  These are put in a sub list of the
@@ -125,13 +125,13 @@ public:
    * 
    * @param dir Directory to add to 
    */
-  void DefineOutput(TList* dir);
+  virtual void DefineOutput(TList* dir);
   /** 
    * Print information
    * 
    * @param option Not used 
    */
-  void Print(Option_t* option="") const;
+  virtual void Print(Option_t* option="") const;
 protected:
   /** 
    * Internal data structure to keep track of the histograms
