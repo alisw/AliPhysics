@@ -106,10 +106,12 @@ public:
   virtual Bool_t FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
   virtual void FillInputCTS() ;
   virtual void FillInputEMCAL() ;
+  virtual void FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t iclus) ;
   virtual void FillInputPHOS() ;
   virtual void FillInputEMCALCells() ;
   virtual void FillInputPHOSCells() ;
-  
+  void SetEMCALClusterListName(TString &name) {fEMCALClustersListName = name;}
+
   virtual TList * GetAODBranchList() const { return fAODBranchList ; }
 
   virtual TObjArray* GetAODCTS()   const {return fAODCTS   ;}
@@ -244,7 +246,6 @@ public:
   
   virtual void SetEMCALOverlapAngle(Float_t /*angle*/)  { ; }
   virtual void SetPHOSOverlapAngle(Float_t /*angle*/)   { ; }
-  
 
   
  protected:
@@ -315,8 +316,9 @@ public:
   Int_t            fV0Mul[2]    ;       // Integrated V0 Multiplicity
 
   Bool_t           fCaloFilterPatch;    // CaloFilter patch
+  TString          fEMCALClustersListName; //Alternative list of clusters produced elsewhere and not from InputEvent
   
-  ClassDef(AliCaloTrackReader,21)
+  ClassDef(AliCaloTrackReader,22)
 } ;
 
 
