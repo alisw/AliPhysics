@@ -32,8 +32,8 @@ AliFlowLYZConstants* AliFlowLYZConstants::fgPMasterConfig = NULL;
 AliFlowLYZConstants::AliFlowLYZConstants():
   TNamed(),
   fNtheta(5),
-  fNbins(1200),
-  fMaxSUM(120.),
+  fNbins(2500),
+  fMaxSUM(250.),
   fMaxPROD(1.)
 {
   //def ctor
