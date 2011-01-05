@@ -14,7 +14,7 @@
  * @ingroup pwg2_forward_scripts
  */
 AliAnalysisTask*
-AddTaskFMD()
+AddTaskFMD(Bool_t mc)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -23,10 +23,11 @@ AddTaskFMD()
   }   
 
   // --- Make the task and add it to the manager ---------------------
-  AliForwardMultiplicityTask* task = new AliForwardMultiplicityTask("FMD");
+  AliForwardMultiplicityBase* task = 0;
+  if (mc) task = new AliForwardMCMultiplicityTask("FMD");
+  else    task = new AliForwardMultiplicityTask("FMD");
   mgr->AddTask(task);
 
-  // --- Set parameters on the algorithms ----------------------------
   // Whether to enable low flux specific code 
   task->SetEnableLowFlux(kFALSE);
   // Set the number of SPD tracklets for which we consider the event a
@@ -83,23 +84,6 @@ AddTaskFMD()
   // Maximum value of reduced chi^2 
   AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 5;
 
-  
-  // --- Set up the parameter manager ---------------------------------
-  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  AliMCEventHandler* mcHandler = 
-    dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
-  Info("AddTaskFMD", "MC handler %p", mcHandler);
-  // if(mcHandler) {
-  //   pars->SetRealData(kFALSE);
-  //   pars->SetProcessPrimary(kTRUE);
-  //   pars->SetProcessHits(kFALSE);
-  // }
-  // else {
-  //   pars->SetRealData(kTRUE);
-  //   pars->SetProcessPrimary(kFALSE);
-  //   pars->SetProcessHits(kFALSE);
-  // }
-  // pars->Init();
   
   // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();
