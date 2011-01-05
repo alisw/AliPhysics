@@ -31,6 +31,7 @@ class TTree;
  * @par Corrections used 
  * 
  * @ingroup pwg2_forward_tasks
+ * @ingroup pwg2_forward_mc
  * 
  */
 class AliForwardMCCorrectionsTask : public AliAnalysisTaskSE
