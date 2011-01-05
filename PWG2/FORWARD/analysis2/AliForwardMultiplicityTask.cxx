@@ -18,10 +18,8 @@
 
 //====================================================================
 AliForwardMultiplicityTask::AliForwardMultiplicityTask()
-  : AliAnalysisTaskSE(),
-    fEnableLowFlux(true),
+  : AliForwardMultiplicityBase(),
     fHData(0),
-    fFirstEvent(true),
     fESDFMD(),
     fHistos(),
     fAODFMD(),
@@ -37,10 +35,8 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
 
 //____________________________________________________________________
 AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
-  : AliAnalysisTaskSE(name), 
-    fEnableLowFlux(true),
+  : AliForwardMultiplicityBase(name),
     fHData(0),
-    fFirstEvent(true),
     fESDFMD(),
     fHistos(),
     fAODFMD(kTRUE),
@@ -57,10 +53,8 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
 
 //____________________________________________________________________
 AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplicityTask& o)
-  : AliAnalysisTaskSE(o),
-    fEnableLowFlux(o.fEnableLowFlux),
+  : AliForwardMultiplicityBase(o),
     fHData(o.fHData),
-    fFirstEvent(true),
     fESDFMD(o.fESDFMD),
     fHistos(o.fHistos),
     fAODFMD(o.fAODFMD),
@@ -79,11 +73,9 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
 AliForwardMultiplicityTask&
 AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
 {
-  AliAnalysisTaskSE::operator=(o);
+  AliForwardMultiplicityBase::operator=(o);
 
-  fEnableLowFlux     = o.fEnableLowFlux;
   fHData             = o.fHData;
-  fFirstEvent        = o.fFirstEvent;
   fEventInspector    = o.fEventInspector;
   fEnergyFitter      = o.fEnergyFitter;
   fSharingFilter     = o.fSharingFilter;
@@ -111,19 +103,8 @@ AliForwardMultiplicityTask::SetDebug(Int_t dbg)
 
 //____________________________________________________________________
 void
-AliForwardMultiplicityTask::Init()
-{
-  fFirstEvent = true;
-}
-
-//____________________________________________________________________
-void
 AliForwardMultiplicityTask::InitializeSubs()
 {
-
-  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  // pars->Init(kTRUE);
-
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   fcm.Init(fEventInspector.GetCollisionSystem(), 
 	   fEventInspector.GetEnergy(),
@@ -164,10 +145,6 @@ AliForwardMultiplicityTask::InitializeSubs()
   const TAxis* pv = fcm.GetVertexAxis();
   if (!pe) AliFatal("No eta axis defined");
   if (!pv) AliFatal("No vertex axis defined");
-
-  // TAxis e(pars->GetNetaBins(),  pars->GetEtaMin(),  pars->GetEtaMax());
-  // TAxis v(pars->GetNvtxBins(), -pars->GetVtxCutZ(), pars->GetVtxCutZ());
-  // pv->Dump();
 
   fHistos.Init(*pe);
   fAODFMD.Init(*pe);
@@ -237,11 +214,6 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
 		 esd->GetMagneticField(),
 		 esd->GetRunNumber()));
 
-	      
-
-    // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-    // pars->SetParametersFromESD(esd);
-    // pars->PrintStatus();
     fFirstEvent = false;
 
     InitializeSubs();
@@ -359,28 +331,11 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
   fDensityCalculator.ScaleHistograms(list,hEventsTrVtx->Integral());
   fCorrections.ScaleHistograms(list,hEventsTrVtx->Integral());
 }
-
-//____________________________________________________________________
-void
-AliForwardMultiplicityTask::MarkEventForStore() const
-{
-  // Make sure the AOD tree is filled 
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler*      ah = 
-    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (!ah)  
-    AliFatal("No AOD output handler set in analysis manager");
-
-  ah->SetFillAOD(kTRUE);
-}
-
 //____________________________________________________________________
 void
 AliForwardMultiplicityTask::Print(Option_t* option) const
 {
-  std::cout << "AliForwardMultiplicityTask: " << GetName() << "\n" 
-	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no")
-	    << std::endl;
+  AliForwardMultiplicityBase::Print(option);
   gROOT->IncreaseDirLevel();
   fEventInspector   .Print(option);
   fEnergyFitter     .Print(option);    
