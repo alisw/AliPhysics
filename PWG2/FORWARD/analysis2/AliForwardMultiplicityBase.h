@@ -1,0 +1,206 @@
+#ifndef ALIFORWARDMULTIPLICITYBASE_H
+#define ALIFORWARDMULTIPLICITYBASE_H
+#include <AliAnalysisTaskSE.h>
+#include "AliForwardUtil.h"
+// #include "AliFMDEventInspector.h"
+// #include "AliFMDEnergyFitter.h"
+// #include "AliFMDSharingFilter.h"
+// #include "AliFMDDensityCalculator.h"
+// #include "AliFMDCorrections.h"
+// #include "AliFMDHistCollector.h"
+// #include "AliAODForwardMult.h"
+// #include "AliFMDEnergyFitter.h"
+// #include <AliESDFMD.h>
+// #include <TH1I.h>
+class AliFMDEventInspector;
+class AliFMDEnergyFitter;
+class AliFMDSharingFilter;
+class AliFMDDensityCalculator;
+class AliFMDCorrections;
+class AliFMDHistCollector;
+class AliESDEvent;
+class TH2D;
+class TList;
+class TTree;
+
+
+/** 
+ * @mainpage ALICE PWG2 Forward Multiplcity Analysis 
+ */
+/** 
+ * @defgroup pwg2_forward PWG2 Forward analysis
+ *
+ * Code to do the multiplicity analysis in the forward psuedo-rapidity
+ * regions
+ *
+ */
+/** 
+ * @defgroup pwg2_forward_tasks Tasks
+ *
+ * Code to do the multiplicity analysis in the forward psuedo-rapidity
+ * regions
+ *
+ * @ingroup pwg2_forward 
+ */
+/** 
+ * Calculate the multiplicity in the forward regions event-by-event 
+ * 
+ * @par Inputs: 
+ *   - AliESDEvent 
+ *
+ * @par Outputs: 
+ *   - AliAODForwardMult 
+ * 
+ * @par Histograms 
+ *   
+ * @par Corrections used 
+ * 
+ * @ingroup pwg2_forward_tasks
+ * 
+ */
+class AliForwardMultiplicityBase : public AliAnalysisTaskSE
+{
+public:
+  /** 
+   * @{ 
+   * @name Interface methods 
+   */
+  /** 
+   * Initialize the task 
+   * 
+   */
+  virtual void Init() { fFirstEvent = true; }
+  /** 
+   * Create output objects 
+   * 
+   */
+  virtual void UserCreateOutputObjects() = 0;
+  /** 
+   * Process each event 
+   *
+   * @param option Not used
+   */  
+  virtual void UserExec(Option_t* option) = 0;
+  /** 
+   * End of job
+   * 
+   * @param option Not used 
+   */
+  virtual void Terminate(Option_t* option) = 0;
+  /** 
+   * @} 
+   */
+  /** 
+   * Print information 
+   * 
+   * @param option Not used
+   */
+  virtual void Print(Option_t* option="") const;
+  /** 
+   * Whether to enable low-flux code 
+   * 
+   * @param use IF true, enable low-flux code 
+   */
+  virtual void SetEnableLowFlux(Bool_t use=true) { fEnableLowFlux = use; }
+  /** 
+   * @{ 
+   * @name Access to sub-algorithms 
+   */
+  /**
+   * Get reference to the EventInspector algorithm 
+   * 
+   * @return Reference to AliFMDEventInspector object 
+   */
+  virtual AliFMDEventInspector& GetEventInspector() = 0;
+  /**
+   * Get reference to the EnergyFitter algorithm 
+   * 
+   * @return Reference to AliFMDEnergyFitter object 
+   */
+  virtual AliFMDEnergyFitter& GetEnergyFitter() = 0;
+  /**
+   * Get reference to the SharingFilter algorithm 
+   * 
+   * @return Reference to AliFMDSharingFilter object 
+   */
+  virtual AliFMDSharingFilter& GetSharingFilter() = 0;
+  /**
+   * Get reference to the DensityCalculator algorithm 
+   * 
+   * @return Reference to AliFMDDensityCalculator object 
+   */
+  virtual AliFMDDensityCalculator& GetDensityCalculator() = 0;
+  /**
+   * Get reference to the Corrections algorithm 
+   * 
+   * @return Reference to AliFMDCorrections object 
+   */
+  virtual AliFMDCorrections& GetCorrections() = 0;
+  /**
+   * Get reference to the HistCollector algorithm 
+   * 
+   * @return Reference to AliFMDHistCollector object 
+   */
+  virtual AliFMDHistCollector& GetHistCollector() = 0;
+  /** 
+   * @} 
+   */
+  virtual void SetDebug(Int_t dbg) = 0;
+protected: 
+  /** 
+   * Constructor 
+   * 
+   * @param name Name of task 
+   */
+  AliForwardMultiplicityBase(const char* name) 
+    : AliAnalysisTaskSE(name), 
+      fEnableLowFlux(true), 
+      fFirstEvent(true)
+  {}
+  /** 
+   * Constructor
+   */
+  AliForwardMultiplicityBase() : AliAnalysisTaskSE(), 
+      fEnableLowFlux(true), 
+      fFirstEvent(true)
+  {}
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  AliForwardMultiplicityBase(const AliForwardMultiplicityBase& o)
+    : AliAnalysisTaskSE(o),
+      fEnableLowFlux(o.fEnableLowFlux), 
+      fFirstEvent(o.fFirstEvent)
+  {}
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object 
+   */
+  AliForwardMultiplicityBase& operator=(const AliForwardMultiplicityBase& o)
+  {
+    fEnableLowFlux = o.fEnableLowFlux;
+    fFirstEvent    = o.fFirstEvent;
+    return *this;
+  }
+  /** 
+   * Mark this event as one to store in the AOD 
+   * 
+   */
+  virtual void MarkEventForStore() const;
+
+  Bool_t                 fEnableLowFlux;// Whether to use low-flux specific code
+  Bool_t                 fFirstEvent;   // Whether the event is the first seen 
+
+  ClassDef(AliForwardMultiplicityBase,1) // Forward multiplicity class
+};
+
+#endif
+// Local Variables:
+//  mode: C++
+// End:
+
