@@ -294,19 +294,19 @@ void AliTOFSDigitizer::InitParameters()
     fTimeResolution = 100.;
   }
   AliDebug(1,Form(" TOF time resolution read from OCDB = %f ps",fTimeResolution));
-  fpadefficiency  = 0.99 ;
+  fpadefficiency  = 0.995 ;
   //fEdgeEffect   = 2   ; // edge effects according to test beam results
   fEdgeEffect     = 1   ; // edge effects according to test beam results
                           // but with fixed time resolution, i.e. fTimeResolution
   fEdgeTails      = 0   ;
   fHparameter     = 0.4 ;
   fH2parameter    = 0.15;
-  fKparameter     = 0.5 ;
-  fK2parameter    = 0.35;
+  fKparameter     = 0.9 ;
+  fK2parameter    = 0.55;
   fEffCenter      = fpadefficiency;
-  fEffBoundary    = 0.65;
-  fEff2Boundary   = 0.90;
-  fEff3Boundary   = 0.08;
+  fEffBoundary    = 0.833;
+  fEff2Boundary   = 0.94;
+  fEff3Boundary   = 0.1;
   fAddTRes        = 68. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 50^2} (p-p)
   //fAddTRes      = 48. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 15^2} (Pb-Pb)
   // 30^2+20^2+40^2+50^2+50^2+50^2 = 10400 ps^2 (very old value)
