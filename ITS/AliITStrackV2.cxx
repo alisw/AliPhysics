@@ -416,12 +416,12 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
 
 
   Double_t cs=TMath::Cos(GetAlpha()), sn=TMath::Sin(GetAlpha());
-//Double_t xv = xyz[0]*cs + xyz[1]*sn; // vertex
+  Double_t xv = xyz[0]*cs + xyz[1]*sn; // vertex
   Double_t yv =-xyz[0]*sn + xyz[1]*cs; // in the
   Double_t zv = xyz[2];                // local frame
 
-  Double_t dy = par[0] - yv, dz = par[1] - zv;
-  Double_t r2=GetX()*GetX() + dy*dy;
+  Double_t dx = x - xv, dy = par[0] - yv, dz = par[1] - zv;
+  Double_t r2=dx*dx + dy*dy;
   Double_t p2=(1.+ GetTgl()*GetTgl())/(GetSigned1Pt()*GetSigned1Pt());
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
   x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
@@ -432,13 +432,13 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
   {
     Double_t dummy = 4/r2 - GetC()*GetC();
     if (dummy < 0) return kFALSE;
-    Double_t parp = 0.5*(GetC()*GetX() + dy*TMath::Sqrt(dummy));
+    Double_t parp = 0.5*(GetC()*dx + dy*TMath::Sqrt(dummy));
     Double_t sigma2p = theta2*(1.-GetSnp())*(1.+GetSnp())*(1. + GetTgl()*GetTgl());
     Double_t ovSqr2 = 1./TMath::Sqrt(r2);
     Double_t tfact = ovSqr2*(1.-dy*ovSqr2)*(1.+dy*ovSqr2);
     sigma2p += cov[0]*tfact*tfact;
     sigma2p += ers[1]*ers[1]/r2;
-    sigma2p += 0.25*cov[14]*cnv*cnv*GetX()*GetX();
+    sigma2p += 0.25*cov[14]*cnv*cnv*dx*dx;
     Double_t eps2p=sigma2p/(cov[5] + sigma2p);
     par[0] += cov[3]/(cov[5] + sigma2p)*(parp - GetSnp());
     par[2]  = eps2p*GetSnp() + (1 - eps2p)*parp;
