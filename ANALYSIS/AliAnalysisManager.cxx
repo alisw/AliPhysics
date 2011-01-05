@@ -49,7 +49,6 @@
 #include "AliVEventPool.h"
 #include "AliSysInfo.h"
 #include "AliAnalysisStatistics.h"
-#include "AliAnalysisTaskStat.h"
 
 ClassImp(AliAnalysisManager)
 
@@ -2275,9 +2274,8 @@ void AliAnalysisManager::AddStatisticsTask()
   if (fStatistics) {
      Info("AddStatisticsTask", "Already added");
      return;
-  }   
-  AliAnalysisTaskStat *taskStatistics = AliAnalysisTaskStat::AddToManager();
-  if (taskStatistics) fStatistics = taskStatistics->GetStatistics();
+  } 
+  fStatistics = (AliAnalysisStatistics*)gROOT->ProcessLine("AliAnalysisTaskStat::AddToManager()->GetStatistics();");
 }  
 
 //______________________________________________________________________________
@@ -2305,10 +2303,22 @@ void AliAnalysisManager::AddStatisticsMsg(const char *line)
 //______________________________________________________________________________
 void AliAnalysisManager::WriteStatisticsMsg(Int_t nevents)
 {
-// Write the statistics message in a file named <nevents.stat>
-   if (!nevents) return;
+// Write the statistics message in a file named <nevents.stat>.
+// If fStatistics is present, write the file in the format ninput_nprocessed_nfailed_naccepted.stat
    ofstream out;
-   out.open(Form("%09d.stat", nevents), ios::out);
-   if (!fStatisticsMsg.IsNull()) out << fStatisticsMsg << endl;
+   if (fStatistics) {
+      AddStatisticsMsg(Form("Number of input events:        %lld",fStatistics->GetNinput()));
+      AddStatisticsMsg(Form("Number of processed events:    %lld",fStatistics->GetNprocessed()));      
+      AddStatisticsMsg(Form("Number of failed events (I/O): %lld",fStatistics->GetNfailed()));
+      AddStatisticsMsg(Form("Number of accepted events:     %lld",fStatistics->GetNaccepted()));
+      out.open(Form("%lld_%lld_%lld_%lld.stat",fStatistics->GetNinput(),
+                    fStatistics->GetNprocessed(),fStatistics->GetNfailed(),
+                    fStatistics->GetNaccepted()), ios::out);      
+      out << fStatisticsMsg << endl;
+   } else {
+      if (!nevents) return;
+      out.open(Form("%09d.stat", nevents), ios::out);
+      if (!fStatisticsMsg.IsNull()) out << fStatisticsMsg << endl;
+   }   
    out.close();
 }
