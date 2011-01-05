@@ -9,7 +9,7 @@
  *
  * @ingroup pwg2_forward_scripts
  */
-void RunELossFitter(const char* esddir, 
+void MakeELossFits(const char* esddir, 
 		    Int_t       nEvents=1000, 
 		    Bool_t      mc=false,
 		    Bool_t      proof=false)
@@ -23,10 +23,10 @@ void RunELossFitter(const char* esddir,
   
   // --- Our data chain ----------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeESDChain.C");
-  TChain* chain = MakeESDChain(esddir);
+  TChain* chain = MakeESDChain(esddir, mc);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
-  Info("RunELossFitter", "Will analyse %d events", nEvents);
+  Info("MakeELossFits", "Will analyse %d events", nEvents);
 
   // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", 
