@@ -31,7 +31,7 @@ Pass2(const char* file="AliAODs.root",
       bool        comp=true)
 {
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C"); 
-  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/DrawRes.C","g"); 
+  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AnalyseAOD.C","g"); 
   
   Int_t trgMask; 
   TString     trgs(triggers);
@@ -68,7 +68,7 @@ Pass2(const char* file="AliAODs.root",
 	 file, vzMin, vzMax, rebin, trgMask, trgs.Data(), energy, tit.Data(),
 	 hhd ? "yes" : "no", comp ? "yes" : "no");
   
-  DrawRes dr;
+  AnalyseAOD dr;
   TStopwatch t;
   t.Start();
   dr.Run(file, vzMin, vzMax, rebin, trgMask, energy, tit.Data(), hhd, comp);
