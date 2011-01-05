@@ -34,6 +34,7 @@
 #pragma link C++ class AliFMDEventInspector+;
 #pragma link C++ class AliFMDSharingFilter+;
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;
+#pragma link C++ class AliFMDMCSharingFilter+;
 #pragma link C++ class AliFMDEnergyFitter+;
 #pragma link C++ class AliFMDEnergyFitter::RingHistos+;
 #pragma link C++ class AliFMDEnergyFitterTask+;
@@ -42,6 +43,7 @@
 #pragma link C++ class AliFMDMCDensityCalculator+;
 #pragma link C++ class AliFMDCorrections+;
 #pragma link C++ class AliFMDCorrections::RingHistos+;
+#pragma link C++ class AliFMDMCCorrections+;
 #pragma link C++ class AliFMDHistCollector+;
 #pragma link C++ class AliFMDCorrELossFit+;
 #pragma link C++ class AliFMDCorrELossFit::ELossFit+;
@@ -50,7 +52,10 @@
 #pragma link C++ class AliFMDCorrVertexBias+;
 #pragma link C++ class AliFMDCorrMergingEfficiency+;
 #pragma link C++ class AliAODForwardMult+;
+// #pragma link C++ typedef AliAODForwardMCMult;
+#pragma link C++ class AliForwardMultiplicityBase+;
 #pragma link C++ class AliForwardMultiplicityTask+;
+#pragma link C++ class AliForwardMCMultiplicityTask+;
 #pragma link C++ class AliForwardCorrectionManager+;
 #pragma link C++ class AliForwardMCCorrectionsTask+;
 

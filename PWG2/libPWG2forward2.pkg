@@ -5,12 +5,16 @@ SRCS		=  FORWARD/analysis2/AliFMDEventInspector.cxx		\
 	   	   FORWARD/analysis2/AliFMDEnergyFitter.cxx		\
 	   	   FORWARD/analysis2/AliFMDEnergyFitterTask.cxx		\
 		   FORWARD/analysis2/AliFMDSharingFilter.cxx		\
+		   FORWARD/analysis2/AliFMDMCSharingFilter.cxx		\
 		   FORWARD/analysis2/AliFMDDensityCalculator.cxx	\
 		   FORWARD/analysis2/AliFMDMCDensityCalculator.cxx	\
 		   FORWARD/analysis2/AliFMDCorrections.cxx		\
+		   FORWARD/analysis2/AliFMDMCCorrections.cxx		\
 		   FORWARD/analysis2/AliFMDHistCollector.cxx		\
 		   FORWARD/analysis2/AliAODForwardMult.cxx		\
+		   FORWARD/analysis2/AliForwardMultiplicityBase.cxx	\
 		   FORWARD/analysis2/AliForwardMultiplicityTask.cxx	\
+		   FORWARD/analysis2/AliForwardMCMultiplicityTask.cxx	\
 		   FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx	\
 		   FORWARD/analysis2/AliForwardUtil.cxx			\
 		   FORWARD/analysis2/AliFMDCorrELossFit.cxx		\
