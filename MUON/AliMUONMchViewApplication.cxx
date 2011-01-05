@@ -466,6 +466,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.06");
+  rn->AddLine("");
+  rn->AddLine("Changed a bit the HV display. Now a trip is indicated with a value of -1");
+  rn->AddLine("");
+  
   rn->AddLine("1.05");
   rn->AddLine("");
   rn->AddLine("Added the possibility to select an event range when reading raw data");

@@ -295,14 +295,23 @@ AliMUONTrackerConditionDataMaker::CreateHVStore(TMap& m)
       AliDCSValue* v;
       Float_t hvValue(0);
       Int_t n(0);
+      Int_t noff(0);
+      
       while ( ( v = static_cast<AliDCSValue*>(n2()) ) )
       {
         hvValue += v->GetFloat();
+        if ( v->GetFloat() < AliMpDCSNamer::TrackerHVOFF() ) ++noff;
         ++n;
       }
       hvValue *= switchValue;  
       
       if ( n ) hvValue /= n;
+
+      if (noff>0 && noff<n) 
+      {
+        // that's a trip
+        hvValue = -1.0;        
+      }
       
       Int_t nofChannels(AliMpConstants::ManuNofChannels());
       
