@@ -19,9 +19,9 @@ class TH2D;
  *     2D histograms of the inclusive charge particle density 
  * 
  * @par HistCollector used: 
- *   - AliFMDAnaCalibBackgroundCorrection
+ *   - AliFMDCorrSecondaryMap
  *
- * @ingroup pwg2_forward 
+ * @ingroup pwg2_forward_algo
  */
 class AliFMDHistCollector : public TNamed
 {
