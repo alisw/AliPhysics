@@ -3,26 +3,31 @@
 #include <TNamed.h>
 #include <TList.h>
 #include "AliForwardUtil.h"
-class AliESDFMD;
 class TH2D;
 
 /** 
- * This class calculates the inclusive charged particle density
+ * @defgroup pwg2_forward_algo Algorithms 
+ *
+ * @ingroup pwg2_forward 
+ */
+/** 
+ * This class calculates the exclusive charged particle density
  * in each for the 5 FMD rings. 
  *
  * @par Input:
- *   - AliESDFMD object possibly corrected for sharing
+ *   - 5 RingHistos objects - each with a number of vertex dependent 
+ *     2D histograms of the inclusive charge particle density 
  *
  * @par Output:
  *   - 5 RingHistos objects - each with a number of vertex dependent 
- *     2D histograms of the inclusive charge particle density 
+ *     2D histograms of the exclusive charge particle density 
  * 
  * @par Corrections used: 
- *   - AliFMDAnaCalibBackgroundCorrection
- *   - AliFMDAnaCalibEventSelectionEfficiency
- *   - AliFMDAnaCalibSharingEfficiency
+ *   - AliFMDCorrSecondaryMap;
+ *   - AliFMDCorrVertexBias
+ *   - AliFMDCorrMergingEfficiency
  *
- * @ingroup pwg2_forward 
+ * @ingroup pwg2_forward_algo 
  */
 class AliFMDCorrections : public TNamed
 {
@@ -70,13 +75,13 @@ public:
    * @param dir     Where the output is stored
    * @param nEvents Number of events 
    */
-  void ScaleHistograms(TList* dir, Int_t nEvents);
+  virtual void ScaleHistograms(TList* dir, Int_t nEvents);
   /** 
    * Output diagnostic histograms to directory 
    * 
    * @param dir List to write in
    */  
-  void DefineOutput(TList* dir);
+  virtual void DefineOutput(TList* dir);
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
