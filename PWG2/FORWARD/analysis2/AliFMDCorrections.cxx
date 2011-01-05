@@ -89,7 +89,6 @@ Bool_t
 AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
 			   UShort_t                vtxbin)
 {
-  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
   UShort_t uvb = vtxbin;
@@ -99,8 +98,6 @@ AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
       Char_t      r = (q == 0 ? 'I' : 'O');
       TH2D*       h = hists.Get(d,r);
       RingHistos* rh= GetRingHistos(d,r);
-      //TH2F*       bg= pars->GetBackgroundCorrection(d, r, vtxbin);
-      //TH2F*       ef= pars->GetEventSelectionEfficiency("INEL",vtxbin,r);
       TH2D* bg = fcm.GetSecondaryMap()->GetCorrection(d,r,uvb);
       TH2D* ef = fcm.GetVertexBias()->GetCorrection(r, uvb);
       if (!bg) { 
