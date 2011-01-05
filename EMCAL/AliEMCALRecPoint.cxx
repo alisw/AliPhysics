@@ -441,7 +441,7 @@ Int_t AliEMCALRecPoint::Compare(const TObject * obj) const
 //}
 
 //____________________________________________________________________________
-void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) 
+void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits, const Bool_t justClusters) 
 {
   // Evaluates cluster parameters
 	
@@ -465,7 +465,8 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
   EvalParents(digits);
 	
   //Called last because it sets the global position of the cluster?
-  EvalLocal2TrackingCSTransform();
+  //Do not call it when recalculating clusters out of standard reconstruction
+  if(!justClusters) EvalLocal2TrackingCSTransform();
 
 }
 

@@ -131,7 +131,7 @@ void AliEMCALClusterizerNxN::Digits2Clusters(Option_t * option)
   { 
     AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
     if(rp){
-      rp->EvalAll(fECAW0,fDigitsArr) ;
+      rp->EvalAll(fECAW0,fDigitsArr,fgkIsInputCalibrated) ;
       AliDebug(5, Form("MAX INDEX %d ", rp->GetMaximalEnergyIndex()));
       //For each rec.point set the distance to the nearest bad crystal
       rp->EvalDistanceToBadChannels(fCaloPed);

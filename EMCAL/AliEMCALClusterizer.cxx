@@ -56,7 +56,6 @@ class TSystem;
 #include "AliEMCALCalibData.h"
 class AliCDBStorage;
 #include "AliCDBEntry.h"
-#include "AliEMCALUnfolding.h"
 
 ClassImp(AliEMCALClusterizer)
 
@@ -356,7 +355,7 @@ void AliEMCALClusterizer::InitParameters()
         fPar6[i] = recParam->GetPar6(i);
       }//end of loop over parameters
       
-      fClusterUnfolding=new AliEMCALUnfolding(fGeom,fECALocMaxCut,fSSPars,fPar5,fPar6);
+      InitClusterUnfolding();
       
       for (i = 0; i < 8; i++) {
         AliDebug(1,Form("unfolding shower shape parameters: fSSPars=%f \n",fSSPars[i]));

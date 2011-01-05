@@ -120,12 +120,12 @@ void AliEMCALAfterBurnerUF::Init()
 
   // required for global cluster position recalculation
   if (!gGeoManager)
-    Fatal("AliEMCALAfterBurnerUF::Init", "failed to import geometry.root");
+    Info("AliEMCALAfterBurnerUF::Init", "gGeoManager was not set, be careful");
 
   // initialize geometry, if not yet initialized
   if (!AliEMCALGeometry::GetInstance()) {
-    Warning("AliEMCALAfterBurnerUF::Init", "AliEMCALGeometry is not yet initialized. Initializing with EMCAL_FIRSTYEARV1");
-    AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
+    Warning("AliEMCALAfterBurnerUF::Init", "AliEMCALGeometry is not yet initialized. Initializing with EMCAL_COMPLETEV1");
+    AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
   }
 
   // AliEMCALRecPoint is using exactly this call
@@ -146,13 +146,25 @@ AliEMCALAfterBurnerUF::~AliEMCALAfterBurnerUF()
 {
   if (fClusterUnfolding) delete fClusterUnfolding;
 
-  if (fRecPoints) delete fRecPoints;
+  if (fRecPoints) {
+    fRecPoints->Delete();
+    delete fRecPoints;
+  }
   if (fDigitsArr) {
     fDigitsArr->Clear("C");
     delete fDigitsArr;
   }
 }
 
+//------------------------------------------------------------------------
+void AliEMCALAfterBurnerUF::Clear()
+{
+  //Clean the arrays
+  
+  if (fRecPoints) fRecPoints->Delete();  // do not Clear(), it leaks, why?
+  if (fDigitsArr) fDigitsArr->Clear("C");
+  
+}
 //------------------------------------------------------------------------
 void AliEMCALAfterBurnerUF::RecPoints2Clusters(TObjArray *clusArray)
 {
@@ -272,7 +284,7 @@ void AliEMCALAfterBurnerUF::UnfoldClusters(TObjArray *clusArray, AliVCaloCells *
   RecPoints2Clusters(clusArray);
 
   // clean up
-  fRecPoints->Clear();
+  fRecPoints->Delete(); // do not Clear(), it leaks, why?
   fDigitsArr->Clear("C");
 
   clusArray->Compress();

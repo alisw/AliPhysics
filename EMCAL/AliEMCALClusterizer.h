@@ -22,7 +22,7 @@ class TTree;
 class AliEMCALGeometry ;
 class AliEMCALCalibData ;
 class AliCaloCalibPedestal ;
-class AliEMCALUnfolding ;
+#include "AliEMCALUnfolding.h"
 
 class AliEMCALClusterizer : public TObject {
 
@@ -61,8 +61,16 @@ public:
   virtual void SetMinECut(Float_t mine)               { fMinECut = mine; }
   virtual void SetECALocalMaxCut(Float_t cut)         { fECALocMaxCut = cut ; }
   virtual void SetECALogWeight(Float_t w)             { fECAW0 = w ; }
-  virtual void SetUnfolding(Bool_t toUnfold = kTRUE ) {fToUnfold = toUnfold ;}  
-
+  
+  //Unfolding
+  virtual void SetUnfolding(Bool_t toUnfold = kTRUE ) { fToUnfold = toUnfold ;}  
+  virtual void SetSSPars   (Int_t ipar, Double_t par) { fSSPars[ipar] = par  ;}
+  virtual void SetPar5     (Int_t ipar, Double_t par) { fPar5  [ipar] = par  ;}
+  virtual void SetPar6     (Int_t ipar, Double_t par) { fPar6  [ipar] = par  ;}
+  virtual void InitClusterUnfolding() {
+    fClusterUnfolding=new AliEMCALUnfolding(fGeom,fECALocMaxCut,fSSPars,fPar5,fPar6);
+  }
+  
   virtual void SetInput(TTree *digitsTree);
   virtual void SetOutput(TTree *clustersTree);
   

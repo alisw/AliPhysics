@@ -56,7 +56,7 @@ class AliEMCALRecPoint : public AliCluster {
   virtual void    SetClusterType(Int_t ver) { fClusterType = ver; }
   virtual Int_t   GetClusterType() const { return fClusterType; }
 
-  virtual void    EvalAll(Float_t logWeight, TClonesArray * digits);
+  virtual void    EvalAll(Float_t logWeight, TClonesArray * digits, const Bool_t justClusters);
   virtual void    EvalLocalPosition (Float_t logWeight, TClonesArray * digits);
   virtual void    EvalGlobalPosition(Float_t logWeight, TClonesArray * digits);
 

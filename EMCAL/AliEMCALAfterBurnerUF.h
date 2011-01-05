@@ -26,7 +26,7 @@ class AliEMCALAfterBurnerUF {
 
   public:
     AliEMCALAfterBurnerUF();
-    AliEMCALAfterBurnerUF(Float_t logWeight, Float_t ECALocMaxCut);
+    AliEMCALAfterBurnerUF(Float_t logWeight, Float_t locMaxCut);
     virtual ~AliEMCALAfterBurnerUF();
 
   private:
@@ -34,10 +34,11 @@ class AliEMCALAfterBurnerUF {
     AliEMCALAfterBurnerUF & operator = (const AliEMCALAfterBurnerUF & uf) ;//cpy assignment, put here to avoid compilation warning 
   
   public:
+    virtual void Clear();
     virtual void Init();
     virtual void RecPoints2Clusters(TObjArray *clusArray);
     virtual void UnfoldClusters(TObjArray *clusArray, AliVCaloCells *cellsEMCAL);  // does the job
-
+  
     // getters and setters
     virtual AliEMCALUnfolding *GetClusterUnfoldingInstance() { return fClusterUnfolding; }
 
@@ -45,8 +46,8 @@ class AliEMCALAfterBurnerUF {
     AliEMCALGeometry  *fGeom;          // EMCAL geometry
     Float_t            fLogWeight;     // used in AliEMCALRecPoint::EvalGlobalPosition()
     Float_t            fECALocMaxCut;  // this amount of energy must distinguish a local maximum from its neighbours
-    TObjArray         *fRecPoints;     // cluster <=> recPoint
-    TClonesArray      *fDigitsArr;     // cell <=> digit
+    TObjArray         *fRecPoints;     //! cluster <=> recPoint
+    TClonesArray      *fDigitsArr;     //->   cell <=> digit
 
     AliEMCALUnfolding *fClusterUnfolding;  // unfolding class instance
 
