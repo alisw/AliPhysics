@@ -70,13 +70,14 @@ AliEMCALHistoUtilities::~AliEMCALHistoUtilities()
 	//destructor
 }  
 
-TList* AliEMCALHistoUtilities::MoveHistsToList(const char* name, Bool_t putToBrowser)
+TList* AliEMCALHistoUtilities::MoveHistsToList(const char* name, Bool_t putToBrowser, Bool_t setOwner)
 {
   // Move HIST to list
   gROOT->cd();
   TIter nextHist(gDirectory->GetList());
   TList *list = new TList;
   list->SetName(name);
+  if(setOwner) list->SetOwner(setOwner);
   TObject *objHist;
   while((objHist=nextHist())){
     if (!objHist->InheritsFrom("TH1")) continue;

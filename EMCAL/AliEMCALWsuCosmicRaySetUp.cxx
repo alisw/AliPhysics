@@ -141,9 +141,10 @@ void AliEMCALWsuCosmicRaySetUp::CreateGeometry()
   //AliMC *ALIMC  = dynamic_cast<AliMC *>(gMC);
   //AliGenBox* gB = dynamic_cast<AliGenBox *>(ALIMC->Generator());
   //Double_t p = gB->
-  fLHists->Add(BookKineHists(1.,"primeKineHists"));
-  fLHists->Add(BookKineHists(1.,"endKineHists"));
-  fLHists->Add(BookKineHists(1.,"secondaryKineHists"));
+  Double_t pmom=1.5; 
+  fLHists->Add(BookKineHists(pmom,"primeKineHists"));
+  fLHists->Add(BookKineHists(pmom,"endKineHists"));
+  fLHists->Add(BookKineHists(pmom,"secondaryKineHists"));
   //ll = BookKineHists(1.,"kineHists");
   //gROOT->GetListOfBrowsables()->Add(ll);
 }
@@ -259,13 +260,13 @@ TList* AliEMCALWsuCosmicRaySetUp::BookKineHists(const Double_t p , const Char_t 
   TH1::AddDirectory(1);
 
   TH1 *h = 0, *hgid=0;
-  Int_t nphi=180;
-  Int_t phimin=0.0, phimax=360.;
+  Int_t nphi=180, nmax=1100;
+  Double_t phimin=0.0, phimax=360.;
   Double_t pmax=110.;
   if(p>0.1) pmax = 1.1*p;
   h = new TH1F("00_hNPrim"," number of primary particles ", 10, 0.5, 10.5);
   hgid = new TH1F("01_hGidprim","Geant Id of primary particles", 16, 0.5, 16.5);
-  new TH1F("02_hPmomPrim","p of primary particles", 200, 0.0, pmax);
+  new TH1F("02_hPmomPrim","p of primary particles", nmax, 0.0, pmax);
   new TH1F("03_hEtaPrim","#eta primary particles", 80, 0.0, 8.0);
   new TH1F("04_hPhiPrim","#phi primary particles", nphi,phimin,phimax);
   new TH1F("05_hThetaPrim","#theta primary particles", 90, 0.0, 90.);
