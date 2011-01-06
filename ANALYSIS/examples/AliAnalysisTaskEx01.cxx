@@ -199,6 +199,14 @@ void AliAnalysisTaskEx01::UserExec(Option_t *)
     //
     // These booleans can then be used to fill different histograms for specific
     // conditions, or summed to make one cut for all events that fill histos.
+
+    // Do some fast cuts first
+    // check for good reconstructed vertex
+    if(!(esd->GetPrimaryVertex()->GetStatus())) return;
+    // if vertex is from spd vertexZ, require more stringent cut
+    if (esd->GetPrimaryVertex()->IsFromVertexerZ()) {
+        if (esd->GetPrimaryVertex()->GetDispersion()>0.02 ||  esd->GetPrimaryVertex()->GetZRes()>0.25 ) return; // bad vertex from VertexerZ
+    }
         
     // Track loop for reconstructed event
     Int_t ntracks = esd->GetNumberOfTracks();
@@ -209,13 +217,6 @@ void AliAnalysisTaskEx01::UserExec(Option_t *)
             continue; 
         }
                 
-        // Do some fast cuts first
-        // check for good reconstructed vertex
-        if(!(esd->GetPrimaryVertex()->GetStatus())) continue;
-        // if vertex is from spd vertexZ, require more stringent cut
-        if (esd->GetPrimaryVertex()->IsFromVertexerZ()) {
-            if (esd->GetPrimaryVertex()->GetDispersion()>0.02 ||  esd->GetPrimaryVertex()->GetZRes()>0.25 ) continue; // bad vertex from VertexerZ
-        }
         // Some MC checks, if MC is used
         //if(esdtrack->GetLabel() < 0) continue; // get rid of "ghost" tracks
                 
