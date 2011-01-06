@@ -8,6 +8,9 @@
 // 05/12/2009 cvetan.cheshkov@cern.ch
 //------------------------------
 
+class TH1F;
+class TH2F;
+
 #include "AliAnalysisTaskSE.h"
 
 class AliAnaVZEROQA : public AliAnalysisTaskSE
