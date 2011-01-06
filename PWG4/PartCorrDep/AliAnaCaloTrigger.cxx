@@ -126,13 +126,13 @@ void AliAnaCaloTrigger::UserExec(Option_t *)
   
   if ( !((Entry()-1)%100) ) 
     printf(" Processing event # %lld\n",  Entry()) ; 
-  AliESDEvent* esd = 0x0;
-  esd = (AliESDEvent*)InputEvent();
-  
-  //Get MC data, if available
-  AliStack* stack = 0x0; 
-  if(MCEvent())
-    stack = MCEvent()->Stack();
+//  AliESDEvent* esd = 0x0;
+//  esd = (AliESDEvent*)InputEvent();
+//  
+//  //Get MC data, if available
+//  AliStack* stack = 0x0; 
+//  if(MCEvent())
+//    stack = MCEvent()->Stack();
   
   // // Get trigger information of fCalorimeter 
   // TArrayF * triggerAmplitudes = 0x0 ;

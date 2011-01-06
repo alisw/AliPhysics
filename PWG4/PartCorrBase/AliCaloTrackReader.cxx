@@ -761,7 +761,8 @@ void AliCaloTrackReader::FillInputEMCAL() {
     for (Int_t iclus =  0; iclus <  nclusters; iclus++) {
       AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));
       //printf("E %f\n",clus->E());
-      FillInputEMCALAlgorithm(clus, iclus);
+      if (clus) FillInputEMCALAlgorithm(clus, iclus);
+      else printf("AliCaloTrackReader::FillInputEMCAL() - Null cluster in list!\n");
     }// cluster loop
   }
   
