@@ -40,6 +40,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask()
     fMCESDFMD(),
     fMCHistos(),
     fMCAODFMD(),
+    fPrimary(0),
     fEventInspector(),
     fEnergyFitter(),
     fSharingFilter(),
@@ -63,6 +64,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
     fMCESDFMD(),
     fMCHistos(),
     fMCAODFMD(kTRUE),
+    fPrimary(0),
     fEventInspector("event"),
     fEnergyFitter("energy"),
     fSharingFilter("sharing"), 
@@ -90,9 +92,10 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const AliForwardMCMul
     fMCESDFMD(o.fMCESDFMD),
     fMCHistos(o.fMCHistos),
     fMCAODFMD(o.fMCAODFMD),
+    fPrimary(o.fPrimary),
     fEventInspector(o.fEventInspector),
     fEnergyFitter(o.fEnergyFitter),
-   fSharingFilter(o.fSharingFilter),
+    fSharingFilter(o.fSharingFilter),
     fDensityCalculator(o.fDensityCalculator),
     fCorrections(o.fCorrections),
     fHistCollector(o.fHistCollector),
@@ -133,6 +136,7 @@ AliForwardMCMultiplicityTask::operator=(const AliForwardMCMultiplicityTask& o)
   fAODFMD            = o.fAODFMD;
   fMCHistos          = o.fMCHistos;
   fMCAODFMD          = o.fMCAODFMD;
+  fPrimary           = o.fPrimary;
   fList              = o.fList;
 
   return *this;
@@ -213,6 +217,7 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   fHData = static_cast<TH2D*>(fAODFMD.GetHistogram().Clone("d2Ndetadphi"));
   fHData->SetStats(0);
   fHData->SetDirectory(0);
+
   fList->Add(fHData);
 
   fEnergyFitter.Init(*pe);
@@ -245,6 +250,16 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
 
   TObject* mcobj = &fMCAODFMD;
   ah->AddBranch("AliAODForwardMult", &mcobj);
+
+  fPrimary = new TH2D("primary", "MC Primaries", 
+		      200, -4, 6, 20, 0, 2*TMath::Pi());
+  fPrimary->SetXTitle("#eta");
+  fPrimary->SetYTitle("#varphi [radians]");
+  fPrimary->SetZTitle("d^{2}N_{ch}/d#etad#phi");
+  fPrimary->Sumw2();
+  fPrimary->SetStats(0);
+  fPrimary->SetDirectory(0);
+  ah->AddBranch("TH2D", &fPrimary);
 
   fEventInspector.DefineOutput(fList);
   fEnergyFitter.DefineOutput(fList);
@@ -299,6 +314,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fMCHistos.Clear();
   fMCESDFMD.Clear();
   fMCAODFMD.Clear();
+  fPrimary->Reset();
 
   Bool_t   lowFlux  = kFALSE;
   UInt_t   triggers = 0;
@@ -332,7 +348,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
     AliWarning("Sharing filter failed!");
     return;
   }
-  if (!fSharingFilter.FilterMC(*esdFMD, *mcEvent, vz, fMCESDFMD)) { 
+  if (!fSharingFilter.FilterMC(*esdFMD, *mcEvent, vz, fMCESDFMD, fPrimary)) { 
     AliWarning("MC Sharing filter failed!");
     return;
   }

@@ -70,18 +70,22 @@ public:
    */
   AliFMDMCSharingFilter& operator=(const AliFMDMCSharingFilter& o);
   /** 
-   * Filter the input AliESDFMD object
+   * Filter the input kinematics and track references, using 
+   * some of the ESD information
    * 
-   * @param input     Input (from ESD) - used for eta
-   * @param lowFlux   If this is a low-flux event 
-   * @param output    Output AliESDFMD object 
-   * 
-   * @return True on success, false otherwise 
+   * @param input   Input ESD event
+   * @param event   Input MC event
+   * @param vz      Vertex position 
+   * @param output  Output ESD-like object
+   * @param primary Per-event histogram of primaries 
+   *
+   * @return True on succes, false otherwise 
    */
   Bool_t FilterMC(const AliESDFMD&  input, 
 		  const AliMCEvent& event,
 		  Double_t          vz,
-		  AliESDFMD&        output);
+		  AliESDFMD&        output,
+		  TH2D*             primary);
   /** 
    * Compare the result of merging to the monte-carlo truth.  This
    * fills the correlation histograms

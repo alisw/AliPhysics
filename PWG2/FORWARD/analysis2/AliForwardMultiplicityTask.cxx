@@ -54,7 +54,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
     fHData(0),
     fESDFMD(),
     fHistos(),
-    fAODFMD(kTRUE),
+    fAODFMD(false),
     fEventInspector("event"),
     fEnergyFitter("energy"),
     fSharingFilter("sharing"), 

@@ -158,6 +158,7 @@ protected:
   AliESDFMD              fMCESDFMD;     // MC 'Sharing corrected' ESD object
   AliForwardUtil::Histos fMCHistos;     // MC Cache histograms 
   AliAODForwardMult      fMCAODFMD;     // MC Output object
+  TH2D*                  fPrimary;      // Per event primary particles 
 
   AliFMDEventInspector      fEventInspector;    // Algorithm
   AliFMDEnergyFitter        fEnergyFitter;      // Algorithm

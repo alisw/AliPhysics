@@ -164,18 +164,22 @@ Bool_t
 AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input, 
 				const AliMCEvent& event,
 				Double_t          vz,
-				AliESDFMD&        output)
+				AliESDFMD&        output, 
+				TH2D*             primary)
 {
   // 
-  // Filter the input AliESDFMD object
+  // Filter the input kinematics and track references, using 
+  // some of the ESD information
   // 
   // Parameters:
-  //    input     Input (from ESD) - used for eta
-  //    lowFlux   If this is a low-flux event 
-  //    output    Output AliESDFMD object 
-  // 
+  //    input   Input ESD event
+  //    event   Input MC event
+  //    vz      Vertex position 
+  //    output  Output ESD-like object
+  //    primary Per-event histogram of primaries 
+  //
   // Return:
-  //    True on success, false otherwise 
+  //    True on succes, false otherwise 
   //
   output.Clear();
 
@@ -206,7 +210,10 @@ AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input,
     Bool_t isPrimary = stack->IsPhysicalPrimary(iTr);
 
     // Fill 'dn/deta' histogram 
-    if (isPrimary) fSumEta->Fill(particle->Eta());
+    if (isPrimary) { 
+      fSumEta->Fill(particle->Eta());
+      primary->Fill(particle->Eta(), particle->Phi());
+    }
 
     Int_t    nTrRef  = particle->GetNumberOfTrackReferences();
     Int_t    longest = -1;
