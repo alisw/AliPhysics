@@ -159,7 +159,7 @@ enum EAliAnalysisFlags {
    
    // Analysis initialization and execution, status
    void                 AddBranches(const char *branches);
-   void                 AddStatisticsTask();
+   void                 AddStatisticsTask(UInt_t offlineMask=0);
    void                 CheckBranches(Bool_t load=kFALSE);
    void                 CountEvent(Int_t ninput, Int_t nprocessed, Int_t nfailed, Int_t naccepted);
    Bool_t               InitAnalysis();
@@ -176,6 +176,7 @@ enum EAliAnalysisFlags {
    void                 AddStatisticsMsg(const char *line);
    const char          *GetStatisticsMsg() const {return fStatisticsMsg.Data();}
    const AliAnalysisStatistics *GetStatistics() const {return fStatistics;}
+   void                 SetStatistics(AliAnalysisStatistics *stat) {fStatistics = stat;}
    void                 WriteStatisticsMsg(Int_t nevents);
    Int_t                GetNcalls() const {return fNcalls;}
    Bool_t               ValidateOutputFiles() const;

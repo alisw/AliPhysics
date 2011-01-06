@@ -56,7 +56,7 @@ AliAnalysisTaskStat::~AliAnalysisTaskStat()
 } 
     
 //______________________________________________________________________________
-AliAnalysisTaskStat *AliAnalysisTaskStat::AddToManager()
+AliAnalysisTaskStat *AliAnalysisTaskStat::AddToManager(UInt_t offlineMask)
 {
 // Add this task to the analysis manager. By default it selects MB events.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -73,7 +73,10 @@ AliAnalysisTaskStat *AliAnalysisTaskStat::AddToManager()
                 mgr->GetCommonFileName());
   AliAnalysisTaskStat *taskStatistics = new AliAnalysisTaskStat("MgrStat");
   mgr->AddTask(taskStatistics);
-  taskStatistics->SelectCollisionCandidates(AliVEvent::kMB);
+  AliAnalysisStatistics *stat = taskStatistics->GetStatistics();
+  stat->SetOfflineMask(offlineMask);
+  mgr->SetStatistics(stat);
+  taskStatistics->SelectCollisionCandidates(offlineMask);
   mgr->ConnectInput(taskStatistics, 0, cinput);
   mgr->ConnectOutput(taskStatistics, 1, coutput);
   return taskStatistics;
@@ -113,11 +116,14 @@ void  AliAnalysisTaskStat::Terminate(Option_t *)
     Error("Terminate", "Statistics object not found in list");
     return;
   }
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (stat != fStatistics) {
+    // Non-local mode
     fStatistics->AddInput(stat->GetNinput());
     fStatistics->AddProcessed(stat->GetNprocessed());
     fStatistics->AddFailed(stat->GetNfailed());
     fStatistics->AddAccepted(stat->GetNaccepted());
+    mgr->SetStatistics(fStatistics);
   }
   fStatistics->Print();
 }  

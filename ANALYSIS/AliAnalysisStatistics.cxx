@@ -28,6 +28,8 @@
 #include "Riostream.h"
 #include "TCollection.h"
 
+#include "AliVEvent.h"
+
 ClassImp(AliAnalysisStatistics)
 
 //______________________________________________________________________________
@@ -36,7 +38,8 @@ AliAnalysisStatistics::AliAnalysisStatistics(const AliAnalysisStatistics &other)
        fNinput(other.fNinput),
        fNprocessed(other.fNprocessed),
        fNfailed(other.fNfailed),
-       fNaccepted(other.fNaccepted)
+       fNaccepted(other.fNaccepted),
+       fOfflineMask(other.fOfflineMask)
 {
 // Copy constructor.
 }
@@ -50,6 +53,7 @@ AliAnalysisStatistics &AliAnalysisStatistics::operator=(const AliAnalysisStatist
   fNprocessed = other.fNprocessed;
   fNfailed    = other.fNfailed;
   fNaccepted  = other.fNaccepted;
+  fOfflineMask = other.fOfflineMask;
   return *this;
 }
 
@@ -77,5 +81,31 @@ void AliAnalysisStatistics::Print(const Option_t *) const
   cout << "### Input events                 : " << fNinput << endl;
   cout << "### Processed events w/o errors  : " << fNprocessed << endl;
   cout << "### Failed events                : " << fNfailed << endl;
-  cout << "### Accepted events              : " << fNaccepted << endl;
+  cout << "### Accepted events for mask: " << GetMaskAsString(fOfflineMask) << ": " << fNaccepted << endl;
 }
+
+//______________________________________________________________________________
+const char *AliAnalysisStatistics::GetMaskAsString(UInt_t mask)
+{
+// Returns a string corresponding to the offline mask.
+   static TString smask;
+   smask = "ALL EVT.";
+   if (!mask) return smask.Data();
+   smask.Clear();
+   if (mask & AliVEvent::kMB)   smask = "MB";
+   if (mask & AliVEvent::kMUON) {
+      if (!smask.IsNull()) smask += " | ";
+      smask += "MUON";
+   }
+   if (mask & AliVEvent::kHighMult) {
+      if (!smask.IsNull()) smask += " | ";
+      smask += "HighMult";
+   }
+   if (mask & AliVEvent::kUserDefined) {
+      if (!smask.IsNull()) smask += " | ";
+      smask += "UserDefined";
+   }
+   if (mask ==  AliVEvent::kAny) smask = "ANY";
+   return smask.Data();
+}
+   
