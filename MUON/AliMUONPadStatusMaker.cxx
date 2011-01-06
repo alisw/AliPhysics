@@ -263,7 +263,7 @@ AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
         hvMin = TMath::Min(hv,hvMin);
       }
       
-      float lowThreshold = fHVLimit[chamberId];
+      float lowThreshold = HVLimit(chamberId);
             
       if ( hvMin < lowThreshold ) hvChannelTooLow = kTRUE;
       if ( hvMin < hvNamer.TrackerHVOFF() ) hvChannelON = kFALSE;
@@ -375,7 +375,7 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
         hvMin = TMath::Min(hv,hvMin);
       }
 
-      float lowThreshold = fHVLimit[chamberId];
+      float lowThreshold = HVLimit(chamberId);
 
       if ( hvMin < lowThreshold ) hvChannelTooLow = kTRUE;
       if ( hvMin < hvNamer.TrackerHVOFF() ) hvChannelON = kFALSE;
@@ -656,6 +656,18 @@ AliMUONPadStatusMaker::SetHVStatus(Int_t detElemId, Int_t index, Int_t status) c
     Int_t manuId = manus->GetValue(i);
     fHV->Add(AliMpManuUID::BuildUniqueID(detElemId,manuId),status + 1);
   }
+}
+
+//_____________________________________________________________________________
+Double_t
+AliMUONPadStatusMaker::HVLimit(Int_t chamberId) const
+{
+  /// Get HV limit for a given chamber
+  if ( chamberId >=0 && chamberId < 10 ) 
+  {
+    return fHVLimit[chamberId];
+  }
+  return 0.0;
 }
 
 //_____________________________________________________________________________
