@@ -1,5 +1,9 @@
-#ifndef ALIROOT_PWG2_FORWARD_ALIFORWARDUTIL_H
-#define ALIROOT_PWG2_FORWARD_ALIFORWARDUTIL_H
+// 
+// Utilities used in the forward multiplcity analysis 
+// 
+//
+#ifndef ALIFORWARDUTIL_H
+#define ALIFORWARDUTIL_H
 #include <TObject.h>
 #include <TString.h>
 #include <TObjArray.h>
@@ -324,6 +328,10 @@ public:
      * @param minusBins  The number of bins below maximum to use 
      */
     ELossFitter(Double_t lowCut, Double_t maxRange, UShort_t minusBins); 
+    /** 
+     * Destructor
+     * 
+     */
     virtual ~ELossFitter();
     /** 
      * Clear internal arrays 
@@ -500,28 +508,28 @@ public:
       return *this;
     }
     /** 
+     * Define the outout list in @a d
      * 
+     * @param d Where to put the output list
      * 
-     * @param d 
-     * 
-     * @return 
+     * @return Newly allocated TList object or null
      */
     TList* DefineOutputList(TList* d) const;
     /** 
+     * Get our output list from the container @a d
      * 
+     * @param d where to get the output list from 
      * 
-     * @param d 
-     * 
-     * @return 
+     * @return The found TList or null
      */
     TList* GetOutputList(TList* d) const;
     /** 
+     * Find a specific histogram in the source list @a d
      * 
+     * @param d     (top)-container 
+     * @param name  Name of histogram
      * 
-     * @param d 
-     * @param name 
-     * 
-     * @return 
+     * @return Found histogram or null
      */
     TH1* GetOutputHist(TList* d, const char* name) const;
     /** 

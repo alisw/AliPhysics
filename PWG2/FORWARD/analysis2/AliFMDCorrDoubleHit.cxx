@@ -1,3 +1,8 @@
+//
+// This class contains the secondary correction and the double hit
+// correction used in low-flux events.
+//
+//
 #include "AliFMDCorrDoubleHit.h"
 #include <TBrowser.h>
 #include <TH1D.h>
@@ -8,6 +13,9 @@
 AliFMDCorrDoubleHit::AliFMDCorrDoubleHit()
   : fCorrections()
 {
+  // Constructor 
+  // 
+  // 
   fCorrections.SetOwner(kTRUE);
   fCorrections.SetName("doubleHit");
 }
@@ -16,16 +24,27 @@ AliFMDCorrDoubleHit::AliFMDCorrDoubleHit(const AliFMDCorrDoubleHit& o)
   : TObject(o), 
     fCorrections(o.fCorrections)
 {
+  // Copy constructor 
+  // 
+  // Parameters: 
+  //   o  Object to copy from 
 }
 //____________________________________________________________________
 AliFMDCorrDoubleHit::~AliFMDCorrDoubleHit()
 {
+  // 
+  // Destructor 
+  // 
   fCorrections.Clear();
 }
 //____________________________________________________________________
 AliFMDCorrDoubleHit&
 AliFMDCorrDoubleHit::operator=(const AliFMDCorrDoubleHit& o)
 {
+  // Assignment operator 
+  // 
+  // Parameters: 
+  //   o   Object to assign from 
   fCorrections   = o.fCorrections;
 
   return *this;
@@ -34,6 +53,16 @@ AliFMDCorrDoubleHit::operator=(const AliFMDCorrDoubleHit& o)
 TH1D*
 AliFMDCorrDoubleHit::GetCorrection(UShort_t d, Char_t r) const
 {
+  // 
+  // Get the double hit correction @f$ h_{r}(\eta)@f$ 
+  //
+  // Parameters:
+  //    d Detector number 
+  //    r Ring identifier 
+  // 
+  // Return:
+  //    @f$ h_{r}(\eta)@f$ 
+  //
   Int_t idx = GetRingIndex(d, r);
   if (idx < 0) return 0;
 
@@ -48,6 +77,17 @@ AliFMDCorrDoubleHit::GetCorrection(UShort_t d, Char_t r) const
 Int_t
 AliFMDCorrDoubleHit::GetRingIndex(UShort_t d, Char_t r) const
 {
+  // 
+  // Get the index corresponding to the given ring 
+  //
+  // Parameters:
+  //    d Detector
+  //    r Ring 
+  // 
+  // Return:
+  //    Index (0 based) or negative in case of errors
+  //
+
   switch (d) {
   case 1:  return 0;
   case 2:  return (r == 'I' || r == 'i' ? 1 : 2); break;  
@@ -60,6 +100,18 @@ AliFMDCorrDoubleHit::GetRingIndex(UShort_t d, Char_t r) const
 Bool_t
 AliFMDCorrDoubleHit::SetCorrection(UShort_t d, Char_t r, TH1D* h) 
 {
+  // 
+  // Set the double hit correction @f$ h_{r}(\eta)@f$. Note, that the
+  // object takes ownership of the passed pointer.
+  //
+  // Parameters:
+  //    d  Detector number (1-3)
+  //    r  Ring identifier (I or O)
+  //    h  @f$ h_{r}(\eta)@f$ 
+  // 
+  // Return:
+  //    true if operation succeeded 
+  //
   Int_t idx = GetRingIndex(d, r);
   if (idx < 0) return kFALSE;
 
@@ -80,12 +132,20 @@ AliFMDCorrDoubleHit::SetCorrection(UShort_t d, Char_t r, TH1D* h)
 void
 AliFMDCorrDoubleHit::Browse(TBrowser* b)
 {
+  // BRowse this object 
+  // 
+  // Parameters:
+  //  b   Browser to use
   b->Add(&fCorrections);
 }
 //____________________________________________________________________
 void
 AliFMDCorrDoubleHit::Print(Option_t* option) const
 {
+  // Print this object 
+  // 
+  // Parameters:
+  //  option   Passed to TH2D::Print 
   std::cout << "Double hit correction" << std::endl;
   fCorrections.Print(option);
 }

@@ -1,5 +1,8 @@
-#ifndef ALIROOT_PWG2_FORWARD_ALIFMDCORRELOSSFIT_H
-#define ALIROOT_PWG2_FORWARD_ALIFMDCORRELOSSFIT_H
+// Object holding the Energy loss fit 'correction'
+// 
+// These are generated from Monte-Carlo or real ESDs. 
+#ifndef ALIFMDCORRELOSSFIT_H
+#define ALIFMDCORRELOSSFIT_H
 #include <TObject.h>
 #include <TAxis.h>
 #include <TObjArray.h>

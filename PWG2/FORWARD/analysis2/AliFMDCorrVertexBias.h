@@ -2,8 +2,8 @@
 // This class contains the secondary correction and the double hit
 // correction used in low-flux events.
 //
-#ifndef ALIROOT_PWG2_FORWARD_ANALYSIS_ALIFMDCORRVERTEXBIAS_H
-#define ALIROOT_PWG2_FORWARD_ANALYSIS_ALIFMDCORRVERTEXBIAS_H
+#ifndef ALIFMDCORRVERTEXBIAS_H
+#define ALIFMDCORRVERTEXBIAS_H
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TAxis.h>

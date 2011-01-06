@@ -1,5 +1,8 @@
-#ifndef ALIROOT_PWG2_FORWARD_ANALYSIS2_ALIFMDDENSITYCALCULATOR_H
-#define ALIROOT_PWG2_FORWARD_ANALYSIS2_ALIFMDDENSITYCALCULATOR_H
+// This class calculates the inclusive charged particle density
+// in each for the 5 FMD rings. 
+//
+#ifndef ALIFMDDENSITYCALCULATOR_H
+#define ALIFMDDENSITYCALCULATOR_H
 #include <TNamed.h>
 #include <TList.h>
 #include "AliForwardUtil.h"

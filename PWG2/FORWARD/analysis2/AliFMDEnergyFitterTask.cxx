@@ -1,6 +1,21 @@
+// 
+// Histogram and fit the energy loss distributions for the FMD
+// 
+// Inputs: 
+//   - AliESDEvent 
+//
+// Outputs: 
+//   - None
+// 
+// Histograms:
+//   
+// Corrections used:
+//   - None
+// 
+// 
+//
 #include "AliFMDEnergyFitterTask.h"
 #include "AliLog.h"
-// #include "AliFMDAnaParameters.h"
 #include "AliESDEvent.h"
 #include "AliAODForwardMult.h"
 #include "AliForwardCorrectionManager.h"
@@ -17,6 +32,9 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
     fEnergyFitter(),
     fList(0)
 {
+  // 
+  // Constructor
+  //
 }
 
 //____________________________________________________________________
@@ -27,6 +45,12 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
     fEnergyFitter("energy"),
     fList(0)
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    name Name of task 
+  //
   DefineOutput(1, TList::Class());
 }
 
@@ -38,6 +62,12 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const AliFMDEnergyFitterTask& o)
     fEnergyFitter(o.fEnergyFitter),
     fList(o.fList) 
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
   DefineOutput(1, TList::Class());
 }
 
@@ -45,6 +75,15 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const AliFMDEnergyFitterTask& o)
 AliFMDEnergyFitterTask&
 AliFMDEnergyFitterTask::operator=(const AliFMDEnergyFitterTask& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object 
+  //
   AliAnalysisTaskSE::operator=(o);
 
   fFirstEvent        = o.fFirstEvent;
@@ -59,6 +98,12 @@ AliFMDEnergyFitterTask::operator=(const AliFMDEnergyFitterTask& o)
 void
 AliFMDEnergyFitterTask::SetDebug(Int_t dbg)
 {
+  // 
+  // Set the debug level 
+  // 
+  // Parameters:
+  //    dbg Debug level
+  //
   fEventInspector.SetDebug(dbg);
   fEnergyFitter.SetDebug(dbg);
 }
@@ -67,6 +112,10 @@ AliFMDEnergyFitterTask::SetDebug(Int_t dbg)
 void
 AliFMDEnergyFitterTask::Init()
 {
+  // 
+  // Initialize the task 
+  // 
+  //
   fFirstEvent = true;
 }
 
@@ -74,10 +123,10 @@ AliFMDEnergyFitterTask::Init()
 void
 AliFMDEnergyFitterTask::InitializeSubs()
 {
-
-  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  // pars->Init(kTRUE);
-
+  // 
+  // Initialise the sub objects and stuff.  Called on first event 
+  // 
+  //
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   fcm.Init(fEventInspector.GetCollisionSystem(), 
 	   fEventInspector.GetEnergy(),
@@ -92,6 +141,10 @@ AliFMDEnergyFitterTask::InitializeSubs()
 void
 AliFMDEnergyFitterTask::UserCreateOutputObjects()
 {
+  // 
+  // Create output objects 
+  // 
+  //
   fList = new TList;
 
   fEventInspector.DefineOutput(fList);
@@ -103,6 +156,13 @@ AliFMDEnergyFitterTask::UserCreateOutputObjects()
 void
 AliFMDEnergyFitterTask::UserExec(Option_t*)
 {
+  // 
+  // Process each event 
+  // 
+  // Parameters:
+  //    option Not used
+  //  
+
   // static Int_t cnt = 0;
   // cnt++;
   // Get the input data 
@@ -164,6 +224,12 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
 void
 AliFMDEnergyFitterTask::Terminate(Option_t*)
 {
+  // 
+  // End of job
+  // 
+  // Parameters:
+  //    option Not used 
+  //
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {
     AliError(Form("No output list defined (%p)", GetOutputData(1)));
@@ -190,6 +256,12 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
 void
 AliFMDEnergyFitterTask::Print(Option_t*) const
 {
+  // 
+  // Print information 
+  // 
+  // Parameters:
+  //    option Not used
+  //
 }
 
 //

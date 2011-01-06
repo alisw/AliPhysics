@@ -1,17 +1,11 @@
+// 
+// Base class for classes that calculate the multiplicity in the
+// forward regions event-by-event
+// 
 #ifndef ALIFORWARDMULTIPLICITYBASE_H
 #define ALIFORWARDMULTIPLICITYBASE_H
 #include <AliAnalysisTaskSE.h>
 #include "AliForwardUtil.h"
-// #include "AliFMDEventInspector.h"
-// #include "AliFMDEnergyFitter.h"
-// #include "AliFMDSharingFilter.h"
-// #include "AliFMDDensityCalculator.h"
-// #include "AliFMDCorrections.h"
-// #include "AliFMDHistCollector.h"
-// #include "AliAODForwardMult.h"
-// #include "AliFMDEnergyFitter.h"
-// #include <AliESDFMD.h>
-// #include <TH1I.h>
 class AliFMDEventInspector;
 class AliFMDEnergyFitter;
 class AliFMDSharingFilter;
@@ -43,7 +37,8 @@ class TTree;
  * @ingroup pwg2_forward 
  */
 /** 
- * Calculate the multiplicity in the forward regions event-by-event 
+ * Base class for classes that calculate the multiplicity in the
+ * forward regions event-by-event
  * 
  * @par Inputs: 
  *   - AliESDEvent 

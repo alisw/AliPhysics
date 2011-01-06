@@ -1,5 +1,8 @@
-#ifndef ALIROOT_PWG2_FORWARD_ALIFMDENERGYFITTERTASK_H
-#define ALIROOT_PWG2_FORWARD_ALIFMDENERGYFITTERTASK_H
+// Histogram and fit the energy loss distributions for the FMD
+// 
+// Wraps AliFMDEnergyFitter 
+#ifndef ALIFMDENERGYFITTERTASK_H
+#define ALIFMDENERGYFITTERTASK_H
 #include <AliAnalysisTaskSE.h>
 #include "AliForwardUtil.h"
 #include "AliFMDEventInspector.h"
@@ -109,6 +112,11 @@ public:
   AliFMDEnergyFitter& GetEnergyFitter() { return fEnergyFitter; }
   /** 
    * @} 
+   */
+  /** 
+   * Set the debug level 
+   * 
+   * @param dbg Debug level
    */
   void SetDebug(Int_t dbg);
 protected: 

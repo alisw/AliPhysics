@@ -1,9 +1,17 @@
 //====================================================================
-/**
- * @file 
- *
- * @ingroup pwg2_forward_tasks 
- */
+// 
+// Base class for classes that calculate the multiplicity in the
+// forward regions event-by-event
+// 
+// Inputs: 
+//   - AliESDEvent 
+//
+// Outputs: 
+//   - AliAODForwardMult 
+// 
+// Histograms 
+//   
+// Corrections used 
 #include "AliForwardMultiplicityBase.h"
 #include "AliLog.h"
 #include "AliAODHandler.h"
@@ -31,6 +39,12 @@ AliForwardMultiplicityBase::MarkEventForStore() const
 void
 AliForwardMultiplicityBase::Print(Option_t* option) const
 {
+  // 
+  // Print information 
+  // 
+  // Parameters:
+  //    option Not used
+  //
   std::cout << "AliForwardMultiplicityBase: " << GetName() << "\n" 
 	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no")
 	    << std::endl;

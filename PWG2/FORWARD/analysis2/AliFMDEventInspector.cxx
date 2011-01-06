@@ -1,3 +1,19 @@
+// 
+// This class inspects the event 
+//
+// Input:
+//   - AliESDFMD object possibly corrected for sharing
+//
+// Output:
+//   - A histogram of v_z of events with triggers. 
+//   - A histogram of v_z of events with vertex and triggers 
+//   - A histogram of trigger counters 
+// 
+// Note, that these are added to the master output list 
+//
+// Corrections used: 
+//   - None
+//
 #include "AliFMDEventInspector.h"
 #include "AliLog.h"
 #include "AliESDEvent.h"
@@ -30,6 +46,9 @@ AliFMDEventInspector::AliFMDEventInspector()
     fCollisionSystem(kUnknown),
     fDebug(0)
 {
+  // 
+  // Constructor 
+  //
 }
 
 //____________________________________________________________________
@@ -47,6 +66,12 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fCollisionSystem(kUnknown),
     fDebug(0)
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //   name Name of object
+  //
 }
 
 //____________________________________________________________________
@@ -64,11 +89,20 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fCollisionSystem(o.fCollisionSystem),
     fDebug(0)
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //   o Object to copy from 
+  //
 }
 
 //____________________________________________________________________
 AliFMDEventInspector::~AliFMDEventInspector()
 {
+  // 
+  // Destructor 
+  //
   if (fHEventsTr)    delete fHEventsTr;
   if (fHEventsTrVtx) delete fHEventsTrVtx;
   if (fHTriggers)    delete fHTriggers;  
@@ -79,6 +113,15 @@ AliFMDEventInspector::~AliFMDEventInspector()
 AliFMDEventInspector&
 AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
 {
+  // 
+  // Assignement operator
+  // 
+  // Parameters:
+  //   o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object
+  //
   TNamed::operator=(o);
   fHEventsTr         = o.fHEventsTr;
   fHEventsTrVtx      = o.fHEventsTrVtx;
@@ -108,6 +151,18 @@ AliFMDEventInspector::FetchHistograms(TList* d,
 				      TH1I*& hEventsTrVtx, 
 				      TH1I*& hTriggers) const
 {
+  // 
+  // Fetch our histograms from the passed list 
+  // 
+  // Parameters:
+  //   d             Input
+  //   hEventsTr     On return, pointer to histogram, or null
+  //   hEventsTrVtx  On return, pointer to histogram, or null
+  //   hTriggers     On return, pointer to histogram, or null
+  // 
+  // Return:
+  //    true on success, false otherwise 
+  //
   hEventsTr    = 0;
   hEventsTrVtx = 0;
   hTriggers    = 0;
@@ -125,6 +180,12 @@ AliFMDEventInspector::FetchHistograms(TList* d,
 void
 AliFMDEventInspector::Init(const TAxis& vtxAxis)
 {
+  // 
+  // Initialize the object 
+  // 
+  // Parameters:
+  //   vtxAxis Vertex axis in use 
+  //
   fHEventsTr = new TH1I("nEventsTr", "Number of events w/trigger", 
 			vtxAxis.GetNbins(), 
 			vtxAxis.GetXmin(), 
@@ -184,6 +245,13 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
 void
 AliFMDEventInspector::DefineOutput(TList* dir)
 {
+  // 
+  // Define the output histograms.  These are put in a sub list of the
+  // passed list.   The histograms are merged before the parent task calls 
+  // AliAnalysisTaskSE::Terminate 
+  // 
+  //   dir Directory to add to 
+  //
   fList = new TList;
   fList->SetName(GetName());
   dir->Add(fList);
@@ -197,6 +265,22 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 			      UShort_t&          ivz, 
 			      Double_t&          vz)
 {
+  // 
+  // Process the event 
+  // 
+  // Parameters:
+  //   event     Input event 
+  //   triggers  On return, the triggers fired 
+  //   lowFlux   On return, true if the event is considered a low-flux 
+  //                  event (according to the setting of fLowFluxCut) 
+  //   ivz       On return, the found vertex bin (1-based).  A zero
+  //                  means outside of the defined vertex range
+  //   vz        On return, the z position of the interaction
+  // 
+  // Return:
+  //    0 (or kOk) on success, otherwise a bit mask of error codes 
+  //
+
   // Check that we have an event 
   if (!event) { 
     AliWarning("No ESD event found for input event");
@@ -257,6 +341,16 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 Bool_t
 AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
 {
+  // 
+  // Read the trigger information from the ESD event 
+  // 
+  // Parameters:
+  //   esd        ESD event 
+  //   triggers   On return, contains the trigger bits 
+  // 
+  // Return:
+  //    @c true on success, @c false otherwise 
+  //
   triggers = 0;
 
   // Get the analysis manager - should always be there 
@@ -349,6 +443,16 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
 Bool_t
 AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
 {
+  // 
+  // Read the vertex information from the ESD event 
+  // 
+  // Parameters:
+  //   esd  ESD event 
+  //   vz   On return, the vertex Z position 
+  // 
+  // Return:
+  //    @c true on success, @c false otherwise 
+  //
   vz = 0;
   // Get the vertex 
   const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
@@ -384,6 +488,16 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
 Bool_t
 AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
 {
+  // 
+  // Read the collision system, collision energy, and L3 field setting
+  // from the ESD
+  // 
+  // Parameters:
+  //   esd ESD to get information from 
+  // 
+  // Return:
+  //    true on success, false 
+  //
   fCollisionSystem = 
     AliForwardUtil::ParseCollisionSystem(esd->GetBeamType());
   fEnergy          = 
@@ -404,6 +518,11 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
 void
 AliFMDEventInspector::Print(Option_t*) const
 {
+  // 
+  // Print information
+  // 
+  //   option Not used 
+  //
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';

@@ -1,3 +1,6 @@
+//
+// Class to fit the energy distribution.  
+//
 #ifndef ALIFMDENERGYFITTER_H
 #define ALIFMDENERGYFITTER_H
 #include <TNamed.h>

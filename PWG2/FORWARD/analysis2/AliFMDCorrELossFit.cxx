@@ -1,3 +1,6 @@
+// Object holding the Energy loss fit 'correction'
+// 
+// These are generated from Monte-Carlo or real ESDs. 
 #include "AliFMDCorrELossFit.h"
 #include "AliForwardUtil.h"
 #include <TF1.h>
@@ -35,7 +38,12 @@ AliFMDCorrELossFit::ELossFit::ELossFit()
     fDet(0), 
     fRing('\0'),
     fBin(0)
-{}
+{
+  //
+  // Default constructor 
+  // 
+  //
+}
 //____________________________________________________________________
 AliFMDCorrELossFit::ELossFit::ELossFit(Int_t quality, const TF1& f)
   : fN(f.GetNpar() > AliForwardUtil::ELossFitter::kN ? 
@@ -60,6 +68,13 @@ AliFMDCorrELossFit::ELossFit::ELossFit(Int_t quality, const TF1& f)
     fRing('\0'),
     fBin(0)
 {
+  // 
+  // Construct from a function
+  // 
+  // Parameters:
+  //    quality Quality flag
+  //    f       Function
+  //
   if (fN <= 0) return;
   fA  = new Double_t[fN];
   fEA = new Double_t[fN];
@@ -100,6 +115,29 @@ AliFMDCorrELossFit::ELossFit::ELossFit(Int_t     quality,UShort_t  n,
     fRing('\0'),
     fBin(0)
 {
+  // 
+  // Constructor with full parameter set
+  // 
+  // Parameters:
+  //    quality   Quality flag
+  //    n         @f$ N@f$ - Number of fitted peaks
+  //    chi2      @f$ \chi^2 @f$
+  //    nu        @f$ \nu @f$ - number degrees of freedom
+  //    c         @f$ C@f$ - scale constant
+  //    ec        @f$ \delta C@f$ - error on @f$ C@f$ 
+  //    delta     @f$ \Delta@f$ - Most probable value		  
+  //    edelta    @f$ \delta\Delta@f$ - error on @f$\Delta@f$ 
+  //    xi        @f$ \xi@f$ - width  
+  //    exi       @f$ \delta\xi@f$ - error on @f$\xi@f$ 
+  //    sigma     @f$ \sigma@f$ - Width of Gaussian		   
+  //    esigma    @f$ \delta\sigma@f$ - error on @f$\sigma@f$ 
+  //    sigman    @f$ \sigma_n@f$ - Noise width		  
+  //    esigman   @f$ \delta\sigma_n@f$ - error on @f$\sigma_n@f$ 
+  //    a         Array of @f$ N-1@f$ weights @f$ a_i@f$ for 
+  //                  @f$ i=2,\ldots@f$ 
+  //    ea        Array of @f$ N-1@f$ error on the weights @f$ a_i@f$ for 
+  //                  @f$ i=2,\ldots@f$ 
+  //
   if (fN <= 0) return;
   fA  = new Double_t[fN];
   fEA = new Double_t[fN];
@@ -133,6 +171,12 @@ AliFMDCorrELossFit::ELossFit::ELossFit(const ELossFit& o)
     fRing(o.fRing),
     fBin(o.fBin)
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
   if (fN <= 0) return;
   fA  = new Double_t[fN];
   fEA = new Double_t[fN];
@@ -148,6 +192,15 @@ AliFMDCorrELossFit::ELossFit::ELossFit(const ELossFit& o)
 AliFMDCorrELossFit::ELossFit&
 AliFMDCorrELossFit::ELossFit::operator=(const ELossFit& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object 
+  //
   fN	   = o.fN;
   fNu	   = o.fNu;
   fChi2	   = o.fChi2;
@@ -195,6 +248,23 @@ AliFMDCorrELossFit::ELossFit::FindMaxWeight(Double_t maxRelError,
 					    Double_t leastWeight, 
 					    UShort_t  maxN) const
 {
+  // 
+  // Find the maximum weight to use.  The maximum weight is the
+  // largest i for which 
+  // 
+  // - @f$ i \leq \max{N}@f$ 
+  // - @f$ a_i > \min{a}@f$ 
+  // - @f$ \delta a_i/a_i > \delta_{max}@f$ 
+  // 
+  // Parameters:
+  //    maxRelError @f$ \min{a}@f$ 
+  //    leastWeight @f$ \delta_{max}@f$ 
+  //    maxN        @f$ \max{N}@f$      
+  // 
+  // Return:
+  //    The largest index @f$ i@f$ for which the above
+  // conditions hold.  Will never return less than 1. 
+  //
   Int_t n = TMath::Min(maxN, UShort_t(fN-1));
   Int_t m = 1;
   // fN is one larger than we have data 
@@ -210,6 +280,23 @@ Double_t
 AliFMDCorrELossFit::ELossFit::Evaluate(Double_t x, 
 				       UShort_t maxN) const
 {
+  // 
+  // Evaluate 
+  // @f[ 
+  //  f_N(x;\Delta,\xi,\sigma') = 
+  //     \sum_{i=1}^{n} a_i f(x;\Delta_i,\xi_i,\sigma_i')
+  // @f] 
+  //
+  // (see AliForwardUtil::NLandauGaus) for the maximum @f$ N @f$
+  // that fulfills the requirements 
+  // 
+  // Parameters:
+  //    x           Where to evaluate 
+  //    maxN 	  @f$ \max{N}@f$    
+  // 
+  // Return:
+  //    @f$ f_N(x;\Delta,\xi,\sigma')@f$ 
+  //
   return AliForwardUtil::NLandauGaus(x, fDelta, fXi, fSigma, fSigmaN, 
 				     TMath::Min(maxN, UShort_t(fN)), fA);
 }
@@ -219,6 +306,29 @@ Double_t
 AliFMDCorrELossFit::ELossFit::EvaluateWeighted(Double_t x, 
 					       UShort_t maxN) const
 {									
+  // 
+  // Evaluate 
+  // @f[ 
+  //   f_W(x;\Delta,\xi,\sigma') = 
+  //   \frac{\sum_{i=1}^{n} i a_i f_i(x;\Delta,\xi,\sigma')}{
+  //     f_N(x;\Delta,\xi,\sigma')} = 
+  //   \frac{\sum_{i=1}^{n} i a_i f(x;\Delta_i,\xi_i,\sigma_i')}{
+  //     \sum_{i=1}^{n} a_i f(x;\Delta_i,\xi_i,\sigma_i')}
+  // @f] 
+  // where @f$ n@f$ fulfills the requirements (see FindMaxWeight). 
+  //
+  // If the denominator is zero, then 1 is returned. 
+  //
+  // See also AliForwardUtil::ILandauGaus and AliForwardUtil::NLandauGaus
+  // for more information on the evaluated functions. 
+  // 
+  // Parameters:
+  //    x           Where to evaluate 
+  //    maxN 	  @f$ \max{N}@f$      
+  // 
+  // Return:
+  //    @f$ f_W(x;\Delta,\xi,\sigma')@f$.  
+  //
   UShort_t n   = TMath::Min(maxN, UShort_t(fN-1));
   Double_t num = 0;
   Double_t den = 0;
@@ -247,6 +357,18 @@ AliFMDCorrELossFit::ELossFit::EvaluateWeighted(Double_t x,
 Int_t
 AliFMDCorrELossFit::ELossFit::Compare(const TObject* o) const
 {
+  // 
+  // Compare to another ELossFit object. 
+  // 
+  // - +1, if this quality is better (larger) than other objects quality
+  // - -1, if this quality is worse (smaller) than other objects quality
+  // - +1, if this @f$|\chi^2/\nu-1|@f$ is smaller than the same for other
+  // - -1, if this @f$|\chi^2/\nu-1|@f$ is larger than the same for other
+  // - 0 otherwise 
+  // 
+  // Parameters:
+  //    o Other object to compare to 
+  //
   const ELossFit* other = static_cast<const ELossFit*>(o);
   if (this->fQuality < other->fQuality) return -1;
   if (this->fQuality > other->fQuality) return +1;
@@ -261,6 +383,12 @@ AliFMDCorrELossFit::ELossFit::Compare(const TObject* o) const
 void
 AliFMDCorrELossFit::ELossFit::Print(Option_t*) const
 {
+  // 
+  // Information to standard output 
+  // 
+  // Parameters:
+  //    option Not used 
+  //
   std::cout << GetName() << ":\n"
 	    << " chi^2/nu = " << fChi2 << "/" << fNu << " = " 
 	    << (fNu == 0 ? 999 : fChi2 / fNu) << "\n"
@@ -279,6 +407,13 @@ AliFMDCorrELossFit::ELossFit::Print(Option_t*) const
 const Char_t*
 AliFMDCorrELossFit::ELossFit::GetName() const 
 {
+  // 
+  // Get the name of this object 
+  // 
+  // 
+  // Return:
+  //    
+  //
   return Form("FMD%d%c_etabin%03d", fDet, fRing, fBin);
 }
 
@@ -286,7 +421,12 @@ AliFMDCorrELossFit::ELossFit::GetName() const
 void
 AliFMDCorrELossFit::ELossFit::Browse(TBrowser* b)
 {
-  // Draw this one 
+  // 
+  // Browse this object 
+  // 
+  // Parameters:
+  //    b Browser
+  //
   Draw(b ? b->GetDrawOption() : "comp");
   gPad->SetLogy();
   gPad->Update();
@@ -296,6 +436,13 @@ AliFMDCorrELossFit::ELossFit::Browse(TBrowser* b)
 void
 AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
 {
+  // 
+  // Draw this fit 
+  // 
+  // Parameters:
+  //    option Options 
+  //  - COMP  Draw components too 
+  //
   TString opt(option);
   opt.ToUpper();
   bool comp = false;
@@ -369,6 +516,9 @@ AliFMDCorrELossFit::ELossFit::CalculateQuality(Double_t maxChi2nu,
 					       Double_t maxRelError, 
 					       Double_t leastWeight)
 {
+  // 
+  // Calculate the quality 
+  //
   Int_t qual = 0;
   if (fNu > 0 && fChi2 / fNu < maxChi2nu) qual += 4;;
   if (CHECKPAR(fDelta,  fEDelta,  maxRelError)) qual++;
@@ -386,6 +536,9 @@ AliFMDCorrELossFit::AliFMDCorrELossFit()
     fEtaAxis(0,0,0), 
     fLowCut(0)
 {
+  // 
+  // Default constructor 
+  //
   fRings.SetOwner(kTRUE);
   fEtaAxis.SetTitle("#eta");
   fEtaAxis.SetName("etaAxis");
@@ -399,6 +552,12 @@ AliFMDCorrELossFit::AliFMDCorrELossFit(const AliFMDCorrELossFit& o)
     fEtaAxis(o.fEtaAxis.GetNbins(),o.fEtaAxis.GetXmin(),o.fEtaAxis.GetXmax()), 
     fLowCut(0)
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
   fEtaAxis.SetTitle("#eta");
   fEtaAxis.SetName("etaAxis");
 }
@@ -406,6 +565,9 @@ AliFMDCorrELossFit::AliFMDCorrELossFit(const AliFMDCorrELossFit& o)
 //____________________________________________________________________
 AliFMDCorrELossFit::~AliFMDCorrELossFit()
 {
+  // 
+  // Destructor 
+  //
   fRings.Clear();
 }
 
@@ -413,6 +575,15 @@ AliFMDCorrELossFit::~AliFMDCorrELossFit()
 AliFMDCorrELossFit&
 AliFMDCorrELossFit::operator=(const AliFMDCorrELossFit& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object 
+  //
   fRings = o.fRings;
   fLowCut = o.fLowCut;
   SetEtaAxis(o.fEtaAxis.GetNbins(), o.fEtaAxis.GetXmin(), o.fEtaAxis.GetXmax());
@@ -423,6 +594,16 @@ AliFMDCorrELossFit::operator=(const AliFMDCorrELossFit& o)
 Int_t
 AliFMDCorrELossFit::FindEtaBin(Double_t eta) const
 {
+  // 
+  // Find the eta bin corresponding to the given eta 
+  // 
+  // Parameters:
+  //    eta  Eta value 
+  // 
+  // Return:
+  //    Bin (in @f$[1,N_{bins}]@f$) corresponding to the given
+  // eta, or 0 if out of range.
+  //
   if (fEtaAxis.GetXmin() == fEtaAxis.GetXmax() || fEtaAxis.GetNbins() == 0) {
     AliWarning("No eta axis defined");
     return -1;
@@ -436,6 +617,15 @@ AliFMDCorrELossFit::FindEtaBin(Double_t eta) const
 Bool_t
 AliFMDCorrELossFit::SetFit(UShort_t d, Char_t r, Int_t etaBin, ELossFit* fit)
 {
+  // 
+  // Set the fit parameters from a function 
+  // 
+  // Parameters:
+  //    d       Detector
+  //    r       Ring 
+  //    etaBin  Eta (bin number, 1->nBins)
+  //    f       ELoss fit result - note, the object will take ownership
+  //  
   TObjArray* ringArray = GetOrMakeRingArray(d, r);
   if (!ringArray) { 
     AliError(Form("Failed to make ring array for FMD%d%c", d, r));
@@ -455,6 +645,15 @@ AliFMDCorrELossFit::SetFit(UShort_t d, Char_t r, Int_t etaBin, ELossFit* fit)
 Bool_t
 AliFMDCorrELossFit::SetFit(UShort_t d, Char_t r, Double_t eta, ELossFit* fit)
 {
+  // 
+  // Set the fit parameters from a function 
+  // 
+  // Parameters:
+  //    d    Detector
+  //    r    Ring 
+  //    eta  Eta 
+  //    f    ELoss fit result - note, the object will take ownership
+  //  
   Int_t bin = FindEtaBin(eta);
   if (bin <= 0) { 
     AliError(Form("eta=%f is out of range [%f,%f]", 
@@ -477,6 +676,32 @@ AliFMDCorrELossFit::SetFit(UShort_t  d,      Char_t    r,
 			   Double_t  sigman, Double_t  esigman, 
 			   Double_t* a,      Double_t* ea)
 {
+  // 
+  // Set the fit parameters from a function 
+  // 
+  // Parameters:
+  //    d         Detector number
+  //    r         Ring identifier 
+  //    eta       Eta value
+  //    quality   Quality flag
+  //    n         @f$ N@f$ - Number of fitted peaks
+  //    chi2      @f$ \chi^2 @f$
+  //    nu        @f$ \nu @f$ - number degrees of freedom
+  //    c         @f$ C@f$ - scale constant
+  //    ec        @f$ \delta C@f$ - error on @f$ C@f$ 
+  //    delta     @f$ \Delta@f$ - most probable value
+  //    edelta    @f$ \delta\Delta@f$ - error on @f$\Delta@f$ 
+  //    xi        @f$ \xi@f$ - Landau width		  
+  //    exi       @f$ \delta\xi@f$ - error on @f$\xi@f$ 
+  //    sigma     @f$ \sigma@f$ - Gaussian width
+  //    esigma    @f$ \delta\sigma@f$ - error on @f$\sigma@f$ 
+  //    sigman    @f$ \sigma_n@f$ - Noise width		  
+  //    esigman   @f$ \delta\sigma_n@f$ - error on @f$\sigma_n@f$ 
+  //    a         Array of @f$ N-1@f$ weights @f$ a_i@f$ for 
+  //                  @f$ i=2,\ldots@f$ 
+  //    ea        Array of @f$ N-1@f$ errors on weights @f$ a_i@f$ for 
+  //                  @f$ i=2,\ldots@f$ 
+  //
   ELossFit* e = new ELossFit(quality, n, 
 			     chi2,    nu,
 			     c,       ec,
@@ -496,6 +721,16 @@ Bool_t
 AliFMDCorrELossFit::SetFit(UShort_t  d, Char_t r, Double_t eta, 
 			   Int_t quality, const TF1& f)
 {
+  // 
+  // Set the fit parameters from a function 
+  // 
+  // Parameters:
+  //    d        Detector
+  //    r        Ring 
+  //    eta      Eta 
+  //    quality  Quality flag
+  //    f        Function from fit 
+  //  
   ELossFit* e = new ELossFit(quality, f);
   if (!SetFit(d, r, eta, e)) { 
     delete e;
@@ -507,6 +742,17 @@ AliFMDCorrELossFit::SetFit(UShort_t  d, Char_t r, Double_t eta,
 AliFMDCorrELossFit::ELossFit*
 AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Int_t etabin) const
 {
+  // 
+  // Find the fit corresponding to the specified parameters 
+  // 
+  // Parameters:
+  //    d      Detector 
+  //    r      Ring 
+  //    etabin Eta bin (1 based)
+  // 
+  // Return:
+  //    Fit parameters or null in case of problems 
+  //
   TObjArray* ringArray = GetRingArray(d, r);
   if (!ringArray) { 
     AliError(Form("Failed to make ring array for FMD%d%c", d, r));
@@ -539,6 +785,17 @@ AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Int_t etabin) const
 AliFMDCorrELossFit::ELossFit*
 AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Double_t eta) const
 {
+  // 
+  // Find the fit corresponding to the specified parameters 
+  // 
+  // Parameters:
+  //    d   Detector 
+  //    r   Ring 
+  //    eta Eta value 
+  // 
+  // Return:
+  //    Fit parameters or null in case of problems 
+  //
   Int_t etabin = FindEtaBin(eta);
   return FindFit(d, r, etabin);
 }
@@ -546,6 +803,16 @@ AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Double_t eta) const
 TObjArray*
 AliFMDCorrELossFit::GetRingArray(UShort_t d, Char_t r) const
 {
+  // 
+  // Get the ring array corresponding to the specified ring
+  // 
+  // Parameters:
+  //    d Detector 
+  //    r Ring 
+  // 
+  // Return:
+  //    Pointer to ring array, or null in case of problems
+  //
   Int_t idx = -1;
   switch (d) { 
   case 1:   idx = 0; break;
@@ -559,6 +826,16 @@ AliFMDCorrELossFit::GetRingArray(UShort_t d, Char_t r) const
 TObjArray*
 AliFMDCorrELossFit::GetOrMakeRingArray(UShort_t d, Char_t r)
 {
+  // 
+  // Get the ring array corresponding to the specified ring
+  // 
+  // Parameters:
+  //    d Detector 
+  //    r Ring 
+  // 
+  // Return:
+  //    Pointer to ring array, or newly created container 
+  //
   Int_t idx = -1;
   switch (d) { 
   case 1:   idx = 0; break;
@@ -598,6 +875,13 @@ namespace {
 void
 AliFMDCorrELossFit::Draw(Option_t* option)
 {
+  // 
+  // Draw this object 
+  // 
+  // Parameters:
+  //    option Options.  Possible values are 
+  //  - err Plot error bars 
+  //
   TString opt(Form("nostack %s", option));
   opt.ToLower();
   Bool_t  rel = (opt.Contains("rel"));
@@ -818,6 +1102,12 @@ AliFMDCorrELossFit::Print(Option_t* option) const
 void
 AliFMDCorrELossFit::Browse(TBrowser* b)
 {
+  // 
+  // Browse this object 
+  // 
+  // Parameters:
+  //    b 
+  //
   b->Add(&fRings);
   b->Add(&fEtaAxis);
 }
