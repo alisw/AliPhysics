@@ -28,7 +28,7 @@ ClassImp(AliAnalysisTaskdEdxSSDQA)
 
 //________________________________________________________________________
 AliAnalysisTaskdEdxSSDQA::AliAnalysisTaskdEdxSSDQA(const char *name) 
-: AliAnalysisTaskSE(name), fHist1(0),fHist2(0),fListOfHistos(0),fPcut(0.0)
+: AliAnalysisTaskSE(name), fHist1(0),fHist2(0),fHist3(0),fListOfHistos(0),fPcut(0.0)
 {
   // Constructor
 	// Define input and output slots here
@@ -47,6 +47,8 @@ void AliAnalysisTaskdEdxSSDQA::UserCreateOutputObjects()
 	fListOfHistos->Add(fHist1);
 	fHist2=new TH2F("QACharge","QACharge;Module;Q",1698,-0.5,1697.5,150,0,300);
 	fListOfHistos->Add(fHist2);
+	fHist3=new TH2F("ChargeRatiovCharge","CRvQ;Q;CR",200,0,2000,100,-1.0,1.0);
+	fListOfHistos->Add(fHist3);
 }
 //________________________________________________________________________
 void AliAnalysisTaskdEdxSSDQA::LocalInit() 
@@ -85,7 +87,8 @@ void AliAnalysisTaskdEdxSSDQA::UserExec(Option_t *)
 	AliTrackPoint point;
 	Int_t nlayer=0;
 	Int_t id=0;
-	Float_t chargeratio=0;
+	Float_t chargeratio=0.0;
+	Float_t charge=0.0;
 	for(int itr=0;itr<nTracks;itr++)
 	{
 		AliESDtrack* track= esd->GetTrack(itr);
@@ -116,7 +119,8 @@ void AliAnalysisTaskdEdxSSDQA::UserExec(Option_t *)
 				{
 					if(point.GetCharge()>0.0&&point.IsExtra()==kFALSE)//do not use additional clusters
 					{		
-						 chargeratio=point.GetChargeRatio();						 
+						 chargeratio=point.GetChargeRatio();	
+						 charge=point.GetCharge();					 
 						if(nlayer==5&&tmpQESD[2]>0.0)
 						{
 							fHist1->Fill(id,chargeratio);
@@ -128,7 +132,8 @@ void AliAnalysisTaskdEdxSSDQA::UserExec(Option_t *)
 							fHist1->Fill(id+748,chargeratio);
 							if(track->GetP()>fPcut)
 								fHist2->Fill(id+748,tmpQESD[3]);
-						}		
+						}
+						fHist3->Fill(charge,chargeratio);	
 					}	
 				}
 			}	

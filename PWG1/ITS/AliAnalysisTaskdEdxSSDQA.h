@@ -22,8 +22,9 @@ class AliAnalysisTaskdEdxSSDQA : public AliAnalysisTaskSE {
   Float_t GetPcut() const{return fPcut;}
  private:
 
-  TH2F*   fHist1;         // signal differenc between ITSsignal stored in ESD and calcuated after using AliTrackPoint
-  TH2F*   fHist2;         // landau distributions for each module	  
+  TH2F*   fHist1;         // CR for each module
+  TH2F*   fHist2;         // landau distributions for each module	
+  TH2F*   fHist3;         // CR as function of Charge for the AliTrackPoint 
   TList*  fListOfHistos;  // output list	
   Float_t fPcut;          // Momentum cut
 
@@ -31,7 +32,7 @@ class AliAnalysisTaskdEdxSSDQA : public AliAnalysisTaskSE {
 
  AliAnalysisTaskdEdxSSDQA(const AliAnalysisTaskdEdxSSDQA&); // not implemented
  AliAnalysisTaskdEdxSSDQA& operator=(const AliAnalysisTaskdEdxSSDQA&); // not implemented
- ClassDef(AliAnalysisTaskdEdxSSDQA, 1); // example of analysis
+ ClassDef(AliAnalysisTaskdEdxSSDQA, 2); // example of analysis
 };
 
 #endif
