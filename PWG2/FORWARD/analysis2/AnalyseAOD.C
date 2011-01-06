@@ -55,12 +55,22 @@ public:
   TH2D*              fSum;
   /** Summed histogram */
   TH2D*              fMCSum;
+  /** Primary information */
+  TH2D*              fPrimary;
+  /** Sum primary information */
+  TH2D*              fSumPrimary;
   /** Vertex efficiency */
   Double_t           fVtxEff;
   /** Title to put on the plot */
   TString            fTitle;
   /** Do HHD comparison */
   Bool_t             fDoHHD;
+  /** Number of events with a trigger */
+  Int_t              fNTriggered;
+  /** Number of events with a vertex */
+  Int_t              fNWithVertex;
+  /** Number of events accepted */
+  Int_t              fNAccepted;
 
   //__________________________________________________________________
   /** 
@@ -74,6 +84,8 @@ public:
       fOut(0), 
       fSum(0),
       fMCSum(0),
+      fPrimary(0), 
+      fSumPrimary(0),
       fVtxEff(0),
       fTitle(""),
       fDoHHD(kTRUE)
@@ -93,13 +105,15 @@ public:
       fOut->Close();
       delete fOut;
     }
-    if (fSum)   delete fSum;
-    if (fMCSum) delete fMCSum;
-    fTree   = 0;
-    fOut    = 0;
-    fSum    = 0;
-    fMCSum  = 0;
-    fVtxEff = 0;
+    if (fSum)        delete fSum;
+    if (fMCSum)      delete fMCSum;
+    if (fSumPrimary) delete fSumPrimary;
+    fTree       = 0;
+    fOut        = 0;
+    fSum        = 0;
+    fMCSum      = 0;
+    fSumPrimary = 0;
+    fVtxEff     = 0;
     
   }
   //__________________________________________________________________
@@ -175,6 +189,9 @@ public:
     // Set the branch pointer 
     fTree->SetBranchAddress("ForwardMC", &fMCAOD);
 
+    // Set the branch pointer 
+    fTree->SetBranchAddress("primary", &fPrimary);
+
     fOut = TFile::Open(outname, "RECREATE");
     if (!fOut) { 
       Error("Open", "Couldn't open %s", outname);
@@ -194,16 +211,16 @@ public:
    */
   Bool_t Process(Double_t vzMin, Double_t vzMax, Int_t mask) 
   {
-    Int_t nTriggered  = 0;                    // # of triggered ev.
-    Int_t nWithVertex = 0;                    // # of ev. w/vertex
-    Int_t nAccepted   = 0;                    // # of ev. used
+    fNTriggered       = 0;                    // # of triggered ev.
+    fNWithVertex      = 0;                    // # of ev. w/vertex
+    fNAccepted        = 0;                    // # of ev. used
     Int_t nAvailable  = fTree->GetEntries();  // How many entries
  
     for (int i = 0; i < nAvailable; i++) { 
       fTree->GetEntry(i);
       if (((i+1) % 100) == 0) {
 	fprintf(stdout,"Event # %9d of %9d, %9d accepted so far\r", 
-	       i+1, nAvailable, nAccepted);
+	       i+1, nAvailable, fNAccepted);
 	fflush(stdout);
       }
 
@@ -229,34 +246,48 @@ public:
 	     fMCSum->GetYaxis()->GetXmin(),
 	     fMCSum->GetYaxis()->GetXmax());
       }
+      if (!fSumPrimary && fTree->GetBranch("primary")) { 
+	fSumPrimary = 
+	  static_cast<TH2D*>(fPrimary->Clone("primarySum"));
+	Info("Process", "Created MC truth histogram (%d,%f,%f)x(%d,%f,%f)", 
+	     fMCSum->GetNbinsX(), 
+	     fMCSum->GetXaxis()->GetXmin(),
+	     fMCSum->GetXaxis()->GetXmax(),
+	     fMCSum->GetNbinsY(), 
+	     fMCSum->GetYaxis()->GetXmin(),
+	     fMCSum->GetYaxis()->GetXmax());
+      }
  
       // fAOD->Print();
       // Other trigger/event requirements could be defined 
       if (!fAOD->IsTriggerBits(mask)) continue; 
-      nTriggered++;
+      fNTriggered++;
 
       // Check if there's a vertex 
       if (!fAOD->HasIpZ()) continue; 
-      nWithVertex++;
+      fNWithVertex++;
 
       // Select vertex range (in centimeters) 
       if (!fAOD->InRange(vzMin, vzMax)) continue; 
-      nAccepted++;
+      fNAccepted++;
  
       // Add contribution from this event
       fSum->Add(&(fAOD->GetHistogram()));
 
       // Add contribution from this event
       if (fMCSum) fMCSum->Add(&(fMCAOD->GetHistogram()));
+
+      // Add contribution from this event 
+      if (fSumPrimary) fSumPrimary->Add(fPrimary);
     }
     printf("\n");
-    fVtxEff = Double_t(nWithVertex)/nTriggered;
+    fVtxEff = Double_t(fNWithVertex)/fNTriggered;
 
     Info("Process", "Total of %9d events\n"
 	 "               %9d has a trigger\n" 
 	 "               %9d has a vertex\n" 
 	 "               %9d was used\n",
-	 nAvailable, nTriggered, nWithVertex, nAccepted);
+	 nAvailable, fNTriggered, fNWithVertex, fNAccepted);
 
     return kTRUE;
   }
@@ -310,15 +341,29 @@ public:
       Rebin(dndetaMC, rebin);
     }
 
-    DrawIt(dndeta, dndetaMC, mask, energy, doHHD, doComp, rebin);
+    TH1D* dndetaTruth = 0;
+    if (fSumPrimary) { 
+      dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth", -1, -1, "e");
+      Info("Finish", "Got dn/deta truth with max: %f, scalling to %d", 
+	   dndetaTruth->GetMaximum(), fNTriggered);
+      dndetaTruth->Scale(1./fNTriggered, "width");
+      dndetaTruth->SetMarkerColor(kGray+3);
+      dndetaTruth->SetMarkerStyle(22);
+      dndetaTruth->SetMarkerSize(1);
+      dndetaTruth->SetFillStyle(0);
+      Rebin(dndetaTruth, rebin);
+    }
+
+    DrawIt(dndeta, dndetaMC, dndetaTruth, mask, energy, doHHD, doComp, rebin);
 
     return kTRUE;
   }
   //__________________________________________________________________
   /** 
    */
-  void DrawIt(TH1* dndeta, TH1* dndetaMC, Int_t mask, Int_t energy, 
-	      Bool_t doHHD, Bool_t doComp, Int_t rebin)
+  void DrawIt(TH1* dndeta, TH1* dndetaMC, TH1* dndetaTruth, 
+	      Int_t mask, Int_t energy, Bool_t doHHD, 
+	      Bool_t doComp, Int_t rebin)
   {
     // --- 1st part - prepare data -----------------------------------
     TH1* sym = Symmetrice(dndeta);
@@ -329,9 +374,12 @@ public:
     // Make our histogram stack 
     THStack* stack = new THStack("results", "Results");
 
-    // If available, plot the MC truth 
     TH1* mc = 0;
     TH1* mcsym = 0;
+#if 1
+    mc = dndetaTruth;
+#else 
+    // If available, plot the MC truth 
     if (!gSystem->AccessPathName("AnalysisResults.root")) { 
       TFile* anares = TFile::Open("AnalysisResults.root", "READ");
       if (anares) { 
@@ -339,16 +387,19 @@ public:
 	if (list) { 
 	  mc = static_cast<TH1*>(list->FindObject("mcSumEta"));
 	  Rebin(mc, rebin);
-	  if (mc) {
-	    mcsym = Symmetrice(mc);
-	    stack->Add(mc);
-	    stack->Add(mcsym);
-	    max = TMath::Max(mc->GetMaximum(),max);
-	  }
 	}
 	anares->Close();
 	fOut->cd();
       }
+    }
+#endif
+    if (mc) {
+      mcsym = Symmetrice(mc);
+      stack->Add(mc);
+      stack->Add(mcsym);
+      Info("DrawIt", "Maximum of MC dndeta (truth): %f, was %f", 
+	   mc->GetMaximum(),dndeta->GetMaximum());
+      max = TMath::Max(mc->GetMaximum(),max);
     }
 
     // Get the data from HHD's analysis - if available 
