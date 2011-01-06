@@ -23,26 +23,34 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t* option);
   virtual void   Terminate(Option_t *);
   
-  Int_t LoopESD  (Float_t **pt, Float_t **eta, Float_t **phi, Int_t **numbers);
-  Int_t LoopESDMC(Float_t **pt, Float_t **eta, Float_t **phi);
-  Int_t LoopAOD  (Float_t **pt, Float_t **eta, Float_t **phi, Int_t **numbers);
-  Int_t LoopAODMC(Float_t **pt, Float_t **eta, Float_t **phi);
-  void  Analyse  (Float_t* pt, Float_t* eta, Float_t* phi, Int_t ntacks, Int_t ntacklets=0,Int_t mode=0);
-  void  CleanArrays(Float_t* pt, Float_t* eta, Float_t* phi, Int_t* numbers=0);
+  Int_t LoopESD  (Float_t **pt, Float_t **eta, Float_t **phi, Int_t **nTracksTracklets);
+  Int_t LoopESDMC(Float_t **pt, Float_t **eta, Float_t **phi, Int_t **nTracksTracklets);
+  Int_t LoopAOD  (Float_t **pt, Float_t **eta, Float_t **phi, Int_t **nTracksTracklets);
+  Int_t LoopAODMC(Float_t **pt, Float_t **eta, Float_t **phi, Int_t **nTracksTracklets);
+  void  Analyse  (Float_t* pt, Float_t* eta, Float_t* phi, Int_t ntacks, Int_t ntacklets=0,Int_t nAll=0, Int_t mode=0);
+  void  CleanArrays(Float_t* pt, Float_t* eta, Float_t* phi, Int_t* nTracksTracklets=0);
+  Bool_t SelectParticlePlusCharged(Int_t charge, Int_t pdg, Bool_t prim);
+  Bool_t SelectParticle(Int_t charge, Int_t pdg, Bool_t prim);
 
-  void UseMC(Bool_t useMC=kTRUE) { fUseMC = useMC;}
-  virtual void   SetCuts(AliESDtrackCuts* cuts)    {fCuts = cuts;}
+
+  void UseMC(Bool_t useMC=kTRUE, Bool_t mcOnly=kFALSE)    {fUseMC = useMC; fMcOnly=mcOnly;}
+
+  virtual void   SetCuts(AliESDtrackCuts* cuts)           {fCuts = cuts;}
 
   void   SetRadiusCut(Float_t radiusCut)           {fRadiusCut = radiusCut;}  
   void   SetTriggerPtCut(Float_t triggerPtCut)     {fTriggerPtCut = triggerPtCut;}  
   void   SetAssociatePtCut(Float_t associatePtCut) {fAssociatePtCut = associatePtCut;} 
   void   SetEventAxis(Int_t leadingOrRandom)       {fLeadingOrRandom = leadingOrRandom;}  
-  void   SetMode(Int_t mode)                       {fMode=mode;}
-  void   SetMaxVertexZ(Float_t vertexZCut)         {fVertexZCut=vertexZCut;}
+  void   SetMode(Int_t mode)                       {fMode = mode;}
+  void   SetMaxVertexZ(Float_t vertexZCut)         {fVertexZCut = vertexZCut;}
+  void   SetMaxEta(Float_t etaCut)                 {fEtaCut = etaCut;}
+  void   SetMaxEtaSeed(Float_t etaCutSeed)         {fEtaCutSeed = etaCutSeed;}
 
+  void   SelectParticles(Int_t selectParticles)    {fSelectParticles = selectParticles;}
 
  private:
   Bool_t       fUseMC;
+  Bool_t       fMcOnly;
   AliESDtrackCuts* fCuts;                   // List of cuts for ESDs
   Float_t      fRadiusCut;                  // radius cut 
   Float_t      fTriggerPtCut;               // cut on particle pt used as event axis
@@ -50,6 +58,9 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Int_t        fLeadingOrRandom;            // event axis:leading track or random track
   Int_t        fMode;                       // ESD(=0) of AOD(=1) reading 
   Float_t      fVertexZCut;                 // vertex cut
+  Float_t      fEtaCut;                     // eta acceptance cut
+  Float_t      fEtaCutSeed;                 // eta acceptance cut for seed
+  Int_t        fSelectParticles;            // only in cas of MC: use also neutral particles or not 
 
   AliESDEvent *fESDEvent;                   //! esd event
   AliAODEvent *fAODEvent;                   //! aod event
@@ -57,10 +68,18 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TList	      *fHists;                      // output list
   TH1F        *fHistPt;                     // Pt spectrum ESD
   TH1F        *fHistPtMC;                   // Pt spectrum MC
+  TH2F        *fChargedPi0;                 // charged versus charged+Pi0
   TH1F       * fVertexZ[4];                 // z of vertex
+
   TH1F       * fPt[4];                      // pt
-  TH1F       * fEta[4];                     // eta
+  TH1F       * fEta[4];                     // et
   TH1F       * fPhi[4];                     // phi
+
+  TH1F       * fPtSeed[4];                  // pt of seed (event axis)
+  TH1F       * fEtaSeed[4];                 // eta of seed 
+  TH1F       * fPhiSeed[4];                 // phi of seed
+
+  TH2F       * fPhiEta[4];                  // eta - phi
   TH2F       * fDPhiDEtaEventAxis[4];       // correlation dEta-dPhi towards event axis
   TH1F       * fTriggerNch[4];              // number of triggers with accepted-track number
   TH1F       * fTriggerTracklet[4];         // number of triggers with accepted-tracklet number
