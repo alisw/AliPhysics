@@ -44,7 +44,11 @@ AliFMDEnergyFitter::AliFMDEnergyFitter()
     fMaxChi2PerNDF(20), 
     fMinWeight(1e-7),
     fDebug(0)
-{}
+{
+  // 
+  // Default Constructor - do not use 
+  //
+}
 
 //____________________________________________________________________
 AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
@@ -65,6 +69,12 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
     fMinWeight(1e-7),
     fDebug(3)
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    title Title of object  - not significant 
+  //
   fEtaAxis.SetName("etaAxis");
   fEtaAxis.SetTitle("#eta");
   fRingHistos.Add(new RingHistos(1, 'I'));
@@ -93,6 +103,12 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const AliFMDEnergyFitter& o)
     fMinWeight(o.fMinWeight),
     fDebug(o.fDebug)
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -101,6 +117,9 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const AliFMDEnergyFitter& o)
 //____________________________________________________________________
 AliFMDEnergyFitter::~AliFMDEnergyFitter()
 {
+  // 
+  // Destructor
+  //
   fRingHistos.Delete();
 }
 
@@ -108,6 +127,15 @@ AliFMDEnergyFitter::~AliFMDEnergyFitter()
 AliFMDEnergyFitter&
 AliFMDEnergyFitter::operator=(const AliFMDEnergyFitter& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this 
+  //
   TNamed::operator=(o);
 
   fLowCut        = o.fLowCut;
@@ -134,6 +162,16 @@ AliFMDEnergyFitter::operator=(const AliFMDEnergyFitter& o)
 AliFMDEnergyFitter::RingHistos*
 AliFMDEnergyFitter::GetRingHistos(UShort_t d, Char_t r) const
 {
+  // 
+  // Get the ring histogram container 
+  // 
+  // Parameters:
+  //    d Detector
+  //    r Ring 
+  // 
+  // Return:
+  //    Ring histogram container 
+  //
   Int_t idx = -1;
   switch (d) { 
   case 1: idx = 0; break;
@@ -149,6 +187,14 @@ AliFMDEnergyFitter::GetRingHistos(UShort_t d, Char_t r) const
 void
 AliFMDEnergyFitter::Init(const TAxis& eAxis)
 {
+  // 
+  // Initialise the task
+  // 
+  // Parameters:
+  //    etaAxis The eta axis to use.  Note, that if the eta axis
+  // has already been set (using SetEtaAxis), then this parameter will be 
+  // ignored
+  //
   if (fEtaAxis.GetNbins() == 0 || 
       TMath::Abs(fEtaAxis.GetXmax() - fEtaAxis.GetXmin()) < 1e-7) 
     SetEtaAxis(eAxis);
@@ -161,12 +207,34 @@ AliFMDEnergyFitter::Init(const TAxis& eAxis)
 void
 AliFMDEnergyFitter::SetEtaAxis(const TAxis& eAxis)
 {
+  // 
+  // Set the eta axis to use.  This will force the code to use this
+  // eta axis definition - irrespective of whatever axis is passed to
+  // the Init member function.  Therefore, this member function can be
+  // used to force another eta axis than one found in the correction
+  // objects. 
+  // 
+  // Parameters:
+  //    etaAxis Eta axis to use 
+  //
   SetEtaAxis(eAxis.GetNbins(),eAxis.GetXmin(),eAxis.GetXmax());
 }
 //____________________________________________________________________
 void
 AliFMDEnergyFitter::SetEtaAxis(Int_t nBins, Double_t etaMin, Double_t etaMax)
 {
+  // 
+  // Set the eta axis to use.  This will force the code to use this
+  // eta axis definition - irrespective of whatever axis is passed to
+  // the Init member function.  Therefore, this member function can be
+  // used to force another eta axis than one found in the correction
+  // objects. 
+  // 
+  // Parameters:
+  //    nBins  Number of bins 
+  //    etaMin Minimum of the eta axis 
+  //    etaMax Maximum of the eta axis 
+  //
   fEtaAxis.Set(nBins,etaMin,etaMax);
 }
 
@@ -175,6 +243,16 @@ Bool_t
 AliFMDEnergyFitter::Accumulate(const AliESDFMD& input, 
 			       Bool_t           empty)
 {
+  // 
+  // Fitter the input AliESDFMD object
+  // 
+  // Parameters:
+  //    input     Input 
+  //    empty     Whether the event is 'empty'
+  // 
+  // Return:
+  //    True on success, false otherwise 
+  //
   for(UShort_t d = 1; d <= 3; d++) {
     Int_t nRings = (d == 1 ? 1 : 2);
     for (UShort_t q = 0; q < nRings; q++) {
@@ -211,6 +289,12 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
 void
 AliFMDEnergyFitter::Fit(const TList* dir)
 {
+  // 
+  // Scale the histograms to the total number of events 
+  // 
+  // Parameters:
+  //    dir Where the histograms are  
+  //
   if (!fDoFits) return;
 
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
@@ -255,6 +339,12 @@ AliFMDEnergyFitter::Fit(const TList* dir)
 void
 AliFMDEnergyFitter::MakeCorrectionsObject(TList* d)
 {
+  // 
+  // Generate the corrections object 
+  // 
+  // Parameters:
+  //    dir List to analyse 
+  //
   AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
     
   AliFMDCorrELossFit* obj = new AliFMDCorrELossFit;
@@ -279,6 +369,14 @@ AliFMDEnergyFitter::MakeCorrectionsObject(TList* d)
 void
 AliFMDEnergyFitter::DefineOutput(TList* dir)
 {
+  // 
+  // Define the output histograms.  These are put in a sub list of the
+  // passed list.   The histograms are merged before the parent task calls 
+  // AliAnalysisTaskSE::Terminate 
+  // 
+  // Parameters:
+  //    dir Directory to add to 
+  //
   TList* d = new TList;
   d->SetName(GetName());
   dir->Add(d);
@@ -293,6 +391,12 @@ AliFMDEnergyFitter::DefineOutput(TList* dir)
 void
 AliFMDEnergyFitter::SetDebug(Int_t dbg)
 {
+  // 
+  // Set the debug level.  The higher the value the more output 
+  // 
+  // Parameters:
+  //    dbg Debug level 
+  //
   fDebug = dbg;
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -304,6 +408,12 @@ AliFMDEnergyFitter::SetDebug(Int_t dbg)
 void
 AliFMDEnergyFitter::Print(Option_t*) const
 {
+  // 
+  // Print information
+  // 
+  // Parameters:
+  //    option Not used 
+  //
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
@@ -335,7 +445,11 @@ AliFMDEnergyFitter::RingHistos::RingHistos()
     fList(0),
     fFits("AliFMDCorrELossFit::ELossFit"),
     fDebug(0)
-{}
+{
+  // 
+  // Default CTOR
+  //
+}
 
 //____________________________________________________________________
 AliFMDEnergyFitter::RingHistos::RingHistos(UShort_t d, Char_t r)
@@ -347,6 +461,13 @@ AliFMDEnergyFitter::RingHistos::RingHistos(UShort_t d, Char_t r)
     fFits("AliFMDCorrELossFit::ELossFit"),
     fDebug(0)
 {
+  // 
+  // Constructor
+  // 
+  // Parameters:
+  //    d detector
+  //    r ring 
+  //
   fEtaEDists.SetName("EDists");
 }
 //____________________________________________________________________
@@ -359,6 +480,12 @@ AliFMDEnergyFitter::RingHistos::RingHistos(const RingHistos& o)
     fFits("AliFMDCorrELossFit::ELossFit"),
     fDebug(0)
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
   fFits.Clear();
   TIter next(&o.fEtaEDists);
   TObject* obj = 0;
@@ -375,6 +502,15 @@ AliFMDEnergyFitter::RingHistos::RingHistos(const RingHistos& o)
 AliFMDEnergyFitter::RingHistos&
 AliFMDEnergyFitter::RingHistos::operator=(const RingHistos& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this 
+  //
   AliForwardUtil::RingHistos::operator=(o);
   
   if (fEDist) delete fEDist;
@@ -402,6 +538,9 @@ AliFMDEnergyFitter::RingHistos::operator=(const RingHistos& o)
 //____________________________________________________________________
 AliFMDEnergyFitter::RingHistos::~RingHistos()
 {
+  // 
+  // Destructor 
+  //
   if (fEDist) delete fEDist;
   fEtaEDists.Delete();
 }
@@ -410,6 +549,14 @@ AliFMDEnergyFitter::RingHistos::~RingHistos()
 void
 AliFMDEnergyFitter::RingHistos::Fill(Bool_t empty, Int_t ieta, Double_t mult)
 {
+  // 
+  // Fill histogram 
+  // 
+  // Parameters:
+  //    empty  True if event is empty
+  //    ieta   Eta bin
+  //    mult   Signal 
+  //
   if (empty) { 
     fEmpty->Fill(mult);
     return;
@@ -429,11 +576,18 @@ TArrayD
 AliFMDEnergyFitter::RingHistos::MakeIncreasingAxis(Int_t n, Double_t min, 
 						   Double_t max) const
 {
-  // Service function to define a logarithmic axis. 
-  // Parameters: 
-  //   n    Number of bins 
-  //   min  Minimum of axis 
-  //   max  Maximum of axis 
+  // 
+  // Make an axis with increasing bins 
+  // 
+  // Parameters:
+  //    n    Number of bins 
+  //    min  Minimum 
+  //    max  Maximum
+  // 
+  // Return:
+  //    An axis with quadratically increasing bin size 
+  //
+
   TArrayD bins(n+1);
   Double_t dx = (max-min) / n;
   bins[0]     = min;
@@ -457,6 +611,17 @@ AliFMDEnergyFitter::RingHistos::Make(Int_t    ieta,
 				     Int_t    nDeBins, 
 				     Bool_t   incr)
 {
+  // 
+  // Make E/E_mip histogram 
+  // 
+  // Parameters:
+  //    ieta    Eta bin
+  //    eMin    Least signal
+  //    eMax    Largest signal 
+  //    deMax   Maximum energy loss 
+  //    nDeBins Number energy loss bins 
+  //    incr    Whether to make bins of increasing size
+  //
   TH1D* h = 0;
   TString name  = Form(fgkEDistFormat, fName.Data(), ieta);
   TString title = Form("#DeltaE/#DeltaE_{mip} for %s %+5.3f#leq#eta<%+5.3f "
@@ -483,6 +648,17 @@ TH1D* AliFMDEnergyFitter::RingHistos::MakePar(const char* name,
 					      const char* title, 
 					      const TAxis& eta) const
 {
+  // 
+  // Make a parameter histogram
+  // 
+  // Parameters:
+  //    name   Name of histogram.
+  //    title  Title of histogram. 
+  //    eta    Eta axis 
+  // 
+  // Return:
+  //    
+  //
   TH1D* h = new TH1D(Form("%s_%s", fName.Data(), name), 
 		     Form("%s for %s", title, fName.Data()), 
 		     eta.GetNbins(), eta.GetXmin(), eta.GetXmax());
@@ -507,6 +683,21 @@ AliFMDEnergyFitter::RingHistos::MakeTotal(const char* name,
 					  Double_t val, 
 					  Double_t err) const
 {
+  // 
+  // Make a histogram that contains the results of the fit over the full ring 
+  // 
+  // Parameters:
+  //    name  Name 
+  //    title Title
+  //    eta   Eta axis 
+  //    low   Least bin
+  //    high  Largest bin
+  //    val   Value of parameter 
+  //    err   Error on parameter 
+  // 
+  // Return:
+  //    The newly allocated histogram 
+  //
   Double_t xlow  = eta.GetBinLowEdge(low);
   Double_t xhigh = eta.GetBinUpEdge(high);
   TH1D* h = new TH1D(Form("%s_%s", fName.Data(), name), 
@@ -533,6 +724,15 @@ AliFMDEnergyFitter::RingHistos::Init(const TAxis& eAxis,
 				     Double_t maxDE, Int_t nDEbins, 
 				     Bool_t useIncrBin)
 {
+  // 
+  // Initialise object 
+  // 
+  // Parameters:
+  //    eAxis      Eta axis
+  //    maxDE      Max energy loss to consider 
+  //    nDEbins    Number of bins 
+  //    useIncrBin Whether to use an increasing bin size 
+  //
   fEDist = new TH1D(Form("%s_edist", fName.Data()), 
 		    Form("#DeltaE/#DeltaE_{mip} for %s", fName.Data()), 
 		    200, 0, 6);
@@ -560,6 +760,24 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
 				    Double_t         relErrorCut, 
 				    Double_t         chi2nuCut) const
 {
+  // 
+  // Fit each histogram to up to @a nParticles particle responses.
+  // 
+  // Parameters:
+  //    dir         Output list 
+  //    eta         Eta axis 
+  //    lowCut      Lower cut 
+  //    nParticles  Max number of convolved landaus to fit
+  //    minEntries  Minimum number of entries 
+  //    minusBins   Number of bins from peak to subtract to 
+  //                    get the fit range 
+  //    relErrorCut Cut applied to relative error of parameter. 
+  //                    Note, for multi-particle weights, the cut 
+  //                    is loosend by a factor of 2 
+  //    chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
+  //                    the reduced @f$\chi^2@f$ 
+  //
+
   // Get our ring list from the output container 
   TList* l = GetOutputList(dir);
   if (!l) return 0; 
@@ -742,6 +960,31 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
 					Double_t relErrorCut, 
 					Double_t chi2nuCut) const
 {
+  // 
+  // Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
+  // maximum bin content in the range @f$ [E_{min},\infty]@f$ is
+  // found.  Then the fit range is set to the bin range 
+  // @f$ [b_{min}-\Delta b,b_{min}+2\Delta b]@f$, and a 1 
+  // particle signal is fitted to that.  The parameters of that fit 
+  // is then used as seeds for a fit of the @f$ N@f$ particle response 
+  // to the data in the range 
+  // @f$ [b_{min}-\Delta b,N(\Delta_1+\xi_1\log(N))+2N\xi@f$
+  // 
+  // Parameters:
+  //    dist        Histogram to fit 
+  //    lowCut      Lower cut @f$ E_{min}@f$ on signal 
+  //    nParticles  Max number @f$ N@f$ of convolved landaus to fit
+  //    minusBins   Number of bins @f$ \Delta b@f$ from peak to 
+  //                    subtract to get the fit range 
+  //    relErrorCut Cut applied to relative error of parameter. 
+  //                    Note, for multi-particle weights, the cut 
+  //                    is loosend by a factor of 2 
+  //    chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
+  //                    the reduced @f$\chi^2@f$ 
+  // 
+  // Return:
+  //    The best fit function 
+  //
   Double_t maxRange = 10;
 
   // Create a fitter object 
@@ -805,6 +1048,24 @@ AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult* r,
 					    Double_t relErrorCut, 
 					    Double_t chi2nuCut) const
 {
+  // 
+  // Check the result of the fit. Returns true if 
+  // - @f$ \chi^2/\nu < \max{\chi^2/\nu}@f$
+  // - @f$ \Delta p_i/p_i < \delta_e@f$ for all parameters.  Note, 
+  //   for multi-particle fits, this requirement is relaxed by a 
+  //   factor of 2
+  // - @f$ a_{n} > 10^{-7}@f$ when fitting to an @f$ n@f$ 
+  //   particle response 
+  // 
+  // Parameters:
+  //    r           Result to check
+  //    relErrorCut Cut @f$ \delta_e@f$ applied to relative error 
+  //                    of parameter.  
+  //    chi2nuCut   Cut @f$ \max{\chi^2/\nu}@f$ 
+  // 
+  // Return:
+  //    true if fit is good. 
+  //
   if (fDebug > 10) r->Print();
   TString  n    = r->GetName();
   n.ReplaceAll("TFitResult-", "");
@@ -871,6 +1132,21 @@ AliFMDEnergyFitter::RingHistos::FindBestFits(TList*              d,
 					     Double_t            chi2nuCut,
 					     Double_t            minWeightCut)
 {
+  // 
+  // Find the best fits 
+  // 
+  // Parameters:
+  //    d              Parent list
+  //    obj            Object to add fits to
+  //    eta            Eta axis 
+  //    relErrorCut    Cut applied to relative error of parameter. 
+  //                       Note, for multi-particle weights, the cut 
+  //                       is loosend by a factor of 2 
+  //    chi2nuCut      Cut on @f$ \chi^2/\nu@f$ - 
+  //                       the reduced @f$\chi^2@f$ 
+  //    minWeightCut   Least valid @f$ a_i@f$ 
+  //
+
   // Get our ring list from the output container 
   TList* l = GetOutputList(d);
   if (!l) return; 
@@ -910,6 +1186,21 @@ AliFMDEnergyFitter::RingHistos::FindBestFit(TH1* dist,
 					    Double_t chi2nuCut,
 					    Double_t minWeightCut) 
 {
+  // 
+  // Find the best fit 
+  // 
+  // Parameters:
+  //    dist           Histogram 
+  //    relErrorCut    Cut applied to relative error of parameter. 
+  //                       Note, for multi-particle weights, the cut 
+  //                       is loosend by a factor of 2 
+  //    chi2nuCut      Cut on @f$ \chi^2/\nu@f$ - 
+  //                       the reduced @f$\chi^2@f$ 
+  //    minWeightCut   Least valid @f$ a_i@f$ 
+  // 
+  // Return:
+  //    Best fit 
+  //
   TList* funcs = dist->GetListOfFunctions();
   TIter  next(funcs);
   TF1*   func = 0;
@@ -931,6 +1222,12 @@ AliFMDEnergyFitter::RingHistos::FindBestFit(TH1* dist,
 void
 AliFMDEnergyFitter::RingHistos::Output(TList* dir)
 {
+  // 
+  // Define outputs
+  // 
+  // Parameters:
+  //    dir 
+  //
   fList = DefineOutputList(dir);
 }
 

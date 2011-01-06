@@ -1,8 +1,20 @@
+// 
+// Calculate the corrections in the forward regions
+// 
+// Inputs: 
+//   - AliESDEvent 
+//
+// Outputs: 
+//   - AliAODForwardMult 
+// 
+// Histograms 
+//   
+// Corrections used 
+// 
 #include "AliForwardMCCorrectionsTask.h"
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
 #include "AliLog.h"
-// #include "AliFMDAnaParameters.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliESDEvent.h"
@@ -65,6 +77,12 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask()
     fEtaAxis(),
     fList()
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    name Name of task 
+  //
 }
 
 //____________________________________________________________________
@@ -93,6 +111,12 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const char* name)
     fEtaAxis(200,-4,6),
     fList()
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    name Name of task 
+  //
   DefineOutput(1, TList::Class());
 }
 
@@ -122,12 +146,27 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const AliForwardMCCorre
     fEtaAxis(o.fEtaAxis.GetNbins(), o.fEtaAxis.GetXmin(), o.fEtaAxis.GetXmax()),
     fList(o.fList)
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
 }
 
 //____________________________________________________________________
 AliForwardMCCorrectionsTask&
 AliForwardMCCorrectionsTask::operator=(const AliForwardMCCorrectionsTask& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object 
+  //
   fHEventsTr         = o.fHEventsTr;
   fHEventsTrVtx      = o.fHEventsTrVtx;
   fHTriggers         = o.fHTriggers;
@@ -141,6 +180,10 @@ AliForwardMCCorrectionsTask::operator=(const AliForwardMCCorrectionsTask& o)
 void
 AliForwardMCCorrectionsTask::Init()
 {
+  // 
+  // Initialize the task 
+  // 
+  //
 }
 
 //____________________________________________________________________
@@ -148,6 +191,14 @@ void
 AliForwardMCCorrectionsTask::SetVertexAxis(Int_t nBin, Double_t min, 
 					   Double_t max)
 {
+  // 
+  // Set the vertex axis to use
+  // 
+  // Parameters:
+  //    nBins Number of bins
+  //    vzMin Least @f$z@f$ coordinate of interation point
+  //    vzMax Largest @f$z@f$ coordinate of interation point
+  //
   if (max < min) max = -min;
   if (min < max) { 
     Double_t tmp = min;
@@ -164,6 +215,12 @@ AliForwardMCCorrectionsTask::SetVertexAxis(Int_t nBin, Double_t min,
 void
 AliForwardMCCorrectionsTask::SetVertexAxis(const TAxis& axis)
 {
+  // 
+  // Set the vertex axis to use
+  // 
+  // Parameters:
+  //    axis Axis
+  //
   SetVertexAxis(axis.GetNbins(),axis.GetXmin(),axis.GetXmax());
 }
 
@@ -171,6 +228,14 @@ AliForwardMCCorrectionsTask::SetVertexAxis(const TAxis& axis)
 void
 AliForwardMCCorrectionsTask::SetEtaAxis(Int_t nBin, Double_t min, Double_t max)
 {
+  // 
+  // Set the eta axis to use
+  // 
+  // Parameters:
+  //    nBins Number of bins
+  //    vzMin Least @f$\eta@f$ 
+  //    vzMax Largest @f$\eta@f$ 
+  //
   if (max < min) max = -min;
   if (min < max) { 
     Double_t tmp = min;
@@ -187,6 +252,12 @@ AliForwardMCCorrectionsTask::SetEtaAxis(Int_t nBin, Double_t min, Double_t max)
 void
 AliForwardMCCorrectionsTask::SetEtaAxis(const TAxis& axis)
 {
+  // 
+  // Set the eta axis to use
+  // 
+  // Parameters:
+  //    axis Axis
+  //
   SetEtaAxis(axis.GetNbins(),axis.GetXmin(),axis.GetXmax());
 }
   
@@ -195,6 +266,17 @@ TH3D*
 AliForwardMCCorrectionsTask::Make3D(const char* name, const char* title,
 			       Int_t nPhi) const
 {
+  // 
+  // Make a 3D histogram
+  // 
+  // Parameters:
+  //    name   Name 
+  //    title  Title 
+  //    nPhi   Number of phi bins
+  // 
+  // Return:
+  //    Histogram
+  //
   TH3D* ret = new TH3D(name, title,
 		       fVtxAxis.GetNbins(), 
 		       fVtxAxis.GetXmin(), 
@@ -216,6 +298,16 @@ AliForwardMCCorrectionsTask::Make3D(const char* name, const char* title,
 TH1D*
 AliForwardMCCorrectionsTask::Make1D(const char* name, const char* title) const
 {
+  // 
+  // Make 1D histogram
+  // 
+  // Parameters:
+  //    name   Name 
+  //    title  Title
+  // 
+  // Return:
+  //    Histogram
+  //
   TH1D* ret = new TH1D(name, title,
 		       fEtaAxis.GetNbins(), 
 		       fEtaAxis.GetXmin(), 
@@ -234,6 +326,10 @@ AliForwardMCCorrectionsTask::Make1D(const char* name, const char* title) const
 void
 AliForwardMCCorrectionsTask::UserCreateOutputObjects()
 {
+  // 
+  // Create output objects 
+  // 
+  //
   fList = new TList;
   fList->SetName(GetName());
 
@@ -352,6 +448,13 @@ AliForwardMCCorrectionsTask::UserCreateOutputObjects()
 void
 AliForwardMCCorrectionsTask::UserExec(Option_t*)
 {
+  // 
+  // Process each event 
+  // 
+  // Parameters:
+  //    option Not used
+  //  
+
   // Get the input data - MC event
   AliMCEvent*  mcEvent = MCEvent();
   if (mcEvent) { 
@@ -486,6 +589,16 @@ void
 AliForwardMCCorrectionsTask::FillPrimary(Bool_t gotInel, Bool_t gotVtx, 
 				    Double_t vz, Double_t eta, Double_t phi) 
 {
+  // 
+  // Fill in primary information
+  // 
+  // Parameters:
+  //    gotInel   Got INEL trigger from ESD
+  //    gotVtx    Got vertex Z from ESD 
+  //    vz        @f$z@f$ coordinate of interation point
+  //    eta       Pseudo rapidity 
+  //    phi       Azimuthal angle
+  //
   if (gotInel && gotVtx) {
     // This takes the place of hPrimary_FMD_<r>_vtx<v> and 
     // Analysed_FMD<r>_vtx<v>
@@ -504,6 +617,18 @@ AliForwardMCCorrectionsTask::FillStrip(UShort_t d, Char_t r,
 				  Double_t vz, Double_t eta, Double_t phi,
 				  Bool_t first) 
 {
+  // 
+  // Fill in per-strip information
+  // 
+  // Parameters:
+  //    d         Detector
+  //    r         Ring
+  //    vz        @f$z@f$ coordinate of interation point
+  //    eta       Pseudo rapidity 
+  //    phi       Azimuthal angle
+  //    first     First fill in this event
+  //
+
   // Number of hit strips per eta bin 
   TH1D* strips = 0; 
   // All hits per ring, vertex in eta,phi bins.  This takes the place
@@ -535,6 +660,16 @@ AliForwardMCCorrectionsTask::FillStrip(UShort_t d, Char_t r,
 TH2D*
 AliForwardMCCorrectionsTask::GetVertexProj(Int_t v, TH3D* src) const
 {
+  // 
+  // Get vertex project
+  // 
+  // Parameters:
+  //    v   Vertex bin 
+  //    src Source 3D histogram 
+  // 
+  // Return:
+  //    2D projection of the V'th bin
+  //
   Int_t nX = src->GetNbinsX();
   if (v > nX || v < 1) return 0;
 
@@ -554,6 +689,13 @@ AliForwardMCCorrectionsTask::GetVertexProj(Int_t v, TH3D* src) const
 void
 AliForwardMCCorrectionsTask::Terminate(Option_t*)
 {
+  // 
+  // End of job
+  // 
+  // Parameters:
+  //    option Not used 
+  //
+
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {
     AliError("No output list defined");

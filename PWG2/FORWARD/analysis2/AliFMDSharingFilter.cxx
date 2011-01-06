@@ -1,5 +1,25 @@
 //
-// Class to do the sharing correction of FMD ESD data
+// Class to do the sharing correction.  That is, a filter that merges 
+// adjacent strip signals presumably originating from a single particle 
+// that impinges on the detector in such a way that it deposite energy 
+// into two or more strips. 
+//
+// Input: 
+//    - AliESDFMD object  - from reconstruction
+//
+// Output: 
+//    - AliESDFMD object  - copy of input, but with signals merged 
+//
+// Corrections used: 
+//    - AliFMDCorrELossFit
+//
+// Histograms: 
+//    - For each ring (FMD1i, FMD2i, FMD2o, FMD3i, FMD3o) the distribution of 
+//      signals before and after the filter.  
+//    - For each ring (see above), an array of distributions of number of 
+//      hit strips for each vertex bin (if enabled - see Init method)
+// 
+//
 //
 #include "AliFMDSharingFilter.h"
 #include <AliESDFMD.h>
@@ -8,7 +28,6 @@
 #include <TH1.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
-// #include "AliFMDAnaParameters.h"
 #include <AliLog.h>
 #include <TROOT.h>
 #include <iostream>
@@ -28,7 +47,11 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     fCorrectAngles(kFALSE), 
     fNXi(1),
     fDebug(0)
-{}
+{
+  // 
+  // Default Constructor - do not use 
+  //
+}
 
 //____________________________________________________________________
 AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
@@ -39,6 +62,12 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     fNXi(1),
     fDebug(0)
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    title Title of object  - not significant 
+  //
   fRingHistos.Add(new RingHistos(1, 'I'));
   fRingHistos.Add(new RingHistos(2, 'I'));
   fRingHistos.Add(new RingHistos(2, 'O'));
@@ -55,6 +84,12 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
     fNXi(o.fNXi),
     fDebug(o.fDebug)
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -63,6 +98,9 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
 //____________________________________________________________________
 AliFMDSharingFilter::~AliFMDSharingFilter()
 {
+  // 
+  // Destructor
+  //
   fRingHistos.Delete();
 }
 
@@ -70,6 +108,15 @@ AliFMDSharingFilter::~AliFMDSharingFilter()
 AliFMDSharingFilter&
 AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this 
+  //
   TNamed::operator=(o);
 
   fLowCut        = o.fLowCut;
@@ -89,6 +136,16 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
 AliFMDSharingFilter::RingHistos*
 AliFMDSharingFilter::GetRingHistos(UShort_t d, Char_t r) const
 {
+  // 
+  // Get the ring histogram container 
+  // 
+  // Parameters:
+  //    d Detector
+  //    r Ring 
+  // 
+  // Return:
+  //    Ring histogram container 
+  //
   Int_t idx = -1;
   switch (d) { 
   case 1: idx = 0; break;
@@ -106,6 +163,17 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 			    Bool_t           lowFlux,
 			    AliESDFMD&       output)
 {
+  // 
+  // Filter the input AliESDFMD object
+  // 
+  // Parameters:
+  //    input     Input 
+  //    lowFlux   If this is a low-flux event 
+  //    output    Output AliESDFMD object 
+  // 
+  // Return:
+  //    True on success, false otherwise 
+  //
   output.Clear();
   TIter    next(&fRingHistos);
   RingHistos* o      = 0;
@@ -185,6 +253,19 @@ AliFMDSharingFilter::SignalInStrip(const AliESDFMD& input,
 				   UShort_t         s,
 				   UShort_t         t) const
 {
+  // 
+  // Get the signal in a strip 
+  // 
+  // Parameters:
+  //    fmd   ESD object
+  //    d     Detector
+  //    r     Ring 
+  //    s     Sector 
+  //    t     Strip
+  // 
+  // Return:
+  //    The energy signal 
+  //
   Double_t mult = input.Multiplicity(d,r,s,t);
   if (mult == AliESDFMD::kInvalidMult || mult == 0) return mult;
 
@@ -198,6 +279,12 @@ AliFMDSharingFilter::SignalInStrip(const AliESDFMD& input,
 Double_t 
 AliFMDSharingFilter::GetLowCut() const
 {
+  //
+  // Get the low cut.  Normally, the low cut is taken to be the lower
+  // value of the fit range used when generating the energy loss fits.
+  // However, if fLowCut is set (using SetLowCit) to a value greater
+  // than 0, then that value is used.
+  //
   if (fLowCut > 0) return fLowCut;
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit* fits = fcm.GetELossFit();
@@ -208,6 +295,11 @@ AliFMDSharingFilter::GetLowCut() const
 Double_t 
 AliFMDSharingFilter::GetHighCut(UShort_t d, Char_t r, Double_t eta) const
 {
+  //
+  // Get the high cut.  The high cut is defined as the 
+  // most-probably-value peak found from the energy distributions, minus 
+  // 2 times the width of the corresponding Landau.
+  //
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
 
  
@@ -246,6 +338,26 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t mult,
 					 Bool_t&  usedPrev, 
 					 Bool_t&  usedThis) 
 {
+  // 
+  // The actual algorithm 
+  // 
+  // Parameters:
+  //    mult      The unfiltered signal in the strip
+  //    eta       Psuedo rapidity 
+  //    prevE     Previous strip signal (or 0)
+  //    nextE     Next strip signal (or 0) 
+  //    lowFlux   Whether this is a low flux event 
+  //    d         Detector
+  //    r         Ring 
+  //    s         Sector 
+  //    t         Strip
+  //    usedPrev  Whether the previous strip was used in sharing or not
+  //    usedThis  Wether this strip was used in sharing or not. 
+  // 
+  // Return:
+  //    The filtered signal in the strip
+  //
+
   // IF the multiplicity is very large, or below the cut, reject it, and 
   // flag it as candidate for sharing 
   Double_t    lowCut = GetLowCut();
@@ -331,6 +443,16 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t mult,
 Double_t
 AliFMDSharingFilter::AngleCorrect(Double_t mult, Double_t eta) const
 {
+  // 
+  // Angle correct the signal 
+  // 
+  // Parameters:
+  //    mult Angle Un-corrected Signal 
+  //    eta  Pseudo-rapidity 
+  // 
+  // Return:
+  //    Angle corrected signal 
+  //
   Double_t theta =  2 * TMath::ATan(TMath::Exp(-eta));
   if (eta < 0) theta -= TMath::Pi();
   return mult * TMath::Cos(theta);
@@ -339,6 +461,16 @@ AliFMDSharingFilter::AngleCorrect(Double_t mult, Double_t eta) const
 Double_t
 AliFMDSharingFilter::DeAngleCorrect(Double_t mult, Double_t eta) const
 {
+  // 
+  // Angle de-correct the signal 
+  // 
+  // Parameters:
+  //    mult Angle corrected Signal 
+  //    eta  Pseudo-rapidity 
+  // 
+  // Return:
+  //    Angle un-corrected signal 
+  //
   Double_t theta =  2 * TMath::ATan(TMath::Exp(-eta));
   if (eta < 0) theta -= TMath::Pi();
   return mult / TMath::Cos(theta);
@@ -348,6 +480,13 @@ AliFMDSharingFilter::DeAngleCorrect(Double_t mult, Double_t eta) const
 void
 AliFMDSharingFilter::ScaleHistograms(TList* dir, Int_t nEvents)
 {
+  // 
+  // Scale the histograms to the total number of events 
+  // 
+  // Parameters:
+  //    dir     Where the output is 
+  //    nEvents Number of events 
+  //
   if (nEvents <= 0) return;
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
@@ -362,6 +501,14 @@ AliFMDSharingFilter::ScaleHistograms(TList* dir, Int_t nEvents)
 void
 AliFMDSharingFilter::DefineOutput(TList* dir)
 {
+  // 
+  // Define the output histograms.  These are put in a sub list of the
+  // passed list.   The histograms are merged before the parent task calls 
+  // AliAnalysisTaskSE::Terminate 
+  // 
+  // Parameters:
+  //    dir Directory to add to 
+  //
   TList* d = new TList;
   d->SetName(GetName());
   dir->Add(d);
@@ -375,6 +522,12 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
 void
 AliFMDSharingFilter::Print(Option_t* /*option*/) const
 {
+  // 
+  // Print information
+  // 
+  // Parameters:
+  //    option Not used 
+  //
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
@@ -392,7 +545,12 @@ AliFMDSharingFilter::RingHistos::RingHistos()
     fAfter(0), 
     fHits(0),
     fNHits(0)
-{}
+{
+  // 
+  // Default CTOR
+  //
+
+}
 
 //____________________________________________________________________
 AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
@@ -402,6 +560,13 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
     fHits(0),
     fNHits(0)
 {
+  // 
+  // Constructor
+  // 
+  // Parameters:
+  //    d detector
+  //    r ring 
+  //
   fBefore = new TH1D(Form("%s_ESD_Eloss", fName.Data()), 
 		     Form("Energy loss in %s (reconstruction)", fName.Data()), 
 		     1000, 0, 25);
@@ -435,12 +600,28 @@ AliFMDSharingFilter::RingHistos::RingHistos(const RingHistos& o)
     fAfter(o.fAfter),
     fHits(o.fHits),
     fNHits(o.fNHits)
-{}
+{
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
+}
 
 //____________________________________________________________________
 AliFMDSharingFilter::RingHistos&
 AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this 
+  //
   AliForwardUtil::RingHistos::operator=(o);
   fDet = o.fDet;
   fRing = o.fRing;
@@ -458,6 +639,9 @@ AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
 //____________________________________________________________________
 AliFMDSharingFilter::RingHistos::~RingHistos()
 {
+  // 
+  // Destructor 
+  //
   if (fBefore) delete fBefore;
   if (fAfter)  delete fAfter;
   if (fHits)   delete fHits;
@@ -466,6 +650,10 @@ AliFMDSharingFilter::RingHistos::~RingHistos()
 void
 AliFMDSharingFilter::RingHistos::Finish()
 {
+  // 
+  // Finish off 
+  // 
+  //
   fHits->Fill(fNHits);
 }
 
@@ -473,6 +661,13 @@ AliFMDSharingFilter::RingHistos::Finish()
 void
 AliFMDSharingFilter::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
 {
+  // 
+  // Scale the histograms to the total number of events 
+  // 
+  // Parameters:
+  //    nEvents Number of events 
+  //    dir     Where the output is 
+  //
   TList* l = GetOutputList(dir);
   if (!l) return; 
 
@@ -488,6 +683,12 @@ AliFMDSharingFilter::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
 void
 AliFMDSharingFilter::RingHistos::Output(TList* dir)
 {
+  // 
+  // Make output 
+  // 
+  // Parameters:
+  //    dir where to store 
+  //
   TList* d = DefineOutputList(dir);
   d->Add(fBefore);
   d->Add(fAfter);

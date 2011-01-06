@@ -1,5 +1,8 @@
-#ifndef ALIROOT_PWG2_FORWARD_ALIFORWARDCORRECTIONMANAGER_H
-#define ALIROOT_PWG2_FORWARD_ALIFORWARDCORRECTIONMANAGER_H
+//
+// Manager (singleton) of corrections 
+// 
+#ifndef ALIFORWARDCORRECTIONMANAGER_H
+#define ALIFORWARDCORRECTIONMANAGER_H
 #include <TObject.h>
 #include "AliFMDCorrELossFit.h"
 #include "AliFMDCorrSecondaryMap.h"
@@ -56,6 +59,18 @@ public:
 	      Bool_t   mc=false,
 	      UInt_t   what=kAll,
 	      Bool_t   force=false);
+  /** 
+   * Read in correction based on passed parameters
+   * 
+   * @param collisionSystem Collision system string 
+   * @param cmsNN           Center of mass energy per nucleon pair [GeV]
+   * @param field           Magnetic field [kG]
+   * @param mc              Monte-carlo switch
+   * @param what            What to read in 
+   * @param force           Force (re-)reading of specified things
+   * 
+   * @return true on success
+   */
   Bool_t Init(const char* collisionSystem, 
 	      Float_t     cmsNN, 
 	      Float_t     field, 
@@ -122,6 +137,13 @@ public:
 		      UShort_t    sNN, 
 		      Short_t     field,
 		      Bool_t      mc) const;
+  /** 
+   * Get the file name of the specified object
+   * 
+   * @param what Which stuff to get the path for 
+   * 
+   * @return The full path or null
+   */
   TString GetFileName(ECorrection what) const;
   /** 
    * Get the path to the specified object 
@@ -147,6 +169,14 @@ public:
 		      UShort_t    sNN, 
 		      Short_t     field,
 		      Bool_t      mc) const;
+  /** 
+   * Get the full path to the object.  Note, the manager must be
+   * initialised for this to work
+   * 
+   * @param what Which stuff to get the path for 
+   * 
+   * @return The full path or null
+   */
   TString GetFilePath(ECorrection what) const;
   /** 
    * Open the file that contains the correction object specified 
@@ -168,6 +198,14 @@ public:
 		 Bool_t      mc=false, 
 		 Bool_t      rw=false, 
 		 Bool_t      newfile=false) const;
+  /** 
+   * Get the file that contains the object specifed.  Note, the manager
+   * must be initialised for this to work. 
+   * 
+   * @param what Which stuff to get the path for 
+   * 
+   * @return The file that contains the correction object or null
+   */
   TFile* GetFile(ECorrection what) const;
   /** 
    * Get the object name corresponding to correction type 
@@ -202,6 +240,13 @@ public:
 		     UShort_t    sNN, 
 		     Short_t     field,
 		     Bool_t      mc) const;
+  /** 
+   * Get the object that contaisn the specified correction
+   * 
+   * @param what Which object to get
+   * 
+   * @return The object or null
+   */
   TObject* GetObject(ECorrection what) const;
   /* 
    * @} 

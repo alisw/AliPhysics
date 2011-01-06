@@ -1,3 +1,7 @@
+// 
+// This class calculates the exclusive charged particle density
+// in each for the 5 FMD rings. 
+//
 #ifndef ALIFMDMCCORRECTIONS_H
 #define ALIFMDMCCORRECTIONS_H
 #include "AliFMDCorrections.h"

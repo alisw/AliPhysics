@@ -1,3 +1,7 @@
+//
+// This class calculates the exclusive charged particle density
+// in each for the 5 FMD rings. 
+//
 #include "AliFMDCorrections.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
@@ -21,7 +25,9 @@ AliFMDCorrections::AliFMDCorrections()
   : TNamed(), 
     fRingHistos(),
     fDebug(0)
-{}
+{
+  // Constructor
+}
 
 //____________________________________________________________________
 AliFMDCorrections::AliFMDCorrections(const char* title)
@@ -29,6 +35,10 @@ AliFMDCorrections::AliFMDCorrections(const char* title)
     fRingHistos(), 
     fDebug(0)
 {
+  // Constructor 
+  // 
+  // Parameters: 
+  //   title   Title
   fRingHistos.SetName(GetName());
   fRingHistos.Add(new RingHistos(1, 'I'));
   fRingHistos.Add(new RingHistos(2, 'I'));
@@ -43,6 +53,10 @@ AliFMDCorrections::AliFMDCorrections(const AliFMDCorrections& o)
     fRingHistos(), 
     fDebug(o.fDebug)
 {
+  // Copy constructor 
+  // 
+  // Parameters: 
+  //  o  Object to copy from 
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -51,6 +65,9 @@ AliFMDCorrections::AliFMDCorrections(const AliFMDCorrections& o)
 //____________________________________________________________________
 AliFMDCorrections::~AliFMDCorrections()
 {
+  // Destructor 
+  // 
+  // 
   fRingHistos.Delete();
 }
 
@@ -58,6 +75,10 @@ AliFMDCorrections::~AliFMDCorrections()
 AliFMDCorrections&
 AliFMDCorrections::operator=(const AliFMDCorrections& o)
 {
+  // Assignment operator 
+  // 
+  // Parameters:
+  //   o   Object to assign from 
   TNamed::operator=(o);
 
   fDebug   = o.fDebug;
@@ -73,6 +94,15 @@ AliFMDCorrections::operator=(const AliFMDCorrections& o)
 AliFMDCorrections::RingHistos*
 AliFMDCorrections::GetRingHistos(UShort_t d, Char_t r) const
 {
+  // 
+  // Get the ring histogram container 
+  // Parameters:
+  //    d Detector
+  //    r Ring 
+  // 
+  // Return:
+  //    Ring histogram container 
+  //
   Int_t idx = -1;
   switch (d) { 
   case 1: idx = 0; break;
@@ -89,6 +119,15 @@ Bool_t
 AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
 			   UShort_t                vtxbin)
 {
+  // 
+  // Do the calculations 
+  // Parameters:
+  //    hists    Cache of histograms 
+  //    vtxBin   Vertex bin 
+  // 
+  // Return:
+  //    true on successs 
+  //
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
   UShort_t uvb = vtxbin;
@@ -163,6 +202,12 @@ AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
 void
 AliFMDCorrections::ScaleHistograms(TList* dir, Int_t nEvents)
 {
+  // 
+  // Scale the histograms to the total number of events 
+  // Parameters:
+  //    dir     Where the output is stored
+  //    nEvents Number of events 
+  //
   if (nEvents <= 0) return;
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
@@ -190,6 +235,11 @@ AliFMDCorrections::DefineOutput(TList* dir)
 void
 AliFMDCorrections::Print(Option_t* /* option */) const
 {
+  // 
+  // Print information
+  // Parameters:
+  //    option Not used 
+  //
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
@@ -200,13 +250,23 @@ AliFMDCorrections::Print(Option_t* /* option */) const
 AliFMDCorrections::RingHistos::RingHistos()
   : AliForwardUtil::RingHistos(), 
     fDensity(0)
-{}
+{
+  // Constructor 
+  //
+  // 
+}
 
 //____________________________________________________________________
 AliFMDCorrections::RingHistos::RingHistos(UShort_t d, Char_t r)
   : AliForwardUtil::RingHistos(d,r), 
     fDensity(0)
 {
+  // 
+  // Constructor
+  // Parameters:
+  //    d detector
+  //    r ring 
+  //
   fDensity = new TH2D(Form("FMD%d%c_Primary_Density", d, r), 
 		      Form("in FMD%d%c", d, r), 
 		      200, -4, 6, (r == 'I' || r == 'i' ? 20 : 40), 
@@ -220,12 +280,26 @@ AliFMDCorrections::RingHistos::RingHistos(UShort_t d, Char_t r)
 AliFMDCorrections::RingHistos::RingHistos(const RingHistos& o)
   : AliForwardUtil::RingHistos(o), 
     fDensity(o.fDensity)
-{}
+{
+  // 
+  // Copy constructor 
+  // Parameters:
+  //    o Object to copy from 
+  //
+}
 
 //____________________________________________________________________
 AliFMDCorrections::RingHistos&
 AliFMDCorrections::RingHistos::operator=(const RingHistos& o)
 {
+  // 
+  // Assignment operator 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this 
+  //
   AliForwardUtil::RingHistos::operator=(o);
   
   if (fDensity) delete fDensity;
@@ -237,6 +311,9 @@ AliFMDCorrections::RingHistos::operator=(const RingHistos& o)
 //____________________________________________________________________
 AliFMDCorrections::RingHistos::~RingHistos()
 {
+  // 
+  // Destructor 
+  //
   if (fDensity) delete fDensity;
 }
 
@@ -244,6 +321,11 @@ AliFMDCorrections::RingHistos::~RingHistos()
 void
 AliFMDCorrections::RingHistos::Output(TList* dir)
 {
+  // 
+  // Make output 
+  // Parameters:
+  //    dir Where to put it 
+  //
   TList* d = DefineOutputList(dir);
   d->Add(fDensity);
 }
@@ -252,6 +334,12 @@ AliFMDCorrections::RingHistos::Output(TList* dir)
 void
 AliFMDCorrections::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
 { 
+  // 
+  // Scale the histograms to the total number of events 
+  // Parameters:
+  //    dir     where the output is stored
+  //    nEvents Number of events 
+  //
   TList* l = GetOutputList(dir);
   if (!l) return; 
 

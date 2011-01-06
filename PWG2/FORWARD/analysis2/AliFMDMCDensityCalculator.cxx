@@ -1,9 +1,22 @@
+// 
+// This class calculates the inclusive charged particle density
+// in each for the 5 FMD rings based on the MC truth.
+//
+// Input:
+//   - AliMCEvent  MC truth event infromation
+//
+// Output:
+//   - None
+//
+// Corrections used: 
+//   - None
+//
+//
 #include "AliFMDMCDensityCalculator.h"
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
 #include "AliFMDStripIndex.h"
 #include "AliMCEvent.h"
-// #include "AliFMDAnaParameters.h"
 #include "AliESDFMD.h"
 #include "AliLog.h"
 #include <TH2D.h>
@@ -17,6 +30,9 @@ ClassImp(AliFMDMCDensityCalculator)
 //____________________________________________________________________
 AliFMDMCDensityCalculator::~AliFMDMCDensityCalculator()
 {
+  // 
+  // Destructor 
+  //
   if (fComps)  fComps->Clear();
   if (fFMD1i)  delete fFMD1i;
   if (fFMD2i)  delete fFMD2i;
@@ -34,10 +50,52 @@ AliFMDMCDensityCalculator::~AliFMDMCDensityCalculator()
 AliFMDMCDensityCalculator&
 AliFMDMCDensityCalculator::operator=(const AliFMDMCDensityCalculator& o)
 {
+  // 
+  // Assignement operator
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object
+  //
   AliFMDDensityCalculator::operator=(o);
   return *this;
 }
 
+
+//____________________________________________________________________
+void
+AliFMDMCDensityCalculator::Init(const TAxis& eAxis)
+{
+  // 
+  // Initialize this object 
+  // 
+  // Parameters:
+  //    etaAxis Eta axis to use 
+  //
+  fFMD1i  = Make(1,'I',eAxis);
+  fFMD2i  = Make(2,'I',eAxis);
+  fFMD2o  = Make(2,'O',eAxis);
+  fFMD3i  = Make(3,'I',eAxis);
+  fFMD3o  = Make(3,'O',eAxis); 
+  fFMD1iC = Make(1,'I');
+  fFMD2iC = Make(2,'I');
+  fFMD2oC = Make(2,'O');
+  fFMD3iC = Make(3,'I');
+  fFMD3oC = Make(3,'O');
+ 
+  fComps->Add(fFMD1i);
+  fComps->Add(fFMD2i);
+  fComps->Add(fFMD2o);
+  fComps->Add(fFMD3i);
+  fComps->Add(fFMD3o);
+  fComps->Add(fFMD1iC);
+  fComps->Add(fFMD2iC);
+  fComps->Add(fFMD2oC);
+  fComps->Add(fFMD3iC);
+  fComps->Add(fFMD3oC);
+}
     
 
 //____________________________________________________________________
@@ -45,6 +103,18 @@ Bool_t
 AliFMDMCDensityCalculator::CalculateMC(const AliESDFMD&        fmd,
 				       AliForwardUtil::Histos& hists)
 {
+  // 
+  // Calculate the charged particle density from the MC track references. 
+  // 
+  // Parameters:
+  //    event  MC event
+  //    hists  Histograms to fill
+  //    vz     Interaction z coordinate @f$ v_z@f$
+  //    vtxBin bin corresponding to @f$ v_z@f$
+  // 
+  // Return:
+  //    true on success
+  //
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
     for (UShort_t q=0; q<nr; q++) { 
@@ -73,37 +143,21 @@ AliFMDMCDensityCalculator::CalculateMC(const AliESDFMD&        fmd,
 }
 
 //____________________________________________________________________
-void
-AliFMDMCDensityCalculator::Init(const TAxis& eAxis)
-{
-  fFMD1i  = Make(1,'I',eAxis);
-  fFMD2i  = Make(2,'I',eAxis);
-  fFMD2o  = Make(2,'O',eAxis);
-  fFMD3i  = Make(3,'I',eAxis);
-  fFMD3o  = Make(3,'O',eAxis); 
-  fFMD1iC = Make(1,'I');
-  fFMD2iC = Make(2,'I');
-  fFMD2oC = Make(2,'O');
-  fFMD3iC = Make(3,'I');
-  fFMD3oC = Make(3,'O');
- 
-  fComps->Add(fFMD1i);
-  fComps->Add(fFMD2i);
-  fComps->Add(fFMD2o);
-  fComps->Add(fFMD3i);
-  fComps->Add(fFMD3o);
-  fComps->Add(fFMD1iC);
-  fComps->Add(fFMD2iC);
-  fComps->Add(fFMD2oC);
-  fComps->Add(fFMD3iC);
-  fComps->Add(fFMD3oC);
-}
-
-//____________________________________________________________________
 TProfile2D*
 AliFMDMCDensityCalculator::Make(UShort_t d, Char_t r, 
 				const TAxis& axis) const
 {
+  // 
+  // MAke comparison profiles
+  // 
+  // Parameters:
+  //    d     Detector 
+  //    r     Ring 
+  //    axis  Eta axis 
+  // 
+  // Return:
+  //    Newly allocated profile object
+  //
   TProfile2D* ret = new TProfile2D(Form("FMD%d%c_esd_vs_mc", d, r),
 				   Form("ESD/MC signal for FMD%d%c", d, r),
 				   axis.GetNbins(), 
@@ -121,6 +175,16 @@ AliFMDMCDensityCalculator::Make(UShort_t d, Char_t r,
 TH2D*
 AliFMDMCDensityCalculator::Make(UShort_t d, Char_t r) const
 {
+  // 
+  // MAke comparison profiles
+  // 
+  // Parameters:
+  //    d     Detector 
+  //    r     Ring 
+  // 
+  // Return:
+  //    Newly allocated profile object
+  //
   TH2D* ret = new TH2D(Form("FMD%d%c_corr_mc_esd", d, r),
 		       Form("ESD-MC correlation for FMD%d%c", d, r),
 		       200, 0, 20, 200, 0, 20);
@@ -134,6 +198,15 @@ AliFMDMCDensityCalculator::Make(UShort_t d, Char_t r) const
 void
 AliFMDMCDensityCalculator::Fill(UShort_t d, Char_t r, TH2* esd, TH2* mc)
 {
+  // 
+  // Fill comparison profiles
+  // 
+  // Parameters:
+  //    d    Detector 
+  //    r    Ring 
+  //    esd  ESD histogram
+  //    mc   MC histogram
+  //
   if (!esd || !mc) return;
   TProfile2D* p = 0;
   TH2D*       h = 0;
@@ -171,6 +244,18 @@ Bool_t
 AliFMDMCDensityCalculator::CompareResults(AliForwardUtil::Histos& esd,
 					  AliForwardUtil::Histos& mc)
 {
+  // 
+  // Compare the result of analysing the ESD for 
+  // the inclusive charged particle density to analysing 
+  // MC truth 
+  // 
+  // Parameters:
+  //    esd 
+  //    mc 
+  // 
+  // Return:
+  //   true 
+  //
   Fill(1, 'I', esd.Get(1,'I'), mc.Get(1,'I'));
   Fill(2, 'I', esd.Get(2,'I'), mc.Get(2,'I'));
   Fill(2, 'O', esd.Get(2,'O'), mc.Get(2,'O'));
@@ -184,6 +269,12 @@ AliFMDMCDensityCalculator::CompareResults(AliForwardUtil::Histos& esd,
 void
 AliFMDMCDensityCalculator::DefineOutput(TList* dir)
 {
+  // 
+  // Output diagnostic histograms to directory 
+  // 
+  // Parameters:
+  //    dir List to write in
+  //  
   AliFMDDensityCalculator::DefineOutput(dir);
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
 

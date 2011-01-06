@@ -1,5 +1,8 @@
-#ifndef ALIROOT_PWG2_FORWARD_ALIFORWARDCORRECTIONS_H
-#define ALIROOT_PWG2_FORWARD_ALIFORWARDCORRECTIONS_H
+// 
+// Calculate the corrections in the forward regions
+// 
+#ifndef ALIFORWARDCORRECTIONS_H
+#define ALIFORWARDCORRECTIONS_H
 #include <AliAnalysisTaskSE.h>
 #include "AliForwardUtil.h"
 #include "AliFMDSharingFilter.h"
@@ -90,18 +93,91 @@ public:
   /** 
    * @} 
    */
+  /** 
+   * Print this object 
+   * 
+   * @param option   Not used
+   */
   void         Print(Option_t* option="") const;
 
+  /** 
+   * Set the vertex axis to use
+   * 
+   * @param nBins Number of bins
+   * @param vzMin Least @f$z@f$ coordinate of interation point
+   * @param vzMax Largest @f$z@f$ coordinate of interation point
+   */
   void SetVertexAxis(Int_t nBins, Double_t vzMin, Double_t vzMax=-1000000);
+  /** 
+   * Set the vertex axis to use
+   * 
+   * @param axis Axis
+   */
   void SetVertexAxis(const TAxis& axis);
+  /** 
+   * Set the eta axis to use
+   * 
+   * @param nBins Number of bins
+   * @param vzMin Least @f$\eta@f$ 
+   * @param vzMax Largest @f$\eta@f$ 
+   */
   void SetEtaAxis(Int_t nBins, Double_t etaMin, Double_t etaMax=-1000000);
+  /** 
+   * Set the eta axis to use
+   * 
+   * @param axis Axis
+   */
   void SetEtaAxis(const TAxis& axis);
 protected: 
+  /** 
+   * Get vertex project
+   * 
+   * @param v   Vertex bin 
+   * @param src Source 3D histogram 
+   * 
+   * @return 2D projection of the V'th bin
+   */
   TH2D*  GetVertexProj(Int_t v, TH3D* src) const;
+  /** 
+   * Make a 3D histogram
+   * 
+   * @param name   Name 
+   * @param title  Title 
+   * @param nPhi   Number of phi bins
+   * 
+   * @return Histogram
+   */
   TH3D* Make3D(const char* name, const char* title, Int_t nPhi) const;
+  /** 
+   * Make 1D histogram
+   * 
+   * @param name   Name 
+   * @param title  Title
+   * 
+   * @return Histogram
+   */
   TH1D* Make1D(const char* name, const char* title) const;
+  /** 
+   * Fill in primary information
+   * 
+   * @param gotInel   Got INEL trigger from ESD
+   * @param gotVtx    Got vertex Z from ESD 
+   * @param vz        @f$z@f$ coordinate of interation point
+   * @param eta       Pseudo rapidity 
+   * @param phi       Azimuthal angle
+   */
   void  FillPrimary(Bool_t gotInel, Bool_t gotVtx, 
 		    Double_t vz, Double_t eta, Double_t phi);
+  /** 
+   * Fill in per-strip information
+   * 
+   * @param d         Detector
+   * @param r         Ring
+   * @param vz        @f$z@f$ coordinate of interation point
+   * @param eta       Pseudo rapidity 
+   * @param phi       Azimuthal angle
+   * @param first     First fill in this event
+   */
   void FillStrip(UShort_t d, Char_t r, 
 		 Double_t vz, Double_t eta, Double_t phi,
 		 Bool_t first);

@@ -1,10 +1,12 @@
+// This class calculates the inclusive charged particle density
+// in each for the 5 FMD rings. 
+//
 #include "AliFMDDensityCalculator.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
-// #include "AliFMDAnaParameters.h"
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TProfile.h>
@@ -29,7 +31,11 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fAccI(0),
     fAccO(0),
     fDebug(0)
-{}
+{
+  // 
+  // Constructor 
+  //
+}
 
 //____________________________________________________________________
 AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
@@ -44,6 +50,12 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fAccO(0),
     fDebug(0)
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    name Name of object
+  //
   fRingHistos.SetName(GetName());
   fRingHistos.Add(new RingHistos(1, 'I'));
   fRingHistos.Add(new RingHistos(2, 'I'));
@@ -81,6 +93,12 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fAccO(o.fAccO),
     fDebug(o.fDebug)
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -89,6 +107,9 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
 //____________________________________________________________________
 AliFMDDensityCalculator::~AliFMDDensityCalculator()
 {
+  // 
+  // Destructor 
+  //
   fRingHistos.Delete();
 }
 
@@ -96,6 +117,15 @@ AliFMDDensityCalculator::~AliFMDDensityCalculator()
 AliFMDDensityCalculator&
 AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
 {
+  // 
+  // Assignement operator
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object
+  //
   TNamed::operator=(o);
 
   fMultCut      = o.fMultCut;
@@ -116,6 +146,16 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
 AliFMDDensityCalculator::RingHistos*
 AliFMDDensityCalculator::GetRingHistos(UShort_t d, Char_t r) const
 {
+  // 
+  // Get the ring histogram container 
+  // 
+  // Parameters:
+  //    d Detector
+  //    r Ring 
+  // 
+  // Return:
+  //    Ring histogram container 
+  //
   Int_t idx = -1;
   switch (d) { 
   case 1: idx = 0; break;
@@ -131,6 +171,14 @@ AliFMDDensityCalculator::GetRingHistos(UShort_t d, Char_t r) const
 Double_t
 AliFMDDensityCalculator::GetMultCut() const
 {
+  // 
+  // Get the multiplicity cut.  If the user has set fMultCut (via
+  // SetMultCut) then that value is used.  If not, then the lower
+  // value of the fit range for the enery loss fits is returned.
+  // 
+  // Return:
+  //    Lower cut on multiplicity
+  //
   if (fMultCut > 0) return fMultCut;
 
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
@@ -145,6 +193,18 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 				   UShort_t                vtxbin, 
 				   Bool_t                  lowFlux)
 {
+  // 
+  // Do the calculations 
+  // 
+  // Parameters:
+  //    fmd      AliESDFMD object (possibly) corrected for sharing
+  //    hists    Histogram cache
+  //    vtxBin   Vertex bin 
+  //    lowFlux  Low flux flag. 
+  // 
+  // Return:
+  //    true on successs 
+  //
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
     for (UShort_t q=0; q<nr; q++) { 
@@ -195,10 +255,25 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
 				    Float_t  eta,
 				    Bool_t   lowFlux) const
 {
+  // 
+  // Get the number of particles corresponding to the signal mult
+  // 
+  // Parameters:
+  //    mult     Signal
+  //    d        Detector
+  //    r        Ring 
+  //    s        Sector 
+  //    t        Strip (not used)
+  //    v        Vertex bin 
+  //    eta      Pseudo-rapidity 
+  //    lowFlux  Low-flux flag 
+  // 
+  // Return:
+  //    The number of particles 
+  //
   if (mult <= GetMultCut()) return 0;
   if (lowFlux) return 1;
   
-  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit::ELossFit* fit = fcm.GetELossFit()->FindFit(d,r,eta);
   if (!fit) { 
@@ -253,12 +328,29 @@ AliFMDDensityCalculator::Correction(UShort_t d,
 				    Float_t  eta,
 				    Bool_t   lowFlux) const
 {
-  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  // 
+  // Get the inverse correction factor.  This consist of
+  // 
+  // - acceptance correction (corners of sensors) 
+  // - double hit correction (for low-flux events) 
+  // - dead strip correction 
+  // 
+  // Parameters:
+  //    d        Detector
+  //    r        Ring 
+  //    s        Sector 
+  //    t        Strip (not used)
+  //    v        Vertex bin 
+  //    eta      Pseudo-rapidity 
+  //    lowFlux  Low-flux flag 
+  // 
+  // Return:
+  //    
+  //
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
 
   Float_t correction = AcceptanceCorrection(r,t);
   if (lowFlux) { 
-    // TH1F* dblHitCor = pars->GetDoubleHitCorrection(d,r);
     TH1D* dblHitCor = 0;
     if (fcm.GetDoubleHit()) 
       dblHitCor = fcm.GetDoubleHit()->GetCorrection(d,r);
@@ -288,6 +380,15 @@ AliFMDDensityCalculator::Correction(UShort_t d,
 TH1D*
 AliFMDDensityCalculator::GenerateAcceptanceCorrection(Char_t r) const
 {
+  // 
+  // Generate the acceptance corrections 
+  // 
+  // Parameters:
+  //    r Ring to generate for 
+  // 
+  // Return:
+  //    Newly allocated histogram of acceptance corrections
+  //
   const Double_t ic1[] = { 4.9895, 15.3560 };
   const Double_t ic2[] = { 1.8007, 17.2000 };
   const Double_t oc1[] = { 4.2231, 26.6638 };
@@ -357,6 +458,16 @@ AliFMDDensityCalculator::GenerateAcceptanceCorrection(Char_t r) const
 Float_t 
 AliFMDDensityCalculator::AcceptanceCorrection(Char_t r, UShort_t t) const
 {
+  // 
+  // Get the acceptance correction for strip @a t in an ring of type @a r
+  // 
+  // Parameters:
+  //    r  Ring type ('I' or 'O')
+  //    t  Strip number 
+  // 
+  // Return:
+  //    Inverse acceptance correction 
+  //
   TH1D* acc = (r == 'I' || r == 'i' ? fAccI : fAccO);
   return acc->GetBinContent(t+1);
 
@@ -418,6 +529,13 @@ AliFMDDensityCalculator::AcceptanceCorrection(Char_t r, UShort_t t) const
 void
 AliFMDDensityCalculator::ScaleHistograms(TList* dir, Int_t nEvents)
 {
+  // 
+  // Scale the histograms to the total number of events 
+  // 
+  // Parameters:
+  //    dir     where to put the output
+  //    nEvents Number of events 
+  //
   if (nEvents <= 0) return;
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
@@ -432,6 +550,12 @@ AliFMDDensityCalculator::ScaleHistograms(TList* dir, Int_t nEvents)
 void
 AliFMDDensityCalculator::DefineOutput(TList* dir)
 {
+  // 
+  // Output diagnostic histograms to directory 
+  // 
+  // Parameters:
+  //    dir List to write in
+  //  
   TList* d = new TList;
   d->SetName(GetName());
   dir->Add(d);
@@ -451,6 +575,12 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
 void
 AliFMDDensityCalculator::Print(Option_t*) const
 {
+  // 
+  // Print information 
+  // 
+  // Parameters:
+  //    option Not used
+  //
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
@@ -469,7 +599,11 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
     fEtaVsM(0),
     fCorr(0),
     fDensity(0)
-{}
+{
+  // 
+  // Default CTOR
+  //
+}
 
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
@@ -481,6 +615,13 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
     fCorr(0),
     fDensity(0)
 {
+  // 
+  // Constructor
+  // 
+  // Parameters:
+  //    d detector
+  //    r ring 
+  //
   fEvsN = new TH2D(Form("%s_Eloss_N_nocorr", fName.Data()), 
 		   Form("#Delta E/#Delta E_{mip} vs uncorrected inclusive "
 			"N_{ch} in %s", fName.Data()), 
@@ -543,12 +684,28 @@ AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
     fEtaVsM(o.fEtaVsM),
     fCorr(o.fCorr),
     fDensity(o.fDensity)
-{}
+{
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
+}
 
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos&
 AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this 
+  //
   AliForwardUtil::RingHistos::operator=(o);
   
   if (fEvsN)    delete  fEvsN;
@@ -570,6 +727,9 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos::~RingHistos()
 {
+  // 
+  // Destructor 
+  //
   if (fEvsN)    delete fEvsN;
   if (fEvsM)    delete fEvsM;
   if (fEtaVsN)  delete fEtaVsN;
@@ -582,6 +742,12 @@ AliFMDDensityCalculator::RingHistos::~RingHistos()
 void
 AliFMDDensityCalculator::RingHistos::Output(TList* dir)
 {
+  // 
+  // Make output 
+  // 
+  // Parameters:
+  //    dir Where to put it 
+  //
   TList* d = DefineOutputList(dir);
   d->Add(fEvsN);
   d->Add(fEvsM);
@@ -595,6 +761,13 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
 void
 AliFMDDensityCalculator::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
 {
+  // 
+  // Scale the histograms to the total number of events 
+  // 
+  // Parameters:
+  //    dir     Where the output is 
+  //    nEvents Number of events 
+  //
   TList* l = GetOutputList(dir);
   if (!l) return; 
 

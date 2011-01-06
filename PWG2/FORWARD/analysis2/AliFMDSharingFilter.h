@@ -1,5 +1,11 @@
-#ifndef ALIROOT_PWG2_FORWARD_ALIFMDSHARINGFILTER_H
-#define ALIROOT_PWG2_FORWARD_ALIFMDSHARINGFILTER_H
+//
+// Class to do the sharing correction.  That is, a filter that merges 
+// adjacent strip signals presumably originating from a single particle 
+// that impinges on the detector in such a way that it deposite energy 
+// into two or more strips. 
+//
+#ifndef ALIFMDSHARINGFILTER_H
+#define ALIFMDSHARINGFILTER_H
 #include <TNamed.h>
 #include <TH2.h>
 #include <TList.h>

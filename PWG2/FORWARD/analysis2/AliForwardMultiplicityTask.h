@@ -1,3 +1,6 @@
+// 
+// Calculate the multiplicity in the forward regions event-by-event 
+// 
 #ifndef ALIFORWARDMULTIPLICITYTASK_H
 #define ALIFORWARDMULTIPLICITYTASK_H
 #include "AliForwardMultiplicityBase.h"
@@ -130,6 +133,11 @@ public:
   AliFMDHistCollector& GetHistCollector() { return fHistCollector; }
   /** 
    * @} 
+   */
+  /** 
+   * Set debug level 
+   * 
+   * @param dbg Debug level
    */
   void SetDebug(Int_t dbg);
 protected: 

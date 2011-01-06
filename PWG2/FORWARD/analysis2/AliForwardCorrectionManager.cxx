@@ -1,3 +1,6 @@
+//
+// Manager (singleton) of corrections 
+// 
 #include "AliForwardCorrectionManager.h"
 #include "AliForwardUtil.h"
 #include <TString.h>
@@ -19,6 +22,12 @@ const char* AliForwardCorrectionManager::fgkMergingEffSkel   = "merging";
 //____________________________________________________________________
 AliForwardCorrectionManager& AliForwardCorrectionManager::Instance()
 {
+  // 
+  // Access to the singleton object 
+  // 
+  // Return:
+  //    Reference to the singleton object 
+  //
   if (!fgInstance) fgInstance= new AliForwardCorrectionManager;
   return *fgInstance;
 }
@@ -41,6 +50,9 @@ AliForwardCorrectionManager::AliForwardCorrectionManager()
     fVertexBias(0),
     fMergingEfficiency(0)
 {
+  // 
+  // Default constructor 
+  //
 }
 //____________________________________________________________________
 AliForwardCorrectionManager::AliForwardCorrectionManager(const AliForwardCorrectionManager& o)
@@ -61,11 +73,26 @@ AliForwardCorrectionManager::AliForwardCorrectionManager(const AliForwardCorrect
     fMergingEfficiency(o.fMergingEfficiency)
 
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
 }
 //____________________________________________________________________
 AliForwardCorrectionManager&
 AliForwardCorrectionManager::operator=(const AliForwardCorrectionManager& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object 
+  //
   fInit             = o.fInit;
   fSys              = o.fSys;
   fSNN              = o.fSNN;
@@ -92,6 +119,20 @@ AliForwardCorrectionManager::Init(const char* cms,
 				  UInt_t      what,
 				  Bool_t      force)
 {
+  // 
+  // Read in correction based on passed parameters
+  // 
+  // Parameters:
+  //    collisionSystem Collision system string 
+  //    cmsNN           Center of mass energy per nucleon pair [GeV]
+  //    field           Magnetic field [kG]
+  //    mc              Monte-carlo switch
+  //    what            What to read in 
+  //    force           Force (re-)reading of specified things
+  // 
+  // Return:
+  //    true on success
+  //
   UShort_t col = AliForwardUtil::ParseCollisionSystem(cms);
   return Init(col, 
 	      AliForwardUtil::ParseCenterOfMassEnergy(col, sNN),
@@ -108,6 +149,20 @@ AliForwardCorrectionManager::Init(UShort_t cms,
 				  UInt_t   what,
 				  Bool_t   force)
 {
+  // 
+  // Read in corrections based on the parameters given 
+  // 
+  // Parameters:
+  //    collisionSystem Collision system
+  //    cmsNN           Center of mass energy per nuclean pair [GeV]
+  //    field           Magnetic field setting [kG]
+  //    mc              Monte-carlo switch
+  //    what            What to read in. 
+  //    force           Force (re-)reading of specified things
+  // 
+  // Return:
+  //    
+  //
   if (force) fInit = kFALSE;
   if (fInit) return kTRUE;
 
@@ -176,6 +231,19 @@ AliForwardCorrectionManager::GetFileName(ECorrection what,
 					 Short_t     field,
 					 Bool_t      mc) const
 {
+  // 
+  // Get the path to the specified object 
+  // 
+  // Parameters:
+  //    what  Which stuff to get the path for 
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  //    mc    Whether the correction objects should be valid for MC
+  // 
+  // Return:
+  //    The full path or null 
+  //
   TString fname = "";
   fname = GetObjectName(what);
   fname.Append(Form("_%s_%04dGeV_%c%1dkG_%s.root", 
@@ -188,6 +256,15 @@ AliForwardCorrectionManager::GetFileName(ECorrection what,
 TString
 AliForwardCorrectionManager::GetFileName(ECorrection what) const
 {
+  // 
+  // Get the file name of the specified object
+  // 
+  // Parameters:
+  //    what Which stuff to get the path for 
+  // 
+  // Return:
+  //    The full path or null
+  //
   if (!fInit) { 
     AliWarning("Corrections manager initialised, do a forced Init(...)");
     return "";
@@ -199,6 +276,15 @@ AliForwardCorrectionManager::GetFileName(ECorrection what) const
 const Char_t*
 AliForwardCorrectionManager::GetFileDir(ECorrection what) const
 {
+  // 
+  // Get the path to the specified object 
+  // 
+  // Parameters:
+  //    what  Which stuff to get the path for 
+  // 
+  // Return:
+  //    The full path or null 
+  //
   if      (what & kSecondaryMap)        return fSecondaryMapPath;
   else if (what & kDoubleHit)           return fDoubleHitPath;
   else if (what & kELossFits)           return fELossFitsPath;
@@ -217,6 +303,19 @@ AliForwardCorrectionManager::GetFilePath(ECorrection what,
 					 Short_t     field,
 					 Bool_t      mc) const
 {
+  // 
+  // Get the path to the specified object 
+  // 
+  // Parameters:
+  //    what  Which stuff to get the path for 
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  //    mc    Whether the correction objects should be valid for MC
+  // 
+  // Return:
+  //    The full path or null 
+  //
   TString path = "";
   const Char_t* dir = GetFileDir(what);
   if (!dir) return path;
@@ -232,6 +331,16 @@ AliForwardCorrectionManager::GetFilePath(ECorrection what,
 TString
 AliForwardCorrectionManager::GetFilePath(ECorrection what) const
 {
+  // 
+  // Get the full path to the object.  Note, the manager must be
+  // initialised for this to work
+  // 
+  // Parameters:
+  //    what Which stuff to get the path for 
+  // 
+  // Return:
+  //    The full path or null
+  //
   if (!fInit) { 
     AliWarning("Corrections manager initialised, do a forced Init(...)");
     return "";
@@ -249,6 +358,21 @@ AliForwardCorrectionManager::GetFile(ECorrection what,
 				     Bool_t      rw, 
 				     Bool_t      newfile) const
 {
+  // 
+  // Open the file that contains the correction object specified 
+  // 
+  // Parameters:
+  //    what  Which stuff to get the path for 
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  //    mc    Whether the correction objects should be valid for MC
+  //    rw    Whether to open the file in read/write
+  //    newfile Wheter to make the file if it doesn't exist
+  // 
+  // Return:
+  //    The file that contains the correction object or null 
+  //
   TString path = GetFilePath(what, sys, sNN, field, mc);
   if (path.IsNull()) return 0;
   
@@ -275,6 +399,16 @@ AliForwardCorrectionManager::GetFile(ECorrection what,
 TFile*
 AliForwardCorrectionManager::GetFile(ECorrection what) const
 {
+  // 
+  // Get the file that contains the object specifed.  Note, the manager
+  // must be initialised for this to work. 
+  // 
+  // Parameters:
+  //    what Which stuff to get the path for 
+  // 
+  // Return:
+  //    The file that contains the correction object or null
+  //
   if (!fInit) { 
     AliWarning("Corrections manager initialised, do a forced Init(...)");
     return 0;
@@ -286,6 +420,15 @@ AliForwardCorrectionManager::GetFile(ECorrection what) const
 const Char_t*
 AliForwardCorrectionManager::GetObjectName(ECorrection what) const
 {
+  // 
+  // Get the object name corresponding to correction type 
+  // 
+  // Parameters:
+  //    what Correction 
+  // 
+  // Return:
+  //    Object name or null
+  //
   if      (what & kSecondaryMap)       return fgkSecondaryMapSkel;
   else if (what & kDoubleHit)          return fgkDoubleHitSkel;
   else if (what & kELossFits)          return fgkELossFitsSkel;
@@ -298,6 +441,16 @@ AliForwardCorrectionManager::GetObjectName(ECorrection what) const
 TObject*
 AliForwardCorrectionManager::CheckObject(TFile* file, ECorrection what) const
 {
+  // 
+  // Check if the specified objet exists in the file, and return it
+  // 
+  // Parameters:
+  //    file File to query 
+  //    what Correction type 
+  // 
+  // Return:
+  //    Object found, or null
+  //
   TObject* o = file->Get(GetObjectName(what));
   if (!o) { 
     AliWarning(Form("Object %s not found in %s", 
@@ -316,6 +469,19 @@ AliForwardCorrectionManager::GetObject(ECorrection what,
 				       Short_t     field,
 				       Bool_t      mc) const
 {
+  // 
+  // Get the path to the specified object 
+  // 
+  // Parameters:
+  //    what  Which stuff to get the path for 
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  //    mc    Whether the correction objects should be valid for MC
+  // 
+  // Return:
+  //    The full path or null 
+  //
   TFile* file = GetFile(what, sys, sNN, field, mc, false, false);
   if (!file) return 0;
   
@@ -325,6 +491,15 @@ AliForwardCorrectionManager::GetObject(ECorrection what,
 TObject*
 AliForwardCorrectionManager::GetObject(ECorrection what) const
 {
+  // 
+  // Get the object that contaisn the specified correction
+  // 
+  // Parameters:
+  //    what Which object to get
+  // 
+  // Return:
+  //    The object or null
+  //
   if (!fInit) { 
     AliWarning("Corrections manager initialised, do a forced Init(...)");
     return 0;
@@ -338,6 +513,17 @@ Bool_t
 AliForwardCorrectionManager::ReadSecondaryMap(UShort_t sys, UShort_t sNN, 
 					      Short_t field)
 {
+  // 
+  // Read in the secondary map 
+  // 
+  // Parameters:
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  // 
+  // Return:
+  //    True on success, false otherwise 
+  //
   if (fInit) { 
     AliWarning("Corrections manager initialised, do a forced Init(...)");
     return kFALSE;
@@ -361,6 +547,17 @@ Bool_t
 AliForwardCorrectionManager::ReadDoubleHit(UShort_t sys, UShort_t sNN, 
 					   Short_t field)
 {
+  // 
+  // Read in the double hit correction
+  // 
+  // Parameters:
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  // 
+  // Return:
+  //    True on success, false otherwise 
+  //
   if (fInit) { 
     AliWarning("Corrections manager initialised, do a forced Init(...)");
     return kFALSE;
@@ -385,6 +582,18 @@ Bool_t
 AliForwardCorrectionManager::ReadELossFits(UShort_t sys, UShort_t sNN, 
 					   Short_t field, Bool_t mc)
 {
+  // 
+  // Read in the energy loss fits 
+  // 
+  // Parameters:
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  //    mc    Whether the correction objects should be valid for MC
+  // 
+  // Return:
+  //    True on success, false otherwise 
+  //
   if (fInit) { 
     AliWarning("Corrections manager initialised, do a forced Init(...)");
     return kFALSE;
@@ -410,6 +619,17 @@ AliForwardCorrectionManager::ReadVertexBias(UShort_t sys,
 					    UShort_t sNN, 
 					    Short_t field)
 {
+  // 
+  // Read in the event selection efficiency 
+  // 
+  // Parameters:
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  // 
+  // Return:
+  //    True on success, false otherwise 
+  //
   if (fInit) { 
     AliWarning("Corrections manager initialised, do a forced Init(...)");
     return kFALSE;
@@ -435,6 +655,17 @@ AliForwardCorrectionManager::ReadMergingEfficiency(UShort_t sys,
 						   UShort_t sNN, 
 						   Short_t field)
 {
+  // 
+  // Read in the merging efficiency 
+  // 
+  // Parameters:
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  // 
+  // Return:
+  //    True on success, false otherwise 
+  //
   if (fInit) { 
     AliWarning("Corrections manager initialised, do a forced Init(...)");
     return kFALSE;

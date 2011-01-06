@@ -2,8 +2,8 @@
 // This class contains the secondary correction and the double hit
 // correction used in low-flux events.
 //
-#ifndef ALIROOT_PWG2_FORWARD_ANALYSIS_ALIFMDCORRDOUBLEHIT_H
-#define ALIROOT_PWG2_FORWARD_ANALYSIS_ALIFMDCORRDOUBLEHIT_H
+#ifndef ALIFMDCORRDOUBLEHIT_H
+#define ALIFMDCORRDOUBLEHIT_H
 #include <TObject.h>
 #include <TObjArray.h>
 class TH1D;

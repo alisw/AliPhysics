@@ -1,3 +1,7 @@
+// 
+// Utilities used in the forward multiplcity analysis 
+// 
+//
 #include "AliForwardUtil.h"
 #include <AliAnalysisManager.h>
 #include "AliAODForwardMult.h"
@@ -18,6 +22,19 @@
 UShort_t
 AliForwardUtil::ParseCollisionSystem(const char* sys)
 {
+  // 
+  // Parse a collision system spec given in a string.   Known values are 
+  // 
+  //  - "pp", "p-p" which returns kPP 
+  //  - "PbPb", "Pb-Pb", "A-A", which returns kPbPb 
+  //  - Everything else gives kUnknown 
+  // 
+  // Parameters:
+  //    sys Collision system spec 
+  // 
+  // Return:
+  //    Collision system id 
+  //
   TString s(sys);
   s.ToLower();
   if (s.Contains("p-p")   || s.Contains("pp"))   return AliForwardUtil::kPP; 
@@ -29,6 +46,18 @@ AliForwardUtil::ParseCollisionSystem(const char* sys)
 const char*
 AliForwardUtil::CollisionSystemString(UShort_t sys)
 {
+  // 
+  // Get a string representation of the collision system 
+  // 
+  // Parameters:
+  //    sys  Collision system 
+  // - kPP -> "pp"
+  // - kPbPb -> "PbPb" 
+  // - anything else gives "unknown"
+  // 
+  // Return:
+  //    String representation of the collision system 
+  //
   switch (sys) { 
   case AliForwardUtil::kPP:   return "pp";
   case AliForwardUtil::kPbPb: return "PbPb";
@@ -39,6 +68,17 @@ AliForwardUtil::CollisionSystemString(UShort_t sys)
 UShort_t
 AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t v)
 {
+  // 
+  // Parse the center of mass energy given as a float and return known 
+  // values as a unsigned integer
+  // 
+  // Parameters:
+  //    sys  Collision system (needed for AA)
+  //    cms  Center of mass energy * total charge 
+  // 
+  // Return:
+  //    Center of mass energy per nucleon
+  //
   Float_t energy = v; 
   if (sys != AliForwardUtil::kPP) energy = energy / 208 * 82;
   if (TMath::Abs(energy - 900.)   < 10)  return 900;
@@ -54,12 +94,30 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t v)
 const char* 
 AliForwardUtil::CenterOfMassEnergyString(UShort_t cms)
 {
+  // 
+  // Get a string representation of the center of mass energy per nuclean
+  // 
+  // Parameters:
+  //    cms  Center of mass energy per nucleon
+  // 
+  // Return:
+  //    String representation of the center of mass energy per nuclean
+  //
   return Form("%04dGeV", cms);
 }
 //____________________________________________________________________
 Short_t
 AliForwardUtil::ParseMagneticField(Float_t v)
 {
+  // 
+  // Parse the magnetic field (in kG) as given by a floating point number
+  // 
+  // Parameters:
+  //    field  Magnetic field in kG 
+  // 
+  // Return:
+  //    Short integer value of magnetic field in kG 
+  //
   if (TMath::Abs(v - 5.) < 1 ) return +5;
   if (TMath::Abs(v + 5.) < 1 ) return -5;
   if (TMath::Abs(v) < 1)       return 0;
@@ -69,6 +127,15 @@ AliForwardUtil::ParseMagneticField(Float_t v)
 const char* 
 AliForwardUtil::MagneticFieldString(Short_t f)
 {
+  // 
+  // Get a string representation of the magnetic field
+  // 
+  // Parameters:
+  //    field Magnetic field in kG
+  // 
+  // Return:
+  //    String representation of the magnetic field
+  //
   return Form("%01dkG", f);
 }
 
@@ -77,18 +144,18 @@ AliForwardUtil::MagneticFieldString(Short_t f)
 Int_t    AliForwardUtil::fgConvolutionSteps  = 100;
 Double_t AliForwardUtil::fgConvolutionNSigma = 5;
 namespace {
-  /** 
-   * The shift of the most probable value for the ROOT function TMath::Landau 
-   */
+  // 
+  // The shift of the most probable value for the ROOT function TMath::Landau 
+  //
   const Double_t  mpshift  = -0.22278298;
-  /** 
-   * Integration normalisation 
-   */
+  // 
+  // Integration normalisation 
+  //
   const Double_t  invSq2pi = 1. / TMath::Sqrt(2*TMath::Pi());
 
-  /** 
-   * Utility function to use in TF1 defintition 
-   */
+  // 
+  // Utility function to use in TF1 defintition 
+  //
   Double_t landauGaus1(Double_t* xp, Double_t* pp) 
   {
     Double_t x        = xp[0];
@@ -101,9 +168,9 @@ namespace {
     return constant * AliForwardUtil::LandauGaus(x, delta, xi, sigma, sigma_n);
   }
 
-  /** 
-   * Utility function to use in TF1 defintition 
-   */
+  // 
+  // Utility function to use in TF1 defintition 
+  //
   Double_t landauGausN(Double_t* xp, Double_t* pp) 
   {
     Double_t  x        = xp[0];
@@ -118,9 +185,9 @@ namespace {
     return constant * AliForwardUtil::NLandauGaus(x, delta, xi, sigma, sigma_n,
 						  n, a);
   }
-  /** 
-   * Utility function to use in TF1 defintition 
-   */
+  // 
+  // Utility function to use in TF1 defintition 
+  //
   Double_t landauGausI(Double_t* xp, Double_t* pp) 
   {
     Double_t x         = xp[0];
@@ -140,6 +207,24 @@ namespace {
 Double_t 
 AliForwardUtil::Landau(Double_t x, Double_t delta, Double_t xi)
 {
+  // 
+  // Calculate the shifted Landau
+  // @f[
+  //    f'_{L}(x;\Delta,\xi) = f_L(x;\Delta+0.22278298\xi)
+  // @f]
+  //
+  // where @f$ f_{L}@f$ is the ROOT implementation of the Landau
+  // distribution (known to have @f$ \Delta_{p}=-0.22278298@f$ for
+  // @f$\Delta=0,\xi=1@f$. 
+  // 
+  // Parameters:
+  //    x      Where to evaluate @f$ f'_{L}@f$ 
+  //    delta  Most probable value 
+  //    xi     The 'width' of the distribution 
+  //
+  // Return:
+  //    @f$ f'_{L}(x;\Delta,\xi) @f$
+  //
   return TMath::Landau(x, delta - xi * mpshift, xi);
 }
 //____________________________________________________________________
@@ -147,6 +232,39 @@ Double_t
 AliForwardUtil::LandauGaus(Double_t x, Double_t delta, Double_t xi,
 			   Double_t sigma, Double_t sigma_n)
 {
+  // 
+  // Calculate the value of a Landau convolved with a Gaussian 
+  // 
+  // @f[ 
+  // f(x;\Delta,\xi,\sigma') = \frac{1}{\sigma' \sqrt{2 \pi}}
+  //    \int_{-\infty}^{+\infty} d\Delta' f'_{L}(x;\Delta',\xi)
+  //    \exp{-\frac{(\Delta-\Delta')^2}{2\sigma'^2}}
+  // @f]
+  // 
+  // where @f$ f'_{L}@f$ is the Landau distribution, @f$ \Delta@f$ the
+  // energy loss, @f$ \xi@f$ the width of the Landau, and 
+  // @f$ \sigma'^2=\sigma^2-\sigma_n^2 @f$.  Here, @f$\sigma@f$ is the
+  // variance of the Gaussian, and @f$\sigma_n@f$ is a parameter modelling 
+  // noise in the detector.  
+  //
+  // Note that this function uses the constants fgConvolutionSteps and
+  // fgConvolutionNSigma
+  // 
+  // References: 
+  //  - <a href="http://dx.doi.org/10.1016/0168-583X(84)90472-5">Nucl.Instrum.Meth.B1:16</a>
+  //  - <a href="http://dx.doi.org/10.1103/PhysRevA.28.615">Phys.Rev.A28:615</a>
+  //  - <a href="http://root.cern.ch/root/htmldoc/tutorials/fit/langaus.C.html">ROOT implementation</a>
+  // 
+  // Parameters:
+  //    x         where to evaluate @f$ f@f$
+  //    delta     @f$ \Delta@f$ of @f$ f(x;\Delta,\xi,\sigma')@f$
+  //    xi        @f$ \xi@f$ of @f$ f(x;\Delta,\xi,\sigma')@f$
+  //    sigma     @f$ \sigma@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f$
+  //    sigma_n   @f$ \sigma_n@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f$
+  // 
+  // Return:
+  //    @f$ f@f$ evaluated at @f$ x@f$.  
+  //
   Double_t deltap = delta - xi * mpshift;
   Double_t sigma2 = sigma_n*sigma_n + sigma*sigma;
   Double_t sigma1 = sigma_n == 0 ? sigma : TMath::Sqrt(sigma2);
@@ -170,6 +288,30 @@ Double_t
 AliForwardUtil::ILandauGaus(Double_t x, Double_t delta, Double_t xi, 
 			    Double_t sigma, Double_t sigma_n, Int_t i)
 {
+  // 
+  // Evaluate 
+  // @f[ 
+  //    f_i(x;\Delta,\xi,\sigma') = f(x;\Delta_i,\xi_i,\sigma_i')
+  // @f] 
+  // corresponding to @f$ i@f$ particles i.e., with the substitutions 
+  // @f{eqnarray*}{ 
+  //    \Delta    \rightarrow \Delta_i    &=& i(\Delta + \xi\log(i))
+  //    \xi       \rightarrow \xi_i       &=& i \xi
+  //    \sigma    \rightarrow \sigma_i    &=& \sqrt{i}\sigma
+  //    \sigma'^2 \rightarrow \sigma_i'^2 &=& \sigma_n^2 + \sigma_i^2
+  // @f} 
+  // 
+  // Parameters:
+  //    x        Where to evaluate 
+  //    delta    @f$ \Delta@f$ 
+  //    xi       @f$ \xi@f$ 
+  //    sigma    @f$ \sigma@f$ 
+  //    sigma_n  @f$ \sigma_n@f$
+  //    i        @f$ i @f$
+  // 
+  // Return:
+  //    @f$ f_i @f$ evaluated
+  //  
   Double_t delta_i =  (i == 1 ? delta : i * (delta + xi * TMath::Log(i)));
   Double_t xi_i    =  i * xi;
   Double_t sigma_i =  (i == 1 ? sigma : TMath::Sqrt(Double_t(i))*sigma);
@@ -188,6 +330,42 @@ AliForwardUtil::IdLandauGausdPar(Double_t x,
 				 Double_t sigma, Double_t sigma_n, 
 				 Int_t    i)
 {
+  // 
+  // Numerically evaluate 
+  // @f[ 
+  //    \left.\frac{\partial f_i}{\partial p_i}\right|_{x}
+  // @f] 
+  // where @f$ p_i@f$ is the @f$ i^{\mbox{th}}@f$ parameter.  The mapping 
+  // of the parameters is given by 
+  //
+  // - 0: @f$\Delta@f$ 
+  // - 1: @f$\xi@f$ 
+  // - 2: @f$\sigma@f$ 
+  // - 3: @f$\sigma_n@f$ 
+  //
+  // This is the partial derivative with respect to the parameter of
+  // the response function corresponding to @f$ i@f$ particles i.e.,
+  // with the substitutions
+  // @f[ 
+  //    \Delta    \rightarrow \Delta_i    = i(\Delta + \xi\log(i))
+  //    \xi       \rightarrow \xi_i       = i \xi
+  //    \sigma    \rightarrow \sigma_i    = \sqrt{i}\sigma
+  //    \sigma'^2 \rightarrow \sigma_i'^2 = \sigma_n^2 + \sigma_i^2
+  // @f] 
+  // 
+  // Parameters:
+  //    x        Where to evaluate 
+  //    ipar     Parameter number 
+  //    dp       @f$ \epsilon\delta p_i@f$ for some value of @f$\epsilon@f$
+  //    delta    @f$ \Delta@f$ 
+  //    xi       @f$ \xi@f$ 
+  //    sigma    @f$ \sigma@f$ 
+  //    sigma_n  @f$ \sigma_n@f$
+  //    i        @f$ i@f$
+  // 
+  // Return:
+  //    @f$ f_i@f$ evaluated
+  //  
   if (dPar == 0) return 0;
   Double_t dp      = dPar;
   Double_t d2      = dPar / 2;
@@ -242,6 +420,35 @@ AliForwardUtil::NLandauGaus(Double_t x, Double_t delta, Double_t xi,
 			    Double_t sigma, Double_t sigma_n, Int_t n, 
 			    Double_t* a)
 {
+  // 
+  // Evaluate 
+  // @f[ 
+  //   f_N(x;\Delta,\xi,\sigma') = \sum_{i=1}^N a_i f_i(x;\Delta,\xi,\sigma'a)
+  // @f] 
+  // 
+  // where @f$ f(x;\Delta,\xi,\sigma')@f$ is the convolution of a
+  // Landau with a Gaussian (see LandauGaus).  Note that 
+  // @f$ a_1 = 1@f$, @f$\Delta_i = i(\Delta_1 + \xi\log(i))@f$, 
+  // @f$\xi_i=i\xi_1@f$, and @f$\sigma_i'^2 = \sigma_n^2 + i\sigma_1^2@f$. 
+  //  
+  // References: 
+  //  - <a href="http://dx.doi.org/10.1016/0168-583X(84)90472-5">Nucl.Instrum.Meth.B1:16</a>
+  //  - <a href="http://dx.doi.org/10.1103/PhysRevA.28.615">Phys.Rev.A28:615</a>
+  //  - <a href="http://root.cern.ch/root/htmldoc/tutorials/fit/langaus.C.html">ROOT implementation</a>
+  // 
+  // Parameters:
+  //    x        Where to evaluate @f$ f_N@f$
+  //    delta    @f$ \Delta_1@f$ 
+  //    xi       @f$ \xi_1@f$
+  //    sigma    @f$ \sigma_1@f$ 
+  //    sigma_n  @f$ \sigma_n@f$ 
+  //    n        @f$ N@f$ in the sum above.
+  //    a        Array of size @f$ N-1@f$ of the weights @f$ a_i@f$ for 
+  //                 @f$ i > 1@f$ 
+  // 
+  // Return:
+  //    @f$ f_N(x;\Delta,\xi,\sigma')@f$ 
+  //
   Double_t result = ILandauGaus(x, delta, xi, sigma, sigma_n, 1);
   for (Int_t i = 2; i <= n; i++) 
     result += a[i-2] * AliForwardUtil::ILandauGaus(x,delta,xi,sigma,sigma_n,i);
@@ -270,6 +477,24 @@ AliForwardUtil::MakeNLandauGaus(Double_t  c,
 				Double_t* a, 
 				Double_t  xmin, Double_t xmax)
 {
+  // 
+  // Generate a TF1 object of @f$ f_N@f$ 
+  // 
+  // Parameters:
+  //    c         Constant			       
+  //    delta     @f$ \Delta@f$ 		       
+  //    xi 	      @f$ \xi_1@f$	       	       
+  //    sigma     @f$ \sigma_1@f$ 	       	       
+  //    sigma_n   @f$ \sigma_n@f$ 	       	       
+  //    n 	      @f$ N@f$ - how many particles to sum to
+  //    a         Array of size @f$ N-1@f$ of the weights @f$ a_i@f$ for 
+  //                  @f$ i > 1@f$ 
+  //    xmin      Least value of range  
+  //    xmax      Largest value of range
+  // 
+  // Return:
+  //    Newly allocated TF1 object
+  //
   Int_t npar       = AliForwardUtil::ELossFitter::kN+n;
   TF1* landaun     = new TF1(Form("nlandau%d", n), &landauGausN,xmin,xmax,npar);
   // landaun->SetLineStyle(((n-2) % 10)+2); // start at dashed
@@ -300,6 +525,22 @@ AliForwardUtil::MakeILandauGaus(Double_t  c,
 				Double_t  sigma, Double_t sigma_n, Int_t i, 
 				Double_t  xmin, Double_t xmax)
 {
+  // 
+  // Generate a TF1 object of @f$ f_I@f$ 
+  // 
+  // Parameters:
+  //    c        Constant
+  //    delta    @f$ \Delta@f$ 
+  //    xi       @f$ \xi_1@f$	       
+  //    sigma    @f$ \sigma_1@f$ 	       
+  //    sigma_n  @f$ \sigma_n@f$ 	       
+  //    i 	     @f$ i@f$ - the number of particles
+  //    xmin     Least value of range
+  //    xmax     Largest value of range
+  // 
+  // Return:
+  //    Newly allocated TF1 object
+  //
   Int_t npar       = AliForwardUtil::ELossFitter::kN+1;
   TF1* landaui     = new TF1(Form("ilandau%d", i), &landauGausI,xmin,xmax,npar);
   // landaui->SetLineStyle(((i-2) % 10)+2); // start at dashed
@@ -326,12 +567,24 @@ AliForwardUtil::ELossFitter::ELossFitter(Double_t lowCut,
   : fLowCut(lowCut), fMaxRange(maxRange), fMinusBins(minusBins), 
     fFitResults(0), fFunctions(0)
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    lowCut     Lower cut of spectrum - data below this cuts is ignored
+  //    maxRange   Maximum range to fit to 
+  //    minusBins  The number of bins below maximum to use 
+  //
   fFitResults.SetOwner();
   fFunctions.SetOwner();
 }
 //____________________________________________________________________
 AliForwardUtil::ELossFitter::~ELossFitter()
 {
+  // 
+  // Destructor
+  // 
+  //
   fFitResults.Delete();
   fFunctions.Delete();
 }
@@ -339,6 +592,10 @@ AliForwardUtil::ELossFitter::~ELossFitter()
 void
 AliForwardUtil::ELossFitter::Clear()
 {
+  // 
+  // Clear internal arrays 
+  // 
+  //
   fFitResults.Clear();
   fFunctions.Clear();
 }
@@ -346,6 +603,21 @@ AliForwardUtil::ELossFitter::Clear()
 TF1*
 AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
 {
+  // 
+  // Fit a 1-particle signal to the passed energy loss distribution 
+  // 
+  // Note that this function clears the internal arrays first 
+  // 
+  // Parameters:
+  //    dist    Data to fit the function to 
+  //    sigman If larger than zero, the initial guess of the
+  //               detector induced noise. If zero or less, then this 
+  //               parameter is ignored in the fit (fixed at 0)
+  // 
+  // Return:
+  //    The function fitted to the data 
+  //
+
   // Clear the cache 
   Clear();
   
@@ -391,6 +663,22 @@ TF1*
 AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n, 
 					  Double_t sigman)
 {
+  // 
+  // Fit a N-particle signal to the passed energy loss distribution 
+  //
+  // If there's no 1-particle fit present, it does that first 
+  // 
+  // Parameters:
+  //    dist   Data to fit the function to 
+  //    n      Number of particle signals to fit 
+  //    sigman If larger than zero, the initial guess of the
+  //               detector induced noise. If zero or less, then this 
+  //               parameter is ignored in the fit (fixed at 0)
+  // 
+  // Return:
+  //    The function fitted to the data 
+  //
+
   // Get the seed fit result 
   TFitResult* r = static_cast<TFitResult*>(fFitResults.At(0));
   TF1*        f = static_cast<TF1*>(fFunctions.At(0));
@@ -445,6 +733,9 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
 //====================================================================
 AliForwardUtil::Histos::~Histos()
 {
+  // 
+  // Destructor
+  //
   if (fFMD1i) delete fFMD1i;
   if (fFMD2i) delete fFMD2i;
   if (fFMD2o) delete fFMD2o;
@@ -457,6 +748,17 @@ TH2D*
 AliForwardUtil::Histos::Make(UShort_t d, Char_t r, 
 			     const TAxis& etaAxis) const
 {
+  // 
+  // Make a histogram 
+  // 
+  // Parameters:
+  //    d        Detector
+  //    r        Ring 
+  //    etaAxis  Eta axis to use
+  // 
+  // Return:
+  //    Newly allocated histogram 
+  //
   Int_t ns = (r == 'I' || r == 'i') ? 20 : 40;
   TH2D* hist = new TH2D(Form("FMD%d%c_cache", d, r), 
 			Form("FMD%d%c cache", d, r),
@@ -474,6 +776,12 @@ AliForwardUtil::Histos::Make(UShort_t d, Char_t r,
 void
 AliForwardUtil::Histos::Init(const TAxis& etaAxis)
 {
+  // 
+  // Initialize the object 
+  // 
+  // Parameters:
+  //    etaAxis Eta axis to use 
+  //
   fFMD1i = Make(1, 'I', etaAxis);
   fFMD2i = Make(2, 'I', etaAxis);
   fFMD2o = Make(2, 'O', etaAxis);
@@ -484,6 +792,12 @@ AliForwardUtil::Histos::Init(const TAxis& etaAxis)
 void
 AliForwardUtil::Histos::Clear(Option_t* option)
 {
+  // 
+  // Clear data 
+  // 
+  // Parameters:
+  //    option Not used 
+  //
   fFMD1i->Reset(option);
   fFMD2i->Reset(option);
   fFMD2o->Reset(option);
@@ -495,6 +809,16 @@ AliForwardUtil::Histos::Clear(Option_t* option)
 TH2D*
 AliForwardUtil::Histos::Get(UShort_t d, Char_t r) const
 {
+  // 
+  // Get the histogram for a particular detector,ring
+  // 
+  // Parameters:
+  //    d Detector 
+  //    r Ring 
+  // 
+  // Return:
+  //    Histogram for detector,ring or nul 
+  //
   switch (d) { 
   case 1: return fFMD1i;
   case 2: return (r == 'I' || r == 'i' ? fFMD2i : fFMD2o);
@@ -506,6 +830,15 @@ AliForwardUtil::Histos::Get(UShort_t d, Char_t r) const
 TList*
 AliForwardUtil::RingHistos::DefineOutputList(TList* d) const
 {
+  // 
+  // Define the outout list in @a d
+  // 
+  // Parameters:
+  //    d Where to put the output list
+  // 
+  // Return:
+  //    Newly allocated TList object or null
+  //
   if (!d) return 0;
   TList* list = new TList;
   list->SetName(fName.Data());
@@ -516,6 +849,15 @@ AliForwardUtil::RingHistos::DefineOutputList(TList* d) const
 TList*
 AliForwardUtil::RingHistos::GetOutputList(TList* d) const
 {
+  // 
+  // Get our output list from the container @a d
+  // 
+  // Parameters:
+  //    d where to get the output list from 
+  // 
+  // Return:
+  //    The found TList or null
+  //
   if (!d) return 0;
   TList* list = static_cast<TList*>(d->FindObject(fName.Data()));
   return list;
@@ -525,6 +867,16 @@ AliForwardUtil::RingHistos::GetOutputList(TList* d) const
 TH1*
 AliForwardUtil::RingHistos::GetOutputHist(TList* d, const char* name) const
 {
+  // 
+  // Find a specific histogram in the source list @a d
+  // 
+  // Parameters:
+  //    d     (top)-container 
+  //    name  Name of histogram
+  // 
+  // Return:
+  //    Found histogram or null
+  //
   return static_cast<TH1*>(d->FindObject(name));
 }
 

@@ -1,10 +1,22 @@
-// Calculate the total energy loss 
+// 
+// This class collects the event histograms into single histograms, 
+// one for each ring in each vertex bin.  
+//
+// Input:
+//   - AliESDFMD object possibly corrected for sharing
+//
+// Output:
+//   - 5 RingHistos objects - each with a number of vertex dependent 
+//     2D histograms of the inclusive charge particle density 
+// 
+// HistCollector used: 
+//   - AliFMDCorrSecondaryMap
+//
 #include "AliFMDHistCollector.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
 #include <TMath.h>
-// #include "AliFMDAnaParameters.h"
 #include "AliForwardCorrectionManager.h"
 #include "AliLog.h"
 #include <TH2D.h>
@@ -26,6 +38,15 @@ ClassImp(AliFMDHistCollector)
 AliFMDHistCollector&
 AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
 {
+  // 
+  // Assignement operator
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  //
+  // Return:
+  //    Reference to this object
+  //
   TNamed::operator=(o);
 
   fNCutBins       = o.fNCutBins;
@@ -41,7 +62,13 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
 void
 AliFMDHistCollector::Init(const TAxis& vtxAxis)
 {
-  // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  // 
+  // Intialise 
+  // 
+  // Parameters:
+  //    vtxAxis  Vertex axis 
+  //  
+
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
   UShort_t nVz = vtxAxis.GetNbins();
@@ -95,6 +122,16 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis)
 Int_t
 AliFMDHistCollector::GetIdx(UShort_t d, Char_t r) const
 {
+  // 
+  // Get the ring index from detector number and ring identifier 
+  // 
+  // Parameters:
+  //    d Detector
+  //    r Ring identifier 
+  // 
+  // Return:
+  //    ring index or -1 in case of problems 
+  //
   Int_t idx = -1;
   switch (d) { 
   case 1: idx = 0; break;
@@ -107,6 +144,14 @@ AliFMDHistCollector::GetIdx(UShort_t d, Char_t r) const
 void
 AliFMDHistCollector::GetDetRing(Int_t idx, UShort_t& d, Char_t& r) const
 {
+  // 
+  // Get the detector and ring from the ring index 
+  // 
+  // Parameters:
+  //    idx Ring index 
+  //    d   On return, the detector or 0 in case of errors 
+  //    r   On return, the ring id or '0' in case of errors 
+  //
   d = 0; 
   r = '\0';
   switch (idx) { 
@@ -123,6 +168,15 @@ void
 AliFMDHistCollector::GetFirstAndLast(Int_t idx, UShort_t vtxbin, 
 				     Int_t& first, Int_t& last) const
 {
+  // 
+  // Get the first and last eta bin to use for a given ring and vertex 
+  // 
+  // Parameters:
+  //    idx      Ring index as given by GetIdx
+  //    vtxBin   Vertex bin (1 based) 
+  //    first    On return, the first eta bin to use 
+  //    last     On return, the last eta bin to use 
+  //
   first = 0; 
   last  = 0;
   
@@ -140,6 +194,16 @@ AliFMDHistCollector::GetFirstAndLast(Int_t idx, UShort_t vtxbin,
 Int_t
 AliFMDHistCollector::GetFirst(Int_t idx, UShort_t v) const 
 {
+  // 
+  // Get the first eta bin to use for a given ring and vertex 
+  // 
+  // Parameters:
+  //    idx Ring index as given by GetIdx
+  //    v vertex bin (1 based)
+  // 
+  // Return:
+  //    First eta bin to use, or -1 in case of problems 
+  //  
   Int_t f, l;
   GetFirstAndLast(idx,v,f,l);
   return f;
@@ -150,6 +214,16 @@ AliFMDHistCollector::GetFirst(Int_t idx, UShort_t v) const
 Int_t
 AliFMDHistCollector::GetLast(Int_t idx, UShort_t v) const 
 {
+  // 
+  // Get the last eta bin to use for a given ring and vertex 
+  // 
+  // Parameters:
+  //    idx Ring index as given by GetIdx
+  //    v vertex bin (1 based)
+  // 
+  // Return:
+  //    Last eta bin to use, or -1 in case of problems 
+  //  
   Int_t f, l;
   GetFirstAndLast(idx,v,f,l);
   return l;
@@ -160,7 +234,20 @@ Int_t
 AliFMDHistCollector::GetOverlap(UShort_t d, Char_t r, 
 				Int_t bin,  UShort_t vtxbin) const
 {
-  // Get the possibly overlapping histogram 
+  // 
+  // Get the possibly overlapping histogram of eta bin @a e in 
+  // detector and ring 
+  // 
+  // Parameters:
+  //    d Detector
+  //    r Ring 
+  //    e Eta bin
+  //    v Vertex bin (1 based)
+  //
+  // Return:
+  //    Overlapping histogram index or -1
+  //
+
   Int_t other = -1;
   if (d == 1) {
     if (bin <= GetLast(2,'I',vtxbin)) other = GetIdx(2,'I');
@@ -185,6 +272,18 @@ AliFMDHistCollector::GetOverlap(UShort_t d, Char_t r,
 Int_t
 AliFMDHistCollector::GetOverlap(Int_t idx, Int_t bin, UShort_t vtxbin) const
 {
+  // 
+  // Get the possibly overlapping histogram of eta bin @a e in 
+  // detector and ring 
+  // 
+  // Parameters:
+  //    i Ring index
+  //    e Eta bin
+  //    v Vertex bin (1 based)
+  //
+  // Return:
+  //    Overlapping histogram index or -1
+  //
   UShort_t d = 0; 
   Char_t   r = '\0';
   GetDetRing(idx, d, r);
@@ -200,6 +299,17 @@ AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
 			     UShort_t                vtxbin, 
 			     TH2D&                   out)
 {
+  // 
+  // Do the calculations 
+  // 
+  // Parameters:
+  //    hists    Cache of histograms 
+  //    vtxBin   Vertex bin (1 based)
+  //    out      Output histogram
+  // 
+  // Return:
+  //    true on successs 
+  //
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
     for (UShort_t q=0; q<nr; q++) { 
@@ -334,6 +444,12 @@ AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
 void
 AliFMDHistCollector::Print(Option_t* /* option */) const
 {
+  // 
+  // Print information 
+  // 
+  // Parameters:
+  //    option Not used
+  //
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';

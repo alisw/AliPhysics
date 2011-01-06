@@ -1,5 +1,8 @@
-#ifndef ALIROOT_PWG2_FORWARD_ANALYSIS2_ALIFMDCORRECTIONS_H
-#define ALIROOT_PWG2_FORWARD_ANALYSIS2_ALIFMDCORRECTIONS_H
+// This class calculates the exclusive charged particle density
+// in each for the 5 FMD rings. 
+//
+#ifndef ALIFMDCORRECTIONS_H
+#define ALIFMDCORRECTIONS_H
 #include <TNamed.h>
 #include <TList.h>
 #include "AliForwardUtil.h"

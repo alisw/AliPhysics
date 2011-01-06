@@ -1,3 +1,6 @@
+//
+// Class to do the sharing correction for MC data.
+//
 #ifndef ALIFMDMCSHARINGFILTER_H
 #define ALIFMDMCSHARINGFILTER_H
 #include "AliFMDSharingFilter.h"
@@ -8,12 +11,14 @@ class AliMCEvent;
  *
  * @par Input: 
  *    - AliESDFMD object  - from reconstruction
+ *    - Kinematics
+ *    - Track-References
  *
  * @par Output: 
  *    - AliESDFMD object  - copy of input, but with signals merged 
  *
  * @par Corrections used: 
- *    - AliCorrELossFit 
+ *    - None
  *
  * @par Histograms: 
  *    - For each ring (FMD1i, FMD2i, FMD2o, FMD3i, FMD3o) the distribution of 
@@ -35,7 +40,15 @@ public:
   /** 
    * Default Constructor - do not use 
    */
-  AliFMDMCSharingFilter();
+  AliFMDMCSharingFilter()
+  : AliFMDSharingFilter(), 
+    fFMD1i(0),
+    fFMD2i(0),
+    fFMD2o(0),
+    fFMD3i(0),
+    fFMD3o(0), 
+    fSumEta(0)
+  {}
   /** 
    * Constructor 
    * 
@@ -100,6 +113,15 @@ public:
    */
   void Print(Option_t* option="") const;
 protected:
+  /** 
+   * Store a particle hit in FMD<i>dr</i>[<i>s,t</i>] in @a output
+   * 
+   * @param d       Detector
+   * @param r       Ring
+   * @param s       Sector
+   * @param t       Strip
+   * @param output  Output ESD object
+   */
   void StoreParticle(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
 		     AliESDFMD& output) const;
   TH2D* fFMD1i;  // ESD-MC correlation 

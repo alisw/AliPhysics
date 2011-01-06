@@ -1,8 +1,20 @@
+// 
+// Calculate the multiplicity in the forward regions event-by-event 
+// 
+// Inputs: 
+//   - AliESDEvent 
+//
+// Outputs: 
+//   - AliAODForwardMult 
+// 
+// Histograms 
+//   
+// Corrections used 
+//
 #include "AliForwardMultiplicityTask.h"
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
 #include "AliLog.h"
-// #include "AliFMDAnaParameters.h"
 #include "AliESDEvent.h"
 #include "AliAODHandler.h"
 #include "AliMultiplicity.h"
@@ -31,6 +43,9 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
     fHistCollector(),
     fList(0)
 {
+  // 
+  // Constructor
+  //
 }
 
 //____________________________________________________________________
@@ -48,6 +63,12 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
     fHistCollector("collector"),
     fList(0)
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    name Name of task 
+  //
   DefineOutput(1, TList::Class());
 }
 
@@ -66,6 +87,12 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
     fHistCollector(o.fHistCollector),
     fList(o.fList) 
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
   DefineOutput(1, TList::Class());
 }
 
@@ -73,6 +100,15 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
 AliForwardMultiplicityTask&
 AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object 
+  //
   AliForwardMultiplicityBase::operator=(o);
 
   fHData             = o.fHData;
@@ -93,6 +129,12 @@ AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
 void
 AliForwardMultiplicityTask::SetDebug(Int_t dbg)
 {
+  // 
+  // Set debug level 
+  // 
+  // Parameters:
+  //    dbg Debug level
+  //
   fEventInspector.SetDebug(dbg);
   fEnergyFitter.SetDebug(dbg);
   fSharingFilter.SetDebug(dbg);
@@ -105,6 +147,10 @@ AliForwardMultiplicityTask::SetDebug(Int_t dbg)
 void
 AliForwardMultiplicityTask::InitializeSubs()
 {
+  // 
+  // Initialise the sub objects and stuff.  Called on first event 
+  // 
+  //
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   fcm.Init(fEventInspector.GetCollisionSystem(), 
 	   fEventInspector.GetEnergy(),
@@ -165,6 +211,10 @@ AliForwardMultiplicityTask::InitializeSubs()
 void
 AliForwardMultiplicityTask::UserCreateOutputObjects()
 {
+  // 
+  // Create output objects 
+  // 
+  //
   fList = new TList;
 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
@@ -188,6 +238,13 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
 void
 AliForwardMultiplicityTask::UserExec(Option_t*)
 {
+  // 
+  // Process each event 
+  // 
+  // Parameters:
+  //    option Not used
+  //  
+
   // static Int_t cnt = 0;
   // cnt++;
   // Get the input data 
@@ -286,6 +343,13 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
 void
 AliForwardMultiplicityTask::Terminate(Option_t*)
 {
+  // 
+  // End of job
+  // 
+  // Parameters:
+  //    option Not used 
+  //
+
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {
     AliError(Form("No output list defined (%p)", GetOutputData(1)));
@@ -335,6 +399,12 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
 void
 AliForwardMultiplicityTask::Print(Option_t* option) const
 {
+  // 
+  // Print information 
+  // 
+  // Parameters:
+  //    option Not used
+  //
   AliForwardMultiplicityBase::Print(option);
   gROOT->IncreaseDirLevel();
   fEventInspector   .Print(option);

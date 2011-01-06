@@ -1,3 +1,7 @@
+//
+// This class contains the secondary correction and the double hit
+// correction used in low-flux events.
+//
 #include "AliFMDCorrVertexBias.h"
 #include <TBrowser.h>
 #include <TH2D.h>
@@ -9,6 +13,9 @@ AliFMDCorrVertexBias::AliFMDCorrVertexBias()
   : fVertexArray(), 
     fVertexAxis(0,0,0)
 {
+  // 
+  // Default constructor 
+  //
   fVertexArray.SetOwner(kTRUE);
   fVertexArray.SetName("rings");
   fVertexAxis.SetName("vtxAxis");
@@ -22,18 +29,37 @@ AliFMDCorrVertexBias::AliFMDCorrVertexBias(const AliFMDCorrVertexBias& o)
     fVertexAxis(o.fVertexAxis.GetNbins(), o.fVertexAxis.GetXmin(), 
 		o.fVertexAxis.GetXmax())
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
   fVertexAxis.SetName("vtxAxis");
   fVertexAxis.SetTitle("v_{z} [cm]");
 }
 //____________________________________________________________________
 AliFMDCorrVertexBias::~AliFMDCorrVertexBias()
 {
+  //
+  // Destructor 
+  // 
+  //
   fVertexArray.Clear();
 }
 //____________________________________________________________________
 AliFMDCorrVertexBias&
 AliFMDCorrVertexBias::operator=(const AliFMDCorrVertexBias& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object 
+  //
   fVertexArray        = o.fVertexArray;
   SetVertexAxis(o.fVertexAxis);
 
@@ -43,6 +69,16 @@ AliFMDCorrVertexBias::operator=(const AliFMDCorrVertexBias& o)
 TH2D*
 AliFMDCorrVertexBias::GetCorrection(Char_t r, Double_t v) const
 {
+  // 
+  // Get the vertex bias correction @f$ b_{v}@f$ 
+  // 
+  // Parameters:
+  //    r  Ring type (I or O)
+  //    v  Primary interaction point @f$z@f$ coordinate
+  // 
+  // Return:
+  //    The correction @f$ b_{v}@f$ 
+  //
   Int_t b = FindVertexBin(v);
   if (b <= 0) return 0;
   return GetCorrection(r, UShort_t(b));
@@ -51,6 +87,17 @@ AliFMDCorrVertexBias::GetCorrection(Char_t r, Double_t v) const
 TH2D*
 AliFMDCorrVertexBias::GetCorrection(Char_t r, UShort_t b) const
 {
+  // 
+  // Get the vertex bias correction @f$ b_{v}@f$ 
+  // 
+  // Parameters:
+  //    r  Ring type (I or O)
+  //    b  Bin corresponding to the primary interaction point 
+  //           @f$z@f$ coordinate (1 based)
+  // 
+  // Return:
+  //    The correction @f$ b_{v}@f$ 
+  //
   TObjArray* vertexarray = GetVertexArray(b);
   if (!vertexarray) return 0;
 
@@ -77,6 +124,16 @@ AliFMDCorrVertexBias::GetCorrection(Char_t r, UShort_t b) const
 Int_t
 AliFMDCorrVertexBias::FindVertexBin(Double_t v) const
 {
+  // 
+  // Find the vertex bin that corresponds to the passed vertex 
+  // 
+  // Parameters:
+  //    vertex The interaction points @f$z@f$-coordinate 
+  // 
+  // Return:
+  //    Vertex bin in @f$[1,N_{\mbox{vertex}}]@f$ or negative if 
+  // out of range 
+  //
   if (fVertexAxis.GetNbins() <= 0) { 
     AliWarning("No vertex array defined");
     return 0;
@@ -93,6 +150,15 @@ AliFMDCorrVertexBias::FindVertexBin(Double_t v) const
 TObjArray*
 AliFMDCorrVertexBias::GetVertexArray(UShort_t v) const
 {
+  // 
+  // Get the vertex array corresponding to the specified ring
+  // 
+  // Parameters:
+  //    v vertex bin (1 based)
+  // 
+  // Return:
+  //    Pointer to vertex array, or null in case of problems
+  //
   if (v <= 0 || v > fVertexAxis.GetNbins()) {
     AliWarning(Form("vertex bin %d out of range [1,%d]",
 		    v, fVertexAxis.GetNbins()));
@@ -111,6 +177,15 @@ AliFMDCorrVertexBias::GetVertexArray(UShort_t v) const
 TObjArray*
 AliFMDCorrVertexBias::GetOrMakeVertexArray(UShort_t v)
 {
+  // 
+  // Get the vertex array corresponding to the specified ring
+  // 
+  // Parameters:
+  //    v vertex bin (1 based)
+  // 
+  // Return:
+  //    Pointer to vertex array, or newly created container 
+  //
   if (v <= 0 || v > fVertexAxis.GetNbins()) {
     AliWarning(Form("vertex bin %d out of range [1,%d]",
 		    v, fVertexAxis.GetNbins()));
@@ -133,6 +208,19 @@ AliFMDCorrVertexBias::GetOrMakeVertexArray(UShort_t v)
 Bool_t
 AliFMDCorrVertexBias::SetCorrection(Char_t r, UShort_t b, TH2D*  h) 
 {
+  // 
+  // Set the vertex bias correction @f$ b_{v}(\eta,\varphi)@f$ 
+  // Note, that the object takes ownership of the passed pointer.
+  // 
+  // Parameters:
+  //    r    Ring type (I or O)
+  //    b    Bin corresponding to the primary interaction point 
+  //             @f$z@f$ coordinate  (1 based)
+  //    h    @f$ b_{v}(\eta,\varphi)@f$ 
+  // 
+  // Return:
+  //    true if operation succeeded 
+  //
   TObjArray* vertexarray = GetOrMakeVertexArray(b);
   if (!vertexarray) return false;
   
@@ -165,6 +253,18 @@ AliFMDCorrVertexBias::SetCorrection(Char_t r, UShort_t b, TH2D*  h)
 Bool_t
 AliFMDCorrVertexBias::SetCorrection(Char_t r, Double_t v, TH2D*  h) 
 {
+  // 
+  // Set the vertex bias correction @f$ b_{v}(\eta,\varphi)@f$.
+  // Note, that the object takes ownership of the passed pointer.
+  // 
+  // Parameters:
+  //    r    Ring type (I or O)
+  //    v    Primary interaction point @f$z@f$ coordinate  
+  //    h    @f$ b_{v}(\eta,\varphi)@f$ 
+  // 
+  // Return:
+  //    true if operation succeeded 
+  //
   Int_t b = FindVertexBin(v);
   if (b <= 0 || b > fVertexAxis.GetNbins()) { 
     AliWarning(Form("Vertex %+8.4f out of range [%+8.4f,%+8.4f]", 
@@ -177,6 +277,12 @@ AliFMDCorrVertexBias::SetCorrection(Char_t r, Double_t v, TH2D*  h)
 void
 AliFMDCorrVertexBias::Browse(TBrowser* b)
 {
+  // 
+  // Browse this object in the browser
+  // 
+  // Parameters:
+  //    b 
+  //
   b->Add(&fVertexArray);
   b->Add(&fVertexAxis);
 }
@@ -184,6 +290,12 @@ AliFMDCorrVertexBias::Browse(TBrowser* b)
 void
 AliFMDCorrVertexBias::Print(Option_t* option) const
 {
+  // 
+  // Print this object 
+  // 
+  // Parameters:
+  //    option 
+  //  
   std::cout << "Vertex bias correction" << std::endl;
   fVertexArray.Print(option);
   fVertexAxis.Print(option);

@@ -1,5 +1,9 @@
-#ifndef ALIROOT_PWG2_FORWARD_ANALYSIS2_ALIFMDHISTCOLLECTOR_H
-#define ALIROOT_PWG2_FORWARD_ANALYSIS2_ALIFMDHISTCOLLECTOR_H
+// 
+// This class collects the event histograms into single histograms, 
+// one for each ring in each vertex bin.  
+//
+#ifndef ALIFMDHISTCOLLECTOR_H
+#define ALIFMDHISTCOLLECTOR_H
 #include <TNamed.h>
 #include <TList.h>
 #include <TArrayI.h>
@@ -60,6 +64,8 @@ public:
   /** 
    * Assignement operator
    * 
+   * @param o Object to assign from 
+   *
    * @return Reference to this object
    */
   AliFMDHistCollector& operator=(const AliFMDHistCollector&);

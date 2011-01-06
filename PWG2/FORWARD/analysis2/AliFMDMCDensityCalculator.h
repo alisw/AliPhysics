@@ -1,3 +1,7 @@
+// 
+// This class calculates the inclusive charged particle density
+// in each for the 5 FMD rings based on the MC truth.
+//
 #ifndef ALIFMDMCDENSITYCALCULATOR_H
 #define ALIFMDMCDENSITYCALCULATOR_H
 #include "AliFMDDensityCalculator.h"

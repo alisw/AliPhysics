@@ -1,10 +1,26 @@
+// 
+// This class calculates the exclusive charged particle density
+// in each for the 5 FMD rings. 
+//
+// Input:
+//   - 5 RingHistos objects - each with a number of vertex dependent 
+//     2D histograms of the inclusive charge particle density 
+//
+// Output:
+//   - 5 RingHistos objects - each with a number of vertex dependent 
+//     2D histograms of the exclusive charge particle density 
+// 
+// Corrections used: 
+//   - AliFMDCorrSecondaryMap;
+//   - AliFMDCorrVertexBias
+//   - AliFMDCorrMergingEfficiency
+//
 #include "AliFMDMCCorrections.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
-// #include "AliFMDAnaParameters.h"
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TROOT.h>
@@ -21,6 +37,9 @@ ClassImp(AliFMDMCCorrections)
 //____________________________________________________________________
 AliFMDMCCorrections::~AliFMDMCCorrections()
 {
+  // 
+  // Destructor 
+  //
   if (fComps) fComps->Clear();
   if (fFMD1i) delete fFMD1i;
   if (fFMD2i) delete fFMD2i;
@@ -33,6 +52,15 @@ AliFMDMCCorrections::~AliFMDMCCorrections()
 AliFMDMCCorrections&
 AliFMDMCCorrections::operator=(const AliFMDMCCorrections& o)
 {
+  // 
+  // Assignement operator
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this object
+  //
   AliFMDCorrections::operator=(o);
 
   return *this;
@@ -43,6 +71,16 @@ Bool_t
 AliFMDMCCorrections::CorrectMC(AliForwardUtil::Histos& hists,
 			       UShort_t                vtxbin)
 {
+  // 
+  // Do the calculations 
+  // 
+  // Parameters:
+  //    hists    Cache of histograms 
+  //    vtxBin   Vertex bin 
+  // 
+  // Return:
+  //    true on successs 
+  //
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
   UShort_t uvb = vtxbin;
@@ -79,6 +117,12 @@ AliFMDMCCorrections::CorrectMC(AliForwardUtil::Histos& hists,
 void
 AliFMDMCCorrections::Init(const TAxis& eAxis)
 {
+  // 
+  // Initialize this object 
+  // 
+  // Parameters:
+  //    etaAxis Eta axis to use 
+  //
   fFMD1i = Make(1,'I',eAxis);
   fFMD2i = Make(2,'I',eAxis);
   fFMD2o = Make(2,'O',eAxis);
@@ -97,6 +141,17 @@ TProfile2D*
 AliFMDMCCorrections::Make(UShort_t d, Char_t r, 
 				const TAxis& axis) const
 {
+  // 
+  // MAke comparison profiles
+  // 
+  // Parameters:
+  //    d     Detector 
+  //    r     Ring 
+  //    axis  Eta axis 
+  // 
+  // Return:
+  //    Newly allocated profile object
+  //
   TProfile2D* ret = new TProfile2D(Form("FMD%d%c_esd_vs_mc", d, r),
 				   Form("ESD/MC signal for FMD%d%c", d, r),
 				   axis.GetNbins(), 
@@ -114,6 +169,15 @@ AliFMDMCCorrections::Make(UShort_t d, Char_t r,
 void
 AliFMDMCCorrections::Fill(UShort_t d, Char_t r, TH2* esd, TH2* mc)
 {
+  // 
+  // Fill comparison profiles
+  // 
+  // Parameters:
+  //    d    Detector 
+  //    r    Ring 
+  //    esd  ESD histogram
+  //    mc   MC histogram
+  //
   if (!esd || !mc) return;
   TProfile2D* p = 0;
   switch (d) { 
@@ -140,6 +204,18 @@ Bool_t
 AliFMDMCCorrections::CompareResults(AliForwardUtil::Histos& esd,
 					  AliForwardUtil::Histos& mc)
 {
+  // 
+  // Compare the result of analysing the ESD for 
+  // the inclusive charged particle density to analysing 
+  // MC truth 
+  // 
+  // Parameters:
+  //    esd 
+  //    mc 
+  // 
+  // Return:
+  //   true 
+  //
   Fill(1, 'I', esd.Get(1,'I'), mc.Get(1,'I'));
   Fill(2, 'I', esd.Get(2,'I'), mc.Get(2,'I'));
   Fill(2, 'O', esd.Get(2,'O'), mc.Get(2,'O'));
@@ -153,6 +229,12 @@ AliFMDMCCorrections::CompareResults(AliForwardUtil::Histos& esd,
 void
 AliFMDMCCorrections::DefineOutput(TList* dir)
 {
+  // 
+  // Output diagnostic histograms to directory 
+  // 
+  // Parameters:
+  //    dir List to write in
+  //  
   AliFMDCorrections::DefineOutput(dir);
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
 

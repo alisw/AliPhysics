@@ -1,6 +1,23 @@
 //
-// Class to do the sharing correction of FMD ESD data
+// Class to do the sharing correction for MC data.
 //
+// Input: 
+//    - AliESDFMD object  - from reconstruction
+//    - Kinematics
+//    - Track-References
+//
+// Output: 
+//    - AliESDFMD object  - copy of input, but with signals merged 
+//
+// Corrections used: 
+//    - None
+//
+// Histograms: 
+//    - For each ring (FMD1i, FMD2i, FMD2o, FMD3i, FMD3o) the distribution of 
+//      signals before and after the filter.  
+//    - For each ring (see above), an array of distributions of number of 
+//      hit strips for each vertex bin (if enabled - see Init method)
+// 
 #include "AliFMDMCSharingFilter.h"
 #include <AliESDFMD.h>
 #include <AliMCEvent.h>
@@ -10,8 +27,6 @@
 #include <TList.h>
 #include <TH1.h>
 #include <TMath.h>
-#include "AliForwardCorrectionManager.h"
-// #include "AliFMDAnaParameters.h"
 #include "AliFMDStripIndex.h"
 #include <AliLog.h>
 #include <TROOT.h>
@@ -25,17 +40,6 @@ ClassImp(AliFMDMCSharingFilter)
 
 
 //____________________________________________________________________
-AliFMDMCSharingFilter::AliFMDMCSharingFilter()
-  : AliFMDSharingFilter(), 
-    fFMD1i(0),
-    fFMD2i(0),
-    fFMD2o(0),
-    fFMD3i(0),
-    fFMD3o(0), 
-    fSumEta(0)
-{}
-
-//____________________________________________________________________
 AliFMDMCSharingFilter::AliFMDMCSharingFilter(const char* title)
   : AliFMDSharingFilter(title), 
     fFMD1i(0),
@@ -45,6 +49,12 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const char* title)
     fFMD3o(0),
     fSumEta(0)
 {
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    title Title of object  - not significant 
+  //
   fFMD1i = new TH2D("FMD1i_corr", "Merged vs MC", 21, -.5, 20.5, 100, 0, 20);
   fFMD2i = new TH2D("FMD2i_corr", "Merged vs MC", 21, -.5, 20.5, 100, 0, 20);
   fFMD2o = new TH2D("FMD2o_corr", "Merged vs MC", 21, -.5, 20.5, 100, 0, 20);
@@ -87,11 +97,20 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const AliFMDMCSharingFilter& o)
     fFMD3o(o.fFMD3o),
     fSumEta(o.fSumEta)
 {
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    o Object to copy from 
+  //
 }
 
 //____________________________________________________________________
 AliFMDMCSharingFilter::~AliFMDMCSharingFilter()
 {
+  // 
+  // Destructor
+  //
   if (fFMD1i)  delete fFMD1i;
   if (fFMD2i)  delete fFMD2i;
   if (fFMD2o)  delete fFMD2o;
@@ -104,6 +123,15 @@ AliFMDMCSharingFilter::~AliFMDMCSharingFilter()
 AliFMDMCSharingFilter&
 AliFMDMCSharingFilter::operator=(const AliFMDMCSharingFilter& o)
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    o Object to assign from 
+  // 
+  // Return:
+  //    Reference to this 
+  //
   AliFMDSharingFilter::operator=(o);
   return *this;
 }
@@ -116,6 +144,16 @@ AliFMDMCSharingFilter::StoreParticle(UShort_t   d,
 				     UShort_t   t, 
 				     AliESDFMD& output) const
 {
+  // 
+  // Store a particle hit in FMD<i>dr</i>[<i>s,t</i>] in @a output
+  // 
+  // Parameters:
+  //    d       Detector
+  //    r       Ring
+  //    s       Sector
+  //    t       Strip
+  //    output  Output ESD object
+  //
   Double_t old = output.Multiplicity(d,r,s,t);
   if (old == AliESDFMD::kInvalidMult) old = 0;
   output.SetMultiplicity(d,r,s,t,old+1);
@@ -128,6 +166,17 @@ AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input,
 				Double_t          vz,
 				AliESDFMD&        output)
 {
+  // 
+  // Filter the input AliESDFMD object
+  // 
+  // Parameters:
+  //    input     Input (from ESD) - used for eta
+  //    lowFlux   If this is a low-flux event 
+  //    output    Output AliESDFMD object 
+  // 
+  // Return:
+  //    True on success, false otherwise 
+  //
   output.Clear();
 
   // Copy eta values to output 
@@ -220,6 +269,15 @@ void
 AliFMDMCSharingFilter::CompareResults(const AliESDFMD&  esd, 
 				      const AliESDFMD&  mc)
 {
+  // 
+  // Compare the result of merging to the monte-carlo truth.  This
+  // fills the correlation histograms
+  // 
+  // Parameters:
+  //    esd  ESD after sharing correction
+  //    mc   MC ESD 
+  //
+
   // Copy eta values to output 
   for (UShort_t d = 1; d <= 3; d++) { 
     UShort_t nq = (d == 1 ? 1 : 2);
@@ -250,6 +308,14 @@ AliFMDMCSharingFilter::CompareResults(const AliESDFMD&  esd,
 void
 AliFMDMCSharingFilter::DefineOutput(TList* dir)
 {
+  // 
+  // Define the output histograms.  These are put in a sub list of the
+  // passed list.   The histograms are merged before the parent task calls 
+  // AliAnalysisTaskSE::Terminate 
+  // 
+  // Parameters:
+  //    dir Directory to add to 
+  //
   AliFMDSharingFilter::DefineOutput(dir);
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   TList* cd = new TList;
@@ -267,6 +333,13 @@ AliFMDMCSharingFilter::DefineOutput(TList* dir)
 void
 AliFMDMCSharingFilter::ScaleHistograms(TList* dir, Int_t nEvents)
 {
+  // 
+  // Scale the histograms to the total number of events 
+  // 
+  // Parameters:
+  //    dir     Where the output is 
+  //    nEvents Number of events 
+  //
   AliFMDSharingFilter::ScaleHistograms(dir, nEvents);
   TH1D* sumEta = static_cast<TH1D*>(dir->FindObject("mcSumEta"));
   if (!sumEta) { 
@@ -280,6 +353,12 @@ AliFMDMCSharingFilter::ScaleHistograms(TList* dir, Int_t nEvents)
 void
 AliFMDMCSharingFilter::Print(Option_t* option) const
 {
+  // 
+  // Print information
+  // 
+  // Parameters:
+  //    option Not used 
+  //
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
