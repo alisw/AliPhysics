@@ -204,12 +204,15 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       AliVCluster *clus = event->GetCaloCluster(i);
       if(clus->IsEMCAL()){        
         //printf("Org Cluster %d, E %f \n",i, clus->E());
-        if(dynamic_cast<AliESDCaloCluster*> (clus)){
-          fCaloClusterArr->Add( new AliESDCaloCluster(*(dynamic_cast<AliESDCaloCluster*> (clus))) );   
+        AliESDCaloCluster * esdCluster = dynamic_cast<AliESDCaloCluster*> (clus);
+        AliAODCaloCluster * aodCluster = dynamic_cast<AliAODCaloCluster*> (clus);
+        if     (esdCluster){
+          fCaloClusterArr->Add( new AliESDCaloCluster(*esdCluster) );   
         }//ESD
-        else{
-          fCaloClusterArr->Add( new AliAODCaloCluster(*(dynamic_cast<AliAODCaloCluster*> (clus))) );   
+        else if(aodCluster){
+          fCaloClusterArr->Add( new AliAODCaloCluster(*aodCluster) );   
         }//AOD
+        else printf("AliAnalysisTaskEMCALClusterize::UserExec() - Wrong CaloCluster type? \n");
         nClustersOrg++;
       }
     }
