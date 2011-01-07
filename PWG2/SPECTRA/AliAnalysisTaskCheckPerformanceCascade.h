@@ -17,6 +17,7 @@ class TH1F;
 class TH2F;
 class AliESDEvent;
 class AliESDpid;
+class AliESDtrackCuts;
 class AliCFContainer;
 
 #include "AliAnalysisTaskSE.h"
@@ -36,14 +37,18 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
   
   void SetDebugLevelCascade(Int_t lDebugCascade = 0)          {fDebugCascade = lDebugCascade;}
   void SetCollidingSystems (Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
-  void SetAnalysisType     (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
   
-  void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers       =  rerunV0CascVertexers;   }
-  void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos      =  qualityCutZprimVtxPos;     }
-  void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx =  qualityCutNoTPConlyPrimVtx;}
-  void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit         =  qualityCutTPCrefit;        }
-  void SetQualityCut80TPCcls         (Bool_t qualityCut80TPCcls         = kTRUE) { fkQualityCut80TPCcls         =  qualityCut80TPCcls;        }
-  void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections            =  extraSelections;           }
+  void SetAnalysisType     (const char* analysisType    = "ESD") { fAnalysisType     = analysisType;}
+  void SetTriggerMaskType  (const char* triggerMaskType = "kMB") { fTriggerMaskType  = triggerMaskType;}
+  
+  void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers         =  rerunV0CascVertexers;      }
+  void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos        =  qualityCutZprimVtxPos;     }
+  void SetRejectEventPileUp          (Bool_t rejectPileUp               = kTRUE) { fkRejectEventPileUp            =  rejectPileUp;              }
+  void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx   =  qualityCutNoTPConlyPrimVtx;}
+  void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit           =  qualityCutTPCrefit;        }
+  void SetQualityCut80TPCcls         (Bool_t qualityCut80TPCcls         = kTRUE) { fkQualityCut80TPCcls           =  qualityCut80TPCcls;        }
+  void SetAlephParamFor1PadTPCCluster(Bool_t onePadTPCCluster           = kTRUE) { fkIsDataRecoWith1PadTPCCluster =  onePadTPCCluster ;         }
+  void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections              =  extraSelections;           }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -52,16 +57,20 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 
         Int_t           fDebugCascade;          // Denug Flag for this task devoted to cascade
         TString         fAnalysisType;          // "ESD" or "AOD" analysis type	
+        TString         fTriggerMaskType;       // type of trigger to use in UserExec : AliVEvent::kMB or kHighMult ?
         Short_t         fCollidingSystems;      // 0 = pp collisions or 1 = AA collisions
 
-        AliESDpid       *fESDpid;        // Tool data member to manage the TPC Bethe-Bloch info
+        AliESDpid       *fESDpid;                       // Tool data member to manage the TPC Bethe-Bloch info
+        AliESDtrackCuts *fESDtrackCuts;                 // ESD track cuts used for primary track definition
         //TPaveText       *fPaveTextBookKeeping;          // TString to store all the relevant info necessary for book keeping (v0 cuts, cascade cuts, quality cuts, ...)
 
         Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
         Bool_t          fkQualityCutZprimVtxPos;        // Boolean : kTRUE = cut on the prim.vtx  z-position
+        Bool_t          fkRejectEventPileUp;            // Boolean : kTRUE = enable the rejection of events tagged as pile-up by SPD (AliESDEvent::IsPileupFromSPD)
         Bool_t          fkQualityCutNoTPConlyPrimVtx;   // Boolean : kTRUE = prim vtx should be SPD or Tracking vertex
         Bool_t          fkQualityCutTPCrefit;           // Boolean : kTRUE = ask for TPCrefit for the 3 daughter tracks
         Bool_t          fkQualityCut80TPCcls;           // Boolean : kTRUE = ask for 80 TPC clusters for each daughter track
+        Bool_t          fkIsDataRecoWith1PadTPCCluster; // Boolean : kTRUE = data reconstructed with the "one pad cluster" algo in TPC (important for the ALEPH param for TPC PID)
         Bool_t          fkExtraSelections;              // Boolean : kTRUE = apply tighter selections, before starting the analysis
         
         Double_t        fAlephParameters[5];            // Array to store the 5 param values for the TPC Bethe-Bloch parametrisation
@@ -71,7 +80,9 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 	
  	TList	*fListHistCascade;		//! List of Cascade histograms
 		// - Histos 
-	TH1F	*fHistMCTrackMultiplicity;	//! MC Track multiplicity
+	TH1F	*fHistMCTrackMultiplicity;	//! MC Track multiplicity (gen. primaries)
+                // - Resolution of the multiplicity estimator
+        TH2F    *f2dHistRecoMultVsMCMult;       //! resolution of the multiplicity estimator (based on primary tracks)
 	
 	
 	// proton
@@ -228,6 +239,13 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 	TH2F	*f2dHistAsMCResROmegaMinus;		//! resolution in transv. R = f(transv. gen. R), for Omega-
 	TH2F	*f2dHistAsMCResROmegaPlus;		//! resolution in transv. R = f(transv. gen. R), for Omega+
         
+        // - Resolution in phi as function of generated Pt
+        TH2F    *f2dHistAsMCResPhiXiMinus;              //! resolution in azimuth Phi = f(gen. Pt), for Xi-
+        TH2F    *f2dHistAsMCResPhiXiPlus;               //! resolution in azimuth Phi = f(gen. Pt), for Xi+
+        TH2F    *f2dHistAsMCResPhiOmegaMinus;           //! resolution in azimuth Phi = f(gen. Pt), for Omega-
+        TH2F    *f2dHistAsMCResPhiOmegaPlus;            //! resolution in azimuth Phi = f(gen. Pt), for Omega+
+        
+        
         // - Compilation of all PID plots (3D = casc. transv. momemtum Vs Casc Eff mass Vs Y), stored into an AliCFContainer
 	AliCFContainer  *fCFContCascadePIDAsXiMinus;      //! for Xi-   : Container to store any 3D histos with the different PID flavours
 	AliCFContainer  *fCFContCascadePIDAsXiPlus;       //! for Xi+   : Container to store any 3D histos with the different PID flavours
@@ -240,7 +258,7 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckPerformanceCascade(const AliAnalysisTaskCheckPerformanceCascade&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascade& operator=(const AliAnalysisTaskCheckPerformanceCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascade, 4);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascade, 5);
 };
 
 #endif
