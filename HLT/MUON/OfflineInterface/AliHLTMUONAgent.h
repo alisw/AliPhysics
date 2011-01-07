@@ -15,6 +15,7 @@
 #include "AliHLTModuleAgent.h"
 class AliRunLoader;
 class AliHLTOUTHandlerChain;
+class AliHLTOUTHandlerIgnore;
 
 /**
  * This module agent handles dimuon HLT module registration and configurations
@@ -117,6 +118,7 @@ private:
 	
 	static AliHLTOUTHandlerChain  fgkESDMakerChain;  ///< Chain handler for converting dHLT raw data to ESD format.
 	static AliHLTOUTHandlerChain  fgkRootifyDumpChain;  ///< Chain handler for converting dHLT raw data to ROOT objects and dumping to file.
+	static AliHLTOUTHandlerIgnore fgkDataIgnoreHandler;  ///< HLTOUT handler for ignoring data blocks.
 
 	static Int_t fgMuonModuleLoaded; ///< Cached flag for indicating if the MUON module was loaded for a simulation.
 	static bool fgRunRootifyChain; // Indicates if the dHLT-rootify-and-dump chain should be run.

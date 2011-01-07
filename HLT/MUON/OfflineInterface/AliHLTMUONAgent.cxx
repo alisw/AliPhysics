@@ -40,6 +40,7 @@
 #include "AliHLTMUONRawDataHistoComponent.h"
 #include "AliHLTMUONClusterHistoComponent.h"
 #include "AliHLTOUTHandlerChain.h"
+#include "AliHLTOUTHandlerIgnore.h"
 #include "AliRawReader.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
@@ -53,6 +54,7 @@ AliHLTMUONAgent AliHLTMUONAgent::fgkInstance;
 
 AliHLTOUTHandlerChain AliHLTMUONAgent::fgkESDMakerChain("libAliHLTMUON.so chains=dHLT-make-esd");
 AliHLTOUTHandlerChain AliHLTMUONAgent::fgkRootifyDumpChain("libAliHLTMUON.so chains=dHLT-rootify-and-dump");
+AliHLTOUTHandlerIgnore AliHLTMUONAgent::fgkDataIgnoreHandler;
 Int_t AliHLTMUONAgent::fgMuonModuleLoaded = 0;
 bool AliHLTMUONAgent::fgRunRootifyChain = false;
 
@@ -510,25 +512,46 @@ int AliHLTMUONAgent::GetHandlerDescription(
 		return 1;
 	}
 	
-	if (fgRunRootifyChain and
-	    (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
-	     dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
-	     dt == AliHLTMUONConstants::RecHitsBlockDataType() or
-	     dt == AliHLTMUONConstants::ClusterBlockDataType() or
-	     dt == AliHLTMUONConstants::ChannelBlockDataType() or
-	     dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
-	     dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
-	     dt == AliHLTMUONConstants::TracksBlockDataType() or
-	     dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
-	     dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
-	   ))
+	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
+	    dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
+	    dt == AliHLTMUONConstants::RecHitsBlockDataType() or
+	    dt == AliHLTMUONConstants::ClusterBlockDataType() or
+	    dt == AliHLTMUONConstants::ChannelBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
+	    dt == AliHLTMUONConstants::TracksBlockDataType() or
+	    dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
+	    dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
+	   )
 	{
-		HLTDebug("Indicating we can handle data type = %s and specification"
-			" = 0x%8.8X with dHLT-rootify-and-dump chain",
+		if (fgRunRootifyChain)
+		{
+			HLTDebug("Indicating we can handle data type = %s and specification"
+				" = 0x%8.8X with dHLT-rootify-and-dump chain",
+				AliHLTComponent::DataType2Text(dt).c_str(),
+				spec
+			);
+			desc = AliHLTOUTHandlerDesc(kChain, dt, "dHLT-rootify-and-dump");
+			return 1;
+		}
+		else
+		{
+			HLTDebug("Indicating we will ignore data type = %s and specification = 0x%8.8X",
+				AliHLTComponent::DataType2Text(dt).c_str(),
+				spec
+			);
+			desc = AliHLTOUTHandlerDesc(kProprietary, dt, "AliHLTOUTHandlerIgnore");
+			return 1;
+		}
+	}
+
+	if (dt == kAliHLTDataTypeEvent)
+	{
+		HLTDebug("Indicating we will ignore data type = %s and specification = 0x%8.8X",
 			AliHLTComponent::DataType2Text(dt).c_str(),
 			spec
 		);
-		desc = AliHLTOUTHandlerDesc(kChain, dt, "dHLT-rootify-and-dump");
+		desc = AliHLTOUTHandlerDesc(kProprietary, dt, "AliHLTOUTHandlerIgnore");
 		return 1;
 	}
 	
@@ -561,20 +584,31 @@ AliHLTOUTHandler* AliHLTMUONAgent::GetOutputHandler(
 		return &fgkESDMakerChain;
 	}
 
-	if (fgRunRootifyChain and
-	    (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
-	     dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
-	     dt == AliHLTMUONConstants::RecHitsBlockDataType() or
-	     dt == AliHLTMUONConstants::ClusterBlockDataType() or
-	     dt == AliHLTMUONConstants::ChannelBlockDataType() or
-	     dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
-	     dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
-	     dt == AliHLTMUONConstants::TracksBlockDataType() or
-	     dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
-	     dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
-	   ))
+	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
+	    dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
+	    dt == AliHLTMUONConstants::RecHitsBlockDataType() or
+	    dt == AliHLTMUONConstants::ClusterBlockDataType() or
+	    dt == AliHLTMUONConstants::ChannelBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
+	    dt == AliHLTMUONConstants::TracksBlockDataType() or
+	    dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
+	    dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
+	   )
 	{
-		return &fgkRootifyDumpChain;
+		if (fgRunRootifyChain)
+		{
+			return &fgkRootifyDumpChain;
+		}
+		else
+		{
+			return &fgkDataIgnoreHandler;
+		}
+	}
+
+	if (dt == kAliHLTDataTypeEvent)
+	{
+		return &fgkDataIgnoreHandler;
 	}
 	
 	return NULL;
@@ -589,8 +623,12 @@ int AliHLTMUONAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
 	
 	HLTDebug("Trying to delete HLTOUT handler: %p", pInstance);
 	
-	if (pInstance != &fgkESDMakerChain or pInstance != &fgkRootifyDumpChain)
+	if (pInstance != &fgkESDMakerChain or pInstance != &fgkRootifyDumpChain
+	    or pInstance != &fgkDataIgnoreHandler
+	   )
+	{
 		return -EINVAL;
+	}
 	
 	return 0;
 }
