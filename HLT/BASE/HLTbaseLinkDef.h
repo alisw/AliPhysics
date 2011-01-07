@@ -44,6 +44,7 @@
 #pragma link C++ class AliHLTOUTHomerBuffer+;
 #pragma link C++ class AliHLTOUTTask+;
 #pragma link C++ class AliHLTOUTHandler+;
+#pragma link C++ class AliHLTOUTHandlerIgnore+;
 #pragma link C++ class AliHLTOUTHandlerEquId+;
 #pragma link C++ class AliHLTOUTHandlerDetectorDDL+;
 #pragma link C++ class AliHLTOUTHandlerChain+;

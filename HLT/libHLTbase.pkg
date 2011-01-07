@@ -43,6 +43,7 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTOUTHomerBuffer.h \
 		AliHLTOUTTask.h \
 		AliHLTOUTHandler.h \
+		AliHLTOUTHandlerIgnore.h \
 		AliHLTOUTHandlerEquId.h \
 		AliHLTOUTHandlerDetectorDDL.h \
 		AliHLTOUTHandlerChain.h \
