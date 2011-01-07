@@ -60,13 +60,15 @@ AddTaskFMD(Bool_t mc)
   // trying to fit to the data
   task->GetEnergyFitter().SetMinEntries(1000);
   // Set the low cut used for sharing - overrides settings in eloss fits
-  // task->GetSharingFilter().SetLowCut(0.4);
+  task->GetSharingFilter().SetLowCut(0.3);
   // Set the number of xi's (width of landau peak) to stop at 
   task->GetSharingFilter().SetNXi(1);
   // Set the maximum number of particle to try to reconstruct 
   task->GetDensityCalculator().SetMaxParticles(2);
   // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
-  // task->GetDensityCalculator().SetMultCut(0.4);
+  task->GetDensityCalculator().SetMultCut(0.3);
+  // Whether to use the merging efficiency correction 
+  task->GetCorrections().UseMergingEfficiency(false);
   // Set the number of extra bins (beyond the secondary map border) 
   task->GetHistCollector().SetNCutBins(1);
   // Set the correction cut, that is, when bins in the secondary map 
