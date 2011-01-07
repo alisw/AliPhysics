@@ -39,7 +39,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   enum trackParameterType { kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet };
   enum trackParameterMix  { kPure, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt, kTrackWithPtFromFirstMother };
-  enum PIDsource {kTPCpid, kTOFpid, kTPCTOFpid};
+  enum PIDsource {kTPCpid, kTOFpid, kTPCTOFpid, kTOFbayesian};
 
   //setters (interface to AliESDtrackCuts)
   void SetMinNClustersTPC( Int_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMinNClustersTPC(a);}
@@ -149,6 +149,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void DefineHistograms();
   void InitPIDcuts();
   void InitESDcuts() {if (!fAliESDtrackCuts) fAliESDtrackCuts=new AliESDtrackCuts();}
+  // part added by F. Noferini
+  Bool_t PassesTOFbayesianCut(AliESDtrack* track); 
+  void SetPriors(); // set my favourite priors
+  Int_t GetESDPdg(AliESDtrack *track,Option_t *option="bayesianTOF",Int_t ipart=2,Float_t cPi=-1.0,Float_t cKa=0.0,Float_t cPr=0.0); // 3sigma cut ipart=0(el),1(mu),2(pi),3(K),4(p)
+  // end part added by F. Noferini
 
   //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
@@ -196,6 +201,12 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TMatrixF* fTOFpidCuts; //tof pid cuts
   Double_t fTPCTOFpidCrossOverPt; //pt cross over for pid, below TPC is taken, above TOF
   AliPID::EParticleType fAliPID; //alipid
+
+  // part added by F. Noferini
+  static const Int_t fnPIDptBin = 20; // pT bins for priors
+  Float_t fC[fnPIDptBin][5],fBinLimitPID[fnPIDptBin]; // pt bin limit and priors
+  Float_t fProbBayes[5]; // bayesian probability
+  // end part added by F. Noferini
 
   ClassDef(AliFlowTrackCuts,4)
 };

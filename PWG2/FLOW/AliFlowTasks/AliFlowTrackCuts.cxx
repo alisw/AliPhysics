@@ -494,6 +494,11 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
             if (!PassesTOFpidCut(esdTrack)) pass=kFALSE;
           }
           break;
+	      // part added by F. Noferini
+        case kTOFbayesian:
+	        if (!PassesTOFbayesianCut(esdTrack)) pass=kFALSE;
+	        break;
+	      // end part added by F. Noferini
         default:
           printf("AliFlowTrackCuts::PassesCuts() this should never be called!\n");
           pass=kFALSE;
@@ -898,7 +903,7 @@ void AliFlowTrackCuts::InitPIDcuts()
   {
     if (fAliPID==AliPID::kPion)
     {
-      t = new TMatrixF(3,27);
+      t = new TMatrixF(3,31);
       (*t)(0,0)  = 0.3;   (*t)(1,0)  = -700;  (*t)(2,0)  = 700;
       (*t)(0,1)  = 0.35;  (*t)(1,1)  = -800;  (*t)(2,1)  = 800;
       (*t)(0,2)  = 0.40;  (*t)(1,2)  = -600;  (*t)(2,2)  = 800;
@@ -925,7 +930,11 @@ void AliFlowTrackCuts::InitPIDcuts()
       (*t)(0,23) = 1.90;  (*t)(1,23) = -400;  (*t)(2,23) =  70;
       (*t)(0,24) = 2.00;  (*t)(1,24) = -400;  (*t)(2,24) =  50;
       (*t)(0,25) = 2.10;  (*t)(1,25) = -400;  (*t)(2,25) =   0;
-      (*t)(0,26) = 2.20;  (*t)(1,26) =    0;  (*t)(2,26) =   0;
+      (*t)(0,26) = 2.20;  (*t)(1,26) = -400;  (*t)(2,26) =   0;
+      (*t)(0,27) = 2.30;  (*t)(1,26) = -400;  (*t)(2,26) =   0;
+      (*t)(0,28) = 2.40;  (*t)(1,26) = -400;  (*t)(2,26) = -50;
+      (*t)(0,29) = 2.50;  (*t)(1,26) = -400;  (*t)(2,26) = -50;
+      (*t)(0,30) = 2.60;  (*t)(1,26) =    0;  (*t)(2,26) =   0;
     }
     else
     if (fAliPID==AliPID::kProton)
@@ -967,14 +976,14 @@ void AliFlowTrackCuts::InitPIDcuts()
       (*t)(0,33) = 2.90;  (*t)(1,33) = -150;  (*t)(2,33) = 500;
       (*t)(0,34) = 3.00;  (*t)(1,34) = -100;  (*t)(2,34) = 400;
       (*t)(0,35) = 3.10;  (*t)(1,35) = -100;  (*t)(2,35) = 400;
-      (*t)(0,36) = 3.20;  (*t)(1,36) =    0;  (*t)(2,36) = 0;
-      (*t)(0,37) = 3.30;  (*t)(1,37) =    0;  (*t)(2,37) = 0;
-      (*t)(0,38) = 3.40;  (*t)(1,38) =    0;  (*t)(2,38) = 0;
+      (*t)(0,36) = 3.50;  (*t)(1,36) = -100;  (*t)(2,36) = 400;
+      (*t)(0,37) = 3.60;  (*t)(1,37) =    0;  (*t)(2,37) = 0;
+      (*t)(0,38) = 3.70;  (*t)(1,38) =    0;  (*t)(2,38) = 0;
     }
     else
     if (fAliPID==AliPID::kKaon)
     {
-      t = new TMatrixF(3,23);
+      t = new TMatrixF(3,26);
       (*t)(0,0)  = 0.3;   (*t)(1,0)  =    0;  (*t)(2,0)  =    0;
       (*t)(0,1)  = 0.35;  (*t)(1,1)  =    0;  (*t)(2,1)  =    0;
       (*t)(0,2)  = 0.40;  (*t)(1,2)  = -800;  (*t)(2,2)  =  600;
@@ -997,8 +1006,364 @@ void AliFlowTrackCuts::InitPIDcuts()
       (*t)(0,19) = 1.50;  (*t)(1,19) = -200;  (*t)(2,19) =  400;
       (*t)(0,20) = 1.60;  (*t)(1,20) = -150;  (*t)(2,20) =  400;
       (*t)(0,21) = 1.70;  (*t)(1,21) = -100;  (*t)(2,21) =  400;
-      (*t)(0,22) = 1.80;  (*t)(1,22) =    0;  (*t)(2,22) =    0;
+      (*t)(0,22) = 1.80;  (*t)(1,22) =  -50;  (*t)(2,22) =  400;
+      (*t)(0,23) = 1.90;  (*t)(1,22) =    0;  (*t)(2,22) =  400;
+      (*t)(0,24) = 2.00;  (*t)(1,22) =   50;  (*t)(2,22) =  400;
+      (*t)(0,25) = 2.10;  (*t)(1,22) =    0;  (*t)(2,22) =    0;
     }
     fTOFpidCuts=t;
   }
 }
+
+//-----------------------------------------------------------------------
+// part added by F. Noferini (some methods)
+Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track){
+  if (!fESDpid) 
+  {
+    return kFALSE;
+  }
+  SetPriors();
+
+  Bool_t goodtrack = track && (track->GetStatus() & AliESDtrack::kTOFpid) && (track->GetTOFsignal() > 12000) && (track->GetTOFsignal() < 100000) && (track->GetIntegratedLength() > 365) && !(track->GetStatus() & AliESDtrack::kTOFmismatch);
+
+  if (! goodtrack)
+       return kFALSE;
+
+  Int_t pdg = GetESDPdg(track,"bayesianALL");
+  //  printf("pdg set to %i\n",pdg);
+
+  Int_t pid = 0;
+  Float_t prob = 0;
+  switch (fAliPID)
+  {
+    case AliPID::kPion:
+      pid=211;
+      prob = fProbBayes[2];
+      break;
+    case AliPID::kKaon:
+      pid=321;
+      prob = fProbBayes[3];
+     break;
+    case AliPID::kProton:
+      pid=2212;
+      prob = fProbBayes[4];
+      break;
+    case AliPID::kElectron:
+      pid=-11;
+       prob = fProbBayes[0];
+     break;
+    default:
+      return kFALSE;
+  }
+
+  //  printf("pt = %f -- all prob = [%4.2f,%4.2f,%4.2f,%4.2f,%4.2f] -- prob = %f\n",track->Pt(),fProbBayes[0],fProbBayes[1],fProbBayes[2],fProbBayes[3],fProbBayes[4],prob);
+  if(TMath::Abs(pdg) == TMath::Abs(pid) && prob > 0.8){
+    if(!fCutCharge)
+      return kTRUE;
+    else if (fCutCharge && fCharge * track->GetSign() > 0)
+      return kTRUE;
+  }
+  return kFALSE;
+}
+//-----------------------------------------------------------------------
+Int_t AliFlowTrackCuts::GetESDPdg(AliESDtrack *track,Option_t *option,Int_t ipart,Float_t cPi,Float_t cKa,Float_t cPr){
+  Int_t pdg = 0;
+  Int_t pdgvalues[5] = {-11,-13,211,321,2212};
+  Float_t mass[5] = {5.10998909999999971e-04,1.05658000000000002e-01,1.39570000000000000e-01,4.93676999999999977e-01,9.38271999999999995e-01};
+
+  if(strstr(option,"bayesianTOF")){ // Bayesian TOF PID
+    Double_t c[5]={0.01, 0.01, 0.85, 0.1, 0.05};
+    Double_t rcc=0.;
+    
+    Float_t pt = track->Pt();
+    
+    Int_t iptesd = 0;
+    while(pt > fBinLimitPID[iptesd] && iptesd < fnPIDptBin-1) iptesd++;
+  
+    if(cPi < 0){
+      c[0] = fC[iptesd][0];
+      c[1] = fC[iptesd][1];
+      c[2] = fC[iptesd][2];
+      c[3] = fC[iptesd][3];
+      c[4] = fC[iptesd][4];
+    }
+    else{
+      c[0] = 0.0;
+      c[1] = 0.0;
+      c[2] = cPi;
+      c[3] = cKa;
+      c[4] = cPr;      
+    }
+
+    Double_t r1[10]; track->GetTOFpid(r1);
+    
+    Int_t i;
+    for (i=0; i<5; i++) rcc+=(c[i]*r1[i]);
+    
+    Double_t w[10];
+    for (i=0; i<5; i++){
+	w[i]=c[i]*r1[i]/rcc;
+	fProbBayes[i] = w[i];
+    }
+    if (w[2]>=w[3] && w[2]>=w[4] && w[2]>=w[1] && w[2]>=w[0]) {//pion
+      pdg = 211*Int_t(track->GetSign());
+    }
+    else if (w[4]>=w[3] && w[4]>=w[1] && w[4]>=w[0]) {//proton
+      pdg = 2212*Int_t(track->GetSign());
+    }
+    else if (w[3]>=w[1] && w[3]>=w[0]){//kaon
+      pdg = 321*Int_t(track->GetSign());
+    }
+    else if (w[0]>=w[1]) { //electrons
+      pdg = -11*Int_t(track->GetSign());
+    }
+    else{ // muon
+      pdg = -13*Int_t(track->GetSign());
+    }
+  }
+
+  else if(strstr(option,"bayesianTPC")){ // Bayesian TPC PID
+    Double_t c[5]={0.01, 0.01, 0.85, 0.1, 0.05};
+    Double_t rcc=0.;
+    
+    Float_t pt = track->Pt();
+    
+    Int_t iptesd = 0;
+    while(pt > fBinLimitPID[iptesd] && iptesd < fnPIDptBin-1) iptesd++;
+  
+    if(cPi < 0){
+      c[0] = fC[iptesd][0];
+      c[1] = fC[iptesd][1];
+      c[2] = fC[iptesd][2];
+      c[3] = fC[iptesd][3];
+      c[4] = fC[iptesd][4];
+    }
+    else{
+      c[0] = 0.0;
+      c[1] = 0.0;
+      c[2] = cPi;
+      c[3] = cKa;
+      c[4] = cPr;      
+    }
+
+    Double_t r1[10]; track->GetTPCpid(r1);
+    
+    Int_t i;
+    for (i=0; i<5; i++) rcc+=(c[i]*r1[i]);
+    
+    Double_t w[10];
+    for (i=0; i<5; i++){
+	w[i]=c[i]*r1[i]/rcc;
+    	fProbBayes[i] = w[i];
+    }
+    if (w[2]>=w[3] && w[2]>=w[4] && w[2]>=w[1] && w[2]>=w[0]) {//pion
+      pdg = 211*Int_t(track->GetSign());
+    }
+    else if (w[4]>=w[3] && w[4]>=w[1] && w[4]>=w[0]) {//proton
+      pdg = 2212*Int_t(track->GetSign());
+    }
+    else if (w[3]>=w[1] && w[3]>=w[0]){//kaon
+      pdg = 321*Int_t(track->GetSign());
+    }
+    else if (w[0]>=w[1]) { //electrons
+      pdg = -11*Int_t(track->GetSign());
+    }
+    else{ // muon
+      pdg = -13*Int_t(track->GetSign());
+    }
+  }
+  
+  else if(strstr(option,"bayesianALL")){
+    Double_t c[5]={0.01, 0.01, 0.85, 0.1, 0.05};
+    Double_t rcc=0.;
+    
+    Float_t pt = track->Pt();
+    
+    Int_t iptesd = 0;
+    while(pt > fBinLimitPID[iptesd] && iptesd < fnPIDptBin-1) iptesd++;
+
+    if(cPi < 0){
+      c[0] = fC[iptesd][0];
+      c[1] = fC[iptesd][1];
+      c[2] = fC[iptesd][2];
+      c[3] = fC[iptesd][3];
+      c[4] = fC[iptesd][4];
+    }
+    else{
+      c[0] = 0.0;
+      c[1] = 0.0;
+      c[2] = cPi;
+      c[3] = cKa;
+      c[4] = cPr;      
+    }
+
+    Double_t r1[10]; track->GetTOFpid(r1);
+    Double_t r2[10]; track->GetTPCpid(r2);
+
+    Int_t i;
+    for (i=0; i<5; i++) rcc+=(c[i]*r1[i]*r2[i]);
+    
+
+    Double_t w[10];
+    for (i=0; i<5; i++){
+	w[i]=c[i]*r1[i]*r2[i]/rcc;
+    	fProbBayes[i] = w[i];
+    }
+
+    if (w[2]>=w[3] && w[2]>=w[4] && w[2]>=w[1] && w[2]>=w[0]) {//pion
+      pdg = 211*Int_t(track->GetSign());
+    }
+    else if (w[4]>=w[3] && w[4]>=w[1] && w[4]>=w[0]) {//proton
+      pdg = 2212*Int_t(track->GetSign());
+    }
+    else if (w[3]>=w[1] && w[3]>=w[0]){//kaon
+      pdg = 321*Int_t(track->GetSign());
+    }
+    else if (w[0]>=w[1]) { //electrons
+      pdg = -11*Int_t(track->GetSign());
+    }
+    else{ // muon
+      pdg = -13*Int_t(track->GetSign());
+    }
+  }
+
+  else if(strstr(option,"sigmacutTOF")){
+    printf("PID not implemented yet: %s\nNO PID!!!!\n",option);
+    Float_t p = track->P();
+
+    // Take expected times
+    Double_t exptimes[5];
+    track->GetIntegratedTimes(exptimes);
+
+    // Take resolution for TOF response
+    // like fESDpid->GetTOFResponse().GetExpectedSigma(p, exptimes[ipart], mass[ipart]);
+    Float_t resolution = fESDpid->GetTOFResponse().GetExpectedSigma(p, exptimes[ipart], mass[ipart]);
+
+    if(TMath::Abs(exptimes[ipart] - track->GetTOFsignal()) < 3 * resolution){
+      pdg = pdgvalues[ipart] * Int_t(track->GetSign());
+    }
+  }
+
+  else{
+    printf("Invalid PID option: %s\nNO PID!!!!\n",option);
+  }
+
+  return pdg;
+}
+//-----------------------------------------------------------------------
+void AliFlowTrackCuts::SetPriors(){
+  // set abbundancies
+    fBinLimitPID[0] = 0.30;
+    fC[0][0] = 0.015;
+    fC[0][1] = 0.015;
+    fC[0][2] = 1;
+    fC[0][3] = 0.0025;
+    fC[0][4] = 0.000015;
+    fBinLimitPID[1] = 0.35;
+    fC[1][0] = 0.015;
+    fC[1][1] = 0.015;
+    fC[1][2] = 1;
+    fC[1][3] = 0.01;
+    fC[1][4] = 0.001;
+    fBinLimitPID[2] = 0.40;
+    fC[2][0] = 0.015;
+    fC[2][1] = 0.015;
+    fC[2][2] = 1;
+    fC[2][3] = 0.026;
+    fC[2][4] = 0.004;
+    fBinLimitPID[3] = 0.45;
+    fC[3][0] = 0.015;
+    fC[3][1] = 0.015;
+    fC[3][2] = 1;
+    fC[3][3] = 0.026;
+    fC[3][4] = 0.004;
+    fBinLimitPID[4] = 0.50;
+    fC[4][0] = 0.015;
+    fC[4][1] = 0.015;
+    fC[4][2] = 1.000000;
+    fC[4][3] = 0.05;
+    fC[4][4] = 0.01;
+    fBinLimitPID[5] = 0.60;
+    fC[5][0] = 0.012;
+    fC[5][1] = 0.012;
+    fC[5][2] = 1;
+    fC[5][3] = 0.085;
+    fC[5][4] = 0.022;
+    fBinLimitPID[6] = 0.70;
+    fC[6][0] = 0.01;
+    fC[6][1] = 0.01;
+    fC[6][2] = 1;
+    fC[6][3] = 0.12;
+    fC[6][4] = 0.036;
+    fBinLimitPID[7] = 0.80;
+    fC[7][0] = 0.0095;
+    fC[7][1] = 0.0095;
+    fC[7][2] = 1;
+    fC[7][3] = 0.15;
+    fC[7][4] = 0.05;
+    fBinLimitPID[8] = 0.90;
+    fC[8][0] = 0.0085;
+    fC[8][1] = 0.0085;
+    fC[8][2] = 1;
+    fC[8][3] = 0.18;
+    fC[8][4] = 0.074;
+    fBinLimitPID[9] = 1;
+    fC[9][0] = 0.008;
+    fC[9][1] = 0.008;
+    fC[9][2] = 1;
+    fC[9][3] = 0.22;
+    fC[9][4] = 0.1;
+    fBinLimitPID[10] = 1.20;
+    fC[10][0] = 0.007;
+    fC[10][1] = 0.007;
+    fC[10][2] = 1;
+    fC[10][3] = 0.28;
+    fC[10][4] = 0.16;
+    fBinLimitPID[11] = 1.40;
+    fC[11][0] = 0.0066;
+    fC[11][1] = 0.0066;
+    fC[11][2] = 1;
+    fC[11][3] = 0.35;
+    fC[11][4] = 0.23;
+    fBinLimitPID[12] = 1.60;
+    fC[12][0] = 0.0075;
+    fC[12][1] = 0.0075;
+    fC[12][2] = 1;
+    fC[12][3] = 0.40;
+    fC[12][4] = 0.31;
+    fBinLimitPID[13] = 1.80;
+    fC[13][0] = 0.0062;
+    fC[13][1] = 0.0062;
+    fC[13][2] = 1;
+    fC[13][3] = 0.45;
+    fC[13][4] = 0.39;
+    fBinLimitPID[14] = 2.00;
+    fC[14][0] = 0.005;
+    fC[14][1] = 0.005;
+    fC[14][2] = 1;
+    fC[14][3] = 0.46;
+    fC[14][4] = 0.47;
+    fBinLimitPID[15] = 2.20;
+    fC[15][0] = 0.0042;
+    fC[15][1] = 0.0042;
+    fC[15][2] = 1;
+    fC[15][3] = 0.5;
+    fC[15][4] = 0.55;
+    fBinLimitPID[16] = 2.40;
+    fC[16][0] = 0.007;
+    fC[16][1] = 0.007;
+    fC[16][2] = 1;
+    fC[16][3] = 0.5;
+    fC[16][4] = 0.6;
+    
+    for(Int_t i=17;i<fnPIDptBin;i++){
+	fBinLimitPID[i] = 2.0 + 0.2 * (i-14);
+	fC[i][0] = fC[13][0];
+	fC[i][1] = fC[13][1];
+	fC[i][2] = fC[13][2];
+	fC[i][3] = fC[13][3];
+	fC[i][4] = fC[13][4];
+    }  
+}
+// end part added by F. Noferini
+//-----------------------------------------------------------------------

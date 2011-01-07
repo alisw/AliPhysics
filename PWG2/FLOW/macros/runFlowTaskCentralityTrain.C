@@ -73,6 +73,10 @@ void runFlowTaskCentralityTrain(Int_t mode = mLocal, Int_t nRuns = 50000000,
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AddTaskCentrality();
 
+  //Add the TOF tender
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskTenderTOF.C");
+  AddTaskTenderTOF();
+
   // Setup analysis per centrality bin:
   gROOT->LoadMacro("AddTaskFlowCentrality.C");
   for (Int_t i=binfirst; i<binlast+1; i++)
@@ -131,6 +135,7 @@ void LoadLibraries(const anaModes mode)
   gSystem->Load("libPhysics");
   gSystem->Load("libXMLParser");
   gSystem->Load("libProof");
+  gSystem->Load("libMinuit");
   
   if (mode==mLocal || mode==mGrid || mode == mGridPAR || mode == mLocalPAR )
   {
@@ -145,14 +150,17 @@ void LoadLibraries(const anaModes mode)
     gSystem->Load("libANALYSISalice");   
     gSystem->Load("libTOFbase"); 
     gSystem->Load("libTOFrec"); 
+    gSystem->Load("libTENDER");
 
     if (mode == mLocal || mode == mGrid)
     {
+      gSystem->Load("libTENDERSupplies");
       gSystem->Load("libPWG2flowCommon"); 
       gSystem->Load("libPWG2flowTasks"); 
     }
     if (mode == mLocalPAR || mode == mGridPAR )
     {
+      AliAnalysisAlien::SetupPar("TENDERSupplies");
       AliAnalysisAlien::SetupPar("PWG2flowCommon");
       AliAnalysisAlien::SetupPar("PWG2flowTasks");
     }

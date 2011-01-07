@@ -20,8 +20,6 @@ class TRandom3;
 class AliAnalysisTaskSE;
 class TString;
 class AliESDpid;
-class AliTOFcalib;
-class AliTOFT0maker;
 
 class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
  public:
@@ -99,10 +97,6 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   void SetFlow(Double_t v1, Double_t v2, Double_t v3, Double_t v4) {fV1=v1;fV2=v2;fV3=v3;fV4=v4;}
   // end setters afterburner
 
-  //PID
-  void recalibTOF(AliESDEvent *event);
-  void SetTOFresolution(Float_t res) {fTOFresolution=res;}
-
  private:
 
   AliAnalysisTaskFlowEvent(const AliAnalysisTaskFlowEvent& aAnalysisTask);
@@ -171,9 +165,6 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   
   //PID stuff
   AliESDpid *fESDpid;//pid object
-  Float_t 	fTOFresolution;
-  AliTOFcalib*   fTOFcalib;
-  AliTOFT0maker* ftofT0maker; 
 
   ClassDef(AliAnalysisTaskFlowEvent, 1); // example of analysis
 };

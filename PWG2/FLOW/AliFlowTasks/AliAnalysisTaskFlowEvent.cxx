@@ -72,9 +72,6 @@
 #include "AliAnalysisTaskFlowEvent.h"
 
 #include "AliESDpid.h"
-#include "AliTOFcalib.h"
-#include "AliTOFT0maker.h"
-#include "AliCDBManager.h"
 
 #include "AliLog.h"
 
@@ -127,10 +124,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fV3(0.),
   fV4(0.),
   fMyTRandom3(NULL),
-  fESDpid(NULL),
-  fTOFresolution(0.0),
-  fTOFcalib(NULL),
-  ftofT0maker(NULL)
+  fESDpid(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent()"<<endl;
@@ -183,10 +177,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fV3(0.),
   fV4(0.),
   fMyTRandom3(NULL),
-  fESDpid(NULL),
-  fTOFresolution(0.0),
-  fTOFcalib(NULL),
-  ftofT0maker(NULL)
+  fESDpid(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed)"<<endl;
@@ -204,7 +195,6 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
 
   //PID
   fESDpid=new AliESDpid();
-  fTOFcalib = new AliTOFcalib();
 
   // Define output slots here
   // Define here the flow event output
@@ -228,8 +218,6 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
   //
   delete fMyTRandom3;
   delete fESDpid;
-  delete fTOFcalib;
-  delete ftofT0maker;
   // objects in the output list are deleted
   // by the TSelector dtor (I hope)
 
@@ -241,17 +229,9 @@ void AliAnalysisTaskFlowEvent::NotifyRun()
   //at the beginning of each new run
 	AliESDEvent* fESD = dynamic_cast<AliESDEvent*> (InputEvent());
   if (!fESD) return;
-	if(fTOFresolution>0.0)
-	{
-	  Int_t run = fESD->GetRunNumber();
-		AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage("raw://");
-    cdb->SetRun(run);
-    fTOFcalib->Init(run);
-    fTOFcalib->CreateCalObjects();
-    delete ftofT0maker;
-    ftofT0maker= new AliTOFT0maker(fESDpid,fTOFcalib);  
-  } 
+
+  Int_t run = fESD->GetRunNumber();  
+  AliInfo(Form("Stariting run #%i",run));
 }
 
 //________________________________________________________________________
@@ -283,6 +263,23 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
                                                        2.12543e+00,
                                                        4.88663e+00 );
   }
+
+  // Added by F. Noferini for TOF PID
+  // F. Noferini personal tuning for DATA
+  if(0){
+    Double_t AlephParameters[5];
+    
+    AlephParameters[0] = 4.36414e-02;
+    AlephParameters[1] = 1.75977e+01;
+    AlephParameters[2] = 1.14385e-08;
+    AlephParameters[3] = 2.27907e+00;
+    AlephParameters[4] = 3.36699e+00;
+    
+    Float_t mip = 49;
+    fESDpid->GetTPCResponse().SetBetheBlochParameters(AlephParameters[0],AlephParameters[1],AlephParameters[2],AlephParameters[3],AlephParameters[4]);
+    fESDpid->GetTPCResponse().SetMip(mip);
+  }
+  // End F. Noferini added part
 
   fCutsRP->SetESDpid(fESDpid);
   fCutsPOI->SetESDpid(fESDpid);
@@ -320,6 +317,11 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliESDPmdTrack* pmdtracks = NULL;//pmd      
   TH2F* histFMD = NULL;
 
+  // Added by F. Noferini for TOF PID
+  fESDpid->SetTOFResponse(myESD,AliESDpid::kTOF_T0);
+  fESDpid->MakePID(myESD,kFALSE);
+  // End F. Noferini added part
+
   int availableINslot=1;
   if(strcmp(fRPType,"FMD")==0) {
     TList* FMDdata = dynamic_cast<TList*>(GetInputData(availableINslot++));
@@ -334,20 +336,18 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     }
   }
 
+
   if (!(fCutsRP&&fCutsPOI&&fCutsEvent))
   {
     AliError("cuts not set");
     return;
   }
 
-  //use the new and temporarily inclomplete way of doing things
+  //use the new and temporarily incomplete way of doing things
   if (fAnalysisType == "AUTOMATIC")
   {
     //check event cuts
     if (!fCutsEvent->IsSelected(InputEvent())) return;
-
-    //PID
-    recalibTOF(dynamic_cast<AliESDEvent*>(InputEvent()));
 
     //first attach all possible information to the cuts
     fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
@@ -554,12 +554,3 @@ void AliAnalysisTaskFlowEvent::Terminate(Option_t *)
   // Called once at the end of the query -- do not call in case of CAF
 }
 
-//___________________________________________________________
-void AliAnalysisTaskFlowEvent::recalibTOF(AliESDEvent *event)
-{
-	if(!(fTOFresolution>0.0))
-		return;
-  	ftofT0maker->SetTimeResolution(fTOFresolution);
- 	  ftofT0maker->ComputeT0TOF(event);
-  	ftofT0maker->WriteInESD(event);
-}

@@ -315,9 +315,6 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   // Pass cuts for RPs and POIs to the task:
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
-  taskFE->SetTOFresolution(80);
- 
-
 
   // Create the analysis tasks, add them to the manager.
   //===========================================================================
