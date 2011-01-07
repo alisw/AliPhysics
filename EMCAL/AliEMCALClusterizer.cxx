@@ -195,8 +195,10 @@ Float_t  AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, c
     Bool_t bCell = fGeom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
     if(!bCell) {
       fGeom->PrintGeometry();
-      Error("Calibrate()"," Wrong cell id number : %i", absId);
-      assert(0);
+      AliError(Form("Wrong cell id number : %i", absId));
+      //assert(0); // GCB: This aborts reconstruction of raw simulations where simulation had more SM than default geometry, 
+      //change to return 0, to avoid aborting good generations.
+      return 0;
     }
     
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
