@@ -91,6 +91,7 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  void UseMergingEfficiency(Bool_t use=true) { fUseMergingEfficiency = use; }
   /** 
    * Print information
    * 
@@ -158,10 +159,11 @@ protected:
    */
   RingHistos* GetRingHistos(UShort_t d, Char_t r) const;
 
-  TList    fRingHistos;    // List of histogram containers
-  Int_t    fDebug;         //  Debug level 
+  TList    fRingHistos;           // List of histogram containers
+  Bool_t   fUseMergingEfficiency; // Whether to use the merging efficiency
+  Int_t    fDebug;                //  Debug level 
 
-  ClassDef(AliFMDCorrections,1); // Calculate Nch density 
+  ClassDef(AliFMDCorrections,2); // Calculate Nch density 
 };
 
 #endif

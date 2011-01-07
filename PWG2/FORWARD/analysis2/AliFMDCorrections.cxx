@@ -8,7 +8,6 @@
 #include <TList.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
-// #include "AliFMDAnaParameters.h"
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TROOT.h>
@@ -24,6 +23,7 @@ ClassImp(AliFMDCorrections)
 AliFMDCorrections::AliFMDCorrections()
   : TNamed(), 
     fRingHistos(),
+    fUseMergingEfficiency(true),
     fDebug(0)
 {
   // Constructor
@@ -33,6 +33,7 @@ AliFMDCorrections::AliFMDCorrections()
 AliFMDCorrections::AliFMDCorrections(const char* title)
   : TNamed("fmdCorrections", title), 
     fRingHistos(), 
+    fUseMergingEfficiency(true),
     fDebug(0)
 {
   // Constructor 
@@ -51,6 +52,7 @@ AliFMDCorrections::AliFMDCorrections(const char* title)
 AliFMDCorrections::AliFMDCorrections(const AliFMDCorrections& o)
   : TNamed(o), 
     fRingHistos(), 
+    fUseMergingEfficiency(o.fUseMergingEfficiency),
     fDebug(o.fDebug)
 {
   // Copy constructor 
@@ -83,6 +85,7 @@ AliFMDCorrections::operator=(const AliFMDCorrections& o)
 
   fDebug   = o.fDebug;
   fRingHistos.Delete();
+  fUseMergingEfficiency = o.fUseMergingEfficiency;
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -156,41 +159,36 @@ AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
       // Divide by the event selection efficiency 
       h->Divide(ef);
 
-      
-      // if(!pars->SharingEffPresent()) { 
-      //   AliWarning("No sharing efficiencies");
-      //   continue;
-      // }
-      // TH1F* sf = pars->GetSharingEfficiencyTrVtx(d,r,vtxbin); 
-      if (!fcm.GetMergingEfficiency()) { 
-	AliWarning("No merging efficiencies");
-	continue;
-      }
-      TH1D* sf = fcm.GetMergingEfficiency()->GetCorrection(d,r,uvb);
-      if (!fcm.GetMergingEfficiency()->GetCorrection(d,r,uvb)) { 
-	AliWarning(Form("No merging efficiency for FMD%d%c at vertex bin %d",
-			d, r, uvb));
-	continue;
-      }
-
-      
-      for (Int_t ieta = 1; ieta <= h->GetNbinsX(); ieta++) {
-	Float_t c  = sf->GetBinContent(ieta);
-	Float_t ec = sf->GetBinError(ieta);
+      if (fUseMergingEfficiency) {
+	if (!fcm.GetMergingEfficiency()) { 
+	  AliWarning("No merging efficiencies");
+	  continue;
+	}
+	TH1D* sf = fcm.GetMergingEfficiency()->GetCorrection(d,r,uvb);
+	if (!fcm.GetMergingEfficiency()->GetCorrection(d,r,uvb)) { 
+	  AliWarning(Form("No merging efficiency for FMD%d%c at vertex bin %d",
+			  d, r, uvb));
+	  continue;
+	}
 	
-	if (c == 0) continue;
-
-	for (Int_t iphi = 1; iphi <= h->GetNbinsY(); iphi++) { 
-	  Double_t m  = h->GetBinContent(ieta, iphi) / c;
-	  Double_t em = h->GetBinError(ieta, iphi);
+      
+	for (Int_t ieta = 1; ieta <= h->GetNbinsX(); ieta++) {
+	  Float_t c  = sf->GetBinContent(ieta);
+	  Float_t ec = sf->GetBinError(ieta);
 	  
-	  Double_t e  = TMath::Sqrt(em * em + (m * ec) * (m * ec));
+	  if (c == 0) continue;
 	  
-	  h->SetBinContent(ieta,iphi,m);
-	  h->SetBinError(ieta,iphi,e);
+	  for (Int_t iphi = 1; iphi <= h->GetNbinsY(); iphi++) { 
+	    Double_t m  = h->GetBinContent(ieta, iphi) / c;
+	    Double_t em = h->GetBinError(ieta, iphi);
+	  
+	    Double_t e  = TMath::Sqrt(em * em + (m * ec) * (m * ec));
+	    
+	    h->SetBinContent(ieta,iphi,m);
+	    h->SetBinError(ieta,iphi,e);
+	  }
 	}
       }
-
       rh->fDensity->Add(h);
     }
   }
