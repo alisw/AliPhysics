@@ -23,13 +23,16 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t       lCollidingSystems
    taskcheckcascade-> SetCollidingSystems           (lCollidingSystems);
    taskcheckcascade-> SetAnalysisType               (type);
    
+   taskcheckcascade-> SetTriggerMaskType            ("kMB");
    taskcheckcascade-> SetRelaunchV0CascVertexers    (0);     //NOTE
    taskcheckcascade-> SetQualityCutZprimVtxPos      (kTRUE);
+   taskcheckcascade-> SetRejectEventPileUp          (kTRUE);
    taskcheckcascade-> SetQualityCutNoTPConlyPrimVtx (kTRUE);
    taskcheckcascade-> SetQualityCutTPCrefit         (kTRUE);
    taskcheckcascade-> SetQualityCut80TPCcls         (kTRUE);
+   taskcheckcascade-> SetAlephParamFor1PadTPCCluster(kTRUE);
         // taskcheckcascade-> SetExtraSelections            (0);
-   
+   taskcheckcascade-> SetAngularCorrelationType     ("TrigLeadingTrck-AssoCasc"); // 1.1 - "TrigAnyCasc-AssoAnyPrim", 1.2 - "TrigCascLeading-AssoAnyPrim", 2. - "TrigLeadingTrck-AssoCasc"
    
    mgr->AddTask(taskcheckcascade);
 
@@ -44,7 +47,7 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t       lCollidingSystems
    if(DefaultCommonFileName == "AnalysisResults.root"){
         // Just change the Common File name IF it was not change before
         // -> To avoid screwing-up the analysis train and send the output of the previous task to a non-existing file
-        TString lCommonFileName = "sLHC09-CheckCascade";
+        TString lCommonFileName = "sLHC10-CheckCascade";
         if(lMasterJobSessionFlag.Length()){
                 lCommonFileName += "-";
                 lCommonFileName += lMasterJobSessionFlag.Data();

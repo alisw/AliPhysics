@@ -23,11 +23,14 @@ AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t  
    taskCheckPerfCascade->SetCollidingSystems            (lCollidingSystems);
    taskCheckPerfCascade->SetAnalysisType                (type);
    
+   taskCheckPerfCascade-> SetTriggerMaskType            ("kMB");
    taskCheckPerfCascade-> SetRelaunchV0CascVertexers    (0);     //NOTE
    taskCheckPerfCascade-> SetQualityCutZprimVtxPos      (kTRUE);
+   taskCheckPerfCascade-> SetRejectEventPileUp          (kTRUE);
    taskCheckPerfCascade-> SetQualityCutNoTPConlyPrimVtx (kTRUE);
    taskCheckPerfCascade-> SetQualityCutTPCrefit         (kTRUE);
    taskCheckPerfCascade-> SetQualityCut80TPCcls         (kTRUE);
+   taskCheckPerfCascade-> SetAlephParamFor1PadTPCCluster(kTRUE);
         // taskCheckPerfCascade-> SetExtraSelections            (0);
    
    
@@ -44,7 +47,7 @@ AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t  
    if(DefaultCommonFileName == "AnalysisResults.root"){
         // Just change the Common File name IF it was not change before
         // -> To avoid screwing-up the analysis train and send the output of the previous task to a non-existing file
-        TString lCommonFileName = "sLHC09-CheckPerfCascade";
+        TString lCommonFileName = "sLHC10-CheckPerfCascade";
         if(lMasterJobSessionFlag.Length()){
                 lCommonFileName += "-";
                 lCommonFileName += lMasterJobSessionFlag.Data();
