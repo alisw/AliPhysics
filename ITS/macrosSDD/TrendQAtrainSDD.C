@@ -26,7 +26,8 @@ void MakePlots(TString ntupleFileName);
 
 void TrendQAtrainSDD(TString period,
 		     TString recoPass,
-		     TString qaTrain,
+		     TString qaTrain1,
+		     TString qaTrain2,
 		     Int_t firstRun=0,
 		     Int_t lastRun=999999999,
 		     TString fileName="QAresults.root"){
@@ -39,11 +40,11 @@ void TrendQAtrainSDD(TString period,
   if(period.Contains("LHC09")) year=2009;
   else if(period.Contains("LHC10")) year=2010;
 
-  TString outFilNam=Form("TrendingSDD_%s_%s_%s.root",period.Data(),recoPass.Data(),qaTrain.Data());
+  TString outFilNam=Form("TrendingSDD_%s_%s_%s.root",period.Data(),recoPass.Data(),qaTrain1.Data());
 
 
-  const Int_t nVariables=15;
-  TNtuple* ntsdd=new TNtuple("ntsdd","SDD trending","nrun:meanTrPts3:errmeanTrPts3:meanTrPts4:errmeanTrPts4:minDrTime:errminDrTime:meanDrTime:errmeanDrTime:fracExtra:errfracExtra:meandEdxTB0:errmeandEdxTB0:meandEdxTB5:errmeandEdxTB5");
+  const Int_t nVariables=27;
+  TNtuple* ntsdd=new TNtuple("ntsdd","SDD trending","nrun:fracTrackWithClu1:errfracTrackWithClu1:fracTrackWithClu2:errfracTrackWithClu2:fracTrackWithClu3:errfracTrackWithClu3:fracTrackWithClu4:errfracTrackWithClu4:fracTrackWithClu5:errfracTrackWithClu5:fracTrackWithClu6:errfracTrackWithClu6:meanTrPts3:errmeanTrPts3:meanTrPts4:errmeanTrPts4:minDrTime:errminDrTime:meanDrTime:errmeanDrTime:fracExtra:errfracExtra:meandEdxTB0:errmeandEdxTB0:meandEdxTB5:errmeandEdxTB5");
   Float_t xnt[nVariables];
 
   TBits* readRun=new TBits(999999);
@@ -96,8 +97,10 @@ void TrendQAtrainSDD(TString period,
     for (Int_t iFil = 0; iFil <nFiles ; iFil++) { 
       TString fileNameLong=Form("%s",gr->GetKey(iFil,"turl"));
       if(!fileNameLong.Contains(recoPass.Data())) continue;
-      if(!fileNameLong.Contains(qaTrain.Data())) continue;
-      if(!fileNameLong.Contains(Form("%s/%s",qaTrain.Data(),fileName.Data()))) continue;
+      if(!fileNameLong.Contains(qaTrain1.Data()) &&
+	 !fileNameLong.Contains(qaTrain2.Data())) continue;
+      if(!fileNameLong.Contains(Form("%s/%s",qaTrain1.Data(),fileName.Data())) &&
+	 !fileNameLong.Contains(Form("%s/%s",qaTrain2.Data(),fileName.Data()))) continue;
       TString runNumber=fileNameLong;
       runNumber.ReplaceAll(Form("alien:///alice/data/%d/%s/",year,period.Data()),"");
       runNumber.Remove(9,runNumber.Sizeof());
@@ -121,6 +124,15 @@ void TrendQAtrainSDD(TString period,
       if(!df){
 	printf("Run %d coutputRP TList MISSING -> Exit\n",iRun);
 	continue;
+      }  
+      TH1F* hcllay=(TH1F*)l->FindObject("hCluInLay");
+      Float_t fracT[6]={0.,0.,0.,0.,0.,0.};
+      Float_t efracT[6]={0.,0.,0.,0.,0.,0.};
+      if(hcllay->GetBinContent(1)>0){
+	for(Int_t iLay=0; iLay<6; iLay++){
+	  fracT[iLay]=hcllay->GetBinContent(iLay+2)/hcllay->GetBinContent(1);
+	  efracT[iLay]=TMath::Sqrt(fracT[iLay]*(1-fracT[iLay])/hcllay->GetBinContent(1));
+	}
       }
       TH1F* hmodT=(TH1F*)l->FindObject("hTPMod");
       TH1F* hgamod=(TH1F*)l->FindObject("hGAMod");
@@ -206,21 +218,34 @@ void TrendQAtrainSDD(TString period,
       TH1F* hSigTim0=(TH1F*)l->FindObject("hSigTimeInt0");
       TH1F* hSigTim5=(TH1F*)l->FindObject("hSigTimeInt5");
 
-      xnt[0]=(Float_t)iRun;
-      xnt[1]=sumtp3/nModGood3;
-      xnt[2]=TMath::Sqrt(sumEtp3)/nModGood3;
-      xnt[3]=sumtp4/nModGood4;
-      xnt[4]=TMath::Sqrt(sumEtp4)/nModGood4;
-      xnt[5]=minTime;
-      xnt[6]=errMinTime;
-      xnt[7]=htimT->GetMean();
-      xnt[8]=htimT->GetMeanError();
-      xnt[9]=fracExtra;
-      xnt[10]=errFracExtra;
-      xnt[11]=hSigTim0->GetMean();
-      xnt[12]=hSigTim0->GetMeanError();
-      xnt[13]=hSigTim5->GetMean();
-      xnt[14]=hSigTim5->GetMeanError();
+      Int_t index=0;
+      xnt[index++]=(Float_t)iRun;
+      xnt[index++]=fracT[0];
+      xnt[index++]=efracT[0];
+      xnt[index++]=fracT[1];
+      xnt[index++]=efracT[1];
+      xnt[index++]=fracT[2];
+      xnt[index++]=efracT[2];
+      xnt[index++]=fracT[3];
+      xnt[index++]=efracT[3];
+      xnt[index++]=fracT[4];
+      xnt[index++]=efracT[4];
+      xnt[index++]=fracT[5];
+      xnt[index++]=efracT[5];
+      xnt[index++]=sumtp3/nModGood3;
+      xnt[index++]=TMath::Sqrt(sumEtp3)/nModGood3;
+      xnt[index++]=sumtp4/nModGood4;
+      xnt[index++]=TMath::Sqrt(sumEtp4)/nModGood4;
+      xnt[index++]=minTime;
+      xnt[index++]=errMinTime;
+      xnt[index++]=htimT->GetMean();
+      xnt[index++]=htimT->GetMeanError();
+      xnt[index++]=fracExtra;
+      xnt[index++]=errFracExtra;
+      xnt[index++]=hSigTim0->GetMean();
+      xnt[index++]=hSigTim0->GetMeanError();
+      xnt[index++]=hSigTim5->GetMean();
+      xnt[index++]=hSigTim5->GetMeanError();
       
       ntsdd->Fill(xnt);
     }
@@ -246,10 +271,26 @@ void MakePlots(TString ntupleFileName){
   Float_t nrun;
   Float_t meanTrPts3,errmeanTrPts3,meanTrPts4,errmeanTrPts4;
   Float_t minDrTime,errminDrTime,meanDrTime,errmeanDrTime;
+  Float_t fracTrackWithClu1,fracTrackWithClu2,errfracTrackWithClu1,errfracTrackWithClu2;
+  Float_t fracTrackWithClu3,fracTrackWithClu4,errfracTrackWithClu3,errfracTrackWithClu4;
+  Float_t fracTrackWithClu5,fracTrackWithClu6,errfracTrackWithClu5,errfracTrackWithClu6;
   Float_t fracExtra,errfracExtra;
   Float_t meandEdxTB0,errmeandEdxTB0,meandEdxTB5,errmeandEdxTB5;
 
   ntsdd->SetBranchAddress("nrun",&nrun);
+  ntsdd->SetBranchAddress("fracTrackWithClu1",&fracTrackWithClu1);
+  ntsdd->SetBranchAddress("errfracTrackWithClu1",&errfracTrackWithClu1);
+  ntsdd->SetBranchAddress("fracTrackWithClu2",&fracTrackWithClu2);
+  ntsdd->SetBranchAddress("errfracTrackWithClu2",&errfracTrackWithClu2);
+  ntsdd->SetBranchAddress("fracTrackWithClu3",&fracTrackWithClu3);
+  ntsdd->SetBranchAddress("errfracTrackWithClu3",&errfracTrackWithClu3);
+  ntsdd->SetBranchAddress("fracTrackWithClu4",&fracTrackWithClu4);
+  ntsdd->SetBranchAddress("errfracTrackWithClu4",&errfracTrackWithClu4);
+  ntsdd->SetBranchAddress("fracTrackWithClu5",&fracTrackWithClu5);
+  ntsdd->SetBranchAddress("errfracTrackWithClu5",&errfracTrackWithClu5);
+  ntsdd->SetBranchAddress("fracTrackWithClu6",&fracTrackWithClu6);
+  ntsdd->SetBranchAddress("errfracTrackWithClu6",&errfracTrackWithClu6);
+
   ntsdd->SetBranchAddress("meanTrPts3",&meanTrPts3);
   ntsdd->SetBranchAddress("errmeanTrPts3",&errmeanTrPts3);
   ntsdd->SetBranchAddress("meanTrPts4",&meanTrPts4);
@@ -272,9 +313,34 @@ void MakePlots(TString ntupleFileName){
   TH1F* histofracExtra=new TH1F("histofracExtra","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
   TH1F* histodEdxTB0=new TH1F("histodEdxTB0","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
   TH1F* histodEdxTB5=new TH1F("histodEdxTB5","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histoTrackClu1=new TH1F("histoTrackClu1","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histoTrackClu2=new TH1F("histoTrackClu2","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histoTrackClu3=new TH1F("histoTrackClu3","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histoTrackClu4=new TH1F("histoTrackClu4","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histoTrackClu5=new TH1F("histoTrackClu5","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histoTrackClu6=new TH1F("histoTrackClu6","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+
 
   for(Int_t i=0; i<ntsdd->GetEntries();i++){
     ntsdd->GetEvent(i);
+    histoTrackClu1->SetBinContent(i+1,fracTrackWithClu1);
+    histoTrackClu1->SetBinError(i+1,errfracTrackWithClu1);
+    histoTrackClu1->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histoTrackClu2->SetBinContent(i+1,fracTrackWithClu2);
+    histoTrackClu2->SetBinError(i+1,errfracTrackWithClu2);
+    histoTrackClu2->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histoTrackClu3->SetBinContent(i+1,fracTrackWithClu3);
+    histoTrackClu3->SetBinError(i+1,errfracTrackWithClu3);
+    histoTrackClu3->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histoTrackClu4->SetBinContent(i+1,fracTrackWithClu4);
+    histoTrackClu4->SetBinError(i+1,errfracTrackWithClu4);
+    histoTrackClu4->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histoTrackClu5->SetBinContent(i+1,fracTrackWithClu5);
+    histoTrackClu5->SetBinError(i+1,errfracTrackWithClu5);
+    histoTrackClu5->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histoTrackClu6->SetBinContent(i+1,fracTrackWithClu6);
+    histoTrackClu6->SetBinError(i+1,errfracTrackWithClu6);
+    histoTrackClu6->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
     histominTime->SetBinContent(i+1,minDrTime);
     histominTime->SetBinError(i+1,errminDrTime);
     histominTime->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
@@ -346,7 +412,7 @@ void MakePlots(TString ntupleFileName){
   histodEdxTB5->SetMarkerColor(4);
   histodEdxTB5->SetMarkerStyle(23);
   histodEdxTB5->Draw("same");
-  histodEdxTB0->GetYaxis()->SetTitle("Track Point Occupancy");
+  histodEdxTB0->GetYaxis()->SetTitle("<dE/dx> (keV/300 #mum)");
   TLegend* leg2=new TLegend(0.6,0.15,0.88,0.35);
   ent=leg2->AddEntry(histodEdxTB0,"Small drift time","PL");
   ent=leg2->AddEntry(histodEdxTB5,"Large drift time","PL");
@@ -355,7 +421,50 @@ void MakePlots(TString ntupleFileName){
   leg2->Draw();
   c4->Update();
 
+  TCanvas* c5=new TCanvas("c5","TrackWithSDD");
+  histoTrackClu3->Draw();
+  histoTrackClu3->SetLineColor(1);
+  histoTrackClu3->SetMarkerStyle(20);
+  histoTrackClu3->Draw();
+  histoTrackClu3->SetMinimum(0.);
+  histoTrackClu4->SetLineColor(2);
+  histoTrackClu4->SetMarkerColor(2);
+  histoTrackClu4->SetMarkerStyle(22);
+  histoTrackClu4->Draw("same");
+  histoTrackClu1->SetLineColor(kGray+1);
+  histoTrackClu1->SetMarkerColor(kGray+1);
+  histoTrackClu1->SetMarkerStyle(24);
+  histoTrackClu1->Draw("same");
+  histoTrackClu2->SetLineColor(kGray+2);
+  histoTrackClu2->SetMarkerColor(kGray+2);
+  histoTrackClu2->SetMarkerStyle(26);
+  histoTrackClu2->Draw("same");
+  histoTrackClu5->SetLineColor(4);
+  histoTrackClu5->SetMarkerColor(4);
+  histoTrackClu5->SetMarkerStyle(29);
+  histoTrackClu5->Draw("same");
+  histoTrackClu6->SetLineColor(kBlue+1);
+  histoTrackClu6->SetMarkerColor(kBlue+1);
+  histoTrackClu6->SetMarkerStyle(30);
+  histoTrackClu6->Draw("same");
+  histoTrackClu3->GetYaxis()->SetTitle("Fraction of Tracks with Point in SDD Layers");
+  TLegend* leg3=new TLegend(0.7,0.15,0.88,0.35);
+  ent=leg3->AddEntry(histoTrackClu1,"Layer1","PL");
+  ent->SetTextColor(histoTrackClu1->GetMarkerColor());
+  ent=leg3->AddEntry(histoTrackClu2,"Layer2","PL");
+  ent->SetTextColor(histoTrackClu2->GetMarkerColor());
+  ent=leg3->AddEntry(histoTrackClu3,"Layer3","PL");
+  ent->SetTextColor(histoTrackClu3->GetMarkerColor());
+  ent=leg3->AddEntry(histoTrackClu4,"Layer4","PL");
+  ent->SetTextColor(histoTrackClu4->GetMarkerColor());
+  ent=leg3->AddEntry(histoTrackClu5,"Layer5","PL");
+  ent->SetTextColor(histoTrackClu5->GetMarkerColor());
+  ent=leg3->AddEntry(histoTrackClu6,"Layer6","PL");
+  ent->SetTextColor(histoTrackClu6->GetMarkerColor());
 
+  leg3->SetFillStyle(0);
+  leg3->Draw();
+  c5->Update();
 
 }
 
