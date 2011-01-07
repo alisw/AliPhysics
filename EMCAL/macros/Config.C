@@ -309,7 +309,7 @@ void Config()
     {
         //=================== EMCAL parameters ============================
         AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1");
-        //AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE pbTh=0.144 scTh=0.176");
+        //AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1 pbTh=0.144 scTh=0.176");
     }
 
      if (iACORDE)

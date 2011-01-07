@@ -425,7 +425,7 @@ Config()
   if (usePHOS)   AliPHOS   *PHOS   = new AliPHOSv1("PHOS", "IHEP");
   if (usePMD)    AliPMD    *PMD    = new AliPMDv1("PMD", "normal PMD");
   if (useT0)     AliT0     *T0     = new AliT0v1("T0", "T0 Detector");
-  if (useEMCAL)  AliEMCAL  *EMCAL  = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
+  if (useEMCAL)  AliEMCAL  *EMCAL  = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1");
   if (useACORDE) AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
   if (useVZERO)  AliVZERO  *VZERO  = new AliVZEROv7("VZERO", "normal VZERO");
 }
