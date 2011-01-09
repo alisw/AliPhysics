@@ -210,6 +210,45 @@ void AliEMCALHistoUtilities::Titles(TH1 *hid, const char *titx,const char *tity)
   }
 }
 
+TList* AliEMCALHistoUtilities::CreateProjectionsX(TList *l, const Int_t ind, const Char_t* name)
+{
+  // Sep 4 - seperate list for projections
+  TH2F *hid = dynamic_cast<TH2F *>(l->At(ind));
+  if(hid == 0) {
+    printf("<E> Object at ind %i is %s : should ne TH2F \n",
+	   ind, l->At(ind)->ClassName());
+    return 0;
+  }
+ 
+  TList *lpt = new TList;
+  lpt->SetName(Form("%s%s", hid->GetName(), name));
+  l->Add(lpt);
+
+  TAxis*  yax   = hid->GetYaxis();
+  TString tity  = yax->GetTitle();
+  tity.ReplaceAll(" ","");
+  TString name1 = hid->GetName();
+  TString nam   = name1(3,name1.Length()-3);
+  TString tit1  = hid->GetTitle(), tit=tit1;
+
+  TH1::AddDirectory(0);
+
+  TH1D *hd = hid->ProjectionX(Form("00_%sProx",nam.Data()), 1, yax->GetNbins());
+  tit += Form(" : %5.2f < %s < %5.2f (GeV/c)", yax->GetXmin(),tity.Data(),yax->GetXmax());
+  hd->SetTitle(tit.Data());
+  lpt->Add(hd);
+
+  for(Int_t iy=1; iy<=yax->GetNbins(); iy++){
+    tit = tit1; 
+    tit += Form(" : %5.2f < %s  < %5.2f (GeV/c)", yax->GetBinLowEdge(iy), tity.Data(), yax->GetBinUpEdge(iy));
+    hd = hid->ProjectionX(Form("%2.2i_%sProx%i",iy, nam.Data(),iy),iy,iy);
+    hd->SetTitle(tit.Data());
+    lpt->Add(hd);    
+  }
+
+  return lpt;
+}
+
 TLatex *AliEMCALHistoUtilities::Lat(const char *text, Float_t x,Float_t y, Int_t align, Float_t tsize, short tcolor)
 { 
   // Oct 15, 2007
