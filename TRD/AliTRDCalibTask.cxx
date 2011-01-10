@@ -91,6 +91,7 @@ ClassImp(AliTRDCalibTask)
       fListHist(0),
       fTRDCalibraFillHisto(0),
       fNEvents(0),
+      fNEventsInput(0),
       fNbTRDTrack(0),
       fNbTRDTrackOffline(0),
       fNbTRDTrackStandalone(0),
@@ -174,6 +175,7 @@ AliTRDCalibTask::~AliTRDCalibTask()
 
   // Pointeur
   if(fNEvents) delete fNEvents;
+  if(fNEventsInput) delete fNEventsInput;
   if(fNbTRDTrack) delete fNbTRDTrack;
   if(fNbTRDTrackOffline) delete fNbTRDTrackOffline;
   if(fNbTRDTrackStandalone) delete fNbTRDTrackStandalone;
@@ -275,6 +277,8 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   if(fVector2d) fListHist->Add((TObject *) fTRDCalibraFillHisto->GetCalibraVector()); //calibra vector  
   fNEvents = new TH1I("NEvents","NEvents", 2, 0, 2);
   fListHist->Add(fNEvents);
+  fNEventsInput = new TH1I("NEventsInput","NEventsInput", 2, 0, 2);
+  fListHist->Add(fNEventsInput);
   
   // absolute gain calibration even without AliESDfriend
   Int_t nBinsPt = 25;
@@ -449,6 +453,8 @@ void AliTRDCalibTask::UserExec(Option_t *)
   //printf("Counter %d\n",fCounter);
   
   fCounter++;
+  fNEventsInput->Fill(1);
+
   //cout << "maxEvent = " << fMaxEvent << endl;
   //if(fCounter%100==0) cout << "fCounter = " << fCounter << endl;
   if((fMaxEvent != 0) && (fMaxEvent < fCounter)) {
@@ -1093,6 +1099,7 @@ void  AliTRDCalibTask::AddTask(const AliTRDCalibTask * calibTask) {
   if(!listcalibTask) return;
 
   TH1I *nEvents  = (TH1I *) listcalibTask->FindObject("NEvents");
+  TH1I *nEventsInput  = (TH1I *) listcalibTask->FindObject("NEventsInput");
   TH2F *absoluteGain  = (TH2F *) listcalibTask->FindObject("AbsoluteGain");
 
   TH1F *trdTrack = (TH1F *) listcalibTask->FindObject("TRDTrack");
@@ -1128,6 +1135,7 @@ void  AliTRDCalibTask::AddTask(const AliTRDCalibTask * calibTask) {
 
   //
 
+  TH1I *inEventsInput  = (TH1I *) fListHist->FindObject("NEventsInput");
   TH1I *inEvents  = (TH1I *) fListHist->FindObject("NEvents");
   TH2F *iabsoluteGain  = (TH2F *) fListHist->FindObject("AbsoluteGain");
 
@@ -1164,6 +1172,18 @@ void  AliTRDCalibTask::AddTask(const AliTRDCalibTask * calibTask) {
 
 
   // Add
+
+  if(nEventsInput) {
+    if(inEventsInput) {
+      inEventsInput->Add(nEventsInput);
+      //printf("Add Events\n");
+    }
+    else {
+      //printf("Create new Events\n");
+      inEventsInput = new TH1I(*nEventsInput);
+      fListHist->Add(inEventsInput);
+    }
+  }
   
   if(nEvents) {
     if(inEvents) {

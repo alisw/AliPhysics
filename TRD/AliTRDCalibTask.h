@@ -105,6 +105,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   AliTRDCalibraFillHisto *fTRDCalibraFillHisto;  //! calibration analyse object
 
   TH1I        *fNEvents;                         //! counter  
+  TH1I        *fNEventsInput;                    //! counter  
   
   TH1F        *fNbTRDTrack;                      //! nb ESD tracks with TRD clusters
   TH1F        *fNbTRDTrackOffline;               //! nb ESD tracks with TRD clusters

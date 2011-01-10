@@ -318,15 +318,29 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
       TAxis *yaxis = linearfitterhisto->GetYaxis();
       TLinearFitter linearfitter = TLinearFitter(2,"pol1");
       //printf("test\n");
+      Double_t integral = linearfitterhisto->Integral();
+      //printf("Integral is %f\n",integral);
+      Bool_t securitybreaking = kFALSE;
+      if(TMath::Abs(integral-1199) < 0.00001) securitybreaking = kTRUE;
       for(Int_t ibinx = 0; ibinx < linearfitterhisto->GetNbinsX(); ibinx++){
 	for(Int_t ibiny = 0; ibiny < linearfitterhisto->GetNbinsY(); ibiny++){
 	  if(linearfitterhisto->GetBinContent(ibinx+1,ibiny+1)>0){
 	    Double_t x = xaxis->GetBinCenter(ibinx+1);
 	    Double_t y = yaxis->GetBinCenter(ibiny+1);
+	    
 	    for(Int_t k = 0; k < (Int_t)linearfitterhisto->GetBinContent(ibinx+1,ibiny+1); k++){
-	      linearfitter.AddPoint(&x,y);
-	      arrayI[cb]++;
+	      if(!securitybreaking){
+		linearfitter.AddPoint(&x,y);
+		arrayI[cb]++;
+	      }
+	      else {
+		if(arrayI[cb]< 1198){
+		  linearfitter.AddPoint(&x,y);
+		  arrayI[cb]++; 
+		}
+	      }
 	    }
+	    
 	  }
 	}
       }
@@ -338,10 +352,12 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
 	TVectorD  *par  = new TVectorD(2);
 	TVectorD   pare = TVectorD(2);
 	TVectorD  *parE = new TVectorD(3);
+	//printf("Fit\n");
 	if((linearfitter.EvalRobust(0.8)==0)) {
-	//if((linearfitter.Eval()==0)) {
-	  
+	  //if((linearfitter.Eval()==0)) {
+	  //printf("Take the param\n");
 	  linearfitter.GetParameters(*par);
+	  //printf("Done\n");
 	  //linearfitter.GetErrors(pare);
 	  //Float_t  ppointError =  TMath::Sqrt(TMath::Abs(linearfitter.GetChisquare())/arrayI[cb]);
 	  //(*parE)[0] = pare[0]*ppointError;
@@ -356,6 +372,7 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
 	  //par->Print();
 	  //parE->Print();
 	}
+	//printf("Finish\n");
       }
       
       //delete linearfitterhisto;

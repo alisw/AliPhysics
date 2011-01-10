@@ -43,6 +43,7 @@ class AliTRDCalDet : public TNamed {
   // statistic
   Double_t GetMean(AliTRDCalDet * const outlierDet=0) const;
   Double_t GetRMS(AliTRDCalDet * const outlierDet=0) const;
+  Double_t GetRMSRobust(Double_t robust=0.92) const;
   Double_t GetMedian(AliTRDCalDet * const outlierDet=0) const;
   Double_t GetLTM(Double_t * sigma=0, Double_t fraction=0.9, AliTRDCalDet * const outlierDet=0);     
 
@@ -68,3 +69,4 @@ class AliTRDCalDet : public TNamed {
 };
 
 #endif
+

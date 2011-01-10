@@ -32,7 +32,8 @@ public:
       kT0PHPad = 4,
       kVdriftLinear = 5,
       kLorentzLinear = 6,
-      kPRF = 7
+      kChamberStatus = 7,
+      kPRF = 8
       };   
   
   AliTRDPreprocessorOffline();
@@ -53,6 +54,7 @@ public:
   void CalibVdriftT0(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage="");
   void CalibGain(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage="");
   void CalibPRF(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage="");
+  void CalibChamberStatus(Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage="");
 
   Bool_t ReadGainGlobal(const Char_t* fileName="CalibObjects.root");
   Bool_t ReadVdriftT0Global(const Char_t* fileName="CalibObjects.root");
@@ -62,20 +64,23 @@ public:
   Bool_t AnalyzeGain(); 
   Bool_t AnalyzeVdriftT0(); 
   Bool_t AnalyzeVdriftLinearFit(); 
-  Bool_t AnalyzePRF(); 
+  Bool_t AnalyzePRF();
+  Bool_t AnalyzeChamberStatus(); 
   
   void CorrectFromDetGainUsed();
   void CorrectFromDetVdriftUsed();
-
+  
   void UpdateOCDBT0(Int_t startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBVdrift(Int_t startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBPRF(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
+  void UpdateOCDBChamberStatus(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath);
 
   Bool_t ValidateGain() const;
   Bool_t ValidateVdrift();
   Bool_t ValidateT0();
   Bool_t ValidatePRF() const;
+  Bool_t ValidateChamberStatus() const;
 
   Int_t    GetVersionGainUsed() const                                { return fVersionGainUsed;        }
   Int_t    GetSubVersionGainUsed() const                             { return fSubVersionGainUsed;     }
@@ -87,7 +92,7 @@ public:
   void     SetMinStatsGain(Int_t minStatsGain)                       { fMinStatsGain = minStatsGain; }  
   void     SetMinStatsPRF(Int_t minStatsPRF)                         { fMinStatsPRF = minStatsPRF; }  
 
-  AliTRDCalChamberStatus *ProduceChamberStatus();
+ 
   
  private:
   Bool_t fMethodSecond;                      // Second Method for drift velocity   
@@ -127,4 +132,5 @@ private:
 };
 
 #endif
+
 
