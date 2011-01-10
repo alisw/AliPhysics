@@ -72,6 +72,7 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void VertexInternal();
     virtual void FinishRun();
     virtual void SetMC(TGenerator *theMC) {fMCEvGen =theMC;}
+    virtual TGenerator* GetMC() const {return fMCEvGen;}
     virtual void AddHeader(AliGenEventHeader* /*header*/) {;}
     virtual void SetContainer(AliGenerator* container) {fContainer = container;}
 
