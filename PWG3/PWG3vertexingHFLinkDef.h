@@ -46,6 +46,7 @@
 #pragma link C++ class AliHFMassFitter+;
 #pragma link C++ class AliHFPtSpectrum+;
 #pragma link C++ class AliNormalizationCounter+;
+#pragma link C++ class AliAnalysisTaskSEMonitNorm+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignJPSI+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignD0+;
 #pragma link C++ class AliAnalysisTaskSEJPSItoEle+;
