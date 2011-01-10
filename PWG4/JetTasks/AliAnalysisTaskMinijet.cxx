@@ -48,14 +48,13 @@ ClassImp(AliAnalysisTaskMinijet)
       fVertexZCut(10.),
       fEtaCut(0.9),
       fEtaCutSeed(0.2),
-      fSelectParticles(1),
+      fSelectParticles(2),
       fESDEvent(0),
       fAODEvent(0),
       fHists(0),
       fHistPt(0),
       fHistPtMC(0),
       fChargedPi0(0)
-    
 {
   for(Int_t i = 0;i< 4;i++){
     fVertexZ[i]               =  0;
@@ -67,6 +66,11 @@ ClassImp(AliAnalysisTaskMinijet)
     fPtSeed[i]                =  0;
     fEtaSeed[i]               =  0;
     fPhiSeed[i]               =  0;
+
+    fPtOthers[i]                =  0;
+    fEtaOthers[i]               =  0;
+    fPhiOthers[i]               =  0;
+    fPtEtaOthers[i]               =  0;
 
     fPhiEta[i]                =  0;
 
@@ -122,7 +126,8 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
 
   TString labels[4]={"ESDrec", "ESDmc", "AODrec", "AODmc"};
 
-  for(Int_t i=2*fMode+fMcOnly;i<1+2*fMode+fUseMC;i++){
+  //  for(Int_t i=2*fMode+fMcOnly;i<1+2*fMode+fUseMC;i++){
+  for(Int_t i=0;i<4;i++){
   
     fVertexZ[i]                  = new TH1F(Form("fVertexZ%s",labels[i].Data()),
 					    Form("fVertexZ%s",labels[i].Data()) ,  
@@ -146,6 +151,19 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fPhiSeed[i]                      = new TH1F(Form("fPhiSeed%s",labels[i].Data()),
 					    Form("fPhiSeed%s",labels[i].Data()) ,  
 					    360, 0.,2*TMath::Pi());
+
+    fPtOthers[i]                       = new TH1F(Form("fPOtherst%s",labels[i].Data()),
+					    Form("fPtOthers%s",labels[i].Data()) ,  
+					    500, 0., 50);
+    fEtaOthers[i]                      = new TH1F (Form("fEtaOthers%s",labels[i].Data()),
+					     Form("fEtaOthers%s",labels[i].Data()) ,  
+					     100, -1., 1);
+    fPhiOthers[i]                      = new TH1F(Form("fPhiOthers%s",labels[i].Data()),
+					    Form("fPhiOthers%s",labels[i].Data()) ,  
+					    360, 0.,2*TMath::Pi());
+    fPtEtaOthers[i]                      = new TH2F(Form("fPtEtaOthers%s",labels[i].Data()),
+						    Form("fPtEtaOthers%s",labels[i].Data()) ,  
+						    500, 0., 50, 100, -1., 1);
 
     fPhiEta[i]                   = new TH2F(Form("fPhiEta%s",labels[i].Data()),
 					    Form("fPhiEta%s",labels[i].Data()) ,  
@@ -206,7 +224,8 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   if(fUseMC)fHists->Add(fHistPtMC); 
   fHists->Add(fChargedPi0);
 
-  for(Int_t i=2*fMode+fMcOnly;i<1+2*fMode+fUseMC;i++){
+  //for(Int_t i=2*fMode+fMcOnly;i<1+2*fMode+fUseMC;i++){
+  for(Int_t i=0;i<4;i++){
     fHists->Add(fVertexZ[i]);
     fHists->Add(fPt[i]);
     fHists->Add(fEta[i]);
@@ -214,6 +233,10 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fHists->Add(fPtSeed[i]);
     fHists->Add(fEtaSeed[i]);
     fHists->Add(fPhiSeed[i]);
+    fHists->Add(fPtOthers[i]);
+    fHists->Add(fEtaOthers[i]);
+    fHists->Add(fPhiOthers[i]);
+    fHists->Add(fPtEtaOthers[i]);
     fHists->Add(fPhiEta[i]);
     fHists->Add(fDPhiDEtaEventAxis[i]);
     fHists->Add(fTriggerNch[i]);
@@ -358,7 +381,7 @@ Int_t AliAnalysisTaskMinijet::LoopESD(Float_t **ptArray, Float_t ** etaArray,
   *ptArray = new Float_t[nAcceptedTracks]; 
   *etaArray = new Float_t[nAcceptedTracks]; 
   *phiArray = new Float_t[nAcceptedTracks]; 
-  *nTracksTracklets = new Int_t[2]; //ntracksAccepted, ntracklets
+  *nTracksTracklets = new Int_t[3]; //ntracksAccepted, ntracklets
 
   //check if event is pile up or no tracks are accepted, return to user exec
   // if(fESDEvent->IsPileupFromSPD(3,0,8)) return 0;  
@@ -656,15 +679,13 @@ Int_t AliAnalysisTaskMinijet::LoopAODMC(Float_t **ptArray, Float_t ** etaArray,
       continue;
     }
 
-    if(//count also charged particles in case of fSelectParticles==2 (only neutral)
-       !SelectParticlePlusCharged(
-				  track->Charge(),
-				  track->PdgCode(),
-				  track->IsPhysicalPrimary()
-				  )
+    if(!SelectParticlePlusCharged(
+				 track->Charge(),
+				 track->PdgCode(),
+				 track->IsPhysicalPrimary()
+				 )
        ) 
       continue;
-
  
     if(TMath::Abs(track->Eta())<=fEtaCut && track->Pt()>0.035)++nPseudoTracklets;
     if(TMath::Abs(track->Eta())>fEtaCut || track->Pt()<0.2 || track->Pt()>200) continue; 
@@ -675,8 +696,9 @@ Int_t AliAnalysisTaskMinijet::LoopAODMC(Float_t **ptArray, Float_t ** etaArray,
 
     nAllPrim++;
     if(track->Charge()!=0) nChargedPrim++;
-    Printf("eta=%f,phi=%f,pt=%f",track->Eta(),track->Phi(),track->Pt());
-    Printf("prim=%d,pdg=%d,charge=%d",track->IsPhysicalPrimary(),track->PdgCode(),track->Charge());
+    
+    // Printf("eta=%f,phi=%f,pt=%f",track->Eta(),track->Phi(),track->Pt());
+    // Printf("prim=%d,pdg=%d,charge=%d",track->IsPhysicalPrimary(),track->PdgCode(),track->Charge());
 
 
     if(nAllPrim==1) vzMC= track->Zv(); // check only one time. (only one vertex per event allowed)
@@ -699,8 +721,8 @@ Int_t AliAnalysisTaskMinijet::LoopAODMC(Float_t **ptArray, Float_t ** etaArray,
 
   *nTracksTracklets = new Int_t[3]; 
   
-  //  Printf("nAllPrim=%d", nAllPrim);
-  // Printf("nChargedPrim=%d", nChargedPrim);
+  Printf("nAllPrim=%d", nAllPrim);
+  Printf("nChargedPrim=%d", nChargedPrim);
 
   if(nAllPrim==0) return 0;
   if(nChargedPrim==0) return 0;
@@ -731,6 +753,9 @@ Int_t AliAnalysisTaskMinijet::LoopAODMC(Float_t **ptArray, Float_t ** etaArray,
     if(TMath::Abs(track->Eta())>fEtaCut || track->Pt()<0.2 || track->Pt()>200) continue;
     //if(TMath::Abs(track->Eta())<1e-8 && TMath::Abs(track->Phi())<1e-8)continue;
 
+    //Printf("eta=%f,phi=%f,pt=%f",track->Eta(),track->Phi(),track->Pt());
+    Printf("prim=%d,pdg=%d,charge=%d",track->IsPhysicalPrimary(),track->PdgCode(),track->Charge());
+
     //if(track->TestBit(16))continue;
     
     fHistPtMC->Fill(track->Pt());
@@ -742,7 +767,13 @@ Int_t AliAnalysisTaskMinijet::LoopAODMC(Float_t **ptArray, Float_t ** etaArray,
 
   (*nTracksTracklets)[0] = nChargedPrim;
   (*nTracksTracklets)[1] = nPseudoTracklets;
-  (*nTracksTracklets)[2] = nAllPrim;
+  if(fSelectParticles!=2){
+    (*nTracksTracklets)[2] = nAllPrim;
+  }
+  else{
+    (*nTracksTracklets)[2] = nAllPrim-nChargedPrim; // only neutral
+  }
+  
   
   return nChargedPrim;
   //  Printf("ntracks=%d", nChargedPrim);
@@ -759,7 +790,11 @@ void AliAnalysisTaskMinijet::Analyse(Float_t *pt, Float_t *eta, Float_t *phi, In
   
   // ntracks and ntracklets are already the number of accepted tracks and tracklets
 
-  if(fDebug) Printf("In Analysis\n");
+  if(fDebug){
+    Printf("In Analysis\n");
+    Printf("nAll=%d",nAll);
+    Printf("nCharged=%d",ntracksCharged);
+  }
   
   Float_t ptEventAxis=0;  // pt leading
   Float_t etaEventAxis=0; // eta leading
@@ -768,10 +803,10 @@ void AliAnalysisTaskMinijet::Analyse(Float_t *pt, Float_t *eta, Float_t *phi, In
   Float_t ptOthers  = 0; // pt others // for all other tracks around event axis -> see loop
   Float_t etaOthers = 0; // eta others
   Float_t phiOthers = 0; // phi others
-  
+
   Int_t *pindexInnerEta  = new Int_t[nAll];
   Float_t *ptInnerEta = new Float_t[nAll];
-
+  
   for (Int_t i = 0; i < nAll; i++) {
     //filling of simple check plots
     fPt[mode]    -> Fill( pt[i]);
@@ -784,9 +819,7 @@ void AliAnalysisTaskMinijet::Analyse(Float_t *pt, Float_t *eta, Float_t *phi, In
     ptInnerEta[i]= pt[i];
     
   }
-
-  
-  
+   
   // define event axis: leading or random track (with pt>fTriggerPtCut) 
   // ---------------------------------------
   Int_t highPtTracks=0;
@@ -870,9 +903,15 @@ void AliAnalysisTaskMinijet::Analyse(Float_t *pt, Float_t *eta, Float_t *phi, In
  	  etaOthers  = eta[iTrack];
  	  phiOthers  = phi[iTrack];
 
-	
+	  //if(ptOthers>fAssociatePtCut && ptOthers<fTriggerPtCut){ // only tracks which fullfill associate pt cut
 	  if(ptOthers>fAssociatePtCut){ // only tracks which fullfill associate pt cut
 
+	    //plot only properties of tracks with pt>ptassoc
+	    fPtOthers[mode]    -> Fill( ptOthers);
+	    fEtaOthers[mode]   -> Fill(etaOthers);
+	    fPhiOthers[mode]   -> Fill(phiOthers);
+	    fPtEtaOthers[mode]   -> Fill(ptOthers, etaOthers);
+	    
 	    Float_t dPhi=TMath::Abs(phiOthers-phiEventAxis);
 	    if(dPhi>TMath::Pi())      dPhi=2*TMath::Pi()-dPhi;
 	    Float_t dEta=etaOthers-etaEventAxis;
@@ -934,7 +973,7 @@ void AliAnalysisTaskMinijet::Terminate(Option_t*)
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Int_t charge, Int_t pdg, Bool_t prim)
+Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim)
 {
   //selection of mc particle
   //fSelectParticles=0: use charged primaries and pi0 and k0
@@ -968,7 +1007,7 @@ Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Int_t charge, Int_t pdg
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskMinijet::SelectParticle(Int_t charge, Int_t pdg, Bool_t prim)
+Bool_t AliAnalysisTaskMinijet::SelectParticle(Short_t charge, Int_t pdg, Bool_t prim)
 {
   //selection of mc particle
   //fSelectParticles=0: use charged primaries and pi0 and k0
