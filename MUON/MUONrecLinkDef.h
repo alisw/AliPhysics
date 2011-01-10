@@ -53,10 +53,6 @@
 
 #pragma link C++ class AliMUONESDInterface+;
 
-// calibration
-#pragma link C++ class AliMUONDigitCalibrator+;
-#pragma link C++ class AliMUONPadStatusMapMaker+;
-
 // QA
 #pragma link C++ class AliMUONQADataMakerRec+;
 #pragma link C++ class AliMUONTrackerQADataMakerRec+;

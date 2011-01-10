@@ -46,10 +46,9 @@ class AliMUONDigitMaker : public TObject
   // write raw data
   Int_t  Raw2Digits(AliRawReader* rawReader, 
                     AliMUONVDigitStore* digitContainer=0,
-                    AliMUONVTriggerStore* triggerStore=0,
-                    Bool_t sdigit=kFALSE);
+                    AliMUONVTriggerStore* triggerStore=0);
 
-  Int_t  ReadTrackerDDL(AliRawReader* rawReader, Bool_t sdigit);
+  Int_t  ReadTrackerDDL(AliRawReader* rawReader);
   Int_t  ReadTriggerDDL(AliRawReader* rawReader);
   
   Int_t TriggerDigits(Int_t nBoard, const TArrayS* xyPattern, 

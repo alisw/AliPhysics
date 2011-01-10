@@ -21,6 +21,7 @@
 #include "AliCDBManager.h"
 #include "AliLog.h"
 #include "AliMUONCalibrationData.h"
+#include "AliMUONConstants.h"
 #include "AliMUONLogger.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
@@ -363,11 +364,11 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
   
 	// Gain (mV/fC) = 1/(a0*capa) with a0~1.25 and capa~0.2 
   Float_t charge(0);
-  Float_t capa(0.2); // capa = 0.2 and a0 = 1.25
-	Float_t a0(1.25);  // is equivalent to gain = 4 mV/fC
-	Float_t a1(0);
-	Float_t adc2mv(0.61); // 1 ADC channel = 0.61 mV
-	Float_t injGain(4); // By default the gain is set to 4 mV/fC
+  Float_t capa(AliMUONConstants::DefaultCapa()); // capa = 0.2 and a0 = 1.25
+  Float_t a0(AliMUONConstants::DefaultA0());  // is equivalent to gain = 4 mV/fC
+  Float_t a1(0);
+  Float_t adc2mv(AliMUONConstants::DefaultADC2MV()); // 1 ADC channel = 0.61 mV
+  Float_t injGain(4); // By default the gain is set to 4 mV/fC
   //
   // Note that the ChargeMax (for one pad) is roughly 4096 * 0.61 mV/channel / 4 mV/fC = 625 fC
 

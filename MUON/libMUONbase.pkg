@@ -28,7 +28,9 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONTrackerQAChecker.cxx \
         AliMUONTriggerQAChecker.cxx \
         AliMUONRecoParam.cxx \
-        AliMUONPadStatusMaker.cxx
+        AliMUONPadStatusMaker.cxx \
+        AliMUONDigitCalibrator.cxx \
+        AliMUONPadStatusMapMaker.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

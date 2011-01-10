@@ -27,6 +27,7 @@
 #include "AliMUONSDigitizerV2.h"
 #include "AliMUONDigitizerV3.h"
 #include "AliMUONDigitMaker.h"
+#include "AliMUONDigit.h"
 #include "AliMUONCalibrationData.h"
 
 #include "AliMUONDigitStoreV1.h"
@@ -44,6 +45,10 @@
 #include "AliMUONSt2GeometryBuilderV2.h"
 #include "AliMUONSlatGeometryBuilder.h"
 #include "AliMUONTriggerGeometryBuilder.h"
+#include "AliMUONDigitCalibrator.h"
+#include "AliMUONRecoParam.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 #include "AliMUONRawWriter.h"
 
@@ -104,7 +109,8 @@ AliMUON::AliMUON()
     fDigitMaker(0x0),
     fHitStore(0x0),
     fDigitStoreConcreteClassName(),
-    fCalibrationData(0x0)
+    fCalibrationData(0x0),
+    fDigitCalibrator(0x0)
 {
 /// Default Constructor
     
@@ -141,7 +147,8 @@ AliMUON::AliMUON(const char *name, const char* title)
     fDigitMaker(new AliMUONDigitMaker),
     fHitStore(0x0),
     fDigitStoreConcreteClassName("AliMUONDigitStoreV2S"),
-    fCalibrationData()
+    fCalibrationData(),
+    fDigitCalibrator(0x0)
 {
   /// Standard constructor  
   
@@ -205,6 +212,7 @@ AliMUON::~AliMUON()
   delete fDigitMaker;
   delete fHitStore;
   delete fCalibrationData;
+  delete fDigitCalibrator;
 }
 
 //_____________________________________________________________________________
@@ -508,7 +516,7 @@ void AliMUON::Digits2Raw()
 //_____________________________________________________________________
 Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
 {
-  /// Convert  raw data to SDigit
+  /// Convert raw data to SDigit
   
   if (!fLoader->TreeS()) fLoader->MakeSDigitsContainer();
   
@@ -519,8 +527,52 @@ Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
   sDigitStore->Connect(*treeS);
   
   if (!fDigitMaker) fDigitMaker = new AliMUONDigitMaker;
-  fDigitMaker->Raw2Digits(rawReader,sDigitStore,0x0,kTRUE);
+  
+  if (!fDigitCalibrator)
+  {
+    AliMUONRecoParam* recoParam = 0x0;
+    
+    AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam");
+    
+    if (entry) 
+    {      
+      // load recoParam according OCDB content (single or array)
+      if (!(recoParam = dynamic_cast<AliMUONRecoParam*>(entry->GetObject()))) 
+      {        
+        TObjArray* recoParamArray = static_cast<TObjArray*>(entry->GetObject());
+        
+        for(Int_t i = 0; i < recoParamArray->GetEntriesFast(); ++i)
+        {
+          recoParam = static_cast<AliMUONRecoParam*>(recoParamArray->UncheckedAt(i));
+          if (recoParam->IsDefault()) break;
+          recoParam = 0x0;
+        }        
+      }      
+    }
+    
+    TString calibMode = recoParam->GetCalibrationMode();
+  
+    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,recoParam,calibMode.Data());
+  }
+  
+  fDigitMaker->Raw2Digits(rawReader,sDigitStore,0x0);
+  
+  fDigitCalibrator->Calibrate(*sDigitStore);
+
+  TIter next(sDigitStore->CreateIterator());
+  AliMUONDigit* sdigit;
+  
+  // now tweak the digits to make them "as fresh as possible", i.e.
+  // reset their calibrated status, as they'll be calibrated again
+  // once embedded.
+  while ( ( sdigit = static_cast<AliMUONDigit*>(next()) ) )
+  {
+    sdigit->Calibrated(kFALSE);
+    sdigit->ChargeInFC();
+  }
+  
   treeS->Fill();
+  
   fLoader->WriteSDigits("OVERWRITE");
   
   fLoader->UnloadSDigits();

@@ -102,7 +102,17 @@ class AliMUONConstants : public TObject {
     static Float_t  AverageChamberT(Int_t i) {return fgAverageChamberT[i];}
     /// Return a reduced total charge
     static Float_t  ReducedQTot(Float_t qtot, Float_t timeDif);
-  
+
+    // Return conversionfactor fc to adc
+    static Float_t FC2ADC();
+ 
+    // Return default a0
+    static Float_t DefaultA0() { return fgkDefaultA0; }
+    // Return default adc2mv
+    static Float_t DefaultADC2MV() { return fgkDefaultADC2MV; }
+    // Return default Capa
+    static Float_t DefaultCapa() { return fgkDefaultCapa; }
+
  protected:
     /// Default constructor
     AliMUONConstants() : TObject() {}
@@ -160,6 +170,10 @@ class AliMUONConstants : public TObject {
 
     static Float_t fgAverageChamberT[14]; ///<average arrival time to chamber
   
+    static const Float_t fgkDefaultA0;     ///< Default gain A0
+    static const Float_t fgkDefaultADC2MV; ///< Default ADC to mv conversion factor 
+    static const Float_t fgkDefaultCapa;   ///< Default Capa
+
     ClassDef(AliMUONConstants, 0) // MUON global constants 
 };
 	

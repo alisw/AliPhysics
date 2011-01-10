@@ -144,7 +144,7 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
   /// - add some electronics noise (thus leading to a realistic adc), if requested to do so
   /// - sets the signal to zero if below 3*sigma of the noise
 
-  Float_t charge = digit.Charge();
+  Float_t charge = digit.IsChargeInFC() ? digit.Charge()*AliMUONConstants::FC2ADC() : digit.Charge();
   
   // We set the charge to 0, as the only relevant piece of information
   // after Digitization is the ADC value.  
@@ -241,12 +241,13 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
   Float_t pedestalSigma = pedestals.ValueAsFloat(channel,1);
   
   AliDebugClass(1,Form("DE %04d MANU %04d CH %02d PEDMEAN %7.2f PEDSIGMA %7.2f",
-                       pedestals.ID0(),pedestals.ID1(),channel,pedestalMean,pedestalSigma));
+		       pedestals.ID0(),pedestals.ID1(),channel,pedestalMean,pedestalSigma));
   
   Float_t a0 = gains.ValueAsFloat(channel,0);
   Float_t a1 = gains.ValueAsFloat(channel,1);
   Int_t thres = gains.ValueAsInt(channel,2);
   Int_t qual = gains.ValueAsInt(channel,3);
+
   if ( qual <= 0 ) return 0;
   
   Float_t chargeThres = a0*thres;
@@ -324,6 +325,13 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
   
   if ( adc < TMath::Nint(pedestalMean + fgNSigmas*pedestalSigma + 0.5) ) 
   {
+    AliErrorClass(Form(" DE %04d Manu %04d Channel %02d "
+		       " a0 %7.2f a1 %7.2f thres %04d ped %7.2f pedsig %7.2f adcNoise %7.2f"
+		       " charge=%7.2f padc=%7.2f adc=%04d ZS=%04d",
+		       pedestals.ID0(),pedestals.ID1(),channel, 
+		       a0, a1, thres, pedestalMean, pedestalSigma, adcNoise,
+		       charge, padc, adc, TMath::Nint(pedestalMean + fgNSigmas*pedestalSigma + 0.5)));
+
     adc = 0;
   }
   
@@ -409,7 +417,7 @@ AliMUONDigitizerV3::Exec(Option_t*)
   // files.
   
   for ( Int_t iFile = 0; iFile < nInputFiles; ++iFile )
-  {    
+  {  
     AliLoader* inputLoader = GetLoader(fManager->GetInputFolderName(iFile));
 
     inputLoader->LoadSDigits("READ");
@@ -437,6 +445,7 @@ AliMUONDigitizerV3::Exec(Option_t*)
     
     dstore->Clear();
   }
+
   
   // At this point, we do have digit arrays (one per chamber) which contains 
   // the merging of all the sdigits of the input file(s).
@@ -453,9 +462,8 @@ AliMUONDigitizerV3::Exec(Option_t*)
     // Generate noise-only digits for trigger.
     GenerateNoisyDigitsForTrigger(*fDigitStore);
   }
-
   ApplyResponse(*fDigitStore,*fOutputDigitStore);
-  
+
   if ( fGenerateNoisyDigits )
   {
     // Generate noise-only digits for tracker.

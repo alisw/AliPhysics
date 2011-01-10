@@ -118,6 +118,12 @@ Float_t AliMUONConstants::fgAverageChamberT[14]=
   {17.64*1E-9, 18.28*1E-9, 22.68*1E-9, 23.33*1E-9, 32.42*1E-9, 33.48*1E-9, 42.76*1E-9,
    43.81*1E-9, 47.13*1E-9, 48.17*1E-9, 53.75*1E-9, 54.32*1E-9, 57.12*1E-9, 57.67*1E-9};
 
+// is equivalent to gain = 4 mV/fC
+const Float_t AliMUONConstants::fgkDefaultA0 = 1.25; 
+// 1 ADC channel = 0.61 mV
+const Float_t AliMUONConstants::fgkDefaultADC2MV = 0.61; 
+const Float_t AliMUONConstants::fgkDefaultCapa = 0.2; 
+
 //______________________________________________________________________________
 Int_t AliMUONConstants::NCh()
 {
@@ -183,4 +189,12 @@ Float_t AliMUONConstants::ReducedQTot(Float_t qtot, Float_t timeDif)
   // return a reduced charge if the hit belongs to a track from a pileup event
   Float_t q = qtot*1.19*(1.24-timeDif*1E6)*TMath::Exp(-(0.97-timeDif*1E6)*(0.97-timeDif*1E6)/2.42);
   return q;
+}
+
+//______________________________________________________________________________
+Float_t AliMUONConstants::FC2ADC() {
+  // Return conversionfactor fc to adc
+  Float_t fc2adc = 1./(DefaultA0()*DefaultCapa()*DefaultADC2MV());
+  
+  return fc2adc;
 }

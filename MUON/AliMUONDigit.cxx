@@ -248,6 +248,15 @@ AliMUONDigit::IsConverted() const
   return (fFlags & fgkConverted);
 }
 
+//_____________________________________________________________________________
+Bool_t
+AliMUONDigit::IsChargeInFC() const
+{
+  /// Whether this digit is converted or not
+  
+  return (fFlags & fgkChargeInFC);
+}
+
 
 //_____________________________________________________________________________
 Bool_t
@@ -408,6 +417,22 @@ AliMUONDigit::Converted(Bool_t value)
   else
   {
     fFlags &= ~fgkConverted;
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDigit::ChargeInFC(Bool_t value)
+{
+  /// Set the convertion status of this digit.
+  
+  if ( value )
+  {
+    fFlags |= fgkChargeInFC;
+  }
+  else
+  {
+    fFlags &= ~fgkChargeInFC;
   }
 }
 

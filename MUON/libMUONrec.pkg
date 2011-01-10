@@ -12,7 +12,6 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONTriggerTrack.cxx \
        AliMUONVTriggerTrackStore.cxx \
        AliMUONTriggerTrackStoreV1.cxx \
-       AliMUONDigitCalibrator.cxx \
        AliMUONVClusterFinder.cxx \
        AliMUONPreClusterFinder.cxx \
        AliMUONPreClusterFinderV2.cxx \
@@ -23,7 +22,6 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONClusterFinderCOG.cxx \
        AliMUONPad.cxx \
        AliMUONCluster.cxx \
-       AliMUONPadStatusMapMaker.cxx \
        AliMUONTrackHitPattern.cxx \
        AliMUONVClusterStore.cxx \
        AliMUONClusterStoreV1.cxx \

@@ -41,6 +41,10 @@
 #pragma link C++ class AliMUONDigitMaker+;
 #pragma link C++ class AliMUONRawWriter+;
 
+// calibration
+#pragma link C++ class AliMUONDigitCalibrator+;
+#pragma link C++ class AliMUONPadStatusMapMaker+;
+
 // needed by qa (sim and rec)
 #pragma link C++ class AliMUONRecoParam+;
 #pragma link C++ class AliMUONPadStatusMaker+;

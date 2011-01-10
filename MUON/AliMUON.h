@@ -27,6 +27,7 @@ class AliMUONVGeometryBuilder;
 class AliMUONDigitMaker;
 class AliMUONVHitStore;
 class AliMUONCalibrationData;
+class AliMUONDigitCalibrator;
 
 class AliLoader;
 
@@ -187,7 +188,9 @@ class AliMUON : public  AliDetector
     
     AliMUONCalibrationData* fCalibrationData; ///< pointer of calibration data
 
-    ClassDef(AliMUON,22)  // MUON Detector base class
+  AliMUONDigitCalibrator* fDigitCalibrator; ///< digit calibrator (for raw2sdigits)
+  
+    ClassDef(AliMUON,23)  // MUON Detector base class
 };
 #endif
 
