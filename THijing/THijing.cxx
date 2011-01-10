@@ -55,6 +55,7 @@
 # define profile profile_
 # define rluget_hijing rluget_hijing_
 # define rluset_hijing rluset_hijing_
+# define lulist_hijing lulist_hijing_
 # define type_of_call
 #else
 # define hijset HIJSET
@@ -62,6 +63,7 @@
 # define profile PROFILE
 # define rluget_hijing RLUGET_HIJING
 # define rluset_hijing RLUSET_HIJING
+# define lulist_hijing LULIST_HIJING
 # define type_of_call _stdcall
 #endif
 
@@ -77,6 +79,7 @@ extern "C" void type_of_call hijing(const char *, Float_t  &,
 extern "C" void type_of_call rluget_hijing(Int_t & lfn, Int_t & move);
 
 extern "C" void type_of_call rluset_hijing(Int_t & lfn, Int_t & move);
+extern "C" void type_of_call lulist_hijing(Int_t &);
 
 #else
 #endif
@@ -1146,7 +1149,37 @@ void THijing::SetMSTJ(Int_t key, Int_t parm)
     }
 }
 
+void  THijing::SetMDCY(Int_t key1, Int_t key2, Int_t   parm)
+{
+  // Set value of array MDCY
+  if ( key1 < 1 || key1 > 500) {
+    printf("ERROR in THijing::SetMDCY(key1, key2, parm):\n");
+    printf("      key1=%i is out of range [1..200]\n", key1);
+  } else if ( key2 < 1 || key2 > 3) {
+    printf("ERROR in THijing::SetMDCY(key1, key2, parm):\n");
+    printf("      key2=%i is out of range [1..200]\n", key2);
+  } else {
+    LUDAT3_HIJING.mdcy[key2-1][key1-1] = parm;
+  }
+  
+}
 
+Int_t THijing::GetMDCY(Int_t key1, Int_t key2) 
+{
+  // Get value of array MDCY
+  if ( key1 < 1 || key1 > 500) {
+    printf("ERROR in THijing::GetMDCY(key1, key2, parm):\n");
+    printf("      key1=%i is out of range [1..200]\n", key1);
+    return -1;
+  } else if ( key2 < 1 || key2 > 3) {
+    printf("ERROR in THijing::GetMDCY(key1, key2, parm):\n");
+    printf("      key2=%i is out of range [1..200]\n", key2);
+    return -1;
+  } else {
+    return (LUDAT3_HIJING.mdcy[key2-1][key1-1]);
+  }
+
+}
 //====================== access to Hijing subroutines =========================
 
 
@@ -1253,3 +1286,8 @@ void  THijing::Rluset(Int_t lfn, Int_t move)
   rluset_hijing(lfn, move);
 }
 
+void  THijing::Pylist(Int_t flag)
+{
+// call lulist
+  lulist_hijing(flag);
+}

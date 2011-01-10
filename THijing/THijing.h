@@ -176,6 +176,8 @@ public:
    // common LUDAT1_HIJING common:
    virtual void        SetPARJ(Int_t key, Float_t parm);
    virtual void        SetMSTJ(Int_t key, Int_t   parm);   
+   virtual void        SetMDCY(Int_t key1, Int_t key2, Int_t   parm);   
+   virtual Int_t       GetMDCY(Int_t key1, Int_t key2);   
    
    // access to HIJING routines:
 
@@ -191,7 +193,7 @@ public:
 
    virtual void         Rluget(Int_t lfn, Int_t move=0);
    virtual void         Rluset(Int_t lfn, Int_t move=0);   
-
+   virtual void         Pylist(Int_t flag);
    protected:
 
     Float_t      fEfrm;     // Energy in the centre of mass (CMS) or lab-frame (LAB)

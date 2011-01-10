@@ -608,5 +608,15 @@ COMMON_BLOCK_DEF(HijglbrCommon,HIJGLBR);
 COMMON_BLOCK_DEF(Ludat1_HijingCommon,LUDAT1_HIJING);
 }
 
+//COMMON/LUDAT3_HIJING/MDCY(500, 3),MDME(2000, 2),BRAT(2000),KFDP(2000, 5)
+    typedef struct {
+      Int_t    mdcy[3][500];
+      Int_t    mdme[2][2000];
+      Float_t  brat[2000];
+      Float_t  kfdp[5][2000];
+} Ludat3_HijingCommon;
+
+#define LUDAT3_HIJING COMMON_BLOCK(LUDAT3_HIJING,ludat3_hijing)
+COMMON_BLOCK_DEF(Ludat3_HijingCommon,LUDAT3_HIJING);
 
 #endif
