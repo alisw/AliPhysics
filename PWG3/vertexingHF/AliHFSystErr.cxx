@@ -212,24 +212,24 @@ void AliHFSystErr::InitDstartoD0pi() {
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.07); // 7% PDG2010
+  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.015); // 1.5% PDG2010
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
   fTrackingEff->SetBinContent(1,0.12);
   fTrackingEff->SetBinContent(2,0.08);
-  fTrackingEff->SetBinContent(3,0.032);
+  fTrackingEff->SetBinContent(3,0.05);
   for(Int_t i=4;i<=20;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
 
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
-  fRawYield->SetBinContent(1,0.19);
-  fRawYield->SetBinContent(2,0.10);
-  fRawYield->SetBinContent(3,0.10);
-  fRawYield->SetBinContent(4,0.13);
-  fRawYield->SetBinContent(5,0.09);
-  for(Int_t i=5;i<=20;i++) fRawYield->SetBinContent(i,0.08);  //8%
+  fRawYield->SetBinContent(1,1);
+  fRawYield->SetBinContent(2,0.12);
+  fRawYield->SetBinContent(3,0.09);
+  fRawYield->SetBinContent(4,0.08);
+  fRawYield->SetBinContent(5,0.06);
+  for(Int_t i=5;i<=20;i++) fRawYield->SetBinContent(i,0.04);  //4%
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
@@ -237,9 +237,12 @@ void AliHFSystErr::InitDstartoD0pi() {
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fPIDEff->SetBinContent(i,0.03); // 3%
-  fPIDEff->SetBinContent(4,0.10); // 10%
-  fPIDEff->SetBinContent(5,0.06); // 6%
+  for(Int_t i=1;i<=20;i++) fPIDEff->SetBinContent(i,0.04); // 3%
+  fPIDEff->SetBinContent(1,1); // 100%
+  fPIDEff->SetBinContent(2,1); // 100%
+  fPIDEff->SetBinContent(3,0.05); // 5%
+  fPIDEff->SetBinContent(4,0.05); // 5%
+  fPIDEff->SetBinContent(5,0.05); // 5%
  
 
   // MC dN/dpt  (copied from D0 : will update later)
