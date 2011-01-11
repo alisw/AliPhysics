@@ -68,7 +68,7 @@ while test $# -gt 0 ; do
 	-M|--mc)             mc=`toggle $mc`   ;; 
 	-g|--gdb)            gdb=`toggle $gdb`   ;; 
 	-H|--hhd)            hhd=`toggle $hhd`   ;; 
-	-O|--other)          other=`toggle $other`   ;; 
+	-O|--other)          comp=`toggle $comp`   ;; 
 	-r|--rebin)          rebin=$2         ; shift ;; 
 	-v|--vz-min)         vzmin=$2         ; shift ;; 
 	-V|--vz-max)         vzmax=$2         ; shift ;; 

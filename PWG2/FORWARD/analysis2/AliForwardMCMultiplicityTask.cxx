@@ -321,21 +321,29 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   UShort_t ivz      = 0;
   Double_t vz       = 0;
   UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, ivz, vz);
-  if (found & AliFMDEventInspector::kNoEvent)    return;
-  if (found & AliFMDEventInspector::kNoTriggers) return;
+  //Store all events
+  MarkEventForStore();
+  
+  Bool_t isAccepted = true;
+  if (found & AliFMDEventInspector::kNoEvent)    isAccepted = false; // return;
+  if (found & AliFMDEventInspector::kNoTriggers) isAccepted = false; // return;
  
   // Set trigger bits, and mark this event for storage 
   fAODFMD.SetTriggerBits(triggers);
   fMCAODFMD.SetTriggerBits(triggers);
-  MarkEventForStore();
 
-  if (found & AliFMDEventInspector::kNoSPD)     return;
-  if (found & AliFMDEventInspector::kNoFMD)     return;
-  if (found & AliFMDEventInspector::kNoVertex)  return;
-  fAODFMD.SetIpZ(vz);
-  fMCAODFMD.SetIpZ(vz);
+  //All events should be stored - HHD
+  //MarkEventForStore();
 
-  if (found & AliFMDEventInspector::kBadVertex) return;
+  if (found & AliFMDEventInspector::kNoSPD)     isAccepted = false; // return;
+  if (found & AliFMDEventInspector::kNoFMD)     isAccepted = false; // return;
+  if (found & AliFMDEventInspector::kNoVertex)  isAccepted = false; // return;
+
+  if (isAccepted) {
+    fAODFMD.SetIpZ(vz);
+    fMCAODFMD.SetIpZ(vz);
+  }
+  if (found & AliFMDEventInspector::kBadVertex) isAccepted = false; // return;
 
   // We we do not want to use low flux specific code, we disable it here. 
   if (!fEnableLowFlux) lowFlux = false;
@@ -344,7 +352,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   AliESDFMD*  esdFMD  = esd->GetFMDData();
   AliMCEvent* mcEvent = MCEvent();
   // Apply the sharing filter (or hit merging or clustering if you like)
-  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
+  if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
     AliWarning("Sharing filter failed!");
     return;
   }
@@ -352,6 +360,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
     AliWarning("MC Sharing filter failed!");
     return;
   }
+  if (!isAccepted) return; // Exit on MC event w/o trigger, vertex, data
   fSharingFilter.CompareResults(fESDFMD, fMCESDFMD);
 
   // Do the energy stuff 

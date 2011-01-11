@@ -70,10 +70,10 @@ AddTaskFMD(Bool_t mc)
   // Whether to use the merging efficiency correction 
   task->GetCorrections().UseMergingEfficiency(false);
   // Set the number of extra bins (beyond the secondary map border) 
-  task->GetHistCollector().SetNCutBins(1);
+  task->GetHistCollector().SetNCutBins(2);
   // Set the correction cut, that is, when bins in the secondary map 
   // is smaller than this, they are considered empty 
-  task->GetHistCollector().SetCorrectionCut(0.1);
+  task->GetHistCollector().SetCorrectionCut(0.5);
   // Set the overall debug level (1: some output, 3: a lot of output)
   task->SetDebug(0);
   // Set the debug level of a single algorithm 
