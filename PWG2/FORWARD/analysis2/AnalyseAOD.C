@@ -71,7 +71,9 @@ public:
   Int_t              fNWithVertex;
   /** Number of events accepted */
   Int_t              fNAccepted;
-
+  /** Number of events accepted */
+  Int_t              fNAll;
+    
   //__________________________________________________________________
   /** 
    * Constructor 
@@ -257,7 +259,12 @@ public:
 	     fMCSum->GetYaxis()->GetXmin(),
 	     fMCSum->GetYaxis()->GetXmax());
       }
- 
+      
+      // Add contribution from this event 
+      if (fSumPrimary) fSumPrimary->Add(fPrimary);
+     
+      fNAll++;
+      
       // fAOD->Print();
       // Other trigger/event requirements could be defined 
       if (!fAOD->IsTriggerBits(mask)) continue; 
@@ -277,8 +284,7 @@ public:
       // Add contribution from this event
       if (fMCSum) fMCSum->Add(&(fMCAOD->GetHistogram()));
 
-      // Add contribution from this event 
-      if (fSumPrimary) fSumPrimary->Add(fPrimary);
+      
     }
     printf("\n");
     fVtxEff = Double_t(fNWithVertex)/fNTriggered;
@@ -345,8 +351,9 @@ public:
     if (fSumPrimary) { 
       dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth", -1, -1, "e");
       Info("Finish", "Got dn/deta truth with max: %f, scalling to %d", 
-	   dndetaTruth->GetMaximum(), fNTriggered);
-      dndetaTruth->Scale(1./fNTriggered, "width");
+	   dndetaTruth->GetMaximum(), fNAll);
+      //dndetaTruth->Scale(1./fNTriggered, "width");
+      dndetaTruth->Scale(1./fNAll, "width");
       dndetaTruth->SetMarkerColor(kGray+3);
       dndetaTruth->SetMarkerStyle(22);
       dndetaTruth->SetMarkerSize(1);
@@ -354,7 +361,7 @@ public:
       Rebin(dndetaTruth, rebin);
     }
 
-    DrawIt(dndeta, dndetaMC, dndetaTruth, mask, energy, doHHD, doComp, rebin);
+    DrawIt(dndeta, dndetaMC, dndetaTruth, mask, energy, doHHD, doComp);
 
     return kTRUE;
   }
@@ -363,60 +370,44 @@ public:
    */
   void DrawIt(TH1* dndeta, TH1* dndetaMC, TH1* dndetaTruth, 
 	      Int_t mask, Int_t energy, Bool_t doHHD, 
-	      Bool_t doComp, Int_t rebin)
+	      Bool_t doComp)
   {
     // --- 1st part - prepare data -----------------------------------
-    TH1* sym = Symmetrice(dndeta);
-    // Rebin(sym, rebin);
+    TH1* dndetaSym = Symmetrice(dndeta);
 
     Double_t max = dndeta->GetMaximum();
 
     // Make our histogram stack 
     THStack* stack = new THStack("results", "Results");
 
-    TH1* mc = 0;
-    TH1* mcsym = 0;
-#if 1
-    mc = dndetaTruth;
-#else 
-    // If available, plot the MC truth 
-    if (!gSystem->AccessPathName("AnalysisResults.root")) { 
-      TFile* anares = TFile::Open("AnalysisResults.root", "READ");
-      if (anares) { 
-	TList* list = static_cast<TList*>(anares->Get("Forward"));
-	if (list) { 
-	  mc = static_cast<TH1*>(list->FindObject("mcSumEta"));
-	  Rebin(mc, rebin);
-	}
-	anares->Close();
-	fOut->cd();
-      }
-    }
-#endif
-    if (mc) {
-      mcsym = Symmetrice(mc);
-      stack->Add(mc);
-      stack->Add(mcsym);
+    TH1* dndetaTruthSym = 0;
+    if (dndetaTruth) {
+      dndetaTruth->SetFillColor(kGray);
+      dndetaTruth->SetFillStyle(3001);
+      dndetaTruthSym = Symmetrice(dndetaTruth);
+      stack->Add(dndetaTruthSym, "e5");
+      stack->Add(dndetaTruth, "e5");
       Info("DrawIt", "Maximum of MC dndeta (truth): %f, was %f", 
-	   mc->GetMaximum(),dndeta->GetMaximum());
-      max = TMath::Max(mc->GetMaximum(),max);
+	   dndetaTruth->GetMaximum(),dndeta->GetMaximum());
+      max = TMath::Max(dndetaTruth->GetMaximum(),max);
     }
 
     // Get the data from HHD's analysis - if available 
-    TH1* hhd    = 0;
-    TH1* hhdsym = 0;
+    TH1* dndetaHHD    = 0;
+    TH1* dndetaHHDSym = 0;
     Info("DrawIt", "Will %sdraw HHD results", (doHHD ? "" : "not "));
     if (doHHD) {
       TString hhdName(fOut->GetName());
       hhdName.ReplaceAll("dndeta", "hhd");    
-      hhd    = GetHHD(hhdName.Data(), mask & AliAODForwardMult::kNSD);
-      hhdsym = 0;
-      if (hhd) { 
+      dndetaHHD    = GetHHD(hhdName.Data(), mask & AliAODForwardMult::kNSD);
+      dndetaHHDSym = 0;
+      if (dndetaHHD) { 
 	// Symmetrice and add to stack 
-	hhdsym = Symmetrice(hhd);
-	stack->Add(hhd);
-	stack->Add(hhdsym);
-	max = TMath::Max(hhd->GetMaximum(),max);
+	dndetaHHD->SetTitle("ALICE Forward (HHD)");
+	dndetaHHDSym = Symmetrice(dndetaHHD);
+	stack->Add(dndetaHHDSym);
+	stack->Add(dndetaHHD);
+	max = TMath::Max(dndetaHHD->GetMaximum(),max);
       }
       else 
 	Warning("DrawIt", "No HHD data found");
@@ -427,22 +418,24 @@ public:
     if (dndetaMC) { 
       Info("DrawIt", "Maximum of MC dndeta: %f, was %f", 
 	   dndetaMC->GetMaximum(),dndeta->GetMaximum());
-      TH1* mcSym = Symmetrice(dndetaMC);
+      TH1* dndetaMCSym = Symmetrice(dndetaMC);
+      stack->Add(dndetaMCSym);
       stack->Add(dndetaMC);
-      stack->Add(mcSym);
       max = TMath::Max(dndetaMC->GetMaximum(),max);
     }
 
     // Add the analysis results to the list 
+    stack->Add(dndetaSym);
     stack->Add(dndeta);
-    stack->Add(sym);
 
     // Get graph of 'other' data - e.g., UA5, CMS, ... - and check if
     // there's any graphs.  Set the pad division based on that.
     Info("DrawIt", "Will %sdraw other results", (doComp ? "" : "not "));
     TMultiGraph* other    = (doComp ? GetData(energy, mask) : 0);
-    THStack*     ratios   = MakeRatios(dndeta, sym, hhd, hhdsym, 
-				       mc, mcsym, other);
+    THStack*     ratios   = MakeRatios(dndeta,      dndetaSym, 
+				       dndetaHHD,   dndetaHHDSym, 
+				       dndetaTruth, dndetaTruthSym, 
+				       other);
 
     // Check if we have ratios 
 
@@ -569,7 +562,7 @@ public:
 
       // Make a nice band from 0.9 to 1.1 
       TGraphErrors* band = new TGraphErrors(2);
-      band->SetPoint(0, sym->GetXaxis()->GetXmin(), 1);
+      band->SetPoint(0, dndetaSym->GetXaxis()->GetXmin(), 1);
       band->SetPoint(1, dndeta->GetXaxis()->GetXmax(), 1);
       band->SetPointError(0, 0, .1);
       band->SetPointError(1, 0, .1);
@@ -835,6 +828,9 @@ public:
       s->SetBinContent(j, h->GetBinContent(i));
       s->SetBinError(j, h->GetBinError(i));
     }
+    // Fill in overlap bin 
+    s->SetBinContent(l2+1, h->GetBinContent(first));
+    s->SetBinError(l2+1, h->GetBinError(first));
     return s;
   }
   //__________________________________________________________________

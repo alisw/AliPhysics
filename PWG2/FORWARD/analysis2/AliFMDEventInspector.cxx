@@ -367,7 +367,16 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
     AliWarning("No input handler");
     return kFALSE;
   }
-  
+
+#if 1
+  // Check if this is a collision candidate (INEL)
+  // Note, that we should use the value cached in the input 
+  // handler rather than calling IsCollisionCandiate directly 
+  // on the AliPhysicsSelection obejct.  If we called the latter
+  // then the AliPhysicsSelection object would overcount by a 
+  // factor of 2! :-(
+  Bool_t inel = ih->IsEventSelected();
+#else 
   // Get the physics selection - add that by using the macro 
   // AddTaskPhysicsSelection.C 
   AliPhysicsSelection* ps = 
@@ -379,18 +388,22 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
   
   // Check if this is a collision candidate (INEL)
   Bool_t inel = ps->IsCollisionCandidate(esd);
+#endif
   if (inel) { 
     triggers |= AliAODForwardMult::kInel;
     fHTriggers->Fill(kInel+0.5);
   }
 
-  // IF this is inel, see if we have a tracklet 
+  // If this is inel, see if we have a tracklet 
   if (inel) { 
     const AliMultiplicity* spdmult = esd->GetMultiplicity();
     if (!spdmult) {
       AliWarning("No SPD multiplicity");
     }
     else { 
+      // Check if we have one or more tracklets 
+      // in the range -1 < eta < 1 to set the INEL>0 
+      // trigger flag. 
       Int_t n = spdmult->GetNumberOfTracklets();
       for (Int_t j = 0; j < n; j++) { 
 	if(TMath::Abs(spdmult->GetEta(j)) < 1) { 
