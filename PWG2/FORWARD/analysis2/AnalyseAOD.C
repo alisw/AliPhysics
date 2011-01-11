@@ -350,8 +350,6 @@ public:
     TH1D* dndetaTruth = 0;
     if (fSumPrimary) { 
       dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth", -1, -1, "e");
-      Info("Finish", "Got dn/deta truth with max: %f, scalling to %d", 
-	   dndetaTruth->GetMaximum(), fNAll);
       //dndetaTruth->Scale(1./fNTriggered, "width");
       dndetaTruth->Scale(1./fNAll, "width");
       dndetaTruth->SetMarkerColor(kGray+3);
@@ -385,8 +383,8 @@ public:
       dndetaTruth->SetFillColor(kGray);
       dndetaTruth->SetFillStyle(3001);
       dndetaTruthSym = Symmetrice(dndetaTruth);
-      stack->Add(dndetaTruthSym, "e5");
-      stack->Add(dndetaTruth, "e5");
+      stack->Add(dndetaTruthSym, "e5 p");
+      stack->Add(dndetaTruth, "e5 p");
       Info("DrawIt", "Maximum of MC dndeta (truth): %f, was %f", 
 	   dndetaTruth->GetMaximum(),dndeta->GetMaximum());
       max = TMath::Max(dndetaTruth->GetMaximum(),max);
@@ -395,7 +393,7 @@ public:
     // Get the data from HHD's analysis - if available 
     TH1* dndetaHHD    = 0;
     TH1* dndetaHHDSym = 0;
-    Info("DrawIt", "Will %sdraw HHD results", (doHHD ? "" : "not "));
+    // Info("DrawIt", "Will %sdraw HHD results", (doHHD ? "" : "not "));
     if (doHHD) {
       TString hhdName(fOut->GetName());
       hhdName.ReplaceAll("dndeta", "hhd");    
@@ -416,8 +414,6 @@ public:
 
     // If we have MC analysed data, plot it 
     if (dndetaMC) { 
-      Info("DrawIt", "Maximum of MC dndeta: %f, was %f", 
-	   dndetaMC->GetMaximum(),dndeta->GetMaximum());
       TH1* dndetaMCSym = Symmetrice(dndetaMC);
       stack->Add(dndetaMCSym);
       stack->Add(dndetaMC);
@@ -430,7 +426,7 @@ public:
 
     // Get graph of 'other' data - e.g., UA5, CMS, ... - and check if
     // there's any graphs.  Set the pad division based on that.
-    Info("DrawIt", "Will %sdraw other results", (doComp ? "" : "not "));
+    // Info("DrawIt", "Will %sdraw other results", (doComp ? "" : "not "));
     TMultiGraph* other    = (doComp ? GetData(energy, mask) : 0);
     THStack*     ratios   = MakeRatios(dndeta,      dndetaSym, 
 				       dndetaHHD,   dndetaHHDSym, 
@@ -468,12 +464,12 @@ public:
       TIter              nextG(other->GetListOfGraphs());
       while ((o = static_cast<TGraphAsymmErrors*>(nextG()))) {
 	Double_t gmax = TMath::MaxElement(o->GetN(), o->GetY());
-	Info("DrawIt", "Maximum of %s is %f, was %f", o->GetName(), gmax, max);
+	//Info("DrawIt", "Maximum of %s is %f, was %f", o->GetName(),gmax,max);
 	max = TMath::Max(max, gmax);
       }
     }
     max *= 1.1;
-    Info("DrawIt", "Setting maximum to %f", max);
+    // Info("DrawIt", "Setting maximum to %f", max);
     stack->SetMinimum(ratios ? -0.1 : 0);
     stack->SetMaximum(max);
     FixAxis(stack, 1/(1-yd)/1.5, "#frac{1}{N} #frac{dN_{ch}}{#eta}");
@@ -700,8 +696,10 @@ public:
     // Check if we have ratios 
     Bool_t   hasRatios = (ratios->GetHists() && 
 			  (ratios->GetHists()->GetEntries() > 0));
+#if 0
     Info("MakeRatios", "Got a total of %d ratios", !hasRatios ? 0 :
 	 ratios->GetHists()->GetEntries());
+#endif
 
     if (!hasRatios) { delete ratios; ratios = 0; }
     return ratios;
