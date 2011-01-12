@@ -351,6 +351,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   for(Int_t jj=0; jj<2*kNch; jj++){
      corrCoeff0[jj] =  fPedData->GetPedCorrCoeff0(jj);
      corrCoeff1[jj] =  fPedData->GetPedCorrCoeff1(jj);
+     //printf("  %d   %1.4f  %1.4f\n", jj,corrCoeff0[jj],corrCoeff1[jj]);
   }
 
   Int_t adcZN1[5], adcZN1oot[5], adcZN1lg[5], adcZN1ootlg[5];
@@ -392,7 +393,6 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   Int_t  chBlock[3] = {0,0,0};
   UInt_t puBits=0;
 
-  //fNRun = (Int_t) rawReader->GetRunNumber();
   Int_t kFirstADCGeo=0, kLastADCGeo=3, kScalerGeo=8, kZDCTDCGeo=4, kPUGeo=29;
   //Int_t kTrigScales=30, kTrigHistory=31;
 
@@ -421,21 +421,57 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
       //
       // Mean pedestal value subtraction -------------------------------------------------------
       if(fPedSubMode == 0){
+       //  **** Pb-Pb data taking 2010 -> subtracting some ch. from correlation ****
        // Not interested in o.o.t. signals (ADC modules 2, 3)
+       //if(adcMod == 2 || adcMod == 3) continue;
+       if(((det==1 && quad==0) || (det==2 && quad==2) || (det==3)) && (quad != 5)){
+         if(det == 1){
+	    if(adcMod==0 || adcMod==1){
+	     if(gain==0) adcZN1[quad] = rawData.GetADCValue();
+             else adcZN1lg[quad] = rawData.GetADCValue();
+	   }
+	   else if(adcMod==2 || adcMod==3){
+	     if(gain==0) adcZN1oot[quad] = rawData.GetADCValue();
+             else adcZN1ootlg[quad] = rawData.GetADCValue();
+	   }
+	 }
+	 else if(det == 2){
+	   if(adcMod==0 || adcMod==1){
+	     if(gain==0) adcZP2[quad] = rawData.GetADCValue();
+             else adcZP2lg[quad] = rawData.GetADCValue();
+	   }
+	   else if(adcMod==2 || adcMod==3){
+	     if(gain==0) adcZP2oot[quad] = rawData.GetADCValue();
+             else adcZP2ootlg[quad] = rawData.GetADCValue();
+	   }
+	 }
+	 else if(det == 3){
+	   if(adcMod==0 || adcMod==1){
+	     if(gain==0) adcZEM[quad-1] = rawData.GetADCValue();
+             else adcZEMlg[quad-1] = rawData.GetADCValue();
+	   }
+	   else if(adcMod==2 || adcMod==3){ 
+	     if(gain==0) adcZEMoot[quad-1] = rawData.GetADCValue();
+             else adcZEMootlg[quad-1] = rawData.GetADCValue();
+	   }
+	 }
+       }
+       // When oot values are read the ADC modules 2, 3 can be skipped!!!
        if(adcMod == 2 || adcMod == 3) continue;
-       //
+       
+       // *************************************************************************
        if(quad != 5){ // ZDCs (not reference PTMs)
-        if(det == 1){    
+        if(det==1 && quad!=0){    
           pedindex = quad;
           if(gain == 0) tZN1Corr[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
           else tZN1Corr[quad+5]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+kNch]); 
         }
-        else if(det == 2){ 
+        else if(det==2 && quad!=2){ 
           pedindex = quad+5;
           if(gain == 0) tZP1Corr[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
           else tZP1Corr[quad+5]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+kNch]); 
         }
-        else if(det == 3){ 
+        /*else if(det == 3){ 
           pedindex = quad+9;
           if(quad==1){     
             if(gain == 0) dZEM1Corr[0] += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
@@ -445,7 +481,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
             if(gain == 0) dZEM2Corr[0] += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
             else dZEM2Corr[1] += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+kNch]); 
           }
-        }
+        }*/
         else if(det == 4){	 
           pedindex = quad+12;
           if(gain == 0) tZN2Corr[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
@@ -590,48 +626,33 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        //
        tZP2Corr[t] = adcZP2[t] - (corrCoeff1[t+17]*adcZP2oot[t]+corrCoeff0[t+17]);
        tZP2Corr[t+5] = adcZP2lg[t] - (corrCoeff1[t+17+kNch]*adcZP2ootlg[t]+corrCoeff0[t+17+kNch]);
-       // 0---------0 Ch. debug 0---------0
-/*       printf("\n\n ---------- Debug of pedestal subtraction from correlation ----------\n");
-       printf("\tCorrCoeff0\tCorrCoeff1\n");
-       printf(" ZN1 %d\t%1.0f\t%1.0f\n",t,corrCoeff0[t],corrCoeff1[t]);
-       printf(" ZN1lg %d\t%1.0f\t%1.0f\n",t+kNch,corrCoeff0[t+kNch],corrCoeff1[t+kNch]);
-       printf(" ZP1 %d\t%1.0f\t%1.0f\n",t+5,corrCoeff0[t+5],corrCoeff1[t+5]);
-       printf(" ZP1lg %d\t%1.0f\t%1.0f\n",t+5+kNch,corrCoeff0[t+5+kNch],corrCoeff1[t+5+kNch]);
-       printf(" ZN2 %d\t%1.0f\t%1.0f\n",t+12,corrCoeff0[t+12],corrCoeff1[t+12]);
-       printf(" ZN2lg %d\t%1.0f\t%1.0f\n",t+12+kNch,corrCoeff0[t+12+kNch],corrCoeff1[t+12+kNch]);
-       printf(" ZP2 %d\t%1.0f\t%1.0f\n",t+17,corrCoeff0[t+17],corrCoeff1[t+17]);
-       printf(" ZP2lg %d\t%1.0f\t%1.0f\n",t+17+kNch,corrCoeff0[t+17+kNch],corrCoeff1[t+17+kNch]);
-       
-       printf("ZN1 ->  rawADC %d\tpedestal%1.2f\tcorrADC%1.2f\n",
-       		adcZN1[t],(corrCoeff1[t]*adcZN1oot[t]+corrCoeff0[t]),tZN1Corr[t]);
-       printf(" lg ->  rawADC %d\tpedestal%1.2f\tcorrADC%1.2f\n",
-       		adcZN1lg[t],(corrCoeff1[t+kNch]*adcZN1ootlg[t]+corrCoeff0[t+kNch]),tZN1Corr[t+5]);
-       //
-       printf("ZP1 ->  rawADC %d\tpedestal%1.2f\tcorrADC%1.2f\n",
-       		adcZP1[t],(corrCoeff1[t+5]*adcZP1oot[t]+corrCoeff0[t+5]),tZP1Corr[t]);
-       printf(" lg ->  rawADC %d\tpedestal%1.2f\tcorrADC%1.2f\n",
-       		adcZP1lg[t],(corrCoeff1[t+5+kNch]*adcZP1ootlg[t]+corrCoeff0[t+5+kNch]),tZP1Corr[t+5]);
-       //
-       printf("ZN2 ->  rawADC %d\tpedestal%1.2f\tcorrADC%1.2f\n",
-       		adcZN2[t],(corrCoeff1[t+12]*adcZN2oot[t]+corrCoeff0[t+12]),tZN2Corr[t]);
-       printf(" lg ->  rawADC %d\tpedestal%1.2f\tcorrADC%1.2f\n",
-       		adcZN2lg[t],(corrCoeff1[t+12+kNch]*adcZN2ootlg[t]+corrCoeff0[t+12+kNch]),tZN2Corr[t+5]);
-       //
-       printf("ZP2 ->  rawADC %d\tpedestal%1.2f\tcorrADC%1.2f\n",
-       		adcZP2[t],(corrCoeff1[t+17]*adcZP2oot[t]+corrCoeff0[t+17]),tZP2Corr[t]);
-       printf(" lg ->  rawADC %d\tpedestal%1.2f\tcorrADC%1.2f\n",
-       		adcZP2lg[t],(corrCoeff1[t+17+kNch]*adcZP2ootlg[t]+corrCoeff0[t+17+kNch]),tZP2Corr[t+5]);
-*/
     }
-    dZEM1Corr[0] = adcZEM[0]   - (corrCoeff1[9]*adcZEMoot[0]+corrCoeff0[9]);
-    dZEM1Corr[1] = adcZEMlg[0] - (corrCoeff1[9+kNch]*adcZEMootlg[0]+corrCoeff0[9+kNch]);
-    dZEM2Corr[0] = adcZEM[1]   - (corrCoeff1[10]*adcZEMoot[1]+corrCoeff0[10]);
-    dZEM2Corr[1] = adcZEMlg[1] - (corrCoeff1[10+kNch]*adcZEMootlg[1]+corrCoeff0[10+kNch]);
+    dZEM1Corr[0] = adcZEM[0]   - (corrCoeff1[10]*adcZEMoot[0]+corrCoeff0[10]);
+    dZEM1Corr[1] = adcZEMlg[0] - (corrCoeff1[10+kNch]*adcZEMootlg[0]+corrCoeff0[10+kNch]);
+    dZEM2Corr[0] = adcZEM[1]   - (corrCoeff1[11]*adcZEMoot[1]+corrCoeff0[11]);
+    dZEM2Corr[1] = adcZEMlg[1] - (corrCoeff1[11+kNch]*adcZEMootlg[1]+corrCoeff0[11+kNch]);
     //
     sPMRef1[0] = pmRef[0]   - (corrCoeff1[22]*pmRefoot[0]+corrCoeff0[22]);
     sPMRef1[1] = pmReflg[0] - (corrCoeff1[22+kNch]*pmRefootlg[0]+corrCoeff0[22+kNch]);
     sPMRef2[0] = pmRef[0]   - (corrCoeff1[23]*pmRefoot[1]+corrCoeff0[23]);
     sPMRef2[1] = pmReflg[0] - (corrCoeff1[23+kNch]*pmRefootlg[1]+corrCoeff0[23+kNch]);
+  }
+  else{
+    //  **** Pb-Pb data taking 2010 -> subtracting some ch. from correlation ****
+    tZN1Corr[0] = adcZN1[0] - (corrCoeff1[0]*adcZN1oot[0]+corrCoeff0[0]);
+    tZN1Corr[5] = adcZN1lg[0] - (corrCoeff1[kNch]*adcZN1ootlg[0]+corrCoeff0[kNch]);
+    // Ch. debug
+    //printf(" adcZN1 %d  adcZN1oot %d tZN1Corr %1.2f \n", adcZN1[0],adcZN1oot[0],tZN1Corr[0]);
+    //printf(" adcZN1lg %d  adcZN1ootlg %d tZN1Corrlg %1.2f \n", adcZN1lg[0],adcZN1ootlg[0],tZN1Corr[5]);
+    //
+    tZP1Corr[2] = adcZP1[2] - (corrCoeff1[2+5]*adcZP1oot[2]+corrCoeff0[2+5]);
+    tZP1Corr[2+5] = adcZP1lg[2] - (corrCoeff1[2+5+kNch]*adcZP1ootlg[2]+corrCoeff0[2+5+kNch]);
+    //
+    dZEM1Corr[0] = adcZEM[0]   - (corrCoeff1[10]*adcZEMoot[0]+corrCoeff0[10]);
+    dZEM1Corr[1] = adcZEMlg[0] - (corrCoeff1[10+kNch]*adcZEMootlg[0]+corrCoeff0[10+kNch]);
+    dZEM2Corr[0] = adcZEM[1]   - (corrCoeff1[11]*adcZEMoot[1]+corrCoeff0[11]);
+    dZEM2Corr[1] = adcZEMlg[1] - (corrCoeff1[11+kNch]*adcZEMootlg[1]+corrCoeff0[11+kNch]);
+    // *************************************************************************
   }
     
   if(fRecoMode==1) // p-p data
