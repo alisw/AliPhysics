@@ -124,7 +124,7 @@ enum EAliAnalysisFlags {
    void                SetCurrentEntry(Long64_t entry)            {fCurrentEntry = entry;}
    void                SetCollectSysInfoEach(Int_t nevents=0)     {fNSysInfo = nevents;}
    static void         SetCommonFileName(const char *name)        {fgCommonFileName = name;}
-   void                SetDebugLevel(UInt_t level)                {fDebug = level;}
+   void                SetDebugLevel(UInt_t level);
    void                SetDisableBranches(Bool_t disable=kTRUE)   {TObject::SetBit(kDisableBranches,disable);}
    void                SetExternalLoop(Bool_t flag)               {TObject::SetBit(kExternalLoop,flag);}
    void                SetEventPool(AliVEventPool* const epool)   {fEventPool = epool;}
@@ -137,7 +137,7 @@ enum EAliAnalysisFlags {
    void                SetSelector(AliAnalysisSelector * const sel)      {fSelector = sel;}
    void                SetSaveCanvases(Bool_t flag=kTRUE)         {TObject::SetBit(kSaveCanvases,flag);}
    void                SetSkipTerminate(Bool_t flag)              {TObject::SetBit(kSkipTerminate,flag);}
-   void                SetUseProgressBar(Bool_t flag)             {TObject::SetBit(kUseProgressBar,flag);}
+   void                SetUseProgressBar(Bool_t flag, Int_t freq=1);
    void                SetSpecialOutputLocation(const char *loc)  {fSpecialOutputLocation = loc;}
 
    // Container handling
@@ -215,11 +215,13 @@ private:
    THashTable              fTable;               // keep branch ptrs in case of manual branch loading
    Int_t                   fRunFromPath;         // Run number retrieved from path to input data
    Int_t                   fNcalls;              // Total number of calls (events) of ExecAnalysis
+   Long64_t                fMaxEntries;          // Maximum number of entries
+   static Int_t            fPBUpdateFreq;        // Progress bar update freq.
    TString                 fStatisticsMsg;       // Statistics user message
    TString                 fRequestedBranches;   // Requested branch names
    AliAnalysisStatistics  *fStatistics;          // Statistics info about input events
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,12)  // Analysis manager class
+   ClassDef(AliAnalysisManager,13)  // Analysis manager class
 };   
 #endif

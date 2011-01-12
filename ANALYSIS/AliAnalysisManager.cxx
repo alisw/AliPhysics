@@ -54,6 +54,7 @@ ClassImp(AliAnalysisManager)
 
 AliAnalysisManager *AliAnalysisManager::fgAnalysisManager = NULL;
 TString AliAnalysisManager::fgCommonFileName = "";
+Int_t AliAnalysisManager::fPBUpdateFreq = 1;
 
 //______________________________________________________________________________
 AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
@@ -86,6 +87,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fTable(),
                     fRunFromPath(0),
                     fNcalls(0),
+                    fMaxEntries(0),
                     fStatisticsMsg(),
                     fRequestedBranches(),
                     fStatistics(0)
@@ -135,6 +137,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fTable(),
                     fRunFromPath(0),
                     fNcalls(other.fNcalls),
+                    fMaxEntries(other.fMaxEntries),
                     fStatisticsMsg(other.fStatisticsMsg),
                     fRequestedBranches(other.fRequestedBranches),
                     fStatistics(other.fStatistics)
@@ -187,6 +190,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fTable.Clear("nodelete");
       fRunFromPath = other.fRunFromPath;
       fNcalls     = other. fNcalls;
+      fMaxEntries = other.fMaxEntries;
       fStatisticsMsg = other.fStatisticsMsg;
       fRequestedBranches = other.fRequestedBranches;
       fStatistics = other.fStatistics;
@@ -1476,6 +1480,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
       return -1;
    }
    if (fDebug > 1) printf("StartAnalysis %s\n",GetName());
+   fMaxEntries = nentries;
    fIsRemote = kFALSE;
    TString anaType = type;
    anaType.ToLower();
@@ -1925,7 +1930,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          lastTree = fTree;
       }   
       if (!fNcalls) timer->Start();
-      if (!fIsRemote && TObject::TestBit(kUseProgressBar)) ProgressBar("Processing event", fNcalls, nentries, timer, kFALSE);
+      if (!fIsRemote && TObject::TestBit(kUseProgressBar)) ProgressBar("Processing event", fNcalls, TMath::Min(fMaxEntries,nentries), timer, kFALSE);
    }
    gROOT->cd();
    TDirectory *cdir = gDirectory;
@@ -2022,7 +2027,6 @@ void AliAnalysisManager::SetInputEventHandler(AliVEventHandler* const handler)
 // Set the input event handler and create a container for it.
    fInputEventHandler   = handler;
    fCommonInput = CreateContainer("cAUTO_INPUT", TChain::Class(), AliAnalysisManager::kInputContainer);
-//   Warning("SetInputEventHandler", " An automatic input container for the input chain was created.\nPlease use: mgr->GetCommonInputContainer() to access it.");
 }
 
 //______________________________________________________________________________
@@ -2032,8 +2036,28 @@ void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler* const handler)
    fOutputEventHandler   = handler;
    fCommonOutput = CreateContainer("cAUTO_OUTPUT", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
    fCommonOutput->SetSpecialOutput();
-//   Warning("SetOutputEventHandler", " An automatic output container for the output tree was created.\nPlease use: mgr->GetCommonOutputContainer() to access it.");
 }
+
+//______________________________________________________________________________
+void AliAnalysisManager::SetDebugLevel(UInt_t level)
+{
+// Set verbosity of the analysis manager. If the progress bar is used, the call is ignored
+   if (TObject::TestBit(kUseProgressBar)) {
+      Info("SetDebugLevel","Ignored. Disable the progress bar first.");
+      return;
+   }
+   fDebug = level;
+}
+   
+//______________________________________________________________________________
+void AliAnalysisManager::SetUseProgressBar(Bool_t flag, Int_t freq)
+{
+// Enable a text mode progress bar. Resets debug level to 0.
+   Info("SetUseProgressBar", "Progress bar enabled, updated every %d events.\n  ### NOTE: Debug level reset to 0 ###", freq);
+   TObject::SetBit(kUseProgressBar,flag);
+   fPBUpdateFreq = freq;
+   fDebug = 0;
+}   
 
 //______________________________________________________________________________
 void AliAnalysisManager::RegisterExtraFile(const char *fname)
@@ -2160,9 +2184,7 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
    static Bool_t oneoftwo = kFALSE;
    static Int_t nrefresh = 0;
    static Int_t nchecks = 0;
-   const char symbol[4] = {'=','\\','|','/'}; 
-   char progress[11] = "          ";
-   Int_t ichar = icount%4;
+   const char symbol[4] = {'-','\\','|','/'}; 
    
    if (!refresh) {
       nrefresh = 0;
@@ -2176,7 +2198,10 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
       nrefresh++;
       if (!osize) return;
    }     
+   if ((current % fPBUpdateFreq) != 0) return;
    icount++;
+   char progress[11] = "          ";
+   Int_t ichar = icount%4;
    Double_t time = 0.;
    Int_t hours = 0;
    Int_t minutes = 0;
@@ -2184,11 +2209,9 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
    if (owatch && !last) {
       owatch->Stop();
       time = owatch->RealTime();
-      hours = (Int_t)(time/3600.);
-      time -= 3600*hours;
-      minutes = (Int_t)(time/60.);
-      time -= 60*minutes;
-      seconds = (Int_t)time;
+      seconds   = int(time) % 60;
+      minutes   = (int(time) / 60) % 60;
+      hours     = (int(time) / 60 / 60);
       if (refresh)  {
          if (oseconds==seconds) {
             owatch->Continue();
@@ -2217,7 +2240,17 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
    if(size<10000) fprintf(stderr, "%s [%10s] %4lld ", oname.Data(), progress, ocurrent);
    else if(size<100000) fprintf(stderr, "%s [%10s] %5lld ",oname.Data(), progress, ocurrent);
    else fprintf(stderr, "%s [%10s] %7lld ",oname.Data(), progress, ocurrent);
-   if (time>0.) fprintf(stderr, "[%6.2f %%]   TIME %.2d:%.2d:%.2d             \r", percent, hours, minutes, seconds);
+   if (time>0.) {
+     Int_t full   = Int_t(ocurrent > 0 ? 
+			  time * (float(osize)/ocurrent) + .5 : 
+			  99*3600+59*60+59); 
+     Int_t remain = full - time;
+     Int_t rsec   = remain % 60;
+     Int_t rmin   = (remain / 60) % 60;
+     Int_t rhour  = (remain / 60 / 60);
+     fprintf(stderr, "[%6.2f %%]   TIME %.2d:%.2d:%.2d  ETA %.2d:%.2d:%.2d\r",
+	     percent, hours, minutes, seconds, rhour, rmin, rsec);
+   }
    else fprintf(stderr, "[%6.2f %%]\r", percent);
    if (refresh && oneoftwo) oname = nname;
    if (owatch) owatch->Continue();
