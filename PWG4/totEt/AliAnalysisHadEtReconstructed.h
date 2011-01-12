@@ -29,6 +29,12 @@ public:
     //the "Corrected" variables are only corrected for the track-by-track fCorrections
     Float_t GetCorrectedHadEtFullAcceptanceTPC() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPC;}
     Float_t GetCorrectedHadEtFullAcceptanceITS() const {return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPC+fCorrectedHadEtFullAcceptanceITS);}
+    Float_t GetCorrectedHadEtFullAcceptanceTPCAssumingPion() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCAssumingPion;}
+    Float_t GetCorrectedHadEtFullAcceptanceITSAssumingPion() const {return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPCAssumingPion+fCorrectedHadEtFullAcceptanceITSAssumingPion);}
+    Float_t GetCorrectedHadEtFullAcceptanceTPCAssumingProton() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCAssumingProton;}
+    Float_t GetCorrectedHadEtFullAcceptanceITSAssumingProton() const {return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPCAssumingProton+fCorrectedHadEtFullAcceptanceITSAssumingProton);}
+    Float_t GetCorrectedHadEtFullAcceptanceTPCAssumingKaon() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCAssumingKaon;}
+    Float_t GetCorrectedHadEtFullAcceptanceITSAssumingKaon() const {return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPCAssumingKaon+fCorrectedHadEtFullAcceptanceITSAssumingKaon);}
     Float_t GetCorrectedHadEtEMCALAcceptanceTPC() const{return fCorrHadEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPC;}
     Float_t GetCorrectedHadEtEMCALAcceptanceITS() const {return fCorrHadEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPC+fCorrectedHadEtEMCALAcceptanceITS);}
     Float_t GetCorrectedHadEtPHOSAcceptanceTPC() const {return fCorrHadEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPC;}
@@ -102,6 +108,12 @@ protected:
     Float_t fCorrectedHadEtPHOSAcceptanceITSNoPID;//analogous to above for PHOS acceptance
     Float_t fCorrectedHadEtFullAcceptanceTPC;//get the corrected hadronic et for full acceptance, pt>0.15 GeV/c
     Float_t fCorrectedHadEtFullAcceptanceITS;//get the corrected hadronic et for full acceptance, pt>0.10 GeV/c
+    Float_t fCorrectedHadEtFullAcceptanceTPCAssumingPion;//get the corrected hadronic et for full acceptance, pt>0.15 GeV/c
+    Float_t fCorrectedHadEtFullAcceptanceITSAssumingPion;//get the corrected hadronic et for full acceptance, pt>0.10 GeV/c
+    Float_t fCorrectedHadEtFullAcceptanceTPCAssumingProton;//get the corrected hadronic et for full acceptance, pt>0.15 GeV/c
+    Float_t fCorrectedHadEtFullAcceptanceITSAssumingProton;//get the corrected hadronic et for full acceptance, pt>0.10 GeV/c
+    Float_t fCorrectedHadEtFullAcceptanceTPCAssumingKaon;//get the corrected hadronic et for full acceptance, pt>0.15 GeV/c
+    Float_t fCorrectedHadEtFullAcceptanceITSAssumingKaon;//get the corrected hadronic et for full acceptance, pt>0.10 GeV/c
     Float_t fCorrectedHadEtEMCALAcceptanceTPC;//analogous to above for EMCal acceptance
     Float_t fCorrectedHadEtEMCALAcceptanceITS;//analogous to above for EMCal acceptance
     Float_t fCorrectedHadEtPHOSAcceptanceTPC;//analogous to above for PHOS acceptance
@@ -125,7 +137,7 @@ protected:
     AliAnalysisHadEtReconstructed & operator = (const AliAnalysisHadEtReconstructed & g) ;//cpy assignment
     AliAnalysisHadEtReconstructed(const AliAnalysisHadEtReconstructed & g) ; // cpy ctor
 
-    void AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL);
+    void AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtPion, Float_t corrEtProton, Float_t corrEtKaon, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL);
     Bool_t IsInPHOS(AliESDtrack *track);
     Bool_t IsInEMCAL(AliESDtrack *track);
 

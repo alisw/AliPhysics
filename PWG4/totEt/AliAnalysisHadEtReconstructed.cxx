@@ -56,6 +56,12 @@ AliAnalysisHadEtReconstructed::AliAnalysisHadEtReconstructed() :
 	,fCorrectedHadEtPHOSAcceptanceITSNoPID(0)
 	,fCorrectedHadEtFullAcceptanceTPC(0)
 	,fCorrectedHadEtFullAcceptanceITS(0)
+	,fCorrectedHadEtFullAcceptanceTPCAssumingPion(0)
+	,fCorrectedHadEtFullAcceptanceITSAssumingPion(0)
+	,fCorrectedHadEtFullAcceptanceTPCAssumingProton(0)
+	,fCorrectedHadEtFullAcceptanceITSAssumingProton(0)
+	,fCorrectedHadEtFullAcceptanceTPCAssumingKaon(0)
+	,fCorrectedHadEtFullAcceptanceITSAssumingKaon(0)
 	,fCorrectedHadEtEMCALAcceptanceTPC(0)
 	,fCorrectedHadEtEMCALAcceptanceITS(0)
 	,fCorrectedHadEtPHOSAcceptanceTPC(0)
@@ -172,6 +178,9 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    Float_t et = 0.0;
 	    Float_t etNoID = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	    Float_t etpartialcorrected = 0.0;
+	    Float_t etpartialcorrectedPion = 0.0;
+	    Float_t etpartialcorrectedKaon = 0.0;
+	    Float_t etpartialcorrectedProton = 0.0;
 	    Float_t etpartialcorrectedNoID = corrNoID*corrBkgd*corrEffNoID*etNoID;
 	    FillHisto2D(Form("EtDataRaw%sNoID",cutName->Data()),track->Pt(),track->Eta(),etpartialcorrectedNoID);
 
@@ -231,20 +240,33 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      //if(!isPion) 
 	      FillHisto2D(Form("dEdxDataUnidentified%s",cutName->Data()),track->P(),dEdx,1.0);
 	      et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
+	      Float_t etProton = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
+	      Float_t etKaon = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
 	      etpartialcorrected = et*corrBkgd*corrEffNoID*corrNotID;
+	      etpartialcorrectedPion = et*corrBkgd*corrEffNoID;
+	      etpartialcorrectedProton = etProton*corrBkgd*corrEffNoID;
+	      etpartialcorrectedKaon = etKaon*corrBkgd*corrEffNoID;
 	      //if(!isPion) 
 	      FillHisto2D(Form("EtDataCorrected%sUnidentified",cutName->Data()),track->Pt(),track->Eta(),etpartialcorrected);
+	    }
+	    else{
+	      etpartialcorrectedPion = etpartialcorrected;
+	      etpartialcorrectedKaon = etpartialcorrected;
+	      etpartialcorrectedProton = etpartialcorrected;
 	    }
 	    if(!isTPC){
 	      etpartialcorrected = etpartialcorrectedNoID;//Not using PID for ITS
 	    }
-	    AddEt(et,etNoID,etpartialcorrected,etpartialcorrectedNoID,track->Pt(),isTPC,inPHOS,inEMCAL);
+	    AddEt(et,etNoID,etpartialcorrected,etpartialcorrectedPion,etpartialcorrectedProton,etpartialcorrectedKaon,etpartialcorrectedNoID,track->Pt(),isTPC,inPHOS,inEMCAL);
 	  }
 	}
       delete list;
     }
     if(GetCorrectedHadEtFullAcceptanceTPC()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPC",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
     if(GetCorrectedTotEtFullAcceptanceTPC()>0.0)FillHisto1D("RecoTotEtFullAcceptanceTPC",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
+    if(GetCorrectedHadEtFullAcceptanceTPCAssumingPion()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingPion",GetCorrectedHadEtFullAcceptanceTPCAssumingPion(),1.0);
+    if(GetCorrectedHadEtFullAcceptanceTPCAssumingProton()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingProton",GetCorrectedHadEtFullAcceptanceTPCAssumingProton(),1.0);
+    if(GetCorrectedHadEtFullAcceptanceTPCAssumingKaon()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingKaon",GetCorrectedHadEtFullAcceptanceTPCAssumingKaon(),1.0);
     if(GetCorrectedHadEtEMCALAcceptanceTPC()>0.0)FillHisto1D("RecoHadEtEMCALAcceptanceTPC",GetCorrectedHadEtEMCALAcceptanceTPC(),1.0);
     if(GetCorrectedTotEtEMCALAcceptanceTPC()>0.0)FillHisto1D("RecoTotEtEMCALAcceptanceTPC",GetCorrectedTotEtEMCALAcceptanceTPC(),1.0);
     if(GetCorrectedHadEtPHOSAcceptanceTPC()>0.0)FillHisto1D("RecoHadEtPHOSAcceptanceTPC",GetCorrectedHadEtPHOSAcceptanceTPC(),1.0);
@@ -256,6 +278,9 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
     if(GetCorrectedHadEtPHOSAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoHadEtPHOSAcceptanceTPCNoPID",GetCorrectedHadEtPHOSAcceptanceTPCNoPID(),1.0);
     if(GetCorrectedTotEtPHOSAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoTotEtPHOSAcceptanceTPCNoPID",GetCorrectedTotEtPHOSAcceptanceTPCNoPID(),1.0);
     if(GetCorrectedHadEtFullAcceptanceITS()>0.0)FillHisto1D("RecoHadEtFullAcceptanceITS",GetCorrectedHadEtFullAcceptanceITS(),1.0);
+    if(GetCorrectedHadEtFullAcceptanceITSAssumingPion()>0.0)FillHisto1D("RecoHadEtFullAcceptanceITSAssumingPion",GetCorrectedHadEtFullAcceptanceITSAssumingPion(),1.0);
+    if(GetCorrectedHadEtFullAcceptanceITSAssumingProton()>0.0)FillHisto1D("RecoHadEtFullAcceptanceITSAssumingProton",GetCorrectedHadEtFullAcceptanceITSAssumingProton(),1.0);
+    if(GetCorrectedHadEtFullAcceptanceITSAssumingKaon()>0.0)FillHisto1D("RecoHadEtFullAcceptanceITSAssumingKaon",GetCorrectedHadEtFullAcceptanceITSAssumingKaon(),1.0);
     if(GetCorrectedTotEtFullAcceptanceITS()>0.0)FillHisto1D("RecoTotEtFullAcceptanceITS",GetCorrectedTotEtFullAcceptanceITS(),1.0);
     if(GetCorrectedHadEtEMCALAcceptanceITS()>0.0)FillHisto1D("RecoHadEtEMCALAcceptanceITS",GetCorrectedHadEtEMCALAcceptanceITS(),1.0);
     if(GetCorrectedTotEtEMCALAcceptanceITS()>0.0)FillHisto1D("RecoTotEtEMCALAcceptanceITS",GetCorrectedTotEtEMCALAcceptanceITS(),1.0);
@@ -286,7 +311,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
     delete strTPCITS;
     return 1;
 }
-void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL) {//Adding Et to each of the variables that tracks et event by event
+void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtPion, Float_t corrEtProton, Float_t corrEtKaon, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL) {//Adding Et to each of the variables that tracks et event by event
   if(pt>=AliAnalysisHadEt::fgPtTPCCutOff && IsTPC){//TPC tracks
     //adding to the raw Et
     fRawEtFullAcceptanceTPC += rawEt;
@@ -297,6 +322,9 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     if(InEMCAL)fRawEtEMCALAcceptanceTPCNoPID += rawEtNoPID;
     //adding to the corrected Et
     fCorrectedHadEtFullAcceptanceTPC += corrEt;
+    fCorrectedHadEtFullAcceptanceTPCAssumingPion += corrEtPion;
+    fCorrectedHadEtFullAcceptanceTPCAssumingProton += corrEtProton;
+    fCorrectedHadEtFullAcceptanceTPCAssumingKaon += corrEtKaon;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceTPC += corrEt;
     if(InEMCAL)fCorrectedHadEtEMCALAcceptanceTPC += corrEt;
     fCorrectedHadEtFullAcceptanceTPCNoPID += corrEtNoPID;
@@ -313,6 +341,9 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     if(InEMCAL)fRawEtEMCALAcceptanceITSNoPID += rawEtNoPID;
     //adding to the corrected Et
     fCorrectedHadEtFullAcceptanceITS += corrEt;
+    fCorrectedHadEtFullAcceptanceITSAssumingPion += corrEtPion;
+    fCorrectedHadEtFullAcceptanceITSAssumingProton += corrEtProton;
+    fCorrectedHadEtFullAcceptanceITSAssumingKaon += corrEtKaon;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceITS += corrEt;
     if(InEMCAL)fCorrectedHadEtEMCALAcceptanceITS += corrEt;
     fCorrectedHadEtFullAcceptanceITSNoPID += corrEtNoPID;
@@ -379,6 +410,12 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
      fCorrectedHadEtPHOSAcceptanceITSNoPID=0.0;
      fCorrectedHadEtFullAcceptanceTPC=0.0;
      fCorrectedHadEtFullAcceptanceITS=0.0;
+     fCorrectedHadEtFullAcceptanceTPCAssumingPion=0.0;
+     fCorrectedHadEtFullAcceptanceITSAssumingPion=0.0;
+     fCorrectedHadEtFullAcceptanceTPCAssumingProton=0.0;
+     fCorrectedHadEtFullAcceptanceITSAssumingProton=0.0;
+     fCorrectedHadEtFullAcceptanceTPCAssumingKaon=0.0;
+     fCorrectedHadEtFullAcceptanceITSAssumingKaon=0.0;
      fCorrectedHadEtEMCALAcceptanceTPC=0.0;
      fCorrectedHadEtEMCALAcceptanceITS=0.0;
      fCorrectedHadEtPHOSAcceptanceTPC=0.0;
@@ -548,8 +585,12 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
       }
     }
   }
-
-  //CreateHisto2D("Efficiency","Efficiency","pT","efficiency",
+  CreateHisto1D("RecoHadEtFullAcceptanceTPCAssumingPion","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.15 GeV/c assuming pions","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
+  CreateHisto1D("RecoHadEtFullAcceptanceTPCAssumingProton","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.15 GeV/c assuming protons","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
+  CreateHisto1D("RecoHadEtFullAcceptanceTPCAssumingKaon","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.15 GeV/c assuming kaons","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
+  CreateHisto1D("RecoHadEtFullAcceptanceITSAssumingPion","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.10 GeV/c assuming pions","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
+  CreateHisto1D("RecoHadEtFullAcceptanceITSAssumingProton","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.10 GeV/c assuming protons","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
+  CreateHisto1D("RecoHadEtFullAcceptanceITSAssumingKaon","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.10 GeV/c assuming kaons","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
 
   delete sTPC;
   delete sITS;
