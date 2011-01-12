@@ -38,7 +38,7 @@ file (GLOB SRCS10 "TRD/info/*.cxx" )
 file (GLOB SRCS11 "background/*.cxx" )
 file (GLOB SRCS12 "Centrality/*.cxx" )
 
-list(APPEND SRCS ${SRCS1} ${SRCS2} ${SRCS3} ${SRCS4} ${SRCS5} ${SRCS6} ${SRCS7} ${SRCS8} ${SRCS9} ${SRCS10} ${SRCS11} ${SRCS12)
+list(APPEND SRCS ${SRCS1} ${SRCS2} ${SRCS3} ${SRCS4} ${SRCS5} ${SRCS6} ${SRCS7} ${SRCS8} ${SRCS9} ${SRCS10} ${SRCS11} ${SRCS12})
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
