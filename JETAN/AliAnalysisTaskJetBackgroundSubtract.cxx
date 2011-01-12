@@ -298,7 +298,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
     if(fDebug&&evBkg)Printf("%s:%d Backgroundbranch %s found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
   }
 
-  if(!evBkg){
+  if(!evBkg&&(fSubtraction==kArea||fSubtraction==kRhoRecalc)){
     if(fDebug){
       Printf("%s:%d Backgroundbranch %s not found",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
       PrintAODContents();
@@ -307,7 +307,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
     return;
   }
 
-  if(!bkgClusters){
+  if(!bkgClusters&&(fSubtraction==kRhoRecalc)){
     if(fDebug){
       Printf("%s:%d Background cluster branch %s not found",(char*)__FILE__,__LINE__,bkgClusterName.Data());
       PrintAODContents();
@@ -316,7 +316,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
     return;
   }
 
-  if(!bkgClustersRC){
+  if(!bkgClustersRC&&(fSubtraction==kRhoRC)){
     if(fDebug){
       Printf("%s:%d Background cluster RC branch %s not found",(char*)__FILE__,__LINE__,bkgClusterRCName.Data());
       PrintAODContents();
