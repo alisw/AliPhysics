@@ -17,7 +17,7 @@
 //***********************************************************
 // Class AliAODPidHF
 // class for PID with AliAODRecoDecayHF
-// Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de
+// Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de P. Antonioli pietro.antonioli@bo.infn.it
 //***********************************************************
 #include "AliAODPidHF.h"
 #include "AliAODPid.h"
@@ -253,32 +253,38 @@ Int_t AliAODPidHF::ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const{
  if(!CheckStatus(track,"TOF")) return 0;
 
  Double_t time[AliPID::kSPECIESN];
+ Double_t sigmaTOFPid[AliPID::kSPECIES];
  AliAODPid *pidObj = track->GetDetPid();
  pidObj->GetIntegratedTimes(time);
  Double_t sigTOF=pidObj->GetTOFsignal();
-// AliTOFPIDResponse tofResponse;
+ pidObj->GetTOFpidResolution(sigmaTOFPid);
+
  Int_t pid=-1;
 
-  if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
-   Double_t nsigmaMax=fTOFSigma*fnSigma[3];
+  if(specie<0){  
+   Double_t sigmaTOFtrack;
+   if (sigmaTOFPid[4]>0) sigmaTOFtrack=sigmaTOFPid[4];
+   else sigmaTOFtrack=fTOFSigma;
+   Double_t nsigmaMax=sigmaTOFtrack*fnSigma[3];
    for(Int_t ipart=0;ipart<5;ipart++){
-    //AliPID::EParticleType type=AliPID::EParticleType(ipart);
-    //Double_t nsigma = tofResponse.GetExpectedSigma(track->P(),time[type],AliPID::ParticleMass(type));
     Double_t nsigma=TMath::Abs(sigTOF-time[ipart]);
-    if((nsigma<nsigmaMax) && (nsigma<fnSigma[3]*fTOFSigma)) {
+    if (sigmaTOFPid[ipart]>0) sigmaTOFtrack=sigmaTOFPid[ipart]; 
+    else sigmaTOFtrack=fTOFSigma;  // backward compatibility for old AODs
+    if((nsigma<nsigmaMax) && (nsigma<fnSigma[3]*sigmaTOFtrack)) {
      pid=ipart;
      nsigmaMax=nsigma;
     }
    }
   }else{ // asks only for one particle specie
-   //AliPID::EParticleType type=AliPID::EParticleType(specie);
-   //Double_t nsigma = TMath::Abs(tofResponse.GetExpectedSigma(track->P(),time[type],AliPID::ParticleMass(type)));
     Double_t nsigma=TMath::Abs(sigTOF-time[specie]);
-   if (nsigma>fnSigma[3]*fTOFSigma) {
-    pid=-1; 
-   }else{
-    pid=specie;
-   }
+    Double_t sigmaTOFtrack;
+    if (sigmaTOFPid[specie]>0) sigmaTOFtrack=sigmaTOFPid[specie]; 
+    else sigmaTOFtrack=fTOFSigma;  // backward compatibility for old AODs
+    if (nsigma>fnSigma[3]*sigmaTOFtrack) {
+      pid=-1; 
+    }else{
+      pid=specie;
+    }
   }
  return pid; 
 
@@ -418,6 +424,7 @@ Bool_t AliAODPidHF::CheckStatus(AliAODTrack *track,TString detectors) const{
    if ((track->GetStatus()&AliESDtrack::kTOFout )==0)    return kFALSE;
    if ((track->GetStatus()&AliESDtrack::kTIME )==0)     return kFALSE;
    if ((track->GetStatus()&AliESDtrack::kTOFpid )==0)   return kFALSE;
+   if (!(track->GetStatus()&AliESDtrack::kTOFmismatch)==0)    return kFALSE;
  }
 
 
