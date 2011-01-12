@@ -152,8 +152,12 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include <cstdlib>
-#include "AliHelix.h"
 #include "Riostream.h"
+#include "TPolyMarker3D.h"
+#include "AliPosition.h"
+#include "AliTrack.h"
+#include "AliEvent.h"
+#include "AliHelix.h"
  
 ClassImp(AliHelix) // Class implementation to enable ROOT I/O
  
@@ -173,20 +177,20 @@ AliHelix::AliHelix() : THelix()
  fLineColor=-1;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliHelix::~AliHelix()
-{
-// Destructor to delete dynamically allocated memory.
- if (fCurves)
- {
-  delete fCurves;
-  fCurves=0;
- }
- if (fExt)
- {
-  delete fExt;
-  fExt=0;
- }
-}
+// AliHelix::~AliHelix()
+// {
+// // Destructor to delete dynamically allocated memory.
+//  if (fCurves)
+//  {
+//   delete fCurves;
+//   fCurves=0;
+//  }
+//  if (fExt)
+//  {
+//   delete fExt;
+//   fExt=0;
+//  }
+// }
 ///////////////////////////////////////////////////////////////////////////
 AliHelix::AliHelix(const AliHelix& h) : THelix(h)
 {

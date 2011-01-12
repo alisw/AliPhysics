@@ -7,17 +7,31 @@
 
 #include "THelix.h"
 #include "TObjArray.h"
-#include "TPolyMarker3D.h"
 
 #include "Ali3Vector.h"
-#include "AliTrack.h"
-#include "AliEvent.h"
+
+class AliEvent;
+class AliTrack;
+class AliPosition;
  
 class AliHelix : public THelix
 {
  public:
   AliHelix();                  // Default constructor
-  virtual ~AliHelix();         // Destructor
+  virtual ~AliHelix()
+    {
+      // Destructor to delete dynamically allocated memory.
+      if (fCurves)
+	{
+	  delete fCurves;
+	  fCurves=0;
+	}
+      if (fExt)
+	{
+	  delete fExt;
+	  fExt=0;
+	}
+    }
   AliHelix(const AliHelix& h); // Copy constructor
   void SetB(Ali3Vector& b);    // Set the magnetic field vector in Tesla
   Ali3Vector& GetB();          // Provide the magnetic field vector in Tesla
