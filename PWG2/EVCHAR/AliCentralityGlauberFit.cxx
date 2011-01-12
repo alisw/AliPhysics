@@ -75,11 +75,12 @@ AliCentralityGlauberFit::AliCentralityGlauberFit(const char *filename) :
   fhAncestor(0),
   fNevents(100000),
   fNtrials(100),
-  finrootfilename(0),
-  finntuplename(0),
-  foutrootfilename(0),
-  foutntuplename(0),
-  fhistnames(), 
+  fInrootfilename(0),
+  fInntuplename(0),
+  fOutrootfilename(0),
+  fOutntuplename(0),
+  fAncfilename("ancestor_hists.root"),
+  fHistnames(), 
   fPercentXsec(0)
 {
   // standard constructor
@@ -92,11 +93,10 @@ AliCentralityGlauberFit::AliCentralityGlauberFit(const char *filename) :
   fGlauntuple->SetBranchAddress("tAA",&fTaa);
   
   fNBD = new TF1 ("fNBD", AliCentralityGlauberFit::NBDFunc, 0, 100,2);
-
 }
 
 //--------------------------------------------------------------------------------------------------
-void AliCentralityGlauberFit::SetRangeToFit(Float_t fmultmin, Float_t fmultmax)
+void AliCentralityGlauberFit::SetRangeToFit(Double_t fmultmin, Double_t fmultmax)
 {
   // Set fit range.
 
@@ -107,17 +107,17 @@ void AliCentralityGlauberFit::SetRangeToFit(Float_t fmultmin, Float_t fmultmax)
 //--------------------------------------------------------------------------------------------------
 void AliCentralityGlauberFit::SetGlauberParam(
 					      Int_t   Nmu,
-					      Float_t mulow,
-					      Float_t muhigh,
+					      Double_t mulow,
+					      Double_t muhigh,
 					      Int_t   Nk,
-					      Float_t klow,
-					      Float_t khigh,
+					      Double_t klow,
+					      Double_t khigh,
 					      Int_t   Nalpha,
-					      Float_t alphalow,
-					      Float_t alphahigh,
+					      Double_t alphalow,
+					      Double_t alphahigh,
 					      Int_t   Neff,
-					      Float_t efflow,
-					      Float_t effhigh)
+					      Double_t efflow,
+					      Double_t effhigh)
 {
   // Set Glauber parameters.
 
@@ -138,53 +138,48 @@ void AliCentralityGlauberFit::SetGlauberParam(
 //--------------------------------------------------------------------------------------------------
 void AliCentralityGlauberFit::MakeFits() 
 {
-  TH1D *hDATA;
-  TH1D *thistGlau; 
-  FILE* fTxt = fopen ("parameters.txt","w");
+  TH1F *hDATA;
+  TH1F *thistGlau; 
   TFile *inrootfile;
   TFile *outrootfile;
   
   // open inrootfile, outrootfile
-  std::cout << "input file " << finrootfilename << std::endl;
-  inrootfile  = new TFile(finrootfilename,"OPEN");
-  outrootfile = new TFile(foutrootfilename,"RECREATE");
+  std::cout << "input file " << fInrootfilename << std::endl;
+  inrootfile  = new TFile(fInrootfilename,"OPEN");
+  outrootfile = new TFile(fOutrootfilename,"RECREATE");
   
   // loop over all distribution names  
   std::vector<TString>::const_iterator hni;
-  for(hni=fhistnames.begin(); hni!=fhistnames.end(); hni++) {
-    hDATA  = (TH1D*) (inrootfile->Get(*hni)); 
-    //TList *list  = (TList*) (inrootfile->Get("coutput1")); 
-    //hDATA  = (TH1D*) (list->FindObject(*hni)); 
+  for(hni=fHistnames.begin(); hni!=fHistnames.end(); hni++) {
+    hDATA  = (TH1F*) (inrootfile->Get(*hni)); 
+    if (!hDATA) {
+      TList *list  = (TList*) (inrootfile->Get("coutput1")); 
+      hDATA  = (TH1F*) (list->FindObject(*hni));
+    } 
     hDATA->Rebin(fRebinFactor);
-    TH1D *hGLAU = new TH1D("hGLAU","hGLAU",hDATA->GetNbinsX(),0,hDATA->GetNbinsX()*hDATA->GetBinWidth(1));
-    Float_t chi2min = 9999999.0;
-    Float_t alpha_min=-1;
-    Float_t mu_min=-1;
-    Float_t k_min=-1;
-    Float_t eff_min=-1;
-    Float_t alpha, mu, k, eff, chi2;   
+    TH1F *hGLAU = new TH1F("hGLAU","hGLAU",hDATA->GetNbinsX(),0,hDATA->GetNbinsX()*hDATA->GetBinWidth(1));
+    Double_t chi2min = 9999999.0;
+    Double_t alpha_min=-1;
+    Double_t mu_min=-1;
+    Double_t k_min=-1;
+    Double_t eff_min=-1;
+    Double_t alpha, mu, k, eff, chi2;   
 
-    for (int nalpha=0;nalpha<fNalpha;nalpha++) {
-      alpha = fAlphalow   + ((float) nalpha ) * (fAlphahigh  - fAlphalow ) / fNalpha;
-
-      if (fUseAverage) fhAncestor = MakeAncestor(alpha);
+    for (Int_t nalpha=0;nalpha<fNalpha;nalpha++) {
+      alpha = fAlphalow   + ((Double_t) nalpha ) * (fAlphahigh  - fAlphalow ) / fNalpha;
 
       mu=0.0;
-      for (int nmu=0; nmu<fNmu; nmu++) {
-	mu = (fMulow*(1-nalpha*0.05) )  + ((float) nmu ) * (fMuhigh  - fMulow ) / fNmu;
-	//mu = mulow   + ((float) nmu ) * (muhigh  - mulow ) / Nmu;
+      for (Int_t nmu=0; nmu<fNmu; nmu++) {
+	mu = (fMulow*(1-nalpha*0.05) )  + ((Double_t) nmu ) * (fMuhigh  - fMulow ) / fNmu;
 	
-	for (int nk=0; nk<fNk; nk++) {
-	  k = fKlow  + ((float) nk ) * (fKhigh  - fKlow ) / fNk;
+	for (Int_t nk=0; nk<fNk; nk++) {
+	  k = fKlow  + ((Double_t) nk ) * (fKhigh  - fKlow ) / fNk;
 	  
-	  for (int neff=0; neff<fNeff; neff++) {
-	    eff = fEfflow + ((float) neff) * (fEffhigh - fEfflow) / fNeff;
+	  for (Int_t neff=0; neff<fNeff; neff++) {
+	    eff = fEfflow + ((Double_t) neff) * (fEffhigh - fEfflow) / fNeff;
 	    
-	    if (fUseAverage) thistGlau = GlauberHisto(mu,k,eff,alpha,fhAncestor,hDATA,kFALSE);
-	    else thistGlau = GlauberHisto(mu,k,eff,alpha,hDATA,kFALSE);
+	    thistGlau = GlauberHisto(mu,k,eff,alpha,hDATA,kFALSE);
 	    chi2 = CalculateChi2(hDATA,thistGlau,eff);
-	    fprintf(fTxt, "%3.3f %3.3f %3.3f %3.3f %3.3f\n",(float) eff, (float) mu, (float) k, (float) alpha, chi2);
-
 	    if ( chi2 < chi2min ) {
 	      chi2min = chi2;
 	      alpha_min=alpha;
@@ -197,23 +192,20 @@ void AliCentralityGlauberFit::MakeFits()
       }
     }
 
-    if (fUseAverage) {
-      fhAncestor = MakeAncestor(alpha_min);
-      thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,fhAncestor,hDATA,kTRUE);
-    } else thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,hDATA,kTRUE);
+    thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,hDATA,kTRUE);
 
-    hGLAU = (TH1D *) thistGlau->Clone("hGLAU");
+    hGLAU = (TH1F *) thistGlau->Clone("hGLAU");
     hGLAU->SetName( ((TString)hDATA->GetName()).Append(Form("_GLAU")));
-    hGLAU->SetTitle( ((TString)hDATA->GetName()).Append(Form("_GLAU_%.3f_%.3f_%.3f_%.3f",mu_min,k_min,alpha_min,eff_min)));
+    hGLAU->SetTitle( ((TString)hDATA->GetName()).Append(Form("_GLAU_%.3f_%.3f_%.3f_%.3f",
+                                                             mu_min,k_min,alpha_min,eff_min)));
 
-    float mcintegral = hGLAU->Integral(1,hGLAU->GetNbinsX());
-    float scale = (hDATA->Integral(1,hDATA->GetNbinsX())/mcintegral) * ((float) eff_min);
+    Double_t mcintegral = hGLAU->Integral(1,hGLAU->GetNbinsX());
+    Double_t scale = (hDATA->Integral(1,hDATA->GetNbinsX())/mcintegral) * ((Double_t) eff_min);
     hGLAU->Scale(scale);
 
     fhEffi = GetTriggerEfficiencyFunction(hDATA, hGLAU);
     SaveHisto(hDATA,hGLAU,fhEffi,outrootfile);
-    fclose (fTxt);
-
+    
     std::cout << "chi2 min is " << chi2min << std::endl;
     std::cout << "fitted " << hGLAU->Integral(hGLAU->FindBin(fMultmin),
                                               hGLAU->FindBin(fMultmax))/hGLAU->Integral() 
@@ -228,27 +220,38 @@ void AliCentralityGlauberFit::MakeFits()
 }
 
 //--------------------------------------------------------------------------------------------------
-void AliCentralityGlauberFit::MakeFitsMinuitNBD() 
+void AliCentralityGlauberFit::MakeFitsMinuitNBD(Double_t alpha, Double_t mu, Double_t k, Double_t eff) 
 {
-  // Make fits using Minut.
+  // Make fits using Minuit.
 
-  TH1D *hDATA;
-  TH1D *thistGlau; 
+  if (alpha<0) 
+    alpha = fAlphalow;
+  if (mu<0)
+    mu = fMulow;
+  if (k<0)
+    k = fKlow;
+  if (eff<0)
+    eff = fEfflow;
+  printf("Calling Minuit with starting values: %f %f %f %f\n", alpha, mu, k, eff);
+
+  TH1F *hDATA;
+  TH1F *thistGlau; 
   TFile *inrootfile;
   TFile *outrootfile;
   
   // open inrootfile, outrootfile
-  inrootfile  = new TFile(finrootfilename,"OPEN");
-  outrootfile = new TFile(foutrootfilename,"RECREATE");
+  inrootfile  = new TFile(fInrootfilename,"OPEN");
+  outrootfile = new TFile(fOutrootfilename,"RECREATE");
   
   // loop over all distribution names  
   std::vector<TString>::const_iterator hni;
-  for(hni=fhistnames.begin(); hni!=fhistnames.end(); hni++) {
-    hDATA  = (TH1D*) (inrootfile->Get(*hni)); 
+  for(hni=fHistnames.begin(); hni!=fHistnames.end(); hni++) {
+    hDATA  = (TH1F*) (inrootfile->Get(*hni)); 
     hDATA->Rebin(fRebinFactor);
     fTempHist=hDATA;
-    TH1D *hGLAU = new TH1D("hGLAU","hGLAU",hDATA->GetNbinsX(),0,hDATA->GetNbinsX()*hDATA->GetBinWidth(1));
+    TH1F *hGLAU = new TH1F("hGLAU","hGLAU",hDATA->GetNbinsX(),0,hDATA->GetNbinsX()*hDATA->GetBinWidth(1));
     hGLAU->Sumw2();
+
     // Minimize here
     if(gMinuit) delete gMinuit;
     new TMinuit(3);
@@ -259,37 +262,19 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD()
     Double_t arglist[2]={0};
     Int_t ierflg;
     if (fUseChi2) arglist[0] = 1; // should be 1 if you want to minimize chi2
-    else arglist[0] = 0.5; // should be 0.5 for ll
+    else arglist[0] = 0.5;        // should be 0.5 for ll
     gMinuit->mnexcm("SET ERR",arglist, 1, ierflg);
-
-    //Change verbosity
-    if (0) {
-      //gMinuit->Command((TString("SET PRINTOUT ")+long(fVerbosity)).Data());
-    }
-
-    if (!fFastFit) {
-      gMinuit->mnparm(0,"alpha", fAlphalow,  0.1,  0.75, 1  , ierflg);
-      gMinuit->mnparm(1,"mu"   , fMulow,     0.2,  1   , 100, ierflg);
-      gMinuit->mnparm(2,"k"    , fKlow,      0.1,  0.5 , 2.5, ierflg);
-      gMinuit->mnparm(3,"eff"  , fEfflow,    0.1,  0.95, 1.0, ierflg);      
-    } else if (fFastFit == 2) {
-      gMinuit->mnparm(0,"alpha", fAlphalow,   0.1, 0.75, 1   , ierflg);
-      gMinuit->mnparm(1,"mu"   , 30.2,        0.2, 1   , 100 , ierflg);
-      gMinuit->mnparm(2,"k"    , 3.875,       0.1, 0   , 0   , ierflg);
-      gMinuit->mnparm(3,"eff"  , fEfflow,     0.1, 0.95, 1.0 , ierflg);
-    }
+    gMinuit->mnparm(0,"alpha", alpha,  (fAlphahigh-fAlphalow)/fNalpha,  fAlphalow, fAlphahigh, ierflg);
+    gMinuit->mnparm(1,"mu"   , mu,     (fMuhigh-fMulow)/fNmu, fMulow, fMuhigh, ierflg);
+    gMinuit->mnparm(2,"k"    , k,      (fKhigh-fKlow)/fNk, fKlow, fKhigh, ierflg);
+    gMinuit->mnparm(3,"eff"  , eff,    (fEffhigh-fEfflow)/fNeff, fEfflow, fEffhigh, ierflg);      
 
     // Call migrad
-    // arglist[0] = 100000; // max calls
-    // arglist[1] = 0.1; // tolerance    
-    // arglist[0] = 50; // max calls
-    // arglist[1] = 1; // tolerance    
-    // gMinuit->mnexcm("MIGrad",arglist, 2, ierflg);
     arglist[0] = 100; // max calls
     arglist[1] = 0.1; // tolerance    
     gMinuit->mnexcm("SIMPLEX",arglist, 2, ierflg);
     arglist[0] = 1000; // max calls
-    arglist[1] = 0.1; // tolerance    
+    arglist[1] = 0.1;  // tolerance    
     gMinuit->mnexcm("MIGrad",arglist, 2, ierflg);
     //gMinuit->mnexcm("IMPROVE",arglist, 0, ierflg);
 
@@ -297,18 +282,9 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD()
       AliWarning("Abnormal termination of minimization.");
     }
     
-    // if(opt.Contains("M")) {
-    //   gMinuit->mnexcm("IMPROVE",arglist, 0, ierflg);
-    // }
-    // if(opt.Contains("E")) {
-    // gMinuit->mnexcm("HESSE",arglist, 0, ierflg);
-    // gMinuit->mnexcm("MINOS",arglist, 0, ierflg);
-    // }
-
     // ______________________ Get chi2 and Fit Status __________
     Double_t amin,edm,errdef;
-    int      nvpar, nparx, icstat;
-    
+    Int_t    nvpar, nparx, icstat;
     
     gMinuit->mnstat(amin,edm,errdef,nvpar,nparx,icstat);
     Double_t chi2min = amin;
@@ -321,25 +297,24 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD()
     gMinuit->GetParameter(2, k_min     , k_mine     );
     gMinuit->GetParameter(3, eff_min   , eff_mine   );
 
-    // Print some infos
-    std::cout << "chi2 min is " << chi2min << ", " << alpha_min << ", "<< mu_min<< ", "  << k_min << ", " <<  eff_min << std::endl;
+    // PrInt_t some infos
+    std::cout << "chi2 min is " << chi2min << ", " << alpha_min << ", "<< mu_min<< ", "  
+              << k_min << ", " <<  eff_min << std::endl;
 
-    if (fUseAverage) {
-      fhAncestor = MakeAncestor(alpha_min);
-      thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,fhAncestor,hDATA,kTRUE);
-    } else thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,hDATA,kTRUE);
+    thistGlau = GlauberHisto(mu_min,k_min,eff_min,alpha_min,hDATA,kTRUE);
 
-    hGLAU = (TH1D *) thistGlau->Clone("hGLAU");
+    hGLAU = (TH1F *) thistGlau->Clone("hGLAU");
     hGLAU->SetName( ((TString)hDATA->GetName()).Append(Form("_GLAU")));
-    hGLAU->SetTitle( ((TString)hDATA->GetName()).Append(Form("_GLAU_%.3f_%.3f_%.3f_%.3f",mu_min,k_min,alpha_min,eff_min)));
+    hGLAU->SetTitle( ((TString)hDATA->GetName()).Append(Form("_GLAU_%.3f_%.3f_%.3f_%.3f",
+                                                             mu_min,k_min,alpha_min,eff_min)));
 
     
     std::cout << "fitted " << hGLAU->Integral(hGLAU->FindBin(fMultmin),
                                               hGLAU->FindBin(fMultmax))/hGLAU->Integral() 
               << " of the total cross section" << std::endl; 
 
-    float mcintegral = hGLAU->Integral(1,hGLAU->GetNbinsX());
-    float scale = (hDATA->Integral(1,hDATA->GetNbinsX())/mcintegral) * ((float) eff_min);
+    Double_t mcintegral = hGLAU->Integral(1,hGLAU->GetNbinsX());
+    Double_t scale = (hDATA->Integral(1,hDATA->GetNbinsX())/mcintegral) * ((Double_t) eff_min);
     hGLAU->Scale(scale);
 
     std::cout << "Chi2 final " << CalculateChi2(hDATA,hGLAU,eff_min) << std::endl;
@@ -354,31 +329,57 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD()
 }
 
 //--------------------------------------------------------------------------------------------------
-TH1D *AliCentralityGlauberFit::GlauberHisto(Float_t mu, Float_t k, Float_t eff, Float_t alpha, 
-                                            TH1D *hDATA, Bool_t save) 
+TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t mu, Double_t k, Double_t eff, Double_t alpha, 
+                                            TH1F *hDATA, Bool_t save) 
 {
   // Get Glauber histogram
 
-  eff=eff;
-  static TStopwatch sw;
+  eff=eff; // to avoid compiler warning
 
-  TH1D *hSample = fFastFit != 2 ? NBDhist(mu,k) : 0;
-  static TH1D *h1 = (TH1D*)hDATA->Clone();
+  static TH1F *h1 = (TH1F*)hDATA->Clone();
   h1->Reset();
+  h1->SetName(Form("fit_%.3f_%.3f_%.3f_%.3f",mu,k,eff,alpha));
+
+  if (fUseAverage) {
+    TH1F *hSample = NBDhist(mu,k);
+    fhAncestor = MakeAncestor(alpha);
+    for (Int_t np=1; np<=fhAncestor->GetNbinsX(); ++np) {  
+      Double_t weights = fhAncestor->GetBinContent(np);
+      if (weights < 1) continue;
+      Int_t trials = (Int_t)(weights/fNtrials);
+      if (trials==0) continue;
+      Double_t weight_factor = weights/trials;
+      Int_t samp = (Int_t)fhAncestor->GetBinLowEdge(np);
+      for (Int_t j=0; j<trials; j++) {  // always just do Ntrials MC throws but then re-weight
+        Int_t ntot = 0;
+        for (Int_t jj=0;jj<samp;jj++) {
+          Double_t temp = (hSample->GetRandom());
+          ntot += (Int_t)temp;
+        }
+        h1->Fill(ntot, weight_factor);
+      }
+    }
+    delete hSample;
+    return h1;
+  }
+
+  TH1F *hSample = fFastFit != 2 ? NBDhist(mu,k) : 0;
 
   TFile *outFile = NULL;
   TNtuple *ntuple = NULL;
  
   if (save) {
-    outFile = new TFile(foutntuplename,"RECREATE");
+    outFile = new TFile(fOutntuplename,"RECREATE");
     ntuple = new TNtuple("gnt", "Glauber ntuple", "Npart:Ncoll:B:tAA:ntot");
   } 
 
+  Int_t nents = fGlauntuple->GetEntries(); 
   for (Int_t i=0;i<fNevents;++i) {
-    fGlauntuple->GetEntry(i);
+    fGlauntuple->GetEntry(i % nents);
     Int_t n=0;
     if (fAncestor == 1)      n = TMath::Nint(TMath::Power(fNpart,alpha));
-    else if (fAncestor == 2) n = alpha * fNpart + (1-alpha) * fNcoll;
+    else if (fAncestor == 2) n = TMath::Nint(alpha * fNpart + (1-alpha) * fNcoll);
+    else if (fAncestor == 3) n = TMath::Nint((1-alpha) * fNpart/2 + alpha * fNcoll);
     Int_t ntot=0;
     if (fFastFit == 1) {
       ntot = n*hSample->GetRandom(); // NBD
@@ -389,13 +390,12 @@ TH1D *AliCentralityGlauberFit::GlauberHisto(Float_t mu, Float_t k, Float_t eff, 
     }
     else {
       for(Int_t j = 0; j<n; ++j) 
-	ntot+=hSample->GetRandom();
+	ntot += (Int_t)hSample->GetRandom();
     }
     h1->Fill(ntot);
     
     if (save) 
       ntuple->Fill(fNpart,fNcoll,fB,fTaa,ntot);
-   
   }
 
   if (save) {
@@ -405,61 +405,33 @@ TH1D *AliCentralityGlauberFit::GlauberHisto(Float_t mu, Float_t k, Float_t eff, 
   
   if (fFastFit != 2) delete hSample;
   return h1;
-  
 }
 
 //--------------------------------------------------------------------------------------------------
-
-TH1D * AliCentralityGlauberFit::GlauberHisto(Float_t mu, Float_t k, Float_t eff, Float_t alpha, TH1D *hAncestor, TH1D *hDATA, Bool_t /*save*/) {
-    
-  TH1D *hSample = NBDhist(mu,k);
-  TH1D *h1 = (TH1D*)hDATA->Clone();
-  h1->Reset();
-  h1->SetName(Form("fit_%.3f_%.3f_%.3f_%.3f",mu,k,eff,alpha));
-
-  for (int np=0; np<hAncestor->GetNbinsX(); np++) {  
-    int weight_factor = (int) hAncestor->GetBinContent(np+1);
-    if (weight_factor < 1) continue;
-
-    for (int j=0; j<fNtrials; j++) {  // always just do Ntrials MC throws but then re-weight
-      Int_t ntot = 0;
-      Int_t samp = (int)hAncestor->GetBinCenter(np);
-      for (Int_t jj=0;jj<samp;jj++) {
-	float temp = (hSample->GetRandom());
-	int nhit = (int) (temp);
-	ntot = ntot + nhit;
-      }
-      h1->Fill(ntot, (float) weight_factor);
-    }
-  }
-    
-  delete hSample;
-  return h1;
-  
-}
-
-
-//--------------------------------------------------------------------------------------------------
-Float_t AliCentralityGlauberFit::CalculateChi2(TH1D *hDATA, TH1D *thistGlau, Float_t eff) 
+Double_t AliCentralityGlauberFit::CalculateChi2(TH1F *hDATA, TH1F *thistGlau, Double_t eff) 
 {
   // note that for different values of neff the mc distribution is identical, just re-scaled below
   // normalize the two histogram
   // scale MC up but leave data alone - that preserves error bars !!!!
   
-  int lowchibin =   hDATA->FindBin(fMultmin);
-  int highchibin =  hDATA->FindBin(fMultmax);
+  Int_t lowchibin =   hDATA->FindBin(fMultmin);
+  Int_t highchibin =  hDATA->FindBin(fMultmax);
 
-  float mcintegral = thistGlau->Integral(1,thistGlau->GetNbinsX());
-  float scale = (hDATA->Integral(1,hDATA->GetNbinsX())/mcintegral) * ((float) eff);
+  Double_t mcintegral = thistGlau->Integral(1,thistGlau->GetNbinsX());
+  Double_t scale = (hDATA->Integral(1,hDATA->GetNbinsX())/mcintegral) * ((Double_t) eff);
+  if (0) {
+    mcintegral = thistGlau->Integral(lowchibin,highchibin);
+    scale = (hDATA->Integral(lowchibin,highchibin)/mcintegral) * ((Double_t) eff);
+  }
   thistGlau->Scale(scale);
 
   // // calculate the chi2 between MC and real data over some range ????
   if (fUseChi2) {
-    float chi2 = 0.0;
-    for (int i=lowchibin; i<=highchibin; i++) {
+    Double_t chi2 = 0.0;
+    for (Int_t i=lowchibin; i<=highchibin; i++) {
       if (hDATA->GetBinContent(i) < 1.0) continue;
-      float diff = pow( (thistGlau->GetBinContent(i) - hDATA->GetBinContent(i)) , 2);
-      diff = diff / (pow(hDATA->GetBinError(i) , 2)+pow(thistGlau->GetBinError(i) , 2)); // FIXME squared distance if commented
+      Double_t diff = TMath::Power((thistGlau->GetBinContent(i) - hDATA->GetBinContent(i)),2);
+      diff = diff / (TMath::Power(hDATA->GetBinError(i),2) + TMath::Power(thistGlau->GetBinError(i),2)); 
       chi2 += diff;
     }
     chi2 = chi2 / (highchibin - lowchibin + 1);
@@ -468,48 +440,40 @@ Float_t AliCentralityGlauberFit::CalculateChi2(TH1D *hDATA, TH1D *thistGlau, Flo
   // "-2 log likelihood ratio(mu;n) = 2[(mu - n) + n ln(n/mu)]"
   else {
     std::cout << "LL" << std::endl;
-    
 
-    float ll = 0.0;
-    for (int i=lowchibin; i<=highchibin; i++) {
-      //      if (thistGlau->GetBinContent(i) < 1) continue; 
-      //      if (hDATA->GetBinContent(i) < 1) continue; 
-      //    cout << ll << " " << thistGlau->GetBinContent(i) <<" " <<  hDATA->GetBinContent(i) << endl;
- 
-      Float_t data = hDATA    ->GetBinContent(i);
-      Float_t mc   = thistGlau->GetBinContent(i);
+    Double_t ll = 0.0;
+    for (Int_t i=lowchibin; i<=highchibin; i++) {
+      Double_t data = hDATA    ->GetBinContent(i);
+      Double_t mc   = thistGlau->GetBinContent(i);
       Int_t idata = TMath::Nint(data);
       if (mc < 1.e-9) mc = 1.e-9;
-      Float_t fsub = - mc + idata * TMath::Log(mc);
-      Float_t fobs = 0;
-      //Int_t imc = TMath::Nint(mc);
+      Double_t fsub = - mc + idata * TMath::Log(mc);
+      Double_t fobs = 0;
       if (idata > 0) {
 	for(Int_t istep = 0; istep < idata; istep++){
 	  if (istep > 1) 
 	    fobs += TMath::Log(istep);
 	}
       }
-      //      cout << mc << " " << data << " " << fsub << " " << fobs << endl;
       fsub -= fobs;
       ll -=  fsub ;
     }
     return 2*ll;
   }
-
 }
 
 //--------------------------------------------------------------------------------------------------
-TH1D * AliCentralityGlauberFit::GetTriggerEfficiencyFunction(TH1D *hist1, TH1D *hist2) 
+TH1F *AliCentralityGlauberFit::GetTriggerEfficiencyFunction(TH1F *hist1, TH1F *hist2) 
 {
   // Get efficiency.
 
-  fhEffi = (TH1D*)hist1->Clone("heffi");
+  fhEffi = (TH1F*)hist1->Clone("heffi");
   fhEffi->Divide(hist2);
   return fhEffi;
 }
 
 //--------------------------------------------------------------------------------------------------
-Float_t AliCentralityGlauberFit::GetTriggerEfficiencyIntegral(TH1D *hist1, TH1D *hist2) 
+Double_t AliCentralityGlauberFit::GetTriggerEfficiencyIntegral(TH1F *hist1, TH1F *hist2) 
 {
   // Get eff integral.
   fEffi = hist1->Integral()/hist2->Integral();
@@ -517,7 +481,7 @@ Float_t AliCentralityGlauberFit::GetTriggerEfficiencyIntegral(TH1D *hist1, TH1D 
 }
 
 //--------------------------------------------------------------------------------------------------
-void AliCentralityGlauberFit::SaveHisto(TH1D *hist1, TH1D *hist2, TH1D *heffi, TFile *outrootfile) 
+void AliCentralityGlauberFit::SaveHisto(TH1F *hist1, TH1F *hist2, TH1F *heffi, TFile *outrootfile) 
 {
   outrootfile->cd();
   hist1->Write();
@@ -536,9 +500,9 @@ Double_t AliCentralityGlauberFit::NBD(Int_t n, Double_t mu, Double_t k)
 }
 
 //--------------------------------------------------------------------------------------------------
-TH1D *AliCentralityGlauberFit::NBDhist(Double_t mu, Double_t k)
+TH1F *AliCentralityGlauberFit::NBDhist(Double_t mu, Double_t k)
 {
-  TH1D *h = new TH1D("htemp","",100,-0.5,299.5);
+  TH1F *h = new TH1F("htemp","",100,-0.5,299.5);
   h->SetName(Form("nbd_%f_%f",mu,k));
   h->SetDirectory(0);
   for (Int_t i=0;i<300;++i) {
@@ -556,6 +520,7 @@ void AliCentralityGlauberFit::MinuitFcnNBD(Int_t &npar, Double_t *gin, Double_t 
   Double_t mu    = par[1];
   Double_t k     = par[2];
   Double_t eff   = par[3];
+
   //Double_t eff   = 1;//par[3];
   if (0) { //avoid warning
     gin=gin;
@@ -563,37 +528,61 @@ void AliCentralityGlauberFit::MinuitFcnNBD(Int_t &npar, Double_t *gin, Double_t 
     iflag=iflag;
   }
   AliCentralityGlauberFit * obj = (AliCentralityGlauberFit *) gMinuit->GetObjectFit();
-
-  // static TStopwatch sw;
-  // sw.Start();
-  TH1D * thistGlau = obj->GlauberHisto(mu,k,eff,alpha,obj->GetTempHist(),kFALSE);
+  TH1F * thistGlau = obj->GlauberHisto(mu,k,eff,alpha,obj->GetTempHist(),kFALSE);
   f = obj->CalculateChi2(obj->GetTempHist(),thistGlau,eff);
-  // sw.Stop();
-  // sw.Print();
-  Printf("%f - %f - %f - %f - %f \n",f,alpha,mu,k,eff);
+  Printf("Minuit step: chi2=%f, alpha=%f,  mu=%f, k=%f, eff=%f \n",f,alpha,mu,k,eff);
 }
 
 //--------------------------------------------------------------------------------------------------
-Double_t AliCentralityGlauberFit::NBDFunc(Double_t * x, Double_t *par) 
+Double_t AliCentralityGlauberFit::NBDFunc(Double_t *x, Double_t *par) 
 {
   // TF1  interface
   Double_t mu = par[0];
   Double_t k  = par[1];
   Double_t n  = x[0];
-  Double_t ret = exp( TMath::LnGamma(n+k) - TMath::LnGamma(k) - TMath::LnGamma(n+1) ) * TMath::Power(mu/(mu+k),n) * TMath::Power(1-mu/(mu+k),k);
+  Double_t ret = exp( TMath::LnGamma(n+k) - TMath::LnGamma(k) - TMath::LnGamma(n+1) ) * 
+    TMath::Power(mu/(mu+k),n) * TMath::Power(1-mu/(mu+k),k);
   return ret;
 }
 
 //--------------------------------------------------------------------------------------------------
-TH1D *AliCentralityGlauberFit::MakeAncestor(Double_t alpha)
+TH1F *AliCentralityGlauberFit::MakeAncestor(Double_t alpha)
 {
-  fhAncestor = new TH1D("fhAncestor","fhAncestor",3000,0,3000);
-  for (Int_t i=0;i<fNevents;++i) {
-    fGlauntuple->GetEntry(i);
+  TString hname(Form("fhAncestor_%.3f",alpha));
+  if (fhAncestor) {
+    if (hname.CompareTo(fhAncestor->GetName())==0)
+      return fhAncestor;
+  }
+
+  delete fhAncestor;
+  fhAncestor = 0;
+  TFile *ancfile = TFile::Open(fAncfilename,"read");
+  if (ancfile && ancfile->IsOpen()) {
+    fhAncestor = dynamic_cast<TH1F*>(ancfile->Get(hname));
+    if (fhAncestor) {
+      fhAncestor->SetDirectory(0);
+      delete ancfile;
+      return fhAncestor;
+    }
+  }
+  delete ancfile;
+  
+  fhAncestor = new TH1F(hname,hname,3000,0,3000);
+  fhAncestor->SetDirectory(0);
+  Int_t nents = fGlauntuple->GetEntries(); 
+  for (Int_t i=0;i<nents;++i) {
+    fGlauntuple->GetEntry(i % nents);
     Int_t n=0;
     if (fAncestor == 1)      n = TMath::Nint(TMath::Power(fNpart,alpha));
-    else if (fAncestor == 2) n = alpha * fNpart + (1-alpha) * fNcoll;
+    else if (fAncestor == 2) n = TMath::Nint(alpha * fNpart + (1-alpha) * fNcoll);
+    else if (fAncestor == 3) n = TMath::Nint((1-alpha) * fNpart/2 + alpha * fNcoll);
     fhAncestor->Fill(n);
   }
+
+  ancfile = TFile::Open(fAncfilename,"update");
+  if (ancfile && ancfile->IsOpen()) {
+    fhAncestor->Write();
+  }
+  delete ancfile;
   return fhAncestor;
 }
