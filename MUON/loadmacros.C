@@ -44,7 +44,12 @@ void init()
   includePath        += "-I${ALICE_ROOT}/SHUTTLE/TestShuttle ";
   includePath        += "-I${ALICE_ROOT}/ITS ";
   includePath        += "-I${ALICE_ROOT}/MUON ";
-  includePath        += "-I${ALICE_ROOT}/MUON/mapping";
+  includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
+
+  // includes needed for Config.C
+  includePath        += "-I${ALICE_ROOT}/STRUCT ";
+  includePath        += "-I${ALICE}/geant3/TGeant3 ";
+  includePath        += "-I${ALICE_ROOT}/THijing";
   gSystem->SetIncludePath(includePath.Data());
 
   // Load libraries not linked with aliroot
@@ -58,6 +63,11 @@ void init()
   gSystem->Load("libEG");
   gSystem->Load("libEGPythia6");
   gSystem->Load("libAliPythia6.so");
+  
+  // libraries needed for Config.C
+  gSystem->Load("libSTRUCT.so");
+  gSystem->Load("libITSbase.so");
+  gSystem->Load("libITSsim.so");
 }  
 
 void loadmacro(const TString& macroName)
@@ -77,10 +87,10 @@ void loadmacros ()
   loadmacro("AddTaskMuonAlignment");       // Javier
   loadmacro("AddTaskMuonReAlign");         // Javier
   loadmacro("DecodeRecoCocktail");         // Hermine, Alessandro     
+  loadmacro("Config");                     //      
   loadmacro("DIMUONFakes");                // Philippe P.
   loadmacro("fastMUONGen");                // Hermine, Alessandro
   loadmacro("fastMUONSim");                // Hermine, Alessandro
-  loadmacro("loadFromOCDB");               // Philippe P.
   loadmacro("MakeMUONFullMisAlignment");   // Javier, Ivana
   loadmacro("MakeMUONResMisAlignment");    // Javier, Ivana
   loadmacro("MakeMUONZeroMisAlignment");   // Javier, Ivana

@@ -26,7 +26,10 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliCDBManager.h"
 #include "AliSimulation.h"
+#include "AliRun.h"
+#include "AliHeader.h"
 #include <TRandom.h>
+#include <Riostream.h>
 #endif
 
 void runSimulation(int seed, 
@@ -53,14 +56,14 @@ void runSimulation(int seed,
     AliRunLoader* runLoader = AliRunLoader::Open(embedwith,"titi");
     if (runLoader == 0x0) 
     {
-      AliError(Form("Cannot open file %s",filename));    
+      cerr << Form("Cannot open file %s",embedwith) << endl;    
       return;
     }
     
     runLoader->LoadHeader();
     
     if ( ! runLoader->GetHeader() ) {
-      AliError("Cannot load header.");    
+      cerr << "Cannot load header." << endl;   
       return;
     }
     else {

@@ -31,6 +31,7 @@
 #include "AliTracker.h"
 #include "AliReconstruction.h"
 #include <TRandom.h>
+#include <Riostream.h>
 //#include <TObjectTable.h>
 #endif
 
