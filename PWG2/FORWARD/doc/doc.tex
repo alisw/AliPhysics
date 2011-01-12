@@ -332,26 +332,38 @@ charged particles in a given by a simple threshold:
     \end{array}\right.\quad,
 \end{align}
 where $t$ is the strip identifier, $\Delta_t$ is the scaled energy
-deposition in that strip, and 'low cut' is a predefined cut.  For high
-flux events, the number charged particles in a strip is calculated
-using multiple Landau distributions fitted to the energy loss spectrum
-at a given $\eta$ value.  
+deposition in that strip, and 'low cut' is a predefined
+cut\footnote{This low--flux mode is perhaps deprecated.}.  
+
+For high flux events, the number charged particles in a strip is
+calculated using multiple Landau distributions fitted to the energy
+loss spectrum at a given $\eta$ value.
 \begin{align}
-  \Delta_{2,mp} &= 2 \Delta_{mp}+ 2 w \log(2)\nonumber\\
-  \Delta_{3,mp} &= 3 \Delta_{mp}+ 3 w \log(2)\nonumber\\
-  N_{ch,t} &= \frac{\landau{\Delta_t,\Delta_{mp},w}+
-    2\,\alpha\,\landau{\Delta_t,\Delta_{2,mp},2w} + 
-    3\,\beta\,\landau{\Delta_t,\Delta_{3,mp},3w}}{% 
-    \landau{\Delta_t,\Delta_{mp},w}+
-    \alpha\,\landau{\Delta_t,\Delta_{2,mp},2w} + 
-    \beta\,\landau{\Delta_t,\Delta_{3,mp},3w}}\quad,
+  \Delta_{i,mp} &= i (\Delta_{1,mp}+ \xi_1 \log(i))\nonumber\\
+  \xi_i         &= i\xi_1\nonumber\\
+  \sigma_i      &= \sqrt{i}\sigma_1\nonumber\\
+  N_{ch,t} &= \frac{\sum_i^{N_{max}}
+    i\,a_i\,F(\Delta_t;\Delta_{i,mp},\xi_i,\sigma_i)}{
+    \sum_i^{N_{max}}\,a_i\,F(\Delta_t;\Delta_{i,mp},\xi_i,\sigma_i)}\quad,
 \end{align}
-where $\landau{x,\psi,W}$ is the evaluation of the Landau distribution
-with most probable value $\psi$ and width $W$ at $x$, $w$ is the width
-of the first MIP peak, $\Delta_{mp}$ the most probable value of
-the first MIP peak, and $\alpha$ and
-$\beta$ are the relative strength of the second and third MIP peak in
-the fitted energy loss spectrum. 
+where $F(x;\Delta_{mp},\xi,\sigma)$ is the evaluation of the Landau
+distribution $f_L$ with most probable value $\Delta_{mp}$ and width
+$\xi$, folded with a Gaussian distribution with spread $\sigma$
+\cite{nim:b1:16,phyrev:a28:615}.
+$$
+F(x;\Delta_{mp},\xi,\sigma) = \frac{1}{\sigma \sqrt{2 \pi}}
+\int_{-\infty}^{+\infty} d\Delta' f_{L}(x;\Delta',\xi)
+\exp{-\frac{(\Delta_{mp}-\Delta')^2}{2\sigma^2}}
+$$
+$\Delta_{1,mp}$, $\xi_1$, and $\sigma_1$ are the parameters for the
+first MIP peak, $a_1=1$, and $a_i$ is the relative weight of the
+$i^{\text{th}}$ MIP peak.   The parameters $\Delta_{1,mp}, \xi_1,
+\sigma_1, a_2, \ldots a_{N_{max}}$ are obtained by fitting 
+$$
+\sum_{i=1}^{j} F(x;\Delta_{i,mp},\xi_{i},\sigma_i) 
+$$
+for increasing $j$ to the energy loss spectra in separate $\eta$
+bins. 
 
 \subsubsection{Acceptance and double-hit corrections}
 
@@ -377,7 +389,9 @@ hits a strip.  However, for low--flux events, it is not possible to
 reconstruct the 3\textsuperscript{rd} nor even the
 2\textsuperscript{nd} MIP peak in the energy loss spectrum.
 Therefore, the strip signal needs to be corrected to the average
-number of particle impinging on a strip at a given $\eta$.  
+number of particle impinging on a strip at a given $\eta$\footnote{As
+  before, this low--flux mode is deprecated and this correction is not
+  applied}.  
 \begin{align}
   d_{t,r}(\eta) &= \left\{
     \begin{array}{cl} \langle
@@ -536,8 +550,9 @@ three corrections
 %%   for MC events - from AliFMDAnalysisTaskSharing - number of not
 %%   empty mc events per vertex bin 
 %% 
-  This is a one dimension histogram in $\eta$, generated from running
-  the full analysis on simulated data.   
+This is a one dimension histogram in $\eta$, generated from running
+the full analysis on simulated data\footnote{With improved energy loss
+  fits, this correction is redundant and not used} .
   \begin{align}
     \label{eq:sharing_corr}
     m_v(\eta) &=
@@ -773,7 +788,6 @@ void Analyse()
 { 
   gSystem->Load("libANALYSIS.so");      // Load analysis libraries
   gSystem->Load("libANALYSISalice.so"); // General ALICE stuff
-  gSystem->Load("libPWG2forward.so");   // Older HHD code
   gSystem->Load("libPWG2forward2.so");  // New code 
 
   TH2D*              sum        = 0;                  // Summed hist
@@ -784,16 +798,17 @@ void Analyse()
   int                nWithVertex= 0;                  // # of ev. w/vertex
   int                nAvailable = tree->GetEntries(); // How many entries
   float              vzLow      = -10;                // Lower ip cut
-  float              vzHigh     =  10;                // Upper ip cut
+  float              vzHigh     = +10;                // Upper ip cut
   int                mask       = AliAODForwardMult::kInel;// Trigger mask
-  tree->SetBranchAddress("forward", &forward);        // Set the address
+  tree->SetBranchAddress("Forward", &forward);        // Set the address
 
   for (int i = 0; i < nAvailable; i++) { 
     // Read the i'th event 
     tree->GetEntry(i);
 
     // Create sum histogram on first event - to match binning to input
-    if (!sum) sum = static_cast<TH2D*>(mult->Clone("d2ndetadphi"));
+    if (!sum) 
+      sum = static_cast<TH2D*>(mult->GetHistogram()->Clone("d2ndetadphi"));
     
     // Other trigger/event requirements could be defined 
     if (!mult->IsTriggerBits(mask)) continue; 
@@ -821,4 +836,9 @@ void Analyse()
   dndeta->Draw();
 }
 \end{lstlisting}
+
+\begin{thebibliography}{99}
+\bibitem{nim:b1:16} Nucl.Instrum.Meth.B1:16
+\bibitem{phyrev:a28:615} Phys.Rev.A28:615
+\end{thebibliography}
 \end{document}
