@@ -402,6 +402,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   MakeJetContainer();
   fHistList->Add(fhnCorrelation);
   fHistList->Add(fhnCorrelationPhiZRec);
+  for(int i = 0;i<kMaxStep*2;++i)fHistList->Add(fhnJetContainer[i]);
 
   //
   //  Histogram
@@ -587,7 +588,6 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh2NRecTracksPt);
     fHistList->Add(fh2NGenJetsPt);
     fHistList->Add(fh2NGenTracksPt);
-    for(int i = 0;i<kMaxStep*2;++i)fHistList->Add(fhnJetContainer[i]);
     for(int ij = 0;ij<kMaxJets;++ij){
       fHistList->Add( fh1PtRecIn[ij]);
 
@@ -698,7 +698,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       fh1DijetMinv[ij]                = new TH1F(Form("fh1Dijet%sMinv",cAdd.Data()),"Dijet invariant mass;m_{JJ}",nBinPt,binLimitsPt);
       fHistList->Add(fh1DijetMinv[ij]);
 
-      fh2DijetDeltaPhiPt[ij]       = new TH2F(Form("fh2Dijet%sDeltaPhiPt",cAdd.Data()),"Difference in the azimuthal angle;#Delta#phi;p_{T,1};Entries",180,0.,TMath::Pi(),nBinPt,binLimitsPt);
+      fh2DijetDeltaPhiPt[ij]       = new TH2F(Form("fh2Dijet%sDeltaPhiPt",cAdd.Data()),"Difference in the azimuthal angle;#Delta#phi;p_{T,2};Entries",180,0.,TMath::Pi(),nBinPt,binLimitsPt);
       fHistList->Add(fh2DijetDeltaPhiPt[ij]);
 
       fh2DijetAsymPt[ij]            = new TH2F(Form("fh2Dijet%sAsym",cAdd.Data()),"Pt asymmetry;#Deltap_{T}/(p_{T,1}+p_{T,2});p_{T,1};Entries",50,0.,1.,nBinPt,binLimitsPt);
@@ -950,7 +950,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
     }
     ptOld = ptJet;
     
-    // find the dijets assume soring and acceptance cut...
+    // find the dijets assume sorting and acceptance cut...
     if(ij==0){
       ij0 = ij;
       pT0 = ptJet;
@@ -960,6 +960,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
     else if(ptJet>pT1){
       // take only the backward hemisphere??                                                        
       phi1 = jet->Phi();
+      if(phi1<0)phi1+=TMath::Pi()*2.;
       Float_t dPhi = phi1 - phi0;
       if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
       if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();
@@ -1019,7 +1020,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
     if(deltaPhi>TMath::Pi())deltaPhi = deltaPhi - 2.*TMath::Pi();
     if(deltaPhi<(-1.*TMath::Pi()))deltaPhi = deltaPhi + 2.*TMath::Pi();      
     deltaPhi = TMath::Abs(deltaPhi);
-    fh2DijetDeltaPhiPt[iType]->Fill(deltaPhi,ptJet0);      
+    fh2DijetDeltaPhiPt[iType]->Fill(deltaPhi,ptJet1);      
 
     Float_t asym = 9999;
     if((ptJet0+ptJet1)>0)asym = (ptJet0-ptJet1)/(ptJet0+ptJet1);
