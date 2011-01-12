@@ -594,7 +594,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
   //
   // Produce AliTRDCalChamberStatus out of calibration results
   //
-
+  
   // set up AliTRDCalChamberStatus
   AliTRDCalChamberStatus *CalChamberStatus = new AliTRDCalChamberStatus();
   for(Int_t det = 0; det < 540; det++) CalChamberStatus->SetStatus(det,1);
@@ -604,7 +604,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
   AliTRDCalDet *calDetVDrift = (AliTRDCalDet *) fCalibObjects->At(kVdriftLinear);
 
   // Check
-  if((!calDetGain) || (!calDetVDrift)) return kFALSE;
+  if((!calDetGain) || (!calDetVDrift) || (!fCH2d)) return kFALSE;
 
   // Gain
   Double_t gainmean = calDetGain->GetMean();
@@ -654,8 +654,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
      }
      */
 
-     if(projch) delete projch;
-
+    delete projch;
+    
    }
 
    // Security
@@ -1028,5 +1028,4 @@ Int_t AliTRDPreprocessorOffline::GetSubVersion(TString name) const
   return -1;
 
 }
-
 
