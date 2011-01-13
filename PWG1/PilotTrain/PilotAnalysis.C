@@ -8,12 +8,12 @@ Int_t runNumbers[5] = {137844};
 
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
-Bool_t doCentrality   = 1;
+Bool_t doCentrality   = 0;
 Bool_t doQAsym        = 1;
 Bool_t doVZERO        = 1;   // there is a 2nd file
 Bool_t doVertex       = 1;
 Bool_t doSPD          = 1;   // needs RP   
-Bool_t doTPC          = 1;
+Bool_t doTPC          = 0;
 Bool_t doSDD          = 1;   // needs RP
 Bool_t doSSDdEdx      = 1;
 // new 
@@ -30,28 +30,28 @@ Bool_t doMUONEff      = 0;   // NEEDS geometry
 Bool_t doV0           = 0;   // NEEDS MCtruth 
 
 TString     train_name         = "QA";      // QA local folder name
-TString     train_tag          = "";        // Train special tag appended to 
+TString     train_tag          = "pp";        // Train special tag appended to 
                                             // visible name. ("sim", "pp", ...)
                // Name in train page (DON'T CHANGE)
 TString     visible_name       = Form("QA$2_$3%s", train_tag.Data()); //# FIXED #
-TString     job_comment        = "PWG1 QA train"; // Can add observations here
+TString     job_comment        = "PWG1 QA train (no TPC)"; // Can add observations here
                // Job tag (DON'T CHANGE)
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
                // Package versions - Modify as needed
 TString     root_version       = "v5-27-06b";
-TString     aliroot_version    = "v4-21-10-AN";
+TString     aliroot_version    = "v4-21-12-AN";
                // Production directory - change as needed for test mode
-TString     grid_datadir       = "/alice/data/2010/LHC10h";
+TString     grid_datadir       = "/alice/data/2010/LHC10e";
                // Work directory in GRID (DON'T CHANGE)
 TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/QA/QA$2";
                // Job splitting
-Int_t       grid_split         = 10;       // Splitting
+Int_t       grid_split         = 20;       // Splitting
                // Debug level
 Int_t       debug_level        = 1;        // Debugging
                // File merging
 Int_t       maxMergeFiles      = 10;       // Max files to merge in a chunk
                // Data pattern - change as needed for test mode
-TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
+TString     data_pattern       = "*ESDs/pass2/*ESDs.root";
                // Output directory (DON'T CHANGE)
 TString     alien_outdir       = "$1/QA$2";
                // Input collection (production mode)
@@ -62,7 +62,7 @@ TString     terminateFiles     = "trending.root"; // Files produced during Termi
 
 Bool_t useProductionMode       = kTRUE;
 Bool_t useMergeViaJDL          = kTRUE;
-Bool_t useFastReadOption       = kTRUE;
+Bool_t useFastReadOption       = kFALSE;
 Bool_t useOverwriteMode        = kTRUE;
 Bool_t useDevelopmentVersion   = kFALSE;
 
@@ -163,6 +163,8 @@ void AddAnalysisTasks()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   mgr->SetCommonFileName("QAresults.root");
+  // Statistics task
+  mgr->AddStatisticsTask(AliVEvent::kMB);
   //
   // CDB connection
   //
@@ -185,13 +187,14 @@ void AddAnalysisTasks()
   }
   
   //
-  // Centrality (J. Thaeder)
+  // Centrality (A. Toia)
   //
   if (doCentrality) {
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
      AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-     gROOT->LoadMacro("$ALICE_ROOT/PWG1/Centrality/AddTaskHIMultCorr.C");
-     AliAnalysisTaskHIMultCorr *taskHIcentrality = AddTaskHIMultCorr();
+// J.Thaeder
+//     gROOT->LoadMacro("$ALICE_ROOT/PWG1/Centrality/AddTaskHIMultCorr.C");
+//     AliAnalysisTaskHIMultCorr *taskHIcentrality = AddTaskHIMultCorr();
   }   
   
   // Vertexing (A. Dainese)
