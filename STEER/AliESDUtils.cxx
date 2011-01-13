@@ -30,7 +30,7 @@
 #include "AliESDVZERO.h"
 
 //______________________________________________________________________________
-Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc)
+Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Float_t *v0multChCorr)
 {
   // Correct V0 non-linearity, prepare a version rescaled to SPD2 corr.
   // Please describe better parameters...
@@ -126,6 +126,9 @@ Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc)
     multCorr2 += (multChCorr[i]/par0[i]/64.);
   }
   v0CorrResc =  multCorr2;
+  if (v0multChCorr)
+    for(Int_t i = 0; i < 64; ++i) v0multChCorr[i] = multChCorr[i];
+
   return multCorr;
 }
 
