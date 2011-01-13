@@ -96,58 +96,17 @@ void drawTHnSparse( TString inputFile,
   folder.Remove(6,15);
    
   gSystem->Exec("mkdir "+folder);
-  can0->SaveAs(folder+"/event_properties.root");
-  can0->SaveAs(folder+"/event_properties.png");
-  
- 
-  stringstream sMinEta, sMaxEta;
-  sMinEta << minEta; sMaxEta << maxEta;
- 
-  stringstream sMinTM, sMaxTM;
-  sMinTM << minTrackMult; sMaxTM << maxTrackMult;
- 
-  stringstream sMinPt, sMaxPt;
-  sMinPt << minPt; sMaxPt << maxPt;
- 
-  stringstream sMinDCAr, sMaxDCAr;
-  sMinDCAr << minDCAr; sMaxDCAr << maxDCAr;
+  TString cuts = cutsToString(minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult, vertexStatus);
 
-  stringstream sMinDCAz, sMaxDCAz;
-  sMinDCAz << minDCAz; sMaxDCAz << maxDCAz;
-
-  stringstream sMinTPCclus, sMaxTPCclus;
-  sMinTPCclus << minTPCclus; sMaxTPCclus << maxTPCclus;
- 
-  stringstream sMinITSclus, sMaxITSclus;
-  sMinITSclus << minITSclus; sMaxITSclus << maxITSclus;
+  can0->SaveAs(folder+"/event_properties_"+cuts+".root");
+  can0->SaveAs(folder+"/event_properties_"+cuts+".png");
+  can1->SaveAs(folder+"/track_properties_"+cuts+".root");
+  can1->SaveAs(folder+"/track_properties_"+cuts+".png");  
+  can2->SaveAs(folder+"/HLT_2D_track_correlations_"+cuts+".root");
+  can2->SaveAs(folder+"/HLT_2D_track_correlations_"+cuts+".png");
+  can3->SaveAs(folder+"/OFF_2D_track_correlations_"+cuts+".root");
+  can3->SaveAs(folder+"/OFF_2D_track_correlations_"+cuts+".png");
   
-  stringstream sVS; sVS << vertexStatus;
-  
-  TString trackName = "track_properties_";
-  trackName += "eta"+sMinEta.str()+"_"+sMaxEta.str()+"_";
-  trackName += "Pt"+sMinPt.str()+"_"+sMaxPt.str()+"_";
-  trackName += "TM"+sMinTM.str()+"_"+sMaxTM.str()+"_";
-  trackName += "DCAr"+sMinDCAr.str()+"_"+sMaxDCAr.str()+"_";
-  trackName += "DCAz"+sMinDCAz.str()+"_"+sMaxDCAz.str()+"_";
-  trackName += "TPCclus"+sMinTPCclus.str()+"_"+sMaxTPCclus.str()+"_";
-  trackName += "ITSclus"+sMinITSclus.str()+"_"+sMaxITSclus.str()+"_";
-  if(vertexStatus==2){
-     trackName.Chop(); trackName += ".root";
-  }
-  else { 
-     trackName += "VS"+sVS.str();   
-     trackName += ".root";
-  }
-  can1->SaveAs(folder+"/"+trackName);
-  trackName.ReplaceAll("root","png");
-  can1->SaveAs(folder+"/"+trackName);
-  
-  
-  can2->SaveAs(folder+"/HLT_2D_track_correlations.root");
-  can3->SaveAs(folder+"/OFF_2D_track_correlations.root");
-  can2->SaveAs(folder+"/HLT_2D_track_correlations.png");
-  can3->SaveAs(folder+"/OFF_2D_track_correlations.png");
-
   return;
 }
 
@@ -239,8 +198,11 @@ void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D 
       hlt->Draw();
       off->Draw("sames");
       printStats(hlt, off);
+      
+      if(i==0){
+         printLegend(l,hlt,off);
+      }
    } 
-   printLegend(l,hlt,off);  
 }
 
 //====================== for 2D distributions ===============================//
@@ -340,8 +302,9 @@ void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D 
       hlt->Draw();
       off->Draw("sames");
       printStats(hlt, off);
+      
+      if(i==0) printLegend(l,hlt,off);
    } 
-   printLegend(l,hlt,off);  
 }
 
 void plotEventQuantities(TCanvas* can, THnSparse* heventOFF, THnSparse* heventHLT, TText* hText){
@@ -384,4 +347,51 @@ TString fix1DTitle(const char* c){
 TString fix2DTitle(const char* c1, const char* c2){
   TString tmp = fix1DTitle(c1)+" vs."+fix1DTitle(c2);
   return tmp;
+}
+
+TString cutsToString( double minEta,	double maxEta,
+ 	              double minPt,	double maxPt,
+	   	      double minDCAr,	double maxDCAr,
+	   	      double minDCAz,	double maxDCAz,
+	   	      int minTPCclus,	int maxTPCclus,
+	   	      int minITSclus,	int maxITSclus, 
+	              int minTrackMult, int maxTrackMult,
+		      int VS
+	            )
+{
+  stringstream sMinEta, sMaxEta;
+  sMinEta << minEta; sMaxEta << maxEta;
+ 
+  stringstream sMinTM, sMaxTM;
+  sMinTM << minTrackMult; sMaxTM << maxTrackMult;
+ 
+  stringstream sMinPt, sMaxPt;
+  sMinPt << minPt; sMaxPt << maxPt;
+ 
+  stringstream sMinDCAr, sMaxDCAr;
+  sMinDCAr << minDCAr; sMaxDCAr << maxDCAr;
+
+  stringstream sMinDCAz, sMaxDCAz;
+  sMinDCAz << minDCAz; sMaxDCAz << maxDCAz;
+
+  stringstream sMinTPCclus, sMaxTPCclus;
+  sMinTPCclus << minTPCclus; sMaxTPCclus << maxTPCclus;
+ 
+  stringstream sMinITSclus, sMaxITSclus;
+  sMinITSclus << minITSclus; sMaxITSclus << maxITSclus;
+  
+  stringstream sVS; sVS << VS;
+  
+  TString cuts = "";
+  cuts += "eta"+sMinEta.str()+"_"+sMaxEta.str()+"_";
+  cuts += "Pt"+sMinPt.str()+"_"+sMaxPt.str()+"_";
+  cuts += "TM"+sMinTM.str()+"_"+sMaxTM.str()+"_";
+  cuts += "DCAr"+sMinDCAr.str()+"_"+sMaxDCAr.str()+"_";
+  cuts += "DCAz"+sMinDCAz.str()+"_"+sMaxDCAz.str()+"_";
+  cuts += "TPCclus"+sMinTPCclus.str()+"_"+sMaxTPCclus.str()+"_";
+  cuts += "ITSclus"+sMinITSclus.str()+"_"+sMaxITSclus.str()+"_";
+  
+  if(VS==2) cuts.Chop(); 
+  else cuts += "VS"+sVS.str(); 
+  return cuts;
 }
