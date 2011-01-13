@@ -24,6 +24,8 @@
 #include "AliMUON1DMap.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
+#include "AliMUONConstants.h"
+#include "AliMUONRejectList.h"
 #include "AliMUONSparseHisto.h"
 #include "AliMUONVStore.h"
 #include "AliMpBusPatch.h"
@@ -382,6 +384,127 @@ fNofEventsPerDDL(0x0)
   
   UpdateNumberOfEvents(&nevents);
   
+}
+
+//_____________________________________________________________________________
+AliMUONTrackerData::AliMUONTrackerData(const char* name, const char* title,
+                                       const AliMUONRejectList& rejectList)
+: AliMUONVTrackerData(name,title),
+fIsSingleEvent(kFALSE),
+fChannelValues(0x0),
+fManuValues(0x0),
+fBusPatchValues(0x0),
+fDEValues(0x0),
+fChamberValues(0x0),
+fPCBValues(0x0),
+fDimension(External2Internal(1)+fgkExtraDimension),
+fNevents(0),
+fDimensionNames(new TObjArray(fDimension+fgkVirtualExtraDimension)),
+fExternalDimensionNames(new TObjArray(1)),
+fExternalDimension(1),
+fHistogramming(new Int_t[fExternalDimension]),
+fHistos(0x0),
+fXmin(0.0),
+fXmax(0.0),
+fIsChannelLevelEnabled(kTRUE),
+fIsManuLevelEnabled(kTRUE),
+fIsBustPatchLevelEnabled(kTRUE),
+fIsPCBLevelEnabled(kFALSE),
+fNofDDLs(0),
+fNofEventsPerDDL(0x0)
+{  
+  
+   /// ctor with values from the given rejectlist
+    
+  if ( !AliMpDDLStore::Instance(kFALSE) && !AliMpManuStore::Instance(kFALSE) )
+  {
+    AliError("Cannot work without (full) mapping");
+    return;
+  }
+  
+  memset(fHistogramming,0,fExternalDimension*sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
+  
+  fExternalDimensionNames->SetOwner(kTRUE);
+  fDimensionNames->SetOwner(kTRUE);  
+  fDimensionNames->AddAt(new TObjString("occ"),IndexOfOccupancyDimension());
+  fDimensionNames->AddAt(new TObjString("N"),IndexOfNumberDimension());
+  fDimensionNames->AddAt(new TObjString("n"),NumberOfDimensions()-fgkVirtualExtraDimension);
+  Clear();
+  TArrayI nevents(AliDAQ::NumberOfDdls("MUONTRK"));
+  AssertStores();
+  
+  
+  for ( Int_t chamberId = 0; chamberId < AliMUONConstants::NCh(); ++chamberId ) 
+  {
+    AliMUONVCalibParam* chamber = ChamberParam(chamberId,kTRUE);
+
+    // FIXME : update the chamber value !
+    
+    AliMpDEIterator deit;
+  
+    deit.First(chamberId);
+
+    while ( !deit.IsDone() ) 
+    {
+      AliMpDetElement* mpde = deit.CurrentDE();
+      
+      Int_t detElemId = mpde->GetId();
+
+      AliMUONVCalibParam* de = DetectionElementParam(detElemId,kTRUE);
+
+      DispatchValue(*de,0,rejectList.DetectionElementProbability(detElemId),0.0,mpde->NofChannels());
+      
+      for ( Int_t iBusPatch = 0; iBusPatch < mpde->GetNofBusPatches(); ++iBusPatch ) 
+      {
+        Int_t busPatchId = mpde->GetBusPatchId(iBusPatch);
+        
+        AliMUONVCalibParam* bp = BusPatchParam(busPatchId,kTRUE);
+
+        AliMpBusPatch* mpbp = AliMpDDLStore::Instance()->GetBusPatch(busPatchId);
+
+        Int_t nch(0);
+        
+        for ( Int_t iManu = 0 ;iManu < mpbp->GetNofManus(); ++iManu )
+        {
+          Int_t manuId = mpbp->GetManuId(iManu);
+          
+          nch += mpde->NofChannelsInManu(manuId);
+          
+          AliMUONVCalibParam* manu = ManuParam(detElemId,manuId,kTRUE);
+          
+          DispatchValue(*manu,0,rejectList.ManuProbability(detElemId,manuId),0.0,mpde->NofChannelsInManu(manuId));
+          
+          AliMUONVCalibParam* c = ChannelParam(detElemId,manuId);
+          
+          if (!c)
+          {
+            c = new AliMUONCalibParamND(Dimension(),
+                                        AliMpConstants::ManuNofChannels(),
+                                        detElemId,
+                                        manuId,
+                                        0.0);
+            fChannelValues->Add(c);
+          }
+          
+          for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
+          {
+            DispatchValue(*c,manuChannel,rejectList.ChannelProbability(detElemId,manuId,manuChannel),0.0,1);
+          }
+        }
+
+        DispatchValue(*bp,0,rejectList.BusPatchProbability(busPatchId),0.0,nch);
+
+      }
+      
+      deit.Next();
+    }
+ 
+  }
+  
+  
+  SetDimensionName(0,"RejectProba");
+
+  UpdateNumberOfEvents(0x0);
 }
 
 //_____________________________________________________________________________
@@ -2020,5 +2143,23 @@ AliMUONTrackerData::ExportAsASCIIOccupancyFile(const char* filename, Int_t runNu
   out.close();
   return kTRUE;
 }
-
-
+  
+//_____________________________________________________________________________
+void AliMUONTrackerData::DispatchValue(AliMUONVCalibParam& param, 
+                                       Int_t index,
+                                       Double_t y, 
+                                       Double_t ey,
+                                       Int_t nchannels)
+{
+  /// fills the calibparam with a single value
+  
+  Double_t sumn = 1000.0; // or any value strictly above 1
+  Double_t sumw = sumn*y;
+  Double_t sumw2 = (sumn-1)*ey*ey+sumw*sumw/sumn;
+  
+  param.SetValueAsDouble(index,0,sumw);
+  param.SetValueAsDouble(index,1,sumw2);
+  param.SetValueAsDouble(index,2,sumn);
+  param.SetValueAsDouble(index,3,nchannels);
+  
+}

@@ -20,6 +20,7 @@ class AliMUONSparseHisto;
 class AliMUONVCalibParam;
 class AliMUONVStore;
 class AliMpDetElement;
+class AliMUONRejectList;
 
 class AliMUONTrackerData : public AliMUONVTrackerData
 {
@@ -33,6 +34,9 @@ public:
 
   AliMUONTrackerData(const char* name, const char* title,
                      const AliMUONVStore& deValues, Int_t val);
+
+  AliMUONTrackerData(const char* name, const char* title,
+                     const AliMUONRejectList& rejectList);
 
   virtual ~AliMUONTrackerData();
 
@@ -219,6 +223,8 @@ private:
   void AssertStores();
   
   Bool_t UpdateNumberOfEvents(TArrayI* nevents);
+  
+  static void DispatchValue(AliMUONVCalibParam& param, Int_t index, Double_t y, Double_t ey, Int_t nchannels);
   
 private:
   

@@ -40,6 +40,7 @@ ClassImp(AliMUONTrackerConditionDataMaker)
 #include "AliMUONDigitCalibrator.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
+#include "AliMUONRejectList.h"
 #include "AliMUONTrackerData.h"
 #include "AliMUONTrackerIO.h"
 #include "AliMpArrayI.h"
@@ -79,16 +80,36 @@ fIsOwnerOfData(kTRUE)
 	
 	AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
 
-  Int_t startOfValidity;
-  AliMUONVStore* store = CreateStore(runNumber,ocdbPath,type,startOfValidity);
-  AliDebug(1,Form("runNumber=%d ocdbPath=%s type=%s startOfValidity=%d store=%p",
-                  runNumber,ocdbPath,type,startOfValidity,store));
-  if ( store )
+  TString stype(type);
+  stype.ToUpper();
+  
+  if ( stype == "REJECTLIST" ) 
   {
-    fData = CreateData(type,*store,startOfValidity);
-  }  
+    
+    Int_t startOfValidity(0);
+    
+    AliMUONRejectList* rl = AliMUONCalibrationData::CreateRejectList(runNumber,&startOfValidity);    
 
-  delete store;
+    if (rl)
+    {
+      fData = new AliMUONTrackerData(Form("RL%d",startOfValidity),"RejectList",*rl);
+    }
+    
+    delete rl;
+  }
+  else
+  {
+    Int_t startOfValidity;
+  AliMUONVStore* store = CreateStore(runNumber,ocdbPath,type,startOfValidity);
+    AliDebug(1,Form("runNumber=%d ocdbPath=%s type=%s startOfValidity=%d store=%p",
+                    runNumber,ocdbPath,type,startOfValidity,store));
+    if ( store )
+    {
+      fData = CreateData(type,*store,startOfValidity);
+    }  
+    
+    delete store;
+  }
   
   AliCDBManager::Instance()->SetDefaultStorage(storage);
 }

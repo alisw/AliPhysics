@@ -199,6 +199,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fOCDBTypes->AddEntry("StatusMap",5);
   fOCDBTypes->AddEntry("Status",6);
   fOCDBTypes->AddEntry("Capacitances",2);
+  fOCDBTypes->AddEntry("RejectList",8);
   fOCDBTypes->Select(0);
   fOCDBTypes->Resize(80,20);
     
