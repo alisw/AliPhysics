@@ -96,6 +96,7 @@ void drawTHnSparse( TString inputFile,
    
   gSystem->Exec("mkdir "+folder);
   can0->SaveAs(folder+"/event_properties.root");
+  can0->SaveAs(folder+"/event_properties.png");
   
  
   stringstream sMinEta, sMaxEta;
@@ -137,9 +138,14 @@ void drawTHnSparse( TString inputFile,
      trackName += ".root";
   }
   can1->SaveAs(folder+"/"+trackName);
+  trackName.ReplaceAll("root","png");
+  can1->SaveAs(folder+"/"+trackName);
+  
   
   can2->SaveAs(folder+"/HLT_2D_track_correlations.root");
   can3->SaveAs(folder+"/OFF_2D_track_correlations.root");
+  can2->SaveAs(folder+"/HLT_2D_track_correlations.png");
+  can3->SaveAs(folder+"/OFF_2D_track_correlations.png");
 
   return;
 }
