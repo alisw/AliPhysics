@@ -706,7 +706,7 @@ AliMpDCSNamer::ManuId2Sector(Int_t detElemId, Int_t manuId) const
     if ( x < -140 ) AliFatal("");
     
     if ( x < 283.75 ) isector = 0;
-    else if ( x < 603.75 ) isector = 1;
+    else if ( x < 606.25 ) isector = 1;
     else if ( x < 1158.75 ) isector = 2;
   }
   
