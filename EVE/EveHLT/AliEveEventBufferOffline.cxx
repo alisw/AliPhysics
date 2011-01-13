@@ -5,6 +5,8 @@
 #include "AliEveEventBufferOffline.h"
 
 #include "AliESDEvent.h"
+#include "AliEveEventBufferOffline.h"
+#include "AliEveEventBuffer.h"
 
 #include "TTimer.h"
 #include "TFile.h"

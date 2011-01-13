@@ -2,6 +2,9 @@
 #define ALIEVEHLTEVENTMANAGEROFFLINE_H
 
 class AliESDEvent;
+class AliEveEventBufferOffline;
+class AliEveEventBuffer;
+
 #include "AliEveHLTEventManager.h"
 
 class AliEveHLTEventManagerOffline : public AliEveHLTEventManager { 
