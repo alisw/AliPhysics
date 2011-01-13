@@ -131,10 +131,10 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
   // values. If you want to modify any parameter you have to set the new
   // value after calling Initialize and before PrepareRun.
 
-   char  cbeam[8];
-    strncpy(cbeam,beam, 7);
-   char  ctarget[8];
-   strncpy(ctarget,target, 7);
+   char  cbeam[9];
+    strncpy(cbeam,beam, 8);
+   char  ctarget[9];
+   strncpy(ctarget,target, 8);
    printf("\n Initializing Herwig !! \n");
    if ( (!strncmp(beam, "E+"    ,2)) &&
         (!strncmp(beam, "E-"    ,2)) &&
@@ -184,8 +184,8 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
 
    // initialization:
    // type of beams
-   strncpy(HWBMCH.PART1,beam, 7);
-   strncpy(HWBMCH.PART2,target, 7);
+   strncpy(HWBMCH.PART1,beam, 8);
+   strncpy(HWBMCH.PART2,target, 8);
    // momentum of beams
    HWPROC.PBEAM1=pbeam1;
    HWPROC.PBEAM2=pbeam2;
@@ -214,9 +214,9 @@ void THerwig6::InitializeJimmy(const char *beam, const char *target, double pbea
   // values. If you want to modify any parameter you have to set the new
   // value after calling Initialize and before PrepareRun.
 
-   char  cbeam[8];
+   char  cbeam[9];
    strncpy(cbeam,beam,8);
-   char  ctarget[8];
+   char  ctarget[9];
    strncpy(ctarget,target,8);
    printf("\n Initializing Herwig !! \n");
    if ( (!strncmp(beam, "E+"    ,2)) &&
