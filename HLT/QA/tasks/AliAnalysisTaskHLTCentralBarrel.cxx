@@ -311,9 +311,9 @@ THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateEventTHnSparse(const char* na
 //see header for documentation                     
   
   THnSparseF *thn = new THnSparseF(name,"",size,bins,min,max);
-  thn->GetAxis(0)->SetTitle("x (cm)");
-  thn->GetAxis(1)->SetTitle("y (cm)");
-  thn->GetAxis(2)->SetTitle("z (cm)");
+  thn->GetAxis(0)->SetTitle("vertex x (cm)");
+  thn->GetAxis(1)->SetTitle("vertex y (cm)");
+  thn->GetAxis(2)->SetTitle("vertex z (cm)");
   thn->GetAxis(3)->SetTitle("number of contributors");
   thn->GetAxis(4)->SetTitle("track multiplicity");
   thn->GetAxis(5)->SetTitle("vertex status"); 

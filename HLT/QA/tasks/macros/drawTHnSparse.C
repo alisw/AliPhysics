@@ -32,6 +32,7 @@ void drawTHnSparse( TString inputFile,
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
   gStyle->SetOptStat(10);
+  //gROOT->ForceStyle();
   TH1::AddDirectory(kFALSE);
 
   TFile *file = TFile::Open(inputFile);
@@ -213,7 +214,9 @@ void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D 
   
       hlt = hHLT->Projection(i);
       off = hOFF->Projection(i); 
-      hlt->SetTitle(hHLT->Projection(i)->GetTitle()); 
+      
+      hlt->SetTitle(fix1DTitle(hHLT->Projection(i)->GetTitle())); 
+        
       defineYaxisMax(hlt, off);
       //off->SetLineColor(2);
       off->SetLineStyle(2);
@@ -238,7 +241,6 @@ void plot2D(TCanvas* can, THnSparse* h,
  	    int minTrackMult, int maxTrackMult
            )
 {
-
   h->GetAxis(0)->SetRangeUser(minPt,maxPt);
   h->GetAxis(1)->SetRangeUser(minTPCclus,maxTPCclus);
   h->GetAxis(3)->SetRangeUser(minEta, maxEta);
@@ -247,24 +249,45 @@ void plot2D(TCanvas* can, THnSparse* h,
   h->GetAxis(10)->SetRangeUser(minITSclus, maxITSclus);
   h->GetAxis(11)->SetRangeUser(minTrackMult, maxTrackMult);
   
-  can->cd(1);
-  h->Projection(1,0)->Draw("colz");	      
+  can->cd(1);    
+  TH2D *ht = h->Projection(1,0);
+  ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(0)->GetTitle()));
+  ht->Draw("colz");
+  
   can->cd(2);
-  h->Projection(1,3)->Draw("colz");	   
+  ht = h->Projection(1,3);
+  ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(3)->GetTitle()));
+  ht->Draw("colz");
+  
   can->cd(3);
-  h->Projection(1,5)->Draw("colz"); 
+  ht = h->Projection(1,5);
+  ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(5)->GetTitle()));
+  ht->Draw("colz");
+  
   can->cd(4);
-  h->Projection(1,6)->Draw("colz"); 
+  ht = h->Projection(1,6);
+  ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(6)->GetTitle()));
+  ht->Draw("colz");
   
   can->cd(5);
-  h->Projection(6,0)->Draw("colz");	      
+  ht = h->Projection(6,0);
+  ht->SetTitle(fix2DTitle(h->Projection(6)->GetTitle(), h->Projection(0)->GetTitle()));
+  ht->Draw("colz");
+  
   can->cd(6);
-  h->Projection(6,3)->Draw("colz");	   
+  ht = h->Projection(6,3);
+  ht->SetTitle(fix2DTitle(h->Projection(6)->GetTitle(), h->Projection(3)->GetTitle()));
+  ht->Draw("colz");
+  
   can->cd(7);
-  h->Projection(3,0)->Draw("colz"); 
+  ht = h->Projection(3,0);
+  ht->SetTitle(fix2DTitle(h->Projection(3)->GetTitle(), h->Projection(0)->GetTitle()));
+  ht->Draw("colz");
+  
   can->cd(8);
-  h->Projection(3,4)->Draw("colz"); 
- 
+  ht = h->Projection(3,4);
+  ht->SetTitle(fix2DTitle(h->Projection(3)->GetTitle(), h->Projection(4)->GetTitle()));
+  ht->Draw("colz"); 
 }
 
 void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D *hlt, TH1D *off, TLegend *l, int size){
@@ -272,7 +295,7 @@ void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D 
   for(int i=0; i<size; i++){         
       hlt = hHLT->Projection(i);
       off = hOFF->Projection(i); 
-      hlt->SetTitle(hHLT->Projection(i)->GetTitle()); 
+      hlt->SetTitle(fix1DTitle(hHLT->Projection(i)->GetTitle()));
       defineYaxisMax(hlt, off);
       off->SetLineColor(2);
      
@@ -312,5 +335,16 @@ void plotTrackQuantities( TCanvas* can, THnSparse* htrackOFF, THnSparse* htrackH
   TLegend *leg1 = new TLegend(0.6,0.6,0.8,0.8);
   plotAid(can, htrackOFF, htrackHLT, hText, hlt, off, leg1, 11, 
           minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult, VS);  
-return;
+  return;
+}
+
+TString fix1DTitle(const char* c){
+  TString tmp = c;
+  tmp.ReplaceAll("projection ","");
+  return tmp;   
+}
+
+TString fix2DTitle(const char* c1, const char* c2){
+  TString tmp = fix1DTitle(c1)+" vs."+fix1DTitle(c2);
+  return tmp;
 }
