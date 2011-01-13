@@ -259,6 +259,8 @@ void AliTOFReconstructor::FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *es
   // It contains the event_time estiamted by the TOF combinatorial algorithm
   //
 
+  if (!GetRecoParam()) AliFatal("cannot get TOF RECO params");
+
   Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
   AliTOFT0maker *tofT0maker = new AliTOFT0maker(esdPID,fTOFcalib);
   //AliTOFT0maker tofT0maker = AliTOFT0maker(esdPID,fTOFcalib);
