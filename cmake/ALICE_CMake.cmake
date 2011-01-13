@@ -430,6 +430,7 @@ macro(ALICE_BuildLibrary)
   include_directories(${CMAKE_INCLUDE_EXPORT_DIRECTORY})
   
   add_library(${PACKAGE} SHARED ${PCS} ${PFS} ${PS} ${PDS})
+  set_target_properties(${PACKAGE} PROPERTIES SUFFIX .so)  
   
 
   if(PELIBS OR SHLIB)
