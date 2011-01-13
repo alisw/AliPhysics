@@ -144,8 +144,6 @@ Bool_t AliMultiEventInputHandler::BeginEvent(Long64_t /*entry*/)
     // Actions before analysis of each event 
     //
     // Reset the number of events buffered for this bin to 0
-    printf("BeginEvent %5d %5d \n", 
-	   fCurrentBin, fEventPool->BinNumber());
     
     if (fCurrentBin != (fEventPool->BinNumber())) {
 	fCurrentBin = fEventPool->BinNumber();
