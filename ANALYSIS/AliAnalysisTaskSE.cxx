@@ -40,6 +40,7 @@
 #include "AliAODInputHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliInputEventHandler.h"
+#include "AliMultiInputEventHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
@@ -76,7 +77,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE():
     fTreeA(0x0),
     fCurrentRunNumber(-1),
     fHistosQA(0x0),
-    fOfflineTriggerMask(0)
+    fOfflineTriggerMask(0),
+    fMultiInputHandler(0),
+    fMCEventHandler(0)
 {
   // Default constructor
 }
@@ -93,7 +96,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
     fTreeA(0x0),
     fCurrentRunNumber(-1),
     fHistosQA(0x0),
-    fOfflineTriggerMask(0)
+    fOfflineTriggerMask(0),
+    fMultiInputHandler(0),
+    fMCEventHandler(0)
 {
   // Default constructor
     DefineInput (0, TChain::Class());
@@ -112,7 +117,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     fTreeA(0x0),
     fCurrentRunNumber(-1),
     fHistosQA(0x0),
-    fOfflineTriggerMask(0)
+    fOfflineTriggerMask(0),
+    fMultiInputHandler(obj.fMultiInputHandler),
+    fMCEventHandler(obj.fMCEventHandler)
 {
 // Copy constructor
     fDebug            = obj.fDebug;
@@ -144,6 +151,8 @@ AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
     fCurrentRunNumber = other.fCurrentRunNumber;
     fHistosQA         = other.fHistosQA;
     fOfflineTriggerMask = other.fOfflineTriggerMask;
+    fMultiInputHandler  = other.fMultiInputHandler;
+    fMCEventHandler     = other.fMCEventHandler;
     return *this;
 }
 
@@ -152,20 +161,10 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 {
 // Connect the input data
     if (fDebug > 1) printf("AnalysisTaskSE::ConnectInputData() \n");
-//
-//  ESD
-//
-    fInputHandler = (AliInputEventHandler*) 
-         ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-//
-//  Monte Carlo
-//
-    AliMCEventHandler*    mcH = 0;
-    mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    if (mcH) {
-	fMCEvent = mcH->MCEvent();
-    } 
-    
+
+   // Connect input handlers (multi input handler is handled)
+   ConnectMultiHandler();
+
     if (fInputHandler) {
 	if ((fInputHandler->GetTree())->GetBranch("ESDfriend."))
 	    fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
@@ -177,6 +176,8 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
          AliError("No Input Event Handler connected") ; 
          return ; 
     }
+    // Disconnect multi handler
+    DisconnectMultiHandler();
 }
 
 void AliAnalysisTaskSE::CreateOutputObjects()
@@ -297,6 +298,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 {
 //
 // Exec analysis of one event
+
+    ConnectMultiHandler();
+
     if ( fDebug >= 10)
       printf("Task is active %5d\n", IsActive());
     
@@ -491,20 +495,19 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     }
 
 // Call the user analysis    
-    AliMCEventHandler*    mcH = 0;
-    mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-
-    if (!mcH) {
+    if (!fMCEventHandler) {
 	if (isSelected) 
 	    UserExec(option);
     } else {
-	if (isSelected && (mcH->InitOk())) 
+	if (isSelected && (fMCEventHandler->InitOk())) 
 	    UserExec(option);
     }
     
 // Added protection in case the derived task is not an AOD producer.
     AliAnalysisDataSlot *out0 = GetOutputSlot(0);
     if (out0 && out0->IsConnected()) PostData(0, fTreeA);    
+    
+    DisconnectMultiHandler();
 }
 
 const char* AliAnalysisTaskSE::CurrentFileName()
@@ -572,4 +575,30 @@ void AliAnalysisTaskSE::LoadBranches() const
   TIter next(arr);
   TObject *obj;
   while ((obj=next())) mgr->LoadBranch(obj->GetName());
+}
+
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskSE::ConnectMultiHandler()
+{
+   //
+   // Connect MultiHandler
+   //
+   fInputHandler = (AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+   fMultiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(fInputHandler);
+   if (fMultiInputHandler) {
+//     fMultiInputHandler = (AliMultiInputEventHandler*)fInputHandler;
+      fInputHandler = dynamic_cast<AliInputEventHandler *>(fMultiInputHandler->GetFirstInputEventHandler());
+      fMCEventHandler = dynamic_cast<AliMCEventHandler *>(fMultiInputHandler->GetFirstMCEventHandler());
+   }
+   if (fMCEventHandler) fMCEvent = fMCEventHandler->MCEvent();
+}
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskSE::DisconnectMultiHandler()
+{
+   //
+   // Disconnect MultiHandler
+   //
+   if (fMultiInputHandler) fInputHandler = fMultiInputHandler;
 }

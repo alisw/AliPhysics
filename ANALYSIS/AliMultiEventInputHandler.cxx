@@ -125,7 +125,7 @@ Bool_t AliMultiEventInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 Bool_t AliMultiEventInputHandler::Notify(const char */*path*/)
 {
     // Connect to new tree
- 
+
     TList* connectedList = (TList*) (fTree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));   
     if (connectedList && !fInit) {
 	fEventBuffer[0]->ReadFromTree(fTree, "reconnect");
@@ -144,6 +144,9 @@ Bool_t AliMultiEventInputHandler::BeginEvent(Long64_t /*entry*/)
     // Actions before analysis of each event 
     //
     // Reset the number of events buffered for this bin to 0
+    printf("BeginEvent %5d %5d \n", 
+	   fCurrentBin, fEventPool->BinNumber());
+    
     if (fCurrentBin != (fEventPool->BinNumber())) {
 	fCurrentBin = fEventPool->BinNumber();
 	fNBuffered = 0;
@@ -167,7 +170,6 @@ Bool_t AliMultiEventInputHandler::FinishEvent()
     // Connect the next event in the buffer to the tree
     if (!fEventSkipped) fIndex++;
     fIndex %= fBufferSize;
-
     AliInfo(Form("Connecting buffer entry %5d", fIndex));
     fEventBuffer[fIndex]->Clear();
     fCurrentEvt++;
@@ -178,7 +180,7 @@ Bool_t AliMultiEventInputHandler::FinishEvent()
 
     fNBuffered++;
     if (fNBuffered > fBufferSize) fNBuffered = fBufferSize;
-
+    
     Int_t nmax = fTree->GetEntries();
     if (fTree->GetEntryList()) {
 	nmax = (fTree->GetEntryList()->GetN());

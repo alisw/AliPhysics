@@ -14,7 +14,9 @@ class AliAODHeader;
 class AliAODTracklets;
 class AliAODCaloCells;
 class AliMCEvent;
+class AliMCEventHandler;
 class AliInputEventHandler;
+class AliMultiInputEventHandler;
 class AliAnalysisCuts;
 class AliESDfriend;
 class AliEventTag;
@@ -63,6 +65,9 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual Bool_t        IsStandardAOD() const;
     virtual TList*        GetQAHistos()   const {return fHistosQA;}
     virtual Bool_t        IsEventInBinZero() { return kFALSE;}
+ protected:
+    void ConnectMultiHandler();
+    void DisconnectMultiHandler();
 
   protected:
     Int_t                 fDebug;           //  Debug flag
@@ -93,7 +98,9 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static TClonesArray*    fgAODDimuons;       //! Dimuons replication
     // Event Selection
     UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
-     
+    // Event Mixing
+    AliMultiInputEventHandler *fMultiInputHandler;  //! pointer to multihandler
+    AliMCEventHandler         *fMCEventHandler;     //! pointer to MCEventHandler
     ClassDef(AliAnalysisTaskSE, 4); // Analysis task for standard jet analysis
 };
  

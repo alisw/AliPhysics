@@ -12,7 +12,7 @@ SRCS = 	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx \
    AliAnalysisFilter.cxx AliAnalysisCuts.cxx \
 	AliCollisionNormalization.cxx AliCollisionNormalizationTask.cxx \
 	AliAnalysisTaskAODCentralityMaker.cxx AliCentralitySelectionTask.cxx \
-   AliAnalysisTaskStat.cxx
+   AliAnalysisTaskStat.cxx AliMultiInputEventHandler.cxx
 
 
 ifeq (yes,$(CHECKALIEN))
