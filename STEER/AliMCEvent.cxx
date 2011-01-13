@@ -115,10 +115,10 @@ void AliMCEvent::ConnectTreeK (TTree* tree)
     fStack->GetEvent();
     fNparticles = fStack->GetNtrack();
     fNprimaries = fStack->GetNprimary();
+
     Int_t iev  = fHeader->GetEvent();
     Int_t ievr = fHeader->GetEventNrInRun();
-    
-    AliInfo(Form("AliMCEvent# %5d %5d: Number of particles: %5d (all) %5d (primaries)\n", 
+    AliDebug(1, Form("AliMCEvent# %5d %5d: Number of particles: %5d (all) %5d (primaries)\n", 
 		 iev, ievr, fNparticles, fNprimaries));
  
     // This is a cache for the TParticles converted to MCParticles on user request
