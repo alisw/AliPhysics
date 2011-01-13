@@ -65,8 +65,7 @@ void drawTHnSparse( TString inputFile,
       printf("Error: No OFF THnSparse object found\n");
       return;
   }
-    
-  
+      
   TText *hText = list->FindObject("text");
   if(!hText) printf("No hText\n");
   
@@ -201,6 +200,22 @@ void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D 
       
       if(i==0){
          printLegend(l,hlt,off);
+      	 TPaveText *pave = new TPaveText(50,500,140,2100);
+         pave->SetFillColor(kWhite);
+         pave->SetLineColor(kWhite);
+	 pave->SetShadowColor(kWhite);
+         //TText *t1 = 
+	 pave->AddText(itoa(minEta)+" < #eta < "+itoa(maxEta));
+	 pave->AddText(itoa(minPt)+" < p_{T} (GeV/c) < "+itoa(maxPt));
+	 pave->AddText(itoa(minTrackMult)+" < track mult < "+itoa(maxTrackMult));
+	 pave->AddText(itoa(minDCAr)+" < DCAr (cm) < "+itoa(maxDCAr));
+	 pave->AddText(itoa(minDCAz)+" < DCAz (cm) < "+itoa(maxDCAz));
+	 pave->AddText(itoa(minTPCclus)+" < TPC clusters/track < "+itoa(maxTPCclus));
+	 pave->AddText(itoa(minITSclus)+" < ITS clusters/track < "+itoa(maxITSclus));  
+	 if(VS!=2) pave->AddText("vertex status: "+itoa(VS));
+    	 
+    	 pave->Draw();
+    	 can->Update();
       }
    } 
 }
@@ -359,39 +374,28 @@ TString cutsToString( double minEta,	double maxEta,
 		      int VS
 	            )
 {
-  stringstream sMinEta, sMaxEta;
-  sMinEta << minEta; sMaxEta << maxEta;
- 
-  stringstream sMinTM, sMaxTM;
-  sMinTM << minTrackMult; sMaxTM << maxTrackMult;
- 
-  stringstream sMinPt, sMaxPt;
-  sMinPt << minPt; sMaxPt << maxPt;
- 
-  stringstream sMinDCAr, sMaxDCAr;
-  sMinDCAr << minDCAr; sMaxDCAr << maxDCAr;
-
-  stringstream sMinDCAz, sMaxDCAz;
-  sMinDCAz << minDCAz; sMaxDCAz << maxDCAz;
-
-  stringstream sMinTPCclus, sMaxTPCclus;
-  sMinTPCclus << minTPCclus; sMaxTPCclus << maxTPCclus;
- 
-  stringstream sMinITSclus, sMaxITSclus;
-  sMinITSclus << minITSclus; sMaxITSclus << maxITSclus;
-  
-  stringstream sVS; sVS << VS;
-  
   TString cuts = "";
-  cuts += "eta"+sMinEta.str()+"_"+sMaxEta.str()+"_";
-  cuts += "Pt"+sMinPt.str()+"_"+sMaxPt.str()+"_";
-  cuts += "TM"+sMinTM.str()+"_"+sMaxTM.str()+"_";
-  cuts += "DCAr"+sMinDCAr.str()+"_"+sMaxDCAr.str()+"_";
-  cuts += "DCAz"+sMinDCAz.str()+"_"+sMaxDCAz.str()+"_";
-  cuts += "TPCclus"+sMinTPCclus.str()+"_"+sMaxTPCclus.str()+"_";
-  cuts += "ITSclus"+sMinITSclus.str()+"_"+sMaxITSclus.str()+"_";
+  cuts += "eta"+itoa(minEta)+"_"+itoa(maxEta)+"_";
+  cuts += "Pt"+itoa(minPt)+"_"+itoa(maxPt)+"_";
+  cuts += "TM"+itoa(minTrackMult)+"_"+itoa(maxTrackMult)+"_";
+  cuts += "DCAr"+itoa(minDCAr)+"_"+itoa(maxDCAr)+"_";
+  cuts += "DCAz"+itoa(minDCAz)+"_"+itoa(maxDCAz)+"_";
+  cuts += "TPCclus"+itoa(minTPCclus)+"_"+itoa(maxTPCclus)+"_";
+  cuts += "ITSclus"+itoa(minITSclus)+"_"+itoa(maxITSclus)+"_";
   
   if(VS==2) cuts.Chop(); 
-  else cuts += "VS"+sVS.str(); 
+  else cuts += "VS"+itoa(VS); 
   return cuts;
+}
+
+TString itoa(int i){
+  stringstream si;
+  si << i;
+  return si.str();
+}
+
+TString itoa(double i){
+  stringstream si;
+  si << i;
+  return si.str();
 }
