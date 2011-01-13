@@ -38,6 +38,7 @@
 #include "TString.h"
 #include "TText.h"
 #include "TTimeStamp.h"
+#include "TH1.h"
 
 ClassImp(AliAnalysisTaskHLTCentralBarrel)
 //_______________________________________________________________________________________________//
@@ -259,9 +260,9 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
       Double_t trackHLT[] = {
         		       TMath::Abs(esdTrackHLT->Pt())
         		      ,esdTrackHLT->GetTPCNcls()    
-        		      ,esdTrackHLT->Theta()	    
+        		      ,esdTrackHLT->Theta()
         		      ,esdTrackHLT->Eta()	    
-        		      ,esdTrackHLT->Phi()	    
+        		      ,esdTrackHLT->Phi()
         		      ,dca[0]			    
         		      ,dca[1]			    
         		      ,esdTrackHLT->Charge()	    
@@ -311,9 +312,9 @@ THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateEventTHnSparse(const char* na
 //see header for documentation                     
   
   THnSparseF *thn = new THnSparseF(name,"",size,bins,min,max);
-  thn->GetAxis(0)->SetTitle("vertex x (cm)");
-  thn->GetAxis(1)->SetTitle("vertex y (cm)");
-  thn->GetAxis(2)->SetTitle("vertex z (cm)");
+  thn->GetAxis(0)->SetTitle("primary vertex x");
+  thn->GetAxis(1)->SetTitle("primary vertex y");
+  thn->GetAxis(2)->SetTitle("primary vertex z");
   thn->GetAxis(3)->SetTitle("number of contributors");
   thn->GetAxis(4)->SetTitle("track multiplicity");
   thn->GetAxis(5)->SetTitle("vertex status"); 
@@ -324,17 +325,17 @@ THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateTrackTHnSparse(const char* na
 //see header for documentation                     
   
   THnSparseF *thn = new THnSparseF(name,"",size,bins,min,max);
-  thn->GetAxis(0)->SetTitle("transverse momentum");
-  thn->GetAxis(1)->SetTitle("TPC clusters per track");
-  thn->GetAxis(2)->SetTitle("theta");
-  thn->GetAxis(3)->SetTitle("eta");
-  thn->GetAxis(4)->SetTitle("phi");
+  thn->GetAxis(0)->SetTitle("p_{T}");
+  thn->GetAxis(1)->SetTitle("TPC clusters/track");
+  thn->GetAxis(2)->SetTitle("#theta");
+  thn->GetAxis(3)->SetTitle("#eta");
+  thn->GetAxis(4)->SetTitle("#phi");
   thn->GetAxis(5)->SetTitle("DCAr");
   thn->GetAxis(6)->SetTitle("DCAz");
-  thn->GetAxis(7)->SetTitle("charge");
+  thn->GetAxis(7)->SetTitle("polarity");
   thn->GetAxis(8)->SetTitle("DCArSG");
   thn->GetAxis(9)->SetTitle("DCAzSG");
-  thn->GetAxis(10)->SetTitle("ITS clusters per track");  
+  thn->GetAxis(10)->SetTitle("ITS clusters/track");  
   return thn;
 }
 

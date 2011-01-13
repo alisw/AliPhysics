@@ -216,6 +216,20 @@ void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D 
       off = hOFF->Projection(i); 
       
       hlt->SetTitle(fix1DTitle(hHLT->Projection(i)->GetTitle())); 
+   
+      TString s = hlt->GetTitle();      
+      if(s.Contains("p_")){ 
+         s+=" (GeV/c)";
+	 hlt->SetXTitle(s);     
+      }
+      else if(s.Contains("theta") || s.Contains("phi")){
+         s+=" (rad)"; 
+	 hlt->SetXTitle(s);
+      }
+      else if(s.Contains("DCA")){
+         s+=" (cm)";
+	 hlt->SetXTitle(s);
+      }
         
       defineYaxisMax(hlt, off);
       //off->SetLineColor(2);
@@ -252,6 +266,9 @@ void plot2D(TCanvas* can, THnSparse* h,
   can->cd(1);    
   TH2D *ht = h->Projection(1,0);
   ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(0)->GetTitle()));
+
+  TString s = fix1DTitle(h->Projection(0)->GetTitle())+" (GeV/c)";
+  ht->SetXTitle(s);
   ht->Draw("colz");
   
   can->cd(2);
@@ -262,31 +279,45 @@ void plot2D(TCanvas* can, THnSparse* h,
   can->cd(3);
   ht = h->Projection(1,5);
   ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(5)->GetTitle()));
+  TString s = fix1DTitle(h->Projection(5)->GetTitle())+" (cm)";
+  ht->SetXTitle(s);
   ht->Draw("colz");
   
   can->cd(4);
   ht = h->Projection(1,6);
   ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(6)->GetTitle()));
+  TString s = fix1DTitle(h->Projection(6)->GetTitle())+" (cm)";
+  ht->SetXTitle(s);
   ht->Draw("colz");
   
   can->cd(5);
   ht = h->Projection(6,0);
   ht->SetTitle(fix2DTitle(h->Projection(6)->GetTitle(), h->Projection(0)->GetTitle()));
+  TString s = fix1DTitle(h->Projection(0)->GetTitle())+" (GeV/c)";
+  ht->SetXTitle(s);
+  TString s = fix1DTitle(h->Projection(6)->GetTitle())+" (cm)";
+  ht->SetYTitle(s);
   ht->Draw("colz");
   
   can->cd(6);
   ht = h->Projection(6,3);
   ht->SetTitle(fix2DTitle(h->Projection(6)->GetTitle(), h->Projection(3)->GetTitle()));
+  TString s = fix1DTitle(h->Projection(6)->GetTitle())+" (cm)";
+  ht->SetYTitle(s);
   ht->Draw("colz");
   
   can->cd(7);
   ht = h->Projection(3,0);
   ht->SetTitle(fix2DTitle(h->Projection(3)->GetTitle(), h->Projection(0)->GetTitle()));
+  TString s = fix1DTitle(h->Projection(0)->GetTitle())+" (GeV/c)";
+  ht->SetXTitle(s);
   ht->Draw("colz");
   
   can->cd(8);
   ht = h->Projection(3,4);
   ht->SetTitle(fix2DTitle(h->Projection(3)->GetTitle(), h->Projection(4)->GetTitle()));
+  TString s = fix1DTitle(h->Projection(4)->GetTitle())+" (rad)";
+  ht->SetXTitle(s);
   ht->Draw("colz"); 
 }
 
@@ -295,7 +326,13 @@ void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D 
   for(int i=0; i<size; i++){         
       hlt = hHLT->Projection(i);
       off = hOFF->Projection(i); 
-      hlt->SetTitle(fix1DTitle(hHLT->Projection(i)->GetTitle()));
+      hlt->SetTitle(fix1DTitle(hHLT->Projection(i)->GetTitle()));      
+      TString s = hlt->GetTitle();      
+      if(s.Contains("primary")){ 
+         s+=" (cm)";
+	 hlt->SetXTitle(s);     
+      }
+     
       defineYaxisMax(hlt, off);
       off->SetLineColor(2);
      
