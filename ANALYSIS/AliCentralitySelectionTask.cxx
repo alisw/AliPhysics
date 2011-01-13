@@ -564,12 +564,9 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* esd)
   
   AliInfo(Form("Setup Centrality Selection for run %d\n",fCurrentRun));
 
-  fRunNo = fCurrentRun;
-
   // CHANGE HERE FOR RUN RANGES
-  if ( fRunNo <= 137162 ) fRunNo = 137161;
-  else if ( fRunNo == 137365 ) fRunNo = 137366;
-  else if ( fRunNo >= 137366 ) fRunNo = 137366;
+  if ( fCurrentRun <= 137165 ) fRunNo = 137161;
+  else fRunNo = 137366;
   // CHANGE HERE FOR RUN RANGES
   
   TString fileName(Form("%s/AliCentralityBy1D_%d.root", fDirName.Data(), fRunNo));
