@@ -320,6 +320,7 @@ Bool_t kGCplotESDEPhi    = kTRUE;
 Bool_t kGCplotESDENTPCClusters = kTRUE;
 Bool_t kGCplotESDENITSClusters = kTRUE;
 Bool_t kGCplotESDENTPCClustersToFP = kTRUE;
+Bool_t kGCplotESDENTPCClustersToFR = kTRUE;
 Bool_t kGCplotESDETPCchi2 = kTRUE;
 
 Bool_t kGCplotESDPEnergy = kFALSE;
@@ -329,6 +330,7 @@ Bool_t kGCplotESDPPhi    = kTRUE;
 Bool_t kGCplotESDPNTPCClusters = kTRUE; 
 Bool_t kGCplotESDPNITSClusters = kTRUE;
 Bool_t kGCplotESDPNTPCClustersToFP = kTRUE;
+Bool_t kGCplotESDPNTPCClustersToFR = kTRUE;
 Bool_t kGCplotESDPTPCchi2 = kTRUE;
 
 Bool_t kGCplotESDConvGammaEnergy = kFALSE;
@@ -1659,7 +1661,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kGCdoMCTruth,kTRUE);
     gammaconversion->SelectCollisionCandidates(); 
 
-
+    //    if(kGCrunOnTrain == kFALSE){
       TChain* chain= CreateESDChain(kGCdataList,kGCnumberOfFilesToAnalyze);
 			
       mgr->InitAnalysis();
@@ -1673,12 +1675,12 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 }
 
 void LoadLibraries() {
-
- TStopwatch timer;
+	 	 
+  TStopwatch timer;
   timer.Start();
   gSystem->Load("libTree.so");
   gSystem->Load("libGeom");
-	
+  
   gSystem->Load("libSTEERBase.so");
   gSystem->Load("libVMC.so");
   gSystem->Load("libESD.so");
@@ -1689,9 +1691,8 @@ void LoadLibraries() {
   gSystem->Load("libPWG4GammaConv.so");
   
   //  gSystem->ChangeDirectory(pwd.Data());
-
+  
 }
-
 void build() {
 	
   TStopwatch timer;
@@ -1888,6 +1889,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDENTPCClusters == kTRUE){ histograms->AddHistogram("ESD_E_nTPCClusters" ,"" , kGCnXBinsNTPCClusters, kGCfirstXBinNTPCClusters, kGClastXBinNTPCClusters, "", "");}
     if(kGCplotESDENITSClusters == kTRUE){ histograms->AddHistogram("ESD_E_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNITSClusters, kGClastXBinNITSClusters, "", "");}
     if(kGCplotESDENTPCClustersToFP== kTRUE){ histograms->AddHistogram("ESD_E_nTPCClustersToFP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}
+    if(kGCplotESDENTPCClustersToFR== kTRUE){ histograms->AddHistogram("ESD_E_nTPCClustersToFR" ,"" ,kGCnXBinsR, kGCfirstXBinR, kGClastXBinR,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}
     if(kGCplotESDETPCchi2 == kTRUE){ histograms->AddHistogram("ESD_E_TPCchi2" ,"" , kGCnXBinsTPCchi2, kGCfirstXBinTPCchi2, kGClastXBinTPCchi2, "", "");}
 
 		
@@ -1898,6 +1900,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDPNTPCClusters == kTRUE){ histograms->AddHistogram("ESD_P_nTPCClusters" ,"" , kGCnXBinsNTPCClusters, kGCfirstXBinNTPCClusters, kGClastXBinNTPCClusters, "", "");}
     if(kGCplotESDPNITSClusters == kTRUE){ histograms->AddHistogram("ESD_P_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNITSClusters, kGClastXBinNITSClusters, "", "");}
     if(kGCplotESDPNTPCClustersToFP== kTRUE){ histograms->AddHistogram("ESD_P_nTPCClustersToFP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}	
+    if(kGCplotESDPNTPCClustersToFR== kTRUE){ histograms->AddHistogram("ESD_P_nTPCClustersToFR" ,"" ,kGCnXBinsR, kGCfirstXBinR, kGClastXBinR,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}
     if(kGCplotESDPTPCchi2 == kTRUE){ histograms->AddHistogram("ESD_P_TPCchi2" ,"" , kGCnXBinsTPCchi2, kGCfirstXBinTPCchi2, kGClastXBinTPCchi2, "", "");}
 
     if(kGCplotESDConvGammaEnergy == kTRUE){ histograms->AddHistogram("ESD_ConvGamma_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
