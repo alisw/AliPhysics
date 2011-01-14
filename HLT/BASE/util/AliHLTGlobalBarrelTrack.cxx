@@ -88,15 +88,6 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliExternalTrackParam& p 
   *(dynamic_cast<AliExternalTrackParam*>(this))=p;
 }
 
-template <class c>
-AliHLTGlobalBarrelTrack& AliHLTGlobalBarrelTrack::operator=(const c& p)
-{
-  // see header file for class documentation
-  this->~AliHLTGlobalBarrelTrack();
-  new (this) AliHLTGlobalBarrelTrack(p);
-  return *this;
-}
-
 AliHLTGlobalBarrelTrack::~AliHLTGlobalBarrelTrack()
 {
   // see header file for class documentation

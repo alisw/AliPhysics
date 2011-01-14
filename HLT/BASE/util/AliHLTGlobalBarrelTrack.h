@@ -38,7 +38,11 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
 
   /** assignment operator */
   template <class c>
-  AliHLTGlobalBarrelTrack& operator=(const c& t);
+  AliHLTGlobalBarrelTrack& operator=(const c& t) {
+    this->~AliHLTGlobalBarrelTrack(); new (this) AliHLTGlobalBarrelTrack(t);
+    return *this;
+  }
+
   /** destructor */
   ~AliHLTGlobalBarrelTrack();
 
