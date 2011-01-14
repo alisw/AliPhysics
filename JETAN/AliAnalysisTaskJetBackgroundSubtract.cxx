@@ -453,22 +453,23 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 
        }//kRhoRC
 
-        else if(fSubtraction==k4Area){
-         
-       	  backgroundv.SetPxPyPzE(rho*(jet->VectorAreaCharged())->Px(),rho*(jet->VectorAreaCharged())->Py(),rho*(jet->VectorAreaCharged())->Pz(),rho*(jet->VectorAreaCharged())->E());
-        if((backgroundv.E()>jet->E())&&(backgroundv.Pt()>jet->Pt())){
-       
-	  // optionally rescale it and keep??
-	  bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
-	}
-	else{
-	  bAdd = RescaleJet4vector(&tmpNewJet,backgroundv);
-	}
-	// add background estimates to the new jet object
-	// allows to recover old p_T and rho...
-	tmpNewJet.SetBgEnergy(backgroundv.P(),0);
+       else if(fSubtraction==k4Area&&jet->VectorAreaCharged()){
 
+	 
+	 backgroundv.SetPxPyPzE(rho*(jet->VectorAreaCharged())->Px(),rho*(jet->VectorAreaCharged())->Py(),rho*(jet->VectorAreaCharged())->Pz(),rho*(jet->VectorAreaCharged())->E());
+	 if((backgroundv.E()>jet->E())&&(backgroundv.Pt()>jet->Pt())){
+       
+	   // optionally rescale it and keep??
+	   bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
+	   if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
+	 }
+	 else{
+	   bAdd = RescaleJet4vector(&tmpNewJet,backgroundv);
+	 }
+	 // add background estimates to the new jet object
+	 // allows to recover old p_T and rho...
+	 tmpNewJet.SetBgEnergy(backgroundv.P(),0);
+	 
        }//kArea4vector  
 
 
