@@ -506,6 +506,18 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskCl->SetGhostEtamax(0.9);
 	 kDefaultJetBackgroundBranch = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
 	 
+         if (iPWG4FastEmbedding) {
+           taskClEmb = AddTaskJetCluster("AODextra","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
+           taskClEmb->SetBackgroundCalc(kFALSE);
+           taskClEmb->SetCentralityCut(fCenLo,fCenUp);
+           taskClEmb->SetGhostEtamax(0.9);
+
+           taskClEmb = AddTaskJetCluster("AODextraonly","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
+           taskClEmb->SetBackgroundCalc(kFALSE);
+           taskClEmb->SetCentralityCut(fCenLo,fCenUp);
+           taskClEmb->SetGhostEtamax(0.9);
+         }
+
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.2,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
 	 taskCl->SetBackgroundCalc(kTRUE);
 	 taskCl->SetCentralityCut(fCenLo,fCenUp);

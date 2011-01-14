@@ -52,8 +52,11 @@
     TString type = mgr->GetInputEventHandler()->GetDataType();
     TString typeRec(bRec);
     TString typeGen(bGen);
-    typeGen.ToUpper();
-    typeRec.ToUpper();
+    if(!typeRec.Contains("AODextra")) {
+      typeGen.ToUpper();
+      typeRec.ToUpper();
+    }
+    cout << "typeRec: " << typeRec << endl;
     // Create the task and configure it.
     //===========================================================================
 
@@ -67,7 +70,7 @@
     cAdd += Form("_Cut%05d",(int)(1000.*kPtTrackCut));
     cAdd += Form("_Skip%02d",nSkip);
     Printf("%s %E",cAdd.Data(),kPtTrackCut);
-    AliAnalysisTaskJetCluster* pwg4spec = new  AliAnalysisTaskJetCluster(Form("JetCluster_%s%s",jf,cAdd.Data()));
+    AliAnalysisTaskJetCluster* pwg4spec = new  AliAnalysisTaskJetCluster(Form("JetCluster%s_%s%s",bRec,jf,cAdd.Data()));
       
    // or a config file
    // pwg4spec->SetAnalysisType(AliAnalysisTaskJetCluster::kAnaMC);
@@ -90,6 +93,15 @@
    }
    else if (typeRec.Contains("AODMC")){
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCAll);
+   }
+   else if (typeRec.Contains("AODextraonly")) {
+     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextraonly);
+     pwg4spec->SetTrackPtCut(kPtTrackCut);
+   }
+   else if (typeRec.Contains("AODextra")) {
+     cout << "AliAnalysisTaskJetCluster::kTrackAODextra: " << AliAnalysisTaskJetCluster::kTrackAODextra << endl;
+     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextra);
+     pwg4spec->SetTrackPtCut(kPtTrackCut);
    }
    else if (typeRec.Contains("AOD")) {
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAOD);
