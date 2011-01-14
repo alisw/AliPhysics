@@ -16,10 +16,8 @@ void test()
   // 
   con->WriteToFile("test.root");
   //
-  TFile* file = TFile::Open("test.root");
-  //
-  AliOADBContainer* cont0;
-  file->GetObject("OADB", cont0); 
-  cont0->Dump();
-  cont0->List();
+  AliOADBContainer cont0;
+  cont0.InitFromFile("test.root", "OADB");
+  cont0.Dump();
+  cont0.List();
 }
