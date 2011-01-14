@@ -348,7 +348,7 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       if(fNonStdFile.Length()!=0){
 	// 
 	// case that we have an AOD extension we need to fetch the jets from the extended output
-	// we identifay the extension aod event by looking for the branchname
+	// we identify the extension aod event by looking for the branchname
 	AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
 	TObjArray* extArray = aodH->GetExtensions();
 	if (extArray) {
@@ -1359,20 +1359,42 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
   if(fDebug>2)Printf("%s:%d Selecting tracks with %d",(char*)__FILE__,__LINE__,type);
 
   Int_t iCount = 0;
-  if(type==kTrackAOD){
-    AliAODEvent *aod = 0;
-    if(fUseAODTrackInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
-    else aod = AODEvent();
-    if(!aod){
-      return iCount;
+  if(type==kTrackAOD || type==kTrackAODextra || type==kTrackAODextraonly){
+    if(type!=kTrackAODextraonly) {
+      AliAODEvent *aod = 0;
+      if(fUseAODTrackInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
+      else aod = AODEvent();
+      if(!aod){
+	return iCount;
+      }
+      for(int it = 0;it < aod->GetNumberOfTracks();++it){
+	AliAODTrack *tr = aod->GetTrack(it);
+	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+	if(TMath::Abs(tr->Eta())>0.9)continue;
+	if(tr->Pt()<fTrackPtCut)continue;
+	list->Add(tr);
+	iCount++;
+      }
     }
-    for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
-      if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
-      if(TMath::Abs(tr->Eta())>0.9)continue;
-      if(tr->Pt()<fTrackPtCut)continue;
-      list->Add(tr);
-      iCount++;
+    if(type==kTrackAODextra || type==kTrackAODextraonly) {
+      AliAODEvent *aod = 0;
+      if(fUseAODTrackInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
+      else aod = AODEvent();
+      
+      if(!aod){
+	return iCount;
+      }
+      TClonesArray *aodExtraTracks = dynamic_cast<TClonesArray*>(aod->FindListObject("aodExtraTracks"));
+      for(int it =0; it<aodExtraTracks->GetEntries(); it++) {
+	AliVParticle *track = dynamic_cast<AliVParticle*> ((*aodExtraTracks)[it]);
+	if (!track) continue;
+
+	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
+	if(trackAOD->Pt()<fTrackPtCut) continue;
+
+	list->Add(trackAOD);
+	iCount++;
+      }
     }
   }
   else if (type ==  kTrackKineAll||type == kTrackKineCharged){

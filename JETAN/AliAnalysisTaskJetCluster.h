@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 // **************************************
-// task used for comapring different jets D parmaters from fastjet 
+// task used for comparing different jets D parmaters from fastjet 
 // *******************************************
 
 #include  "AliAnalysisTaskSE.h"
@@ -97,7 +97,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     // AOD reading -> MC from AOD
     // ESD reading -> MC from Kinematics
     // this has to match with our selection of input events
-    enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
+    enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODextra, kTrackAODextraonly};
     enum {kMaxJets = 4};
     enum {kMaxCorrelation =  3};
     enum {kMaxRadius =       5};
@@ -219,7 +219,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 12) 
+    ClassDef(AliAnalysisTaskJetCluster, 13) 
 };
  
 #endif
