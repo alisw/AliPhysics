@@ -1235,7 +1235,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	aodTrack->SetTPCClusterMap(track->GetTPCClusterMap());
 	aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
 	aodTrack->SetChi2perNDF(Chi2perNDF(track));
-	
+	aodTrack->SetFlags(track->GetStatus());
 	aodTrackRefs->AddAt(aodTrack, nTrack);
 	
 	delete track;
