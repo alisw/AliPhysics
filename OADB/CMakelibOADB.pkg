@@ -1,0 +1,9 @@
+#-*- Mode: CMake -*-
+set ( SRCS  AliOADBContainer.cxx)
+
+string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
+
+set ( DHDR  OADBLinkDef.h)
+
+set ( EXPORT ${HDRS})
+
